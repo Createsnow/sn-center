@@ -30,17 +30,28 @@ def _num(v: Any) -> bool:
     return isinstance(v, (int, float)) and not isinstance(v, bool)
 
 
+#: 表格软件会把以这些字符开头的文本当成公式
+FORMULA_START = ("=", "+", "-", "@", "\t", "\r")
+
+
 def csv_line(cells: list[Any]) -> str:
     parts = []
     for v in cells:
         s = "" if v is None else ("true" if v is True else "false" if v is False else str(v))
+        # 防公式注入：先加前缀再决定是否加引号（加了引号后首字符变成 "，就判断不到了）
+        if s.startswith(FORMULA_START) and not _num(v):
+            s = "'" + s
         if any(ch in s for ch in ',"\n\r'):
             s = '"' + s.replace('"', '""') + '"'
-        # 防止以 = + - @ 开头的值在 Excel 中被当成公式执行
-        if s and s[0] in "=+-@" and not _num(v):
-            s = "'" + s
         parts.append(s)
     return ",".join(parts) + "\r\n"
+
+
+def _text_cell(ws: Any, v: Any) -> WriteOnlyCell:
+    """文本单元格：强制按字符串写出，以 = 开头也不会被 openpyxl 写成公式。"""
+    cell = WriteOnlyCell(ws, value=str(v))
+    cell.data_type = "s"
+    return cell
 
 
 def csv_stream(headers: list[str], rows: Iterable[list[Any]]) -> Iterator[bytes]:
@@ -60,7 +71,7 @@ def xlsx_bytes(title: str, headers: list[str], rows: Iterable[list[Any]]) -> Ite
     wb = Workbook(write_only=True)
     ws = wb.create_sheet(title[:31] or "Sheet1")
     ws.freeze_panes = "A2"
-    ws.append(headers)
+    ws.append([_text_cell(ws, h) for h in headers])
     for r in rows:
         line = []
         for v in r:
@@ -69,7 +80,7 @@ def xlsx_bytes(title: str, headers: list[str], rows: Iterable[list[Any]]) -> Ite
             elif v is None:
                 line.append(None)
             else:
-                line.append(WriteOnlyCell(ws, value=str(v)))
+                line.append(_text_cell(ws, v))
         ws.append(line)
     with tempfile.SpooledTemporaryFile(max_size=32 * 1024 * 1024) as tmp:
         wb.save(tmp)

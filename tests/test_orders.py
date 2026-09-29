@@ -67,3 +67,22 @@ def test_factory_operator_cannot_see_orders_but_bound_query_only_sees_own_factor
     qb = w.user(uid("qb"), "query", "F-ORD")
     assert ok(api.get("/api/orders" + q(q=b1), qb))["total"] == 1
     assert ok(api.get("/api/orders" + q(q=b2), qb))["total"] == 0
+
+
+def test_bound_query_cannot_read_other_factory_lines_or_customers(api, admin, w):
+    w.factory("F-ORD3", "订单范围甲厂")
+    w.factory("F-ORD4", "订单范围乙厂")
+    own_c, other_c = uid("CO"), uid("CX")
+    b1, b2 = uid("MO"), uid("MO")
+    w.order(b1, "订单范围甲厂", own_c, uid("PI"), ("M1", 2))
+    w.order(b2, "订单范围乙厂", other_c, uid("PI"), ("M1", 3))
+    qb = w.user(uid("qb"), "query", "F-ORD3")
+    assert len(ok(api.get(f"/api/orders/{b1}/lines", qb)).body) == 1
+    assert api.get(f"/api/orders/{b2}/lines", qb).code == "FACTORY_FORBIDDEN"
+    assert ok(api.get("/api/orders/customers" + q(q=own_c), qb)).body == [own_c]
+    assert ok(api.get("/api/orders/customers" + q(q=other_c), qb)).body == []
+    # 总部与未绑厂查询员仍可看全部
+    assert len(ok(api.get(f"/api/orders/{b2}/lines", admin)).body) == 1
+    assert ok(api.get("/api/orders/customers" + q(q=other_c), admin)).body == [other_c]
+    qa = w.user(uid("qa"), "query", None)
+    assert len(ok(api.get(f"/api/orders/{b2}/lines", qa)).body) == 1

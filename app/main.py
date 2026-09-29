@@ -30,7 +30,7 @@ from app.db import init_db
 from app.db.session import db, is_integrity, is_lock_conflict
 from app.middleware.request_id import WRITE_METHODS, RequestIdMiddleware
 from app.services import audit as audit_svc
-from app.services import demo_seed, partitions, users
+from app.services import demo_seed, generate, partitions, users
 
 log = structlog.get_logger()
 
@@ -83,9 +83,21 @@ def _spa_fallback(request: Request) -> Response:
     return JSONResponse({"detail": "Not Found"}, status_code=404)
 
 
+def check_secret() -> None:
+    """生产环境（ENVIRONMENT=production）密钥为空、为示例值或过短时拒绝启动：否则任何人都能伪造登录令牌。"""
+    problem = settings.secret_problem()
+    if problem is None:
+        return
+    if settings.production:
+        raise RuntimeError(f"{problem}：生产环境必须设置至少 32 位的随机 SN_SECRET")
+    log.warning("weak_secret", problem=problem, note="ENVIRONMENT=production 时将拒绝启动")
+
+
 def startup() -> None:
+    check_secret()
     db.configure(settings.db_target(), settings.db_pool_size)
     init_db()
+    generate.recover_interrupted()
     if settings.get_bool("SN_RESET_ADMIN", False):
         users.reset_admin(settings.init_admin_password)
         log.warning("admin_reset", emp_no="admin", note="password=SN_INIT_ADMIN_PASSWORD; remove SN_RESET_ADMIN now")
@@ -184,6 +196,11 @@ def create_app() -> FastAPI:
 
     @app.exception_handler(pymysql.err.MySQLError)
     async def db_handler(request: Request, exc: pymysql.err.MySQLError) -> JSONResponse:
+        if isinstance(exc, pymysql.err.DataError):
+            # 超长 / 格式不符是请求本身的问题，重试也不会成功
+            log.warning("db_data_error", path=request.url.path, err=str(exc))
+            b = biz(ErrorCode.VALIDATION, detail="body")
+            return JSONResponse(_body(b.code, b.message, b.params), status_code=422)
         if is_lock_conflict(exc) or is_integrity(exc):
             # 死锁 / 锁等待超时 / 约束冲突：让调用方重试
             log.warning("db_conflict", path=request.url.path, err=str(exc))

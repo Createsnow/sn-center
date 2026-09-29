@@ -21,6 +21,12 @@ DEFAULT_CORS = [
     "http://127.0.0.1:8000",
 ]
 
+#: 未配置 SN_SECRET 时的兜底密钥（仅非生产环境可用）
+DEFAULT_SECRET = "change-me-sn-center-secret"
+#: 公开出现过的示例密钥：生产环境不允许使用
+WEAK_SECRETS = frozenset((DEFAULT_SECRET, "change-me-to-a-long-random-string"))
+MIN_SECRET_LEN = 32
+
 
 def resolve_root() -> Path:
     """仓库根目录：SN_ROOT 优先（容器里为 /app），否则按代码位置（app/core → 仓库根）。"""
@@ -89,7 +95,18 @@ class Settings:
 
     @property
     def secret_key(self) -> str:
-        return self.get("SN_SECRET", "change-me-sn-center-secret")
+        return self.get("SN_SECRET", "") or DEFAULT_SECRET
+
+    def secret_problem(self) -> str | None:
+        """登录令牌签名密钥的问题；None 表示可用。生产环境有问题时拒绝启动。"""
+        v = self.get("SN_SECRET", "")
+        if not v:
+            return "SN_SECRET 未设置"
+        if v in WEAK_SECRETS:
+            return "SN_SECRET 仍是示例值"
+        if len(v) < MIN_SECRET_LEN:
+            return f"SN_SECRET 长度不足 {MIN_SECRET_LEN} 位"
+        return None
 
     @property
     def access_token_ttl_seconds(self) -> int:

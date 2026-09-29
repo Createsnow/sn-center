@@ -64,6 +64,8 @@ def init(
         pi = util.trim(pi_in)
         if not pi:
             raise biz(ErrorCode.PI_REQUIRED)
+        if len(pi) > util.CODE_MAX:
+            raise biz(ErrorCode.VALIDATION, detail="pi_no")
         sns: list[str] = []
         if sns_in is not None:
             seen: set[str] = set()
@@ -88,8 +90,8 @@ def init(
         material = util.trim(material_in)
         now = util.now()
         db.exec(
-            "INSERT IGNORE INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, imported_qty, start_locked, "
-            "updated_at) VALUES (%s,0,0,0,0,%s)",
+            "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, imported_qty, start_locked, "
+            "updated_at) VALUES (%s,0,0,0,0,%s) ON DUPLICATE KEY UPDATE pi_no = pi_no",
             pi,
             now,
         )

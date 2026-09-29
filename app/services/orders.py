@@ -221,6 +221,23 @@ def lines(bill_no: str | None) -> list[dict]:
     return db.all("SELECT * FROM sn_prd_mo WHERE bill_no = %s ORDER BY line_seq ASC", util.trim(bill_no))
 
 
+def _own_org(cu: CurrentUser) -> str | None:
+    """绑厂账户本厂的生产组织名称；未绑厂返回 None（可看全部）。"""
+    if not cu.bound:
+        return None
+    f = factories.get(cu.factory_code)
+    return "" if f is None else f["factory_name"]
+
+
+def lines_of(cu: CurrentUser, bill_no: str | None) -> list[dict]:
+    """订单页右表：绑厂查询员只能看本厂（生产组织 = 本厂）的订单，与左表范围一致。"""
+    ls = lines(bill_no)
+    org = _own_org(cu)
+    if org is not None and ls and ls[0]["prd_org_name"] != org:
+        raise biz(ErrorCode.FACTORY_FORBIDDEN, factory=cu.factory_code)
+    return ls
+
+
 # ------------------------------------------------------------------ 生成用的订单视图
 
 
@@ -337,19 +354,19 @@ def targets(q: str | None, limit: int) -> list[dict]:
     ]
 
 
-def customers(q: str | None) -> list[str]:
-    """快照中出现过的客户编码（规则绑定选择用）。"""
+def customers(cu: CurrentUser, q: str | None) -> list[str]:
+    """快照中出现过的客户编码（规则绑定选择用）；绑厂查询员只看本厂订单的客户。"""
+    sql = "SELECT DISTINCT customer_number FROM sn_prd_mo WHERE customer_number <> ''"
+    args: list = []
     text = util.trim(q)
-    if not text:
-        return db.column(
-            "SELECT DISTINCT customer_number FROM sn_prd_mo WHERE customer_number <> '' "
-            "ORDER BY customer_number LIMIT 200"
-        )
-    return db.column(
-        "SELECT DISTINCT customer_number FROM sn_prd_mo WHERE customer_number LIKE %s "
-        "ORDER BY customer_number LIMIT 200",
-        util.like_any(text),
-    )
+    if text:
+        sql += " AND customer_number LIKE %s"
+        args.append(util.like_any(text))
+    org = _own_org(cu)
+    if org is not None:
+        sql += " AND prd_org_name = %s"
+        args.append(org)
+    return db.column(sql + " ORDER BY customer_number LIMIT 200", *args)
 
 
 def customer_of_pi(pi: str) -> str | None:

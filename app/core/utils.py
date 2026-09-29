@@ -28,6 +28,9 @@ ROLES = frozenset((ADMIN, FACTORY, QUERY))
 
 # ---------------------------------------------------------------- 字符串
 
+#: 编码类字段（PI、SN、工厂、客户、物料）的最大长度，与表结构 VARCHAR(64) 一致
+CODE_MAX = 64
+
 
 def trim(s: str | None) -> str:
     return "" if s is None else s.strip()

@@ -27,6 +27,8 @@ _current: contextvars.ContextVar[pymysql.connections.Connection | None] = contex
 ER_DUP_ENTRY = 1062
 ER_LOCK_WAIT_TIMEOUT = 1205
 ER_LOCK_DEADLOCK = 1213
+#: FOR UPDATE NOWAIT 拿不到锁
+ER_LOCK_NOWAIT = 3572
 
 
 def error_no(e: BaseException) -> int | None:

@@ -13,7 +13,7 @@ from app.core.encoding import DEFAULT_CHARSETS, Spec
 from app.core.errors import ErrorCode
 from app.core.scheduler import Cron
 from app.db.migrate import migrations
-from app.services import k3
+from app.services import files, k3
 from app.services.sn_items import sn_qty, split
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -165,3 +165,74 @@ def test_spring_cron_next_fire():
     assert c.next_after(datetime(2026, 9, 28, 2, 10, 0)) == datetime(2026, 9, 29, 2, 10, 0)
     assert Cron("0 0 3 * * SUN").next_after(datetime(2026, 9, 28)) == datetime(2026, 10, 4, 3, 0, 0)
     assert Cron("*/15 * * * * *").next_after(datetime(2026, 1, 1, 0, 0, 1)) == datetime(2026, 1, 1, 0, 0, 15)
+
+
+# ---------------------------------------------------------------------- 导出防公式注入
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["=1+1", "+1", "-A1", "@SUM(A1)", "\t=1+1", "\r=1+1", '=HYPERLINK("http://x","y")', "=A1,B1", "=a\nb"],
+)
+def test_csv_neutralizes_formula_even_when_quoted(value):
+    cell = files.csv_line([value]).rstrip("\r\n")
+    body = cell[1:-1].replace('""', '"') if cell.startswith('"') else cell
+    assert body == "'" + value
+
+
+def test_csv_keeps_numbers_and_plain_text():
+    assert files.csv_line([-5, 1.5, "SN-001", "a,b", None, True]) == '-5,1.5,SN-001,"a,b",,true\r\n'
+
+
+def test_xlsx_writes_formula_like_text_as_plain_string():
+    import io
+
+    import openpyxl
+
+    rows = [["=1+1", '=HYPERLINK("http://x","y")', "@x", 7]]
+    raw = files.to_bytes(files.xlsx_bytes("t", ["=h"], rows))
+    ws = openpyxl.load_workbook(io.BytesIO(raw)).active
+    cells = [c for row in ws.iter_rows() for c in row if c.value is not None]
+    assert [c.value for c in cells] == ["=h", "=1+1", '=HYPERLINK("http://x","y")', "@x", 7]
+    assert all(c.data_type == "s" for c in cells[:-1])
+    assert cells[-1].data_type == "n"
+
+
+# ---------------------------------------------------------------------- 令牌签名密钥
+
+
+@pytest.mark.parametrize(
+    "secret,problem",
+    [
+        ("", True),
+        ("change-me-sn-center-secret", True),
+        ("change-me-to-a-long-random-string", True),
+        ("short-secret", True),
+        ("x" * 32, False),
+    ],
+)
+def test_secret_problem(monkeypatch, secret, problem):
+    from app.core.config import settings
+
+    monkeypatch.setenv("SN_SECRET", secret)
+    assert (settings.secret_problem() is not None) is problem
+
+
+def test_production_refuses_weak_secret_but_local_only_warns(monkeypatch):
+    from app.core.config import settings
+    from app.core.security import _sign
+    from app.main import check_secret
+
+    monkeypatch.setenv("SN_SECRET", "")
+    monkeypatch.setenv("ENVIRONMENT", "local")
+    check_secret()
+    assert settings.secret_key, "blank secret never signs with an empty key"
+    assert _sign("x") == _sign("x") != ""
+    monkeypatch.setenv("ENVIRONMENT", "production")
+    with pytest.raises(RuntimeError):
+        check_secret()
+    monkeypatch.setenv("SN_SECRET", "change-me-to-a-long-random-string")
+    with pytest.raises(RuntimeError):
+        check_secret()
+    monkeypatch.setenv("SN_SECRET", "0123456789abcdef0123456789abcdef")
+    check_secret()

@@ -224,3 +224,86 @@ def test_only_admin_generates(api, admin, w):
     op = w.user(uid("op"), "factory_operator", FAC)
     assert api.post("/api/generate/preview", m(bill_no="x", qty=1), op).code == "FORBIDDEN"
     assert api.get("/api/rules", op).status != 200
+
+
+def _stuck_job(sql, bill: str, pi: str, token: str) -> int:
+    """模拟进程在后台生成途中退出：任务行停在 RUNNING，running_pi 仍占着该 PI。"""
+    sql.exec(
+        "INSERT INTO sn_gen_job(bill_no, pi_no, factory_code, rule_version_id, qty, start_seq_dec, end_seq_dec, "
+        "start_sn, end_sn, status, running_pi, preview_token, segments_json, created_by, created_at) "
+        "VALUES (%s, %s, %s, 0, 1, 1, 1, 'a', 'a', 'RUNNING', %s, %s, '[]', 'x', NOW())",
+        bill,
+        pi,
+        FAC,
+        pi,
+        token,
+    )
+    return sql.one("SELECT id FROM sn_gen_job WHERE preview_token = %s", token)["id"]
+
+
+def test_interrupted_job_is_recovered_on_startup_and_pi_can_generate_again(api, admin, w, sql):
+    from app.services import generate
+
+    pi, bill = uid("PI"), uid("MO")
+    w.pi_rule(pi, "RC", 10, 5)
+    w.order(bill, ORG, "C1", pi, ("A", 5))
+    job_id = _stuck_job(sql, bill, pi, uuid.uuid4().hex)
+    token = ok(w.preview(bill, 2)).text("token")
+    assert api.post("/api/generate", m(preview_token=token, bill_no=bill, qty=2), admin).code == "GEN_BUSY"
+    assert generate.recover_interrupted() >= 1
+    j = sql.one("SELECT status, error_code, running_pi FROM sn_gen_job WHERE id = %s", job_id)
+    assert (j["status"], j["error_code"], j["running_pi"]) == ("FAILED", "INTERRUPTED", None)
+    assert w.generate(bill, 2)["start_sn"] == "RC00001"
+
+
+def test_recovery_skips_job_whose_generation_still_holds_the_pi_counter(w, sql):
+    from conftest import raw_conn
+
+    from app.services import generate
+
+    pi, bill = uid("PI"), uid("MO")
+    w.pi_rule(pi, "RL", 10, 5)
+    w.order(bill, ORG, "C1", pi, ("A", 5))
+    w.generate(bill, 1)
+    job_id = _stuck_job(sql, bill, pi, uuid.uuid4().hex)
+    holder = raw_conn()
+    try:
+        holder.begin()
+        with holder.cursor() as c:
+            # 正在进行的生成事务全程持有计数器行锁
+            c.execute("SELECT * FROM sn_pi_counter WHERE pi_no = %s FOR UPDATE", (pi,))
+        generate.recover_interrupted()
+        assert sql.one("SELECT status FROM sn_gen_job WHERE id = %s", job_id)["status"] == "RUNNING"
+    finally:
+        holder.rollback()
+        holder.close()
+    generate.recover_interrupted()
+    assert sql.one("SELECT status FROM sn_gen_job WHERE id = %s", job_id)["status"] == "FAILED"
+
+
+def test_recovered_job_never_writes_numbers_afterwards(w, sql):
+    from app.core.exceptions import BizError
+    from app.core.security import CurrentUser
+    from app.services import generate
+
+    pi, bill = uid("PI"), uid("MO")
+    w.pi_rule(pi, "RN", 10, 5)
+    w.order(bill, ORG, "C1", pi, ("A", 5))
+    token = ok(w.preview(bill, 3)).text("token")
+    p = sql.one("SELECT * FROM sn_gen_preview WHERE token = %s", token)
+    job_id = _stuck_job(sql, bill, pi, token)
+    generate.recover_interrupted()
+    # 例如另一实例排队中的任务在回收后才轮到执行：必须放弃，不能再写号
+    with pytest.raises(BizError):
+        generate._run_job(CurrentUser.system(), job_id, p, True)
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 0
+    assert sql.one("SELECT error_code FROM sn_gen_job WHERE id = %s", job_id)["error_code"] == "INTERRUPTED"
+
+
+def test_successful_job_status_commits_with_the_numbers(w, sql):
+    pi, bill = uid("PI"), uid("MO")
+    w.pi_rule(pi, "RS", 10, 5)
+    w.order(bill, ORG, "C1", pi, ("A", 5))
+    j = w.generate(bill, 4)
+    row = sql.one("SELECT status, done_qty, running_pi FROM sn_gen_job WHERE id = %s", j["id"])
+    assert (row["status"], row["done_qty"], row["running_pi"]) == ("SUCCESS", 4, None)

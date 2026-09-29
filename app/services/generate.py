@@ -22,7 +22,7 @@ from app.core.config import settings
 from app.core.errors import ErrorCode, biz
 from app.core.exceptions import BizError
 from app.core.security import CurrentUser
-from app.db.session import db, is_duplicate, marks
+from app.db.session import ER_LOCK_NOWAIT, db, error_no, is_duplicate, marks
 from app.services import audit, factories, orders, rules, sn_items
 
 log = structlog.get_logger()
@@ -317,15 +317,20 @@ def jobs(bill_no: str | None, pi: str | None, limit: int) -> list[dict]:
 
 def _run_job(cu: CurrentUser, job_id: int, p: dict, rethrow: bool) -> None:
     try:
+        # 号与任务状态同一事务提交：不会出现「号已写入、任务仍是 RUNNING」
         with db.tx():
             _generate_in_tx(cu, job_id, p)
-        db.exec(
-            "UPDATE sn_gen_job SET status = %s, done_qty = %s, running_pi = NULL, finished_at = %s WHERE id = %s",
-            SUCCESS,
-            p["qty"],
-            util.now(),
-            job_id,
-        )
+            n = db.exec(
+                "UPDATE sn_gen_job SET status = %s, done_qty = %s, running_pi = NULL, finished_at = %s "
+                "WHERE id = %s AND status = %s",
+                SUCCESS,
+                p["qty"],
+                util.now(),
+                job_id,
+                RUNNING,
+            )
+            if n != 1:
+                raise biz(ErrorCode.CONFLICT_RETRY)
         log.info("gen_done", job=job_id, pi=p["pi_no"], qty=p["qty"])
     except Exception as e:  # noqa: BLE001
         code = e.code if isinstance(e, BizError) else "INTERNAL"
@@ -333,12 +338,13 @@ def _run_job(cu: CurrentUser, job_id: int, p: dict, rethrow: bool) -> None:
         try:
             db.exec(
                 "UPDATE sn_gen_job SET status = %s, done_qty = 0, error_code = %s, error_msg = %s, running_pi = NULL, "
-                "finished_at = %s WHERE id = %s",
+                "finished_at = %s WHERE id = %s AND status = %s",
                 FAILED,
                 code,
                 msg,
                 util.now(),
                 job_id,
+                RUNNING,
             )
         except Exception:  # noqa: BLE001
             log.exception("gen_job_status_update_failed", job=job_id)
@@ -366,12 +372,16 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
     pi = p["pi_no"]
     # 1) 锁 PI 计数器（一张 PI 一行），核对预演时的最大号
     db.exec(
-        "INSERT IGNORE INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, imported_qty, start_locked, "
-        "updated_at) VALUES (%s,0,0,0,0,%s)",
+        "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, imported_qty, start_locked, updated_at) "
+        "VALUES (%s,0,0,0,0,%s) ON DUPLICATE KEY UPDATE pi_no = pi_no",
         pi,
         now,
     )
     c = db.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s FOR UPDATE", pi)
+    # 已被启动回收标为失败的任务不再执行（回收要先拿到计数器锁，持锁期间不会再改任务状态）
+    st = db.scalar("SELECT status FROM sn_gen_job WHERE id = %s", job_id)
+    if st != RUNNING:
+        raise biz(ErrorCode.CONFLICT_RETRY)
     if c["last_seq_dec"] != p["base_last_seq"]:
         raise biz(ErrorCode.GEN_PREVIEW_STALE, pi=pi, expected=p["base_last_seq"], actual=c["last_seq_dec"])
     if p["start_override"] is not None and c["start_locked"]:
@@ -379,8 +389,8 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
     # 2) 订单仍在快照、额度与号段未变
     b = orders.bill(p["bill_no"])
     db.exec(
-        "INSERT IGNORE INTO sn_bill_gen(bill_no, pi_no, factory_code, customer_code, generated_qty, allocated_qty, "
-        "updated_at) VALUES (%s,%s,%s,%s,0,0,%s)",
+        "INSERT INTO sn_bill_gen(bill_no, pi_no, factory_code, customer_code, generated_qty, allocated_qty, "
+        "updated_at) VALUES (%s,%s,%s,%s,0,0,%s) ON DUPLICATE KEY UPDATE bill_no = bill_no",
         b.bill_no,
         b.pi,
         p["factory_code"],
@@ -481,6 +491,42 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
         .status(None, util.PENDING_ALLOC)
         .info(detail),
     )
+
+
+INTERRUPTED = "INTERRUPTED"
+
+
+def recover_interrupted() -> int:
+    """启动时回收中断的任务：进程重启时仍是 RUNNING 的任务标为失败并释放 running_pi，否则该 PI 永远「正在生成」。
+
+    生成事务全程持有该 PI 计数器的行锁；这里对任务行与计数器都用 NOWAIT 加锁，拿不到说明生成仍在进行，跳过。
+    未提交的生成事务已随进程退出回滚，所以这些任务一枚号也没有写入。
+    """
+    recovered = 0
+    for j in db.all("SELECT id, pi_no FROM sn_gen_job WHERE status = %s", RUNNING):
+        try:
+            with db.new_tx():
+                row = db.one("SELECT status FROM sn_gen_job WHERE id = %s FOR UPDATE NOWAIT", j["id"])
+                if row is None or row["status"] != RUNNING:
+                    continue
+                db.all("SELECT pi_no FROM sn_pi_counter WHERE pi_no = %s FOR UPDATE NOWAIT", j["pi_no"])
+                db.exec(
+                    "UPDATE sn_gen_job SET status = %s, done_qty = 0, error_code = %s, error_msg = %s, "
+                    "running_pi = NULL, finished_at = %s WHERE id = %s",
+                    FAILED,
+                    INTERRUPTED,
+                    "服务重启时任务未完成，已回滚，请重新预演后生成",
+                    util.now(),
+                    j["id"],
+                )
+                recovered += 1
+        except pymysql.err.OperationalError as e:
+            if error_no(e) != ER_LOCK_NOWAIT:
+                raise
+            log.info("gen_job_still_running", job=j["id"], pi=j["pi_no"])
+    if recovered:
+        log.warning("gen_jobs_recovered", count=recovered)
+    return recovered
 
 
 def _first_existing(pi: str, sns: list[str]) -> str | None:

@@ -30,12 +30,12 @@ def order_meta(cu: AdminOrQueryDep) -> dict:
 
 @router.get("/customers")
 def order_customers(cu: AdminOrQueryDep, q: str | None = None) -> list:
-    return orders.customers(q)
+    return orders.customers(cu, q)
 
 
 @router.get("/{bill_no}/lines", summary="订单页右表：该单各物料行")
 def order_lines(bill_no: str, cu: AdminOrQueryDep) -> list:
-    return [orders.prd_mo_json(r) for r in orders.lines(bill_no)]
+    return [orders.prd_mo_json(r) for r in orders.lines_of(cu, bill_no)]
 
 
 @router.post("/sync", summary="同步金蝶：不传 bill_no = 全量；传 bill_no = 只替换该单")

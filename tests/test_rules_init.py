@@ -154,3 +154,12 @@ def test_partitions_maintained_and_old_audit_archived(app_client, sql):
     assert sql.count("SELECT COUNT(*) FROM sn_audit WHERE detail = 'archive-me'") == 0
     assert sql.count("SELECT COUNT(*) FROM sn_audit_archive WHERE detail = 'archive-me'") == 1
     assert partitions.archive(0) == 0, "0 = keep forever"
+
+
+def test_pi_init_rejects_over_long_pi_instead_of_crashing(api, admin, sql):
+    pi = "P" * 80
+    r = api.post("/api/pi-init", m(pi_no=pi, start_seq=5), admin)
+    assert r.status == 422 and r.code == "VALIDATION", str(r)
+    # 不能被截断成 64 位写进计数器
+    assert sql.count("SELECT COUNT(*) FROM sn_pi_counter WHERE pi_no = %s", pi[:64]) == 0
+    assert api.post("/api/pi-init", m(pi_no="P" * 64, start_seq=5), admin).status == 200

