@@ -15,9 +15,12 @@ def gen_context(cu: AdminDep, bill_no: str = Query(...)) -> dict:
     return generate.context(bill_no)
 
 
-@router.post("/generate/preview", summary="预演：只给起止号、数量与号段，不落库；返回预演令牌")
+@router.post(
+    "/generate/preview",
+    summary="预演：只给起止号、数量与号段，不落库；返回预演令牌。PI 没有绑定规则且未选定过时须传 rule_id",
+)
 def gen_preview(body: PreviewIn, cu: AdminDep) -> dict:
-    return generate.preview(cu, body.bill_no, body.qty, body.start_seq)
+    return generate.preview(cu, body.bill_no, body.qty, body.start_seq, body.rule_id)
 
 
 @router.post("/generate", summary="凭本次预演令牌生成；数量大时返回 RUNNING，轮询任务进度")

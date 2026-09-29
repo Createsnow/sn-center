@@ -65,7 +65,8 @@ class ErrorCode(Enum):
     RULE_CHARSET_LENGTH = (400, "字符表长度必须等于进制")
     RULE_CHARSET_DUPLICATE = (400, "字符表不能有重复字符")
     RULE_SN_TOO_LONG = (400, "前缀 + 流水 + 后缀总长不能超过 64")
-    RULE_MISSING = (400, "PI {pi} 没有可用规则：请配置按 PI、按客户（{customer}）或通用规则")
+    RULE_MISSING = (400, "PI {pi} 没有可用规则：请先在「规则模板」页新建规则（可按 PI、按客户（{customer}）绑定）")
+    RULE_CHOICE_REQUIRED = (400, "PI {pi} 没有绑定规则，请先选择一条规则模板")
     # ---------- 生成 / 分配 ----------
     GEN_QTY_INVALID = (400, "数量须为正整数")
     GEN_QUOTA_EMPTY = (400, "生产订单 {bill_no} 的可生成额度为 0")

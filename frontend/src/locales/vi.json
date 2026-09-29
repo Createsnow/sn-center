@@ -178,6 +178,13 @@
     "allocated": "Đã phân bổ",
     "pendingAlloc": "Chờ phân bổ",
     "rule": "Quy tắc hiện hành",
+    "ruleSource": "Nguồn",
+    "ruleSrcPI": "Gắn theo PI",
+    "ruleSrcCUSTOMER": "Gắn theo khách hàng",
+    "ruleSrcCHOSEN": "Đã chọn khi tạo lần đầu cho PI này; dùng tiếp",
+    "rulePick": "Chọn mẫu quy tắc",
+    "rulePickHint": "PI này và khách hàng đều chưa gắn quy tắc; hãy chọn một. Sau lần tạo đầu PI sẽ giữ quy tắc đã chọn; muốn đổi định dạng hãy gắn quy tắc theo PI ở trang Quy tắc SN.",
+    "rulePickRequired": "Hãy chọn mẫu quy tắc trước",
     "counter": "Dãy số PI",
     "lastSeq": "Số lớn nhất",
     "nextStart": "SN tiếp theo",
@@ -229,7 +236,7 @@
       "ORDER_NO_CUSTOMER": "Lệnh không có khách hàng; không thể tạo",
       "ORDER_NO_PI": "Lệnh không có PI; không thể tạo",
       "FACTORY_UNMAPPED": "Tổ chức sản xuất “{org}” chưa là nhà máy; hãy đồng bộ nhà máy",
-      "RULE_MISSING": "Chưa có quy tắc: hãy cấu hình theo PI, khách hàng hoặc chung",
+      "RULE_MISSING": "Chưa có quy tắc: hãy tạo ở trang Quy tắc SN trước",
       "GEN_QUOTA_EMPTY": "Hạn mức bằng 0"
     }
   },

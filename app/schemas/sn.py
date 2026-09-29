@@ -5,6 +5,7 @@ class PreviewIn(In):
     bill_no: str | None = None
     qty: int | None = None
     start_seq: int | None = None
+    rule_id: int | None = None
 
 
 class GenerateIn(PreviewIn):

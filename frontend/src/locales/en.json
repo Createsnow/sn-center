@@ -178,6 +178,13 @@
     "allocated": "Allocated",
     "pendingAlloc": "To allocate",
     "rule": "Effective rule",
+    "ruleSource": "Source",
+    "ruleSrcPI": "Bound to PI",
+    "ruleSrcCUSTOMER": "Bound to customer",
+    "ruleSrcCHOSEN": "Chosen at this PI's first generation; kept since",
+    "rulePick": "Pick a rule template",
+    "rulePickHint": "Neither this PI nor its customer has a bound rule; pick one. After the first generation this PI keeps the chosen rule; to use another format, bind a rule to the PI on the SN rules page.",
+    "rulePickRequired": "Pick a rule template first",
     "counter": "PI serial",
     "lastSeq": "Current max",
     "nextStart": "Next SN",
@@ -229,7 +236,7 @@
       "ORDER_NO_CUSTOMER": "Order has no customer; cannot generate",
       "ORDER_NO_PI": "Order has no PI; cannot generate",
       "FACTORY_UNMAPPED": "Production org “{org}” is not a factory yet; sync factories first",
-      "RULE_MISSING": "No rule: configure a PI, customer or general rule",
+      "RULE_MISSING": "No rule yet: create one on the SN rules page first",
       "GEN_QUOTA_EMPTY": "Quota is 0"
     }
   },

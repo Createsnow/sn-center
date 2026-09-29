@@ -180,8 +180,10 @@ def context(bill_no: str) -> dict:
     quota = max(0, b.total_qty - generated)
     if quota == 0:
         issues.append(ErrorCode.GEN_QUOTA_EMPTY.name)
-    r = None if util.blank(b.pi) else rules.resolve(b.pi, b.customer_code)
-    if r is None:
+    # 有绑定或该 PI 已选定过：规则确定；否则列出规则让用户选（默认通用规则）
+    r = None if util.blank(b.pi) else rules.fixed(b.pi, b.customer_code)
+    rule_options = [] if r is not None else rules.options()
+    if r is None and not rule_options:
         issues.append(ErrorCode.RULE_MISSING.name)
     f = factories.get(b.factory_code)
     running = None if util.blank(b.pi) else db.one("SELECT * FROM sn_gen_job WHERE running_pi = %s", b.pi)
@@ -197,6 +199,7 @@ def context(bill_no: str) -> dict:
         "counter": counter(b.pi),
         "next": None if r is None else _next_json(b.pi, rules.spec_of(r.version)),
         "rule": None if r is None else rules.rule_info(r),
+        "rule_options": rule_options,
         "issues": issues,
         "running_job": job_json(running),
         "jobs": [job_json(j) for j in recent],
@@ -260,10 +263,12 @@ def segments_json(segs: list[sn_items.Segment]) -> str:
     return json.dumps([s.as_camel() for s in segs], ensure_ascii=False, separators=(",", ":"))
 
 
-def preview(cu: CurrentUser, bill_no: str | None, qty_in: int | None, start_override: int | None) -> dict:
+def preview(
+    cu: CurrentUser, bill_no: str | None, qty_in: int | None, start_override: int | None, rule_id: int | None = None
+) -> dict:
     qty = 0 if qty_in is None else qty_in
     b, generated = _check_bill(bill_no, qty)
-    r = rules.must_resolve(b.pi, b.customer_code)
+    r = rules.for_generation(b.pi, b.customer_code, rule_id)
     spec = rules.spec_of(r.version)
     c = db.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s", b.pi)
     base = 0 if c is None else c["last_seq_dec"]
@@ -477,9 +482,10 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
     quota = b.total_qty - g["generated_qty"]
     if p["qty"] > quota:
         raise biz(ErrorCode.GEN_QUOTA_EXCEEDED, qty=p["qty"], quota=max(0, quota))
-    # 3) 规则版本未变（锁版本并标记已使用，之后该版本只能另出新版）
+    # 3) 规则版本未变（锁版本并标记已使用，之后该版本只能另出新版）；
+    #    没有绑定时须仍是预演所选的规则，且期间该 PI 没被别的生成选定成另一条
     v = rules.lock_for_generation(p["rule_version_id"])
-    r = rules.must_resolve(b.pi, b.customer_code)
+    r = rules.for_generation(b.pi, b.customer_code, v["rule_id"], c["rule_id"])
     spec = rules.spec_of(v)
     if (
         r.version["id"] != v["id"]
@@ -545,6 +551,10 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
     # 5) 推进计数器、订单已生成数；留痕
     sets = "last_seq_dec = %s, generated_qty = %s, start_locked = 1, updated_at = %s"
     args: list = [p["end_seq_dec"], c["generated_qty"] + p["qty"], now]
+    if r.source == rules.SRC_PICKED:
+        # 没有绑定：记下所选规则，这张 PI 之后一直沿用
+        sets += ", rule_id = %s"
+        args.append(r.rule["id"])
     if not c["start_locked"]:
         sets += ", locked_by = %s, locked_at = %s"
         args += [cu.emp_no, now]
@@ -559,7 +569,7 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
         now,
         b.bill_no,
     )
-    detail = f"job={job_id} rule_version={v['id']} segments={len(segs)}"
+    detail = f"job={job_id} rule_version={v['id']} rule_source={r.source} segments={len(segs)}"
     if p["start_override"] is not None:
         detail += f" start={p['start_override']}"
     if p["start_override"] is None and ns.adjusted:

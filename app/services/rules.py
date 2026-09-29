@@ -1,4 +1,5 @@
-"""SN 规则。绑定：按单张 PI ＞ 按客户 ＞ 通用。
+"""SN 规则。绑定：按单张 PI ＞ 按客户；都没绑定时，由用户在首次生成时选一条规则（默认通用规则），
+之后该 PI 一直沿用这条（同一 PI 一套流水、一种格式）。
 
 改前缀 / 后缀 / 进制 / 位数 / 字符集：该版本还没生成过号时就地修改，否则另出一版；只改名称不出版本。
 新版本只作用于之后新生成的号，已发出的号仍记旧版本。
@@ -63,10 +64,24 @@ def spec_of(v: dict) -> codec.Spec:
     return codec.Spec(v["prefix"], v["suffix"], v["base"], v["seq_len"], v["charset"])
 
 
+#: 规则来源：按 PI 绑定 / 按客户绑定 / 该 PI 首次生成时选定 / 本次所选 / 未选定时默认的通用规则
+SRC_PI = "PI"
+SRC_CUSTOMER = "CUSTOMER"
+SRC_CHOSEN = "CHOSEN"
+SRC_PICKED = "PICKED"
+SRC_GENERAL = "GENERAL"
+
+
 @dataclass(frozen=True)
 class Resolved:
     rule: dict
     version: dict
+    source: str = SRC_GENERAL
+
+    @property
+    def fixed(self) -> bool:
+        """已确定、生成时不再让用户选：有绑定或该 PI 已选定过。"""
+        return self.source in (SRC_PI, SRC_CUSTOMER, SRC_CHOSEN)
 
 
 @dataclass(frozen=True)
@@ -280,21 +295,74 @@ def update(cu: CurrentUser, rule_id: int, name: str | None, s: SpecIn) -> dict:
 # ---------------------------------------------------------------- 生效规则
 
 
-def resolve(pi: str, customer: str | None) -> Resolved | None:
-    """该 PI 生效的规则：按 PI ＞ 按客户 ＞ 通用。没有返回 None。"""
+def bound(pi: str, customer: str | None) -> Resolved | None:
+    """绑定到该 PI 的规则：按 PI ＞ 按客户。没有返回 None。"""
     r = db.one("SELECT * FROM sn_rule WHERE bind_scope = %s AND bind_value = %s", PI, pi)
-    if r is None and not util.blank(customer):
+    if r is not None:
+        return Resolved(r, current_version(r), SRC_PI)
+    if not util.blank(customer):
         r = db.one("SELECT * FROM sn_rule WHERE bind_scope = %s AND bind_value = %s", CUSTOMER, customer)
+        if r is not None:
+            return Resolved(r, current_version(r), SRC_CUSTOMER)
+    return None
+
+
+def chosen_rule_id(pi: str, counter_rule_id: int | None = None) -> int | None:
+    """没有绑定的 PI 首次生成时选定的规则；早于「选定」记录的 PI 取其最近一次成功生成所用的规则。"""
+    if counter_rule_id is not None:
+        return counter_rule_id
+    rid = db.scalar("SELECT rule_id FROM sn_pi_counter WHERE pi_no = %s", pi)
+    if rid is not None:
+        return rid
+    return db.scalar(
+        "SELECT v.rule_id FROM sn_gen_job j JOIN sn_rule_version v ON v.id = j.rule_version_id "
+        "WHERE j.pi_no = %s AND j.status = 'SUCCESS' ORDER BY j.id DESC LIMIT 1",
+        pi,
+    )
+
+
+def by_id(rule_id: int, source: str) -> Resolved:
+    r = db.one("SELECT * FROM sn_rule WHERE id = %s", rule_id)
     if r is None:
-        r = db.one("SELECT * FROM sn_rule WHERE bind_scope = %s AND bind_value = ''", GENERAL)
-    return None if r is None else Resolved(r, current_version(r))
+        raise biz(ErrorCode.RULE_NOT_FOUND)
+    return Resolved(r, current_version(r), source)
 
 
-def must_resolve(pi: str, customer: str | None) -> Resolved:
-    res = resolve(pi, customer)
-    if res is None:
-        raise biz(ErrorCode.RULE_MISSING, pi=pi, customer=customer or "")
-    return res
+def fixed(pi: str, customer: str | None, counter_rule_id: int | None = None) -> Resolved | None:
+    """已确定的规则：绑定 ＞ 该 PI 已选定的规则。没有返回 None（生成时须由用户选）。"""
+    r = bound(pi, customer)
+    if r is not None:
+        return r
+    rid = chosen_rule_id(pi, counter_rule_id)
+    return None if rid is None else by_id(rid, SRC_CHOSEN)
+
+
+def general() -> Resolved | None:
+    r = db.one("SELECT * FROM sn_rule WHERE bind_scope = %s AND bind_value = ''", GENERAL)
+    return None if r is None else Resolved(r, current_version(r), SRC_GENERAL)
+
+
+def resolve(pi: str, customer: str | None) -> Resolved | None:
+    """该 PI 生效的规则：按 PI ＞ 按客户 ＞ 已选定 ＞ 通用（尚未选定时的默认）。没有返回 None。"""
+    return fixed(pi, customer) or general()
+
+
+def for_generation(pi: str, customer: str | None, rule_id: int | None, counter_rule_id: int | None = None) -> Resolved:
+    """本次生成用的规则：已确定的规则优先（忽略所选）；否则必须由用户选一条。"""
+    r = fixed(pi, customer, counter_rule_id)
+    if r is not None:
+        return r
+    if rule_id is None:
+        if db.count("SELECT COUNT(*) FROM sn_rule") == 0:
+            raise biz(ErrorCode.RULE_MISSING, pi=pi, customer=customer or "")
+        raise biz(ErrorCode.RULE_CHOICE_REQUIRED, pi=pi)
+    return by_id(rule_id, SRC_PICKED)
+
+
+def options() -> list[dict]:
+    """可供选择的规则（各取当前版本）：通用规则排最前。"""
+    rows = db.all("SELECT * FROM sn_rule ORDER BY CASE bind_scope WHEN %s THEN 0 ELSE 1 END, rule_code ASC", GENERAL)
+    return [rule_info(Resolved(r, current_version(r))) for r in rows]
 
 
 def lock_for_generation(version_id: int) -> dict:
@@ -336,6 +404,8 @@ def seq_text(version_id: int | None, seq_dec: int | None) -> str:
 def rule_info(r: Resolved) -> dict:
     s = spec_of(r.version)
     return {
+        "rule_id": r.rule["id"],
+        "source": r.source,
         "rule_code": r.rule["rule_code"],
         "rule_name": r.rule["rule_name"],
         "bind_scope": r.rule["bind_scope"],

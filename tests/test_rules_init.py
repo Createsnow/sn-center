@@ -163,3 +163,68 @@ def test_pi_init_rejects_over_long_pi_instead_of_crashing(api, admin, sql):
     # 不能被截断成 64 位写进计数器
     assert sql.count("SELECT COUNT(*) FROM sn_pi_counter WHERE pi_no = %s", pi[:64]) == 0
     assert api.post("/api/pi-init", m(pi_no="P" * 64, start_seq=5), admin).status == 200
+
+
+def _template(api, admin, prefix: str) -> int:
+    """借一条按其它客户绑定的规则当模板，返回规则 id。"""
+    r = ok(
+        api.post(
+            "/api/rules",
+            m(
+                rule_code=uid("TP"),
+                rule_name="模板" + prefix,
+                bind_scope="CUSTOMER",
+                bind_value=uid("OTHER"),
+                prefix=prefix,
+                base=10,
+                seq_len=4,
+            ),
+            admin,
+        )
+    )
+    return r["rule"]["id"]
+
+
+def test_unbound_pi_must_pick_a_rule_and_then_keeps_it(api, admin, w, sql):
+    tpl_a, tpl_b = _template(api, admin, "TPA"), _template(api, admin, "TPB")
+    pi, bill = uid("PI"), uid("MO")
+    w.order(bill, ORG, uid("CU"), pi, ("A", 5))
+
+    ctx = ok(api.get("/api/generate/context" + q(bill_no=bill), admin))
+    assert ctx["rule"] is None
+    assert {tpl_a, tpl_b} <= {o["rule_id"] for o in ctx["rule_options"]}
+    assert "RULE_MISSING" not in ctx["issues"]
+    assert w.preview(bill, 1).code == "RULE_CHOICE_REQUIRED"
+
+    # 预演只看不记；生成后这张 PI 记下所选规则
+    assert ok(w.preview(bill, 1, rule_id=tpl_b)).text("start_sn") == "TPB0001"
+    assert sql.count("SELECT COUNT(*) FROM sn_pi_counter WHERE pi_no = %s AND rule_id IS NOT NULL", pi) == 0
+    w.generate(bill, 2, rule_id=tpl_a)
+    assert sql.count("SELECT COUNT(*) FROM sn_pi_counter WHERE pi_no = %s AND rule_id = %s", pi, tpl_a) == 1
+
+    ctx = ok(api.get("/api/generate/context" + q(bill_no=bill), admin))
+    assert ctx["rule"]["rule_id"] == tpl_a and ctx["rule"]["source"] == "CHOSEN"
+    assert ctx["rule_options"] == []
+    # 升级前生成过的 PI 没有选定记录：沿用最近一次成功生成所用的规则
+    sql.exec("UPDATE sn_pi_counter SET rule_id = NULL WHERE pi_no = %s", pi)
+    assert ok(api.get("/api/generate/context" + q(bill_no=bill), admin))["rule"]["rule_id"] == tpl_a
+    sql.exec("UPDATE sn_pi_counter SET rule_id = %s WHERE pi_no = %s", tpl_a, pi)
+    # 选定后再传别的规则也沿用已选定的
+    assert ok(w.preview(bill, 1, rule_id=tpl_b)).text("start_sn") == "TPA0003"
+    assert ok(api.get("/api/rules/effective" + q(pi=pi), admin)).text("prefix") == "TPA"
+
+    # 之后按 PI 绑定规则：绑定优先
+    w.pi_rule(pi, "PIB", 10, 4)
+    assert ok(w.preview(bill, 1)).text("start_sn") == "PIB0003"
+
+
+def test_preview_of_picked_rule_goes_stale_when_pi_chose_another_meanwhile(api, admin, w):
+    tpl_a, tpl_b = _template(api, admin, "SPA"), _template(api, admin, "SPB")
+    pi, bill1, bill2, cust = uid("PI"), uid("MO"), uid("MO"), uid("CU")
+    w.order(bill1, ORG, cust, pi, ("A", 5))
+    w.order(bill2, ORG, cust, pi, ("A", 5))
+    token = ok(w.preview(bill1, 1, rule_id=tpl_b)).text("token")
+    # 同 PI 另一张订单先以另一条规则生成：这张 PI 已选定 A，按 B 做的预演失效
+    w.generate(bill2, 1, rule_id=tpl_a)
+    r = api.post("/api/generate", m(preview_token=token, bill_no=bill1, qty=1), admin)
+    assert r.code in ("GEN_PREVIEW_CHANGED", "GEN_PREVIEW_STALE"), str(r)

@@ -16,6 +16,7 @@ from error_messages import E  # noqa: E402
 
 ROOT = HERE.parent
 JAVA = ROOT.parent / "backend/src/main/java/com/sncenter/common/ErrorCode.java"
+PY = ROOT.parent / "app/core/errors.py"
 OUT = ROOT / "src/locales"
 PH = re.compile(r"\{(\w+)\}")
 LANGS = ["zh-CN", "en", "vi"]
@@ -41,7 +42,10 @@ def main():
             problems.append(f"ui {key}: placeholders differ {phs}")
         for lang, v in zip(LANGS, vals):
             ui[lang][key] = v
-    zh_errors = dict(re.findall(r'^\s+([A-Z0-9_]+)\(\d+, "([^"]*)"\)', JAVA.read_text("utf-8"), re.M))
+    if JAVA.exists():
+        zh_errors = dict(re.findall(r'^\s+([A-Z0-9_]+)\(\d+, "([^"]*)"\)', JAVA.read_text("utf-8"), re.M))
+    else:  # 仓库里只有 Python 后端时取 app/core/errors.py
+        zh_errors = dict(re.findall(r'^\s+([A-Z0-9_]+) = \(\d+, "([^"]*)"\)', PY.read_text("utf-8"), re.M))
     errs = {lang: {} for lang in LANGS}
     for code, zh in zh_errors.items():
         if code not in E:

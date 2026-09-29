@@ -54,16 +54,32 @@
         <el-col :lg="10" :xs="24">
           <div class="surface">
             <div class="surface__title">{{ t("generate.rule") }}</div>
-            <el-descriptions v-if="ctx.rule" :column="2" size="small" border>
-              <el-descriptions-item :label="t('rules.code')">{{ ctx.rule.rule_code }} · v{{ ctx.rule.version }}</el-descriptions-item>
-              <el-descriptions-item :label="t('rules.bind')">{{ t(`rules.scope${ctx.rule.bind_scope}`) }} {{ ctx.rule.bind_value }}</el-descriptions-item>
-              <el-descriptions-item :label="t('rules.format')">
-                <span class="sn-mono">{{ ctx.rule.prefix }}<i>{{ "#".repeat(ctx.rule.seq_len) }}</i>{{ ctx.rule.suffix }}</span>
+            <!-- 没有绑定且该 PI 未选定过：让用户选规则模板 -->
+            <template v-if="!ctx.rule && ctx.rule_options.length">
+              <el-select v-model="ruleId" filterable :placeholder="t('generate.rulePick')" class="rule-picker">
+                <el-option v-for="o in ctx.rule_options" :key="o.rule_id" :value="o.rule_id" :label="ruleLabel(o)">
+                  <div class="opt">
+                    <span><b>{{ o.rule_code }}</b> · {{ o.rule_name }}</span>
+                    <span class="muted sn-mono">{{ o.sample_sn }}</span>
+                  </div>
+                </el-option>
+              </el-select>
+              <div class="muted hint">{{ t("generate.rulePickHint") }}</div>
+            </template>
+            <el-descriptions v-if="shownRule" :column="2" size="small" border>
+              <el-descriptions-item :label="t('rules.code')">{{ shownRule.rule_code }} · v{{ shownRule.version }}</el-descriptions-item>
+              <el-descriptions-item :label="t('rules.bind')">{{ t(`rules.scope${shownRule.bind_scope}`) }} {{ shownRule.bind_value }}</el-descriptions-item>
+              <el-descriptions-item v-if="ctx.rule" :label="t('generate.ruleSource')" :span="2">
+                <el-tag size="small" :type="ctx.rule.source === 'CHOSEN' ? 'warning' : 'success'">{{ t(`generate.ruleSrc${ctx.rule.source}`) }}</el-tag>
               </el-descriptions-item>
-              <el-descriptions-item :label="t('rules.base')">{{ ctx.rule.base }} / {{ ctx.rule.seq_len }}</el-descriptions-item>
-              <el-descriptions-item :label="t('rules.maxSeq')"><span class="num">{{ ctx.rule.max_seq.toLocaleString() }}</span></el-descriptions-item>
-              <el-descriptions-item :label="t('rules.sample')"><span class="sn-mono">{{ ctx.rule.sample_sn }}</span></el-descriptions-item>
+              <el-descriptions-item :label="t('rules.format')">
+                <span class="sn-mono">{{ shownRule.prefix }}<i>{{ "#".repeat(shownRule.seq_len) }}</i>{{ shownRule.suffix }}</span>
+              </el-descriptions-item>
+              <el-descriptions-item :label="t('rules.base')">{{ shownRule.base }} / {{ shownRule.seq_len }}</el-descriptions-item>
+              <el-descriptions-item :label="t('rules.maxSeq')"><span class="num">{{ shownRule.max_seq.toLocaleString() }}</span></el-descriptions-item>
+              <el-descriptions-item :label="t('rules.sample')"><span class="sn-mono">{{ shownRule.sample_sn }}</span></el-descriptions-item>
             </el-descriptions>
+            <el-alert v-else-if="ctx.rule_options.length" type="warning" :closable="false" :title="t('generate.rulePickRequired')" />
             <el-empty v-else :image-size="60" :description="t('generate.issue.RULE_MISSING')" />
             <div class="surface__title mt">{{ t("generate.counter") }}</div>
             <el-descriptions :column="2" size="small" border>
@@ -246,6 +262,7 @@ const runningJob = ref<GenJob | null>(null);
 const lastGenerated = ref(0);
 const allocQty = ref(1);
 const allocating = ref(false);
+const ruleId = ref<number | null>(null);
 let timer: number | undefined;
 
 // 0 = 待生成；1 = 已生成待分配；2 = 本订单额度已全部生成并分配
@@ -254,7 +271,10 @@ const step = computed(() => {
   if (ctx.value.pending_alloc > 0) return 1;
   return ctx.value.quota === 0 && ctx.value.allocated_qty > 0 ? 2 : 0;
 });
-const canGenerate = computed(() => !!ctx.value && !ctx.value.issues.length && !runningJob.value);
+// 规则已确定（绑定或该 PI 已选定）时用它；否则用用户所选
+const shownRule = computed(() => ctx.value?.rule ?? ctx.value?.rule_options.find((o: any) => o.rule_id === ruleId.value) ?? null);
+const canGenerate = computed(() => !!ctx.value && !ctx.value.issues.length && !!shownRule.value && !runningJob.value);
+const ruleLabel = (o: any) => `${o.rule_code} · ${o.rule_name}（${t(`rules.scope${o.bind_scope}`)}${o.bind_value ? " " + o.bind_value : ""}）`;
 const startSeq = computed(() => {
   const s = startText.value.trim();
   return s ? Number(s) : null;
@@ -278,6 +298,11 @@ async function loadContext() {
     return;
   }
   ctx.value = await api.genContext(billNo.value);
+  // 默认选中通用规则（排在最前）；已选的仍在列表里就保留
+  const opts = ctx.value.rule_options;
+  if (!opts.some((o: any) => o.rule_id === ruleId.value)) {
+    ruleId.value = opts.find((o: any) => o.bind_scope === "GENERAL")?.rule_id ?? null;
+  }
   allocations.value = await api.allocations(billNo.value);
   qty.value = Math.max(1, suggestQty(ctx.value.quota, limit.value));
   const pending = ctx.value.pending_alloc;
@@ -286,7 +311,7 @@ async function loadContext() {
 }
 
 // 预演条件改变 → 预演失效，必须重新预演
-watch([qty, startText, billNo], () => {
+watch([qty, startText, billNo, ruleId], () => {
   preview.value = null;
 });
 watch(limit, (l) => {
@@ -300,7 +325,8 @@ async function doPreview() {
   }
   previewing.value = true;
   try {
-    preview.value = await api.genPreview({ bill_no: billNo.value, qty: qty.value, start_seq: startSeq.value });
+    const rule_id = ctx.value.rule ? null : ruleId.value;
+    preview.value = await api.genPreview({ bill_no: billNo.value, qty: qty.value, start_seq: startSeq.value, rule_id });
   } finally {
     previewing.value = false;
   }
@@ -375,6 +401,8 @@ onUnmounted(() => window.clearInterval(timer));
 
 <style scoped>
 .picker { width: 360px; }
+.rule-picker { width: 100%; }
+.hint { margin: 6px 0 12px; font-size: 12px; }
 .opt { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
 .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 12px 0; }
 .stats > div { background: var(--el-color-primary-light-9); border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; }
