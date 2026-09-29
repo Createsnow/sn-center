@@ -4,6 +4,7 @@ E = {
 "TOKEN_INVALID": ("Session expired, please sign in again", "Phiên đã hết hạn, vui lòng đăng nhập lại"),
 "LOGIN_FAILED": ("Wrong employee number or password", "Sai mã nhân viên hoặc mật khẩu"),
 "ACCOUNT_DISABLED": ("Account is disabled", "Tài khoản đã bị vô hiệu"),
+"LOGIN_LOCKED": ("Too many failed sign-ins, please try again in {minutes} minutes", "Đăng nhập sai quá nhiều lần, vui lòng thử lại sau {minutes} phút"),
 "PASSWORD_CHANGE_REQUIRED": ("Please change your password first", "Vui lòng đổi mật khẩu trước"),
 "FORBIDDEN": ("Your role is not allowed to do this", "Vai trò của bạn không được phép"),
 "FACTORY_FORBIDDEN": ("You can only operate SNs of your factory: {factory}", "Chỉ được thao tác SN của nhà máy mình: {factory}"),

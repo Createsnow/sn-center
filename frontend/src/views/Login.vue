@@ -63,6 +63,8 @@ async function onLogin() {
     } else {
       router.push((route.query.redirect as string) || "/");
     }
+  } catch {
+    // 错误提示已由 http 拦截器弹出
   } finally {
     loading.value = false;
   }

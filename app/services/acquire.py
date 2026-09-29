@@ -310,17 +310,37 @@ def print_pi(cu: CurrentUser, factory_in: str | None, pi_in: str | None, request
     if not pi:
         raise biz(ErrorCode.PI_REQUIRED)
     req = _request_no(request_no_in)
-    prev = db.one("SELECT * FROM sn_print WHERE factory_code = %s AND request_no = %s", factory, req)
+    prev = _existing_print(factory, req)
     if prev is not None:
-        if prev["pi_no"] != pi:
-            raise biz(ErrorCode.ACQ_REQUEST_CONFLICT, request_no=req, factory=factory, pi=prev["pi_no"])
-        return {
-            "print_no": prev["print_no"],
-            "factory_code": prev["factory_code"],
-            "pi_no": prev["pi_no"],
-            "qty": prev["qty"],
-            "replayed": True,
-        }
+        return _replay_print(prev, pi, req)
+    try:
+        return _print_in_tx(cu, factory, pi, req)
+    except pymysql.err.IntegrityError as e:
+        # 同一请求号并发：另一请求已建打印单，返回它
+        if is_duplicate(e):
+            other = _existing_print(factory, req)
+            if other is not None:
+                return _replay_print(other, pi, req)
+        raise
+
+
+def _existing_print(factory: str, request_no: str) -> dict | None:
+    return db.one("SELECT * FROM sn_print WHERE factory_code = %s AND request_no = %s", factory, request_no)
+
+
+def _replay_print(p: dict, pi: str, req: str) -> dict:
+    if p["pi_no"] != pi:
+        raise biz(ErrorCode.ACQ_REQUEST_CONFLICT, request_no=req, factory=p["factory_code"], pi=p["pi_no"])
+    return {
+        "print_no": p["print_no"],
+        "factory_code": p["factory_code"],
+        "pi_no": p["pi_no"],
+        "qty": p["qty"],
+        "replayed": True,
+    }
+
+
+def _print_in_tx(cu: CurrentUser, factory: str, pi: str, req: str) -> dict:
     with db.tx():
         now = util.now()
         print_no = util.next_id("P")

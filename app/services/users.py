@@ -3,13 +3,24 @@
 from __future__ import annotations
 
 import re
+import secrets
 from datetime import datetime, timedelta
 
 from app.core import utils as util
+from app.core.config import settings
 from app.core.errors import ErrorCode, biz
-from app.core.security import CurrentUser, check_policy, hash_password, issue_token, pwd_version, verify_password
+from app.core.exceptions import BizError
+from app.core.security import (
+    PAGE,
+    CurrentUser,
+    check_policy,
+    hash_password,
+    issue_token,
+    pwd_version,
+    verify_password,
+)
 from app.db.session import db
-from app.services import audit
+from app.services import audit, login_guard
 
 ACTIVE = "ACTIVE"
 DISABLED = "DISABLED"
@@ -61,14 +72,51 @@ def _next_pv(u: dict, now: datetime) -> datetime:
     return prev + timedelta(seconds=1) if prev is not None and not now > prev else now
 
 
-def login(emp_no: str | None, password: str | None) -> dict:
-    u = _by_emp_no(util.trim(emp_no))
-    if u is None or not verify_password(password, u["password_hash"]):
-        raise biz(ErrorCode.LOGIN_FAILED)
+_dummy_hash: str | None = None
+
+
+def _dummy() -> str:
+    """工号不存在时也做一次同样代价的口令校验，避免按响应时间判断工号是否存在。"""
+    global _dummy_hash
+    if _dummy_hash is None:
+        _dummy_hash = hash_password(secrets.token_hex(16))
+    return _dummy_hash
+
+
+def _login_actor(emp: str, u: dict | None, trace_id: str | None) -> CurrentUser:
+    if u is None:
+        return CurrentUser(None, util.cut(emp, 32) or "-", "", "", None, PAGE, trace_id)
+    return CurrentUser(u["id"], u["emp_no"], u["name"], u["role"], u["factory_code"], PAGE, trace_id)
+
+
+def _login_failed(actor: CurrentUser, e: BizError, detail: str) -> BizError:
+    """登录失败：独立事务留痕（不受请求结果影响），返回要抛出的错误。"""
+    audit.record_isolated(actor, audit.entry(audit.LOGIN).factory(actor.factory_code).fail(e.message).info(detail))
+    return e
+
+
+def login(emp_no: str | None, password: str | None, trace_id: str | None = None, client: str | None = None) -> dict:
+    """登录。成功、失败（含锁定、停用）都留痕；同一工号连续失败达到上限后临时锁定。"""
+    emp = util.trim(emp_no)
+    key = util.cut(emp, 64) or ""
+    where = f"client={client or '-'}"
+    try:
+        login_guard.check(key)
+    except BizError as e:
+        raise _login_failed(_login_actor(emp, None, trace_id), e, where + " locked") from None
+    u = _by_emp_no(emp) if emp else None
+    matched = verify_password(password, _dummy() if u is None else u["password_hash"])
+    if u is None or not matched:
+        locked = login_guard.fail(key)
+        detail = where + (f" locked={settings.login_lock_minutes}m" if locked else "")
+        raise _login_failed(_login_actor(emp, u, trace_id), biz(ErrorCode.LOGIN_FAILED), detail) from None
     if u["status"] != ACTIVE:
-        raise biz(ErrorCode.ACCOUNT_DISABLED)
+        raise _login_failed(_login_actor(emp, u, trace_id), biz(ErrorCode.ACCOUNT_DISABLED), where) from None
+    login_guard.success(key)
     u["last_login_at"] = util.now()
-    db.exec("UPDATE sn_user SET last_login_at = %s WHERE id = %s", u["last_login_at"], u["id"])
+    with db.tx():
+        db.exec("UPDATE sn_user SET last_login_at = %s WHERE id = %s", u["last_login_at"], u["id"])
+        audit.record(_login_actor(emp, u, trace_id), audit.entry(audit.LOGIN).factory(u["factory_code"]).info(where))
     return {"token": issue_token(u["id"], pwd_version(u["pwd_changed_at"])), "user": view(u)}
 
 

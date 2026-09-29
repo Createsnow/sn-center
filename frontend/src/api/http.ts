@@ -47,7 +47,9 @@ http.interceptors.response.use(
     const body = err.response?.data as ApiErrorBody | undefined;
     const message = translateApiError(body, err.message || t("common.requestFailed"));
     const code = body?.code;
-    if (status === 401) {
+    // 登录请求本身的 401（工号或密码错误、账户已停用）要提示，不能当成「登录已失效」处理
+    const isLogin = /\/auth\/login$/.test(err.config?.url || "");
+    if (status === 401 && !isLogin) {
       const { useAuthStore } = await import("@/stores/auth");
       useAuthStore().clear();
       if (!window.location.pathname.endsWith("/login")) {

@@ -86,3 +86,48 @@ def test_cannot_disable_self_or_last_admin_and_only_admin_manages_users(api, adm
 def test_login_fails_with_wrong_password(api, admin):
     assert api.post("/api/auth/login", m(emp_no="admin", password="bad"), None).code == "LOGIN_FAILED"
     assert api.get("/api/sn", None).code == "UNAUTHENTICATED"
+
+
+def test_login_locks_after_repeated_failures_and_is_audited(api, w, sql):
+    from app.services import login_guard
+
+    emp = uid("lk")
+    w.user(emp, "query", None)
+    for _ in range(4):
+        assert api.post("/api/auth/login", m(emp_no=emp, password="bad"), None).code == "LOGIN_FAILED"
+    fifth = api.post("/api/auth/login", m(emp_no=emp, password="bad"), None)
+    assert fifth.code == "LOGIN_FAILED", "the attempt that reaches the limit still reports wrong password"
+    locked = api.post("/api/auth/login", m(emp_no=emp, password="Pass@1234"), None)
+    assert locked.status == 429
+    assert locked.code == "LOGIN_LOCKED"
+    assert locked["params"]["minutes"] == 15
+    assert (
+        sql.count("SELECT COUNT(*) FROM sn_audit WHERE action = 'LOGIN' AND result = 'FAIL' AND operator = %s", emp)
+        == 6
+    )
+    assert sql.count("SELECT COUNT(*) FROM sn_audit WHERE operator = %s AND detail LIKE '%%locked=15m%%'", emp) == 1
+    login_guard.reset()
+    ok(api.post("/api/auth/login", m(emp_no=emp, password="Pass@1234"), None))
+    assert (
+        sql.count("SELECT COUNT(*) FROM sn_audit WHERE action = 'LOGIN' AND result = 'OK' AND operator = %s", emp) >= 2
+    )
+
+
+def test_login_success_clears_failure_count(api, w):
+    emp = uid("lc")
+    w.user(emp, "query", None)
+    for _ in range(4):
+        assert api.post("/api/auth/login", m(emp_no=emp, password="bad"), None).code == "LOGIN_FAILED"
+    ok(api.post("/api/auth/login", m(emp_no=emp, password="Pass@1234"), None))
+    for _ in range(4):
+        assert api.post("/api/auth/login", m(emp_no=emp, password="bad"), None).code == "LOGIN_FAILED"
+    ok(api.post("/api/auth/login", m(emp_no=emp, password="Pass@1234"), None))
+
+
+def test_login_with_unknown_emp_no_is_audited(api, sql):
+    emp = uid("ghost")
+    assert api.post("/api/auth/login", m(emp_no=emp, password="whatever1"), None).code == "LOGIN_FAILED"
+    row = sql.one("SELECT result, error_msg, detail FROM sn_audit WHERE action = 'LOGIN' AND operator = %s", emp)
+    assert row["result"] == "FAIL"
+    assert row["error_msg"] == "工号或密码错误"
+    assert row["detail"].startswith("client=")

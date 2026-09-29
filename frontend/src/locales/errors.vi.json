@@ -3,6 +3,7 @@
   "TOKEN_INVALID": "Phiên đã hết hạn, vui lòng đăng nhập lại",
   "LOGIN_FAILED": "Sai mã nhân viên hoặc mật khẩu",
   "ACCOUNT_DISABLED": "Tài khoản đã bị vô hiệu",
+  "LOGIN_LOCKED": "Đăng nhập sai quá nhiều lần, vui lòng thử lại sau {minutes} phút",
   "PASSWORD_CHANGE_REQUIRED": "Vui lòng đổi mật khẩu trước",
   "FORBIDDEN": "Vai trò của bạn không được phép",
   "FACTORY_FORBIDDEN": "Chỉ được thao tác SN của nhà máy mình: {factory}",

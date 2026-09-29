@@ -362,3 +362,19 @@ def test_exports_never_carry_formulas(api, admin, w, ctx):
     assert all(c.data_type == "s" for c in cells)
     csv = api.client.get(path + "&format=csv", headers=headers).content.decode("utf-8-sig")
     assert "\"'=HYPERLINK(" in csv
+
+
+def test_concurrent_print_with_same_request_no_replays_one_print(api, admin, w, ctx, sql):
+    from concurrent.futures import ThreadPoolExecutor
+
+    for _ in range(3):
+        pi = ready(w, "N", 1500, 500)
+        ok(w.acquire(admin, FA, pi, req()))
+        r = req()
+        body = m(factory_code=FA, pi_no=pi, request_no=r)
+        with ThreadPoolExecutor(4) as ex:
+            out = list(ex.map(lambda b: api.post("/api/acquire/print", b, admin), [body] * 4))
+        assert all(o.status == 200 for o in out), [str(o) for o in out]
+        assert len({o.text("print_no") for o in out}) == 1
+        assert sum(1 for o in out if o["replayed"] is False) == 1
+        assert sql.count("SELECT COUNT(*) FROM sn_print WHERE factory_code = %s AND request_no = %s", FA, r) == 1
