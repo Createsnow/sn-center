@@ -1,0 +1,62 @@
+name: sn-center
+
+# 默认连接 .env 里 DB_URL 指向的 MySQL（如公司库 10.0.200.125:3306/sndb）。
+# 需要一个本地 MySQL 时：docker compose --profile mysql up -d --build，并把 DB_URL 指向 mysql:3306。
+services:
+  mysql:
+    image: mysql:8.0
+    profiles: ["mysql"]
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-sndb}
+      MYSQL_USER: ${DB_USER:-appuser}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change-me-root}
+      TZ: ${TZ:-Asia/Shanghai}
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci", "--default-time-zone=+08:00"]
+    volumes:
+      - sn-mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sn-center-api:1.0.0
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      ENVIRONMENT: production
+      CORS_ORIGINS: '["http://localhost","http://127.0.0.1"]'
+      CORS_ALLOW_ANY_ORIGIN: "false"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/health/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 60s
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmjs.org}
+    image: sn-center-web:1.0.0
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-80}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  sn-mysql:
+    name: sn-center-mysql

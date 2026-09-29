@@ -1,0 +1,167 @@
+"""单元测试：编码、号段切分、金蝶解析、多语言契约、与 Java 后端的一致性、cron。"""
+
+import json
+import re
+from datetime import datetime
+from decimal import Decimal
+from pathlib import Path
+
+import pytest
+
+from app.core import encoding as codec
+from app.core.encoding import DEFAULT_CHARSETS, Spec
+from app.core.errors import ErrorCode
+from app.core.scheduler import Cron
+from app.db.migrate import migrations
+from app.services import k3
+from app.services.sn_items import sn_qty, split
+
+ROOT = Path(__file__).resolve().parents[1]
+
+# ---------------------------------------------------------------------- SnCodec（对应 SnCodecTest）
+
+DEC5 = Spec("AVM", "X", 10, 5, "0123456789")
+B32 = Spec("", "", 32, 4, DEFAULT_CHARSETS[32])
+
+
+def test_formats_fixed_width_with_prefix_suffix():
+    assert codec.format_sn(1, DEC5) == "AVM00001X"
+    assert codec.format_sn(99_999, DEC5) == "AVM99999X"
+    assert codec.encode_seq(31, B32) == "000V"
+    assert codec.encode_seq(32, B32) == "0010"
+
+
+def test_rejects_overflow_instead_of_widening():
+    with pytest.raises(codec.SeqOverflow):
+        codec.format_sn(100_000, DEC5)
+    assert codec.max_seq(DEC5) == 99_999
+    assert codec.max_seq(B32) == 32**4 - 1
+
+
+def test_parse_is_inverse_of_format():
+    for s in (0, 1, 31, 32, 1023, 1_048_575):
+        assert codec.parse(codec.format_sn(s, B32), B32) == s
+    assert codec.parse("AVM00042X", DEC5) == 42
+    assert codec.parse("AVM0042X", DEC5) is None, "wrong length"
+    assert codec.parse("BVM00042X", DEC5) is None, "wrong prefix"
+    assert codec.parse("AVM0004AX", DEC5) is None, "char outside charset"
+
+
+def test_custom_charset_keeps_order_of_table():
+    s = Spec("", "", 10, 3, "ABCDEFGHJK")
+    assert codec.encode_seq(10, s) == "ABA"
+    assert codec.parse("ABA", s) == 10
+
+
+def test_validation():
+    assert codec.validate(Spec("", "", 8, 4, "01234567")) is ErrorCode.RULE_BASE_INVALID
+    assert codec.validate(Spec("", "", 10, 13, "0123456789")) is ErrorCode.RULE_SEQ_LEN_INVALID
+    assert codec.validate(Spec("", "", 10, 4, "012345678")) is ErrorCode.RULE_CHARSET_LENGTH
+    assert codec.validate(Spec("", "", 10, 4, "0123456788")) is ErrorCode.RULE_CHARSET_DUPLICATE
+    assert codec.validate(DEC5) is None
+
+
+# ---------------------------------------------------------------------- Segments（对应 SegmentsTest）
+
+SPEC4 = Spec("S", "", 10, 4, "0123456789")
+
+
+def line(seq, material, qty):
+    return {"line_seq": seq, "material_number": material, "material_name": material, "qty": Decimal(qty)}
+
+
+def test_splits_by_line_order_including_repeated_and_empty_material():
+    segs = split([line(1, "A", 3), line(2, "B", 2), line(3, "A", 2), line(4, "", 1)], 0, 8, 11, SPEC4)
+    assert len(segs) == 4
+    assert segs[0].material_code == "A"
+    assert (segs[0].start_seq, segs[0].end_seq) == (11, 13)
+    assert segs[1].start_sn == "S0014"
+    assert segs[2].material_code == "A"
+    assert segs[3].material_code == ""
+    assert segs[3].end_seq == 18
+
+
+def test_continues_after_already_generated_positions():
+    segs = split([line(1, "A", 3), line(2, "B", 2)], 2, 2, 100, SPEC4)
+    assert len(segs) == 2
+    assert (segs[0].material_code, segs[0].qty, segs[0].start_seq) == ("A", 1, 100)
+    assert (segs[1].material_code, segs[1].start_seq) == ("B", 101)
+
+
+def test_fractional_quantity_counts_integer_part():
+    assert sn_qty({"qty": Decimal("2.9")}) == 2
+
+
+def test_segments_json_matches_java_jackson_layout():
+    from app.services.generate import segments_json
+
+    s = segments_json(split([line(1, "物料", 2)], 0, 2, 1, SPEC4))
+    assert s == (
+        '[{"lineSeq":1,"materialCode":"物料","materialName":"物料","qty":2,"startSeq":1,"endSeq":2,'
+        '"startSn":"S0001","endSn":"S0002"}]'
+    )
+
+
+# ---------------------------------------------------------------------- 金蝶解析（对应 K3ParsingTest）
+
+
+def test_query_rows_keep_only_plan_statuses_and_order():
+    raw = [
+        ["C1", "MO1", "PO", "PI1", "M1", "物料1", 10.0, "1", "SO1", "工厂A"],
+        ["C1", "MO1", "PO", "PI1", "M2", "物料2", 5, 2.0, "", "工厂A"],
+        ["C1", "MO2", "PO", "PI1", "M1", "物料1", 7, "4", "", "工厂A"],
+    ]
+    rows = k3.rows_from_query(raw)
+    assert len(rows) == 2
+    assert rows[1].material_number == "M2"
+    assert rows[1].status == "2"
+    assert rows[1].qty == Decimal("5")
+
+
+def test_locale_name_picks_simplified_chinese():
+    assert k3.locale_name([{"Key": 1033, "Value": "Lock"}, {"Key": 2052, "Value": "门锁"}]) == "门锁"
+
+
+def test_error_is_extracted():
+    err = [[{"Result": {"ResponseStatus": {"IsSuccess": False, "Errors": [{"Message": "字段不存在"}]}}}]]
+    assert k3.error_of(err) == "字段不存在"
+    assert k3.error_of([["a"]]) is None
+
+
+# ---------------------------------------------------------------------- 多语言契约（对应 I18nContractTest）
+
+PH = re.compile(r"\{(\w+)}")
+
+
+@pytest.mark.parametrize("lang", ["zh-CN", "en", "vi"])
+def test_every_error_code_translated(lang):
+    path = ROOT / "frontend" / "src" / "locales" / f"errors.{lang}.json"
+    if not path.is_file():
+        pytest.skip("frontend sources not present")
+    msgs = json.loads(path.read_text(encoding="utf-8"))
+    for c in ErrorCode:
+        assert c.name in msgs, f"{lang} missing {c.name}"
+        assert set(PH.findall(c.zh)) == set(PH.findall(msgs[c.name])), f"{lang} placeholders of {c.name}"
+    assert len(msgs) == len(ErrorCode), f"{lang} has stale codes"
+
+
+# ---------------------------------------------------------------------- 建表脚本
+
+
+def test_migration_flyway_checksum():
+    """V1__init.sql 与 Flyway 建库时记下的校验和一致（Java 版可直接接着用同一个库）。"""
+    ours = {m.script: m for m in migrations()}
+    assert list(ours) == ["V1__init.sql"]
+    assert ours["V1__init.sql"].checksum() == -1052070499
+    assert len(ours["V1__init.sql"].statements()) == 19
+
+
+# ---------------------------------------------------------------------- 定时任务
+
+
+def test_spring_cron_next_fire():
+    c = Cron("0 10 2 * * *")
+    assert c.next_after(datetime(2026, 9, 28, 1, 0, 0)) == datetime(2026, 9, 28, 2, 10, 0)
+    assert c.next_after(datetime(2026, 9, 28, 2, 10, 0)) == datetime(2026, 9, 29, 2, 10, 0)
+    assert Cron("0 0 3 * * SUN").next_after(datetime(2026, 9, 28)) == datetime(2026, 10, 4, 3, 0, 0)
+    assert Cron("*/15 * * * * *").next_after(datetime(2026, 1, 1, 0, 0, 1)) == datetime(2026, 1, 1, 0, 0, 15)

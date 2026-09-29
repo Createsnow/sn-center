@@ -1,0 +1,583 @@
+"""生成与分配（同一页面两步）。
+
+生成：预演（只算起止号与号段，记下 PI 当前最大号，不落库）→ 凭预演令牌生成。
+同一 PI 同一时刻只有一个生成任务（sn_gen_job.running_pi 唯一）；生成在一个事务内完成，
+失败整批回滚；遇到与本 PI 已有号（含转入号）相同的完整 SN 立即停止，不跳号。
+
+分配：把该订单的待分配号整单分到订单的生产组织，状态变为待领取。
+"""
+
+from __future__ import annotations
+
+import json
+from concurrent.futures import ThreadPoolExecutor
+from datetime import timedelta
+
+import pymysql
+import structlog
+
+from app.core import encoding as codec
+from app.core import utils as util
+from app.core.config import settings
+from app.core.errors import ErrorCode, biz
+from app.core.exceptions import BizError
+from app.core.security import CurrentUser
+from app.db.session import db, is_duplicate, marks
+from app.services import audit, factories, orders, rules, sn_items
+
+log = structlog.get_logger()
+
+CHUNK = 1000
+RUNNING = "RUNNING"
+SUCCESS = "SUCCESS"
+FAILED = "FAILED"
+
+JOB_FIELDS = (
+    "id",
+    "bill_no",
+    "pi_no",
+    "factory_code",
+    "customer_code",
+    "rule_version_id",
+    "qty",
+    "start_seq_dec",
+    "end_seq_dec",
+    "start_sn",
+    "end_sn",
+    "status",
+    "done_qty",
+    "error_code",
+    "error_msg",
+    "running_pi",
+    "preview_token",
+    "segments_json",
+    "created_by",
+    "created_at",
+    "finished_at",
+)
+ALLOCATION_FIELDS = ("id", "bill_no", "pi_no", "factory_code", "qty", "start_sn", "end_sn", "created_by", "created_at")
+
+_INSERT_ITEM = (
+    "INSERT INTO sn_item(gen_month, sn, pi_no, customer_code, material_code, factory_code, bill_no, rule_version_id, "
+    "seq_pi_no, seq_dec, status, source, job_id, created_at, updated_at) "
+    "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+)
+_INSERT_KEY = "INSERT INTO sn_key(pi_no, sn, seq_pi_no, seq_dec) VALUES (%s,%s,%s,%s)"
+
+#: 大批量生成走后台线程
+executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="sn-gen")
+
+
+def job_json(j: dict | None) -> dict | None:
+    return util.jrow(j, JOB_FIELDS)
+
+
+# ================================================================== 上下文
+
+
+def counter(pi: str) -> dict:
+    c = db.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s", pi)
+    if c is None:
+        return {
+            "pi_no": pi,
+            "last_seq_dec": 0,
+            "generated_qty": 0,
+            "imported_qty": 0,
+            "start_seq_dec": None,
+            "start_locked": False,
+        }
+    return {
+        "pi_no": pi,
+        "last_seq_dec": c["last_seq_dec"],
+        "generated_qty": c["generated_qty"],
+        "imported_qty": c["imported_qty"],
+        "start_seq_dec": c["start_seq_dec"],
+        "start_locked": bool(c["start_locked"]),
+    }
+
+
+def _bill_gen(bill_no: str, lock: bool = False) -> dict | None:
+    return db.one("SELECT * FROM sn_bill_gen WHERE bill_no = %s" + (" FOR UPDATE" if lock else ""), bill_no)
+
+
+def _pending_alloc(bill_no: str) -> int:
+    return db.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND status = 'PENDING_ALLOC'", bill_no)
+
+
+def context(bill_no: str) -> dict:
+    b = orders.bill(bill_no)
+    issues = []
+    if util.blank(b.customer_code):
+        issues.append(ErrorCode.ORDER_NO_CUSTOMER.name)
+    if util.blank(b.pi):
+        issues.append(ErrorCode.ORDER_NO_PI.name)
+    if b.factory_code is None:
+        issues.append(ErrorCode.FACTORY_UNMAPPED.name)
+    g = _bill_gen(b.bill_no)
+    generated = 0 if g is None else g["generated_qty"]
+    quota = max(0, b.total_qty - generated)
+    if quota == 0:
+        issues.append(ErrorCode.GEN_QUOTA_EMPTY.name)
+    r = None if util.blank(b.pi) else rules.resolve(b.pi, b.customer_code)
+    if r is None:
+        issues.append(ErrorCode.RULE_MISSING.name)
+    f = factories.get(b.factory_code)
+    running = None if util.blank(b.pi) else db.one("SELECT * FROM sn_gen_job WHERE running_pi = %s", b.pi)
+    recent = db.all("SELECT * FROM sn_gen_job WHERE bill_no = %s ORDER BY id DESC LIMIT 20", b.bill_no)
+    return {
+        "bill": b.as_json(),
+        "factory_name": None if f is None else f["factory_name"],
+        "generated_qty": generated,
+        "allocated_qty": 0 if g is None else g["allocated_qty"],
+        "quota": quota,
+        "pending_alloc": _pending_alloc(b.bill_no),
+        "pi_summary": [] if util.blank(b.pi) else orders.pi_summary(b.factory_code, b.prd_org_name, b.pi),
+        "counter": counter(b.pi),
+        "rule": None if r is None else rules.rule_info(r),
+        "issues": issues,
+        "running_job": job_json(running),
+        "jobs": [job_json(j) for j in recent],
+    }
+
+
+# ================================================================== 预演
+
+
+def _check_bill(bill_no: str | None, qty: int) -> tuple[orders.Bill, int]:
+    """生成前校验订单，返回订单与已生成数。"""
+    b = orders.bill(bill_no)
+    if util.blank(b.customer_code):
+        raise biz(ErrorCode.ORDER_NO_CUSTOMER, bill_no=b.bill_no)
+    if util.blank(b.pi):
+        raise biz(ErrorCode.ORDER_NO_PI, bill_no=b.bill_no)
+    if b.factory_code is None:
+        raise biz(ErrorCode.FACTORY_UNMAPPED, org=b.prd_org_name)
+    if qty <= 0:
+        raise biz(ErrorCode.GEN_QTY_INVALID)
+    g = _bill_gen(b.bill_no)
+    generated = 0 if g is None else g["generated_qty"]
+    quota = max(0, b.total_qty - generated)
+    if quota == 0:
+        raise biz(ErrorCode.GEN_QUOTA_EMPTY, bill_no=b.bill_no)
+    if qty > quota:
+        raise biz(ErrorCode.GEN_QUOTA_EXCEEDED, qty=qty, quota=quota)
+    return b, generated
+
+
+def _start_of(c: dict | None, override: int | None, spec: codec.Spec) -> int:
+    mx = codec.max_seq(spec)
+    if override is not None:
+        if c is not None and c["start_locked"]:
+            raise biz(ErrorCode.GEN_START_NOT_ALLOWED, pi=c["pi_no"])
+        if override < 1 or override > mx:
+            raise biz(ErrorCode.GEN_START_INVALID, max=mx)
+        return override
+    return (0 if c is None else c["last_seq_dec"]) + 1
+
+
+def _check_capacity(end: int, spec: codec.Spec) -> None:
+    mx = codec.max_seq(spec)
+    if end > mx:
+        raise biz(ErrorCode.GEN_RULE_EXHAUSTED, max=mx, end=end)
+
+
+def segments_json(segs: list[sn_items.Segment]) -> str:
+    return json.dumps([s.as_camel() for s in segs], ensure_ascii=False, separators=(",", ":"))
+
+
+def preview(cu: CurrentUser, bill_no: str | None, qty_in: int | None, start_override: int | None) -> dict:
+    qty = 0 if qty_in is None else qty_in
+    b, generated = _check_bill(bill_no, qty)
+    r = rules.must_resolve(b.pi, b.customer_code)
+    spec = rules.spec_of(r.version)
+    c = db.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s", b.pi)
+    base = 0 if c is None else c["last_seq_dec"]
+    start = _start_of(c, start_override, spec)
+    end = start + qty - 1
+    _check_capacity(end, spec)
+    segs = sn_items.split(b.lines, generated, qty, start, spec)
+    now = util.now()
+    token = util.token_hex()
+    start_sn, end_sn = codec.format_sn(start, spec), codec.format_sn(end, spec)
+    expires = now + timedelta(minutes=settings.preview_ttl_minutes)
+    db.exec(
+        "INSERT INTO sn_gen_preview(token, bill_no, pi_no, factory_code, qty, start_seq_dec, end_seq_dec, start_sn, "
+        "end_sn, rule_version_id, base_last_seq, start_override, segments_json, created_by, created_at, expires_at) "
+        "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+        token,
+        b.bill_no,
+        b.pi,
+        b.factory_code,
+        qty,
+        start,
+        end,
+        start_sn,
+        end_sn,
+        r.version["id"],
+        base,
+        start_override,
+        segments_json(segs),
+        cu.emp_no,
+        now,
+        expires,
+    )
+    return {
+        "token": token,
+        "bill_no": b.bill_no,
+        "pi_no": b.pi,
+        "factory_code": b.factory_code,
+        "qty": qty,
+        "start_seq": start,
+        "end_seq": end,
+        "start_sn": start_sn,
+        "end_sn": end_sn,
+        "base_last_seq": base,
+        "start_override": start_override,
+        "rule": rules.rule_info(r),
+        "segments": [s.as_json() for s in segs],
+        "expires_at": util.fmt(expires),
+    }
+
+
+# ================================================================== 生成
+
+
+def generate(
+    cu: CurrentUser, token: str | None, bill_no: str | None, qty: int | None, start_override: int | None
+) -> dict:
+    p = None if util.blank(token) else db.one("SELECT * FROM sn_gen_preview WHERE token = %s", token.strip())
+    if p is None or p["created_by"] != cu.emp_no:
+        raise biz(ErrorCode.GEN_PREVIEW_REQUIRED)
+    if p["used_at"] is not None:
+        raise biz(ErrorCode.GEN_PREVIEW_USED)
+    if util.now() > p["expires_at"]:
+        raise biz(ErrorCode.GEN_PREVIEW_EXPIRED)
+    if p["bill_no"] != util.trim(bill_no) or qty is None or qty != p["qty"] or p["start_override"] != start_override:
+        raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
+    c = db.one("SELECT last_seq_dec FROM sn_pi_counter WHERE pi_no = %s", p["pi_no"])
+    last = 0 if c is None else c["last_seq_dec"]
+    if last != p["base_last_seq"]:
+        raise biz(ErrorCode.GEN_PREVIEW_STALE, pi=p["pi_no"], expected=p["base_last_seq"], actual=last)
+    customer = orders.bill(p["bill_no"]).customer_code
+    try:
+        job_id = db.insert(
+            "INSERT INTO sn_gen_job(bill_no, pi_no, factory_code, customer_code, rule_version_id, qty, start_seq_dec, "
+            "end_seq_dec, start_sn, end_sn, status, done_qty, running_pi, preview_token, segments_json, created_by, "
+            "created_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,0,%s,%s,%s,%s,%s)",
+            p["bill_no"],
+            p["pi_no"],
+            p["factory_code"],
+            customer,
+            p["rule_version_id"],
+            p["qty"],
+            p["start_seq_dec"],
+            p["end_seq_dec"],
+            p["start_sn"],
+            p["end_sn"],
+            RUNNING,
+            p["pi_no"],
+            p["token"],
+            p["segments_json"],
+            cu.emp_no,
+            util.now(),
+        )
+    except pymysql.err.IntegrityError as e:
+        if not is_duplicate(e):
+            raise
+        if "ux_job_preview" in str(e):
+            raise biz(ErrorCode.GEN_PREVIEW_USED) from None
+        raise biz(ErrorCode.GEN_BUSY, pi=p["pi_no"]) from None
+    db.exec("UPDATE sn_gen_preview SET used_at = %s WHERE token = %s", util.now(), p["token"])
+    if p["qty"] <= settings.gen_sync_threshold:
+        _run_job(cu, job_id, p, True)
+    else:
+        executor.submit(_run_job, cu, job_id, p, False)
+    return job_json(db.one("SELECT * FROM sn_gen_job WHERE id = %s", job_id))
+
+
+def job(job_id: int) -> dict:
+    j = db.one("SELECT * FROM sn_gen_job WHERE id = %s", job_id)
+    if j is None:
+        raise biz(ErrorCode.GEN_JOB_NOT_FOUND)
+    return job_json(j)
+
+
+def jobs(bill_no: str | None, pi: str | None, limit: int) -> list[dict]:
+    sql = "SELECT * FROM sn_gen_job WHERE 1=1"
+    args: list = []
+    if not util.blank(bill_no):
+        sql += " AND bill_no = %s"
+        args.append(util.trim(bill_no))
+    if not util.blank(pi):
+        sql += " AND pi_no = %s"
+        args.append(util.trim(pi))
+    sql += f" ORDER BY id DESC LIMIT {min(max(limit, 1), 200)}"
+    return [job_json(j) for j in db.all(sql, *args)]
+
+
+def _run_job(cu: CurrentUser, job_id: int, p: dict, rethrow: bool) -> None:
+    try:
+        with db.tx():
+            _generate_in_tx(cu, job_id, p)
+        db.exec(
+            "UPDATE sn_gen_job SET status = %s, done_qty = %s, running_pi = NULL, finished_at = %s WHERE id = %s",
+            SUCCESS,
+            p["qty"],
+            util.now(),
+            job_id,
+        )
+        log.info("gen_done", job=job_id, pi=p["pi_no"], qty=p["qty"])
+    except Exception as e:  # noqa: BLE001
+        code = e.code if isinstance(e, BizError) else "INTERNAL"
+        msg = util.cut(str(e) or type(e).__name__, 1000)
+        try:
+            db.exec(
+                "UPDATE sn_gen_job SET status = %s, done_qty = 0, error_code = %s, error_msg = %s, running_pi = NULL, "
+                "finished_at = %s WHERE id = %s",
+                FAILED,
+                code,
+                msg,
+                util.now(),
+                job_id,
+            )
+        except Exception:  # noqa: BLE001
+            log.exception("gen_job_status_update_failed", job=job_id)
+        # 同步执行时由全局异常处理记失败痕迹；后台任务在这里记
+        if not rethrow:
+            audit.record_isolated(
+                cu,
+                audit.entry(audit.SN_GENERATE)
+                .fail(msg)
+                .pi(p["pi_no"])
+                .factory(p["factory_code"])
+                .bill(p["bill_no"])
+                .count(p["qty"])
+                .range(p["start_sn"], p["end_sn"])
+                .info(f"job={job_id}"),
+            )
+        if not isinstance(e, BizError):
+            log.error("gen_failed", job=job_id, pi=p["pi_no"], exc_info=e)
+        if rethrow:
+            raise
+
+
+def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
+    now = util.now()
+    pi = p["pi_no"]
+    # 1) 锁 PI 计数器（一张 PI 一行），核对预演时的最大号
+    db.exec(
+        "INSERT IGNORE INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, imported_qty, start_locked, "
+        "updated_at) VALUES (%s,0,0,0,0,%s)",
+        pi,
+        now,
+    )
+    c = db.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s FOR UPDATE", pi)
+    if c["last_seq_dec"] != p["base_last_seq"]:
+        raise biz(ErrorCode.GEN_PREVIEW_STALE, pi=pi, expected=p["base_last_seq"], actual=c["last_seq_dec"])
+    if p["start_override"] is not None and c["start_locked"]:
+        raise biz(ErrorCode.GEN_START_NOT_ALLOWED, pi=pi)
+    # 2) 订单仍在快照、额度与号段未变
+    b = orders.bill(p["bill_no"])
+    db.exec(
+        "INSERT IGNORE INTO sn_bill_gen(bill_no, pi_no, factory_code, customer_code, generated_qty, allocated_qty, "
+        "updated_at) VALUES (%s,%s,%s,%s,0,0,%s)",
+        b.bill_no,
+        b.pi,
+        p["factory_code"],
+        b.customer_code,
+        now,
+    )
+    g = _bill_gen(b.bill_no, lock=True)
+    quota = b.total_qty - g["generated_qty"]
+    if p["qty"] > quota:
+        raise biz(ErrorCode.GEN_QUOTA_EXCEEDED, qty=p["qty"], quota=max(0, quota))
+    # 3) 规则版本未变（锁版本并标记已使用，之后该版本只能另出新版）
+    v = rules.lock_for_generation(p["rule_version_id"])
+    r = rules.must_resolve(b.pi, b.customer_code)
+    spec = rules.spec_of(v)
+    if (
+        r.version["id"] != v["id"]
+        or codec.format_sn(p["start_seq_dec"], spec) != p["start_sn"]
+        or b.pi != pi
+        or p["factory_code"] != b.factory_code
+    ):
+        raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
+    segs = sn_items.split(b.lines, g["generated_qty"], p["qty"], p["start_seq_dec"], spec)
+    if segments_json(segs) != p["segments_json"]:
+        raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
+    _check_capacity(p["end_seq_dec"], spec)
+    # 4) 逐块写号：先查重，再写护栏与明细
+    month = util.month_of(now)
+    done = 0
+    for seg in segs:
+        s = seg.start_seq
+        while s <= seg.end_seq:
+            e = min(seg.end_seq, s + CHUNK - 1)
+            sns = [codec.format_sn(q, spec) for q in range(s, e + 1)]
+            dup = _first_existing(pi, sns)
+            if dup is not None:
+                raise biz(ErrorCode.GEN_DUPLICATE_SN, sn=dup, pi=pi)
+            keys = [(pi, sn, pi, s + i) for i, sn in enumerate(sns)]
+            items = [
+                (
+                    month,
+                    sn,
+                    pi,
+                    b.customer_code,
+                    seg.material_code,
+                    None,
+                    b.bill_no,
+                    v["id"],
+                    pi,
+                    s + i,
+                    util.PENDING_ALLOC,
+                    "GEN",
+                    job_id,
+                    now,
+                    now,
+                )
+                for i, sn in enumerate(sns)
+            ]
+            try:
+                db.exec_many(_INSERT_KEY, keys)
+            except pymysql.err.IntegrityError as ex:
+                if not is_duplicate(ex):
+                    raise
+                again = _first_existing(pi, sns)
+                raise biz(ErrorCode.GEN_DUPLICATE_SN, sn=again or sns[0], pi=pi) from None
+            db.exec_many(_INSERT_ITEM, items)
+            done += len(sns)
+            _progress(job_id, done)
+            s += CHUNK
+    # 5) 推进计数器、订单已生成数；留痕
+    sets = "last_seq_dec = %s, generated_qty = %s, start_locked = 1, updated_at = %s"
+    args: list = [p["end_seq_dec"], c["generated_qty"] + p["qty"], now]
+    if not c["start_locked"]:
+        sets += ", locked_by = %s, locked_at = %s"
+        args += [cu.emp_no, now]
+    if p["start_override"] is not None:
+        sets += ", start_seq_dec = %s"
+        args.append(p["start_override"])
+    db.exec(f"UPDATE sn_pi_counter SET {sets} WHERE pi_no = %s", *args, pi)
+    db.exec(
+        "UPDATE sn_bill_gen SET generated_qty = %s, factory_code = %s, updated_at = %s WHERE bill_no = %s",
+        g["generated_qty"] + p["qty"],
+        p["factory_code"],
+        now,
+        b.bill_no,
+    )
+    detail = f"job={job_id} rule_version={v['id']} segments={len(segs)}"
+    if p["start_override"] is not None:
+        detail += f" start={p['start_override']}"
+    audit.record(
+        cu,
+        audit.entry(audit.SN_GENERATE)
+        .factory(p["factory_code"])
+        .pi(pi)
+        .customer(b.customer_code)
+        .bill(b.bill_no)
+        .range(p["start_sn"], p["end_sn"])
+        .count(p["qty"])
+        .status(None, util.PENDING_ALLOC)
+        .info(detail),
+    )
+
+
+def _first_existing(pi: str, sns: list[str]) -> str | None:
+    """本 PI 下（含转入号）已存在的第一个 SN；没有返回 None。"""
+    hit = db.column(f"SELECT sn FROM sn_key WHERE pi_no = %s AND sn IN ({marks(len(sns))}) LIMIT 1", pi, *sns)
+    return hit[0] if hit else None
+
+
+def _progress(job_id: int, done: int) -> None:
+    try:
+        with db.new_tx():
+            db.exec("UPDATE sn_gen_job SET done_qty = %s WHERE id = %s", done, job_id)
+    except Exception:  # noqa: BLE001
+        log.debug("progress_update_failed", job=job_id)
+
+
+# ================================================================== 分配
+
+
+def allocate(cu: CurrentUser, bill_no: str | None, qty_in: int | None, factory_code: str | None) -> dict:
+    no = util.trim(bill_no)
+    with db.tx():
+        g = _bill_gen(no, lock=True)
+        if g is None:
+            raise biz(ErrorCode.ALLOC_NOTHING, bill_no=no)
+        if not util.blank(factory_code) and g["factory_code"] != factory_code.strip():
+            raise biz(ErrorCode.ALLOC_FACTORY_MISMATCH, factory=g["factory_code"])
+        pending = _pending_alloc(no)
+        if pending == 0:
+            raise biz(ErrorCode.ALLOC_NOTHING, bill_no=no)
+        qty = pending if qty_in is None else qty_in
+        if qty <= 0:
+            raise biz(ErrorCode.GEN_QTY_INVALID)
+        if qty > pending:
+            raise biz(ErrorCode.ALLOC_QTY_EXCEEDED, qty=qty, pending=pending)
+        first = db.scalar(
+            "SELECT sn FROM sn_item WHERE bill_no = %s AND status = 'PENDING_ALLOC' ORDER BY seq_dec LIMIT 1", no
+        )
+        last = db.scalar(
+            "SELECT sn FROM sn_item WHERE bill_no = %s AND status = 'PENDING_ALLOC' ORDER BY seq_dec LIMIT %s, 1",
+            no,
+            qty - 1,
+        )
+        now = util.now()
+        n = db.exec(
+            "UPDATE sn_item SET status = 'TO_ACQUIRE', factory_code = %s, allocated_at = %s, updated_at = %s "
+            "WHERE bill_no = %s AND status = 'PENDING_ALLOC' ORDER BY seq_dec LIMIT %s",
+            g["factory_code"],
+            now,
+            now,
+            no,
+            qty,
+        )
+        if n != qty:
+            raise biz(ErrorCode.CONFLICT_RETRY)
+        db.exec(
+            "UPDATE sn_bill_gen SET allocated_qty = %s, updated_at = %s WHERE bill_no = %s",
+            g["allocated_qty"] + qty,
+            now,
+            no,
+        )
+        db.insert(
+            "INSERT INTO sn_allocation(bill_no, pi_no, factory_code, qty, start_sn, end_sn, created_by, "
+            "created_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
+            no,
+            g["pi_no"],
+            g["factory_code"],
+            qty,
+            first,
+            last,
+            cu.emp_no,
+            now,
+        )
+        audit.record(
+            cu,
+            audit.entry(audit.SN_ALLOCATE)
+            .factory(g["factory_code"])
+            .pi(g["pi_no"])
+            .customer(g["customer_code"])
+            .bill(no)
+            .range(first, last)
+            .count(qty)
+            .status(util.PENDING_ALLOC, util.TO_ACQUIRE),
+        )
+        return {
+            "bill_no": no,
+            "pi_no": g["pi_no"],
+            "factory_code": g["factory_code"],
+            "qty": qty,
+            "start_sn": first,
+            "end_sn": last,
+            "pending_left": pending - qty,
+        }
+
+
+def allocations(bill_no: str | None) -> list[dict]:
+    return [
+        util.jrow(a, ALLOCATION_FIELDS)
+        for a in db.all("SELECT * FROM sn_allocation WHERE bill_no = %s ORDER BY id DESC", util.trim(bill_no))
+    ]

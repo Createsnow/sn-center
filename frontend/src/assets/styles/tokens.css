@@ -1,0 +1,28 @@
+:root {
+  --el-color-primary: #1e4a8a;
+  --el-color-primary-light-3: #3b6bb0;
+  --el-color-primary-light-5: #6b8fc4;
+  --el-color-primary-light-7: #a3bde0;
+  --el-color-primary-light-8: #cdd9ee;
+  --el-color-primary-light-9: #e8eef8;
+  --el-color-primary-dark-2: #163a6e;
+  --el-border-radius-base: 8px;
+  --el-font-size-base: 14px;
+  --el-color-success: #3f7d5a;
+  --el-color-warning: #c27803;
+  --el-color-danger: #b42318;
+  --app-header: 56px;
+  --app-canvas: #f1f4f9;
+  --app-surface: #ffffff;
+  --app-ink: #0f172a;
+  --app-text: #0f172a;
+  --app-muted: #64748b;
+  --app-line: #dde4ef;
+}
+html, body, #app { height: 100%; margin: 0; }
+body {
+  color: var(--app-text);
+  background: var(--app-canvas);
+  font-family: "Source Han Sans SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}

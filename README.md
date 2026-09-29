@@ -1,0 +1,78 @@
+# 多工厂 SN 防重管控
+
+总部统一生成并分配 SN（可代任一工厂领取、打印、转厂），工厂按 PI 领取、打印；**同一张 PI 下的 SN 不得重复**。
+
+- 前端：Vue 3 + TypeScript + Vite + Element Plus（简体中文 / English / Tiếng Việt）
+- 后端：Python 3.12 + FastAPI + PyMySQL + structlog（目录结构与 `main` 分支相同：`app/{api,core,db,middleware,models,repositories,schemas,services}`）
+- 数据库：**MySQL 8**（启动时自动建表，Flyway 兼容的 `flyway_schema_history`；SN 明细与操作痕迹按月分区）
+- 外部：金蝶 K3 Cloud 生产订单 / 组织机构（只读同步到本地快照）
+
+## 文档
+
+| 文档 | 内容 |
+| --- | --- |
+| [需求说明（修订版）](docs/多工厂SN防重管控-需求说明（修订版）.md) | 业务口径 |
+| [技术文档](docs/技术文档.md) | 架构、权限矩阵、状态机、业务流程与时序图、接口清单、需求落地说明 |
+| [数据库表设计](docs/数据库表设计.md) | ER 图、每张表字段与索引、分区与归档、容量与并发 |
+| [部署 / 启动 / 关闭说明书](docs/部署启动关闭方式说明书.md) | MySQL 准备、`.env`、三种启动方式、上线步骤、排障 |
+
+## 快速开始
+
+```bash
+cp .env.example .env     # 填 DB_URL / DB_USER / DB_PASSWORD、SN_SECRET、K3_*
+python start.py          # Windows 可双击 start.bat；需要 Python 3.12+、Node.js 20+
+```
+
+浏览器打开 `http://127.0.0.1:8000`，用 `admin` + `SN_INIT_ADMIN_PASSWORD`（默认 `Admin@123`）登录，首次登录必须修改密码。
+本机没有金蝶时可设 `SN_DEMO_SEED=true` 灌入演示工厂、规则、订单与账户（**连公司库务必关闭**）。
+
+服务器：`docker compose up -d --build`（详见部署说明书）。接口文档：`/docs`（对外接口在 `open` 分组）。
+
+## 功能一览
+
+| 页面 | 角色 | 功能 |
+| --- | --- | --- |
+| 首页 | 全部 | 在途状态枚数、待处理转厂、今日作业量、最近生成任务 |
+| 生产订单 | 总部、查询员 | 金蝶快照：左表按单据汇总数量 / 已生成 / 可生成，右表物料行；全量或按单据同步 |
+| 生成与分配 | 总部 | 选订单 → 预演（起止号、按物料行切号段）→ 生成（大批量后台任务 + 进度）→ 确认整单分配到订单生产组织 |
+| 起始号与历史导入 | 总部 | 每张 PI 首次生成前指定一次起始号，并可导入历史已发出 SN（参与查重） |
+| 规则模板 | 总部 | 通用 / 按客户 / 按 PI；未用过的版本就地修改，用过的另出一版，改名不出版本 |
+| 领取与打印 | 全部（查询员只读） | 按「工厂 + PI」整批领取、打印（下载打印文件）；号段按「工厂 + PI + 物料 + 连续号段 + 状态」分行；批次明细、打印记录 |
+| 转厂 | 全部（查询员只读） | 工厂申请 / 撤回；总部确认 / 驳回 / 直接转移；整张 PI、PI + 物料、单枚 SN 三种范围；转出厂可查已转出的号 |
+| SN 查询 | 全部 | 按工厂 / 客户 / PI / 物料 / 状态 / SN / 来源订单 / 批次筛选；厂区可只读查看同 PI 各厂；导出 xlsx / csv |
+| 操作痕迹 | 全部（按范围） | 账户、规则、SN、转厂全流程留痕（含失败）；筛选、导出；保存期与归档 |
+| 账户 / 工厂 | 总部 | 工号唯一、只停用不删除、重置密码；工厂从金蝶同步或手工建档 |
+
+对外接口（MES / 打印系统）：`POST /api/open/acquire`（按 PI 整批领取，请求号幂等）、`GET /api/open/batches/{batch_no}/items`（分页明细）、`POST /api/open/callback`（打印回调）、`GET /api/open/sn`（只读拉取）。
+
+## 开发与测试
+
+```bash
+uv sync && uv run uvicorn app.main:app --reload --port 8000   # 后端（读仓库根 .env）
+cd frontend && npm install && npm run dev      # 前端 5173，代理 /api 到 8000
+
+uv run pytest -q                               # 单元 + 集成测试（集成测试需 MySQL，默认 127.0.0.1:3306/sndb_test_py，连不上自动跳过）
+uv run ruff check app tests                    # 代码检查
+node --test frontend/src/*.test.js             # 前端测试
+python3 frontend/scripts/gen_locales.py        # 改了词条 / 错误码后重新生成三种语言文件
+```
+
+## 目录
+
+```
+app/                         FastAPI 后端
+  main.py                    应用装配、错误处理、单端口托管前端、启动任务
+  api/                       deps.py（鉴权依赖）、routes/（各接口）
+  core/                      配置、.env、错误码、异常、SN 编码、口令与令牌、日志、定时任务
+  db/                        MySQL 连接池与事务、建表迁移、migration/V1__init.sql
+  middleware/ models/ repositories/ schemas/ services/
+tests/                       pytest：单元测试 + 集成测试（真实 MySQL + 假金蝶）
+frontend/                    Vue 3 + Vite + Element Plus
+  src/views/                 各页面
+  scripts/                   多语言词条源表与生成脚本
+docs/                        需求、技术文档、数据库表设计、部署说明
+.env.example                 配置模板（.env 不提交）
+pyproject.toml / uv.lock     Python 依赖
+Dockerfile / frontend/Dockerfile / docker-compose.yml
+start.py / start.bat / stop.bat
+```

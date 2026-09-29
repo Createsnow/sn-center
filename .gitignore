@@ -1,0 +1,41 @@
+# =============================================================================
+# GitHub 忽略清单（本目录即仓库根）
+# 标了「必须」的不要提交；标了「可提交」的请保留。
+# =============================================================================
+
+# ---------- 必须：密钥与本机环境 ----------
+# 真实账套 / 密钥 / 本机路径。模板 .env.example 要提交。
+.env
+.env.*
+!.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# ---------- 必须：本机数据库与运行时 ----------
+# SQLite 演示库、后端写的 tools/sn-center.pid。
+data/
+tools/
+
+# ---------- 必须：依赖与虚拟环境（体积大，可复现） ----------
+# 用 uv.lock / frontend/package-lock.json 还原，不要提交安装结果。
+frontend/node_modules/
+.venv/
+
+# ---------- 必须：构建与缓存 ----------
+frontend/dist/
+
+# ---------- 建议：编辑器 / 系统杂项 ----------
+.DS_Store
+Thumbs.db
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# ---------- Python 缓存（多语言生成脚本、Python 后端）----------
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
