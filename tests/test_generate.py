@@ -131,37 +131,140 @@ def test_start_number_only_once_before_first_generation(api, admin, w):
     assert ok(w.preview(bill, 1)).text("start_sn") == "T00502"
 
 
-def test_duplicate_full_sn_stops_whole_batch_and_rolls_back(api, admin, w, sql):
-    # PI-A 生成 D00001..D00005；D00003 转入 PI-B；PI-B 用同一规则生成 5 枚时遇到 D00003 → 整批回滚
+def _transfer(api, admin, pi_from, pi_to, **scope):
+    body = m(factory_code=FAC, pi_no=pi_from, to_factory=FAC, to_pi=pi_to, target_source="MANUAL", reason="测试转入")
+    body.update(scope)
+    return api.post("/api/transfers/direct", body, admin)
+
+
+def _two_pis(w, prefix_a: str, prefix_b: str, qty_a: int, own_b: int):
+    """PI-A 生成 qty_a 枚并分配；PI-B 自己生成 own_b 枚。"""
     pi_a, pi_b, b_a, b_b = uid("PI"), uid("PI"), uid("MO"), uid("MO")
-    w.pi_rule(pi_a, "D", 10, 5)
-    w.pi_rule(pi_b, "D", 10, 5)
-    w.order(b_a, ORG, "C1", pi_a, ("A", 5))
-    w.order(b_b, ORG, "C1", pi_b, ("A", 5))
-    w.generate(b_a, 5)
+    w.pi_rule(pi_a, prefix_a, 10, 5)
+    w.pi_rule(pi_b, prefix_b, 10, 5)
+    w.order(b_a, ORG, "C1", pi_a, ("A", qty_a))
+    w.order(b_b, ORG, "C1", pi_b, ("A", 50))
+    w.generate(b_a, qty_a)
     w.allocate(b_a)
-    ok(
-        api.post(
-            "/api/transfers/direct",
-            m(
-                factory_code=FAC,
-                pi_no=pi_a,
-                scope="SINGLE",
-                sn="D00003",
-                to_factory=FAC,
-                to_pi=pi_b,
-                target_source="MANUAL",
-                reason="测试转入",
-            ),
+    if own_b:
+        w.generate(b_b, own_b)
+    return pi_a, pi_b, b_a, b_b
+
+
+def _audit_detail(api, admin, transfer_no: str) -> str:
+    rows = ok(api.get("/api/audits" + q(keyword=transfer_no, action="TRANSFER_DIRECT"), admin))["items"]
+    return rows[0]["detail"]
+
+
+def test_generation_continues_after_contiguous_transferred_sns(api, admin, w, sql):
+    # PI-B 自己到 D00002；A 的 D00003..D00005 转入 → B 从 D00006 接着排，不重号、不断号
+    pi_a, pi_b, _, b_b = _two_pis(w, "D", "D", 5, 2)
+    for sn in ("D00003", "D00004", "D00005"):
+        ok(_transfer(api, admin, pi_a, pi_b, scope="SINGLE", sn=sn))
+    p = ok(w.preview(b_b, 3))
+    assert p.text("start_sn") == "D00006"
+    assert p["next"]["adjusted"] is True
+    assert p["next"]["by_sn"] == "D00005"
+    assert p["base_last_seq"] == 2, "own counter itself is not raised by the transfer"
+    j = ok(api.post("/api/generate", m(preview_token=p.text("token"), bill_no=b_b, qty=3), admin)).body
+    assert j["status"] == "SUCCESS"
+    assert (j["start_sn"], j["end_sn"]) == ("D00006", "D00008")
+    assert sql.count("SELECT last_seq_dec FROM sn_pi_counter WHERE pi_no = %s", pi_b) == 8
+    assert sql.count("SELECT COUNT(DISTINCT sn) FROM sn_item WHERE pi_no = %s", pi_b) == 8
+    detail = sql.one(
+        "SELECT detail FROM sn_audit WHERE action = 'SN_GENERATE' AND pi_no = %s ORDER BY id DESC LIMIT 1", pi_b
+    )["detail"]
+    assert "start_after_transferred=D00005" in detail
+
+
+def test_generation_jumps_past_non_contiguous_transferred_sns(api, admin, w):
+    # PI-B 自己到 E00002；A 的 E00012 转入 → B 从 E00013 生成，E00003..E00011 不再由 B 生成
+    pi_a, pi_b, _, b_b = _two_pis(w, "E", "E", 12, 2)
+    c = ok(api.get("/api/transfers/candidates" + q(factory_code=FAC, pi=pi_a, scope="PI", to_pi=pi_b), admin))
+    assert c["duplicates"] == {"count": 2, "samples": ["E00001", "E00002"]}
+    d = _transfer(api, admin, pi_a, pi_b, scope="PI")
+    assert d.code == "TR_DUPLICATE"
+    assert d["params"]["count"] == 2
+    assert d["params"]["sn"] == "E00001、E00002"
+    single = ok(
+        api.get(
+            "/api/transfers/candidates" + q(factory_code=FAC, pi=pi_a, scope="SINGLE", sn="E00012", to_pi=pi_b),
             admin,
         )
     )
+    assert single["duplicates"] is None
+    assert single["target"]["before"]["start_sn"] == "E00003"
+    assert single["target"]["after"]["start_sn"] == "E00013"
+    assert single["target"]["unused"] == 9
+    r = ok(_transfer(api, admin, pi_a, pi_b, scope="SINGLE", sn="E00012"))
+    assert r["target_hint"]["after"]["start_sn"] == "E00013"
+    assert "to_next=E00003->E00013 unused=9" in _audit_detail(api, admin, r["transfer_no"])
+    r2 = ok(_transfer(api, admin, pi_a, pi_b, scope="SINGLE", sn="E00010"))
+    assert r2["target_hint"] is None, "E00010 is below the new start: nothing moves"
+    p = ok(w.preview(b_b, 2))
+    assert (p.text("start_sn"), p.text("end_sn")) == ("E00013", "E00014")
+
+
+def test_transferred_sns_of_other_format_do_not_move_start(api, admin, w):
+    pi_a, pi_b, _, b_b = _two_pis(w, "FA", "FB", 3, 1)
+    r = ok(_transfer(api, admin, pi_a, pi_b, scope="SINGLE", sn="FA00003"))
+    assert r["target_hint"] is None
+    p = ok(w.preview(b_b, 1))
+    assert p.text("start_sn") == "FB00002"
+    assert p["next"]["adjusted"] is False
+
+
+def test_transfer_after_preview_makes_preview_stale(api, admin, w):
+    pi_a, pi_b, _, b_b = _two_pis(w, "G", "G", 5, 1)
+    p = ok(w.preview(b_b, 2))
+    assert p.text("start_sn") == "G00002"
+    ok(_transfer(api, admin, pi_a, pi_b, scope="SINGLE", sn="G00004"))
+    g = api.post("/api/generate", m(preview_token=p.text("token"), bill_no=b_b, qty=2), admin)
+    assert g.code == "GEN_PREVIEW_STALE", str(g)
+    assert ok(w.preview(b_b, 2)).text("start_sn") == "G00005"
+
+
+def test_start_number_must_be_above_transferred_sns(api, admin, w):
+    # PI-B 还没生成过：可以指定起始号，但必须越过已转入的号
+    pi_a, pi_b, _, b_b = _two_pis(w, "H", "H", 5, 0)
+    ok(_transfer(api, admin, pi_a, pi_b, scope="SINGLE", sn="H00004"))
+    bad = w.preview(b_b, 1, 3)
+    assert bad.code == "GEN_START_TAKEN"
+    assert bad["params"]["sn"] == "H00004"
+    assert api.post("/api/pi-init", m(pi_no=pi_b, start_seq=4), admin).code == "GEN_START_TAKEN"
+    assert ok(w.preview(b_b, 1, 10)).text("start_sn") == "H00010"
+    assert ok(w.preview(b_b, 1)).text("start_sn") == "H00005"
+
+
+def test_pending_transfer_shows_target_hint_before_approval(api, admin, w, sql):
+    pi_a, pi_b, _, _ = _two_pis(w, "J", "J", 8, 1)
+    op = w.user(uid("opj"), "factory_operator", FAC)
+    t = ok(
+        api.post(
+            "/api/transfers",
+            m(pi_no=pi_a, scope="SINGLE", sn="J00008", to_factory=FAC, to_pi=pi_b, reason="申请转入"),
+            op,
+        )
+    )
+    assert t["target_hint"]["after"]["start_sn"] == "J00009"
+    got = ok(api.get(f"/api/transfers/{t['id']}", admin))
+    assert got["target_hint"]["before"]["start_sn"] == "J00002"
+    assert got["target_hint"]["unused"] == 6
+    a = ok(api.post(f"/api/transfers/{t['id']}/approve", m(note="ok"), admin))
+    assert a["target_hint"]["after"]["start_sn"] == "J00009"
+    assert ok(api.get(f"/api/transfers/{t['id']}", admin))["target_hint"] is None, "only pending ones carry a hint"
+
+
+def test_duplicate_full_sn_still_stops_whole_batch_and_rolls_back(api, admin, w, sql):
+    # 兜底：库里已有与本 PI 将生成的号相同的完整 SN（这里直接写护栏模拟）→ 停止并整批回滚
+    pi_a, pi_b, b_a, b_b = _two_pis(w, "D", "D", 5, 0)
+    sql.exec("INSERT INTO sn_key(pi_no, sn, seq_pi_no, seq_dec) VALUES (%s, 'D00003', %s, 999)", pi_b, pi_b)
     p = ok(w.preview(b_b, 5))
-    assert p.text("start_sn") == "D00001", "transfer-in does not raise PI-B counter"
+    assert p.text("start_sn") == "D00001"
     g = api.post("/api/generate", m(preview_token=p.text("token"), bill_no=b_b, qty=5), admin)
     assert g.code == "GEN_DUPLICATE_SN", str(g)
     assert g["params"]["sn"] == "D00003"
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi_b) == 1, "only the transferred-in SN"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi_b) == 0
     assert sql.count("SELECT COALESCE(MAX(last_seq_dec), 0) FROM sn_pi_counter WHERE pi_no = %s", pi_b) == 0
     job = ok(api.get("/api/generate/jobs" + q(bill_no=b_b), admin)).body[0]
     assert job["status"] == "FAILED"

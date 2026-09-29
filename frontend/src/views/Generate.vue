@@ -68,6 +68,12 @@
             <div class="surface__title mt">{{ t("generate.counter") }}</div>
             <el-descriptions :column="2" size="small" border>
               <el-descriptions-item :label="t('generate.lastSeq')"><b class="num">{{ ctx.counter.last_seq_dec }}</b></el-descriptions-item>
+              <el-descriptions-item v-if="ctx.next" :label="t('generate.nextStart')">
+                <span class="sn-mono">{{ ctx.next.start_sn }}</span>
+                <el-tooltip v-if="ctx.next.adjusted" :content="t('generate.startAdjusted', { sn: ctx.next.by_sn, start: ctx.next.start_sn })">
+                  <el-tag size="small" type="warning" class="ml">{{ t("generate.adjustedTag") }}</el-tag>
+                </el-tooltip>
+              </el-descriptions-item>
               <el-descriptions-item :label="t('generate.piGenerated')"><span class="num">{{ ctx.counter.generated_qty }}</span></el-descriptions-item>
               <el-descriptions-item :label="t('generate.piImported')"><span class="num">{{ ctx.counter.imported_qty }}</span></el-descriptions-item>
               <el-descriptions-item :label="t('generate.startState')">
@@ -129,6 +135,8 @@
             </div>
             <el-alert v-if="!preview" type="info" :closable="false" class="mt" :title="t('generate.needPreview')" />
             <template v-if="preview">
+              <el-alert v-if="preview.next?.adjusted && preview.start_override == null" type="warning" :closable="false" show-icon class="mt"
+                :title="t('generate.startAdjusted', { sn: preview.next.by_sn, start: preview.start_sn })" />
               <el-descriptions :column="2" size="small" border class="mt">
                 <el-descriptions-item :label="t('generate.startSn')"><span class="sn-mono">{{ preview.start_sn }}</span></el-descriptions-item>
                 <el-descriptions-item :label="t('generate.endSn')"><span class="sn-mono">{{ preview.end_sn }}</span></el-descriptions-item>

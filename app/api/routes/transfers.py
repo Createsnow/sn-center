@@ -10,7 +10,7 @@ from app.services import orders, transfers
 router = APIRouter(prefix="/transfers", tags=["transfers"])
 
 
-@router.get("/candidates")
+@router.get("/candidates", summary="范围内各状态枚数；传 to_pi 时另给与转入 PI 重复的号、转入后下一个号的提示")
 def tr_candidates(
     cu: UserDep,
     pi: str = Query(...),
@@ -18,8 +18,13 @@ def tr_candidates(
     factory_code: str | None = None,
     material_code: str | None = None,
     sn: str | None = None,
+    to_pi: str | None = None,
+    to_customer: str | None = None,
 ) -> dict:
-    return transfers.candidates(cu, transfers.Request(factory_code, pi, scope, material_code, sn))
+    return transfers.candidates(
+        cu,
+        transfers.Request(factory_code, pi, scope, material_code, sn, to_pi=to_pi, to_customer=to_customer),
+    )
 
 
 @router.get("/targets", summary="从生产订单快照选择转入目标")

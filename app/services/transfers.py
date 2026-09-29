@@ -3,18 +3,20 @@
 可转：待领取 / 待打印 / 已打印；来源限同一张 PI，范围 = 整张 PI、PI + 物料、单枚 SN。
 工厂申请 → 号变申请中 → 总部确认（改挂转入目标，转入厂待领取）/ 驳回或申请厂撤回（恢复申请前状态）；
 总部也可不经申请直接转。转入 PI 已有相同完整 SN 时拒绝整次转移。
-流水归属（seq_pi_no）不变，不抬高转入 PI 的计数器。
+流水归属（seq_pi_no）不变，不抬高转入 PI 的计数器；转入 PI 之后从「自己的最大号与转入号按其规则解析出的
+最大流水」两者取大再加 1 生成（见 generate.NextStart），转厂时提示转入后的下一个号。
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 
+from app.core import encoding as codec
 from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db
-from app.services import audit, factories, rules
+from app.services import audit, factories, generate, orders, rules
 
 MODE_APPLY = "APPLY"
 MODE_DIRECT = "DIRECT"
@@ -124,7 +126,7 @@ def _source(factory: str, r: Request) -> _Source:
 
 
 def candidates(cu: CurrentUser, r: Request) -> dict:
-    """选定范围内各状态枚数（页面提交前展示）。"""
+    """选定范围内各状态枚数（页面提交前展示）；填了转入 PI 时另给重复的号与转入后下一个号的提示。"""
     factory = factories.must_get(r.factory_code)["factory_code"] if cu.is_admin else cu.read_factory(r.factory_code)
     if factory is None:
         raise biz(ErrorCode.FACTORY_NOT_FOUND, factory="")
@@ -145,7 +147,65 @@ def candidates(cu: CurrentUser, r: Request) -> dict:
         factory,
         s.pi,
     )
-    return {"total": total, "transferable": ok, "by_status": by, "materials": materials}
+    out: dict = {"total": total, "transferable": ok, "by_status": by, "materials": materials}
+    out.update(duplicates=None, target=None)
+    to_pi = util.trim(r.to_pi)
+    if to_pi and to_pi != s.pi:
+        # 与 _create 锁定的范围一致：可转状态的号
+        where = (
+            " WHERE i.factory_code = %s AND i.pi_no = %s AND i.status IN "
+            + ELIGIBLE
+            + s.where().replace(" AND ", " AND i.")
+        )
+        dup_from = " FROM sn_item i JOIN sn_key k ON k.pi_no = %s AND k.sn = i.sn" + where
+        n = db.count("SELECT COUNT(*)" + dup_from, to_pi, *s.args())
+        if n:
+            samples = db.column(f"SELECT i.sn{dup_from} ORDER BY i.sn LIMIT {DUP_SAMPLES}", to_pi, *s.args())
+            out["duplicates"] = {"count": n, "samples": samples}
+        sns = db.column("SELECT i.sn FROM sn_item i" + where, *s.args())
+        out["target"] = target_hint(to_pi, util.trim(r.to_customer) or None, sns)
+    return out
+
+
+DUP_SAMPLES = 5
+
+
+def target_hint(to_pi: str, customer: str | None, sns: list[str]) -> dict | None:
+    """这批号转入后，转入 PI 下一次生成的起点会不会后移：会则返回前后的下一个号与不再生成的号数。
+
+    按转入 PI 当前生效的规则解析；没有规则、或这批号按该规则解析不出（格式不同，不会重复）时返回 None。
+    """
+    r = rules.resolve(to_pi, orders.customer_of_pi(to_pi) or customer)
+    if r is None:
+        return None
+    spec = rules.spec_of(r.version)
+    seqs = {q for q in (codec.parse(sn, spec) for sn in sns) if q is not None}
+    before = generate.next_start(to_pi, generate.counter(to_pi)["last_seq_dec"], spec)
+    top = max(seqs, default=None)
+    if top is None or top <= before.base:
+        return None
+    top_sn = codec.format_sn(top, spec)
+    after = generate.NextStart(before.own_last, top, top_sn)
+    unused = (top - before.base) - sum(1 for q in seqs if q > before.base)
+    return {
+        "to_pi": to_pi,
+        "before": before.as_json(spec),
+        "after": after.as_json(spec),
+        "unused": unused,
+    }
+
+
+def _hint_of(t: dict) -> dict | None:
+    if t["to_pi"] == t["from_pi"]:
+        return None
+    sns = db.column("SELECT sn FROM sn_transfer_item WHERE transfer_id = %s", t["id"])
+    return target_hint(t["to_pi"], t["to_customer"] or t["from_customer"] or None, sns)
+
+
+def _hint_text(h: dict | None) -> str:
+    if h is None:
+        return ""
+    return f" to_next={h['before']['start_sn']}->{h['after']['start_sn']} unused={h['unused']}"
 
 
 # ================================================================== 申请 / 直接转
@@ -231,6 +291,7 @@ def _create(cu: CurrentUser, factory: str, r: Request, mode: str) -> dict:
     from_customer = db.scalar("SELECT MIN(from_customer) FROM sn_transfer_item WHERE transfer_id = %s", t["id"])
     t["qty"] = n
     t["from_customer"] = from_customer or ""
+    hint = _hint_of(t)
     if mode == MODE_APPLY:
         m = db.exec(
             f"UPDATE {_JOIN} SET i.prev_status = i.status, i.status = 'APPLYING', i.transfer_id = %s, "
@@ -242,7 +303,7 @@ def _create(cu: CurrentUser, factory: str, r: Request, mode: str) -> dict:
         if m != n:
             raise biz(ErrorCode.TR_CONCURRENT)
         db.exec("UPDATE sn_transfer SET qty = %s, from_customer = %s WHERE id = %s", n, t["from_customer"], t["id"])
-        audit.record(cu, _entry(audit.TRANSFER_APPLY, t).status(None, util.APPLYING))
+        audit.record(cu, _entry(audit.TRANSFER_APPLY, t, hint).status(None, util.APPLYING))
     else:
         _move(t, False, now)
         db.exec(
@@ -255,8 +316,14 @@ def _create(cu: CurrentUser, factory: str, r: Request, mode: str) -> dict:
             now,
             t["id"],
         )
-        audit.record(cu, _entry(audit.TRANSFER_DIRECT, t).status(None, util.TO_ACQUIRE))
-    return transfer_json(db.one("SELECT * FROM sn_transfer WHERE id = %s", t["id"]))
+        audit.record(cu, _entry(audit.TRANSFER_DIRECT, t, hint).status(None, util.TO_ACQUIRE))
+    return _with_hint(db.one("SELECT * FROM sn_transfer WHERE id = %s", t["id"]), hint)
+
+
+def _with_hint(t: dict, hint: dict | None) -> dict:
+    out = transfer_json(t)
+    out["target_hint"] = hint
+    return out
 
 
 def _in_snapshot(factory: str, customer: str, pi: str, material: str) -> bool:
@@ -298,18 +365,24 @@ def _check_duplicates(t: dict) -> None:
     """转入 PI 下已有相同完整 SN（不含本次这批自身）→ 拒绝整次转移。"""
     if t["to_pi"] == t["from_pi"]:
         return
-    dup = db.column(
-        "SELECT t.sn FROM sn_transfer_item t JOIN sn_key k ON k.pi_no = %s AND k.sn = t.sn "
-        "WHERE t.transfer_id = %s LIMIT 1",
-        t["to_pi"],
-        t["id"],
-    )
-    if dup:
-        raise biz(ErrorCode.TR_DUPLICATE, pi=t["to_pi"], sn=dup[0])
+    join = "FROM sn_transfer_item t JOIN sn_key k ON k.pi_no = %s AND k.sn = t.sn WHERE t.transfer_id = %s"
+    n = db.count("SELECT COUNT(*) " + join, t["to_pi"], t["id"])
+    if n:
+        dup = db.column(f"SELECT t.sn {join} ORDER BY t.sn LIMIT {DUP_SAMPLES}", t["to_pi"], t["id"])
+        raise biz(ErrorCode.TR_DUPLICATE, pi=t["to_pi"], count=n, sn="、".join(dup))
 
 
 def _move(t: dict, from_applying: bool, now) -> None:
     """改挂到转入目标：查重护栏换 PI；号变为转入厂的待领取；批次 / 打印单清空。"""
+    if t["to_pi"] != t["from_pi"]:
+        # 与转入 PI 的生成互斥：生成持有该 PI 计数器行锁期间，不会有号转入
+        db.exec(
+            "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, imported_qty, start_locked, updated_at) "
+            "VALUES (%s,0,0,0,0,%s) ON DUPLICATE KEY UPDATE pi_no = pi_no",
+            t["to_pi"],
+            now,
+        )
+        db.all("SELECT pi_no FROM sn_pi_counter WHERE pi_no = %s FOR UPDATE", t["to_pi"])
     _check_duplicates(t)
     if t["to_pi"] != t["from_pi"]:
         db.exec(
@@ -350,11 +423,11 @@ def _move(t: dict, from_applying: bool, now) -> None:
         raise biz(ErrorCode.TR_CONCURRENT)
 
 
-def _entry(action: str, t: dict) -> audit.Entry:
+def _entry(action: str, t: dict, hint: dict | None = None) -> audit.Entry:
     from_sn = t["from_sn"] or None
     detail = (
         f"scope={t['scope']} to={t['to_factory']}/{t['to_pi']}/{t['to_customer'] or '(原客户)'}/"
-        f"{t['to_material'] or '(原物料)'} target={t['target_source']}"
+        f"{t['to_material'] or '(原物料)'} target={t['target_source']}" + _hint_text(hint)
     )
     return (
         audit.entry(action)
@@ -386,6 +459,7 @@ def approve(cu: CurrentUser, tid: int, note: str | None) -> dict:
     with db.tx():
         t = _lock_pending(tid)
         now = util.now()
+        hint = _hint_of(t)
         _move(t, True, now)
         db.exec(
             "UPDATE sn_transfer SET status = %s, decided_by = %s, decided_at = %s, decide_note = %s WHERE id = %s",
@@ -395,8 +469,8 @@ def approve(cu: CurrentUser, tid: int, note: str | None) -> dict:
             util.cut(util.trim_or_none(note), 500),
             tid,
         )
-        audit.record(cu, _entry(audit.TRANSFER_APPROVE, t).status(util.APPLYING, util.TO_ACQUIRE))
-        return transfer_json(db.one("SELECT * FROM sn_transfer WHERE id = %s", tid))
+        audit.record(cu, _entry(audit.TRANSFER_APPROVE, t, hint).status(util.APPLYING, util.TO_ACQUIRE))
+        return _with_hint(db.one("SELECT * FROM sn_transfer WHERE id = %s", tid), hint)
 
 
 def reject(cu: CurrentUser, tid: int, note: str | None) -> dict:
@@ -481,7 +555,9 @@ def _get(cu: CurrentUser, tid: int) -> dict:
 
 
 def get(cu: CurrentUser, tid: int) -> dict:
-    return transfer_json(_get(cu, tid))
+    """转厂记录；待确认的附带转入后下一个号的提示（确认前展示）。"""
+    t = _get(cu, tid)
+    return _with_hint(t, _hint_of(t) if t["status"] == PENDING else None)
 
 
 def items(cu: CurrentUser, tid: int, page: util.Page) -> dict:

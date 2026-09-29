@@ -104,6 +104,8 @@ def init(
             mx = codec.LONG_MAX if spec is None else codec.max_seq(spec)
             if start_seq < 1 or start_seq > mx:
                 raise biz(ErrorCode.GEN_START_INVALID, max=mx)
+            if spec is not None:
+                generate.check_start_above_foreign(pi, start_seq, generate.next_start(pi, c["last_seq_dec"], spec))
         decoded = 0
         max_seq: int | None = None
         month = util.month_of(now)

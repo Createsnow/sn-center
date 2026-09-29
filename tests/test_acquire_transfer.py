@@ -221,7 +221,9 @@ def test_approve_moves_to_target_keeps_serial_owner_and_source_count(api, admin,
         == 2
     )
     assert sql.count("SELECT COUNT(*) FROM sn_key WHERE pi_no = %s AND seq_pi_no = %s", to_pi, pi) == 2
-    assert sql.count("SELECT COUNT(*) FROM sn_pi_counter WHERE pi_no = %s", to_pi) == 0, "target counter untouched"
+    assert sql.count("SELECT COALESCE(MAX(last_seq_dec), 0) FROM sn_pi_counter WHERE pi_no = %s", to_pi) == 0, (
+        "target counter not raised"
+    )
     assert sql.count("SELECT generated_qty FROM sn_bill_gen WHERE pi_no = %s", pi) == 4, "still counted at source"
     # 转出厂仍能在记录里查到，标为已转出；转入厂可按正常流程领取
     items = ok(api.get(f"/api/transfers/{tid}/items", op_a))["items"]

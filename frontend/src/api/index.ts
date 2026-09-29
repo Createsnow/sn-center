@@ -72,6 +72,7 @@ export const api = {
   withdrawTransfer: (id: number) => post(`/transfers/${id}/withdraw`),
   transfers: (params?: Q) => get("/transfers", params),
   transferItems: (id: number, params?: Q) => get(`/transfers/${id}/items`, params),
+  transfer: (id: number) => get(`/transfers/${id}`),
   // 查询与留痕
   items: (params?: Q) => get("/sn", params),
   audits: (params?: Q) => get("/audits", params),

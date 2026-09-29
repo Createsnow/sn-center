@@ -36,6 +36,9 @@
                 <span v-for="(n, s) in candidates.by_status" :key="s"><StatusTag :status="String(s)" /> {{ n }}</span>
               </div>
             </el-alert>
+            <el-alert v-if="candidates?.duplicates" type="error" :closable="false" show-icon class="mt"
+              :title="t('transfer.dupWarn', { pi: target.to_pi.trim(), n: candidates.duplicates.count, sns: candidates.duplicates.samples.join('、') })" />
+            <el-alert v-if="candidates?.target" type="warning" :closable="false" show-icon class="mt" :title="jumpText(candidates.target)" />
             <p class="muted">{{ t("transfer.rule") }}</p>
           </el-col>
           <el-col :lg="12" :xs="24">
@@ -51,10 +54,10 @@
                 <FactorySelect v-model="target.to_factory" @update:model-value="manual" />
               </el-form-item>
               <el-form-item :label="t('transfer.toPi')" required>
-                <el-input v-model="target.to_pi" clearable @input="manual" />
+                <el-input v-model="target.to_pi" clearable @input="manual" @change="loadCandidates" />
               </el-form-item>
               <el-form-item :label="t('transfer.toCustomer')">
-                <el-input v-model="target.to_customer" clearable :placeholder="t('transfer.keep')" @input="manual" />
+                <el-input v-model="target.to_customer" clearable :placeholder="t('transfer.keep')" @input="manual" @change="loadCandidates" />
               </el-form-item>
               <el-form-item :label="t('transfer.toMaterial')">
                 <el-input v-model="target.to_material" clearable :placeholder="t('transfer.keep')" @input="manual" />
@@ -197,8 +200,13 @@ const { items: trItems, state: itemState, load: loadItems } = usePaged<any>((q) 
 
 const canSubmit = computed(() =>
   !!src.pi_no.trim() && !!target.to_factory && !!target.to_pi.trim() && !!reason.value.trim() &&
-  (store.isAdmin ? !!src.factory_code : true) && (candidates.value?.transferable ?? 0) > 0,
+  (store.isAdmin ? !!src.factory_code : true) && (candidates.value?.transferable ?? 0) > 0 && !candidates.value?.duplicates,
 );
+
+/** 转入后转入 PI 下一次生成的起点后移时的提示。 */
+function jumpText(h: any): string {
+  return t("transfer.jumpWarn", { pi: h.to_pi, before: h.before.start_sn, after: h.after.start_sn, unused: h.unused });
+}
 
 async function loadCandidates() {
   candidates.value = null;
@@ -209,6 +217,8 @@ async function loadCandidates() {
     factory_code: factory, pi: src.pi_no.trim(), scope: src.scope,
     material_code: src.scope === "MATERIAL" ? src.material_code : undefined,
     sn: src.scope === "SINGLE" ? src.sn.trim() : undefined,
+    to_pi: target.to_pi.trim() || undefined,
+    to_customer: target.to_customer.trim() || undefined,
   });
 }
 
@@ -227,6 +237,7 @@ function useTarget(row: any) {
   target.to_material = row.material_code;
   target.target_source = "SNAPSHOT";
   pickerOpen.value = false;
+  loadCandidates();
 }
 
 async function submit() {
@@ -239,8 +250,9 @@ async function submit() {
     to_customer: target.to_customer.trim(), to_material: target.to_material.trim(),
     target_source: target.target_source, reason: reason.value.trim(),
   };
+  const hint = candidates.value?.target ? ` ${jumpText(candidates.value.target)}` : "";
   await ElMessageBox.confirm(
-    t(store.isAdmin ? "transfer.directConfirm" : "transfer.applyConfirm", { n: candidates.value?.transferable, pi: body.to_pi, factory: nameOf(body.to_factory) }),
+    t(store.isAdmin ? "transfer.directConfirm" : "transfer.applyConfirm", { n: candidates.value?.transferable, pi: body.to_pi, factory: nameOf(body.to_factory) }) + hint,
     store.isAdmin ? t("transfer.directSubmit") : t("transfer.applySubmit"),
     { type: "warning" },
   );
@@ -258,8 +270,11 @@ async function submit() {
 }
 
 async function decide(tr: any, action: "approve" | "reject") {
+  // 确认前取最新的转入后起点提示（此刻计算，反映转入 PI 当前状态）
+  const hint = action === "approve" ? (await api.transfer(tr.id)).target_hint : null;
   const { value } = await ElMessageBox.prompt(
-    t(action === "approve" ? "transfer.approveConfirm" : "transfer.rejectConfirm", { no: tr.transfer_no, n: tr.qty }),
+    t(action === "approve" ? "transfer.approveConfirm" : "transfer.rejectConfirm", { no: tr.transfer_no, n: tr.qty }) +
+      (hint ? ` ${jumpText(hint)}` : ""),
     action === "approve" ? t("transfer.approve") : t("transfer.reject"),
     { inputPlaceholder: t("transfer.note"), type: action === "approve" ? "success" : "warning" },
   );
