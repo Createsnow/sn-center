@@ -60,8 +60,8 @@ export const api = {
   // 领取与打印
   acquirePis: (params?: Q) => get("/acquire/pis", params),
   acquireSegments: (params?: Q) => get("/acquire/segments", params),
-  take: (data: Q) => post("/acquire/take", data),
-  print: (data: Q) => post("/acquire/print", data),
+  take: (data: Q, silent = false) => post("/acquire/take", data, silent),
+  print: (data: Q, silent = false) => post("/acquire/print", data, silent),
   prints: (params?: Q) => get("/acquire/prints", params),
   batches: (params?: Q) => get("/acquire/batches", params),
   batchItems: (batchNo: string, params?: Q) => get(`/acquire/batches/${encodeURIComponent(batchNo)}/items`, params),
