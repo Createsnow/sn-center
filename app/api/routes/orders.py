@@ -3,24 +3,50 @@
 from fastapi import APIRouter, Body
 
 from app.api.deps import AdminDep, AdminOrQueryDep, page_of
-from app.schemas.common import OptInt
-from app.schemas.prd_mo import SyncIn
-from app.services import orders
+from app.schemas.common import Flag, OptInt
+from app.schemas.prd_mo import SyncIn, SyncScheduleIn
+from app.services import order_sync_schedule, orders
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 
-@router.get("", summary="订单页左表：按单据汇总（客户编码为空的单据不显示）")
+@router.get(
+    "",
+    summary="订单页左表：按单据汇总（客户编码为空的单据不显示）；q 匹配单据 / PI / PO / 物料 / 客户；"
+    "pending=1 只要还有额度或待分配的单据",
+)
 def order_list(
     cu: AdminOrQueryDep,
     q: str | None = None,
     customer: str | None = None,
     pi: str | None = None,
     factory_code: str | None = None,
+    pending: Flag = None,
     page: OptInt = None,
     page_size: OptInt = None,
 ) -> dict:
-    return orders.list_bills(cu, q, customer, pi, factory_code, page_of(page, page_size))
+    return orders.list_bills(cu, q, customer, pi, factory_code, page_of(page, page_size), bool(pending))
+
+
+@router.get("/pis", summary="生成页 PI 下拉：按 PI 汇总单据数与额度；可按客户过滤，q 匹配 PI")
+def order_pis(
+    cu: AdminOrQueryDep,
+    q: str | None = None,
+    customer: str | None = None,
+    pending: Flag = None,
+    limit: OptInt = None,
+) -> list:
+    return orders.pis(cu, q, customer, bool(pending), 50 if limit is None else limit)
+
+
+@router.get("/sync-schedule", summary="定时全量同步：开关、间隔、下次执行与最近一次结果")
+def sync_schedule(cu: AdminOrQueryDep) -> dict:
+    return order_sync_schedule.status()
+
+
+@router.put("/sync-schedule", summary="修改定时全量同步（只有总部）：开启 / 关闭、间隔 10 分钟–7 天")
+def sync_schedule_save(body: SyncScheduleIn, cu: AdminDep) -> dict:
+    return order_sync_schedule.save(cu, body.enabled, body.interval_minutes)
 
 
 @router.get("/meta")

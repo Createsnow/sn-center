@@ -1,17 +1,52 @@
 <template>
   <div class="page">
-    <PageHead :title="t('generate.title')" :desc="t('generate.desc')">
-      <el-select v-model="billNo" filterable remote clearable :remote-method="searchBills" :loading="searching"
-        :placeholder="t('generate.pickOrder')" class="picker" @change="loadContext" @focus="searchBills('')">
-        <el-option v-for="o in options" :key="o.bill_no" :value="o.bill_no" :label="o.bill_no">
-          <div class="opt">
-            <b>{{ o.bill_no }}</b>
-            <span class="muted">{{ o.pi }} · {{ o.prd_org_name }}</span>
-            <el-tag size="small" :type="o.quota ? 'success' : 'info'">{{ t("orders.quota") }} {{ o.quota }}</el-tag>
-          </div>
-        </el-option>
-      </el-select>
-    </PageHead>
+    <PageHead :title="t('generate.title')" :desc="t('generate.desc')" />
+
+    <!-- 选单：客户 → PI → 单据逐级收窄；也可不选客户直接搜 PI 或单据 -->
+    <div class="surface picker-bar">
+      <div class="toolbar">
+        <el-select v-model="customer" filterable remote clearable :remote-method="searchCustomers" :loading="loadingCustomers"
+          :placeholder="t('generate.pickCustomer')" class="w-customer" @change="onCustomerChange" @focus="searchCustomers('')">
+          <el-option v-for="c in customerOpts" :key="c" :value="c" :label="c" />
+        </el-select>
+        <el-icon class="muted"><ArrowRight /></el-icon>
+        <el-select v-model="pi" filterable remote clearable :remote-method="searchPis" :loading="loadingPis"
+          :placeholder="t('generate.pickPi')" class="w-pi" @change="onPiChange" @focus="searchPis('')">
+          <el-option v-for="o in piOpts" :key="o.pi" :value="o.pi" :label="o.pi">
+            <div class="opt">
+              <b>{{ o.pi }}</b>
+              <span class="muted">{{ o.customer_number }} · {{ t("generate.piBills", { n: o.bills }) }}</span>
+              <span>
+                <el-tag size="small" :type="o.quota ? 'success' : 'info'">{{ t("orders.quota") }} {{ o.quota }}</el-tag>
+                <el-tag v-if="o.pending_alloc" size="small" type="warning" class="ml">{{ t("generate.pendingShort") }} {{ o.pending_alloc }}</el-tag>
+              </span>
+            </div>
+          </el-option>
+        </el-select>
+        <el-icon class="muted"><ArrowRight /></el-icon>
+        <el-select v-model="billNo" filterable remote clearable :remote-method="searchBills" :loading="searching"
+          :placeholder="t('generate.pickOrder')" class="w-bill" @change="loadContext" @focus="searchBills('')">
+          <el-option v-for="o in options" :key="o.bill_no" :value="o.bill_no" :label="o.bill_no">
+            <div class="opt">
+              <b>{{ o.bill_no }}</b>
+              <span class="muted">{{ o.pi }} · {{ o.prd_org_name }}</span>
+              <span>
+                <el-tag size="small" :type="o.quota ? 'success' : 'info'">{{ t("orders.quota") }} {{ o.quota }}</el-tag>
+                <el-tag v-if="o.pending_alloc" size="small" type="warning" class="ml">{{ t("generate.pendingShort") }} {{ o.pending_alloc }}</el-tag>
+              </span>
+            </div>
+          </el-option>
+          <template v-if="optionsTotal > options.length" #footer>
+            <span class="muted">{{ t("generate.moreBills", { shown: options.length, total: optionsTotal }) }}</span>
+          </template>
+        </el-select>
+        <el-checkbox v-model="onlyPending" @change="onPendingChange">{{ t("generate.onlyPending") }}</el-checkbox>
+        <span class="muted snap">
+          {{ t("generate.snapshotAt", { time: syncedAt || "—" }) }}
+          <router-link to="/orders">{{ t("generate.toOrders") }}</router-link>
+        </span>
+      </div>
+    </div>
 
     <el-empty v-if="!ctx" :description="t('generate.empty')" />
 
@@ -248,8 +283,17 @@ import PageHead from "@/components/PageHead.vue";
 const { t } = useI18n();
 const route = useRoute();
 const billNo = ref<string>((route.query.bill_no as string) || "");
+const customer = ref("");
+const pi = ref("");
+const onlyPending = ref(true);
+const customerOpts = ref<string[]>([]);
+const loadingCustomers = ref(false);
+const piOpts = ref<any[]>([]);
+const loadingPis = ref(false);
 const options = ref<any[]>([]);
+const optionsTotal = ref(0);
 const searching = ref(false);
+const syncedAt = ref<string | null>(null);
 const ctx = ref<any>(null);
 const allocations = ref<any[]>([]);
 const limit = ref(DEFAULT_PAGE_LIMIT);
@@ -282,13 +326,66 @@ const startSeq = computed(() => {
 
 const pct = (j: GenJob) => (j.qty ? Math.min(100, Math.round((j.done_qty * 100) / j.qty)) : 0);
 
+async function searchCustomers(q: string) {
+  loadingCustomers.value = true;
+  try {
+    customerOpts.value = await api.orderCustomers(q);
+  } finally {
+    loadingCustomers.value = false;
+  }
+}
+
+async function searchPis(q: string) {
+  loadingPis.value = true;
+  try {
+    piOpts.value = await api.orderPis({ q, customer: customer.value, pending: onlyPending.value ? 1 : undefined, limit: 50 });
+  } finally {
+    loadingPis.value = false;
+  }
+}
+
+// 选了 PI 时列出该 PI 的全部单据（通常只有几张）；没选时按关键字搜前 50 张
 async function searchBills(q: string) {
   searching.value = true;
   try {
-    options.value = (await api.orders({ q, page_size: 30 })).items;
+    const r = await api.orders({
+      q,
+      customer: customer.value,
+      pi: pi.value,
+      pending: onlyPending.value ? 1 : undefined,
+      page_size: pi.value ? 200 : 50,
+    });
+    options.value = r.items;
+    optionsTotal.value = r.total;
   } finally {
     searching.value = false;
   }
+}
+
+function clearBill() {
+  if (!billNo.value) return;
+  billNo.value = "";
+  loadContext();
+}
+
+async function onCustomerChange() {
+  pi.value = "";
+  if (ctx.value && customer.value && ctx.value.bill.customer_code !== customer.value) clearBill();
+  await Promise.all([searchPis(""), searchBills("")]);
+}
+
+async function onPiChange() {
+  if (ctx.value && pi.value && ctx.value.bill.pi !== pi.value) clearBill();
+  await searchBills("");
+  // 该 PI 只有一张待办单据时直接选上
+  if (pi.value && !billNo.value && options.value.length === 1) {
+    billNo.value = options.value[0].bill_no;
+    await loadContext();
+  }
+}
+
+async function onPendingChange() {
+  await Promise.all([searchPis(""), searchBills("")]);
 }
 
 async function loadContext() {
@@ -298,6 +395,9 @@ async function loadContext() {
     return;
   }
   ctx.value = await api.genContext(billNo.value);
+  // 直接选单据（或从订单页跳来）时回填客户与 PI，三个选框保持一致
+  customer.value = ctx.value.bill.customer_code || "";
+  pi.value = ctx.value.bill.pi || "";
   // 默认选中通用规则（排在最前）；已选的仍在列表里就保留
   const opts = ctx.value.rule_options;
   if (!opts.some((o: any) => o.rule_id === ruleId.value)) {
@@ -393,14 +493,19 @@ async function doAllocate() {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   if (billNo.value) loadContext();
+  syncedAt.value = (await api.orderMeta()).synced_at;
 });
 onUnmounted(() => window.clearInterval(timer));
 </script>
 
 <style scoped>
-.picker { width: 360px; }
+.picker-bar { padding: 12px 20px 0; }
+.toolbar .w-customer { width: 180px; }
+.toolbar .w-pi { width: 260px; }
+.toolbar .w-bill { width: 300px; }
+.snap { margin-left: auto; }
 .rule-picker { width: 100%; }
 .hint { margin: 6px 0 12px; font-size: 12px; }
 .opt { display: flex; gap: 10px; align-items: center; justify-content: space-between; }

@@ -52,6 +52,7 @@ class ErrorCode(Enum):
     ORDER_NOT_FOUND = (404, "生产订单 {bill_no} 不在快照中（不是计划 / 计划确认，或尚未同步）")
     ORDER_NO_CUSTOMER = (400, "生产订单 {bill_no} 没有客户编码，不能生成")
     ORDER_NO_PI = (400, "生产订单 {bill_no} 没有 PI，不能生成")
+    ORDER_SYNC_INTERVAL_INVALID = (400, "定时同步间隔须为 {min}–{max} 分钟")
     # ---------- 规则 ----------
     RULE_NOT_FOUND = (404, "规则不存在")
     RULE_CODE_INVALID = (400, "规则编码须为 1–64 位字母、数字、下划线或横线")

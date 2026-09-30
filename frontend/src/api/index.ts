@@ -37,6 +37,9 @@ export const api = {
   orderMeta: () => get("/orders/meta"),
   orderLines: (billNo: string) => get(`/orders/${encodeURIComponent(billNo)}/lines`),
   orderCustomers: (q?: string) => get("/orders/customers", { q }),
+  orderPis: (params?: Q) => get("/orders/pis", params),
+  orderSyncSchedule: () => get("/orders/sync-schedule"),
+  saveOrderSyncSchedule: (data: { enabled: boolean; interval_minutes?: number }) => put("/orders/sync-schedule", data),
   syncOrders: (bill_no?: string) => http.post("/orders/sync", bill_no ? { bill_no } : {}, { timeout: 0 }),
   // 规则
   rules: (params?: Q) => get("/rules", params),

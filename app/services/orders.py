@@ -158,17 +158,18 @@ def _bill_gens(bills: list[str]) -> dict[str, dict]:
     }
 
 
-def list_bills(
-    cu: CurrentUser, q: str | None, customer: str | None, pi: str | None, factory: str | None, page: util.Page
-) -> dict:
-    """订单页左表。客户编码为空的单据不显示；绑厂查询员只看本厂。"""
+def _bill_filter(cu: CurrentUser, q: str | None, customer: str | None, pi: str | None, factory: str | None):
+    """订单列表 / PI 列表共用的快照筛选（m = sn_prd_mo）。客户编码为空的单据不显示；绑厂查询员只看本厂。"""
     where = " WHERE m.customer_number <> ''"
     args: list = []
     text = util.trim(q)
     if text:
-        where += " AND (m.bill_no LIKE %s OR m.pi LIKE %s OR m.po LIKE %s OR m.material_number LIKE %s)"
+        where += (
+            " AND (m.bill_no LIKE %s OR m.pi LIKE %s OR m.po LIKE %s OR m.material_number LIKE %s"
+            " OR m.customer_number LIKE %s)"
+        )
         like = util.like_any(text)
-        args += [like, like, like, like]
+        args += [like, like, like, like, like]
     if not util.blank(customer):
         where += " AND m.customer_number = %s"
         args.append(util.trim(customer))
@@ -179,13 +180,40 @@ def list_bills(
     if fac is not None:
         where += " AND m.prd_org_name = (SELECT factory_name FROM sn_factory WHERE factory_code = %s)"
         args.append(fac)
-    total = db.count("SELECT COUNT(DISTINCT m.bill_no) FROM sn_prd_mo m" + where, *args)
+    return where, args
+
+
+#: 单据仍有待办：还有额度可生成，或已生成还没分配完（g = sn_bill_gen，按单 GROUP BY 后用）
+_PENDING_HAVING = (
+    " HAVING SUM(FLOOR(m.qty)) > COALESCE(MAX(g.generated_qty), 0)"
+    " OR COALESCE(MAX(g.generated_qty), 0) > COALESCE(MAX(g.allocated_qty), 0)"
+)
+
+
+def list_bills(
+    cu: CurrentUser,
+    q: str | None,
+    customer: str | None,
+    pi: str | None,
+    factory: str | None,
+    page: util.Page,
+    pending: bool = False,
+) -> dict:
+    """订单页左表、生成页选单。pending = 只要还有额度或待分配的单据。"""
+    where, args = _bill_filter(cu, q, customer, pi, factory)
+    if pending:
+        src = " FROM sn_prd_mo m LEFT JOIN sn_bill_gen g ON g.bill_no = m.bill_no" + where + " GROUP BY m.bill_no"
+        src += _PENDING_HAVING
+        total = db.count("SELECT COUNT(*) FROM (SELECT m.bill_no" + src + ") t", *args)
+    else:
+        src = " FROM sn_prd_mo m" + where + " GROUP BY m.bill_no"
+        total = db.count("SELECT COUNT(DISTINCT m.bill_no) FROM sn_prd_mo m" + where, *args)
     rows = db.all(
         "SELECT m.bill_no, MAX(m.customer_number) customer_number, MAX(m.po) po, MAX(m.pi) pi, "
         "MAX(m.prd_org_name) prd_org_name, GROUP_CONCAT(DISTINCT m.status ORDER BY m.status) statuses, "
-        "SUM(FLOOR(m.qty)) total_qty, COUNT(*) line_count, MAX(m.synced_at) synced_at FROM sn_prd_mo m"
-        + where
-        + " GROUP BY m.bill_no ORDER BY m.bill_no DESC LIMIT %s, %s",
+        "SUM(FLOOR(m.qty)) total_qty, COUNT(*) line_count, MAX(m.synced_at) synced_at"
+        + src
+        + " ORDER BY m.bill_no DESC LIMIT %s, %s",
         *args,
         page.offset,
         page.size,
@@ -197,6 +225,7 @@ def list_bills(
         g = gen.get(r["bill_no"])
         total_qty = int(r["total_qty"])
         generated = 0 if g is None else g["generated_qty"]
+        allocated = 0 if g is None else g["allocated_qty"]
         items.append(
             {
                 "bill_no": r["bill_no"],
@@ -209,12 +238,52 @@ def list_bills(
                 "total_qty": total_qty,
                 "line_count": int(r["line_count"]),
                 "generated_qty": generated,
-                "allocated_qty": 0 if g is None else g["allocated_qty"],
+                "allocated_qty": allocated,
+                "pending_alloc": generated - allocated,
                 "quota": max(0, total_qty - generated),
                 "synced_at": util.fmt(r["synced_at"]),
             }
         )
     return util.page_result(items, total, page)
+
+
+def pis(cu: CurrentUser, q: str | None, customer: str | None, pending: bool, limit: int) -> list[dict]:
+    """生成页的 PI 下拉：按 PI 汇总快照里的单据数与额度，最近下单的 PI 在前。
+
+    q 只匹配 PI；customer 精确匹配。pending = 只要还有额度或待分配的 PI。
+    """
+    where, args = _bill_filter(cu, None, customer, None, None)
+    where += " AND m.pi <> ''"
+    text = util.trim(q)
+    if text:
+        where += " AND m.pi LIKE %s"
+        args.append(util.like_any(text))
+    bills = (
+        "SELECT m.bill_no, MAX(m.pi) pi, MAX(m.customer_number) customer_number, SUM(FLOOR(m.qty)) total_qty, "
+        "COALESCE(MAX(g.generated_qty), 0) gen, COALESCE(MAX(g.allocated_qty), 0) alloc "
+        "FROM sn_prd_mo m LEFT JOIN sn_bill_gen g ON g.bill_no = m.bill_no" + where + " GROUP BY m.bill_no"
+    )
+    having = " HAVING SUM(GREATEST(b.total_qty - b.gen, 0)) > 0 OR SUM(b.gen - b.alloc) > 0" if pending else ""
+    rows = db.all(
+        "SELECT b.pi, MAX(b.customer_number) customer_number, COUNT(*) bills, SUM(b.total_qty) total_qty, "
+        "SUM(b.gen) generated_qty, SUM(b.alloc) allocated_qty, SUM(GREATEST(b.total_qty - b.gen, 0)) quota "
+        f"FROM ({bills}) b GROUP BY b.pi{having} ORDER BY MAX(b.bill_no) DESC LIMIT %s",
+        *args,
+        min(max(limit, 1), 200),
+    )
+    return [
+        {
+            "pi": r["pi"],
+            "customer_number": r["customer_number"],
+            "bills": int(r["bills"]),
+            "total_qty": int(r["total_qty"]),
+            "generated_qty": int(r["generated_qty"]),
+            "allocated_qty": int(r["allocated_qty"]),
+            "pending_alloc": int(r["generated_qty"]) - int(r["allocated_qty"]),
+            "quota": int(r["quota"]),
+        }
+        for r in rows
+    ]
 
 
 def lines(bill_no: str | None) -> list[dict]:

@@ -29,6 +29,7 @@ USER_RESET_PWD = "USER_RESET_PWD"
 FACTORY_SYNC = "FACTORY_SYNC"
 FACTORY_CREATE = "FACTORY_CREATE"
 ORDER_SYNC = "ORDER_SYNC"
+ORDER_SYNC_SCHEDULE = "ORDER_SYNC_SCHEDULE"
 RULE_CREATE = "RULE_CREATE"
 RULE_UPDATE = "RULE_UPDATE"
 RULE_VERSION = "RULE_VERSION"
@@ -189,6 +190,7 @@ _PATH_ACTIONS = (
     ("/api/auth/password", PASSWORD_CHANGE),
     ("/api/users", USER_UPDATE),
     ("/api/factories", FACTORY_SYNC),
+    ("/api/orders/sync-schedule", ORDER_SYNC_SCHEDULE),
     ("/api/orders", ORDER_SYNC),
     ("/api/rules", RULE_UPDATE),
     ("/api/pi-init", PI_INIT),

@@ -31,7 +31,7 @@ from app.db import init_db
 from app.db.session import db, is_integrity, is_lock_conflict
 from app.middleware.request_id import WRITE_METHODS, RequestIdMiddleware
 from app.services import audit as audit_svc
-from app.services import demo_seed, generate, partitions, users
+from app.services import demo_seed, generate, order_sync_schedule, partitions, users
 
 log = structlog.get_logger()
 
@@ -114,11 +114,13 @@ def startup() -> None:
 async def lifespan(app: FastAPI):
     await run_sync(startup)
     job = scheduler.start_daily(settings.partition_cron, partitions.maintain)
+    order_sync = scheduler.start_every(order_sync_schedule.POLL_SECONDS, order_sync_schedule.run_due, "sn-order-sync")
     try:
         yield
     finally:
         # 后台生成任务由线程池自行跑完（解释器退出前会等待）
         job.stop()
+        order_sync.stop()
         db.close()
 
 

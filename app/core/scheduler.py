@@ -1,6 +1,7 @@
 """极简定时任务：按 Spring 风格 6 段 cron（秒 分 时 日 月 周）在后台线程里执行。
 
-只用于每日分区维护 / 痕迹归档（SN_PARTITION_CRON，默认 0 10 2 * * *）。
+用于每日分区维护 / 痕迹归档（SN_PARTITION_CRON，默认 0 10 2 * * *）；
+另有固定周期的轮询（start_every），用于生产订单定时全量同步是否到期。
 """
 
 from __future__ import annotations
@@ -90,11 +91,15 @@ class Cron:
 
 
 class Job:
-    def __init__(self, cron: Cron, fn: Callable[[], None]) -> None:
-        self._cron = cron
+    """next_after(now) 给出下次执行时间；每次执行完再算下一次。"""
+
+    def __init__(
+        self, next_after: Callable[[datetime], datetime], fn: Callable[[], None], name: str = "sn-scheduler"
+    ) -> None:
+        self._next_after = next_after
         self._fn = fn
         self._stop = threading.Event()
-        self._thread = threading.Thread(target=self._loop, name="sn-scheduler", daemon=True)
+        self._thread = threading.Thread(target=self._loop, name=name, daemon=True)
 
     def start(self) -> Job:
         self._thread.start()
@@ -106,7 +111,7 @@ class Job:
     def _loop(self) -> None:
         while not self._stop.is_set():
             now = datetime.now(settings.zone).replace(tzinfo=None)
-            nxt = self._cron.next_after(now)
+            nxt = self._next_after(now)
             if self._stop.wait((nxt - now).total_seconds()):
                 return
             try:
@@ -121,4 +126,9 @@ def start_daily(expr: str, fn: Callable[[], None]) -> Job:
     except ValueError:
         log.warning("bad_partition_cron", value=expr, fallback="0 10 2 * * *")
         cron = Cron("0 10 2 * * *")
-    return Job(cron, fn).start()
+    return Job(cron.next_after, fn).start()
+
+
+def start_every(seconds: int, fn: Callable[[], None], name: str) -> Job:
+    """每隔 seconds 秒执行一次（首次在启动 seconds 秒后）。"""
+    return Job(lambda t: t + timedelta(seconds=seconds), fn, name).start()

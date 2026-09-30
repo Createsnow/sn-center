@@ -32,6 +32,7 @@
   "ORDER_NOT_FOUND": "Order {bill_no} is not in the snapshot (not planned / plan-confirmed, or not synced)",
   "ORDER_NO_CUSTOMER": "Order {bill_no} has no customer; cannot generate",
   "ORDER_NO_PI": "Order {bill_no} has no PI; cannot generate",
+  "ORDER_SYNC_INTERVAL_INVALID": "Scheduled sync interval must be {min}–{max} minutes",
   "RULE_NOT_FOUND": "Rule not found",
   "RULE_CODE_INVALID": "Rule code must be 1–64 letters, digits, _ or -",
   "RULE_CODE_EXISTS": "Rule code already exists: {rule_code}",

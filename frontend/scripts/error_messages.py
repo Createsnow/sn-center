@@ -33,6 +33,7 @@ E = {
 "ORDER_NOT_FOUND": ("Order {bill_no} is not in the snapshot (not planned / plan-confirmed, or not synced)", "Lệnh {bill_no} không có trong ảnh chụp (không ở trạng thái kế hoạch hoặc chưa đồng bộ)"),
 "ORDER_NO_CUSTOMER": ("Order {bill_no} has no customer; cannot generate", "Lệnh {bill_no} không có khách hàng; không thể tạo"),
 "ORDER_NO_PI": ("Order {bill_no} has no PI; cannot generate", "Lệnh {bill_no} không có PI; không thể tạo"),
+"ORDER_SYNC_INTERVAL_INVALID": ("Scheduled sync interval must be {min}–{max} minutes", "Chu kỳ đồng bộ định kỳ phải từ {min}–{max} phút"),
 "RULE_NOT_FOUND": ("Rule not found", "Không tìm thấy quy tắc"),
 "RULE_CODE_INVALID": ("Rule code must be 1–64 letters, digits, _ or -", "Mã quy tắc gồm 1–64 chữ, số, _ hoặc -"),
 "RULE_CODE_EXISTS": ("Rule code already exists: {rule_code}", "Mã quy tắc đã tồn tại: {rule_code}"),

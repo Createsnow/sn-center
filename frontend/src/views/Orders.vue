@@ -18,13 +18,55 @@
       <span>{{ t("orders.bills") }}：<b class="num">{{ meta?.bills ?? 0 }}</b></span>
       <span>{{ t("orders.rows") }}：<b class="num">{{ meta?.rows ?? 0 }}</b></span>
       <span class="muted">{{ t("orders.excluded", { n: meta?.excluded_empty_customer ?? 0 }) }}</span>
+      <span v-if="sched" class="sched">
+        <span>{{ t("orders.sched.title") }}：</span>
+        <el-tag v-if="sched.enabled" size="small" type="success">{{ t("orders.sched.every", { every: intervalText(sched.interval_minutes) }) }}</el-tag>
+        <el-tag v-else size="small" type="info">{{ t("orders.sched.off") }}</el-tag>
+        <span v-if="sched.enabled" class="muted">{{ t("orders.sched.next") }} {{ sched.next_run_at || "—" }}</span>
+        <el-tooltip v-if="sched.last_run_at" :content="lastText" placement="bottom">
+          <el-icon :class="sched.last_ok ? 'ok' : 'bad'">
+            <CircleCheckFilled v-if="sched.last_ok" /><WarningFilled v-else />
+          </el-icon>
+        </el-tooltip>
+        <el-button v-if="store.isAdmin" link type="primary" @click="openSched">
+          <el-icon><Setting /></el-icon><span>{{ t("orders.sched.settings") }}</span>
+        </el-button>
+      </span>
     </div>
+
+    <el-dialog v-model="schedOpen" :title="t('orders.sched.dialogTitle')" width="480px">
+      <el-form label-width="110px">
+        <el-form-item :label="t('orders.sched.enabled')">
+          <el-switch v-model="form.enabled" />
+        </el-form-item>
+        <el-form-item :label="t('orders.sched.interval')">
+          <div class="interval">
+            <el-input-number v-model="form.amount" :min="1" :max="unitMax" :step="1" step-strictly controls-position="right" />
+            <el-select v-model="form.unit" class="unit">
+              <el-option v-for="u in UNITS" :key="u.key" :value="u.key" :label="t(`orders.sched.unit.${u.key}`)" />
+            </el-select>
+          </div>
+          <div class="muted hint">{{ t("orders.sched.intervalHint", { min: sched?.min_interval ?? 10 }) }}</div>
+        </el-form-item>
+        <el-form-item v-if="sched?.last_run_at" :label="t('orders.sched.last')">
+          <span :class="sched.last_ok ? 'ok' : 'bad'">{{ lastText }}</span>
+        </el-form-item>
+        <el-form-item v-if="sched?.updated_at" :label="t('orders.sched.updated')">
+          <span class="muted">{{ sched.updated_by }} · {{ sched.updated_at }}</span>
+        </el-form-item>
+      </el-form>
+      <el-alert type="info" :closable="false" :title="t('orders.sched.note')" />
+      <template #footer>
+        <el-button @click="schedOpen = false">{{ t("common.cancel") }}</el-button>
+        <el-button type="primary" :loading="savingSched" @click="saveSched">{{ t("common.save") }}</el-button>
+      </template>
+    </el-dialog>
 
     <el-row :gutter="16">
       <el-col :lg="16" :xs="24">
         <div class="surface">
           <div class="toolbar">
-            <el-input v-model="f.q" :placeholder="t('orders.search')" clearable prefix-icon="Search" @keyup.enter="load(1)" @clear="load(1)" />
+            <el-input v-model="f.q" :placeholder="t('orders.search')" clearable prefix-icon="Search" class="w-search" @keyup.enter="load(1)" @clear="load(1)" />
             <el-input v-model="f.customer" :placeholder="t('common.customer')" clearable @keyup.enter="load(1)" @clear="load(1)" />
             <FactorySelect v-if="!store.boundFactory" v-model="f.factory_code" clearable @update:model-value="load(1)" />
             <el-button type="primary" @click="load(1)">{{ t("common.search") }}</el-button>
@@ -97,7 +139,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { ElMessage } from "element-plus";
@@ -118,6 +160,60 @@ const linesLoading = ref(false);
 const syncBillNo = ref("");
 const syncing = ref<"" | "all" | "one">("");
 
+const sched = ref<any>(null);
+const schedOpen = ref(false);
+const savingSched = ref(false);
+const UNITS = [
+  { key: "minute", minutes: 1 },
+  { key: "hour", minutes: 60 },
+  { key: "day", minutes: 1440 },
+] as const;
+type Unit = (typeof UNITS)[number]["key"];
+const form = reactive<{ enabled: boolean; amount: number; unit: Unit }>({ enabled: false, amount: 1, unit: "day" });
+const unitMinutes = (u: Unit) => UNITS.find((x) => x.key === u)!.minutes;
+const unitMax = computed(() => Math.floor((sched.value?.max_interval ?? 10080) / unitMinutes(form.unit)));
+
+/** 分钟数拆成「最大的整除单位」：1440 → 1 天，120 → 2 小时，90 → 90 分钟 */
+function splitInterval(minutes: number): { amount: number; unit: Unit } {
+  const u = [...UNITS].reverse().find((x) => minutes % x.minutes === 0)!;
+  return { amount: minutes / u.minutes, unit: u.key };
+}
+function intervalText(minutes: number) {
+  const { amount, unit } = splitInterval(minutes);
+  return `${amount} ${t(`orders.sched.unit.${unit}`)}`;
+}
+const lastText = computed(() => {
+  const s = sched.value;
+  if (!s?.last_run_at) return "";
+  return s.last_ok
+    ? t("orders.sched.lastOk", { time: s.last_run_at, bills: s.last_bills ?? 0, rows: s.last_rows ?? 0 })
+    : t("orders.sched.lastFail", { time: s.last_run_at, msg: s.last_message });
+});
+
+function openSched() {
+  const s = sched.value;
+  Object.assign(form, { enabled: !!s?.enabled, ...splitInterval(s?.interval_minutes ?? 1440) });
+  schedOpen.value = true;
+}
+
+async function saveSched() {
+  const minutes = form.amount * unitMinutes(form.unit);
+  const min = sched.value?.min_interval ?? 10;
+  const max = sched.value?.max_interval ?? 10080;
+  if (minutes < min || minutes > max) {
+    ElMessage.error(t("orders.sched.intervalHint", { min }));
+    return;
+  }
+  savingSched.value = true;
+  try {
+    sched.value = await api.saveOrderSyncSchedule({ enabled: form.enabled, interval_minutes: minutes });
+    ElMessage.success(t("common.saved"));
+    schedOpen.value = false;
+  } finally {
+    savingSched.value = false;
+  }
+}
+
 const { items, state, load, onSize } = usePaged<any>((q) => api.orders({ ...f, ...q }));
 
 function statusText(s: string) {
@@ -136,7 +232,7 @@ async function select(row: any) {
 }
 
 async function refresh() {
-  meta.value = await api.orderMeta();
+  [meta.value, sched.value] = await Promise.all([api.orderMeta(), api.orderSyncSchedule()]);
   await load(1);
 }
 
@@ -170,6 +266,14 @@ onMounted(refresh);
 <style scoped>
 .meta { display: flex; gap: 24px; flex-wrap: wrap; align-items: center; font-size: 13px; padding: 12px 20px; }
 .w200 { width: 200px; }
+.toolbar .w-search { width: 280px; }
+.sched { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; }
+.sched .el-icon { font-size: 16px; }
+.ok { color: var(--el-color-success); }
+.bad { color: var(--el-color-danger); }
+.interval { display: flex; gap: 8px; }
+.interval .unit { width: 100px; }
+.hint { width: 100%; margin-top: 4px; }
 .ml { margin-left: 6px; }
 .mb { margin-bottom: 12px; }
 .zero { color: var(--app-muted); }
