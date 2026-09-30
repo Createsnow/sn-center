@@ -149,13 +149,11 @@ def test_every_error_code_translated(lang):
 
 
 def test_migration_flyway_checksum():
-    """V1__init.sql 与 Flyway 建库时记下的校验和一致（Java 版可直接接着用同一个库）。"""
+    """演示阶段只有一个 V1__init.sql；校验和按 Flyway 算法固定，改了建表脚本须同步更新这里。"""
     ours = {m.script: m for m in migrations()}
-    assert list(ours) == ["V1__init.sql", "V2__pi_chosen_rule.sql", "V3__order_sync_schedule.sql"]
-    assert ours["V1__init.sql"].checksum() == -1052070499
-    assert len(ours["V1__init.sql"].statements()) == 19
-    assert len(ours["V2__pi_chosen_rule.sql"].statements()) == 1
-    assert len(ours["V3__order_sync_schedule.sql"].statements()) == 2
+    assert list(ours) == ["V1__init.sql"]
+    assert ours["V1__init.sql"].checksum() == 1767916779
+    assert len(ours["V1__init.sql"].statements()) == 21
 
 
 # ---------------------------------------------------------------------- 定时任务
