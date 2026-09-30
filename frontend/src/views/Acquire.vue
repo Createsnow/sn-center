@@ -61,10 +61,13 @@
           </div>
           <el-tabs v-model="tab" @tab-change="onTab">
             <el-tab-pane :label="t('acquire.segments')" name="segments">
-              <el-radio-group v-model="f.status" size="small" class="mb" @change="reloadSegments">
-                <el-radio-button value="">{{ t("common.all") }}</el-radio-button>
-                <el-radio-button v-for="s in ['TO_ACQUIRE', 'TO_PRINT', 'APPLYING']" :key="s" :value="s">{{ statusLabel(s) }}</el-radio-button>
-              </el-radio-group>
+              <div class="seg-bar">
+                <el-radio-group v-model="f.status" size="small" @change="reloadSegments">
+                  <el-radio-button value="">{{ t("common.all") }}</el-radio-button>
+                  <el-radio-button v-for="s in ['TO_ACQUIRE', 'TO_PRINT', 'APPLYING']" :key="s" :value="s">{{ statusLabel(s) }}</el-radio-button>
+                </el-radio-group>
+                <span class="muted">{{ t("acquire.segmentsHint") }}</span>
+              </div>
               <el-table v-loading="segState.loading" :data="segments" size="small" :empty-text="t('common.empty')">
                 <el-table-column v-if="!picked" :label="t('common.factory')" width="110"><template #default="{ row }">{{ nameOf(row.factory_code) }}</template></el-table-column>
                 <el-table-column v-if="!picked" prop="pi_no" label="PI" min-width="140" />
@@ -269,6 +272,7 @@ onMounted(reload);
 .filters .toolbar { margin-bottom: 0; }
 .filters .el-alert { margin-top: 12px; }
 .col { margin-bottom: 16px; }
+.seg-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
 .col > .surface { height: 100%; }
 .summary { margin-left: auto; }
 .hint { font-weight: normal; margin-left: 8px; }
