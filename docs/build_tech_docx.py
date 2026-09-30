@@ -32,6 +32,7 @@ MAXW, MAXH = 16.0, 21.0  # 图片最大宽 / 高（cm）
 def prepare_markdown():
     s = open(SRC, encoding='utf-8').read()
     s = re.sub(r'## 目录\n.*?(?=\n## 第一章)', '', s, flags=re.S)  # 手写目录由 Word 目录代替
+    s = re.sub(r'^> Word 版见.*\n', '', s, flags=re.M)  # 指向本文件自身的说明不进入 Word
     title = s.split('\n', 1)[0].lstrip('# ').strip()
     s = s.split('\n', 1)[1]
 
@@ -291,20 +292,21 @@ def build(pages):
     hs = headings(d)
     # 目录插在标题之后、正文之前，目录后分页
     title = next(p for p in d.paragraphs if p.style.name == 'Title')
+    first_h1 = next(p for p in d.paragraphs if p.style.name == 'Heading 1')
     head = copy.deepcopy(title._p)
     for r in head.findall(qn('w:r')):
         head.remove(r)
     head.find(qn('w:pPr')).find(qn('w:pStyle')).set(qn('w:val'), 'TOCHeading')
     head.append(run('目　录', bold=True))
     width = int((sec.page_width - sec.left_margin - sec.right_margin) / 635)  # EMU → twips
-    anchor = title._p
-    for x in [head] + toc_paragraphs(hs, pages, width):
-        anchor.addnext(x)
-        anchor = x
-    brk = el('w:p')
-    brk.append(run(None))
-    brk[-1].append(el('w:br', **{'w:type': 'page'}))
-    anchor.addnext(brk)
+    # 文档信息与修订记录之后另起一页放目录，目录后再分页进入正文
+    def page_break():
+        p = el('w:p')
+        p.append(run(None))
+        p[-1].append(el('w:br', **{'w:type': 'page'}))
+        return p
+    for x in [page_break(), head] + toc_paragraphs(hs, pages, width) + [page_break()]:
+        first_h1._p.addprevious(x)
     # 目录样式：TOC 1 / TOC 2 可能不在模板里，缺了就补
     for i in (1, 2):
         sid = f'TOC{i}'
@@ -331,7 +333,10 @@ def pdf_pages(hs):
     doc = pymupdf.open(f'{TMP}/doc.pdf')
     texts = [pg.get_text().replace(' ', '') for pg in doc]
     pages, start = {}, 0
-    toc_end = next((i for i, t in enumerate(texts) if '目录' in t.replace('　', '')), 0) + 1
+    # 目录可能跨页：从「目录」所在页起，到列出最后一个标题的那一页为止都属于目录
+    toc_start = next((i for i, t in enumerate(texts) if '目录' in t.replace('　', '')), 0)
+    last = hs[-1][1].replace(' ', '')
+    toc_end = next((i for i in range(toc_start, len(texts)) if last in texts[i]), toc_start) + 1
     for bm, text in hs:
         key = text.replace(' ', '')
         for i in range(max(start, toc_end), len(texts)):
