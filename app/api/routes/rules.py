@@ -33,7 +33,7 @@ def rule_preview(body: RulePreviewIn, cu: AdminDep) -> dict:
     return rules.preview(_spec(body), body.start)
 
 
-@router.get("/effective", summary="某 PI 当前生效的规则（按 PI ＞ 按客户 ＞ 通用）")
+@router.get("/effective", summary="某 PI 当前生效的规则（按 PI ＞ 按客户 ＞ 该 PI 已选定 ＞ 通用）")
 def rule_effective(cu: UserDep, pi: str = Query(...), customer: str | None = None):
     c = orders.customer_of_pi(pi.strip()) if customer is None or not customer.strip() else customer.strip()
     r = rules.resolve(pi.strip(), c)
