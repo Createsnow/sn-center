@@ -354,7 +354,12 @@
     "batchDetail": "Batch {no}",
     "prints": "Print records",
     "printNo": "Print No.",
-    "file": "Print file"
+    "file": "Print file",
+    "summary": "{n} PIs · {a} to acquire · {p} to print",
+    "summaryApplying": "{x} pending transfer",
+    "detailAll": "All details",
+    "detailHint": "Click a PI on the left to see only its segments and records",
+    "showAll": "Show all"
   },
   "transfer": {
     "title": "Factory transfer",

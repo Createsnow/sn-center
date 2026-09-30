@@ -354,7 +354,12 @@
     "batchDetail": "Chi tiết lô {no}",
     "prints": "Lịch sử in",
     "printNo": "Số phiếu in",
-    "file": "Tệp in"
+    "file": "Tệp in",
+    "summary": "{n} PI · {a} chờ nhận · {p} chờ in",
+    "summaryApplying": "{x} đang xin chuyển",
+    "detailAll": "Tất cả chi tiết",
+    "detailHint": "Bấm một PI bên trái để chỉ xem đoạn số và lịch sử của PI đó",
+    "showAll": "Xem tất cả"
   },
   "transfer": {
     "title": "Chuyển nhà máy",

@@ -2,7 +2,7 @@
   <div class="page">
     <PageHead :title="t('acquire.title')" :desc="t('acquire.desc')" />
 
-    <div class="surface">
+    <div class="surface filters">
       <div class="toolbar">
         <FactorySelect v-if="!store.boundFactory" v-model="f.factory_code" clearable :placeholder="t('acquire.allFactories')" @update:model-value="reload" />
         <el-tag v-else type="warning" effect="plain" size="large">{{ store.profile?.factory_name || store.boundFactory }}</el-tag>
@@ -10,104 +10,118 @@
         <el-input v-model="f.material_code" :placeholder="t('common.material')" clearable @keyup.enter="reloadSegments" @clear="reloadSegments" />
         <el-switch v-if="store.isFactory" v-model="f.pi_all" :active-text="t('acquire.piAll')" :disabled="!f.pi.trim()" @change="reload" />
         <el-button type="primary" @click="reload">{{ t("common.search") }}</el-button>
+        <span v-if="!f.pi_all" class="muted summary">
+          {{ t("acquire.summary", { n: pis.length, a: totals.to_acquire, p: totals.to_print }) }}
+          <span v-if="totals.applying" class="warn">· {{ t("acquire.summaryApplying", { x: totals.applying }) }}</span>
+        </span>
       </div>
-      <el-alert v-if="readOnly" type="info" :closable="false" show-icon :title="readOnlyText" class="mb" />
-
-      <div class="surface__title">{{ t("acquire.byPi") }}</div>
-      <el-table v-loading="pisLoading" :data="pis" size="small" :empty-text="t('acquire.emptyPis')" @row-click="pickPi">
-        <el-table-column prop="factory_code" :label="t('common.factory')" width="120">
-          <template #default="{ row }">{{ nameOf(row.factory_code) }}</template>
-        </el-table-column>
-        <el-table-column prop="pi_no" label="PI" min-width="170"><template #default="{ row }"><b>{{ row.pi_no }}</b></template></el-table-column>
-        <el-table-column prop="customer_code" :label="t('common.customer')" width="100" />
-        <el-table-column :label="t('status.TO_ACQUIRE')" width="190">
-          <template #default="{ row }">
-            <span class="num cnt">{{ row.to_acquire }}</span>
-            <el-button v-if="actable" size="small" type="primary" :disabled="!row.to_acquire" :loading="busy === `take:${key(row)}`"
-              @click.stop="take(row)">{{ t("acquire.take") }}</el-button>
-          </template>
-        </el-table-column>
-        <el-table-column :label="t('status.TO_PRINT')" width="190">
-          <template #default="{ row }">
-            <span class="num cnt">{{ row.to_print }}</span>
-            <el-button v-if="actable" size="small" type="warning" :disabled="!row.to_print" :loading="busy === `print:${key(row)}`"
-              @click.stop="print(row)">{{ t("acquire.print") }}</el-button>
-          </template>
-        </el-table-column>
-        <el-table-column :label="t('status.APPLYING')" width="100">
-          <template #default="{ row }"><span class="num" :class="{ warn: row.applying }">{{ row.applying }}</span></template>
-        </el-table-column>
-      </el-table>
-      <p class="muted">{{ t("acquire.rule") }}</p>
+      <el-alert v-if="readOnly" type="info" :closable="false" show-icon :title="readOnlyText" />
     </div>
 
-    <div class="surface">
-      <div class="surface__title">
-        <span>{{ t("acquire.segments") }}</span>
-        <el-radio-group v-model="f.status" size="small" @change="reloadSegments">
-          <el-radio-button value="">{{ t("common.all") }}</el-radio-button>
-          <el-radio-button v-for="s in ['TO_ACQUIRE', 'TO_PRINT', 'APPLYING']" :key="s" :value="s">{{ statusLabel(s) }}</el-radio-button>
-        </el-radio-group>
-      </div>
-      <el-table v-loading="segState.loading" :data="segments" size="small" :empty-text="t('common.empty')">
-        <el-table-column :label="t('common.factory')" width="120"><template #default="{ row }">{{ nameOf(row.factory_code) }}</template></el-table-column>
-        <el-table-column prop="pi_no" label="PI" min-width="160" />
-        <el-table-column :label="t('common.material')" width="120">
-          <template #default="{ row }">{{ row.material_code || t("orders.noMaterial") }}</template>
-        </el-table-column>
-        <el-table-column :label="t('common.status')" width="90"><template #default="{ row }"><StatusTag :status="row.status" /></template></el-table-column>
-        <el-table-column :label="t('acquire.range')" min-width="260">
-          <template #default="{ row }"><span class="sn-mono">{{ row.start_sn }} ~ {{ row.end_sn }}</span></template>
-        </el-table-column>
-        <el-table-column :label="t('acquire.decRange')" width="150">
-          <template #default="{ row }"><span class="num">{{ row.start_seq }} ~ {{ row.end_seq }}</span></template>
-        </el-table-column>
-        <el-table-column :label="t('common.qty')" align="right" width="80"><template #default="{ row }"><span class="num">{{ row.qty }}</span></template></el-table-column>
-        <el-table-column prop="seq_pi_no" :label="t('acquire.seqOwner')" min-width="150" show-overflow-tooltip />
-      </el-table>
-      <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="segState.total" :page-size="segState.pageSize"
-        :current-page="segState.page" :page-sizes="[20, 50, 100]" @current-change="loadSegments" @size-change="segSize" />
-    </div>
-
-    <div class="surface">
-      <el-tabs v-model="tab" @tab-change="onTab">
-        <el-tab-pane :label="t('acquire.batches')" name="batches">
-          <el-table v-loading="batchState.loading" :data="batches" size="small" :empty-text="t('common.empty')">
-            <el-table-column prop="batch_no" :label="t('acquire.batchNo')" min-width="190" />
-            <el-table-column :label="t('common.factory')" width="120"><template #default="{ row }">{{ nameOf(row.factory_code) }}</template></el-table-column>
-            <el-table-column prop="pi_no" label="PI" min-width="150" />
-            <el-table-column prop="qty" :label="t('common.qty')" align="right" width="80" />
-            <el-table-column :label="t('audit.source')" width="80"><template #default="{ row }">{{ t(`audit.src${row.source}`) }}</template></el-table-column>
-            <el-table-column prop="request_no" :label="t('acquire.requestNo')" min-width="150" show-overflow-tooltip />
-            <el-table-column prop="created_by" :label="t('common.operator')" width="90" />
-            <el-table-column prop="created_at" :label="t('common.time')" width="160" />
-            <el-table-column :label="t('common.actions')" width="80">
-              <template #default="{ row }"><el-button link type="primary" @click="openBatch(row)">{{ t("common.detail") }}</el-button></template>
-            </el-table-column>
-          </el-table>
-          <el-pagination class="pager" layout="total, prev, pager, next" :total="batchState.total" :page-size="batchState.pageSize"
-            :current-page="batchState.page" @current-change="loadBatches" />
-        </el-tab-pane>
-        <el-tab-pane :label="t('acquire.prints')" name="prints">
-          <el-table v-loading="printState.loading" :data="prints" size="small" :empty-text="t('common.empty')">
-            <el-table-column prop="print_no" :label="t('acquire.printNo')" min-width="190" />
-            <el-table-column :label="t('common.factory')" width="120"><template #default="{ row }">{{ nameOf(row.factory_code) }}</template></el-table-column>
-            <el-table-column prop="pi_no" label="PI" min-width="150" />
-            <el-table-column prop="qty" :label="t('common.qty')" align="right" width="80" />
-            <el-table-column prop="created_by" :label="t('common.operator')" width="90" />
-            <el-table-column prop="created_at" :label="t('common.time')" width="160" />
-            <el-table-column :label="t('acquire.file')" width="140">
+    <el-row :gutter="16">
+      <el-col v-if="!f.pi_all" :lg="11" :xs="24" class="col">
+        <div class="surface">
+          <div class="surface__title">{{ t("acquire.byPi") }}</div>
+          <el-table v-loading="pisLoading" :data="pis" size="small" :empty-text="t('acquire.emptyPis')" max-height="620"
+            :row-class-name="rowClass" @row-click="pickPi">
+            <el-table-column label="PI" min-width="140">
               <template #default="{ row }">
-                <el-button link type="primary" @click="download(row.print_no, 'xlsx')">xlsx</el-button>
-                <el-button link type="primary" @click="download(row.print_no, 'csv')">csv</el-button>
+                <div class="pi">{{ row.pi_no }}</div>
+                <div class="muted">{{ nameOf(row.factory_code) }}<template v-if="row.customer_code"> · {{ row.customer_code }}</template></div>
+              </template>
+            </el-table-column>
+            <el-table-column :label="t('status.TO_ACQUIRE')" align="right" width="68">
+              <template #default="{ row }"><span class="num" :class="{ zero: !row.to_acquire }">{{ row.to_acquire }}</span></template>
+            </el-table-column>
+            <el-table-column :label="t('status.TO_PRINT')" align="right" width="68">
+              <template #default="{ row }"><span class="num" :class="{ zero: !row.to_print }">{{ row.to_print }}</span></template>
+            </el-table-column>
+            <el-table-column :label="t('status.APPLYING')" align="right" width="68">
+              <template #default="{ row }"><span class="num" :class="row.applying ? 'warn' : 'zero'">{{ row.applying }}</span></template>
+            </el-table-column>
+            <el-table-column v-if="actable" :label="t('common.actions')" width="156" align="center">
+              <template #default="{ row }">
+                <el-button size="small" type="primary" :disabled="!row.to_acquire" :loading="busy === `take:${key(row)}`"
+                  @click.stop="take(row)">{{ t("acquire.take") }}</el-button>
+                <el-button size="small" type="warning" :disabled="!row.to_print" :loading="busy === `print:${key(row)}`"
+                  @click.stop="print(row)">{{ t("acquire.print") }}</el-button>
               </template>
             </el-table-column>
           </el-table>
-          <el-pagination class="pager" layout="total, prev, pager, next" :total="printState.total" :page-size="printState.pageSize"
-            :current-page="printState.page" @current-change="loadPrints" />
-        </el-tab-pane>
-      </el-tabs>
-    </div>
+          <p class="muted">{{ t("acquire.rule") }}</p>
+        </div>
+      </el-col>
+
+      <el-col :lg="f.pi_all ? 24 : 13" :xs="24" class="col">
+        <div class="surface">
+          <div class="surface__title">
+            <span v-if="picked">{{ nameOf(picked.factory_code) }} · PI {{ picked.pi_no }}</span>
+            <span v-else>{{ t("acquire.detailAll") }} <span v-if="!f.pi_all" class="muted hint">{{ t("acquire.detailHint") }}</span></span>
+            <el-button v-if="picked" size="small" @click="unpick">{{ t("acquire.showAll") }}</el-button>
+          </div>
+          <el-tabs v-model="tab" @tab-change="onTab">
+            <el-tab-pane :label="t('acquire.segments')" name="segments">
+              <el-radio-group v-model="f.status" size="small" class="mb" @change="reloadSegments">
+                <el-radio-button value="">{{ t("common.all") }}</el-radio-button>
+                <el-radio-button v-for="s in ['TO_ACQUIRE', 'TO_PRINT', 'APPLYING']" :key="s" :value="s">{{ statusLabel(s) }}</el-radio-button>
+              </el-radio-group>
+              <el-table v-loading="segState.loading" :data="segments" size="small" :empty-text="t('common.empty')">
+                <el-table-column v-if="!picked" :label="t('common.factory')" width="110"><template #default="{ row }">{{ nameOf(row.factory_code) }}</template></el-table-column>
+                <el-table-column v-if="!picked" prop="pi_no" label="PI" min-width="140" />
+                <el-table-column :label="t('common.material')" width="110">
+                  <template #default="{ row }">{{ row.material_code || t("orders.noMaterial") }}</template>
+                </el-table-column>
+                <el-table-column :label="t('common.status')" width="110"><template #default="{ row }"><StatusTag :status="row.status" /></template></el-table-column>
+                <el-table-column :label="t('acquire.range')" min-width="240">
+                  <template #default="{ row }">
+                    <div class="sn-mono">{{ row.start_sn }} ~ {{ row.end_sn }}</div>
+                    <div class="muted num">{{ t("acquire.decRange") }} {{ row.start_seq }} ~ {{ row.end_seq }}<template v-if="row.seq_pi_no && row.seq_pi_no !== row.pi_no"> · {{ t("acquire.seqOwner") }} {{ row.seq_pi_no }}</template></div>
+                  </template>
+                </el-table-column>
+                <el-table-column :label="t('common.qty')" align="right" width="80"><template #default="{ row }"><span class="num">{{ row.qty }}</span></template></el-table-column>
+              </el-table>
+              <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="segState.total" :page-size="segState.pageSize"
+                :current-page="segState.page" :page-sizes="[20, 50, 100]" @current-change="loadSegments" @size-change="segSize" />
+            </el-tab-pane>
+            <el-tab-pane :label="t('acquire.batches')" name="batches">
+              <el-table v-loading="batchState.loading" :data="batches" size="small" :empty-text="t('common.empty')">
+                <el-table-column prop="batch_no" :label="t('acquire.batchNo')" min-width="180" />
+                <el-table-column v-if="!picked" :label="t('common.factory')" width="110"><template #default="{ row }">{{ nameOf(row.factory_code) }}</template></el-table-column>
+                <el-table-column v-if="!picked" prop="pi_no" label="PI" min-width="140" />
+                <el-table-column prop="qty" :label="t('common.qty')" align="right" width="80" />
+                <el-table-column :label="t('audit.source')" width="80"><template #default="{ row }">{{ t(`audit.src${row.source}`) }}</template></el-table-column>
+                <el-table-column prop="request_no" :label="t('acquire.requestNo')" min-width="140" show-overflow-tooltip />
+                <el-table-column prop="created_by" :label="t('common.operator')" width="90" />
+                <el-table-column prop="created_at" :label="t('common.time')" width="160" />
+                <el-table-column :label="t('common.actions')" width="70" fixed="right">
+                  <template #default="{ row }"><el-button link type="primary" @click="openBatch(row)">{{ t("common.detail") }}</el-button></template>
+                </el-table-column>
+              </el-table>
+              <el-pagination class="pager" layout="total, prev, pager, next" :total="batchState.total" :page-size="batchState.pageSize"
+                :current-page="batchState.page" @current-change="loadBatches" />
+            </el-tab-pane>
+            <el-tab-pane :label="t('acquire.prints')" name="prints">
+              <el-table v-loading="printState.loading" :data="prints" size="small" :empty-text="t('common.empty')">
+                <el-table-column prop="print_no" :label="t('acquire.printNo')" min-width="180" />
+                <el-table-column v-if="!picked" :label="t('common.factory')" width="110"><template #default="{ row }">{{ nameOf(row.factory_code) }}</template></el-table-column>
+                <el-table-column v-if="!picked" prop="pi_no" label="PI" min-width="140" />
+                <el-table-column prop="qty" :label="t('common.qty')" align="right" width="80" />
+                <el-table-column prop="created_by" :label="t('common.operator')" width="90" />
+                <el-table-column prop="created_at" :label="t('common.time')" width="160" />
+                <el-table-column :label="t('acquire.file')" width="120" fixed="right">
+                  <template #default="{ row }">
+                    <el-button link type="primary" @click="download(row.print_no, 'xlsx')">xlsx</el-button>
+                    <el-button link type="primary" @click="download(row.print_no, 'csv')">csv</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <el-pagination class="pager" layout="total, prev, pager, next" :total="printState.total" :page-size="printState.pageSize"
+                :current-page="printState.page" @current-change="loadPrints" />
+            </el-tab-pane>
+          </el-tabs>
+        </div>
+      </el-col>
+    </el-row>
 
     <el-drawer :model-value="!!batch" :title="t('acquire.batchDetail', { no: batch?.batch_no })" size="760px" @close="batch = null">
       <el-table v-loading="itemState.loading" :data="batchItems" size="small">
@@ -146,24 +160,34 @@ const f = reactive({ factory_code: "", pi: "", material_code: "", status: "", pi
 const pis = ref<any[]>([]);
 const pisLoading = ref(false);
 const busy = ref("");
-const tab = ref("batches");
+const tab = ref("segments");
+/** 左侧选中的「工厂 + PI」；右侧明细按它过滤，不改动查询条件。 */
+const picked = ref<any>(null);
 const batch = ref<any>(null);
 
 const readOnly = computed(() => store.isQuery || (store.isFactory && f.pi_all));
 const actable = computed(() => store.canAct && !f.pi_all);
 const readOnlyText = computed(() => (store.isQuery ? t("acquire.queryReadOnly") : t("acquire.piAllReadOnly")));
 const key = (row: any) => `${row.factory_code}|${row.pi_no}`;
+const rowClass = ({ row }: { row: any }) => (picked.value && key(row) === key(picked.value) ? "is-picked" : "");
+const totals = computed(() =>
+  pis.value.reduce((s, r) => ({ to_acquire: s.to_acquire + r.to_acquire, to_print: s.to_print + r.to_print, applying: s.applying + r.applying }),
+    { to_acquire: 0, to_print: 0, applying: 0 }),
+);
 
-const params = () => ({ factory_code: f.factory_code, pi: f.pi.trim(), material_code: f.material_code.trim(), status: f.status, pi_all: f.pi_all || undefined });
+const scope = () => (picked.value ? { factory_code: picked.value.factory_code, pi: picked.value.pi_no } : { factory_code: f.factory_code, pi: f.pi.trim() });
+const params = () => ({ ...scope(), material_code: f.material_code.trim(), status: f.status, pi_all: f.pi_all || undefined });
 const { items: segments, state: segState, load: loadSegments, onSize: segSize } = usePaged<any>((q) => api.acquireSegments({ ...params(), ...q }));
-const { items: batches, state: batchState, load: loadBatches } = usePaged<any>((q) => api.batches({ factory_code: f.factory_code, pi: f.pi.trim(), ...q }), 10);
-const { items: prints, state: printState, load: loadPrints } = usePaged<any>((q) => api.prints({ factory_code: f.factory_code, pi: f.pi.trim(), ...q }), 10);
+const { items: batches, state: batchState, load: loadBatches } = usePaged<any>((q) => api.batches({ ...scope(), ...q }), 10);
+const { items: prints, state: printState, load: loadPrints } = usePaged<any>((q) => api.prints({ ...scope(), ...q }), 10);
 const { items: batchItems, state: itemState, load: loadBatchItems } = usePaged<any>((q) => api.batchItems(batch.value.batch_no, q), 50);
 
 async function loadPis() {
   pisLoading.value = true;
   try {
     pis.value = f.pi_all ? [] : await api.acquirePis({ factory_code: f.factory_code, pi: f.pi.trim() });
+    // 领取 / 打印后这张 PI 可能已无待办而不在列表里：选中项跟着失效
+    if (picked.value && !pis.value.some((r) => key(r) === key(picked.value))) picked.value = null;
   } finally {
     pisLoading.value = false;
   }
@@ -173,19 +197,30 @@ function reloadSegments() {
   loadSegments(1);
 }
 
+function loadDetail() {
+  return Promise.all([loadSegments(1), tab.value === "batches" ? loadBatches(1) : tab.value === "prints" ? loadPrints(1) : null]);
+}
+
 async function reload() {
   if (f.pi_all && !f.pi.trim()) f.pi_all = false;
-  await Promise.all([loadPis(), loadSegments(1), tab.value === "batches" ? loadBatches(1) : loadPrints(1)]);
+  if (f.pi_all) picked.value = null;
+  await loadPis();
+  await loadDetail();
 }
 
 function onTab(name: string | number) {
   if (name === "batches") loadBatches(1);
-  else loadPrints(1);
+  else if (name === "prints") loadPrints(1);
 }
 
 function pickPi(row: any) {
-  f.pi = row.pi_no;
-  reloadSegments();
+  picked.value = picked.value && key(picked.value) === key(row) ? null : row;
+  loadDetail();
+}
+
+function unpick() {
+  picked.value = null;
+  loadDetail();
 }
 
 async function take(row: any) {
@@ -231,7 +266,16 @@ onMounted(reload);
 
 <style scoped>
 .mb { margin-bottom: 12px; }
-.cnt { display: inline-block; min-width: 56px; }
+.filters .toolbar { margin-bottom: 0; }
+.filters .el-alert { margin-top: 12px; }
+.col { margin-bottom: 16px; }
+.col > .surface { height: 100%; }
+.summary { margin-left: auto; }
+.hint { font-weight: normal; margin-left: 8px; }
+.pi { font-weight: 600; }
+.zero { color: var(--app-muted); }
 .warn { color: var(--el-color-danger); font-weight: 600; }
 .el-table :deep(.el-table__row) { cursor: pointer; }
+.el-table :deep(.is-picked > td.el-table__cell) { background: var(--el-color-primary-light-9); }
+.el-table :deep(.is-picked > td.el-table__cell:first-child) { box-shadow: inset 3px 0 0 var(--el-color-primary); }
 </style>

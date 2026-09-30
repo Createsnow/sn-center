@@ -354,7 +354,12 @@
     "batchDetail": "批次 {no} 明细",
     "prints": "打印记录",
     "printNo": "打印单号",
-    "file": "打印文件"
+    "file": "打印文件",
+    "summary": "{n} 张 PI · 待领取 {a} 枚 · 待打印 {p} 枚",
+    "summaryApplying": "申请中 {x} 枚",
+    "detailAll": "全部明细",
+    "detailHint": "点左侧某一张 PI，只看它的号段与记录",
+    "showAll": "看全部"
   },
   "transfer": {
     "title": "转厂",
