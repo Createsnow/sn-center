@@ -1,10 +1,7 @@
 package com.adtek.server;
 
-import java.net.*;
-import java.net.http.*;
-import java.security.SecureRandom;
-import java.util.*;
-import java.util.concurrent.*;
+import static org.assertj.core.api.Assertions.*;
+
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,233 +13,825 @@ import org.springframework.test.context.*;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.*;
 import org.testcontainers.mysql.MySQLContainer;
+
 import tools.jackson.databind.*;
-import static org.assertj.core.api.Assertions.*;
+
+import java.net.*;
+import java.net.http.*;
+import java.security.SecureRandom;
+import java.util.*;
+import java.util.concurrent.*;
 
 /** 旧Factories/Orders/Rules行为在真实MySQL/Redis和HTTP协议夹具上的迁移回归，不连接真实ERP。 */
-@Testcontainers @ActiveProfiles("integration-test") @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Testcontainers
+@ActiveProfiles("integration-test")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 // 每类使用独立容器，结束时关闭连接池/Redis线程，不缓存已经失效的容器连接。
-@org.springframework.test.annotation.DirtiesContext(classMode=org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_CLASS)
+@org.springframework.test.annotation.DirtiesContext(
+        classMode = org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_CLASS)
 class SnFoundationIT {
- static final String SECRET=HexFormat.of().formatHex(new SecureRandom().generateSeed(32)),PASSWORD="SnStage9!"+SECRET.substring(0,24);
- static final K3ProtocolFixture ERP=new K3ProtocolFixture();
- @Container static final MySQLContainer MYSQL=new MySQLContainer("mysql:8.4.11").withDatabaseName("adtek_sn_stage3_it").withUsername("stage3").withPassword(SECRET).withCommand("--character-set-server=utf8mb4","--collation-server=utf8mb4_0900_as_cs","--default-time-zone=+00:00");
- @Container static final GenericContainer<?> REDIS=new GenericContainer<>("redis:8.4.7-alpine").withExposedPorts(6379).withCommand("redis-server","--requirepass",SECRET);
- @DynamicPropertySource static void settings(DynamicPropertyRegistry p){
-  p.add("ADTEK_DB_URL",MYSQL::getJdbcUrl);p.add("ADTEK_DB_USER",MYSQL::getUsername);p.add("ADTEK_DB_PASSWORD",MYSQL::getPassword);p.add("ADTEK_MIGRATION_USER",MYSQL::getUsername);p.add("ADTEK_MIGRATION_PASSWORD",MYSQL::getPassword);p.add("ADTEK_REDIS_HOST",REDIS::getHost);p.add("ADTEK_REDIS_PORT",()->REDIS.getMappedPort(6379));p.add("ADTEK_REDIS_PASSWORD",()->SECRET);p.add("ADTEK_JWT_SECRET",()->SECRET);
-  p.add("adtek.k3.enabled",()->true);p.add("adtek.k3.url",ERP::url);p.add("adtek.k3.account",()->"ISOLATED");p.add("adtek.k3.app-id",()->"fixture");p.add("adtek.k3.app-secret",()->SECRET);p.add("adtek.k3.username",()->"fixture");p.add("adtek.k3.page-size",()->2);p.add("adtek.k3.max-pages",()->10);p.add("adtek.k3.max-rows",()->18);p.add("adtek.k3.query-seconds",()->10);
- }
- @Autowired JdbcTemplate jdbc;@Autowired PasswordEncoder passwords;@Autowired StringRedisTemplate redis;@Autowired ObjectMapper json;@LocalServerPort int port;
- @AfterAll static void close(){ERP.close();}
- @BeforeEach void reset(){
-  ERP.reset();for(String table:List.of("sn_source_entry_quota","sn_order_entry","sn_order_bill","sn_order_sync","sn_org_mapping","sn_factory","sn_rule_version","sn_rule","sn_user_factory","sys_user_role","sys_user","sys_oper_log"))jdbc.update("DELETE FROM "+table);
-  jdbc.update("DELETE FROM sys_role_menu WHERE role_id>=1000");jdbc.update("DELETE FROM sys_role WHERE id>=1000");jdbc.update("UPDATE sn_snapshot_control SET revision=0");
-  jdbc.execute("ALTER TABLE sn_factory AUTO_INCREMENT=9007199254742001");jdbc.execute("ALTER TABLE sn_order_bill AUTO_INCREMENT=9007199254743001");jdbc.execute("ALTER TABLE sn_rule AUTO_INCREMENT=9007199254744001");
-  try(var c=redis.getConnectionFactory().getConnection()){c.serverCommands().flushDb();}
-  user(9007199254741001L,"sn_hq",2);
- }
- void user(long id,String username,long role){jdbc.update("INSERT INTO sys_user(id,username,password_hash,display_name,dept_id,must_change_password) VALUES(?,?,?,?,1,FALSE)",id,username,passwords.encode(PASSWORD),username);jdbc.update("INSERT INTO sys_user_role(user_id,role_id) VALUES(?,?)",id,role);}
- List<Object> row(String bill,String entry,String no,String material,Object qty){return K3ProtocolFixture.row(bill,entry,no,"C1","PI-1","101","ERP-A","甲工厂",material,qty);}
- void sample(){ERP.orders=List.of(row("9007199254740993","11","MO-1","M1","8"),row("9007199254740993","12","MO-1","M1","3"),row("9007199254740993","13","MO-1","","2"),K3ProtocolFixture.row("2","21","MO-2","C2","PI-2","102","ERP-B","乙工厂","M2","5"));}
- JsonNode data(HttpResponse<String> response)throws Exception{assertThat(response.statusCode()).as(response.body()).isEqualTo(200);return json.readTree(response.body()).path("data");}
- Map<String,Object> rule(String code,String scope,String value,String prefix){return new HashMap<>(Map.of("code",code,"name",code,"bindScope",scope,"bindValue",value,"prefix",prefix,"suffix","","base",10,"length",4,"alphabet",""));}
+    static final String SECRET = HexFormat.of().formatHex(new SecureRandom().generateSeed(32)),
+            PASSWORD = "SnStage9!" + SECRET.substring(0, 24);
+    static final K3ProtocolFixture ERP = new K3ProtocolFixture();
 
- @Test void manualFactoryConflictRequiresExplicitStableMappingAndNamesDoNotIdentifyOrganizations()throws Exception{
-  try(var b=new Browser("sn_hq")){
-   var manual=data(b.post("/factories",Map.of("code","MANUAL-A","name","甲工厂")));String id=manual.path("id").asString();assertThat(id).isEqualTo("9007199254742001");
-   assertThat(b.post("/factories",Map.of("code","MANUAL-B","name","甲工厂")).statusCode()).isEqualTo(409);
-   var sync=data(b.post("/factories/sync",Map.of()));assertThat(sync.path("conflicts").size()).isEqualTo(1);
-   sample();data(b.post("/orders/sync",Map.of()));assertThat(data(b.get("/orders/meta")).path("unmappedOrganizations").size()).isEqualTo(1);
-   data(b.post("/factories/"+id+"/organization",Map.of("orgId","101","version","1")));
-   assertThat(data(b.get("/orders/meta")).path("unmappedOrganizations").size()).isZero();
-   assertThat(data(b.get("/orders?q=MO-1")).path("items").get(0).path("factoryId").asString()).isEqualTo(id);
-   assertThat(b.post("/factories/"+id+"/organization",Map.of("orgId","102","version","2")).statusCode()).isEqualTo(409);
-  }
- }
- @Test void completePagingPreservesOldOrderColumnsEmptyMaterialSameMaterialAndExactIds()throws Exception{
-  sample();var rows=new ArrayList<>(ERP.orders);rows.add(K3ProtocolFixture.row("3","31","EMPTY-CUSTOMER","","PI-3","101","ERP-A","甲工厂","","1"));ERP.orders=rows;
-  try(var b=new Browser("sn_hq")){
-   var sync=data(b.post("/orders/sync",Map.of()));assertThat(sync.path("rowsCount").asString()).isEqualTo("5");
-   var page=data(b.get("/orders?q=MO-1"));var bill=page.path("items").get(0);assertThat(bill.path("sourceBillId").asString()).isEqualTo("9007199254740993");assertThat(bill.path("totalQty").asString()).isEqualTo("13");assertThat(bill.path("lineCount").asString()).isEqualTo("3");
-   var lines=data(b.get("/orders/"+bill.path("id").asString()+"/lines?size=2"));assertThat(lines.path("total").asString()).isEqualTo("3");assertThat(lines.path("items").size()).isEqualTo(2);
-   var tail=data(b.get("/orders/"+bill.path("id").asString()+"/lines?size=2&page=2"));assertThat(tail.path("items").get(0).path("material").asString()).isEmpty();
-   var meta=data(b.get("/orders/meta"));assertThat(meta.path("bills").asString()).isEqualTo("2");assertThat(meta.path("excludedEmptyCustomer").asString()).isEqualTo("1");
-   assertThat(data(b.get("/orders?q=M1")).path("items").get(0).path("totalQty").asString()).isEqualTo("13");
-  }
- }
- @Test void stableEntryLedgerSurvivesReorderRemovalAndEmptySnapshotWithoutMovingQuota()throws Exception{
-  sample();try(var b=new Browser("sn_hq")){
-   data(b.post("/orders/sync",Map.of()));long bill=jdbc.queryForObject("SELECT id FROM sn_order_bill WHERE bill_no='MO-1'",Long.class);jdbc.update("UPDATE sn_source_entry_quota SET generated_qty=5,allocated_qty=2 WHERE bill_id=? AND source_entry_id='11'",bill);
-   ERP.orders=List.of(row("9007199254740993","14","MO-1","M1","7"),row("9007199254740993","11","MO-1","M1","2"));data(b.post("/orders/sync",Map.of("billNo","MO-1")));
-   var current=data(b.get("/orders?q=MO-1")).path("items").get(0);assertThat(current.path("generatedQty").asString()).isEqualTo("5");assertThat(current.path("quota").asString()).isEqualTo("7");
-   var lines=data(b.get("/orders/"+bill+"/lines")).path("items");assertThat(lines.get(0).path("sourceEntryId").asString()).isEqualTo("11");assertThat(lines.get(0).path("quota").asString()).isEqualTo("0");
-   ERP.orders=List.of();data(b.post("/orders/sync",Map.of()));assertThat(data(b.get("/orders")).path("total").asString()).isEqualTo("0");assertThat(jdbc.queryForObject("SELECT SUM(generated_qty) FROM sn_source_entry_quota",Long.class)).isEqualTo(5L);
-   assertThat(data(b.get("/orders/meta")).path("syncedAt").isString()).isTrue();
-  }
- }
- @Test void factoryScopeProtectsListDetailsMetaCustomersAndExplicitFilterCannotExpandIt()throws Exception{
-  sample();try(var hq=new Browser("sn_hq")){data(hq.post("/orders/sync",Map.of()));}
-  long own=jdbc.queryForObject("SELECT id FROM sn_factory WHERE code='ERP-A'",Long.class),other=jdbc.queryForObject("SELECT id FROM sn_order_bill WHERE bill_no='MO-2'",Long.class);
-  user(10,"bound_query",5);jdbc.update("INSERT INTO sn_user_factory(user_id,factory_id) VALUES(10,?)",own);user(11,"empty_query",5);
-  try(var b=new Browser("bound_query");var empty=new Browser("empty_query")){
-   assertThat(data(b.get("/orders")).path("total").asString()).isEqualTo("1");assertThat(b.get("/orders/"+other+"/lines").statusCode()).isEqualTo(404);
-   assertThat(data(b.get("/orders/customers")).path("items").toString()).isEqualTo("[\"C1\"]");assertThat(data(b.get("/orders/meta")).path("bills").asString()).isEqualTo("1");
-   assertThat(data(b.get("/orders?factoryId=1")).path("total").asString()).isEqualTo("0");assertThat(b.post("/orders/sync",Map.of()).statusCode()).isEqualTo(403);assertThat(b.get("/orders/syncs").statusCode()).isEqualTo(403);
-   assertThat(data(empty.get("/orders")).path("total").asString()).isEqualTo("0");assertThat(data(empty.get("/orders/customers")).path("total").asString()).isEqualTo("0");
-  }
-  jdbc.update("INSERT INTO sys_role(id,role_code,role_name,data_scope,factory_scope) VALUES(1000,'BOUND_SYNC','限定工厂同步',1,1)");jdbc.update("INSERT INTO sys_role_menu(role_id,menu_id) VALUES(1000,221)");
-  user(13,"read_all_write_bound",4);jdbc.update("INSERT INTO sys_user_role(user_id,role_id) VALUES(13,1000)");jdbc.update("INSERT INTO sn_user_factory(user_id,factory_id) VALUES(13,?)",own);
-  try(var mixed=new Browser("read_all_write_bound")){assertThat(data(mixed.get("/orders")).path("total").asString()).isEqualTo("2");assertThat(mixed.post("/orders/sync",Map.of()).statusCode()).isEqualTo(403);}
- }
- @Test void laterPageFailureAndInvalidStableIdentityOrExcessPrecisionKeepPreviousVersion()throws Exception{
-  sample();try(var b=new Browser("sn_hq")){
-   data(b.post("/orders/sync",Map.of()));long version=jdbc.queryForObject("SELECT revision FROM sn_snapshot_control",Long.class);
-   ERP.failure="page";assertThat(b.post("/orders/sync",Map.of()).statusCode()).isGreaterThanOrEqualTo(400);ERP.failure="";
-   ERP.orders=List.of(row("9007199254740993","11","MO-1","M1","1.00001"));assertThat(b.post("/orders/sync",Map.of()).statusCode()).isEqualTo(502);
-   ERP.orders=List.of(row("9007199254740993","","MO-1","M1","1"));assertThat(b.post("/orders/sync",Map.of()).statusCode()).isEqualTo(502);
-   assertThat(jdbc.queryForObject("SELECT revision FROM sn_snapshot_control",Long.class)).isEqualTo(version);assertThat(data(b.get("/orders")).path("total").asString()).isEqualTo("2");
-   assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM sn_order_sync WHERE state='FAILED'",Integer.class)).isEqualTo(3);
-  }
- }
- @Test void singleBillNotFoundIsLegalEmptyButOtherViewFailuresPreserveSnapshot()throws Exception{
-  sample();try(var b=new Browser("sn_hq")){
-   data(b.post("/orders/sync",Map.of()));ERP.failure="view";assertThat(b.post("/orders/sync",Map.of("billNo","MO-1")).statusCode()).isEqualTo(502);
-   assertThat(data(b.get("/orders?q=MO-1")).path("total").asString()).isEqualTo("1");ERP.failure="";ERP.orders=ERP.orders.stream().filter(r->!r.get(1).equals("MO-1")).toList();
-   var result=data(b.post("/orders/sync",Map.of("billNo","MO-1")));assertThat(result.path("rowsCount").asString()).isEqualTo("0");assertThat(data(b.get("/orders")).path("total").asString()).isEqualTo("1");
-  }
- }
- @Test void twoConcurrentFetchesCannotPublishOlderSnapshotOverNewerVersion()throws Exception{
-  sample();ERP.barrier=new CountDownLatch(2);
-  try(var b=new Browser("sn_hq");var pool=Executors.newFixedThreadPool(2)){
-   var one=pool.submit(()->b.post("/orders/sync",Map.of()));var two=pool.submit(()->b.post("/orders/sync",Map.of()));
-   assertThat(List.of(one.get(30,TimeUnit.SECONDS).statusCode(),two.get(30,TimeUnit.SECONDS).statusCode())).containsExactlyInAnyOrder(200,409);
-   assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM sn_order_sync WHERE state='SUCCESS'",Integer.class)).isEqualTo(1);
-  }
- }
- @Test void rulePriorityRenameUnusedEditUsedNewVersionAndHistoryArePreserved()throws Exception{
-  try(var b=new Browser("sn_hq")){
-   data(b.post("/rules",rule("GENERAL","GENERAL","","G")));data(b.post("/rules",rule("CUSTOMER","CUSTOMER","C1","C")));
-   var pi=rule("PI_RULE","PI","PI-1","A");var created=data(b.post("/rules",pi));String id=created.path("id").asString();assertThat(data(b.get("/rules/effective?pi=PI-1&customer=C1")).path("prefix").asString()).isEqualTo("A");
-   assertThat(data(b.get("/rules/effective?pi=PI-2&customer=C1")).path("prefix").asString()).isEqualTo("C");assertThat(data(b.get("/rules/effective?pi=PI-2&customer=C2")).path("prefix").asString()).isEqualTo("G");
-   pi.put("revision","1");pi.put("name","改名");assertThat(data(b.post("/rules/"+id+"/update",pi)).path("action").asString()).isEqualTo("RENAMED");
-   pi.put("revision","2");pi.put("prefix","B");var updated=data(b.post("/rules/"+id+"/update",pi));assertThat(updated.path("action").asString()).isEqualTo("UPDATED");String digest=updated.path("rule").path("current").path("contentDigest").asString();
-   // S4生成尚未迁移；直接在隔离数据库模拟已被历史SN引用，不冒充生成闭环。
-   jdbc.update("UPDATE sn_rule_version SET used=TRUE WHERE rule_id=?",Long.parseLong(id));pi.put("revision","3");pi.put("prefix","C");assertThat(data(b.post("/rules/"+id+"/update",pi)).path("action").asString()).isEqualTo("NEW_VERSION");
-   var history=data(b.get("/rules/"+id+"/versions")).path("items");assertThat(history.size()).isEqualTo(2);assertThat(history.get(1).path("prefix").asString()).isEqualTo("B");assertThat(history.get(1).path("contentDigest").asString()).isEqualTo(digest);
-   assertThat(b.post("/rules",rule("DUP","PI","PI-1","D")).statusCode()).isEqualTo(409);
-  }
- }
- @Test void ruleCapacityPrecisionValidationAndStaleConcurrentEdits()throws Exception{
-  try(var b=new Browser("sn_hq")){
-   var preview=data(b.post("/rules/preview",Map.of("prefix","😀","suffix","","base",36,"length",12,"alphabet","","start","9007199254740993")));assertThat(preview.path("maxSequence").asString()).isEqualTo("4738381338321616895");assertThat(preview.path("samples").get(0).path("seqDecimal").asString()).isEqualTo("9007199254740993");
-   assertThat(b.post("/rules/preview",Map.of("base",8,"length",4)).statusCode()).isEqualTo(400);
-   var command=rule("CONCURRENT","PI","P","A");String id=data(b.post("/rules",command)).path("id").asString();command.put("revision","1");command.put("prefix","B");
-   try(var pool=Executors.newFixedThreadPool(2)){var one=pool.submit(()->b.post("/rules/"+id+"/update",command));var two=pool.submit(()->b.post("/rules/"+id+"/update",command));assertThat(List.of(one.get().statusCode(),two.get().statusCode())).containsExactlyInAnyOrder(200,409);}
-  }
- }
- @Test void successfulAuditFailureRollsBackFactoryRuleAndEntireOrderPublication()throws Exception{
-  sample();try(var b=new Browser("sn_hq")){
-   jdbc.execute("ALTER TABLE sys_oper_log ADD CONSTRAINT ck_it_reject_sn_success CHECK(action NOT LIKE 'sn:%' OR success=FALSE)");
-   try{
-    assertThat(b.post("/factories",Map.of("code","ROLLBACK","name","回滚工厂")).statusCode()).isEqualTo(500);assertThat(b.post("/rules",rule("ROLLBACK","PI","P","X")).statusCode()).isEqualTo(500);assertThat(b.post("/orders/sync",Map.of()).statusCode()).isEqualTo(500);
-    for(String table:List.of("sn_factory","sn_rule","sn_rule_version","sn_order_bill","sn_order_entry","sn_source_entry_quota"))assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM "+table,Integer.class)).isZero();
-    assertThat(jdbc.queryForObject("SELECT revision FROM sn_snapshot_control",Long.class)).isZero();
-   }finally{jdbc.execute("ALTER TABLE sys_oper_log DROP CHECK ck_it_reject_sn_success");}
-  }
- }
- @Test void erpLoginFailureDoesNotLeakResponseAndOrganizationFailureDoesNotEraseOrders()throws Exception{
-  sample();try(var b=new Browser("sn_hq")){
-   ERP.failure="login";var rejected=b.post("/orders/sync",Map.of());assertThat(rejected.statusCode()).isEqualTo(502);assertThat(json.readTree(rejected.body()).path("code").asInt()).isEqualTo(1005000002);assertThat(rejected.body()).doesNotContain("SYNTHETIC_SECRET",SECRET,PASSWORD);
-   ERP.failure="org";var result=data(b.post("/orders/sync",Map.of()));assertThat(result.path("orgSyncFailed").asBoolean()).isTrue();assertThat(data(b.get("/orders/meta")).path("unmappedOrganizations").size()).isEqualTo(2);
-  }
- }
- @Test void sourceOrganizationChangeToUnmappedClearsPreviousFactoryScope()throws Exception{
-  sample();try(var b=new Browser("sn_hq")){
-   data(b.post("/orders/sync",Map.of()));long old=jdbc.queryForObject("SELECT id FROM sn_factory WHERE code='ERP-A'",Long.class);
-   user(10,"old_factory",5);jdbc.update("INSERT INTO sn_user_factory(user_id,factory_id) VALUES(10,?)",old);
-   ERP.orders=List.of(K3ProtocolFixture.row("9007199254740993","11","MO-1","C1","PI-1","999","UNKNOWN","未映射厂","M1","8"));
-   data(b.post("/orders/sync",Map.of("billNo","MO-1")));
-   var current=data(b.get("/orders?q=MO-1")).path("items").get(0);assertThat(current.path("factoryId").isNull()).isTrue();
-   try(var previous=new Browser("old_factory")){assertThat(data(previous.get("/orders")).path("total").asString()).isEqualTo("0");assertThat(previous.get("/orders/"+current.path("id").asString()+"/lines").statusCode()).isEqualTo(404);}
-  }
- }
- @Test void userFactoryAssignmentIsAtomicScopedAndRevokesPreviousSession()throws Exception{
-  sample();jdbc.update("INSERT INTO sys_user_role(user_id,role_id) VALUES(9007199254741001,1)");
-  try(var hq=new Browser("sn_hq")){
-   data(hq.post("/orders/sync",Map.of()));
-   String a=jdbc.queryForObject("SELECT id FROM sn_factory WHERE code='ERP-A'",String.class),other=jdbc.queryForObject("SELECT id FROM sn_factory WHERE code='ERP-B'",String.class);
-   var created=data(hq.raw("POST","/system/users",Map.of("username","assigned","displayName","绑定用户","deptId","1","roleIds",List.of("5"),"factoryIds",List.of(a),"password",PASSWORD),hq.token,hq.csrf));
-   String id=created.path("id").asString();assertThat(created.path("factoryIds").toString()).isEqualTo("[\""+a+"\"]");
-   jdbc.update("UPDATE sys_user SET must_change_password=FALSE WHERE id=?",Long.parseLong(id));
-   try(var target=new Browser("assigned")){
-    assertThat(data(target.get("/orders")).path("items").get(0).path("billNo").asString()).isEqualTo("MO-1");
-    var patch=new HashMap<String,Object>(Map.of("displayName","绑定用户","deptId","1","roleIds",List.of("5"),"factoryIds",List.of(other),"version","1"));
-    data(hq.raw("POST","/system/users/"+id+"/update",patch,hq.token,hq.csrf));assertThat(target.get("/orders").statusCode()).isEqualTo(401);
-    patch.put("factoryIds",List.of("999"));patch.put("version","2");assertThat(hq.raw("POST","/system/users/"+id+"/update",patch,hq.token,hq.csrf).statusCode()).isEqualTo(400);
-    assertThat(jdbc.queryForObject("SELECT security_version FROM sys_user WHERE id=?",Long.class,Long.parseLong(id))).isEqualTo(2);
-   }
-   try(var target=new Browser("assigned")){assertThat(data(target.get("/orders")).path("items").get(0).path("billNo").asString()).isEqualTo("MO-2");}
-   user(12,"platform_only",1);try(var platform=new Browser("platform_only")){
-    assertThat(platform.raw("POST","/system/users",Map.of("username","forbidden_binding","displayName","禁止绑定","deptId","1","roleIds",List.of(),"factoryIds",List.of(a),"password",PASSWORD),platform.token,platform.csrf).statusCode()).isEqualTo(403);
-    assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM sys_user WHERE username='forbidden_binding'",Integer.class)).isZero();
-   }
-  }
- }
- @Test void effectiveRuleInfersCustomerFromCurrentPiAsOriginalPage()throws Exception{
-  sample();try(var b=new Browser("sn_hq")){
-   data(b.post("/orders/sync",Map.of()));data(b.post("/rules",rule("G","GENERAL","","G")));data(b.post("/rules",rule("C","CUSTOMER","C1","C")));
-   assertThat(data(b.get("/rules/effective?pi=PI-1")).path("prefix").asString()).isEqualTo("C");
-   assertThat(data(b.get("/rules/effective?pi=PI-2")).path("prefix").asString()).isEqualTo("G");
-  }
- }
- @Test void duplicateIdentityAndResourceLimitNeverPublishPartialOrders()throws Exception{
-  sample();try(var b=new Browser("sn_hq")){
-   data(b.post("/orders/sync",Map.of()));long revision=jdbc.queryForObject("SELECT revision FROM sn_snapshot_control",Long.class);
-   ERP.orders=List.of(row("1","11","DUP","M","1"),row("1","11","DUP","M","1"));assertThat(b.post("/orders/sync",Map.of()).statusCode()).isEqualTo(502);
-   var rows=new ArrayList<List<Object>>();for(int i=1;i<=19;i++)rows.add(row("1",Integer.toString(i),"LIMIT","M","1"));ERP.orders=rows;
-   assertThat(b.post("/orders/sync",Map.of()).statusCode()).isEqualTo(409);assertThat(jdbc.queryForObject("SELECT revision FROM sn_snapshot_control",Long.class)).isEqualTo(revision);assertThat(data(b.get("/orders")).path("total").asString()).isEqualTo("2");
-  }
- }
- @Test void auditStorageFailureDoesNotUndoKnownSyncFailureState()throws Exception{
-  try(var b=new Browser("sn_hq")){
-   jdbc.execute("ALTER TABLE sys_oper_log ADD CONSTRAINT ck_it_reject_all_failure CHECK(success=TRUE)");
-   try{ERP.failure="login";assertThat(b.post("/orders/sync",Map.of()).statusCode()).isEqualTo(502);assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM sn_order_sync WHERE state='FAILED'",Integer.class)).isEqualTo(1);}
-   finally{jdbc.execute("ALTER TABLE sys_oper_log DROP CHECK ck_it_reject_all_failure");}
-  }
- }
- @Test void unknownLegacyRuleCreatorRemainsNullAcrossListEffectiveAndHistory()throws Exception{
-  try(var b=new Browser("sn_hq")){
-   var created=data(b.post("/rules",rule("LEGACY_NULL","GENERAL","","L")));String id=created.path("id").asString();assertThat(id).isNotEmpty();
-   jdbc.update("UPDATE sn_rule SET created_by=NULL WHERE id=?",id);jdbc.update("UPDATE sn_rule_version SET created_by=NULL WHERE rule_id=?",id);
-   assertThat(data(b.get("/rules")).path("items").get(0).path("current").path("createdBy").isNull()).isTrue();
-   assertThat(data(b.get("/rules/effective?pi=LEGACY-PI")).path("createdBy").isNull()).isTrue();
-   assertThat(data(b.get("/rules/"+id+"/versions")).path("items").get(0).path("createdBy").isNull()).isTrue();
-  }
- }
- @Test void fractionalPlansAreStoredExactlyEvenWhenTheirSumIsAnInteger()throws Exception{
-  ERP.orders=List.of(row("91","11","FRACTION","M",new java.math.BigDecimal("0.1254")),row("91","12","FRACTION","M","0.8746"),row("92","21","WHOLE","M","9007199254740993"));
-  try(var b=new Browser("sn_hq")){
-   assertThat(data(b.post("/orders/sync",Map.of())).path("rowsCount").asString()).isEqualTo("3");
-   var bill=data(b.get("/orders?q=FRACTION")).path("items").get(0);
-   assertThat(bill.path("totalQty").asString()).isEqualTo("1");assertThat(bill.path("quantityReady").asBoolean()).isFalse();assertThat(bill.path("quota").asString()).isEqualTo("0");
-   var lines=data(b.get("/orders/"+bill.path("id").asString()+"/lines")).path("items");
-   assertThat(lines.get(0).path("qty").asString()).isEqualTo("0.1254");assertThat(lines.get(1).path("qty").asString()).isEqualTo("0.8746");
-   assertThat(jdbc.queryForObject("SELECT qty FROM sn_order_entry WHERE source_entry_id='11'",java.math.BigDecimal.class)).isEqualByComparingTo("0.1254");
-   var whole=data(b.get("/orders?q=WHOLE")).path("items").get(0);assertThat(whole.path("totalQty").asString()).isEqualTo("9007199254740993");assertThat(whole.path("quantityReady").asBoolean()).isTrue();
-  }
- }
- final class Browser implements AutoCloseable {
-  final HttpClient client;final String token,csrf;
-  Browser(String username)throws Exception{
-   client=HttpClient.newBuilder().cookieHandler(new CookieManager(null,CookiePolicy.ACCEPT_ALL)).build();var c=raw("GET","/system/auth/csrf",null,null,null);csrf=json.readTree(c.body()).path("data").path("token").asString();
-   var login=raw("POST","/system/auth/login",Map.of("username",username,"password",PASSWORD),null,csrf);assertThat(login.statusCode()).isEqualTo(200);token=json.readTree(login.body()).path("data").path("accessToken").asString();
-  }
-  HttpResponse<String> get(String path)throws Exception{return raw("GET","/sn"+path,null,token,null);}
-  HttpResponse<String> post(String path,Object body)throws Exception{return raw("POST","/sn"+path,body,token,csrf);}
-  HttpResponse<String> raw(String method,String path,Object body,String bearer,String csrfToken)throws Exception{
-   var builder=HttpRequest.newBuilder(URI.create("http://127.0.0.1:"+port+"/api/v1"+path)).header("Content-Type","application/json");if(bearer!=null)builder.header("Authorization","Bearer "+bearer);if(csrfToken!=null)builder.header("X-XSRF-TOKEN",csrfToken);
-   builder.method(method,body==null?HttpRequest.BodyPublishers.noBody():HttpRequest.BodyPublishers.ofString(json.writeValueAsString(body)));return client.send(builder.build(),HttpResponse.BodyHandlers.ofString());
-  }
-  @Override public void close(){client.close();}
- }
+    @Container
+    static final MySQLContainer MYSQL =
+            new MySQLContainer("mysql:8.4.11")
+                    .withDatabaseName("adtek_sn_stage3_it")
+                    .withUsername("stage3")
+                    .withPassword(SECRET)
+                    .withCommand(
+                            "--character-set-server=utf8mb4",
+                            "--collation-server=utf8mb4_0900_as_cs",
+                            "--default-time-zone=+00:00");
+
+    @Container
+    static final GenericContainer<?> REDIS =
+            new GenericContainer<>("redis:8.4.7-alpine")
+                    .withExposedPorts(6379)
+                    .withCommand("redis-server", "--requirepass", SECRET);
+
+    @DynamicPropertySource
+    static void settings(DynamicPropertyRegistry p) {
+        p.add("ADTEK_DB_URL", MYSQL::getJdbcUrl);
+        p.add("ADTEK_DB_USER", MYSQL::getUsername);
+        p.add("ADTEK_DB_PASSWORD", MYSQL::getPassword);
+        p.add("ADTEK_MIGRATION_USER", MYSQL::getUsername);
+        p.add("ADTEK_MIGRATION_PASSWORD", MYSQL::getPassword);
+        p.add("ADTEK_REDIS_HOST", REDIS::getHost);
+        p.add("ADTEK_REDIS_PORT", () -> REDIS.getMappedPort(6379));
+        p.add("ADTEK_REDIS_PASSWORD", () -> SECRET);
+        p.add("ADTEK_JWT_SECRET", () -> SECRET);
+        p.add("adtek.k3.enabled", () -> true);
+        p.add("adtek.k3.url", ERP::url);
+        p.add("adtek.k3.account", () -> "ISOLATED");
+        p.add("adtek.k3.app-id", () -> "fixture");
+        p.add("adtek.k3.app-secret", () -> SECRET);
+        p.add("adtek.k3.username", () -> "fixture");
+        p.add("adtek.k3.page-size", () -> 2);
+        p.add("adtek.k3.max-pages", () -> 10);
+        p.add("adtek.k3.max-rows", () -> 18);
+        p.add("adtek.k3.query-seconds", () -> 10);
+    }
+
+    @Autowired JdbcTemplate jdbc;
+    @Autowired PasswordEncoder passwords;
+    @Autowired StringRedisTemplate redis;
+    @Autowired ObjectMapper json;
+    @LocalServerPort int port;
+
+    @AfterAll
+    static void close() {
+        ERP.close();
+    }
+
+    @BeforeEach
+    void reset() {
+        ERP.reset();
+        for (String table :
+                List.of(
+                        "sn_source_entry_quota",
+                        "sn_order_entry",
+                        "sn_order_bill",
+                        "sn_order_sync",
+                        "sn_org_mapping",
+                        "sn_factory",
+                        "sn_rule_version",
+                        "sn_rule",
+                        "sn_user_factory",
+                        "sys_user_role",
+                        "sys_user",
+                        "sys_oper_log")) jdbc.update("DELETE FROM " + table);
+        jdbc.update("DELETE FROM sys_role_menu WHERE role_id>=1000");
+        jdbc.update("DELETE FROM sys_role WHERE id>=1000");
+        jdbc.update("UPDATE sn_snapshot_control SET revision=0");
+        jdbc.execute("ALTER TABLE sn_factory AUTO_INCREMENT=9007199254742001");
+        jdbc.execute("ALTER TABLE sn_order_bill AUTO_INCREMENT=9007199254743001");
+        jdbc.execute("ALTER TABLE sn_rule AUTO_INCREMENT=9007199254744001");
+        try (var c = redis.getConnectionFactory().getConnection()) {
+            c.serverCommands().flushDb();
+        }
+        user(9007199254741001L, "sn_hq", 2);
+    }
+
+    void user(long id, String username, long role) {
+        jdbc.update(
+                "INSERT INTO"
+                        + " sys_user(id,username,password_hash,display_name,dept_id,must_change_password)"
+                        + " VALUES(?,?,?,?,1,FALSE)",
+                id,
+                username,
+                passwords.encode(PASSWORD),
+                username);
+        jdbc.update("INSERT INTO sys_user_role(user_id,role_id) VALUES(?,?)", id, role);
+    }
+
+    List<Object> row(String bill, String entry, String no, String material, Object qty) {
+        return K3ProtocolFixture.row(
+                bill, entry, no, "C1", "PI-1", "101", "ERP-A", "甲工厂", material, qty);
+    }
+
+    void sample() {
+        ERP.orders =
+                List.of(
+                        row("9007199254740993", "11", "MO-1", "M1", "8"),
+                        row("9007199254740993", "12", "MO-1", "M1", "3"),
+                        row("9007199254740993", "13", "MO-1", "", "2"),
+                        K3ProtocolFixture.row(
+                                "2", "21", "MO-2", "C2", "PI-2", "102", "ERP-B", "乙工厂", "M2", "5"));
+    }
+
+    JsonNode data(HttpResponse<String> response) throws Exception {
+        assertThat(response.statusCode()).as(response.body()).isEqualTo(200);
+        return json.readTree(response.body()).path("data");
+    }
+
+    Map<String, Object> rule(String code, String scope, String value, String prefix) {
+        return new HashMap<>(
+                Map.of(
+                        "code",
+                        code,
+                        "name",
+                        code,
+                        "bindScope",
+                        scope,
+                        "bindValue",
+                        value,
+                        "prefix",
+                        prefix,
+                        "suffix",
+                        "",
+                        "base",
+                        10,
+                        "length",
+                        4,
+                        "alphabet",
+                        ""));
+    }
+
+    @Test
+    void manualFactoryConflictRequiresExplicitStableMappingAndNamesDoNotIdentifyOrganizations()
+            throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            var manual = data(b.post("/factories", Map.of("code", "MANUAL-A", "name", "甲工厂")));
+            String id = manual.path("id").asString();
+            assertThat(id).isEqualTo("9007199254742001");
+            assertThat(b.post("/factories", Map.of("code", "MANUAL-B", "name", "甲工厂")).statusCode())
+                    .isEqualTo(409);
+            var sync = data(b.post("/factories/sync", Map.of()));
+            assertThat(sync.path("conflicts").size()).isEqualTo(1);
+            sample();
+            data(b.post("/orders/sync", Map.of()));
+            assertThat(data(b.get("/orders/meta")).path("unmappedOrganizations").size())
+                    .isEqualTo(1);
+            data(
+                    b.post(
+                            "/factories/" + id + "/organization",
+                            Map.of("orgId", "101", "version", "1")));
+            assertThat(data(b.get("/orders/meta")).path("unmappedOrganizations").size()).isZero();
+            assertThat(
+                            data(b.get("/orders?q=MO-1"))
+                                    .path("items")
+                                    .get(0)
+                                    .path("factoryId")
+                                    .asString())
+                    .isEqualTo(id);
+            assertThat(
+                            b.post(
+                                            "/factories/" + id + "/organization",
+                                            Map.of("orgId", "102", "version", "2"))
+                                    .statusCode())
+                    .isEqualTo(409);
+        }
+    }
+
+    @Test
+    void completePagingPreservesOldOrderColumnsEmptyMaterialSameMaterialAndExactIds()
+            throws Exception {
+        sample();
+        var rows = new ArrayList<>(ERP.orders);
+        rows.add(
+                K3ProtocolFixture.row(
+                        "3", "31", "EMPTY-CUSTOMER", "", "PI-3", "101", "ERP-A", "甲工厂", "", "1"));
+        ERP.orders = rows;
+        try (var b = new Browser("sn_hq")) {
+            var sync = data(b.post("/orders/sync", Map.of()));
+            assertThat(sync.path("rowsCount").asString()).isEqualTo("5");
+            var page = data(b.get("/orders?q=MO-1"));
+            var bill = page.path("items").get(0);
+            assertThat(bill.path("sourceBillId").asString()).isEqualTo("9007199254740993");
+            assertThat(bill.path("totalQty").asString()).isEqualTo("13");
+            assertThat(bill.path("lineCount").asString()).isEqualTo("3");
+            var lines = data(b.get("/orders/" + bill.path("id").asString() + "/lines?size=2"));
+            assertThat(lines.path("total").asString()).isEqualTo("3");
+            assertThat(lines.path("items").size()).isEqualTo(2);
+            var tail =
+                    data(b.get("/orders/" + bill.path("id").asString() + "/lines?size=2&page=2"));
+            assertThat(tail.path("items").get(0).path("material").asString()).isEmpty();
+            var meta = data(b.get("/orders/meta"));
+            assertThat(meta.path("bills").asString()).isEqualTo("2");
+            assertThat(meta.path("excludedEmptyCustomer").asString()).isEqualTo("1");
+            assertThat(data(b.get("/orders?q=M1")).path("items").get(0).path("totalQty").asString())
+                    .isEqualTo("13");
+        }
+    }
+
+    @Test
+    void stableEntryLedgerSurvivesReorderRemovalAndEmptySnapshotWithoutMovingQuota()
+            throws Exception {
+        sample();
+        try (var b = new Browser("sn_hq")) {
+            data(b.post("/orders/sync", Map.of()));
+            long bill =
+                    jdbc.queryForObject(
+                            "SELECT id FROM sn_order_bill WHERE bill_no='MO-1'", Long.class);
+            jdbc.update(
+                    "UPDATE sn_source_entry_quota SET generated_qty=5,allocated_qty=2 WHERE"
+                            + " bill_id=? AND source_entry_id='11'",
+                    bill);
+            ERP.orders =
+                    List.of(
+                            row("9007199254740993", "14", "MO-1", "M1", "7"),
+                            row("9007199254740993", "11", "MO-1", "M1", "2"));
+            data(b.post("/orders/sync", Map.of("billNo", "MO-1")));
+            var current = data(b.get("/orders?q=MO-1")).path("items").get(0);
+            assertThat(current.path("generatedQty").asString()).isEqualTo("5");
+            assertThat(current.path("quota").asString()).isEqualTo("7");
+            var lines = data(b.get("/orders/" + bill + "/lines")).path("items");
+            assertThat(lines.get(0).path("sourceEntryId").asString()).isEqualTo("11");
+            assertThat(lines.get(0).path("quota").asString()).isEqualTo("0");
+            ERP.orders = List.of();
+            data(b.post("/orders/sync", Map.of()));
+            assertThat(data(b.get("/orders")).path("total").asString()).isEqualTo("0");
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT SUM(generated_qty) FROM sn_source_entry_quota",
+                                    Long.class))
+                    .isEqualTo(5L);
+            assertThat(data(b.get("/orders/meta")).path("syncedAt").isString()).isTrue();
+        }
+    }
+
+    @Test
+    void factoryScopeProtectsListDetailsMetaCustomersAndExplicitFilterCannotExpandIt()
+            throws Exception {
+        sample();
+        try (var hq = new Browser("sn_hq")) {
+            data(hq.post("/orders/sync", Map.of()));
+        }
+        long own = jdbc.queryForObject("SELECT id FROM sn_factory WHERE code='ERP-A'", Long.class),
+                other =
+                        jdbc.queryForObject(
+                                "SELECT id FROM sn_order_bill WHERE bill_no='MO-2'", Long.class);
+        user(10, "bound_query", 5);
+        jdbc.update("INSERT INTO sn_user_factory(user_id,factory_id) VALUES(10,?)", own);
+        user(11, "empty_query", 5);
+        try (var b = new Browser("bound_query");
+                var empty = new Browser("empty_query")) {
+            assertThat(data(b.get("/orders")).path("total").asString()).isEqualTo("1");
+            assertThat(b.get("/orders/" + other + "/lines").statusCode()).isEqualTo(404);
+            assertThat(data(b.get("/orders/customers")).path("items").toString())
+                    .isEqualTo("[\"C1\"]");
+            assertThat(data(b.get("/orders/meta")).path("bills").asString()).isEqualTo("1");
+            assertThat(data(b.get("/orders?factoryId=1")).path("total").asString()).isEqualTo("0");
+            assertThat(b.post("/orders/sync", Map.of()).statusCode()).isEqualTo(403);
+            assertThat(b.get("/orders/syncs").statusCode()).isEqualTo(403);
+            assertThat(data(empty.get("/orders")).path("total").asString()).isEqualTo("0");
+            assertThat(data(empty.get("/orders/customers")).path("total").asString())
+                    .isEqualTo("0");
+        }
+        jdbc.update(
+                "INSERT INTO sys_role(id,role_code,role_name,data_scope,factory_scope)"
+                        + " VALUES(1000,'BOUND_SYNC','限定工厂同步',1,1)");
+        jdbc.update("INSERT INTO sys_role_menu(role_id,menu_id) VALUES(1000,221)");
+        user(13, "read_all_write_bound", 4);
+        jdbc.update("INSERT INTO sys_user_role(user_id,role_id) VALUES(13,1000)");
+        jdbc.update("INSERT INTO sn_user_factory(user_id,factory_id) VALUES(13,?)", own);
+        try (var mixed = new Browser("read_all_write_bound")) {
+            assertThat(data(mixed.get("/orders")).path("total").asString()).isEqualTo("2");
+            assertThat(mixed.post("/orders/sync", Map.of()).statusCode()).isEqualTo(403);
+        }
+    }
+
+    @Test
+    void laterPageFailureAndInvalidStableIdentityOrExcessPrecisionKeepPreviousVersion()
+            throws Exception {
+        sample();
+        try (var b = new Browser("sn_hq")) {
+            data(b.post("/orders/sync", Map.of()));
+            long version =
+                    jdbc.queryForObject("SELECT revision FROM sn_snapshot_control", Long.class);
+            ERP.failure = "page";
+            assertThat(b.post("/orders/sync", Map.of()).statusCode()).isGreaterThanOrEqualTo(400);
+            ERP.failure = "";
+            ERP.orders = List.of(row("9007199254740993", "11", "MO-1", "M1", "1.00001"));
+            assertThat(b.post("/orders/sync", Map.of()).statusCode()).isEqualTo(502);
+            ERP.orders = List.of(row("9007199254740993", "", "MO-1", "M1", "1"));
+            assertThat(b.post("/orders/sync", Map.of()).statusCode()).isEqualTo(502);
+            assertThat(jdbc.queryForObject("SELECT revision FROM sn_snapshot_control", Long.class))
+                    .isEqualTo(version);
+            assertThat(data(b.get("/orders")).path("total").asString()).isEqualTo("2");
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT COUNT(*) FROM sn_order_sync WHERE state='FAILED'",
+                                    Integer.class))
+                    .isEqualTo(3);
+        }
+    }
+
+    @Test
+    void singleBillNotFoundIsLegalEmptyButOtherViewFailuresPreserveSnapshot() throws Exception {
+        sample();
+        try (var b = new Browser("sn_hq")) {
+            data(b.post("/orders/sync", Map.of()));
+            ERP.failure = "view";
+            assertThat(b.post("/orders/sync", Map.of("billNo", "MO-1")).statusCode())
+                    .isEqualTo(502);
+            assertThat(data(b.get("/orders?q=MO-1")).path("total").asString()).isEqualTo("1");
+            ERP.failure = "";
+            ERP.orders = ERP.orders.stream().filter(r -> !r.get(1).equals("MO-1")).toList();
+            var result = data(b.post("/orders/sync", Map.of("billNo", "MO-1")));
+            assertThat(result.path("rowsCount").asString()).isEqualTo("0");
+            assertThat(data(b.get("/orders")).path("total").asString()).isEqualTo("1");
+        }
+    }
+
+    @Test
+    void twoConcurrentFetchesCannotPublishOlderSnapshotOverNewerVersion() throws Exception {
+        sample();
+        ERP.barrier = new CountDownLatch(2);
+        try (var b = new Browser("sn_hq");
+                var pool = Executors.newFixedThreadPool(2)) {
+            var one = pool.submit(() -> b.post("/orders/sync", Map.of()));
+            var two = pool.submit(() -> b.post("/orders/sync", Map.of()));
+            assertThat(
+                            List.of(
+                                    one.get(30, TimeUnit.SECONDS).statusCode(),
+                                    two.get(30, TimeUnit.SECONDS).statusCode()))
+                    .containsExactlyInAnyOrder(200, 409);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT COUNT(*) FROM sn_order_sync WHERE state='SUCCESS'",
+                                    Integer.class))
+                    .isEqualTo(1);
+        }
+    }
+
+    @Test
+    void rulePriorityRenameUnusedEditUsedNewVersionAndHistoryArePreserved() throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            data(b.post("/rules", rule("GENERAL", "GENERAL", "", "G")));
+            data(b.post("/rules", rule("CUSTOMER", "CUSTOMER", "C1", "C")));
+            var pi = rule("PI_RULE", "PI", "PI-1", "A");
+            var created = data(b.post("/rules", pi));
+            String id = created.path("id").asString();
+            assertThat(
+                            data(b.get("/rules/effective?pi=PI-1&customer=C1"))
+                                    .path("prefix")
+                                    .asString())
+                    .isEqualTo("A");
+            assertThat(
+                            data(b.get("/rules/effective?pi=PI-2&customer=C1"))
+                                    .path("prefix")
+                                    .asString())
+                    .isEqualTo("C");
+            assertThat(
+                            data(b.get("/rules/effective?pi=PI-2&customer=C2"))
+                                    .path("prefix")
+                                    .asString())
+                    .isEqualTo("G");
+            pi.put("revision", "1");
+            pi.put("name", "改名");
+            assertThat(data(b.post("/rules/" + id + "/update", pi)).path("action").asString())
+                    .isEqualTo("RENAMED");
+            pi.put("revision", "2");
+            pi.put("prefix", "B");
+            var updated = data(b.post("/rules/" + id + "/update", pi));
+            assertThat(updated.path("action").asString()).isEqualTo("UPDATED");
+            String digest = updated.path("rule").path("current").path("contentDigest").asString();
+            // S4生成尚未迁移；直接在隔离数据库模拟已被历史SN引用，不冒充生成闭环。
+            jdbc.update("UPDATE sn_rule_version SET used=TRUE WHERE rule_id=?", Long.parseLong(id));
+            pi.put("revision", "3");
+            pi.put("prefix", "C");
+            assertThat(data(b.post("/rules/" + id + "/update", pi)).path("action").asString())
+                    .isEqualTo("NEW_VERSION");
+            var history = data(b.get("/rules/" + id + "/versions")).path("items");
+            assertThat(history.size()).isEqualTo(2);
+            assertThat(history.get(1).path("prefix").asString()).isEqualTo("B");
+            assertThat(history.get(1).path("contentDigest").asString()).isEqualTo(digest);
+            assertThat(b.post("/rules", rule("DUP", "PI", "PI-1", "D")).statusCode())
+                    .isEqualTo(409);
+        }
+    }
+
+    @Test
+    void ruleCapacityPrecisionValidationAndStaleConcurrentEdits() throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            var preview =
+                    data(
+                            b.post(
+                                    "/rules/preview",
+                                    Map.of(
+                                            "prefix",
+                                            "😀",
+                                            "suffix",
+                                            "",
+                                            "base",
+                                            36,
+                                            "length",
+                                            12,
+                                            "alphabet",
+                                            "",
+                                            "start",
+                                            "9007199254740993")));
+            assertThat(preview.path("maxSequence").asString()).isEqualTo("4738381338321616895");
+            assertThat(preview.path("samples").get(0).path("seqDecimal").asString())
+                    .isEqualTo("9007199254740993");
+            assertThat(b.post("/rules/preview", Map.of("base", 8, "length", 4)).statusCode())
+                    .isEqualTo(400);
+            var command = rule("CONCURRENT", "PI", "P", "A");
+            String id = data(b.post("/rules", command)).path("id").asString();
+            command.put("revision", "1");
+            command.put("prefix", "B");
+            try (var pool = Executors.newFixedThreadPool(2)) {
+                var one = pool.submit(() -> b.post("/rules/" + id + "/update", command));
+                var two = pool.submit(() -> b.post("/rules/" + id + "/update", command));
+                assertThat(List.of(one.get().statusCode(), two.get().statusCode()))
+                        .containsExactlyInAnyOrder(200, 409);
+            }
+        }
+    }
+
+    @Test
+    void successfulAuditFailureRollsBackFactoryRuleAndEntireOrderPublication() throws Exception {
+        sample();
+        try (var b = new Browser("sn_hq")) {
+            jdbc.execute(
+                    "ALTER TABLE sys_oper_log ADD CONSTRAINT ck_it_reject_sn_success CHECK(action"
+                            + " NOT LIKE 'sn:%' OR success=FALSE)");
+            try {
+                assertThat(
+                                b.post("/factories", Map.of("code", "ROLLBACK", "name", "回滚工厂"))
+                                        .statusCode())
+                        .isEqualTo(500);
+                assertThat(b.post("/rules", rule("ROLLBACK", "PI", "P", "X")).statusCode())
+                        .isEqualTo(500);
+                assertThat(b.post("/orders/sync", Map.of()).statusCode()).isEqualTo(500);
+                for (String table :
+                        List.of(
+                                "sn_factory",
+                                "sn_rule",
+                                "sn_rule_version",
+                                "sn_order_bill",
+                                "sn_order_entry",
+                                "sn_source_entry_quota"))
+                    assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM " + table, Integer.class))
+                            .isZero();
+                assertThat(
+                                jdbc.queryForObject(
+                                        "SELECT revision FROM sn_snapshot_control", Long.class))
+                        .isZero();
+            } finally {
+                jdbc.execute("ALTER TABLE sys_oper_log DROP CHECK ck_it_reject_sn_success");
+            }
+        }
+    }
+
+    @Test
+    void erpLoginFailureDoesNotLeakResponseAndOrganizationFailureDoesNotEraseOrders()
+            throws Exception {
+        sample();
+        try (var b = new Browser("sn_hq")) {
+            ERP.failure = "login";
+            var rejected = b.post("/orders/sync", Map.of());
+            assertThat(rejected.statusCode()).isEqualTo(502);
+            assertThat(json.readTree(rejected.body()).path("code").asInt()).isEqualTo(1005000002);
+            assertThat(rejected.body()).doesNotContain("SYNTHETIC_SECRET", SECRET, PASSWORD);
+            ERP.failure = "org";
+            var result = data(b.post("/orders/sync", Map.of()));
+            assertThat(result.path("orgSyncFailed").asBoolean()).isTrue();
+            assertThat(data(b.get("/orders/meta")).path("unmappedOrganizations").size())
+                    .isEqualTo(2);
+        }
+    }
+
+    @Test
+    void sourceOrganizationChangeToUnmappedClearsPreviousFactoryScope() throws Exception {
+        sample();
+        try (var b = new Browser("sn_hq")) {
+            data(b.post("/orders/sync", Map.of()));
+            long old =
+                    jdbc.queryForObject("SELECT id FROM sn_factory WHERE code='ERP-A'", Long.class);
+            user(10, "old_factory", 5);
+            jdbc.update("INSERT INTO sn_user_factory(user_id,factory_id) VALUES(10,?)", old);
+            ERP.orders =
+                    List.of(
+                            K3ProtocolFixture.row(
+                                    "9007199254740993",
+                                    "11",
+                                    "MO-1",
+                                    "C1",
+                                    "PI-1",
+                                    "999",
+                                    "UNKNOWN",
+                                    "未映射厂",
+                                    "M1",
+                                    "8"));
+            data(b.post("/orders/sync", Map.of("billNo", "MO-1")));
+            var current = data(b.get("/orders?q=MO-1")).path("items").get(0);
+            assertThat(current.path("factoryId").isNull()).isTrue();
+            try (var previous = new Browser("old_factory")) {
+                assertThat(data(previous.get("/orders")).path("total").asString()).isEqualTo("0");
+                assertThat(
+                                previous.get("/orders/" + current.path("id").asString() + "/lines")
+                                        .statusCode())
+                        .isEqualTo(404);
+            }
+        }
+    }
+
+    @Test
+    void userFactoryAssignmentIsAtomicScopedAndRevokesPreviousSession() throws Exception {
+        sample();
+        jdbc.update("INSERT INTO sys_user_role(user_id,role_id) VALUES(9007199254741001,1)");
+        try (var hq = new Browser("sn_hq")) {
+            data(hq.post("/orders/sync", Map.of()));
+            String
+                    a =
+                            jdbc.queryForObject(
+                                    "SELECT id FROM sn_factory WHERE code='ERP-A'", String.class),
+                    other =
+                            jdbc.queryForObject(
+                                    "SELECT id FROM sn_factory WHERE code='ERP-B'", String.class);
+            var created =
+                    data(
+                            hq.raw(
+                                    "POST",
+                                    "/system/users",
+                                    Map.of(
+                                            "username",
+                                            "assigned",
+                                            "displayName",
+                                            "绑定用户",
+                                            "deptId",
+                                            "1",
+                                            "roleIds",
+                                            List.of("5"),
+                                            "factoryIds",
+                                            List.of(a),
+                                            "password",
+                                            PASSWORD),
+                                    hq.token,
+                                    hq.csrf));
+            String id = created.path("id").asString();
+            assertThat(created.path("factoryIds").toString()).isEqualTo("[\"" + a + "\"]");
+            jdbc.update(
+                    "UPDATE sys_user SET must_change_password=FALSE WHERE id=?",
+                    Long.parseLong(id));
+            try (var target = new Browser("assigned")) {
+                assertThat(
+                                data(target.get("/orders"))
+                                        .path("items")
+                                        .get(0)
+                                        .path("billNo")
+                                        .asString())
+                        .isEqualTo("MO-1");
+                var patch =
+                        new HashMap<String, Object>(
+                                Map.of(
+                                        "displayName",
+                                        "绑定用户",
+                                        "deptId",
+                                        "1",
+                                        "roleIds",
+                                        List.of("5"),
+                                        "factoryIds",
+                                        List.of(other),
+                                        "version",
+                                        "1"));
+                data(hq.raw("POST", "/system/users/" + id + "/update", patch, hq.token, hq.csrf));
+                assertThat(target.get("/orders").statusCode()).isEqualTo(401);
+                patch.put("factoryIds", List.of("999"));
+                patch.put("version", "2");
+                assertThat(
+                                hq.raw(
+                                                "POST",
+                                                "/system/users/" + id + "/update",
+                                                patch,
+                                                hq.token,
+                                                hq.csrf)
+                                        .statusCode())
+                        .isEqualTo(400);
+                assertThat(
+                                jdbc.queryForObject(
+                                        "SELECT security_version FROM sys_user WHERE id=?",
+                                        Long.class,
+                                        Long.parseLong(id)))
+                        .isEqualTo(2);
+            }
+            try (var target = new Browser("assigned")) {
+                assertThat(
+                                data(target.get("/orders"))
+                                        .path("items")
+                                        .get(0)
+                                        .path("billNo")
+                                        .asString())
+                        .isEqualTo("MO-2");
+            }
+            user(12, "platform_only", 1);
+            try (var platform = new Browser("platform_only")) {
+                assertThat(
+                                platform.raw(
+                                                "POST",
+                                                "/system/users",
+                                                Map.of(
+                                                        "username",
+                                                        "forbidden_binding",
+                                                        "displayName",
+                                                        "禁止绑定",
+                                                        "deptId",
+                                                        "1",
+                                                        "roleIds",
+                                                        List.of(),
+                                                        "factoryIds",
+                                                        List.of(a),
+                                                        "password",
+                                                        PASSWORD),
+                                                platform.token,
+                                                platform.csrf)
+                                        .statusCode())
+                        .isEqualTo(403);
+                assertThat(
+                                jdbc.queryForObject(
+                                        "SELECT COUNT(*) FROM sys_user WHERE"
+                                                + " username='forbidden_binding'",
+                                        Integer.class))
+                        .isZero();
+            }
+        }
+    }
+
+    @Test
+    void effectiveRuleInfersCustomerFromCurrentPiAsOriginalPage() throws Exception {
+        sample();
+        try (var b = new Browser("sn_hq")) {
+            data(b.post("/orders/sync", Map.of()));
+            data(b.post("/rules", rule("G", "GENERAL", "", "G")));
+            data(b.post("/rules", rule("C", "CUSTOMER", "C1", "C")));
+            assertThat(data(b.get("/rules/effective?pi=PI-1")).path("prefix").asString())
+                    .isEqualTo("C");
+            assertThat(data(b.get("/rules/effective?pi=PI-2")).path("prefix").asString())
+                    .isEqualTo("G");
+        }
+    }
+
+    @Test
+    void duplicateIdentityAndResourceLimitNeverPublishPartialOrders() throws Exception {
+        sample();
+        try (var b = new Browser("sn_hq")) {
+            data(b.post("/orders/sync", Map.of()));
+            long revision =
+                    jdbc.queryForObject("SELECT revision FROM sn_snapshot_control", Long.class);
+            ERP.orders = List.of(row("1", "11", "DUP", "M", "1"), row("1", "11", "DUP", "M", "1"));
+            assertThat(b.post("/orders/sync", Map.of()).statusCode()).isEqualTo(502);
+            var rows = new ArrayList<List<Object>>();
+            for (int i = 1; i <= 19; i++)
+                rows.add(row("1", Integer.toString(i), "LIMIT", "M", "1"));
+            ERP.orders = rows;
+            assertThat(b.post("/orders/sync", Map.of()).statusCode()).isEqualTo(409);
+            assertThat(jdbc.queryForObject("SELECT revision FROM sn_snapshot_control", Long.class))
+                    .isEqualTo(revision);
+            assertThat(data(b.get("/orders")).path("total").asString()).isEqualTo("2");
+        }
+    }
+
+    @Test
+    void auditStorageFailureDoesNotUndoKnownSyncFailureState() throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            jdbc.execute(
+                    "ALTER TABLE sys_oper_log ADD CONSTRAINT ck_it_reject_all_failure"
+                            + " CHECK(success=TRUE)");
+            try {
+                ERP.failure = "login";
+                assertThat(b.post("/orders/sync", Map.of()).statusCode()).isEqualTo(502);
+                assertThat(
+                                jdbc.queryForObject(
+                                        "SELECT COUNT(*) FROM sn_order_sync WHERE state='FAILED'",
+                                        Integer.class))
+                        .isEqualTo(1);
+            } finally {
+                jdbc.execute("ALTER TABLE sys_oper_log DROP CHECK ck_it_reject_all_failure");
+            }
+        }
+    }
+
+    @Test
+    void unknownLegacyRuleCreatorRemainsNullAcrossListEffectiveAndHistory() throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            var created = data(b.post("/rules", rule("LEGACY_NULL", "GENERAL", "", "L")));
+            String id = created.path("id").asString();
+            assertThat(id).isNotEmpty();
+            jdbc.update("UPDATE sn_rule SET created_by=NULL WHERE id=?", id);
+            jdbc.update("UPDATE sn_rule_version SET created_by=NULL WHERE rule_id=?", id);
+            assertThat(
+                            data(b.get("/rules"))
+                                    .path("items")
+                                    .get(0)
+                                    .path("current")
+                                    .path("createdBy")
+                                    .isNull())
+                    .isTrue();
+            assertThat(data(b.get("/rules/effective?pi=LEGACY-PI")).path("createdBy").isNull())
+                    .isTrue();
+            assertThat(
+                            data(b.get("/rules/" + id + "/versions"))
+                                    .path("items")
+                                    .get(0)
+                                    .path("createdBy")
+                                    .isNull())
+                    .isTrue();
+        }
+    }
+
+    @Test
+    void fractionalPlansAreStoredExactlyEvenWhenTheirSumIsAnInteger() throws Exception {
+        ERP.orders =
+                List.of(
+                        row("91", "11", "FRACTION", "M", new java.math.BigDecimal("0.1254")),
+                        row("91", "12", "FRACTION", "M", "0.8746"),
+                        row("92", "21", "WHOLE", "M", "9007199254740993"));
+        try (var b = new Browser("sn_hq")) {
+            assertThat(data(b.post("/orders/sync", Map.of())).path("rowsCount").asString())
+                    .isEqualTo("3");
+            var bill = data(b.get("/orders?q=FRACTION")).path("items").get(0);
+            assertThat(bill.path("totalQty").asString()).isEqualTo("1");
+            assertThat(bill.path("quantityReady").asBoolean()).isFalse();
+            assertThat(bill.path("quota").asString()).isEqualTo("0");
+            var lines =
+                    data(b.get("/orders/" + bill.path("id").asString() + "/lines")).path("items");
+            assertThat(lines.get(0).path("qty").asString()).isEqualTo("0.1254");
+            assertThat(lines.get(1).path("qty").asString()).isEqualTo("0.8746");
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT qty FROM sn_order_entry WHERE source_entry_id='11'",
+                                    java.math.BigDecimal.class))
+                    .isEqualByComparingTo("0.1254");
+            var whole = data(b.get("/orders?q=WHOLE")).path("items").get(0);
+            assertThat(whole.path("totalQty").asString()).isEqualTo("9007199254740993");
+            assertThat(whole.path("quantityReady").asBoolean()).isTrue();
+        }
+    }
+
+    final class Browser implements AutoCloseable {
+        final HttpClient client;
+        final String token, csrf;
+
+        Browser(String username) throws Exception {
+            client =
+                    HttpClient.newBuilder()
+                            .cookieHandler(new CookieManager(null, CookiePolicy.ACCEPT_ALL))
+                            .build();
+            var c = raw("GET", "/system/auth/csrf", null, null, null);
+            csrf = json.readTree(c.body()).path("data").path("token").asString();
+            var login =
+                    raw(
+                            "POST",
+                            "/system/auth/login",
+                            Map.of("username", username, "password", PASSWORD),
+                            null,
+                            csrf);
+            assertThat(login.statusCode()).isEqualTo(200);
+            token = json.readTree(login.body()).path("data").path("accessToken").asString();
+        }
+
+        HttpResponse<String> get(String path) throws Exception {
+            return raw("GET", "/sn" + path, null, token, null);
+        }
+
+        HttpResponse<String> post(String path, Object body) throws Exception {
+            return raw("POST", "/sn" + path, body, token, csrf);
+        }
+
+        HttpResponse<String> raw(
+                String method, String path, Object body, String bearer, String csrfToken)
+                throws Exception {
+            var builder =
+                    HttpRequest.newBuilder(
+                                    URI.create("http://127.0.0.1:" + port + "/api/v1" + path))
+                            .header("Content-Type", "application/json");
+            if (bearer != null) builder.header("Authorization", "Bearer " + bearer);
+            if (csrfToken != null) builder.header("X-XSRF-TOKEN", csrfToken);
+            builder.method(
+                    method,
+                    body == null
+                            ? HttpRequest.BodyPublishers.noBody()
+                            : HttpRequest.BodyPublishers.ofString(json.writeValueAsString(body)));
+            return client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+        }
+
+        @Override
+        public void close() {
+            client.close();
+        }
+    }
 }

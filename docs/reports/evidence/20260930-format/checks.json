@@ -1,0 +1,391 @@
+{
+  "recordedAt": "2026-09-30T11:02:45.360734+00:00",
+  "baseCommit": "e3a324daa19d590455d17531e86f2889dd585a1f",
+  "formatters": {
+    "spotless": "3.10.3",
+    "googleJavaFormat": "1.36.1/AOSP",
+    "sortPom": "4.0.0",
+    "prettier": "3.9.9",
+    "psScriptAnalyzer": "1.25.0"
+  },
+  "formatScope": {
+    "javaChecked": 457,
+    "javaReformatted": 453,
+    "pomReformatted": 7,
+    "existingPowerShellChecked": 33,
+    "existingPowerShellReformatted": 31,
+    "totalPowerShellAndSettingsChecked": 36,
+    "frontendFormatting": "passed without source changes",
+    "configurationFormatting": "passed",
+    "javaLinesOver160Before": 1726,
+    "javaLinesOver160After": 38,
+    "remainingLongLines": "unbreakable literal/SQL fragments retained by formatter"
+  },
+  "backend": {
+    "surefire": {
+      "totals": {
+        "tests": 71,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "suites": [
+        {
+          "name": "com.adtek.common.core.DataScopeTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.framework.audit.AuditContextTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.framework.audit.RequestFailureAuditFilterTest",
+          "tests": 4,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.framework.mybatis.ScopedDataPermissionInterceptorTest",
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.framework.security.CurrentActorTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.framework.security.JwtTokenCodecTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.framework.security.PasswordEncodingTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.framework.security.RedisFailureTest",
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.framework.task.FileStorageTest",
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.framework.web.LegacyBoundaryTest",
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.framework.web.ResultSerializationTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.framework.web.TraceFilterTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.ArchitectureTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.ArchiveRestoreProofTest",
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.AuditProjectionTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.ErrorCodeCatalogTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.K3ConfigurationTest",
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.K3ErrorsTest",
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.K3LegacyProtocolTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.LegacyErrorCatalogTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.MaintenanceScheduleTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.sn.service.support.SequenceCodecTest",
+          "tests": 9,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      ]
+    },
+    "failsafe": {
+      "totals": {
+        "tests": 171,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "suites": [
+        {
+          "name": "com.adtek.server.AuditIT",
+          "tests": 7,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.AuthenticationIT",
+          "tests": 20,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.ConfigurationIT",
+          "tests": 9,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.DurableTaskIT",
+          "tests": 9,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.LegacyCliIT",
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.LegacyInventoryIT",
+          "tests": 7,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.LegacyMasterIT",
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.LegacySnapshotIT",
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.LegacyStageIT",
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.ProcessTaskRecoveryIT",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.RuntimeIT",
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.SnAcquireIT",
+          "tests": 15,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.SnAuditIT",
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.SnFoundationIT",
+          "tests": 18,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.SnMaintenanceIT",
+          "tests": 14,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.SnQueryIT",
+          "tests": 8,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.SnTransferIT",
+          "tests": 9,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.adtek.server.SnWorkIT",
+          "tests": 21,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      ]
+    }
+  },
+  "frontend": {
+    "tests": 43,
+    "failed": 0,
+    "skipped": 0,
+    "checks": [
+      "OpenAPI drift",
+      "ESLint",
+      "Prettier",
+      "TypeScript",
+      "Vite build"
+    ]
+  },
+  "k3SyntheticConfiguration": {
+    "checks": 18,
+    "failed": 0
+  },
+  "javaSemantics": {
+    "declarationAstUnchanged": 457,
+    "removedUnusedImports": {
+      "adtek-integration/src/main/java/com/adtek/integration/k3/K3ProductionOrderAdapter.java": [
+        "import java.math.BigInteger;"
+      ],
+      "adtek-sn/src/main/java/com/adtek/sn/convert/SnConvert.java": [
+        "import java.util.List;"
+      ],
+      "adtek-sn/src/main/java/com/adtek/sn/domain/OrderEntryEntity.java": [
+        "import java.time.Instant;"
+      ],
+      "adtek-sn/src/main/java/com/adtek/sn/service/impl/PrintHandlers.java": [
+        "import java.nio.charset.StandardCharsets;"
+      ],
+      "adtek-sn/src/main/java/com/adtek/sn/service/support/PrintFiles.java": [
+        "import com.adtek.framework.task.FileStorage;"
+      ]
+    }
+  },
+  "powershellSemantics": {
+    "astStructureDifferences": 0,
+    "tokenDifferences": 0,
+    "files": 33
+  },
+  "pomSemantics": {
+    "pomsChecked": 7,
+    "priorValuesAndListOrderUnchanged": true,
+    "allowedNamedFieldReordering": "configuration/executions under two existing failsafe plugin profiles",
+    "intentionalAdditions": "Spotless formatter configuration and three fixed version properties"
+  },
+  "runtime": {
+    "apiPid": 34344,
+    "frontend": 200,
+    "developmentApi": "UP",
+    "managedExecSession": 35889,
+    "legacyPython": "ok"
+  },
+  "limitations": [
+    "No browser E2E rerun for formatting-only changes",
+    "GitLab/GitHub CI not executed",
+    "Existing frontend shared-chunk size warning retained"
+  ],
+  "commands": [
+    "./tools/format.ps1 -Check",
+    "./tools/maven.ps1 -B -ntp -DargLine=-Xmx512m -Pintegration verify",
+    "./tools/verify-web.ps1",
+    "./tools/verify-k3-configuration.ps1"
+  ]
+}

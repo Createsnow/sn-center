@@ -1,8 +1,14 @@
 package com.adtek.framework.task.vo;
+
 import com.adtek.framework.task.*;
-import java.time.Instant;
+
 import io.swagger.v3.oas.annotations.media.Schema;
-/** 操作、执行和文件状态分别展示；processed是本代进度而非已生效业务数量。
+
+import java.time.Instant;
+
+/**
+ * 操作、执行和文件状态分别展示；processed是本代进度而非已生效业务数量。
+ *
  * @param taskId 服务器UUID
  * @param operationId 调用方稳定意图UUID
  * @param operationState 操作最终状态；文件恢复不撤销已成功的操作
@@ -19,9 +25,37 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @param byteSize READY后字节数的精确字符串，可空
  * @param createdAt 原任务创建时刻，以UTC输出，不随文件恢复重置
  */
-@Schema(requiredProperties={"taskId","operationId","operationState","state","attempt","executionEpoch","processed","phase","fileState","fileId","byteSize","rowCount","errorCode","resultRef","createdAt"})
-public record TaskVO(String taskId,String operationId,OperationState operationState,TaskState state,
- String attempt,String executionEpoch,String processed,@Schema(nullable=true) String phase,
- @Schema(nullable=true) FileState fileState,@Schema(nullable=true) String fileId,
- @Schema(nullable=true) String byteSize,@Schema(nullable=true) String rowCount,
- @Schema(nullable=true) Integer errorCode,@Schema(nullable=true) String resultRef,Instant createdAt) {}
+@Schema(
+        requiredProperties = {
+            "taskId",
+            "operationId",
+            "operationState",
+            "state",
+            "attempt",
+            "executionEpoch",
+            "processed",
+            "phase",
+            "fileState",
+            "fileId",
+            "byteSize",
+            "rowCount",
+            "errorCode",
+            "resultRef",
+            "createdAt"
+        })
+public record TaskVO(
+        String taskId,
+        String operationId,
+        OperationState operationState,
+        TaskState state,
+        String attempt,
+        String executionEpoch,
+        String processed,
+        @Schema(nullable = true) String phase,
+        @Schema(nullable = true) FileState fileState,
+        @Schema(nullable = true) String fileId,
+        @Schema(nullable = true) String byteSize,
+        @Schema(nullable = true) String rowCount,
+        @Schema(nullable = true) Integer errorCode,
+        @Schema(nullable = true) String resultRef,
+        Instant createdAt) {}

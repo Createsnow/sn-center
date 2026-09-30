@@ -17,6 +17,11 @@ public final class BusinessException extends RuntimeException {
         this.params = Map.copyOf(params);
     }
 
-    public ErrorCode getError() { return error; }
-    public Map<String, String> getParams() { return params; }
+    public ErrorCode getError() {
+        return error;
+    }
+
+    public Map<String, String> getParams() {
+        return params;
+    }
 }

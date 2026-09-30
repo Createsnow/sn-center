@@ -1,0 +1,224 @@
+[
+  {
+    "file": "backend/adtek-framework/src/main/java/com/adtek/framework/task/mapper/DurableFileMapper.java",
+    "maxLength": 98,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-framework/src/main/java/com/adtek/framework/task/mapper/DurableTaskMapper.java",
+    "maxLength": 98,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-framework/src/main/java/com/adtek/framework/task/mapper/LegacyTaskGuardMapper.java",
+    "maxLength": 98,
+    "over100": 0,
+    "changed": false
+  },
+  {
+    "file": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/AcquireMapper.java",
+    "maxLength": 100,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/FactoryMapper.java",
+    "maxLength": 66,
+    "over100": 0,
+    "changed": false
+  },
+  {
+    "file": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/FactoryMembershipMapper.java",
+    "maxLength": 97,
+    "over100": 0,
+    "changed": false
+  },
+  {
+    "file": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/LegacyMasterMapper.java",
+    "maxLength": 100,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/LegacyStageMapper.java",
+    "maxLength": 100,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/MaintenanceMapper.java",
+    "maxLength": 100,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/OrderBillMapper.java",
+    "maxLength": 99,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/OrderEntryMapper.java",
+    "maxLength": 98,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/OrderSyncMapper.java",
+    "maxLength": 79,
+    "over100": 0,
+    "changed": false
+  },
+  {
+    "file": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/OrganizationMappingMapper.java",
+    "maxLength": 98,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/RuleMapper.java",
+    "maxLength": 94,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/RuleVersionMapper.java",
+    "maxLength": 94,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/SnAuditContextMapper.java",
+    "maxLength": 100,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/SnAuditMapper.java",
+    "maxLength": 100,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/SnControlMapper.java",
+    "maxLength": 77,
+    "over100": 0,
+    "changed": false
+  },
+  {
+    "file": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/SnQueryMapper.java",
+    "maxLength": 98,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/SnWorkMapper.java",
+    "maxLength": 99,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/SourceQuotaMapper.java",
+    "maxLength": 94,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/TransferMapper.java",
+    "maxLength": 100,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-system/src/main/java/com/adtek/system/mapper/AuditExportMapper.java",
+    "maxLength": 100,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-system/src/main/java/com/adtek/system/mapper/AuditQueryMapper.java",
+    "maxLength": 92,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-system/src/main/java/com/adtek/system/mapper/BootstrapMapper.java",
+    "maxLength": 96,
+    "over100": 0,
+    "changed": false
+  },
+  {
+    "file": "backend/adtek-system/src/main/java/com/adtek/system/mapper/ConfigurationSecurityMapper.java",
+    "maxLength": 94,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-system/src/main/java/com/adtek/system/mapper/DepartmentMapper.java",
+    "maxLength": 97,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-system/src/main/java/com/adtek/system/mapper/DictionaryItemMapper.java",
+    "maxLength": 98,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-system/src/main/java/com/adtek/system/mapper/DictionaryTypeMapper.java",
+    "maxLength": 96,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-system/src/main/java/com/adtek/system/mapper/IdentityMapper.java",
+    "maxLength": 100,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-system/src/main/java/com/adtek/system/mapper/LegacyIdentityMapper.java",
+    "maxLength": 100,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-system/src/main/java/com/adtek/system/mapper/ManagedMenuMapper.java",
+    "maxLength": 96,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-system/src/main/java/com/adtek/system/mapper/OperLogMapper.java",
+    "maxLength": 98,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-system/src/main/java/com/adtek/system/mapper/RoleMapper.java",
+    "maxLength": 95,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-system/src/main/java/com/adtek/system/mapper/ServiceClientMapper.java",
+    "maxLength": 97,
+    "over100": 0,
+    "changed": true
+  },
+  {
+    "file": "backend/adtek-system/src/main/java/com/adtek/system/mapper/UserMapper.java",
+    "maxLength": 63,
+    "over100": 0,
+    "changed": false
+  },
+  {
+    "file": "backend/adtek-system/src/main/java/com/adtek/system/mapper/UserSecurityMapper.java",
+    "maxLength": 88,
+    "over100": 0,
+    "changed": true
+  }
+]

@@ -9,6 +9,7 @@ import com.adtek.system.mapper.BootstrapMapper;
 import com.adtek.system.service.AuthenticationAuditService;
 import com.adtek.system.service.BootstrapService;
 import com.adtek.system.service.support.PasswordPolicy;
+
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,9 +24,18 @@ public class BootstrapServiceImpl implements BootstrapService {
     private final PasswordEncoder passwords;
     private final CommandValidator validator;
     private final AuthenticationAuditService audit;
-    public BootstrapServiceImpl(BootstrapMapper mapper, UserConvert convert, PasswordEncoder passwords,
-            CommandValidator validator, AuthenticationAuditService audit) {
-        this.mapper = mapper; this.convert = convert; this.passwords = passwords; this.validator = validator; this.audit = audit;
+
+    public BootstrapServiceImpl(
+            BootstrapMapper mapper,
+            UserConvert convert,
+            PasswordEncoder passwords,
+            CommandValidator validator,
+            AuthenticationAuditService audit) {
+        this.mapper = mapper;
+        this.convert = convert;
+        this.passwords = passwords;
+        this.validator = validator;
+        this.audit = audit;
     }
 
     @Override
@@ -47,7 +57,9 @@ public class BootstrapServiceImpl implements BootstrapService {
         mapper.markOwnership(user.getId());
         mapper.assignInitialRoles(user.getId());
         audit.recordSuccess(user.getId(), AuthenticationAuditService.Action.BOOTSTRAP);
-        if (mapper.finishInitialization() != 1) { throw new IllegalStateException("Bootstrap control row changed"); }
+        if (mapper.finishInitialization() != 1) {
+            throw new IllegalStateException("Bootstrap control row changed");
+        }
         return user.getId().toString();
     }
 }

@@ -7,5 +7,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DataScope {
     String resource();
+
     String permission();
 }

@@ -11,5 +11,12 @@ public interface AuthenticationAuditService {
     /** 记录已读取的语言前后值；仅白名单字段，与本人语言修改加入同一事务。 */
     void recordLanguageChange(long userId, String previous, String current);
 
-    enum Action { LOGIN, REFRESH, LOGOUT, PASSWORD_CHANGE, LANGUAGE_CHANGE, BOOTSTRAP }
+    enum Action {
+        LOGIN,
+        REFRESH,
+        LOGOUT,
+        PASSWORD_CHANGE,
+        LANGUAGE_CHANGE,
+        BOOTSTRAP
+    }
 }

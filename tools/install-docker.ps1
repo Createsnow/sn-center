@@ -26,13 +26,19 @@ if ($wslProcess.ExitCode -ne 0) {
     throw "WSL setup failed; inspect tools/.runtime/wsl-result.json (exit $($wslProcess.ExitCode))."
 }
 $wslResult = Get-Content -LiteralPath (Join-Path $runtimePath 'wsl-result.json') -Raw | ConvertFrom-Json
-if (-not $wslResult.success) { throw $wslResult.error }
+if (-not $wslResult.success) {
+    throw $wslResult.error
+}
 $desktopPath = Join-Path $env:LOCALAPPDATA 'Programs/DockerDesktop/Docker Desktop.exe'
 if (-not (Test-Path -LiteralPath $desktopPath)) {
     Write-Output 'Installing Docker Desktop for the current user with the WSL 2 backend.'
     $installProcess = Start-Process -FilePath $installerPath -WindowStyle Hidden -PassThru -Wait -ArgumentList @('install', '--user', '--quiet', '--accept-license', '--backend=wsl-2', '--no-windows-containers')
-    if ($installProcess.ExitCode -notin @(0, 3010)) { throw "Docker installer returned $($installProcess.ExitCode)" }
-    if ($installProcess.ExitCode -eq 3010) { $wslResult.restartNeeded = $true }
+    if ($installProcess.ExitCode -notin @(0, 3010)) {
+        throw "Docker installer returned $($installProcess.ExitCode)"
+    }
+    if ($installProcess.ExitCode -eq 3010) {
+        $wslResult.restartNeeded = $true
+    }
 }
 [ordered]@{
     installedAt = (Get-Date).ToString('o')
@@ -43,6 +49,7 @@ if (-not (Test-Path -LiteralPath $desktopPath)) {
 } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $runtimePath 'docker-install-result.json') -Encoding utf8
 if ($wslResult.restartNeeded) {
     Write-Output 'Installation completed. A Windows restart is required before Linux containers can run. No restart has been requested.'
-} else {
+}
+else {
     Write-Output "Installation completed: $desktopPath"
 }

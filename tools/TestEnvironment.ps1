@@ -13,7 +13,7 @@ function Set-AdtekTestEnvironment {
         ADTEK_FILE_ROOT = (Join-Path $projectRoot 'deploy/data/files')
         SPRING_PROFILES_ACTIVE = 'local'
         # 显式导入新工程受保护配置；缺目录时继续默认禁用，不读取旧.env。
-        SPRING_CONFIG_IMPORT = ('optional:configtree:' + (Join-Path $secretRoot 'k3').Replace('\','/') + '/')
+        SPRING_CONFIG_IMPORT = ('optional:configtree:' + (Join-Path $secretRoot 'k3').Replace('\', '/') + '/')
     }
     $files = @{
         ADTEK_DB_PASSWORD = 'mysql-app-password'
@@ -23,9 +23,13 @@ function Set-AdtekTestEnvironment {
     }
     foreach ($entry in $files.GetEnumerator()) {
         $path = Join-Path $secretRoot $entry.Value
-        if (-not (Test-Path -LiteralPath $path)) { throw 'Missing test secrets. Run ./tools/infra.ps1 start first.' }
+        if (-not (Test-Path -LiteralPath $path)) {
+            throw 'Missing test secrets. Run ./tools/infra.ps1 start first.'
+        }
         $values[$entry.Key] = [IO.File]::ReadAllText($path).Trim()
-        if ($values[$entry.Key] -notmatch '^[0-9a-f]{64}$') { throw "Invalid secret format: $($entry.Value)" }
+        if ($values[$entry.Key] -notmatch '^[0-9a-f]{64}$') {
+            throw "Invalid secret format: $($entry.Value)"
+        }
     }
     $previous = @{}
     foreach ($entry in $values.GetEnumerator()) {

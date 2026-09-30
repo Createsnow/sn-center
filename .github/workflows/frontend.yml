@@ -29,6 +29,20 @@ jobs:
           pnpm format:check
           pnpm test
           pnpm build
+      - name: Check deployment and application configuration formatting
+        run: >-
+          pnpm exec prettier --check
+          "../.github/workflows/*.yml"
+          "../deploy/*.yml" "../deploy/*.json"
+          "../backend/adtek-server/src/main/resources/*.yml"
+          "../backend/adtek-server/src/test/resources/*.yml"
+          "../tools/build-tools.lock.json"
+      - name: Check PowerShell formatting without running operational scripts
+        working-directory: .
+        shell: pwsh
+        run: |
+          ./tools/bootstrap-format.ps1
+          ./tools/format.ps1 -Check -Scope PowerShell
       - name: Reject zero discovery or skipped tests
         shell: python
         run: |

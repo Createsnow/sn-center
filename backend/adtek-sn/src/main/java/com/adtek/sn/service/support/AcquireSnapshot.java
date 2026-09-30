@@ -1,5 +1,43 @@
 package com.adtek.sn.service.support;
+
 /** 领取/打印时不可变展示值；seqText用当时版本编码，不用今日规则重建。 */
-@io.swagger.v3.oas.annotations.media.Schema(requiredProperties={"sn","seqText","seqDec","seqPi","pi","factoryId","factoryCode","factoryName","customer","material","ruleVersionId","sourceSystem","sourceAccount","sourceBillId","sourceEntryId","billNo","sourcePi","sourceOrgId"})
-public record AcquireSnapshot(String sn,@io.swagger.v3.oas.annotations.media.Schema(nullable=true) String seqText,@io.swagger.v3.oas.annotations.media.Schema(nullable=true) String seqDec,@io.swagger.v3.oas.annotations.media.Schema(nullable=true) String seqPi,String pi,String factoryId,String factoryCode,String factoryName,
- String customer,String material,@io.swagger.v3.oas.annotations.media.Schema(nullable=true) String ruleVersionId,@io.swagger.v3.oas.annotations.media.Schema(nullable=true) String sourceSystem,@io.swagger.v3.oas.annotations.media.Schema(nullable=true) String sourceAccount,@io.swagger.v3.oas.annotations.media.Schema(nullable=true) String sourceBillId,@io.swagger.v3.oas.annotations.media.Schema(nullable=true) String sourceEntryId,String billNo,String sourcePi,@io.swagger.v3.oas.annotations.media.Schema(nullable=true) String sourceOrgId) {}
+@io.swagger.v3.oas.annotations.media.Schema(
+        requiredProperties = {
+            "sn",
+            "seqText",
+            "seqDec",
+            "seqPi",
+            "pi",
+            "factoryId",
+            "factoryCode",
+            "factoryName",
+            "customer",
+            "material",
+            "ruleVersionId",
+            "sourceSystem",
+            "sourceAccount",
+            "sourceBillId",
+            "sourceEntryId",
+            "billNo",
+            "sourcePi",
+            "sourceOrgId"
+        })
+public record AcquireSnapshot(
+        String sn,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String seqText,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String seqDec,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String seqPi,
+        String pi,
+        String factoryId,
+        String factoryCode,
+        String factoryName,
+        String customer,
+        String material,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String ruleVersionId,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String sourceSystem,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String sourceAccount,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String sourceBillId,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String sourceEntryId,
+        String billNo,
+        String sourcePi,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String sourceOrgId) {}

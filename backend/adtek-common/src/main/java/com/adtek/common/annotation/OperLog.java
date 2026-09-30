@@ -7,8 +7,15 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OperLog {
     String title();
+
     String action();
+
     BusinessType businessType();
+
     String[] fields();
-    enum BusinessType { INSERT, UPDATE }
+
+    enum BusinessType {
+        INSERT,
+        UPDATE
+    }
 }

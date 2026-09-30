@@ -17,11 +17,17 @@ try {
     if ($LASTEXITCODE -notin @(0, 3010)) {
         throw "WSL installation returned $LASTEXITCODE; see tools/.runtime/wsl-install.log"
     }
-    if ($LASTEXITCODE -eq 3010) { $result.restartNeeded = $true }
+    if ($LASTEXITCODE -eq 3010) {
+        $result.restartNeeded = $true
+    }
     $result.success = $true
-} catch {
+}
+catch {
     $result.error = $_.Exception.Message
-} finally {
+}
+finally {
     $result | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $runtimePath 'wsl-result.json') -Encoding utf8
 }
-if (-not $result.success) { exit 1 }
+if (-not $result.success) {
+    exit 1
+}

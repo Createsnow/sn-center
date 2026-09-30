@@ -1,6 +1,13 @@
 package com.adtek.framework.security;
 
+import static org.assertj.core.api.Assertions.*;
+
 import com.adtek.common.core.Actor;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.security.oauth2.jwt.JwtException;
+
+import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -8,10 +15,6 @@ import java.time.ZoneOffset;
 import java.util.HexFormat;
 import java.util.Map;
 import java.util.UUID;
-import java.security.SecureRandom;
-import org.junit.jupiter.api.Test;
-import org.springframework.security.oauth2.jwt.JwtException;
-import static org.assertj.core.api.Assertions.*;
 
 class JwtTokenCodecTest {
     private static final Instant NOW = Instant.parse("2026-09-29T05:00:00Z");
@@ -19,7 +22,8 @@ class JwtTokenCodecTest {
     private final Actor actor = new Actor(9_007_199_254_740_993L, 7, false, Map.of());
 
     private JwtTokenCodec codec(String secret, String issuer, String audience, Instant now) {
-        return new JwtTokenCodec(secret, issuer, audience, Duration.ofMinutes(15), Clock.fixed(now, ZoneOffset.UTC));
+        return new JwtTokenCodec(
+                secret, issuer, audience, Duration.ofMinutes(15), Clock.fixed(now, ZoneOffset.UTC));
     }
 
     @Test
@@ -38,18 +42,40 @@ class JwtTokenCodecTest {
 
     @Test
     void rejectsExpiredFutureIssuerAudienceAndSignatureMismatch() {
-        String token = codec(key, "issuer", "audience", NOW).issue(actor, UUID.randomUUID().toString()).accessToken();
-        assertThatThrownBy(() -> codec(key, "issuer", "audience", NOW.plusSeconds(901)).decoder().decode(token)).isInstanceOf(JwtException.class);
-        assertThatThrownBy(() -> codec(key, "issuer", "audience", NOW.minusSeconds(1)).decoder().decode(token)).isInstanceOf(JwtException.class);
-        assertThatThrownBy(() -> codec(key, "other", "audience", NOW).decoder().decode(token)).isInstanceOf(JwtException.class);
-        assertThatThrownBy(() -> codec(key, "issuer", "other", NOW).decoder().decode(token)).isInstanceOf(JwtException.class);
+        String token =
+                codec(key, "issuer", "audience", NOW)
+                        .issue(actor, UUID.randomUUID().toString())
+                        .accessToken();
+        assertThatThrownBy(
+                        () ->
+                                codec(key, "issuer", "audience", NOW.plusSeconds(901))
+                                        .decoder()
+                                        .decode(token))
+                .isInstanceOf(JwtException.class);
+        assertThatThrownBy(
+                        () ->
+                                codec(key, "issuer", "audience", NOW.minusSeconds(1))
+                                        .decoder()
+                                        .decode(token))
+                .isInstanceOf(JwtException.class);
+        assertThatThrownBy(() -> codec(key, "other", "audience", NOW).decoder().decode(token))
+                .isInstanceOf(JwtException.class);
+        assertThatThrownBy(() -> codec(key, "issuer", "other", NOW).decoder().decode(token))
+                .isInstanceOf(JwtException.class);
         String otherKey = HexFormat.of().formatHex(new SecureRandom().generateSeed(32));
-        assertThatThrownBy(() -> codec(otherKey, "issuer", "audience", NOW).decoder().decode(token)).isInstanceOf(JwtException.class);
+        assertThatThrownBy(() -> codec(otherKey, "issuer", "audience", NOW).decoder().decode(token))
+                .isInstanceOf(JwtException.class);
     }
 
     @Test
     void rejectsWeakKeysAndLegacyTwoPartTokens() {
-        assertThatThrownBy(() -> codec("00", "issuer", "audience", NOW)).isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> codec(key, "issuer", "audience", NOW).decoder().decode("legacy.payload")).isInstanceOf(JwtException.class);
+        assertThatThrownBy(() -> codec("00", "issuer", "audience", NOW))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(
+                        () ->
+                                codec(key, "issuer", "audience", NOW)
+                                        .decoder()
+                                        .decode("legacy.payload"))
+                .isInstanceOf(JwtException.class);
     }
 }

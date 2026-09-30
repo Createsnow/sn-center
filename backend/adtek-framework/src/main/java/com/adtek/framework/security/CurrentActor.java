@@ -3,6 +3,7 @@ package com.adtek.framework.security;
 import com.adtek.common.core.Actor;
 import com.adtek.common.core.BusinessException;
 import com.adtek.framework.constant.ErrorCodeConstants;
+
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +27,8 @@ public class CurrentActor {
 
     public ActorAuthenticationToken token() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (!(authentication instanceof ActorAuthenticationToken token) || !token.isAuthenticated()) {
+        if (!(authentication instanceof ActorAuthenticationToken token)
+                || !token.isAuthenticated()) {
             throw new BusinessException(ErrorCodeConstants.SESSION_INVALID);
         }
         return token;

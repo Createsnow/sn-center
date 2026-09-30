@@ -1,0 +1,200 @@
+[
+  {
+    "name": "com.adtek.common.core.DataScopeTest",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "364a0ac237deff041de2ac1fcd26d49571d87326afa24c4b3eeb964b22daeacd",
+    "modifiedAt": "2026-09-30T12:10:14.514342+00:00"
+  },
+  {
+    "name": "com.adtek.framework.audit.AuditContextTest",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "4eabe34feea822fadf765c3336f81af97c01ba886915141a611e1b9f38209887",
+    "modifiedAt": "2026-09-30T12:10:19.766577+00:00"
+  },
+  {
+    "name": "com.adtek.framework.audit.RequestFailureAuditFilterTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "7feaee0f4f66697a728505c6ddc693fc711787a9b54191fcabc477410911cdd3",
+    "modifiedAt": "2026-09-30T12:10:19.896060+00:00"
+  },
+  {
+    "name": "com.adtek.framework.mybatis.ScopedDataPermissionInterceptorTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "f87d1c10f46de707df1e1aa1c3cfb9a65049cc6bee3f57d622f70b1b3257369f",
+    "modifiedAt": "2026-09-30T12:10:20.053499+00:00"
+  },
+  {
+    "name": "com.adtek.framework.security.CurrentActorTest",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "7771b79352f431accdd8f5de65f4226eee2e58a706edbf1ca293dddcc8726dbd",
+    "modifiedAt": "2026-09-30T12:10:20.063855+00:00"
+  },
+  {
+    "name": "com.adtek.framework.security.JwtTokenCodecTest",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "6665f18e1655c0331b53052fdf316073eceb8eec87efde304aa6753c68780dfc",
+    "modifiedAt": "2026-09-30T12:10:20.217274+00:00"
+  },
+  {
+    "name": "com.adtek.framework.security.PasswordEncodingTest",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "909be907de5243b5361dd929dc744ebfd5dc1c3f01b91119f7475f7ea07f5d34",
+    "modifiedAt": "2026-09-30T12:10:20.553059+00:00"
+  },
+  {
+    "name": "com.adtek.framework.security.RedisFailureTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "85e7dc487bc662c9fec31afd759fa4a09438b02cb2e9415ab4ac76d65f48301c",
+    "modifiedAt": "2026-09-30T12:10:21.393489+00:00"
+  },
+  {
+    "name": "com.adtek.framework.task.FileStorageTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "fedf41f41e2a1db59ed6f4d66405cd75a25c6396bc91a1c112f1d9c00d0525d0",
+    "modifiedAt": "2026-09-30T12:10:21.717325+00:00"
+  },
+  {
+    "name": "com.adtek.framework.web.LegacyBoundaryTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "e23d1c87d7e6507e99710cb1fb771d1cab7c61ed3d3a00811f2e3e4139a2bbce",
+    "modifiedAt": "2026-09-30T12:10:22.877576+00:00"
+  },
+  {
+    "name": "com.adtek.framework.web.ResultSerializationTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "8490a8d72689cdd9eebce5264fd49374ea71aed04db81c1638fe39ef3f200cb7",
+    "modifiedAt": "2026-09-30T12:10:22.895896+00:00"
+  },
+  {
+    "name": "com.adtek.framework.web.TraceFilterTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "01092da7e1b62b1784a1daa77da72e5c377c570ab1b1d35d7a8718d09903e3d2",
+    "modifiedAt": "2026-09-30T12:10:22.901052+00:00"
+  },
+  {
+    "name": "com.adtek.server.ArchitectureTest",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "6aeccfd6170f7c5fb3e7ea7e6cf476af0807ba9299abae086b4dd67cda151110",
+    "modifiedAt": "2026-09-30T12:10:39.718473+00:00"
+  },
+  {
+    "name": "com.adtek.server.ArchiveRestoreProofTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "34afc70632325ba1bd44c72674d7fd915960f2dfb9df90128ece08f06fe290d8",
+    "modifiedAt": "2026-09-30T12:10:40.374232+00:00"
+  },
+  {
+    "name": "com.adtek.server.AuditProjectionTest",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "b2f9dd6826fcd4a68ad7330dbdca1960fe9d76bcb756d2f57ff7dd1bdc3ba5a8",
+    "modifiedAt": "2026-09-30T12:10:40.396364+00:00"
+  },
+  {
+    "name": "com.adtek.server.ErrorCodeCatalogTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "2905f705fa4c072eeadfe911540a5e08758cd75279f18bd090a5e281dd792b26",
+    "modifiedAt": "2026-09-30T12:10:41.223741+00:00"
+  },
+  {
+    "name": "com.adtek.server.K3ConfigurationTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "4f8d5d3530aa3c35ce566ec7893b460b5248edc5cf44e7348f0b1459b7407f9e",
+    "modifiedAt": "2026-09-30T12:10:42.028091+00:00"
+  },
+  {
+    "name": "com.adtek.server.K3ErrorsTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "b383d385623ca1b9fe2ef485a823027d2606b7e51a3b59047484c89f62c2c395",
+    "modifiedAt": "2026-09-30T12:10:43.242766+00:00"
+  },
+  {
+    "name": "com.adtek.server.K3LegacyProtocolTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "b07c49ea29e6975ca0f3c48f140593b1453225e3ad4a043b4392a2f6f39afad0",
+    "modifiedAt": "2026-09-30T12:10:43.286156+00:00"
+  },
+  {
+    "name": "com.adtek.server.LegacyErrorCatalogTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "12fa84df73e3963f921912e05cb7881e02c20e76d40a38ebe9fefc2f1cd0383d",
+    "modifiedAt": "2026-09-30T12:10:43.300088+00:00"
+  },
+  {
+    "name": "com.adtek.server.MaintenanceScheduleTest",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "ab64869744339bff4b716dcd229e6080b0c80386a1dc1a09ab7494da4972c693",
+    "modifiedAt": "2026-09-30T12:10:43.326634+00:00"
+  },
+  {
+    "name": "com.adtek.sn.service.support.SequenceCodecTest",
+    "tests": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "297ddcfacc69c99f0e905d3282461a22dda7ecf81d53d380907b25717690c814",
+    "modifiedAt": "2026-09-30T12:10:29.633347+00:00"
+  }
+]

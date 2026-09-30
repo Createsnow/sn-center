@@ -1,9 +1,11 @@
 package com.adtek.common.core;
 
-import java.util.Set;
-import java.util.Map;
-import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
+
+import java.util.Map;
+import java.util.Set;
 
 class DataScopeTest {
     @Test
@@ -21,7 +23,8 @@ class DataScopeTest {
 
     @Test
     void departmentAndFactoryScopesRemainIndependent() {
-        var scope = new AuthorizationScope(new DataScope(true, Set.of(), false), false, Set.of(20L));
+        var scope =
+                new AuthorizationScope(new DataScope(true, Set.of(), false), false, Set.of(20L));
         assertThat(scope.permitsFactory(20)).isTrue();
         assertThat(scope.permitsFactory(21)).isFalse();
     }
@@ -29,9 +32,16 @@ class DataScopeTest {
     @Test
     void crossFactoryReadGrantDoesNotBroadenOwnFactoryWriteGrant() {
         var departments = new DataScope(true, Set.of(), false);
-        var actor = new Actor(1, 1, false, Map.of(
-                "sn:query:list", new AuthorizationScope(departments, true, Set.of()),
-                "sn:acquire:execute", new AuthorizationScope(departments, false, Set.of(20L))));
+        var actor =
+                new Actor(
+                        1,
+                        1,
+                        false,
+                        Map.of(
+                                "sn:query:list",
+                                        new AuthorizationScope(departments, true, Set.of()),
+                                "sn:acquire:execute",
+                                        new AuthorizationScope(departments, false, Set.of(20L))));
         assertThat(actor.grants().get("sn:query:list").permitsFactory(21)).isTrue();
         assertThat(actor.grants().get("sn:acquire:execute").permitsFactory(20)).isTrue();
         assertThat(actor.grants().get("sn:acquire:execute").permitsFactory(21)).isFalse();

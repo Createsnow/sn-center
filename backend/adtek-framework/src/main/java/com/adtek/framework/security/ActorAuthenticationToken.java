@@ -1,6 +1,7 @@
 package com.adtek.framework.security;
 
 import com.adtek.common.core.Actor;
+
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -16,8 +17,22 @@ public final class ActorAuthenticationToken extends AbstractAuthenticationToken 
         super.setAuthenticated(true);
     }
 
-    @Override public Object getCredentials() { return ""; }
-    @Override public Actor getPrincipal() { return actor; }
-    @Override public String getName() { return Long.toString(actor.userId()); }
-    public String sessionId() { return sessionId; }
+    @Override
+    public Object getCredentials() {
+        return "";
+    }
+
+    @Override
+    public Actor getPrincipal() {
+        return actor;
+    }
+
+    @Override
+    public String getName() {
+        return Long.toString(actor.userId());
+    }
+
+    public String sessionId() {
+        return sessionId;
+    }
 }

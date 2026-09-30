@@ -9,5 +9,8 @@ public record BootstrapAdminDTO(
         @NotBlank @Pattern(regexp = "[A-Za-z0-9_-]{2,32}") String username,
         @NotBlank @Size(max = 64) String password,
         @NotBlank @Size(max = 100) String displayName) {
-    @Override public String toString() { return "BootstrapAdminDTO[REDACTED]"; }
+    @Override
+    public String toString() {
+        return "BootstrapAdminDTO[REDACTED]";
+    }
 }

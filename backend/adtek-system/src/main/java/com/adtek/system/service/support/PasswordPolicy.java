@@ -8,9 +8,11 @@ public final class PasswordPolicy {
     private PasswordPolicy() {}
 
     public static void requireStrong(String value) {
-        if (value == null || value.codePointCount(0, value.length()) < 8
+        if (value == null
+                || value.codePointCount(0, value.length()) < 8
                 || value.codePointCount(0, value.length()) > 64
-                || !value.matches("(?s).*[A-Za-z].*") || !value.matches("(?s).*[0-9].*")
+                || !value.matches("(?s).*[A-Za-z].*")
+                || !value.matches("(?s).*[0-9].*")
                 || value.codePoints().anyMatch(Character::isISOControl)) {
             throw new BusinessException(ErrorCodeConstants.PASSWORD_WEAK);
         }

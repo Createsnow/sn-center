@@ -1,9 +1,13 @@
 package com.adtek.system.convert;
+
 import com.adtek.system.domain.*;
 import com.adtek.system.dto.*;
 import com.adtek.system.vo.*;
-import java.util.List;
+
 import org.mapstruct.*;
+
+import java.util.List;
+
 /** 仅作配置字段映射；版本、关系校验、授权和审计由服务完成。 */
 @Mapper
 public interface ConfigurationConvert {
@@ -14,6 +18,7 @@ public interface ConfigurationConvert {
     @Mapping(target = "factoryScope", source = "factoryScope")
     @Mapping(target = "enabled", source = "enabled")
     RoleEntity fromRole(RoleSaveDTO command);
+
     @Mapping(target = "menuIds", source = "menuIds")
     @Mapping(target = "deptIds", source = "deptIds")
     RoleVO toRole(RoleEntity entity, List<String> menuIds, List<String> deptIds);
@@ -23,6 +28,7 @@ public interface ConfigurationConvert {
     @Mapping(target = "parentId", source = "parentId")
     @Mapping(target = "enabled", source = "enabled")
     DepartmentEntity fromDepartment(DepartmentSaveDTO command);
+
     DepartmentVO toDepartment(DepartmentEntity entity);
 
     @BeanMapping(ignoreByDefault = true)
@@ -35,6 +41,7 @@ public interface ConfigurationConvert {
     @Mapping(target = "sortOrder", source = "sortOrder")
     @Mapping(target = "enabled", source = "enabled")
     ManagedMenuEntity fromManagedMenu(ManagedMenuSaveDTO command);
+
     ManagedMenuVO toManagedMenu(ManagedMenuEntity entity);
 
     @BeanMapping(ignoreByDefault = true)
@@ -42,6 +49,7 @@ public interface ConfigurationConvert {
     @Mapping(target = "name", source = "name")
     @Mapping(target = "enabled", source = "enabled")
     DictionaryTypeEntity fromDictionaryType(DictionaryTypeSaveDTO command);
+
     DictionaryTypeVO toDictionaryType(DictionaryTypeEntity entity);
 
     @BeanMapping(ignoreByDefault = true)
@@ -53,5 +61,6 @@ public interface ConfigurationConvert {
     @Mapping(target = "sortOrder", source = "sortOrder")
     @Mapping(target = "enabled", source = "enabled")
     DictionaryItemEntity fromDictionaryItem(DictionaryItemSaveDTO command);
+
     DictionaryItemVO toDictionaryItem(DictionaryItemEntity entity);
 }

@@ -1,2 +1,3 @@
 package com.adtek.sn.domain;
-public record SnCountEntity(String name,long quantity) {}
+
+public record SnCountEntity(String name, long quantity) {}

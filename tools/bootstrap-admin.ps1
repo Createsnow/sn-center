@@ -6,7 +6,9 @@ $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $jar = Join-Path $projectRoot 'backend/adtek-server/target/adtek-server-0.1.0-SNAPSHOT.jar'
 $jdk = Get-ChildItem -LiteralPath (Join-Path $projectRoot '.tools/jdk') -Directory | Select-Object -First 1
-if (-not (Test-Path -LiteralPath $jar)) { throw 'Build first: ./tools/verify.ps1' }
+if (-not (Test-Path -LiteralPath $jar)) {
+    throw 'Build first: ./tools/verify.ps1'
+}
 . (Join-Path $PSScriptRoot 'TestEnvironment.ps1')
 $previous = Set-AdtekTestEnvironment
 $passwordFile = Join-Path $projectRoot 'deploy/.secrets/bootstrap-admin-password'
@@ -25,7 +27,8 @@ try {
     if ($bootstrapExitCode -eq 0) {
         Write-Output "Initialized test account '$Username'; initial password: deploy/.secrets/bootstrap-admin-password. Change it at first login."
     }
-} finally {
+}
+finally {
     Restore-AdtekTestEnvironment $previous
     $env:ADTEK_BOOTSTRAP_USERNAME = $previousBootstrapUser
     $env:ADTEK_BOOTSTRAP_PASSWORD = $previousBootstrapPassword
