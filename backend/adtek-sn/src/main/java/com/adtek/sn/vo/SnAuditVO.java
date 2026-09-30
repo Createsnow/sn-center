@@ -1,0 +1,36 @@
+package com.adtek.sn.vo;
+import java.time.Instant;
+import io.swagger.v3.oas.annotations.media.Schema;
+@Schema(requiredProperties={"id","createdAt","actorId","operator","operatorName","roles","source","action","result","factoryId","factoryCode","factoryName","pi","toFactoryId","toFactoryCode","toPi","customer","material","billNo","startSn","endSn","quantity","beforeStatus","afterStatus","batchId","operationId","transferId","reason","errorCode","traceId","detail"})
+public record SnAuditVO(
+ String id,
+ Instant createdAt,
+ String actorId,
+ String operator,
+ String operatorName,
+ String roles,
+ String source,
+ String action,
+ String result,
+ @Schema(types={"string","null"}) String factoryId,
+ @Schema(types={"string","null"}) String factoryCode,
+ @Schema(types={"string","null"}) String factoryName,
+ @Schema(types={"string","null"}) String pi,
+ @Schema(types={"string","null"}) String toFactoryId,
+ @Schema(types={"string","null"}) String toFactoryCode,
+ @Schema(types={"string","null"}) String toPi,
+ @Schema(types={"string","null"}) String customer,
+ @Schema(types={"string","null"}) String material,
+ @Schema(types={"string","null"}) String billNo,
+ @Schema(types={"string","null"}) String startSn,
+ @Schema(types={"string","null"}) String endSn,
+ String quantity,
+ @Schema(types={"string","null"}) String beforeStatus,
+ @Schema(types={"string","null"}) String afterStatus,
+ @Schema(types={"string","null"}) String batchId,
+ @Schema(types={"string","null"}) String operationId,
+ @Schema(types={"string","null"}) String transferId,
+ @Schema(types={"string","null"}) String reason,
+ @Schema(types={"string","null"}) String errorCode,
+ @Schema(types={"string","null"}) String traceId,
+ String detail) {}

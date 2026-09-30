@@ -1,0 +1,141 @@
+{
+  "login": {
+    "shape": "dict",
+    "resultType": "int",
+    "success": true,
+    "sessionPresent": true
+  },
+  "firstPageShape": {
+    "type": "array",
+    "length": 1,
+    "first": {
+      "type": "array",
+      "length": 1,
+      "first": {
+        "Result": {
+          "ResponseStatus": {
+            "ErrorCode": "int",
+            "IsSuccess": false,
+            "Errors": {
+              "type": "array",
+              "length": 1,
+              "first": {
+                "FieldName": "NoneType",
+                "Message": "str",
+                "DIndex": "int"
+              }
+            },
+            "SuccessEntitys": {
+              "type": "array",
+              "length": 0,
+              "first": null
+            },
+            "SuccessMessages": {
+              "type": "array",
+              "length": 0,
+              "first": null
+            },
+            "MsgCode": "int"
+          }
+        }
+      }
+    }
+  },
+  "orders": {
+    "pages": 1,
+    "rows": 1,
+    "columnTypes": [
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {}
+    ],
+    "violations": {
+      "rowShape": 1
+    }
+  },
+  "fieldProbes": {
+    "old10": {
+      "type": "array",
+      "length": 1,
+      "first": {
+        "type": "array",
+        "length": 10,
+        "first": "str"
+      }
+    },
+    "FID": {
+      "type": "array",
+      "length": 1,
+      "first": {
+        "type": "array",
+        "length": 11,
+        "first": "str"
+      }
+    },
+    "FTreeEntity_FEntryId": {
+      "type": "array",
+      "length": 1,
+      "first": {
+        "type": "array",
+        "length": 11,
+        "first": "str"
+      }
+    },
+    "FPrdOrgId.FOrgID": {
+      "type": "array",
+      "length": 1,
+      "first": {
+        "type": "array",
+        "length": 1,
+        "first": {
+          "Result": {
+            "ResponseStatus": {
+              "ErrorCode": "int",
+              "IsSuccess": false,
+              "Errors": {
+                "type": "array",
+                "length": 1,
+                "first": {
+                  "FieldName": "NoneType",
+                  "Message": "str",
+                  "DIndex": "int"
+                }
+              },
+              "SuccessEntitys": {
+                "type": "array",
+                "length": 0,
+                "first": null
+              },
+              "SuccessMessages": {
+                "type": "array",
+                "length": 0,
+                "first": null
+              },
+              "MsgCode": "int"
+            }
+          }
+        }
+      }
+    },
+    "FPrdOrgId.FNumber": {
+      "type": "array",
+      "length": 1,
+      "first": {
+        "type": "array",
+        "length": 11,
+        "first": "str"
+      }
+    }
+  }
+}

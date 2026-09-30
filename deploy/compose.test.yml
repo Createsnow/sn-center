@@ -1,0 +1,63 @@
+# 仅本机隔离测试设施；命名卷不随 stop/down 删除，禁止用于生产库。
+name: adtek-platform-sn-test
+services:
+  mysql:
+    image: mysql:8.4.11
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:33306:3306"
+    environment:
+      MYSQL_DATABASE: adtek_sn_test
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      TZ: UTC
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_as_cs
+      - --default-time-zone=+00:00
+      - --max-connections=120
+      - --local-infile=OFF
+    secrets:
+      - mysql_root_password
+      - mysql_app_password
+      - mysql_migration_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init-test-users.sh:/docker-entrypoint-initdb.d/10-users.sh:ro
+    healthcheck:
+      test: [CMD-SHELL, 'MYSQL_PWD="$$(cat /run/secrets/mysql_root_password)" mysql -uroot --silent --execute="SELECT 1" >/dev/null']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 45s
+    mem_limit: 2g
+  redis:
+    image: redis:8.4.7-alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:36379:6379"
+    entrypoint: [sh, /opt/adtek/start-redis.sh]
+    secrets:
+      - redis_password
+    volumes:
+      - redis_data:/data
+      - ./redis/start-redis.sh:/opt/adtek/start-redis.sh:ro
+    tmpfs:
+      - /run/redis:mode=0700
+    healthcheck:
+      test: [CMD-SHELL, 'REDISCLI_AUTH="$$(cat /run/secrets/redis_password)" redis-cli ping | grep -qx PONG']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 512m
+secrets:
+  mysql_root_password:
+    file: ./.secrets/mysql-root-password
+  mysql_app_password:
+    file: ./.secrets/mysql-app-password
+  mysql_migration_password:
+    file: ./.secrets/mysql-migration-password
+  redis_password:
+    file: ./.secrets/redis-password
+volumes:
+  mysql_data:
+  redis_data:

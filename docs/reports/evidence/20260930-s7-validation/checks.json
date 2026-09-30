@@ -1,0 +1,367 @@
+{
+  "capturedAt": "2026-09-30T08:53:25.258459+00:00",
+  "backendUnit": 67,
+  "backendIntegration": 169,
+  "backendIntegrationSuites": 18,
+  "browserJUnit": {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suite": "com.adtek.server.UsersBrowserE2E",
+    "seconds": "160.27",
+    "reportSha256": "87cc8267c6326428e3cd1c3b17d679da2b1b5d4756a6ce72a0cd25ed5a04ea71"
+  },
+  "frontend": {
+    "tests": 43,
+    "failures": 0,
+    "skipped": 0,
+    "apiTypes": true,
+    "lint": true,
+    "format": true,
+    "build": true,
+    "sharedChunkKB": 750.64
+  },
+  "edge": {
+    "startTime": "2026-09-30T08:48:35.034Z",
+    "duration": 136962.199,
+    "expected": 16,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "containerHTTPS": {
+    "startTime": "2026-09-30T08:52:47.599Z",
+    "duration": 8766.548999999999,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "files": [
+    {
+      "name": "sn-acquire-batch-zh.png",
+      "bytes": 120300,
+      "sha256": "b9b244d84cbcd10a0a4272a540f8416604f0bfaae4b34f8e759226af1b55f437"
+    },
+    {
+      "name": "sn-acquire-before-zh.png",
+      "bytes": 75779,
+      "sha256": "1cb8c81232e2a9d4d9e5b1e87d0cb2e06994224d27f09f7166d41b3d2921bbf9"
+    },
+    {
+      "name": "sn-acquire-en.png",
+      "bytes": 110427,
+      "sha256": "8aba1383afab6efb4ace8afa5f0c4bd8ca1515bac28b0314c75b7349c8f8fc4c"
+    },
+    {
+      "name": "sn-acquire-vi-mobile.png",
+      "bytes": 70780,
+      "sha256": "e76a809077ca0be912384906525c3437dfe4048b11f81e2ff5e617711b8d1d35"
+    },
+    {
+      "name": "sn-audit-detail-zh.png",
+      "bytes": 70644,
+      "sha256": "dbeb4c39510bd382cf8bec17808e4e78227c6745a9866295363319cdc3ff90e0"
+    },
+    {
+      "name": "sn-audit-en.png",
+      "bytes": 282068,
+      "sha256": "8f8155b0b72449fc31e3f4d0dda2c7cd3d4d55c2a4a2093cdafedbead7d335e2"
+    },
+    {
+      "name": "sn-audit-vi-mobile.png",
+      "bytes": 172989,
+      "sha256": "dfd41191499354508b65ff7d4fd4f2c09495091a0a89b7c7393e8833fdd4a5a5"
+    },
+    {
+      "name": "sn-audit-zh.png",
+      "bytes": 67441,
+      "sha256": "3f08dabdaec86f6b00c6642ca75a99d50e9acae99ea3f03b1e7d7cc3bd142da9"
+    },
+    {
+      "name": "sn-dashboard-en.png",
+      "bytes": 76084,
+      "sha256": "3331e1846e7602f27ed42a2a9020fc49448f37e29a994af55f04a54dbab5ad7e"
+    },
+    {
+      "name": "sn-dashboard-vi-mobile.png",
+      "bytes": 54787,
+      "sha256": "8c66dcf12f3729df3c4480cea1218bff5907d29cc9a63ad888e49e4fbcdb7d5f"
+    },
+    {
+      "name": "sn-dashboard-zh.png",
+      "bytes": 71599,
+      "sha256": "aac033dbd625235343b082171291676202c9647dc3f2b573f3db32eac5e597df"
+    },
+    {
+      "name": "sn-factories-zh.png",
+      "bytes": 44852,
+      "sha256": "3b0156a209226b7a4f0ab12e9f94ebcb1ae1c2a7e9e7e6514a42a1dbaafefda9"
+    },
+    {
+      "name": "sn-generation-allocated-zh.png",
+      "bytes": 152667,
+      "sha256": "f9f6a9f9eb5099dcbed902b4b251f87a174c1d6c2550f416dcfa12d58bd0ec6e"
+    },
+    {
+      "name": "sn-generation-en.png",
+      "bytes": 152460,
+      "sha256": "023cb1f470cb53bd5429ce2619ad0529b0bf14c9437fb8cbae5c43136dd56271"
+    },
+    {
+      "name": "sn-generation-preview-zh.png",
+      "bytes": 155431,
+      "sha256": "bc0248e080103fdddbe35b1baa1624b6de18a9e10b6a217588f0a2b9f54f8840"
+    },
+    {
+      "name": "sn-generation-vi-mobile.png",
+      "bytes": 133534,
+      "sha256": "4aae0d30db74f9a6c251386e6c20e30f6ecfd186a575dc09cebaaae73a949da3"
+    },
+    {
+      "name": "sn-orders-en.png",
+      "bytes": 76745,
+      "sha256": "311b7d9edc2a825d1df1b67d0558a3505f3d32dd81dad0010353dfff232e22c3"
+    },
+    {
+      "name": "sn-orders-vi-mobile.png",
+      "bytes": 55061,
+      "sha256": "916fbe870b162a36a9703d4e2003ff2c5d85947ab3df55d5ae7e233533a5e36c"
+    },
+    {
+      "name": "sn-orders-zh.png",
+      "bytes": 79840,
+      "sha256": "f57658d11f746b466a6959f2d40efae170111fd050ccced67d4cca6c172ecdd4"
+    },
+    {
+      "name": "sn-pi-init-form-zh.png",
+      "bytes": 104932,
+      "sha256": "d705e4e5f217db676177fbab804b80a05df0a2751724f61ea229d8d2860e9a70"
+    },
+    {
+      "name": "sn-pi-init-result-zh.png",
+      "bytes": 87364,
+      "sha256": "fe6655ed6843888c64ec3d6563b25fe03d9d260178a028fa5ec7ce3e7e8fd1f8"
+    },
+    {
+      "name": "sn-print-history-zh.png",
+      "bytes": 108254,
+      "sha256": "f3efda399be1fb60618a28a6ca6d9e319cec550860993192806c46a138e257b7"
+    },
+    {
+      "name": "sn-query-en.png",
+      "bytes": 109995,
+      "sha256": "0e54e819cbffa62a3bb156a739823f5e3628ac823052401cc24f8af31114747d"
+    },
+    {
+      "name": "sn-query-exports-zh.png",
+      "bytes": 84833,
+      "sha256": "c8b8f5c42bb3b12ac7ca06d6923a3ab2936e440a64366a9107168425d200351d"
+    },
+    {
+      "name": "sn-query-vi-mobile.png",
+      "bytes": 75130,
+      "sha256": "210c539a1d0723c3c143216cf20db9f3ee64f965b3c90f9df665a55fe439d914"
+    },
+    {
+      "name": "sn-query-zh.png",
+      "bytes": 78218,
+      "sha256": "33b22deb38a143e06521a90923d0edb34fcdbbcf6f1d042ea6d43c5255b447ee"
+    },
+    {
+      "name": "sn-rules-versions-zh.png",
+      "bytes": 61163,
+      "sha256": "f436b48e20e9f26651b46c0313280dbb10c21dec95d9f7a456c3879277a11023"
+    },
+    {
+      "name": "sn-rules-zh.png",
+      "bytes": 62671,
+      "sha256": "9a4952f7036f7bbf8dda22899b7c005667b25456dc0758a0614b23018a5bd273"
+    },
+    {
+      "name": "sn-transfer-detail-zh.png",
+      "bytes": 127622,
+      "sha256": "7157e53ea6806e2437e8c4fee41b6e120be450e6747a19d3bea35dc02fe20ead"
+    },
+    {
+      "name": "sn-transfer-en.png",
+      "bytes": 79955,
+      "sha256": "ec9d3549dd2c0ecb90b15636fe28443ae2aa5bd02bced2dc28bf63034105e07b"
+    },
+    {
+      "name": "sn-transfer-form-zh.png",
+      "bytes": 91678,
+      "sha256": "d5985decd55c7c47101ca696ef98f61f221fe052efba622a32eaa150441ce159"
+    },
+    {
+      "name": "sn-transfer-vi-mobile.png",
+      "bytes": 61391,
+      "sha256": "a1d8a9b712edd649b1a673717e129c240adeffd02fcd59d019d0643bb777d5a1"
+    },
+    {
+      "name": "task-export.csv",
+      "bytes": 270,
+      "sha256": "970a978133173b41eb9dcbc39497641896313543076d2c606bf874a0a4de7a16"
+    },
+    {
+      "name": "task-export-repeat.csv",
+      "bytes": 270,
+      "sha256": "970a978133173b41eb9dcbc39497641896313543076d2c606bf874a0a4de7a16"
+    },
+    {
+      "name": "sn-print.csv",
+      "bytes": 1662,
+      "sha256": "fe13c875aed2bb3ebb2964006301f2dc270093e5fe01676c5fe2d78c27aca39c"
+    },
+    {
+      "name": "sn-print.xlsx",
+      "bytes": 4468,
+      "sha256": "aa77e083928e4180e224b150c2b787f2aa3a030d713fc7f136bad7d115aa6e9a"
+    },
+    {
+      "name": "sn-query.csv",
+      "bytes": 2549,
+      "sha256": "f610f338e930f3587686938f6c8bb88c29aacd7e112b7d83f925e88cfa75772e"
+    },
+    {
+      "name": "sn-query.xlsx",
+      "bytes": 4963,
+      "sha256": "88f85500e71b5513a00c953f4cd4df58b1eeafa985524045d550bb4a1d90f0bb"
+    },
+    {
+      "name": "sn-audit.csv",
+      "bytes": 937,
+      "sha256": "d484526d8d4bd77b4a9fbb92c9d660d3d6f3db2e444977c9e55bfc5b9de74cf9"
+    },
+    {
+      "name": "sn-audit.xlsx",
+      "bytes": 4331,
+      "sha256": "cbc9c530fdac9db8d4ffd7eed5bc12a02e2062792f3b14a83ea9001326d7b555"
+    },
+    {
+      "name": "container-restored.png",
+      "bytes": 67858,
+      "sha256": "48390d18d56c0fb9a376b4d39dae4fd651a1686e9004e2352c802ca7bcb9ad24"
+    },
+    {
+      "name": "container-archive.png",
+      "bytes": 85236,
+      "sha256": "f3471998dd2b951f1311da864201fe514921605591c90c1ba34a187dc4354590"
+    },
+    {
+      "name": "container-restored.csv",
+      "bytes": 768,
+      "sha256": "5231471ae4c9fbfe393ff991e79253f21885ff793e2dfdc4540b47f8a948d2f6"
+    },
+    {
+      "name": "container-restored.xlsx",
+      "bytes": 3992,
+      "sha256": "dee7df19796acd73527db560fdfb3cb506313debebfa69126958103f493b4e31"
+    }
+  ],
+  "migrations": [
+    {
+      "path": "backend/adtek-server/src/main/resources/db/migration/V10__sn_transfers.sql",
+      "sha256": "291db6331b52043f7223355ebe197ca340f3d95560ea476e2c2704dfac77fc1f"
+    },
+    {
+      "path": "backend/adtek-server/src/main/resources/db/migration/V11__sn_query_exports_and_dashboard.sql",
+      "sha256": "4e950610b8d72e84e79a3e11b9b23c461a57414a77b826a180e921cd0a771496"
+    },
+    {
+      "path": "backend/adtek-server/src/main/resources/db/migration/V12__sn_business_audit.sql",
+      "sha256": "eac32f50f8edbdac0d77c295d920aea8869052ec402b4c249cf5ddaf9a48d293"
+    },
+    {
+      "path": "backend/adtek-server/src/main/resources/db/migration/V13__maintenance_runs.sql",
+      "sha256": "9680cf359199140b07a66d502beae7d50c2dba33111210af90e07a07fc2b8d9f"
+    },
+    {
+      "path": "backend/adtek-server/src/main/resources/db/migration/V14__legacy_migration_staging.sql",
+      "sha256": "2be2b857eecf8538e683d73c5fe05ff560ca76a7fa7b2188e951b93d9a0e7590"
+    },
+    {
+      "path": "backend/adtek-server/src/main/resources/db/migration/V15__legacy_master_data.sql",
+      "sha256": "f602077a7503d62e8d82978d3bf3ef616cbc980213874c88a3131e4c016cf115"
+    },
+    {
+      "path": "backend/adtek-server/src/main/resources/db/migration/V1__system_foundation.sql",
+      "sha256": "20ee7487e1c2e6413b1b4f58e41f8152f3273532d0c4ac9631eed41ae91fb52a"
+    },
+    {
+      "path": "backend/adtek-server/src/main/resources/db/migration/V2__identity_authorization_and_audit.sql",
+      "sha256": "feca2b5e8fff8cd4f80d48ccf3dbeac3221a7935f6e9c395677f35c4db5ee3ab"
+    },
+    {
+      "path": "backend/adtek-server/src/main/resources/db/migration/V3__user_management_audit.sql",
+      "sha256": "41e514fedfd4fb5a0409f11c4014078e43d6e68aca688a1775a3139d2001dd5d"
+    },
+    {
+      "path": "backend/adtek-server/src/main/resources/db/migration/V4__system_configuration.sql",
+      "sha256": "92a4c4693a31b0376aac350f3639bd2d8d8ab1b6d20d66039da16de8e98623e4"
+    },
+    {
+      "path": "backend/adtek-server/src/main/resources/db/migration/V5__audit_query_and_request_failures.sql",
+      "sha256": "28874030d0f764447512c14f8e6ab2425ae9c53a8fad97e9950ba683a90f0529"
+    },
+    {
+      "path": "backend/adtek-server/src/main/resources/db/migration/V6__durable_operations_tasks_and_files.sql",
+      "sha256": "f5b7399a070a559e8a741554c762f11e7587bd93b5e76c6d5987b59b00924b4d"
+    },
+    {
+      "path": "backend/adtek-server/src/main/resources/db/migration/V7__sn_factories_orders_and_rules.sql",
+      "sha256": "cb8c4daba1cf0890f0681153cc182f685ac232d59b27a52014e538452cb74b48"
+    },
+    {
+      "path": "backend/adtek-server/src/main/resources/db/migration/V8__sn_initialization_generation_allocation.sql",
+      "sha256": "8f87d950ee0f77b1e0adf400aebdccbfca0f02d552604460818b28948b519f72"
+    },
+    {
+      "path": "backend/adtek-server/src/main/resources/db/migration/V9__sn_acquisition_print_and_service_clients.sql",
+      "sha256": "54eb806df720e95d1589ca6c02c1e106b5ee75305174f3a7dcd1865eb4238eca"
+    },
+    {
+      "path": "backend/adtek-server/src/main/resources/db/migration/V16__legacy_import_inventory.sql",
+      "sha256": "13af3d7421ecf8eff4370ea47fa07889dd559808742318792e1a8af2d2dec103"
+    }
+  ],
+  "runtimeData": {
+    "container": {
+      "sn": 6,
+      "keys": 6,
+      "files": 4,
+      "rules": 0,
+      "tasks": 6,
+      "users": 1,
+      "schemaVersion": 16,
+      "previousVersion": 13,
+      "accountPasswordStateUnchanged": true,
+      "businessCountsUnchanged": true
+    },
+    "development": {
+      "sn": 0,
+      "keys": 0,
+      "files": 0,
+      "rules": 0,
+      "tasks": 0,
+      "users": 1,
+      "schemaVersion": 16,
+      "previousVersion": 12,
+      "accountPasswordStateUnchanged": true,
+      "businessCountsUnchanged": true
+    }
+  },
+  "upgradeBackup": {
+    "runId": "0578c969-e347-4e83-8685-6a7e26b720e1",
+    "completedAtUtc": "2026-09-30T08:26:55.7119432Z",
+    "restoreVerified": false
+  },
+  "oldRepositoryClean": true,
+  "limits": [
+    "Synthetic source/ERP only; no old real database or .env accessed",
+    "Limited IMPORT inventory only; full historical migration/account activation not completed",
+    "512 MiB serial local samples are not million/ten-million/150-million capacity acceptance",
+    "No real K3/MES, CI, UAT, multi-host failure or production cutover acceptance"
+  ]
+}

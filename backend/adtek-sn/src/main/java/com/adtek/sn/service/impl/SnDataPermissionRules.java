@@ -1,0 +1,39 @@
+package com.adtek.sn.service.impl;
+import com.adtek.framework.mybatis.DataPermissionRules;
+import java.util.*;
+import org.springframework.stereotype.Component;
+/** 逐语句登记工厂读取和内部发布；不因属于SN包而豁免。所有公开候选/统计/详情同范围。 */
+@Component
+public class SnDataPermissionRules implements DataPermissionRules {
+ @Override public Map<String,Rule> statements(){
+  Map<String,Rule> rules=new HashMap<>();
+  internal(rules,"FactoryMembershipMapper","可信主体ID装配；替换由身份事务持协调/账号锁，逐工厂校验assign资格并递增账号版本","factoryIds","clear","add");
+  internal(rules,"SnControlMapper","全局目录/完整快照发布协调，服务先锁当前写授权","revision","lock","advance");
+  internal(rules,"FactoryMapper","全部工厂管理服务的冲突校验/写入，持安全及发布协调锁","byCode","byName","lock","insert","updateById","selectById");
+  scoped(rules,"FactoryMapper","sn:factory","sn_factory","id","sn:factory:list","selectList","selectCount");
+  internal(rules,"OrganizationMappingMapper","全部工厂管理的显式稳定映射/快照发布，不接受自由SQL或名称推断","list","insert","update","mapBills","mapEntries");
+  internal(rules,"RuleMapper","共享规则目录服务强制该操作全部工厂资格，写持安全/头/版本锁","selectList","selectCount","selectById","insert","updateById","lock","effective");
+  internal(rules,"RuleVersionMapper","规则服务按已授权规则ID查询及锁定，版本used后不原位改编码","selectList","selectCount","selectById","insert","updateById","lock","current");
+  scoped(rules,"OrderBillMapper","sn:order","sn_order_bill","factory_id","sn:order:list","selectList","selectCount","selectById","stats","unmapped","customers","customerCount");
+  scoped(rules,"OrderEntryMapper","sn:order","sn_order_entry","factory_id","sn:order:list","selectList","selectCount","selectById");
+  internal(rules,"OrderBillMapper","ERP完整校验后的发布事务按固定来源命名空间写入，先安全/发布控制锁","source","insert","updateById","deactivate");
+  internal(rules,"OrderBillMapper","共享生效规则要求effective的全部工厂资格，按旧billNo顺序确定PI客户","effectiveCustomer");
+  internal(rules,"OrderEntryMapper","同一订单发布事务写分录，稳定身份不依赖ordinal","source","insert","updateById","deactivate","deactivateSource");
+  internal(rules,"SourceQuotaMapper","发布仅初始化缺失历史账本；forBills只取已按当前工厂授权的服务器订单集合","ensure","forBills");
+  internal(rules,"OrderSyncMapper","全部工厂同步服务，结果同发布事务；lastSuccess仅order:list全部工厂分支可读；失败独立记录且不覆盖成功","selectList","selectCount","selectById","insert","updateById","lastSuccess");
+  internal(rules,"SnWorkMapper","初始化/生成/整单分配要求当前对应操作全部工厂资格；任务按本人和当前授权复核，持任务/安全/快照/PI控制锁后写，不接受任意SQL",
+   "counter","ensure","lock","occupy","release","advance","bill","summary","inSnapshot","lines","lockQuota","quota","preview","previewById","previewForTask","bind","insert","find","history","importCount","success","ended","pendingCount","pendingMismatch","workCount","billHistory","pending","keys","items","allocate");
+  internal(rules,"AcquireMapper","服务逐动作装配可信工厂参数；同PI跨厂仅汇总/号段，历史按原工厂；任务持安全/快照/PI控制，固定集合按头授权",
+   "owns","summaries","summaryCount","segments","segmentCount","count","candidates","current","currentFor","acquire","printed","work","workById","complete","ended","result","results","batch","batchById","batches","batchCount","member","members","memberBySn","membersBySn","membersForRows","range","print","printByTask","prints","printCount","printMember","printMembers","items","memberBatch","resultBatch","acquireBatch","printedBatch","printMemberBatch");
+  internal(rules,"TransferMapper","源厂命令逐动作当前授权，总部批准/直转全厂；双PI占用及快照/授权锁保护写。历史源或目标厂，targets单独最小交接目录权限",
+   "candidates","candidateItems","get","insert","members","freeze","collisions","moveKeys","exceptions","move","page","current","frozenCount","restore","decide","work","workById","ended","list","count","targets","targetCount","snapshotTarget","factories","factoryCount");
+  internal(rules,"SnQueryMapper","查询由各自权限范围装配；导出快照持安全/快照控制锁并求读/导出交集，下载核对全部原成员；首页按当前范围，全部水位统计仅全厂分支",
+   "items","count","export","rows","exportById","exportRows","exportVisible","history","historyCount","states","generated","imported","today","recent");
+  internal(rules,"SnAuditMapper","同事务业务审计追加；读/导出由当前工厂范围装配，转厂双方可读；快照单条SQL同一视图，下载复核每条原范围",
+   "insert","page","count","get","export","quantity","snapshot","exportById","exportRows","exportVisible","history","historyCount");
+  internal(rules,"SnAuditContextMapper","审计观察器只读已提交或同事务固定成员；分配仅在成功事务内取固定成员当时投影，禁止取得业务写锁或事后重建历史","batch","print","transfer","allocation");
+  return Map.copyOf(rules);
+ }
+ private static void internal(Map<String,Rule> rules,String mapper,String reason,String... methods){for(String method:methods)rules.put("com.adtek.sn.mapper."+mapper+"."+method,Rule.internal(reason));}
+ private static void scoped(Map<String,Rule> rules,String mapper,String resource,String table,String column,String permission,String... methods){for(String method:methods)rules.put("com.adtek.sn.mapper."+mapper+"."+method,Rule.factories(resource,table,column,permission));}
+}

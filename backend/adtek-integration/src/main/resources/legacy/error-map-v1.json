@@ -1,0 +1,3087 @@
+{
+  "version": "legacy-errors-v1",
+  "enumCount": 97,
+  "extraCount": 5,
+  "sources": [
+    {
+      "path": "app/core/errors.py",
+      "sha256": "b5104d7359a66748ced850919b98de3c2386829712da0b5034439de804863a97"
+    },
+    {
+      "path": "app/core/exceptions.py",
+      "sha256": "e2a0295ad2c160c80b554dfe629010f6d1084d268edf797710b771b2ee5d3b89"
+    },
+    {
+      "path": "app/main.py",
+      "sha256": "ba4f7039fbe72f65e0606840f7b079ac21dbd90a8fb9574a59ca053e5dda55f9"
+    },
+    {
+      "path": "app/services/generate.py",
+      "sha256": "609af2567378a4b948bca83316c1bb47ea70de5c897c19d7982d95c78a93239a"
+    }
+  ],
+  "unknown": "UNKNOWN_LEGACY_ERROR: retain original code/message/params in protected archive; never map to success or guess by prefix.",
+  "entries": [
+    {
+      "legacyCode": "UNAUTHENTICATED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 401,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "请先登录",
+        "en": "Please sign in",
+        "vi": "Vui lòng đăng nhập"
+      },
+      "targets": [
+        {
+          "code": 1003000001,
+          "constant": "com.adtek.framework.constant.ErrorCodeConstants.SESSION_INVALID",
+          "http": 401,
+          "message": "framework.sessionInvalid",
+          "translationKey": "errors.1003000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "会话已失效，请重新登录。",
+            "en": "Your session has expired. Please sign in again.",
+            "vi": "Phiên đã hết hạn. Vui lòng đăng nhập lại."
+          }
+        }
+      ],
+      "handling": "登录后重试；匿名凭据失败不透露账号",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "TOKEN_INVALID",
+      "sourceKind": "ENUM",
+      "legacyHttp": 401,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "登录已失效，请重新登录",
+        "en": "Session expired, please sign in again",
+        "vi": "Phiên đã hết hạn, vui lòng đăng nhập lại"
+      },
+      "targets": [
+        {
+          "code": 1003000001,
+          "constant": "com.adtek.framework.constant.ErrorCodeConstants.SESSION_INVALID",
+          "http": 401,
+          "message": "framework.sessionInvalid",
+          "translationKey": "errors.1003000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "会话已失效，请重新登录。",
+            "en": "Your session has expired. Please sign in again.",
+            "vi": "Phiên đã hết hạn. Vui lòng đăng nhập lại."
+          }
+        }
+      ],
+      "handling": "会话失效，重新登录",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "LOGIN_FAILED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 401,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "工号或密码错误",
+        "en": "Wrong employee number or password",
+        "vi": "Sai mã nhân viên hoặc mật khẩu"
+      },
+      "targets": [
+        {
+          "code": 1002000001,
+          "constant": "com.adtek.system.constant.ErrorCodeConstants.LOGIN_FAILED",
+          "http": 401,
+          "message": "system.loginFailed",
+          "translationKey": "errors.1002000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "工号或密码不正确，或账号已停用。",
+            "en": "Incorrect employee ID or password, or the account is disabled.",
+            "vi": "Mã nhân viên hoặc mật khẩu không đúng, hoặc tài khoản đã bị vô hiệu hóa."
+          }
+        }
+      ],
+      "handling": "保留401，提示凭据错误",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "ACCOUNT_DISABLED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 401,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "账户已停用",
+        "en": "Account is disabled",
+        "vi": "Tài khoản đã bị vô hiệu"
+      },
+      "targets": [
+        {
+          "code": 1002000001,
+          "constant": "com.adtek.system.constant.ErrorCodeConstants.LOGIN_FAILED",
+          "http": 401,
+          "message": "system.loginFailed",
+          "translationKey": "errors.1002000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "工号或密码不正确，或账号已停用。",
+            "en": "Incorrect employee ID or password, or the account is disabled.",
+            "vi": "Mã nhân viên hoặc mật khẩu không đúng, hoặc tài khoản đã bị vô hiệu hóa."
+          }
+        }
+      ],
+      "handling": "匿名登录与密码错误合并防账号枚举；停用事实保留旧码",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "PASSWORD_CHANGE_REQUIRED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 403,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "首次登录或密码已重置，请先修改密码",
+        "en": "Please change your password first",
+        "vi": "Vui lòng đổi mật khẩu trước"
+      },
+      "targets": [
+        {
+          "code": 1003000005,
+          "constant": "com.adtek.framework.constant.ErrorCodeConstants.PASSWORD_CHANGE_REQUIRED",
+          "http": 403,
+          "message": "framework.passwordChangeRequired",
+          "translationKey": "errors.1003000005",
+          "params": [],
+          "translations": {
+            "zh-CN": "请先修改初始密码。",
+            "en": "Change your initial password first.",
+            "vi": "Vui lòng đổi mật khẩu ban đầu trước."
+          }
+        }
+      ],
+      "handling": "首次改密保持可识别；已发布框架入口码保留",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "FORBIDDEN",
+      "sourceKind": "ENUM",
+      "legacyHttp": 403,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "当前角色无权执行该操作",
+        "en": "Your role is not allowed to do this",
+        "vi": "Vai trò của bạn không được phép"
+      },
+      "targets": [
+        {
+          "code": 1003000004,
+          "constant": "com.adtek.framework.constant.ErrorCodeConstants.FORBIDDEN",
+          "http": 403,
+          "message": "framework.forbidden",
+          "translationKey": "errors.1003000004",
+          "params": [],
+          "translations": {
+            "zh-CN": "请求未通过安全校验，请重试或联系管理员。",
+            "en": "The request failed a security check. Retry or contact your administrator.",
+            "vi": "Yêu cầu không vượt qua kiểm tra bảo mật. Hãy thử lại hoặc liên hệ quản trị viên."
+          }
+        }
+      ],
+      "handling": "保持403；角色和动作权限重新检查",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "FACTORY_FORBIDDEN",
+      "sourceKind": "ENUM",
+      "legacyHttp": 403,
+      "legacyParams": [
+        "factory"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "只能操作本厂的号：{factory}",
+        "en": "You can only operate SNs of your factory: {factory}",
+        "vi": "Chỉ được thao tác SN của nhà máy mình: {factory}"
+      },
+      "targets": [
+        {
+          "code": 1003000004,
+          "constant": "com.adtek.framework.constant.ErrorCodeConstants.FORBIDDEN",
+          "http": 403,
+          "message": "framework.forbidden",
+          "translationKey": "errors.1003000004",
+          "params": [],
+          "translations": {
+            "zh-CN": "请求未通过安全校验，请重试或联系管理员。",
+            "en": "The request failed a security check. Retry or contact your administrator.",
+            "vi": "Yêu cầu không vượt qua kiểm tra bảo mật. Hãy thử lại hoặc liên hệ quản trị viên."
+          }
+        }
+      ],
+      "handling": "保持403；当前用例工厂范围不相交即拒绝",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "VALIDATION",
+      "sourceKind": "ENUM",
+      "legacyHttp": 422,
+      "legacyParams": [
+        "detail"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "参数不合法：{detail}",
+        "en": "Invalid parameter: {detail}",
+        "vi": "Tham số không hợp lệ: {detail}"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "旧422改为400；表单校验及安全字段提示",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "CONFLICT_RETRY",
+      "sourceKind": "ENUM",
+      "legacyHttp": 409,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "数据正被其他操作占用，请稍后重试",
+        "en": "Data is being changed by another operation, please retry",
+        "vi": "Dữ liệu đang bị thao tác khác sử dụng, vui lòng thử lại"
+      },
+      "targets": [
+        {
+          "code": 1000000008,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.CONFLICT_RETRY",
+          "http": 409,
+          "message": "common.conflictRetry",
+          "translationKey": "errors.1000000008",
+          "params": [],
+          "translations": {
+            "zh-CN": "数据正在被其他操作修改，请查询原操作结果后重试。",
+            "en": "Data is being changed by another operation. Check the original result before retrying.",
+            "vi": "Dữ liệu đang được thao tác khác thay đổi. Kiểm tra kết quả trước khi thử lại."
+          }
+        }
+      ],
+      "handling": "锁竞争与唯一键冲突409；先查询原操作再重试",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "USER_NOT_FOUND",
+      "sourceKind": "ENUM",
+      "legacyHttp": 404,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "账户不存在",
+        "en": "Account not found",
+        "vi": "Không tìm thấy tài khoản"
+      },
+      "targets": [
+        {
+          "code": 1000000005,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.NOT_FOUND",
+          "http": 404,
+          "message": "common.notFound",
+          "translationKey": "errors.1000000005",
+          "params": [],
+          "translations": {
+            "zh-CN": "请求的内容不存在。",
+            "en": "The requested content was not found.",
+            "vi": "Không tìm thấy nội dung yêu cầu."
+          }
+        }
+      ],
+      "handling": "不存在或不可见统一404",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "USER_EMP_NO_INVALID",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "工号须为 2–32 位字母、数字、下划线或横线",
+        "en": "Employee No. must be 2–32 letters, digits, _ or -",
+        "vi": "Mã NV phải gồm 2–32 chữ, số, _ hoặc -"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "工号格式由用户DTO校验",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "USER_EMP_NO_EXISTS",
+      "sourceKind": "ENUM",
+      "legacyHttp": 409,
+      "legacyParams": [
+        "emp_no"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "工号已存在：{emp_no}",
+        "en": "Employee No. already exists: {emp_no}",
+        "vi": "Mã NV đã tồn tại: {emp_no}"
+      },
+      "targets": [
+        {
+          "code": 1002000007,
+          "constant": "com.adtek.system.constant.ErrorCodeConstants.USERNAME_EXISTS",
+          "http": 409,
+          "message": "system.usernameExists",
+          "translationKey": "errors.1002000007",
+          "params": [],
+          "translations": {
+            "zh-CN": "工号已存在，请使用其他工号。",
+            "en": "This employee ID already exists.",
+            "vi": "Mã nhân viên này đã tồn tại."
+          }
+        }
+      ],
+      "handling": "用户名唯一性409，不回传完整用户对象",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "USER_NAME_REQUIRED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "姓名必填",
+        "en": "Name is required",
+        "vi": "Bắt buộc nhập họ tên"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "显示名必填",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "USER_ROLE_INVALID",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "角色无效",
+        "en": "Invalid role",
+        "vi": "Vai trò không hợp lệ"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "角色必须存在且可授予；越权另为403",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "USER_FACTORY_REQUIRED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "厂区操作员必须绑定工厂",
+        "en": "Factory operators must be bound to a factory",
+        "vi": "Nhân viên nhà máy phải gắn nhà máy"
+      },
+      "targets": [],
+      "handling": "新多角色模型允许空工厂集合且实际无SN数据权限；旧单角色创建限制不套用",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "NO_AUTOMATIC_ERROR_MAPPING"
+    },
+    {
+      "legacyCode": "USER_ADMIN_NO_FACTORY",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "系统管理员不绑定工厂",
+        "en": "Administrators are not bound to a factory",
+        "vi": "Quản trị viên không gắn nhà máy"
+      },
+      "targets": [],
+      "handling": "旧单角色限制由多角色及按动作工厂范围替代，不能据此拒绝新模型",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "NO_AUTOMATIC_ERROR_MAPPING"
+    },
+    {
+      "legacyCode": "USER_PASSWORD_WEAK",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "密码须为 8–64 位，且同时包含字母和数字",
+        "en": "Password must be 8–64 characters with letters and digits",
+        "vi": "Mật khẩu 8–64 ký tự, gồm chữ và số"
+      },
+      "targets": [
+        {
+          "code": 1002000002,
+          "constant": "com.adtek.system.constant.ErrorCodeConstants.PASSWORD_WEAK",
+          "http": 400,
+          "message": "system.passwordWeak",
+          "translationKey": "errors.1002000002",
+          "params": [],
+          "translations": {
+            "zh-CN": "密码需为 8–64 个字符，并包含英文字母和数字。",
+            "en": "Use 8–64 characters, including English letters and numbers.",
+            "vi": "Dùng 8–64 ký tự, gồm chữ cái tiếng Anh và chữ số."
+          }
+        }
+      ],
+      "handling": "按新密码强度校验，历史哈希不自动重设",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "USER_PASSWORD_WRONG",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "原密码不正确",
+        "en": "Current password is wrong",
+        "vi": "Mật khẩu hiện tại không đúng"
+      },
+      "targets": [
+        {
+          "code": 1002000003,
+          "constant": "com.adtek.system.constant.ErrorCodeConstants.PASSWORD_WRONG",
+          "http": 400,
+          "message": "system.passwordWrong",
+          "translationKey": "errors.1002000003",
+          "params": [],
+          "translations": {
+            "zh-CN": "当前密码不正确。",
+            "en": "The current password is incorrect.",
+            "vi": "Mật khẩu hiện tại không đúng."
+          }
+        }
+      ],
+      "handling": "改密原口令校验400",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "USER_PASSWORD_SAME",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "新密码不能与原密码相同",
+        "en": "New password must differ from the current one",
+        "vi": "Mật khẩu mới phải khác mật khẩu cũ"
+      },
+      "targets": [
+        {
+          "code": 1002000004,
+          "constant": "com.adtek.system.constant.ErrorCodeConstants.PASSWORD_SAME",
+          "http": 400,
+          "message": "system.passwordSame",
+          "translationKey": "errors.1002000004",
+          "params": [],
+          "translations": {
+            "zh-CN": "新密码不能与当前密码相同。",
+            "en": "The new password must differ from the current password.",
+            "vi": "Mật khẩu mới phải khác mật khẩu hiện tại."
+          }
+        }
+      ],
+      "handling": "禁止新旧口令相同",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "USER_SELF_DISABLE",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "不能停用自己的账户",
+        "en": "You cannot disable your own account",
+        "vi": "Không thể vô hiệu tài khoản của chính mình"
+      },
+      "targets": [
+        {
+          "code": 1002000009,
+          "constant": "com.adtek.system.constant.ErrorCodeConstants.SELF_PROTECTION",
+          "http": 409,
+          "message": "system.selfProtection",
+          "translationKey": "errors.1002000009",
+          "params": [],
+          "translations": {
+            "zh-CN": "不能停用或重置本人账号，请在个人设置中修改密码。",
+            "en": "You cannot disable or reset your own account. Change your password in personal settings.",
+            "vi": "Không thể vô hiệu hóa hoặc đặt lại tài khoản của chính mình. Hãy đổi mật khẩu trong cài đặt cá nhân."
+          }
+        }
+      ],
+      "handling": "旧400改409，保护当前操作者",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "USER_LAST_ADMIN",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "系统须保留至少一名启用中的管理员",
+        "en": "At least one active administrator is required",
+        "vi": "Phải còn ít nhất một quản trị viên hoạt động"
+      },
+      "targets": [
+        {
+          "code": 1002000010,
+          "constant": "com.adtek.system.constant.ErrorCodeConstants.LAST_ADMIN",
+          "http": 409,
+          "message": "system.lastAdmin",
+          "translationKey": "errors.1002000010",
+          "params": [],
+          "translations": {
+            "zh-CN": "必须至少保留一个启用的平台安全管理员。",
+            "en": "At least one enabled platform security administrator must remain.",
+            "vi": "Phải giữ lại ít nhất một quản trị viên bảo mật nền tảng đang hoạt động."
+          }
+        }
+      ],
+      "handling": "旧400改409，同事务协调锁保留至少一个管理员",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "FACTORY_NOT_FOUND",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "factory"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "工厂不存在：{factory}",
+        "en": "Factory not found: {factory}",
+        "vi": "Không tìm thấy nhà máy: {factory}"
+      },
+      "targets": [
+        {
+          "code": 1000000005,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.NOT_FOUND",
+          "http": 404,
+          "message": "common.notFound",
+          "translationKey": "errors.1000000005",
+          "params": [],
+          "translations": {
+            "zh-CN": "请求的内容不存在。",
+            "en": "The requested content was not found.",
+            "vi": "Không tìm thấy nội dung yêu cầu."
+          }
+        }
+      ],
+      "handling": "旧400改404，不泄露范围外工厂",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "FACTORY_EXISTS",
+      "sourceKind": "ENUM",
+      "legacyHttp": 409,
+      "legacyParams": [
+        "factory"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "工厂编码或名称已存在：{factory}",
+        "en": "Factory code or name already exists: {factory}",
+        "vi": "Mã hoặc tên nhà máy đã tồn tại: {factory}"
+      },
+      "targets": [
+        {
+          "code": 1004000003,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.FACTORY_EXISTS",
+          "http": 409,
+          "message": "sn.factoryExists",
+          "translationKey": "errors.1004000003",
+          "params": [],
+          "translations": {
+            "zh-CN": "工厂编码或名称已存在",
+            "en": "Factory code or name already exists",
+            "vi": "Mã hoặc tên nhà máy đã tồn tại"
+          }
+        }
+      ],
+      "handling": "编码/名称唯一性409",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "FACTORY_CODE_INVALID",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "工厂编码与名称必填，编码不超过 64 位",
+        "en": "Factory code and name are required (code ≤ 64)",
+        "vi": "Bắt buộc mã và tên nhà máy (mã ≤ 64)"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "工厂DTO必填及长度校验",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "FACTORY_UNMAPPED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "org"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "生产组织「{org}」尚未建档为工厂，请先同步工厂",
+        "en": "Production org “{org}” is not set up as a factory; sync factories first",
+        "vi": "Tổ chức sản xuất “{org}” chưa là nhà máy; hãy đồng bộ nhà máy"
+      },
+      "targets": [
+        {
+          "code": 1004000017,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.GENERATION_NOT_READY",
+          "http": 409,
+          "message": "sn.generationNotReady",
+          "translationKey": "errors.1004000017",
+          "params": [],
+          "translations": {
+            "zh-CN": "当前订单条件不满足生成要求，请检查页面提示。",
+            "en": "The current order is not ready for generation. Check its issues.",
+            "vi": "Lệnh chưa đủ điều kiện tạo mã. Hãy kiểm tra thông báo."
+          }
+        }
+      ],
+      "handling": "未映射组织在生成上下文列出，提交拒绝409",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "K3_CONFIG_MISSING",
+      "sourceKind": "ENUM",
+      "legacyHttp": 503,
+      "legacyParams": [
+        "missing"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "金蝶配置缺失：{missing}",
+        "en": "Kingdee configuration missing: {missing}",
+        "vi": "Thiếu cấu hình Kingdee: {missing}"
+      },
+      "targets": [
+        {
+          "code": 1005000001,
+          "constant": "com.adtek.integration.constant.ErrorCodeConstants.K3_CONFIG_MISSING",
+          "http": 503,
+          "message": "integration.k3ConfigMissing",
+          "translationKey": "errors.1005000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "金蝶连接配置未完成，请联系管理员。",
+            "en": "K3 connection configuration is incomplete. Contact an administrator.",
+            "vi": "Cấu hình kết nối K3 chưa hoàn tất. Vui lòng liên hệ quản trị viên."
+          }
+        }
+      ],
+      "handling": "配置缺失503；不回传原missing配置细节",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "K3_LOGIN_FAILED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 502,
+      "legacyParams": [
+        "message"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "金蝶登录失败：{message}",
+        "en": "Kingdee login failed: {message}",
+        "vi": "Đăng nhập Kingdee thất bại: {message}"
+      },
+      "targets": [
+        {
+          "code": 1005000002,
+          "constant": "com.adtek.integration.constant.ErrorCodeConstants.K3_LOGIN_REJECTED",
+          "http": 502,
+          "message": "integration.k3LoginRejected",
+          "translationKey": "errors.1005000002",
+          "params": [],
+          "translations": {
+            "zh-CN": "金蝶拒绝登录，请联系管理员检查连接账号。",
+            "en": "K3 rejected sign-in. Ask an administrator to check the connection account.",
+            "vi": "K3 từ chối đăng nhập. Nhờ quản trị viên kiểm tra tài khoản kết nối."
+          }
+        },
+        {
+          "code": 1005000003,
+          "constant": "com.adtek.integration.constant.ErrorCodeConstants.K3_UNAVAILABLE",
+          "http": 503,
+          "message": "integration.k3Unavailable",
+          "translationKey": "errors.1005000003",
+          "params": [],
+          "translations": {
+            "zh-CN": "金蝶暂时无法访问，请稍后重试。",
+            "en": "K3 is temporarily unavailable. Try again later.",
+            "vi": "Tạm thời không thể truy cập K3. Vui lòng thử lại sau."
+          }
+        },
+        {
+          "code": 1005000004,
+          "constant": "com.adtek.integration.constant.ErrorCodeConstants.K3_RESPONSE_INVALID",
+          "http": 502,
+          "message": "integration.k3ResponseInvalid",
+          "translationKey": "errors.1005000004",
+          "params": [],
+          "translations": {
+            "zh-CN": "金蝶返回的数据格式不符合约定，原订单快照保持不变。",
+            "en": "K3 returned an unexpected data format. The previous order snapshot is unchanged.",
+            "vi": "K3 trả về dữ liệu sai định dạng. Ảnh chụp đơn hàng trước đó được giữ nguyên."
+          }
+        }
+      ],
+      "handling": "拒绝502、网络503、非法报文502分开；不回传原message",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "K3_QUERY_FAILED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 502,
+      "legacyParams": [
+        "message"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "金蝶查询失败：{message}",
+        "en": "Kingdee query failed: {message}",
+        "vi": "Truy vấn Kingdee thất bại: {message}"
+      },
+      "targets": [
+        {
+          "code": 1005000006,
+          "constant": "com.adtek.integration.constant.ErrorCodeConstants.K3_QUERY_REJECTED",
+          "http": 502,
+          "message": "integration.k3QueryRejected",
+          "translationKey": "errors.1005000006",
+          "params": [],
+          "translations": {
+            "zh-CN": "金蝶拒绝本次查询，原订单快照保持不变。",
+            "en": "K3 rejected this query. The previous order snapshot is unchanged.",
+            "vi": "K3 từ chối truy vấn này. Ảnh chụp đơn hàng trước đó được giữ nguyên."
+          }
+        },
+        {
+          "code": 1005000003,
+          "constant": "com.adtek.integration.constant.ErrorCodeConstants.K3_UNAVAILABLE",
+          "http": 503,
+          "message": "integration.k3Unavailable",
+          "translationKey": "errors.1005000003",
+          "params": [],
+          "translations": {
+            "zh-CN": "金蝶暂时无法访问，请稍后重试。",
+            "en": "K3 is temporarily unavailable. Try again later.",
+            "vi": "Tạm thời không thể truy cập K3. Vui lòng thử lại sau."
+          }
+        },
+        {
+          "code": 1005000004,
+          "constant": "com.adtek.integration.constant.ErrorCodeConstants.K3_RESPONSE_INVALID",
+          "http": 502,
+          "message": "integration.k3ResponseInvalid",
+          "translationKey": "errors.1005000004",
+          "params": [],
+          "translations": {
+            "zh-CN": "金蝶返回的数据格式不符合约定，原订单快照保持不变。",
+            "en": "K3 returned an unexpected data format. The previous order snapshot is unchanged.",
+            "vi": "K3 trả về dữ liệu sai định dạng. Ảnh chụp đơn hàng trước đó được giữ nguyên."
+          }
+        },
+        {
+          "code": 1005000005,
+          "constant": "com.adtek.integration.constant.ErrorCodeConstants.K3_RESOURCE_LIMIT",
+          "http": 409,
+          "message": "integration.k3ResourceLimit",
+          "translationKey": "errors.1005000005",
+          "params": [],
+          "translations": {
+            "zh-CN": "金蝶响应超出本次读取上限，请缩小范围后重试。",
+            "en": "The K3 response exceeds the read limit. Narrow the scope and retry.",
+            "vi": "Phản hồi K3 vượt giới hạn đọc. Hãy thu hẹp phạm vi và thử lại."
+          }
+        }
+      ],
+      "handling": "查询拒绝502、网络503、协议502、资源409分开；保留完整旧错误事实",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "ORDER_BILL_REQUIRED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "请输入单据编号",
+        "en": "Please enter an order number",
+        "vi": "Vui lòng nhập số lệnh"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "单据参数为空时校验；不影响显式全量同步",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "ORDER_NOT_FOUND",
+      "sourceKind": "ENUM",
+      "legacyHttp": 404,
+      "legacyParams": [
+        "bill_no"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "生产订单 {bill_no} 不在快照中（不是计划 / 计划确认，或尚未同步）",
+        "en": "Order {bill_no} is not in the snapshot (not planned / plan-confirmed, or not synced)",
+        "vi": "Lệnh {bill_no} không có trong ảnh chụp (không ở trạng thái kế hoạch hoặc chưa đồng bộ)"
+      },
+      "targets": [
+        {
+          "code": 1000000005,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.NOT_FOUND",
+          "http": 404,
+          "message": "common.notFound",
+          "translationKey": "errors.1000000005",
+          "params": [],
+          "translations": {
+            "zh-CN": "请求的内容不存在。",
+            "en": "The requested content was not found.",
+            "vi": "Không tìm thấy nội dung yêu cầu."
+          }
+        }
+      ],
+      "handling": "不存在或当前授权不可见404",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "ORDER_NO_CUSTOMER",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "bill_no"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "生产订单 {bill_no} 没有客户编码，不能生成",
+        "en": "Order {bill_no} has no customer; cannot generate",
+        "vi": "Lệnh {bill_no} không có khách hàng; không thể tạo"
+      },
+      "targets": [
+        {
+          "code": 1004000017,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.GENERATION_NOT_READY",
+          "http": 409,
+          "message": "sn.generationNotReady",
+          "translationKey": "errors.1004000017",
+          "params": [],
+          "translations": {
+            "zh-CN": "当前订单条件不满足生成要求，请检查页面提示。",
+            "en": "The current order is not ready for generation. Check its issues.",
+            "vi": "Lệnh chưa đủ điều kiện tạo mã. Hãy kiểm tra thông báo."
+          }
+        }
+      ],
+      "handling": "上下文issue可见；提交409，不自动填客户",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "ORDER_NO_PI",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "bill_no"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "生产订单 {bill_no} 没有 PI，不能生成",
+        "en": "Order {bill_no} has no PI; cannot generate",
+        "vi": "Lệnh {bill_no} không có PI; không thể tạo"
+      },
+      "targets": [
+        {
+          "code": 1004000017,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.GENERATION_NOT_READY",
+          "http": 409,
+          "message": "sn.generationNotReady",
+          "translationKey": "errors.1004000017",
+          "params": [],
+          "translations": {
+            "zh-CN": "当前订单条件不满足生成要求，请检查页面提示。",
+            "en": "The current order is not ready for generation. Check its issues.",
+            "vi": "Lệnh chưa đủ điều kiện tạo mã. Hãy kiểm tra thông báo."
+          }
+        }
+      ],
+      "handling": "上下文issue可见；提交409，不自动填PI",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "RULE_NOT_FOUND",
+      "sourceKind": "ENUM",
+      "legacyHttp": 404,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "规则不存在",
+        "en": "Rule not found",
+        "vi": "Không tìm thấy quy tắc"
+      },
+      "targets": [
+        {
+          "code": 1000000005,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.NOT_FOUND",
+          "http": 404,
+          "message": "common.notFound",
+          "translationKey": "errors.1000000005",
+          "params": [],
+          "translations": {
+            "zh-CN": "请求的内容不存在。",
+            "en": "The requested content was not found.",
+            "vi": "Không tìm thấy nội dung yêu cầu."
+          }
+        }
+      ],
+      "handling": "未找到有效规则404",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "RULE_CODE_INVALID",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "规则编码须为 1–64 位字母、数字、下划线或横线",
+        "en": "Rule code must be 1–64 letters, digits, _ or -",
+        "vi": "Mã quy tắc gồm 1–64 chữ, số, _ hoặc -"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "规则编码DTO校验",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "RULE_CODE_EXISTS",
+      "sourceKind": "ENUM",
+      "legacyHttp": 409,
+      "legacyParams": [
+        "rule_code"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "规则编码已存在：{rule_code}",
+        "en": "Rule code already exists: {rule_code}",
+        "vi": "Mã quy tắc đã tồn tại: {rule_code}"
+      },
+      "targets": [
+        {
+          "code": 1004000006,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.RULE_EXISTS",
+          "http": 409,
+          "message": "sn.ruleExists",
+          "translationKey": "errors.1004000006",
+          "params": [],
+          "translations": {
+            "zh-CN": "规则编码或绑定对象已存在",
+            "en": "Rule code or binding already exists",
+            "vi": "Mã quy tắc hoặc đối tượng liên kết đã tồn tại"
+          }
+        }
+      ],
+      "handling": "编码重复409",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "RULE_NAME_REQUIRED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "规则名称必填",
+        "en": "Rule name is required",
+        "vi": "Bắt buộc nhập tên quy tắc"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "规则名称必填",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "RULE_SCOPE_INVALID",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "绑定方式只能是通用、按客户或按 PI",
+        "en": "Binding must be general, customer or PI",
+        "vi": "Ràng buộc phải là chung, khách hàng hoặc PI"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "绑定范围只接受GENERAL/CUSTOMER/PI",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "RULE_BIND_REQUIRED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "按客户或按 PI 绑定时，绑定对象必填",
+        "en": "A customer or PI is required for this binding",
+        "vi": "Phải nhập khách hàng hoặc PI"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "客户/PI绑定对象必填",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "RULE_BIND_EXISTS",
+      "sourceKind": "ENUM",
+      "legacyHttp": 409,
+      "legacyParams": [
+        "rule_code"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "该绑定对象已有规则：{rule_code}",
+        "en": "This target already has a rule: {rule_code}",
+        "vi": "Đối tượng này đã có quy tắc: {rule_code}"
+      },
+      "targets": [
+        {
+          "code": 1004000006,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.RULE_EXISTS",
+          "http": 409,
+          "message": "sn.ruleExists",
+          "translationKey": "errors.1004000006",
+          "params": [],
+          "translations": {
+            "zh-CN": "规则编码或绑定对象已存在",
+            "en": "Rule code or binding already exists",
+            "vi": "Mã quy tắc hoặc đối tượng liên kết đã tồn tại"
+          }
+        }
+      ],
+      "handling": "绑定对象唯一性409",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "RULE_BASE_INVALID",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "进制仅支持 10 / 16 / 32 / 36",
+        "en": "Base must be 10 / 16 / 32 / 36",
+        "vi": "Hệ cơ số phải là 10 / 16 / 32 / 36"
+      },
+      "targets": [
+        {
+          "code": 1004000001,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.RULE_INVALID",
+          "http": 400,
+          "message": "sn.ruleInvalid",
+          "translationKey": "errors.1004000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "规则编码参数不符合要求，请检查进制、字符表、流水长度和完整SN长度。",
+            "en": "Invalid rule encoding. Check the base, alphabet, sequence length and full SN length.",
+            "vi": "Tham số mã hóa quy tắc không hợp lệ. Kiểm tra cơ số, bảng ký tự, độ dài số thứ tự và SN."
+          }
+        }
+      ],
+      "handling": "仅支持10/16/32/36",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "RULE_SEQ_LEN_INVALID",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "流水位数须为 1–12",
+        "en": "Serial length must be 1–12",
+        "vi": "Số chữ số phải từ 1–12"
+      },
+      "targets": [
+        {
+          "code": 1004000001,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.RULE_INVALID",
+          "http": 400,
+          "message": "sn.ruleInvalid",
+          "translationKey": "errors.1004000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "规则编码参数不符合要求，请检查进制、字符表、流水长度和完整SN长度。",
+            "en": "Invalid rule encoding. Check the base, alphabet, sequence length and full SN length.",
+            "vi": "Tham số mã hóa quy tắc không hợp lệ. Kiểm tra cơ số, bảng ký tự, độ dài số thứ tự và SN."
+          }
+        }
+      ],
+      "handling": "流水位数1至12",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "RULE_CHARSET_LENGTH",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "字符表长度必须等于进制",
+        "en": "Charset length must equal the base",
+        "vi": "Độ dài bộ ký tự phải bằng hệ cơ số"
+      },
+      "targets": [
+        {
+          "code": 1004000001,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.RULE_INVALID",
+          "http": 400,
+          "message": "sn.ruleInvalid",
+          "translationKey": "errors.1004000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "规则编码参数不符合要求，请检查进制、字符表、流水长度和完整SN长度。",
+            "en": "Invalid rule encoding. Check the base, alphabet, sequence length and full SN length.",
+            "vi": "Tham số mã hóa quy tắc không hợp lệ. Kiểm tra cơ số, bảng ký tự, độ dài số thứ tự và SN."
+          }
+        }
+      ],
+      "handling": "字符表长度精确匹配进制",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "RULE_CHARSET_DUPLICATE",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "字符表不能有重复字符",
+        "en": "Charset must not repeat characters",
+        "vi": "Bộ ký tự không được trùng"
+      },
+      "targets": [
+        {
+          "code": 1004000001,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.RULE_INVALID",
+          "http": 400,
+          "message": "sn.ruleInvalid",
+          "translationKey": "errors.1004000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "规则编码参数不符合要求，请检查进制、字符表、流水长度和完整SN长度。",
+            "en": "Invalid rule encoding. Check the base, alphabet, sequence length and full SN length.",
+            "vi": "Tham số mã hóa quy tắc không hợp lệ. Kiểm tra cơ số, bảng ký tự, độ dài số thứ tự và SN."
+          }
+        }
+      ],
+      "handling": "字符表不能重复",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "RULE_SN_TOO_LONG",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "前缀 + 流水 + 后缀总长不能超过 64",
+        "en": "Prefix + serial + suffix must not exceed 64",
+        "vi": "Tiền tố + số + hậu tố không quá 64"
+      },
+      "targets": [
+        {
+          "code": 1004000001,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.RULE_INVALID",
+          "http": 400,
+          "message": "sn.ruleInvalid",
+          "translationKey": "errors.1004000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "规则编码参数不符合要求，请检查进制、字符表、流水长度和完整SN长度。",
+            "en": "Invalid rule encoding. Check the base, alphabet, sequence length and full SN length.",
+            "vi": "Tham số mã hóa quy tắc không hợp lệ. Kiểm tra cơ số, bảng ký tự, độ dài số thứ tự và SN."
+          }
+        }
+      ],
+      "handling": "完整SN不得超过64字符",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "RULE_MISSING",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "customer",
+        "pi"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "PI {pi} 没有可用规则：请配置按 PI、按客户（{customer}）或通用规则",
+        "en": "No rule for PI {pi}: configure a PI, customer ({customer}) or general rule",
+        "vi": "PI {pi} chưa có quy tắc: cấu hình theo PI, khách hàng ({customer}) hoặc chung"
+      },
+      "targets": [
+        {
+          "code": 1004000017,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.GENERATION_NOT_READY",
+          "http": 409,
+          "message": "sn.generationNotReady",
+          "translationKey": "errors.1004000017",
+          "params": [],
+          "translations": {
+            "zh-CN": "当前订单条件不满足生成要求，请检查页面提示。",
+            "en": "The current order is not ready for generation. Check its issues.",
+            "vi": "Lệnh chưa đủ điều kiện tạo mã. Hãy kiểm tra thông báo."
+          }
+        }
+      ],
+      "handling": "缺有效规则在上下文列出，生成提交409",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "GEN_QTY_INVALID",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "数量须为正整数",
+        "en": "Quantity must be a positive integer",
+        "vi": "Số lượng phải là số nguyên dương"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "精确正整数字符串校验",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "GEN_QUOTA_EMPTY",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "bill_no"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "生产订单 {bill_no} 的可生成额度为 0",
+        "en": "Order {bill_no} has no quota left",
+        "vi": "Lệnh {bill_no} đã hết hạn mức"
+      },
+      "targets": [
+        {
+          "code": 1004000017,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.GENERATION_NOT_READY",
+          "http": 409,
+          "message": "sn.generationNotReady",
+          "translationKey": "errors.1004000017",
+          "params": [],
+          "translations": {
+            "zh-CN": "当前订单条件不满足生成要求，请检查页面提示。",
+            "en": "The current order is not ready for generation. Check its issues.",
+            "vi": "Lệnh chưa đủ điều kiện tạo mã. Hãy kiểm tra thông báo."
+          }
+        }
+      ],
+      "handling": "额度为零在上下文列出，提交409",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "GEN_QUOTA_EXCEEDED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "qty",
+        "quota"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "生成数量 {qty} 超出可生成额度 {quota}",
+        "en": "Quantity {qty} exceeds the quota {quota}",
+        "vi": "Số lượng {qty} vượt hạn mức {quota}"
+      },
+      "targets": [
+        {
+          "code": 1004000018,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.QUOTA_EXCEEDED",
+          "http": 409,
+          "message": "sn.quotaExceeded",
+          "translationKey": "errors.1004000018",
+          "params": [],
+          "translations": {
+            "zh-CN": "生成数量超过来源分录剩余额度。",
+            "en": "Quantity exceeds the remaining source entry quota.",
+            "vi": "Số lượng vượt hạn mức còn lại của dòng nguồn."
+          }
+        }
+      ],
+      "handling": "旧400改409，锁内复核来源分录额度",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "GEN_START_NOT_ALLOWED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "pi"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "PI {pi} 已指定过起始号或已生成过，不能再指定起始号",
+        "en": "PI {pi} already has a start number or generated SNs",
+        "vi": "PI {pi} đã có số bắt đầu hoặc đã tạo SN"
+      },
+      "targets": [
+        {
+          "code": 1004000013,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.PI_INIT_LOCKED",
+          "http": 409,
+          "message": "sn.piInitLocked",
+          "translationKey": "errors.1004000013",
+          "params": [],
+          "translations": {
+            "zh-CN": "该 PI 已初始化或生成，不能再次设置起号。",
+            "en": "This PI was already initialized or generated.",
+            "vi": "PI đã được khởi tạo hoặc tạo mã, không thể đặt lại số đầu."
+          }
+        }
+      ],
+      "handling": "起始水位只能指定一次，409",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "GEN_START_INVALID",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "max"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "起始号须在 1 与 {max} 之间",
+        "en": "Start number must be between 1 and {max}",
+        "vi": "Số bắt đầu phải từ 1 đến {max}"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        },
+        {
+          "code": 1004000002,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.SEQUENCE_OVERFLOW",
+          "http": 409,
+          "message": "sn.sequenceOverflow",
+          "translationKey": "errors.1004000002",
+          "params": [],
+          "translations": {
+            "zh-CN": "流水已超出规则容量，无法继续生成。",
+            "en": "The sequence exceeds the rule capacity. Generation cannot continue.",
+            "vi": "Số thứ tự vượt sức chứa của quy tắc. Không thể tiếp tục tạo."
+          }
+        }
+      ],
+      "handling": "格式非正整数400；超规则容量409",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "GEN_RULE_EXHAUSTED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "end",
+        "max"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "规则位数已用尽：最大流水 {max}，本次需要排到 {end}",
+        "en": "Rule capacity exhausted: max serial {max}, needs {end}",
+        "vi": "Hết dung lượng quy tắc: tối đa {max}, cần {end}"
+      },
+      "targets": [
+        {
+          "code": 1004000002,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.SEQUENCE_OVERFLOW",
+          "http": 409,
+          "message": "sn.sequenceOverflow",
+          "translationKey": "errors.1004000002",
+          "params": [],
+          "translations": {
+            "zh-CN": "流水已超出规则容量，无法继续生成。",
+            "en": "The sequence exceeds the rule capacity. Generation cannot continue.",
+            "vi": "Số thứ tự vượt sức chứa của quy tắc. Không thể tiếp tục tạo."
+          }
+        }
+      ],
+      "handling": "容量耗尽409；不跳号",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "GEN_PREVIEW_REQUIRED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "没有完成本次预演，不能生成",
+        "en": "Preview this generation first",
+        "vi": "Hãy xem trước lần tạo này"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        },
+        {
+          "code": 1000000005,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.NOT_FOUND",
+          "http": 404,
+          "message": "common.notFound",
+          "translationKey": "errors.1000000005",
+          "params": [],
+          "translations": {
+            "zh-CN": "请求的内容不存在。",
+            "en": "The requested content was not found.",
+            "vi": "Không tìm thấy nội dung yêu cầu."
+          }
+        }
+      ],
+      "handling": "缺UUID为400，未知或他人预演404",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "GEN_PREVIEW_EXPIRED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "预演已过期，请重新预演",
+        "en": "Preview expired, please preview again",
+        "vi": "Bản xem trước đã hết hạn, hãy xem lại"
+      },
+      "targets": [
+        {
+          "code": 1004000016,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.PREVIEW_CHANGED",
+          "http": 409,
+          "message": "sn.previewChanged",
+          "translationKey": "errors.1004000016",
+          "params": [],
+          "translations": {
+            "zh-CN": "预演条件已变化、已使用或过期，请重新预演。",
+            "en": "The preview changed, expired or was consumed. Preview again.",
+            "vi": "Điều kiện xem trước đã đổi, hết hạn hoặc đã sử dụng. Hãy xem trước lại."
+          }
+        }
+      ],
+      "handling": "过期409，重新预演",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "GEN_PREVIEW_CHANGED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 409,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "预演条件已改变，请重新预演",
+        "en": "Preview conditions changed, please preview again",
+        "vi": "Điều kiện đã thay đổi, hãy xem trước lại"
+      },
+      "targets": [
+        {
+          "code": 1004000016,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.PREVIEW_CHANGED",
+          "http": 409,
+          "message": "sn.previewChanged",
+          "translationKey": "errors.1004000016",
+          "params": [],
+          "translations": {
+            "zh-CN": "预演条件已变化、已使用或过期，请重新预演。",
+            "en": "The preview changed, expired or was consumed. Preview again.",
+            "vi": "Điều kiện xem trước đã đổi, hết hạn hoặc đã sử dụng. Hãy xem trước lại."
+          }
+        }
+      ],
+      "handling": "输入/规则/来源/额度变化409",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "GEN_PREVIEW_STALE",
+      "sourceKind": "ENUM",
+      "legacyHttp": 409,
+      "legacyParams": [
+        "actual",
+        "expected",
+        "pi"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "PI {pi} 的最大号已从 {expected} 变为 {actual}，预演失效，请重新预演",
+        "en": "Max serial of PI {pi} changed from {expected} to {actual}; preview again",
+        "vi": "Số lớn nhất của PI {pi} đã đổi từ {expected} thành {actual}; hãy xem trước lại"
+      },
+      "targets": [
+        {
+          "code": 1004000016,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.PREVIEW_CHANGED",
+          "http": 409,
+          "message": "sn.previewChanged",
+          "translationKey": "errors.1004000016",
+          "params": [],
+          "translations": {
+            "zh-CN": "预演条件已变化、已使用或过期，请重新预演。",
+            "en": "The preview changed, expired or was consumed. Preview again.",
+            "vi": "Điều kiện xem trước đã đổi, hết hạn hoặc đã sử dụng. Hãy xem trước lại."
+          }
+        }
+      ],
+      "handling": "水位变化409，重新预演",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "GEN_PREVIEW_USED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 409,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "该预演已用于一次生成，请重新预演",
+        "en": "This preview was already used; preview again",
+        "vi": "Bản xem trước đã được dùng; hãy xem lại"
+      },
+      "targets": [
+        {
+          "code": 1004000016,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.PREVIEW_CHANGED",
+          "http": 409,
+          "message": "sn.previewChanged",
+          "translationKey": "errors.1004000016",
+          "params": [],
+          "translations": {
+            "zh-CN": "预演条件已变化、已使用或过期，请重新预演。",
+            "en": "The preview changed, expired or was consumed. Preview again.",
+            "vi": "Điều kiện xem trước đã đổi, hết hạn hoặc đã sử dụng. Hãy xem trước lại."
+          }
+        }
+      ],
+      "handling": "新操作复用预演409；同号原任务合法重放",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "GEN_BUSY",
+      "sourceKind": "ENUM",
+      "legacyHttp": 409,
+      "legacyParams": [
+        "pi"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "PI {pi} 正在生成，请稍后再试",
+        "en": "PI {pi} is being generated, please try later",
+        "vi": "PI {pi} đang được tạo, vui lòng thử lại sau"
+      },
+      "targets": [
+        {
+          "code": 1004000014,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.PI_BUSY",
+          "http": 409,
+          "message": "sn.piBusy",
+          "translationKey": "errors.1004000014",
+          "params": [],
+          "translations": {
+            "zh-CN": "该 PI 有未完成操作，请先查询原任务。",
+            "en": "This PI has unfinished work. Check its task.",
+            "vi": "PI có thao tác chưa hoàn tất. Hãy kiểm tra tác vụ."
+          }
+        }
+      ],
+      "handling": "PI已有活跃任务409，不启动第二写者",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "GEN_DUPLICATE_SN",
+      "sourceKind": "ENUM",
+      "legacyHttp": 409,
+      "legacyParams": [
+        "pi",
+        "sn"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "完整 SN {sn} 与 PI {pi} 已有的号重复，已停止生成（不自动跳号）",
+        "en": "Full SN {sn} already exists in PI {pi}; generation stopped (no skipping)",
+        "vi": "SN {sn} đã tồn tại trong PI {pi}; đã dừng tạo (không nhảy số)"
+      },
+      "targets": [
+        {
+          "code": 1004000015,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.SN_CONFLICT",
+          "http": 409,
+          "message": "sn.snConflict",
+          "translationKey": "errors.1004000015",
+          "params": [],
+          "translations": {
+            "zh-CN": "完整 SN 或流水冲突，整批操作已拒绝。",
+            "en": "An SN or sequence conflicts. The entire operation was rejected.",
+            "vi": "SN hoặc số thứ tự bị trùng. Toàn bộ thao tác bị từ chối."
+          }
+        }
+      ],
+      "handling": "双护栏冲突整批失败409，不跳号",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "GEN_JOB_NOT_FOUND",
+      "sourceKind": "ENUM",
+      "legacyHttp": 404,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "生成任务不存在",
+        "en": "Generation job not found",
+        "vi": "Không tìm thấy tác vụ tạo"
+      },
+      "targets": [
+        {
+          "code": 1000000005,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.NOT_FOUND",
+          "http": 404,
+          "message": "common.notFound",
+          "translationKey": "errors.1000000005",
+          "params": [],
+          "translations": {
+            "zh-CN": "请求的内容不存在。",
+            "en": "The requested content was not found.",
+            "vi": "Không tìm thấy nội dung yêu cầu."
+          }
+        }
+      ],
+      "handling": "任务不存在或不属于当前主体404",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "ALLOC_NOTHING",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "bill_no"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "生产订单 {bill_no} 没有待分配的号",
+        "en": "Order {bill_no} has nothing to allocate",
+        "vi": "Lệnh {bill_no} không có SN chờ phân bổ"
+      },
+      "targets": [
+        {
+          "code": 1004000019,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.ALLOCATION_CHANGED",
+          "http": 409,
+          "message": "sn.allocationChanged",
+          "translationKey": "errors.1004000019",
+          "params": [],
+          "translations": {
+            "zh-CN": "待分配成员、数量或生产组织已变化，请刷新核对。",
+            "en": "Pending members, quantity or production organization changed. Refresh and verify.",
+            "vi": "Thành viên, số lượng chờ hoặc đơn vị sản xuất đã đổi. Hãy tải lại và kiểm tra."
+          }
+        }
+      ],
+      "handling": "待分配数与确认数不一致409",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "ALLOC_QTY_EXCEEDED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "pending",
+        "qty"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "分配数量 {qty} 超出待分配数量 {pending}",
+        "en": "Quantity {qty} exceeds the {pending} waiting for allocation",
+        "vi": "Số lượng {qty} vượt quá {pending} đang chờ phân bổ"
+      },
+      "targets": [],
+      "handling": "部分分配接口已移除，只接受整单固定成员确认",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "NO_AUTOMATIC_ERROR_MAPPING"
+    },
+    {
+      "legacyCode": "ALLOC_FACTORY_MISMATCH",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "factory"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "只能分到该订单的生产组织 {factory}",
+        "en": "Can only allocate to the order's production org {factory}",
+        "vi": "Chỉ được phân bổ cho tổ chức sản xuất của lệnh {factory}"
+      },
+      "targets": [
+        {
+          "code": 1004000019,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.ALLOCATION_CHANGED",
+          "http": 409,
+          "message": "sn.allocationChanged",
+          "translationKey": "errors.1004000019",
+          "params": [],
+          "translations": {
+            "zh-CN": "待分配成员、数量或生产组织已变化，请刷新核对。",
+            "en": "Pending members, quantity or production organization changed. Refresh and verify.",
+            "vi": "Thành viên, số lượng chờ hoặc đơn vị sản xuất đã đổi. Hãy tải lại và kiểm tra."
+          }
+        }
+      ],
+      "handling": "来源组织/工厂改变409，必须重新确认整单",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "PI_REQUIRED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "PI 必填",
+        "en": "PI is required",
+        "vi": "Bắt buộc nhập PI"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "PI必填，空/null按声明规范化",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "PI_INIT_LOCKED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "pi"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "PI {pi} 已指定起始号或已生成过，不能再初始化",
+        "en": "PI {pi} already has a start number or generated SNs",
+        "vi": "PI {pi} đã có số bắt đầu hoặc đã tạo SN"
+      },
+      "targets": [
+        {
+          "code": 1004000013,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.PI_INIT_LOCKED",
+          "http": 409,
+          "message": "sn.piInitLocked",
+          "translationKey": "errors.1004000013",
+          "params": [],
+          "translations": {
+            "zh-CN": "该 PI 已初始化或生成，不能再次设置起号。",
+            "en": "This PI was already initialized or generated.",
+            "vi": "PI đã được khởi tạo hoặc tạo mã, không thể đặt lại số đầu."
+          }
+        }
+      ],
+      "handling": "旧400改409，已有水位/导入/生成不再初始化",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "PI_INIT_EMPTY",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "请填写起始号，或导入历史 SN 清单",
+        "en": "Enter a start number or import an SN list",
+        "vi": "Nhập số bắt đầu hoặc nhập danh sách SN"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "至少起始号或历史清单之一",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "PI_IMPORT_SN_INVALID",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "line"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "第 {line} 行 SN 为空或超过 64 位",
+        "en": "Line {line}: SN is empty or longer than 64",
+        "vi": "Dòng {line}: SN trống hoặc dài hơn 64"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "逐条SN长度/控制字符校验；空白行按页面规则忽略",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "PI_IMPORT_DUP_IN_LIST",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "sn"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "导入清单内有重复 SN：{sn}",
+        "en": "Duplicate SN in list: {sn}",
+        "vi": "SN trùng trong danh sách: {sn}"
+      },
+      "targets": [
+        {
+          "code": 1004000015,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.SN_CONFLICT",
+          "http": 409,
+          "message": "sn.snConflict",
+          "translationKey": "errors.1004000015",
+          "params": [],
+          "translations": {
+            "zh-CN": "完整 SN 或流水冲突，整批操作已拒绝。",
+            "en": "An SN or sequence conflicts. The entire operation was rejected.",
+            "vi": "SN hoặc số thứ tự bị trùng. Toàn bộ thao tác bị từ chối."
+          }
+        }
+      ],
+      "handling": "清单重复旧400改409，整批拒绝",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "PI_IMPORT_DUP_EXISTING",
+      "sourceKind": "ENUM",
+      "legacyHttp": 409,
+      "legacyParams": [
+        "pi",
+        "sn"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "SN {sn} 已存在于 PI {pi}",
+        "en": "SN {sn} already exists in PI {pi}",
+        "vi": "SN {sn} đã tồn tại trong PI {pi}"
+      },
+      "targets": [
+        {
+          "code": 1004000015,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.SN_CONFLICT",
+          "http": 409,
+          "message": "sn.snConflict",
+          "translationKey": "errors.1004000015",
+          "params": [],
+          "translations": {
+            "zh-CN": "完整 SN 或流水冲突，整批操作已拒绝。",
+            "en": "An SN or sequence conflicts. The entire operation was rejected.",
+            "vi": "SN hoặc số thứ tự bị trùng. Toàn bộ thao tác bị từ chối."
+          }
+        }
+      ],
+      "handling": "目标PI完整SN重复409",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "PI_IMPORT_SEQ_DUP",
+      "sourceKind": "ENUM",
+      "legacyHttp": 409,
+      "legacyParams": [
+        "pi",
+        "seq"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "导入清单中有流水 {seq} 已被 PI {pi} 占用",
+        "en": "Serial {seq} in the list is already used in PI {pi}",
+        "vi": "Số {seq} trong danh sách đã được dùng trong PI {pi}"
+      },
+      "targets": [
+        {
+          "code": 1004000015,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.SN_CONFLICT",
+          "http": 409,
+          "message": "sn.snConflict",
+          "translationKey": "errors.1004000015",
+          "params": [],
+          "translations": {
+            "zh-CN": "完整 SN 或流水冲突，整批操作已拒绝。",
+            "en": "An SN or sequence conflicts. The entire operation was rejected.",
+            "vi": "SN hoặc số thứ tự bị trùng. Toàn bộ thao tác bị từ chối."
+          }
+        }
+      ],
+      "handling": "原始PI流水重复409，不修补水位掩盖冲突",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "PI_IMPORT_TOO_LARGE",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "max"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "单次导入最多 {max} 条",
+        "en": "At most {max} SNs per import",
+        "vi": "Tối đa {max} SN mỗi lần nhập"
+      },
+      "targets": [
+        {
+          "code": 1004000011,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.RESOURCE_LIMIT",
+          "http": 409,
+          "message": "sn.resourceLimit",
+          "translationKey": "errors.1004000011",
+          "params": [],
+          "translations": {
+            "zh-CN": "数据超出本次资源上限，请缩小范围或联系管理员",
+            "en": "The request exceeds the resource limit. Narrow the scope or contact an administrator",
+            "vi": "Yêu cầu vượt giới hạn tài nguyên. Thu hẹp phạm vi hoặc liên hệ quản trị viên"
+          }
+        }
+      ],
+      "handling": "受控单批条数/输入字节限制409，不能截断",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "ACQ_REQUEST_NO_REQUIRED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "请求号必填（1–64 位）",
+        "en": "Request No. is required (1–64 chars)",
+        "vi": "Bắt buộc mã yêu cầu (1–64 ký tự)"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "操作号改为规范UUID；旧1至64字符串仅经显式映射进入历史",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "ACQ_NOTHING",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "factory",
+        "pi"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "工厂 {factory} 的 PI {pi} 没有待领取的号",
+        "en": "Factory {factory} has nothing to acquire in PI {pi}",
+        "vi": "Nhà máy {factory} không có SN chờ nhận trong PI {pi}"
+      },
+      "targets": [],
+      "handling": "新接口返回固定批次分项计数与零可领取结果，历史错误不改为成功",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "NO_AUTOMATIC_ERROR_MAPPING"
+    },
+    {
+      "legacyCode": "ACQ_PI_NOT_IN_ERP",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "pi"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "PI {pi} 不在生产订单快照（计划 / 计划确认）中，不能领取",
+        "en": "PI {pi} is not in the order snapshot (planned / confirmed); cannot acquire",
+        "vi": "PI {pi} không có trong ảnh chụp lệnh; không thể nhận"
+      },
+      "targets": [],
+      "handling": "成员分类为blocked，不伪造ERP来源，不将历史失败改为成功",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "NO_AUTOMATIC_ERROR_MAPPING"
+    },
+    {
+      "legacyCode": "ACQ_REQUEST_CONFLICT",
+      "sourceKind": "ENUM",
+      "legacyHttp": 409,
+      "legacyParams": [
+        "factory",
+        "pi",
+        "request_no"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "请求号 {request_no} 已用于工厂 {factory} 的 PI {pi}",
+        "en": "Request No. {request_no} was used for factory {factory} PI {pi}",
+        "vi": "Mã yêu cầu {request_no} đã dùng cho nhà máy {factory} PI {pi}"
+      },
+      "targets": [
+        {
+          "code": 1003000007,
+          "constant": "com.adtek.framework.constant.ErrorCodeConstants.OPERATION_CONFLICT",
+          "http": 409,
+          "message": "framework.operationConflict",
+          "translationKey": "errors.1003000007",
+          "params": [
+            "action",
+            "factoryId",
+            "operationId",
+            "pi"
+          ],
+          "translations": {
+            "zh-CN": "同一操作号的内容不一致，请查询原操作。",
+            "en": "This operation ID has different input. Check the original operation.",
+            "vi": "Mã yêu cầu này có nội dung khác. Hãy kiểm tra yêu cầu gốc."
+          }
+        }
+      ],
+      "handling": "按主体类型/主体/动作/operationId命名空间；同号异载荷409",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "ACQ_BATCH_NOT_FOUND",
+      "sourceKind": "ENUM",
+      "legacyHttp": 404,
+      "legacyParams": [
+        "batch_no"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "领取批次 {batch_no} 不存在",
+        "en": "Batch {batch_no} not found",
+        "vi": "Không tìm thấy lô {batch_no}"
+      },
+      "targets": [
+        {
+          "code": 1000000005,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.NOT_FOUND",
+          "http": 404,
+          "message": "common.notFound",
+          "translationKey": "errors.1000000005",
+          "params": [],
+          "translations": {
+            "zh-CN": "请求的内容不存在。",
+            "en": "The requested content was not found.",
+            "vi": "Không tìm thấy nội dung yêu cầu."
+          }
+        }
+      ],
+      "handling": "不存在或工厂范围不可见404",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "PRINT_NOTHING",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "factory",
+        "pi"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "工厂 {factory} 的 PI {pi} 没有待打印的号",
+        "en": "Factory {factory} has nothing to print in PI {pi}",
+        "vi": "Nhà máy {factory} không có SN chờ in trong PI {pi}"
+      },
+      "targets": [
+        {
+          "code": 1004000022,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.PRINT_NOTHING",
+          "http": 409,
+          "message": "sn.printNothing",
+          "translationKey": "errors.1004000022",
+          "params": [],
+          "translations": {
+            "zh-CN": "此工厂 + PI 暂无待打印 SN。",
+            "en": "No SN is ready to print for this factory + PI.",
+            "vi": "Không có SN chờ in cho nhà máy + PI này."
+          }
+        }
+      ],
+      "handling": "旧400改409，当前整PI没有待打印成员",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "PRINT_NOT_FOUND",
+      "sourceKind": "ENUM",
+      "legacyHttp": 404,
+      "legacyParams": [
+        "print_no"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "打印单 {print_no} 不存在",
+        "en": "Print record {print_no} not found",
+        "vi": "Không tìm thấy phiếu in {print_no}"
+      },
+      "targets": [
+        {
+          "code": 1000000005,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.NOT_FOUND",
+          "http": 404,
+          "message": "common.notFound",
+          "translationKey": "errors.1000000005",
+          "params": [],
+          "translations": {
+            "zh-CN": "请求的内容不存在。",
+            "en": "The requested content was not found.",
+            "vi": "Không tìm thấy nội dung yêu cầu."
+          }
+        }
+      ],
+      "handling": "固定打印记录不存在或不可见404",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "CALLBACK_EMPTY",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "请传入 SN 清单或起止号",
+        "en": "Provide an SN list or a start/end range",
+        "vi": "Cung cấp danh sách SN hoặc dải đầu/cuối"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "SN清单与区间必须且只能指定一种",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "CALLBACK_STATUS_INVALID",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "目标状态只能是 PRINTED",
+        "en": "Target status must be PRINTED",
+        "vi": "Trạng thái đích phải là PRINTED"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "目标状态只能为PRINTED",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "CALLBACK_RANGE_INVALID",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "batch_no",
+        "end_sn",
+        "start_sn"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "起止号 {start_sn} ~ {end_sn} 不属于批次 {batch_no}",
+        "en": "Range {start_sn} ~ {end_sn} is not in batch {batch_no}",
+        "vi": "Dải {start_sn} ~ {end_sn} không thuộc lô {batch_no}"
+      },
+      "targets": [
+        {
+          "code": 1004000021,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.CALLBACK_RANGE_INVALID",
+          "http": 400,
+          "message": "sn.callbackRangeInvalid",
+          "translationKey": "errors.1004000021",
+          "params": [],
+          "translations": {
+            "zh-CN": "回调范围必须是同一流水 PI 的连续固定批次成员。",
+            "en": "A callback range must contain contiguous fixed batch members with the same sequence PI.",
+            "vi": "Khoảng phản hồi phải gồm các thành viên liên tiếp của lô cố định cùng PI số thứ tự."
+          }
+        }
+      ],
+      "handling": "区间必须是该固定批次连续且同原流水PI成员",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "CALLBACK_TOO_MANY",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "max"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "单次回调最多 {max} 枚",
+        "en": "At most {max} SNs per callback",
+        "vi": "Tối đa {max} SN mỗi lần gọi lại"
+      },
+      "targets": [
+        {
+          "code": 1004000011,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.RESOURCE_LIMIT",
+          "http": 409,
+          "message": "sn.resourceLimit",
+          "translationKey": "errors.1004000011",
+          "params": [],
+          "translations": {
+            "zh-CN": "数据超出本次资源上限，请缩小范围或联系管理员",
+            "en": "The request exceeds the resource limit. Narrow the scope or contact an administrator",
+            "vi": "Yêu cầu vượt giới hạn tài nguyên. Thu hẹp phạm vi hoặc liên hệ quản trị viên"
+          }
+        }
+      ],
+      "handling": "条数/区间长度先校验，上限409，不截断",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "TR_SCOPE_INVALID",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "转移范围只能是整张 PI、PI + 物料、单枚 SN",
+        "en": "Scope must be whole PI, PI + material or single SN",
+        "vi": "Phạm vi phải là cả PI, PI + vật tư hoặc một SN"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "范围只允许整PI/物料/单SN",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "TR_MATERIAL_REQUIRED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "按物料转移时物料编码必填",
+        "en": "Material is required for this scope",
+        "vi": "Bắt buộc nhập vật tư"
+      },
+      "targets": [],
+      "handling": "新模型显式区分空物料与不限物料，空物料是合法范围",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "NO_AUTOMATIC_ERROR_MAPPING"
+    },
+    {
+      "legacyCode": "TR_SN_REQUIRED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "单枚转移时 SN 必填",
+        "en": "SN is required for a single transfer",
+        "vi": "Bắt buộc nhập SN"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "单SN范围必须提供完整SN",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "TR_REASON_REQUIRED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "转厂原因必填",
+        "en": "Transfer reason is required",
+        "vi": "Bắt buộc nhập lý do chuyển"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "申请/直转原因必填",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "TR_TO_PI_REQUIRED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "转入 PI 必填",
+        "en": "Target PI is required",
+        "vi": "Bắt buộc nhập PI đích"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "转入PI必填",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "TR_NOTHING",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "所选范围内没有可转移的号（待分配、申请中的号不能转移）",
+        "en": "Nothing transferable in the scope (to-allocate or pending SNs cannot move)",
+        "vi": "Không có SN có thể chuyển (SN chờ phân bổ hoặc đang xin chuyển không thể chuyển)"
+      },
+      "targets": [
+        {
+          "code": 1004000024,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.TRANSFER_NOTHING",
+          "http": 409,
+          "message": "sn.transferNothing",
+          "translationKey": "errors.1004000024",
+          "params": [],
+          "translations": {
+            "zh-CN": "当前范围内没有可转移的 SN。",
+            "en": "There are no transferable SNs in this scope.",
+            "vi": "Không có SN có thể chuyển trong phạm vi này."
+          }
+        }
+      ],
+      "handling": "旧400改409，没有可冻结/直转成员",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "TR_SN_NOT_TRANSFERABLE",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "sn"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "SN {sn} 当前状态不能转移",
+        "en": "SN {sn} cannot be transferred in its current status",
+        "vi": "SN {sn} không thể chuyển ở trạng thái hiện tại"
+      },
+      "targets": [
+        {
+          "code": 1004000024,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.TRANSFER_NOTHING",
+          "http": 409,
+          "message": "sn.transferNothing",
+          "translationKey": "errors.1004000024",
+          "params": [],
+          "translations": {
+            "zh-CN": "当前范围内没有可转移的 SN。",
+            "en": "There are no transferable SNs in this scope.",
+            "vi": "Không có SN có thể chuyển trong phạm vi này."
+          }
+        }
+      ],
+      "handling": "待分配/已申请成员不可再次选取，409",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "TR_SAME_TARGET",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "转入目标与来源完全相同",
+        "en": "Target is identical to the source",
+        "vi": "Đích trùng với nguồn"
+      },
+      "targets": [
+        {
+          "code": 1004000025,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.TRANSFER_NO_CHANGE",
+          "http": 409,
+          "message": "sn.transferNoChange",
+          "translationKey": "errors.1004000025",
+          "params": [],
+          "translations": {
+            "zh-CN": "目标与全部来源成员相同，没有可执行的转厂变化。",
+            "en": "The destination matches every source member; nothing would change.",
+            "vi": "Đích giống mọi thành viên nguồn; không có thay đổi."
+          }
+        }
+      ],
+      "handling": "目标全相同409；混合来源按固定成员判断",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "TR_DUPLICATE",
+      "sourceKind": "ENUM",
+      "legacyHttp": 409,
+      "legacyParams": [
+        "pi",
+        "sn"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "转入 PI {pi} 下已存在相同完整 SN（如 {sn}），拒绝整次转移",
+        "en": "Target PI {pi} already has the same full SN (e.g. {sn}); transfer rejected",
+        "vi": "PI đích {pi} đã có SN trùng (ví dụ {sn}); từ chối toàn bộ"
+      },
+      "targets": [
+        {
+          "code": 1004000015,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.SN_CONFLICT",
+          "http": 409,
+          "message": "sn.snConflict",
+          "translationKey": "errors.1004000015",
+          "params": [],
+          "translations": {
+            "zh-CN": "完整 SN 或流水冲突，整批操作已拒绝。",
+            "en": "An SN or sequence conflicts. The entire operation was rejected.",
+            "vi": "SN hoặc số thứ tự bị trùng. Toàn bộ thao tác bị từ chối."
+          }
+        }
+      ],
+      "handling": "目标PI完整SN冲突整批409，原流水护栏不迁走",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "TR_NOT_FOUND",
+      "sourceKind": "ENUM",
+      "legacyHttp": 404,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "转厂记录不存在",
+        "en": "Transfer record not found",
+        "vi": "Không tìm thấy phiếu chuyển"
+      },
+      "targets": [
+        {
+          "code": 1000000005,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.NOT_FOUND",
+          "http": 404,
+          "message": "common.notFound",
+          "translationKey": "errors.1000000005",
+          "params": [],
+          "translations": {
+            "zh-CN": "请求的内容不存在。",
+            "en": "The requested content was not found.",
+            "vi": "Không tìm thấy nội dung yêu cầu."
+          }
+        }
+      ],
+      "handling": "转厂记录不存在或不可见404",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "TR_NOT_PENDING",
+      "sourceKind": "ENUM",
+      "legacyHttp": 409,
+      "legacyParams": [
+        "transfer_no"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "转厂申请 {transfer_no} 已处理，不能重复操作",
+        "en": "Transfer {transfer_no} was already processed",
+        "vi": "Phiếu chuyển {transfer_no} đã được xử lý"
+      },
+      "targets": [
+        {
+          "code": 1004000023,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.TRANSFER_CHANGED",
+          "http": 409,
+          "message": "sn.transferChanged",
+          "translationKey": "errors.1004000023",
+          "params": [],
+          "translations": {
+            "zh-CN": "转厂单状态、版本或固定成员已变化，请刷新后重试。",
+            "en": "Transfer status, version or fixed members changed. Refresh and retry.",
+            "vi": "Trạng thái, phiên bản hoặc thành viên cố định đã thay đổi. Hãy tải lại."
+          }
+        }
+      ],
+      "handling": "终态/版本不匹配409；相同操作可读取原结果",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "TR_WITHDRAW_FORBIDDEN",
+      "sourceKind": "ENUM",
+      "legacyHttp": 403,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "只能撤回本厂提交的申请",
+        "en": "Only your factory's own requests can be withdrawn",
+        "vi": "Chỉ rút được yêu cầu của nhà máy mình"
+      },
+      "targets": [
+        {
+          "code": 1003000004,
+          "constant": "com.adtek.framework.constant.ErrorCodeConstants.FORBIDDEN",
+          "http": 403,
+          "message": "framework.forbidden",
+          "translationKey": "errors.1003000004",
+          "params": [],
+          "translations": {
+            "zh-CN": "请求未通过安全校验，请重试或联系管理员。",
+            "en": "The request failed a security check. Retry or contact your administrator.",
+            "vi": "Yêu cầu không vượt qua kiểm tra bảo mật. Hãy thử lại hoặc liên hệ quản trị viên."
+          }
+        }
+      ],
+      "handling": "撤回按当前动作与源工厂授权403",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "TR_CONCURRENT",
+      "sourceKind": "ENUM",
+      "legacyHttp": 409,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "部分号的状态刚刚变化，请刷新后重试",
+        "en": "Some SNs just changed status; refresh and retry",
+        "vi": "Một số SN vừa đổi trạng thái; hãy làm mới và thử lại"
+      },
+      "targets": [
+        {
+          "code": 1004000023,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.TRANSFER_CHANGED",
+          "http": 409,
+          "message": "sn.transferChanged",
+          "translationKey": "errors.1004000023",
+          "params": [],
+          "translations": {
+            "zh-CN": "转厂单状态、版本或固定成员已变化，请刷新后重试。",
+            "en": "Transfer status, version or fixed members changed. Refresh and retry.",
+            "vi": "Trạng thái, phiên bản hoặc thành viên cố định đã thay đổi. Hãy tải lại."
+          }
+        }
+      ],
+      "handling": "固定成员状态/数量变化409，禁止部分成功",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "QUERY_PI_REQUIRED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "查看同一 PI 各厂的号时必须指定 PI",
+        "en": "A PI is required to view all factories of a PI",
+        "vi": "Phải nhập PI để xem mọi nhà máy của PI"
+      },
+      "targets": [
+        {
+          "code": 1000000001,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "http": 400,
+          "message": "common.invalidArgument",
+          "translationKey": "errors.1000000001",
+          "params": [],
+          "translations": {
+            "zh-CN": "输入内容不符合要求，请检查后重试。",
+            "en": "Please check the information you entered.",
+            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+          }
+        }
+      ],
+      "handling": "跨厂同PI观察必须指定PI",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "QUERY_PI_NOT_OWNED",
+      "sourceKind": "ENUM",
+      "legacyHttp": 403,
+      "legacyParams": [
+        "pi"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "本厂没有 PI {pi} 的号，不能查看其他工厂",
+        "en": "Your factory has no SNs in PI {pi}",
+        "vi": "Nhà máy của bạn không có SN trong PI {pi}"
+      },
+      "targets": [
+        {
+          "code": 1003000004,
+          "constant": "com.adtek.framework.constant.ErrorCodeConstants.FORBIDDEN",
+          "http": 403,
+          "message": "framework.forbidden",
+          "translationKey": "errors.1003000004",
+          "params": [],
+          "translations": {
+            "zh-CN": "请求未通过安全校验，请重试或联系管理员。",
+            "en": "The request failed a security check. Retry or contact your administrator.",
+            "vi": "Yêu cầu không vượt qua kiểm tra bảo mật. Hãy thử lại hoặc liên hệ quản trị viên."
+          }
+        }
+      ],
+      "handling": "本厂不持有该PI时拒绝跨厂观察403",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "EXPORT_TOO_LARGE",
+      "sourceKind": "ENUM",
+      "legacyHttp": 400,
+      "legacyParams": [
+        "max"
+      ],
+      "legacyTemplates": {
+        "zh-CN": "单次导出最多 {max} 条，请缩小筛选范围",
+        "en": "At most {max} rows per export; narrow the filter",
+        "vi": "Tối đa {max} dòng mỗi lần xuất; hãy thu hẹp điều kiện"
+      },
+      "targets": [
+        {
+          "code": 1004000011,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.RESOURCE_LIMIT",
+          "http": 409,
+          "message": "sn.resourceLimit",
+          "translationKey": "errors.1004000011",
+          "params": [],
+          "translations": {
+            "zh-CN": "数据超出本次资源上限，请缩小范围或联系管理员",
+            "en": "The request exceeds the resource limit. Narrow the scope or contact an administrator",
+            "vi": "Yêu cầu vượt giới hạn tài nguyên. Thu hẹp phạm vi hoặc liên hệ quản trị viên"
+          }
+        },
+        {
+          "code": 1003000014,
+          "constant": "com.adtek.framework.constant.ErrorCodeConstants.RESOURCE_LIMIT",
+          "http": 409,
+          "message": "framework.resourceLimit",
+          "translationKey": "errors.1003000014",
+          "params": [],
+          "translations": {
+            "zh-CN": "导出超过本阶段的行数或文件大小上限，请缩小范围。",
+            "en": "Export exceeds the row or file size limit. Narrow the search.",
+            "vi": "Vượt giới hạn số dòng hoặc kích thước tệp. Hãy thu hẹp bộ lọc."
+          }
+        }
+      ],
+      "handling": "业务快照条数/文件格式容量分层限制409；允许范围内使用持久导出任务",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "INTERNAL",
+      "sourceKind": "LITERAL_OR_DEFAULT",
+      "legacyHttp": 500,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "Internal Server Error",
+        "en": "Internal Server Error",
+        "vi": "Internal Server Error"
+      },
+      "targets": [
+        {
+          "code": 1000000002,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.INTERNAL_ERROR",
+          "http": 500,
+          "message": "common.internalError",
+          "translationKey": "errors.1000000002",
+          "params": [],
+          "translations": {
+            "zh-CN": "服务暂时无法完成请求，请保留问题追踪号。",
+            "en": "The service could not complete the request. Keep the reference number.",
+            "vi": "Dịch vụ chưa thể xử lý yêu cầu. Vui lòng giữ mã theo dõi."
+          }
+        }
+      ],
+      "handling": "历史任务及全局非预期异常500，保留原始失败事实",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "METHOD_NOT_ALLOWED",
+      "sourceKind": "LITERAL_OR_DEFAULT",
+      "legacyHttp": 405,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "Method Not Allowed",
+        "en": "Method Not Allowed",
+        "vi": "Method Not Allowed"
+      },
+      "targets": [
+        {
+          "code": 1000000007,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.METHOD_NOT_ALLOWED",
+          "http": 405,
+          "message": "common.methodNotAllowed",
+          "translationKey": "errors.1000000007",
+          "params": [],
+          "translations": {
+            "zh-CN": "请求方法不支持。",
+            "en": "This request method is not supported.",
+            "vi": "Phương thức yêu cầu không được hỗ trợ."
+          }
+        }
+      ],
+      "handling": "HTTP方法不支持405",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    },
+    {
+      "legacyCode": "app_error",
+      "sourceKind": "LITERAL_OR_DEFAULT",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "",
+        "en": "",
+        "vi": ""
+      },
+      "targets": [],
+      "handling": "旧异常基类默认值，缺少具体语义，原始记录保留且不自动推断新码",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "NO_AUTOMATIC_ERROR_MAPPING"
+    },
+    {
+      "legacyCode": "biz_error",
+      "sourceKind": "LITERAL_OR_DEFAULT",
+      "legacyHttp": 400,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "",
+        "en": "",
+        "vi": ""
+      },
+      "targets": [],
+      "handling": "旧业务异常基类默认值，缺少具体语义，原始记录保留且不自动推断新码",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "NO_AUTOMATIC_ERROR_MAPPING"
+    },
+    {
+      "legacyCode": "<HTTP_404_WITHOUT_CODE>",
+      "sourceKind": "HTTP_WITHOUT_CODE",
+      "legacyHttp": 404,
+      "legacyParams": [],
+      "legacyTemplates": {
+        "zh-CN": "",
+        "en": "",
+        "vi": ""
+      },
+      "targets": [
+        {
+          "code": 1000000005,
+          "constant": "com.adtek.common.constant.ErrorCodeConstants.NOT_FOUND",
+          "http": 404,
+          "message": "common.notFound",
+          "translationKey": "errors.1000000005",
+          "params": [],
+          "translations": {
+            "zh-CN": "请求的内容不存在。",
+            "en": "The requested content was not found.",
+            "vi": "Không tìm thấy nội dung yêu cầu."
+          }
+        }
+      ],
+      "handling": "旧SPA/API缺少字符串码的404边界，合成登记键不当作旧实际码",
+      "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
+      "disposition": "SEMANTIC_MAPPING"
+    }
+  ]
+}

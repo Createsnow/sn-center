@@ -1,0 +1,13 @@
+{
+  "environment": "container-test-18443",
+  "startedAt": "2026-09-30T09:32:54.4636221+00:00",
+  "actualK3": true,
+  "before": {
+    "excludedEmptyCustomer": "0",
+    "rows": "0",
+    "bills": "0"
+  },
+  "success": false,
+  "error": "Local API rejected /sn/orders/sync; HTTP=502 code=1005000004 trace=791dbe55-aa6b-4942-8fd4-2172128c4b56.",
+  "finishedAt": "2026-09-30T09:32:57.2280821+00:00"
+}

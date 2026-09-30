@@ -1,0 +1,1777 @@
+{
+  "version": "sn-python-repository-v1",
+  "sourceSqlSha256": "050f686bcd998e5ca2d9ffe939694dfae17c7d314b6ea6a2096218327c9f48e8",
+  "tables": [
+    {
+      "name": "sn_factory",
+      "columns": [
+        {
+          "name": "factory_code",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "factory_name",
+          "type": "varchar(128)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "enabled",
+          "type": "tinyint(1)",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "source",
+          "type": "varchar(16)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        }
+      ],
+      "primaryKey": [
+        "factory_code"
+      ],
+      "uniqueKeys": {
+        "ux_factory_name": [
+          "factory_name"
+        ]
+      },
+      "partitioned": false
+    },
+    {
+      "name": "sn_user",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "emp_no",
+          "type": "varchar(32)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "name",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "role",
+          "type": "varchar(32)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "factory_code",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "status",
+          "type": "varchar(16)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "password_hash",
+          "type": "varchar(128)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "must_change_pwd",
+          "type": "tinyint(1)",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "lang",
+          "type": "varchar(8)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "last_login_at",
+          "type": "datetime",
+          "nullable": true,
+          "collation": null
+        },
+        {
+          "name": "pwd_changed_at",
+          "type": "datetime",
+          "nullable": true,
+          "collation": null
+        },
+        {
+          "name": "created_by",
+          "type": "varchar(32)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "disabled_by",
+          "type": "varchar(32)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "disabled_at",
+          "type": "datetime",
+          "nullable": true,
+          "collation": null
+        }
+      ],
+      "primaryKey": [
+        "id"
+      ],
+      "uniqueKeys": {
+        "ux_user_emp_no": [
+          "emp_no"
+        ]
+      },
+      "partitioned": false
+    },
+    {
+      "name": "sn_rule",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "rule_code",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "rule_name",
+          "type": "varchar(128)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "bind_scope",
+          "type": "varchar(16)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "bind_value",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "current_version",
+          "type": "int",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "created_by",
+          "type": "varchar(32)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "updated_by",
+          "type": "varchar(32)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        }
+      ],
+      "primaryKey": [
+        "id"
+      ],
+      "uniqueKeys": {
+        "ux_rule_code": [
+          "rule_code"
+        ],
+        "ux_rule_bind": [
+          "bind_scope",
+          "bind_value"
+        ]
+      },
+      "partitioned": false
+    },
+    {
+      "name": "sn_rule_version",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "rule_id",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "version",
+          "type": "int",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "prefix",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "suffix",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "base",
+          "type": "int",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "seq_len",
+          "type": "int",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "charset",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "used",
+          "type": "tinyint(1)",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "created_by",
+          "type": "varchar(32)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        }
+      ],
+      "primaryKey": [
+        "id"
+      ],
+      "uniqueKeys": {
+        "ux_rule_version": [
+          "rule_id",
+          "version"
+        ]
+      },
+      "partitioned": false
+    },
+    {
+      "name": "sn_prd_mo",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "bill_no",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "line_seq",
+          "type": "int",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "customer_number",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "po",
+          "type": "varchar(128)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "pi",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "material_number",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "material_name",
+          "type": "varchar(255)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "qty",
+          "type": "decimal(18,4)",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "status",
+          "type": "varchar(8)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "demand_bill_no",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "prd_org_name",
+          "type": "varchar(128)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "synced_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        }
+      ],
+      "primaryKey": [
+        "id"
+      ],
+      "uniqueKeys": {
+        "ux_prd_mo_line": [
+          "bill_no",
+          "line_seq"
+        ]
+      },
+      "partitioned": false
+    },
+    {
+      "name": "sn_pi_counter",
+      "columns": [
+        {
+          "name": "pi_no",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "last_seq_dec",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "generated_qty",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "imported_qty",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "start_seq_dec",
+          "type": "bigint",
+          "nullable": true,
+          "collation": null
+        },
+        {
+          "name": "start_locked",
+          "type": "tinyint(1)",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "locked_by",
+          "type": "varchar(32)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "locked_at",
+          "type": "datetime",
+          "nullable": true,
+          "collation": null
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        }
+      ],
+      "primaryKey": [
+        "pi_no"
+      ],
+      "uniqueKeys": {},
+      "partitioned": false
+    },
+    {
+      "name": "sn_bill_gen",
+      "columns": [
+        {
+          "name": "bill_no",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "pi_no",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "factory_code",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "customer_code",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "generated_qty",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "allocated_qty",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        }
+      ],
+      "primaryKey": [
+        "bill_no"
+      ],
+      "uniqueKeys": {},
+      "partitioned": false
+    },
+    {
+      "name": "sn_gen_preview",
+      "columns": [
+        {
+          "name": "token",
+          "type": "char(32)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "bill_no",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "pi_no",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "factory_code",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "qty",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "start_seq_dec",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "end_seq_dec",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "start_sn",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "end_sn",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "rule_version_id",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "base_last_seq",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "start_override",
+          "type": "bigint",
+          "nullable": true,
+          "collation": null
+        },
+        {
+          "name": "segments_json",
+          "type": "text",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "created_by",
+          "type": "varchar(32)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "expires_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "used_at",
+          "type": "datetime",
+          "nullable": true,
+          "collation": null
+        }
+      ],
+      "primaryKey": [
+        "token"
+      ],
+      "uniqueKeys": {},
+      "partitioned": false
+    },
+    {
+      "name": "sn_gen_job",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "bill_no",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "pi_no",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "factory_code",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "customer_code",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "rule_version_id",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "qty",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "start_seq_dec",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "end_seq_dec",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "start_sn",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "end_sn",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "status",
+          "type": "varchar(16)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "done_qty",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "error_code",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "error_msg",
+          "type": "varchar(1000)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "running_pi",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "preview_token",
+          "type": "char(32)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "segments_json",
+          "type": "text",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "created_by",
+          "type": "varchar(32)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "finished_at",
+          "type": "datetime",
+          "nullable": true,
+          "collation": null
+        }
+      ],
+      "primaryKey": [
+        "id"
+      ],
+      "uniqueKeys": {
+        "ux_job_running_pi": [
+          "running_pi"
+        ],
+        "ux_job_preview": [
+          "preview_token"
+        ]
+      },
+      "partitioned": false
+    },
+    {
+      "name": "sn_item",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "gen_month",
+          "type": "int",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "sn",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "pi_no",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "customer_code",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "material_code",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "factory_code",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "bill_no",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "rule_version_id",
+          "type": "bigint",
+          "nullable": true,
+          "collation": null
+        },
+        {
+          "name": "seq_pi_no",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "seq_dec",
+          "type": "bigint",
+          "nullable": true,
+          "collation": null
+        },
+        {
+          "name": "status",
+          "type": "varchar(16)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "prev_status",
+          "type": "varchar(16)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "source",
+          "type": "varchar(8)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "job_id",
+          "type": "bigint",
+          "nullable": true,
+          "collation": null
+        },
+        {
+          "name": "batch_no",
+          "type": "varchar(40)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "print_no",
+          "type": "varchar(40)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "transfer_id",
+          "type": "bigint",
+          "nullable": true,
+          "collation": null
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "allocated_at",
+          "type": "datetime",
+          "nullable": true,
+          "collation": null
+        },
+        {
+          "name": "acquired_at",
+          "type": "datetime",
+          "nullable": true,
+          "collation": null
+        },
+        {
+          "name": "printed_at",
+          "type": "datetime",
+          "nullable": true,
+          "collation": null
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        }
+      ],
+      "primaryKey": [
+        "id",
+        "gen_month"
+      ],
+      "uniqueKeys": {},
+      "partitioned": true
+    },
+    {
+      "name": "sn_key",
+      "columns": [
+        {
+          "name": "pi_no",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "sn",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "seq_pi_no",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "seq_dec",
+          "type": "bigint",
+          "nullable": true,
+          "collation": null
+        }
+      ],
+      "primaryKey": [
+        "pi_no",
+        "sn"
+      ],
+      "uniqueKeys": {
+        "ux_key_seq": [
+          "seq_pi_no",
+          "seq_dec"
+        ]
+      },
+      "partitioned": false
+    },
+    {
+      "name": "sn_allocation",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "bill_no",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "pi_no",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "factory_code",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "qty",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "start_sn",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "end_sn",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "created_by",
+          "type": "varchar(32)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        }
+      ],
+      "primaryKey": [
+        "id"
+      ],
+      "uniqueKeys": {},
+      "partitioned": false
+    },
+    {
+      "name": "sn_acquire_batch",
+      "columns": [
+        {
+          "name": "batch_no",
+          "type": "varchar(40)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "factory_code",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "pi_no",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "request_no",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "source",
+          "type": "varchar(8)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "qty",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "created_by",
+          "type": "varchar(32)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        }
+      ],
+      "primaryKey": [
+        "batch_no"
+      ],
+      "uniqueKeys": {
+        "ux_batch_request": [
+          "factory_code",
+          "request_no"
+        ]
+      },
+      "partitioned": false
+    },
+    {
+      "name": "sn_print",
+      "columns": [
+        {
+          "name": "print_no",
+          "type": "varchar(40)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "factory_code",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "pi_no",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "request_no",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "qty",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "created_by",
+          "type": "varchar(32)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        }
+      ],
+      "primaryKey": [
+        "print_no"
+      ],
+      "uniqueKeys": {
+        "ux_print_request": [
+          "factory_code",
+          "request_no"
+        ]
+      },
+      "partitioned": false
+    },
+    {
+      "name": "sn_transfer",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "transfer_no",
+          "type": "varchar(40)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "mode",
+          "type": "varchar(8)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "status",
+          "type": "varchar(16)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "scope",
+          "type": "varchar(16)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "from_factory",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "from_customer",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "from_pi",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "from_material",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "from_sn",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "qty",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "to_factory",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "to_customer",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "to_pi",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "to_material",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "target_source",
+          "type": "varchar(16)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "reason",
+          "type": "varchar(500)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "applied_by",
+          "type": "varchar(32)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "applied_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "decided_by",
+          "type": "varchar(32)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "decided_at",
+          "type": "datetime",
+          "nullable": true,
+          "collation": null
+        },
+        {
+          "name": "decide_note",
+          "type": "varchar(500)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        }
+      ],
+      "primaryKey": [
+        "id"
+      ],
+      "uniqueKeys": {
+        "ux_transfer_no": [
+          "transfer_no"
+        ]
+      },
+      "partitioned": false
+    },
+    {
+      "name": "sn_transfer_item",
+      "columns": [
+        {
+          "name": "transfer_id",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "item_id",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "gen_month",
+          "type": "int",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "sn",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "seq_pi_no",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "seq_dec",
+          "type": "bigint",
+          "nullable": true,
+          "collation": null
+        },
+        {
+          "name": "from_status",
+          "type": "varchar(16)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "from_customer",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "from_material",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "from_batch_no",
+          "type": "varchar(40)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        }
+      ],
+      "primaryKey": [
+        "transfer_id",
+        "item_id"
+      ],
+      "uniqueKeys": {},
+      "partitioned": false
+    },
+    {
+      "name": "sn_pi_import",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "pi_no",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "start_seq_dec",
+          "type": "bigint",
+          "nullable": true,
+          "collation": null
+        },
+        {
+          "name": "import_qty",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "max_seq_dec",
+          "type": "bigint",
+          "nullable": true,
+          "collation": null
+        },
+        {
+          "name": "factory_code",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "file_name",
+          "type": "varchar(255)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "created_by",
+          "type": "varchar(32)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        }
+      ],
+      "primaryKey": [
+        "id"
+      ],
+      "uniqueKeys": {},
+      "partitioned": false
+    },
+    {
+      "name": "sn_audit",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "created_at",
+          "type": "datetime(3)",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "operator",
+          "type": "varchar(32)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "operator_name",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "role",
+          "type": "varchar(32)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "source",
+          "type": "varchar(8)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "action",
+          "type": "varchar(32)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "result",
+          "type": "varchar(8)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "factory_code",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "pi_no",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "customer_code",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "material_code",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "bill_no",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "start_sn",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "end_sn",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "qty",
+          "type": "bigint",
+          "nullable": true,
+          "collation": null
+        },
+        {
+          "name": "before_status",
+          "type": "varchar(16)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "after_status",
+          "type": "varchar(16)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "batch_no",
+          "type": "varchar(40)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "request_no",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "transfer_no",
+          "type": "varchar(40)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "reason",
+          "type": "varchar(500)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "error_msg",
+          "type": "varchar(1000)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "trace_id",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "detail",
+          "type": "varchar(2000)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        }
+      ],
+      "primaryKey": [
+        "id",
+        "created_at"
+      ],
+      "uniqueKeys": {},
+      "partitioned": true
+    },
+    {
+      "name": "sn_audit_archive",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "created_at",
+          "type": "datetime(3)",
+          "nullable": false,
+          "collation": null
+        },
+        {
+          "name": "operator",
+          "type": "varchar(32)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "operator_name",
+          "type": "varchar(64)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "role",
+          "type": "varchar(32)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "source",
+          "type": "varchar(8)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "action",
+          "type": "varchar(32)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "result",
+          "type": "varchar(8)",
+          "nullable": false,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "factory_code",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "pi_no",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "customer_code",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "material_code",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "bill_no",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "start_sn",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "end_sn",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "qty",
+          "type": "bigint",
+          "nullable": true,
+          "collation": null
+        },
+        {
+          "name": "before_status",
+          "type": "varchar(16)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "after_status",
+          "type": "varchar(16)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "batch_no",
+          "type": "varchar(40)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "request_no",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "transfer_no",
+          "type": "varchar(40)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "reason",
+          "type": "varchar(500)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "error_msg",
+          "type": "varchar(1000)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "trace_id",
+          "type": "varchar(64)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "detail",
+          "type": "varchar(2000)",
+          "nullable": true,
+          "collation": "utf8mb4_bin"
+        },
+        {
+          "name": "archived_at",
+          "type": "datetime",
+          "nullable": false,
+          "collation": null
+        }
+      ],
+      "primaryKey": [
+        "id",
+        "created_at"
+      ],
+      "uniqueKeys": {},
+      "partitioned": false
+    }
+  ]
+}

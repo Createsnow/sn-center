@@ -1,0 +1,46 @@
+name: Backend verification
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  backend:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: backend/**/pom.xml
+      # 托管 runner 必须能启动真实容器；无 Docker 或 IT 失败使本 job 失败。
+      - name: Verify real MySQL and Redis integration
+        working-directory: backend
+        run: sh ./mvnw -B -ntp -Pintegration verify
+      - name: Reject missing or skipped test reports
+        if: success()
+        shell: python
+        run: |
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          for kind in ('surefire', 'failsafe'):
+              files = list(Path('backend').glob(f'*/target/{kind}-reports/TEST-*.xml'))
+              assert files, f'No {kind} reports'
+              totals = dict(tests=0, failures=0, errors=0, skipped=0)
+              for file in files:
+                  attributes = ET.parse(file).getroot().attrib
+                  for key in totals:
+                      totals[key] += int(attributes.get(key, 0))
+              print(kind, totals)
+              assert totals['tests'] > 0 and not any(totals[k] for k in ('failures', 'errors', 'skipped'))
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: backend-test-reports
+          path: |
+            backend/**/target/surefire-reports/
+            backend/**/target/failsafe-reports/

@@ -1,0 +1,24 @@
+{
+  "documents": 48,
+  "missingLinks": [],
+  "baseline": [
+    {
+      "file": "AI 生成代码注释规范（v1.1）.md",
+      "sha256": "990620792cd4f0c950fb9cef112241580d33f0d90ed5dcd30096673d18bbc777",
+      "matchesOriginal": true
+    },
+    {
+      "file": "SN项目迁移方案（v1.1）.md",
+      "sha256": "323d13c5278a429b9065d5380307f40ee94be7b39ebe1fd9f140537fdce55cf9",
+      "matchesOriginal": true
+    },
+    {
+      "file": "技术栈和工程结构（v1.1）.md",
+      "sha256": "32703451ce6da911029a9fd98fa501b79784ea062ec8b6e4df0bb56fc858f133",
+      "matchesOriginal": true
+    }
+  ],
+  "sourceFilesScanned": 650,
+  "knownLocalSecretMatches": [],
+  "scope": "known local secret comparison only; not a complete security audit"
+}

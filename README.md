@@ -1,93 +1,31 @@
 # adtek-platform-sn
 
+SN 中心从 Python/Vue 迁移到 Java 21、Spring Boot 4.1、React 的新工程。**本机工程、认证、用户管理、系统配置、操作日志及SN工厂/订单/规则、初始化/生成/整单分配、领取/打印/MES、转厂/查询/业务痕迹/首页已建立，完整业务迁移仍在进行。** 旧工程保持只读。
 
+三份 v1.1 基线原样保存在 [docs/references/baselines](docs/references/baselines)。已具备六模块后端、React 前端、MySQL 8.4 / Redis Docker 环境、认证、用户分页/增改/启停/重置、角色与范围配置、菜单/部门/三语字典维护、SQL 数据范围和管理审计。K3只读协议适配器、独立HTTPS容器、维护/归档及数据库与文件恢复已实施，真实K3全量同步已在独立测试环境完成；ERP跨页一致性、MES联调、历史存量全量迁移及人工验收仍待完成，详见 [30 项执行矩阵](docs/11-完整功能迁移清单.md)。
 
-## Getting started
+操作日志支持按数据范围查询和三语 CSV 导出；持久操作、数据库租约、固定快照与文件恢复已接通。SN页面保留旧工厂、订单主从表、规则预览与版本操作。新增PI初始化与生成分配仍保留旧页面流程。[S6迁移报告](docs/reports/2026-09-30-S6-转厂查询与业务痕迹.md)、[S3迁移报告](docs/reports/2026-09-29-S3-工厂订单与规则.md)和[持久任务与文件报告](docs/reports/2026-09-29-S2-持久任务与文件恢复.md)保留为历史证据。当前边界先读 [项目状态](memory/项目状态.md)、[文档导航](docs/README.md) 和 [命令手册](docs/10-命令手册.md)。
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+本机已安装工具并初始化测试管理员。日常启动（PowerShell 7，工作目录为本工程，后两个命令分别在两个终端运行）：
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin http://git.adt-net.cn/58671/adtek-platform-sn.git
-git branch -M master
-git push -uf origin master
+```powershell
+./tools/infra.ps1 start
+./tools/start-test.ps1
+./tools/start-web.ps1
 ```
 
-## Integrate with your tools
+前端：http://127.0.0.1:15173 。API：http://127.0.0.1:18080 。本机账号 `admin` 已于 2026-09-29 15:48 完成改密，请使用当前密码。`deploy/.secrets/bootstrap-admin-password` 只记录初始值，已经失效，不会随改密自动更新。
 
-- [ ] [Set up project integrations](http://git.adt-net.cn/58671/adtek-platform-sn/-/settings/integrations)
+MySQL / Redis 只监听本机 33306 / 36379；秘密文件已忽略并限制访问。容器停止命令 `./tools/infra.ps1 stop` 保留数据卷。其他电脑首次安装、构建、一次性管理员初始化和测试命令见 [命令手册](docs/10-命令手册.md)。
 
-## Collaborate with your team
+测试启动脚本把持久文件根目录设为本工程 `deploy/data/files`。V7—V12 新增SN菜单会撤销既有SN角色账号的旧会话，使用当前密码重新登录即可；不重新初始化账号。
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+**检查结果以 docs/reports 为准。命令存在不表示已经通过；完整迁移验收按来源方案 S0—S8 逐项留证。**
 
-## Test and Deploy
+独立容器测试入口为 https://127.0.0.1:18443 ，使用本机自签证书和独立数据卷；构建及启动用 `./tools/container-test.ps1 build` / `./tools/container-test.ps1 start`。初始化只在空用户库首次执行，不重置已有账号。维护与恢复见 [S7恢复报告](docs/reports/2026-09-30-S7-容器维护与恢复.md)。
 
-Use the built-in continuous integration in GitLab.
+旧库工具已支持已知19表快照/暂存、主数据与停用身份、有限IMPORT库存转换；[命令和范围](docs/16-旧库快照暂存与主数据迁移.md)明确列出尚缺的历史转换与证据。阶段成功不自动开放账号或新业务写入。
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+最新[K3真实全量同步报告](docs/reports/2026-09-30-K3真实全量同步.md)：独立容器实际发布3418张订单、26660条分录；V17精确保留小数计划量，含小数订单禁止SN生成。71单元/架构、171项IT最终覆盖、43前端单元和16实际Edge流程通过；IT首轮170/171通过，修正迁移版本断言后重跑相关45项通过，完整过程见报告。开发入口http://127.0.0.1:15173，独立容器入口https://127.0.0.1:18443，均使用V17；原账号和数据保留。开发库尚未执行真实K3全量同步，使用原账号登录后可按[接入说明](docs/17-生产订单全量同步接入.md)操作。有限旧IMPORT库存不等于全历史迁移完成。
 
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+GitLab仓库：[adtek-platform-sn](http://git.adt-net.cn/58671/adtek-platform-sn)，分支为`master`。仓库包含代码、部署模板、工具、文档和验证证据；本机密钥、数据备份与构建产物不入库，新环境按命令手册单独初始化配置。

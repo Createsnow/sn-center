@@ -1,0 +1,13 @@
+**
+!backend/
+!backend/adtek-server/
+!backend/adtek-server/target/
+!backend/adtek-server/target/adtek-server-0.1.0-SNAPSHOT.jar
+!frontend/
+!frontend/dist/
+!frontend/dist/**
+!deploy/
+!deploy/api/
+!deploy/api/**
+!deploy/web/
+!deploy/web/**

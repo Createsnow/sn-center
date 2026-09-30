@@ -1,0 +1,46 @@
+name: Frontend verification
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  frontend:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24.20.0'
+          package-manager-cache: false
+      - name: Install exact package manager and dependencies
+        run: |
+          npm install --global pnpm@10.34.6
+          pnpm install --frozen-lockfile
+      - name: Contract, lint, format, tests and strict build
+        run: |
+          pnpm api:check
+          pnpm lint
+          pnpm format:check
+          pnpm test
+          pnpm build
+      - name: Reject zero discovery or skipped tests
+        shell: python
+        run: |
+          import json
+          from pathlib import Path
+          report = json.loads(Path('test-results/unit.json').read_text())
+          assert report['success'] and report['numTotalTests'] > 0
+          assert report['numFailedTests'] == report['numPendingTests'] == 0
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: frontend-unit-report
+          path: frontend/test-results/unit.json
+# 本机真实浏览器验收由 tools/verify-web.ps1 -Browser 执行。
+# CI 尚未配置隔离浏览器账号/后端；此 job 不宣称执行 E2E。

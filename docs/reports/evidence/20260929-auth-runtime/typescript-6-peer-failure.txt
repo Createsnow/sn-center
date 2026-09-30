@@ -1,0 +1,71 @@
+Progress: resolved 1, reused 0, downloaded 0, added 0
+ WARN  deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+Progress: resolved 15, reused 0, downloaded 8, added 0
+Progress: resolved 18, reused 0, downloaded 12, added 0
+Progress: resolved 19, reused 0, downloaded 15, added 0
+Progress: resolved 20, reused 0, downloaded 15, added 0
+Progress: resolved 22, reused 0, downloaded 15, added 0
+Progress: resolved 23, reused 0, downloaded 15, added 0
+Progress: resolved 23, reused 0, downloaded 18, added 0
+Progress: resolved 23, reused 0, downloaded 19, added 0
+ WARN  Request took 10795ms: https://registry.npmjs.org/react
+ WARN  Request took 11664ms: https://registry.npmjs.org/typescript
+Progress: resolved 25, reused 0, downloaded 20, added 0
+Progress: resolved 83, reused 0, downloaded 60, added 0
+Progress: resolved 124, reused 0, downloaded 93, added 0
+ WARN  Tarball download average speed 36 KiB/s (size 54 KiB) is below 50 KiB/s: https://registry.npmjs.org/@babel/runtime/-/runtime-7.29.7.tgz (GET)
+Progress: resolved 182, reused 0, downloaded 143, added 0
+ WARN  Tarball download average speed 21 KiB/s (size 34 KiB) is below 50 KiB/s: https://registry.npmjs.org/@rc-component/menu/-/menu-1.5.0.tgz (GET)
+Progress: resolved 261, reused 0, downloaded 204, added 0
+ WARN  Tarball download average speed 27 KiB/s (size 65 KiB) is below 50 KiB/s: https://registry.npmjs.org/@rc-component/table/-/table-1.11.1.tgz (GET)
+Progress: resolved 311, reused 0, downloaded 270, added 0
+Progress: resolved 317, reused 0, downloaded 282, added 0
+Progress: resolved 319, reused 0, downloaded 286, added 0
+Progress: resolved 319, reused 0, downloaded 287, added 0
+Progress: resolved 319, reused 0, downloaded 290, added 0
+Progress: resolved 321, reused 0, downloaded 291, added 0
+Progress: resolved 321, reused 0, downloaded 292, added 0
+Progress: resolved 321, reused 0, downloaded 293, added 0
+ WARN  Request took 10507ms: https://registry.npmjs.org/electron-to-chromium
+Progress: resolved 322, reused 0, downloaded 293, added 0
+Progress: resolved 323, reused 0, downloaded 295, added 0
+ WARN  Request took 20064ms: https://registry.npmjs.org/@typescript-eslint%2Ftypescript-estree
+Progress: resolved 324, reused 0, downloaded 295, added 0
+Progress: resolved 330, reused 0, downloaded 301, added 0
+Progress: resolved 332, reused 0, downloaded 303, added 0
+Progress: resolved 332, reused 0, downloaded 304, added 0
+ WARN  Request took 29564ms: https://registry.npmjs.org/playwright
+Progress: resolved 333, reused 0, downloaded 304, added 0
+ WARN  Request took 13311ms: https://registry.npmjs.org/@typescript-eslint%2Fvisitor-keys
+Progress: resolved 334, reused 0, downloaded 304, added 0
+Progress: resolved 335, reused 0, downloaded 306, added 0
+Progress: resolved 335, reused 0, downloaded 307, added 0
+ WARN  Request took 16629ms: https://registry.npmjs.org/@typescript-eslint%2Ftypes
+Progress: resolved 336, reused 0, downloaded 307, added 0
+Progress: resolved 338, reused 0, downloaded 310, added 0
+Progress: resolved 338, reused 0, downloaded 311, added 0
+ WARN  Request took 25824ms: https://registry.npmjs.org/playwright-core
+Progress: resolved 339, reused 0, downloaded 311, added 0
+Packages: +314
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 339, reused 0, downloaded 311, added 1
+Progress: resolved 339, reused 0, downloaded 311, added 156
+Progress: resolved 339, reused 0, downloaded 311, added 236
+Progress: resolved 339, reused 0, downloaded 311, added 309
+Progress: resolved 339, reused 0, downloaded 311, added 311
+Progress: resolved 339, reused 0, downloaded 312, added 311
+Progress: resolved 339, reused 0, downloaded 312, added 312
+Progress: resolved 339, reused 0, downloaded 313, added 312
+Progress: resolved 339, reused 0, downloaded 313, added 313
+Progress: resolved 339, reused 0, downloaded 314, added 313
+Progress: resolved 339, reused 0, downloaded 314, added 314, done
+ ERR_PNPM_PEER_DEP_ISSUES  Unmet peer dependencies
+
+.
+└─┬ openapi-typescript 7.13.0
+  └── ✕ unmet peer typescript@^5.x: found 6.0.3
+hint: To disable failing on peer dependency issues, add the following to pnpm-workspace.yaml in your project root:
+
+  strictPeerDependencies: false
+
+

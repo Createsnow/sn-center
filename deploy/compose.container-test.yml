@@ -1,0 +1,191 @@
+# 与本机开发库完全独立；只有HTTPS绑定loopback，stop保留全部卷。
+name: adtek-platform-sn-container-test
+x-api-image: &api-image
+  image: adtek-platform-sn-api:local
+  build:
+    context: ..
+    dockerfile: deploy/api/Dockerfile
+x-database: &database
+  ADTEK_DB_URL: jdbc:mysql://mysql:3306/adtek_sn_container?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&allowPublicKeyRetrieval=true&sslMode=DISABLED
+services:
+  mysql:
+    image: mysql:8.4.11@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d
+    environment:
+      MYSQL_DATABASE: adtek_sn_container
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      TZ: UTC
+    command: [--character-set-server=utf8mb4, --collation-server=utf8mb4_0900_as_cs, --default-time-zone=+00:00, --local-infile=OFF]
+    secrets: [mysql_root_password, mysql_app_password, mysql_migration_password, mysql_maintenance_password]
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init-container-users.sh:/docker-entrypoint-initdb.d/10-users.sh:ro
+    healthcheck:
+      test: [CMD-SHELL, 'MYSQL_PWD="$$(cat /run/secrets/mysql_root_password)" mysql -uroot --silent --execute="SELECT 1" >/dev/null']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    mem_limit: 2g
+  redis:
+    image: redis:8.4.7-alpine@sha256:0514fa59e3d84e2f3be66731c5401fc2a85b8ea71b49c0116c850f6a558076f4
+    entrypoint: [sh, /opt/adtek/start-redis.sh]
+    secrets: [redis_password]
+    volumes: [redis_data:/data, ./redis/start-redis.sh:/opt/adtek/start-redis.sh:ro]
+    tmpfs: [/run/redis:mode=0700]
+    healthcheck:
+      test: [CMD-SHELL, 'REDISCLI_AUTH="$$(cat /run/secrets/redis_password)" redis-cli ping | grep -qx PONG']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 512m
+  migrate:
+    <<: *api-image
+    command: [--migrate, --apply]
+    depends_on:
+      mysql: {condition: service_healthy}
+    environment:
+      <<: *database
+      ADTEK_MIGRATION_USER: adtek_migration
+      ADTEK_MIGRATION_ALLOWED_SCHEMA: adtek_sn_container
+    secrets:
+      - source: mysql_migration_password
+        target: ADTEK_MIGRATION_PASSWORD
+    read_only: true
+    tmpfs: [/tmp:mode=1777]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+  api:
+    <<: *api-image
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+    environment:
+      <<: *database
+      ADTEK_DB_USER: adtek_app
+      ADTEK_REDIS_HOST: redis
+      ADTEK_REDIS_PORT: 6379
+      ADTEK_SERVER_ADDRESS: 0.0.0.0
+      ADTEK_SERVER_PORT: 18080
+      ADTEK_FILE_ROOT: /app/var/files
+      SPRING_FLYWAY_ENABLED: 'false'
+      SPRING_CONFIG_IMPORT: optional:configtree:/run/adtek-k3/
+    secrets:
+      - source: mysql_app_password
+        target: ADTEK_DB_PASSWORD
+      - source: redis_password
+        target: ADTEK_REDIS_PASSWORD
+      - source: jwt_signing_key
+        target: ADTEK_JWT_SECRET
+    volumes:
+      - files_data:/app/var/files
+      - ./.secrets/k3:/run/adtek-k3:ro
+    read_only: true
+    tmpfs: [/tmp:mode=1777]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    stop_grace_period: 40s
+    mem_limit: 1g
+    healthcheck:
+      test: [CMD, java, -jar, /app/app.jar, --healthcheck]
+      interval: 15s
+      timeout: 8s
+      retries: 12
+      start_period: 40s
+  web:
+    image: adtek-platform-sn-web:local
+    build:
+      context: ..
+      dockerfile: deploy/web/Dockerfile
+    depends_on:
+      api: {condition: service_healthy}
+    ports: [127.0.0.1:18443:8443]
+    secrets: [tls_certificate, tls_private_key]
+    read_only: true
+    tmpfs: [/tmp:mode=1777]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 128m
+    healthcheck:
+      test: [CMD-SHELL, 'wget -q --no-check-certificate -O /dev/null https://127.0.0.1:8443/healthz']
+      interval: 10s
+      timeout: 3s
+      retries: 10
+  bootstrap:
+    <<: *api-image
+    profiles: [operations]
+    command: [--spring.main.web-application-type=none]
+    environment:
+      <<: *database
+      SPRING_PROFILES_ACTIVE: bootstrap-admin
+      SPRING_FLYWAY_ENABLED: 'false'
+      ADTEK_TASKS_ENABLED: 'false'
+      ADTEK_DB_USER: adtek_app
+      ADTEK_REDIS_HOST: redis
+      ADTEK_REDIS_PORT: 6379
+      ADTEK_BOOTSTRAP_USERNAME: container_admin
+    secrets:
+      - source: mysql_app_password
+        target: ADTEK_DB_PASSWORD
+      - source: redis_password
+        target: ADTEK_REDIS_PASSWORD
+      - source: jwt_signing_key
+        target: ADTEK_JWT_SECRET
+      - source: bootstrap_password
+        target: ADTEK_BOOTSTRAP_PASSWORD
+    read_only: true
+    tmpfs: [/tmp:mode=1777]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+  maintenance:
+    <<: *api-image
+    profiles: [operations]
+    command: [--maintenance]
+    environment:
+      ADTEK_MAINT_DB_URL: jdbc:mysql://mysql:3306/adtek_sn_container?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&allowPublicKeyRetrieval=true&sslMode=DISABLED
+      ADTEK_MAINT_DB_USER: adtek_maintenance
+      ADTEK_MAINT_ALLOWED_SCHEMA: adtek_sn_container
+    secrets:
+      - source: mysql_maintenance_password
+        target: ADTEK_MAINT_DB_PASSWORD
+    read_only: true
+    tmpfs: [/tmp:mode=1777]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+  scheduler:
+    <<: *api-image
+    profiles: [scheduled-maintenance]
+    command: [--maintenance-scheduler, --apply]
+    depends_on:
+      mysql: {condition: service_healthy}
+    environment:
+      ADTEK_MAINT_DB_URL: jdbc:mysql://mysql:3306/adtek_sn_container?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&allowPublicKeyRetrieval=true&sslMode=DISABLED
+      ADTEK_MAINT_DB_USER: adtek_maintenance
+      ADTEK_MAINT_ALLOWED_SCHEMA: adtek_sn_container
+      ADTEK_MAINT_CRON: '0 15 2 * * *'
+      ADTEK_MAINT_ZONE: Asia/Shanghai
+      ADTEK_MAINT_MONTHS_AHEAD: '3'
+      ADTEK_MAINT_ROW_LIMIT: '100000'
+      ADTEK_MAINT_ARCHIVE_COPY: 'false'
+    secrets:
+      - source: mysql_maintenance_password
+        target: ADTEK_MAINT_DB_PASSWORD
+    read_only: true
+    tmpfs: [/tmp:mode=1777]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 512m
+    # 有限重试后保持退出状态，外部监控读取退出码和日志；不无限掩盖维护失败。
+    restart: 'on-failure:3'
+secrets:
+  mysql_root_password: {file: ./.secrets/container-test/mysql-root-password}
+  mysql_app_password: {file: ./.secrets/container-test/mysql-app-password}
+  mysql_migration_password: {file: ./.secrets/container-test/mysql-migration-password}
+  mysql_maintenance_password: {file: ./.secrets/container-test/mysql-maintenance-password}
+  redis_password: {file: ./.secrets/container-test/redis-password}
+  jwt_signing_key: {file: ./.secrets/container-test/jwt-signing-key}
+  tls_certificate: {file: ./.secrets/container-test/tls-cert.pem}
+  tls_private_key: {file: ./.secrets/container-test/tls-key.pem}
+  bootstrap_password: {file: ./.secrets/container-test/container-admin-password}
+volumes:
+  mysql_data:
+  redis_data:
+  files_data:
