@@ -1,12 +1,12 @@
 """把 docs/系统技术方案.md 转成 docs/系统技术方案.docx。
 
-1. 用 mermaid-cli 把文中每个 mermaid 图渲染成 PNG，存到 docs/images/系统技术方案/；
+1. 文中每个 mermaid 图按顺序换成 docs/images/系统技术方案/ 下同名的 PNG（由对应 .drawio 导出）；
 2. 用 pandoc 转 docx（中文字体模板、自动目录），再给表格加边框、图题居中。
 
-依赖：Node.js（npx @mermaid-js/mermaid-cli）、pip install pypandoc_binary python-docx pillow
-用法（仓库根目录）：python docs/build_tech_docx.py [--chrome /path/to/chrome]
+依赖：pip install pypandoc_binary python-docx pillow
+用法（仓库根目录）：python docs/build_tech_docx.py
 """
-import argparse, json, os, re, subprocess, tempfile
+import os, re, subprocess, tempfile
 from PIL import Image
 import pypandoc
 from docx import Document
@@ -15,9 +15,6 @@ from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
-ap = argparse.ArgumentParser()
-ap.add_argument('--chrome', help='Chromium 可执行文件路径（mermaid-cli 找不到浏览器时指定）')
-args = ap.parse_args()
 SP = tempfile.mkdtemp()
 SRC = 'docs/系统技术方案.md'
 OUT = 'docs/系统技术方案.docx'
@@ -26,16 +23,9 @@ names = ['fig2-1-function','fig2-2-tech','fig2-3-data-layer','fig2-4-sn-state','
          'fig2-6-er-item','fig2-7-context','fig2-8-deploy','fig3-1-generate-seq']
 
 s = open(SRC, encoding='utf-8').read()
-blocks = re.findall(r'```mermaid\n(.*?)\n```', s, flags=re.S)
-assert len(blocks) == len(names), f'文中有 {len(blocks)} 个 mermaid 图，names 列了 {len(names)} 个'
-os.makedirs(IMG, exist_ok=True)
-pcfg = {'args': ['--no-sandbox']}
-if args.chrome: pcfg['executablePath'] = args.chrome
-json.dump(pcfg, open(f'{SP}/p.json', 'w'))
-for b, n in zip(blocks, names):
-    open(f'{SP}/{n}.mmd', 'w', encoding='utf-8').write(b)
-    subprocess.run(['npx', '-y', '-p', '@mermaid-js/mermaid-cli', 'mmdc', '-i', f'{SP}/{n}.mmd',
-                    '-o', f'{IMG}/{n}.png', '-p', f'{SP}/p.json', '-s', '3', '-b', 'white'], check=True)
+for n in names:
+    assert os.path.exists(f'{IMG}/{n}.png'), f'缺少图片 {IMG}/{n}.png（由同名 .drawio 导出）'
+
 # 手写目录换成 Word 自动目录
 s = re.sub(r'## 目录\n.*?(?=\n## 第一章)', '', s, flags=re.S)
 title = s.split('\n', 1)[0].lstrip('# ').strip()
