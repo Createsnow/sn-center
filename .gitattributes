@@ -1,6 +1,6 @@
 * text=auto eol=lf
 *.java text eol=lf
-*.md text eol=lf
+*.md text eol=lf whitespace=-blank-at-eol
 *.xml text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
@@ -10,4 +10,4 @@
 *.ps1 text eol=lf
 *.psd1 text eol=lf
 # 下载验收产物按原始字节保留；CRLF属于文件内容和摘要的一部分。
-*.csv -text
+*.csv -text whitespace=cr-at-eol
