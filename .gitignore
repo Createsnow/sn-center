@@ -13,6 +13,8 @@ frontend/playwright-report/
 !.env.*.example
 .env.*.local
 *.log
+# 公开的历史依赖冲突证据；不开放一般运行日志入库。
+!docs/archive/python-migration/docs/reports/evidence/20260929-auth-runtime/typescript-6-peer-failure.log
 .idea/
 .vscode/
 .DS_Store

@@ -16,6 +16,6 @@
 | 原位置与内容证明 | [file-manifest.json](file-manifest.json)：每个原路径、归档路径、字节数与 SHA-256 |
 | 当前差异关闭与遗留 | [当前差异状态](../../releases/功能与差异状态.md)、[当前待办](../../releases/待办与验收边界.md) |
 
-范围共 310 文件：原 docs 全树 303 文件、memory 3 文件、README/AGENTS 2 文件、两个公开 deploy 配置快照。秘密、数据库、备份、缓存和运行日志未复制。保留 archive/docs 的内部层级，原相对引用仍能定位；原 README 单独命名 README.original.md 避免覆盖本索引，manifest 对应更新。当前正文衍生文件修正文档过时状态，原始版本保持字节不变。
+范围共 310 文件：原 docs 全树 303 文件、memory 3 文件、README/AGENTS 2 文件、两个公开 deploy 配置快照。秘密、数据库、备份、缓存和本轮运行日志未复制；既有公开 TypeScript 依赖冲突日志作为历史证据原样保留。保留 archive/docs 的内部层级，原相对引用仍能定位；原 README 单独命名 README.original.md 避免覆盖本索引，manifest 对应更新。当前正文衍生文件修正文档过时状态，原始版本保持字节不变。
 
 归档检查由 `node tools/check-docs.mjs` 核验文件大小/SHA 与本轮冻结 SQL，另核验当前文档链接。来源基线中的原外部工作目录链接属于原始内容，不改写、不发起网络访问；按本索引找到保存副本。
