@@ -1,0 +1,21 @@
+{
+  "archiveOriginalFiles": 310,
+  "archiveBytesVerified": true,
+  "v1ThroughV17Unchanged": true,
+  "allMigrationsPreserved": 19,
+  "runtimeSourceUnchangedCount": 658,
+  "backendUnit": 71,
+  "postArchiveIntegration": 7,
+  "postArchiveSuites": [
+    "RuntimeIT",
+    "IncrementalMigrationIT"
+  ],
+  "frontendUnit": 46,
+  "k3ConfigurationChecks": 18,
+  "formatPowershellFiles": 36,
+  "formatDifferences": 0,
+  "existingDevelopmentAndHttpsEnvironmentChanged": false,
+  "historicalDatabaseMigration": "NOT_APPLICABLE_USER_DECISION",
+  "remoteGitlab": "NOT_ACCESSED",
+  "production": "NOT_DEPLOYED"
+}

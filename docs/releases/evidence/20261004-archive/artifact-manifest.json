@@ -1,0 +1,32 @@
+[
+  {
+    "path": "backend-integration.json",
+    "bytes": 1055,
+    "sha256": "874827c80d7f96bd515cb5224952a5db416ed0ababc3bb2c96c502d3e2cbb069"
+  },
+  {
+    "path": "backend-unit.json",
+    "bytes": 10579,
+    "sha256": "d514a8c5ed54135c1f3d30345a04d8e67d71e64f7860ca8bd917e2d68b3e55b4"
+  },
+  {
+    "path": "checks.json",
+    "bytes": 617,
+    "sha256": "e729c8940e5f62fb48c49b712d6cbd0c24d603de18c72fd580a90a49e7516540"
+  },
+  {
+    "path": "frontend-unit.json",
+    "bytes": 154,
+    "sha256": "e1e446da850c00c9ec7904416d7e109238f26828de4b396469b506a1c5a61963"
+  },
+  {
+    "path": "migration-sha256.json",
+    "bytes": 2731,
+    "sha256": "4730b83b9d78b837d3aeb3173a7f264c669fec2ae8578f9e1d1e671005c9f54d"
+  },
+  {
+    "path": "unchanged-runtime-source.json",
+    "bytes": 50463,
+    "sha256": "15beb1258844d410596a09b352080080273088f7201dd5ebd1bd7e19c08e682e"
+  }
+]

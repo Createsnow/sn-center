@@ -1,0 +1,21 @@
+{
+  "verifiedAt": "2026-09-30",
+  "mysql": {
+    "tag": "mysql:8.4.11",
+    "digest": "mysql@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d"
+  },
+  "temurin": {
+    "tag": "eclipse-temurin:21.0.12.1_1-jre-noble",
+    "digest": "eclipse-temurin@sha256:0c324fbe2e1455c3159184717440f3b52906ef82a39c4a6efc9edb401d31971a",
+    "source": "https://github.com/docker-library/docs/blob/master/eclipse-temurin/README.md"
+  },
+  "nginx": {
+    "tag": "nginxinc/nginx-unprivileged:stable-alpine",
+    "digest": "nginxinc/nginx-unprivileged@sha256:ed04ec1ff34502c339ee5c3ae3f855442398edc1d05591e2b98981dcbbd20b1e",
+    "source": "https://github.com/nginx/docker-nginx-unprivileged/blob/main/README.md"
+  },
+  "redis": {
+    "tag": "redis:8.4.7-alpine",
+    "digest": "redis@sha256:0514fa59e3d84e2f3be66731c5401fc2a85b8ea71b49c0116c850f6a558076f4"
+  }
+}

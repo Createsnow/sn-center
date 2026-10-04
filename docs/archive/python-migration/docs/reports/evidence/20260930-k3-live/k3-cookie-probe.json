@@ -1,0 +1,47 @@
+{
+  "raw": {
+    "type": "array",
+    "length": 1,
+    "first": {
+      "type": "array",
+      "length": 14,
+      "first": "str"
+    }
+  },
+  "quoted": {
+    "type": "array",
+    "length": 1,
+    "first": {
+      "type": "array",
+      "length": 1,
+      "first": {
+        "Result": {
+          "ResponseStatus": {
+            "ErrorCode": "int",
+            "IsSuccess": false,
+            "Errors": {
+              "type": "array",
+              "length": 1,
+              "first": {
+                "FieldName": "NoneType",
+                "Message": "str",
+                "DIndex": "int"
+              }
+            },
+            "SuccessEntitys": {
+              "type": "array",
+              "length": 0,
+              "first": null
+            },
+            "SuccessMessages": {
+              "type": "array",
+              "length": 0,
+              "first": null
+            },
+            "MsgCode": "int"
+          }
+        }
+      }
+    }
+  }
+}

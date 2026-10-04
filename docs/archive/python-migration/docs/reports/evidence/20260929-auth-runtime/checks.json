@@ -1,0 +1,160 @@
+{
+  "recordedAtUtc": "2026-09-29T07:39:52.4648336Z",
+  "backend": [
+    {
+      "kind": "surefire",
+      "suite": "com.adtek.common.core.DataScopeTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "lastWriteUtc": "2026-09-29T07:29:21.155242Z",
+      "reportSha256": "99887B5FB9BEB39E8C101812ADF45F542DE82C6734F52D25E3D1179E6B0AE344"
+    },
+    {
+      "kind": "surefire",
+      "suite": "com.adtek.framework.security.CurrentActorTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "lastWriteUtc": "2026-09-29T07:29:24.322903Z",
+      "reportSha256": "7015AE31376703D3A42DEBDDB98A99FE88404FF060167D372EF834423DCCF8F2"
+    },
+    {
+      "kind": "surefire",
+      "suite": "com.adtek.framework.security.JwtTokenCodecTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "lastWriteUtc": "2026-09-29T07:29:24.5516579Z",
+      "reportSha256": "4CDA731434443086906B4753E5EEED542885F731D78142FC5E3330E63C8687E6"
+    },
+    {
+      "kind": "surefire",
+      "suite": "com.adtek.framework.security.RedisFailureTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "lastWriteUtc": "2026-09-29T07:29:25.2962596Z",
+      "reportSha256": "9690CA198614F06B4C3685D816799CDA3180840067DA162E4B4EBD37321434EA"
+    },
+    {
+      "kind": "surefire",
+      "suite": "com.adtek.framework.web.ResultSerializationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "lastWriteUtc": "2026-09-29T07:29:25.5650249Z",
+      "reportSha256": "4141F184FDA3F8DD73C43FF5B473CA67F0A7A6EA447FD3F4F384E2D9D5C87267"
+    },
+    {
+      "kind": "surefire",
+      "suite": "com.adtek.framework.web.TraceFilterTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "lastWriteUtc": "2026-09-29T07:29:25.5828447Z",
+      "reportSha256": "0F2E20599C46CC6335FA88675F8ABF67679B5FC62B5AE056EFB3F47941B8617A"
+    },
+    {
+      "kind": "surefire",
+      "suite": "com.adtek.server.ArchitectureTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "lastWriteUtc": "2026-09-29T07:29:33.4093251Z",
+      "reportSha256": "F9E3D0D458B06A09D1A42FB641B4E9F307052AA6CB69276D3B56CDD639178B80"
+    },
+    {
+      "kind": "surefire",
+      "suite": "com.adtek.server.ErrorCodeCatalogTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "lastWriteUtc": "2026-09-29T07:29:33.929398Z",
+      "reportSha256": "9D74CA284006FA6A45B4F0E720E1C8501D1F59AB1070D77F42CD046B85D53624"
+    },
+    {
+      "kind": "surefire",
+      "suite": "com.adtek.sn.service.support.SequenceCodecTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "lastWriteUtc": "2026-09-29T07:29:28.6720355Z",
+      "reportSha256": "81E0D3299E652FC0D48FCBE0C2228CA6443B1AA41000B1D4232B6A68A71E2C86"
+    },
+    {
+      "kind": "failsafe",
+      "suite": "com.adtek.server.AuthenticationIT",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "lastWriteUtc": "2026-09-29T07:30:01.8651182Z",
+      "reportSha256": "04297E085AEB5901C627664C85934E07AD7902D99118AE12BFA0D352F7CDAA55"
+    },
+    {
+      "kind": "failsafe",
+      "suite": "com.adtek.server.RuntimeIT",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "lastWriteUtc": "2026-09-29T07:30:12.5586681Z",
+      "reportSha256": "75CE4AA126B15BE808123CD05D9840EB253431588C0CF6D3BEB25D25B825AB74"
+    }
+  ],
+  "frontendUnit": {
+    "tests": 4,
+    "success": true,
+    "startTime": 1790667197486,
+    "skipped": 0,
+    "failures": 0
+  },
+  "browser": {
+    "startTime": "2026-09-29T07:33:24.62Z",
+    "duration": 8669.589,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "browserChannel": "msedge",
+  "edgeVersion": "154.0.4258.37",
+  "jarSha256": "51AA9B66A2CB7619E5CE2DF4B00023567CCC4E3CF04E8D61795C810984C6FBB1",
+  "apiSchemaSha256": "6AAFF85ED35260C3C576D49A833FA4C3D61071E03F79BC5DF766C83D18FCCEB1",
+  "frontendLockSha256": "F65850DA8D24CFD770130ABC5CD9653AFCFD006B49F569229D1AC7BEA57B4A7A",
+  "baselines": [
+    {
+      "name": "技术栈和工程结构（v1.1）.md",
+      "sha256": "32703451CE6DA911029A9FD98FA501B79784EA062EC8B6E4DF0BB56FC858F133",
+      "matchesOriginal": true
+    },
+    {
+      "name": "AI 生成代码注释规范（v1.1）.md",
+      "sha256": "990620792CD4F0C950FB9CEF112241580D33F0D90ED5DCD30096673D18BBC777",
+      "matchesOriginal": true
+    },
+    {
+      "name": "SN项目迁移方案（v1.1）.md",
+      "sha256": "323D13C5278A429B9065D5380307F40EE94BE7B39EBE1FD9F140537FDCE55CF9",
+      "matchesOriginal": true
+    }
+  ],
+  "deliveryChecks": {
+    "frontendHttpStatus": 200,
+    "localDocumentationLinks": "PASS",
+    "sourceFilesVerified": 145,
+    "apiReadiness": "UP",
+    "oldRepositoryStatus": "clean",
+    "knownLocalSecretMatches": 0
+  }
+}

@@ -11,3 +11,6 @@
 *.psd1 text eol=lf
 # 下载验收产物按原始字节保留；CRLF属于文件内容和摘要的一部分。
 *.csv -text whitespace=cr-at-eol
+# 原迁移资料保留原始字节与摘要，不随 checkout 换行转换。
+docs/archive/python-migration/** -text whitespace=cr-at-eol,-blank-at-eol
+docs/releases/evidence/** -text whitespace=cr-at-eol

@@ -1,4 +1,0 @@
-﻿"ordinal","sn","seq_text","seq_dec","pi","material","customer","factory_code","status","batch_id","source_bill_no","seq_pi","source","print_id","transfer_id","created_at","acquired_at","printed_at","source_system","source_account","source_bill_id","source_entry_id"
-"1","LEGACY-A","","","CONTAINER-93b5911c","","","CT-93b5911c","PRINTED","","","","IMPORT","","","2026-09-30T04:39:45.730Z","","2026-09-30T04:39:45.730Z","","","",""
-"2","LEGACY-B","","","CONTAINER-93b5911c","","","CT-93b5911c","PRINTED","","","","IMPORT","","","2026-09-30T04:39:45.730Z","","2026-09-30T04:39:45.730Z","","","",""
-"3","LEGACY-C","","","CONTAINER-93b5911c","","","CT-93b5911c","PRINTED","","","","IMPORT","","","2026-09-30T04:39:45.730Z","","2026-09-30T04:39:45.730Z","","","",""

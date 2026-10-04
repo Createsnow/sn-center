@@ -1,0 +1,8 @@
+{
+  "mappings": "50003",
+  "items": "25000",
+  "applyMs": 3768,
+  "verifiedReplayMs": 1759,
+  "rollbackAtProof": true,
+  "scope": "synthetic bounded inventory; not full historical migration"
+}

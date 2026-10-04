@@ -1,2 +1,0 @@
-id,created_at,user_id,actor_username,actor_dept_id,module,action,success,object_id,trace_id
-"9007199254743033","2026-09-29T08:07:17.536236Z","9007199254741005","browser_export","1","认证","auth:LOGIN","true","9007199254741005","8e79f667-5625-43e6-b732-9069a307e150"

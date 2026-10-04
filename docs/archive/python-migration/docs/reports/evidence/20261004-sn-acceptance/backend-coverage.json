@@ -1,0 +1,427 @@
+{
+  "finishedAt": "2026-10-04T21:34:07+08:00",
+  "type": "FULL_RUN_PLUS_TARGETED_REPAIR",
+  "total": 193,
+  "suites": [
+    {
+      "name": "com.adtek.server.AuditIT",
+      "tests": "7",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "26.141",
+      "timestamp": null,
+      "cases": [
+        "existingBusinessFailuresAreNotDuplicatedAndAuditOutageCannotTurnDenialIntoSuccess",
+        "firewallRejectsAmbiguousPathWithoutStoringItsUntrustedSegments",
+        "validationScopePreconditionsAndRateLimitsAlsoReachFailureAudit",
+        "authenticationAndManagementSnapshotsRemainInOriginalDepartmentAfterMove",
+        "allFiveScopesApplyToPaginationDetailsAndMetadataWithoutLosingLargeIds",
+        "detailsProjectOnlyKnownDiffFieldsAndFiltersRejectUnsafeOrUnboundedQueries",
+        "entryAuthenticationCsrfAndMethodDenialsAreRecordedWithTrustedMetadataOnly"
+      ]
+    },
+    {
+      "name": "com.adtek.server.AuthenticationIT",
+      "tests": "23",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "29.106",
+      "timestamp": null,
+      "cases": [
+        "passwordChangeInvalidatesOldAccessAndRefreshAndKeepsIdentifiersExact",
+        "sqlRoleCompositionDoesNotPromoteLocalWriteWithGlobalReadRole",
+        "resetRevokesTargetAccessAndRefreshAndForcesPasswordChange",
+        "subjectBudgetStillLimitsSuccessfulLoginsIndependentlyOfFailureLock",
+        "userLifecycleHasBoundPaginationDiffUniqueNameAndVersionConflicts",
+        "taggedLegacyPasswordLogsInAndUpgradesWithoutClearingRequiredChange",
+        "roleAssignmentCannotGrantPermissionsActorDoesNotHaveAndRollsBackCreatedUser",
+        "allFiveDataScopesExecuteAgainstMysqlIncludingPaginationCounts",
+        "successfulLoginClearsFailuresButCannotClearAnActiveLock",
+        "languageDiffUsesDatabaseBeforeAndAfterAndRejectsUnknownLanguage",
+        "malformedRequestsCannotBypassSourceBudgetUsingUntrustedForwardingHeaders",
+        "accountDisableAndPermissionShrinkAreObservedWithoutWaitingForJwtExpiry",
+        "cookieCsrfRefreshReplayAndLogoutAreEnforcedOverHttp",
+        "bootstrapIsSingleUseWithRolesAuditAndMandatoryPasswordChange",
+        "independentGuardsShareAtomicFailureBudgetAndLockExpires",
+        "ordinaryManagerCannotResetPlatformAdminAndSelfOrLastAdminProtectionIsTransactional",
+        "redisOutageReturns503ForAccessAndLoginWithoutAcceptingAnOldAuthorizationSnapshot",
+        "auditStorageFailureRollsBackAccountCreation",
+        "fifthFailureLocksEvenCorrectPasswordAndAuditsUnknownAccountsWithoutCredentials",
+        "allFiveSqlScopeKindsRespectEmptyDepartmentAndDisabledDescendants",
+        "userSqlFiltersReadAndWriteSeparatelyAndEmptyCustomScopeReturnsEmptyPage",
+        "concurrentSelfDemotionsCannotRemoveBothAdministrators",
+        "disabledLegacyAccountAndUntaggedHashAreNotAccepted"
+      ]
+    },
+    {
+      "name": "com.adtek.server.ConfigurationIT",
+      "tests": "9",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "18.486",
+      "timestamp": null,
+      "cases": [
+        "disablingButtonRevokesAffectedSessionsAndLeavesUnrelatedAccountVersionUntouched",
+        "lastAdministratorAndSelfLockoutAreRolledBack",
+        "departmentMoveRecomputesDescendantScopeAndRejectsCycleOrActiveReferences",
+        "concurrentRoleWritesHaveOneWinnerAndOneVersionConflict",
+        "auditFailureRollsBackRoleRelationsAndVersionInvalidation",
+        "dictionaryUniquenessThreeLanguagesImmutableValuesAndDisabledParentArePreserved",
+        "roleScopeUpdateRevokesAllMembersAndRejectsStaleVersion",
+        "menuHierarchyWhitelistAndPermissionImmutabilityAreEnforced",
+        "globalConfigurationRequiresExplicitAuthorityAndCannotDelegateUnknownPermissionOrFactoryScope"
+      ]
+    },
+    {
+      "name": "com.adtek.server.DurableTaskIT",
+      "tests": "9",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "19.432",
+      "timestamp": null,
+      "cases": [
+        "expiredLeaseCannotPassOldEpochAndLockedTaskCannotBeTakenOver",
+        "canonicalTimeAndEmptyFiltersReplayAndOtherPrincipalsCannotRead",
+        "permissionIntersectionProgressFenceAndAdmissionLimitAreEnforced",
+        "publishedFileAndProgressSurviveRollbackThenSameTaskRecovers",
+        "missingAndCorruptFilesRecoverFromSameSnapshotAfterLiveLogsChange",
+        "revokedScopeBlocksReplayWorkerAndEveryNewDownloadRead",
+        "queuedCancellationAndTransientRetriesHaveFiniteBudget",
+        "concurrentSameIntentHasOneSnapshotAndReplaySurvivesRedisLoss",
+        "snapshotAuditFailureRollsBackAllRegistrationAndResourceLimitsNeverTruncate"
+      ]
+    },
+    {
+      "name": "com.adtek.server.IncrementalMigrationIT",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "11.468",
+      "timestamp": null,
+      "cases": [
+        "upgradeFrom17PreservesHistoryAndBackfillsOnlyLatestSuccessfulChoice"
+      ]
+    },
+    {
+      "name": "com.adtek.server.LegacyCliIT",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "44.043",
+      "timestamp": null,
+      "cases": [
+        "missingOrDuplicateFlagsExitBeforeSourceAccessWithoutLeakingEnvironment",
+        "packagedSnapshotStageAndResumeThroughOfficialEntryPoints"
+      ]
+    },
+    {
+      "name": "com.adtek.server.LegacyInventoryIT",
+      "tests": "7",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "117.528",
+      "timestamp": null,
+      "cases": [
+        "sourcePointersAndInvalidRulesNeedEvidenceNotNullingOrGuessing",
+        "unverifiedMasterAndActivatedAccountRefuseInventory",
+        "changedWatermarkAndKeysAreDetectedOnReplay",
+        "preservesOriginalMonthSeparatePiAndPreciseNullableSequenceWithoutFakeTask",
+        "counterFailureRollsBackBothSnTablesAllMapsAndProof",
+        "databaseOriginConstraintDoesNotAllowLegacyGeneratedSnOrDetachedInventory",
+        "boundedMaximumInventoryBatchesRollbackAndReplayWithoutDuplicateMappings"
+      ]
+    },
+    {
+      "name": "com.adtek.server.LegacyMasterIT",
+      "tests": "5",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "30.348",
+      "timestamp": null,
+      "cases": [
+        "initializedTargetAndUnsupportedSourceRoleAreBlockedBeforeWrites",
+        "replayDetectsActivatedUserRuleChangeOrMissingMap",
+        "laterTableFailureRollsBackIdentityFactoriesMapsAndBootstrapClosure",
+        "changedStagingOrExistingTargetNeverGetsOverwritten",
+        "preservesIdentityScopeRuleVersionsUtcAndRawUnknownActorsWithoutActivating"
+      ]
+    },
+    {
+      "name": "com.adtek.server.LegacySnapshotIT",
+      "tests": "5",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "12.832",
+      "timestamp": null,
+      "cases": [
+        "resourceOverflowDoesNotPublishAUsableManifest",
+        "exportsAllKnownTablesWithSelectOnlyAccountAndStableFingerprint",
+        "wrongSourceSchemaAndAmbiguousTimezoneAreRefused",
+        "unknownColumnOrUniqueKeyIsRefusedBeforeExport",
+        "preservesHighPrecisionAndExposesIntegrityAndMissingHistoryBlockers"
+      ]
+    },
+    {
+      "name": "com.adtek.server.LegacyStageIT",
+      "tests": "5",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "25.012",
+      "timestamp": null,
+      "cases": [
+        "changedSourceCannotContinueAnExistingRun",
+        "dryRunAndStageNeverActivateBusinessRows",
+        "committedChunkSurvivesFailureAndResumeChecksExistingRows",
+        "changedStagedPayloadCannotHideBehindStoredDigest",
+        "sourceInstanceWrongTargetAndConcurrentWriterAreRefused"
+      ]
+    },
+    {
+      "name": "com.adtek.server.ProcessTaskRecoveryIT",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "35.256",
+      "timestamp": null,
+      "cases": [
+        "killedGenerationRollsBackThenRestartsWithSameIntentExactlyOnce"
+      ]
+    },
+    {
+      "name": "com.adtek.server.RuntimeIT",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "16.37",
+      "timestamp": null,
+      "cases": [
+        "openApiDescribesIntegerErrorCodesStringIdsAndFilterErrors",
+        "readinessIsPublicButApplicationDefaultsToClosed",
+        "rateLimitCountsConcurrentRequestsAndSeparatesSubjects",
+        "initializesFlywayAndKeepsRealRedisReachable",
+        "sessionRotationRejectsReplayAndVersionMismatch",
+        "concurrentRefreshConsumesCredentialAtMostOnce"
+      ]
+    },
+    {
+      "name": "com.adtek.server.SnAcquireIT",
+      "tests": "15",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "44.428",
+      "timestamp": null,
+      "cases": [
+        "takeAndPrintSuccessAuditFailureRollBackEveryBusinessWrite",
+        "sameIntentAndCompetingIntentHaveOneBatchAndNoOrphanOperation",
+        "allFactoryReadCannotExpandLocalTakeAndPrintGrants",
+        "factoryQueryCanDownloadOriginalHistoryButCrossPiViewCannotGrantAccess",
+        "mixedQualificationDoesNotBorrowSiblingOrderAndPersistsEveryOutcome",
+        "fixedBatchReadsAllOrdinalsAndDoesNotFollowTransfersOrRenames",
+        "overTenThousandFixedMembersAndBothFilesKeepLargeSequenceAsText",
+        "serviceReadCursorIsScopedAndGrantRevocationFailsQueuedWorkClosed",
+        "transferExceptionOnlyAdmitsItsExactMemberAtItsProvenDestination",
+        "serviceCredentialsCannotLoginToUiAndRotationKeepsStableSubject",
+        "callbackProtectsOriginalBatchAndReturnsCompleteDeduplicatedClassification",
+        "filePublicationRollbackAndRecoveryNeverUndoOrRepeatPrintFact",
+        "printConfirmationAndBothFilesStayFixedAfterCurrentRowsChange",
+        "callbackRangeRequiresFixedContinuityAndReplayKeepsOriginalClassification",
+        "zeroEligibleReplayNeverTakesNewlyEligibleMembers"
+      ]
+    },
+    {
+      "name": "com.adtek.server.SnAuditIT",
+      "tests": "10",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "33.597",
+      "timestamp": null,
+      "cases": [
+        "businessEventsKeepExactSnapshotIdentityAndStatusesAfterRenames",
+        "exportLimitsAndAuditFailureRollbackSnapshotAndOperationTogether",
+        "relativeDateExportRetryAfterMidnightKeepsOriginalSnapshot",
+        "csvAndXlsxAreFixedTextSnapshotsAndRecoverByteIdenticallyAfterArchive",
+        "cursorsBindActorFiltersAndAuthorizationAndKeywordEscapesWildcards",
+        "transferHistoryIsVisibleToBothOriginalFactoriesButNoGlobalFactsLeak",
+        "originalFactoryRangeAndOwnerAreRecheckedForFilesAndQueuedWork",
+        "successProjectionFailureRollsBackBusinessAndFailureIsRecordedIndependently",
+        "onlineArchiveAndMergedReadsUseSameFiltersAndNeverDuplicateStagedCopies",
+        "cancellingQueuedGenerationRecordsNoCompletedSnTransition"
+      ]
+    },
+    {
+      "name": "com.adtek.server.SnFoundationIT",
+      "tests": "25",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "29.281",
+      "timestamp": null,
+      "cases": [
+        "ruleCapacityPrecisionValidationAndStaleConcurrentEdits",
+        "successfulAuditFailureRollsBackFactoryRuleAndEntireOrderPublication",
+        "scheduleRechecksDisabledForcedPasswordAndRevokedOwnersBeforeContactingErp",
+        "settingsChangeAndAuthorizationRevocationDuringFetchFencePublication",
+        "dueScheduleHasOneWinnerAndPublishesFullSnapshotAndLastResult",
+        "sourceOrganizationChangeToUnmappedClearsPreviousFactoryScope",
+        "erpLoginFailureDoesNotLeakResponseAndOrganizationFailureDoesNotEraseOrders",
+        "pendingOrderAndPiPagesIncludeUnallocatedHistoryAndExcludeFinishedBills",
+        "stableEntryLedgerSurvivesReorderRemovalAndEmptySnapshotWithoutMovingQuota",
+        "factoryScopeProtectsListDetailsMetaCustomersAndExplicitFilterCannotExpandIt",
+        "rulePriorityRenameUnusedEditUsedNewVersionAndHistoryArePreserved",
+        "scheduleSettingsValidateScopeIntervalsAndPreserveUnchangedNextRun",
+        "singleBillNotFoundIsLegalEmptyButOtherViewFailuresPreserveSnapshot",
+        "fractionalPlansAreStoredExactlyEvenWhenTheirSumIsAnInteger",
+        "userFactoryAssignmentIsAtomicScopedAndRevokesPreviousSession",
+        "unknownLegacyRuleCreatorRemainsNullAcrossListEffectiveAndHistory",
+        "auditStorageFailureDoesNotUndoKnownSyncFailureState",
+        "completePagingPreservesOldOrderColumnsEmptyMaterialSameMaterialAndExactIds",
+        "piAggregationIncludesVisibleOrdersOnlyAndDoesNotNetDifferentEntryQuotas",
+        "effectiveRuleInfersCustomerFromCurrentPiAsOriginalPage",
+        "manualFactoryConflictRequiresExplicitStableMappingAndNamesDoNotIdentifyOrganizations",
+        "twoConcurrentFetchesCannotPublishOlderSnapshotOverNewerVersion",
+        "duplicateIdentityAndResourceLimitNeverPublishPartialOrders",
+        "laterPageFailureAndInvalidStableIdentityOrExcessPrecisionKeepPreviousVersion",
+        "expiredRunIsRecoveredAndLateWorkerCannotPublishOrOverwriteReplacementResult"
+      ]
+    },
+    {
+      "name": "com.adtek.server.SnMaintenanceIT",
+      "tests": "14",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "16.508",
+      "timestamp": null,
+      "cases": [
+        "partitionsPreservePopulatedFallbackAndRetryCompletedRun",
+        "finalizeRemovesOnlyProvenMonthAndReplaysResult",
+        "cleanupWaitsForSubmissionThenPreservesBoundPreview",
+        "finalizeRejectsChangedRowsAndWrongServerWithoutDeletion",
+        "copiesOriginalAuditAndKeepsOnlineWithExactDigest",
+        "dryRunDoesNotWriteSchemaOrRunRows",
+        "failedDdlRunCanResumeAfterSomeBoundariesExist",
+        "finalizeRollsBackRemovalIfTerminalRecordFails",
+        "archiveRejectsOpenMonthMissingRowsAndResourceOverflow",
+        "connectionLockRejectsAnotherMaintainerWithoutWritingRun",
+        "archiveConflictRollsBackOtherCopiesAndRecordsFailure",
+        "dmlAndTerminalRecordAreAtomic",
+        "onlyExpiredUnboundPreviewsAreRemovedAndLimitIsEnforced",
+        "refusesWrongSchemaAndUnexpectedPartitionStructure"
+      ]
+    },
+    {
+      "name": "com.adtek.server.SnQueryIT",
+      "tests": "8",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "22.971",
+      "timestamp": null,
+      "cases": [
+        "factoryAndCrossPiReadsExcludeUnassignedAndUnownedPis",
+        "dashboardUsesBusinessFactsAndNoGlobalJobsLeakIntoFactoryRole",
+        "publishedBeforeReadyFailureRetainsSnapshotAndCanRecoverWithoutNewOperation",
+        "oversizedSnapshotAndAuditFailureLeaveNoPartialExport",
+        "bothFormatsUseFixedSnapshotsAndLostFilesRecoverSameBytes",
+        "allFactoryReadAndLocalExportAreIntersectedPerAction",
+        "exactFiltersEmptyMaterialAndCursorReadEveryItemWithoutNumericLoss",
+        "currentDownloadAuthorizationChecksOriginalScopeAndNeverFollowsMovedSn"
+      ]
+    },
+    {
+      "name": "com.adtek.server.SnTransferIT",
+      "tests": "13",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "29.458",
+      "timestamp": null,
+      "cases": [
+        "factoryScopeAndMinimalTargetDirectoryDoNotGrantOtherInventoryOrWrites",
+        "applyFreezesMixedStatesAndAnotherSourceOperatorWithdrawsExactPointers",
+        "incomingSameFormatMovesNextGenerationOnlyAndInvalidatesOldPreview",
+        "oversizedTransferFieldsAreRejectedWithoutTasksOrInventoryChanges",
+        "laterSqlBlockCollisionRollsBackEarlierMembersAndDualGuardUpdates",
+        "replayAndCancellationKeepBothPisSerializedWithoutLeakingReservations",
+        "businessAuditFailureRollsBackHeaderMembersKeysAndExceptions",
+        "pendingTransferHintUsesCurrentTargetStateAndDoesNotExposeItToBoundOperators",
+        "queuedRevocationFailsClosedAndFixedCursorRejectsTampering",
+        "emptyMaterialAndSingleScopesPreservePerMemberValuesAndNoopRollsBack",
+        "nonContiguousIncomingNumbersSkipGapsButDifferentFormatDoesNotChangeStart",
+        "targetCollisionAfterApplicationRejectsWholeApprovalAndCanStillBeRejected",
+        "approvalMovesCurrentKeysAndCreatesOnlyExactAcquisitionExceptions"
+      ]
+    },
+    {
+      "name": "com.adtek.server.SnWorkIT",
+      "tests": "28",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "68.34",
+      "timestamp": null,
+      "cases": [
+        "successfulAuditFailureRollsBackBusinessAndInitializationCanBeResubmitted",
+        "expiredPreviewAndCapacityFailuresLeaveNoBusinessOrIntentResidue",
+        "generationAuditFailureRollsBackNewRuleChoiceWithNumbersAndQuota",
+        "anotherChoiceOrNewExplicitBindingInvalidatesOldPreview",
+        "previewIsPureAndGenerationKeepsDuplicateAndEmptyMaterialsWithImmutableSource",
+        "fullSnConflictRollsBackAllChunksWatermarkQuotaRuleAndTaskResult",
+        "historyInitializationIsOncePrintedAtomicAndUnknownSequenceStaysNull",
+        "incomingScanTraversesPagesAndRefusesTruncationAtConfiguredLimit",
+        "capacityProfileAtOneTenAndOneHundredThousandPreservesAllLedgers",
+        "quantityOverUiSuggestionAndLargeStartRemainExact",
+        "incomingMaximumAtCapacityReturnsNullSuggestionAndControlledOverflow",
+        "staleLeaseCannotCommitAndReclaimedTaskCommitsExactlyOnce",
+        "permissionRevocationAndForeignActorCannotReadOrExecutePendingOperation",
+        "allocationSuccessAuditFailureRollsBackMembersAndLedger",
+        "competingPreviewsSerializeAndNextPreviewContinuesWithoutGap",
+        "samePiConcurrentDifferentIntentHasOneOccupancyWithoutOrphanOperation",
+        "concurrentSameIntentOneTaskAndRedisLossReturnsOriginalResult",
+        "localWriteScopeCannotBorrowAllFactoryReadScope",
+        "queuedWorkRechecksSnapshotAndNeverReleasesConsumedPreview",
+        "fullOrderAllocationRejectsPartialAndReplayDoesNotAllocateTwice",
+        "fractionalSnapshotBlocksGenerationWithoutLosingHistoryAndCanBeCorrected",
+        "initializationPreservesAboveJavascriptPrecisionAndNoRuleImport",
+        "piInputBoundaryRejectsBeforeCreatingAnyWork",
+        "previouslyUnparsedImportsUseCurrentFormatMaximumWithoutChangingHistoricalOwnership",
+        "decreasedQuantityReportsAnomalyAndOrgChangeCannotRedirectAllocation",
+        "ruleEditInvalidatesPreviewEvenWhenVersionIdUnchanged",
+        "unboundPiRequiresExplicitSelectionAndOnlySuccessfulGenerationRemembersIt",
+        "cancellationReleasesPiButNeverReusesPreview"
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "log": "tools/.runtime/incremental-full-it.log",
+      "result": "191 passed, 2 packaged-entry failures; see full-it-attempt.json"
+    },
+    {
+      "log": "tools/.runtime/incremental-packaged-it.log",
+      "result": "LegacyCliIT 2 passed with current acceptance JAR; child startup still failed"
+    },
+    {
+      "log": "tools/.runtime/incremental-process-final.log",
+      "result": "ProcessTaskRecoveryIT 1 passed after child JVM short socket directory fix"
+    }
+  ],
+  "limitations": [
+    "Not a single clean full run; final coverage combines named runs of unchanged business source and corrected test/tool entrypoints.",
+    "No production or original Python database was used."
+  ]
+}

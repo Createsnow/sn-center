@@ -1,0 +1,320 @@
+{
+  "total": 71,
+  "failures": 0,
+  "skipped": 0,
+  "suites": [
+    {
+      "name": "com.adtek.common.core.DataScopeTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "0.09",
+      "reportModifiedAtUtc": "2026-10-04T14:48:26.712241+00:00",
+      "cases": [
+        "emptyScopeDoesNotBecomeAllAndSelfDoesNotGrantOtherDepartments",
+        "crossFactoryReadGrantDoesNotBroadenOwnFactoryWriteGrant",
+        "departmentAndFactoryScopesRemainIndependent"
+      ]
+    },
+    {
+      "name": "com.adtek.framework.audit.AuditContextTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "0.1",
+      "reportModifiedAtUtc": "2026-10-04T14:48:28.504739+00:00",
+      "cases": [
+        "diffIncludesOnlyActualChangesAndRepresentsMissingValuesAsNull",
+        "recordingWithoutAnOperationBoundaryIsRejected",
+        "arbitraryFieldsSecretDeclarationsAndPasswordStringsAreRejected"
+      ]
+    },
+    {
+      "name": "com.adtek.framework.audit.RequestFailureAuditFilterTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "0.136",
+      "reportModifiedAtUtc": "2026-10-04T14:48:28.644910+00:00",
+      "cases": [
+        "persistenceFailureDoesNotChangeRejectionOrHideOriginalException",
+        "anonymousRejectionDoesNotTrustHeadersOrReadPayload",
+        "verifiedActorIsCapturedAndCommittedBusinessFailureIsNotDuplicated",
+        "successAndNonApiTrafficDoNotCreateFailureEvents"
+      ]
+    },
+    {
+      "name": "com.adtek.framework.mybatis.ScopedDataPermissionInterceptorTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "0.156",
+      "reportModifiedAtUtc": "2026-10-04T14:48:28.798957+00:00",
+      "cases": [
+        "quotedQuestionMarksAreNotBoundAndReservedParameterInjectionIsRejected",
+        "unknownTableMalformedSqlAndUnregisteredStatementFailClosed",
+        "subqueryAndAggregateRetainBoundSearchValues",
+        "readContextCannotExecuteAWriteOnlyStatement",
+        "emptyScopeIsFalseWhileExplicitAllStillRequiresRuleAndContext",
+        "joinBindsInsertedScopesInFinalOrderWithoutLosingOriginalPredicates"
+      ]
+    },
+    {
+      "name": "com.adtek.framework.security.CurrentActorTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "0.01",
+      "reportModifiedAtUtc": "2026-10-04T14:48:28.808982+00:00",
+      "cases": [
+        "passwordChangeRestrictionStillAppliesToExplicitPermissions",
+        "rejectsUntypedPrincipalAndAnonymousCallers",
+        "grantsOnlyCurrentExplicitPermission"
+      ]
+    },
+    {
+      "name": "com.adtek.framework.security.JwtTokenCodecTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "0.162",
+      "reportModifiedAtUtc": "2026-10-04T14:48:28.973253+00:00",
+      "cases": [
+        "rejectsWeakKeysAndLegacyTwoPartTokens",
+        "rejectsExpiredFutureIssuerAudienceAndSignatureMismatch",
+        "validatesStandardThreePartTokenWithoutEmbeddingPermissions"
+      ]
+    },
+    {
+      "name": "com.adtek.framework.security.PasswordEncodingTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "0.294",
+      "reportModifiedAtUtc": "2026-10-04T14:48:29.268031+00:00",
+      "cases": [
+        "neverGuessesUnmarkedOrUnknownHash",
+        "newPasswordsAlwaysUseCurrentAlgorithm",
+        "matchesExplicitlyTaggedPythonVectorAndRequiresUpgrade"
+      ]
+    },
+    {
+      "name": "com.adtek.framework.security.RedisFailureTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "0.903",
+      "reportModifiedAtUtc": "2026-10-04T14:48:30.190820+00:00",
+      "cases": [
+        "sessionDependencyFailureIsNotMisreportedAsExpiredOrAllowed",
+        "malformedRefreshCredentialNeverAccessesRedis"
+      ]
+    },
+    {
+      "name": "com.adtek.framework.task.FileStorageTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "0.348",
+      "reportModifiedAtUtc": "2026-10-04T14:48:30.528842+00:00",
+      "cases": [
+        "changedSnapshotCannotReplaceCommittedObject",
+        "corruptContentAndAuthorizationAreRejectedBeforeExposingBytes",
+        "rejectsPathsBeforeWritingOutsideRoot",
+        "linkedStorageDirectoryCannotEscapeControlledRoot(Path)",
+        "writerFailureAndSizeLimitCleanPartsWithoutPublishing",
+        "publishedBytesAreReusedAndInterruptedPartsAreCleanedOnlyForSameTask"
+      ]
+    },
+    {
+      "name": "com.adtek.framework.web.LegacyBoundaryTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "1.21",
+      "reportModifiedAtUtc": "2026-10-04T14:48:31.743189+00:00",
+      "cases": [
+        "unsupportedMethodKeeps405",
+        "lockAndUniqueConflictKeep409ButCheckConstraintIsNotRetryAdvice"
+      ]
+    },
+    {
+      "name": "com.adtek.framework.web.ResultSerializationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "0.024",
+      "reportModifiedAtUtc": "2026-10-04T14:48:31.765860+00:00",
+      "cases": [
+        "errorCodeIsNumericWhileIdsSequencesAndCountsStayExactText"
+      ]
+    },
+    {
+      "name": "com.adtek.framework.web.TraceFilterTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "0.003",
+      "reportModifiedAtUtc": "2026-10-04T14:48:31.770576+00:00",
+      "cases": [
+        "generatesTrustedTraceAndCleansThreadContextOnFailure"
+      ]
+    },
+    {
+      "name": "com.adtek.server.ArchitectureTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "4.373",
+      "reportModifiedAtUtc": "2026-10-04T14:48:39.004158+00:00",
+      "cases": [
+        "entitiesDoNotUseUpperLayers",
+        "foundationDoesNotDependOnBusinessModules",
+        "modulesAreAcyclicAndDoNotReachIntoOtherBusinessMappers"
+      ]
+    },
+    {
+      "name": "com.adtek.server.ArchiveRestoreProofTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "0.681",
+      "reportModifiedAtUtc": "2026-10-04T14:48:39.688263+00:00",
+      "cases": [
+        "rejectsMissingRootAndTraversal",
+        "validatesArtifactsAndEquivalentMysqlDdl",
+        "failedBrowserSameServerAndWrongMonthRefused",
+        "rawDataChangeFailsEvenWhenRawHashIsReplaced",
+        "fileByteChangeRefusesProof"
+      ]
+    },
+    {
+      "name": "com.adtek.server.AuditProjectionTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "0.017",
+      "reportModifiedAtUtc": "2026-10-04T14:48:39.706150+00:00",
+      "cases": [
+        "preciseRelationshipIdsSurviveWhileMalformedOrOversizedJsonIsMarked",
+        "historyIsProjectedWithWhitelistAndPasswordMaterialCannotHideInBooleanFlag",
+        "routeRegistryNeverCopiesDynamicPathOrUnrecognizedUrls"
+      ]
+    },
+    {
+      "name": "com.adtek.server.ErrorCodeCatalogTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "0.56",
+      "reportModifiedAtUtc": "2026-10-04T14:48:40.266975+00:00",
+      "cases": [
+        "exportedErrorCodesAreUniqueAndWithinTheirModuleRange"
+      ]
+    },
+    {
+      "name": "com.adtek.server.K3ConfigurationTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "0.736",
+      "reportModifiedAtUtc": "2026-10-04T14:48:41.004214+00:00",
+      "cases": [
+        "incompleteTreeCannotContactErp",
+        "installedConfigurationFeedsActualFullSyncAndCanBeDisabled"
+      ]
+    },
+    {
+      "name": "com.adtek.server.K3ErrorsTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "1.153",
+      "reportModifiedAtUtc": "2026-10-04T14:48:42.157271+00:00",
+      "cases": [
+        "arrayWrappedLaterPageAndOrganizationErrorsAreQueryRejections",
+        "loginRejectionAndHttpAuthenticationRejectionAgree",
+        "disabledConfigurationHasDedicatedCode",
+        "laterQueryRejectionIsDistinctAndDoesNotReturnEarlierRows",
+        "invalidJsonIsProtocolFailureAndOversizeIsBoundedResourceFailure",
+        "transportStatusAndTimeoutHaveUnavailableCode"
+      ]
+    },
+    {
+      "name": "com.adtek.server.K3LegacyProtocolTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "0.042",
+      "reportModifiedAtUtc": "2026-10-04T14:48:42.201499+00:00",
+      "cases": [
+        "legacyEnvelopeAndWrappedNamesWorkForFullSingleAndOrganizationQueries"
+      ]
+    },
+    {
+      "name": "com.adtek.server.LegacyErrorCatalogTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "0.011",
+      "reportModifiedAtUtc": "2026-10-04T14:48:42.213509+00:00",
+      "cases": [
+        "allExplicitTargetsMatchPublishedConstants"
+      ]
+    },
+    {
+      "name": "com.adtek.server.MaintenanceScheduleTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "0.032",
+      "reportModifiedAtUtc": "2026-10-04T14:48:42.248288+00:00",
+      "cases": [
+        "computesConfiguredTimezoneAndClosedUtcMonth",
+        "retriesSameUtcDayButNewDayGetsNewRun",
+        "invalidCronTimezoneAndConfigurationNeverSilentlyFallBack"
+      ]
+    },
+    {
+      "name": "com.adtek.sn.service.support.SequenceCodecTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "0.158",
+      "reportModifiedAtUtc": "2026-10-04T14:48:33.218649+00:00",
+      "cases": [
+        "roundTripsExactValuesIncludingJavaScriptUnsafeIntegers(int)[1]",
+        "roundTripsExactValuesIncludingJavaScriptUnsafeIntegers(int)[2]",
+        "roundTripsExactValuesIncludingJavaScriptUnsafeIntegers(int)[3]",
+        "roundTripsExactValuesIncludingJavaScriptUnsafeIntegers(int)[4]",
+        "rejectsInvalidRulesAndFullBatchOverflow",
+        "usesUnicodeCodePointsForCustomAlphabet",
+        "preservesLeadingZeroAndLegacyBase32Alphabet",
+        "capsBase36BeforeLongOverflowAndRejectsUnrepresentableText",
+        "rejectsMismatchWithoutNormalizingTheSerial"
+      ]
+    }
+  ]
+}

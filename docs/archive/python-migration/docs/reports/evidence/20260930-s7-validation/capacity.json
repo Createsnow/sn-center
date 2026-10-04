@@ -1,0 +1,55 @@
+{
+  "scope": "synthetic serial local single samples; no production SLO or 150-million-row claim",
+  "samples": [
+    {
+      "previewMs": 31,
+      "auditKeyParts": [
+        "gen_month",
+        "id"
+      ],
+      "allocationMs": 151,
+      "exactCountMs": 17,
+      "mysqlRowLockWaits": 0,
+      "auditAccess": "eq_ref",
+      "generationMs": 210,
+      "submitMs": 72,
+      "quantity": "1000",
+      "first100QueryMs": 28
+    },
+    {
+      "previewMs": 23,
+      "auditKeyParts": [
+        "gen_month",
+        "id"
+      ],
+      "allocationMs": 1093,
+      "exactCountMs": 17,
+      "mysqlRowLockWaits": 0,
+      "auditAccess": "eq_ref",
+      "generationMs": 1132,
+      "submitMs": 43,
+      "quantity": "10000",
+      "first100QueryMs": 32
+    },
+    {
+      "previewMs": 29,
+      "auditKeyParts": [
+        "gen_month",
+        "id"
+      ],
+      "allocationMs": 10435,
+      "exactCountMs": 47,
+      "mysqlRowLockWaits": 0,
+      "auditAccess": "eq_ref",
+      "generationMs": 11168,
+      "submitMs": 53,
+      "quantity": "100000",
+      "first100QueryMs": 112
+    }
+  ],
+  "totalItems": "111000",
+  "java": "21.0.12.1",
+  "maxHeapBytes": 536870912,
+  "database": "MySQL 8.4.11 Testcontainers",
+  "processors": 16
+}

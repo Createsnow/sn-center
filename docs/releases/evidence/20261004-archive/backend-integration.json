@@ -1,0 +1,36 @@
+{
+  "total": 7,
+  "failures": 0,
+  "skipped": 0,
+  "suites": [
+    {
+      "name": "com.adtek.server.IncrementalMigrationIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "14.353",
+      "reportModifiedAtUtc": "2026-10-04T14:48:57.737408+00:00",
+      "cases": [
+        "upgradeFrom17PreservesHistoryAndBackfillsOnlyLatestSuccessfulChoice"
+      ]
+    },
+    {
+      "name": "com.adtek.server.RuntimeIT",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "21.286",
+      "reportModifiedAtUtc": "2026-10-04T14:49:19.026819+00:00",
+      "cases": [
+        "openApiDescribesIntegerErrorCodesStringIdsAndFilterErrors",
+        "readinessIsPublicButApplicationDefaultsToClosed",
+        "rateLimitCountsConcurrentRequestsAndSeparatesSubjects",
+        "initializesFlywayAndKeepsRealRedisReachable",
+        "sessionRotationRejectsReplayAndVersionMismatch",
+        "concurrentRefreshConsumesCredentialAtMostOnce"
+      ]
+    }
+  ]
+}

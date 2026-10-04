@@ -1,17 +1,15 @@
 # adtek-platform-sn 共同工作入口
 
-用户已授权按照三份 v1.1 基线开始迁移并创建本工程。项目名以用户指定的 `adtek-platform-sn` 为准，替代迁移方案中的建议目录名。
+先读 [README](README.md)、[当前状态](memory/项目状态.md)、[文档导航](docs/README.md)和任务相关正文。SN 新需求、缺陷与回归统一进入本工程。
 
-先读 [项目状态](memory/项目状态.md)、[文档导航](docs/README.md) 和任务相关正文。有效来源为 `docs/references/baselines/` 中的三份 v1.1 来源快照；开发约束和引用方式见 `docs/05-开发与协作规范.md`。
-
-- 保留相邻 `sn-center-python`、`bak` 和工作区根目录三份基线原件，只在本工程修改。
-- Java 使用 `com.adtek` / `adtek-*` 六模块；遵守 server → system/sn → framework → common，integration 实现 sn 的 service.port。
-- 使用 controller/service/service.impl/mapper/domain/dto/query/vo/convert，MapStruct、Result、BusinessException；domain 为 Entity。
-- 主体可信装配、服务用例授权；数据库保证 SN 双唯一性、额度与事务，Redis 不承担业务最终状态。
-- React 函数组件、TypeScript strict、TanStack Query 服务端状态和最小 Zustand 状态；业务 ID/流水保持精确字符串。
-- 注释按职责与风险覆盖；公开 Service/端口有真实契约，不虚构实现、测试、作者或决定。
-- 代码生成或修改后运行tools/format.ps1，再用-Check检查；Java/POM由父POM的Spotless统一，前端沿用Prettier，PowerShell使用固定PSScriptAnalyzer规则。禁止格式化冻结SQL、来源基线、历史证据或生成契约。
-- 只运行明确隔离的测试设施；禁止连接业务库做破坏性测试、提交密钥。用户于2026-09-30明确授权从相邻sn-center-python对应功能查找K3连接配置，可只读提取其五个K3连接字段到新工程受保护目录；其他旧配置不导入、不回显，旧工程不修改。
-- 新增功能同时交付对应测试、契约及状态。实际编译、单元、集成、浏览器和性能结果分别报告，跳过不当通过。
-- 未获授权不提交、推送、发布或部署；原授权范围内的常规实现持续推进，不逐文件重复请示。
-- memory 是共同状态，正式证据在 docs/reports；禁止以空页面、模拟成功、TODO 或关闭门禁冒充完成。
+- 用户确认本轮仅新建隔离测试数据；相邻 Python 原型、原库、秘密和历史备份保持不变，不执行旧数据搬迁。
+- 通用规范引用 [模板 0.1.0 及 SN 差异](docs/development/README.md)；三份 v1.1 原文在 [归档](docs/archive/python-migration/README.md)，已批准的业务变更见当前 SN 补迁契约。
+- 六模块方向 server → system/sn → framework → common，integration 实现 sn 的 service.port；禁止跨模块 Mapper/impl 引用。
+- 保持 Controller/Service/impl/Mapper/Entity/DTO/Query/VO/MapStruct 分层；可信身份与当前权限在服务用例检查。
+- MySQL 保证 SN 双唯一性、额度、固定成员、事务和任务终态；Redis 不承担业务最终状态。完整 SN 冲突整批回滚。
+- React 函数组件、strict TypeScript、TanStack Query；业务 ID、版本、数量与流水保留精确字符串。
+- V1—V19 已交付，内容不改，新增结构取下一个未占用版本。不要因已有常驻库仍为 V17 而改写 V18/V19。
+- 修改代码后执行 tools/format.ps1 并以 -Check 核对；禁止格式化冻结 SQL、来源基线、历史证据、归档原文或手改生成类型。
+- 验收脚本使用独立 acceptance JAR；同仓库不并行运行两个 Maven。只运行隔离测试，保护已有服务和账号。
+- 本轮仅本地交付；不访问或更新 GitLab，不将本地检查称为远程 CI 或生产验收。秘密与备份不入库。
+- memory 只记录当前状态；正式证据在当前发布记录和只读归档。真实联调、人工练习和生产待办不得隐藏或冒充通过。

@@ -1,0 +1,27 @@
+{
+  "recordedAt": "2026-09-30T10:05:52.320331+00:00",
+  "documents": 50,
+  "missingLinks": [],
+  "sourceManifestFiles": 657,
+  "filesScanned": 723,
+  "knownSecretMatches": [],
+  "baselines": [
+    {
+      "name": "AI 生成代码注释规范（v1.1）.md",
+      "matchesOriginal": true,
+      "sha256": "990620792cd4f0c950fb9cef112241580d33f0d90ed5dcd30096673d18bbc777"
+    },
+    {
+      "name": "SN项目迁移方案（v1.1）.md",
+      "matchesOriginal": true,
+      "sha256": "323d13c5278a429b9065d5380307f40ee94be7b39ebe1fd9f140537fdce55cf9"
+    },
+    {
+      "name": "技术栈和工程结构（v1.1）.md",
+      "matchesOriginal": true,
+      "sha256": "32703451ce6da911029a9fd98fa501b79784ea062ec8b6e4df0bb56fc858f133"
+    }
+  ],
+  "dockerContext": "explicit artifact/deploy allowlist excludes deploy/.secrets",
+  "scope": "known local secrets including K3 AppId/AppSecret; no complete security-audit claim"
+}

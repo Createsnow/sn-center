@@ -1,0 +1,1862 @@
+[
+  {
+    "original": "README.md",
+    "archived": "docs/archive/python-migration/README.original.md",
+    "bytes": 4657,
+    "sha256": "287debd7be29057c5943c82bb474f8409d656c687f183995e80b4ba31c056e07"
+  },
+  {
+    "original": "AGENTS.md",
+    "archived": "docs/archive/python-migration/AGENTS.md",
+    "bytes": 2236,
+    "sha256": "0ac7081fba36af6b83086ff31cbfbaa27977f7ebcab76b89ccf5b73dbd26d26e"
+  },
+  {
+    "original": "deploy/images.lock.json",
+    "archived": "docs/archive/python-migration/deploy/images.lock.json",
+    "bytes": 865,
+    "sha256": "6ce973b7f954e770f670eee0a71bdcf0585228b5fe7dfdf3adefc1a629ec1829"
+  },
+  {
+    "original": "deploy/k3.example.json",
+    "archived": "docs/archive/python-migration/deploy/k3.example.json",
+    "bytes": 85,
+    "sha256": "a37c08881cafe905f0e3a7d496a083a75e721f3a4e3398f02bef6e8e4efea284"
+  },
+  {
+    "original": "docs/01-需求与范围.md",
+    "archived": "docs/archive/python-migration/docs/01-需求与范围.md",
+    "bytes": 3991,
+    "sha256": "c3b6b4469b275444baef65bee116fce48809f7ea4d96e19c5a165f40ba700f8f"
+  },
+  {
+    "original": "docs/02-架构与工程结构.md",
+    "archived": "docs/archive/python-migration/docs/02-架构与工程结构.md",
+    "bytes": 15001,
+    "sha256": "b575e0583c9053e4d9ab9f65e0b21fcc36deda91f8d4d7978489d50dec1425ba"
+  },
+  {
+    "original": "docs/03-数据库设计.md",
+    "archived": "docs/archive/python-migration/docs/03-数据库设计.md",
+    "bytes": 14163,
+    "sha256": "a3135625458c100293e3e7dbdbac31df23b4ce3a9297e9c0652da2ebe56c7300"
+  },
+  {
+    "original": "docs/04-接口契约.md",
+    "archived": "docs/archive/python-migration/docs/04-接口契约.md",
+    "bytes": 26584,
+    "sha256": "8d2921d51015cf318553094bb7a4350f3ff9826978102100622502160a604a14"
+  },
+  {
+    "original": "docs/05-开发与协作规范.md",
+    "archived": "docs/archive/python-migration/docs/05-开发与协作规范.md",
+    "bytes": 5367,
+    "sha256": "250b76c7c567a7ad78ad438ef8929455f3d4c4b16749fc22e71502ea9d5cb20f"
+  },
+  {
+    "original": "docs/06-测试与验收.md",
+    "archived": "docs/archive/python-migration/docs/06-测试与验收.md",
+    "bytes": 11485,
+    "sha256": "5b67c8cd003e0851c5111f8ae4da169382c26a316d97c2c60a7849647bc0c6aa"
+  },
+  {
+    "original": "docs/07-部署与运维.md",
+    "archived": "docs/archive/python-migration/docs/07-部署与运维.md",
+    "bytes": 13736,
+    "sha256": "0aa9dc17a72123ab10fdd1b36bc69aa88682a89c77b254fa8f21ffe9c1d85d52"
+  },
+  {
+    "original": "docs/08-用户手册.md",
+    "archived": "docs/archive/python-migration/docs/08-用户手册.md",
+    "bytes": 13512,
+    "sha256": "7d70b2127f47a39945c187c0a8cf76c56cab18bce8b73873ea0001a7568d0a20"
+  },
+  {
+    "original": "docs/09-技术选型与版本基线.md",
+    "archived": "docs/archive/python-migration/docs/09-技术选型与版本基线.md",
+    "bytes": 6876,
+    "sha256": "45543565f742528ab9a82ba94c930dab5ee78575ed89cb525c90da474363c969"
+  },
+  {
+    "original": "docs/10-命令手册.md",
+    "archived": "docs/archive/python-migration/docs/10-命令手册.md",
+    "bytes": 15130,
+    "sha256": "815eaca6a52a54ec59366abd9cf81a0a91423bc891a7b48a87d04fdc0d108c57"
+  },
+  {
+    "original": "docs/11-完整功能迁移清单.md",
+    "archived": "docs/archive/python-migration/docs/11-完整功能迁移清单.md",
+    "bytes": 11457,
+    "sha256": "f717cbef6017145fa435eb2550ecf7d0313ca6ebb858d55159390402a38a30d9"
+  },
+  {
+    "original": "docs/12-MES领取与打印契约.md",
+    "archived": "docs/archive/python-migration/docs/12-MES领取与打印契约.md",
+    "bytes": 8377,
+    "sha256": "31d65c2f9c4a4a1b00e72885cd8bb13723a6de5c92231b35a882ec73b77b158f"
+  },
+  {
+    "original": "docs/13-转厂查询与痕迹契约.md",
+    "archived": "docs/archive/python-migration/docs/13-转厂查询与痕迹契约.md",
+    "bytes": 7280,
+    "sha256": "02b937aeeadcb714c046f7c6f1aeba99ba1346b273c9fc4cd68defa291809076"
+  },
+  {
+    "original": "docs/14-维护迁移与恢复契约.md",
+    "archived": "docs/archive/python-migration/docs/14-维护迁移与恢复契约.md",
+    "bytes": 5948,
+    "sha256": "ec4c11a9ad0dd8aeaa20661c2347c820a61021f53feb94acc1687ac0ee4edc80"
+  },
+  {
+    "original": "docs/15-旧错误码兼容登记.md",
+    "archived": "docs/archive/python-migration/docs/15-旧错误码兼容登记.md",
+    "bytes": 11207,
+    "sha256": "b012f9b24ca09c6340619e2a1a39ed78242d4c674d3743b3d97f237439b27c86"
+  },
+  {
+    "original": "docs/16-旧库快照暂存与主数据迁移.md",
+    "archived": "docs/archive/python-migration/docs/16-旧库快照暂存与主数据迁移.md",
+    "bytes": 8641,
+    "sha256": "a1c9ec5a2b23dadfbd92e2e8cf229c8835e750226e5c5fcbd29d8ea95fa6e4f4"
+  },
+  {
+    "original": "docs/17-生产订单全量同步接入.md",
+    "archived": "docs/archive/python-migration/docs/17-生产订单全量同步接入.md",
+    "bytes": 6485,
+    "sha256": "8917813abf6aa5ee88434ecb77465707b90b8dbab9d524ca9f43c92d30499580"
+  },
+  {
+    "original": "docs/18-SN补迁契约.md",
+    "archived": "docs/archive/python-migration/docs/18-SN补迁契约.md",
+    "bytes": 10899,
+    "sha256": "000f20b59cecf7ce2d08545f46da7e765e9820cab806f6801ee2ddc015f36f1d"
+  },
+  {
+    "original": "docs/README.md",
+    "archived": "docs/archive/python-migration/docs/README.md",
+    "bytes": 6975,
+    "sha256": "c74b74b420343b6dc30200c87a6c74c3090109460f7816925008d268f5c3c922"
+  },
+  {
+    "original": "docs/plans/2026-09-29-工程启动.md",
+    "archived": "docs/archive/python-migration/docs/plans/2026-09-29-工程启动.md",
+    "bytes": 1432,
+    "sha256": "8f6627f3e7ab800e6ca87ee2346dad21a251e4bb587a0b7bc3e8cc20fb5ed010"
+  },
+  {
+    "original": "docs/plans/2026-09-29-S2-操作日志.md",
+    "archived": "docs/archive/python-migration/docs/plans/2026-09-29-S2-操作日志.md",
+    "bytes": 1898,
+    "sha256": "4827a6e10f5c10c74dbef07ed8dd4d7760e207efa994e88bad27cc50210fcc27"
+  },
+  {
+    "original": "docs/plans/2026-09-29-S2-持久任务与文件.md",
+    "archived": "docs/archive/python-migration/docs/plans/2026-09-29-S2-持久任务与文件.md",
+    "bytes": 3150,
+    "sha256": "c9807db4162417a86701ccddb83a9a21ea7d80f06b79ae1ddc2b08332092f9d3"
+  },
+  {
+    "original": "docs/plans/2026-09-29-S2-系统配置.md",
+    "archived": "docs/archive/python-migration/docs/plans/2026-09-29-S2-系统配置.md",
+    "bytes": 1924,
+    "sha256": "22d96892a80a705d5de186d815b19592113dd4153691f7c65f13c79dc02ce079"
+  },
+  {
+    "original": "docs/plans/2026-09-29-S2-用户样板.md",
+    "archived": "docs/archive/python-migration/docs/plans/2026-09-29-S2-用户样板.md",
+    "bytes": 1536,
+    "sha256": "1065d671b12e44761f628badf93cc197ed55d33ed13fc418346efde89f57347f"
+  },
+  {
+    "original": "docs/plans/2026-09-29-S3-工厂订单与规则.md",
+    "archived": "docs/archive/python-migration/docs/plans/2026-09-29-S3-工厂订单与规则.md",
+    "bytes": 3102,
+    "sha256": "bd5a6c5f2c4110ca96812c76b822eb458c5ab0f1f71e7a5049ca9e88944fa68e"
+  },
+  {
+    "original": "docs/plans/2026-09-29-S4-初始化生成与分配.md",
+    "archived": "docs/archive/python-migration/docs/plans/2026-09-29-S4-初始化生成与分配.md",
+    "bytes": 2260,
+    "sha256": "b89d4c64e240e8342304439bc3909d9f890e91d402bd5b336aadbdcbfb5483b8"
+  },
+  {
+    "original": "docs/plans/2026-09-30-S5-领取打印与MES.md",
+    "archived": "docs/archive/python-migration/docs/plans/2026-09-30-S5-领取打印与MES.md",
+    "bytes": 2924,
+    "sha256": "48a7cf68e731207ed47a757b248dc121238b7d165c6ca03258d2b6a0e20045dc"
+  },
+  {
+    "original": "docs/plans/2026-09-30-S6-转厂查询与首页.md",
+    "archived": "docs/archive/python-migration/docs/plans/2026-09-30-S6-转厂查询与首页.md",
+    "bytes": 2043,
+    "sha256": "7110ed000437dd7698b771c3bc98acfb115746484b92f29c25d34c2d6112cc96"
+  },
+  {
+    "original": "docs/plans/2026-09-30-S7-数据演练与交付硬化.md",
+    "archived": "docs/archive/python-migration/docs/plans/2026-09-30-S7-数据演练与交付硬化.md",
+    "bytes": 4067,
+    "sha256": "0241dc26da6ec2cbe262c9be1445de4734e92743a0e49541a24d8fb606c70ae0"
+  },
+  {
+    "original": "docs/plans/2026-10-04-SN补迁与Adtek开发框架建设实施计划.md",
+    "archived": "docs/archive/python-migration/docs/plans/2026-10-04-SN补迁与Adtek开发框架建设实施计划.md",
+    "bytes": 23963,
+    "sha256": "555f7dd64f20ce9c77e3d3a01b622da4ec7fcf874c89632106f72daba24f6e6e"
+  },
+  {
+    "original": "docs/plans/旧数据处置范围说明.md",
+    "archived": "docs/archive/python-migration/docs/plans/旧数据处置范围说明.md",
+    "bytes": 1388,
+    "sha256": "2b8746a3694c1692e1a45cd99d9ef1ed5b8a664490897408d10e5f463b2d1e7a"
+  },
+  {
+    "original": "docs/plans/SN补迁范围与规则决定.md",
+    "archived": "docs/archive/python-migration/docs/plans/SN补迁范围与规则决定.md",
+    "bytes": 2802,
+    "sha256": "68b339d3ee3f98e2d4d371b388f62ec2ab9733ca1a3ae9d94e43c5a813ebc38f"
+  },
+  {
+    "original": "docs/plans/SN原型更新差异清单.md",
+    "archived": "docs/archive/python-migration/docs/plans/SN原型更新差异清单.md",
+    "bytes": 6533,
+    "sha256": "213af79d52ba893fb2faf10c2fe151425707efff9fb9971da6437cb7032c34b8"
+  },
+  {
+    "original": "docs/references/baselines/技术栈和工程结构（v1.1）.md",
+    "archived": "docs/archive/python-migration/docs/references/baselines/技术栈和工程结构（v1.1）.md",
+    "bytes": 80418,
+    "sha256": "32703451ce6da911029a9fd98fa501b79784ea062ec8b6e4df0bb56fc858f133"
+  },
+  {
+    "original": "docs/references/baselines/AI 生成代码注释规范（v1.1）.md",
+    "archived": "docs/archive/python-migration/docs/references/baselines/AI 生成代码注释规范（v1.1）.md",
+    "bytes": 37488,
+    "sha256": "990620792cd4f0c950fb9cef112241580d33f0d90ed5dcd30096673d18bbc777"
+  },
+  {
+    "original": "docs/references/baselines/SN项目迁移方案（v1.1）.md",
+    "archived": "docs/archive/python-migration/docs/references/baselines/SN项目迁移方案（v1.1）.md",
+    "bytes": 97480,
+    "sha256": "323d13c5278a429b9065d5380307f40ee94be7b39ebe1fd9f140537fdce55cf9"
+  },
+  {
+    "original": "docs/reports/2026-09-29-本机Docker安装.md",
+    "archived": "docs/archive/python-migration/docs/reports/2026-09-29-本机Docker安装.md",
+    "bytes": 2734,
+    "sha256": "af7aef73a6c05a3401d9890e2a4f0ed01fa4bf2f9d61d7ea35ef5b0ee67d80d1"
+  },
+  {
+    "original": "docs/reports/2026-09-29-测试环境与认证链路.md",
+    "archived": "docs/archive/python-migration/docs/reports/2026-09-29-测试环境与认证链路.md",
+    "bytes": 5741,
+    "sha256": "04b0550b33c6b320750dba0e540677dfc79fcb3b43cc9ce86bc458ff1ce4aa31"
+  },
+  {
+    "original": "docs/reports/2026-09-29-S1-后端构建.md",
+    "archived": "docs/archive/python-migration/docs/reports/2026-09-29-S1-后端构建.md",
+    "bytes": 3085,
+    "sha256": "9f2ff98173a29bc635300dd5f631bdf522eb35336be21179a44611346b94f7f8"
+  },
+  {
+    "original": "docs/reports/2026-09-29-S2-操作日志与入口失败审计.md",
+    "archived": "docs/archive/python-migration/docs/reports/2026-09-29-S2-操作日志与入口失败审计.md",
+    "bytes": 6692,
+    "sha256": "96b4f1d37064f8b9e2dbff1d8a10b9753d2d9972efc8e96839c5b93d6f3f7c8b"
+  },
+  {
+    "original": "docs/reports/2026-09-29-S2-持久任务与文件恢复.md",
+    "archived": "docs/archive/python-migration/docs/reports/2026-09-29-S2-持久任务与文件恢复.md",
+    "bytes": 10969,
+    "sha256": "8ff0b9110a751f40dcef13bd5f776d5d923323960a92d2f69c441e5a689942a1"
+  },
+  {
+    "original": "docs/reports/2026-09-29-S2-系统配置与授权传播.md",
+    "archived": "docs/archive/python-migration/docs/reports/2026-09-29-S2-系统配置与授权传播.md",
+    "bytes": 5001,
+    "sha256": "0844bf0a958e68148c0dc57c2ce5cdbcb811862ceaadf3565b315a5354f2589b"
+  },
+  {
+    "original": "docs/reports/2026-09-29-S2-用户管理与数据权限.md",
+    "archived": "docs/archive/python-migration/docs/reports/2026-09-29-S2-用户管理与数据权限.md",
+    "bytes": 6788,
+    "sha256": "93ce74881d9d24a8f1d418c092642ee00c4c34ec28566f5a5fea671bd3bb5f72"
+  },
+  {
+    "original": "docs/reports/2026-09-29-S3-工厂订单与规则.md",
+    "archived": "docs/archive/python-migration/docs/reports/2026-09-29-S3-工厂订单与规则.md",
+    "bytes": 8556,
+    "sha256": "8b1745ae9f161e2059e1efee87fb1e51e816234f28a2b6944516ce94b02a67a6"
+  },
+  {
+    "original": "docs/reports/2026-09-29-S4-初始化生成与分配.md",
+    "archived": "docs/archive/python-migration/docs/reports/2026-09-29-S4-初始化生成与分配.md",
+    "bytes": 8311,
+    "sha256": "6fa69dcf4c268c84e4f4e7144825adf895f5537a708cf5b7f43682d8dab1c19c"
+  },
+  {
+    "original": "docs/reports/2026-09-30-全工程代码格式规范化.md",
+    "archived": "docs/archive/python-migration/docs/reports/2026-09-30-全工程代码格式规范化.md",
+    "bytes": 3878,
+    "sha256": "ce924b8e6502a4273ff1ca26ac7efa0148fd2aa9479bf687a45d340cd5acfe23"
+  },
+  {
+    "original": "docs/reports/2026-09-30-生产订单全量同步接入.md",
+    "archived": "docs/archive/python-migration/docs/reports/2026-09-30-生产订单全量同步接入.md",
+    "bytes": 3641,
+    "sha256": "3013991285853d90ab6fb3a9e0e6003e2356ca3b27edee50f943f1100d20087f"
+  },
+  {
+    "original": "docs/reports/2026-09-30-K3真实全量同步.md",
+    "archived": "docs/archive/python-migration/docs/reports/2026-09-30-K3真实全量同步.md",
+    "bytes": 4573,
+    "sha256": "3610e37809ead5ebcb7e1aa7d7e8d008f949dd7c08294f416e5c5c1b1162025f"
+  },
+  {
+    "original": "docs/reports/2026-09-30-Mapper超长行修正.md",
+    "archived": "docs/archive/python-migration/docs/reports/2026-09-30-Mapper超长行修正.md",
+    "bytes": 2726,
+    "sha256": "c17dc430fe33bb7a04789e70ba14c47bcb56ae815bceb255d0824cacc94079ed"
+  },
+  {
+    "original": "docs/reports/2026-09-30-S5-领取打印与MES.md",
+    "archived": "docs/archive/python-migration/docs/reports/2026-09-30-S5-领取打印与MES.md",
+    "bytes": 6215,
+    "sha256": "bcd56421f9538fc9b3a9fb2febd61b34a452c470c41da323012d7e324fcf6cf0"
+  },
+  {
+    "original": "docs/reports/2026-09-30-S6-转厂查询与业务痕迹.md",
+    "archived": "docs/archive/python-migration/docs/reports/2026-09-30-S6-转厂查询与业务痕迹.md",
+    "bytes": 3955,
+    "sha256": "3eb67be7d362d8265cf698513a379894dd9deab65b2d1b61d83fcf634312f13b"
+  },
+  {
+    "original": "docs/reports/2026-09-30-S7-旧数据工具与错误兼容.md",
+    "archived": "docs/archive/python-migration/docs/reports/2026-09-30-S7-旧数据工具与错误兼容.md",
+    "bytes": 3966,
+    "sha256": "42190dd22c66d03e7e664a91c3380dc995ab5f1461bbd92d37fea7e77cde947c"
+  },
+  {
+    "original": "docs/reports/2026-09-30-S7-库存迁移与整体验证.md",
+    "archived": "docs/archive/python-migration/docs/reports/2026-09-30-S7-库存迁移与整体验证.md",
+    "bytes": 6732,
+    "sha256": "c7ecf242c7c7d85ed81cedd5368e5f4403825330df9ddb4d8cff57ef97485759"
+  },
+  {
+    "original": "docs/reports/2026-09-30-S7-容器维护与恢复.md",
+    "archived": "docs/archive/python-migration/docs/reports/2026-09-30-S7-容器维护与恢复.md",
+    "bytes": 4296,
+    "sha256": "9ffb15e5465b58ce5427341d61c16dc45e8638fbb917941df66ade5874cbbb52"
+  },
+  {
+    "original": "docs/reports/2026-10-04-补迁第一批-订单定时同步与登录防护.md",
+    "archived": "docs/archive/python-migration/docs/reports/2026-10-04-补迁第一批-订单定时同步与登录防护.md",
+    "bytes": 5357,
+    "sha256": "9758592d4efc1dc9125cdb334fd552f5f998765207e2ca9aa5ac501645d5f72d"
+  },
+  {
+    "original": "docs/reports/2026-10-04-SN迁移总结与验收记录.md",
+    "archived": "docs/archive/python-migration/docs/reports/2026-10-04-SN迁移总结与验收记录.md",
+    "bytes": 6810,
+    "sha256": "041acffadb7d2c01c6c641edb4ea68a3e9a311e1bf1b879db8f68c92f0dd62f0"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-S1-source-manifest.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-S1-source-manifest.json",
+    "bytes": 7205,
+    "sha256": "9ae8763811c6bc27d888559139ddf116ff48c4ae5ea5544fdc1f5b3047d2a087"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-S1-tests.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-S1-tests.json",
+    "bytes": 868,
+    "sha256": "edc195e0f7df8fd4abbeae8c0146853408c87a9fad79a5f9255e0f6474af5e81"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-audit/audit-detail-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-audit/audit-detail-zh.png",
+    "bytes": 51487,
+    "sha256": "c8c96a3a61f6e60d7a61b49b347d806cf6ea6c8d78f1ca073af87df733db3989"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-audit/audit-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-audit/audit-en.png",
+    "bytes": 45551,
+    "sha256": "8685edfa50c2ed1c2c4c046aa1c695f75d80d0918b72658a1cdbaafd8a6f2c23"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-audit/audit-mobile-vi.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-audit/audit-mobile-vi.png",
+    "bytes": 47791,
+    "sha256": "56739fb65bd41821587f52dd2d6a302ba747a353367d53551c7d462893194cf2"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-audit/checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-audit/checks.json",
+    "bytes": 8326,
+    "sha256": "66ffb2a28390d98311876f89f52396ca94307cccb65261775662177fa03acdbf"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-audit/source-manifest.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-audit/source-manifest.json",
+    "bytes": 42119,
+    "sha256": "83bc3518088784556203fcd320b2f54d32ce7e64cd441fa747d06852e9096245"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-auth-runtime/checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-auth-runtime/checks.json",
+    "bytes": 5143,
+    "sha256": "385e9196218e2650788de61f166cc531539b016a1a873d67d131fdb455c1aa2c"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-auth-runtime/first-password.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-auth-runtime/first-password.png",
+    "bytes": 35403,
+    "sha256": "87b542970074f788b11729d3cabd9f9181b749d7e4e7b1d2fd396bb349c7e35a"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-auth-runtime/login-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-auth-runtime/login-vi-mobile.png",
+    "bytes": 31614,
+    "sha256": "5094a492bbb84c6f380d723bd998573dbe6f1319a9ec285eae47caa3286edc71"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-auth-runtime/login-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-auth-runtime/login-zh.png",
+    "bytes": 46736,
+    "sha256": "0299fb0b67687cf0120acfc77f7add3e459d75a6f2925392b088df894fb39784"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-auth-runtime/source-manifest.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-auth-runtime/source-manifest.json",
+    "bytes": 24183,
+    "sha256": "2215ebb3ebf9bf1f858ffecf1f701c45f8b13e982574430f58d061f7888e8e1b"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-auth-runtime/typescript-6-peer-failure.log",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-auth-runtime/typescript-6-peer-failure.log",
+    "bytes": 4439,
+    "sha256": "3c8695b17f9b96b2ad10524e14836068bff3ef7a2b43f0bc411ccfb11948b545"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-auth-runtime/typescript-6-peer-failure.txt",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-auth-runtime/typescript-6-peer-failure.txt",
+    "bytes": 4439,
+    "sha256": "3c8695b17f9b96b2ad10524e14836068bff3ef7a2b43f0bc411ccfb11948b545"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-configuration/checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-configuration/checks.json",
+    "bytes": 7095,
+    "sha256": "25458776927218a2ca2b34e08b3af6a9e440d74a20de3add5b1a4643cb544140"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-configuration/configuration-dictionary-vi.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-configuration/configuration-dictionary-vi.png",
+    "bytes": 43313,
+    "sha256": "1a230bd915d635653283b9eced2934e46aa0fa81a0e038b51af93b0894d9463b"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-configuration/configuration-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-configuration/configuration-mobile.png",
+    "bytes": 25241,
+    "sha256": "784d643ebb86e3d67a3810678dc2ad6745df3c73a69b648a9dbd99db5003d58c"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-configuration/configuration-roles-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-configuration/configuration-roles-zh.png",
+    "bytes": 55667,
+    "sha256": "18a5583df616b5a26e6c4f00b4a7ad9f4e9e139ec9a5b337da957c262e9b93b9"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-configuration/source-manifest.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-configuration/source-manifest.json",
+    "bytes": 37304,
+    "sha256": "eae326575f450bd35dd14d6507c3a8f06ad8972f095253eb40fd48eda567bb30"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-s3/checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-s3/checks.json",
+    "bytes": 11000,
+    "sha256": "28a9b60c9072c33c07b573c3b933b4d9e5bb5bfe147b9b499718dfdf5a3a4120"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-s3/sn-factories-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-s3/sn-factories-zh.png",
+    "bytes": 36816,
+    "sha256": "901582f360e8e906b8738d3c7dea536af2111fff560a7e7092740ea83df24b68"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-s3/sn-orders-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-s3/sn-orders-en.png",
+    "bytes": 67428,
+    "sha256": "576f73ef7b472d12e611cdf2fd8e68c83d69ba3054e673c26ce36eab9d557a75"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-s3/sn-orders-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-s3/sn-orders-vi-mobile.png",
+    "bytes": 55056,
+    "sha256": "c655a19f25e4e1ade2f08a0d766fe29f1d3bdd481e0f28ac2edbcf8e28716f81"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-s3/sn-orders-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-s3/sn-orders-zh.png",
+    "bytes": 71434,
+    "sha256": "86b7825a3de84ff45a5227cf4812e4a30e1650f03f790c4ba78aa56834591cb2"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-s3/sn-rules-versions-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-s3/sn-rules-versions-zh.png",
+    "bytes": 52439,
+    "sha256": "027ed11ec8ef5a61f8d7fa569de3adc68d3e7526fff9120b73a8b18bd371dfa9"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-s3/sn-rules-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-s3/sn-rules-zh.png",
+    "bytes": 53988,
+    "sha256": "cbb6f1a98da255b307cf1cdfc66bdf67e95f2261c9870d4bce176cbab9ae46f0"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-s3/source-manifest.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-s3/source-manifest.json",
+    "bytes": 63542,
+    "sha256": "30588b73a9bc103e4a99d1b40b71bbf18b6a2d90049eca551222fc392ce030d0"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-s3/task-export-repeat.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-s3/task-export-repeat.csv",
+    "bytes": 270,
+    "sha256": "82a6566e7dca49b08ced472f27c18209369d55a1880332cc106be13634c74f72"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-s3/task-export.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-s3/task-export.csv",
+    "bytes": 270,
+    "sha256": "82a6566e7dca49b08ced472f27c18209369d55a1880332cc106be13634c74f72"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-tasks/checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-tasks/checks.json",
+    "bytes": 10164,
+    "sha256": "2e68cab9301070398d4154e54c0ec9d29600981b181bc38265d91ba1b5ca53ce"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-tasks/source-manifest.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-tasks/source-manifest.json",
+    "bytes": 50756,
+    "sha256": "34cf5508e20d929d618c0c6db96f1f0efd26c91e7eff71e3e32ed8b92535fa51"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-tasks/task-export-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-tasks/task-export-en.png",
+    "bytes": 105097,
+    "sha256": "7a25aebd4110cff6da7e68a54350c73b5e4f2e3abc514054ee502d363bc04682"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-tasks/task-export-mobile-vi.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-tasks/task-export-mobile-vi.png",
+    "bytes": 82941,
+    "sha256": "6f420014088ec48b669ee5b883b4ea3288b577dc4192b9e21029f4e854f05e1b"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-tasks/task-export-repeat.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-tasks/task-export-repeat.csv",
+    "bytes": 270,
+    "sha256": "6a1d0fb311435e3c3bcb58f05d49621941ddf3fbec5547df2d1622a928970e1c"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-tasks/task-export-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-tasks/task-export-zh.png",
+    "bytes": 87692,
+    "sha256": "3c1300e0af83e9f9a542dd85593e1482f8d1769ef9b491d873f759b78d78ce49"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-tasks/task-export.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-tasks/task-export.csv",
+    "bytes": 270,
+    "sha256": "6a1d0fb311435e3c3bcb58f05d49621941ddf3fbec5547df2d1622a928970e1c"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-users/checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-users/checks.json",
+    "bytes": 6390,
+    "sha256": "3b6e912ca7036e9b801f7f7680c7980c525f3d3b9900cd52b4150e581a9f8c81"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-users/source-manifest.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-users/source-manifest.json",
+    "bytes": 31142,
+    "sha256": "3955a7b6183fb2981fc1de6375fc1963bc21706bd823dd7492ba41bc61635858"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-users/users-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-users/users-mobile.png",
+    "bytes": 27136,
+    "sha256": "a737c807634cf454ab932259b3dc14e8636503543121619fe8944cb7e93649f7"
+  },
+  {
+    "original": "docs/reports/evidence/20260929-users/users-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260929-users/users-zh.png",
+    "bytes": 51048,
+    "sha256": "99e2b9a57dc261bd700e1f188cd7922235b5678ea236d4df2091d098ad54e742"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-format/checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-format/checks.json",
+    "bytes": 10353,
+    "sha256": "b563e26e4e1823cf087d753a3ee9ed911bf69d64614938a6abe7534c51da122d"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-format/delivery-checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-format/delivery-checks.json",
+    "bytes": 815,
+    "sha256": "90bb9b7f1636e9cbc3d428ea7b9469cae1f74848899ddb6ecec757b2fc910251"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-format/source-manifest.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-format/source-manifest.json",
+    "bytes": 117443,
+    "sha256": "f1e6f4b1c7fa088a7709f50857a9a00631cefa15f1c665f4090bf74b89dc6af7"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-k3-live/checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-k3-live/checks.json",
+    "bytes": 12281,
+    "sha256": "431786a99bd4f693889dd0f4bf89c8b2eff6c2a5637852803e7a5bb6696f2bd0"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-k3-live/delivery-checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-k3-live/delivery-checks.json",
+    "bytes": 949,
+    "sha256": "b86669c9382ffc64e17e39b65a8cd635c202a60521be3ad6dffe9ff54b06782a"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-k3-live/k3-cookie-probe.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-k3-live/k3-cookie-probe.json",
+    "bytes": 1009,
+    "sha256": "fc6a1de747737b9cd8bc973355878033b5ae7cf4cf3d1c99a516a5d1e022f5a9"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-k3-live/k3-real-diagnostic-before-field-fix.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-k3-live/k3-real-diagnostic-before-field-fix.json",
+    "bytes": 2935,
+    "sha256": "47c8f3099d4496b20b2b75100bdaf1969e11d49fb73f9c4907cf1b440c01b1a3"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-k3-live/k3-real-sync-before-cookie-fix.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-k3-live/k3-real-sync-before-cookie-fix.json",
+    "bytes": 408,
+    "sha256": "16efad6dfa3dbc581b1573064bb602e373021a4689f71ce79bad5839a6d57394"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-k3-live/k3-real-sync-first-attempt.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-k3-live/k3-real-sync-first-attempt.json",
+    "bytes": 408,
+    "sha256": "777d34c1d549f41a15269b831664ea81e19d61a97e6c1d9ccbc914505868972f"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-k3-live/sn-fractional-plan-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-k3-live/sn-fractional-plan-zh.png",
+    "bytes": 151541,
+    "sha256": "af99b7fbbb624c633084cf2d6c444220bc05a0ac39dd4394f297eef479c226c5"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-k3-live/sn-orders-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-k3-live/sn-orders-zh.png",
+    "bytes": 81061,
+    "sha256": "1fde364849e6c17e3a36170b33260e1bae37db01d0e5a812e585271b4b3118af"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-k3-live/source-manifest.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-k3-live/source-manifest.json",
+    "bytes": 115589,
+    "sha256": "2892056c9e0025f4c16022ab6cb7b1dccaf63f336444178cca51bab24bf33ec0"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-mapper-format/checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-mapper-format/checks.json",
+    "bytes": 11901,
+    "sha256": "25e378fb2adbc770eeb4cbb573112168d34a2dcec19e0619296c122234a9bc65"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-mapper-format/mapper-ast-after.tsv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-mapper-format/mapper-ast-after.tsv",
+    "bytes": 92453,
+    "sha256": "db2fec155dd8b489e39b5b01d9cb8d6196dd3becd200fb8594ee375d2a06e276"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-mapper-format/mapper-ast-before.tsv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-mapper-format/mapper-ast-before.tsv",
+    "bytes": 92453,
+    "sha256": "db2fec155dd8b489e39b5b01d9cb8d6196dd3becd200fb8594ee375d2a06e276"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-mapper-format/mapper-lines-after.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-mapper-format/mapper-lines-after.json",
+    "bytes": 6211,
+    "sha256": "a193f781a61460a777c638adfb8a16a77ccf90e971710b72bd7386f1828c1166"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-mapper-format/mapper-lines-before.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-mapper-format/mapper-lines-before.json",
+    "bytes": 8789,
+    "sha256": "5542089d7a38ecaedb2d1c596ee626694db81ada7998c4e254f6e3540bb6c79b"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-mapper-format/source-manifest.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-mapper-format/source-manifest.json",
+    "bytes": 117443,
+    "sha256": "da887d0cb2f4a4ebef956b850c5bbe1845e315f02d1e3a53eaa831bc3f9c771c"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-mapper-format/unit-suites.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-mapper-format/unit-suites.json",
+    "bytes": 6184,
+    "sha256": "e93fa37ae270cdc5ca7d28707c1440c24226967c87716a612ec3f99dc5f2c1ff"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-order-sync/checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-order-sync/checks.json",
+    "bytes": 8084,
+    "sha256": "67a8c696ad279a1fbda59e9fe71d874238af4badb350e817427d89cd70156fc8"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-order-sync/delivery-checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-order-sync/delivery-checks.json",
+    "bytes": 775,
+    "sha256": "b46149794120dbf28135c2a23455b9a2399d6d7b50516df66ed69481de0fc745"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-order-sync/screenshots.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-order-sync/screenshots.json",
+    "bytes": 774,
+    "sha256": "cb9d132da1b4391798fe6ba59c0a5193b3019dc13f2259571855038e10b0b7d2"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-order-sync/sn-orders-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-order-sync/sn-orders-en.png",
+    "bytes": 76535,
+    "sha256": "d6d2dcf8cf0f8788a1c92138fe1300e8a15934f9320af80fa268db33f159f6f7"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-order-sync/sn-orders-sync-rejected-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-order-sync/sn-orders-sync-rejected-zh.png",
+    "bytes": 71581,
+    "sha256": "f69c98bcd0f115c5a0fb0ac35421444995f004b98ad5e2372e85ccca40af8279"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-order-sync/sn-orders-sync-running-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-order-sync/sn-orders-sync-running-zh.png",
+    "bytes": 63770,
+    "sha256": "21694e993bfe7c7ceca2798da80599e1b72465712b49ef7ce149120ab7459ca1"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-order-sync/sn-orders-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-order-sync/sn-orders-vi-mobile.png",
+    "bytes": 55091,
+    "sha256": "1c3ec60446fb6b1fcffbf5cbf1549ad5949721b310a270b2ce8d137b5c6893d5"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-order-sync/sn-orders-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-order-sync/sn-orders-zh.png",
+    "bytes": 78105,
+    "sha256": "f8542f0bfb3783672df012271bcbcde7c2c5f7b385306673091af01ee669b50e"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-order-sync/source-manifest.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-order-sync/source-manifest.json",
+    "bytes": 135382,
+    "sha256": "c808a27097bf67a7286e49f66dfabdc0610ba2dd7b4b41b56ba7925dad89d8aa"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s4/checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s4/checks.json",
+    "bytes": 12528,
+    "sha256": "7ac7b6060da72ec1e0f4ab94bea6d1c83a3c8b83d26c3aa311eef12acdcaaeda"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s4/generation-timing.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s4/generation-timing.json",
+    "bytes": 96,
+    "sha256": "cb975cf55f2755f96ecb76cb35ef8a25a9a4562a96f8c2d9d12047e186f6750b"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s4/sn-factories-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s4/sn-factories-zh.png",
+    "bytes": 39619,
+    "sha256": "5dc8fdc8d1599c55bae11ba1856634a6d066383af5540da3d42461a7082650b0"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s4/sn-generation-allocated-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s4/sn-generation-allocated-zh.png",
+    "bytes": 147493,
+    "sha256": "c58cac98bb6012bdbfaa86274fde9c69a2b05491c3ec849a043e1b4dfc18b8f0"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s4/sn-generation-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s4/sn-generation-en.png",
+    "bytes": 146057,
+    "sha256": "04a7c48be66c9c1b8e4f9dbc21b98e7a3b3012c958434bf809ac2936c8f140c8"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s4/sn-generation-preview-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s4/sn-generation-preview-zh.png",
+    "bytes": 149903,
+    "sha256": "c6dddef0875c87830975b507f5348d69959c375fe43f374587db8a8b723555ff"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s4/sn-generation-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s4/sn-generation-vi-mobile.png",
+    "bytes": 133633,
+    "sha256": "e7976864cacc258402da2f6878d90dee3493328478f090c9c1cdb17a6dfe8ab4"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s4/sn-orders-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s4/sn-orders-en.png",
+    "bytes": 70571,
+    "sha256": "aeba2e525c83cc13d9b2739ca53cd1cb1de66b41e4c28a4ecd924366fa710ac8"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s4/sn-orders-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s4/sn-orders-vi-mobile.png",
+    "bytes": 55149,
+    "sha256": "736553d99c99184df7f7582b147e1b274c9648398f8def7720d4d4a57ddd7d44"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s4/sn-orders-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s4/sn-orders-zh.png",
+    "bytes": 74523,
+    "sha256": "58cfbae346728756ecba78afa99ff826e4d76b06e539b004a62cfdb965f80d71"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s4/sn-pi-init-form-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s4/sn-pi-init-form-zh.png",
+    "bytes": 99713,
+    "sha256": "46dcc37e7a0cf60015b852f7a0256425fbc4484f5048f136f583e7e4e05966b5"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s4/sn-pi-init-result-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s4/sn-pi-init-result-zh.png",
+    "bytes": 81980,
+    "sha256": "155bdfa1494a11938a8c7d77d4e49b643a962eaf9bc9c5a9fd06eaf93718420c"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s4/sn-rules-versions-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s4/sn-rules-versions-zh.png",
+    "bytes": 55502,
+    "sha256": "6f0ec5cf1c9242fc927b81ad2d9adc90fd587d14a047a2c76232d75dd8042296"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s4/sn-rules-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s4/sn-rules-zh.png",
+    "bytes": 57035,
+    "sha256": "185241ce2a3da48c9b1fe26942b1c285d2d46d58a96bdb9c1761ecadea37681b"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s4/source-manifest.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s4/source-manifest.json",
+    "bytes": 69259,
+    "sha256": "eb878f162798f8c799fd91271afe8d6d5bf703eb52ed90f43128ea61a009d7b5"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s4/task-export-repeat.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s4/task-export-repeat.csv",
+    "bytes": 270,
+    "sha256": "856da8b3aca85502c069693e6cb7747619d5c736b5ff9c76344ce6a075df9ec1"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s4/task-export.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s4/task-export.csv",
+    "bytes": 270,
+    "sha256": "856da8b3aca85502c069693e6cb7747619d5c736b5ff9c76344ce6a075df9ec1"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/acquire-print-timing.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/acquire-print-timing.json",
+    "bytes": 123,
+    "sha256": "390a09c232c229f2fad538518773df372fbd7af4feee77c308790213af5b7b02"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/checks.json",
+    "bytes": 14182,
+    "sha256": "1a9872c5553df46118ee8813b82b7334eccf6bf9eeb2242fda9217622a48a34c"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/generation-timing.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/generation-timing.json",
+    "bytes": 96,
+    "sha256": "4ac9293283b2bf50bb549d2e21677e51a0782e6a8eba53cdc57be83b5514097f"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/sn-acquire-batch-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/sn-acquire-batch-zh.png",
+    "bytes": 115709,
+    "sha256": "5fe0f4f3da779af5862e0563b913c662f220f3dbc4ed571e1c0f54ce6310701a"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/sn-acquire-before-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/sn-acquire-before-zh.png",
+    "bytes": 71798,
+    "sha256": "379a5a4d92f7ed0ba261f394584eac1fcdd0548381a07c3c617aaad59941284f"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/sn-acquire-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/sn-acquire-en.png",
+    "bytes": 98396,
+    "sha256": "294f33c43b186966cdf07fe552890f10b16d6f25bba92f576c111300108597b9"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/sn-acquire-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/sn-acquire-vi-mobile.png",
+    "bytes": 72716,
+    "sha256": "7f525be184d2f6488c5bdea999cc4fc14492757cbc7c460b206df07637d432a4"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/sn-factories-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/sn-factories-zh.png",
+    "bytes": 40759,
+    "sha256": "1cf59882147b44ff93aca8d332365d3a7e1e7a8ee0fbf0a62b411c713675d562"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/sn-generation-allocated-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/sn-generation-allocated-zh.png",
+    "bytes": 148902,
+    "sha256": "9a0bee9f270a267ce85e3d1516f170f6850468ad368c51e425b67c5018a6ca49"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/sn-generation-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/sn-generation-en.png",
+    "bytes": 147473,
+    "sha256": "858d2db00effaedf4db491577fb7612c18a86829f5ffb7247caafc5fb93d18d2"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/sn-generation-preview-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/sn-generation-preview-zh.png",
+    "bytes": 151304,
+    "sha256": "12f7cb3d0d181fff69e1894bccd20d093b7e1ffc5c1bbdbe38f4a7b1d8f1c015"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/sn-generation-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/sn-generation-vi-mobile.png",
+    "bytes": 133786,
+    "sha256": "910377f582c17ff10df95df35952a34f75254abc5bf02a0d26de6166a3476f12"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/sn-orders-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/sn-orders-en.png",
+    "bytes": 71748,
+    "sha256": "f876f51b1f5d34db591e74bd3d59e89bed54a600cba54417b81d570a5abda0ca"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/sn-orders-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/sn-orders-vi-mobile.png",
+    "bytes": 55118,
+    "sha256": "730b06ecee8aa5e80d7b9ca299de102e8a0ce5a7b52258317730113c4ed490af"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/sn-orders-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/sn-orders-zh.png",
+    "bytes": 75869,
+    "sha256": "efaf2a9a921781a765621b360029317e95268a7da779948ff492f8291e17aa09"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/sn-pi-init-form-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/sn-pi-init-form-zh.png",
+    "bytes": 100942,
+    "sha256": "cdd5308d092ad1f06e6fb135a30f699f718059d92a93db78114f8f48ce2cb59f"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/sn-pi-init-result-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/sn-pi-init-result-zh.png",
+    "bytes": 83002,
+    "sha256": "fab7a2e8825ac1ba247131abb46a01c567970361487e8e6b571e2094e56685eb"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/sn-print-history-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/sn-print-history-zh.png",
+    "bytes": 104270,
+    "sha256": "ebf00219357a1a46e500f6ae546a83bb6767dd4a9278cab563fc4ab1ca4db505"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/sn-print.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/sn-print.csv",
+    "bytes": 1662,
+    "sha256": "9540cf4f5e51d6bac0a2c4a5ede165c9c84dc01f3139104c4ca5d9bd9953322c"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/sn-print.xlsx",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/sn-print.xlsx",
+    "bytes": 4463,
+    "sha256": "e153a9d2da88af44c5ea600bb594cda5f6a5a09edcca231728b576ed4a9f346b"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/sn-rules-versions-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/sn-rules-versions-zh.png",
+    "bytes": 57023,
+    "sha256": "cba58844a078becdfc79edf8fcea98e935e670974f79af2c8ca005602a57a496"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/sn-rules-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/sn-rules-zh.png",
+    "bytes": 58437,
+    "sha256": "c456e33928043153e3747348d6f4d692466c14e36381c8719171da17dbe069eb"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/source-manifest.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/source-manifest.json",
+    "bytes": 79446,
+    "sha256": "2326d677f931cd7b8b2fb8047f65b697c51e3f4490f29e44b474f76525cc090c"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/task-export-repeat.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/task-export-repeat.csv",
+    "bytes": 270,
+    "sha256": "97e150304257454c5d3d8fc449786b46340e8435adda2b27b6bd7014386458fa"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s5/task-export.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s5/task-export.csv",
+    "bytes": 270,
+    "sha256": "97e150304257454c5d3d8fc449786b46340e8435adda2b27b6bd7014386458fa"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/acquire-print-timing.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/acquire-print-timing.json",
+    "bytes": 123,
+    "sha256": "ba6e67a3422b5c7a5a3fcb5f6ecf2ac7adaa678a6fb132ad17aa68624b521bbf"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/checks.json",
+    "bytes": 18840,
+    "sha256": "351d13ea16b7990548f7d2c5917096182629e3fc8f87a78060c2d7c0772e1ef9"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/generation-timing.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/generation-timing.json",
+    "bytes": 96,
+    "sha256": "835474c1d0376c1f70bfef7edf1c916ce096d8115468fbd28874d7b09b305fda"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-acquire-batch-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-acquire-batch-zh.png",
+    "bytes": 119623,
+    "sha256": "f075aee414bd7570f4edb819b21ad0c92996bb7c53caf2e1b5a68f478bf01393"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-acquire-before-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-acquire-before-zh.png",
+    "bytes": 75779,
+    "sha256": "1cb8c81232e2a9d4d9e5b1e87d0cb2e06994224d27f09f7166d41b3d2921bbf9"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-acquire-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-acquire-en.png",
+    "bytes": 112569,
+    "sha256": "c76b73c671424e540e1d053ebaf28e592705f1c5de055f917536d84b6faec927"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-acquire-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-acquire-vi-mobile.png",
+    "bytes": 72583,
+    "sha256": "23fee781c78c77d3f8c36a5be81cb29799cd8f081d005890f5681e0d317958b5"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-audit-detail-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-audit-detail-zh.png",
+    "bytes": 70095,
+    "sha256": "bc226a012d6ad0ff24756e759f344ab570b20fe5a7d5730fc09b6f11a4dd7454"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-audit-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-audit-en.png",
+    "bytes": 281370,
+    "sha256": "e87250d29b3765f42d93c67347155a8d66ead1dd191d56bab558844e01482ba5"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-audit-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-audit-vi-mobile.png",
+    "bytes": 172331,
+    "sha256": "df2b3b4d49798f966d69fe2ed74c6e203c5db0972d1e271765b0b2d365f595e0"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-audit-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-audit-zh.png",
+    "bytes": 67378,
+    "sha256": "6f89443b7d4e87edae46097f3ed6f565efb0883f55e79ac301f5c4bb8c794652"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-audit.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-audit.csv",
+    "bytes": 937,
+    "sha256": "e341a50075a6a186b08ade54c69d68ca37f919cb864a2090cb3ddd54860069ea"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-audit.xlsx",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-audit.xlsx",
+    "bytes": 4332,
+    "sha256": "6af8995d3b1e65fcbeb4462a9eb5af2a63525c03cad8688b15777f51ac685b24"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-dashboard-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-dashboard-en.png",
+    "bytes": 76299,
+    "sha256": "b921f0f9e32dccb9f276a00acbf2690825f73b7644a1051cb16675464ce6281a"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-dashboard-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-dashboard-vi-mobile.png",
+    "bytes": 55068,
+    "sha256": "81ebad49a25ea373acae0f7e6b48b4f5db1f28595180baf0f2ec90b510de54ff"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-dashboard-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-dashboard-zh.png",
+    "bytes": 71767,
+    "sha256": "f7148b26131347b7b54ffb0b10e59e055428c6c38587c549c071ea55336a83db"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-factories-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-factories-zh.png",
+    "bytes": 44634,
+    "sha256": "f58abccb582f771b821a5f02c5b7071dcac8e49d1f43b2a3c57789368e705c26"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-generation-allocated-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-generation-allocated-zh.png",
+    "bytes": 152413,
+    "sha256": "f1d6be2cf02e3b3c8b57d378e92d097204b8def866d524b0008b4dde7d2f1f27"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-generation-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-generation-en.png",
+    "bytes": 152444,
+    "sha256": "f53f55f3fbaa23cd8e72cf886640114c399f0d4d03da0685bceec70e258dea1a"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-generation-preview-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-generation-preview-zh.png",
+    "bytes": 155350,
+    "sha256": "81d91813dc96cdc23bdf6ffe5f81f74759b4294be059660b89427ddf6bcb4044"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-generation-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-generation-vi-mobile.png",
+    "bytes": 133638,
+    "sha256": "a616a4883cdf718e67220b7ab54f384385d68d969254641676a26675055c39ed"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-orders-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-orders-en.png",
+    "bytes": 76543,
+    "sha256": "4676342e21ee80bc6012f4d027f535cb1b0dd56597a79d4f5408986870e6dd71"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-orders-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-orders-vi-mobile.png",
+    "bytes": 55087,
+    "sha256": "df32a5753116b9182f85757870196c32fd003a5da8458eb5d0054086bda89a32"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-orders-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-orders-zh.png",
+    "bytes": 79749,
+    "sha256": "31a7d9b1d20b6284557c69a4576b2d82108b70facc62abd40a57590b0840f398"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-pi-init-form-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-pi-init-form-zh.png",
+    "bytes": 104932,
+    "sha256": "d705e4e5f217db676177fbab804b80a05df0a2751724f61ea229d8d2860e9a70"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-pi-init-result-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-pi-init-result-zh.png",
+    "bytes": 87322,
+    "sha256": "249d12f6fac4bc92f60808189e2b74b7a4b2e7d714343fcfa7db1103a898ec2f"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-print-history-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-print-history-zh.png",
+    "bytes": 107991,
+    "sha256": "fd22ad40742e97ea43893b46c8924b24dfad421adb25620b0a537dcb8d4b10d6"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-print.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-print.csv",
+    "bytes": 1662,
+    "sha256": "f4a2a168d9b8dc907e9902f547f700fb9fd0121eb44e2d9be021c7cf156e3d53"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-print.xlsx",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-print.xlsx",
+    "bytes": 4475,
+    "sha256": "b1323515a6bde97ac5a5f9ef3809dd1a489b865f538cacf2842a3ef1f034c9b4"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-query-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-query-en.png",
+    "bytes": 109792,
+    "sha256": "823a9077340ab746bb70771f263f0ca2844386366934e2755f8ec761c9441b6f"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-query-exports-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-query-exports-zh.png",
+    "bytes": 84178,
+    "sha256": "a430328bcb9483ac88cf367c4a3f48fee2b8e08faa55ccc4aca7de22fa42d24d"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-query-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-query-vi-mobile.png",
+    "bytes": 75129,
+    "sha256": "2bfd20f5312450d877d4ebdb55eea13178eae5c175ac112cb24d69f3a7911b66"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-query-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-query-zh.png",
+    "bytes": 78223,
+    "sha256": "c6e13e2c9348856715cc226a14f2f623812f53f34cc5336778bb831d01d09da6"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-query.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-query.csv",
+    "bytes": 2549,
+    "sha256": "08e9cc029272d61dfe334ff2947558e762badabec90d7cadfe5602842fe7004b"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-query.xlsx",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-query.xlsx",
+    "bytes": 4968,
+    "sha256": "611b29d9a51a6f56ac9e1038dada1198c1da01e5d87fec456d618081cb12c148"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-rules-versions-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-rules-versions-zh.png",
+    "bytes": 60966,
+    "sha256": "a1f0239ed5541ec16ffe44894616869ba8996eb145038f137c54d199abe51bd0"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-rules-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-rules-zh.png",
+    "bytes": 62671,
+    "sha256": "9a4952f7036f7bbf8dda22899b7c005667b25456dc0758a0614b23018a5bd273"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-transfer-detail-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-transfer-detail-zh.png",
+    "bytes": 129021,
+    "sha256": "139b9d0040fe4fe6c6feca38ac40e697c84c512565c5f219628f610d3f0b73aa"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-transfer-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-transfer-en.png",
+    "bytes": 80071,
+    "sha256": "c0a10330541427a8d3875114b4eb81042e428a0b256b9aa8d82ed882a9b67f73"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-transfer-form-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-transfer-form-zh.png",
+    "bytes": 88400,
+    "sha256": "dba4070747052557714c23a5d50f45327bd7f271108d1495974919cf2ac7dab6"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/sn-transfer-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/sn-transfer-vi-mobile.png",
+    "bytes": 61437,
+    "sha256": "35cc2b290ccd32ad9587aa104acc48905470f325b07b68be7f62aaa0a70cb8a6"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/source-manifest.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/source-manifest.json",
+    "bytes": 93269,
+    "sha256": "1b7a343a6001b684022fd826613ad176f83479356ce1e0d409cbfba5ef457220"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/task-export-repeat.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/task-export-repeat.csv",
+    "bytes": 270,
+    "sha256": "f40551e4c791594d9558099134d446d007349e852912ea4bfd479a56f68500e5"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s6/task-export.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s6/task-export.csv",
+    "bytes": 270,
+    "sha256": "f40551e4c791594d9558099134d446d007349e852912ea4bfd479a56f68500e5"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-data/checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-data/checks.json",
+    "bytes": 7488,
+    "sha256": "4b5c708b352f5e923745c04da721996d6c50512ac749e834b33fa7d42de0f387"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-data/source-manifest.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-data/source-manifest.json",
+    "bytes": 128340,
+    "sha256": "9f25446ed6aa452a2b2361c117e83221d3f43f6cd41d5b3edfe0799427f50854"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-recovery/artifact-manifest.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-recovery/artifact-manifest.json",
+    "bytes": 1653,
+    "sha256": "ec12d8d1d905917dc7ebf549f42cc3feb95e290a49d25ada54c54effb934e561"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-recovery/checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-recovery/checks.json",
+    "bytes": 3748,
+    "sha256": "e48cbf4a5dccefaa307f3cddba97ff790f7a4a2e388b64a637fa25d9a54bd8d7"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-recovery/container-archive.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-recovery/container-archive.png",
+    "bytes": 85816,
+    "sha256": "2abd5f3a09bbb39fd0ec3110c5c29985fc9c3b781506de4adfc6dd76551abb19"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-recovery/container-restored.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-recovery/container-restored.csv",
+    "bytes": 768,
+    "sha256": "5231471ae4c9fbfe393ff991e79253f21885ff793e2dfdc4540b47f8a948d2f6"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-recovery/container-restored.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-recovery/container-restored.png",
+    "bytes": 67858,
+    "sha256": "48390d18d56c0fb9a376b4d39dae4fd651a1686e9004e2352c802ca7bcb9ad24"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-recovery/container-restored.xlsx",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-recovery/container-restored.xlsx",
+    "bytes": 3992,
+    "sha256": "dee7df19796acd73527db560fdfb3cb506313debebfa69126958103f493b4e31"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-recovery/container-source.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-recovery/container-source.csv",
+    "bytes": 768,
+    "sha256": "5231471ae4c9fbfe393ff991e79253f21885ff793e2dfdc4540b47f8a948d2f6"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-recovery/container-source.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-recovery/container-source.png",
+    "bytes": 67858,
+    "sha256": "48390d18d56c0fb9a376b4d39dae4fd651a1686e9004e2352c802ca7bcb9ad24"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-recovery/container-source.xlsx",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-recovery/container-source.xlsx",
+    "bytes": 3992,
+    "sha256": "dee7df19796acd73527db560fdfb3cb506313debebfa69126958103f493b4e31"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-recovery/operations.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-recovery/operations.json",
+    "bytes": 1014,
+    "sha256": "81d9c6d29bc835bd602f2976e56e44ae8f176edefcb32fa567e186963e7683bc"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-recovery/restore-summary.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-recovery/restore-summary.json",
+    "bytes": 2592,
+    "sha256": "97cbef2fba2558eb70ca0ca4bc82f2bee1ea614fa13f69f8b39718c59d91d1c7"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-recovery/source-manifest.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-recovery/source-manifest.json",
+    "bytes": 101083,
+    "sha256": "e3abb8d7acad76f82ba141e2eb1fa30dc90b85c2d5aff8c7a2206f8caf0b97b3"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/capacity.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/capacity.json",
+    "bytes": 1289,
+    "sha256": "a155120efb5645ff61f66bdb54550b393078ff693bfcf173e1f3d36e86653622"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/checks.json",
+    "bytes": 12521,
+    "sha256": "0707803b7e1acf4095269c623a4c9a190bd4add6468ed713afa7a1cc42ad2bea"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/container-archive.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/container-archive.png",
+    "bytes": 85236,
+    "sha256": "f3471998dd2b951f1311da864201fe514921605591c90c1ba34a187dc4354590"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/container-restored.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/container-restored.csv",
+    "bytes": 768,
+    "sha256": "5231471ae4c9fbfe393ff991e79253f21885ff793e2dfdc4540b47f8a948d2f6"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/container-restored.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/container-restored.png",
+    "bytes": 67858,
+    "sha256": "48390d18d56c0fb9a376b4d39dae4fd651a1686e9004e2352c802ca7bcb9ad24"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/container-restored.xlsx",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/container-restored.xlsx",
+    "bytes": 3992,
+    "sha256": "dee7df19796acd73527db560fdfb3cb506313debebfa69126958103f493b4e31"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/delivery-checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/delivery-checks.json",
+    "bytes": 775,
+    "sha256": "c4a8bc483ac7b6f3e11aa4e778e5b61b010090bdeedf4f104d7727ba61ec2d18"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/full-backend.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/full-backend.json",
+    "bytes": 12801,
+    "sha256": "fabcbd80cb2a2b2a74cea5a4a194921b5eaf03e6d9b3ab4c0a44bbff650e3c77"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/inventory.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/inventory.json",
+    "bytes": 201,
+    "sha256": "3f03c713ba7ca90ef370af408326242a4435c7ae28b68a09d707710effc75b57"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/process-recovery.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/process-recovery.json",
+    "bytes": 290,
+    "sha256": "7f79c1ba5f1d7b07d793bdcfe053ea1cc727de0b0065e737d2534a14c105a9cf"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/runtime.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/runtime.json",
+    "bytes": 833,
+    "sha256": "82295754c7afbb91979e0d3ebe970ed2e57f9ccb41747c0e52615007caf0d5aa"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-acquire-batch-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-acquire-batch-zh.png",
+    "bytes": 120300,
+    "sha256": "b9b244d84cbcd10a0a4272a540f8416604f0bfaae4b34f8e759226af1b55f437"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-acquire-before-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-acquire-before-zh.png",
+    "bytes": 75779,
+    "sha256": "1cb8c81232e2a9d4d9e5b1e87d0cb2e06994224d27f09f7166d41b3d2921bbf9"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-acquire-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-acquire-en.png",
+    "bytes": 110427,
+    "sha256": "8aba1383afab6efb4ace8afa5f0c4bd8ca1515bac28b0314c75b7349c8f8fc4c"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-acquire-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-acquire-vi-mobile.png",
+    "bytes": 70780,
+    "sha256": "e76a809077ca0be912384906525c3437dfe4048b11f81e2ff5e617711b8d1d35"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-audit-detail-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-audit-detail-zh.png",
+    "bytes": 70644,
+    "sha256": "dbeb4c39510bd382cf8bec17808e4e78227c6745a9866295363319cdc3ff90e0"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-audit-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-audit-en.png",
+    "bytes": 282068,
+    "sha256": "8f8155b0b72449fc31e3f4d0dda2c7cd3d4d55c2a4a2093cdafedbead7d335e2"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-audit-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-audit-vi-mobile.png",
+    "bytes": 172989,
+    "sha256": "dfd41191499354508b65ff7d4fd4f2c09495091a0a89b7c7393e8833fdd4a5a5"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-audit-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-audit-zh.png",
+    "bytes": 67441,
+    "sha256": "3f08dabdaec86f6b00c6642ca75a99d50e9acae99ea3f03b1e7d7cc3bd142da9"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-audit.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-audit.csv",
+    "bytes": 937,
+    "sha256": "d484526d8d4bd77b4a9fbb92c9d660d3d6f3db2e444977c9e55bfc5b9de74cf9"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-audit.xlsx",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-audit.xlsx",
+    "bytes": 4331,
+    "sha256": "cbc9c530fdac9db8d4ffd7eed5bc12a02e2062792f3b14a83ea9001326d7b555"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-dashboard-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-dashboard-en.png",
+    "bytes": 76084,
+    "sha256": "3331e1846e7602f27ed42a2a9020fc49448f37e29a994af55f04a54dbab5ad7e"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-dashboard-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-dashboard-vi-mobile.png",
+    "bytes": 54787,
+    "sha256": "8c66dcf12f3729df3c4480cea1218bff5907d29cc9a63ad888e49e4fbcdb7d5f"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-dashboard-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-dashboard-zh.png",
+    "bytes": 71599,
+    "sha256": "aac033dbd625235343b082171291676202c9647dc3f2b573f3db32eac5e597df"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-factories-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-factories-zh.png",
+    "bytes": 44852,
+    "sha256": "3b0156a209226b7a4f0ab12e9f94ebcb1ae1c2a7e9e7e6514a42a1dbaafefda9"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-generation-allocated-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-generation-allocated-zh.png",
+    "bytes": 152667,
+    "sha256": "f9f6a9f9eb5099dcbed902b4b251f87a174c1d6c2550f416dcfa12d58bd0ec6e"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-generation-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-generation-en.png",
+    "bytes": 152460,
+    "sha256": "023cb1f470cb53bd5429ce2619ad0529b0bf14c9437fb8cbae5c43136dd56271"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-generation-preview-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-generation-preview-zh.png",
+    "bytes": 155431,
+    "sha256": "bc0248e080103fdddbe35b1baa1624b6de18a9e10b6a217588f0a2b9f54f8840"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-generation-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-generation-vi-mobile.png",
+    "bytes": 133534,
+    "sha256": "4aae0d30db74f9a6c251386e6c20e30f6ecfd186a575dc09cebaaae73a949da3"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-orders-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-orders-en.png",
+    "bytes": 76745,
+    "sha256": "311b7d9edc2a825d1df1b67d0558a3505f3d32dd81dad0010353dfff232e22c3"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-orders-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-orders-vi-mobile.png",
+    "bytes": 55061,
+    "sha256": "916fbe870b162a36a9703d4e2003ff2c5d85947ab3df55d5ae7e233533a5e36c"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-orders-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-orders-zh.png",
+    "bytes": 79840,
+    "sha256": "f57658d11f746b466a6959f2d40efae170111fd050ccced67d4cca6c172ecdd4"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-pi-init-form-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-pi-init-form-zh.png",
+    "bytes": 104932,
+    "sha256": "d705e4e5f217db676177fbab804b80a05df0a2751724f61ea229d8d2860e9a70"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-pi-init-result-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-pi-init-result-zh.png",
+    "bytes": 87364,
+    "sha256": "fe6655ed6843888c64ec3d6563b25fe03d9d260178a028fa5ec7ce3e7e8fd1f8"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-print-history-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-print-history-zh.png",
+    "bytes": 108254,
+    "sha256": "f3efda399be1fb60618a28a6ca6d9e319cec550860993192806c46a138e257b7"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-print.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-print.csv",
+    "bytes": 1662,
+    "sha256": "fe13c875aed2bb3ebb2964006301f2dc270093e5fe01676c5fe2d78c27aca39c"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-print.xlsx",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-print.xlsx",
+    "bytes": 4468,
+    "sha256": "aa77e083928e4180e224b150c2b787f2aa3a030d713fc7f136bad7d115aa6e9a"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-query-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-query-en.png",
+    "bytes": 109995,
+    "sha256": "0e54e819cbffa62a3bb156a739823f5e3628ac823052401cc24f8af31114747d"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-query-exports-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-query-exports-zh.png",
+    "bytes": 84833,
+    "sha256": "c8b8f5c42bb3b12ac7ca06d6923a3ab2936e440a64366a9107168425d200351d"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-query-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-query-vi-mobile.png",
+    "bytes": 75130,
+    "sha256": "210c539a1d0723c3c143216cf20db9f3ee64f965b3c90f9df665a55fe439d914"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-query-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-query-zh.png",
+    "bytes": 78218,
+    "sha256": "33b22deb38a143e06521a90923d0edb34fcdbbcf6f1d042ea6d43c5255b447ee"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-query.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-query.csv",
+    "bytes": 2549,
+    "sha256": "f610f338e930f3587686938f6c8bb88c29aacd7e112b7d83f925e88cfa75772e"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-query.xlsx",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-query.xlsx",
+    "bytes": 4963,
+    "sha256": "88f85500e71b5513a00c953f4cd4df58b1eeafa985524045d550bb4a1d90f0bb"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-rules-versions-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-rules-versions-zh.png",
+    "bytes": 61163,
+    "sha256": "f436b48e20e9f26651b46c0313280dbb10c21dec95d9f7a456c3879277a11023"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-rules-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-rules-zh.png",
+    "bytes": 62671,
+    "sha256": "9a4952f7036f7bbf8dda22899b7c005667b25456dc0758a0614b23018a5bd273"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-transfer-detail-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-transfer-detail-zh.png",
+    "bytes": 127622,
+    "sha256": "7157e53ea6806e2437e8c4fee41b6e120be450e6747a19d3bea35dc02fe20ead"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-transfer-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-transfer-en.png",
+    "bytes": 79955,
+    "sha256": "ec9d3549dd2c0ecb90b15636fe28443ae2aa5bd02bced2dc28bf63034105e07b"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-transfer-form-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-transfer-form-zh.png",
+    "bytes": 91678,
+    "sha256": "d5985decd55c7c47101ca696ef98f61f221fe052efba622a32eaa150441ce159"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/sn-transfer-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/sn-transfer-vi-mobile.png",
+    "bytes": 61391,
+    "sha256": "a1d8a9b712edd649b1a673717e129c240adeffd02fcd59d019d0643bb777d5a1"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/source-manifest.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/source-manifest.json",
+    "bytes": 134325,
+    "sha256": "999b7c3fc5b8f845de4cff1357642b8c32609fd91738c7d4e82c7f4df6405576"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/task-export-repeat.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/task-export-repeat.csv",
+    "bytes": 270,
+    "sha256": "970a978133173b41eb9dcbc39497641896313543076d2c606bf874a0a4de7a16"
+  },
+  {
+    "original": "docs/reports/evidence/20260930-s7-validation/task-export.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20260930-s7-validation/task-export.csv",
+    "bytes": 270,
+    "sha256": "970a978133173b41eb9dcbc39497641896313543076d2c606bf874a0a4de7a16"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-incremental/frozen-sql.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-incremental/frozen-sql.json",
+    "bytes": 2449,
+    "sha256": "8e7eee897c2768111117dbb90148e17beeec5138df6894aab06d6c26912a4d35"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-incremental/login-locked-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-incremental/login-locked-zh.png",
+    "bytes": 56652,
+    "sha256": "fb7df04b1515569fb72772c75923e784296c7bf5eaabd02cb0d54d8f8b0a0d0d"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-incremental/order-auth-checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-incremental/order-auth-checks.json",
+    "bytes": 8431,
+    "sha256": "60a2157bcb1dd4bf0c923174772fa064f5c40498544354a95fb5efcfa10a4ae6"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-incremental/order-auth-source-manifest.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-incremental/order-auth-source-manifest.json",
+    "bytes": 112256,
+    "sha256": "38bf77e9271635fd3dfe17dab98fe63655f77aeb4175c38bc39e5aec8f031824"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-incremental/sn-orders-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-incremental/sn-orders-en.png",
+    "bytes": 99009,
+    "sha256": "01b1f2d8455f0a1470c6fd5f53b863b27f0bf6aa725c25e3a1bffd3a7c8c6398"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-incremental/sn-orders-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-incremental/sn-orders-vi-mobile.png",
+    "bytes": 82119,
+    "sha256": "c58e7222acd9de1d6b6db16daeed0c7bcb1d0c1b907d514552cda324fe89ab73"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-incremental/sn-orders-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-incremental/sn-orders-zh.png",
+    "bytes": 101639,
+    "sha256": "b8ccb8ea34b07198e19bd91f76c9d77c37483adea23f6654ec0ae70340ff55fb"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-incremental/source-delta.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-incremental/source-delta.json",
+    "bytes": 10750,
+    "sha256": "a385f32e533f2291f1a981d4867d9b6573aaf02762d960d826b8ae09cbb8cf44"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-sn-acceptance/backend-coverage.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-sn-acceptance/backend-coverage.json",
+    "bytes": 19593,
+    "sha256": "03f91102a5a9fa59455679d499b6217dda842061dfde1e5c992f9db030afe9fc"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-sn-acceptance/browser-artifacts.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-sn-acceptance/browser-artifacts.json",
+    "bytes": 1827,
+    "sha256": "50ba51785bc26b018253dfbca9189065f0d6cf0df6eb5b54a2c376de3df9a6be"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-sn-acceptance/browser-checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-sn-acceptance/browser-checks.json",
+    "bytes": 7218,
+    "sha256": "4d6367fa2d907816e4d2667c836d42b5cb6cb387ceffc0b6dc15c83f72836722"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-sn-acceptance/full-it-attempt.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-sn-acceptance/full-it-attempt.json",
+    "bytes": 9947,
+    "sha256": "864b30d218b3f178f44a1f592c91d5a6928f8e358a93f065ed6524af1766df1b"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-sn-acceptance/implementation-manifest.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-sn-acceptance/implementation-manifest.json",
+    "bytes": 194625,
+    "sha256": "2ffc4978fea2217a3e76fb59e277603026168de7a3abfd085d0c0775f851c565"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-sn-acceptance/sn-generation-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-sn-acceptance/sn-generation-en.png",
+    "bytes": 159376,
+    "sha256": "70166ef48b4763b6607e77d4f1124e13af8c8f3daf8c4f3f94156b846f6eeb96"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-sn-acceptance/sn-generation-preview-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-sn-acceptance/sn-generation-preview-zh.png",
+    "bytes": 170342,
+    "sha256": "399d56c3fb0a4444d483194eb51f7f4d82454aece462aa07814ae3d319255a2a"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-sn-acceptance/sn-generation-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-sn-acceptance/sn-generation-vi-mobile.png",
+    "bytes": 141604,
+    "sha256": "d23c790cbec7321fc2017f893d8c3ca8f4d1c78830be0fa5506b607318d2adac"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-sn-acceptance/sn-orders-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-sn-acceptance/sn-orders-en.png",
+    "bytes": 100490,
+    "sha256": "b9e925bd145541128b76fd0b7df2dccf95752f18f18a2a983ceb7f36fd913628"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-sn-acceptance/sn-orders-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-sn-acceptance/sn-orders-vi-mobile.png",
+    "bytes": 83851,
+    "sha256": "3d4a2599ce8d7c7a7baf263469fb28289c2efda9b7886e1bf4c0b433c1252fb9"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-sn-acceptance/sn-orders-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-sn-acceptance/sn-orders-zh.png",
+    "bytes": 103318,
+    "sha256": "650d56ba0707d56e17535b9b8d6716b23ef510249bb0a1de0ea6ffd5d87b4f3e"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-sn-acceptance/sn-query-exports-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-sn-acceptance/sn-query-exports-zh.png",
+    "bytes": 84323,
+    "sha256": "9ee271af9167b761b57314bb4176cd3699db83e5310f6500f54338c35cc552aa"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-sn-acceptance/sn-query.csv",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-sn-acceptance/sn-query.csv",
+    "bytes": 2549,
+    "sha256": "bb2f189febab11b451a593218f42b31f6015ca205350841fc841c15a4c71cb58"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-sn-acceptance/sn-query.xlsx",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-sn-acceptance/sn-query.xlsx",
+    "bytes": 4951,
+    "sha256": "8851f1e85be3cf0d2dc45cdff886a22a0ec998e0c4d7ea0ba8d055f9072f6d8e"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-sn-acceptance/sn-transfer-en.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-sn-acceptance/sn-transfer-en.png",
+    "bytes": 80077,
+    "sha256": "96588ee84a29feda268f4bbec7bed67d1a86d56fdb3f4b170829a8fa9e2cb746"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-sn-acceptance/sn-transfer-impact-zh.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-sn-acceptance/sn-transfer-impact-zh.png",
+    "bytes": 108085,
+    "sha256": "1a05964e192247d47052b439529adb4e9f2bf70c8ceec2edfff86d5e5bf8f036"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-sn-acceptance/sn-transfer-vi-mobile.png",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-sn-acceptance/sn-transfer-vi-mobile.png",
+    "bytes": 61345,
+    "sha256": "05928f02fa24bf27a0cf719b5c6f035690b0a96a833600cfe06a01e9942d37c1"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-sn-acceptance/unit-checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-sn-acceptance/unit-checks.json",
+    "bytes": 4240,
+    "sha256": "37c491e8859e26700107c676efbb4d78ff56c442313f145aa9aaa3230c6c5f1c"
+  },
+  {
+    "original": "docs/reports/evidence/20261004-sn-acceptance/web-unit-checks.json",
+    "archived": "docs/archive/python-migration/docs/reports/evidence/20261004-sn-acceptance/web-unit-checks.json",
+    "bytes": 129,
+    "sha256": "b967f6094c79e2b21a74c41483ab272ed3662f44d779bb406eb22e1fa8d11ab1"
+  },
+  {
+    "original": "memory/决策与变更日志.md",
+    "archived": "docs/archive/python-migration/memory/决策与变更日志.md",
+    "bytes": 13964,
+    "sha256": "f96a98f03eb6290b486f8df8103f3e1f8fa84aec316bd045a96814203a744010"
+  },
+  {
+    "original": "memory/项目状态.md",
+    "archived": "docs/archive/python-migration/memory/项目状态.md",
+    "bytes": 21938,
+    "sha256": "fe469e297f31cea3ab04bef8ee52523cc90bdbaae81c20cdd4e37ca5073ecd08"
+  },
+  {
+    "original": "memory/README.md",
+    "archived": "docs/archive/python-migration/memory/README.md",
+    "bytes": 284,
+    "sha256": "461b4bc09265c647b4b91dfe226edcb65de6f9529a5ec265544b6f4fc1f8a9be"
+  }
+]

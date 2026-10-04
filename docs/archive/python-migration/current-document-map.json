@@ -1,0 +1,17 @@
+{
+  "docs/02-架构与工程结构.md": "docs/architecture/架构与工程结构.md",
+  "docs/03-数据库设计.md": "docs/architecture/数据库设计.md",
+  "docs/04-接口契约.md": "docs/business/接口契约.md",
+  "docs/08-用户手册.md": "docs/business/用户手册.md",
+  "docs/09-技术选型与版本基线.md": "docs/development/技术版本.md",
+  "docs/10-命令手册.md": "docs/operations/命令手册.md",
+  "docs/12-MES领取与打印契约.md": "docs/business/MES领取与打印契约.md",
+  "docs/13-转厂查询与痕迹契约.md": "docs/business/转厂查询与痕迹契约.md",
+  "docs/14-维护迁移与恢复契约.md": "docs/operations/维护与恢复.md",
+  "docs/17-生产订单全量同步接入.md": "docs/operations/K3订单同步.md",
+  "docs/18-SN补迁契约.md": "docs/business/SN补迁契约.md",
+  "docs/05-开发与协作规范.md": "docs/development/README.md",
+  "docs/06-测试与验收.md": "docs/testing/README.md",
+  "docs/07-部署与运维.md": "docs/operations/部署与运维.md",
+  "docs/11-完整功能迁移清单.md": "docs/releases/功能与差异状态.md"
+}

@@ -1,0 +1,2298 @@
+[
+  {
+    "path": "backend/.mvn/wrapper/maven-wrapper.properties",
+    "sha256": "e58a938518cbdaff4dbde52a3bd06d739d8a7c02c7dd41b2e92a3979916f8c58"
+  },
+  {
+    "path": "backend/adtek-common/pom.xml",
+    "sha256": "0c3fc5440d7d0d0e972eefde4183c844dec1c3ddc62f586fa2f4eb6d49a229b5"
+  },
+  {
+    "path": "backend/adtek-common/src/main/java/com/adtek/common/annotation/DataScope.java",
+    "sha256": "702f105ea76ca5225839864089c9cdd9a66a5c4feb2ae5125eceed007b1170c0"
+  },
+  {
+    "path": "backend/adtek-common/src/main/java/com/adtek/common/annotation/Idempotent.java",
+    "sha256": "ba5256e268bf77a14f033aa1ea34f01b004833de516b15b1a43737324038a581"
+  },
+  {
+    "path": "backend/adtek-common/src/main/java/com/adtek/common/annotation/OperLog.java",
+    "sha256": "acce1fb8b619e4dedcd15b0bf8f9b3325689282359a7d920a081d4bbe1f8949b"
+  },
+  {
+    "path": "backend/adtek-common/src/main/java/com/adtek/common/annotation/RateLimiter.java",
+    "sha256": "bbab69691ef95c9f20d9a2b5c0ffa20a2965b2866aff650e756396bd9a471823"
+  },
+  {
+    "path": "backend/adtek-common/src/main/java/com/adtek/common/constant/ErrorCodeConstants.java",
+    "sha256": "bb51b48f43ded63254bf24059b2ea4451189b183b23d2171682e9e5b78630a1f"
+  },
+  {
+    "path": "backend/adtek-common/src/main/java/com/adtek/common/core/Actor.java",
+    "sha256": "04e15f64fa3d1b222f7c8738432ad807fa0e0751f491ec70a5b18ebe298f8f68"
+  },
+  {
+    "path": "backend/adtek-common/src/main/java/com/adtek/common/core/AuthorizationScope.java",
+    "sha256": "fa59c87d3dd8af484b035e5d17951a7de36cc755cd823bdff14a41b23297cd58"
+  },
+  {
+    "path": "backend/adtek-common/src/main/java/com/adtek/common/core/BusinessException.java",
+    "sha256": "f3d28d008f32f73be9893281bc133128f2e64c17d41756a96e8e5e65a290eb6c"
+  },
+  {
+    "path": "backend/adtek-common/src/main/java/com/adtek/common/core/CursorResult.java",
+    "sha256": "04548edebef370bb0f212199320ba468253ecdceb4b36c46b98b871339f6acdf"
+  },
+  {
+    "path": "backend/adtek-common/src/main/java/com/adtek/common/core/DataScope.java",
+    "sha256": "7f785aa26a5f2e18fb567336e0385ffb487c9edfe10cf7b6bcb949ff4b3c6ae2"
+  },
+  {
+    "path": "backend/adtek-common/src/main/java/com/adtek/common/core/DataScopeType.java",
+    "sha256": "31a9b6f47a8113a68121214c60bd0f5ca452f8ceb5d7ebfb19c390be56d3d131"
+  },
+  {
+    "path": "backend/adtek-common/src/main/java/com/adtek/common/core/ErrorCode.java",
+    "sha256": "9d8b794ab8fb458546c946250155dd5074d8c10faac67f769a09d99fe66fc150"
+  },
+  {
+    "path": "backend/adtek-common/src/main/java/com/adtek/common/core/PageResult.java",
+    "sha256": "7fb59cc41214d77172a1f312be362fb3e99cba86b6c64d5935660d02d4cfbb66"
+  },
+  {
+    "path": "backend/adtek-common/src/main/java/com/adtek/common/core/RateLimitSubject.java",
+    "sha256": "1b1bd96e2d66be56e0e1f5d733d70b72131428d2c78b3570b59553e941067522"
+  },
+  {
+    "path": "backend/adtek-common/src/main/java/com/adtek/common/core/Result.java",
+    "sha256": "73aa9a77c62c8c5e83e8155f43e00357b8fd5ec63714fce8bfd2f19c3cc1eac6"
+  },
+  {
+    "path": "backend/adtek-common/src/main/java/com/adtek/common/core/TaskVO.java",
+    "sha256": "edd5f62626a535f6adc0bcac790e3b168be8333ac9f517d771c1efd7fb13d0cf"
+  },
+  {
+    "path": "backend/adtek-common/src/test/java/com/adtek/common/core/DataScopeTest.java",
+    "sha256": "52ce30a55f0d3300601f3105bde4ad83966f0a3cb29bea49cee9f52256711efb"
+  },
+  {
+    "path": "backend/adtek-framework/pom.xml",
+    "sha256": "06da1d595a95596d9670d2f6eee74516a9ac44db4834165e4e805e88f44046a5"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/audit/AuditContext.java",
+    "sha256": "504660907c49744998feef2e3b2600b279c39cc77ac043bbc0ef1630a1e7c374"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/audit/AuditEventObserver.java",
+    "sha256": "961e264fb35c199db8cf9182e274f29ae69251ad9752f3ff57f59007dd23c7d9"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/audit/ManagementAuditPort.java",
+    "sha256": "7a715d0d60e68c8ede81bdcaae25630d280ce5474f6850d1b6990f9ba266163b"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/audit/OperLogAspect.java",
+    "sha256": "2e2e6c23aff19bafb92950ef79470417bfdd2869e1f2c621aaa84bb2787b8a70"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/audit/RequestAuditRoutes.java",
+    "sha256": "aeb248ee5ef2094c91af72c93530eab0ca64b443701d96c5365cf9093f730acb"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/audit/RequestAuditState.java",
+    "sha256": "91dc7a391c7975b2873ef6248a3bfc41b41aba1c27ae0df9d74cf5046d50380c"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/audit/RequestFailureAuditFilter.java",
+    "sha256": "5a1b43703154e1f2451e7f9b9dc977e7d214787673f85903c5cf67f63356c8aa"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/audit/RequestFailureAuditPort.java",
+    "sha256": "96a86dd98ae8d140bd5cf00ff3e31b8095526fea86f7e2c95c109ee71e143d52"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/constant/ErrorCodeConstants.java",
+    "sha256": "f57fe859dfa6df23605962f49ea2c3c9c95d4e59a6576463fb0621e664982abf"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/mybatis/DataPermissionRules.java",
+    "sha256": "d58d3259088c39582305616920558c81e797445d490ad54a36d5ab48cbe430ed"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/mybatis/DataScopeAspect.java",
+    "sha256": "543373da9c39eab2d3d485fe3cbcac061a87effe1e2ec38a18a352b61a503ea2"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/mybatis/MybatisConfiguration.java",
+    "sha256": "1f0ac6ddb98ca559174c6838a5517de142bc4529b3a60750f02a0b65790b958d"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/mybatis/ScopeContext.java",
+    "sha256": "e9d9833b60d6d74bc1ca0bb3b69d24aa56406ad0d682c93ea6daa7253dc4e659"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/mybatis/ScopedDataPermissionInterceptor.java",
+    "sha256": "0d251ad42342130751e9be94a612b861ac02f4f2f4df035be2c9487465cd5b71"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/mybatis/SqlScopeBindings.java",
+    "sha256": "273f3b6b740dba719cfbfb3a2dce7622a5019ee5ba91c1dcd3cfe4242ea34d24"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/security/ActorAuthenticationException.java",
+    "sha256": "789efe49d61680843c4004c339ccb01c40d2c383395b88761e94f7d0639a5ee0"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/security/ActorAuthenticationToken.java",
+    "sha256": "4d8d50c3a5dc83f9d544f626840324a95491d126de79d7dc22a46cdd039ea4e2"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/security/AuthorizationMutationPort.java",
+    "sha256": "75740031c519b0ef543c838304199e5f0acdca0917b3c3131cced3411126a128"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/security/AuthorizationPort.java",
+    "sha256": "b3bbffa8c71c163b01a412afae9bdefe0f8511f3e52d0b8d807ce6c794d6ea63"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/security/CommandValidator.java",
+    "sha256": "73b9f62d67596ecece5f8e2d1ccf9173f2c0682db30fd5c83bac78991a9f8a70"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/security/CurrentActor.java",
+    "sha256": "83b4bddfa905e457829d4a5b30ad63dd49cbb5893ec3a7aa0c0d0a24c3da87a5"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/security/EntryRateLimitFilter.java",
+    "sha256": "172cfb528c7b308ad734585591f3684822749c3fc8bd999c66c7f7d34e768a9c"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/security/FactoryMembershipPort.java",
+    "sha256": "dbbbf127687c68d320fec3cad3e467b4aac51f18a6edd95e0cfa3fab1976c384"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/security/JwtTokenCodec.java",
+    "sha256": "e958df44e609a016eba6ed54c0c86c5ad542d00e0d8e79d6e9e5009201db8502"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/security/PrincipalBoundaryFilter.java",
+    "sha256": "97fc67fa0a6cbab2278f797aad7593f6bb401a8af2b2c6b1ed4e4ab306b064b9"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/security/RateLimitService.java",
+    "sha256": "c4371cfa05b9daea77c0822272848eba618b32c57cacc5681d052fedaecfacce"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/security/RateLimitSettings.java",
+    "sha256": "8acf690f844f2d298677f01afb787438ec08f10013efb56db9b7c9f7302acd43"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/security/RateLimiterAspect.java",
+    "sha256": "e27d5a1fd9cdef113a5fe979cff1b990ef268ba65b4704d46cd9f6e33ebf307a"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/security/RedisRateLimitService.java",
+    "sha256": "a6041e84289d8a4632cd33cb985ff97d96e1f46bf5f41cc8d783119db05db096"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/security/RedisSessionStore.java",
+    "sha256": "46210b95bdb8834a81c80af2bb70373646dbd9ebfdeb893767695e6c17ef9244"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/security/SecurityBeansConfiguration.java",
+    "sha256": "1d7e1907ed07f12a6349e5d13a333f7dc61be98c4a8554b5fa1df8abab92091a"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/security/SecurityConfiguration.java",
+    "sha256": "e3c588dc480d6a8ca1146503f2b667f9ab0f322ac5322d27f6f3f0b3c84debb3"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/security/SecuritySettings.java",
+    "sha256": "0e055c013e21d9326dd2feba50673d4d9de61fb2bfd3ca1cbd38dd2216a53d31"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/security/SessionJwtAuthenticationConverter.java",
+    "sha256": "3a2e3342d8cae4fa23f48d0b699d499f00c0a7391b57c06c994a2ae6a8530eef"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/security/SessionStore.java",
+    "sha256": "608cd03a8e92f4200fe36483adc739be54e37b5b7115ebc67c1d1f59c9a3775e"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/FileState.java",
+    "sha256": "ebf02cf908322bbd8a5a0bd44b74c831a74a9b0737cb3bf35cb287b6b5051e43"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/FileStorage.java",
+    "sha256": "9f18dc42dd62ae6815702fe075f7c03a947f6930ef9153aa68d493893f34d468"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/OperationState.java",
+    "sha256": "d17f6cfc17a01bded4f205935cedbd1f30cf5d7f3814ead4c7a1ca6aa5574899"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/TaskAccess.java",
+    "sha256": "31f2a45490052f3ca93f85598c4bfc6f84b9180b5569d82fce615ad8d527c0de"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/TaskDataPermissionRules.java",
+    "sha256": "7ff7472009b786cee137bf8f76c300658ebc976d5459618884cd3c85db8b21ac"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/TaskDigests.java",
+    "sha256": "81c90eb68b46a5c931185649bfe84056ccfb5b92b5aad3c657a6358615ce4f06"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/TaskHandler.java",
+    "sha256": "324a7e23b96bfc0d018dd1c533e1d560860a24f90746c00c71c4a32fcf321c4d"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/TaskHandlers.java",
+    "sha256": "e520eb2fc42d535bd4c70eadc5ef92b5ef4e4d8fbcd1b7d3c858dc01edfb3916"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/TaskSettings.java",
+    "sha256": "611f9b343cc8f3b8facbc1909ce2697b6237bb15d95573786263bb4630a39bba"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/TaskState.java",
+    "sha256": "4748ccfe2b9bb042f671f4a17797fd1c57b0c6c53d8a89ab7a588bac860b36bb"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/TaskWorker.java",
+    "sha256": "427aad2dc5c6a9ddb5da8529915257097d9015f14a4e5c2d725574321c0352b2"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/controller/TaskController.java",
+    "sha256": "d20c46c92dd6ee928cc23a304049018ba2e996bb51ce50520908d8a566d8ee70"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/convert/TaskConvert.java",
+    "sha256": "46587fc4e8679af98699618a46f6f32cd1d50448207ae3f3170fb5673c9938b2"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/domain/FileEntity.java",
+    "sha256": "189e204ac7b4ce059dfb335d11a340a4a3b1da46e805bcfdf21f808a073ed25f"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/domain/OperationEntity.java",
+    "sha256": "3b2251904249b5031c2eb983153d557f66ae74fad5313dd632034e13224e7cdd"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/domain/ProgressEntity.java",
+    "sha256": "bd8fda9ccf3f75fb1b39c3d464dde26df94f506df6dc64f77357d25475ff5e5a"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/domain/TaskEntity.java",
+    "sha256": "82230b643d74b893d8c8244780b41bd8be9318f85ec83e8380c46775068d816a"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/mapper/DurableFileMapper.java",
+    "sha256": "9220108c1d43297a1ebad42d7878b026f0906cdfcb87644004ed85388a754b6b"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/mapper/DurableTaskMapper.java",
+    "sha256": "db121164b62fdbd437f7872daf998f8de2b7871e5d38193dfea1dbd20399e77d"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/service/DurableTaskService.java",
+    "sha256": "c7f2eda461d0eadf3f30747d19b0427c17fdd4d7697545f1ba34615385b92074"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/service/TaskExecutionService.java",
+    "sha256": "7e3d9dfae46d41223469c1fbb9fb43e4ae740625310a914ad2318f7456fef172"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/service/TaskFileService.java",
+    "sha256": "bd33b90f7be2ef2fe968cac331091de6f126e9cfd9ff4f4479521168f4bd85fd"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/service/TaskProgressService.java",
+    "sha256": "4fd26ad486a2bb849802965dacd8527030debdd9ff528c0856d029b519486255"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/service/impl/DurableTaskServiceImpl.java",
+    "sha256": "718846eaa0e985886b3cbedd4e0549e89756619b236bffbf72ee52eefc819eaa"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/service/impl/TaskExecutionServiceImpl.java",
+    "sha256": "cf01a8314159f4e514291e876930d9387207d83b7bc5279f5f7236c0f262c409"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/service/impl/TaskFileServiceImpl.java",
+    "sha256": "0d829ec1fe43f2d606f660420db63f81a18473554d5048186b8c37161a5ee7fe"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/service/impl/TaskProgressServiceImpl.java",
+    "sha256": "b0383ca850e054193c2d05439e1917ca2c4dc5372014918803d002608f499c32"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/task/vo/TaskVO.java",
+    "sha256": "de3258f1fc1c9401e820eeeed8ef0aac8138c8dbf17d157e9fb1a994ba651f95"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/web/GlobalExceptionHandler.java",
+    "sha256": "15a2f4366b603880fffedcb3235f2e0731ca2e2ec808e68c6114cf98360174a5"
+  },
+  {
+    "path": "backend/adtek-framework/src/main/java/com/adtek/framework/web/TraceFilter.java",
+    "sha256": "a97270211f9c57ea3ca6e4bc8ab742e00bd5db047b30c94a597d21c041ddd428"
+  },
+  {
+    "path": "backend/adtek-framework/src/test/java/com/adtek/framework/audit/AuditContextTest.java",
+    "sha256": "8ba86f4ee63c3c2984a9ed64425b49335e2ad646b52dbde4426430848720d0d2"
+  },
+  {
+    "path": "backend/adtek-framework/src/test/java/com/adtek/framework/audit/RequestFailureAuditFilterTest.java",
+    "sha256": "7b23cb40c64a7283c4b158949adc78fb4435fe860fe9d15d14b0210089275a83"
+  },
+  {
+    "path": "backend/adtek-framework/src/test/java/com/adtek/framework/mybatis/ScopedDataPermissionInterceptorTest.java",
+    "sha256": "d93b0f53de00f6d013780759d4b42a87fab1bbdc0a029be2c40917fdb51ee485"
+  },
+  {
+    "path": "backend/adtek-framework/src/test/java/com/adtek/framework/security/CurrentActorTest.java",
+    "sha256": "4df5fb003714c68f43c8f7e296312aeb80a9b94200b9e337aee72b40899b5f6e"
+  },
+  {
+    "path": "backend/adtek-framework/src/test/java/com/adtek/framework/security/JwtTokenCodecTest.java",
+    "sha256": "fa59c640e8fc07ad9bef320bd23d44d0a50339ae99c57941d9215b69995732a7"
+  },
+  {
+    "path": "backend/adtek-framework/src/test/java/com/adtek/framework/security/RedisFailureTest.java",
+    "sha256": "00cc5cf2462b9605179a3eb34d324a3621c10a8dc676fcff12110aec16ed4d34"
+  },
+  {
+    "path": "backend/adtek-framework/src/test/java/com/adtek/framework/task/FileStorageTest.java",
+    "sha256": "a48585e967ba16e16c58f3255a9055a2cb9ca9148b5767c124a8ffed8eec493d"
+  },
+  {
+    "path": "backend/adtek-framework/src/test/java/com/adtek/framework/web/ResultSerializationTest.java",
+    "sha256": "7c89bf85d06c266f3b4009336415d489b6473b96ebbf6f00e89f48bed9e1b623"
+  },
+  {
+    "path": "backend/adtek-framework/src/test/java/com/adtek/framework/web/TraceFilterTest.java",
+    "sha256": "d5692b5a3b4ed7958666517daafac3d051292c7a28148c3c073d3d90115290fb"
+  },
+  {
+    "path": "backend/adtek-integration/pom.xml",
+    "sha256": "94bbab5325f03739679ba4bb3ec34fe397878da9a3aa9c0e8370590d9fdfd3f7"
+  },
+  {
+    "path": "backend/adtek-integration/src/main/java/com/adtek/integration/k3/K3Configuration.java",
+    "sha256": "4d437ca72d2a6dc084107ece7e292fcf81a51a10b2fa70c68ba9d52f0a9a6265"
+  },
+  {
+    "path": "backend/adtek-integration/src/main/java/com/adtek/integration/k3/K3ProductionOrderAdapter.java",
+    "sha256": "6c0d62fd0fe4bdb3cef52c0d56c8e0079e09e324563097ee28342e7c7f8fdec0"
+  },
+  {
+    "path": "backend/adtek-integration/src/main/java/com/adtek/integration/k3/K3Settings.java",
+    "sha256": "e4f21f60e7a1ca35a32a62f4ccc3d176e7a08a23854667070e0810cc7e6a69cd"
+  },
+  {
+    "path": "backend/adtek-server/pom.xml",
+    "sha256": "f971104d9e321bff86e8f6227b7158821303ef8232dc859dc85f2e93372754bd"
+  },
+  {
+    "path": "backend/adtek-server/src/main/java/com/adtek/server/AdtekApplication.java",
+    "sha256": "9b6f7268ebde27fecf74c5a143cf7ea589fa6c3520c82051e0085f162f783a9d"
+  },
+  {
+    "path": "backend/adtek-server/src/main/java/com/adtek/server/BootstrapAdminRunner.java",
+    "sha256": "f2255c6c717a843e0630bb827732fe38edf431f6f55c6679377288e861b9256a"
+  },
+  {
+    "path": "backend/adtek-server/src/main/java/com/adtek/server/HealthCommand.java",
+    "sha256": "c1662c6d95b01ac3c1cc0dee9c23422eef996fcbc51310cdb38c80cd872b2930"
+  },
+  {
+    "path": "backend/adtek-server/src/main/java/com/adtek/server/MaintenanceCommand.java",
+    "sha256": "9588f1fc84f0c84aae2cdfad45b057415efe061d68fbf6eb527750b11a2a6022"
+  },
+  {
+    "path": "backend/adtek-server/src/main/java/com/adtek/server/MaintenanceSchedule.java",
+    "sha256": "8ea845261dc76fb36fd8caf888431b7152b0e68c57d5adfa2e48dab78a33d0c2"
+  },
+  {
+    "path": "backend/adtek-server/src/main/java/com/adtek/server/MaintenanceSchedulerCommand.java",
+    "sha256": "2c384e772855a049273e4a05478fc55cd9d71fa0e231b0333ec110d9dc8a2224"
+  },
+  {
+    "path": "backend/adtek-server/src/main/java/com/adtek/server/MigrationCommand.java",
+    "sha256": "0f2d709e047cc35d4d54433acc4b4fc68f331c1fc44a52fdfa71434fec8e5d00"
+  },
+  {
+    "path": "backend/adtek-server/src/main/java/com/adtek/server/OpenApiConfiguration.java",
+    "sha256": "91b467d02f849276a7ee3a43269cbb5a6073b26512b694c3946c8b35919acc09"
+  },
+  {
+    "path": "backend/adtek-server/src/main/resources/application-local.yml",
+    "sha256": "02521c53c5ea9c29075ed34bc33ab5ec284f929b06a92f7357c06c728e0b45fd"
+  },
+  {
+    "path": "backend/adtek-server/src/main/resources/application.yml",
+    "sha256": "04328436040bfb3040ec5db1209cb72cb65cb958856d7cdd2c82fd5934b3bfc5"
+  },
+  {
+    "path": "backend/adtek-server/src/main/resources/db/migration/V10__sn_transfers.sql",
+    "sha256": "291db6331b52043f7223355ebe197ca340f3d95560ea476e2c2704dfac77fc1f"
+  },
+  {
+    "path": "backend/adtek-server/src/main/resources/db/migration/V11__sn_query_exports_and_dashboard.sql",
+    "sha256": "4e950610b8d72e84e79a3e11b9b23c461a57414a77b826a180e921cd0a771496"
+  },
+  {
+    "path": "backend/adtek-server/src/main/resources/db/migration/V12__sn_business_audit.sql",
+    "sha256": "eac32f50f8edbdac0d77c295d920aea8869052ec402b4c249cf5ddaf9a48d293"
+  },
+  {
+    "path": "backend/adtek-server/src/main/resources/db/migration/V13__maintenance_runs.sql",
+    "sha256": "9680cf359199140b07a66d502beae7d50c2dba33111210af90e07a07fc2b8d9f"
+  },
+  {
+    "path": "backend/adtek-server/src/main/resources/db/migration/V1__system_foundation.sql",
+    "sha256": "20ee7487e1c2e6413b1b4f58e41f8152f3273532d0c4ac9631eed41ae91fb52a"
+  },
+  {
+    "path": "backend/adtek-server/src/main/resources/db/migration/V2__identity_authorization_and_audit.sql",
+    "sha256": "feca2b5e8fff8cd4f80d48ccf3dbeac3221a7935f6e9c395677f35c4db5ee3ab"
+  },
+  {
+    "path": "backend/adtek-server/src/main/resources/db/migration/V3__user_management_audit.sql",
+    "sha256": "41e514fedfd4fb5a0409f11c4014078e43d6e68aca688a1775a3139d2001dd5d"
+  },
+  {
+    "path": "backend/adtek-server/src/main/resources/db/migration/V4__system_configuration.sql",
+    "sha256": "92a4c4693a31b0376aac350f3639bd2d8d8ab1b6d20d66039da16de8e98623e4"
+  },
+  {
+    "path": "backend/adtek-server/src/main/resources/db/migration/V5__audit_query_and_request_failures.sql",
+    "sha256": "28874030d0f764447512c14f8e6ab2425ae9c53a8fad97e9950ba683a90f0529"
+  },
+  {
+    "path": "backend/adtek-server/src/main/resources/db/migration/V6__durable_operations_tasks_and_files.sql",
+    "sha256": "f5b7399a070a559e8a741554c762f11e7587bd93b5e76c6d5987b59b00924b4d"
+  },
+  {
+    "path": "backend/adtek-server/src/main/resources/db/migration/V7__sn_factories_orders_and_rules.sql",
+    "sha256": "cb8c4daba1cf0890f0681153cc182f685ac232d59b27a52014e538452cb74b48"
+  },
+  {
+    "path": "backend/adtek-server/src/main/resources/db/migration/V8__sn_initialization_generation_allocation.sql",
+    "sha256": "8f87d950ee0f77b1e0adf400aebdccbfca0f02d552604460818b28948b519f72"
+  },
+  {
+    "path": "backend/adtek-server/src/main/resources/db/migration/V9__sn_acquisition_print_and_service_clients.sql",
+    "sha256": "54eb806df720e95d1589ca6c02c1e106b5ee75305174f3a7dcd1865eb4238eca"
+  },
+  {
+    "path": "backend/adtek-server/src/test/java/com/adtek/server/ArchitectureTest.java",
+    "sha256": "0ac7932761d65e1f0419f134fe900e161d207c03feaf32985630930ac2967c86"
+  },
+  {
+    "path": "backend/adtek-server/src/test/java/com/adtek/server/ArchiveRestoreProofTest.java",
+    "sha256": "9121a4eff7215b5f5771b389d4cf6f63aafa978701da564ddf5cb7372389c6d0"
+  },
+  {
+    "path": "backend/adtek-server/src/test/java/com/adtek/server/AuditIT.java",
+    "sha256": "fc50d57f1fb6154a4fc2eb56f6ef4140db3423b4b5d52958775cf46b4a1bc2dd"
+  },
+  {
+    "path": "backend/adtek-server/src/test/java/com/adtek/server/AuditProjectionTest.java",
+    "sha256": "2fb099992b7ef98892f58242998107a8b955b22d911ee339afd2304dab0fb453"
+  },
+  {
+    "path": "backend/adtek-server/src/test/java/com/adtek/server/AuthenticationIT.java",
+    "sha256": "2397cc58bc8daa02b66b7ae9ab412ceae2a956aec151b61311dc34ac08db3511"
+  },
+  {
+    "path": "backend/adtek-server/src/test/java/com/adtek/server/ConfigurationIT.java",
+    "sha256": "a7bc6a47012a8ee3b6fb214597cbade78f3dd386c8659f6c1890c0321fcc5789"
+  },
+  {
+    "path": "backend/adtek-server/src/test/java/com/adtek/server/DurableTaskIT.java",
+    "sha256": "94d53070dc4532ffaa73b33b0f33b0afa06ba1920516b072000fb43c239ddf1a"
+  },
+  {
+    "path": "backend/adtek-server/src/test/java/com/adtek/server/ErrorCodeCatalogTest.java",
+    "sha256": "85c4767023041c4a4015e9c1b612b57e2c89b50fa1fdd3ff5a496c321e009f1c"
+  },
+  {
+    "path": "backend/adtek-server/src/test/java/com/adtek/server/K3ProtocolFixture.java",
+    "sha256": "850de03890597c4ef2857a48485f044503ea47f3d9be1397b8070b70b56b2b7f"
+  },
+  {
+    "path": "backend/adtek-server/src/test/java/com/adtek/server/MaintenanceScheduleTest.java",
+    "sha256": "49d74f3adaa9fd3433953d1c468d70d377aec992ad58b8437bc4813c80a1c739"
+  },
+  {
+    "path": "backend/adtek-server/src/test/java/com/adtek/server/RestoreProofFixture.java",
+    "sha256": "ec5979b7d24c3905bc6914b823637cd742c9eca395c1e77463a4908efd382c9f"
+  },
+  {
+    "path": "backend/adtek-server/src/test/java/com/adtek/server/RuntimeIT.java",
+    "sha256": "8a947231c6ae27486e55b0f76ef1828624f8ce0dddc2c310ee2576225eedae7d"
+  },
+  {
+    "path": "backend/adtek-server/src/test/java/com/adtek/server/SnAcquireIT.java",
+    "sha256": "120f7ab0dd015bcb730f67c889b20051e93ba74fc07e972f22259bd65dbad2a7"
+  },
+  {
+    "path": "backend/adtek-server/src/test/java/com/adtek/server/SnAuditIT.java",
+    "sha256": "9dbbd1148e1dd606377c9ae9c31c8f0ae847bb04dcaf70d1cc8c3b94e7773665"
+  },
+  {
+    "path": "backend/adtek-server/src/test/java/com/adtek/server/SnFoundationIT.java",
+    "sha256": "74370f8ac6323e219b0ac25a4a9a9abd7e88f5f4f00112fb709e2cfba71cddb1"
+  },
+  {
+    "path": "backend/adtek-server/src/test/java/com/adtek/server/SnMaintenanceIT.java",
+    "sha256": "c858deafc11f2cb27ddc313574b409e7a8e0782ca57f31fe916a8866cd87577c"
+  },
+  {
+    "path": "backend/adtek-server/src/test/java/com/adtek/server/SnQueryIT.java",
+    "sha256": "2b0ee0e353e70184e91b0035132af0772e264cb424f4c6f3188bb9bde91b4805"
+  },
+  {
+    "path": "backend/adtek-server/src/test/java/com/adtek/server/SnTransferIT.java",
+    "sha256": "005a232e40cb112d8a7ca60b2113030974ce5894b146b509ba110a87bdc97791"
+  },
+  {
+    "path": "backend/adtek-server/src/test/java/com/adtek/server/SnWorkIT.java",
+    "sha256": "7bcc3fed1b0767c5618c747fa40ca3e9ac05e9ef6a6e62603ede323ac97ad8ba"
+  },
+  {
+    "path": "backend/adtek-server/src/test/java/com/adtek/server/UsersBrowserE2E.java",
+    "sha256": "fb607b56f90bcd3f2ea5586941d5f5d70a7541b14ca030c2cdbff22a586b277c"
+  },
+  {
+    "path": "backend/adtek-server/src/test/resources/application-integration-test.yml",
+    "sha256": "1360ca9b4bd84590beab93030eca7532e672ea892978749f17e86fe8f2c0d1cb"
+  },
+  {
+    "path": "backend/adtek-sn/pom.xml",
+    "sha256": "b890a11a0e684a7c34940707c0005592ae76f5ace2847453cf061d4e370c0151"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/config/SnMaintenanceFactory.java",
+    "sha256": "ea95799071c67961040695b52a8ee5f49b087f86a6ec3c9d335bf1a04bdb1b4a"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/constant/ErrorCodeConstants.java",
+    "sha256": "32e2220d1215be470eaf1c4732e2ac136dd5c167f919c50ee54bb0fb79c27366"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/constant/SnStatus.java",
+    "sha256": "6d3928750bc647283166935c14fc50eecf9c30e1bbea0e01cfab40756db591e0"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/controller/AcquireController.java",
+    "sha256": "50219e7c698025d8ccca9deb3b69abfadfc7351dc474154b82954c962fc7f544"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/controller/FactoryController.java",
+    "sha256": "a0c388cf87aca4f10dd81ff549e84373b5631b8896553afa89b8c7e41dff0f9c"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/controller/MesSnController.java",
+    "sha256": "60ed99754b69a993df33ca1c7939961aafe2088647008711c4025c3c2b060cb9"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/controller/OrderController.java",
+    "sha256": "f6bda128a3d94d27ae5287ceaaf4a3e9f38c1035d3e004e497339a4c49d0a77a"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/controller/RuleController.java",
+    "sha256": "fccec999d9d51ca7416ccedfa16f474d186420b3565fc6dff3c1daca8e0831bc"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/controller/SnAuditController.java",
+    "sha256": "d90707b016ebfaf25a045aa437ff02f74eea1a7bfe71bbd27aec6fa210c68749"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/controller/SnQueryController.java",
+    "sha256": "6d2b9f77c1cc29a110f5494fed248d2417a860e16e638695bca840b7f8375fb9"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/controller/SnWorkController.java",
+    "sha256": "b5dd74ff373dc75f2bcf4cd0e3d29d1a7b0d456b3d03197789ff7ed3cb03cd86"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/controller/TransferController.java",
+    "sha256": "06938cccf5cb081840ff75cd9807fbb21a1164eb24180fcd6f889a2487f976f5"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/convert/AcquireConvert.java",
+    "sha256": "090969e946d0dff1334ab381bec68aa346ddc547103b7bb507eba8e9ca165392"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/convert/SnAuditConvert.java",
+    "sha256": "b190c175c7aecd1e334839dfa314334ae8dbdf4efed26c90a0c48fcadf177093"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/convert/SnConvert.java",
+    "sha256": "90287ca0de3c18ca03b0210c491ba2528a8056584b0072d6aeba95ba38874bbe"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/convert/SnQueryConvert.java",
+    "sha256": "5355abff01cdbfc9e4c49c1bf556ae4c07486f8597f4f181c0055e5f1277aad6"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/convert/TransferConvert.java",
+    "sha256": "f6da51f8990af2a4d8c67ce0b314d294005f57d276534c402e7a3dfe06b22cac"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/AcquireBatchEntity.java",
+    "sha256": "941a9275caa8ee895b951c7cec9001e9dbfbe2be759ef6abf8105cafd83a5e19"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/AcquireMemberEntity.java",
+    "sha256": "599dcd141bf03dfdc98a5304ad02b8b4833597926013cec2086a6f92740d083d"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/AcquireResultEntity.java",
+    "sha256": "878a6a6e917ac3edeeea53e7c26d22c7353d4747e73c0a15d026d3ada2a478a5"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/AcquireSegmentEntity.java",
+    "sha256": "adefcbc5b76b53b929e43e2da731a89a0904c077de5a2032237896a8248e972f"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/AcquireSummaryEntity.java",
+    "sha256": "4f21cf3d277eebbd9a54d5a1bcff2db1f241802bdde09169a063745322bd69bc"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/AcquireWorkEntity.java",
+    "sha256": "2c63302ea6ef49cb92290207706bcd99566fb3f41b3ebfe7753d18b4980c6b58"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/FactoryEntity.java",
+    "sha256": "68bae5ab7d779938a0030f33cd81302758a9711e5610168ca7a5c9bc4a494c26"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/OrderBillEntity.java",
+    "sha256": "d7fce18a966abb20d89b8f4a4aecfaee56b86578893c6b28aa91a4e537ea28de"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/OrderEntryEntity.java",
+    "sha256": "63cd31503fffb10f5eb806f9b8f8869c7cada9f3bc4903068cdf212e278bfa68"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/OrderSyncEntity.java",
+    "sha256": "f06f1c3d6efc0414608a5fcaff29a9d9e90da2ab68c02536c28f12aa6ea78bca"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/OrganizationMappingEntity.java",
+    "sha256": "5e3aff54db657f0f8ebf1b3730241008249eab2d8b4802ed673384fa8fab8339"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/PiCounterEntity.java",
+    "sha256": "bc71e538918e8c4bbeca2d02fba2d9e573b9bdd3acb543ba8562feadb8ba5747"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/PrintEntity.java",
+    "sha256": "e7e1a9ec944e6395a2626b236fe8f765ad39868ca0612ccb3512e839fa53a44c"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/PrintMemberEntity.java",
+    "sha256": "a64081ffe4fabe97ab95f7996c42fa7cf27eec2ae700c1c7ec283f6d30edf82b"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/RuleEntity.java",
+    "sha256": "1cc6ff7a3872f1d43b2a354cd2f6e831e0b4f58f9fab7960afd53ccbb946e389"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/RuleVersionEntity.java",
+    "sha256": "8fea19c16a19db8673b7ae7a2adc03054778ed34f44fdd5551fd07bc4d092a83"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/SnAuditEntity.java",
+    "sha256": "85ba6d2aa93cf691726a46e276cd5130c5c070f6468029e0adc2c22566545169"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/SnCountEntity.java",
+    "sha256": "ce51f0de427f1d4e5486e8542b9ee96314a13502c7b9715ebdc90fc7cf7a7357"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/SnCurrentEntity.java",
+    "sha256": "e098dc920fc92bbd5025ad2802a0c6106c9482487ef63ce1da24457f18e079a6"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/SnExportEntity.java",
+    "sha256": "4bb169abc582b7ebbc69e52fa7b925b3df534d2fdce3b917060ddd05e74bc568"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/SnExportRowEntity.java",
+    "sha256": "97cdad42e56100a30af74c69f4f0b68ebfc304854d0d9a5faf0eecebbfaec40c"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/SnItemEntity.java",
+    "sha256": "42de432380a242ef221000e1002396aec5227b8a3bff2e0076ee8ad031e58ec5"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/SnPreviewEntity.java",
+    "sha256": "a92c340c430d024cdb405325d95c53247bc1e2c0ffb4b36c77c0d0ec702ab877"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/SnQueryItemEntity.java",
+    "sha256": "a5e1aa05ffb06279c40d8ee49d0fafd29a8a369ca0f7718a4c2c227bdb66e2e2"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/SnWorkEntity.java",
+    "sha256": "9e117fbbea1f0db385683b32b612a2d5d486e5dd19b4e4e088fa1fd201d4b346"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/TransferCandidateEntity.java",
+    "sha256": "314167e90d56d21a78bfda937b6fbb7c391220f72dcd5e37061b940adde38429"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/TransferEntity.java",
+    "sha256": "8037cb0348a2866d18f3f0e24f64b0828a2df4c470600429291ac836a7290cba"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/TransferMemberEntity.java",
+    "sha256": "0010ca66a1b2d934090416d5ca6c7114901da0a963533b9ed5a5c7bab69f972c"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/TransferTargetEntity.java",
+    "sha256": "34a8752639eb81f7b5f14dd5741f80e27122fbe61c58bc0e388c1263a24304f8"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/domain/TransferWorkEntity.java",
+    "sha256": "89fb16c64222088664b57a3cc568632c45faf831f1f6d35659b422a177df57b2"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/dto/AcquisitionDTO.java",
+    "sha256": "c3c6338fa0da820d22197925cc86134f59de53da50a41542839d8f14b2ccf5ed"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/dto/AllocationDTO.java",
+    "sha256": "1260f11a5113fe0cb3326e69611ecff2a7eb5633029a9c53e42a01c7bced4471"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/dto/FactoryCreateDTO.java",
+    "sha256": "a27a34a7536843a485071e0905b5e2847b8416bf5769c7a7a92ba44f36e1fb05"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/dto/GenerationDTO.java",
+    "sha256": "517216ed5ae340029780d77deaf2c6abb24ced2f4fe49024ec9d960a4d1cb647"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/dto/GenerationPreviewDTO.java",
+    "sha256": "efa80fbd6250968034d95f3e755e37eb5572c74d8e2079fac8b651a1da3303ee"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/dto/MaintenanceCommandDTO.java",
+    "sha256": "e94d449a70c660ee2fc2bc655c73ac01fdd455a5110c352f16ae040be27e53f5"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/dto/OrderSyncDTO.java",
+    "sha256": "e2da0f721275068879cc6952ef1ece88b738adfa998d2b3b1f160773dd859ad0"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/dto/OrganizationMapDTO.java",
+    "sha256": "a00714ed4cc4b5a6af1383b463d0bb62e24e3a9d9ee6058f79a4f1a9605495c3"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/dto/PiInitializationDTO.java",
+    "sha256": "2c6dbb41401c2a58b200d0c0bb6b47dd5026f59f8a27a6cd95d27d4fe3a30c51"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/dto/PrintConfirmationDTO.java",
+    "sha256": "af3c9a7a77cd8e1d1a518826a78ef6e2580b631960e3f532354b262d3d9a35d6"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/dto/RulePreviewDTO.java",
+    "sha256": "995f249e91cd76c8ed9568965b433e28f5e36d9f5bb628d062f057eafbef8447"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/dto/RuleSaveDTO.java",
+    "sha256": "9ae3464ba15a64cd312689d239f5afc51f7662d4c1bbcef80576b7654817c711"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/dto/SnAuditExportDTO.java",
+    "sha256": "82a65e62b6cf62e501640dab19fc63ab6fe66b3400dbadb0af2bc8460413b8dd"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/dto/SnExportDTO.java",
+    "sha256": "b600016583c1d65169b3907add4143e06818d6cc6c95ac6b6bef37c4216bffa2"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/dto/TransferCreateDTO.java",
+    "sha256": "49f6d3beddaa9178b09fb7db86af6491195efdb3401f4c7aba3a7ed0bfc431e8"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/dto/TransferDecisionDTO.java",
+    "sha256": "acbeb1c17f911838a2d58646ad2365b8cc08a1d63eae76bc35e18e5b366ce2e2"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/AcquireMapper.java",
+    "sha256": "bca032cea849cff6b121c50222510e7ccf4926ac017c1cdb7a3e516bd4f61878"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/FactoryMapper.java",
+    "sha256": "69bfd8554f9b5f4a587ded3c63e0b8dbfdc24a7f0ca94154e1e1447d5b0985d1"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/FactoryMembershipMapper.java",
+    "sha256": "0d4611059a9f401f532274c32482b14fa39b0b33de7fd20c09df7d37f24c2567"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/MaintenanceMapper.java",
+    "sha256": "c1572ccc806950987ab86348cddb0901f4f5560a521e5b954adca92e77eb2fc3"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/OrderBillMapper.java",
+    "sha256": "91bae61f0989676cf947e09577174bdb7f813d2186ae596bc008aa1405ef69cf"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/OrderEntryMapper.java",
+    "sha256": "6b58185fcc571a4d7abd20a3934f12d2fe4f1985dc23d3b04588ebad720991a9"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/OrderSyncMapper.java",
+    "sha256": "c1cd19cfd5e16aa9c95aa99691f637a0af6e73bc5160eda67e6eebdd807385d8"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/OrganizationMappingMapper.java",
+    "sha256": "f8d9ac43a92f148455c14b879644532203b0d5c51b45feb389bc3c5a50a239bf"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/RuleMapper.java",
+    "sha256": "481c0519ba22aff40517456d933a9e91320d1e3277431b56b934e41126bc474a"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/RuleVersionMapper.java",
+    "sha256": "22bc9f12552cc18924e7d6ea35d70da5a1e2e80dd2aa8242bdf1bbbd024eb33a"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/SnAuditContextMapper.java",
+    "sha256": "652bb1bef2f4aead96e0434e3281a7ed5322cefc61cf7450153acb04484098a8"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/SnAuditMapper.java",
+    "sha256": "b3f620404b0b7fe43a4a0ffb88abee41cc19934fa52f5c31f252229029c5e419"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/SnControlMapper.java",
+    "sha256": "3e91e46e9dab9eb40ea2edf40fecef0c2be06fd6058072e1872a842b566fcf08"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/SnQueryMapper.java",
+    "sha256": "b4c06562e315ef36b9a627a8cdeedd2069b179d2615a56caf78be44f38efb0bd"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/SnWorkMapper.java",
+    "sha256": "8f3dc530a4dc372dc41e0aad0ab252f3fa7468674880d4bfb5e05743b1de5512"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/SourceQuotaMapper.java",
+    "sha256": "fa6cd5d2ae12cda94e1d9e6d05f6f3ebb24a45773205f8761f237414f9a8dc30"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/TransferMapper.java",
+    "sha256": "2ce942782417ec11cce894144112175d9dbaffd8b0be20a65bf343fa240f4124"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/query/AcquireQuery.java",
+    "sha256": "537962abf5643cffb47c63ed3dc335c522d9d9c5faecea6d30d2132623fad456"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/query/SnAuditQuery.java",
+    "sha256": "c456b9acdf1fe36888efa4baf9996199c18744fc87ea62c10b3cc089c20f22e5"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/query/SnItemQuery.java",
+    "sha256": "51839c1ff09d5ca7dcf548e44d32f96af869771d7ff94387183a2e606691db57"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/query/SnPageQuery.java",
+    "sha256": "fe1b65a3b41d9d2b951cc098c242211254956fcfd3fc7ca334291564aa125615"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/query/TransferQuery.java",
+    "sha256": "67ac6e558b4f49e83c13f90933b454888f971dbba88c71947cf166c193fcb01a"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/AcquireService.java",
+    "sha256": "687bea1a1d74fc7648870a5adc606816ac87d94d67f5b9f024b89d4aab819a5d"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/DashboardService.java",
+    "sha256": "4b4665d8ad45df00fe9412d603ddd71e4caceb064a77aa941282117a1355a702"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/FactoryPublishService.java",
+    "sha256": "253b5998c21094ce932ee871d2a78ec19353f05c12942ac8ce3af08ebf3661f4"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/FactoryService.java",
+    "sha256": "81dcc55e6ca997a9977674e9c43988b6bea51eedd5d851fadf1b406027d2479c"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/OrderPublishService.java",
+    "sha256": "b2c17eae95af68afd2abe7700f772045f48354c9c5a3717367ab9458c69a5ab5"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/OrderService.java",
+    "sha256": "daa40d2744550bea08d97160b95858dacfbe153e80380983902a005376b77b21"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/PrintService.java",
+    "sha256": "e067b1efcf296a4a6d55e254c694013a6ceb61b7b9d32659e4dd9d7ff17c1a0b"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/RuleService.java",
+    "sha256": "bd72fc7e2d677143fc02cbe9311b8f96ab34b17f00c35378601e6ca76b6c640a"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/SnAuditService.java",
+    "sha256": "b9c773a00ce2ed357cea3a34d6d1af48a3bf57ee3a47a86ad0057218c3404ab6"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/SnMaintenanceService.java",
+    "sha256": "56cdf0fabb12cf87c60f33dfa4534eb1abb87330d5636f5b8b3c8566ecc6c2c3"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/SnQueryService.java",
+    "sha256": "7bc16d5fe95289482e27d407dfc945ad082ed804c8a299f2ffbc21e8fa72af63"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/SnWorkService.java",
+    "sha256": "bb143bca9854386f602d64b33ac45f136492bddf0c970962dce0d81972c12672"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/TransferService.java",
+    "sha256": "5620024621111376dfe7a1d9b5b7340c5f2edc0a4ed945db5357b671cc0d15d5"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/AcquireEngine.java",
+    "sha256": "f421c41584685d6f1cd8f8b4e1ad5c24c932767008f36eb6c144573ac45173b8"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/AcquireHandlers.java",
+    "sha256": "bbeab8c1e30b9def9cd3f33b5ccc33eb25cbab4bf91c01048552bd4aca15a42c"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/AcquireServiceImpl.java",
+    "sha256": "ba93d8006de8730d64b6a9de0bc1f30bd46a0a28a9be13f20e14606d1ccc63a9"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/DashboardServiceImpl.java",
+    "sha256": "344df4f0505a9acc9a0cd14fd43b754c5f65bb366576c7d59b99ddc2da5f0d9c"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/FactoryMembershipServiceImpl.java",
+    "sha256": "60146fc34ed0cdcedd0d38ceb571af3ae3194ee3d39db338063e7ee664f45773"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/FactoryPublishServiceImpl.java",
+    "sha256": "b2b975daad8386423ddaeb32483e61b23e948019f0e482018c746e60294341ca"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/FactoryServiceImpl.java",
+    "sha256": "4742a38373e256803a1d3cf1c9c496113ca7f2427d54003cc4eaaabed83fdfe1"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/OrderPublishServiceImpl.java",
+    "sha256": "758ee67c3c361095d56b8d46b44ab55beaf39f4c16f8494c48505e2dacc8ee8a"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/OrderServiceImpl.java",
+    "sha256": "df19e3ddc544acd9039b7c5428ae41e2a2b89523f6b0b4072b7fcc3f09a2ede5"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/PrintHandlers.java",
+    "sha256": "1e21de4bcbe1643f5786d91967ea82bbf06c70c34a750e448bb1628c32e5e280"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/PrintServiceImpl.java",
+    "sha256": "653aaaf5387d91e5c9c7dd17add2d1697dd9a1a45642cb93fb7104409da8c837"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/RuleServiceImpl.java",
+    "sha256": "66dc7912159d939f9be74ad4579d1417df5d43417681728ff574a6631268afa7"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnAuditAccess.java",
+    "sha256": "fe815f4b7255b3411aa7f23ca91d50d4b2a668d22fbc8298f11f11500f987aaf"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnAuditHandlers.java",
+    "sha256": "4200a7824da4a2ff639cdf462753450f76c4110acf86b26785f272b4582402c2"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnAuditObserver.java",
+    "sha256": "9dcc159224f51beac65f7c9003bb8e1c9e69f299840944e71389ec8f269cb659"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnAuditServiceImpl.java",
+    "sha256": "2d27c00245ae56508decc121f81ef88336a6a4399eca411a3218cc46c5c71af3"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnDataPermissionRules.java",
+    "sha256": "32f9618f882a740c306c17078c324e1935f6f4c14fa2fae02b1530c254df52c2"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnMaintenanceServiceImpl.java",
+    "sha256": "f32d3b4d5a1ff72f06822617cd950d6f71c213f06922635cf242b69cee38e63f"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnQueryAccess.java",
+    "sha256": "a23c04abc8508cc1da7f63347579f79cca8255ba8f312e8e823d3da0b6786fa2"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnQueryHandlers.java",
+    "sha256": "0f05d01811e89475e956f30f42f4de9b6c2317aee3c0da2f4c75c9015cf6f57f"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnQueryServiceImpl.java",
+    "sha256": "b64a20e5d9ff405be6b676b9a9f72b610ed8a708509779b987fceae2cc5b5f21"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnRequestAuditRoutes.java",
+    "sha256": "d796cc9fd26d9cac9350ccaa9fdbc298576d41545fc690da8daf15e26511d266"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnWorkEngine.java",
+    "sha256": "44888b9702ce42fb7012e046547822c8f8f9d279a1a52e268a083415ff378b4f"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnWorkHandlers.java",
+    "sha256": "6680b674eeb4212133fb669589463dc254e0e82117797e2f838a4389b9ba6fd3"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnWorkServiceImpl.java",
+    "sha256": "71c75967b28feba7f516a55531eab8da2c760b44784fd170802b279d0bffeede"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/TransferEngine.java",
+    "sha256": "017a4a50f1545baef4237af7be421e56ace40a271d249ff7d4237ee6a7020459"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/TransferHandlers.java",
+    "sha256": "d961e7f3d5bdb14ef45145b1dcf0cb30b8b68a9cc916fc8072f2f85a8d45cb33"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/TransferServiceImpl.java",
+    "sha256": "4440e612bbc2d7e3996054c79329bee21cdb2e40c313145739390c5b9f58bbe4"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/port/ErpProductionOrderPort.java",
+    "sha256": "496cc46314f3fee63dab22997ed239252fc16d6db61b3d851dafcbb16cef49dc"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/AcquireInput.java",
+    "sha256": "70a80085fbc131cb8b08af33d16428bf80639776cd2d9483e60238c72c7b19ef"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/AcquirePolicy.java",
+    "sha256": "1d7fb70dbce11505864217e60a91d01b3c0804ce1cc1774c0dd16192c54c9cc4"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/AcquireSnapshot.java",
+    "sha256": "ea01db72d4a3973a984f95384a016cd36a45478530b6710792f274da8c271fe7"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/ArchiveRestoreProof.java",
+    "sha256": "43b88248ffd013387ae762b5b19c89bdfcbbd807929961813b154489bf89e58d"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/OrderSnapshot.java",
+    "sha256": "6e93f2ec5fdeb18854f2ba78740fa3cf33883ae163a8a438378eaa2e7f0ffd2b"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/PrintFiles.java",
+    "sha256": "6f2882e06c92f1f4dd189e188e38935077a5cd71ff142076339015fc79496105"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/SequenceCodec.java",
+    "sha256": "3d486e7f5ccf140afe3a78cced8886490c6eb02c58db83659bde4e3c5fbb58af"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/SequenceSpec.java",
+    "sha256": "5748a4d5e527eeae3e343143eb33f4db9d98696ad83defcf86aed4c9e582f5bf"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/SnAuditDates.java",
+    "sha256": "b1ada5f70f4e7da3196ee70bebe64d2454912cbd738f6e5c5058492d9253f575"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/SnAuditFiles.java",
+    "sha256": "4ac6092f7905307b3565279934f3351290e301b26e2ca7a4e6da853803243359"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/SnCursor.java",
+    "sha256": "71dd96272c80ef5836e5e46122905190cae49d6e4817e2d9fe06a5c142033404"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/SnPolicy.java",
+    "sha256": "161121adb01d8aa1c2e6ae9d5274aae8fc137c456c4a432a7a4758f13b23ed7c"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/SnQueryFiles.java",
+    "sha256": "35f8a0f3ed474f6939d55f727128833b6cdb3cb99695fab529662a1a73a2ab65"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/SnQueryPolicy.java",
+    "sha256": "145448cae5b10b04444250b9cd9ec33ec76af13f0697d0f6c56056ed777c2281"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/SnWorkInput.java",
+    "sha256": "1fa838e37f78ab284c437912041470df2a0eb72d90d2a52d6c2627425b0a7d76"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/SnWorkSettings.java",
+    "sha256": "ae937c506adec2eddafa50279f9e8c35d2bf5a3d215e420004ae9cc44946dbed"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/TransferInput.java",
+    "sha256": "d1be3196a494655695dadf61b7502e8c841fb56d49bf4a92ce3eb5bab884ba5a"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/TransferPolicy.java",
+    "sha256": "2f555ca44745fa33062d9b95aa1c18386994113bdd95879341970de8a00a15ae"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/AcquireBatchVO.java",
+    "sha256": "f462207d9f982bfe08b721d77258572ec044fc7637d9a02c01b7d00416cc3f29"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/AcquireItemVO.java",
+    "sha256": "e7039b22c91ea40ad6d5e447001b48d2029269a54ce715637050389ccd4e5c6b"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/AcquireResultVO.java",
+    "sha256": "48f0149ab9690ab69617de04512d65bc8d360a67a494550458cfca978131689a"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/AcquireSegmentVO.java",
+    "sha256": "c3f0e47da004bf167f89ca7f568d52f59654f418f4b7e19769e004e6b7dc7446"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/AcquireSummaryVO.java",
+    "sha256": "8d3fdf744937e00ad88008abc75a52b4df2cb50d9dffca0e539dd44c6214981e"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/AcquireWorkVO.java",
+    "sha256": "c146dcff0f7b0d4195dfd9ffc83505abc233c98aeedc9191d03eff022711e041"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/DashboardVO.java",
+    "sha256": "aae2881d05babc200960fdd9dd0274efe5b4bffa4fc593fa59bb83519cef9f4c"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/FactorySyncVO.java",
+    "sha256": "b6299ceb5086dfb0957741bfb2cc8e7ccff3e0f9e481dcbd1f72faf09ec43e7f"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/FactoryVO.java",
+    "sha256": "f2d65a2f5d2e940d708163b8f365d0d40d83f436dc76764b2023c020e6c4f48f"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/GenerationContextVO.java",
+    "sha256": "dc2f297439f540cc116ed4188308a0a994c9a8dae425c53242cdb42bf3e474d3"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/GenerationPreviewVO.java",
+    "sha256": "7262c9614dd143eea5cf3e0a8ed8a0cf6b120a2837e61f161d8ce2a366968ac8"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/MaintenanceResultVO.java",
+    "sha256": "945865a13ed34e5681ed4eef2d476b8d90b59c25024d8c8e4af0e5be9fce79d6"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/OrderBillVO.java",
+    "sha256": "48b11617bf781ef0d8061d64f8ae51d5cdb4d8faed391286373a74af1d6b4a3b"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/OrderLineVO.java",
+    "sha256": "df72ece579b8262bce8e0117272f56fbd3a79429d3132ce7200ea4e799f11d32"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/OrderMetaVO.java",
+    "sha256": "82c71284f16d5fa905ff0e1109332bb109f5836ea27875729f62ed2542f7e356"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/OrderSyncVO.java",
+    "sha256": "e890e9b70f5b3f45a4f264a1dd8602cd941bb55902a8ee1d6b38e49c5b638d60"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/OrganizationVO.java",
+    "sha256": "2879a035731045a52e80a253a31ef58e9d4d9b5b703f3fc16bde713adcd7ca29"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/PiCounterVO.java",
+    "sha256": "a147c269fa36233a90d734436ba50ce8250366f5e588cdafaa6edb61171b8c0b"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/PiInitializationVO.java",
+    "sha256": "2bd0aeb9bc0be40ea9419d7e37cc2730d98bae35e08e28b3cd2f10b3a953a26f"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/PrintVO.java",
+    "sha256": "dccfacc575a91a940d9d57cb093a8074f4f07a4a199324252085a98ca7071eae"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/RuleChangeVO.java",
+    "sha256": "b38ecf9d63df224dbb1024f10b1a3610b2218c133fd3c6dba1bf50900e4d7b0e"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/RulePreviewVO.java",
+    "sha256": "3dbd3b60d144b8c9de1c32f10deb6647118d0a175d9b3d2c7670189757c88578"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/RuleVO.java",
+    "sha256": "41d18f5373188b5a57e50a92396472aa72eee4aa5761b112308aa5fa4d9a7333"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/RuleVersionVO.java",
+    "sha256": "c8997112d5a626815a6fa2b1be98cd3eade8cafe1cef308c189f65a080988818"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/SnAuditMetaVO.java",
+    "sha256": "7e51a08cfa142c33a162f4c3cc6fed3f1b754f4eeab3669c5dcfcc00f4564981"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/SnAuditVO.java",
+    "sha256": "0867b75415f01e2ca1781e143e25aacaa5706f1b82792b05ce0786d6c4c5ac3f"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/SnCountVO.java",
+    "sha256": "95da512950981c6e029d02123b05a224c3257ba218ee0b8f990c52d0b47c917e"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/SnExportVO.java",
+    "sha256": "ddb7b040d1bfbad349155201b25d4b4d7b4195bcd3efb00c295ec7ddbdc06172"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/SnQueryItemVO.java",
+    "sha256": "30593574f8cc880c669f051ed5afab3eed74939715c1f6b9f8d5e7cb3d7a07ac"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/SnReadItemVO.java",
+    "sha256": "0f1246988b79064f417a412800112344d1a89b2b38bad4548078a07f836d0029"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/SnWorkVO.java",
+    "sha256": "fb7defabf581e7126a3e386b6a407bed4f9e46113cf58e4a3416a9ed3f96417c"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/TransferCandidateVO.java",
+    "sha256": "9dd00a9e8da438652e2e568c1bd7612f76ea05f475b138d3d11d719f12070d64"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/TransferItemVO.java",
+    "sha256": "8aab62aab5052c5623c5dc98071bd674d90f4de115258d7e6848109bc650ce2f"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/TransferTargetVO.java",
+    "sha256": "39ac0b958461091b436e5a3c4be2dc5752ec4c98e38385a5ff6adc185f237a4d"
+  },
+  {
+    "path": "backend/adtek-sn/src/main/java/com/adtek/sn/vo/TransferVO.java",
+    "sha256": "cf39ddc155af7c15b2a1509fa5b12ce4431189cdf1269bc17faaf407478e37d5"
+  },
+  {
+    "path": "backend/adtek-sn/src/test/java/com/adtek/sn/service/support/SequenceCodecTest.java",
+    "sha256": "1797128d33649051e4dc5cba5acb20787a6a8ba885f027a1b22f0c3409a62d9b"
+  },
+  {
+    "path": "backend/adtek-system/pom.xml",
+    "sha256": "60caf5d1629c09277e1088f88e5e69f75767df4ed08173eac6448f1909e5db90"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/constant/ErrorCodeConstants.java",
+    "sha256": "82fae8e10dd87a1b05756cffa482771674f44ff5700cd8acdc9ff007bbf457b4"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/controller/AuditExportController.java",
+    "sha256": "276c9ba7f9db1d1fdd250383e11dca076822b2e72e79422d5680fc3d7b886085"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/controller/AuditQueryController.java",
+    "sha256": "b31864545f75ec65ba01838c0041959b93e16654b8fa9293c8e27c5bd43f6d30"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/controller/AuthenticationController.java",
+    "sha256": "d8174dbdd75198b58708522ffa71b94ef127e6ef4a3cd28148634f35f49e9ff6"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/controller/ConfigurationManagementController.java",
+    "sha256": "4134c629f215c0baec43facaf2e476cf6177616dc94032df0f40b1957d1d3e8a"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/controller/ServiceClientController.java",
+    "sha256": "b28969aeb87777a5897bc0b71e4fd0a4d224c0b792d66f9fa4cb5e9869d6522b"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/controller/UserManagementController.java",
+    "sha256": "e30cbce7570c38f2a94dacbccc2d292bc7be2ab671319b77b9f4fd64887ada35"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/convert/AuditConvert.java",
+    "sha256": "ed50194bc72f6198055f37d07247a69e2d94d62cc2086b6accfcd9fe71b911ee"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/convert/AuditExportConvert.java",
+    "sha256": "78a5267ef27ae756f2bf4ff7f2ad66db41dd0e36e6758e7719099aafac5a827a"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/convert/ConfigurationConvert.java",
+    "sha256": "eb9dd478a9546db4ddf08a295798ce248ebeba5cbbe772281bb6171ce6b89ec0"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/convert/UserConvert.java",
+    "sha256": "42d460778712b8398aea6b4c57797c67d620c5aece5f77a5599124fc5716c5b8"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/domain/AuditExportRowEntity.java",
+    "sha256": "d8e59cdc235944aa8bc256cf3c9e2146aa75b9eaae3226248c356f13fa87fdda"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/domain/DepartmentEntity.java",
+    "sha256": "8d25511dae53117d45c0a2e0bf8fb73fe36d05456eb6a2cb7ac23a61c01eb6e0"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/domain/DictionaryItemEntity.java",
+    "sha256": "3bde4fb2abfdd9a887ad98e67e212918a7fad3aeb7ab80b4cb9a7322a00e4976"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/domain/DictionaryTypeEntity.java",
+    "sha256": "845ff744e2de7d46c6c0b7a8995e48552d931cb43cba98554af491bc5c30612f"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/domain/ManagedMenuEntity.java",
+    "sha256": "89af21853c51a3134938eb245d28236062a85ac9f6dbee6d9dc6da4612e966cc"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/domain/OperLogEntity.java",
+    "sha256": "73978514d8477db61b160aa81aee80316bce53e857d9864797161f60832066e4"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/domain/RoleEntity.java",
+    "sha256": "93bb190390703f11965db7ae094abef47171ca25b92c87ab770a4c65b3acdc19"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/domain/ServiceClientEntity.java",
+    "sha256": "a8c69700339ee2454ae062b6dfc936c11e24de0ed9ed84e94b8f44ce0a3df35b"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/domain/SysUserEntity.java",
+    "sha256": "35adc847514fde85702337392df9695f2fda10bf2df70ab47d0db9e29661a08f"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/dto/AuditExportCommandDTO.java",
+    "sha256": "88398434b746b7f4388243cf2b94e4f65d91bb9d19a4536434e5d17e1b64a93b"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/dto/BootstrapAdminDTO.java",
+    "sha256": "58a97d6325defab9e852ecdfd86fcf689aed1082ffe04d947a0cfef336594b37"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/dto/DepartmentSaveDTO.java",
+    "sha256": "f81c139e44fdbcc9fd7531098829c767bd1f8aeea5b1b0aa6b2a012da968236b"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/dto/DictionaryItemSaveDTO.java",
+    "sha256": "fe5f007bfdaaaccf610fb6d678faa2d85727d826126e7b2d2f53f919c7cf72d5"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/dto/DictionaryTypeSaveDTO.java",
+    "sha256": "688a3862a6bf612a1a74dc425c1f7fff14e87bbfb8f8fb944e2ec5b53b6a6dba"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/dto/LanguageChangeDTO.java",
+    "sha256": "a0f569176d9c027b84547f72213f76dc9fe27a3799770428d923ce1a38b3aadf"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/dto/LoginCommandDTO.java",
+    "sha256": "31b7bcab84fecac4b112291ce9d578847c3d44a39bb93e545765aa6add068fbd"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/dto/ManagedMenuSaveDTO.java",
+    "sha256": "e8b0a836373d06be8c1588dfbc7e21800d1eb652e2be2e654f1864d2c2a79ede"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/dto/PasswordChangeDTO.java",
+    "sha256": "b7d2fa61c4040c4c034c9710c3b407ee88289d899140bb2e5927a2a12450ba1f"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/dto/RefreshCommandDTO.java",
+    "sha256": "f0f1e4725a5f3ad0d47b96256bfea5baad8a6cd13066a8a0319fd1843952a4ec"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/dto/RoleSaveDTO.java",
+    "sha256": "e5ab07864c0190b45b7fd069d0d748b92953e093f9ef2bc3418456dbff8f9bbe"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/dto/ServiceClientCreateDTO.java",
+    "sha256": "46d4dd2b9baa9f626199885312beb94dd51ae25a46e8e8fabeff565dde9d9d72"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/dto/ServiceClientRotationDTO.java",
+    "sha256": "008c40d5fc3cd387d43b09da8fb760c2f4915867257a344765c02459f08a5628"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/dto/ServiceClientUpdateDTO.java",
+    "sha256": "80a4a1d0ea0e0fba4d3aa0e338de09b7a33644bb7801fb6309d9e855643c2965"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/dto/ServiceTokenDTO.java",
+    "sha256": "785ea1f8b9f57f9188795e6e7927686e8beb8e915238ba97b8ee2bf8e9e574e0"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/dto/UserCreateDTO.java",
+    "sha256": "814fa184ed10a8ae1a566a15e70cb189b751144ee6bc6aa000e7a37fbffe9c9b"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/dto/UserPasswordResetDTO.java",
+    "sha256": "ca25dc93a10d018968ada522e2b0d4effc5487278521a434a73ff63e2827ca65"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/dto/UserStatusDTO.java",
+    "sha256": "d6a9bc6fed846c59ca55b92fc8291d024ba6258cf69a4d65ba13adb42014c73b"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/dto/UserUpdateDTO.java",
+    "sha256": "3f85b44299bbc9921d40c91681aa94c3671f90c1d03ee7650bbe3acf87b5a570"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/mapper/AuditExportMapper.java",
+    "sha256": "bba2c67e22e36ac24d0b9eb9fd297d4b9ac934765e59948446240613fe588323"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/mapper/AuditQueryMapper.java",
+    "sha256": "5d50c0c33627f74529427dcecb08ad0954f48b985272cb07775bf385c09d25c1"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/mapper/BootstrapMapper.java",
+    "sha256": "7ca63b48cae991e28ade1775e44e8e0f3d2fe538f8948cca7aa6cfd7f6b88558"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/mapper/ConfigurationSecurityMapper.java",
+    "sha256": "7eb7d86c1cf232f7fe69184c4406d15d441f17db23410cd85f7a668d014c6d48"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/mapper/DepartmentMapper.java",
+    "sha256": "f72d8979c1e16c9213bc4e71bc7624cdef1c8c8cf07e8ccd800b0f060cab22d2"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/mapper/DictionaryItemMapper.java",
+    "sha256": "1c28d8cfb12064b55a1a52026a9a122689ff7bf2b5945b60a4d539bf4a60e258"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/mapper/DictionaryTypeMapper.java",
+    "sha256": "e5f8007126fe5a8cb58aab348fc255034c551a5e011fa93311a2eba9995a366f"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/mapper/IdentityMapper.java",
+    "sha256": "aa24fd062e2db6e2fa7ccbb48a7e5b713ff90420dd98d01c51414e6d797fbce9"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/mapper/ManagedMenuMapper.java",
+    "sha256": "5fc6b3c7b1e342a6000b5b7c61e91e25b9325f870b3dac0a232b18a23a7ce423"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/mapper/OperLogMapper.java",
+    "sha256": "d9271abaa1da8b91368cdca41f97ffd9f8635bc72b1679984852441feab967b4"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/mapper/RoleMapper.java",
+    "sha256": "99da3733167956ba552da96f51e4b748b473ea9c46439481876d6f0c708a15b1"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/mapper/ServiceClientMapper.java",
+    "sha256": "4fe458e5c201ec7dcd40b4e0c51595da9ec8c77e5d7fe7549153b60748e01d16"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/mapper/UserMapper.java",
+    "sha256": "ec4184dc80022d6ac4d86b20ffe3d975eb1e2c0215b3136f35c1f652d1549145"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/mapper/UserSecurityMapper.java",
+    "sha256": "ae432a28f50b6b12070f62f0f99a2b1201e8b171cf91beca66ffd7959c3f1354"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/query/AuditQuery.java",
+    "sha256": "a6d8aaff3ad4e226456ef2bc9ede0704e46e77cb059cbe8603f23f4ba957f1ac"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/query/UserQuery.java",
+    "sha256": "8566fda277dd1bfca7cb31363ad20370f20ea7acdaa87bea162df4071e4afe04"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/AuditExportService.java",
+    "sha256": "ab8864b1b80de2c0b8e40e9bea2fb7df83d7af43f40398cfdde7588ecbc20fb0"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/AuditQueryService.java",
+    "sha256": "959427e9cc873f6f7f5b6e0a6706c19d1b9634d5f293875b62085c667c55ff35"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/AuthenticationAuditService.java",
+    "sha256": "cf54072b626a0d2079d809a9b1ce91706c0e20a0412da8aec199e2025af36377"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/AuthenticationService.java",
+    "sha256": "e7898b31a4a7ac0a946ce26a7d1f242e773ec189ca6ef22520619f8732bc17f0"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/BootstrapService.java",
+    "sha256": "145807411e673538249d95a29f4d8ee26e60957df29a6fb0a0a24b62b17189c5"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/ConfigurationManagementService.java",
+    "sha256": "0c9b447f9ccd277142019c5a12e66aa893fa821b9ed7f8231afa3be377309bb7"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/ServiceClientService.java",
+    "sha256": "332324bb83b774ed67a2474f17a4291a7600155911a204f35d47be7cd17ac166"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/SystemAuthorizationService.java",
+    "sha256": "e07f90e6b624a80a5c3c4a76eccf698148cf6993287242a8c64863b87204f382"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/UserManagementService.java",
+    "sha256": "6433d416c27a1c1eff24f5d438ff0f3934b5422c509b616766676cf5a139e38a"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/impl/AuditExportServiceImpl.java",
+    "sha256": "a659b558ee8fadc7a6cf74a01a50c57a456036ea57da2f178225e153d359ef42"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/impl/AuditExportTaskHandler.java",
+    "sha256": "e157ab524b941ad82c1c50aa6fbc0ea5491c0ce87aa318b9053dff8d5d7c8fda"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/impl/AuditQueryServiceImpl.java",
+    "sha256": "4788a095ae8024f82fc11f7b7c846ba360b5cf491597e168b0d48b03af1753c4"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/impl/AuthenticationAuditServiceImpl.java",
+    "sha256": "bf4ad5757f7a72e4eb12e048ec5df476a1d0b545c4c8f69b8d82d653fbd9654f"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/impl/AuthenticationServiceImpl.java",
+    "sha256": "22c7eaa6bf4de9d117d81bd928d76cb189c305705657833e32d62622c293772a"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/impl/AuthorizationMutationServiceImpl.java",
+    "sha256": "73413e7dae19635aa68f826b85f2a826b6791250b20aa9482af0e94e151de949"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/impl/BootstrapServiceImpl.java",
+    "sha256": "09475d7b604109338eef6dfddf724a3c509d2c5a09b133566137b2ad56bef5ee"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/impl/ConfigurationManagementServiceImpl.java",
+    "sha256": "9e12b616a94defbd667b6e1bc6895c785d3da567477c6287c3e772eb47621c7f"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/impl/CurrentAuthorizationServiceImpl.java",
+    "sha256": "be6d18f7a9aac2be5e3aac3e692c81d32793bd25660594a0b3a7d7e5ea1a7fea"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/impl/ManagementAuditServiceImpl.java",
+    "sha256": "0a694e449cac72069c4c7ef3a15752b4e4568f3e353ca94fb8290a0f87fcdc5e"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/impl/RequestFailureAuditServiceImpl.java",
+    "sha256": "d822b482d908ce40e22cd35358b0b80660dcbbadaf78097d8d2b5e4bafdc53cf"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/impl/ServiceClientServiceImpl.java",
+    "sha256": "d884fcbee7aff089fd1642793641132665b852281b2f343d01926c8e4e98cb57"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/impl/SystemDataPermissionRules.java",
+    "sha256": "bb040a60417d08bcab79ce02ec8e8f527c9d8f32e13c22ba24f6982d36c64113"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/impl/SystemRequestAuditRoutes.java",
+    "sha256": "faa785c6edeeb620ea351dae7a4e657ea2fff80611f7be4b3778f492a9e64e3a"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/impl/UserManagementServiceImpl.java",
+    "sha256": "dae011da1094fa8a2407a91b8c49304d3e3a1fc591d0375a0c3e6f029aeb165b"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/support/AuditChanges.java",
+    "sha256": "63f11415eccaec291fefcbf992b8b3e8b87c3f42901a509e7759d246310e77b4"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/support/AuditCsv.java",
+    "sha256": "06f11efe8af49ccc54bab030bc1297aab73613b499c1104ebac2864e871b4a21"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/support/ConfigurationPolicy.java",
+    "sha256": "009d7a3c9fe8454af04e24c9cefd22cdd4cf2cf4c9a4762928787973a797ef0b"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/service/support/PasswordPolicy.java",
+    "sha256": "a413f577b245c3cb4fa339b777c5c06aea93cee680d24bdd31f1097f784dc8e4"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/vo/AccessTokenVO.java",
+    "sha256": "d176ba32af7a2f03d01ffec9386585dbde3979888c5154c2b5319c4524a7ce48"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/vo/AuditChangeVO.java",
+    "sha256": "6885d7be632833cd98b5c9a876f3e34904bc5c8b733bbfb76cb69803f52278bf"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/vo/AuditDetailVO.java",
+    "sha256": "accc663574a5ecc08a263f936030fe6a4906567796f751c6d874da268b4b48f1"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/vo/AuditLogVO.java",
+    "sha256": "30f9177047ec399ec019eb78246ac0a90bb0d1a0427025662d7446d32d9b65cc"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/vo/AuditOptionsVO.java",
+    "sha256": "b5f0599076f15c4422f56711cc427cc4a45bd1f85841f9b0361f69f48d580bd3"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/vo/ConfigurationChangeVO.java",
+    "sha256": "45a77ff9008cfe174f568ae7a82c565ff2e1bd80ebef71ff6d85754b87a13f44"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/vo/CsrfTokenVO.java",
+    "sha256": "f4e293b555d22902a69296a5052eb944ec8a8bbe5ee4a0e69d24c5c9d95f7d63"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/vo/DepartmentVO.java",
+    "sha256": "61a67a11dbcdcdbb7d65d2ee188e2fc0e9230a1366de18a899ac365e90ccf030"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/vo/DictionaryItemVO.java",
+    "sha256": "7c1c7a3f36406dc746718b13c57c804d65d74d72be39974fdb218f3484ca4cd6"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/vo/DictionaryTypeVO.java",
+    "sha256": "c6295489685b35207495008ac1bc6b4f9562bbf6ccc64caab7de153197e1cbd4"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/vo/ManagedMenuVO.java",
+    "sha256": "b55f1ad37efce1457f67aa0c39f131b9f5a5832c87bf857e5ee84d05ca77a6ee"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/vo/ManagedUserVO.java",
+    "sha256": "97e814bd5d3b3fee5965387595fb83b2eb1f3213a0230f9317fdd4fffb04dee6"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/vo/MenuVO.java",
+    "sha256": "8f2dd1c5d31dfe147eb529cfec81b8eba6f4d010c6e7312c037b40003c7954d0"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/vo/RoleVO.java",
+    "sha256": "748ae6ac53f7e895ad51202b5292fd8de4207fc1dcb0a92906c6a033f6617b56"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/vo/ServiceClientVO.java",
+    "sha256": "610d1ccf40969c7fb2a0c18949fc82bf3176b9a0d02ed184114f0a46f5824599"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/vo/ServiceCredentialVO.java",
+    "sha256": "f5d9296723fceee44f8a6bd17dee9a975524345b8e0d5c944beb8fb81a5f0b3f"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/vo/ServiceTokenVO.java",
+    "sha256": "9747ad32b7574f0dda69250374e39eecde5a867d98eae5b1a0d6a3a17fa5bce4"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/vo/UserOptionsVO.java",
+    "sha256": "586af9591fb6a6b1a057b5519edb85892be8b4c734c554027e9cc79597b0bb7d"
+  },
+  {
+    "path": "backend/adtek-system/src/main/java/com/adtek/system/vo/UserProfileVO.java",
+    "sha256": "bb6c4cd243017686c208995d07dc66067be6b387aaed4cabf59ba06f6634cc61"
+  },
+  {
+    "path": "backend/adtek-system/src/main/resources/mapper/UserSecurityMapper.xml",
+    "sha256": "229b0bd0cdfe38a50a8479275fa6d5ddf07ea03f476c25ea49195bcaaa856eb0"
+  },
+  {
+    "path": "backend/pom.xml",
+    "sha256": "679907143ccb6128160d449cd5f6b8d6129cddf5efe1d877386e1912d4ecf8ef"
+  },
+  {
+    "path": "deploy/api/Dockerfile",
+    "sha256": "4bf42634b21dade43613e65280504a0a86d4900fc2ba99a260ae06a4e9a6d3c6"
+  },
+  {
+    "path": "deploy/api/entrypoint.sh",
+    "sha256": "16f0506b56d31dfead8eabab0a936506d8decc3ffcfc16f97dcd9a06c02637d3"
+  },
+  {
+    "path": "deploy/compose.container-test.yml",
+    "sha256": "10789fe7d7c08eb206eff357fa5f5bcb4c91a4af50bf7dca6c76c654c7928f48"
+  },
+  {
+    "path": "deploy/compose.test.yml",
+    "sha256": "f4e70ed3c9a3d3bf325a04455e661f4d9b41db165dfe18fff8fb8c4dbaa8d63b"
+  },
+  {
+    "path": "deploy/images.lock.json",
+    "sha256": "6ce973b7f954e770f670eee0a71bdcf0585228b5fe7dfdf3adefc1a629ec1829"
+  },
+  {
+    "path": "deploy/mysql/init-container-users.sh",
+    "sha256": "d9e8a7cfcf902835ec8c76564ce527bed0dc16b17f4336237e50d8a92d59d683"
+  },
+  {
+    "path": "deploy/mysql/init-test-users.sh",
+    "sha256": "b3ee2e68b28f638e49e9b98cf58cd69414c91e8f6a44687114a1f9c142cf3c35"
+  },
+  {
+    "path": "deploy/redis/start-redis.sh",
+    "sha256": "f76d4e0d662b940dce9eb5c86f67533596597af57f7ee5bce9da17f47b11e2d7"
+  },
+  {
+    "path": "deploy/web/Dockerfile",
+    "sha256": "4dade6eae5a0d3f8cff73fdf7faf9f4d5cd12a3d808e93b16890d0b4d88d5a83"
+  },
+  {
+    "path": "docs/01-需求与范围.md",
+    "sha256": "c3b6b4469b275444baef65bee116fce48809f7ea4d96e19c5a165f40ba700f8f"
+  },
+  {
+    "path": "docs/02-架构与工程结构.md",
+    "sha256": "7b12e76def0ff04dba5a60dbf67525410a634361d7e353a269a238de2a5c1011"
+  },
+  {
+    "path": "docs/03-数据库设计.md",
+    "sha256": "70f6483df7ef404354c5692461b0507b2eec9adee38d41af517a3eeca82a3b43"
+  },
+  {
+    "path": "docs/04-接口契约.md",
+    "sha256": "e52a4044f960187eddfdce71c15e75b6d6f7b7332deb28e055133afe4c5eca4a"
+  },
+  {
+    "path": "docs/05-开发与协作规范.md",
+    "sha256": "b2c764411a2d9fcdc516e9c5886960347a3ecb126673867d3bc8af25e3de18d2"
+  },
+  {
+    "path": "docs/06-测试与验收.md",
+    "sha256": "a01625aa36e62d3cec5426b4b2169bcdfa26502435e27a9f0bf714ebf073648f"
+  },
+  {
+    "path": "docs/07-部署与运维.md",
+    "sha256": "99f6861a13687db8d67ccbffac8e197a6778b2a19c546107a17cb5190e9b46ac"
+  },
+  {
+    "path": "docs/08-用户手册.md",
+    "sha256": "7d70b2127f47a39945c187c0a8cf76c56cab18bce8b73873ea0001a7568d0a20"
+  },
+  {
+    "path": "docs/09-技术选型与版本基线.md",
+    "sha256": "289acc19e8f5c0e4acbf8f187c743d9c6951a2806f85017c777136d655fdc3c2"
+  },
+  {
+    "path": "docs/10-命令手册.md",
+    "sha256": "4278acecf3b7199b705e93557e9ef51c72017e5e8a28cadb21245f02122ce425"
+  },
+  {
+    "path": "docs/11-完整功能迁移清单.md",
+    "sha256": "472be6110d359e12004f2223aa79359fcd97fa71729e7ccbbae7d307117176d7"
+  },
+  {
+    "path": "docs/12-MES领取与打印契约.md",
+    "sha256": "31d65c2f9c4a4a1b00e72885cd8bb13723a6de5c92231b35a882ec73b77b158f"
+  },
+  {
+    "path": "docs/13-转厂查询与痕迹契约.md",
+    "sha256": "02b937aeeadcb714c046f7c6f1aeba99ba1346b273c9fc4cd68defa291809076"
+  },
+  {
+    "path": "docs/14-维护迁移与恢复契约.md",
+    "sha256": "cfd7665c7bd8d0cc99918d39fca9beabe1f0dd2f3b75af9ccdf52182d1f6490e"
+  },
+  {
+    "path": "docs/README.md",
+    "sha256": "726a21bb29f4aa92d42bcb50b0b27a447933998bf6cfafa16582539bccb1dbea"
+  },
+  {
+    "path": "docs/plans/2026-09-29-S2-持久任务与文件.md",
+    "sha256": "c9807db4162417a86701ccddb83a9a21ea7d80f06b79ae1ddc2b08332092f9d3"
+  },
+  {
+    "path": "docs/plans/2026-09-29-S2-操作日志.md",
+    "sha256": "4827a6e10f5c10c74dbef07ed8dd4d7760e207efa994e88bad27cc50210fcc27"
+  },
+  {
+    "path": "docs/plans/2026-09-29-S2-用户样板.md",
+    "sha256": "1065d671b12e44761f628badf93cc197ed55d33ed13fc418346efde89f57347f"
+  },
+  {
+    "path": "docs/plans/2026-09-29-S2-系统配置.md",
+    "sha256": "22d96892a80a705d5de186d815b19592113dd4153691f7c65f13c79dc02ce079"
+  },
+  {
+    "path": "docs/plans/2026-09-29-S3-工厂订单与规则.md",
+    "sha256": "bd5a6c5f2c4110ca96812c76b822eb458c5ab0f1f71e7a5049ca9e88944fa68e"
+  },
+  {
+    "path": "docs/plans/2026-09-29-S4-初始化生成与分配.md",
+    "sha256": "b89d4c64e240e8342304439bc3909d9f890e91d402bd5b336aadbdcbfb5483b8"
+  },
+  {
+    "path": "docs/plans/2026-09-29-工程启动.md",
+    "sha256": "8f6627f3e7ab800e6ca87ee2346dad21a251e4bb587a0b7bc3e8cc20fb5ed010"
+  },
+  {
+    "path": "docs/plans/2026-09-30-S5-领取打印与MES.md",
+    "sha256": "48a7cf68e731207ed47a757b248dc121238b7d165c6ca03258d2b6a0e20045dc"
+  },
+  {
+    "path": "docs/plans/2026-09-30-S6-转厂查询与首页.md",
+    "sha256": "7110ed000437dd7698b771c3bc98acfb115746484b92f29c25d34c2d6112cc96"
+  },
+  {
+    "path": "docs/plans/2026-09-30-S7-数据演练与交付硬化.md",
+    "sha256": "746690e5199d9891eb54878d4cd1ed94be3b802b54ae1db17f911dfb32df308b"
+  },
+  {
+    "path": "frontend/.prettierrc.json",
+    "sha256": "f583ff6d8ba542b76af46c4c024a0941b77aee51133bb0f69ec6eb1fa613de7e"
+  },
+  {
+    "path": "frontend/e2e/audit.spec.ts",
+    "sha256": "96fd3a514bf19e45b903799aad9be6b722d4e012a74bd16d99aca620f3fda4af"
+  },
+  {
+    "path": "frontend/e2e/auth.spec.ts",
+    "sha256": "682ac7bc4d3bcf0367ea7cda67ad2743f6242197c08c054e1b5ff7b9677566af"
+  },
+  {
+    "path": "frontend/e2e/configuration.spec.ts",
+    "sha256": "550eb0a3c1457a6d4a427a64cd137210a2eb80556adad7f068487d5a9dd2693e"
+  },
+  {
+    "path": "frontend/e2e/container.spec.ts",
+    "sha256": "95a27fdc28db35b54dbde781a7e3c93ee647ee4054e3c8484b502dcf77ec8d28"
+  },
+  {
+    "path": "frontend/e2e/export.spec.ts",
+    "sha256": "789f3569804113bf6a32ae58a73e4b46bc758512bb9af2cbf0095ad3848dd19f"
+  },
+  {
+    "path": "frontend/e2e/privacy.ts",
+    "sha256": "6884b91fe9f3d9e7a4a95ab079261ec54df9552d033e7ca074a95d563c3033e9"
+  },
+  {
+    "path": "frontend/e2e/sn.spec.ts",
+    "sha256": "b0aa8e248f7077e7f9b61ee09dafe502e2e247a2de6087fd7bfbfb40a5631b21"
+  },
+  {
+    "path": "frontend/e2e/users.spec.ts",
+    "sha256": "5701090504d398a30ce1dea0b4f6cfcb7053ef6661b5ec695dc68c0577cc5143"
+  },
+  {
+    "path": "frontend/index.html",
+    "sha256": "727829d781e5b668fe7fef99248f716877a65ca12bd885d8ff547e1e82ada98c"
+  },
+  {
+    "path": "frontend/openapi/adtek-sn.json",
+    "sha256": "5ed636cd90dbead117ea30dcc72c2207099f13479d558bd16fb52b6c3be968cc"
+  },
+  {
+    "path": "frontend/package.json",
+    "sha256": "3815c25790b8781940ef9278b083fe51c1204bd33ee4ec7a24ee480226bd0011"
+  },
+  {
+    "path": "frontend/playwright.config.ts",
+    "sha256": "5cb523de1447d3124678deed941000571a36d981a70033ad39219dfc23056a01"
+  },
+  {
+    "path": "frontend/playwright.container.config.ts",
+    "sha256": "f3b0ca4d05a55e0d8a620e8c25717b2a905d9f7a2ff2e11cd2c28211710241ba"
+  },
+  {
+    "path": "frontend/playwright.users.config.ts",
+    "sha256": "3cc2f4cc4b2adf33767a5721ac37fe800b950617af6c5ce1b9d82d10cf264d6e"
+  },
+  {
+    "path": "frontend/pnpm-lock.yaml",
+    "sha256": "f65850da8d24cfd770130abc5cd9653afcfd006b49f569229d1ac7bea57b4a7a"
+  },
+  {
+    "path": "frontend/pnpm-workspace.yaml",
+    "sha256": "82305f7f0661842985b6f440da1ab2a972495f79b11239775659897bc1a4db6d"
+  },
+  {
+    "path": "frontend/src/api/audit.test.ts",
+    "sha256": "78b3598528c4fd3d51069d69352eee1f311d608312ac128d5521bec97cc01472"
+  },
+  {
+    "path": "frontend/src/api/audit.ts",
+    "sha256": "596b81677d26095f94e83d4bb6d74d6367f4653036044e02411cbb1c8e0e6bcf"
+  },
+  {
+    "path": "frontend/src/api/client.ts",
+    "sha256": "adaa4295ed7fce9e1ea3eaa79fefd5792892799c79ae3e24653c032dc4856512"
+  },
+  {
+    "path": "frontend/src/api/configuration.test.ts",
+    "sha256": "dd95f2f333e034bc4b29692d9c218342b11058278432e28c64d67d64af95e26e"
+  },
+  {
+    "path": "frontend/src/api/configuration.ts",
+    "sha256": "95c273fcdd6bd01c779b57ef03bd29e144fa573b67fe97df2e91105b7d37ed12"
+  },
+  {
+    "path": "frontend/src/api/contract.test.ts",
+    "sha256": "35c83d5891e383b0e1721c63d2c46f20a8c2236fff43cb7423d43171b2665bca"
+  },
+  {
+    "path": "frontend/src/api/contract.ts",
+    "sha256": "43693b727dfb616a1bab59beb3e9cc2f0c93e6a355046e54c211bcb4c239a311"
+  },
+  {
+    "path": "frontend/src/api/generated/schema.d.ts",
+    "sha256": "7f9cfc43684832de39fb85fa1cc2f0389895e7ef720d29d28b9c8a2dea358481"
+  },
+  {
+    "path": "frontend/src/api/sn.test.ts",
+    "sha256": "90a6176b97605bb139616037c33b9138c5895620422d52175ba49f6c8988eefb"
+  },
+  {
+    "path": "frontend/src/api/sn.ts",
+    "sha256": "0fbf59040d597ebce17f820b08b73bb3d6a8b76d80ab6ed2f55e97e7cfe30a22"
+  },
+  {
+    "path": "frontend/src/api/snAcquire.test.ts",
+    "sha256": "34cdbd50b34fc4329260b233d36d825a1e896fa5b6703049881cf4ff8ba7c258"
+  },
+  {
+    "path": "frontend/src/api/snAcquire.ts",
+    "sha256": "305a29b2ee26b4477eb645cbd1ad76141da4ddffac3be987171f41e9c22e465d"
+  },
+  {
+    "path": "frontend/src/api/snAudit.test.ts",
+    "sha256": "cd55e0f58027b7451edd383c050cc59b2f1bf6574bd342a0c2f6b408a16d286d"
+  },
+  {
+    "path": "frontend/src/api/snAudit.ts",
+    "sha256": "a7349bc47447dad444368c8ef3f35420996164582130e3ebd1d2755d2d324615"
+  },
+  {
+    "path": "frontend/src/api/snQuery.test.ts",
+    "sha256": "6bef6c2c3607bb0d86dda972ddf28a2540f54fc8be61446ae1d9471dec360caa"
+  },
+  {
+    "path": "frontend/src/api/snQuery.ts",
+    "sha256": "e96bd7e26b0facd8bdeec6929a8fda3344174edebe3a83ac32e0a69db12d8cdb"
+  },
+  {
+    "path": "frontend/src/api/snTransfer.test.ts",
+    "sha256": "adb35fedede5b5871adacc71b0a31ff0fa292690219bec3a77e7bb808be2e399"
+  },
+  {
+    "path": "frontend/src/api/snTransfer.ts",
+    "sha256": "33e0ea8d33d7803ff0cc4d0fecd753551cf767ee2f5ab2aabedc8030c8d5f143"
+  },
+  {
+    "path": "frontend/src/api/snWork.test.ts",
+    "sha256": "254906f9126ac38ddd58430035be8c37552dd30214c3ae627f06be5fc21466a4"
+  },
+  {
+    "path": "frontend/src/api/snWork.ts",
+    "sha256": "1db246eb8193d48f12f8bf14d8fd7cbbf42a852dc03f3a0704cf4654564207df"
+  },
+  {
+    "path": "frontend/src/api/tasks.test.ts",
+    "sha256": "babf861969731f594e1a121262d1d65d312f0393232743c914fa5c932c0c836a"
+  },
+  {
+    "path": "frontend/src/api/tasks.ts",
+    "sha256": "f896e96ce24d83395086899da6943a60e972b762c460db30db0bed9ae95466e7"
+  },
+  {
+    "path": "frontend/src/api/users.test.ts",
+    "sha256": "c73bd14472d77146a33fec2826f1766275fe1c97c72b1ff75133ee18f9b1f557"
+  },
+  {
+    "path": "frontend/src/api/users.ts",
+    "sha256": "3372566ce5f3a188c189b1764b0df1984b645279134dfbdd247a6ffc33bfc946"
+  },
+  {
+    "path": "frontend/src/app/App.tsx",
+    "sha256": "5e525d73e5447ec9b2fc0ca47d92668a1d6fc8ecc707d7c392e490315b7c0751"
+  },
+  {
+    "path": "frontend/src/app/queryClient.ts",
+    "sha256": "c11c9e769a6b3e238db3415c28f9d21b5ae43fbdead284289a4ab5edd7273f92"
+  },
+  {
+    "path": "frontend/src/components/ApiErrorAlert.tsx",
+    "sha256": "5bddf5c11e37ded8b78ea66d5a5c85bc77f2f535fff8652576b3f04d89323315"
+  },
+  {
+    "path": "frontend/src/components/LanguageSelect.tsx",
+    "sha256": "8f7f9efa44569aa9ed1b9bdbcb3137d3a9eee14bb8be2a1972a16da4a3124368"
+  },
+  {
+    "path": "frontend/src/features/audit/auditLabels.ts",
+    "sha256": "0c0db0f3bf7b5eb13a2491b26d129ad090d44ba26de138d1ed4a9e60c66b1ebd"
+  },
+  {
+    "path": "frontend/src/features/audit/pages/AuditExportPanel.tsx",
+    "sha256": "a6915d42d48540ce759e344f881aa2dc16da737e47a863f6415016b811e4fd20"
+  },
+  {
+    "path": "frontend/src/features/audit/pages/AuditPage.tsx",
+    "sha256": "9c0b681dd4044058ddf944fefc15b679a9c28c7d5f4f8cd38aa105d40bf176b9"
+  },
+  {
+    "path": "frontend/src/features/auth/pages/LoginPage.tsx",
+    "sha256": "a131f985f1bbdbf16657f0b51a3668ce2ef35b197be4edfa0d6355348e1bc8e6"
+  },
+  {
+    "path": "frontend/src/features/auth/pages/PasswordPage.tsx",
+    "sha256": "36cbe72c65c64d220ed6271e1b5dc4a3075614c130cb0c3895fa21ac9de39f8d"
+  },
+  {
+    "path": "frontend/src/features/auth/pages/ProfilePage.tsx",
+    "sha256": "a563ba615bd2de61a5972055bdd3ea8b9794f0632cff4d2276bd3597fe06f2b2"
+  },
+  {
+    "path": "frontend/src/features/configuration/pages/ConfigurationPage.tsx",
+    "sha256": "b5b24c59ff0959327aeabf8485c274ee34bcf27e4f6ad6af26988a9faf0ae058"
+  },
+  {
+    "path": "frontend/src/features/sn/components/AcquireHistory.tsx",
+    "sha256": "42ee752791f831b3f018b4802cc05717fd8914238b17cab8a098910a2ed43d1c"
+  },
+  {
+    "path": "frontend/src/features/sn/components/FactoryPicker.tsx",
+    "sha256": "a2017436c359882152dae493d316f97dab465769ba070e5a0c7aac33641d9a00"
+  },
+  {
+    "path": "frontend/src/features/sn/components/SnExportHistory.tsx",
+    "sha256": "75994f7b62425ed3f4b24c70a17ee4d13ceabfc5e505e4105497007b9e01a3d3"
+  },
+  {
+    "path": "frontend/src/features/sn/components/SnOperation.tsx",
+    "sha256": "8f188737d88e4fd053b1c2eddbd854a94b98f43f17a57450bf0663a4f779c8eb"
+  },
+  {
+    "path": "frontend/src/features/sn/components/SnPageHead.tsx",
+    "sha256": "d2f230437cb98b1a645f9026d3074cfb337bc83bc035e6915e3e0c0bd07b9a6b"
+  },
+  {
+    "path": "frontend/src/features/sn/components/SnWorkViews.tsx",
+    "sha256": "e63c0143f36c5d208e10a72edba62a0a14a03d8e0a1c6b975990dd95f650b0d0"
+  },
+  {
+    "path": "frontend/src/features/sn/components/TransferHistory.tsx",
+    "sha256": "8b55f22b3d992d4a122a27d16903426edd983930d0f68bbeebfd4d25d9e49eac"
+  },
+  {
+    "path": "frontend/src/features/sn/pages/AcquirePage.tsx",
+    "sha256": "cfc983ac8c35cfa5951caf856f7d37dcc113839e65cd5ffce271297d044f95c2"
+  },
+  {
+    "path": "frontend/src/features/sn/pages/DashboardPage.tsx",
+    "sha256": "e4044c125b993375af927ea92d2ff68a51939f55eea308794d64b888b4a3dde9"
+  },
+  {
+    "path": "frontend/src/features/sn/pages/FactoriesPage.tsx",
+    "sha256": "7df572779895678eab2bb7c8995e5635960f13a4ca08369d94d776a7a498094d"
+  },
+  {
+    "path": "frontend/src/features/sn/pages/GeneratePage.tsx",
+    "sha256": "dfdcc5971de5344532a51fe5bde2e80d3b183a63a1d0b6e4f05d3879e5f2c73e"
+  },
+  {
+    "path": "frontend/src/features/sn/pages/OrdersPage.tsx",
+    "sha256": "c848904997e06506730e3eb253f7a60a7df596e33d1139eb2f0b36c21da11d54"
+  },
+  {
+    "path": "frontend/src/features/sn/pages/PiInitPage.tsx",
+    "sha256": "1acd862d8fcd0fdf7698c50d39929ecccfae06e8a78ccbd0d5c5a646a08df52c"
+  },
+  {
+    "path": "frontend/src/features/sn/pages/QueryPage.tsx",
+    "sha256": "7d4d242e1cdb29907957b8fe50150c41829efd810ad12735984015ecd558b04b"
+  },
+  {
+    "path": "frontend/src/features/sn/pages/RulesPage.tsx",
+    "sha256": "08398216ba22a8e5b2ef6a188648f338d44a5b1594b331e1fde63a72fc0be64a"
+  },
+  {
+    "path": "frontend/src/features/sn/pages/SnAuditPage.tsx",
+    "sha256": "78d55bc1be96e29c08baf82a0660b4f78b66f87c8292b26f4aed733fff0e461c"
+  },
+  {
+    "path": "frontend/src/features/sn/pages/TransferPage.tsx",
+    "sha256": "f8c89ca68422efed9652e8de02ffbcfa45b25858250a61034896d7dc75ab5046"
+  },
+  {
+    "path": "frontend/src/features/sn/snInput.test.ts",
+    "sha256": "f372f4aed10b736d083e6e3be21808901f81fc5ded3e46611e18c8d85ccf5e72"
+  },
+  {
+    "path": "frontend/src/features/sn/snInput.ts",
+    "sha256": "e1e8b92852f9475cab4d87c9eb6bfe8a779cf96838ab10aabb0596fdfeb1e9a4"
+  },
+  {
+    "path": "frontend/src/features/sn/useSnOperation.ts",
+    "sha256": "0c3e7686864b08670a5efbf3742ced702b3290d4f98273ffb148bd580d20f728"
+  },
+  {
+    "path": "frontend/src/features/users/pages/UsersPage.tsx",
+    "sha256": "c9f41818080147540a3dc44bd537c216f0cecaa6695a09f4e06891534a9c979b"
+  },
+  {
+    "path": "frontend/src/i18n/index.ts",
+    "sha256": "c054bfb59b346065cd00b9674494fbf53767fc5bad0789bda8c37b70cd4966bd"
+  },
+  {
+    "path": "frontend/src/i18n/locales/en.json",
+    "sha256": "eee39296d573ec7d77c2af5f025b35b31852a11ec7827265ae02f9087912a703"
+  },
+  {
+    "path": "frontend/src/i18n/locales/vi.json",
+    "sha256": "f4e6bff45ff70a66c846cb9ad782551900ff437c6354d1eeca11424cc316790e"
+  },
+  {
+    "path": "frontend/src/i18n/locales/zh-CN.json",
+    "sha256": "96b26101b2a5406cf1eef6cedfe35e275249823a76bf325d5b3f58b4249d613d"
+  },
+  {
+    "path": "frontend/src/main.tsx",
+    "sha256": "f5cc78355c60226ad64c5b831609d919bda6023fd1c607f5aff3ea894a68b1f5"
+  },
+  {
+    "path": "frontend/src/stores/session.ts",
+    "sha256": "81677e7ab3e279413a1d6ab539c3ef9a5ab255f0336c5bd68bae53e730901451"
+  },
+  {
+    "path": "frontend/src/styles.css",
+    "sha256": "e5456829da03d076e072482cb26b238f8e4a3f39698bbfee64e950c0119a7103"
+  },
+  {
+    "path": "frontend/tsconfig.json",
+    "sha256": "64cf778a9fbcd60ae88239a4ee00d51953637d93aa6c5bd2f352f761f77d4175"
+  },
+  {
+    "path": "frontend/vite.config.ts",
+    "sha256": "8189ca4f5c577d2d792414b383edf8ea0b9abf83c86c19c95ac79b5292440846"
+  },
+  {
+    "path": "frontend/vitest.config.ts",
+    "sha256": "481989bba2ae250bfe82f27c87f1242705cafc6f8ff2102186dc0ed4c5577c19"
+  },
+  {
+    "path": "tools/BackupSupport.ps1",
+    "sha256": "8abbf563d39692456a2563b766a516a2668e34fb0dd6146b0c2ec51d1ae691bb"
+  },
+  {
+    "path": "tools/DockerEnvironment.ps1",
+    "sha256": "d132718aa12ada9327a61695b708de215f90d1833601c0d97199790cbf950fd2"
+  },
+  {
+    "path": "tools/TestEnvironment.ps1",
+    "sha256": "c1f5bce59f20bbc46a7b37d9d778717023348bc5c912548ee5d4fba76ef9b03b"
+  },
+  {
+    "path": "tools/backup-container.ps1",
+    "sha256": "64d1e681472cc570604f617e5c316a3bab155738c9dc79d25b983c89d0d95b4a"
+  },
+  {
+    "path": "tools/bootstrap-admin.ps1",
+    "sha256": "a86f6aa191188a8751c1452bed3316de68a8ee561cbdf7daf365fd8ac4b9a482"
+  },
+  {
+    "path": "tools/bootstrap-build.ps1",
+    "sha256": "ee4b531165c54c0a80179389ddab0e22a6f760c4a3430a5e1dfdc1fe0f3f25ae"
+  },
+  {
+    "path": "tools/build-tools.lock.json",
+    "sha256": "341c356af05e921d526ea20c67232adc1df4ae9c9affb94949e970882263a73d"
+  },
+  {
+    "path": "tools/check-infra.ps1",
+    "sha256": "759686c8e21ec8e1b98961f5b7d4b107b5756495d66ee73de704cfeb32636c91"
+  },
+  {
+    "path": "tools/container-test.ps1",
+    "sha256": "e9fc919965ea08e5ab46dc93f079aeb574b9e1ed1123ea896325f9ec0606e2d2"
+  },
+  {
+    "path": "tools/enable-wsl.ps1",
+    "sha256": "d9fab0f31fd765daa42bc265eb6d3c92dfa4f57b8269c268ff344c0143ec1df4"
+  },
+  {
+    "path": "tools/export-api.ps1",
+    "sha256": "9f0e660a1972e315e0b061791b3cd7bd9abbccefb29ba71849a590f22f1d3ed7"
+  },
+  {
+    "path": "tools/finalize-container-archive.ps1",
+    "sha256": "3538bbd0e9f601a6ea3ea4992c03d69a086db5bf8434461bf924c06d827c8051"
+  },
+  {
+    "path": "tools/infra.ps1",
+    "sha256": "5fe8d732b1a67cd618646a930da94d6ef70b7e80ae1d26be23f490ab7ef454e2"
+  },
+  {
+    "path": "tools/install-docker.ps1",
+    "sha256": "e71eec4c7fd73df2b7066c3470afee82e15927d637938bd72c6819b58993e618"
+  },
+  {
+    "path": "tools/invoke-mes.ps1",
+    "sha256": "471324b4d7a9aecde76f4c568273075f5de41d095760a47d8ad799bafcb6f577"
+  },
+  {
+    "path": "tools/maintain.ps1",
+    "sha256": "56d4f1140b607fb5e69c7c63d52aa94c5cbeed775270a73d004b85f4e5d76325"
+  },
+  {
+    "path": "tools/maven.ps1",
+    "sha256": "ec579732d4a9fc725cdc2e38c54f834772675ece800addd5a11a8a302d1efc5d"
+  },
+  {
+    "path": "tools/pnpm.ps1",
+    "sha256": "cec81ce0c15607bb9831afc2eac06b1bd7700e6fd571b53f258611e79df4ff66"
+  },
+  {
+    "path": "tools/restore-container.ps1",
+    "sha256": "d6da857555ec194620e5a67e375449641ac1df38548781ef58ab3d93a2c09ceb"
+  },
+  {
+    "path": "tools/start-test.ps1",
+    "sha256": "7ba3db4026cd3af355f93eba04a313f50846603d34a9f29b95c5a11f5c1eec28"
+  },
+  {
+    "path": "tools/start-web.ps1",
+    "sha256": "52e488a93534167809f6cbaff3accb0336f4ff246f01decbf52a610e61fc361b"
+  },
+  {
+    "path": "tools/stop-test.ps1",
+    "sha256": "b73d2a5ab2d7179752a99ffcdd7c3ab9390145e78fcf1811a8493a134846a0a7"
+  },
+  {
+    "path": "tools/verify-backup-support.ps1",
+    "sha256": "2134cfc746f08a6fec9f199bf3ec1e1e29d73c202937fc1e59e3587cb783c28b"
+  },
+  {
+    "path": "tools/verify-container-operations.ps1",
+    "sha256": "230c2270339c858fb83a07cba5c4dd2eaef052886c42f42f85711333faa81b2e"
+  },
+  {
+    "path": "tools/verify-users-browser.ps1",
+    "sha256": "725622b2b063afa7f79f15ccab812774f18567a6994a7d4fff7c8f62940d19e2"
+  },
+  {
+    "path": "tools/verify-web.ps1",
+    "sha256": "1b995ee509d0816b715a6d10ebc0a172d8ede25c88cd9fe2716010cf70481a38"
+  },
+  {
+    "path": "tools/verify.ps1",
+    "sha256": "4611ade12c627bcfee2435eb0801fe7355ed2f0ebb24c5651f28bf87cb5232cb"
+  }
+]
