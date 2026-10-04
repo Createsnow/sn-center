@@ -19,6 +19,7 @@ import com.adtek.system.dto.RefreshCommandDTO;
 import com.adtek.system.mapper.IdentityMapper;
 import com.adtek.system.service.AuthenticationAuditService;
 import com.adtek.system.service.AuthenticationService;
+import com.adtek.system.service.support.LoginFailureGuard;
 import com.adtek.system.service.support.PasswordPolicy;
 import com.adtek.system.vo.AccessTokenVO;
 import com.adtek.system.vo.UserProfileVO;
@@ -46,6 +47,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final CommandValidator validator;
     private final UserConvert convert;
     private final AuthenticationAuditService audit;
+    private final LoginFailureGuard loginGuard;
     private final String dummyHash;
 
     public AuthenticationServiceImpl(
@@ -58,7 +60,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             SecuritySettings settings,
             CommandValidator validator,
             UserConvert convert,
-            AuthenticationAuditService audit) {
+            AuthenticationAuditService audit,
+            LoginFailureGuard loginGuard) {
         this.identities = identities;
         this.authorizations = authorizations;
         this.current = current;
@@ -69,6 +72,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         this.validator = validator;
         this.convert = convert;
         this.audit = audit;
+        this.loginGuard = loginGuard;
         // 不存在的账号也走相同哈希成本；该值不是可登录的账号或默认密码。
         this.dummyHash = passwords.encode(UUID.randomUUID().toString());
     }
@@ -78,6 +82,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Transactional
     public AuthenticationResult login(LoginCommandDTO command) {
         validator.requireValid(command);
+        try {
+            return authenticate(command);
+        } catch (BusinessException error) {
+            if (error.getError().equals(ErrorCodeConstants.LOGIN_LOCKED)) rejected(true, false);
+            throw error;
+        }
+    }
+
+    private AuthenticationResult authenticate(LoginCommandDTO command) {
+        loginGuard.check(command.username());
         var user = identities.findByUsername(command.username());
         boolean matched =
                 matches(command.password(), user == null ? dummyHash : user.getPasswordHash());
@@ -85,15 +99,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 || !Boolean.TRUE.equals(user.getEnabled())
                 || !"USER".equals(user.getPrincipalType())
                 || !matched) {
-            try {
-                audit.recordLoginFailure();
-                com.adtek.framework.audit.RequestAuditState.failureCommitted();
-            } catch (RuntimeException error) {
-                LOG.error(
-                        "Rejected-login audit unavailable traceId={} exceptionType={}",
-                        org.slf4j.MDC.get("traceId"),
-                        error.getClass().getSimpleName());
-            }
+            rejected(false, loginGuard.failed(command.username()));
             throw new BusinessException(ErrorCodeConstants.LOGIN_FAILED);
         }
         if (passwords.upgradeEncoding(user.getPasswordHash())
@@ -109,9 +115,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 authorizations
                         .loadCurrent(user.getId())
                         .orElseThrow(() -> new BusinessException(ErrorCodeConstants.LOGIN_FAILED));
+        loginGuard.succeeded(command.username());
         var session = sessions.create(actor.userId(), actor.securityVersion(), refreshLifetime());
         audit.recordSuccess(actor.userId(), AuthenticationAuditService.Action.LOGIN);
         return issue(actor, user, session.sessionId(), session.credential());
+    }
+
+    private void rejected(boolean locked, boolean lockStarted) {
+        try {
+            audit.recordLoginFailure(locked, lockStarted);
+            com.adtek.framework.audit.RequestAuditState.failureCommitted();
+        } catch (RuntimeException error) {
+            LOG.error(
+                    "Rejected-login audit unavailable traceId={} exceptionType={}",
+                    org.slf4j.MDC.get("traceId"),
+                    error.getClass().getSimpleName());
+        }
     }
 
     @Override

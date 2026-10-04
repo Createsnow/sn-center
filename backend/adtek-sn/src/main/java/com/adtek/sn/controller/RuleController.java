@@ -66,7 +66,7 @@ public class RuleController {
     }
 
     @GetMapping("/effective")
-    @Operation(summary = "全部工厂effective权限；PI高于客户高于通用，没有规则data为null")
+    @Operation(summary = "全部工厂effective权限；PI高于客户高于首次生成选择高于通用，没有规则data为null")
     public Result<RuleVersionVO> effective(
             @RequestParam String pi,
             @RequestParam(required = false) String customer,

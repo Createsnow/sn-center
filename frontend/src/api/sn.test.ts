@@ -1,7 +1,57 @@
 import { describe, it, expect } from 'vitest';
-import { isFactory, isOrder, isLine, isPreview, isVersion, pageGuard, paginationTotal } from './sn';
+import {
+  isFactory,
+  isOrder,
+  isLine,
+  isPreview,
+  isVersion,
+  isSchedule,
+  isOrderPi,
+  pageGuard,
+  paginationTotal,
+} from './sn';
 describe('SN response boundary', () => {
   const large = '9007199254740993';
+  it('keeps PI sums exact and rejects numeric or fractional SN counts', () => {
+    const pi = {
+      pi: 'PI',
+      bills: '3',
+      totalQty: '9007199254740993.1254',
+      generatedQty: large,
+      allocatedQty: '1',
+      pendingQuantity: '9007199254740992',
+      quota: '0',
+    };
+    expect(isOrderPi(pi)).toBe(true);
+    expect(isOrderPi({ ...pi, generatedQty: Number(large) })).toBe(false);
+    expect(isOrderPi({ ...pi, quota: '0.1254' })).toBe(false);
+    expect(isOrderPi({ ...pi, pendingQuantity: undefined })).toBe(false);
+  });
+  it('preserves schedule result precision and distinguishes never-run from failed', () => {
+    const schedule = {
+      enabled: true,
+      workerEnabled: false,
+      intervalMinutes: 10,
+      ownerId: large,
+      nextRunAt: '2026-10-04T12:00:00Z',
+      lastRunId: null,
+      lastRunAt: null,
+      lastState: null,
+      lastErrorCode: null,
+      lastBills: null,
+      lastRows: null,
+      updatedAt: null,
+    };
+    expect(isSchedule(schedule)).toBe(true);
+    expect(
+      isSchedule({ ...schedule, lastState: 'FAILED', lastErrorCode: 1004000026, lastBills: large }),
+    ).toBe(true);
+    expect(isSchedule({ ...schedule, lastBills: Number(large) })).toBe(false);
+    expect(isSchedule({ ...schedule, intervalMinutes: 9 })).toBe(false);
+    expect(isSchedule({ ...schedule, workerEnabled: undefined })).toBe(false);
+    expect(isSchedule({ ...schedule, lastState: 'UNKNOWN' })).toBe(false);
+    expect(isSchedule({ ...schedule, lastState: ['SUCCESS'] })).toBe(false);
+  });
   const factory = {
     id: large,
     version: '1',

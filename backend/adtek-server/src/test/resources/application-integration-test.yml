@@ -1,4 +1,7 @@
 adtek:
+  sn:
+    order-sync-worker:
+      enabled: false
   tasks:
     enabled: false
     file-root: ./target/task-files/${random.uuid}

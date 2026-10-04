@@ -1,0 +1,473 @@
+{
+  "pythonSource": "f8bc2d722cfde38cfb3ee892a50dcd1d90d58a4a",
+  "pythonPrevious": "17b78db707b2046dee9e98926843cf9550f5533f",
+  "snSource": "ab8fc3bbee809cfd73bf433ab9d30a1d60b373e4",
+  "count": 93,
+  "files": [
+    {
+      "status": "M",
+      "path": ".env.example",
+      "group": "D11"
+    },
+    {
+      "status": "M",
+      "path": "README.md",
+      "group": "D14"
+    },
+    {
+      "status": "M",
+      "path": "app/api/routes/auth.py",
+      "group": "D07"
+    },
+    {
+      "status": "M",
+      "path": "app/api/routes/generate.py",
+      "group": "D04/D05/D06/D10"
+    },
+    {
+      "status": "M",
+      "path": "app/api/routes/orders.py",
+      "group": "D01/D02/D03"
+    },
+    {
+      "status": "M",
+      "path": "app/api/routes/rules.py",
+      "group": "D04/D05/D06/D10"
+    },
+    {
+      "status": "M",
+      "path": "app/api/routes/transfers.py",
+      "group": "D05/D08/D09/D10"
+    },
+    {
+      "status": "M",
+      "path": "app/core/config.py",
+      "group": "D11"
+    },
+    {
+      "status": "M",
+      "path": "app/core/errors.py",
+      "group": "D11"
+    },
+    {
+      "status": "M",
+      "path": "app/core/scheduler.py",
+      "group": "D11"
+    },
+    {
+      "status": "M",
+      "path": "app/core/utils.py",
+      "group": "D05/D08/D09/D10"
+    },
+    {
+      "status": "M",
+      "path": "app/db/migration/V1__init.sql",
+      "group": "D12/D09/D11"
+    },
+    {
+      "status": "M",
+      "path": "app/db/mysql.py",
+      "group": "D12/D09/D11"
+    },
+    {
+      "status": "M",
+      "path": "app/db/session.py",
+      "group": "D12/D09/D11"
+    },
+    {
+      "status": "M",
+      "path": "app/main.py",
+      "group": "D11"
+    },
+    {
+      "status": "M",
+      "path": "app/schemas/prd_mo.py",
+      "group": "D11"
+    },
+    {
+      "status": "M",
+      "path": "app/schemas/sn.py",
+      "group": "D11"
+    },
+    {
+      "status": "M",
+      "path": "app/services/acquire.py",
+      "group": "D05/D08/D09/D10"
+    },
+    {
+      "status": "M",
+      "path": "app/services/audit.py",
+      "group": "D11"
+    },
+    {
+      "status": "M",
+      "path": "app/services/files.py",
+      "group": "D05/D08/D09/D10"
+    },
+    {
+      "status": "M",
+      "path": "app/services/generate.py",
+      "group": "D04/D05/D06/D10"
+    },
+    {
+      "status": "A",
+      "path": "app/services/login_guard.py",
+      "group": "D07"
+    },
+    {
+      "status": "A",
+      "path": "app/services/order_sync_schedule.py",
+      "group": "D01/D02/D03"
+    },
+    {
+      "status": "M",
+      "path": "app/services/orders.py",
+      "group": "D01/D02/D03"
+    },
+    {
+      "status": "M",
+      "path": "app/services/pi_init.py",
+      "group": "D04/D05/D06/D10"
+    },
+    {
+      "status": "M",
+      "path": "app/services/rules.py",
+      "group": "D04/D05/D06/D10"
+    },
+    {
+      "status": "M",
+      "path": "app/services/transfers.py",
+      "group": "D05/D08/D09/D10"
+    },
+    {
+      "status": "M",
+      "path": "app/services/users.py",
+      "group": "D11"
+    },
+    {
+      "status": "A",
+      "path": "docs/MES对接接口文档.md",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/build_tech_docx.py",
+      "group": "D14"
+    },
+    {
+      "status": "D",
+      "path": "docs/db/mysql/V1__init_schema.sql",
+      "group": "D14"
+    },
+    {
+      "status": "D",
+      "path": "docs/db/数据库设计-MySQL.md",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-1-function.drawio",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-1-function.png",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-1-function.svg",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-2-tech.drawio",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-2-tech.png",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-2-tech.svg",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-3-data-layer.drawio",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-3-data-layer.png",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-3-data-layer.svg",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-4-sn-state.drawio",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-4-sn-state.png",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-4-sn-state.svg",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-5-er-base.drawio",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-5-er-base.png",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-5-er-base.svg",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-6-er-item.drawio",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-6-er-item.png",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-6-er-item.svg",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-7-context.drawio",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-7-context.png",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-7-context.svg",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-8-deploy.drawio",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-8-deploy.png",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig2-8-deploy.svg",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig3-1-generate-seq.drawio",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig3-1-generate-seq.png",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/images/系统技术方案/fig3-1-generate-seq.svg",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/关键节点说明.md",
+      "group": "D14"
+    },
+    {
+      "status": "M",
+      "path": "docs/多工厂SN防重管控-需求说明（修订版）.md",
+      "group": "D14"
+    },
+    {
+      "status": "M",
+      "path": "docs/技术文档.md",
+      "group": "D14"
+    },
+    {
+      "status": "M",
+      "path": "docs/接口数据库与架构设计.md",
+      "group": "D14"
+    },
+    {
+      "status": "M",
+      "path": "docs/数据库表设计.md",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/系统技术方案.docx",
+      "group": "D14"
+    },
+    {
+      "status": "A",
+      "path": "docs/系统技术方案.md",
+      "group": "D14"
+    },
+    {
+      "status": "M",
+      "path": "docs/部署启动关闭方式说明书.md",
+      "group": "D14"
+    },
+    {
+      "status": "M",
+      "path": "frontend/components.d.ts",
+      "group": "D13"
+    },
+    {
+      "status": "M",
+      "path": "frontend/nginx.conf",
+      "group": "D13"
+    },
+    {
+      "status": "M",
+      "path": "frontend/scripts/error_messages.py",
+      "group": "D13"
+    },
+    {
+      "status": "M",
+      "path": "frontend/scripts/gen_locales.py",
+      "group": "D13"
+    },
+    {
+      "status": "M",
+      "path": "frontend/scripts/ui_messages.py",
+      "group": "D13"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/api/http.ts",
+      "group": "D13"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/api/index.ts",
+      "group": "D13"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/constants.ts",
+      "group": "D13"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/locales/en.json",
+      "group": "D13"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/locales/errors.en.json",
+      "group": "D13"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/locales/errors.vi.json",
+      "group": "D13"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/locales/errors.zh-CN.json",
+      "group": "D13"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/locales/vi.json",
+      "group": "D13"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/locales/zh-CN.json",
+      "group": "D13"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/views/Acquire.vue",
+      "group": "D13"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/views/Generate.vue",
+      "group": "D13"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/views/Login.vue",
+      "group": "D13"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/views/Orders.vue",
+      "group": "D13"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/views/Transfer.vue",
+      "group": "D13"
+    },
+    {
+      "status": "M",
+      "path": "tests/conftest.py",
+      "group": "D11"
+    },
+    {
+      "status": "M",
+      "path": "tests/test_accounts.py",
+      "group": "D07"
+    },
+    {
+      "status": "M",
+      "path": "tests/test_acquire_transfer.py",
+      "group": "D05/D08/D09/D10"
+    },
+    {
+      "status": "M",
+      "path": "tests/test_generate.py",
+      "group": "D04/D05/D06/D10"
+    },
+    {
+      "status": "M",
+      "path": "tests/test_orders.py",
+      "group": "D01/D02/D03"
+    },
+    {
+      "status": "M",
+      "path": "tests/test_rules_init.py",
+      "group": "D04/D05/D06/D10"
+    },
+    {
+      "status": "M",
+      "path": "tests/test_unit.py",
+      "group": "D12/D09/D11"
+    }
+  ]
+}

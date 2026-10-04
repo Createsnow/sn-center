@@ -77,3 +77,31 @@ test('真实登录强制改密、刷新恢复、HttpOnly 与退出闭环', async
   await page.reload();
   await expect(page.getByRole('heading', { name: '登录工作台' })).toBeVisible();
 });
+
+test('连续失败锁定在真实登录页显示中英越提示', async ({ page }) => {
+  await page.goto('/login');
+  await page.getByLabel('工号', { exact: true }).fill('lock_browser_unknown');
+  await page.getByLabel('密码', { exact: true }).fill('wrong-lock-credentials');
+  for (let i = 0; i < 6; i++) {
+    const [response] = await Promise.all([
+      page.waitForResponse(
+        (r) => r.url().endsWith('/system/auth/login') && r.request().method() === 'POST',
+      ),
+      page.getByRole('button', { name: '登录', exact: true }).click(),
+    ]);
+    expect(response.status()).toBe(i < 5 ? 401 : 429);
+  }
+  await expect(page.getByText('登录已锁定，请在 15 分钟后重试。', { exact: true })).toBeVisible();
+  await page.getByLabel('密码', { exact: true }).clear();
+  await page.screenshot({ path: 'test-results/login-locked-zh.png', fullPage: true });
+  await page.getByRole('combobox', { name: '语言' }).click();
+  await page.getByText('English', { exact: true }).click();
+  await expect(
+    page.getByText('Login is locked. Try again in 15 minute(s).', { exact: true }),
+  ).toBeVisible();
+  await page.getByRole('combobox', { name: 'Language' }).click();
+  await page.getByText('Tiếng Việt', { exact: true }).click();
+  await expect(
+    page.getByText('Đăng nhập bị khóa. Vui lòng thử lại sau 15 phút.', { exact: true }),
+  ).toBeVisible();
+});

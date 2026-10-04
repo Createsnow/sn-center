@@ -62,6 +62,8 @@ logging:
     level: '%5p [traceId=%X{traceId}]'
 adtek:
   sn:
+    order-sync-worker:
+      enabled: ${ADTEK_ORDER_SYNC_WORKER_ENABLED:true}
     work:
       # 资源准入与来源额度、页面10000建议量分离；整批超限拒绝，不分段提交。
       max-batch-quantity: ${ADTEK_SN_MAX_BATCH_QUANTITY:100000}
@@ -96,6 +98,9 @@ adtek:
     file-bytes: 16777216
     file-root: ${ADTEK_FILE_ROOT:./var/files}
   security:
+    login-guard:
+      maximum-failures: 5
+      lock-seconds: 900
     issuer: adtek-platform-sn
     audience: adtek-platform-sn-web
     jwt-secret: ${ADTEK_JWT_SECRET}

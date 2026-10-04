@@ -84,11 +84,21 @@ class ProcessTaskRecoveryIT {
                         System.getProperty("java.home"),
                         "bin",
                         System.getProperty("os.name").startsWith("Windows") ? "java.exe" : "java");
-        Path jar = Path.of("target/adtek-server-0.1.0-SNAPSHOT.jar").toAbsolutePath();
+        Path jar =
+                Path.of(
+                                System.getProperty(
+                                        "adtek.test.jar", "target/adtek-server-0.1.0-SNAPSHOT.jar"))
+                        .toAbsolutePath();
+        // 子JVM不会继承Maven的系统属性；显式沿用短套接字目录，避免Windows长TEMP启动失败。
+        Path socketTemp =
+                Path.of(System.getProperty("jdk.net.unixdomain.tmpdir", "target/tmp"))
+                        .toAbsolutePath();
+        Files.createDirectories(socketTemp);
         var command =
                 List.of(
                         java.toString(),
                         "-Xmx384m",
+                        "-Djdk.net.unixdomain.tmpdir=" + socketTemp,
                         "-jar",
                         jar.toString(),
                         "--spring.profiles.active=local",
@@ -158,9 +168,24 @@ class ProcessTaskRecoveryIT {
             waitFor(
                     60,
                     () -> {
-                        if (!process.isAlive())
+                        if (!process.isAlive()) {
+                            Path diagnostic =
+                                    Path.of("target/process-recovery-" + label + "-failure.log");
+                            try {
+                                for (var reader : logReaders) reader.join(1000);
+                                Files.copy(
+                                        temporary.resolve(label + ".log"),
+                                        diagnostic,
+                                        StandardCopyOption.REPLACE_EXISTING);
+                            } catch (InterruptedException interrupted) {
+                                Thread.currentThread().interrupt();
+                            } catch (java.io.IOException unavailable) {
+                                // 保留原进程失败断言；诊断副本失败不能覆盖真正的启动问题。
+                            }
                             throw new AssertionError(
-                                    "Packaged child exited; inspect isolated test log " + label);
+                                    "Packaged child exited; inspect isolated test log "
+                                            + diagnostic);
+                        }
                         try {
                             return client.send(
                                                     HttpRequest.newBuilder(
@@ -266,7 +291,15 @@ class ProcessTaskRecoveryIT {
                     browser.data(
                                     browser.post(
                                             "/sn/generation/previews",
-                                            Map.of("billId", bill, "quantity", "13")))
+                                            Map.of(
+                                                    "billId",
+                                                    bill,
+                                                    "quantity",
+                                                    "13",
+                                                    "ruleId",
+                                                    jdbc.queryForObject(
+                                                            "SELECT CAST(id AS CHAR) FROM sn_rule WHERE bind_scope='GENERAL'",
+                                                            String.class))))
                             .path("id")
                             .asString();
             String operation = UUID.randomUUID().toString();

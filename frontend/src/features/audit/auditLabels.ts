@@ -43,6 +43,7 @@ export const actionKeys: Record<string, string> = {
   'sn:factory:sync': 'factorySync',
   'sn:factory:map': 'factoryMap',
   'sn:order:sync': 'orderSync',
+  'sn:order:schedule': 'orderSchedule',
   'sn:order:sync:failed': 'orderFailed',
   'sn:rule:create': 'ruleCreate',
   'sn:rule:update': 'ruleUpdate',

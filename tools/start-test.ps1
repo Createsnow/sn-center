@@ -5,6 +5,8 @@ $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $jar = Join-Path $projectRoot 'backend/adtek-server/target/adtek-server-0.1.0-SNAPSHOT.jar'
 $jdk = Get-ChildItem -LiteralPath (Join-Path $projectRoot '.tools/jdk') -Directory | Select-Object -First 1
+$socketTemp = Join-Path $projectRoot '.tools/tmp'
+New-Item -ItemType Directory -Force -Path $socketTemp | Out-Null
 if (-not (Test-Path -LiteralPath $jar)) {
     throw 'Build first: ./tools/maven.ps1 -B -ntp verify'
 }
@@ -12,7 +14,7 @@ if (-not (Test-Path -LiteralPath $jar)) {
 $previous = Set-AdtekTestEnvironment
 try {
     Write-Output 'Starting test API on http://127.0.0.1:18080 (Ctrl+C stops this process).'
-    & (Join-Path $jdk.FullName 'bin/java.exe') '-jar' $jar
+    & (Join-Path $jdk.FullName 'bin/java.exe') "-Djdk.net.unixdomain.tmpdir=$socketTemp" '-jar' $jar
     $serverExitCode = $LASTEXITCODE
 }
 finally {

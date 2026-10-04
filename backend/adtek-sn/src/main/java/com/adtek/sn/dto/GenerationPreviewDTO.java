@@ -6,4 +6,5 @@ import jakarta.validation.constraints.*;
 public record GenerationPreviewDTO(
         @NotBlank @Pattern(regexp = "[1-9][0-9]{0,18}") String billId,
         @NotBlank @Pattern(regexp = "[1-9][0-9]{0,18}") String quantity,
-        @Pattern(regexp = "[1-9][0-9]{0,18}") String start) {}
+        @Pattern(regexp = "[1-9][0-9]{0,18}") String start,
+        @Pattern(regexp = "[1-9][0-9]{0,18}") String ruleId) {}

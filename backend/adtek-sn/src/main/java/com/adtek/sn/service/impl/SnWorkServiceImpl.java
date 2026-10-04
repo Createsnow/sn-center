@@ -16,6 +16,8 @@ import com.adtek.sn.query.SnPageQuery;
 import com.adtek.sn.service.SnWorkService;
 import com.adtek.sn.service.support.*;
 import com.adtek.sn.vo.*;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.*;
@@ -153,6 +155,9 @@ public class SnWorkServiceImpl implements SnWorkService {
                                             ? Long.MAX_VALUE
                                             : SequenceCodec.capacity(SnWorkEngine.spec(rule))))
                         throw new BusinessException(SEQUENCE_OVERFLOW);
+                    if (start != null && rule != null)
+                        e.next.current(pi, counter.lastSeq(), SnWorkEngine.spec(rule))
+                                .requireAboveIncoming(start);
                     var input =
                             new SnWorkInput(
                                     pi,
@@ -179,7 +184,8 @@ public class SnWorkServiceImpl implements SnWorkService {
     public GenerationContextVO context(String id) {
         e.policy.read("sn:generation:view", true);
         var bill = e.bill(SnPolicy.id(id));
-        var rule = e.effective(bill.getPi(), bill.getCustomer());
+        var resolved = e.resolver.fixed(bill.getPi(), bill.getCustomer());
+        var rule = resolved == null ? null : resolved.version();
         var counter = e.counter(bill.getPi());
         long generated = 0, allocated = 0;
         for (var q : e.quotaMap(bill.getId()).values()) {
@@ -187,6 +193,7 @@ public class SnWorkServiceImpl implements SnWorkService {
             allocated = Math.addExact(allocated, q.allocatedQty());
         }
         var issues = new ArrayList<>(e.issues(bill, rule));
+        if (rule == null && e.rules.selectCount(null) > 0) issues.remove("RULE_MISSING");
         if (counter.activeTaskId() != null) issues.add("PI_BUSY");
         String factoryName = "";
         List<GenerationContextVO.Summary> summary = new ArrayList<>();
@@ -231,7 +238,48 @@ public class SnWorkServiceImpl implements SnWorkService {
                 Integer.toString(e.settings.getMaxBatchQuantity()),
                 head == null ? "" : head.getCode(),
                 head == null ? "" : head.getBindScope(),
-                head == null ? "" : head.getBindValue());
+                head == null ? "" : head.getBindValue(),
+                resolved == null ? "NONE" : resolved.source(),
+                rule == null,
+                rule == null
+                        ? null
+                        : e.next.current(bill.getPi(), counter.lastSeq(), SnWorkEngine.spec(rule))
+                                .view(SnWorkEngine.spec(rule)));
+    }
+
+    @Override
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public PageResult<RuleVO> ruleOptions(SnPageQuery query) {
+        validator.requireValid(query);
+        e.policy.read("sn:generation:view", true);
+        var where =
+                new QueryWrapper<RuleEntity>()
+                        .orderByAsc(
+                                "CASE WHEN bind_scope='GENERAL' THEN 0 ELSE 1 END", "code", "id");
+        String like = SnPolicy.like(query.getQ());
+        if (like != null)
+            where.and(
+                    w ->
+                            w.apply("code LIKE {0} ESCAPE '!'", like)
+                                    .or()
+                                    .apply("name LIKE {0} ESCAPE '!'", like));
+        var page = e.rules.selectPage(new Page<>(query.getPage(), query.getSize()), where);
+        List<RuleVO> options = new ArrayList<>();
+        if (!page.getRecords().isEmpty()) {
+            var versions =
+                    e.versions.current(page.getRecords().stream().map(RuleEntity::getId).toList());
+            for (var rule : page.getRecords())
+                options.add(
+                        convert.rule(
+                                rule,
+                                convert.version(
+                                        versions.stream()
+                                                .filter(v -> v.getRuleId().equals(rule.getId()))
+                                                .findFirst()
+                                                .orElseThrow())));
+        }
+        return new PageResult<>(
+                options, Long.toString(page.getTotal()), query.getPage(), query.getSize());
     }
 
     private SnWorkVO work(SnWorkEntity work) {
@@ -276,7 +324,8 @@ public class SnWorkServiceImpl implements SnWorkService {
                 e.calculate(
                         SnPolicy.id(command.billId()),
                         SnPolicy.id(command.quantity()),
-                        optionalId(command.start()));
+                        optionalId(command.start()),
+                        optionalId(command.ruleId()));
         var counter = e.counter(plan.bill().getPi());
         if (counter.activeTaskId() != null) throw new BusinessException(PI_BUSY);
         String id = UUID.randomUUID().toString();
@@ -312,7 +361,9 @@ public class SnWorkServiceImpl implements SnWorkService {
                                                 Long.toString(s.end()),
                                                 SequenceCodec.format(s.start(), plan.spec()),
                                                 SequenceCodec.format(s.end(), plan.spec())))
-                        .toList());
+                        .toList(),
+                new SnNextSequence.Position(plan.baseLast(), plan.incomingMax(), plan.incomingSn())
+                        .view(plan.spec()));
     }
 
     @Override

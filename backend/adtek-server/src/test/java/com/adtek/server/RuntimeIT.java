@@ -133,7 +133,7 @@ class RuntimeIT {
                         jdbc.queryForObject(
                                 "SELECT COUNT(*) FROM flyway_schema_history WHERE success=1",
                                 Integer.class))
-                .isEqualTo(17);
+                .isEqualTo(19);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM sys_user", Integer.class)).isZero();
         redis.opsForValue().set("adtek:it:runtime", "verified");
         assertThat(redis.opsForValue().get("adtek:it:runtime")).isEqualTo("verified");

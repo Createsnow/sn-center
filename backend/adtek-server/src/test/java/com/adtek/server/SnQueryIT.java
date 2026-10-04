@@ -111,6 +111,7 @@ class SnQueryIT {
                         "sn_work",
                         "sn_preview",
                         "sn_pi_counter",
+                        "sn_pi_rule_choice",
                         "sys_task_progress",
                         "sys_file",
                         "sys_task",
@@ -217,7 +218,17 @@ class SnQueryIT {
     }
 
     String preview(Browser b, String bill, String qty) throws Exception {
-        return data(b.post("/generation/previews", Map.of("billId", bill, "quantity", qty)))
+        return data(b.post(
+                        "/generation/previews",
+                        Map.of(
+                                "billId",
+                                bill,
+                                "quantity",
+                                qty,
+                                "ruleId",
+                                jdbc.queryForObject(
+                                        "SELECT CAST(id AS CHAR) FROM sn_rule WHERE bind_scope='GENERAL'",
+                                        String.class))))
                 .path("id")
                 .asString();
     }

@@ -29,6 +29,7 @@ public class FactoryPublishServiceImpl implements FactoryPublishService {
     private final OrganizationMappingMapper mappings;
     private final SnConvert convert;
     private final ManagementAuditPort audit;
+    private final com.adtek.framework.security.AuthorizationMutationPort authorization;
 
     public FactoryPublishServiceImpl(
             SnPolicy policy,
@@ -36,13 +37,15 @@ public class FactoryPublishServiceImpl implements FactoryPublishService {
             FactoryMapper factories,
             OrganizationMappingMapper mappings,
             SnConvert convert,
-            ManagementAuditPort audit) {
+            ManagementAuditPort audit,
+            com.adtek.framework.security.AuthorizationMutationPort authorization) {
         this.policy = policy;
         this.control = control;
         this.factories = factories;
         this.mappings = mappings;
         this.convert = convert;
         this.audit = audit;
+        this.authorization = authorization;
     }
 
     @Override
@@ -58,8 +61,10 @@ public class FactoryPublishServiceImpl implements FactoryPublishService {
 
     @Override
     @Transactional(propagation = Propagation.MANDATORY)
-    public FactorySyncVO withinOrderPublish(Source source, List<Organization> orgs, long revision) {
-        policy.read("sn:factory:sync", true);
+    public FactorySyncVO withinOrderPublish(
+            Actor requested, Source source, List<Organization> orgs, long revision) {
+        // HTTP与定时执行共享显式主体；不依赖调度线程没有的SecurityContext。
+        policy.require(authorization.lockCurrent(requested), "sn:factory:sync", true);
         return merge(source, orgs, revision);
     }
 

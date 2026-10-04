@@ -38,7 +38,9 @@ class LegacyCliIT {
     static JdbcTemplate target;
     @TempDir Path temporary;
     final Path project = Path.of("../..").toAbsolutePath().normalize();
-    final Path jar = Path.of("target/adtek-server-0.1.0-SNAPSHOT.jar").toAbsolutePath();
+    final Path jar =
+            Path.of(System.getProperty("adtek.test.jar", "target/adtek-server-0.1.0-SNAPSHOT.jar"))
+                    .toAbsolutePath();
 
     @BeforeAll
     static void setup() throws Exception {
@@ -130,6 +132,8 @@ class LegacyCliIT {
                         .redirectErrorStream(true)
                         .redirectOutput(output.toFile());
         builder.environment().putAll(environment);
+        builder.environment()
+                .put("JDK_JAVA_OPTIONS", "-Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8");
         var process = builder.start();
         if (!process.waitFor(90, TimeUnit.SECONDS)) {
             process.destroyForcibly();
@@ -177,6 +181,8 @@ class LegacyCliIT {
                                 "-NoProfile",
                                 "-File",
                                 project.resolve("tools/legacy-snapshot.ps1").toString(),
+                                "-JarPath",
+                                jar.toString(),
                                 "-RunId",
                                 snapshot,
                                 "-SourceSchema",
@@ -202,6 +208,8 @@ class LegacyCliIT {
                                 "-NoProfile",
                                 "-File",
                                 project.resolve("tools/legacy-stage.ps1").toString(),
+                                "-JarPath",
+                                jar.toString(),
                                 "-SnapshotId",
                                 snapshot,
                                 "-RunId",
@@ -230,6 +238,8 @@ class LegacyCliIT {
                                 "-NoProfile",
                                 "-File",
                                 project.resolve("tools/legacy-master.ps1").toString(),
+                                "-JarPath",
+                                jar.toString(),
                                 "-SnapshotId",
                                 snapshot,
                                 "-RunId",
@@ -253,6 +263,8 @@ class LegacyCliIT {
                                 "-NoProfile",
                                 "-File",
                                 project.resolve("tools/legacy-inventory.ps1").toString(),
+                                "-JarPath",
+                                jar.toString(),
                                 "-SnapshotId",
                                 snapshot,
                                 "-RunId",

@@ -4,6 +4,7 @@ import { isRecord } from './contract';
 import { isOperationId, isTask } from './tasks';
 import { pageGuard } from './sn';
 import { cursorGuard, isAcquireItem } from './snAcquire';
+import { isNextSequence } from './snWork';
 
 export type Transfer = components['schemas']['TransferVO'];
 export type TransferItem = components['schemas']['TransferItemVO'];
@@ -12,12 +13,21 @@ export type TransferTarget = components['schemas']['TransferTargetVO'];
 export type TransferCreate = components['schemas']['TransferCreateDTO'];
 export type TransferDecision = components['schemas']['TransferDecisionDTO'] & { id: string };
 export type TransferAction = 'APPROVE' | 'REJECT' | 'WITHDRAW';
+export type TransferHint = components['schemas']['TransferHintDTO'];
+export type TransferImpact = components['schemas']['TransferImpactVO'];
 const text = (v: unknown): v is string => typeof v === 'string';
 const decimal = (v: unknown): v is string => text(v) && /^(0|[1-9]\d*)$/.test(v);
 const date = (v: unknown) => text(v) && Number.isFinite(Date.parse(v));
 const nullable = (v: unknown, guard: (value: unknown) => boolean) => v === null || guard(v);
 const fields = (v: Record<string, unknown>, keys: string[], guard: (v: unknown) => boolean) =>
   keys.every((k) => guard(v[k]));
+export const isTransferImpact = (v: unknown): v is TransferImpact =>
+  isRecord(v) &&
+  typeof v.available === 'boolean' &&
+  fields(v, ['ruleCode', 'ruleSource'], text) &&
+  nullable(v.before, isNextSequence) &&
+  nullable(v.after, isNextSequence) &&
+  nullable(v.unused, decimal);
 export const isTransfer = (v: unknown): v is Transfer =>
   isRecord(v) &&
   isOperationId(v.id) &&
@@ -73,6 +83,9 @@ const params = (input: Record<string, string | number | undefined>) => {
   return result.toString();
 };
 export const transferApi = {
+  hint: (input: TransferHint) => submit('/sn/transfers/target-hint', input, isTransferImpact),
+  pendingHint: (id: string) =>
+    query(`/sn/transfers/${encodeURIComponent(id)}/target-hint`, isTransferImpact),
   candidates: (input: {
     factoryId: string;
     pi: string;

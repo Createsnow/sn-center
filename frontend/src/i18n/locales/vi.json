@@ -94,7 +94,8 @@
       "snAuditExport": "Tạo tệp nhật ký",
       "snAuditExportSubmit": "Chốt dữ liệu nhật ký",
       "snAuditExportFailed": "Tạo tệp nhật ký thất bại",
-      "snWorkCancel": "Hủy tác vụ SN chưa chạy"
+      "snWorkCancel": "Hủy tác vụ SN chưa chạy",
+      "orderSchedule": "Lịch đồng bộ đơn hàng"
     },
     "modules": {
       "auth": "Xác thực",
@@ -153,8 +154,10 @@
       "currentVersion": "Phiên bản hiện tại",
       "source": "Nguồn",
       "permissions": "Quyền dịch vụ",
-      "authorizationVersion": "Phiên bản quyền"
-    }
+      "authorizationVersion": "Phiên bản quyền",
+      "intervalMinutes": "Khoảng cách (phút)"
+    },
+    "credentialsLocked": "Đăng nhập bị khóa sau nhiều lần thất bại"
   },
   "menu": {
     "system": "Hệ thống",
@@ -395,7 +398,11 @@
     "1000000007": "Phương thức yêu cầu không được hỗ trợ.",
     "1000000008": "Dữ liệu đang được thao tác khác thay đổi. Kiểm tra kết quả trước khi thử lại.",
     "1004000001": "Tham số mã hóa quy tắc không hợp lệ. Kiểm tra cơ số, bảng ký tự, độ dài số thứ tự và SN.",
-    "1004000002": "Số thứ tự vượt sức chứa của quy tắc. Không thể tiếp tục tạo."
+    "1004000002": "Số thứ tự vượt sức chứa của quy tắc. Không thể tiếp tục tạo.",
+    "1002000017": "Đăng nhập bị khóa. Vui lòng thử lại sau {{minutes}} phút.",
+    "1004000026": "Quyền thực thi đã hết hạn hoặc cấu hình đã đổi. Lần chạy này chưa công bố.",
+    "1004000027": "Chọn quy tắc cho lần tạo đầu tiên của PI này.",
+    "1004000028": "Số bắt đầu phải lớn hơn số lớn nhất cùng định dạng đã chuyển/nhập {{sequence}} ({{sn}})."
   },
   "export": {
     "title": "Tác vụ xuất",
@@ -467,7 +474,7 @@
       "rows": "Số dòng",
       "excluded": "{{n}} lệnh không có khách hàng bị ẩn",
       "unmapped": "Các tổ chức sản xuất sau chưa được tạo nhà máy, không thể tạo SN: {{orgs}}",
-      "search": "Lệnh / PI / PO / vật tư",
+      "search": "Tìm đơn / PI / PO / vật tư / khách hàng",
       "org": "Tổ chức sản xuất",
       "noFactory": "Chưa tạo",
       "status": "Trạng thái",
@@ -483,7 +490,8 @@
       "toGenerate": "Tạo SN",
       "noMaterial": "(không có vật tư)",
       "materialName": "Tên vật tư",
-      "demand": "Chứng từ nhu cầu"
+      "demand": "Chứng từ nhu cầu",
+      "pendingOnly": "Chỉ còn chờ tạo hoặc phân bổ"
     },
     "rules": {
       "title": "Quy tắc SN",
@@ -645,7 +653,7 @@
       "qty": "Số lượng tạo",
       "qtyHint": "Hạn mức {{quota}}, giới hạn mỗi lần {{limit}}",
       "start": "Số bắt đầu (thập phân, tùy chọn)",
-      "startPlaceholder": "Để trống = số lớn nhất + 1",
+      "startPlaceholder": "Để trống để dùng số bắt đầu đề xuất",
       "startHint": "Mỗi PI chỉ đặt được một lần, trước lần tạo đầu tiên.",
       "startInvalid": "Số bắt đầu phải là số nguyên dương",
       "preview": "Xem trước",
@@ -688,7 +696,22 @@
         "QUOTA_EMPTY": "Không còn hạn mức tạo mã.",
         "PI_BUSY": "PI này có thao tác chưa hoàn tất. Hãy kiểm tra tác vụ hiện tại.",
         "ALLOCATION_SOURCE_CHANGED": "Đơn vị sản xuất hoặc PI của mã chờ khác với lệnh hiện tại. Hãy kiểm tra thay đổi nguồn."
-      }
+      },
+      "pickCustomer": "Chọn khách hàng",
+      "pickPi": "Chọn PI",
+      "piOption": "{{pi}} · {{bills}} đơn · Có thể tạo {{quota}} · Chờ phân bổ {{pending}}",
+      "moreCustomers": "Thêm khách hàng",
+      "morePis": "Thêm PI",
+      "pickRule": "Chọn quy tắc tạo",
+      "ruleChoiceHint": "PI này chưa gắn quy tắc. Quy tắc được chọn sẽ được giữ sau lần tạo thành công đầu tiên. Xem trước không lưu lựa chọn.",
+      "ruleSource": {
+        "PI": "Gắn theo PI",
+        "CUSTOMER": "Gắn theo khách hàng",
+        "CHOSEN": "Lựa chọn khi tạo lần đầu"
+      },
+      "nextStart": "Số bắt đầu tự động đề xuất: {{sn}} (số thứ tự {{seq}})",
+      "incomingStart": "Mốc riêng của PI vẫn là {{own}}. SN chuyển đến hoặc nhập chưa phân tích trước đây lớn nhất theo định dạng hiện tại là {{sn}} ({{seq}}). Mốc chỉ tăng khi tạo thành công.",
+      "exhaustedStart": "Đã hết dung lượng số thứ tự của định dạng hiện tại."
     },
     "work": {
       "progress": "Đã xử lý {{n}} mã. Hãy dựa vào trạng thái cuối cùng.",
@@ -696,6 +719,18 @@
       "fileInvalid": "Chọn tệp CSV/TXT UTF-8 không lớn hơn 8 MiB.",
       "absentConfirm": "Chưa tìm thấy thao tác này. Hãy kiểm tra kết quả trước. Gửi lại sau khi đóng sẽ dùng mã thao tác mới. Đóng?",
       "completed": "Thao tác này đã hoàn tất."
+    },
+    "schedule": {
+      "title": "Đồng bộ toàn bộ theo lịch",
+      "enabled": "Bật đồng bộ theo lịch",
+      "interval": "Khoảng cách (phút)",
+      "save": "Lưu lịch",
+      "next": "Lần chạy tiếp theo",
+      "last": "Lần chạy gần nhất",
+      "lastBills": "Số đơn lần thành công gần nhất",
+      "lastRows": "Số dòng lần thành công gần nhất",
+      "policy": "Mỗi lần chạy kiểm tra quyền hiện tại của người lưu cấu hình. Thay đổi cấu hình hủy công bố đang chạy. Khoảng cách: 10 phút đến 7 ngày.",
+      "workerStopped": "Bộ lập lịch chưa chạy trên phiên bản này. Cấu hình đã lưu nhưng sẽ không tự chạy tại đây."
     }
   },
   "snAcquire": {
@@ -836,7 +871,11 @@
       "MATERIAL": "PI + vật liệu",
       "SINGLE": "Một SN"
     },
-    "mode": "Chế độ chuyển"
+    "mode": "Chế độ chuyển",
+    "impact": "Quy tắc {{rule}}: số bắt đầu tiếp theo ở đích {{before}} → {{after}}; {{unused}} số ở giữa sẽ không được tạo.",
+    "impactRestricted": "Quyền hiện tại không cho phép tính số bắt đầu toàn nhà máy của PI đích.",
+    "impactNone": "Hiện không có tác động số bắt đầu giữa các PI để hiển thị.",
+    "impactNote": "Tính theo quy tắc và tồn kho hiện tại. PI chưa gắn có thể chọn quy tắc khác. Chuyển nhà máy không tăng mốc; khi tạo sẽ kiểm tra trạng thái cuối cùng."
   },
   "snQuery": {
     "title": "Tra cứu SN",

@@ -39,4 +39,6 @@ public final class ErrorCodeConstants {
             new ErrorCode(1_002_000_015, 409, "system.configLimit");
     public static final ErrorCode AUDIT_OPTIONS_LIMIT =
             new ErrorCode(1_002_000_016, 409, "system.auditOptionsLimit");
+    public static final ErrorCode LOGIN_LOCKED =
+            new ErrorCode(1_002_000_017, 429, "system.loginLocked");
 }

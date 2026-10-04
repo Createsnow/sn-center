@@ -1,5 +1,5 @@
 import type { components } from './generated/schema';
-import { query, submit } from './client';
+import { query, submit, replace } from './client';
 import { isRecord } from './contract';
 
 export type Factory = components['schemas']['FactoryVO'];
@@ -15,6 +15,9 @@ export type Order = components['schemas']['OrderBillVO'];
 export type OrderLine = components['schemas']['OrderLineVO'];
 export type OrderMeta = components['schemas']['OrderMetaVO'];
 export type OrderSync = components['schemas']['OrderSyncVO'];
+export type OrderSchedule = components['schemas']['OrderScheduleVO'];
+export type OrderScheduleCommand = components['schemas']['OrderScheduleDTO'];
+export type OrderPi = components['schemas']['OrderPiVO'];
 export interface Page<T> {
   items: T[];
   total: string;
@@ -29,6 +32,7 @@ export interface SnFilter {
   pi?: string;
   factoryId?: string;
   scope?: string;
+  pending?: boolean;
 }
 const decimal = (value: unknown): value is string =>
   typeof value === 'string' && /^(0|[1-9]\d*)$/.test(value);
@@ -105,6 +109,11 @@ export const isOrder = (value: unknown): value is Order =>
   text(value.statuses) &&
   ['1', '2', '1,2'].includes(value.statuses) &&
   date(value.syncedAt);
+export const isOrderPi = (value: unknown): value is OrderPi =>
+  isRecord(value) &&
+  text(value.pi) &&
+  plannedQuantity(value.totalQty) &&
+  fields(value, ['bills', 'generatedQty', 'allocatedQty', 'pendingQuantity', 'quota'], decimal);
 export const isLine = (value: unknown): value is OrderLine =>
   isRecord(value) &&
   fields(value, ['id', 'ordinal', 'snapshotVersion'], id) &&
@@ -118,7 +127,7 @@ export const isSync = (value: unknown): value is OrderSync =>
   typeof value.id === 'string' &&
   /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(value.id) &&
   text(value.mode) &&
-  ['all', 'one'].includes(value.mode) &&
+  ['all', 'one', 'scheduled'].includes(value.mode) &&
   text(value.state) &&
   ['FETCHING', 'SUCCESS', 'FAILED'].includes(value.state) &&
   text(value.billNo) &&
@@ -129,6 +138,23 @@ export const isSync = (value: unknown): value is OrderSync =>
   typeof value.orgSyncFailed === 'boolean' &&
   date(value.startedAt) &&
   nullable(date)(value.finishedAt);
+export const isSchedule = (value: unknown): value is OrderSchedule =>
+  isRecord(value) &&
+  typeof value.enabled === 'boolean' &&
+  typeof value.workerEnabled === 'boolean' &&
+  typeof value.intervalMinutes === 'number' &&
+  Number.isInteger(value.intervalMinutes) &&
+  value.intervalMinutes >= 10 &&
+  value.intervalMinutes <= 10080 &&
+  nullable(id)(value.ownerId) &&
+  nullable(text)(value.lastRunId) &&
+  fields(value, ['nextRunAt', 'lastRunAt', 'updatedAt'], nullable(date)) &&
+  fields(value, ['lastBills', 'lastRows'], nullable(decimal)) &&
+  (value.lastState === null ||
+    (typeof value.lastState === 'string' &&
+      ['FETCHING', 'SUCCESS', 'FAILED'].includes(value.lastState))) &&
+  (value.lastErrorCode === null ||
+    (typeof value.lastErrorCode === 'number' && Number.isSafeInteger(value.lastErrorCode)));
 export const isPreview = (value: unknown): value is RulePreview =>
   isRecord(value) &&
   decimal(value.maxSequence) &&
@@ -206,10 +232,14 @@ export const snApi = {
     submit(`/sn/rules/${ruleId}/update`, command, isRuleChange),
   preview: (command: PreviewCommand) => submit('/sn/rules/preview', command, isPreview),
   orders: (filter: SnFilter) => query(url('/sn/orders', filter), pageGuard(isOrder)),
+  pis: (filter: SnFilter) => query(url('/sn/orders/pis', filter), pageGuard(isOrderPi)),
   lines: (orderId: string, filter: SnFilter) =>
     query(url(`/sn/orders/${orderId}/lines`, filter), pageGuard(isLine)),
   meta: () => query('/sn/orders/meta', isMeta),
   customers: (filter: SnFilter) => query(url('/sn/orders/customers', filter), pageGuard(text)),
   syncOrders: (billNo?: string) => submit('/sn/orders/sync', { billNo }, isSync, syncTimeout),
   syncs: (filter: SnFilter) => query(url('/sn/orders/syncs', filter), pageGuard(isSync)),
+  schedule: () => query('/sn/orders/sync-schedule', isSchedule),
+  saveSchedule: (command: OrderScheduleCommand) =>
+    replace('/sn/orders/sync-schedule', command, isSchedule),
 };

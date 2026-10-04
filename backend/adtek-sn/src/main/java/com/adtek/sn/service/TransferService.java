@@ -8,6 +8,12 @@ import com.adtek.sn.vo.*;
 
 /** 原页面与统一任务的转厂用例；所有授权在此服务复核，控制器不作为安全边界。 */
 public interface TransferService {
+    /** 只读当前可转集合及目标起号提示；先校验来源权限，全厂view才返回目标水位，候选不保留执行权。 */
+    TransferImpactVO hint(TransferHintDTO command);
+
+    /** 读取待审批固定成员在当前规则/目标状态下的影响；非待审批无测算，全厂view才返回目标水位。 */
+    TransferImpactVO pendingHint(String transferId);
+
     /** 读取源厂/PI/范围计数；不预留成员，正式命令在执行时固定完整可转集合。 */
     TransferCandidateVO candidates(
             String factory, String pi, String scope, String material, String sn);

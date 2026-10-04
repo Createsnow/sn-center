@@ -94,7 +94,8 @@
       "snAuditExport": "Generate audit export",
       "snAuditExportSubmit": "Snapshot audit export",
       "snAuditExportFailed": "Audit export failed",
-      "snWorkCancel": "Cancel queued SN work"
+      "snWorkCancel": "Cancel queued SN work",
+      "orderSchedule": "Order sync schedule"
     },
     "modules": {
       "auth": "Authentication",
@@ -153,8 +154,10 @@
       "currentVersion": "Current version",
       "source": "Source",
       "permissions": "Service permissions",
-      "authorizationVersion": "Authorization version"
-    }
+      "authorizationVersion": "Authorization version",
+      "intervalMinutes": "Interval (minutes)"
+    },
+    "credentialsLocked": "Login locked after repeated failures"
   },
   "menu": {
     "system": "System",
@@ -395,7 +398,11 @@
     "1000000007": "This request method is not supported.",
     "1000000008": "Data is being changed by another operation. Check the original result before retrying.",
     "1004000001": "Invalid rule encoding. Check the base, alphabet, sequence length and full SN length.",
-    "1004000002": "The sequence exceeds the rule capacity. Generation cannot continue."
+    "1004000002": "The sequence exceeds the rule capacity. Generation cannot continue.",
+    "1002000017": "Login is locked. Try again in {{minutes}} minute(s).",
+    "1004000026": "Sync execution expired or settings changed. This run was not published.",
+    "1004000027": "Choose the rule for this PI’s first generation.",
+    "1004000028": "Starting sequence must exceed the matching incoming/imported maximum {{sequence}} ({{sn}})."
   },
   "export": {
     "title": "Export task",
@@ -467,7 +474,7 @@
       "rows": "Lines",
       "excluded": "{{n}} more orders without customer are hidden",
       "unmapped": "These production orgs are not set up as factories; their orders cannot be generated: {{orgs}}",
-      "search": "Order / PI / PO / material",
+      "search": "Search order / PI / PO / material / customer",
       "org": "Production org",
       "noFactory": "Not set up",
       "status": "Status",
@@ -483,7 +490,8 @@
       "toGenerate": "Generate",
       "noMaterial": "(no material)",
       "materialName": "Material name",
-      "demand": "Demand doc."
+      "demand": "Demand doc.",
+      "pendingOnly": "Pending generation or allocation only"
     },
     "rules": {
       "title": "SN rules",
@@ -645,7 +653,7 @@
       "qty": "Quantity",
       "qtyHint": "Quota {{quota}}, per-run limit {{limit}}",
       "start": "Start number (decimal, optional)",
-      "startPlaceholder": "Blank = current max + 1",
+      "startPlaceholder": "Leave blank to use the suggested start",
       "startHint": "Can be set only once per PI, before its first generation.",
       "startInvalid": "Start number must be a positive integer",
       "preview": "Preview",
@@ -688,7 +696,22 @@
         "QUOTA_EMPTY": "No generation quota remains.",
         "PI_BUSY": "This PI has unfinished work. Check the existing task.",
         "ALLOCATION_SOURCE_CHANGED": "Pending items belong to a different production organization or PI. Review the source change."
-      }
+      },
+      "pickCustomer": "Choose customer",
+      "pickPi": "Choose PI",
+      "piOption": "{{pi}} · {{bills}} orders · {{quota}} available · {{pending}} unallocated",
+      "moreCustomers": "More customers",
+      "morePis": "More PIs",
+      "pickRule": "Choose generation rule",
+      "ruleChoiceHint": "This PI has no bound rule. Choose a rule to retain after the first successful generation. Previewing does not save the choice.",
+      "ruleSource": {
+        "PI": "PI binding",
+        "CUSTOMER": "Customer binding",
+        "CHOSEN": "First generation choice"
+      },
+      "nextStart": "Suggested automatic start: {{sn}} (sequence {{seq}})",
+      "incomingStart": "This PI’s own watermark remains {{own}}. The highest matching incoming or previously unparsed imported SN is {{sn}} ({{seq}}). The watermark advances on generation commit.",
+      "exhaustedStart": "The current format has no sequence capacity remaining."
     },
     "work": {
       "progress": "{{n}} items processed. Check the final status before continuing.",
@@ -696,6 +719,18 @@
       "fileInvalid": "Choose a UTF-8 CSV/TXT file no larger than 8 MiB.",
       "absentConfirm": "This operation has not been found. Check its result first. A new submission after closing will use a new operation ID. Close?",
       "completed": "This operation has completed."
+    },
+    "schedule": {
+      "title": "Scheduled full sync",
+      "enabled": "Enable scheduled sync",
+      "interval": "Interval (minutes)",
+      "save": "Save schedule",
+      "next": "Next run",
+      "last": "Last run",
+      "lastBills": "Bills in last success",
+      "lastRows": "Rows in last success",
+      "policy": "Each run checks the current sync permissions of the person who saved these settings. Changed settings cancel in-flight publication. Interval: 10 minutes to 7 days.",
+      "workerStopped": "The scheduler is stopped on this instance. Settings are saved, but this instance will not run them automatically."
     }
   },
   "snAcquire": {
@@ -836,7 +871,11 @@
       "MATERIAL": "PI + material",
       "SINGLE": "Single SN"
     },
-    "mode": "Transfer mode"
+    "mode": "Transfer mode",
+    "impact": "Rule {{rule}}: target next start {{before}} → {{after}}; {{unused}} intermediate numbers will remain unused.",
+    "impactRestricted": "Your permissions do not include the target PI’s full-factory start calculation.",
+    "impactNone": "No cross-PI start impact is currently available.",
+    "impactNote": "Calculated from current rules and inventory. An unbound PI may select another rule. Transfer does not advance the watermark; generation validates the final state."
   },
   "snQuery": {
     "title": "SN Query",

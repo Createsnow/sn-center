@@ -4,6 +4,24 @@
  */
 
 export interface paths {
+    "/api/v1/sn/orders/sync-schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 全部工厂order:list读取定时同步设置、执行条件与最近结果 */
+        get: operations["status"];
+        /** 全部工厂order:sync设置开关和10—10080分钟间隔，责任主体为当前人员；设置变化使在途运行失效 */
+        put: operations["save"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/tasks/{id}/recover": {
         parameters: {
             query?: never;
@@ -87,7 +105,7 @@ export interface paths {
          * 停用或重新启用用户
          * @description 无删除接口；本人停用及最后管理员失效被拒绝。
          */
-        post: operations["status"];
+        post: operations["status_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -523,6 +541,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/sn/transfers/target-hint": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 只读转厂前后起号测算；校验来源，全厂view可查看目标PI，受限主体不返回目标水位 */
+        post: operations["hint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/sn/transfers/direct": {
         parameters: {
             query?: never;
@@ -659,7 +694,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** 短事务绑定预演、操作、任务和PI活跃占用；持久任务整批提交，不跳号 */
+        /** 短事务绑定预演、操作、任务和PI活跃占用；起号避让同格式转入/原未解析导入最大号，完整SN冲突整批回滚 */
         post: operations["generate"];
         delete?: never;
         options?: never;
@@ -1063,6 +1098,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/sn/transfers/{id}/target-hint": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 按待审批固定成员和当前目标规则重新测算起号；不保证审批时状态未变 */
+        get: operations["pendingHint"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/sn/transfers/{id}/items": {
         parameters: {
             query?: never;
@@ -1167,7 +1219,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 全部工厂effective权限；PI高于客户高于通用，没有规则data为null */
+        /** 全部工厂effective权限；PI高于客户高于首次生成选择高于通用，没有规则data为null */
         get: operations["effective"];
         put?: never;
         post?: never;
@@ -1277,6 +1329,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/sn/orders/pis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 同order:list范围分页PI汇总候选；q匹配PI，pending保留待生成或待分配PI */
+        get: operations["pis"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/sn/orders/meta": {
         parameters: {
             query?: never;
@@ -1356,6 +1425,23 @@ export interface paths {
             cookie?: never;
         };
         get: operations["count"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sn/generation/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 全部工厂generation:view；首次生成规则候选，按通用优先分页 */
+        get: operations["ruleOptions"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1582,7 +1668,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["pis"];
+        get: operations["pis_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1739,6 +1825,40 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        OrderScheduleDTO: {
+            enabled: boolean;
+            /** Format: int32 */
+            intervalMinutes?: number;
+        };
+        OrderScheduleVO: {
+            enabled: boolean;
+            workerEnabled: boolean;
+            /** Format: int32 */
+            intervalMinutes: number;
+            /** Format: date-time */
+            nextRunAt: string | null;
+            ownerId: string | null;
+            lastRunId: string | null;
+            /** Format: date-time */
+            lastRunAt: string | null;
+            lastState: string | null;
+            /** Format: int32 */
+            lastErrorCode: number | null;
+            lastBills: string | null;
+            lastRows: string | null;
+            /** Format: date-time */
+            updatedAt: string | null;
+        };
+        ResultOrderScheduleVO: {
+            /** Format: int32 */
+            code: number;
+            message: string;
+            data: components["schemas"]["OrderScheduleVO"];
+            params: {
+                [key: string]: string;
+            };
+            traceId: string;
+        };
         ResultTaskVO: {
             /** Format: int32 */
             code: number;
@@ -2005,6 +2125,41 @@ export interface components {
             version: string;
             note?: string;
         };
+        TransferHintDTO: {
+            factoryId: string;
+            pi: string;
+            scope: string;
+            material?: string;
+            sn?: string;
+            toPi: string;
+            toCustomer?: string;
+        };
+        NextSequenceVO: {
+            ownLastSeq: string;
+            startSeq: string;
+            startSn: string | null;
+            adjusted: boolean;
+            bySeq: string | null;
+            bySn: string | null;
+        };
+        ResultTransferImpactVO: {
+            /** Format: int32 */
+            code: number;
+            message: string;
+            data: components["schemas"]["TransferImpactVO"];
+            params: {
+                [key: string]: string;
+            };
+            traceId: string;
+        };
+        TransferImpactVO: {
+            available: boolean;
+            ruleCode: string;
+            ruleSource: string;
+            before: components["schemas"]["NextSequenceVO"];
+            after: components["schemas"]["NextSequenceVO"];
+            unused: string | null;
+        };
         RuleSaveDTO: {
             code: string;
             name: string;
@@ -2152,6 +2307,7 @@ export interface components {
             billId: string;
             quantity: string;
             start?: string;
+            ruleId?: string;
         };
         GenerationPreviewVO: {
             id: string;
@@ -2164,6 +2320,7 @@ export interface components {
             /** Format: date-time */
             expiresAt: string;
             segments: components["schemas"]["Segment"][];
+            nextStart: components["schemas"]["NextSequenceVO"];
         };
         ResultGenerationPreviewVO: {
             /** Format: int32 */
@@ -2665,7 +2822,7 @@ export interface components {
         };
         CursorResultTransferItemVO: {
             items: components["schemas"]["TransferItemVO"][];
-            nextCursor: null | string;
+            nextCursor: string | null;
         };
         ResultCursorResultTransferItemVO: {
             /** Format: int32 */
@@ -2743,6 +2900,7 @@ export interface components {
             pi?: string;
             factoryId?: string;
             scope?: string;
+            pending?: boolean;
         };
         PageResultRuleVO: {
             items?: components["schemas"]["RuleVO"][];
@@ -3001,6 +3159,33 @@ export interface components {
             };
             traceId: string;
         };
+        OrderPiVO: {
+            pi: string;
+            bills: string;
+            totalQty: string;
+            generatedQty: string;
+            allocatedQty: string;
+            pendingQuantity: string;
+            quota: string;
+        };
+        PageResultOrderPiVO: {
+            items?: components["schemas"]["OrderPiVO"][];
+            total?: string;
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+        };
+        ResultPageResultOrderPiVO: {
+            /** Format: int32 */
+            code: number;
+            message: string;
+            data: components["schemas"]["PageResultOrderPiVO"];
+            params: {
+                [key: string]: string;
+            };
+            traceId: string;
+        };
         OrderMetaVO: {
             /** Format: date-time */
             syncedAt: string | null;
@@ -3039,7 +3224,7 @@ export interface components {
         };
         CursorResultSnQueryItemVO: {
             items: components["schemas"]["SnQueryItemVO"][];
-            nextCursor: null | string;
+            nextCursor: string | null;
         };
         ResultCursorResultSnQueryItemVO: {
             /** Format: int32 */
@@ -3110,6 +3295,10 @@ export interface components {
             ruleCode: string;
             ruleScope: string;
             ruleBinding: string;
+            /** @enum {string} */
+            ruleSource: "NONE" | "PI" | "CUSTOMER" | "CHOSEN";
+            ruleChoiceRequired: boolean;
+            nextStart: components["schemas"]["NextSequenceVO"];
         };
         ResultGenerationContextVO: {
             /** Format: int32 */
@@ -3221,7 +3410,7 @@ export interface components {
         };
         CursorResultSnAuditVO: {
             items: components["schemas"]["SnAuditVO"][];
-            nextCursor: null | string;
+            nextCursor: string | null;
         };
         ResultCursorResultSnAuditVO: {
             /** Format: int32 */
@@ -3364,7 +3553,7 @@ export interface components {
         };
         CursorResultAcquireResultVO: {
             items: components["schemas"]["AcquireResultVO"][];
-            nextCursor: null | string;
+            nextCursor: string | null;
         };
         ResultCursorResultAcquireResultVO: {
             /** Format: int32 */
@@ -3446,7 +3635,7 @@ export interface components {
         };
         CursorResultAcquireItemVO: {
             items: components["schemas"]["AcquireItemVO"][];
-            nextCursor: null | string;
+            nextCursor: string | null;
         };
         ResultCursorResultAcquireItemVO: {
             /** Format: int32 */
@@ -3460,7 +3649,7 @@ export interface components {
         };
         CursorResultSnReadItemVO: {
             items: components["schemas"]["SnReadItemVO"][];
-            nextCursor: null | string;
+            nextCursor: string | null;
         };
         ResultCursorResultSnReadItemVO: {
             /** Format: int32 */
@@ -3504,6 +3693,212 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResultOrderScheduleVO"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+        };
+    };
+    save: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderScheduleDTO"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResultOrderScheduleVO"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+        };
+    };
     recover: {
         parameters: {
             query?: never;
@@ -4025,7 +4420,7 @@ export interface operations {
             };
         };
     };
-    status: {
+    status_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -6984,6 +7379,111 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ResultTaskVO"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+        };
+    };
+    hint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferHintDTO"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ResultTransferImpactVO"];
                 };
             };
             /** @description 错误码与 params，参见接口契约 */
@@ -10814,6 +11314,109 @@ export interface operations {
             };
         };
     };
+    pendingHint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ResultTransferImpactVO"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+        };
+    };
     items: {
         parameters: {
             query?: {
@@ -12171,6 +12774,109 @@ export interface operations {
             };
         };
     };
+    pis: {
+        parameters: {
+            query: {
+                query: components["schemas"]["SnPageQuery"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResultPageResultOrderPiVO"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+        };
+    };
     meta: {
         parameters: {
             query?: never;
@@ -12620,6 +13326,109 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ResultSnCountVO"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+            /** @description 错误码与 params，参见接口契约 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResult"];
+                };
+            };
+        };
+    };
+    ruleOptions: {
+        parameters: {
+            query: {
+                q: components["schemas"]["SnPageQuery"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResultPageResultRuleVO"];
                 };
             };
             /** @description 错误码与 params，参见接口契约 */
@@ -14078,7 +14887,7 @@ export interface operations {
             };
         };
     };
-    pis: {
+    pis_1: {
         parameters: {
             query?: {
                 factoryId?: string;

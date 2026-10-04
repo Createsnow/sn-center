@@ -15,5 +15,8 @@ public interface FactoryPublishService {
 
     /** 必须已有当前order:sync事务且锁安全/发布行；另复核factory:sync资格，复用目录更新但不另开事务。 */
     FactorySyncVO withinOrderPublish(
-            Source source, List<Organization> organizations, long revision);
+            com.adtek.common.core.Actor requested,
+            Source source,
+            List<Organization> organizations,
+            long revision);
 }

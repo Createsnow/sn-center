@@ -11,6 +11,15 @@ public class SnPageQuery {
     private String pi;
     private String factoryId;
     private String scope;
+    private boolean pending;
+
+    public boolean isPending() {
+        return pending;
+    }
+
+    public void setPending(boolean value) {
+        pending = value;
+    }
 
     @Min(1)
     @Max(10000)

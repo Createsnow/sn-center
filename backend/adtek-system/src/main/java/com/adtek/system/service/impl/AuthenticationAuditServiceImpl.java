@@ -39,13 +39,18 @@ public class AuthenticationAuditServiceImpl implements AuthenticationAuditServic
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void recordLoginFailure() {
+    public void recordLoginFailure(boolean locked, boolean lockStarted) {
         logs.insert(
                 null,
                 "auth:LOGIN",
                 null,
                 false,
-                "{\"reason\":\"credentialsRejected\"}",
+                json.writeValueAsString(
+                        Map.of(
+                                "reason",
+                                locked ? "credentialsLocked" : "credentialsRejected",
+                                "lockStarted",
+                                lockStarted)),
                 MDC.get("traceId"),
                 null,
                 null);

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isGenerationPreview, isPiStatus, isSnWork } from './snWork';
+import { isGenerationPreview, isNextSequence, isPiStatus, isSnWork } from './snWork';
 const id = '10000000-0000-4000-8000-000000000001';
 describe('S4响应精度与固定状态边界', () => {
   it('预演流水仅接受精确字符串', () => {
@@ -12,6 +12,14 @@ describe('S4响应精度与固定状态边界', () => {
       firstSn: 'A',
       lastSn: 'A',
       expiresAt: '2026-09-30T00:00:00Z',
+      nextStart: {
+        ownLastSeq: '9007199254740992',
+        startSeq: '9007199254740993',
+        startSn: 'A',
+        adjusted: false,
+        bySn: null,
+        bySeq: null,
+      },
       segments: [
         {
           sourceEntryId: '9007199254740993',
@@ -27,6 +35,19 @@ describe('S4响应精度与固定状态边界', () => {
     };
     expect(isGenerationPreview(value)).toBe(true);
     expect(isGenerationPreview({ ...value, startSeq: 9007199254740992 })).toBe(false);
+  });
+  it('起号建议支持超过long的已耗尽值，实际SN为空，仍拒绝浮点数', () => {
+    const value = {
+      ownLastSeq: '0',
+      startSeq: '9223372036854775808',
+      startSn: null,
+      adjusted: true,
+      bySeq: '9223372036854775807',
+      bySn: 'GZZZZZZZZZZZZ',
+    };
+    expect(isNextSequence(value)).toBe(true);
+    expect(isNextSequence({ ...value, startSeq: 9223372036854775808 })).toBe(false);
+    expect(isNextSequence({ ...value, bySeq: undefined })).toBe(false);
   });
   it('PI空规则和空流水有明确语义，拒绝缺失锁定状态', () => {
     const value = {

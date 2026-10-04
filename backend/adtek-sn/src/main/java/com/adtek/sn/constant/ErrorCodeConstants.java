@@ -49,6 +49,12 @@ public final class ErrorCodeConstants {
             new ErrorCode(1_004_000_024, 409, "sn.transferNothing");
     public static final ErrorCode TRANSFER_NO_CHANGE =
             new ErrorCode(1_004_000_025, 409, "sn.transferNoChange");
+    public static final ErrorCode SYNC_EXECUTION_EXPIRED =
+            new ErrorCode(1_004_000_026, 409, "sn.syncExecutionExpired");
+    public static final ErrorCode RULE_CHOICE_REQUIRED =
+            new ErrorCode(1_004_000_027, 409, "sn.ruleChoiceRequired");
+    public static final ErrorCode START_BEFORE_INCOMING =
+            new ErrorCode(1_004_000_028, 409, "sn.startBeforeIncoming");
 
     private ErrorCodeConstants() {}
 }

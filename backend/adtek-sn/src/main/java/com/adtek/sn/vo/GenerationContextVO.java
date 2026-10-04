@@ -19,7 +19,10 @@ import java.util.List;
             "maxBatchQuantity",
             "ruleCode",
             "ruleScope",
-            "ruleBinding"
+            "ruleBinding",
+            "ruleSource",
+            "ruleChoiceRequired",
+            "nextStart"
         })
 public record GenerationContextVO(
         OrderBillVO bill,
@@ -34,7 +37,10 @@ public record GenerationContextVO(
         String maxBatchQuantity,
         String ruleCode,
         String ruleScope,
-        String ruleBinding) {
+        String ruleBinding,
+        @Schema(allowableValues = {"NONE", "PI", "CUSTOMER", "CHOSEN"}) String ruleSource,
+        boolean ruleChoiceRequired,
+        @Schema(nullable = true) NextSequenceVO nextStart) {
     @Schema(
             requiredProperties = {
                 "billId",

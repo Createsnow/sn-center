@@ -109,6 +109,7 @@ class SnTransferIT {
                         "sn_work",
                         "sn_preview",
                         "sn_pi_counter",
+                        "sn_pi_rule_choice",
                         "sys_task_progress",
                         "sys_file",
                         "sys_task",
@@ -215,7 +216,17 @@ class SnTransferIT {
     }
 
     String preview(Browser b, String bill, String qty) throws Exception {
-        return data(b.post("/generation/previews", Map.of("billId", bill, "quantity", qty)))
+        return data(b.post(
+                        "/generation/previews",
+                        Map.of(
+                                "billId",
+                                bill,
+                                "quantity",
+                                qty,
+                                "ruleId",
+                                jdbc.queryForObject(
+                                        "SELECT CAST(id AS CHAR) FROM sn_rule WHERE bind_scope='GENERAL'",
+                                        String.class))))
                 .path("id")
                 .asString();
     }
@@ -378,6 +389,50 @@ class SnTransferIT {
                 .asString();
     }
 
+    @Test
+    void oversizedTransferFieldsAreRejectedWithoutTasksOrInventoryChanges() throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            String source = allocated(b), target = destination(source);
+            long taskCount = count("sys_task");
+            for (var entry :
+                    Map.of(
+                                    "pi",
+                                    128,
+                                    "toPi",
+                                    128,
+                                    "material",
+                                    128,
+                                    "toMaterial",
+                                    128,
+                                    "toCustomer",
+                                    64,
+                                    "sn",
+                                    64,
+                                    "reason",
+                                    500)
+                            .entrySet()) {
+                var body = transfer(uuid(), source, target, "PI", null, null);
+                body.put(entry.getKey(), "X".repeat(entry.getValue() + 1));
+                assertThat(b.post("/transfers", body).statusCode())
+                        .as(entry.getKey())
+                        .isEqualTo(400);
+                assertThat(b.post("/transfers/direct", body).statusCode())
+                        .as(entry.getKey())
+                        .isEqualTo(400);
+            }
+            assertThat(count("sys_task")).isEqualTo(taskCount);
+            assertThat(count("sn_transfer")).isZero();
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT COUNT(*) FROM sn_key WHERE pi='PI-1'", Integer.class))
+                    .isEqualTo(13);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT COUNT(*) FROM sn_key WHERE pi='PI-2'", Integer.class))
+                    .isZero();
+        }
+    }
+
     String decision(Browser b, String id, String action, String version) throws Exception {
         return data(b.post(
                         "/transfers/" + id + "/" + action,
@@ -401,6 +456,186 @@ class SnTransferIT {
             cursor = page.path("nextCursor").isNull() ? null : page.path("nextCursor").asString();
         } while (cursor != null);
         return out;
+    }
+
+    Map<String, Object> hint(String factory, String scope, String sn) {
+        var input = new HashMap<String, Object>();
+        input.putAll(
+                Map.of(
+                        "factoryId",
+                        factory,
+                        "pi",
+                        "PI-1",
+                        "scope",
+                        scope,
+                        "toPi",
+                        "PI-2",
+                        "toCustomer",
+                        "C2"));
+        input.put("sn", sn);
+        return input;
+    }
+
+    String targetBill() {
+        return jdbc.queryForObject(
+                "SELECT CAST(id AS CHAR) FROM sn_order_bill WHERE bill_no='MO-2'", String.class);
+    }
+
+    @Test
+    void incomingSameFormatMovesNextGenerationOnlyAndInvalidatesOldPreview() throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            String source = allocated(b), target = destination(source), bill = targetBill();
+            String before = preview(b, bill, "1");
+            var hint = data(b.post("/transfers/target-hint", hint(source, "PI", null)));
+            assertThat(hint.path("before").path("startSeq").asString()).isEqualTo("1");
+            assertThat(hint.path("after").path("startSeq").asString()).isEqualTo("14");
+            assertThat(hint.path("unused").asString()).isEqualTo("0");
+            assertThat(count("sn_transfer")).isZero();
+            String transfer =
+                    submit(b, "APPLY", transfer(uuid(), source, target, "PI", null, null));
+            run(transfer);
+            assertThat(
+                            data(b.get("/transfers/" + transfer + "/target-hint"))
+                                    .path("after")
+                                    .path("startSn")
+                                    .asString())
+                    .isEqualTo("G0014");
+            run(decision(b, transfer, "approve", "1"));
+            assertThat(last("PI-2")).isZero();
+            assertThat(last("PI-1")).isEqualTo(13);
+            assertThat(
+                            b.post(
+                                            "/generation",
+                                            Map.of("operationId", uuid(), "previewId", before))
+                                    .statusCode())
+                    .isEqualTo(409);
+            String rule =
+                    jdbc.queryForObject(
+                            "SELECT CAST(id AS CHAR) FROM sn_rule WHERE code='GENERAL'",
+                            String.class);
+            var rejected =
+                    b.post(
+                            "/generation/previews",
+                            Map.of("billId", bill, "quantity", "1", "ruleId", rule, "start", "13"));
+            assertThat(rejected.statusCode()).isEqualTo(409);
+            assertThat(json.readTree(rejected.body()).path("code").asInt()).isEqualTo(1004000028);
+            assertThat(
+                            b.post("/pi-initializations", init(uuid(), "PI-2", "13", List.of()))
+                                    .statusCode())
+                    .isEqualTo(409);
+            var preview =
+                    data(
+                            b.post(
+                                    "/generation/previews",
+                                    Map.of(
+                                            "billId",
+                                            bill,
+                                            "quantity",
+                                            "2",
+                                            "ruleId",
+                                            rule,
+                                            "start",
+                                            "14")));
+            assertThat(preview.path("baseLastSeq").asString()).isEqualTo("0");
+            assertThat(preview.path("nextStart").path("adjusted").asBoolean()).isTrue();
+            run(generate(b, preview.path("id").asString()));
+            assertThat(last("PI-2")).isEqualTo(15);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT COUNT(*) FROM sn_key WHERE pi='PI-2' AND seq_pi='PI-1'",
+                                    Integer.class))
+                    .isEqualTo(13);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT SUM(generated_qty) FROM sn_source_entry_quota WHERE bill_id=?",
+                                    Long.class,
+                                    bill))
+                    .isEqualTo(2);
+        }
+    }
+
+    @Test
+    void nonContiguousIncomingNumbersSkipGapsButDifferentFormatDoesNotChangeStart()
+            throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            String source = allocated(b), target = destination(source);
+            var first = data(b.post("/transfers/target-hint", hint(source, "SINGLE", "G0002")));
+            assertThat(first.path("unused").asString()).isEqualTo("1");
+            run(submit(b, "DIRECT", transfer(uuid(), source, target, "SINGLE", null, "G0002")));
+            var second = data(b.post("/transfers/target-hint", hint(source, "SINGLE", "G0013")));
+            assertThat(second.path("before").path("startSn").asString()).isEqualTo("G0003");
+            assertThat(second.path("after").path("startSn").asString()).isEqualTo("G0014");
+            assertThat(second.path("unused").asString()).isEqualTo("10");
+            run(submit(b, "DIRECT", transfer(uuid(), source, target, "SINGLE", null, "G0013")));
+            assertThat(last("PI-2")).isZero();
+            var matching =
+                    data(
+                            b.post(
+                                    "/generation/previews",
+                                    Map.of(
+                                            "billId",
+                                            targetBill(),
+                                            "quantity",
+                                            "1",
+                                            "ruleId",
+                                            jdbc.queryForObject(
+                                                    "SELECT CAST(id AS CHAR) FROM sn_rule",
+                                                    String.class))));
+            assertThat(matching.path("firstSn").asString()).isEqualTo("G0014");
+            data(b.post("/rules", rule("DIFFERENT", "PI", "PI-2", "Z")));
+            var different =
+                    data(
+                            b.post(
+                                    "/generation/previews",
+                                    Map.of("billId", targetBill(), "quantity", "1")));
+            assertThat(different.path("firstSn").asString()).isEqualTo("Z0001");
+            assertThat(different.path("nextStart").path("adjusted").asBoolean()).isFalse();
+        }
+    }
+
+    @Test
+    void pendingTransferHintUsesCurrentTargetStateAndDoesNotExposeItToBoundOperators()
+            throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            String source = allocated(b), target = destination(source);
+            String pending =
+                    submit(b, "APPLY", transfer(uuid(), source, target, "SINGLE", null, "G0005"));
+            run(pending);
+            assertThat(
+                            data(b.get("/transfers/" + pending + "/target-hint"))
+                                    .path("unused")
+                                    .asString())
+                    .isEqualTo("4");
+            run(submit(b, "DIRECT", transfer(uuid(), source, target, "SINGLE", null, "G0013")));
+            var hint = data(b.get("/transfers/" + pending + "/target-hint"));
+            assertThat(hint.path("before").path("startSn").asString()).isEqualTo("G0014");
+            assertThat(hint.path("after").path("startSn").asString()).isEqualTo("G0014");
+            assertThat(hint.path("unused").asString()).isEqualTo("0");
+            user(11, "hint_operator", 3);
+            jdbc.update("INSERT INTO sn_user_factory(user_id,factory_id) VALUES(11,?)", source);
+            try (var local = new Browser("hint_operator")) {
+                var hidden = data(local.get("/transfers/" + pending + "/target-hint"));
+                assertThat(hidden.path("available").asBoolean()).isFalse();
+                assertThat(hidden.path("before").isNull()).isTrue();
+                assertThat(
+                                data(local.post(
+                                                "/transfers/target-hint",
+                                                hint(source, "SINGLE", "G0001")))
+                                        .path("available")
+                                        .asBoolean())
+                        .isFalse();
+                assertThat(
+                                local.post("/transfers/target-hint", hint(target, "PI", null))
+                                        .statusCode())
+                        .isEqualTo(403);
+            }
+            run(decision(b, pending, "approve", "1"));
+            assertThat(
+                            data(b.get("/transfers/" + pending + "/target-hint"))
+                                    .path("before")
+                                    .isNull())
+                    .isTrue();
+        }
     }
 
     @Test

@@ -94,6 +94,94 @@ public class TransferServiceImpl implements TransferService {
     }
 
     @Override
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public TransferImpactVO hint(TransferHintDTO command) {
+        validator.requireValid(command);
+        var input =
+                source(
+                        command.factoryId(),
+                        command.pi(),
+                        command.scope(),
+                        command.material(),
+                        command.sn());
+        var actor =
+                e.policy.require(
+                        e.policy.read(TransferPolicy.VIEW), TransferPolicy.VIEW, input.factoryId());
+        e.policy.read(TransferPolicy.TARGETS);
+        String toPi = AcquirePolicy.pi(command.toPi());
+        String customer = value(command.toCustomer(), 64, false);
+        if (!actor.grants().get(TransferPolicy.VIEW).allFactories()) return emptyImpact(false);
+        e.acquire.work.resource(e.rows.candidates(input).transferable());
+        List<String> sns = new ArrayList<>();
+        java.time.LocalDate month = null;
+        String after = null;
+        while (true) {
+            var page = e.rows.candidateItems(input, month, after, 500);
+            if (page.isEmpty()) break;
+            if (sns.isEmpty() && customer.isEmpty()) customer = page.getFirst().customer();
+            page.forEach(item -> sns.add(item.sn()));
+            month = page.getLast().genMonth();
+            after = page.getLast().id();
+        }
+        return impact(input.pi(), toPi, customer, sns);
+    }
+
+    @Override
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public TransferImpactVO pendingHint(String id) {
+        var actor = e.policy.read(TransferPolicy.VIEW);
+        var transfer = visible(actor, id);
+        if (!actor.grants().get(TransferPolicy.VIEW).allFactories()) return emptyImpact(false);
+        if (!"PENDING".equals(transfer.status())) return emptyImpact(true);
+        e.acquire.work.resource(transfer.quantity());
+        List<String> sns = new ArrayList<>();
+        long ordinal = 0;
+        String customer = transfer.toCustomer();
+        while (true) {
+            var page = e.rows.page(transfer.id(), ordinal, 500);
+            if (page.isEmpty()) break;
+            for (var member : page) {
+                var item = e.acquire.json.readValue(member.snapshot(), AcquireSnapshot.class);
+                if (sns.isEmpty() && customer.isEmpty()) customer = item.customer();
+                sns.add(item.sn());
+            }
+            ordinal = page.getLast().ordinal();
+        }
+        return impact(transfer.fromPi(), transfer.toPi(), customer, sns);
+    }
+
+    private TransferImpactVO emptyImpact(boolean available) {
+        return new TransferImpactVO(available, "", "", null, null, null);
+    }
+
+    private TransferImpactVO impact(String from, String to, String customer, List<String> sns) {
+        if (from.equals(to) || sns.isEmpty()) return emptyImpact(true);
+        String currentCustomer = e.acquire.work.customer(to, "");
+        var rule =
+                e.acquire.work.resolver.effective(
+                        to, currentCustomer.isEmpty() ? customer : currentCustomer);
+        if (rule == null) return emptyImpact(true);
+        var spec = SnWorkEngine.spec(rule.version());
+        var before = e.acquire.work.next.current(to, e.acquire.work.counter(to).lastSeq(), spec);
+        var sequences = new TreeSet<Long>();
+        for (String sn : sns) SequenceCodec.parse(sn, spec).ifPresent(sequences::add);
+        long top = sequences.isEmpty() ? before.base() : Math.max(before.base(), sequences.last());
+        var after =
+                top == before.base()
+                        ? before
+                        : new SnNextSequence.Position(
+                                before.ownLast(), top, SequenceCodec.format(top, spec));
+        long unused = top - before.base() - sequences.tailSet(before.base(), false).size();
+        return new TransferImpactVO(
+                true,
+                rule.head().getCode(),
+                rule.source(),
+                before.view(spec),
+                after.view(spec),
+                Long.toString(unused));
+    }
+
+    @Override
     @Idempotent
     public TaskVO create(String mode, TransferCreateDTO command) {
         if (!Set.of("APPLY", "DIRECT").contains(mode)) throw SnPolicy.invalid();

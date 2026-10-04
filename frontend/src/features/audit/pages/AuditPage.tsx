@@ -107,16 +107,17 @@ function AuditDetails({
               {
                 key: 'reason',
                 label: t('audit.reason'),
-                children:
-                  detail.data?.reason === 'credentialsRejected'
-                    ? t('audit.credentialsRejected')
-                    : event.errorCode
-                      ? t('errors.' + event.errorCode, { defaultValue: String(event.errorCode) })
-                      : detail.data?.failureCode
-                        ? t('errors.' + detail.data.failureCode, {
-                            defaultValue: detail.data.failureCode,
-                          })
-                        : '—',
+                children: ['credentialsRejected', 'credentialsLocked'].includes(
+                  detail.data?.reason ?? '',
+                )
+                  ? t(`audit.${detail.data?.reason}`)
+                  : event.errorCode
+                    ? t('errors.' + event.errorCode, { defaultValue: String(event.errorCode) })
+                    : detail.data?.failureCode
+                      ? t('errors.' + detail.data.failureCode, {
+                          defaultValue: detail.data.failureCode,
+                        })
+                      : '—',
               },
             ]}
           />

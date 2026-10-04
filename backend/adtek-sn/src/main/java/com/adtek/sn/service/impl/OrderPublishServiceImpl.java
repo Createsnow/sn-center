@@ -35,6 +35,7 @@ public class OrderPublishServiceImpl implements OrderPublishService {
     private final FactoryPublishService factoryPublisher;
     private final ManagementAuditPort audit;
     private final SnConvert convert;
+    private final OrderScheduleMapper schedules;
 
     public OrderPublishServiceImpl(
             SnPolicy policy,
@@ -48,7 +49,8 @@ public class OrderPublishServiceImpl implements OrderPublishService {
             FactoryMapper factories,
             FactoryPublishService factoryPublisher,
             ManagementAuditPort audit,
-            SnConvert convert) {
+            SnConvert convert,
+            OrderScheduleMapper schedules) {
         this.policy = policy;
         this.authorization = authorization;
         this.control = control;
@@ -61,6 +63,7 @@ public class OrderPublishServiceImpl implements OrderPublishService {
         this.factoryPublisher = factoryPublisher;
         this.audit = audit;
         this.convert = convert;
+        this.schedules = schedules;
     }
 
     @Override
@@ -102,12 +105,22 @@ public class OrderPublishServiceImpl implements OrderPublishService {
                 || attempt.getActorId() != actor.userId()
                 || !attempt.getState().equals("FETCHING")) throw SnPolicy.missing();
         if (attempt.getBaseVersion() != previous) throw new BusinessException(SNAPSHOT_CHANGED);
+        if ("scheduled".equals(attempt.getMode())) {
+            var schedule = schedules.lock();
+            if (!schedule.enabled()
+                    || !id.equals(schedule.lastRunId())
+                    || !"FETCHING".equals(schedule.lastState())
+                    || schedule.leaseUntil() == null
+                    || !schedule.leaseUntil().isAfter(schedules.now())) {
+                throw new BusinessException(SYNC_EXECUTION_EXPIRED);
+            }
+        }
         String billNo = attempt.getMode().equals("one") ? attempt.getBillNo() : null;
         var groups = OrderSnapshot.validate(rows, billNo);
         long version = previous + 1;
         if (organizations != null) {
             policy.require(actor, "sn:factory:sync", true);
-            factoryPublisher.withinOrderPublish(source, organizations, version);
+            factoryPublisher.withinOrderPublish(actor, source, organizations, version);
         }
         var links = new HashMap<String, OrganizationMappingEntity>();
         for (var link : mappings.list(source.system(), source.account()))
@@ -178,6 +191,8 @@ public class OrderPublishServiceImpl implements OrderPublishService {
         attempt.setOrgSyncFailed(orgFailed);
         attempt.setFinishedAt(now);
         attempts.updateById(attempt);
+        if ("scheduled".equals(attempt.getMode()))
+            schedules.succeeded(id, attempt.getBillsCount(), attempt.getRowsCount());
         audit.success(
                 new ManagementAuditPort.Event(
                         actor.userId(),
@@ -193,12 +208,15 @@ public class OrderPublishServiceImpl implements OrderPublishService {
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
     public void failed(String id, int errorCode) {
+        // 与发布使用相同协调锁，失败回写不能根据旧FETCHING快照覆盖已提交SUCCESS。
+        control.lock();
         var attempt = attempts.selectById(id);
         if (attempt == null || !attempt.getState().equals("FETCHING")) return;
         attempt.setState("FAILED");
         attempt.setErrorCode(errorCode);
         attempt.setFinishedAt(Instant.now());
         attempts.updateById(attempt);
+        if ("scheduled".equals(attempt.getMode())) schedules.failed(id, errorCode);
         try {
             audit.failure(
                     new ManagementAuditPort.Event(

@@ -6,6 +6,8 @@ $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $jar = Join-Path $projectRoot 'backend/adtek-server/target/adtek-server-0.1.0-SNAPSHOT.jar'
 $jdk = Get-ChildItem -LiteralPath (Join-Path $projectRoot '.tools/jdk') -Directory | Select-Object -First 1
+$socketTemp = Join-Path $projectRoot '.tools/tmp'
+New-Item -ItemType Directory -Force -Path $socketTemp | Out-Null
 if (-not (Test-Path -LiteralPath $jar)) {
     throw 'Build first: ./tools/verify.ps1'
 }
@@ -22,7 +24,7 @@ try {
     $env:ADTEK_BOOTSTRAP_USERNAME = $Username
     $env:ADTEK_BOOTSTRAP_PASSWORD = [IO.File]::ReadAllText($passwordFile).Trim()
     $env:SPRING_PROFILES_ACTIVE = 'local,bootstrap-admin'
-    & (Join-Path $jdk.FullName 'bin/java.exe') '-jar' $jar '--spring.main.web-application-type=none'
+    & (Join-Path $jdk.FullName 'bin/java.exe') "-Djdk.net.unixdomain.tmpdir=$socketTemp" '-jar' $jar '--spring.main.web-application-type=none'
     $bootstrapExitCode = $LASTEXITCODE
     if ($bootstrapExitCode -eq 0) {
         Write-Output "Initialized test account '$Username'; initial password: deploy/.secrets/bootstrap-admin-password. Change it at first login."

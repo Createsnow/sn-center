@@ -88,6 +88,8 @@ class SnFoundationIT {
     @BeforeEach
     void reset() {
         ERP.reset();
+        jdbc.update(
+                "UPDATE sn_order_sync_schedule SET enabled=FALSE,interval_minutes=1440,next_run_at=NULL,owner_id=NULL,last_run_id=NULL,last_run_at=NULL,lease_until=NULL,last_state=NULL,last_error_code=NULL,last_bills=NULL,last_rows=NULL,updated_at=NULL");
         for (String table :
                 List.of(
                         "sn_source_entry_quota",
@@ -257,6 +259,10 @@ class SnFoundationIT {
             var current = data(b.get("/orders?q=MO-1")).path("items").get(0);
             assertThat(current.path("generatedQty").asString()).isEqualTo("5");
             assertThat(current.path("quota").asString()).isEqualTo("7");
+            var pi = data(b.get("/orders/pis?pending=true&customer=C1")).path("items").get(0);
+            assertThat(pi.path("quota").asString()).isEqualTo("7");
+            assertThat(pi.path("generatedQty").asString()).isEqualTo("5");
+            assertThat(pi.path("pendingQuantity").asString()).isEqualTo("3");
             var lines = data(b.get("/orders/" + bill + "/lines")).path("items");
             assertThat(lines.get(0).path("sourceEntryId").asString()).isEqualTo("11");
             assertThat(lines.get(0).path("quota").asString()).isEqualTo("0");
@@ -293,6 +299,20 @@ class SnFoundationIT {
             assertThat(data(b.get("/orders/customers")).path("items").toString())
                     .isEqualTo("[\"C1\"]");
             assertThat(data(b.get("/orders/meta")).path("bills").asString()).isEqualTo("1");
+            assertThat(
+                            data(b.get("/orders/pis?pending=true"))
+                                    .path("items")
+                                    .get(0)
+                                    .path("pi")
+                                    .asString())
+                    .isEqualTo("PI-1");
+            assertThat(data(b.get("/orders/pis?customer=C2")).path("total").asString())
+                    .isEqualTo("0");
+            assertThat(data(b.get("/orders?pending=true&customer=C2")).path("total").asString())
+                    .isEqualTo("0");
+            assertThat(data(b.get("/orders/pis?factoryId=1")).path("total").asString())
+                    .isEqualTo("0");
+            assertThat(data(empty.get("/orders/pis")).path("total").asString()).isEqualTo("0");
             assertThat(data(b.get("/orders?factoryId=1")).path("total").asString()).isEqualTo("0");
             assertThat(b.post("/orders/sync", Map.of()).statusCode()).isEqualTo(403);
             assertThat(b.get("/orders/syncs").statusCode()).isEqualTo(403);
@@ -779,6 +799,291 @@ class SnFoundationIT {
             var whole = data(b.get("/orders?q=WHOLE")).path("items").get(0);
             assertThat(whole.path("totalQty").asString()).isEqualTo("9007199254740993");
             assertThat(whole.path("quantityReady").asBoolean()).isTrue();
+            assertThat(data(b.get("/orders?pending=true&q=FRACTION")).path("total").asString())
+                    .isEqualTo("0");
+            var pi = data(b.get("/orders/pis?pending=true")).path("items").get(0);
+            assertThat(pi.path("bills").asString()).isEqualTo("2");
+            assertThat(pi.path("totalQty").asString()).isEqualTo("9007199254740994");
+            assertThat(pi.path("quota").asString()).isEqualTo("9007199254740993");
+        }
+    }
+
+    @Test
+    void pendingOrderAndPiPagesIncludeUnallocatedHistoryAndExcludeFinishedBills() throws Exception {
+        sample();
+        try (var b = new Browser("sn_hq")) {
+            data(b.post("/orders/sync", Map.of()));
+            assertThat(data(b.get("/orders?q=C1")).path("total").asString()).isEqualTo("1");
+            assertThat(data(b.get("/orders/pis?q=C1")).path("total").asString()).isEqualTo("0");
+            assertThat(data(b.get("/orders/pis?q=PI&size=1")).path("total").asString())
+                    .isEqualTo("2");
+            assertThat(
+                            data(b.get("/orders/pis?size=1&page=2"))
+                                    .path("items")
+                                    .get(0)
+                                    .path("pi")
+                                    .asString())
+                    .isEqualTo("PI-1");
+            jdbc.update(
+                    "UPDATE sn_source_entry_quota q JOIN sn_order_entry e ON e.bill_id=q.bill_id"
+                            + " AND e.source_entry_id=q.source_entry_id SET q.generated_qty=e.qty");
+            var pending = data(b.get("/orders?pending=true&size=1"));
+            assertThat(pending.path("total").asString()).isEqualTo("2");
+            assertThat(pending.path("items").get(0).path("quota").asString()).isEqualTo("0");
+            assertThat(
+                            data(b.get("/orders/pis?customer=C1&pending=true"))
+                                    .path("items")
+                                    .get(0)
+                                    .path("pendingQuantity")
+                                    .asString())
+                    .isEqualTo("13");
+            jdbc.update("UPDATE sn_source_entry_quota SET allocated_qty=generated_qty");
+            assertThat(data(b.get("/orders?pending=true")).path("total").asString()).isEqualTo("0");
+            assertThat(data(b.get("/orders/pis?pending=true")).path("total").asString())
+                    .isEqualTo("0");
+            assertThat(data(b.get("/orders/pis")).path("total").asString()).isEqualTo("2");
+        }
+    }
+
+    @Test
+    void piAggregationIncludesVisibleOrdersOnlyAndDoesNotNetDifferentEntryQuotas()
+            throws Exception {
+        ERP.orders =
+                List.of(
+                        row("1", "11", "LATEST", "M", "2"),
+                        row("1", "12", "LATEST", "M", "6"),
+                        K3ProtocolFixture.row(
+                                "2", "21", "OLDER", "C2", "PI-1", "102", "ERP-B", "乙工厂", "M", "9"));
+        try (var b = new Browser("sn_hq")) {
+            data(b.post("/orders/sync", Map.of()));
+            jdbc.update(
+                    "UPDATE sn_source_entry_quota SET generated_qty=5,allocated_qty=5"
+                            + " WHERE source_entry_id='11'");
+            var pi = data(b.get("/orders/pis?pending=true")).path("items").get(0);
+            assertThat(pi.path("bills").asString()).isEqualTo("2");
+            assertThat(pi.path("quota").asString()).isEqualTo("15");
+            var own = data(b.get("/orders/pis?customer=C1")).path("items").get(0);
+            assertThat(own.path("quota").asString()).isEqualTo("6");
+            assertThat(own.path("totalQty").asString()).isEqualTo("8");
+        }
+        long factory =
+                jdbc.queryForObject("SELECT id FROM sn_factory WHERE code='ERP-A'", Long.class);
+        user(10, "scoped_pi", 5);
+        jdbc.update("INSERT INTO sn_user_factory(user_id,factory_id) VALUES(10,?)", factory);
+        try (var b = new Browser("scoped_pi")) {
+            var pi = data(b.get("/orders/pis?pending=true")).path("items").get(0);
+            assertThat(pi.path("bills").asString()).isEqualTo("1");
+            assertThat(pi.path("quota").asString()).isEqualTo("6");
+            assertThat(data(b.get("/orders?q=C2&pending=true")).path("total").asString())
+                    .isEqualTo("0");
+        }
+    }
+
+    @Autowired com.adtek.sn.service.OrderScheduleService schedules;
+    @Autowired com.adtek.sn.service.impl.OrderScheduleControl scheduleControl;
+    @Autowired com.adtek.sn.service.OrderService orderService;
+    @Autowired com.adtek.framework.security.AuthorizationPort authorizations;
+
+    void due() {
+        jdbc.update(
+                "UPDATE sn_order_sync_schedule SET next_run_at=TIMESTAMPADD(SECOND,-1,CURRENT_TIMESTAMP(6))");
+    }
+
+    JsonNode saveSchedule(Browser browser, boolean enabled, int minutes) throws Exception {
+        return data(
+                browser.raw(
+                        "PUT",
+                        "/sn/orders/sync-schedule",
+                        Map.of("enabled", enabled, "intervalMinutes", minutes),
+                        browser.token,
+                        browser.csrf));
+    }
+
+    @Test
+    void scheduleSettingsValidateScopeIntervalsAndPreserveUnchangedNextRun() throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            assertThat(data(b.get("/orders/sync-schedule")).path("enabled").asBoolean()).isFalse();
+            var saved = saveSchedule(b, true, 10);
+            assertThat(saved.path("ownerId").asString()).isEqualTo("9007199254741001");
+            assertThat(saved.path("workerEnabled").asBoolean()).isFalse();
+            assertThat(saveSchedule(b, true, 10).path("nextRunAt"))
+                    .isEqualTo(saved.path("nextRunAt"));
+            assertThat(saveSchedule(b, true, 20).path("nextRunAt"))
+                    .isNotEqualTo(saved.path("nextRunAt"));
+            for (int invalid : new int[] {0, 9, 10081})
+                assertThat(
+                                b.raw(
+                                                "PUT",
+                                                "/sn/orders/sync-schedule",
+                                                Map.of("enabled", true, "intervalMinutes", invalid),
+                                                b.token,
+                                                b.csrf)
+                                        .statusCode())
+                        .isEqualTo(400);
+            assertThat(saveSchedule(b, false, 20).path("nextRunAt").isNull()).isTrue();
+            assertThat(schedules.runDue()).isFalse();
+        }
+        user(10, "schedule_bound", 5);
+        try (var b = new Browser("schedule_bound")) {
+            assertThat(b.get("/orders/sync-schedule").statusCode()).isEqualTo(403);
+            assertThat(
+                            b.raw(
+                                            "PUT",
+                                            "/sn/orders/sync-schedule",
+                                            Map.of("enabled", true, "intervalMinutes", 10),
+                                            b.token,
+                                            b.csrf)
+                                    .statusCode())
+                    .isEqualTo(403);
+        }
+    }
+
+    @Test
+    void dueScheduleHasOneWinnerAndPublishesFullSnapshotAndLastResult() throws Exception {
+        sample();
+        try (var b = new Browser("sn_hq")) {
+            saveSchedule(b, true, 10);
+            assertThat(schedules.runDue()).isFalse();
+            due();
+            try (var pool = Executors.newFixedThreadPool(2)) {
+                var start = new CountDownLatch(1);
+                var first =
+                        pool.submit(
+                                () -> {
+                                    start.await();
+                                    return schedules.runDue();
+                                });
+                var second =
+                        pool.submit(
+                                () -> {
+                                    start.await();
+                                    return schedules.runDue();
+                                });
+                start.countDown();
+                assertThat(List.of(first.get(), second.get()))
+                        .containsExactlyInAnyOrder(true, false);
+            }
+            var status = data(b.get("/orders/sync-schedule"));
+            assertThat(status.path("lastState").asString()).isEqualTo("SUCCESS");
+            assertThat(status.path("lastBills").asString()).isEqualTo("2");
+            assertThat(status.path("lastRows").asString()).isEqualTo("4");
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT COUNT(*) FROM sn_order_sync WHERE mode='scheduled' AND state='SUCCESS'",
+                                    Integer.class))
+                    .isEqualTo(1);
+            assertThat(jdbc.queryForObject("SELECT revision FROM sn_snapshot_control", Long.class))
+                    .isEqualTo(1);
+            assertThat(data(b.get("/orders")).path("total").asString()).isEqualTo("2");
+            due();
+            ERP.failure = "login";
+            assertThat(schedules.runDue()).isTrue();
+            var failed = data(b.get("/orders/sync-schedule"));
+            assertThat(failed.path("lastState").asString()).isEqualTo("FAILED");
+            assertThat(failed.path("lastErrorCode").asInt()).isEqualTo(1_005_000_002);
+            assertThat(failed.path("lastBills").asString()).isEqualTo("2");
+            assertThat(jdbc.queryForObject("SELECT revision FROM sn_snapshot_control", Long.class))
+                    .isEqualTo(1);
+        }
+    }
+
+    @Test
+    void scheduleRechecksDisabledForcedPasswordAndRevokedOwnersBeforeContactingErp()
+            throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            saveSchedule(b, true, 10);
+        }
+        for (String change :
+                List.of(
+                        "enabled=FALSE",
+                        "enabled=TRUE,must_change_password=TRUE",
+                        "must_change_password=FALSE")) {
+            jdbc.update("UPDATE sys_user SET " + change + " WHERE username='sn_hq'");
+            if (change.equals("must_change_password=FALSE"))
+                jdbc.update("DELETE FROM sys_user_role");
+            due();
+            assertThat(schedules.runDue()).isTrue();
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT last_state FROM sn_order_sync_schedule", String.class))
+                    .isEqualTo("FAILED");
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT last_error_code FROM sn_order_sync_schedule",
+                                    Integer.class))
+                    .isEqualTo(1_003_000_004);
+            assertThat(ERP.envelopes).isEmpty();
+        }
+    }
+
+    @Test
+    void expiredRunIsRecoveredAndLateWorkerCannotPublishOrOverwriteReplacementResult()
+            throws Exception {
+        sample();
+        try (var b = new Browser("sn_hq")) {
+            saveSchedule(b, true, 10);
+            due();
+            var old = scheduleControl.claim();
+            assertThat(old).isNotNull();
+            assertThat(scheduleControl.claim()).isNull();
+            jdbc.update(
+                    "UPDATE sn_order_sync_schedule SET lease_until=TIMESTAMPADD(SECOND,-1,CURRENT_TIMESTAMP(6))");
+            assertThat(schedules.runDue()).isFalse();
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT state FROM sn_order_sync WHERE id=?",
+                                    String.class,
+                                    old.getId()))
+                    .isEqualTo("FAILED");
+            due();
+            assertThat(schedules.runDue()).isTrue();
+            var actor = authorizations.loadCurrent(old.getActorId()).orElseThrow();
+            assertThatThrownBy(() -> orderService.synchronizeScheduled(actor, old.getId()))
+                    .isInstanceOf(com.adtek.common.core.BusinessException.class);
+            assertThat(data(b.get("/orders/sync-schedule")).path("lastState").asString())
+                    .isEqualTo("SUCCESS");
+            assertThat(jdbc.queryForObject("SELECT revision FROM sn_snapshot_control", Long.class))
+                    .isEqualTo(1);
+        }
+    }
+
+    @Test
+    void settingsChangeAndAuthorizationRevocationDuringFetchFencePublication() throws Exception {
+        sample();
+        try (var b = new Browser("sn_hq");
+                var pool = Executors.newSingleThreadExecutor()) {
+            saveSchedule(b, true, 10);
+            due();
+            ERP.barrier = new CountDownLatch(2);
+            var pending = pool.submit(() -> schedules.runDue());
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+            while (ERP.barrier.getCount() == 2 && System.nanoTime() < deadline) Thread.sleep(10);
+            assertThat(ERP.barrier.getCount()).isEqualTo(1);
+            saveSchedule(b, false, 10);
+            ERP.barrier.countDown();
+            assertThat(pending.get()).isTrue();
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM sn_order_bill", Integer.class))
+                    .isZero();
+            assertThat(data(b.get("/orders/sync-schedule")).path("lastErrorCode").asInt())
+                    .isEqualTo(1_004_000_026);
+            ERP.barrier = null;
+            saveSchedule(b, true, 10);
+            due();
+            ERP.barrier = new CountDownLatch(2);
+            var revoked = pool.submit(() -> schedules.runDue());
+            deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+            while (ERP.barrier.getCount() == 2 && System.nanoTime() < deadline) Thread.sleep(10);
+            assertThat(ERP.barrier.getCount()).isEqualTo(1);
+            jdbc.update(
+                    "UPDATE sys_user SET enabled=FALSE,security_version=security_version+1 WHERE username='sn_hq'");
+            ERP.barrier.countDown();
+            assertThat(revoked.get()).isTrue();
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT last_state FROM sn_order_sync_schedule", String.class))
+                    .isEqualTo("FAILED");
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM sn_order_bill", Integer.class))
+                    .isZero();
         }
     }
 

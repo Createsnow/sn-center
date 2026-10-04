@@ -28,6 +28,7 @@ import java.util.*;
 @Service
 public class RuleServiceImpl implements RuleService {
     private final OrderBillMapper bills;
+    private final SnRuleResolver resolver;
     private final RuleMapper rules;
     private final RuleVersionMapper versions;
     private final SnPolicy policy;
@@ -40,7 +41,9 @@ public class RuleServiceImpl implements RuleService {
             SnPolicy policy,
             CommandValidator validator,
             SnConvert convert,
-            OrderBillMapper bills) {
+            OrderBillMapper bills,
+            SnRuleResolver resolver) {
+        this.resolver = resolver;
         this.bills = bills;
         this.rules = rules;
         this.versions = versions;
@@ -252,16 +255,8 @@ public class RuleServiceImpl implements RuleService {
             throw SnPolicy.invalid();
         String resolved = SnPolicy.text(customer);
         if (resolved.isEmpty()) resolved = SnPolicy.text(bills.effectiveCustomer(p));
-        var rule = rules.effective(p, resolved);
-        return rule == null
-                ? null
-                : convert.version(
-                        versions.selectOne(
-                                Wrappers.<RuleVersionEntity>lambdaQuery()
-                                        .eq(RuleVersionEntity::getRuleId, rule.getId())
-                                        .eq(
-                                                RuleVersionEntity::getVersion,
-                                                rule.getCurrentVersion())));
+        var rule = resolver.effective(p, resolved);
+        return rule == null ? null : convert.version(rule.version());
     }
 
     private RuleSaveDTO normalize(RuleSaveDTO input) {

@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([Parameter(Mandatory)][string]$SnapshotId, [Parameter(Mandatory)][string]$RunId, [switch]$Apply)
+param([Parameter(Mandatory)][string]$SnapshotId, [Parameter(Mandatory)][string]$RunId, [switch]$Apply, [string]$JarPath)
 # 最大25000枚的PRINTED IMPORT库存，必须已完成同号主数据；整个库存阶段原子提交，账号保持停用。
 $ErrorActionPreference = 'Stop'
 foreach ($key in @('ADTEK_LEGACY_TARGET_URL', 'ADTEK_LEGACY_TARGET_USER', 'ADTEK_LEGACY_TARGET_PASSWORD', 'ADTEK_LEGACY_TARGET_SCHEMA')) {
@@ -14,6 +14,10 @@ foreach ($id in @($SnapshotId, $RunId)) {
     }
 }
 $projectRoot = Split-Path -Parent $PSScriptRoot
+if (!$JarPath) {
+    $JarPath = Join-Path $projectRoot 'backend/adtek-server/target/adtek-server-0.1.0-SNAPSHOT.jar'
+}
+$JarPath = (Get-Item -LiteralPath $JarPath -ErrorAction Stop).FullName
 $java = Get-ChildItem -LiteralPath (Join-Path $projectRoot '.tools/jdk') -Directory | ForEach-Object { Join-Path $_.FullName 'bin/java.exe' } | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
 if (!$java) {
     throw 'Project JDK missing.'
@@ -21,7 +25,7 @@ if (!$java) {
 $previous = $env:ADTEK_LEGACY_SNAPSHOT_ROOT
 try {
     $env:ADTEK_LEGACY_SNAPSHOT_ROOT = Join-Path $projectRoot 'deploy/data/legacy-snapshots'
-    $arguments = @('-Xmx768m', '-jar', (Join-Path $projectRoot 'backend/adtek-server/target/adtek-server-0.1.0-SNAPSHOT.jar'), '--legacy-inventory', '--run-id', $RunId, '--snapshot-id', $SnapshotId)
+    $arguments = @('-Xmx768m', '-jar', $JarPath, '--legacy-inventory', '--run-id', $RunId, '--snapshot-id', $SnapshotId)
     if ($Apply) {
         $arguments += '--apply'
     }

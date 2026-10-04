@@ -55,6 +55,13 @@ public class OrderController {
         return Result.success(service.customers(query), TraceFilter.current(request));
     }
 
+    @GetMapping("/pis")
+    @Operation(summary = "同order:list范围分页PI汇总候选；q匹配PI，pending保留待生成或待分配PI")
+    public Result<PageResult<OrderPiVO>> pis(
+            @Valid @ModelAttribute SnPageQuery query, HttpServletRequest request) {
+        return Result.success(service.pis(query), TraceFilter.current(request));
+    }
+
     @PostMapping("/sync")
     @Operation(summary = "全部工厂order:sync权限；空billNo全量，否则单据；失败保留旧快照，并发版本变化409")
     public Result<OrderSyncVO> synchronize(

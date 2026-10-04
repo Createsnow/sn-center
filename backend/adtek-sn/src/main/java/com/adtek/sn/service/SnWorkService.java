@@ -20,6 +20,9 @@ public interface SnWorkService {
     /** 生成页面上下文；历史消耗独立于当前快照，异常阻止生成。 */
     GenerationContextVO context(String billId);
 
+    /** 当前generation:view全部工厂权限下的首次生成规则候选，按通用优先分页，不要求规则维护权限。 */
+    PageResult<RuleVO> ruleOptions(SnPageQuery query);
+
     /** 当前view全部工厂权限，按稳定来源单据分页完整查看生成/分配历史，快照PI改名不丢旧记录。 */
     PageResult<SnWorkVO> history(String billId, String kind, SnPageQuery query);
 

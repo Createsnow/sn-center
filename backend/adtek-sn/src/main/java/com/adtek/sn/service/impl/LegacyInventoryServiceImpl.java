@@ -76,7 +76,7 @@ public final class LegacyInventoryServiceImpl implements LegacyInventoryService 
                         .sourceServerUuid()
                         .equals(stage.scalar(c, "SELECT @@server_uuid")))
                     throw fail("TARGET_IS_SOURCE_INSTANCE");
-                if (!Set.of("16", "17")
+                if (!Set.of("16", "17", "18", "19")
                         .contains(
                                 stage.scalar(
                                         c,

@@ -13,6 +13,7 @@ import {
   Typography,
 } from 'antd';
 import { useState } from 'react';
+import { TransferImpactHint } from './TransferImpactHint';
 import { useTranslation } from 'react-i18next';
 import type { UserProfile } from '../../../api/contract';
 import { paginationTotal } from '../../../api/sn';
@@ -201,7 +202,10 @@ export function TransferHistory({ profile }: { profile: UserProfile }) {
           maxLength={500}
         />
         {decision?.action === 'APPROVE' && (
-          <Alert type="warning" showIcon title={t('snTransfer.labels')} />
+          <>
+            <Alert type="warning" showIcon title={t('snTransfer.labels')} />
+            <TransferImpactHint profile={profile} transferId={decision.row.id} />
+          </>
         )}
       </Modal>
     </div>
@@ -266,6 +270,7 @@ function TransferDetails({
         ]}
       />
       <ApiErrorAlert error={rows.error ?? detail.error} />
+      {value.status === 'PENDING' && <TransferImpactHint profile={profile} transferId={value.id} />}
       <Table
         rowKey="ordinal"
         data-testid="transfer-members"

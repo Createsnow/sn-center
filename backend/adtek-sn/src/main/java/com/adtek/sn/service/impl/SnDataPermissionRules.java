@@ -13,6 +13,34 @@ public class SnDataPermissionRules implements DataPermissionRules {
     public Map<String, Rule> statements() {
         Map<String, Rule> rules = new HashMap<>();
         internal(
+                rules, "IncomingSnMapper", "全厂生成/初始化或转厂提示服务装配PI；只读护栏分页，写用例持快照/PI锁，不更改流水归属", "page");
+        internal(
+                rules,
+                "PiRuleChoiceMapper",
+                "SN用例当前权限；规则解析只读，首次选择持快照/PI锁与生成成功同事务保存",
+                "chosen",
+                "previous",
+                "choose");
+        internal(
+                rules,
+                "OrderCandidateMapper",
+                "服务当前order:list授权装配工厂交集；历史额度仅按可见订单聚合，含小数整单不生成",
+                "bills",
+                "billCount",
+                "pis",
+                "piCount");
+        internal(
+                rules,
+                "OrderScheduleMapper",
+                "全局设置先复核order权限；内部调度先快照锁再设置锁，发布按持久运行号和当前授权复核",
+                "get",
+                "lock",
+                "now",
+                "save",
+                "claim",
+                "succeeded",
+                "failed");
+        internal(
                 rules,
                 "FactoryMembershipMapper",
                 "可信主体ID装配；替换由身份事务持协调/账号锁，逐工厂校验assign资格并递增账号版本",

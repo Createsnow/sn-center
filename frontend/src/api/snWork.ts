@@ -2,12 +2,13 @@ import type { components } from './generated/schema';
 import { query, submit } from './client';
 import { isRecord } from './contract';
 import { isTask, isOperationId } from './tasks';
-import { plannedQuantity, isOrder, isVersion, pageGuard } from './sn';
+import { plannedQuantity, isOrder, isRule, isVersion, pageGuard } from './sn';
 
 export type PiStatus = components['schemas']['PiInitializationVO'];
 export type SnWork = components['schemas']['SnWorkVO'];
 export type GenerateContext = components['schemas']['GenerationContextVO'];
 export type GenerationPreview = components['schemas']['GenerationPreviewVO'];
+export type NextSequence = components['schemas']['NextSequenceVO'];
 export type InitCommand = components['schemas']['PiInitializationDTO'];
 export type GenerateCommand = components['schemas']['GenerationDTO'];
 export type AllocateCommand = components['schemas']['AllocationDTO'];
@@ -68,12 +69,20 @@ export const isSnWork = (v: unknown): v is SnWork =>
     v.errorCode,
     (x) => typeof x === 'number' && Number.isInteger(x) && x > 0 && x <= 2147483647,
   );
+export const isNextSequence = (v: unknown): v is NextSequence =>
+  isRecord(v) &&
+  fields(v, ['ownLastSeq', 'startSeq'], decimal) &&
+  typeof v.adjusted === 'boolean' &&
+  nullable(v.startSn, text) &&
+  nullable(v.bySeq, decimal) &&
+  nullable(v.bySn, text);
 export const isGenerationPreview = (v: unknown): v is GenerationPreview =>
   isRecord(v) &&
   isOperationId(v.id) &&
   fields(v, ['quantity', 'baseLastSeq', 'startSeq', 'endSeq'], decimal) &&
   fields(v, ['firstSn', 'lastSn'], text) &&
   date(v.expiresAt) &&
+  isNextSequence(v.nextStart) &&
   Array.isArray(v.segments) &&
   v.segments.every(
     (s: unknown) =>
@@ -88,6 +97,10 @@ export const isGenerateContext = (v: unknown): v is GenerateContext =>
   fields(v, ['ruleCode', 'ruleScope', 'ruleBinding'], text) &&
   counter(v.counter) &&
   nullable(v.rule, isVersion) &&
+  typeof v.ruleChoiceRequired === 'boolean' &&
+  nullable(v.nextStart, isNextSequence) &&
+  text(v.ruleSource) &&
+  ['NONE', 'PI', 'CUSTOMER', 'CHOSEN'].includes(v.ruleSource) &&
   decimal(v.pendingQuantity) &&
   decimal(v.maxBatchQuantity) &&
   Array.isArray(v.issues) &&
@@ -123,6 +136,11 @@ export const snWorkApi = {
   initialize: (input: InitCommand) => submit('/sn/pi-initializations', input, isTask, 60_000),
   context: (billId: string) =>
     query('/sn/generation/context?' + new URLSearchParams({ billId }), isGenerateContext),
+  ruleOptions: (q: string, page: number) =>
+    query(
+      '/sn/generation/rules?' + new URLSearchParams({ q, page: String(page), size: '50' }),
+      pageGuard(isRule),
+    ),
   preview: (input: components['schemas']['GenerationPreviewDTO']) =>
     submit('/sn/generation/previews', input, isGenerationPreview),
   generate: (input: GenerateCommand) => submit('/sn/generation', input, isTask),

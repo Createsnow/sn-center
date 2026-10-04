@@ -69,6 +69,7 @@ class LegacyInventoryIT {
                         "sn_item",
                         "sn_key",
                         "sn_pi_counter",
+                        "sn_pi_rule_choice",
                         "sn_legacy_master_run",
                         "sn_legacy_id_map",
                         "sn_legacy_row",
@@ -243,7 +244,12 @@ class LegacyInventoryIT {
             jdbc.execute("ALTER TABLE sn_pi_counter DROP CHECK it_reject_inventory");
         }
         for (String table :
-                List.of("sn_item", "sn_key", "sn_pi_counter", "sn_legacy_inventory_run"))
+                List.of(
+                        "sn_item",
+                        "sn_key",
+                        "sn_pi_counter",
+                        "sn_pi_rule_choice",
+                        "sn_legacy_inventory_run"))
             assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM " + table, Integer.class))
                     .isZero();
         assertThat(
@@ -406,7 +412,12 @@ class LegacyInventoryIT {
                     "ALTER TABLE sn_legacy_inventory_run DROP CHECK it_inventory_proof_reject");
         }
         for (String table :
-                List.of("sn_item", "sn_key", "sn_pi_counter", "sn_legacy_inventory_run"))
+                List.of(
+                        "sn_item",
+                        "sn_key",
+                        "sn_pi_counter",
+                        "sn_pi_rule_choice",
+                        "sn_legacy_inventory_run"))
             assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM " + table, Long.class)).isZero();
         assertThat(
                         jdbc.queryForObject(

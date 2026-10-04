@@ -24,6 +24,8 @@ import java.util.*;
 @Component
 public class SnWorkEngine {
     final SnWorkMapper rows;
+    final SnRuleResolver resolver;
+    final SnNextSequence next;
     final RuleMapper rules;
     final RuleVersionMapper versions;
     final OrderBillMapper bills;
@@ -39,6 +41,8 @@ public class SnWorkEngine {
 
     public SnWorkEngine(
             SnWorkMapper rows,
+            SnRuleResolver resolver,
+            SnNextSequence next,
             RuleMapper rules,
             RuleVersionMapper versions,
             OrderBillMapper bills,
@@ -52,6 +56,8 @@ public class SnWorkEngine {
             ManagementAuditPort audit,
             TaskProgressService progress) {
         this.rows = rows;
+        this.resolver = resolver;
+        this.next = next;
         this.rules = rules;
         this.versions = versions;
         this.bills = bills;
@@ -100,8 +106,8 @@ public class SnWorkEngine {
     }
 
     RuleVersionEntity effective(String pi, String customer) {
-        var rule = rules.effective(pi, customer);
-        return rule == null ? null : versions.current(List.of(rule.getId())).getFirst();
+        var resolved = resolver.effective(pi, customer);
+        return resolved == null ? null : resolved.version();
     }
 
     static SequenceSpec spec(RuleVersionEntity rule) {
@@ -216,16 +222,18 @@ public class SnWorkEngine {
         return bill;
     }
 
-    Plan calculate(long billId, long quantity, Long start) {
+    Plan calculate(long billId, long quantity, Long start, Long selectedRule) {
         resource(quantity);
         var bill = bill(billId);
-        var rule = effective(bill.getPi(), bill.getCustomer());
+        var rule = resolver.generation(bill.getPi(), bill.getCustomer(), selectedRule).version();
         if (!issues(bill, rule).isEmpty()) throw new BusinessException(GENERATION_NOT_READY);
         factory(bill.getFactoryId());
         var counter = counter(bill.getPi());
         if (start != null && counter.startLocked()) throw new BusinessException(PI_INIT_LOCKED);
         var spec = spec(rule);
-        long first = start == null ? Math.addExact(counter.lastSeq(), 1) : start;
+        var position = next.current(bill.getPi(), counter.lastSeq(), spec);
+        if (start != null) position.requireAboveIncoming(start);
+        long first = start == null ? SequenceCodec.lastSequence(position.base(), 1, spec) : start;
         long end = SequenceCodec.lastSequence(first - 1, quantity, spec);
         long todo = quantity, next = first;
         var history = quotaMap(billId);
@@ -264,12 +272,18 @@ public class SnWorkEngine {
                 rule.getVersion(),
                 rule.getId(),
                 rule.getContentDigest(),
-                spec);
+                spec,
+                position.incomingMax(),
+                position.incomingSn());
     }
 
     void samePlan(Plan expected) {
         var actual =
-                calculate(expected.bill().getId(), expected.quantity(), expected.requestedStart());
+                calculate(
+                        expected.bill().getId(),
+                        expected.quantity(),
+                        expected.requestedStart(),
+                        expected.ruleId());
         if (!json.readTree(encode(actual)).equals(json.readTree(encode(expected))))
             throw new BusinessException(PREVIEW_CHANGED);
     }
@@ -352,6 +366,9 @@ public class SnWorkEngine {
                 && input.requestedStart()
                         > (rule == null ? Long.MAX_VALUE : SequenceCodec.capacity(spec(rule))))
             throw new BusinessException(SEQUENCE_OVERFLOW);
+        if (input.requestedStart() != null && rule != null)
+            next.current(input.pi(), counter.lastSeq(), spec(rule))
+                    .requireAboveIncoming(input.requestedStart());
         long count = 0, last = counter.lastSeq();
         Long max = null;
         if (input.requestedStart() != null) last = Math.max(last, input.requestedStart() - 1);
@@ -435,6 +452,7 @@ public class SnWorkEngine {
         }
         if (!batch.isEmpty()) write(task, batch, processed);
         used(rule);
+        resolver.remember(input.pi(), input.customer(), p.ruleId());
         rows.advance(input.pi(), p.end(), p.quantity(), 0, p.requestedStart(), actor.userId());
         complete(
                 task,

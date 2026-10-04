@@ -97,6 +97,7 @@ class SnWorkIT {
                         "sn_work",
                         "sn_preview",
                         "sn_pi_counter",
+                        "sn_pi_rule_choice",
                         "sys_task_progress",
                         "sys_file",
                         "sys_task",
@@ -193,6 +194,284 @@ class SnWorkIT {
         return out;
     }
 
+    @Autowired com.adtek.sn.service.support.SnWorkSettings workSettings;
+
+    @Test
+    void piInputBoundaryRejectsBeforeCreatingAnyWork() throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            var rejected =
+                    b.post(
+                            "/pi-initializations",
+                            init(uuid(), "P".repeat(129), "1", List.of("OLD")));
+            assertThat(rejected.statusCode()).isEqualTo(400);
+            assertThat(count("sn_work")).isZero();
+            assertThat(count("sys_task")).isZero();
+            assertThat(count("sn_key")).isZero();
+            var accepted =
+                    data(
+                            b.post(
+                                    "/pi-initializations",
+                                    init(uuid(), "P".repeat(128), "1", List.of("OLD"))));
+            run(accepted.path("taskId").asString());
+            assertThat(count("sn_key")).isEqualTo(1);
+            assertThat(last("P".repeat(128))).isZero();
+        }
+    }
+
+    @Test
+    void incomingScanTraversesPagesAndRefusesTruncationAtConfiguredLimit() throws Exception {
+        int limit = workSettings.getMaxIncomingScan();
+        try (var b = new Browser("sn_hq")) {
+            var sns =
+                    java.util.stream.IntStream.rangeClosed(1, 1001)
+                            .mapToObj(i -> "G" + String.format(java.util.Locale.ROOT, "%04d", i))
+                            .toList();
+            run(
+                    data(b.post("/pi-initializations", init(uuid(), "PI-1", "1", sns)))
+                            .path("taskId")
+                            .asString());
+            String bill = prepared(b);
+            workSettings.setMaxIncomingScan(1000);
+            var response =
+                    b.post(
+                            "/generation/previews",
+                            Map.of("billId", bill, "quantity", "1", "ruleId", generalRule()));
+            assertThat(response.statusCode()).isEqualTo(409);
+            assertThat(count("sn_preview")).isZero();
+            assertThat(last("PI-1")).isZero();
+            workSettings.setMaxIncomingScan(limit);
+            var preview =
+                    data(
+                            b.post(
+                                    "/generation/previews",
+                                    Map.of(
+                                            "billId",
+                                            bill,
+                                            "quantity",
+                                            "1",
+                                            "ruleId",
+                                            generalRule())));
+            assertThat(preview.path("firstSn").asString()).isEqualTo("G1002");
+            assertThat(count("sn_key")).isEqualTo(1001);
+        } finally {
+            workSettings.setMaxIncomingScan(limit);
+        }
+    }
+
+    @Test
+    void unboundPiRequiresExplicitSelectionAndOnlySuccessfulGenerationRemembersIt()
+            throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            String bill = prepared(b);
+            String other =
+                    data(b.post("/rules", rule("TEMPLATE", "CUSTOMER", "OTHER", "T")))
+                            .path("id")
+                            .asString();
+            var context = data(b.get("/generation/context?billId=" + bill));
+            assertThat(context.path("rule").isNull()).isTrue();
+            assertThat(context.path("ruleChoiceRequired").asBoolean()).isTrue();
+            assertThat(context.path("issues").toString()).doesNotContain("RULE_MISSING");
+            assertThat(
+                            data(b.get("/generation/rules?size=1"))
+                                    .path("items")
+                                    .get(0)
+                                    .path("code")
+                                    .asString())
+                    .isEqualTo("GENERAL");
+            assertThat(data(b.get("/generation/rules?q=TEMPLATE")).path("total").asString())
+                    .isEqualTo("1");
+            var missing = b.post("/generation/previews", Map.of("billId", bill, "quantity", "1"));
+            assertThat(missing.statusCode()).isEqualTo(409);
+            assertThat(json.readTree(missing.body()).path("code").asInt()).isEqualTo(1004000027);
+            assertThat(count("sn_preview")).isZero();
+            assertThat(
+                            b.post(
+                                            "/generation/previews",
+                                            Map.of(
+                                                    "billId",
+                                                    bill,
+                                                    "quantity",
+                                                    "1",
+                                                    "ruleId",
+                                                    "1 OR 1=1"))
+                                    .statusCode())
+                    .isEqualTo(400);
+            var preview =
+                    data(
+                            b.post(
+                                    "/generation/previews",
+                                    Map.of("billId", bill, "quantity", "2", "ruleId", other)));
+            assertThat(preview.path("firstSn").asString()).isEqualTo("T0001");
+            assertThat(count("sn_pi_rule_choice")).isZero();
+            assertThat(count("sn_pi_counter")).isZero();
+            run(generate(b, preview.path("id").asString()));
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT CAST(rule_id AS CHAR) FROM sn_pi_rule_choice",
+                                    String.class))
+                    .isEqualTo(other);
+            var chosen = data(b.get("/generation/context?billId=" + bill));
+            assertThat(chosen.path("ruleSource").asString()).isEqualTo("CHOSEN");
+            assertThat(chosen.path("ruleChoiceRequired").asBoolean()).isFalse();
+            assertThat(
+                            data(b.post(
+                                            "/generation/previews",
+                                            Map.of(
+                                                    "billId",
+                                                    bill,
+                                                    "quantity",
+                                                    "1",
+                                                    "ruleId",
+                                                    generalRule())))
+                                    .path("firstSn")
+                                    .asString())
+                    .isEqualTo("T0003");
+            jdbc.update("DELETE FROM sn_pi_rule_choice");
+            assertThat(data(b.get("/rules/effective?pi=PI-1")).path("prefix").asString())
+                    .isEqualTo("T");
+            data(b.post("/rules", rule("EXPLICIT", "PI", "PI-1", "P")));
+            assertThat(
+                            data(b.post(
+                                            "/generation/previews",
+                                            Map.of("billId", bill, "quantity", "1")))
+                                    .path("firstSn")
+                                    .asString())
+                    .isEqualTo("P0003");
+        }
+        user(10, "query_rules", 5);
+        try (var b = new Browser("query_rules")) {
+            assertThat(b.get("/generation/rules").statusCode()).isEqualTo(403);
+        }
+    }
+
+    @Test
+    void anotherChoiceOrNewExplicitBindingInvalidatesOldPreview() throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            String bill = prepared(b);
+            String other =
+                    data(b.post("/rules", rule("TEMPLATE", "CUSTOMER", "OTHER", "T")))
+                            .path("id")
+                            .asString();
+            String stale = preview(b, bill, "1");
+            String newer =
+                    data(b.post(
+                                    "/generation/previews",
+                                    Map.of("billId", bill, "quantity", "1", "ruleId", other)))
+                            .path("id")
+                            .asString();
+            run(generate(b, newer));
+            assertThat(
+                            b.post("/generation", Map.of("operationId", uuid(), "previewId", stale))
+                                    .statusCode())
+                    .isEqualTo(409);
+            assertThat(count("sn_work")).isEqualTo(1);
+            var next =
+                    data(b.post("/generation/previews", Map.of("billId", bill, "quantity", "1")));
+            String task = generate(b, next.path("id").asString());
+            data(b.post("/rules", rule("EXPLICIT", "PI", "PI-1", "P")));
+            assertThat(fail(task)).isEqualTo(1004000016);
+            assertThat(count("sn_item")).isEqualTo(1);
+            assertThat(last("PI-1")).isEqualTo(1);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT CAST(rule_id AS CHAR) FROM sn_pi_rule_choice",
+                                    String.class))
+                    .isEqualTo(other);
+        }
+    }
+
+    @Test
+    void generationAuditFailureRollsBackNewRuleChoiceWithNumbersAndQuota() throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            String bill = prepared(b), task = generate(b, preview(b, bill, "2"));
+            jdbc.execute(
+                    "ALTER TABLE sys_oper_log ADD CONSTRAINT ck_choice_audit"
+                            + " CHECK(action<>'sn:generation:execute' OR success=FALSE)");
+            try {
+                fail(task);
+            } finally {
+                jdbc.execute("ALTER TABLE sys_oper_log DROP CHECK ck_choice_audit");
+            }
+            assertThat(count("sn_pi_rule_choice")).isZero();
+            assertThat(count("sn_item")).isZero();
+            assertThat(count("sn_key")).isZero();
+            assertThat(last("PI-1")).isZero();
+            assertThat(jdbc.queryForObject("SELECT used FROM sn_rule_version", Boolean.class))
+                    .isFalse();
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT SUM(generated_qty) FROM sn_source_entry_quota",
+                                    Long.class))
+                    .isZero();
+            run(generate(b, preview(b, bill, "2")));
+            assertThat(count("sn_pi_rule_choice")).isEqualTo(1);
+        }
+    }
+
+    @Test
+    void previouslyUnparsedImportsUseCurrentFormatMaximumWithoutChangingHistoricalOwnership()
+            throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            run(
+                    data(b.post(
+                                    "/pi-initializations",
+                                    init(
+                                            uuid(),
+                                            "PI-1",
+                                            "1",
+                                            List.of("G0003", "G0600", "OTHER9999"))))
+                            .path("taskId")
+                            .asString());
+            String bill = prepared(b);
+            var preview =
+                    data(
+                            b.post(
+                                    "/generation/previews",
+                                    Map.of(
+                                            "billId",
+                                            bill,
+                                            "quantity",
+                                            "2",
+                                            "ruleId",
+                                            generalRule())));
+            assertThat(preview.path("startSeq").asString()).isEqualTo("601");
+            assertThat(preview.path("nextStart").path("bySn").asString()).isEqualTo("G0600");
+            assertThat(preview.path("nextStart").path("ownLastSeq").asString()).isEqualTo("0");
+            assertThat(last("PI-1")).isZero();
+            run(generate(b, preview.path("id").asString()));
+            assertThat(last("PI-1")).isEqualTo(602);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT COUNT(*) FROM sn_key WHERE seq_pi IS NULL",
+                                    Integer.class))
+                    .isEqualTo(3);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT SUM(generated_qty) FROM sn_source_entry_quota",
+                                    Long.class))
+                    .isEqualTo(2);
+        }
+    }
+
+    @Test
+    void incomingMaximumAtCapacityReturnsNullSuggestionAndControlledOverflow() throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            run(
+                    data(b.post("/pi-initializations", init(uuid(), "PI-1", "1", List.of("G9999"))))
+                            .path("taskId")
+                            .asString());
+            String bill = prepared(b);
+            data(b.post("/rules", rule("FIXED", "PI", "PI-1", "G")));
+            var context = data(b.get("/generation/context?billId=" + bill));
+            assertThat(context.path("nextStart").path("startSeq").asString()).isEqualTo("10000");
+            assertThat(context.path("nextStart").path("startSn").isNull()).isTrue();
+            var response = b.post("/generation/previews", Map.of("billId", bill, "quantity", "1"));
+            assertThat(response.statusCode()).isEqualTo(409);
+            assertThat(json.readTree(response.body()).path("code").asInt()).isEqualTo(1004000002);
+            assertThat(count("sn_preview")).isZero();
+        }
+    }
+
     String prepared(Browser b) throws Exception {
         sample();
         data(b.post("/orders/sync", Map.of()));
@@ -201,8 +480,23 @@ class SnWorkIT {
                 "SELECT CAST(id AS CHAR) FROM sn_order_bill WHERE bill_no='MO-1'", String.class);
     }
 
+    String generalRule() {
+        return jdbc.queryForObject(
+                "SELECT CAST(id AS CHAR) FROM sn_rule WHERE bind_scope='GENERAL'", String.class);
+    }
+
     String preview(Browser b, String bill, String qty) throws Exception {
-        return data(b.post("/generation/previews", Map.of("billId", bill, "quantity", qty)))
+        return data(b.post(
+                        "/generation/previews",
+                        Map.of(
+                                "billId",
+                                bill,
+                                "quantity",
+                                qty,
+                                "ruleId",
+                                jdbc.queryForObject(
+                                        "SELECT CAST(id AS CHAR) FROM sn_rule WHERE bind_scope='GENERAL'",
+                                        String.class))))
                 .path("id")
                 .asString();
     }
@@ -446,7 +740,17 @@ class SnWorkIT {
             throws Exception {
         try (var b = new Browser("sn_hq")) {
             String bill = prepared(b);
-            var p = data(b.post("/generation/previews", Map.of("billId", bill, "quantity", "13")));
+            var p =
+                    data(
+                            b.post(
+                                    "/generation/previews",
+                                    Map.of(
+                                            "billId",
+                                            bill,
+                                            "quantity",
+                                            "13",
+                                            "ruleId",
+                                            generalRule())));
             assertThat(p.path("segments").size()).isEqualTo(3);
             assertThat(p.path("segments").get(2).path("material").asString()).isEmpty();
             assertThat(count("sn_pi_counter")).isZero();
@@ -585,18 +889,26 @@ class SnWorkIT {
     @Test
     void fullSnConflictRollsBackAllChunksWatermarkQuotaRuleAndTaskResult() throws Exception {
         try (var b = new Browser("sn_hq")) {
+            String bill = prepared(b);
+            var before = rule("GENERAL", "GENERAL", "", "G06");
+            before.put("length", 2);
+            before.put("revision", "1");
+            data(b.post("/rules/" + generalRule() + "/update", before));
             String historical =
                     data(b.post("/pi-initializations", init(uuid(), "PI-1", "1", List.of("G0600"))))
                             .path("taskId")
                             .asString();
             run(historical);
-            String bill = prepared(b);
+            var after = rule("GENERAL", "GENERAL", "", "G");
+            after.put("revision", "2");
+            data(b.post("/rules/" + generalRule() + "/update", after));
             jdbc.update(
                     "UPDATE sn_order_entry SET qty=800 WHERE bill_id=? AND source_entry_id='11'",
                     Long.parseLong(bill));
-            // 未配置规则时导入的真实历史号无法解析；之后的新规则在第二块遇完整SN冲突，不得跳号。
+            // 旧规则G06+2位把G0600反解为本PI流水0；改为G+4位后第二块遇完整SN冲突，整批回滚。
             String id = generate(b, preview(b, bill, "700"));
             assertThat(fail(id)).isEqualTo(1004000015);
+            assertThat(count("sn_pi_rule_choice")).isZero();
             assertThat(count("sn_item")).isEqualTo(1);
             assertThat(count("sn_key")).isEqualTo(1);
             assertThat(last("PI-1")).isZero();
@@ -605,7 +917,10 @@ class SnWorkIT {
                                     "SELECT SUM(generated_qty) FROM sn_source_entry_quota",
                                     Long.class))
                     .isZero();
-            assertThat(jdbc.queryForObject("SELECT used FROM sn_rule_version", Boolean.class))
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT used FROM sn_rule_version WHERE version=2",
+                                    Boolean.class))
                     .isFalse();
             assertThat(
                             jdbc.queryForObject(
@@ -796,7 +1111,9 @@ class SnWorkIT {
                                                     "quantity",
                                                     "2",
                                                     "start",
-                                                    "9999"))
+                                                    "9999",
+                                                    "ruleId",
+                                                    generalRule()))
                                     .statusCode())
                     .isEqualTo(409);
             assertThat(count("sn_work")).isZero();
@@ -830,7 +1147,11 @@ class SnWorkIT {
                                             "quantity",
                                             "10001",
                                             "start",
-                                            "9007199254740993")));
+                                            "9007199254740993",
+                                            "ruleId",
+                                            jdbc.queryForObject(
+                                                    "SELECT CAST(id AS CHAR) FROM sn_rule WHERE bind_scope='GENERAL'",
+                                                    String.class))));
             assertThat(p.path("endSeq").asString()).isEqualTo("9007199254750993");
             long began = System.nanoTime();
             run(generate(b, p.path("id").asString()));
@@ -880,7 +1201,16 @@ class SnWorkIT {
             run(data(x.statusCode() == 202 ? x : y).path("taskId").asString());
             long before = last("PI-1");
             var next =
-                    data(b.post("/generation/previews", Map.of("billId", bill, "quantity", "2")));
+                    data(
+                            b.post(
+                                    "/generation/previews",
+                                    Map.of(
+                                            "billId",
+                                            bill,
+                                            "quantity",
+                                            "2",
+                                            "ruleId",
+                                            generalRule())));
             assertThat(next.path("startSeq").asString()).isEqualTo(Long.toString(before + 1));
             run(generate(b, next.path("id").asString()));
             assertThat(last("PI-1")).isEqualTo(before + 2);

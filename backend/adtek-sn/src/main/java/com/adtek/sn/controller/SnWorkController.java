@@ -55,6 +55,13 @@ public class SnWorkController {
         return Result.success(service.context(billId), TraceFilter.current(r));
     }
 
+    @GetMapping("/generation/rules")
+    @Operation(summary = "全部工厂generation:view；首次生成规则候选，按通用优先分页")
+    public Result<PageResult<RuleVO>> ruleOptions(
+            @Valid @ModelAttribute SnPageQuery q, HttpServletRequest r) {
+        return Result.success(service.ruleOptions(q), TraceFilter.current(r));
+    }
+
     @PostMapping("/generation/previews")
     @Operation(summary = "纯预演并固定原主体/来源/规则摘要/水位/数量，不推进流水或额度")
     public Result<GenerationPreviewVO> preview(
@@ -64,7 +71,7 @@ public class SnWorkController {
 
     @PostMapping("/generation")
     @ResponseStatus(org.springframework.http.HttpStatus.ACCEPTED)
-    @Operation(summary = "短事务绑定预演、操作、任务和PI活跃占用；持久任务整批提交，不跳号")
+    @Operation(summary = "短事务绑定预演、操作、任务和PI活跃占用；起号避让同格式转入/原未解析导入最大号，完整SN冲突整批回滚")
     public Result<TaskVO> generate(@Valid @RequestBody GenerationDTO c, HttpServletRequest r) {
         return Result.success(service.generate(c), TraceFilter.current(r));
     }

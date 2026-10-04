@@ -97,6 +97,27 @@ test('SN订单页保留全量和单据同步、左单据右分录、过滤及三
   });
   await page.reload();
   await expect(page.getByText('小数数量待确认', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '定时全量同步', exact: true })).toBeVisible();
+  await page.getByRole('switch', { name: '启用定时同步', exact: true }).check();
+  await page.getByRole('spinbutton', { name: '间隔（分钟）', exact: true }).fill('20');
+  const saved = page.waitForResponse(
+    (r) => r.url().endsWith('/orders/sync-schedule') && r.request().method() === 'PUT',
+  );
+  await page.getByRole('button', { name: '保存定时设置', exact: true }).click();
+  expect((await saved).status()).toBe(200);
+  await page.reload();
+  await expect(page.getByRole('switch', { name: '启用定时同步', exact: true })).toBeChecked();
+  await expect(page.getByRole('spinbutton', { name: '间隔（分钟）', exact: true })).toHaveValue(
+    '20',
+  );
+  await page.getByRole('switch', { name: '启用定时同步', exact: true }).uncheck();
+  const disabled = page.waitForResponse(
+    (r) => r.url().endsWith('/orders/sync-schedule') && r.request().method() === 'PUT',
+  );
+  await page.getByRole('button', { name: '保存定时设置', exact: true }).click();
+  expect((await disabled).status()).toBe(200);
+  await page.reload();
+  await expect(page.getByRole('switch', { name: '启用定时同步', exact: true })).not.toBeChecked();
   await page
     .getByTestId('orders-table')
     .getByRole('button', { name: 'MO-FRACTION', exact: true })
@@ -124,7 +145,7 @@ test('SN订单页保留全量和单据同步、左单据右分录、过滤及三
     fullPage: true,
     animations: 'disabled',
   });
-  await page.getByLabel('单据 / PI / PO / 物料', { exact: true }).fill('M2');
+  await page.getByLabel('搜索单号 / PI / PO / 物料 / 客户', { exact: true }).fill('M2');
   await page.getByRole('button', { name: /^查\s*询$/ }).click();
   await expect(
     page.getByTestId('orders-table').getByRole('button', { name: 'MO-1', exact: true }),
@@ -141,6 +162,7 @@ test('SN订单页保留全量和单据同步、左单据右分录、过滤及三
   await page.goto('/profile');
   await page.getByRole('combobox').click();
   await page.getByText('English', { exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'My settings', exact: true })).toBeVisible();
   await page.goto('/orders');
   await expect(
     page.getByRole('heading', { name: 'Production order snapshot', exact: true }),
@@ -164,6 +186,7 @@ test('SN订单页保留全量和单据同步、左单据右分录、过滤及三
   await page.goto('/profile');
   await page.getByRole('combobox').click();
   await page.getByText('Tiếng Việt', { exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Cài đặt cá nhân', exact: true })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/orders');
   await expect(
@@ -305,10 +328,58 @@ test('SN生成页保持预演和整单分配两步，固定物料段、任务恢
   await page.getByRole('button', { name: '去生成', exact: true }).click();
   await expect(page.getByRole('heading', { name: '生成与分配', exact: true })).toBeVisible();
   await expect(page.getByTestId('sn-watermark')).toHaveText('0');
+  await expect(page.getByLabel('仅待生成或待分配', { exact: true })).toBeChecked();
+  await page.getByLabel('选择客户', { exact: true }).click();
+  await page
+    .locator('.ant-select-dropdown:visible .ant-select-item-option-content')
+    .filter({ hasText: /^C1$/ })
+    .click();
+  await page.getByLabel('选择 PI', { exact: true }).click();
+  await page
+    .locator('.ant-select-dropdown:visible .ant-select-item-option-content')
+    .filter({ hasText: /PI-1 · 1 单/ })
+    .click();
+  await page.getByLabel('选择生产订单（单据 / PI）', { exact: true }).click();
+  await page
+    .locator('.ant-select-dropdown:visible .ant-select-item-option-content')
+    .filter({ hasText: /^MO-1 · PI-1 · 甲工厂$/ })
+    .click();
   await expect(page.getByLabel('生成数量', { exact: true })).toHaveValue('13');
+  await expect(page.getByRole('button', { name: /^预\s*演$/ })).toBeDisabled();
+  await page.getByLabel('选择生成规则', { exact: true }).click();
+  await page
+    .locator('.ant-select-dropdown:visible .ant-select-item-option-content')
+    .filter({ hasText: /^GENERATE_RULE · 生成规则 · v1$/ })
+    .click();
   await expect(page.getByRole('button', { name: /^生\s*成$/ })).toBeDisabled();
   await page.getByRole('button', { name: /^预\s*演$/ }).click();
   await expect(page.getByText('G0013', { exact: true }).first()).toBeVisible();
+  // 通过地址导航回到同一组件时，旧订单的规则选择和预演都不能继续使用。
+  await page.getByLabel('选择客户', { exact: true }).click();
+  await page
+    .locator('.ant-select-dropdown:visible .ant-select-item-option-content')
+    .filter({ hasText: /^C2$/ })
+    .click();
+  await expect(page.getByLabel('生成数量', { exact: true })).toHaveCount(0);
+  await page.goBack();
+  await expect(page.getByLabel('生成数量', { exact: true })).toHaveValue('13');
+  await expect(
+    page.locator('.ant-select').filter({
+      has: page.getByRole('combobox', { name: '选择客户', exact: true }),
+    }),
+  ).toContainText('C1');
+  await expect(
+    page.locator('.ant-select').filter({
+      has: page.getByRole('combobox', { name: '选择 PI', exact: true }),
+    }),
+  ).toContainText('PI-1');
+  await expect(page.getByRole('button', { name: /^预\s*演$/ })).toBeDisabled();
+  await expect(page.getByRole('button', { name: /^生\s*成$/ })).toBeDisabled();
+  await page.getByLabel('选择生成规则', { exact: true }).click();
+  await page
+    .locator('.ant-select-dropdown:visible .ant-select-item-option-content')
+    .filter({ hasText: /^GENERATE_RULE · 生成规则 · v1$/ })
+    .click();
   await page.getByLabel('生成数量', { exact: true }).fill('12');
   await expect(page.getByRole('button', { name: /^生\s*成$/ })).toBeDisabled();
   await page.getByLabel('生成数量', { exact: true }).fill('13');
@@ -327,6 +398,8 @@ test('SN生成页保持预演和整单分配两步，固定物料段、任务恢
   await expect(page.getByTestId('sn-operation')).toHaveText(operation);
   await expect(page.getByTestId('sn-task-state')).toHaveText('已完成', { timeout: 30000 });
   await expect(page.getByTestId('sn-watermark')).toHaveText('13');
+  await expect(page.getByText('沿用首次生成选择', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('选择生成规则', { exact: true })).toHaveCount(0);
   await expect(page.getByLabel('分配数量', { exact: true })).toHaveValue('13');
   await expect(page.getByLabel('分配数量', { exact: true })).not.toBeEditable();
   await page.getByRole('button', { name: '确认分配', exact: true }).click();
@@ -345,6 +418,7 @@ test('SN生成页保持预演和整单分配两步，固定物料段、任务恢
   await page.goto('/profile');
   await page.getByRole('combobox').click();
   await page.getByText('English', { exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'My settings', exact: true })).toBeVisible();
   await page.goto(url);
   await expect(
     page.getByRole('heading', { name: 'Generate & allocate', exact: true }),
@@ -357,6 +431,7 @@ test('SN生成页保持预演和整单分配两步，固定物料段、任务恢
   await page.goto('/profile');
   await page.getByRole('combobox').click();
   await page.getByText('Tiếng Việt', { exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Cài đặt cá nhân', exact: true })).toBeVisible();
   await page.setViewportSize({ width: 430, height: 932 });
   await page.goto(url);
   await expect(page.getByTestId('sn-watermark')).toHaveText('13');
@@ -461,6 +536,7 @@ test('SN领取页保持整PI领取、固定批次与双格式打印，刷新不�
   await page.goto('/profile');
   await page.getByRole('combobox').click();
   await page.getByText('English', { exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'My settings', exact: true })).toBeVisible();
   await page.goto('/acquire');
   await expect(page.getByRole('heading', { name: 'Acquire / Print', exact: true })).toBeVisible();
   await page.getByRole('tab', { name: 'Print history', exact: true }).click();
@@ -472,6 +548,7 @@ test('SN领取页保持整PI领取、固定批次与双格式打印，刷新不�
   await page.goto('/profile');
   await page.getByRole('combobox').click();
   await page.getByText('Tiếng Việt', { exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Cài đặt cá nhân', exact: true })).toBeVisible();
   await page.setViewportSize({ width: 430, height: 932 });
   await page.goto('/acquire');
   await expect(page.getByRole('heading', { name: 'Nhận / In', exact: true })).toBeVisible();
@@ -499,6 +576,7 @@ async function languageEvidence(
   await page.goto('/profile');
   await page.getByRole('combobox').click();
   await page.getByText('English', { exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'My settings', exact: true })).toBeVisible();
   await page.goto(path);
   await expect(page.getByRole('heading', { name: enTitle, exact: true })).toBeVisible();
   await page.screenshot({
@@ -509,6 +587,7 @@ async function languageEvidence(
   await page.goto('/profile');
   await page.getByRole('combobox').click();
   await page.getByText('Tiếng Việt', { exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Cài đặt cá nhân', exact: true })).toBeVisible();
   await page.setViewportSize({ width: 430, height: 932 });
   await page.goto(path);
   await expect(page.getByRole('heading', { name: viTitle, exact: true })).toBeVisible();
@@ -548,6 +627,13 @@ test('SN转厂页保留空物料申请、驳回恢复、整PI批准和固定明�
     animations: 'disabled',
   });
   await page.getByRole('button', { name: '提交申请', exact: true }).click();
+  await expect(page.getByRole('dialog').getByTestId('transfer-impact')).toContainText('G0001');
+  await expect(page.getByRole('dialog').getByTestId('transfer-impact')).toContainText('G0014');
+  await page.screenshot({
+    path: 'test-results/sn-transfer-impact-zh.png',
+    fullPage: true,
+    animations: 'disabled',
+  });
   await page
     .getByRole('dialog')
     .getByRole('button', { name: /^确\s*认$/ })
@@ -578,6 +664,7 @@ test('SN转厂页保留空物料申请、驳回恢复、整PI批准和固定明�
   const pending = history.getByRole('row').filter({ hasText: '待审批' });
   await expect(pending).toHaveCount(1);
   await pending.getByRole('button', { name: '确认', exact: true }).click();
+  await expect(page.getByRole('dialog').getByTestId('transfer-impact')).toContainText('G0014');
   await page
     .getByRole('dialog')
     .getByLabel('处理意见（可选）', { exact: true })
@@ -698,7 +785,10 @@ test('SN操作痕迹保留状态、归档筛选和双格式快照并支持三语
   await modal.press('Escape');
   await expect(modal).not.toBeVisible();
   await page.getByRole('combobox', { name: '记录范围', exact: true }).click();
-  await page.locator('.ant-select-dropdown:visible').getByText('归档记录', { exact: true }).click();
+  await page
+    .locator('.ant-select-dropdown:visible .ant-select-item-option-content')
+    .getByText('归档记录', { exact: true })
+    .click();
   await page.getByRole('button', { name: '查询', exact: true }).click();
   await expect(page.getByText('共 0 条', { exact: true })).toBeVisible();
   await page.getByRole('combobox', { name: '记录范围', exact: true }).click();

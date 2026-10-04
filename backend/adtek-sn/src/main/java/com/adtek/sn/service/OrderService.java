@@ -19,8 +19,14 @@ public interface OrderService {
     /** 同范围完整分页客户候选，空范围为空，不返回跨厂客户。 */
     PageResult<String> customers(SnPageQuery query);
 
+    /** 同order:list范围分页PI候选；q只匹配PI，客户精确匹配。待办包含生成额度或历史待分配。 */
+    PageResult<OrderPiVO> pis(SnPageQuery query);
+
     /** 当前order:sync全部工厂权限；外部完整拉取后原子发布，失败记录且保留旧版本。 同步不生成SN、不消费/退回历史额度；并发发布版本变更409，调用方可重新发起新的完整读取。 */
     OrderSyncVO synchronize(OrderSyncDTO command);
+
+    /** 内部调度器传入重新装配的当前主体及已抢占运行号；只全量拉取，发布同时校验MySQL执行权和当前授权。 */
+    OrderSyncVO synchronizeScheduled(com.adtek.common.core.Actor actor, String runId);
 
     /** 当前order:list全部工厂资格才能查看全局同步历史；按开始时刻/ID倒序分页。 */
     PageResult<OrderSyncVO> syncs(SnPageQuery query);

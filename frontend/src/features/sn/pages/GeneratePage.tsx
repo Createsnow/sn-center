@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   Alert,
   Button,
@@ -7,7 +7,6 @@ import {
   Form,
   Input,
   Popconfirm,
-  Select,
   Space,
   Steps,
   Table,
@@ -19,9 +18,12 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import type { UserProfile } from '../../../api/contract';
-import { snApi, paginationTotal } from '../../../api/sn';
+import { snApi, paginationTotal, type SnRule } from '../../../api/sn';
 import { snWorkApi } from '../../../api/snWork';
 import { ApiErrorAlert } from '../../../components/ApiErrorAlert';
+import { GenerationOrderPicker } from '../components/GenerationOrderPicker';
+import { GenerationRulePicker } from '../components/GenerationRulePicker';
+import { NextSequenceHint } from '../components/NextSequenceHint';
 import { SnPageHead } from '../components/SnPageHead';
 import { SnOperation } from '../components/SnOperation';
 import { useSnOperation } from '../useSnOperation';
@@ -29,22 +31,41 @@ import { SnCounter, SnRuleDetails, SnBillHistory } from '../components/SnWorkVie
 import { positiveDecimal, suggestedQuantity } from '../snInput';
 
 export function GeneratePage({ profile }: { profile: UserProfile }) {
-  const { t, i18n } = useTranslation(),
-    [params, setParams] = useSearchParams();
+  const { t } = useTranslation();
+  const [params, setParams] = useSearchParams();
   const billId = params.get('billId') ?? '';
-  const [search, setSearch] = useState(''),
-    [limit, setLimit] = useState('10000'),
+  const context = useQuery({
+    queryKey: ['sn', 'generate', profile.id, profile.authorizationVersion, billId],
+    queryFn: () => snWorkApi.context(billId),
+    enabled: !!billId,
+  });
+  // 地址栏和前进/后退切换订单也必须清空本地输入、规则选择及预演。
+  return (
+    <>
+      <SnPageHead title={t('snPages.generate.title')} description={t('snPages.generate.desc')}>
+        <GenerationOrderPicker
+          profile={profile}
+          billId={billId}
+          bill={context.data?.bill}
+          onChange={(id) => setParams(id ? { billId: id } : {})}
+        />
+      </SnPageHead>
+      <GenerationForm key={billId} profile={profile} />
+    </>
+  );
+}
+
+function GenerationForm({ profile }: { profile: UserProfile }) {
+  const { t, i18n } = useTranslation(),
+    [params] = useSearchParams();
+  const billId = params.get('billId') ?? '';
+  const [chosenRule, setChosenRule] = useState<SnRule>();
+  const [limit, setLimit] = useState('10000'),
     [qty, setQty] = useState(''),
     [start, setStart] = useState(''),
     [linePage, setLinePage] = useState(1),
     [consumed, setConsumed] = useState('');
   const prefix = ['sn', 'generate', profile.id, profile.authorizationVersion];
-  const options = useInfiniteQuery({
-    queryKey: [...prefix, 'orders', search],
-    queryFn: ({ pageParam }) => snApi.orders({ page: pageParam, size: 50, q: search }),
-    initialPageParam: 1,
-    getNextPageParam: (p) => (BigInt(p.page * p.size) < BigInt(p.total) ? p.page + 1 : undefined),
-  });
   const context = useQuery({
     queryKey: [...prefix, billId],
     queryFn: () => snWorkApi.context(billId),
@@ -66,55 +87,20 @@ export function GeneratePage({ profile }: { profile: UserProfile }) {
     positiveDecimal(limit) &&
     (start === '' || positiveDecimal(start)) &&
     BigInt(quantity) <= BigInt(limit);
-  const ready = !!value && !value.issues.length && valid && !generate.busy && !allocate.busy;
-  const choices =
-    options.data?.pages.flatMap((page) =>
-      page.items.map((order) => ({
-        value: order.id,
-        label: `${order.billNo} · ${order.pi} · ${order.orgName}`,
-      })),
-    ) ?? [];
-  if (value && !choices.some((c) => c.value === value.bill.id))
-    choices.unshift({
-      value: value.bill.id,
-      label: `${value.bill.billNo} · ${value.bill.pi} · ${value.bill.orgName}`,
-    });
+  const ready =
+    !!value &&
+    !value.issues.length &&
+    valid &&
+    !generate.busy &&
+    !allocate.busy &&
+    (!value.ruleChoiceRequired || !!chosenRule);
   const change = () => {
     preview.reset();
     setConsumed('');
   };
   return (
     <div className="sn-page">
-      <SnPageHead title={t('snPages.generate.title')} description={t('snPages.generate.desc')}>
-        <Space wrap>
-          <Select
-            aria-label={t('snPages.generate.pickOrder')}
-            placeholder={t('snPages.generate.pickOrder')}
-            value={billId || undefined}
-            options={choices}
-            style={{ width: 350, maxWidth: '100%' }}
-            loading={options.isFetching}
-            showSearch={{ filterOption: false, onSearch: setSearch }}
-            onChange={(v) => {
-              setParams({ billId: v });
-              setQty('');
-              setStart('');
-              setLinePage(1);
-              change();
-            }}
-          />
-          {options.hasNextPage && (
-            <Button
-              onClick={() => {
-                void options.fetchNextPage();
-              }}
-            >
-              {t('snPages.more')}
-            </Button>
-          )}
-        </Space>
-      </SnPageHead>
-      <ApiErrorAlert error={context.error ?? options.error ?? lines.error ?? preview.error} />
+      <ApiErrorAlert error={context.error ?? lines.error ?? preview.error} />
       {!value ? (
         <Empty description={t('snPages.generate.empty')} />
       ) : (
@@ -191,9 +177,36 @@ export function GeneratePage({ profile }: { profile: UserProfile }) {
             </section>
             <section className="sn-surface">
               <Typography.Title level={4}>{t('snPages.generate.rule')}</Typography.Title>
-              <SnRuleDetails rule={value.rule} details={value} />
+              {value.ruleChoiceRequired ? (
+                <>
+                  <GenerationRulePicker
+                    profile={profile}
+                    value={chosenRule}
+                    onChange={(rule) => {
+                      setChosenRule(rule);
+                      change();
+                    }}
+                  />
+                  {chosenRule && (
+                    <SnRuleDetails
+                      rule={chosenRule.current}
+                      details={{
+                        ruleCode: chosenRule.code,
+                        ruleScope: chosenRule.bindScope,
+                        ruleBinding: chosenRule.bindValue,
+                      }}
+                    />
+                  )}
+                </>
+              ) : (
+                <>
+                  <Tag>{t('snPages.generate.ruleSource.' + value.ruleSource)}</Tag>
+                  <SnRuleDetails rule={value.rule} details={value} />
+                </>
+              )}
               <Typography.Title level={4}>{t('snPages.generate.counter')}</Typography.Title>
               <SnCounter value={value.counter} />
+              <NextSequenceHint value={p && consumed !== p.id ? p.nextStart : value.nextStart} />
             </section>
           </div>
           <section className="sn-surface">
@@ -296,7 +309,14 @@ export function GeneratePage({ profile }: { profile: UserProfile }) {
                   <Button
                     disabled={!ready || !profile.permissions.includes('sn:generation:preview')}
                     loading={preview.isPending}
-                    onClick={() => preview.mutate({ billId, quantity, start: start || undefined })}
+                    onClick={() =>
+                      preview.mutate({
+                        billId,
+                        quantity,
+                        start: start || undefined,
+                        ruleId: value.ruleChoiceRequired ? chosenRule?.id : undefined,
+                      })
+                    }
                   >
                     {t('snPages.generate.preview')}
                   </Button>

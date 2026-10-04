@@ -35,7 +35,9 @@ public record SnWorkInput(
             long ruleNumber,
             long ruleVersionId,
             String ruleDigest,
-            SequenceSpec spec) {}
+            SequenceSpec spec,
+            Long incomingMax,
+            String incomingSn) {}
 
     public record Segment(
             String entryId,

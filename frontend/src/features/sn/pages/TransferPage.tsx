@@ -10,6 +10,7 @@ import { FactoryPicker } from '../components/FactoryPicker';
 import { SnPageHead } from '../components/SnPageHead';
 import { SnOperation } from '../components/SnOperation';
 import { TransferHistory } from '../components/TransferHistory';
+import { TransferImpactHint } from '../components/TransferImpactHint';
 import { useSnOperation } from '../useSnOperation';
 
 type Fields = Omit<TransferCreate, 'operationId'>;
@@ -258,6 +259,20 @@ export function TransferPage({ profile }: { profile: UserProfile }) {
             })}
         </p>
         <Alert type="warning" title={t('snTransfer.labels')} />
+        {confirm && (
+          <TransferImpactHint
+            profile={profile}
+            input={{
+              factoryId: confirm.factoryId,
+              pi: confirm.pi,
+              scope: confirm.scope,
+              material: confirm.material,
+              sn: confirm.sn,
+              toPi: confirm.toPi,
+              toCustomer: confirm.toCustomer,
+            }}
+          />
+        )}
       </Modal>
       {picker && (
         <TargetPicker

@@ -18,6 +18,7 @@ public final class AuditChanges {
                     "digest",
                     "currentVersion",
                     "enabled",
+                    "intervalMinutes",
                     "mustChangePassword",
                     "code",
                     "name",
@@ -64,10 +65,12 @@ public final class AuditChanges {
                 JsonNode value = root.get(field);
                 if (field.equals("reason")
                         && value.isString()
-                        && value.asString().equals("credentialsRejected")) {
+                        && Set.of("credentialsRejected", "credentialsLocked")
+                                .contains(value.asString())) {
                     reason = value.asString();
                     continue;
                 }
+                if (field.equals("lockStarted") && value.isBoolean()) continue;
                 if (field.equals("errorCode")
                         && value.isString()
                         && value.asString().matches("internal|[1-9][0-9]{9}")) {

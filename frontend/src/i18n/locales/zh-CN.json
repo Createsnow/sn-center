@@ -94,7 +94,8 @@
       "snAuditExport": "生成痕迹导出文件",
       "snAuditExportSubmit": "固定痕迹导出快照",
       "snAuditExportFailed": "痕迹文件生成失败",
-      "snWorkCancel": "取消未执行业务任务"
+      "snWorkCancel": "取消未执行业务任务",
+      "orderSchedule": "订单定时同步设置"
     },
     "modules": {
       "auth": "认证",
@@ -153,8 +154,10 @@
       "currentVersion": "当前版本",
       "source": "来源",
       "permissions": "服务操作权限",
-      "authorizationVersion": "授权版本"
-    }
+      "authorizationVersion": "授权版本",
+      "intervalMinutes": "间隔（分钟）"
+    },
+    "credentialsLocked": "登录因连续失败被锁定"
   },
   "menu": {
     "system": "系统管理",
@@ -395,7 +398,11 @@
     "1000000007": "请求方法不支持。",
     "1000000008": "数据正在被其他操作修改，请查询原操作结果后重试。",
     "1004000001": "规则编码参数不符合要求，请检查进制、字符表、流水长度和完整SN长度。",
-    "1004000002": "流水已超出规则容量，无法继续生成。"
+    "1004000002": "流水已超出规则容量，无法继续生成。",
+    "1002000017": "登录已锁定，请在 {{minutes}} 分钟后重试。",
+    "1004000026": "定时同步执行权已失效或设置已变化，本次未发布。",
+    "1004000027": "请选择本 PI 首次生成使用的规则。",
+    "1004000028": "起始号必须大于当前同格式转入/未解析导入号的最大流水 {{sequence}}（{{sn}}）。"
   },
   "export": {
     "title": "导出任务",
@@ -467,7 +474,7 @@
       "rows": "物料行",
       "excluded": "另有 {{n}} 张单据无客户编码，未显示",
       "unmapped": "以下生产组织尚未建档为工厂，其订单不能生成：{{orgs}}",
-      "search": "单据 / PI / PO / 物料",
+      "search": "搜索单号 / PI / PO / 物料 / 客户",
       "org": "生产组织",
       "noFactory": "未建档",
       "status": "业务状态",
@@ -483,7 +490,8 @@
       "toGenerate": "去生成",
       "noMaterial": "（无物料）",
       "materialName": "物料名称",
-      "demand": "需求单据号"
+      "demand": "需求单据号",
+      "pendingOnly": "仅待生成或待分配"
     },
     "rules": {
       "title": "规则模板",
@@ -645,7 +653,7 @@
       "qty": "生成数量",
       "qtyHint": "可生成额度 {{quota}}，单次上限 {{limit}}",
       "start": "起始号（十进制，可选）",
-      "startPlaceholder": "留空 = 当前最大号 + 1",
+      "startPlaceholder": "留空使用自动起号建议",
       "startHint": "每张 PI 只能在首次生成前指定一次，之后不再提供。",
       "startInvalid": "起始号须为正整数",
       "preview": "预演",
@@ -688,7 +696,22 @@
         "QUOTA_EMPTY": "可生成额度为 0",
         "PI_BUSY": "该 PI 有未完成操作，请先查看任务结果",
         "ALLOCATION_SOURCE_CHANGED": "待分配号的生产组织或 PI 与当前订单不一致，请核对来源变更。"
-      }
+      },
+      "pickCustomer": "选择客户",
+      "pickPi": "选择 PI",
+      "piOption": "{{pi}} · {{bills}} 单 · 可生成 {{quota}} · 待分配 {{pending}}",
+      "moreCustomers": "更多客户",
+      "morePis": "更多 PI",
+      "pickRule": "选择生成规则",
+      "ruleChoiceHint": "本 PI 未绑定规则。请选择一条规则，首次成功生成后沿用；预演不会保存选择。",
+      "ruleSource": {
+        "PI": "按 PI 绑定",
+        "CUSTOMER": "按客户绑定",
+        "CHOSEN": "沿用首次生成选择"
+      },
+      "nextStart": "自动起号建议：{{sn}}（流水 {{seq}}）",
+      "incomingStart": "本 PI 自有水位仍为 {{own}}；当前格式的转入/原未解析导入号最大为 {{sn}}（{{seq}}）。生成提交时才推进水位。",
+      "exhaustedStart": "当前格式的流水容量已耗尽。"
     },
     "work": {
       "progress": "已处理 {{n}} 枚，请以最终状态为准。",
@@ -696,6 +719,18 @@
       "fileInvalid": "请选择不超过 8 MiB 的 UTF-8 CSV/TXT 文件。",
       "absentConfirm": "尚未找到此操作。请先查询确认结果；关闭后再次提交会创建新操作号，确认关闭？",
       "completed": "本次操作已完成。"
+    },
+    "schedule": {
+      "title": "定时全量同步",
+      "enabled": "启用定时同步",
+      "interval": "间隔（分钟）",
+      "save": "保存定时设置",
+      "next": "下次执行",
+      "last": "最近执行",
+      "lastBills": "最近成功单据数",
+      "lastRows": "最近成功分录数",
+      "policy": "每次执行复核保存者的当前同步权限；设置变化会终止在途发布。间隔为 10 分钟至 7 天。",
+      "workerStopped": "此服务未启动定时执行器；设置已保存，但不会在本实例自动执行。"
     }
   },
   "snAcquire": {
@@ -836,7 +871,11 @@
       "MATERIAL": "PI + 物料",
       "SINGLE": "单枚 SN"
     },
-    "mode": "转厂方式"
+    "mode": "转厂方式",
+    "impact": "按规则 {{rule}}：目标下次起号 {{before}} → {{after}}；中间不再生成 {{unused}} 个号。",
+    "impactRestricted": "当前权限不提供目标 PI 全厂起号测算。",
+    "impactNone": "当前无可显示的跨 PI 起号影响。",
+    "impactNote": "按当前规则和库存测算；未绑定 PI 的实际选择可能不同。转厂本身不抬水位，最终以生成时校验为准。"
   },
   "snQuery": {
     "title": "SN 查询",

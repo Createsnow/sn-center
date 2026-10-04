@@ -4,7 +4,7 @@ param()
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $startedAt = [DateTime]::UtcNow
-& (Join-Path $PSScriptRoot 'maven.ps1') -B -ntp -Pbrowser verify
+& (Join-Path $PSScriptRoot 'maven.ps1') -B -ntp '-Pbrowser,acceptance' verify
 if ($LASTEXITCODE -ne 0) {
     throw "Isolated users browser verification failed: $LASTEXITCODE"
 }
@@ -21,7 +21,7 @@ if ($browserFile.LastWriteTimeUtc -lt $startedAt) {
     throw 'No fresh Playwright users report.'
 }
 $browserReport = Get-Content -LiteralPath $browserFile.FullName -Raw | ConvertFrom-Json
-if ($browserReport.stats.expected -ne 16 -or $browserReport.stats.unexpected -gt 0 -or $browserReport.stats.skipped -gt 0 -or $browserReport.stats.flaky -gt 0) {
+if ($browserReport.stats.expected -ne 17 -or $browserReport.stats.unexpected -gt 0 -or $browserReport.stats.skipped -gt 0 -or $browserReport.stats.flaky -gt 0) {
     throw 'Playwright isolated auth/users/configuration/audit/export/SN discovery/result gate failed.'
 }
 Write-Output "users browser discovered=$($browserReport.stats.expected) failures=0 skipped=0; isolated MySQL/Redis and backend harness passed."

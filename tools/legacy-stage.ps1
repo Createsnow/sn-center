@@ -3,7 +3,8 @@ param(
     [Parameter(Mandatory)][string]$SnapshotId,
     [string]$RunId,
     [ValidateRange(1, 1000)][int]$ChunkSize = 500,
-    [switch]$Apply
+    [switch]$Apply,
+    [string]$JarPath
 )
 # 默认只读核验。apply只写V14 staging，不激活业务；保存运行号以核验已提交块并续传，不能换源续跑。
 $ErrorActionPreference = 'Stop'
@@ -24,6 +25,10 @@ foreach ($id in @($SnapshotId, $RunId)) {
     }
 }
 $projectRoot = Split-Path -Parent $PSScriptRoot
+if (!$JarPath) {
+    $JarPath = Join-Path $projectRoot 'backend/adtek-server/target/adtek-server-0.1.0-SNAPSHOT.jar'
+}
+$JarPath = (Get-Item -LiteralPath $JarPath -ErrorAction Stop).FullName
 $java = Get-ChildItem -LiteralPath (Join-Path $projectRoot '.tools/jdk') -Directory | ForEach-Object { Join-Path $_.FullName 'bin/java.exe' } | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
 if (!$java) {
     throw 'Project JDK missing.'
@@ -31,7 +36,7 @@ if (!$java) {
 $previous = $env:ADTEK_LEGACY_SNAPSHOT_ROOT
 try {
     $env:ADTEK_LEGACY_SNAPSHOT_ROOT = Join-Path $projectRoot 'deploy/data/legacy-snapshots'
-    $arguments = @('-jar', (Join-Path $projectRoot 'backend/adtek-server/target/adtek-server-0.1.0-SNAPSHOT.jar'), '--legacy-stage', '--run-id', $RunId, '--snapshot-id', $SnapshotId, '--chunk-size', "$ChunkSize")
+    $arguments = @('-jar', $JarPath, '--legacy-stage', '--run-id', $RunId, '--snapshot-id', $SnapshotId, '--chunk-size', "$ChunkSize")
     if ($Apply) {
         $arguments += '--apply'
     }

@@ -7,7 +7,10 @@ $projectRoot = Split-Path -Parent $PSScriptRoot
 $startedAt = [DateTime]::UtcNow
 $arguments = @('-B', '-ntp')
 if ($Integration) {
-    $arguments += '-Pintegration'
+    $arguments += '-Pintegration,acceptance'
+}
+else {
+    $arguments += '-Pacceptance'
 }
 $arguments += 'verify'
 & (Join-Path $PSScriptRoot 'maven.ps1') @arguments

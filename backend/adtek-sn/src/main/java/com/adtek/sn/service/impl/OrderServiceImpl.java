@@ -9,6 +9,7 @@ import com.adtek.sn.convert.SnConvert;
 import com.adtek.sn.domain.*;
 import com.adtek.sn.dto.OrderSyncDTO;
 import com.adtek.sn.mapper.*;
+import com.adtek.sn.query.OrderCandidateQuery;
 import com.adtek.sn.query.SnPageQuery;
 import com.adtek.sn.service.*;
 import com.adtek.sn.service.port.ErpProductionOrderPort;
@@ -31,6 +32,7 @@ public class OrderServiceImpl implements OrderService {
     private final SnPolicy policy;
     private final CommandValidator validator;
     private final OrderBillMapper bills;
+    private final OrderCandidateMapper candidates;
     private final OrderEntryMapper entries;
     private final SourceQuotaMapper quotas;
     private final OrderSyncMapper attempts;
@@ -42,6 +44,7 @@ public class OrderServiceImpl implements OrderService {
             SnPolicy policy,
             CommandValidator validator,
             OrderBillMapper bills,
+            OrderCandidateMapper candidates,
             OrderEntryMapper entries,
             SourceQuotaMapper quotas,
             OrderSyncMapper attempts,
@@ -51,6 +54,7 @@ public class OrderServiceImpl implements OrderService {
         this.policy = policy;
         this.validator = validator;
         this.bills = bills;
+        this.candidates = candidates;
         this.entries = entries;
         this.quotas = quotas;
         this.attempts = attempts;
@@ -64,51 +68,13 @@ public class OrderServiceImpl implements OrderService {
     @DataScope(resource = "sn:order", permission = "sn:order:list")
     public PageResult<OrderBillVO> list(SnPageQuery query) {
         validator.requireValid(query);
-        var where =
-                Wrappers.<OrderBillEntity>lambdaQuery()
-                        .eq(OrderBillEntity::getActive, true)
-                        .ne(OrderBillEntity::getCustomer, "")
-                        .eq(
-                                SnPolicy.optional(query.getCustomer()) != null,
-                                OrderBillEntity::getCustomer,
-                                SnPolicy.text(query.getCustomer()))
-                        .eq(
-                                SnPolicy.optional(query.getPi()) != null,
-                                OrderBillEntity::getPi,
-                                SnPolicy.text(query.getPi()))
-                        .orderByDesc(OrderBillEntity::getBillNo, OrderBillEntity::getId);
-        if (SnPolicy.optional(query.getFactoryId()) != null)
-            where.eq(OrderBillEntity::getFactoryId, SnPolicy.id(query.getFactoryId()));
-        String like = SnPolicy.like(query.getQ());
-        if (like != null) {
-            // 明细先按相同工厂范围筛选候选；只筛选订单，不改变订单全部有效分录的汇总量。
-            var matches =
-                    entries
-                            .selectList(
-                                    Wrappers.<OrderEntryEntity>lambdaQuery()
-                                            .select(OrderEntryEntity::getBillId)
-                                            .eq(OrderEntryEntity::getActive, true)
-                                            .apply("material LIKE {0} ESCAPE '!'", like))
-                            .stream()
-                            .map(OrderEntryEntity::getBillId)
-                            .distinct()
-                            .toList();
-            if (matches.size() > 10000) throw new BusinessException(RESOURCE_LIMIT);
-            where.and(
-                    w -> {
-                        w.apply("bill_no LIKE {0} ESCAPE '!'", like)
-                                .or()
-                                .apply("pi LIKE {0} ESCAPE '!'", like)
-                                .or()
-                                .apply("po LIKE {0} ESCAPE '!'", like);
-                        if (!matches.isEmpty()) w.or().in(OrderBillEntity::getId, matches);
-                    });
-        }
-        var page = bills.selectPage(new Page<>(query.getPage(), query.getSize()), where);
-        var ids = page.getRecords().stream().map(OrderBillEntity::getId).toList();
+        var filter = candidateQuery(query);
+        var records = candidates.bills(filter);
+        long total = candidates.billCount(filter);
+        var ids = records.stream().map(OrderBillEntity::getId).toList();
         if (ids.isEmpty())
             return new PageResult<>(
-                    List.of(), Long.toString(page.getTotal()), query.getPage(), query.getSize());
+                    List.of(), Long.toString(total), query.getPage(), query.getSize());
         var history = quotas.forBills(ids);
         var current =
                 entries.selectList(
@@ -116,7 +82,7 @@ public class OrderServiceImpl implements OrderService {
                                 .in(OrderEntryEntity::getBillId, ids)
                                 .eq(OrderEntryEntity::getActive, true));
         var result =
-                page.getRecords().stream()
+                records.stream()
                         .map(
                                 bill -> {
                                     var ledger =
@@ -161,8 +127,7 @@ public class OrderServiceImpl implements OrderService {
                                                     : "0");
                                 })
                         .toList();
-        return new PageResult<>(
-                result, Long.toString(page.getTotal()), query.getPage(), query.getSize());
+        return new PageResult<>(result, Long.toString(total), query.getPage(), query.getSize());
     }
 
     @Override
@@ -242,11 +207,55 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public PageResult<OrderPiVO> pis(SnPageQuery query) {
+        validator.requireValid(query);
+        var filter = candidateQuery(query);
+        return new PageResult<>(
+                candidates.pis(filter).stream().map(convert::pi).toList(),
+                Long.toString(candidates.piCount(filter)),
+                query.getPage(),
+                query.getSize());
+    }
+
+    private OrderCandidateQuery candidateQuery(SnPageQuery query) {
+        var grant = policy.read("sn:order:list", false).grants().get("sn:order:list");
+        return new OrderCandidateQuery(
+                SnPolicy.like(query.getQ()),
+                SnPolicy.optional(query.getCustomer()),
+                SnPolicy.optional(query.getPi()),
+                SnPolicy.optional(query.getFactoryId()) == null
+                        ? null
+                        : SnPolicy.id(query.getFactoryId()),
+                query.isPending(),
+                grant.allFactories(),
+                grant.factoryIds(),
+                (query.getPage() - 1) * query.getSize(),
+                query.getSize());
+    }
+
+    @Override
     public OrderSyncVO synchronize(OrderSyncDTO command) {
         validator.requireValid(command);
         var actor = policy.read("sn:order:sync", true);
         String no = SnPolicy.optional(command.billNo());
         var attempt = publisher.begin(no);
+        return fetchAndPublish(actor, attempt.id(), no);
+    }
+
+    @Override
+    public OrderSyncVO synchronizeScheduled(Actor actor, String runId) {
+        policy.require(actor, "sn:order:sync", true);
+        var attempt = attempts.selectById(runId);
+        if (attempt == null
+                || !"scheduled".equals(attempt.getMode())
+                || !"FETCHING".equals(attempt.getState())
+                || attempt.getActorId() != actor.userId())
+            throw new BusinessException(SYNC_EXECUTION_EXPIRED);
+        return fetchAndPublish(actor, runId, null);
+    }
+
+    private OrderSyncVO fetchAndPublish(Actor actor, String attemptId, String no) {
         try {
             var source = erp.source();
             var rows = erp.orders(no);
@@ -261,14 +270,14 @@ public class OrderServiceImpl implements OrderService {
                     orgFailed = true;
                 }
             }
-            return publisher.publish(actor, attempt.id(), source, rows, orgs, orgFailed);
+            return publisher.publish(actor, attemptId, source, rows, orgs, orgFailed);
         } catch (RuntimeException error) {
             int code =
                     error instanceof BusinessException business
                             ? business.getError().code()
                             : SYNC_FAILED.code();
             try {
-                publisher.failed(attempt.id(), code);
+                publisher.failed(attemptId, code);
             } catch (RuntimeException failure) {
                 LOG.error(
                         "SN sync failure record unavailable traceId={} exceptionType={}",

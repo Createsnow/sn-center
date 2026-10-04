@@ -53,7 +53,7 @@ function acceptSession(value: AccessToken) {
 
 /** 不向页面传播 Axios config（可能包含密码/Authorization），也不记录原始错误。 */
 async function send<T>(
-  method: 'GET' | 'POST',
+  method: 'GET' | 'POST' | 'PUT',
   path: string,
   validate: (value: unknown) => value is T,
   body?: unknown,
@@ -173,6 +173,15 @@ export async function submit<T>(
   return send('POST', path, validate, body, await access(), await csrf(), timeout);
 }
 export { command };
+
+/** PUT配置写入沿用当前会话、CSRF与响应校验；失败不自动重试。 */
+export async function replace<T>(
+  path: string,
+  body: unknown,
+  validate: (value: unknown) => value is T,
+) {
+  return send('PUT', path, validate, body, await access(), await csrf());
+}
 
 /** 文件入口沿用会话/统一错误协议；在创建下载链接前完整接收并验证长度，不把JSON错误保存成CSV。 */
 export async function downloadFile(path: string) {

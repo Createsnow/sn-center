@@ -5,7 +5,8 @@ param(
     [Parameter(Mandatory)][string]$SourceZone,
     [ValidateSet('sn-python-repository-v1')][string]$SchemaVersion = 'sn-python-repository-v1',
     [ValidateRange(1, 150000000)][long]$RowLimit = 100000,
-    [ValidateRange(1024, 1099511627776)][long]$ByteLimit = 1073741824
+    [ValidateRange(1024, 1099511627776)][long]$ByteLimit = 1073741824,
+    [string]$JarPath
 )
 # 仅从显式环境变量中的SELECT源账号读取。19表原始文件含口令哈希，只写本工程ACL保护目录，不打印内容。
 # SourceZone必须来自旧实际部署证据；不能用本机时区代替。完整manifest出现前不允许阶段导入。
@@ -23,6 +24,10 @@ if ($SourceSchema -notmatch '^[a-z][a-z0-9_]{0,63}$') {
     throw 'Explicit source schema required.'
 }
 $projectRoot = Split-Path -Parent $PSScriptRoot
+if (!$JarPath) {
+    $JarPath = Join-Path $projectRoot 'backend/adtek-server/target/adtek-server-0.1.0-SNAPSHOT.jar'
+}
+$JarPath = (Get-Item -LiteralPath $JarPath -ErrorAction Stop).FullName
 $root = Join-Path $projectRoot 'deploy/data/legacy-snapshots'
 New-Item -ItemType Directory -Path $root -Force | Out-Null
 $sid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
@@ -37,7 +42,7 @@ if (!$java) {
 $previous = $env:ADTEK_LEGACY_SNAPSHOT_ROOT
 try {
     $env:ADTEK_LEGACY_SNAPSHOT_ROOT = $root
-    & $java -jar (Join-Path $projectRoot 'backend/adtek-server/target/adtek-server-0.1.0-SNAPSHOT.jar') --legacy-snapshot --run-id $RunId --source-schema $SourceSchema --source-zone $SourceZone --schema-version $SchemaVersion --row-limit "$RowLimit" --byte-limit "$ByteLimit"
+    & $java -jar $JarPath --legacy-snapshot --run-id $RunId --source-schema $SourceSchema --source-zone $SourceZone --schema-version $SchemaVersion --row-limit "$RowLimit" --byte-limit "$ByteLimit"
     if ($LASTEXITCODE -ne 0) {
         throw 'Legacy snapshot failed; incomplete files retained, never treat them as a complete snapshot.'
     }

@@ -1,6 +1,6 @@
 import { ReloadOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Alert, Button, Descriptions, Drawer, Empty, Input, Table, Tag } from 'antd';
+import { Alert, Button, Checkbox, Descriptions, Drawer, Empty, Input, Table, Tag } from 'antd';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +9,7 @@ import { snApi, paginationTotal, type Order, type SnFilter } from '../../../api/
 import { ApiErrorAlert } from '../../../components/ApiErrorAlert';
 import { SnPageHead } from '../components/SnPageHead';
 import { FactoryPicker } from '../components/FactoryPicker';
+import { OrderSyncSchedule } from '../components/OrderSyncSchedule';
 
 function SyncHistory({ profile, close }: { profile: UserProfile; close: () => void }) {
   const { t, i18n } = useTranslation();
@@ -199,6 +200,7 @@ export function OrdersPage({ profile }: { profile: UserProfile }) {
           {t('snPages.orders.excluded', { n: meta.data?.excludedEmptyCustomer ?? '0' })}
         </span>
       </div>
+      {canSync && <OrderSyncSchedule profile={profile} />}
       <div className="sn-orders-grid">
         <div className="sn-surface">
           <div className="sn-toolbar">
@@ -234,6 +236,12 @@ export function OrdersPage({ profile }: { profile: UserProfile }) {
             <Button type="primary" onClick={apply}>
               {t('snPages.common.search')}
             </Button>
+            <Checkbox
+              checked={draft.pending ?? false}
+              onChange={(event) => setDraft({ ...draft, pending: event.target.checked })}
+            >
+              {t('snPages.orders.pendingOnly')}
+            </Checkbox>
           </div>
           <Table
             rowKey="id"

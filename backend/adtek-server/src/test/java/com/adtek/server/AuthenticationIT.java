@@ -86,6 +86,7 @@ class AuthenticationIT {
     @Autowired BootstrapService bootstrap;
     @Autowired AuthorizationPort authorizations;
     @Autowired ObjectMapper json;
+    @Autowired com.adtek.system.service.support.LoginFailureGuard loginGuard;
     @LocalServerPort int port;
 
     @BeforeEach
@@ -383,11 +384,11 @@ class AuthenticationIT {
     }
 
     @Test
-    void subjectBudgetReturnsRetryAfterAndRejectedLoginAuditContainsNoCredentials()
-            throws Exception {
+    void subjectBudgetStillLimitsSuccessfulLoginsIndependentlyOfFailureLock() throws Exception {
+        seedUser(false);
         try (var browser = new Browser()) {
             for (int index = 0; index < 8; index++) {
-                assertThat(browser.login(INITIAL_PASSWORD).statusCode()).isEqualTo(401);
+                assertThat(browser.login(INITIAL_PASSWORD).statusCode()).isEqualTo(200);
             }
             var limited = browser.login(INITIAL_PASSWORD);
             assertThat(limited.statusCode()).isEqualTo(429);
@@ -397,7 +398,7 @@ class AuthenticationIT {
         assertThat(
                         jdbc.queryForObject(
                                 "SELECT COUNT(*) FROM sys_oper_log WHERE action='auth:LOGIN' AND"
-                                        + " success=FALSE",
+                                        + " success=TRUE",
                                 Integer.class))
                 .isEqualTo(8);
         assertThat(
@@ -406,8 +407,99 @@ class AuthenticationIT {
                 .allSatisfy(
                         value ->
                                 assertThat(value)
+                                        .doesNotContain(INITIAL_PASSWORD, "password", "token"));
+    }
+
+    @Test
+    void fifthFailureLocksEvenCorrectPasswordAndAuditsUnknownAccountsWithoutCredentials()
+            throws Exception {
+        // 匿名不存在的账号和真实账号使用相同的失败预算；锁在成功匹配密码前检查。
+        try (var browser = new Browser()) {
+            for (int i = 0; i < 5; i++)
+                assertThat(browser.login(INITIAL_PASSWORD).statusCode()).isEqualTo(401);
+            seedUser(false);
+            var response = browser.login(INITIAL_PASSWORD);
+            assertThat(response.statusCode()).isEqualTo(429);
+            assertThat(json.readTree(response.body()).path("code").asInt())
+                    .isEqualTo(1_002_000_017);
+            assertThat(json.readTree(response.body()).path("params").path("minutes").asString())
+                    .isEqualTo("15");
+            assertThat(Integer.parseInt(response.headers().firstValue("Retry-After").orElseThrow()))
+                    .isBetween(890, 900);
+        }
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT COUNT(*) FROM sys_oper_log WHERE action='auth:LOGIN' AND success=FALSE",
+                                Integer.class))
+                .isEqualTo(6);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT COUNT(*) FROM sys_oper_log WHERE JSON_EXTRACT(changes,'$.lockStarted')=TRUE",
+                                Integer.class))
+                .isEqualTo(1);
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT CAST(changes AS CHAR) FROM sys_oper_log", String.class))
+                .allSatisfy(
+                        value ->
+                                assertThat(value)
                                         .doesNotContain(
                                                 INITIAL_PASSWORD, "auth_it", "password", "token"));
+    }
+
+    @Test
+    void successfulLoginClearsFailuresButCannotClearAnActiveLock() throws Exception {
+        seedUser(false);
+        for (int i = 0; i < 4; i++) loginGuard.failed("auth_it");
+        try (var browser = new Browser()) {
+            assertThat(browser.login(INITIAL_PASSWORD).statusCode()).isEqualTo(200);
+            for (int i = 0; i < 4; i++) assertThat(loginGuard.failed("auth_it")).isFalse();
+            assertThat(loginGuard.failed("auth_it")).isTrue();
+            assertThatThrownBy(() -> loginGuard.succeeded("auth_it"))
+                    .isInstanceOfSatisfying(
+                            BusinessException.class,
+                            error -> assertThat(error.getError().code()).isEqualTo(1_002_000_017));
+            assertThat(browser.login(INITIAL_PASSWORD).statusCode()).isEqualTo(429);
+        }
+    }
+
+    @Test
+    void independentGuardsShareAtomicFailureBudgetAndLockExpires() throws Exception {
+        var other =
+                new com.adtek.system.service.support.LoginFailureGuard(
+                        redis, new com.adtek.system.service.support.LoginGuardSettings(5, 900));
+        var started = new java.util.concurrent.atomic.AtomicInteger();
+        var rejected = new java.util.concurrent.atomic.AtomicInteger();
+        try (var pool = java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor()) {
+            var futures = new java.util.ArrayList<java.util.concurrent.Future<?>>();
+            for (int i = 0; i < 20; i++) {
+                var guard = i % 2 == 0 ? loginGuard : other;
+                futures.add(
+                        pool.submit(
+                                () -> {
+                                    try {
+                                        if (guard.failed("parallel_it")) started.incrementAndGet();
+                                    } catch (BusinessException error) {
+                                        assertThat(error.getError().code())
+                                                .isEqualTo(1_002_000_017);
+                                        rejected.incrementAndGet();
+                                    }
+                                }));
+            }
+            for (var future : futures) future.get();
+        }
+        assertThat(started.get()).isEqualTo(1);
+        assertThat(rejected.get()).isEqualTo(15);
+        other.check("separate_it");
+        var shortGuard =
+                new com.adtek.system.service.support.LoginFailureGuard(
+                        redis, new com.adtek.system.service.support.LoginGuardSettings(1, 1));
+        assertThat(shortGuard.failed("expires_it")).isTrue();
+        assertThatThrownBy(() -> shortGuard.check("expires_it"))
+                .isInstanceOf(BusinessException.class);
+        Thread.sleep(1100);
+        shortGuard.check("expires_it");
+        assertThat(shortGuard.failed("expires_it")).isTrue();
     }
 
     @Test

@@ -16,7 +16,8 @@ import java.util.List;
             "firstSn",
             "lastSn",
             "expiresAt",
-            "segments"
+            "segments",
+            "nextStart"
         })
 public record GenerationPreviewVO(
         String id,
@@ -27,7 +28,8 @@ public record GenerationPreviewVO(
         String firstSn,
         String lastSn,
         Instant expiresAt,
-        List<Segment> segments) {
+        List<Segment> segments,
+        NextSequenceVO nextStart) {
     @Schema(
             requiredProperties = {
                 "sourceEntryId",

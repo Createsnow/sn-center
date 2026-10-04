@@ -26,6 +26,20 @@ public class TransferController {
         this.service = service;
     }
 
+    @PostMapping("/target-hint")
+    @Operation(summary = "只读转厂前后起号测算；校验来源，全厂view可查看目标PI，受限主体不返回目标水位")
+    public Result<TransferImpactVO> hint(
+            @Valid @RequestBody TransferHintDTO command, HttpServletRequest request) {
+        return Result.success(service.hint(command), TraceFilter.current(request));
+    }
+
+    @GetMapping("/{id}/target-hint")
+    @Operation(summary = "按待审批固定成员和当前目标规则重新测算起号；不保证审批时状态未变")
+    public Result<TransferImpactVO> pendingHint(
+            @PathVariable String id, HttpServletRequest request) {
+        return Result.success(service.pendingHint(id), TraceFilter.current(request));
+    }
+
     @GetMapping("/candidates")
     public Result<TransferCandidateVO> candidates(
             @RequestParam String factoryId,

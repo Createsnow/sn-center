@@ -8,6 +8,17 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "adtek.sn.work")
 public class SnWorkSettings {
     private int maxBatchQuantity = 100000, maxImportBytes = 8388608, previewSeconds = 600;
+    private int maxIncomingScan = 1000000;
+
+    public int getMaxIncomingScan() {
+        return maxIncomingScan;
+    }
+
+    public void setMaxIncomingScan(int value) {
+        if (value < 1000 || value > 10000000)
+            throw new IllegalArgumentException("Invalid SN scan limit");
+        maxIncomingScan = value;
+    }
 
     public int getMaxBatchQuantity() {
         return maxBatchQuantity;

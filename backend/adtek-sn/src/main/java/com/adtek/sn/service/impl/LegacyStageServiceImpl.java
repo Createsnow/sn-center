@@ -52,7 +52,7 @@ public final class LegacyStageServiceImpl implements LegacyStageService {
                     throw failure("TARGET_VERSION");
                 if (manifest.sourceServerUuid().equals(rows.scalar(c, "SELECT @@server_uuid")))
                     throw failure("TARGET_IS_SOURCE_INSTANCE");
-                if (!Set.of("14", "15", "16", "17")
+                if (!Set.of("14", "15", "16", "17", "18", "19")
                         .contains(
                                 rows.scalar(
                                         c,

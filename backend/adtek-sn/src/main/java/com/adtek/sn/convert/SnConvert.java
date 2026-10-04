@@ -45,6 +45,10 @@ public interface SnConvert {
 
     OrderSyncVO sync(OrderSyncEntity entity);
 
+    OrderScheduleVO schedule(OrderScheduleEntity entity, boolean workerEnabled);
+
+    OrderPiVO pi(OrderPiEntity entity);
+
     @Mapping(target = "generatedQty", source = "generated")
     @Mapping(target = "allocatedQty", source = "allocated")
     @Mapping(target = "quota", source = "remaining")
