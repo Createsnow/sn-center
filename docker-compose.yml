@@ -10,7 +10,7 @@ services:
     environment:
       MYSQL_DATABASE: ${DB_NAME:-sndb}
       MYSQL_USER: ${DB_USER:-appuser}
-      MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change-me-root}
       TZ: ${TZ:-Asia/Shanghai}
     command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci", "--default-time-zone=+08:00"]
@@ -28,6 +28,11 @@ services:
       dockerfile: Dockerfile
     image: sn-center-api:1.0.0
     restart: unless-stopped
+    depends_on:
+      # 仅在启用 mysql profile 时等待本地库就绪；连公司库时忽略
+      mysql:
+        condition: service_healthy
+        required: false
     env_file:
       - path: .env
         required: false
