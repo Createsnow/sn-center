@@ -28,7 +28,7 @@ from app.core.exceptions import AppError, BizError
 from app.core.logging import setup_logging
 from app.core.security import CurrentUser
 from app.db import init_db
-from app.db.session import db, is_integrity, is_lock_conflict
+from app.db.session import PoolExhausted, db, is_integrity, is_lock_conflict
 from app.middleware.request_id import WRITE_METHODS, RequestIdMiddleware
 from app.services import audit as audit_svc
 from app.services import demo_seed, generate, order_sync_schedule, partitions, users
@@ -205,8 +205,11 @@ def create_app() -> FastAPI:
             b = biz(ErrorCode.VALIDATION, detail="body")
             return JSONResponse(_body(b.code, b.message, b.params), status_code=422)
         if is_lock_conflict(exc) or is_integrity(exc):
-            # 死锁 / 锁等待超时 / 约束冲突：让调用方重试
-            log.warning("db_conflict", path=request.url.path, err=str(exc))
+            # 死锁 / 锁等待超时 / 约束冲突 / 连接池满：让调用方重试；池满单独记，便于看出 DB_POOL_SIZE 不够
+            if isinstance(exc, PoolExhausted):
+                log.error("db_pool_exhausted", path=request.url.path)
+            else:
+                log.warning("db_conflict", path=request.url.path, err=str(exc))
             b = biz(ErrorCode.CONFLICT_RETRY)
             return JSONResponse(_body(b.code, b.message), status_code=409)
         log.error("db_error", path=request.url.path, exc_info=exc)

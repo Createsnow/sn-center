@@ -3,6 +3,7 @@
 from app.db.mysql import (
     ER_LOCK_NOWAIT,
     Db,
+    PoolExhausted,
     db,
     error_no,
     is_duplicate,
@@ -11,4 +12,14 @@ from app.db.mysql import (
     marks,
 )
 
-__all__ = ["ER_LOCK_NOWAIT", "Db", "db", "error_no", "is_duplicate", "is_integrity", "is_lock_conflict", "marks"]
+__all__ = [
+    "ER_LOCK_NOWAIT",
+    "Db",
+    "PoolExhausted",
+    "db",
+    "error_no",
+    "is_duplicate",
+    "is_integrity",
+    "is_lock_conflict",
+    "marks",
+]

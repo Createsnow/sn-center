@@ -29,6 +29,18 @@ ER_LOCK_WAIT_TIMEOUT = 1205
 ER_LOCK_DEADLOCK = 1213
 #: FOR UPDATE NOWAIT 拿不到锁
 ER_LOCK_NOWAIT = 3572
+#: 客户端错误号（CR_*，断线、读写超时等连接层故障）占 2000–2999；其余是服务端错误，连接仍可用
+CR_ERRORS = range(2000, 3000)
+
+#: 连接池满时等空闲连接的上限
+CHECKOUT_TIMEOUT_SECONDS = 30.0
+
+
+class PoolExhausted(pymysql.err.OperationalError):
+    """等不到空闲连接。沿用锁等待超时的错误号，调用方仍按「稍后重试」处理。"""
+
+    def __init__(self) -> None:
+        super().__init__(ER_LOCK_WAIT_TIMEOUT, "connection pool exhausted")
 
 
 def error_no(e: BaseException) -> int | None:
@@ -44,6 +56,12 @@ def is_lock_conflict(e: BaseException) -> bool:
     return isinstance(e, pymysql.err.OperationalError) and error_no(e) in (ER_LOCK_WAIT_TIMEOUT, ER_LOCK_DEADLOCK)
 
 
+def is_connection_lost(e: BaseException) -> bool:
+    """连接层故障（断线、读写超时）。死锁、锁等待超时、NOWAIT 冲突是服务端错误，回滚后连接照常可用。"""
+    no = error_no(e)
+    return isinstance(e, pymysql.err.OperationalError) and (no is None or no in CR_ERRORS)
+
+
 def is_integrity(e: BaseException) -> bool:
     """对应 Spring 的 DataIntegrityViolationException：约束冲突、数据超长等。"""
     return isinstance(e, (pymysql.err.IntegrityError, pymysql.err.DataError))
@@ -56,10 +74,7 @@ def marks(n: int) -> str:
 class Db:
     def __init__(self) -> None:
         self._target: DbTarget | None = None
-        self._pool: queue.LifoQueue = queue.LifoQueue()
-        self._size = 20
-        self._created = 0
-        self._lock = threading.Lock()
+        self._pool: queue.LifoQueue[pymysql.connections.Connection] = queue.LifoQueue()
         self._slots: threading.BoundedSemaphore | None = None
 
     # ------------------------------------------------------------------ 连接
@@ -67,7 +82,6 @@ class Db:
     def configure(self, target: DbTarget, size: int) -> None:
         self.close()
         self._target = target
-        self._size = size
         self._slots = threading.BoundedSemaphore(size)
 
     @property
@@ -76,14 +90,14 @@ class Db:
             raise RuntimeError("database not configured")
         return self._target
 
-    def connect_raw(self, database: str | None = "") -> pymysql.connections.Connection:
+    def connect_raw(self) -> pymysql.connections.Connection:
         t = self.target
         return pymysql.connect(
             host=t.host,
             port=t.port,
             user=t.user,
             password=t.password,
-            database=t.database if database == "" else database,
+            database=t.database,
             charset="utf8mb4",
             autocommit=True,
             cursorclass=DictCursor,
@@ -91,9 +105,10 @@ class Db:
         )
 
     def _checkout(self) -> pymysql.connections.Connection:
-        assert self._slots is not None, "database not configured"
-        if not self._slots.acquire(timeout=30):
-            raise pymysql.err.OperationalError(ER_LOCK_WAIT_TIMEOUT, "connection pool exhausted")
+        slots = self._slots
+        assert slots is not None, "database not configured"
+        if not slots.acquire(timeout=CHECKOUT_TIMEOUT_SECONDS):
+            raise PoolExhausted()
         try:
             while True:
                 try:
@@ -106,7 +121,7 @@ class Db:
                 except pymysql.err.Error:
                     self._discard(conn)
         except BaseException:
-            self._slots.release()
+            slots.release()
             raise
 
     def _release(self, conn: pymysql.connections.Connection, broken: bool = False) -> None:
@@ -138,8 +153,8 @@ class Db:
         broken = False
         try:
             yield conn
-        except pymysql.err.OperationalError:
-            broken = True
+        except pymysql.err.OperationalError as e:
+            broken = is_connection_lost(e)
             raise
         finally:
             self._release(conn, broken)
@@ -176,16 +191,12 @@ class Db:
                     broken = True
                 raise
             conn.commit()
-        except pymysql.err.OperationalError:
-            broken = True
+        except pymysql.err.OperationalError as e:
+            broken = broken or is_connection_lost(e)
             raise
         finally:
             _current.reset(token)
             self._release(conn, broken)
-
-    @staticmethod
-    def in_tx() -> bool:
-        return _current.get() is not None
 
     # ------------------------------------------------------------------ 执行
 

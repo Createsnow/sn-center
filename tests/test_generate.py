@@ -3,6 +3,7 @@
 import time
 import uuid
 
+import pymysql
 import pytest
 from conftest import m, ok, q, uid
 
@@ -410,3 +411,39 @@ def test_successful_job_status_commits_with_the_numbers(w, sql):
     j = w.generate(bill, 4)
     row = sql.one("SELECT status, done_qty, running_pi FROM sn_gen_job WHERE id = %s", j["id"])
     assert (row["status"], row["done_qty"], row["running_pi"]) == ("SUCCESS", 4, None)
+
+
+def test_lock_conflict_keeps_pooled_connection_but_lost_one_is_dropped(w, sql):
+    from conftest import raw_conn
+
+    from app.db.session import db, error_no
+
+    pi, bill = uid("PI"), uid("MO")
+    w.pi_rule(pi, "RP", 10, 5)
+    w.order(bill, ORG, "C1", pi, ("A", 5))
+    w.generate(bill, 1)
+    holder = raw_conn()
+    try:
+        holder.begin()
+        with holder.cursor() as c:
+            c.execute("SELECT * FROM sn_pi_counter WHERE pi_no = %s FOR UPDATE", (pi,))
+        # NOWAIT 冲突是服务端错误：回滚后连接仍健康，应回池复用，而不是重连
+        with pytest.raises(pymysql.err.OperationalError) as e, db.tx() as conn:
+            db.exec("SELECT * FROM sn_pi_counter WHERE pi_no = %s FOR UPDATE NOWAIT", pi)
+        assert error_no(e.value) == 3572
+        assert conn.open and conn in db._pool.queue
+    finally:
+        holder.rollback()
+        holder.close()
+
+    # 断线（这里由服务端 KILL）才丢弃
+    killer = raw_conn()
+    try:
+        with pytest.raises(pymysql.err.OperationalError), db.tx() as conn:
+            with killer.cursor() as c:
+                c.execute("KILL %s", (conn.thread_id(),))
+            db.scalar("SELECT 1")
+        assert conn not in db._pool.queue
+    finally:
+        killer.close()
+    assert db.scalar("SELECT 1") == 1
