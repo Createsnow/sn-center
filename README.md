@@ -19,7 +19,7 @@
 | [MES 对接接口文档](docs/MES对接接口文档.md) | 给 MES / 打印系统的对外接口契约 |
 | [技术文档](docs/技术文档.md) | 代码结构、权限矩阵、状态机、时序图、金蝶调用、接口清单、需求落地说明 |
 | [数据库表设计](docs/数据库表设计.md) | ER 图、每张表字段与索引、分区与归档、容量估算、性能测试与设计决定 |
-| [部署 / 启动 / 关闭说明书](docs/部署启动关闭方式说明书.md) | MySQL 准备、`.env`、三种启动方式、上线步骤、排障 |
+| [运维手册](docs/运维手册.md) | MySQL 准备、`.env`、三种启动方式、上线步骤、排障 |
 
 ## 快速开始
 
@@ -31,7 +31,7 @@ python start.py          # Windows 可双击 start.bat；需要 Python 3.12+、N
 浏览器打开 `http://127.0.0.1:8000`，用 `admin` + `SN_INIT_ADMIN_PASSWORD`（默认 `Admin@123`）登录，首次登录必须修改密码。
 本机没有金蝶时可设 `SN_DEMO_SEED=true` 灌入演示工厂、规则、订单与账户（**连公司库务必关闭**）。
 
-服务器：`docker compose up -d --build`（详见部署说明书；Docker 方式为 `ENVIRONMENT=production`，`SN_SECRET` 为空、为示例值或不足 32 位会拒绝启动）。接口文档：`/docs`（对外接口在 `open` 分组）。
+服务器：`docker compose up -d --build`（详见运维手册；Docker 方式为 `ENVIRONMENT=production`，`SN_SECRET` 为空、为示例值或不足 32 位会拒绝启动）。接口文档：`/docs`（对外接口在 `open` 分组）。
 
 ## 功能一览
 
