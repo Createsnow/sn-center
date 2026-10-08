@@ -1,38 +1,13 @@
 name: sn-center
 
-# 默认连接 .env 里 DB_HOST / DB_PORT / DB_NAME 指向的 MySQL（如公司库 10.0.200.125:3306/sndb）。
-# 需要一个本地 MySQL 时：docker compose --profile mysql up -d --build，并把 DB_HOST 设为 mysql、DB_PORT 设为 3306。
+# 连接 .env 里 DB_HOST / DB_PORT / DB_NAME 指向的 MySQL（如公司库 10.0.200.125:3306/sndb），不随附数据库。
 services:
-  mysql:
-    image: mysql:8.0
-    profiles: ["mysql"]
-    restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: ${DB_NAME:-sndb}
-      MYSQL_USER: ${DB_USER:-appuser}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change-me-root}
-      TZ: ${TZ:-Asia/Shanghai}
-    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci", "--default-time-zone=+08:00"]
-    volumes:
-      - sn-mysql:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
-      interval: 5s
-      timeout: 3s
-      retries: 30
-
   api:
     build:
       context: .
       dockerfile: Dockerfile
     image: sn-center-api:1.0.0
     restart: unless-stopped
-    depends_on:
-      # 仅在启用 mysql profile 时等待本地库就绪；连公司库时忽略
-      mysql:
-        condition: service_healthy
-        required: false
     env_file:
       - path: .env
         required: false
@@ -62,6 +37,3 @@ services:
       api:
         condition: service_healthy
 
-volumes:
-  sn-mysql:
-    name: sn-center-mysql
