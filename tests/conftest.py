@@ -259,7 +259,11 @@ def app_client():
         cur.execute(f"DROP DATABASE IF EXISTS {DB}")
         cur.execute(f"CREATE DATABASE {DB} CHARACTER SET utf8mb4")
     env = {
-        "DB_URL": f"jdbc:mysql://{HOST}/{DB}?useUnicode=true&characterEncoding=utf8",
+        # 逐项写死并清空 DB_URL：本机 .env 里的任何库配置都不能把测试带到别的库上
+        "DB_URL": "",
+        "DB_HOST": _host_port()[0],
+        "DB_PORT": str(_host_port()[1]),
+        "DB_NAME": DB,
         "DB_USER": USER,
         "DB_PASSWORD": PASSWORD,
         "SN_INIT_ADMIN_PASSWORD": "Admin@123",

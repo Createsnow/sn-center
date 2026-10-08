@@ -1,14 +1,14 @@
 name: sn-center
 
-# 默认连接 .env 里 DB_URL 指向的 MySQL（如公司库 10.0.200.125:3306/sndb）。
-# 需要一个本地 MySQL 时：docker compose --profile mysql up -d --build，并把 DB_URL 指向 mysql:3306。
+# 默认连接 .env 里 DB_HOST / DB_PORT / DB_NAME 指向的 MySQL（如公司库 10.0.200.125:3306/sndb）。
+# 需要一个本地 MySQL 时：docker compose --profile mysql up -d --build，并把 DB_HOST 设为 mysql、DB_PORT 设为 3306。
 services:
   mysql:
     image: mysql:8.0
     profiles: ["mysql"]
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-sndb}
+      MYSQL_DATABASE: ${DB_NAME:-sndb}
       MYSQL_USER: ${DB_USER:-appuser}
       MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change-me-root}

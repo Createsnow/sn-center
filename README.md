@@ -3,7 +3,7 @@
 总部统一生成并分配 SN（可代任一工厂领取、打印、转厂），工厂按 PI 领取、打印；**同一张 PI 下的 SN 不得重复**。
 
 - 前端：Vue 3 + TypeScript + Vite + Element Plus（简体中文 / English / Tiếng Việt）
-- 后端：Python 3.12 + FastAPI + PyMySQL + structlog（目录结构与 `main` 分支相同：`app/{api,core,db,middleware,models,repositories,schemas,services}`）
+- 后端：Python 3.12 + FastAPI + PyMySQL + structlog（目录结构与 `main` 分支相同：`app/{api,core,db,middleware,models,schemas,services}`；SQL 直接写在 services 里，不另设仓储层）
 - 数据库：**MySQL 8**（启动时自动建表，Flyway 兼容的 `flyway_schema_history`；SN 明细与操作痕迹按月分区）
 - 外部：金蝶 K3 Cloud 生产订单 / 组织机构（只读同步到本地快照）
 
@@ -23,7 +23,7 @@
 ## 快速开始
 
 ```bash
-cp .env.example .env     # 填 DB_URL / DB_USER / DB_PASSWORD、SN_SECRET（≥ 32 位随机串）、K3_*
+cp .env.example .env     # 填 DB_HOST / DB_PORT / DB_NAME / DB_USER / DB_PASSWORD、SN_SECRET（≥ 32 位随机串）、K3_*
 python start.py          # Windows 可双击 start.bat；需要 Python 3.12+、Node.js 20+
 ```
 
@@ -69,7 +69,7 @@ app/                         FastAPI 后端
   api/                       deps.py（鉴权依赖）、routes/（各接口）
   core/                      配置、.env、错误码、异常、SN 编码、口令与令牌、日志、定时任务
   db/                        MySQL 连接池与事务、建表迁移、migration/V1__init.sql
-  middleware/ models/ repositories/ schemas/ services/
+  middleware/ models/ schemas/ services/
 tests/                       pytest：单元测试 + 集成测试（真实 MySQL + 假金蝶）
 frontend/                    Vue 3 + Vite + Element Plus
   src/views/                 各页面

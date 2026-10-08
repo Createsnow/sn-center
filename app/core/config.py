@@ -221,29 +221,36 @@ class Settings:
         return raw
 
     def db_target(self) -> DbTarget:
-        """DB_URL 与 Java 共用 JDBC 写法：jdbc:mysql://host:port/db?参数；也接受 mysql://user:pass@host/db。"""
-        url = self.get(
-            "DB_URL",
-            "jdbc:mysql://127.0.0.1:3306/sndb?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai",
-        )
+        """MySQL 连接目标。按项读 DB_HOST / DB_PORT / DB_NAME / DB_USER / DB_PASSWORD，改哪项就换哪项。
+
+        兼容旧写法 DB_URL（jdbc:mysql://主机:端口/库名?参数，或 mysql://用户:密码@主机:端口/库名）：
+        只作为未单独配置项的来源，单项配置总是优先；URL 里的 JDBC 参数不读取。
+        """
+        url = self.get("DB_URL", "")
         if url.startswith("jdbc:"):
             url = url[len("jdbc:") :]
         parts = urlsplit(url)
         query = parse_qs(parts.query)
-        user = self.raw("DB_USER")
+        try:
+            url_port = parts.port
+        except ValueError:
+            url_port = None
+
+        def pick(key: str, from_url: str | None, fallback: str) -> str:
+            v = self.raw(key)
+            if v is not None and v.strip():
+                return v.strip()
+            return from_url or fallback
+
+        host = pick("DB_HOST", parts.hostname, "127.0.0.1")
+        port = self.get_int("DB_PORT", url_port or 3306)
+        database = pick("DB_NAME", parts.path.lstrip("/"), "sndb")
+        user = pick("DB_USER", unquote(parts.username) if parts.username else query.get("user", [""])[0], "appuser")
+        # 密码可以含空格、可以为空，不做 strip
         password = self.raw("DB_PASSWORD")
-        if user is None:
-            user = unquote(parts.username) if parts.username else query.get("user", ["appuser"])[0]
         if password is None:
             password = unquote(parts.password) if parts.password else query.get("password", [""])[0]
-        database = parts.path.lstrip("/") or "sndb"
-        return DbTarget(
-            host=parts.hostname or "127.0.0.1",
-            port=parts.port or 3306,
-            database=database,
-            user=user.strip(),
-            password=password,
-        )
+        return DbTarget(host=host, port=port, database=database, user=user, password=password)
 
 
 settings = Settings()
