@@ -488,7 +488,7 @@ MES 只推动领取和打印这两步。
 | 400 | `CALLBACK_RANGE_INVALID` | 起止号不属于该批次，或两端流水归属不同。`params` 含 `start_sn`、`end_sn`、`batch_no` |
 | 400 | `CALLBACK_TOO_MANY` | 去重后枚数或号段跨度超过单次上限。`params.max` 为上限。拆批回调 |
 | 422 | `VALIDATION` | 参数类型或长度不合法。`params.detail` 指出位置。修正后再发，原样重试无效 |
-| 409 | `CONFLICT_RETRY` | 数据库锁冲突。用同一请求原样重试 |
+| 409 | `CONFLICT_RETRY` | 数据库锁冲突，或服务端连接繁忙。稍后用同一请求（领取用同一 `request_no`）原样重试 |
 | 500 | `INTERNAL` | 服务内部错误。保留 `X-Request-ID` 后联系本系统维护人员 |
 
 查询参数缺失（例如只读接口未传 `factory_code` 或 `pi`）返回 `422 VALIDATION`。
