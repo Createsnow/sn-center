@@ -1,9 +1,7 @@
 # MES 对接接口文档
 
-> 对接方：工厂 MES、现场打印系统。  
-> 被调方：SN 管控中心。  
-> 对照代码：`app/api/routes/open.py`、`app/api/routes/auth.py`、`app/services/acquire.py`。  
-> 日期：2026-09-30。
+> **读者**：工厂 MES、现场打印系统的对接方（被调方：SN 管控中心）　**对应代码**：`app/api/routes/open.py`、`app/api/routes/auth.py`、`app/services/acquire.py`　**更新**：2026-10-08
+> **相关**：本文自成一体，对接方只需要本文；在线版见 `/docs` 的 `open` 分组
 
 MES 主动调用本系统。本系统不向 MES 推送，也不回调 MES。号池只在本系统。MES 领取、取明细、打完后回写；生成、分配、转厂留在工作台，不提供给 MES。
 
