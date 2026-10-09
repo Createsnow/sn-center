@@ -6,8 +6,8 @@
 
 分配：把该订单的待分配号整单分到订单的生产组织，状态变为待领取。
 
-页面以 PI 为单位：按 PI 预演会给该 PI 的每张订单各记一份接续的预演，前端按单据号顺序逐张生成；
-按 PI 分配在一个事务里把各订单的待分配号分到各自的生产组织。
+页面以 PI 为单位：按 PI 预演会给该 PI 的每张订单各记一份接续的预演；按 PI 生成把这些订单放进同一个事务依次生成
+（每张一个任务，校验与写号同按单据生成），任何一张失败整张 PI 回滚；按 PI 分配同样在一个事务里分到各订单的生产组织。
 """
 
 from __future__ import annotations
@@ -16,6 +16,7 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import timedelta
+from typing import NoReturn
 
 import pymysql
 import structlog
@@ -452,8 +453,7 @@ def pi_preview(
 ) -> dict:
     """按 PI 预演：数量按单据号顺序依次占用各订单的额度，号段在 PI 的一套流水上接续。
 
-    每张订单各记一份预演（base 为前一张生成后的最大号），之后按顺序逐张凭令牌生成，
-    每张仍是独立事务，生成接口与校验与按单据完全相同。
+    每张订单各记一份预演（base 为前一张生成后的最大号），凭这些令牌调用 generate_pi 在一个事务里一次生成。
     """
     pi = util.trim(pi_in)
     if not pi:
@@ -507,6 +507,66 @@ def pi_preview(
 def generate(
     cu: CurrentUser, token: str | None, bill_no: str | None, qty: int | None, start_override: int | None
 ) -> dict:
+    p = _usable_preview(cu, token, bill_no, qty, start_override)
+    _check_base(p, _last_seq(p["pi_no"]))
+    try:
+        job_id = _insert_job(cu, p, p["pi_no"])
+    except pymysql.err.IntegrityError as e:
+        _raise_job_conflict(e, p["pi_no"])
+    db.exec("UPDATE sn_gen_preview SET used_at = %s WHERE token = %s", util.now(), p["token"])
+    if p["qty"] <= settings.gen_sync_threshold:
+        _run_job(cu, job_id, p, True)
+    else:
+        executor.submit(_run_job, cu, job_id, p, False)
+    return job_json(db.one("SELECT * FROM sn_gen_job WHERE id = %s", job_id))
+
+
+def generate_pi(cu: CurrentUser, pi_in: str | None, items: list[dict] | None) -> dict:
+    """凭按 PI 预演的各订单令牌，一次生成整张 PI：所有订单在同一个事务里依次生成，任何一张失败整张 PI 回滚。
+
+    每张订单仍是一个任务、仍走与按单据生成相同的校验与写号（_generate_in_tx）；
+    第一张的任务占住 running_pi，整张 PI 结束前别的生成进不来。
+    """
+    pi = util.trim(pi_in)
+    if not pi:
+        raise biz(ErrorCode.PI_REQUIRED)
+    if not items:
+        raise biz(ErrorCode.GEN_PREVIEW_REQUIRED)
+    ps = []
+    for it in items:
+        p = _usable_preview(cu, it.get("preview_token"), it.get("bill_no"), it.get("qty"), it.get("start_seq"))
+        # 须是同一次按 PI 预演、按原顺序：号段首尾相接，只有第一张可带起始号
+        prev = ps[-1] if ps else None
+        if (
+            p["pi_no"] != pi
+            or (prev is not None and (p["base_last_seq"] != prev["end_seq_dec"] or p["start_override"] is not None))
+            or (prev is not None and p["rule_version_id"] != prev["rule_version_id"])
+            or any(x["bill_no"] == p["bill_no"] for x in ps)
+        ):
+            raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
+        ps.append(p)
+    _check_base(ps[0], _last_seq(pi))
+    try:
+        with db.tx():
+            ids = [_insert_job(cu, p, pi if i == 0 else None) for i, p in enumerate(ps)]
+            now = util.now()
+            for p in ps:
+                db.exec("UPDATE sn_gen_preview SET used_at = %s WHERE token = %s", now, p["token"])
+    except pymysql.err.IntegrityError as e:
+        _raise_job_conflict(e, pi)
+    work = list(zip(ids, ps, strict=True))
+    if sum(p["qty"] for p in ps) <= settings.gen_sync_threshold:
+        _run_jobs(cu, work, True)
+    else:
+        executor.submit(_run_jobs, cu, work, False)
+    rows = db.all(f"SELECT * FROM sn_gen_job WHERE id IN ({marks(len(ids))}) ORDER BY id", *ids)
+    return {"pi_no": pi, "qty": sum(p["qty"] for p in ps), "jobs": [job_json(j) for j in rows]}
+
+
+def _usable_preview(
+    cu: CurrentUser, token: str | None, bill_no: str | None, qty: int | None, start_override: int | None
+) -> dict:
+    """本人、未用、未过期，且订单 / 数量 / 起始号与预演一致的预演。"""
     p = None if util.blank(token) else db.one("SELECT * FROM sn_gen_preview WHERE token = %s", token.strip())
     if p is None or p["created_by"] != cu.emp_no:
         raise biz(ErrorCode.GEN_PREVIEW_REQUIRED)
@@ -516,45 +576,49 @@ def generate(
         raise biz(ErrorCode.GEN_PREVIEW_EXPIRED)
     if p["bill_no"] != util.trim(bill_no) or qty is None or qty != p["qty"] or p["start_override"] != start_override:
         raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
-    c = db.one("SELECT last_seq_dec FROM sn_pi_counter WHERE pi_no = %s", p["pi_no"])
-    last = 0 if c is None else c["last_seq_dec"]
+    return p
+
+
+def _last_seq(pi: str) -> int:
+    c = db.one("SELECT last_seq_dec FROM sn_pi_counter WHERE pi_no = %s", pi)
+    return 0 if c is None else c["last_seq_dec"]
+
+
+def _check_base(p: dict, last: int) -> None:
     if last != p["base_last_seq"]:
         raise biz(ErrorCode.GEN_PREVIEW_STALE, pi=p["pi_no"], expected=p["base_last_seq"], actual=last)
-    customer = orders.bill(p["bill_no"]).customer_code
-    try:
-        job_id = db.insert(
-            "INSERT INTO sn_gen_job(bill_no, pi_no, factory_code, customer_code, rule_version_id, qty, start_seq_dec, "
-            "end_seq_dec, start_sn, end_sn, status, done_qty, running_pi, preview_token, segments_json, created_by, "
-            "created_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,0,%s,%s,%s,%s,%s)",
-            p["bill_no"],
-            p["pi_no"],
-            p["factory_code"],
-            customer,
-            p["rule_version_id"],
-            p["qty"],
-            p["start_seq_dec"],
-            p["end_seq_dec"],
-            p["start_sn"],
-            p["end_sn"],
-            RUNNING,
-            p["pi_no"],
-            p["token"],
-            p["segments_json"],
-            cu.emp_no,
-            util.now(),
-        )
-    except pymysql.err.IntegrityError as e:
-        if not is_duplicate(e):
-            raise
-        if "ux_job_preview" in str(e):
-            raise biz(ErrorCode.GEN_PREVIEW_USED) from None
-        raise biz(ErrorCode.GEN_BUSY, pi=p["pi_no"]) from None
-    db.exec("UPDATE sn_gen_preview SET used_at = %s WHERE token = %s", util.now(), p["token"])
-    if p["qty"] <= settings.gen_sync_threshold:
-        _run_job(cu, job_id, p, True)
-    else:
-        executor.submit(_run_job, cu, job_id, p, False)
-    return job_json(db.one("SELECT * FROM sn_gen_job WHERE id = %s", job_id))
+
+
+def _insert_job(cu: CurrentUser, p: dict, running_pi: str | None) -> int:
+    return db.insert(
+        "INSERT INTO sn_gen_job(bill_no, pi_no, factory_code, customer_code, rule_version_id, qty, start_seq_dec, "
+        "end_seq_dec, start_sn, end_sn, status, done_qty, running_pi, preview_token, segments_json, created_by, "
+        "created_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,0,%s,%s,%s,%s,%s)",
+        p["bill_no"],
+        p["pi_no"],
+        p["factory_code"],
+        orders.bill(p["bill_no"]).customer_code,
+        p["rule_version_id"],
+        p["qty"],
+        p["start_seq_dec"],
+        p["end_seq_dec"],
+        p["start_sn"],
+        p["end_sn"],
+        RUNNING,
+        running_pi,
+        p["token"],
+        p["segments_json"],
+        cu.emp_no,
+        util.now(),
+    )
+
+
+def _raise_job_conflict(e: pymysql.err.IntegrityError, pi: str) -> NoReturn:
+    if not is_duplicate(e):
+        raise e
+    if "ux_job_preview" in str(e):
+        raise biz(ErrorCode.GEN_PREVIEW_USED) from None
+    raise biz(ErrorCode.GEN_BUSY, pi=pi) from None
 
 
 def job(job_id: int) -> dict:
@@ -578,53 +642,67 @@ def jobs(bill_no: str | None, pi: str | None, limit: int) -> list[dict]:
 
 
 def _run_job(cu: CurrentUser, job_id: int, p: dict, rethrow: bool) -> None:
+    _run_jobs(cu, [(job_id, p)], rethrow)
+
+
+def _run_jobs(cu: CurrentUser, work: list[tuple[int, dict]], rethrow: bool) -> None:
+    """按顺序执行一个或多个生成任务（同一 PI 的各订单），全部在一个事务里：任何一张失败，全部回滚、全部标为失败。"""
+    current = work[0]
     try:
         # 号与任务状态同一事务提交：不会出现「号已写入、任务仍是 RUNNING」
         with db.tx():
-            _generate_in_tx(cu, job_id, p)
-            n = db.exec(
-                "UPDATE sn_gen_job SET status = %s, done_qty = %s, running_pi = NULL, finished_at = %s "
-                "WHERE id = %s AND status = %s",
-                SUCCESS,
-                p["qty"],
-                util.now(),
-                job_id,
-                RUNNING,
-            )
-            if n != 1:
-                raise biz(ErrorCode.CONFLICT_RETRY)
-        log.info("gen_done", job=job_id, pi=p["pi_no"], qty=p["qty"])
+            for item in work:
+                current = item
+                _generate_in_tx(cu, *item)
+            for job_id, p in work:
+                n = db.exec(
+                    "UPDATE sn_gen_job SET status = %s, done_qty = %s, running_pi = NULL, finished_at = %s "
+                    "WHERE id = %s AND status = %s",
+                    SUCCESS,
+                    p["qty"],
+                    util.now(),
+                    job_id,
+                    RUNNING,
+                )
+                if n != 1:
+                    raise biz(ErrorCode.CONFLICT_RETRY)
+        for job_id, p in work:
+            log.info("gen_done", job=job_id, pi=p["pi_no"], qty=p["qty"])
     except Exception as e:  # noqa: BLE001
         code = e.code if isinstance(e, BizError) else "INTERNAL"
-        msg = util.cut(str(e) or type(e).__name__, 1000)
-        try:
-            db.exec(
-                "UPDATE sn_gen_job SET status = %s, done_qty = 0, error_code = %s, error_msg = %s, running_pi = NULL, "
-                "finished_at = %s WHERE id = %s AND status = %s",
-                FAILED,
-                code,
-                msg,
-                util.now(),
-                job_id,
-                RUNNING,
-            )
-        except Exception:  # noqa: BLE001
-            log.exception("gen_job_status_update_failed", job=job_id)
-        # 同步执行时由全局异常处理记失败痕迹；后台任务在这里记
-        if not rethrow:
-            audit.record_isolated(
-                cu,
-                audit.entry(audit.SN_GENERATE)
-                .fail(msg)
-                .pi(p["pi_no"])
-                .factory(p["factory_code"])
-                .bill(p["bill_no"])
-                .count(p["qty"])
-                .range(p["start_sn"], p["end_sn"])
-                .info(f"job={job_id}"),
-            )
+        msg = str(e) or type(e).__name__
+        if len(work) > 1:
+            msg = f"{current[1]['bill_no']}: {msg}"
+        msg = util.cut(msg, 1000)
+        for job_id, p in work:
+            try:
+                db.exec(
+                    "UPDATE sn_gen_job SET status = %s, done_qty = 0, error_code = %s, error_msg = %s, "
+                    "running_pi = NULL, finished_at = %s WHERE id = %s AND status = %s",
+                    FAILED,
+                    code,
+                    msg,
+                    util.now(),
+                    job_id,
+                    RUNNING,
+                )
+            except Exception:  # noqa: BLE001
+                log.exception("gen_job_status_update_failed", job=job_id)
+            # 同步执行时由全局异常处理记失败痕迹；后台任务在这里记
+            if not rethrow:
+                audit.record_isolated(
+                    cu,
+                    audit.entry(audit.SN_GENERATE)
+                    .fail(msg)
+                    .pi(p["pi_no"])
+                    .factory(p["factory_code"])
+                    .bill(p["bill_no"])
+                    .count(p["qty"])
+                    .range(p["start_sn"], p["end_sn"])
+                    .info(f"job={job_id}"),
+                )
         if not isinstance(e, BizError):
-            log.error("gen_failed", job=job_id, pi=p["pi_no"], exc_info=e)
+            log.error("gen_failed", job=current[0], pi=current[1]["pi_no"], exc_info=e)
         if rethrow:
             raise
 

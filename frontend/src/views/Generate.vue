@@ -156,7 +156,7 @@
             </div>
           </template>
           <div v-else>
-            <div class="muted small">{{ t("generate.runningBill", { i: running.index + 1, n: running.total, bill: running.bill }) }}</div>
+            <div class="muted small">{{ t("generate.runningPi", { n: running.bills, qty: running.qty }) }}</div>
             <el-progress :percentage="running.pct" :stroke-width="14" striped striped-flow />
           </div>
         </div>
@@ -238,7 +238,7 @@
 
 <script setup lang="ts">
 import { computed, defineComponent, h, onMounted, onUnmounted, ref, watch } from "vue";
-import { onBeforeRouteLeave, useRoute } from "vue-router";
+import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { api } from "@/api";
@@ -290,8 +290,8 @@ const startText = ref("");
 const preview = ref<any>(null);
 const previewing = ref(false);
 const previewError = ref("");
-/** 正在按顺序逐张生成：第 index 张（共 total 张）。 */
-const running = ref<{ pi: string; index: number; total: number; bill: string; pct: number } | null>(null);
+/** 整张 PI 正在生成（含后台任务）：bills 张订单共 qty 枚。 */
+const running = ref<{ pi: string; bills: number; qty: number; pct: number } | null>(null);
 let previewTimer: number | undefined;
 let previewSeq = 0;
 let alive = true;
@@ -382,6 +382,9 @@ async function loadContext(params: { pi?: string; bill_no?: string }) {
     }
     qty.value = Math.max(1, defaultQty(c.quota));
     schedulePreview();
+    // 打开时这张 PI 正在后台生成（如刷新过页面）：接着显示进度
+    const busyJobs = c.jobs.filter((j: GenJob) => j.status === "RUNNING");
+    if (busyJobs.length && !running.value) settle(c.pi_no, busyJobs);
   } finally {
     ctxLoading.value = false;
   }
@@ -444,7 +447,7 @@ async function quickGenerate(row: any) {
   await runGenerate(p);
 }
 
-/** 按预演逐张凭令牌生成：一张订单一个任务；某张失败就停下，前面已生成的保留。 */
+/** 凭按 PI 预演的各订单令牌一次生成：后端在一个事务里依次生成各订单，任何一张失败整张 PI 回滚。 */
 async function runGenerate(p: any) {
   await ElMessageBox.confirm(
     t("generate.confirm", { qty: p.qty, start: p.start_sn, end: p.end_sn, n: p.items.length }),
@@ -452,41 +455,36 @@ async function runGenerate(p: any) {
     { type: "warning" },
   );
   busy.value = `gen:${p.pi_no}`;
-  let done = 0;
-  let stopped = false;
   try {
-    for (const [i, it] of p.items.entries()) {
-      running.value = { pi: p.pi_no, index: i, total: p.items.length, bill: it.bill_no, pct: 0 };
-      try {
-        let job: GenJob = await api.generate({ preview_token: it.token, bill_no: it.bill_no, qty: it.qty, start_seq: it.start_override });
-        if (job.status === "RUNNING") job = await waitJob(job);
-        if (job.status !== "SUCCESS") {
-          ElMessage.error({ message: t("generate.failed", { msg: job.error_msg || "" }), duration: 8000, showClose: true });
-          stopped = true;
-          break;
-        }
-        done += job.qty;
-      } catch {
-        stopped = true;
-        break;
-      }
+    const items = p.items.map((it: any) => ({ preview_token: it.token, bill_no: it.bill_no, qty: it.qty, start_seq: it.start_override }));
+    const r = await api.generatePi({ pi_no: p.pi_no, items });
+    await settle(p.pi_no, r.jobs);
+  } catch {
+    // 错误已由请求层提示；预演可能已失效，刷新后重新预演
+    await refresh(p.pi_no).catch(() => undefined);
+  } finally {
+    busy.value = "";
+  }
+}
+
+/** 等整张 PI 的任务结束（大批量在后台执行，轮询进度），再提示结果并刷新。 */
+async function settle(pi: string, jobs: GenJob[]) {
+  const qty = jobs.reduce((s, j) => s + j.qty, 0);
+  let js = jobs;
+  running.value = { pi, bills: js.length, qty, pct: 0 };
+  try {
+    while (alive && js.some((j) => j.status === "RUNNING")) {
+      await new Promise((r) => window.setTimeout(r, 1000));
+      js = await Promise.all(js.map((j) => api.genJob(j.id)));
+      if (running.value) running.value.pct = qty ? Math.min(100, Math.round((js.reduce((s, j) => s + j.done_qty, 0) * 100) / qty)) : 0;
     }
   } finally {
     running.value = null;
-    busy.value = "";
   }
-  if (done) ElMessage.success(stopped ? t("generate.partial", { qty: done }) : t("generate.done", { qty: done }));
-  await refresh(p.pi_no);
-}
-
-async function waitJob(job: GenJob): Promise<GenJob> {
-  let j = job;
-  while (alive && j.status === "RUNNING") {
-    await new Promise((r) => window.setTimeout(r, 1000));
-    j = await api.genJob(job.id);
-    if (running.value) running.value.pct = j.qty ? Math.min(100, Math.round((j.done_qty * 100) / j.qty)) : 0;
-  }
-  return j;
+  const failed = js.find((j) => j.status === "FAILED");
+  if (failed) ElMessage.error({ message: t("generate.failed", { msg: failed.error_msg || "" }), duration: 8000, showClose: true });
+  else if (js.length) ElMessage.success(t("generate.done", { qty }));
+  await refresh(pi);
 }
 
 async function refresh(pi: string) {
@@ -517,17 +515,6 @@ async function allocateBill(b: any) {
     busy.value = "";
   }
 }
-
-// 逐张生成进行中离开页面，后面的订单不会再生成
-onBeforeRouteLeave(async () => {
-  if (!running.value) return true;
-  try {
-    await ElMessageBox.confirm(t("generate.leaveRunning"), t("generate.generate"), { type: "warning" });
-    return true;
-  } catch {
-    return false;
-  }
-});
 
 onMounted(async () => {
   const pi = route.query.pi as string | undefined;

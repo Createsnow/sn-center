@@ -4,7 +4,7 @@ from fastapi import APIRouter, Query
 
 from app.api.deps import AdminDep
 from app.schemas.common import OptInt
-from app.schemas.sn import AllocateIn, GenerateIn, PiAllocateIn, PiInitIn, PiPreviewIn, PreviewIn
+from app.schemas.sn import AllocateIn, GenerateIn, PiAllocateIn, PiGenerateIn, PiInitIn, PiPreviewIn, PreviewIn
 from app.services import generate, pi_init
 
 router = APIRouter(tags=["generate"])
@@ -27,10 +27,20 @@ def gen_pi_context(cu: AdminDep, pi: str | None = None, bill_no: str | None = No
 @router.post(
     "/generate/pi-preview",
     summary="按 PI 预演：数量按单据号顺序占用各订单额度，号段接续；"
-    "每张订单各返回一个预演令牌，按顺序逐张调用 /generate",
+    "每张订单各返回一个预演令牌，凭这些令牌调用 /generate/pi",
 )
 def gen_pi_preview(body: PiPreviewIn, cu: AdminDep) -> dict:
     return generate.pi_preview(cu, body.pi_no, body.qty, body.start_seq, body.rule_id)
+
+
+@router.post(
+    "/generate/pi",
+    summary="按 PI 生成：凭按 PI 预演的各订单令牌（按原顺序），同一个事务里依次生成，任何一张失败整张 PI 回滚；"
+    "数量大时返回 RUNNING，轮询各任务进度",
+)
+def gen_pi_generate(body: PiGenerateIn, cu: AdminDep) -> dict:
+    items = [x.model_dump() for x in body.items or []]
+    return generate.generate_pi(cu, body.pi_no, items)
 
 
 @router.post("/generate/pi-allocate", summary="整张 PI 分配：各订单待分配号分到各自的生产组织，同一事务")

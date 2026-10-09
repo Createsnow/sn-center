@@ -19,6 +19,18 @@ class PiPreviewIn(In):
     rule_id: int | None = None
 
 
+class PiGenerateItem(In):
+    preview_token: str | None = None
+    bill_no: str | None = None
+    qty: int | None = None
+    start_seq: int | None = None
+
+
+class PiGenerateIn(In):
+    pi_no: str | None = None
+    items: list[PiGenerateItem] | None = None
+
+
 class PiAllocateIn(In):
     pi_no: str | None = None
 

@@ -324,6 +324,11 @@ def sql():
                 c.execute(s, args or None)
                 return c.fetchone()
 
+        def all(self, s: str, *args: Any) -> list[dict]:
+            with conn.cursor() as c:
+                c.execute(s, args or None)
+                return list(c.fetchall())
+
         def exec(self, s: str, *args: Any) -> int:
             with conn.cursor() as c:
                 return c.execute(s, args or None)

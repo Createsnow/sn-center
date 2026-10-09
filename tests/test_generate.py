@@ -452,17 +452,18 @@ def test_lock_conflict_keeps_pooled_connection_but_lost_one_is_dropped(w, sql):
 # ---------------------------------------------------------------- 按 PI
 
 
+def _pi_items(p, **override):
+    return [
+        m(preview_token=it["token"], bill_no=it["bill_no"], qty=it["qty"], start_seq=it["start_override"], **override)
+        for it in p["items"]
+    ]
+
+
 def _pi_generate(api, admin, p):
-    """按 PI 预演的结果逐张凭令牌生成（与页面相同的顺序）。"""
-    for it in p["items"]:
-        j = ok(
-            api.post(
-                "/api/generate",
-                m(preview_token=it["token"], bill_no=it["bill_no"], qty=it["qty"], start_seq=it["start_override"]),
-                admin,
-            )
-        )
-        assert j.text("status") == "SUCCESS", str(j)
+    """凭按 PI 预演的结果一次生成整张 PI（同步完成）。"""
+    r = ok(api.post("/api/generate/pi", m(pi_no=p["pi_no"], items=_pi_items(p)), admin)).body
+    assert [j["status"] for j in r["jobs"]] == ["SUCCESS"] * len(p["items"]), r
+    return r
 
 
 def test_pi_preview_spreads_qty_over_bills_in_bill_order_on_one_serial(api, admin, w, sql):
@@ -495,7 +496,7 @@ def test_pi_preview_spreads_qty_over_bills_in_bill_order_on_one_serial(api, admi
     assert api.post("/api/generate/pi-preview", m(pi_no=pi, qty=9), admin).code == "GEN_QUOTA_EXCEEDED"
 
 
-def test_pi_preview_items_go_stale_out_of_order_and_start_override_only_on_first(api, admin, w):
+def test_pi_generate_requires_the_whole_preview_in_order_and_start_override_only_on_first(api, admin, w, sql):
     pi = uid("PI")
     b1, b2 = pi + "-MO1", pi + "-MO2"
     w.pi_rule(pi, "Q", 10, 5)
@@ -504,14 +505,66 @@ def test_pi_preview_items_go_stale_out_of_order_and_start_override_only_on_first
     p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=4, start_seq=100), admin)).body
     assert [it["start_override"] for it in p["items"]] == [100, None]
     assert p["items"][1]["start_sn"] == "Q00102"
-    second = p["items"][1]
-    stale = api.post("/api/generate", m(preview_token=second["token"], bill_no=b2, qty=2, start_seq=None), admin)
-    assert stale.code == "GEN_PREVIEW_STALE", "第二张须在第一张之后生成"
-    p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=4, start_seq=100), admin)).body
-    _pi_generate(api, admin, p)
+    items = _pi_items(p)
+    gen = lambda its: api.post("/api/generate/pi", m(pi_no=pi, items=its), admin)  # noqa: E731
+    assert gen(items[::-1]).code == "GEN_PREVIEW_CHANGED", "顺序打乱"
+    assert gen(items[1:]).code == "GEN_PREVIEW_STALE", "缺第一张"
+    assert gen([items[0], items[0]]).code == "GEN_PREVIEW_CHANGED", "同一张重复"
+    assert api.post("/api/generate/pi", m(pi_no=uid("PI"), items=items), admin).code == "GEN_PREVIEW_CHANGED"
+    assert sql.count("SELECT COUNT(*) FROM sn_gen_job WHERE pi_no = %s", pi) == 0, "校验不过不建任务"
+    r = _pi_generate(api, admin, p)
+    assert [j["bill_no"] for j in r["jobs"]] == [b1, b2] and r["qty"] == 4
+    assert gen(items).code == "GEN_PREVIEW_USED"
     ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin)).body
     assert ctx["counter"]["last_seq_dec"] == 103 and ctx["counter"]["start_locked"]
+    assert ctx["running_job"] is None, "整张 PI 结束后释放 running_pi"
     assert api.post("/api/generate/pi-preview", m(pi_no=pi, qty=1), admin).code == "GEN_PI_QUOTA_EMPTY"
+
+
+def test_pi_generate_rolls_back_every_bill_when_a_later_bill_fails(api, admin, w, sql):
+    pi = uid("PI")
+    b1, b2, b3 = pi + "-MO1", pi + "-MO2", pi + "-MO3"
+    w.pi_rule(pi, "R", 10, 5)
+    w.order(b1, ORG, "C1", pi, ("A", 3))
+    w.order(b2, "生成测试二厂", "C1", pi, ("A", 3))
+    w.order(b3, ORG, "C1", pi, ("A", 3))
+    p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=9), admin)).body
+    # 第三张号段里的 R00008 已被本 PI 占用（流水归属本 PI，不影响起点），生成到第三张时查重失败
+    sql.exec("INSERT INTO sn_key(pi_no, sn, seq_pi_no, seq_dec) VALUES (%s, 'R00008', %s, 8)", pi, pi)
+    r = api.post("/api/generate/pi", m(pi_no=pi, items=_pi_items(p)), admin)
+    assert r.code == "GEN_DUPLICATE_SN"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 0, "前两张也回滚"
+    assert sql.count("SELECT COUNT(*) FROM sn_key WHERE pi_no = %s", pi) == 1
+    assert sql.count("SELECT COUNT(*) FROM sn_bill_gen WHERE pi_no = %s AND generated_qty > 0", pi) == 0
+    assert sql.count("SELECT COUNT(*) FROM sn_pi_counter WHERE pi_no = %s AND last_seq_dec > 0", pi) == 0
+    rows = sql.all("SELECT status, error_code, error_msg, running_pi FROM sn_gen_job WHERE pi_no = %s", pi)
+    assert [x["status"] for x in rows] == ["FAILED"] * 3
+    assert all(x["error_code"] == "GEN_DUPLICATE_SN" and x["running_pi"] is None for x in rows)
+    assert rows[0]["error_msg"].startswith(b3 + ":"), "失败原因写明是哪张订单"
+
+
+def test_pi_generate_holds_the_pi_until_every_bill_is_done(api, admin, w, sql):
+    pi = uid("PI")
+    b1, b2 = pi + "-MO1", pi + "-MO2"
+    w.pi_rule(pi, "B", 10, 5)
+    w.order(b1, ORG, "C1", pi, ("A", 2))
+    w.order(b2, ORG, "C1", pi, ("A", 2))
+    p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=4), admin)).body
+    # 模拟别的生成正占着这张 PI
+    sql.exec(
+        "INSERT INTO sn_gen_job(bill_no, pi_no, factory_code, customer_code, rule_version_id, qty, start_seq_dec, "
+        "end_seq_dec, start_sn, end_sn, status, done_qty, running_pi, preview_token, segments_json, created_by, "
+        "created_at) VALUES (%s,%s,%s,'C1',1,1,1,1,'x','x','RUNNING',0,%s,%s,'[]','t',NOW())",
+        b1,
+        pi,
+        FAC,
+        pi,
+        uuid.uuid4().hex,
+    )
+    assert api.post("/api/generate/pi", m(pi_no=pi, items=_pi_items(p)), admin).code == "GEN_BUSY"
+    sql.exec("DELETE FROM sn_gen_job WHERE pi_no = %s", pi)
+    assert sql.count("SELECT COUNT(*) FROM sn_gen_preview WHERE pi_no = %s AND used_at IS NOT NULL", pi) == 0
+    _pi_generate(api, admin, p)
 
 
 def test_pi_allocate_sends_each_bill_to_its_own_factory_in_one_go(api, admin, w, sql):
@@ -563,3 +616,24 @@ def test_pi_preview_skips_bills_whose_org_is_not_a_factory_yet(api, admin, w):
     p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=2), admin)).body
     assert [it["bill_no"] for it in p["items"]] == [b2]
     assert api.post("/api/generate/pi-preview", m(pi_no=pi, qty=3), admin).code == "GEN_QUOTA_EXCEEDED"
+
+
+def test_pi_generate_runs_in_background_when_the_pi_total_is_large(api, admin, w, sql):
+    """各张都不超过同步阈值（测试里 3000），但整张 PI 合计超过：整体转后台，仍是一个事务。"""
+    pi = uid("PI")
+    b1, b2 = pi + "-MO1", pi + "-MO2"
+    w.pi_rule(pi, "BG", 32, 6)
+    w.order(b1, ORG, "C1", pi, ("A", 2000))
+    w.order(b2, "生成测试二厂", "C1", pi, ("A", 2000))
+    p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=4000), admin)).body
+    r = ok(api.post("/api/generate/pi", m(pi_no=pi, items=_pi_items(p)), admin)).body
+    ids = [j["id"] for j in r["jobs"]]
+    statuses = [j["status"] for j in r["jobs"]]
+    for _ in range(240):
+        if "RUNNING" not in statuses:
+            break
+        time.sleep(0.25)
+        statuses = [ok(api.get(f"/api/generate/jobs/{i}", admin)).text("status") for i in ids]
+    assert statuses == ["SUCCESS", "SUCCESS"]
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND bill_no = %s", pi, b2) == 2000
+    assert ok(api.get("/api/generate/pi-context" + q(pi=pi), admin))["pending_alloc"] == 4000

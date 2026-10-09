@@ -193,7 +193,7 @@
   },
   "generate": {
     "title": "Generate & allocate",
-    "desc": "One row per PI; the button shows the next step: first Generate (prepare SNs within quota, status To allocate), then Allocate (each order goes to its own production org, status To acquire). Orders of the same PI continue on one serial in order-number order. Click a row for order details, rule choice, start number, or allocating a single order.",
+    "desc": "One row per PI; the button shows the next step: first Generate (prepare SNs within quota, status To allocate), then Allocate (each order goes to its own production org, status To acquire). Orders of the same PI continue on one serial in order-number order; the whole PI is generated in one transaction and rolls back entirely if any order fails. Click a row for order details, rule choice, start number, or allocating a single order.",
     "snapshotAt": "Order snapshot synced at {time}",
     "toOrders": "Sync",
     "allocated": "Allocated",
@@ -257,7 +257,7 @@
     "setStart": "Set start number",
     "previewing": "Previewing…",
     "byBill": "By order: ",
-    "runningBill": "Generating order {i} of {n}: {bill}…",
+    "runningPi": "Generating {qty} SNs for {n} orders (one transaction; the whole PI rolls back on failure)…",
     "allocOne": "Allocate this only",
     "allocOneConfirm": "Allocate only the {qty} SNs of order {bill} to {factory}? They become To acquire.",
     "allocOneDone": "Allocated {qty}: {start} ~ {end}",
@@ -265,8 +265,6 @@
     "jobSUCCESS": "Done",
     "jobFAILED": "Failed",
     "jobRUNNING": "Running",
-    "partial": "{qty} SNs generated; the remaining orders were not generated. Preview again to continue.",
-    "leaveRunning": "Orders are being generated one by one; orders not yet started will not be generated if you leave. Leave anyway?",
     "issue": {
       "ORDER_NO_CUSTOMER": "Order has no customer; cannot generate",
       "ORDER_NO_PI": "Order has no PI; cannot generate",
