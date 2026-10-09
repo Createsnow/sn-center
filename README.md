@@ -28,7 +28,7 @@ cp .env.example .env     # 填 DB_HOST / DB_PORT / DB_NAME / DB_USER / DB_PASSWO
 python start.py          # Windows 可双击 start.bat；需要 Python 3.12+、Node.js 20+
 ```
 
-浏览器打开 `http://127.0.0.1:8000`，用 `admin` + `SN_INIT_ADMIN_PASSWORD`（默认 `Admin@123`）登录，首次登录必须修改密码。
+浏览器打开 `http://127.0.0.1:8000`，用 `.env` 里的 `SN_INIT_ADMIN_EMP_NO` + `SN_INIT_ADMIN_PASSWORD`（默认 `admin` / `Admin@123`）登录，再在「账户」页创建其他账户。
 本机没有金蝶时可设 `SN_DEMO_SEED=true` 灌入演示工厂、规则、订单与账户（**连公司库务必关闭**）。
 
 服务器：`docker compose up -d --build`（详见运维手册；Docker 方式为 `ENVIRONMENT=production`，`SN_SECRET` 为空、为示例值或不足 32 位会拒绝启动）。接口文档：`/docs`（对外接口在 `open` 分组）。

@@ -26,6 +26,9 @@ DEFAULT_SECRET = "change-me-sn-center-secret"
 #: 公开出现过的示例密钥：生产环境不允许使用
 WEAK_SECRETS = frozenset((DEFAULT_SECRET, "change-me-to-a-long-random-string"))
 MIN_SECRET_LEN = 32
+#: 内置管理员的默认工号与密码（.env 未配置时）；生产环境不允许用默认密码建 / 重置管理员
+DEFAULT_ADMIN_EMP_NO = "admin"
+DEFAULT_ADMIN_PASSWORD = "Admin@123"
 
 
 def resolve_root() -> Path:
@@ -123,8 +126,22 @@ class Settings:
         return max(1, self.get_int("SN_LOGIN_LOCK_MINUTES", 15))
 
     @property
+    def init_admin_emp_no(self) -> str:
+        """内置管理员的工号；空库首次启动按它建管理员，SN_RESET_ADMIN 也重置这个工号。"""
+        return self.get("SN_INIT_ADMIN_EMP_NO", "") or DEFAULT_ADMIN_EMP_NO
+
+    @property
     def init_admin_password(self) -> str:
-        return self.get("SN_INIT_ADMIN_PASSWORD", "Admin@123")
+        return self.get("SN_INIT_ADMIN_PASSWORD", DEFAULT_ADMIN_PASSWORD)
+
+    def admin_password_problem(self) -> str | None:
+        """内置管理员密码的问题；None 表示可用。生产环境有问题时不建 / 不重置管理员并拒绝启动。"""
+        v = self.init_admin_password
+        if not v:
+            return "SN_INIT_ADMIN_PASSWORD 未设置"
+        if v == DEFAULT_ADMIN_PASSWORD:
+            return "SN_INIT_ADMIN_PASSWORD 仍是默认值"
+        return None
 
     @property
     def demo_seed(self) -> bool:

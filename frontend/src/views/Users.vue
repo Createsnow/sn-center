@@ -57,7 +57,7 @@
         </el-form-item>
         <el-form-item v-if="!editing" :label="t('users.initPwd')" required>
           <el-input v-model="form.password" type="password" show-password />
-          <div class="muted">{{ t("password.policy") }} {{ t("users.firstLogin") }}</div>
+          <div class="muted">{{ t("password.policy") }} {{ t("users.pwdHint") }}</div>
         </el-form-item>
       </el-form>
       <template #footer>

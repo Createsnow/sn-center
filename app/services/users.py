@@ -1,4 +1,7 @@
-"""登录、改密与账户管理。账户用公司工号创建，只停用不删除。"""
+"""登录、改密与账户管理。账户用公司工号创建，只停用不删除。
+
+管理员建账户时给定的密码直接可用，不强制改密；只有管理员重置别人的密码后，下次登录必须改密。
+"""
 
 from __future__ import annotations
 
@@ -216,7 +219,7 @@ def create(
         now = util.now()
         uid = db.insert(
             "INSERT INTO sn_user(emp_no, name, role, factory_code, status, password_hash, must_change_pwd, created_by, "
-            "created_at, updated_at) VALUES (%s,%s,%s,%s,%s,%s,1,%s,%s,%s)",
+            "created_at, updated_at) VALUES (%s,%s,%s,%s,%s,%s,0,%s,%s,%s)",
             emp,
             n,
             r,
@@ -316,44 +319,62 @@ def reset_password(cu: CurrentUser, uid: int, password: str | None) -> dict:
         return view(_must_get(uid))
 
 
-def reset_admin(password: str) -> bool:
-    """运维恢复：把工号 admin 重置为初始密码并启用、角色改回管理员，下次登录强制改密。
+def _admin_emp_no() -> str:
+    emp = settings.init_admin_emp_no
+    if not _EMP_NO.match(emp):
+        raise RuntimeError(f"SN_INIT_ADMIN_EMP_NO={emp!r} 不是合法工号（2–32 位字母、数字、_ -）")
+    return emp
+
+
+def _insert_admin(emp: str, password: str, now: datetime) -> None:
+    db.insert(
+        "INSERT INTO sn_user(emp_no, name, role, status, password_hash, must_change_pwd, created_by, created_at, "
+        "updated_at) VALUES (%s,'系统管理员',%s,%s,%s,0,'system',%s,%s)",
+        emp,
+        util.ADMIN,
+        ACTIVE,
+        hash_password(password),
+        now,
+        now,
+    )
+
+
+def reset_admin(password: str) -> None:
+    """运维恢复：把内置管理员（SN_INIT_ADMIN_EMP_NO）重置为 .env 里的密码并启用、角色改回管理员；不存在就新建。
 
     只在服务器上设置 SN_RESET_ADMIN=true 启动时执行一次（需要服务器权限），并留痕。
     """
+    emp = _admin_emp_no()
     with db.tx():
-        u = _by_emp_no("admin")
-        if u is None:
-            return bootstrap_admin(password)
+        u = _by_emp_no(emp)
         now = util.now()
-        db.exec(
-            "UPDATE sn_user SET role = %s, factory_code = NULL, status = %s, password_hash = %s, must_change_pwd = 1, "
-            "pwd_changed_at = %s, disabled_by = NULL, disabled_at = NULL, updated_at = %s WHERE id = %s",
-            util.ADMIN,
-            ACTIVE,
-            hash_password(password),
-            now,
-            now,
-            u["id"],
-        )
-        audit.record(CurrentUser.system(), audit.entry(audit.USER_RESET_PWD).info("emp_no=admin SN_RESET_ADMIN"))
-        return True
+        if u is None:
+            _insert_admin(emp, password, now)
+        else:
+            db.exec(
+                "UPDATE sn_user SET role = %s, factory_code = NULL, status = %s, password_hash = %s, "
+                "must_change_pwd = 0, pwd_changed_at = %s, disabled_by = NULL, disabled_at = NULL, updated_at = %s "
+                "WHERE id = %s",
+                util.ADMIN,
+                ACTIVE,
+                hash_password(password),
+                _next_pv(u, now),
+                now,
+                u["id"],
+            )
+        audit.record(CurrentUser.system(), audit.entry(audit.USER_RESET_PWD).info(f"emp_no={emp} SN_RESET_ADMIN"))
+
+
+def needs_bootstrap() -> bool:
+    return db.count("SELECT COUNT(*) FROM sn_user") == 0
 
 
 def bootstrap_admin(password: str) -> bool:
-    """空库启动时建首个管理员（工号 admin），首次登录强制改密。"""
+    """空库启动时按 .env 建首个管理员（工号 SN_INIT_ADMIN_EMP_NO、密码 SN_INIT_ADMIN_PASSWORD），可直接使用。"""
+    emp = _admin_emp_no()
     with db.tx():
-        if db.count("SELECT COUNT(*) FROM sn_user") > 0:
+        if not needs_bootstrap():
             return False
-        now = util.now()
-        db.insert(
-            "INSERT INTO sn_user(emp_no, name, role, status, password_hash, must_change_pwd, created_by, created_at, "
-            "updated_at) VALUES ('admin','系统管理员',%s,%s,%s,1,'system',%s,%s)",
-            util.ADMIN,
-            ACTIVE,
-            hash_password(password),
-            now,
-            now,
-        )
-        audit.record(CurrentUser.system(), audit.entry(audit.USER_CREATE).info("emp_no=admin bootstrap"))
+        _insert_admin(emp, password, util.now())
+        audit.record(CurrentUser.system(), audit.entry(audit.USER_CREATE).info(f"emp_no={emp} bootstrap"))
         return True

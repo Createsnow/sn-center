@@ -118,11 +118,11 @@
     "empNo": "Mã nhân viên",
     "password": "Mật khẩu",
     "submit": "Đăng nhập",
-    "hint": "Tài khoản do quản trị viên tạo theo mã nhân viên; lần đầu đăng nhập phải đổi mật khẩu."
+    "hint": "Tài khoản do quản trị viên tạo theo mã nhân viên; hãy hỏi quản trị viên mật khẩu."
   },
   "password": {
     "title": "Đổi mật khẩu",
-    "forced": "Lần đầu đăng nhập hoặc mật khẩu đã được đặt lại: vui lòng đổi mật khẩu.",
+    "forced": "Mật khẩu đã được quản trị viên đặt lại: vui lòng đổi mật khẩu trước.",
     "old": "Mật khẩu hiện tại",
     "new": "Mật khẩu mới",
     "confirm": "Xác nhận mật khẩu mới",
@@ -342,7 +342,7 @@
     "bulkDone": "Đã xong {n} PI, tổng {q} SN",
     "bulkFailed": "{n} PI chưa xong: {list}",
     "records": "Lô nhận / bản ghi in",
-    "viewALL": "Tất cả",
+    "viewTODO": "Cần xử lý",
     "viewTO_ACQUIRE": "Chờ nhận",
     "viewTO_PRINT": "Chờ in",
     "viewAPPLYING": "Đang xin chuyển",
@@ -462,7 +462,7 @@
   },
   "users": {
     "title": "Tài khoản",
-    "desc": "Tài khoản dùng mã nhân viên duy nhất. Chỉ vô hiệu, không xóa; tài khoản bị vô hiệu không đăng nhập được và lịch sử được giữ. Tài khoản mới phải đổi mật khẩu lần đầu.",
+    "desc": "Tài khoản dùng mã nhân viên duy nhất. Chỉ vô hiệu, không xóa; tài khoản bị vô hiệu không đăng nhập được và lịch sử được giữ. Tài khoản mới đăng nhập ngay bằng mật khẩu đặt khi tạo; sau khi quản trị viên đặt lại, phải đổi mật khẩu ở lần đăng nhập kế tiếp.",
     "create": "Tạo tài khoản",
     "search": "Mã NV / tên",
     "empNo": "Mã NV",
@@ -479,7 +479,7 @@
     "enable": "Kích hoạt",
     "editTitle": "Sửa tài khoản {emp}",
     "initPwd": "Mật khẩu ban đầu",
-    "firstLogin": "Phải đổi khi đăng nhập lần đầu.",
+    "pwdHint": "Dùng được ngay; người dùng có thể tự đổi bất cứ lúc nào.",
     "roleHint": {
       "admin": "Tổng bộ: không gắn nhà máy, toàn quyền, thao tác thay mọi nhà máy.",
       "factory_operator": "Phải gắn một nhà máy và chỉ thao tác cho nhà máy đó.",

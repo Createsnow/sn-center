@@ -118,11 +118,11 @@
     "empNo": "Employee No.",
     "password": "Password",
     "submit": "Sign in",
-    "hint": "Accounts are created by the administrator with the company employee number; change the initial password at first sign-in."
+    "hint": "Accounts are created by the administrator with the company employee number; ask the administrator for your password."
   },
   "password": {
     "title": "Change password",
-    "forced": "First sign-in or password reset: please change your password first.",
+    "forced": "Your password was reset by the administrator: please change it first.",
     "old": "Current password",
     "new": "New password",
     "confirm": "Confirm new password",
@@ -342,7 +342,7 @@
     "bulkDone": "{n} PIs done, {q} SNs",
     "bulkFailed": "{n} PIs not done: {list}",
     "records": "Batches / print records",
-    "viewALL": "All",
+    "viewTODO": "To do",
     "viewTO_ACQUIRE": "To acquire",
     "viewTO_PRINT": "To print",
     "viewAPPLYING": "Pending transfer",
@@ -462,7 +462,7 @@
   },
   "users": {
     "title": "Accounts",
-    "desc": "Accounts use the unique company employee number. Accounts are disabled, never deleted; disabled accounts cannot sign in and their history is kept. New accounts must change the initial password at first sign-in.",
+    "desc": "Accounts use the unique company employee number. Accounts are disabled, never deleted; disabled accounts cannot sign in and their history is kept. New accounts sign in directly with the password set at creation; after an administrator reset, the password must be changed at next sign-in.",
     "create": "New account",
     "search": "Employee No. / name",
     "empNo": "Employee No.",
@@ -479,7 +479,7 @@
     "enable": "Enable",
     "editTitle": "Edit account {emp}",
     "initPwd": "Initial password",
-    "firstLogin": "Must be changed at first sign-in.",
+    "pwdHint": "Usable right away; the user can change it at any time.",
     "roleHint": {
       "admin": "HQ: no factory, full permissions, may act for any factory.",
       "factory_operator": "Must be bound to one factory and can only act for it.",

@@ -1,12 +1,22 @@
-"""账户：工号唯一、首次登录强制改密、只停用不删除、停用不能登录、改密 / 重置后旧令牌失效。（对应 AccountIT）"""
+"""账户：工号唯一、新建直接可用、重置后强制改密、只停用不删除、停用不能登录、改密 / 重置后旧令牌失效。"""
 
 from conftest import m, ok, q, uid
 
 
-def test_first_login_must_change_password_and_old_token_dies(api, admin):
+def test_new_account_works_without_password_change(api, admin):
     emp = uid("u")
     ok(api.post("/api/users", m(emp_no=emp, name="张三", role="query", password="Init@1234"), admin))
     login = ok(api.post("/api/auth/login", m(emp_no=emp, password="Init@1234"), None))
+    assert login["user"]["must_change_pwd"] is False
+    assert api.get("/api/sn", login.text("token")).status == 200
+
+
+def test_reset_forces_change_and_old_token_dies(api, admin):
+    emp = uid("u")
+    ok(api.post("/api/users", m(emp_no=emp, name="张三", role="query", password="Init@1234"), admin))
+    uid_ = ok(api.get("/api/users" + q(q=emp), admin))["items"][0]["id"]
+    ok(api.post(f"/api/users/{uid_}/reset-password", m(password="Reset@123"), admin))
+    login = ok(api.post("/api/auth/login", m(emp_no=emp, password="Reset@123"), None))
     assert login["user"]["must_change_pwd"] is True
     t0 = login.text("token")
     blocked = api.get("/api/sn", t0)
@@ -14,14 +24,14 @@ def test_first_login_must_change_password_and_old_token_dies(api, admin):
     assert blocked.code == "PASSWORD_CHANGE_REQUIRED"
     assert api.get("/api/auth/me", t0).status == 200, "me stays reachable"
     assert (
-        api.post("/api/auth/password", m(old_password="Init@1234", new_password="short"), t0).code
+        api.post("/api/auth/password", m(old_password="Reset@123", new_password="short"), t0).code
         == "USER_PASSWORD_WEAK"
     )
     assert (
         api.post("/api/auth/password", m(old_password="nope", new_password="Better@123"), t0).code
         == "USER_PASSWORD_WRONG"
     )
-    t1 = ok(api.post("/api/auth/password", m(old_password="Init@1234", new_password="Better@123"), t0)).text("token")
+    t1 = ok(api.post("/api/auth/password", m(old_password="Reset@123", new_password="Better@123"), t0)).text("token")
     assert api.get("/api/auth/me", t0).code == "TOKEN_INVALID"
     assert api.get("/api/sn", t1).status == 200
 
@@ -63,16 +73,6 @@ def test_disable_keeps_record_and_blocks_login(api, admin, w):
     assert api.post("/api/auth/login", m(emp_no=emp, password="Pass@1234"), None).status == 200
     audits = ok(api.get("/api/audits" + q(action="USER_DISABLE", keyword=emp), admin))
     assert audits["total"] >= 1
-
-
-def test_reset_password_forces_change_again(api, admin, w):
-    emp = uid("r")
-    token = w.user(emp, "query", None)
-    uid_ = ok(api.get("/api/users" + q(q=emp), admin))["items"][0]["id"]
-    ok(api.post(f"/api/users/{uid_}/reset-password", m(password="Reset@123"), admin))
-    assert api.get("/api/auth/me", token).code == "TOKEN_INVALID"
-    login = ok(api.post("/api/auth/login", m(emp_no=emp, password="Reset@123"), None))
-    assert login["user"]["must_change_pwd"] is True
 
 
 def test_cannot_disable_self_or_last_admin_and_only_admin_manages_users(api, admin, w):

@@ -94,16 +94,30 @@ def check_secret() -> None:
     log.warning("weak_secret", problem=problem, note="ENVIRONMENT=production 时将拒绝启动")
 
 
+def init_admin() -> None:
+    """按 .env 建内置管理员（空库）或重置它（SN_RESET_ADMIN=true）。不强制改密，所以生产环境不允许默认密码。"""
+    reset = settings.get_bool("SN_RESET_ADMIN", False)
+    if not reset and not users.needs_bootstrap():
+        return
+    problem = settings.admin_password_problem()
+    if problem is not None:
+        if settings.production:
+            raise RuntimeError(f"{problem}：生产环境必须在 .env 里设置 SN_INIT_ADMIN_PASSWORD")
+        log.warning("weak_admin_password", problem=problem, note="ENVIRONMENT=production 时将拒绝启动")
+    emp = settings.init_admin_emp_no
+    if reset:
+        users.reset_admin(settings.init_admin_password)
+        log.warning("admin_reset", emp_no=emp, note="password=SN_INIT_ADMIN_PASSWORD; remove SN_RESET_ADMIN now")
+    elif users.bootstrap_admin(settings.init_admin_password):
+        log.warning("bootstrap_admin", emp_no=emp, note="password=SN_INIT_ADMIN_PASSWORD")
+
+
 def startup() -> None:
     check_secret()
     db.configure(settings.db_target(), settings.db_pool_size)
     init_db()
     generate.recover_interrupted()
-    if settings.get_bool("SN_RESET_ADMIN", False):
-        users.reset_admin(settings.init_admin_password)
-        log.warning("admin_reset", emp_no="admin", note="password=SN_INIT_ADMIN_PASSWORD; remove SN_RESET_ADMIN now")
-    elif users.bootstrap_admin(settings.init_admin_password):
-        log.warning("bootstrap_admin", emp_no="admin", note="must change password on first login")
+    init_admin()
     partitions.maintain()
     if settings.demo_seed:
         demo_seed.seed_if_empty()

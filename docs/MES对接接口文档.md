@@ -56,7 +56,7 @@ MES 使用本系统账户，角色取值如下。
 
 厂区账户操作其他工厂返回 `403 FACTORY_FORBIDDEN`，`params.factory` 是该账户自己的工厂编码。
 
-首次登录或密码被重置后，`user.must_change_pwd` 为 `true`。此时除改密接口外，开放接口都返回 `403 PASSWORD_CHANGE_REQUIRED`。先改密，再用新令牌继续。
+密码被管理员重置后，`user.must_change_pwd` 为 `true`（新建账户为 `false`，可直接调用）。此时除改密接口外，开放接口都返回 `403 PASSWORD_CHANGE_REQUIRED`。先改密，再用新令牌继续。
 
 密码规则：8–64 位，同时包含字母和数字。
 

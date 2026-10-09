@@ -458,7 +458,8 @@ def main() -> None:
     print(f"  局域网  http://<本机IP>:{args.port}")
     print("  公网    未启用（入口在网关：Docker 路径为 nginx）")
     print(f"  文档    http://127.0.0.1:{args.port}/docs")
-    print(f"  账号    admin / {lookup('SN_INIT_ADMIN_PASSWORD', 'Admin@123')}（空库首次启动创建，首次登录须改密）")
+    admin = lookup("SN_INIT_ADMIN_EMP_NO", "admin") or "admin"
+    print(f"  账号    {admin} / {lookup('SN_INIT_ADMIN_PASSWORD', 'Admin@123')}（.env 配置，空库首次启动创建）")
     t = Settings().db_target()
     print(f"  数据库  {t.user}@{t.host}:{t.port}/{t.database}")
     print("  退出    本窗口 Ctrl+C，或另开窗口 python start.py --stop / stop.bat")

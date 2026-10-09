@@ -269,7 +269,9 @@ def app_client():
         "DB_NAME": DB,
         "DB_USER": USER,
         "DB_PASSWORD": PASSWORD,
-        "SN_INIT_ADMIN_PASSWORD": "Admin@123",
+        "SN_INIT_ADMIN_EMP_NO": "admin",
+        "SN_INIT_ADMIN_PASSWORD": ADMIN_PASSWORD,
+        "SN_RESET_ADMIN": "false",
         "SN_SECRET": "test-secret",
         "SN_DEMO_SEED": "false",
         "SN_GEN_SYNC_THRESHOLD": "3000",
@@ -299,10 +301,10 @@ def app_client():
 @pytest.fixture(scope="session")
 def admin(app_client) -> str:
     api = Api(app_client)
-    r = api.post("/api/auth/login", m(emp_no="admin", password="Admin@123"), None)
+    r = api.post("/api/auth/login", m(emp_no="admin", password=ADMIN_PASSWORD), None)
     assert r.status == 200, str(r)
-    c = ok(api.post("/api/auth/password", m(old_password="Admin@123", new_password=ADMIN_PASSWORD), r.text("token")))
-    return c.text("token")
+    assert r["user"]["must_change_pwd"] is False, "built-in admin from .env works without a password change"
+    return r.text("token")
 
 
 @pytest.fixture
@@ -357,16 +359,13 @@ class World:
         assert r.status == 200 or r.code == "FACTORY_EXISTS", str(r)
 
     def user(self, emp: str, role: str, factory: str | None) -> str:
-        """建账户并完成首次改密，返回令牌。"""
+        """建账户并登录（新建账户直接可用），返回令牌。"""
         ok(
             self.api.post(
-                "/api/users", m(emp_no=emp, name=emp, role=role, factory_code=factory, password="Init@1234"), self.admin
+                "/api/users", m(emp_no=emp, name=emp, role=role, factory_code=factory, password="Pass@1234"), self.admin
             )
         )
-        t = ok(self.api.post("/api/auth/login", m(emp_no=emp, password="Init@1234"), None)).text("token")
-        return ok(self.api.post("/api/auth/password", m(old_password="Init@1234", new_password="Pass@1234"), t)).text(
-            "token"
-        )
+        return ok(self.api.post("/api/auth/login", m(emp_no=emp, password="Pass@1234"), None)).text("token")
 
     def order(self, bill_no: str, org: str, customer: str, pi: str, *lines: tuple) -> Res:
         """在假金蝶登记一张生产订单并按单据编号同步进快照。lines = (物料, 数量[, 状态])。"""
