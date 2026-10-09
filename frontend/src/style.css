@@ -23,3 +23,11 @@
 .page-enter-active, .page-leave-active { transition: opacity 0.15s ease, transform 0.15s ease; }
 .page-enter-from { opacity: 0; transform: translateY(6px); }
 .page-leave-to { opacity: 0; transform: translateY(-4px); }
+/* 整页铺满内容区：外层不出滚动条，表格在卡片内自带滚动（表头固定）；窄屏退回自然高度 */
+.page--fill { height: 100%; min-height: 0; }
+.page--fill .fill { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.page--fill .fill-body { flex: 1; min-height: 240px; position: relative; }
+@media (max-width: 1199px) {
+  .page--fill { height: auto; }
+  .page--fill .fill-body { flex: none; height: 520px; }
+}

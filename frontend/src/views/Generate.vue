@@ -1,5 +1,5 @@
 <template>
-  <div class="page">
+  <div class="page page--fill">
     <PageHead :title="t('generate.title')" :desc="t('generate.desc')">
       <span class="muted snap">
         {{ t("generate.snapshotAt", { time: syncedAt || "—" }) }}
@@ -7,7 +7,7 @@
       </span>
     </PageHead>
 
-    <div class="surface">
+    <div class="surface fill">
       <div class="toolbar">
         <el-radio-group v-model="view">
           <el-radio-button v-for="v in VIEWS" :key="v" :value="v">
@@ -18,7 +18,8 @@
         <span class="muted summary">{{ t("generate.summary", { q: totals.quota, p: totals.pending }) }}</span>
       </div>
 
-      <el-table v-loading="loading" :data="paged" size="small" row-key="pi" class="pis" :empty-text="t(`generate.empty${view}`)" @row-click="(row: any) => openDetail(row.pi)">
+      <div class="fill-body">
+      <el-table v-loading="loading" :data="paged" size="small" row-key="pi" class="pis" height="100%" :empty-text="t(`generate.empty${view}`)" @row-click="(row: any) => openDetail(row.pi)">
         <el-table-column label="PI" min-width="170">
           <template #default="{ row }">
             <b>{{ row.pi }}</b>
@@ -52,6 +53,7 @@
           </template>
         </el-table-column>
       </el-table>
+      </div>
       <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="shown.length" :page-size="pageSize"
         :current-page="page" :page-sizes="[20, 50, 100]" @current-change="(p: number) => (page = p)" @size-change="onSize" />
       <p v-if="pis.length >= LIST_LIMIT" class="muted">{{ t("generate.more", { n: LIST_LIMIT }) }}</p>

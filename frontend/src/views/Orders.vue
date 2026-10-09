@@ -1,5 +1,5 @@
 <template>
-  <div class="page">
+  <div class="page page--fill">
     <PageHead :title="t('orders.title')" :desc="t('orders.desc')">
       <template v-if="store.isAdmin">
         <el-input v-model="syncBillNo" :placeholder="t('orders.billToSync')" clearable class="w200" @keyup.enter="syncOne" />
@@ -62,16 +62,17 @@
       </template>
     </el-dialog>
 
-    <el-row :gutter="16">
+    <el-row :gutter="16" class="cols">
       <el-col :lg="16" :xs="24">
-        <div class="surface">
+        <div class="surface fill">
           <div class="toolbar">
             <el-input v-model="f.q" :placeholder="t('orders.search')" clearable prefix-icon="Search" class="w-search" @keyup.enter="load(1)" @clear="load(1)" />
             <el-input v-model="f.customer" :placeholder="t('common.customer')" clearable @keyup.enter="load(1)" @clear="load(1)" />
             <FactorySelect v-if="!store.boundFactory" v-model="f.factory_code" clearable @update:model-value="load(1)" />
             <el-button type="primary" @click="load(1)">{{ t("common.search") }}</el-button>
           </div>
-          <el-table v-loading="state.loading" :data="items" highlight-current-row size="small" height="560"
+          <div class="fill-body">
+          <el-table v-loading="state.loading" :data="items" highlight-current-row size="small" height="100%"
             :empty-text="t('common.empty')" @current-change="select">
             <el-table-column prop="bill_no" :label="t('common.billNo')" min-width="120" show-overflow-tooltip />
             <el-table-column prop="customer_number" :label="t('common.customer')" width="80" show-overflow-tooltip />
@@ -95,12 +96,13 @@
               <template #default="{ row }"><span class="num" :class="{ zero: !row.quota }">{{ row.quota }}</span></template>
             </el-table-column>
           </el-table>
+          </div>
           <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="state.total" :page-size="state.pageSize"
             :current-page="state.page" :page-sizes="[20, 50, 100]" @current-change="load" @size-change="onSize" />
         </div>
       </el-col>
       <el-col :lg="8" :xs="24">
-        <div class="surface">
+        <div class="surface fill">
           <div class="surface__title">
             <span>{{ current ? t("orders.linesOf", { bill: current.bill_no }) : t("orders.lines") }}</span>
             <el-button v-if="current && store.isAdmin" type="primary" size="small"
@@ -115,7 +117,8 @@
               <el-descriptions-item :label="t('common.customer')">{{ current.customer_number }}</el-descriptions-item>
               <el-descriptions-item :label="t('common.factory')">{{ current.prd_org_name }}（{{ current.factory_code || "—" }}）</el-descriptions-item>
             </el-descriptions>
-            <el-table v-loading="linesLoading" :data="lines" size="small" :empty-text="t('common.empty')">
+            <div class="fill-body">
+            <el-table v-loading="linesLoading" :data="lines" size="small" height="100%" :empty-text="t('common.empty')">
               <el-table-column prop="line_seq" label="#" width="48" />
               <el-table-column :label="t('common.material')" min-width="100">
                 <template #default="{ row }"><span v-if="row.material_number">{{ row.material_number }}</span><span v-else class="muted">{{ t("orders.noMaterial") }}</span></template>
@@ -130,6 +133,7 @@
                 <template #default="{ row }"><span class="num">{{ Number(row.qty) }}</span></template>
               </el-table-column>
             </el-table>
+            </div>
           </template>
           <el-empty v-else :description="t('orders.pick')" />
         </div>
@@ -278,4 +282,10 @@ onMounted(refresh);
 .mb { margin-bottom: 12px; }
 .zero { color: var(--app-muted); }
 .el-col { margin-bottom: 16px; }
+/* 宽屏左右两栏铺满剩余高度，各自在卡片内滚动 */
+@media (min-width: 1200px) {
+  .cols { flex: 1; min-height: 0; flex-wrap: nowrap; }
+  .cols > .el-col { margin-bottom: 0; display: flex; flex-direction: column; }
+  .cols > .el-col > .surface { flex: 1; }
+}
 </style>
