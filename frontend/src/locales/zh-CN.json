@@ -342,7 +342,7 @@
     "bulkDone": "已完成 {n} 张 PI，共 {q} 枚",
     "bulkFailed": "{n} 张 PI 未完成：{list}",
     "records": "领取批次 / 打印记录",
-    "viewTODO": "要处理",
+    "viewALL": "全部",
     "viewTO_ACQUIRE": "待领取",
     "viewTO_PRINT": "待打印",
     "viewAPPLYING": "申请中",

@@ -145,8 +145,8 @@ import FactorySelect from "@/components/FactorySelect.vue";
 import StatusTag from "@/components/StatusTag.vue";
 
 type Step = "TO_ACQUIRE" | "TO_PRINT";
-type View = "TODO" | Step | "APPLYING";
-const VIEWS: View[] = ["TODO", "TO_ACQUIRE", "TO_PRINT", "APPLYING"];
+type View = "ALL" | Step | "APPLYING";
+const VIEWS: View[] = ["ALL", "TO_ACQUIRE", "TO_PRINT", "APPLYING"];
 const MOVABLE = ["TO_ACQUIRE", "TO_PRINT", "PRINTED"];
 
 const { t } = useI18n();
@@ -154,7 +154,7 @@ const router = useRouter();
 const store = useAuthStore();
 const { nameOf } = useFactories();
 const f = reactive({ factory_code: "", pi: "" });
-const view = ref<View>("TODO");
+const view = ref<View>("ALL");
 const pis = ref<any[]>([]);
 const pisLoading = ref(false);
 const busy = ref("");
@@ -175,7 +175,7 @@ const totals = computed(() =>
 );
 const qtyOf = (row: any, st: Step) => (st === "TO_ACQUIRE" ? row.to_acquire : row.to_print);
 const nextStep = (row: any): Step | null => (row.to_acquire > 0 ? "TO_ACQUIRE" : row.to_print > 0 ? "TO_PRINT" : null);
-/** 待领取 / 待打印标签只做本标签的工序；要处理、申请中按流程取下一步。 */
+/** 待领取 / 待打印标签只做本标签的工序；全部、申请中按流程取下一步。 */
 const rowStep = (row: any): Step | null => {
   if (view.value === "TO_ACQUIRE" || view.value === "TO_PRINT") return qtyOf(row, view.value) > 0 ? view.value : null;
   return nextStep(row);
@@ -184,10 +184,10 @@ const btnType = (st: Step) => (st === "TO_ACQUIRE" ? "primary" : "warning");
 const stepLabel = (st: Step, row: any) => t(st === "TO_ACQUIRE" ? "acquire.takeN" : "acquire.printN", { n: qtyOf(row, st) });
 const pickedOf = (st: Step) => picked.value.filter((r) => qtyOf(r, st) > 0);
 const pickedQty = (st: Step) => pickedOf(st).reduce((s, r) => s + qtyOf(r, st), 0);
-const bulkShows = (st: Step) => (view.value === st || view.value === "TODO" || view.value === "APPLYING") && pickedOf(st).length > 0;
+const bulkShows = (st: Step) => (view.value === st || view.value === "ALL" || view.value === "APPLYING") && pickedOf(st).length > 0;
 
 function rowsOf(v: View) {
-  if (v === "TODO") return pis.value.filter((r) => r.to_acquire > 0 || r.to_print > 0);
+  if (v === "ALL") return pis.value;
   if (v === "APPLYING") return pis.value.filter((r) => r.applying > 0);
   return pis.value.filter((r) => qtyOf(r, v) > 0);
 }

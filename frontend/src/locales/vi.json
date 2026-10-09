@@ -342,7 +342,7 @@
     "bulkDone": "Đã xong {n} PI, tổng {q} SN",
     "bulkFailed": "{n} PI chưa xong: {list}",
     "records": "Lô nhận / bản ghi in",
-    "viewTODO": "Cần xử lý",
+    "viewALL": "Tất cả",
     "viewTO_ACQUIRE": "Chờ nhận",
     "viewTO_PRINT": "Chờ in",
     "viewAPPLYING": "Đang xin chuyển",
