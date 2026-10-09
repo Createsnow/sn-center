@@ -45,9 +45,10 @@
           <template #default="{ row }">
             <el-button v-if="showAlloc(row)" size="small" type="success" :loading="busy === `alloc:${row.pi}`" :disabled="!!busy && busy !== `alloc:${row.pi}`"
               @click.stop="allocatePi(row.pi, row.pending_alloc)">{{ t("generate.allocN", { n: row.pending_alloc }) }}</el-button>
+            <el-button v-else-if="row.quota && row.generated_qty > 0" size="small" type="primary" @click.stop="openDetail(row.pi)">{{ t("generate.genMore") }}</el-button>
             <el-button v-else-if="row.quota && canQuickGen(row)" size="small" type="primary" :loading="busy === `gen:${row.pi}`" :disabled="!!busy && busy !== `gen:${row.pi}`"
-              @click.stop="quickGenerate(row)">{{ row.generated_qty > 0 ? t("generate.genMore") : t("generate.genN", { n: defaultQty(row.quota) }) }}</el-button>
-            <el-button v-else-if="row.quota" size="small" @click.stop="openDetail(row.pi)">{{ row.generated_qty > 0 ? t("generate.genMore") : t("generate.genFirst") }}</el-button>
+              @click.stop="quickGenerate(row)">{{ t("generate.genN", { n: defaultQty(row.quota) }) }}</el-button>
+            <el-button v-else-if="row.quota" size="small" @click.stop="openDetail(row.pi)">{{ t("generate.genFirst") }}</el-button>
           </template>
         </el-table-column>
       </el-table>
