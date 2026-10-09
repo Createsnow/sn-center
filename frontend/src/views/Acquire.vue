@@ -6,11 +6,11 @@
 
     <div class="surface">
       <div class="toolbar">
-        <FactorySelect v-if="!store.boundFactory" v-model="f.factory_code" clearable :placeholder="t('acquire.allFactories')" @update:model-value="reload" />
-        <el-tag v-else type="warning" effect="plain" size="large">{{ store.profile?.factory_name || store.boundFactory }}</el-tag>
         <el-radio-group v-model="view" @change="clearPicked">
           <el-radio-button v-for="v in VIEWS" :key="v" :value="v">{{ t(`acquire.view${v}`) }}<span class="cnt num">{{ rowsOf(v).length }}</span></el-radio-button>
         </el-radio-group>
+        <FactorySelect v-if="!store.boundFactory" v-model="f.factory_code" clearable :placeholder="t('acquire.allFactories')" @update:model-value="reload" />
+        <el-tag v-else type="warning" effect="plain" size="large">{{ store.profile?.factory_name || store.boundFactory }}</el-tag>
         <el-input v-model="f.pi" class="pi" :placeholder="t('acquire.piSearch')" clearable prefix-icon="Search" @keyup.enter="reload" @clear="reload" />
         <span class="muted summary">
           {{ t("acquire.summary", { a: totals.to_acquire, p: totals.to_print }) }}
@@ -146,7 +146,7 @@ import StatusTag from "@/components/StatusTag.vue";
 
 type Step = "TO_ACQUIRE" | "TO_PRINT";
 type View = "ALL" | Step | "APPLYING";
-const VIEWS: View[] = ["ALL", "TO_ACQUIRE", "TO_PRINT", "APPLYING"];
+const VIEWS: View[] = ["ALL", "APPLYING", "TO_ACQUIRE", "TO_PRINT"];
 const MOVABLE = ["TO_ACQUIRE", "TO_PRINT", "PRINTED"];
 
 const { t } = useI18n();

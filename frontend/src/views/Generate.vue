@@ -250,7 +250,7 @@ import type { GenJob } from "@/types/api";
 import PageHead from "@/components/PageHead.vue";
 
 type View = "TO_GEN" | "TO_ALLOC" | "ALL";
-const VIEWS: View[] = ["TO_GEN", "TO_ALLOC", "ALL"];
+const VIEWS: View[] = ["ALL", "TO_GEN", "TO_ALLOC"];
 const LIST_LIMIT = 500;
 
 /** 进度条：已分配 / 已生成待分配 / 未生成，占订单总数（已生成超过总数时以已生成为准）。 */
