@@ -447,3 +447,119 @@ def test_lock_conflict_keeps_pooled_connection_but_lost_one_is_dropped(w, sql):
     finally:
         killer.close()
     assert db.scalar("SELECT 1") == 1
+
+
+# ---------------------------------------------------------------- 按 PI
+
+
+def _pi_generate(api, admin, p):
+    """按 PI 预演的结果逐张凭令牌生成（与页面相同的顺序）。"""
+    for it in p["items"]:
+        j = ok(
+            api.post(
+                "/api/generate",
+                m(preview_token=it["token"], bill_no=it["bill_no"], qty=it["qty"], start_seq=it["start_override"]),
+                admin,
+            )
+        )
+        assert j.text("status") == "SUCCESS", str(j)
+
+
+def test_pi_preview_spreads_qty_over_bills_in_bill_order_on_one_serial(api, admin, w, sql):
+    pi = uid("PI")
+    b1, b2, b3 = pi + "-MO1", pi + "-MO2", pi + "-MO3"
+    w.pi_rule(pi, "P", 10, 5)
+    w.order(b2, "生成测试二厂", "C1", pi, ("A", 4))
+    w.order(b1, ORG, "C1", pi, ("A", 3), ("B", 2))
+    w.order(b3, ORG, "C1", pi, ("A", 10))
+    w.generate(b1, 2)
+
+    p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=9), admin)).body
+    assert [(it["bill_no"], it["qty"]) for it in p["items"]] == [(b1, 3), (b2, 4), (b3, 2)]
+    assert p["start_sn"] == "P00003" and p["end_sn"] == "P00011"
+    assert [it["base_last_seq"] for it in p["items"]] == [2, 5, 9]
+    assert p["items"][0]["segments"][0]["material_code"] == "A", "第一张订单接着已生成的 2 枚切段"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 2, "预演不落号"
+
+    _pi_generate(api, admin, p)
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND sn = 'P00009'", b2) == 1
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s", b3) == 2
+
+    ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin)).body
+    assert [b["bill_no"] for b in ctx["bills"]] == [b1, b2, b3]
+    assert ctx["generated_qty"] == 11 and ctx["pending_alloc"] == 11 and ctx["quota"] == 8
+    assert ctx["bills"][1]["factory_code"] == "F-GEN2"
+    assert ctx["next"]["start_sn"] == "P00012"
+    assert ok(api.get("/api/generate/pi-context" + q(bill_no=b2), admin))["pi_no"] == pi
+
+    assert api.post("/api/generate/pi-preview", m(pi_no=pi, qty=9), admin).code == "GEN_QUOTA_EXCEEDED"
+
+
+def test_pi_preview_items_go_stale_out_of_order_and_start_override_only_on_first(api, admin, w):
+    pi = uid("PI")
+    b1, b2 = pi + "-MO1", pi + "-MO2"
+    w.pi_rule(pi, "Q", 10, 5)
+    w.order(b1, ORG, "C1", pi, ("A", 2))
+    w.order(b2, ORG, "C1", pi, ("A", 2))
+    p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=4, start_seq=100), admin)).body
+    assert [it["start_override"] for it in p["items"]] == [100, None]
+    assert p["items"][1]["start_sn"] == "Q00102"
+    second = p["items"][1]
+    stale = api.post("/api/generate", m(preview_token=second["token"], bill_no=b2, qty=2, start_seq=None), admin)
+    assert stale.code == "GEN_PREVIEW_STALE", "第二张须在第一张之后生成"
+    p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=4, start_seq=100), admin)).body
+    _pi_generate(api, admin, p)
+    ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin)).body
+    assert ctx["counter"]["last_seq_dec"] == 103 and ctx["counter"]["start_locked"]
+    assert api.post("/api/generate/pi-preview", m(pi_no=pi, qty=1), admin).code == "GEN_PI_QUOTA_EMPTY"
+
+
+def test_pi_allocate_sends_each_bill_to_its_own_factory_in_one_go(api, admin, w, sql):
+    pi = uid("PI")
+    b1, b2 = pi + "-MO1", pi + "-MO2"
+    w.pi_rule(pi, "K", 10, 5)
+    w.order(b1, ORG, "C1", pi, ("A", 3))
+    w.order(b2, "生成测试二厂", "C1", pi, ("A", 2))
+    assert api.post("/api/generate/pi-allocate", m(pi_no=pi), admin).code == "ALLOC_PI_NOTHING"
+    _pi_generate(api, admin, ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=5), admin)).body)
+    ok(api.post("/api/generate/allocate", m(bill_no=b1, qty=1), admin))
+
+    a = ok(api.post("/api/generate/pi-allocate", m(pi_no=pi), admin)).body
+    assert a["qty"] == 4
+    assert [(x["bill_no"], x["factory_code"], x["qty"]) for x in a["items"]] == [(b1, FAC, 2), (b2, "F-GEN2", 2)]
+    assert (
+        sql.count(
+            "SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND factory_code = 'F-GEN2' AND status = 'TO_ACQUIRE'", b2
+        )
+        == 2
+    )
+    ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin)).body
+    assert ctx["pending_alloc"] == 0 and ctx["allocated_qty"] == 5
+    assert len(ctx["allocations"]) == 3
+
+
+def test_pi_list_shows_orgs_and_matches_by_bill(api, admin, w):
+    pi = uid("PI")
+    b1, b2 = pi + "-MO1", pi + "-MO2"
+    w.pi_rule(pi, "L", 10, 5)
+    w.order(b1, ORG, "C1", pi, ("A", 3))
+    w.order(b2, "生成测试二厂", "C1", pi, ("A", 2))
+    rows = ok(api.get("/api/orders/pis" + q(q=b2, pending=1), admin)).body
+    assert len(rows) == 1
+    r = rows[0]
+    assert r["pi"] == pi and r["bills"] == 2 and r["quota"] == 5, "按单据命中也汇总整张 PI"
+    assert sorted(o["factory_code"] for o in r["orgs"]) == [FAC, "F-GEN2"]
+    assert r["unmapped"] is False and r["start_locked"] is False
+
+
+def test_pi_preview_skips_bills_whose_org_is_not_a_factory_yet(api, admin, w):
+    pi = uid("PI")
+    b1, b2 = pi + "-MO1", pi + "-MO2"
+    w.pi_rule(pi, "U", 10, 5)
+    w.order(b1, "未建档组织", "C1", pi, ("A", 3))
+    w.order(b2, ORG, "C1", pi, ("A", 2))
+    ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin)).body
+    assert "FACTORY_UNMAPPED" in ctx["issues"] and ctx["bills"][0]["factory_code"] is None
+    p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=2), admin)).body
+    assert [it["bill_no"] for it in p["items"]] == [b2]
+    assert api.post("/api/generate/pi-preview", m(pi_no=pi, qty=3), admin).code == "GEN_QUOTA_EXCEEDED"

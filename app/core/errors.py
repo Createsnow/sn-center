@@ -71,6 +71,7 @@ class ErrorCode(Enum):
     # ---------- 生成 / 分配 ----------
     GEN_QTY_INVALID = (400, "数量须为正整数")
     GEN_QUOTA_EMPTY = (400, "生产订单 {bill_no} 的可生成额度为 0")
+    GEN_PI_QUOTA_EMPTY = (400, "PI {pi} 没有可生成额度")
     GEN_QUOTA_EXCEEDED = (400, "生成数量 {qty} 超出可生成额度 {quota}")
     GEN_START_NOT_ALLOWED = (400, "PI {pi} 已指定过起始号或已生成过，不能再指定起始号")
     GEN_START_INVALID = (400, "起始号须在 1 与 {max} 之间")
@@ -85,6 +86,7 @@ class ErrorCode(Enum):
     GEN_DUPLICATE_SN = (409, "完整 SN {sn} 与 PI {pi} 已有的号重复，已停止生成（不自动跳号）")
     GEN_JOB_NOT_FOUND = (404, "生成任务不存在")
     ALLOC_NOTHING = (400, "生产订单 {bill_no} 没有待分配的号")
+    ALLOC_PI_NOTHING = (400, "PI {pi} 没有待分配的号")
     ALLOC_QTY_EXCEEDED = (400, "分配数量 {qty} 超出待分配数量 {pending}")
     ALLOC_FACTORY_MISMATCH = (400, "只能分到该订单的生产组织 {factory}")
     # ---------- 起始号 / 历史导入 ----------

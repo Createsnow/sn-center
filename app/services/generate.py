@@ -5,6 +5,9 @@
 失败整批回滚；遇到与本 PI 已有号（含转入号）相同的完整 SN 立即停止，不跳号。
 
 分配：把该订单的待分配号整单分到订单的生产组织，状态变为待领取。
+
+页面以 PI 为单位：按 PI 预演会给该 PI 的每张订单各记一份接续的预演，前端按单据号顺序逐张生成；
+按 PI 分配在一个事务里把各订单的待分配号分到各自的生产组织。
 """
 
 from __future__ import annotations
@@ -206,6 +209,114 @@ def context(bill_no: str) -> dict:
     }
 
 
+def _pi_quota(pi: str) -> list[tuple[orders.Bill, int, int]]:
+    """该 PI 在快照中的订单（单据号从小到大）及各自的已生成数与可生成额度。"""
+    nos = orders.pi_bills(pi)
+    gens = {g["bill_no"]: g for g in db.all("SELECT * FROM sn_bill_gen WHERE pi_no = %s", pi)}
+    out = []
+    for no in nos:
+        b = orders.bill(no)
+        generated = gens[no]["generated_qty"] if no in gens else 0
+        out.append((b, generated, max(0, b.total_qty - generated)))
+    return out
+
+
+def _pending_by_bill(pi: str) -> dict[str, int]:
+    rows = db.all(
+        "SELECT bill_no, COUNT(*) n FROM sn_item WHERE pi_no = %s AND status = 'PENDING_ALLOC' GROUP BY bill_no", pi
+    )
+    return {r["bill_no"]: int(r["n"]) for r in rows}
+
+
+def pi_context(pi_in: str | None, bill_no: str | None = None) -> dict:
+    """按 PI 的生成上下文：PI 流水与规则、各订单的额度 / 已生成 / 已分配 / 待分配、任务与分配记录。
+
+    只给单据时取它所属的 PI（订单页跳转用）。已生成过但已离开快照的订单也列出（额度为 0，仍可分配）。
+    """
+    pi = util.trim(pi_in)
+    if not pi and not util.blank(bill_no):
+        pi = orders.bill(bill_no).pi
+    if not pi:
+        raise biz(ErrorCode.PI_REQUIRED)
+    names = {f["factory_code"]: f["factory_name"] for f in db.all("SELECT factory_code, factory_name FROM sn_factory")}
+    gens = {g["bill_no"]: g for g in db.all("SELECT * FROM sn_bill_gen WHERE pi_no = %s ORDER BY bill_no", pi)}
+    pending = _pending_by_bill(pi)
+    bills, issues, customer = [], [], ""
+    for b, generated, quota in _pi_quota(pi):
+        customer = customer or b.customer_code
+        g = gens.get(b.bill_no)
+        if b.factory_code is None and quota > 0 and ErrorCode.FACTORY_UNMAPPED.name not in issues:
+            issues.append(ErrorCode.FACTORY_UNMAPPED.name)
+        bills.append(
+            {
+                "bill_no": b.bill_no,
+                "po": b.po,
+                "customer_code": b.customer_code,
+                "prd_org_name": b.prd_org_name,
+                "factory_code": b.factory_code,
+                "factory_name": names.get(b.factory_code or ""),
+                "in_snapshot": True,
+                "total_qty": b.total_qty,
+                "generated_qty": generated,
+                "allocated_qty": 0 if g is None else g["allocated_qty"],
+                "pending_alloc": pending.get(b.bill_no, 0),
+                "quota": quota,
+                "lines": [orders.prd_mo_json(x) for x in b.lines],
+            }
+        )
+    seen = {x["bill_no"] for x in bills}
+    for no, g in gens.items():
+        if no in seen:
+            continue
+        customer = customer or g["customer_code"]
+        bills.append(
+            {
+                "bill_no": no,
+                "po": "",
+                "customer_code": g["customer_code"],
+                "prd_org_name": names.get(g["factory_code"], ""),
+                "factory_code": g["factory_code"],
+                "factory_name": names.get(g["factory_code"]),
+                "in_snapshot": False,
+                "total_qty": g["generated_qty"],
+                "generated_qty": g["generated_qty"],
+                "allocated_qty": g["allocated_qty"],
+                "pending_alloc": pending.get(no, 0),
+                "quota": 0,
+                "lines": [],
+            }
+        )
+    if not bills:
+        raise biz(ErrorCode.ORDER_NOT_FOUND, bill_no=pi)
+    quota = sum(x["quota"] for x in bills)
+    if quota == 0:
+        issues.append(ErrorCode.GEN_QUOTA_EMPTY.name)
+    r = rules.fixed(pi, customer)
+    rule_options = [] if r is not None else rules.options()
+    if r is None and not rule_options:
+        issues.append(ErrorCode.RULE_MISSING.name)
+    running = db.one("SELECT * FROM sn_gen_job WHERE running_pi = %s", pi)
+    recent = db.all("SELECT * FROM sn_gen_job WHERE pi_no = %s ORDER BY id DESC LIMIT 20", pi)
+    return {
+        "pi_no": pi,
+        "customer_code": customer,
+        "bills": bills,
+        "total_qty": sum(x["total_qty"] for x in bills),
+        "generated_qty": sum(x["generated_qty"] for x in bills),
+        "allocated_qty": sum(x["allocated_qty"] for x in bills),
+        "pending_alloc": sum(x["pending_alloc"] for x in bills),
+        "quota": quota,
+        "counter": counter(pi),
+        "next": None if r is None else _next_json(pi, rules.spec_of(r.version)),
+        "rule": None if r is None else rules.rule_info(r),
+        "rule_options": rule_options,
+        "issues": issues,
+        "running_job": job_json(running),
+        "jobs": [job_json(j) for j in recent],
+        "allocations": allocations([x["bill_no"] for x in bills]),
+    }
+
+
 def _next_json(pi: str, spec: codec.Spec) -> dict:
     return next_start(pi, counter(pi)["last_seq_dec"], spec).as_json(spec)
 
@@ -273,8 +384,26 @@ def preview(
     c = db.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s", b.pi)
     base = 0 if c is None else c["last_seq_dec"]
     start, ns = _start_of(b.pi, c, start_override, spec)
+    _check_capacity(start + qty - 1, spec)
+    out = _save_preview(cu, b, generated, qty, start, base, start_override, r, spec)
+    out["next"] = ns.as_json(spec)
+    out["rule"] = rules.rule_info(r)
+    return out
+
+
+def _save_preview(
+    cu: CurrentUser,
+    b: orders.Bill,
+    generated: int,
+    qty: int,
+    start: int,
+    base: int,
+    start_override: int | None,
+    r: rules.Resolved,
+    spec: codec.Spec,
+) -> dict:
+    """记下一张订单的预演（不落 SN）：base 为生成时该 PI 计数器应有的最大号。"""
     end = start + qty - 1
-    _check_capacity(end, spec)
     segs = sn_items.split(b.lines, generated, qty, start, spec)
     now = util.now()
     token = util.token_hex()
@@ -313,10 +442,62 @@ def preview(
         "end_sn": end_sn,
         "base_last_seq": base,
         "start_override": start_override,
-        "next": ns.as_json(spec),
-        "rule": rules.rule_info(r),
         "segments": [s.as_json() for s in segs],
         "expires_at": util.fmt(expires),
+    }
+
+
+def pi_preview(
+    cu: CurrentUser, pi_in: str | None, qty_in: int | None, start_override: int | None, rule_id: int | None = None
+) -> dict:
+    """按 PI 预演：数量按单据号顺序依次占用各订单的额度，号段在 PI 的一套流水上接续。
+
+    每张订单各记一份预演（base 为前一张生成后的最大号），之后按顺序逐张凭令牌生成，
+    每张仍是独立事务，生成接口与校验与按单据完全相同。
+    """
+    pi = util.trim(pi_in)
+    if not pi:
+        raise biz(ErrorCode.PI_REQUIRED)
+    qty = 0 if qty_in is None else qty_in
+    if qty <= 0:
+        raise biz(ErrorCode.GEN_QTY_INVALID)
+    with_quota = [(b, gen, quota) for b, gen, quota in _pi_quota(pi) if quota > 0]
+    if not with_quota:
+        raise biz(ErrorCode.GEN_PI_QUOTA_EMPTY, pi=pi)
+    # 生产组织未建档的订单先跳过（页面会提示），不挡住同 PI 其他订单
+    todo = [x for x in with_quota if x[0].factory_code is not None]
+    if not todo:
+        raise biz(ErrorCode.FACTORY_UNMAPPED, org=with_quota[0][0].prd_org_name)
+    total = sum(q for _, _, q in todo)
+    if qty > total:
+        raise biz(ErrorCode.GEN_QUOTA_EXCEEDED, qty=qty, quota=total)
+    r = rules.for_generation(pi, todo[0][0].customer_code, rule_id)
+    spec = rules.spec_of(r.version)
+    c = db.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s", pi)
+    base = 0 if c is None else c["last_seq_dec"]
+    start, ns = _start_of(pi, c, start_override, spec)
+    _check_capacity(start + qty - 1, spec)
+    items = []
+    cur, left, prev = start, qty, base
+    for b, gen, quota in todo:
+        if left == 0:
+            break
+        n = min(quota, left)
+        items.append(_save_preview(cu, b, gen, n, cur, prev, start_override if not items else None, r, spec))
+        prev, cur, left = cur + n - 1, cur + n, left - n
+    return {
+        "pi_no": pi,
+        "qty": qty,
+        "start_seq": start,
+        "end_seq": start + qty - 1,
+        "start_sn": items[0]["start_sn"],
+        "end_sn": items[-1]["end_sn"],
+        "base_last_seq": base,
+        "start_override": start_override,
+        "next": ns.as_json(spec),
+        "rule": rules.rule_info(r),
+        "items": items,
+        "expires_at": items[0]["expires_at"],
     }
 
 
@@ -717,8 +898,22 @@ def allocate(cu: CurrentUser, bill_no: str | None, qty_in: int | None, factory_c
         }
 
 
-def allocations(bill_no: str | None) -> list[dict]:
-    return [
-        util.jrow(a, ALLOCATION_FIELDS)
-        for a in db.all("SELECT * FROM sn_allocation WHERE bill_no = %s ORDER BY id DESC", util.trim(bill_no))
-    ]
+def allocate_pi(cu: CurrentUser, pi_in: str | None) -> dict:
+    """整张 PI 分配：各订单的待分配号全部分到各自订单的生产组织，同一事务。"""
+    pi = util.trim(pi_in)
+    if not pi:
+        raise biz(ErrorCode.PI_REQUIRED)
+    with db.tx():
+        nos = [no for no, n in sorted(_pending_by_bill(pi).items()) if n > 0]
+        if not nos:
+            raise biz(ErrorCode.ALLOC_PI_NOTHING, pi=pi)
+        items = [allocate(cu, no, None, None) for no in nos]
+    return {"pi_no": pi, "qty": sum(x["qty"] for x in items), "items": items}
+
+
+def allocations(bill_nos: list[str]) -> list[dict]:
+    nos = [n for n in (util.trim(x) for x in bill_nos) if n]
+    if not nos:
+        return []
+    rows = db.all(f"SELECT * FROM sn_allocation WHERE bill_no IN ({marks(len(nos))}) ORDER BY id DESC LIMIT 100", *nos)
+    return [util.jrow(a, ALLOCATION_FIELDS) for a in rows]

@@ -48,13 +48,13 @@ export const api = {
   previewRule: (data: Q) => post("/rules/preview", data, true),
   effectiveRule: (pi: string) => get("/rules/effective", { pi }),
   // 生成与分配
-  genContext: (bill_no: string) => get("/generate/context", { bill_no }),
-  genPreview: (data: Q) => post("/generate/preview", data),
+  genPiContext: (params: { pi?: string; bill_no?: string }) => get("/generate/pi-context", params),
+  genPiPreview: (data: Q, silent = false) => post("/generate/pi-preview", data, silent),
   generate: (data: Q) => post("/generate", data),
   genJob: (id: number) => get(`/generate/jobs/${id}`),
   genJobs: (params?: Q) => get("/generate/jobs", params),
   allocate: (data: Q) => post("/generate/allocate", data),
-  allocations: (bill_no: string) => get("/generate/allocations", { bill_no }),
+  allocatePi: (pi_no: string) => post("/generate/pi-allocate", { pi_no }),
   piStatus: (pi: string) => get("/pi-init", { pi }),
   piInit: (data: Q) => http.post("/pi-init", data, { timeout: 0 }),
   // 领取与打印

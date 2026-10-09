@@ -24,7 +24,7 @@ export const AUDIT_ACTIONS = [
   "RULE_CREATE", "RULE_UPDATE", "RULE_VERSION", "RULE_RENAME", "PI_INIT",
   "ORDER_SYNC", "ORDER_SYNC_SCHEDULE", "FACTORY_SYNC", "FACTORY_CREATE", "AUDIT_ARCHIVE", "OTHER",
 ];
-/** 页面单次生成 / 分配默认上限（用户可在页面改）。后台不设上限。 */
+/** 生成页单次默认生成数量的上限（可在抽屉里改）。后台不设上限。 */
 export const DEFAULT_PAGE_LIMIT = 10000;
 
 function label(prefix: string, code: string | null | undefined): string {

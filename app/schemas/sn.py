@@ -12,6 +12,17 @@ class GenerateIn(PreviewIn):
     preview_token: str | None = None
 
 
+class PiPreviewIn(In):
+    pi_no: str | None = None
+    qty: int | None = None
+    start_seq: int | None = None
+    rule_id: int | None = None
+
+
+class PiAllocateIn(In):
+    pi_no: str | None = None
+
+
 class AllocateIn(In):
     bill_no: str | None = None
     qty: int | None = None
