@@ -18,7 +18,7 @@
         <span class="muted summary">{{ t("generate.summary", { q: totals.quota, p: totals.pending }) }}</span>
       </div>
 
-      <el-table v-loading="loading" :data="shown" size="small" row-key="pi" class="pis" :empty-text="t(`generate.empty${view}`)" @row-click="(row: any) => openDetail(row.pi)">
+      <el-table v-loading="loading" :data="paged" size="small" row-key="pi" class="pis" :empty-text="t(`generate.empty${view}`)" @row-click="(row: any) => openDetail(row.pi)">
         <el-table-column label="PI" min-width="170">
           <template #default="{ row }">
             <b>{{ row.pi }}</b>
@@ -51,6 +51,8 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="shown.length" :page-size="pageSize"
+        :current-page="page" :page-sizes="[20, 50, 100]" @current-change="(p: number) => (page = p)" @size-change="onSize" />
       <p v-if="pis.length >= LIST_LIMIT" class="muted">{{ t("generate.more", { n: LIST_LIMIT }) }}</p>
     </div>
 
@@ -252,8 +254,8 @@ import { useFactories } from "@/composables/useFactories";
 import type { GenJob } from "@/types/api";
 import PageHead from "@/components/PageHead.vue";
 
-type View = "TODO" | "TO_GEN" | "TO_ALLOC" | "ALL";
-const VIEWS: View[] = ["TODO", "TO_GEN", "TO_ALLOC", "ALL"];
+type View = "TO_GEN" | "TO_ALLOC" | "ALL";
+const VIEWS: View[] = ["TO_GEN", "TO_ALLOC", "ALL"];
 const LIST_LIMIT = 500;
 
 /** 进度条：已分配 / 已生成待分配 / 未生成，占订单总数（已生成超过总数时以已生成为准）。 */
@@ -275,7 +277,9 @@ const ProgressBar = defineComponent({
 const { t } = useI18n();
 const route = useRoute();
 const { nameOf } = useFactories();
-const view = ref<View>("TODO");
+const view = ref<View>("TO_GEN");
+const page = ref(1);
+const pageSize = ref(20);
 const kw = ref("");
 const pis = ref<any[]>([]);
 const allPis = ref<any[]>([]);
@@ -307,14 +311,14 @@ const canQuickGen = (row: any) => row.start_locked && !row.unmapped;
 const genKey = (r: any) => (r.generated_qty > 0 ? "generate.genMore" : "generate.genN");
 const totals = computed(() => pis.value.reduce((s, r) => ({ quota: s.quota + r.quota, pending: s.pending + r.pending_alloc }), { quota: 0, pending: 0 }));
 const shown = computed(() => rowsOf(view.value));
+const paged = computed(() => shown.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value));
 const ruleLabel = (o: any) => `${o.rule_code} · ${o.rule_name}`;
 const nextSn = computed(() => ctx.value?.next?.start_sn ?? ctx.value?.rule_options.find((o: any) => o.rule_id === ruleId.value)?.sample_sn ?? null);
 
 function rowsOf(v: View) {
   if (v === "ALL") return allPis.value;
   if (v === "TO_GEN") return pis.value.filter((r) => r.quota > 0);
-  if (v === "TO_ALLOC") return pis.value.filter((r) => r.pending_alloc > 0);
-  return pis.value;
+  return pis.value.filter((r) => r.pending_alloc > 0);
 }
 
 const issueTexts = computed(() => {
@@ -358,8 +362,19 @@ async function reload() {
   }
 }
 watch(view, (v) => {
+  page.value = 1;
   if (v === "ALL") reload();
 });
+watch(kw, () => (page.value = 1));
+// 生成 / 分配后列表变短时，页码退回最后一页
+watch(() => shown.value.length, (n) => {
+  page.value = Math.min(page.value, Math.max(1, Math.ceil(n / pageSize.value)));
+});
+
+function onSize(s: number) {
+  pageSize.value = s;
+  page.value = 1;
+}
 
 async function openDetail(pi: string) {
   detailPi.value = pi;
