@@ -182,9 +182,10 @@ const rowStep = (row: any): Step | null => {
 };
 const btnType = (st: Step) => (st === "TO_ACQUIRE" ? "primary" : "warning");
 const stepLabel = (st: Step, row: any) => t(st === "TO_ACQUIRE" ? "acquire.takeN" : "acquire.printN", { n: qtyOf(row, st) });
-const pickedOf = (st: Step) => picked.value.filter((r) => qtyOf(r, st) > 0);
+/** 批量栏按行按钮分组：每个按钮只做所选行里行按钮是该工序的 PI。 */
+const pickedOf = (st: Step) => picked.value.filter((r) => rowStep(r) === st);
 const pickedQty = (st: Step) => pickedOf(st).reduce((s, r) => s + qtyOf(r, st), 0);
-const bulkShows = (st: Step) => (view.value === st || view.value === "ALL" || view.value === "APPLYING") && pickedOf(st).length > 0;
+const bulkShows = (st: Step) => pickedOf(st).length > 0;
 
 function rowsOf(v: View) {
   if (v === "ALL") return pis.value;
