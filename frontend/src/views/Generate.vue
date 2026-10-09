@@ -156,7 +156,7 @@
             </div>
             <div class="row">
               <el-button type="primary" :disabled="!preview || !!busy" :loading="busy === `gen:${ctx.pi_no}`" @click="runGenerate(preview)">
-                {{ t("generate.genN", { n: preview?.qty ?? qty }) }}
+                {{ t("generate.generate") }}
               </el-button>
             </div>
           </template>
