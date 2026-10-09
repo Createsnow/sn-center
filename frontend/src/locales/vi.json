@@ -255,6 +255,7 @@
     "billsN": "{n} lệnh",
     "allocN": "Phân bổ {n}",
     "genN": "Tạo {n}",
+    "genMore": "Tạo tiếp {n}",
     "genFirst": "Tạo lần đầu…",
     "more": "Chỉ hiển thị {n} PI đầu, hãy nhập từ khóa để thu hẹp",
     "total": "Tổng {n}",

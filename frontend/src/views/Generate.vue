@@ -46,7 +46,7 @@
             <el-button v-if="row.pending_alloc" size="small" type="success" :loading="busy === `alloc:${row.pi}`" :disabled="!!busy && busy !== `alloc:${row.pi}`"
               @click.stop="allocatePi(row.pi, row.pending_alloc)">{{ t("generate.allocN", { n: row.pending_alloc }) }}</el-button>
             <el-button v-else-if="row.quota && canQuickGen(row)" size="small" type="primary" :loading="busy === `gen:${row.pi}`" :disabled="!!busy && busy !== `gen:${row.pi}`"
-              @click.stop="quickGenerate(row)">{{ t("generate.genN", { n: defaultQty(row.quota) }) }}</el-button>
+              @click.stop="quickGenerate(row)">{{ t(genKey(row), { n: defaultQty(row.quota) }) }}</el-button>
             <el-button v-else-if="row.quota" size="small" @click.stop="openDetail(row.pi)">{{ t("generate.genFirst") }}</el-button>
           </template>
         </el-table-column>
@@ -154,7 +154,7 @@
             </div>
             <div class="row">
               <el-button type="primary" :disabled="!preview || !!busy" :loading="busy === `gen:${ctx.pi_no}`" @click="runGenerate(preview)">
-                {{ t("generate.genN", { n: preview?.qty ?? qty }) }}
+                {{ t(genKey(ctx), { n: preview?.qty ?? qty }) }}
               </el-button>
             </div>
           </template>
@@ -303,6 +303,8 @@ let alive = true;
 const defaultQty = (quota: number) => suggestQty(quota, DEFAULT_PAGE_LIMIT);
 // 已生成过的 PI 规则与起始号都已确定，行上可直接生成；首次生成要在抽屉里选规则 / 指定起始号
 const canQuickGen = (row: any) => row.start_locked && !row.unmapped;
+// 已生成过一部分的 PI 显示「继续生成」
+const genKey = (r: any) => (r.generated_qty > 0 ? "generate.genMore" : "generate.genN");
 const totals = computed(() => pis.value.reduce((s, r) => ({ quota: s.quota + r.quota, pending: s.pending + r.pending_alloc }), { quota: 0, pending: 0 }));
 const shown = computed(() => rowsOf(view.value));
 const ruleLabel = (o: any) => `${o.rule_code} · ${o.rule_name}`;

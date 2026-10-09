@@ -255,6 +255,7 @@
     "billsN": "{n} 张单据",
     "allocN": "分配 {n} 枚",
     "genN": "生成 {n} 枚",
+    "genMore": "继续生成 {n} 枚",
     "genFirst": "首次生成…",
     "more": "只显示前 {n} 张 PI，请输入关键字缩小范围",
     "total": "共 {n}",

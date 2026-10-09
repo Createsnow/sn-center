@@ -239,6 +239,7 @@ M = {
 "generate.billsN": ("{n} 张单据", "{n} orders", "{n} lệnh"),
 "generate.allocN": ("分配 {n} 枚", "Allocate {n}", "Phân bổ {n}"),
 "generate.genN": ("生成 {n} 枚", "Generate {n}", "Tạo {n}"),
+"generate.genMore": ("继续生成 {n} 枚", "Continue {n}", "Tạo tiếp {n}"),
 "generate.genFirst": ("首次生成…", "First run…", "Tạo lần đầu…"),
 "generate.more": ("只显示前 {n} 张 PI，请输入关键字缩小范围", "Showing the first {n} PIs; type to narrow down", "Chỉ hiển thị {n} PI đầu, hãy nhập từ khóa để thu hẹp"),
 "generate.total": ("共 {n}", "Total {n}", "Tổng {n}"),

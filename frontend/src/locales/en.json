@@ -255,6 +255,7 @@
     "billsN": "{n} orders",
     "allocN": "Allocate {n}",
     "genN": "Generate {n}",
+    "genMore": "Continue {n}",
     "genFirst": "First run…",
     "more": "Showing the first {n} PIs; type to narrow down",
     "total": "Total {n}",
