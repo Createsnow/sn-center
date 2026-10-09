@@ -155,6 +155,64 @@ def test_callback_only_touches_to_print_in_batch_and_lists_the_rest(api, w, ctx)
     assert segs[0]["status"] == "APPLYING"
 
 
+def test_page_print_and_mes_callback_first_one_wins(api, w, ctx, sql):
+    """页面打印与 MES 回调对等：谁先把待打印改成已打印谁生效，后到的不再改状态。"""
+    op_a, op_b = ctx["op_a"], ctx["op_b"]
+    pi = ready(w, "PC", 3, 2)
+    batch = ok(api.post("/api/open/acquire", m(pi=pi, request_no=req()), op_a))["batch"]["batch_no"]
+    # MES 部分回调 3 枚，页面打印只改剩下的 2 枚
+    part = ok(
+        api.post(
+            "/api/open/callback",
+            m(batch_no=batch, target_status="PRINTED", sns=["PC00001", "PC00002", "PC00003"]),
+            op_a,
+        )
+    )
+    assert part["updated"] == 3
+    printed = ok(api.post("/api/acquire/print", m(factory_code=FA, pi_no=pi, request_no=req()), op_a))
+    assert printed["qty"] == 2
+    csv = api.get(f"/api/acquire/prints/{printed.text('print_no')}/file?format=csv", op_a).raw.decode("utf-8")
+    assert "PC00004" in csv and "PC00005" in csv and "PC00001" not in csv
+    # MES 再回调全部：页面已打掉的计入 already_printed
+    full = ok(
+        api.post(
+            "/api/open/callback",
+            m(batch_no=batch, target_status="PRINTED", ranges=[m(start_sn="PC00001", end_sn="PC00005")]),
+            op_a,
+        )
+    )
+    assert full["updated"] == 0
+    assert full["already_printed"] == 5
+    # 批次导出：整批 5 枚（含 MES 回调打的），格式同打印文件
+    f = api.get(f"/api/acquire/batches/{batch}/file?format=csv", op_a)
+    assert f.status == 200
+    lines = [ln for ln in f.raw.decode("utf-8").splitlines() if ",PC0000" in ln]
+    assert len(lines) == 5
+    assert f"PC00001,00001,1,{pi}" in f.raw.decode("utf-8")
+    assert api.get(f"/api/acquire/batches/{batch}/file", op_b).code == "FACTORY_FORBIDDEN"
+    assert api.get("/api/acquire/batches/B-NOT-EXIST/file", op_a).code == "ACQ_BATCH_NOT_FOUND"
+
+
+def test_after_mes_callback_page_can_only_export(api, w, ctx, sql):
+    op_a = ctx["op_a"]
+    pi = ready(w, "PE", 2, 1)
+    batch = ok(api.post("/api/open/acquire", m(pi=pi, request_no=req()), op_a))["batch"]["batch_no"]
+    ok(
+        api.post(
+            "/api/open/callback",
+            m(batch_no=batch, target_status="PRINTED", ranges=[m(start_sn="PE00001", end_sn="PE00003")]),
+            op_a,
+        )
+    )
+    assert api.post("/api/acquire/print", m(factory_code=FA, pi_no=pi, request_no=req()), op_a).code == "PRINT_NOTHING"
+    f = api.get(f"/api/acquire/batches/{batch}/file", op_a)
+    assert f.status == 200
+    assert (
+        sql.count("SELECT COUNT(*) FROM sn_item WHERE batch_no = %s AND status = 'PRINTED' AND print_no IS NULL", batch)
+        == 3
+    )
+
+
 def test_apply_withdraw_reject_restore_previous_status(api, admin, w, ctx, sql):
     op_a, op_b, qry = ctx["op_a"], ctx["op_b"], ctx["query"]
     pi = ready(w, "AW", 2, 2)

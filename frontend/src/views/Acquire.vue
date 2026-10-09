@@ -41,9 +41,9 @@
         </el-table-column>
         <el-table-column v-if="actable" :label="t('common.actions')" width="150" align="right">
           <template #default="{ row }">
-            <el-button v-if="nextStep(row)" size="small" :type="btnType(nextStep(row)!)" :loading="busy === `${nextStep(row)}:${row._key}`"
-              :disabled="!!busy && busy !== `${nextStep(row)}:${row._key}`" @click.stop="runOne(nextStep(row)!, row)">
-              {{ stepLabel(nextStep(row)!, row) }}
+            <el-button v-if="rowStep(row)" size="small" :type="btnType(rowStep(row)!)" :loading="busy === `${rowStep(row)}:${row._key}`"
+              :disabled="!!busy && busy !== `${rowStep(row)}:${row._key}`" @click.stop="runOne(rowStep(row)!, row)">
+              {{ stepLabel(rowStep(row)!, row) }}
             </el-button>
           </template>
         </el-table-column>
@@ -56,9 +56,9 @@
         <span>{{ t("acquire.picked", { n: picked.length }) }}</span>
         <span class="sp" />
         <el-button size="small" :disabled="!!busy" @click="clearPicked">{{ t("acquire.clearPicked") }}</el-button>
-        <el-button v-if="pickedOf('TO_ACQUIRE').length" size="small" type="primary" :disabled="!!busy" :loading="busy === 'bulk:TO_ACQUIRE'"
+        <el-button v-if="bulkShows('TO_ACQUIRE')" size="small" type="primary" :disabled="!!busy" :loading="busy === 'bulk:TO_ACQUIRE'"
           @click="runBulk('TO_ACQUIRE')">{{ t("acquire.bulkTake", { n: pickedOf("TO_ACQUIRE").length, q: pickedQty("TO_ACQUIRE") }) }}</el-button>
-        <el-button v-if="pickedOf('TO_PRINT').length" size="small" type="warning" :disabled="!!busy" :loading="busy === 'bulk:TO_PRINT'"
+        <el-button v-if="bulkShows('TO_PRINT')" size="small" type="warning" :disabled="!!busy" :loading="busy === 'bulk:TO_PRINT'"
           @click="runBulk('TO_PRINT')">{{ t("acquire.bulkPrint", { n: pickedOf("TO_PRINT").length, q: pickedQty("TO_PRINT") }) }}</el-button>
       </div>
     </transition>
@@ -72,8 +72,8 @@
       </template>
       <template v-if="detail">
         <div class="row">
-          <el-button v-if="actable && nextStep(detail)" :type="btnType(nextStep(detail)!)" :loading="busy === `${nextStep(detail)}:${detail._key}`"
-            :disabled="!!busy" @click="runOne(nextStep(detail)!, detail)">{{ stepLabel(nextStep(detail)!, detail) }}</el-button>
+          <el-button v-if="actable && rowStep(detail)" :type="btnType(rowStep(detail)!)" :loading="busy === `${rowStep(detail)}:${detail._key}`"
+            :disabled="!!busy" @click="runOne(rowStep(detail)!, detail)">{{ stepLabel(rowStep(detail)!, detail) }}</el-button>
           <el-button v-if="actable" @click="toTransfer(detail)">{{ t("acquire.toTransfer") }}</el-button>
           <el-button @click="toRecords(detail)">{{ t("acquire.piRecords") }}</el-button>
         </div>
@@ -133,6 +133,7 @@ import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { api, urls } from "@/api";
+import { ApiError } from "@/api/http";
 import { useAuthStore } from "@/stores/auth";
 import { usePaged } from "@/composables/usePaged";
 import { useFactories } from "@/composables/useFactories";
@@ -174,10 +175,16 @@ const totals = computed(() =>
 );
 const qtyOf = (row: any, st: Step) => (st === "TO_ACQUIRE" ? row.to_acquire : row.to_print);
 const nextStep = (row: any): Step | null => (row.to_acquire > 0 ? "TO_ACQUIRE" : row.to_print > 0 ? "TO_PRINT" : null);
+/** 待领取 / 待打印标签只做本标签的工序；要处理、申请中按流程取下一步。 */
+const rowStep = (row: any): Step | null => {
+  if (view.value === "TO_ACQUIRE" || view.value === "TO_PRINT") return qtyOf(row, view.value) > 0 ? view.value : null;
+  return nextStep(row);
+};
 const btnType = (st: Step) => (st === "TO_ACQUIRE" ? "primary" : "warning");
 const stepLabel = (st: Step, row: any) => t(st === "TO_ACQUIRE" ? "acquire.takeN" : "acquire.printN", { n: qtyOf(row, st) });
 const pickedOf = (st: Step) => picked.value.filter((r) => qtyOf(r, st) > 0);
 const pickedQty = (st: Step) => pickedOf(st).reduce((s, r) => s + qtyOf(r, st), 0);
+const bulkShows = (st: Step) => (view.value === st || view.value === "TODO" || view.value === "APPLYING") && pickedOf(st).length > 0;
 
 function rowsOf(v: View) {
   if (v === "TODO") return pis.value.filter((r) => r.to_acquire > 0 || r.to_print > 0);
@@ -243,21 +250,28 @@ function exec(st: Step, row: any, silent: boolean) {
   return st === "TO_ACQUIRE" ? api.take(body, silent) : api.print(body, silent);
 }
 
+/** 页面与 MES 对等，列表上的数量可能已被 MES 改过：以返回的实际枚数为准，成功失败都刷新列表。 */
 async function runOne(st: Step, row: any) {
-  const args = { n: qtyOf(row, st), pi: row.pi_no, factory: nameOf(row.factory_code) };
+  const shown = qtyOf(row, st);
+  const args = { n: shown, pi: row.pi_no, factory: nameOf(row.factory_code) };
   await ElMessageBox.confirm(t(st === "TO_ACQUIRE" ? "acquire.takeConfirm" : "acquire.printConfirm", args), stepLabel(st, row), { type: "warning" });
   busy.value = `${st}:${row._key}`;
   try {
-    const r = await exec(st, row, false);
-    if (st === "TO_ACQUIRE") {
+    const r = await exec(st, row, true);
+    if (r.qty !== shown) {
+      ElMessage.warning({ message: t("acquire.qtyChanged", { n: r.qty, m: shown }), duration: 6000, showClose: true });
+    } else if (st === "TO_ACQUIRE") {
       ElMessage.success(t("acquire.taken", { n: r.qty, batch: r.batch_no }));
     } else {
       ElMessage.success(t("acquire.printed", { n: r.qty }));
-      await download(r.print_no, "xlsx");
     }
-    await reload();
+    if (st === "TO_PRINT") await download(r.print_no, "xlsx");
+  } catch (e: any) {
+    if (e instanceof ApiError && e.code === "PRINT_NOTHING") ElMessage.warning({ message: t("acquire.printNothing"), duration: 6000, showClose: true });
+    else ElMessage.error(e.message);
   } finally {
     busy.value = "";
+    await reload();
   }
 }
 

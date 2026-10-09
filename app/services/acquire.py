@@ -421,14 +421,14 @@ def prints(
     return _paged("sn_print", PRINT_FIELDS, cu, factory, pi, page, {"print_no": print_no, "request_no": request_no})
 
 
-def print_file_rows(print_no: str) -> Iterator[list]:
-    """打印文件：按 id 游标分页读，不把整单装入内存。"""
+def _file_rows(col: str, value: str) -> Iterator[list]:
+    """打印文件 / 批次导出：按 id 游标分页读，不把整单装入内存。"""
     last_id = 0
     no = 0
     while True:
         page = db.all(
-            f"SELECT {sn_items.COLS} FROM sn_item WHERE print_no = %s AND id > %s ORDER BY id LIMIT 5000",
-            print_no,
+            f"SELECT {sn_items.COLS} FROM sn_item WHERE {col} = %s AND id > %s ORDER BY id LIMIT 5000",
+            value,
             last_id,
         )
         if not page:
@@ -440,7 +440,13 @@ def print_file_rows(print_no: str) -> Iterator[list]:
 
 
 def print_file(p: dict, fmt: str) -> Iterator[bytes]:
-    return files.stream(fmt, p["print_no"], sn_items.FILE_HEADERS, print_file_rows(p["print_no"]))
+    return files.stream(fmt, p["print_no"], sn_items.FILE_HEADERS, _file_rows("print_no", p["print_no"]))
+
+
+def batch_file(b: dict, fmt: str) -> Iterator[bytes]:
+    """批次导出：当前仍属于该批次的号，格式同打印文件；只读，不改状态。
+    MES 回调写成已打印的号没有打印单，页面从这里取文件。"""
+    return files.stream(fmt, b["batch_no"], sn_items.FILE_HEADERS, _file_rows("batch_no", b["batch_no"]))
 
 
 # ================================================================== 回调

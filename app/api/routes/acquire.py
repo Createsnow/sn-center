@@ -78,3 +78,10 @@ def acq_batches(
 @router.get("/batches/{batch_no}/items")
 def acq_batch_items(batch_no: str, cu: UserDep, page: OptInt = None, page_size: OptInt = None) -> dict:
     return acquire.batch_items(cu, batch_no, page_of(page, page_size))
+
+
+@router.get("/batches/{batch_no}/file", summary="批次导出（格式同打印文件）；只读，不改状态；format=csv|xlsx")
+def acq_batch_file(batch_no: str, cu: UserDep, format: str = "xlsx"):
+    b = acquire.batch(cu, batch_no)
+    fmt = files.fmt_of(format)
+    return download("batch_" + b["batch_no"], fmt, files.content_type(fmt), acquire.batch_file(b, fmt))

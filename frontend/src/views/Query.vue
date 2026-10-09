@@ -70,6 +70,12 @@
             <el-table-column prop="request_no" :label="t('acquire.requestNo')" min-width="200" show-overflow-tooltip />
             <el-table-column prop="created_by" :label="t('common.operator')" width="100" />
             <el-table-column prop="created_at" :label="t('common.time')" width="160" />
+            <el-table-column :label="t('acquire.exportFile')" width="120">
+              <template #default="{ row }">
+                <el-button link type="primary" @click="downloadBatch(row.batch_no, 'xlsx')">xlsx</el-button>
+                <el-button link type="primary" @click="downloadBatch(row.batch_no, 'csv')">csv</el-button>
+              </template>
+            </el-table-column>
             <el-table-column :label="t('common.actions')" width="80">
               <template #default="{ row }"><el-button link type="primary" @click="openBatch(row.batch_no)">{{ t("common.detail") }}</el-button></template>
             </el-table-column>
@@ -194,6 +200,15 @@ async function exportFile(format: string) {
 async function download(printNo: string, format: string) {
   try {
     await downloadWithToken(urls.printFile(printNo, format), `print_${printNo}.${format}`);
+  } catch (e: any) {
+    ElMessage.error(e.message);
+  }
+}
+
+/** 批次导出：格式同打印文件，不改状态；MES 回调打印的号从这里取文件。 */
+async function downloadBatch(batchNo: string, format: string) {
+  try {
+    await downloadWithToken(urls.batchFile(batchNo, format), `batch_${batchNo}.${format}`);
   } catch (e: any) {
     ElMessage.error(e.message);
   }

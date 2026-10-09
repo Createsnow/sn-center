@@ -99,6 +99,8 @@ const base = import.meta.env.VITE_API_BASE_URL || "/api";
 export const urls = {
   printFile: (printNo: string, format = "xlsx") =>
     withQuery(`${base}/acquire/prints/${encodeURIComponent(printNo)}/file`, { format }),
+  batchFile: (batchNo: string, format = "xlsx") =>
+    withQuery(`${base}/acquire/batches/${encodeURIComponent(batchNo)}/file`, { format }),
   snExport: (params: Q) => withQuery(`${base}/sn/export`, params),
   auditExport: (params: Q) => withQuery(`${base}/audits/export`, params),
 };
