@@ -47,6 +47,7 @@ CREATE TABLE sn_rule (
   rule_name       VARCHAR(128) NOT NULL,
   bind_scope      VARCHAR(16)  NOT NULL COMMENT 'GENERAL / CUSTOMER / PI',
   bind_value      VARCHAR(64)  NOT NULL DEFAULT '' COMMENT '客户编码或 PI；通用为空串',
+  bind_key        VARCHAR(64)  GENERATED ALWAYS AS (CASE WHEN bind_scope = 'GENERAL' THEN NULL ELSE bind_value END) VIRTUAL COMMENT '唯一约束用：通用规则为 NULL，可以有多条',
   current_version INT          NOT NULL DEFAULT 1,
   created_by      VARCHAR(32)  NULL,
   created_at      DATETIME     NOT NULL,
@@ -54,7 +55,8 @@ CREATE TABLE sn_rule (
   updated_at      DATETIME     NOT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY ux_rule_code (rule_code),
-  UNIQUE KEY ux_rule_bind (bind_scope, bind_value)
+  UNIQUE KEY ux_rule_bind (bind_scope, bind_key),
+  KEY ix_rule_scope_value (bind_scope, bind_value)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='SN 规则';
 
 CREATE TABLE sn_rule_version (

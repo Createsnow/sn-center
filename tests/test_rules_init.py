@@ -228,3 +228,40 @@ def test_preview_of_picked_rule_goes_stale_when_pi_chose_another_meanwhile(api, 
     w.generate(bill2, 1, rule_id=tpl_a)
     r = api.post("/api/generate", m(preview_token=token, bill_no=bill1, qty=1), admin)
     assert r.code in ("GEN_PREVIEW_CHANGED", "GEN_PREVIEW_STALE"), str(r)
+
+
+def test_multiple_general_rules_all_offered_to_unbound_pi(api, admin, w):
+    codes = [uid("GEN"), uid("GEN")]
+    ids = [
+        ok(
+            api.post(
+                "/api/rules",
+                m(
+                    rule_code=c,
+                    rule_name="通用" + c,
+                    bind_scope="GENERAL",
+                    bind_value="x",
+                    prefix="G",
+                    base=10,
+                    seq_len=4,
+                ),
+                admin,
+            )
+        )["rule"]["id"]
+        for c in codes
+    ]
+    pi, bill = uid("PI"), uid("MO")
+    w.order(bill, ORG, uid("CU"), pi, ("A", 5))
+    opts = ok(api.get("/api/generate/context" + q(bill_no=bill), admin))["rule_options"]
+    scopes = [o["bind_scope"] for o in opts]
+    assert set(ids) <= {o["rule_id"] for o in opts if o["bind_scope"] == "GENERAL"}
+    # 通用规则全部排在其它规则前面
+    assert scopes == sorted(scopes, key=lambda s: s != "GENERAL")
+    assert all(o["bind_value"] == "" for o in opts if o["bind_scope"] == "GENERAL")
+    assert ok(api.get("/api/rules/effective" + q(pi=pi), admin)).text("source") == "GENERAL"
+    # 按客户仍然一个对象只能绑一条
+    cust = uid("CU")
+    body = m(rule_code=uid("RC"), rule_name="c", bind_scope="CUSTOMER", bind_value=cust, base=10, seq_len=4)
+    ok(api.post("/api/rules", body, admin))
+    body = m(rule_code=uid("RC"), rule_name="c", bind_scope="CUSTOMER", bind_value=cust, base=10, seq_len=4)
+    assert api.post("/api/rules", body, admin).code == "RULE_BIND_EXISTS"

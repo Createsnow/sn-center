@@ -1,5 +1,6 @@
 """SN 规则。绑定：按单张 PI ＞ 按客户；都没绑定时，由用户在首次生成时选一条规则（默认通用规则），
-之后该 PI 一直沿用这条（同一 PI 一套流水、一种格式）。
+之后该 PI 一直沿用这条（同一 PI 一套流水、一种格式）。按客户 / 按 PI 每个对象只能绑一条；通用规则可以有多条，
+未绑定的 PI 选规则时都能看到。
 
 改前缀 / 后缀 / 进制 / 位数 / 字符集：该版本还没生成过号时就地修改，否则另出一版；只改名称不出版本。
 新版本只作用于之后新生成的号，已发出的号仍记旧版本。
@@ -196,7 +197,10 @@ def create(
         spec = normalize(s)
         if db.count("SELECT COUNT(*) FROM sn_rule WHERE rule_code = %s", c) > 0:
             raise biz(ErrorCode.RULE_CODE_EXISTS, rule_code=c)
-        dup = db.one("SELECT rule_code FROM sn_rule WHERE bind_scope = %s AND bind_value = %s", sc, bv)
+        # 通用规则可以有多条；按客户 / 按 PI 每个对象只能一条
+        dup = None
+        if sc != GENERAL:
+            dup = db.one("SELECT rule_code FROM sn_rule WHERE bind_scope = %s AND bind_value = %s", sc, bv)
         if dup is not None:
             raise biz(ErrorCode.RULE_BIND_EXISTS, rule_code=dup["rule_code"])
         now = util.now()
@@ -338,7 +342,8 @@ def fixed(pi: str, customer: str | None, counter_rule_id: int | None = None) -> 
 
 
 def general() -> Resolved | None:
-    r = db.one("SELECT * FROM sn_rule WHERE bind_scope = %s AND bind_value = ''", GENERAL)
+    """未选定时的默认：通用规则中编码最小的一条（与选项列表的顺序一致）。"""
+    r = db.one("SELECT * FROM sn_rule WHERE bind_scope = %s ORDER BY rule_code ASC LIMIT 1", GENERAL)
     return None if r is None else Resolved(r, current_version(r), SRC_GENERAL)
 
 
@@ -360,7 +365,7 @@ def for_generation(pi: str, customer: str | None, rule_id: int | None, counter_r
 
 
 def options() -> list[dict]:
-    """可供选择的规则（各取当前版本）：通用规则排最前。"""
+    """可供选择的规则（各取当前版本）：全部通用规则排最前，再是其它规则（作模板用）。"""
     rows = db.all("SELECT * FROM sn_rule ORDER BY CASE bind_scope WHEN %s THEN 0 ELSE 1 END, rule_code ASC", GENERAL)
     return [rule_info(Resolved(r, current_version(r))) for r in rows]
 
