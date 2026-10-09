@@ -123,7 +123,7 @@ CREATE TABLE sn_pi_counter (
   generated_qty  BIGINT      NOT NULL DEFAULT 0 COMMENT '本 PI 自己生成的枚数',
   imported_qty   BIGINT      NOT NULL DEFAULT 0 COMMENT '历史导入的枚数',
   start_seq_dec  BIGINT      NULL COMMENT '指定过的起始号',
-  rule_id        BIGINT      NULL COMMENT '无绑定时首次生成选定的规则（sn_rule.id）',
+  rule_id        BIGINT      NULL COMMENT '给该 PI 指定的通用规则（sn_rule.id），可解绑',
   start_locked   TINYINT(1)  NOT NULL DEFAULT 0 COMMENT '1 = 已指定起始号或已生成，不再提供起始号',
   locked_by      VARCHAR(32) NULL,
   locked_at      DATETIME    NULL,

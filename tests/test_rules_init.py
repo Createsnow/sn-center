@@ -166,15 +166,14 @@ def test_pi_init_rejects_over_long_pi_instead_of_crashing(api, admin, sql):
 
 
 def _template(api, admin, prefix: str) -> int:
-    """借一条按其它客户绑定的规则当模板，返回规则 id。"""
+    """新建一条通用规则当模板，返回规则 id。"""
     r = ok(
         api.post(
             "/api/rules",
             m(
                 rule_code=uid("TP"),
                 rule_name="模板" + prefix,
-                bind_scope="CUSTOMER",
-                bind_value=uid("OTHER"),
+                bind_scope="GENERAL",
                 prefix=prefix,
                 base=10,
                 seq_len=4,
@@ -205,10 +204,6 @@ def test_unbound_pi_must_pick_a_rule_and_then_keeps_it(api, admin, w, sql):
     ctx = ok(api.get("/api/generate/context" + q(bill_no=bill), admin))
     assert ctx["rule"]["rule_id"] == tpl_a and ctx["rule"]["source"] == "CHOSEN"
     assert ctx["rule_options"] == []
-    # 升级前生成过的 PI 没有选定记录：沿用最近一次成功生成所用的规则
-    sql.exec("UPDATE sn_pi_counter SET rule_id = NULL WHERE pi_no = %s", pi)
-    assert ok(api.get("/api/generate/context" + q(bill_no=bill), admin))["rule"]["rule_id"] == tpl_a
-    sql.exec("UPDATE sn_pi_counter SET rule_id = %s WHERE pi_no = %s", tpl_a, pi)
     # 选定后再传别的规则也沿用已选定的
     assert ok(w.preview(bill, 1, rule_id=tpl_b)).text("start_sn") == "TPA0003"
     assert ok(api.get("/api/rules/effective" + q(pi=pi), admin)).text("prefix") == "TPA"
@@ -230,38 +225,116 @@ def test_preview_of_picked_rule_goes_stale_when_pi_chose_another_meanwhile(api, 
     assert r.code in ("GEN_PREVIEW_CHANGED", "GEN_PREVIEW_STALE"), str(r)
 
 
+def _general(api, admin, prefix: str = "G") -> int:
+    return _template(api, admin, prefix)
+
+
 def test_multiple_general_rules_all_offered_to_unbound_pi(api, admin, w):
-    codes = [uid("GEN"), uid("GEN")]
-    ids = [
-        ok(
-            api.post(
-                "/api/rules",
-                m(
-                    rule_code=c,
-                    rule_name="通用" + c,
-                    bind_scope="GENERAL",
-                    bind_value="x",
-                    prefix="G",
-                    base=10,
-                    seq_len=4,
-                ),
-                admin,
-            )
-        )["rule"]["id"]
-        for c in codes
-    ]
+    ids = [_general(api, admin), _general(api, admin)]
+    bound = ok(
+        api.post(
+            "/api/rules",
+            m(rule_code=uid("RC"), rule_name="c", bind_scope="CUSTOMER", bind_value=uid("CU"), base=10, seq_len=4),
+            admin,
+        )
+    )["rule"]["id"]
     pi, bill = uid("PI"), uid("MO")
     w.order(bill, ORG, uid("CU"), pi, ("A", 5))
-    opts = ok(api.get("/api/generate/context" + q(bill_no=bill), admin))["rule_options"]
-    scopes = [o["bind_scope"] for o in opts]
-    assert set(ids) <= {o["rule_id"] for o in opts if o["bind_scope"] == "GENERAL"}
-    # 通用规则全部排在其它规则前面
-    assert scopes == sorted(scopes, key=lambda s: s != "GENERAL")
-    assert all(o["bind_value"] == "" for o in opts if o["bind_scope"] == "GENERAL")
-    assert ok(api.get("/api/rules/effective" + q(pi=pi), admin)).text("source") == "GENERAL"
+    ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin))
+    opts = ctx["rule_options"]
+    # 只列通用规则，全部可见，按编码排序
+    assert {o["bind_scope"] for o in opts} == {"GENERAL"}
+    assert set(ids) <= {o["rule_id"] for o in opts}
+    assert bound not in {o["rule_id"] for o in opts}
+    assert [o["rule_code"] for o in opts] == sorted(o["rule_code"] for o in opts)
+    eff = ok(api.get("/api/rules/effective" + q(pi=pi), admin))
+    assert eff.text("source") == "GENERAL" and eff["rule_id"] == opts[0]["rule_id"]
+    # 不能挑按客户 / 按 PI 绑定的规则来生成
+    assert w.preview(bill, 1, rule_id=bound).code == "RULE_NOT_GENERAL"
     # 按客户仍然一个对象只能绑一条
     cust = uid("CU")
     body = m(rule_code=uid("RC"), rule_name="c", bind_scope="CUSTOMER", bind_value=cust, base=10, seq_len=4)
     ok(api.post("/api/rules", body, admin))
     body = m(rule_code=uid("RC"), rule_name="c", bind_scope="CUSTOMER", bind_value=cust, base=10, seq_len=4)
     assert api.post("/api/rules", body, admin).code == "RULE_BIND_EXISTS"
+
+
+def test_assign_rule_to_pi_then_unbind_and_pick_again(api, admin, w, sql):
+    tpl_a, tpl_b = _general(api, admin, "ASA"), _general(api, admin, "ASB")
+    pi, bill = uid("PI"), uid("MO")
+    w.order(bill, ORG, uid("CU"), pi, ("A", 9))
+
+    # 生成前就给 PI 指定规则：生成默认用它，不再要求选择
+    r = ok(api.put("/api/rules/pi-binding", m(pi_no=pi, rule_id=tpl_b), admin))
+    assert r["rule"]["rule_id"] == tpl_b and r["rule"]["source"] == "CHOSEN"
+    ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin))
+    assert ctx["rule"]["rule_id"] == tpl_b and ctx["rule_options"] == []
+    w.generate(bill, 2)
+    assert ok(w.preview(bill, 1)).text("start_sn") == "ASB0003"
+
+    # 解绑：重新出现可选规则，必须重新选；改选另一条后流水接续、换成新格式
+    r = ok(api.delete("/api/rules/pi-binding" + q(pi=pi), admin))
+    assert r["rule"] is None
+    ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin))
+    assert ctx["rule"] is None and tpl_a in {o["rule_id"] for o in ctx["rule_options"]}
+    assert w.preview(bill, 1).code == "RULE_CHOICE_REQUIRED"
+    w.generate(bill, 1, rule_id=tpl_a)
+    assert sql.count("SELECT COUNT(*) FROM sn_pi_counter WHERE pi_no = %s AND rule_id = %s", pi, tpl_a) == 1
+    assert ok(w.preview(bill, 1)).text("start_sn") == "ASA0004"
+
+    # 直接改指定为另一条
+    ok(api.put("/api/rules/pi-binding", m(pi_no=pi, rule_id=tpl_b), admin))
+    assert ok(w.preview(bill, 1)).text("start_sn") == "ASB0004"
+
+    # 只能指定通用规则
+    cr = ok(
+        api.post(
+            "/api/rules",
+            m(rule_code=uid("RC"), rule_name="c", bind_scope="CUSTOMER", bind_value=uid("CU"), base=10, seq_len=4),
+            admin,
+        )
+    )["rule"]["id"]
+    assert api.put("/api/rules/pi-binding", m(pi_no=pi, rule_id=cr), admin).code == "RULE_NOT_GENERAL"
+    assert api.put("/api/rules/pi-binding", m(pi_no=pi, rule_id=999999999), admin).code == "RULE_NOT_FOUND"
+    assert sql.count("SELECT COUNT(*) FROM sn_audit WHERE action = 'RULE_PI_BIND' AND pi_no = %s", pi) == 2
+    assert sql.count("SELECT COUNT(*) FROM sn_audit WHERE action = 'RULE_PI_UNBIND' AND pi_no = %s", pi) == 1
+
+
+def test_rule_binding_can_be_changed_and_unbound(api, admin, w):
+    pi, bill, cust = uid("PI"), uid("MO"), uid("CU")
+    w.order(bill, ORG, cust, pi, ("A", 5))
+    rid = ok(
+        api.post(
+            "/api/rules",
+            m(rule_code=uid("RB"), rule_name="rb", bind_scope="GENERAL", prefix="RB", base=10, seq_len=4),
+            admin,
+        )
+    )["rule"]["id"]
+    spec = dict(rule_name="rb", prefix="RB", base=10, seq_len=4)
+    # 通用 → 按客户：该客户的 PI 生成默认用它
+    r = ok(api.put(f"/api/rules/{rid}", m(bind_scope="CUSTOMER", bind_value=cust, **spec), admin))
+    assert r.text("action") == "REBOUND"
+    assert r["rule"]["rule"]["bind_scope"] == "CUSTOMER" and r["rule"]["rule"]["bind_value"] == cust
+    eff = ok(api.get("/api/rules/effective" + q(pi=pi), admin))
+    assert eff["rule_id"] == rid and eff.text("source") == "CUSTOMER"
+    # 不传绑定方式：绑定不变
+    assert ok(api.put(f"/api/rules/{rid}", m(**spec), admin)).text("action") == "UNCHANGED"
+    # 按客户 → 按 PI
+    r = ok(api.put(f"/api/rules/{rid}", m(bind_scope="PI", bind_value=pi, **spec), admin))
+    assert ok(api.get("/api/rules/effective" + q(pi=pi), admin)).text("source") == "PI"
+    # 同一对象已有规则时不能再绑
+    other = ok(
+        api.post(
+            "/api/rules",
+            m(rule_code=uid("RB"), rule_name="o", bind_scope="GENERAL", prefix="O", base=10, seq_len=4),
+            admin,
+        )
+    )["rule"]["id"]
+    body = m(bind_scope="PI", bind_value=pi, rule_name="o", prefix="O", base=10, seq_len=4)
+    assert api.put(f"/api/rules/{other}", body, admin).code == "RULE_BIND_EXISTS"
+    assert api.put(f"/api/rules/{rid}", m(bind_scope="PI", bind_value="", **spec), admin).code == "RULE_BIND_REQUIRED"
+    # 解绑（改回通用）：该 PI 又要选规则
+    r = ok(api.put(f"/api/rules/{rid}", m(bind_scope="GENERAL", bind_value="x", **spec), admin))
+    assert r["rule"]["rule"]["bind_scope"] == "GENERAL" and r["rule"]["rule"]["bind_value"] == ""
+    ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin))
+    assert ctx["rule"] is None and rid in {o["rule_id"] for o in ctx["rule_options"]}

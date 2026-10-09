@@ -18,6 +18,14 @@ class RuleIn(RuleSpecIn):
 
 class RuleUpdateIn(RuleSpecIn):
     rule_name: str | None = None
+    #: 不传则绑定不变；改成 GENERAL 即解绑
+    bind_scope: str | None = None
+    bind_value: str | None = None
+
+
+class RulePiBindIn(In):
+    pi_no: str | None = None
+    rule_id: int | None = None
 
 
 class RulePreviewIn(RuleSpecIn):

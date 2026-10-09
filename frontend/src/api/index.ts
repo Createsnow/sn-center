@@ -15,6 +15,7 @@ export function clean(params?: Q): Q | undefined {
 const get = <T = any>(url: string, params?: Q) => http.get<T, T>(url, { params: clean(params) });
 const post = <T = any>(url: string, data?: unknown, silent = false) => http.post<T, T>(url, data, { silent });
 const put = <T = any>(url: string, data?: unknown) => http.put<T, T>(url, data);
+const del = <T = any>(url: string, params?: Q) => http.delete<T, T>(url, { params: clean(params) });
 
 export const api = {
   // 账户与登录
@@ -47,6 +48,8 @@ export const api = {
   updateRule: (id: number, data: Q) => put(`/rules/${id}`, data),
   previewRule: (data: Q) => post("/rules/preview", data, true),
   effectiveRule: (pi: string) => get("/rules/effective", { pi }),
+  bindPiRule: (pi_no: string, rule_id: number) => put("/rules/pi-binding", { pi_no, rule_id }),
+  unbindPiRule: (pi: string) => del("/rules/pi-binding", { pi }),
   // 生成与分配
   genPiContext: (params: { pi?: string; bill_no?: string }) => get("/generate/pi-context", params),
   genPiPreview: (data: Q, silent = false) => post("/generate/pi-preview", data, silent),

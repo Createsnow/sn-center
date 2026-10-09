@@ -226,6 +226,9 @@ class Api:
     def put(self, path: str, body: Any, token: str | None) -> Res:
         return self.call("PUT", path, body, token)
 
+    def delete(self, path: str, token: str | None) -> Res:
+        return self.call("DELETE", path, None, token)
+
 
 def q(**kv: Any) -> str:
     items = [(k, "true" if v is True else "false" if v is False else v) for k, v in kv.items() if v is not None]

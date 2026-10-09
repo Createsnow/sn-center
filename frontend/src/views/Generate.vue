@@ -71,6 +71,8 @@
             <template v-if="ctx.rule">
               {{ ctx.rule.rule_code }} · {{ ctx.rule.rule_name }} · v{{ ctx.rule.version }}
               <el-tag size="small" :type="ctx.rule.source === 'CHOSEN' ? 'warning' : 'success'" class="ml">{{ t(`generate.ruleSrc${ctx.rule.source}`) }}</el-tag>
+              <el-button v-if="ctx.rule.source === 'CHOSEN'" link type="primary" size="small" class="ml" :loading="ruleBusy" @click="unbindRule">{{ t("generate.ruleUnbind") }}</el-button>
+              <div v-else class="muted hint">{{ t("generate.ruleBoundHint") }}</div>
             </template>
             <template v-else-if="ctx.rule_options.length">
               <el-select v-model="ruleId" filterable size="small" :placeholder="t('generate.rulePick')" class="rule-picker">
@@ -78,6 +80,7 @@
                   <div class="opt"><span><b>{{ o.rule_code }}</b> · {{ o.rule_name }}</span><span class="muted sn-mono">{{ o.sample_sn }}</span></div>
                 </el-option>
               </el-select>
+              <el-button size="small" class="ml" :disabled="ruleId == null" :loading="ruleBusy" @click="bindRule">{{ t("generate.ruleAssign") }}</el-button>
               <div class="muted hint">{{ t("generate.rulePickHint") }}</div>
             </template>
             <span v-else class="muted">—</span>
@@ -284,6 +287,7 @@ const detailPi = ref("");
 const ctx = ref<any>(null);
 const ctxLoading = ref(false);
 const ruleId = ref<number | null>(null);
+const ruleBusy = ref(false);
 const qty = ref(1);
 const startOpen = ref(false);
 const startText = ref("");
@@ -301,7 +305,7 @@ const defaultQty = (quota: number) => suggestQty(quota, DEFAULT_PAGE_LIMIT);
 const canQuickGen = (row: any) => row.start_locked && !row.unmapped;
 const totals = computed(() => pis.value.reduce((s, r) => ({ quota: s.quota + r.quota, pending: s.pending + r.pending_alloc }), { quota: 0, pending: 0 }));
 const shown = computed(() => rowsOf(view.value));
-const ruleLabel = (o: any) => `${o.rule_code} · ${o.rule_name}（${t(`rules.scope${o.bind_scope}`)}${o.bind_value ? " " + o.bind_value : ""}）`;
+const ruleLabel = (o: any) => `${o.rule_code} · ${o.rule_name}`;
 const nextSn = computed(() => ctx.value?.next?.start_sn ?? ctx.value?.rule_options.find((o: any) => o.rule_id === ruleId.value)?.sample_sn ?? null);
 
 function rowsOf(v: View) {
@@ -366,6 +370,37 @@ function closeDetail() {
   ctx.value = null;
 }
 
+async function bindRule() {
+  const c = ctx.value;
+  if (!c || ruleId.value == null) return;
+  ruleBusy.value = true;
+  try {
+    await api.bindPiRule(c.pi_no, ruleId.value);
+    ElMessage.success(t("generate.ruleAssigned"));
+    await loadContext({ pi: c.pi_no });
+  } finally {
+    ruleBusy.value = false;
+  }
+}
+
+async function unbindRule() {
+  const c = ctx.value;
+  if (!c?.rule) return;
+  try {
+    await ElMessageBox.confirm(t("generate.ruleUnbindConfirm", { pi: c.pi_no, code: c.rule.rule_code }), t("generate.ruleUnbind"), { type: "warning" });
+  } catch {
+    return;
+  }
+  ruleBusy.value = true;
+  try {
+    await api.unbindPiRule(c.pi_no);
+    ElMessage.success(t("generate.ruleUnbound"));
+    await loadContext({ pi: c.pi_no });
+  } finally {
+    ruleBusy.value = false;
+  }
+}
+
 async function loadContext(params: { pi?: string; bill_no?: string }) {
   ctxLoading.value = true;
   try {
@@ -374,7 +409,7 @@ async function loadContext(params: { pi?: string; bill_no?: string }) {
     ctx.value = c;
     detailPi.value = c.pi_no;
     if (!c.rule_options.some((o: any) => o.rule_id === ruleId.value)) {
-      ruleId.value = c.rule_options.find((o: any) => o.bind_scope === "GENERAL")?.rule_id ?? null;
+      ruleId.value = c.rule_options[0]?.rule_id ?? null;
     }
     if (changedPi) {
       startOpen.value = false;

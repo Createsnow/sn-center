@@ -47,17 +47,18 @@
       <el-form label-width="110px">
         <el-form-item v-if="!editing" :label="t('rules.code')" required><el-input v-model="form.rule_code" /></el-form-item>
         <el-form-item :label="t('rules.name')" required><el-input v-model="form.rule_name" /></el-form-item>
-        <el-form-item v-if="!editing" :label="t('rules.bind')" required>
+        <el-form-item :label="t('rules.bind')" required>
           <el-radio-group v-model="form.bind_scope">
             <el-radio-button v-for="s in SCOPES" :key="s" :value="s">{{ t(`rules.scope${s}`) }}</el-radio-button>
           </el-radio-group>
+          <div class="muted">{{ t("rules.bindHint") }}</div>
         </el-form-item>
-        <el-form-item v-if="!editing && form.bind_scope === 'CUSTOMER'" :label="t('common.customer')" required>
+        <el-form-item v-if="form.bind_scope === 'CUSTOMER'" :label="t('common.customer')" required>
           <el-select v-model="form.bind_value" filterable allow-create remote :remote-method="searchCustomers" class="w100">
             <el-option v-for="c in customers" :key="c" :value="c" :label="c" />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="!editing && form.bind_scope === 'PI'" label="PI" required><el-input v-model="form.bind_value" /></el-form-item>
+        <el-form-item v-if="form.bind_scope === 'PI'" label="PI" required><el-input v-model="form.bind_value" /></el-form-item>
         <el-form-item :label="t('rules.prefix')"><el-input v-model="form.prefix" /></el-form-item>
         <el-form-item :label="t('rules.suffix')"><el-input v-model="form.suffix" /></el-form-item>
         <el-form-item :label="t('rules.base')">
@@ -148,7 +149,7 @@ function openCreate() {
 function openEdit(row: any) {
   editing.value = row;
   const c = row.current;
-  Object.assign(form, { rule_name: row.rule.rule_name, prefix: c.prefix, suffix: c.suffix, base: c.base, seq_len: c.seq_len,
+  Object.assign(form, { rule_name: row.rule.rule_name, bind_scope: row.rule.bind_scope, bind_value: row.rule.bind_value, prefix: c.prefix, suffix: c.suffix, base: c.base, seq_len: c.seq_len,
     charset: c.charset === CHARSETS[c.base] ? "" : c.charset });
   dialog.value = true;
 }
@@ -173,7 +174,8 @@ async function save() {
   try {
     if (editing.value) {
       const r: any = await api.updateRule(editing.value.rule.id, { rule_name: form.rule_name, prefix: form.prefix, suffix: form.suffix,
-        base: form.base, seq_len: form.seq_len, charset: form.charset });
+        base: form.base, seq_len: form.seq_len, charset: form.charset,
+        bind_scope: form.bind_scope, bind_value: form.bind_scope === "GENERAL" ? "" : form.bind_value });
       ElMessage.success(t(`rules.result${r.action}`));
     } else {
       await api.createRule({ ...form, bind_value: form.bind_scope === "GENERAL" ? "" : form.bind_value });
