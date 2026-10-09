@@ -280,8 +280,15 @@ def batch_items(cu: CurrentUser, batch_no: str | None, page: util.Page) -> dict:
 
 
 def _paged(
-    table: str, fields: tuple[str, ...], cu: CurrentUser, factory: str | None, pi: str | None, page: util.Page
+    table: str,
+    fields: tuple[str, ...],
+    cu: CurrentUser,
+    factory: str | None,
+    pi: str | None,
+    page: util.Page,
+    exact: dict[str, str | None] | None = None,
 ) -> dict:
+    """exact：额外的等值筛选（单号、请求号、来源），空值不参与。"""
     where = " WHERE 1=1"
     args: list = []
     f = cu.read_factory(factory)
@@ -291,13 +298,26 @@ def _paged(
     if not util.blank(pi):
         where += " AND pi_no = %s"
         args.append(util.trim(pi))
+    for col, v in (exact or {}).items():
+        if not util.blank(v):
+            where += f" AND {col} = %s"
+            args.append(util.trim(v))
     total = db.count(f"SELECT COUNT(*) FROM {table}{where}", *args)
     rows = db.all(f"SELECT * FROM {table}{where} ORDER BY created_at DESC LIMIT %s,%s", *args, page.offset, page.size)
     return util.page_result([util.jrow(r, fields) for r in rows], total, page)
 
 
-def batches(cu: CurrentUser, factory: str | None, pi: str | None, page: util.Page) -> dict:
-    return _paged("sn_acquire_batch", BATCH_FIELDS, cu, factory, pi, page)
+def batches(
+    cu: CurrentUser,
+    factory: str | None,
+    pi: str | None,
+    page: util.Page,
+    batch_no: str | None = None,
+    request_no: str | None = None,
+    source: str | None = None,
+) -> dict:
+    exact = {"batch_no": batch_no, "request_no": request_no, "source": source}
+    return _paged("sn_acquire_batch", BATCH_FIELDS, cu, factory, pi, page, exact)
 
 
 # ================================================================== 页面打印
@@ -390,8 +410,15 @@ def print_record(cu: CurrentUser, print_no: str | None) -> dict:
     return p
 
 
-def prints(cu: CurrentUser, factory: str | None, pi: str | None, page: util.Page) -> dict:
-    return _paged("sn_print", PRINT_FIELDS, cu, factory, pi, page)
+def prints(
+    cu: CurrentUser,
+    factory: str | None,
+    pi: str | None,
+    page: util.Page,
+    print_no: str | None = None,
+    request_no: str | None = None,
+) -> dict:
+    return _paged("sn_print", PRINT_FIELDS, cu, factory, pi, page, {"print_no": print_no, "request_no": request_no})
 
 
 def print_file_rows(print_no: str) -> Iterator[list]:

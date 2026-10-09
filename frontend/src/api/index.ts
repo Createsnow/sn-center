@@ -66,7 +66,9 @@ export const api = {
   batches: (params?: Q) => get("/acquire/batches", params),
   batchItems: (batchNo: string, params?: Q) => get(`/acquire/batches/${encodeURIComponent(batchNo)}/items`, params),
   // 转厂
-  transferCandidates: (params: Q) => get("/transfers/candidates", params),
+  // 空物料（material_code = ""）是一个真实的物料分组，不能被 clean 去掉
+  transferCandidates: (params: Q) =>
+    http.get<any, any>("/transfers/candidates", { params: { ...clean(params), ...(params.material_code === "" ? { material_code: "" } : {}) } }),
   transferTargets: (q?: string) => get("/transfers/targets", { q }),
   applyTransfer: (data: Q) => post("/transfers", data),
   directTransfer: (data: Q) => post("/transfers/direct", data),

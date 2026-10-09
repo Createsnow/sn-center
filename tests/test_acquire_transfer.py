@@ -68,6 +68,22 @@ def test_acquire_by_whole_pi_is_idempotent_per_request_no(api, w, ctx, sql):
     )
 
 
+def test_batch_and_print_lists_filter_by_no_request_no_and_source(api, w, ctx):
+    op_a = ctx["op_a"]
+    pi = ready(w, "FL", 2, 0)
+    r = req()
+    batch = ok(api.post("/api/open/acquire", m(pi=pi, request_no=r), op_a))["batch"]["batch_no"]
+    by_req = ok(api.get("/api/acquire/batches" + q(request_no=r), op_a))
+    assert [b["batch_no"] for b in by_req["items"]] == [batch]
+    assert ok(api.get("/api/acquire/batches" + q(batch_no=batch, source="API"), op_a))["total"] == 1
+    assert ok(api.get("/api/acquire/batches" + q(batch_no=batch, source="PAGE"), op_a))["total"] == 0
+    pr = req()
+    printed = ok(api.post("/api/acquire/print", m(factory_code=FA, pi_no=pi, request_no=pr), op_a))
+    by_no = ok(api.get("/api/acquire/prints" + q(print_no=printed.text("print_no")), op_a))
+    assert [p["request_no"] for p in by_no["items"]] == [pr]
+    assert ok(api.get("/api/acquire/prints" + q(pi=pi, request_no=req()), op_a))["total"] == 0
+
+
 def test_factory_cannot_act_for_other_factory_but_admin_can(api, admin, w, ctx):
     op_a, op_b, qry = ctx["op_a"], ctx["op_b"], ctx["query"]
     pi = ready(w, "W", 2, 0)
