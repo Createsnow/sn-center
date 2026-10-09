@@ -1,13 +1,13 @@
 <template>
-  <div class="page">
+  <div class="page page--fill">
     <PageHead :title="t('query.title')" :desc="t('query.desc')">
       <template v-if="tab === 'sn'">
         <el-button :loading="exporting" @click="exportFile('xlsx')"><el-icon><Download /></el-icon><span>{{ t("query.exportXlsx") }}</span></el-button>
         <el-button :loading="exporting" @click="exportFile('csv')">CSV</el-button>
       </template>
     </PageHead>
-    <div class="surface">
-      <el-tabs v-model="tab" @tab-change="onTab">
+    <div class="surface fill">
+      <el-tabs v-model="tab" class="tabs-fill" @tab-change="onTab">
         <el-tab-pane :label="t('query.tabSn')" name="sn">
           <div class="toolbar">
             <FactorySelect v-if="!store.boundFactory" v-model="f.factory_code" clearable :disabled="f.pi_all" />
@@ -25,7 +25,8 @@
             <el-button type="primary" @click="load(1)">{{ t("common.search") }}</el-button>
           </div>
           <el-alert v-if="f.pi_all" type="info" :closable="false" show-icon :title="t('acquire.piAllReadOnly')" class="mb" />
-          <el-table v-loading="state.loading" :data="items" size="small" :empty-text="t('common.empty')">
+          <div class="fill-body">
+          <el-table v-loading="state.loading" height="100%" :data="items" size="small" :empty-text="t('common.empty')">
             <el-table-column :label="t('common.sn')" min-width="170" fixed><template #default="{ row }"><span class="sn-mono">{{ row.sn }}</span></template></el-table-column>
             <el-table-column :label="t('common.seqText')" width="110"><template #default="{ row }"><span class="sn-mono">{{ row.seq_text }}</span></template></el-table-column>
             <el-table-column prop="seq_dec" :label="t('common.seqDec')" width="100" />
@@ -43,6 +44,7 @@
             <el-table-column prop="created_at" :label="t('query.createdAt')" width="160" />
             <el-table-column prop="printed_at" :label="t('query.printedAt')" width="160" />
           </el-table>
+          </div>
           <div class="foot">
             <span v-if="state.capped" class="muted">{{ t("query.capped", { n: state.total }) }}</span>
             <el-pagination layout="total, sizes, prev, pager, next" :total="state.total" :page-size="state.pageSize"
@@ -61,7 +63,8 @@
             </el-select>
             <el-button type="primary" @click="loadBatches(1)">{{ t("common.search") }}</el-button>
           </div>
-          <el-table v-loading="batchState.loading" :data="batches" size="small" :empty-text="t('common.empty')">
+          <div class="fill-body">
+          <el-table v-loading="batchState.loading" height="100%" :data="batches" size="small" :empty-text="t('common.empty')">
             <el-table-column prop="batch_no" :label="t('acquire.batchNo')" min-width="190" />
             <el-table-column :label="t('common.factory')" width="120"><template #default="{ row }">{{ nameOf(row.factory_code) }}</template></el-table-column>
             <el-table-column prop="pi_no" label="PI" min-width="150" />
@@ -80,6 +83,7 @@
               <template #default="{ row }"><el-button link type="primary" @click="openBatch(row.batch_no)">{{ t("common.detail") }}</el-button></template>
             </el-table-column>
           </el-table>
+          </div>
           <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="batchState.total" :page-size="batchState.pageSize"
             :current-page="batchState.page" :page-sizes="[20, 50, 100]" @current-change="loadBatches" @size-change="batchSize" />
         </el-tab-pane>
@@ -92,7 +96,8 @@
             <el-input v-model="pf.request_no" :placeholder="t('acquire.requestNo')" clearable @keyup.enter="loadPrints(1)" />
             <el-button type="primary" @click="loadPrints(1)">{{ t("common.search") }}</el-button>
           </div>
-          <el-table v-loading="printState.loading" :data="prints" size="small" :empty-text="t('common.empty')">
+          <div class="fill-body">
+          <el-table v-loading="printState.loading" height="100%" :data="prints" size="small" :empty-text="t('common.empty')">
             <el-table-column prop="print_no" :label="t('acquire.printNo')" min-width="190" />
             <el-table-column :label="t('common.factory')" width="120"><template #default="{ row }">{{ nameOf(row.factory_code) }}</template></el-table-column>
             <el-table-column prop="pi_no" label="PI" min-width="150" />
@@ -107,6 +112,7 @@
               </template>
             </el-table-column>
           </el-table>
+          </div>
           <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="printState.total" :page-size="printState.pageSize"
             :current-page="printState.page" :page-sizes="[20, 50, 100]" @current-change="loadPrints" @size-change="printSize" />
         </el-tab-pane>
@@ -219,5 +225,10 @@ onMounted(onTab);
 
 <style scoped>
 .mb { margin-bottom: 12px; }
+/* 页签铺满卡片，当前页签内的表格占剩余高度 */
+.tabs-fill { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.tabs-fill :deep(.el-tabs__content) { flex: 1; min-height: 0; }
+.tabs-fill :deep(.el-tab-pane) { height: 100%; display: flex; flex-direction: column; }
+@media (max-width: 1199px) { .tabs-fill :deep(.el-tab-pane) { height: auto; } }
 .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
 </style>

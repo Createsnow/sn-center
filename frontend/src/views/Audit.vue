@@ -1,9 +1,9 @@
 <template>
-  <div class="page">
+  <div class="page page--fill">
     <PageHead :title="t('audit.title')" :desc="retention">
       <el-button :loading="exporting" @click="exportFile"><el-icon><Download /></el-icon><span>{{ t("query.exportXlsx") }}</span></el-button>
     </PageHead>
-    <div class="surface">
+    <div class="surface fill">
       <div class="toolbar">
         <el-date-picker v-model="range" type="daterange" value-format="YYYY-MM-DD" :start-placeholder="t('audit.from')" :end-placeholder="t('audit.to')" />
         <el-select v-model="f.action" clearable filterable :placeholder="t('audit.action')">
@@ -22,7 +22,8 @@
         <el-input v-model="f.keyword" :placeholder="t('audit.keyword')" clearable />
         <el-button type="primary" @click="load(1)">{{ t("common.search") }}</el-button>
       </div>
-      <el-table v-loading="state.loading" :data="items" size="small" :empty-text="t('common.empty')" row-key="id">
+      <div class="fill-body">
+      <el-table v-loading="state.loading" :data="items" size="small" height="100%" :empty-text="t('common.empty')" row-key="id">
         <el-table-column type="expand">
           <template #default="{ row }">
             <el-descriptions :column="3" size="small" border class="exp">
@@ -59,6 +60,7 @@
         </el-table-column>
         <el-table-column prop="error_msg" :label="t('audit.error')" min-width="160" show-overflow-tooltip />
       </el-table>
+      </div>
       <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="state.total" :page-size="state.pageSize"
         :current-page="state.page" :page-sizes="[20, 50, 100]" @current-change="load" @size-change="onSize" />
     </div>
