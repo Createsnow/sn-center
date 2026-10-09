@@ -11,7 +11,6 @@ export const MENU = [
   { group: "nav.groupHq", items: [
     { path: "/orders", title: "nav.orders", icon: "Tickets", roles: ["admin", "query"] },
     { path: "/generate", title: "nav.generate", icon: "Finished", roles: ADMIN },
-    { path: "/pi-init", title: "nav.piInit", icon: "Upload", roles: ADMIN },
     { path: "/rules", title: "nav.rules", icon: "SetUp", roles: ADMIN },
   ] },
   { group: "nav.groupFactory", items: [
@@ -32,7 +31,6 @@ const views: Record<string, () => Promise<unknown>> = {
   "/": () => import("@/views/Dashboard.vue"),
   "/orders": () => import("@/views/Orders.vue"),
   "/generate": () => import("@/views/Generate.vue"),
-  "/pi-init": () => import("@/views/PiInit.vue"),
   "/rules": () => import("@/views/Rules.vue"),
   "/acquire": () => import("@/views/Acquire.vue"),
   "/transfer": () => import("@/views/Transfer.vue"),

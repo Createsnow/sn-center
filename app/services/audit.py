@@ -37,7 +37,6 @@ RULE_RENAME = "RULE_RENAME"
 RULE_REBIND = "RULE_REBIND"
 RULE_PI_BIND = "RULE_PI_BIND"
 RULE_PI_UNBIND = "RULE_PI_UNBIND"
-PI_INIT = "PI_INIT"
 SN_GENERATE = "SN_GENERATE"
 SN_ALLOCATE = "SN_ALLOCATE"
 SN_ACQUIRE = "SN_ACQUIRE"
@@ -196,7 +195,6 @@ _PATH_ACTIONS = (
     ("/api/orders/sync-schedule", ORDER_SYNC_SCHEDULE),
     ("/api/orders", ORDER_SYNC),
     ("/api/rules", RULE_UPDATE),
-    ("/api/pi-init", PI_INIT),
     ("/api/generate/allocate", SN_ALLOCATE),
     ("/api/generate", SN_GENERATE),
     ("/api/acquire/take", SN_ACQUIRE),

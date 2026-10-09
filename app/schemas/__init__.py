@@ -8,7 +8,6 @@ from app.schemas.sn import (
     CallbackIn,
     GenerateIn,
     OpenAcquireIn,
-    PiInitIn,
     PreviewIn,
     RangeIn,
 )
@@ -30,7 +29,6 @@ __all__ = [
     "PreviewIn",
     "GenerateIn",
     "AllocateIn",
-    "PiInitIn",
     "AcquireIn",
     "OpenAcquireIn",
     "RangeIn",

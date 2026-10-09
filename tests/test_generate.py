@@ -122,16 +122,6 @@ def test_rule_exhausted_stops_without_upper_limit_on_pi_total(api, admin, w):
     assert w.preview(bill, 1).code == "GEN_RULE_EXHAUSTED"
 
 
-def test_start_number_only_once_before_first_generation(api, admin, w):
-    pi, bill = uid("PI"), uid("MO")
-    w.pi_rule(pi, "T", 10, 5)
-    w.order(bill, ORG, "C1", pi, ("A", 10))
-    j = w.generate(bill, 2, 500)
-    assert j["start_sn"] == "T00500"
-    assert w.preview(bill, 1, 900).code == "GEN_START_NOT_ALLOWED"
-    assert ok(w.preview(bill, 1)).text("start_sn") == "T00502"
-
-
 def _transfer(api, admin, pi_from, pi_to, **scope):
     body = m(factory_code=FAC, pi_no=pi_from, to_factory=FAC, to_pi=pi_to, target_source="MANUAL", reason="测试转入")
     body.update(scope)
@@ -223,18 +213,6 @@ def test_transfer_after_preview_makes_preview_stale(api, admin, w):
     g = api.post("/api/generate", m(preview_token=p.text("token"), bill_no=b_b, qty=2), admin)
     assert g.code == "GEN_PREVIEW_STALE", str(g)
     assert ok(w.preview(b_b, 2)).text("start_sn") == "G00005"
-
-
-def test_start_number_must_be_above_transferred_sns(api, admin, w):
-    # PI-B 还没生成过：可以指定起始号，但必须越过已转入的号
-    pi_a, pi_b, _, b_b = _two_pis(w, "H", "H", 5, 0)
-    ok(_transfer(api, admin, pi_a, pi_b, scope="SINGLE", sn="H00004"))
-    bad = w.preview(b_b, 1, 3)
-    assert bad.code == "GEN_START_TAKEN"
-    assert bad["params"]["sn"] == "H00004"
-    assert api.post("/api/pi-init", m(pi_no=pi_b, start_seq=4), admin).code == "GEN_START_TAKEN"
-    assert ok(w.preview(b_b, 1, 10)).text("start_sn") == "H00010"
-    assert ok(w.preview(b_b, 1)).text("start_sn") == "H00005"
 
 
 def test_pending_transfer_shows_target_hint_before_approval(api, admin, w, sql):
@@ -453,10 +431,7 @@ def test_lock_conflict_keeps_pooled_connection_but_lost_one_is_dropped(w, sql):
 
 
 def _pi_items(p, **override):
-    return [
-        m(preview_token=it["token"], bill_no=it["bill_no"], qty=it["qty"], start_seq=it["start_override"], **override)
-        for it in p["items"]
-    ]
+    return [m(preview_token=it["token"], bill_no=it["bill_no"], qty=it["qty"], **override) for it in p["items"]]
 
 
 def _pi_generate(api, admin, p):
@@ -496,15 +471,14 @@ def test_pi_preview_spreads_qty_over_bills_in_bill_order_on_one_serial(api, admi
     assert api.post("/api/generate/pi-preview", m(pi_no=pi, qty=9), admin).code == "GEN_QUOTA_EXCEEDED"
 
 
-def test_pi_generate_requires_the_whole_preview_in_order_and_start_override_only_on_first(api, admin, w, sql):
+def test_pi_generate_requires_the_whole_preview_in_order(api, admin, w, sql):
     pi = uid("PI")
     b1, b2 = pi + "-MO1", pi + "-MO2"
     w.pi_rule(pi, "Q", 10, 5)
     w.order(b1, ORG, "C1", pi, ("A", 2))
     w.order(b2, ORG, "C1", pi, ("A", 2))
-    p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=4, start_seq=100), admin)).body
-    assert [it["start_override"] for it in p["items"]] == [100, None]
-    assert p["items"][1]["start_sn"] == "Q00102"
+    p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=4), admin)).body
+    assert p["items"][1]["start_sn"] == "Q00003"
     items = _pi_items(p)
     gen = lambda its: api.post("/api/generate/pi", m(pi_no=pi, items=its), admin)  # noqa: E731
     assert gen(items[::-1]).code == "GEN_PREVIEW_CHANGED", "顺序打乱"
@@ -516,7 +490,7 @@ def test_pi_generate_requires_the_whole_preview_in_order_and_start_override_only
     assert [j["bill_no"] for j in r["jobs"]] == [b1, b2] and r["qty"] == 4
     assert gen(items).code == "GEN_PREVIEW_USED"
     ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin)).body
-    assert ctx["counter"]["last_seq_dec"] == 103 and ctx["counter"]["start_locked"]
+    assert ctx["counter"]["last_seq_dec"] == 4 and ctx["counter"]["start_locked"]
     assert ctx["running_job"] is None, "整张 PI 结束后释放 running_pi"
     assert api.post("/api/generate/pi-preview", m(pi_no=pi, qty=1), admin).code == "GEN_PI_QUOTA_EMPTY"
 

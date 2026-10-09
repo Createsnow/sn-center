@@ -103,7 +103,7 @@ def counter(pi: str) -> dict:
 
 @dataclass(frozen=True)
 class NextStart:
-    """下一次生成的起点：本 PI 自己的最大号，与本 PI 下「流水不归属本 PI」的号（转入、未解析的历史导入）
+    """下一次生成的起点：本 PI 自己的最大号，与本 PI 下「流水不归属本 PI」的号（转入的号）
     按当前规则解析出的最大流水，两者取大再加 1。连续转入时等于接着排；不连续时越过中间未用的号。"""
 
     own_last: int
@@ -147,7 +147,7 @@ def max_parsed(sns, spec: codec.Spec) -> tuple[int, str] | None:
 
 
 def foreign_max(pi: str, spec: codec.Spec) -> tuple[int, str] | None:
-    """本 PI 下流水不归属本 PI 的号（转入的号、未解析出流水的历史导入）按当前规则的最大流水。"""
+    """本 PI 下流水不归属本 PI 的号（转入的号）按当前规则的最大流水。"""
     sns = db.column(
         "SELECT sn FROM sn_key WHERE pi_no = %s AND (seq_pi_no IS NULL OR seq_pi_no <> %s) AND CHAR_LENGTH(sn) = %s",
         pi,
@@ -346,25 +346,6 @@ def _check_bill(bill_no: str | None, qty: int) -> tuple[orders.Bill, int]:
     return b, generated
 
 
-def _start_of(pi: str, c: dict | None, override: int | None, spec: codec.Spec) -> tuple[int, NextStart]:
-    """本次起始流水：指定了起始号用它（须越过已转入的号），否则按 NextStart。"""
-    ns = next_start(pi, 0 if c is None else c["last_seq_dec"], spec)
-    mx = codec.max_seq(spec)
-    if override is not None:
-        if c is not None and c["start_locked"]:
-            raise biz(ErrorCode.GEN_START_NOT_ALLOWED, pi=pi)
-        if override < 1 or override > mx:
-            raise biz(ErrorCode.GEN_START_INVALID, max=mx)
-        check_start_above_foreign(pi, override, ns)
-        return override, ns
-    return ns.start, ns
-
-
-def check_start_above_foreign(pi: str, start: int, ns: NextStart) -> None:
-    if ns.foreign_seq is not None and start <= ns.foreign_seq:
-        raise biz(ErrorCode.GEN_START_TAKEN, pi=pi, sn=ns.foreign_sn, seq=ns.foreign_seq)
-
-
 def _check_capacity(end: int, spec: codec.Spec) -> None:
     mx = codec.max_seq(spec)
     if end > mx:
@@ -375,18 +356,17 @@ def segments_json(segs: list[sn_items.Segment]) -> str:
     return json.dumps([s.as_camel() for s in segs], ensure_ascii=False, separators=(",", ":"))
 
 
-def preview(
-    cu: CurrentUser, bill_no: str | None, qty_in: int | None, start_override: int | None, rule_id: int | None = None
-) -> dict:
+def preview(cu: CurrentUser, bill_no: str | None, qty_in: int | None, rule_id: int | None = None) -> dict:
     qty = 0 if qty_in is None else qty_in
     b, generated = _check_bill(bill_no, qty)
     r = rules.for_generation(b.pi, b.customer_code, rule_id)
     spec = rules.spec_of(r.version)
     c = db.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s", b.pi)
     base = 0 if c is None else c["last_seq_dec"]
-    start, ns = _start_of(b.pi, c, start_override, spec)
+    ns = next_start(b.pi, base, spec)
+    start = ns.start
     _check_capacity(start + qty - 1, spec)
-    out = _save_preview(cu, b, generated, qty, start, base, start_override, r, spec)
+    out = _save_preview(cu, b, generated, qty, start, base, r, spec)
     out["next"] = ns.as_json(spec)
     out["rule"] = rules.rule_info(r)
     return out
@@ -399,7 +379,6 @@ def _save_preview(
     qty: int,
     start: int,
     base: int,
-    start_override: int | None,
     r: rules.Resolved,
     spec: codec.Spec,
 ) -> dict:
@@ -412,8 +391,8 @@ def _save_preview(
     expires = now + timedelta(minutes=settings.preview_ttl_minutes)
     db.exec(
         "INSERT INTO sn_gen_preview(token, bill_no, pi_no, factory_code, qty, start_seq_dec, end_seq_dec, start_sn, "
-        "end_sn, rule_version_id, base_last_seq, start_override, segments_json, created_by, created_at, expires_at) "
-        "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+        "end_sn, rule_version_id, base_last_seq, segments_json, created_by, created_at, expires_at) "
+        "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
         token,
         b.bill_no,
         b.pi,
@@ -425,7 +404,6 @@ def _save_preview(
         end_sn,
         r.version["id"],
         base,
-        start_override,
         segments_json(segs),
         cu.emp_no,
         now,
@@ -442,15 +420,12 @@ def _save_preview(
         "start_sn": start_sn,
         "end_sn": end_sn,
         "base_last_seq": base,
-        "start_override": start_override,
         "segments": [s.as_json() for s in segs],
         "expires_at": util.fmt(expires),
     }
 
 
-def pi_preview(
-    cu: CurrentUser, pi_in: str | None, qty_in: int | None, start_override: int | None, rule_id: int | None = None
-) -> dict:
+def pi_preview(cu: CurrentUser, pi_in: str | None, qty_in: int | None, rule_id: int | None = None) -> dict:
     """按 PI 预演：数量按单据号顺序依次占用各订单的额度，号段在 PI 的一套流水上接续。
 
     每张订单各记一份预演（base 为前一张生成后的最大号），凭这些令牌调用 generate_pi 在一个事务里一次生成。
@@ -475,7 +450,8 @@ def pi_preview(
     spec = rules.spec_of(r.version)
     c = db.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s", pi)
     base = 0 if c is None else c["last_seq_dec"]
-    start, ns = _start_of(pi, c, start_override, spec)
+    ns = next_start(pi, base, spec)
+    start = ns.start
     _check_capacity(start + qty - 1, spec)
     items = []
     cur, left, prev = start, qty, base
@@ -483,7 +459,7 @@ def pi_preview(
         if left == 0:
             break
         n = min(quota, left)
-        items.append(_save_preview(cu, b, gen, n, cur, prev, start_override if not items else None, r, spec))
+        items.append(_save_preview(cu, b, gen, n, cur, prev, r, spec))
         prev, cur, left = cur + n - 1, cur + n, left - n
     return {
         "pi_no": pi,
@@ -493,7 +469,6 @@ def pi_preview(
         "start_sn": items[0]["start_sn"],
         "end_sn": items[-1]["end_sn"],
         "base_last_seq": base,
-        "start_override": start_override,
         "next": ns.as_json(spec),
         "rule": rules.rule_info(r),
         "items": items,
@@ -504,10 +479,8 @@ def pi_preview(
 # ================================================================== 生成
 
 
-def generate(
-    cu: CurrentUser, token: str | None, bill_no: str | None, qty: int | None, start_override: int | None
-) -> dict:
-    p = _usable_preview(cu, token, bill_no, qty, start_override)
+def generate(cu: CurrentUser, token: str | None, bill_no: str | None, qty: int | None) -> dict:
+    p = _usable_preview(cu, token, bill_no, qty)
     _check_base(p, _last_seq(p["pi_no"]))
     try:
         job_id = _insert_job(cu, p, p["pi_no"])
@@ -534,12 +507,12 @@ def generate_pi(cu: CurrentUser, pi_in: str | None, items: list[dict] | None) ->
         raise biz(ErrorCode.GEN_PREVIEW_REQUIRED)
     ps = []
     for it in items:
-        p = _usable_preview(cu, it.get("preview_token"), it.get("bill_no"), it.get("qty"), it.get("start_seq"))
-        # 须是同一次按 PI 预演、按原顺序：号段首尾相接，只有第一张可带起始号
+        p = _usable_preview(cu, it.get("preview_token"), it.get("bill_no"), it.get("qty"))
+        # 须是同一次按 PI 预演、按原顺序：号段首尾相接
         prev = ps[-1] if ps else None
         if (
             p["pi_no"] != pi
-            or (prev is not None and (p["base_last_seq"] != prev["end_seq_dec"] or p["start_override"] is not None))
+            or (prev is not None and p["base_last_seq"] != prev["end_seq_dec"])
             or (prev is not None and p["rule_version_id"] != prev["rule_version_id"])
             or any(x["bill_no"] == p["bill_no"] for x in ps)
         ):
@@ -563,10 +536,8 @@ def generate_pi(cu: CurrentUser, pi_in: str | None, items: list[dict] | None) ->
     return {"pi_no": pi, "qty": sum(p["qty"] for p in ps), "jobs": [job_json(j) for j in rows]}
 
 
-def _usable_preview(
-    cu: CurrentUser, token: str | None, bill_no: str | None, qty: int | None, start_override: int | None
-) -> dict:
-    """本人、未用、未过期，且订单 / 数量 / 起始号与预演一致的预演。"""
+def _usable_preview(cu: CurrentUser, token: str | None, bill_no: str | None, qty: int | None) -> dict:
+    """本人、未用、未过期，且订单 / 数量与预演一致的预演。"""
     p = None if util.blank(token) else db.one("SELECT * FROM sn_gen_preview WHERE token = %s", token.strip())
     if p is None or p["created_by"] != cu.emp_no:
         raise biz(ErrorCode.GEN_PREVIEW_REQUIRED)
@@ -574,7 +545,7 @@ def _usable_preview(
         raise biz(ErrorCode.GEN_PREVIEW_USED)
     if util.now() > p["expires_at"]:
         raise biz(ErrorCode.GEN_PREVIEW_EXPIRED)
-    if p["bill_no"] != util.trim(bill_no) or qty is None or qty != p["qty"] or p["start_override"] != start_override:
+    if p["bill_no"] != util.trim(bill_no) or qty is None or qty != p["qty"]:
         raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
     return p
 
@@ -724,8 +695,6 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
         raise biz(ErrorCode.CONFLICT_RETRY)
     if c["last_seq_dec"] != p["base_last_seq"]:
         raise biz(ErrorCode.GEN_PREVIEW_STALE, pi=pi, expected=p["base_last_seq"], actual=c["last_seq_dec"])
-    if p["start_override"] is not None and c["start_locked"]:
-        raise biz(ErrorCode.GEN_START_NOT_ALLOWED, pi=pi)
     # 2) 订单仍在快照、额度与号段未变
     b = orders.bill(p["bill_no"])
     db.exec(
@@ -759,11 +728,8 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
     _check_capacity(p["end_seq_dec"], spec)
     # 预演之后又有号转入本 PI：起点可能要后移，预演失效
     ns = next_start(pi, c["last_seq_dec"], spec)
-    if p["start_override"] is None:
-        if ns.start != p["start_seq_dec"]:
-            raise biz(ErrorCode.GEN_PREVIEW_STALE, pi=pi, expected=p["start_seq_dec"] - 1, actual=ns.base)
-    else:
-        check_start_above_foreign(pi, p["start_override"], ns)
+    if ns.start != p["start_seq_dec"]:
+        raise biz(ErrorCode.GEN_PREVIEW_STALE, pi=pi, expected=p["start_seq_dec"] - 1, actual=ns.base)
     # 4) 逐块写号：先查重，再写护栏与明细
     month = util.month_of(now)
     done = 0
@@ -817,9 +783,6 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
     if not c["start_locked"]:
         sets += ", locked_by = %s, locked_at = %s"
         args += [cu.emp_no, now]
-    if p["start_override"] is not None:
-        sets += ", start_seq_dec = %s"
-        args.append(p["start_override"])
     db.exec(f"UPDATE sn_pi_counter SET {sets} WHERE pi_no = %s", *args, pi)
     db.exec(
         "UPDATE sn_bill_gen SET generated_qty = %s, factory_code = %s, updated_at = %s WHERE bill_no = %s",
@@ -829,9 +792,7 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
         b.bill_no,
     )
     detail = f"job={job_id} rule_version={v['id']} rule_source={r.source} segments={len(segs)}"
-    if p["start_override"] is not None:
-        detail += f" start={p['start_override']}"
-    if p["start_override"] is None and ns.adjusted:
+    if ns.adjusted:
         detail += f" start_after_transferred={ns.foreign_sn}(seq {ns.foreign_seq}, own_last {ns.own_last})"
     audit.record(
         cu,

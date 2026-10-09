@@ -1,11 +1,11 @@
-"""生成与分配、起始号与历史导入：只有总部。"""
+"""生成与分配：只有总部。"""
 
 from fastapi import APIRouter, Query
 
 from app.api.deps import AdminDep
 from app.schemas.common import OptInt
-from app.schemas.sn import AllocateIn, GenerateIn, PiAllocateIn, PiGenerateIn, PiInitIn, PiPreviewIn, PreviewIn
-from app.services import generate, pi_init
+from app.schemas.sn import AllocateIn, GenerateIn, PiAllocateIn, PiGenerateIn, PiPreviewIn, PreviewIn
+from app.services import generate
 
 router = APIRouter(tags=["generate"])
 
@@ -30,7 +30,7 @@ def gen_pi_context(cu: AdminDep, pi: str | None = None, bill_no: str | None = No
     "每张订单各返回一个预演令牌，凭这些令牌调用 /generate/pi",
 )
 def gen_pi_preview(body: PiPreviewIn, cu: AdminDep) -> dict:
-    return generate.pi_preview(cu, body.pi_no, body.qty, body.start_seq, body.rule_id)
+    return generate.pi_preview(cu, body.pi_no, body.qty, body.rule_id)
 
 
 @router.post(
@@ -53,12 +53,12 @@ def gen_pi_allocate(body: PiAllocateIn, cu: AdminDep) -> dict:
     summary="预演：只给起止号、数量与号段，不落库；返回预演令牌。PI 没有绑定规则且未选定过时须传 rule_id",
 )
 def gen_preview(body: PreviewIn, cu: AdminDep) -> dict:
-    return generate.preview(cu, body.bill_no, body.qty, body.start_seq, body.rule_id)
+    return generate.preview(cu, body.bill_no, body.qty, body.rule_id)
 
 
 @router.post("/generate", summary="凭本次预演令牌生成；数量大时返回 RUNNING，轮询任务进度")
 def gen_generate(body: GenerateIn, cu: AdminDep) -> dict:
-    return generate.generate(cu, body.preview_token, body.bill_no, body.qty, body.start_seq)
+    return generate.generate(cu, body.preview_token, body.bill_no, body.qty)
 
 
 @router.get("/generate/jobs/{id}")
@@ -79,22 +79,3 @@ def gen_allocate(body: AllocateIn, cu: AdminDep) -> dict:
 @router.get("/generate/allocations")
 def gen_allocations(cu: AdminDep, bill_no: str = Query(...)) -> list:
     return generate.allocations([bill_no])
-
-
-@router.get("/pi-init")
-def pi_status(cu: AdminDep, pi: str = Query(...)) -> dict:
-    return pi_init.status(pi)
-
-
-@router.post("/pi-init", summary="首次生成前：指定一次起始号，并可导入历史已发出 SN（状态已打印，参与查重）")
-def pi_init_post(body: PiInitIn, cu: AdminDep) -> dict:
-    return pi_init.init(
-        cu,
-        body.pi_no,
-        body.start_seq,
-        body.sns,
-        body.customer_code,
-        body.factory_code,
-        body.material_code,
-        body.file_name,
-    )

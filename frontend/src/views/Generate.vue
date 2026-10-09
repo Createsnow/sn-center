@@ -95,8 +95,7 @@
               <el-tag size="small" type="warning" class="ml">{{ t("generate.adjustedTag") }}</el-tag>
             </el-tooltip>
             <span class="muted ml">
-              {{ t("generate.lastSeq") }} <span class="num">{{ ctx.counter.last_seq_dec }}</span> ·
-              {{ ctx.counter.start_locked ? t("generate.startLocked") : t("generate.startOpen") }}
+              {{ t("generate.lastSeq") }} <span class="num">{{ ctx.counter.last_seq_dec }}</span>
             </span>
           </dd>
         </dl>
@@ -139,16 +138,11 @@
             <div class="row">
               <span class="muted small">{{ t("generate.qty") }}</span>
               <el-input-number v-model="qty" :min="1" :max="Math.max(1, ctx.quota)" :step="1000" controls-position="right" />
-              <template v-if="!ctx.counter.start_locked">
-                <el-link v-if="!startOpen" type="primary" :underline="false" @click="startOpen = true">{{ t("generate.setStart") }}</el-link>
-                <el-input v-else v-model="startText" clearable class="start" :placeholder="t('generate.startPlaceholder')" />
-              </template>
             </div>
-            <div v-if="startOpen && !ctx.counter.start_locked" class="muted small">{{ t("generate.startHint") }}</div>
             <div v-if="previewing" class="result muted">{{ t("generate.previewing") }}</div>
             <div v-else-if="previewError" class="result err">{{ previewError }}</div>
             <div v-else-if="preview" class="result">
-              <el-alert v-if="preview.next?.adjusted && preview.start_override == null" type="warning" :closable="false" show-icon
+              <el-alert v-if="preview.next?.adjusted" type="warning" :closable="false" show-icon
                 :title="t('generate.startAdjusted', { sn: preview.next.by_sn, start: preview.start_sn })" />
               <span class="sn-mono">{{ preview.start_sn }} ~ {{ preview.end_sn }}</span>
               <span class="muted num">
@@ -294,8 +288,6 @@ const ctxLoading = ref(false);
 const ruleId = ref<number | null>(null);
 const ruleBusy = ref(false);
 const qty = ref(1);
-const startOpen = ref(false);
-const startText = ref("");
 const preview = ref<any>(null);
 const previewing = ref(false);
 const previewError = ref("");
@@ -306,7 +298,7 @@ let previewSeq = 0;
 let alive = true;
 
 const defaultQty = (quota: number) => suggestQty(quota, DEFAULT_PAGE_LIMIT);
-// 已生成过的 PI 规则与起始号都已确定，行上可直接生成；首次生成要在抽屉里选规则 / 指定起始号
+// 已生成过的 PI 规则已确定，行上可直接生成；首次生成要在抽屉里选规则
 const canQuickGen = (row: any) => row.start_locked && !row.unmapped;
 // 「分配 N 枚」只在待分配页签显示；全部页签里没有可生成量时也给出分配
 const showAlloc = (row: any) => row.pending_alloc > 0 && (view.value === "TO_ALLOC" || (view.value === "ALL" && !row.quota));
@@ -423,15 +415,10 @@ async function loadContext(params: { pi?: string; bill_no?: string }) {
   ctxLoading.value = true;
   try {
     const c = await api.genPiContext(params);
-    const changedPi = ctx.value?.pi_no !== c.pi_no;
     ctx.value = c;
     detailPi.value = c.pi_no;
     if (!c.rule_options.some((o: any) => o.rule_id === ruleId.value)) {
       ruleId.value = c.rule_options[0]?.rule_id ?? null;
-    }
-    if (changedPi) {
-      startOpen.value = false;
-      startText.value = "";
     }
     qty.value = Math.max(1, defaultQty(c.quota));
     schedulePreview();
@@ -443,12 +430,7 @@ async function loadContext(params: { pi?: string; bill_no?: string }) {
   }
 }
 
-const startSeq = () => {
-  const s = startText.value.trim();
-  return s ? Number(s) : null;
-};
-
-// 数量、起始号、所选规则停顿后自动预演；预演结果过时就丢弃
+// 数量、所选规则停顿后自动预演；预演结果过时就丢弃
 function schedulePreview() {
   window.clearTimeout(previewTimer);
   previewSeq++;
@@ -461,21 +443,16 @@ function schedulePreview() {
     previewError.value = t("generate.rulePickRequired");
     return;
   }
-  const s = startSeq();
-  if (s !== null && (!Number.isInteger(s) || s < 1)) {
-    previewError.value = t("generate.startInvalid");
-    return;
-  }
   previewTimer = window.setTimeout(doPreview, 400);
 }
-watch([qty, startText, ruleId], schedulePreview);
+watch([qty, ruleId], schedulePreview);
 
 async function doPreview() {
   const c = ctx.value;
   const seq = ++previewSeq;
   previewing.value = true;
   try {
-    const p = await api.genPiPreview({ pi_no: c.pi_no, qty: qty.value, start_seq: startSeq(), rule_id: c.rule ? null : ruleId.value }, true);
+    const p = await api.genPiPreview({ pi_no: c.pi_no, qty: qty.value, rule_id: c.rule ? null : ruleId.value }, true);
     if (seq === previewSeq) preview.value = p;
   } catch (e: any) {
     if (seq === previewSeq) previewError.value = e.message;
@@ -509,7 +486,7 @@ async function runGenerate(p: any) {
   );
   busy.value = `gen:${p.pi_no}`;
   try {
-    const items = p.items.map((it: any) => ({ preview_token: it.token, bill_no: it.bill_no, qty: it.qty, start_seq: it.start_override }));
+    const items = p.items.map((it: any) => ({ preview_token: it.token, bill_no: it.bill_no, qty: it.qty }));
     const r = await api.generatePi({ pi_no: p.pi_no, items });
     await settle(p.pi_no, r.jobs);
   } catch {
@@ -612,7 +589,6 @@ onUnmounted(() => {
 .card h4 { margin: 0; font-size: 14px; display: flex; align-items: center; gap: 8px; }
 .result { background: var(--el-fill-color-light); border-radius: 6px; padding: 8px 10px; font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
 .result.err { color: var(--el-color-danger); }
-.start { width: 220px; }
 .lines { margin: 0 12px 0 48px; width: auto; }
 :deep(.bar) { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--el-fill-color-dark); min-width: 100px; }
 :deep(.bar.big) { height: 10px; }

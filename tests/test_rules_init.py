@@ -1,4 +1,4 @@
-"""规则版本、起始号与历史导入、分区与痕迹归档。（对应 RuleInitIT）"""
+"""规则版本、分区与痕迹归档。（对应 RuleInitIT）"""
 
 import pytest
 from conftest import m, ok, q, uid
@@ -82,45 +82,6 @@ def test_rule_resolution_pi_over_customer_over_general(api, admin, w):
     assert ok(api.get("/api/rules/effective" + q(pi=pi), admin)).text("prefix") == "PIR"
 
 
-def test_pi_init_start_and_history_import(api, admin, w, sql):
-    pi, bill = uid("PI"), uid("MO")
-    w.pi_rule(pi, "H", 10, 5)
-    w.order(bill, ORG, "C1", pi, ("A", 10))
-    assert api.post("/api/pi-init", m(pi_no=pi, sns=["H00010", "H00010"]), admin).code == "PI_IMPORT_DUP_IN_LIST"
-    out = ok(
-        api.post(
-            "/api/pi-init",
-            m(pi_no=pi, start_seq=100, factory_code=FAC, sns=["H00120", "H00005", "LEGACY-XYZ", ""]),
-            admin,
-        )
-    ).body
-    assert out["imported_qty"] == 3
-    assert out["decoded_qty"] == 2
-    assert out["last_seq_dec"] == 120
-    assert (
-        sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PRINTED' AND source = 'IMPORT'", pi) == 3
-    )
-    assert api.post("/api/pi-init", m(pi_no=pi, start_seq=1), admin).code == "PI_INIT_LOCKED"
-    assert w.preview(bill, 1, 500).code == "GEN_START_NOT_ALLOWED"
-    assert w.generate(bill, 1)["start_sn"] == "H00121"
-    st = ok(api.get("/api/pi-init" + q(pi=pi), admin)).body
-    assert st["start_allowed"] is False
-    assert len(st["imports"]) == 1
-
-
-def test_imported_sn_participates_in_duplicate_check(api, admin, w, sql):
-    pi, bill = uid("PI"), uid("MO")
-    w.pi_rule(pi, "I", 10, 5)
-    w.order(bill, ORG, "C1", pi, ("A", 10))
-    ok(api.post("/api/pi-init", m(pi_no=pi, sns=["LEGACY-1"]), admin))
-    pi2 = uid("PI")
-    ok(api.post("/api/pi-init", m(pi_no=pi2, sns=["LEGACY-1"]), admin))
-    assert sql.count("SELECT COUNT(*) FROM sn_key WHERE sn = 'LEGACY-1' AND pi_no = %s", pi) == 1, (
-        "same SN allowed in a different PI"
-    )
-    assert api.post("/api/pi-init", m(pi_no=uid("PI")), admin).code == "PI_INIT_EMPTY"
-
-
 def test_partitions_maintained_and_old_audit_archived(app_client, sql):
     from app.services import partitions
 
@@ -154,15 +115,6 @@ def test_partitions_maintained_and_old_audit_archived(app_client, sql):
     assert sql.count("SELECT COUNT(*) FROM sn_audit WHERE detail = 'archive-me'") == 0
     assert sql.count("SELECT COUNT(*) FROM sn_audit_archive WHERE detail = 'archive-me'") == 1
     assert partitions.archive(0) == 0, "0 = keep forever"
-
-
-def test_pi_init_rejects_over_long_pi_instead_of_crashing(api, admin, sql):
-    pi = "P" * 80
-    r = api.post("/api/pi-init", m(pi_no=pi, start_seq=5), admin)
-    assert r.status == 422 and r.code == "VALIDATION", str(r)
-    # 不能被截断成 64 位写进计数器
-    assert sql.count("SELECT COUNT(*) FROM sn_pi_counter WHERE pi_no = %s", pi[:64]) == 0
-    assert api.post("/api/pi-init", m(pi_no="P" * 64, start_seq=5), admin).status == 200
 
 
 def _template(api, admin, prefix: str) -> int:

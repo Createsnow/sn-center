@@ -411,19 +411,13 @@ class World:
             )
         )
 
-    def preview(self, bill: str, qty: int, start: int | None = None, rule_id: int | None = None) -> Res:
-        return self.api.post(
-            "/api/generate/preview", m(bill_no=bill, qty=qty, start_seq=start, rule_id=rule_id), self.admin
-        )
+    def preview(self, bill: str, qty: int, rule_id: int | None = None) -> Res:
+        return self.api.post("/api/generate/preview", m(bill_no=bill, qty=qty, rule_id=rule_id), self.admin)
 
-    def generate(self, bill: str, qty: int, start: int | None = None, rule_id: int | None = None) -> dict:
+    def generate(self, bill: str, qty: int, rule_id: int | None = None) -> dict:
         """预演 + 生成（同步完成），返回任务。"""
-        p = ok(self.preview(bill, qty, start, rule_id))
-        j = ok(
-            self.api.post(
-                "/api/generate", m(preview_token=p.text("token"), bill_no=bill, qty=qty, start_seq=start), self.admin
-            )
-        )
+        p = ok(self.preview(bill, qty, rule_id))
+        j = ok(self.api.post("/api/generate", m(preview_token=p.text("token"), bill_no=bill, qty=qty), self.admin))
         assert j.text("status") == "SUCCESS", str(j)
         return j.body
 

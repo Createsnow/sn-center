@@ -155,10 +155,6 @@ class Settings:
         return self.get_bool("SN_ACQUIRE_REQUIRE_SNAPSHOT", True)
 
     @property
-    def import_max(self) -> int:
-        return self.get_int("SN_IMPORT_MAX", 500_000)
-
-    @property
     def callback_max(self) -> int:
         return self.get_int("SN_CALLBACK_MAX", 200_000)
 

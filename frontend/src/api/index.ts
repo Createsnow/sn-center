@@ -58,8 +58,6 @@ export const api = {
   genJobs: (params?: Q) => get("/generate/jobs", params),
   allocate: (data: Q) => post("/generate/allocate", data),
   allocatePi: (pi_no: string) => post("/generate/pi-allocate", { pi_no }),
-  piStatus: (pi: string) => get("/pi-init", { pi }),
-  piInit: (data: Q) => http.post("/pi-init", data, { timeout: 0 }),
   // 领取与打印
   acquirePis: (params?: Q) => get("/acquire/pis", params),
   acquireSegments: (params?: Q) => get("/acquire/segments", params),

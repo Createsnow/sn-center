@@ -4,7 +4,6 @@ from app.schemas.common import In
 class PreviewIn(In):
     bill_no: str | None = None
     qty: int | None = None
-    start_seq: int | None = None
     rule_id: int | None = None
 
 
@@ -15,7 +14,6 @@ class GenerateIn(PreviewIn):
 class PiPreviewIn(In):
     pi_no: str | None = None
     qty: int | None = None
-    start_seq: int | None = None
     rule_id: int | None = None
 
 
@@ -23,7 +21,6 @@ class PiGenerateItem(In):
     preview_token: str | None = None
     bill_no: str | None = None
     qty: int | None = None
-    start_seq: int | None = None
 
 
 class PiGenerateIn(In):
@@ -39,16 +36,6 @@ class AllocateIn(In):
     bill_no: str | None = None
     qty: int | None = None
     factory_code: str | None = None
-
-
-class PiInitIn(In):
-    pi_no: str | None = None
-    start_seq: int | None = None
-    sns: list[str | None] | None = None
-    customer_code: str | None = None
-    factory_code: str | None = None
-    material_code: str | None = None
-    file_name: str | None = None
 
 
 class AcquireIn(In):
