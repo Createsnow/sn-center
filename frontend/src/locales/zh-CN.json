@@ -246,6 +246,7 @@
     "genN": "生成 {n} 枚",
     "genMore": "继续生成",
     "genFirst": "首次生成…",
+    "recentOnly": "只显示最近 {n} 页 PI，更早的请输入关键字搜索",
     "more": "只显示前 {n} 张 PI，请输入关键字缩小范围",
     "total": "共 {n}",
     "current": "当前",

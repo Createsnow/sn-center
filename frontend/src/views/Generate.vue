@@ -56,7 +56,8 @@
       </div>
       <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="shown.length" :page-size="pageSize"
         :current-page="page" :page-sizes="[20, 50, 100]" @current-change="(p: number) => (page = p)" @size-change="onSize" />
-      <p v-if="pis.length >= LIST_LIMIT || allPis.length >= LIST_LIMIT" class="muted">{{ t("generate.more", { n: LIST_LIMIT }) }}</p>
+      <p v-if="view === 'TO_GEN' && allPis.length > genCap" class="muted">{{ t("generate.recentOnly", { n: GEN_PAGES }) }}</p>
+      <p v-else-if="pis.length >= LIST_LIMIT || allPis.length >= LIST_LIMIT" class="muted">{{ t("generate.more", { n: LIST_LIMIT }) }}</p>
     </div>
 
     <el-drawer :model-value="!!detailPi" size="780px" @close="closeDetail">
@@ -273,6 +274,8 @@ import PageHead from "@/components/PageHead.vue";
 type View = "TO_GEN" | "TO_ALLOC";
 const VIEWS: View[] = ["TO_GEN", "TO_ALLOC"];
 const LIST_LIMIT = 500;
+/** 待生成页签只列最近下单的几页 PI，更早的用搜索找。 */
+const GEN_PAGES = 3;
 
 /** 进度条：已分配 / 已生成待分配 / 未生成，占订单总数（已生成超过总数时以已生成为准）。 */
 const ProgressBar = defineComponent({
@@ -330,8 +333,10 @@ const ruleLabel = (o: any) => `${o.rule_code} · ${o.rule_name}`;
 const lastRevocable = computed<GenJob | undefined>(() => ctx.value?.jobs.find((j: GenJob) => j.revocable));
 const nextSn = computed(() => ctx.value?.next?.start_sn ?? ctx.value?.rule_options.find((o: any) => o.rule_id === ruleId.value)?.sample_sn ?? null);
 
+const genCap = computed(() => GEN_PAGES * pageSize.value);
+
 function rowsOf(v: View) {
-  if (v === "TO_GEN") return allPis.value;
+  if (v === "TO_GEN") return allPis.value.slice(0, genCap.value);
   return pis.value.filter((r) => r.pending_alloc > 0);
 }
 

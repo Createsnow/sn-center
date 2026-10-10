@@ -246,6 +246,7 @@
     "genN": "Tạo {n}",
     "genMore": "Tạo tiếp",
     "genFirst": "Tạo lần đầu…",
+    "recentOnly": "Chỉ hiển thị {n} trang PI gần nhất; hãy tìm kiếm để xem PI cũ hơn",
     "more": "Chỉ hiển thị {n} PI đầu, hãy nhập từ khóa để thu hẹp",
     "total": "Tổng {n}",
     "current": "Hiện tại",
