@@ -229,7 +229,7 @@ M = {
 "generate.allocN": ("分配 {n} 枚", "Allocate {n}", "Phân bổ {n}"),
 "generate.genN": ("生成 {n} 枚", "Generate {n}", "Tạo {n}"),
 "generate.genMore": ("继续生成", "Continue", "Tạo tiếp"),
-"generate.genFirst": ("首次生成…", "First run…", "Tạo lần đầu…"),
+"generate.genFirst": ("首次生成", "First run", "Tạo lần đầu"),
 "generate.recentOnly": ("只显示最近 {n} 页 PI，更早的请输入关键字搜索", "Showing the latest {n} pages of PIs; search to find older ones", "Chỉ hiển thị {n} trang PI gần nhất; hãy tìm kiếm để xem PI cũ hơn"),
 "generate.more": ("只显示前 {n} 张 PI，请输入关键字缩小范围", "Showing the first {n} PIs; type to narrow down", "Chỉ hiển thị {n} PI đầu, hãy nhập từ khóa để thu hẹp"),
 "generate.total": ("共 {n}", "Total {n}", "Tổng {n}"),

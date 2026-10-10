@@ -245,7 +245,7 @@
     "allocN": "Allocate {n}",
     "genN": "Generate {n}",
     "genMore": "Continue",
-    "genFirst": "First run…",
+    "genFirst": "First run",
     "recentOnly": "Showing the latest {n} pages of PIs; search to find older ones",
     "more": "Showing the first {n} PIs; type to narrow down",
     "total": "Total {n}",

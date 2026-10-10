@@ -42,7 +42,7 @@
         <el-table-column :label="t('generate.pendingAlloc')" align="right" width="90">
           <template #default="{ row }"><span class="num" :class="{ zero: !row.pending_alloc }">{{ row.pending_alloc }}</span></template>
         </el-table-column>
-        <el-table-column :label="t('common.actions')" width="150" align="right">
+        <el-table-column :label="t('common.actions')" width="150" align="right" class-name="acts">
           <template #default="{ row }">
             <el-button v-if="showAlloc(row)" size="small" type="success" :loading="busy === `alloc:${row.pi}`" :disabled="!!busy && busy !== `alloc:${row.pi}`"
               @click.stop="allocatePi(row.pi, row.pending_alloc)">{{ t("generate.allocN", { n: row.pending_alloc }) }}</el-button>
@@ -614,6 +614,8 @@ onUnmounted(() => {
 .snap { font-size: 12px; }
 .cnt { margin-left: 6px; font-size: 12px; opacity: 0.75; }
 .pis :deep(.el-table__row) { cursor: pointer; }
+/* 行上按钮等宽，「首次生成」「继续生成」「生成 N 枚」右侧对齐、宽度一致 */
+.pis :deep(.acts .el-button) { min-width: 88px; }
 .zero { color: var(--app-muted); }
 .ml { margin-left: 6px; }
 .small { font-size: 12px; }
