@@ -1,0 +1,100 @@
+{
+  "authentication": [
+    {
+      "case": "cmp_auth_100943131701U-file.json",
+      "rows": 1,
+      "orderedMatchingColumns": 22,
+      "typesEqual": true,
+      "sheetAndHeaderEqual": true,
+      "orderedDomCellsExceptTimeEqual": true,
+      "differingColumns": [
+        "时间",
+        "请求ID"
+      ],
+      "sourceSha256": "ed6793d536ad734d745d4db932c9f6bc3af638607f95df123ba0ea32453b2205",
+      "migrationSha256": "4e54fbec398fadf4090c6b788422c07a002046c51f0e6285409a99acb5339e0b",
+      "fullFileEquality": false
+    },
+    {
+      "case": "cmp_auth_100943131701L-file.json",
+      "rows": 6,
+      "orderedMatchingColumns": 22,
+      "typesEqual": true,
+      "sheetAndHeaderEqual": true,
+      "orderedDomCellsExceptTimeEqual": true,
+      "differingColumns": [
+        "时间",
+        "请求ID"
+      ],
+      "sourceSha256": "971d6e279e1efe8635ce3bcfc0697ca1f11b7b5989d88a1559654b36e8bde533",
+      "migrationSha256": "7f7809b660bba3df8a47ef3f710938673e77c95844fc4cefd62b1de8ae1b288d",
+      "fullFileEquality": false
+    },
+    {
+      "case": "cmp_auth_100943131701A-file.json",
+      "rows": 5,
+      "orderedMatchingColumns": 22,
+      "typesEqual": true,
+      "sheetAndHeaderEqual": true,
+      "orderedDomCellsExceptTimeEqual": true,
+      "differingColumns": [
+        "时间",
+        "请求ID"
+      ],
+      "sourceSha256": "642bc3430e1c3b304c322300df4d9c06db0c13ffaf766b54c58604f85c7f8aa6",
+      "migrationSha256": "d84a10e3a3a41b20aa49ac0946329c06de42b33eccb1efb4420ed9f4befaf52a",
+      "fullFileEquality": false
+    },
+    {
+      "case": "cmp_auth_100943131701D-file.json",
+      "rows": 2,
+      "orderedMatchingColumns": 22,
+      "typesEqual": true,
+      "sheetAndHeaderEqual": true,
+      "orderedDomCellsExceptTimeEqual": true,
+      "differingColumns": [
+        "时间",
+        "请求ID"
+      ],
+      "sourceSha256": "7f44251baa6d272fedf08b3f076d89f37870b691715d104d48e4ba265fec4684",
+      "migrationSha256": "9f1679006fdc37d6140fc3b816190e2d3d6be338c64b3238036b56c26096c566",
+      "fullFileEquality": false
+    }
+  ],
+  "authenticationActorLayout": [
+    {
+      "case": "cmp_auth_100943131701U-actors.json",
+      "rows": 1,
+      "characterRectanglesAndWrappingEqual": true
+    },
+    {
+      "case": "cmp_auth_100943131701L-actors.json",
+      "rows": 6,
+      "characterRectanglesAndWrappingEqual": true
+    },
+    {
+      "case": "cmp_auth_100943131701A-actors.json",
+      "rows": 5,
+      "characterRectanglesAndWrappingEqual": true
+    },
+    {
+      "case": "cmp_auth_100943131701D-actors.json",
+      "rows": 2,
+      "characterRectanglesAndWrappingEqual": true
+    }
+  ],
+  "authenticationMessagePaint": [
+    {
+      "case": "rejected-login-paint.json",
+      "bothVisibleBeforeAndAfterCapture": true,
+      "messageEqual": true,
+      "geometryEqual": false
+    },
+    {
+      "case": "locked-login-paint.json",
+      "bothVisibleBeforeAndAfterCapture": true,
+      "messageEqual": true,
+      "geometryEqual": false
+    }
+  ]
+}

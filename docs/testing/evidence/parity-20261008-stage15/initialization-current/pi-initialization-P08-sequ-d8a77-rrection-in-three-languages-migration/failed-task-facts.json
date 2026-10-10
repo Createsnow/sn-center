@@ -1,0 +1,20 @@
+[
+  {
+    "state": "FAILED",
+    "error_code": 1004000015,
+    "error_params": "{\"pi\": \"CMP-UI-INIT-PI\", \"seq\": \"5\", \"reason\": \"PI_IMPORT_SEQ_DUP\"}",
+    "processed": 1000
+  },
+  {
+    "state": "FAILED",
+    "error_code": 1004000015,
+    "error_params": "{\"pi\": \"CMP-UI-INIT-PI\", \"seq\": \"5\", \"reason\": \"PI_IMPORT_SEQ_DUP\"}",
+    "processed": 1000
+  },
+  {
+    "state": "FAILED",
+    "error_code": 1004000015,
+    "error_params": "{\"pi\": \"CMP-UI-INIT-PI\", \"seq\": \"5\", \"reason\": \"PI_IMPORT_SEQ_DUP\"}",
+    "processed": 1000
+  }
+]

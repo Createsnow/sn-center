@@ -1,0 +1,10 @@
+{
+  "before": {
+    "opacity": 1,
+    "text": "Nhà máy của bạn không có SN trong PI CMP-UI-QUERY-SCOPE-PI-B"
+  },
+  "after": {
+    "opacity": 1,
+    "text": "Nhà máy của bạn không có SN trong PI CMP-UI-QUERY-SCOPE-PI-B"
+  }
+}

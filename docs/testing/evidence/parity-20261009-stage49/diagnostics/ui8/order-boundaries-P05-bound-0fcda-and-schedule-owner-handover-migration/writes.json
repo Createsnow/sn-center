@@ -1,0 +1,27 @@
+{
+  "writes": [
+    {
+      "locale": "zh-CN",
+      "suffix": "nel",
+      "body": {
+        "code": 1004000034,
+        "message": "sn.orderBillRequired",
+        "data": null,
+        "params": {},
+        "traceId": "a603dfe3-089d-482c-b196-0ed4f801a8b0"
+      }
+    },
+    {
+      "locale": "zh-CN",
+      "suffix": "separator",
+      "body": {
+        "code": 1004000034,
+        "message": "sn.orderBillRequired",
+        "data": null,
+        "params": {},
+        "traceId": "3cf7d377-7076-4e09-8e58-089d0151d6b1"
+      }
+    }
+  ],
+  "pageErrors": []
+}

@@ -1,0 +1,14 @@
+{
+  "before": {
+    "opacity": 1,
+    "text": "工号或密码错误",
+    "top": 27,
+    "bottom": 45
+  },
+  "after": {
+    "opacity": 1,
+    "text": "工号或密码错误",
+    "top": 27,
+    "bottom": 45
+  }
+}

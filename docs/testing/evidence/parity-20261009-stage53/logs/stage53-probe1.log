@@ -1,0 +1,22 @@
+
+Running 2 tests using 1 worker
+
+(node:46532) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ok 1 [prototype] › e2e\parity\order-scroll.spec.ts:10:1 › P05 scroll: initial navigation and full sync with real request overlap (31.0s)
+(node:51936) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  x  2 [migration] › e2e\parity\order-scroll.spec.ts:10:1 › P05 scroll: initial navigation and full sync with real request overlap (4.0m)
+
+
+  1) [migration] › e2e\parity\order-scroll.spec.ts:10:1 › P05 scroll: initial navigation and full sync with real request overlap 
+
+    Test timeout of 240000ms exceeded.
+
+    Error Context: test-results\stage53-probe1\order-scroll-P05-scroll-in-b02cf-c-with-real-request-overlap-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\order-scroll.spec.ts:10:1 › P05 scroll: initial navigation and full sync with real request overlap 
+  1 passed (4.6m)

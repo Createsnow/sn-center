@@ -1,0 +1,151 @@
+{
+  "java": {
+    "protectedOriginalRows": {
+      "items": {
+        "count": 10,
+        "sha256": "606511e3555a5a65685e1725b9efb1238c6651bf9b420e21d933d9343ef8e601"
+      },
+      "keys": {
+        "count": 10,
+        "sha256": "22fe4fd1f2fa814e2369c3ccb98163adfc8d9d4c817e4401866eeaa07e9eb59f"
+      },
+      "counters": {
+        "count": 2,
+        "sha256": "572e4fe78a6a79d72135da3858d98152a9214117b187480e7a10e58388ec3e29"
+      },
+      "rules": {
+        "count": 3,
+        "sha256": "2b3945bc6ba55c27f4a6ccbf6f1ea1d512f003a9aebae86b986bc8454bde3c80"
+      },
+      "versions": {
+        "count": 3,
+        "sha256": "d01d91aa95352e978eb5564f65e57ad242572c20fe33a239228765c1513a7f08"
+      },
+      "allocations": {
+        "count": 1,
+        "sha256": "6f89688c64e053c3f48961b9b45e6e495c28df44431f1bb2e6079cfa54741e10"
+      },
+      "ledger": {
+        "count": 156,
+        "sha256": "dfaea356e77e3b79660c13c61f61da33f88ed7d72952726fc63ab3a5165b756b"
+      },
+      "generation_identity": {
+        "count": 1,
+        "sha256": "89370c52d59ea61ad81db24ecd34b4d6ead202f8c79908953604d20554f183de"
+      },
+      "choices": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "preV29BusinessRowsUnchanged": true,
+    "schedule": {
+      "enabled": 0,
+      "interval_minutes": 1440
+    },
+    "schema": "30",
+    "pendingIndex": [
+      "bill_id",
+      "status",
+      "seq_dec",
+      "created_at",
+      "id"
+    ],
+    "inputChunksCleared": true,
+    "credentialsUnchanged": true,
+    "orders": [
+      {
+        "bill_no": "CMP-MO-001"
+      },
+      {
+        "bill_no": "CMP-MO-002"
+      },
+      {
+        "bill_no": "CMP-MO-FRACTION"
+      }
+    ]
+  },
+  "python": {
+    "protectedOriginalRows": {
+      "items": {
+        "count": 10,
+        "sha256": "762cf145a0b76a3891e15e8358e3d2081aa65519fd10c373653e545a0e6975ae"
+      },
+      "keys": {
+        "count": 10,
+        "sha256": "40fea6d45c5a902477a8c7440ae95be5410972cdc90c8f626b87bebc1df061a9"
+      },
+      "counters": {
+        "count": 2,
+        "sha256": "05844eaafbe16577da6f51f516dee1947f0a2cd1c5870d2b36bb0013044a8157"
+      },
+      "rules": {
+        "count": 3,
+        "sha256": "72019769d18ea687ea9e90a9277049a6e9cdf95dc4743bd810f5ba2d58c64e32"
+      },
+      "versions": {
+        "count": 3,
+        "sha256": "649ac1416f202b1a3591153edd60d4a5e4e4f266532d625f5a467d8107081039"
+      },
+      "allocations": {
+        "count": 1,
+        "sha256": "dbb888334f57e81a2ce11fee82c9f87f2e94fae05a1ff098661e2be966cd391b"
+      },
+      "ledger": {
+        "count": 1,
+        "sha256": "29fb1cd552ab6236fc25736d34bb73788df07dec4726e3e7d4cd19c7c73d28ec"
+      }
+    },
+    "preV29BusinessRowsUnchanged": true,
+    "schedule": {
+      "enabled": 0,
+      "interval_minutes": 1440
+    },
+    "credentialsUnchanged": true,
+    "orders": [
+      {
+        "bill_no": "CMP-MO-001"
+      },
+      {
+        "bill_no": "CMP-MO-002"
+      },
+      {
+        "bill_no": "CMP-MO-FRACTION"
+      }
+    ]
+  },
+  "fixtureControlsCleared": true,
+  "todayAudit": {
+    "java": {
+      "SN_ACQUIRE": "10",
+      "SN_ALLOCATE": "139",
+      "SN_GENERATE": "717",
+      "SN_PRINT": "10"
+    },
+    "python": {
+      "SN_ACQUIRE": "10",
+      "SN_ALLOCATE": "152",
+      "SN_GENERATE": "791",
+      "SN_PRINT": "10"
+    }
+  },
+  "nonInitializationAuditTotalsUnchanged": true,
+  "health": {
+    "status": "UP"
+  },
+  "web": {
+    "15173": 200,
+    "8000": 200
+  },
+  "k3": {
+    "fixture": "synthetic comparison only",
+    "extrasSupported": true,
+    "controlsSupported": true,
+    "queryRequests": 1134,
+    "inflight": 0,
+    "orders": 3,
+    "entries": 4
+  },
+  "liveOpenApiMatches": true,
+  "openApiComparison": "Object equality after sorting only JSON Schema type union arrays"
+}

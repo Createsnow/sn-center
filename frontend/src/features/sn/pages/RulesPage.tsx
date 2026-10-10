@@ -1,18 +1,15 @@
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Alert,
-  AutoComplete,
   Button,
   Drawer,
   Form,
   Input,
   InputNumber,
   Modal,
-  Pagination,
   Radio,
   Select,
-  Space,
   Table,
   Tag,
   Timeline,
@@ -20,15 +17,12 @@ import {
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { UserProfile } from '../../../api/contract';
-import {
-  snApi,
-  paginationTotal,
-  type SnRule,
-  type RuleCommand,
-  type PreviewCommand,
-} from '../../../api/sn';
+import { snApi, type SnRule, type RuleCommand, type PreviewCommand } from '../../../api/sn';
 import { ApiErrorAlert } from '../../../components/ApiErrorAlert';
+import { formatSnTime } from '../../../utils/snTime';
 import { SnPageHead } from '../components/SnPageHead';
+import { normalizeRuleForm, ruleErrorText } from '../ruleErrorText';
+import { usePrototypeFeedback } from '../usePrototypeFeedback';
 
 const scopes = ['GENERAL', 'CUSTOMER', 'PI'];
 const alphabets: Record<number, string> = {
@@ -47,63 +41,63 @@ function VersionDrawer({
   profile: UserProfile;
   close: () => void;
 }) {
-  const { t, i18n } = useTranslation();
-  const [page, setPage] = useState(1);
+  const { t } = useTranslation();
   const list = useQuery({
-    queryKey: ['sn', 'rule-versions', profile.id, profile.authorizationVersion, rule.id, page],
-    queryFn: () => snApi.versions(rule.id, { page, size: 20 }),
+    queryKey: ['sn', 'rule-versions', profile.id, profile.authorizationVersion, rule.id],
+    queryFn: ({ signal }) => snApi.allVersions(rule.id, signal),
   });
   return (
     <Drawer
       open
-      title={t('snPages.rules.versionsOf', { code: rule.code })}
+      title={t('prototype:rules.versionsOf', { code: rule.code })}
       onClose={close}
       width={560}
+      rootClassName="sn-rule-versions"
     >
       <ApiErrorAlert error={list.error} />
       <Timeline
-        items={list.data?.items.map((version) => ({
-          color: version.version === rule.currentVersion ? 'blue' : 'gray',
+        items={list.data?.map((version) => ({
+          icon: (
+            <span
+              className={`sn-rule-version-dot${version.version === rule.currentVersion ? ' current' : ''}`}
+            />
+          ),
           content: (
             <>
-              <b>v{version.version}</b>
-              <span className="sn-mono">
-                {' '}
-                {version.prefix}
-                {'#'.repeat(version.length)}
-                {version.suffix}
-              </span>
-              <p className="sn-muted">
-                {new Date(version.createdAt).toLocaleString(i18n.language)} ·{' '}
-                {t('snPages.rules.base')} {version.base} ·{' '}
-                {version.createdBy ?? t('snPages.rules.creatorUnknown')}
-              </p>
-              {version.used && <Tag color="success">{t('snPages.rules.used')}</Tag>}
+              <div className="sn-rule-version-line">
+                <b>v{version.version}</b>
+                <span className="sn-mono">
+                  {version.prefix}
+                  <i>{'#'.repeat(version.length)}</i>
+                  {version.suffix}
+                </span>
+                <span className="sn-muted">
+                  {t('prototype:rules.base')} {version.base} · {version.createdByName ?? '—'}
+                </span>
+                {version.used && <Tag color="success">{t('prototype:rules.used')}</Tag>}
+              </div>
+              <div className="sn-rule-version-time">{formatSnTime(version.createdAt)}</div>
             </>
           ),
         }))}
-      />
-      <Pagination
-        current={page}
-        pageSize={20}
-        total={paginationTotal(list.data?.total)}
-        onChange={setPage}
       />
     </Drawer>
   );
 }
 
-/** 表单预览仅计算，250ms合并输入；Query按完整参数区分响应，旧预览不会覆盖新表单。 */
+/** 预览仅计算；250ms 合并输入，Query 按完整参数隔离响应，错误内联显示。 */
 function RuleDialog({
   editing,
   profile,
   close,
   done,
+  failed,
 }: {
   editing?: SnRule;
   profile: UserProfile;
   close: () => void;
   done: (action: string) => void;
+  failed: (text: string) => void;
 }) {
   const { t } = useTranslation();
   const cache = useQueryClient();
@@ -163,157 +157,149 @@ function RuleDialog({
     queryKey: ['sn', 'rule-preview', profile.id, profile.authorizationVersion, previewInput],
     queryFn: () => snApi.preview(previewInput),
     retry: false,
+    placeholderData: (previous) => previous,
     enabled: profile.permissions.includes('sn:rule:preview'),
   });
-  const [customerText, setCustomerText] = useState('');
-  const [customerPage, setCustomerPage] = useState(1);
+  const [customerText, setCustomerText] = useState<string>();
   const customers = useQuery({
-    queryKey: [
-      'sn',
-      'customer-options',
-      profile.id,
-      profile.authorizationVersion,
-      customerText,
-      customerPage,
-    ],
-    queryFn: () => snApi.customers({ q: customerText, page: customerPage, size: 50 }),
-    enabled: values.bindScope === 'CUSTOMER' && profile.permissions.includes('sn:order:list'),
+    queryKey: ['sn', 'rule-customers', profile.id, profile.authorizationVersion, customerText],
+    queryFn: ({ signal }) => snApi.ruleCustomers(customerText ?? '', signal),
+    enabled:
+      !editing &&
+      values.bindScope === 'CUSTOMER' &&
+      customerText !== undefined &&
+      profile.permissions.includes('sn:order:list'),
   });
   const save = useMutation({
     mutationFn: async (value: RuleCommand) => {
-      const command = {
-        ...value,
-        revision: editing?.revision,
-        bindValue: value.bindScope === 'GENERAL' ? '' : value.bindValue,
-      };
+      const command = normalizeRuleForm({ ...defaults, ...value });
       if (editing) return (await snApi.updateRule(editing.id, command)).action;
       await snApi.createRule(command);
       return 'CREATED';
     },
-    onSuccess: async (action) => {
-      await cache.invalidateQueries({ queryKey: ['sn'] });
+    retry: false,
+    onError: (error) => failed(ruleErrorText(error, t)),
+    onSuccess: (action) => {
       done(action);
       close();
+      void cache.invalidateQueries({ queryKey: ['sn'] });
     },
   });
   return (
     <Modal
       open
       width={640}
+      style={{ top: '15vh' }}
+      className="sn-rule-modal"
       title={
-        editing ? t('snPages.rules.editTitle', { code: editing.code }) : t('snPages.rules.create')
+        editing
+          ? t('prototype:rules.editTitle', { code: editing.code })
+          : t('prototype:rules.create')
       }
       onCancel={close}
       onOk={() => form.submit()}
       confirmLoading={save.isPending}
-      okText={t('snPages.common.save')}
-      cancelText={t('snPages.common.cancel')}
+      okText={t('prototype:common.save')}
+      cancelText={t('prototype:common.cancel')}
     >
-      <ApiErrorAlert error={save.error} />
       {editing && (
         <Alert
           type="info"
-          title={t(editing.current.used ? 'snPages.rules.editUsed' : 'snPages.rules.editUnused')}
+          showIcon
+          className="sn-rule-edit-hint"
+          title={t(
+            editing.current.used ? 'prototype:rules.editUsed' : 'prototype:rules.editUnused',
+          )}
         />
       )}
       <Form
         form={form}
         initialValues={defaults}
-        layout="vertical"
+        layout="horizontal"
+        labelCol={{ flex: '110px' }}
+        wrapperCol={{ flex: '1 1 0' }}
+        colon={false}
         onFinish={(value) => save.mutate(value)}
       >
-        <Form.Item
-          name="code"
-          label={t('snPages.rules.code')}
-          rules={[{ required: true, pattern: /^[A-Za-z0-9_-]{1,64}$/ }]}
-        >
-          <Input disabled={!!editing} />
-        </Form.Item>
-        <Form.Item
-          name="name"
-          label={t('snPages.rules.name')}
-          rules={[{ required: true, whitespace: true, max: 128 }]}
-        >
+        {!editing && (
+          <Form.Item name="code" label={t('prototype:rules.code')} required>
+            <Input />
+          </Form.Item>
+        )}
+        <Form.Item name="name" label={t('prototype:rules.name')} required>
           <Input />
         </Form.Item>
-        <Form.Item name="bindScope" label={t('snPages.rules.bind')}>
-          <Radio.Group
-            disabled={!!editing}
-            optionType="button"
-            options={scopes.map((scope) => ({
-              value: scope,
-              label: t(`snPages.rules.scope${scope}`),
-            }))}
-          />
-        </Form.Item>
-        {values.bindScope !== 'GENERAL' && (
+        {!editing && (
+          <Form.Item name="bindScope" label={t('prototype:rules.bind')} required>
+            <Radio.Group
+              optionType="button"
+              buttonStyle="solid"
+              options={scopes.map((scope) => ({
+                value: scope,
+                label: t(`prototype:rules.scope${scope}`),
+              }))}
+            />
+          </Form.Item>
+        )}
+        {!editing && values.bindScope !== 'GENERAL' && (
           <Form.Item
             name="bindValue"
-            label={values.bindScope === 'CUSTOMER' ? t('snPages.common.customer') : 'PI'}
-            rules={[{ required: true, whitespace: true, max: 128 }]}
+            label={values.bindScope === 'CUSTOMER' ? t('prototype:common.customer') : 'PI'}
+            required
           >
             {values.bindScope === 'CUSTOMER' ? (
-              <AutoComplete
-                disabled={!!editing}
-                options={customers.data?.items.map((customer) => ({ value: customer }))}
-                onSearch={(text) => {
-                  setCustomerText(text);
-                  setCustomerPage(1);
-                }}
+              <Select
+                virtual={false}
+                showSearch={{ filterOption: false, onSearch: setCustomerText }}
+                options={[
+                  ...new Set([...(customerText ? [customerText] : []), ...(customers.data ?? [])]),
+                ].map((customer) => ({ value: customer }))}
               />
             ) : (
-              <Input disabled={!!editing} />
+              <Input />
             )}
           </Form.Item>
         )}
-        {values.bindScope === 'CUSTOMER' && !editing && (
-          <>
-            <ApiErrorAlert error={customers.error} />
-            {!!customers.data?.items.length && (
-              <Pagination
-                size="small"
-                current={customerPage}
-                pageSize={50}
-                total={paginationTotal(customers.data.total)}
-                onChange={setCustomerPage}
-              />
-            )}
-          </>
-        )}
-        <Form.Item name="prefix" label={t('snPages.rules.prefix')}>
+        <Form.Item name="prefix" label={t('prototype:rules.prefix')}>
           <Input />
         </Form.Item>
-        <Form.Item name="suffix" label={t('snPages.rules.suffix')}>
+        <Form.Item name="suffix" label={t('prototype:rules.suffix')}>
           <Input />
         </Form.Item>
-        <Form.Item name="base" label={t('snPages.rules.base')}>
+        <Form.Item name="base" label={t('prototype:rules.base')}>
           <Radio.Group
             optionType="button"
+            buttonStyle="solid"
             options={[10, 16, 32, 36]}
             onChange={() => form.setFieldValue('alphabet', '')}
           />
         </Form.Item>
-        <Form.Item name="length" label={t('snPages.rules.seqLen')} rules={[{ required: true }]}>
-          <InputNumber min={1} max={12} precision={0} />
+        <Form.Item name="length" label={t('prototype:rules.seqLen')}>
+          <InputNumber mode="spinner" min={1} max={12} precision={0} />
         </Form.Item>
-        <Form.Item
-          name="alphabet"
-          label={t('snPages.rules.charset')}
-          extra={t('snPages.rules.charsetHint')}
-        >
-          <Input className="sn-mono" placeholder={alphabets[values.base ?? 10]} />
+        <Form.Item label={t('prototype:rules.charset')}>
+          <Form.Item name="alphabet" noStyle>
+            <Input className="sn-mono" placeholder={alphabets[values.base ?? 10]} />
+          </Form.Item>
+          <div className="sn-muted">{t('prototype:rules.charsetHint')}</div>
         </Form.Item>
-        <Form.Item label={t('snPages.rules.sample')}>
-          <ApiErrorAlert error={preview.error} />
-          {preview.data && (
-            <div className="sn-rule-samples">
-              {preview.data.samples.map((sample) => (
-                <code key={sample.seqDecimal}>{sample.sn}</code>
-              ))}
-              <span className="sn-muted">
-                {t('snPages.rules.maxSeq')} {preview.data.maxSequence}
-              </span>
-            </div>
+        <Form.Item label={t('prototype:rules.sample')}>
+          {preview.error ? (
+            <span className="sn-muted">{ruleErrorText(preview.error, t)}</span>
+          ) : (
+            preview.data && (
+              <div className="sn-rule-samples">
+                {preview.data.samples.map((sample) => (
+                  <span className="sn-mono" key={sample.seqDecimal}>
+                    {sample.sn}
+                  </span>
+                ))}
+                <span className="sn-muted">
+                  {t('prototype:rules.maxSeq')}{' '}
+                  {new Intl.NumberFormat().format(BigInt(preview.data.maxSequence))}
+                </span>
+              </div>
+            )
           )}
         </Form.Item>
       </Form>
@@ -321,57 +307,57 @@ function RuleDialog({
   );
 }
 
-/** 独立规则页面，保留旧绑定筛选/编码预览/编辑提示及版本抽屉，不改变规则优先级。 */
+/** 全部规则连续展示，筛选与编辑沿用原型；后台分页和规则版本约束保持独立。 */
 export function RulesPage({ profile }: { profile: UserProfile }) {
   const { t } = useTranslation();
-  const [page, setPage] = useState(1);
+  const feedback = usePrototypeFeedback();
   const [scope, setScope] = useState<string>();
   const [q, setQ] = useState('');
+  const [draft, setDraft] = useState('');
   const [dialog, setDialog] = useState<{ editing?: SnRule }>();
   const [versions, setVersions] = useState<SnRule>();
-  const [result, setResult] = useState('');
   const list = useQuery({
-    queryKey: ['sn', 'rules', profile.id, profile.authorizationVersion, page, scope, q],
-    queryFn: () => snApi.rules({ page, size: 20, scope, q }),
+    queryKey: ['sn', 'rules', profile.id, profile.authorizationVersion, scope, q],
+    queryFn: ({ signal }) => snApi.allRules({ scope, q }, signal),
   });
   return (
-    <section className="sn-page">
-      <SnPageHead title={t('snPages.rules.title')} description={t('snPages.rules.desc')}>
+    <section className="sn-page sn-rules-page">
+      {feedback.holder}
+      <SnPageHead title={t('prototype:rules.title')} description={t('prototype:rules.desc')}>
         {profile.permissions.includes('sn:rule:create') && (
           <Button type="primary" icon={<PlusOutlined aria-hidden />} onClick={() => setDialog({})}>
-            {t('snPages.rules.create')}
+            {t('prototype:rules.create')}
           </Button>
         )}
       </SnPageHead>
       <ApiErrorAlert error={list.error} />
-      {result && (
-        <Alert
-          type="success"
-          title={
-            result === 'CREATED' ? t('snPages.common.saved') : t(`snPages.rules.result${result}`)
-          }
-        />
-      )}
       <div className="sn-surface">
         <div className="sn-toolbar">
           <Select
-            aria-label={t('snPages.rules.bind')}
+            aria-label={t('prototype:rules.bind')}
             allowClear
-            placeholder={t('snPages.rules.bind')}
+            virtual={false}
+            placeholder={t('prototype:rules.bind')}
             value={scope}
-            options={scopes.map((value) => ({ value, label: t(`snPages.rules.scope${value}`) }))}
+            options={scopes.map((value) => ({ value, label: t(`prototype:rules.scope${value}`) }))}
             onChange={(value) => {
               setScope(value);
-              setPage(1);
+              setQ(draft);
             }}
           />
-          <Input.Search
-            aria-label={t('snPages.rules.search')}
-            placeholder={t('snPages.rules.search')}
+          <Input
+            aria-label={t('prototype:rules.search')}
+            placeholder={t('prototype:rules.search')}
             allowClear
-            onSearch={(value) => {
-              setQ(value);
-              setPage(1);
+            prefix={<SearchOutlined />}
+            value={draft}
+            onChange={(event) => {
+              setDraft(event.target.value);
+              if (!event.target.value) setQ('');
+            }}
+            onPressEnter={() => {
+              if (draft === q) void list.refetch();
+              else setQ(draft);
             }}
           />
         </div>
@@ -379,19 +365,21 @@ export function RulesPage({ profile }: { profile: UserProfile }) {
           rowKey="id"
           size="small"
           loading={list.isFetching}
-          dataSource={list.data?.items ?? []}
-          scroll={{ x: 1100 }}
+          dataSource={list.data ?? []}
+          pagination={false}
+          scroll={{ x: 1140 }}
+          locale={{ emptyText: t('prototype:common.empty') }}
           columns={[
             {
-              title: t('snPages.rules.code'),
+              title: t('prototype:rules.code'),
               dataIndex: 'code',
-              width: 130,
+              width: 120,
               render: (value: string) => <b>{value}</b>,
             },
-            { title: t('snPages.rules.name'), dataIndex: 'name', width: 140 },
+            { title: t('prototype:rules.name'), dataIndex: 'name', width: 140 },
             {
-              title: t('snPages.rules.bind'),
-              width: 170,
+              title: t('prototype:rules.bind'),
+              width: 160,
               render: (_, row) => (
                 <>
                   <Tag
@@ -403,19 +391,19 @@ export function RulesPage({ profile }: { profile: UserProfile }) {
                           : 'default'
                     }
                   >
-                    {t(`snPages.rules.scope${row.bindScope}`)}
+                    {t(`prototype:rules.scope${row.bindScope}`)}
                   </Tag>
-                  {row.bindValue}
+                  <span className="sn-rule-binding">{row.bindValue}</span>
                 </>
               ),
             },
             {
-              title: t('snPages.rules.version'),
+              title: t('prototype:rules.version'),
               width: 70,
               render: (_, row) => `v${row.currentVersion}`,
             },
             {
-              title: t('snPages.rules.format'),
+              title: t('prototype:rules.format'),
               width: 170,
               render: (_, row) => (
                 <span className="sn-mono">
@@ -425,46 +413,44 @@ export function RulesPage({ profile }: { profile: UserProfile }) {
                 </span>
               ),
             },
-            { title: t('snPages.rules.base'), width: 70, render: (_, row) => row.current.base },
+            { title: t('prototype:rules.base'), width: 70, render: (_, row) => row.current.base },
             {
-              title: t('snPages.rules.charset'),
-              width: 200,
-              render: (_, row) => <span className="sn-mono">{row.current.alphabet}</span>,
+              title: t('prototype:rules.charset'),
+              width: 180,
+              ellipsis: true,
+              render: (_, row) => (
+                <span className="sn-mono" title={row.current.alphabet}>
+                  {row.current.alphabet}
+                </span>
+              ),
             },
             {
-              title: t('snPages.rules.used'),
+              title: t('prototype:rules.used'),
               width: 80,
               render: (_, row) => (
                 <Tag color={row.current.used ? 'success' : 'default'}>
-                  {t(row.current.used ? 'snPages.common.yes' : 'snPages.common.no')}
+                  {t(row.current.used ? 'prototype:common.yes' : 'prototype:common.no')}
                 </Tag>
               ),
             },
             {
-              title: t('snPages.common.actions'),
+              title: t('prototype:common.actions'),
+              width: 150,
               fixed: 'right',
-              width: 145,
               render: (_, row) => (
-                <Space>
+                <div className="sn-rule-actions">
                   {profile.permissions.includes('sn:rule:update') && (
                     <Button type="link" onClick={() => setDialog({ editing: row })}>
-                      {t('snPages.common.edit')}
+                      {t('prototype:common.edit')}
                     </Button>
                   )}
-                  <Button type="link" onClick={() => setVersions(row)}>
-                    {t('snPages.rules.versions')}
+                  <Button type="text" onClick={() => setVersions(row)}>
+                    {t('prototype:rules.versions')}
                   </Button>
-                </Space>
+                </div>
               ),
             },
           ]}
-          pagination={{
-            current: page,
-            pageSize: 20,
-            total: paginationTotal(list.data?.total),
-            onChange: setPage,
-            showSizeChanger: false,
-          }}
         />
       </div>
       {dialog && (
@@ -472,7 +458,14 @@ export function RulesPage({ profile }: { profile: UserProfile }) {
           editing={dialog.editing}
           profile={profile}
           close={() => setDialog(undefined)}
-          done={setResult}
+          failed={feedback.error}
+          done={(action) =>
+            feedback.success(
+              t(
+                action === 'CREATED' ? 'prototype:common.saved' : `prototype:rules.result${action}`,
+              ),
+            )
+          }
         />
       )}
       {versions && (

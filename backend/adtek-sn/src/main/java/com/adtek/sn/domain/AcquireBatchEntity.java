@@ -11,4 +11,6 @@ public record AcquireBatchEntity(
         long actorId,
         String origin,
         String operationId,
-        java.time.Instant createdAt) {}
+        java.time.Instant createdAt,
+        String batchNo,
+        String actorName) {}

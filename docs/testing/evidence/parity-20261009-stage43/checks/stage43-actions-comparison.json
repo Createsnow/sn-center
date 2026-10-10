@@ -1,0 +1,26 @@
+{
+  "statesPerSystem": 9,
+  "dialogs": [
+    {
+      "state": "01-disable-confirm",
+      "allGeometryGroupsEqual": true,
+      "visibleTextEqual": true
+    },
+    {
+      "state": "04-reset-empty",
+      "allGeometryGroupsEqual": true,
+      "visibleTextEqual": true
+    },
+    {
+      "state": "05-reset-invalid",
+      "allGeometryGroupsEqual": true,
+      "visibleTextEqual": true
+    }
+  ],
+  "prototypePageErrors": [
+    "登录已失效，请重新登录"
+  ],
+  "migrationPageErrors": [],
+  "fullPixelEqualityClaimed": false,
+  "browserFlowAssertions": "Cancel disable; real disable/enable; disabled refresh redirects; no silent relogin after enable; repeated same-password reset without list reload; self reset; old sessions rejected; forced password change"
+}

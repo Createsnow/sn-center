@@ -1,0 +1,15 @@
+
+Running 6 tests using 1 worker
+
+(node:20404) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\acquire-print.spec.ts:877:3 › P09 download failure zh-CN: bulk succeeds, history retries without reprint and narrow detail (20.5s)
+  ok 2 [prototype] › e2e\parity\acquire-print.spec.ts:877:3 › P09 download failure en: bulk succeeds, history retries without reprint and narrow detail (21.8s)
+  ok 3 [prototype] › e2e\parity\acquire-print.spec.ts:877:3 › P09 download failure vi: bulk succeeds, history retries without reprint and narrow detail (21.9s)
+(node:44908) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 4 [migration] › e2e\parity\acquire-print.spec.ts:877:3 › P09 download failure zh-CN: bulk succeeds, history retries without reprint and narrow detail (33.5s)
+  ok 5 [migration] › e2e\parity\acquire-print.spec.ts:877:3 › P09 download failure en: bulk succeeds, history retries without reprint and narrow detail (35.0s)
+  ok 6 [migration] › e2e\parity\acquire-print.spec.ts:877:3 › P09 download failure vi: bulk succeeds, history retries without reprint and narrow detail (34.9s)
+
+  6 passed (2.8m)

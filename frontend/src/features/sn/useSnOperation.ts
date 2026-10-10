@@ -57,6 +57,7 @@ export function useSnOperation<T extends { operationId: string }>(
     task,
     mutation,
     cancel,
+    update,
     begin,
     busy,
     retry: () => {

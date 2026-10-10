@@ -1,0 +1,1129 @@
+{
+  "date": "2026-10-08T12:11:11.973249+00:00",
+  "goalComplete": false,
+  "javaSchema": "29",
+  "browserScenariosPassed": 34,
+  "newBrowserScenariosPassed": 4,
+  "availableBrowserScenarios": 126,
+  "wholeSuiteRerun": false,
+  "cases": [
+    {
+      "title": "P08 sn conflict in the second import chunk rolls back all rows and allows correction in three languages",
+      "project": "prototype",
+      "durationMs": 21958,
+      "status": "passed"
+    },
+    {
+      "title": "P08 sequence conflict in the second import chunk rolls back all rows and allows correction in three languages",
+      "project": "prototype",
+      "durationMs": 21533,
+      "status": "passed"
+    },
+    {
+      "title": "P08 rejects a 65 character SN with its line in three languages and accepts the corrected 64 character value",
+      "project": "prototype",
+      "durationMs": 19204,
+      "status": "passed"
+    },
+    {
+      "title": "P08 rejects a start beyond rule capacity in three languages and permits a corrected initialization",
+      "project": "prototype",
+      "durationMs": 18546,
+      "status": "passed"
+    },
+    {
+      "title": "P08 stale page rejects an already initialized PI and can query the original successful history",
+      "project": "prototype",
+      "durationMs": 11049,
+      "status": "passed"
+    },
+    {
+      "title": "P08 query retains displayed PI until lookup, three languages and reload resets form",
+      "project": "prototype",
+      "durationMs": 12384,
+      "status": "passed"
+    },
+    {
+      "title": "P08 pure start validates integers and duplicates, cancellation is read only, initialization locks once",
+      "project": "prototype",
+      "durationMs": 7927,
+      "status": "passed"
+    },
+    {
+      "title": "P08 mixed history preserves zero and undecodable SN, start dominates decoded maximum and snapshot customer applies",
+      "project": "prototype",
+      "durationMs": 6581,
+      "status": "passed"
+    },
+    {
+      "title": "P08 CSV keeps literal quotes and filename after textarea editing without a decoding rule",
+      "project": "prototype",
+      "durationMs": 5310,
+      "status": "passed"
+    },
+    {
+      "title": "P08 import only takes decoded maximum and keeps optional metadata for the next PI",
+      "project": "prototype",
+      "durationMs": 7897,
+      "status": "passed"
+    },
+    {
+      "title": "P08 previously generated PI stays locked without fabricated initialization history",
+      "project": "prototype",
+      "durationMs": 7356,
+      "status": "passed"
+    },
+    {
+      "title": "P08 committed initialization survives failed history reading and manual query without another submission",
+      "project": "prototype",
+      "durationMs": 5877,
+      "status": "passed"
+    },
+    {
+      "title": "P08 committed initialization survives failed status reading and manual query without another submission",
+      "project": "prototype",
+      "durationMs": 5962,
+      "status": "passed"
+    },
+    {
+      "title": "P08 committed initialization with a lost response recovers by query without another submission",
+      "project": "prototype",
+      "durationMs": 5525,
+      "status": "passed"
+    },
+    {
+      "title": "P08 committed initialization with a lost response recovers by reload without another submission",
+      "project": "prototype",
+      "durationMs": 5424,
+      "status": "passed"
+    },
+    {
+      "title": "P08 request lost before delivery can be confirmed again with the same original payload",
+      "project": "prototype",
+      "durationMs": 7090,
+      "status": "passed"
+    },
+    {
+      "title": "P08 failed lookup preserves the displayed PI and edited form until a successful query",
+      "project": "prototype",
+      "durationMs": 5928,
+      "status": "passed"
+    },
+    {
+      "title": "P08 sn conflict in the second import chunk rolls back all rows and allows correction in three languages",
+      "project": "migration",
+      "durationMs": 38040,
+      "status": "passed"
+    },
+    {
+      "title": "P08 sequence conflict in the second import chunk rolls back all rows and allows correction in three languages",
+      "project": "migration",
+      "durationMs": 37521,
+      "status": "passed"
+    },
+    {
+      "title": "P08 rejects a 65 character SN with its line in three languages and accepts the corrected 64 character value",
+      "project": "migration",
+      "durationMs": 29368,
+      "status": "passed"
+    },
+    {
+      "title": "P08 rejects a start beyond rule capacity in three languages and permits a corrected initialization",
+      "project": "migration",
+      "durationMs": 29039,
+      "status": "passed"
+    },
+    {
+      "title": "P08 stale page rejects an already initialized PI and can query the original successful history",
+      "project": "migration",
+      "durationMs": 20845,
+      "status": "passed"
+    },
+    {
+      "title": "P08 query retains displayed PI until lookup, three languages and reload resets form",
+      "project": "migration",
+      "durationMs": 25173,
+      "status": "passed"
+    },
+    {
+      "title": "P08 pure start validates integers and duplicates, cancellation is read only, initialization locks once",
+      "project": "migration",
+      "durationMs": 20834,
+      "status": "passed"
+    },
+    {
+      "title": "P08 mixed history preserves zero and undecodable SN, start dominates decoded maximum and snapshot customer applies",
+      "project": "migration",
+      "durationMs": 17438,
+      "status": "passed"
+    },
+    {
+      "title": "P08 CSV keeps literal quotes and filename after textarea editing without a decoding rule",
+      "project": "migration",
+      "durationMs": 15065,
+      "status": "passed"
+    },
+    {
+      "title": "P08 import only takes decoded maximum and keeps optional metadata for the next PI",
+      "project": "migration",
+      "durationMs": 20141,
+      "status": "passed"
+    },
+    {
+      "title": "P08 previously generated PI stays locked without fabricated initialization history",
+      "project": "migration",
+      "durationMs": 17423,
+      "status": "passed"
+    },
+    {
+      "title": "P08 committed initialization survives failed history reading and manual query without another submission",
+      "project": "migration",
+      "durationMs": 17348,
+      "status": "passed"
+    },
+    {
+      "title": "P08 committed initialization survives failed status reading and manual query without another submission",
+      "project": "migration",
+      "durationMs": 17381,
+      "status": "passed"
+    },
+    {
+      "title": "P08 committed initialization with a lost response recovers by query without another submission",
+      "project": "migration",
+      "durationMs": 15896,
+      "status": "passed"
+    },
+    {
+      "title": "P08 committed initialization with a lost response recovers by reload without another submission",
+      "project": "migration",
+      "durationMs": 17215,
+      "status": "passed"
+    },
+    {
+      "title": "P08 request lost before delivery can be confirmed again with the same original payload",
+      "project": "migration",
+      "durationMs": 17753,
+      "status": "passed"
+    },
+    {
+      "title": "P08 failed lookup preserves the displayed PI and edited form until a successful query",
+      "project": "migration",
+      "durationMs": 17580,
+      "status": "passed"
+    }
+  ],
+  "pairedBusinessSnapshotsEqual": [
+    "pi-initialization-P08-comm-15b36--without-another-submission-prototype\\response-lost-query-facts.json",
+    "pi-initialization-P08-comm-955c1--without-another-submission-prototype\\response-lost-reload-facts.json",
+    "pi-initialization-P08-comm-c6452--without-another-submission-prototype\\result-query-recovered-facts.json",
+    "pi-initialization-P08-comm-c6452--without-another-submission-prototype\\result-read-failed-facts.json",
+    "pi-initialization-P08-comm-cbf77--without-another-submission-prototype\\result-query-recovered-facts.json",
+    "pi-initialization-P08-comm-cbf77--without-another-submission-prototype\\result-read-failed-facts.json",
+    "pi-initialization-P08-CSV--a1616-ing-without-a-decoding-rule-prototype\\csv-complete-facts.json",
+    "pi-initialization-P08-fail-16550-rm-until-a-successful-query-prototype\\lookup-failed-facts.json",
+    "pi-initialization-P08-fail-16550-rm-until-a-successful-query-prototype\\lookup-recovered-facts.json",
+    "pi-initialization-P08-impo-73b52-al-metadata-for-the-next-PI-prototype\\import-only-complete-facts.json",
+    "pi-initialization-P08-impo-73b52-al-metadata-for-the-next-PI-prototype\\second-pi-complete-facts.json",
+    "pi-initialization-P08-mixe-7d42f-d-snapshot-customer-applies-prototype\\mixed-before-facts.json",
+    "pi-initialization-P08-mixe-7d42f-d-snapshot-customer-applies-prototype\\mixed-complete-facts.json",
+    "pi-initialization-P08-prev-267a8-ated-initialization-history-prototype\\generated-locked-en-facts.json",
+    "pi-initialization-P08-prev-267a8-ated-initialization-history-prototype\\generated-locked-vi-facts.json",
+    "pi-initialization-P08-prev-267a8-ated-initialization-history-prototype\\generated-locked-zh-facts.json",
+    "pi-initialization-P08-pure-5776a-y-initialization-locks-once-prototype\\duplicate-list-facts.json",
+    "pi-initialization-P08-pure-5776a-y-initialization-locks-once-prototype\\pure-start-complete-facts.json",
+    "pi-initialization-P08-pure-5776a-y-initialization-locks-once-prototype\\start-confirmation-facts.json",
+    "pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\confirmation-en-facts.json",
+    "pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\confirmation-vi-facts.json",
+    "pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\confirmation-zh-facts.json",
+    "pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\empty-facts.json",
+    "pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\form-en-facts.json",
+    "pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\form-narrow-facts.json",
+    "pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\form-vi-facts.json",
+    "pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\form-zh-facts.json",
+    "pi-initialization-P08-reje-5fe32--a-corrected-initialization-prototype\\corrected-capacity-facts.json",
+    "pi-initialization-P08-reje-5fe32--a-corrected-initialization-prototype\\invalid-capacity-en-facts.json",
+    "pi-initialization-P08-reje-5fe32--a-corrected-initialization-prototype\\invalid-capacity-vi-facts.json",
+    "pi-initialization-P08-reje-5fe32--a-corrected-initialization-prototype\\invalid-capacity-zh-facts.json",
+    "pi-initialization-P08-reje-937aa-orrected-64-character-value-prototype\\corrected-length-facts.json",
+    "pi-initialization-P08-reje-937aa-orrected-64-character-value-prototype\\invalid-length-en-facts.json",
+    "pi-initialization-P08-reje-937aa-orrected-64-character-value-prototype\\invalid-length-vi-facts.json",
+    "pi-initialization-P08-reje-937aa-orrected-64-character-value-prototype\\invalid-length-zh-facts.json",
+    "pi-initialization-P08-requ-6c3e8-h-the-same-original-payload-prototype\\delivery-failed-facts.json",
+    "pi-initialization-P08-requ-6c3e8-h-the-same-original-payload-prototype\\delivery-recovered-facts.json",
+    "pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-prototype\\sequence-conflict-corrected-facts.json",
+    "pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-prototype\\sequence-conflict-en-facts.json",
+    "pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-prototype\\sequence-conflict-vi-facts.json",
+    "pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-prototype\\sequence-conflict-zh-facts.json",
+    "pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-prototype\\sn-conflict-corrected-facts.json",
+    "pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-prototype\\sn-conflict-en-facts.json",
+    "pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-prototype\\sn-conflict-vi-facts.json",
+    "pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-prototype\\sn-conflict-zh-facts.json",
+    "pi-initialization-P08-stal-3a90d-original-successful-history-prototype\\stale-locked-rejected-facts.json",
+    "pi-initialization-P08-stal-3a90d-original-successful-history-prototype\\stale-query-recovered-facts.json"
+  ],
+  "pairedRawDatabaseSnapshotsEqual": [
+    "pi-initialization-P08-comm-15b36--without-another-submission-prototype\\response-lost-query-facts.json",
+    "pi-initialization-P08-comm-955c1--without-another-submission-prototype\\response-lost-reload-facts.json",
+    "pi-initialization-P08-comm-c6452--without-another-submission-prototype\\result-query-recovered-facts.json",
+    "pi-initialization-P08-comm-c6452--without-another-submission-prototype\\result-read-failed-facts.json",
+    "pi-initialization-P08-comm-cbf77--without-another-submission-prototype\\result-query-recovered-facts.json",
+    "pi-initialization-P08-comm-cbf77--without-another-submission-prototype\\result-read-failed-facts.json",
+    "pi-initialization-P08-CSV--a1616-ing-without-a-decoding-rule-prototype\\csv-complete-facts.json",
+    "pi-initialization-P08-fail-16550-rm-until-a-successful-query-prototype\\lookup-failed-facts.json",
+    "pi-initialization-P08-fail-16550-rm-until-a-successful-query-prototype\\lookup-recovered-facts.json",
+    "pi-initialization-P08-impo-73b52-al-metadata-for-the-next-PI-prototype\\import-only-complete-facts.json",
+    "pi-initialization-P08-impo-73b52-al-metadata-for-the-next-PI-prototype\\second-pi-complete-facts.json",
+    "pi-initialization-P08-mixe-7d42f-d-snapshot-customer-applies-prototype\\mixed-before-facts.json",
+    "pi-initialization-P08-mixe-7d42f-d-snapshot-customer-applies-prototype\\mixed-complete-facts.json",
+    "pi-initialization-P08-prev-267a8-ated-initialization-history-prototype\\generated-locked-en-facts.json",
+    "pi-initialization-P08-prev-267a8-ated-initialization-history-prototype\\generated-locked-vi-facts.json",
+    "pi-initialization-P08-prev-267a8-ated-initialization-history-prototype\\generated-locked-zh-facts.json",
+    "pi-initialization-P08-pure-5776a-y-initialization-locks-once-prototype\\duplicate-list-facts.json",
+    "pi-initialization-P08-pure-5776a-y-initialization-locks-once-prototype\\pure-start-complete-facts.json",
+    "pi-initialization-P08-pure-5776a-y-initialization-locks-once-prototype\\start-confirmation-facts.json",
+    "pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\confirmation-en-facts.json",
+    "pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\confirmation-vi-facts.json",
+    "pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\confirmation-zh-facts.json",
+    "pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\empty-facts.json",
+    "pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\form-en-facts.json",
+    "pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\form-narrow-facts.json",
+    "pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\form-vi-facts.json",
+    "pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\form-zh-facts.json",
+    "pi-initialization-P08-reje-5fe32--a-corrected-initialization-prototype\\corrected-capacity-facts.json",
+    "pi-initialization-P08-reje-5fe32--a-corrected-initialization-prototype\\invalid-capacity-en-facts.json",
+    "pi-initialization-P08-reje-5fe32--a-corrected-initialization-prototype\\invalid-capacity-vi-facts.json",
+    "pi-initialization-P08-reje-5fe32--a-corrected-initialization-prototype\\invalid-capacity-zh-facts.json",
+    "pi-initialization-P08-reje-937aa-orrected-64-character-value-prototype\\corrected-length-facts.json",
+    "pi-initialization-P08-reje-937aa-orrected-64-character-value-prototype\\invalid-length-en-facts.json",
+    "pi-initialization-P08-reje-937aa-orrected-64-character-value-prototype\\invalid-length-vi-facts.json",
+    "pi-initialization-P08-reje-937aa-orrected-64-character-value-prototype\\invalid-length-zh-facts.json",
+    "pi-initialization-P08-requ-6c3e8-h-the-same-original-payload-prototype\\delivery-failed-facts.json",
+    "pi-initialization-P08-requ-6c3e8-h-the-same-original-payload-prototype\\delivery-recovered-facts.json",
+    "pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-prototype\\sequence-conflict-corrected-facts.json",
+    "pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-prototype\\sn-conflict-corrected-facts.json",
+    "pi-initialization-P08-stal-3a90d-original-successful-history-prototype\\stale-locked-rejected-facts.json",
+    "pi-initialization-P08-stal-3a90d-original-successful-history-prototype\\stale-query-recovered-facts.json"
+  ],
+  "counterDefaultProjectionDifferences": [
+    {
+      "snapshot": "pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-prototype\\sequence-conflict-en-facts.json",
+      "prototypeRaw": [],
+      "migrationRaw": [
+        {
+          "pi": "CMP-UI-INIT-PI",
+          "last_seq": 0,
+          "generated_qty": 0,
+          "imported_qty": 0,
+          "start_seq": null,
+          "start_locked": 0
+        }
+      ],
+      "businessProjection": {
+        "pi": "CMP-UI-INIT-PI",
+        "last_seq": 0,
+        "generated_qty": 0,
+        "imported_qty": 0,
+        "start_seq": null,
+        "start_locked": 0
+      }
+    },
+    {
+      "snapshot": "pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-prototype\\sequence-conflict-vi-facts.json",
+      "prototypeRaw": [],
+      "migrationRaw": [
+        {
+          "pi": "CMP-UI-INIT-PI",
+          "last_seq": 0,
+          "generated_qty": 0,
+          "imported_qty": 0,
+          "start_seq": null,
+          "start_locked": 0
+        }
+      ],
+      "businessProjection": {
+        "pi": "CMP-UI-INIT-PI",
+        "last_seq": 0,
+        "generated_qty": 0,
+        "imported_qty": 0,
+        "start_seq": null,
+        "start_locked": 0
+      }
+    },
+    {
+      "snapshot": "pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-prototype\\sequence-conflict-zh-facts.json",
+      "prototypeRaw": [],
+      "migrationRaw": [
+        {
+          "pi": "CMP-UI-INIT-PI",
+          "last_seq": 0,
+          "generated_qty": 0,
+          "imported_qty": 0,
+          "start_seq": null,
+          "start_locked": 0
+        }
+      ],
+      "businessProjection": {
+        "pi": "CMP-UI-INIT-PI",
+        "last_seq": 0,
+        "generated_qty": 0,
+        "imported_qty": 0,
+        "start_seq": null,
+        "start_locked": 0
+      }
+    },
+    {
+      "snapshot": "pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-prototype\\sn-conflict-en-facts.json",
+      "prototypeRaw": [],
+      "migrationRaw": [
+        {
+          "pi": "CMP-UI-INIT-NONE",
+          "last_seq": 0,
+          "generated_qty": 0,
+          "imported_qty": 0,
+          "start_seq": null,
+          "start_locked": 0
+        }
+      ],
+      "businessProjection": {
+        "pi": "CMP-UI-INIT-NONE",
+        "last_seq": 0,
+        "generated_qty": 0,
+        "imported_qty": 0,
+        "start_seq": null,
+        "start_locked": 0
+      }
+    },
+    {
+      "snapshot": "pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-prototype\\sn-conflict-vi-facts.json",
+      "prototypeRaw": [],
+      "migrationRaw": [
+        {
+          "pi": "CMP-UI-INIT-NONE",
+          "last_seq": 0,
+          "generated_qty": 0,
+          "imported_qty": 0,
+          "start_seq": null,
+          "start_locked": 0
+        }
+      ],
+      "businessProjection": {
+        "pi": "CMP-UI-INIT-NONE",
+        "last_seq": 0,
+        "generated_qty": 0,
+        "imported_qty": 0,
+        "start_seq": null,
+        "start_locked": 0
+      }
+    },
+    {
+      "snapshot": "pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-prototype\\sn-conflict-zh-facts.json",
+      "prototypeRaw": [],
+      "migrationRaw": [
+        {
+          "pi": "CMP-UI-INIT-NONE",
+          "last_seq": 0,
+          "generated_qty": 0,
+          "imported_qty": 0,
+          "start_seq": null,
+          "start_locked": 0
+        }
+      ],
+      "businessProjection": {
+        "pi": "CMP-UI-INIT-NONE",
+        "last_seq": 0,
+        "generated_qty": 0,
+        "imported_qty": 0,
+        "start_seq": null,
+        "start_locked": 0
+      }
+    }
+  ],
+  "screenshots": [
+    "initialization-current\\pi-initialization-P08-CSV--a1616-ing-without-a-decoding-rule-migration\\csv-complete.png",
+    "initialization-current\\pi-initialization-P08-CSV--a1616-ing-without-a-decoding-rule-prototype\\csv-complete.png",
+    "initialization-current\\pi-initialization-P08-comm-15b36--without-another-submission-migration\\response-lost-query.png",
+    "initialization-current\\pi-initialization-P08-comm-15b36--without-another-submission-prototype\\response-lost-query.png",
+    "initialization-current\\pi-initialization-P08-comm-955c1--without-another-submission-migration\\response-lost-reload.png",
+    "initialization-current\\pi-initialization-P08-comm-955c1--without-another-submission-prototype\\response-lost-reload.png",
+    "initialization-current\\pi-initialization-P08-comm-c6452--without-another-submission-migration\\result-query-recovered.png",
+    "initialization-current\\pi-initialization-P08-comm-c6452--without-another-submission-migration\\result-read-failed-bottom.png",
+    "initialization-current\\pi-initialization-P08-comm-c6452--without-another-submission-migration\\result-read-failed.png",
+    "initialization-current\\pi-initialization-P08-comm-c6452--without-another-submission-prototype\\result-query-recovered.png",
+    "initialization-current\\pi-initialization-P08-comm-c6452--without-another-submission-prototype\\result-read-failed-bottom.png",
+    "initialization-current\\pi-initialization-P08-comm-c6452--without-another-submission-prototype\\result-read-failed.png",
+    "initialization-current\\pi-initialization-P08-comm-cbf77--without-another-submission-migration\\result-query-recovered.png",
+    "initialization-current\\pi-initialization-P08-comm-cbf77--without-another-submission-migration\\result-read-failed-bottom.png",
+    "initialization-current\\pi-initialization-P08-comm-cbf77--without-another-submission-migration\\result-read-failed.png",
+    "initialization-current\\pi-initialization-P08-comm-cbf77--without-another-submission-prototype\\result-query-recovered.png",
+    "initialization-current\\pi-initialization-P08-comm-cbf77--without-another-submission-prototype\\result-read-failed-bottom.png",
+    "initialization-current\\pi-initialization-P08-comm-cbf77--without-another-submission-prototype\\result-read-failed.png",
+    "initialization-current\\pi-initialization-P08-fail-16550-rm-until-a-successful-query-migration\\lookup-failed-bottom.png",
+    "initialization-current\\pi-initialization-P08-fail-16550-rm-until-a-successful-query-migration\\lookup-failed.png",
+    "initialization-current\\pi-initialization-P08-fail-16550-rm-until-a-successful-query-migration\\lookup-recovered-bottom.png",
+    "initialization-current\\pi-initialization-P08-fail-16550-rm-until-a-successful-query-migration\\lookup-recovered.png",
+    "initialization-current\\pi-initialization-P08-fail-16550-rm-until-a-successful-query-prototype\\lookup-failed-bottom.png",
+    "initialization-current\\pi-initialization-P08-fail-16550-rm-until-a-successful-query-prototype\\lookup-failed.png",
+    "initialization-current\\pi-initialization-P08-fail-16550-rm-until-a-successful-query-prototype\\lookup-recovered-bottom.png",
+    "initialization-current\\pi-initialization-P08-fail-16550-rm-until-a-successful-query-prototype\\lookup-recovered.png",
+    "initialization-current\\pi-initialization-P08-impo-73b52-al-metadata-for-the-next-PI-migration\\import-only-complete.png",
+    "initialization-current\\pi-initialization-P08-impo-73b52-al-metadata-for-the-next-PI-migration\\second-pi-complete.png",
+    "initialization-current\\pi-initialization-P08-impo-73b52-al-metadata-for-the-next-PI-prototype\\import-only-complete.png",
+    "initialization-current\\pi-initialization-P08-impo-73b52-al-metadata-for-the-next-PI-prototype\\second-pi-complete.png",
+    "initialization-current\\pi-initialization-P08-mixe-7d42f-d-snapshot-customer-applies-migration\\mixed-before-bottom.png",
+    "initialization-current\\pi-initialization-P08-mixe-7d42f-d-snapshot-customer-applies-migration\\mixed-before.png",
+    "initialization-current\\pi-initialization-P08-mixe-7d42f-d-snapshot-customer-applies-migration\\mixed-complete.png",
+    "initialization-current\\pi-initialization-P08-mixe-7d42f-d-snapshot-customer-applies-prototype\\mixed-before-bottom.png",
+    "initialization-current\\pi-initialization-P08-mixe-7d42f-d-snapshot-customer-applies-prototype\\mixed-before.png",
+    "initialization-current\\pi-initialization-P08-mixe-7d42f-d-snapshot-customer-applies-prototype\\mixed-complete.png",
+    "initialization-current\\pi-initialization-P08-prev-267a8-ated-initialization-history-migration\\generated-locked-en.png",
+    "initialization-current\\pi-initialization-P08-prev-267a8-ated-initialization-history-migration\\generated-locked-vi.png",
+    "initialization-current\\pi-initialization-P08-prev-267a8-ated-initialization-history-migration\\generated-locked-zh.png",
+    "initialization-current\\pi-initialization-P08-prev-267a8-ated-initialization-history-prototype\\generated-locked-en.png",
+    "initialization-current\\pi-initialization-P08-prev-267a8-ated-initialization-history-prototype\\generated-locked-vi.png",
+    "initialization-current\\pi-initialization-P08-prev-267a8-ated-initialization-history-prototype\\generated-locked-zh.png",
+    "initialization-current\\pi-initialization-P08-pure-5776a-y-initialization-locks-once-migration\\duplicate-list-bottom.png",
+    "initialization-current\\pi-initialization-P08-pure-5776a-y-initialization-locks-once-migration\\duplicate-list.png",
+    "initialization-current\\pi-initialization-P08-pure-5776a-y-initialization-locks-once-migration\\pure-start-complete.png",
+    "initialization-current\\pi-initialization-P08-pure-5776a-y-initialization-locks-once-migration\\start-confirmation.png",
+    "initialization-current\\pi-initialization-P08-pure-5776a-y-initialization-locks-once-prototype\\duplicate-list-bottom.png",
+    "initialization-current\\pi-initialization-P08-pure-5776a-y-initialization-locks-once-prototype\\duplicate-list.png",
+    "initialization-current\\pi-initialization-P08-pure-5776a-y-initialization-locks-once-prototype\\pure-start-complete.png",
+    "initialization-current\\pi-initialization-P08-pure-5776a-y-initialization-locks-once-prototype\\start-confirmation.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-migration\\confirmation-en.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-migration\\confirmation-vi.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-migration\\confirmation-zh.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-migration\\empty.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-migration\\form-en-bottom.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-migration\\form-en.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-migration\\form-narrow-bottom.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-migration\\form-narrow.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-migration\\form-vi-bottom.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-migration\\form-vi.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-migration\\form-zh-bottom.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-migration\\form-zh.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\confirmation-en.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\confirmation-vi.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\confirmation-zh.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\empty.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\form-en-bottom.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\form-en.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\form-narrow-bottom.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\form-narrow.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\form-vi-bottom.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\form-vi.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\form-zh-bottom.png",
+    "initialization-current\\pi-initialization-P08-quer-eb7c6-ages-and-reload-resets-form-prototype\\form-zh.png",
+    "initialization-current\\pi-initialization-P08-reje-5fe32--a-corrected-initialization-migration\\corrected-capacity.png",
+    "initialization-current\\pi-initialization-P08-reje-5fe32--a-corrected-initialization-migration\\invalid-capacity-en-bottom.png",
+    "initialization-current\\pi-initialization-P08-reje-5fe32--a-corrected-initialization-migration\\invalid-capacity-en.png",
+    "initialization-current\\pi-initialization-P08-reje-5fe32--a-corrected-initialization-migration\\invalid-capacity-vi-bottom.png",
+    "initialization-current\\pi-initialization-P08-reje-5fe32--a-corrected-initialization-migration\\invalid-capacity-vi.png",
+    "initialization-current\\pi-initialization-P08-reje-5fe32--a-corrected-initialization-migration\\invalid-capacity-zh-bottom.png",
+    "initialization-current\\pi-initialization-P08-reje-5fe32--a-corrected-initialization-migration\\invalid-capacity-zh.png",
+    "initialization-current\\pi-initialization-P08-reje-5fe32--a-corrected-initialization-prototype\\corrected-capacity.png",
+    "initialization-current\\pi-initialization-P08-reje-5fe32--a-corrected-initialization-prototype\\invalid-capacity-en-bottom.png",
+    "initialization-current\\pi-initialization-P08-reje-5fe32--a-corrected-initialization-prototype\\invalid-capacity-en.png",
+    "initialization-current\\pi-initialization-P08-reje-5fe32--a-corrected-initialization-prototype\\invalid-capacity-vi-bottom.png",
+    "initialization-current\\pi-initialization-P08-reje-5fe32--a-corrected-initialization-prototype\\invalid-capacity-vi.png",
+    "initialization-current\\pi-initialization-P08-reje-5fe32--a-corrected-initialization-prototype\\invalid-capacity-zh-bottom.png",
+    "initialization-current\\pi-initialization-P08-reje-5fe32--a-corrected-initialization-prototype\\invalid-capacity-zh.png",
+    "initialization-current\\pi-initialization-P08-reje-937aa-orrected-64-character-value-migration\\corrected-length.png",
+    "initialization-current\\pi-initialization-P08-reje-937aa-orrected-64-character-value-migration\\invalid-length-en-bottom.png",
+    "initialization-current\\pi-initialization-P08-reje-937aa-orrected-64-character-value-migration\\invalid-length-en.png",
+    "initialization-current\\pi-initialization-P08-reje-937aa-orrected-64-character-value-migration\\invalid-length-vi-bottom.png",
+    "initialization-current\\pi-initialization-P08-reje-937aa-orrected-64-character-value-migration\\invalid-length-vi.png",
+    "initialization-current\\pi-initialization-P08-reje-937aa-orrected-64-character-value-migration\\invalid-length-zh-bottom.png",
+    "initialization-current\\pi-initialization-P08-reje-937aa-orrected-64-character-value-migration\\invalid-length-zh.png",
+    "initialization-current\\pi-initialization-P08-reje-937aa-orrected-64-character-value-prototype\\corrected-length.png",
+    "initialization-current\\pi-initialization-P08-reje-937aa-orrected-64-character-value-prototype\\invalid-length-en-bottom.png",
+    "initialization-current\\pi-initialization-P08-reje-937aa-orrected-64-character-value-prototype\\invalid-length-en.png",
+    "initialization-current\\pi-initialization-P08-reje-937aa-orrected-64-character-value-prototype\\invalid-length-vi-bottom.png",
+    "initialization-current\\pi-initialization-P08-reje-937aa-orrected-64-character-value-prototype\\invalid-length-vi.png",
+    "initialization-current\\pi-initialization-P08-reje-937aa-orrected-64-character-value-prototype\\invalid-length-zh-bottom.png",
+    "initialization-current\\pi-initialization-P08-reje-937aa-orrected-64-character-value-prototype\\invalid-length-zh.png",
+    "initialization-current\\pi-initialization-P08-requ-6c3e8-h-the-same-original-payload-migration\\delivery-failed-bottom.png",
+    "initialization-current\\pi-initialization-P08-requ-6c3e8-h-the-same-original-payload-migration\\delivery-failed.png",
+    "initialization-current\\pi-initialization-P08-requ-6c3e8-h-the-same-original-payload-migration\\delivery-recovered.png",
+    "initialization-current\\pi-initialization-P08-requ-6c3e8-h-the-same-original-payload-prototype\\delivery-failed-bottom.png",
+    "initialization-current\\pi-initialization-P08-requ-6c3e8-h-the-same-original-payload-prototype\\delivery-failed.png",
+    "initialization-current\\pi-initialization-P08-requ-6c3e8-h-the-same-original-payload-prototype\\delivery-recovered.png",
+    "initialization-current\\pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-migration\\sequence-conflict-corrected.png",
+    "initialization-current\\pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-migration\\sequence-conflict-en-bottom.png",
+    "initialization-current\\pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-migration\\sequence-conflict-en.png",
+    "initialization-current\\pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-migration\\sequence-conflict-vi-bottom.png",
+    "initialization-current\\pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-migration\\sequence-conflict-vi.png",
+    "initialization-current\\pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-migration\\sequence-conflict-zh-bottom.png",
+    "initialization-current\\pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-migration\\sequence-conflict-zh.png",
+    "initialization-current\\pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-prototype\\sequence-conflict-corrected.png",
+    "initialization-current\\pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-prototype\\sequence-conflict-en-bottom.png",
+    "initialization-current\\pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-prototype\\sequence-conflict-en.png",
+    "initialization-current\\pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-prototype\\sequence-conflict-vi-bottom.png",
+    "initialization-current\\pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-prototype\\sequence-conflict-vi.png",
+    "initialization-current\\pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-prototype\\sequence-conflict-zh-bottom.png",
+    "initialization-current\\pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-prototype\\sequence-conflict-zh.png",
+    "initialization-current\\pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-migration\\sn-conflict-corrected.png",
+    "initialization-current\\pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-migration\\sn-conflict-en-bottom.png",
+    "initialization-current\\pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-migration\\sn-conflict-en.png",
+    "initialization-current\\pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-migration\\sn-conflict-vi-bottom.png",
+    "initialization-current\\pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-migration\\sn-conflict-vi.png",
+    "initialization-current\\pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-migration\\sn-conflict-zh-bottom.png",
+    "initialization-current\\pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-migration\\sn-conflict-zh.png",
+    "initialization-current\\pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-prototype\\sn-conflict-corrected.png",
+    "initialization-current\\pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-prototype\\sn-conflict-en-bottom.png",
+    "initialization-current\\pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-prototype\\sn-conflict-en.png",
+    "initialization-current\\pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-prototype\\sn-conflict-vi-bottom.png",
+    "initialization-current\\pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-prototype\\sn-conflict-vi.png",
+    "initialization-current\\pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-prototype\\sn-conflict-zh-bottom.png",
+    "initialization-current\\pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-prototype\\sn-conflict-zh.png",
+    "initialization-current\\pi-initialization-P08-stal-3a90d-original-successful-history-migration\\stale-locked-rejected-bottom.png",
+    "initialization-current\\pi-initialization-P08-stal-3a90d-original-successful-history-migration\\stale-locked-rejected.png",
+    "initialization-current\\pi-initialization-P08-stal-3a90d-original-successful-history-migration\\stale-query-recovered.png",
+    "initialization-current\\pi-initialization-P08-stal-3a90d-original-successful-history-prototype\\stale-locked-rejected-bottom.png",
+    "initialization-current\\pi-initialization-P08-stal-3a90d-original-successful-history-prototype\\stale-locked-rejected.png",
+    "initialization-current\\pi-initialization-P08-stal-3a90d-original-successful-history-prototype\\stale-query-recovered.png"
+  ],
+  "conflictSnapshotsVerified": [
+    "pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-migration\\sequence-conflict-corrected-facts.json",
+    "pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-migration\\sequence-conflict-en-facts.json",
+    "pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-migration\\sequence-conflict-vi-facts.json",
+    "pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-migration\\sequence-conflict-zh-facts.json",
+    "pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-prototype\\sequence-conflict-corrected-facts.json",
+    "pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-prototype\\sequence-conflict-en-facts.json",
+    "pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-prototype\\sequence-conflict-vi-facts.json",
+    "pi-initialization-P08-sequ-d8a77-rrection-in-three-languages-prototype\\sequence-conflict-zh-facts.json",
+    "pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-migration\\sn-conflict-corrected-facts.json",
+    "pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-migration\\sn-conflict-en-facts.json",
+    "pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-migration\\sn-conflict-vi-facts.json",
+    "pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-migration\\sn-conflict-zh-facts.json",
+    "pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-prototype\\sn-conflict-corrected-facts.json",
+    "pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-prototype\\sn-conflict-en-facts.json",
+    "pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-prototype\\sn-conflict-vi-facts.json",
+    "pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-prototype\\sn-conflict-zh-facts.json"
+  ],
+  "frontendUnitTestsPassed": 61,
+  "sourceHashes": {
+    "backend/adtek-framework/src/main/java/com/adtek/framework/security/IdentityNamePort.java": "3569b083324cf43783de98ff763d0f701f8c09ca70c34fc72de2f669d5d6b0ae",
+    "backend/adtek-framework/src/main/java/com/adtek/framework/task/TaskHandler.java": "f55e3cde43a32d40db07b471469c6060960af0db8606ef06f030f36cf24ae654",
+    "backend/adtek-framework/src/main/java/com/adtek/framework/task/service/DurableTaskService.java": "5e6697eefcfca550191804a9d9e1a72e4e0c11e9e99b6c9f3ccccc24db6d09cd",
+    "backend/adtek-framework/src/main/java/com/adtek/framework/task/service/TaskExecutionService.java": "81a104742b316999874caefc64bf6f5b1c61e0054f5bd58df11566f7a6638550",
+    "backend/adtek-framework/src/main/java/com/adtek/framework/task/service/impl/DurableTaskServiceImpl.java": "675390b4347f97568eb34adfa7f92f73b24ce4e5dfbedd27d77ab54edb2fcb10",
+    "backend/adtek-framework/src/main/java/com/adtek/framework/task/service/impl/TaskExecutionServiceImpl.java": "299515ee8ed0c389dcfd231427ac1bb7bead2c126ffbbbda672452993e5d0cb5",
+    "backend/adtek-framework/src/main/java/com/adtek/framework/task/vo/TaskProgressVO.java": "8bc86bea7c46331d193ad232195f87ff62559ecc628c9b93ca3be2e7c92b332c",
+    "backend/adtek-integration/src/main/java/com/adtek/integration/k3/K3ProductionOrderAdapter.java": "fbf8692c274308d4466d5acac6eb0b576b51b1f4d9fff45bdee7d9fcbd101b7d",
+    "backend/adtek-server/src/main/resources/application.yml": "df6b40d0ed92e1fe870322fe98a0a00db257ee0b494ee18aa5e4fee133005f9c",
+    "backend/adtek-server/src/main/resources/db/migration/V20__query_role_transfer_read.sql": "180d6b27df04f90abafd02db714994f92fe391a264f588f7855ba7483e8219e6",
+    "backend/adtek-server/src/main/resources/db/migration/V21__generation_job_display_number.sql": "ee32b3c0687ba2c469f1696c79ace8c49e7cdf2ffd47aeefda49fd6b02f40af7",
+    "backend/adtek-server/src/main/resources/db/migration/V22__per_line_integer_sn_quantity.sql": "19840cd4990af6958f2c9a38bee294b5a09875c5c5f3a914ee8359f501c1127d",
+    "backend/adtek-server/src/main/resources/db/migration/V23__order_schedule_last_result.sql": "7ca46fd88d0d7b632faae9ec00b5730a59f13c5782ffbbd241d94f21af787320",
+    "backend/adtek-server/src/main/resources/db/migration/V24__rule_version_creator_name.sql": "ca004496d391efeb37bd8858b9ef567aaafbf943307c76b3a326d7d8dd280eb4",
+    "backend/adtek-server/src/main/resources/db/migration/V25__rule_binary_text_semantics.sql": "e41d022f961749752b39c7d928f1a706c4706a2fdf0422f07098aff815124250",
+    "backend/adtek-server/src/main/resources/db/migration/V26__sn_work_actor_name.sql": "5ae4fe9d768f616256d36cf44b648014cbce77a308cccd093d06cc4879afa1d5",
+    "backend/adtek-server/src/main/resources/db/migration/V27__sn_work_failure_parameters.sql": "fac6c28774864ec7a60d2058eeb431be3fee7dade710881512df43ee498e0193",
+    "backend/adtek-server/src/main/resources/db/migration/V28__bill_generation_identity.sql": "1ddc07babc2e1ff5121bc475cdf96821021b55cbc38f6ac65fff3aa910bb3385",
+    "backend/adtek-server/src/main/resources/db/migration/V29__pending_allocation_generation_order.sql": "cc099c2099e8f07fb80af55f650431b35d0aedd7b9d3696c18ee288432720fd2",
+    "backend/adtek-server/src/test/java/com/adtek/server/K3ErrorsTest.java": "57ff0911aa73e2c126bb81ced6193324bab45fc218c725143a9295ca327306d9",
+    "backend/adtek-server/src/test/java/com/adtek/server/K3ProtocolFixture.java": "f8592b8afdcd56965d0266429ed412c1a128bd056d7cdbf44c08d9c2b917ff29",
+    "backend/adtek-server/src/test/java/com/adtek/server/SnAcquireIT.java": "b1b5ebf825112dc8087b42ae65a0c4b3e8e611b4577be6b2b1517a3236bb67af",
+    "backend/adtek-server/src/test/java/com/adtek/server/SnAuditIT.java": "fdc37aa1924b772093b3cece98fe3e8b7bd33cc4b0f661b089f016313f1b227a",
+    "backend/adtek-server/src/test/java/com/adtek/server/SnFoundationIT.java": "dd4b65107059a879d329eea4f7758aeeff776639ad1d691728eafd63f6454a66",
+    "backend/adtek-server/src/test/java/com/adtek/server/SnQueryIT.java": "0d2c398cd0e48fbf4ff7705152105189853a9b3e11a2f6b7bb38ba05609e6e95",
+    "backend/adtek-server/src/test/java/com/adtek/server/SnTransferIT.java": "dabc177529a4f7ef91a1ea6127b76d1cf3a73823f15432584132a86feed92128",
+    "backend/adtek-server/src/test/java/com/adtek/server/SnWorkIT.java": "1f5c5234b812f9fbfa9aab3206ed8a5b14e98503ce0c51a802b4b0040de1cc57",
+    "backend/adtek-server/src/test/resources/application-integration-test.yml": "06e7d3e32c837a22575a48fe5af87c56e264cd237631a665f968855fb5a58cc3",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/constant/ErrorCodeConstants.java": "8c75720d7124dd84b9e4c19536ce6cd4cddf1a460d99b4721edb569766d664a1",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/controller/SnContextController.java": "4b39228b96160a5add2f7b516bfd9a4f66aa3fa802db7a34b1f2534985ce2124",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/convert/SnConvert.java": "2ee4ab05f475b32893c2634bee0f98a5423a45d8e60ab72e29fb053aed462cf2",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/domain/BillGenerationEntity.java": "0fea83d2c0ddf2b3629886932cff226971ede12af685d918b78d85efc2ca7b1f",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/domain/OrderPiEntity.java": "f81e304e7f3a30e4d027bf7297d8ecf3803e1e5b1aae559595e957bfc5162cb7",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/domain/OrderScheduleEntity.java": "036cf063d8d3b2e7ccf6ef47f3011d3620493c40b3c53f350a596ba29e6ecb0f",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/domain/RuleVersionEntity.java": "28b92bb80a78b42c1da069675fc44d0ba88ac2b612dfba5ef6464d82eb740b38",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/domain/SnWorkEntity.java": "730ccf9a457e407502cc85d56e86b1552d3518874cc8e5f96b67f9f6da0d1f20",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/dto/AllocationDTO.java": "04daffaf532aafc7b093e30354910a3cb9adaa429d9f3e7441d45f0280f2bfb9",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/BillGenerationMapper.java": "8a19dc0f6a859d43d2d6aa6dc02d893a8a5e26acdf1f32f7a864bc22444731c9",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/OrderBillMapper.java": "8b988c597b99cb0b8e3fcc5c65969041b564afda8bfa48a36f58b5117001702d",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/OrderCandidateMapper.java": "36f308758419b99d414fd82f7a4779052830cff0dba2594eee8ff6dc3dc7ff2f",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/OrderScheduleMapper.java": "a1f5134af0332069d5257b6bc0b0268d3b6cc65d222a35a70c8543fac24edc7e",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/SnQueryMapper.java": "92482a4a8665e2690389e0d2393a86daf6bd3f8391ed7b112ab0243c214c7a41",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/SnWorkMapper.java": "048f10e21bce3e172a2822960f77bffafabe033e54da20a35916b3aeca3ba0bf",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/OrderPublishService.java": "8921742b91d2b826faa246b37b3b29668b3019ba5b8be19fbbb60346be78a081",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/SnContextService.java": "95f9bcc7a2e80d9bf1c012f95a7c54f4b0faccad85ac80474ce69f447f5c56c9",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/DashboardServiceImpl.java": "9cfb0b144be92f351f3f4766ab410af66b9955e30066271b33d5f679aa37661f",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/OrderPublishServiceImpl.java": "69b2d11ab3ce3b0ec67cb6dcefb0f7b7ba098a27b5f4ae53fa1795ec6cf40ede",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/OrderScheduleControl.java": "fe49bb9fda4a234dab7f576e44f436020153df261c8622be1a792dc43991bd90",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/OrderScheduleServiceImpl.java": "8701bb5c7dbe8a6d1c3a67615455517a6575a9b6f1a136db8589bb307c554c07",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/OrderServiceImpl.java": "05265b546b70417daf3feda7c87c81469fd4565fded7a4b583d5d9f2a7b9e854",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/RuleServiceImpl.java": "a9dadd97e389722825bef9bf7b06c66c997c7798c36e4dac34b0a83ee24c4798",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnAuditObserver.java": "e6df829ab8b6fc3d3b19f23ac1bd56c49c4e6d12db683c21246afd3fb8090eac",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnContextServiceImpl.java": "bf6da1046248e32c3565be06aaafb2f57dcadd3c3aaae0fe9bec2a8a59b1e109",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnDataPermissionRules.java": "f3c414e5c14be090eadf4bafb4f3cc9c9f1e0567bf5f3407a5adba54494a200e",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnRequestAuditRoutes.java": "f5a9a93ddc9173ebd0e8485dc3c27566485925213e823c41e27ac6ba783b908b",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnWorkEngine.java": "48f85ec64aa60abbab306914b526c3c1713d041053a89f30cdb8ecfc1e8c755b",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnWorkHandlers.java": "fd5cb64fddaf3e992091a98ab77000bd1ddf1a587c4445558e8e6ca222287844",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnWorkServiceImpl.java": "b8a196d5fe85d88481999924ab315869d2df42db670128f7490ff26b7887c31c",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/GenerationErrors.java": "725d9f67ec3751fc14333df2075274d7f5e90d5f9d7455e31ddf03547472a497",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/InitializationErrors.java": "55522b0dffa5f87fae39a8d2ffe8eac9b029f6e9af53795273d63db60fb6169a",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/OrderSnapshot.java": "3fb5f19136f45c1efa0fe272f2f584f4f72e9a3a2aa3e47302e602ce8d375df0",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/PlannedQuantity.java": "8a00d902c2b2f155e6f31cf5ce99961f7bd441853ea80511b7176f4599995468",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/SequenceSpec.java": "a36f9620c7dd4e23c96528520745f771d944b12327b1b32726edf36657561083",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/SnWorkInput.java": "7745cc14e47e1d58a78091d799667d787ed9088ec426113629f6fd8734a79eac",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/SnWorkSettings.java": "58ee2375ae373bd308fd112af479f5cb3c87a4b804f8e586abdcd7268686da67",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/vo/DashboardJobVO.java": "8f2f3aa76d888ebb583fcc6d11d10363d2a9cc5394affa263905c48210f008ca",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/vo/DashboardVO.java": "1ed86b58b3f8b01e04d430a961e3366dcb4c16aa98de18e06319704d2740bc62",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/vo/GenerationContextVO.java": "97f4c2998301d460d5b829021a83706163cbd98f852214e6f683cbbca624cf68",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/vo/OrderBillVO.java": "b39a2cac69fbc98e5046e8511a5a4bf9315825dc44214e5f7357d83c8520b283",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/vo/OrderLineVO.java": "638d8301fed59fba4caeb53b0e4e501308cbc7ec92ae1c7c3395969feae53125",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/vo/OrderPiVO.java": "9887f4e1a11e3676e3597e23ff639aaa982c40df7facf20f83f646b1ea4451ef",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/vo/OrderScheduleVO.java": "eb5e9185aabafe4ef529ef3670eb86b32dd1440d8c5b12a37d67c49a4ae779be",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/vo/RuleVersionVO.java": "6650e2766799a68d81b6fdc688da1aaeb502f75ef92e72a5e579bcdd419937e0",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/vo/SnContextVO.java": "f98cd833893c435ea6bfa8f5bf10afc75f6bc7231f5fcdc2a2ba8516bf8a6604",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/vo/SnWorkVO.java": "5e03f4027b3927584f7f97b68b0bbb7645d294742b21f82aec9ab8dfbbd83baa",
+    "backend/adtek-sn/src/test/java/com/adtek/sn/service/support/InitializationErrorsTest.java": "e7493c61ef27cefbe490141f0bef7f58a8930ea076e571099dfe5432282772fc",
+    "backend/adtek-sn/src/test/java/com/adtek/sn/service/support/SequenceCodecTest.java": "b567e0833bf2dceb89a6f627636892c918aebb321af649d1e29d0c6875b42c68",
+    "backend/adtek-system/src/main/java/com/adtek/system/service/impl/IdentityNameServiceImpl.java": "bbec8b07f4b13cb16917a208fd69148d5f3ab5c855090581e4a3ec1e29dc7aff",
+    "frontend/e2e/parity/dashboard-roles.spec.ts": "7fb10813a33fd53726a37447b361882fa07ef41ad8c88edf828ddfc47780643c",
+    "frontend/e2e/parity/generation-identity.spec.ts": "79df45d336a79d1c52753518129ac0469ce18ee0ce439bd947efcb3a977ff3a2",
+    "frontend/e2e/parity/generation-picker.spec.ts": "d4e30def147ffbec9c1e5a9b91d660e0989cd187b58804bfb77d3eb99280c078",
+    "frontend/e2e/parity/generation-quota.spec.ts": "717afb0cc622049bbed2eff5799c8df8892c594429516078b9f778703da9653f",
+    "frontend/e2e/parity/login-budget.ts": "f7aa6a7a426fa543c7c7a9db4fa63259eac935ccd87a2215e0f54ed56da27cb7",
+    "frontend/e2e/parity/order-filters.spec.ts": "b63554aaf4641c8ad4ec0bc7f733e75f95b31776a02cef8a0b779cf59cf10f9c",
+    "frontend/e2e/parity/order-sync.spec.ts": "f655efcdc994b8c502952f2488b6f958b190ba959683f0aa2b13507a3e028b92",
+    "frontend/e2e/parity/pi-initialization.spec.ts": "2d04eb6ff60b98233a19713e6bf673ffe6c268cdd356e52a3cb7496434ef44b8",
+    "frontend/e2e/parity/rules.spec.ts": "d821ff08f9ce1cd090a3ddfb2239c167663fd12f140640374be161aadba81ad7",
+    "frontend/e2e/parity/shell-orders.spec.ts": "9f22670f3755f2b332b71031f1c6b94bad1e9b63a3493a9be41a05c42a08835a",
+    "frontend/openapi/adtek-sn.json": "f7217b89304300f01893f637b3a07a4e5dd23773b225f13798465e99837d4b5e",
+    "frontend/playwright.parity.config.ts": "4da6d33ff41d11123b647eaf964d89fe9deefd3c9b8ee497f2e37fd962e0923e",
+    "frontend/src/api/catalog.test.ts": "b7b54913eb378eb9f3a1d34ea429fb3bfded1c71b7af0b798aeb857b1b768643",
+    "frontend/src/api/catalog.ts": "71710524527ec6a67fce16e04af5c2e1ae2e934c123b6cbee228ede15428e344",
+    "frontend/src/api/generated/schema.d.ts": "797e166da4d727bc2e9ceccac7810b0e19ed49669b04ab5c3cc7f1ad1814f979",
+    "frontend/src/api/sn.test.ts": "beed74c66b641e749d49b290bf23212183c9984cc44201a3af02f47940015a7f",
+    "frontend/src/api/sn.ts": "b18b43d38da5708af5cd6e86ea7fe2a4802c66bc8d425ee97bb7750649d7b030",
+    "frontend/src/api/snQuery.test.ts": "83c79557dcfc9d3e6053759f7b09db35c1d652f1e680615a1a4a7cee0c8b82cb",
+    "frontend/src/api/snQuery.ts": "aea12713be003ecd4ad70fcd8c55b7f6e794f21f80e2440673290774c189742d",
+    "frontend/src/api/snWork.test.ts": "6490f21eec637b65dfd5df3edbac3ae1845c5ac92d4bc3a02685cfb9824c03c2",
+    "frontend/src/api/snWork.ts": "7ec8246bbefdabbed60b51084a80f6282abf88bb2e495fbde875ecf843bdd6e7",
+    "frontend/src/app/App.tsx": "7bb3ba5389412c3ff3caa595ae0caf5e73be7eee6559fc84fe639b3f855da64a",
+    "frontend/src/app/WorkspaceShell.tsx": "15c4c771f0e7a6aa035414aac4baf02ae6e716c247e455fa0bbce7af2e6bf1d1",
+    "frontend/src/app/snNavigation.ts": "10b0a745521c61d59f676aa4b9b4e33c709cf72822d03b95d2e7a777b06eacec",
+    "frontend/src/components/LanguageSelect.tsx": "5fc493c51b93139baa431ef82b38da295c0b3ec238299b3ef9e30fe42e1662ce",
+    "frontend/src/components/prototype/ELEMENT-PLUS-ICONS-LICENSE": "5db4ebb3abd8353774ae148723ccc14087d6dab99473f77a7b799b55defd8dfe",
+    "frontend/src/components/prototype/ELEMENT-PLUS-LICENSE": "0790118bb4d66681db1d63181f72ef68e632d632f6db0373ef87cf328561af27",
+    "frontend/src/components/prototype/PrototypeEmpty.tsx": "7a5064964e333c271bd704e83bc08f07c6f0216fd5cba15b62a29b738bd0a626",
+    "frontend/src/components/prototype/PrototypeIcon.tsx": "1ac0c1ca524d27498c61a0c4333572dbeb9583a9aec10e19124cc800b4f4dc4b",
+    "frontend/src/components/prototype/empty.json": "ff4b0abee25e6bf5c08f95d0f6a671bcf3b5b82e0cd64ef80f601dc184be7ce7",
+    "frontend/src/components/prototype/icons.json": "7a99a353d2c091cbb08ec83a98256c23a7bb65e8ebc9a1b1cd4865da245593a9",
+    "frontend/src/features/auth/pages/LoginPage.tsx": "241b83c989c7fcaf01afc4d4fbfff87e7cea38a9ebeaa389ed149d6afaa8fb40",
+    "frontend/src/features/auth/pages/PasswordPage.tsx": "130e3334148af1708cffb5da04d09f3e76a28cebfcdf13388f5f41e29c32c13b",
+    "frontend/src/features/sn/components/FactoryPicker.tsx": "5a1987346deaff51057dfeb40f938e48d9ec24d91dc4cd5d2db5a63882509fbe",
+    "frontend/src/features/sn/components/GenerationDetails.tsx": "4ef36e7ef6d123d965087d96d2ab29d0a7c95678b71d18646b7f5918b34e376b",
+    "frontend/src/features/sn/components/GenerationHistory.tsx": "d45e11b1323428cca1b65fc5759469c3672765f15a20f23236e683a396ec8cab",
+    "frontend/src/features/sn/components/GenerationOrderPicker.tsx": "8d0e2a4bfa8134e6b9b7c3366b4b06fa553f4f57e729238b453d96fde9f9dfe0",
+    "frontend/src/features/sn/components/GenerationRulePicker.tsx": "3ae91011cde00b0c05c42974001513b68f449d395c40a23ace0098093f83e9ad",
+    "frontend/src/features/sn/components/GenerationSteps.tsx": "0278c08c84fecbc4bdb8368c8de647149fa11ef7283e301875363c5df829a82e",
+    "frontend/src/features/sn/components/OrderSyncSchedule.tsx": "4642a80ec1cc6629a77818a7dcc8cbc904219c86a55533f22ee9372cc7685350",
+    "frontend/src/features/sn/generationErrorText.test.ts": "55c2e95cb84b35345c8f4a3586c392f7ec34b9284c1e1a7a8dea5dbb5bb01c97",
+    "frontend/src/features/sn/generationErrorText.ts": "0392c530561de3e6ee1534d1cf9a109e5de9eaabb6e05dba26aca0d18d9783c7",
+    "frontend/src/features/sn/generationProgress.ts": "f56c5cbe5fbfe549f8ae9284d3122634519f3217913cd7872fc0ac20a3ea6938",
+    "frontend/src/features/sn/initializationErrorText.test.ts": "488c4d89ad411604214d120b754b1cff754eb82d5e4ee3ec3fbf950f97131eb1",
+    "frontend/src/features/sn/initializationErrorText.ts": "e63ed22d44c19c6d238cd0ef893ea97880058ba74dca76c6c7f41682ca61725b",
+    "frontend/src/features/sn/pages/DashboardPage.tsx": "d2ffe3402fadd6ef02224d636c04b020632ffbf2a55c0e38b93a182f672121fa",
+    "frontend/src/features/sn/pages/GeneratePage.tsx": "80bce8b0980ab84a59b4b105f816a160af287c9e7217ae470e2eec1db71fe484",
+    "frontend/src/features/sn/pages/OrdersPage.tsx": "440edf7d0f1cdd020e72514c65ad2ae76ec0b69914f0c4ba4752d04e0e27755a",
+    "frontend/src/features/sn/pages/PiInitPage.tsx": "b310d638e485db284adb054cd99b4cafdfaa39ba2aab31589259a1ac7a08552c",
+    "frontend/src/features/sn/pages/RulesPage.tsx": "fd14096c576e1a950b178ca82a8abf4162fa1fc0f4c3f2a8db649fcb3abfb29c",
+    "frontend/src/features/sn/ruleErrorText.test.ts": "ac9f860c07abc6f4cbf3ccebf20b9bfcd26d99d8043e39ac9101b329f1537f94",
+    "frontend/src/features/sn/ruleErrorText.ts": "cb7fbc3c1d3fda4d33b5507c8b8987b236e77df5edcc1fc7c744cfc30f374214",
+    "frontend/src/features/sn/snInput.test.ts": "9080613f965e5aebb7c96edc1933b9aec61526517c3f0ba2a620d1f088fcebd0",
+    "frontend/src/features/sn/snInput.ts": "9ff6771ab182e0c1266f0f4722df09daf768ccf4a11a66347119a5f19faca3d6",
+    "frontend/src/features/sn/syncErrorText.test.ts": "dbc82a4cf9b0115e5b1bb8ddf7a5450a2a237966e36e229e0f7adad21d1ff505",
+    "frontend/src/features/sn/syncErrorText.ts": "51df1000396f0512542e72e97e5c42a553ad13a3c8d91f77739d66c362778f83",
+    "frontend/src/features/sn/usePrototypeFeedback.tsx": "0e25d878818b54c54440b17f9ba2dcb9c9ab82520b723925798c43fa443a7de3",
+    "frontend/src/features/sn/useSnContext.ts": "6e290980baa1124fa7539378ed07e0ec88da126d4d8aa26f156df7d70b0fa94f",
+    "frontend/src/features/sn/useSyncFeedback.tsx": "7d876409558707a638d16451ebbc0aa93afc3d31d852d430ba716a05dffd2a05",
+    "frontend/src/i18n/index.ts": "6e8bd0ccaa46ff5e528d5d5983c51c81cd3f6e0f73bc9e899a36b10a4eb78452",
+    "frontend/src/i18n/locales/en.json": "1aaf9699903dda133b0a40d4a4a741b0fbaa8bc6cd915805afccc64769b75d99",
+    "frontend/src/i18n/locales/vi.json": "b400874b1ac67c14852d65abc6630296fac3d10847bceee09d02e2f4fe8da3d6",
+    "frontend/src/i18n/locales/zh-CN.json": "7542232d191c3c6a429ff7b7846b13c71f18b04fe7090211f63d52943eef91e8",
+    "frontend/src/i18n/prototype/en.json": "de45aa852e6f5cce84e19ef1018b3b61e68d5f5e9a3e80e5d0b602d686893c95",
+    "frontend/src/i18n/prototype/errors.en.json": "ec69c1a7fbdb8352eedbac097b293591dd911c39b928ddeb849c674475a24f5a",
+    "frontend/src/i18n/prototype/errors.vi.json": "dff17f6fda440631f729db0701dfc91f5078a43b6eabdf548a03662794fee53e",
+    "frontend/src/i18n/prototype/errors.zh-CN.json": "1cb2f3dff3bb986f8f6e1ec0396b4f76e8928ee0a18ae3a7839c740513ce3c19",
+    "frontend/src/i18n/prototype/vi.json": "ccd1ae337d37868adfc9ccce04a3af5c11070602ff8131c3419da5af444787fa",
+    "frontend/src/i18n/prototype/zh-CN.json": "899ce384f7b7f3fc63b32b6049876d4a4fe57f8be30c5f5337c6d2c98c4c9753",
+    "frontend/src/styles.css": "c7ef539112fc279d311ab087add38d535c161639798c77e767fe3a517c6390cb",
+    "frontend/src/utils/snTime.ts": "a2230f75f1a83ba55369b3298a4f9a4092a251eb460458e22649123e3814a587",
+    "frontend/vite.config.ts": "f5f165faa51497cd370701dcb42761b83af04637152e7b816824dfadfd83241f",
+    "tools/testing/parity-generation-fixture.py": "3f07ff891cca67ec62c96fadb3b91597db119dbab1efc0c007c1b21e6a103505",
+    "tools/testing/parity-identity-fixture.py": "9774397728e793198797d2f7d02452a995caf65ff62111dfd0277d240cbdc1e5",
+    "tools/testing/parity-initialization-fixture.py": "960bf266f72ddf510755ea3082e4ba33012c87c96c0e4640ccfa4a1a98276e8a",
+    "tools/testing/parity-k3-fixture.py": "a0bcf939f2262a8769fc96a4513614a5a349c0548bb6714647dbbbee3dfd486d",
+    "tools/testing/parity-role-fixture.py": "467e34d83c098173b60cc81b3c6d87ffa4643f619ffa37484d47d2f1713f66c0",
+    "tools/testing/parity-rule-fixture.py": "0ebafe494e8a906f7150eae2539c29ddf2f26cf4394e39a29f7dd5ecf2803add",
+    "tools/testing/parity-schedule-clock.py": "07ae6911d58970a71d131154cf45950620b24106ea4dcbf4e2889313a36c6534"
+  },
+  "browserValidation": "34 paired initialization cases, one final run, workers=1, retries=0. Two conflict cases per project: second 1000-row chunk, three languages, retained form, complete rollback, and corrected 1001-member success.",
+  "fixtureBoundary": "Only two owned synthetic PIs and a precisely recorded archived-key collision. Existing <=12 fixture stays unchanged outside conflict mode; conflict mode allows only 1000 enumerated synthetic SN plus existing allowlist. This is not proof of a complete historical archive/transfer workflow.",
+  "backendValidation": "76 unit/architecture and 78 related integration tests passed after explicit mapper scope registration; no DDL. Durable failed tasks retain 1000 observed processed rows while all business inserts roll back.",
+  "checks": [
+    "Full format and Mapper width",
+    "TypeScript",
+    "ESLint",
+    "Production build",
+    "Generated API consistency",
+    "Ruff and compileall",
+    "Documentation links and frozen archive hashes"
+  ],
+  "acceptanceJarSha256": "4be9ce529db0c83c98dab31f7d8c4e6b74f44e7d64669a94e1325ac347126d34",
+  "targetHead": "46f607c936ab3b2deef5e025edd87f2e0e31dc88",
+  "prototypeHead": "f8bc2d722cfde38cfb3ee892a50dcd1d90d58a4a",
+  "prototypeStatus": "?? sn.env",
+  "limitations": [
+    "P01-P16 full objective remains incomplete",
+    "126 available cases not all rerun",
+    "Import maximum: source500000 versus target generation limit100000 and8MB; execution timeout30seconds and JSON/MySQL packet constraints need separate capacity work",
+    "P08 other character/PI/capacity boundaries, roles, simultaneous writers, combinations of multiple conflicts and other network recovery remain unverified",
+    "Existing sequence0 and long precision covered by unit tests, not full paired UI",
+    "Remaining success toast timing, clear controls, disabled button and table geometry differences not waived",
+    "Actual failed task and audit history retained; no company ERP, original database, or GitLab accessed"
+  ],
+  "finalState": {
+    "java": {
+      "protectedOriginalRows": {
+        "items": {
+          "count": 10,
+          "sha256": "606511e3555a5a65685e1725b9efb1238c6651bf9b420e21d933d9343ef8e601"
+        },
+        "keys": {
+          "count": 10,
+          "sha256": "22fe4fd1f2fa814e2369c3ccb98163adfc8d9d4c817e4401866eeaa07e9eb59f"
+        },
+        "counters": {
+          "count": 2,
+          "sha256": "572e4fe78a6a79d72135da3858d98152a9214117b187480e7a10e58388ec3e29"
+        },
+        "rules": {
+          "count": 3,
+          "sha256": "2b3945bc6ba55c27f4a6ccbf6f1ea1d512f003a9aebae86b986bc8454bde3c80"
+        },
+        "versions": {
+          "count": 3,
+          "sha256": "d01d91aa95352e978eb5564f65e57ad242572c20fe33a239228765c1513a7f08"
+        },
+        "allocations": {
+          "count": 1,
+          "sha256": "6f89688c64e053c3f48961b9b45e6e495c28df44431f1bb2e6079cfa54741e10"
+        },
+        "ledger": {
+          "count": 156,
+          "sha256": "dfaea356e77e3b79660c13c61f61da33f88ed7d72952726fc63ab3a5165b756b"
+        },
+        "generation_identity": {
+          "count": 1,
+          "sha256": "89370c52d59ea61ad81db24ecd34b4d6ead202f8c79908953604d20554f183de"
+        },
+        "choices": {
+          "count": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "preV29BusinessRowsUnchanged": true,
+      "schedule": {
+        "enabled": 0,
+        "interval_minutes": 1440
+      },
+      "schema": "29",
+      "pendingIndex": [
+        "bill_id",
+        "status",
+        "seq_dec",
+        "created_at",
+        "id"
+      ],
+      "credentialsUnchanged": true,
+      "orders": [
+        {
+          "bill_no": "CMP-MO-001"
+        },
+        {
+          "bill_no": "CMP-MO-002"
+        },
+        {
+          "bill_no": "CMP-MO-FRACTION"
+        }
+      ]
+    },
+    "python": {
+      "protectedOriginalRows": {
+        "items": {
+          "count": 10,
+          "sha256": "762cf145a0b76a3891e15e8358e3d2081aa65519fd10c373653e545a0e6975ae"
+        },
+        "keys": {
+          "count": 10,
+          "sha256": "40fea6d45c5a902477a8c7440ae95be5410972cdc90c8f626b87bebc1df061a9"
+        },
+        "counters": {
+          "count": 2,
+          "sha256": "05844eaafbe16577da6f51f516dee1947f0a2cd1c5870d2b36bb0013044a8157"
+        },
+        "rules": {
+          "count": 3,
+          "sha256": "72019769d18ea687ea9e90a9277049a6e9cdf95dc4743bd810f5ba2d58c64e32"
+        },
+        "versions": {
+          "count": 3,
+          "sha256": "649ac1416f202b1a3591153edd60d4a5e4e4f266532d625f5a467d8107081039"
+        },
+        "allocations": {
+          "count": 1,
+          "sha256": "dbb888334f57e81a2ce11fee82c9f87f2e94fae05a1ff098661e2be966cd391b"
+        },
+        "ledger": {
+          "count": 1,
+          "sha256": "29fb1cd552ab6236fc25736d34bb73788df07dec4726e3e7d4cd19c7c73d28ec"
+        }
+      },
+      "preV29BusinessRowsUnchanged": true,
+      "schedule": {
+        "enabled": 0,
+        "interval_minutes": 1440
+      },
+      "credentialsUnchanged": true,
+      "orders": [
+        {
+          "bill_no": "CMP-MO-001"
+        },
+        {
+          "bill_no": "CMP-MO-002"
+        },
+        {
+          "bill_no": "CMP-MO-FRACTION"
+        }
+      ]
+    },
+    "fixtureControlsCleared": true,
+    "todayAudit": {
+      "java": {
+        "SN_ACQUIRE": "10",
+        "SN_ALLOCATE": "139",
+        "SN_GENERATE": "717",
+        "SN_PRINT": "10"
+      },
+      "python": {
+        "SN_ACQUIRE": "10",
+        "SN_ALLOCATE": "152",
+        "SN_GENERATE": "791",
+        "SN_PRINT": "10"
+      }
+    },
+    "nonInitializationAuditTotalsUnchanged": true,
+    "health": {
+      "status": "UP"
+    },
+    "web": {
+      "15173": 200,
+      "8000": 200
+    },
+    "k3": {
+      "fixture": "synthetic comparison only",
+      "extrasSupported": true,
+      "controlsSupported": true,
+      "queryRequests": 1066,
+      "inflight": 0,
+      "orders": 3,
+      "entries": 4
+    },
+    "liveOpenApiMatches": true,
+    "openApiComparison": "Object equality after sorting only JSON Schema type union arrays"
+  },
+  "backendUnitTestsPassed": 76,
+  "backendRelatedIntegrationTestsPassed": 78,
+  "backendTestClasses": {
+    "unit": [
+      {
+        "class": "com.adtek.common.core.DataScopeTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.framework.audit.AuditContextTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.framework.audit.RequestFailureAuditFilterTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.framework.mybatis.ScopedDataPermissionInterceptorTest",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.framework.security.CurrentActorTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.framework.security.JwtTokenCodecTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.framework.security.PasswordEncodingTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.framework.security.RedisFailureTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.framework.task.FileStorageTest",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.framework.web.LegacyBoundaryTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.framework.web.ResultSerializationTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.framework.web.TraceFilterTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.sn.service.support.InitializationErrorsTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.sn.service.support.SequenceCodecTest",
+        "tests": 10,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.server.ArchitectureTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.server.ArchiveRestoreProofTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.server.AuditProjectionTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.server.ErrorCodeCatalogTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.server.K3ConfigurationTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.server.K3ErrorsTest",
+        "tests": 7,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.server.K3LegacyProtocolTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.server.LegacyErrorCatalogTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.server.MaintenanceScheduleTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ],
+    "integration-fixed": [
+      {
+        "class": "com.adtek.server.SnAcquireIT",
+        "tests": 15,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.server.SnTransferIT",
+        "tests": 13,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "com.adtek.server.SnWorkIT",
+        "tests": 50,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ]
+  },
+  "integrationSelectionNote": "Initial integration run exposed missing explicit scope registration for the two new mapper statements; only the corrected successful run is counted."
+}

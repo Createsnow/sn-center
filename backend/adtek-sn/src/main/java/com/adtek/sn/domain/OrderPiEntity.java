@@ -10,4 +10,5 @@ public record OrderPiEntity(
         BigDecimal generatedQty,
         BigDecimal allocatedQty,
         BigDecimal pendingQuantity,
-        BigDecimal quota) {}
+        BigDecimal quota,
+        String customer) {}

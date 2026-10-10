@@ -1,0 +1,301 @@
+{
+  "text": "新建账户\n工号\n姓名\n角色\n系统管理员（总部）\n厂区操作员\n查询员\n只读；不绑厂 = 跨厂只读，绑厂 = 只看该厂。\n工厂\n工厂\n初始密码\n8–64 位，同时包含字母和数字。 首次登录须修改。\n取消\n保存",
+  "drawnLabels": [
+    [
+      [
+        "工",
+        536,
+        207,
+        14,
+        20
+      ],
+      [
+        "号",
+        550,
+        207,
+        14,
+        20
+      ]
+    ],
+    [
+      [
+        "姓",
+        536,
+        257,
+        14,
+        20
+      ],
+      [
+        "名",
+        550,
+        257,
+        14,
+        20
+      ]
+    ],
+    [
+      [
+        "角",
+        536,
+        307,
+        14,
+        20
+      ],
+      [
+        "色",
+        550,
+        307,
+        14,
+        20
+      ]
+    ],
+    [
+      [
+        "工",
+        536,
+        389,
+        14,
+        20
+      ],
+      [
+        "厂",
+        550,
+        389,
+        14,
+        20
+      ]
+    ],
+    [
+      [
+        "初",
+        508,
+        439,
+        14,
+        20
+      ],
+      [
+        "始",
+        522,
+        439,
+        14,
+        20
+      ],
+      [
+        "密",
+        536,
+        439,
+        14,
+        20
+      ],
+      [
+        "码",
+        550,
+        439,
+        14,
+        20
+      ]
+    ]
+  ],
+  "factoryMarkup": "<div class=\"sn-factory-picker\"><div class=\"ant-select ant-select-outlined ant-select-in-form-item css-var-_r_0_ ant-select-css-var css-dev-only-do-not-override-oc1rc0 ant-select-single ant-select-show-arrow ant-select-show-search\"><div class=\"ant-select-content\"><div class=\"ant-select-placeholder\">工厂</div><input id=\"_r_2h_\" aria-label=\"工厂\" autocomplete=\"new-password\" class=\"ant-select-input\" role=\"combobox\" aria-expanded=\"false\" aria-haspopup=\"listbox\" aria-autocomplete=\"list\" type=\"text\" value=\"\" style=\"\"></div><div class=\"ant-select-suffix\"><span role=\"img\" aria-label=\"down\" class=\"anticon anticon-down\"><svg viewBox=\"64 64 896 896\" focusable=\"false\" data-icon=\"down\" width=\"1em\" height=\"1em\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z\"></path></svg></span></div></div></div>",
+  "styles": [
+    {
+      "text": "系统管理员（总部）",
+      "font": "500 14px / 14px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "letterSpacing": "normal",
+      "boxSizing": "border-box",
+      "padding": "8px 15px",
+      "border": "0px none rgb(96, 98, 102)",
+      "margin": "0px",
+      "display": "block",
+      "width": "156px"
+    },
+    {
+      "text": "厂区操作员",
+      "font": "500 14px / 14px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "letterSpacing": "normal",
+      "boxSizing": "border-box",
+      "padding": "8px 15px",
+      "border": "0px none rgb(96, 98, 102)",
+      "margin": "0px",
+      "display": "block",
+      "width": "100px"
+    },
+    {
+      "text": "查询员",
+      "font": "500 14px / 14px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "letterSpacing": "normal",
+      "boxSizing": "border-box",
+      "padding": "8px 15px",
+      "border": "0px none rgb(255, 255, 255)",
+      "margin": "0px",
+      "display": "block",
+      "width": "72px"
+    },
+    {
+      "text": "只读；不绑厂 = 跨厂只读，绑厂 = 只看该厂。",
+      "font": "12px / 32px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "letterSpacing": "normal",
+      "boxSizing": "border-box",
+      "padding": "0px",
+      "border": "0px none rgb(100, 116, 139)",
+      "margin": "0px",
+      "display": "block",
+      "width": "240.078px"
+    },
+    {
+      "text": "8–64 位，同时包含字母和数字。 首次登录须修改。",
+      "font": "12px / 32px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "letterSpacing": "normal",
+      "boxSizing": "border-box",
+      "padding": "0px",
+      "border": "0px none rgb(100, 116, 139)",
+      "margin": "0px",
+      "display": "block",
+      "width": "271.797px"
+    }
+  ],
+  "geometry": {
+    "dialog": [
+      [
+        460,
+        144,
+        520,
+        435
+      ]
+    ],
+    "title": [
+      [
+        476,
+        159,
+        72,
+        26
+      ]
+    ],
+    "rows": [
+      [
+        476,
+        201,
+        488,
+        32
+      ],
+      [
+        476,
+        251,
+        488,
+        32
+      ],
+      [
+        476,
+        301,
+        488,
+        64
+      ],
+      [
+        476,
+        383,
+        488,
+        32
+      ],
+      [
+        476,
+        433,
+        488,
+        64
+      ]
+    ],
+    "labels": [
+      [
+        476,
+        201,
+        100,
+        32
+      ],
+      [
+        476,
+        251,
+        100,
+        32
+      ],
+      [
+        476,
+        301,
+        100,
+        32
+      ],
+      [
+        476,
+        383,
+        100,
+        32
+      ],
+      [
+        476,
+        433,
+        100,
+        32
+      ]
+    ],
+    "inputs": [
+      [
+        576,
+        201,
+        388,
+        32
+      ],
+      [
+        576,
+        251,
+        388,
+        32
+      ],
+      [
+        576,
+        433,
+        388,
+        32
+      ]
+    ],
+    "hints": [
+      [
+        576,
+        333,
+        240.078125,
+        32
+      ],
+      [
+        576,
+        465,
+        271.796875,
+        32
+      ]
+    ],
+    "roles": [
+      [
+        576,
+        301,
+        156,
+        32
+      ],
+      [
+        732,
+        301,
+        100,
+        32
+      ],
+      [
+        832,
+        301,
+        72,
+        32
+      ]
+    ],
+    "footer": [
+      [
+        476,
+        515,
+        488,
+        48
+      ]
+    ]
+  }
+}

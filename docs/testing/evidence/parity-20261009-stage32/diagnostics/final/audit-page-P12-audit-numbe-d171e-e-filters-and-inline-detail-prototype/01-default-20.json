@@ -1,0 +1,460 @@
+{
+  "cells": [
+    [
+      "",
+      "2026-10-08 12:00:54",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "页面",
+      "分配",
+      "失败",
+      "比较测试乙厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00054",
+      "54",
+      "待分配 → 待领取",
+      ""
+    ],
+    [
+      "",
+      "2026-10-08 12:00:53",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "系统",
+      "生成",
+      "成功",
+      "比较测试甲厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00053",
+      "53",
+      "待分配 → 待领取",
+      ""
+    ],
+    [
+      "",
+      "2026-10-08 12:00:52",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "接口",
+      "分配",
+      "成功",
+      "比较测试乙厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00052",
+      "52",
+      "待分配 → 待领取",
+      ""
+    ],
+    [
+      "",
+      "2026-10-08 12:00:51",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "页面",
+      "生成",
+      "成功",
+      "比较测试甲厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00051",
+      "51",
+      "待分配 → 待领取",
+      ""
+    ],
+    [
+      "",
+      "2026-10-08 12:00:50",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "系统",
+      "分配",
+      "成功",
+      "比较测试乙厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00050",
+      "50",
+      "待分配 → 待领取",
+      ""
+    ],
+    [
+      "",
+      "2026-10-08 12:00:49",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "接口",
+      "生成",
+      "成功",
+      "比较测试甲厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00049",
+      "49",
+      "待分配 → 待领取",
+      ""
+    ],
+    [
+      "",
+      "2026-10-08 12:00:48",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "页面",
+      "分配",
+      "成功",
+      "比较测试乙厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00048",
+      "48",
+      "待分配 → 待领取",
+      ""
+    ],
+    [
+      "",
+      "2026-10-08 12:00:47",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "系统",
+      "生成",
+      "成功",
+      "比较测试甲厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00047",
+      "47",
+      "待分配 → 待领取",
+      ""
+    ],
+    [
+      "",
+      "2026-10-08 12:00:46",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "接口",
+      "分配",
+      "成功",
+      "比较测试乙厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00046",
+      "46",
+      "待分配 → 待领取",
+      ""
+    ],
+    [
+      "",
+      "2026-10-08 12:00:45",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "页面",
+      "生成",
+      "失败",
+      "比较测试甲厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00045",
+      "45",
+      "待分配 → 待领取",
+      ""
+    ],
+    [
+      "",
+      "2026-10-08 12:00:44",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "系统",
+      "分配",
+      "成功",
+      "比较测试乙厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00044",
+      "44",
+      "待分配 → 待领取",
+      ""
+    ],
+    [
+      "",
+      "2026-10-08 12:00:43",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "接口",
+      "生成",
+      "成功",
+      "比较测试甲厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00043",
+      "43",
+      "待分配 → 待领取",
+      ""
+    ],
+    [
+      "",
+      "2026-10-08 12:00:42",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "页面",
+      "分配",
+      "成功",
+      "比较测试乙厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00042",
+      "42",
+      "待分配 → 待领取",
+      ""
+    ],
+    [
+      "",
+      "2026-10-08 12:00:41",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "系统",
+      "生成",
+      "成功",
+      "比较测试甲厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00041",
+      "41",
+      "待分配 → 待领取",
+      ""
+    ],
+    [
+      "",
+      "2026-10-08 12:00:40",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "接口",
+      "分配",
+      "成功",
+      "比较测试乙厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00040",
+      "40",
+      "待分配 → 待领取",
+      ""
+    ],
+    [
+      "",
+      "2026-10-08 12:00:39",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "页面",
+      "生成",
+      "成功",
+      "比较测试甲厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00039",
+      "39",
+      "待分配 → 待领取",
+      ""
+    ],
+    [
+      "",
+      "2026-10-08 12:00:38",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "系统",
+      "分配",
+      "成功",
+      "比较测试乙厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00038",
+      "38",
+      "待分配 → 待领取",
+      ""
+    ],
+    [
+      "",
+      "2026-10-08 12:00:37",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "接口",
+      "生成",
+      "成功",
+      "比较测试甲厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00037",
+      "37",
+      "待分配 → 待领取",
+      ""
+    ],
+    [
+      "",
+      "2026-10-08 12:00:36",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "页面",
+      "分配",
+      "失败",
+      "比较测试乙厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00036",
+      "36",
+      "待分配 → 待领取",
+      ""
+    ],
+    [
+      "",
+      "2026-10-08 12:00:35",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "系统",
+      "生成",
+      "成功",
+      "比较测试甲厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00035",
+      "35",
+      "待分配 → 待领取",
+      ""
+    ]
+  ],
+  "text": "SN 管控中心\n总部统一生成与分配\n工作台\n首页\n总部作业\n生产订单\n生成与分配\n起始号与历史导入\n规则模板\n工厂作业\n领取与打印\n转厂\n查询与留痕\nSN 查询\n操作痕迹\n系统管理\n账户\n工厂\nSN 管控中心\n/\n操作痕迹\n总部\n简体中文\n系\n系统管理员 · 系统管理员（总部）\n操作痕迹\n\n痕迹永久保存。\n\n导出 Excel\n-\n动作\n结果\n来源\n工厂\n查询\n\t\n时间\n\t\n操作人工号\n\t\n来源\n\t\n动作\n\t\n结果\n\t\n工厂\n\t\nPI\n\t\n号段\n\t\n数量\n\t\n状态变化\n\t\n失败原因\n\t\n2026-10-08 12:00:54\n\t\nCMP_AUDIT_VIEW 审计界面样本\n\t\n页面\n\t\n分配\n\t\n失败\n\t\n比较测试乙厂\n\t\nCMP-UI-AUDIT-VIEW-PI\n\t\nAV00054\n\t\n54\n\t\n待分配 → 待领取\n\t\n\n\n\t\n2026-10-08 12:00:53\n\t\nCMP_AUDIT_VIEW 审计界面样本\n\t\n系统\n\t\n生成\n\t\n成功\n\t\n比较测试甲厂\n\t\nCMP-UI-AUDIT-VIEW-PI\n\t\nAV00053\n\t\n53\n\t\n待分配 → 待领取\n\t\n\n\n\t\n2026-10-08 12:00:52\n\t\nCMP_AUDIT_VIEW 审计界面样本\n\t\n接口\n\t\n分配\n\t\n成功\n\t\n比较测试乙厂\n\t\nCMP-UI-AUDIT-VIEW-PI\n\t\nAV00052\n\t\n52\n\t\n待分配 → 待领取\n\t\n\n\n\t\n2026-10-08 12:00:51\n\t\nCMP_AUDIT_VIEW 审计界面样本\n\t\n页面\n\t\n生成\n\t\n成功\n\t\n比较测试甲厂\n\t\nCMP-UI-AUDIT-VIEW-PI\n\t\nAV00051\n\t\n51\n\t\n待分配 → 待领取\n\t\n\n\n\t\n2026-10-08 12:00:50\n\t\nCMP_AUDIT_VIEW 审计界面样本\n\t\n系统\n\t\n分配\n\t\n成功\n\t\n比较测试乙厂\n\t\nCMP-UI-AUDIT-VIEW-PI\n\t\nAV00050\n\t\n50\n\t\n待分配 → 待领取\n\t\n\n\n\t\n2026-10-08 12:00:49\n\t\nCMP_AUDIT_VIEW 审计界面样本\n\t\n接口\n\t\n生成\n\t\n成功\n\t\n比较测试甲厂\n\t\nCMP-UI-AUDIT-VIEW-PI\n\t\nAV00049\n\t\n49\n\t\n待分配 → 待领取\n\t\n\n\n\t\n2026-10-08 12:00:48\n\t\nCMP_AUDIT_VIEW 审计界面样本\n\t\n页面\n\t\n分配\n\t\n成功\n\t\n比较测试乙厂\n\t\nCMP-UI-AUDIT-VIEW-PI\n\t\nAV00048\n\t\n48\n\t\n待分配 → 待领取\n\t\n\n\n\t\n2026-10-08 12:00:47\n\t\nCMP_AUDIT_VIEW 审计界面样本\n\t\n系统\n\t\n生成\n\t\n成功\n\t\n比较测试甲厂\n\t\nCMP-UI-AUDIT-VIEW-PI\n\t\nAV00047\n\t\n47\n\t\n待分配 → 待领取\n\t\n\n\n\t\n2026-10-08 12:00:46\n\t\nCMP_AUDIT_VIEW 审计界面样本\n\t\n接口\n\t\n分配\n\t\n成功\n\t\n比较测试乙厂\n\t\nCMP-UI-AUDIT-VIEW-PI\n\t\nAV00046\n\t\n46\n\t\n待分配 → 待领取\n\t\n\n\n\t\n2026-10-08 12:00:45\n\t\nCMP_AUDIT_VIEW 审计界面样本\n\t\n页面\n\t\n生成\n\t\n失败\n\t\n比较测试甲厂\n\t\nCMP-UI-AUDIT-VIEW-PI\n\t\nAV00045\n\t\n45\n\t\n待分配 → 待领取\n\t\n\n\n\t\n2026-10-08 12:00:44\n\t\nCMP_AUDIT_VIEW 审计界面样本\n\t\n系统\n\t\n分配\n\t\n成功\n\t\n比较测试乙厂\n\t\nCMP-UI-AUDIT-VIEW-PI\n\t\nAV00044\n\t\n44\n\t\n待分配 → 待领取\n\t\n\n\n\t\n2026-10-08 12:00:43\n\t\nCMP_AUDIT_VIEW 审计界面样本\n\t\n接口\n\t\n生成\n\t\n成功\n\t\n比较测试甲厂\n\t\nCMP-UI-AUDIT-VIEW-PI\n\t\nAV00043\n\t\n43\n\t\n待分配 → 待领取\n\t\n\n\n\t\n2026-10-08 12:00:42\n\t\nCMP_AUDIT_VIEW 审计界面样本\n\t\n页面\n\t\n分配\n\t\n成功\n\t\n比较测试乙厂\n\t\nCMP-UI-AUDIT-VIEW-PI\n\t\nAV00042\n\t\n42\n\t\n待分配 → 待领取\n\t\n\n\n\t\n2026-10-08 12:00:41\n\t\nCMP_AUDIT_VIEW 审计界面样本\n\t\n系统\n\t\n生成\n\t\n成功\n\t\n比较测试甲厂\n\t\nCMP-UI-AUDIT-VIEW-PI\n\t\nAV00041\n\t\n41\n\t\n待分配 → 待领取\n\t\n\n\n\t\n2026-10-08 12:00:40\n\t\nCMP_AUDIT_VIEW 审计界面样本\n\t\n接口\n\t\n分配\n\t\n成功\n\t\n比较测试乙厂\n\t\nCMP-UI-AUDIT-VIEW-PI\n\t\nAV00040\n\t\n40\n\t\n待分配 → 待领取\n\t\n\n\n\t\n2026-10-08 12:00:39\n\t\nCMP_AUDIT_VIEW 审计界面样本\n\t\n页面\n\t\n生成\n\t\n成功\n\t\n比较测试甲厂\n\t\nCMP-UI-AUDIT-VIEW-PI\n\t\nAV00039\n\t\n39\n\t\n待分配 → 待领取\n\t\n\n\n\t\n2026-10-08 12:00:38\n\t\nCMP_AUDIT_VIEW 审计界面样本\n\t\n系统\n\t\n分配\n\t\n成功\n\t\n比较测试乙厂\n\t\nCMP-UI-AUDIT-VIEW-PI\n\t\nAV00038\n\t\n38\n\t\n待分配 → 待领取\n\t\n\n\n\t\n2026-10-08 12:00:37\n\t\nCMP_AUDIT_VIEW 审计界面样本\n\t\n接口\n\t\n生成\n\t\n成功\n\t\n比较测试甲厂\n\t\nCMP-UI-AUDIT-VIEW-PI\n\t\nAV00037\n\t\n37\n\t\n待分配 → 待领取\n\t\n\n\n\t\n2026-10-08 12:00:36\n\t\nCMP_AUDIT_VIEW 审计界面样本\n\t\n页面\n\t\n分配\n\t\n失败\n\t\n比较测试乙厂\n\t\nCMP-UI-AUDIT-VIEW-PI\n\t\nAV00036\n\t\n36\n\t\n待分配 → 待领取\n\t\n\n\n\t\n2026-10-08 12:00:35\n\t\nCMP_AUDIT_VIEW 审计界面样本\n\t\n系统\n\t\n生成\n\t\n成功\n\t\n比较测试甲厂\n\t\nCMP-UI-AUDIT-VIEW-PI\n\t\nAV00035\n\t\n35\n\t\n待分配 → 待领取\n\t\n共 54 条\n20条/页\n1\n2\n3",
+  "details": [],
+  "layout": [
+    [
+      {
+        "x": 240,
+        "y": 76,
+        "width": 1180,
+        "height": 55.796875
+      }
+    ],
+    [
+      {
+        "x": 240,
+        "y": 147.796875,
+        "width": 1180,
+        "height": 1296
+      }
+    ],
+    [
+      {
+        "x": 261,
+        "y": 164.796875,
+        "width": 1138,
+        "height": 74
+      }
+    ],
+    [
+      {
+        "x": 261,
+        "y": 250.796875,
+        "width": 48,
+        "height": 32
+      },
+      {
+        "x": 309,
+        "y": 250.796875,
+        "width": 170,
+        "height": 32
+      },
+      {
+        "x": 479,
+        "y": 250.796875,
+        "width": 130,
+        "height": 32
+      },
+      {
+        "x": 609,
+        "y": 250.796875,
+        "width": 70,
+        "height": 32
+      },
+      {
+        "x": 679,
+        "y": 250.796875,
+        "width": 120,
+        "height": 32
+      },
+      {
+        "x": 799,
+        "y": 250.796875,
+        "width": 70,
+        "height": 32
+      },
+      {
+        "x": 869,
+        "y": 250.796875,
+        "width": 110,
+        "height": 32
+      },
+      {
+        "x": 979,
+        "y": 250.796875,
+        "width": 140,
+        "height": 32
+      },
+      {
+        "x": 1119,
+        "y": 250.796875,
+        "width": 230,
+        "height": 32
+      },
+      {
+        "x": 1349,
+        "y": 250.796875,
+        "width": 70,
+        "height": 32
+      },
+      {
+        "x": 1419,
+        "y": 250.796875,
+        "width": 150,
+        "height": 32
+      },
+      {
+        "x": 1569,
+        "y": 250.796875,
+        "width": 160,
+        "height": 32
+      }
+    ],
+    [
+      {
+        "x": 261,
+        "y": 282.796875,
+        "width": 48,
+        "height": 55
+      },
+      {
+        "x": 309,
+        "y": 282.796875,
+        "width": 170,
+        "height": 55
+      },
+      {
+        "x": 479,
+        "y": 282.796875,
+        "width": 130,
+        "height": 55
+      },
+      {
+        "x": 609,
+        "y": 282.796875,
+        "width": 70,
+        "height": 55
+      },
+      {
+        "x": 679,
+        "y": 282.796875,
+        "width": 120,
+        "height": 55
+      },
+      {
+        "x": 799,
+        "y": 282.796875,
+        "width": 70,
+        "height": 55
+      },
+      {
+        "x": 869,
+        "y": 282.796875,
+        "width": 110,
+        "height": 55
+      },
+      {
+        "x": 979,
+        "y": 282.796875,
+        "width": 140,
+        "height": 55
+      },
+      {
+        "x": 1119,
+        "y": 282.796875,
+        "width": 230,
+        "height": 55
+      },
+      {
+        "x": 1349,
+        "y": 282.796875,
+        "width": 70,
+        "height": 55
+      },
+      {
+        "x": 1419,
+        "y": 282.796875,
+        "width": 150,
+        "height": 55
+      },
+      {
+        "x": 1569,
+        "y": 282.796875,
+        "width": 160,
+        "height": 55
+      }
+    ]
+  ]
+}

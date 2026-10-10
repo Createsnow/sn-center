@@ -1,0 +1,83 @@
+
+Running 2 tests using 1 worker
+
+(node:42076) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Traceback (most recent call last):
+  File "D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-audit-fixture.py", line 219, in <module>
+    main()
+  File "D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-audit-fixture.py", line 81, in main
+    c.execute(
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\cursors.py", line 170, in execute
+    result = self._query(query)
+             ^^^^^^^^^^^^^^^^^^
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\cursors.py", line 335, in _query
+    conn.query(q)
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 581, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 857, in _read_query_result
+    result.read()
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 1290, in read
+    first_packet = self.connection._read_packet()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 810, in _read_packet
+    packet.raise_for_error()
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\err.py", line 154, in raise_mysql_exception
+    raise errorclass(errno, errval, sqlstate=sqlstate)
+pymysql.err.OperationalError: (1054, "Unknown column 'name' in 'where clause'")
+  x  1 [prototype] › e2e\parity\audit-page.spec.ts:81:1 › P12 audit: numbered pages, draft export scope, filters and inline detail (829ms)
+(node:40404) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok 2 [migration] › e2e\parity\audit-page.spec.ts:81:1 › P12 audit: numbered pages, draft export scope, filters and inline detail (31.3s)
+
+
+  1) [prototype] › e2e\parity\audit-page.spec.ts:81:1 › P12 audit: numbered pages, draft export scope, filters and inline detail 
+
+    Error: Command failed: D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Scripts\python.exe -X utf8 D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-audit-fixture.py python begin
+    Traceback (most recent call last):
+      File "D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-audit-fixture.py", line 219, in <module>
+        main()
+      File "D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-audit-fixture.py", line 81, in main
+        c.execute(
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\cursors.py", line 170, in execute
+        result = self._query(query)
+                 ^^^^^^^^^^^^^^^^^^
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\cursors.py", line 335, in _query
+        conn.query(q)
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 581, in query
+        self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 857, in _read_query_result
+        result.read()
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 1290, in read
+        first_packet = self.connection._read_packet()
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 810, in _read_packet
+        packet.raise_for_error()
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+        err.raise_mysql_exception(self._data)
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\err.py", line 154, in raise_mysql_exception
+        raise errorclass(errno, errval, sqlstate=sqlstate)
+    pymysql.err.OperationalError: (1054, "Unknown column 'name' in 'where clause'")
+
+
+      12 | const operator = 'CMP_AUDIT_VIEW';
+      13 | const fixture = (info: TestInfo, action: string) =>
+    > 14 |   execFileSync(
+         |   ^
+      15 |     python,
+      16 |     ['-X', 'utf8', resolve('../tools/testing/parity-audit-fixture.py'), kind(info), action],
+      17 |     { windowsHide: true, encoding: 'utf8' },
+        at fixture (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-page.spec.ts:14:3)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-page.spec.ts:86:3
+
+    Error Context: test-results\stage31-audit-initial-ui\audit-page-P12-audit-numbe-d171e-e-filters-and-inline-detail-prototype\error-context.md
+
+  1 failed
+    [prototype] › e2e\parity\audit-page.spec.ts:81:1 › P12 audit: numbered pages, draft export scope, filters and inline detail 
+  1 passed (41.7s)

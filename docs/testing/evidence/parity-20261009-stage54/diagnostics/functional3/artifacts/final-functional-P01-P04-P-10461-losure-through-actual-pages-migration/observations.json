@@ -1,0 +1,110 @@
+{
+  "pi": "CMP-FINAL-20261009540005",
+  "facts": [
+    {
+      "stage": "page-entry",
+      "name": "首页",
+      "heading": "你好，同步痕迹操作员"
+    },
+    {
+      "stage": "page-entry",
+      "name": "生产订单",
+      "heading": "你好，同步痕迹操作员"
+    },
+    {
+      "stage": "page-entry",
+      "name": "生成与分配",
+      "heading": "你好，同步痕迹操作员"
+    },
+    {
+      "stage": "page-entry",
+      "name": "起始号与历史导入",
+      "heading": "生成与分配"
+    },
+    {
+      "stage": "page-entry",
+      "name": "规则模板",
+      "heading": "起始号与历史导入"
+    },
+    {
+      "stage": "page-entry",
+      "name": "领取与打印",
+      "heading": "领取与打印"
+    },
+    {
+      "stage": "page-entry",
+      "name": "转厂",
+      "heading": "领取与打印"
+    },
+    {
+      "stage": "page-entry",
+      "name": "SN 查询",
+      "heading": "转厂"
+    },
+    {
+      "stage": "page-entry",
+      "name": "操作痕迹",
+      "heading": "操作痕迹"
+    },
+    {
+      "stage": "page-entry",
+      "name": "账户",
+      "heading": "操作痕迹"
+    },
+    {
+      "stage": "page-entry",
+      "name": "工厂",
+      "heading": "工厂"
+    },
+    {
+      "stage": "factory-created",
+      "code": "F54-20261009540005"
+    },
+    {
+      "stage": "imported-members",
+      "members": [
+        {
+          "sn": "F20261009540005-ONE",
+          "pi": "CMP-FINAL-20261009540005",
+          "factory": "CMP-A",
+          "status": "PRINTED"
+        },
+        {
+          "sn": "F20261009540005-TWO",
+          "pi": "CMP-FINAL-20261009540005",
+          "factory": "CMP-A",
+          "status": "PRINTED"
+        }
+      ]
+    },
+    {
+      "stage": "forced-password-and-role",
+      "usersHidden": true,
+      "generationHidden": true
+    },
+    {
+      "stage": "imported-members",
+      "members": [
+        {
+          "sn": "F20261009540005-ONE",
+          "pi": "CMP-FINAL-20261009540005",
+          "factory": "CMP-A",
+          "status": "PRINTED"
+        },
+        {
+          "sn": "F20261009540005-TWO",
+          "pi": "CMP-FINAL-20261009540005",
+          "factory": "CMP-A",
+          "status": "PRINTED"
+        }
+      ]
+    },
+    {
+      "stage": "credential-relogin",
+      "oldRejected": true,
+      "newAccepted": true,
+      "refreshPreserved": true
+    }
+  ],
+  "errors": []
+}

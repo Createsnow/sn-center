@@ -1,0 +1,35 @@
+{
+  "kind": "python",
+  "items": [
+    {
+      "sn": "G0600001",
+      "seq_dec": 1,
+      "status": "PENDING_ALLOC",
+      "material": "M1"
+    },
+    {
+      "sn": "G0600002",
+      "seq_dec": 2,
+      "status": "PENDING_ALLOC",
+      "material": "M1"
+    },
+    {
+      "sn": "G0600003",
+      "seq_dec": 3,
+      "status": "PENDING_ALLOC",
+      "material": "M1"
+    },
+    {
+      "sn": "G0600004",
+      "seq_dec": 4,
+      "status": "PENDING_ALLOC",
+      "material": "M1"
+    },
+    {
+      "sn": "G0600005",
+      "seq_dec": 5,
+      "status": "PENDING_ALLOC",
+      "material": "M1"
+    }
+  ]
+}

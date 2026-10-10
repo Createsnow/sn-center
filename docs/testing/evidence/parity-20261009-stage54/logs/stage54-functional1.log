@@ -1,0 +1,102 @@
+
+Running 2 tests using 1 worker
+
+(node:48712) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  x  1 [prototype] › e2e\parity\final-functional.spec.ts:10:1 › P01-P04 P08 P13-P14 functional closure through actual pages (20.0s)
+(node:49780) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Traceback (most recent call last):
+  File "D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-order-audit-fixture.py", line 37, in <module>
+    c.execute("INSERT INTO " + user_table + " (" + ",".join(user) + ") VALUES (" + ",".join(["%s"] * len(user)) + ")", tuple(user.values()))
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\cursors.py", line 170, in execute
+    result = self._query(query)
+             ^^^^^^^^^^^^^^^^^^
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\cursors.py", line 335, in _query
+    conn.query(q)
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 581, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 857, in _read_query_result
+    result.read()
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 1290, in read
+    first_packet = self.connection._read_packet()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 810, in _read_packet
+    packet.raise_for_error()
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\err.py", line 154, in raise_mysql_exception
+    raise errorclass(errno, errval, sqlstate=sqlstate)
+pymysql.err.IntegrityError: (1062, "Duplicate entry '90020261009540003' for key 'sys_user.PRIMARY'")
+  x  2 [migration] › e2e\parity\final-functional.spec.ts:10:1 › P01-P04 P08 P13-P14 functional closure through actual pages (649ms)
+
+
+  1) [prototype] › e2e\parity\final-functional.spec.ts:10:1 › P01-P04 P08 P13-P14 functional closure through actual pages 
+
+    Error: expect(locator).toHaveValue(expected) failed
+
+    Locator: locator('.el-form-item').filter({ has: locator('label').filter({ hasText: /^\s*历史 SN 清单（可选）\s*$/ }) }).locator('textarea')
+    Expected: ""
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveValue" locator('.el-form-item').filter({ has: locator('label').filter({ hasText: /^\s*历史 SN 清单（可选）\s*$/ }) }).locator('textarea') with timeout 15000ms
+      - waiting for locator('.el-form-item').filter({ has: locator('label').filter({ hasText: /^\s*历史 SN 清单（可选）\s*$/ }) }).locator('textarea')
+
+
+      149 |     await confirmation.getByRole('button', { name: /^(确定|确认)$/ }).click();
+      150 |     await expect(confirmation).toBeHidden();
+    > 151 |     await expect(field(zh.piInit.snList).locator('textarea')).toHaveValue('');
+          |                                                               ^
+      152 |     await expect(rows()).toHaveCount(1);
+      153 |     await capture('02-initialization');
+      154 |     await queryImported();
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\final-functional.spec.ts:151:63
+
+    Error Context: test-results\stage54-functional1\final-functional-P01-P04-P-10461-losure-through-actual-pages-prototype\error-context.md
+
+  2) [migration] › e2e\parity\final-functional.spec.ts:10:1 › P01-P04 P08 P13-P14 functional closure through actual pages 
+
+    Error: Command failed: D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Scripts\python.exe -X utf8 D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-order-audit-fixture.py java prepare 20261009540003
+    Traceback (most recent call last):
+      File "D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-order-audit-fixture.py", line 37, in <module>
+        c.execute("INSERT INTO " + user_table + " (" + ",".join(user) + ") VALUES (" + ",".join(["%s"] * len(user)) + ")", tuple(user.values()))
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\cursors.py", line 170, in execute
+        result = self._query(query)
+                 ^^^^^^^^^^^^^^^^^^
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\cursors.py", line 335, in _query
+        conn.query(q)
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 581, in query
+        self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 857, in _read_query_result
+        result.read()
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 1290, in read
+        first_packet = self.connection._read_packet()
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 810, in _read_packet
+        packet.raise_for_error()
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+        err.raise_mysql_exception(self._data)
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\err.py", line 154, in raise_mysql_exception
+        raise errorclass(errno, errval, sqlstate=sqlstate)
+    pymysql.err.IntegrityError: (1062, "Duplicate entry '90020261009540003' for key 'sys_user.PRIMARY'")
+
+
+      15 |   expect(run).toMatch(/^[0-9]{14}$/);
+      16 |   const admin = 'audit' + run;
+    > 17 |   execFileSync(
+         |   ^
+      18 |     resolve('../../sn-center-python/.venv/Scripts/python.exe'),
+      19 |     ['-X', 'utf8', resolve('../tools/testing/parity-order-audit-fixture.py'), kind, 'prepare', run],
+      20 |     { windowsHide: true },
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\final-functional.spec.ts:17:3
+
+    Error Context: test-results\stage54-functional1\final-functional-P01-P04-P-10461-losure-through-actual-pages-migration\error-context.md
+
+  2 failed
+    [prototype] › e2e\parity\final-functional.spec.ts:10:1 › P01-P04 P08 P13-P14 functional closure through actual pages 
+    [migration] › e2e\parity\final-functional.spec.ts:10:1 › P01-P04 P08 P13-P14 functional closure through actual pages 

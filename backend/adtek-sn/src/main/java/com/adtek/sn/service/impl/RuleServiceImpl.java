@@ -6,6 +6,7 @@ import com.adtek.common.annotation.*;
 import com.adtek.common.core.*;
 import com.adtek.framework.audit.AuditContext;
 import com.adtek.framework.security.CommandValidator;
+import com.adtek.framework.security.IdentityNamePort;
 import com.adtek.framework.task.TaskDigests;
 import com.adtek.sn.convert.SnConvert;
 import com.adtek.sn.domain.*;
@@ -34,6 +35,7 @@ public class RuleServiceImpl implements RuleService {
     private final SnPolicy policy;
     private final CommandValidator validator;
     private final SnConvert convert;
+    private final IdentityNamePort names;
 
     public RuleServiceImpl(
             RuleMapper rules,
@@ -42,7 +44,9 @@ public class RuleServiceImpl implements RuleService {
             CommandValidator validator,
             SnConvert convert,
             OrderBillMapper bills,
-            SnRuleResolver resolver) {
+            SnRuleResolver resolver,
+            IdentityNamePort names) {
+        this.names = names;
         this.resolver = resolver;
         this.bills = bills;
         this.rules = rules;
@@ -67,15 +71,15 @@ public class RuleServiceImpl implements RuleService {
                                 RuleEntity::getBindScope,
                                 RuleEntity::getBindValue,
                                 RuleEntity::getId);
-        String like = SnPolicy.like(query.getQ());
+        String like = SnPolicy.optional(query.getQ());
         if (like != null)
             where.and(
                     w ->
-                            w.apply("code LIKE {0} ESCAPE '!'", like)
+                            w.like(RuleEntity::getCode, like)
                                     .or()
-                                    .apply("name LIKE {0} ESCAPE '!'", like)
+                                    .like(RuleEntity::getName, like)
                                     .or()
-                                    .apply("bind_value LIKE {0} ESCAPE '!'", like));
+                                    .like(RuleEntity::getBindValue, like));
         var page = rules.selectPage(new Page<>(query.getPage(), query.getSize()), where);
         if (page.getRecords().isEmpty())
             return new PageResult<>(
@@ -132,7 +136,7 @@ public class RuleServiceImpl implements RuleService {
             title = "编码规则",
             action = "sn:rule:create",
             businessType = OperLog.BusinessType.INSERT,
-            fields = {"name", "digest", "currentVersion"})
+            fields = {"name", "digest", "currentVersion", "description"})
     public RuleVO create(RuleSaveDTO input) {
         validator.requireValid(input);
         var command = normalize(input);
@@ -153,7 +157,7 @@ public class RuleServiceImpl implements RuleService {
         try {
             rules.insert(rule);
         } catch (DuplicateKeyException e) {
-            throw new BusinessException(RULE_EXISTS);
+            throw collision(command);
         }
         var version = version(rule, 1, spec, actor.userId());
         versions.insert(version);
@@ -167,7 +171,7 @@ public class RuleServiceImpl implements RuleService {
             title = "编码规则",
             action = "sn:rule:update",
             businessType = OperLog.BusinessType.UPDATE,
-            fields = {"name", "digest", "currentVersion"})
+            fields = {"name", "digest", "currentVersion", "description"})
     public RuleChangeVO update(String id, RuleSaveDTO input) {
         validator.requireValid(input);
         var command = normalize(input);
@@ -290,6 +294,26 @@ public class RuleServiceImpl implements RuleService {
                         SnPolicy.text(prefix), SnPolicy.text(suffix), base, length, chars);
     }
 
+    /** 唯一约束是并发最终裁决；失败后仅返回调用者有权查看的冲突规则编码。 */
+    private BusinessException collision(RuleSaveDTO command) {
+        var existing =
+                rules.selectOne(
+                        Wrappers.<RuleEntity>lambdaQuery().eq(RuleEntity::getCode, command.code()));
+        String reason = "RULE_CODE_EXISTS";
+        if (existing == null) {
+            existing =
+                    rules.selectOne(
+                            Wrappers.<RuleEntity>lambdaQuery()
+                                    .eq(RuleEntity::getBindScope, command.bindScope())
+                                    .eq(RuleEntity::getBindValue, command.bindValue()));
+            reason = "RULE_BIND_EXISTS";
+        }
+        return existing == null
+                ? new BusinessException(RULE_EXISTS)
+                : new BusinessException(
+                        RULE_EXISTS, Map.of("reason", reason, "rule_code", existing.getCode()));
+    }
+
     private static String digest(SequenceSpec spec) {
         return TaskDigests.sha256(
                 spec.prefix().length()
@@ -312,6 +336,7 @@ public class RuleServiceImpl implements RuleService {
         value.setVersion(number);
         value.setUsed(false);
         value.setCreatedBy(actor);
+        value.setCreatedByName(names.username(actor).orElse(null));
         value.setCreatedAt(Instant.now());
         value.setUpdatedAt(value.getCreatedAt());
         apply(value, spec);
@@ -342,6 +367,17 @@ public class RuleServiceImpl implements RuleService {
                 "digest",
                 version.getContentDigest(),
                 "currentVersion",
-                rule.getCurrentVersion().toString());
+                rule.getCurrentVersion().toString(),
+                "description",
+                "prefix="
+                        + version.getPrefix()
+                        + " suffix="
+                        + version.getSuffix()
+                        + " base="
+                        + version.getBase()
+                        + " len="
+                        + version.getSeqLength()
+                        + " charset="
+                        + version.getAlphabet());
     }
 }

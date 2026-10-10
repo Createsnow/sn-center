@@ -7,7 +7,7 @@ import com.adtek.framework.task.*;
 import com.adtek.framework.task.service.DurableTaskService;
 import com.adtek.framework.task.vo.TaskVO;
 import com.adtek.sn.convert.*;
-import com.adtek.sn.domain.SnExportEntity;
+import com.adtek.sn.domain.SnAuditExportEntity;
 import com.adtek.sn.dto.SnAuditExportDTO;
 import com.adtek.sn.query.SnAuditQuery;
 import com.adtek.sn.service.SnAuditService;
@@ -127,6 +127,27 @@ public class SnAuditServiceImpl implements SnAuditService {
     }
 
     @Override
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public PageResult<SnAuditVO> page(SnAuditQuery query, int page, int size) {
+        if (page < 1 || size < 1 || size > 1000) throw SnPolicy.invalid();
+        var w = normalized(query);
+        var actor = e.policy.read(SnAuditAccess.VIEW);
+        var range = scope(actor, SnAuditAccess.VIEW, w.query());
+        long total = e.rows.count(range, w.query(), w.from(), w.to(), w.keyword());
+        var found =
+                e.rows.numberedPage(
+                        range,
+                        w.query(),
+                        w.from(),
+                        w.to(),
+                        w.keyword(),
+                        (long) (page - 1) * size,
+                        size);
+        return new PageResult<>(
+                found.stream().map(convert::view).toList(), Long.toString(total), page, size);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public SnCountVO count(SnAuditQuery query) {
         var w = normalized(query);
@@ -167,7 +188,8 @@ public class SnAuditServiceImpl implements SnAuditService {
     @Override
     public SnAuditMetaVO meta() {
         e.policy.read(SnAuditAccess.VIEW);
-        return new SnAuditMetaVO(true, Integer.toString(settings.getMaxBatchQuantity()), 30, true);
+        return new SnAuditMetaVO(
+                true, Integer.toString(settings.getMaxAuditExportQuantity()), 30, true);
     }
 
     static String type(String format) {
@@ -218,11 +240,11 @@ public class SnAuditServiceImpl implements SnAuditService {
                     var read = scope(fresh, SnAuditAccess.VIEW, w.query());
                     var exporting = scope(fresh, SnAuditAccess.EXPORT, w.query());
                     e.rows.export(
-                            new SnExportEntity(
-                                    task.id(), fresh.userId(), format, payload, 0, null));
+                            new SnAuditExportEntity(
+                                    task.id(), fresh.userId(), format, payload, 0, null, 7));
                     // 失败审计可独立并发追加；单条INSERT SELECT用一个一致读视图固定全部行，不能先计数再跨语句分页猜快照。
                     long count =
-                            e.rows.snapshot(
+                            e.rows.prototypeSnapshot(
                                     read,
                                     w.query(),
                                     w.from(),
@@ -230,8 +252,8 @@ public class SnAuditServiceImpl implements SnAuditService {
                                     w.keyword(),
                                     exporting,
                                     task.id(),
-                                    settings.getMaxBatchQuantity() + 1);
-                    if (count > settings.getMaxBatchQuantity())
+                                    settings.getMaxAuditExportQuantity() + 1);
+                    if (count > settings.getMaxAuditExportQuantity())
                         throw new BusinessException(
                                 com.adtek.sn.constant.ErrorCodeConstants.RESOURCE_LIMIT);
                     e.rows.quantity(task.id(), count);
@@ -239,7 +261,7 @@ public class SnAuditServiceImpl implements SnAuditService {
                     e.files.insert(task.id(), task.id() + "." + ext, count);
                     e.files.metadata(
                             task.id(),
-                            "sn-audit-" + task.id() + "." + ext,
+                            "audit_export." + ext,
                             format.equals("CSV") ? "text/csv;charset=UTF-8" : PrintFiles.XLSX);
                     tasks.confirmBusiness(task.id(), task.id());
                     e.audit.success(

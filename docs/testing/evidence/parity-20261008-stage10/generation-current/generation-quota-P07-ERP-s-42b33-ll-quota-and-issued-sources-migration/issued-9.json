@@ -1,0 +1,155 @@
+{
+  "kind": "java",
+  "items": [
+    {
+      "sn": "G0600001",
+      "seq_dec": 1,
+      "status": "PENDING_ALLOC",
+      "material": "OLD-A",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600002",
+      "seq_dec": 2,
+      "status": "PENDING_ALLOC",
+      "material": "OLD-A",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600003",
+      "seq_dec": 3,
+      "status": "PENDING_ALLOC",
+      "material": "OLD-A",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600004",
+      "seq_dec": 4,
+      "status": "PENDING_ALLOC",
+      "material": "OLD-A",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600005",
+      "seq_dec": 5,
+      "status": "PENDING_ALLOC",
+      "material": "OLD-A",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600006",
+      "seq_dec": 6,
+      "status": "PENDING_ALLOC",
+      "material": "NEW",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600007",
+      "seq_dec": 7,
+      "status": "PENDING_ALLOC",
+      "material": "NEW",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600008",
+      "seq_dec": 8,
+      "status": "PENDING_ALLOC",
+      "material": "NEW",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600009",
+      "seq_dec": 9,
+      "status": "PENDING_ALLOC",
+      "material": "NEW",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    }
+  ],
+  "allocations": [],
+  "jobs": [
+    {
+      "state": "SUCCESS",
+      "qty": 5,
+      "error_code": null,
+      "error_params": null
+    },
+    {
+      "state": "SUCCESS",
+      "qty": 4,
+      "error_code": null,
+      "error_params": null
+    }
+  ],
+  "identities": [
+    {
+      "sn": "G0600001",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null,
+      "source_factory_code": "CMP-A"
+    },
+    {
+      "sn": "G0600002",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null,
+      "source_factory_code": "CMP-A"
+    },
+    {
+      "sn": "G0600003",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null,
+      "source_factory_code": "CMP-A"
+    },
+    {
+      "sn": "G0600004",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null,
+      "source_factory_code": "CMP-A"
+    },
+    {
+      "sn": "G0600005",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null,
+      "source_factory_code": "CMP-A"
+    },
+    {
+      "sn": "G0600006",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null,
+      "source_factory_code": "CMP-A"
+    },
+    {
+      "sn": "G0600007",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null,
+      "source_factory_code": "CMP-A"
+    },
+    {
+      "sn": "G0600008",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null,
+      "source_factory_code": "CMP-A"
+    },
+    {
+      "sn": "G0600009",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null,
+      "source_factory_code": "CMP-A"
+    }
+  ],
+  "generationIdentity": [
+    {
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": "CMP-A"
+    }
+  ]
+}

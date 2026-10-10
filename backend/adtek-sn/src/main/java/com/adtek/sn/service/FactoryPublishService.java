@@ -13,10 +13,10 @@ public interface FactoryPublishService {
     /** 当前factory:map全厂授权，锁定工厂版本，显式绑定不可变组织身份；与快照映射/审计原子提交。 */
     FactoryVO bind(Source source, Organization organization, long factoryId, long version);
 
-    /** 必须已有当前order:sync事务且锁安全/发布行；另复核factory:sync资格，复用目录更新但不另开事务。 */
-    FactorySyncVO withinOrderPublish(
+    /** 全量同步的独立工厂事务；复核当前权限/版本/租约，目录、审计和本次工厂版本一起提交。 */
+    FactorySyncVO publishForOrderSync(
             com.adtek.common.core.Actor requested,
+            String attemptId,
             Source source,
-            List<Organization> organizations,
-            long revision);
+            List<Organization> organizations);
 }

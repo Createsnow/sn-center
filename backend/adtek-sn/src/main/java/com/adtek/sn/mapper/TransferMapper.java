@@ -41,6 +41,23 @@ public interface TransferMapper {
                     + "</script>")
     TransferCandidateEntity candidates(@Param("c") TransferInput input);
 
+    /** 物料目录覆盖整源 PI，切换范围后仍可选择其它物料。 */
+    @Select(
+            "SELECT DISTINCT material FROM sn_item WHERE factory_id=#{factory}"
+                    + " AND pi=#{pi} ORDER BY material")
+    List<String> materials(@Param("factory") long factory, @Param("pi") String pi);
+
+    String DUPLICATES =
+            " FROM sn_item i JOIN sn_key k ON k.sn=i.sn AND k.pi=#{target} WHERE "
+                    + SOURCE
+                    + ELIGIBLE;
+
+    @Select("<script>SELECT COUNT(*)" + DUPLICATES + "</script>")
+    long duplicateCount(@Param("c") TransferInput input, @Param("target") String target);
+
+    @Select("<script>SELECT i.sn" + DUPLICATES + " ORDER BY i.sn LIMIT 5</script>")
+    List<String> duplicateSamples(@Param("c") TransferInput input, @Param("target") String target);
+
     @Select(
             "<script>SELECT "
                     + AcquireMapper.CURRENT
@@ -59,17 +76,42 @@ public interface TransferMapper {
     @Select("SELECT * FROM sn_transfer WHERE id=#{id}")
     TransferEntity get(String id);
 
+    /** 历史分页不随当前状态过滤成员；新数据相同流水按创建顺序稳定展示。 */
+    @Select(
+            "SELECT m.ordinal,JSON_UNQUOTE(JSON_EXTRACT(m.snapshot,'$.sn')) sn,"
+                    + "NULLIF(JSON_UNQUOTE(JSON_EXTRACT(m.snapshot,'$.seqText')),'null') seq_text,"
+                    + "CAST(NULLIF(JSON_UNQUOTE(JSON_EXTRACT(m.snapshot,'$.seqDec')),'null')"
+                    + " AS UNSIGNED) seq_dec,"
+                    + "NULLIF(JSON_UNQUOTE(JSON_EXTRACT(m.snapshot,'$.seqPi')),'null') seq_pi,"
+                    + "m.from_status,COALESCE(b.batch_no,m.from_batch_id) from_batch_no,"
+                    + "i.status current_status,i.factory_id current_factory_id,"
+                    + "f.code current_factory_code,f.name current_factory_name,i.pi current_pi"
+                    + " FROM sn_transfer_member m LEFT JOIN sn_item i"
+                    + " ON i.gen_month=m.gen_month AND i.id=m.item_id"
+                    + " LEFT JOIN sn_key k ON k.gen_month=m.gen_month AND k.id=m.item_id"
+                    + " LEFT JOIN sn_factory f ON f.id=i.factory_id"
+                    + " LEFT JOIN sn_acquire_batch b ON b.id=m.from_batch_id"
+                    + " WHERE m.transfer_id=#{id}"
+                    + " ORDER BY seq_pi,seq_dec,COALESCE(k.creation_order,m.ordinal)"
+                    + " LIMIT #{size} OFFSET #{offset}")
+    List<TransferDetailEntity> detailPage(
+            @Param("id") String id, @Param("offset") long offset, @Param("size") int size);
+
+    @Select("SELECT COUNT(*) FROM sn_transfer_member WHERE transfer_id=#{id}")
+    long detailCount(String id);
+
     @Insert(
             "INSERT INTO"
                     + " sn_transfer(id,mode,status,from_factory_id,from_factory_code,"
                     + "from_factory_name,from_pi,scope,material,sn,to_factory_id,"
                     + "to_factory_code,to_factory_name,to_pi,to_customer,to_material,"
-                    + "target_source,reason,quantity,actor_id,decided_by,decided_at)"
+                    + "target_source,reason,quantity,actor_id,decided_by,decided_at,"
+                    + "transfer_no,actor_name,decided_name)"
                     + " VALUES(#{id},#{mode},#{status},#{fromFactoryId},#{fromFactoryCode},"
                     + "#{fromFactoryName},#{fromPi},#{scope},#{material},#{sn},#{toFactoryId},"
                     + "#{toFactoryCode},#{toFactoryName},#{toPi},#{toCustomer},#{toMaterial},"
                     + "#{targetSource},#{reason},#{quantity},#{actorId},#{decidedBy},"
-                    + "#{decidedAt})")
+                    + "#{decidedAt},#{transferNo},#{actorName},#{decidedName})")
     int insert(TransferEntity row);
 
     @Insert(
@@ -167,7 +209,8 @@ public interface TransferMapper {
 
     @Update(
             "UPDATE sn_transfer SET"
-                    + " status=#{status},version=version+1,decided_by=#{actor},note=#{note},"
+                    + " status=#{status},version=version+1,decided_by=#{actor},"
+                    + "decided_name=#{actorName},note=#{note},"
                     + "decided_at=CURRENT_TIMESTAMP(6)"
                     + " WHERE id=#{id} AND status='PENDING' AND version=#{version}")
     int decide(
@@ -175,6 +218,7 @@ public interface TransferMapper {
             @Param("version") long version,
             @Param("status") String status,
             @Param("actor") long actor,
+            @Param("actorName") String actorName,
             @Param("note") String note);
 
     @Insert(
@@ -222,21 +266,25 @@ public interface TransferMapper {
     long count(@Param("s") Scope scope, @Param("pi") String pi, @Param("status") String status);
 
     String TARGET =
-            "SELECT DISTINCT b.factory_id,f.code factory_code,f.name"
-                    + " factory_name,b.pi,b.customer,e.material FROM sn_order_bill b JOIN"
-                    + " sn_order_entry e ON e.bill_id=b.id JOIN sn_factory f ON"
+            "SELECT f.id factory_id,f.code factory_code,f.name factory_name,"
+                    + "b.org_name,b.pi,b.customer,e.material,MAX(e.material_name) material_name"
+                    + " FROM sn_order_bill b JOIN sn_order_entry e ON e.bill_id=b.id"
+                    + " LEFT JOIN sn_factory f ON"
                     + " f.id=b.factory_id WHERE"
-                    + " b.active=TRUE AND e.active=TRUE AND f.enabled=TRUE AND b.pi&lt;&gt;'' <if"
+                    + " b.active=TRUE AND e.active=TRUE AND b.customer&lt;&gt;''"
+                    + " AND b.pi&lt;&gt;'' <if"
                     + " test='q!=null'> AND (b.pi LIKE #{q} ESCAPE '!' OR b.customer LIKE"
                     + " #{q} ESCAPE"
-                    + " '!' OR e.material LIKE #{q} ESCAPE '!')</if>";
+                    + " '!' OR e.material LIKE #{q} ESCAPE '!'"
+                    + " OR b.bill_no LIKE #{q} ESCAPE '!')</if>"
+                    + " GROUP BY f.id,f.code,f.name,b.org_name,b.pi,b.customer,e.material";
 
     @Select(
             "<script>"
                     + TARGET
-                    + " ORDER BY b.factory_id,b.pi,b.customer,e.material LIMIT #{size} OFFSET"
+                    + " ORDER BY b.pi,e.material,b.org_name,b.customer,f.code LIMIT #{size} OFFSET"
                     + " #{offset}</script>")
-    List<TransferTargetEntity> targets(
+    List<TransferSnapshotEntity> targets(
             @Param("q") String q, @Param("offset") long offset, @Param("size") int size);
 
     @Select("<script>SELECT COUNT(*) FROM (" + TARGET + ") targets</script>")

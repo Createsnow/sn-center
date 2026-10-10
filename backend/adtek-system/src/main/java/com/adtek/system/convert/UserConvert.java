@@ -17,6 +17,9 @@ import java.util.Set;
 /** Entity 到对外资料的唯一字段映射；显式权限来源由用例传入，不映射密码/安全版本。 */
 @Mapper
 public interface UserConvert {
+    com.adtek.framework.security.AccountAdministrationPort.Profile accountProfile(
+            ManagedUserVO user);
+
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "displayName", source = "displayName")
     SysUserEntity fromServiceClient(com.adtek.system.dto.ServiceClientCreateDTO command);
@@ -31,8 +34,15 @@ public interface UserConvert {
     @Mapping(target = "roleIds", source = "roleIds")
     @Mapping(target = "deptName", source = "deptName")
     @Mapping(target = "factoryIds", source = "factoryIds")
+    @Mapping(target = "createdAt", source = "user.createTime")
     ManagedUserVO toManaged(
-            SysUserEntity user, List<String> roleIds, String deptName, List<String> factoryIds);
+            SysUserEntity user,
+            List<String> roleIds,
+            String deptName,
+            List<String> factoryIds,
+            List<String> roleCodes,
+            List<com.adtek.framework.security.FactoryMembershipPort.Factory> factories,
+            String createdByName);
 
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "username", source = "username")
@@ -50,12 +60,14 @@ public interface UserConvert {
     UserProfileVO toProfile(SysUserEntity user, Set<String> permissions);
 
     @Mapping(target = "principalType", ignore = true)
+    @Mapping(target = "lastLoginAt", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "passwordHash", ignore = true)
     @Mapping(target = "deptId", ignore = true)
     @Mapping(target = "enabled", ignore = true)
     @Mapping(target = "mustChangePassword", ignore = true)
     @Mapping(target = "securityVersion", ignore = true)
+    @Mapping(target = "credentialVersion", ignore = true)
     @Mapping(target = "language", ignore = true)
     @Mapping(target = "createBy", ignore = true)
     @Mapping(target = "createTime", ignore = true)

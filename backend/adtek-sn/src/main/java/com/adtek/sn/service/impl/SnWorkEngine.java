@@ -24,6 +24,7 @@ import java.util.*;
 @Component
 public class SnWorkEngine {
     final SnWorkMapper rows;
+    final SnImportMapper imports;
     final SnRuleResolver resolver;
     final SnNextSequence next;
     final RuleMapper rules;
@@ -31,6 +32,7 @@ public class SnWorkEngine {
     final OrderBillMapper bills;
     final FactoryMapper factories;
     final SourceQuotaMapper quotas;
+    final BillGenerationMapper generation;
     final SnControlMapper control;
     final SnPolicy policy;
     final ObjectMapper json;
@@ -41,6 +43,7 @@ public class SnWorkEngine {
 
     public SnWorkEngine(
             SnWorkMapper rows,
+            SnImportMapper imports,
             SnRuleResolver resolver,
             SnNextSequence next,
             RuleMapper rules,
@@ -48,6 +51,7 @@ public class SnWorkEngine {
             OrderBillMapper bills,
             FactoryMapper factories,
             SourceQuotaMapper quotas,
+            BillGenerationMapper generation,
             SnControlMapper control,
             SnPolicy policy,
             ObjectMapper json,
@@ -56,6 +60,7 @@ public class SnWorkEngine {
             ManagementAuditPort audit,
             TaskProgressService progress) {
         this.rows = rows;
+        this.imports = imports;
         this.resolver = resolver;
         this.next = next;
         this.rules = rules;
@@ -63,6 +68,7 @@ public class SnWorkEngine {
         this.bills = bills;
         this.factories = factories;
         this.quotas = quotas;
+        this.generation = generation;
         this.control = control;
         this.policy = policy;
         this.json = json;
@@ -167,25 +173,7 @@ public class SnWorkEngine {
         if (bill.getPi().isEmpty()) out.add("NO_PI");
         if (bill.getFactoryId() == null) out.add("ORG_UNMAPPED");
         if (rule == null) out.add("RULE_MISSING");
-        var historical = quotaMap(bill.getId());
-        long remaining = 0;
-        for (var line : rows.lines(bill.getId())) {
-            long consumed =
-                    historical
-                            .getOrDefault(
-                                    line.getSourceEntryId(),
-                                    new SourceQuotaMapper.Quota(
-                                            bill.getId(), line.getSourceEntryId(), 0, 0))
-                            .generatedQty();
-            if (java.math.BigDecimal.valueOf(consumed).compareTo(line.getQty()) > 0
-                    && !out.contains("QUOTA_ANOMALY")) out.add("QUOTA_ANOMALY");
-            remaining =
-                    Math.addExact(remaining, PlannedQuantity.remaining(line.getQty(), consumed));
-        }
-        if (!Boolean.TRUE.equals(bill.getQuantityReady())) out.add("NON_INTEGER_QUANTITY");
-        if (remaining == 0) out.add("QUOTA_EMPTY");
-        if (rows.pendingMismatch(bill.getId(), bill.getPi(), bill.getOrgId(), bill.getFactoryId())
-                > 0) out.add("ALLOCATION_SOURCE_CHANGED");
+        if (remaining(bill) == 0) out.add("QUOTA_EMPTY");
         return List.copyOf(out);
     }
 
@@ -197,23 +185,15 @@ public class SnWorkEngine {
 
     long remaining(OrderBillEntity bill) {
         if (!bill.getActive() || !Boolean.TRUE.equals(bill.getQuantityReady())) return 0;
-        var history = quotaMap(bill.getId());
-        long qty = 0;
-        for (var line : rows.lines(bill.getId()))
-            qty =
-                    Math.addExact(
-                            qty,
-                            PlannedQuantity.remaining(
-                                    line.getQty(),
-                                    history.getOrDefault(
-                                                    line.getSourceEntryId(),
-                                                    new SourceQuotaMapper.Quota(
-                                                            bill.getId(),
-                                                            line.getSourceEntryId(),
-                                                            0,
-                                                            0))
-                                            .generatedQty()));
-        return qty;
+        return Math.max(0, PlannedQuantity.snCount(bill.getTotalQty()) - generated(bill.getId()));
+    }
+
+    /** 额度按整单历史累计扣减；ERP 删除、替换或缩减分录不能重新释放已发号码的额度。 */
+    private long generated(long billId) {
+        long generated = 0;
+        for (var quota : quotaMap(billId).values())
+            generated = Math.addExact(generated, quota.generatedQty());
+        return generated;
     }
 
     OrderBillEntity bill(long id) {
@@ -226,7 +206,12 @@ public class SnWorkEngine {
         resource(quantity);
         var bill = bill(billId);
         var rule = resolver.generation(bill.getPi(), bill.getCustomer(), selectedRule).version();
-        if (!issues(bill, rule).isEmpty()) throw new BusinessException(GENERATION_NOT_READY);
+        var problems = issues(bill, rule);
+        if (problems.contains("QUOTA_EMPTY") && problems.size() == 1)
+            throw GenerationErrors.error(
+                    GENERATION_NOT_READY, "GEN_QUOTA_EMPTY", Map.of("bill_no", bill.getBillNo()));
+        if (!problems.isEmpty()) throw new BusinessException(GENERATION_NOT_READY);
+        if (quantity > remaining(bill)) throw quotaExceeded(quantity, remaining(bill));
         factory(bill.getFactoryId());
         var counter = counter(bill.getPi());
         if (start != null && counter.startLocked()) throw new BusinessException(PI_INIT_LOCKED);
@@ -237,12 +222,17 @@ public class SnWorkEngine {
         long end = SequenceCodec.lastSequence(first - 1, quantity, spec);
         long todo = quantity, next = first;
         var history = quotaMap(billId);
+        long skip = generated(billId);
         List<Segment> segments = new ArrayList<>();
         for (var line : rows.lines(billId)) {
             if (todo == 0) break;
             var q = history.get(line.getSourceEntryId());
             if (q == null) throw new IllegalStateException("Missing source quota");
-            long take = Math.min(todo, PlannedQuantity.remaining(line.getQty(), q.generatedQty()));
+            // 原型在当前分录序列上跳过整单已生成量；稳定来源台账只保留历史追溯，不决定本行余量。
+            long available = PlannedQuantity.snCount(line.getQty());
+            long skipped = Math.min(skip, available);
+            skip -= skipped;
+            long take = Math.min(todo, available - skipped);
             if (take > 0) {
                 segments.add(
                         new Segment(
@@ -253,12 +243,13 @@ public class SnWorkEngine {
                                 next,
                                 Math.addExact(next, take - 1),
                                 line.getSnapshotVersion(),
-                                q.generatedQty()));
+                                q.generatedQty(),
+                                line.getMaterialName()));
                 todo -= take;
                 next += take;
             }
         }
-        if (todo != 0) throw new BusinessException(QUOTA_EXCEEDED);
+        if (todo != 0) throw quotaExceeded(quantity, remaining(bill));
         return new Plan(
                 bill,
                 List.copyOf(segments),
@@ -277,16 +268,77 @@ public class SnWorkEngine {
                 position.incomingSn());
     }
 
-    void samePlan(Plan expected) {
+    /** 只比较预演承诺的业务结果；同步时间、内部版本与来源分录内码不影响相同号段。 */
+    Plan samePlan(Plan expected) {
+        var current = bill(expected.bill().getId());
+        if (!current.getActive()) throw SnPolicy.missing();
+        // 已接受的执行先检查整单剩余额度，额度归零也保留原型的“超过剩余量”失败原因。
+        if (expected.quantity() > remaining(current))
+            throw quotaExceeded(expected.quantity(), remaining(current));
         var actual =
                 calculate(
                         expected.bill().getId(),
                         expected.quantity(),
                         expected.requestedStart(),
                         expected.ruleId());
-        if (!json.readTree(encode(actual)).equals(json.readTree(encode(expected))))
-            throw new BusinessException(PREVIEW_CHANGED);
+        if (!condition(actual).equals(condition(expected)))
+            throw GenerationErrors.preview("GEN_PREVIEW_CHANGED");
+        // 来源台账与客户使用锁内重算值；不能通过校验后仍写入已失效的 ERP 分录身份。
+        return actual;
     }
+
+    private BusinessException quotaExceeded(long quantity, long quota) {
+        return GenerationErrors.error(
+                QUOTA_EXCEEDED,
+                "GEN_QUOTA_EXCEEDED",
+                Map.of("qty", Long.toString(quantity), "quota", Long.toString(quota)));
+    }
+
+    private PreviewCondition condition(Plan p) {
+        return new PreviewCondition(
+                p.bill().getBillNo(),
+                p.bill().getPi(),
+                p.bill().getFactoryId(),
+                p.ruleVersionId(),
+                p.baseLast(),
+                p.requestedStart(),
+                p.start(),
+                p.end(),
+                p.segments().stream()
+                        .map(
+                                s ->
+                                        new PreviewSegment(
+                                                s.ordinal(),
+                                                s.material(),
+                                                s.materialName(),
+                                                s.quantity(),
+                                                s.start(),
+                                                s.end(),
+                                                SequenceCodec.format(s.start(), p.spec()),
+                                                SequenceCodec.format(s.end(), p.spec())))
+                        .toList());
+    }
+
+    private record PreviewCondition(
+            String billNo,
+            String pi,
+            Long factoryId,
+            long ruleVersionId,
+            long baseLast,
+            Long requestedStart,
+            long start,
+            long end,
+            List<PreviewSegment> segments) {}
+
+    private record PreviewSegment(
+            long ordinal,
+            String material,
+            String materialName,
+            long quantity,
+            long start,
+            long end,
+            String firstSn,
+            String lastSn) {}
 
     RuleVersionEntity lockRule(Long id, Long number, String digest) {
         if (id == null) return null;
@@ -311,28 +363,11 @@ public class SnWorkEngine {
         var actor = authorization.lockCurrent(requested);
         authorize(actor, work.kind());
         var input = input(work);
-        // 初始化的反解在PI锁之前完成，输入已受控；锁内再核对规则内容与一次性条件。
-        RuleVersionEntity initRule = null;
-        List<Long> decoded = new ArrayList<>();
-        if (work.kind().equals("PI_INIT")) {
-            initRule =
-                    input.ruleId() == null
-                            ? null
-                            : versions.current(List.of(input.ruleId())).getFirst();
-            for (String sn : input.sns())
-                decoded.add(
-                        initRule == null
-                                ? null
-                                : SequenceCodec.parse(sn, spec(initRule)).stream()
-                                        .boxed()
-                                        .findFirst()
-                                        .orElse(null));
-        }
         var counter = lockPi(work.pi());
         if (!task.id().equals(counter.activeTaskId())) throw new BusinessException(PI_BUSY);
         try {
             switch (work.kind()) {
-                case "PI_INIT" -> initialize(task, actor, input, counter, decoded);
+                case "PI_INIT" -> initialize(task, actor, input, counter, work.quantity());
                 case "GENERATE" -> generate(task, actor, input, counter);
                 case "ALLOCATE" -> allocate(task, actor, input, counter);
                 default -> throw new IllegalStateException("Unknown SN work");
@@ -351,8 +386,8 @@ public class SnWorkEngine {
             Actor actor,
             SnWorkInput input,
             PiCounterEntity counter,
-            List<Long> decoded) {
-        if (counter.startLocked()) throw new BusinessException(PI_INIT_LOCKED);
+            long quantity) {
+        if (counter.startLocked()) throw InitializationErrors.locked(input.pi());
         factory(input.factoryId());
         var current = effective(input.pi(), input.customer());
         if (!Objects.equals(input.ruleId(), current == null ? null : current.getRuleId())
@@ -362,67 +397,98 @@ public class SnWorkEngine {
                         input.ruleDigest(), current == null ? null : current.getContentDigest()))
             throw new BusinessException(PREVIEW_CHANGED);
         var rule = lockRule(input.ruleId(), input.ruleNumber(), input.ruleDigest());
-        if (input.requestedStart() != null
-                && input.requestedStart()
-                        > (rule == null ? Long.MAX_VALUE : SequenceCodec.capacity(spec(rule))))
-            throw new BusinessException(SEQUENCE_OVERFLOW);
+        long maximum = rule == null ? Long.MAX_VALUE : SequenceCodec.capacity(spec(rule));
+        if (input.requestedStart() != null && input.requestedStart() > maximum)
+            throw InitializationErrors.start(maximum);
         if (input.requestedStart() != null && rule != null)
             next.current(input.pi(), counter.lastSeq(), spec(rule))
                     .requireAboveIncoming(input.requestedStart());
         long count = 0, last = counter.lastSeq();
         Long max = null;
         if (input.requestedStart() != null) last = Math.max(last, input.requestedStart() - 1);
-        List<SnItemEntity> batch = new ArrayList<>();
-        for (int i = 0; i < input.sns().size(); i++) {
-            Long seq = decoded.get(i);
-            if (seq != null) {
-                count++;
-                max = max == null ? seq : Math.max(max, seq);
-                last = Math.max(last, seq);
+        boolean inline = !input.sns().isEmpty();
+        if (inline && input.sns().size() != quantity)
+            throw new IllegalStateException("Invalid legacy import input");
+        var digest = new SnImportDigest(json);
+        var ruleSpec = rule == null ? null : spec(rule);
+        long processed = 0;
+        int ordinal = 0;
+        String first = null, finalSn = null;
+        while (processed < quantity) {
+            List<String> sns;
+            if (inline)
+                sns =
+                        input.sns()
+                                .subList(
+                                        (int) processed,
+                                        (int)
+                                                Math.min(
+                                                        quantity,
+                                                        processed + SnImportDigest.CHUNK_SIZE));
+            else {
+                var chunk = imports.next(task.id(), ordinal);
+                if (chunk == null || chunk.ordinal() != ordinal)
+                    throw new IllegalStateException("Missing import chunk");
+                sns = Arrays.asList(json.readValue(chunk.sns(), String[].class));
+                if (sns.size() != chunk.quantity())
+                    throw new IllegalStateException("Invalid import chunk quantity");
             }
-            batch.add(
-                    item(
-                            task,
-                            input.pi(),
-                            input.sns().get(i),
-                            seq,
-                            input.customer(),
-                            input.material(),
-                            input.factoryId(),
-                            "IMPORT",
-                            seq == null ? null : rule.getId(),
-                            null,
-                            null));
-            if (batch.size() == 500) {
-                write(task, batch, i + 1);
-                batch.clear();
+            if (sns.isEmpty()
+                    || sns.size() > SnImportDigest.CHUNK_SIZE
+                    || processed + sns.size() > quantity)
+                throw new IllegalStateException("Invalid import input quantity");
+            digest.add(sns);
+            List<SnItemEntity> batch = new ArrayList<>(sns.size());
+            for (String sn : sns) {
+                var parsed =
+                        ruleSpec == null
+                                ? java.util.OptionalLong.empty()
+                                : SequenceCodec.parse(sn, ruleSpec);
+                Long seq = parsed.isPresent() ? parsed.getAsLong() : null;
+                if (seq != null) {
+                    count++;
+                    max = max == null ? seq : Math.max(max, seq);
+                    last = Math.max(last, seq);
+                }
+                if (first == null) first = sn;
+                finalSn = sn;
+                batch.add(
+                        item(
+                                task,
+                                input.pi(),
+                                sn,
+                                seq,
+                                input.customer(),
+                                input.material(),
+                                input.factoryId(),
+                                "IMPORT",
+                                seq == null ? null : rule.getId(),
+                                null,
+                                null));
             }
+            processed += sns.size();
+            writeImport(task, input.pi(), batch, processed);
+            ordinal++;
         }
-        if (!batch.isEmpty()) write(task, batch, input.sns().size());
+        if ((!inline && imports.next(task.id(), ordinal) != null)
+                || !digest.finish()
+                        .equals(json.readTree(task.inputJson()).path("snsDigest").asString()))
+            throw new IllegalStateException("Import input digest mismatch");
         if (count > 0) used(rule);
-        rows.advance(
-                input.pi(), last, 0, input.sns().size(), input.requestedStart(), actor.userId());
-        complete(
-                task,
-                input.requestedStart(),
-                null,
-                count,
-                max,
-                last,
-                input.sns().isEmpty() ? null : input.sns().getFirst(),
-                input.sns().isEmpty() ? null : input.sns().getLast());
+        rows.advance(input.pi(), last, 0, quantity, input.requestedStart(), actor.userId());
+        complete(task, input.requestedStart(), null, count, max, last, first, finalSn);
     }
 
     private void generate(
             TaskEntity task, Actor actor, SnWorkInput input, PiCounterEntity counter) {
         var preview = rows.previewForTask(task.id());
-        if (preview == null
-                || preview.actorId() != actor.userId()
-                || !preview.expiresAt().isAfter(Instant.now()))
-            throw new BusinessException(PREVIEW_CHANGED);
-        var p = input.plan();
-        rows.lockQuota(p.bill().getId());
-        samePlan(p);
+        // 过期只在提交前拒绝；已接受的任务等待工作器期间不重新消耗预演有效期。
+        if (preview == null || preview.actorId() != actor.userId())
+            throw GenerationErrors.preview("GEN_PREVIEW_REQUIRED");
+        if (counter.lastSeq() != input.plan().baseLast())
+            throw GenerationErrors.stale(input.pi(), input.plan().baseLast(), counter.lastSeq());
+        rows.lockQuota(input.plan().bill().getId());
+        var p = samePlan(input.plan());
         var rule = lockRule(p.ruleId(), p.ruleNumber(), p.ruleDigest());
         long processed = 0;
         List<SnItemEntity> batch = new ArrayList<>();
@@ -434,7 +500,7 @@ public class SnWorkEngine {
                                 input.pi(),
                                 SequenceCodec.format(seq, p.spec()),
                                 seq,
-                                input.customer(),
+                                p.bill().getCustomer(),
                                 s.material(),
                                 null,
                                 "GEN",
@@ -451,8 +517,15 @@ public class SnWorkEngine {
                 throw new IllegalStateException("Missing source quota");
         }
         if (!batch.isEmpty()) write(task, batch, processed);
+        // 与 SN 和额度同事务提交；后续 ERP 改 PI/客户只影响新成员，不重写首次历史归属。
+        generation.generated(
+                p.bill().getId(),
+                input.pi(),
+                p.bill().getCustomer(),
+                p.bill().getFactoryId(),
+                task.id());
         used(rule);
-        resolver.remember(input.pi(), input.customer(), p.ruleId());
+        resolver.remember(input.pi(), p.bill().getCustomer(), p.ruleId());
         rows.advance(input.pi(), p.end(), p.quantity(), 0, p.requestedStart(), actor.userId());
         complete(
                 task,
@@ -469,21 +542,17 @@ public class SnWorkEngine {
             TaskEntity task, Actor actor, SnWorkInput input, PiCounterEntity counter) {
         rows.lockQuota(input.billId());
         factory(input.factoryId());
-        var pending = rows.pending(input.billId());
+        // 只重新核对提交时固定的最早一批；其余待分配成员不能被本任务扩大纳入。
+        var pending = rows.pendingBatch(input.billId(), input.members().size());
         if (!pending.stream()
                 .map(i -> new Member(i.genMonth(), i.id()))
                 .toList()
                 .equals(input.members())) throw new BusinessException(ALLOCATION_CHANGED);
-        var current = bill(input.billId());
-        if (!Objects.equals(current.getFactoryId(), input.factoryId())
-                || !current.getPi().equals(input.pi())
-                || pending.stream()
-                        .anyMatch(
-                                i ->
-                                        !Objects.equals(i.sourceFactoryId(), input.factoryId())
-                                                || !Objects.equals(
-                                                        i.sourceOrgId(), current.getOrgId())
-                                                || !i.sourcePi().equals(input.pi())))
+        var ledger = generation.find(input.billId());
+        if (ledger == null
+                || ledger.factoryId() != input.factoryId()
+                || !ledger.firstPi().equals(input.pi())
+                || !Objects.equals(ledger.firstCustomer(), input.customer()))
             throw new BusinessException(ALLOCATION_CHANGED);
         Map<String, Long> quantities = new TreeMap<>();
         for (int offset = 0; offset < pending.size(); offset += 500) {
@@ -555,6 +624,19 @@ public class SnWorkEngine {
         progress.record(task.id(), task.executionEpoch(), processed, "WRITING");
     }
 
+    /** 与原型保持每千条先查完整 SN、再查来源流水；后块失败回滚此前所有业务写入。 */
+    private void writeImport(TaskEntity task, String pi, List<SnItemEntity> batch, long processed) {
+        String sn = rows.importedSnConflict(pi, batch.stream().map(SnItemEntity::sn).toList());
+        if (sn != null)
+            throw InitializationErrors.error("PI_IMPORT_DUP_EXISTING", Map.of("sn", sn, "pi", pi));
+        var seqs = batch.stream().map(SnItemEntity::seqDec).filter(Objects::nonNull).toList();
+        Long seq = seqs.isEmpty() ? null : rows.importedSequenceConflict(pi, seqs);
+        if (seq != null)
+            throw InitializationErrors.error(
+                    "PI_IMPORT_SEQ_DUP", Map.of("seq", seq.toString(), "pi", pi));
+        write(task, batch, processed);
+    }
+
     private void complete(
             TaskEntity task,
             Long start,
@@ -569,12 +651,23 @@ public class SnWorkEngine {
     }
 
     public void ended(TaskEntity task, String state, Integer code) {
+        ended(task, state, code, Map.of());
+    }
+
+    public void ended(TaskEntity task, String state, Integer code, Map<String, String> params) {
         var work = rows.find(task.id());
         if (work == null) return;
         // 终态事实与PI占用释放加入framework的终态事务；独立失败审计不可使占用永久残留。
         control.lock();
         rows.lock(work.pi());
-        rows.ended(task.id(), state, code);
+        rows.ended(
+                task.id(),
+                state,
+                code,
+                encode(
+                        "PI_INIT".equals(work.kind())
+                                ? InitializationErrors.safe(code, params)
+                                : GenerationErrors.safe(code, params)));
         rows.release(work.pi(), task.id());
         if (state.equals("CANCELLED"))
             audit(task.userId(), permission(work.kind()) + ":cancel", task.id());

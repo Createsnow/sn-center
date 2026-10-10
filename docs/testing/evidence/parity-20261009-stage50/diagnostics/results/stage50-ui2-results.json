@@ -1,0 +1,268 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\node_modules\\.pnpm\\@playwright+test@1.63.0\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.parity.config.ts",
+      "k3-responses.spec.ts",
+      "--output=test-results/stage50-ui2"
+    ],
+    "configFile": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\playwright.parity.config.ts",
+    "rootDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage50-ui2",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "prototype",
+        "name": "prototype",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [
+          "**/query-recovery.spec.ts"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage50-ui2",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "migration",
+        "name": "migration",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/parity/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "k3-responses.spec.ts",
+      "file": "k3-responses.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P05/P12 K3 response shapes, messages, later-page rejection and empty documents",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 480000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 176847,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T09:49:01.842Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "ff9fd7f3e60e6eaeb762-3ee6f65f0ad7edfd92d8",
+          "file": "k3-responses.spec.ts",
+          "line": 99,
+          "column": 1
+        },
+        {
+          "title": "P05/P12 K3 response shapes, messages, later-page rejection and empty documents",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 480000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 158050,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"active\": 0, \"bill_no\": \"CMP-MO-001\", \"customer\": \"CMP-CUSTOMER\", \"factory_code\": \"CMP-A\", \"factory_id\": 1, \"id\": 1, \"line_count\": 2, \"org_code\": \"CMP-A\", \"org_id\": \"101\", \"org_name\": \"比较测试甲厂\", \"pi\": \"CMP-PI-001\", \"po\": \"CMP-PO\", \"quantity_ready\": 1, \"snapshot_version\": 52, \"source_account\": \"COMPARISON_SYNTHETIC\", \"source_bill_id\": \"9007199254740993\", \"source_system\": \"K3\", \"statuses\": \"1\", \"synced_at\": \"2026-10-09 09:52:26.432377\", \"total_qty\": \"10.0000\"}]\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"active\": 0, \"bill_no\": \"CMP-MO-001\", \"customer\": \"CMP-CUSTOMER\", \"factory_code\": \"CMP-A\", \"factory_id\": 1, \"id\": 1, \"line_count\": 2, \"org_code\": \"CMP-A\", \"org_id\": \"101\", \"org_name\": \"比较测试甲厂\", \"pi\": \"CMP-PI-001\", \"po\": \"CMP-PO\", \"quantity_ready\": 1, \"snapshot_version\": 52, \"source_account\": \"COMPARISON_SYNTHETIC\", \"source_bill_id\": \"9007199254740993\", \"source_system\": \"K3\", \"statuses\": \"1\", \"synced_at\": \"2026-10-09 09:52:26.432377\", \"total_qty\": \"10.0000\"}]\u001b[39m\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:265:14",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                      "column": 14,
+                      "line": 265
+                    },
+                    "snippet": "  263 |               observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001'),\n  264 |             )\n> 265 |             .toHaveLength(0);\n      |              ^\n  266 |           control({});\n  267 |           await sync(\n  268 |             locale + '-' + example.label + '-restore',"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 14,
+                        "line": 265
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"active\": 0, \"bill_no\": \"CMP-MO-001\", \"customer\": \"CMP-CUSTOMER\", \"factory_code\": \"CMP-A\", \"factory_id\": 1, \"id\": 1, \"line_count\": 2, \"org_code\": \"CMP-A\", \"org_id\": \"101\", \"org_name\": \"比较测试甲厂\", \"pi\": \"CMP-PI-001\", \"po\": \"CMP-PO\", \"quantity_ready\": 1, \"snapshot_version\": 52, \"source_account\": \"COMPARISON_SYNTHETIC\", \"source_bill_id\": \"9007199254740993\", \"source_system\": \"K3\", \"statuses\": \"1\", \"synced_at\": \"2026-10-09 09:52:26.432377\", \"total_qty\": \"10.0000\"}]\u001b[39m\n\n  263 |               observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001'),\n  264 |             )\n> 265 |             .toHaveLength(0);\n      |              ^\n  266 |           control({});\n  267 |           await sync(\n  268 |             locale + '-' + example.label + '-restore',\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:265:14"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 14,
+                        "line": 265
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"active\": 0, \"bill_no\": \"CMP-MO-001\", \"customer\": \"CMP-CUSTOMER\", \"factory_code\": \"CMP-A\", \"factory_id\": 1, \"id\": 1, \"line_count\": 2, \"org_code\": \"CMP-A\", \"org_id\": \"101\", \"org_name\": \"比较测试甲厂\", \"pi\": \"CMP-PI-001\", \"po\": \"CMP-PO\", \"quantity_ready\": 1, \"snapshot_version\": 55, \"source_account\": \"COMPARISON_SYNTHETIC\", \"source_bill_id\": \"9007199254740993\", \"source_system\": \"K3\", \"statuses\": \"1\", \"synced_at\": \"2026-10-09 09:52:34.426834\", \"total_qty\": \"10.0000\"}]\u001b[39m\n\n  263 |               observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001'),\n  264 |             )\n> 265 |             .toHaveLength(0);\n      |              ^\n  266 |           control({});\n  267 |           await sync(\n  268 |             locale + '-' + example.label + '-restore',\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:265:14"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 14,
+                        "line": 265
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"active\": 0, \"bill_no\": \"CMP-MO-001\", \"customer\": \"CMP-CUSTOMER\", \"factory_code\": \"CMP-A\", \"factory_id\": 1, \"id\": 1, \"line_count\": 2, \"org_code\": \"CMP-A\", \"org_id\": \"101\", \"org_name\": \"比较测试甲厂\", \"pi\": \"CMP-PI-001\", \"po\": \"CMP-PO\", \"quantity_ready\": 1, \"snapshot_version\": 58, \"source_account\": \"COMPARISON_SYNTHETIC\", \"source_bill_id\": \"9007199254740993\", \"source_system\": \"K3\", \"statuses\": \"1\", \"synced_at\": \"2026-10-09 09:52:42.567924\", \"total_qty\": \"10.0000\"}]\u001b[39m\n\n  263 |               observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001'),\n  264 |             )\n> 265 |             .toHaveLength(0);\n      |              ^\n  266 |           control({});\n  267 |           await sync(\n  268 |             locale + '-' + example.label + '-restore',\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:265:14"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 14,
+                        "line": 265
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"active\": 0, \"bill_no\": \"CMP-MO-001\", \"customer\": \"CMP-CUSTOMER\", \"factory_code\": \"CMP-A\", \"factory_id\": 1, \"id\": 1, \"line_count\": 2, \"org_code\": \"CMP-A\", \"org_id\": \"101\", \"org_name\": \"比较测试甲厂\", \"pi\": \"CMP-PI-001\", \"po\": \"CMP-PO\", \"quantity_ready\": 1, \"snapshot_version\": 63, \"source_account\": \"COMPARISON_SYNTHETIC\", \"source_bill_id\": \"9007199254740993\", \"source_system\": \"K3\", \"statuses\": \"1\", \"synced_at\": \"2026-10-09 09:53:13.804493\", \"total_qty\": \"10.0000\"}]\u001b[39m\n\n  263 |               observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001'),\n  264 |             )\n> 265 |             .toHaveLength(0);\n      |              ^\n  266 |           control({});\n  267 |           await sync(\n  268 |             locale + '-' + example.label + '-restore',\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:265:14"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 14,
+                        "line": 265
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"active\": 0, \"bill_no\": \"CMP-MO-001\", \"customer\": \"CMP-CUSTOMER\", \"factory_code\": \"CMP-A\", \"factory_id\": 1, \"id\": 1, \"line_count\": 2, \"org_code\": \"CMP-A\", \"org_id\": \"101\", \"org_name\": \"比较测试甲厂\", \"pi\": \"CMP-PI-001\", \"po\": \"CMP-PO\", \"quantity_ready\": 1, \"snapshot_version\": 66, \"source_account\": \"COMPARISON_SYNTHETIC\", \"source_bill_id\": \"9007199254740993\", \"source_system\": \"K3\", \"statuses\": \"1\", \"synced_at\": \"2026-10-09 09:53:21.409762\", \"total_qty\": \"10.0000\"}]\u001b[39m\n\n  263 |               observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001'),\n  264 |             )\n> 265 |             .toHaveLength(0);\n      |              ^\n  266 |           control({});\n  267 |           await sync(\n  268 |             locale + '-' + example.label + '-restore',\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:265:14"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 14,
+                        "line": 265
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"active\": 0, \"bill_no\": \"CMP-MO-001\", \"customer\": \"CMP-CUSTOMER\", \"factory_code\": \"CMP-A\", \"factory_id\": 1, \"id\": 1, \"line_count\": 2, \"org_code\": \"CMP-A\", \"org_id\": \"101\", \"org_name\": \"比较测试甲厂\", \"pi\": \"CMP-PI-001\", \"po\": \"CMP-PO\", \"quantity_ready\": 1, \"snapshot_version\": 69, \"source_account\": \"COMPARISON_SYNTHETIC\", \"source_bill_id\": \"9007199254740993\", \"source_system\": \"K3\", \"statuses\": \"1\", \"synced_at\": \"2026-10-09 09:53:29.078923\", \"total_qty\": \"10.0000\"}]\u001b[39m\n\n  263 |               observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001'),\n  264 |             )\n> 265 |             .toHaveLength(0);\n      |              ^\n  266 |           control({});\n  267 |           await sync(\n  268 |             locale + '-' + example.label + '-restore',\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:265:14"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 14,
+                        "line": 265
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"active\": 0, \"bill_no\": \"CMP-MO-001\", \"customer\": \"CMP-CUSTOMER\", \"factory_code\": \"CMP-A\", \"factory_id\": 1, \"id\": 1, \"line_count\": 2, \"org_code\": \"CMP-A\", \"org_id\": \"101\", \"org_name\": \"比较测试甲厂\", \"pi\": \"CMP-PI-001\", \"po\": \"CMP-PO\", \"quantity_ready\": 1, \"snapshot_version\": 74, \"source_account\": \"COMPARISON_SYNTHETIC\", \"source_bill_id\": \"9007199254740993\", \"source_system\": \"K3\", \"statuses\": \"1\", \"synced_at\": \"2026-10-09 09:53:59.508050\", \"total_qty\": \"10.0000\"}]\u001b[39m\n\n  263 |               observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001'),\n  264 |             )\n> 265 |             .toHaveLength(0);\n      |              ^\n  266 |           control({});\n  267 |           await sync(\n  268 |             locale + '-' + example.label + '-restore',\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:265:14"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 14,
+                        "line": 265
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"active\": 0, \"bill_no\": \"CMP-MO-001\", \"customer\": \"CMP-CUSTOMER\", \"factory_code\": \"CMP-A\", \"factory_id\": 1, \"id\": 1, \"line_count\": 2, \"org_code\": \"CMP-A\", \"org_id\": \"101\", \"org_name\": \"比较测试甲厂\", \"pi\": \"CMP-PI-001\", \"po\": \"CMP-PO\", \"quantity_ready\": 1, \"snapshot_version\": 77, \"source_account\": \"COMPARISON_SYNTHETIC\", \"source_bill_id\": \"9007199254740993\", \"source_system\": \"K3\", \"statuses\": \"1\", \"synced_at\": \"2026-10-09 09:54:07.417525\", \"total_qty\": \"10.0000\"}]\u001b[39m\n\n  263 |               observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001'),\n  264 |             )\n> 265 |             .toHaveLength(0);\n      |              ^\n  266 |           control({});\n  267 |           await sync(\n  268 |             locale + '-' + example.label + '-restore',\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:265:14"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 14,
+                        "line": 265
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"active\": 0, \"bill_no\": \"CMP-MO-001\", \"customer\": \"CMP-CUSTOMER\", \"factory_code\": \"CMP-A\", \"factory_id\": 1, \"id\": 1, \"line_count\": 2, \"org_code\": \"CMP-A\", \"org_id\": \"101\", \"org_name\": \"比较测试甲厂\", \"pi\": \"CMP-PI-001\", \"po\": \"CMP-PO\", \"quantity_ready\": 1, \"snapshot_version\": 80, \"source_account\": \"COMPARISON_SYNTHETIC\", \"source_bill_id\": \"9007199254740993\", \"source_system\": \"K3\", \"statuses\": \"1\", \"synced_at\": \"2026-10-09 09:54:14.838096\", \"total_qty\": \"10.0000\"}]\u001b[39m\n\n  263 |               observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001'),\n  264 |             )\n> 265 |             .toHaveLength(0);\n      |              ^\n  266 |           control({});\n  267 |           await sync(\n  268 |             locale + '-' + example.label + '-restore',\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:265:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T09:52:00.172Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage50-ui2\\k3-responses-P05-P12-K3-re-6f6f9-jection-and-empty-documents-migration\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                    "column": 14,
+                    "line": 265
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "ff9fd7f3e60e6eaeb762-50e600565986277a5801",
+          "file": "k3-responses.spec.ts",
+          "line": 99,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-09T09:49:01.379Z",
+    "duration": 337789.387,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

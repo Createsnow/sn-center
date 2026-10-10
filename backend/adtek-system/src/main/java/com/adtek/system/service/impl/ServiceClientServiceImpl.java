@@ -244,7 +244,7 @@ public class ServiceClientServiceImpl implements ServiceClientService {
         var session =
                 sessions.create(
                         actor.get().userId(),
-                        actor.get().securityVersion(),
+                        actor.get().credentialVersion(),
                         Duration.ofMinutes(30));
         var token = tokens.issue(actor.get(), session.sessionId());
         fact(actor.get(), "token", actor.get().userId());

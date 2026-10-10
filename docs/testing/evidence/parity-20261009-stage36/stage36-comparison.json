@@ -1,0 +1,480 @@
+{
+  "authentication": [
+    {
+      "case": "cmp_auth_1009360001U-file.json",
+      "rows": 1,
+      "orderedMatchingColumns": 22,
+      "typesEqual": true,
+      "sheetAndHeaderEqual": true,
+      "orderedDomCellsExceptTimeEqual": true,
+      "differingColumns": [
+        "时间",
+        "请求ID"
+      ],
+      "sourceSha256": "5bc8422835248c4a93c9e9a5438c3cc7755ac5dc371ad84b2080efa49f53b2dc",
+      "migrationSha256": "4f6591d4196e0d95f13d3d9d49cffb4b3ddc360423740eee5e914285f1b5fad5",
+      "fullFileEquality": false
+    },
+    {
+      "case": "cmp_auth_1009360001L-file.json",
+      "rows": 6,
+      "orderedMatchingColumns": 22,
+      "typesEqual": true,
+      "sheetAndHeaderEqual": true,
+      "orderedDomCellsExceptTimeEqual": true,
+      "differingColumns": [
+        "时间",
+        "请求ID"
+      ],
+      "sourceSha256": "8c0c5bdfd3a559b7d2268f259e11bf07d83b1473e49dad6336b24e062b54fabf",
+      "migrationSha256": "32f7837e2f5e8618319f1289bfe9dfbbc82a9f205271b35387a998f1e169f569",
+      "fullFileEquality": false
+    },
+    {
+      "case": "cmp_auth_1009360001A-file.json",
+      "rows": 5,
+      "orderedMatchingColumns": 22,
+      "typesEqual": true,
+      "sheetAndHeaderEqual": true,
+      "orderedDomCellsExceptTimeEqual": true,
+      "differingColumns": [
+        "时间",
+        "请求ID"
+      ],
+      "sourceSha256": "5865e483da15bc3feaef82ea9aff8139005834921dbba0119205da7ab4d92b8a",
+      "migrationSha256": "fc98841ce84b006d17c48d1c46da83a40d7f46b390dafa5ca92c447f15003594",
+      "fullFileEquality": false
+    },
+    {
+      "case": "cmp_auth_1009360001D-file.json",
+      "rows": 2,
+      "orderedMatchingColumns": 22,
+      "typesEqual": true,
+      "sheetAndHeaderEqual": true,
+      "orderedDomCellsExceptTimeEqual": true,
+      "differingColumns": [
+        "时间",
+        "请求ID"
+      ],
+      "sourceSha256": "d84d18d8aa3d744c39f990af85a3d41878b502bee8d226f61d1c02592be2699f",
+      "migrationSha256": "36977b10d8d8443de2fcd3433e4e7118b3f2036c77dbdead4067f34f70a7506d",
+      "fullFileEquality": false
+    }
+  ],
+  "authenticationActorLayout": [
+    {
+      "case": "cmp_auth_1009360001U-actors.json",
+      "rows": 1,
+      "characterRectanglesAndWrappingEqual": true
+    },
+    {
+      "case": "cmp_auth_1009360001L-actors.json",
+      "rows": 6,
+      "characterRectanglesAndWrappingEqual": true
+    },
+    {
+      "case": "cmp_auth_1009360001A-actors.json",
+      "rows": 5,
+      "characterRectanglesAndWrappingEqual": true
+    },
+    {
+      "case": "cmp_auth_1009360001D-actors.json",
+      "rows": 2,
+      "characterRectanglesAndWrappingEqual": true
+    }
+  ],
+  "authenticationMessagePaint": [
+    {
+      "case": "rejected-login-paint.json",
+      "bothVisibleBeforeAndAfterCapture": true,
+      "messageEqual": true,
+      "geometryEqual": false
+    },
+    {
+      "case": "locked-login-paint.json",
+      "bothVisibleBeforeAndAfterCapture": true,
+      "messageEqual": true,
+      "geometryEqual": false
+    }
+  ],
+  "loginLayout": [
+    {
+      "case": "button-hover.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "empty-submit.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "en-1440.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "en-1920.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "en-390.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "en-900.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "initial.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "password-focus.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "password-visible.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "username-focus.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "vi-1440.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "vi-1920.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "vi-390.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "vi-900.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "zh-CN-1440.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "zh-CN-1920.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "zh-CN-390.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "zh-CN-900.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    }
+  ]
+}

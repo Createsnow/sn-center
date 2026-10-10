@@ -1,0 +1,75 @@
+
+Running 4 tests using 1 worker
+
+(node:37648) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\audit-rules.spec.ts:129:3 › P12 real rule audits: create edit rename combined and no-op (9.3s)
+  ok 2 [prototype] › e2e\parity\audit-rules.spec.ts:129:3 › P12 real rule audits: used version and rename (5.5s)
+(node:45620) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 [migration] › e2e\parity\audit-rules.spec.ts:129:3 › P12 real rule audits: create edit rename combined and no-op (21.3s)
+(node:43576) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  4 [migration] › e2e\parity\audit-rules.spec.ts:129:3 › P12 real rule audits: used version and rename (19.3s)
+
+
+  1) [migration] › e2e\parity\audit-rules.spec.ts:129:3 › P12 real rule audits: create edit rename combined and no-op 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.ant-table-row')
+    Expected: 5
+    Received: 0
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.ant-table-row') with timeout 15000ms
+      - waiting for locator('.ant-table-row')
+        33 × locator resolved to 0 elements
+           - unexpected value "0"
+
+
+      74 |   writeFileSync(info.outputPath('actual-records.json'), JSON.stringify(items, null, 2));
+      75 |   const rows = page.locator(rowSelector(info));
+    > 76 |   await expect(rows).toHaveCount(expected.length);
+         |                      ^
+      77 |   const action = (value: unknown) =>
+      78 |     value === 'sn:rule:create' ? 'RULE_CREATE' : value === 'sn:rule:update' ? 'RULE_UPDATE' : value;
+      79 |   expect(
+        at inspect (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-rules.spec.ts:76:22)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-rules.spec.ts:179:9
+
+    Error Context: test-results\stage33-rule-diagnostic-ui\audit-rules-P12-real-rule--eebd3-t-rename-combined-and-no-op-migration\error-context.md
+
+  2) [migration] › e2e\parity\audit-rules.spec.ts:129:3 › P12 real rule audits: used version and rename 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.ant-table-row')
+    Expected: 2
+    Received: 1
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.ant-table-row') with timeout 15000ms
+      - waiting for locator('.ant-table-row')
+        33 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      74 |   writeFileSync(info.outputPath('actual-records.json'), JSON.stringify(items, null, 2));
+      75 |   const rows = page.locator(rowSelector(info));
+    > 76 |   await expect(rows).toHaveCount(expected.length);
+         |                      ^
+      77 |   const action = (value: unknown) =>
+      78 |     value === 'sn:rule:create' ? 'RULE_CREATE' : value === 'sn:rule:update' ? 'RULE_UPDATE' : value;
+      79 |   expect(
+        at inspect (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-rules.spec.ts:76:22)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-rules.spec.ts:154:9
+
+    Error Context: test-results\stage33-rule-diagnostic-ui\audit-rules-P12-real-rule-audits-used-version-and-rename-migration\error-context.md
+
+  2 failed
+    [migration] › e2e\parity\audit-rules.spec.ts:129:3 › P12 real rule audits: create edit rename combined and no-op 
+    [migration] › e2e\parity\audit-rules.spec.ts:129:3 › P12 real rule audits: used version and rename 
+  2 passed (59.5s)

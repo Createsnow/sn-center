@@ -62,6 +62,26 @@ class SequenceCodecTest {
     }
 
     @Test
+    void distinguishesPreviewValidationReasons() {
+        assertThatThrownBy(() -> new SequenceSpec("", "", 10, 2, "012"))
+                .isInstanceOfSatisfying(
+                        BusinessException.class,
+                        e ->
+                                assertThat(e.getParams())
+                                        .containsEntry("reason", "RULE_CHARSET_LENGTH"));
+        assertThatThrownBy(() -> new SequenceSpec("", "", 10, 2, "0012345678"))
+                .isInstanceOfSatisfying(
+                        BusinessException.class,
+                        e ->
+                                assertThat(e.getParams())
+                                        .containsEntry("reason", "RULE_CHARSET_DUPLICATE"));
+        assertThatThrownBy(() -> SequenceSpec.standard("A".repeat(64), "", 10, 1))
+                .isInstanceOfSatisfying(
+                        BusinessException.class,
+                        e -> assertThat(e.getParams()).containsEntry("reason", "RULE_SN_TOO_LONG"));
+    }
+
+    @Test
     void rejectsInvalidRulesAndFullBatchOverflow() {
         assertThatThrownBy(() -> new SequenceSpec("", "", 10, 2, "0012345678"))
                 .isInstanceOf(BusinessException.class);

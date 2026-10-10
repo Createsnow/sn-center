@@ -7,8 +7,31 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "adtek.sn.work")
 public class SnWorkSettings {
-    private int maxBatchQuantity = 100000, maxImportBytes = 8388608, previewSeconds = 600;
+    private int maxBatchQuantity = 100000, maxImportQuantity = 500000, previewSeconds = 1800;
+    private int maxAuditExportQuantity = 200000;
+
+    public int getMaxAuditExportQuantity() {
+        return maxAuditExportQuantity;
+    }
+
+    public void setMaxAuditExportQuantity(int value) {
+        if (value < 1 || value > 1000000)
+            throw new IllegalArgumentException("Invalid audit export limit");
+        maxAuditExportQuantity = value;
+    }
+
+    private int importExecutionSeconds = 600;
     private int maxIncomingScan = 1000000;
+    private int inlineGenerationQuantity = 5000;
+
+    public int getInlineGenerationQuantity() {
+        return inlineGenerationQuantity;
+    }
+
+    public void setInlineGenerationQuantity(int value) {
+        if (value < 0) throw new IllegalArgumentException("Invalid inline generation threshold");
+        inlineGenerationQuantity = value;
+    }
 
     public int getMaxIncomingScan() {
         return maxIncomingScan;
@@ -29,13 +52,23 @@ public class SnWorkSettings {
         maxBatchQuantity = v;
     }
 
-    public int getMaxImportBytes() {
-        return maxImportBytes;
+    public int getMaxImportQuantity() {
+        return maxImportQuantity;
     }
 
-    public void setMaxImportBytes(int v) {
-        if (v < 1024 || v > 67108864) throw new IllegalArgumentException("Invalid SN byte limit");
-        maxImportBytes = v;
+    public void setMaxImportQuantity(int v) {
+        if (v < 1 || v > 1000000) throw new IllegalArgumentException("Invalid import quantity");
+        maxImportQuantity = v;
+    }
+
+    public int getImportExecutionSeconds() {
+        return importExecutionSeconds;
+    }
+
+    public void setImportExecutionSeconds(int v) {
+        if (v < 30 || v > 3540)
+            throw new IllegalArgumentException("Invalid import execution budget");
+        importExecutionSeconds = v;
     }
 
     public int getPreviewSeconds() {

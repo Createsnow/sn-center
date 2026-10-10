@@ -1,0 +1,76 @@
+[
+  {
+    "code": 0,
+    "message": "common.success",
+    "data": {
+      "total": "1",
+      "inserted": "0",
+      "updated": "0",
+      "conflicts": [
+        "CMP_F46_MANUAL/比较46旧名"
+      ]
+    },
+    "params": {},
+    "traceId": "25d5f0f2-a324-464c-bc00-8896253ac41c"
+  },
+  {
+    "code": 0,
+    "message": "common.success",
+    "data": {
+      "total": "1",
+      "inserted": "0",
+      "updated": "0",
+      "conflicts": []
+    },
+    "params": {},
+    "traceId": "2f78e2fb-0dc7-4774-807b-f7a4b6ea14ec"
+  },
+  {
+    "code": 0,
+    "message": "common.success",
+    "data": {
+      "total": "1",
+      "inserted": "0",
+      "updated": "0",
+      "conflicts": []
+    },
+    "params": {},
+    "traceId": "d6e29edf-9124-4c9b-90d1-9a282ea9f19b"
+  },
+  {
+    "code": 0,
+    "message": "common.success",
+    "data": {
+      "total": "1",
+      "inserted": "1",
+      "updated": "0",
+      "conflicts": []
+    },
+    "params": {},
+    "traceId": "89e88eba-009b-4bec-8320-5462f96a19a3"
+  },
+  {
+    "code": 0,
+    "message": "common.success",
+    "data": {
+      "total": "1",
+      "inserted": "0",
+      "updated": "1",
+      "conflicts": []
+    },
+    "params": {},
+    "traceId": "cd4e04e3-dc74-4494-91ba-77222812aeb1"
+  },
+  {
+    "code": 0,
+    "message": "common.success",
+    "data": {
+      "total": "2",
+      "inserted": "2",
+      "updated": "0",
+      "conflicts": []
+    },
+    "params": {},
+    "traceId": "885e3ace-6968-4e20-beff-1f992baf0399"
+  }
+]

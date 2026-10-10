@@ -1,0 +1,26 @@
+{
+  "sn_item": {
+    "count": 500000,
+    "sha256": "9c274777998b894065ff3d437c318b7ac57ebf31d001f58c759e782bef80d085"
+  },
+  "sn_key": {
+    "count": 500000,
+    "sha256": "9c274777998b894065ff3d437c318b7ac57ebf31d001f58c759e782bef80d085"
+  },
+  "counter": {
+    "last_seq": 9,
+    "generated_qty": 0,
+    "imported_qty": 500000,
+    "start_seq": 10,
+    "start_locked": 1
+  },
+  "history": [
+    {
+      "qty": 500000,
+      "start_seq": 10,
+      "max_seq": null,
+      "file_name": "capacity-valid.txt",
+      "operator": "admin"
+    }
+  ]
+}

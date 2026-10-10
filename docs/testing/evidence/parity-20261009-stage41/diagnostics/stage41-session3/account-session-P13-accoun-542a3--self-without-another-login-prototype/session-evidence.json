@@ -1,0 +1,27 @@
+{
+  "snapshots": [],
+  "requests": [
+    {
+      "route": "/api/auth/login",
+      "status": 200,
+      "authenticated": false
+    },
+    {
+      "route": "/api/auth/password",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/auth/me",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/dashboard",
+      "status": 200,
+      "authenticated": true
+    }
+  ],
+  "memberLogins": 1,
+  "failures": []
+}

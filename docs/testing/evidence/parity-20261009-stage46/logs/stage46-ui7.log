@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:22164) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [migration] › e2e\parity\factory-identity.spec.ts:9:1 › P14 organization changes: snapshot name, manual factory, changed ID/code, rename and directory filters (23.1s)
+
+  1 passed (25.3s)

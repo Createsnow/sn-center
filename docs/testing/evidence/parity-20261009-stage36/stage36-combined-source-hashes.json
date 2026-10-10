@@ -1,0 +1,8 @@
+{
+  "frontend/src/styles.css": "8ce893e9c8f27ee600134c90e11b7614f6b6d9e2b9f04260597bd48be441cf21",
+  "frontend/src/features/auth/pages/LoginPage.tsx": "d7042fcb1dd4071f465dd58da63d299b6623704169d9447ff83cc3b702b91684",
+  "frontend/src/components/LanguageSelect.tsx": "f56f8372b7814a83854d63f74ba9f39bda45a555b4c739e1868df00f7f20bac7",
+  "frontend/src/components/prototype/icons.json": "6efcc325122d2fdef79bd623e5a819cc063f6fefdef68174e2e1c358201e24f2",
+  "frontend/e2e/parity/login-layout.spec.ts": "c187c1843383882aacda48aede6955e5576587ee5c133bcd92af75a262c6d068",
+  "frontend/e2e/parity/audit-auth.spec.ts": "46ba26449de4130ec22569f9e4917e827f422230e81ad4d9ffdb3b2b420ca049"
+}

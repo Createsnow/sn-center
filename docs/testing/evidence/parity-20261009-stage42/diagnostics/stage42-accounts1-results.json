@@ -1,0 +1,525 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\node_modules\\.pnpm\\@playwright+test@1.63.0\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.parity.config.ts",
+      "account-actions.spec.ts",
+      "account-editor.spec.ts",
+      "account-session.spec.ts",
+      "users-directory.spec.ts",
+      "--output=test-results/stage42-accounts-final"
+    ],
+    "configFile": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\playwright.parity.config.ts",
+    "rootDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage42-accounts-final",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "prototype",
+        "name": "prototype",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [
+          "**/query-recovery.spec.ts"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage42-accounts-final",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "migration",
+        "name": "migration",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/parity/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "account-actions.spec.ts",
+      "file": "account-actions.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P13 account actions: disable, enable, repeated same-password reset and self reset",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9505,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T04:47:40.161Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f7878f83b18ebd8c72fa-1b98b3d1621096564d1a",
+          "file": "account-actions.spec.ts",
+          "line": 9,
+          "column": 1
+        },
+        {
+          "title": "P13 account actions: disable, enable, repeated same-password reset and self reset",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 34815,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T04:48:06.062Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f7878f83b18ebd8c72fa-e507a021f2bcfc2148dc",
+          "file": "account-actions.spec.ts",
+          "line": 9,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "account-editor.spec.ts",
+      "file": "account-editor.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P13 account editor: real create/edit, ordered validation, roles, cancel and three languages",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 210000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 158,
+                  "error": {
+                    "message": "Error: ENOENT: no such file or directory, open 'D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\deploy\\.secrets\\comparison-20261008\\account-editor-python.json'",
+                    "stack": "Error: ENOENT: no such file or directory, open 'D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\deploy\\.secrets\\comparison-20261008\\account-editor-python.json'\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-editor.spec.ts:116:28",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-editor.spec.ts",
+                      "column": 28,
+                      "line": 116
+                    },
+                    "snippet": "  114 |   const kind = source(info) ? 'python' : 'java';\n  115 |   const statePath = resolve(`../deploy/.secrets/comparison-20261008/account-editor-${kind}.json`);\n> 116 |   const state = JSON.parse(readFileSync(statePath, 'utf8')) as {\n      |                            ^\n  117 |     password: string;\n  118 |     names: [string, string, string];\n  119 |     created: string[];"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-editor.spec.ts",
+                        "column": 28,
+                        "line": 116
+                      },
+                      "message": "Error: ENOENT: no such file or directory, open 'D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\deploy\\.secrets\\comparison-20261008\\account-editor-python.json'\n\n  114 |   const kind = source(info) ? 'python' : 'java';\n  115 |   const statePath = resolve(`../deploy/.secrets/comparison-20261008/account-editor-${kind}.json`);\n> 116 |   const state = JSON.parse(readFileSync(statePath, 'utf8')) as {\n      |                            ^\n  117 |     password: string;\n  118 |     names: [string, string, string];\n  119 |     created: string[];\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-editor.spec.ts:116:28"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T04:47:50.123Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage42-accounts-final\\account-editor-P13-account-41ce0--cancel-and-three-languages-prototype\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-editor.spec.ts",
+                    "column": 28,
+                    "line": 116
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "9bc909f121c7d7c1adae-73c4ebe16bd924d2d949",
+          "file": "account-editor.spec.ts",
+          "line": 109,
+          "column": 1
+        },
+        {
+          "title": "P13 account editor: real create/edit, ordered validation, roles, cancel and three languages",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 210000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 256,
+                  "error": {
+                    "message": "Error: ENOENT: no such file or directory, open 'D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\deploy\\.secrets\\comparison-20261008\\account-editor-java.json'",
+                    "stack": "Error: ENOENT: no such file or directory, open 'D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\deploy\\.secrets\\comparison-20261008\\account-editor-java.json'\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-editor.spec.ts:116:28",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-editor.spec.ts",
+                      "column": 28,
+                      "line": 116
+                    },
+                    "snippet": "  114 |   const kind = source(info) ? 'python' : 'java';\n  115 |   const statePath = resolve(`../deploy/.secrets/comparison-20261008/account-editor-${kind}.json`);\n> 116 |   const state = JSON.parse(readFileSync(statePath, 'utf8')) as {\n      |                            ^\n  117 |     password: string;\n  118 |     names: [string, string, string];\n  119 |     created: string[];"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-editor.spec.ts",
+                        "column": 28,
+                        "line": 116
+                      },
+                      "message": "Error: ENOENT: no such file or directory, open 'D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\deploy\\.secrets\\comparison-20261008\\account-editor-java.json'\n\n  114 |   const kind = source(info) ? 'python' : 'java';\n  115 |   const statePath = resolve(`../deploy/.secrets/comparison-20261008/account-editor-${kind}.json`);\n> 116 |   const state = JSON.parse(readFileSync(statePath, 'utf8')) as {\n      |                            ^\n  117 |     password: string;\n  118 |     names: [string, string, string];\n  119 |     created: string[];\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-editor.spec.ts:116:28"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T04:48:41.412Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage42-accounts-final\\account-editor-P13-account-41ce0--cancel-and-three-languages-migration\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-editor.spec.ts",
+                    "column": 28,
+                    "line": 116
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "9bc909f121c7d7c1adae-7535608d8a1c8ee25e65",
+          "file": "account-editor.spec.ts",
+          "line": 109,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "account-session.spec.ts",
+      "file": "account-session.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P13 account sessions: edit name, role, factory and self without another login",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13204,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T04:47:51.162Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0eacca8da853c0c4e270-dab72ca93ef2657d643e",
+          "file": "account-session.spec.ts",
+          "line": 9,
+          "column": 1
+        },
+        {
+          "title": "P13 account sessions: edit name, role, factory and self without another login",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 20611,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T04:48:42.509Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0eacca8da853c0c4e270-5fb7ffa2402b3da859ad",
+          "file": "account-session.spec.ts",
+          "line": 9,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "users-directory.spec.ts",
+      "file": "users-directory.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P13 account directory: prefix/name search, roles, factories, status, pagination and metadata",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 204,
+                  "error": {
+                    "message": "Error: ENOENT: no such file or directory, open 'D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\deploy\\.secrets\\comparison-20261008\\users-directory-python.json'",
+                    "stack": "Error: ENOENT: no such file or directory, open 'D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\deploy\\.secrets\\comparison-20261008\\users-directory-python.json'\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\users-directory.spec.ts:107:5",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\users-directory.spec.ts",
+                      "column": 5,
+                      "line": 107
+                    },
+                    "snippet": "  105 |   protectTestSecrets(password);\n  106 |   const fixture = JSON.parse(\n> 107 |     readFileSync(\n      |     ^\n  108 |       resolve(`../deploy/.secrets/comparison-20261008/users-directory-${kind}.json`),\n  109 |       'utf8',\n  110 |     ),"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\users-directory.spec.ts",
+                        "column": 5,
+                        "line": 107
+                      },
+                      "message": "Error: ENOENT: no such file or directory, open 'D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\deploy\\.secrets\\comparison-20261008\\users-directory-python.json'\n\n  105 |   protectTestSecrets(password);\n  106 |   const fixture = JSON.parse(\n> 107 |     readFileSync(\n      |     ^\n  108 |       resolve(`../deploy/.secrets/comparison-20261008/users-directory-${kind}.json`),\n  109 |       'utf8',\n  110 |     ),\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\users-directory.spec.ts:107:5"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T04:48:04.796Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage42-accounts-final\\users-directory-P13-accoun-f2ea4-tus-pagination-and-metadata-prototype\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\users-directory.spec.ts",
+                    "column": 5,
+                    "line": 107
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "49c340285c87dffef02f-b296b309552cc17a89d6",
+          "file": "users-directory.spec.ts",
+          "line": 94,
+          "column": 1
+        },
+        {
+          "title": "P13 account directory: prefix/name search, roles, factories, status, pagination and metadata",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 165,
+                  "error": {
+                    "message": "Error: ENOENT: no such file or directory, open 'D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\deploy\\.secrets\\comparison-20261008\\users-directory-java.json'",
+                    "stack": "Error: ENOENT: no such file or directory, open 'D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\deploy\\.secrets\\comparison-20261008\\users-directory-java.json'\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\users-directory.spec.ts:107:5",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\users-directory.spec.ts",
+                      "column": 5,
+                      "line": 107
+                    },
+                    "snippet": "  105 |   protectTestSecrets(password);\n  106 |   const fixture = JSON.parse(\n> 107 |     readFileSync(\n      |     ^\n  108 |       resolve(`../deploy/.secrets/comparison-20261008/users-directory-${kind}.json`),\n  109 |       'utf8',\n  110 |     ),"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\users-directory.spec.ts",
+                        "column": 5,
+                        "line": 107
+                      },
+                      "message": "Error: ENOENT: no such file or directory, open 'D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\deploy\\.secrets\\comparison-20261008\\users-directory-java.json'\n\n  105 |   protectTestSecrets(password);\n  106 |   const fixture = JSON.parse(\n> 107 |     readFileSync(\n      |     ^\n  108 |       resolve(`../deploy/.secrets/comparison-20261008/users-directory-${kind}.json`),\n  109 |       'utf8',\n  110 |     ),\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\users-directory.spec.ts:107:5"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T04:49:03.581Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage42-accounts-final\\users-directory-P13-accoun-f2ea4-tus-pagination-and-metadata-migration\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\users-directory.spec.ts",
+                    "column": 5,
+                    "line": 107
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "49c340285c87dffef02f-c7c9fbd56875af17a5dd",
+          "file": "users-directory.spec.ts",
+          "line": 94,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-09T04:47:39.653Z",
+    "duration": 84595.785,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 4,
+    "flaky": 0
+  }
+}

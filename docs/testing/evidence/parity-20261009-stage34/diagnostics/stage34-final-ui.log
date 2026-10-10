@@ -1,0 +1,81 @@
+
+Running 10 tests using 1 worker
+
+(node:35884) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [prototype] › e2e\parity\audit-files.spec.ts:10:1 › P12 audit files: original insertion order, typed cells and empty workbook (4.7s)
+  x   2 [prototype] › e2e\parity\audit-layout.spec.ts:98:1 › P12 layout: single row table, date range and pagination across widths and languages (18.8s)
+(node:42320) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  3 [prototype] › e2e\parity\audit-page.spec.ts:138:1 › P12 audit: numbered pages, draft export scope, filters and inline detail (14.3s)
+  ok  4 [prototype] › e2e\parity\audit-rules.spec.ts:129:3 › P12 real rule audits: create edit rename combined and no-op (8.1s)
+  ok  5 [prototype] › e2e\parity\audit-rules.spec.ts:129:3 › P12 real rule audits: used version and rename (5.2s)
+(node:45748) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok  6 [migration] › e2e\parity\audit-files.spec.ts:10:1 › P12 audit files: original insertion order, typed cells and empty workbook (10.9s)
+  x   7 [migration] › e2e\parity\audit-layout.spec.ts:98:1 › P12 layout: single row table, date range and pagination across widths and languages (20.9s)
+(node:38544) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok  8 [migration] › e2e\parity\audit-page.spec.ts:138:1 › P12 audit: numbered pages, draft export scope, filters and inline detail (32.5s)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok  9 [migration] › e2e\parity\audit-rules.spec.ts:129:3 › P12 real rule audits: create edit rename combined and no-op (8.0s)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok 10 [migration] › e2e\parity\audit-rules.spec.ts:129:3 › P12 real rule audits: used version and rename (6.3s)
+
+
+  1) [prototype] › e2e\parity\audit-layout.spec.ts:98:1 › P12 layout: single row table, date range and pagination across widths and languages 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 330
+    Received: 187
+
+    Call Log:
+    - Timeout 15000ms exceeded while waiting on the predicate
+
+      144 |       element.scrollTo({ left: element.scrollWidth, behavior: 'instant' });
+      145 |     });
+    > 146 |     await expect.poll(() => scrolling.evaluate((element) => element.scrollLeft)).toBe(330);
+          |                                                                                  ^
+      147 |     await capture(page, info, 'table-scroll-end');
+      148 |     await scrolling.evaluate((element) => {
+      149 |       element.scrollTo({ left: 0, behavior: 'instant' });
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-layout.spec.ts:146:82
+
+    Error Context: test-results\stage34-final-ui\audit-layout-P12-layout-si-5705f-across-widths-and-languages-prototype\error-context.md
+
+  2) [migration] › e2e\parity\audit-layout.spec.ts:98:1 › P12 layout: single row table, date range and pagination across widths and languages 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 330
+    Received: 215
+
+    Call Log:
+    - Timeout 15000ms exceeded while waiting on the predicate
+
+      144 |       element.scrollTo({ left: element.scrollWidth, behavior: 'instant' });
+      145 |     });
+    > 146 |     await expect.poll(() => scrolling.evaluate((element) => element.scrollLeft)).toBe(330);
+          |                                                                                  ^
+      147 |     await capture(page, info, 'table-scroll-end');
+      148 |     await scrolling.evaluate((element) => {
+      149 |       element.scrollTo({ left: 0, behavior: 'instant' });
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-layout.spec.ts:146:82
+
+    Error Context: test-results\stage34-final-ui\audit-layout-P12-layout-si-5705f-across-widths-and-languages-migration\error-context.md
+
+  2 failed
+    [prototype] › e2e\parity\audit-layout.spec.ts:98:1 › P12 layout: single row table, date range and pagination across widths and languages 
+    [migration] › e2e\parity\audit-layout.spec.ts:98:1 › P12 layout: single row table, date range and pagination across widths and languages 
+  8 passed (2.3m)

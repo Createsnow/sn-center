@@ -1,0 +1,320 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.parity.config.ts",
+      "transfer-impact.spec.ts",
+      "transfer-targets.spec.ts",
+      "--grep",
+      "P10 cross PI|P10 snapshot pending",
+      "--max-failures=1",
+      "--output=test-results/stage25-impact-ui-r2"
+    ],
+    "configFile": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\playwright.parity.config.ts",
+    "rootDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 1,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage25-impact-ui-r2",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "prototype",
+        "name": "prototype",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage25-impact-ui-r2",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "migration",
+        "name": "migration",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/parity/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "transfer-impact.spec.ts",
+      "file": "transfer-impact.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P10 cross PI hints: wait for impact, zero skipped positions, gaps and actual transfer",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 16726,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T20:13:12.122Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "39e1cdb9e9953e34dfb4-d5abc8d2752c99f848a0",
+          "file": "transfer-impact.spec.ts",
+          "line": 212,
+          "column": 1
+        },
+        {
+          "title": "P10 cross PI duplicate: exact count and five samples, single SN and same PI reset",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7226,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T20:13:29.297Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "39e1cdb9e9953e34dfb4-b30eec7e189863620bb9",
+          "file": "transfer-impact.spec.ts",
+          "line": 299,
+          "column": 1
+        },
+        {
+          "title": "P10 cross PI hints: wait for impact, zero skipped positions, gaps and actual transfer",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 32491,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T20:13:41.760Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "39e1cdb9e9953e34dfb4-bafff539fb95c8b705d1",
+          "file": "transfer-impact.spec.ts",
+          "line": 212,
+          "column": 1
+        },
+        {
+          "title": "P10 cross PI duplicate: exact count and five samples, single SN and same PI reset",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 19593,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T20:14:14.692Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "39e1cdb9e9953e34dfb4-1b80342438696a958ecc",
+          "file": "transfer-impact.spec.ts",
+          "line": 299,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "transfer-targets.spec.ts",
+      "file": "transfer-targets.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P10 snapshot pending search: retain visible rows and selection while a real request waits",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4381,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T20:13:36.559Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d59a32118c6f33d3d27c-33a05f9f1dfd02b2751d",
+          "file": "transfer-targets.spec.ts",
+          "line": 278,
+          "column": 1
+        },
+        {
+          "title": "P10 snapshot pending search: retain visible rows and selection while a real request waits",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9614,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T20:14:34.316Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d59a32118c6f33d3d27c-5d8b084566190402dacb",
+          "file": "transfer-targets.spec.ts",
+          "line": 278,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-08T20:13:11.646Z",
+    "duration": 92776.69900000001,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

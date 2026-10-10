@@ -4,6 +4,26 @@ import java.time.Instant;
 
 /** 同事务固定的SN操作事实；无通用更新/删除接口，归档保留原键及内容。 */
 public class SnAuditEntity {
+    private String errorMessage;
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String value) {
+        errorMessage = value;
+    }
+
+    private String detailText;
+
+    public String getDetailText() {
+        return detailText;
+    }
+
+    public void setDetailText(String value) {
+        detailText = value;
+    }
+
     private String id;
 
     public String getId() {
@@ -312,5 +332,25 @@ public class SnAuditEntity {
 
     public void setDetail(String value) {
         this.detail = value;
+    }
+
+    private String batchNo;
+
+    public String getBatchNo() {
+        return batchNo;
+    }
+
+    public void setBatchNo(String value) {
+        batchNo = value;
+    }
+
+    private String transferNo;
+
+    public String getTransferNo() {
+        return transferNo;
+    }
+
+    public void setTransferNo(String value) {
+        transferNo = value;
     }
 }

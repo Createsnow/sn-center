@@ -28,4 +28,6 @@ public record SnQueryItemEntity(
         String currentTransferId,
         Instant createdAt,
         Instant acquiredAt,
-        Instant printedAt) {}
+        Instant printedAt,
+        String currentBatchNo,
+        long creationOrder) {}

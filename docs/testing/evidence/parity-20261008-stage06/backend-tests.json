@@ -1,0 +1,231 @@
+{
+  "unit": [
+    {
+      "name": "com.adtek.common.core.DataScopeTest",
+      "tests": "3",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "0.069",
+      "reportModifiedAt": "2026-10-08T05:57:27.507739+00:00"
+    },
+    {
+      "name": "com.adtek.framework.audit.AuditContextTest",
+      "tests": "3",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "0.086",
+      "reportModifiedAt": "2026-10-08T05:57:29.016133+00:00"
+    },
+    {
+      "name": "com.adtek.framework.audit.RequestFailureAuditFilterTest",
+      "tests": "4",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "0.113",
+      "reportModifiedAt": "2026-10-08T05:57:29.128989+00:00"
+    },
+    {
+      "name": "com.adtek.framework.mybatis.ScopedDataPermissionInterceptorTest",
+      "tests": "6",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "0.138",
+      "reportModifiedAt": "2026-10-08T05:57:29.267704+00:00"
+    },
+    {
+      "name": "com.adtek.framework.security.CurrentActorTest",
+      "tests": "3",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "0.008",
+      "reportModifiedAt": "2026-10-08T05:57:29.276707+00:00"
+    },
+    {
+      "name": "com.adtek.framework.security.JwtTokenCodecTest",
+      "tests": "3",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "0.139",
+      "reportModifiedAt": "2026-10-08T05:57:29.418389+00:00"
+    },
+    {
+      "name": "com.adtek.framework.security.PasswordEncodingTest",
+      "tests": "3",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "0.332",
+      "reportModifiedAt": "2026-10-08T05:57:29.754098+00:00"
+    },
+    {
+      "name": "com.adtek.framework.security.RedisFailureTest",
+      "tests": "2",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "0.727",
+      "reportModifiedAt": "2026-10-08T05:57:30.482142+00:00"
+    },
+    {
+      "name": "com.adtek.framework.task.FileStorageTest",
+      "tests": "6",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "0.305",
+      "reportModifiedAt": "2026-10-08T05:57:30.793062+00:00"
+    },
+    {
+      "name": "com.adtek.framework.web.LegacyBoundaryTest",
+      "tests": "2",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "1.036",
+      "reportModifiedAt": "2026-10-08T05:57:31.833211+00:00"
+    },
+    {
+      "name": "com.adtek.framework.web.ResultSerializationTest",
+      "tests": "1",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "0.016",
+      "reportModifiedAt": "2026-10-08T05:57:31.846621+00:00"
+    },
+    {
+      "name": "com.adtek.framework.web.TraceFilterTest",
+      "tests": "1",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "0.003",
+      "reportModifiedAt": "2026-10-08T05:57:31.850359+00:00"
+    },
+    {
+      "name": "com.adtek.server.ArchitectureTest",
+      "tests": "3",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "3.891",
+      "reportModifiedAt": "2026-10-08T05:57:45.716313+00:00"
+    },
+    {
+      "name": "com.adtek.server.ArchiveRestoreProofTest",
+      "tests": "5",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "0.78",
+      "reportModifiedAt": "2026-10-08T05:57:46.497360+00:00"
+    },
+    {
+      "name": "com.adtek.server.AuditProjectionTest",
+      "tests": "3",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "0.016",
+      "reportModifiedAt": "2026-10-08T05:57:46.516351+00:00"
+    },
+    {
+      "name": "com.adtek.server.ErrorCodeCatalogTest",
+      "tests": "1",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "0.573",
+      "reportModifiedAt": "2026-10-08T05:57:47.090583+00:00"
+    },
+    {
+      "name": "com.adtek.server.K3ConfigurationTest",
+      "tests": "2",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "0.672",
+      "reportModifiedAt": "2026-10-08T05:57:47.764006+00:00"
+    },
+    {
+      "name": "com.adtek.server.K3ErrorsTest",
+      "tests": "7",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "1.184",
+      "reportModifiedAt": "2026-10-08T05:57:48.950524+00:00"
+    },
+    {
+      "name": "com.adtek.server.K3LegacyProtocolTest",
+      "tests": "1",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "0.042",
+      "reportModifiedAt": "2026-10-08T05:57:48.993258+00:00"
+    },
+    {
+      "name": "com.adtek.server.LegacyErrorCatalogTest",
+      "tests": "1",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "0.013",
+      "reportModifiedAt": "2026-10-08T05:57:49.006561+00:00"
+    },
+    {
+      "name": "com.adtek.server.MaintenanceScheduleTest",
+      "tests": "3",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "0.025",
+      "reportModifiedAt": "2026-10-08T05:57:49.032967+00:00"
+    },
+    {
+      "name": "com.adtek.sn.service.support.SequenceCodecTest",
+      "tests": "10",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "0.145",
+      "reportModifiedAt": "2026-10-08T05:57:37.612202+00:00"
+    }
+  ],
+  "integration": [
+    {
+      "name": "com.adtek.server.SnFoundationIT",
+      "tests": "28",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "40.819",
+      "reportModifiedAt": "2026-10-08T05:58:31.280242+00:00"
+    },
+    {
+      "name": "com.adtek.server.SnWorkIT",
+      "tests": "31",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "63.825",
+      "reportModifiedAt": "2026-10-08T06:00:00.024087+00:00"
+    },
+    {
+      "name": "com.adtek.server.SnQueryIT",
+      "tests": "9",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "24.93",
+      "reportModifiedAt": "2026-10-08T05:58:56.202486+00:00"
+    }
+  ]
+}

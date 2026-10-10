@@ -68,27 +68,49 @@ public class TransferServiceImpl implements TransferService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public TransferCandidateVO candidates(
-            String factory, String pi, String scope, String material, String sn) {
+            String factory, String pi, String scope, String material, String sn, String toPi) {
         var input = source(factory, pi, scope, material, sn);
         e.policy.require(
                 e.policy.read(TransferPolicy.VIEW), TransferPolicy.VIEW, input.factoryId());
-        return e.convert.candidate(e.rows.candidates(input));
+        String target = toPi == null || toPi.isBlank() ? "" : AcquirePolicy.pi(toPi);
+        // 仅揭示来源可见且可转的号的冲突，不提供目标库存枚举权限。
+        long duplicates =
+                target.isEmpty() || target.equals(input.pi())
+                        ? 0
+                        : e.rows.duplicateCount(input, target);
+        return e.convert.candidate(
+                e.rows.candidates(input),
+                e.rows.materials(input.factoryId(), input.pi()),
+                duplicates,
+                duplicates == 0 ? List.of() : e.rows.duplicateSamples(input, target));
     }
 
     @Override
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
-    public PageResult<TransferTargetVO> targets(
-            boolean factories, String query, int page, int size) {
+    public PageResult<TransferSnapshotVO> targets(String query, int page, int size) {
         e.policy.read(TransferPolicy.TARGETS);
         if (page < 1 || size < 1 || size > 100) throw SnPolicy.invalid();
         String q = SnPolicy.like(value(query, 128, false));
         long offset = (long) (page - 1) * size;
-        var items = factories ? e.rows.factories(q, offset, size) : e.rows.targets(q, offset, size);
         return new PageResult<>(
-                items.stream().map(e.convert::target).toList(),
-                Long.toString(factories ? e.rows.factoryCount(q) : e.rows.targetCount(q)),
+                e.rows.targets(q, offset, size).stream().map(e.convert::snapshot).toList(),
+                Long.toString(e.rows.targetCount(q)),
+                page,
+                size);
+    }
+
+    @Override
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public PageResult<TransferTargetVO> factories(String query, int page, int size) {
+        e.policy.read(TransferPolicy.TARGETS);
+        if (page < 1 || size < 1 || size > 100) throw SnPolicy.invalid();
+        String q = SnPolicy.like(value(query, 128, false));
+        long offset = (long) (page - 1) * size;
+        return new PageResult<>(
+                e.rows.factories(q, offset, size).stream().map(e.convert::target).toList(),
+                Long.toString(e.rows.factoryCount(q)),
                 page,
                 size);
     }
@@ -318,6 +340,35 @@ public class TransferServiceImpl implements TransferService {
         if (transfer == null) throw SnPolicy.missing();
         e.policy.visible(actor, transfer);
         return transfer;
+    }
+
+    @Override
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public PageResult<TransferDetailVO> itemPage(String id, int page, int size) {
+        if (page < 1 || size < 1 || size > 1000) throw SnPolicy.invalid();
+        var actor = e.policy.read(TransferPolicy.VIEW);
+        var transfer = visible(actor, id);
+        var grant = actor.grants().get(TransferPolicy.VIEW);
+        boolean sourceOnly =
+                "APPROVED".equals(transfer.status())
+                        && !grant.allFactories()
+                        && grant.factoryIds().size() == 1
+                        && grant.factoryIds().contains(transfer.fromFactoryId());
+        var items =
+                e.rows.detailPage(transfer.id(), (long) (page - 1) * size, size).stream()
+                        .map(
+                                row ->
+                                        e.convert.detail(
+                                                row,
+                                                sourceOnly
+                                                                && !Objects.equals(
+                                                                        row.currentFactoryId(),
+                                                                        transfer.fromFactoryId())
+                                                        ? "TRANSFERRED_OUT"
+                                                        : row.currentStatus()))
+                        .toList();
+        return new PageResult<>(
+                items, Long.toString(e.rows.detailCount(transfer.id())), page, size);
     }
 
     @Override

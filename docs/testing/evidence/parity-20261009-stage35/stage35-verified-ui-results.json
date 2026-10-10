@@ -1,0 +1,724 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\node_modules\\.pnpm\\@playwright+test@1.63.0\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "-c",
+      "playwright.parity.config.ts",
+      "audit-auth.spec.ts",
+      "audit-page.spec.ts",
+      "audit-files.spec.ts",
+      "audit-rules.spec.ts",
+      "audit-layout.spec.ts",
+      "--output=test-results/stage35-verified-ui"
+    ],
+    "configFile": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\playwright.parity.config.ts",
+    "rootDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage35-verified-ui",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "prototype",
+        "name": "prototype",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [
+          "**/query-recovery.spec.ts"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage35-verified-ui",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "migration",
+        "name": "migration",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/parity/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "audit-auth.spec.ts",
+      "file": "audit-auth.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P12 real anonymous login failure appears in audit and downloaded file",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2800,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T01:11:42.781Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7a07d2f52b91ec5846ab-358fb8a0c7dfdef0513a",
+          "file": "audit-auth.spec.ts",
+          "line": 180,
+          "column": 1
+        },
+        {
+          "title": "P12 real known login password rejection change and disabled account facts",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8505,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T01:11:46.006Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7a07d2f52b91ec5846ab-e39c57389762ee6d7918",
+          "file": "audit-auth.spec.ts",
+          "line": 200,
+          "column": 1
+        },
+        {
+          "title": "P12 real fifth failed login and subsequent lock retain exact audit facts",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4216,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T01:11:54.519Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7a07d2f52b91ec5846ab-c9ab0037658eb3d516c7",
+          "file": "audit-auth.spec.ts",
+          "line": 331,
+          "column": 1
+        },
+        {
+          "title": "P12 real anonymous login failure appears in audit and downloaded file",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12044,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\openpyxl\\styles\\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default\r\n  warn(\"Workbook contains no default style, apply openpyxl's default\")\r\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-09T01:12:39.526Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7a07d2f52b91ec5846ab-583bbd0f4aeb5620be3f",
+          "file": "audit-auth.spec.ts",
+          "line": 180,
+          "column": 1
+        },
+        {
+          "title": "P12 real known login password rejection change and disabled account facts",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 49393,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\openpyxl\\styles\\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default\r\n  warn(\"Workbook contains no default style, apply openpyxl's default\")\r\n"
+                    },
+                    {
+                      "text": "D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\openpyxl\\styles\\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default\r\n  warn(\"Workbook contains no default style, apply openpyxl's default\")\r\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-09T01:12:52.031Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7a07d2f52b91ec5846ab-e53b6a6f44c049bcc891",
+          "file": "audit-auth.spec.ts",
+          "line": 200,
+          "column": 1
+        },
+        {
+          "title": "P12 real fifth failed login and subsequent lock retain exact audit facts",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 57195,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\openpyxl\\styles\\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default\r\n  warn(\"Workbook contains no default style, apply openpyxl's default\")\r\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-09T01:13:41.435Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7a07d2f52b91ec5846ab-a2768c132948a01d7068",
+          "file": "audit-auth.spec.ts",
+          "line": 331,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "audit-files.spec.ts",
+      "file": "audit-files.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P12 audit files: original insertion order, typed cells and empty workbook",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4109,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T01:11:58.748Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "021b772b88aac3836cff-d3d4c7daebaa351b96bd",
+          "file": "audit-files.spec.ts",
+          "line": 10,
+          "column": 1
+        },
+        {
+          "title": "P12 audit files: original insertion order, typed cells and empty workbook",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12239,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\openpyxl\\styles\\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default\r\n  warn(\"Workbook contains no default style, apply openpyxl's default\")\r\n"
+                    },
+                    {
+                      "text": "D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\openpyxl\\styles\\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default\r\n  warn(\"Workbook contains no default style, apply openpyxl's default\")\r\n"
+                    },
+                    {
+                      "text": "D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\openpyxl\\styles\\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default\r\n  warn(\"Workbook contains no default style, apply openpyxl's default\")\r\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-09T01:14:38.653Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "021b772b88aac3836cff-87bccecfcc51eceda42f",
+          "file": "audit-files.spec.ts",
+          "line": 10,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "audit-layout.spec.ts",
+      "file": "audit-layout.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P12 layout: single row table, date range and pagination across widths and languages",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7419,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T01:12:02.877Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6b103875e64600dc198f-1c652f78984fd6e0d619",
+          "file": "audit-layout.spec.ts",
+          "line": 98,
+          "column": 1
+        },
+        {
+          "title": "P12 layout: single row table, date range and pagination across widths and languages",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11237,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T01:14:50.909Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6b103875e64600dc198f-66a8740611cb82b9c73d",
+          "file": "audit-layout.spec.ts",
+          "line": 98,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "audit-page.spec.ts",
+      "file": "audit-page.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P12 audit: numbered pages, draft export scope, filters and inline detail",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13849,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T01:12:10.312Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "ea072c576657465a14c0-1b917b9995a375510878",
+          "file": "audit-page.spec.ts",
+          "line": 138,
+          "column": 1
+        },
+        {
+          "title": "P12 audit: numbered pages, draft export scope, filters and inline detail",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 33748,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\openpyxl\\styles\\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default\r\n  warn(\"Workbook contains no default style, apply openpyxl's default\")\r\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-09T01:15:02.169Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "ea072c576657465a14c0-186610ff6aec4d261361",
+          "file": "audit-page.spec.ts",
+          "line": 138,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "audit-rules.spec.ts",
+      "file": "audit-rules.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P12 real rule audits: create edit rename combined and no-op",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8831,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T01:12:24.174Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "22fe91cd20997730c2b8-79515fc05ba2ee041f41",
+          "file": "audit-rules.spec.ts",
+          "line": 129,
+          "column": 3
+        },
+        {
+          "title": "P12 real rule audits: used version and rename",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5431,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T01:12:33.012Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "22fe91cd20997730c2b8-ab514d42d0ae7eea92cc",
+          "file": "audit-rules.spec.ts",
+          "line": 129,
+          "column": 3
+        },
+        {
+          "title": "P12 real rule audits: create edit rename combined and no-op",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9356,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\openpyxl\\styles\\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default\r\n  warn(\"Workbook contains no default style, apply openpyxl's default\")\r\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-09T01:15:35.931Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "22fe91cd20997730c2b8-875b907c25ad4138bac2",
+          "file": "audit-rules.spec.ts",
+          "line": 129,
+          "column": 3
+        },
+        {
+          "title": "P12 real rule audits: used version and rename",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6378,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\openpyxl\\styles\\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default\r\n  warn(\"Workbook contains no default style, apply openpyxl's default\")\r\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-09T01:15:45.292Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "22fe91cd20997730c2b8-dfe07b5121cca772cf8d",
+          "file": "audit-rules.spec.ts",
+          "line": 129,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-09T01:11:42.258Z",
+    "duration": 250043.768,
+    "expected": 16,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

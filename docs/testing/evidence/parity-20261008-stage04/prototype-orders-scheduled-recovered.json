@@ -1,0 +1,38 @@
+[
+  {
+    "classes": "el-dialog",
+    "rect": {
+      "x": 480,
+      "y": 144,
+      "width": 480,
+      "height": 421,
+      "top": 144,
+      "right": 960,
+      "bottom": 565,
+      "left": 480
+    },
+    "color": "rgb(15, 23, 42)",
+    "background": "rgb(255, 255, 255)",
+    "fontSize": "16px",
+    "lineHeight": "normal",
+    "opacity": "1"
+  },
+  {
+    "classes": "el-dialog__title",
+    "rect": {
+      "x": 496,
+      "y": 159,
+      "width": 144,
+      "height": 26,
+      "top": 159,
+      "right": 640,
+      "bottom": 185,
+      "left": 496
+    },
+    "color": "rgb(48, 49, 51)",
+    "background": "rgba(0, 0, 0, 0)",
+    "fontSize": "18px",
+    "lineHeight": "24px",
+    "opacity": "1"
+  }
+]

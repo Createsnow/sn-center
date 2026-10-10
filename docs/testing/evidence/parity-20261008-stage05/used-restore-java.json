@@ -1,0 +1,9 @@
+{
+  "kind": "java",
+  "baselineVersion": 1,
+  "observedVersion": 2,
+  "newVersionCount": 1,
+  "originalVersionsUnchanged": true,
+  "issuedSnCount": 10,
+  "issuedSnRowsUnchanged": true
+}

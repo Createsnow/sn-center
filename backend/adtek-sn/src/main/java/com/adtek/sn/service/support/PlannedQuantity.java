@@ -3,7 +3,7 @@ package com.adtek.sn.service.support;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-/** ERP计划量保留精确十进制；与离散SN额度分开。小数单位未确认前，不对其舍入、截断或分配枚数。 */
+/** ERP明细保留精确十进制；SN枚数遵循原型，逐分录取整数部分后再汇总。 */
 public final class PlannedQuantity {
     private PlannedQuantity() {}
 
@@ -16,13 +16,13 @@ public final class PlannedQuantity {
         return value.setScale(4, RoundingMode.UNNECESSARY).stripTrailingZeros();
     }
 
-    public static boolean integral(BigDecimal value) {
-        return value != null && value.stripTrailingZeros().scale() <= 0;
+    public static long snCount(BigDecimal value) {
+        return require(value).setScale(0, RoundingMode.FLOOR).longValueExact();
     }
 
-    /** 小数没有可用SN额度；原小数仍由qty独立展示，所属单据另明确quantityReady=false及阻止原因。 */
+    /** 先对本分录取整，再扣该稳定来源分录已生成量；不将多个分录的小数凑成一枚。 */
     public static long remaining(BigDecimal value, long generated) {
-        return integral(value) ? Math.max(0, value.longValueExact() - generated) : 0;
+        return Math.max(0, snCount(value) - generated);
     }
 
     public static String text(BigDecimal value) {

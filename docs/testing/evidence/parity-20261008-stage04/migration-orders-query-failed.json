@@ -1,0 +1,20 @@
+[
+  {
+    "classes": "ant-message-notice ant-message-notice-error sn-prototype-error-message",
+    "rect": {
+      "x": 589,
+      "y": 16,
+      "width": 262,
+      "height": 40,
+      "top": 16,
+      "right": 851,
+      "bottom": 56,
+      "left": 589
+    },
+    "color": "rgb(245, 108, 108)",
+    "background": "rgb(254, 240, 240)",
+    "fontSize": "14px",
+    "lineHeight": "18px",
+    "opacity": "1"
+  }
+]

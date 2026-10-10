@@ -1,0 +1,10 @@
+{
+  "before": {
+    "opacity": 1,
+    "text": "本厂没有 PI CMP-UI-QUERY-SCOPE-PI-B 的号，不能查看其他工厂"
+  },
+  "after": {
+    "opacity": 1,
+    "text": "本厂没有 PI CMP-UI-QUERY-SCOPE-PI-B 的号，不能查看其他工厂"
+  }
+}

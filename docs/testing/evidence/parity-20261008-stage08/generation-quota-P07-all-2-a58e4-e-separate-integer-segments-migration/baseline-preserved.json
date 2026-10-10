@@ -1,0 +1,34 @@
+{
+  "kind": "java",
+  "originalRowsUnchanged": {
+    "items": {
+      "count": 10,
+      "sha256": "606511e3555a5a65685e1725b9efb1238c6651bf9b420e21d933d9343ef8e601"
+    },
+    "keys": {
+      "count": 10,
+      "sha256": "22fe4fd1f2fa814e2369c3ccb98163adfc8d9d4c817e4401866eeaa07e9eb59f"
+    },
+    "counters": {
+      "count": 2,
+      "sha256": "572e4fe78a6a79d72135da3858d98152a9214117b187480e7a10e58388ec3e29"
+    },
+    "rules": {
+      "count": 3,
+      "sha256": "2b3945bc6ba55c27f4a6ccbf6f1ea1d512f003a9aebae86b986bc8454bde3c80"
+    },
+    "versions": {
+      "count": 3,
+      "sha256": "d01d91aa95352e978eb5564f65e57ad242572c20fe33a239228765c1513a7f08"
+    },
+    "ledger": {
+      "count": 156,
+      "sha256": "dfaea356e77e3b79660c13c61f61da33f88ed7d72952726fc63ab3a5165b756b"
+    },
+    "allocations": {
+      "count": 1,
+      "sha256": "c13d9d6778e8f0c71b0e48b9c74d0dafd23df716e3f0077803f19be3779dcb98"
+    }
+  },
+  "ownedFixtureRemoved": true
+}

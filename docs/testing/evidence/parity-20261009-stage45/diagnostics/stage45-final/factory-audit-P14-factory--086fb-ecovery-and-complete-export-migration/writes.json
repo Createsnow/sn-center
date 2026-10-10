@@ -1,0 +1,167 @@
+{
+  "writes": [
+    {
+      "status": 400,
+      "route": "/api/v1/sn/factories",
+      "body": {
+        "code": 1004000033,
+        "message": "sn.factoryInvalid",
+        "data": null,
+        "params": {},
+        "traceId": "52f9727b-1fc8-464b-abf2-22706b32e568"
+      }
+    },
+    {
+      "status": 400,
+      "route": "/api/v1/sn/factories",
+      "body": {
+        "code": 1004000033,
+        "message": "sn.factoryInvalid",
+        "data": null,
+        "params": {},
+        "traceId": "27cf08c1-df7f-4644-8552-eca262943756"
+      }
+    },
+    {
+      "status": 400,
+      "route": "/api/v1/sn/factories",
+      "body": {
+        "code": 1004000033,
+        "message": "sn.factoryInvalid",
+        "data": null,
+        "params": {},
+        "traceId": "6d51e212-97e6-4a05-bf5a-df244b6caa24"
+      }
+    },
+    {
+      "status": 200,
+      "route": "/api/v1/sn/factories",
+      "body": {
+        "code": 0,
+        "message": "common.success",
+        "data": {
+          "id": "422",
+          "code": "CMP_F44_MANUAL",
+          "name": "工厂审计手工",
+          "source": "MANUAL",
+          "enabled": true,
+          "version": "1",
+          "createdAt": "2026-10-09T06:21:35.177338600Z",
+          "updatedAt": "2026-10-09T06:21:35.177338600Z"
+        },
+        "params": {},
+        "traceId": "79a98f50-c9f5-4a0f-894c-09777a5aed18"
+      }
+    },
+    {
+      "status": 409,
+      "route": "/api/v1/sn/factories",
+      "body": {
+        "code": 1004000003,
+        "message": "sn.factoryExists",
+        "data": null,
+        "params": {
+          "factory": "CMP_F44_MANUAL/重复编码"
+        },
+        "traceId": "eaf48860-c608-4ab8-aa72-bcd85442b953"
+      }
+    },
+    {
+      "status": 409,
+      "route": "/api/v1/sn/factories",
+      "body": {
+        "code": 1004000003,
+        "message": "sn.factoryExists",
+        "data": null,
+        "params": {
+          "factory": "CMP_F44_CONFLICT/工厂审计手工"
+        },
+        "traceId": "cf258895-ca53-47af-933b-9cffeac64324"
+      }
+    },
+    {
+      "status": 200,
+      "route": "/api/v1/sn/factories/sync",
+      "body": {
+        "code": 0,
+        "message": "common.success",
+        "data": {
+          "total": "3",
+          "inserted": "1",
+          "updated": "1",
+          "conflicts": [
+            "CMP_F44_CONFLICT/比较工厂44-00"
+          ]
+        },
+        "params": {},
+        "traceId": "8804af3f-3f46-4406-8d1d-297bdfe91453"
+      }
+    },
+    {
+      "status": 200,
+      "route": "/api/v1/sn/factories/sync",
+      "body": {
+        "code": 0,
+        "message": "common.success",
+        "data": {
+          "total": "3",
+          "inserted": "0",
+          "updated": "0",
+          "conflicts": [
+            "CMP_F44_CONFLICT/比较工厂44-00"
+          ]
+        },
+        "params": {},
+        "traceId": "c8347b24-9e88-4dd5-a069-af66cdcde048"
+      }
+    },
+    {
+      "status": 200,
+      "route": "/api/v1/sn/factories/sync",
+      "body": {
+        "code": 0,
+        "message": "common.success",
+        "data": {
+          "total": "1",
+          "inserted": "0",
+          "updated": "0",
+          "conflicts": [
+            "CMP_F44_MANUAL/比较工厂44-00"
+          ]
+        },
+        "params": {},
+        "traceId": "d1ac33a9-f294-41c7-b809-ca102247d278"
+      }
+    },
+    {
+      "status": 502,
+      "route": "/api/v1/sn/factories/sync",
+      "body": {
+        "code": 1005000006,
+        "message": "integration.k3QueryRejected",
+        "data": null,
+        "params": {
+          "message": "HTTP 503"
+        },
+        "traceId": "3795c3aa-fccc-41ef-af04-01f31573f7aa"
+      }
+    },
+    {
+      "status": 200,
+      "route": "/api/v1/sn/factories/sync",
+      "body": {
+        "code": 0,
+        "message": "common.success",
+        "data": {
+          "total": "0",
+          "inserted": "0",
+          "updated": "0",
+          "conflicts": []
+        },
+        "params": {},
+        "traceId": "0fb8629f-1ccc-4b08-9206-f14b306eb1cf"
+      }
+    }
+  ],
+  "pageErrors": []
+}

@@ -1,0 +1,304 @@
+{
+  "errors": [],
+  "responses": [
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/exports",
+      "status": 202,
+      "code": 0,
+      "state": "QUEUED",
+      "fileState": "PREPARING"
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/exports/operations/CSV/56e7e0f2-b2cc-4b78-a64a-28b2f7acf004",
+      "status": 200,
+      "code": 0,
+      "state": "SUCCESS",
+      "fileState": "READY"
+    },
+    {
+      "path": "/api/v1/files/d1d3edd5-16d6-4ccb-9290-94eeb956aa07",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/exports",
+      "status": 202,
+      "code": 0,
+      "state": "QUEUED",
+      "fileState": "PREPARING"
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/exports/operations/XLSX/516368b2-2005-4414-98a5-08473985feb4",
+      "status": 200,
+      "code": 0,
+      "state": "SUCCESS",
+      "fileState": "READY"
+    },
+    {
+      "path": "/api/v1/files/5a7a4f6c-a0ca-4669-8102-16cc0f1d5f9b",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/exports",
+      "status": 202,
+      "code": 0,
+      "state": "QUEUED",
+      "fileState": "PREPARING"
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/exports/operations/CSV/77ab8ac1-15d0-4359-b828-189847cec958",
+      "status": 200,
+      "code": 0,
+      "state": "SUCCESS",
+      "fileState": "READY"
+    },
+    {
+      "path": "/api/v1/files/48a581aa-9cd9-4014-85c6-b80166d4fb87",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/exports",
+      "status": 202,
+      "code": 0,
+      "state": "QUEUED",
+      "fileState": "PREPARING"
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/exports/operations/XLSX/84500439-6cb6-44ca-8cf4-db7f49a6aaef",
+      "status": 200,
+      "code": 0,
+      "state": "SUCCESS",
+      "fileState": "READY"
+    },
+    {
+      "path": "/api/v1/files/69bfd673-3c6b-4476-975f-16c999dfd4aa",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/exports",
+      "status": 202,
+      "code": 0,
+      "state": "QUEUED",
+      "fileState": "PREPARING"
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/exports/operations/CSV/daa8ee15-bfdd-4067-a789-c2e79a7b056e",
+      "status": 200,
+      "code": 0,
+      "state": "SUCCESS",
+      "fileState": "READY"
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/files/ef6d5422-7b81-4c98-ba15-687eefba7bc2",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/sn/exports",
+      "status": 202,
+      "code": 0,
+      "state": "QUEUED",
+      "fileState": "PREPARING"
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/exports/operations/XLSX/5aadd28f-48fe-489c-8b81-4c1b9e2a0e6d",
+      "status": 200,
+      "code": 0,
+      "state": "SUCCESS",
+      "fileState": "READY"
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/files/d4ed588e-bfce-4400-8dee-1468644f9d94",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/exports",
+      "status": 202,
+      "code": 0,
+      "state": "QUEUED",
+      "fileState": "PREPARING"
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/exports/operations/CSV/8518d50f-d35f-48bd-a1be-6af88dfebc8d",
+      "status": 200,
+      "code": 0,
+      "state": "SUCCESS",
+      "fileState": "READY"
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/files/4c52838f-8b89-468d-93b8-57bbe6683129",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/sn/exports",
+      "status": 202,
+      "code": 0,
+      "state": "QUEUED",
+      "fileState": "PREPARING"
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/sn/exports/operations/XLSX/b7e67f91-fafb-4ae6-b303-694f38d99261",
+      "status": 200,
+      "code": 0,
+      "state": "SUCCESS",
+      "fileState": "READY"
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "path": "/api/v1/files/22cf87eb-0b8b-4317-a6ae-140d71f061c1",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/sn/items/page",
+      "status": 200,
+      "code": 0
+    }
+  ]
+}

@@ -23,4 +23,6 @@ public record SnWorkEntity(
         String fileName,
         Integer errorCode,
         Instant createdAt,
-        Instant finishedAt) {}
+        Instant finishedAt,
+        String actorName,
+        String errorParams) {}

@@ -6,10 +6,9 @@ import com.adtek.common.core.BusinessException;
 import com.adtek.sn.service.port.ErpProductionOrderPort.Row;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.*;
 
-/** 完整来源身份/头一致性校验；同物料不合并，按稳定分录内码排序后编号，历史额度不依赖该编号。 */
+/** 完整来源身份/头一致性校验；同物料不合并，保留ERP返回的行序用于页面与号段切分。 */
 public final class OrderSnapshot {
     private OrderSnapshot() {}
 
@@ -59,7 +58,6 @@ public final class OrderSnapshot {
             group.add(row);
         }
         for (var group : bills.values()) {
-            group.sort(Comparator.comparing(row -> new BigInteger(row.entryId())));
             try {
                 PlannedQuantity.require(
                         group.stream().map(Row::qty).reduce(BigDecimal.ZERO, BigDecimal::add));

@@ -8,6 +8,7 @@ package com.adtek.sn.vo;
             "totalImported",
             "today",
             "recentJobs",
+            "jobs",
             "date",
             "zone",
             "allFactories"
@@ -19,6 +20,7 @@ public record DashboardVO(
         @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String totalImported,
         java.util.List<SnCountVO> today,
         java.util.List<SnWorkVO> recentJobs,
+        java.util.List<DashboardJobVO> jobs,
         String date,
         String zone,
         boolean allFactories) {}

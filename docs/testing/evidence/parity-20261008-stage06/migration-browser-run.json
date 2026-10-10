@@ -1,0 +1,386 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.parity.config.ts",
+      "dashboard-roles.spec.ts",
+      "generation-quota.spec.ts",
+      "--project=migration",
+      "--max-failures=1"
+    ],
+    "configFile": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\playwright.parity.config.ts",
+    "rootDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 1,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/parity",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "prototype",
+        "name": "prototype",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/parity",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "migration",
+        "name": "migration",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/parity/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "dashboard-roles.spec.ts",
+      "file": "dashboard-roles.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P04 管理员首页指标 近期订单进度 快捷入口和窄屏",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4465,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T06:00:26.798Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3ec7db71f1c071200a91-ec971d945027061a5c72",
+          "file": "dashboard-roles.spec.ts",
+          "line": 91,
+          "column": 1
+        },
+        {
+          "title": "P01 P03 P04 cmp_operator 首次改密 角色范围与首页入口",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 20868,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T06:00:31.735Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3ec7db71f1c071200a91-506945cecbcf48954b57",
+          "file": "dashboard-roles.spec.ts",
+          "line": 182,
+          "column": 3
+        },
+        {
+          "title": "P01 P03 P04 cmp_query_all 首次改密 角色范围与首页入口",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 24323,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T06:00:52.618Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3ec7db71f1c071200a91-529391d70e063810880b",
+          "file": "dashboard-roles.spec.ts",
+          "line": 182,
+          "column": 3
+        },
+        {
+          "title": "P01 P03 P04 cmp_query_factory 首次改密 角色范围与首页入口",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 24314,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T06:01:16.950Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3ec7db71f1c071200a91-7b6b10de94c5624624f6",
+          "file": "dashboard-roles.spec.ts",
+          "line": 182,
+          "column": 3
+        },
+        {
+          "title": "P04 首页三语文案与刷新保持",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13017,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T06:01:41.271Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3ec7db71f1c071200a91-9139c77a2b8876b27fbf",
+          "file": "dashboard-roles.spec.ts",
+          "line": 236,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "generation-quota.spec.ts",
+      "file": "generation-quota.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P07 ERP shrink and replacement preserve whole-bill quota and issued sources",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 23905,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T06:01:54.308Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "461cf6f08e19eb296587-647b566ee38a95bf1ef4",
+          "file": "generation-quota.spec.ts",
+          "line": 185,
+          "column": 1
+        },
+        {
+          "title": "P07 ERP returned order controls segments after the whole-bill offset",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 16968,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T06:02:18.221Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "461cf6f08e19eb296587-1fd3afc6ad15eacb070d",
+          "file": "generation-quota.spec.ts",
+          "line": 233,
+          "column": 1
+        },
+        {
+          "title": "P07 all 21 fractional lines remain visible and generate separate integer segments",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14013,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T06:02:35.194Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "461cf6f08e19eb296587-f15260fc0a28389a83d3",
+          "file": "generation-quota.spec.ts",
+          "line": 267,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-08T06:00:26.269Z",
+    "duration": 143442.5,
+    "expected": 8,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

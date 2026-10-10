@@ -1,0 +1,477 @@
+[
+  {
+    "path": "diagnostic-download-validation.json",
+    "bytes": 21349,
+    "sha256": "72f909b1103951ddb8cb9b1f6efd132d7219704709d2aba79e1fe95e04be19b6"
+  },
+  {
+    "path": "diagnostic-stale-vite.json",
+    "bytes": 21403,
+    "sha256": "5c7dcba85b0690f245174541f4a01c1f90d51a55df4d7523dee4b6b93e621d94"
+  },
+  {
+    "path": "docs-check.log",
+    "bytes": 85,
+    "sha256": "1e8000e2877aefcbd8bb710c7d00250ec7a75712678150eab71d5d188bca37ad"
+  },
+  {
+    "path": "file-comparison.json",
+    "bytes": 3386,
+    "sha256": "b8ee60bfb08336e1b48a4c223b98c81fb0babc598af71faf93834a3b5c738e0e"
+  },
+  {
+    "path": "final-state.json",
+    "bytes": 2590,
+    "sha256": "34771b19cc9f2c43ad549b12e241466ff1edfbacd6f9299519af261130b99ab7"
+  },
+  {
+    "path": "format-check.log",
+    "bytes": 8004,
+    "sha256": "153127ceabe67055700a743617797f6e34655e852bd3715cf2b647e2f9699fb8"
+  },
+  {
+    "path": "summary.json",
+    "bytes": 11352,
+    "sha256": "d686142f037c496b230018aeec92e9164087d195d014160398db00189598352b"
+  },
+  {
+    "path": "ui/.last-run.json",
+    "bytes": 45,
+    "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "path": "ui/acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page-migration/baseline-preserved.json",
+    "bytes": 1921,
+    "sha256": "7e2eb79008cdca2ff81486cc4ca2719b3b50ccc847d41bf555818f2abc0d8165"
+  },
+  {
+    "path": "ui/acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page-migration/competing.xlsx",
+    "bytes": 3965,
+    "sha256": "97a12b85cb82e2a88ad2fc5f8da27f77cd840b16d3b000d1829a08ac05448eec"
+  },
+  {
+    "path": "ui/acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page-migration/partial-failure-continues.json",
+    "bytes": 957,
+    "sha256": "dcafb18275fb565fbe536a5cc2470a5f03ffdc922a418ead53e6929d591892ab"
+  },
+  {
+    "path": "ui/acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page-migration/partial-failure-continues.png",
+    "bytes": 90476,
+    "sha256": "027f49307a5add9b990f591c82c19c9f04ec4acd63df6bf63f121d9ae66c9321"
+  },
+  {
+    "path": "ui/acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page-migration/remaining.xlsx",
+    "bytes": 3965,
+    "sha256": "fdb94fa817a889d6ef42c561c3fd5a3e42f5fc455feb2759864a0d1a6e233236"
+  },
+  {
+    "path": "ui/acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page-prototype/baseline-preserved.json",
+    "bytes": 1371,
+    "sha256": "bb4775757f0000d712f514805da6cb8f799150f8554ff46fad340f29224fca91"
+  },
+  {
+    "path": "ui/acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page-prototype/competing.xlsx",
+    "bytes": 5278,
+    "sha256": "822e5f481cc2d14e3ba656dcf1ea2be7851208ae5955c36fbaec05f7b8d09239"
+  },
+  {
+    "path": "ui/acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page-prototype/partial-failure-continues.json",
+    "bytes": 957,
+    "sha256": "dcafb18275fb565fbe536a5cc2470a5f03ffdc922a418ead53e6929d591892ab"
+  },
+  {
+    "path": "ui/acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page-prototype/partial-failure-continues.png",
+    "bytes": 93883,
+    "sha256": "666c59c57c8cd051078cacb11f570b5776cb76215c5403209c53d70c0e523acb"
+  },
+  {
+    "path": "ui/acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page-prototype/remaining.xlsx",
+    "bytes": 5277,
+    "sha256": "d2f3108c0759908985c97a188717f029c1da34744fd19f670c73afe03fa4cdb1"
+  },
+  {
+    "path": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-migration/baseline-preserved.json",
+    "bytes": 1921,
+    "sha256": "7e2eb79008cdca2ff81486cc4ca2719b3b50ccc847d41bf555818f2abc0d8165"
+  },
+  {
+    "path": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-migration/cmp_operator.json",
+    "bytes": 731,
+    "sha256": "2444f3ecde48c9dae1109e1473f306805529edbae49f57667907a27317266a4e"
+  },
+  {
+    "path": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-migration/cmp_operator.png",
+    "bytes": 100225,
+    "sha256": "099d9d6b0e7e6924e971ed977d9f94393ed750b81ccf0859e6a3cc86b22af00b"
+  },
+  {
+    "path": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-migration/cmp_query_all.json",
+    "bytes": 731,
+    "sha256": "2444f3ecde48c9dae1109e1473f306805529edbae49f57667907a27317266a4e"
+  },
+  {
+    "path": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-migration/cmp_query_all.png",
+    "bytes": 95197,
+    "sha256": "36a04496d1b38b84555b1b2acb6184cb41243c131f270cec4e2977c6caf1e0ef"
+  },
+  {
+    "path": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-migration/cmp_query_factory.json",
+    "bytes": 731,
+    "sha256": "2444f3ecde48c9dae1109e1473f306805529edbae49f57667907a27317266a4e"
+  },
+  {
+    "path": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-migration/cmp_query_factory.png",
+    "bytes": 92741,
+    "sha256": "89c209763be50106fabd2e6f7211d8cd053e521cdf2ad9447f51a241d3cbc4d0"
+  },
+  {
+    "path": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-prototype/baseline-preserved.json",
+    "bytes": 1371,
+    "sha256": "bb4775757f0000d712f514805da6cb8f799150f8554ff46fad340f29224fca91"
+  },
+  {
+    "path": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-prototype/cmp_operator.json",
+    "bytes": 731,
+    "sha256": "2444f3ecde48c9dae1109e1473f306805529edbae49f57667907a27317266a4e"
+  },
+  {
+    "path": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-prototype/cmp_operator.png",
+    "bytes": 96700,
+    "sha256": "e2bc5de0d1f6599efc502645da69b1f6155ee0a8875fd5a605818236198958bd"
+  },
+  {
+    "path": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-prototype/cmp_query_all.json",
+    "bytes": 731,
+    "sha256": "2444f3ecde48c9dae1109e1473f306805529edbae49f57667907a27317266a4e"
+  },
+  {
+    "path": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-prototype/cmp_query_all.png",
+    "bytes": 94498,
+    "sha256": "36dee921f98d64e008be9226a061ce50fcde0d77df9a81c24f8244af2f186067"
+  },
+  {
+    "path": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-prototype/cmp_query_factory.json",
+    "bytes": 731,
+    "sha256": "2444f3ecde48c9dae1109e1473f306805529edbae49f57667907a27317266a4e"
+  },
+  {
+    "path": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-prototype/cmp_query_factory.png",
+    "bytes": 92045,
+    "sha256": "e19782469c6f92ab1023c34a5ff06c661b4786b4327f58376bdc5169d1113f2d"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/01-steps.json",
+    "bytes": 731,
+    "sha256": "2444f3ecde48c9dae1109e1473f306805529edbae49f57667907a27317266a4e"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/01-steps.png",
+    "bytes": 118258,
+    "sha256": "3d5cf0c4d7f1e33e27922d25b93568d05cd6671d13cdb9d831c7306383344df9"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/02-take-confirm.json",
+    "bytes": 731,
+    "sha256": "2444f3ecde48c9dae1109e1473f306805529edbae49f57667907a27317266a4e"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/02-take-confirm.png",
+    "bytes": 114278,
+    "sha256": "e1a5f12160028fa00cc87ef2f6fd01535d6c0818553095ee7e0f0ef8b37f7c33"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/03-focused-material.json",
+    "bytes": 731,
+    "sha256": "2444f3ecde48c9dae1109e1473f306805529edbae49f57667907a27317266a4e"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/03-focused-material.png",
+    "bytes": 102531,
+    "sha256": "242b3e848faec11fb69ea393013ca26e6cfbb48bd1bb95a766b822b356c8d144"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/04-batch-number-and-operator.json",
+    "bytes": 785,
+    "sha256": "349d9ffe1018a93a24bd299223d92bfd0a29bad9cab1db8f26e9038015de8dea"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/04-batch-number-and-operator.png",
+    "bytes": 106508,
+    "sha256": "fbbb1fcb2c341fe5eba8f429d6e5d5491453c7f1ef36eb24aa2c90bff37e1e0d"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/04-taken.json",
+    "bytes": 785,
+    "sha256": "349d9ffe1018a93a24bd299223d92bfd0a29bad9cab1db8f26e9038015de8dea"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/04-taken.png",
+    "bytes": 102779,
+    "sha256": "49847ec9db60c63565d80b5a05e2ff31b0f65ed7abc64f24662d2a41821d2f68"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/05-print-confirm.json",
+    "bytes": 785,
+    "sha256": "349d9ffe1018a93a24bd299223d92bfd0a29bad9cab1db8f26e9038015de8dea"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/05-print-confirm.png",
+    "bytes": 109743,
+    "sha256": "82565835d01c21a69d6cba65e31a661ae8759efaa2382bd7dda44e12eb6a37bf"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/06-print-history.json",
+    "bytes": 842,
+    "sha256": "acd8dfb3d50a4049f3fb0136c84461df8f3c71568bf29b532b95cc2c272c6e1a"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/06-print-history.png",
+    "bytes": 95262,
+    "sha256": "eec3d32311f425fe4eff6a958c0c4634dc605375c97c3e5c5ada63a622d9d43f"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/baseline-preserved.json",
+    "bytes": 1921,
+    "sha256": "7e2eb79008cdca2ff81486cc4ca2719b3b50ccc847d41bf555818f2abc0d8165"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/file-identities.json",
+    "bytes": 180,
+    "sha256": "0f5dc7e2a3c3e891290cad802fb7c84e2856954a2e58754b926030a1d23b997c"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/single-again.xlsx",
+    "bytes": 3965,
+    "sha256": "99b12b0d1831ce6eb1273de0f41cee8f1103a8dd27888943a62ab8f261206ee3"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/single.csv",
+    "bytes": 472,
+    "sha256": "3d9a9faeeae8d5d2ec2a93b417d654c5f9c96a0e3fd5a7feb2097865b1d1ffc8"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/single.xlsx",
+    "bytes": 3965,
+    "sha256": "99b12b0d1831ce6eb1273de0f41cee8f1103a8dd27888943a62ab8f261206ee3"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/01-steps.json",
+    "bytes": 731,
+    "sha256": "2444f3ecde48c9dae1109e1473f306805529edbae49f57667907a27317266a4e"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/01-steps.png",
+    "bytes": 120235,
+    "sha256": "668b530ada8ae911c9b38386a2442c319e5d9f0ee4f7c24abe88bd1c652aa102"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/02-take-confirm.json",
+    "bytes": 731,
+    "sha256": "2444f3ecde48c9dae1109e1473f306805529edbae49f57667907a27317266a4e"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/02-take-confirm.png",
+    "bytes": 113670,
+    "sha256": "01e40ccc96e9c87bbaa8a582db387424e84fe88521ff35c89bd4c916b4bbb671"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/03-focused-material.json",
+    "bytes": 731,
+    "sha256": "2444f3ecde48c9dae1109e1473f306805529edbae49f57667907a27317266a4e"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/03-focused-material.png",
+    "bytes": 103077,
+    "sha256": "816d386794366539b519678ea40bf36d9fe394426a26357e945b896bdc763b48"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/04-batch-number-and-operator.json",
+    "bytes": 785,
+    "sha256": "349d9ffe1018a93a24bd299223d92bfd0a29bad9cab1db8f26e9038015de8dea"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/04-batch-number-and-operator.png",
+    "bytes": 102681,
+    "sha256": "e4d7fb87520ab4cfb39a6765b2140470740adc1b9afc14f637e2785ae6f274ef"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/04-taken.json",
+    "bytes": 785,
+    "sha256": "349d9ffe1018a93a24bd299223d92bfd0a29bad9cab1db8f26e9038015de8dea"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/04-taken.png",
+    "bytes": 101668,
+    "sha256": "ae561206761fa85bc1a50ad355063a8959971cea44858f1a6a82f334e59f52e4"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/05-print-confirm.json",
+    "bytes": 785,
+    "sha256": "349d9ffe1018a93a24bd299223d92bfd0a29bad9cab1db8f26e9038015de8dea"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/05-print-confirm.png",
+    "bytes": 104928,
+    "sha256": "46ee9525fd6eefb4903f91d23cd4cbbb620b8fb31b3c05ca66aa5ceb26dee510"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/06-print-history.json",
+    "bytes": 842,
+    "sha256": "acd8dfb3d50a4049f3fb0136c84461df8f3c71568bf29b532b95cc2c272c6e1a"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/06-print-history.png",
+    "bytes": 93354,
+    "sha256": "198a587db8c974453588dbd1692e1938bfc0fdbaa9d03f26957c557ef68db842"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/baseline-preserved.json",
+    "bytes": 1371,
+    "sha256": "bb4775757f0000d712f514805da6cb8f799150f8554ff46fad340f29224fca91"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/file-identities.json",
+    "bytes": 180,
+    "sha256": "d48d2f98a746ed264126b4ed6e30fd90efc7fb4da478007280b404f43a30ace5"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/single-again.xlsx",
+    "bytes": 5275,
+    "sha256": "faccc4e517ed120aadd4b2699735cf4f079c6b9bdebdcce8de7fae6592055d3c"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/single.csv",
+    "bytes": 472,
+    "sha256": "184d625e9a913d0e3f4a2bf85a3914c6c587cdaed78d15bc8f105794acd5d7e5"
+  },
+  {
+    "path": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/single.xlsx",
+    "bytes": 5275,
+    "sha256": "96608c670060a551c8b1382cd76f7e0119573b0a16b8548474ddb37f4bb1fdaa"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/01-bulk-take-confirm.json",
+    "bytes": 731,
+    "sha256": "2444f3ecde48c9dae1109e1473f306805529edbae49f57667907a27317266a4e"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/01-bulk-take-confirm.png",
+    "bytes": 114689,
+    "sha256": "b555ccecddbf1b8cb792582d2cc010b3386600a036edad6bc6a8be10ab29d883"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/02-bulk-selected.json",
+    "bytes": 841,
+    "sha256": "c180a64a1ebdd59bf999d2b32773e2283180368e0e82fe0e5a6158765498ef03"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/02-bulk-selected.png",
+    "bytes": 106585,
+    "sha256": "2ebbc4d6504e039807299f2720fe393d49c5c8cdc43956ee89dcd34aeda71cfe"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/03-bulk-batches.json",
+    "bytes": 957,
+    "sha256": "dcafb18275fb565fbe536a5cc2470a5f03ffdc922a418ead53e6929d591892ab"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/03-bulk-batches.png",
+    "bytes": 112766,
+    "sha256": "4425c9e0fd6174f479b9bf82d123d65e0cad1be29ec8c207b4b38ba7cbb9d593"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/04-bulk-prints.json",
+    "bytes": 957,
+    "sha256": "dcafb18275fb565fbe536a5cc2470a5f03ffdc922a418ead53e6929d591892ab"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/04-bulk-prints.png",
+    "bytes": 106266,
+    "sha256": "206ff73ecec5c7e609b8ba444810de28c9a7586d7010836d8350702795346781"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/baseline-preserved.json",
+    "bytes": 1921,
+    "sha256": "7e2eb79008cdca2ff81486cc4ca2719b3b50ccc847d41bf555818f2abc0d8165"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/bulk-1.xlsx",
+    "bytes": 3966,
+    "sha256": "f6e05388cae37ab477b05a733abc6bad3297ecf9dfb5c791dc647892add80836"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/bulk-2.xlsx",
+    "bytes": 3966,
+    "sha256": "63c21eb5d1a0a71b05cc29c2ea146510ac7b660becd922112cd91526a41542cb"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/01-bulk-take-confirm.json",
+    "bytes": 731,
+    "sha256": "2444f3ecde48c9dae1109e1473f306805529edbae49f57667907a27317266a4e"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/01-bulk-take-confirm.png",
+    "bytes": 112706,
+    "sha256": "33833d67f75f013d5dfe769700d933f7d8b6a8402e8669f1ca5d22394cfc0e56"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/02-bulk-selected.json",
+    "bytes": 841,
+    "sha256": "c180a64a1ebdd59bf999d2b32773e2283180368e0e82fe0e5a6158765498ef03"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/02-bulk-selected.png",
+    "bytes": 105219,
+    "sha256": "c6fa53755a3e397a2e62b6d13e4389b9da79690bf6f9405a9b6175662472e738"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/03-bulk-batches.json",
+    "bytes": 957,
+    "sha256": "dcafb18275fb565fbe536a5cc2470a5f03ffdc922a418ead53e6929d591892ab"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/03-bulk-batches.png",
+    "bytes": 112143,
+    "sha256": "89c085d749cb528141df0f9b713a569a82dca5be9ba9fd027ff6a45e70b06236"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/04-bulk-prints.json",
+    "bytes": 957,
+    "sha256": "dcafb18275fb565fbe536a5cc2470a5f03ffdc922a418ead53e6929d591892ab"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/04-bulk-prints.png",
+    "bytes": 103806,
+    "sha256": "c29e18ee9861699afa2f81c7fd95a65076973a30aefabcb528d6c792689bbc67"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/baseline-preserved.json",
+    "bytes": 1371,
+    "sha256": "bb4775757f0000d712f514805da6cb8f799150f8554ff46fad340f29224fca91"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/bulk-1.xlsx",
+    "bytes": 5278,
+    "sha256": "881ea6033f14325ea6e08e75146ebf0a7e4f5dcfd3783b4df6a682e073d6a2ca"
+  },
+  {
+    "path": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/bulk-2.xlsx",
+    "bytes": 5278,
+    "sha256": "e67e5c380812af60205effc7cb75144478bcfc6ffec34d754027f5341bb63e79"
+  },
+  {
+    "path": "ui-results.json",
+    "bytes": 11463,
+    "sha256": "0759e9a7c4cd9092c172903943cc5c0af9a6a94a049939bd949129546eb84040"
+  },
+  {
+    "path": "ui-run.log",
+    "bytes": 1650,
+    "sha256": "16f30de798387d7119f84e14ed775beda63d9ec6a309327baa19b361b010374c"
+  },
+  {
+    "path": "unit-results.json",
+    "bytes": 25156,
+    "sha256": "dc7aa2196336b03513b2ac29d28f7b257e962ce79180ce8a03f97d910407d646"
+  }
+]

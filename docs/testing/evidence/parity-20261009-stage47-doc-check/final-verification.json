@@ -1,0 +1,11 @@
+{
+  "mainFrozenFiles": 406,
+  "currentSourceFiles": 22,
+  "sourceHashesMatch": true,
+  "mainServicesReady": true,
+  "temporaryServicesStopped": true,
+  "frozenSqlOldVersions": 40,
+  "currentSchema": 41,
+  "goal": "active",
+  "lintLog": "\n> adtek-platform-sn-web@0.1.0 lint D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\n> eslint . --max-warnings 0\n\n"
+}

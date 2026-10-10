@@ -1,0 +1,10 @@
+{
+  "code": 1003000004,
+  "message": "framework.forbidden",
+  "data": null,
+  "params": {
+    "reason": "QUERY_PI_NOT_OWNED",
+    "pi": "CMP-UI-QUERY-SCOPE-PI-B"
+  },
+  "traceId": "76a7c30d-343b-4c61-84a7-156bd8e2766c"
+}

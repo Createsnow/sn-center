@@ -4,7 +4,6 @@ import static com.adtek.sn.constant.ErrorCodeConstants.*;
 
 import com.adtek.common.core.*;
 import com.adtek.framework.audit.ManagementAuditPort;
-import com.adtek.framework.security.AuthorizationMutationPort;
 import com.adtek.sn.convert.SnConvert;
 import com.adtek.sn.domain.*;
 import com.adtek.sn.mapper.*;
@@ -24,7 +23,7 @@ import java.util.*;
 @Service
 public class OrderPublishServiceImpl implements OrderPublishService {
     private final SnPolicy policy;
-    private final AuthorizationMutationPort authorization;
+    private final OrderPublicationGuard publicationGuard;
     private final SnControlMapper control;
     private final OrderSyncMapper attempts;
     private final OrderBillMapper bills;
@@ -32,14 +31,13 @@ public class OrderPublishServiceImpl implements OrderPublishService {
     private final SourceQuotaMapper quotas;
     private final OrganizationMappingMapper mappings;
     private final FactoryMapper factories;
-    private final FactoryPublishService factoryPublisher;
     private final ManagementAuditPort audit;
     private final SnConvert convert;
     private final OrderScheduleMapper schedules;
 
     public OrderPublishServiceImpl(
             SnPolicy policy,
-            AuthorizationMutationPort authorization,
+            OrderPublicationGuard publicationGuard,
             SnControlMapper control,
             OrderSyncMapper attempts,
             OrderBillMapper bills,
@@ -47,12 +45,11 @@ public class OrderPublishServiceImpl implements OrderPublishService {
             SourceQuotaMapper quotas,
             OrganizationMappingMapper mappings,
             FactoryMapper factories,
-            FactoryPublishService factoryPublisher,
             ManagementAuditPort audit,
             SnConvert convert,
             OrderScheduleMapper schedules) {
         this.policy = policy;
-        this.authorization = authorization;
+        this.publicationGuard = publicationGuard;
         this.control = control;
         this.attempts = attempts;
         this.bills = bills;
@@ -60,7 +57,6 @@ public class OrderPublishServiceImpl implements OrderPublishService {
         this.quotas = quotas;
         this.mappings = mappings;
         this.factories = factories;
-        this.factoryPublisher = factoryPublisher;
         this.audit = audit;
         this.convert = convert;
         this.schedules = schedules;
@@ -92,36 +88,14 @@ public class OrderPublishServiceImpl implements OrderPublishService {
             timeout = 60,
             rollbackFor = Exception.class)
     public OrderSyncVO publish(
-            Actor requested,
-            String id,
-            Source source,
-            List<Row> rows,
-            List<Organization> organizations,
-            boolean orgFailed) {
-        var actor = policy.require(authorization.lockCurrent(requested), "sn:order:sync", true);
-        long previous = control.lock();
-        var attempt = attempts.selectById(id);
-        if (attempt == null
-                || attempt.getActorId() != actor.userId()
-                || !attempt.getState().equals("FETCHING")) throw SnPolicy.missing();
-        if (attempt.getBaseVersion() != previous) throw new BusinessException(SNAPSHOT_CHANGED);
-        if ("scheduled".equals(attempt.getMode())) {
-            var schedule = schedules.lock();
-            if (!schedule.enabled()
-                    || !id.equals(schedule.lastRunId())
-                    || !"FETCHING".equals(schedule.lastState())
-                    || schedule.leaseUntil() == null
-                    || !schedule.leaseUntil().isAfter(schedules.now())) {
-                throw new BusinessException(SYNC_EXECUTION_EXPIRED);
-            }
-        }
+            Actor requested, String id, Source source, List<Row> rows, boolean orgFailed) {
+        var locked = publicationGuard.lock(requested, id);
+        var actor = locked.actor();
+        long previous = locked.revision();
+        var attempt = locked.attempt();
         String billNo = attempt.getMode().equals("one") ? attempt.getBillNo() : null;
         var groups = OrderSnapshot.validate(rows, billNo);
         long version = previous + 1;
-        if (organizations != null) {
-            policy.require(actor, "sn:factory:sync", true);
-            factoryPublisher.withinOrderPublish(actor, source, organizations, version);
-        }
         var links = new HashMap<String, OrganizationMappingEntity>();
         for (var link : mappings.list(source.system(), source.account()))
             links.put(link.orgId(), link);
@@ -144,17 +118,23 @@ public class OrderPublishServiceImpl implements OrderPublishService {
             bill.setOrgCode(first.orgCode());
             bill.setOrgName(first.orgName());
             var link = links.get(first.orgId());
-            var factory = link == null ? null : factories.selectById(link.factoryId());
-            if (link != null && factory == null) throw new BusinessException(MAPPING_CONFLICT);
+            var factory =
+                    link != null && link.explicit()
+                            ? factories.selectById(link.factoryId())
+                            : factories.byName(first.orgName());
+            if (link != null && link.explicit() && factory == null)
+                throw new BusinessException(MAPPING_CONFLICT);
             bill.setFactoryId(factory == null ? null : factory.getId());
             bill.setFactoryCode(factory == null ? null : factory.getCode());
             bill.setActive(true);
             bill.setTotalQty(
                     group.stream()
-                            .map(Row::qty)
+                            .map(
+                                    row ->
+                                            java.math.BigDecimal.valueOf(
+                                                    PlannedQuantity.snCount(row.qty())))
                             .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add));
-            bill.setQuantityReady(
-                    group.stream().allMatch(row -> PlannedQuantity.integral(row.qty())));
+            bill.setQuantityReady(true);
             bill.setLineCount((long) group.size());
             bill.setStatuses(
                     String.join(",", group.stream().map(Row::status).distinct().sorted().toList()));
@@ -207,7 +187,7 @@ public class OrderPublishServiceImpl implements OrderPublishService {
 
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
-    public void failed(String id, int errorCode) {
+    public void failed(String id, int errorCode, String safeMessage) {
         // 与发布使用相同协调锁，失败回写不能根据旧FETCHING快照覆盖已提交SUCCESS。
         control.lock();
         var attempt = attempts.selectById(id);
@@ -216,7 +196,7 @@ public class OrderPublishServiceImpl implements OrderPublishService {
         attempt.setErrorCode(errorCode);
         attempt.setFinishedAt(Instant.now());
         attempts.updateById(attempt);
-        if ("scheduled".equals(attempt.getMode())) schedules.failed(id, errorCode);
+        if ("scheduled".equals(attempt.getMode())) schedules.failed(id, errorCode, safeMessage);
         try {
             audit.failure(
                     new ManagementAuditPort.Event(
@@ -225,7 +205,11 @@ public class OrderPublishServiceImpl implements OrderPublishService {
                             "sn:order:sync:failed",
                             "OTHER",
                             id,
-                            Map.of("errorCode", Integer.toString(errorCode)),
+                            Map.of(
+                                    "errorCode",
+                                    Integer.toString(errorCode),
+                                    "safeMessage",
+                                    safeMessage),
                             MDC.get("traceId")));
             com.adtek.framework.audit.RequestAuditState.failureCommitted();
         } catch (RuntimeException failure) {

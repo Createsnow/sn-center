@@ -1,0 +1,59 @@
+{
+  "stats": {
+    "expected": 8,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+  },
+  "cases": [
+    [
+      "1",
+      "prototype",
+      "P09 single take and print: cancel, focus, material filtering, automatic XLSX and stable reload",
+      "10.5s"
+    ],
+    [
+      "2",
+      "prototype",
+      "P09 bulk print continues when one selected PI was printed in another browser page",
+      "8.2s"
+    ],
+    [
+      "3",
+      "prototype",
+      "P09 factory cross-PI read-only and query-role controls preserve state",
+      "9.3s"
+    ],
+    [
+      "4",
+      "prototype",
+      "P09 two-PI bulk take and print: independent requests, per-PI files and focus history",
+      "9.0s"
+    ],
+    [
+      "5",
+      "migration",
+      "P09 single take and print: cancel, focus, material filtering, automatic XLSX and stable reload",
+      "23.3s"
+    ],
+    [
+      "6",
+      "migration",
+      "P09 bulk print continues when one selected PI was printed in another browser page",
+      "23.0s"
+    ],
+    [
+      "7",
+      "migration",
+      "P09 factory cross-PI read-only and query-role controls preserve state",
+      "36.4s"
+    ],
+    [
+      "8",
+      "migration",
+      "P09 two-PI bulk take and print: independent requests, per-PI files and focus history",
+      "29.6s"
+    ]
+  ],
+  "evidence": "Actual Playwright console log and .last-run.json. The shared reporter JSON was later overwritten by --list (138 skipped listing entries); it is not presented as this run report."
+}

@@ -1,0 +1,80 @@
+
+Running 2 tests using 1 worker
+
+(node:52316) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\order-revisit.spec.ts:10:1 › P05 revisit: another page updates orders and schedule before returning from home (44.5s)
+(node:37092) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [migration] › e2e\parity\order-revisit.spec.ts:10:1 › P05 revisit: another page updates orders and schedule before returning from home (41.3s)
+
+
+  1) [migration] › e2e\parity\order-revisit.spec.ts:10:1 › P05 revisit: another page updates orders and schedule before returning from home 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Array [
+    +   "3",
+        "4",
+    -   "5",
+      ]
+
+      168 |     await page.getByRole('button', { name: zh.orders.sched.settings, exact: true }).click();
+      169 |     const editor = await capture('schedule-after-return');
+    > 170 |     expect.soft(returned.values.slice(1)).toEqual(['4', '5']);
+          |                                           ^
+      171 |     expect.soft(editor.amount).toBe('2');
+      172 |     expect.soft(editor.unit?.trim()).toBe(zh.orders.sched.unit.hour);
+      173 |     expect(
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-revisit.spec.ts:170:43
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "2"
+    Received: "1"
+
+      169 |     const editor = await capture('schedule-after-return');
+      170 |     expect.soft(returned.values.slice(1)).toEqual(['4', '5']);
+    > 171 |     expect.soft(editor.amount).toBe('2');
+          |                                ^
+      172 |     expect.soft(editor.unit?.trim()).toBe(zh.orders.sched.unit.hour);
+      173 |     expect(
+      174 |       requests.some((r) => {
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-revisit.spec.ts:171:32
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "小时"
+    Received: "天"
+
+      170 |     expect.soft(returned.values.slice(1)).toEqual(['4', '5']);
+      171 |     expect.soft(editor.amount).toBe('2');
+    > 172 |     expect.soft(editor.unit?.trim()).toBe(zh.orders.sched.unit.hour);
+          |                                      ^
+      173 |     expect(
+      174 |       requests.some((r) => {
+      175 |         const value = r as { at: number; path: string };
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-revisit.spec.ts:172:38
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      176 |         return value.at >= returnedAt && value.path === prefix + '/meta';
+      177 |       }),
+    > 178 |     ).toBe(true);
+          |       ^
+      179 |     await page
+      180 |       .getByRole('dialog')
+      181 |       .getByRole('button', { name: zh.common.cancel, exact: true })
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-revisit.spec.ts:178:7
+
+    Error Context: test-results\stage53-revisit-before\order-revisit-P05-revisit--5fbeb--before-returning-from-home-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\order-revisit.spec.ts:10:1 › P05 revisit: another page updates orders and schedule before returning from home 
+  1 passed (1.5m)

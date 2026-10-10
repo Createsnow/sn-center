@@ -1,0 +1,48 @@
+
+Running 2 tests using 1 worker
+
+(node:41604) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\account-editor.spec.ts:64:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages (3.5m)
+(node:17004) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [migration] › e2e\parity\account-editor.spec.ts:64:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages (3.5m)
+
+
+  1) [prototype] › e2e\parity\account-editor.spec.ts:64:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages 
+
+    Test timeout of 210000ms exceeded.
+
+    Error: locator.isVisible: Target page, context or browser has been closed
+
+      221 |   } finally {
+      222 |     writeFileSync(info.outputPath('writes.json'), JSON.stringify(writes, null, 2));
+    > 223 |     if (await dialog.isVisible())
+          |                      ^
+      224 |       await dialog.locator(source(info) ? '.el-dialog__headerbtn' : '.ant-modal-close').click();
+      225 |     const language = page.locator(
+      226 |       source(info) ? '.header .lang' : '.prototype-language .ant-select',
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-editor.spec.ts:223:22
+
+    Error Context: test-results\stage40-editor1\account-editor-P13-account-41ce0--cancel-and-three-languages-prototype\error-context.md
+
+  2) [migration] › e2e\parity\account-editor.spec.ts:64:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages 
+
+    Test timeout of 210000ms exceeded.
+
+    Error: locator.isVisible: Target page, context or browser has been closed
+
+      221 |   } finally {
+      222 |     writeFileSync(info.outputPath('writes.json'), JSON.stringify(writes, null, 2));
+    > 223 |     if (await dialog.isVisible())
+          |                      ^
+      224 |       await dialog.locator(source(info) ? '.el-dialog__headerbtn' : '.ant-modal-close').click();
+      225 |     const language = page.locator(
+      226 |       source(info) ? '.header .lang' : '.prototype-language .ant-select',
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-editor.spec.ts:223:22
+
+    Error Context: test-results\stage40-editor1\account-editor-P13-account-41ce0--cancel-and-three-languages-migration\error-context.md
+
+  2 failed
+    [prototype] › e2e\parity\account-editor.spec.ts:64:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages 
+    [migration] › e2e\parity\account-editor.spec.ts:64:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages 

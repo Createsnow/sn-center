@@ -1,0 +1,31 @@
+
+> adtek-platform-sn-web@0.1.0 test D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> vitest run
+
+
+ RUN  v5.0.2 D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend
+
+ ✓ src/api/contract.test.ts (4 tests) 4ms
+ ✓ src/api/catalog.test.ts (3 tests) 7ms
+ ✓ src/i18n/errors.test.ts (2 tests) 17ms
+ ✓ src/features/sn/ruleErrorText.test.ts (3 tests) 8ms
+ ✓ src/features/sn/snInput.test.ts (4 tests) 5ms
+ ✓ src/features/sn/generationErrorText.test.ts (2 tests) 7ms
+ ✓ src/features/sn/syncErrorText.test.ts (2 tests) 5ms
+ ✓ src/api/configuration.test.ts (2 tests) 3ms
+ ✓ src/api/sn.test.ts (8 tests) 5ms
+ ✓ src/api/snQuery.test.ts (5 tests) 3ms
+ ✓ src/api/snWork.test.ts (4 tests) 3ms
+ ✓ src/api/audit.test.ts (2 tests) 3ms
+ ✓ src/api/snAcquire.test.ts (4 tests) 4ms
+ ✓ src/api/snAudit.test.ts (4 tests) 4ms
+ ✓ src/api/snTransfer.test.ts (4 tests) 3ms
+ ✓ src/api/tasks.test.ts (2 tests) 2ms
+ ✓ src/api/users.test.ts (2 tests) 3ms
+
+ Test Files  17 passed (17)
+      Tests  57 passed (57)
+   Start at  16:15:28
+   Duration  962ms (import 68%, transform 29%, tests 2%, worker 2%)
+
+JSON report written to D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/unit.json

@@ -1,0 +1,169 @@
+[
+  {
+    "route": "/api/users",
+    "status": 400,
+    "data": {
+      "code": "USER_EMP_NO_INVALID",
+      "message": "工号须为 2–32 位字母、数字、下划线或横线",
+      "params": {}
+    }
+  },
+  {
+    "route": "/api/users",
+    "status": 400,
+    "data": {
+      "code": "USER_NAME_REQUIRED",
+      "message": "姓名必填",
+      "params": {}
+    }
+  },
+  {
+    "route": "/api/users",
+    "status": 400,
+    "data": {
+      "code": "USER_FACTORY_REQUIRED",
+      "message": "厂区操作员必须绑定工厂",
+      "params": {}
+    }
+  },
+  {
+    "route": "/api/users",
+    "status": 400,
+    "data": {
+      "code": "USER_PASSWORD_WEAK",
+      "message": "密码须为 8–64 位，且同时包含字母和数字",
+      "params": {}
+    }
+  },
+  {
+    "route": "/api/users",
+    "status": 200,
+    "data": {
+      "id": 122,
+      "emp_no": "cmp_account40_operator",
+      "name": "表单测试成员",
+      "role": "factory_operator",
+      "factory_code": "CMP-A",
+      "factory_name": "比较测试甲厂",
+      "status": "ACTIVE",
+      "must_change_pwd": true,
+      "lang": null,
+      "last_login_at": null,
+      "created_at": "2026-10-09 12:18:31",
+      "created_by": "admin",
+      "disabled_at": null,
+      "disabled_by": null
+    }
+  },
+  {
+    "route": "/api/users",
+    "status": 409,
+    "data": {
+      "code": "USER_EMP_NO_EXISTS",
+      "message": "工号已存在：cmp_account40_operator",
+      "params": {
+        "emp_no": "cmp_account40_operator"
+      }
+    }
+  },
+  {
+    "route": "/api/users/122",
+    "status": 200,
+    "data": {
+      "id": 122,
+      "emp_no": "cmp_account40_operator",
+      "name": "表单测试成员",
+      "role": "query",
+      "factory_code": null,
+      "factory_name": null,
+      "status": "ACTIVE",
+      "must_change_pwd": true,
+      "lang": null,
+      "last_login_at": null,
+      "created_at": "2026-10-09 12:18:31",
+      "created_by": "admin",
+      "disabled_at": null,
+      "disabled_by": null
+    }
+  },
+  {
+    "route": "/api/users/122",
+    "status": 200,
+    "data": {
+      "id": 122,
+      "emp_no": "cmp_account40_operator",
+      "name": "表单测试成员",
+      "role": "admin",
+      "factory_code": null,
+      "factory_name": null,
+      "status": "ACTIVE",
+      "must_change_pwd": true,
+      "lang": null,
+      "last_login_at": null,
+      "created_at": "2026-10-09 12:18:31",
+      "created_by": "admin",
+      "disabled_at": null,
+      "disabled_by": null
+    }
+  },
+  {
+    "route": "/api/users/122",
+    "status": 200,
+    "data": {
+      "id": 122,
+      "emp_no": "cmp_account40_operator",
+      "name": "表单测试成员",
+      "role": "factory_operator",
+      "factory_code": "CMP-A",
+      "factory_name": "比较测试甲厂",
+      "status": "ACTIVE",
+      "must_change_pwd": true,
+      "lang": null,
+      "last_login_at": null,
+      "created_at": "2026-10-09 12:18:31",
+      "created_by": "admin",
+      "disabled_at": null,
+      "disabled_by": null
+    }
+  },
+  {
+    "route": "/api/users",
+    "status": 200,
+    "data": {
+      "id": 123,
+      "emp_no": "cmp_account40_query",
+      "name": "表单query",
+      "role": "query",
+      "factory_code": null,
+      "factory_name": null,
+      "status": "ACTIVE",
+      "must_change_pwd": true,
+      "lang": null,
+      "last_login_at": null,
+      "created_at": "2026-10-09 12:18:39",
+      "created_by": "admin",
+      "disabled_at": null,
+      "disabled_by": null
+    }
+  },
+  {
+    "route": "/api/users",
+    "status": 200,
+    "data": {
+      "id": 124,
+      "emp_no": "cmp_account40_admin",
+      "name": "表单admin",
+      "role": "admin",
+      "factory_code": null,
+      "factory_name": null,
+      "status": "ACTIVE",
+      "must_change_pwd": true,
+      "lang": null,
+      "last_login_at": null,
+      "created_at": "2026-10-09 12:18:40",
+      "created_by": "admin",
+      "disabled_at": null,
+      "disabled_by": null
+    }
+  }
+]

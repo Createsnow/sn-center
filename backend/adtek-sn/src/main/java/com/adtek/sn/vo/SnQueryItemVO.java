@@ -27,7 +27,8 @@ package com.adtek.sn.vo;
             "currentTransferId",
             "createdAt",
             "acquiredAt",
-            "printedAt"
+            "printedAt",
+            "currentBatchNo"
         })
 public record SnQueryItemVO(
         String genMonth,
@@ -55,4 +56,5 @@ public record SnQueryItemVO(
         @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String currentTransferId,
         java.time.Instant createdAt,
         @io.swagger.v3.oas.annotations.media.Schema(nullable = true) java.time.Instant acquiredAt,
-        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) java.time.Instant printedAt) {}
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) java.time.Instant printedAt,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String currentBatchNo) {}

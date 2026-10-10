@@ -1,0 +1,124 @@
+Listing tests:
+  [prototype] › dashboard-roles.spec.ts:91:1 › P04 管理员首页指标 近期订单进度 快捷入口和窄屏
+  [prototype] › dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_operator 首次改密 角色范围与首页入口
+  [prototype] › dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_query_all 首次改密 角色范围与首页入口
+  [prototype] › dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_query_factory 首次改密 角色范围与首页入口
+  [prototype] › dashboard-roles.spec.ts:236:1 › P04 首页三语文案与刷新保持
+  [prototype] › generation-identity.spec.ts:215:3 › P07 ERP changed PI retains first identity with separate sequence ranges
+  [prototype] › generation-identity.spec.ts:215:3 › P07 ERP changed PI retains first identity with overlapping sequence ranges
+  [prototype] › generation-identity.spec.ts:307:1 › P07 departed generated bill remains historical while unused departed bill disappears and return restores totals
+  [prototype] › generation-identity.spec.ts:349:1 › P07 unmapped organization still shows its current PI summary without foreign organization rows
+  [prototype] › generation-picker.spec.ts:35:1 › P07 PI auto-selection, clearing filters, pending toggle and three-language layout
+  [prototype] › generation-quota.spec.ts:220:1 › P07 ERP shrink and replacement preserve whole-bill quota and issued sources
+  [prototype] › generation-quota.spec.ts:268:1 › P07 ERP returned order controls segments after the whole-bill offset
+  [prototype] › generation-quota.spec.ts:302:1 › P07 all 21 fractional lines remain visible and generate separate integer segments
+  [prototype] › generation-quota.spec.ts:374:1 › P07 quantity controls, cancelled confirmations and partial allocation preserve the exact remainder
+  [prototype] › generation-quota.spec.ts:512:1 › P07 resync keeps unchanged preview and adopts current source metadata
+  [prototype] › generation-quota.spec.ts:596:3 › P07 changed material name rejects retained preview without issuing and recovers
+  [prototype] › generation-quota.spec.ts:596:3 › P07 changed material code rejects retained preview without issuing and recovers
+  [prototype] › generation-quota.spec.ts:596:3 › P07 changed segment split rejects retained preview without issuing and recovers
+  [prototype] › generation-quota.spec.ts:596:3 › P07 changed line order rejects retained preview without issuing and recovers
+  [prototype] › generation-quota.spec.ts:684:1 › P07 expired preview is rejected before creating a job and repreview recovers
+  [prototype] › generation-quota.spec.ts:707:1 › P07 generation in another tab makes retained preview stale without adding a failed job
+  [prototype] › generation-quota.spec.ts:740:1 › P07 quota shrink after preview leaves a failed job with planned range and zero progress
+  [prototype] › generation-quota.spec.ts:778:1 › P07 changed ERP factory rejects old allocation then new generation permits mixed-source members
+  [prototype] › order-filters.spec.ts:80:1 › P05 搜索匹配分录汇总 完整明细 小数整数额度和客户精确筛选
+  [prototype] › order-filters.spec.ts:113:1 › P05 工厂筛选自动加载及清空 选单清理
+  [prototype] › order-filters.spec.ts:133:3 › P05 cmp_query_all 同步摘要 只读定时设置及订单范围
+  [prototype] › order-filters.spec.ts:133:3 › P05 cmp_query_factory 同步摘要 只读定时设置及订单范围
+  [prototype] › order-filters.spec.ts:160:1 › P05 分页换页每页数量回首页 清除选择与单据倒序
+  [prototype] › order-filters.spec.ts:221:1 › P05 定时最小最大值 分钟换算 开关 更新人 保存取消
+  [prototype] › order-sync.spec.ts:178:1 › P05 全量查询失败 单据HTTP失败 登录失败 提示关闭及恢复
+  [prototype] › order-sync.spec.ts:210:1 › P05 全量空快照 清空摘要和选单 恢复原订单
+  [prototype] › order-sync.spec.ts:233:1 › P05 真实定时worker 成功 失败 恢复 执行中保留上一轮结果
+  [prototype] › pi-initialization.spec.ts:103:1 › P08 rejects a 65 character SN with its line in three languages and accepts the corrected 64 character value
+  [prototype] › pi-initialization.spec.ts:129:1 › P08 rejects a start beyond rule capacity in three languages and permits a corrected initialization
+  [prototype] › pi-initialization.spec.ts:148:1 › P08 stale page rejects an already initialized PI and can query the original successful history
+  [prototype] › pi-initialization.spec.ts:388:1 › P08 query retains displayed PI until lookup, three languages and reload resets form
+  [prototype] › pi-initialization.spec.ts:452:1 › P08 pure start validates integers and duplicates, cancellation is read only, initialization locks once
+  [prototype] › pi-initialization.spec.ts:501:1 › P08 mixed history preserves zero and undecodable SN, start dominates decoded maximum and snapshot customer applies
+  [prototype] › pi-initialization.spec.ts:534:1 › P08 CSV keeps literal quotes and filename after textarea editing without a decoding rule
+  [prototype] › pi-initialization.spec.ts:575:1 › P08 import only takes decoded maximum and keeps optional metadata for the next PI
+  [prototype] › pi-initialization.spec.ts:615:1 › P08 previously generated PI stays locked without fabricated initialization history
+  [prototype] › pi-initialization.spec.ts:642:3 › P08 committed initialization survives failed history reading and manual query without another submission
+  [prototype] › pi-initialization.spec.ts:642:3 › P08 committed initialization survives failed status reading and manual query without another submission
+  [prototype] › pi-initialization.spec.ts:708:3 › P08 committed initialization with a lost response recovers by query without another submission
+  [prototype] › pi-initialization.spec.ts:708:3 › P08 committed initialization with a lost response recovers by reload without another submission
+  [prototype] › pi-initialization.spec.ts:764:1 › P08 request lost before delivery can be confirmed again with the same original payload
+  [prototype] › pi-initialization.spec.ts:805:1 › P08 failed lookup preserves the displayed PI and edited form until a successful query
+  [prototype] › rules.spec.ts:98:1 › P06 baseline filters, used editing and version identity
+  [prototype] › rules.spec.ts:130:1 › P06 preview bases, Unicode and inline validation recovery
+  [prototype] › rules.spec.ts:170:1 › P06 create scopes, duplicate errors and unused version updates
+  [prototype] › rules.spec.ts:242:1 › P06 three languages and narrow rule dialog
+  [prototype] › rules.spec.ts:296:1 › P06 complete catalog beyond 100 rows and literal wildcard filters
+  [prototype] › rules.spec.ts:336:1 › P06 used rule rename keeps v1 and encoding change creates immutable history
+  [prototype] › shell-orders.spec.ts:55:1 › P02 登录三语文案与移动布局
+  [prototype] › shell-orders.spec.ts:88:1 › P01 菜单分组顺序 收起展开 用户菜单与退出
+  [prototype] › shell-orders.spec.ts:144:1 › P03 修改密码打开 校验和取消
+  [prototype] › shell-orders.spec.ts:158:1 › P05 全量与按单同步 搜索清空 订单分录和生成入口
+  [prototype] › shell-orders.spec.ts:189:1 › P05 定时弹窗 换算 保存和取消
+  [prototype] › shell-orders.spec.ts:218:1 › P01 三语导航 用户偏好刷新持久化 窄屏收起与展开
+  [prototype] › shell-orders.spec.ts:253:1 › P02 首次访问跟随浏览器语言
+  [prototype] › shell-orders.spec.ts:273:1 › P05 超过一页的分录连续展示 按单据删除过期快照
+  [migration] › dashboard-roles.spec.ts:91:1 › P04 管理员首页指标 近期订单进度 快捷入口和窄屏
+  [migration] › dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_operator 首次改密 角色范围与首页入口
+  [migration] › dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_query_all 首次改密 角色范围与首页入口
+  [migration] › dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_query_factory 首次改密 角色范围与首页入口
+  [migration] › dashboard-roles.spec.ts:236:1 › P04 首页三语文案与刷新保持
+  [migration] › generation-identity.spec.ts:215:3 › P07 ERP changed PI retains first identity with separate sequence ranges
+  [migration] › generation-identity.spec.ts:215:3 › P07 ERP changed PI retains first identity with overlapping sequence ranges
+  [migration] › generation-identity.spec.ts:307:1 › P07 departed generated bill remains historical while unused departed bill disappears and return restores totals
+  [migration] › generation-identity.spec.ts:349:1 › P07 unmapped organization still shows its current PI summary without foreign organization rows
+  [migration] › generation-picker.spec.ts:35:1 › P07 PI auto-selection, clearing filters, pending toggle and three-language layout
+  [migration] › generation-quota.spec.ts:220:1 › P07 ERP shrink and replacement preserve whole-bill quota and issued sources
+  [migration] › generation-quota.spec.ts:268:1 › P07 ERP returned order controls segments after the whole-bill offset
+  [migration] › generation-quota.spec.ts:302:1 › P07 all 21 fractional lines remain visible and generate separate integer segments
+  [migration] › generation-quota.spec.ts:374:1 › P07 quantity controls, cancelled confirmations and partial allocation preserve the exact remainder
+  [migration] › generation-quota.spec.ts:512:1 › P07 resync keeps unchanged preview and adopts current source metadata
+  [migration] › generation-quota.spec.ts:596:3 › P07 changed material name rejects retained preview without issuing and recovers
+  [migration] › generation-quota.spec.ts:596:3 › P07 changed material code rejects retained preview without issuing and recovers
+  [migration] › generation-quota.spec.ts:596:3 › P07 changed segment split rejects retained preview without issuing and recovers
+  [migration] › generation-quota.spec.ts:596:3 › P07 changed line order rejects retained preview without issuing and recovers
+  [migration] › generation-quota.spec.ts:684:1 › P07 expired preview is rejected before creating a job and repreview recovers
+  [migration] › generation-quota.spec.ts:707:1 › P07 generation in another tab makes retained preview stale without adding a failed job
+  [migration] › generation-quota.spec.ts:740:1 › P07 quota shrink after preview leaves a failed job with planned range and zero progress
+  [migration] › generation-quota.spec.ts:778:1 › P07 changed ERP factory rejects old allocation then new generation permits mixed-source members
+  [migration] › order-filters.spec.ts:80:1 › P05 搜索匹配分录汇总 完整明细 小数整数额度和客户精确筛选
+  [migration] › order-filters.spec.ts:113:1 › P05 工厂筛选自动加载及清空 选单清理
+  [migration] › order-filters.spec.ts:133:3 › P05 cmp_query_all 同步摘要 只读定时设置及订单范围
+  [migration] › order-filters.spec.ts:133:3 › P05 cmp_query_factory 同步摘要 只读定时设置及订单范围
+  [migration] › order-filters.spec.ts:160:1 › P05 分页换页每页数量回首页 清除选择与单据倒序
+  [migration] › order-filters.spec.ts:221:1 › P05 定时最小最大值 分钟换算 开关 更新人 保存取消
+  [migration] › order-sync.spec.ts:178:1 › P05 全量查询失败 单据HTTP失败 登录失败 提示关闭及恢复
+  [migration] › order-sync.spec.ts:210:1 › P05 全量空快照 清空摘要和选单 恢复原订单
+  [migration] › order-sync.spec.ts:233:1 › P05 真实定时worker 成功 失败 恢复 执行中保留上一轮结果
+  [migration] › pi-initialization.spec.ts:103:1 › P08 rejects a 65 character SN with its line in three languages and accepts the corrected 64 character value
+  [migration] › pi-initialization.spec.ts:129:1 › P08 rejects a start beyond rule capacity in three languages and permits a corrected initialization
+  [migration] › pi-initialization.spec.ts:148:1 › P08 stale page rejects an already initialized PI and can query the original successful history
+  [migration] › pi-initialization.spec.ts:388:1 › P08 query retains displayed PI until lookup, three languages and reload resets form
+  [migration] › pi-initialization.spec.ts:452:1 › P08 pure start validates integers and duplicates, cancellation is read only, initialization locks once
+  [migration] › pi-initialization.spec.ts:501:1 › P08 mixed history preserves zero and undecodable SN, start dominates decoded maximum and snapshot customer applies
+  [migration] › pi-initialization.spec.ts:534:1 › P08 CSV keeps literal quotes and filename after textarea editing without a decoding rule
+  [migration] › pi-initialization.spec.ts:575:1 › P08 import only takes decoded maximum and keeps optional metadata for the next PI
+  [migration] › pi-initialization.spec.ts:615:1 › P08 previously generated PI stays locked without fabricated initialization history
+  [migration] › pi-initialization.spec.ts:642:3 › P08 committed initialization survives failed history reading and manual query without another submission
+  [migration] › pi-initialization.spec.ts:642:3 › P08 committed initialization survives failed status reading and manual query without another submission
+  [migration] › pi-initialization.spec.ts:708:3 › P08 committed initialization with a lost response recovers by query without another submission
+  [migration] › pi-initialization.spec.ts:708:3 › P08 committed initialization with a lost response recovers by reload without another submission
+  [migration] › pi-initialization.spec.ts:764:1 › P08 request lost before delivery can be confirmed again with the same original payload
+  [migration] › pi-initialization.spec.ts:805:1 › P08 failed lookup preserves the displayed PI and edited form until a successful query
+  [migration] › rules.spec.ts:98:1 › P06 baseline filters, used editing and version identity
+  [migration] › rules.spec.ts:130:1 › P06 preview bases, Unicode and inline validation recovery
+  [migration] › rules.spec.ts:170:1 › P06 create scopes, duplicate errors and unused version updates
+  [migration] › rules.spec.ts:242:1 › P06 three languages and narrow rule dialog
+  [migration] › rules.spec.ts:296:1 › P06 complete catalog beyond 100 rows and literal wildcard filters
+  [migration] › rules.spec.ts:336:1 › P06 used rule rename keeps v1 and encoding change creates immutable history
+  [migration] › shell-orders.spec.ts:55:1 › P02 登录三语文案与移动布局
+  [migration] › shell-orders.spec.ts:88:1 › P01 菜单分组顺序 收起展开 用户菜单与退出
+  [migration] › shell-orders.spec.ts:144:1 › P03 修改密码打开 校验和取消
+  [migration] › shell-orders.spec.ts:158:1 › P05 全量与按单同步 搜索清空 订单分录和生成入口
+  [migration] › shell-orders.spec.ts:189:1 › P05 定时弹窗 换算 保存和取消
+  [migration] › shell-orders.spec.ts:218:1 › P01 三语导航 用户偏好刷新持久化 窄屏收起与展开
+  [migration] › shell-orders.spec.ts:253:1 › P02 首次访问跟随浏览器语言
+  [migration] › shell-orders.spec.ts:273:1 › P05 超过一页的分录连续展示 按单据删除过期快照
+Total: 122 tests in 9 files

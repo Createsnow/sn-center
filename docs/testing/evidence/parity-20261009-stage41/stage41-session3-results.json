@@ -1,0 +1,234 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\node_modules\\.pnpm\\@playwright+test@1.63.0\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.parity.config.ts",
+      "account-session.spec.ts",
+      "--output=test-results/stage41-session3"
+    ],
+    "configFile": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\playwright.parity.config.ts",
+    "rootDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage41-session3",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "prototype",
+        "name": "prototype",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [
+          "**/query-recovery.spec.ts"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage41-session3",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "migration",
+        "name": "migration",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/parity/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "account-session.spec.ts",
+      "file": "account-session.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P13 account sessions: edit name, role, factory and self without another login",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 3932,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at capture (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-session.spec.ts:178:11)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-session.spec.ts:215:5",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-session.spec.ts",
+                      "column": 11,
+                      "line": 178
+                    },
+                    "snippet": "  176 |         expect(\n  177 |           queryRows.every((row) => row[6] === `比较测试${bound === 'A' ? '甲' : '乙'}厂`),\n> 178 |         ).toBe(true);\n      |           ^\n  179 |     }\n  180 |     snapshots.push({\n  181 |       queryRows,"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-session.spec.ts",
+                        "column": 11,
+                        "line": 178
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  176 |         expect(\n  177 |           queryRows.every((row) => row[6] === `比较测试${bound === 'A' ? '甲' : '乙'}厂`),\n> 178 |         ).toBe(true);\n      |           ^\n  179 |     }\n  180 |     snapshots.push({\n  181 |       queryRows,\n    at capture (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-session.spec.ts:178:11)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-session.spec.ts:215:5"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T04:14:51.823Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage41-session3\\account-session-P13-accoun-542a3--self-without-another-login-prototype\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-session.spec.ts",
+                    "column": 11,
+                    "line": 178
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "0eacca8da853c0c4e270-dab72ca93ef2657d643e",
+          "file": "account-session.spec.ts",
+          "line": 9,
+          "column": 1
+        },
+        {
+          "title": "P13 account sessions: edit name, role, factory and self without another login",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 11194,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at capture (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-session.spec.ts:178:11)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-session.spec.ts:215:5",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-session.spec.ts",
+                      "column": 11,
+                      "line": 178
+                    },
+                    "snippet": "  176 |         expect(\n  177 |           queryRows.every((row) => row[6] === `比较测试${bound === 'A' ? '甲' : '乙'}厂`),\n> 178 |         ).toBe(true);\n      |           ^\n  179 |     }\n  180 |     snapshots.push({\n  181 |       queryRows,"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-session.spec.ts",
+                        "column": 11,
+                        "line": 178
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  176 |         expect(\n  177 |           queryRows.every((row) => row[6] === `比较测试${bound === 'A' ? '甲' : '乙'}厂`),\n> 178 |         ).toBe(true);\n      |           ^\n  179 |     }\n  180 |     snapshots.push({\n  181 |       queryRows,\n    at capture (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-session.spec.ts:178:11)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-session.spec.ts:215:5"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T04:14:57.048Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage41-session3\\account-session-P13-accoun-542a3--self-without-another-login-migration\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-session.spec.ts",
+                    "column": 11,
+                    "line": 178
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "0eacca8da853c0c4e270-5fb7ffa2402b3da859ad",
+          "file": "account-session.spec.ts",
+          "line": 9,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-09T04:14:51.367Z",
+    "duration": 17945.227,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

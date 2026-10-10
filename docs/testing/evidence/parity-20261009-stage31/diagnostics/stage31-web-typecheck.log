@@ -1,0 +1,6 @@
+
+> adtek-platform-sn-web@0.1.0 typecheck D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> tsc --noEmit
+
+src/features/sn/pages/SnAuditPage.tsx(243,32): error TS2322: Type '"ArrowRight"' is not assignable to type '"Switch" | "Upload" | "Stamp" | "Odometer" | "Tickets" | "Finished" | "SetUp" | "Printer" | "Search" | "Notebook" | "User" | "OfficeBuilding" | "Fold" | "Expand" | "ArrowDown" | ... 5 more ... | "Download"'.
+ ELIFECYCLE  Command failed with exit code 2.

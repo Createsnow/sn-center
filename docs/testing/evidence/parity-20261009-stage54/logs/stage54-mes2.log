@@ -1,0 +1,13 @@
+
+Running 2 tests using 1 worker
+
+(node:50940) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ok 1 [prototype] › e2e\parity\business-loop.spec.ts:11:1 › P16 MES lifecycle with UI generation, callback state, transfer protection and audit (11.9s)
+(node:20564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ok 2 [migration] › e2e\parity\business-loop.spec.ts:11:1 › P16 MES lifecycle with UI generation, callback state, transfer protection and audit (22.8s)
+
+  2 passed (37.5s)

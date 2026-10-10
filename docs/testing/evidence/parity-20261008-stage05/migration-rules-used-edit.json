@@ -1,0 +1,128 @@
+[
+  {
+    "class": "ant-table ant-table-small css-var-_r_0_ ant-table-css-var css-dev-only-do-not-override-oc1rc0 ant-table-fix-start-shadow ant-table-fix-end-shadow ant-table-fix-end-shadow-show ant-table-fixed-column ant-table-scroll-horizontal ant-table-has-fix-end",
+    "rect": {
+      "x": 261,
+      "y": 229.59375,
+      "width": 1138,
+      "height": 155,
+      "top": 229.59375,
+      "right": 1399,
+      "bottom": 384.59375,
+      "left": 261
+    },
+    "font": "14px"
+  },
+  {
+    "class": "ant-modal css-dev-only-do-not-override-oc1rc0 sn-rule-modal",
+    "rect": {
+      "x": 400,
+      "y": 144,
+      "width": 640,
+      "height": 597,
+      "top": 144,
+      "right": 1040,
+      "bottom": 741,
+      "left": 400
+    },
+    "font": "14px"
+  },
+  {
+    "class": "ant-form-item css-var-_r_0_ ant-form-css-var css-dev-only-do-not-override-oc1rc0 ant-form-item-horizontal",
+    "rect": {
+      "x": 416,
+      "y": 252,
+      "width": 608,
+      "height": 32,
+      "top": 252,
+      "right": 1024,
+      "bottom": 284,
+      "left": 416
+    },
+    "font": "14px"
+  },
+  {
+    "class": "ant-form-item css-var-_r_0_ ant-form-css-var css-dev-only-do-not-override-oc1rc0 ant-form-item-horizontal",
+    "rect": {
+      "x": 416,
+      "y": 302,
+      "width": 608,
+      "height": 32,
+      "top": 302,
+      "right": 1024,
+      "bottom": 334,
+      "left": 416
+    },
+    "font": "14px"
+  },
+  {
+    "class": "ant-form-item css-var-_r_0_ ant-form-css-var css-dev-only-do-not-override-oc1rc0 ant-form-item-horizontal",
+    "rect": {
+      "x": 416,
+      "y": 352,
+      "width": 608,
+      "height": 32,
+      "top": 352,
+      "right": 1024,
+      "bottom": 384,
+      "left": 416
+    },
+    "font": "14px"
+  },
+  {
+    "class": "ant-form-item css-var-_r_0_ ant-form-css-var css-dev-only-do-not-override-oc1rc0 ant-form-item-horizontal",
+    "rect": {
+      "x": 416,
+      "y": 402,
+      "width": 608,
+      "height": 32,
+      "top": 402,
+      "right": 1024,
+      "bottom": 434,
+      "left": 416
+    },
+    "font": "14px"
+  },
+  {
+    "class": "ant-form-item css-var-_r_0_ ant-form-css-var css-dev-only-do-not-override-oc1rc0 ant-form-item-horizontal",
+    "rect": {
+      "x": 416,
+      "y": 452,
+      "width": 608,
+      "height": 33,
+      "top": 452,
+      "right": 1024,
+      "bottom": 485,
+      "left": 416
+    },
+    "font": "14px"
+  },
+  {
+    "class": "ant-form-item css-var-_r_0_ ant-form-css-var css-dev-only-do-not-override-oc1rc0 ant-form-item-horizontal",
+    "rect": {
+      "x": 416,
+      "y": 503,
+      "width": 608,
+      "height": 66,
+      "top": 503,
+      "right": 1024,
+      "bottom": 569,
+      "left": 416
+    },
+    "font": "14px"
+  },
+  {
+    "class": "ant-form-item css-var-_r_0_ ant-form-css-var css-dev-only-do-not-override-oc1rc0 ant-form-item-horizontal",
+    "rect": {
+      "x": 416,
+      "y": 587,
+      "width": 608,
+      "height": 74,
+      "top": 587,
+      "right": 1024,
+      "bottom": 661,
+      "left": 416
+    },
+    "font": "14px"
+  }
+]

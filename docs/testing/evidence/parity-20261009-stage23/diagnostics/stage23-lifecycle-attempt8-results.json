@@ -1,0 +1,207 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.parity.config.ts",
+      "transfer-lifecycle.spec.ts",
+      "--max-failures=1",
+      "--output=test-results/stage23-lifecycle-attempt8"
+    ],
+    "configFile": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\playwright.parity.config.ts",
+    "rootDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 1,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage23-lifecycle-attempt8",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "prototype",
+        "name": "prototype",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage23-lifecycle-attempt8",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "migration",
+        "name": "migration",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/parity/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "transfer-lifecycle.spec.ts",
+      "file": "transfer-lifecycle.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P10 applied transfers: withdraw, reject, approve and fixed 50-row detail pages",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 37321,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T19:05:19.145Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1c5f1e46c3aa73b2778d-443f9e854da5b3f9ae47",
+          "file": "transfer-lifecycle.spec.ts",
+          "line": 335,
+          "column": 1
+        },
+        {
+          "title": "P10 applied transfers: withdraw, reject, approve and fixed 50-row detail pages",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 58637,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"待领取\"\u001b[39m\nReceived: \u001b[31m\"申请中\"\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"待领取\"\u001b[39m\nReceived: \u001b[31m\"申请中\"\u001b[39m\n    at details (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-lifecycle.spec.ts:270:23)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-lifecycle.spec.ts:455:5",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-lifecycle.spec.ts",
+                      "column": 23,
+                      "line": 270
+                    },
+                    "snippet": "  268 |     all.map((r) => Array.from(r.querySelectorAll('td')).map((c) => c.textContent?.trim() ?? '')),\n  269 |   );\n> 270 |   expect(last[0]![4]).toBe(status);\n      |                       ^\n  271 |   expect(last[0]![6]).toBe(first[0]![6]);\n  272 |   writeFileSync(info.outputPath(name + '-raw-rows.json'), JSON.stringify({ first, last }));\n  273 |   await capture(page, info, name + '-page2');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-lifecycle.spec.ts",
+                        "column": 23,
+                        "line": 270
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"待领取\"\u001b[39m\nReceived: \u001b[31m\"申请中\"\u001b[39m\n\n  268 |     all.map((r) => Array.from(r.querySelectorAll('td')).map((c) => c.textContent?.trim() ?? '')),\n  269 |   );\n> 270 |   expect(last[0]![4]).toBe(status);\n      |                       ^\n  271 |   expect(last[0]![6]).toBe(first[0]![6]);\n  272 |   writeFileSync(info.outputPath(name + '-raw-rows.json'), JSON.stringify({ first, last }));\n  273 |   await capture(page, info, name + '-page2');\n    at details (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-lifecycle.spec.ts:270:23)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-lifecycle.spec.ts:455:5"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T19:05:57.768Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage23-lifecycle-attempt8\\transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-migration\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-lifecycle.spec.ts",
+                    "column": 23,
+                    "line": 270
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1c5f1e46c3aa73b2778d-c1270fd0c0891ac8a1fe",
+          "file": "transfer-lifecycle.spec.ts",
+          "line": 335,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "message": "\u001b[31mTesting stopped early after 1 maximum allowed failures.\u001b[39m"
+    }
+  ],
+  "stats": {
+    "startTime": "2026-10-08T19:05:18.677Z",
+    "duration": 98660.77,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

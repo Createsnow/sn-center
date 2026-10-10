@@ -1,0 +1,374 @@
+{
+  "stage": 23,
+  "goalComplete": false,
+  "schema": "V32",
+  "nextMigration": "V33",
+  "ui": {
+    "startTime": "2026-10-08T19:10:19.367Z",
+    "duration": 317113.113,
+    "expected": 8,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "workers": 1,
+  "retries": 0,
+  "registeredCases": 154,
+  "allCasesRerun": false,
+  "frontendUnitPassed": 71,
+  "backend": {
+    "unitPassed": 79,
+    "integrationPassed": 33
+  },
+  "screenshots": 107,
+  "businessPairs": [
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/01-original-detail-current.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/01-original-history-current.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/02-partial-detail-current.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/02-partial-history-current.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/03-at-b-history-current.json",
+      "rawEqual": false,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/03-reacquired-detail-current.json",
+      "rawEqual": false,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/03-reacquired-history-current.json",
+      "rawEqual": false,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/04-all-out-detail-current.json",
+      "rawEqual": false,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/04-all-out-history-current.json",
+      "rawEqual": false,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/05-returned-old-detail-current.json",
+      "rawEqual": false,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/05-returned-old-history-current.json",
+      "rawEqual": false,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/06-returned-b-detail-current.json",
+      "rawEqual": false,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/06-returned-b-history-current.json",
+      "rawEqual": false,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/07-returned-new-detail-current.json",
+      "rawEqual": false,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/07-returned-new-history-current.json",
+      "rawEqual": false,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/transfer-1-completed.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/transfer-2-completed.json",
+      "rawEqual": false,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/transfer-3-completed.json",
+      "rawEqual": false,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-form-P10-transfer-0512d--and-cancelled-confirmation-prototype/01-pi-candidates.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-form-P10-transfer-0512d--and-cancelled-confirmation-prototype/03-single-ready.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-form-P10-transfer-0512d--and-cancelled-confirmation-prototype/04-confirm-factory-name.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-form-P10-transfer-0512d--and-cancelled-confirmation-prototype/05-empty-narrow.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-form-P10-transfer-f0d8e-accounts-preserve-inventory-prototype/role-cmp_operator.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-form-P10-transfer-f0d8e-accounts-preserve-inventory-prototype/role-cmp_query_all.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-form-P10-transfer-f0d8e-accounts-preserve-inventory-prototype/role-cmp_query_factory.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/01-acquired.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/02-source-pending-page1.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/02-source-pending-page2.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/03-withdraw-confirm.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/04-withdrawn.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/05-reject-confirm.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/06-rejected.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/07-admin-pending-page1.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/07-admin-pending-page2.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/08-approve-confirm.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/09-approved-admin.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/10-admin-approved-page1.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/10-admin-approved-page2.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/11-source-approved-page1.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/11-source-approved-page2.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/12-filter-rejected.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/13-filter-empty.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/14-filter-approved.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/CMP_UI_TRANSFER_APPROVE-apply-confirm.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/CMP_UI_TRANSFER_APPROVE-pending.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/CMP_UI_TRANSFER_APPROVE-ready.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/CMP_UI_TRANSFER_REJECT-apply-confirm.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/CMP_UI_TRANSFER_REJECT-pending.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/CMP_UI_TRANSFER_REJECT-ready.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/CMP_UI_TRANSFER_WITHDRAW-apply-confirm.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/CMP_UI_TRANSFER_WITHDRAW-pending.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/CMP_UI_TRANSFER_WITHDRAW-ready.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    }
+  ],
+  "domRowPairs": [
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/01-original-detail-rows.json",
+      "normalization": null
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/02-partial-detail-rows.json",
+      "normalization": null
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/03-reacquired-detail-rows.json",
+      "normalization": null
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/04-all-out-detail-rows.json",
+      "normalization": null
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/05-returned-old-detail-rows.json",
+      "normalization": null
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/06-returned-b-detail-rows.json",
+      "normalization": null
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/07-returned-new-detail-rows.json",
+      "normalization": null
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/02-source-pending-raw-rows.json",
+      "normalization": "Only final from-batch-number column; each browser separately verifies all 51 rows use its original batch."
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/07-admin-pending-raw-rows.json",
+      "normalization": "Only final from-batch-number column; each browser separately verifies all 51 rows use its original batch."
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/10-admin-approved-raw-rows.json",
+      "normalization": "Only final from-batch-number column; each browser separately verifies all 51 rows use its original batch."
+    },
+    {
+      "file": "ui/transfer-lifecycle-P10-app-4c322-d-fixed-50-row-detail-pages-prototype/11-source-approved-raw-rows.json",
+      "normalization": "Only final from-batch-number column; each browser separately verifies all 51 rows use its original batch."
+    }
+  ],
+  "filePairs": 19,
+  "emptyFilePairs": 6,
+  "knownSourceDifferences": [
+    {
+      "file": "material-known-difference.json",
+      "source": "Empty material parameter is dropped; first material selection fails.",
+      "parityProven": false
+    }
+  ],
+  "fullTransferParityProven": false,
+  "sourceHashes": {
+    "backend/adtek-sn/src/main/java/com/adtek/sn/controller/TransferController.java": "3e504c5b45a3a282db021ad1cf45cc2a76a0aa1d0eb228848a8653a85ef25831",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/TransferService.java": "7e48d2efc4f1c452f0c2f8b942b8163b3e081db80e7a009d0a803fde17ad66ff",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/TransferServiceImpl.java": "5acff1814b7815bd7322e99a7e52edf5a360777339f1e9a0f81053a04ce01cf7",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnDataPermissionRules.java": "dfbce6927f034bae2818a1f4454acbb4510291a0b3a7b640573b6b56a6e51769",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/convert/TransferConvert.java": "0edba1a0621fa77fd603279ebd23154719d96c1f60f36c3c9a05a349ef22ca56",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/TransferMapper.java": "fb1ca6421d5ad0edd9353bfa74bae8dd5e9077826e96bd851878f8965e94e62b",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/domain/TransferDetailEntity.java": "8c4fae131bb42c49eb1f64bc2b1ba91d63d873b0043cfd79d270a6c1f8c8a6b1",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/vo/TransferDetailVO.java": "146500d49c9c093cee5bc091a87a3e4c8401763cf2ee76b373494d4857a5d51c",
+    "backend/adtek-server/src/main/resources/db/migration/V32__transfer_display_number_and_actor.sql": "0286bf4c449dd7f92701f18a61a4450454f7ce064acc0acb597d3a0a02bc0e54",
+    "backend/adtek-server/src/test/java/com/adtek/server/SnTransferIT.java": "f7498c72b62e9b8686afabc12d8c35591db7b6e3b9bf94b0e3efca79107ca35a",
+    "backend/adtek-server/target/adtek-server-acceptance.jar": "cdd15c2a2e8832207f07ba7233d093a6d0463263656a2d09463fef1ad7cefee0",
+    "frontend/src/features/sn/pages/TransferPage.tsx": "a0442c98eeae0e332e668612e4da06240342ee759312702ad1029e3a8b4df3bc",
+    "frontend/src/features/sn/components/TransferHistory.tsx": "4c946e4d58c65c59dd579cafe3403822994b396c705a7019c56b682845a5f10c",
+    "frontend/src/features/sn/transferJump.ts": "ca74f7e1ac9e2f3f0d50b178ee6a68175ca71e45c02865b3cae8e0d16a38e049",
+    "frontend/src/features/sn/transferJump.test.ts": "7c51edbb96ff739d4cb13757b2d606962e56eeebcc7ef173709eda3a5cf5382b",
+    "frontend/src/styles.css": "d07202d1babbc3ab8a7276f1899deb5c9b3db8955ee6a5817e6901a95ebed15d",
+    "frontend/src/api/snTransfer.ts": "a23a1bb779217bf63f4cc32b1c69f2c38f8152576bf10d1ebe1b889a4fa60995",
+    "frontend/src/api/snTransfer.test.ts": "af3541d5a5090ccb471e3b47cb4a90a24dcde2a105809d11940242dc969b1b62",
+    "frontend/openapi/adtek-sn.json": "566c74e82ddb5537b6f78202748be19aa109beadcfce683493156160c70c86f4",
+    "frontend/src/api/generated/schema.d.ts": "e0f6fe29e647b04f1739b84ff49c7ec23876518a43f72de788636222c778b516",
+    "frontend/e2e/parity/transfer-form.spec.ts": "0793c7a0d6a36e808be1e538a1598af16f0a3fb2e262dac287038ec990fd4bec",
+    "frontend/e2e/parity/transfer-lifecycle.spec.ts": "8f9d0160f97d0df426fe86144089b0c5ebcd4586dcf3944fb9027134f683fff5",
+    "frontend/e2e/parity/acquire-print.spec.ts": "d5787c24612499e7e77ccb141ea93304d8f92f48267557fbd8bf6c8a63a177bd",
+    "tools/testing/parity-acquire-fixture.py": "498d130e0602f0aabdf7b1cf2e867f07cf4b9fe6b59e44920f03a341f42c0ac2",
+    "tools/testing/compare-transfer-print-files.py": "f8536d28ccb1e2493f5d14c4718fb1444c6394a4a660758f4972d7f7d07a5f46"
+  },
+  "remaining": [
+    "P10 snapshot directory, material source defect, duplicates and sequence hints through UI, history over 20 rows, all languages and full visual fidelity.",
+    "P09 permissions/person/factory changes, unknown submission responses and queue recovery, old records and download capacity/performance.",
+    "All outstanding P01-P08/P11-P16 and 500000-row import performance requirements."
+  ]
+}

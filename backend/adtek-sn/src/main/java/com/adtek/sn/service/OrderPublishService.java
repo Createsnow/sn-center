@@ -13,13 +13,8 @@ public interface OrderPublishService {
 
     /** 再核验原提交主体版本/当前权限，安全→发布锁；基准未变才发布整个范围。 头/分录/历史额度初始化/成功记录/审计同事务；任一失败回滚，空列表是已验证的合法空快照。 */
     OrderSyncVO publish(
-            Actor requested,
-            String attemptId,
-            Source source,
-            List<Row> rows,
-            List<Organization> organizations,
-            boolean orgFailed);
+            Actor requested, String attemptId, Source source, List<Row> rows, boolean orgFailed);
 
     /** 外部或发布失败后独立事务登记受控失败码；已经SUCCESS不覆盖，失败审计不伪造成功。 */
-    void failed(String attemptId, int errorCode);
+    void failed(String attemptId, int errorCode, String safeMessage);
 }

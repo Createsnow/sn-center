@@ -1,0 +1,26 @@
+package com.adtek.sn.vo;
+
+@io.swagger.v3.oas.annotations.media.Schema(
+        requiredProperties = {
+            "states",
+            "pendingTransfers",
+            "totalGenerated",
+            "totalImported",
+            "today",
+            "recentJobs",
+            "jobs",
+            "date",
+            "zone",
+            "allFactories"
+        })
+public record DashboardVO(
+        java.util.List<SnCountVO> states,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String pendingTransfers,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String totalGenerated,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String totalImported,
+        java.util.List<SnCountVO> today,
+        java.util.List<SnWorkVO> recentJobs,
+        java.util.List<DashboardJobVO> jobs,
+        String date,
+        String zone,
+        boolean allFactories) {}

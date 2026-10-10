@@ -1,0 +1,79 @@
+
+Running 4 tests using 1 worker
+
+(node:21420) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  x  1 [prototype] › e2e\parity\business-loop.spec.ts:10:1 › P15 complete UI business loop from order sync and rule creation to transferred reprint and audit (9.2s)
+(node:28976) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [prototype] › e2e\parity\order-focus.spec.ts:11:1 › P05 focus: schedule closing, unit text, keyboard steps and scroll restoration (41.4s)
+(node:45208) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  x  3 [migration] › e2e\parity\business-loop.spec.ts:10:1 › P15 complete UI business loop from order sync and rule creation to transferred reprint and audit (7.6s)
+(node:53216) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 4 [migration] › e2e\parity\order-focus.spec.ts:11:1 › P05 focus: schedule closing, unit text, keyboard steps and scroll restoration (47.0s)
+
+
+  1) [prototype] › e2e\parity\business-loop.spec.ts:10:1 › P15 complete UI business loop from order sync and rule creation to transferred reprint and audit 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 3
+
+      Array [
+    +   "L2026100953000900001",
+    +   "L2026100953000900002",
+    +   "L2026100953000900003",
+        "L2026100953001100001",
+        "L2026100953001100002",
+        "L2026100953001100003",
+      ]
+
+       98 |       factory: v.factory_code ?? v.factoryCode ?? null,
+       99 |     }));
+    > 100 |     expect(observed.map((v) => v.sn).sort()).toEqual(sns);
+          |                                              ^
+      101 |     expect(observed.map((v) => v.status)).toEqual([status, status, status]);
+      102 |     if (factory !== null)
+      103 |       expect(observed.map((v) => v.factory)).toEqual([factory, factory, factory]);
+        at query (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\business-loop.spec.ts:100:46)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\business-loop.spec.ts:205:5
+
+    Error Context: test-results\stage53-loop-focus-final\business-loop-P15-complete-3dffa-ansferred-reprint-and-audit-prototype\error-context.md
+
+  2) [migration] › e2e\parity\business-loop.spec.ts:10:1 › P15 complete UI business loop from order sync and rule creation to transferred reprint and audit 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 3
+
+      Array [
+    +   "L2026100953000900001",
+    +   "L2026100953000900002",
+    +   "L2026100953000900003",
+        "L2026100953001100001",
+        "L2026100953001100002",
+        "L2026100953001100003",
+      ]
+
+       98 |       pi: v.pi_no ?? v.pi,
+       99 |       factory: v.factory_code ?? v.factoryCode ?? null,
+    > 100 |     }));
+          |         ^
+      101 |     expect(observed.map((v) => v.sn).sort()).toEqual(sns);
+      102 |     expect(observed.map((v) => v.status)).toEqual([status, status, status]);
+      103 |     if (factory !== null)
+        at query (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\business-loop.spec.ts:100:46)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\business-loop.spec.ts:203:5
+
+    Error Context: test-results\stage53-loop-focus-final\business-loop-P15-complete-3dffa-ansferred-reprint-and-audit-migration\error-context.md
+
+  2 failed
+    [prototype] › e2e\parity\business-loop.spec.ts:10:1 › P15 complete UI business loop from order sync and rule creation to transferred reprint and audit 
+    [migration] › e2e\parity\business-loop.spec.ts:10:1 › P15 complete UI business loop from order sync and rule creation to transferred reprint and audit 
+  2 passed (1.8m)

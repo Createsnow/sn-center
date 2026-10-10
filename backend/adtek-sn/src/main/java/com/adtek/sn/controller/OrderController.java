@@ -63,10 +63,13 @@ public class OrderController {
     }
 
     @PostMapping("/sync")
-    @Operation(summary = "全部工厂order:sync权限；空billNo全量，否则单据；失败保留旧快照，并发版本变化409")
+    @Operation(summary = "全部工厂order:sync权限；缺省/null billNo全量，显式空白拒绝；失败保留旧快照，并发版本变化409")
     public Result<OrderSyncVO> synchronize(
-            @Valid @RequestBody OrderSyncDTO command, HttpServletRequest request) {
-        return Result.success(service.synchronize(command), TraceFilter.current(request));
+            @Valid @RequestBody(required = false) OrderSyncDTO command,
+            HttpServletRequest request) {
+        return Result.success(
+                service.synchronize(command == null ? new OrderSyncDTO(null) : command),
+                TraceFilter.current(request));
     }
 
     @GetMapping("/syncs")

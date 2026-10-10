@@ -1,0 +1,378 @@
+{
+  "wrap": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 390,
+      "height": 960,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "padding": "24px",
+      "background": "rgb(241, 244, 249)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [
+        "M512 64a448 448 0 1 1 0 896 448 448 0 0 1 0-896m0 192a58.43 58.43 0 0 0-58.24 63.744l23.36 256.384a35.072 35.072 0 0 0 69.76 0l23.296-256.384A58.43 58.43 0 0 0 512 256m0 512a51.2 51.2 0 1 0 0-102.4 51.2 51.2 0 0 0 0 102.4"
+      ],
+      "text": null
+    }
+  ],
+  "panel": [
+    {
+      "x": 24,
+      "y": 226.5,
+      "width": 342,
+      "height": 507,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "padding": "28px",
+      "background": "rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "borderRadius": "12px",
+      "iconPaths": [
+        "M512 64a448 448 0 1 1 0 896 448 448 0 0 1 0-896m0 192a58.43 58.43 0 0 0-58.24 63.744l23.36 256.384a35.072 35.072 0 0 0 69.76 0l23.296-256.384A58.43 58.43 0 0 0 512 256m0 512a51.2 51.2 0 1 0 0-102.4 51.2 51.2 0 0 0 0 102.4"
+      ],
+      "text": null
+    }
+  ],
+  "title": [
+    {
+      "x": 53,
+      "y": 255.5,
+      "width": 284,
+      "height": 29,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "20px",
+      "fontWeight": "700",
+      "lineHeight": "normal",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "text": "Change password"
+    }
+  ],
+  "alert": [
+    {
+      "x": 53,
+      "y": 296.5,
+      "width": 284,
+      "height": 88,
+      "color": "rgb(194, 120, 3)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "padding": "8px 16px",
+      "background": "rgb(253, 246, 236)",
+      "boxShadow": "none",
+      "borderRadius": "8px",
+      "iconPaths": [
+        "M512 64a448 448 0 1 1 0 896 448 448 0 0 1 0-896m0 192a58.43 58.43 0 0 0-58.24 63.744l23.36 256.384a35.072 35.072 0 0 0 69.76 0l23.296-256.384A58.43 58.43 0 0 0 512 256m0 512a51.2 51.2 0 1 0 0-102.4 51.2 51.2 0 0 0 0 102.4"
+      ],
+      "text": null
+    }
+  ],
+  "alertIcon": [
+    {
+      "x": 69,
+      "y": 332.5,
+      "width": 16,
+      "height": 16,
+      "color": "rgb(194, 120, 3)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "16px",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [
+        "M512 64a448 448 0 1 1 0 896 448 448 0 0 1 0-896m0 192a58.43 58.43 0 0 0-58.24 63.744l23.36 256.384a35.072 35.072 0 0 0 69.76 0l23.296-256.384A58.43 58.43 0 0 0 512 256m0 512a51.2 51.2 0 1 0 0-102.4 51.2 51.2 0 0 0 0 102.4"
+      ],
+      "text": null
+    }
+  ],
+  "alertTitle": [
+    {
+      "x": 93,
+      "y": 304.5,
+      "width": 220,
+      "height": 72,
+      "color": "rgb(194, 120, 3)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "text": "First sign-in or password reset: please change your password first."
+    }
+  ],
+  "form": [
+    {
+      "x": 53,
+      "y": 400.5,
+      "width": 284,
+      "height": 304,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "text": null
+    }
+  ],
+  "labels": [
+    {
+      "x": 53,
+      "y": 400.5,
+      "width": 126.09375,
+      "height": 22,
+      "color": "rgb(96, 98, 102)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "22px",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "text": "Current password"
+    },
+    {
+      "x": 53,
+      "y": 480.5,
+      "width": 105.765625,
+      "height": 22,
+      "color": "rgb(96, 98, 102)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "22px",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "text": "New password"
+    },
+    {
+      "x": 53,
+      "y": 592.5,
+      "width": 149.515625,
+      "height": 22,
+      "color": "rgb(96, 98, 102)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "22px",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "text": "Confirm new password"
+    }
+  ],
+  "fields": [
+    {
+      "x": 53,
+      "y": 430.5,
+      "width": 284,
+      "height": 32,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "32px",
+      "padding": "1px 11px",
+      "background": "rgb(255, 255, 255)",
+      "boxShadow": "rgb(220, 223, 230) 0px 0px 0px 1px inset",
+      "borderRadius": "8px",
+      "iconPaths": [],
+      "text": null
+    },
+    {
+      "x": 53,
+      "y": 510.5,
+      "width": 284,
+      "height": 32,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "32px",
+      "padding": "1px 11px",
+      "background": "rgb(255, 255, 255)",
+      "boxShadow": "rgb(220, 223, 230) 0px 0px 0px 1px inset",
+      "borderRadius": "8px",
+      "iconPaths": [],
+      "text": null
+    },
+    {
+      "x": 53,
+      "y": 622.5,
+      "width": 284,
+      "height": 32,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "32px",
+      "padding": "1px 11px",
+      "background": "rgb(255, 255, 255)",
+      "boxShadow": "rgb(220, 223, 230) 0px 0px 0px 1px inset",
+      "borderRadius": "8px",
+      "iconPaths": [],
+      "text": null
+    }
+  ],
+  "inputs": [
+    {
+      "x": 64,
+      "y": 431.5,
+      "width": 262,
+      "height": 30,
+      "color": "rgb(96, 98, 102)",
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "30px",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "text": null
+    },
+    {
+      "x": 64,
+      "y": 511.5,
+      "width": 262,
+      "height": 30,
+      "color": "rgb(96, 98, 102)",
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "30px",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "text": null
+    },
+    {
+      "x": 64,
+      "y": 623.5,
+      "width": 262,
+      "height": 30,
+      "color": "rgb(96, 98, 102)",
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "30px",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "text": null
+    }
+  ],
+  "eyes": [],
+  "policy": [
+    {
+      "x": 53,
+      "y": 542.5,
+      "width": 242.71875,
+      "height": 32,
+      "color": "rgb(100, 116, 139)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "lineHeight": "32px",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "text": "8–64 characters with both letters and digits."
+    }
+  ],
+  "errors": [],
+  "actions": [
+    {
+      "x": 53,
+      "y": 672.5,
+      "width": 284,
+      "height": 32,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "text": null
+    }
+  ],
+  "buttons": [
+    {
+      "x": 169.703125,
+      "y": 672.5,
+      "width": 83.375,
+      "height": 32,
+      "color": "rgb(96, 98, 102)",
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "lineHeight": "14px",
+      "padding": "8px 15px",
+      "background": "rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "borderRadius": "8px",
+      "iconPaths": [],
+      "text": "Sign out"
+    },
+    {
+      "x": 273.078125,
+      "y": 672.5,
+      "width": 63.921875,
+      "height": 32,
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "lineHeight": "14px",
+      "padding": "8px 15px",
+      "background": "rgb(30, 74, 138)",
+      "boxShadow": "none",
+      "borderRadius": "8px",
+      "iconPaths": [],
+      "text": "Save"
+    }
+  ]
+}

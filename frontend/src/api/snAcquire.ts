@@ -1,6 +1,6 @@
 import type { components } from './generated/schema';
-import { query, submit } from './client';
-import { isRecord } from './contract';
+import { query, submit, downloadFile } from './client';
+import { ApiError, isRecord } from './contract';
 import { isOperationId, isTask } from './tasks';
 import { pageGuard, type SnFilter } from './sn';
 interface AcquireFilter extends SnFilter {
@@ -15,6 +15,7 @@ export type AcquireSummary = components['schemas']['AcquireSummaryVO'];
 export type AcquireSegment = components['schemas']['AcquireSegmentVO'];
 export type AcquireBatch = components['schemas']['AcquireBatchVO'];
 export type AcquireItem = components['schemas']['AcquireItemVO'];
+export type CurrentBatchItem = components['schemas']['SnReadItemVO'];
 export type AcquireWork = components['schemas']['AcquireWorkVO'];
 export type AcquireResult = components['schemas']['AcquireResultVO'];
 export type PrintRecord = components['schemas']['PrintVO'];
@@ -48,6 +49,8 @@ export const isAcquireBatch = (v: unknown): v is AcquireBatch =>
   fields(v, ['factoryId', 'quantity', 'actorId'], decimal) &&
   fields(v, ['factoryCode', 'factoryName', 'pi'], text) &&
   ['PAGE', 'API'].includes(String(v.origin)) &&
+  nullable(v.batchNo, text) &&
+  nullable(v.actorName, text) &&
   date(v.createdAt);
 export const isAcquireItem = (v: unknown): v is AcquireItem =>
   isRecord(v) &&
@@ -78,6 +81,15 @@ export const isAcquireItem = (v: unknown): v is AcquireItem =>
   nullable(v.currentPi, text) &&
   nullable(v.currentBatchId, isOperationId) &&
   typeof v.currentMember === 'boolean';
+export const isCurrentBatchItem = (v: unknown): v is CurrentBatchItem =>
+  isRecord(v) &&
+  isOperationId(v.id) &&
+  fields(v, ['sn', 'pi', 'customer', 'material'], text) &&
+  decimal(v.factoryId) &&
+  state(v.status) &&
+  nullable(v.seqDec, decimal) &&
+  fields(v, ['seqPi', 'seqText'], (x) => nullable(x, text)) &&
+  nullable(v.currentBatchId, isOperationId);
 export const isAcquireWork = (v: unknown): v is AcquireWork =>
   isRecord(v) &&
   isOperationId(v.taskId) &&
@@ -92,6 +104,7 @@ export const isAcquireWork = (v: unknown): v is AcquireWork =>
   ['PAGE', 'API'].includes(String(v.origin)) &&
   ['PENDING', 'SUCCESS', 'FAILED', 'CANCELLED'].includes(String(v.state)) &&
   nullable(v.batchId, isOperationId) &&
+  nullable(v.batchNo, text) &&
   nullable(v.errorCode, (x) => typeof x === 'number' && Number.isInteger(x) && x > 0) &&
   date(v.createdAt) &&
   nullable(v.finishedAt, date);
@@ -121,6 +134,8 @@ export const isPrintRecord = (v: unknown): v is PrintRecord =>
   fields(v, ['factoryId', 'quantity', 'actorId'], decimal) &&
   fields(v, ['factoryCode', 'factoryName', 'pi'], text) &&
   date(v.createdAt) &&
+  nullable(v.printNo, text) &&
+  nullable(v.actorName, text) &&
   fileState(v.xlsxState) &&
   fileState(v.csvState);
 export const cursorGuard =
@@ -133,13 +148,32 @@ const url = (path: string, filter: AcquireFilter) => {
     if (value !== undefined && value !== '') p.set(key, String(value));
   return path + '?' + p.toString();
 };
+
+/** 已提交打印的后台文件可能暂占额度；仅明确容量拒绝按原意图等待，未知响应不重发。 */
+async function submitPrint(input: AcquisitionCommand) {
+  const deadline = Date.now() + 60_000;
+  for (;;) {
+    try {
+      return await submit('/sn/prints', input, isTask, 60_000);
+    } catch (error) {
+      if (
+        !(error instanceof ApiError) ||
+        error.status !== 409 ||
+        error.code !== 1003000008 ||
+        Date.now() >= deadline
+      )
+        throw error;
+      await new Promise<void>((resolve) => setTimeout(resolve, 1000));
+    }
+  }
+}
 export const acquireApi = {
   summaries: (filter: AcquireFilter) =>
     query(url('/sn/acquisitions/pis', filter), pageGuard(isAcquireSummary)),
   segments: (filter: AcquireFilter) =>
     query(url('/sn/acquisitions/segments', filter), pageGuard(isAcquireSegment)),
   take: (input: AcquisitionCommand) => submit('/sn/acquisitions', input, isTask, 60_000),
-  print: (input: AcquisitionCommand) => submit('/sn/prints', input, isTask, 60_000),
+  print: submitPrint,
   work: (id: string) => query('/sn/acquisitions/results/' + encodeURIComponent(id), isAcquireWork),
   results: (id: string, cursor?: string) =>
     query(
@@ -148,6 +182,11 @@ export const acquireApi = {
     ),
   batches: (filter: SnFilter) =>
     query(url('/sn/acquire-batches', filter), pageGuard(isAcquireBatch)),
+  currentItems: (id: string, page: number) =>
+    query(
+      url('/sn/acquire-batches/' + encodeURIComponent(id) + '/current-items', { page, size: 50 }),
+      pageGuard(isCurrentBatchItem),
+    ),
   items: (id: string, cursor?: string) =>
     query(
       url('/sn/acquire-batches/' + encodeURIComponent(id) + '/items', { cursor, size: 50 }),
@@ -155,4 +194,6 @@ export const acquireApi = {
     ),
   prints: (filter: SnFilter) => query(url('/sn/prints', filter), pageGuard(isPrintRecord)),
   printRecord: (id: string) => query('/sn/prints/' + encodeURIComponent(id), isPrintRecord),
+  download: ({ id, format }: { id: string; format: 'csv' | 'xlsx' }) =>
+    downloadFile('/sn/prints/' + encodeURIComponent(id) + '/file?format=' + format),
 };

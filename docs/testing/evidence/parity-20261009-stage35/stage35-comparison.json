@@ -1,0 +1,503 @@
+{
+  "tables": [
+    {
+      "case": "01-default-20.json",
+      "rows": 20,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "02-second-page.json",
+      "rows": 20,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "03-third-page.json",
+      "rows": 14,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "04-fifty-rows.json",
+      "rows": 50,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "05-inline-detail.json",
+      "rows": 50,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "06-draft-keeps-query.json",
+      "rows": 50,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "07-keyword.json",
+      "rows": 1,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "08-combined.json",
+      "rows": 3,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "09-factory-empty.json",
+      "rows": 0,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "10-date-cleared.json",
+      "rows": 50,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "10-date-inclusive.json",
+      "rows": 50,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "10-literal-wildcard-empty.json",
+      "rows": 0,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "11-layout-en.json",
+      "rows": 1,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "11-layout-vi.json",
+      "rows": 1,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "11-layout-zh.json",
+      "rows": 1,
+      "allRawCellsAndOrderEqual": true
+    }
+  ],
+  "layouts": [
+    {
+      "case": "01-default-20.json",
+      "equal": true
+    },
+    {
+      "case": "02-second-page.json",
+      "equal": true
+    },
+    {
+      "case": "03-third-page.json",
+      "equal": true
+    },
+    {
+      "case": "04-fifty-rows.json",
+      "equal": true
+    },
+    {
+      "case": "05-inline-detail.json",
+      "equal": true
+    },
+    {
+      "case": "06-draft-keeps-query.json",
+      "equal": true
+    },
+    {
+      "case": "07-keyword.json",
+      "equal": true
+    },
+    {
+      "case": "08-combined.json",
+      "equal": true
+    },
+    {
+      "case": "09-factory-empty.json",
+      "equal": true
+    },
+    {
+      "case": "10-date-cleared.json",
+      "equal": true
+    },
+    {
+      "case": "10-date-inclusive.json",
+      "equal": true
+    },
+    {
+      "case": "10-literal-wildcard-empty.json",
+      "equal": true
+    },
+    {
+      "case": "11-layout-en.json",
+      "equal": true
+    },
+    {
+      "case": "11-layout-vi.json",
+      "equal": true
+    },
+    {
+      "case": "11-layout-zh.json",
+      "equal": true
+    }
+  ],
+  "details": [
+    {
+      "case": "05-inline-detail.json",
+      "cells": 20,
+      "textGeometryAndStylesEqual": true
+    }
+  ],
+  "files": [
+    {
+      "case": "audit-page-06-draft-export.json",
+      "rows": 1,
+      "columns": 24,
+      "allCellValuesTypesOrderSheetAndFilenameEqual": true,
+      "sourceSha256": "59fd8cda3a8c99b9b002034c75a36cd6e726cf99bed852e806b015ef33a4af7c",
+      "migrationSha256": "eb36951cd1c428e721ba981e9ac165c77a7843bfd3d51b4f58461dce573397b9"
+    },
+    {
+      "case": "audit-files-01-all.json",
+      "rows": 54,
+      "columns": 24,
+      "allCellValuesTypesOrderSheetAndFilenameEqual": true,
+      "sourceSha256": "835d7771f1be3178ce25361c01d1a157074188613c96b10277f9345ebcce18ff",
+      "migrationSha256": "0480dfa7566bc66cc220cd65b86e68ccc260efe668f87de862e3d8f59f802b50"
+    },
+    {
+      "case": "audit-files-02-text.json",
+      "rows": 1,
+      "columns": 24,
+      "allCellValuesTypesOrderSheetAndFilenameEqual": true,
+      "sourceSha256": "9be54fb382d8a3e9814bf8f454621e16705d2ff4d7624f229b769c323299f51a",
+      "migrationSha256": "cb287a8171eaaeda2e1e73af62208bf20f7e5753ccc4c5feb0ad50c8f5cf9957"
+    },
+    {
+      "case": "audit-files-03-empty.json",
+      "rows": 0,
+      "columns": 24,
+      "allCellValuesTypesOrderSheetAndFilenameEqual": true,
+      "sourceSha256": "beb6d0f0d777866e4a232dee839864fc71326f7c87c2e75cf1336bb946fb21a3",
+      "migrationSha256": "dc20afcea2cec28233ea8e8e030578490bac897326e3ac3c6dbcea578eece608"
+    }
+  ],
+  "realRules": [
+    {
+      "case": "audit-rules-P12-real-rule--eebd3-t-rename-combined-and-no-op",
+      "rows": 5,
+      "matchingOrderedColumnCount": 21,
+      "allTypesEqual": true,
+      "headerAndSheetEqual": true,
+      "differingColumns": [
+        "时间",
+        "姓名",
+        "请求ID"
+      ],
+      "sourceSha256": "e563035bd905108c5f3b2cc2fdad1dc7ed2715a3e9b11d4f749f2c02d3d6cddd",
+      "migrationSha256": "6ae66e7d4ce11fbcbb3b1ecd0198123cc658e42514d899dcdbe0f7dcc2459e82",
+      "fullFilesEqual": false
+    },
+    {
+      "case": "audit-rules-P12-real-rule-audits-used-version-and-rename",
+      "rows": 2,
+      "matchingOrderedColumnCount": 21,
+      "allTypesEqual": true,
+      "headerAndSheetEqual": true,
+      "differingColumns": [
+        "时间",
+        "姓名",
+        "请求ID"
+      ],
+      "sourceSha256": "3c06abdcac78737cf07c2689333cf06409f948f462ffc81a156c76ff40149be4",
+      "migrationSha256": "aeed7098ea6f609845f29fd6cd9f909a43b0893b873cc1715b4c42eacd0af53e",
+      "fullFilesEqual": false
+    }
+  ],
+  "auditLayout": [
+    {
+      "case": "language-en.json",
+      "exactGeometryGroups": {
+        "surface": 1,
+        "toolbar": 1,
+        "headers": 12,
+        "cells": 12,
+        "pager": 1,
+        "total": 1,
+        "size": 1,
+        "prev": 1,
+        "pages": 1,
+        "next": 1,
+        "date": 1,
+        "dateInput": 2,
+        "dateIcon": 1,
+        "separator": 1
+      },
+      "tableTextsAndDateValuesEqual": true,
+      "dateInputColorsEqual": true
+    },
+    {
+      "case": "language-vi.json",
+      "exactGeometryGroups": {
+        "surface": 1,
+        "toolbar": 1,
+        "headers": 12,
+        "cells": 12,
+        "pager": 1,
+        "total": 1,
+        "size": 1,
+        "prev": 1,
+        "pages": 1,
+        "next": 1,
+        "date": 1,
+        "dateInput": 2,
+        "dateIcon": 1,
+        "separator": 1
+      },
+      "tableTextsAndDateValuesEqual": true,
+      "dateInputColorsEqual": true
+    },
+    {
+      "case": "language-zh.json",
+      "exactGeometryGroups": {
+        "surface": 1,
+        "toolbar": 1,
+        "headers": 12,
+        "cells": 12,
+        "pager": 1,
+        "total": 1,
+        "size": 1,
+        "prev": 1,
+        "pages": 1,
+        "next": 1,
+        "date": 1,
+        "dateInput": 2,
+        "dateIcon": 1,
+        "separator": 1
+      },
+      "tableTextsAndDateValuesEqual": true,
+      "dateInputColorsEqual": true
+    },
+    {
+      "case": "narrow-fifty.json",
+      "exactGeometryGroups": {
+        "surface": 1,
+        "toolbar": 1,
+        "headers": 12,
+        "cells": 12,
+        "pager": 1,
+        "total": 1,
+        "size": 1,
+        "prev": 1,
+        "pages": 1,
+        "next": 1,
+        "date": 1,
+        "dateInput": 2,
+        "dateIcon": 1,
+        "separator": 1
+      },
+      "tableTextsAndDateValuesEqual": true,
+      "dateInputColorsEqual": true
+    },
+    {
+      "case": "table-scroll-end.json",
+      "exactGeometryGroups": {
+        "surface": 1,
+        "toolbar": 1,
+        "headers": 12,
+        "cells": 12,
+        "pager": 1,
+        "total": 1,
+        "size": 1,
+        "prev": 1,
+        "pages": 1,
+        "next": 1,
+        "date": 1,
+        "dateInput": 2,
+        "dateIcon": 1,
+        "separator": 1
+      },
+      "tableTextsAndDateValuesEqual": true,
+      "dateInputColorsEqual": true
+    },
+    {
+      "case": "width-1440.json",
+      "exactGeometryGroups": {
+        "surface": 1,
+        "toolbar": 1,
+        "headers": 12,
+        "cells": 12,
+        "pager": 1,
+        "total": 1,
+        "size": 1,
+        "prev": 1,
+        "pages": 1,
+        "next": 1,
+        "date": 1,
+        "dateInput": 2,
+        "dateIcon": 1,
+        "separator": 1
+      },
+      "tableTextsAndDateValuesEqual": true,
+      "dateInputColorsEqual": true
+    },
+    {
+      "case": "width-1920.json",
+      "exactGeometryGroups": {
+        "surface": 1,
+        "toolbar": 1,
+        "headers": 12,
+        "cells": 12,
+        "pager": 1,
+        "total": 1,
+        "size": 1,
+        "prev": 1,
+        "pages": 1,
+        "next": 1,
+        "date": 1,
+        "dateInput": 2,
+        "dateIcon": 1,
+        "separator": 1
+      },
+      "tableTextsAndDateValuesEqual": true,
+      "dateInputColorsEqual": true
+    },
+    {
+      "case": "width-390.json",
+      "exactGeometryGroups": {
+        "surface": 1,
+        "toolbar": 1,
+        "headers": 12,
+        "cells": 12,
+        "pager": 1,
+        "total": 1,
+        "size": 1,
+        "prev": 1,
+        "pages": 1,
+        "next": 1,
+        "date": 1,
+        "dateInput": 2,
+        "dateIcon": 1,
+        "separator": 1
+      },
+      "tableTextsAndDateValuesEqual": true,
+      "dateInputColorsEqual": true
+    },
+    {
+      "case": "width-900.json",
+      "exactGeometryGroups": {
+        "surface": 1,
+        "toolbar": 1,
+        "headers": 12,
+        "cells": 12,
+        "pager": 1,
+        "total": 1,
+        "size": 1,
+        "prev": 1,
+        "pages": 1,
+        "next": 1,
+        "date": 1,
+        "dateInput": 2,
+        "dateIcon": 1,
+        "separator": 1
+      },
+      "tableTextsAndDateValuesEqual": true,
+      "dateInputColorsEqual": true
+    }
+  ],
+  "authentication": [
+    {
+      "case": "cmp_auth_1009350004U-file.json",
+      "rows": 1,
+      "orderedMatchingColumns": 22,
+      "typesEqual": true,
+      "sheetAndHeaderEqual": true,
+      "orderedDomCellsExceptTimeEqual": true,
+      "differingColumns": [
+        "时间",
+        "请求ID"
+      ],
+      "sourceSha256": "fc07af43cbb5eb0d278d7825c92036e525c5d7092225c78946ab9f6f05414047",
+      "migrationSha256": "3dd52e5583493f820d0c085cfda6894f90e48a4c75cd45cbe196dc21cd9e0b54",
+      "fullFileEquality": false
+    },
+    {
+      "case": "cmp_auth_1009350004L-file.json",
+      "rows": 6,
+      "orderedMatchingColumns": 22,
+      "typesEqual": true,
+      "sheetAndHeaderEqual": true,
+      "orderedDomCellsExceptTimeEqual": true,
+      "differingColumns": [
+        "时间",
+        "请求ID"
+      ],
+      "sourceSha256": "efa747370049540e419893f789b686ffe6c1b8d6a442cc5a75998a26d0e08466",
+      "migrationSha256": "eddedaa2f558ce040ba4361fb35f69440d0b7c206574a8c49c56d364185d9eb5",
+      "fullFileEquality": false
+    },
+    {
+      "case": "cmp_auth_1009350004A-file.json",
+      "rows": 5,
+      "orderedMatchingColumns": 22,
+      "typesEqual": true,
+      "sheetAndHeaderEqual": true,
+      "orderedDomCellsExceptTimeEqual": true,
+      "differingColumns": [
+        "时间",
+        "请求ID"
+      ],
+      "sourceSha256": "6fff2b5a1329f396d86b1a82270932115fd84b02e8931ba62fa9bef751b3b2e9",
+      "migrationSha256": "3eaa0b43bad7b8f3dd493524f2a988a6dfcb308d59939cbc39fb3196b6fa7861",
+      "fullFileEquality": false
+    },
+    {
+      "case": "cmp_auth_1009350004D-file.json",
+      "rows": 2,
+      "orderedMatchingColumns": 22,
+      "typesEqual": true,
+      "sheetAndHeaderEqual": true,
+      "orderedDomCellsExceptTimeEqual": true,
+      "differingColumns": [
+        "时间",
+        "请求ID"
+      ],
+      "sourceSha256": "36536cf2e77af03ae32175f24d2031a92308c1e055fea60713b840a20dcbef66",
+      "migrationSha256": "9d6c2965125c38a261846a498db39886a96fb5d606b47da619e0faf263429178",
+      "fullFileEquality": false
+    }
+  ],
+  "authenticationActorLayout": [
+    {
+      "case": "cmp_auth_1009350004U-actors.json",
+      "rows": 1,
+      "characterRectanglesAndWrappingEqual": true
+    },
+    {
+      "case": "cmp_auth_1009350004L-actors.json",
+      "rows": 6,
+      "characterRectanglesAndWrappingEqual": true
+    },
+    {
+      "case": "cmp_auth_1009350004A-actors.json",
+      "rows": 5,
+      "characterRectanglesAndWrappingEqual": true
+    },
+    {
+      "case": "cmp_auth_1009350004D-actors.json",
+      "rows": 2,
+      "characterRectanglesAndWrappingEqual": true
+    }
+  ],
+  "authenticationMessagePaint": [
+    {
+      "case": "rejected-login-paint.json",
+      "bothVisibleBeforeAndAfterCapture": true,
+      "messageEqual": true,
+      "geometryEqual": false
+    },
+    {
+      "case": "locked-login-paint.json",
+      "bothVisibleBeforeAndAfterCapture": true,
+      "messageEqual": true,
+      "geometryEqual": false
+    }
+  ]
+}

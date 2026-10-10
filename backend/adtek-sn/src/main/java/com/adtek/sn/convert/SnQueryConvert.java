@@ -11,5 +11,9 @@ public interface SnQueryConvert {
 
     SnExportVO export(SnExportEntity row, String fileState);
 
+    SnExportVO export(SnAuditExportEntity row, String fileState);
+
+    SnExportVO export(SnQueryExportEntity row, String fileState);
+
     SnCountVO count(SnCountEntity row);
 }

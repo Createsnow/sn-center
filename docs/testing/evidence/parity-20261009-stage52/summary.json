@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-09",
+  "goal": "active",
+  "previousGoalTurn": "progress",
+  "schema": 41,
+  "ui": {
+    "ui11": {
+      "startTime": "2026-10-09T11:31:26.266Z",
+      "duration": 298508.409,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "focus13": {
+      "startTime": "2026-10-09T11:38:24.041Z",
+      "duration": 92533.731,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  },
+  "frontendUnit": 84,
+  "backendRerun": false,
+  "backendBytesUnchanged": 603,
+  "jarSha256": "b21de36437a1dd15138c476dd98df763b6dcd88b6e307c4e2916d8b78e40ff6f",
+  "statePairs": 77,
+  "focusStatePairs": 27,
+  "overflowPairs": 36,
+  "shortTextPairs": 6,
+  "scrollClosePairs": 3,
+  "functionalDifferences": 0,
+  "focusDifferences": 12,
+  "visualDifferences": 780,
+  "focusScrollMismatchPairs": 12,
+  "principalBoxMismatchPairs": 0,
+  "timestampChecks": 84,
+  "screenshots": 208,
+  "diagnosticScreenshots": 751,
+  "sourceFiles": {
+    "frontend/e2e/parity/order-focus.spec.ts": "37b718e49d7904af105cc85104f84c8221a1f367199e16b809a50482e31c3dc6",
+    "frontend/e2e/parity/order-interactions.spec.ts": "90be80628ab6a2123c87e9f1c97f2144115b4756d0de08843c4fa5416409aaee",
+    "frontend/e2e/parity/settleOrderPage.ts": "cabf2a3dad4acba823449908c80509983c35f840937284fdfb774df13073423f",
+    "frontend/playwright.parity.config.ts": "702e61f4c28f3873f17b8716eba5391aaa25083a90a08040751f15a7c49ea918",
+    "frontend/src/features/sn/components/OrderLineTable.tsx": "ab59ec5663db356c048f872a9b1c7dddf5b8d72978c385f87a4b034ce415f04d",
+    "frontend/src/features/sn/components/OrderSyncSchedule.tsx": "e781a4f1573cee5ebc3a312365f77983d4f2c5a1e981f891fd40a8f2163340e8",
+    "frontend/src/features/sn/pages/OrdersPage.tsx": "fcb2be5c48aec52868920eb2e420535494533e33bf5453ed527f9ec82679d9ca",
+    "frontend/src/styles.css": "89658786c7b904e8798b92cde9a4224f8d780e5c2ef4c89249b6e67ab451f6dd",
+    "tools/testing/parity-k3-fixture.py": "bc7af24adb2def4cb774cad5e77db358bcf316865d3a65c2deb2fcb3808306fe",
+    "tools/testing/parity-order-audit-fixture.py": "f987dba601f6fd1078309938b7b941e351cdfd746839edcc9d8b81468ac35bf7"
+  },
+  "registeredUiTests": 231,
+  "registeredUiFiles": 42,
+  "fullUiMatrixRerun": false,
+  "mainDataAllUnchanged": true,
+  "originalFilesPreserved": 580,
+  "prototypeFilesPreserved": 146,
+  "frozenSqlPreserved": 41,
+  "dedicatedServicesStopped": true,
+  "remaining": [
+    "Initial-load/full-sync overlap and remaining order details/visuals",
+    "Complete P01-P16 role/language/viewport UI matrix",
+    "K3 malformed/oversized/coercion, generation concurrency, recovery, MES and end-to-end UI business loop"
+  ]
+}

@@ -1,0 +1,29 @@
+[
+  {
+    "id": 8019,
+    "created_at": "2026-10-09 09:27:08",
+    "operator": "cmp_auth_1009360001U",
+    "operator_name": "",
+    "role": "",
+    "source": "PAGE",
+    "action": "LOGIN",
+    "result": "FAIL",
+    "factory_code": null,
+    "pi_no": null,
+    "customer_code": null,
+    "material_code": null,
+    "bill_no": null,
+    "start_sn": null,
+    "end_sn": null,
+    "qty": null,
+    "before_status": null,
+    "after_status": null,
+    "batch_no": null,
+    "request_no": null,
+    "transfer_no": null,
+    "reason": null,
+    "error_msg": "工号或密码错误",
+    "trace_id": "0533503d-457f-4f1e-8c85-e44b20b5c1e3",
+    "detail": "client=127.0.0.1"
+  }
+]

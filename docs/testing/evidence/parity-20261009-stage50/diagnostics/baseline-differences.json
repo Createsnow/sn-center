@@ -1,0 +1,365 @@
+[
+  {
+    "label": "zh-CN-login-missing",
+    "prototype": [
+      502,
+      "金蝶登录失败：LoginResultType != 1"
+    ],
+    "migration": [
+      502,
+      "金蝶返回的数据格式不符合约定，原订单快照保持不变。"
+    ]
+  },
+  {
+    "label": "zh-CN-login-boolean",
+    "prototype": [
+      502,
+      "金蝶登录失败：LoginResultType != 1"
+    ],
+    "migration": [
+      502,
+      "金蝶返回的数据格式不符合约定，原订单快照保持不变。"
+    ]
+  },
+  {
+    "label": "zh-CN-login-scalar",
+    "prototype": [
+      502,
+      "金蝶登录失败：LoginResultType != 1"
+    ],
+    "migration": [
+      502,
+      "金蝶返回的数据格式不符合约定，原订单快照保持不变。"
+    ]
+  },
+  {
+    "label": "zh-CN-query-object",
+    "prototype": [
+      502,
+      "金蝶查询失败：unexpected response"
+    ],
+    "migration": [
+      502,
+      "金蝶返回的数据格式不符合约定，原订单快照保持不变。"
+    ]
+  },
+  {
+    "label": "zh-CN-query-scalar",
+    "prototype": [
+      502,
+      "金蝶查询失败：unexpected response"
+    ],
+    "migration": [
+      502,
+      "金蝶返回的数据格式不符合约定，原订单快照保持不变。"
+    ]
+  },
+  {
+    "label": "zh-CN-query-message-values",
+    "prototype": [
+      502,
+      "金蝶查询失败：组织权限不足; 123; false"
+    ],
+    "migration": [
+      502,
+      "金蝶查询失败：组织权限不足"
+    ]
+  },
+  {
+    "label": "zh-CN-query-empty-message",
+    "prototype": [
+      502,
+      "金蝶查询失败："
+    ],
+    "migration": [
+      502,
+      "金蝶查询失败：查询失败"
+    ]
+  },
+  {
+    "label": "zh-CN-view-missing-status",
+    "prototype": [
+      502,
+      "金蝶查询失败：View failed"
+    ],
+    "migration": [
+      502,
+      "金蝶返回的数据格式不符合约定，原订单快照保持不变。"
+    ]
+  },
+  {
+    "label": "zh-CN-login-empty-session",
+    "prototype": [
+      200,
+      "单据 CMP-MO-001 已同步，2 行"
+    ],
+    "migration": [
+      502,
+      "金蝶返回的数据格式不符合约定，原订单快照保持不变。"
+    ]
+  },
+  {
+    "label": "zh-CN-view-empty-document",
+    "prototype": [
+      200,
+      "单据 CMP-MO-001 已不在计划 / 计划确认，已从快照移除"
+    ],
+    "migration": [
+      502,
+      "金蝶返回的数据格式不符合约定，原订单快照保持不变。"
+    ]
+  },
+  {
+    "label": "zh-CN-view-empty-lines",
+    "prototype": [
+      200,
+      "单据 CMP-MO-001 已不在计划 / 计划确认，已从快照移除"
+    ],
+    "migration": [
+      502,
+      "金蝶返回的数据格式不符合约定，原订单快照保持不变。"
+    ]
+  },
+  {
+    "label": "en-login-missing",
+    "prototype": [
+      502,
+      "Kingdee login failed: LoginResultType != 1"
+    ],
+    "migration": [
+      502,
+      "K3 returned an unexpected data format. The previous order snapshot is unchanged."
+    ]
+  },
+  {
+    "label": "en-login-boolean",
+    "prototype": [
+      502,
+      "Kingdee login failed: LoginResultType != 1"
+    ],
+    "migration": [
+      502,
+      "K3 returned an unexpected data format. The previous order snapshot is unchanged."
+    ]
+  },
+  {
+    "label": "en-login-scalar",
+    "prototype": [
+      502,
+      "Kingdee login failed: LoginResultType != 1"
+    ],
+    "migration": [
+      502,
+      "K3 returned an unexpected data format. The previous order snapshot is unchanged."
+    ]
+  },
+  {
+    "label": "en-query-object",
+    "prototype": [
+      502,
+      "Kingdee query failed: unexpected response"
+    ],
+    "migration": [
+      502,
+      "K3 returned an unexpected data format. The previous order snapshot is unchanged."
+    ]
+  },
+  {
+    "label": "en-query-scalar",
+    "prototype": [
+      502,
+      "Kingdee query failed: unexpected response"
+    ],
+    "migration": [
+      502,
+      "K3 returned an unexpected data format. The previous order snapshot is unchanged."
+    ]
+  },
+  {
+    "label": "en-query-message-values",
+    "prototype": [
+      502,
+      "Kingdee query failed: 组织权限不足; 123; false"
+    ],
+    "migration": [
+      502,
+      "Kingdee query failed: 组织权限不足"
+    ]
+  },
+  {
+    "label": "en-query-empty-message",
+    "prototype": [
+      502,
+      "Kingdee query failed:"
+    ],
+    "migration": [
+      502,
+      "Kingdee query failed: 查询失败"
+    ]
+  },
+  {
+    "label": "en-view-missing-status",
+    "prototype": [
+      502,
+      "Kingdee query failed: View failed"
+    ],
+    "migration": [
+      502,
+      "K3 returned an unexpected data format. The previous order snapshot is unchanged."
+    ]
+  },
+  {
+    "label": "en-login-empty-session",
+    "prototype": [
+      200,
+      "Order CMP-MO-001 synced, 2 lines"
+    ],
+    "migration": [
+      502,
+      "K3 returned an unexpected data format. The previous order snapshot is unchanged."
+    ]
+  },
+  {
+    "label": "en-view-empty-document",
+    "prototype": [
+      200,
+      "Order CMP-MO-001 is no longer planned; removed from the snapshot"
+    ],
+    "migration": [
+      502,
+      "K3 returned an unexpected data format. The previous order snapshot is unchanged."
+    ]
+  },
+  {
+    "label": "en-view-empty-lines",
+    "prototype": [
+      200,
+      "Order CMP-MO-001 is no longer planned; removed from the snapshot"
+    ],
+    "migration": [
+      502,
+      "K3 returned an unexpected data format. The previous order snapshot is unchanged."
+    ]
+  },
+  {
+    "label": "vi-login-missing",
+    "prototype": [
+      502,
+      "Đăng nhập Kingdee thất bại: LoginResultType != 1"
+    ],
+    "migration": [
+      502,
+      "K3 trả về dữ liệu sai định dạng. Ảnh chụp đơn hàng trước đó được giữ nguyên."
+    ]
+  },
+  {
+    "label": "vi-login-boolean",
+    "prototype": [
+      502,
+      "Đăng nhập Kingdee thất bại: LoginResultType != 1"
+    ],
+    "migration": [
+      502,
+      "K3 trả về dữ liệu sai định dạng. Ảnh chụp đơn hàng trước đó được giữ nguyên."
+    ]
+  },
+  {
+    "label": "vi-login-scalar",
+    "prototype": [
+      502,
+      "Đăng nhập Kingdee thất bại: LoginResultType != 1"
+    ],
+    "migration": [
+      502,
+      "K3 trả về dữ liệu sai định dạng. Ảnh chụp đơn hàng trước đó được giữ nguyên."
+    ]
+  },
+  {
+    "label": "vi-query-object",
+    "prototype": [
+      502,
+      "Truy vấn Kingdee thất bại: unexpected response"
+    ],
+    "migration": [
+      502,
+      "K3 trả về dữ liệu sai định dạng. Ảnh chụp đơn hàng trước đó được giữ nguyên."
+    ]
+  },
+  {
+    "label": "vi-query-scalar",
+    "prototype": [
+      502,
+      "Truy vấn Kingdee thất bại: unexpected response"
+    ],
+    "migration": [
+      502,
+      "K3 trả về dữ liệu sai định dạng. Ảnh chụp đơn hàng trước đó được giữ nguyên."
+    ]
+  },
+  {
+    "label": "vi-query-message-values",
+    "prototype": [
+      502,
+      "Truy vấn Kingdee thất bại: 组织权限不足; 123; false"
+    ],
+    "migration": [
+      502,
+      "Truy vấn Kingdee thất bại: 组织权限不足"
+    ]
+  },
+  {
+    "label": "vi-query-empty-message",
+    "prototype": [
+      502,
+      "Truy vấn Kingdee thất bại:"
+    ],
+    "migration": [
+      502,
+      "Truy vấn Kingdee thất bại: 查询失败"
+    ]
+  },
+  {
+    "label": "vi-view-missing-status",
+    "prototype": [
+      502,
+      "Truy vấn Kingdee thất bại: View failed"
+    ],
+    "migration": [
+      502,
+      "K3 trả về dữ liệu sai định dạng. Ảnh chụp đơn hàng trước đó được giữ nguyên."
+    ]
+  },
+  {
+    "label": "vi-login-empty-session",
+    "prototype": [
+      200,
+      "Lệnh CMP-MO-001 đã đồng bộ, 2 dòng"
+    ],
+    "migration": [
+      502,
+      "K3 trả về dữ liệu sai định dạng. Ảnh chụp đơn hàng trước đó được giữ nguyên."
+    ]
+  },
+  {
+    "label": "vi-view-empty-document",
+    "prototype": [
+      200,
+      "Lệnh CMP-MO-001 không còn ở trạng thái kế hoạch; đã xóa khỏi ảnh chụp"
+    ],
+    "migration": [
+      502,
+      "K3 trả về dữ liệu sai định dạng. Ảnh chụp đơn hàng trước đó được giữ nguyên."
+    ]
+  },
+  {
+    "label": "vi-view-empty-lines",
+    "prototype": [
+      200,
+      "Lệnh CMP-MO-001 không còn ở trạng thái kế hoạch; đã xóa khỏi ảnh chụp"
+    ],
+    "migration": [
+      502,
+      "K3 trả về dữ liệu sai định dạng. Ảnh chụp đơn hàng trước đó được giữ nguyên."
+    ]
+  }
+]

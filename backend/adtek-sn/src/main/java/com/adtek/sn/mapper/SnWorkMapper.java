@@ -9,6 +9,12 @@ import java.util.List;
 /** 仅由已复核全部工厂的SN命令用例访问；所有写遵守控制→PI→额度→版本→成员顺序。 */
 @Mapper
 public interface SnWorkMapper {
+    @Insert("INSERT INTO sn_generation_job(task_id) VALUES(#{taskId})")
+    int generationNumber(String taskId);
+
+    @Select("SELECT id FROM sn_generation_job WHERE task_id=#{taskId}")
+    Long generationLabel(String taskId);
+
     @Select("SELECT * FROM sn_pi_counter WHERE pi=#{pi}")
     PiCounterEntity counter(String pi);
 
@@ -45,11 +51,6 @@ public interface SnWorkMapper {
 
     @Select("SELECT * FROM sn_order_bill WHERE id=#{id}")
     OrderBillEntity bill(long id);
-
-    @Select(
-            "SELECT * FROM sn_order_bill WHERE pi=#{pi} AND factory_id=#{factory} ORDER BY"
-                    + " bill_no,id LIMIT 1001")
-    List<OrderBillEntity> summary(@Param("pi") String pi, @Param("factory") long factory);
 
     @Select("SELECT COUNT(*) FROM sn_order_bill WHERE pi=#{pi} AND active=TRUE")
     long inSnapshot(String pi);
@@ -93,9 +94,9 @@ public interface SnWorkMapper {
     @Insert(
             "INSERT INTO"
                     + " sn_work(task_id,kind,pi,bill_id,factory_id,actor_id,payload,quantity,"
-                    + "file_name)"
+                    + "file_name,actor_name)"
                     + " VALUES(#{taskId},#{kind},#{pi},#{billId},#{factoryId},#{actorId},"
-                    + "#{payload},#{quantity},#{fileName})")
+                    + "#{payload},#{quantity},#{fileName},#{actorName})")
     int insert(SnWorkEntity work);
 
     @Select("SELECT * FROM sn_work WHERE task_id=#{task}")
@@ -132,24 +133,17 @@ public interface SnWorkMapper {
             @Param("lastSn") String lastSn);
 
     @Update(
-            "UPDATE sn_work SET state=#{state},error_code=#{code},"
+            "UPDATE sn_work SET state=#{state},error_code=#{code},error_params=#{params},"
                     + "finished_at=CURRENT_TIMESTAMP(6)"
                     + " WHERE task_id=#{task} AND state='PENDING'")
     int ended(
-            @Param("task") String task, @Param("state") String state, @Param("code") Integer code);
+            @Param("task") String task,
+            @Param("state") String state,
+            @Param("code") Integer code,
+            @Param("params") String params);
 
     @Select("SELECT COUNT(*) FROM sn_item WHERE bill_id=#{bill} AND status='PENDING_ALLOC'")
     long pendingCount(long bill);
-
-    @Select(
-            "SELECT COUNT(*) FROM sn_item WHERE bill_id=#{bill} AND status='PENDING_ALLOC' AND"
-                    + " (source_pi<>#{pi} OR source_org_id<>#{org} OR NOT (source_factory_id <=>"
-                    + " #{factory}))")
-    long pendingMismatch(
-            @Param("bill") long bill,
-            @Param("pi") String pi,
-            @Param("org") String org,
-            @Param("factory") Long factory);
 
     @Select("SELECT COUNT(*) FROM sn_work WHERE bill_id=#{bill} AND kind=#{kind}")
     long workCount(@Param("bill") long bill, @Param("kind") String kind);
@@ -163,6 +157,7 @@ public interface SnWorkMapper {
             @Param("offset") int offset,
             @Param("limit") int limit);
 
+    /** 改 PI 后可能重新起号；相同流水按实际生成时间选旧成员，随机 UUID 只作末级稳定排序。 */
     @Select(
             "SELECT"
                     + " gen_month,id,sn,pi,seq_pi,seq_dec,customer,material,factory_id,source,"
@@ -170,8 +165,8 @@ public interface SnWorkMapper {
                     + "source_entry_id,bill_id,bill_no,source_pi,source_org_id,"
                     + "source_factory_id,task_id"
                     + " FROM sn_item WHERE bill_id=#{bill} AND status='PENDING_ALLOC' ORDER BY"
-                    + " seq_dec,id")
-    List<SnItemEntity> pending(long bill);
+                    + " seq_dec,created_at,id LIMIT #{quantity}")
+    List<SnItemEntity> pendingBatch(@Param("bill") long bill, @Param("quantity") long quantity);
 
     @Insert(
             "<script>INSERT INTO sn_key(id,gen_month,pi,sn,seq_pi,seq_dec) VALUES <foreach"
@@ -179,6 +174,19 @@ public interface SnWorkMapper {
                     + " separator=','>(#{r.id},#{r.genMonth},#{r.pi},#{r.sn},#{r.seqPi},"
                     + "#{r.seqDec})</foreach></script>")
     int keys(@Param("items") List<SnItemEntity> items);
+
+    /** 在初始化事务内逐块查重；只返回受控业务字段，唯一索引仍作最后防线。 */
+    @Select(
+            "<script>SELECT sn FROM sn_key WHERE pi=#{pi} AND sn IN"
+                    + " <foreach collection='sns' item='sn' open='(' separator=',' close=')'>"
+                    + "#{sn}</foreach> LIMIT 1</script>")
+    String importedSnConflict(@Param("pi") String pi, @Param("sns") List<String> sns);
+
+    @Select(
+            "<script>SELECT seq_dec FROM sn_key WHERE seq_pi=#{pi} AND seq_dec IN"
+                    + " <foreach collection='seqs' item='seq' open='(' separator=',' close=')'>"
+                    + "#{seq}</foreach> LIMIT 1</script>")
+    Long importedSequenceConflict(@Param("pi") String pi, @Param("seqs") List<Long> seqs);
 
     @Insert(
             "<script>INSERT INTO"

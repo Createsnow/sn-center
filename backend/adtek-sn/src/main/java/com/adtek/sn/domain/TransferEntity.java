@@ -28,4 +28,7 @@ public record TransferEntity(
         Long decidedBy,
         String note,
         Instant createdAt,
-        Instant decidedAt) {}
+        Instant decidedAt,
+        String transferNo,
+        String actorName,
+        String decidedName) {}

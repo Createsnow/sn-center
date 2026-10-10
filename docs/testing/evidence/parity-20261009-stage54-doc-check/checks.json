@@ -1,0 +1,30 @@
+{
+  "checkedAt": "2026-10-09T12:44:10.848995+00:00",
+  "evidenceFiles": 166,
+  "sourceFiles": 6,
+  "changedBaselineSources": [
+    "frontend/e2e/parity/business-loop.spec.ts"
+  ],
+  "documents": {
+    "README.md": "ccb94b95adee9d7bf8589a15033f7989b1e3c3d40690d3151c70614e835d5216",
+    "docs/README.md": "e74464518a8324c11e93b7b38a0f27527f961105cd37bb8338003d64ce154141",
+    "docs/testing/README.md": "8ddba12ba766e6cfc4c26cb0966387c7c44e409ed75f39181d1cea26d036e30b",
+    "docs/testing/SN页面与功能一致性验收清单.md": "a37cf09b0e241c72bc583d7b2524417599362538497abccf85a75866370291c2",
+    "docs/testing/2026-10-09一致性第五十四阶段.md": "687d45104a405a7f5ca79719b854e7ca797152100b5c177007b4695580d554a5",
+    "memory/项目状态.md": "0de520be8202e88f5ec26818dd61f994d0aaf395b7685e20fe6b4838f018fa12"
+  },
+  "services": {
+    "18080": {
+      "status": "UP"
+    },
+    "8000": {
+      "status": "ok",
+      "db": "mysql"
+    }
+  },
+  "schema": 41,
+  "dedicatedPortsClosed": true,
+  "acceptance": "closed",
+  "fullUiMatrixRerun": false,
+  "jarSha256": "b21de36437a1dd15138c476dd98df763b6dcd88b6e307c4e2916d8b78e40ff6f"
+}

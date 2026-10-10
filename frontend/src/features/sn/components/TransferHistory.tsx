@@ -1,19 +1,7 @@
+import { CheckCircleFilled, ExclamationCircleFilled } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Alert,
-  Button,
-  Descriptions,
-  Drawer,
-  Input,
-  Modal,
-  Select,
-  Space,
-  Table,
-  Tag,
-  Typography,
-} from 'antd';
-import { useState } from 'react';
-import { TransferImpactHint } from './TransferImpactHint';
+import { Button, Drawer, Input, Modal, Pagination, Select, Space, Table, Tag } from 'antd';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { UserProfile } from '../../../api/contract';
 import { paginationTotal } from '../../../api/sn';
@@ -27,138 +15,327 @@ import { ApiErrorAlert } from '../../../components/ApiErrorAlert';
 import { FactoryPicker } from './FactoryPicker';
 import { SnOperation } from './SnOperation';
 import { useSnOperation } from '../useSnOperation';
+import { useSnContext } from '../useSnContext';
+import { usePrototypeFeedback } from '../usePrototypeFeedback';
+import { syncErrorText } from '../syncErrorText';
+import { transferJump } from '../transferJump';
+import { formatSnTime } from '../../../utils/snTime';
 
-export function TransferHistory({ profile }: { profile: UserProfile }) {
-  const { t } = useTranslation();
-  const [factoryId, setFactory] = useState<string>(),
-    [pi, setPi] = useState(''),
-    [status, setStatus] = useState<string>(),
-    [page, setPage] = useState(1);
-  const [selected, setSelected] = useState<Transfer>(),
-    [decision, setDecision] = useState<{ row: Transfer; action: TransferAction }>(),
-    [note, setNote] = useState('');
-  const [filter, setFilter] = useState<{ factoryId?: string; pi: string; status?: string }>({
-    pi: '',
-  });
-  const rows = useQuery({
-    queryKey: ['sn', 'transfer', profile.id, profile.authorizationVersion, filter, page],
-    queryFn: () => transferApi.list({ ...filter, page }),
-  });
-  const approve = useSnOperation(profile, 'TRANSFER_APPROVE', (input: TransferDecision) =>
-    transferApi.decision('APPROVE', input),
-  );
-  const reject = useSnOperation(profile, 'TRANSFER_REJECT', (input: TransferDecision) =>
-    transferApi.decision('REJECT', input),
-  );
-  const withdraw = useSnOperation(profile, 'TRANSFER_WITHDRAW', (input: TransferDecision) =>
-    transferApi.decision('WITHDRAW', input),
-  );
-  const work = { APPROVE: approve, REJECT: reject, WITHDRAW: withdraw };
-  const busy = approve.busy || reject.busy || withdraw.busy;
+const statusColors: Record<string, string> = {
+  PENDING: 'warning',
+  APPROVED: 'success',
+  REJECTED: 'danger',
+  WITHDRAWN: 'info',
+  TO_ACQUIRE: 'primary',
+  TO_PRINT: 'warning',
+  PRINTED: 'success',
+  APPLYING: 'danger',
+  TRANSFERRED_OUT: 'info',
+};
+function Status({ status, transfer = false }: { status: string; transfer?: boolean }) {
+  const { t } = useTranslation('prototype');
   return (
-    <div>
-      <Space wrap className="sn-toolbar">
-        <FactoryPicker profile={profile} value={factoryId} onChange={setFactory} />
+    <Tag className={'sn-transfer-tag sn-transfer-tag-' + statusColors[status]}>
+      {t((transfer ? 'transferStatus.' : 'status.') + status)}
+    </Tag>
+  );
+}
+
+/** 决策仍恢复原操作；成功后刷新记录和提示，不把异步确认当作业务成功。 */
+function useDecision(profile: UserProfile, action: TransferAction, done: () => void) {
+  const work = useSnOperation(profile, `TRANSFER_${action}`, (input: TransferDecision) =>
+    transferApi.decision(action, input),
+  );
+  const consumed = useRef(new Set<string>());
+  const task = work.task.data;
+  useEffect(() => {
+    if (task?.state === 'SUCCESS' && !consumed.current.has(task.operationId)) {
+      consumed.current.add(task.operationId);
+      done();
+      work.clear();
+    }
+  }, [task, work, done]);
+  return work;
+}
+
+type Filter = { factoryId?: string; pi: string; status?: string };
+export function TransferHistory({ profile }: { profile: UserProfile }) {
+  const { t } = useTranslation('prototype');
+  const { t: common } = useTranslation();
+  const context = useSnContext(profile);
+  const bound =
+    !context.data?.allFactories && context.data?.factories.length === 1
+      ? context.data.factories[0]
+      : undefined;
+  const [draft, setDraft] = useState<Filter>({ pi: '' });
+  const [filter, setFilter] = useState(draft);
+  const [pagination, setPagination] = useState({ page: 1, size: 20 });
+  const [revision, setRevision] = useState(0);
+  const [selected, setSelected] = useState<Transfer>();
+  const [preparing, setPreparing] = useState(false);
+  const [modal, modalHolder] = Modal.useModal();
+  const feedback = usePrototypeFeedback();
+  const done = () => feedback.success(t('common.done'));
+  const approve = useDecision(profile, 'APPROVE', done),
+    reject = useDecision(profile, 'REJECT', done),
+    withdraw = useDecision(profile, 'WITHDRAW', done);
+  const work = { APPROVE: approve, REJECT: reject, WITHDRAW: withdraw };
+  const busy = preparing || approve.busy || reject.busy || withdraw.busy;
+  const rows = useQuery({
+    queryKey: [
+      'sn',
+      'transfer',
+      profile.id,
+      profile.authorizationVersion,
+      filter,
+      pagination,
+      revision,
+    ],
+    queryFn: () => transferApi.list({ ...filter, ...pagination }),
+  });
+  const reload = (next = draft) => {
+    setDraft(next);
+    setFilter({ ...next, pi: next.pi.trim() });
+    setPagination((p) => ({ ...p, page: 1 }));
+    setRevision((v) => v + 1);
+  };
+  const decide = async (row: Transfer, action: TransferAction) => {
+    let hint = '';
+    setPreparing(true);
+    try {
+      if (action === 'APPROVE') {
+        const jump = transferJump(await transferApi.pendingHint(row.id));
+        if (jump) hint = ' ' + t('transfer.jumpWarn', { pi: row.toPi, ...jump });
+      }
+    } catch (error) {
+      feedback.error(syncErrorText(error, common));
+      return;
+    } finally {
+      setPreparing(false);
+    }
+    let note = '';
+    modal.confirm({
+      title: t('transfer.' + action.toLowerCase()),
+      icon: null,
+      className: 'sn-init-confirm sn-transfer-confirm',
+      width: 420,
+      centered: true,
+      closable: true,
+      okText: common('snAcquire.confirmButton'),
+      cancelText: common('snAcquire.cancelButton'),
+      content: (
+        <>
+          <div
+            className={
+              'sn-init-confirm-message' +
+              (action === 'APPROVE' ? ' sn-transfer-approve-message' : '')
+            }
+          >
+            {action === 'APPROVE' ? (
+              <CheckCircleFilled aria-hidden />
+            ) : (
+              <ExclamationCircleFilled aria-hidden />
+            )}
+            <span>
+              {t('transfer.' + action.toLowerCase() + 'Confirm', {
+                no: row.transferNo ?? row.id,
+                n: row.quantity,
+              })}
+              {hint}
+            </span>
+          </div>
+          {action !== 'WITHDRAW' && (
+            <Input
+              className="sn-transfer-note"
+              aria-label={t('transfer.note')}
+              placeholder={t('transfer.note')}
+              maxLength={500}
+              onChange={(e) => {
+                note = e.target.value;
+              }}
+            />
+          )}
+        </>
+      ),
+      onOk: () =>
+        work[action].begin({
+          id: row.id,
+          operationId: crypto.randomUUID(),
+          version: row.version,
+          note,
+        }),
+    });
+  };
+  return (
+    <div className="sn-transfer-history">
+      {feedback.holder}
+      {modalHolder}
+      <div className="sn-toolbar">
+        <Select
+          aria-label={t('common.status')}
+          allowClear
+          placeholder={t('common.status')}
+          value={draft.status}
+          onChange={(status) => reload({ ...draft, status })}
+          options={['PENDING', 'APPROVED', 'REJECTED', 'WITHDRAWN'].map((value) => ({
+            value,
+            label: t('transferStatus.' + value),
+          }))}
+        />
         <Input
           aria-label="PI"
           placeholder="PI"
-          value={pi}
-          onChange={(e) => setPi(e.target.value)}
-          style={{ width: 200 }}
-        />
-        <Select
-          aria-label={t('snPages.common.status')}
           allowClear
-          placeholder={t('snPages.common.status')}
-          style={{ width: 160 }}
-          value={status}
-          onChange={setStatus}
-          options={['PENDING', 'APPROVED', 'REJECTED', 'WITHDRAWN'].map((value) => ({
-            value,
-            label: t('snTransfer.states.' + value),
-          }))}
-        />
-        <Button
-          onClick={() => {
-            setPage(1);
-            setFilter({ factoryId, pi: pi.trim(), status });
-            void rows.refetch();
+          value={draft.pi}
+          onChange={(e) => {
+            const next = { ...draft, pi: e.target.value };
+            setDraft(next);
+            if (!next.pi) reload(next);
           }}
-        >
-          {t('snPages.common.search')}
+          onPressEnter={() => reload()}
+        />
+        {!bound && (
+          <FactoryPicker
+            profile={profile}
+            value={draft.factoryId}
+            onChange={(factoryId) => reload({ ...draft, factoryId })}
+          />
+        )}
+        <Button type="primary" onClick={() => reload()}>
+          {t('common.search')}
         </Button>
-      </Space>
-      <SnOperation work={approve} />
-      <SnOperation work={reject} />
-      <SnOperation work={withdraw} />
+      </div>
+      {[approve, reject, withdraw].map((operation, index) =>
+        operation.mutation.error ||
+        operation.task.error ||
+        operation.task.data?.state === 'FAILED' ? (
+          <SnOperation key={index} work={operation} />
+        ) : null,
+      )}
       <ApiErrorAlert error={rows.error} />
       <Table
         rowKey="id"
+        size="small"
+        tableLayout="fixed"
+        locale={{ emptyText: t('common.empty') }}
         data-testid="transfer-history"
         dataSource={rows.data?.items}
         loading={rows.isFetching}
-        scroll={{ x: 1550 }}
-        pagination={{
-          current: page,
-          pageSize: 20,
-          total: paginationTotal(rows.data?.total),
-          onChange: setPage,
-          showSizeChanger: false,
-        }}
+        scroll={{ x: 1370 }}
+        pagination={false}
         columns={[
           {
-            title: t('snTransfer.no'),
-            dataIndex: 'id',
-            width: 250,
-            render: (id: string) => (
-              <Typography.Text copyable className="sn-mono">
-                {id}
-              </Typography.Text>
-            ),
-          },
-          {
-            title: t('snPages.common.status'),
+            title: t('transfer.no'),
+            width: 170,
             render: (_, r) => (
-              <Space>
-                <Tag>{t('snTransfer.states.' + r.status)}</Tag>
-                {t('snTransfer.dir' + r.direction)}
-              </Space>
+              <>
+                <div className="sn-transfer-number" title={r.transferNo ?? r.id}>
+                  {r.transferNo ?? r.id}
+                </div>
+                <Tag className="sn-transfer-tag sn-transfer-mode">
+                  {t('transfer.mode' + r.mode)}
+                </Tag>
+                {bound && (
+                  <Tag
+                    className={
+                      'sn-transfer-tag sn-transfer-tag-' +
+                      (r.fromFactoryId === bound.id ? 'danger' : 'success')
+                    }
+                  >
+                    {t('transfer.dir' + (r.fromFactoryId === bound.id ? 'OUT' : 'IN'))}
+                  </Tag>
+                )}
+              </>
             ),
           },
-          { title: t('snTransfer.source'), render: (_, r) => `${r.fromFactoryCode} · ${r.fromPi}` },
-          { title: t('snTransfer.target'), render: (_, r) => `${r.toFactoryCode} · ${r.toPi}` },
-          { title: t('snPages.common.qty'), dataIndex: 'quantity' },
-          { title: t('snTransfer.reason'), dataIndex: 'reason' },
           {
-            title: t('snTransfer.applied'),
-            dataIndex: 'createdAt',
-            render: (v: string) => new Date(v).toLocaleString(),
+            title: t('common.status'),
+            width: 90,
+            render: (_, r) => <Status status={r.status} transfer />,
           },
           {
-            title: t('snPages.common.actions'),
-            fixed: 'right',
+            title: t('transfer.source'),
             width: 210,
             render: (_, r) => (
-              <Space wrap>
+              <>
+                <div>
+                  {r.fromFactoryName || r.fromFactoryCode} · <b>{r.fromPi}</b>
+                </div>
+                <div className="sn-muted">
+                  {t('scope.' + r.scope)}
+                  {r.material ? ' · ' + r.material : ''}
+                  {r.sn ? ' · ' + r.sn : ''}
+                </div>
+              </>
+            ),
+          },
+          {
+            title: t('transfer.target'),
+            width: 220,
+            render: (_, r) => (
+              <>
+                <div>
+                  {r.toFactoryName || r.toFactoryCode} · <b>{r.toPi}</b>
+                </div>
+                <div className="sn-muted">
+                  {t('common.customer')} {r.toCustomer || t('transfer.keepShort')} ·{' '}
+                  {t('common.material')} {r.toMaterial || t('transfer.keepShort')}
+                  {r.targetSource === 'MANUAL' && (
+                    <Tag className="sn-transfer-tag sn-transfer-tag-warning">
+                      {t('transfer.srcMANUAL')}
+                    </Tag>
+                  )}
+                </div>
+              </>
+            ),
+          },
+          { title: t('common.qty'), dataIndex: 'quantity', width: 70, align: 'right' },
+          { title: t('transfer.reason'), dataIndex: 'reason', width: 140, ellipsis: true },
+          {
+            title: t('transfer.applied'),
+            width: 150,
+            render: (_, r) => (
+              <>
+                <div>{r.actorName ?? r.actorId}</div>
+                <div className="sn-muted">{formatSnTime(r.createdAt)}</div>
+              </>
+            ),
+          },
+          {
+            title: t('transfer.decided'),
+            width: 150,
+            render: (_, r) => (
+              <>
+                <div>{r.decidedName ?? r.decidedBy ?? ''}</div>
+                <div className="sn-muted">{r.decidedAt ? formatSnTime(r.decidedAt) : ''}</div>
+              </>
+            ),
+          },
+          {
+            title: t('common.actions'),
+            fixed: 'right',
+            width: 170,
+            render: (_, r) => (
+              <Space size={0}>
                 <Button type="link" onClick={() => setSelected(r)}>
-                  {t('snPages.common.detail')}
+                  {t('common.detail')}
                 </Button>
                 {r.status === 'PENDING' &&
                   (['APPROVE', 'REJECT', 'WITHDRAW'] as const)
-                    .filter((action) =>
-                      profile.permissions.includes('sn:transfer:' + action.toLowerCase()),
+                    .filter(
+                      (action) =>
+                        profile.permissions.includes('sn:transfer:' + action.toLowerCase()) &&
+                        (action !== 'WITHDRAW' || bound?.id === r.fromFactoryId),
                     )
                     .map((action) => (
                       <Button
+                        className={'sn-transfer-action-' + action.toLowerCase()}
                         key={action}
                         type="link"
                         disabled={busy}
-                        onClick={() => {
-                          setNote('');
-                          setDecision({ row: r, action });
-                        }}
+                        onClick={() => void decide(r, action)}
                       >
-                        {t('snTransfer.' + action.toLowerCase())}
+                        {t('transfer.' + action.toLowerCase())}
                       </Button>
                     ))}
               </Space>
@@ -166,51 +343,23 @@ export function TransferHistory({ profile }: { profile: UserProfile }) {
           },
         ]}
       />
+      <Pagination
+        className="sn-acquire-pager"
+        current={pagination.page}
+        pageSize={pagination.size}
+        total={paginationTotal(rows.data?.total)}
+        showSizeChanger
+        pageSizeOptions={[20, 50, 100]}
+        showTotal={() => common('shell.paginationTotal', { total: rows.data?.total ?? '0' })}
+        onChange={(page, size) => setPagination({ page, size })}
+      />
       {selected && (
         <TransferDetails profile={profile} record={selected} close={() => setSelected(undefined)} />
       )}
-      <Modal
-        open={!!decision}
-        title={decision ? t('snTransfer.' + decision.action.toLowerCase()) : ''}
-        onCancel={() => setDecision(undefined)}
-        okText={t('users.confirm')}
-        cancelText={t('snPages.common.cancel')}
-        onOk={() => {
-          if (decision) {
-            work[decision.action].begin({
-              id: decision.row.id,
-              operationId: crypto.randomUUID(),
-              version: decision.row.version,
-              note,
-            });
-            setDecision(undefined);
-          }
-        }}
-      >
-        <p>
-          {decision &&
-            t('snTransfer.' + decision.action.toLowerCase() + 'Confirm', {
-              no: decision.row.id,
-              n: decision.row.quantity,
-            })}
-        </p>
-        <Input.TextArea
-          aria-label={t('snTransfer.note')}
-          placeholder={t('snTransfer.note')}
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          maxLength={500}
-        />
-        {decision?.action === 'APPROVE' && (
-          <>
-            <Alert type="warning" showIcon title={t('snTransfer.labels')} />
-            <TransferImpactHint profile={profile} transferId={decision.row.id} />
-          </>
-        )}
-      </Modal>
     </div>
   );
 }
+
 function TransferDetails({
   profile,
   record,
@@ -220,96 +369,81 @@ function TransferDetails({
   record: Transfer;
   close: () => void;
 }) {
-  const { t } = useTranslation();
-  const [cursors, setCursors] = useState<(string | undefined)[]>([undefined]);
-  const cursor = cursors.at(-1);
+  const { t } = useTranslation('prototype');
+  const { t: common } = useTranslation();
+  const [page, setPage] = useState(1);
   const rows = useQuery({
-    queryKey: ['sn', 'transfer-items', profile.id, profile.authorizationVersion, record.id, cursor],
-    queryFn: () => transferApi.items(record.id, cursor),
+    queryKey: [
+      'sn',
+      'transfer-detail-page',
+      profile.id,
+      profile.authorizationVersion,
+      record.id,
+      page,
+    ],
+    queryFn: () => transferApi.itemPage(record.id, page),
   });
-  const detail = useQuery({
-    queryKey: ['sn', 'transfer-detail', profile.id, profile.authorizationVersion, record.id],
-    queryFn: () => transferApi.get(record.id),
-  });
-  const value = detail.data ?? record;
   return (
     <Drawer
-      title={t('snTransfer.itemsOf', { no: record.id })}
       open
+      title={t('transfer.itemsOf', { no: record.transferNo ?? record.id })}
       onClose={close}
-      size="large"
-      styles={{ wrapper: { width: 'min(1100px,100vw)' } }}
+      size={780}
+      rootClassName="sn-acquire-detail sn-transfer-detail"
     >
-      <Alert type="info" title={t('snTransfer.fixed')} showIcon />
-      <Descriptions
-        column={1}
-        size="small"
-        items={[
-          {
-            key: 'scope',
-            label: t('snTransfer.scope'),
-            children: t('snTransfer.scopes.' + value.scope),
-          },
-          {
-            key: 'mode',
-            label: t('snTransfer.target'),
-            children: `${t('snTransfer.src' + value.targetSource)} · ${value.toFactoryCode} · ${value.toPi}`,
-          },
-          {
-            key: 'customer',
-            label: t('snTransfer.toCustomer'),
-            children: value.toCustomer || t('snTransfer.keepShort'),
-          },
-          {
-            key: 'material',
-            label: t('snTransfer.toMaterial'),
-            children: value.toMaterial || t('snTransfer.keepShort'),
-          },
-          { key: 'reason', label: t('snTransfer.reason'), children: value.reason },
-          { key: 'note', label: t('snTransfer.note'), children: value.note },
-        ]}
-      />
-      <ApiErrorAlert error={rows.error ?? detail.error} />
-      {value.status === 'PENDING' && <TransferImpactHint profile={profile} transferId={value.id} />}
+      <ApiErrorAlert error={rows.error} />
       <Table
         rowKey="ordinal"
+        size="small"
+        tableLayout="auto"
+        locale={{ emptyText: t('common.empty') }}
         data-testid="transfer-members"
         dataSource={rows.data?.items}
         loading={rows.isFetching}
         pagination={false}
-        scroll={{ x: 1300 }}
+        scroll={{ x: 910 }}
         columns={[
-          { title: '#', dataIndex: 'ordinal', width: 60 },
-          { title: 'SN', render: (_, r) => <span className="sn-mono">{r.snapshot.sn}</span> },
-          { title: t('snPages.common.seqText'), render: (_, r) => r.snapshot.seqText ?? '—' },
-          { title: t('snPages.common.seqDec'), render: (_, r) => r.snapshot.seqDec ?? '—' },
           {
-            title: t('snTransfer.fromStatus'),
-            render: (_, r) => t('snAcquire.status.' + r.fromStatus),
+            title: t('common.sn'),
+            dataIndex: 'sn',
+            minWidth: 170,
+            render: (value: string) => <span className="sn-mono">{value}</span>,
           },
           {
-            title: t('snTransfer.nowStatus'),
-            render: (_, r) => (r.currentStatus ? t('snAcquire.status.' + r.currentStatus) : '—'),
+            title: t('common.seqText'),
+            dataIndex: 'seqText',
+            width: 110,
+            render: (value: string | null) => <span className="sn-mono">{value}</span>,
+          },
+          { title: t('common.seqDec'), dataIndex: 'seqDec', width: 90 },
+          {
+            title: t('transfer.fromStatus'),
+            width: 100,
+            render: (_, r) => <Status status={r.fromStatus} />,
           },
           {
-            title: t('snTransfer.nowAt'),
-            render: (_, r) => `${r.currentFactoryId ?? '—'} · ${r.currentPi ?? '—'}`,
+            title: t('transfer.nowStatus'),
+            width: 100,
+            render: (_, r) => (r.currentStatus ? <Status status={r.currentStatus} /> : null),
           },
-          { title: t('snAcquire.batchNo'), dataIndex: 'fromBatchId' },
+          {
+            title: t('transfer.nowAt'),
+            minWidth: 170,
+            render: (_, r) =>
+              `${r.currentFactoryName || r.currentFactoryCode || ''} · ${r.currentPi ?? ''}`,
+          },
+          { title: t('acquire.batchNo'), dataIndex: 'fromBatchNo', minWidth: 170 },
         ]}
       />
-      <Space className="sn-toolbar">
-        <Button disabled={cursors.length <= 1} onClick={() => setCursors((v) => v.slice(0, -1))}>
-          {t('snTransfer.previous')}
-        </Button>
-        <span>{cursors.length}</span>
-        <Button
-          disabled={!rows.data?.nextCursor}
-          onClick={() => setCursors((v) => [...v, rows.data!.nextCursor!])}
-        >
-          {t('snTransfer.next')}
-        </Button>
-      </Space>
+      <Pagination
+        className="sn-acquire-pager"
+        current={page}
+        pageSize={50}
+        showSizeChanger={false}
+        total={paginationTotal(rows.data?.total)}
+        showTotal={() => common('shell.paginationTotal', { total: rows.data?.total ?? '0' })}
+        onChange={setPage}
+      />
     </Drawer>
   );
 }

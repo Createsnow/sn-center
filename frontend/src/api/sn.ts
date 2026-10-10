@@ -1,6 +1,7 @@
 import type { components } from './generated/schema';
 import { query, submit, replace } from './client';
 import { isRecord } from './contract';
+import { loadCatalog } from './catalog';
 
 export type Factory = components['schemas']['FactoryVO'];
 export type Organization = components['schemas']['OrganizationVO'];
@@ -64,6 +65,7 @@ export const isVersion = (value: unknown): value is RuleVersion =>
   isRecord(value) &&
   fields(value, ['id', 'ruleId', 'version'], id) &&
   nullable(id)(value.createdBy) &&
+  nullable(text)(value.createdByName) &&
   fields(value, ['prefix', 'suffix', 'alphabet'], text) &&
   typeof value.base === 'number' &&
   [10, 16, 32, 36].includes(value.base) &&
@@ -103,7 +105,7 @@ export const isOrder = (value: unknown): value is Order =>
   ) &&
   nullable(id)(value.factoryId) &&
   nullable(text)(value.factoryCode) &&
-  plannedQuantity(value.totalQty) &&
+  decimal(value.totalQty) &&
   typeof value.quantityReady === 'boolean' &&
   fields(value, ['lineCount', 'generatedQty', 'allocatedQty', 'quota'], decimal) &&
   text(value.statuses) &&
@@ -112,7 +114,8 @@ export const isOrder = (value: unknown): value is Order =>
 export const isOrderPi = (value: unknown): value is OrderPi =>
   isRecord(value) &&
   text(value.pi) &&
-  plannedQuantity(value.totalQty) &&
+  text(value.customer) &&
+  decimal(value.totalQty) &&
   fields(value, ['bills', 'generatedQty', 'allocatedQty', 'pendingQuantity', 'quota'], decimal);
 export const isLine = (value: unknown): value is OrderLine =>
   isRecord(value) &&
@@ -147,6 +150,9 @@ export const isSchedule = (value: unknown): value is OrderSchedule =>
   value.intervalMinutes >= 10 &&
   value.intervalMinutes <= 10080 &&
   nullable(id)(value.ownerId) &&
+  nullable(text)(value.ownerName) &&
+  (value.lastOk === null || typeof value.lastOk === 'boolean') &&
+  text(value.lastErrorMessage) &&
   nullable(text)(value.lastRunId) &&
   fields(value, ['nextRunAt', 'lastRunAt', 'updatedAt'], nullable(date)) &&
   fields(value, ['lastBills', 'lastRows'], nullable(decimal)) &&
@@ -225,8 +231,25 @@ export const snApi = {
       syncTimeout,
     ),
   rules: (filter: SnFilter) => query(url('/sn/rules', filter), pageGuard(isRule)),
+  allRules: (filter: SnFilter, signal: AbortSignal) =>
+    loadCatalog(
+      (page) => query(url('/sn/rules', { ...filter, page, size: 100 }), pageGuard(isRule)),
+      signal,
+    ),
   versions: (ruleId: string, filter: SnFilter) =>
     query(url(`/sn/rules/${ruleId}/versions`, filter), pageGuard(isVersion)),
+  allVersions: (ruleId: string, signal: AbortSignal) =>
+    loadCatalog(
+      (page) =>
+        query(url(`/sn/rules/${ruleId}/versions`, { page, size: 100 }), pageGuard(isVersion)),
+      signal,
+    ),
+  ruleCustomers: (q: string, signal: AbortSignal) =>
+    loadCatalog(
+      (page) => query(url('/sn/orders/customers', { q, page, size: 100 }), pageGuard(text)),
+      signal,
+      200,
+    ),
   createRule: (command: RuleCommand) => submit('/sn/rules', command, isRule),
   updateRule: (ruleId: string, command: RuleCommand) =>
     submit(`/sn/rules/${ruleId}/update`, command, isRuleChange),
@@ -235,6 +258,21 @@ export const snApi = {
   pis: (filter: SnFilter) => query(url('/sn/orders/pis', filter), pageGuard(isOrderPi)),
   lines: (orderId: string, filter: SnFilter) =>
     query(url(`/sn/orders/${orderId}/lines`, filter), pageGuard(isLine)),
+  /** 分录区与原型一样连续展示；后台仍逐页读取，取消选单后停止请求后续页。 */
+  async allLines(orderId: string, signal: AbortSignal): Promise<OrderLine[]> {
+    const items: OrderLine[] = [];
+    for (let page = 1; ; page++) {
+      signal.throwIfAborted();
+      const result = await query(
+        url(`/sn/orders/${orderId}/lines`, { page, size: 100 }),
+        pageGuard(isLine),
+      );
+      signal.throwIfAborted();
+      items.push(...result.items);
+      if (BigInt(items.length) >= BigInt(result.total)) return items;
+      if (result.items.length === 0) throw new Error('Order lines changed during loading');
+    }
+  },
   meta: () => query('/sn/orders/meta', isMeta),
   customers: (filter: SnFilter) => query(url('/sn/orders/customers', filter), pageGuard(text)),
   syncOrders: (billNo?: string) => submit('/sn/orders/sync', { billNo }, isSync, syncTimeout),

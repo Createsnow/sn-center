@@ -10,6 +10,43 @@ import java.util.List;
 /** 管理用例内部策略读写；调用前必须取得协调锁并复核权限，不能直接用于对外用户查询。 */
 @Mapper
 public interface UserSecurityMapper {
+    /** 仅供受控管理审计还原变更前角色；调用方已验证内部角色ID，不读请求正文。 */
+    @Select(
+            """
+            <script>
+            SELECT role_code FROM sys_role WHERE id IN
+            <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+            ORDER BY role_code
+            </script>
+            """)
+    List<String> auditRoleCodes(@Param("ids") List<String> ids);
+
+    @Select("SELECT id FROM sys_role WHERE role_code=#{code} AND enabled=TRUE")
+    Long enabledRoleId(@Param("code") String code);
+
+    /** 只返回角色候选 ID；最终列表必须继续应用 system:user:list 的 SQL 数据范围。 */
+    @Select(
+            """
+            <script>
+            SELECT DISTINCT ur.user_id FROM sys_user_role ur JOIN sys_role r ON r.id=ur.role_id
+            WHERE r.role_code IN
+            <foreach collection="codes" item="code" open="(" separator="," close=")">
+              #{code}
+            </foreach>
+            </script>
+            """)
+    List<Long> usersWithRoles(@Param("codes") List<String> codes);
+
+    @Select(
+            """
+            SELECT r.role_code FROM sys_user_role ur JOIN sys_role r ON r.id=ur.role_id
+            WHERE ur.user_id=#{id} ORDER BY r.role_code
+            """)
+    List<String> roleCodes(@Param("id") long id);
+
+    @Select("SELECT username FROM sys_user WHERE id=#{id}")
+    String creatorName(@Param("id") long id);
+
     @Select("SELECT initialized FROM sys_security_control WHERE id=1 FOR UPDATE")
     Boolean lockControl();
 

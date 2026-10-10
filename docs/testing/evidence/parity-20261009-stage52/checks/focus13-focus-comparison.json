@@ -1,0 +1,2471 @@
+{
+  "pairs": [
+    {
+      "label": "loaded",
+      "prototypeScroll": 60,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "BODY",
+      "migrationFocusTag": "BODY",
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "selected",
+      "prototypeScroll": 60,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "TBODY",
+      "migrationFocusTag": "BODY",
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "detail-row-hover",
+      "prototypeScroll": 60,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "TBODY",
+      "migrationFocusTag": "BODY",
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "table-arrow-down",
+      "prototypeScroll": 60,
+      "migrationScroll": 40,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "TBODY",
+      "migrationFocusTag": "BODY",
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "table-arrow-up",
+      "prototypeScroll": 20,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "TBODY",
+      "migrationFocusTag": "BODY",
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "opened",
+      "prototypeScroll": 20,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "DIV",
+      "migrationFocusTag": "DIV",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ],
+          "migration": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ]
+        },
+        "1": {
+          "prototype": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ],
+          "migration": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ]
+        },
+        "3": {
+          "prototype": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ]
+        },
+        "4": {
+          "prototype": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ]
+        },
+        "5": {
+          "prototype": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ],
+          "migration": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ]
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "escape",
+      "prototypeScroll": 20,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "BUTTON",
+      "migrationFocusTag": "BUTTON",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "switch-edited",
+      "prototypeScroll": 20,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "DIV",
+      "migrationFocusTag": "DIV",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ],
+          "migration": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ]
+        },
+        "1": {
+          "prototype": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ],
+          "migration": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ]
+        },
+        "3": {
+          "prototype": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ]
+        },
+        "4": {
+          "prototype": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ]
+        },
+        "5": {
+          "prototype": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ],
+          "migration": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ]
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "cancel",
+      "prototypeScroll": 20,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "BUTTON",
+      "migrationFocusTag": "BUTTON",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "close-button",
+      "prototypeScroll": 20,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "BUTTON",
+      "migrationFocusTag": "BUTTON",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "backdrop",
+      "prototypeScroll": 20,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "BODY",
+      "migrationFocusTag": "BODY",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "narrow-open",
+      "prototypeScroll": 20,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "DIV",
+      "migrationFocusTag": "DIV",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [
+            [
+              144,
+              144,
+              480,
+              421
+            ]
+          ],
+          "migration": [
+            [
+              144,
+              144,
+              480,
+              421
+            ]
+          ]
+        },
+        "1": {
+          "prototype": [
+            [
+              576,
+              144,
+              48,
+              48
+            ]
+          ],
+          "migration": [
+            [
+              576,
+              144,
+              48,
+              48
+            ]
+          ]
+        },
+        "3": {
+          "prototype": [
+            [
+              387,
+              252,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              387,
+              252,
+              32,
+              15
+            ]
+          ]
+        },
+        "4": {
+          "prototype": [
+            [
+              387,
+              267,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              387,
+              267,
+              32,
+              15
+            ]
+          ]
+        },
+        "5": {
+          "prototype": [
+            [
+              285,
+              252,
+              93,
+              30
+            ]
+          ],
+          "migration": [
+            [
+              285,
+              252,
+              93,
+              30
+            ]
+          ]
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "wide-reopened",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "DIV",
+      "migrationFocusTag": "DIV",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ],
+          "migration": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ]
+        },
+        "1": {
+          "prototype": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ],
+          "migration": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ]
+        },
+        "3": {
+          "prototype": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ]
+        },
+        "4": {
+          "prototype": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ]
+        },
+        "5": {
+          "prototype": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ],
+          "migration": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ]
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "fast-unit-0",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "INPUT",
+      "migrationFocusTag": "INPUT",
+      "controlGeometry": {
+        "0": {
+          "prototype": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ],
+          "migration": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ]
+        },
+        "1": {
+          "prototype": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ],
+          "migration": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ]
+        },
+        "3": {
+          "prototype": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ]
+        },
+        "4": {
+          "prototype": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ]
+        },
+        "5": {
+          "prototype": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ],
+          "migration": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ]
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "fast-unit-1",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "INPUT",
+      "migrationFocusTag": "INPUT",
+      "controlGeometry": {
+        "0": {
+          "prototype": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ],
+          "migration": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ]
+        },
+        "1": {
+          "prototype": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ],
+          "migration": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ]
+        },
+        "3": {
+          "prototype": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ]
+        },
+        "4": {
+          "prototype": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ]
+        },
+        "5": {
+          "prototype": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ],
+          "migration": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ]
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "fast-unit-2",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "INPUT",
+      "migrationFocusTag": "INPUT",
+      "controlGeometry": {
+        "0": {
+          "prototype": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ],
+          "migration": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ]
+        },
+        "1": {
+          "prototype": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ],
+          "migration": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ]
+        },
+        "3": {
+          "prototype": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ]
+        },
+        "4": {
+          "prototype": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ]
+        },
+        "5": {
+          "prototype": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ],
+          "migration": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ]
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "keyboard-up",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "INPUT",
+      "migrationFocusTag": "INPUT",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ],
+          "migration": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ]
+        },
+        "1": {
+          "prototype": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ],
+          "migration": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ]
+        },
+        "3": {
+          "prototype": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ]
+        },
+        "4": {
+          "prototype": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ]
+        },
+        "5": {
+          "prototype": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ],
+          "migration": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ]
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "keyboard-down",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "INPUT",
+      "migrationFocusTag": "INPUT",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ],
+          "migration": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ]
+        },
+        "1": {
+          "prototype": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ],
+          "migration": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ]
+        },
+        "3": {
+          "prototype": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ]
+        },
+        "4": {
+          "prototype": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ]
+        },
+        "5": {
+          "prototype": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ],
+          "migration": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ]
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "mouse-step-up",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "DIV",
+      "migrationFocusTag": "DIV",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ],
+          "migration": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ]
+        },
+        "1": {
+          "prototype": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ],
+          "migration": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ]
+        },
+        "3": {
+          "prototype": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ]
+        },
+        "4": {
+          "prototype": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ]
+        },
+        "5": {
+          "prototype": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ],
+          "migration": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ]
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "mouse-step-down",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "DIV",
+      "migrationFocusTag": "DIV",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ],
+          "migration": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ]
+        },
+        "1": {
+          "prototype": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ],
+          "migration": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ]
+        },
+        "3": {
+          "prototype": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ]
+        },
+        "4": {
+          "prototype": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ]
+        },
+        "5": {
+          "prototype": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ],
+          "migration": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ]
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "step-minimum",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "INPUT",
+      "migrationFocusTag": "INPUT",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ],
+          "migration": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ]
+        },
+        "1": {
+          "prototype": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ],
+          "migration": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ]
+        },
+        "3": {
+          "prototype": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ]
+        },
+        "4": {
+          "prototype": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ]
+        },
+        "5": {
+          "prototype": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ],
+          "migration": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ]
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "step-maximum",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "INPUT",
+      "migrationFocusTag": "INPUT",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ],
+          "migration": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ]
+        },
+        "1": {
+          "prototype": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ],
+          "migration": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ]
+        },
+        "3": {
+          "prototype": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ]
+        },
+        "4": {
+          "prototype": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ]
+        },
+        "5": {
+          "prototype": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ],
+          "migration": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ]
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "wheel-bottom",
+      "prototypeScroll": 60,
+      "migrationScroll": 60,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "BUTTON",
+      "migrationFocusTag": "BUTTON",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "opened-after-scroll",
+      "prototypeScroll": 60,
+      "migrationScroll": 60,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "DIV",
+      "migrationFocusTag": "DIV",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ],
+          "migration": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ]
+        },
+        "1": {
+          "prototype": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ],
+          "migration": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ]
+        },
+        "3": {
+          "prototype": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ]
+        },
+        "4": {
+          "prototype": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ]
+        },
+        "5": {
+          "prototype": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ],
+          "migration": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ]
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "escape-after-scroll",
+      "prototypeScroll": 60,
+      "migrationScroll": 60,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "BUTTON",
+      "migrationFocusTag": "BUTTON",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "saved-120",
+      "prototypeScroll": 60,
+      "migrationScroll": 60,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "BODY",
+      "migrationFocusTag": "BODY",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "saved-1440",
+      "prototypeScroll": 60,
+      "migrationScroll": 60,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "BODY",
+      "migrationFocusTag": "BODY",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    }
+  ],
+  "differences": [
+    {
+      "label": "loaded",
+      "prototypeScroll": 60,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "BODY",
+      "migrationFocusTag": "BODY",
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "selected",
+      "prototypeScroll": 60,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "TBODY",
+      "migrationFocusTag": "BODY",
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "detail-row-hover",
+      "prototypeScroll": 60,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "TBODY",
+      "migrationFocusTag": "BODY",
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "table-arrow-down",
+      "prototypeScroll": 60,
+      "migrationScroll": 40,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "TBODY",
+      "migrationFocusTag": "BODY",
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "table-arrow-up",
+      "prototypeScroll": 20,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "TBODY",
+      "migrationFocusTag": "BODY",
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "opened",
+      "prototypeScroll": 20,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "DIV",
+      "migrationFocusTag": "DIV",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ],
+          "migration": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ]
+        },
+        "1": {
+          "prototype": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ],
+          "migration": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ]
+        },
+        "3": {
+          "prototype": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ]
+        },
+        "4": {
+          "prototype": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ]
+        },
+        "5": {
+          "prototype": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ],
+          "migration": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ]
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "escape",
+      "prototypeScroll": 20,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "BUTTON",
+      "migrationFocusTag": "BUTTON",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "switch-edited",
+      "prototypeScroll": 20,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "DIV",
+      "migrationFocusTag": "DIV",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ],
+          "migration": [
+            [
+              480,
+              144,
+              480,
+              421
+            ]
+          ]
+        },
+        "1": {
+          "prototype": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ],
+          "migration": [
+            [
+              912,
+              144,
+              48,
+              48
+            ]
+          ]
+        },
+        "3": {
+          "prototype": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              252,
+              32,
+              15
+            ]
+          ]
+        },
+        "4": {
+          "prototype": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              723,
+              267,
+              32,
+              15
+            ]
+          ]
+        },
+        "5": {
+          "prototype": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ],
+          "migration": [
+            [
+              621,
+              252,
+              93,
+              30
+            ]
+          ]
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "cancel",
+      "prototypeScroll": 20,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "BUTTON",
+      "migrationFocusTag": "BUTTON",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "close-button",
+      "prototypeScroll": 20,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "BUTTON",
+      "migrationFocusTag": "BUTTON",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "backdrop",
+      "prototypeScroll": 20,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "BODY",
+      "migrationFocusTag": "BODY",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [],
+          "migration": []
+        },
+        "1": {
+          "prototype": [],
+          "migration": []
+        },
+        "3": {
+          "prototype": [],
+          "migration": []
+        },
+        "4": {
+          "prototype": [],
+          "migration": []
+        },
+        "5": {
+          "prototype": [],
+          "migration": []
+        }
+      },
+      "controlBoxesEqual": true
+    },
+    {
+      "label": "narrow-open",
+      "prototypeScroll": 20,
+      "migrationScroll": 0,
+      "scrollEqual": false,
+      "heightEqual": true,
+      "prototypeFocusTag": "DIV",
+      "migrationFocusTag": "DIV",
+      "focusTagEqual": true,
+      "controlGeometry": {
+        "0": {
+          "prototype": [
+            [
+              144,
+              144,
+              480,
+              421
+            ]
+          ],
+          "migration": [
+            [
+              144,
+              144,
+              480,
+              421
+            ]
+          ]
+        },
+        "1": {
+          "prototype": [
+            [
+              576,
+              144,
+              48,
+              48
+            ]
+          ],
+          "migration": [
+            [
+              576,
+              144,
+              48,
+              48
+            ]
+          ]
+        },
+        "3": {
+          "prototype": [
+            [
+              387,
+              252,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              387,
+              252,
+              32,
+              15
+            ]
+          ]
+        },
+        "4": {
+          "prototype": [
+            [
+              387,
+              267,
+              32,
+              15
+            ]
+          ],
+          "migration": [
+            [
+              387,
+              267,
+              32,
+              15
+            ]
+          ]
+        },
+        "5": {
+          "prototype": [
+            [
+              285,
+              252,
+              93,
+              30
+            ]
+          ],
+          "migration": [
+            [
+              285,
+              252,
+              93,
+              30
+            ]
+          ]
+        }
+      },
+      "controlBoxesEqual": true
+    }
+  ],
+  "scope": "Chinese administrator, 1440x960 and narrow-to-wide reopening at 768x960, dedicated synthetic database; semantic focus flow, not equality of framework DOM nodes."
+}

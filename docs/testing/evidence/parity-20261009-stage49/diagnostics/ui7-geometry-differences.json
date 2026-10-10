@@ -1,0 +1,2576 @@
+{
+  "pairedStates": 19,
+  "exactLocalizedErrorPairs": 6,
+  "geometryChecks": [
+    {
+      "label": "zh-CN-nel",
+      "group": "buttons",
+      "elements": 2
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "headers",
+      "elements": 8
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "meta",
+      "elements": 5
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "input",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "summary",
+      "elements": 4
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "inputText",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "toolbarButtons",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "table",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "pager",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "pagerTotal",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "pagerSize",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "pagerPrev",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "pagerNext",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "pagerNumber",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "buttons",
+      "elements": 2
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "headers",
+      "elements": 8
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "meta",
+      "elements": 5
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "input",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "summary",
+      "elements": 4
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "inputText",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "toolbarButtons",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "table",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "pager",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "pagerTotal",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "pagerSize",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "pagerPrev",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "pagerNext",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "pagerNumber",
+      "elements": 1
+    },
+    {
+      "label": "en-nel",
+      "group": "buttons",
+      "elements": 2
+    },
+    {
+      "label": "en-nel",
+      "group": "headers",
+      "elements": 8
+    },
+    {
+      "label": "en-nel",
+      "group": "meta",
+      "elements": 5
+    },
+    {
+      "label": "en-nel",
+      "group": "input",
+      "elements": 1
+    },
+    {
+      "label": "en-nel",
+      "group": "summary",
+      "elements": 4
+    },
+    {
+      "label": "en-nel",
+      "group": "inputText",
+      "elements": 1
+    },
+    {
+      "label": "en-nel",
+      "group": "toolbarButtons",
+      "elements": 1
+    },
+    {
+      "label": "en-nel",
+      "group": "table",
+      "elements": 1
+    },
+    {
+      "label": "en-nel",
+      "group": "pager",
+      "elements": 1
+    },
+    {
+      "label": "en-nel",
+      "group": "pagerTotal",
+      "elements": 1
+    },
+    {
+      "label": "en-nel",
+      "group": "pagerSize",
+      "elements": 1
+    },
+    {
+      "label": "en-nel",
+      "group": "pagerPrev",
+      "elements": 1
+    },
+    {
+      "label": "en-nel",
+      "group": "pagerNext",
+      "elements": 1
+    },
+    {
+      "label": "en-nel",
+      "group": "pagerNumber",
+      "elements": 1
+    },
+    {
+      "label": "en-pager",
+      "group": "buttons",
+      "elements": 2
+    },
+    {
+      "label": "en-pager",
+      "group": "headers",
+      "elements": 8
+    },
+    {
+      "label": "en-pager",
+      "group": "meta",
+      "elements": 5
+    },
+    {
+      "label": "en-pager",
+      "group": "input",
+      "elements": 1
+    },
+    {
+      "label": "en-pager",
+      "group": "summary",
+      "elements": 4
+    },
+    {
+      "label": "en-pager",
+      "group": "inputText",
+      "elements": 1
+    },
+    {
+      "label": "en-pager",
+      "group": "toolbarButtons",
+      "elements": 1
+    },
+    {
+      "label": "en-pager",
+      "group": "table",
+      "elements": 1
+    },
+    {
+      "label": "en-pager",
+      "group": "pager",
+      "elements": 1
+    },
+    {
+      "label": "en-pager",
+      "group": "pagerTotal",
+      "elements": 1
+    },
+    {
+      "label": "en-pager",
+      "group": "pagerSize",
+      "elements": 1
+    },
+    {
+      "label": "en-pager",
+      "group": "pagerPrev",
+      "elements": 1
+    },
+    {
+      "label": "en-pager",
+      "group": "pagerNext",
+      "elements": 1
+    },
+    {
+      "label": "en-pager",
+      "group": "pagerNumber",
+      "elements": 1
+    },
+    {
+      "label": "vi-nel",
+      "group": "buttons",
+      "elements": 2
+    },
+    {
+      "label": "vi-nel",
+      "group": "headers",
+      "elements": 8
+    },
+    {
+      "label": "vi-nel",
+      "group": "meta",
+      "elements": 5
+    },
+    {
+      "label": "vi-nel",
+      "group": "input",
+      "elements": 1
+    },
+    {
+      "label": "vi-nel",
+      "group": "summary",
+      "elements": 4
+    },
+    {
+      "label": "vi-nel",
+      "group": "inputText",
+      "elements": 1
+    },
+    {
+      "label": "vi-nel",
+      "group": "toolbarButtons",
+      "elements": 1
+    },
+    {
+      "label": "vi-nel",
+      "group": "table",
+      "elements": 1
+    },
+    {
+      "label": "vi-nel",
+      "group": "pager",
+      "elements": 1
+    },
+    {
+      "label": "vi-nel",
+      "group": "pagerTotal",
+      "elements": 1
+    },
+    {
+      "label": "vi-nel",
+      "group": "pagerSize",
+      "elements": 1
+    },
+    {
+      "label": "vi-nel",
+      "group": "pagerPrev",
+      "elements": 1
+    },
+    {
+      "label": "vi-nel",
+      "group": "pagerNext",
+      "elements": 1
+    },
+    {
+      "label": "vi-nel",
+      "group": "pagerNumber",
+      "elements": 1
+    },
+    {
+      "label": "vi-pager",
+      "group": "buttons",
+      "elements": 2
+    },
+    {
+      "label": "vi-pager",
+      "group": "headers",
+      "elements": 8
+    },
+    {
+      "label": "vi-pager",
+      "group": "meta",
+      "elements": 5
+    },
+    {
+      "label": "vi-pager",
+      "group": "input",
+      "elements": 1
+    },
+    {
+      "label": "vi-pager",
+      "group": "summary",
+      "elements": 4
+    },
+    {
+      "label": "vi-pager",
+      "group": "inputText",
+      "elements": 1
+    },
+    {
+      "label": "vi-pager",
+      "group": "toolbarButtons",
+      "elements": 1
+    },
+    {
+      "label": "vi-pager",
+      "group": "table",
+      "elements": 1
+    },
+    {
+      "label": "vi-pager",
+      "group": "pager",
+      "elements": 1
+    },
+    {
+      "label": "vi-pager",
+      "group": "pagerTotal",
+      "elements": 1
+    },
+    {
+      "label": "vi-pager",
+      "group": "pagerSize",
+      "elements": 1
+    },
+    {
+      "label": "vi-pager",
+      "group": "pagerPrev",
+      "elements": 1
+    },
+    {
+      "label": "vi-pager",
+      "group": "pagerNext",
+      "elements": 1
+    },
+    {
+      "label": "vi-pager",
+      "group": "pagerNumber",
+      "elements": 1
+    }
+  ],
+  "differences": [
+    {
+      "label": "zh-CN-nel",
+      "group": "pager",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        261,
+        934.796875,
+        739.328125,
+        32
+      ],
+      "migration": [
+        261,
+        938.796875,
+        739.328125,
+        32
+      ]
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "pagerTotal",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        702.28125,
+        940.796875,
+        42.046875,
+        20
+      ],
+      "migration": [
+        702.28125,
+        944.796875,
+        42.046875,
+        20
+      ]
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "pagerSize",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        760.328125,
+        934.796875,
+        128,
+        32
+      ],
+      "migration": [
+        760.328125,
+        938.796875,
+        128,
+        32
+      ]
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "pagerPrev",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        904.328125,
+        934.796875,
+        32,
+        32
+      ],
+      "migration": [
+        904.328125,
+        938.796875,
+        32,
+        32
+      ]
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "pagerNext",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        968.328125,
+        934.796875,
+        32,
+        32
+      ],
+      "migration": [
+        968.328125,
+        938.796875,
+        32,
+        32
+      ]
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "pagerNumber",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        936.328125,
+        934.796875,
+        32,
+        32
+      ],
+      "migration": [
+        936.328125,
+        938.796875,
+        32,
+        32
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "buttons",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        448,
+        140.796875,
+        102,
+        32
+      ],
+      "migration": [
+        448,
+        136.796875,
+        102,
+        32
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "buttons",
+      "index": 1,
+      "key": "rect",
+      "prototype": [
+        570,
+        140.796875,
+        108,
+        32
+      ],
+      "migration": [
+        570,
+        136.796875,
+        108,
+        32
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "headers",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        261,
+        355.796875,
+        120,
+        32
+      ],
+      "migration": [
+        261,
+        351.796875,
+        120,
+        32
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "headers",
+      "index": 0,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          269,
+          362.796875,
+          48,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          269,
+          358.796875,
+          48,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "headers",
+      "index": 1,
+      "key": "rect",
+      "prototype": [
+        381,
+        355.796875,
+        80,
+        32
+      ],
+      "migration": [
+        381,
+        351.796875,
+        80,
+        32
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "headers",
+      "index": 1,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          389,
+          362.796875,
+          48,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          389,
+          358.796875,
+          48,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "headers",
+      "index": 2,
+      "key": "rect",
+      "prototype": [
+        461,
+        355.796875,
+        140,
+        32
+      ],
+      "migration": [
+        461,
+        351.796875,
+        140,
+        32
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "headers",
+      "index": 2,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          469,
+          362.796875,
+          11.96875,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          469,
+          358.796875,
+          11.96875,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "headers",
+      "index": 3,
+      "key": "rect",
+      "prototype": [
+        601,
+        355.796875,
+        100,
+        32
+      ],
+      "migration": [
+        601,
+        351.796875,
+        100,
+        32
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "headers",
+      "index": 3,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          609,
+          362.796875,
+          48,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          609,
+          358.796875,
+          48,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "headers",
+      "index": 4,
+      "key": "rect",
+      "prototype": [
+        701,
+        355.796875,
+        84,
+        32
+      ],
+      "migration": [
+        701,
+        351.796875,
+        84,
+        32
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "headers",
+      "index": 4,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          709,
+          362.796875,
+          48,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          709,
+          358.796875,
+          48,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "headers",
+      "index": 5,
+      "key": "rect",
+      "prototype": [
+        785,
+        355.796875,
+        76,
+        32
+      ],
+      "migration": [
+        785,
+        351.796875,
+        76,
+        32
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "headers",
+      "index": 5,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          805,
+          362.796875,
+          48,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          805,
+          358.796875,
+          48,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "headers",
+      "index": 6,
+      "key": "rect",
+      "prototype": [
+        861,
+        355.796875,
+        70,
+        32
+      ],
+      "migration": [
+        861,
+        351.796875,
+        70,
+        32
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "headers",
+      "index": 6,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          887,
+          362.796875,
+          36,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          887,
+          358.796875,
+          36,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "headers",
+      "index": 7,
+      "key": "rect",
+      "prototype": [
+        931,
+        355.796875,
+        70,
+        32
+      ],
+      "migration": [
+        931,
+        351.796875,
+        70,
+        32
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "headers",
+      "index": 7,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          957,
+          362.796875,
+          36,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          957,
+          358.796875,
+          36,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "meta",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        261,
+        203.296875,
+        193.40625,
+        19
+      ],
+      "migration": [
+        261,
+        199.296875,
+        193.40625,
+        19
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "meta",
+      "index": 1,
+      "key": "rect",
+      "prototype": [
+        478.40625,
+        203.296875,
+        59.671875,
+        19
+      ],
+      "migration": [
+        478.40625,
+        199.296875,
+        59.671875,
+        19
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "meta",
+      "index": 2,
+      "key": "rect",
+      "prototype": [
+        562.078125,
+        203.296875,
+        59.671875,
+        19
+      ],
+      "migration": [
+        562.078125,
+        199.296875,
+        59.671875,
+        19
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "meta",
+      "index": 3,
+      "key": "rect",
+      "prototype": [
+        645.75,
+        204.296875,
+        180.046875,
+        17
+      ],
+      "migration": [
+        645.75,
+        200.296875,
+        180.046875,
+        17
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "meta",
+      "index": 4,
+      "key": "rect",
+      "prototype": [
+        1160,
+        201.796875,
+        239,
+        22
+      ],
+      "migration": [
+        1160,
+        197.796875,
+        239,
+        22
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "input",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        240,
+        140.796875,
+        200,
+        32
+      ],
+      "migration": [
+        240,
+        136.796875,
+        200,
+        32
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "summary",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        1160,
+        203.296875,
+        91,
+        19
+      ],
+      "migration": [
+        1160,
+        199.296875,
+        91,
+        19
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "summary",
+      "index": 1,
+      "key": "rect",
+      "prototype": [
+        1259,
+        202.796875,
+        52,
+        20
+      ],
+      "migration": [
+        1259,
+        198.796875,
+        52,
+        20
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "summary",
+      "index": 2,
+      "key": "rect",
+      "prototype": [
+        1319,
+        204.796875,
+        16,
+        16
+      ],
+      "migration": [
+        1319,
+        200.796875,
+        16,
+        16
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "summary",
+      "index": 3,
+      "key": "rect",
+      "prototype": [
+        1343,
+        201.796875,
+        56,
+        22
+      ],
+      "migration": [
+        1343,
+        197.796875,
+        56,
+        22
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "inputText",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        251,
+        141.796875,
+        156,
+        30
+      ],
+      "migration": [
+        251,
+        137.796875,
+        156,
+        30
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "toolbarButtons",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        261,
+        311.796875,
+        60,
+        32
+      ],
+      "migration": [
+        261,
+        307.796875,
+        60,
+        32
+      ]
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "table",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        261,
+        355.796875,
+        739.328125,
+        560
+      ],
+      "migration": [
+        261,
+        351.796875,
+        739.328125,
+        560
+      ]
+    },
+    {
+      "label": "en-nel",
+      "group": "pager",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        261,
+        955.59375,
+        739.328125,
+        32
+      ],
+      "migration": [
+        261,
+        959.59375,
+        739.328125,
+        32
+      ]
+    },
+    {
+      "label": "en-nel",
+      "group": "pagerTotal",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        701.15625,
+        961.59375,
+        43.171875,
+        20
+      ],
+      "migration": [
+        701.15625,
+        965.59375,
+        43.171875,
+        20
+      ]
+    },
+    {
+      "label": "en-nel",
+      "group": "pagerSize",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        760.328125,
+        955.59375,
+        128,
+        32
+      ],
+      "migration": [
+        760.328125,
+        959.59375,
+        128,
+        32
+      ]
+    },
+    {
+      "label": "en-nel",
+      "group": "pagerPrev",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        904.328125,
+        955.59375,
+        32,
+        32
+      ],
+      "migration": [
+        904.328125,
+        959.59375,
+        32,
+        32
+      ]
+    },
+    {
+      "label": "en-nel",
+      "group": "pagerNext",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        968.328125,
+        955.59375,
+        32,
+        32
+      ],
+      "migration": [
+        968.328125,
+        959.59375,
+        32,
+        32
+      ]
+    },
+    {
+      "label": "en-nel",
+      "group": "pagerNumber",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        936.328125,
+        955.59375,
+        32,
+        32
+      ],
+      "migration": [
+        936.328125,
+        959.59375,
+        32,
+        32
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "buttons",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        448,
+        140.59375,
+        99.703125,
+        32
+      ],
+      "migration": [
+        448,
+        136.59375,
+        99.703125,
+        32
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "buttons",
+      "index": 1,
+      "key": "rect",
+      "prototype": [
+        567.703125,
+        140.59375,
+        107.234375,
+        32
+      ],
+      "migration": [
+        567.703125,
+        136.59375,
+        107.234375,
+        32
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "headers",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        261,
+        355.59375,
+        120,
+        55
+      ],
+      "migration": [
+        261,
+        351.59375,
+        120,
+        55
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "headers",
+      "index": 0,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          269,
+          374.09375,
+          57.140625,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          269,
+          370.09375,
+          57.140625,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "headers",
+      "index": 1,
+      "key": "rect",
+      "prototype": [
+        381,
+        355.59375,
+        80,
+        55
+      ],
+      "migration": [
+        381,
+        351.59375,
+        80,
+        55
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "headers",
+      "index": 1,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          389,
+          374.09375,
+          56.96875,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          389,
+          370.09375,
+          56.96875,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "headers",
+      "index": 2,
+      "key": "rect",
+      "prototype": [
+        461,
+        355.59375,
+        140,
+        55
+      ],
+      "migration": [
+        461,
+        351.59375,
+        140,
+        55
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "headers",
+      "index": 2,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          469,
+          374.09375,
+          11.96875,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          469,
+          370.09375,
+          11.96875,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "headers",
+      "index": 3,
+      "key": "rect",
+      "prototype": [
+        601,
+        355.59375,
+        100,
+        55
+      ],
+      "migration": [
+        601,
+        351.59375,
+        100,
+        55
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "headers",
+      "index": 3,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          609,
+          362.59375,
+          65.953125,
+          17
+        ],
+        [
+          609,
+          385.59375,
+          19.71875,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          609,
+          358.59375,
+          65.953125,
+          17
+        ],
+        [
+          609,
+          381.59375,
+          19.71875,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "headers",
+      "index": 4,
+      "key": "rect",
+      "prototype": [
+        701,
+        355.59375,
+        84,
+        55
+      ],
+      "migration": [
+        701,
+        351.59375,
+        84,
+        55
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "headers",
+      "index": 4,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          709,
+          374.09375,
+          37.1875,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          709,
+          370.09375,
+          37.1875,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "headers",
+      "index": 5,
+      "key": "rect",
+      "prototype": [
+        785,
+        355.59375,
+        76,
+        55
+      ],
+      "migration": [
+        785,
+        351.59375,
+        76,
+        55
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "headers",
+      "index": 5,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          796.375,
+          374.09375,
+          56.625,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          796.375,
+          370.09375,
+          56.625,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "headers",
+      "index": 6,
+      "key": "rect",
+      "prototype": [
+        861,
+        355.59375,
+        70,
+        55
+      ],
+      "migration": [
+        861,
+        351.59375,
+        70,
+        55
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "headers",
+      "index": 6,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          869.421875,
+          362.59375,
+          53.578125,
+          17
+        ],
+        [
+          915.265625,
+          385.59375,
+          7.734375,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          869.421875,
+          358.59375,
+          53.578125,
+          17
+        ],
+        [
+          915.265625,
+          381.59375,
+          7.734375,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "headers",
+      "index": 7,
+      "key": "rect",
+      "prototype": [
+        931,
+        355.59375,
+        70,
+        55
+      ],
+      "migration": [
+        931,
+        351.59375,
+        70,
+        55
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "headers",
+      "index": 7,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          957.203125,
+          374.09375,
+          35.796875,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          957.203125,
+          370.09375,
+          35.796875,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "meta",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        261,
+        203.09375,
+        196.78125,
+        19
+      ],
+      "migration": [
+        261,
+        199.09375,
+        196.78125,
+        19
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "meta",
+      "index": 1,
+      "key": "rect",
+      "prototype": [
+        481.78125,
+        203.09375,
+        61.484375,
+        19
+      ],
+      "migration": [
+        481.78125,
+        199.09375,
+        61.484375,
+        19
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "meta",
+      "index": 2,
+      "key": "rect",
+      "prototype": [
+        567.265625,
+        203.09375,
+        52.53125,
+        19
+      ],
+      "migration": [
+        567.265625,
+        199.09375,
+        52.53125,
+        19
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "meta",
+      "index": 3,
+      "key": "rect",
+      "prototype": [
+        643.796875,
+        204.09375,
+        242.203125,
+        17
+      ],
+      "migration": [
+        643.796875,
+        200.09375,
+        242.203125,
+        17
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "meta",
+      "index": 4,
+      "key": "rect",
+      "prototype": [
+        1117.65625,
+        201.59375,
+        281.34375,
+        22
+      ],
+      "migration": [
+        1117.65625,
+        197.59375,
+        281.34375,
+        22
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "input",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        240,
+        140.59375,
+        200,
+        32
+      ],
+      "migration": [
+        240,
+        136.59375,
+        200,
+        32
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "summary",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        1117.65625,
+        203.09375,
+        130.125,
+        19
+      ],
+      "migration": [
+        1117.65625,
+        199.09375,
+        130.125,
+        19
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "summary",
+      "index": 1,
+      "key": "rect",
+      "prototype": [
+        1255.78125,
+        202.59375,
+        32.625,
+        20
+      ],
+      "migration": [
+        1255.78125,
+        198.59375,
+        32.625,
+        20
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "summary",
+      "index": 2,
+      "key": "rect",
+      "prototype": [
+        1296.40625,
+        204.59375,
+        16,
+        16
+      ],
+      "migration": [
+        1296.40625,
+        200.59375,
+        16,
+        16
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "summary",
+      "index": 3,
+      "key": "rect",
+      "prototype": [
+        1320.40625,
+        201.59375,
+        78.59375,
+        22
+      ],
+      "migration": [
+        1320.40625,
+        197.59375,
+        78.59375,
+        22
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "inputText",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        251,
+        141.59375,
+        156,
+        30
+      ],
+      "migration": [
+        251,
+        137.59375,
+        156,
+        30
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "toolbarButtons",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        261,
+        311.59375,
+        76.359375,
+        32
+      ],
+      "migration": [
+        261,
+        307.59375,
+        76.359375,
+        32
+      ]
+    },
+    {
+      "label": "en-pager",
+      "group": "table",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        261,
+        355.59375,
+        739.328125,
+        560
+      ],
+      "migration": [
+        261,
+        351.59375,
+        739.328125,
+        560
+      ]
+    },
+    {
+      "label": "vi-nel",
+      "group": "pager",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        261,
+        955.59375,
+        739.328125,
+        32
+      ],
+      "migration": [
+        261,
+        959.59375,
+        739.328125,
+        32
+      ]
+    },
+    {
+      "label": "vi-nel",
+      "group": "pagerTotal",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        701.171875,
+        961.59375,
+        43.15625,
+        20
+      ],
+      "migration": [
+        701.171875,
+        965.59375,
+        43.15625,
+        20
+      ]
+    },
+    {
+      "label": "vi-nel",
+      "group": "pagerSize",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        760.328125,
+        955.59375,
+        128,
+        32
+      ],
+      "migration": [
+        760.328125,
+        959.59375,
+        128,
+        32
+      ]
+    },
+    {
+      "label": "vi-nel",
+      "group": "pagerPrev",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        904.328125,
+        955.59375,
+        32,
+        32
+      ],
+      "migration": [
+        904.328125,
+        959.59375,
+        32,
+        32
+      ]
+    },
+    {
+      "label": "vi-nel",
+      "group": "pagerNext",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        968.328125,
+        955.59375,
+        32,
+        32
+      ],
+      "migration": [
+        968.328125,
+        959.59375,
+        32,
+        32
+      ]
+    },
+    {
+      "label": "vi-nel",
+      "group": "pagerNumber",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        936.328125,
+        955.59375,
+        32,
+        32
+      ],
+      "migration": [
+        936.328125,
+        959.59375,
+        32,
+        32
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "buttons",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        448,
+        140.59375,
+        115.296875,
+        32
+      ],
+      "migration": [
+        448,
+        136.59375,
+        115.296875,
+        32
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "buttons",
+      "index": 1,
+      "key": "rect",
+      "prototype": [
+        583.296875,
+        140.59375,
+        155.53125,
+        32
+      ],
+      "migration": [
+        583.296875,
+        136.59375,
+        155.53125,
+        32
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "headers",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        261,
+        355.59375,
+        120,
+        55
+      ],
+      "migration": [
+        261,
+        351.59375,
+        120,
+        55
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "headers",
+      "index": 0,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          269,
+          374.09375,
+          43.859375,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          269,
+          370.09375,
+          43.859375,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "headers",
+      "index": 1,
+      "key": "rect",
+      "prototype": [
+        381,
+        355.59375,
+        80,
+        55
+      ],
+      "migration": [
+        381,
+        351.59375,
+        80,
+        55
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "headers",
+      "index": 1,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          389,
+          362.59375,
+          56.078125,
+          17
+        ],
+        [
+          389,
+          385.59375,
+          29.640625,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          389,
+          358.59375,
+          56.078125,
+          17
+        ],
+        [
+          389,
+          381.59375,
+          29.640625,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "headers",
+      "index": 2,
+      "key": "rect",
+      "prototype": [
+        461,
+        355.59375,
+        140,
+        55
+      ],
+      "migration": [
+        461,
+        351.59375,
+        140,
+        55
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "headers",
+      "index": 2,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          469,
+          374.09375,
+          11.96875,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          469,
+          370.09375,
+          11.96875,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "headers",
+      "index": 3,
+      "key": "rect",
+      "prototype": [
+        601,
+        355.59375,
+        100,
+        55
+      ],
+      "migration": [
+        601,
+        351.59375,
+        100,
+        55
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "headers",
+      "index": 3,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          609,
+          362.59375,
+          68.09375,
+          17
+        ],
+        [
+          609,
+          385.59375,
+          26.234375,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          609,
+          358.59375,
+          68.09375,
+          17
+        ],
+        [
+          609,
+          381.59375,
+          26.234375,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "headers",
+      "index": 4,
+      "key": "rect",
+      "prototype": [
+        701,
+        355.59375,
+        84,
+        55
+      ],
+      "migration": [
+        701,
+        351.59375,
+        84,
+        55
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "headers",
+      "index": 4,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          709,
+          374.09375,
+          59.8125,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          709,
+          370.09375,
+          59.8125,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "headers",
+      "index": 5,
+      "key": "rect",
+      "prototype": [
+        785,
+        355.59375,
+        76,
+        55
+      ],
+      "migration": [
+        785,
+        351.59375,
+        76,
+        55
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "headers",
+      "index": 5,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          809.71875,
+          374.09375,
+          43.28125,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          809.71875,
+          370.09375,
+          43.28125,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "headers",
+      "index": 6,
+      "key": "rect",
+      "prototype": [
+        861,
+        355.59375,
+        70,
+        55
+      ],
+      "migration": [
+        861,
+        351.59375,
+        70,
+        55
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "headers",
+      "index": 6,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          884.96875,
+          374.09375,
+          38.03125,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          884.96875,
+          370.09375,
+          38.03125,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "headers",
+      "index": 7,
+      "key": "rect",
+      "prototype": [
+        931,
+        355.59375,
+        70,
+        55
+      ],
+      "migration": [
+        931,
+        351.59375,
+        70,
+        55
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "headers",
+      "index": 7,
+      "key": "textBoxes",
+      "prototype": [
+        [
+          940.859375,
+          374.09375,
+          52.140625,
+          17
+        ]
+      ],
+      "migration": [
+        [
+          940.859375,
+          370.09375,
+          52.140625,
+          17
+        ]
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "meta",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        261,
+        203.09375,
+        248.578125,
+        19
+      ],
+      "migration": [
+        261,
+        199.09375,
+        248.578125,
+        19
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "meta",
+      "index": 1,
+      "key": "rect",
+      "prototype": [
+        533.578125,
+        203.09375,
+        65.9375,
+        19
+      ],
+      "migration": [
+        533.578125,
+        199.09375,
+        65.9375,
+        19
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "meta",
+      "index": 2,
+      "key": "rect",
+      "prototype": [
+        623.515625,
+        203.09375,
+        70.421875,
+        19
+      ],
+      "migration": [
+        623.515625,
+        199.09375,
+        70.421875,
+        19
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "meta",
+      "index": 3,
+      "key": "rect",
+      "prototype": [
+        717.9375,
+        204.09375,
+        185.46875,
+        17
+      ],
+      "migration": [
+        717.9375,
+        200.09375,
+        185.46875,
+        17
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "meta",
+      "index": 4,
+      "key": "rect",
+      "prototype": [
+        1062.5625,
+        201.59375,
+        336.4375,
+        22
+      ],
+      "migration": [
+        1062.5625,
+        197.59375,
+        336.4375,
+        22
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "input",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        240,
+        140.59375,
+        200,
+        32
+      ],
+      "migration": [
+        240,
+        136.59375,
+        200,
+        32
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "summary",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        1062.5625,
+        203.09375,
+        160.734375,
+        19
+      ],
+      "migration": [
+        1062.5625,
+        199.09375,
+        160.734375,
+        19
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "summary",
+      "index": 1,
+      "key": "rect",
+      "prototype": [
+        1231.296875,
+        202.59375,
+        63.34375,
+        20
+      ],
+      "migration": [
+        1231.296875,
+        198.59375,
+        63.34375,
+        20
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "summary",
+      "index": 2,
+      "key": "rect",
+      "prototype": [
+        1302.640625,
+        204.59375,
+        16,
+        16
+      ],
+      "migration": [
+        1302.640625,
+        200.59375,
+        16,
+        16
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "summary",
+      "index": 3,
+      "key": "rect",
+      "prototype": [
+        1326.640625,
+        201.59375,
+        72.359375,
+        22
+      ],
+      "migration": [
+        1326.640625,
+        197.59375,
+        72.359375,
+        22
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "inputText",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        251,
+        141.59375,
+        156,
+        30
+      ],
+      "migration": [
+        251,
+        137.59375,
+        156,
+        30
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "toolbarButtons",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        261,
+        311.59375,
+        56.109375,
+        32
+      ],
+      "migration": [
+        261,
+        307.59375,
+        56.109375,
+        32
+      ]
+    },
+    {
+      "label": "vi-pager",
+      "group": "table",
+      "index": 0,
+      "key": "rect",
+      "prototype": [
+        261,
+        355.59375,
+        739.328125,
+        560
+      ],
+      "migration": [
+        261,
+        351.59375,
+        739.328125,
+        560
+      ]
+    }
+  ],
+  "directApiOperationsPerSystem": 20,
+  "matchingAuditFacts": 20,
+  "limits": [
+    "Only the recorded administrator scenarios and desktop viewport are verified here.",
+    "This does not establish completion of P01-P16 or all request coercion and K3 response boundaries."
+  ]
+}

@@ -1,0 +1,59 @@
+-------------------------------------------------------------------------------
+Test set: com.adtek.server.FactoryMappingMigrationIT
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 40.39 s <<< FAILURE! -- in com.adtek.server.FactoryMappingMigrationIT
+com.adtek.server.FactoryMappingMigrationIT.upgradesOldBindingsWithoutChangingConsumedQuotaOrUnchangedSnapshots -- Time elapsed: 20.95 s <<< ERROR!
+org.flywaydb.core.internal.exception.FlywayMigrateException: 
+Failed to execute script V40__factory_mapping_origin_and_order_names.sql
+------------------------------------------------------------------------
+SQL State  : HY000
+Error Code : 1267
+Message    : Illegal mix of collations (utf8mb4_0900_as_cs,IMPLICIT) and (utf8mb4_0900_ai_ci,IMPLICIT) for operation '='
+Location   : db/migration/V40__factory_mapping_origin_and_order_names.sql (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-server\target\classes\db\migration\V40__factory_mapping_origin_and_order_names.sql)
+Line       : 7
+Statement  : Run Flyway with -X option to see the actual statement causing the problem
+
+	at org.flywaydb.core.internal.command.DbMigrate.doMigrateGroup(DbMigrate.java:399)
+	at org.flywaydb.core.internal.command.DbMigrate.lambda$applyMigrations$1(DbMigrate.java:283)
+	at org.flywaydb.core.internal.jdbc.TransactionalExecutionTemplate.execute(TransactionalExecutionTemplate.java:59)
+	at org.flywaydb.core.internal.command.DbMigrate.applyMigrations(DbMigrate.java:282)
+	at org.flywaydb.core.internal.command.DbMigrate.migrateGroup(DbMigrate.java:255)
+	at org.flywaydb.core.internal.command.DbMigrate.lambda$migrateAll$0(DbMigrate.java:153)
+	at org.flywaydb.database.mysql.MySQLNamedLockTemplate.execute(MySQLNamedLockTemplate.java:62)
+	at org.flywaydb.database.mysql.MySQLConnection.lock(MySQLConnection.java:159)
+	at org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory.lock(JdbcTableSchemaHistory.java:165)
+	at org.flywaydb.core.internal.command.DbMigrate.migrateAll(DbMigrate.java:153)
+	at org.flywaydb.core.internal.command.DbMigrate.migrate(DbMigrate.java:104)
+	at org.flywaydb.core.Flyway.lambda$migrate$3(Flyway.java:231)
+	at org.flywaydb.core.FlywayExecutor.execute(FlywayExecutor.java:236)
+	at org.flywaydb.core.FlywayExecutor.execute(FlywayExecutor.java:120)
+	at org.flywaydb.core.Flyway.migrate(Flyway.java:181)
+	at com.adtek.server.FactoryMappingMigrationIT.upgradesOldBindingsWithoutChangingConsumedQuotaOrUnchangedSnapshots(FactoryMappingMigrationIT.java:74)
+Caused by: org.flywaydb.core.internal.sqlscript.FlywaySqlScriptException: Failed to execute script V40__factory_mapping_origin_and_order_names.sql
+------------------------------------------------------------------------
+SQL State  : HY000
+Error Code : 1267
+Message    : Illegal mix of collations (utf8mb4_0900_as_cs,IMPLICIT) and (utf8mb4_0900_ai_ci,IMPLICIT) for operation '='
+Location   : db/migration/V40__factory_mapping_origin_and_order_names.sql (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-server\target\classes\db\migration\V40__factory_mapping_origin_and_order_names.sql)
+Line       : 7
+Statement  : Run Flyway with -X option to see the actual statement causing the problem
+
+	at org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor.handleException(DefaultSqlScriptExecutor.java:251)
+	at org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor.executeStatement(DefaultSqlScriptExecutor.java:212)
+	at org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor.execute(DefaultSqlScriptExecutor.java:134)
+	at org.flywaydb.core.internal.resolver.sql.SqlMigrationExecutor.executeOnce(SqlMigrationExecutor.java:75)
+	at org.flywaydb.core.internal.resolver.sql.SqlMigrationExecutor.lambda$execute$0(SqlMigrationExecutor.java:66)
+	at org.flywaydb.core.internal.database.DefaultExecutionStrategy.execute(DefaultExecutionStrategy.java:31)
+	at org.flywaydb.core.internal.resolver.sql.SqlMigrationExecutor.execute(SqlMigrationExecutor.java:65)
+	at org.flywaydb.core.internal.command.DbMigrate.doMigrateGroup(DbMigrate.java:391)
+	... 15 more
+Caused by: java.sql.SQLException: Illegal mix of collations (utf8mb4_0900_as_cs,IMPLICIT) and (utf8mb4_0900_ai_ci,IMPLICIT) for operation '='
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:121)
+	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:114)
+	at com.mysql.cj.jdbc.StatementImpl.executeInternal(StatementImpl.java:839)
+	at com.mysql.cj.jdbc.StatementImpl.execute(StatementImpl.java:687)
+	at org.flywaydb.core.internal.jdbc.JdbcTemplate.executeStatement(JdbcTemplate.java:229)
+	at org.flywaydb.core.internal.sqlscript.ParsedSqlStatement.execute(ParsedSqlStatement.java:88)
+	at org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor.executeStatement(DefaultSqlScriptExecutor.java:207)
+	... 21 more
+

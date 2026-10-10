@@ -1,0 +1,28 @@
+
+Running 1 test using 1 worker
+
+(node:16504) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\account-audit.spec.ts:10:1 › P13 management audit: real account writes, rejected writes, no-change edit and complete export (17.1s)
+
+
+  1) [prototype] › e2e\parity\account-audit.spec.ts:10:1 › P13 management audit: real account writes, rejected writes, no-change edit and complete export 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "cmp_a43_100943130101A"
+    Received: "账户痕迹操作员"
+
+      337 |     for (const row of parsed.raw.slice(1)) {
+      338 |       expect(row[14]).toBeNull();
+    > 339 |       expect(row[2]).toBe(state.names[0]);
+          |                      ^
+      340 |     }
+      341 |     writeFileSync(
+      342 |       info.outputPath('identities.json'),
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-audit.spec.ts:339:22
+
+    Error Context: test-results\stage43-prototype1\account-audit-P13-manageme-2824c-ge-edit-and-complete-export-prototype\error-context.md
+
+  1 failed
+    [prototype] › e2e\parity\account-audit.spec.ts:10:1 › P13 management audit: real account writes, rejected writes, no-change edit and complete export 

@@ -1,0 +1,56 @@
+[
+  {
+    "label": "01-manual-name-matches-different-erp-code-before-select",
+    "top": 0
+  },
+  {
+    "label": "02-name-conflict-still-resolves-order-before-select",
+    "top": 0
+  },
+  {
+    "label": "03-replaced-id-preserves-factory-before-select",
+    "top": 0
+  },
+  {
+    "label": "04-new-code-leaves-old-snapshot-before-select",
+    "top": 0
+  },
+  {
+    "label": "05-rename-leaves-snapshot-unmapped-before-select",
+    "top": 0
+  },
+  {
+    "label": "06-create-matching-name-reprojects-before-select",
+    "top": 0
+  },
+  {
+    "label": "factories-before",
+    "top": 151,
+    "height": 2142,
+    "client": 904
+  },
+  {
+    "label": "audit-after-long",
+    "top": 0,
+    "height": 962,
+    "client": 904
+  },
+  {
+    "label": "factories-return",
+    "top": 0,
+    "height": 2142,
+    "client": 904
+  },
+  {
+    "label": "orders-after-long",
+    "top": 0,
+    "height": 964,
+    "client": 904
+  },
+  {
+    "label": "factories-after-short",
+    "top": 0,
+    "height": 2142,
+    "client": 904
+  }
+]

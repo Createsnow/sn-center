@@ -1,0 +1,40 @@
+
+Running 1 test using 1 worker
+
+(node:28764) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+capacity: uploading over-limit file
+capacity: confirming limit 500001
+  x  1 [migration] › e2e\parity\import-capacity.spec.ts:24:3 › P08 capacity limit: rejects 500001 through file upload (2.5m)
+
+
+  1) [migration] › e2e\parity\import-capacity.spec.ts:24:3 › P08 capacity limit: rejects 500001 through file upload 
+
+    Error: response.json: Protocol error (Network.getResponseBody): Request content was evicted from inspector cache
+    Response body is not available for a response that was navigated away from. Read response.body() before triggering any navigation.
+
+      46 |       )
+      47 |         return;
+    > 48 |       const body = await response.json();
+         |                                   ^
+      49 |       writeFileSync(
+      50 |         info.outputPath('initialization-response.json'),
+      51 |         JSON.stringify(
+        at _Page.<anonymous> (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\import-capacity.spec.ts:48:35)
+
+    Error: locator.evaluateAll: Target page, context or browser has been closed
+
+      131 |               .poll(
+      132 |                 async () => {
+    > 133 |                   const texts = await feedback.evaluateAll((nodes) =>
+          |                                                ^
+      134 |                     nodes.map((node) => node.textContent?.trim() ?? ''),
+      135 |                   );
+      136 |                   if (JSON.stringify(texts) !== JSON.stringify(seen.at(-1))) {
+        at Promise.all.expect.poll.timeout (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\import-capacity.spec.ts:133:48)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\import-capacity.spec.ts:128:11
+
+    Error Context: test-results\parity\import-capacity-P08-capaci-a0bca--500001-through-file-upload-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\import-capacity.spec.ts:24:3 › P08 capacity limit: rejects 500001 through file upload 

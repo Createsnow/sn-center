@@ -1,0 +1,57 @@
+{
+  "kind": "java",
+  "items": [
+    {
+      "sn": "G0600001",
+      "seq_dec": 1,
+      "status": "PENDING_ALLOC",
+      "material": "QUOTA",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600002",
+      "seq_dec": 2,
+      "status": "PENDING_ALLOC",
+      "material": "QUOTA",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    }
+  ],
+  "allocations": [],
+  "jobs": [
+    {
+      "state": "FAILED",
+      "qty": 3,
+      "error_code": 1004000018,
+      "error_params": "{\"qty\": \"3\", \"quota\": \"2\", \"reason\": \"GEN_QUOTA_EXCEEDED\"}"
+    },
+    {
+      "state": "SUCCESS",
+      "qty": 2,
+      "error_code": null,
+      "error_params": null
+    }
+  ],
+  "identities": [
+    {
+      "sn": "G0600001",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null,
+      "source_factory_code": "CMP-A"
+    },
+    {
+      "sn": "G0600002",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null,
+      "source_factory_code": "CMP-A"
+    }
+  ],
+  "generationIdentity": [
+    {
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": "CMP-A"
+    }
+  ]
+}

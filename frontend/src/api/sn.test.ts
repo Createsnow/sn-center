@@ -15,8 +15,9 @@ describe('SN response boundary', () => {
   it('keeps PI sums exact and rejects numeric or fractional SN counts', () => {
     const pi = {
       pi: 'PI',
+      customer: 'C1',
       bills: '3',
-      totalQty: '9007199254740993.1254',
+      totalQty: large,
       generatedQty: large,
       allocatedQty: '1',
       pendingQuantity: '9007199254740992',
@@ -33,11 +34,14 @@ describe('SN response boundary', () => {
       workerEnabled: false,
       intervalMinutes: 10,
       ownerId: large,
+      ownerName: 'admin',
       nextRunAt: '2026-10-04T12:00:00Z',
       lastRunId: null,
       lastRunAt: null,
       lastState: null,
       lastErrorCode: null,
+      lastOk: null,
+      lastErrorMessage: '',
       lastBills: null,
       lastRows: null,
       updatedAt: null,
@@ -47,6 +51,9 @@ describe('SN response boundary', () => {
       isSchedule({ ...schedule, lastState: 'FAILED', lastErrorCode: 1004000026, lastBills: large }),
     ).toBe(true);
     expect(isSchedule({ ...schedule, lastBills: Number(large) })).toBe(false);
+    expect(isSchedule({ ...schedule, ownerName: undefined })).toBe(false);
+    expect(isSchedule({ ...schedule, lastOk: undefined })).toBe(false);
+    expect(isSchedule({ ...schedule, lastErrorMessage: undefined })).toBe(false);
     expect(isSchedule({ ...schedule, intervalMinutes: 9 })).toBe(false);
     expect(isSchedule({ ...schedule, workerEnabled: undefined })).toBe(false);
     expect(isSchedule({ ...schedule, lastState: 'UNKNOWN' })).toBe(false);
@@ -97,8 +104,8 @@ describe('SN response boundary', () => {
     expect(isOrder({ ...order, totalQty: 1.5 })).toBe(false);
     expect(
       isOrder({ ...order, totalQty: '9007199254740993.1254', quantityReady: false, quota: '0' }),
-    ).toBe(true);
-    for (const totalQty of ['1.00001', '-0.1', '1e3', 'NaN'])
+    ).toBe(false);
+    for (const totalQty of ['1.5', '1.00001', '-0.1', '1e3', 'NaN'])
       expect(isOrder({ ...order, totalQty })).toBe(false);
     expect(isOrder({ ...order, totalQty: '1.5', quota: '1.5' })).toBe(false);
     expect(isOrder({ ...order, quota: '-1' })).toBe(false);
@@ -162,6 +169,7 @@ describe('SN response boundary', () => {
       ruleId: '1',
       version: '1',
       createdBy: null,
+      createdByName: null,
       prefix: '',
       suffix: '',
       alphabet: '0123456789',
@@ -174,6 +182,8 @@ describe('SN response boundary', () => {
     expect(isVersion(version)).toBe(true);
     expect(isVersion({ ...version, createdBy: large })).toBe(true);
     expect(isVersion({ ...version, createdBy: undefined })).toBe(false);
+    expect(isVersion({ ...version, createdByName: undefined })).toBe(false);
+    expect(isVersion({ ...version, createdByName: 'admin' })).toBe(true);
     expect(isVersion({ ...version, createdBy: Number(large) })).toBe(false);
     expect(isVersion({ ...version, createdBy: '0' })).toBe(false);
   });

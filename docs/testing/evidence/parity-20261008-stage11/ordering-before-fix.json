@@ -1,0 +1,16 @@
+{
+  "test": "SnWorkIT.overlappingPiSequencesAllocateOlderMembersBeforeLexicallySmallerRandomIds",
+  "oldSort": "seq_dec,id",
+  "actualMembers": [
+    "G0001",
+    "H0001",
+    "H0002"
+  ],
+  "expectedMembers": [
+    "G0001",
+    "H0001",
+    "G0002"
+  ],
+  "fixture": "Generated through HTTP, then reversed UUID lexical order in disposable integration database only",
+  "result": "One assertion failure before fix; complete 46-test SnWorkIT passes after fix"
+}

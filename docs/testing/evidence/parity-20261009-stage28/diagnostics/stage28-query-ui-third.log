@@ -1,0 +1,101 @@
+
+Running 2 tests using 1 worker
+
+(node:42864) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\query.spec.ts:223:1 › P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX (19.1s)
+(node:24580) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok 2 [migration] › e2e\parity\query.spec.ts:223:1 › P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX (45.7s)
+
+
+  1) [prototype] › e2e\parity\query.spec.ts:223:1 › P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 50
+    + Received  +  4
+
+      Array [
+    -   "Q28B00003",
+    -   "Q28B00002",
+    -   "Q28B00001",
+    -   "Q28A00051",
+    -   "Q28A00050",
+    -   "Q28A00049",
+    -   "Q28A00048",
+    -   "Q28A00047",
+    -   "Q28A00046",
+    -   "Q28A00045",
+    -   "Q28A00044",
+    -   "Q28A00043",
+    -   "Q28A00042",
+    -   "Q28A00041",
+    -   "Q28A00040",
+    -   "Q28A00039",
+    -   "Q28A00038",
+    -   "Q28A00037",
+    -   "Q28A00036",
+    -   "Q28A00035",
+    -   "Q28A00034",
+    -   "Q28A00033",
+    -   "Q28A00032",
+    -   "Q28A00031",
+    -   "Q28A00030",
+    -   "Q28A00029",
+    -   "Q28A00028",
+    -   "Q28A00027",
+    -   "Q28A00026",
+    -   "Q28A00025",
+    -   "Q28A00024",
+    -   "Q28A00023",
+    -   "Q28A00022",
+    -   "Q28A00021",
+    -   "Q28A00020",
+    -   "Q28A00019",
+    -   "Q28A00018",
+    -   "Q28A00017",
+    -   "Q28A00016",
+    -   "Q28A00015",
+    -   "Q28A00014",
+    -   "Q28A00013",
+    -   "Q28A00012",
+    -   "Q28A00011",
+    -   "Q28A00010",
+    -   "Q28A00009",
+    -   "Q28A00008",
+    -   "Q28A00007",
+    -   "Q28A00006",
+    -   "Q28A00005",
+    +   "Q28A00004",
+    +   "Q28A00003",
+    +   "Q28A00002",
+    +   "Q28A00001",
+      ]
+
+    Call Log:
+    - Timeout 15000ms exceeded while waiting on the predicate
+
+      103 |       ),
+      104 |     )
+    > 105 |     .toEqual(expected);
+          |      ^
+      106 | }
+      107 |
+      108 | async function capture(page: Page, info: TestInfo, name: string) {
+        at expectRows (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\query.spec.ts:105:6)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\query.spec.ts:262:11
+
+    Error Context: test-results\parity-stage28-query-third\query-P11-query-current-dr-b2391-s-batch-and-actual-CSV-XLSX-prototype\error-context.md
+
+  1 failed
+    [prototype] › e2e\parity\query.spec.ts:223:1 › P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX 
+  1 passed (1.1m)

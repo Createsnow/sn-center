@@ -1,0 +1,37 @@
+
+Running 1 test using 1 worker
+
+(node:30420) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\factory-identity.spec.ts:9:1 › P14 organization changes: snapshot name, manual factory, changed ID/code, rename and directory filters (5.0s)
+
+
+  1) [prototype] › e2e\parity\factory-identity.spec.ts:9:1 › P14 organization changes: snapshot name, manual factory, changed ID/code, rename and directory filters 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('比较46旧名（CMP_F46_OLD）', { exact: true })
+    Expected: visible
+    Error: strict mode violation: getByText('比较46旧名（CMP_F46_OLD）', { exact: true }) resolved to 2 elements:
+        1) <td colspan="1" class="el-descriptions__cell el-descriptions__content is-bordered-content">比较46旧名（CMP_F46_OLD）</td> aka getByRole('cell', { name: '比较46旧名（CMP_F46_OLD）' })
+        2) <span>比较46旧名（CMP_F46_OLD）</span> aka locator('#el-id-2749-86').getByText('比较46旧名（CMP_F46_OLD）')
+
+    Call log:
+      - Expect "toBeVisible" getByText('比较46旧名（CMP_F46_OLD）', { exact: true }) with timeout 15000ms
+      - waiting for getByText('比较46旧名（CMP_F46_OLD）', { exact: true })
+
+
+      62 |     await expect(row).toHaveCount(1);
+      63 |     await row.click();
+    > 64 |     await expect(page.getByText(`比较46旧名（${code ?? '—'}）`, { exact: true })).toBeVisible();
+         |                                                                             ^
+      65 |     await expect(row.getByText(zh.orders.noFactory, { exact: true })).toHaveCount(code ? 0 : 1);
+      66 |     const observed = JSON.parse(fixture('snapshot'));
+      67 |     expect(observed.orders).toHaveLength(1);
+        at order (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\factory-identity.spec.ts:64:77)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\factory-identity.spec.ts:89:5
+
+    Error Context: test-results\stage46-ui2\factory-identity-P14-organ-bbe1f-ename-and-directory-filters-prototype\error-context.md
+
+  1 failed
+    [prototype] › e2e\parity\factory-identity.spec.ts:9:1 › P14 organization changes: snapshot name, manual factory, changed ID/code, rename and directory filters 

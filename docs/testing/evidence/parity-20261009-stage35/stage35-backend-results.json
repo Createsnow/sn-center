@@ -1,0 +1,252 @@
+{
+  "surefire": {
+    "tests": 88,
+    "suites": [
+      {
+        "file": "backend/adtek-common/target/surefire-reports/TEST-com.adtek.common.core.DataScopeTest.xml",
+        "name": "com.adtek.common.core.DataScopeTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-framework/target/surefire-reports/TEST-com.adtek.framework.audit.AuditContextTest.xml",
+        "name": "com.adtek.framework.audit.AuditContextTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-framework/target/surefire-reports/TEST-com.adtek.framework.audit.RequestFailureAuditFilterTest.xml",
+        "name": "com.adtek.framework.audit.RequestFailureAuditFilterTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-framework/target/surefire-reports/TEST-com.adtek.framework.mybatis.ScopedDataPermissionInterceptorTest.xml",
+        "name": "com.adtek.framework.mybatis.ScopedDataPermissionInterceptorTest",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-framework/target/surefire-reports/TEST-com.adtek.framework.security.CurrentActorTest.xml",
+        "name": "com.adtek.framework.security.CurrentActorTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-framework/target/surefire-reports/TEST-com.adtek.framework.security.JwtTokenCodecTest.xml",
+        "name": "com.adtek.framework.security.JwtTokenCodecTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-framework/target/surefire-reports/TEST-com.adtek.framework.security.PasswordEncodingTest.xml",
+        "name": "com.adtek.framework.security.PasswordEncodingTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-framework/target/surefire-reports/TEST-com.adtek.framework.security.RedisFailureTest.xml",
+        "name": "com.adtek.framework.security.RedisFailureTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-framework/target/surefire-reports/TEST-com.adtek.framework.task.FileStorageTest.xml",
+        "name": "com.adtek.framework.task.FileStorageTest",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-framework/target/surefire-reports/TEST-com.adtek.framework.web.LegacyBoundaryTest.xml",
+        "name": "com.adtek.framework.web.LegacyBoundaryTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-framework/target/surefire-reports/TEST-com.adtek.framework.web.ResultSerializationTest.xml",
+        "name": "com.adtek.framework.web.ResultSerializationTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-framework/target/surefire-reports/TEST-com.adtek.framework.web.TraceFilterTest.xml",
+        "name": "com.adtek.framework.web.TraceFilterTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-server/target/surefire-reports/TEST-com.adtek.server.ArchitectureTest.xml",
+        "name": "com.adtek.server.ArchitectureTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-server/target/surefire-reports/TEST-com.adtek.server.ArchiveRestoreProofTest.xml",
+        "name": "com.adtek.server.ArchiveRestoreProofTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-server/target/surefire-reports/TEST-com.adtek.server.AuditProjectionTest.xml",
+        "name": "com.adtek.server.AuditProjectionTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-server/target/surefire-reports/TEST-com.adtek.server.ErrorCodeCatalogTest.xml",
+        "name": "com.adtek.server.ErrorCodeCatalogTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-server/target/surefire-reports/TEST-com.adtek.server.K3ConfigurationTest.xml",
+        "name": "com.adtek.server.K3ConfigurationTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-server/target/surefire-reports/TEST-com.adtek.server.K3ErrorsTest.xml",
+        "name": "com.adtek.server.K3ErrorsTest",
+        "tests": 7,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-server/target/surefire-reports/TEST-com.adtek.server.K3LegacyProtocolTest.xml",
+        "name": "com.adtek.server.K3LegacyProtocolTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-server/target/surefire-reports/TEST-com.adtek.server.LegacyErrorCatalogTest.xml",
+        "name": "com.adtek.server.LegacyErrorCatalogTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-server/target/surefire-reports/TEST-com.adtek.server.MaintenanceScheduleTest.xml",
+        "name": "com.adtek.server.MaintenanceScheduleTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-sn/target/surefire-reports/TEST-com.adtek.sn.service.support.InitializationErrorsTest.xml",
+        "name": "com.adtek.sn.service.support.InitializationErrorsTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-sn/target/surefire-reports/TEST-com.adtek.sn.service.support.PrintFilesTest.xml",
+        "name": "com.adtek.sn.service.support.PrintFilesTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-sn/target/surefire-reports/TEST-com.adtek.sn.service.support.SequenceCodecTest.xml",
+        "name": "com.adtek.sn.service.support.SequenceCodecTest",
+        "tests": 10,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-sn/target/surefire-reports/TEST-com.adtek.sn.service.support.SnAuditFilesTest.xml",
+        "name": "com.adtek.sn.service.support.SnAuditFilesTest",
+        "tests": 9,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-sn/target/surefire-reports/TEST-com.adtek.sn.service.support.SnImportDigestTest.xml",
+        "name": "com.adtek.sn.service.support.SnImportDigestTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ]
+  },
+  "failsafe": {
+    "tests": 82,
+    "suites": [
+      {
+        "file": "backend/adtek-server/target/failsafe-reports/TEST-com.adtek.server.AuthenticationIT.xml",
+        "name": "com.adtek.server.AuthenticationIT",
+        "tests": 25,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-server/target/failsafe-reports/TEST-com.adtek.server.SnAuditIT.xml",
+        "name": "com.adtek.server.SnAuditIT",
+        "tests": 14,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-server/target/failsafe-reports/TEST-com.adtek.server.SnFoundationIT.xml",
+        "name": "com.adtek.server.SnFoundationIT",
+        "tests": 28,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "backend/adtek-server/target/failsafe-reports/TEST-com.adtek.server.SnMaintenanceIT.xml",
+        "name": "com.adtek.server.SnMaintenanceIT",
+        "tests": 15,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ]
+  }
+}

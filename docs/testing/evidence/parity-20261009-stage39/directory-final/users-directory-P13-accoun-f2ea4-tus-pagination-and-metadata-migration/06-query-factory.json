@@ -1,0 +1,137 @@
+{
+  "styles": {
+    "tags": [],
+    "firstTags": [
+      {
+        "className": "ant-tag ant-tag-filled ant-tag-success css-dev-only-do-not-override-oc1rc0 css-var-_r_0_",
+        "width": 40,
+        "height": 20,
+        "color": "rgb(63, 125, 90)",
+        "background": "rgb(240, 249, 235)",
+        "fontSize": "12px",
+        "lineHeight": "12px",
+        "padding": "0px 7px",
+        "margin": "0px",
+        "verticalAlign": "middle",
+        "display": "inline-flex"
+      },
+      {
+        "className": "ant-tag ant-tag-filled ant-tag-warning css-dev-only-do-not-override-oc1rc0 css-var-_r_0_",
+        "width": 52,
+        "height": 20,
+        "color": "rgb(194, 120, 3)",
+        "background": "rgb(253, 246, 236)",
+        "fontSize": "12px",
+        "lineHeight": "12px",
+        "padding": "0px 7px",
+        "margin": "0px 0px 0px 4px",
+        "verticalAlign": "middle",
+        "display": "inline-flex"
+      }
+    ],
+    "buttons": [
+      {
+        "className": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-link ant-btn-color-link ant-btn-variant-link",
+        "width": 34,
+        "height": 20,
+        "color": "rgb(30, 74, 138)",
+        "background": "rgba(0, 0, 0, 0)",
+        "fontSize": "14px",
+        "lineHeight": "14px",
+        "padding": "2px",
+        "margin": "0px",
+        "verticalAlign": "middle",
+        "display": "inline-flex"
+      },
+      {
+        "className": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-link ant-btn-color-link ant-btn-variant-link",
+        "width": 62,
+        "height": 20,
+        "color": "rgb(96, 98, 102)",
+        "background": "rgba(0, 0, 0, 0)",
+        "fontSize": "14px",
+        "lineHeight": "14px",
+        "padding": "2px",
+        "margin": "0px 0px 0px 12px",
+        "verticalAlign": "middle",
+        "display": "inline-flex"
+      },
+      {
+        "className": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-link ant-btn-dangerous ant-btn-color-dangerous ant-btn-variant-link",
+        "width": 34,
+        "height": 20,
+        "color": "rgb(180, 35, 24)",
+        "background": "rgba(0, 0, 0, 0)",
+        "fontSize": "14px",
+        "lineHeight": "14px",
+        "padding": "2px",
+        "margin": "0px 0px 0px 12px",
+        "verticalAlign": "middle",
+        "display": "inline-flex"
+      }
+    ],
+    "plus": [
+      {
+        "className": "prototype-icon",
+        "width": 14,
+        "height": 14,
+        "color": "rgb(255, 255, 255)",
+        "background": "rgba(0, 0, 0, 0)",
+        "fontSize": "14px",
+        "lineHeight": "normal",
+        "padding": "0px",
+        "margin": "0px",
+        "verticalAlign": "middle",
+        "display": "flex"
+      }
+    ]
+  },
+  "rows": [
+    [
+      "cmp_dir39_24",
+      "目录成员24",
+      "查询员",
+      "比较测试甲厂（CMP-A）",
+      "启用待改密",
+      "",
+      "admin · 2026-10-09 10:46:08",
+      "修改重置密码停用"
+    ]
+  ],
+  "headings": [
+    "工号",
+    "姓名",
+    "角色",
+    "工厂",
+    "状态",
+    "最近登录",
+    "创建",
+    "操作"
+  ],
+  "geometry": {
+    "surface": {
+      "x": 240,
+      "y": 147.796875,
+      "width": 1180,
+      "height": 209
+    },
+    "toolbar": {
+      "x": 261,
+      "y": 164.796875,
+      "width": 1138,
+      "height": 32
+    },
+    "table": {
+      "x": 261,
+      "y": 208.796875,
+      "width": 1138,
+      "height": 87
+    },
+    "pager": {
+      "x": 261,
+      "y": 307.796875,
+      "width": 1138,
+      "height": 32
+    }
+  }
+}

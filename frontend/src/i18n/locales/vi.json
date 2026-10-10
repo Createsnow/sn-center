@@ -383,6 +383,7 @@
     "1004000017": "Lệnh chưa đủ điều kiện tạo mã. Hãy kiểm tra thông báo.",
     "1004000018": "Số lượng vượt hạn mức còn lại của dòng nguồn.",
     "1004000019": "Thành viên, số lượng chờ hoặc đơn vị sản xuất đã đổi. Hãy tải lại và kiểm tra.",
+    "1004000029": "Số lượng phân bổ không được vượt quá số lượng đang chờ.",
     "1004000020": "Điều kiện nhận hoặc lô đã đổi. Hãy tải lại và kiểm tra.",
     "1004000021": "Khoảng phản hồi phải gồm các thành viên liên tiếp của lô cố định cùng PI số thứ tự.",
     "1004000022": "Không có SN chờ in cho nhà máy + PI này.",
@@ -399,10 +400,17 @@
     "1000000008": "Dữ liệu đang được thao tác khác thay đổi. Kiểm tra kết quả trước khi thử lại.",
     "1004000001": "Tham số mã hóa quy tắc không hợp lệ. Kiểm tra cơ số, bảng ký tự, độ dài số thứ tự và SN.",
     "1004000002": "Số thứ tự vượt sức chứa của quy tắc. Không thể tiếp tục tạo.",
-    "1002000017": "Đăng nhập bị khóa. Vui lòng thử lại sau {{minutes}} phút.",
+    "1002000017": "Đăng nhập sai quá nhiều lần, vui lòng thử lại sau {{minutes}} phút",
     "1004000026": "Quyền thực thi đã hết hạn hoặc cấu hình đã đổi. Lần chạy này chưa công bố.",
     "1004000027": "Chọn quy tắc cho lần tạo đầu tiên của PI này.",
-    "1004000028": "Số bắt đầu phải lớn hơn số lớn nhất cùng định dạng đã chuyển/nhập {{sequence}} ({{sn}})."
+    "1004000028": "Số bắt đầu phải lớn hơn số lớn nhất cùng định dạng đã chuyển/nhập {{sequence}} ({{sn}}).",
+    "1002000018": "Tài khoản đã bị vô hiệu",
+    "1004000031": "Tài khoản có quyền mở rộng. Hãy mở lại bằng trình sửa tài khoản chung.",
+    "1004000030": "Thông tin tài khoản không hợp lệ. Vui lòng kiểm tra và thử lại.",
+    "1004000032": "Mã nhân viên đã tồn tại.",
+    "1004000033": "Bắt buộc mã và tên nhà máy (mã ≤ 64)",
+    "1004000034": "Vui lòng nhập số lệnh",
+    "1004000035": "Chu kỳ đồng bộ định kỳ phải từ {{min}}–{{max}} phút"
   },
   "export": {
     "title": "Tác vụ xuất",
@@ -603,6 +611,8 @@
     },
     "factoryAssignmentHelp": "Liên kết rõ ràng dành cho vai trò giới hạn nhà máy. Để trống nghĩa là không có quyền nhà máy.",
     "piInit": {
+      "confirmButton": "OK",
+      "networkError": "Network Error",
       "title": "Số bắt đầu & nhập lịch sử",
       "desc": "Nhập khi triển khai: mỗi PI có thể đặt số bắt đầu một lần trước lần tạo đầu và nhập danh sách SN đã phát (trạng thái đã in, tham gia kiểm tra trùng). Sau đó số bắt đầu bị khóa.",
       "piPlaceholder": "Nhập PI",
@@ -804,7 +814,9 @@
     "origins": {
       "PAGE": "Trang",
       "API": "MES API"
-    }
+    },
+    "confirmButton": "OK",
+    "cancelButton": "Hủy"
   },
   "snTransfer": {
     "title": "Chuyển nhà máy",
@@ -997,5 +1009,13 @@
       "ONLINE": "Bản ghi trực tuyến",
       "ARCHIVE": "Bản ghi lưu trữ"
     }
+  },
+  "shell": {
+    "paginationTotal": "Tổng {{total}}",
+    "expand": "Mở rộng điều hướng",
+    "collapse": "Thu gọn điều hướng",
+    "framework": "Quản lý nền tảng",
+    "intervalUnit": "Đơn vị thời gian",
+    "paginationSize": "{{size}}/trang"
   }
 }

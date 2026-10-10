@@ -1,0 +1,526 @@
+{
+  "snapshots": [
+    {
+      "name": "01-disable-confirm",
+      "measurements": [
+        {
+          "x": 1161.199951171875,
+          "y": 296,
+          "width": 84,
+          "height": 30.399993896484375,
+          "text": "停用\n\n停用 cmp_account42_member 启停重置测试？停用后不能登录，历史痕迹保留。\n\n取消\n确定",
+          "color": "rgb(96, 98, 102)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "14px",
+          "lineHeight": "22px"
+        },
+        {
+          "x": 1163.5999755859375,
+          "y": 298.3999938964844,
+          "width": 79.199951171875,
+          "height": 7.20001220703125,
+          "text": "停用",
+          "color": "rgb(15, 23, 42)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "14px",
+          "lineHeight": "22px"
+        },
+        {
+          "x": 1163.5999755859375,
+          "y": 305.6000061035156,
+          "width": 79.199951171875,
+          "height": 9.600006103515625,
+          "text": "停用 cmp_account42_member 启停重置测试？停用后不能登录，历史痕迹保留。",
+          "color": "rgb(96, 98, 102)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "14px",
+          "lineHeight": "24px"
+        },
+        null,
+        {
+          "x": 1163.5999755859375,
+          "y": 315.20001220703125,
+          "width": 79.199951171875,
+          "height": 8.79998779296875,
+          "text": "取消\n确定",
+          "color": "rgb(96, 98, 102)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "14px",
+          "lineHeight": "22px"
+        },
+        null
+      ]
+    },
+    {
+      "name": "02-disabled",
+      "measurements": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "name": "03-enabled",
+      "measurements": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "name": "04-reset-empty",
+      "measurements": [
+        {
+          "x": 510,
+          "y": 386,
+          "width": 420,
+          "height": 188,
+          "text": "重置密码\n为 cmp_account42_member 设置新的初始密码（下次登录须修改）\n取消\n确定",
+          "color": "rgb(96, 98, 102)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "14px",
+          "lineHeight": "22px"
+        },
+        {
+          "x": 522,
+          "y": 398,
+          "width": 396,
+          "height": 36,
+          "text": "重置密码",
+          "color": "rgb(15, 23, 42)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "14px",
+          "lineHeight": "22px"
+        },
+        {
+          "x": 522,
+          "y": 434,
+          "width": 396,
+          "height": 40,
+          "text": "为 cmp_account42_member 设置新的初始密码（下次登录须修改）",
+          "color": "rgb(96, 98, 102)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "14px",
+          "lineHeight": "24px"
+        },
+        {
+          "x": 522,
+          "y": 474,
+          "width": 396,
+          "height": 44,
+          "text": "",
+          "color": "rgb(96, 98, 102)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "14px",
+          "lineHeight": "24px"
+        },
+        {
+          "x": 522,
+          "y": 518,
+          "width": 396,
+          "height": 44,
+          "text": "取消\n确定",
+          "color": "rgb(96, 98, 102)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "14px",
+          "lineHeight": "22px"
+        },
+        {
+          "x": 522,
+          "y": 518,
+          "width": 396,
+          "height": 0,
+          "text": "",
+          "color": "rgb(245, 108, 108)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "12px",
+          "lineHeight": "24px"
+        }
+      ]
+    },
+    {
+      "name": "05-reset-invalid",
+      "measurements": [
+        {
+          "x": 510,
+          "y": 374,
+          "width": 420,
+          "height": 212,
+          "text": "重置密码\n为 cmp_account42_member 设置新的初始密码（下次登录须修改）\n8–64 位，同时包含字母和数字。\n取消\n确定",
+          "color": "rgb(96, 98, 102)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "14px",
+          "lineHeight": "22px"
+        },
+        {
+          "x": 522,
+          "y": 386,
+          "width": 396,
+          "height": 36,
+          "text": "重置密码",
+          "color": "rgb(15, 23, 42)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "14px",
+          "lineHeight": "22px"
+        },
+        {
+          "x": 522,
+          "y": 422,
+          "width": 396,
+          "height": 40,
+          "text": "为 cmp_account42_member 设置新的初始密码（下次登录须修改）",
+          "color": "rgb(96, 98, 102)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "14px",
+          "lineHeight": "24px"
+        },
+        {
+          "x": 522,
+          "y": 462,
+          "width": 396,
+          "height": 68,
+          "text": "8–64 位，同时包含字母和数字。",
+          "color": "rgb(96, 98, 102)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "14px",
+          "lineHeight": "24px"
+        },
+        {
+          "x": 522,
+          "y": 530,
+          "width": 396,
+          "height": 44,
+          "text": "取消\n确定",
+          "color": "rgb(96, 98, 102)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "14px",
+          "lineHeight": "22px"
+        },
+        {
+          "x": 522,
+          "y": 506,
+          "width": 396,
+          "height": 24,
+          "text": "8–64 位，同时包含字母和数字。",
+          "color": "rgb(245, 108, 108)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "12px",
+          "lineHeight": "24px"
+        }
+      ]
+    },
+    {
+      "name": "06-reset-done-no-reload",
+      "measurements": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "name": "07-self-actions",
+      "measurements": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "name": "08-self-reset-done",
+      "measurements": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "name": "09-self-reset-forced-change",
+      "measurements": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    }
+  ],
+  "requests": [
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/refresh",
+      "status": 401
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/login",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/menus/current",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/context",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/dashboard",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/factories",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/users",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/users",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/users",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/refresh",
+      "status": 401
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/login",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/password",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/context",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/menus/current",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/dashboard",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/users",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/users/131/status",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/users",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/refresh",
+      "status": 401
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/users/131/status",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/users",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/refresh",
+      "status": 401
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/login",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/menus/current",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/context",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/users",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/dashboard",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/users/131/password",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/users/131/password",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/refresh",
+      "status": 401
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/refresh",
+      "status": 401
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/login",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/password",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/context",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/menus/current",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/dashboard",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/factories",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/users",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/users",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/users/131/password",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/refresh",
+      "status": 401
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/refresh",
+      "status": 401
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/system/auth/login",
+      "status": 200
+    }
+  ],
+  "pageErrors": []
+}

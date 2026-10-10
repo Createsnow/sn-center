@@ -1,0 +1,240 @@
+{
+  "roleTables": [
+    {
+      "case": "cmp_operator-01-bound.json",
+      "rows": 2,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "cmp_operator-02-cross-factory.json",
+      "rows": 3,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "cmp_operator-03-denied.json",
+      "rows": 3,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "cmp_operator-04-cleared.json",
+      "rows": 2,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "cmp_query_all-01-bound.json",
+      "rows": 6,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "cmp_query_all-02-other-pi.json",
+      "rows": 3,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "cmp_query_all-03-factory-b.json",
+      "rows": 4,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "cmp_query_all-04-status-exact-sn.json",
+      "rows": 1,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "cmp_query_all-05-bill-material.json",
+      "rows": 2,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "cmp_query_all-06-cleared-selects.json",
+      "rows": 6,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "cmp_query_factory-01-bound.json",
+      "rows": 2,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "cmp_query_factory-02-other-pi.json",
+      "rows": 0,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    }
+  ],
+  "roleFiles": [
+    {
+      "case": "cmp_operator-01-bound-csv.json",
+      "rows": 2,
+      "allValuesTypesOrderEqual": true,
+      "byteIdentical": true
+    },
+    {
+      "case": "cmp_operator-02-cross-factory-xlsx.json",
+      "rows": 3,
+      "allValuesTypesOrderEqual": true,
+      "byteIdentical": false
+    },
+    {
+      "case": "cmp_query_all-01-bound-csv.json",
+      "rows": 6,
+      "allValuesTypesOrderEqual": true,
+      "byteIdentical": true
+    },
+    {
+      "case": "cmp_query_all-02-other-pi-xlsx.json",
+      "rows": 3,
+      "allValuesTypesOrderEqual": true,
+      "byteIdentical": false
+    },
+    {
+      "case": "cmp_query_factory-01-bound-csv.json",
+      "rows": 2,
+      "allValuesTypesOrderEqual": true,
+      "byteIdentical": true
+    },
+    {
+      "case": "cmp_query_factory-02-other-pi-xlsx.json",
+      "rows": 0,
+      "allValuesTypesOrderEqual": true,
+      "byteIdentical": false
+    }
+  ],
+  "mainTables": [
+    {
+      "case": "01-default-descending-20.json",
+      "rows": 20,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "02-size-first-page.json",
+      "rows": 50,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "02-third-page.json",
+      "rows": 14,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "03-pi-material-sequence.json",
+      "rows": 50,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "03-whitespace-material-ignored.json",
+      "rows": 50,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "04-draft-export-keeps-query.json",
+      "rows": 30,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "06-business-batch.json",
+      "rows": 20,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "07-empty-batch.json",
+      "rows": 0,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "08-layout-en-1440.json",
+      "rows": 20,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "08-layout-en-900.json",
+      "rows": 20,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "08-layout-vi-1440.json",
+      "rows": 20,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "08-layout-vi-900.json",
+      "rows": 20,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "08-layout-zh-1440.json",
+      "rows": 20,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "08-layout-zh-900.json",
+      "rows": 20,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    }
+  ],
+  "mainFiles": [
+    {
+      "case": "04-draft-single-csv.json",
+      "rows": 1,
+      "allValuesTypesOrderEqual": true,
+      "byteIdentical": true
+    },
+    {
+      "case": "04-draft-single-xlsx.json",
+      "rows": 1,
+      "allValuesTypesOrderEqual": true,
+      "byteIdentical": false
+    },
+    {
+      "case": "05-pi-creation-order-csv.json",
+      "rows": 51,
+      "allValuesTypesOrderEqual": true,
+      "byteIdentical": true
+    },
+    {
+      "case": "05-pi-creation-order-xlsx.json",
+      "rows": 51,
+      "allValuesTypesOrderEqual": true,
+      "byteIdentical": false
+    },
+    {
+      "case": "06-batch-all-csv.json",
+      "rows": 51,
+      "allValuesTypesOrderEqual": true,
+      "byteIdentical": false
+    },
+    {
+      "case": "06-batch-all-xlsx.json",
+      "rows": 51,
+      "allValuesTypesOrderEqual": true,
+      "byteIdentical": false
+    },
+    {
+      "case": "07-empty-csv.json",
+      "rows": 0,
+      "allValuesTypesOrderEqual": true,
+      "byteIdentical": true
+    },
+    {
+      "case": "07-empty-xlsx.json",
+      "rows": 0,
+      "allValuesTypesOrderEqual": true,
+      "byteIdentical": false
+    }
+  ],
+  "mainLayouts": [
+    "01-default-descending-20.json",
+    "02-size-first-page.json",
+    "02-third-page.json",
+    "03-pi-material-sequence.json",
+    "03-whitespace-material-ignored.json",
+    "04-draft-export-keeps-query.json",
+    "06-business-batch.json",
+    "07-empty-batch.json",
+    "08-layout-en-1440.json",
+    "08-layout-en-900.json",
+    "08-layout-vi-1440.json",
+    "08-layout-vi-900.json",
+    "08-layout-zh-1440.json",
+    "08-layout-zh-900.json"
+  ]
+}

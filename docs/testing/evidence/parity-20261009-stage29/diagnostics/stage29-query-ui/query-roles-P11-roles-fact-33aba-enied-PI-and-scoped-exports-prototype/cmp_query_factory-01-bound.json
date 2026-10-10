@@ -1,0 +1,37 @@
+{
+  "cells": [
+    [
+      "Q29A00002",
+      "00002",
+      "2",
+      "CMP-UI-QUERY-SCOPE-PI-A",
+      "CMP-SCOPE-MAT-Z",
+      "CMP-QUERY-SCOPE-CUSTOMER",
+      "比较测试甲厂",
+      "待领取",
+      "CMP-UI-QUERY-SCOPE-PI-A",
+      "CMP-UI-QUERY-SCOPE-MO-A",
+      "",
+      "生成",
+      "2026-10-09 05:57:20",
+      ""
+    ],
+    [
+      "Q29A00001",
+      "00001",
+      "1",
+      "CMP-UI-QUERY-SCOPE-PI-A",
+      "CMP-SCOPE-MAT-Z",
+      "CMP-QUERY-SCOPE-CUSTOMER",
+      "比较测试甲厂",
+      "待领取",
+      "CMP-UI-QUERY-SCOPE-PI-A",
+      "CMP-UI-QUERY-SCOPE-MO-A",
+      "",
+      "生成",
+      "2026-10-09 05:57:20",
+      ""
+    ]
+  ],
+  "text": "SN 管控中心\n总部统一生成与分配\n工作台\n首页\n总部作业\n生产订单\n工厂作业\n领取与打印\n转厂\n查询与留痕\nSN 查询\n操作痕迹\nSN 管控中心\n/\nSN 查询\n 比较测试甲厂\n简体中文\n比\n比较工厂查询员 · 查询员\nSN 查询\n\n只读查询，不能在这里转走号。工厂默认只看已分给本厂的号，可切换为只读查看同一 PI 下已分到各个厂的号。\n\n导出 Excel\nCSV\n比较测试甲厂\n状态\n查询\n完整 SN\n\t\n进制流水\n\t\n十进制流水\n\t\nPI\n\t\n物料编码\n\t\n客户编码\n\t\n工厂\n\t\n状态\n\t\n流水归属 PI\n\t\n来源订单\n\t\n批次号\n\t\n来源\n\t\n生成时间\n\t\n打印时间\nQ29A00002\n\t\n00002\n\t\n2\n\t\nCMP-UI-QUERY-SCOPE-PI-A\n\t\nCMP-SCOPE-MAT-Z\n\t\nCMP-QUERY-SCOPE-CUSTOMER\n\t\n比较测试甲厂\n\t\n待领取\n\t\nCMP-UI-QUERY-SCOPE-PI-A\n\t\nCMP-UI-QUERY-SCOPE-MO-A\n\t\n\t\n生成\n\t\n2026-10-09 05:57:20\n\t\n\n\nQ29A00001\n\t\n00001\n\t\n1\n\t\nCMP-UI-QUERY-SCOPE-PI-A\n\t\nCMP-SCOPE-MAT-Z\n\t\nCMP-QUERY-SCOPE-CUSTOMER\n\t\n比较测试甲厂\n\t\n待领取\n\t\nCMP-UI-QUERY-SCOPE-PI-A\n\t\nCMP-UI-QUERY-SCOPE-MO-A\n\t\n\t\n生成\n\t\n2026-10-09 05:57:20\n\t\n共 2 条\n20条/页\n1"
+}

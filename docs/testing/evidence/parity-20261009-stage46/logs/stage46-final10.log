@@ -1,0 +1,17 @@
+
+Running 6 tests using 1 worker
+
+(node:17744) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\factories.spec.ts:12:1 › P14 factories: full catalog, create validation, Unicode, cancel, sync conflicts and recovery (1.1m)
+  ok 2 [prototype] › e2e\parity\factory-audit.spec.ts:10:1 › P14 factory audit: real create, validation, sync conflicts, failure recovery and complete export (14.6s)
+  ok 3 [prototype] › e2e\parity\factory-identity.spec.ts:9:1 › P14 organization changes: snapshot name, manual factory, changed ID/code, rename and directory filters (22.6s)
+(node:43452) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 4 [migration] › e2e\parity\factories.spec.ts:12:1 › P14 factories: full catalog, create validation, Unicode, cancel, sync conflicts and recovery (1.4m)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok 5 [migration] › e2e\parity\factory-audit.spec.ts:10:1 › P14 factory audit: real create, validation, sync conflicts, failure recovery and complete export (28.0s)
+  ok 6 [migration] › e2e\parity\factory-identity.spec.ts:9:1 › P14 organization changes: snapshot name, manual factory, changed ID/code, rename and directory filters (21.6s)
+
+  6 passed (4.1m)

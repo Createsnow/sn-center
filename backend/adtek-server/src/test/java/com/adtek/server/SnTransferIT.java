@@ -114,6 +114,7 @@ class SnTransferIT {
                         "sys_file",
                         "sys_task",
                         "sys_operation",
+                        "sn_bill_generation",
                         "sn_source_entry_quota",
                         "sn_order_entry",
                         "sn_order_bill",
@@ -433,6 +434,94 @@ class SnTransferIT {
         }
     }
 
+    @Test
+    void pageDetailsKeepFixedMembershipSourceBatchAndCurrentFactoryWithScopedStatus()
+            throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            String source = allocated(b), target = destination(source);
+            acquire(b, source);
+            user(31, "detail_source", 3);
+            user(32, "detail_outsider", 3);
+            jdbc.update("INSERT INTO sn_user_factory(user_id,factory_id) VALUES(31,?)", source);
+            String id = submit(b, "DIRECT", transfer(uuid(), source, target, "PI", null, null));
+            run(id);
+            String path = "/transfers/" + id + "/items/page";
+            var first = data(b.get(path + "?page=1&size=10"));
+            var second = data(b.get(path + "?page=2&size=10"));
+            assertThat(first.path("total").asString()).isEqualTo("13");
+            assertThat(first.path("items").size()).isEqualTo(10);
+            assertThat(second.path("items").size()).isEqualTo(3);
+            assertThat(first.path("items").get(0).path("sn").asString()).isEqualTo("G0001");
+            assertThat(second.path("items").get(0).path("sn").asString()).isEqualTo("G0011");
+            assertThat(first.path("items").get(0).path("fromBatchNo").asString())
+                    .matches("B[0-9]{18}");
+            assertThat(first.path("items").get(0).path("fromStatus").asString())
+                    .isEqualTo("TO_PRINT");
+            assertThat(first.path("items").get(0).path("currentStatus").asString())
+                    .isEqualTo("TO_ACQUIRE");
+            assertThat(first.path("items").get(0).path("currentFactoryId").asString())
+                    .isEqualTo(target);
+            assertThat(data(b.get(path + "?page=3&size=10")).path("items").isEmpty()).isTrue();
+            assertThat(b.get(path + "?page=0").statusCode()).isEqualTo(400);
+            assertThat(b.get(path + "?size=1001").statusCode()).isEqualTo(400);
+            try (var local = new Browser("detail_source");
+                    var outsider = new Browser("detail_outsider")) {
+                var visible = data(local.get(path));
+                assertThat(visible.path("items").get(0).path("currentStatus").asString())
+                        .isEqualTo("TRANSFERRED_OUT");
+                assertThat(outsider.get(path).statusCode()).isEqualTo(403);
+            }
+            assertThat(transferItems(b, id)).hasSize(13);
+        }
+    }
+
+    @Test
+    void candidateMaterialsDuplicatesAndDisplayIdentityMatchTheSourceWorkflow() throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            String source = allocated(b), target = destination(source);
+            String path = "/transfers/candidates?factoryId=" + source + "&pi=PI-1";
+            var material = data(b.get(path + "&scope=MATERIAL&material="));
+            assertThat(material.path("total").asString()).isEqualTo("2");
+            assertThat(material.path("materials").toString()).isEqualTo("[\"\",\"M1\"]");
+            assertThat(material.path("duplicateCount").asString()).isEqualTo("0");
+            var imported =
+                    data(
+                            b.post(
+                                    "/pi-initializations",
+                                    init(
+                                            uuid(),
+                                            "PI-2",
+                                            null,
+                                            List.of(
+                                                    "G0001", "G0002", "G0003", "G0004", "G0005",
+                                                    "G0006"))));
+            run(imported.path("taskId").asString());
+            var dup = data(b.get(path + "&toPi=PI-2"));
+            assertThat(dup.path("duplicateCount").asString()).isEqualTo("6");
+            assertThat(dup.path("duplicateSamples").toString())
+                    .isEqualTo("[\"G0001\",\"G0002\",\"G0003\",\"G0004\",\"G0005\"]");
+            assertThat(data(b.get(path + "&toPi=PI-1")).path("duplicateCount").asString())
+                    .isEqualTo("0");
+            var command = transfer(uuid(), source, target, "SINGLE", null, "G0013");
+            String id = submit(b, "APPLY", command);
+            run(id);
+            var created = data(b.get("/transfers/" + id));
+            assertThat(created.path("transferNo").asString()).matches("T[0-9]{18}");
+            assertThat(created.path("actorName").asString()).isEqualTo("sn_hq");
+            assertThat(created.path("decidedName").isNull()).isTrue();
+            assertThat(submit(b, "APPLY", command)).isEqualTo(id);
+            run(decision(b, id, "reject", "1"));
+            var decided = data(b.get("/transfers/" + id));
+            assertThat(decided.path("transferNo")).isEqualTo(created.path("transferNo"));
+            assertThat(decided.path("decidedName").asString()).isEqualTo("sn_hq");
+            assertThat(decided.path("status").asString()).isEqualTo("REJECTED");
+            jdbc.update("UPDATE sys_user SET username='renamed_hq' WHERE username='sn_hq'");
+            var history = data(b.get("/transfers/" + id));
+            assertThat(history.path("actorName").asString()).isEqualTo("sn_hq");
+            assertThat(history.path("decidedName").asString()).isEqualTo("sn_hq");
+        }
+    }
+
     String decision(Browser b, String id, String action, String version) throws Exception {
         return data(b.post(
                         "/transfers/" + id + "/" + action,
@@ -503,12 +592,16 @@ class SnTransferIT {
             run(decision(b, transfer, "approve", "1"));
             assertThat(last("PI-2")).isZero();
             assertThat(last("PI-1")).isEqualTo(13);
+            String stale = generate(b, before);
+            assertThat(fail(stale)).isEqualTo(1004000016);
             assertThat(
-                            b.post(
-                                            "/generation",
-                                            Map.of("operationId", uuid(), "previewId", before))
-                                    .statusCode())
-                    .isEqualTo(409);
+                            jdbc.queryForObject(
+                                    "SELECT state FROM sn_work WHERE task_id=?",
+                                    String.class,
+                                    stale))
+                    .isEqualTo("FAILED");
+            assertThat(last("PI-2")).isZero();
+            assertThat(count("sn_item")).isEqualTo(13);
             String rule =
                     jdbc.queryForObject(
                             "SELECT CAST(id AS CHAR) FROM sn_rule WHERE code='GENERAL'",
@@ -1013,9 +1106,11 @@ class SnTransferIT {
     void laterSqlBlockCollisionRollsBackEarlierMembersAndDualGuardUpdates() throws Exception {
         try (var b = new Browser("sn_hq")) {
             String bill = prepared(b);
-            jdbc.update(
-                    "UPDATE sn_order_entry SET qty=1001 WHERE bill_id=? AND source_entry_id='11'",
-                    bill);
+            // 通过 ERP 发布保持表头整单额度与分录数量一致，容量测试不伪造不一致快照。
+            var largeRows = new ArrayList<>(ERP.orders);
+            largeRows.set(0, row("9007199254740993", "11", "MO-1", "M1", "1001"));
+            ERP.orders = largeRows;
+            data(b.post("/orders/sync", Map.of("billNo", "MO-1")));
             String source =
                     jdbc.queryForObject(
                             "SELECT CAST(factory_id AS CHAR) FROM sn_order_bill WHERE id=?",
@@ -1061,6 +1156,78 @@ class SnTransferIT {
                                     "SELECT COUNT(*) FROM sn_key WHERE pi='PI-1'", Long.class))
                     .isEqualTo(1001);
             assertThat(last("PI-1")).isEqualTo(1001);
+        }
+    }
+
+    @Test
+    void snapshotDirectoryKeepsUnmappedOrganizationsGroupsNamesAndSearchesBillNumbers()
+            throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            var first = new ArrayList<Object>(row("11", "1", "LOOK%_UP", "M1", "1"));
+            first.set(5, "A name");
+            var duplicate = new ArrayList<Object>(row("12", "2", "DUPLICATE", "M1", "1"));
+            duplicate.set(5, "Z name");
+            ERP.orders =
+                    List.of(
+                            first,
+                            duplicate,
+                            K3ProtocolFixture.row(
+                                    "13",
+                                    "3",
+                                    "UNMAPPED",
+                                    "C2",
+                                    "PI-0",
+                                    "999",
+                                    "UNKNOWN",
+                                    "未映射组织",
+                                    "M0",
+                                    "1"),
+                            K3ProtocolFixture.row(
+                                    "14",
+                                    "4",
+                                    "NO-CUSTOMER",
+                                    "",
+                                    "PI-X",
+                                    "101",
+                                    "ERP-A",
+                                    "甲工厂",
+                                    "M2",
+                                    "1"),
+                            K3ProtocolFixture.row(
+                                    "15", "5", "NO-PI", "C1", "", "101", "ERP-A", "甲工厂", "M2", "1"),
+                            row("16", "6", "LOOKZZUP", "M2", "1"));
+            data(b.post("/orders/sync", Map.of()));
+            var directory = data(b.get("/transfers/targets"));
+            assertThat(directory.path("total").asString()).isEqualTo("3");
+            assertThat(directory.path("size").asInt()).isEqualTo(50);
+            var items = directory.path("items");
+            assertThat(items.size()).isEqualTo(3);
+            var unmapped = items.get(0);
+            assertThat(unmapped.path("pi").asString()).isEqualTo("PI-0");
+            assertThat(unmapped.path("orgName").asString()).isEqualTo("未映射组织");
+            assertThat(unmapped.path("factoryId").isNull()).isTrue();
+            assertThat(unmapped.path("factoryCode").isNull()).isTrue();
+            assertThat(unmapped.path("factoryName").isNull()).isTrue();
+            assertThat(unmapped.size()).isEqualTo(8);
+            assertThat(items.get(1).path("materialName").asString()).isEqualTo("Z name");
+            assertThat(items.get(1).path("factoryId").asString()).matches("[1-9][0-9]{15,}");
+            assertThat(items.get(2).path("material").asString()).isEqualTo("M2");
+            var literal = data(b.get("/transfers/targets?query=LOOK%25_"));
+            assertThat(literal.path("total").asString()).isEqualTo("1");
+            assertThat(literal.path("items").get(0).path("materialName").asString())
+                    .isEqualTo("A name");
+            assertThat(data(b.get("/transfers/targets?query=C2")).path("total").asString())
+                    .isEqualTo("1");
+            assertThat(data(b.get("/transfers/targets?query=M2")).path("total").asString())
+                    .isEqualTo("1");
+            assertThat(data(b.get("/transfers/targets?query=name")).path("total").asString())
+                    .isEqualTo("0");
+            assertThat(data(b.get("/transfers/targets?size=1&page=2")).path("items").get(0))
+                    .isEqualTo(items.get(1));
+            assertThat(b.get("/transfers/targets?size=101").statusCode()).isEqualTo(400);
+            jdbc.update("UPDATE sn_factory SET enabled=FALSE WHERE code='ERP-A'");
+            assertThat(data(b.get("/transfers/targets")).path("total").asString()).isEqualTo("3");
+            assertThat(data(b.get("/transfers/factories")).path("total").asString()).isEqualTo("1");
         }
     }
 

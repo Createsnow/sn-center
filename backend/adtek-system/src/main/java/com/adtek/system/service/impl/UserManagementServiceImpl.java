@@ -80,21 +80,43 @@ public class UserManagementServiceImpl implements UserManagementService {
                                 SysUserEntity::getDeptId,
                                 SysUserEntity::getEnabled,
                                 SysUserEntity::getMustChangePassword,
-                                SysUserEntity::getSecurityVersion)
+                                SysUserEntity::getSecurityVersion,
+                                SysUserEntity::getLastLoginAt,
+                                SysUserEntity::getCreateTime,
+                                SysUserEntity::getCreateBy)
                         .eq(SysUserEntity::getPrincipalType, "USER")
                         .eq(
                                 query.getEnabled() != null,
                                 SysUserEntity::getEnabled,
                                 query.getEnabled())
-                        .orderByDesc(SysUserEntity::getId);
+                        .orderByAsc(SysUserEntity::getUsername, SysUserEntity::getId);
         if (query.getKeyword() != null && !query.getKeyword().isBlank()) {
             where.and(
                     part ->
-                            part.like(SysUserEntity::getUsername, query.getKeyword().strip())
+                            part.likeRight(SysUserEntity::getUsername, query.getKeyword().strip())
                                     .or()
                                     .like(
                                             SysUserEntity::getDisplayName,
                                             query.getKeyword().strip()));
+        }
+        // 所有筛选先进入同一条受数据范围保护的 SQL，再计算总数和分页，禁止页后过滤。
+        if (query.getRoleCodes() != null && !query.getRoleCodes().isEmpty()) {
+            var members = security.usersWithRoles(query.getRoleCodes());
+            if (members.isEmpty())
+                return new PageResult<>(List.of(), "0", query.getPage(), query.getSize());
+            where.in(SysUserEntity::getId, members);
+        }
+        if (query.getExcludedRoleCodes() != null && !query.getExcludedRoleCodes().isEmpty()) {
+            var excluded = security.usersWithRoles(query.getExcludedRoleCodes());
+            if (!excluded.isEmpty()) where.notIn(SysUserEntity::getId, excluded);
+        }
+        if (query.getFactoryId() != null) {
+            var members =
+                    factories.members(
+                            actors.requirePermission("system:user:list"), id(query.getFactoryId()));
+            if (members.isEmpty())
+                return new PageResult<>(List.of(), "0", query.getPage(), query.getSize());
+            where.in(SysUserEntity::getId, members);
         }
         Page<SysUserEntity> page =
                 users.selectPage(new Page<>(query.getPage(), query.getSize()), where);
@@ -103,6 +125,19 @@ public class UserManagementServiceImpl implements UserManagementService {
                 Long.toString(page.getTotal()),
                 query.getPage(),
                 query.getSize());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @com.adtek.common.annotation.DataScope(
+            resource = "system:user",
+            permission = "system:user:list")
+    public ManagedUserVO get(String userId) {
+        var user = users.selectById(id(userId));
+        if (user == null || !"USER".equals(user.getPrincipalType())) {
+            throw new BusinessException(com.adtek.common.constant.ErrorCodeConstants.NOT_FOUND);
+        }
+        return view(user);
     }
 
     @Override
@@ -183,6 +218,7 @@ public class UserManagementServiceImpl implements UserManagementService {
         user.setEnabled(true);
         user.setMustChangePassword(true);
         user.setSecurityVersion(1L);
+        user.setCredentialVersion(1L);
         user.setLanguage("zh-CN");
         user.setCreateBy(actor.userId());
         user.setUpdateBy(actor.userId());
@@ -203,7 +239,10 @@ public class UserManagementServiceImpl implements UserManagementService {
                 user,
                 textIds(roles),
                 security.departmentName(department),
-                factoryIds(user.getId()));
+                factoryIds(user.getId()),
+                security.roleCodes(user.getId()),
+                factories.details(user.getId()),
+                user.getCreateBy() == null ? null : security.creatorName(user.getCreateBy()));
     }
 
     @Override
@@ -225,6 +264,33 @@ public class UserManagementServiceImpl implements UserManagementService {
                 "mustChangePassword"
             })
     public void update(String userId, UserUpdateDTO command) {
+        updateAccount(userId, command, true);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @com.adtek.common.annotation.DataScope(
+            resource = "system:user",
+            permission = "system:user:update")
+    @OperLog(
+            title = "用户管理",
+            action = "system:user:update",
+            businessType = UPDATE,
+            fields = {
+                "username",
+                "displayName",
+                "deptId",
+                "roleIds",
+                "factoryIds",
+                "enabled",
+                "mustChangePassword"
+            })
+    public void updatePreservingSession(String userId, UserUpdateDTO command) {
+        updateAccount(userId, command, false);
+    }
+
+    /** 会话策略只由内部用例选择；授权锁、版本冲突和事务审计共用同一写入路径。 */
+    private void updateAccount(String userId, UserUpdateDTO command, boolean revokeSessions) {
         validator.requireValid(command);
         Actor actor = lockActor();
         var user = target(actor, id(userId), command.version());
@@ -238,7 +304,7 @@ public class UserManagementServiceImpl implements UserManagementService {
         var before = snapshot(user, beforeRoles);
         SysUserEntity patch = convert.fromUpdate(command);
         var update =
-                mutation(user, actor)
+                mutation(user, actor, revokeSessions)
                         .set(SysUserEntity::getDisplayName, patch.getDisplayName())
                         .set(SysUserEntity::getDeptId, patch.getDeptId());
         requireUpdated(users.update(null, update));
@@ -264,20 +330,48 @@ public class UserManagementServiceImpl implements UserManagementService {
             businessType = UPDATE,
             fields = {"enabled"})
     public void status(String userId, UserStatusDTO command) {
+        changeStatus(userId, command, true);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @com.adtek.common.annotation.DataScope(
+            resource = "system:user",
+            permission = "system:user:status")
+    @OperLog(
+            title = "用户管理",
+            action = "system:user:status",
+            businessType = UPDATE,
+            fields = {"enabled"})
+    public String statusPreservingSession(String userId, UserStatusDTO command) {
+        return changeStatus(userId, command, false);
+    }
+
+    private String changeStatus(String userId, UserStatusDTO command, boolean revokeSessions) {
         validator.requireValid(command);
         Actor actor = lockActor();
-        var user = target(actor, id(userId), command.version());
+        var user = lockedTarget(actor, id(userId));
         if (user.getId() == actor.userId() && !command.enabled()) {
             throw new BusinessException(SELF_PROTECTION);
         }
+        if (!revokeSessions && user.getEnabled().equals(command.enabled())) {
+            AuditContext.record(
+                    userId,
+                    Map.of("enabled", user.getEnabled()),
+                    Map.of("enabled", user.getEnabled()));
+            return user.getSecurityVersion().toString();
+        }
+        requireVersion(user, command.version());
         boolean previous = user.getEnabled();
         requireUpdated(
                 users.update(
                         null,
-                        mutation(user, actor).set(SysUserEntity::getEnabled, command.enabled())));
+                        mutation(user, actor, revokeSessions)
+                                .set(SysUserEntity::getEnabled, command.enabled())));
         requireRemainingAdministrator();
         AuditContext.record(
                 userId, Map.of("enabled", previous), Map.of("enabled", command.enabled()));
+        return Long.toString(Math.addExact(user.getSecurityVersion(), 1L));
     }
 
     @Override
@@ -291,14 +385,32 @@ public class UserManagementServiceImpl implements UserManagementService {
             businessType = UPDATE,
             fields = {"mustChangePassword"})
     public void resetPassword(String userId, UserPasswordResetDTO command) {
+        resetPassword(userId, command, false);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @com.adtek.common.annotation.DataScope(
+            resource = "system:user",
+            permission = "system:user:reset")
+    @OperLog(
+            title = "用户管理",
+            action = "system:user:reset",
+            businessType = UPDATE,
+            fields = {"mustChangePassword"})
+    public String resetInitialPassword(String userId, UserPasswordResetDTO command) {
+        return resetPassword(userId, command, true);
+    }
+
+    private String resetPassword(String userId, UserPasswordResetDTO command, boolean initial) {
         validator.requireValid(command);
         Actor actor = lockActor();
         var user = target(actor, id(userId), command.version());
-        if (user.getId() == actor.userId()) {
+        if (!initial && user.getId() == actor.userId()) {
             throw new BusinessException(SELF_PROTECTION);
         }
         PasswordPolicy.requireStrong(command.password());
-        if (passwords.matches(command.password(), user.getPasswordHash())) {
+        if (!initial && passwords.matches(command.password(), user.getPasswordHash())) {
             throw new BusinessException(PASSWORD_SAME);
         }
         requireUpdated(
@@ -313,6 +425,7 @@ public class UserManagementServiceImpl implements UserManagementService {
                 userId,
                 Map.of("mustChangePassword", user.getMustChangePassword()),
                 Map.of("mustChangePassword", true));
+        return Long.toString(Math.addExact(user.getSecurityVersion(), 1L));
     }
 
     /** 协调锁先于账号锁，所有未来角色/菜单/部门权限写也必须使用相同顺序。 */
@@ -340,12 +453,19 @@ public class UserManagementServiceImpl implements UserManagementService {
     }
 
     private SysUserEntity target(Actor actor, long targetId, String version) {
+        var user = lockedTarget(actor, targetId);
+        requireVersion(user, version);
+        return user;
+    }
+
+    private void requireVersion(SysUserEntity user, String version) {
+        if (user.getSecurityVersion() != id(version)) throw new BusinessException(USER_CONFLICT);
+    }
+
+    private SysUserEntity lockedTarget(Actor actor, long targetId) {
         var user = users.lock(targetId);
         if (user == null || !"USER".equals(user.getPrincipalType())) {
             throw new BusinessException(com.adtek.common.constant.ErrorCodeConstants.NOT_FOUND);
-        }
-        if (user.getSecurityVersion() != id(version)) {
-            throw new BusinessException(USER_CONFLICT);
         }
         requireDominates(actor, grants.describe(targetId), user.getDeptId());
         return user;
@@ -398,12 +518,21 @@ public class UserManagementServiceImpl implements UserManagementService {
 
     private com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper<SysUserEntity>
             mutation(SysUserEntity user, Actor actor) {
+        return mutation(user, actor, true);
+    }
+
+    private com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper<SysUserEntity>
+            mutation(SysUserEntity user, Actor actor, boolean revokeSessions) {
         return Wrappers.<SysUserEntity>lambdaUpdate()
                 .eq(SysUserEntity::getId, user.getId())
                 .eq(SysUserEntity::getSecurityVersion, user.getSecurityVersion())
                 .set(
                         SysUserEntity::getSecurityVersion,
                         Math.addExact(user.getSecurityVersion(), 1L))
+                .set(
+                        revokeSessions,
+                        SysUserEntity::getCredentialVersion,
+                        Math.addExact(user.getCredentialVersion(), 1L))
                 .set(SysUserEntity::getUpdateBy, actor.userId())
                 .set(SysUserEntity::getUpdateTime, Instant.now());
     }
@@ -429,7 +558,10 @@ public class UserManagementServiceImpl implements UserManagementService {
                 user,
                 textIds(security.roleIds(user.getId())),
                 user.getDeptId() == null ? null : security.departmentName(user.getDeptId()),
-                factoryIds(user.getId()));
+                factoryIds(user.getId()),
+                security.roleCodes(user.getId()),
+                factories.details(user.getId()),
+                user.getCreateBy() == null ? null : security.creatorName(user.getCreateBy()));
     }
 
     private List<String> factoryIds(long userId) {

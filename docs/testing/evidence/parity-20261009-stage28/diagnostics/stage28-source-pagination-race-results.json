@@ -1,0 +1,217 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.parity.config.ts",
+      "query.spec.ts",
+      "--workers=1",
+      "--retries=0",
+      "--output=test-results/stage28-final-ui"
+    ],
+    "configFile": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\playwright.parity.config.ts",
+    "rootDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage28-final-ui",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "prototype",
+        "name": "prototype",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage28-final-ui",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "migration",
+        "name": "migration",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/parity/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "query.spec.ts",
+      "file": "query.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 360000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 19352,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  4\u001b[39m\n\u001b[31m+ Received  + 50\u001b[39m\n\n\u001b[2m  Array [\u001b[22m\n\u001b[32m-   \"Q28A00004\",\u001b[39m\n\u001b[32m-   \"Q28A00003\",\u001b[39m\n\u001b[32m-   \"Q28A00002\",\u001b[39m\n\u001b[32m-   \"Q28A00001\",\u001b[39m\n\u001b[31m+   \"Q28B00003\",\u001b[39m\n\u001b[31m+   \"Q28B00002\",\u001b[39m\n\u001b[31m+   \"Q28B00001\",\u001b[39m\n\u001b[31m+   \"Q28A00051\",\u001b[39m\n\u001b[31m+   \"Q28A00050\",\u001b[39m\n\u001b[31m+   \"Q28A00049\",\u001b[39m\n\u001b[31m+   \"Q28A00048\",\u001b[39m\n\u001b[31m+   \"Q28A00047\",\u001b[39m\n\u001b[31m+   \"Q28A00046\",\u001b[39m\n\u001b[31m+   \"Q28A00045\",\u001b[39m\n\u001b[31m+   \"Q28A00044\",\u001b[39m\n\u001b[31m+   \"Q28A00043\",\u001b[39m\n\u001b[31m+   \"Q28A00042\",\u001b[39m\n\u001b[31m+   \"Q28A00041\",\u001b[39m\n\u001b[31m+   \"Q28A00040\",\u001b[39m\n\u001b[31m+   \"Q28A00039\",\u001b[39m\n\u001b[31m+   \"Q28A00038\",\u001b[39m\n\u001b[31m+   \"Q28A00037\",\u001b[39m\n\u001b[31m+   \"Q28A00036\",\u001b[39m\n\u001b[31m+   \"Q28A00035\",\u001b[39m\n\u001b[31m+   \"Q28A00034\",\u001b[39m\n\u001b[31m+   \"Q28A00033\",\u001b[39m\n\u001b[31m+   \"Q28A00032\",\u001b[39m\n\u001b[31m+   \"Q28A00031\",\u001b[39m\n\u001b[31m+   \"Q28A00030\",\u001b[39m\n\u001b[31m+   \"Q28A00029\",\u001b[39m\n\u001b[31m+   \"Q28A00028\",\u001b[39m\n\u001b[31m+   \"Q28A00027\",\u001b[39m\n\u001b[31m+   \"Q28A00026\",\u001b[39m\n\u001b[31m+   \"Q28A00025\",\u001b[39m\n\u001b[31m+   \"Q28A00024\",\u001b[39m\n\u001b[31m+   \"Q28A00023\",\u001b[39m\n\u001b[31m+   \"Q28A00022\",\u001b[39m\n\u001b[31m+   \"Q28A00021\",\u001b[39m\n\u001b[31m+   \"Q28A00020\",\u001b[39m\n\u001b[31m+   \"Q28A00019\",\u001b[39m\n\u001b[31m+   \"Q28A00018\",\u001b[39m\n\u001b[31m+   \"Q28A00017\",\u001b[39m\n\u001b[31m+   \"Q28A00016\",\u001b[39m\n\u001b[31m+   \"Q28A00015\",\u001b[39m\n\u001b[31m+   \"Q28A00014\",\u001b[39m\n\u001b[31m+   \"Q28A00013\",\u001b[39m\n\u001b[31m+   \"Q28A00012\",\u001b[39m\n\u001b[31m+   \"Q28A00011\",\u001b[39m\n\u001b[31m+   \"Q28A00010\",\u001b[39m\n\u001b[31m+   \"Q28A00009\",\u001b[39m\n\u001b[31m+   \"Q28A00008\",\u001b[39m\n\u001b[31m+   \"Q28A00007\",\u001b[39m\n\u001b[31m+   \"Q28A00006\",\u001b[39m\n\u001b[31m+   \"Q28A00005\",\u001b[39m\n\u001b[2m  ]\u001b[22m\n\nCall Log:\n- Timeout 15000ms exceeded while waiting on the predicate",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  4\u001b[39m\n\u001b[31m+ Received  + 50\u001b[39m\n\n\u001b[2m  Array [\u001b[22m\n\u001b[32m-   \"Q28A00004\",\u001b[39m\n\u001b[32m-   \"Q28A00003\",\u001b[39m\n\u001b[32m-   \"Q28A00002\",\u001b[39m\n\u001b[32m-   \"Q28A00001\",\u001b[39m\n\u001b[31m+   \"Q28B00003\",\u001b[39m\n\u001b[31m+   \"Q28B00002\",\u001b[39m\n\u001b[31m+   \"Q28B00001\",\u001b[39m\n\u001b[31m+   \"Q28A00051\",\u001b[39m\n\u001b[31m+   \"Q28A00050\",\u001b[39m\n\u001b[31m+   \"Q28A00049\",\u001b[39m\n\u001b[31m+   \"Q28A00048\",\u001b[39m\n\u001b[31m+   \"Q28A00047\",\u001b[39m\n\u001b[31m+   \"Q28A00046\",\u001b[39m\n\u001b[31m+   \"Q28A00045\",\u001b[39m\n\u001b[31m+   \"Q28A00044\",\u001b[39m\n\u001b[31m+   \"Q28A00043\",\u001b[39m\n\u001b[31m+   \"Q28A00042\",\u001b[39m\n\u001b[31m+   \"Q28A00041\",\u001b[39m\n\u001b[31m+   \"Q28A00040\",\u001b[39m\n\u001b[31m+   \"Q28A00039\",\u001b[39m\n\u001b[31m+   \"Q28A00038\",\u001b[39m\n\u001b[31m+   \"Q28A00037\",\u001b[39m\n\u001b[31m+   \"Q28A00036\",\u001b[39m\n\u001b[31m+   \"Q28A00035\",\u001b[39m\n\u001b[31m+   \"Q28A00034\",\u001b[39m\n\u001b[31m+   \"Q28A00033\",\u001b[39m\n\u001b[31m+   \"Q28A00032\",\u001b[39m\n\u001b[31m+   \"Q28A00031\",\u001b[39m\n\u001b[31m+   \"Q28A00030\",\u001b[39m\n\u001b[31m+   \"Q28A00029\",\u001b[39m\n\u001b[31m+   \"Q28A00028\",\u001b[39m\n\u001b[31m+   \"Q28A00027\",\u001b[39m\n\u001b[31m+   \"Q28A00026\",\u001b[39m\n\u001b[31m+   \"Q28A00025\",\u001b[39m\n\u001b[31m+   \"Q28A00024\",\u001b[39m\n\u001b[31m+   \"Q28A00023\",\u001b[39m\n\u001b[31m+   \"Q28A00022\",\u001b[39m\n\u001b[31m+   \"Q28A00021\",\u001b[39m\n\u001b[31m+   \"Q28A00020\",\u001b[39m\n\u001b[31m+   \"Q28A00019\",\u001b[39m\n\u001b[31m+   \"Q28A00018\",\u001b[39m\n\u001b[31m+   \"Q28A00017\",\u001b[39m\n\u001b[31m+   \"Q28A00016\",\u001b[39m\n\u001b[31m+   \"Q28A00015\",\u001b[39m\n\u001b[31m+   \"Q28A00014\",\u001b[39m\n\u001b[31m+   \"Q28A00013\",\u001b[39m\n\u001b[31m+   \"Q28A00012\",\u001b[39m\n\u001b[31m+   \"Q28A00011\",\u001b[39m\n\u001b[31m+   \"Q28A00010\",\u001b[39m\n\u001b[31m+   \"Q28A00009\",\u001b[39m\n\u001b[31m+   \"Q28A00008\",\u001b[39m\n\u001b[31m+   \"Q28A00007\",\u001b[39m\n\u001b[31m+   \"Q28A00006\",\u001b[39m\n\u001b[31m+   \"Q28A00005\",\u001b[39m\n\u001b[2m  ]\u001b[22m\n\nCall Log:\n- Timeout 15000ms exceeded while waiting on the predicate\n    at expectRows (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\query.spec.ts:105:6)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\query.spec.ts:288:11",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\query.spec.ts",
+                      "column": 6,
+                      "line": 105
+                    },
+                    "snippet": "  103 |       ),\n  104 |     )\n> 105 |     .toEqual(expected);\n      |      ^\n  106 | }\n  107 |\n  108 | async function capture(page: Page, info: TestInfo, name: string) {"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\query.spec.ts",
+                        "column": 6,
+                        "line": 105
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  4\u001b[39m\n\u001b[31m+ Received  + 50\u001b[39m\n\n\u001b[2m  Array [\u001b[22m\n\u001b[32m-   \"Q28A00004\",\u001b[39m\n\u001b[32m-   \"Q28A00003\",\u001b[39m\n\u001b[32m-   \"Q28A00002\",\u001b[39m\n\u001b[32m-   \"Q28A00001\",\u001b[39m\n\u001b[31m+   \"Q28B00003\",\u001b[39m\n\u001b[31m+   \"Q28B00002\",\u001b[39m\n\u001b[31m+   \"Q28B00001\",\u001b[39m\n\u001b[31m+   \"Q28A00051\",\u001b[39m\n\u001b[31m+   \"Q28A00050\",\u001b[39m\n\u001b[31m+   \"Q28A00049\",\u001b[39m\n\u001b[31m+   \"Q28A00048\",\u001b[39m\n\u001b[31m+   \"Q28A00047\",\u001b[39m\n\u001b[31m+   \"Q28A00046\",\u001b[39m\n\u001b[31m+   \"Q28A00045\",\u001b[39m\n\u001b[31m+   \"Q28A00044\",\u001b[39m\n\u001b[31m+   \"Q28A00043\",\u001b[39m\n\u001b[31m+   \"Q28A00042\",\u001b[39m\n\u001b[31m+   \"Q28A00041\",\u001b[39m\n\u001b[31m+   \"Q28A00040\",\u001b[39m\n\u001b[31m+   \"Q28A00039\",\u001b[39m\n\u001b[31m+   \"Q28A00038\",\u001b[39m\n\u001b[31m+   \"Q28A00037\",\u001b[39m\n\u001b[31m+   \"Q28A00036\",\u001b[39m\n\u001b[31m+   \"Q28A00035\",\u001b[39m\n\u001b[31m+   \"Q28A00034\",\u001b[39m\n\u001b[31m+   \"Q28A00033\",\u001b[39m\n\u001b[31m+   \"Q28A00032\",\u001b[39m\n\u001b[31m+   \"Q28A00031\",\u001b[39m\n\u001b[31m+   \"Q28A00030\",\u001b[39m\n\u001b[31m+   \"Q28A00029\",\u001b[39m\n\u001b[31m+   \"Q28A00028\",\u001b[39m\n\u001b[31m+   \"Q28A00027\",\u001b[39m\n\u001b[31m+   \"Q28A00026\",\u001b[39m\n\u001b[31m+   \"Q28A00025\",\u001b[39m\n\u001b[31m+   \"Q28A00024\",\u001b[39m\n\u001b[31m+   \"Q28A00023\",\u001b[39m\n\u001b[31m+   \"Q28A00022\",\u001b[39m\n\u001b[31m+   \"Q28A00021\",\u001b[39m\n\u001b[31m+   \"Q28A00020\",\u001b[39m\n\u001b[31m+   \"Q28A00019\",\u001b[39m\n\u001b[31m+   \"Q28A00018\",\u001b[39m\n\u001b[31m+   \"Q28A00017\",\u001b[39m\n\u001b[31m+   \"Q28A00016\",\u001b[39m\n\u001b[31m+   \"Q28A00015\",\u001b[39m\n\u001b[31m+   \"Q28A00014\",\u001b[39m\n\u001b[31m+   \"Q28A00013\",\u001b[39m\n\u001b[31m+   \"Q28A00012\",\u001b[39m\n\u001b[31m+   \"Q28A00011\",\u001b[39m\n\u001b[31m+   \"Q28A00010\",\u001b[39m\n\u001b[31m+   \"Q28A00009\",\u001b[39m\n\u001b[31m+   \"Q28A00008\",\u001b[39m\n\u001b[31m+   \"Q28A00007\",\u001b[39m\n\u001b[31m+   \"Q28A00006\",\u001b[39m\n\u001b[31m+   \"Q28A00005\",\u001b[39m\n\u001b[2m  ]\u001b[22m\n\nCall Log:\n- Timeout 15000ms exceeded while waiting on the predicate\n\n  103 |       ),\n  104 |     )\n> 105 |     .toEqual(expected);\n      |      ^\n  106 | }\n  107 |\n  108 | async function capture(page: Page, info: TestInfo, name: string) {\n    at expectRows (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\query.spec.ts:105:6)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\query.spec.ts:288:11"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T21:30:32.717Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage28-final-ui\\query-P11-query-current-dr-b2391-s-batch-and-actual-CSV-XLSX-prototype\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\query.spec.ts",
+                    "column": 6,
+                    "line": 105
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a896955f6e6e528af08b-6898a8a70bae2bf68e39",
+          "file": "query.spec.ts",
+          "line": 234,
+          "column": 1
+        },
+        {
+          "title": "P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 360000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 48050,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\openpyxl\\styles\\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default\r\n  warn(\"Workbook contains no default style, apply openpyxl's default\")\r\n"
+                    },
+                    {
+                      "text": "D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\openpyxl\\styles\\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default\r\n  warn(\"Workbook contains no default style, apply openpyxl's default\")\r\n"
+                    },
+                    {
+                      "text": "D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\openpyxl\\styles\\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default\r\n  warn(\"Workbook contains no default style, apply openpyxl's default\")\r\n"
+                    },
+                    {
+                      "text": "D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\openpyxl\\styles\\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default\r\n  warn(\"Workbook contains no default style, apply openpyxl's default\")\r\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-08T21:30:53.489Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a896955f6e6e528af08b-b804f9c13c43a15fb919",
+          "file": "query.spec.ts",
+          "line": 234,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-08T21:30:32.244Z",
+    "duration": 70255.632,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

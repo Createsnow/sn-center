@@ -1,0 +1,117 @@
+
+Running 6 tests using 1 worker
+
+(node:37700) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\audit-auth.spec.ts:120:1 › P12 real anonymous login failure appears in audit and downloaded file (2.3s)
+  ok 2 [prototype] › e2e\parity\audit-auth.spec.ts:140:1 › P12 real known login password rejection change and disabled account facts (7.7s)
+  ok 3 [prototype] › e2e\parity\audit-auth.spec.ts:271:1 › P12 real fifth failed login and subsequent lock retain exact audit facts (3.5s)
+(node:44860) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok 4 [migration] › e2e\parity\audit-auth.spec.ts:120:1 › P12 real anonymous login failure appears in audit and downloaded file (11.9s)
+Traceback (most recent call last):
+  File "D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-auth-fixture.py", line 111, in <module>
+    main()
+  File "D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-auth-fixture.py", line 96, in main
+    c.execute("SELECT COUNT(*) n FROM sys_task WHERE actor_id=%s", (uid,))
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\cursors.py", line 170, in execute
+    result = self._query(query)
+             ^^^^^^^^^^^^^^^^^^
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\cursors.py", line 335, in _query
+    conn.query(q)
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 581, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 857, in _read_query_result
+    result.read()
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 1290, in read
+    first_packet = self.connection._read_packet()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 810, in _read_packet
+    packet.raise_for_error()
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\err.py", line 154, in raise_mysql_exception
+    raise errorclass(errno, errval, sqlstate=sqlstate)
+pymysql.err.OperationalError: (1054, "Unknown column 'actor_id' in 'where clause'")
+  x  5 [migration] › e2e\parity\audit-auth.spec.ts:140:1 › P12 real known login password rejection change and disabled account facts (23.1s)
+(node:6724) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  6 [migration] › e2e\parity\audit-auth.spec.ts:271:1 › P12 real fifth failed login and subsequent lock retain exact audit facts (50.9s)
+
+
+  1) [migration] › e2e\parity\audit-auth.spec.ts:140:1 › P12 real known login password rejection change and disabled account facts 
+
+    Error: Command failed: D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Scripts\python.exe -X utf8 D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-auth-fixture.py java clean 1009350002
+    Traceback (most recent call last):
+      File "D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-auth-fixture.py", line 111, in <module>
+        main()
+      File "D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-auth-fixture.py", line 96, in main
+        c.execute("SELECT COUNT(*) n FROM sys_task WHERE actor_id=%s", (uid,))
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\cursors.py", line 170, in execute
+        result = self._query(query)
+                 ^^^^^^^^^^^^^^^^^^
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\cursors.py", line 335, in _query
+        conn.query(q)
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 581, in query
+        self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 857, in _read_query_result
+        result.read()
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 1290, in read
+        first_packet = self.connection._read_packet()
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 810, in _read_packet
+        packet.raise_for_error()
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+        err.raise_mysql_exception(self._data)
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\err.py", line 154, in raise_mysql_exception
+        raise errorclass(errno, errval, sqlstate=sqlstate)
+    pymysql.err.OperationalError: (1054, "Unknown column 'actor_id' in 'where clause'")
+
+
+      145 |   expect(tag).toMatch(/^[0-9]{8,14}$/);
+      146 |   const fixture = (action: string) =>
+    > 147 |     execFileSync(
+          |     ^
+      148 |       python,
+      149 |       ['-X', 'utf8', resolve('../tools/testing/parity-auth-fixture.py'), kind(info), action, tag!],
+      150 |       { windowsHide: true, encoding: 'utf8' },
+        at fixture (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-auth.spec.ts:147:5)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-auth.spec.ts:267:5
+
+    Error Context: test-results\stage35-auth-ui\audit-auth-P12-real-known--dfe28--and-disabled-account-facts-migration\error-context.md
+
+  2) [migration] › e2e\parity\audit-auth.spec.ts:271:1 › P12 real fifth failed login and subsequent lock retain exact audit facts 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('client=127.0.0.1', { exact: true })
+    Expected: visible
+    Error: strict mode violation: getByText('client=127.0.0.1', { exact: true }) resolved to 2 elements:
+        1) <span>client=127.0.0.1</span> aka getByText('client=').nth(2)
+        2) <span>client=127.0.0.1</span> aka getByText('client=').nth(3)
+
+    Call log:
+      - Expect "toBeVisible" getByText('client=127.0.0.1', { exact: true }) with timeout 15000ms
+      - waiting for getByText('client=127.0.0.1', { exact: true })
+
+
+      88 |       .locator(source(info) ? '.el-table__expand-icon' : '.sn-audit-expand')
+      89 |       .click();
+    > 90 |     await expect(page.getByText(expected[index]!.detail, { exact: true })).toBeVisible();
+         |                                                                            ^
+      91 |     await page.screenshot({
+      92 |       path: info.outputPath(username + `-detail-${index}.png`),
+      93 |       animations: 'disabled',
+        at inspect (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-auth.spec.ts:90:76)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-auth.spec.ts:284:3
+
+    Error Context: test-results\stage35-auth-ui\audit-auth-P12-real-fifth--697e0-ck-retain-exact-audit-facts-migration\error-context.md
+
+  2 failed
+    [migration] › e2e\parity\audit-auth.spec.ts:140:1 › P12 real known login password rejection change and disabled account facts 
+    [migration] › e2e\parity\audit-auth.spec.ts:271:1 › P12 real fifth failed login and subsequent lock retain exact audit facts 
+  4 passed (1.7m)

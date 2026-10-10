@@ -3,6 +3,7 @@ import { queryClient } from '../app/queryClient';
 import { useSession } from '../stores/session';
 import {
   ApiError,
+  DownloadHttpError,
   isAccessToken,
   isProfile,
   isRecord,
@@ -207,13 +208,13 @@ export async function downloadFile(path: string) {
     try {
       payload = JSON.parse(await response.data.text());
     } catch {
-      throw new ApiError(1_000_000_006, response.status);
+      throw new DownloadHttpError(response.status);
     }
     unwrap(payload, response.status, (value): value is null => value === null);
     throw new ApiError(1_000_000_006, response.status);
   }
   const match = String(response.headers['content-disposition']).match(
-    /filename="((?:audit-[0-9a-f-]{36}\.csv|(?:print|sn-export|sn-audit)-[0-9a-f-]{36}\.(?:csv|xlsx)))"/,
+    /filename="((?:audit-[0-9a-f-]{36}\.csv|(?:print|sn-export|sn-audit)-[0-9a-f-]{36}\.(?:csv|xlsx)|print_P[0-9]{18}\.(?:csv|xlsx)|(?:sn|audit)_export\.(?:csv|xlsx)))"/,
   );
   const length = Number(response.headers['content-length']);
   if (
@@ -253,8 +254,18 @@ export const authApi = {
     clearSession(true);
   },
   async password(input: PasswordChange) {
-    await command('/system/auth/password', input);
+    const epoch = sessionEpoch;
+    const token = await send(
+      'POST',
+      '/system/auth/password',
+      isAccessToken,
+      input,
+      await access(),
+      await csrf(),
+    );
+    if (epoch !== sessionEpoch) throw new ApiError(1_003_000_001, 401);
     clearSession(true);
+    acceptSession(token);
   },
   async language(language: Language) {
     await command('/system/auth/language', { language });

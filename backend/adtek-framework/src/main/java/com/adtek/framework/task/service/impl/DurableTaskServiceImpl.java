@@ -10,6 +10,7 @@ import com.adtek.framework.task.convert.TaskConvert;
 import com.adtek.framework.task.domain.*;
 import com.adtek.framework.task.mapper.*;
 import com.adtek.framework.task.service.DurableTaskService;
+import com.adtek.framework.task.vo.TaskProgressVO;
 import com.adtek.framework.task.vo.TaskVO;
 
 import org.springframework.stereotype.Service;
@@ -106,11 +107,13 @@ public class DurableTaskServiceImpl implements DurableTaskService {
                 input,
                 actor.securityVersion(),
                 settings.maxAttempts(),
-                settings.budgetSeconds());
+                handler.executionSeconds() > 30
+                        ? Math.max(settings.budgetSeconds(), handler.executionSeconds() + 60)
+                        : settings.budgetSeconds());
         var task = tasks.find(id);
         snapshot.accept(task);
         access.require(task, actor.userId());
-        return view(task);
+        return view(tasks.find(id));
     }
 
     @Override
@@ -135,6 +138,25 @@ public class DurableTaskServiceImpl implements DurableTaskService {
         var task = tasks.find(TaskAccess.uuid(id));
         access.require(task);
         return view(task);
+    }
+
+    @Override
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public TaskProgressVO businessProgress(String id) {
+        var requested = current.requireAuthenticated();
+        var actor = access.fresh(requested.userId());
+        if (actor.securityVersion() != requested.securityVersion())
+            throw new BusinessException(FORBIDDEN);
+        var task = tasks.find(TaskAccess.uuid(id));
+        if (task == null)
+            throw new BusinessException(com.adtek.common.constant.ErrorCodeConstants.NOT_FOUND);
+        handlers.require(task.taskType()).authorizeProgress(actor, task);
+        var progress = tasks.progress(task.id());
+        long processed =
+                progress != null && progress.executionEpoch() == task.executionEpoch()
+                        ? progress.processed()
+                        : 0;
+        return new TaskProgressVO(task.state().name(), Long.toString(processed));
     }
 
     @Override

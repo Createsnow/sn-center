@@ -1,0 +1,20 @@
+[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 57.52 s -- in com.adtek.server.SnAcquireIT
+[ERROR] Tests run: 13, Failures: 0, Errors: 2, Skipped: 0, Time elapsed: 31.17 s <<< FAILURE! -- in com.adtek.server.SnTransferIT
+[ERROR] com.adtek.server.SnTransferIT.laterSqlBlockCollisionRollsBackEarlierMembersAndDualGuardUpdates -- Time elapsed: 1.219 s <<< ERROR!
+[ERROR] com.adtek.server.SnTransferIT.targetCollisionAfterApplicationRejectsWholeApprovalAndCanStillBeRejected -- Time elapsed: 0.807 s <<< ERROR!
+[ERROR] Tests run: 50, Failures: 2, Errors: 11, Skipped: 0, Time elapsed: 82.40 s <<< FAILURE! -- in com.adtek.server.SnWorkIT
+[ERROR] com.adtek.server.SnWorkIT.successfulAuditFailureRollsBackBusinessAndInitializationCanBeResubmitted -- Time elapsed: 0.606 s <<< ERROR!
+[ERROR] com.adtek.server.SnWorkIT.fullSnConflictRollsBackAllChunksWatermarkQuotaRuleAndTaskResult -- Time elapsed: 0.582 s <<< ERROR!
+[ERROR] com.adtek.server.SnWorkIT.historyInitializationIsOncePrintedAtomicAndUnknownSequenceStaysNull -- Time elapsed: 0.474 s <<< ERROR!
+[ERROR] com.adtek.server.SnWorkIT.initializationFailurePersistsOnlyPublicParametersAndAllowsFreshSubmission -- Time elapsed: 0.624 s <<< ERROR!
+[ERROR] com.adtek.server.SnWorkIT.initializationExistingSnInSecondChunkRollsBackAndReportsConflict -- Time elapsed: 0.497 s <<< FAILURE!
+[ERROR] com.adtek.server.SnWorkIT.incomingScanTraversesPagesAndRefusesTruncationAtConfiguredLimit -- Time elapsed: 0.393 s <<< ERROR!
+[ERROR] com.adtek.server.SnWorkIT.incomingMaximumAtCapacityReturnsNullSuggestionAndControlledOverflow -- Time elapsed: 0.639 s <<< ERROR!
+[ERROR] com.adtek.server.SnWorkIT.initializationValidationReportsOriginalLineAndCapacityWithoutCreatingWork -- Time elapsed: 0.525 s <<< ERROR!
+[ERROR] com.adtek.server.SnWorkIT.concurrentSameIntentOneTaskAndRedisLossReturnsOriginalResult -- Time elapsed: 0.384 s <<< ERROR!
+[ERROR] com.adtek.server.SnWorkIT.initializationPreservesAboveJavascriptPrecisionAndNoRuleImport -- Time elapsed: 0.383 s <<< ERROR!
+[ERROR] com.adtek.server.SnWorkIT.piInputBoundaryRejectsBeforeCreatingAnyWork -- Time elapsed: 0.413 s <<< ERROR!
+[ERROR] com.adtek.server.SnWorkIT.previouslyUnparsedImportsUseCurrentFormatMaximumWithoutChangingHistoricalOwnership -- Time elapsed: 0.338 s <<< ERROR!
+[ERROR] com.adtek.server.SnWorkIT.initializationExistingSequenceInSecondChunkRollsBackAndReportsConflict -- Time elapsed: 0.416 s <<< FAILURE!
+[ERROR] Tests run: 78, Failures: 2, Errors: 13, Skipped: 0
+[INFO] BUILD FAILURE

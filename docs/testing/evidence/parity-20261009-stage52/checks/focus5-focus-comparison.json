@@ -1,0 +1,263 @@
+{
+  "pairs": [
+    {
+      "label": "loaded",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "BODY",
+      "migrationFocusTag": "BODY"
+    },
+    {
+      "label": "selected",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "TBODY",
+      "migrationFocusTag": "BODY"
+    },
+    {
+      "label": "table-arrow-down",
+      "prototypeScroll": 40,
+      "migrationScroll": 40,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "TBODY",
+      "migrationFocusTag": "BODY"
+    },
+    {
+      "label": "table-arrow-up",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "TBODY",
+      "migrationFocusTag": "BODY"
+    },
+    {
+      "label": "opened",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "DIV",
+      "migrationFocusTag": "DIV",
+      "focusTagEqual": true
+    },
+    {
+      "label": "escape",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "BUTTON",
+      "migrationFocusTag": "BUTTON",
+      "focusTagEqual": true
+    },
+    {
+      "label": "switch-edited",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "DIV",
+      "migrationFocusTag": "DIV",
+      "focusTagEqual": true
+    },
+    {
+      "label": "cancel",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "BUTTON",
+      "migrationFocusTag": "BUTTON",
+      "focusTagEqual": true
+    },
+    {
+      "label": "close-button",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "BUTTON",
+      "migrationFocusTag": "BUTTON",
+      "focusTagEqual": true
+    },
+    {
+      "label": "backdrop",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "BODY",
+      "migrationFocusTag": "BODY",
+      "focusTagEqual": true
+    },
+    {
+      "label": "narrow-open",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": false,
+      "prototypeFocusTag": "DIV",
+      "migrationFocusTag": "DIV",
+      "focusTagEqual": true
+    },
+    {
+      "label": "wide-reopened",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "DIV",
+      "migrationFocusTag": "DIV",
+      "focusTagEqual": true
+    },
+    {
+      "label": "keyboard-up",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "INPUT",
+      "migrationFocusTag": "INPUT",
+      "focusTagEqual": true
+    },
+    {
+      "label": "keyboard-down",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "INPUT",
+      "migrationFocusTag": "INPUT",
+      "focusTagEqual": true
+    },
+    {
+      "label": "mouse-step-up",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "DIV",
+      "migrationFocusTag": "INPUT",
+      "focusTagEqual": false
+    },
+    {
+      "label": "mouse-step-down",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "DIV",
+      "migrationFocusTag": "INPUT",
+      "focusTagEqual": false
+    },
+    {
+      "label": "step-minimum",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "INPUT",
+      "migrationFocusTag": "INPUT",
+      "focusTagEqual": true
+    },
+    {
+      "label": "step-maximum",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "INPUT",
+      "migrationFocusTag": "INPUT",
+      "focusTagEqual": true
+    },
+    {
+      "label": "wheel-bottom",
+      "prototypeScroll": 60,
+      "migrationScroll": 60,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "BUTTON",
+      "migrationFocusTag": "BUTTON",
+      "focusTagEqual": true
+    },
+    {
+      "label": "opened-after-scroll",
+      "prototypeScroll": 60,
+      "migrationScroll": 60,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "DIV",
+      "migrationFocusTag": "DIV",
+      "focusTagEqual": true
+    },
+    {
+      "label": "escape-after-scroll",
+      "prototypeScroll": 60,
+      "migrationScroll": 60,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "BUTTON",
+      "migrationFocusTag": "BUTTON",
+      "focusTagEqual": true
+    },
+    {
+      "label": "saved-120",
+      "prototypeScroll": 60,
+      "migrationScroll": 60,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "BODY",
+      "migrationFocusTag": "BODY",
+      "focusTagEqual": true
+    },
+    {
+      "label": "saved-1440",
+      "prototypeScroll": 60,
+      "migrationScroll": 60,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "BODY",
+      "migrationFocusTag": "BODY",
+      "focusTagEqual": true
+    }
+  ],
+  "differences": [
+    {
+      "label": "narrow-open",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": false,
+      "prototypeFocusTag": "DIV",
+      "migrationFocusTag": "DIV",
+      "focusTagEqual": true
+    },
+    {
+      "label": "mouse-step-up",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "DIV",
+      "migrationFocusTag": "INPUT",
+      "focusTagEqual": false
+    },
+    {
+      "label": "mouse-step-down",
+      "prototypeScroll": 0,
+      "migrationScroll": 0,
+      "scrollEqual": true,
+      "heightEqual": true,
+      "prototypeFocusTag": "DIV",
+      "migrationFocusTag": "INPUT",
+      "focusTagEqual": false
+    }
+  ],
+  "scope": "Chinese administrator, 1440x960 and narrow-to-wide reopening at 768x960, dedicated synthetic database; semantic focus flow, not equality of framework DOM nodes."
+}

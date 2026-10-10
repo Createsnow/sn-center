@@ -8,7 +8,7 @@
 - 保持 Controller/Service/impl/Mapper/Entity/DTO/Query/VO/MapStruct 分层；可信身份与当前权限在服务用例检查。
 - MySQL 保证 SN 双唯一性、额度、固定成员、事务和任务终态；Redis 不承担业务最终状态。完整 SN 冲突整批回滚。
 - React 函数组件、strict TypeScript、TanStack Query；业务 ID、版本、数量与流水保留精确字符串。
-- V1—V19 已交付，内容不改，新增结构取下一个未占用版本。不要因已有常驻库仍为 V17 而改写 V18/V19。
+- V1—V19 已交付，V20—V41 已在独立一致性比较库应用，均保持原字节；新增结构取下一个未占用版本（当前 V42）。不要因已有常驻库仍为 V17 而改写历史迁移。
 - 修改代码后执行 tools/format.ps1 并以 -Check 核对；禁止格式化冻结 SQL、来源基线、历史证据、归档原文或手改生成类型。
 - 验收脚本使用独立 acceptance JAR；同仓库不并行运行两个 Maven。只运行隔离测试，保护已有服务和账号。
 - 本轮仅本地交付；不访问或更新 GitLab，不将本地检查称为远程 CI 或生产验收。秘密与备份不入库。

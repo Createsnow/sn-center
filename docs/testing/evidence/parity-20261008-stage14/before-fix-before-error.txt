@@ -1,0 +1,36 @@
+
+Running 1 test using 1 worker
+
+(node:35068) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [migration] › e2e\parity\pi-initialization.spec.ts:100:1 › P08 rejects a 65 character SN with its line in three languages and accepts the corrected 64 character value (27.4s)
+
+
+  1) [migration] › e2e\parity\pi-initialization.spec.ts:100:1 › P08 rejects a 65 character SN with its line in three languages and accepts the corrected 64 character value 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('第 2 行 SN 为空或超过 64 位', { exact: true }).last()
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('第 2 行 SN 为空或超过 64 位', { exact: true }).last() with timeout 15000ms
+      - waiting for getByText('第 2 行 SN 为空或超过 64 位', { exact: true }).last()
+
+
+      87 |       .click();
+      88 |     const message = errors[reason].replace(/\{\{(\w+)\}\}/g, (_, key: string) => params[key]!);
+    > 89 |     await expect(page.getByText(message, { exact: true }).last()).toBeVisible();
+         |                                                                   ^
+      90 |     await expect(button).not.toHaveClass(/is-loading|ant-btn-loading/);
+      91 |     await expect(button).toBeEnabled();
+      92 |     expect(facts(info).history).toEqual([]);
+        at rejectInLanguages (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\pi-initialization.spec.ts:89:67)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\pi-initialization.spec.ts:109:5
+
+    Error Context: test-results\parity\pi-initialization-P08-reje-937aa-orrected-64-character-value-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\pi-initialization.spec.ts:100:1 › P08 rejects a 65 character SN with its line in three languages and accepts the corrected 64 character value 

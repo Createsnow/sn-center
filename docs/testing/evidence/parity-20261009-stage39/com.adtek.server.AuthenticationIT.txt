@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.adtek.server.AuthenticationIT
+-------------------------------------------------------------------------------
+Tests run: 26, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 43.72 s -- in com.adtek.server.AuthenticationIT

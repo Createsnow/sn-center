@@ -1,0 +1,87 @@
+
+Running 4 tests using 1 worker
+
+(node:47668) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  x  1 [prototype] › e2e\parity\business-loop.spec.ts:10:1 › P15 complete UI business loop from order sync and rule creation to transferred reprint and audit (30.8s)
+(node:48704) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [prototype] › e2e\parity\order-focus.spec.ts:11:1 › P05 focus: schedule closing, unit text, keyboard steps and scroll restoration (40.6s)
+(node:4480) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  x  3 [migration] › e2e\parity\business-loop.spec.ts:10:1 › P15 complete UI business loop from order sync and rule creation to transferred reprint and audit (18.3s)
+(node:41584) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 4 [migration] › e2e\parity\order-focus.spec.ts:11:1 › P05 focus: schedule closing, unit text, keyboard steps and scroll restoration (47.5s)
+
+
+  1) [prototype] › e2e\parity\business-loop.spec.ts:10:1 › P15 complete UI business loop from order sync and rule creation to transferred reprint and audit 
+
+    TimeoutError: locator.fill: Timeout 20000ms exceeded.
+    Call log:
+      - waiting for getByRole('tabpanel').visible().locator('.el-form-item').filter({ has: locator('label').filter({ hasText: /^\s*转厂原因\s*$/ }) }).locator('input').first()
+
+
+      217 |       await field(panel(), 'PI').fill(pi);
+      218 |       await field(panel(), zh.transfer.toPi).fill(pi);
+    > 219 |       await field(panel(), zh.transfer.reason).fill('完整界面闭环 ' + run);
+          |                                                ^
+      220 |     } else {
+      221 |       await panel().getByRole('combobox', { name: ui.snPages.common.factory, exact: true }).click();
+      222 |       await page.getByRole('option', { name: '比较测试甲厂（CMP-A）', exact: true }).click();
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\business-loop.spec.ts:219:48
+
+    Error Context: test-results\stage53-loop-focus\business-loop-P15-complete-3dffa-ansferred-reprint-and-audit-prototype\error-context.md
+
+  2) [prototype] › e2e\parity\order-focus.spec.ts:11:1 › P05 focus: schedule closing, unit text, keyboard steps and scroll restoration 
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  getByRole('spinbutton')
+    Expected: "10080"
+    Received: "7"
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveAttribute" getByRole('spinbutton') with timeout 15000ms
+      - waiting for getByRole('spinbutton')
+        33 × locator resolved to <input min="1" step="1" max="10080" tabindex="0" type="number" role="spinbutton" aria-valuemax="7" aria-valuemin="1" aria-valuenow="1" autocomplete="off" id="el-id-2284-50" aria-disabled="false" class="el-input__inner"/>
+           - unexpected value "7"
+
+
+      264 |     const amount = page.getByRole('spinbutton');
+      265 |     // 单位选择落定后再输入，确认测试读取的是分钟控件和已提交的输入值。
+    > 266 |     await expect(amount).toHaveAttribute('aria-valuemax', '10080');
+          |                          ^
+      267 |     await amount.fill('10');
+      268 |     await expect(amount).toHaveValue('10');
+      269 |     await amount.press('ArrowUp');
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-focus.spec.ts:266:26
+
+    Error Context: test-results\stage53-loop-focus\order-focus-P05-focus-sche-1888b-teps-and-scroll-restoration-prototype\error-context.md
+
+  3) [migration] › e2e\parity\business-loop.spec.ts:10:1 › P15 complete UI business loop from order sync and rule creation to transferred reprint and audit 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      274 |       'TRANSFER_DIRECT',
+      275 |     ]) {
+    > 276 |       expect(audits.some((r) => (actions[String(r.action)] ?? r.action) === action)).toBe(true);
+          |                                                                                      ^
+      277 |     }
+      278 |     await capture('11-audit');
+      279 |     expect(errors).toEqual([]);
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\business-loop.spec.ts:276:86
+
+    Error Context: test-results\stage53-loop-focus\business-loop-P15-complete-3dffa-ansferred-reprint-and-audit-migration\error-context.md
+
+  3 failed
+    [prototype] › e2e\parity\business-loop.spec.ts:10:1 › P15 complete UI business loop from order sync and rule creation to transferred reprint and audit 
+    [prototype] › e2e\parity\order-focus.spec.ts:11:1 › P05 focus: schedule closing, unit text, keyboard steps and scroll restoration 
+    [migration] › e2e\parity\business-loop.spec.ts:10:1 › P15 complete UI business loop from order sync and rule creation to transferred reprint and audit 
+  1 passed (2.4m)

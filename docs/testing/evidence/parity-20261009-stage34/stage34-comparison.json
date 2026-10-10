@@ -1,0 +1,405 @@
+{
+  "tables": [
+    {
+      "case": "01-default-20.json",
+      "rows": 20,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "02-second-page.json",
+      "rows": 20,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "03-third-page.json",
+      "rows": 14,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "04-fifty-rows.json",
+      "rows": 50,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "05-inline-detail.json",
+      "rows": 50,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "06-draft-keeps-query.json",
+      "rows": 50,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "07-keyword.json",
+      "rows": 1,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "08-combined.json",
+      "rows": 3,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "09-factory-empty.json",
+      "rows": 0,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "10-date-cleared.json",
+      "rows": 50,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "10-date-inclusive.json",
+      "rows": 50,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "10-literal-wildcard-empty.json",
+      "rows": 0,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "11-layout-en.json",
+      "rows": 1,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "11-layout-vi.json",
+      "rows": 1,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "11-layout-zh.json",
+      "rows": 1,
+      "allRawCellsAndOrderEqual": true
+    }
+  ],
+  "layouts": [
+    {
+      "case": "01-default-20.json",
+      "equal": true
+    },
+    {
+      "case": "02-second-page.json",
+      "equal": true
+    },
+    {
+      "case": "03-third-page.json",
+      "equal": true
+    },
+    {
+      "case": "04-fifty-rows.json",
+      "equal": true
+    },
+    {
+      "case": "05-inline-detail.json",
+      "equal": true
+    },
+    {
+      "case": "06-draft-keeps-query.json",
+      "equal": true
+    },
+    {
+      "case": "07-keyword.json",
+      "equal": true
+    },
+    {
+      "case": "08-combined.json",
+      "equal": true
+    },
+    {
+      "case": "09-factory-empty.json",
+      "equal": true
+    },
+    {
+      "case": "10-date-cleared.json",
+      "equal": true
+    },
+    {
+      "case": "10-date-inclusive.json",
+      "equal": true
+    },
+    {
+      "case": "10-literal-wildcard-empty.json",
+      "equal": true
+    },
+    {
+      "case": "11-layout-en.json",
+      "equal": true
+    },
+    {
+      "case": "11-layout-vi.json",
+      "equal": true
+    },
+    {
+      "case": "11-layout-zh.json",
+      "equal": true
+    }
+  ],
+  "details": [
+    {
+      "case": "05-inline-detail.json",
+      "cells": 20,
+      "textGeometryAndStylesEqual": true
+    }
+  ],
+  "files": [
+    {
+      "case": "audit-page-06-draft-export.json",
+      "rows": 1,
+      "columns": 24,
+      "allCellValuesTypesOrderSheetAndFilenameEqual": true,
+      "sourceSha256": "aa8e4f9232487ac77879d00d045aaeca4e6460ae62451c499dc7e30ed08f085e",
+      "migrationSha256": "5e4882031a31ada9ab02f9d026f0030b143557c92db2ee82c67d0e88cbac73dc"
+    },
+    {
+      "case": "audit-files-01-all.json",
+      "rows": 54,
+      "columns": 24,
+      "allCellValuesTypesOrderSheetAndFilenameEqual": true,
+      "sourceSha256": "791f4e299e0f51068538eea6c56ad6054443ef398a592097228ff8c1ec18cbc4",
+      "migrationSha256": "82510dfad31be29dd93773409691e6333f629fc9af5b28c6eddf31b35aed35fa"
+    },
+    {
+      "case": "audit-files-02-text.json",
+      "rows": 1,
+      "columns": 24,
+      "allCellValuesTypesOrderSheetAndFilenameEqual": true,
+      "sourceSha256": "f4d67967227b6f1c9c0b32b0b0ffeb8758228e36cd5bd772e1be0fd71f4eb6b5",
+      "migrationSha256": "482684be71ab9e1f700fd71d948b158b3d3aeec4f4fa71b2db3a9c000059b11d"
+    },
+    {
+      "case": "audit-files-03-empty.json",
+      "rows": 0,
+      "columns": 24,
+      "allCellValuesTypesOrderSheetAndFilenameEqual": true,
+      "sourceSha256": "7aef900a37b5b696cc4079eefee2945988c76d5fd1fa92ad11865d88ab7c573f",
+      "migrationSha256": "6bcc91e94e73bbb96ea888ff317ffdefa64b0cc624d99eabeab706671c401901"
+    }
+  ],
+  "realRules": [
+    {
+      "case": "audit-rules-P12-real-rule--eebd3-t-rename-combined-and-no-op",
+      "rows": 5,
+      "matchingOrderedColumnCount": 21,
+      "allTypesEqual": true,
+      "headerAndSheetEqual": true,
+      "differingColumns": [
+        "时间",
+        "姓名",
+        "请求ID"
+      ],
+      "sourceSha256": "5be28c68695db9825234c0113628d5663734619d95bbd7c20dc80ebef55d9f72",
+      "migrationSha256": "5f85bf8776c6cbf18727d33baa76073dbcb73615f51f77ee5acad8b9c3a63af8",
+      "fullFilesEqual": false
+    },
+    {
+      "case": "audit-rules-P12-real-rule-audits-used-version-and-rename",
+      "rows": 2,
+      "matchingOrderedColumnCount": 21,
+      "allTypesEqual": true,
+      "headerAndSheetEqual": true,
+      "differingColumns": [
+        "时间",
+        "姓名",
+        "请求ID"
+      ],
+      "sourceSha256": "7d8f7ffdee257edef19f5f42c38f486089a0f443288a515eab8e8183d028988a",
+      "migrationSha256": "bdb61330cefbf5d2301da56f2ddc6fae1b3e138eb17a6ab522aa77591d6ee8c8",
+      "fullFilesEqual": false
+    }
+  ],
+  "auditLayout": [
+    {
+      "case": "language-en.json",
+      "exactGeometryGroups": {
+        "surface": 1,
+        "toolbar": 1,
+        "headers": 12,
+        "cells": 12,
+        "pager": 1,
+        "total": 1,
+        "size": 1,
+        "prev": 1,
+        "pages": 1,
+        "next": 1,
+        "date": 1,
+        "dateInput": 2,
+        "dateIcon": 1,
+        "separator": 1
+      },
+      "tableTextsAndDateValuesEqual": true,
+      "dateInputColorsEqual": true
+    },
+    {
+      "case": "language-vi.json",
+      "exactGeometryGroups": {
+        "surface": 1,
+        "toolbar": 1,
+        "headers": 12,
+        "cells": 12,
+        "pager": 1,
+        "total": 1,
+        "size": 1,
+        "prev": 1,
+        "pages": 1,
+        "next": 1,
+        "date": 1,
+        "dateInput": 2,
+        "dateIcon": 1,
+        "separator": 1
+      },
+      "tableTextsAndDateValuesEqual": true,
+      "dateInputColorsEqual": true
+    },
+    {
+      "case": "language-zh.json",
+      "exactGeometryGroups": {
+        "surface": 1,
+        "toolbar": 1,
+        "headers": 12,
+        "cells": 12,
+        "pager": 1,
+        "total": 1,
+        "size": 1,
+        "prev": 1,
+        "pages": 1,
+        "next": 1,
+        "date": 1,
+        "dateInput": 2,
+        "dateIcon": 1,
+        "separator": 1
+      },
+      "tableTextsAndDateValuesEqual": true,
+      "dateInputColorsEqual": true
+    },
+    {
+      "case": "narrow-fifty.json",
+      "exactGeometryGroups": {
+        "surface": 1,
+        "toolbar": 1,
+        "headers": 12,
+        "cells": 12,
+        "pager": 1,
+        "total": 1,
+        "size": 1,
+        "prev": 1,
+        "pages": 1,
+        "next": 1,
+        "date": 1,
+        "dateInput": 2,
+        "dateIcon": 1,
+        "separator": 1
+      },
+      "tableTextsAndDateValuesEqual": true,
+      "dateInputColorsEqual": true
+    },
+    {
+      "case": "table-scroll-end.json",
+      "exactGeometryGroups": {
+        "surface": 1,
+        "toolbar": 1,
+        "headers": 12,
+        "cells": 12,
+        "pager": 1,
+        "total": 1,
+        "size": 1,
+        "prev": 1,
+        "pages": 1,
+        "next": 1,
+        "date": 1,
+        "dateInput": 2,
+        "dateIcon": 1,
+        "separator": 1
+      },
+      "tableTextsAndDateValuesEqual": true,
+      "dateInputColorsEqual": true
+    },
+    {
+      "case": "width-1440.json",
+      "exactGeometryGroups": {
+        "surface": 1,
+        "toolbar": 1,
+        "headers": 12,
+        "cells": 12,
+        "pager": 1,
+        "total": 1,
+        "size": 1,
+        "prev": 1,
+        "pages": 1,
+        "next": 1,
+        "date": 1,
+        "dateInput": 2,
+        "dateIcon": 1,
+        "separator": 1
+      },
+      "tableTextsAndDateValuesEqual": true,
+      "dateInputColorsEqual": true
+    },
+    {
+      "case": "width-1920.json",
+      "exactGeometryGroups": {
+        "surface": 1,
+        "toolbar": 1,
+        "headers": 12,
+        "cells": 12,
+        "pager": 1,
+        "total": 1,
+        "size": 1,
+        "prev": 1,
+        "pages": 1,
+        "next": 1,
+        "date": 1,
+        "dateInput": 2,
+        "dateIcon": 1,
+        "separator": 1
+      },
+      "tableTextsAndDateValuesEqual": true,
+      "dateInputColorsEqual": true
+    },
+    {
+      "case": "width-390.json",
+      "exactGeometryGroups": {
+        "surface": 1,
+        "toolbar": 1,
+        "headers": 12,
+        "cells": 12,
+        "pager": 1,
+        "total": 1,
+        "size": 1,
+        "prev": 1,
+        "pages": 1,
+        "next": 1,
+        "date": 1,
+        "dateInput": 2,
+        "dateIcon": 1,
+        "separator": 1
+      },
+      "tableTextsAndDateValuesEqual": true,
+      "dateInputColorsEqual": true
+    },
+    {
+      "case": "width-900.json",
+      "exactGeometryGroups": {
+        "surface": 1,
+        "toolbar": 1,
+        "headers": 12,
+        "cells": 12,
+        "pager": 1,
+        "total": 1,
+        "size": 1,
+        "prev": 1,
+        "pages": 1,
+        "next": 1,
+        "date": 1,
+        "dateInput": 2,
+        "dateIcon": 1,
+        "separator": 1
+      },
+      "tableTextsAndDateValuesEqual": true,
+      "dateInputColorsEqual": true
+    }
+  ]
+}

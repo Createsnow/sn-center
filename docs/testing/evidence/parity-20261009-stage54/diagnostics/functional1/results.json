@@ -1,0 +1,242 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\node_modules\\.pnpm\\@playwright+test@1.63.0\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.parity.config.ts",
+      "final-functional.spec.ts",
+      "--output=test-results/stage54-functional1"
+    ],
+    "configFile": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\playwright.parity.config.ts",
+    "rootDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage54-functional1",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "prototype",
+        "name": "prototype",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [
+          "**/query-recovery.spec.ts"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage54-functional1",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "migration",
+        "name": "migration",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/parity/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "final-functional.spec.ts",
+      "file": "final-functional.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P01-P04 P08 P13-P14 functional closure through actual pages",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 20007,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.el-form-item').filter({ has: locator('label').filter({ hasText: /^\\s*历史 SN 清单（可选）\\s*$/ }) }).locator('textarea')\nExpected: \u001b[32m\"\"\u001b[39m\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" locator('.el-form-item').filter({ has: locator('label').filter({ hasText: /^\\s*历史 SN 清单（可选）\\s*$/ }) }).locator('textarea') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.el-form-item').filter({ has: locator('label').filter({ hasText: /^\\s*历史 SN 清单（可选）\\s*$/ }) }).locator('textarea')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.el-form-item').filter({ has: locator('label').filter({ hasText: /^\\s*历史 SN 清单（可选）\\s*$/ }) }).locator('textarea')\nExpected: \u001b[32m\"\"\u001b[39m\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" locator('.el-form-item').filter({ has: locator('label').filter({ hasText: /^\\s*历史 SN 清单（可选）\\s*$/ }) }).locator('textarea') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.el-form-item').filter({ has: locator('label').filter({ hasText: /^\\s*历史 SN 清单（可选）\\s*$/ }) }).locator('textarea')\u001b[22m\n\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\final-functional.spec.ts:151:63",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\final-functional.spec.ts",
+                      "column": 63,
+                      "line": 151
+                    },
+                    "snippet": "  149 |     await confirmation.getByRole('button', { name: /^(确定|确认)$/ }).click();\n  150 |     await expect(confirmation).toBeHidden();\n> 151 |     await expect(field(zh.piInit.snList).locator('textarea')).toHaveValue('');\n      |                                                               ^\n  152 |     await expect(rows()).toHaveCount(1);\n  153 |     await capture('02-initialization');\n  154 |     await queryImported();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\final-functional.spec.ts",
+                        "column": 63,
+                        "line": 151
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.el-form-item').filter({ has: locator('label').filter({ hasText: /^\\s*历史 SN 清单（可选）\\s*$/ }) }).locator('textarea')\nExpected: \u001b[32m\"\"\u001b[39m\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" locator('.el-form-item').filter({ has: locator('label').filter({ hasText: /^\\s*历史 SN 清单（可选）\\s*$/ }) }).locator('textarea') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.el-form-item').filter({ has: locator('label').filter({ hasText: /^\\s*历史 SN 清单（可选）\\s*$/ }) }).locator('textarea')\u001b[22m\n\n\n  149 |     await confirmation.getByRole('button', { name: /^(确定|确认)$/ }).click();\n  150 |     await expect(confirmation).toBeHidden();\n> 151 |     await expect(field(zh.piInit.snList).locator('textarea')).toHaveValue('');\n      |                                                               ^\n  152 |     await expect(rows()).toHaveCount(1);\n  153 |     await capture('02-initialization');\n  154 |     await queryImported();\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\final-functional.spec.ts:151:63"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "buffer": ""
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-09T12:33:15.261Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage54-functional1\\final-functional-P01-P04-P-10461-losure-through-actual-pages-prototype\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\final-functional.spec.ts",
+                    "column": 63,
+                    "line": 151
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "d0e9ab1c0d74b11ca64e-82d41585bc5a53396b72",
+          "file": "final-functional.spec.ts",
+          "line": 10,
+          "column": 1
+        },
+        {
+          "title": "P01-P04 P08 P13-P14 functional closure through actual pages",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 649,
+                  "error": {
+                    "message": "Error: Command failed: D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Scripts\\python.exe -X utf8 D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-order-audit-fixture.py java prepare 20261009540003\nTraceback (most recent call last):\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-order-audit-fixture.py\", line 37, in <module>\r\n    c.execute(\"INSERT INTO \" + user_table + \" (\" + \",\".join(user) + \") VALUES (\" + \",\".join([\"%s\"] * len(user)) + \")\", tuple(user.values()))\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\cursors.py\", line 170, in execute\r\n    result = self._query(query)\r\n             ^^^^^^^^^^^^^^^^^^\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\cursors.py\", line 335, in _query\r\n    conn.query(q)\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\connections.py\", line 581, in query\r\n    self._affected_rows = self._read_query_result(unbuffered=unbuffered)\r\n                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\connections.py\", line 857, in _read_query_result\r\n    result.read()\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\connections.py\", line 1290, in read\r\n    first_packet = self.connection._read_packet()\r\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\connections.py\", line 810, in _read_packet\r\n    packet.raise_for_error()\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\protocol.py\", line 219, in raise_for_error\r\n    err.raise_mysql_exception(self._data)\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\err.py\", line 154, in raise_mysql_exception\r\n    raise errorclass(errno, errval, sqlstate=sqlstate)\r\npymysql.err.IntegrityError: (1062, \"Duplicate entry '90020261009540003' for key 'sys_user.PRIMARY'\")\r\n",
+                    "stack": "Error: Command failed: D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Scripts\\python.exe -X utf8 D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-order-audit-fixture.py java prepare 20261009540003\nTraceback (most recent call last):\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-order-audit-fixture.py\", line 37, in <module>\r\n    c.execute(\"INSERT INTO \" + user_table + \" (\" + \",\".join(user) + \") VALUES (\" + \",\".join([\"%s\"] * len(user)) + \")\", tuple(user.values()))\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\cursors.py\", line 170, in execute\r\n    result = self._query(query)\r\n             ^^^^^^^^^^^^^^^^^^\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\cursors.py\", line 335, in _query\r\n    conn.query(q)\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\connections.py\", line 581, in query\r\n    self._affected_rows = self._read_query_result(unbuffered=unbuffered)\r\n                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\connections.py\", line 857, in _read_query_result\r\n    result.read()\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\connections.py\", line 1290, in read\r\n    first_packet = self.connection._read_packet()\r\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\connections.py\", line 810, in _read_packet\r\n    packet.raise_for_error()\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\protocol.py\", line 219, in raise_for_error\r\n    err.raise_mysql_exception(self._data)\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\err.py\", line 154, in raise_mysql_exception\r\n    raise errorclass(errno, errval, sqlstate=sqlstate)\r\npymysql.err.IntegrityError: (1062, \"Duplicate entry '90020261009540003' for key 'sys_user.PRIMARY'\")\r\n\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\final-functional.spec.ts:17:3",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\final-functional.spec.ts",
+                      "column": 3,
+                      "line": 17
+                    },
+                    "snippet": "  15 |   expect(run).toMatch(/^[0-9]{14}$/);\n  16 |   const admin = 'audit' + run;\n> 17 |   execFileSync(\n     |   ^\n  18 |     resolve('../../sn-center-python/.venv/Scripts/python.exe'),\n  19 |     ['-X', 'utf8', resolve('../tools/testing/parity-order-audit-fixture.py'), kind, 'prepare', run],\n  20 |     { windowsHide: true },"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\final-functional.spec.ts",
+                        "column": 3,
+                        "line": 17
+                      },
+                      "message": "Error: Command failed: D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Scripts\\python.exe -X utf8 D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-order-audit-fixture.py java prepare 20261009540003\nTraceback (most recent call last):\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-order-audit-fixture.py\", line 37, in <module>\r\n    c.execute(\"INSERT INTO \" + user_table + \" (\" + \",\".join(user) + \") VALUES (\" + \",\".join([\"%s\"] * len(user)) + \")\", tuple(user.values()))\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\cursors.py\", line 170, in execute\r\n    result = self._query(query)\r\n             ^^^^^^^^^^^^^^^^^^\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\cursors.py\", line 335, in _query\r\n    conn.query(q)\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\connections.py\", line 581, in query\r\n    self._affected_rows = self._read_query_result(unbuffered=unbuffered)\r\n                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\connections.py\", line 857, in _read_query_result\r\n    result.read()\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\connections.py\", line 1290, in read\r\n    first_packet = self.connection._read_packet()\r\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\connections.py\", line 810, in _read_packet\r\n    packet.raise_for_error()\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\protocol.py\", line 219, in raise_for_error\r\n    err.raise_mysql_exception(self._data)\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\pymysql\\err.py\", line 154, in raise_mysql_exception\r\n    raise errorclass(errno, errval, sqlstate=sqlstate)\r\npymysql.err.IntegrityError: (1062, \"Duplicate entry '90020261009540003' for key 'sys_user.PRIMARY'\")\r\n\n\n  15 |   expect(run).toMatch(/^[0-9]{14}$/);\n  16 |   const admin = 'audit' + run;\n> 17 |   execFileSync(\n     |   ^\n  18 |     resolve('../../sn-center-python/.venv/Scripts/python.exe'),\n  19 |     ['-X', 'utf8', resolve('../tools/testing/parity-order-audit-fixture.py'), kind, 'prepare', run],\n  20 |     { windowsHide: true },\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\final-functional.spec.ts:17:3"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "buffer": "VHJhY2ViYWNrIChtb3N0IHJlY2VudCBjYWxsIGxhc3QpOg0KICBGaWxlICJEOlxBZHRla1Byb2plY3RzXG1mLXNuLXVuaXEtZ3VhcmRcYWR0ZWstcGxhdGZvcm0tc25cdG9vbHNcdGVzdGluZ1xwYXJpdHktb3JkZXItYXVkaXQtZml4dHVyZS5weSIsIGxpbmUgMzcsIGluIDxtb2R1bGU+DQogICAgYy5leGVjdXRlKCJJTlNFUlQgSU5UTyAiICsgdXNlcl90YWJsZSArICIgKCIgKyAiLCIuam9pbih1c2VyKSArICIpIFZBTFVFUyAoIiArICIsIi5qb2luKFsiJXMiXSAqIGxlbih1c2VyKSkgKyAiKSIsIHR1cGxlKHVzZXIudmFsdWVzKCkpKQ0KICBGaWxlICJEOlxBZHRla1Byb2plY3RzXG1mLXNuLXVuaXEtZ3VhcmRcc24tY2VudGVyLXB5dGhvblwudmVudlxMaWJcc2l0ZS1wYWNrYWdlc1xweW15c3FsXGN1cnNvcnMucHkiLCBsaW5lIDE3MCwgaW4gZXhlY3V0ZQ0KICAgIHJlc3VsdCA9IHNlbGYuX3F1ZXJ5KHF1ZXJ5KQ0KICAgICAgICAgICAgIF5eXl5eXl5eXl5eXl5eXl5eXg0KICBGaWxlICJEOlxBZHRla1Byb2plY3RzXG1mLXNuLXVuaXEtZ3VhcmRcc24tY2VudGVyLXB5dGhvblwudmVudlxMaWJcc2l0ZS1wYWNrYWdlc1xweW15c3FsXGN1cnNvcnMucHkiLCBsaW5lIDMzNSwgaW4gX3F1ZXJ5DQogICAgY29ubi5xdWVyeShxKQ0KICBGaWxlICJEOlxBZHRla1Byb2plY3RzXG1mLXNuLXVuaXEtZ3VhcmRcc24tY2VudGVyLXB5dGhvblwudmVudlxMaWJcc2l0ZS1wYWNrYWdlc1xweW15c3FsXGNvbm5lY3Rpb25zLnB5IiwgbGluZSA1ODEsIGluIHF1ZXJ5DQogICAgc2VsZi5fYWZmZWN0ZWRfcm93cyA9IHNlbGYuX3JlYWRfcXVlcnlfcmVzdWx0KHVuYnVmZmVyZWQ9dW5idWZmZXJlZCkNCiAgICAgICAgICAgICAgICAgICAgICAgICAgXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXg0KICBGaWxlICJEOlxBZHRla1Byb2plY3RzXG1mLXNuLXVuaXEtZ3VhcmRcc24tY2VudGVyLXB5dGhvblwudmVudlxMaWJcc2l0ZS1wYWNrYWdlc1xweW15c3FsXGNvbm5lY3Rpb25zLnB5IiwgbGluZSA4NTcsIGluIF9yZWFkX3F1ZXJ5X3Jlc3VsdA0KICAgIHJlc3VsdC5yZWFkKCkNCiAgRmlsZSAiRDpcQWR0ZWtQcm9qZWN0c1xtZi1zbi11bmlxLWd1YXJkXHNuLWNlbnRlci1weXRob25cLnZlbnZcTGliXHNpdGUtcGFja2FnZXNccHlteXNxbFxjb25uZWN0aW9ucy5weSIsIGxpbmUgMTI5MCwgaW4gcmVhZA0KICAgIGZpcnN0X3BhY2tldCA9IHNlbGYuY29ubmVjdGlvbi5fcmVhZF9wYWNrZXQoKQ0KICAgICAgICAgICAgICAgICAgIF5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXg0KICBGaWxlICJEOlxBZHRla1Byb2plY3RzXG1mLXNuLXVuaXEtZ3VhcmRcc24tY2VudGVyLXB5dGhvblwudmVudlxMaWJcc2l0ZS1wYWNrYWdlc1xweW15c3FsXGNvbm5lY3Rpb25zLnB5IiwgbGluZSA4MTAsIGluIF9yZWFkX3BhY2tldA0KICAgIHBhY2tldC5yYWlzZV9mb3JfZXJyb3IoKQ0KICBGaWxlICJEOlxBZHRla1Byb2plY3RzXG1mLXNuLXVuaXEtZ3VhcmRcc24tY2VudGVyLXB5dGhvblwudmVudlxMaWJcc2l0ZS1wYWNrYWdlc1xweW15c3FsXHByb3RvY29sLnB5IiwgbGluZSAyMTksIGluIHJhaXNlX2Zvcl9lcnJvcg0KICAgIGVyci5yYWlzZV9teXNxbF9leGNlcHRpb24oc2VsZi5fZGF0YSkNCiAgRmlsZSAiRDpcQWR0ZWtQcm9qZWN0c1xtZi1zbi11bmlxLWd1YXJkXHNuLWNlbnRlci1weXRob25cLnZlbnZcTGliXHNpdGUtcGFja2FnZXNccHlteXNxbFxlcnIucHkiLCBsaW5lIDE1NCwgaW4gcmFpc2VfbXlzcWxfZXhjZXB0aW9uDQogICAgcmFpc2UgZXJyb3JjbGFzcyhlcnJubywgZXJydmFsLCBzcWxzdGF0ZT1zcWxzdGF0ZSkNCnB5bXlzcWwuZXJyLkludGVncml0eUVycm9yOiAoMTA2MiwgIkR1cGxpY2F0ZSBlbnRyeSAnOTAwMjAyNjEwMDk1NDAwMDMnIGZvciBrZXkgJ3N5c191c2VyLlBSSU1BUlknIikNCg=="
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-09T12:33:36.717Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage54-functional1\\final-functional-P01-P04-P-10461-losure-through-actual-pages-migration\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\final-functional.spec.ts",
+                    "column": 3,
+                    "line": 17
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "d0e9ab1c0d74b11ca64e-423d716fc42430ccdb11",
+          "file": "final-functional.spec.ts",
+          "line": 10,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-09T12:33:14.791Z",
+    "duration": 23435.34,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

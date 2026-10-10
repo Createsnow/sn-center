@@ -1,0 +1,56 @@
+[
+  {
+    "classes": "el-dialog",
+    "rect": {
+      "x": 480,
+      "y": 144,
+      "width": 480,
+      "height": 477,
+      "top": 144,
+      "right": 960,
+      "bottom": 621,
+      "left": 480
+    },
+    "color": "rgb(15, 23, 42)",
+    "background": "rgb(255, 255, 255)",
+    "fontSize": "16px",
+    "lineHeight": "normal",
+    "opacity": "1"
+  },
+  {
+    "classes": "el-dialog__title",
+    "rect": {
+      "x": 496,
+      "y": 159,
+      "width": 265.28125,
+      "height": 26,
+      "top": 159,
+      "right": 761.28125,
+      "bottom": 185,
+      "left": 496
+    },
+    "color": "rgb(48, 49, 51)",
+    "background": "rgba(0, 0, 0, 0)",
+    "fontSize": "18px",
+    "lineHeight": "24px",
+    "opacity": "1"
+  },
+  {
+    "classes": "bad",
+    "rect": {
+      "x": 606,
+      "y": 337,
+      "width": 338,
+      "height": 64,
+      "top": 337,
+      "right": 944,
+      "bottom": 401,
+      "left": 606
+    },
+    "color": "rgb(180, 35, 24)",
+    "background": "rgba(0, 0, 0, 0)",
+    "fontSize": "14px",
+    "lineHeight": "32px",
+    "opacity": "1"
+  }
+]

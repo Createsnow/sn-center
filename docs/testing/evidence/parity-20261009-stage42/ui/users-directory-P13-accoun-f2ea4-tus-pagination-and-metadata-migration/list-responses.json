@@ -1,0 +1,3751 @@
+[
+  {
+    "query": "?page=1&size=20&keyword=",
+    "status": 200,
+    "data": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "items": [
+          {
+            "id": "1",
+            "username": "admin",
+            "displayName": "初始管理员",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": false,
+            "version": "2",
+            "roleIds": [
+              "1",
+              "2"
+            ],
+            "factoryIds": [],
+            "roleCodes": [
+              "PLATFORM_ADMIN",
+              "SN_HQ"
+            ],
+            "factories": [],
+            "lastLoginAt": "2026-10-09T04:52:00.910798Z",
+            "createdAt": "2026-10-08T01:36:01.390121Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "165",
+            "username": "cmp_account40_admin",
+            "displayName": "表单admin",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "1",
+              "2"
+            ],
+            "factoryIds": [],
+            "roleCodes": [
+              "PLATFORM_ADMIN",
+              "SN_HQ"
+            ],
+            "factories": [],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:51:15.390212Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "162",
+            "username": "cmp_account40_operator",
+            "displayName": "表单测试成员",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "4",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:51:04.675028Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "164",
+            "username": "cmp_account40_query",
+            "displayName": "表单query",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "4"
+            ],
+            "factoryIds": [],
+            "roleCodes": [
+              "SN_QUERY_ALL"
+            ],
+            "factories": [],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:51:14.568293Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "160",
+            "username": "cmp_dir39_00",
+            "displayName": "目录成员00",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.869558Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "159",
+            "username": "cmp_dir39_01",
+            "displayName": "目录成员01",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.742697Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "158",
+            "username": "cmp_dir39_02",
+            "displayName": "目录成员02",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.621549Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "157",
+            "username": "cmp_dir39_03",
+            "displayName": "目录成员03",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.501838Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "156",
+            "username": "cmp_dir39_04",
+            "displayName": "目录成员04",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.383112Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "155",
+            "username": "cmp_dir39_05",
+            "displayName": "目录成员05",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": false,
+            "mustChangePassword": true,
+            "version": "2",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.214064Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "154",
+            "username": "cmp_dir39_06",
+            "displayName": "目录成员06",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.087108Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "153",
+            "username": "cmp_dir39_07",
+            "displayName": "目录成员07",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.964094Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "152",
+            "username": "cmp_dir39_08",
+            "displayName": "目录成员08",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.836656Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "151",
+            "username": "cmp_dir39_09",
+            "displayName": "目录成员09",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.716644Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "150",
+            "username": "cmp_dir39_10",
+            "displayName": "目录成员10",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.593442Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "149",
+            "username": "cmp_dir39_11",
+            "displayName": "目录成员11",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.468950Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "148",
+            "username": "cmp_dir39_12",
+            "displayName": "目录成员12",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.340280Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "147",
+            "username": "cmp_dir39_13",
+            "displayName": "目录成员13",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.218573Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "146",
+            "username": "cmp_dir39_14",
+            "displayName": "目录成员14",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.094916Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "145",
+            "username": "cmp_dir39_15",
+            "displayName": "目录成员15",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.972466Z",
+            "createdByName": "admin"
+          }
+        ],
+        "total": "34",
+        "page": 1,
+        "size": 20
+      },
+      "params": {},
+      "traceId": "0def856e-b9f1-454f-915d-113c9edaa707"
+    }
+  },
+  {
+    "query": "?page=1&size=20&keyword=cmp_dir39_",
+    "status": 200,
+    "data": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "items": [
+          {
+            "id": "160",
+            "username": "cmp_dir39_00",
+            "displayName": "目录成员00",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.869558Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "159",
+            "username": "cmp_dir39_01",
+            "displayName": "目录成员01",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.742697Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "158",
+            "username": "cmp_dir39_02",
+            "displayName": "目录成员02",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.621549Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "157",
+            "username": "cmp_dir39_03",
+            "displayName": "目录成员03",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.501838Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "156",
+            "username": "cmp_dir39_04",
+            "displayName": "目录成员04",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.383112Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "155",
+            "username": "cmp_dir39_05",
+            "displayName": "目录成员05",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": false,
+            "mustChangePassword": true,
+            "version": "2",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.214064Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "154",
+            "username": "cmp_dir39_06",
+            "displayName": "目录成员06",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.087108Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "153",
+            "username": "cmp_dir39_07",
+            "displayName": "目录成员07",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.964094Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "152",
+            "username": "cmp_dir39_08",
+            "displayName": "目录成员08",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.836656Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "151",
+            "username": "cmp_dir39_09",
+            "displayName": "目录成员09",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.716644Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "150",
+            "username": "cmp_dir39_10",
+            "displayName": "目录成员10",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.593442Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "149",
+            "username": "cmp_dir39_11",
+            "displayName": "目录成员11",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.468950Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "148",
+            "username": "cmp_dir39_12",
+            "displayName": "目录成员12",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.340280Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "147",
+            "username": "cmp_dir39_13",
+            "displayName": "目录成员13",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.218573Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "146",
+            "username": "cmp_dir39_14",
+            "displayName": "目录成员14",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.094916Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "145",
+            "username": "cmp_dir39_15",
+            "displayName": "目录成员15",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.972466Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "144",
+            "username": "cmp_dir39_16",
+            "displayName": "目录成员16",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.848812Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "143",
+            "username": "cmp_dir39_17",
+            "displayName": "目录成员17",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.719165Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "142",
+            "username": "cmp_dir39_18",
+            "displayName": "目录成员18",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.585340Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "141",
+            "username": "cmp_dir39_19",
+            "displayName": "目录成员19",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.445486Z",
+            "createdByName": "admin"
+          }
+        ],
+        "total": "27",
+        "page": 1,
+        "size": 20
+      },
+      "params": {},
+      "traceId": "06e7bfd1-e0c2-4546-b50c-97759d75b8f7"
+    }
+  },
+  {
+    "query": "?page=2&size=20&keyword=cmp_dir39_",
+    "status": 200,
+    "data": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "items": [
+          {
+            "id": "140",
+            "username": "cmp_dir39_20",
+            "displayName": "目录成员20",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.325080Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "139",
+            "username": "cmp_dir39_21",
+            "displayName": "目录成员21",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.198314Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "138",
+            "username": "cmp_dir39_22",
+            "displayName": "目录成员22",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.057627Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "137",
+            "username": "cmp_dir39_23",
+            "displayName": "目录成员23",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:20.938724Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "136",
+            "username": "cmp_dir39_24",
+            "displayName": "目录成员24",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "5"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "SN_QUERY_FACTORY"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:20.807006Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "135",
+            "username": "cmp_dir39_25",
+            "displayName": "目录成员25",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": false,
+            "mustChangePassword": true,
+            "version": "2",
+            "roleIds": [
+              "4"
+            ],
+            "factoryIds": [],
+            "roleCodes": [
+              "SN_QUERY_ALL"
+            ],
+            "factories": [],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:20.620530Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "134",
+            "username": "cmp_dir39_26",
+            "displayName": "目录成员26",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "1",
+              "2"
+            ],
+            "factoryIds": [],
+            "roleCodes": [
+              "PLATFORM_ADMIN",
+              "SN_HQ"
+            ],
+            "factories": [],
+            "lastLoginAt": "2026-10-09T04:51:52.986364Z",
+            "createdAt": "2026-10-09T04:49:20.501416Z",
+            "createdByName": "admin"
+          }
+        ],
+        "total": "27",
+        "page": 2,
+        "size": 20
+      },
+      "params": {},
+      "traceId": "8687ad18-2733-47f3-8fd5-4dd0da42795b"
+    }
+  },
+  {
+    "query": "?page=1&size=20&keyword=cmp_dir39_&roleCodes=FACTORY_OPERATOR&excludedRoleCodes=PLATFORM_ADMIN&excludedRoleCodes=SN_HQ",
+    "status": 200,
+    "data": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "items": [
+          {
+            "id": "160",
+            "username": "cmp_dir39_00",
+            "displayName": "目录成员00",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.869558Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "159",
+            "username": "cmp_dir39_01",
+            "displayName": "目录成员01",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.742697Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "158",
+            "username": "cmp_dir39_02",
+            "displayName": "目录成员02",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.621549Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "157",
+            "username": "cmp_dir39_03",
+            "displayName": "目录成员03",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.501838Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "156",
+            "username": "cmp_dir39_04",
+            "displayName": "目录成员04",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.383112Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "155",
+            "username": "cmp_dir39_05",
+            "displayName": "目录成员05",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": false,
+            "mustChangePassword": true,
+            "version": "2",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.214064Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "154",
+            "username": "cmp_dir39_06",
+            "displayName": "目录成员06",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.087108Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "153",
+            "username": "cmp_dir39_07",
+            "displayName": "目录成员07",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.964094Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "152",
+            "username": "cmp_dir39_08",
+            "displayName": "目录成员08",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.836656Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "151",
+            "username": "cmp_dir39_09",
+            "displayName": "目录成员09",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.716644Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "150",
+            "username": "cmp_dir39_10",
+            "displayName": "目录成员10",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.593442Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "149",
+            "username": "cmp_dir39_11",
+            "displayName": "目录成员11",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.468950Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "148",
+            "username": "cmp_dir39_12",
+            "displayName": "目录成员12",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.340280Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "147",
+            "username": "cmp_dir39_13",
+            "displayName": "目录成员13",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.218573Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "146",
+            "username": "cmp_dir39_14",
+            "displayName": "目录成员14",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.094916Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "145",
+            "username": "cmp_dir39_15",
+            "displayName": "目录成员15",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.972466Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "144",
+            "username": "cmp_dir39_16",
+            "displayName": "目录成员16",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.848812Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "143",
+            "username": "cmp_dir39_17",
+            "displayName": "目录成员17",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.719165Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "142",
+            "username": "cmp_dir39_18",
+            "displayName": "目录成员18",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.585340Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "141",
+            "username": "cmp_dir39_19",
+            "displayName": "目录成员19",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.445486Z",
+            "createdByName": "admin"
+          }
+        ],
+        "total": "24",
+        "page": 1,
+        "size": 20
+      },
+      "params": {},
+      "traceId": "e6bfa203-5b17-4e72-9ac1-e7be0e33318e"
+    }
+  },
+  {
+    "query": "?page=2&size=20&keyword=cmp_dir39_&roleCodes=FACTORY_OPERATOR&excludedRoleCodes=PLATFORM_ADMIN&excludedRoleCodes=SN_HQ",
+    "status": 200,
+    "data": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "items": [
+          {
+            "id": "140",
+            "username": "cmp_dir39_20",
+            "displayName": "目录成员20",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.325080Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "139",
+            "username": "cmp_dir39_21",
+            "displayName": "目录成员21",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.198314Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "138",
+            "username": "cmp_dir39_22",
+            "displayName": "目录成员22",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.057627Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "137",
+            "username": "cmp_dir39_23",
+            "displayName": "目录成员23",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:20.938724Z",
+            "createdByName": "admin"
+          }
+        ],
+        "total": "24",
+        "page": 2,
+        "size": 20
+      },
+      "params": {},
+      "traceId": "d7e3dfc8-dc27-44b0-8b85-e88036053532"
+    }
+  },
+  {
+    "query": "?page=1&size=20&keyword=cmp_dir39_&roleCodes=SN_QUERY_ALL&roleCodes=SN_QUERY_FACTORY&excludedRoleCodes=PLATFORM_ADMIN&excludedRoleCodes=SN_HQ&excludedRoleCodes=FACTORY_OPERATOR",
+    "status": 200,
+    "data": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "items": [
+          {
+            "id": "136",
+            "username": "cmp_dir39_24",
+            "displayName": "目录成员24",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "5"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "SN_QUERY_FACTORY"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:20.807006Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "135",
+            "username": "cmp_dir39_25",
+            "displayName": "目录成员25",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": false,
+            "mustChangePassword": true,
+            "version": "2",
+            "roleIds": [
+              "4"
+            ],
+            "factoryIds": [],
+            "roleCodes": [
+              "SN_QUERY_ALL"
+            ],
+            "factories": [],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:20.620530Z",
+            "createdByName": "admin"
+          }
+        ],
+        "total": "2",
+        "page": 1,
+        "size": 20
+      },
+      "params": {},
+      "traceId": "3685fb69-e0eb-4be4-9f30-280ef1cc9901"
+    }
+  },
+  {
+    "query": "?page=1&size=20&keyword=cmp_dir39_&enabled=false&roleCodes=SN_QUERY_ALL&roleCodes=SN_QUERY_FACTORY&excludedRoleCodes=PLATFORM_ADMIN&excludedRoleCodes=SN_HQ&excludedRoleCodes=FACTORY_OPERATOR",
+    "status": 200,
+    "data": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "items": [
+          {
+            "id": "135",
+            "username": "cmp_dir39_25",
+            "displayName": "目录成员25",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": false,
+            "mustChangePassword": true,
+            "version": "2",
+            "roleIds": [
+              "4"
+            ],
+            "factoryIds": [],
+            "roleCodes": [
+              "SN_QUERY_ALL"
+            ],
+            "factories": [],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:20.620530Z",
+            "createdByName": "admin"
+          }
+        ],
+        "total": "1",
+        "page": 1,
+        "size": 20
+      },
+      "params": {},
+      "traceId": "3e1a22bb-8e01-4eb4-bbc4-6bfdf3ba1108"
+    }
+  },
+  {
+    "query": "?page=1&size=20&keyword=cmp_dir39_&enabled=false&roleCodes=SN_QUERY_ALL&roleCodes=SN_QUERY_FACTORY&excludedRoleCodes=PLATFORM_ADMIN&excludedRoleCodes=SN_HQ&excludedRoleCodes=FACTORY_OPERATOR&factoryId=1",
+    "status": 200,
+    "data": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "items": [],
+        "total": "0",
+        "page": 1,
+        "size": 20
+      },
+      "params": {},
+      "traceId": "1a0d0568-517d-45e6-a1c0-ab643d5e7d6d"
+    }
+  },
+  {
+    "query": "?page=1&size=20&keyword=cmp_dir39_&roleCodes=SN_QUERY_ALL&roleCodes=SN_QUERY_FACTORY&excludedRoleCodes=PLATFORM_ADMIN&excludedRoleCodes=SN_HQ&excludedRoleCodes=FACTORY_OPERATOR&factoryId=1",
+    "status": 200,
+    "data": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "items": [
+          {
+            "id": "136",
+            "username": "cmp_dir39_24",
+            "displayName": "目录成员24",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "5"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "SN_QUERY_FACTORY"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:20.807006Z",
+            "createdByName": "admin"
+          }
+        ],
+        "total": "1",
+        "page": 1,
+        "size": 20
+      },
+      "params": {},
+      "traceId": "706e73c5-c9c9-479e-8edb-eef576d07b39"
+    }
+  },
+  {
+    "query": "?page=1&size=20&keyword=cmp_dir39_&roleCodes=PLATFORM_ADMIN&roleCodes=SN_HQ&factoryId=1",
+    "status": 200,
+    "data": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "items": [],
+        "total": "0",
+        "page": 1,
+        "size": 20
+      },
+      "params": {},
+      "traceId": "f9f6bca9-d1d4-4e51-bad2-bbab45445514"
+    }
+  },
+  {
+    "query": "?page=1&size=20&keyword=cmp_dir39_&roleCodes=PLATFORM_ADMIN&roleCodes=SN_HQ",
+    "status": 200,
+    "data": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "items": [
+          {
+            "id": "134",
+            "username": "cmp_dir39_26",
+            "displayName": "目录成员26",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "1",
+              "2"
+            ],
+            "factoryIds": [],
+            "roleCodes": [
+              "PLATFORM_ADMIN",
+              "SN_HQ"
+            ],
+            "factories": [],
+            "lastLoginAt": "2026-10-09T04:51:52.986364Z",
+            "createdAt": "2026-10-09T04:49:20.501416Z",
+            "createdByName": "admin"
+          }
+        ],
+        "total": "1",
+        "page": 1,
+        "size": 20
+      },
+      "params": {},
+      "traceId": "904a903c-9d1a-4309-b0c3-66ed7aa25f1b"
+    }
+  },
+  {
+    "query": "?page=1&size=20&keyword=cmp_dir39_",
+    "status": 200,
+    "data": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "items": [
+          {
+            "id": "160",
+            "username": "cmp_dir39_00",
+            "displayName": "目录成员00",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.869558Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "159",
+            "username": "cmp_dir39_01",
+            "displayName": "目录成员01",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.742697Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "158",
+            "username": "cmp_dir39_02",
+            "displayName": "目录成员02",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.621549Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "157",
+            "username": "cmp_dir39_03",
+            "displayName": "目录成员03",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.501838Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "156",
+            "username": "cmp_dir39_04",
+            "displayName": "目录成员04",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.383112Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "155",
+            "username": "cmp_dir39_05",
+            "displayName": "目录成员05",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": false,
+            "mustChangePassword": true,
+            "version": "2",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.214064Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "154",
+            "username": "cmp_dir39_06",
+            "displayName": "目录成员06",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.087108Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "153",
+            "username": "cmp_dir39_07",
+            "displayName": "目录成员07",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.964094Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "152",
+            "username": "cmp_dir39_08",
+            "displayName": "目录成员08",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.836656Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "151",
+            "username": "cmp_dir39_09",
+            "displayName": "目录成员09",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.716644Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "150",
+            "username": "cmp_dir39_10",
+            "displayName": "目录成员10",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.593442Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "149",
+            "username": "cmp_dir39_11",
+            "displayName": "目录成员11",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.468950Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "148",
+            "username": "cmp_dir39_12",
+            "displayName": "目录成员12",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.340280Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "147",
+            "username": "cmp_dir39_13",
+            "displayName": "目录成员13",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.218573Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "146",
+            "username": "cmp_dir39_14",
+            "displayName": "目录成员14",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.094916Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "145",
+            "username": "cmp_dir39_15",
+            "displayName": "目录成员15",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.972466Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "144",
+            "username": "cmp_dir39_16",
+            "displayName": "目录成员16",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.848812Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "143",
+            "username": "cmp_dir39_17",
+            "displayName": "目录成员17",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.719165Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "142",
+            "username": "cmp_dir39_18",
+            "displayName": "目录成员18",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.585340Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "141",
+            "username": "cmp_dir39_19",
+            "displayName": "目录成员19",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.445486Z",
+            "createdByName": "admin"
+          }
+        ],
+        "total": "27",
+        "page": 1,
+        "size": 20
+      },
+      "params": {},
+      "traceId": "973b60db-be11-45cb-a4c5-171202137d6b"
+    }
+  },
+  {
+    "query": "?page=1&size=20&keyword=%E6%88%90%E5%91%982",
+    "status": 200,
+    "data": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "items": [
+          {
+            "id": "140",
+            "username": "cmp_dir39_20",
+            "displayName": "目录成员20",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.325080Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "139",
+            "username": "cmp_dir39_21",
+            "displayName": "目录成员21",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.198314Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "138",
+            "username": "cmp_dir39_22",
+            "displayName": "目录成员22",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.057627Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "137",
+            "username": "cmp_dir39_23",
+            "displayName": "目录成员23",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:20.938724Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "136",
+            "username": "cmp_dir39_24",
+            "displayName": "目录成员24",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "5"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "SN_QUERY_FACTORY"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:20.807006Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "135",
+            "username": "cmp_dir39_25",
+            "displayName": "目录成员25",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": false,
+            "mustChangePassword": true,
+            "version": "2",
+            "roleIds": [
+              "4"
+            ],
+            "factoryIds": [],
+            "roleCodes": [
+              "SN_QUERY_ALL"
+            ],
+            "factories": [],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:20.620530Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "134",
+            "username": "cmp_dir39_26",
+            "displayName": "目录成员26",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "1",
+              "2"
+            ],
+            "factoryIds": [],
+            "roleCodes": [
+              "PLATFORM_ADMIN",
+              "SN_HQ"
+            ],
+            "factories": [],
+            "lastLoginAt": "2026-10-09T04:51:52.986364Z",
+            "createdAt": "2026-10-09T04:49:20.501416Z",
+            "createdByName": "admin"
+          }
+        ],
+        "total": "7",
+        "page": 1,
+        "size": 20
+      },
+      "params": {},
+      "traceId": "5f80cefc-3f01-44df-89cc-637e18145f8a"
+    }
+  },
+  {
+    "query": "?page=1&size=20&keyword=dir39_",
+    "status": 200,
+    "data": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "items": [],
+        "total": "0",
+        "page": 1,
+        "size": 20
+      },
+      "params": {},
+      "traceId": "ad18bd79-d99f-42e2-b4c2-2f766eafa304"
+    }
+  },
+  {
+    "query": "?page=1&size=20&keyword=cmp_dir39_",
+    "status": 200,
+    "data": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "items": [
+          {
+            "id": "160",
+            "username": "cmp_dir39_00",
+            "displayName": "目录成员00",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.869558Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "159",
+            "username": "cmp_dir39_01",
+            "displayName": "目录成员01",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.742697Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "158",
+            "username": "cmp_dir39_02",
+            "displayName": "目录成员02",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.621549Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "157",
+            "username": "cmp_dir39_03",
+            "displayName": "目录成员03",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.501838Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "156",
+            "username": "cmp_dir39_04",
+            "displayName": "目录成员04",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.383112Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "155",
+            "username": "cmp_dir39_05",
+            "displayName": "目录成员05",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": false,
+            "mustChangePassword": true,
+            "version": "2",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.214064Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "154",
+            "username": "cmp_dir39_06",
+            "displayName": "目录成员06",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:23.087108Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "153",
+            "username": "cmp_dir39_07",
+            "displayName": "目录成员07",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.964094Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "152",
+            "username": "cmp_dir39_08",
+            "displayName": "目录成员08",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.836656Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "151",
+            "username": "cmp_dir39_09",
+            "displayName": "目录成员09",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.716644Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "150",
+            "username": "cmp_dir39_10",
+            "displayName": "目录成员10",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.593442Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "149",
+            "username": "cmp_dir39_11",
+            "displayName": "目录成员11",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.468950Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "148",
+            "username": "cmp_dir39_12",
+            "displayName": "目录成员12",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.340280Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "147",
+            "username": "cmp_dir39_13",
+            "displayName": "目录成员13",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.218573Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "146",
+            "username": "cmp_dir39_14",
+            "displayName": "目录成员14",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:22.094916Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "145",
+            "username": "cmp_dir39_15",
+            "displayName": "目录成员15",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.972466Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "144",
+            "username": "cmp_dir39_16",
+            "displayName": "目录成员16",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.848812Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "143",
+            "username": "cmp_dir39_17",
+            "displayName": "目录成员17",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.719165Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "142",
+            "username": "cmp_dir39_18",
+            "displayName": "目录成员18",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.585340Z",
+            "createdByName": "admin"
+          },
+          {
+            "id": "141",
+            "username": "cmp_dir39_19",
+            "displayName": "目录成员19",
+            "deptId": "1",
+            "deptName": "总部",
+            "enabled": true,
+            "mustChangePassword": true,
+            "version": "1",
+            "roleIds": [
+              "3"
+            ],
+            "factoryIds": [
+              "1"
+            ],
+            "roleCodes": [
+              "FACTORY_OPERATOR"
+            ],
+            "factories": [
+              {
+                "id": "1",
+                "name": "比较测试甲厂",
+                "code": "CMP-A"
+              }
+            ],
+            "lastLoginAt": null,
+            "createdAt": "2026-10-09T04:49:21.445486Z",
+            "createdByName": "admin"
+          }
+        ],
+        "total": "27",
+        "page": 1,
+        "size": 20
+      },
+      "params": {},
+      "traceId": "761c61b8-10c5-4313-8fe1-e92b7df9d4a6"
+    }
+  }
+]

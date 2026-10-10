@@ -1,0 +1,1012 @@
+{
+  "head": [
+    {
+      "text": "SN 查询只读查询，不能在这里转走号。工厂默认只看已分给本厂的号，可切换为只读查看同一 PI 下已分到各个厂的号。导出 ExcelCSV",
+      "x": 240,
+      "y": 76,
+      "width": 1180,
+      "height": 55.796875,
+      "style": {
+        "color": "rgb(15, 23, 42)",
+        "font": "16px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      }
+    }
+  ],
+  "surface": [
+    {
+      "text": "工厂状态查询完整 SN进制流水十进制流水PI物料编码客户编码工厂状态流水归属 PI来源订单批次号来源生成时间打印时间Q28A000140001414CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A000130001313CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A000120001212CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A000110001111CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A000100001010CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A00009000099CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A00008000088CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A00007000077CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A00006000066CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A00005000055CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A00004000044CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A00003000033CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A00002000022CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A00001000011CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35共 54 条20条/页 1 23",
+      "x": 240,
+      "y": 147.796875,
+      "width": 1180,
+      "height": 966,
+      "style": {
+        "color": "rgb(15, 23, 42)",
+        "font": "16px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      }
+    }
+  ],
+  "toolbar": [
+    {
+      "text": "工厂状态查询",
+      "x": 261,
+      "y": 164.796875,
+      "width": 1138,
+      "height": 74,
+      "style": {
+        "color": "rgb(15, 23, 42)",
+        "font": "16px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      }
+    }
+  ],
+  "table": [
+    {
+      "text": "完整 SN进制流水十进制流水PI物料编码客户编码工厂状态流水归属 PI来源订单批次号来源生成时间打印时间Q28A000140001414CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A000130001313CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A000120001212CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A000110001111CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A000100001010CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A00009000099CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A00008000088CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A00007000077CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A00006000066CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A00005000055CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A00004000044CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A00003000033CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A00002000022CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35Q28A00001000011CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35",
+      "x": 261,
+      "y": 250.796875,
+      "width": 1138,
+      "height": 802,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      }
+    }
+  ],
+  "foot": [
+    {
+      "text": "共 54 条20条/页 1 23",
+      "x": 261,
+      "y": 1064.796875,
+      "width": 1138,
+      "height": 32,
+      "style": {
+        "color": "rgb(15, 23, 42)",
+        "font": "16px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      }
+    }
+  ],
+  "header": [
+    {
+      "text": "完整 SN",
+      "x": 261,
+      "y": 250.796875,
+      "width": 170,
+      "height": 32,
+      "style": {
+        "color": "rgb(144, 147, 153)",
+        "font": "600 12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      }
+    },
+    {
+      "text": "进制流水",
+      "x": 431,
+      "y": 250.796875,
+      "width": 110,
+      "height": 32,
+      "style": {
+        "color": "rgb(144, 147, 153)",
+        "font": "600 12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      }
+    },
+    {
+      "text": "十进制流水",
+      "x": 541,
+      "y": 250.796875,
+      "width": 100,
+      "height": 32,
+      "style": {
+        "color": "rgb(144, 147, 153)",
+        "font": "600 12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      }
+    },
+    {
+      "text": "PI",
+      "x": 641,
+      "y": 250.796875,
+      "width": 150,
+      "height": 32,
+      "style": {
+        "color": "rgb(144, 147, 153)",
+        "font": "600 12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      }
+    },
+    {
+      "text": "物料编码",
+      "x": 791,
+      "y": 250.796875,
+      "width": 110,
+      "height": 32,
+      "style": {
+        "color": "rgb(144, 147, 153)",
+        "font": "600 12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      }
+    },
+    {
+      "text": "客户编码",
+      "x": 901,
+      "y": 250.796875,
+      "width": 90,
+      "height": 32,
+      "style": {
+        "color": "rgb(144, 147, 153)",
+        "font": "600 12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      }
+    },
+    {
+      "text": "工厂",
+      "x": 991,
+      "y": 250.796875,
+      "width": 110,
+      "height": 32,
+      "style": {
+        "color": "rgb(144, 147, 153)",
+        "font": "600 12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      }
+    },
+    {
+      "text": "状态",
+      "x": 1101,
+      "y": 250.796875,
+      "width": 90,
+      "height": 32,
+      "style": {
+        "color": "rgb(144, 147, 153)",
+        "font": "600 12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      }
+    },
+    {
+      "text": "流水归属 PI",
+      "x": 1191,
+      "y": 250.796875,
+      "width": 150,
+      "height": 32,
+      "style": {
+        "color": "rgb(144, 147, 153)",
+        "font": "600 12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      }
+    },
+    {
+      "text": "来源订单",
+      "x": 1341,
+      "y": 250.796875,
+      "width": 130,
+      "height": 32,
+      "style": {
+        "color": "rgb(144, 147, 153)",
+        "font": "600 12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      }
+    },
+    {
+      "text": "批次号",
+      "x": 1471,
+      "y": 250.796875,
+      "width": 170,
+      "height": 32,
+      "style": {
+        "color": "rgb(144, 147, 153)",
+        "font": "600 12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      }
+    },
+    {
+      "text": "来源",
+      "x": 1641,
+      "y": 250.796875,
+      "width": 80,
+      "height": 32,
+      "style": {
+        "color": "rgb(144, 147, 153)",
+        "font": "600 12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      }
+    },
+    {
+      "text": "生成时间",
+      "x": 1721,
+      "y": 250.796875,
+      "width": 160,
+      "height": 32,
+      "style": {
+        "color": "rgb(144, 147, 153)",
+        "font": "600 12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      }
+    },
+    {
+      "text": "打印时间",
+      "x": 1881,
+      "y": 250.796875,
+      "width": 160,
+      "height": 32,
+      "style": {
+        "color": "rgb(144, 147, 153)",
+        "font": "600 12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      }
+    }
+  ],
+  "row": [
+    {
+      "text": "Q28A000140001414CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35",
+      "x": 261,
+      "y": 282.796875,
+      "width": 1780,
+      "height": 55,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      },
+      "cells": [
+        "Q28A00014",
+        "00014",
+        "14",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-Z",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待领取",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "",
+        "生成",
+        "2026-10-09 05:57:35",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000130001313CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35",
+      "x": 261,
+      "y": 337.796875,
+      "width": 1780,
+      "height": 55,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      },
+      "cells": [
+        "Q28A00013",
+        "00013",
+        "13",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-Z",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待领取",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "",
+        "生成",
+        "2026-10-09 05:57:35",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000120001212CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35",
+      "x": 261,
+      "y": 392.796875,
+      "width": 1780,
+      "height": 55,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      },
+      "cells": [
+        "Q28A00012",
+        "00012",
+        "12",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-Z",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待领取",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "",
+        "生成",
+        "2026-10-09 05:57:35",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000110001111CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35",
+      "x": 261,
+      "y": 447.796875,
+      "width": 1780,
+      "height": 55,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      },
+      "cells": [
+        "Q28A00011",
+        "00011",
+        "11",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-Z",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待领取",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "",
+        "生成",
+        "2026-10-09 05:57:35",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000100001010CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35",
+      "x": 261,
+      "y": 502.796875,
+      "width": 1780,
+      "height": 55,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      },
+      "cells": [
+        "Q28A00010",
+        "00010",
+        "10",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-Z",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待领取",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "",
+        "生成",
+        "2026-10-09 05:57:35",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A00009000099CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35",
+      "x": 261,
+      "y": 557.796875,
+      "width": 1780,
+      "height": 55,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      },
+      "cells": [
+        "Q28A00009",
+        "00009",
+        "9",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-Z",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待领取",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "",
+        "生成",
+        "2026-10-09 05:57:35",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A00008000088CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35",
+      "x": 261,
+      "y": 612.796875,
+      "width": 1780,
+      "height": 55,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      },
+      "cells": [
+        "Q28A00008",
+        "00008",
+        "8",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-Z",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待领取",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "",
+        "生成",
+        "2026-10-09 05:57:35",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A00007000077CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35",
+      "x": 261,
+      "y": 667.796875,
+      "width": 1780,
+      "height": 55,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      },
+      "cells": [
+        "Q28A00007",
+        "00007",
+        "7",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-Z",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待领取",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "",
+        "生成",
+        "2026-10-09 05:57:35",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A00006000066CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35",
+      "x": 261,
+      "y": 722.796875,
+      "width": 1780,
+      "height": 55,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      },
+      "cells": [
+        "Q28A00006",
+        "00006",
+        "6",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-Z",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待领取",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "",
+        "生成",
+        "2026-10-09 05:57:35",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A00005000055CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35",
+      "x": 261,
+      "y": 777.796875,
+      "width": 1780,
+      "height": 55,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      },
+      "cells": [
+        "Q28A00005",
+        "00005",
+        "5",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-Z",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待领取",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "",
+        "生成",
+        "2026-10-09 05:57:35",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A00004000044CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35",
+      "x": 261,
+      "y": 832.796875,
+      "width": 1780,
+      "height": 55,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      },
+      "cells": [
+        "Q28A00004",
+        "00004",
+        "4",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-Z",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待领取",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "",
+        "生成",
+        "2026-10-09 05:57:35",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A00003000033CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35",
+      "x": 261,
+      "y": 887.796875,
+      "width": 1780,
+      "height": 55,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      },
+      "cells": [
+        "Q28A00003",
+        "00003",
+        "3",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-Z",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待领取",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "",
+        "生成",
+        "2026-10-09 05:57:35",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A00002000022CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35",
+      "x": 261,
+      "y": 942.796875,
+      "width": 1780,
+      "height": 55,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      },
+      "cells": [
+        "Q28A00002",
+        "00002",
+        "2",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-Z",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待领取",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "",
+        "生成",
+        "2026-10-09 05:57:35",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A00001000011CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ZCMP-QUERY-CUSTOMER比较测试甲厂待领取CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-A生成2026-10-09 05:57:35",
+      "x": 261,
+      "y": 997.796875,
+      "width": 1780,
+      "height": 55,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "letterSpacing": "normal"
+      },
+      "cells": [
+        "Q28A00001",
+        "00001",
+        "1",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-Z",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待领取",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "",
+        "生成",
+        "2026-10-09 05:57:35",
+        ""
+      ]
+    }
+  ],
+  "buttons": [
+    {
+      "text": "导出 Excel",
+      "x": 1221.078125,
+      "y": 99.796875,
+      "width": 118.125,
+      "height": 32,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "500 14px / 14px Arial",
+        "letterSpacing": "normal"
+      }
+    },
+    {
+      "text": "CSV",
+      "x": 1359.203125,
+      "y": 99.796875,
+      "width": 60.796875,
+      "height": 32,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "500 14px / 14px Arial",
+        "letterSpacing": "normal"
+      }
+    },
+    {
+      "text": "查询",
+      "x": 891,
+      "y": 206.796875,
+      "width": 60,
+      "height": 32,
+      "style": {
+        "color": "rgb(255, 255, 255)",
+        "font": "500 14px / 14px Arial",
+        "letterSpacing": "normal"
+      }
+    }
+  ],
+  "mono": [
+    {
+      "text": "Q28A00014",
+      "x": 269,
+      "y": 303.296875,
+      "width": 61.1875,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "00014",
+      "x": 439,
+      "y": 303.296875,
+      "width": 34,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "Q28A00013",
+      "x": 269,
+      "y": 358.296875,
+      "width": 61.1875,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "00013",
+      "x": 439,
+      "y": 358.296875,
+      "width": 34,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "Q28A00012",
+      "x": 269,
+      "y": 413.296875,
+      "width": 61.1875,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "00012",
+      "x": 439,
+      "y": 413.296875,
+      "width": 34,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "Q28A00011",
+      "x": 269,
+      "y": 468.296875,
+      "width": 61.1875,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "00011",
+      "x": 439,
+      "y": 468.296875,
+      "width": 34,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "Q28A00010",
+      "x": 269,
+      "y": 523.296875,
+      "width": 61.1875,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "00010",
+      "x": 439,
+      "y": 523.296875,
+      "width": 34,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "Q28A00009",
+      "x": 269,
+      "y": 578.296875,
+      "width": 61.1875,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "00009",
+      "x": 439,
+      "y": 578.296875,
+      "width": 34,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "Q28A00008",
+      "x": 269,
+      "y": 633.296875,
+      "width": 61.1875,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "00008",
+      "x": 439,
+      "y": 633.296875,
+      "width": 34,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "Q28A00007",
+      "x": 269,
+      "y": 688.296875,
+      "width": 61.1875,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "00007",
+      "x": 439,
+      "y": 688.296875,
+      "width": 34,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "Q28A00006",
+      "x": 269,
+      "y": 743.296875,
+      "width": 61.1875,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "00006",
+      "x": 439,
+      "y": 743.296875,
+      "width": 34,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "Q28A00005",
+      "x": 269,
+      "y": 798.296875,
+      "width": 61.1875,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "00005",
+      "x": 439,
+      "y": 798.296875,
+      "width": 34,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "Q28A00004",
+      "x": 269,
+      "y": 853.296875,
+      "width": 61.1875,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "00004",
+      "x": 439,
+      "y": 853.296875,
+      "width": 34,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "Q28A00003",
+      "x": 269,
+      "y": 908.296875,
+      "width": 61.1875,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "00003",
+      "x": 439,
+      "y": 908.296875,
+      "width": 34,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "Q28A00002",
+      "x": 269,
+      "y": 963.296875,
+      "width": 61.1875,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "00002",
+      "x": 439,
+      "y": 963.296875,
+      "width": 34,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "Q28A00001",
+      "x": 269,
+      "y": 1018.296875,
+      "width": 61.1875,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    },
+    {
+      "text": "00001",
+      "x": 439,
+      "y": 1018.296875,
+      "width": 34,
+      "height": 14,
+      "style": {
+        "color": "rgb(96, 98, 102)",
+        "font": "12px / 23px \"JetBrains Mono\", Consolas, \"Courier New\", monospace",
+        "letterSpacing": "0.2px"
+      }
+    }
+  ]
+}

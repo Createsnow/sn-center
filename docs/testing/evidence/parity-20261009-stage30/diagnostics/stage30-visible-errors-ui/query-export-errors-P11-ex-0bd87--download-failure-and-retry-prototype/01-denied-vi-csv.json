@@ -1,0 +1,37 @@
+{
+  "cells": [
+    [
+      "Q29A00002",
+      "00002",
+      "2",
+      "CMP-UI-QUERY-SCOPE-PI-A",
+      "CMP-SCOPE-MAT-Z",
+      "CMP-QUERY-SCOPE-CUSTOMER",
+      "比较测试甲厂",
+      "Chờ nhận",
+      "CMP-UI-QUERY-SCOPE-PI-A",
+      "CMP-UI-QUERY-SCOPE-MO-A",
+      "",
+      "Tạo",
+      "2026-10-09 06:30:13",
+      ""
+    ],
+    [
+      "Q29A00001",
+      "00001",
+      "1",
+      "CMP-UI-QUERY-SCOPE-PI-A",
+      "CMP-SCOPE-MAT-Z",
+      "CMP-QUERY-SCOPE-CUSTOMER",
+      "比较测试甲厂",
+      "Chờ nhận",
+      "CMP-UI-QUERY-SCOPE-PI-A",
+      "CMP-UI-QUERY-SCOPE-MO-A",
+      "",
+      "Tạo",
+      "2026-10-09 06:30:13",
+      ""
+    ]
+  ],
+  "text": "Trung tâm SN\nTổng bộ tạo & phân bổ\nBÀN LÀM VIỆC\nTổng quan\nNGHIỆP VỤ NHÀ MÁY\nNhận & in\nChuyển nhà máy\nTRA CỨU & NHẬT KÝ\nTra cứu SN\nNhật ký thao tác\nTrung tâm SN\n/\nTra cứu SN\n 比较测试甲厂\nTiếng Việt\n比\n比较操作员 · Nhân viên nhà máy\nTra cứu SN\n\nChỉ xem; không thể chuyển SN tại đây. Nhà máy mặc định chỉ thấy SN của mình, có thể xem (chỉ đọc) cùng PI ở mọi nhà máy.\n\nXuất Excel\nCSV\n比较测试甲厂\nTrạng thái\nMọi nhà máy của PI (chỉ xem)\nTìm\nChỉ xem: SN của PI này tại mọi nhà máy; không thể nhận/in.\nSN đầy đủ\n\t\nSố thứ tự mã hóa\n\t\nSố thứ tự thập phân\n\t\nPI\n\t\nMã vật tư\n\t\nMã khách hàng\n\t\nNhà máy\n\t\nTrạng thái\n\t\nPI sở hữu số\n\t\nLệnh nguồn\n\t\nSố lô\n\t\nNguồn\n\t\nThời gian tạo\n\t\nThời gian in\nQ29A00002\n\t\n00002\n\t\n2\n\t\nCMP-UI-QUERY-SCOPE-PI-A\n\t\nCMP-SCOPE-MAT-Z\n\t\nCMP-QUERY-SCOPE-CUSTOMER\n\t\n比较测试甲厂\n\t\nChờ nhận\n\t\nCMP-UI-QUERY-SCOPE-PI-A\n\t\nCMP-UI-QUERY-SCOPE-MO-A\n\t\n\t\nTạo\n\t\n2026-10-09 06:30:13\n\t\n\n\nQ29A00001\n\t\n00001\n\t\n1\n\t\nCMP-UI-QUERY-SCOPE-PI-A\n\t\nCMP-SCOPE-MAT-Z\n\t\nCMP-QUERY-SCOPE-CUSTOMER\n\t\n比较测试甲厂\n\t\nChờ nhận\n\t\nCMP-UI-QUERY-SCOPE-PI-A\n\t\nCMP-UI-QUERY-SCOPE-MO-A\n\t\n\t\nTạo\n\t\n2026-10-09 06:30:13\n\t\nTổng 2\n20/trang\n1\n简体中文\nEnglish\nTiếng Việt\n\nNhà máy của bạn không có SN trong PI CMP-UI-QUERY-SCOPE-PI-B"
+}

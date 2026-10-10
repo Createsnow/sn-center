@@ -17,6 +17,7 @@ public final class AuditChanges {
                     "factoryIds",
                     "digest",
                     "currentVersion",
+                    "description",
                     "enabled",
                     "intervalMinutes",
                     "mustChangePassword",

@@ -1,0 +1,7 @@
+{
+  "code": "QUERY_PI_NOT_OWNED",
+  "message": "本厂没有 PI CMP-UI-QUERY-SCOPE-PI-B 的号，不能查看其他工厂",
+  "params": {
+    "pi": "CMP-UI-QUERY-SCOPE-PI-B"
+  }
+}

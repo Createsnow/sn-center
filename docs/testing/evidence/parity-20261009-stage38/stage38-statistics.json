@@ -1,0 +1,322 @@
+{
+  "day": "2026-10-09",
+  "systems": {
+    "java": {
+      "allFactories": {
+        "SN_ACQUIRE": 1648,
+        "SN_ALLOCATE": 2092,
+        "SN_GENERATE": 2092,
+        "SN_PRINT": 667
+      },
+      "factoryA": {
+        "SN_ACQUIRE": 1636,
+        "SN_ALLOCATE": 2059,
+        "SN_GENERATE": 2059,
+        "SN_PRINT": 655
+      },
+      "matchingSuccessfulFacts": 933,
+      "futureDatedFacts": 0,
+      "groups": [
+        {
+          "action": "SN_ACQUIRE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-ACQ-PI-A",
+          "rows": 145,
+          "quantity": 1159
+        },
+        {
+          "action": "SN_ACQUIRE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-ACQ-PI-B",
+          "rows": 23,
+          "quantity": 69
+        },
+        {
+          "action": "SN_ACQUIRE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-QUERY-PI-A",
+          "rows": 8,
+          "quantity": 408
+        },
+        {
+          "action": "SN_ACQUIRE",
+          "factory": "CMP-B",
+          "pi": "CMP-UI-ACQ-PI-A",
+          "rows": 12,
+          "quantity": 12
+        },
+        {
+          "action": "SN_ALLOCATE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-ACQ-PI-A",
+          "rows": 161,
+          "quantity": 1216
+        },
+        {
+          "action": "SN_ALLOCATE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-ACQ-PI-B",
+          "rows": 87,
+          "quantity": 270
+        },
+        {
+          "action": "SN_ALLOCATE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-QUERY-PI-A",
+          "rows": 10,
+          "quantity": 510
+        },
+        {
+          "action": "SN_ALLOCATE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-QUERY-PI-B",
+          "rows": 10,
+          "quantity": 30
+        },
+        {
+          "action": "SN_ALLOCATE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-QUERY-SCOPE-PI-A",
+          "rows": 11,
+          "quantity": 33
+        },
+        {
+          "action": "SN_ALLOCATE",
+          "factory": "CMP-B",
+          "pi": "CMP-UI-QUERY-SCOPE-PI-B",
+          "rows": 11,
+          "quantity": 33
+        },
+        {
+          "action": "SN_GENERATE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-ACQ-PI-A",
+          "rows": 161,
+          "quantity": 1216
+        },
+        {
+          "action": "SN_GENERATE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-ACQ-PI-B",
+          "rows": 87,
+          "quantity": 270
+        },
+        {
+          "action": "SN_GENERATE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-QUERY-PI-A",
+          "rows": 10,
+          "quantity": 510
+        },
+        {
+          "action": "SN_GENERATE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-QUERY-PI-B",
+          "rows": 10,
+          "quantity": 30
+        },
+        {
+          "action": "SN_GENERATE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-QUERY-SCOPE-PI-A",
+          "rows": 11,
+          "quantity": 33
+        },
+        {
+          "action": "SN_GENERATE",
+          "factory": "CMP-B",
+          "pi": "CMP-UI-QUERY-SCOPE-PI-B",
+          "rows": 11,
+          "quantity": 33
+        },
+        {
+          "action": "SN_PRINT",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-ACQ-PI-A",
+          "rows": 133,
+          "quantity": 595
+        },
+        {
+          "action": "SN_PRINT",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-ACQ-PI-B",
+          "rows": 20,
+          "quantity": 60
+        },
+        {
+          "action": "SN_PRINT",
+          "factory": "CMP-B",
+          "pi": "CMP-UI-ACQ-PI-A",
+          "rows": 12,
+          "quantity": 12
+        }
+      ]
+    },
+    "python": {
+      "allFactories": {
+        "SN_ACQUIRE": 1620,
+        "SN_ALLOCATE": 2180,
+        "SN_GENERATE": 2180,
+        "SN_PRINT": 753
+      },
+      "factoryA": {
+        "SN_ACQUIRE": 1604,
+        "SN_ALLOCATE": 2150,
+        "SN_GENERATE": 2150,
+        "SN_PRINT": 737
+      },
+      "matchingSuccessfulFacts": 1007,
+      "futureDatedFacts": 0,
+      "groups": [
+        {
+          "action": "SN_ACQUIRE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-ACQ-PI-A",
+          "rows": 160,
+          "quantity": 1232
+        },
+        {
+          "action": "SN_ACQUIRE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-ACQ-PI-B",
+          "rows": 22,
+          "quantity": 66
+        },
+        {
+          "action": "SN_ACQUIRE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-QUERY-PI-A",
+          "rows": 6,
+          "quantity": 306
+        },
+        {
+          "action": "SN_ACQUIRE",
+          "factory": "CMP-B",
+          "pi": "CMP-UI-ACQ-PI-A",
+          "rows": 16,
+          "quantity": 16
+        },
+        {
+          "action": "SN_ALLOCATE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-ACQ-PI-A",
+          "rows": 176,
+          "quantity": 1292
+        },
+        {
+          "action": "SN_ALLOCATE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-ACQ-PI-B",
+          "rows": 92,
+          "quantity": 288
+        },
+        {
+          "action": "SN_ALLOCATE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-QUERY-PI-A",
+          "rows": 10,
+          "quantity": 510
+        },
+        {
+          "action": "SN_ALLOCATE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-QUERY-PI-B",
+          "rows": 10,
+          "quantity": 30
+        },
+        {
+          "action": "SN_ALLOCATE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-QUERY-SCOPE-PI-A",
+          "rows": 10,
+          "quantity": 30
+        },
+        {
+          "action": "SN_ALLOCATE",
+          "factory": "CMP-B",
+          "pi": "CMP-UI-QUERY-SCOPE-PI-B",
+          "rows": 10,
+          "quantity": 30
+        },
+        {
+          "action": "SN_GENERATE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-ACQ-PI-A",
+          "rows": 176,
+          "quantity": 1292
+        },
+        {
+          "action": "SN_GENERATE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-ACQ-PI-B",
+          "rows": 92,
+          "quantity": 288
+        },
+        {
+          "action": "SN_GENERATE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-QUERY-PI-A",
+          "rows": 10,
+          "quantity": 510
+        },
+        {
+          "action": "SN_GENERATE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-QUERY-PI-B",
+          "rows": 10,
+          "quantity": 30
+        },
+        {
+          "action": "SN_GENERATE",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-QUERY-SCOPE-PI-A",
+          "rows": 10,
+          "quantity": 30
+        },
+        {
+          "action": "SN_GENERATE",
+          "factory": "CMP-B",
+          "pi": "CMP-UI-QUERY-SCOPE-PI-B",
+          "rows": 10,
+          "quantity": 30
+        },
+        {
+          "action": "SN_PRINT",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-ACQ-PI-A",
+          "rows": 149,
+          "quantity": 671
+        },
+        {
+          "action": "SN_PRINT",
+          "factory": "CMP-A",
+          "pi": "CMP-UI-ACQ-PI-B",
+          "rows": 22,
+          "quantity": 66
+        },
+        {
+          "action": "SN_PRINT",
+          "factory": "CMP-B",
+          "pi": "CMP-UI-ACQ-PI-A",
+          "rows": 16,
+          "quantity": 16
+        }
+      ]
+    }
+  },
+  "quantityDifferenceJavaMinusPython": {
+    "allFactories": {
+      "SN_ACQUIRE": 28,
+      "SN_ALLOCATE": -88,
+      "SN_GENERATE": -88,
+      "SN_PRINT": -86
+    },
+    "factoryA": {
+      "SN_ACQUIRE": 32,
+      "SN_ALLOCATE": -91,
+      "SN_GENERATE": -91,
+      "SN_PRINT": -82
+    }
+  },
+  "scope": "Current stored successful audit facts only; unequal independent historical runs are retained. Future-date boundary semantics differ and are not proved equal."
+}

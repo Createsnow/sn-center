@@ -92,6 +92,8 @@ class SnQueryIT {
         ERP.reset();
         for (String table :
                 List.of(
+                        "sn_audit",
+                        "sn_audit_archive",
                         "sn_query_export_row",
                         "sn_query_export",
                         "sn_transfer_work",
@@ -109,6 +111,7 @@ class SnQueryIT {
                         "sn_key",
                         "sn_item",
                         "sn_work",
+                        "sn_generation_job",
                         "sn_preview",
                         "sn_pi_counter",
                         "sn_pi_rule_choice",
@@ -116,6 +119,7 @@ class SnQueryIT {
                         "sys_file",
                         "sys_task",
                         "sys_operation",
+                        "sn_bill_generation",
                         "sn_source_entry_quota",
                         "sn_order_entry",
                         "sn_order_bill",
@@ -431,7 +435,15 @@ class SnQueryIT {
                 assertThat(items(local, "pi=PI-1")).hasSize(11);
                 assertThat(items(local, "pi=PI-1&piAll=true")).hasSize(12);
                 assertThat(items(local, "status=PENDING_ALLOC")).isEmpty();
-                assertThat(local.get("/items?pi=UNOWNED&piAll=true").statusCode()).isEqualTo(403);
+                for (String endpoint : List.of("/items", "/items/page")) {
+                    var denied = local.get(endpoint + "?pi=UNOWNED&piAll=true");
+                    assertThat(denied.statusCode()).isEqualTo(403);
+                    var body = json.readTree(denied.body());
+                    assertThat(body.path("code").asInt()).isEqualTo(1003000004);
+                    assertThat(body.path("params").path("reason").asString())
+                            .isEqualTo("QUERY_PI_NOT_OWNED");
+                    assertThat(body.path("params").path("pi").asString()).isEqualTo("UNOWNED");
+                }
                 assertThat(local.get("/items?factoryId=" + other).statusCode()).isEqualTo(403);
                 String cursor = data(hq.get("/items?size=1")).path("nextCursor").asString();
                 assertThat(local.get("/items?cursor=" + cursor).statusCode()).isEqualTo(400);
@@ -461,10 +473,21 @@ class SnQueryIT {
                     org.apache.poi.ss.usermodel.WorkbookFactory.create(
                             new java.io.ByteArrayInputStream(xlsxBytes))) {
                 assertThat(workbook.getSheetAt(0).getLastRowNum()).isEqualTo(13);
-                for (var row : workbook.getSheetAt(0))
-                    for (var cell : row)
+                var sheet = workbook.getSheetAt(0);
+                assertThat(sheet.getRow(0).getLastCellNum()).isEqualTo((short) 11);
+                assertThat(sheet.getRow(0).getCell(1).getStringCellValue()).isEqualTo("完整SN");
+                for (var row : sheet)
+                    for (var cell : row) {
+                        boolean numeric =
+                                row.getRowNum() > 0
+                                        && (cell.getColumnIndex() == 0
+                                                || cell.getColumnIndex() == 3);
                         assertThat(cell.getCellType())
-                                .isEqualTo(org.apache.poi.ss.usermodel.CellType.STRING);
+                                .isEqualTo(
+                                        numeric
+                                                ? org.apache.poi.ss.usermodel.CellType.NUMERIC
+                                                : org.apache.poi.ss.usermodel.CellType.STRING);
+                    }
             }
             for (String id : List.of(csv, xlsx)) {
                 String ext = id.equals(csv) ? "csv" : "xlsx";
@@ -542,7 +565,8 @@ class SnQueryIT {
     }
 
     @Test
-    void dashboardUsesBusinessFactsAndNoGlobalJobsLeakIntoFactoryRole() throws Exception {
+    void dashboardUsesSuccessfulAuditQuantitiesAndNoGlobalJobsLeakIntoFactoryRole()
+            throws Exception {
         try (var hq = new Browser("sn_hq")) {
             String source = allocated(hq), other = target(source);
             acquire(hq, source);
@@ -558,6 +582,11 @@ class SnQueryIT {
             var all = data(hq.get("/dashboard"));
             assertThat(all.path("totalGenerated").asString()).isEqualTo("13");
             assertThat(all.path("recentJobs").size()).isEqualTo(1);
+            var job = all.path("jobs").get(0);
+            assertThat(job.path("billNo").asString()).isEqualTo("MO-1");
+            assertThat(job.path("quantity").asString()).isEqualTo("13");
+            assertThat(job.path("processed").asString()).isEqualTo("13");
+            assertThat(data(hq.get("/context")).path("role").asString()).isEqualTo("admin");
             Map<String, String> today = new HashMap<>();
             all.path("today")
                     .forEach(
@@ -569,17 +598,87 @@ class SnQueryIT {
                     .containsEntry("GENERATE", "13")
                     .containsEntry("TAKE", "13")
                     .containsEntry("PRINT", "13");
+            // 今日动作来自不可变审计；业务任务清理或导入不能抹掉当天已发生的生成事实。
+            jdbc.update("DELETE FROM sn_generation_job");
+            jdbc.update("DELETE FROM sn_work WHERE kind='GENERATE'");
+            var retained = data(hq.get("/dashboard"));
+            assertThat(retained.path("jobs").size()).isZero();
+            assertThat(retained.path("today")).isEqualTo(all.path("today"));
             assertThat(all.path("zone").asString()).isEqualTo("Asia/Shanghai");
             user(11, "factory_reader", 5);
             jdbc.update("INSERT INTO sn_user_factory(user_id,factory_id) VALUES(11,?)", other);
             try (var local = new Browser("factory_reader")) {
                 var dashboard = data(local.get("/dashboard"));
                 assertThat(dashboard.path("totalGenerated").isNull()).isTrue();
-                assertThat(dashboard.path("pendingTransfers").isNull()).isTrue();
+                assertThat(dashboard.path("pendingTransfers").asString()).isEqualTo("0");
                 assertThat(dashboard.path("recentJobs").size()).isZero();
+                assertThat(dashboard.path("jobs").size()).isZero();
+                var context = data(local.get("/context"));
+                assertThat(context.path("role").asString()).isEqualTo("query");
+                assertThat(context.path("allFactories").asBoolean()).isFalse();
+                assertThat(context.path("factories").size()).isEqualTo(1);
+                assertThat(context.path("factories").get(0).path("id").asString()).isEqualTo(other);
+                assertThat(local.get("/transfers").statusCode()).isEqualTo(200);
+                assertThat(
+                                local.post(
+                                                "/transfers",
+                                                Map.of(
+                                                        "operationId",
+                                                        uuid(),
+                                                        "factoryId",
+                                                        other,
+                                                        "pi",
+                                                        "PI-1",
+                                                        "scope",
+                                                        "PI",
+                                                        "toFactoryId",
+                                                        source,
+                                                        "toPi",
+                                                        "PI-2",
+                                                        "targetSource",
+                                                        "MANUAL",
+                                                        "reason",
+                                                        "read-only role check"))
+                                        .statusCode())
+                        .isEqualTo(403);
                 assertThat(dashboard.path("today").size()).isZero();
                 assertThat(dashboard.path("states").get(0).path("quantity").asString())
                         .isEqualTo("13");
+            }
+        }
+    }
+
+    @Test
+    void dashboardJobsAreSharedOnlyWithCurrentHeadquartersGenerationPermission() throws Exception {
+        try (var hq = new Browser("sn_hq")) {
+            allocated(hq);
+            user(11, "another_hq", 2);
+            user(12, "global_reader", 4);
+            try (var colleague = new Browser("another_hq");
+                    var reader = new Browser("global_reader")) {
+                var dashboard = data(colleague.get("/dashboard"));
+                assertThat(dashboard.path("jobs").size()).isEqualTo(1);
+                assertThat(dashboard.path("jobs").get(0).path("billNo").asString())
+                        .isEqualTo("MO-1");
+                var job = dashboard.path("jobs").get(0);
+                assertThat(job.path("id").asString()).matches("[1-9][0-9]*");
+                String taskId = job.path("taskId").asString();
+                // 重试中的旧代次进度不能展示为本轮进度；订单号保留提交时快照。
+                jdbc.update(
+                        "UPDATE sn_order_bill SET bill_no='CHANGED-AFTER-SUBMIT' WHERE bill_no='MO-1'");
+                jdbc.update("UPDATE sn_work SET state='PENDING' WHERE task_id=?", taskId);
+                jdbc.update(
+                        "UPDATE sys_task SET execution_epoch=execution_epoch+1 WHERE id=?", taskId);
+                var retry = data(colleague.get("/dashboard")).path("jobs").get(0);
+                assertThat(retry.path("processed").asString()).isEqualTo("0");
+                assertThat(retry.path("billNo").asString()).isEqualTo("MO-1");
+                assertThat(retry.path("id").asString()).isEqualTo(job.path("id").asString());
+                var context = data(reader.get("/context"));
+                assertThat(context.path("role").asString()).isEqualTo("query");
+                assertThat(context.path("allFactories").asBoolean()).isTrue();
+                assertThat(context.path("factories").size()).isZero();
+                assertThat(data(reader.get("/dashboard")).path("jobs").size()).isZero();
+                assertThat(reader.get("/transfers").statusCode()).isEqualTo(200);
             }
         }
     }
@@ -663,6 +762,104 @@ class SnQueryIT {
                     .contains("G0001")
                     .doesNotContain("changed");
             assertThat(count("sn_query_export")).isEqualTo(1);
+        }
+    }
+
+    @Test
+    void pageUsesCreationOrderPiSequenceBusinessBatchAndCurrentScope() throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            String factory = allocated(b), batch = acquire(b, factory);
+            String number =
+                    jdbc.queryForObject(
+                            "SELECT batch_no FROM sn_acquire_batch WHERE id=?",
+                            String.class,
+                            batch);
+            var first = data(b.get("/items/page?size=5"));
+            assertThat(first.path("total").asString()).isEqualTo("13");
+            assertThat(first.path("totalCapped").asBoolean()).isFalse();
+            assertThat(first.path("items").get(0).path("sn").asString()).isEqualTo("G0013");
+            assertThat(first.path("items").get(4).path("sn").asString()).isEqualTo("G0009");
+            var last = data(b.get("/items/page?size=5&page=3"));
+            assertThat(last.path("items").size()).isEqualTo(3);
+            assertThat(last.path("items").get(2).path("sn").asString()).isEqualTo("G0001");
+            var ordered = data(b.get("/items/page?size=20&pi=PI-1&batchNo=" + number));
+            assertThat(ordered.path("items").size()).isEqualTo(13);
+            assertThat(ordered.path("items").get(0).path("sn").asString()).isEqualTo("G0012");
+            assertThat(ordered.path("items").get(2).path("sn").asString()).isEqualTo("G0001");
+            assertThat(ordered.path("items").get(0).path("currentBatchNo").asString())
+                    .isEqualTo(number);
+            assertThat(data(b.get("/items/page?batchNo=UNKNOWN")).path("items").size()).isZero();
+            assertThat(b.get("/items/page?batchId=" + number).statusCode()).isEqualTo(400);
+            assertThat(b.get("/items/page?page=0").statusCode()).isEqualTo(400);
+            String file = export(b, "CSV", Map.of("batchNo", number));
+            drain();
+            String csv = new String(download(b, file), java.nio.charset.StandardCharsets.UTF_8);
+            assertThat(csv).contains("序号,完整SN,进制流水", number);
+            assertThat(csv.indexOf("G0001")).isLessThan(csv.indexOf("G0002"));
+            assertThat(csv.indexOf("G0002")).isLessThan(csv.indexOf("G0012"));
+            user(11, "different_factory", 5);
+            jdbc.update(
+                    "INSERT INTO sn_user_factory(user_id,factory_id) VALUES(11,?)",
+                    target(factory));
+            try (var reader = new Browser("different_factory")) {
+                assertThat(data(reader.get("/items/page?batchNo=" + number)).path("items").size())
+                        .isZero();
+                assertThat(reader.get("/items/page?factoryId=" + factory).statusCode())
+                        .isEqualTo(403);
+                assertThat(reader.get("/items/page?pi=PI-1&piAll=true").statusCode())
+                        .isEqualTo(403);
+            }
+        }
+    }
+
+    @Test
+    void legacyQueryFormatStillRecoversOriginalTwentyTwoColumnBytes() throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            allocated(b);
+            var original = items(b, "");
+            for (String format : List.of("CSV", "XLSX")) {
+                String id = export(b, format, Map.of());
+                jdbc.update("UPDATE sn_query_export SET format_version=1 WHERE task_id=?", id);
+                for (int i = 0; i < original.size(); i++) {
+                    var row =
+                            json.treeToValue(original.get(i), com.adtek.sn.vo.SnQueryItemVO.class);
+                    jdbc.update(
+                            "UPDATE sn_query_export_row SET cells=? WHERE task_id=? AND ordinal=?",
+                            json.writeValueAsString(
+                                    com.adtek.sn.service.support.SnQueryFiles.cells(i + 1L, row)),
+                            id,
+                            i + 1);
+                }
+                drain();
+                byte[] before = download(b, id);
+                if (format.equals("CSV"))
+                    assertThat(new String(before, java.nio.charset.StandardCharsets.UTF_8))
+                            .startsWith("\uFEFF\"ordinal\",\"sn\"")
+                            .contains("\"source_entry_id\"");
+                else
+                    try (var workbook =
+                            org.apache.poi.ss.usermodel.WorkbookFactory.create(
+                                    new java.io.ByteArrayInputStream(before))) {
+                        assertThat(workbook.getSheetAt(0).getRow(0).getLastCellNum())
+                                .isEqualTo((short) 22);
+                        assertThat(workbook.getSheetAt(0).getRow(1).getCell(0).getCellType())
+                                .isEqualTo(org.apache.poi.ss.usermodel.CellType.STRING);
+                    }
+                var directory =
+                        java.nio.file.Path.of(taskSettings.fileRoot()).toAbsolutePath().normalize();
+                var path =
+                        directory
+                                .resolve("objects")
+                                .resolve(id + "." + format.toLowerCase(Locale.ROOT))
+                                .normalize();
+                assertThat(path.startsWith(directory)).isTrue();
+                java.nio.file.Files.delete(path);
+                assertThat(b.raw("GET", "/files/" + id, null, b.token, null).statusCode())
+                        .isEqualTo(409);
+                data(b.raw("POST", "/tasks/" + id + "/recover", Map.of(), b.token, b.csrf));
+                drain();
+                assertThat(download(b, id)).isEqualTo(before);
+            }
         }
     }
 

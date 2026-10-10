@@ -1,0 +1,59 @@
+{
+  "originalRowsUnchanged": {
+    "items": {
+      "count": 10,
+      "sha256": "762cf145a0b76a3891e15e8358e3d2081aa65519fd10c373653e545a0e6975ae"
+    },
+    "keys": {
+      "count": 10,
+      "sha256": "40fea6d45c5a902477a8c7440ae95be5410972cdc90c8f626b87bebc1df061a9"
+    },
+    "counters": {
+      "count": 2,
+      "sha256": "05844eaafbe16577da6f51f516dee1947f0a2cd1c5870d2b36bb0013044a8157"
+    },
+    "rules": {
+      "count": 3,
+      "sha256": "72019769d18ea687ea9e90a9277049a6e9cdf95dc4743bd810f5ba2d58c64e32"
+    },
+    "versions": {
+      "count": 3,
+      "sha256": "649ac1416f202b1a3591153edd60d4a5e4e4f266532d625f5a467d8107081039"
+    },
+    "imports": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "ledger": {
+      "count": 1,
+      "sha256": "29fb1cd552ab6236fc25736d34bb73788df07dec4726e3e7d4cd19c7c73d28ec"
+    }
+  },
+  "ownedFixtureRemoved": true,
+  "finalOwnedState": {
+    "sn_item": {
+      "count": 500000,
+      "sha256": "9c274777998b894065ff3d437c318b7ac57ebf31d001f58c759e782bef80d085"
+    },
+    "sn_key": {
+      "count": 500000,
+      "sha256": "9c274777998b894065ff3d437c318b7ac57ebf31d001f58c759e782bef80d085"
+    },
+    "counter": {
+      "last_seq": 9,
+      "generated_qty": 0,
+      "imported_qty": 500000,
+      "start_seq": 10,
+      "start_locked": 1
+    },
+    "history": [
+      {
+        "qty": 500000,
+        "start_seq": 10,
+        "max_seq": null,
+        "file_name": "capacity-valid.txt",
+        "operator": "admin"
+      }
+    ]
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "java": {
+    "rules": [
+      {
+        "code": "CMP_FRACTION",
+        "current_version": 1
+      },
+      {
+        "code": "CMP_MAIN",
+        "current_version": 1
+      },
+      {
+        "code": "CMP_TARGET",
+        "current_version": 1
+      }
+    ],
+    "ruleTextCollation": "utf8mb4_bin",
+    "schedule": {
+      "enabled": 0,
+      "interval_minutes": 1440
+    },
+    "orders": [
+      {
+        "bill_no": "CMP-MO-001",
+        "total_qty": "10.0000",
+        "quantity_ready": 1
+      },
+      {
+        "bill_no": "CMP-MO-002",
+        "total_qty": "5.0000",
+        "quantity_ready": 1
+      },
+      {
+        "bill_no": "CMP-MO-FRACTION",
+        "total_qty": "2.0000",
+        "quantity_ready": 1
+      }
+    ],
+    "rawFractionQuantity": "2.5000",
+    "snCount": 10,
+    "schema": "25",
+    "generationLabels": 1
+  },
+  "python": {
+    "rules": [
+      {
+        "code": "CMP_FRACTION",
+        "current_version": 1
+      },
+      {
+        "code": "CMP_MAIN",
+        "current_version": 1
+      },
+      {
+        "code": "CMP_TARGET",
+        "current_version": 1
+      }
+    ],
+    "ruleTextCollation": "utf8mb4_bin",
+    "schedule": {
+      "enabled": 0,
+      "interval_minutes": 1440
+    },
+    "orders": [
+      {
+        "bill_no": "CMP-MO-001",
+        "total_qty": "10"
+      },
+      {
+        "bill_no": "CMP-MO-002",
+        "total_qty": "5"
+      },
+      {
+        "bill_no": "CMP-MO-FRACTION",
+        "total_qty": "2"
+      }
+    ],
+    "rawFractionQuantity": "2.5000",
+    "snCount": 10,
+    "schema": null,
+    "generationLabels": null
+  },
+  "k3": {
+    "fixture": "synthetic comparison only",
+    "extrasSupported": true,
+    "controlsSupported": true,
+    "queryRequests": 211,
+    "inflight": 0,
+    "orders": 3,
+    "entries": 4
+  },
+  "extraOrdersEmpty": true,
+  "fixtureControlsEmpty": true,
+  "ruleFixturesCleaned": true,
+  "generationFixturesCleaned": true,
+  "todayAudit": {
+    "java": {
+      "SN_ACQUIRE": "10",
+      "SN_ALLOCATE": "10",
+      "SN_GENERATE": "139",
+      "SN_PRINT": "10"
+    },
+    "python": {
+      "SN_ACQUIRE": "10",
+      "SN_ALLOCATE": "10",
+      "SN_GENERATE": "139",
+      "SN_PRINT": "10"
+    }
+  },
+  "todayAuditTotalsEqual": true
+}

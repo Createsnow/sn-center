@@ -1,0 +1,299 @@
+
+Running 4 tests using 1 worker
+
+(node:40860) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\audit-rules.spec.ts:128:3 › P12 real rule audits: create edit rename combined and no-op (7.7s)
+(node:32420) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [prototype] › e2e\parity\audit-rules.spec.ts:128:3 › P12 real rule audits: used version and rename (4.3s)
+(node:30108) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 [migration] › e2e\parity\audit-rules.spec.ts:128:3 › P12 real rule audits: create edit rename combined and no-op (20.7s)
+(node:4812) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  4 [migration] › e2e\parity\audit-rules.spec.ts:128:3 › P12 real rule audits: used version and rename (19.2s)
+
+
+  1) [prototype] › e2e\parity\audit-rules.spec.ts:128:3 › P12 real rule audits: create edit rename combined and no-op 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  0
+    + Received  + 75
+
+    @@ -22,6 +22,81 @@
+        Object {
+          "action": "RULE_CREATE",
+          "detail": "CMP_UI_R_AUDIT_1009075251 v1 prefix= suffix= base=10 len=5 charset=0123456789",
+          "pi": "CMP_UI_R_AUDIT_1009075251",
+        },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+      ]
+
+      82 |       pi: r[source(info) ? 'pi_no' : 'pi'],
+      83 |     })),
+    > 84 |   ).toEqual(expected);
+         |     ^
+      85 |   for (const item of items) {
+      86 |     expect(item.operator).toBe('admin');
+      87 |     expect(item.source).toBe('PAGE');
+        at inspect (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-rules.spec.ts:84:5)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-rules.spec.ts:178:9
+
+    Error Context: test-results\stage33-rule-initial-ui\audit-rules-P12-real-rule--eebd3-t-rename-combined-and-no-op-prototype\error-context.md
+
+  2) [prototype] › e2e\parity\audit-rules.spec.ts:128:3 › P12 real rule audits: used version and rename 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  0
+    + Received  + 90
+
+    @@ -7,6 +7,96 @@
+        Object {
+          "action": "RULE_VERSION",
+          "detail": "CMP_MAIN v2 prefix=CMP_UI_R_USED_100907525177 suffix= base=10 len=5 charset=0123456789 (was prefix=CMP suffix= base=10 len=5 charset=0123456789)",
+          "pi": null,
+        },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "RULE_RENAME",
+    +     "detail": "CMP_UI_R_AUDIT_1009075251 改名规则 -> 组合修改",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "RULE_UPDATE",
+    +     "detail": "CMP_UI_R_AUDIT_1009075251 v1 prefix=B suffix= base=10 len=5 charset=0123456789 (was prefix=A suffix= base=10 len=5 charset=0123456789)",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "RULE_RENAME",
+    +     "detail": "CMP_UI_R_AUDIT_1009075251 原规则 -> 改名规则",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "RULE_UPDATE",
+    +     "detail": "CMP_UI_R_AUDIT_1009075251 v1 prefix=A suffix= base=10 len=5 charset=0123456789 (was prefix= suffix= base=10 len=5 charset=0123456789)",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "RULE_CREATE",
+    +     "detail": "CMP_UI_R_AUDIT_1009075251 v1 prefix= suffix= base=10 len=5 charset=0123456789",
+    +     "pi": "CMP_UI_R_AUDIT_1009075251",
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+    +   Object {
+    +     "action": "LOGIN",
+    +     "detail": "client=127.0.0.1",
+    +     "pi": null,
+    +   },
+      ]
+
+      82 |       pi: r[source(info) ? 'pi_no' : 'pi'],
+      83 |     })),
+    > 84 |   ).toEqual(expected);
+         |     ^
+      85 |   for (const item of items) {
+      86 |     expect(item.operator).toBe('admin');
+      87 |     expect(item.source).toBe('PAGE');
+        at inspect (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-rules.spec.ts:84:5)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-rules.spec.ts:153:9
+
+    Error Context: test-results\stage33-rule-initial-ui\audit-rules-P12-real-rule-audits-used-version-and-rename-prototype\error-context.md
+
+  3) [migration] › e2e\parity\audit-rules.spec.ts:128:3 › P12 real rule audits: create edit rename combined and no-op 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.ant-table-row')
+    Expected: 5
+    Received: 0
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.ant-table-row') with timeout 15000ms
+      - waiting for locator('.ant-table-row')
+        33 × locator resolved to 0 elements
+           - unexpected value "0"
+
+
+      73 |   writeFileSync(info.outputPath('actual-records.json'), JSON.stringify(items, null, 2));
+      74 |   const rows = page.locator(rowSelector(info));
+    > 75 |   await expect(rows).toHaveCount(expected.length);
+         |                      ^
+      76 |   const action = (value: unknown) =>
+      77 |     value === 'sn:rule:create' ? 'RULE_CREATE' : value === 'sn:rule:update' ? 'RULE_UPDATE' : value;
+      78 |   expect(
+        at inspect (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-rules.spec.ts:75:22)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-rules.spec.ts:178:9
+
+    Error Context: test-results\stage33-rule-initial-ui\audit-rules-P12-real-rule--eebd3-t-rename-combined-and-no-op-migration\error-context.md
+
+  4) [migration] › e2e\parity\audit-rules.spec.ts:128:3 › P12 real rule audits: used version and rename 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.ant-table-row')
+    Expected: 2
+    Received: 1
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.ant-table-row') with timeout 15000ms
+      - waiting for locator('.ant-table-row')
+        2 × locator resolved to 20 elements
+          - unexpected value "20"
+        31 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      73 |   writeFileSync(info.outputPath('actual-records.json'), JSON.stringify(items, null, 2));
+      74 |   const rows = page.locator(rowSelector(info));
+    > 75 |   await expect(rows).toHaveCount(expected.length);
+         |                      ^
+      76 |   const action = (value: unknown) =>
+      77 |     value === 'sn:rule:create' ? 'RULE_CREATE' : value === 'sn:rule:update' ? 'RULE_UPDATE' : value;
+      78 |   expect(
+        at inspect (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-rules.spec.ts:75:22)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-rules.spec.ts:153:9
+
+    Error Context: test-results\stage33-rule-initial-ui\audit-rules-P12-real-rule-audits-used-version-and-rename-migration\error-context.md
+
+  4 failed
+    [prototype] › e2e\parity\audit-rules.spec.ts:128:3 › P12 real rule audits: create edit rename combined and no-op 
+    [prototype] › e2e\parity\audit-rules.spec.ts:128:3 › P12 real rule audits: used version and rename 
+    [migration] › e2e\parity\audit-rules.spec.ts:128:3 › P12 real rule audits: create edit rename combined and no-op 
+    [migration] › e2e\parity\audit-rules.spec.ts:128:3 › P12 real rule audits: used version and rename 

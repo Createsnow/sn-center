@@ -25,6 +25,8 @@ public class SnAuditObserver implements AuditEventObserver {
     private final FactoryMapper factories;
     private final DurableTaskMapper tasks;
     private final ObjectMapper json;
+    private final RuleMapper rules;
+    private final OrderSyncMapper syncs;
     private static final Set<String> DETAILS =
             Set.of(
                     "quantity",
@@ -72,7 +74,9 @@ public class SnAuditObserver implements AuditEventObserver {
             TransferMapper transfers,
             FactoryMapper factories,
             DurableTaskMapper tasks,
-            ObjectMapper json) {
+            ObjectMapper json,
+            RuleMapper rules,
+            OrderSyncMapper syncs) {
         this.audits = audits;
         this.context = context;
         this.work = work;
@@ -81,11 +85,24 @@ public class SnAuditObserver implements AuditEventObserver {
         this.factories = factories;
         this.tasks = tasks;
         this.json = json;
+        this.rules = rules;
+        this.syncs = syncs;
     }
 
     @Override
     public void recorded(ManagementAuditPort.Event event, boolean success, ActorSnapshot actor) {
         if (!event.action().startsWith("sn:")) return;
+        boolean factoryEvent =
+                event.action().startsWith("sn:factory:create")
+                        || event.action().startsWith("sn:factory:sync");
+        // 失败由外层工厂用例记录一次；平台通用失败事件仍保留在平台日志。
+        if (factoryEvent && !success) return;
+        // 人工业务拒绝由用例外层记录；框架/SQL异常只保留平台记录，不增添原型没有的SN失败痕迹。
+        if (!success && event.action().startsWith("sn:order:")) {
+            if (!event.action().equals("sn:order:sync:failed")) return;
+            var attempt = syncs.selectById(event.objectId());
+            if (attempt == null || !"scheduled".equals(attempt.getMode())) return;
+        }
         var row = new SnAuditEntity();
         row.setId(UUID.randomUUID().toString());
         row.setCreatedAt(Instant.now().truncatedTo(ChronoUnit.MILLIS));
@@ -98,6 +115,19 @@ public class SnAuditObserver implements AuditEventObserver {
         row.setResult(success ? "SUCCESS" : "FAILED");
         row.setQuantity(0L);
         row.setTraceId(event.traceId());
+        if (event.action().startsWith("sn:order:")) {
+            orderEvent(row, event, success);
+            return;
+        }
+        if (factoryEvent) {
+            if (Boolean.TRUE.equals(event.changes().get("scheduled"))) OrderAuditText.system(row);
+            factoryEvent(row, event);
+            return;
+        }
+        if (success && Set.of("sn:rule:create", "sn:rule:update").contains(event.action())) {
+            rule(row, event);
+            return;
+        }
         var details = new TreeMap<String, Object>();
         event.changes()
                 .forEach(
@@ -140,6 +170,153 @@ public class SnAuditObserver implements AuditEventObserver {
                             : "MEMBER_MIN_MAX");
         row.setDetail(json.writeValueAsString(details));
         audits.insert(row);
+        audits.creationIdentity(row);
+    }
+
+    /** 从本次持久同步记录固定数量/单号；调度展示SYSTEM，平台日志仍保留实际责任人。 */
+    private void orderEvent(SnAuditEntity row, ManagementAuditPort.Event event, boolean success) {
+        row.setDetail("{}");
+        if (event.action().equals("sn:order:schedule")) {
+            var enabled = (Map<?, ?>) event.changes().get("enabled");
+            var interval = (Map<?, ?>) event.changes().get("intervalMinutes");
+            row.setQuantity(null);
+            row.setDetailText(
+                    "enabled="
+                            + pythonBoolean(enabled.get("after"))
+                            + " interval_minutes="
+                            + interval.get("after")
+                            + " before=enabled="
+                            + pythonBoolean(enabled.get("before"))
+                            + " interval_minutes="
+                            + interval.get("before"));
+        } else {
+            var attempt = syncs.selectById(event.objectId());
+            if (attempt == null || attempt.getActorId() != event.actorId())
+                throw new IllegalStateException("Missing order audit attempt");
+            boolean scheduled = "scheduled".equals(attempt.getMode());
+            row.setAction("sn:order:sync");
+            if (scheduled) OrderAuditText.system(row);
+            if (success) {
+                row.setQuantity(attempt.getBillsCount());
+                boolean single = "one".equals(attempt.getMode());
+                row.setBillNo(single ? attempt.getBillNo() : null);
+                row.setDetailText(
+                        "mode=" + (single ? "one" : "all") + " rows=" + attempt.getRowsCount());
+            } else {
+                row.setQuantity(null);
+                row.setDetailText("mode=scheduled");
+                int code = Integer.parseInt(event.changes().get("errorCode").toString());
+                row.setErrorCode(Integer.toString(code));
+                row.setErrorMessage(
+                        FactoryText.cut(
+                                OrderAuditText.message(
+                                        code,
+                                        Objects.toString(event.changes().get("safeMessage"), "")),
+                                1000));
+            }
+        }
+        audits.insert(row);
+        audits.creationIdentity(row);
+    }
+
+    private static String pythonBoolean(Object value) {
+        return Boolean.TRUE.equals(value) ? "True" : "False";
+    }
+
+    /** 工厂新增保留名称原文、数量为空；同步保留全部组织计数与冲突清单。 */
+    private void factoryEvent(SnAuditEntity row, ManagementAuditPort.Event event) {
+        row.setDetail("{}");
+        if (event.action().equals("sn:factory:create")) {
+            var value = factories.selectById(Long.parseLong(event.objectId()));
+            if (value == null) throw new IllegalStateException("Missing committed audit factory");
+            row.setFactoryId(value.getId());
+            row.setFactoryCode(value.getCode());
+            row.setFactoryName(value.getName());
+            row.setQuantity(null);
+            row.setDetailText(value.getName());
+        } else {
+            row.setQuantity(Long.valueOf(event.changes().get("total").toString()));
+            Object conflictValue = event.changes().get("conflicts");
+            if (!(conflictValue instanceof List<?> conflicts)
+                    || conflicts.stream().anyMatch(v -> !(v instanceof String)))
+                throw new IllegalStateException("Invalid factory audit conflicts");
+            row.setDetailText(
+                    FactoryText.cut(
+                            "inserted="
+                                    + event.changes().get("inserted")
+                                    + " updated="
+                                    + event.changes().get("updated")
+                                    + " conflicts=["
+                                    + String.join(
+                                            ", ",
+                                            conflicts.stream().map(String.class::cast).toList())
+                                    + "]",
+                            2000));
+        }
+        audits.insert(row);
+        audits.creationIdentity(row);
+    }
+
+    /** 平台仍保留字段差异；SN痕迹按真实版本修改和改名分别追加，未改变内容不追加。 */
+    private void rule(SnAuditEntity row, ManagementAuditPort.Event event) {
+        var rule = rules.selectById(Long.parseLong(event.objectId()));
+        if (rule == null) throw new IllegalStateException("Missing committed audit rule");
+        row.setQuantity(null);
+        row.setDetail("{}");
+        String after = changed(event, "description", "after");
+        if (event.action().equals("sn:rule:create")) {
+            if (after == null) throw new IllegalStateException("Missing rule audit description");
+            if ("PI".equals(rule.getBindScope())) row.setPi(rule.getBindValue());
+            if ("CUSTOMER".equals(rule.getBindScope())) row.setCustomer(rule.getBindValue());
+            writeRule(row, "sn:rule:create", rule.getCode() + " v1 " + after);
+            return;
+        }
+        if (after != null) {
+            String action =
+                    event.changes().containsKey("currentVersion")
+                            ? "RULE_VERSION"
+                            : "sn:rule:update";
+            writeRule(
+                    row,
+                    action,
+                    rule.getCode()
+                            + " v"
+                            + rule.getCurrentVersion()
+                            + " "
+                            + after
+                            + " (was "
+                            + changed(event, "description", "before")
+                            + ")");
+        }
+        String name = changed(event, "name", "after");
+        if (name != null)
+            writeRule(
+                    row,
+                    "RULE_RENAME",
+                    rule.getCode() + " " + changed(event, "name", "before") + " -> " + name);
+    }
+
+    private static String changed(ManagementAuditPort.Event event, String field, String side) {
+        if (!event.changes().containsKey(field)) return null;
+        Object change = event.changes().get(field);
+        if (!(change instanceof Map<?, ?> values))
+            throw new IllegalStateException("Invalid rule audit change");
+        Object value = values.get(side);
+        if (value == null) return null;
+        if (!(value instanceof String text))
+            throw new IllegalStateException("Invalid rule audit text");
+        return text;
+    }
+
+    private void writeRule(SnAuditEntity row, String action, String detail) {
+        row.setId(UUID.randomUUID().toString());
+        row.setAction(action);
+        row.setDetailText(
+                detail.codePointCount(0, detail.length()) <= 2000
+                        ? detail
+                        : detail.substring(0, detail.offsetByCodePoints(0, 2000)));
+        audits.insert(row);
+        audits.creationIdentity(row);
     }
 
     private void factory(SnAuditEntity row, Long id) {
@@ -186,8 +363,16 @@ public class SnAuditObserver implements AuditEventObserver {
         row.setEndSn(w.lastSn());
         if ("ALLOCATE".equals(w.kind())) {
             row.setBeforeStatus("PENDING_ALLOC");
-            if (committed) bounds(row, context.allocation(id));
+            if (committed) {
+                bounds(row, context.allocation(id));
+                // 分配归属取整单首次客户；成员可能来自不同客户/PI的后续生成。
+                row.setCustomer(input.customer());
+            }
         }
+        // 生成允许无关 ERP 字段变化；成功事务仍持控制锁，客户应与本次实际写入的 SN 一致。
+        // 只在提交前固定该值，之后的历史查询不再从订单快照重建。
+        if (committed && "GENERATE".equals(w.kind()))
+            row.setCustomer(work.bill(input.billId()).getCustomer());
         if (committed)
             row.setAfterStatus(
                     switch (w.kind()) {

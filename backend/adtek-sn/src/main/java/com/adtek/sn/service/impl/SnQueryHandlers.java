@@ -52,6 +52,9 @@ public class SnQueryHandlers {
                 var fresh = service.authorization.lockCurrent(actor);
                 service.authorize(fresh, task.id());
                 var export = service.rows.exportById(task.id());
+                if (export.formatVersion() != 1 && export.formatVersion() != 2)
+                    throw new IllegalStateException("Unsupported query export format");
+                boolean prototype = export.formatVersion() == 2;
                 var file = service.files.find(task.id());
                 if (file == null) throw new IllegalStateException("Missing export file");
                 storage.cleanInterrupted(task.id());
@@ -81,21 +84,34 @@ public class SnQueryHandlers {
                                 file.storageKey(),
                                 file.sha256(),
                                 output -> {
-                                    if (format.equals("XLSX"))
-                                        PrintFiles.xlsx(
-                                                output,
-                                                export.createdAt(),
-                                                SnQueryFiles.HEADER,
-                                                settings.fileBytes(),
-                                                rows);
-                                    else {
+                                    if (format.equals("XLSX")) {
+                                        if (prototype)
+                                            PrintFiles.prototypeXlsx(
+                                                    output,
+                                                    export.createdAt(),
+                                                    settings.fileBytes(),
+                                                    rows);
+                                        else
+                                            PrintFiles.xlsx(
+                                                    output,
+                                                    export.createdAt(),
+                                                    SnQueryFiles.HEADER,
+                                                    settings.fileBytes(),
+                                                    rows);
+                                    } else {
                                         output.write(
                                                 new byte[] {(byte) 0xef, (byte) 0xbb, (byte) 0xbf});
-                                        PrintFiles.csvRow(output, SnQueryFiles.HEADER);
+                                        if (prototype)
+                                            PrintFiles.prototypeCsvRow(
+                                                    output, PrintFiles.PROTOTYPE_HEADER);
+                                        else PrintFiles.csvRow(output, SnQueryFiles.HEADER);
                                         rows.each(
                                                 values -> {
                                                     try {
-                                                        PrintFiles.csvRow(output, values);
+                                                        if (prototype)
+                                                            PrintFiles.prototypeCsvRow(
+                                                                    output, values);
+                                                        else PrintFiles.csvRow(output, values);
                                                     } catch (IOException error) {
                                                         throw new UncheckedIOException(error);
                                                     }

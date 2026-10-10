@@ -1,0 +1,22 @@
+{
+  "before": {
+    "x": 656,
+    "y": 40,
+    "width": 128,
+    "height": 44,
+    "color": "rgb(103, 194, 58)",
+    "background": "rgb(240, 249, 235)",
+    "text": "密码已修改",
+    "opacity": 1
+  },
+  "after": {
+    "x": 656,
+    "y": 40,
+    "width": 128,
+    "height": 44,
+    "color": "rgb(103, 194, 58)",
+    "background": "rgb(240, 249, 235)",
+    "text": "密码已修改",
+    "opacity": 1
+  }
+}

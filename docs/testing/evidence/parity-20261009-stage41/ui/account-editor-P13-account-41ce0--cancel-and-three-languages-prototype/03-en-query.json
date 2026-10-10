@@ -1,0 +1,518 @@
+{
+  "text": "New account\nEmployee No.\nName\nRole\nAdministrator (HQ)\nFactory operator\nViewer\nRead-only; no factory = all factories, bound = that factory only.\nFactory\nFactory\nInitial password\n8–64 characters with both letters and digits. Must be changed at first sign-in.\nCancel\nSave",
+  "drawnLabels": [
+    [
+      [
+        "E",
+        499.03125,
+        207,
+        8.25,
+        20
+      ],
+      [
+        "m",
+        507.265625,
+        207,
+        12.984375,
+        20
+      ],
+      [
+        "p",
+        520.234375,
+        207,
+        8.6875,
+        20
+      ],
+      [
+        "l",
+        528.90625,
+        207,
+        4,
+        20
+      ],
+      [
+        "o",
+        532.890625,
+        207,
+        8.40625,
+        20
+      ],
+      [
+        "y",
+        541.28125,
+        207,
+        7.203125,
+        20
+      ],
+      [
+        "e",
+        548.46875,
+        207,
+        7.78125,
+        20
+      ],
+      [
+        "e",
+        556.234375,
+        207,
+        7.765625,
+        20
+      ],
+      [
+        " ",
+        563.984375,
+        207,
+        0,
+        20
+      ],
+      [
+        "N",
+        541.6875,
+        239,
+        10.125,
+        20
+      ],
+      [
+        "o",
+        551.796875,
+        239,
+        8.3125,
+        20
+      ],
+      [
+        ".",
+        560.09375,
+        239,
+        3.90625,
+        20
+      ]
+    ],
+    [
+      [
+        "N",
+        525.265625,
+        257,
+        10.125,
+        20
+      ],
+      [
+        "a",
+        535.375,
+        257,
+        7.90625,
+        20
+      ],
+      [
+        "m",
+        543.265625,
+        257,
+        12.96875,
+        20
+      ],
+      [
+        "e",
+        556.21875,
+        257,
+        7.78125,
+        20
+      ]
+    ],
+    [
+      [
+        "R",
+        535.078125,
+        307,
+        8.703125,
+        20
+      ],
+      [
+        "o",
+        543.765625,
+        307,
+        8.5,
+        20
+      ],
+      [
+        "l",
+        552.25,
+        307,
+        3.984375,
+        20
+      ],
+      [
+        "e",
+        556.21875,
+        307,
+        7.78125,
+        20
+      ]
+    ],
+    [
+      [
+        "F",
+        515.40625,
+        389,
+        7.171875,
+        20
+      ],
+      [
+        "a",
+        522.5625,
+        389,
+        7.90625,
+        20
+      ],
+      [
+        "c",
+        530.453125,
+        389,
+        6.953125,
+        20
+      ],
+      [
+        "t",
+        537.390625,
+        389,
+        5.046875,
+        20
+      ],
+      [
+        "o",
+        542.421875,
+        389,
+        8.5,
+        20
+      ],
+      [
+        "r",
+        550.90625,
+        389,
+        5.796875,
+        20
+      ],
+      [
+        "y",
+        556.6875,
+        389,
+        7.3125,
+        20
+      ]
+    ],
+    [
+      [
+        "I",
+        526.515625,
+        439,
+        4.109375,
+        20
+      ],
+      [
+        "n",
+        530.609375,
+        439,
+        8.5625,
+        20
+      ],
+      [
+        "i",
+        539.15625,
+        439,
+        3.859375,
+        20
+      ],
+      [
+        "t",
+        543,
+        439,
+        5.296875,
+        20
+      ],
+      [
+        "i",
+        548.28125,
+        439,
+        3.859375,
+        20
+      ],
+      [
+        "a",
+        552.125,
+        439,
+        7.90625,
+        20
+      ],
+      [
+        "l",
+        560.015625,
+        439,
+        3.984375,
+        20
+      ],
+      [
+        " ",
+        563.984375,
+        439,
+        0,
+        20
+      ],
+      [
+        "p",
+        501.0625,
+        471,
+        8.421875,
+        20
+      ],
+      [
+        "a",
+        509.46875,
+        471,
+        7.890625,
+        20
+      ],
+      [
+        "s",
+        517.34375,
+        471,
+        6.578125,
+        20
+      ],
+      [
+        "s",
+        523.90625,
+        471,
+        6.5625,
+        20
+      ],
+      [
+        "w",
+        530.453125,
+        471,
+        11.140625,
+        20
+      ],
+      [
+        "o",
+        541.578125,
+        471,
+        8.5,
+        20
+      ],
+      [
+        "r",
+        550.0625,
+        471,
+        5.25,
+        20
+      ],
+      [
+        "d",
+        555.296875,
+        471,
+        8.703125,
+        20
+      ]
+    ]
+  ],
+  "factoryMarkup": "<div data-v-9fb291fe=\"\" data-v-f95763dd=\"\" class=\"el-select factory-select\"><div class=\"el-select__wrapper is-filterable el-tooltip__trigger el-tooltip__trigger\" tabindex=\"-1\"><!--v-if--><div class=\"el-select__selection\"><!--v-if--><div class=\"el-select__selected-item el-select__input-wrapper\"><input type=\"text\" class=\"el-select__input\" autocomplete=\"off\" tabindex=\"0\" role=\"combobox\" spellcheck=\"false\" aria-activedescendant=\"\" aria-controls=\"el-id-9487-64\" aria-expanded=\"false\" aria-autocomplete=\"none\" aria-haspopup=\"listbox\" value=\"\" id=\"el-id-9487-68\" style=\"min-width: 11px;\"><span aria-hidden=\"true\" class=\"el-select__input-calculator\"></span></div><div class=\"el-select__selected-item el-select__placeholder is-transparent\"><span>Factory</span></div></div><div class=\"el-select__suffix\"><i class=\"el-icon el-select__caret el-select__icon\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1024 1024\"><path fill=\"currentColor\" d=\"M831.872 340.864 512 652.672 192.128 340.864a30.59 30.59 0 0 0-42.752 0 29.12 29.12 0 0 0 0 41.6L489.664 714.24a32 32 0 0 0 44.672 0l340.288-331.712a29.12 29.12 0 0 0 0-41.728 30.59 30.59 0 0 0-42.752 0z\"></path></svg></i><!--v-if--><!--v-if--></div></div></div>",
+  "styles": [
+    {
+      "text": "Administrator (HQ)",
+      "font": "500 14px / 14px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "letterSpacing": "normal",
+      "boxSizing": "border-box",
+      "padding": "8px 15px",
+      "border": "0px none rgb(96, 98, 102)",
+      "margin": "0px",
+      "display": "inline-block",
+      "width": "156.094px"
+    },
+    {
+      "text": "Factory operator",
+      "font": "500 14px / 14px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "letterSpacing": "normal",
+      "boxSizing": "border-box",
+      "padding": "8px 15px",
+      "border": "0px none rgb(96, 98, 102)",
+      "margin": "0px",
+      "display": "inline-block",
+      "width": "140.984px"
+    },
+    {
+      "text": "Viewer",
+      "font": "500 14px / 14px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "letterSpacing": "normal",
+      "boxSizing": "border-box",
+      "padding": "8px 15px",
+      "border": "0px none rgb(30, 74, 138)",
+      "margin": "0px",
+      "display": "inline-block",
+      "width": "75.3594px"
+    },
+    {
+      "text": "Read-only; no factory = all factories, bound = that factory only.",
+      "font": "12px / 32px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "letterSpacing": "normal",
+      "boxSizing": "border-box",
+      "padding": "0px",
+      "border": "0px none rgb(100, 116, 139)",
+      "margin": "0px",
+      "display": "block",
+      "width": "344.547px"
+    },
+    {
+      "text": "8–64 characters with both letters and digits. Must be changed at first sign-in.",
+      "font": "12px / 32px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "letterSpacing": "normal",
+      "boxSizing": "border-box",
+      "padding": "0px",
+      "border": "0px none rgb(100, 116, 139)",
+      "margin": "0px",
+      "display": "block",
+      "width": "388px"
+    }
+  ],
+  "geometry": {
+    "dialog": [
+      [
+        460,
+        144,
+        520,
+        467
+      ]
+    ],
+    "title": [
+      [
+        476,
+        159,
+        108.65625,
+        26
+      ]
+    ],
+    "rows": [
+      [
+        476,
+        201,
+        488,
+        32
+      ],
+      [
+        476,
+        251,
+        488,
+        32
+      ],
+      [
+        476,
+        301,
+        488,
+        64
+      ],
+      [
+        476,
+        383,
+        488,
+        32
+      ],
+      [
+        476,
+        433,
+        488,
+        96
+      ]
+    ],
+    "labels": [
+      [
+        476,
+        201,
+        100,
+        32
+      ],
+      [
+        476,
+        251,
+        100,
+        32
+      ],
+      [
+        476,
+        301,
+        100,
+        32
+      ],
+      [
+        476,
+        383,
+        100,
+        32
+      ],
+      [
+        476,
+        433,
+        100,
+        32
+      ]
+    ],
+    "inputs": [
+      [
+        576,
+        201,
+        388,
+        32
+      ],
+      [
+        576,
+        251,
+        388,
+        32
+      ],
+      [
+        576,
+        433,
+        388,
+        32
+      ]
+    ],
+    "hints": [
+      [
+        576,
+        333,
+        344.546875,
+        32
+      ],
+      [
+        576,
+        465,
+        388,
+        64
+      ]
+    ],
+    "roles": [
+      [
+        576,
+        301,
+        156.09375,
+        32
+      ],
+      [
+        732.09375,
+        301,
+        140.984375,
+        32
+      ],
+      [
+        873.078125,
+        301,
+        75.359375,
+        32
+      ]
+    ],
+    "footer": [
+      [
+        476,
+        547,
+        488,
+        48
+      ]
+    ]
+  }
+}

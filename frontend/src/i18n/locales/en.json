@@ -383,6 +383,7 @@
     "1004000017": "The current order is not ready for generation. Check its issues.",
     "1004000018": "Quantity exceeds the remaining source entry quota.",
     "1004000019": "Pending members, quantity or production organization changed. Refresh and verify.",
+    "1004000029": "Allocation quantity cannot exceed the pending quantity.",
     "1004000020": "Acquisition or batch conditions changed. Refresh and check.",
     "1004000021": "A callback range must contain contiguous fixed batch members with the same sequence PI.",
     "1004000022": "No SN is ready to print for this factory + PI.",
@@ -399,10 +400,17 @@
     "1000000008": "Data is being changed by another operation. Check the original result before retrying.",
     "1004000001": "Invalid rule encoding. Check the base, alphabet, sequence length and full SN length.",
     "1004000002": "The sequence exceeds the rule capacity. Generation cannot continue.",
-    "1002000017": "Login is locked. Try again in {{minutes}} minute(s).",
+    "1002000017": "Too many failed sign-ins, please try again in {{minutes}} minutes",
     "1004000026": "Sync execution expired or settings changed. This run was not published.",
     "1004000027": "Choose the rule for this PI’s first generation.",
-    "1004000028": "Starting sequence must exceed the matching incoming/imported maximum {{sequence}} ({{sn}})."
+    "1004000028": "Starting sequence must exceed the matching incoming/imported maximum {{sequence}} ({{sn}}).",
+    "1002000018": "Account is disabled",
+    "1004000031": "This account has extended grants. Reopen it in the general account editor.",
+    "1004000030": "Account information is invalid. Check it and try again.",
+    "1004000032": "The employee number already exists.",
+    "1004000033": "Factory code and name are required (code ≤ 64)",
+    "1004000034": "Please enter an order number",
+    "1004000035": "Scheduled sync interval must be {{min}}–{{max}} minutes"
   },
   "export": {
     "title": "Export task",
@@ -603,6 +611,8 @@
     },
     "factoryAssignmentHelp": "Explicit bindings apply to restricted factory roles. An empty selection grants no factory access.",
     "piInit": {
+      "confirmButton": "OK",
+      "networkError": "Network Error",
       "title": "Start number & history import",
       "desc": "Go-live import: each PI may set a start number once before its first generation and optionally import SNs issued earlier (status printed, included in duplicate checks). Afterwards the start number is locked.",
       "piPlaceholder": "Enter PI",
@@ -804,7 +814,9 @@
     "origins": {
       "PAGE": "Page",
       "API": "MES API"
-    }
+    },
+    "confirmButton": "OK",
+    "cancelButton": "Cancel"
   },
   "snTransfer": {
     "title": "Factory transfer",
@@ -997,5 +1009,13 @@
       "ONLINE": "Online records",
       "ARCHIVE": "Archived records"
     }
+  },
+  "shell": {
+    "paginationTotal": "Total {{total}}",
+    "expand": "Expand navigation",
+    "collapse": "Collapse navigation",
+    "framework": "Framework management",
+    "intervalUnit": "Interval unit",
+    "paginationSize": "{{size}}/page"
   }
 }

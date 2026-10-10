@@ -1,0 +1,650 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\node_modules\\.pnpm\\@playwright+test@1.63.0\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.parity.config.ts",
+      "k3-responses.spec.ts",
+      "--output=test-results/stage50-ui1"
+    ],
+    "configFile": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\playwright.parity.config.ts",
+    "rootDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage50-ui1",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "prototype",
+        "name": "prototype",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [
+          "**/query-recovery.spec.ts"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage50-ui1",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "migration",
+        "name": "migration",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/parity/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "k3-responses.spec.ts",
+      "file": "k3-responses.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P05/P12 K3 response shapes, messages, later-page rejection and empty documents",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 360000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 168262,
+                  "error": {
+                    "message": "Error: en-query-empty-message\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"Kingdee query failed:\u001b[7m \u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"Kingdee query failed:\"\u001b[39m",
+                    "stack": "Error: en-query-empty-message\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"Kingdee query failed:\u001b[7m \u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"Kingdee query failed:\"\u001b[39m\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                      "column": 32,
+                      "line": 146
+                    },
+                    "snippet": "  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: en-query-empty-message\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"Kingdee query failed:\u001b[7m \u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"Kingdee query failed:\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: vi-query-empty-message\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"Truy vấn Kingdee thất bại:\u001b[7m \u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"Truy vấn Kingdee thất bại:\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T09:36:07.434Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage50-ui1\\k3-responses-P05-P12-K3-re-6f6f9-jection-and-empty-documents-prototype\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                    "column": 32,
+                    "line": 146
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "ff9fd7f3e60e6eaeb762-3ee6f65f0ad7edfd92d8",
+          "file": "k3-responses.spec.ts",
+          "line": 99,
+          "column": 1
+        },
+        {
+          "title": "P05/P12 K3 response shapes, messages, later-page rejection and empty documents",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 360000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 125046,
+                  "error": {
+                    "message": "Error: zh-CN-login-missing\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"金蝶\u001b[7m登录失败：LoginResultType != 1\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"金蝶\u001b[7m返回的数据格式不符合约定，原订单快照保持不变。\u001b[27m\"\u001b[39m",
+                    "stack": "Error: zh-CN-login-missing\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"金蝶\u001b[7m登录失败：LoginResultType != 1\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"金蝶\u001b[7m返回的数据格式不符合约定，原订单快照保持不变。\u001b[27m\"\u001b[39m\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                      "column": 32,
+                      "line": 146
+                    },
+                    "snippet": "  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: zh-CN-login-missing\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"金蝶\u001b[7m登录失败：LoginResultType != 1\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"金蝶\u001b[7m返回的数据格式不符合约定，原订单快照保持不变。\u001b[27m\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: zh-CN-login-boolean\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"金蝶\u001b[7m登录失败：LoginResultType != 1\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"金蝶\u001b[7m返回的数据格式不符合约定，原订单快照保持不变。\u001b[27m\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: zh-CN-login-scalar\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"金蝶\u001b[7m登录失败：LoginResultType != 1\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"金蝶\u001b[7m返回的数据格式不符合约定，原订单快照保持不变。\u001b[27m\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: zh-CN-query-object\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"金蝶\u001b[7m查询失败：unexpected response\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"金蝶\u001b[7m返回的数据格式不符合约定，原订单快照保持不变。\u001b[27m\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: zh-CN-query-scalar\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"金蝶\u001b[7m查询失败：unexpected response\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"金蝶\u001b[7m返回的数据格式不符合约定，原订单快照保持不变。\u001b[27m\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: zh-CN-query-message-values\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"金蝶查询失败：组织权限不足\u001b[7m; 123; false\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"金蝶查询失败：\u001b[7m\u001b[27m组织权限不足\u001b[7m\u001b[27m\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: zh-CN-query-empty-message\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"金蝶查询失败：\"\u001b[39m\nReceived: \u001b[31m\"金蝶查询失败：\u001b[7m查询失败\u001b[27m\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: zh-CN-view-missing-status\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"金蝶\u001b[7m查询失败：View failed\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"金蝶\u001b[7m返回的数据格式不符合约定，原订单快照保持不变。\u001b[27m\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 43,
+                        "line": 145
+                      },
+                      "message": "Error: zh-CN-login-empty-session\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m502\u001b[39m\n\n  143 |     await expect(messages).toHaveCount(1);\n  144 |     const actual = await messages.innerText();\n> 145 |     expect.soft(response.status(), label).toBe(status);\n      |                                           ^\n  146 |     expect.soft(actual, label).toBe(expected);\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:145:43)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: zh-CN-login-empty-session\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"单据 CMP-MO-001 已同步，2 行\"\u001b[39m\nReceived: \u001b[31m\"金蝶返回的数据格式不符合约定，原订单快照保持不变。\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 109,
+                        "line": 201
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"active\": 0, \"bill_no\": \"CMP-MO-001\", \"customer\": \"CMP-CUSTOMER\", \"factory_code\": \"CMP-A\", \"factory_id\": 1, \"id\": 1, \"line_count\": 2, \"org_code\": \"CMP-A\", \"org_id\": \"101\", \"org_name\": \"比较测试甲厂\", \"pi\": \"CMP-PI-001\", \"po\": \"CMP-PO\", \"quantity_ready\": 1, \"snapshot_version\": 25, \"source_account\": \"COMPARISON_SYNTHETIC\", \"source_bill_id\": \"9007199254740993\", \"source_system\": \"K3\", \"statuses\": \"1\", \"synced_at\": \"2026-10-09 09:39:21.581201\", \"total_qty\": \"10.0000\"}]\u001b[39m\n\n  199 |           expect.soft(observed.traffic.filter((r: { operation: string }) => r.operation === 'orders').map((r: { start: number }) => r.start)).toEqual([0, 2000]);\n  200 |         if (example.removes) {\n> 201 |           expect.soft(observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001')).toHaveLength(0);\n      |                                                                                                             ^\n  202 |           control({});\n  203 |           await sync(locale + '-' + example.label + '-restore', text, text.orders.syncedAll.replace('{{bills}}', '3').replace('{{rows}}', '4'), false, 200);\n  204 |         }\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:201:109"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 43,
+                        "line": 145
+                      },
+                      "message": "Error: zh-CN-view-empty-document\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m502\u001b[39m\n\n  143 |     await expect(messages).toHaveCount(1);\n  144 |     const actual = await messages.innerText();\n> 145 |     expect.soft(response.status(), label).toBe(status);\n      |                                           ^\n  146 |     expect.soft(actual, label).toBe(expected);\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:145:43)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: zh-CN-view-empty-document\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"单据 CMP-MO-001 已不在计划 / 计划确认，已从快照移除\"\u001b[39m\nReceived: \u001b[31m\"金蝶返回的数据格式不符合约定，原订单快照保持不变。\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 109,
+                        "line": 201
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"active\": 1, \"bill_no\": \"CMP-MO-001\", \"customer\": \"CMP-CUSTOMER\", \"factory_code\": \"CMP-A\", \"factory_id\": 1, \"id\": 1, \"line_count\": 2, \"org_code\": \"CMP-A\", \"org_id\": \"101\", \"org_name\": \"比较测试甲厂\", \"pi\": \"CMP-PI-001\", \"po\": \"CMP-PO\", \"quantity_ready\": 1, \"snapshot_version\": 27, \"source_account\": \"COMPARISON_SYNTHETIC\", \"source_bill_id\": \"9007199254740993\", \"source_system\": \"K3\", \"statuses\": \"1\", \"synced_at\": \"2026-10-09 09:39:30.319003\", \"total_qty\": \"10.0000\"}]\u001b[39m\n\n  199 |           expect.soft(observed.traffic.filter((r: { operation: string }) => r.operation === 'orders').map((r: { start: number }) => r.start)).toEqual([0, 2000]);\n  200 |         if (example.removes) {\n> 201 |           expect.soft(observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001')).toHaveLength(0);\n      |                                                                                                             ^\n  202 |           control({});\n  203 |           await sync(locale + '-' + example.label + '-restore', text, text.orders.syncedAll.replace('{{bills}}', '3').replace('{{rows}}', '4'), false, 200);\n  204 |         }\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:201:109"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 43,
+                        "line": 145
+                      },
+                      "message": "Error: zh-CN-view-empty-lines\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m502\u001b[39m\n\n  143 |     await expect(messages).toHaveCount(1);\n  144 |     const actual = await messages.innerText();\n> 145 |     expect.soft(response.status(), label).toBe(status);\n      |                                           ^\n  146 |     expect.soft(actual, label).toBe(expected);\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:145:43)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: zh-CN-view-empty-lines\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"单据 CMP-MO-001 已不在计划 / 计划确认，已从快照移除\"\u001b[39m\nReceived: \u001b[31m\"金蝶返回的数据格式不符合约定，原订单快照保持不变。\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 109,
+                        "line": 201
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"active\": 1, \"bill_no\": \"CMP-MO-001\", \"customer\": \"CMP-CUSTOMER\", \"factory_code\": \"CMP-A\", \"factory_id\": 1, \"id\": 1, \"line_count\": 2, \"org_code\": \"CMP-A\", \"org_id\": \"101\", \"org_name\": \"比较测试甲厂\", \"pi\": \"CMP-PI-001\", \"po\": \"CMP-PO\", \"quantity_ready\": 1, \"snapshot_version\": 29, \"source_account\": \"COMPARISON_SYNTHETIC\", \"source_bill_id\": \"9007199254740993\", \"source_system\": \"K3\", \"statuses\": \"1\", \"synced_at\": \"2026-10-09 09:39:35.257725\", \"total_qty\": \"10.0000\"}]\u001b[39m\n\n  199 |           expect.soft(observed.traffic.filter((r: { operation: string }) => r.operation === 'orders').map((r: { start: number }) => r.start)).toEqual([0, 2000]);\n  200 |         if (example.removes) {\n> 201 |           expect.soft(observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001')).toHaveLength(0);\n      |                                                                                                             ^\n  202 |           control({});\n  203 |           await sync(locale + '-' + example.label + '-restore', text, text.orders.syncedAll.replace('{{bills}}', '3').replace('{{rows}}', '4'), false, 200);\n  204 |         }\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:201:109"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: en-login-missing\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"K\u001b[7mingdee login failed: LoginResultType != 1\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"K\u001b[7m3 returned an unexpected data format. The previous order snapshot is unchanged.\u001b[27m\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: en-login-boolean\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"K\u001b[7mingdee login failed: LoginResultType != 1\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"K\u001b[7m3 returned an unexpected data format. The previous order snapshot is unchanged.\u001b[27m\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: en-login-scalar\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"K\u001b[7mingdee login failed: LoginResultType != 1\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"K\u001b[7m3 returned an unexpected data format. The previous order snapshot is unchanged.\u001b[27m\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: en-query-object\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"K\u001b[7mingdee query failed: unexpected response\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"K\u001b[7m3 returned an unexpected data format. The previous order snapshot is unchanged.\u001b[27m\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: en-query-scalar\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"K\u001b[7mingdee query failed: unexpected response\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"K\u001b[7m3 returned an unexpected data format. The previous order snapshot is unchanged.\u001b[27m\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: en-query-message-values\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"Kingdee query failed: 组织权限不足\u001b[7m; 123; false\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"Kingdee query failed: \u001b[7m\u001b[27m组织权限不足\u001b[7m\u001b[27m\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: en-query-empty-message\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"Kingdee query failed: \"\u001b[39m\nReceived: \u001b[31m\"Kingdee query failed: \u001b[7m查询失败\u001b[27m\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: en-view-missing-status\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"K\u001b[7mingdee query failed: View fail\u001b[27med\"\u001b[39m\nReceived: \u001b[31m\"K\u001b[7m3 returned an unexpected data format. The previous order snapshot is unchang\u001b[27med\u001b[7m.\u001b[27m\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 43,
+                        "line": 145
+                      },
+                      "message": "Error: en-login-empty-session\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m502\u001b[39m\n\n  143 |     await expect(messages).toHaveCount(1);\n  144 |     const actual = await messages.innerText();\n> 145 |     expect.soft(response.status(), label).toBe(status);\n      |                                           ^\n  146 |     expect.soft(actual, label).toBe(expected);\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:145:43)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: en-login-empty-session\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"Order CMP-MO-001 synced, 2 lines\"\u001b[39m\nReceived: \u001b[31m\"K3 returned an unexpected data format. The previous order snapshot is unchanged.\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 109,
+                        "line": 201
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"active\": 0, \"bill_no\": \"CMP-MO-001\", \"customer\": \"CMP-CUSTOMER\", \"factory_code\": \"CMP-A\", \"factory_id\": 1, \"id\": 1, \"line_count\": 2, \"org_code\": \"CMP-A\", \"org_id\": \"101\", \"org_name\": \"比较测试甲厂\", \"pi\": \"CMP-PI-001\", \"po\": \"CMP-PO\", \"quantity_ready\": 1, \"snapshot_version\": 33, \"source_account\": \"COMPARISON_SYNTHETIC\", \"source_bill_id\": \"9007199254740993\", \"source_system\": \"K3\", \"statuses\": \"1\", \"synced_at\": \"2026-10-09 09:40:00.611839\", \"total_qty\": \"10.0000\"}]\u001b[39m\n\n  199 |           expect.soft(observed.traffic.filter((r: { operation: string }) => r.operation === 'orders').map((r: { start: number }) => r.start)).toEqual([0, 2000]);\n  200 |         if (example.removes) {\n> 201 |           expect.soft(observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001')).toHaveLength(0);\n      |                                                                                                             ^\n  202 |           control({});\n  203 |           await sync(locale + '-' + example.label + '-restore', text, text.orders.syncedAll.replace('{{bills}}', '3').replace('{{rows}}', '4'), false, 200);\n  204 |         }\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:201:109"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 43,
+                        "line": 145
+                      },
+                      "message": "Error: en-view-empty-document\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m502\u001b[39m\n\n  143 |     await expect(messages).toHaveCount(1);\n  144 |     const actual = await messages.innerText();\n> 145 |     expect.soft(response.status(), label).toBe(status);\n      |                                           ^\n  146 |     expect.soft(actual, label).toBe(expected);\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:145:43)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: en-view-empty-document\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"Order CMP-MO-001 is no longer planned; removed from the snapshot\"\u001b[39m\nReceived: \u001b[31m\"K3 returned an unexpected data format. The previous order snapshot is unchanged.\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 109,
+                        "line": 201
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"active\": 1, \"bill_no\": \"CMP-MO-001\", \"customer\": \"CMP-CUSTOMER\", \"factory_code\": \"CMP-A\", \"factory_id\": 1, \"id\": 1, \"line_count\": 2, \"org_code\": \"CMP-A\", \"org_id\": \"101\", \"org_name\": \"比较测试甲厂\", \"pi\": \"CMP-PI-001\", \"po\": \"CMP-PO\", \"quantity_ready\": 1, \"snapshot_version\": 35, \"source_account\": \"COMPARISON_SYNTHETIC\", \"source_bill_id\": \"9007199254740993\", \"source_system\": \"K3\", \"statuses\": \"1\", \"synced_at\": \"2026-10-09 09:40:09.410580\", \"total_qty\": \"10.0000\"}]\u001b[39m\n\n  199 |           expect.soft(observed.traffic.filter((r: { operation: string }) => r.operation === 'orders').map((r: { start: number }) => r.start)).toEqual([0, 2000]);\n  200 |         if (example.removes) {\n> 201 |           expect.soft(observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001')).toHaveLength(0);\n      |                                                                                                             ^\n  202 |           control({});\n  203 |           await sync(locale + '-' + example.label + '-restore', text, text.orders.syncedAll.replace('{{bills}}', '3').replace('{{rows}}', '4'), false, 200);\n  204 |         }\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:201:109"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 43,
+                        "line": 145
+                      },
+                      "message": "Error: en-view-empty-lines\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m502\u001b[39m\n\n  143 |     await expect(messages).toHaveCount(1);\n  144 |     const actual = await messages.innerText();\n> 145 |     expect.soft(response.status(), label).toBe(status);\n      |                                           ^\n  146 |     expect.soft(actual, label).toBe(expected);\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:145:43)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: en-view-empty-lines\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"Order CMP-MO-001 is no longer planned; removed from the snapshot\"\u001b[39m\nReceived: \u001b[31m\"K3 returned an unexpected data format. The previous order snapshot is unchanged.\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 109,
+                        "line": 201
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"active\": 1, \"bill_no\": \"CMP-MO-001\", \"customer\": \"CMP-CUSTOMER\", \"factory_code\": \"CMP-A\", \"factory_id\": 1, \"id\": 1, \"line_count\": 2, \"org_code\": \"CMP-A\", \"org_id\": \"101\", \"org_name\": \"比较测试甲厂\", \"pi\": \"CMP-PI-001\", \"po\": \"CMP-PO\", \"quantity_ready\": 1, \"snapshot_version\": 37, \"source_account\": \"COMPARISON_SYNTHETIC\", \"source_bill_id\": \"9007199254740993\", \"source_system\": \"K3\", \"statuses\": \"1\", \"synced_at\": \"2026-10-09 09:40:14.853974\", \"total_qty\": \"10.0000\"}]\u001b[39m\n\n  199 |           expect.soft(observed.traffic.filter((r: { operation: string }) => r.operation === 'orders').map((r: { start: number }) => r.start)).toEqual([0, 2000]);\n  200 |         if (example.removes) {\n> 201 |           expect.soft(observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001')).toHaveLength(0);\n      |                                                                                                             ^\n  202 |           control({});\n  203 |           await sync(locale + '-' + example.label + '-restore', text, text.orders.syncedAll.replace('{{bills}}', '3').replace('{{rows}}', '4'), false, 200);\n  204 |         }\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:201:109"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: vi-login-missing\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"Đăng nhập Kingdee thất bại: LoginResultType != 1\"\u001b[39m\nReceived: \u001b[31m\"K3 trả về dữ liệu sai định dạng. Ảnh chụp đơn hàng trước đó được giữ nguyên.\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: vi-login-boolean\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"Đăng nhập Kingdee thất bại: LoginResultType != 1\"\u001b[39m\nReceived: \u001b[31m\"K3 trả về dữ liệu sai định dạng. Ảnh chụp đơn hàng trước đó được giữ nguyên.\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: vi-login-scalar\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"Đăng nhập Kingdee thất bại: LoginResultType != 1\"\u001b[39m\nReceived: \u001b[31m\"K3 trả về dữ liệu sai định dạng. Ảnh chụp đơn hàng trước đó được giữ nguyên.\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: vi-query-object\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"Truy vấn Kingdee thất bại: unexpected response\"\u001b[39m\nReceived: \u001b[31m\"K3 trả về dữ liệu sai định dạng. Ảnh chụp đơn hàng trước đó được giữ nguyên.\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: vi-query-scalar\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"Truy vấn Kingdee thất bại: unexpected response\"\u001b[39m\nReceived: \u001b[31m\"K3 trả về dữ liệu sai định dạng. Ảnh chụp đơn hàng trước đó được giữ nguyên.\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: vi-query-message-values\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"Truy vấn Kingdee thất bại: 组织权限不足\u001b[7m; 123; false\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"Truy vấn Kingdee thất bại: \u001b[7m\u001b[27m组织权限不足\u001b[7m\u001b[27m\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: vi-query-empty-message\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"Truy vấn Kingdee thất bại: \"\u001b[39m\nReceived: \u001b[31m\"Truy vấn Kingdee thất bại: \u001b[7m查询失败\u001b[27m\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: vi-view-missing-status\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"Truy vấn Kingdee thất bại: View failed\"\u001b[39m\nReceived: \u001b[31m\"K3 trả về dữ liệu sai định dạng. Ảnh chụp đơn hàng trước đó được giữ nguyên.\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 43,
+                        "line": 145
+                      },
+                      "message": "Error: vi-login-empty-session\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m502\u001b[39m\n\n  143 |     await expect(messages).toHaveCount(1);\n  144 |     const actual = await messages.innerText();\n> 145 |     expect.soft(response.status(), label).toBe(status);\n      |                                           ^\n  146 |     expect.soft(actual, label).toBe(expected);\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:145:43)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: vi-login-empty-session\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"Lệnh CMP-MO-001 đã đồng bộ, 2 dòng\"\u001b[39m\nReceived: \u001b[31m\"K3 trả về dữ liệu sai định dạng. Ảnh chụp đơn hàng trước đó được giữ nguyên.\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 109,
+                        "line": 201
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"active\": 0, \"bill_no\": \"CMP-MO-001\", \"customer\": \"CMP-CUSTOMER\", \"factory_code\": \"CMP-A\", \"factory_id\": 1, \"id\": 1, \"line_count\": 2, \"org_code\": \"CMP-A\", \"org_id\": \"101\", \"org_name\": \"比较测试甲厂\", \"pi\": \"CMP-PI-001\", \"po\": \"CMP-PO\", \"quantity_ready\": 1, \"snapshot_version\": 41, \"source_account\": \"COMPARISON_SYNTHETIC\", \"source_bill_id\": \"9007199254740993\", \"source_system\": \"K3\", \"statuses\": \"1\", \"synced_at\": \"2026-10-09 09:40:39.915540\", \"total_qty\": \"10.0000\"}]\u001b[39m\n\n  199 |           expect.soft(observed.traffic.filter((r: { operation: string }) => r.operation === 'orders').map((r: { start: number }) => r.start)).toEqual([0, 2000]);\n  200 |         if (example.removes) {\n> 201 |           expect.soft(observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001')).toHaveLength(0);\n      |                                                                                                             ^\n  202 |           control({});\n  203 |           await sync(locale + '-' + example.label + '-restore', text, text.orders.syncedAll.replace('{{bills}}', '3').replace('{{rows}}', '4'), false, 200);\n  204 |         }\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:201:109"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 43,
+                        "line": 145
+                      },
+                      "message": "Error: vi-view-empty-document\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m502\u001b[39m\n\n  143 |     await expect(messages).toHaveCount(1);\n  144 |     const actual = await messages.innerText();\n> 145 |     expect.soft(response.status(), label).toBe(status);\n      |                                           ^\n  146 |     expect.soft(actual, label).toBe(expected);\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:145:43)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: vi-view-empty-document\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"Lệnh CMP-MO-001 không còn ở trạng thái kế hoạch; đã xóa khỏi ảnh chụp\"\u001b[39m\nReceived: \u001b[31m\"K3 trả về dữ liệu sai định dạng. Ảnh chụp đơn hàng trước đó được giữ nguyên.\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 109,
+                        "line": 201
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"active\": 1, \"bill_no\": \"CMP-MO-001\", \"customer\": \"CMP-CUSTOMER\", \"factory_code\": \"CMP-A\", \"factory_id\": 1, \"id\": 1, \"line_count\": 2, \"org_code\": \"CMP-A\", \"org_id\": \"101\", \"org_name\": \"比较测试甲厂\", \"pi\": \"CMP-PI-001\", \"po\": \"CMP-PO\", \"quantity_ready\": 1, \"snapshot_version\": 43, \"source_account\": \"COMPARISON_SYNTHETIC\", \"source_bill_id\": \"9007199254740993\", \"source_system\": \"K3\", \"statuses\": \"1\", \"synced_at\": \"2026-10-09 09:40:48.595383\", \"total_qty\": \"10.0000\"}]\u001b[39m\n\n  199 |           expect.soft(observed.traffic.filter((r: { operation: string }) => r.operation === 'orders').map((r: { start: number }) => r.start)).toEqual([0, 2000]);\n  200 |         if (example.removes) {\n> 201 |           expect.soft(observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001')).toHaveLength(0);\n      |                                                                                                             ^\n  202 |           control({});\n  203 |           await sync(locale + '-' + example.label + '-restore', text, text.orders.syncedAll.replace('{{bills}}', '3').replace('{{rows}}', '4'), false, 200);\n  204 |         }\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:201:109"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 43,
+                        "line": 145
+                      },
+                      "message": "Error: vi-view-empty-lines\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m502\u001b[39m\n\n  143 |     await expect(messages).toHaveCount(1);\n  144 |     const actual = await messages.innerText();\n> 145 |     expect.soft(response.status(), label).toBe(status);\n      |                                           ^\n  146 |     expect.soft(actual, label).toBe(expected);\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:145:43)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 32,
+                        "line": 146
+                      },
+                      "message": "Error: vi-view-empty-lines\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"Lệnh CMP-MO-001 không còn ở trạng thái kế hoạch; đã xóa khỏi ảnh chụp\"\u001b[39m\nReceived: \u001b[31m\"K3 trả về dữ liệu sai định dạng. Ảnh chụp đơn hàng trước đó được giữ nguyên.\"\u001b[39m\n\n  144 |     const actual = await messages.innerText();\n  145 |     expect.soft(response.status(), label).toBe(status);\n> 146 |     expect.soft(actual, label).toBe(expected);\n      |                                ^\n  147 |     await expect(page.locator('.sn-page-actions [aria-busy=\"true\"]')).toHaveCount(0);\n  148 |     await expect(page.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);\n  149 |     const after = helper('snapshot');\n    at sync (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:146:32)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:197:26"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 109,
+                        "line": 201
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"active\": 1, \"bill_no\": \"CMP-MO-001\", \"customer\": \"CMP-CUSTOMER\", \"factory_code\": \"CMP-A\", \"factory_id\": 1, \"id\": 1, \"line_count\": 2, \"org_code\": \"CMP-A\", \"org_id\": \"101\", \"org_name\": \"比较测试甲厂\", \"pi\": \"CMP-PI-001\", \"po\": \"CMP-PO\", \"quantity_ready\": 1, \"snapshot_version\": 45, \"source_account\": \"COMPARISON_SYNTHETIC\", \"source_bill_id\": \"9007199254740993\", \"source_system\": \"K3\", \"statuses\": \"1\", \"synced_at\": \"2026-10-09 09:40:53.513498\", \"total_qty\": \"10.0000\"}]\u001b[39m\n\n  199 |           expect.soft(observed.traffic.filter((r: { operation: string }) => r.operation === 'orders').map((r: { start: number }) => r.start)).toEqual([0, 2000]);\n  200 |         if (example.removes) {\n> 201 |           expect.soft(observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001')).toHaveLength(0);\n      |                                                                                                             ^\n  202 |           control({});\n  203 |           await sync(locale + '-' + example.label + '-restore', text, text.orders.syncedAll.replace('{{bills}}', '3').replace('{{rows}}', '4'), false, 200);\n  204 |         }\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:201:109"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                        "column": 24,
+                        "line": 210
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m39\u001b[39m\nReceived length: \u001b[31m48\u001b[39m\nReceived array:  \u001b[31m[{\"action\": \"sn:order:sync\", \"actor_id\": 90020261009500000, \"after_status\": null, \"batch_id\": null, \"before_status\": null, \"bill_no\": \"CMP-MO-001\", \"created_at\": \"2026-10-09 09:39:05.991000\", \"customer\": null, \"detail\": \"{}\", \"detail_text\": \"POST /api/orders/sync\", \"end_sn\": null, \"error_code\": \"1005000004\", \"error_message\": \"订单同步失败\", \"factory_code\": null, \"factory_id\": null, \"factory_name\": null, \"id\": \"b79d0110-10cf-48c1-aadd-47480b650996\", \"material\": null, \"operation_id\": null, \"operator\": \"audit20261009500001\", \"operator_name\": \"同步痕迹操作员\", \"pi\": null, \"quantity\": null, \"reason\": null, \"result\": \"FAILED\", \"roles\": \"[\\\"PLATFORM_ADMIN\\\",\\\"SN_HQ\\\"]\", \"source\": \"PAGE\", \"start_sn\": null, \"to_factory_code\": null, \"to_factory_id\": null, \"to_pi\": null, \"trace_id\": \"f955d567-99e3-4677-a1ec-0978e3eb34a1\", \"transfer_id\": null}, {\"action\": \"sn:order:sync\", \"actor_id\": 90020261009500000, \"after_status\": null, \"batch_id\": null, \"before_status\": null, \"bill_no\": \"CMP-MO-001\", \"created_at\": \"2026-10-09 09:39:07.327000\", \"customer\": null, \"detail\": \"{}\", \"detail_text\": \"POST /api/orders/sync\", \"end_sn\": null, \"error_code\": \"1005000004\", \"error_message\": \"订单同步失败\", \"factory_code\": null, \"factory_id\": null, \"factory_name\": null, \"id\": \"d607ec8f-41a5-4ed8-a4f8-90012803d777\", \"material\": null, \"operation_id\": null, \"operator\": \"audit20261009500001\", \"operator_name\": \"同步痕迹操作员\", \"pi\": null, \"quantity\": null, \"reason\": null, \"result\": \"FAILED\", \"roles\": \"[\\\"PLATFORM_ADMIN\\\",\\\"SN_HQ\\\"]\", \"source\": \"PAGE\", \"start_sn\": null, \"to_factory_code\": null, \"to_factory_id\": null, \"to_pi\": null, \"trace_id\": \"ef7ec11e-e553-4453-803b-9628d6945286\", \"transfer_id\": null}, {\"action\": \"sn:order:sync\", \"actor_id\": 90020261009500000, \"after_status\": null, \"batch_id\": null, \"before_status\": null, \"bill_no\": \"CMP-MO-001\", \"created_at\": \"2026-10-09 09:39:08.502000\", \"customer\": null, \"detail\": \"{}\", \"detail_text\": \"POST /api/orders/sync\", \"end_sn\": null, \"error_code\": \"1005000002\", \"error_message\": \"金蝶登录失败：123\", \"factory_code\": null, \"factory_id\": null, \"factory_name\": null, \"id\": \"7ef356b1-a4e4-4d0d-a791-61cc1a1e6cde\", \"material\": null, \"operation_id\": null, \"operator\": \"audit20261009500001\", \"operator_name\": \"同步痕迹操作员\", \"pi\": null, \"quantity\": null, \"reason\": null, \"result\": \"FAILED\", \"roles\": \"[\\\"PLATFORM_ADMIN\\\",\\\"SN_HQ\\\"]\", \"source\": \"PAGE\", \"start_sn\": null, \"to_factory_code\": null, \"to_factory_id\": null, \"to_pi\": null, \"trace_id\": \"59c6f890-0c09-4c88-8225-c988ada1ead5\", \"transfer_id\": null}, {\"action\": \"sn:order:sync\", \"actor_id\": 90020261009500000, \"after_status\": null, \"batch_id\": null, \"before_status\": null, \"bill_no\": \"CMP-MO-001\", \"created_at\": \"2026-10-09 09:39:09.700000\", \"customer\": null, \"detail\": \"{}\", \"detail_text\": \"POST /api/orders/sync\", \"end_sn\": null, \"error_code\": \"1005000004\", \"error_message\": \"订单同步失败\", \"factory_code\": null, \"factory_id\": null, \"factory_name\": null, \"id\": \"0e3716b1-4ecb-4561-b2bc-1c731590a925\", \"material\": null, \"operation_id\": null, \"operator\": \"audit20261009500001\", \"operator_name\": \"同步痕迹操作员\", \"pi\": null, \"quantity\": null, \"reason\": null, \"result\": \"FAILED\", \"roles\": \"[\\\"PLATFORM_ADMIN\\\",\\\"SN_HQ\\\"]\", \"source\": \"PAGE\", \"start_sn\": null, \"to_factory_code\": null, \"to_factory_id\": null, \"to_pi\": null, \"trace_id\": \"d5506e0e-10f2-40da-bd3e-be121c6a5b57\", \"transfer_id\": null}, {\"action\": \"sn:order:sync\", \"actor_id\": 90020261009500000, \"after_status\": null, \"batch_id\": null, \"before_status\": null, \"bill_no\": null, \"created_at\": \"2026-10-09 09:39:10.871000\", \"customer\": null, \"detail\": \"{}\", \"detail_text\": \"POST /api/orders/sync\", \"end_sn\": null, \"error_code\": \"1005000004\", \"error_message\": \"订单同步失败\", \"factory_code\": null, \"factory_id\": null, \"factory_name\": null, \"id\": \"09b36fa3-c7e9-4b45-81b3-e17df39ec4bd\", \"material\": null, \"operation_id\": null, \"operator\": \"audit20261009500001\", \"operator_name\": \"同步痕迹操作员\", \"pi\": null, \"quantity\": null, \"reason\": null, \"result\": \"FAILED\", \"roles\": \"[\\\"PLATFORM_ADMIN\\\",\\\"SN_HQ\\\"]\", \"source\": \"PAGE\", \"start_sn\": null, \"to_factory_code\": null, \"to_factory_id\": null, \"to_pi\": null, \"trace_id\": \"e762d18c-360c-409f-8b36-cdad34b1c54f\", \"transfer_id\": null}, {\"action\": \"sn:order:sync\", \"actor_id\": 90020261009500000, \"after_status\": null, \"batch_id\": null, \"before_status\": null, \"bill_no\": null, \"created_at\": \"2026-10-09 09:39:12.026000\", \"customer\": null, \"detail\": \"{}\", \"detail_text\": \"POST /api/orders/sync\", \"end_sn\": null, \"error_code\": \"1005000004\", \"error_message\": \"订单同步失败\", \"factory_code\": null, \"factory_id\": null, \"factory_name\": null, \"id\": \"aaeaf253-129d-493d-8548-d4d989cf96af\", \"material\": null, \"operation_id\": null, \"operator\": \"audit20261009500001\", \"operator_name\": \"同步痕迹操作员\", \"pi\": null, \"quantity\": null, \"reason\": null, \"result\": \"FAILED\", \"roles\": \"[\\\"PLATFORM_ADMIN\\\",\\\"SN_HQ\\\"]\", \"source\": \"PAGE\", \"start_sn\": null, \"to_factory_code\": null, \"to_factory_id\": null, \"to_pi\": null, \"trace_id\": \"cde53ebb-cadd-4793-90ce-0ce3c587679a\", \"transfer_id\": null}, {\"action\": \"sn:order:sync\", \"actor_id\": 90020261009500000, \"after_status\": null, \"batch_id\": null, \"before_status\": null, \"bill_no\": null, \"created_at\": \"2026-10-09 09:39:13.192000\", \"customer\": null, \"detail\": \"{}\", \"detail_text\": \"POST /api/orders/sync\", \"end_sn\": null, \"error_code\": \"1005000006\", \"error_message\": \"金蝶查询失败：组织权限不足\", \"factory_code\": null, \"factory_id\": null, \"factory_name\": null, \"id\": \"d5b8f6f0-8adc-43db-8cea-92d6bfeb0005\", \"material\": null, \"operation_id\": null, \"operator\": \"audit20261009500001\", \"operator_name\": \"同步痕迹操作员\", \"pi\": null, \"quantity\": null, \"reason\": null, \"result\": \"FAILED\", \"roles\": \"[\\\"PLATFORM_ADMIN\\\",\\\"SN_HQ\\\"]\", \"source\": \"PAGE\", \"start_sn\": null, \"to_factory_code\": null, \"to_factory_id\": null, \"to_pi\": null, \"trace_id\": \"2ef9dbaf-1f69-40e7-81c2-42b5d1a65d8d\", \"transfer_id\": null}, {\"action\": \"sn:order:sync\", \"actor_id\": 90020261009500000, \"after_status\": null, \"batch_id\": null, \"before_status\": null, \"bill_no\": null, \"created_at\": \"2026-10-09 09:39:14.389000\", \"customer\": null, \"detail\": \"{}\", \"detail_text\": \"POST /api/orders/sync\", \"end_sn\": null, \"error_code\": \"1005000006\", \"error_message\": \"金蝶查询失败：查询失败\", \"factory_code\": null, \"factory_id\": null, \"factory_name\": null, \"id\": \"5b1a0cb0-fa63-4eb2-adbe-494b4afb226c\", \"material\": null, \"operation_id\": null, \"operator\": \"audit20261009500001\", \"operator_name\": \"同步痕迹操作员\", \"pi\": null, \"quantity\": null, \"reason\": null, \"result\": \"FAILED\", \"roles\": \"[\\\"PLATFORM_ADMIN\\\",\\\"SN_HQ\\\"]\", \"source\": \"PAGE\", \"start_sn\": null, \"to_factory_code\": null, \"to_factory_id\": null, \"to_pi\": null, \"trace_id\": \"ccbd3fe2-d8a2-4dd4-b017-461ca09fbcc0\", \"transfer_id\": null}, {\"action\": \"sn:order:sync\", \"actor_id\": 90020261009500000, \"after_status\": null, \"batch_id\": null, \"before_status\": null, \"bill_no\": null, \"created_at\": \"2026-10-09 09:39:15.649000\", \"customer\": null, \"detail\": \"{}\", \"detail_text\": \"POST /api/orders/sync\", \"end_sn\": null, \"error_code\": \"1005000006\", \"error_message\": \"金蝶查询失败：查询权限不足\", \"factory_code\": null, \"factory_id\": null, \"factory_name\": null, \"id\": \"892e1458-ff7d-4371-9df8-afb038a9a249\", \"material\": null, \"operation_id\": null, \"operator\": \"audit20261009500001\", \"operator_name\": \"同步痕迹操作员\", \"pi\": null, \"quantity\": null, \"reason\": null, \"result\": \"FAILED\", \"roles\": \"[\\\"PLATFORM_ADMIN\\\",\\\"SN_HQ\\\"]\", \"source\": \"PAGE\", \"start_sn\": null, \"to_factory_code\": null, \"to_factory_id\": null, \"to_pi\": null, \"trace_id\": \"7b4cac51-05cb-4981-88c2-93d9a936c1de\", \"transfer_id\": null}, {\"action\": \"sn:order:sync\", \"actor_id\": 90020261009500000, \"after_status\": null, \"batch_id\": null, \"before_status\": null, \"bill_no\": \"CMP-MO-001\", \"created_at\": \"2026-10-09 09:39:16.807000\", \"customer\": null, \"detail\": \"{}\", \"detail_text\": \"POST /api/orders/sync\", \"end_sn\": null, \"error_code\": \"1005000004\", \"error_message\": \"订单同步失败\", \"factory_code\": null, \"factory_id\": null, \"factory_name\": null, \"id\": \"6f144739-7389-4d40-80bf-cb41431bae6f\", \"material\": null, \"operation_id\": null, \"operator\": \"audit20261009500001\", \"operator_name\": \"同步痕迹操作员\", \"pi\": null, \"quantity\": null, \"reason\": null, \"result\": \"FAILED\", \"roles\": \"[\\\"PLATFORM_ADMIN\\\",\\\"SN_HQ\\\"]\", \"source\": \"PAGE\", \"start_sn\": null, \"to_factory_code\": null, \"to_factory_id\": null, \"to_pi\": null, \"trace_id\": \"8c2c5e63-1548-4508-82c2-6b74fae70cbd\", \"transfer_id\": null}, …]\u001b[39m\n\n  208 |     const facts = helper('snapshot').audits.filter((r: Record<string, unknown>) => r.operator === username && ['ORDER_SYNC', 'sn:order:sync'].includes(String(r.action)) && ['FAIL', 'FAILED'].includes(String(r.result)));\n  209 |     writeFileSync(info.outputPath('failure-audits.json'), JSON.stringify(facts, null, 2));\n> 210 |     expect.soft(facts).toHaveLength(39);\n      |                        ^\n  211 |     await page.getByRole('menuitem', { name: vi.nav.audit, exact: true }).click();\n  212 |     await page.getByPlaceholder(vi.audit.operator, { exact: true }).fill(username);\n  213 |     await page.getByRole('button', { name: vi.common.search, exact: true }).click();\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts:210:24"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T09:38:57.232Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage50-ui1\\k3-responses-P05-P12-K3-re-6f6f9-jection-and-empty-documents-migration\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\k3-responses.spec.ts",
+                    "column": 32,
+                    "line": 146
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "ff9fd7f3e60e6eaeb762-50e600565986277a5801",
+          "file": "k3-responses.spec.ts",
+          "line": 99,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-09T09:36:06.980Z",
+    "duration": 296352.545,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

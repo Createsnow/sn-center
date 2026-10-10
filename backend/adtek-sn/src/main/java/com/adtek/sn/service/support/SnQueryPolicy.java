@@ -34,19 +34,24 @@ public class SnQueryPolicy {
         var grant = require(actor, permission).grants().get(permission);
         Long factory = q.factoryId() == null ? null : SnPolicy.id(q.factoryId());
         if (factory != null && !grant.permitsFactory(factory)) throw AcquirePolicy.forbidden();
-        if (q.piAll()
-                && (q.pi() == null
-                        || (!grant.allFactories()
-                                && acquire.owns(
-                                                new AcquireMapper.Scope(
-                                                        false,
-                                                        grant.factoryIds().stream()
-                                                                .sorted()
-                                                                .toList(),
-                                                        null,
-                                                        q.pi(),
-                                                        false))
-                                        == 0))) throw AcquirePolicy.forbidden();
+        if (q.piAll()) {
+            if (q.pi() == null) throw AcquirePolicy.forbidden();
+            String pi = AcquirePolicy.pi(q.pi());
+            if (!grant.allFactories()
+                    && acquire.owns(
+                                    new AcquireMapper.Scope(
+                                            false,
+                                            grant.factoryIds().stream().sorted().toList(),
+                                            null,
+                                            pi,
+                                            false))
+                            == 0) {
+                // 保持已发布的拒绝码，只返回用户输入的 PI，不暴露其他工厂的成员。
+                throw new BusinessException(
+                        com.adtek.framework.constant.ErrorCodeConstants.FORBIDDEN,
+                        java.util.Map.of("reason", "QUERY_PI_NOT_OWNED", "pi", pi));
+            }
+        }
         return new SnQueryMapper.Scope(
                 grant.allFactories(), grant.factoryIds().stream().sorted().toList(), q.piAll());
     }

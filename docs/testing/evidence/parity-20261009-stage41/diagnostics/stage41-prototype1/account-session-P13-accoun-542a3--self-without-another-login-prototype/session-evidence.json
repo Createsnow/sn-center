@@ -1,0 +1,97 @@
+{
+  "snapshots": [
+    {
+      "name": "01-operator",
+      "displayName": "会话测试成员",
+      "role": "factory_operator",
+      "bound": "A",
+      "menus": [
+        "首页",
+        "领取与打印",
+        "转厂",
+        "SN 查询",
+        "操作痕迹"
+      ],
+      "logins": 1
+    },
+    {
+      "name": "original-token-query-after-edit",
+      "status": 200,
+      "sameBearer": true
+    },
+    {
+      "name": "02-renamed",
+      "displayName": "管理修改姓名",
+      "role": "factory_operator",
+      "bound": "A",
+      "menus": [
+        "首页",
+        "领取与打印",
+        "转厂",
+        "SN 查询",
+        "操作痕迹"
+      ],
+      "logins": 1
+    }
+  ],
+  "requests": [
+    {
+      "route": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "route": "/api/auth/password",
+      "status": 200
+    },
+    {
+      "route": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "route": "/api/dashboard",
+      "status": 200
+    },
+    {
+      "route": "/api/factories",
+      "status": 200
+    },
+    {
+      "route": "/api/sn",
+      "status": 200
+    },
+    {
+      "route": "/api/sn",
+      "status": 200
+    },
+    {
+      "route": "/api/sn",
+      "status": 200
+    },
+    {
+      "route": "/api/factories",
+      "status": 200
+    },
+    {
+      "route": "/api/sn",
+      "status": 200
+    },
+    {
+      "route": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "route": "/api/factories",
+      "status": 200
+    },
+    {
+      "route": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "route": "/api/sn",
+      "status": 200
+    }
+  ],
+  "memberLogins": 1,
+  "failures": []
+}

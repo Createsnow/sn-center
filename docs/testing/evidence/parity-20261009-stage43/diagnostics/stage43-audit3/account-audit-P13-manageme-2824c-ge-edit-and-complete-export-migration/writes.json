@@ -1,0 +1,269 @@
+{
+  "writes": [
+    {
+      "route": "/api/v1/sn/users",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/users",
+      "status": 400
+    },
+    {
+      "route": "/api/v1/sn/users",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/users",
+      "status": 409
+    },
+    {
+      "route": "/api/v1/sn/users/171/update",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/users/171/update",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/users/171/password",
+      "status": 409
+    }
+  ],
+  "pageErrors": [],
+  "versions": [
+    {
+      "route": "/api/v1/system/users",
+      "status": 200,
+      "code": 0,
+      "users": [
+        {
+          "id": "1",
+          "version": "2",
+          "enabled": true
+        },
+        {
+          "id": "2",
+          "version": "2",
+          "enabled": true
+        },
+        {
+          "id": "3",
+          "version": "2",
+          "enabled": true
+        },
+        {
+          "id": "4",
+          "version": "2",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "route": "/api/v1/sn/users",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "route": "/api/v1/system/users",
+      "status": 200,
+      "code": 0,
+      "users": [
+        {
+          "id": "1",
+          "version": "2",
+          "enabled": true
+        },
+        {
+          "id": "170",
+          "version": "1",
+          "enabled": true
+        },
+        {
+          "id": "2",
+          "version": "2",
+          "enabled": true
+        },
+        {
+          "id": "3",
+          "version": "2",
+          "enabled": true
+        },
+        {
+          "id": "4",
+          "version": "2",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "route": "/api/v1/system/users",
+      "status": 200,
+      "code": 0,
+      "users": [
+        {
+          "id": "1",
+          "version": "2",
+          "enabled": true
+        },
+        {
+          "id": "170",
+          "version": "2",
+          "enabled": true
+        },
+        {
+          "id": "2",
+          "version": "2",
+          "enabled": true
+        },
+        {
+          "id": "3",
+          "version": "2",
+          "enabled": true
+        },
+        {
+          "id": "4",
+          "version": "2",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "route": "/api/v1/sn/users",
+      "status": 400,
+      "code": 1004000030
+    },
+    {
+      "route": "/api/v1/sn/users",
+      "status": 200,
+      "code": 0
+    },
+    {
+      "route": "/api/v1/system/users",
+      "status": 200,
+      "code": 0,
+      "users": [
+        {
+          "id": "1",
+          "version": "2",
+          "enabled": true
+        },
+        {
+          "id": "170",
+          "version": "2",
+          "enabled": true
+        },
+        {
+          "id": "171",
+          "version": "1",
+          "enabled": true
+        },
+        {
+          "id": "2",
+          "version": "2",
+          "enabled": true
+        },
+        {
+          "id": "3",
+          "version": "2",
+          "enabled": true
+        },
+        {
+          "id": "4",
+          "version": "2",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "route": "/api/v1/sn/users",
+      "status": 409,
+      "code": 1004000032
+    },
+    {
+      "route": "/api/v1/system/users",
+      "status": 200,
+      "code": 0,
+      "users": [
+        {
+          "id": "171",
+          "version": "1",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "route": "/api/v1/sn/users/171/update",
+      "status": 200,
+      "requestVersion": "1",
+      "code": 0
+    },
+    {
+      "route": "/api/v1/system/users",
+      "status": 200,
+      "code": 0,
+      "users": [
+        {
+          "id": "171",
+          "version": "2",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "route": "/api/v1/sn/users/171/update",
+      "status": 200,
+      "requestVersion": "2",
+      "code": 0
+    },
+    {
+      "route": "/api/v1/system/users",
+      "status": 200,
+      "code": 0,
+      "users": [
+        {
+          "id": "171",
+          "version": "3",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "route": "/api/v1/sn/users/171/status",
+      "status": 200,
+      "requestVersion": "3",
+      "code": 0,
+      "version": "4"
+    },
+    {
+      "route": "/api/v1/system/users",
+      "status": 200,
+      "code": 0,
+      "users": [
+        {
+          "id": "171",
+          "version": "4",
+          "enabled": false
+        }
+      ]
+    },
+    {
+      "route": "/api/v1/sn/users/171/status",
+      "status": 200,
+      "requestVersion": "4",
+      "code": 0,
+      "version": "5"
+    },
+    {
+      "route": "/api/v1/system/users",
+      "status": 200,
+      "code": 0,
+      "users": [
+        {
+          "id": "171",
+          "version": "5",
+          "enabled": true
+        }
+      ]
+    }
+  ]
+}

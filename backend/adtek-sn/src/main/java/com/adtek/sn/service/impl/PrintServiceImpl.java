@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.*;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -71,12 +70,12 @@ public class PrintServiceImpl implements PrintService {
                     if (count == 0) throw new BusinessException(PRINT_NOTHING);
                     var factoryRow = e.work.factories.selectById(factory);
                     long ordinal = 0;
-                    LocalDate month = null;
+                    String printNo = e.numbers.next("P");
                     String after = null;
                     Map<Long, RuleVersionEntity> rules = new HashMap<>();
                     Map<String, AcquireBatchEntity> batches = new HashMap<>();
                     while (true) {
-                        var chunk = e.rows.candidates(factory, pi, "TO_PRINT", month, after, 500);
+                        var chunk = e.rows.printCandidates(factory, pi, after, 500);
                         if (chunk.isEmpty()) break;
                         var members = new ArrayList<PrintMemberEntity>();
                         // 成员核验按同一500枚窗口读取，避免每枚SN一次SQL；批次头仍逐头检查原工厂/PI。
@@ -116,13 +115,15 @@ public class PrintServiceImpl implements PrintService {
                                             row.id(),
                                             batch.id(),
                                             e.json.writeValueAsString(
-                                                    e.snapshot(row, factoryRow, rules))));
+                                                    e.snapshot(row, factoryRow, rules)),
+                                            batch.batchNo() == null
+                                                    ? batch.id()
+                                                    : batch.batchNo()));
                         }
                         e.rows.printMemberBatch(members);
                         if (e.rows.printedBatch(chunk, task.id()) != chunk.size())
                             throw new BusinessException(ACQUIRE_CHANGED);
                         var last = chunk.getLast();
-                        month = last.genMonth();
                         after = last.id();
                     }
                     if (ordinal != count) throw new BusinessException(ACQUIRE_CHANGED);
@@ -149,11 +150,14 @@ public class PrintServiceImpl implements PrintService {
                                                 fresh.userId(),
                                                 TaskAccess.uuid(command.operationId()),
                                                 csv.id(),
-                                                null));
-                                file(csv.id(), task.id(), "csv", count);
+                                                null,
+                                                printNo,
+                                                e.names.username(fresh.userId()).orElse(null),
+                                                2));
+                                file(csv.id(), printNo, "csv", count);
                                 tasks.confirmBusiness(csv.id(), task.id());
                             });
-                    file(task.id(), task.id(), "xlsx", count);
+                    file(task.id(), printNo, "xlsx", count);
                     e.fact(
                             fresh,
                             AcquirePolicy.PRINT,
@@ -175,7 +179,7 @@ public class PrintServiceImpl implements PrintService {
         files.insert(task, task + "." + format, count);
         files.metadata(
                 task,
-                "print-" + print + "." + format,
+                "print_" + print + "." + format,
                 format.equals("xlsx") ? PrintFiles.XLSX : "text/csv;charset=UTF-8");
     }
 

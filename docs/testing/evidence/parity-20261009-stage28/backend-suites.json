@@ -1,0 +1,191 @@
+[
+  {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.common.core.DataScopeTest"
+  },
+  {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.audit.AuditContextTest"
+  },
+  {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.audit.RequestFailureAuditFilterTest"
+  },
+  {
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.mybatis.ScopedDataPermissionInterceptorTest"
+  },
+  {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.security.CurrentActorTest"
+  },
+  {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.security.JwtTokenCodecTest"
+  },
+  {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.security.PasswordEncodingTest"
+  },
+  {
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.security.RedisFailureTest"
+  },
+  {
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.task.FileStorageTest"
+  },
+  {
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.web.LegacyBoundaryTest"
+  },
+  {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.web.ResultSerializationTest"
+  },
+  {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.web.TraceFilterTest"
+  },
+  {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.sn.service.support.InitializationErrorsTest"
+  },
+  {
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.sn.service.support.PrintFilesTest"
+  },
+  {
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.sn.service.support.SequenceCodecTest"
+  },
+  {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.sn.service.support.SnImportDigestTest"
+  },
+  {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.ArchitectureTest"
+  },
+  {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.ArchiveRestoreProofTest"
+  },
+  {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.AuditProjectionTest"
+  },
+  {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.ErrorCodeCatalogTest"
+  },
+  {
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.K3ConfigurationTest"
+  },
+  {
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.K3ErrorsTest"
+  },
+  {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.K3LegacyProtocolTest"
+  },
+  {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.LegacyErrorCatalogTest"
+  },
+  {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.MaintenanceScheduleTest"
+  },
+  {
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.SnAuditIT"
+  },
+  {
+    "tests": 11,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.SnQueryIT"
+  }
+]

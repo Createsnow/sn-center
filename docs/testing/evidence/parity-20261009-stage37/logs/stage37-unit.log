@@ -1,0 +1,5 @@
+
+> adtek-platform-sn-web@0.1.0 test D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> vitest run "--reporter=json" "--outputFile=test-results/stage37-unit.json"
+
+JSON report written to D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage37-unit.json

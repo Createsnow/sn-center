@@ -1,0 +1,48 @@
+
+Running 4 tests using 1 worker
+
+(node:34980) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\query-roles.spec.ts:138:1 › P11 roles: factory scope, cross-factory read-only, denied PI and scoped exports (15.2s)
+  ok 2 [prototype] › e2e\parity\query.spec.ts:243:1 › P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX (17.5s)
+(node:19708) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  x  3 [migration] › e2e\parity\query-roles.spec.ts:138:1 › P11 roles: factory scope, cross-factory read-only, denied PI and scoped exports (52.4s)
+(node:41828) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok 4 [migration] › e2e\parity\query.spec.ts:243:1 › P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX (49.4s)
+
+
+  1) [migration] › e2e\parity\query-roles.spec.ts:138:1 › P11 roles: factory scope, cross-factory read-only, denied PI and scoped exports 
+
+    TimeoutError: locator.click: Timeout 20000ms exceeded.
+    Call log:
+      - waiting for getByRole('option', { name: '已打印', exact: true })
+
+
+      269 |             );
+      270 |             await statusSelect.click();
+    > 271 |             await rolePage.getByRole('option', { name: zh.status.PRINTED, exact: true }).click();
+          |                                                                                          ^
+      272 |             await query(rolePage, info);
+      273 |             await expectRows(rolePage, info, []);
+      274 |             await statusSelect.click();
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\query-roles.spec.ts:271:90
+
+    Error Context: test-results\stage29-query-ui\query-roles-P11-roles-fact-33aba-enied-PI-and-scoped-exports-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\query-roles.spec.ts:138:1 › P11 roles: factory scope, cross-factory read-only, denied PI and scoped exports 
+  3 passed (2.3m)

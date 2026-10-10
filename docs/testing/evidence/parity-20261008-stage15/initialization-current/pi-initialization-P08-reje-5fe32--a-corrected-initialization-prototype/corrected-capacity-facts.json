@@ -1,0 +1,25 @@
+{
+  "keys": [],
+  "items": [],
+  "counters": [
+    {
+      "pi": "CMP-UI-INIT-PI",
+      "last_seq": 98,
+      "generated_qty": 0,
+      "imported_qty": 0,
+      "start_seq": 99,
+      "start_locked": 1
+    }
+  ],
+  "history": [
+    {
+      "pi": "CMP-UI-INIT-PI",
+      "start_seq": 99,
+      "qty": 0,
+      "max_seq": null,
+      "factory_code": "",
+      "file_name": "",
+      "operator": "admin"
+    }
+  ]
+}

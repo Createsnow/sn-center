@@ -1,0 +1,896 @@
+{
+  "wrap": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 390,
+      "height": 960,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "padding": "24px",
+      "background": "rgb(241, 244, 249)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [
+        "M512 64a448 448 0 1 1 0 896 448 448 0 0 1 0-896m0 192a58.43 58.43 0 0 0-58.24 63.744l23.36 256.384a35.072 35.072 0 0 0 69.76 0l23.296-256.384A58.43 58.43 0 0 0 512 256m0 512a51.2 51.2 0 1 0 0-102.4 51.2 51.2 0 0 0 0 102.4"
+      ],
+      "characters": [],
+      "text": null
+    }
+  ],
+  "panel": [
+    {
+      "x": 24,
+      "y": 226.5,
+      "width": 342,
+      "height": 507,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "padding": "28px",
+      "background": "rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "borderRadius": "12px",
+      "iconPaths": [
+        "M512 64a448 448 0 1 1 0 896 448 448 0 0 1 0-896m0 192a58.43 58.43 0 0 0-58.24 63.744l23.36 256.384a35.072 35.072 0 0 0 69.76 0l23.296-256.384A58.43 58.43 0 0 0 512 256m0 512a51.2 51.2 0 1 0 0-102.4 51.2 51.2 0 0 0 0 102.4"
+      ],
+      "characters": [],
+      "text": null
+    }
+  ],
+  "title": [
+    {
+      "x": 53,
+      "y": 255.5,
+      "width": 284,
+      "height": 29,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "20px",
+      "fontWeight": "700",
+      "lineHeight": "normal",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "characters": [],
+      "text": "Đổi mật khẩu"
+    }
+  ],
+  "alert": [
+    {
+      "x": 53,
+      "y": 296.5,
+      "width": 284,
+      "height": 88,
+      "color": "rgb(194, 120, 3)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "padding": "8px 16px",
+      "background": "rgb(253, 246, 236)",
+      "boxShadow": "none",
+      "borderRadius": "8px",
+      "iconPaths": [
+        "M512 64a448 448 0 1 1 0 896 448 448 0 0 1 0-896m0 192a58.43 58.43 0 0 0-58.24 63.744l23.36 256.384a35.072 35.072 0 0 0 69.76 0l23.296-256.384A58.43 58.43 0 0 0 512 256m0 512a51.2 51.2 0 1 0 0-102.4 51.2 51.2 0 0 0 0 102.4"
+      ],
+      "characters": [],
+      "text": null
+    }
+  ],
+  "alertIcon": [
+    {
+      "x": 69,
+      "y": 332.5,
+      "width": 16,
+      "height": 16,
+      "color": "rgb(194, 120, 3)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "16px",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [
+        "M512 64a448 448 0 1 1 0 896 448 448 0 0 1 0-896m0 192a58.43 58.43 0 0 0-58.24 63.744l23.36 256.384a35.072 35.072 0 0 0 69.76 0l23.296-256.384A58.43 58.43 0 0 0 512 256m0 512a51.2 51.2 0 1 0 0-102.4 51.2 51.2 0 0 0 0 102.4"
+      ],
+      "characters": [],
+      "text": null
+    }
+  ],
+  "alertTitle": [
+    {
+      "x": 93,
+      "y": 304.5,
+      "width": 228,
+      "height": 72,
+      "color": "rgb(194, 120, 3)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "characters": [
+        {
+          "text": "L",
+          "x": 0,
+          "y": 2,
+          "width": 7.609375,
+          "height": 20
+        },
+        {
+          "text": "ầ",
+          "x": 7.59375,
+          "y": 2,
+          "width": 7.890625,
+          "height": 20
+        },
+        {
+          "text": "n",
+          "x": 15.46875,
+          "y": 2,
+          "width": 8.5625,
+          "height": 20
+        },
+        {
+          "text": " ",
+          "x": 24.015625,
+          "y": 2,
+          "width": 3.15625,
+          "height": 20
+        },
+        {
+          "text": "đ",
+          "x": 27.15625,
+          "y": 2,
+          "width": 8.6875,
+          "height": 20
+        },
+        {
+          "text": "ầ",
+          "x": 35.828125,
+          "y": 2,
+          "width": 7.90625,
+          "height": 20
+        },
+        {
+          "text": "u",
+          "x": 43.71875,
+          "y": 2,
+          "width": 8.515625,
+          "height": 20
+        },
+        {
+          "text": " ",
+          "x": 52.21875,
+          "y": 2,
+          "width": 3.140625,
+          "height": 20
+        },
+        {
+          "text": "đ",
+          "x": 55.34375,
+          "y": 2,
+          "width": 8.703125,
+          "height": 20
+        },
+        {
+          "text": "ă",
+          "x": 64.03125,
+          "y": 2,
+          "width": 7.890625,
+          "height": 20
+        },
+        {
+          "text": "n",
+          "x": 71.90625,
+          "y": 2,
+          "width": 8.5625,
+          "height": 20
+        },
+        {
+          "text": "g",
+          "x": 80.453125,
+          "y": 2,
+          "width": 7.90625,
+          "height": 20
+        },
+        {
+          "text": " ",
+          "x": 88.34375,
+          "y": 2,
+          "width": 3.15625,
+          "height": 20
+        },
+        {
+          "text": "n",
+          "x": 91.484375,
+          "y": 2,
+          "width": 8.546875,
+          "height": 20
+        },
+        {
+          "text": "h",
+          "x": 100.015625,
+          "y": 2,
+          "width": 8.515625,
+          "height": 20
+        },
+        {
+          "text": "ậ",
+          "x": 108.515625,
+          "y": 2,
+          "width": 7.90625,
+          "height": 20
+        },
+        {
+          "text": "p",
+          "x": 116.40625,
+          "y": 2,
+          "width": 8.6875,
+          "height": 20
+        },
+        {
+          "text": " ",
+          "x": 125.078125,
+          "y": 2,
+          "width": 3.15625,
+          "height": 20
+        },
+        {
+          "text": "h",
+          "x": 128.21875,
+          "y": 2,
+          "width": 8.515625,
+          "height": 20
+        },
+        {
+          "text": "o",
+          "x": 136.71875,
+          "y": 2,
+          "width": 8.234375,
+          "height": 20
+        },
+        {
+          "text": "ặ",
+          "x": 144.9375,
+          "y": 2,
+          "width": 7.890625,
+          "height": 20
+        },
+        {
+          "text": "c",
+          "x": 152.8125,
+          "y": 2,
+          "width": 7.15625,
+          "height": 20
+        },
+        {
+          "text": " ",
+          "x": 159.953125,
+          "y": 2,
+          "width": 3.15625,
+          "height": 20
+        },
+        {
+          "text": "m",
+          "x": 163.09375,
+          "y": 2,
+          "width": 12.96875,
+          "height": 20
+        },
+        {
+          "text": "ậ",
+          "x": 176.046875,
+          "y": 2,
+          "width": 7.65625,
+          "height": 20
+        },
+        {
+          "text": "t",
+          "x": 183.6875,
+          "y": 2,
+          "width": 5.296875,
+          "height": 20
+        },
+        {
+          "text": " ",
+          "x": 188.96875,
+          "y": 2,
+          "width": 3.140625,
+          "height": 20
+        },
+        {
+          "text": "k",
+          "x": 192.09375,
+          "y": 2,
+          "width": 7.75,
+          "height": 20
+        },
+        {
+          "text": "h",
+          "x": 199.828125,
+          "y": 2,
+          "width": 8.515625,
+          "height": 20
+        },
+        {
+          "text": "ẩ",
+          "x": 208.328125,
+          "y": 2,
+          "width": 7.890625,
+          "height": 20
+        },
+        {
+          "text": "u",
+          "x": 216.203125,
+          "y": 2,
+          "width": 8.515625,
+          "height": 20
+        },
+        {
+          "text": " ",
+          "x": 224.703125,
+          "y": 2,
+          "width": 0,
+          "height": 20
+        },
+        {
+          "text": "đ",
+          "x": 0,
+          "y": 26,
+          "width": 8.6875,
+          "height": 20
+        },
+        {
+          "text": "ã",
+          "x": 8.671875,
+          "y": 26,
+          "width": 7.890625,
+          "height": 20
+        },
+        {
+          "text": " ",
+          "x": 16.546875,
+          "y": 26,
+          "width": 3.15625,
+          "height": 20
+        },
+        {
+          "text": "đ",
+          "x": 19.6875,
+          "y": 26,
+          "width": 8.703125,
+          "height": 20
+        },
+        {
+          "text": "ư",
+          "x": 28.375,
+          "y": 26,
+          "width": 8.515625,
+          "height": 20
+        },
+        {
+          "text": "ợ",
+          "x": 36.875,
+          "y": 26,
+          "width": 8.5,
+          "height": 20
+        },
+        {
+          "text": "c",
+          "x": 45.359375,
+          "y": 26,
+          "width": 7.140625,
+          "height": 20
+        },
+        {
+          "text": " ",
+          "x": 52.484375,
+          "y": 26,
+          "width": 3.15625,
+          "height": 20
+        },
+        {
+          "text": "đ",
+          "x": 55.625,
+          "y": 26,
+          "width": 8.703125,
+          "height": 20
+        },
+        {
+          "text": "ặ",
+          "x": 64.3125,
+          "y": 26,
+          "width": 7.640625,
+          "height": 20
+        },
+        {
+          "text": "t",
+          "x": 71.9375,
+          "y": 26,
+          "width": 5.296875,
+          "height": 20
+        },
+        {
+          "text": " ",
+          "x": 77.21875,
+          "y": 26,
+          "width": 3.15625,
+          "height": 20
+        },
+        {
+          "text": "l",
+          "x": 80.359375,
+          "y": 26,
+          "width": 3.984375,
+          "height": 20
+        },
+        {
+          "text": "ạ",
+          "x": 84.328125,
+          "y": 26,
+          "width": 7.890625,
+          "height": 20
+        },
+        {
+          "text": "i",
+          "x": 92.203125,
+          "y": 26,
+          "width": 3.875,
+          "height": 20
+        },
+        {
+          "text": ":",
+          "x": 96.0625,
+          "y": 26,
+          "width": 3.90625,
+          "height": 20
+        },
+        {
+          "text": " ",
+          "x": 99.953125,
+          "y": 26,
+          "width": 3.15625,
+          "height": 20
+        },
+        {
+          "text": "v",
+          "x": 103.09375,
+          "y": 26,
+          "width": 7.296875,
+          "height": 20
+        },
+        {
+          "text": "u",
+          "x": 110.375,
+          "y": 26,
+          "width": 8.515625,
+          "height": 20
+        },
+        {
+          "text": "i",
+          "x": 118.875,
+          "y": 26,
+          "width": 3.875,
+          "height": 20
+        },
+        {
+          "text": " ",
+          "x": 122.734375,
+          "y": 26,
+          "width": 3.140625,
+          "height": 20
+        },
+        {
+          "text": "l",
+          "x": 125.859375,
+          "y": 26,
+          "width": 4,
+          "height": 20
+        },
+        {
+          "text": "ò",
+          "x": 129.84375,
+          "y": 26,
+          "width": 8.5,
+          "height": 20
+        },
+        {
+          "text": "n",
+          "x": 138.328125,
+          "y": 26,
+          "width": 8.546875,
+          "height": 20
+        },
+        {
+          "text": "g",
+          "x": 146.859375,
+          "y": 26,
+          "width": 7.921875,
+          "height": 20
+        },
+        {
+          "text": " ",
+          "x": 154.765625,
+          "y": 26,
+          "width": 3.140625,
+          "height": 20
+        },
+        {
+          "text": "đ",
+          "x": 157.890625,
+          "y": 26,
+          "width": 8.703125,
+          "height": 20
+        },
+        {
+          "text": "ổ",
+          "x": 166.578125,
+          "y": 26,
+          "width": 8.5,
+          "height": 20
+        },
+        {
+          "text": "i",
+          "x": 175.0625,
+          "y": 26,
+          "width": 3.859375,
+          "height": 20
+        },
+        {
+          "text": " ",
+          "x": 178.90625,
+          "y": 26,
+          "width": 3.15625,
+          "height": 20
+        },
+        {
+          "text": "m",
+          "x": 182.046875,
+          "y": 26,
+          "width": 12.984375,
+          "height": 20
+        },
+        {
+          "text": "ậ",
+          "x": 195.015625,
+          "y": 26,
+          "width": 7.640625,
+          "height": 20
+        },
+        {
+          "text": "t",
+          "x": 202.640625,
+          "y": 26,
+          "width": 5.296875,
+          "height": 20
+        },
+        {
+          "text": " ",
+          "x": 207.921875,
+          "y": 26,
+          "width": 0,
+          "height": 20
+        },
+        {
+          "text": "k",
+          "x": 0,
+          "y": 50,
+          "width": 7.734375,
+          "height": 20
+        },
+        {
+          "text": "h",
+          "x": 7.71875,
+          "y": 50,
+          "width": 8.515625,
+          "height": 20
+        },
+        {
+          "text": "ẩ",
+          "x": 16.21875,
+          "y": 50,
+          "width": 7.890625,
+          "height": 20
+        },
+        {
+          "text": "u",
+          "x": 24.09375,
+          "y": 50,
+          "width": 8.515625,
+          "height": 20
+        },
+        {
+          "text": ".",
+          "x": 32.59375,
+          "y": 50,
+          "width": 3.90625,
+          "height": 20
+        }
+      ],
+      "text": "Lần đầu đăng nhập hoặc mật khẩu đã được đặt lại: vui lòng đổi mật khẩu."
+    }
+  ],
+  "form": [
+    {
+      "x": 53,
+      "y": 400.5,
+      "width": 284,
+      "height": 304,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "characters": [],
+      "text": null
+    }
+  ],
+  "labels": [
+    {
+      "x": 53,
+      "y": 400.5,
+      "width": 122.125,
+      "height": 22,
+      "color": "rgb(96, 98, 102)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "22px",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "characters": [],
+      "text": "Mật khẩu hiện tại"
+    },
+    {
+      "x": 53,
+      "y": 480.5,
+      "width": 99,
+      "height": 22,
+      "color": "rgb(96, 98, 102)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "22px",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "characters": [],
+      "text": "Mật khẩu mới"
+    },
+    {
+      "x": 53,
+      "y": 592.5,
+      "width": 152.640625,
+      "height": 22,
+      "color": "rgb(96, 98, 102)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "22px",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "characters": [],
+      "text": "Xác nhận mật khẩu mới"
+    }
+  ],
+  "fields": [
+    {
+      "x": 53,
+      "y": 430.5,
+      "width": 284,
+      "height": 32,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "32px",
+      "padding": "1px 11px",
+      "background": "rgb(255, 255, 255)",
+      "boxShadow": "rgb(220, 223, 230) 0px 0px 0px 1px inset",
+      "borderRadius": "8px",
+      "iconPaths": [],
+      "characters": [],
+      "text": null
+    },
+    {
+      "x": 53,
+      "y": 510.5,
+      "width": 284,
+      "height": 32,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "32px",
+      "padding": "1px 11px",
+      "background": "rgb(255, 255, 255)",
+      "boxShadow": "rgb(220, 223, 230) 0px 0px 0px 1px inset",
+      "borderRadius": "8px",
+      "iconPaths": [],
+      "characters": [],
+      "text": null
+    },
+    {
+      "x": 53,
+      "y": 622.5,
+      "width": 284,
+      "height": 32,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "32px",
+      "padding": "1px 11px",
+      "background": "rgb(255, 255, 255)",
+      "boxShadow": "rgb(220, 223, 230) 0px 0px 0px 1px inset",
+      "borderRadius": "8px",
+      "iconPaths": [],
+      "characters": [],
+      "text": null
+    }
+  ],
+  "inputs": [
+    {
+      "x": 64,
+      "y": 431.5,
+      "width": 262,
+      "height": 30,
+      "color": "rgb(96, 98, 102)",
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "30px",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "characters": [],
+      "text": null
+    },
+    {
+      "x": 64,
+      "y": 511.5,
+      "width": 262,
+      "height": 30,
+      "color": "rgb(96, 98, 102)",
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "30px",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "characters": [],
+      "text": null
+    },
+    {
+      "x": 64,
+      "y": 623.5,
+      "width": 262,
+      "height": 30,
+      "color": "rgb(96, 98, 102)",
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "30px",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "characters": [],
+      "text": null
+    }
+  ],
+  "eyes": [],
+  "policy": [
+    {
+      "x": 53,
+      "y": 542.5,
+      "width": 160.34375,
+      "height": 32,
+      "color": "rgb(100, 116, 139)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "lineHeight": "32px",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "characters": [],
+      "text": "8–64 ký tự, gồm cả chữ và số."
+    }
+  ],
+  "errors": [],
+  "actions": [
+    {
+      "x": 53,
+      "y": 672.5,
+      "width": 284,
+      "height": 32,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "iconPaths": [],
+      "characters": [],
+      "text": null
+    }
+  ],
+  "buttons": [
+    {
+      "x": 164.21875,
+      "y": 672.5,
+      "width": 95.828125,
+      "height": 32,
+      "color": "rgb(96, 98, 102)",
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "lineHeight": "14px",
+      "padding": "8px 15px",
+      "background": "rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "borderRadius": "8px",
+      "iconPaths": [],
+      "characters": [],
+      "text": "Đăng xuất"
+    },
+    {
+      "x": 280.046875,
+      "y": 672.5,
+      "width": 56.953125,
+      "height": 32,
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "lineHeight": "14px",
+      "padding": "8px 15px",
+      "background": "rgb(30, 74, 138)",
+      "boxShadow": "none",
+      "borderRadius": "8px",
+      "iconPaths": [],
+      "characters": [],
+      "text": "Lưu"
+    }
+  ]
+}

@@ -1,0 +1,364 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\node_modules\\.pnpm\\@playwright+test@1.63.0\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.parity.config.ts",
+      "audit-rules.spec.ts",
+      "--workers=1",
+      "--retries=0",
+      "--output=test-results/stage33-rule-initial-ui"
+    ],
+    "configFile": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\playwright.parity.config.ts",
+    "rootDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage33-rule-initial-ui",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "prototype",
+        "name": "prototype",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [
+          "**/query-recovery.spec.ts"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage33-rule-initial-ui",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "migration",
+        "name": "migration",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/parity/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "audit-rules.spec.ts",
+      "file": "audit-rules.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P12 real rule audits: create edit rename combined and no-op",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 7679,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  0\u001b[39m\n\u001b[31m+ Received  + 75\u001b[39m\n\n\u001b[33m@@ -22,6 +22,81 @@\u001b[39m\n\u001b[2m    Object {\u001b[22m\n\u001b[2m      \"action\": \"RULE_CREATE\",\u001b[22m\n\u001b[2m      \"detail\": \"CMP_UI_R_AUDIT_1009075251 v1 prefix= suffix= base=10 len=5 charset=0123456789\",\u001b[22m\n\u001b[2m      \"pi\": \"CMP_UI_R_AUDIT_1009075251\",\u001b[22m\n\u001b[2m    },\u001b[22m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[2m  ]\u001b[22m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  0\u001b[39m\n\u001b[31m+ Received  + 75\u001b[39m\n\n\u001b[33m@@ -22,6 +22,81 @@\u001b[39m\n\u001b[2m    Object {\u001b[22m\n\u001b[2m      \"action\": \"RULE_CREATE\",\u001b[22m\n\u001b[2m      \"detail\": \"CMP_UI_R_AUDIT_1009075251 v1 prefix= suffix= base=10 len=5 charset=0123456789\",\u001b[22m\n\u001b[2m      \"pi\": \"CMP_UI_R_AUDIT_1009075251\",\u001b[22m\n\u001b[2m    },\u001b[22m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[2m  ]\u001b[22m\n    at inspect (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts:84:5)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts:178:9",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts",
+                      "column": 5,
+                      "line": 84
+                    },
+                    "snippet": "  82 |       pi: r[source(info) ? 'pi_no' : 'pi'],\n  83 |     })),\n> 84 |   ).toEqual(expected);\n     |     ^\n  85 |   for (const item of items) {\n  86 |     expect(item.operator).toBe('admin');\n  87 |     expect(item.source).toBe('PAGE');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts",
+                        "column": 5,
+                        "line": 84
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  0\u001b[39m\n\u001b[31m+ Received  + 75\u001b[39m\n\n\u001b[33m@@ -22,6 +22,81 @@\u001b[39m\n\u001b[2m    Object {\u001b[22m\n\u001b[2m      \"action\": \"RULE_CREATE\",\u001b[22m\n\u001b[2m      \"detail\": \"CMP_UI_R_AUDIT_1009075251 v1 prefix= suffix= base=10 len=5 charset=0123456789\",\u001b[22m\n\u001b[2m      \"pi\": \"CMP_UI_R_AUDIT_1009075251\",\u001b[22m\n\u001b[2m    },\u001b[22m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[2m  ]\u001b[22m\n\n  82 |       pi: r[source(info) ? 'pi_no' : 'pi'],\n  83 |     })),\n> 84 |   ).toEqual(expected);\n     |     ^\n  85 |   for (const item of items) {\n  86 |     expect(item.operator).toBe('admin');\n  87 |     expect(item.source).toBe('PAGE');\n    at inspect (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts:84:5)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts:178:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T23:52:52.236Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage33-rule-initial-ui\\audit-rules-P12-real-rule--eebd3-t-rename-combined-and-no-op-prototype\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts",
+                    "column": 5,
+                    "line": 84
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "22fe91cd20997730c2b8-79515fc05ba2ee041f41",
+          "file": "audit-rules.spec.ts",
+          "line": 128,
+          "column": 3
+        },
+        {
+          "title": "P12 real rule audits: used version and rename",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 4308,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  0\u001b[39m\n\u001b[31m+ Received  + 90\u001b[39m\n\n\u001b[33m@@ -7,6 +7,96 @@\u001b[39m\n\u001b[2m    Object {\u001b[22m\n\u001b[2m      \"action\": \"RULE_VERSION\",\u001b[22m\n\u001b[2m      \"detail\": \"CMP_MAIN v2 prefix=CMP_UI_R_USED_100907525177 suffix= base=10 len=5 charset=0123456789 (was prefix=CMP suffix= base=10 len=5 charset=0123456789)\",\u001b[22m\n\u001b[2m      \"pi\": null,\u001b[22m\n\u001b[2m    },\u001b[22m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"RULE_RENAME\",\u001b[39m\n\u001b[31m+     \"detail\": \"CMP_UI_R_AUDIT_1009075251 改名规则 -> 组合修改\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"RULE_UPDATE\",\u001b[39m\n\u001b[31m+     \"detail\": \"CMP_UI_R_AUDIT_1009075251 v1 prefix=B suffix= base=10 len=5 charset=0123456789 (was prefix=A suffix= base=10 len=5 charset=0123456789)\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"RULE_RENAME\",\u001b[39m\n\u001b[31m+     \"detail\": \"CMP_UI_R_AUDIT_1009075251 原规则 -> 改名规则\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"RULE_UPDATE\",\u001b[39m\n\u001b[31m+     \"detail\": \"CMP_UI_R_AUDIT_1009075251 v1 prefix=A suffix= base=10 len=5 charset=0123456789 (was prefix= suffix= base=10 len=5 charset=0123456789)\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"RULE_CREATE\",\u001b[39m\n\u001b[31m+     \"detail\": \"CMP_UI_R_AUDIT_1009075251 v1 prefix= suffix= base=10 len=5 charset=0123456789\",\u001b[39m\n\u001b[31m+     \"pi\": \"CMP_UI_R_AUDIT_1009075251\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[2m  ]\u001b[22m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  0\u001b[39m\n\u001b[31m+ Received  + 90\u001b[39m\n\n\u001b[33m@@ -7,6 +7,96 @@\u001b[39m\n\u001b[2m    Object {\u001b[22m\n\u001b[2m      \"action\": \"RULE_VERSION\",\u001b[22m\n\u001b[2m      \"detail\": \"CMP_MAIN v2 prefix=CMP_UI_R_USED_100907525177 suffix= base=10 len=5 charset=0123456789 (was prefix=CMP suffix= base=10 len=5 charset=0123456789)\",\u001b[22m\n\u001b[2m      \"pi\": null,\u001b[22m\n\u001b[2m    },\u001b[22m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"RULE_RENAME\",\u001b[39m\n\u001b[31m+     \"detail\": \"CMP_UI_R_AUDIT_1009075251 改名规则 -> 组合修改\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"RULE_UPDATE\",\u001b[39m\n\u001b[31m+     \"detail\": \"CMP_UI_R_AUDIT_1009075251 v1 prefix=B suffix= base=10 len=5 charset=0123456789 (was prefix=A suffix= base=10 len=5 charset=0123456789)\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"RULE_RENAME\",\u001b[39m\n\u001b[31m+     \"detail\": \"CMP_UI_R_AUDIT_1009075251 原规则 -> 改名规则\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"RULE_UPDATE\",\u001b[39m\n\u001b[31m+     \"detail\": \"CMP_UI_R_AUDIT_1009075251 v1 prefix=A suffix= base=10 len=5 charset=0123456789 (was prefix= suffix= base=10 len=5 charset=0123456789)\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"RULE_CREATE\",\u001b[39m\n\u001b[31m+     \"detail\": \"CMP_UI_R_AUDIT_1009075251 v1 prefix= suffix= base=10 len=5 charset=0123456789\",\u001b[39m\n\u001b[31m+     \"pi\": \"CMP_UI_R_AUDIT_1009075251\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[2m  ]\u001b[22m\n    at inspect (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts:84:5)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts:153:9",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts",
+                      "column": 5,
+                      "line": 84
+                    },
+                    "snippet": "  82 |       pi: r[source(info) ? 'pi_no' : 'pi'],\n  83 |     })),\n> 84 |   ).toEqual(expected);\n     |     ^\n  85 |   for (const item of items) {\n  86 |     expect(item.operator).toBe('admin');\n  87 |     expect(item.source).toBe('PAGE');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts",
+                        "column": 5,
+                        "line": 84
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  0\u001b[39m\n\u001b[31m+ Received  + 90\u001b[39m\n\n\u001b[33m@@ -7,6 +7,96 @@\u001b[39m\n\u001b[2m    Object {\u001b[22m\n\u001b[2m      \"action\": \"RULE_VERSION\",\u001b[22m\n\u001b[2m      \"detail\": \"CMP_MAIN v2 prefix=CMP_UI_R_USED_100907525177 suffix= base=10 len=5 charset=0123456789 (was prefix=CMP suffix= base=10 len=5 charset=0123456789)\",\u001b[22m\n\u001b[2m      \"pi\": null,\u001b[22m\n\u001b[2m    },\u001b[22m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"RULE_RENAME\",\u001b[39m\n\u001b[31m+     \"detail\": \"CMP_UI_R_AUDIT_1009075251 改名规则 -> 组合修改\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"RULE_UPDATE\",\u001b[39m\n\u001b[31m+     \"detail\": \"CMP_UI_R_AUDIT_1009075251 v1 prefix=B suffix= base=10 len=5 charset=0123456789 (was prefix=A suffix= base=10 len=5 charset=0123456789)\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"RULE_RENAME\",\u001b[39m\n\u001b[31m+     \"detail\": \"CMP_UI_R_AUDIT_1009075251 原规则 -> 改名规则\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"RULE_UPDATE\",\u001b[39m\n\u001b[31m+     \"detail\": \"CMP_UI_R_AUDIT_1009075251 v1 prefix=A suffix= base=10 len=5 charset=0123456789 (was prefix= suffix= base=10 len=5 charset=0123456789)\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"RULE_CREATE\",\u001b[39m\n\u001b[31m+     \"detail\": \"CMP_UI_R_AUDIT_1009075251 v1 prefix= suffix= base=10 len=5 charset=0123456789\",\u001b[39m\n\u001b[31m+     \"pi\": \"CMP_UI_R_AUDIT_1009075251\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"action\": \"LOGIN\",\u001b[39m\n\u001b[31m+     \"detail\": \"client=127.0.0.1\",\u001b[39m\n\u001b[31m+     \"pi\": null,\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[2m  ]\u001b[22m\n\n  82 |       pi: r[source(info) ? 'pi_no' : 'pi'],\n  83 |     })),\n> 84 |   ).toEqual(expected);\n     |     ^\n  85 |   for (const item of items) {\n  86 |     expect(item.operator).toBe('admin');\n  87 |     expect(item.source).toBe('PAGE');\n    at inspect (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts:84:5)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts:153:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T23:53:01.273Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage33-rule-initial-ui\\audit-rules-P12-real-rule-audits-used-version-and-rename-prototype\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts",
+                    "column": 5,
+                    "line": 84
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "22fe91cd20997730c2b8-ab514d42d0ae7eea92cc",
+          "file": "audit-rules.spec.ts",
+          "line": 128,
+          "column": 3
+        },
+        {
+          "title": "P12 real rule audits: create edit rename combined and no-op",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 20733,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.ant-table-row')\nExpected: \u001b[32m5\u001b[39m\nReceived: \u001b[31m0\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" locator('.ant-table-row') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.ant-table-row')\u001b[22m\n\u001b[2m    33 × locator resolved to 0 elements\u001b[22m\n\u001b[2m       - unexpected value \"0\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.ant-table-row')\nExpected: \u001b[32m5\u001b[39m\nReceived: \u001b[31m0\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" locator('.ant-table-row') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.ant-table-row')\u001b[22m\n\u001b[2m    33 × locator resolved to 0 elements\u001b[22m\n\u001b[2m       - unexpected value \"0\"\u001b[22m\n\n    at inspect (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts:75:22)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts:178:9",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts",
+                      "column": 22,
+                      "line": 75
+                    },
+                    "snippet": "  73 |   writeFileSync(info.outputPath('actual-records.json'), JSON.stringify(items, null, 2));\n  74 |   const rows = page.locator(rowSelector(info));\n> 75 |   await expect(rows).toHaveCount(expected.length);\n     |                      ^\n  76 |   const action = (value: unknown) =>\n  77 |     value === 'sn:rule:create' ? 'RULE_CREATE' : value === 'sn:rule:update' ? 'RULE_UPDATE' : value;\n  78 |   expect("
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts",
+                        "column": 22,
+                        "line": 75
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.ant-table-row')\nExpected: \u001b[32m5\u001b[39m\nReceived: \u001b[31m0\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" locator('.ant-table-row') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.ant-table-row')\u001b[22m\n\u001b[2m    33 × locator resolved to 0 elements\u001b[22m\n\u001b[2m       - unexpected value \"0\"\u001b[22m\n\n\n  73 |   writeFileSync(info.outputPath('actual-records.json'), JSON.stringify(items, null, 2));\n  74 |   const rows = page.locator(rowSelector(info));\n> 75 |   await expect(rows).toHaveCount(expected.length);\n     |                      ^\n  76 |   const action = (value: unknown) =>\n  77 |     value === 'sn:rule:create' ? 'RULE_CREATE' : value === 'sn:rule:update' ? 'RULE_UPDATE' : value;\n  78 |   expect(\n    at inspect (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts:75:22)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts:178:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T23:53:06.876Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage33-rule-initial-ui\\audit-rules-P12-real-rule--eebd3-t-rename-combined-and-no-op-migration\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts",
+                    "column": 22,
+                    "line": 75
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "22fe91cd20997730c2b8-875b907c25ad4138bac2",
+          "file": "audit-rules.spec.ts",
+          "line": 128,
+          "column": 3
+        },
+        {
+          "title": "P12 real rule audits: used version and rename",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 19177,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.ant-table-row')\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m1\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" locator('.ant-table-row') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.ant-table-row')\u001b[22m\n\u001b[2m    2 × locator resolved to 20 elements\u001b[22m\n\u001b[2m      - unexpected value \"20\"\u001b[22m\n\u001b[2m    31 × locator resolved to 1 element\u001b[22m\n\u001b[2m       - unexpected value \"1\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.ant-table-row')\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m1\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" locator('.ant-table-row') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.ant-table-row')\u001b[22m\n\u001b[2m    2 × locator resolved to 20 elements\u001b[22m\n\u001b[2m      - unexpected value \"20\"\u001b[22m\n\u001b[2m    31 × locator resolved to 1 element\u001b[22m\n\u001b[2m       - unexpected value \"1\"\u001b[22m\n\n    at inspect (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts:75:22)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts:153:9",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts",
+                      "column": 22,
+                      "line": 75
+                    },
+                    "snippet": "  73 |   writeFileSync(info.outputPath('actual-records.json'), JSON.stringify(items, null, 2));\n  74 |   const rows = page.locator(rowSelector(info));\n> 75 |   await expect(rows).toHaveCount(expected.length);\n     |                      ^\n  76 |   const action = (value: unknown) =>\n  77 |     value === 'sn:rule:create' ? 'RULE_CREATE' : value === 'sn:rule:update' ? 'RULE_UPDATE' : value;\n  78 |   expect("
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts",
+                        "column": 22,
+                        "line": 75
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.ant-table-row')\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m1\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" locator('.ant-table-row') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.ant-table-row')\u001b[22m\n\u001b[2m    2 × locator resolved to 20 elements\u001b[22m\n\u001b[2m      - unexpected value \"20\"\u001b[22m\n\u001b[2m    31 × locator resolved to 1 element\u001b[22m\n\u001b[2m       - unexpected value \"1\"\u001b[22m\n\n\n  73 |   writeFileSync(info.outputPath('actual-records.json'), JSON.stringify(items, null, 2));\n  74 |   const rows = page.locator(rowSelector(info));\n> 75 |   await expect(rows).toHaveCount(expected.length);\n     |                      ^\n  76 |   const action = (value: unknown) =>\n  77 |     value === 'sn:rule:create' ? 'RULE_CREATE' : value === 'sn:rule:update' ? 'RULE_UPDATE' : value;\n  78 |   expect(\n    at inspect (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts:75:22)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts:153:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T23:53:29.044Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage33-rule-initial-ui\\audit-rules-P12-real-rule-audits-used-version-and-rename-migration\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\audit-rules.spec.ts",
+                    "column": 22,
+                    "line": 75
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "22fe91cd20997730c2b8-dfe07b5121cca772cf8d",
+          "file": "audit-rules.spec.ts",
+          "line": 128,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-08T23:52:51.793Z",
+    "duration": 57485.547999999995,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 4,
+    "flaky": 0
+  }
+}

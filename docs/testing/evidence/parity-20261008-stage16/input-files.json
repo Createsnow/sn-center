@@ -1,0 +1,14 @@
+[
+  {
+    "file": "capacity-over.txt",
+    "count": 500001,
+    "bytes": 32500065,
+    "sha256": "4305673949e7bc742f0a0290e01dafdf99314130874a1af8fc7af4a6138992f7"
+  },
+  {
+    "file": "capacity-valid.txt",
+    "count": 500000,
+    "bytes": 110500000,
+    "sha256": "9c274777998b894065ff3d437c318b7ac57ebf31d001f58c759e782bef80d085"
+  }
+]

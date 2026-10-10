@@ -1,0 +1,379 @@
+{
+  "filePairs": [
+    {
+      "locale": "en",
+      "file": "automatic-second.xlsx",
+      "rows": 3,
+      "allColumnsAndOriginalOrderEqual": true,
+      "cellTypesEqual": true
+    },
+    {
+      "locale": "en",
+      "file": "retried-first.xlsx",
+      "rows": 3,
+      "allColumnsAndOriginalOrderEqual": true,
+      "cellTypesEqual": true
+    },
+    {
+      "locale": "en",
+      "file": "retried-first.csv",
+      "rows": 3,
+      "utf8Bom": true,
+      "bytesEqualExceptIndependentBatchNumbers": true
+    },
+    {
+      "locale": "vi",
+      "file": "automatic-second.xlsx",
+      "rows": 3,
+      "allColumnsAndOriginalOrderEqual": true,
+      "cellTypesEqual": true
+    },
+    {
+      "locale": "vi",
+      "file": "retried-first.xlsx",
+      "rows": 3,
+      "allColumnsAndOriginalOrderEqual": true,
+      "cellTypesEqual": true
+    },
+    {
+      "locale": "vi",
+      "file": "retried-first.csv",
+      "rows": 3,
+      "utf8Bom": true,
+      "bytesEqualExceptIndependentBatchNumbers": true
+    },
+    {
+      "locale": "zh-CN",
+      "file": "automatic-second.xlsx",
+      "rows": 3,
+      "allColumnsAndOriginalOrderEqual": true,
+      "cellTypesEqual": true
+    },
+    {
+      "locale": "zh-CN",
+      "file": "retried-first.xlsx",
+      "rows": 3,
+      "allColumnsAndOriginalOrderEqual": true,
+      "cellTypesEqual": true
+    },
+    {
+      "locale": "zh-CN",
+      "file": "retried-first.csv",
+      "rows": 3,
+      "utf8Bom": true,
+      "bytesEqualExceptIndependentBatchNumbers": true
+    }
+  ],
+  "cases": [
+    {
+      "locale": "en",
+      "prototype": {
+        "locale": "en",
+        "injectedFailures": 2,
+        "successfulPrintCommands": 2,
+        "downloadError": "Download failed (HTTP 503)",
+        "confirm": "OK",
+        "cancel": "Cancel",
+        "noticeElapsedMs": 3825,
+        "noCloseButton": true,
+        "noPersistentAlert": true,
+        "retryLeavesBusinessUnchanged": true,
+        "detailHeaders": [
+          "Full SN",
+          "Encoded serial",
+          "Decimal serial",
+          "Material",
+          "Status",
+          "PI"
+        ],
+        "detailViewport": {
+          "width": 900,
+          "height": 900
+        },
+        "drawer": {
+          "x": 140,
+          "y": 0,
+          "width": 760,
+          "height": 900
+        },
+        "appearance": {
+          "tag": {
+            "color": "rgb(63, 125, 90)",
+            "background": "rgb(240, 249, 235)",
+            "width": 57.28125,
+            "height": 20
+          },
+          "close": {
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "width": 32,
+            "height": 22
+          },
+          "mask": {
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0.5)",
+            "width": 900,
+            "height": 900
+          }
+        }
+      },
+      "migration": {
+        "locale": "en",
+        "injectedFailures": 2,
+        "successfulPrintCommands": 2,
+        "downloadError": "Download failed (HTTP 503)",
+        "confirm": "OK",
+        "cancel": "Cancel",
+        "noticeElapsedMs": 3671,
+        "noCloseButton": true,
+        "noPersistentAlert": true,
+        "retryLeavesBusinessUnchanged": true,
+        "detailHeaders": [
+          "Full SN",
+          "Encoded serial",
+          "Decimal serial",
+          "Material",
+          "Status",
+          "PI"
+        ],
+        "detailViewport": {
+          "width": 900,
+          "height": 900
+        },
+        "drawer": {
+          "x": 140,
+          "y": 0,
+          "width": 760,
+          "height": 900
+        },
+        "appearance": {
+          "tag": {
+            "color": "rgb(63, 125, 90)",
+            "background": "rgb(240, 249, 235)",
+            "width": 57.28125,
+            "height": 20
+          },
+          "close": {
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "width": 32,
+            "height": 22
+          },
+          "mask": {
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0.5)",
+            "width": 900,
+            "height": 900
+          }
+        }
+      }
+    },
+    {
+      "locale": "vi",
+      "prototype": {
+        "locale": "vi",
+        "injectedFailures": 2,
+        "successfulPrintCommands": 2,
+        "downloadError": "Tải xuống thất bại (HTTP 503)",
+        "confirm": "OK",
+        "cancel": "Hủy",
+        "noticeElapsedMs": 3832,
+        "noCloseButton": true,
+        "noPersistentAlert": true,
+        "retryLeavesBusinessUnchanged": true,
+        "detailHeaders": [
+          "SN đầy đủ",
+          "Số thứ tự mã hóa",
+          "Số thứ tự thập phân",
+          "Mã vật tư",
+          "Trạng thái",
+          "PI"
+        ],
+        "detailViewport": {
+          "width": 900,
+          "height": 900
+        },
+        "drawer": {
+          "x": 140,
+          "y": 0,
+          "width": 760,
+          "height": 900
+        },
+        "appearance": {
+          "tag": {
+            "color": "rgb(63, 125, 90)",
+            "background": "rgb(240, 249, 235)",
+            "width": 44.609375,
+            "height": 20
+          },
+          "close": {
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "width": 32,
+            "height": 22
+          },
+          "mask": {
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0.5)",
+            "width": 900,
+            "height": 900
+          }
+        }
+      },
+      "migration": {
+        "locale": "vi",
+        "injectedFailures": 2,
+        "successfulPrintCommands": 2,
+        "downloadError": "Tải xuống thất bại (HTTP 503)",
+        "confirm": "OK",
+        "cancel": "Hủy",
+        "noticeElapsedMs": 3649,
+        "noCloseButton": true,
+        "noPersistentAlert": true,
+        "retryLeavesBusinessUnchanged": true,
+        "detailHeaders": [
+          "SN đầy đủ",
+          "Số thứ tự mã hóa",
+          "Số thứ tự thập phân",
+          "Mã vật tư",
+          "Trạng thái",
+          "PI"
+        ],
+        "detailViewport": {
+          "width": 900,
+          "height": 900
+        },
+        "drawer": {
+          "x": 140,
+          "y": 0,
+          "width": 760,
+          "height": 900
+        },
+        "appearance": {
+          "tag": {
+            "color": "rgb(63, 125, 90)",
+            "background": "rgb(240, 249, 235)",
+            "width": 44.609375,
+            "height": 20
+          },
+          "close": {
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "width": 32,
+            "height": 22
+          },
+          "mask": {
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0.5)",
+            "width": 900,
+            "height": 900
+          }
+        }
+      }
+    },
+    {
+      "locale": "zh-CN",
+      "prototype": {
+        "locale": "zh-CN",
+        "injectedFailures": 2,
+        "successfulPrintCommands": 2,
+        "downloadError": "下载失败（HTTP 503）",
+        "confirm": "确定",
+        "cancel": "取消",
+        "noticeElapsedMs": 3827,
+        "noCloseButton": true,
+        "noPersistentAlert": true,
+        "retryLeavesBusinessUnchanged": true,
+        "detailHeaders": [
+          "完整 SN",
+          "进制流水",
+          "十进制流水",
+          "物料编码",
+          "状态",
+          "PI"
+        ],
+        "detailViewport": {
+          "width": 900,
+          "height": 900
+        },
+        "drawer": {
+          "x": 140,
+          "y": 0,
+          "width": 760,
+          "height": 900
+        },
+        "appearance": {
+          "tag": {
+            "color": "rgb(63, 125, 90)",
+            "background": "rgb(240, 249, 235)",
+            "width": 52,
+            "height": 20
+          },
+          "close": {
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "width": 32,
+            "height": 22
+          },
+          "mask": {
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0.5)",
+            "width": 900,
+            "height": 900
+          }
+        }
+      },
+      "migration": {
+        "locale": "zh-CN",
+        "injectedFailures": 2,
+        "successfulPrintCommands": 2,
+        "downloadError": "下载失败（HTTP 503）",
+        "confirm": "确定",
+        "cancel": "取消",
+        "noticeElapsedMs": 3671,
+        "noCloseButton": true,
+        "noPersistentAlert": true,
+        "retryLeavesBusinessUnchanged": true,
+        "detailHeaders": [
+          "完整 SN",
+          "进制流水",
+          "十进制流水",
+          "物料编码",
+          "状态",
+          "PI"
+        ],
+        "detailViewport": {
+          "width": 900,
+          "height": 900
+        },
+        "drawer": {
+          "x": 140,
+          "y": 0,
+          "width": 760,
+          "height": 900
+        },
+        "appearance": {
+          "tag": {
+            "color": "rgb(63, 125, 90)",
+            "background": "rgb(240, 249, 235)",
+            "width": 52,
+            "height": 20
+          },
+          "close": {
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "width": 32,
+            "height": 22
+          },
+          "mask": {
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0.5)",
+            "width": 900,
+            "height": 900
+          }
+        }
+      }
+    }
+  ],
+  "scope": "HTTP 503 injected only for downloads. Actual acquire/print commands, real retries, original file row order. No claim about real permission revocation or arbitrary network failure."
+}

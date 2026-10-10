@@ -67,8 +67,11 @@ adtek:
     work:
       # 资源准入与来源额度、页面10000建议量分离；整批超限拒绝，不分段提交。
       max-batch-quantity: ${ADTEK_SN_MAX_BATCH_QUANTITY:100000}
-      max-import-bytes: ${ADTEK_SN_MAX_IMPORT_BYTES:8388608}
-      preview-seconds: ${ADTEK_SN_PREVIEW_SECONDS:600}
+      max-audit-export-quantity: ${ADTEK_SN_MAX_AUDIT_EXPORT_QUANTITY:200000}
+      max-import-quantity: ${ADTEK_SN_MAX_IMPORT_QUANTITY:500000}
+      import-execution-seconds: ${ADTEK_SN_IMPORT_EXECUTION_SECONDS:600}
+      preview-seconds: ${ADTEK_SN_PREVIEW_SECONDS:1800}
+      inline-generation-quantity: ${ADTEK_SN_INLINE_GENERATION_QUANTITY:5000}
   k3:
     # 默认不连接ERP，不读取旧项目配置；启用后需验证实际账套稳定字段。
     enabled: ${ADTEK_K3_ENABLED:false}

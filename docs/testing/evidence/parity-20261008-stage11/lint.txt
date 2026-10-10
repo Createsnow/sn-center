@@ -1,0 +1,4 @@
+
+> adtek-platform-sn-web@0.1.0 lint D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> eslint . --max-warnings 0
+

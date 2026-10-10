@@ -1,0 +1,1588 @@
+{
+  "states": [
+    {
+      "label": "loaded",
+      "scroll": 0,
+      "scrollHeight": 964,
+      "height": 904,
+      "fonts": "loaded",
+      "focus": {
+        "tag": "LI",
+        "cls": "el-menu-item is-active",
+        "text": "生产订单",
+        "rect": [
+          0,
+          187,
+          220,
+          44
+        ],
+        "display": "flex",
+        "font": [
+          "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "14px",
+          "400",
+          "44px"
+        ],
+        "color": "rgb(255, 255, 255)",
+        "padding": "0px 20px"
+      },
+      "groups": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_9 el-table__cell",
+            "text": "CMP-MO-FRACTION",
+            "rect": [
+              261,
+              394.796875,
+              120,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_10 el-table__cell",
+            "text": "CMP-CUSTOMER",
+            "rect": [
+              381,
+              394.796875,
+              80,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_11 el-table__cell",
+            "text": "CMP-PI-FRACTION",
+            "rect": [
+              461,
+              394.796875,
+              140,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_12 el-table__cell",
+            "text": "比较测试甲厂",
+            "rect": [
+              601,
+              394.796875,
+              100,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_13 el-table__cell",
+            "text": "计划",
+            "rect": [
+              701,
+              394.796875,
+              84,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_14 is-right el-table__cell",
+            "text": "2",
+            "rect": [
+              785,
+              394.796875,
+              76,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_15 is-right el-table__cell",
+            "text": "0",
+            "rect": [
+              861,
+              394.796875,
+              70,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_16 is-right el-table__cell",
+            "text": "2",
+            "rect": [
+              931,
+              394.796875,
+              70,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          }
+        ],
+        []
+      ],
+      "select": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "last_run_at": "2026-10-09 16:25:00",
+          "last_ok": 1,
+          "last_bills": 3,
+          "last_rows": 4,
+          "last_message": "",
+          "updated_by": "audit20261009520002",
+          "updated_at": "2026-10-09 18:55:32"
+        }
+      ]
+    },
+    {
+      "label": "selected",
+      "scroll": 0,
+      "scrollHeight": 964,
+      "height": 904,
+      "fonts": "loaded",
+      "focus": {
+        "tag": "TBODY",
+        "cls": null,
+        "text": "CMP-MO-FRACTION\n\t\nCMP-CUSTOMER\n\t\nCMP-PI-FRACTION\n\t\n比较测试甲厂\n\t\n计划\n\t\n2\n\t\n0\n\t\n2\n\n\nCMP-MO-002\n\t\nCMP-CUSTOMER\n\t\nCMP-PI-002\n\t\n比较测试乙厂\n\t\n计划\n\t\n5\n\t\n0\n\t\n5\n\n\nCMP-MO-001\n\t\nCMP-CUSTOMER\n\t\nCMP-PI-001\n\t\n比较测试甲厂\n\t\n计划\n\t\n10\n\t\n0\n\t\n10",
+        "rect": [
+          261,
+          394.796875,
+          740,
+          96
+        ],
+        "display": "table-row-group",
+        "font": [
+          "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "12px",
+          "400",
+          "normal"
+        ],
+        "color": "rgb(96, 98, 102)",
+        "padding": "0px"
+      },
+      "groups": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_9 el-table__cell",
+            "text": "CMP-MO-FRACTION",
+            "rect": [
+              261,
+              394.796875,
+              120,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_10 el-table__cell",
+            "text": "CMP-CUSTOMER",
+            "rect": [
+              381,
+              394.796875,
+              80,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_11 el-table__cell",
+            "text": "CMP-PI-FRACTION",
+            "rect": [
+              461,
+              394.796875,
+              140,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_12 el-table__cell",
+            "text": "比较测试甲厂",
+            "rect": [
+              601,
+              394.796875,
+              100,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_13 el-table__cell",
+            "text": "计划",
+            "rect": [
+              701,
+              394.796875,
+              84,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_14 is-right el-table__cell",
+            "text": "2",
+            "rect": [
+              785,
+              394.796875,
+              76,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_15 is-right el-table__cell",
+            "text": "0",
+            "rect": [
+              861,
+              394.796875,
+              70,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_16 is-right el-table__cell",
+            "text": "2",
+            "rect": [
+              931,
+              394.796875,
+              70,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_4_column_17 el-table__cell",
+            "text": "1",
+            "rect": [
+              1058.328125,
+              485.796875,
+              48,
+              55
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_4_column_18 el-table__cell",
+            "text": "CMP-MAT-A",
+            "rect": [
+              1106.328125,
+              485.796875,
+              102,
+              55
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_4_column_19 el-table__cell",
+            "text": "CMP-MAT-A\n需求单据号 CMP-SO",
+            "rect": [
+              1208.328125,
+              485.796875,
+              121,
+              55
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_4_column_20 is-right el-table__cell",
+            "text": "5",
+            "rect": [
+              1329.328125,
+              485.796875,
+              70,
+              55
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          }
+        ],
+        [
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__label is-bordered-label",
+            "text": "PI",
+            "rect": [
+              1058.828125,
+              313.296875,
+              101.609375,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 7px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__content is-bordered-content",
+            "text": "CMP-PI-002",
+            "rect": [
+              1160.4375,
+              313.296875,
+              238.046875,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "padding": "4px 7px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__label is-bordered-label",
+            "text": "PO",
+            "rect": [
+              1058.828125,
+              345.296875,
+              101.609375,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 7px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__content is-bordered-content",
+            "text": "CMP-PO",
+            "rect": [
+              1160.4375,
+              345.296875,
+              238.046875,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "padding": "4px 7px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__label is-bordered-label",
+            "text": "客户编码",
+            "rect": [
+              1058.828125,
+              377.296875,
+              101.609375,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 7px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__content is-bordered-content",
+            "text": "CMP-CUSTOMER",
+            "rect": [
+              1160.4375,
+              377.296875,
+              238.046875,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "padding": "4px 7px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__label is-bordered-label",
+            "text": "工厂",
+            "rect": [
+              1058.828125,
+              409.296875,
+              101.609375,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 7px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__content is-bordered-content",
+            "text": "比较测试乙厂（CMP-B）",
+            "rect": [
+              1160.4375,
+              409.296875,
+              238.046875,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "padding": "4px 7px"
+          }
+        ]
+      ],
+      "select": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "last_run_at": "2026-10-09 16:25:00",
+          "last_ok": 1,
+          "last_bills": 3,
+          "last_rows": 4,
+          "last_message": "",
+          "updated_by": "audit20261009520002",
+          "updated_at": "2026-10-09 18:55:32"
+        }
+      ]
+    },
+    {
+      "label": "table-arrow-down",
+      "scroll": 40,
+      "scrollHeight": 964,
+      "height": 904,
+      "fonts": "loaded",
+      "focus": {
+        "tag": "TBODY",
+        "cls": null,
+        "text": "CMP-MO-FRACTION\n\t\nCMP-CUSTOMER\n\t\nCMP-PI-FRACTION\n\t\n比较测试甲厂\n\t\n计划\n\t\n2\n\t\n0\n\t\n2\n\n\nCMP-MO-002\n\t\nCMP-CUSTOMER\n\t\nCMP-PI-002\n\t\n比较测试乙厂\n\t\n计划\n\t\n5\n\t\n0\n\t\n5\n\n\nCMP-MO-001\n\t\nCMP-CUSTOMER\n\t\nCMP-PI-001\n\t\n比较测试甲厂\n\t\n计划\n\t\n10\n\t\n0\n\t\n10",
+        "rect": [
+          261,
+          354.796875,
+          740,
+          96
+        ],
+        "display": "table-row-group",
+        "font": [
+          "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "12px",
+          "400",
+          "normal"
+        ],
+        "color": "rgb(96, 98, 102)",
+        "padding": "0px"
+      },
+      "groups": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_9 el-table__cell",
+            "text": "CMP-MO-FRACTION",
+            "rect": [
+              261,
+              354.796875,
+              120,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_10 el-table__cell",
+            "text": "CMP-CUSTOMER",
+            "rect": [
+              381,
+              354.796875,
+              80,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_11 el-table__cell",
+            "text": "CMP-PI-FRACTION",
+            "rect": [
+              461,
+              354.796875,
+              140,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_12 el-table__cell",
+            "text": "比较测试甲厂",
+            "rect": [
+              601,
+              354.796875,
+              100,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_13 el-table__cell",
+            "text": "计划",
+            "rect": [
+              701,
+              354.796875,
+              84,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_14 is-right el-table__cell",
+            "text": "2",
+            "rect": [
+              785,
+              354.796875,
+              76,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_15 is-right el-table__cell",
+            "text": "0",
+            "rect": [
+              861,
+              354.796875,
+              70,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_16 is-right el-table__cell",
+            "text": "2",
+            "rect": [
+              931,
+              354.796875,
+              70,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_4_column_17 el-table__cell",
+            "text": "1",
+            "rect": [
+              1058.328125,
+              445.796875,
+              48,
+              55
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_4_column_18 el-table__cell",
+            "text": "CMP-MAT-A",
+            "rect": [
+              1106.328125,
+              445.796875,
+              102,
+              55
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_4_column_19 el-table__cell",
+            "text": "CMP-MAT-A\n需求单据号 CMP-SO",
+            "rect": [
+              1208.328125,
+              445.796875,
+              121,
+              55
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_4_column_20 is-right el-table__cell",
+            "text": "5",
+            "rect": [
+              1329.328125,
+              445.796875,
+              70,
+              55
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          }
+        ],
+        [
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__label is-bordered-label",
+            "text": "PI",
+            "rect": [
+              1058.828125,
+              273.296875,
+              101.609375,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 7px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__content is-bordered-content",
+            "text": "CMP-PI-002",
+            "rect": [
+              1160.4375,
+              273.296875,
+              238.046875,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "padding": "4px 7px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__label is-bordered-label",
+            "text": "PO",
+            "rect": [
+              1058.828125,
+              305.296875,
+              101.609375,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 7px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__content is-bordered-content",
+            "text": "CMP-PO",
+            "rect": [
+              1160.4375,
+              305.296875,
+              238.046875,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "padding": "4px 7px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__label is-bordered-label",
+            "text": "客户编码",
+            "rect": [
+              1058.828125,
+              337.296875,
+              101.609375,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 7px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__content is-bordered-content",
+            "text": "CMP-CUSTOMER",
+            "rect": [
+              1160.4375,
+              337.296875,
+              238.046875,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "padding": "4px 7px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__label is-bordered-label",
+            "text": "工厂",
+            "rect": [
+              1058.828125,
+              369.296875,
+              101.609375,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 7px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__content is-bordered-content",
+            "text": "比较测试乙厂（CMP-B）",
+            "rect": [
+              1160.4375,
+              369.296875,
+              238.046875,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "padding": "4px 7px"
+          }
+        ]
+      ],
+      "select": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "last_run_at": "2026-10-09 16:25:00",
+          "last_ok": 1,
+          "last_bills": 3,
+          "last_rows": 4,
+          "last_message": "",
+          "updated_by": "audit20261009520002",
+          "updated_at": "2026-10-09 18:55:32"
+        }
+      ]
+    },
+    {
+      "label": "table-arrow-up",
+      "scroll": 0,
+      "scrollHeight": 964,
+      "height": 904,
+      "fonts": "loaded",
+      "focus": {
+        "tag": "TBODY",
+        "cls": null,
+        "text": "CMP-MO-FRACTION\n\t\nCMP-CUSTOMER\n\t\nCMP-PI-FRACTION\n\t\n比较测试甲厂\n\t\n计划\n\t\n2\n\t\n0\n\t\n2\n\n\nCMP-MO-002\n\t\nCMP-CUSTOMER\n\t\nCMP-PI-002\n\t\n比较测试乙厂\n\t\n计划\n\t\n5\n\t\n0\n\t\n5\n\n\nCMP-MO-001\n\t\nCMP-CUSTOMER\n\t\nCMP-PI-001\n\t\n比较测试甲厂\n\t\n计划\n\t\n10\n\t\n0\n\t\n10",
+        "rect": [
+          261,
+          394.796875,
+          740,
+          96
+        ],
+        "display": "table-row-group",
+        "font": [
+          "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "12px",
+          "400",
+          "normal"
+        ],
+        "color": "rgb(96, 98, 102)",
+        "padding": "0px"
+      },
+      "groups": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_9 el-table__cell",
+            "text": "CMP-MO-FRACTION",
+            "rect": [
+              261,
+              394.796875,
+              120,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_10 el-table__cell",
+            "text": "CMP-CUSTOMER",
+            "rect": [
+              381,
+              394.796875,
+              80,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_11 el-table__cell",
+            "text": "CMP-PI-FRACTION",
+            "rect": [
+              461,
+              394.796875,
+              140,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_12 el-table__cell",
+            "text": "比较测试甲厂",
+            "rect": [
+              601,
+              394.796875,
+              100,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_13 el-table__cell",
+            "text": "计划",
+            "rect": [
+              701,
+              394.796875,
+              84,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_14 is-right el-table__cell",
+            "text": "2",
+            "rect": [
+              785,
+              394.796875,
+              76,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_15 is-right el-table__cell",
+            "text": "0",
+            "rect": [
+              861,
+              394.796875,
+              70,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_3_column_16 is-right el-table__cell",
+            "text": "2",
+            "rect": [
+              931,
+              394.796875,
+              70,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_4_column_17 el-table__cell",
+            "text": "1",
+            "rect": [
+              1058.328125,
+              485.796875,
+              48,
+              55
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_4_column_18 el-table__cell",
+            "text": "CMP-MAT-A",
+            "rect": [
+              1106.328125,
+              485.796875,
+              102,
+              55
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_4_column_19 el-table__cell",
+            "text": "CMP-MAT-A\n需求单据号 CMP-SO",
+            "rect": [
+              1208.328125,
+              485.796875,
+              121,
+              55
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-table_4_column_20 is-right el-table__cell",
+            "text": "5",
+            "rect": [
+              1329.328125,
+              485.796875,
+              70,
+              55
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 0px"
+          }
+        ],
+        [
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__label is-bordered-label",
+            "text": "PI",
+            "rect": [
+              1058.828125,
+              313.296875,
+              101.609375,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 7px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__content is-bordered-content",
+            "text": "CMP-PI-002",
+            "rect": [
+              1160.4375,
+              313.296875,
+              238.046875,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "padding": "4px 7px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__label is-bordered-label",
+            "text": "PO",
+            "rect": [
+              1058.828125,
+              345.296875,
+              101.609375,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 7px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__content is-bordered-content",
+            "text": "CMP-PO",
+            "rect": [
+              1160.4375,
+              345.296875,
+              238.046875,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "padding": "4px 7px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__label is-bordered-label",
+            "text": "客户编码",
+            "rect": [
+              1058.828125,
+              377.296875,
+              101.609375,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 7px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__content is-bordered-content",
+            "text": "CMP-CUSTOMER",
+            "rect": [
+              1160.4375,
+              377.296875,
+              238.046875,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "padding": "4px 7px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__label is-bordered-label",
+            "text": "工厂",
+            "rect": [
+              1058.828125,
+              409.296875,
+              101.609375,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "padding": "4px 7px"
+          },
+          {
+            "tag": "TD",
+            "cls": "el-descriptions__cell el-descriptions__content is-bordered-content",
+            "text": "比较测试乙厂（CMP-B）",
+            "rect": [
+              1160.4375,
+              409.296875,
+              238.046875,
+              32
+            ],
+            "display": "table-cell",
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "padding": "4px 7px"
+          }
+        ]
+      ],
+      "select": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "last_run_at": "2026-10-09 16:25:00",
+          "last_ok": 1,
+          "last_bills": 3,
+          "last_rows": 4,
+          "last_message": "",
+          "updated_by": "audit20261009520002",
+          "updated_at": "2026-10-09 18:55:32"
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

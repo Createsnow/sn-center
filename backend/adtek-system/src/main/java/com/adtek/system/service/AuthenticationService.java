@@ -11,7 +11,7 @@ import com.adtek.system.vo.UserProfileVO;
 public interface AuthenticationService {
     /**
      * 核验工号/密码及当前账号状态，生成 Redis 会话和标准短时 JWT。 入口从可信 HTTP 上下文按账号与来源限流；非 HTTP 无来源上下文拒绝。 凭据错误统一 401，超限
-     * 429，依赖故障 503；不区分匿名可枚举的停用/不存在原因。 登录成功审计提交后返回。Redis 与数据库不构成同一事务，失败残留的未返回会话由 TTL 回收。
+     * 429，依赖故障 503；错误密码不区分账号状态；密码正确的停用账号返回明确停用原因。 登录成功审计提交后返回。Redis 与数据库不构成同一事务，失败残留的未返回会话由 TTL 回收。
      * 显式标记的旧PBKDF2哈希在成功验证后条件升级；不改变停用/首次改密标志或权限，失败回滚升级。
      */
     AuthenticationResult login(LoginCommandDTO command);
@@ -30,9 +30,9 @@ public interface AuthenticationService {
 
     /**
      * 仅修改本人密码，包括首次强制改密；核验原密码、新强度及不同值。 锁定本人记录并比对权限版本，密码哈希/版本递增/改密标志/审计同事务提交。 所有旧
-     * JWT/刷新凭据在下一次校验时失效，成功后客户端必须重新登录。
+     * JWT/刷新凭据在下一次校验时失效，成功直接返回当前版本的新会话，不产生额外登录动作。
      */
-    void changePassword(PasswordChangeDTO command);
+    AuthenticationResult changePassword(PasswordChangeDTO command);
 
     /** 仅更新本人语言偏好，限定中/英/越；记录实际前后值并与变更同事务提交。 */
     void changeLanguage(LanguageChangeDTO command);

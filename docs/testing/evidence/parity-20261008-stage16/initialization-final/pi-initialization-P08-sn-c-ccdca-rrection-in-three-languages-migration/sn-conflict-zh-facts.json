@@ -1,0 +1,22 @@
+{
+  "keys": [
+    {
+      "pi": "CMP-UI-INIT-NONE",
+      "sn": "UNPARSED",
+      "seq_pi": null,
+      "seq_dec": null
+    }
+  ],
+  "items": [],
+  "counters": [
+    {
+      "pi": "CMP-UI-INIT-NONE",
+      "last_seq": 0,
+      "generated_qty": 0,
+      "imported_qty": 0,
+      "start_seq": null,
+      "start_locked": 0
+    }
+  ],
+  "history": []
+}

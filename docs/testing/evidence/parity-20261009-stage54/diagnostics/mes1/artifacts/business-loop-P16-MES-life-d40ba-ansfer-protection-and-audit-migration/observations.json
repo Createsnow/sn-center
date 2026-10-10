@@ -1,0 +1,37 @@
+{
+  "pi": "CMP-LOOP-20261009540001",
+  "bill": "CMP-LOOP-MO-20261009540001",
+  "sns": [
+    "L2026100954000100001",
+    "L2026100954000100002",
+    "L2026100954000100003"
+  ],
+  "files": [],
+  "facts": [
+    {
+      "stage": "05-allocated",
+      "observed": [
+        {
+          "sn": "L2026100954000100001",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000100002",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000100003",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-A"
+        }
+      ]
+    }
+  ],
+  "mesObservations": [],
+  "errors": []
+}

@@ -41,7 +41,9 @@ public interface ServiceClientMapper extends BaseMapper<SysUserEntity> {
 
     @Update(
             "UPDATE sys_user SET"
-                    + " security_version=security_version+1,enabled=#{enabled},"
+                    + " security_version=security_version+1,"
+                    + "credential_version=credential_version+1,"
+                    + "enabled=#{enabled},"
                     + "display_name=#{name},update_by=#{actor},update_time=CURRENT_TIMESTAMP(6)"
                     + " WHERE id=#{id} AND principal_type='SERVICE'")
     int updateClient(

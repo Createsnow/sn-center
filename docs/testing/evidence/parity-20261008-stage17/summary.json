@@ -1,0 +1,339 @@
+{
+  "stage": 17,
+  "ui": {
+    "expected": 8,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+  },
+  "workers": 1,
+  "retries": 0,
+  "registeredUiCases": 138,
+  "allCasesRerun": false,
+  "screenshots": 28,
+  "rawBusinessPairs": [
+    {
+      "source": "ui/acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page-prototype/partial-failure-continues.json",
+      "migration": "ui/acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page-migration/partial-failure-continues.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-prototype/cmp_operator.json",
+      "migration": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-migration/cmp_operator.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-prototype/cmp_query_all.json",
+      "migration": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-migration/cmp_query_all.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-prototype/cmp_query_factory.json",
+      "migration": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-migration/cmp_query_factory.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/01-steps.json",
+      "migration": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/01-steps.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/02-take-confirm.json",
+      "migration": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/02-take-confirm.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/03-focused-material.json",
+      "migration": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/03-focused-material.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/04-taken.json",
+      "migration": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/04-taken.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/05-print-confirm.json",
+      "migration": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/05-print-confirm.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/06-print-history.json",
+      "migration": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/06-print-history.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/01-bulk-take-confirm.json",
+      "migration": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/01-bulk-take-confirm.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/02-bulk-selected.json",
+      "migration": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/02-bulk-selected.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/03-bulk-batches.json",
+      "migration": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/03-bulk-batches.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/04-bulk-prints.json",
+      "migration": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/04-bulk-prints.json",
+      "rawEqual": true
+    }
+  ],
+  "downloadPairs": [
+    {
+      "source": "ui/acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page-prototype/competing.xlsx",
+      "migration": "ui/acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page-migration/competing.xlsx",
+      "sourceHeaders": [
+        "序号",
+        "完整SN",
+        "进制流水",
+        "十进制流水",
+        "PI",
+        "物料编码",
+        "客户编码",
+        "工厂",
+        "状态",
+        "领取批次",
+        "来源订单"
+      ],
+      "migrationHeaders": [
+        "ordinal",
+        "sn",
+        "seq_text",
+        "seq_dec",
+        "seq_pi",
+        "pi",
+        "factory_code",
+        "customer",
+        "material",
+        "source_bill_no",
+        "source_system",
+        "source_account",
+        "source_bill_id",
+        "source_entry_id"
+      ],
+      "sourceRows": 3,
+      "migrationRows": 3,
+      "sharedNineFieldsEqualInFileOrder": false,
+      "eightSharedMemberFieldsEqualAfterSortingBySn": true,
+      "sourceSnOrder": [
+        "A17A00001",
+        "A17A00002",
+        "A17A00003"
+      ],
+      "migrationSnOrder": [
+        "A17A00003",
+        "A17A00001",
+        "A17A00002"
+      ],
+      "fullFileEquivalent": false
+    },
+    {
+      "source": "ui/acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page-prototype/remaining.xlsx",
+      "migration": "ui/acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page-migration/remaining.xlsx",
+      "sourceHeaders": [
+        "序号",
+        "完整SN",
+        "进制流水",
+        "十进制流水",
+        "PI",
+        "物料编码",
+        "客户编码",
+        "工厂",
+        "状态",
+        "领取批次",
+        "来源订单"
+      ],
+      "migrationHeaders": [
+        "ordinal",
+        "sn",
+        "seq_text",
+        "seq_dec",
+        "seq_pi",
+        "pi",
+        "factory_code",
+        "customer",
+        "material",
+        "source_bill_no",
+        "source_system",
+        "source_account",
+        "source_bill_id",
+        "source_entry_id"
+      ],
+      "sourceRows": 3,
+      "migrationRows": 3,
+      "sharedNineFieldsEqualInFileOrder": false,
+      "eightSharedMemberFieldsEqualAfterSortingBySn": true,
+      "sourceSnOrder": [
+        "A17B00001",
+        "A17B00002",
+        "A17B00003"
+      ],
+      "migrationSnOrder": [
+        "A17B00001",
+        "A17B00003",
+        "A17B00002"
+      ],
+      "fullFileEquivalent": false
+    },
+    {
+      "source": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/single.xlsx",
+      "migration": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/single.xlsx",
+      "sourceHeaders": [
+        "序号",
+        "完整SN",
+        "进制流水",
+        "十进制流水",
+        "PI",
+        "物料编码",
+        "客户编码",
+        "工厂",
+        "状态",
+        "领取批次",
+        "来源订单"
+      ],
+      "migrationHeaders": [
+        "ordinal",
+        "sn",
+        "seq_text",
+        "seq_dec",
+        "seq_pi",
+        "pi",
+        "factory_code",
+        "customer",
+        "material",
+        "source_bill_no",
+        "source_system",
+        "source_account",
+        "source_bill_id",
+        "source_entry_id"
+      ],
+      "sourceRows": 3,
+      "migrationRows": 3,
+      "sharedNineFieldsEqualInFileOrder": false,
+      "eightSharedMemberFieldsEqualAfterSortingBySn": true,
+      "sourceSnOrder": [
+        "A17A00001",
+        "A17A00002",
+        "A17A00003"
+      ],
+      "migrationSnOrder": [
+        "A17A00003",
+        "A17A00001",
+        "A17A00002"
+      ],
+      "fullFileEquivalent": false
+    },
+    {
+      "source": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/bulk-1.xlsx",
+      "migration": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/bulk-1.xlsx",
+      "sourceHeaders": [
+        "序号",
+        "完整SN",
+        "进制流水",
+        "十进制流水",
+        "PI",
+        "物料编码",
+        "客户编码",
+        "工厂",
+        "状态",
+        "领取批次",
+        "来源订单"
+      ],
+      "migrationHeaders": [
+        "ordinal",
+        "sn",
+        "seq_text",
+        "seq_dec",
+        "seq_pi",
+        "pi",
+        "factory_code",
+        "customer",
+        "material",
+        "source_bill_no",
+        "source_system",
+        "source_account",
+        "source_bill_id",
+        "source_entry_id"
+      ],
+      "sourceRows": 3,
+      "migrationRows": 3,
+      "sharedNineFieldsEqualInFileOrder": false,
+      "eightSharedMemberFieldsEqualAfterSortingBySn": true,
+      "sourceSnOrder": [
+        "A17A00001",
+        "A17A00002",
+        "A17A00003"
+      ],
+      "migrationSnOrder": [
+        "A17A00002",
+        "A17A00001",
+        "A17A00003"
+      ],
+      "fullFileEquivalent": false
+    },
+    {
+      "source": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/bulk-2.xlsx",
+      "migration": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/bulk-2.xlsx",
+      "sourceHeaders": [
+        "序号",
+        "完整SN",
+        "进制流水",
+        "十进制流水",
+        "PI",
+        "物料编码",
+        "客户编码",
+        "工厂",
+        "状态",
+        "领取批次",
+        "来源订单"
+      ],
+      "migrationHeaders": [
+        "ordinal",
+        "sn",
+        "seq_text",
+        "seq_dec",
+        "seq_pi",
+        "pi",
+        "factory_code",
+        "customer",
+        "material",
+        "source_bill_no",
+        "source_system",
+        "source_account",
+        "source_bill_id",
+        "source_entry_id"
+      ],
+      "sourceRows": 3,
+      "migrationRows": 3,
+      "sharedNineFieldsEqualInFileOrder": false,
+      "eightSharedMemberFieldsEqualAfterSortingBySn": true,
+      "sourceSnOrder": [
+        "A17B00001",
+        "A17B00002",
+        "A17B00003"
+      ],
+      "migrationSnOrder": [
+        "A17B00003",
+        "A17B00002",
+        "A17B00001"
+      ],
+      "fullFileEquivalent": false
+    }
+  ],
+  "remaining": [
+    "XLSX/CSV column layout, member order, printed status/batch fields",
+    "Business display numbers and operator employee number in history",
+    "Batch detail page navigation and visual parity",
+    "Three languages, narrow viewport, pagination and large catalogs",
+    "Unknown response/result retrieval/reload queue recovery",
+    "P01-P08 remaining gaps and P10-P16"
+  ],
+  "backendChanged": false,
+  "schema": "V30",
+  "nextMigration": "V31"
+}

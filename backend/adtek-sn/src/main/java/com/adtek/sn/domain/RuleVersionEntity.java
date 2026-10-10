@@ -118,6 +118,16 @@ public class RuleVersionEntity {
         this.createdBy = value;
     }
 
+    private String createdByName;
+
+    public String getCreatedByName() {
+        return createdByName;
+    }
+
+    public void setCreatedByName(String value) {
+        this.createdByName = value;
+    }
+
     private Instant createdAt;
 
     public Instant getCreatedAt() {

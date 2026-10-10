@@ -1,0 +1,10 @@
+{
+  "mainManifestVerifiedFiles": 499,
+  "currentSourceHashesVerified": 393,
+  "secretsScanPassed": true,
+  "documentationLinks": 843,
+  "archiveFilesUnchanged": 310,
+  "earlySqlCheckedByDocsTool": 17,
+  "all37SqlCheckedByFinalState": true,
+  "missingPnpmDocsCheckScript": "first command failed; corrected to pnpm exec node ../tools/check-docs.mjs"
+}

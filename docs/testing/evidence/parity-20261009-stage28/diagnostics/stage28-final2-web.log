@@ -1,0 +1,110 @@
+
+> adtek-platform-sn-web@0.1.0 api:check D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> openapi-typescript openapi/adtek-sn.json -o src/api/generated/schema.d.ts --check
+
+✨ openapi-typescript 7.13.0
+
+> adtek-platform-sn-web@0.1.0 lint D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> eslint . --max-warnings 0
+
+
+> adtek-platform-sn-web@0.1.0 format:check D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> adtek-platform-sn-web@0.1.0 test D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> vitest run
+
+
+ RUN  v5.0.2 D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend
+
+ ✓ src/api/contract.test.ts (4 tests) 4ms
+ ✓ src/i18n/errors.test.ts (2 tests) 17ms
+ ✓ src/features/sn/ruleErrorText.test.ts (3 tests) 8ms
+ ✓ src/features/sn/snInput.test.ts (6 tests) 4ms
+ ✓ src/features/sn/generationErrorText.test.ts (2 tests) 7ms
+ ✓ src/api/catalog.test.ts (3 tests) 6ms
+ ✓ src/api/snAcquireSubmission.test.ts (3 tests) 8ms
+ ✓ src/features/sn/initializationErrorText.test.ts (2 tests) 8ms
+ ✓ src/features/sn/syncErrorText.test.ts (2 tests) 7ms
+ ✓ src/features/sn/printDownloadErrorText.test.ts (3 tests) 7ms
+ ✓ src/features/sn/transferJump.test.ts (2 tests) 3ms
+ ✓ src/api/sn.test.ts (8 tests) 5ms
+ ✓ src/api/snAcquire.test.ts (5 tests) 4ms
+ ✓ src/api/snTransfer.test.ts (6 tests) 5ms
+ ✓ src/api/snQuery.test.ts (6 tests) 4ms
+ ✓ src/api/snWork.test.ts (4 tests) 3ms
+ ✓ src/api/tasks.test.ts (2 tests) 2ms
+ ✓ src/api/configuration.test.ts (2 tests) 2ms
+ ✓ src/api/snAudit.test.ts (4 tests) 2ms
+ ✓ src/api/audit.test.ts (2 tests) 2ms
+ ✓ src/api/users.test.ts (2 tests) 2ms
+
+ Test Files  21 passed (21)
+      Tests  73 passed (73)
+   Start at  05:34:05
+   Duration  921ms (import 59%, transform 36%, tests 2%, worker 2%)
+
+JSON report written to D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/unit.json
+
+> adtek-platform-sn-web@0.1.0 build D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> tsc --noEmit && vite build
+
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 3321 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                   1.15 kB │ gzip:   0.43 kB
+dist/assets/index-Ded-a6Gg.css                   43.22 kB │ gzip:   7.95 kB
+dist/assets/printDownloadErrorText-zCPO2S6u.js    0.22 kB │ gzip:   0.18 kB
+dist/assets/snTime-9ttSLFII.js                    0.23 kB │ gzip:   0.19 kB
+dist/assets/SnPageHead-oqEBZ-F7.js                0.34 kB │ gzip:   0.22 kB
+dist/assets/syncErrorText-Ahouv6z_.js             0.38 kB │ gzip:   0.26 kB
+dist/assets/PlusOutlined-CvG87C3r.js              0.71 kB │ gzip:   0.48 kB
+dist/assets/rolldown-runtime-hePW80VL.js          0.71 kB │ gzip:   0.42 kB
+dist/assets/usePrototypeFeedback-CIHXc2Nw.js      0.74 kB │ gzip:   0.45 kB
+dist/assets/ActionButton-YGS7mGJM.js              0.90 kB │ gzip:   0.56 kB
+dist/assets/snInput-CaUle-Uq.js                   1.06 kB │ gzip:   0.66 kB
+dist/assets/ReloadOutlined-DZ2NStL1.js            1.26 kB │ gzip:   0.78 kB
+dist/assets/tasks-xG4i63uz.js                     1.39 kB │ gzip:   0.63 kB
+dist/assets/FactoryPicker-Dggogz-B.js             2.25 kB │ gzip:   1.06 kB
+dist/assets/auditLabels-DmFmDRYm.js               2.97 kB │ gzip:   1.09 kB
+dist/assets/useSnOperation-B3sTJeJ4.js            3.38 kB │ gzip:   1.47 kB
+dist/assets/snWork-DTsDI6Cr.js                    3.39 kB │ gzip:   1.36 kB
+dist/assets/popconfirm-CNYiB5eU.js                3.55 kB │ gzip:   1.58 kB
+dist/assets/FactoriesPage-Vbz0oHwL.js             4.79 kB │ gzip:   1.85 kB
+dist/assets/DashboardPage-BlCSeK_1.js             5.24 kB │ gzip:   2.29 kB
+dist/assets/sn-BEhOyZlo.js                        5.66 kB │ gzip:   2.16 kB
+dist/assets/snQuery-C2tMA7-K.js                   6.04 kB │ gzip:   2.25 kB
+dist/assets/UsersPage-DB73V6KV.js                 6.43 kB │ gzip:   2.52 kB
+dist/assets/QueryPage-BzDzFGGd.js                 6.77 kB │ gzip:   2.79 kB
+dist/assets/switch-DJ4htcBF.js                    7.50 kB │ gzip:   2.60 kB
+dist/assets/PiInitPage-BAaxERYv.js                8.97 kB │ gzip:   3.40 kB
+dist/assets/SnAuditPage-DCwkjZSS.js              10.12 kB │ gzip:   3.82 kB
+dist/assets/ConfigurationPage-CguNqHj4.js        10.68 kB │ gzip:   3.43 kB
+dist/assets/style-CAKtEeJy.js                    11.39 kB │ gzip:   3.92 kB
+dist/assets/AuditPage-DGVann0T.js                11.68 kB │ gzip:   3.95 kB
+dist/assets/drawer-TUpHvu6q.js                   14.43 kB │ gzip:   5.56 kB
+dist/assets/CheckCircleOutlined-C6N0Qz3w.js      15.63 kB │ gzip:   6.07 kB
+dist/assets/OrdersPage-D744dRm2.js               17.36 kB │ gzip:   6.08 kB
+dist/assets/AcquirePage-C0LMaTRx.js              18.72 kB │ gzip:   5.97 kB
+dist/assets/input-number-NYI7qtbp.js             20.74 kB │ gzip:   7.54 kB
+dist/assets/TransferPage-Biln6gx0.js             22.24 kB │ gzip:   7.08 kB
+dist/assets/GeneratePage-BSpXicnA.js             22.66 kB │ gzip:   7.23 kB
+dist/assets/modal-BoG0yCEM.js                    26.52 kB │ gzip:   9.17 kB
+dist/assets/tabs-Brizyltj.js                     34.82 kB │ gzip:  10.88 kB
+dist/assets/RulesPage-BRHJlgHd.js                46.17 kB │ gzip:  13.51 kB
+dist/assets/table-BwEyfybD.js                   182.67 kB │ gzip:  56.77 kB
+dist/assets/index-DgX8Ikua.js                   448.31 kB │ gzip: 150.74 kB
+dist/assets/ApiErrorAlert-PiDGu5Dy.js           755.98 kB │ gzip: 245.72 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 534ms
+frontend-unit discovered=73 failures=0 skipped=0

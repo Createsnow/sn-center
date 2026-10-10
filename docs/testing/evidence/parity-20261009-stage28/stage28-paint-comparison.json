@@ -1,0 +1,72 @@
+[
+  {
+    "case": "01-default-descending-20.json",
+    "buttonRectanglesIdentical": true,
+    "monoStylesIdentical": true
+  },
+  {
+    "case": "02-size-first-page.json",
+    "buttonRectanglesIdentical": true,
+    "monoStylesIdentical": true
+  },
+  {
+    "case": "02-third-page.json",
+    "buttonRectanglesIdentical": true,
+    "monoStylesIdentical": true
+  },
+  {
+    "case": "03-pi-material-sequence.json",
+    "buttonRectanglesIdentical": true,
+    "monoStylesIdentical": true
+  },
+  {
+    "case": "03-whitespace-material-ignored.json",
+    "buttonRectanglesIdentical": true,
+    "monoStylesIdentical": true
+  },
+  {
+    "case": "04-draft-export-keeps-query.json",
+    "buttonRectanglesIdentical": true,
+    "monoStylesIdentical": true
+  },
+  {
+    "case": "06-business-batch.json",
+    "buttonRectanglesIdentical": true,
+    "monoStylesIdentical": true
+  },
+  {
+    "case": "07-empty-batch.json",
+    "buttonRectanglesIdentical": true,
+    "monoStylesIdentical": true
+  },
+  {
+    "case": "08-layout-en-1440.json",
+    "buttonRectanglesIdentical": true,
+    "monoStylesIdentical": true
+  },
+  {
+    "case": "08-layout-en-900.json",
+    "buttonRectanglesIdentical": true,
+    "monoStylesIdentical": true
+  },
+  {
+    "case": "08-layout-vi-1440.json",
+    "buttonRectanglesIdentical": true,
+    "monoStylesIdentical": true
+  },
+  {
+    "case": "08-layout-vi-900.json",
+    "buttonRectanglesIdentical": true,
+    "monoStylesIdentical": true
+  },
+  {
+    "case": "08-layout-zh-1440.json",
+    "buttonRectanglesIdentical": true,
+    "monoStylesIdentical": true
+  },
+  {
+    "case": "08-layout-zh-900.json",
+    "buttonRectanglesIdentical": true,
+    "monoStylesIdentical": true
+  }
+]

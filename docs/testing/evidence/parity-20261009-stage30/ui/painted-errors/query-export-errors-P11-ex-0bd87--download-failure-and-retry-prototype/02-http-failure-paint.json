@@ -1,0 +1,10 @@
+{
+  "before": {
+    "opacity": 1,
+    "text": "下载失败（HTTP 500）"
+  },
+  "after": {
+    "opacity": 1,
+    "text": "下载失败（HTTP 500）"
+  }
+}

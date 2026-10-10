@@ -1,0 +1,439 @@
+{
+  "stage": 21,
+  "goalComplete": false,
+  "schema": "V31 unchanged",
+  "nextMigration": "V32",
+  "ui": {
+    "startTime": "2026-10-08T17:31:15.071Z",
+    "duration": 534487.162,
+    "expected": 18,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "workers": 1,
+  "retries": 0,
+  "registeredCases": 148,
+  "allCasesRerun": false,
+  "acceptanceScreenshots": 112,
+  "diagnosticScreenshots": 37,
+  "visualFollowup": {
+    "startTime": "2026-10-08T17:40:48.251Z",
+    "duration": 170453.838,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "businessPairs": [
+    {
+      "prototype": "ui/acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page-prototype/partial-failure-continues.json",
+      "migration": "ui/acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page-migration/partial-failure-continues.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-prototype/cmp_operator.json",
+      "migration": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-migration/cmp_operator.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-prototype/cmp_query_all.json",
+      "migration": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-migration/cmp_query_all.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-prototype/cmp_query_factory.json",
+      "migration": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-migration/cmp_query_factory.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/19-detail-first-page.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/19-detail-first-page.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/20-detail-last-page.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/20-detail-last-page.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/21-detail-current-printed.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/21-detail-current-printed.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/22-batches-page-two.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/22-batches-page-two.json",
+      "rawEqual": false,
+      "multisetEqual": true,
+      "difference": "Read-only projection orders only by PI; same-PI history order is undefined. UI identities and raw item/file order are checked independently."
+    },
+    {
+      "prototype": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/23-prints-page-two.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/23-prints-page-two.json",
+      "rawEqual": false,
+      "multisetEqual": true,
+      "difference": "Read-only projection orders only by PI; same-PI history order is undefined. UI identities and raw item/file order are checked independently."
+    },
+    {
+      "prototype": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/01-steps.json",
+      "migration": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/01-steps.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/02-take-confirm.json",
+      "migration": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/02-take-confirm.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/03-focused-material.json",
+      "migration": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/03-focused-material.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/04-batch-number-and-operator.json",
+      "migration": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/04-batch-number-and-operator.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/04-taken.json",
+      "migration": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/04-taken.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/05-print-confirm.json",
+      "migration": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/05-print-confirm.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/06-print-history.json",
+      "migration": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/06-print-history.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/01-bulk-take-confirm.json",
+      "migration": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/01-bulk-take-confirm.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/02-bulk-selected.json",
+      "migration": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/02-bulk-selected.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/03-bulk-batches.json",
+      "migration": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/03-bulk-batches.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/04-bulk-prints.json",
+      "migration": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/04-bulk-prints.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/01-original-detail-current.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/01-original-detail-current.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/01-original-history-current.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/01-original-history-current.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/02-partial-detail-current.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/02-partial-detail-current.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/02-partial-history-current.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/02-partial-history-current.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/03-at-b-history-current.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/03-at-b-history-current.json",
+      "rawEqual": false,
+      "multisetEqual": true,
+      "difference": "Read-only projection orders only by PI; same-PI history order is undefined. UI identities and raw item/file order are checked independently."
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/03-reacquired-detail-current.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/03-reacquired-detail-current.json",
+      "rawEqual": false,
+      "multisetEqual": true,
+      "difference": "Read-only projection orders only by PI; same-PI history order is undefined. UI identities and raw item/file order are checked independently."
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/03-reacquired-history-current.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/03-reacquired-history-current.json",
+      "rawEqual": false,
+      "multisetEqual": true,
+      "difference": "Read-only projection orders only by PI; same-PI history order is undefined. UI identities and raw item/file order are checked independently."
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/04-all-out-detail-current.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/04-all-out-detail-current.json",
+      "rawEqual": false,
+      "multisetEqual": true,
+      "difference": "Read-only projection orders only by PI; same-PI history order is undefined. UI identities and raw item/file order are checked independently."
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/04-all-out-history-current.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/04-all-out-history-current.json",
+      "rawEqual": false,
+      "multisetEqual": true,
+      "difference": "Read-only projection orders only by PI; same-PI history order is undefined. UI identities and raw item/file order are checked independently."
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/05-returned-old-detail-current.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/05-returned-old-detail-current.json",
+      "rawEqual": false,
+      "multisetEqual": true,
+      "difference": "Read-only projection orders only by PI; same-PI history order is undefined. UI identities and raw item/file order are checked independently."
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/05-returned-old-history-current.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/05-returned-old-history-current.json",
+      "rawEqual": false,
+      "multisetEqual": true,
+      "difference": "Read-only projection orders only by PI; same-PI history order is undefined. UI identities and raw item/file order are checked independently."
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/06-returned-b-detail-current.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/06-returned-b-detail-current.json",
+      "rawEqual": false,
+      "multisetEqual": true,
+      "difference": "Read-only projection orders only by PI; same-PI history order is undefined. UI identities and raw item/file order are checked independently."
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/06-returned-b-history-current.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/06-returned-b-history-current.json",
+      "rawEqual": false,
+      "multisetEqual": true,
+      "difference": "Read-only projection orders only by PI; same-PI history order is undefined. UI identities and raw item/file order are checked independently."
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/07-returned-new-detail-current.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/07-returned-new-detail-current.json",
+      "rawEqual": false,
+      "multisetEqual": true,
+      "difference": "Read-only projection orders only by PI; same-PI history order is undefined. UI identities and raw item/file order are checked independently."
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/07-returned-new-history-current.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/07-returned-new-history-current.json",
+      "rawEqual": false,
+      "multisetEqual": true,
+      "difference": "Read-only projection orders only by PI; same-PI history order is undefined. UI identities and raw item/file order are checked independently."
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/transfer-1-completed.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/transfer-1-completed.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/transfer-2-completed.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/transfer-2-completed.json",
+      "rawEqual": false,
+      "multisetEqual": true,
+      "difference": "Read-only projection orders only by PI; same-PI history order is undefined. UI identities and raw item/file order are checked independently."
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/transfer-3-completed.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/transfer-3-completed.json",
+      "rawEqual": false,
+      "multisetEqual": true,
+      "difference": "Read-only projection orders only by PI; same-PI history order is undefined. UI identities and raw item/file order are checked independently."
+    },
+    {
+      "prototype": "downloads/acquire-print-P09-download-18fac-t-reprint-and-narrow-detail-prototype/01-localized-take-confirm.json",
+      "migration": "downloads/acquire-print-P09-download-18fac-t-reprint-and-narrow-detail-migration/01-localized-take-confirm.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "downloads/acquire-print-P09-download-18fac-t-reprint-and-narrow-detail-prototype/02-localized-print-confirm.json",
+      "migration": "downloads/acquire-print-P09-download-18fac-t-reprint-and-narrow-detail-migration/02-localized-print-confirm.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "downloads/acquire-print-P09-download-18fac-t-reprint-and-narrow-detail-prototype/04-history-after-download-error.json",
+      "migration": "downloads/acquire-print-P09-download-18fac-t-reprint-and-narrow-detail-migration/04-history-after-download-error.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "downloads/acquire-print-P09-download-18fac-t-reprint-and-narrow-detail-prototype/06-narrow-detail.json",
+      "migration": "downloads/acquire-print-P09-download-18fac-t-reprint-and-narrow-detail-migration/06-narrow-detail.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "downloads/acquire-print-P09-download-42dcc-t-reprint-and-narrow-detail-prototype/01-localized-take-confirm.json",
+      "migration": "downloads/acquire-print-P09-download-42dcc-t-reprint-and-narrow-detail-migration/01-localized-take-confirm.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "downloads/acquire-print-P09-download-42dcc-t-reprint-and-narrow-detail-prototype/02-localized-print-confirm.json",
+      "migration": "downloads/acquire-print-P09-download-42dcc-t-reprint-and-narrow-detail-migration/02-localized-print-confirm.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "downloads/acquire-print-P09-download-42dcc-t-reprint-and-narrow-detail-prototype/04-history-after-download-error.json",
+      "migration": "downloads/acquire-print-P09-download-42dcc-t-reprint-and-narrow-detail-migration/04-history-after-download-error.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "downloads/acquire-print-P09-download-42dcc-t-reprint-and-narrow-detail-prototype/06-narrow-detail.json",
+      "migration": "downloads/acquire-print-P09-download-42dcc-t-reprint-and-narrow-detail-migration/06-narrow-detail.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "downloads/acquire-print-P09-download-e3394-t-reprint-and-narrow-detail-prototype/01-localized-take-confirm.json",
+      "migration": "downloads/acquire-print-P09-download-e3394-t-reprint-and-narrow-detail-migration/01-localized-take-confirm.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "downloads/acquire-print-P09-download-e3394-t-reprint-and-narrow-detail-prototype/02-localized-print-confirm.json",
+      "migration": "downloads/acquire-print-P09-download-e3394-t-reprint-and-narrow-detail-migration/02-localized-print-confirm.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "downloads/acquire-print-P09-download-e3394-t-reprint-and-narrow-detail-prototype/04-history-after-download-error.json",
+      "migration": "downloads/acquire-print-P09-download-e3394-t-reprint-and-narrow-detail-migration/04-history-after-download-error.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "downloads/acquire-print-P09-download-e3394-t-reprint-and-narrow-detail-prototype/06-narrow-detail.json",
+      "migration": "downloads/acquire-print-P09-download-e3394-t-reprint-and-narrow-detail-migration/06-narrow-detail.json",
+      "rawEqual": true
+    }
+  ],
+  "domRowPairs": [
+    {
+      "prototype": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/19-detail-first-page-rows.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/19-detail-first-page-rows.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/20-detail-last-page-rows.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/20-detail-last-page-rows.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/21-detail-current-printed-rows.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/21-detail-current-printed-rows.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/01-original-detail-rows.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/01-original-detail-rows.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/02-partial-detail-rows.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/02-partial-detail-rows.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/03-reacquired-detail-rows.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/03-reacquired-detail-rows.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/04-all-out-detail-rows.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/04-all-out-detail-rows.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/05-returned-old-detail-rows.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/05-returned-old-detail-rows.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/06-returned-b-detail-rows.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/06-returned-b-detail-rows.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/07-returned-new-detail-rows.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/07-returned-new-detail-rows.json",
+      "rawEqual": true
+    }
+  ],
+  "geometryPairs": [
+    {
+      "prototype": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/19-detail-first-page-geometry.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/19-detail-first-page-geometry.json",
+      "rawEqual": false,
+      "scope": "Drawer/row size, table top and cell font size. Other raw measurements retained."
+    },
+    {
+      "prototype": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/20-detail-last-page-geometry.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/20-detail-last-page-geometry.json",
+      "rawEqual": false,
+      "scope": "Drawer/row size, table top and cell font size. Other raw measurements retained."
+    },
+    {
+      "prototype": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/21-detail-current-printed-geometry.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/21-detail-current-printed-geometry.json",
+      "rawEqual": false,
+      "scope": "Drawer/row size, table top and cell font size. Other raw measurements retained."
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/04-all-out-empty-geometry.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/04-all-out-empty-geometry.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/05-returned-old-empty-geometry.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/05-returned-old-empty-geometry.json",
+      "rawEqual": true
+    },
+    {
+      "prototype": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/06-returned-b-empty-geometry.json",
+      "migration": "transfers/acquire-print-P09-transfer-8999c-etails-and-historical-files-migration/06-returned-b-empty-geometry.json",
+      "rawEqual": true
+    }
+  ],
+  "multilingualNarrowPairs": 3,
+  "frontendUnitPassed": 68,
+  "backendRerun": false,
+  "backendBaseline": {
+    "stage": 20,
+    "unit": 79,
+    "integration": 31,
+    "unchangedHashes": {
+      "backend/adtek-sn/src/main/java/com/adtek/sn/service/CurrentPrintFileService.java": "e65bffd85239b15f71fb8c2b473f1feba3a536c6066e983821c671d5d5c0d2a2",
+      "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/CurrentPrintFileServiceImpl.java": "b7f758f1a2ed555bae4d8b76f6b794f08127f5d5f7b812aa80250207cb6c5c70",
+      "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/AcquireMapper.java": "793860fa9c1c815571e06575cc0f228cfaa8c1be76f5839b63e6a737f769360b",
+      "backend/adtek-sn/src/main/java/com/adtek/sn/controller/AcquireController.java": "3980e49666dba42b364eeb8414fc56d5719e43878c7d7125ee5e3225a77e8413",
+      "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/PrintFiles.java": "e9a37eede2b16b0496e7174f4f90068004e4268546474b852e2b2afb565a2440",
+      "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnDataPermissionRules.java": "8e4a7a3b134fbfab13f0446393a956ea9166faa6b48128d3ec86c5fb5c0f4d6e",
+      "backend/adtek-server/src/test/java/com/adtek/server/SnAcquireIT.java": "2d6261845263d27c64e85a86fe28b8b79ad69c4eb61bd0d9998347259e51e5da",
+      "backend/adtek-server/target/adtek-server-acceptance.jar": "7063eb4bd9003be61845e6fa3beb293621eb07a24791a438cca5caf9f1246ae8"
+    }
+  },
+  "filePairs": 36,
+  "currentPrintEmptyFilePairs": 6,
+  "sourceHashes": {
+    "frontend/src/api/contract.ts": "26a967573779d79537e32757307e2e00c5ff8b5cb87c0d37a5e7fc54a3555f20",
+    "frontend/src/api/client.ts": "592cefe8d4785d0b7996c27e69d93c6deb221a974b191d68c95c8a3c0b5a4bb1",
+    "frontend/src/features/sn/useAcquireQueue.ts": "8e9d58e282463b3944293e1353396cdea7a95438ebc2b549baeead0bbaa1f011",
+    "frontend/src/features/sn/usePrototypeFeedback.tsx": "9cb4f3c78257dd0a7641e26f5a80237637a0290db3598e2001711ca5ad9468a4",
+    "frontend/src/features/sn/components/AcquireHistory.tsx": "6c5197a3860a2604afcba9188044714205f0ecd077e7645573b95c50e0b19b95",
+    "frontend/src/features/sn/pages/AcquirePage.tsx": "535fcb14df9ae311d4cf75f84476ee4b6839d767ca1c55234931c048873e0794",
+    "frontend/src/features/sn/printDownloadErrorText.ts": "d622eb2ca2957875ebec045678a275140f8009a2000a2cb42decbd11e0ea57ea",
+    "frontend/src/features/sn/printDownloadErrorText.test.ts": "d7017c95a3e20846b9ca5ed8be281323b928cf44a6aed687f1916f73ab274342",
+    "frontend/src/styles.css": "03f702bba7c3143564cd9dd02c267f9e5eedb695d6a25f426dce6a46a04e226b",
+    "frontend/e2e/parity/acquire-print.spec.ts": "b7e5ac5c67c2eaf23fa8df1cf68bce803535c3c41340678eeddca76d1cbcc8d9",
+    "tools/testing/compare-download-recovery.py": "a786dd4e0ce68d350848071a03c53a82f6fd8b9b0f151c2c89c257569f9d24a9",
+    "frontend/src/i18n/locales/zh-CN.json": "3dc3af6ac9921c0e7b605ab5823b6904dae126d401d5e142a58d88fcd7495dca",
+    "frontend/src/i18n/locales/en.json": "df6bb2940e0f22682c14494cdd080bdc50800ccd4946ad89c28c15910ccaff3a",
+    "frontend/src/i18n/locales/vi.json": "a84d3f36fc9e8c32e795e8126936eaed6b75fb498ca4630b68912a685fab3bd0",
+    "tools/testing/parity-acquire-fixture.py": "3a4b5eaeaa3a8ba43bac40653676ba31e91c434f3e9edde7f9045d1dd5371dff"
+  },
+  "remaining": [
+    "P09 permission/factory/person changes, zero/resource/unknown-response queue cases, historical IDs/order and visual details.",
+    "Full transfer page including applications/approve/reject/withdraw and all remaining P01-P08/P10-P16 requirements.",
+    "Current download size/concurrency/query plan and 500000-row import performance."
+  ]
+}

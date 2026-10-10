@@ -35,7 +35,7 @@ MES 接口挂在 `/api/v1/integrations`。人员页面和 MES 共享 SN Service�
 | --- | --- |
 | POST `/acquisitions` | take；`{operationId,factoryId,pi}`，领取整工厂 + PI 的全部合格 TO_ACQUIRE |
 | GET `/operations/{kind}/{operationId}` | 本主体对应动作当前权限；kind 仅 TAKE/CALLBACK |
-| GET `/results/{taskId}` | 本主体领取/回调的数量、状态、分类计数及 batchId |
+| GET `/results/{taskId}` | 本主体领取/回调的数量、状态、分类计数及 batchId；V31 另给可空业务展示号 batchNo，回调仍传 UUID batchId |
 | GET `/results/{taskId}/items?cursor=&size=1000` | 本主体完整逐项结果，固定 ordinal 游标 |
 | GET `/acquire-batches/{batchId}/items?cursor=&size=1000` | view，原所属工厂；不可变 snapshot 与另列当前状态 |
 | POST `/print-confirmations` | callback，固定批次确认 PRINTED，返回持久任务 |

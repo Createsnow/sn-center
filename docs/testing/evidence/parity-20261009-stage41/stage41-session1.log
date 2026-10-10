@@ -1,0 +1,31 @@
+
+Running 2 tests using 1 worker
+
+(node:45264) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\account-session.spec.ts:9:1 › P13 account sessions: edit name, role, factory and self without another login (11.9s)
+(node:39872) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [migration] › e2e\parity\account-session.spec.ts:9:1 › P13 account sessions: edit name, role, factory and self without another login (28.5s)
+
+
+  1) [migration] › e2e\parity\account-session.spec.ts:9:1 › P13 account sessions: edit name, role, factory and self without another login 
+
+    TimeoutError: page.waitForResponse: Timeout 15000ms exceeded while waiting for event "response"
+
+      64 |     await tab.getByRole('menuitem', { name: zh.nav.users, exact: true }).click();
+      65 |     await tab.getByPlaceholder(zh.users.search).fill(state.names[0]!);
+    > 66 |     const refreshed = tab.waitForResponse(
+         |                           ^
+      67 |       (r) =>
+      68 |         r.request().method() === 'GET' &&
+      69 |         new URL(r.url()).pathname === (prototype ? '/api/users' : '/api/v1/system/users'),
+        at search (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-session.spec.ts:66:27)
+        at edit (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-session.spec.ts:133:17)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-session.spec.ts:215:5
+
+    Error Context: test-results\stage41-session1\account-session-P13-accoun-542a3--self-without-another-login-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\account-session.spec.ts:9:1 › P13 account sessions: edit name, role, factory and self without another login 
+  1 passed (43.3s)

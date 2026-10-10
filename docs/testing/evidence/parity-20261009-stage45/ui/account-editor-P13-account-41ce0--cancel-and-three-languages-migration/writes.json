@@ -1,0 +1,140 @@
+[
+  {
+    "route": "/api/v1/sn/users",
+    "status": 400,
+    "data": {
+      "code": 1004000030,
+      "message": "sn.accountInvalid",
+      "data": null,
+      "params": {
+        "reason": "USER_EMP_NO_INVALID"
+      },
+      "traceId": "360e1300-6b0e-41c4-b78c-8576cc4a329a"
+    }
+  },
+  {
+    "route": "/api/v1/sn/users",
+    "status": 400,
+    "data": {
+      "code": 1004000030,
+      "message": "sn.accountInvalid",
+      "data": null,
+      "params": {
+        "reason": "USER_NAME_REQUIRED"
+      },
+      "traceId": "95661f9f-b241-4316-bf4e-a4b8d4d65388"
+    }
+  },
+  {
+    "route": "/api/v1/sn/users",
+    "status": 400,
+    "data": {
+      "code": 1004000030,
+      "message": "sn.accountInvalid",
+      "data": null,
+      "params": {
+        "reason": "USER_FACTORY_REQUIRED"
+      },
+      "traceId": "95260c14-1e1c-43b0-a3ff-58db0880bbdb"
+    }
+  },
+  {
+    "route": "/api/v1/sn/users",
+    "status": 400,
+    "data": {
+      "code": 1004000030,
+      "message": "sn.accountInvalid",
+      "data": null,
+      "params": {
+        "reason": "USER_PASSWORD_WEAK"
+      },
+      "traceId": "a35c8867-a9f0-4a6b-9093-dd03637d4f11"
+    }
+  },
+  {
+    "route": "/api/v1/sn/users",
+    "status": 200,
+    "data": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "id": "191"
+      },
+      "params": {},
+      "traceId": "d978c6e3-37ab-4df1-b244-72ad8e182bff"
+    }
+  },
+  {
+    "route": "/api/v1/sn/users",
+    "status": 409,
+    "data": {
+      "code": 1004000032,
+      "message": "sn.accountExists",
+      "data": null,
+      "params": {
+        "emp_no": "cmp_account40_operator",
+        "reason": "USER_EMP_NO_EXISTS"
+      },
+      "traceId": "f1c68848-4b83-4a03-a9b4-9bc2e337cb2c"
+    }
+  },
+  {
+    "route": "/api/v1/sn/users/191/update",
+    "status": 200,
+    "data": {
+      "code": 0,
+      "message": "common.success",
+      "data": null,
+      "params": {},
+      "traceId": "5525664d-6208-4596-abbb-4dd641381aea"
+    }
+  },
+  {
+    "route": "/api/v1/sn/users/191/update",
+    "status": 200,
+    "data": {
+      "code": 0,
+      "message": "common.success",
+      "data": null,
+      "params": {},
+      "traceId": "6be06247-405c-4aa9-9d88-f6fced0d33e3"
+    }
+  },
+  {
+    "route": "/api/v1/sn/users/191/update",
+    "status": 200,
+    "data": {
+      "code": 0,
+      "message": "common.success",
+      "data": null,
+      "params": {},
+      "traceId": "0e653536-2e0f-4e2f-a7e3-b0a91e43352d"
+    }
+  },
+  {
+    "route": "/api/v1/sn/users",
+    "status": 200,
+    "data": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "id": "193"
+      },
+      "params": {},
+      "traceId": "aee6e979-bfd8-4cf3-99b7-0351ad88cdfc"
+    }
+  },
+  {
+    "route": "/api/v1/sn/users",
+    "status": 200,
+    "data": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "id": "194"
+      },
+      "params": {},
+      "traceId": "6be3e539-e78c-48c0-be94-2456d130cfad"
+    }
+  }
+]

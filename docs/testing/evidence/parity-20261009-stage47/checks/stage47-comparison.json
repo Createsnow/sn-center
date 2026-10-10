@@ -1,0 +1,129 @@
+{
+  "states": [
+    {
+      "label": "baseline-orders",
+      "factories": 2,
+      "orderLines": 4,
+      "orderedVisibleBusinessRowsEqual": true,
+      "warningsAndFeedbackEqual": true,
+      "syncButtonGeometryEqual": true
+    },
+    {
+      "label": "baseline-factories",
+      "factories": 2,
+      "orderLines": 4,
+      "orderedVisibleBusinessRowsEqual": true,
+      "warningsAndFeedbackEqual": true,
+      "syncButtonGeometryEqual": false
+    },
+    {
+      "label": "factory-write-orders",
+      "factories": 2,
+      "orderLines": 5,
+      "orderedVisibleBusinessRowsEqual": true,
+      "warningsAndFeedbackEqual": true,
+      "syncButtonGeometryEqual": true
+    },
+    {
+      "label": "factory-write-factories",
+      "factories": 2,
+      "orderLines": 5,
+      "orderedVisibleBusinessRowsEqual": true,
+      "warningsAndFeedbackEqual": true,
+      "syncButtonGeometryEqual": false
+    },
+    {
+      "label": "factory-audit-orders",
+      "factories": 2,
+      "orderLines": 6,
+      "orderedVisibleBusinessRowsEqual": true,
+      "warningsAndFeedbackEqual": true,
+      "syncButtonGeometryEqual": true
+    },
+    {
+      "label": "factory-audit-factories",
+      "factories": 2,
+      "orderLines": 6,
+      "orderedVisibleBusinessRowsEqual": true,
+      "warningsAndFeedbackEqual": true,
+      "syncButtonGeometryEqual": false
+    },
+    {
+      "label": "order-write-orders",
+      "factories": 3,
+      "orderLines": 6,
+      "orderedVisibleBusinessRowsEqual": true,
+      "warningsAndFeedbackEqual": true,
+      "syncButtonGeometryEqual": true
+    },
+    {
+      "label": "order-write-factories",
+      "factories": 3,
+      "orderLines": 6,
+      "orderedVisibleBusinessRowsEqual": true,
+      "warningsAndFeedbackEqual": true,
+      "syncButtonGeometryEqual": false
+    },
+    {
+      "label": "order-audit-orders",
+      "factories": 4,
+      "orderLines": 6,
+      "orderedVisibleBusinessRowsEqual": true,
+      "warningsAndFeedbackEqual": true,
+      "syncButtonGeometryEqual": true
+    },
+    {
+      "label": "order-audit-factories",
+      "factories": 4,
+      "orderLines": 6,
+      "orderedVisibleBusinessRowsEqual": true,
+      "warningsAndFeedbackEqual": true,
+      "syncButtonGeometryEqual": false
+    },
+    {
+      "label": "recovery-orders",
+      "factories": 6,
+      "orderLines": 7,
+      "orderedVisibleBusinessRowsEqual": true,
+      "warningsAndFeedbackEqual": true,
+      "syncButtonGeometryEqual": true
+    },
+    {
+      "label": "recovery-factories",
+      "factories": 6,
+      "orderLines": 7,
+      "orderedVisibleBusinessRowsEqual": true,
+      "warningsAndFeedbackEqual": true,
+      "syncButtonGeometryEqual": false
+    },
+    {
+      "label": "bill-only-orders",
+      "factories": 6,
+      "orderLines": 7,
+      "orderedVisibleBusinessRowsEqual": true,
+      "warningsAndFeedbackEqual": true,
+      "syncButtonGeometryEqual": true
+    }
+  ],
+  "persistedFactoryReceiptsAndOrderOutcomesVerified": 7,
+  "faultTriggersRemoved": true,
+  "factoryUpdateTimesByProject": {
+    "java": {
+      "CMP-A": "2026-10-09 15:54:54",
+      "CMP-B": "2026-10-09 15:54:54",
+      "CMP-TX-F3": "2026-10-09 15:55:05",
+      "CMP-TX-F4": "2026-10-09 15:55:08",
+      "CMP-TX-F1": "2026-10-09 15:55:11",
+      "CMP-TX-F2": "2026-10-09 15:55:11"
+    },
+    "python": {
+      "CMP-A": "2026-10-09 15:54:03",
+      "CMP-B": "2026-10-09 15:54:03",
+      "CMP-TX-F1": "2026-10-09 15:54:21",
+      "CMP-TX-F2": "2026-10-09 15:54:21",
+      "CMP-TX-F3": "2026-10-09 15:54:14",
+      "CMP-TX-F4": "2026-10-09 15:54:18"
+    }
+  },
+  "remainingAuditDifference": "ORDER_SYNC quantity/detail/bill fields and failed-operation audit visibility still differ; no claim of audit page parity in this stage."
+}

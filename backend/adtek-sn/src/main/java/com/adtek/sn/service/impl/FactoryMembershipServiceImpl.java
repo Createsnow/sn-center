@@ -9,6 +9,7 @@ import com.adtek.sn.service.support.SnPolicy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.*;
 
+import java.util.List;
 import java.util.Set;
 
 /** 授权关系属于SN，身份模块只见类型化端口。 */
@@ -25,6 +26,23 @@ public class FactoryMembershipServiceImpl implements FactoryMembershipPort {
     @Override
     public Set<Long> factoryIds(long userId) {
         return Set.copyOf(mapper.factoryIds(userId));
+    }
+
+    @Override
+    public List<Factory> details(long userId) {
+        return mapper.details(userId);
+    }
+
+    @Override
+    public Set<Long> members(Actor reader, long factoryId) {
+        var grant = reader.grants().get("sn:factory:list");
+        if (reader.mustChangePassword()
+                || !reader.permissions().contains("system:user:list")
+                || grant == null
+                || (!grant.allFactories() && !grant.factoryIds().contains(factoryId))) {
+            throw new BusinessException(com.adtek.framework.constant.ErrorCodeConstants.FORBIDDEN);
+        }
+        return Set.copyOf(mapper.members(factoryId));
     }
 
     @Override

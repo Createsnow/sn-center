@@ -95,15 +95,18 @@ public class SecurityConfiguration {
                                 .secure(settings.cookieSecure())
                                 .sameSite("Strict"));
         AuthenticationEntryPoint unauthenticated =
-                (request, response, error) ->
-                        writeFailure(
-                                mapper,
-                                request,
-                                response,
-                                error instanceof ActorAuthenticationException actorError
-                                        ? actorError.error()
-                                        : ErrorCodeConstants.SESSION_INVALID,
-                                Map.of());
+                (request, response, error) -> {
+                    if (error.getCause() instanceof SessionSuspendedException)
+                        RefreshCookie.write(response, settings, "", java.time.Duration.ZERO);
+                    writeFailure(
+                            mapper,
+                            request,
+                            response,
+                            error instanceof ActorAuthenticationException actorError
+                                    ? actorError.error()
+                                    : ErrorCodeConstants.SESSION_INVALID,
+                            Map.of());
+                };
         AccessDeniedHandler forbidden =
                 (request, response, error) ->
                         writeFailure(

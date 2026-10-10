@@ -1,0 +1,46 @@
+{
+  "writes": [
+    {
+      "route": "/api/users",
+      "status": 200
+    },
+    {
+      "route": "/api/users",
+      "status": 400
+    },
+    {
+      "route": "/api/users",
+      "status": 200
+    },
+    {
+      "route": "/api/users",
+      "status": 409
+    },
+    {
+      "route": "/api/users/174",
+      "status": 200
+    },
+    {
+      "route": "/api/users/174",
+      "status": 200
+    },
+    {
+      "route": "/api/users/174/reset-password",
+      "status": 200
+    },
+    {
+      "route": "/api/users/174/reset-password",
+      "status": 200
+    },
+    {
+      "route": "/api/users/174/reset-password",
+      "status": 400
+    },
+    {
+      "route": "/api/users/173",
+      "status": 200
+    }
+  ],
+  "pageErrors": [],
+  "versions": []
+}

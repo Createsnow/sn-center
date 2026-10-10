@@ -1,0 +1,37 @@
+{
+  "cells": [
+    [
+      "Q29A00002",
+      "00002",
+      "2",
+      "CMP-UI-QUERY-SCOPE-PI-A",
+      "CMP-SCOPE-MAT-Z",
+      "CMP-QUERY-SCOPE-CUSTOMER",
+      "比较测试甲厂",
+      "To acquire",
+      "CMP-UI-QUERY-SCOPE-PI-A",
+      "CMP-UI-QUERY-SCOPE-MO-A",
+      "",
+      "Generated",
+      "2026-10-09 06:23:03",
+      ""
+    ],
+    [
+      "Q29A00001",
+      "00001",
+      "1",
+      "CMP-UI-QUERY-SCOPE-PI-A",
+      "CMP-SCOPE-MAT-Z",
+      "CMP-QUERY-SCOPE-CUSTOMER",
+      "比较测试甲厂",
+      "To acquire",
+      "CMP-UI-QUERY-SCOPE-PI-A",
+      "CMP-UI-QUERY-SCOPE-MO-A",
+      "",
+      "Generated",
+      "2026-10-09 06:23:03",
+      ""
+    ]
+  ],
+  "text": "SN Center\nHQ generates & allocates\nWORKSPACE\nDashboard\nFACTORY OPERATIONS\nAcquire & print\nFactory transfer\nQUERY & AUDIT\nSN query\nAudit trail\nSN Center\n/\nSN query\n 比较测试甲厂\nEnglish\n比\n比较操作员 · Factory operator\nSN query\n\nRead-only; SNs cannot be moved here. Factories see their own SNs by default and may switch to a read-only view of the same PI across factories.\n\nExport Excel\nCSV\n比较测试甲厂\nStatus\nAll factories of PI (read-only)\nSearch\nRead-only: SNs of this PI allocated to all factories; acquire/print disabled.\nFull SN\n\t\nEncoded serial\n\t\nDecimal serial\n\t\nPI\n\t\nMaterial\n\t\nCustomer\n\t\nFactory\n\t\nStatus\n\t\nSerial owner PI\n\t\nSource order\n\t\nBatch No.\n\t\nSource\n\t\nCreated\n\t\nPrinted\nQ29A00002\n\t\n00002\n\t\n2\n\t\nCMP-UI-QUERY-SCOPE-PI-A\n\t\nCMP-SCOPE-MAT-Z\n\t\nCMP-QUERY-SCOPE-CUSTOMER\n\t\n比较测试甲厂\n\t\nTo acquire\n\t\nCMP-UI-QUERY-SCOPE-PI-A\n\t\nCMP-UI-QUERY-SCOPE-MO-A\n\t\n\t\nGenerated\n\t\n2026-10-09 06:23:03\n\t\n\n\nQ29A00001\n\t\n00001\n\t\n1\n\t\nCMP-UI-QUERY-SCOPE-PI-A\n\t\nCMP-SCOPE-MAT-Z\n\t\nCMP-QUERY-SCOPE-CUSTOMER\n\t\n比较测试甲厂\n\t\nTo acquire\n\t\nCMP-UI-QUERY-SCOPE-PI-A\n\t\nCMP-UI-QUERY-SCOPE-MO-A\n\t\n\t\nGenerated\n\t\n2026-10-09 06:23:03\n\t\nTotal 2\n20/page\n1\n\nYour factory has no SNs in PI CMP-UI-QUERY-SCOPE-PI-B"
+}

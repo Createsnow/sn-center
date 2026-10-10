@@ -1,60 +1,204 @@
-import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
-import { Alert, Button, Form, Input, Modal, Select, Space, Table, Tabs, Typography } from 'antd';
-import { useState } from 'react';
+import { ExclamationCircleFilled, LoadingOutlined } from '@ant-design/icons';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { Alert, Button, Form, Input, Modal, Radio, Select, Table, Tabs, Tag } from 'antd';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { UserProfile } from '../../../api/contract';
-import { paginationTotal } from '../../../api/sn';
-import { transferApi, type TransferCreate, type TransferTarget } from '../../../api/snTransfer';
+import { transferApi, type TransferCreate, type TransferSnapshot } from '../../../api/snTransfer';
 import { ApiErrorAlert } from '../../../components/ApiErrorAlert';
+import { PrototypeIcon } from '../../../components/prototype/PrototypeIcon';
 import { FactoryPicker } from '../components/FactoryPicker';
 import { SnPageHead } from '../components/SnPageHead';
 import { SnOperation } from '../components/SnOperation';
 import { TransferHistory } from '../components/TransferHistory';
-import { TransferImpactHint } from '../components/TransferImpactHint';
 import { useSnOperation } from '../useSnOperation';
+import { useSnContext } from '../useSnContext';
+import { usePrototypeFeedback } from '../usePrototypeFeedback';
+import { transferJump } from '../transferJump';
 
 type Fields = Omit<TransferCreate, 'operationId'>;
-/** 保留来源/目标/记录布局；候选只作提示，任务成功后才表示整批冻结或转移。 */
+const clearControl = { clearIcon: <PrototypeIcon name="CircleClose" /> };
+const states = [
+  ['toAcquire', 'TO_ACQUIRE', 'primary'],
+  ['toPrint', 'TO_PRINT', 'warning'],
+  ['printed', 'PRINTED', 'success'],
+  ['applying', 'APPLYING', 'danger'],
+  ['pendingAllocation', 'PENDING_ALLOC', 'info'],
+] as const;
+
+/** 候选随来源变化自动读取；只有原任务成功且读取到转厂头才显示提交结果。 */
 export function TransferPage({ profile }: { profile: UserProfile }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('prototype');
+  const { t: common } = useTranslation();
   const [form] = Form.useForm<Fields>();
-  const directAllowed = profile.permissions.includes('sn:transfer:direct'),
-    applyAllowed = profile.permissions.includes('sn:transfer:apply');
-  const [mode, setMode] = useState<'APPLY' | 'DIRECT'>(directAllowed ? 'DIRECT' : 'APPLY'),
-    [tab, setTab] = useState(directAllowed || applyAllowed ? 'new' : 'records');
-  const [picker, setPicker] = useState(false),
-    [confirm, setConfirm] = useState<Fields>(),
-    [chosen, setChosen] = useState<TransferTarget>();
+  const context = useSnContext(profile);
+  const bound =
+    context.data?.role === 'factory_operator' && context.data.factories.length === 1
+      ? context.data.factories[0]
+      : undefined;
+  const directAllowed = profile.permissions.includes('sn:transfer:direct');
+  const applyAllowed = profile.permissions.includes('sn:transfer:apply');
+  const mode = directAllowed ? 'DIRECT' : 'APPLY';
+  const [tab, setTab] = useState(directAllowed || applyAllowed ? 'new' : 'records');
+  const [picker, setPicker] = useState(false);
+  const [chosen, setChosen] = useState<TransferSnapshot>();
+  const [targetName, setTargetName] = useState('');
   const [sourceType, setSourceType] = useState('MANUAL');
-  const scope = Form.useWatch('scope', form);
-  const candidates = useMutation({ mutationFn: transferApi.candidates });
-  const apply = useSnOperation(profile, 'TRANSFER_APPLY', transferApi.apply),
-    direct = useSnOperation(profile, 'TRANSFER_DIRECT', transferApi.direct);
-  const work = mode === 'DIRECT' ? direct : apply,
-    busy = apply.busy || direct.busy;
-  const candidate = () => {
-    const values = form.getFieldsValue();
-    if (
-      !values.factoryId ||
-      !values.pi?.trim() ||
-      (values.scope === 'SINGLE' && !values.sn?.trim())
-    )
-      return;
-    candidates.mutate({
-      factoryId: values.factoryId,
-      pi: values.pi,
-      scope: values.scope,
-      material: values.material ?? '',
-      sn: values.sn ?? undefined,
+  const [modal, modalHolder] = Modal.useModal();
+  const feedback = usePrototypeFeedback();
+  const consumed = useRef(new Set<string>());
+  const values = Form.useWatch([], form) as Partial<Fields> | undefined;
+  const factoryId = bound?.id ?? values?.factoryId ?? '';
+  const pi = values?.pi?.trim() ?? '';
+  const scope = values?.scope ?? 'PI';
+  const candidateInput = {
+    factoryId,
+    pi,
+    scope,
+    material: scope === 'MATERIAL' ? (values?.material ?? '') : undefined,
+    sn: scope === 'SINGLE' ? values?.sn?.trim() : undefined,
+    toPi: values?.toPi?.trim() || undefined,
+  };
+  const validSource = !!factoryId && !!pi && (scope !== 'SINGLE' || !!candidateInput.sn);
+  const candidates = useQuery({
+    queryKey: [
+      'sn',
+      'transfer-candidates',
+      profile.id,
+      profile.authorizationVersion,
+      candidateInput,
+    ],
+    queryFn: () => transferApi.candidates(candidateInput),
+    enabled: validSource,
+    retry: false,
+  });
+  const hintInput = {
+    ...candidateInput,
+    toPi: candidateInput.toPi ?? '',
+    toCustomer: values?.toCustomer?.trim() ?? '',
+  };
+  const hintEnabled =
+    validSource &&
+    !!candidateInput.toPi &&
+    candidateInput.toPi !== pi &&
+    profile.permissions.includes('sn:transfer:targets');
+  const hint = useQuery({
+    queryKey: ['sn', 'transfer-impact', profile.id, profile.authorizationVersion, hintInput],
+    queryFn: () => transferApi.hint(hintInput),
+    enabled: hintEnabled,
+    retry: false,
+  });
+  const impact = transferJump(hint.data);
+  const jump = impact ? t('transfer.jumpWarn', { pi: candidateInput.toPi, ...impact }) : '';
+  const apply = useSnOperation(profile, 'TRANSFER_APPLY', transferApi.apply);
+  const direct = useSnOperation(profile, 'TRANSFER_DIRECT', transferApi.direct);
+  const work = mode === 'DIRECT' ? direct : apply;
+  const busy = apply.busy || direct.busy;
+  const completed = work.task.data;
+  const result = useQuery({
+    queryKey: [
+      'sn',
+      'transfer-result',
+      profile.id,
+      profile.authorizationVersion,
+      completed?.resultRef,
+    ],
+    queryFn: () => transferApi.get(completed!.resultRef!),
+    enabled: completed?.state === 'SUCCESS' && !!completed.resultRef,
+    retry: false,
+  });
+  useEffect(() => {
+    if (!result.data || !completed || consumed.current.has(completed.operationId)) return;
+    // 刷新后由持久操作号恢复同一结果；不要依赖当前组件是否发起过 POST。
+    consumed.current.add(completed.operationId);
+    feedback.success(
+      t('transfer.submitted', {
+        no: result.data.transferNo ?? result.data.id,
+        n: result.data.quantity,
+      }),
+    );
+    form.setFieldValue('reason', '');
+    setTab('records');
+    void candidates.refetch();
+    work.clear();
+  }, [completed, result.data, feedback, t, form, candidates, work]);
+  const count = validSource ? candidates.data : undefined;
+  const canSubmit =
+    !busy &&
+    !candidates.isFetching &&
+    (!hintEnabled || (!hint.isFetching && !!hint.data && !hint.error)) &&
+    !!factoryId &&
+    !!pi &&
+    !!values?.toFactoryId &&
+    !!values.toPi?.trim() &&
+    !!values.reason?.trim() &&
+    !!count &&
+    count.transferable !== '0' &&
+    count.duplicateCount === '0';
+  const confirm = () => {
+    if (!canSubmit) return;
+    const input: Fields = {
+      factoryId,
+      pi,
+      scope,
+      material: scope === 'MATERIAL' ? (values?.material ?? '') : undefined,
+      sn: scope === 'SINGLE' ? (values?.sn?.trim() ?? '') : undefined,
+      toFactoryId: values!.toFactoryId!,
+      toPi: values!.toPi!.trim(),
+      toCustomer: values?.toCustomer?.trim() ?? '',
+      toMaterial: values?.toMaterial?.trim() ?? '',
+      targetSource: sourceType,
+      reason: values!.reason!.trim(),
+    };
+    modal.confirm({
+      title: t(mode === 'DIRECT' ? 'transfer.directSubmit' : 'transfer.applySubmit'),
+      icon: null,
+      className: 'sn-init-confirm',
+      width: 420,
+      centered: true,
+      closable: true,
+      okText: common('snAcquire.confirmButton'),
+      cancelText: common('snAcquire.cancelButton'),
+      content: (
+        <div className="sn-init-confirm-message">
+          <ExclamationCircleFilled aria-hidden />
+          <span>
+            {t(mode === 'DIRECT' ? 'transfer.directConfirm' : 'transfer.applyConfirm', {
+              n: count!.transferable,
+              factory: targetName || chosen?.factoryName || input.toFactoryId,
+              pi: input.toPi,
+            })}
+            {jump ? ` ${jump}` : ''}
+          </span>
+        </div>
+      ),
+      onOk: () => {
+        const operationId = crypto.randomUUID();
+        work.begin({ ...input, operationId });
+      },
     });
   };
   return (
-    <div className="sn-page">
-      <SnPageHead title={t('snTransfer.title')} description={t('snTransfer.desc')} />
-      <Alert type="warning" showIcon title={t('snTransfer.labels')} />
-      <SnOperation work={apply} />
-      <SnOperation work={direct} />
+    <div className="sn-page sn-transfer-page">
+      {feedback.holder}
+      {modalHolder}
+      <SnPageHead title={t('transfer.title')} description={t('transfer.desc')} />
+      {[apply, direct].map((operation, index) =>
+        operation.mutation.error ||
+        operation.task.error ||
+        operation.task.data?.state === 'FAILED' ? (
+          <SnOperation key={index} work={operation} />
+        ) : null,
+      )}
+      {result.error && (
+        <>
+          <ApiErrorAlert error={result.error} />
+          <Button onClick={() => void result.refetch()}>{common('export.check')}</Button>
+        </>
+      )}
       <Tabs
+        type="card"
+        className="sn-transfer-tabs"
         activeKey={tab}
         onChange={setTab}
         items={[
@@ -62,7 +206,7 @@ export function TransferPage({ profile }: { profile: UserProfile }) {
             ? [
                 {
                   key: 'new',
-                  label: t(directAllowed ? 'snTransfer.directTab' : 'snTransfer.applyTab'),
+                  label: t(directAllowed ? 'transfer.directTab' : 'transfer.applyTab'),
                   children: (
                     <Form
                       form={form}
@@ -72,15 +216,9 @@ export function TransferPage({ profile }: { profile: UserProfile }) {
                         material: '',
                         toCustomer: '',
                         toMaterial: '',
-                        targetSource: 'MANUAL',
+                        reason: '',
                       }}
                       onValuesChange={(changed: Partial<Fields>) => {
-                        if (
-                          ['factoryId', 'pi', 'scope', 'material', 'sn'].some(
-                            (key) => key in changed,
-                          )
-                        )
-                          candidates.reset();
                         if (
                           ['toFactoryId', 'toPi', 'toCustomer', 'toMaterial'].some(
                             (key) => key in changed,
@@ -88,142 +226,217 @@ export function TransferPage({ profile }: { profile: UserProfile }) {
                         )
                           setSourceType('MANUAL');
                       }}
-                      onFinish={(values) => setConfirm(values)}
+                      onFinish={confirm}
                     >
-                      <div className="sn-form-grid">
-                        <div className="sn-section">
-                          <Typography.Title level={4}>{t('snTransfer.source')}</Typography.Title>
+                      <div className="sn-transfer-grid">
+                        <section>
+                          <h4>{t('transfer.source')}</h4>
+                          {bound ? (
+                            <Form.Item label={t('transfer.fromFactory')} required>
+                              <Input
+                                disabled
+                                value={bound.name}
+                                aria-label={t('transfer.fromFactory')}
+                              />
+                            </Form.Item>
+                          ) : (
+                            <Form.Item name="factoryId" label={t('transfer.fromFactory')} required>
+                              <FactoryPicker profile={profile} />
+                            </Form.Item>
+                          )}
+                          <Form.Item name="pi" label="PI" required>
+                            <Input
+                              allowClear={clearControl}
+                              aria-label={t('transfer.source') + ' PI'}
+                              maxLength={128}
+                            />
+                          </Form.Item>
                           <Form.Item
-                            name="factoryId"
-                            label={t('snTransfer.fromFactory')}
-                            rules={[{ required: true }]}
+                            name="scope"
+                            label={t('transfer.scope')}
+                            required
+                            className={scope === 'PI' ? 'sn-transfer-last-field' : undefined}
                           >
-                            <FactoryPicker profile={profile} />
-                          </Form.Item>
-                          <Form.Item name="pi" label="PI" rules={[{ required: true }]}>
-                            <Input aria-label={t('snTransfer.source') + ' PI'} maxLength={128} />
-                          </Form.Item>
-                          <Form.Item name="scope" label={t('snTransfer.scope')}>
-                            <Select
-                              aria-label={t('snTransfer.scope')}
+                            <Radio.Group
+                              optionType="button"
+                              buttonStyle="solid"
                               options={['PI', 'MATERIAL', 'SINGLE'].map((value) => ({
                                 value,
-                                label: t('snTransfer.scopes.' + value),
+                                label: t('scope.' + value),
                               }))}
                             />
                           </Form.Item>
                           {scope === 'MATERIAL' && (
-                            <Form.Item name="material" label={t('snPages.common.material')}>
-                              <Input maxLength={128} placeholder={t('snTransfer.emptyMaterial')} />
+                            <Form.Item
+                              name="material"
+                              label={t('common.material')}
+                              required
+                              className="sn-transfer-last-field"
+                            >
+                              <Select
+                                aria-label={t('common.material')}
+                                showSearch
+                                options={(count?.materials ?? []).map((value) => ({
+                                  value,
+                                  label: value || t('orders.noMaterial'),
+                                }))}
+                              />
                             </Form.Item>
                           )}
                           {scope === 'SINGLE' && (
-                            <Form.Item name="sn" label="SN" rules={[{ required: true }]}>
-                              <Input aria-label="SN" maxLength={64} />
+                            <Form.Item
+                              name="sn"
+                              label={t('common.sn')}
+                              required
+                              className="sn-transfer-last-field"
+                            >
+                              <Input
+                                allowClear={clearControl}
+                                className="sn-mono"
+                                aria-label="SN"
+                                maxLength={64}
+                              />
                             </Form.Item>
                           )}
-                          <Button
-                            aria-label={t('snTransfer.checkCandidates')}
-                            onClick={candidate}
-                            loading={candidates.isPending}
-                          >
-                            {t('snTransfer.checkCandidates')}
-                          </Button>
-                          <ApiErrorAlert error={candidates.error} />
-                          {candidates.data && (
+                          <ApiErrorAlert error={validSource ? candidates.error : null} />
+                          <ApiErrorAlert error={hintEnabled ? hint.error : null} />
+                          {count && (
                             <Alert
-                              type="info"
-                              title={t('snTransfer.candidates', {
-                                ok: candidates.data.transferable,
-                                total: candidates.data.total,
+                              showIcon
+                              icon={
+                                <span>
+                                  <PrototypeIcon
+                                    name={
+                                      count.transferable === '0' ? 'WarningFilled' : 'SuccessFilled'
+                                    }
+                                  />
+                                </span>
+                              }
+                              type={count.transferable === '0' ? 'warning' : 'success'}
+                              title={t('transfer.candidates', {
+                                ok: count.transferable,
+                                total: count.total,
                               })}
                               description={
-                                <Space wrap>
-                                  {(['toAcquire', 'toPrint', 'printed', 'applying'] as const).map(
-                                    (key, i) => (
+                                <div className="sn-transfer-counts">
+                                  {states
+                                    .filter(([key]) => count[key] !== '0')
+                                    .map(([key, status, color]) => (
                                       <span key={key}>
-                                        {t(
-                                          'snAcquire.status.' +
-                                            ['TO_ACQUIRE', 'TO_PRINT', 'PRINTED', 'APPLYING'][i],
-                                        )}
-                                        : {candidates.data![key]}
+                                        <Tag className={'sn-tag-' + color}>
+                                          {t('status.' + status)}
+                                        </Tag>{' '}
+                                        {count[key]}
                                       </span>
-                                    ),
-                                  )}
-                                </Space>
+                                    ))}
+                                </div>
                               }
                             />
                           )}
-                          <p>{t('snTransfer.rule')}</p>
-                        </div>
-                        <div className="sn-section">
-                          <Typography.Title level={4}>{t('snTransfer.target')}</Typography.Title>
-                          <Space wrap>
-                            <Button onClick={() => setPicker(true)}>
-                              {t('snTransfer.fromSnapshot')}
-                            </Button>
-                            <span>{t('snTransfer.src' + sourceType)}</span>
-                          </Space>
-                          <Form.Item
-                            name="toFactoryId"
-                            label={t('snTransfer.toFactory')}
-                            rules={[{ required: true }]}
-                          >
-                            <TargetFactoryPicker profile={profile} chosen={chosen} />
-                          </Form.Item>
-                          <Form.Item
-                            name="toPi"
-                            label={t('snTransfer.toPi')}
-                            rules={[{ required: true }]}
-                          >
-                            <Input aria-label={t('snTransfer.toPi')} maxLength={128} />
-                          </Form.Item>
-                          <Form.Item name="toCustomer" label={t('snTransfer.toCustomer')}>
-                            <Input placeholder={t('snTransfer.keep')} maxLength={64} />
-                          </Form.Item>
-                          <Form.Item name="toMaterial" label={t('snTransfer.toMaterial')}>
-                            <Input placeholder={t('snTransfer.keep')} maxLength={128} />
-                          </Form.Item>
-                        </div>
-                      </div>
-                      <div className="sn-section">
-                        <Form.Item
-                          name="reason"
-                          label={t('snTransfer.reason')}
-                          rules={[{ required: true, whitespace: true }]}
-                        >
-                          <Input.TextArea
-                            aria-label={t('snTransfer.reason')}
-                            maxLength={500}
-                            showCount
-                          />
-                        </Form.Item>
-                        <Space wrap>
-                          {directAllowed && applyAllowed && (
-                            <Select
-                              aria-label={t('snTransfer.mode')}
-                              value={mode}
-                              onChange={setMode}
-                              options={[
-                                { value: 'DIRECT', label: t('snTransfer.modeDIRECT') },
-                                { value: 'APPLY', label: t('snTransfer.modeAPPLY') },
-                              ]}
+                          {count && count.duplicateCount !== '0' && (
+                            <Alert
+                              showIcon
+                              type="error"
+                              icon={
+                                <span>
+                                  <PrototypeIcon name="CircleCloseFilled" />
+                                </span>
+                              }
+                              className="sn-transfer-gap"
+                              title={t('transfer.dupWarn', {
+                                pi: candidateInput.toPi,
+                                n: count.duplicateCount,
+                                sns: count.duplicateSamples.join('、'),
+                              })}
                             />
                           )}
+                          {jump && (
+                            <Alert
+                              showIcon
+                              type="warning"
+                              icon={
+                                <span>
+                                  <PrototypeIcon name="WarningFilled" />
+                                </span>
+                              }
+                              className="sn-transfer-gap"
+                              title={jump}
+                            />
+                          )}
+                          <p className="sn-muted">{t('transfer.rule')}</p>
+                        </section>
+                        <section>
+                          <h4>
+                            {t('transfer.target')}
+                            <Tag
+                              className={
+                                'sn-tag-' + (sourceType === 'SNAPSHOT' ? 'success' : 'warning')
+                              }
+                            >
+                              {t('transfer.src' + sourceType)}
+                            </Tag>
+                            <Button size="small" onClick={() => setPicker(true)}>
+                              {t('transfer.fromSnapshot')}
+                            </Button>
+                          </h4>
+                          <Form.Item name="toFactoryId" label={t('transfer.toFactory')} required>
+                            <TargetFactoryPicker
+                              profile={profile}
+                              chosen={chosen}
+                              nameChanged={setTargetName}
+                            />
+                          </Form.Item>
+                          <Form.Item name="toPi" label={t('transfer.toPi')} required>
+                            <Input
+                              allowClear={clearControl}
+                              aria-label={t('transfer.toPi')}
+                              maxLength={128}
+                            />
+                          </Form.Item>
+                          <Form.Item name="toCustomer" label={t('transfer.toCustomer')}>
+                            <Input
+                              allowClear={clearControl}
+                              aria-label={t('transfer.toCustomer')}
+                              placeholder={t('transfer.keep')}
+                              maxLength={64}
+                            />
+                          </Form.Item>
+                          <Form.Item name="toMaterial" label={t('transfer.toMaterial')}>
+                            <Input
+                              allowClear={clearControl}
+                              aria-label={t('transfer.toMaterial')}
+                              placeholder={t('transfer.keep')}
+                              maxLength={128}
+                            />
+                          </Form.Item>
+                          <Form.Item
+                            name="reason"
+                            label={t('transfer.reason')}
+                            required
+                            className="sn-transfer-last-field"
+                          >
+                            <Input.TextArea
+                              aria-label={t('transfer.reason')}
+                              rows={3}
+                              maxLength={500}
+                              showCount
+                            />
+                          </Form.Item>
                           <Button
                             type="primary"
                             htmlType="submit"
-                            disabled={
-                              busy || !candidates.data || candidates.data.transferable === '0'
-                            }
+                            disabled={!canSubmit}
+                            aria-label={t(
+                              mode === 'DIRECT' ? 'transfer.directSubmit' : 'transfer.applySubmit',
+                            )}
+                            aria-busy={busy}
+                            loading={busy ? { icon: <LoadingOutlined aria-hidden /> } : false}
                           >
                             {t(
-                              mode === 'DIRECT'
-                                ? 'snTransfer.directSubmit'
-                                : 'snTransfer.applySubmit',
+                              mode === 'DIRECT' ? 'transfer.directSubmit' : 'transfer.applySubmit',
                             )}
                           </Button>
-                        </Space>
+                        </section>
                       </div>
                     </Form>
                   ),
@@ -232,56 +445,21 @@ export function TransferPage({ profile }: { profile: UserProfile }) {
             : []),
           {
             key: 'records',
-            label: t('snTransfer.records'),
+            label: t('transfer.records'),
             children: <TransferHistory profile={profile} />,
           },
         ]}
       />
-      <Modal
-        open={!!confirm}
-        title={t(mode === 'DIRECT' ? 'snTransfer.directSubmit' : 'snTransfer.applySubmit')}
-        okText={t('users.confirm')}
-        cancelText={t('snPages.common.cancel')}
-        onCancel={() => setConfirm(undefined)}
-        onOk={() => {
-          if (confirm) {
-            work.begin({ ...confirm, targetSource: sourceType, operationId: crypto.randomUUID() });
-            setConfirm(undefined);
-          }
-        }}
-      >
-        <p>
-          {confirm &&
-            t(mode === 'DIRECT' ? 'snTransfer.directConfirm' : 'snTransfer.applyConfirm', {
-              n: candidates.data?.transferable,
-              factory: confirm.toFactoryId,
-              pi: confirm.toPi,
-            })}
-        </p>
-        <Alert type="warning" title={t('snTransfer.labels')} />
-        {confirm && (
-          <TransferImpactHint
-            profile={profile}
-            input={{
-              factoryId: confirm.factoryId,
-              pi: confirm.pi,
-              scope: confirm.scope,
-              material: confirm.material,
-              sn: confirm.sn,
-              toPi: confirm.toPi,
-              toCustomer: confirm.toCustomer,
-            }}
-          />
-        )}
-      </Modal>
-      {picker && (
+      {(directAllowed || applyAllowed) && (
         <TargetPicker
           profile={profile}
+          open={picker}
           close={() => setPicker(false)}
           choose={(row) => {
             setChosen(row);
+            setTargetName(row.factoryName ?? '');
             form.setFieldsValue({
-              toFactoryId: row.factoryId,
+              toFactoryId: row.factoryId ?? undefined,
               toPi: row.pi,
               toCustomer: row.customer,
               toMaterial: row.material,
@@ -294,23 +472,26 @@ export function TransferPage({ profile }: { profile: UserProfile }) {
     </div>
   );
 }
+
 function TargetFactoryPicker({
   profile,
   value,
   onChange,
   chosen,
+  nameChanged,
 }: {
   profile: UserProfile;
   value?: string;
   onChange?: (v: string) => void;
-  chosen?: TransferTarget;
+  chosen?: TransferSnapshot;
+  nameChanged: (name: string) => void;
 }) {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const rows = useInfiniteQuery({
     queryKey: ['sn', 'transfer-factories', profile.id, profile.authorizationVersion, search],
     initialPageParam: 1,
-    queryFn: ({ pageParam }) => transferApi.targets(true, search, pageParam),
+    queryFn: ({ pageParam }) => transferApi.factories(search, pageParam),
     getNextPageParam: (p) => (BigInt(p.page * p.size) < BigInt(p.total) ? p.page + 1 : undefined),
   });
   const options = new Map(
@@ -319,22 +500,31 @@ function TargetFactoryPicker({
         (r) =>
           [
             r.factoryId,
-            { value: r.factoryId, label: `${r.factoryCode} · ${r.factoryName}` },
+            {
+              value: r.factoryId,
+              label: `${r.factoryName}（${r.factoryCode}）`,
+              name: r.factoryName,
+            },
           ] as const,
       ),
     ),
   );
-  if (chosen)
+  if (chosen?.factoryId && chosen.factoryCode !== null && chosen.factoryName !== null)
     options.set(chosen.factoryId, {
       value: chosen.factoryId,
-      label: `${chosen.factoryCode} · ${chosen.factoryName}`,
+      label: `${chosen.factoryName}（${chosen.factoryCode}）`,
+      name: chosen.factoryName,
     });
   return (
-    <div>
+    <div className="sn-transfer-factory">
       <Select
         aria-label={t('snTransfer.toFactory')}
+        placeholder={t('snPages.common.factory')}
         value={value}
-        onChange={onChange}
+        onChange={(id) => {
+          onChange?.(id);
+          nameChanged(options.get(id)?.name ?? id);
+        }}
         options={[...options.values()]}
         showSearch={{ filterOption: false, onSearch: setSearch }}
         loading={rows.isFetching}
@@ -353,71 +543,87 @@ function TargetFactoryPicker({
     </div>
   );
 }
+/** 快照搜索在页面内保留；回车重查同一条件，关闭弹窗不丢弃已选候选。 */
 function TargetPicker({
   profile,
+  open,
   close,
   choose,
 }: {
   profile: UserProfile;
+  open: boolean;
   close: () => void;
-  choose: (row: TransferTarget) => void;
+  choose: (row: TransferSnapshot) => void;
 }) {
-  const { t } = useTranslation();
-  const [query, setQuery] = useState(''),
-    [search, setSearch] = useState(''),
-    [page, setPage] = useState(1);
+  const { t } = useTranslation('prototype');
+  const [query, setQuery] = useState('');
+  const [search, setSearch] = useState('');
   const rows = useQuery({
-    queryKey: ['sn', 'transfer-targets', profile.id, profile.authorizationVersion, search, page],
-    queryFn: () => transferApi.targets(false, search, page),
+    queryKey: ['sn', 'transfer-targets', profile.id, profile.authorizationVersion, search],
+    queryFn: () => transferApi.targets(search),
+    // 同一身份等待新搜索时保留已显示候选；身份或授权版本变化不能沿用旧目录。
+    placeholderData: (previous, query) =>
+      query?.queryKey[2] === profile.id && query.queryKey[3] === profile.authorizationVersion
+        ? previous
+        : undefined,
+    staleTime: 0,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    retry: false,
   });
   return (
-    <Modal open title={t('snTransfer.fromSnapshot')} onCancel={close} footer={null} width={900}>
-      <Space.Compact>
-        <Input
-          aria-label={t('snTransfer.targetSearch')}
-          placeholder={t('snTransfer.targetSearch')}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onPressEnter={() => {
-            setPage(1);
-            setSearch(query);
-          }}
-        />
-        <Button
-          onClick={() => {
-            setPage(1);
-            setSearch(query);
-          }}
-        >
-          {t('snPages.common.search')}
-        </Button>
-      </Space.Compact>
+    <Modal
+      open={open}
+      title={t('transfer.fromSnapshot')}
+      onCancel={close}
+      footer={null}
+      width={820}
+      className="sn-transfer-snapshot"
+      closeIcon={<PrototypeIcon name="Close" />}
+      style={{ top: '15vh' }}
+    >
+      <Input
+        aria-label={t('transfer.targetSearch')}
+        placeholder={t('transfer.targetSearch')}
+        prefix={<PrototypeIcon name="Search" />}
+        allowClear={clearControl}
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        onPressEnter={() => {
+          const next = query.trim();
+          if (next === search) void rows.refetch();
+          else setSearch(next);
+        }}
+      />
       <ApiErrorAlert error={rows.error} />
       <Table
-        rowKey={(r) => JSON.stringify([r.factoryId, r.pi, r.customer, r.material])}
+        size="small"
+        rowKey={(r) => JSON.stringify([r.factoryId, r.orgName, r.pi, r.customer, r.material])}
         dataSource={rows.data?.items}
-        loading={rows.isFetching}
-        scroll={{ x: 650 }}
-        pagination={{
-          current: page,
-          pageSize: 20,
-          total: paginationTotal(rows.data?.total),
-          onChange: setPage,
-          showSizeChanger: false,
-        }}
+        scroll={{ x: 660, y: 328 }}
+        pagination={false}
+        onRow={(row) => ({ onClick: () => choose(row) })}
+        locale={{ emptyText: t('common.empty') }}
         columns={[
-          { title: t('snPages.common.factory'), dataIndex: 'factoryCode' },
-          { title: 'PI', dataIndex: 'pi' },
-          { title: t('snPages.common.customer'), dataIndex: 'customer' },
-          { title: t('snPages.common.material'), dataIndex: 'material' },
           {
-            title: t('snPages.common.actions'),
-            render: (_, r) => (
-              <Button type="link" onClick={() => choose(r)}>
-                {t('snTransfer.select')}
-              </Button>
+            title: t('orders.org'),
+            dataIndex: 'orgName',
+            width: 182,
+            render: (name: string, row) => (
+              <>
+                {name}
+                {!row.factoryCode && (
+                  <Tag className="sn-transfer-tag sn-transfer-tag-danger">
+                    {t('orders.noFactory')}
+                  </Tag>
+                )}
+              </>
             ),
           },
+          { title: t('common.customer'), dataIndex: 'customer', width: 100 },
+          { title: 'PI', dataIndex: 'pi', width: 206 },
+          { title: t('common.material'), dataIndex: 'material', width: 120 },
+          { title: t('orders.materialName'), dataIndex: 'materialName', ellipsis: true },
         ]}
       />
     </Modal>

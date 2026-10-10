@@ -1,0 +1,89 @@
+{
+  "filePairs": [
+    {
+      "case": "acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page",
+      "file": "competing.xlsx",
+      "rows": 3,
+      "rawSnOrderEqual": true,
+      "allElevenColumnsEqualAfterBusinessNumberNormalization": true,
+      "cellTypesEqual": true,
+      "freezePanes": "A2",
+      "prototypeSha256": "a4d4c699919095b3686eb4b3d14bedd2668d1eb7b9c3aad8349616d149ab1ed5",
+      "migrationSha256": "9f71322f3d0008c59e1750e0bf6f0ed08e28bbef2830947e5e3901800c4bd9a6"
+    },
+    {
+      "case": "acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page",
+      "file": "remaining.xlsx",
+      "rows": 3,
+      "rawSnOrderEqual": true,
+      "allElevenColumnsEqualAfterBusinessNumberNormalization": true,
+      "cellTypesEqual": true,
+      "freezePanes": "A2",
+      "prototypeSha256": "d6b55f7d7f0bbfc5a01b2d0ff05ec5efca303881ed09226e5395bbdef9ba241c",
+      "migrationSha256": "1c8273704f6f91535b2bf8b1fc80816c78e6d4dc9c4a2b679098c6a03caeef4a"
+    },
+    {
+      "case": "acquire-print-P09-paged-hi-1341c--histories-and-filter-reset",
+      "file": "history-first.xlsx",
+      "rows": 51,
+      "rawSnOrderEqual": true,
+      "allElevenColumnsEqualAfterBusinessNumberNormalization": true,
+      "cellTypesEqual": true,
+      "freezePanes": "A2",
+      "prototypeSha256": "bf2df22bfbe0d41d34162fa0ffbd277a845b5ba6761f23a4d9520b5b3097daf9",
+      "migrationSha256": "809f8b1f1842bd45496fdb67e1bdcc7cf319bf04aa1d432a9ddaaea2e232dcec"
+    },
+    {
+      "case": "acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload",
+      "file": "single-again.xlsx",
+      "rows": 3,
+      "rawSnOrderEqual": true,
+      "allElevenColumnsEqualAfterBusinessNumberNormalization": true,
+      "cellTypesEqual": true,
+      "freezePanes": "A2",
+      "prototypeSha256": "a540e0a1378811e679d8ee1f7ee7243fb6d4306da6d52cc557c9be34f61ebf82",
+      "migrationSha256": "a759acb0c49724b34107c4fbacd42a65fb9498a47f363963b1d327c4c8cd0c56"
+    },
+    {
+      "case": "acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload",
+      "file": "single.xlsx",
+      "rows": 3,
+      "rawSnOrderEqual": true,
+      "allElevenColumnsEqualAfterBusinessNumberNormalization": true,
+      "cellTypesEqual": true,
+      "freezePanes": "A2",
+      "prototypeSha256": "1be5171c88ef6888595f700def02bf9d4a7434f29b9779b547028c104f3391c3",
+      "migrationSha256": "a759acb0c49724b34107c4fbacd42a65fb9498a47f363963b1d327c4c8cd0c56"
+    },
+    {
+      "case": "acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload",
+      "file": "single.csv",
+      "bom": true,
+      "encoding": "UTF-8",
+      "bytesEqualAfterBatchNumberNormalization": true
+    },
+    {
+      "case": "acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history",
+      "file": "bulk-1.xlsx",
+      "rows": 3,
+      "rawSnOrderEqual": true,
+      "allElevenColumnsEqualAfterBusinessNumberNormalization": true,
+      "cellTypesEqual": true,
+      "freezePanes": "A2",
+      "prototypeSha256": "7a9f08d224507b428ad3ac4d9ef66deef3ec2bbd5bb0273ce90d4a763016d2b6",
+      "migrationSha256": "953cea876f7a424998a81d84de89e222084e341a374bbcf1b3b49daaa922c95e"
+    },
+    {
+      "case": "acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history",
+      "file": "bulk-2.xlsx",
+      "rows": 3,
+      "rawSnOrderEqual": true,
+      "allElevenColumnsEqualAfterBusinessNumberNormalization": true,
+      "cellTypesEqual": true,
+      "freezePanes": "A2",
+      "prototypeSha256": "6f1127803993bf18e7d206fbca036130fc180f851e91009835fe92cb2c8fda6f",
+      "migrationSha256": "09e3d9a44b481afd712d27ca01e602b4b8cf9170cbefa6f5fd80b3323fff459b"
+    }
+  ],
+  "note": "Independent B/P numbers and ZIP metadata differ. All columns, raw row order, cell types and CSV encoding/quoting are checked, not an SN-sorted shared-field projection."
+}

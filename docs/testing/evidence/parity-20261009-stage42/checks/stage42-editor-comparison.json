@@ -1,0 +1,98 @@
+{
+  "states": [
+    {
+      "state": "01-default",
+      "allEightGeometryGroupsEqual": true,
+      "allLabelGlyphRectanglesEqual": true,
+      "rawTextEqual": true,
+      "extraInvisibleLiveAnnouncement": false
+    },
+    {
+      "state": "02-edit-admin",
+      "allEightGeometryGroupsEqual": true,
+      "allLabelGlyphRectanglesEqual": true,
+      "rawTextEqual": true,
+      "extraInvisibleLiveAnnouncement": false
+    },
+    {
+      "state": "02-edit-factory_operator",
+      "allEightGeometryGroupsEqual": true,
+      "allLabelGlyphRectanglesEqual": true,
+      "rawTextEqual": false,
+      "extraInvisibleLiveAnnouncement": true
+    },
+    {
+      "state": "02-edit-query",
+      "allEightGeometryGroupsEqual": true,
+      "allLabelGlyphRectanglesEqual": true,
+      "rawTextEqual": true,
+      "extraInvisibleLiveAnnouncement": false
+    },
+    {
+      "state": "03-en-admin",
+      "allEightGeometryGroupsEqual": true,
+      "allLabelGlyphRectanglesEqual": true,
+      "rawTextEqual": true,
+      "extraInvisibleLiveAnnouncement": false
+    },
+    {
+      "state": "03-en-factory_operator",
+      "allEightGeometryGroupsEqual": true,
+      "allLabelGlyphRectanglesEqual": true,
+      "rawTextEqual": true,
+      "extraInvisibleLiveAnnouncement": false
+    },
+    {
+      "state": "03-en-query",
+      "allEightGeometryGroupsEqual": true,
+      "allLabelGlyphRectanglesEqual": true,
+      "rawTextEqual": true,
+      "extraInvisibleLiveAnnouncement": false
+    },
+    {
+      "state": "03-vi-admin",
+      "allEightGeometryGroupsEqual": true,
+      "allLabelGlyphRectanglesEqual": true,
+      "rawTextEqual": true,
+      "extraInvisibleLiveAnnouncement": false
+    },
+    {
+      "state": "03-vi-factory_operator",
+      "allEightGeometryGroupsEqual": true,
+      "allLabelGlyphRectanglesEqual": true,
+      "rawTextEqual": true,
+      "extraInvisibleLiveAnnouncement": false
+    },
+    {
+      "state": "03-vi-query",
+      "allEightGeometryGroupsEqual": true,
+      "allLabelGlyphRectanglesEqual": true,
+      "rawTextEqual": true,
+      "extraInvisibleLiveAnnouncement": false
+    },
+    {
+      "state": "03-zh-CN-admin",
+      "allEightGeometryGroupsEqual": true,
+      "allLabelGlyphRectanglesEqual": true,
+      "rawTextEqual": true,
+      "extraInvisibleLiveAnnouncement": false
+    },
+    {
+      "state": "03-zh-CN-factory_operator",
+      "allEightGeometryGroupsEqual": true,
+      "allLabelGlyphRectanglesEqual": true,
+      "rawTextEqual": true,
+      "extraInvisibleLiveAnnouncement": false
+    },
+    {
+      "state": "03-zh-CN-query",
+      "allEightGeometryGroupsEqual": true,
+      "allLabelGlyphRectanglesEqual": true,
+      "rawTextEqual": true,
+      "extraInvisibleLiveAnnouncement": false
+    }
+  ],
+  "submittedActionsPerSystem": 11,
+  "responseStatusSequenceEqual": true,
+  "fullPixelEqualityClaimed": false
+}

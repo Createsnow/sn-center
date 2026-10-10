@@ -1,0 +1,194 @@
+-------------------------------------------------------------------------------
+Test set: com.adtek.server.SnAuditIT
+-------------------------------------------------------------------------------
+Tests run: 17, Failures: 15, Errors: 0, Skipped: 0, Time elapsed: 79.08 s <<< FAILURE! -- in com.adtek.server.SnAuditIT
+com.adtek.server.SnAuditIT.creationIdentityOrdersEqualTimesAndExportIndependentlyOfTimestampsAndArchive -- Time elapsed: 5.384 s <<< FAILURE!
+java.lang.AssertionError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"99415cd1-4220-41e2-9918-2f0d16255ce0"}] 
+Expecting actual:
+  500
+to be in:
+  [200, 202]
+
+	at com.adtek.server.SnAuditIT.data(SnAuditIT.java:178)
+	at com.adtek.server.SnAuditIT.prepared(SnAuditIT.java:220)
+	at com.adtek.server.SnAuditIT.allocated(SnAuditIT.java:274)
+	at com.adtek.server.SnAuditIT.creationIdentityOrdersEqualTimesAndExportIndependentlyOfTimestampsAndArchive(SnAuditIT.java:752)
+
+com.adtek.server.SnAuditIT.existingVersionOneSnapshotStillWritesAndRecoversTwentyEightTextColumns -- Time elapsed: 1.112 s <<< FAILURE!
+java.lang.AssertionError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"70b2e22e-52c7-4d4a-a8e2-6aead4957128"}] 
+Expecting actual:
+  500
+to be in:
+  [200, 202]
+
+	at com.adtek.server.SnAuditIT.data(SnAuditIT.java:178)
+	at com.adtek.server.SnAuditIT.prepared(SnAuditIT.java:220)
+	at com.adtek.server.SnAuditIT.allocated(SnAuditIT.java:274)
+	at com.adtek.server.SnAuditIT.existingVersionOneSnapshotStillWritesAndRecoversTwentyEightTextColumns(SnAuditIT.java:824)
+
+com.adtek.server.SnAuditIT.businessEventsKeepExactSnapshotIdentityAndStatusesAfterRenames -- Time elapsed: 1.101 s <<< FAILURE!
+java.lang.AssertionError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"c50f9f09-f306-4d2e-8707-d11da369df51"}] 
+Expecting actual:
+  500
+to be in:
+  [200, 202]
+
+	at com.adtek.server.SnAuditIT.data(SnAuditIT.java:178)
+	at com.adtek.server.SnAuditIT.prepared(SnAuditIT.java:220)
+	at com.adtek.server.SnAuditIT.allocated(SnAuditIT.java:274)
+	at com.adtek.server.SnAuditIT.businessEventsKeepExactSnapshotIdentityAndStatusesAfterRenames(SnAuditIT.java:461)
+
+com.adtek.server.SnAuditIT.exportLimitsAndAuditFailureRollbackSnapshotAndOperationTogether -- Time elapsed: 1.150 s <<< FAILURE!
+java.lang.AssertionError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"123fcc79-c26c-434d-81a6-caf6eab29e6d"}] 
+Expecting actual:
+  500
+to be in:
+  [200, 202]
+
+	at com.adtek.server.SnAuditIT.data(SnAuditIT.java:178)
+	at com.adtek.server.SnAuditIT.prepared(SnAuditIT.java:220)
+	at com.adtek.server.SnAuditIT.allocated(SnAuditIT.java:274)
+	at com.adtek.server.SnAuditIT.exportLimitsAndAuditFailureRollbackSnapshotAndOperationTogether(SnAuditIT.java:914)
+
+com.adtek.server.SnAuditIT.relativeDateExportRetryAfterMidnightKeepsOriginalSnapshot -- Time elapsed: 0.980 s <<< FAILURE!
+java.lang.AssertionError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"8e1f1dde-d54c-483b-b992-ca532e899508"}] 
+Expecting actual:
+  500
+to be in:
+  [200, 202]
+
+	at com.adtek.server.SnAuditIT.data(SnAuditIT.java:178)
+	at com.adtek.server.SnAuditIT.prepared(SnAuditIT.java:220)
+	at com.adtek.server.SnAuditIT.allocated(SnAuditIT.java:274)
+	at com.adtek.server.SnAuditIT.relativeDateExportRetryAfterMidnightKeepsOriginalSnapshot(SnAuditIT.java:981)
+
+com.adtek.server.SnAuditIT.csvAndXlsxAreFixedTextSnapshotsAndRecoverByteIdenticallyAfterArchive -- Time elapsed: 1.057 s <<< FAILURE!
+java.lang.AssertionError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"ae1dc2e3-166a-4fba-80cf-a111f5798720"}] 
+Expecting actual:
+  500
+to be in:
+  [200, 202]
+
+	at com.adtek.server.SnAuditIT.data(SnAuditIT.java:178)
+	at com.adtek.server.SnAuditIT.prepared(SnAuditIT.java:220)
+	at com.adtek.server.SnAuditIT.allocated(SnAuditIT.java:274)
+	at com.adtek.server.SnAuditIT.csvAndXlsxAreFixedTextSnapshotsAndRecoverByteIdenticallyAfterArchive(SnAuditIT.java:687)
+
+com.adtek.server.SnAuditIT.cursorsBindActorFiltersAndAuthorizationAndKeywordEscapesWildcards -- Time elapsed: 0.998 s <<< FAILURE!
+java.lang.AssertionError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"76a3183b-bda3-4027-8c56-de2de15dee37"}] 
+Expecting actual:
+  500
+to be in:
+  [200, 202]
+
+	at com.adtek.server.SnAuditIT.data(SnAuditIT.java:178)
+	at com.adtek.server.SnAuditIT.prepared(SnAuditIT.java:220)
+	at com.adtek.server.SnAuditIT.allocated(SnAuditIT.java:274)
+	at com.adtek.server.SnAuditIT.cursorsBindActorFiltersAndAuthorizationAndKeywordEscapesWildcards(SnAuditIT.java:633)
+
+com.adtek.server.SnAuditIT.transferHistoryIsVisibleToBothOriginalFactoriesButNoGlobalFactsLeak -- Time elapsed: 0.974 s <<< FAILURE!
+java.lang.AssertionError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"9c68ea62-2efa-43b9-8207-36ffe5623077"}] 
+Expecting actual:
+  500
+to be in:
+  [200, 202]
+
+	at com.adtek.server.SnAuditIT.data(SnAuditIT.java:178)
+	at com.adtek.server.SnAuditIT.prepared(SnAuditIT.java:220)
+	at com.adtek.server.SnAuditIT.allocated(SnAuditIT.java:274)
+	at com.adtek.server.SnAuditIT.transferHistoryIsVisibleToBothOriginalFactoriesButNoGlobalFactsLeak(SnAuditIT.java:508)
+
+com.adtek.server.SnAuditIT.numberedPagesKeepExactTotalsOrderArchiveDeduplicationAndFilterScope -- Time elapsed: 1.037 s <<< FAILURE!
+java.lang.AssertionError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"25216110-4253-46b6-8f4d-f80a2c20edbc"}] 
+Expecting actual:
+  500
+to be in:
+  [200, 202]
+
+	at com.adtek.server.SnAuditIT.data(SnAuditIT.java:178)
+	at com.adtek.server.SnAuditIT.prepared(SnAuditIT.java:220)
+	at com.adtek.server.SnAuditIT.allocated(SnAuditIT.java:274)
+	at com.adtek.server.SnAuditIT.numberedPagesKeepExactTotalsOrderArchiveDeduplicationAndFilterScope(SnAuditIT.java:594)
+
+com.adtek.server.SnAuditIT.originalFactoryRangeAndOwnerAreRecheckedForFilesAndQueuedWork -- Time elapsed: 1.050 s <<< FAILURE!
+java.lang.AssertionError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"35adbdfa-305e-40ad-adfa-789e2fe1b9e4"}] 
+Expecting actual:
+  500
+to be in:
+  [200, 202]
+
+	at com.adtek.server.SnAuditIT.data(SnAuditIT.java:178)
+	at com.adtek.server.SnAuditIT.prepared(SnAuditIT.java:220)
+	at com.adtek.server.SnAuditIT.allocated(SnAuditIT.java:274)
+	at com.adtek.server.SnAuditIT.originalFactoryRangeAndOwnerAreRecheckedForFilesAndQueuedWork(SnAuditIT.java:886)
+
+com.adtek.server.SnAuditIT.fullOrderSyncRecordsFactoryCountsWhileBillOnlySyncDoesNot -- Time elapsed: 0.998 s <<< FAILURE!
+java.lang.AssertionError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"86bd7595-6491-402a-aec6-97cc832fe872"}] 
+Expecting actual:
+  500
+to be in:
+  [200, 202]
+
+	at com.adtek.server.SnAuditIT.data(SnAuditIT.java:178)
+	at com.adtek.server.SnAuditIT.fullOrderSyncRecordsFactoryCountsWhileBillOnlySyncDoesNot(SnAuditIT.java:1199)
+
+com.adtek.server.SnAuditIT.factoryFactsRetainNameNullQuantitySyncCountsAndOneFailurePerRequest -- Time elapsed: 0.807 s <<< FAILURE!
+java.lang.AssertionError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"59b2b7bf-15b1-4ffd-86ea-73d904ebca1f"}] 
+Expecting actual:
+  500
+to be in:
+  [200, 202]
+
+	at com.adtek.server.SnAuditIT.data(SnAuditIT.java:178)
+	at com.adtek.server.SnAuditIT.factoryFactsRetainNameNullQuantitySyncCountsAndOneFailurePerRequest(SnAuditIT.java:1095)
+
+com.adtek.server.SnAuditIT.successProjectionFailureRollsBackBusinessAndFailureIsRecordedIndependently -- Time elapsed: 1.061 s <<< FAILURE!
+java.lang.AssertionError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"d67a1ca3-b463-47ff-9af6-a172995e86f1"}] 
+Expecting actual:
+  500
+to be in:
+  [200, 202]
+
+	at com.adtek.server.SnAuditIT.data(SnAuditIT.java:178)
+	at com.adtek.server.SnAuditIT.prepared(SnAuditIT.java:220)
+	at com.adtek.server.SnAuditIT.allocated(SnAuditIT.java:274)
+	at com.adtek.server.SnAuditIT.successProjectionFailureRollsBackBusinessAndFailureIsRecordedIndependently(SnAuditIT.java:654)
+
+com.adtek.server.SnAuditIT.onlineArchiveAndMergedReadsUseSameFiltersAndNeverDuplicateStagedCopies -- Time elapsed: 1.017 s <<< FAILURE!
+java.lang.AssertionError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"4fd23eee-7ec6-4e21-8b55-a0fc3e96a6df"}] 
+Expecting actual:
+  500
+to be in:
+  [200, 202]
+
+	at com.adtek.server.SnAuditIT.data(SnAuditIT.java:178)
+	at com.adtek.server.SnAuditIT.prepared(SnAuditIT.java:220)
+	at com.adtek.server.SnAuditIT.allocated(SnAuditIT.java:274)
+	at com.adtek.server.SnAuditIT.onlineArchiveAndMergedReadsUseSameFiltersAndNeverDuplicateStagedCopies(SnAuditIT.java:566)
+
+com.adtek.server.SnAuditIT.cancellingQueuedGenerationRecordsNoCompletedSnTransition -- Time elapsed: 1.140 s <<< FAILURE!
+java.lang.AssertionError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"8cc393a3-9b96-4ae8-a574-20f0b4c808e3"}] 
+Expecting actual:
+  500
+to be in:
+  [200, 202]
+
+	at com.adtek.server.SnAuditIT.data(SnAuditIT.java:178)
+	at com.adtek.server.SnAuditIT.prepared(SnAuditIT.java:220)
+	at com.adtek.server.SnAuditIT.cancellingQueuedGenerationRecordsNoCompletedSnTransition(SnAuditIT.java:965)
+

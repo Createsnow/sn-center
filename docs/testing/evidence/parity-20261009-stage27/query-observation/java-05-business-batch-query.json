@@ -1,0 +1,62 @@
+{
+  "columns": [
+    "SN",
+    "进制流水",
+    "十进制流水",
+    "PI",
+    "物料编码",
+    "客户编码",
+    "工厂",
+    "状态",
+    "流水归属 PI",
+    "单据编号",
+    "批次号",
+    "来源",
+    "创建时间",
+    "打印时间"
+  ],
+  "rows": [],
+  "controls": "SN 查询\n\n按工厂、客户、PI、物料、状态、完整 SN、来源订单或当前领取批次查询。\n\n工厂\n全部物料\n状态\n同 PI 跨厂\n同 PI 跨厂\n查询\n操作号: 22869449-0cc4-44ea-a373-885e7a272db8\n已完成\n查询快照已固定。文件：可下载；恢复文件不会重新查询当前 SN。\n查询原操作\n关闭本次操作状态\n操作号: 48db8e2b-4957-44d0-b86b-a086aa8cedd2\n已完成\n查询快照已固定。文件：可下载；恢复文件不会重新查询当前 SN。\n查询原操作\n关闭本次操作状态\nSN 明细\n导出记录\n共 — 枚\n导出 CSV\n导出 XLSX\n输入内容不符合要求，请检查后重试。\n问题追踪号: b519b59f-d1ac-4aa1-87eb-3a1f02782f77\nSN\t进制流水\t十进制流水\tPI\t物料编码\t客户编码\t工厂\t状态\t流水归属 PI\t单据编号\t批次号\t来源\t创建时间\t打印时间\n\nSN\n\t\n进制流水\n\t\n十进制流水\n\t\nPI\n\t\n物料编码\n\t\n客户编码\n\t\n工厂\n\t\n状态\n\t\n流水归属 PI\n\t\n单据编号\n\t\n批次号\n\t\n来源\n\t\n创建时间\n\t\n打印时间\n\n\n暂无数据\n上一页\n1\n下一页\n50 条/页",
+  "inputHints": [
+    {
+      "placeholder": "",
+      "ariaLabel": "语言"
+    },
+    {
+      "placeholder": "",
+      "ariaLabel": "工厂"
+    },
+    {
+      "placeholder": "客户编码",
+      "ariaLabel": "客户编码"
+    },
+    {
+      "placeholder": "PI",
+      "ariaLabel": "PI"
+    },
+    {
+      "placeholder": "完整 SN",
+      "ariaLabel": "完整 SN"
+    },
+    {
+      "placeholder": "来源订单",
+      "ariaLabel": "来源订单"
+    },
+    {
+      "placeholder": "领取批次",
+      "ariaLabel": "领取批次"
+    },
+    {
+      "placeholder": "",
+      "ariaLabel": "物料范围"
+    },
+    {
+      "placeholder": "",
+      "ariaLabel": "状态"
+    },
+    {
+      "placeholder": "",
+      "ariaLabel": "每页条数"
+    }
+  ]
+}

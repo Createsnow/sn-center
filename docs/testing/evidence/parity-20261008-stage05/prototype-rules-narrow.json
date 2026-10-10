@@ -1,0 +1,170 @@
+[
+  {
+    "class": "el-table--fit el-table--scrollable-x el-table--enable-row-transition el-table--small el-table el-table--layout-fixed is-scrolling-left",
+    "rect": {
+      "x": 105,
+      "y": 277.59375,
+      "width": 754,
+      "height": 155.734375,
+      "top": 277.59375,
+      "right": 859,
+      "bottom": 433.328125,
+      "left": 105
+    },
+    "font": "12px"
+  },
+  {
+    "class": "el-dialog",
+    "rect": {
+      "x": 130,
+      "y": 135,
+      "width": 640,
+      "height": 603,
+      "top": 135,
+      "right": 770,
+      "bottom": 738,
+      "left": 130
+    },
+    "font": "16px"
+  },
+  {
+    "class": "el-form-item is-required asterisk-left el-form-item--label-right",
+    "rect": {
+      "x": 146,
+      "y": 192,
+      "width": 608,
+      "height": 32,
+      "top": 192,
+      "right": 754,
+      "bottom": 224,
+      "left": 146
+    },
+    "font": "14px"
+  },
+  {
+    "class": "el-form-item is-required asterisk-left el-form-item--label-right",
+    "rect": {
+      "x": 146,
+      "y": 242,
+      "width": 608,
+      "height": 32,
+      "top": 242,
+      "right": 754,
+      "bottom": 274,
+      "left": 146
+    },
+    "font": "14px"
+  },
+  {
+    "class": "el-form-item is-required asterisk-left el-form-item--label-right",
+    "rect": {
+      "x": 146,
+      "y": 292,
+      "width": 608,
+      "height": 32,
+      "top": 292,
+      "right": 754,
+      "bottom": 324,
+      "left": 146
+    },
+    "font": "14px"
+  },
+  {
+    "class": "el-form-item asterisk-left el-form-item--label-right",
+    "rect": {
+      "x": 146,
+      "y": 342,
+      "width": 608,
+      "height": 32,
+      "top": 342,
+      "right": 754,
+      "bottom": 374,
+      "left": 146
+    },
+    "font": "14px"
+  },
+  {
+    "class": "el-form-item asterisk-left el-form-item--label-right",
+    "rect": {
+      "x": 146,
+      "y": 392,
+      "width": 608,
+      "height": 32,
+      "top": 392,
+      "right": 754,
+      "bottom": 424,
+      "left": 146
+    },
+    "font": "14px"
+  },
+  {
+    "class": "el-form-item asterisk-left el-form-item--label-right",
+    "rect": {
+      "x": 146,
+      "y": 442,
+      "width": 608,
+      "height": 32,
+      "top": 442,
+      "right": 754,
+      "bottom": 474,
+      "left": 146
+    },
+    "font": "14px"
+  },
+  {
+    "class": "el-form-item asterisk-left el-form-item--label-right",
+    "rect": {
+      "x": 146,
+      "y": 492,
+      "width": 608,
+      "height": 32,
+      "top": 492,
+      "right": 754,
+      "bottom": 524,
+      "left": 146
+    },
+    "font": "14px"
+  },
+  {
+    "class": "el-form-item asterisk-left el-form-item--label-right",
+    "rect": {
+      "x": 146,
+      "y": 542,
+      "width": 608,
+      "height": 64,
+      "top": 542,
+      "right": 754,
+      "bottom": 606,
+      "left": 146
+    },
+    "font": "14px"
+  },
+  {
+    "class": "el-form-item asterisk-left el-form-item--label-right",
+    "rect": {
+      "x": 146,
+      "y": 624,
+      "width": 608,
+      "height": 32,
+      "top": 624,
+      "right": 754,
+      "bottom": 656,
+      "left": 146
+    },
+    "font": "14px"
+  },
+  {
+    "class": "el-drawer rtl",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0,
+      "top": 0,
+      "right": 0,
+      "bottom": 0,
+      "left": 0
+    },
+    "font": "16px"
+  }
+]

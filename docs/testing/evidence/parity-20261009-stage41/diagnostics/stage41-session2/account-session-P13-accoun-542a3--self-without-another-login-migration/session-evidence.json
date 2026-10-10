@@ -1,0 +1,313 @@
+{
+  "snapshots": [
+    {
+      "name": "01-operator",
+      "displayName": "会话测试成员",
+      "role": "factory_operator",
+      "bound": "A",
+      "menus": [
+        "首页",
+        "领取与打印",
+        "转厂",
+        "SN 查询",
+        "操作痕迹"
+      ],
+      "logins": 1
+    },
+    {
+      "name": "original-token-query-after-edit",
+      "status": 200,
+      "sameBearer": true
+    },
+    {
+      "name": "02-renamed",
+      "displayName": "管理修改姓名",
+      "role": "factory_operator",
+      "bound": "A",
+      "menus": [
+        "首页",
+        "领取与打印",
+        "转厂",
+        "SN 查询",
+        "操作痕迹"
+      ],
+      "logins": 1
+    },
+    {
+      "name": "03-query-b",
+      "displayName": "乙厂只读成员",
+      "role": "query",
+      "bound": "B",
+      "menus": [
+        "首页",
+        "生产订单",
+        "领取与打印",
+        "转厂",
+        "SN 查询",
+        "操作痕迹"
+      ],
+      "logins": 1
+    },
+    {
+      "name": "04-admin",
+      "displayName": "会话测试管理员",
+      "role": "admin",
+      "menus": [
+        "首页",
+        "生产订单",
+        "生成与分配",
+        "起始号与历史导入",
+        "规则模板",
+        "领取与打印",
+        "转厂",
+        "SN 查询",
+        "操作痕迹",
+        "账户",
+        "工厂"
+      ],
+      "logins": 1
+    },
+    {
+      "name": "05-self-edited",
+      "displayName": "本人修改姓名",
+      "role": "admin",
+      "menus": [
+        "首页",
+        "生产订单",
+        "生成与分配",
+        "起始号与历史导入",
+        "规则模板",
+        "领取与打印",
+        "转厂",
+        "SN 查询",
+        "操作痕迹",
+        "账户",
+        "工厂"
+      ],
+      "logins": 1
+    },
+    {
+      "name": "06-operator-again",
+      "displayName": "恢复甲厂操作员",
+      "role": "factory_operator",
+      "bound": "A",
+      "menus": [
+        "首页",
+        "领取与打印",
+        "转厂",
+        "SN 查询",
+        "操作痕迹"
+      ],
+      "logins": 1
+    }
+  ],
+  "requests": [
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200,
+      "authenticated": false
+    },
+    {
+      "route": "/api/v1/system/auth/refresh",
+      "status": 401,
+      "authenticated": false
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200,
+      "authenticated": false
+    },
+    {
+      "route": "/api/v1/system/auth/login",
+      "status": 200,
+      "authenticated": false
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/auth/password",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/menus/current",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/sn/context",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/sn/dashboard",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/sn/items/page",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/sn/items/page",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/auth/refresh",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/menus/current",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/sn/context",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/sn/items/page",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/auth/refresh",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/sn/context",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/menus/current",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/sn/items/page",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/auth/refresh",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/menus/current",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/sn/context",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/sn/factories",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/users",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/users",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/sn/users/96/update",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/users",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/auth/refresh",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/sn/context",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/menus/current",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/sn/factories",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/users",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/auth/refresh",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/menus/current",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/sn/context",
+      "status": 200,
+      "authenticated": true
+    }
+  ],
+  "memberLogins": 1,
+  "failures": []
+}

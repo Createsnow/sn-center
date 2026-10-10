@@ -1,0 +1,32 @@
+{
+  "checkedAt": "2026-10-09T10:47:33.510664+00:00",
+  "evidenceFiles": 770,
+  "sourceFiles": 9,
+  "changedBaselineSources": [
+    "frontend/src/features/sn/components/OrderSyncSchedule.tsx",
+    "frontend/src/features/sn/pages/OrdersPage.tsx",
+    "frontend/src/styles.css"
+  ],
+  "documents": {
+    "README.md": "a1cb52747dc68d2a80c84781d0bdaa51e6ed46ffe3cea8c3e6d29003fdf4590c",
+    "docs/README.md": "97f41b49c294fc8e0e7cc48f940b550e326cbe69b379d8d81dddaa8fff3db515",
+    "docs/testing/README.md": "ad8084777018dd9e2e2dcc9a2cac674a3de4b8f1eebdb655bdf66f39f9ac4c3c",
+    "docs/testing/SN页面与功能一致性验收清单.md": "e2762b33070abd42c334825b8d9df6a20703bee146c954922487e105acbae011",
+    "docs/testing/2026-10-09一致性第五十一阶段.md": "23a302e361d7c1edeaa3e5ae8407b502103ad1097a0de365629e24f3382bc6bd",
+    "memory/项目状态.md": "e4852e8f37449495c0520b51c7cc0e857dc8cb8c4ccc7c35f94663120e2c4e95"
+  },
+  "services": {
+    "18080": {
+      "status": "UP"
+    },
+    "8000": {
+      "status": "ok",
+      "db": "mysql"
+    }
+  },
+  "schema": 41,
+  "dedicatedPortsClosed": true,
+  "goal": "active",
+  "fullUiMatrixRerun": false,
+  "jarSha256": "b21de36437a1dd15138c476dd98df763b6dcd88b6e307c4e2916d8b78e40ff6f"
+}

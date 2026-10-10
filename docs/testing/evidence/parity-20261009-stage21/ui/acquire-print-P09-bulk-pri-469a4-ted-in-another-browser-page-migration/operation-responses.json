@@ -1,0 +1,180 @@
+[
+  {
+    "path": "/api/v1/sn/acquisitions/pis",
+    "method": "GET",
+    "status": 200,
+    "code": 0,
+    "task": {}
+  },
+  {
+    "path": "/api/v1/sn/acquisitions/pis",
+    "method": "GET",
+    "status": 200,
+    "code": 0,
+    "task": {}
+  },
+  {
+    "path": "/api/v1/sn/acquisitions",
+    "method": "POST",
+    "status": 202,
+    "code": 0,
+    "task": {
+      "taskId": "c0d48ebc-ae1a-48c9-86a7-5210e0935c30",
+      "operationId": "101dd5ae-ad61-4f9e-a1d2-ba5be98a0df4",
+      "state": "QUEUED",
+      "operationState": "PENDING",
+      "fileState": null,
+      "errorCode": null
+    }
+  },
+  {
+    "path": "/api/v1/sn/acquisitions/operations/TAKE/101dd5ae-ad61-4f9e-a1d2-ba5be98a0df4",
+    "method": "GET",
+    "status": 200,
+    "code": 0,
+    "task": {
+      "taskId": "c0d48ebc-ae1a-48c9-86a7-5210e0935c30",
+      "operationId": "101dd5ae-ad61-4f9e-a1d2-ba5be98a0df4",
+      "state": "SUCCESS",
+      "operationState": "SUCCEEDED",
+      "fileState": null,
+      "errorCode": null
+    }
+  },
+  {
+    "path": "/api/v1/sn/acquisitions/pis",
+    "method": "GET",
+    "status": 200,
+    "code": 0,
+    "task": {}
+  },
+  {
+    "path": "/api/v1/sn/acquisitions/results/c0d48ebc-ae1a-48c9-86a7-5210e0935c30",
+    "method": "GET",
+    "status": 200,
+    "code": 0,
+    "task": {
+      "taskId": "c0d48ebc-ae1a-48c9-86a7-5210e0935c30",
+      "operationId": "101dd5ae-ad61-4f9e-a1d2-ba5be98a0df4",
+      "state": "SUCCESS",
+      "errorCode": null
+    }
+  },
+  {
+    "path": "/api/v1/sn/acquisitions",
+    "method": "POST",
+    "status": 202,
+    "code": 0,
+    "task": {
+      "taskId": "faffa50d-9b09-4f42-a359-4d14ca53cc19",
+      "operationId": "5ad58153-d274-40a3-a764-902cfe3fe5e1",
+      "state": "QUEUED",
+      "operationState": "PENDING",
+      "fileState": null,
+      "errorCode": null
+    }
+  },
+  {
+    "path": "/api/v1/sn/acquisitions/operations/TAKE/5ad58153-d274-40a3-a764-902cfe3fe5e1",
+    "method": "GET",
+    "status": 200,
+    "code": 0,
+    "task": {
+      "taskId": "faffa50d-9b09-4f42-a359-4d14ca53cc19",
+      "operationId": "5ad58153-d274-40a3-a764-902cfe3fe5e1",
+      "state": "SUCCESS",
+      "operationState": "SUCCEEDED",
+      "fileState": null,
+      "errorCode": null
+    }
+  },
+  {
+    "path": "/api/v1/sn/acquisitions/pis",
+    "method": "GET",
+    "status": 200,
+    "code": 0,
+    "task": {}
+  },
+  {
+    "path": "/api/v1/sn/acquisitions/results/faffa50d-9b09-4f42-a359-4d14ca53cc19",
+    "method": "GET",
+    "status": 200,
+    "code": 0,
+    "task": {
+      "taskId": "faffa50d-9b09-4f42-a359-4d14ca53cc19",
+      "operationId": "5ad58153-d274-40a3-a764-902cfe3fe5e1",
+      "state": "SUCCESS",
+      "errorCode": null
+    }
+  },
+  {
+    "path": "/api/v1/sn/acquisitions/pis",
+    "method": "GET",
+    "status": 200,
+    "code": 0,
+    "task": {}
+  },
+  {
+    "path": "/api/v1/sn/acquisitions/pis",
+    "method": "GET",
+    "status": 200,
+    "code": 0,
+    "task": {}
+  },
+  {
+    "path": "/api/v1/sn/prints",
+    "method": "POST",
+    "status": 409,
+    "code": 1004000022,
+    "task": null
+  },
+  {
+    "path": "/api/v1/sn/prints/operations/aa501346-bcac-46b8-a82f-3ba054c55af5",
+    "method": "GET",
+    "status": 404,
+    "code": 1000000005,
+    "task": null
+  },
+  {
+    "path": "/api/v1/sn/prints",
+    "method": "POST",
+    "status": 202,
+    "code": 0,
+    "task": {
+      "taskId": "42e04ccb-7f1a-4ee9-a528-6e0e1c11fc27",
+      "operationId": "b091d2de-93dc-42e7-b1f5-22d33ca3eaa0",
+      "state": "QUEUED",
+      "operationState": "SUCCEEDED",
+      "fileState": "PREPARING",
+      "errorCode": null
+    }
+  },
+  {
+    "path": "/api/v1/sn/prints/42e04ccb-7f1a-4ee9-a528-6e0e1c11fc27",
+    "method": "GET",
+    "status": 200,
+    "code": 0,
+    "task": {
+      "operationId": "b091d2de-93dc-42e7-b1f5-22d33ca3eaa0"
+    }
+  },
+  {
+    "path": "/api/v1/sn/acquisitions/pis",
+    "method": "GET",
+    "status": 200,
+    "code": 0,
+    "task": {}
+  },
+  {
+    "path": "/api/v1/sn/prints/42e04ccb-7f1a-4ee9-a528-6e0e1c11fc27/file",
+    "method": "GET",
+    "status": 200
+  },
+  {
+    "path": "/api/v1/sn/acquisitions/pis",
+    "method": "GET",
+    "status": 200,
+    "code": 0,
+    "task": {}
+  }
+]

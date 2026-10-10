@@ -1,0 +1,609 @@
+{
+  "head": [
+    {
+      "text": "Tra cứu SNChỉ xem; không thể chuyển SN tại đây. Nhà máy mặc định chỉ thấy SN của mình, có thể xem (chỉ đọc) cùng PI ở mọi nhà máy.Xuất ExcelCSV",
+      "x": 84,
+      "y": 76,
+      "width": 796,
+      "height": 103.796875
+    }
+  ],
+  "surface": [
+    {
+      "text": "Nhà máyTrạng tháiTìmSN đầy đủSố thứ tự mã hóaSố thứ tự thập phânPIMã vật tưMã khách hàngNhà máyTrạng tháiPI sở hữu sốLệnh nguồnSố lôNguồnThời gian tạoThời gian inSN đầy đủSố thứ tự mã hóaSố thứ tự thập phânPIMã vật tưMã khách hàngNhà máyTrạng tháiPI sở hữu sốLệnh nguồnSố lôNguồnThời gian tạoThời gian inQ28A000510005151CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000500005050CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000490004949CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000480004848CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000470004747CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000460004646CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000450004545CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000440004444CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000430004343CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000420004242CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000410004141CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000400004040CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000390003939CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000380003838CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000370003737CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000360003636CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000350003535CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000340003434CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000330003333CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000320003232CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Tổng 5112320 / trang",
+      "x": 84,
+      "y": 195.796875,
+      "width": 796,
+      "height": 1361
+    }
+  ],
+  "toolbar": [
+    {
+      "text": "Nhà máyTrạng tháiTìm",
+      "x": 105,
+      "y": 212.796875,
+      "width": 754,
+      "height": 116
+    }
+  ],
+  "table": [
+    {
+      "text": "SN đầy đủSố thứ tự mã hóaSố thứ tự thập phânPIMã vật tưMã khách hàngNhà máyTrạng tháiPI sở hữu sốLệnh nguồnSố lôNguồnThời gian tạoThời gian inSN đầy đủSố thứ tự mã hóaSố thứ tự thập phânPIMã vật tưMã khách hàngNhà máyTrạng tháiPI sở hữu sốLệnh nguồnSố lôNguồnThời gian tạoThời gian inQ28A000510005151CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000500005050CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000490004949CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000480004848CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000470004747CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000460004646CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000450004545CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000440004444CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000430004343CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000420004242CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000410004141CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000400004040CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000390003939CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000380003838CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000370003737CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000360003636CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000350003535CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000340003434CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000330003333CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55Q28A000320003232CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55",
+      "x": 105,
+      "y": 340.796875,
+      "width": 754,
+      "height": 1155
+    }
+  ],
+  "foot": [
+    {
+      "text": "Tổng 5112320 / trang",
+      "x": 105,
+      "y": 1507.796875,
+      "width": 754,
+      "height": 32
+    }
+  ],
+  "header": [
+    {
+      "text": "SN đầy đủ",
+      "x": 105,
+      "y": 340.796875,
+      "width": 179.546875,
+      "height": 55
+    },
+    {
+      "text": "Số thứ tự mã hóa",
+      "x": 284.546875,
+      "y": 340.796875,
+      "width": 116.171875,
+      "height": 55
+    },
+    {
+      "text": "Số thứ tự thập phân",
+      "x": 400.71875,
+      "y": 340.796875,
+      "width": 105.609375,
+      "height": 55
+    },
+    {
+      "text": "PI",
+      "x": 506.328125,
+      "y": 340.796875,
+      "width": 158.421875,
+      "height": 55
+    },
+    {
+      "text": "Mã vật tư",
+      "x": 664.75,
+      "y": 340.796875,
+      "width": 116.171875,
+      "height": 55
+    },
+    {
+      "text": "Mã khách hàng",
+      "x": 780.921875,
+      "y": 340.796875,
+      "width": 95.046875,
+      "height": 55
+    },
+    {
+      "text": "Nhà máy",
+      "x": 875.96875,
+      "y": 340.796875,
+      "width": 116.171875,
+      "height": 55
+    },
+    {
+      "text": "Trạng thái",
+      "x": 992.140625,
+      "y": 340.796875,
+      "width": 95.046875,
+      "height": 55
+    },
+    {
+      "text": "PI sở hữu số",
+      "x": 1087.1875,
+      "y": 340.796875,
+      "width": 158.421875,
+      "height": 55
+    },
+    {
+      "text": "Lệnh nguồn",
+      "x": 1245.609375,
+      "y": 340.796875,
+      "width": 137.296875,
+      "height": 55
+    },
+    {
+      "text": "Số lô",
+      "x": 1382.90625,
+      "y": 340.796875,
+      "width": 179.546875,
+      "height": 55
+    },
+    {
+      "text": "Nguồn",
+      "x": 1562.453125,
+      "y": 340.796875,
+      "width": 84.484375,
+      "height": 55
+    },
+    {
+      "text": "Thời gian tạo",
+      "x": 1646.9375,
+      "y": 340.796875,
+      "width": 168.984375,
+      "height": 55
+    },
+    {
+      "text": "Thời gian in",
+      "x": 1815.921875,
+      "y": 340.796875,
+      "width": 169.078125,
+      "height": 55
+    }
+  ],
+  "row": [
+    {
+      "text": "Q28A000510005151CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55",
+      "x": 105,
+      "y": 395.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00051",
+        "00051",
+        "51",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "Chờ in",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090526138832",
+        "Tạo",
+        "2026-10-09 05:25:55",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000500005050CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55",
+      "x": 105,
+      "y": 450.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00050",
+        "00050",
+        "50",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "Chờ in",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090526138832",
+        "Tạo",
+        "2026-10-09 05:25:55",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000490004949CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55",
+      "x": 105,
+      "y": 505.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00049",
+        "00049",
+        "49",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "Chờ in",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090526138832",
+        "Tạo",
+        "2026-10-09 05:25:55",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000480004848CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55",
+      "x": 105,
+      "y": 560.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00048",
+        "00048",
+        "48",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "Chờ in",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090526138832",
+        "Tạo",
+        "2026-10-09 05:25:55",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000470004747CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55",
+      "x": 105,
+      "y": 615.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00047",
+        "00047",
+        "47",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "Chờ in",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090526138832",
+        "Tạo",
+        "2026-10-09 05:25:55",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000460004646CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55",
+      "x": 105,
+      "y": 670.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00046",
+        "00046",
+        "46",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "Chờ in",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090526138832",
+        "Tạo",
+        "2026-10-09 05:25:55",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000450004545CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55",
+      "x": 105,
+      "y": 725.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00045",
+        "00045",
+        "45",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "Chờ in",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090526138832",
+        "Tạo",
+        "2026-10-09 05:25:55",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000440004444CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55",
+      "x": 105,
+      "y": 780.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00044",
+        "00044",
+        "44",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "Chờ in",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090526138832",
+        "Tạo",
+        "2026-10-09 05:25:55",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000430004343CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55",
+      "x": 105,
+      "y": 835.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00043",
+        "00043",
+        "43",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "Chờ in",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090526138832",
+        "Tạo",
+        "2026-10-09 05:25:55",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000420004242CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55",
+      "x": 105,
+      "y": 890.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00042",
+        "00042",
+        "42",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "Chờ in",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090526138832",
+        "Tạo",
+        "2026-10-09 05:25:55",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000410004141CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55",
+      "x": 105,
+      "y": 945.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00041",
+        "00041",
+        "41",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "Chờ in",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090526138832",
+        "Tạo",
+        "2026-10-09 05:25:55",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000400004040CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55",
+      "x": 105,
+      "y": 1000.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00040",
+        "00040",
+        "40",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "Chờ in",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090526138832",
+        "Tạo",
+        "2026-10-09 05:25:55",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000390003939CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55",
+      "x": 105,
+      "y": 1055.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00039",
+        "00039",
+        "39",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "Chờ in",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090526138832",
+        "Tạo",
+        "2026-10-09 05:25:55",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000380003838CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55",
+      "x": 105,
+      "y": 1110.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00038",
+        "00038",
+        "38",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "Chờ in",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090526138832",
+        "Tạo",
+        "2026-10-09 05:25:55",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000370003737CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55",
+      "x": 105,
+      "y": 1165.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00037",
+        "00037",
+        "37",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "Chờ in",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090526138832",
+        "Tạo",
+        "2026-10-09 05:25:55",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000360003636CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55",
+      "x": 105,
+      "y": 1220.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00036",
+        "00036",
+        "36",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "Chờ in",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090526138832",
+        "Tạo",
+        "2026-10-09 05:25:55",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000350003535CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55",
+      "x": 105,
+      "y": 1275.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00035",
+        "00035",
+        "35",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "Chờ in",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090526138832",
+        "Tạo",
+        "2026-10-09 05:25:55",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000340003434CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55",
+      "x": 105,
+      "y": 1330.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00034",
+        "00034",
+        "34",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "Chờ in",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090526138832",
+        "Tạo",
+        "2026-10-09 05:25:55",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000330003333CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55",
+      "x": 105,
+      "y": 1385.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00033",
+        "00033",
+        "33",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "Chờ in",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090526138832",
+        "Tạo",
+        "2026-10-09 05:25:55",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000320003232CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂Chờ inCMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090526138832Tạo2026-10-09 05:25:55",
+      "x": 105,
+      "y": 1440.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00032",
+        "00032",
+        "32",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "Chờ in",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090526138832",
+        "Tạo",
+        "2026-10-09 05:25:55",
+        ""
+      ]
+    }
+  ]
+}

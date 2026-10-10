@@ -59,12 +59,17 @@ export const isSnWork = (v: unknown): v is SnWork =>
   ['PENDING', 'SUCCESS', 'FAILED', 'CANCELLED'].includes(v.state) &&
   fields(v, ['pi', 'fileName', 'factoryCode'], text) &&
   fields(v, ['actorId', 'quantity'], decimal) &&
+  decimal(v.processed) &&
+  nullable(v.actorName, text) &&
+  nullable(v.generationNumber, decimal) &&
   fields(v, ['billId', 'factoryId', 'startSeq', 'endSeq', 'decodedQty', 'maxSeq', 'lastSeq'], (x) =>
     nullable(x, decimal),
   ) &&
   fields(v, ['firstSn', 'lastSn'], (x) => nullable(x, text)) &&
   date(v.createdAt) &&
   nullable(v.finishedAt, date) &&
+  isRecord(v.errorParams) &&
+  Object.values(v.errorParams).every(text) &&
   nullable(
     v.errorCode,
     (x) => typeof x === 'number' && Number.isInteger(x) && x > 0 && x <= 2147483647,

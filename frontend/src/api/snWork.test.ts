@@ -84,6 +84,9 @@ describe('S4响应精度与固定状态边界', () => {
       factoryId: null,
       factoryCode: '',
       actorId: '9007199254740993',
+      actorName: null,
+      generationNumber: null,
+      processed: '1',
       state: 'SUCCESS',
       quantity: '1',
       startSeq: null,
@@ -95,11 +98,24 @@ describe('S4响应精度与固定状态边界', () => {
       lastSn: 'UNKNOWN',
       fileName: 'a.csv',
       errorCode: null,
+      errorParams: {},
       createdAt: '2026-09-30T00:00:00Z',
       finishedAt: '2026-09-30T00:00:01Z',
     };
     expect(isSnWork(value)).toBe(true);
     expect(isSnWork({ ...value, state: 'PRINTED' })).toBe(false);
     expect(isSnWork({ ...value, quantity: 1 })).toBe(false);
+    expect(isSnWork({ ...value, actorName: undefined })).toBe(false);
+    expect(isSnWork({ ...value, generationNumber: '9007199254740993' })).toBe(true);
+    expect(isSnWork({ ...value, generationNumber: 9007199254740992 })).toBe(false);
+    expect(isSnWork({ ...value, processed: 1 })).toBe(false);
+    expect(
+      isSnWork({
+        ...value,
+        errorParams: { reason: 'GEN_PREVIEW_STALE', actual: '9007199254740993' },
+      }),
+    ).toBe(true);
+    expect(isSnWork({ ...value, errorParams: { actual: 9007199254740992 } })).toBe(false);
+    expect(isSnWork({ ...value, errorParams: undefined })).toBe(false);
   });
 });

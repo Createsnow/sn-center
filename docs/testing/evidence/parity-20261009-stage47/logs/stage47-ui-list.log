@@ -1,0 +1,221 @@
+Listing tests:
+  [prototype] › account-actions.spec.ts:9:1 › P13 account actions: disable, enable, repeated same-password reset and self reset
+  [prototype] › account-audit.spec.ts:10:1 › P13 management audit: real account writes, rejected writes, no-change edit and complete export
+  [prototype] › account-editor.spec.ts:109:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages
+  [prototype] › account-session.spec.ts:9:1 › P13 account sessions: edit name, role, factory and self without another login
+  [prototype] › acquire-print.spec.ts:201:1 › P09 single take and print: cancel, focus, material filtering, automatic XLSX and stable reload
+  [prototype] › acquire-print.spec.ts:315:1 › P09 paged history: current detail 50+1 rows, print status, eleven histories and filter reset
+  [prototype] › acquire-print.spec.ts:466:1 › P09 bulk print continues when one selected PI was printed in another browser page
+  [prototype] › acquire-print.spec.ts:516:1 › P09 factory cross-PI read-only and query-role controls preserve state
+  [prototype] › acquire-print.spec.ts:576:1 › P09 transferred print: real factory round trip, current batch details and historical files
+  [prototype] › acquire-print.spec.ts:894:1 › P09 two-PI bulk take and print: independent requests, per-PI files and focus history
+  [prototype] › acquire-print.spec.ts:943:3 › P09 download failure zh-CN: bulk succeeds, history retries without reprint and narrow detail
+  [prototype] › acquire-print.spec.ts:943:3 › P09 download failure en: bulk succeeds, history retries without reprint and narrow detail
+  [prototype] › acquire-print.spec.ts:943:3 › P09 download failure vi: bulk succeeds, history retries without reprint and narrow detail
+  [prototype] › audit-auth.spec.ts:180:1 › P12 real anonymous login failure appears in audit and downloaded file
+  [prototype] › audit-auth.spec.ts:200:1 › P12 real known login password rejection change and disabled account facts
+  [prototype] › audit-auth.spec.ts:331:1 › P12 real fifth failed login and subsequent lock retain exact audit facts
+  [prototype] › audit-files.spec.ts:10:1 › P12 audit files: original insertion order, typed cells and empty workbook
+  [prototype] › audit-layout.spec.ts:98:1 › P12 layout: single row table, date range and pagination across widths and languages
+  [prototype] › audit-page.spec.ts:138:1 › P12 audit: numbered pages, draft export scope, filters and inline detail
+  [prototype] › audit-rules.spec.ts:129:3 › P12 real rule audits: create edit rename combined and no-op
+  [prototype] › audit-rules.spec.ts:129:3 › P12 real rule audits: used version and rename
+  [prototype] › dashboard-layout.spec.ts:174:1 › P01 P04 factory operator header and shortcuts: three languages, four widths and real navigation
+  [prototype] › dashboard-roles.spec.ts:91:1 › P04 管理员首页指标 近期订单进度 快捷入口和窄屏
+  [prototype] › dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_operator 首次改密 角色范围与首页入口
+  [prototype] › dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_query_all 首次改密 角色范围与首页入口
+  [prototype] › dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_query_factory 首次改密 角色范围与首页入口
+  [prototype] › dashboard-roles.spec.ts:236:1 › P04 首页三语文案与刷新保持
+  [prototype] › factories.spec.ts:12:1 › P14 factories: full catalog, create validation, Unicode, cancel, sync conflicts and recovery
+  [prototype] › factory-audit.spec.ts:10:1 › P14 factory audit: real create, validation, sync conflicts, failure recovery and complete export
+  [prototype] › factory-identity.spec.ts:9:1 › P14 organization changes: snapshot name, manual factory, changed ID/code, rename and directory filters
+  [prototype] › generation-identity.spec.ts:215:3 › P07 ERP changed PI retains first identity with separate sequence ranges
+  [prototype] › generation-identity.spec.ts:215:3 › P07 ERP changed PI retains first identity with overlapping sequence ranges
+  [prototype] › generation-identity.spec.ts:307:1 › P07 departed generated bill remains historical while unused departed bill disappears and return restores totals
+  [prototype] › generation-identity.spec.ts:349:1 › P07 unmapped organization still shows its current PI summary without foreign organization rows
+  [prototype] › generation-picker.spec.ts:35:1 › P07 PI auto-selection, clearing filters, pending toggle and three-language layout
+  [prototype] › generation-quota.spec.ts:220:1 › P07 ERP shrink and replacement preserve whole-bill quota and issued sources
+  [prototype] › generation-quota.spec.ts:268:1 › P07 ERP returned order controls segments after the whole-bill offset
+  [prototype] › generation-quota.spec.ts:302:1 › P07 all 21 fractional lines remain visible and generate separate integer segments
+  [prototype] › generation-quota.spec.ts:374:1 › P07 quantity controls, cancelled confirmations and partial allocation preserve the exact remainder
+  [prototype] › generation-quota.spec.ts:512:1 › P07 resync keeps unchanged preview and adopts current source metadata
+  [prototype] › generation-quota.spec.ts:596:3 › P07 changed material name rejects retained preview without issuing and recovers
+  [prototype] › generation-quota.spec.ts:596:3 › P07 changed material code rejects retained preview without issuing and recovers
+  [prototype] › generation-quota.spec.ts:596:3 › P07 changed segment split rejects retained preview without issuing and recovers
+  [prototype] › generation-quota.spec.ts:596:3 › P07 changed line order rejects retained preview without issuing and recovers
+  [prototype] › generation-quota.spec.ts:684:1 › P07 expired preview is rejected before creating a job and repreview recovers
+  [prototype] › generation-quota.spec.ts:707:1 › P07 generation in another tab makes retained preview stale without adding a failed job
+  [prototype] › generation-quota.spec.ts:740:1 › P07 quota shrink after preview leaves a failed job with planned range and zero progress
+  [prototype] › generation-quota.spec.ts:778:1 › P07 changed ERP factory rejects old allocation then new generation permits mixed-source members
+  [prototype] › import-capacity.spec.ts:24:3 › P08 capacity limit: rejects 500001 through file upload
+  [prototype] › import-capacity.spec.ts:24:3 › P08 capacity maximum: imports 500000 full-width Unicode SN through file upload
+  [prototype] › login-layout.spec.ts:90:1 › P02 login layout: three languages, four widths, focus, reveal and empty submission
+  [prototype] › order-filters.spec.ts:80:1 › P05 搜索匹配分录汇总 完整明细 小数整数额度和客户精确筛选
+  [prototype] › order-filters.spec.ts:113:1 › P05 工厂筛选自动加载及清空 选单清理
+  [prototype] › order-filters.spec.ts:133:3 › P05 cmp_query_all 同步摘要 只读定时设置及订单范围
+  [prototype] › order-filters.spec.ts:133:3 › P05 cmp_query_factory 同步摘要 只读定时设置及订单范围
+  [prototype] › order-filters.spec.ts:160:1 › P05 分页换页每页数量回首页 清除选择与单据倒序
+  [prototype] › order-filters.spec.ts:221:1 › P05 定时最小最大值 分钟换算 开关 更新人 保存取消
+  [prototype] › order-sync.spec.ts:178:1 › P05 全量查询失败 单据HTTP失败 登录失败 提示关闭及恢复
+  [prototype] › order-sync.spec.ts:210:1 › P05 全量空快照 清空摘要和选单 恢复原订单
+  [prototype] › order-sync.spec.ts:233:1 › P05 真实定时worker 成功 失败 恢复 执行中保留上一轮结果
+  [prototype] › order-transactions.spec.ts:9:1 › P05 full sync commits factories separately and continues after factory write/audit failures
+  [prototype] › password-page.spec.ts:121:3 › P03 password zh-CN: forced form, blur validation, logout, save and voluntary cancel
+  [prototype] › password-page.spec.ts:121:3 › P03 password en: forced form, blur validation, logout, save and voluntary cancel
+  [prototype] › password-page.spec.ts:121:3 › P03 password vi: forced form, blur validation, logout, save and voluntary cancel
+  [prototype] › pi-initialization.spec.ts:115:3 › P08 sn conflict in the second import chunk rolls back all rows and allows correction in three languages
+  [prototype] › pi-initialization.spec.ts:115:3 › P08 sequence conflict in the second import chunk rolls back all rows and allows correction in three languages
+  [prototype] › pi-initialization.spec.ts:178:1 › P08 rejects a 65 character SN with its line in three languages and accepts the corrected 64 character value
+  [prototype] › pi-initialization.spec.ts:204:1 › P08 rejects a start beyond rule capacity in three languages and permits a corrected initialization
+  [prototype] › pi-initialization.spec.ts:223:1 › P08 stale page rejects an already initialized PI and can query the original successful history
+  [prototype] › pi-initialization.spec.ts:463:1 › P08 query retains displayed PI until lookup, three languages and reload resets form
+  [prototype] › pi-initialization.spec.ts:527:1 › P08 pure start validates integers and duplicates, cancellation is read only, initialization locks once
+  [prototype] › pi-initialization.spec.ts:576:1 › P08 mixed history preserves zero and undecodable SN, start dominates decoded maximum and snapshot customer applies
+  [prototype] › pi-initialization.spec.ts:609:1 › P08 CSV keeps literal quotes and filename after textarea editing without a decoding rule
+  [prototype] › pi-initialization.spec.ts:650:1 › P08 import only takes decoded maximum and keeps optional metadata for the next PI
+  [prototype] › pi-initialization.spec.ts:690:1 › P08 previously generated PI stays locked without fabricated initialization history
+  [prototype] › pi-initialization.spec.ts:717:3 › P08 committed initialization survives failed history reading and manual query without another submission
+  [prototype] › pi-initialization.spec.ts:717:3 › P08 committed initialization survives failed status reading and manual query without another submission
+  [prototype] › pi-initialization.spec.ts:783:3 › P08 committed initialization with a lost response recovers by query without another submission
+  [prototype] › pi-initialization.spec.ts:783:3 › P08 committed initialization with a lost response recovers by reload without another submission
+  [prototype] › pi-initialization.spec.ts:839:1 › P08 request lost before delivery can be confirmed again with the same original payload
+  [prototype] › pi-initialization.spec.ts:880:1 › P08 failed lookup preserves the displayed PI and edited form until a successful query
+  [prototype] › query-export-errors.spec.ts:63:1 › P11 export errors: denied PI, HTTP download failure and retry
+  [prototype] › query-roles.spec.ts:24:1 › P11 roles: factory scope, cross-factory read-only, denied PI and scoped exports
+  [prototype] › query.spec.ts:243:1 › P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX
+  [prototype] › rules.spec.ts:98:1 › P06 baseline filters, used editing and version identity
+  [prototype] › rules.spec.ts:130:1 › P06 preview bases, Unicode and inline validation recovery
+  [prototype] › rules.spec.ts:170:1 › P06 create scopes, duplicate errors and unused version updates
+  [prototype] › rules.spec.ts:242:1 › P06 three languages and narrow rule dialog
+  [prototype] › rules.spec.ts:296:1 › P06 complete catalog beyond 100 rows and literal wildcard filters
+  [prototype] › rules.spec.ts:336:1 › P06 used rule rename keeps v1 and encoding change creates immutable history
+  [prototype] › shell-orders.spec.ts:55:1 › P02 登录三语文案与移动布局
+  [prototype] › shell-orders.spec.ts:88:1 › P01 菜单分组顺序 收起展开 用户菜单与退出
+  [prototype] › shell-orders.spec.ts:144:1 › P03 修改密码打开 校验和取消
+  [prototype] › shell-orders.spec.ts:158:1 › P05 全量与按单同步 搜索清空 订单分录和生成入口
+  [prototype] › shell-orders.spec.ts:189:1 › P05 定时弹窗 换算 保存和取消
+  [prototype] › shell-orders.spec.ts:218:1 › P01 三语导航 用户偏好刷新持久化 窄屏收起与展开
+  [prototype] › shell-orders.spec.ts:253:1 › P02 首次访问跟随浏览器语言
+  [prototype] › shell-orders.spec.ts:273:1 › P05 超过一页的分录连续展示 按单据删除过期快照
+  [prototype] › transfer-form.spec.ts:141:1 › P10 transfer form: automatic candidates, material scope, single SN and cancelled confirmation
+  [prototype] › transfer-form.spec.ts:225:1 › P10 transfer roles: bound factory and query accounts preserve inventory
+  [prototype] › transfer-impact.spec.ts:212:1 › P10 cross PI hints: wait for impact, zero skipped positions, gaps and actual transfer
+  [prototype] › transfer-impact.spec.ts:299:1 › P10 cross PI duplicate: exact count and five samples, single SN and same PI reset
+  [prototype] › transfer-layout.spec.ts:135:3 › P10 layout zh-CN: field rhythm, clear control, alerts and snapshot at wide and narrow widths
+  [prototype] › transfer-layout.spec.ts:135:3 › P10 layout en: field rhythm, clear control, alerts and snapshot at wide and narrow widths
+  [prototype] › transfer-layout.spec.ts:135:3 › P10 layout vi: field rhythm, clear control, alerts and snapshot at wide and narrow widths
+  [prototype] › transfer-lifecycle.spec.ts:337:1 › P10 applied transfers: withdraw, reject, approve and fixed 50-row detail pages
+  [prototype] › transfer-targets.spec.ts:149:1 › P10 snapshot picker: fifty rows, literal bill search, grouping, unmapped target and persistent selection
+  [prototype] › transfer-targets.spec.ts:291:1 › P10 snapshot pending search: retain visible rows and selection while a real request waits
+  [prototype] › users-directory.spec.ts:94:1 › P13 account directory: prefix/name search, roles, factories, status, pagination and metadata
+  [migration] › account-actions.spec.ts:9:1 › P13 account actions: disable, enable, repeated same-password reset and self reset
+  [migration] › account-audit.spec.ts:10:1 › P13 management audit: real account writes, rejected writes, no-change edit and complete export
+  [migration] › account-editor.spec.ts:109:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages
+  [migration] › account-session.spec.ts:9:1 › P13 account sessions: edit name, role, factory and self without another login
+  [migration] › acquire-print.spec.ts:201:1 › P09 single take and print: cancel, focus, material filtering, automatic XLSX and stable reload
+  [migration] › acquire-print.spec.ts:315:1 › P09 paged history: current detail 50+1 rows, print status, eleven histories and filter reset
+  [migration] › acquire-print.spec.ts:466:1 › P09 bulk print continues when one selected PI was printed in another browser page
+  [migration] › acquire-print.spec.ts:516:1 › P09 factory cross-PI read-only and query-role controls preserve state
+  [migration] › acquire-print.spec.ts:576:1 › P09 transferred print: real factory round trip, current batch details and historical files
+  [migration] › acquire-print.spec.ts:894:1 › P09 two-PI bulk take and print: independent requests, per-PI files and focus history
+  [migration] › acquire-print.spec.ts:943:3 › P09 download failure zh-CN: bulk succeeds, history retries without reprint and narrow detail
+  [migration] › acquire-print.spec.ts:943:3 › P09 download failure en: bulk succeeds, history retries without reprint and narrow detail
+  [migration] › acquire-print.spec.ts:943:3 › P09 download failure vi: bulk succeeds, history retries without reprint and narrow detail
+  [migration] › audit-auth.spec.ts:180:1 › P12 real anonymous login failure appears in audit and downloaded file
+  [migration] › audit-auth.spec.ts:200:1 › P12 real known login password rejection change and disabled account facts
+  [migration] › audit-auth.spec.ts:331:1 › P12 real fifth failed login and subsequent lock retain exact audit facts
+  [migration] › audit-files.spec.ts:10:1 › P12 audit files: original insertion order, typed cells and empty workbook
+  [migration] › audit-layout.spec.ts:98:1 › P12 layout: single row table, date range and pagination across widths and languages
+  [migration] › audit-page.spec.ts:138:1 › P12 audit: numbered pages, draft export scope, filters and inline detail
+  [migration] › audit-rules.spec.ts:129:3 › P12 real rule audits: create edit rename combined and no-op
+  [migration] › audit-rules.spec.ts:129:3 › P12 real rule audits: used version and rename
+  [migration] › dashboard-layout.spec.ts:174:1 › P01 P04 factory operator header and shortcuts: three languages, four widths and real navigation
+  [migration] › dashboard-roles.spec.ts:91:1 › P04 管理员首页指标 近期订单进度 快捷入口和窄屏
+  [migration] › dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_operator 首次改密 角色范围与首页入口
+  [migration] › dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_query_all 首次改密 角色范围与首页入口
+  [migration] › dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_query_factory 首次改密 角色范围与首页入口
+  [migration] › dashboard-roles.spec.ts:236:1 › P04 首页三语文案与刷新保持
+  [migration] › factories.spec.ts:12:1 › P14 factories: full catalog, create validation, Unicode, cancel, sync conflicts and recovery
+  [migration] › factory-audit.spec.ts:10:1 › P14 factory audit: real create, validation, sync conflicts, failure recovery and complete export
+  [migration] › factory-identity.spec.ts:9:1 › P14 organization changes: snapshot name, manual factory, changed ID/code, rename and directory filters
+  [migration] › generation-identity.spec.ts:215:3 › P07 ERP changed PI retains first identity with separate sequence ranges
+  [migration] › generation-identity.spec.ts:215:3 › P07 ERP changed PI retains first identity with overlapping sequence ranges
+  [migration] › generation-identity.spec.ts:307:1 › P07 departed generated bill remains historical while unused departed bill disappears and return restores totals
+  [migration] › generation-identity.spec.ts:349:1 › P07 unmapped organization still shows its current PI summary without foreign organization rows
+  [migration] › generation-picker.spec.ts:35:1 › P07 PI auto-selection, clearing filters, pending toggle and three-language layout
+  [migration] › generation-quota.spec.ts:220:1 › P07 ERP shrink and replacement preserve whole-bill quota and issued sources
+  [migration] › generation-quota.spec.ts:268:1 › P07 ERP returned order controls segments after the whole-bill offset
+  [migration] › generation-quota.spec.ts:302:1 › P07 all 21 fractional lines remain visible and generate separate integer segments
+  [migration] › generation-quota.spec.ts:374:1 › P07 quantity controls, cancelled confirmations and partial allocation preserve the exact remainder
+  [migration] › generation-quota.spec.ts:512:1 › P07 resync keeps unchanged preview and adopts current source metadata
+  [migration] › generation-quota.spec.ts:596:3 › P07 changed material name rejects retained preview without issuing and recovers
+  [migration] › generation-quota.spec.ts:596:3 › P07 changed material code rejects retained preview without issuing and recovers
+  [migration] › generation-quota.spec.ts:596:3 › P07 changed segment split rejects retained preview without issuing and recovers
+  [migration] › generation-quota.spec.ts:596:3 › P07 changed line order rejects retained preview without issuing and recovers
+  [migration] › generation-quota.spec.ts:684:1 › P07 expired preview is rejected before creating a job and repreview recovers
+  [migration] › generation-quota.spec.ts:707:1 › P07 generation in another tab makes retained preview stale without adding a failed job
+  [migration] › generation-quota.spec.ts:740:1 › P07 quota shrink after preview leaves a failed job with planned range and zero progress
+  [migration] › generation-quota.spec.ts:778:1 › P07 changed ERP factory rejects old allocation then new generation permits mixed-source members
+  [migration] › import-capacity.spec.ts:24:3 › P08 capacity limit: rejects 500001 through file upload
+  [migration] › import-capacity.spec.ts:24:3 › P08 capacity maximum: imports 500000 full-width Unicode SN through file upload
+  [migration] › login-layout.spec.ts:90:1 › P02 login layout: three languages, four widths, focus, reveal and empty submission
+  [migration] › order-filters.spec.ts:80:1 › P05 搜索匹配分录汇总 完整明细 小数整数额度和客户精确筛选
+  [migration] › order-filters.spec.ts:113:1 › P05 工厂筛选自动加载及清空 选单清理
+  [migration] › order-filters.spec.ts:133:3 › P05 cmp_query_all 同步摘要 只读定时设置及订单范围
+  [migration] › order-filters.spec.ts:133:3 › P05 cmp_query_factory 同步摘要 只读定时设置及订单范围
+  [migration] › order-filters.spec.ts:160:1 › P05 分页换页每页数量回首页 清除选择与单据倒序
+  [migration] › order-filters.spec.ts:221:1 › P05 定时最小最大值 分钟换算 开关 更新人 保存取消
+  [migration] › order-sync.spec.ts:178:1 › P05 全量查询失败 单据HTTP失败 登录失败 提示关闭及恢复
+  [migration] › order-sync.spec.ts:210:1 › P05 全量空快照 清空摘要和选单 恢复原订单
+  [migration] › order-sync.spec.ts:233:1 › P05 真实定时worker 成功 失败 恢复 执行中保留上一轮结果
+  [migration] › order-transactions.spec.ts:9:1 › P05 full sync commits factories separately and continues after factory write/audit failures
+  [migration] › password-page.spec.ts:121:3 › P03 password zh-CN: forced form, blur validation, logout, save and voluntary cancel
+  [migration] › password-page.spec.ts:121:3 › P03 password en: forced form, blur validation, logout, save and voluntary cancel
+  [migration] › password-page.spec.ts:121:3 › P03 password vi: forced form, blur validation, logout, save and voluntary cancel
+  [migration] › pi-initialization.spec.ts:115:3 › P08 sn conflict in the second import chunk rolls back all rows and allows correction in three languages
+  [migration] › pi-initialization.spec.ts:115:3 › P08 sequence conflict in the second import chunk rolls back all rows and allows correction in three languages
+  [migration] › pi-initialization.spec.ts:178:1 › P08 rejects a 65 character SN with its line in three languages and accepts the corrected 64 character value
+  [migration] › pi-initialization.spec.ts:204:1 › P08 rejects a start beyond rule capacity in three languages and permits a corrected initialization
+  [migration] › pi-initialization.spec.ts:223:1 › P08 stale page rejects an already initialized PI and can query the original successful history
+  [migration] › pi-initialization.spec.ts:463:1 › P08 query retains displayed PI until lookup, three languages and reload resets form
+  [migration] › pi-initialization.spec.ts:527:1 › P08 pure start validates integers and duplicates, cancellation is read only, initialization locks once
+  [migration] › pi-initialization.spec.ts:576:1 › P08 mixed history preserves zero and undecodable SN, start dominates decoded maximum and snapshot customer applies
+  [migration] › pi-initialization.spec.ts:609:1 › P08 CSV keeps literal quotes and filename after textarea editing without a decoding rule
+  [migration] › pi-initialization.spec.ts:650:1 › P08 import only takes decoded maximum and keeps optional metadata for the next PI
+  [migration] › pi-initialization.spec.ts:690:1 › P08 previously generated PI stays locked without fabricated initialization history
+  [migration] › pi-initialization.spec.ts:717:3 › P08 committed initialization survives failed history reading and manual query without another submission
+  [migration] › pi-initialization.spec.ts:717:3 › P08 committed initialization survives failed status reading and manual query without another submission
+  [migration] › pi-initialization.spec.ts:783:3 › P08 committed initialization with a lost response recovers by query without another submission
+  [migration] › pi-initialization.spec.ts:783:3 › P08 committed initialization with a lost response recovers by reload without another submission
+  [migration] › pi-initialization.spec.ts:839:1 › P08 request lost before delivery can be confirmed again with the same original payload
+  [migration] › pi-initialization.spec.ts:880:1 › P08 failed lookup preserves the displayed PI and edited form until a successful query
+  [migration] › query-export-errors.spec.ts:63:1 › P11 export errors: denied PI, HTTP download failure and retry
+  [migration] › query-recovery.spec.ts:46:1 › P11 durable export: same intent retry, response loss with reload and exact file recovery
+  [migration] › query-roles.spec.ts:24:1 › P11 roles: factory scope, cross-factory read-only, denied PI and scoped exports
+  [migration] › query.spec.ts:243:1 › P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX
+  [migration] › rules.spec.ts:98:1 › P06 baseline filters, used editing and version identity
+  [migration] › rules.spec.ts:130:1 › P06 preview bases, Unicode and inline validation recovery
+  [migration] › rules.spec.ts:170:1 › P06 create scopes, duplicate errors and unused version updates
+  [migration] › rules.spec.ts:242:1 › P06 three languages and narrow rule dialog
+  [migration] › rules.spec.ts:296:1 › P06 complete catalog beyond 100 rows and literal wildcard filters
+  [migration] › rules.spec.ts:336:1 › P06 used rule rename keeps v1 and encoding change creates immutable history
+  [migration] › shell-orders.spec.ts:55:1 › P02 登录三语文案与移动布局
+  [migration] › shell-orders.spec.ts:88:1 › P01 菜单分组顺序 收起展开 用户菜单与退出
+  [migration] › shell-orders.spec.ts:144:1 › P03 修改密码打开 校验和取消
+  [migration] › shell-orders.spec.ts:158:1 › P05 全量与按单同步 搜索清空 订单分录和生成入口
+  [migration] › shell-orders.spec.ts:189:1 › P05 定时弹窗 换算 保存和取消
+  [migration] › shell-orders.spec.ts:218:1 › P01 三语导航 用户偏好刷新持久化 窄屏收起与展开
+  [migration] › shell-orders.spec.ts:253:1 › P02 首次访问跟随浏览器语言
+  [migration] › shell-orders.spec.ts:273:1 › P05 超过一页的分录连续展示 按单据删除过期快照
+  [migration] › transfer-form.spec.ts:141:1 › P10 transfer form: automatic candidates, material scope, single SN and cancelled confirmation
+  [migration] › transfer-form.spec.ts:225:1 › P10 transfer roles: bound factory and query accounts preserve inventory
+  [migration] › transfer-impact.spec.ts:212:1 › P10 cross PI hints: wait for impact, zero skipped positions, gaps and actual transfer
+  [migration] › transfer-impact.spec.ts:299:1 › P10 cross PI duplicate: exact count and five samples, single SN and same PI reset
+  [migration] › transfer-layout.spec.ts:135:3 › P10 layout zh-CN: field rhythm, clear control, alerts and snapshot at wide and narrow widths
+  [migration] › transfer-layout.spec.ts:135:3 › P10 layout en: field rhythm, clear control, alerts and snapshot at wide and narrow widths
+  [migration] › transfer-layout.spec.ts:135:3 › P10 layout vi: field rhythm, clear control, alerts and snapshot at wide and narrow widths
+  [migration] › transfer-lifecycle.spec.ts:337:1 › P10 applied transfers: withdraw, reject, approve and fixed 50-row detail pages
+  [migration] › transfer-targets.spec.ts:149:1 › P10 snapshot picker: fifty rows, literal bill search, grouping, unmapped target and persistent selection
+  [migration] › transfer-targets.spec.ts:291:1 › P10 snapshot pending search: retain visible rows and selection while a real request waits
+  [migration] › users-directory.spec.ts:94:1 › P13 account directory: prefix/name search, roles, factories, status, pagination and metadata
+Total: 219 tests in 37 files

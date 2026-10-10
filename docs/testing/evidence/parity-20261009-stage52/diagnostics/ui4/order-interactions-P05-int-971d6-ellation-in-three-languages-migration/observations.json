@@ -1,0 +1,6059 @@
+{
+  "states": [
+    {
+      "label": "zh-CN-synced",
+      "geometry": {
+        "dialog": [],
+        "title": [],
+        "labels": [],
+        "number": [],
+        "unit": [],
+        "hint": [],
+        "alert": [],
+        "buttons": [],
+        "switch": [],
+        "message": [
+          {
+            "text": "已同步 4 张单据，6 行",
+            "box": [
+              623.5234375,
+              16,
+              192.953125,
+              40
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "16px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgb(240, 249, 235)",
+            "padding": "11px 15px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "tooltip": [],
+        "numberInput": [],
+        "unitText": [],
+        "alertText": [],
+        "messageText": [
+          {
+            "text": "已同步 4 张单据，6 行",
+            "box": [
+              663.5234375,
+              29,
+              136.953125,
+              14
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "14px",
+              "400",
+              "14px"
+            ],
+            "color": "rgb(63, 125, 90)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "detailTitle": [
+          {
+            "text": "物料明细",
+            "box": [
+              1058.328125,
+              332.796875,
+              340.671875,
+              21
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "15px",
+              "600",
+              "normal"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "detailButton": [],
+        "details": [],
+        "lineCells": []
+      },
+      "mainScroll": 0,
+      "focus": {
+        "tag": "BODY",
+        "text": "\n    SN 管控中心总部统一生成与分配工作台首页总部作业生产订单生成与分配起始号与历史导入规则模板工厂作业领取与打印转厂查询与留痕SN 查询操作痕迹系统管理账户工厂SN 管控中心/生产订单总部简体中文同同步痕迹操作员 · 系统管理员（总"
+      },
+      "tooltips": [],
+      "message": [
+        "已同步 4 张单据，6 行"
+      ],
+      "amount": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "owner_id": 90020261009520000,
+          "last_run_id": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "last_run_at": "2026-10-09 08:26:45.775734",
+          "lease_until": null,
+          "last_state": "SUCCESS",
+          "last_error_code": null,
+          "last_bills": 3,
+          "last_rows": 4,
+          "updated_at": "2026-10-09 11:02:50.184381",
+          "last_ok": 1,
+          "last_error_message": ""
+        }
+      ]
+    },
+    {
+      "label": "zh-CN-1440-overflow-0",
+      "geometry": {
+        "dialog": [],
+        "title": [],
+        "labels": [],
+        "number": [],
+        "unit": [],
+        "hint": [],
+        "alert": [],
+        "buttons": [],
+        "switch": [],
+        "message": [],
+        "tooltip": [
+          {
+            "text": "CMP-TOOLTIP-LONG-ORDER-00000051",
+            "box": [
+              203,
+              419,
+              236.171875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "20px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(48, 49, 51)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "numberInput": [],
+        "unitText": [],
+        "alertText": [],
+        "messageText": [],
+        "detailTitle": [
+          {
+            "text": "物料明细",
+            "box": [
+              1058.328125,
+              332.796875,
+              340.671875,
+              21
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "15px",
+              "600",
+              "normal"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "detailButton": [],
+        "details": [],
+        "lineCells": []
+      },
+      "mainScroll": 0,
+      "focus": {
+        "tag": "BODY",
+        "text": "\n    SN 管控中心总部统一生成与分配工作台首页总部作业生产订单生成与分配起始号与历史导入规则模板工厂作业领取与打印转厂查询与留痕SN 查询操作痕迹系统管理账户工厂SN 管控中心/生产订单总部简体中文同同步痕迹操作员 · 系统管理员（总"
+      },
+      "tooltips": [
+        "CMP-TOOLTIP-LONG-ORDER-00000051"
+      ],
+      "message": [],
+      "amount": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "owner_id": 90020261009520000,
+          "last_run_id": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "last_run_at": "2026-10-09 08:26:45.775734",
+          "lease_until": null,
+          "last_state": "SUCCESS",
+          "last_error_code": null,
+          "last_bills": 3,
+          "last_rows": 4,
+          "updated_at": "2026-10-09 11:02:50.184381",
+          "last_ok": 1,
+          "last_error_message": ""
+        }
+      ]
+    },
+    {
+      "label": "zh-CN-1440-overflow-1",
+      "geometry": {
+        "dialog": [],
+        "title": [],
+        "labels": [],
+        "number": [],
+        "unit": [],
+        "hint": [],
+        "alert": [],
+        "buttons": [],
+        "switch": [],
+        "message": [],
+        "tooltip": [
+          {
+            "text": "CMP-CUSTOMER-WITH-LONG-CODE-000051",
+            "box": [
+              288,
+              419,
+              265.09375,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "20px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(48, 49, 51)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "numberInput": [],
+        "unitText": [],
+        "alertText": [],
+        "messageText": [],
+        "detailTitle": [
+          {
+            "text": "物料明细",
+            "box": [
+              1058.328125,
+              332.796875,
+              340.671875,
+              21
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "15px",
+              "600",
+              "normal"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "detailButton": [],
+        "details": [],
+        "lineCells": []
+      },
+      "mainScroll": 0,
+      "focus": {
+        "tag": "BODY",
+        "text": "\n    SN 管控中心总部统一生成与分配工作台首页总部作业生产订单生成与分配起始号与历史导入规则模板工厂作业领取与打印转厂查询与留痕SN 查询操作痕迹系统管理账户工厂SN 管控中心/生产订单总部简体中文同同步痕迹操作员 · 系统管理员（总"
+      },
+      "tooltips": [
+        "CMP-CUSTOMER-WITH-LONG-CODE-000051"
+      ],
+      "message": [],
+      "amount": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "owner_id": 90020261009520000,
+          "last_run_id": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "last_run_at": "2026-10-09 08:26:45.775734",
+          "lease_until": null,
+          "last_state": "SUCCESS",
+          "last_error_code": null,
+          "last_bills": 3,
+          "last_rows": 4,
+          "updated_at": "2026-10-09 11:02:50.184381",
+          "last_ok": 1,
+          "last_error_message": ""
+        }
+      ]
+    },
+    {
+      "label": "zh-CN-1440-overflow-2",
+      "geometry": {
+        "dialog": [],
+        "title": [],
+        "labels": [],
+        "number": [],
+        "unit": [],
+        "hint": [],
+        "alert": [],
+        "buttons": [],
+        "switch": [],
+        "message": [],
+        "tooltip": [
+          {
+            "text": "PI-TOOLTIP-00000000000000000051",
+            "box": [
+              419,
+              419,
+              223.328125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "20px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(48, 49, 51)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "numberInput": [],
+        "unitText": [],
+        "alertText": [],
+        "messageText": [],
+        "detailTitle": [
+          {
+            "text": "物料明细",
+            "box": [
+              1058.328125,
+              332.796875,
+              340.671875,
+              21
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "15px",
+              "600",
+              "normal"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "detailButton": [],
+        "details": [],
+        "lineCells": []
+      },
+      "mainScroll": 0,
+      "focus": {
+        "tag": "BODY",
+        "text": "\n    SN 管控中心总部统一生成与分配工作台首页总部作业生产订单生成与分配起始号与历史导入规则模板工厂作业领取与打印转厂查询与留痕SN 查询操作痕迹系统管理账户工厂SN 管控中心/生产订单总部简体中文同同步痕迹操作员 · 系统管理员（总"
+      },
+      "tooltips": [
+        "PI-TOOLTIP-00000000000000000051"
+      ],
+      "message": [],
+      "amount": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "owner_id": 90020261009520000,
+          "last_run_id": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "last_run_at": "2026-10-09 08:26:45.775734",
+          "lease_until": null,
+          "last_state": "SUCCESS",
+          "last_error_code": null,
+          "last_bills": 3,
+          "last_rows": 4,
+          "updated_at": "2026-10-09 11:02:50.184381",
+          "last_ok": 1,
+          "last_error_message": ""
+        }
+      ]
+    },
+    {
+      "label": "zh-CN-1440-overflow-3",
+      "geometry": {
+        "dialog": [],
+        "title": [],
+        "labels": [],
+        "number": [],
+        "unit": [],
+        "hint": [],
+        "alert": [],
+        "buttons": [],
+        "switch": [],
+        "message": [],
+        "tooltip": [
+          {
+            "text": "比较测试未建档长名称工厂 第五十一阶段 未建档",
+            "box": [
+              510,
+              419,
+              281.390625,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "20px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(48, 49, 51)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "numberInput": [],
+        "unitText": [],
+        "alertText": [],
+        "messageText": [],
+        "detailTitle": [
+          {
+            "text": "物料明细",
+            "box": [
+              1058.328125,
+              332.796875,
+              340.671875,
+              21
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "15px",
+              "600",
+              "normal"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "detailButton": [],
+        "details": [],
+        "lineCells": []
+      },
+      "mainScroll": 0,
+      "focus": {
+        "tag": "BODY",
+        "text": "\n    SN 管控中心总部统一生成与分配工作台首页总部作业生产订单生成与分配起始号与历史导入规则模板工厂作业领取与打印转厂查询与留痕SN 查询操作痕迹系统管理账户工厂SN 管控中心/生产订单总部简体中文同同步痕迹操作员 · 系统管理员（总"
+      },
+      "tooltips": [
+        "比较测试未建档长名称工厂 第五十一阶段\n未建档"
+      ],
+      "message": [],
+      "amount": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "owner_id": 90020261009520000,
+          "last_run_id": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "last_run_at": "2026-10-09 08:26:45.775734",
+          "lease_until": null,
+          "last_state": "SUCCESS",
+          "last_error_code": null,
+          "last_bills": 3,
+          "last_rows": 4,
+          "updated_at": "2026-10-09 11:02:50.184381",
+          "last_ok": 1,
+          "last_error_message": ""
+        }
+      ]
+    },
+    {
+      "label": "zh-CN-1440-overflow-4",
+      "geometry": {
+        "dialog": [],
+        "title": [],
+        "labels": [],
+        "number": [],
+        "unit": [],
+        "hint": [],
+        "alert": [],
+        "buttons": [],
+        "switch": [],
+        "message": [],
+        "tooltip": [
+          {
+            "text": "计划 / 计划确认",
+            "box": [
+              690,
+              419,
+              106.09375,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "20px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(48, 49, 51)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "numberInput": [],
+        "unitText": [],
+        "alertText": [],
+        "messageText": [],
+        "detailTitle": [
+          {
+            "text": "物料明细",
+            "box": [
+              1058.328125,
+              332.796875,
+              340.671875,
+              21
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "15px",
+              "600",
+              "normal"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "detailButton": [],
+        "details": [],
+        "lineCells": []
+      },
+      "mainScroll": 0,
+      "focus": {
+        "tag": "BODY",
+        "text": "\n    SN 管控中心总部统一生成与分配工作台首页总部作业生产订单生成与分配起始号与历史导入规则模板工厂作业领取与打印转厂查询与留痕SN 查询操作痕迹系统管理账户工厂SN 管控中心/生产订单总部简体中文同同步痕迹操作员 · 系统管理员（总"
+      },
+      "tooltips": [
+        "计划 / 计划确认"
+      ],
+      "message": [],
+      "amount": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "owner_id": 90020261009520000,
+          "last_run_id": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "last_run_at": "2026-10-09 08:26:45.775734",
+          "lease_until": null,
+          "last_state": "SUCCESS",
+          "last_error_code": null,
+          "last_bills": 3,
+          "last_rows": 4,
+          "updated_at": "2026-10-09 11:02:50.184381",
+          "last_ok": 1,
+          "last_error_message": ""
+        }
+      ]
+    },
+    {
+      "label": "zh-CN-1440-short-no-tooltip",
+      "geometry": {
+        "dialog": [],
+        "title": [],
+        "labels": [],
+        "number": [],
+        "unit": [],
+        "hint": [],
+        "alert": [],
+        "buttons": [],
+        "switch": [],
+        "message": [],
+        "tooltip": [],
+        "numberInput": [],
+        "unitText": [],
+        "alertText": [],
+        "messageText": [],
+        "detailTitle": [
+          {
+            "text": "物料明细",
+            "box": [
+              1058.328125,
+              332.796875,
+              340.671875,
+              21
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "15px",
+              "600",
+              "normal"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "detailButton": [],
+        "details": [],
+        "lineCells": []
+      },
+      "mainScroll": 0,
+      "focus": {
+        "tag": "BODY",
+        "text": "\n    SN 管控中心总部统一生成与分配工作台首页总部作业生产订单生成与分配起始号与历史导入规则模板工厂作业领取与打印转厂查询与留痕SN 查询操作痕迹系统管理账户工厂SN 管控中心/生产订单总部简体中文同同步痕迹操作员 · 系统管理员（总"
+      },
+      "tooltips": [],
+      "message": [],
+      "amount": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "owner_id": 90020261009520000,
+          "last_run_id": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "last_run_at": "2026-10-09 08:26:45.775734",
+          "lease_until": null,
+          "last_state": "SUCCESS",
+          "last_error_code": null,
+          "last_bills": 3,
+          "last_rows": 4,
+          "updated_at": "2026-10-09 11:02:50.184381",
+          "last_ok": 1,
+          "last_error_message": ""
+        }
+      ]
+    },
+    {
+      "label": "zh-CN-1440-line-overflow",
+      "geometry": {
+        "dialog": [],
+        "title": [],
+        "labels": [],
+        "number": [],
+        "unit": [],
+        "hint": [],
+        "alert": [],
+        "buttons": [],
+        "switch": [],
+        "message": [],
+        "tooltip": [
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段 需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              868,
+              530,
+              571.6875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "20px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(48, 49, 51)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "numberInput": [],
+        "unitText": [],
+        "alertText": [],
+        "messageText": [],
+        "detailTitle": [
+          {
+            "text": "CMP-TOOLTIP-LONG-ORDER-00000051 的物料明细\n去生成",
+            "box": [
+              1058.328125,
+              332.796875,
+              340.671875,
+              42
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "15px",
+              "600",
+              "normal"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "detailButton": [
+          {
+            "text": "去生成",
+            "box": [
+              1339,
+              341.796875,
+              60,
+              24
+            ],
+            "font": [
+              "Arial",
+              "12px",
+              "500",
+              "12px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(30, 74, 138)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "details": [
+          {
+            "text": "PI",
+            "box": [
+              1059.828125,
+              388.296875,
+              63.9375,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PI-TOOLTIP-00000000000000000051",
+            "box": [
+              1123.765625,
+              388.296875,
+              273.734375,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO",
+            "box": [
+              1059.828125,
+              420.296875,
+              63.9375,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO-TOOLTIP-51",
+            "box": [
+              1123.765625,
+              420.296875,
+              273.734375,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "客户编码",
+            "box": [
+              1059.828125,
+              452.296875,
+              63.9375,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "CMP-CUSTOMER-WITH-LONG-CODE-000051",
+            "box": [
+              1123.765625,
+              452.296875,
+              273.734375,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "工厂",
+            "box": [
+              1059.828125,
+              484.296875,
+              63.9375,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "比较测试未建档长名称工厂 第五十一阶段（—）",
+            "box": [
+              1123.765625,
+              484.296875,
+              273.734375,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "lineCells": [
+          {
+            "text": "1",
+            "box": [
+              1058.328125,
+              561.796875,
+              48.375,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(250, 250, 250)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-1",
+            "box": [
+              1106.703125,
+              561.796875,
+              100.78125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(250, 250, 250)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              1207.484375,
+              561.796875,
+              120.9375,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(250, 250, 250)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              1328.421875,
+              561.796875,
+              70.578125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(250, 250, 250)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "2",
+            "box": [
+              1058.328125,
+              616.796875,
+              48.375,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-2",
+            "box": [
+              1106.703125,
+              616.796875,
+              100.78125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              1207.484375,
+              616.796875,
+              120.9375,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              1328.421875,
+              616.796875,
+              70.578125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ]
+      },
+      "mainScroll": 0,
+      "focus": {
+        "tag": "BODY",
+        "text": "\n    SN 管控中心总部统一生成与分配工作台首页总部作业生产订单生成与分配起始号与历史导入规则模板工厂作业领取与打印转厂查询与留痕SN 查询操作痕迹系统管理账户工厂SN 管控中心/生产订单总部简体中文同同步痕迹操作员 · 系统管理员（总"
+      },
+      "tooltips": [
+        "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051"
+      ],
+      "message": [],
+      "amount": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "owner_id": 90020261009520000,
+          "last_run_id": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "last_run_at": "2026-10-09 08:26:45.775734",
+          "lease_until": null,
+          "last_state": "SUCCESS",
+          "last_error_code": null,
+          "last_bills": 3,
+          "last_rows": 4,
+          "updated_at": "2026-10-09 11:02:50.184381",
+          "last_ok": 1,
+          "last_error_message": ""
+        }
+      ]
+    },
+    {
+      "label": "zh-CN-1440-dialog",
+      "geometry": {
+        "dialog": [
+          {
+            "text": "定时全量同步设置\n开启\n同步间隔\n天\n最短 10 分钟，最长 7 天；保存后从现在起算下次执行时间\n最近一次\n2026-10-09 16:26:45 成功：3 张单据，4 行\n最近修改\naudit20261009520004 · 2026-10-09 19:02:50\n每次执行与「全量同步」按钮完全相同（操作人记为 system）；金蝶失败时快照保持不动，下个周期再试。\n取消\n保存",
+            "box": [
+              480,
+              144,
+              480,
+              421
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "16px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "padding": "16px",
+            "shadow": "rgba(0, 0, 0, 0.08) 0px 6px 16px 0px, rgba(0, 0, 0, 0.12) 0px 3px 6px -4px, rgba(0, 0, 0, 0.05) 0px 9px 28px 8px",
+            "filter": "none"
+          }
+        ],
+        "title": [
+          {
+            "text": "定时全量同步设置",
+            "box": [
+              496,
+              159,
+              144,
+              26
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "18px",
+              "400",
+              "24px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "labels": [
+          {
+            "text": "开启",
+            "box": [
+              496,
+              201,
+              110,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "14px",
+              "400",
+              "32px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px 12px 0px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "同步间隔",
+            "box": [
+              496,
+              251,
+              110,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "14px",
+              "400",
+              "32px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px 12px 0px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "最近一次",
+            "box": [
+              496,
+              337,
+              110,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "14px",
+              "400",
+              "32px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px 12px 0px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "最近修改",
+            "box": [
+              496,
+              387,
+              110,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "14px",
+              "400",
+              "32px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px 12px 0px 0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "number": [
+          {
+            "text": "",
+            "box": [
+              606,
+              251,
+              150,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "14px",
+              "400",
+              "30px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(255, 255, 255)",
+            "padding": "0px 41px 0px 14px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "unit": [
+          {
+            "text": "天",
+            "box": [
+              764,
+              251,
+              100,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "14px",
+              "400",
+              "24px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(255, 255, 255)",
+            "padding": "3px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "hint": [
+          {
+            "text": "最短 10 分钟，最长 7 天；保存后从现在起算下次执行时间",
+            "box": [
+              606,
+              287,
+              338,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "32px"
+            ],
+            "color": "rgb(100, 116, 139)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "alert": [
+          {
+            "text": "每次执行与「全量同步」按钮完全相同（操作人记为 system）；金蝶失败时快照保持不动，下个周期再试。",
+            "box": [
+              496,
+              437,
+              448,
+              64
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "14px",
+              "400",
+              "24px"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgb(244, 244, 245)",
+            "padding": "8px 16px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "buttons": [
+          {
+            "text": "取消",
+            "box": [
+              812,
+              517,
+              60,
+              32
+            ],
+            "font": [
+              "Arial, sans-serif",
+              "14px",
+              "500",
+              "14px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(255, 255, 255)",
+            "padding": "8px 15px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "保存",
+            "box": [
+              884,
+              517,
+              60,
+              32
+            ],
+            "font": [
+              "Arial, sans-serif",
+              "14px",
+              "500",
+              "14px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(30, 74, 138)",
+            "padding": "8px 15px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "switch": [
+          {
+            "text": "",
+            "box": [
+              606,
+              207,
+              40,
+              20
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "14px",
+              "400",
+              "22px"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgb(220, 223, 230)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "message": [],
+        "tooltip": [],
+        "numberInput": [
+          {
+            "text": "",
+            "box": [
+              621,
+              252,
+              93,
+              30
+            ],
+            "font": [
+              "Arial",
+              "14px",
+              "400",
+              "14px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "unitText": [
+          {
+            "text": "天",
+            "box": [
+              776,
+              255,
+              56,
+              24
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "14px",
+              "400",
+              "24px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "alertText": [
+          {
+            "text": "每次执行与「全量同步」按钮完全相同（操作人记为 system）；金蝶失败时快照保持不动，下个周期再试。",
+            "box": [
+              512,
+              445,
+              416,
+              48
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "14px",
+              "400",
+              "24px"
+            ],
+            "color": "rgb(144, 147, 153)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "messageText": [],
+        "detailTitle": [
+          {
+            "text": "CMP-TOOLTIP-LONG-ORDER-00000051 的物料明细\n去生成",
+            "box": [
+              1058.328125,
+              332.796875,
+              340.671875,
+              42
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "15px",
+              "600",
+              "normal"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "detailButton": [
+          {
+            "text": "去生成",
+            "box": [
+              1339,
+              341.796875,
+              60,
+              24
+            ],
+            "font": [
+              "Arial",
+              "12px",
+              "500",
+              "12px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(30, 74, 138)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "details": [
+          {
+            "text": "PI",
+            "box": [
+              1059.828125,
+              388.296875,
+              63.9375,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PI-TOOLTIP-00000000000000000051",
+            "box": [
+              1123.765625,
+              388.296875,
+              273.734375,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO",
+            "box": [
+              1059.828125,
+              420.296875,
+              63.9375,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO-TOOLTIP-51",
+            "box": [
+              1123.765625,
+              420.296875,
+              273.734375,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "客户编码",
+            "box": [
+              1059.828125,
+              452.296875,
+              63.9375,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "CMP-CUSTOMER-WITH-LONG-CODE-000051",
+            "box": [
+              1123.765625,
+              452.296875,
+              273.734375,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "工厂",
+            "box": [
+              1059.828125,
+              484.296875,
+              63.9375,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "比较测试未建档长名称工厂 第五十一阶段（—）",
+            "box": [
+              1123.765625,
+              484.296875,
+              273.734375,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "lineCells": [
+          {
+            "text": "1",
+            "box": [
+              1058.328125,
+              561.796875,
+              48.375,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-1",
+            "box": [
+              1106.703125,
+              561.796875,
+              100.78125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              1207.484375,
+              561.796875,
+              120.9375,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              1328.421875,
+              561.796875,
+              70.578125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "2",
+            "box": [
+              1058.328125,
+              616.796875,
+              48.375,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-2",
+            "box": [
+              1106.703125,
+              616.796875,
+              100.78125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              1207.484375,
+              616.796875,
+              120.9375,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              1328.421875,
+              616.796875,
+              70.578125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ]
+      },
+      "mainScroll": 0,
+      "focus": {
+        "tag": "DIV",
+        "text": "定时全量同步设置开启同步间隔天最短 10 分钟，最长 7 天；保存后从现在起算下次执行时间最近一次2026-10-09 16:26:45 成功：3 张单据，4 行最近修改audit20261009520004 · 2026-10-09 19"
+      },
+      "tooltips": [],
+      "message": [],
+      "amount": "1",
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "owner_id": 90020261009520000,
+          "last_run_id": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "last_run_at": "2026-10-09 08:26:45.775734",
+          "lease_until": null,
+          "last_state": "SUCCESS",
+          "last_error_code": null,
+          "last_bills": 3,
+          "last_rows": 4,
+          "updated_at": "2026-10-09 11:02:50.184381",
+          "last_ok": 1,
+          "last_error_message": ""
+        }
+      ]
+    },
+    {
+      "label": "zh-CN-768-overflow-0",
+      "geometry": {
+        "dialog": [],
+        "title": [],
+        "labels": [],
+        "number": [],
+        "unit": [],
+        "hint": [],
+        "alert": [],
+        "buttons": [],
+        "switch": [],
+        "message": [],
+        "tooltip": [
+          {
+            "text": "CMP-TOOLTIP-LONG-ORDER-00000051",
+            "box": [
+              47,
+              24,
+              236.171875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "20px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(48, 49, 51)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "numberInput": [],
+        "unitText": [],
+        "alertText": [],
+        "messageText": [],
+        "detailTitle": [
+          {
+            "text": "CMP-TOOLTIP-LONG-ORDER-00000051 的物料明细\n去生成",
+            "box": [
+              105,
+              677.59375,
+              622,
+              24
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "15px",
+              "600",
+              "normal"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "detailButton": [
+          {
+            "text": "去生成",
+            "box": [
+              667,
+              677.59375,
+              60,
+              24
+            ],
+            "font": [
+              "Arial",
+              "12px",
+              "500",
+              "12px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(30, 74, 138)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "details": [
+          {
+            "text": "PI",
+            "box": [
+              106.5,
+              715.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PI-TOOLTIP-00000000000000000051",
+            "box": [
+              223.703125,
+              715.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO",
+            "box": [
+              106.5,
+              747.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO-TOOLTIP-51",
+            "box": [
+              223.703125,
+              747.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "客户编码",
+            "box": [
+              106.5,
+              779.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "CMP-CUSTOMER-WITH-LONG-CODE-000051",
+            "box": [
+              223.703125,
+              779.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "工厂",
+            "box": [
+              106.5,
+              811.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "比较测试未建档长名称工厂 第五十一阶段（—）",
+            "box": [
+              223.703125,
+              811.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "lineCells": [
+          {
+            "text": "1",
+            "box": [
+              105,
+              888.59375,
+              88.328125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-1",
+            "box": [
+              193.328125,
+              888.59375,
+              184.015625,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              377.34375,
+              888.59375,
+              220.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              598.171875,
+              888.59375,
+              128.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "2",
+            "box": [
+              105,
+              943.59375,
+              88.328125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-2",
+            "box": [
+              193.328125,
+              943.59375,
+              184.015625,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              377.34375,
+              943.59375,
+              220.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              598.171875,
+              943.59375,
+              128.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ]
+      },
+      "mainScroll": 459,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "设置"
+      },
+      "tooltips": [
+        "CMP-TOOLTIP-LONG-ORDER-00000051"
+      ],
+      "message": [],
+      "amount": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "owner_id": 90020261009520000,
+          "last_run_id": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "last_run_at": "2026-10-09 08:26:45.775734",
+          "lease_until": null,
+          "last_state": "SUCCESS",
+          "last_error_code": null,
+          "last_bills": 3,
+          "last_rows": 4,
+          "updated_at": "2026-10-09 11:02:50.184381",
+          "last_ok": 1,
+          "last_error_message": ""
+        }
+      ]
+    },
+    {
+      "label": "zh-CN-768-overflow-1",
+      "geometry": {
+        "dialog": [],
+        "title": [],
+        "labels": [],
+        "number": [],
+        "unit": [],
+        "hint": [],
+        "alert": [],
+        "buttons": [],
+        "switch": [],
+        "message": [],
+        "tooltip": [
+          {
+            "text": "CMP-CUSTOMER-WITH-LONG-CODE-000051",
+            "box": [
+              132,
+              24,
+              265.09375,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "20px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(48, 49, 51)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "numberInput": [],
+        "unitText": [],
+        "alertText": [],
+        "messageText": [],
+        "detailTitle": [
+          {
+            "text": "CMP-TOOLTIP-LONG-ORDER-00000051 的物料明细\n去生成",
+            "box": [
+              105,
+              677.59375,
+              622,
+              24
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "15px",
+              "600",
+              "normal"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "detailButton": [
+          {
+            "text": "去生成",
+            "box": [
+              667,
+              677.59375,
+              60,
+              24
+            ],
+            "font": [
+              "Arial",
+              "12px",
+              "500",
+              "12px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(30, 74, 138)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "details": [
+          {
+            "text": "PI",
+            "box": [
+              106.5,
+              715.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PI-TOOLTIP-00000000000000000051",
+            "box": [
+              223.703125,
+              715.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO",
+            "box": [
+              106.5,
+              747.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO-TOOLTIP-51",
+            "box": [
+              223.703125,
+              747.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "客户编码",
+            "box": [
+              106.5,
+              779.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "CMP-CUSTOMER-WITH-LONG-CODE-000051",
+            "box": [
+              223.703125,
+              779.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "工厂",
+            "box": [
+              106.5,
+              811.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "比较测试未建档长名称工厂 第五十一阶段（—）",
+            "box": [
+              223.703125,
+              811.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "lineCells": [
+          {
+            "text": "1",
+            "box": [
+              105,
+              888.59375,
+              88.328125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-1",
+            "box": [
+              193.328125,
+              888.59375,
+              184.015625,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              377.34375,
+              888.59375,
+              220.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              598.171875,
+              888.59375,
+              128.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "2",
+            "box": [
+              105,
+              943.59375,
+              88.328125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-2",
+            "box": [
+              193.328125,
+              943.59375,
+              184.015625,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              377.34375,
+              943.59375,
+              220.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              598.171875,
+              943.59375,
+              128.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ]
+      },
+      "mainScroll": 459,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "设置"
+      },
+      "tooltips": [
+        "CMP-CUSTOMER-WITH-LONG-CODE-000051"
+      ],
+      "message": [],
+      "amount": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "owner_id": 90020261009520000,
+          "last_run_id": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "last_run_at": "2026-10-09 08:26:45.775734",
+          "lease_until": null,
+          "last_state": "SUCCESS",
+          "last_error_code": null,
+          "last_bills": 3,
+          "last_rows": 4,
+          "updated_at": "2026-10-09 11:02:50.184381",
+          "last_ok": 1,
+          "last_error_message": ""
+        }
+      ]
+    },
+    {
+      "label": "zh-CN-768-overflow-2",
+      "geometry": {
+        "dialog": [],
+        "title": [],
+        "labels": [],
+        "number": [],
+        "unit": [],
+        "hint": [],
+        "alert": [],
+        "buttons": [],
+        "switch": [],
+        "message": [],
+        "tooltip": [
+          {
+            "text": "PI-TOOLTIP-00000000000000000051",
+            "box": [
+              263,
+              24,
+              223.328125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "20px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(48, 49, 51)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "numberInput": [],
+        "unitText": [],
+        "alertText": [],
+        "messageText": [],
+        "detailTitle": [
+          {
+            "text": "CMP-TOOLTIP-LONG-ORDER-00000051 的物料明细\n去生成",
+            "box": [
+              105,
+              677.59375,
+              622,
+              24
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "15px",
+              "600",
+              "normal"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "detailButton": [
+          {
+            "text": "去生成",
+            "box": [
+              667,
+              677.59375,
+              60,
+              24
+            ],
+            "font": [
+              "Arial",
+              "12px",
+              "500",
+              "12px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(30, 74, 138)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "details": [
+          {
+            "text": "PI",
+            "box": [
+              106.5,
+              715.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PI-TOOLTIP-00000000000000000051",
+            "box": [
+              223.703125,
+              715.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO",
+            "box": [
+              106.5,
+              747.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO-TOOLTIP-51",
+            "box": [
+              223.703125,
+              747.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "客户编码",
+            "box": [
+              106.5,
+              779.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "CMP-CUSTOMER-WITH-LONG-CODE-000051",
+            "box": [
+              223.703125,
+              779.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "工厂",
+            "box": [
+              106.5,
+              811.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "比较测试未建档长名称工厂 第五十一阶段（—）",
+            "box": [
+              223.703125,
+              811.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "lineCells": [
+          {
+            "text": "1",
+            "box": [
+              105,
+              888.59375,
+              88.328125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-1",
+            "box": [
+              193.328125,
+              888.59375,
+              184.015625,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              377.34375,
+              888.59375,
+              220.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              598.171875,
+              888.59375,
+              128.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "2",
+            "box": [
+              105,
+              943.59375,
+              88.328125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-2",
+            "box": [
+              193.328125,
+              943.59375,
+              184.015625,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              377.34375,
+              943.59375,
+              220.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              598.171875,
+              943.59375,
+              128.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ]
+      },
+      "mainScroll": 459,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "设置"
+      },
+      "tooltips": [
+        "PI-TOOLTIP-00000000000000000051"
+      ],
+      "message": [],
+      "amount": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "owner_id": 90020261009520000,
+          "last_run_id": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "last_run_at": "2026-10-09 08:26:45.775734",
+          "lease_until": null,
+          "last_state": "SUCCESS",
+          "last_error_code": null,
+          "last_bills": 3,
+          "last_rows": 4,
+          "updated_at": "2026-10-09 11:02:50.184381",
+          "last_ok": 1,
+          "last_error_message": ""
+        }
+      ]
+    },
+    {
+      "label": "zh-CN-768-overflow-3",
+      "geometry": {
+        "dialog": [],
+        "title": [],
+        "labels": [],
+        "number": [],
+        "unit": [],
+        "hint": [],
+        "alert": [],
+        "buttons": [],
+        "switch": [],
+        "message": [],
+        "tooltip": [
+          {
+            "text": "比较测试未建档长名称工厂 第五十一阶段 未建档",
+            "box": [
+              354,
+              24,
+              281.390625,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "20px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(48, 49, 51)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "numberInput": [],
+        "unitText": [],
+        "alertText": [],
+        "messageText": [],
+        "detailTitle": [
+          {
+            "text": "CMP-TOOLTIP-LONG-ORDER-00000051 的物料明细\n去生成",
+            "box": [
+              105,
+              677.59375,
+              622,
+              24
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "15px",
+              "600",
+              "normal"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "detailButton": [
+          {
+            "text": "去生成",
+            "box": [
+              667,
+              677.59375,
+              60,
+              24
+            ],
+            "font": [
+              "Arial",
+              "12px",
+              "500",
+              "12px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(30, 74, 138)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "details": [
+          {
+            "text": "PI",
+            "box": [
+              106.5,
+              715.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PI-TOOLTIP-00000000000000000051",
+            "box": [
+              223.703125,
+              715.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO",
+            "box": [
+              106.5,
+              747.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO-TOOLTIP-51",
+            "box": [
+              223.703125,
+              747.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "客户编码",
+            "box": [
+              106.5,
+              779.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "CMP-CUSTOMER-WITH-LONG-CODE-000051",
+            "box": [
+              223.703125,
+              779.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "工厂",
+            "box": [
+              106.5,
+              811.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "比较测试未建档长名称工厂 第五十一阶段（—）",
+            "box": [
+              223.703125,
+              811.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "lineCells": [
+          {
+            "text": "1",
+            "box": [
+              105,
+              888.59375,
+              88.328125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-1",
+            "box": [
+              193.328125,
+              888.59375,
+              184.015625,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              377.34375,
+              888.59375,
+              220.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              598.171875,
+              888.59375,
+              128.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "2",
+            "box": [
+              105,
+              943.59375,
+              88.328125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-2",
+            "box": [
+              193.328125,
+              943.59375,
+              184.015625,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              377.34375,
+              943.59375,
+              220.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              598.171875,
+              943.59375,
+              128.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ]
+      },
+      "mainScroll": 459,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "设置"
+      },
+      "tooltips": [
+        "比较测试未建档长名称工厂 第五十一阶段\n未建档"
+      ],
+      "message": [],
+      "amount": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "owner_id": 90020261009520000,
+          "last_run_id": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "last_run_at": "2026-10-09 08:26:45.775734",
+          "lease_until": null,
+          "last_state": "SUCCESS",
+          "last_error_code": null,
+          "last_bills": 3,
+          "last_rows": 4,
+          "updated_at": "2026-10-09 11:02:50.184381",
+          "last_ok": 1,
+          "last_error_message": ""
+        }
+      ]
+    },
+    {
+      "label": "zh-CN-768-overflow-4",
+      "geometry": {
+        "dialog": [],
+        "title": [],
+        "labels": [],
+        "number": [],
+        "unit": [],
+        "hint": [],
+        "alert": [],
+        "buttons": [],
+        "switch": [],
+        "message": [],
+        "tooltip": [
+          {
+            "text": "计划 / 计划确认",
+            "box": [
+              534,
+              24,
+              106.09375,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "20px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(48, 49, 51)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "numberInput": [],
+        "unitText": [],
+        "alertText": [],
+        "messageText": [],
+        "detailTitle": [
+          {
+            "text": "CMP-TOOLTIP-LONG-ORDER-00000051 的物料明细\n去生成",
+            "box": [
+              105,
+              677.59375,
+              622,
+              24
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "15px",
+              "600",
+              "normal"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "detailButton": [
+          {
+            "text": "去生成",
+            "box": [
+              667,
+              677.59375,
+              60,
+              24
+            ],
+            "font": [
+              "Arial",
+              "12px",
+              "500",
+              "12px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(30, 74, 138)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "details": [
+          {
+            "text": "PI",
+            "box": [
+              106.5,
+              715.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PI-TOOLTIP-00000000000000000051",
+            "box": [
+              223.703125,
+              715.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO",
+            "box": [
+              106.5,
+              747.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO-TOOLTIP-51",
+            "box": [
+              223.703125,
+              747.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "客户编码",
+            "box": [
+              106.5,
+              779.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "CMP-CUSTOMER-WITH-LONG-CODE-000051",
+            "box": [
+              223.703125,
+              779.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "工厂",
+            "box": [
+              106.5,
+              811.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "比较测试未建档长名称工厂 第五十一阶段（—）",
+            "box": [
+              223.703125,
+              811.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "lineCells": [
+          {
+            "text": "1",
+            "box": [
+              105,
+              888.59375,
+              88.328125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-1",
+            "box": [
+              193.328125,
+              888.59375,
+              184.015625,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              377.34375,
+              888.59375,
+              220.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              598.171875,
+              888.59375,
+              128.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "2",
+            "box": [
+              105,
+              943.59375,
+              88.328125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-2",
+            "box": [
+              193.328125,
+              943.59375,
+              184.015625,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              377.34375,
+              943.59375,
+              220.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              598.171875,
+              943.59375,
+              128.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ]
+      },
+      "mainScroll": 459,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "设置"
+      },
+      "tooltips": [
+        "计划 / 计划确认"
+      ],
+      "message": [],
+      "amount": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "owner_id": 90020261009520000,
+          "last_run_id": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "last_run_at": "2026-10-09 08:26:45.775734",
+          "lease_until": null,
+          "last_state": "SUCCESS",
+          "last_error_code": null,
+          "last_bills": 3,
+          "last_rows": 4,
+          "updated_at": "2026-10-09 11:02:50.184381",
+          "last_ok": 1,
+          "last_error_message": ""
+        }
+      ]
+    },
+    {
+      "label": "zh-CN-768-short-no-tooltip",
+      "geometry": {
+        "dialog": [],
+        "title": [],
+        "labels": [],
+        "number": [],
+        "unit": [],
+        "hint": [],
+        "alert": [],
+        "buttons": [],
+        "switch": [],
+        "message": [],
+        "tooltip": [],
+        "numberInput": [],
+        "unitText": [],
+        "alertText": [],
+        "messageText": [],
+        "detailTitle": [
+          {
+            "text": "CMP-TOOLTIP-LONG-ORDER-00000051 的物料明细\n去生成",
+            "box": [
+              105,
+              677.59375,
+              622,
+              24
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "15px",
+              "600",
+              "normal"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "detailButton": [
+          {
+            "text": "去生成",
+            "box": [
+              667,
+              677.59375,
+              60,
+              24
+            ],
+            "font": [
+              "Arial",
+              "12px",
+              "500",
+              "12px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(30, 74, 138)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "details": [
+          {
+            "text": "PI",
+            "box": [
+              106.5,
+              715.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PI-TOOLTIP-00000000000000000051",
+            "box": [
+              223.703125,
+              715.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO",
+            "box": [
+              106.5,
+              747.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO-TOOLTIP-51",
+            "box": [
+              223.703125,
+              747.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "客户编码",
+            "box": [
+              106.5,
+              779.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "CMP-CUSTOMER-WITH-LONG-CODE-000051",
+            "box": [
+              223.703125,
+              779.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "工厂",
+            "box": [
+              106.5,
+              811.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "比较测试未建档长名称工厂 第五十一阶段（—）",
+            "box": [
+              223.703125,
+              811.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "lineCells": [
+          {
+            "text": "1",
+            "box": [
+              105,
+              888.59375,
+              88.328125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-1",
+            "box": [
+              193.328125,
+              888.59375,
+              184.015625,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              377.34375,
+              888.59375,
+              220.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              598.171875,
+              888.59375,
+              128.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "2",
+            "box": [
+              105,
+              943.59375,
+              88.328125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-2",
+            "box": [
+              193.328125,
+              943.59375,
+              184.015625,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              377.34375,
+              943.59375,
+              220.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              598.171875,
+              943.59375,
+              128.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ]
+      },
+      "mainScroll": 459,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "设置"
+      },
+      "tooltips": [],
+      "message": [],
+      "amount": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "owner_id": 90020261009520000,
+          "last_run_id": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "last_run_at": "2026-10-09 08:26:45.775734",
+          "lease_until": null,
+          "last_state": "SUCCESS",
+          "last_error_code": null,
+          "last_bills": 3,
+          "last_rows": 4,
+          "updated_at": "2026-10-09 11:02:50.184381",
+          "last_ok": 1,
+          "last_error_message": ""
+        }
+      ]
+    },
+    {
+      "label": "zh-CN-768-scroll-closes-tooltip",
+      "geometry": {
+        "dialog": [],
+        "title": [],
+        "labels": [],
+        "number": [],
+        "unit": [],
+        "hint": [],
+        "alert": [],
+        "buttons": [],
+        "switch": [],
+        "message": [],
+        "tooltip": [],
+        "numberInput": [],
+        "unitText": [],
+        "alertText": [],
+        "messageText": [],
+        "detailTitle": [
+          {
+            "text": "CMP-TOOLTIP-LONG-ORDER-00000051 的物料明细\n去生成",
+            "box": [
+              105,
+              677.59375,
+              622,
+              24
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "15px",
+              "600",
+              "normal"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "detailButton": [
+          {
+            "text": "去生成",
+            "box": [
+              667,
+              677.59375,
+              60,
+              24
+            ],
+            "font": [
+              "Arial",
+              "12px",
+              "500",
+              "12px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(30, 74, 138)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "details": [
+          {
+            "text": "PI",
+            "box": [
+              106.5,
+              715.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PI-TOOLTIP-00000000000000000051",
+            "box": [
+              223.703125,
+              715.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO",
+            "box": [
+              106.5,
+              747.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO-TOOLTIP-51",
+            "box": [
+              223.703125,
+              747.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "客户编码",
+            "box": [
+              106.5,
+              779.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "CMP-CUSTOMER-WITH-LONG-CODE-000051",
+            "box": [
+              223.703125,
+              779.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "工厂",
+            "box": [
+              106.5,
+              811.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "比较测试未建档长名称工厂 第五十一阶段（—）",
+            "box": [
+              223.703125,
+              811.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "lineCells": [
+          {
+            "text": "1",
+            "box": [
+              105,
+              888.59375,
+              88.328125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-1",
+            "box": [
+              193.328125,
+              888.59375,
+              184.015625,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              377.34375,
+              888.59375,
+              220.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              598.171875,
+              888.59375,
+              128.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "2",
+            "box": [
+              105,
+              943.59375,
+              88.328125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-2",
+            "box": [
+              193.328125,
+              943.59375,
+              184.015625,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              377.34375,
+              943.59375,
+              220.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              598.171875,
+              943.59375,
+              128.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ]
+      },
+      "mainScroll": 459,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "设置"
+      },
+      "tooltips": [],
+      "message": [],
+      "amount": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "owner_id": 90020261009520000,
+          "last_run_id": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "last_run_at": "2026-10-09 08:26:45.775734",
+          "lease_until": null,
+          "last_state": "SUCCESS",
+          "last_error_code": null,
+          "last_bills": 3,
+          "last_rows": 4,
+          "updated_at": "2026-10-09 11:02:50.184381",
+          "last_ok": 1,
+          "last_error_message": ""
+        }
+      ]
+    },
+    {
+      "label": "zh-CN-768-line-overflow",
+      "geometry": {
+        "dialog": [],
+        "title": [],
+        "labels": [],
+        "number": [],
+        "unit": [],
+        "hint": [],
+        "alert": [],
+        "buttons": [],
+        "switch": [],
+        "message": [],
+        "tooltip": [
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段 需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              196,
+              857,
+              571.6875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "20px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(48, 49, 51)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "numberInput": [],
+        "unitText": [],
+        "alertText": [],
+        "messageText": [],
+        "detailTitle": [
+          {
+            "text": "CMP-TOOLTIP-LONG-ORDER-00000051 的物料明细\n去生成",
+            "box": [
+              105,
+              677.59375,
+              622,
+              24
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "15px",
+              "600",
+              "normal"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "detailButton": [
+          {
+            "text": "去生成",
+            "box": [
+              667,
+              677.59375,
+              60,
+              24
+            ],
+            "font": [
+              "Arial",
+              "12px",
+              "500",
+              "12px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(30, 74, 138)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "details": [
+          {
+            "text": "PI",
+            "box": [
+              106.5,
+              715.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PI-TOOLTIP-00000000000000000051",
+            "box": [
+              223.703125,
+              715.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO",
+            "box": [
+              106.5,
+              747.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO-TOOLTIP-51",
+            "box": [
+              223.703125,
+              747.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "客户编码",
+            "box": [
+              106.5,
+              779.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "CMP-CUSTOMER-WITH-LONG-CODE-000051",
+            "box": [
+              223.703125,
+              779.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "工厂",
+            "box": [
+              106.5,
+              811.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "比较测试未建档长名称工厂 第五十一阶段（—）",
+            "box": [
+              223.703125,
+              811.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "lineCells": [
+          {
+            "text": "1",
+            "box": [
+              105,
+              888.59375,
+              88.328125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(250, 250, 250)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-1",
+            "box": [
+              193.328125,
+              888.59375,
+              184.015625,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(250, 250, 250)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              377.34375,
+              888.59375,
+              220.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(250, 250, 250)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              598.171875,
+              888.59375,
+              128.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(250, 250, 250)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "2",
+            "box": [
+              105,
+              943.59375,
+              88.328125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-2",
+            "box": [
+              193.328125,
+              943.59375,
+              184.015625,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              377.34375,
+              943.59375,
+              220.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              598.171875,
+              943.59375,
+              128.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ]
+      },
+      "mainScroll": 459,
+      "focus": {
+        "tag": "BODY",
+        "text": "\n    SN 管控中心/生产订单总部简体中文同同步痕迹操作员 · 系统管理员（总部）生产订单快照来自金蝶生产订单（只保留计划、计划确认），按物料明细落地。左表按单据汇总数量，右表为各物料行。客户编码为空的单据不显示。按单据同步全量同步以下"
+      },
+      "tooltips": [
+        "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051"
+      ],
+      "message": [],
+      "amount": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "owner_id": 90020261009520000,
+          "last_run_id": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "last_run_at": "2026-10-09 08:26:45.775734",
+          "lease_until": null,
+          "last_state": "SUCCESS",
+          "last_error_code": null,
+          "last_bills": 3,
+          "last_rows": 4,
+          "updated_at": "2026-10-09 11:02:50.184381",
+          "last_ok": 1,
+          "last_error_message": ""
+        }
+      ]
+    },
+    {
+      "label": "zh-CN-768-dialog",
+      "geometry": {
+        "dialog": [
+          {
+            "text": "定时全量同步设置\n开启\n同步间隔\n天\n最短 10 分钟，最长 7 天；保存后从现在起算下次执行时间\n最近一次\n2026-10-09 16:26:45 成功：3 张单据，4 行\n最近修改\naudit20261009520004 · 2026-10-09 19:02:50\n每次执行与「全量同步」按钮完全相同（操作人记为 system）；金蝶失败时快照保持不动，下个周期再试。\n取消\n保存",
+            "box": [
+              144,
+              144,
+              480,
+              421
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "16px",
+              "400",
+              "normal"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "padding": "16px",
+            "shadow": "rgba(0, 0, 0, 0.08) 0px 6px 16px 0px, rgba(0, 0, 0, 0.12) 0px 3px 6px -4px, rgba(0, 0, 0, 0.05) 0px 9px 28px 8px",
+            "filter": "none"
+          }
+        ],
+        "title": [
+          {
+            "text": "定时全量同步设置",
+            "box": [
+              160,
+              159,
+              144,
+              26
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "18px",
+              "400",
+              "24px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "labels": [
+          {
+            "text": "开启",
+            "box": [
+              160,
+              201,
+              110,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "14px",
+              "400",
+              "32px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px 12px 0px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "同步间隔",
+            "box": [
+              160,
+              251,
+              110,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "14px",
+              "400",
+              "32px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px 12px 0px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "最近一次",
+            "box": [
+              160,
+              337,
+              110,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "14px",
+              "400",
+              "32px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px 12px 0px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "最近修改",
+            "box": [
+              160,
+              387,
+              110,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "14px",
+              "400",
+              "32px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px 12px 0px 0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "number": [
+          {
+            "text": "",
+            "box": [
+              270,
+              251,
+              150,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "14px",
+              "400",
+              "30px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(255, 255, 255)",
+            "padding": "0px 41px 0px 14px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "unit": [
+          {
+            "text": "天",
+            "box": [
+              428,
+              251,
+              100,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "14px",
+              "400",
+              "24px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(255, 255, 255)",
+            "padding": "3px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "hint": [
+          {
+            "text": "最短 10 分钟，最长 7 天；保存后从现在起算下次执行时间",
+            "box": [
+              270,
+              287,
+              338,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "32px"
+            ],
+            "color": "rgb(100, 116, 139)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "alert": [
+          {
+            "text": "每次执行与「全量同步」按钮完全相同（操作人记为 system）；金蝶失败时快照保持不动，下个周期再试。",
+            "box": [
+              160,
+              437,
+              448,
+              64
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "14px",
+              "400",
+              "24px"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgb(244, 244, 245)",
+            "padding": "8px 16px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "buttons": [
+          {
+            "text": "取消",
+            "box": [
+              476,
+              517,
+              60,
+              32
+            ],
+            "font": [
+              "Arial, sans-serif",
+              "14px",
+              "500",
+              "14px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(255, 255, 255)",
+            "padding": "8px 15px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "保存",
+            "box": [
+              548,
+              517,
+              60,
+              32
+            ],
+            "font": [
+              "Arial, sans-serif",
+              "14px",
+              "500",
+              "14px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(30, 74, 138)",
+            "padding": "8px 15px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "switch": [
+          {
+            "text": "",
+            "box": [
+              270,
+              207,
+              40,
+              20
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "14px",
+              "400",
+              "22px"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgb(220, 223, 230)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "message": [],
+        "tooltip": [],
+        "numberInput": [
+          {
+            "text": "",
+            "box": [
+              285,
+              252,
+              93,
+              30
+            ],
+            "font": [
+              "Arial",
+              "14px",
+              "400",
+              "14px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "unitText": [
+          {
+            "text": "天",
+            "box": [
+              440,
+              255,
+              56,
+              24
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "14px",
+              "400",
+              "24px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "alertText": [
+          {
+            "text": "每次执行与「全量同步」按钮完全相同（操作人记为 system）；金蝶失败时快照保持不动，下个周期再试。",
+            "box": [
+              176,
+              445,
+              416,
+              48
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "14px",
+              "400",
+              "24px"
+            ],
+            "color": "rgb(144, 147, 153)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "messageText": [],
+        "detailTitle": [
+          {
+            "text": "CMP-TOOLTIP-LONG-ORDER-00000051 的物料明细\n去生成",
+            "box": [
+              105,
+              1136.59375,
+              622,
+              24
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "15px",
+              "600",
+              "normal"
+            ],
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "detailButton": [
+          {
+            "text": "去生成",
+            "box": [
+              667,
+              1136.59375,
+              60,
+              24
+            ],
+            "font": [
+              "Arial",
+              "12px",
+              "500",
+              "12px"
+            ],
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(30, 74, 138)",
+            "padding": "5px 11px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "details": [
+          {
+            "text": "PI",
+            "box": [
+              106.5,
+              1174.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PI-TOOLTIP-00000000000000000051",
+            "box": [
+              223.703125,
+              1174.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO",
+            "box": [
+              106.5,
+              1206.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "PO-TOOLTIP-51",
+            "box": [
+              223.703125,
+              1206.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "客户编码",
+            "box": [
+              106.5,
+              1238.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "CMP-CUSTOMER-WITH-LONG-CODE-000051",
+            "box": [
+              223.703125,
+              1238.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "工厂",
+            "box": [
+              106.5,
+              1270.09375,
+              117.203125,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "700",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgb(245, 247, 250)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "比较测试未建档长名称工厂 第五十一阶段（—）",
+            "box": [
+              223.703125,
+              1270.09375,
+              501.796875,
+              32
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(48, 49, 51)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 7px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ],
+        "lineCells": [
+          {
+            "text": "1",
+            "box": [
+              105,
+              1347.59375,
+              88.328125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-1",
+            "box": [
+              193.328125,
+              1347.59375,
+              184.015625,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              377.34375,
+              1347.59375,
+              220.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              598.171875,
+              1347.59375,
+              128.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "2",
+            "box": [
+              105,
+              1402.59375,
+              88.328125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "MAT-LONG-51-2",
+            "box": [
+              193.328125,
+              1402.59375,
+              184.015625,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "用于核对完整悬浮提示的生产物料名称 第五十一阶段\n需求单据号 SD-TOOLTIP-00000000000000000051",
+            "box": [
+              377.34375,
+              1402.59375,
+              220.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 0px",
+            "shadow": "none",
+            "filter": "none"
+          },
+          {
+            "text": "1",
+            "box": [
+              598.171875,
+              1402.59375,
+              128.828125,
+              55
+            ],
+            "font": [
+              "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+              "12px",
+              "400",
+              "23px"
+            ],
+            "color": "rgb(96, 98, 102)",
+            "background": "rgba(0, 0, 0, 0)",
+            "padding": "4px 8px",
+            "shadow": "none",
+            "filter": "none"
+          }
+        ]
+      },
+      "mainScroll": 0,
+      "focus": {
+        "tag": "DIV",
+        "text": "定时全量同步设置开启同步间隔天最短 10 分钟，最长 7 天；保存后从现在起算下次执行时间最近一次2026-10-09 16:26:45 成功：3 张单据，4 行最近修改audit20261009520004 · 2026-10-09 19"
+      },
+      "tooltips": [],
+      "message": [],
+      "amount": "1",
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "owner_id": 90020261009520000,
+          "last_run_id": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "last_run_at": "2026-10-09 08:26:45.775734",
+          "lease_until": null,
+          "last_state": "SUCCESS",
+          "last_error_code": null,
+          "last_bills": 3,
+          "last_rows": 4,
+          "updated_at": "2026-10-09 11:02:50.184381",
+          "last_ok": 1,
+          "last_error_message": ""
+        }
+      ]
+    }
+  ],
+  "writes": [],
+  "errors": []
+}

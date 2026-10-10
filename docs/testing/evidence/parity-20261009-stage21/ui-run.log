@@ -1,0 +1,29 @@
+
+Running 18 tests using 1 worker
+
+(node:36420) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [prototype] › e2e\parity\acquire-print.spec.ts:201:1 › P09 single take and print: cancel, focus, material filtering, automatic XLSX and stable reload (12.2s)
+  ok  2 [prototype] › e2e\parity\acquire-print.spec.ts:315:1 › P09 paged history: current detail 50+1 rows, print status, eleven histories and filter reset (20.9s)
+  ok  3 [prototype] › e2e\parity\acquire-print.spec.ts:466:1 › P09 bulk print continues when one selected PI was printed in another browser page (8.7s)
+  ok  4 [prototype] › e2e\parity\acquire-print.spec.ts:516:1 › P09 factory cross-PI read-only and query-role controls preserve state (9.9s)
+  ok  5 [prototype] › e2e\parity\acquire-print.spec.ts:576:1 › P09 transferred print: real factory round trip, current batch details and historical files (57.2s)
+  ok  6 [prototype] › e2e\parity\acquire-print.spec.ts:828:1 › P09 two-PI bulk take and print: independent requests, per-PI files and focus history (8.9s)
+  ok  7 [prototype] › e2e\parity\acquire-print.spec.ts:877:3 › P09 download failure zh-CN: bulk succeeds, history retries without reprint and narrow detail (20.0s)
+  ok  8 [prototype] › e2e\parity\acquire-print.spec.ts:877:3 › P09 download failure en: bulk succeeds, history retries without reprint and narrow detail (21.0s)
+  ok  9 [prototype] › e2e\parity\acquire-print.spec.ts:877:3 › P09 download failure vi: bulk succeeds, history retries without reprint and narrow detail (21.0s)
+(node:43580) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 10 [migration] › e2e\parity\acquire-print.spec.ts:201:1 › P09 single take and print: cancel, focus, material filtering, automatic XLSX and stable reload (25.2s)
+  ok 11 [migration] › e2e\parity\acquire-print.spec.ts:315:1 › P09 paged history: current detail 50+1 rows, print status, eleven histories and filter reset (1.2m)
+  ok 12 [migration] › e2e\parity\acquire-print.spec.ts:466:1 › P09 bulk print continues when one selected PI was printed in another browser page (22.1s)
+  ok 13 [migration] › e2e\parity\acquire-print.spec.ts:516:1 › P09 factory cross-PI read-only and query-role controls preserve state (37.2s)
+  ok 14 [migration] › e2e\parity\acquire-print.spec.ts:576:1 › P09 transferred print: real factory round trip, current batch details and historical files (1.1m)
+  ok 15 [migration] › e2e\parity\acquire-print.spec.ts:828:1 › P09 two-PI bulk take and print: independent requests, per-PI files and focus history (22.9s)
+  ok 16 [migration] › e2e\parity\acquire-print.spec.ts:877:3 › P09 download failure zh-CN: bulk succeeds, history retries without reprint and narrow detail (34.0s)
+  ok 17 [migration] › e2e\parity\acquire-print.spec.ts:877:3 › P09 download failure en: bulk succeeds, history retries without reprint and narrow detail (35.3s)
+  ok 18 [migration] › e2e\parity\acquire-print.spec.ts:877:3 › P09 download failure vi: bulk succeeds, history retries without reprint and narrow detail (34.7s)
+
+  Slow test file: [migration] › e2e\parity\acquire-print.spec.ts (5.9m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  18 passed (8.9m)

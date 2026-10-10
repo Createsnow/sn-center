@@ -1,0 +1,13 @@
+
+Running 4 tests using 1 worker
+
+(node:21100) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\factory-identity.spec.ts:9:1 › P14 organization changes: snapshot name, manual factory, changed ID/code, rename and directory filters (22.2s)
+  ok 2 [prototype] › e2e\parity\order-transactions.spec.ts:9:1 › P05 full sync commits factories separately and continues after factory write/audit failures (25.3s)
+(node:33912) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 [migration] › e2e\parity\factory-identity.spec.ts:9:1 › P14 organization changes: snapshot name, manual factory, changed ID/code, rename and directory filters (22.9s)
+  ok 4 [migration] › e2e\parity\order-transactions.spec.ts:9:1 › P05 full sync commits factories separately and continues after factory write/audit failures (27.3s)
+
+  4 passed (1.7m)

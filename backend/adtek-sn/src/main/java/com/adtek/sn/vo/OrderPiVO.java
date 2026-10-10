@@ -2,7 +2,7 @@ package com.adtek.sn.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** PI候选汇总；仅当前可见有效订单，历史分录累计不丢失，整数额度不抵扣其他分录。 */
+/** PI候选汇总；仅当前可见有效订单，按整单历史累计计算余额后再汇总，不跨订单抵扣。 */
 @Schema(
         requiredProperties = {
             "pi",
@@ -11,7 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
             "generatedQty",
             "allocatedQty",
             "pendingQuantity",
-            "quota"
+            "quota",
+            "customer"
         })
 public record OrderPiVO(
         String pi,
@@ -20,4 +21,5 @@ public record OrderPiVO(
         String generatedQty,
         String allocatedQty,
         String pendingQuantity,
-        String quota) {}
+        String quota,
+        String customer) {}

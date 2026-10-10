@@ -1,0 +1,88 @@
+
+Running 2 tests using 1 worker
+
+(node:17112) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  x  1 [prototype] › e2e\parity\final-functional.spec.ts:10:1 › P01-P04 P08 P13-P14 functional closure through actual pages (5.9s)
+(node:48296) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  x  2 [migration] › e2e\parity\final-functional.spec.ts:10:1 › P01-P04 P08 P13-P14 functional closure through actual pages (7.0s)
+
+
+  1) [prototype] › e2e\parity\final-functional.spec.ts:10:1 › P01-P04 P08 P13-P14 functional closure through actual pages 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Array [
+        Object {
+          "factory": "CMP-A",
+          "pi": "CMP-FINAL-20261009540004",
+          "sn": "F20261009540004-ONE",
+    -     "status": "TO_ACQUIRE",
+    +     "status": "PRINTED",
+        },
+        Object {
+          "factory": "CMP-A",
+          "pi": "CMP-FINAL-20261009540004",
+          "sn": "F20261009540004-TWO",
+    -     "status": "TO_ACQUIRE",
+    +     "status": "PRINTED",
+        },
+      ]
+
+      81 |       }))
+      82 |       .sort((a, b) => String(a.sn).localeCompare(String(b.sn)));
+    > 83 |     expect(members).toEqual(sns.map((sn) => ({ sn, pi, factory: 'CMP-A', status: 'TO_ACQUIRE' })));
+         |                     ^
+      84 |     await expect(rows()).toHaveCount(2);
+      85 |     facts.push({ stage: 'imported-members', members });
+      86 |   };
+        at queryImported (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\final-functional.spec.ts:83:21)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\final-functional.spec.ts:155:5
+
+    Error Context: test-results\stage54-functional2\final-functional-P01-P04-P-10461-losure-through-actual-pages-prototype\error-context.md
+
+  2) [migration] › e2e\parity\final-functional.spec.ts:10:1 › P01-P04 P08 P13-P14 functional closure through actual pages 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Array [
+        Object {
+          "factory": "CMP-A",
+          "pi": "CMP-FINAL-20261009540004",
+          "sn": "F20261009540004-ONE",
+    -     "status": "TO_ACQUIRE",
+    +     "status": "PRINTED",
+        },
+        Object {
+          "factory": "CMP-A",
+          "pi": "CMP-FINAL-20261009540004",
+          "sn": "F20261009540004-TWO",
+    -     "status": "TO_ACQUIRE",
+    +     "status": "PRINTED",
+        },
+      ]
+
+      81 |       }))
+      82 |       .sort((a, b) => String(a.sn).localeCompare(String(b.sn)));
+    > 83 |     expect(members).toEqual(sns.map((sn) => ({ sn, pi, factory: 'CMP-A', status: 'TO_ACQUIRE' })));
+         |                     ^
+      84 |     await expect(rows()).toHaveCount(2);
+      85 |     facts.push({ stage: 'imported-members', members });
+      86 |   };
+        at queryImported (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\final-functional.spec.ts:83:21)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\final-functional.spec.ts:155:5
+
+    Error Context: test-results\stage54-functional2\final-functional-P01-P04-P-10461-losure-through-actual-pages-migration\error-context.md
+
+  2 failed
+    [prototype] › e2e\parity\final-functional.spec.ts:10:1 › P01-P04 P08 P13-P14 functional closure through actual pages 
+    [migration] › e2e\parity\final-functional.spec.ts:10:1 › P01-P04 P08 P13-P14 functional closure through actual pages 

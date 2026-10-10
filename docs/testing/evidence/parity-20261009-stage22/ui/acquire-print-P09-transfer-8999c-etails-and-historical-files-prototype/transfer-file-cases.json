@@ -1,0 +1,161 @@
+{
+  "identities": {
+    "original": {
+      "batchNo": "B202610090220281235",
+      "printNo": "P202610090220292526",
+      "quantity": 3,
+      "factory": "CMP-A"
+    },
+    "at-b": {
+      "batchNo": "B202610090220466618",
+      "printNo": "P202610090220464583",
+      "quantity": 1,
+      "factory": "CMP-B"
+    },
+    "returned": {
+      "batchNo": "B202610090221088153",
+      "printNo": "P202610090221093029",
+      "quantity": 3,
+      "factory": "CMP-A"
+    }
+  },
+  "fileCases": [
+    {
+      "name": "original-automatic.xlsx",
+      "identity": "original",
+      "sns": [
+        "A17A00001",
+        "A17A00002",
+        "A17A00003"
+      ]
+    },
+    {
+      "name": "01-original-original.csv",
+      "identity": "original",
+      "sns": [
+        "A17A00001",
+        "A17A00002",
+        "A17A00003"
+      ]
+    },
+    {
+      "name": "01-original-original.xlsx",
+      "identity": "original",
+      "sns": [
+        "A17A00001",
+        "A17A00002",
+        "A17A00003"
+      ]
+    },
+    {
+      "name": "02-partial-original.csv",
+      "identity": "original",
+      "sns": [
+        "A17A00002",
+        "A17A00003"
+      ]
+    },
+    {
+      "name": "02-partial-original.xlsx",
+      "identity": "original",
+      "sns": [
+        "A17A00002",
+        "A17A00003"
+      ]
+    },
+    {
+      "name": "at-b-automatic.xlsx",
+      "identity": "at-b",
+      "sns": [
+        "A17A00001"
+      ]
+    },
+    {
+      "name": "03-reacquired-original.csv",
+      "identity": "original",
+      "sns": [
+        "A17A00002",
+        "A17A00003"
+      ]
+    },
+    {
+      "name": "03-reacquired-original.xlsx",
+      "identity": "original",
+      "sns": [
+        "A17A00002",
+        "A17A00003"
+      ]
+    },
+    {
+      "name": "03-at-b-at-b.csv",
+      "identity": "at-b",
+      "sns": [
+        "A17A00001"
+      ]
+    },
+    {
+      "name": "03-at-b-at-b.xlsx",
+      "identity": "at-b",
+      "sns": [
+        "A17A00001"
+      ]
+    },
+    {
+      "name": "04-all-out-original.csv",
+      "identity": "original",
+      "sns": []
+    },
+    {
+      "name": "04-all-out-original.xlsx",
+      "identity": "original",
+      "sns": []
+    },
+    {
+      "name": "returned-automatic.xlsx",
+      "identity": "returned",
+      "sns": [
+        "A17A00001",
+        "A17A00002",
+        "A17A00003"
+      ]
+    },
+    {
+      "name": "05-returned-old-original.csv",
+      "identity": "original",
+      "sns": []
+    },
+    {
+      "name": "05-returned-old-original.xlsx",
+      "identity": "original",
+      "sns": []
+    },
+    {
+      "name": "06-returned-b-at-b.csv",
+      "identity": "at-b",
+      "sns": []
+    },
+    {
+      "name": "06-returned-b-at-b.xlsx",
+      "identity": "at-b",
+      "sns": []
+    },
+    {
+      "name": "07-returned-new-returned.csv",
+      "identity": "returned",
+      "sns": [
+        "A17A00001",
+        "A17A00002",
+        "A17A00003"
+      ]
+    },
+    {
+      "name": "07-returned-new-returned.xlsx",
+      "identity": "returned",
+      "sns": [
+        "A17A00001",
+        "A17A00002",
+        "A17A00003"
+      ]
+    }
+  ]
+}

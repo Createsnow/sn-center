@@ -1,0 +1,651 @@
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] adtek-platform-sn                                                  [pom]
+[INFO] adtek-common                                                       [jar]
+[INFO] adtek-framework                                                    [jar]
+[INFO] adtek-system                                                       [jar]
+[INFO] adtek-sn                                                           [jar]
+[INFO] adtek-integration                                                  [jar]
+[INFO] adtek-server                                                       [jar]
+[INFO] 
+[INFO] -----------------------< com.adtek:adtek-parent >-----------------------
+[INFO] Building adtek-platform-sn 0.1.0-SNAPSHOT                          [1/7]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- spotless:3.10.3:check (format-check) @ adtek-parent ---
+[INFO] Spotless.Pom is keeping 1 files clean - 0 needs changes to be clean, 0 were already clean, 1 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- checkstyle:3.6.0:check (mapper-line-length) @ adtek-parent ---
+[INFO] ��ʼ��顭��
+�����ɡ�
+[INFO] You have 0 Checkstyle violations.
+[INFO] 
+[INFO] --- enforcer:3.6.2:enforce (baseline) @ adtek-parent ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.version.RequireJavaVersion passed
+[INFO] Rule 1: org.apache.maven.enforcer.rules.version.RequireMavenVersion passed
+[INFO] Rule 2: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- failsafe:3.5.6:integration-test (default) @ adtek-parent ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- failsafe:3.5.6:verify (default) @ adtek-parent ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] -----------------------< com.adtek:adtek-common >-----------------------
+[INFO] Building adtek-common 0.1.0-SNAPSHOT                               [2/7]
+[INFO]   from adtek-common\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- spotless:3.10.3:check (format-check) @ adtek-common ---
+[INFO] Spotless.Java is keeping 17 files clean - 0 needs changes to be clean, 0 were already clean, 17 were skipped because caching determined they were already clean
+[INFO] Spotless.Pom is keeping 1 files clean - 0 needs changes to be clean, 0 were already clean, 1 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- checkstyle:3.6.0:check (mapper-line-length) @ adtek-common ---
+[INFO] ��ʼ��顭��
+�����ɡ�
+[INFO] You have 0 Checkstyle violations.
+[INFO] 
+[INFO] --- enforcer:3.6.2:enforce (baseline) @ adtek-common ---
+[INFO] Rule 2: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- enforcer:3.6.2:enforce (module-boundaries) @ adtek-common ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ adtek-common ---
+[INFO] skip non existing resourceDirectory D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-common\src\main\resources
+[INFO] skip non existing resourceDirectory D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-common\src\main\resources
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ adtek-common ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ adtek-common ---
+[INFO] skip non existing resourceDirectory D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-common\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ adtek-common ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ adtek-common ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.adtek.common.core.DataScopeTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.067 s -- in com.adtek.common.core.DataScopeTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.1:jar (default-jar) @ adtek-common ---
+[INFO] 
+[INFO] --- failsafe:3.5.6:integration-test (default) @ adtek-common ---
+[INFO] 
+[INFO] --- failsafe:3.5.6:verify (default) @ adtek-common ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] ---------------------< com.adtek:adtek-framework >----------------------
+[INFO] Building adtek-framework 0.1.0-SNAPSHOT                            [3/7]
+[INFO]   from adtek-framework\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- spotless:3.10.3:check (format-check) @ adtek-framework ---
+[INFO] Spotless.Java is keeping 82 files clean - 0 needs changes to be clean, 0 were already clean, 82 were skipped because caching determined they were already clean
+[INFO] Spotless.Pom is keeping 1 files clean - 0 needs changes to be clean, 0 were already clean, 1 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- checkstyle:3.6.0:check (mapper-line-length) @ adtek-framework ---
+[INFO] ��ʼ��顭��
+�����ɡ�
+[INFO] You have 0 Checkstyle violations.
+[INFO] 
+[INFO] --- enforcer:3.6.2:enforce (baseline) @ adtek-framework ---
+[INFO] Rule 2: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- enforcer:3.6.2:enforce (module-boundaries) @ adtek-framework ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ adtek-framework ---
+[INFO] skip non existing resourceDirectory D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-framework\src\main\resources
+[INFO] skip non existing resourceDirectory D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-framework\src\main\resources
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ adtek-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ adtek-framework ---
+[INFO] skip non existing resourceDirectory D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-framework\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ adtek-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ adtek-framework ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.adtek.framework.audit.AuditContextTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.093 s -- in com.adtek.framework.audit.AuditContextTest
+[INFO] Running com.adtek.framework.audit.RequestFailureAuditFilterTest
+03:34:04.362 [main] WARN com.adtek.framework.audit.RequestFailureAuditFilter -- Request failure audit unavailable traceId=test-trace exceptionType=IllegalStateException
+03:34:04.365 [main] WARN com.adtek.framework.audit.RequestFailureAuditFilter -- Request failure audit unavailable traceId=test-trace exceptionType=IllegalStateException
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.113 s -- in com.adtek.framework.audit.RequestFailureAuditFilterTest
+[INFO] Running com.adtek.framework.mybatis.ScopedDataPermissionInterceptorTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.136 s -- in com.adtek.framework.mybatis.ScopedDataPermissionInterceptorTest
+[INFO] Running com.adtek.framework.security.CurrentActorTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.010 s -- in com.adtek.framework.security.CurrentActorTest
+[INFO] Running com.adtek.framework.security.JwtTokenCodecTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.137 s -- in com.adtek.framework.security.JwtTokenCodecTest
+[INFO] Running com.adtek.framework.security.PasswordEncodingTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.315 s -- in com.adtek.framework.security.PasswordEncodingTest
+[INFO] Running com.adtek.framework.security.RedisFailureTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\.tools\m2\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.744 s -- in com.adtek.framework.security.RedisFailureTest
+[INFO] Running com.adtek.framework.task.FileStorageTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.319 s -- in com.adtek.framework.task.FileStorageTest
+[INFO] Running com.adtek.framework.web.LegacyBoundaryTest
+03:34:06.568 [main] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 9.1.3.Final
+03:34:06.939 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+03:34:06.939 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+03:34:06.943 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 2 ms
+03:34:07.087 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+03:34:07.087 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+03:34:07.087 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+03:34:07.116 [main] ERROR com.adtek.framework.web.GlobalExceptionHandler -- Unhandled request failure, traceId=
+org.springframework.dao.DataIntegrityViolationException: SENSITIVE_ROW
+	at com.adtek.framework.web.LegacyBoundaryTest$Fixture.get(LegacyBoundaryTest.java:18)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:252)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:184)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:117)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:934)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:853)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:86)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:866)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1000)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:892)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:622)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:874)
+	at org.springframework.test.web.servlet.TestDispatcherServlet.service(TestDispatcherServlet.java:72)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:710)
+	at org.springframework.mock.web.MockFilterChain$ServletFilterProxy.doFilter(MockFilterChain.java:160)
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:127)
+	at org.springframework.test.web.servlet.MockMvc.perform(MockMvc.java:199)
+	at com.adtek.framework.web.LegacyBoundaryTest.lockAndUniqueConflictKeep409ButCheckConstraintIsNotRetryAdvice(LegacyBoundaryTest.java:43)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:701)
+	at org.junit.platform.commons.support.ReflectionSupport.invokeMethod(ReflectionSupport.java:502)
+	at org.junit.jupiter.engine.support.MethodReflectionUtils.invoke(MethodReflectionUtils.java:45)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:61)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:124)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:163)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:148)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:123)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:105)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:99)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:66)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:47)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:39)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:104)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:98)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invokeVoid(InterceptingExecutableInvoker.java:71)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$0(TestMethodTestDescriptor.java:219)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:215)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:157)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:70)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:176)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:36)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:52)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.executeEngine(EngineExecutionOrchestrator.java:246)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.failOrExecuteEngine(EngineExecutionOrchestrator.java:218)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:179)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:108)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:66)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:157)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:65)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:125)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:114)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:58)
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$2(InterceptingLauncher.java:57)
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25)
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:56)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:58)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray(ReflectionUtils.java:125)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithCancellationToken(LauncherAdapter.java:68)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:54)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:203)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:168)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:136)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.058 s -- in com.adtek.framework.web.LegacyBoundaryTest
+[INFO] Running com.adtek.framework.web.ResultSerializationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.018 s -- in com.adtek.framework.web.ResultSerializationTest
+[INFO] Running com.adtek.framework.web.TraceFilterTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.adtek.framework.web.TraceFilterTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 34, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.1:jar (default-jar) @ adtek-framework ---
+[INFO] 
+[INFO] --- failsafe:3.5.6:integration-test (default) @ adtek-framework ---
+[INFO] 
+[INFO] --- failsafe:3.5.6:verify (default) @ adtek-framework ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] -----------------------< com.adtek:adtek-system >-----------------------
+[INFO] Building adtek-system 0.1.0-SNAPSHOT                               [4/7]
+[INFO]   from adtek-system\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- spotless:3.10.3:check (format-check) @ adtek-system ---
+[INFO] Spotless.Java is keeping 108 files clean - 0 needs changes to be clean, 0 were already clean, 108 were skipped because caching determined they were already clean
+[INFO] Spotless.Pom is keeping 1 files clean - 0 needs changes to be clean, 0 were already clean, 1 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- checkstyle:3.6.0:check (mapper-line-length) @ adtek-system ---
+[INFO] ��ʼ��顭��
+�����ɡ�
+[INFO] You have 0 Checkstyle violations.
+[INFO] 
+[INFO] --- enforcer:3.6.2:enforce (baseline) @ adtek-system ---
+[INFO] Rule 2: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- enforcer:3.6.2:enforce (module-boundaries) @ adtek-system ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ adtek-system ---
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ adtek-system ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ adtek-system ---
+[INFO] skip non existing resourceDirectory D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-system\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ adtek-system ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ adtek-system ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- jar:3.5.1:jar (default-jar) @ adtek-system ---
+[INFO] 
+[INFO] --- failsafe:3.5.6:integration-test (default) @ adtek-system ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- failsafe:3.5.6:verify (default) @ adtek-system ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] -------------------------< com.adtek:adtek-sn >-------------------------
+[INFO] Building adtek-sn 0.1.0-SNAPSHOT                                   [5/7]
+[INFO]   from adtek-sn\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- spotless:3.10.3:check (format-check) @ adtek-sn ---
+[INFO] Spotless.Java is keeping 250 files clean - 0 needs changes to be clean, 0 were already clean, 250 were skipped because caching determined they were already clean
+[INFO] Spotless.Pom is keeping 1 files clean - 0 needs changes to be clean, 0 were already clean, 1 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- checkstyle:3.6.0:check (mapper-line-length) @ adtek-sn ---
+[INFO] ��ʼ��顭��
+�����ɡ�
+[INFO] You have 0 Checkstyle violations.
+[INFO] 
+[INFO] --- enforcer:3.6.2:enforce (baseline) @ adtek-sn ---
+[INFO] Rule 2: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- enforcer:3.6.2:enforce (module-boundaries) @ adtek-sn ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ adtek-sn ---
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ adtek-sn ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 246 source files with javac [debug parameters release 21] to target\classes
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ adtek-sn ---
+[INFO] skip non existing resourceDirectory D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-sn\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ adtek-sn ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 4 source files with javac [debug parameters release 21] to target\test-classes
+[WARNING] ����ѡ��δ���κδ�������ʶ��: '[mapstruct.unmappedTargetPolicy, mapstruct.defaultComponentModel]'
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ adtek-sn ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.adtek.sn.service.support.InitializationErrorsTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.222 s -- in com.adtek.sn.service.support.InitializationErrorsTest
+[INFO] Running com.adtek.sn.service.support.PrintFilesTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.616 s -- in com.adtek.sn.service.support.PrintFilesTest
+[INFO] Running com.adtek.sn.service.support.SequenceCodecTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.059 s -- in com.adtek.sn.service.support.SequenceCodecTest
+[INFO] Running com.adtek.sn.service.support.SnImportDigestTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.022 s -- in com.adtek.sn.service.support.SnImportDigestTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.1:jar (default-jar) @ adtek-sn ---
+[INFO] Building jar: D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-sn\target\adtek-sn-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- failsafe:3.5.6:integration-test (default) @ adtek-sn ---
+[INFO] 
+[INFO] --- failsafe:3.5.6:verify (default) @ adtek-sn ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --------------------< com.adtek:adtek-integration >---------------------
+[INFO] Building adtek-integration 0.1.0-SNAPSHOT                          [6/7]
+[INFO]   from adtek-integration\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- spotless:3.10.3:check (format-check) @ adtek-integration ---
+[INFO] Spotless.Java is keeping 7 files clean - 0 needs changes to be clean, 0 were already clean, 7 were skipped because caching determined they were already clean
+[INFO] Spotless.Pom is keeping 1 files clean - 0 needs changes to be clean, 0 were already clean, 1 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- checkstyle:3.6.0:check (mapper-line-length) @ adtek-integration ---
+[INFO] ��ʼ��顭��
+�����ɡ�
+[INFO] You have 0 Checkstyle violations.
+[INFO] 
+[INFO] --- enforcer:3.6.2:enforce (baseline) @ adtek-integration ---
+[INFO] Rule 2: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- enforcer:3.6.2:enforce (module-boundaries) @ adtek-integration ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ adtek-integration ---
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ adtek-integration ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 7 source files with javac [debug parameters release 21] to target\classes
+[WARNING] ����ѡ��δ���κδ�������ʶ��: '[mapstruct.unmappedTargetPolicy, mapstruct.defaultComponentModel]'
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ adtek-integration ---
+[INFO] skip non existing resourceDirectory D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-integration\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ adtek-integration ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ adtek-integration ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- jar:3.5.1:jar (default-jar) @ adtek-integration ---
+[INFO] Building jar: D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-integration\target\adtek-integration-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- failsafe:3.5.6:integration-test (default) @ adtek-integration ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- failsafe:3.5.6:verify (default) @ adtek-integration ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] -----------------------< com.adtek:adtek-server >-----------------------
+[INFO] Building adtek-server 0.1.0-SNAPSHOT                               [7/7]
+[INFO]   from adtek-server\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- spotless:3.10.3:check (format-check) @ adtek-server ---
+[INFO] Spotless.Java is keeping 43 files clean - 0 needs changes to be clean, 0 were already clean, 43 were skipped because caching determined they were already clean
+[INFO] Spotless.Pom is keeping 1 files clean - 0 needs changes to be clean, 0 were already clean, 1 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- checkstyle:3.6.0:check (mapper-line-length) @ adtek-server ---
+[INFO] ��ʼ��顭��
+�����ɡ�
+[INFO] You have 0 Checkstyle violations.
+[INFO] 
+[INFO] --- enforcer:3.6.2:enforce (baseline) @ adtek-server ---
+[INFO] Rule 2: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ adtek-server ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] Copying 32 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ adtek-server ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 12 source files with javac [debug parameters release 21] to target\classes
+[WARNING] ����ѡ��δ���κδ�������ʶ��: '[mapstruct.unmappedTargetPolicy, mapstruct.defaultComponentModel]'
+[INFO] /D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/backend/adtek-server/src/main/java/com/adtek/server/OpenApiConfiguration.java: D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-server\src\main\java\com\adtek\server\OpenApiConfiguration.javaʹ����δ�����򲻰�ȫ�Ĳ�����
+[INFO] /D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/backend/adtek-server/src/main/java/com/adtek/server/OpenApiConfiguration.java: �й���ϸ��Ϣ, ��ʹ�� -Xlint:unchecked ���±��롣
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ adtek-server ---
+[INFO] Copying 2 resources from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ adtek-server ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 31 source files with javac [debug parameters release 21] to target\test-classes
+[WARNING] ����ѡ��δ���κδ�������ʶ��: '[mapstruct.unmappedTargetPolicy, mapstruct.defaultComponentModel]'
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ adtek-server ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.adtek.server.ArchitectureTest
+03:34:18.553 [main] INFO com.tngtech.archunit.core.PluginLoader -- Detected Java version 21.0.12.1
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.065 s -- in com.adtek.server.ArchitectureTest
+[INFO] Running com.adtek.server.ArchiveRestoreProofTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.837 s -- in com.adtek.server.ArchiveRestoreProofTest
+[INFO] Running com.adtek.server.AuditProjectionTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 s -- in com.adtek.server.AuditProjectionTest
+[INFO] Running com.adtek.server.ErrorCodeCatalogTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.562 s -- in com.adtek.server.ErrorCodeCatalogTest
+[INFO] Running com.adtek.server.K3ConfigurationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.685 s -- in com.adtek.server.K3ConfigurationTest
+[INFO] Running com.adtek.server.K3ErrorsTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.227 s -- in com.adtek.server.K3ErrorsTest
+[INFO] Running com.adtek.server.K3LegacyProtocolTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.038 s -- in com.adtek.server.K3LegacyProtocolTest
+[INFO] Running com.adtek.server.LegacyErrorCatalogTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.019 s -- in com.adtek.server.LegacyErrorCatalogTest
+[INFO] Running com.adtek.server.MaintenanceScheduleTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.020 s -- in com.adtek.server.MaintenanceScheduleTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 26, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.1:jar (default-jar) @ adtek-server ---
+[INFO] Building jar: D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-server\target\adtek-server-acceptance.jar
+[INFO] 
+[INFO] --- spring-boot:4.1.1:repackage (repackage) @ adtek-server ---
+[INFO] Replacing main artifact D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-server\target\adtek-server-acceptance.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-server\target\adtek-server-acceptance.jar.original
+[INFO] 
+[INFO] --- failsafe:3.5.6:integration-test (default) @ adtek-server ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.adtek.server.SnTransferIT
+03:34:27.558 [main] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+03:34:27.561 [main] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+03:34:27.568 [main] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 2.0.5
+03:34:27.721 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+03:34:28.033 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Npipe socket (npipe:////./pipe/docker_engine)
+03:34:28.034 [main] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+03:34:28.049 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 29.8.1
+  API Version: 1.56
+  Operating System: Docker Desktop
+  Total Memory: 15687 MB
+  Labels: 
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+03:34:28.107 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Creating container for image: testcontainers/ryuk:0.14.0
+03:34:28.432 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 is starting: 7e17d8e445187f7f7a295808f6fde93009ac1ecd491a47a7b00dbd17d0e266b6
+03:34:28.691 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 started in PT0.5839192S
+03:34:28.699 [main] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+03:34:28.699 [main] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+03:34:28.699 [main] INFO org.testcontainers.DockerClientFactory -- ?? Docker server version should be at least 1.6.0
+03:34:28.700 [main] INFO tc.mysql:8.4.11 -- Creating container for image: mysql:8.4.11
+03:34:28.752 [main] INFO tc.mysql:8.4.11 -- Container mysql:8.4.11 is starting: 82b7d8ede418d81aa953da430ccc65eeafdebbeb983b1c14c6dd6fd54f823cbb
+03:34:28.918 [main] INFO tc.mysql:8.4.11 -- Waiting for database connection to become available at jdbc:mysql://localhost:49957/adtek_sn_stage6_transfer_it using query 'SELECT 1'
+03:34:36.844 [main] INFO tc.mysql:8.4.11 -- Container mysql:8.4.11 started in PT8.1440231S
+03:34:36.844 [main] INFO tc.mysql:8.4.11 -- Container is started (JDBC URL: jdbc:mysql://localhost:49957/adtek_sn_stage6_transfer_it)
+03:34:36.845 [main] INFO tc.redis:8.4.7-alpine -- Creating container for image: redis:8.4.7-alpine
+03:34:36.888 [main] INFO tc.redis:8.4.7-alpine -- Container redis:8.4.7-alpine is starting: 7c3a705b8266eddff9740a9a38c34d7682c4ed1c3e355a5550a47865d57d9d78
+03:34:37.110 [main] INFO tc.redis:8.4.7-alpine -- Container redis:8.4.7-alpine started in PT0.2651036S
+03:34:37.198 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.adtek.server.SnTransferIT]: SnTransferIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+03:34:37.291 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.adtek.server.AdtekApplication for test class com.adtek.server.SnTransferIT
+03:34:37.347 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.adtek.server.SnTransferIT]: SnTransferIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+03:34:37.349 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.adtek.server.AdtekApplication for test class com.adtek.server.SnTransferIT
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.1)
+
+2026-10-09T03:34:37.634+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] com.adtek.server.SnTransferIT            : Starting SnTransferIT using Java 21.0.12.1 with PID 25784 (started by 58671 in D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-server)
+2026-10-09T03:34:37.636+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] com.adtek.server.SnTransferIT            : The following 1 profile is active: "integration-test"
+2026-10-09T03:34:38.774+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-10-09T03:34:38.784+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-10-09T03:34:38.817+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 14 ms. Found 0 Redis repository interfaces.
+2026-10-09T03:34:39.961+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 0 (http)
+2026-10-09T03:34:39.976+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-09T03:34:39.976+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.24]
+2026-10-09T03:34:40.030+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 2373 ms
+2026-10-09T03:34:41.199+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:mysql://localhost:49957/adtek_sn_stage6_transfer_it (MySQL 8.4)
+2026-10-09T03:34:41.346+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table `adtek_sn_stage6_transfer_it`.`flyway_schema_history` does not exist yet
+2026-10-09T03:34:41.351+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 32 migrations (execution time 00:00.035s)
+2026-10-09T03:34:41.378+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table `adtek_sn_stage6_transfer_it`.`flyway_schema_history` ...
+2026-10-09T03:34:41.446+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema `adtek_sn_stage6_transfer_it`: << Empty Schema >>
+2026-10-09T03:34:41.459+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "1 - system foundation"
+2026-10-09T03:34:41.621+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "2 - identity authorization and audit"
+2026-10-09T03:34:41.981+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "3 - user management audit"
+2026-10-09T03:34:42.078+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "4 - system configuration"
+2026-10-09T03:34:42.199+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "5 - audit query and request failures"
+2026-10-09T03:34:42.257+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "6 - durable operations tasks and files"
+2026-10-09T03:34:42.403+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "7 - sn factories orders and rules"
+2026-10-09T03:34:42.652+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "8 - sn initialization generation allocation"
+2026-10-09T03:34:42.788+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "9 - sn acquisition print and service clients"
+2026-10-09T03:34:43.103+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "10 - sn transfers"
+2026-10-09T03:34:43.248+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "11 - sn query exports and dashboard"
+2026-10-09T03:34:43.303+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "12 - sn business audit"
+2026-10-09T03:34:43.534+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "13 - maintenance runs"
+2026-10-09T03:34:43.575+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "14 - legacy migration staging"
+2026-10-09T03:34:43.650+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "15 - legacy master data"
+2026-10-09T03:34:43.740+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "16 - legacy import inventory"
+2026-10-09T03:34:43.870+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "17 - exact erp planned quantity"
+2026-10-09T03:34:43.975+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "18 - order sync schedule"
+2026-10-09T03:34:44.057+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "19 - pi generation rule choice"
+2026-10-09T03:34:44.097+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "20 - query role transfer read"
+2026-10-09T03:34:44.117+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "21 - generation job display number"
+2026-10-09T03:34:44.154+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "22 - per line integer sn quantity"
+2026-10-09T03:34:44.180+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "23 - order schedule last result"
+2026-10-09T03:34:44.209+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "24 - rule version creator name"
+2026-10-09T03:34:44.261+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "25 - rule binary text semantics"
+2026-10-09T03:34:44.318+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "26 - sn work actor name"
+2026-10-09T03:34:44.372+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "27 - sn work failure parameters"
+2026-10-09T03:34:44.422+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "28 - bill generation identity"
+2026-10-09T03:34:44.467+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "29 - pending allocation generation order"
+2026-10-09T03:34:44.509+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "30 - initialization input chunks"
+2026-10-09T03:34:44.551+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "31 - print presentation and creation order"
+2026-10-09T03:34:44.703+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `adtek_sn_stage6_transfer_it` to version "32 - transfer display number and actor"
+2026-10-09T03:34:44.762+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 32 migrations to schema `adtek_sn_stage6_transfer_it`, now at version v32 (execution time 00:02.717s)
+2026-10-09T03:34:47.102+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] b.m.s.MybatisPlusApplicationContextAware : Register ApplicationContext instances org.springframework.boot.web.server.servlet.context.AnnotationConfigServletWebServerApplicationContext@37d6dddc
+2026-10-09T03:34:47.452+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-10-09T03:34:47.506+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 50103 (http) with context path '/'
+2026-10-09T03:34:47.514+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] com.adtek.server.SnTransferIT            : Started SnTransferIT in 10.123 seconds (process running for 20.78)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\.tools\m2\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+2026-10-09T03:34:48.019+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-09T03:34:48.045+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@5d947961
+2026-10-09T03:34:48.052+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-09T03:34:48.579+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [1-auto-1-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-09T03:34:48.579+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [1-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-10-09T03:34:48.581+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [1-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-10-09T03:35:10.924+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-10-09T03:35:10.925+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-10-09T03:35:10.954+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-10-09T03:35:10.955+08:00  INFO [traceId=] 25784 --- [adtek-platform-sn] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 44.25 s -- in com.adtek.server.SnTransferIT
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- failsafe:3.5.6:verify (default) @ adtek-server ---
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for adtek-platform-sn 0.1.0-SNAPSHOT:
+[INFO] 
+[INFO] adtek-platform-sn .................................. SUCCESS [  1.326 s]
+[INFO] adtek-common ....................................... SUCCESS [  1.524 s]
+[INFO] adtek-framework .................................... SUCCESS [  4.181 s]
+[INFO] adtek-system ....................................... SUCCESS [  0.218 s]
+[INFO] adtek-sn ........................................... SUCCESS [  7.008 s]
+[INFO] adtek-integration .................................. SUCCESS [  0.590 s]
+[INFO] adtek-server ....................................... SUCCESS [ 57.107 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  01:12 min
+[INFO] Finished at: 2026-10-09T03:35:12+08:00
+[INFO] ------------------------------------------------------------------------

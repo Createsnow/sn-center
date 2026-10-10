@@ -1,0 +1,280 @@
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] adtek-platform-sn                                                  [pom]
+[INFO] adtek-common                                                       [jar]
+[INFO] adtek-framework                                                    [jar]
+[INFO] adtek-system                                                       [jar]
+[INFO] adtek-sn                                                           [jar]
+[INFO] adtek-integration                                                  [jar]
+[INFO] adtek-server                                                       [jar]
+[INFO] 
+[INFO] -----------------------< com.adtek:adtek-parent >-----------------------
+[INFO] Building adtek-platform-sn 0.1.0-SNAPSHOT                          [1/7]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- spotless:3.10.3:apply (default-cli) @ adtek-parent ---
+[INFO] Spotless.Pom is keeping 1 files clean - 0 were changed to be clean, 0 were already clean, 1 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- checkstyle:3.6.0:check (default-cli) @ adtek-parent ---
+[INFO] ��ʼ��顭��
+�����ɡ�
+[INFO] You have 0 Checkstyle violations.
+[INFO] 
+[INFO] -----------------------< com.adtek:adtek-common >-----------------------
+[INFO] Building adtek-common 0.1.0-SNAPSHOT                               [2/7]
+[INFO]   from adtek-common\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- spotless:3.10.3:apply (default-cli) @ adtek-common ---
+[INFO] Spotless.Java is keeping 17 files clean - 0 were changed to be clean, 0 were already clean, 17 were skipped because caching determined they were already clean
+[INFO] Spotless.Pom is keeping 1 files clean - 0 were changed to be clean, 0 were already clean, 1 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- checkstyle:3.6.0:check (default-cli) @ adtek-common ---
+[INFO] ��ʼ��顭��
+�����ɡ�
+[INFO] You have 0 Checkstyle violations.
+[INFO] 
+[INFO] ---------------------< com.adtek:adtek-framework >----------------------
+[INFO] Building adtek-framework 0.1.0-SNAPSHOT                            [3/7]
+[INFO]   from adtek-framework\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- spotless:3.10.3:apply (default-cli) @ adtek-framework ---
+[INFO] Spotless.Java is keeping 82 files clean - 0 were changed to be clean, 0 were already clean, 82 were skipped because caching determined they were already clean
+[INFO] Spotless.Pom is keeping 1 files clean - 0 were changed to be clean, 0 were already clean, 1 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- checkstyle:3.6.0:check (default-cli) @ adtek-framework ---
+[INFO] ��ʼ��顭��
+�����ɡ�
+[INFO] You have 0 Checkstyle violations.
+[INFO] 
+[INFO] -----------------------< com.adtek:adtek-system >-----------------------
+[INFO] Building adtek-system 0.1.0-SNAPSHOT                               [4/7]
+[INFO]   from adtek-system\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- spotless:3.10.3:apply (default-cli) @ adtek-system ---
+[INFO] Spotless.Java is keeping 108 files clean - 0 were changed to be clean, 0 were already clean, 108 were skipped because caching determined they were already clean
+[INFO] Spotless.Pom is keeping 1 files clean - 0 were changed to be clean, 0 were already clean, 1 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- checkstyle:3.6.0:check (default-cli) @ adtek-system ---
+[INFO] ��ʼ��顭��
+�����ɡ�
+[INFO] You have 0 Checkstyle violations.
+[INFO] 
+[INFO] -------------------------< com.adtek:adtek-sn >-------------------------
+[INFO] Building adtek-sn 0.1.0-SNAPSHOT                                   [5/7]
+[INFO]   from adtek-sn\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- spotless:3.10.3:apply (default-cli) @ adtek-sn ---
+[INFO] Spotless.Java is keeping 250 files clean - 0 were changed to be clean, 0 were already clean, 250 were skipped because caching determined they were already clean
+[INFO] Spotless.Pom is keeping 1 files clean - 0 were changed to be clean, 0 were already clean, 1 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- checkstyle:3.6.0:check (default-cli) @ adtek-sn ---
+[INFO] ��ʼ��顭��
+�����ɡ�
+[INFO] You have 0 Checkstyle violations.
+[INFO] 
+[INFO] --------------------< com.adtek:adtek-integration >---------------------
+[INFO] Building adtek-integration 0.1.0-SNAPSHOT                          [6/7]
+[INFO]   from adtek-integration\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- spotless:3.10.3:apply (default-cli) @ adtek-integration ---
+[INFO] Spotless.Java is keeping 7 files clean - 0 were changed to be clean, 0 were already clean, 7 were skipped because caching determined they were already clean
+[INFO] Spotless.Pom is keeping 1 files clean - 0 were changed to be clean, 0 were already clean, 1 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- checkstyle:3.6.0:check (default-cli) @ adtek-integration ---
+[INFO] ��ʼ��顭��
+�����ɡ�
+[INFO] You have 0 Checkstyle violations.
+[INFO] 
+[INFO] -----------------------< com.adtek:adtek-server >-----------------------
+[INFO] Building adtek-server 0.1.0-SNAPSHOT                               [7/7]
+[INFO]   from adtek-server\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- spotless:3.10.3:apply (default-cli) @ adtek-server ---
+[INFO] Spotless.Java is keeping 43 files clean - 0 were changed to be clean, 0 were already clean, 43 were skipped because caching determined they were already clean
+[INFO] Spotless.Pom is keeping 1 files clean - 0 were changed to be clean, 0 were already clean, 1 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- checkstyle:3.6.0:check (default-cli) @ adtek-server ---
+[INFO] ��ʼ��顭��
+�����ɡ�
+[INFO] You have 0 Checkstyle violations.
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for adtek-platform-sn 0.1.0-SNAPSHOT:
+[INFO] 
+[INFO] adtek-platform-sn .................................. SUCCESS [  1.014 s]
+[INFO] adtek-common ....................................... SUCCESS [  0.035 s]
+[INFO] adtek-framework .................................... SUCCESS [  0.039 s]
+[INFO] adtek-system ....................................... SUCCESS [  0.046 s]
+[INFO] adtek-sn ........................................... SUCCESS [  0.055 s]
+[INFO] adtek-integration .................................. SUCCESS [  0.026 s]
+[INFO] adtek-server ....................................... SUCCESS [  0.030 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.613 s
+[INFO] Finished at: 2026-10-09T04:55:01+08:00
+[INFO] ------------------------------------------------------------------------
+
+> adtek-platform-sn-web@0.1.0 format D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> prettier --write .
+
+.prettierrc.json 12ms (unchanged)
+e2e/audit.spec.ts 48ms (unchanged)
+e2e/auth.spec.ts 23ms (unchanged)
+e2e/configuration.spec.ts 14ms (unchanged)
+e2e/container.spec.ts 18ms (unchanged)
+e2e/export.spec.ts 7ms (unchanged)
+e2e/parity/acquire-print.spec.ts 97ms (unchanged)
+e2e/parity/dashboard-roles.spec.ts 16ms (unchanged)
+e2e/parity/generation-identity.spec.ts 24ms (unchanged)
+e2e/parity/generation-picker.spec.ts 6ms (unchanged)
+e2e/parity/generation-quota.spec.ts 48ms (unchanged)
+e2e/parity/import-capacity.spec.ts 11ms (unchanged)
+e2e/parity/login-budget.ts 2ms (unchanged)
+e2e/parity/order-filters.spec.ts 14ms (unchanged)
+e2e/parity/order-sync.spec.ts 14ms (unchanged)
+e2e/parity/pi-initialization.spec.ts 38ms (unchanged)
+e2e/parity/rules.spec.ts 17ms (unchanged)
+e2e/parity/shell-orders.spec.ts 13ms (unchanged)
+e2e/parity/transfer-form.spec.ts 11ms (unchanged)
+e2e/parity/transfer-impact.spec.ts 14ms (unchanged)
+e2e/parity/transfer-layout.spec.ts 9ms (unchanged)
+e2e/parity/transfer-lifecycle.spec.ts 24ms (unchanged)
+e2e/parity/transfer-targets.spec.ts 13ms
+e2e/privacy.ts 4ms (unchanged)
+e2e/sn.spec.ts 47ms (unchanged)
+e2e/users.spec.ts 6ms (unchanged)
+eslint.config.js 4ms (unchanged)
+index.html 12ms (unchanged)
+package.json 1ms (unchanged)
+playwright.config.ts 2ms (unchanged)
+playwright.container.config.ts 1ms (unchanged)
+playwright.parity.config.ts 1ms (unchanged)
+playwright.users.config.ts 1ms (unchanged)
+pnpm-workspace.yaml 7ms (unchanged)
+src/api/audit.test.ts 2ms (unchanged)
+src/api/audit.ts 5ms (unchanged)
+src/api/catalog.test.ts 3ms (unchanged)
+src/api/catalog.ts 2ms (unchanged)
+src/api/client.ts 7ms (unchanged)
+src/api/configuration.test.ts 3ms (unchanged)
+src/api/configuration.ts 7ms (unchanged)
+src/api/contract.test.ts 3ms (unchanged)
+src/api/contract.ts 7ms (unchanged)
+src/api/sn.test.ts 6ms (unchanged)
+src/api/sn.ts 18ms (unchanged)
+src/api/snAcquire.test.ts 3ms (unchanged)
+src/api/snAcquire.ts 11ms (unchanged)
+src/api/snAcquireSubmission.test.ts 2ms (unchanged)
+src/api/snAudit.test.ts 2ms (unchanged)
+src/api/snAudit.ts 3ms (unchanged)
+src/api/snQuery.test.ts 3ms (unchanged)
+src/api/snQuery.ts 5ms (unchanged)
+src/api/snTransfer.test.ts 3ms (unchanged)
+src/api/snTransfer.ts 7ms (unchanged)
+src/api/snWork.test.ts 3ms (unchanged)
+src/api/snWork.ts 6ms (unchanged)
+src/api/tasks.test.ts 1ms (unchanged)
+src/api/tasks.ts 3ms (unchanged)
+src/api/users.test.ts 1ms (unchanged)
+src/api/users.ts 4ms (unchanged)
+src/app/App.tsx 14ms (unchanged)
+src/app/queryClient.ts 1ms (unchanged)
+src/app/snNavigation.ts 2ms (unchanged)
+src/app/WorkspaceShell.tsx 7ms (unchanged)
+src/components/ApiErrorAlert.tsx 2ms (unchanged)
+src/components/LanguageSelect.tsx 1ms (unchanged)
+src/components/prototype/empty.json 1ms (unchanged)
+src/components/prototype/icons.json 1ms (unchanged)
+src/components/prototype/PrototypeEmpty.tsx 1ms (unchanged)
+src/components/prototype/PrototypeIcon.tsx 1ms (unchanged)
+src/features/audit/auditLabels.ts 2ms (unchanged)
+src/features/audit/pages/AuditExportPanel.tsx 8ms (unchanged)
+src/features/audit/pages/AuditPage.tsx 11ms (unchanged)
+src/features/auth/pages/LoginPage.tsx 3ms (unchanged)
+src/features/auth/pages/PasswordPage.tsx 3ms (unchanged)
+src/features/auth/pages/ProfilePage.tsx 2ms (unchanged)
+src/features/configuration/pages/ConfigurationPage.tsx 13ms (unchanged)
+src/features/sn/components/AcquireHistory.tsx 11ms (unchanged)
+src/features/sn/components/FactoryPicker.tsx 3ms (unchanged)
+src/features/sn/components/GenerationDetails.tsx 4ms (unchanged)
+src/features/sn/components/GenerationHistory.tsx 3ms (unchanged)
+src/features/sn/components/GenerationOrderPicker.tsx 6ms (unchanged)
+src/features/sn/components/GenerationRulePicker.tsx 3ms (unchanged)
+src/features/sn/components/GenerationSteps.tsx 2ms (unchanged)
+src/features/sn/components/NextSequenceHint.tsx 1ms (unchanged)
+src/features/sn/components/OrderSyncSchedule.tsx 7ms (unchanged)
+src/features/sn/components/SnExportHistory.tsx 4ms (unchanged)
+src/features/sn/components/SnOperation.tsx 3ms (unchanged)
+src/features/sn/components/SnPageHead.tsx 1ms (unchanged)
+src/features/sn/components/SnWorkViews.tsx 5ms (unchanged)
+src/features/sn/components/TransferHistory.tsx 12ms (unchanged)
+src/features/sn/components/TransferImpactHint.tsx 2ms (unchanged)
+src/features/sn/generationErrorText.test.ts 2ms (unchanged)
+src/features/sn/generationErrorText.ts 1ms (unchanged)
+src/features/sn/generationProgress.ts 1ms (unchanged)
+src/features/sn/initializationErrorText.test.ts 2ms (unchanged)
+src/features/sn/initializationErrorText.ts 2ms (unchanged)
+src/features/sn/pages/AcquirePage.tsx 13ms (unchanged)
+src/features/sn/pages/DashboardPage.tsx 5ms (unchanged)
+src/features/sn/pages/FactoriesPage.tsx 6ms (unchanged)
+src/features/sn/pages/GeneratePage.tsx 17ms (unchanged)
+src/features/sn/pages/OrdersPage.tsx 9ms (unchanged)
+src/features/sn/pages/PiInitPage.tsx 11ms (unchanged)
+src/features/sn/pages/QueryPage.tsx 7ms (unchanged)
+src/features/sn/pages/RulesPage.tsx 13ms (unchanged)
+src/features/sn/pages/SnAuditPage.tsx 11ms (unchanged)
+src/features/sn/pages/TransferPage.tsx 15ms (unchanged)
+src/features/sn/printDownloadErrorText.test.ts 2ms (unchanged)
+src/features/sn/printDownloadErrorText.ts 1ms (unchanged)
+src/features/sn/ruleErrorText.test.ts 2ms (unchanged)
+src/features/sn/ruleErrorText.ts 2ms (unchanged)
+src/features/sn/snInput.test.ts 1ms (unchanged)
+src/features/sn/snInput.ts 3ms (unchanged)
+src/features/sn/syncErrorText.test.ts 2ms (unchanged)
+src/features/sn/syncErrorText.ts 1ms (unchanged)
+src/features/sn/transferJump.test.ts 1ms (unchanged)
+src/features/sn/transferJump.ts 1ms (unchanged)
+src/features/sn/useAcquireQueue.ts 8ms (unchanged)
+src/features/sn/usePrototypeFeedback.tsx 2ms (unchanged)
+src/features/sn/useSnContext.ts 1ms (unchanged)
+src/features/sn/useSnOperation.ts 3ms (unchanged)
+src/features/sn/useSyncFeedback.tsx 2ms (unchanged)
+src/features/users/pages/UsersPage.tsx 8ms (unchanged)
+src/i18n/errors.test.ts 3ms (unchanged)
+src/i18n/index.ts 2ms (unchanged)
+src/i18n/locales/en.json 7ms (unchanged)
+src/i18n/locales/vi.json 6ms (unchanged)
+src/i18n/locales/zh-CN.json 6ms (unchanged)
+src/i18n/prototype/en.json 5ms (unchanged)
+src/i18n/prototype/errors.en.json 1ms (unchanged)
+src/i18n/prototype/errors.vi.json 1ms (unchanged)
+src/i18n/prototype/errors.zh-CN.json 1ms (unchanged)
+src/i18n/prototype/vi.json 3ms (unchanged)
+src/i18n/prototype/zh-CN.json 3ms (unchanged)
+src/main.tsx 2ms (unchanged)
+src/stores/session.ts 2ms (unchanged)
+src/styles.css 84ms (unchanged)
+src/utils/snTime.ts 1ms (unchanged)
+tsconfig.json 1ms (unchanged)
+vite.config.ts 1ms (unchanged)
+vitest.config.ts 1ms (unchanged)
+../.github/workflows/backend.yml 16ms (unchanged)
+../.github/workflows/frontend.yml 4ms (unchanged)
+../deploy/compose.container-test.yml 16ms (unchanged)
+../deploy/compose.test.yml 4ms (unchanged)
+../deploy/images.lock.json 11ms (unchanged)
+../deploy/k3.example.json 1ms (unchanged)
+../backend/adtek-server/src/main/resources/application-local.yml 1ms (unchanged)
+../backend/adtek-server/src/main/resources/application.yml 6ms (unchanged)
+../backend/adtek-server/src/test/resources/application-integration-test.yml 1ms (unchanged)
+../tools/build-tools.lock.json 1ms (unchanged)
+PowerShell files=36 differences=0

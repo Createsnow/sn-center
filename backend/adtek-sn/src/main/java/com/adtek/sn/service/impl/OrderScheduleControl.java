@@ -60,6 +60,6 @@ public class OrderScheduleControl {
             attempt.setFinishedAt(schedules.now());
             attempts.updateById(attempt);
         }
-        schedules.failed(row.lastRunId(), ErrorCodeConstants.SYNC_EXECUTION_EXPIRED.code());
+        schedules.failed(row.lastRunId(), ErrorCodeConstants.SYNC_EXECUTION_EXPIRED.code(), "");
     }
 }

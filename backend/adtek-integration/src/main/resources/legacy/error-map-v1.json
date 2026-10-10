@@ -659,7 +659,9 @@
           "http": 409,
           "message": "sn.factoryExists",
           "translationKey": "errors.1004000003",
-          "params": [],
+          "params": [
+            "factory"
+          ],
           "translations": {
             "zh-CN": "工厂编码或名称已存在",
             "en": "Factory code or name already exists",
@@ -667,7 +669,7 @@
           }
         }
       ],
-      "handling": "编码/名称唯一性409",
+      "handling": "编码/名称唯一性409；params.factory保留编码/名称，工厂页使用原型三语模板",
       "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
       "disposition": "SEMANTIC_MAPPING"
     },
@@ -683,20 +685,20 @@
       },
       "targets": [
         {
-          "code": 1000000001,
-          "constant": "com.adtek.common.constant.ErrorCodeConstants.INVALID_ARGUMENT",
+          "code": 1004000033,
+          "constant": "com.adtek.sn.constant.ErrorCodeConstants.FACTORY_INVALID",
           "http": 400,
-          "message": "common.invalidArgument",
-          "translationKey": "errors.1000000001",
+          "message": "sn.factoryInvalid",
+          "translationKey": "errors.1004000033",
           "params": [],
           "translations": {
-            "zh-CN": "输入内容不符合要求，请检查后重试。",
-            "en": "Please check the information you entered.",
-            "vi": "Vui lòng kiểm tra thông tin đã nhập."
+            "zh-CN": "工厂编码与名称必填，编码不超过 64 位",
+            "en": "Factory code and name are required (code ≤ 64)",
+            "vi": "Bắt buộc mã và tên nhà máy (mã ≤ 64)"
           }
         }
       ],
-      "handling": "工厂DTO必填及长度校验",
+      "handling": "工厂用例按Unicode码点检查必填及64/128位边界，返回专用码",
       "history": "保留legacyCode、legacyMessage和原params；目标只是展示提示，不改写原失败状态。原外部报文仅在受控原始档案保存，不作为新API错误或HTML渲染。",
       "disposition": "SEMANTIC_MAPPING"
     },

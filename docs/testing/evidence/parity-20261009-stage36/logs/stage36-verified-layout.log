@@ -1,0 +1,11 @@
+
+Running 2 tests using 1 worker
+
+(node:8760) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\login-layout.spec.ts:90:1 › P02 login layout: three languages, four widths, focus, reveal and empty submission (5.2s)
+(node:38976) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [migration] › e2e\parity\login-layout.spec.ts:90:1 › P02 login layout: three languages, four widths, focus, reveal and empty submission (5.9s)
+
+  2 passed (13.9s)

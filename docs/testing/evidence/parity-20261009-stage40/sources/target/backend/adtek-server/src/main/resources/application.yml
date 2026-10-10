@@ -1,0 +1,129 @@
+spring:
+  application:
+    name: adtek-platform-sn
+  datasource:
+    url: ${ADTEK_DB_URL}
+    username: ${ADTEK_DB_USER}
+    password: ${ADTEK_DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 12
+      minimum-idle: 2
+      connection-timeout: 5000
+  data:
+    redis:
+      host: ${ADTEK_REDIS_HOST}
+      port: ${ADTEK_REDIS_PORT}
+      password: ${ADTEK_REDIS_PASSWORD}
+      connect-timeout: 2s
+      timeout: 2s
+  flyway:
+    url: ${ADTEK_DB_URL}
+    user: ${ADTEK_MIGRATION_USER}
+    password: ${ADTEK_MIGRATION_PASSWORD}
+    validate-on-migrate: true
+    clean-disabled: true
+    baseline-on-migrate: false
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+server:
+  forward-headers-strategy: none
+  address: ${ADTEK_SERVER_ADDRESS:127.0.0.1}
+  port: ${ADTEK_SERVER_PORT:18080}
+  shutdown: graceful
+  error:
+    include-message: never
+    include-stacktrace: never
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState,db,redis
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    jdbc-type-for-null: NULL
+  global-config:
+    banner: false
+logging:
+  pattern:
+    level: '%5p [traceId=%X{traceId}]'
+adtek:
+  sn:
+    order-sync-worker:
+      enabled: ${ADTEK_ORDER_SYNC_WORKER_ENABLED:true}
+    work:
+      # 资源准入与来源额度、页面10000建议量分离；整批超限拒绝，不分段提交。
+      max-batch-quantity: ${ADTEK_SN_MAX_BATCH_QUANTITY:100000}
+      max-audit-export-quantity: ${ADTEK_SN_MAX_AUDIT_EXPORT_QUANTITY:200000}
+      max-import-quantity: ${ADTEK_SN_MAX_IMPORT_QUANTITY:500000}
+      import-execution-seconds: ${ADTEK_SN_IMPORT_EXECUTION_SECONDS:600}
+      preview-seconds: ${ADTEK_SN_PREVIEW_SECONDS:1800}
+      inline-generation-quantity: ${ADTEK_SN_INLINE_GENERATION_QUANTITY:5000}
+  k3:
+    # 默认不连接ERP，不读取旧项目配置；启用后需验证实际账套稳定字段。
+    enabled: ${ADTEK_K3_ENABLED:false}
+    url: ${ADTEK_K3_URL:}
+    account: ${ADTEK_K3_ACCOUNT:}
+    app-id: ${ADTEK_K3_APP_ID:}
+    app-secret: ${ADTEK_K3_APP_SECRET:}
+    username: ${ADTEK_K3_USERNAME:}
+    lcid: 2052
+    connect-seconds: 10
+    login-seconds: 30
+    query-seconds: 60
+    budget-seconds: 180
+    page-size: 2000
+    max-pages: 100
+    max-rows: 100000
+    response-bytes: 4194304
+  tasks:
+    enabled: true
+    max-attempts: 3
+    lease-seconds: 30
+    budget-seconds: 300
+    retry-seconds: 3
+    per-user-limit: 3
+    queue-limit: 1000
+    export-rows: 10000
+    file-bytes: 16777216
+    file-root: ${ADTEK_FILE_ROOT:./var/files}
+  security:
+    login-guard:
+      maximum-failures: 5
+      lock-seconds: 900
+    issuer: adtek-platform-sn
+    audience: adtek-platform-sn-web
+    jwt-secret: ${ADTEK_JWT_SECRET}
+    access-minutes: 15
+    refresh-hours: 8
+    cookie-secure: true
+  rate-limit:
+    policies:
+      mes-token:
+        path: /api/v1/integrations/auth/token
+        subject-limit: 12
+        source-limit: 100
+        window-seconds: 60
+      auth-login:
+        path: /api/v1/system/auth/login
+        subject-limit: 8
+        source-limit: 100
+        window-seconds: 60
+      auth-refresh:
+        path: /api/v1/system/auth/refresh
+        subject-limit: 30
+        source-limit: 100
+        window-seconds: 60

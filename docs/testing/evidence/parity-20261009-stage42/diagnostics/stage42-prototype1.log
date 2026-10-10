@@ -1,0 +1,37 @@
+
+Running 1 test using 1 worker
+
+(node:35036) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\account-actions.spec.ts:9:1 › P13 account actions: disable, enable, repeated same-password reset and self reset (6.7s)
+
+
+  1) [prototype] › e2e\parity\account-actions.spec.ts:9:1 › P13 account actions: disable, enable, repeated same-password reset and self reset 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('密码已重置，该账户下次登录须修改', { exact: true })
+    Expected: visible
+    Error: strict mode violation: getByText('密码已重置，该账户下次登录须修改', { exact: true }) resolved to 2 elements:
+        1) <p class="el-message__content">密码已重置，该账户下次登录须修改</p> aka locator('#message_4').getByText('密码已重置，该账户下次登录须修改')
+        2) <p class="el-message__content">密码已重置，该账户下次登录须修改</p> aka locator('#message_5').getByText('密码已重置，该账户下次登录须修改')
+
+    Call log:
+      - Expect "toBeVisible" getByText('密码已重置，该账户下次登录须修改', { exact: true }) with timeout 15000ms
+      - waiting for getByText('密码已重置，该账户下次登录须修改', { exact: true })
+
+
+      142 |     await dialog.getByRole('button', { name: '确定', exact: true }).click();
+      143 |     expect((await response).status()).toBe(200);
+    > 144 |     await expect(tab.getByText(zh.users.resetDone, { exact: true })).toBeVisible();
+          |                                                                      ^
+      145 |     await expect(dialog).toBeHidden();
+      146 |   };
+      147 |   const changePassword = async (previous: string, next: string) => {
+        at reset (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-actions.spec.ts:144:70)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-actions.spec.ts:218:5
+
+    Error Context: test-results\stage42-prototype1\account-actions-P13-accoun-72ac6-ssword-reset-and-self-reset-prototype\error-context.md
+
+  1 failed
+    [prototype] › e2e\parity\account-actions.spec.ts:9:1 › P13 account actions: disable, enable, repeated same-password reset and self reset 

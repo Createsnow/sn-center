@@ -1,0 +1,59 @@
+
+Running 4 tests using 1 worker
+
+(node:45464) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+capacity: uploading over-limit file
+capacity: confirming limit 500001
+  ok 1 [prototype] › e2e\parity\import-capacity.spec.ts:24:3 › P08 capacity limit: rejects 500001 through file upload (2.7m)
+capacity: uploading maximum file
+capacity: maximum file parsed
+capacity: confirming maximum 500000
+capacity: import committed
+  ok 2 [prototype] › e2e\parity\import-capacity.spec.ts:24:3 › P08 capacity maximum: imports 500000 full-width Unicode SN through file upload (4.0m)
+(node:42692) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+capacity: uploading over-limit file
+capacity: confirming limit 500001
+  x  3 [migration] › e2e\parity\import-capacity.spec.ts:24:3 › P08 capacity limit: rejects 500001 through file upload (3.2m)
+(node:41240) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+capacity: uploading maximum file
+capacity: maximum file parsed
+capacity: confirming maximum 500000
+capacity: import committed
+  ok 4 [migration] › e2e\parity\import-capacity.spec.ts:24:3 › P08 capacity maximum: imports 500000 full-width Unicode SN through file upload (11.1m)
+
+
+  1) [migration] › e2e\parity\import-capacity.spec.ts:24:3 › P08 capacity limit: rejects 500001 through file upload 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 3
+    + Received  + 1
+
+    - Array [
+    -   "单次导入最多 500000 条",
+    - ]
+    + Array []
+
+    Call Log:
+    - Timeout 180000ms exceeded while waiting on the predicate
+
+      18 |       intervals: [1_000, 2_000, 5_000],
+      19 |     })
+    > 20 |     .toEqual([text]);
+         |      ^
+      21 | }
+      22 |
+      23 | for (const mode of ['limit', 'maximum'] as const)
+        at expectShortText (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\import-capacity.spec.ts:20:6)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\import-capacity.spec.ts:95:15
+
+    Error Context: test-results\parity\import-capacity-P08-capaci-a0bca--500001-through-file-upload-migration\error-context.md
+
+  Slow test file: [prototype] › e2e\parity\import-capacity.spec.ts (6.8m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  1 failed
+    [migration] › e2e\parity\import-capacity.spec.ts:24:3 › P08 capacity limit: rejects 500001 through file upload 
+  3 passed (21.1m)

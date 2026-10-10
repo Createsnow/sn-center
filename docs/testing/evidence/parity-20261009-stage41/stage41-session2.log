@@ -1,0 +1,11 @@
+
+Running 2 tests using 1 worker
+
+(node:33736) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\account-session.spec.ts:9:1 › P13 account sessions: edit name, role, factory and self without another login (12.8s)
+(node:40696) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [migration] › e2e\parity\account-session.spec.ts:9:1 › P13 account sessions: edit name, role, factory and self without another login (19.1s)
+
+  2 passed (34.6s)

@@ -3,6 +3,7 @@ package com.adtek.sn.service;
 import com.adtek.common.core.*;
 import com.adtek.framework.task.vo.TaskVO;
 import com.adtek.sn.dto.*;
+import com.adtek.sn.query.AcquireItemsQuery;
 import com.adtek.sn.query.AcquireQuery;
 import com.adtek.sn.vo.*;
 
@@ -37,6 +38,9 @@ public interface AcquireService {
 
     /** 固定领取展示快照与另列当前状态；全部ordinal可读，转厂/重领不改旧成员。 */
     CursorResult<AcquireItemVO> items(String batchId, String cursor, int size);
+
+    /** 页面详情按原批次工厂授权，返回仍指向该批次的当前成员；转出后不再显示。 */
+    PageResult<SnReadItemVO> currentItems(String batchId, AcquireItemsQuery query);
 
     /** 当前范围实时只读，不改变状态；游标绑定筛选/主体/版本，跨页不承诺固定导出快照。 */
     CursorResult<SnReadItemVO> readItems(

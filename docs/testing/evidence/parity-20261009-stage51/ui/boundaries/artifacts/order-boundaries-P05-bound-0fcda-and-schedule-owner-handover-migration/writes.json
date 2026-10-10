@@ -1,0 +1,71 @@
+{
+  "writes": [
+    {
+      "locale": "zh-CN",
+      "suffix": "nel",
+      "body": {
+        "code": 1004000034,
+        "message": "sn.orderBillRequired",
+        "data": null,
+        "params": {},
+        "traceId": "a3a5f658-f2f2-4e1b-80d0-1d95e8fb5ae6"
+      }
+    },
+    {
+      "locale": "zh-CN",
+      "suffix": "separator",
+      "body": {
+        "code": 1004000034,
+        "message": "sn.orderBillRequired",
+        "data": null,
+        "params": {},
+        "traceId": "f3b632a7-abee-4c12-9239-8b1f6aef2066"
+      }
+    },
+    {
+      "locale": "en",
+      "suffix": "nel",
+      "body": {
+        "code": 1004000034,
+        "message": "sn.orderBillRequired",
+        "data": null,
+        "params": {},
+        "traceId": "755f5250-3a9b-46f0-afd3-9dc3a26d8fa7"
+      }
+    },
+    {
+      "locale": "en",
+      "suffix": "separator",
+      "body": {
+        "code": 1004000034,
+        "message": "sn.orderBillRequired",
+        "data": null,
+        "params": {},
+        "traceId": "ef40e5a3-9341-4b5a-bebf-03fa6017866a"
+      }
+    },
+    {
+      "locale": "vi",
+      "suffix": "nel",
+      "body": {
+        "code": 1004000034,
+        "message": "sn.orderBillRequired",
+        "data": null,
+        "params": {},
+        "traceId": "2aee9ac8-8720-4e5d-895e-6fbc813599f1"
+      }
+    },
+    {
+      "locale": "vi",
+      "suffix": "separator",
+      "body": {
+        "code": 1004000034,
+        "message": "sn.orderBillRequired",
+        "data": null,
+        "params": {},
+        "traceId": "bdaca314-aaa2-46bd-a7a4-0253f8f99cc7"
+      }
+    }
+  ],
+  "pageErrors": []
+}

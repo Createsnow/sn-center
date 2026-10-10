@@ -1,0 +1,36 @@
+
+Running 1 test using 1 worker
+
+(node:37632) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [migration] › e2e\parity\pi-initialization.spec.ts:104:3 › P08 sn conflict in the second import chunk rolls back all rows and allows correction in three languages (29.1s)
+
+
+  1) [migration] › e2e\parity\pi-initialization.spec.ts:104:3 › P08 sn conflict in the second import chunk rolls back all rows and allows correction in three languages 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('SN UNPARSED 已存在于 PI CMP-UI-INIT-NONE', { exact: true }).last()
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('SN UNPARSED 已存在于 PI CMP-UI-INIT-NONE', { exact: true }).last() with timeout 15000ms
+      - waiting for getByText('SN UNPARSED 已存在于 PI CMP-UI-INIT-NONE', { exact: true }).last()
+
+
+      87 |     'PI_IMPORT_SN_INVALID' | 'GEN_START_INVALID' | 'PI_IMPORT_DUP_EXISTING' | 'PI_IMPORT_SEQ_DUP',
+      88 |   params: Record<string, string>,
+    > 89 |   name: string,
+         |                ^
+      90 | ) {
+      91 |   for (const [label, words, errors, key] of languages) {
+      92 |     await language(page, info, label);
+        at rejectInLanguages (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\pi-initialization.spec.ts:89:67)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\pi-initialization.spec.ts:116:7
+
+    Error Context: test-results\parity\pi-initialization-P08-sn-c-ccdca-rrection-in-three-languages-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\pi-initialization.spec.ts:104:3 › P08 sn conflict in the second import chunk rolls back all rows and allows correction in three languages 

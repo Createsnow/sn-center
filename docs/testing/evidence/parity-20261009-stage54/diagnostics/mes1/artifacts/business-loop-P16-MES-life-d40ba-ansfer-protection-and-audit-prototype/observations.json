@@ -1,0 +1,634 @@
+{
+  "pi": "CMP-LOOP-20261009540001",
+  "bill": "CMP-LOOP-MO-20261009540001",
+  "sns": [
+    "L2026100954000100001",
+    "L2026100954000100002",
+    "L2026100954000100003"
+  ],
+  "files": [],
+  "facts": [
+    {
+      "stage": "05-allocated",
+      "observed": [
+        {
+          "sn": "L2026100954000100001",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000100002",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000100003",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-A"
+        }
+      ]
+    },
+    {
+      "stage": "MES-06-taken",
+      "observed": [
+        {
+          "sn": "L2026100954000100001",
+          "status": "TO_PRINT",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000100002",
+          "status": "TO_PRINT",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000100003",
+          "status": "TO_PRINT",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-A"
+        }
+      ]
+    },
+    {
+      "stage": "MES-06-partial",
+      "observed": [
+        {
+          "sn": "L2026100954000100001",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000100002",
+          "status": "TO_PRINT",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000100003",
+          "status": "TO_PRINT",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-A"
+        }
+      ]
+    },
+    {
+      "stage": "07-printed",
+      "observed": [
+        {
+          "sn": "L2026100954000100001",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000100002",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000100003",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-A"
+        }
+      ]
+    },
+    {
+      "stage": "08-transferred",
+      "observed": [
+        {
+          "sn": "L2026100954000100001",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-B"
+        },
+        {
+          "sn": "L2026100954000100002",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-B"
+        },
+        {
+          "sn": "L2026100954000100003",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-B"
+        }
+      ]
+    },
+    {
+      "stage": "MES-08-old-batch-protected",
+      "observed": [
+        {
+          "sn": "L2026100954000100001",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-B"
+        },
+        {
+          "sn": "L2026100954000100002",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-B"
+        },
+        {
+          "sn": "L2026100954000100003",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-B"
+        }
+      ]
+    },
+    {
+      "stage": "10-reprinted",
+      "observed": [
+        {
+          "sn": "L2026100954000100001",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-B"
+        },
+        {
+          "sn": "L2026100954000100002",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-B"
+        },
+        {
+          "sn": "L2026100954000100003",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009540001",
+          "factory": "CMP-B"
+        }
+      ]
+    },
+    {
+      "stage": "audit",
+      "audits": [
+        {
+          "id": 766,
+          "created_at": "2026-10-09 20:27:39",
+          "operator": "audit20261009540001",
+          "operator_name": "同步痕迹操作员",
+          "role": "admin",
+          "source": "API",
+          "action": "SN_CALLBACK",
+          "result": "OK",
+          "factory_code": "CMP-B",
+          "pi_no": "CMP-LOOP-20261009540001",
+          "customer_code": null,
+          "material_code": null,
+          "bill_no": null,
+          "start_sn": "L2026100954000100001",
+          "end_sn": "L2026100954000100003",
+          "qty": 3,
+          "before_status": "TO_PRINT",
+          "after_status": "PRINTED",
+          "batch_no": "B202610092027398147",
+          "request_no": null,
+          "transfer_no": null,
+          "reason": null,
+          "error_msg": null,
+          "trace_id": "f3e52147-acf2-4e23-980a-9e1552bb21f4",
+          "detail": "requested=3 already_printed=0 skipped=0"
+        },
+        {
+          "id": 765,
+          "created_at": "2026-10-09 20:27:39",
+          "operator": "audit20261009540001",
+          "operator_name": "同步痕迹操作员",
+          "role": "admin",
+          "source": "API",
+          "action": "SN_ACQUIRE",
+          "result": "OK",
+          "factory_code": "CMP-B",
+          "pi_no": "CMP-LOOP-20261009540001",
+          "customer_code": null,
+          "material_code": null,
+          "bill_no": null,
+          "start_sn": "L2026100954000100001",
+          "end_sn": "L2026100954000100003",
+          "qty": 3,
+          "before_status": "TO_ACQUIRE",
+          "after_status": "TO_PRINT",
+          "batch_no": "B202610092027398147",
+          "request_no": "32f4cb18-b3e1-455f-bf38-fb60cb5f31b3",
+          "transfer_no": null,
+          "reason": null,
+          "error_msg": null,
+          "trace_id": "8d21dabf-aea9-4c3c-aa3e-15513f6655fd",
+          "detail": null
+        },
+        {
+          "id": 764,
+          "created_at": "2026-10-09 20:27:38",
+          "operator": "audit20261009540001",
+          "operator_name": "同步痕迹操作员",
+          "role": "admin",
+          "source": "API",
+          "action": "SN_CALLBACK",
+          "result": "OK",
+          "factory_code": "CMP-A",
+          "pi_no": "CMP-LOOP-20261009540001",
+          "customer_code": null,
+          "material_code": null,
+          "bill_no": null,
+          "start_sn": null,
+          "end_sn": null,
+          "qty": 0,
+          "before_status": "TO_PRINT",
+          "after_status": "PRINTED",
+          "batch_no": "B202610092027357413",
+          "request_no": null,
+          "transfer_no": null,
+          "reason": null,
+          "error_msg": null,
+          "trace_id": "f455e04a-76c0-4875-9760-b0a70c45672e",
+          "detail": "requested=3 already_printed=0 skipped=3"
+        },
+        {
+          "id": 763,
+          "created_at": "2026-10-09 20:27:37",
+          "operator": "audit20261009540001",
+          "operator_name": "同步痕迹操作员",
+          "role": "admin",
+          "source": "PAGE",
+          "action": "TRANSFER_DIRECT",
+          "result": "OK",
+          "factory_code": "CMP-A",
+          "pi_no": "CMP-LOOP-20261009540001",
+          "customer_code": "CMP-LOOP-CUSTOMER",
+          "material_code": "",
+          "bill_no": null,
+          "start_sn": null,
+          "end_sn": null,
+          "qty": 3,
+          "before_status": null,
+          "after_status": "TO_ACQUIRE",
+          "batch_no": null,
+          "request_no": null,
+          "transfer_no": "T202610092027379485",
+          "reason": "完整界面闭环 20261009540001",
+          "error_msg": null,
+          "trace_id": "e33c40ec-24dd-49fa-bdca-c1dc56119cf6",
+          "detail": "scope=PI to=CMP-B/CMP-LOOP-20261009540001/(原客户)/(原物料) target=MANUAL"
+        },
+        {
+          "id": 762,
+          "created_at": "2026-10-09 20:27:35",
+          "operator": "audit20261009540001",
+          "operator_name": "同步痕迹操作员",
+          "role": "admin",
+          "source": "API",
+          "action": "SN_CALLBACK",
+          "result": "OK",
+          "factory_code": "CMP-A",
+          "pi_no": "CMP-LOOP-20261009540001",
+          "customer_code": null,
+          "material_code": null,
+          "bill_no": null,
+          "start_sn": "L2026100954000100002",
+          "end_sn": "L2026100954000100003",
+          "qty": 2,
+          "before_status": "TO_PRINT",
+          "after_status": "PRINTED",
+          "batch_no": "B202610092027357413",
+          "request_no": null,
+          "transfer_no": null,
+          "reason": null,
+          "error_msg": null,
+          "trace_id": "65ee5116-8b35-4800-8856-25e6abc722de",
+          "detail": "requested=2 already_printed=0 skipped=0"
+        },
+        {
+          "id": 761,
+          "created_at": "2026-10-09 20:27:35",
+          "operator": "audit20261009540001",
+          "operator_name": "同步痕迹操作员",
+          "role": "admin",
+          "source": "API",
+          "action": "SN_CALLBACK",
+          "result": "OK",
+          "factory_code": "CMP-A",
+          "pi_no": "CMP-LOOP-20261009540001",
+          "customer_code": null,
+          "material_code": null,
+          "bill_no": null,
+          "start_sn": null,
+          "end_sn": null,
+          "qty": 0,
+          "before_status": "TO_PRINT",
+          "after_status": "PRINTED",
+          "batch_no": "B202610092027357413",
+          "request_no": null,
+          "transfer_no": null,
+          "reason": null,
+          "error_msg": null,
+          "trace_id": "e1bc96b7-c6c2-4c36-b73f-bcb850d70c08",
+          "detail": "requested=2 already_printed=1 skipped=1"
+        },
+        {
+          "id": 760,
+          "created_at": "2026-10-09 20:27:35",
+          "operator": "audit20261009540001",
+          "operator_name": "同步痕迹操作员",
+          "role": "admin",
+          "source": "API",
+          "action": "SN_CALLBACK",
+          "result": "OK",
+          "factory_code": "CMP-A",
+          "pi_no": "CMP-LOOP-20261009540001",
+          "customer_code": null,
+          "material_code": null,
+          "bill_no": null,
+          "start_sn": "L2026100954000100001",
+          "end_sn": "L2026100954000100001",
+          "qty": 1,
+          "before_status": "TO_PRINT",
+          "after_status": "PRINTED",
+          "batch_no": "B202610092027357413",
+          "request_no": null,
+          "transfer_no": null,
+          "reason": null,
+          "error_msg": null,
+          "trace_id": "9d5fcc35-b4ed-4a20-ba1f-54e91d3d6a61",
+          "detail": "requested=2 already_printed=0 skipped=1"
+        },
+        {
+          "id": 758,
+          "created_at": "2026-10-09 20:27:35",
+          "operator": "audit20261009540001",
+          "operator_name": "同步痕迹操作员",
+          "role": "admin",
+          "source": "API",
+          "action": "SN_ACQUIRE",
+          "result": "OK",
+          "factory_code": "CMP-A",
+          "pi_no": "CMP-LOOP-20261009540001",
+          "customer_code": null,
+          "material_code": null,
+          "bill_no": null,
+          "start_sn": "L2026100954000100001",
+          "end_sn": "L2026100954000100003",
+          "qty": 3,
+          "before_status": "TO_ACQUIRE",
+          "after_status": "TO_PRINT",
+          "batch_no": "B202610092027357413",
+          "request_no": "ece47eab-0079-4ae0-9851-44c1fc3fbf01",
+          "transfer_no": null,
+          "reason": null,
+          "error_msg": null,
+          "trace_id": "258b27b2-dc50-4f1f-800d-c92dc2aa3b14",
+          "detail": null
+        },
+        {
+          "id": 756,
+          "created_at": "2026-10-09 20:27:34",
+          "operator": "audit20261009540001",
+          "operator_name": "同步痕迹操作员",
+          "role": "admin",
+          "source": "PAGE",
+          "action": "SN_ALLOCATE",
+          "result": "OK",
+          "factory_code": "CMP-A",
+          "pi_no": "CMP-LOOP-20261009540001",
+          "customer_code": "CMP-LOOP-CUSTOMER",
+          "material_code": null,
+          "bill_no": "CMP-LOOP-MO-20261009540001",
+          "start_sn": "L2026100954000100001",
+          "end_sn": "L2026100954000100003",
+          "qty": 3,
+          "before_status": "PENDING_ALLOC",
+          "after_status": "TO_ACQUIRE",
+          "batch_no": null,
+          "request_no": null,
+          "transfer_no": null,
+          "reason": null,
+          "error_msg": null,
+          "trace_id": "fdbdda36-ede5-45ac-b37e-c357daf10ba4",
+          "detail": null
+        },
+        {
+          "id": 755,
+          "created_at": "2026-10-09 20:27:33",
+          "operator": "audit20261009540001",
+          "operator_name": "同步痕迹操作员",
+          "role": "admin",
+          "source": "PAGE",
+          "action": "SN_GENERATE",
+          "result": "OK",
+          "factory_code": "CMP-A",
+          "pi_no": "CMP-LOOP-20261009540001",
+          "customer_code": "CMP-LOOP-CUSTOMER",
+          "material_code": null,
+          "bill_no": "CMP-LOOP-MO-20261009540001",
+          "start_sn": "L2026100954000100001",
+          "end_sn": "L2026100954000100003",
+          "qty": 3,
+          "before_status": null,
+          "after_status": "PENDING_ALLOC",
+          "batch_no": null,
+          "request_no": null,
+          "transfer_no": null,
+          "reason": null,
+          "error_msg": null,
+          "trace_id": "52a25d7d-dfe8-487e-9f43-314849adda1f",
+          "detail": "job=5 rule_version=5 rule_source=PI segments=1"
+        },
+        {
+          "id": 754,
+          "created_at": "2026-10-09 20:27:31",
+          "operator": "audit20261009540001",
+          "operator_name": "同步痕迹操作员",
+          "role": "admin",
+          "source": "PAGE",
+          "action": "RULE_CREATE",
+          "result": "OK",
+          "factory_code": null,
+          "pi_no": "CMP-LOOP-20261009540001",
+          "customer_code": null,
+          "material_code": null,
+          "bill_no": null,
+          "start_sn": null,
+          "end_sn": null,
+          "qty": null,
+          "before_status": null,
+          "after_status": null,
+          "batch_no": null,
+          "request_no": null,
+          "transfer_no": null,
+          "reason": null,
+          "error_msg": null,
+          "trace_id": "3138c23f-3d88-467e-b6ed-e1c6e6f71550",
+          "detail": "LOOP_20261009540001 v1 prefix=L20261009540001 suffix= base=10 len=5 charset=0123456789"
+        }
+      ]
+    }
+  ],
+  "mesObservations": [
+    {
+      "stage": "read-CMP-A",
+      "members": [
+        {
+          "sn": "L2026100954000100001",
+          "status": "TO_ACQUIRE",
+          "seq": "1",
+          "pi": "CMP-LOOP-20261009540001"
+        },
+        {
+          "sn": "L2026100954000100002",
+          "status": "TO_ACQUIRE",
+          "seq": "2",
+          "pi": "CMP-LOOP-20261009540001"
+        },
+        {
+          "sn": "L2026100954000100003",
+          "status": "TO_ACQUIRE",
+          "seq": "3",
+          "pi": "CMP-LOOP-20261009540001"
+        }
+      ]
+    },
+    {
+      "stage": "take-CMP-A",
+      "quantity": 3,
+      "members": [
+        "L2026100954000100001",
+        "L2026100954000100002",
+        "L2026100954000100003"
+      ],
+      "replaySameBatch": true
+    },
+    {
+      "stage": "invalid-target-rejected",
+      "status": 400
+    },
+    {
+      "stage": "partial",
+      "updated": 1,
+      "already": 0,
+      "blocked": 1,
+      "outcomes": [
+        {
+          "sn": "CMP-NOT-IN-THIS-BATCH",
+          "reason": "NOT_IN_BATCH"
+        }
+      ],
+      "immutableReplayChecked": false
+    },
+    {
+      "stage": "already-printed",
+      "updated": 0,
+      "already": 1,
+      "blocked": 1,
+      "outcomes": [
+        {
+          "sn": "CMP-NOT-IN-THIS-BATCH",
+          "reason": "NOT_IN_BATCH"
+        }
+      ],
+      "immutableReplayChecked": false
+    },
+    {
+      "stage": "reverse-range",
+      "updated": 2,
+      "already": 0,
+      "blocked": 0,
+      "outcomes": [],
+      "immutableReplayChecked": false
+    },
+    {
+      "stage": "read-CMP-A",
+      "members": [
+        {
+          "sn": "L2026100954000100001",
+          "status": "PRINTED",
+          "seq": "1",
+          "pi": "CMP-LOOP-20261009540001"
+        },
+        {
+          "sn": "L2026100954000100002",
+          "status": "PRINTED",
+          "seq": "2",
+          "pi": "CMP-LOOP-20261009540001"
+        },
+        {
+          "sn": "L2026100954000100003",
+          "status": "PRINTED",
+          "seq": "3",
+          "pi": "CMP-LOOP-20261009540001"
+        }
+      ]
+    },
+    {
+      "stage": "old-batch-after-transfer",
+      "updated": 0,
+      "already": 0,
+      "blocked": 3,
+      "outcomes": [
+        {
+          "sn": "L2026100954000100001",
+          "reason": "TRANSFERRED"
+        },
+        {
+          "sn": "L2026100954000100002",
+          "reason": "TRANSFERRED"
+        },
+        {
+          "sn": "L2026100954000100003",
+          "reason": "TRANSFERRED"
+        }
+      ],
+      "immutableReplayChecked": false
+    },
+    {
+      "stage": "take-CMP-B",
+      "quantity": 3,
+      "members": [
+        "L2026100954000100001",
+        "L2026100954000100002",
+        "L2026100954000100003"
+      ],
+      "replaySameBatch": true
+    },
+    {
+      "stage": "new-batch-at-target",
+      "updated": 3,
+      "already": 0,
+      "blocked": 0,
+      "outcomes": [],
+      "immutableReplayChecked": false
+    },
+    {
+      "stage": "read-CMP-B",
+      "members": [
+        {
+          "sn": "L2026100954000100001",
+          "status": "PRINTED",
+          "seq": "1",
+          "pi": "CMP-LOOP-20261009540001"
+        },
+        {
+          "sn": "L2026100954000100002",
+          "status": "PRINTED",
+          "seq": "2",
+          "pi": "CMP-LOOP-20261009540001"
+        },
+        {
+          "sn": "L2026100954000100003",
+          "status": "PRINTED",
+          "seq": "3",
+          "pi": "CMP-LOOP-20261009540001"
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

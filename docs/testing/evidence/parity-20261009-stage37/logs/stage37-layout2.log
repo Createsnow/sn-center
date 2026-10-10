@@ -1,0 +1,15 @@
+
+Running 6 tests using 1 worker
+
+(node:15760) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\password-page.spec.ts:100:3 › P03 password zh-CN: forced form, blur validation, logout, save and voluntary cancel (7.3s)
+  ok 2 [prototype] › e2e\parity\password-page.spec.ts:100:3 › P03 password en: forced form, blur validation, logout, save and voluntary cancel (7.2s)
+  ok 3 [prototype] › e2e\parity\password-page.spec.ts:100:3 › P03 password vi: forced form, blur validation, logout, save and voluntary cancel (7.1s)
+(node:29968) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 4 [migration] › e2e\parity\password-page.spec.ts:100:3 › P03 password zh-CN: forced form, blur validation, logout, save and voluntary cancel (12.0s)
+  ok 5 [migration] › e2e\parity\password-page.spec.ts:100:3 › P03 password en: forced form, blur validation, logout, save and voluntary cancel (16.3s)
+  ok 6 [migration] › e2e\parity\password-page.spec.ts:100:3 › P03 password vi: forced form, blur validation, logout, save and voluntary cancel (16.0s)
+
+  6 passed (1.1m)

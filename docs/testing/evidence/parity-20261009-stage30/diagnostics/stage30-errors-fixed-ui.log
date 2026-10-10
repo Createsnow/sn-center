@@ -1,0 +1,11 @@
+
+Running 2 tests using 1 worker
+
+(node:22320) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\query-export-errors.spec.ts:22:1 › P11 export errors: denied PI, HTTP download failure and retry (7.0s)
+(node:43136) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [migration] › e2e\parity\query-export-errors.spec.ts:22:1 › P11 export errors: denied PI, HTTP download failure and retry (24.4s)
+
+  2 passed (34.6s)

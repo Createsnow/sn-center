@@ -3,13 +3,27 @@ package com.adtek.common.core;
 import java.util.Map;
 import java.util.Set;
 
-/** 可信认证过程装配的当前授权，不用于接收请求体或 Actor header。 每个权限单独绑定部门/工厂范围，不能先扁平合并角色范围再套到所有权限。 */
+/**
+ * 可信认证过程装配的当前授权，不用于接收请求体或 Actor header。 securityVersion 控制授权写入并发及任务资格，credentialVersion
+ * 控制会话失效；普通业务资料更新可只推进前者。 每个权限单独绑定部门/工厂范围，不能先扁平合并角色范围再套到所有权限。
+ */
 public record Actor(
         long userId,
         long securityVersion,
         boolean mustChangePassword,
         Map<String, AuthorizationScope> grants,
-        String principalType) {
+        String principalType,
+        long credentialVersion) {
+    /** 兼容同一版本控制授权和凭据的主体；人员认证使用显式凭据版本。 */
+    public Actor(
+            long userId,
+            long securityVersion,
+            boolean mustChangePassword,
+            Map<String, AuthorizationScope> grants,
+            String principalType) {
+        this(userId, securityVersion, mustChangePassword, grants, principalType, securityVersion);
+    }
+
     public Actor(
             long userId,
             long securityVersion,
@@ -19,7 +33,7 @@ public record Actor(
     }
 
     public Actor {
-        if (userId <= 0 || securityVersion <= 0 || grants == null) {
+        if (userId <= 0 || securityVersion <= 0 || credentialVersion <= 0 || grants == null) {
             throw new IllegalArgumentException("Invalid trusted actor");
         }
         if (!Set.of("USER", "SERVICE").contains(principalType)) {

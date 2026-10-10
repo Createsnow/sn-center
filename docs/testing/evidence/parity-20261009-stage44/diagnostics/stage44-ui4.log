@@ -1,0 +1,13 @@
+
+Running 4 tests using 1 worker
+
+(node:33608) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\account-actions.spec.ts:9:1 › P13 account actions: disable, enable, repeated same-password reset and self reset (10.2s)
+  ok 2 [prototype] › e2e\parity\factories.spec.ts:12:1 › P14 factories: full catalog, create validation, Unicode, cancel, sync conflicts and recovery (59.9s)
+(node:35236) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 [migration] › e2e\parity\account-actions.spec.ts:9:1 › P13 account actions: disable, enable, repeated same-password reset and self reset (34.4s)
+  ok 4 [migration] › e2e\parity\factories.spec.ts:12:1 › P14 factories: full catalog, create validation, Unicode, cancel, sync conflicts and recovery (1.4m)
+
+  4 passed (3.2m)

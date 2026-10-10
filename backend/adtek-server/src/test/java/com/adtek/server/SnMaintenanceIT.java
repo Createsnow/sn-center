@@ -113,6 +113,46 @@ class SnMaintenanceIT {
     }
 
     @Test
+    void newPlainAuditDetailIsCopiedAndHashedWithoutChangingLegacyNullColumnDigest()
+            throws Exception {
+        audit(UUID.randomUUID().toString(), oldMonth(), "original");
+        try (var c = source.getConnection()) {
+            var legacy = java.security.MessageDigest.getInstance("SHA-256");
+            try (var p = c.prepareStatement("SELECT * FROM sn_audit ORDER BY created_at,id");
+                    var r = p.executeQuery()) {
+                int columns = r.getMetaData().getColumnCount();
+                assertThat(r.getMetaData().getColumnName(columns)).isEqualTo("error_message");
+                assertThat(r.getMetaData().getColumnName(columns - 1)).isEqualTo("detail_text");
+                while (r.next()) {
+                    for (int col = 1; col < columns - 1; col++) {
+                        byte[] bytes = r.getBytes(col);
+                        legacy.update(
+                                java.nio.ByteBuffer.allocate(4)
+                                        .putInt(bytes == null ? -1 : bytes.length)
+                                        .array());
+                        if (bytes != null) legacy.update(bytes);
+                    }
+                }
+            }
+            var mapper = new MaintenanceMapper();
+            var old = mapper.auditDigest(c, "sn_audit", oldMonth());
+            assertThat(old.sha256()).isEqualTo(HexFormat.of().formatHex(legacy.digest()));
+            jdbc.update(
+                    "UPDATE sn_audit SET detail_text='R old name -> new name',quantity=NULL,error_message='原密码不正确',actor_id=NULL");
+            var current = mapper.auditDigest(c, "sn_audit", oldMonth());
+            assertThat(current.sha256()).isNotEqualTo(old.sha256());
+            assertThat(mapper.copyAudit(c, oldMonth())).isEqualTo(1);
+            assertThat(mapper.auditDigest(c, "sn_audit_archive", oldMonth())).isEqualTo(current);
+            jdbc.update("UPDATE sn_audit_archive SET error_message='changed'");
+            assertThat(mapper.auditDigest(c, "sn_audit_archive", oldMonth()).sha256())
+                    .isNotEqualTo(current.sha256());
+            jdbc.update("UPDATE sn_audit_archive SET error_message='原密码不正确',detail_text='changed'");
+            assertThat(mapper.auditDigest(c, "sn_audit_archive", oldMonth()).sha256())
+                    .isNotEqualTo(current.sha256());
+        }
+    }
+
+    @Test
     void dmlAndTerminalRecordAreAtomic() {
         audit(UUID.randomUUID().toString(), oldMonth(), "original");
         preview(UUID.randomUUID().toString(), true, false);

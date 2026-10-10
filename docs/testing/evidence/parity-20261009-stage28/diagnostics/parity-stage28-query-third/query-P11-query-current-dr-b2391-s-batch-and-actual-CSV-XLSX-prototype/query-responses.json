@@ -1,0 +1,29 @@
+{
+  "errors": [],
+  "responses": [
+    {
+      "path": "/api/sn",
+      "status": 200
+    },
+    {
+      "path": "/api/sn",
+      "status": 200
+    },
+    {
+      "path": "/api/sn",
+      "status": 200
+    },
+    {
+      "path": "/api/sn",
+      "status": 200
+    },
+    {
+      "path": "/api/sn",
+      "status": 200
+    },
+    {
+      "path": "/api/sn",
+      "status": 200
+    }
+  ]
+}

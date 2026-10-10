@@ -1,0 +1,438 @@
+{
+  "surface": [
+    {
+      "text": "-动作结果来源工厂查询时间操作人工号来源动作结果工厂PI号段数量状态变化失败原因 时间操作人工号来源动作结果工厂PI号段数量状态变化失败原因2026-10-08 12:00:01CMP_AUDIT_VIEW 审计界面样本接口生成成功比较测试甲厂CMP-UI-AUDIT-VIEW-PIAV000011待分配 → 待领取共 1 条120 条/页",
+      "x": 240,
+      "y": 147.796875,
+      "width": 1660,
+      "height": 251,
+      "color": "rgb(15, 23, 42)",
+      "font": "16px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "16px 20px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 1658,
+      "clientWidth": 1658
+    }
+  ],
+  "toolbar": [
+    {
+      "text": "-动作结果来源工厂查询",
+      "x": 261,
+      "y": 164.796875,
+      "width": 1618,
+      "height": 74,
+      "color": "rgb(15, 23, 42)",
+      "font": "16px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px",
+      "gap": "10px",
+      "margin": "0px 0px 12px",
+      "scrollLeft": 0,
+      "scrollWidth": 1618,
+      "clientWidth": 1618
+    }
+  ],
+  "headers": [
+    {
+      "text": "",
+      "x": 261,
+      "y": 250.796875,
+      "width": 52.890625,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 53,
+      "clientWidth": 53
+    },
+    {
+      "text": "时间",
+      "x": 313.890625,
+      "y": 250.796875,
+      "width": 187.359375,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 187,
+      "clientWidth": 187
+    },
+    {
+      "text": "操作人工号",
+      "x": 501.25,
+      "y": 250.796875,
+      "width": 143.28125,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 143,
+      "clientWidth": 143
+    },
+    {
+      "text": "来源",
+      "x": 644.53125,
+      "y": 250.796875,
+      "width": 77.140625,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 77,
+      "clientWidth": 77
+    },
+    {
+      "text": "动作",
+      "x": 721.671875,
+      "y": 250.796875,
+      "width": 132.25,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 132,
+      "clientWidth": 132
+    },
+    {
+      "text": "结果",
+      "x": 853.921875,
+      "y": 250.796875,
+      "width": 77.140625,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 77,
+      "clientWidth": 77
+    },
+    {
+      "text": "工厂",
+      "x": 931.0625,
+      "y": 250.796875,
+      "width": 121.234375,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 121,
+      "clientWidth": 121
+    },
+    {
+      "text": "PI",
+      "x": 1052.296875,
+      "y": 250.796875,
+      "width": 154.296875,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 154,
+      "clientWidth": 154
+    },
+    {
+      "text": "号段",
+      "x": 1206.59375,
+      "y": 250.796875,
+      "width": 253.5,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 254,
+      "clientWidth": 254
+    },
+    {
+      "text": "数量",
+      "x": 1460.09375,
+      "y": 250.796875,
+      "width": 77.140625,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 77,
+      "clientWidth": 77
+    },
+    {
+      "text": "状态变化",
+      "x": 1537.234375,
+      "y": 250.796875,
+      "width": 165.3125,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 165,
+      "clientWidth": 165
+    },
+    {
+      "text": "失败原因",
+      "x": 1702.546875,
+      "y": 250.796875,
+      "width": 176.453125,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 176,
+      "clientWidth": 176
+    }
+  ],
+  "cells": [],
+  "pager": [
+    {
+      "text": "共 1 条120 条/页",
+      "x": 261,
+      "y": 349.796875,
+      "width": 264.21875,
+      "height": 32,
+      "color": "rgb(15, 23, 42)",
+      "font": "14px / 22px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 264,
+      "clientWidth": 264
+    }
+  ],
+  "total": [
+    {
+      "text": "共 1 条",
+      "x": 261,
+      "y": 349.796875,
+      "width": 42.046875,
+      "height": 32,
+      "color": "rgb(96, 98, 102)",
+      "font": "14px / 30px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px 16px 0px 0px",
+      "scrollLeft": 0,
+      "scrollWidth": 42,
+      "clientWidth": 42
+    }
+  ],
+  "size": [
+    {
+      "text": "20 条/页",
+      "x": 319.046875,
+      "y": 349.796875,
+      "width": 94.171875,
+      "height": 32,
+      "color": "rgb(15, 23, 42)",
+      "font": "14px / 22px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px 16px 0px 0px",
+      "scrollLeft": 0,
+      "scrollWidth": 94,
+      "clientWidth": 94
+    }
+  ],
+  "prev": [
+    {
+      "text": "",
+      "x": 429.21875,
+      "y": 349.796875,
+      "width": 32,
+      "height": 32,
+      "color": "rgb(15, 23, 42)",
+      "font": "14px / 32px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 32,
+      "clientWidth": 32
+    }
+  ],
+  "pages": [
+    {
+      "text": "1",
+      "x": 461.21875,
+      "y": 349.796875,
+      "width": 32,
+      "height": 32,
+      "color": "rgb(15, 23, 42)",
+      "font": "700 14px / 30px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 32,
+      "clientWidth": 32
+    }
+  ],
+  "next": [
+    {
+      "text": "",
+      "x": 493.21875,
+      "y": 349.796875,
+      "width": 32,
+      "height": 32,
+      "color": "rgb(15, 23, 42)",
+      "font": "14px / 32px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 32,
+      "clientWidth": 32
+    }
+  ],
+  "date": [
+    {
+      "text": "-",
+      "x": 261,
+      "y": 164.796875,
+      "width": 548,
+      "height": 32,
+      "color": "rgb(15, 23, 42)",
+      "font": "14px / 14px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "3px 10px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 546,
+      "clientWidth": 546
+    }
+  ],
+  "dateInput": [
+    {
+      "text": "2026-09-09",
+      "x": 291,
+      "y": 169.796875,
+      "width": 237.5,
+      "height": 22,
+      "color": "rgb(96, 98, 102)",
+      "font": "14px / 22px Arial, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 238,
+      "clientWidth": 238
+    },
+    {
+      "text": "2026-10-09",
+      "x": 560.5,
+      "y": 169.796875,
+      "width": 237.5,
+      "height": 22,
+      "color": "rgb(96, 98, 102)",
+      "font": "14px / 22px Arial, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 238,
+      "clientWidth": 238
+    }
+  ],
+  "dateIcon": [
+    {
+      "text": "",
+      "x": 272,
+      "y": 173.796875,
+      "width": 14,
+      "height": 14,
+      "color": "rgba(0, 0, 0, 0.25)",
+      "font": "14px / 14px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px 5px 0px 0px",
+      "scrollLeft": 0,
+      "scrollWidth": 14,
+      "clientWidth": 14
+    }
+  ],
+  "separator": [
+    {
+      "text": "-",
+      "x": 528.5,
+      "y": 172.796875,
+      "width": 32,
+      "height": 16,
+      "color": "rgb(15, 23, 42)",
+      "font": "14px / 14px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 32,
+      "clientWidth": 32
+    }
+  ],
+  "table": [
+    {
+      "text": "时间操作人工号来源动作结果工厂PI号段数量状态变化失败原因 时间操作人工号来源动作结果工厂PI号段数量状态变化失败原因2026-10-08 12:00:01CMP_AUDIT_VIEW 审计界面样本接口生成成功比较测试甲厂CMP-UI-AUDIT-VIEW-PIAV000011待分配 → 待领取",
+      "x": 261,
+      "y": 250.796875,
+      "width": 1618,
+      "height": 87,
+      "color": "rgb(15, 23, 42)",
+      "font": "14px / 22px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 1618,
+      "clientWidth": 1618
+    }
+  ],
+  "scroll": [
+    {
+      "text": "时间操作人工号来源动作结果工厂PI号段数量状态变化失败原因 时间操作人工号来源动作结果工厂PI号段数量状态变化失败原因2026-10-08 12:00:01CMP_AUDIT_VIEW 审计界面样本接口生成成功比较测试甲厂CMP-UI-AUDIT-VIEW-PIAV000011待分配 → 待领取",
+      "x": 261,
+      "y": 250.796875,
+      "width": 1618,
+      "height": 87,
+      "color": "rgb(15, 23, 42)",
+      "font": "14px / 22px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 1618,
+      "clientWidth": 1618
+    }
+  ]
+}

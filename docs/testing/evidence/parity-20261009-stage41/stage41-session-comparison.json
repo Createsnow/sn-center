@@ -1,0 +1,56 @@
+{
+  "states": [
+    {
+      "state": "01-operator",
+      "identityMenusAndLoginCountEqual": true,
+      "queryRows": 9,
+      "firstEightColumnsEqualBySn": true,
+      "rawOrderEqual": false
+    },
+    {
+      "state": "original-token-query-after-edit",
+      "identityMenusAndLoginCountEqual": true
+    },
+    {
+      "state": "02-renamed",
+      "identityMenusAndLoginCountEqual": true,
+      "queryRows": 9,
+      "firstEightColumnsEqualBySn": true,
+      "rawOrderEqual": false
+    },
+    {
+      "state": "03-query-b",
+      "identityMenusAndLoginCountEqual": true,
+      "queryRows": 1,
+      "firstEightColumnsEqualBySn": true,
+      "rawOrderEqual": true
+    },
+    {
+      "state": "04-admin",
+      "identityMenusAndLoginCountEqual": true,
+      "queryRows": 10,
+      "firstEightColumnsEqualBySn": true,
+      "rawOrderEqual": false
+    },
+    {
+      "state": "05-self-edited",
+      "identityMenusAndLoginCountEqual": true
+    },
+    {
+      "state": "06-operator-again",
+      "identityMenusAndLoginCountEqual": true
+    }
+  ],
+  "fullPixelEqualityClaimed": false,
+  "historicalRowOrderAligned": false,
+  "prototype": {
+    "loginCount": 1,
+    "authenticatedRequests": 24,
+    "anonymousBootstrap401": 0
+  },
+  "migration": {
+    "loginCount": 1,
+    "authenticatedRequests": 39,
+    "anonymousBootstrap401": 1
+  }
+}

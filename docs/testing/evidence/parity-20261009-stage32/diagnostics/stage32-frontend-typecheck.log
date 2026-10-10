@@ -1,0 +1,15 @@
+
+> adtek-platform-sn-web@0.1.0 typecheck D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> tsc --noEmit
+
+e2e/parity/audit-files.spec.ts(57,39): error TS2532: Object is possibly 'undefined'.
+e2e/parity/audit-files.spec.ts(90,16): error TS2532: Object is possibly 'undefined'.
+e2e/parity/audit-files.spec.ts(91,16): error TS2532: Object is possibly 'undefined'.
+e2e/parity/audit-files.spec.ts(92,16): error TS2532: Object is possibly 'undefined'.
+e2e/parity/audit-files.spec.ts(93,16): error TS2532: Object is possibly 'undefined'.
+e2e/parity/audit-files.spec.ts(94,16): error TS2532: Object is possibly 'undefined'.
+e2e/parity/audit-files.spec.ts(95,16): error TS2532: Object is possibly 'undefined'.
+e2e/parity/audit-files.spec.ts(96,16): error TS2532: Object is possibly 'undefined'.
+e2e/parity/audit-files.spec.ts(97,16): error TS2532: Object is possibly 'undefined'.
+e2e/parity/audit-files.spec.ts(98,16): error TS2532: Object is possibly 'undefined'.
+ ELIFECYCLE  Command failed with exit code 2.

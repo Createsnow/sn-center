@@ -1,0 +1,132 @@
+{
+  "kind": "java",
+  "items": [
+    {
+      "sn": "G0600001",
+      "seq_dec": 1,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-1"
+    },
+    {
+      "sn": "G0600002",
+      "seq_dec": 2,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-2"
+    },
+    {
+      "sn": "G0600003",
+      "seq_dec": 3,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-3"
+    },
+    {
+      "sn": "G0600004",
+      "seq_dec": 4,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-4"
+    },
+    {
+      "sn": "G0600005",
+      "seq_dec": 5,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-5"
+    },
+    {
+      "sn": "G0600006",
+      "seq_dec": 6,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-6"
+    },
+    {
+      "sn": "G0600007",
+      "seq_dec": 7,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-7"
+    },
+    {
+      "sn": "G0600008",
+      "seq_dec": 8,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-8"
+    },
+    {
+      "sn": "G0600009",
+      "seq_dec": 9,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-9"
+    },
+    {
+      "sn": "G0600010",
+      "seq_dec": 10,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-10"
+    },
+    {
+      "sn": "G0600011",
+      "seq_dec": 11,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-11"
+    },
+    {
+      "sn": "G0600012",
+      "seq_dec": 12,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-12"
+    },
+    {
+      "sn": "G0600013",
+      "seq_dec": 13,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-13"
+    },
+    {
+      "sn": "G0600014",
+      "seq_dec": 14,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-14"
+    },
+    {
+      "sn": "G0600015",
+      "seq_dec": 15,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-15"
+    },
+    {
+      "sn": "G0600016",
+      "seq_dec": 16,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-16"
+    },
+    {
+      "sn": "G0600017",
+      "seq_dec": 17,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-17"
+    },
+    {
+      "sn": "G0600018",
+      "seq_dec": 18,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-18"
+    },
+    {
+      "sn": "G0600019",
+      "seq_dec": 19,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-19"
+    },
+    {
+      "sn": "G0600020",
+      "seq_dec": 20,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-20"
+    },
+    {
+      "sn": "G0600021",
+      "seq_dec": 21,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-21"
+    }
+  ],
+  "allocations": []
+}

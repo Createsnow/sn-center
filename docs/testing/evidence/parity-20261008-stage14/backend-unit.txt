@@ -1,0 +1,53 @@
+[INFO] Running com.adtek.common.core.DataScopeTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.072 s -- in com.adtek.common.core.DataScopeTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Running com.adtek.framework.audit.AuditContextTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.094 s -- in com.adtek.framework.audit.AuditContextTest
+[INFO] Running com.adtek.framework.audit.RequestFailureAuditFilterTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.112 s -- in com.adtek.framework.audit.RequestFailureAuditFilterTest
+[INFO] Running com.adtek.framework.mybatis.ScopedDataPermissionInterceptorTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.136 s -- in com.adtek.framework.mybatis.ScopedDataPermissionInterceptorTest
+[INFO] Running com.adtek.framework.security.CurrentActorTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.010 s -- in com.adtek.framework.security.CurrentActorTest
+[INFO] Running com.adtek.framework.security.JwtTokenCodecTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.139 s -- in com.adtek.framework.security.JwtTokenCodecTest
+[INFO] Running com.adtek.framework.security.PasswordEncodingTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.309 s -- in com.adtek.framework.security.PasswordEncodingTest
+[INFO] Running com.adtek.framework.security.RedisFailureTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.763 s -- in com.adtek.framework.security.RedisFailureTest
+[INFO] Running com.adtek.framework.task.FileStorageTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.322 s -- in com.adtek.framework.task.FileStorageTest
+[INFO] Running com.adtek.framework.web.LegacyBoundaryTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.057 s -- in com.adtek.framework.web.LegacyBoundaryTest
+[INFO] Running com.adtek.framework.web.ResultSerializationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.021 s -- in com.adtek.framework.web.ResultSerializationTest
+[INFO] Running com.adtek.framework.web.TraceFilterTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.adtek.framework.web.TraceFilterTest
+[INFO] Tests run: 34, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Running com.adtek.sn.service.support.InitializationErrorsTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.249 s -- in com.adtek.sn.service.support.InitializationErrorsTest
+[INFO] Running com.adtek.sn.service.support.SequenceCodecTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.054 s -- in com.adtek.sn.service.support.SequenceCodecTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Running com.adtek.server.ArchitectureTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.570 s -- in com.adtek.server.ArchitectureTest
+[INFO] Running com.adtek.server.ArchiveRestoreProofTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.637 s -- in com.adtek.server.ArchiveRestoreProofTest
+[INFO] Running com.adtek.server.AuditProjectionTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.018 s -- in com.adtek.server.AuditProjectionTest
+[INFO] Running com.adtek.server.ErrorCodeCatalogTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.716 s -- in com.adtek.server.ErrorCodeCatalogTest
+[INFO] Running com.adtek.server.K3ConfigurationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.744 s -- in com.adtek.server.K3ConfigurationTest
+[INFO] Running com.adtek.server.K3ErrorsTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.212 s -- in com.adtek.server.K3ErrorsTest
+[INFO] Running com.adtek.server.K3LegacyProtocolTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.036 s -- in com.adtek.server.K3LegacyProtocolTest
+[INFO] Running com.adtek.server.LegacyErrorCatalogTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.010 s -- in com.adtek.server.LegacyErrorCatalogTest
+[INFO] Running com.adtek.server.MaintenanceScheduleTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.038 s -- in com.adtek.server.MaintenanceScheduleTest
+[INFO] Tests run: 26, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[INFO] Total time:  26.222 s
+[INFO] Finished at: 2026-10-08T19:11:01+08:00

@@ -34,6 +34,10 @@ public class SnWorkHandlers {
                 return SnWorkEngine.permission(kind);
             }
 
+            public int executionSeconds() {
+                return "PI_INIT".equals(kind) ? e.settings.getImportExecutionSeconds() : 30;
+            }
+
             public void authorize(Actor actor, TaskEntity task) {
                 e.authorize(actor, kind);
                 var work = e.rows.find(task.id());
@@ -45,8 +49,22 @@ public class SnWorkHandlers {
                 return e.execute(task, actor);
             }
 
+            public void authorizeProgress(Actor actor, TaskEntity task) {
+                e.policy.require(
+                        actor,
+                        "PI_INIT".equals(kind) ? "sn:pi-init:view" : "sn:generation:view",
+                        true);
+                var work = e.rows.find(task.id());
+                if (work == null || !kind.equals(work.kind()))
+                    throw new IllegalStateException("Missing SN task input");
+            }
+
             public void failed(TaskEntity task, int code) {
                 e.ended(task, "FAILED", code);
+            }
+
+            public void failed(TaskEntity task, int code, java.util.Map<String, String> params) {
+                e.ended(task, "FAILED", code, params);
             }
 
             public void cancelled(TaskEntity task) {

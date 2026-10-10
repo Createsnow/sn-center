@@ -1,0 +1,44 @@
+{
+  "java": {
+    "schedule": {
+      "enabled": 0,
+      "interval_minutes": 1440,
+      "next_run_at": null
+    },
+    "triggers": 0,
+    "activeBills": 3,
+    "activeEntries": 4,
+    "syncStates": [
+      {
+        "state": "SUCCESS",
+        "n": 170
+      },
+      {
+        "state": "FAILED",
+        "n": 130
+      }
+    ],
+    "taskStates": [
+      {
+        "state": "SUCCESS",
+        "n": 52
+      }
+    ],
+    "stage54ServiceClientsDisabled": [
+      {
+        "display_name": "MES闭环 audit20261009540002",
+        "enabled": 0
+      }
+    ]
+  },
+  "python": {
+    "schedule": {
+      "enabled": 0,
+      "interval_minutes": 1440,
+      "next_run_at": null
+    },
+    "triggers": 0,
+    "activeBills": 3,
+    "activeEntries": 4
+  }
+}

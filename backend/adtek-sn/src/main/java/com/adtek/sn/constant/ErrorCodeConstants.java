@@ -55,6 +55,21 @@ public final class ErrorCodeConstants {
             new ErrorCode(1_004_000_027, 409, "sn.ruleChoiceRequired");
     public static final ErrorCode START_BEFORE_INCOMING =
             new ErrorCode(1_004_000_028, 409, "sn.startBeforeIncoming");
+    public static final ErrorCode ALLOCATION_QTY_EXCEEDED =
+            new ErrorCode(1_004_000_029, 409, "sn.allocationQtyExceeded");
 
     private ErrorCodeConstants() {}
+
+    public static final ErrorCode ACCOUNT_INVALID =
+            new ErrorCode(1_004_000_030, 400, "sn.accountInvalid");
+    public static final ErrorCode ACCOUNT_EXTENDED =
+            new ErrorCode(1_004_000_031, 409, "sn.accountExtended");
+    public static final ErrorCode ACCOUNT_EXISTS =
+            new ErrorCode(1_004_000_032, 409, "sn.accountExists");
+    public static final ErrorCode FACTORY_INVALID =
+            new ErrorCode(1_004_000_033, 400, "sn.factoryInvalid");
+    public static final ErrorCode ORDER_BILL_REQUIRED =
+            new ErrorCode(1_004_000_034, 400, "sn.orderBillRequired");
+    public static final ErrorCode ORDER_SYNC_INTERVAL_INVALID =
+            new ErrorCode(1_004_000_035, 400, "sn.orderSyncIntervalInvalid");
 }

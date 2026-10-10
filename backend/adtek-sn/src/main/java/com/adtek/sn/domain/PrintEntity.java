@@ -11,4 +11,7 @@ public record PrintEntity(
         long actorId,
         String operationId,
         String csvTaskId,
-        java.time.Instant createdAt) {}
+        java.time.Instant createdAt,
+        String printNo,
+        String actorName,
+        int formatVersion) {}

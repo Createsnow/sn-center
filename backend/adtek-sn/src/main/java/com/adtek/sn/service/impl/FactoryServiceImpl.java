@@ -88,12 +88,18 @@ public class FactoryServiceImpl implements FactoryService {
             businessType = OperLog.BusinessType.INSERT,
             fields = {"code", "name", "source"})
     public FactoryVO create(FactoryCreateDTO input) {
-        validator.requireValid(input);
+        policy.read("sn:factory:create", true);
         var command =
-                new FactoryCreateDTO(SnPolicy.text(input.code()), SnPolicy.text(input.name()));
-        validator.requireValid(command);
+                new FactoryCreateDTO(
+                        com.adtek.sn.service.support.FactoryText.trim(input.code()),
+                        com.adtek.sn.service.support.FactoryText.trim(input.name()));
+        if (command.code().isEmpty()
+                || command.name().isEmpty()
+                || command.code().codePointCount(0, command.code().length()) > 64
+                || command.name().codePointCount(0, command.name().length()) > 128)
+            throw new BusinessException(FACTORY_INVALID);
         policy.lock("sn:factory:create");
-        control.lock();
+        long revision = control.lock() + 1;
         var entity = convert.factory(command);
         entity.setSource("MANUAL");
         entity.setEnabled(true);
@@ -103,8 +109,11 @@ public class FactoryServiceImpl implements FactoryService {
         try {
             factories.insert(entity);
         } catch (DuplicateKeyException e) {
-            throw new BusinessException(FACTORY_EXISTS);
+            throw new BusinessException(
+                    FACTORY_EXISTS, Map.of("factory", command.code() + "/" + command.name()));
         }
+        mappings.projectAutomaticBills(revision);
+        mappings.projectAutomaticEntries(revision);
         control.advance();
         AuditContext.record(
                 entity.getId().toString(),
@@ -138,6 +147,7 @@ public class FactoryServiceImpl implements FactoryService {
         String q = SnPolicy.text(query.getQ());
         var all =
                 orgs.stream()
+                        .filter(o -> o.id() != null)
                         .filter(o -> q.isEmpty() || o.code().contains(q) || o.name().contains(q))
                         .sorted(
                                 Comparator.comparing(ErpProductionOrderPort.Organization::code)
@@ -159,7 +169,7 @@ public class FactoryServiceImpl implements FactoryService {
         var source = erp.source();
         var org =
                 erp.organizations().stream()
-                        .filter(o -> o.id().equals(command.orgId()))
+                        .filter(o -> command.orgId().equals(o.id()))
                         .findFirst()
                         .orElseThrow(SnPolicy::missing);
         return publisher.bind(source, org, SnPolicy.id(factoryId), SnPolicy.id(command.version()));

@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.*;
 
 import java.time.Instant;
 
-/** 同步尝试记录；失败或进程中断不能改变已发布快照，错误只保存受控码。 */
+/** 同步尝试记录；订单失败保留此前订单，独立提交的工厂步骤保留，错误只保存受控码。 */
 @TableName("sn_order_sync")
 public class OrderSyncEntity {
     @TableId(type = IdType.INPUT)
@@ -69,6 +69,17 @@ public class OrderSyncEntity {
     }
 
     private Long publishedVersion;
+
+    /** 本次工厂步骤已提交的版本；原始baseVersion保持不变，订单仅接受这一连续基准。 */
+    private Long factoryVersion;
+
+    public Long getFactoryVersion() {
+        return factoryVersion;
+    }
+
+    public void setFactoryVersion(Long value) {
+        this.factoryVersion = value;
+    }
 
     public Long getPublishedVersion() {
         return publishedVersion;

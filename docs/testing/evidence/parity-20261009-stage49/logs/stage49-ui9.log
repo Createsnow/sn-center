@@ -1,0 +1,42 @@
+
+Running 2 tests using 1 worker
+
+(node:27572) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\order-boundaries.spec.ts:14:1 › P05 boundaries: Unicode blank bill, three-language validation and schedule owner handover (41.3s)
+(node:41684) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [migration] › e2e\parity\order-boundaries.spec.ts:14:1 › P05 boundaries: Unicode blank bill, three-language validation and schedule owner handover (31.4s)
+
+
+  1) [migration] › e2e\parity\order-boundaries.spec.ts:14:1 › P05 boundaries: Unicode blank bill, three-language validation and schedule owner handover 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.sn-page-actions .ant-btn-loading-icon')
+    Expected: 0
+    Received: 1
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.sn-page-actions .ant-btn-loading-icon') with timeout 15000ms
+      - waiting for locator('.sn-page-actions .ant-btn-loading-icon')
+        33 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      84 |     await tab.mouse.move(0, 0);
+      85 |     await expect(tab.locator('.ant-spin-spinning:visible,.el-loading-mask:visible')).toHaveCount(0);
+    > 86 |     await expect(tab.locator('.sn-page-actions .ant-btn-loading-icon')).toHaveCount(0);
+         |                                                                         ^
+      87 |     states.push({
+      88 |       label,
+      89 |       body: await tab.locator('main').innerText(),
+        at capture (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-boundaries.spec.ts:86:73)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-boundaries.spec.ts:236:9
+
+    Error Context: test-results\stage49-ui9\order-boundaries-P05-bound-0fcda-and-schedule-owner-handover-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\order-boundaries.spec.ts:14:1 › P05 boundaries: Unicode blank bill, three-language validation and schedule owner handover 
+  1 passed (1.3m)

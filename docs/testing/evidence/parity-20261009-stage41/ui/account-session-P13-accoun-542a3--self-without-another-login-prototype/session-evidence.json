@@ -1,0 +1,531 @@
+{
+  "snapshots": [
+    {
+      "queryRows": [
+        [
+          "CMP00010",
+          "00010",
+          "10",
+          "CMP-PI-001",
+          "CMP-MAT-B",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00009",
+          "00009",
+          "9",
+          "CMP-PI-001",
+          "CMP-MAT-B",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00008",
+          "00008",
+          "8",
+          "CMP-PI-001",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00007",
+          "00007",
+          "7",
+          "CMP-PI-001",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00006",
+          "00006",
+          "6",
+          "CMP-PI-001",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00005",
+          "00005",
+          "5",
+          "CMP-PI-001",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00004",
+          "00004",
+          "4",
+          "CMP-PI-001",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00003",
+          "00003",
+          "3",
+          "CMP-PI-001",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00002",
+          "00002",
+          "2",
+          "CMP-PI-001",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ]
+      ],
+      "name": "01-operator",
+      "displayName": "会话测试成员",
+      "role": "factory_operator",
+      "bound": "A",
+      "menus": [
+        "首页",
+        "领取与打印",
+        "转厂",
+        "SN 查询",
+        "操作痕迹"
+      ],
+      "logins": 1
+    },
+    {
+      "name": "original-token-query-after-edit",
+      "status": 200,
+      "sameBearer": true
+    },
+    {
+      "queryRows": [
+        [
+          "CMP00010",
+          "00010",
+          "10",
+          "CMP-PI-001",
+          "CMP-MAT-B",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00009",
+          "00009",
+          "9",
+          "CMP-PI-001",
+          "CMP-MAT-B",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00008",
+          "00008",
+          "8",
+          "CMP-PI-001",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00007",
+          "00007",
+          "7",
+          "CMP-PI-001",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00006",
+          "00006",
+          "6",
+          "CMP-PI-001",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00005",
+          "00005",
+          "5",
+          "CMP-PI-001",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00004",
+          "00004",
+          "4",
+          "CMP-PI-001",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00003",
+          "00003",
+          "3",
+          "CMP-PI-001",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00002",
+          "00002",
+          "2",
+          "CMP-PI-001",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ]
+      ],
+      "name": "02-renamed",
+      "displayName": "管理修改姓名",
+      "role": "factory_operator",
+      "bound": "A",
+      "menus": [
+        "首页",
+        "领取与打印",
+        "转厂",
+        "SN 查询",
+        "操作痕迹"
+      ],
+      "logins": 1
+    },
+    {
+      "queryRows": [
+        [
+          "CMP00001",
+          "00001",
+          "1",
+          "CMP-PI-002",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试乙厂",
+          "待领取"
+        ]
+      ],
+      "name": "03-query-b",
+      "displayName": "乙厂只读成员",
+      "role": "query",
+      "bound": "B",
+      "menus": [
+        "首页",
+        "生产订单",
+        "领取与打印",
+        "转厂",
+        "SN 查询",
+        "操作痕迹"
+      ],
+      "logins": 1
+    },
+    {
+      "queryRows": [
+        [
+          "CMP00010",
+          "00010",
+          "10",
+          "CMP-PI-001",
+          "CMP-MAT-B",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00009",
+          "00009",
+          "9",
+          "CMP-PI-001",
+          "CMP-MAT-B",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00008",
+          "00008",
+          "8",
+          "CMP-PI-001",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00007",
+          "00007",
+          "7",
+          "CMP-PI-001",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00006",
+          "00006",
+          "6",
+          "CMP-PI-001",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00005",
+          "00005",
+          "5",
+          "CMP-PI-001",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00004",
+          "00004",
+          "4",
+          "CMP-PI-001",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00003",
+          "00003",
+          "3",
+          "CMP-PI-001",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00002",
+          "00002",
+          "2",
+          "CMP-PI-001",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试甲厂",
+          "已打印"
+        ],
+        [
+          "CMP00001",
+          "00001",
+          "1",
+          "CMP-PI-002",
+          "CMP-MAT-A",
+          "CMP-CUSTOMER",
+          "比较测试乙厂",
+          "待领取"
+        ]
+      ],
+      "name": "04-admin",
+      "displayName": "会话测试管理员",
+      "role": "admin",
+      "menus": [
+        "首页",
+        "生产订单",
+        "生成与分配",
+        "起始号与历史导入",
+        "规则模板",
+        "领取与打印",
+        "转厂",
+        "SN 查询",
+        "操作痕迹",
+        "账户",
+        "工厂"
+      ],
+      "logins": 1
+    },
+    {
+      "name": "05-self-edited",
+      "displayName": "本人修改姓名",
+      "role": "admin",
+      "menus": [
+        "首页",
+        "生产订单",
+        "生成与分配",
+        "起始号与历史导入",
+        "规则模板",
+        "领取与打印",
+        "转厂",
+        "SN 查询",
+        "操作痕迹",
+        "账户",
+        "工厂"
+      ],
+      "logins": 1
+    },
+    {
+      "name": "06-operator-again",
+      "displayName": "恢复甲厂操作员",
+      "role": "factory_operator",
+      "bound": "A",
+      "menus": [
+        "首页",
+        "领取与打印",
+        "转厂",
+        "SN 查询",
+        "操作痕迹"
+      ],
+      "logins": 1
+    }
+  ],
+  "requests": [
+    {
+      "route": "/api/auth/login",
+      "status": 200,
+      "authenticated": false
+    },
+    {
+      "route": "/api/auth/password",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/auth/me",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/dashboard",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/sn",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/factories",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/sn",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/auth/me",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/sn",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/factories",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/factories",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/auth/me",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/sn",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/auth/me",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/factories",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/sn",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/users",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/users",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/users/125",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/users",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/auth/me",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/factories",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/users",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/auth/me",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/dashboard",
+      "status": 200,
+      "authenticated": true
+    }
+  ],
+  "memberLogins": 1,
+  "failures": []
+}

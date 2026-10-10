@@ -1,0 +1,47 @@
+{
+  "items": [
+    {
+      "sn": "INI00008",
+      "pi": "CMP-UI-INIT-PI",
+      "source_pi": "CMP-UI-INIT-PI",
+      "seq_dec": 8,
+      "customer": "CMP-OVERRIDE",
+      "material": "CMP-INIT-MAT",
+      "factory_code": "CMP-A",
+      "status": "PRINTED",
+      "source": "IMPORT"
+    },
+    {
+      "sn": "UNPARSED",
+      "pi": "CMP-UI-INIT-PI",
+      "source_pi": "CMP-UI-INIT-PI",
+      "seq_dec": null,
+      "customer": "CMP-OVERRIDE",
+      "material": "CMP-INIT-MAT",
+      "factory_code": "CMP-A",
+      "status": "PRINTED",
+      "source": "IMPORT"
+    }
+  ],
+  "counters": [
+    {
+      "pi": "CMP-UI-INIT-PI",
+      "last_seq": 8,
+      "generated_qty": 0,
+      "imported_qty": 2,
+      "start_seq": null,
+      "start_locked": 1
+    }
+  ],
+  "history": [
+    {
+      "pi": "CMP-UI-INIT-PI",
+      "start_seq": null,
+      "qty": 2,
+      "max_seq": 8,
+      "factory_code": "CMP-A",
+      "file_name": "",
+      "operator": "admin"
+    }
+  ]
+}

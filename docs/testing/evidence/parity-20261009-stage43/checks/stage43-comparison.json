@@ -1,0 +1,16 @@
+{
+  "accountAuditRows": 13,
+  "workbookColumns": 24,
+  "sameBusinessColumns": 22,
+  "typesAndNullsEqual": true,
+  "excludedGeneratedColumns": [
+    "time",
+    "requestId"
+  ],
+  "resolvedIndependentIdentity": [
+    "failed reset route member id"
+  ],
+  "orderedVisibleTableRows": 13,
+  "visibleColumnsCompared": 11,
+  "completeGoal": false
+}

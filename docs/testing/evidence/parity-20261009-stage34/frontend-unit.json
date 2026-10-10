@@ -1,0 +1,1252 @@
+{
+  "numTotalTestSuites": 46,
+  "numPassedTestSuites": 46,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 78,
+  "numPassedTests": 78,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1791505848962,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "audit contracts"
+          ],
+          "fullName": "audit contracts keeps identifiers exact and requires typed result, status and time",
+          "status": "passed",
+          "title": "keeps identifiers exact and requires typed result, status and time",
+          "duration": 1.1766999999999825,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "audit contracts"
+          ],
+          "fullName": "audit contracts accepts nullable history and rejects raw nested diff objects or missing redaction state",
+          "status": "passed",
+          "title": "accepts nullable history and rejects raw nested diff objects or missing redaction state",
+          "duration": 0.2185999999999808,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505850158,
+      "endTime": 1791505850160.2185,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/api/audit.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "continuous prototype catalogs"
+          ],
+          "fullName": "continuous prototype catalogs loads later pages without rounding business totals or showing a truncated list",
+          "status": "passed",
+          "title": "loads later pages without rounding business totals or showing a truncated list",
+          "duration": 2.995900000000006,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "continuous prototype catalogs"
+          ],
+          "fullName": "continuous prototype catalogs cancels after an in-flight page before requesting more data",
+          "status": "passed",
+          "title": "cancels after an in-flight page before requesting more data",
+          "duration": 0.5199999999999818,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "continuous prototype catalogs"
+          ],
+          "fullName": "continuous prototype catalogs rejects a changing total and limits remote customer suggestions to the prototype cap",
+          "status": "passed",
+          "title": "rejects a changing total and limits remote customer suggestions to the prototype cap",
+          "duration": 0.9411000000000058,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505849446,
+      "endTime": 1791505849449.9412,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/api/catalog.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "configuration response contracts"
+          ],
+          "fullName": "configuration response contracts preserves IDs and versions beyond JavaScript integer precision",
+          "status": "passed",
+          "title": "preserves IDs and versions beyond JavaScript integer precision",
+          "duration": 1.4506000000000085,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "configuration response contracts"
+          ],
+          "fullName": "configuration response contracts rejects missing translations, malformed menu types and nonboolean states",
+          "status": "passed",
+          "title": "rejects missing translations, malformed menu types and nonboolean states",
+          "duration": 0.2939000000000078,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505850111,
+      "endTime": 1791505850112.4507,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/api/configuration.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "external API boundaries"
+          ],
+          "fullName": "external API boundaries preserves IDs above the JavaScript safe integer range and rejects numeric IDs",
+          "status": "passed",
+          "title": "preserves IDs above the JavaScript safe integer range and rejects numeric IDs",
+          "duration": 1.3553999999999746,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "external API boundaries"
+          ],
+          "fullName": "external API boundaries rejects unknown language and malformed permissions before caching a profile",
+          "status": "passed",
+          "title": "rejects unknown language and malformed permissions before caching a profile",
+          "duration": 0.18549999999999045,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "external API boundaries"
+          ],
+          "fullName": "external API boundaries preserves retry and trace information without treating a failed response as success",
+          "status": "passed",
+          "title": "preserves retry and trace information without treating a failed response as success",
+          "duration": 0.9466999999999643,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "external API boundaries"
+          ],
+          "fullName": "external API boundaries rejects an invalid success envelope and accepts a valid typed payload",
+          "status": "passed",
+          "title": "rejects an invalid success envelope and accepts a valid typed payload",
+          "duration": 0.29290000000003147,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505849529,
+      "endTime": 1791505849532.293,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/api/contract.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "SN response boundary"
+          ],
+          "fullName": "SN response boundary keeps PI sums exact and rejects numeric or fractional SN counts",
+          "status": "passed",
+          "title": "keeps PI sums exact and rejects numeric or fractional SN counts",
+          "duration": 2.0044000000000324,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "SN response boundary"
+          ],
+          "fullName": "SN response boundary preserves schedule result precision and distinguishes never-run from failed",
+          "status": "passed",
+          "title": "preserves schedule result precision and distinguishes never-run from failed",
+          "duration": 0.4802999999999429,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "SN response boundary"
+          ],
+          "fullName": "SN response boundary keeps factory identifiers exact and rejects numeric IDs",
+          "status": "passed",
+          "title": "keeps factory identifiers exact and rejects numeric IDs",
+          "duration": 0.193300000000022,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "SN response boundary"
+          ],
+          "fullName": "SN response boundary keeps unmapped orders and large quotas while rejecting float quantities",
+          "status": "passed",
+          "title": "keeps unmapped orders and large quotas while rejecting float quantities",
+          "duration": 0.3310999999999922,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "SN response boundary"
+          ],
+          "fullName": "SN response boundary preserves empty materials and separate stable entry identity",
+          "status": "passed",
+          "title": "preserves empty materials and separate stable entry identity",
+          "duration": 0.3229999999999791,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "SN response boundary"
+          ],
+          "fullName": "SN response boundary keeps exact rule capacity and validates historical encoding metadata",
+          "status": "passed",
+          "title": "keeps exact rule capacity and validates historical encoding metadata",
+          "duration": 0.248299999999972,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "SN response boundary"
+          ],
+          "fullName": "SN response boundary checks page elements and bounds only the pagination widget",
+          "status": "passed",
+          "title": "checks page elements and bounds only the pagination widget",
+          "duration": 0.2138999999999669,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "SN response boundary"
+          ],
+          "fullName": "SN response boundary preserves an unknown historical creator without accepting missing or numeric identities",
+          "status": "passed",
+          "title": "preserves an unknown historical creator without accepting missing or numeric identities",
+          "duration": 0.2479999999999336,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505849862,
+      "endTime": 1791505849866.248,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/api/sn.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "S5固定历史、精度与文件状态契约"
+          ],
+          "fullName": "S5固定历史、精度与文件状态契约 当前批次页允许未知流水和空物料，拒绝丢精度数字和缺少成员身份",
+          "status": "passed",
+          "title": "当前批次页允许未知流水和空物料，拒绝丢精度数字和缺少成员身份",
+          "duration": 1.4794000000000551,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "S5固定历史、精度与文件状态契约"
+          ],
+          "fullName": "S5固定历史、精度与文件状态契约 未知流水与当前批次失效仍保留历史快照，拒绝数字型流水",
+          "status": "passed",
+          "title": "未知流水与当前批次失效仍保留历史快照，拒绝数字型流水",
+          "duration": 0.29310000000009495,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "S5固定历史、精度与文件状态契约"
+          ],
+          "fullName": "S5固定历史、精度与文件状态契约 零可领成功没有批次；阻止分类不能丢失",
+          "status": "passed",
+          "title": "零可领成功没有批次；阻止分类不能丢失",
+          "duration": 0.25289999999995416,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "S5固定历史、精度与文件状态契约"
+          ],
+          "fullName": "S5固定历史、精度与文件状态契约 完整游标结果必须显式给出结束标记和有效分类",
+          "status": "passed",
+          "title": "完整游标结果必须显式给出结束标记和有效分类",
+          "duration": 0.2583999999999378,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "S5固定历史、精度与文件状态契约"
+          ],
+          "fullName": "S5固定历史、精度与文件状态契约 两份文件状态独立，恢复或失败不抹掉打印记录",
+          "status": "passed",
+          "title": "两份文件状态独立，恢复或失败不抹掉打印记录",
+          "duration": 0.195699999999988,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505850025,
+      "endTime": 1791505850027.2583,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/api/snAcquire.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "打印提交的临时任务容量"
+          ],
+          "fullName": "打印提交的临时任务容量 等待旧文件释放容量，始终复用同一操作号和输入，不跳过当前 PI",
+          "status": "passed",
+          "title": "等待旧文件释放容量，始终复用同一操作号和输入，不跳过当前 PI",
+          "duration": 6.150000000000034,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "打印提交的临时任务容量"
+          ],
+          "fullName": "打印提交的临时任务容量 其他业务错误、权限拒绝和未知网络结果立即返回，不自动重试",
+          "status": "passed",
+          "title": "其他业务错误、权限拒绝和未知网络结果立即返回，不自动重试",
+          "duration": 0.9947999999999979,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "打印提交的临时任务容量"
+          ],
+          "fullName": "打印提交的临时任务容量 容量持续不足最多等待一分钟，返回原拒绝且不遗留重试计时器",
+          "status": "passed",
+          "title": "容量持续不足最多等待一分钟，返回原拒绝且不遗留重试计时器",
+          "duration": 1.4317000000000348,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505849501,
+      "endTime": 1791505849510.4316,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/api/snAcquireSubmission.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "SN historical audit contracts"
+          ],
+          "fullName": "SN historical audit contracts retains precise IDs and quantities and distinguishes blank material from mixed null",
+          "status": "passed",
+          "title": "retains precise IDs and quantities and distinguishes blank material from mixed null",
+          "duration": 1.5534000000000106,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "SN historical audit contracts"
+          ],
+          "fullName": "SN historical audit contracts requires explicit nullable historical fields",
+          "status": "passed",
+          "title": "requires explicit nullable historical fields",
+          "duration": 0.23599999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "SN historical audit contracts"
+          ],
+          "fullName": "SN historical audit contracts rejects invalid outcomes and dates without rewriting free text",
+          "status": "passed",
+          "title": "rejects invalid outcomes and dates without rewriting free text",
+          "duration": 0.13549999999997908,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "SN historical audit contracts"
+          ],
+          "fullName": "SN historical audit contracts requires explicit archive and exact export-limit metadata",
+          "status": "passed",
+          "title": "requires explicit archive and exact export-limit metadata",
+          "duration": 0.15840000000002874,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505849864,
+      "endTime": 1791505849866.236,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/api/snAudit.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "SN query contracts"
+          ],
+          "fullName": "SN query contracts requires exact page totals, explicit cap state and business batch projection",
+          "status": "passed",
+          "title": "requires exact page totals, explicit cap state and business batch projection",
+          "duration": 1.4740000000000464,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "SN query contracts"
+          ],
+          "fullName": "SN query contracts preserves exact dashboard job numbering and progress instead of rounded numeric JSON",
+          "status": "passed",
+          "title": "preserves exact dashboard job numbering and progress instead of rounded numeric JSON",
+          "duration": 0.2276000000000522,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "SN query contracts"
+          ],
+          "fullName": "SN query contracts preserves exact text and permits unassigned global rows",
+          "status": "passed",
+          "title": "preserves exact text and permits unassigned global rows",
+          "duration": 0.19510000000002492,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "SN query contracts"
+          ],
+          "fullName": "SN query contracts rejects missing current pointer or unrecognized state",
+          "status": "passed",
+          "title": "rejects missing current pointer or unrecognized state",
+          "duration": 0.120900000000006,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "SN query contracts"
+          ],
+          "fullName": "SN query contracts treats export file state separately from completed business snapshot",
+          "status": "passed",
+          "title": "treats export file state separately from completed business snapshot",
+          "duration": 0.15140000000008058,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "SN query contracts"
+          ],
+          "fullName": "SN query contracts requires suppressed global statistics to be explicit null",
+          "status": "passed",
+          "title": "requires suppressed global statistics to be explicit null",
+          "duration": 0.18830000000002656,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505849900,
+      "endTime": 1791505849903.1882,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/api/snQuery.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "transfer wire boundaries"
+          ],
+          "fullName": "transfer wire boundaries accepts scoped transferred-out details without losing precise sequences or nullable current rows",
+          "status": "passed",
+          "title": "accepts scoped transferred-out details without losing precise sequences or nullable current rows",
+          "duration": 1.3162999999999556,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "transfer wire boundaries"
+          ],
+          "fullName": "transfer wire boundaries keeps exact IDs and explicitly empty material distinct from unknown values",
+          "status": "passed",
+          "title": "keeps exact IDs and explicitly empty material distinct from unknown values",
+          "duration": 0.33180000000004384,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "transfer wire boundaries"
+          ],
+          "fullName": "transfer wire boundaries does not confuse task state with transfer state or accept guessed direction",
+          "status": "passed",
+          "title": "does not confuse task state with transfer state or accept guessed direction",
+          "duration": 0.14779999999996107,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "transfer wire boundaries"
+          ],
+          "fullName": "transfer wire boundaries requires every source state count as precise text",
+          "status": "passed",
+          "title": "requires every source state count as precise text",
+          "duration": 0.197400000000016,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "transfer wire boundaries"
+          ],
+          "fullName": "transfer wire boundaries allows a wholly unmapped snapshot but rejects incomplete or imprecise factory identities",
+          "status": "passed",
+          "title": "allows a wholly unmapped snapshot but rejects incomplete or imprecise factory identities",
+          "duration": 0.185799999999972,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "transfer wire boundaries"
+          ],
+          "fullName": "transfer wire boundaries checks the complete minimal handoff target contract",
+          "status": "passed",
+          "title": "checks the complete minimal handoff target contract",
+          "duration": 0.15460000000007312,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505850010,
+      "endTime": 1791505850013.1858,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/api/snTransfer.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "S4响应精度与固定状态边界"
+          ],
+          "fullName": "S4响应精度与固定状态边界 预演流水仅接受精确字符串",
+          "status": "passed",
+          "title": "预演流水仅接受精确字符串",
+          "duration": 1.9375,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "S4响应精度与固定状态边界"
+          ],
+          "fullName": "S4响应精度与固定状态边界 起号建议支持超过long的已耗尽值，实际SN为空，仍拒绝浮点数",
+          "status": "passed",
+          "title": "起号建议支持超过long的已耗尽值，实际SN为空，仍拒绝浮点数",
+          "duration": 0.22999999999996135,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "S4响应精度与固定状态边界"
+          ],
+          "fullName": "S4响应精度与固定状态边界 PI空规则和空流水有明确语义，拒绝缺失锁定状态",
+          "status": "passed",
+          "title": "PI空规则和空流水有明确语义，拒绝缺失锁定状态",
+          "duration": 0.2616999999999621,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "S4响应精度与固定状态边界"
+          ],
+          "fullName": "S4响应精度与固定状态边界 历史只能显示已知业务状态，未解析最大流水为空",
+          "status": "passed",
+          "title": "历史只能显示已知业务状态，未解析最大流水为空",
+          "duration": 0.47989999999998645,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505850099,
+      "endTime": 1791505850101.48,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/api/snWork.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "durable task contract"
+          ],
+          "fullName": "durable task contract preserves exact quantities and rejects unknown states or missing recovery facts",
+          "status": "passed",
+          "title": "preserves exact quantities and rejects unknown states or missing recovery facts",
+          "duration": 2.0243999999999573,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "durable task contract"
+          ],
+          "fullName": "durable task contract recovery identifiers are UUIDs without paths or principal claims",
+          "status": "passed",
+          "title": "recovery identifiers are UUIDs without paths or principal claims",
+          "duration": 0.18339999999994916,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505850125,
+      "endTime": 1791505850127.1833,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/api/tasks.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "user management API boundary"
+          ],
+          "fullName": "user management API boundary keeps identifiers beyond JavaScript precision and nullable legacy department intact",
+          "status": "passed",
+          "title": "keeps identifiers beyond JavaScript precision and nullable legacy department intact",
+          "duration": 1.092299999999966,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "user management API boundary"
+          ],
+          "fullName": "user management API boundary rejects missing version and string status instead of permitting an unsafe edit",
+          "status": "passed",
+          "title": "rejects missing version and string status instead of permitting an unsafe edit",
+          "duration": 0.15289999999998827,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505850158,
+      "endTime": 1791505850160.1528,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/api/users.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "published error translations"
+          ],
+          "fullName": "published error translations covers every published integer and uses identical interpolation parameters",
+          "status": "passed",
+          "title": "covers every published integer and uses identical interpolation parameters",
+          "duration": 9.33200000000005,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "published error translations"
+          ],
+          "fullName": "published error translations keeps all 97 original codes and extra boundaries explicit and translated",
+          "status": "passed",
+          "title": "keeps all 97 original codes and extra boundaries explicit and translated",
+          "duration": 8.05759999999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505849378,
+      "endTime": 1791505849395.0576,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/i18n/errors.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "generation failure feedback"
+          ],
+          "fullName": "generation failure feedback keeps exact sequence parameters and historical language while localizing current errors",
+          "status": "passed",
+          "title": "keeps exact sequence parameters and historical language while localizing current errors",
+          "duration": 4.958000000000027,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "generation failure feedback"
+          ],
+          "fullName": "generation failure feedback only translates reasons within the generation error family",
+          "status": "passed",
+          "title": "only translates reasons within the generation error family",
+          "duration": 0.8572000000000344,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505849400,
+      "endTime": 1791505849405.8572,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/features/sn/generationErrorText.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "initialization errors"
+          ],
+          "fullName": "initialization errors shows the exact upper bound and offending input in all three languages",
+          "status": "passed",
+          "title": "shows the exact upper bound and offending input in all three languages",
+          "duration": 5.58359999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "initialization errors"
+          ],
+          "fullName": "initialization errors does not translate missing parameters, unrelated codes or arbitrary reasons",
+          "status": "passed",
+          "title": "does not translate missing parameters, unrelated codes or arbitrary reasons",
+          "duration": 1.189300000000003,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505849440,
+      "endTime": 1791505849446.1892,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/features/sn/initializationErrorText.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "print download feedback"
+          ],
+          "fullName": "print download feedback zh-CN: distinguishes HTTP fallback, business denial, network and invalid file",
+          "status": "passed",
+          "title": "zh-CN: distinguishes HTTP fallback, business denial, network and invalid file",
+          "duration": 7.080199999999991,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "print download feedback"
+          ],
+          "fullName": "print download feedback en: distinguishes HTTP fallback, business denial, network and invalid file",
+          "status": "passed",
+          "title": "en: distinguishes HTTP fallback, business denial, network and invalid file",
+          "duration": 1.059599999999989,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "print download feedback"
+          ],
+          "fullName": "print download feedback vi: distinguishes HTTP fallback, business denial, network and invalid file",
+          "status": "passed",
+          "title": "vi: distinguishes HTTP fallback, business denial, network and invalid file",
+          "duration": 0.6541000000000281,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505849551,
+      "endTime": 1791505849559.654,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/features/sn/printDownloadErrorText.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "query scope errors"
+          ],
+          "fullName": "query scope errors explains the rejected PI in all supported languages",
+          "status": "passed",
+          "title": "explains the rejected PI in all supported languages",
+          "duration": 4.280799999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "query scope errors"
+          ],
+          "fullName": "query scope errors keeps unrelated or malformed rejections generic",
+          "status": "passed",
+          "title": "keeps unrelated or malformed rejections generic",
+          "duration": 1.1671999999999798,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505849440,
+      "endTime": 1791505849445.1672,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/features/sn/queryErrorText.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "query export recovery boundaries"
+          ],
+          "fullName": "query export recovery boundaries releases a rejected submission only after an authoritative absent operation",
+          "status": "passed",
+          "title": "releases a rejected submission only after an authoritative absent operation",
+          "duration": 1.4599000000000046,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "query export recovery boundaries"
+          ],
+          "fullName": "query export recovery boundaries retains unknown submissions and idempotency conflicts even when lookup is absent",
+          "status": "passed",
+          "title": "retains unknown submissions and idempotency conflicts even when lookup is absent",
+          "duration": 0.20189999999999486,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "query export recovery boundaries"
+          ],
+          "fullName": "query export recovery boundaries recovers a committed fixed file without making business failure recoverable",
+          "status": "passed",
+          "title": "recovers a committed fixed file without making business failure recoverable",
+          "duration": 0.20490000000000919,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505849804,
+      "endTime": 1791505849806.2048,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/features/sn/queryExportState.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "prototype rule form errors"
+          ],
+          "fullName": "prototype rule form errors normalizes surrounding whitespace and preserves Unicode content",
+          "status": "passed",
+          "title": "normalizes surrounding whitespace and preserves Unicode content",
+          "duration": 2.3734999999999786,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "prototype rule form errors"
+          ],
+          "fullName": "prototype rule form errors keeps required-field reasons distinct without replacing server uniqueness checks",
+          "status": "passed",
+          "title": "keeps required-field reasons distinct without replacing server uniqueness checks",
+          "duration": 0.5733999999999924,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "prototype rule form errors"
+          ],
+          "fullName": "prototype rule form errors translates only known rule reasons from the rule error codes",
+          "status": "passed",
+          "title": "translates only known rule reasons from the rule error codes",
+          "duration": 3.4814999999999827,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505849530,
+      "endTime": 1791505849536.4814,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/features/sn/ruleErrorText.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "SN旧清单解析与精确数量"
+          ],
+          "fullName": "SN旧清单解析与精确数量 识别BOM标题和第一列，保留字符串精度及大小写",
+          "status": "passed",
+          "title": "识别BOM标题和第一列，保留字符串精度及大小写",
+          "duration": 2.407000000000039,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "SN旧清单解析与精确数量"
+          ],
+          "fullName": "SN旧清单解析与精确数量 只在物理首行跳过标题，重复清单不能静默放行",
+          "status": "passed",
+          "title": "只在物理首行跳过标题，重复清单不能静默放行",
+          "duration": 0.5174999999999841,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "SN旧清单解析与精确数量"
+          ],
+          "fullName": "SN旧清单解析与精确数量 仅去掉成对双引号，单引号和未闭合引号属于完整 SN",
+          "status": "passed",
+          "title": "仅去掉成对双引号，单引号和未闭合引号属于完整 SN",
+          "duration": 0.2966000000000122,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "SN旧清单解析与精确数量"
+          ],
+          "fullName": "SN旧清单解析与精确数量 初始化起号归一化保留精度，同时拒绝非整数和超出 long 的值",
+          "status": "passed",
+          "title": "初始化起号归一化保留精度，同时拒绝非整数和超出 long 的值",
+          "duration": 1.8927000000000476,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "SN旧清单解析与精确数量"
+          ],
+          "fullName": "SN旧清单解析与精确数量 数量建议不经过Number且10000可调整",
+          "status": "passed",
+          "title": "数量建议不经过Number且10000可调整",
+          "duration": 0.42969999999996844,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "SN旧清单解析与精确数量"
+          ],
+          "fullName": "SN旧清单解析与精确数量 正整数不能科学计数、含前导零或超过数据库long",
+          "status": "passed",
+          "title": "正整数不能科学计数、含前导零或超过数据库long",
+          "duration": 0.3131000000000199,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505849556,
+      "endTime": 1791505849562.313,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/features/sn/snInput.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "订单同步可见错误"
+          ],
+          "fullName": "订单同步可见错误 三语展示安全业务摘要且不暴露统一信封错误和追踪号",
+          "status": "passed",
+          "title": "三语展示安全业务摘要且不暴露统一信封错误和追踪号",
+          "duration": 3.408800000000042,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "订单同步可见错误"
+          ],
+          "fullName": "订单同步可见错误 未知和网络错误不采用未经识别的响应摘要",
+          "status": "passed",
+          "title": "未知和网络错误不采用未经识别的响应摘要",
+          "duration": 0.7810000000000059,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505849444,
+      "endTime": 1791505849447.781,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/features/sn/syncErrorText.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "transfer jump hint"
+          ],
+          "fullName": "transfer jump hint shows a changed start even when every skipped position is filled by incoming SNs",
+          "status": "passed",
+          "title": "shows a changed start even when every skipped position is filled by incoming SNs",
+          "duration": 2.193399999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "transfer jump hint"
+          ],
+          "fullName": "transfer jump hint does not reveal restricted or unchanged target counters",
+          "status": "passed",
+          "title": "does not reveal restricted or unchanged target counters",
+          "duration": 0.2927999999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1791505849585,
+      "endTime": 1791505849587.2927,
+      "status": "passed",
+      "message": "",
+      "name": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/src/features/sn/transferJump.test.ts"
+    }
+  ]
+}

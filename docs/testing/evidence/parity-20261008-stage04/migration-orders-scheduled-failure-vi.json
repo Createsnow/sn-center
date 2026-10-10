@@ -1,0 +1,56 @@
+[
+  {
+    "classes": "ant-modal css-dev-only-do-not-override-oc1rc0 sn-schedule-modal",
+    "rect": {
+      "x": 480,
+      "y": 144,
+      "width": 480,
+      "height": 477,
+      "top": 144,
+      "right": 960,
+      "bottom": 621,
+      "left": 480
+    },
+    "color": "rgb(15, 23, 42)",
+    "background": "rgba(0, 0, 0, 0)",
+    "fontSize": "14px",
+    "lineHeight": "22px",
+    "opacity": "1"
+  },
+  {
+    "classes": "ant-modal-title",
+    "rect": {
+      "x": 496,
+      "y": 160,
+      "width": 448,
+      "height": 24,
+      "top": 160,
+      "right": 944,
+      "bottom": 184,
+      "left": 496
+    },
+    "color": "rgb(48, 49, 51)",
+    "background": "rgba(0, 0, 0, 0)",
+    "fontSize": "18px",
+    "lineHeight": "24px",
+    "opacity": "1"
+  },
+  {
+    "classes": "sn-schedule-bad",
+    "rect": {
+      "x": 606,
+      "y": 342,
+      "width": 329.515625,
+      "height": 52,
+      "top": 342,
+      "right": 935.515625,
+      "bottom": 394,
+      "left": 606
+    },
+    "color": "rgb(180, 35, 24)",
+    "background": "rgba(0, 0, 0, 0)",
+    "fontSize": "14px",
+    "lineHeight": "32px",
+    "opacity": "1"
+  }
+]

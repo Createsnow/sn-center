@@ -1,0 +1,413 @@
+{
+  "mesStatePairs": [
+    {
+      "stage": "05-allocated",
+      "observed": [
+        {
+          "sn": "L2026100954000200001",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540002",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000200002",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540002",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000200003",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540002",
+          "factory": "CMP-A"
+        }
+      ]
+    },
+    {
+      "stage": "MES-06-taken",
+      "observed": [
+        {
+          "sn": "L2026100954000200001",
+          "status": "TO_PRINT",
+          "pi": "CMP-LOOP-20261009540002",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000200002",
+          "status": "TO_PRINT",
+          "pi": "CMP-LOOP-20261009540002",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000200003",
+          "status": "TO_PRINT",
+          "pi": "CMP-LOOP-20261009540002",
+          "factory": "CMP-A"
+        }
+      ]
+    },
+    {
+      "stage": "MES-06-partial",
+      "observed": [
+        {
+          "sn": "L2026100954000200001",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009540002",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000200002",
+          "status": "TO_PRINT",
+          "pi": "CMP-LOOP-20261009540002",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000200003",
+          "status": "TO_PRINT",
+          "pi": "CMP-LOOP-20261009540002",
+          "factory": "CMP-A"
+        }
+      ]
+    },
+    {
+      "stage": "07-printed",
+      "observed": [
+        {
+          "sn": "L2026100954000200001",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009540002",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000200002",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009540002",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000200003",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009540002",
+          "factory": "CMP-A"
+        }
+      ]
+    },
+    {
+      "stage": "08-transferred",
+      "observed": [
+        {
+          "sn": "L2026100954000200001",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540002",
+          "factory": "CMP-B"
+        },
+        {
+          "sn": "L2026100954000200002",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540002",
+          "factory": "CMP-B"
+        },
+        {
+          "sn": "L2026100954000200003",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540002",
+          "factory": "CMP-B"
+        }
+      ]
+    },
+    {
+      "stage": "MES-08-old-batch-protected",
+      "observed": [
+        {
+          "sn": "L2026100954000200001",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540002",
+          "factory": "CMP-B"
+        },
+        {
+          "sn": "L2026100954000200002",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540002",
+          "factory": "CMP-B"
+        },
+        {
+          "sn": "L2026100954000200003",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540002",
+          "factory": "CMP-B"
+        }
+      ]
+    },
+    {
+      "stage": "10-reprinted",
+      "observed": [
+        {
+          "sn": "L2026100954000200001",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009540002",
+          "factory": "CMP-B"
+        },
+        {
+          "sn": "L2026100954000200002",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009540002",
+          "factory": "CMP-B"
+        },
+        {
+          "sn": "L2026100954000200003",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009540002",
+          "factory": "CMP-B"
+        }
+      ]
+    }
+  ],
+  "mesBusinessPairs": [
+    {
+      "stage": "read-CMP-A",
+      "members": [
+        {
+          "sn": "L2026100954000200001",
+          "status": "TO_ACQUIRE",
+          "seq": "1",
+          "pi": "CMP-LOOP-20261009540002"
+        },
+        {
+          "sn": "L2026100954000200002",
+          "status": "TO_ACQUIRE",
+          "seq": "2",
+          "pi": "CMP-LOOP-20261009540002"
+        },
+        {
+          "sn": "L2026100954000200003",
+          "status": "TO_ACQUIRE",
+          "seq": "3",
+          "pi": "CMP-LOOP-20261009540002"
+        }
+      ]
+    },
+    {
+      "stage": "take-CMP-A",
+      "quantity": 3,
+      "members": [
+        "L2026100954000200001",
+        "L2026100954000200002",
+        "L2026100954000200003"
+      ],
+      "replaySameBatch": true
+    },
+    {
+      "stage": "invalid-target-rejected",
+      "status": 400
+    },
+    {
+      "stage": "partial",
+      "updated": 1,
+      "already": 0,
+      "blocked": 1
+    },
+    {
+      "stage": "already-printed",
+      "updated": 0,
+      "already": 1,
+      "blocked": 1
+    },
+    {
+      "stage": "reverse-range",
+      "updated": 2,
+      "already": 0,
+      "blocked": 0
+    },
+    {
+      "stage": "read-CMP-A",
+      "members": [
+        {
+          "sn": "L2026100954000200001",
+          "status": "PRINTED",
+          "seq": "1",
+          "pi": "CMP-LOOP-20261009540002"
+        },
+        {
+          "sn": "L2026100954000200002",
+          "status": "PRINTED",
+          "seq": "2",
+          "pi": "CMP-LOOP-20261009540002"
+        },
+        {
+          "sn": "L2026100954000200003",
+          "status": "PRINTED",
+          "seq": "3",
+          "pi": "CMP-LOOP-20261009540002"
+        }
+      ]
+    },
+    {
+      "stage": "old-batch-after-transfer",
+      "updated": 0,
+      "already": 0,
+      "blocked": 3
+    },
+    {
+      "stage": "take-CMP-B",
+      "quantity": 3,
+      "members": [
+        "L2026100954000200001",
+        "L2026100954000200002",
+        "L2026100954000200003"
+      ],
+      "replaySameBatch": true
+    },
+    {
+      "stage": "new-batch-at-target",
+      "updated": 3,
+      "already": 0,
+      "blocked": 0
+    },
+    {
+      "stage": "read-CMP-B",
+      "members": [
+        {
+          "sn": "L2026100954000200001",
+          "status": "PRINTED",
+          "seq": "1",
+          "pi": "CMP-LOOP-20261009540002"
+        },
+        {
+          "sn": "L2026100954000200002",
+          "status": "PRINTED",
+          "seq": "2",
+          "pi": "CMP-LOOP-20261009540002"
+        },
+        {
+          "sn": "L2026100954000200003",
+          "status": "PRINTED",
+          "seq": "3",
+          "pi": "CMP-LOOP-20261009540002"
+        }
+      ]
+    }
+  ],
+  "mesWireProtocolIdentical": false,
+  "mesProtocolNote": "Approved separate service identity, durable tasks, operation UUID and cursor protocol; source only returns skipped callbacks, migration stores all item outcomes.",
+  "functionalFacts": [
+    {
+      "stage": "page-entry",
+      "name": "首页",
+      "heading": "你好，同步痕迹操作员"
+    },
+    {
+      "stage": "page-entry",
+      "name": "生产订单",
+      "heading": "生产订单快照"
+    },
+    {
+      "stage": "page-entry",
+      "name": "生成与分配",
+      "heading": "生成与分配"
+    },
+    {
+      "stage": "page-entry",
+      "name": "起始号与历史导入",
+      "heading": "起始号与历史导入"
+    },
+    {
+      "stage": "page-entry",
+      "name": "规则模板",
+      "heading": "规则模板"
+    },
+    {
+      "stage": "page-entry",
+      "name": "领取与打印",
+      "heading": "领取与打印"
+    },
+    {
+      "stage": "page-entry",
+      "name": "转厂",
+      "heading": "转厂"
+    },
+    {
+      "stage": "page-entry",
+      "name": "SN 查询",
+      "heading": "SN 查询"
+    },
+    {
+      "stage": "page-entry",
+      "name": "操作痕迹",
+      "heading": "操作痕迹"
+    },
+    {
+      "stage": "page-entry",
+      "name": "账户",
+      "heading": "账户"
+    },
+    {
+      "stage": "page-entry",
+      "name": "工厂",
+      "heading": "工厂"
+    },
+    {
+      "stage": "factory-created",
+      "code": "F54-20261009540007"
+    },
+    {
+      "stage": "imported-members",
+      "members": [
+        {
+          "sn": "F20261009540007-ONE",
+          "pi": "CMP-FINAL-20261009540007",
+          "factory": "CMP-A",
+          "status": "PRINTED"
+        },
+        {
+          "sn": "F20261009540007-TWO",
+          "pi": "CMP-FINAL-20261009540007",
+          "factory": "CMP-A",
+          "status": "PRINTED"
+        }
+      ]
+    },
+    {
+      "stage": "forced-password-and-role",
+      "usersHidden": true,
+      "generationHidden": true
+    },
+    {
+      "stage": "imported-members",
+      "members": [
+        {
+          "sn": "F20261009540007-ONE",
+          "pi": "CMP-FINAL-20261009540007",
+          "factory": "CMP-A",
+          "status": "PRINTED"
+        },
+        {
+          "sn": "F20261009540007-TWO",
+          "pi": "CMP-FINAL-20261009540007",
+          "factory": "CMP-A",
+          "status": "PRINTED"
+        }
+      ]
+    },
+    {
+      "stage": "credential-relogin",
+      "oldRejected": true,
+      "newAccepted": true,
+      "refreshPreserved": true
+    }
+  ],
+  "pageEntriesPerSystem": [
+    "首页",
+    "生产订单",
+    "生成与分配",
+    "起始号与历史导入",
+    "规则模板",
+    "领取与打印",
+    "转厂",
+    "SN 查询",
+    "操作痕迹",
+    "账户",
+    "工厂"
+  ],
+  "browserErrors": [],
+  "passed": true
+}

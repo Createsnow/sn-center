@@ -1,0 +1,17 @@
+{
+  "prototypeAttempts": [
+    "Combined maximum attempt stopped after verified browser memory pressure; over-limit rejected; no valid import submitted.",
+    "Shorter diagnostic input hit locator timeout; no valid import submitted; not capacity proof.",
+    "Isolated original 64-codepoint 500000-row test passed before final test instrumentation change."
+  ],
+  "migrationAttempt": {
+    "testRunner": "Node heap OOM, exit 134; original UI test failed",
+    "taskId": "6ee686f3-06ca-4311-8101-1b6e4ea86a9f",
+    "taskState": "SUCCESS",
+    "quantity": 500000,
+    "taskCreatedToUpdatedSeconds": 388,
+    "recovery": "Fresh real browser query/reload, exact data hash verification and guarded cleanup passed; not counted as original test passing"
+  },
+  "limitObservationFailure": "Main run had three passes and one migration limit short-text timeout; HTTP 409 occurred but this did not count as UI passing. Pre-click 100ms observation still failed with the same nested selector. One diagnostic run failed because the inspector evicted the response body. A read-only DOM observer then saw the correct visible-height message for 5255.5ms; Outer locator and native DOM polling from Node also missed the short message. Final migration-only rerun passed using browser RAF wait on actual text and positive geometry; no DOM/content or response modification. Exact root cause of cross-process polling delay is not claimed. Original main report and diagnostic summaries retained.",
+  "instrumentation": "Independent contexts; scoped short-text polling avoids repeated giant page diagnostics. Root cause is consistent with assertion memory overhead, not independently proven."
+}

@@ -1,0 +1,11 @@
+
+Running 2 tests using 1 worker
+
+(node:40016) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\dashboard-layout.spec.ts:79:1 › P01 P04 factory operator header and shortcuts: three languages, four widths and real navigation (10.1s)
+(node:14300) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [migration] › e2e\parity\dashboard-layout.spec.ts:79:1 › P01 P04 factory operator header and shortcuts: three languages, four widths and real navigation (10.8s)
+
+  2 passed (23.8s)

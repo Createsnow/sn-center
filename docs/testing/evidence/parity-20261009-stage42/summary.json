@@ -1,0 +1,29 @@
+{
+  "stage": 42,
+  "completeGoal": false,
+  "schema": "38",
+  "unitTests": 88,
+  "integrationTests": {
+    "AuthenticationIT": 31,
+    "ConfigurationIT": 9,
+    "RuntimeIT": 6
+  },
+  "frontendUnitTests": 81,
+  "ui": {
+    "startTime": "2026-10-09T04:49:25.083Z",
+    "duration": 166812.15699999998,
+    "expected": 8,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "screenshots": 80,
+  "diagnosticScreenshots": 72,
+  "sourceFiles": 47,
+  "pending": [
+    "SN user administration audit projection",
+    "full P13 boundary/permission/concurrency/narrow/locale checks",
+    "P14 factories and remaining full matrix",
+    "earlier historical ordering and capacity/recovery gaps"
+  ]
+}

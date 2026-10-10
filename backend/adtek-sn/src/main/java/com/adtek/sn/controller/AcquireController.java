@@ -4,6 +4,7 @@ import com.adtek.common.core.*;
 import com.adtek.framework.task.vo.TaskVO;
 import com.adtek.framework.web.TraceFilter;
 import com.adtek.sn.dto.*;
+import com.adtek.sn.query.AcquireItemsQuery;
 import com.adtek.sn.query.AcquireQuery;
 import com.adtek.sn.service.*;
 import com.adtek.sn.vo.*;
@@ -11,8 +12,11 @@ import com.adtek.sn.vo.*;
 import io.swagger.v3.oas.annotations.Operation;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,10 +26,13 @@ import org.springframework.web.bind.annotation.*;
 public class AcquireController {
     private final AcquireService acquire;
     private final PrintService prints;
+    private final CurrentPrintFileService currentFiles;
 
-    public AcquireController(AcquireService acquire, PrintService prints) {
+    public AcquireController(
+            AcquireService acquire, PrintService prints, CurrentPrintFileService currentFiles) {
         this.acquire = acquire;
         this.prints = prints;
+        this.currentFiles = currentFiles;
     }
 
     private AcquireQuery query(
@@ -119,6 +126,18 @@ public class AcquireController {
         return Result.success(acquire.items(id, cursor, size), TraceFilter.current(request));
     }
 
+    @Operation(summary = "批次当前成员", description = "按流水归属、十进制流水及创建顺序分页；转出的成员不再显示，原批次数量不变。")
+    @GetMapping("/acquire-batches/{id}/current-items")
+    public Result<PageResult<SnReadItemVO>> currentItems(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "50") int size,
+            HttpServletRequest request) {
+        return Result.success(
+                acquire.currentItems(id, new AcquireItemsQuery(page, size)),
+                TraceFilter.current(request));
+    }
+
     @Operation(
             summary = "确认整工厂+PI打印并准备固定文件",
             description =
@@ -150,5 +169,39 @@ public class AcquireController {
     @GetMapping("/prints/{id}")
     public Result<PrintVO> print(@PathVariable String id, HttpServletRequest request) {
         return Result.success(prints.get(id), TraceFilter.current(request));
+    }
+
+    @Operation(summary = "下载打印单当前成员", description = "每次按当前打印指针生成；转出号不再包含，不重复确认打印，固定审计产物不变。")
+    @GetMapping("/prints/{id}/file")
+    public void currentFile(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "xlsx") String format,
+            HttpServletResponse response)
+            throws java.io.IOException {
+        try (var file = currentFiles.open(id, format)) {
+            response.setContentType(file.mediaType());
+            response.setContentLengthLong(file.bytes());
+            response.setHeader(
+                    HttpHeaders.CONTENT_DISPOSITION,
+                    ContentDisposition.attachment().filename(file.filename()).build().toString());
+            response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
+            response.setHeader("X-Content-Type-Options", "nosniff");
+            byte[] buffer = new byte[65536];
+            int count;
+            while ((count = file.input().read(buffer)) != -1)
+                response.getOutputStream().write(buffer, 0, count);
+        } catch (java.io.IOException | RuntimeException error) {
+            if (!response.isCommitted()) {
+                response.reset();
+                response.setHeader("X-Trace-Id", org.slf4j.MDC.get("traceId"));
+                throw error;
+            }
+            org.slf4j.LoggerFactory.getLogger(AcquireController.class)
+                    .warn(
+                            "Current print stream interrupted traceId={} exceptionType={}",
+                            org.slf4j.MDC.get("traceId"),
+                            error.getClass().getSimpleName());
+            response.getOutputStream().close();
+        }
     }
 }

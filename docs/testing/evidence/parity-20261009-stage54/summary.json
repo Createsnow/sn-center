@@ -1,0 +1,72 @@
+{
+  "date": "2026-10-09",
+  "acceptance": "Local core functional acceptance closed; retained differences explicitly documented.",
+  "userPriority": "Stop cosmetic expansion; complete practical functional acceptance.",
+  "schema": 41,
+  "runs": {
+    "mes2": {
+      "startTime": "2026-10-09T12:28:20.383Z",
+      "duration": 37477.583000000006,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "functional-final": {
+      "startTime": "2026-10-09T12:37:44.414Z",
+      "duration": 34399.655,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "business-final": {
+      "startTime": "2026-10-09T12:35:57.534Z",
+      "duration": 37981.613,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  },
+  "finalPairedUiTests": 6,
+  "frontendUnit": 84,
+  "backendRerun": false,
+  "backendBytesUnchanged": 603,
+  "productFrontendBytesUnchangedThisStage": true,
+  "jarSha256": "b21de36437a1dd15138c476dd98df763b6dcd88b6e307c4e2916d8b78e40ff6f",
+  "sourceFiles": {
+    "frontend/e2e/parity/business-loop.spec.ts": "0f793110c1d39b6810ee3b412bf944e243a52664d72d0b2c59d8d6b662f27694",
+    "frontend/e2e/parity/mes-probe.ts": "433b6a1d01d41f5b58add632b2a0e042b09ea0588be647a3cd97bf4da0d3bdee",
+    "frontend/e2e/parity/final-functional.spec.ts": "7c34b30cf51815ff2b082d665fe0dff316fce00330c4d86a9db5973c2f5e0c52",
+    "frontend/e2e/privacy.ts": "6884b91fe9f3d9e7a4a95ab079261ec54df9552d033e7ca074a95d563c3033e9",
+    "frontend/playwright.parity.config.ts": "702e61f4c28f3873f17b8716eba5391aaa25083a90a08040751f15a7c49ea918",
+    "tools/testing/parity-order-audit-fixture.py": "e387b1b8b4be6bdc3e2583ab625ce044063e523f2326cd3909c5d2619209f003"
+  },
+  "mesStatePairs": 7,
+  "mesBusinessPairs": 11,
+  "pageEntriesPerSystem": 11,
+  "functionalFactPairs": 16,
+  "businessStatePairs": 4,
+  "actualPrintXlsxFiles": 4,
+  "coreUiAuditFactsPerSystem": 7,
+  "screenshots": 58,
+  "diagnosticScreenshots": 34,
+  "originalFilesPreserved": 580,
+  "prototypeFilesPreserved": 146,
+  "frozenSqlPreserved": 41,
+  "allMainDatabaseRowsUnchanged": true,
+  "dedicatedServicesStopped": true,
+  "mainServicesReady": true,
+  "fullUiMatrixRerun": false,
+  "protocolIdentityClaimed": false,
+  "productionIntegrationClaimed": false,
+  "diagnosticsNote": "mes1 used wrong factory listing endpoint. functional1 asserted a removed form and encountered a fixture ID collision. functional2 expected generated rather than historical-import status. functional3 passed operations but observed headings before navigation completed. Corrected final observations compared equal; failed runs retained as diagnostics.",
+  "retainedDifferences": [
+    "Approved MES authentication/task/cursor contract",
+    "Prototype material-selector defect is not duplicated",
+    "Prototype page-size request race is not duplicated",
+    "Future-dated audit upper bound",
+    "Historical data/order reconstruction excluded; large-import performance differs"
+  ]
+}

@@ -1,0 +1,559 @@
+{
+  "java": {
+    "flyway_schema_history": {
+      "rows": 41,
+      "allRowsUnchanged": true
+    },
+    "sn_acquire_batch": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sn_acquire_exception": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sn_acquire_member": {
+      "rows": 10,
+      "allRowsUnchanged": true
+    },
+    "sn_acquire_result": {
+      "rows": 10,
+      "allRowsUnchanged": true
+    },
+    "sn_acquire_work": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sn_audit": {
+      "rows": 5891,
+      "allRowsUnchanged": true
+    },
+    "sn_audit_archive": {
+      "rows": 0,
+      "allRowsUnchanged": true
+    },
+    "sn_audit_export": {
+      "rows": 84,
+      "allRowsUnchanged": true
+    },
+    "sn_audit_export_row": {
+      "rows": 764,
+      "allRowsUnchanged": true
+    },
+    "sn_audit_identity": {
+      "rows": 925,
+      "allRowsUnchanged": true
+    },
+    "sn_bill_generation": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sn_business_number": {
+      "rows": 451,
+      "allRowsUnchanged": true
+    },
+    "sn_factory": {
+      "rows": 2,
+      "allRowsUnchanged": true
+    },
+    "sn_generation_job": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sn_import_chunk": {
+      "rows": 0,
+      "allRowsUnchanged": true
+    },
+    "sn_item": {
+      "rows": 10,
+      "allRowsUnchanged": true
+    },
+    "sn_key": {
+      "rows": 10,
+      "allRowsUnchanged": true
+    },
+    "sn_legacy_id_map": {
+      "rows": 0,
+      "allRowsUnchanged": true
+    },
+    "sn_legacy_inventory_run": {
+      "rows": 0,
+      "allRowsUnchanged": true
+    },
+    "sn_legacy_master_run": {
+      "rows": 0,
+      "allRowsUnchanged": true
+    },
+    "sn_legacy_migration_run": {
+      "rows": 0,
+      "allRowsUnchanged": true
+    },
+    "sn_legacy_migration_table": {
+      "rows": 0,
+      "allRowsUnchanged": true
+    },
+    "sn_legacy_row": {
+      "rows": 0,
+      "allRowsUnchanged": true
+    },
+    "sn_maintenance_run": {
+      "rows": 0,
+      "allRowsUnchanged": true
+    },
+    "sn_order_bill": {
+      "rows": 55,
+      "allRowsUnchanged": true
+    },
+    "sn_order_entry": {
+      "rows": 156,
+      "allRowsUnchanged": true
+    },
+    "sn_order_sync": {
+      "rows": 894,
+      "allRowsUnchanged": true
+    },
+    "sn_order_sync_schedule": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sn_org_mapping": {
+      "rows": 2,
+      "allRowsUnchanged": true
+    },
+    "sn_pi_counter": {
+      "rows": 2,
+      "allRowsUnchanged": true
+    },
+    "sn_pi_rule_choice": {
+      "rows": 0,
+      "allRowsUnchanged": true
+    },
+    "sn_preview": {
+      "rows": 2,
+      "allRowsUnchanged": true
+    },
+    "sn_print": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sn_print_member": {
+      "rows": 10,
+      "allRowsUnchanged": true
+    },
+    "sn_query_export": {
+      "rows": 108,
+      "allRowsUnchanged": true
+    },
+    "sn_query_export_row": {
+      "rows": 1840,
+      "allRowsUnchanged": true
+    },
+    "sn_rule": {
+      "rows": 3,
+      "allRowsUnchanged": true
+    },
+    "sn_rule_version": {
+      "rows": 3,
+      "allRowsUnchanged": true
+    },
+    "sn_snapshot_control": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sn_source_entry_quota": {
+      "rows": 156,
+      "allRowsUnchanged": true
+    },
+    "sn_transfer": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sn_transfer_member": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sn_transfer_work": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sn_user_factory": {
+      "rows": 2,
+      "allRowsUnchanged": true
+    },
+    "sn_work": {
+      "rows": 2,
+      "allRowsUnchanged": true
+    },
+    "sys_audit_export_row": {
+      "rows": 0,
+      "allRowsUnchanged": true
+    },
+    "sys_dept": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sys_dict_item": {
+      "rows": 0,
+      "allRowsUnchanged": true
+    },
+    "sys_dict_type": {
+      "rows": 0,
+      "allRowsUnchanged": true
+    },
+    "sys_file": {
+      "rows": 576,
+      "allRowsUnchanged": true
+    },
+    "sys_menu": {
+      "rows": 55,
+      "allRowsUnchanged": true
+    },
+    "sys_oper_log": {
+      "oldRows": 10283,
+      "oldRowsUnchanged": true,
+      "additionalRefreshLogs": 2
+    },
+    "sys_operation": {
+      "rows": 1844,
+      "allRowsUnchanged": true
+    },
+    "sys_operation_control": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sys_role": {
+      "rows": 5,
+      "allRowsUnchanged": true
+    },
+    "sys_role_dept": {
+      "rows": 0,
+      "allRowsUnchanged": true
+    },
+    "sys_role_menu": {
+      "rows": 96,
+      "allRowsUnchanged": true
+    },
+    "sys_security_control": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sys_service_client": {
+      "rows": 0,
+      "allRowsUnchanged": true
+    },
+    "sys_service_permission": {
+      "rows": 0,
+      "allRowsUnchanged": true
+    },
+    "sys_task": {
+      "rows": 1844,
+      "allRowsUnchanged": true
+    },
+    "sys_task_progress": {
+      "rows": 1777,
+      "allRowsUnchanged": true
+    },
+    "sys_user": {
+      "rows": 4,
+      "allRowsUnchanged": true
+    },
+    "sys_user_factory": {
+      "rows": 0,
+      "allRowsUnchanged": true
+    },
+    "sys_user_role": {
+      "rows": 5,
+      "allRowsUnchanged": true
+    }
+  },
+  "python": {
+    "flyway_schema_history": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sn_acquire_batch": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sn_allocation": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sn_audit": {
+      "rows": 7289,
+      "allRowsUnchanged": true
+    },
+    "sn_audit_archive": {
+      "rows": 0,
+      "allRowsUnchanged": true
+    },
+    "sn_bill_gen": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sn_factory": {
+      "rows": 2,
+      "allRowsUnchanged": true
+    },
+    "sn_gen_job": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sn_gen_preview": {
+      "rows": 3,
+      "allRowsUnchanged": true
+    },
+    "sn_item": {
+      "rows": 10,
+      "allRowsUnchanged": true
+    },
+    "sn_key": {
+      "rows": 10,
+      "allRowsUnchanged": true
+    },
+    "sn_order_sync_schedule": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sn_pi_counter": {
+      "rows": 2,
+      "allRowsUnchanged": true
+    },
+    "sn_pi_import": {
+      "rows": 0,
+      "allRowsUnchanged": true
+    },
+    "sn_prd_mo": {
+      "rows": 4,
+      "allRowsUnchanged": true
+    },
+    "sn_print": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sn_rule": {
+      "rows": 3,
+      "allRowsUnchanged": true
+    },
+    "sn_rule_version": {
+      "rows": 3,
+      "allRowsUnchanged": true
+    },
+    "sn_transfer": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sn_transfer_item": {
+      "rows": 1,
+      "allRowsUnchanged": true
+    },
+    "sn_user": {
+      "rows": 4,
+      "allRowsUnchanged": true
+    }
+  },
+  "file": {
+    "files": 576,
+    "allBytesUnchanged": true
+  },
+  "frozen-sql": {
+    "files": 41,
+    "allBytesUnchanged": true
+  },
+  "prototype": {
+    "files": 146,
+    "allBytesUnchanged": true
+  },
+  "parity-20261008-stage17": {
+    "frozenFiles": 85,
+    "unchanged": true
+  },
+  "parity-20261008-stage18": {
+    "frozenFiles": 95,
+    "unchanged": true
+  },
+  "parity-20261009-audit-observed": {
+    "frozenFiles": 10,
+    "unchanged": true
+  },
+  "parity-20261009-stage19": {
+    "frozenFiles": 132,
+    "unchanged": true
+  },
+  "parity-20261009-stage20": {
+    "frozenFiles": 285,
+    "unchanged": true
+  },
+  "parity-20261009-stage21": {
+    "frozenFiles": 480,
+    "unchanged": true
+  },
+  "parity-20261009-stage22": {
+    "frozenFiles": 190,
+    "unchanged": true
+  },
+  "parity-20261009-stage23": {
+    "frozenFiles": 324,
+    "unchanged": true
+  },
+  "parity-20261009-stage24": {
+    "frozenFiles": 409,
+    "unchanged": true
+  },
+  "parity-20261009-stage25": {
+    "frozenFiles": 476,
+    "unchanged": true
+  },
+  "parity-20261009-stage26": {
+    "frozenFiles": 635,
+    "unchanged": true
+  },
+  "parity-20261009-stage27": {
+    "frozenFiles": 360,
+    "unchanged": true
+  },
+  "parity-20261009-stage28": {
+    "frozenFiles": 449,
+    "unchanged": true
+  },
+  "parity-20261009-stage29": {
+    "frozenFiles": 429,
+    "unchanged": true
+  },
+  "parity-20261009-stage30": {
+    "frozenFiles": 473,
+    "unchanged": true
+  },
+  "parity-20261009-stage31": {
+    "frozenFiles": 426,
+    "unchanged": true
+  },
+  "parity-20261009-stage32": {
+    "frozenFiles": 309,
+    "unchanged": true
+  },
+  "parity-20261009-stage33": {
+    "frozenFiles": 401,
+    "unchanged": true
+  },
+  "parity-20261009-stage34": {
+    "frozenFiles": 423,
+    "unchanged": true
+  },
+  "parity-20261009-stage35": {
+    "frozenFiles": 597,
+    "unchanged": true
+  },
+  "parity-20261009-stage36": {
+    "frozenFiles": 648,
+    "unchanged": true
+  },
+  "parity-20261009-stage36-drawn-text": {
+    "frozenFiles": 83,
+    "unchanged": true
+  },
+  "parity-20261009-stage37": {
+    "frozenFiles": 736,
+    "unchanged": true
+  },
+  "parity-20261009-stage38": {
+    "frozenFiles": 726,
+    "unchanged": true
+  },
+  "parity-20261009-stage39": {
+    "frozenFiles": 506,
+    "unchanged": true
+  },
+  "parity-20261009-stage39-doc-check": {
+    "frozenFiles": 3,
+    "unchanged": true
+  },
+  "parity-20261009-stage40": {
+    "frozenFiles": 499,
+    "unchanged": true
+  },
+  "parity-20261009-stage40-doc-check": {
+    "frozenFiles": 3,
+    "unchanged": true
+  },
+  "parity-20261009-stage41": {
+    "frozenFiles": 322,
+    "unchanged": true
+  },
+  "parity-20261009-stage42": {
+    "frozenFiles": 344,
+    "unchanged": true
+  },
+  "parity-20261009-stage42-doc-check": {
+    "frozenFiles": 2,
+    "unchanged": true
+  },
+  "parity-20261009-stage43": {
+    "frozenFiles": 375,
+    "unchanged": true
+  },
+  "parity-20261009-stage43-doc-check": {
+    "frozenFiles": 2,
+    "unchanged": true
+  },
+  "parity-20261009-stage44": {
+    "frozenFiles": 457,
+    "unchanged": true
+  },
+  "parity-20261009-stage44-doc-check": {
+    "frozenFiles": 2,
+    "unchanged": true
+  },
+  "parity-20261009-stage45": {
+    "frozenFiles": 542,
+    "unchanged": true
+  },
+  "parity-20261009-stage45-doc-check": {
+    "frozenFiles": 2,
+    "unchanged": true
+  },
+  "parity-20261009-stage46": {
+    "frozenFiles": 312,
+    "unchanged": true
+  },
+  "parity-20261009-stage46-doc-check": {
+    "frozenFiles": 2,
+    "unchanged": true
+  },
+  "parity-20261009-stage47": {
+    "frozenFiles": 406,
+    "unchanged": true
+  },
+  "parity-20261009-stage47-doc-check": {
+    "frozenFiles": 2,
+    "unchanged": true
+  },
+  "parity-20261009-stage48": {
+    "frozenFiles": 174,
+    "unchanged": true
+  },
+  "parity-20261009-stage48-doc-check": {
+    "frozenFiles": 2,
+    "unchanged": true
+  },
+  "parity-20261009-stage49": {
+    "frozenFiles": 291,
+    "unchanged": true
+  },
+  "parity-20261009-stage49-doc-check": {
+    "frozenFiles": 2,
+    "unchanged": true
+  },
+  "18080": {
+    "status": "UP"
+  },
+  "8000": {
+    "status": "ok",
+    "db": "mysql"
+  },
+  "web": {
+    "15173": 200,
+    "8000": 200
+  },
+  "jarSha256": "b21de36437a1dd15138c476dd98df763b6dcd88b6e307c4e2916d8b78e40ff6f"
+}

@@ -28,10 +28,13 @@ const item = {
   beforeStatus: 'APPLYING',
   afterStatus: 'TO_ACQUIRE',
   batchId: null,
+  batchNo: null,
+  transferNo: null,
   operationId: id,
   transferId: id,
   reason: '交接',
   errorCode: null,
+  errorMessage: null,
   traceId: id,
 };
 describe('SN historical audit contracts', () => {
@@ -39,11 +42,18 @@ describe('SN historical audit contracts', () => {
     expect(isSnAudit(item)).toBe(true);
     expect(isSnAudit({ ...item, actorId: 9007199254740992 })).toBe(false);
     expect(isSnAudit({ ...item, quantity: 13 })).toBe(false);
+    expect(isSnAudit({ ...item, quantity: null })).toBe(true);
+    expect(isSnAudit({ ...item, actorId: null, errorMessage: '工号或密码错误' })).toBe(true);
+    expect(isSnAudit({ ...item, actorId: undefined })).toBe(false);
+    expect(isSnAudit({ ...item, errorMessage: undefined })).toBe(false);
+    expect(isSnAudit({ ...item, quantity: undefined })).toBe(false);
     expect(isSnAudit({ ...item, material: null })).toBe(true);
   });
   it('requires explicit nullable historical fields', () => {
     expect(isSnAudit({ ...item, toFactoryId: undefined })).toBe(false);
     expect(isSnAudit({ ...item, transferId: undefined })).toBe(false);
+    expect(isSnAudit({ ...item, batchNo: undefined })).toBe(false);
+    expect(isSnAudit({ ...item, transferNo: 123 })).toBe(false);
   });
   it('rejects invalid outcomes and dates without rewriting free text', () => {
     expect(isSnAudit({ ...item, result: 'PENDING' })).toBe(false);

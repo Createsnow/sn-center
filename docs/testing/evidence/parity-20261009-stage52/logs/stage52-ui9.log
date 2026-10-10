@@ -1,0 +1,52 @@
+
+Running 2 tests using 1 worker
+
+(node:44460) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\order-interactions.spec.ts:12:1 › P05 interactions: overflow, line details, schedule limits and cancellation in three languages (2.4m)
+(node:34232) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [migration] › e2e\parity\order-interactions.spec.ts:12:1 › P05 interactions: overflow, line details, schedule limits and cancellation in three languages (2.6m)
+
+
+  1) [migration] › e2e\parity\order-interactions.spec.ts:12:1 › P05 interactions: overflow, line details, schedule limits and cancellation in three languages 
+
+    TimeoutError: locator.click: Timeout 15000ms exceeded.
+    Call log:
+      - waiting for getByRole('option', { name: 'phút', exact: true })
+        - locator resolved to <div title="phút" role="option" id="unit_list_0" aria-selected="false" aria-disabled="false" class="ant-select-item ant-select-item-option">…</div>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not stable
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not stable
+        - retrying click action
+          - waiting 100ms
+        - waiting for element to be visible, enabled and stable
+        - element is not stable
+      28 × retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is not visible
+      - retrying click action
+        - waiting 500ms
+
+
+      204 |       .locator(prototype ? '.el-select' : '.ant-select')
+      205 |       .click();
+    > 206 |     await page.getByRole('option', { name: text.orders.sched.unit[unit], exact: true }).click();
+          |                                                                                         ^
+      207 |   };
+      208 |   const save = async (minutes: number) => {
+      209 |     await open();
+        at choose (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-interactions.spec.ts:206:89)
+        at save (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-interactions.spec.ts:210:5)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-interactions.spec.ts:370:7
+
+    Error Context: test-results\stage52-ui9\order-interactions-P05-int-971d6-ellation-in-three-languages-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\order-interactions.spec.ts:12:1 › P05 interactions: overflow, line details, schedule limits and cancellation in three languages 
+  1 passed (5.1m)

@@ -1,0 +1,55 @@
+
+> adtek-platform-sn-web@0.1.0 build D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> tsc --noEmit && vite build
+
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 3325 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                1.08 kB │ gzip:   0.43 kB
+dist/assets/index-ocfhyaWu.css                47.89 kB │ gzip:   8.64 kB
+dist/assets/snTime-9ttSLFII.js                 0.23 kB │ gzip:   0.19 kB
+dist/assets/SnPageHead-ZAgK_wgj.js             0.34 kB │ gzip:   0.22 kB
+dist/assets/queryExportState-Dt0fmD-O.js       0.42 kB │ gzip:   0.27 kB
+dist/assets/PlusOutlined-Bxb0gHJr.js           0.71 kB │ gzip:   0.48 kB
+dist/assets/rolldown-runtime-hePW80VL.js       0.71 kB │ gzip:   0.42 kB
+dist/assets/ActionButton--FcpEXom.js           0.90 kB │ gzip:   0.56 kB
+dist/assets/snInput-CaUle-Uq.js                1.06 kB │ gzip:   0.66 kB
+dist/assets/ReloadOutlined-4DPV1reF.js         1.26 kB │ gzip:   0.78 kB
+dist/assets/tasks-DF_R9wr6.js                  1.39 kB │ gzip:   0.63 kB
+dist/assets/FactoryPicker-1V4IN30M.js          2.25 kB │ gzip:   1.06 kB
+dist/assets/useSnOperation-CGsvUaom.js         3.36 kB │ gzip:   1.46 kB
+dist/assets/popconfirm-Cv8agO_R.js             3.55 kB │ gzip:   1.58 kB
+dist/assets/FactoriesPage-d8umvl4K.js          4.79 kB │ gzip:   1.85 kB
+dist/assets/DashboardPage-CKU1qKzd.js          5.21 kB │ gzip:   2.28 kB
+dist/assets/sn-BFuO4l3I.js                     5.66 kB │ gzip:   2.16 kB
+dist/assets/UsersPage-Cv5dyb7B.js              6.43 kB │ gzip:   2.51 kB
+dist/assets/switch-CByROp8T.js                 7.50 kB │ gzip:   2.63 kB
+dist/assets/QueryPage-ETV3GMpJ.js              8.17 kB │ gzip:   3.32 kB
+dist/assets/PiInitPage-jUzlEPwl.js             8.89 kB │ gzip:   3.36 kB
+dist/assets/ConfigurationPage-D_Txse3y.js     10.67 kB │ gzip:   3.43 kB
+dist/assets/style-h2tisTNV.js                 11.39 kB │ gzip:   3.92 kB
+dist/assets/drawer-Bikd3gpW.js                14.43 kB │ gzip:   5.58 kB
+dist/assets/AuditPage-D2hoMYMG.js             14.58 kB │ gzip:   5.02 kB
+dist/assets/CheckCircleOutlined-ClPhPTJM.js   15.63 kB │ gzip:   6.10 kB
+dist/assets/OrdersPage-DCWHlBTu.js            17.36 kB │ gzip:   6.06 kB
+dist/assets/AcquirePage-Cs9IiTAb.js           18.58 kB │ gzip:   5.91 kB
+dist/assets/input-number-B8JIYV-m.js          20.74 kB │ gzip:   7.55 kB
+dist/assets/TransferPage-B9i_xdlR.js          22.13 kB │ gzip:   7.01 kB
+dist/assets/GeneratePage-hCOhgt2P.js          22.58 kB │ gzip:   7.21 kB
+dist/assets/syncErrorText-DYCtoFKr.js         26.15 kB │ gzip:   9.54 kB
+dist/assets/modal-DtgHnbCB.js                 26.51 kB │ gzip:   9.18 kB
+dist/assets/tabs-7mYTNtOM.js                  34.82 kB │ gzip:  10.90 kB
+dist/assets/RulesPage-zGxT_I_L.js             46.13 kB │ gzip:  13.46 kB
+dist/assets/SnAuditPage-BDDAsYfs.js          121.00 kB │ gzip:  39.24 kB
+dist/assets/table-CqT0XSxR.js                182.66 kB │ gzip:  56.81 kB
+dist/assets/index-DXmIzZAa.js                435.06 kB │ gzip: 145.82 kB
+dist/assets/ApiErrorAlert-NetzTv1e.js        756.16 kB │ gzip: 245.78 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 537ms

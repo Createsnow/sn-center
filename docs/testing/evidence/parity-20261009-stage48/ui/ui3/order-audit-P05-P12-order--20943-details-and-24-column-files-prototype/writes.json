@@ -1,0 +1,97 @@
+{
+  "writes": [
+    {
+      "label": "01-full",
+      "status": 200,
+      "body": {
+        "mode": "all",
+        "bill_no": "",
+        "rows": 4,
+        "bills": 3,
+        "synced_at": "2026-10-09 16:23:50",
+        "removed": false,
+        "unmapped_orgs": []
+      }
+    },
+    {
+      "label": "02-single",
+      "status": 200,
+      "body": {
+        "mode": "one",
+        "bill_no": "CMP-MO-001",
+        "rows": 2,
+        "bills": 1,
+        "synced_at": "2026-10-09 16:23:50",
+        "removed": false,
+        "unmapped_orgs": []
+      }
+    },
+    {
+      "label": "03-missing",
+      "status": 200,
+      "body": {
+        "mode": "one",
+        "bill_no": "CMP-MISSING",
+        "rows": 0,
+        "bills": 0,
+        "synced_at": "2026-10-09 16:23:50",
+        "removed": true,
+        "unmapped_orgs": []
+      }
+    },
+    {
+      "label": "04-empty",
+      "status": 200,
+      "body": {
+        "mode": "all",
+        "bill_no": "",
+        "rows": 0,
+        "bills": 0,
+        "synced_at": "2026-10-09 16:23:54",
+        "removed": false,
+        "unmapped_orgs": []
+      }
+    },
+    {
+      "label": "05-query-failed",
+      "status": 502,
+      "body": {
+        "code": "K3_QUERY_FAILED",
+        "message": "金蝶查询失败：比较查询失败",
+        "params": {
+          "message": "比较查询失败"
+        }
+      }
+    },
+    {
+      "label": "06-login-failed",
+      "status": 502,
+      "body": {
+        "code": "K3_LOGIN_FAILED",
+        "message": "金蝶登录失败：比较登录失败",
+        "params": {
+          "message": "比较登录失败"
+        }
+      }
+    },
+    {
+      "label": "07-sql-failed",
+      "status": 500,
+      "body": null
+    },
+    {
+      "label": "08-recovered",
+      "status": 200,
+      "body": {
+        "mode": "all",
+        "bill_no": "",
+        "rows": 4,
+        "bills": 3,
+        "synced_at": "2026-10-09 16:23:56",
+        "removed": false,
+        "unmapped_orgs": []
+      }
+    }
+  ],
+  "errors": []
+}

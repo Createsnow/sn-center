@@ -1,0 +1,34 @@
+{
+  "checkedAt": "2026-10-09T10:04:27.685438+00:00",
+  "evidenceFiles": 644,
+  "sourceFiles": 10,
+  "changedBaselineSources": [
+    "backend/adtek-integration/src/main/java/com/adtek/integration/k3/K3ProductionOrderAdapter.java",
+    "backend/adtek-server/src/test/java/com/adtek/server/K3ErrorsTest.java",
+    "backend/adtek-server/src/test/java/com/adtek/server/K3ProtocolFixture.java",
+    "frontend/src/features/sn/syncErrorText.test.ts",
+    "frontend/src/features/sn/syncErrorText.ts"
+  ],
+  "documents": {
+    "README.md": "464f7fd3885e8571a67d7ce288c4371b5725de28dda447ccdb84880e7a9441e3",
+    "docs/README.md": "406f3005337e88baf9eac86a8f8867b7956edb68ac720cbf0490877c20e036db",
+    "docs/testing/README.md": "7480c7df8b5b8498bfd9bc6498e8c573f28dc108acefeb6de49f1d37cdf4f471",
+    "docs/testing/SN页面与功能一致性验收清单.md": "2f8868e0a7d5bc4b6444b668bac46c29b7097c3ce3c1e234fef617e6dbdbf879",
+    "docs/testing/2026-10-09一致性第五十阶段.md": "f11e41740bc46baa24ebf93aaae12978f489e2e33867151286b484db2bc1b167",
+    "memory/项目状态.md": "548b656b9f0e73409ebe48dd066de9db8da984989ff2bcf4b03c05568d61e1a9"
+  },
+  "services": {
+    "18080": {
+      "status": "UP"
+    },
+    "8000": {
+      "status": "ok",
+      "db": "mysql"
+    }
+  },
+  "schema": 41,
+  "dedicatedPortsClosed": true,
+  "goal": "active",
+  "fullUiMatrixRerun": false,
+  "jarSha256": "b21de36437a1dd15138c476dd98df763b6dcd88b6e307c4e2916d8b78e40ff6f"
+}

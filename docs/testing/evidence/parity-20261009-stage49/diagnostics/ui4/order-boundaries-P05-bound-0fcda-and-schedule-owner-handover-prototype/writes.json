@@ -1,0 +1,59 @@
+{
+  "writes": [
+    {
+      "locale": "zh-CN",
+      "suffix": "nel",
+      "body": {
+        "code": "ORDER_BILL_REQUIRED",
+        "message": "请输入单据编号",
+        "params": {}
+      }
+    },
+    {
+      "locale": "zh-CN",
+      "suffix": "separator",
+      "body": {
+        "code": "ORDER_BILL_REQUIRED",
+        "message": "请输入单据编号",
+        "params": {}
+      }
+    },
+    {
+      "locale": "en",
+      "suffix": "nel",
+      "body": {
+        "code": "ORDER_BILL_REQUIRED",
+        "message": "请输入单据编号",
+        "params": {}
+      }
+    },
+    {
+      "locale": "en",
+      "suffix": "separator",
+      "body": {
+        "code": "ORDER_BILL_REQUIRED",
+        "message": "请输入单据编号",
+        "params": {}
+      }
+    },
+    {
+      "locale": "vi",
+      "suffix": "nel",
+      "body": {
+        "code": "ORDER_BILL_REQUIRED",
+        "message": "请输入单据编号",
+        "params": {}
+      }
+    },
+    {
+      "locale": "vi",
+      "suffix": "separator",
+      "body": {
+        "code": "ORDER_BILL_REQUIRED",
+        "message": "请输入单据编号",
+        "params": {}
+      }
+    }
+  ],
+  "pageErrors": []
+}

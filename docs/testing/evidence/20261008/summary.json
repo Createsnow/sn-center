@@ -1,0 +1,679 @@
+{
+  "date": "2026-10-08",
+  "javaSource": "46f607c936ab3b2deef5e025edd87f2e0e31dc88",
+  "pythonSource": "f8bc2d722cfde38cfb3ee892a50dcd1d90d58a4a",
+  "javaUnit": {
+    "totals": {
+      "tests": 71,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "suites": [
+      {
+        "name": "com.adtek.common.core.DataScopeTest",
+        "tests": "3",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.framework.audit.AuditContextTest",
+        "tests": "3",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.framework.audit.RequestFailureAuditFilterTest",
+        "tests": "4",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.framework.mybatis.ScopedDataPermissionInterceptorTest",
+        "tests": "6",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.framework.security.CurrentActorTest",
+        "tests": "3",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.framework.security.JwtTokenCodecTest",
+        "tests": "3",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.framework.security.PasswordEncodingTest",
+        "tests": "3",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.framework.security.RedisFailureTest",
+        "tests": "2",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.framework.task.FileStorageTest",
+        "tests": "6",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.framework.web.LegacyBoundaryTest",
+        "tests": "2",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.framework.web.ResultSerializationTest",
+        "tests": "1",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.framework.web.TraceFilterTest",
+        "tests": "1",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.ArchitectureTest",
+        "tests": "3",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.ArchiveRestoreProofTest",
+        "tests": "5",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.AuditProjectionTest",
+        "tests": "3",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.ErrorCodeCatalogTest",
+        "tests": "1",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.K3ConfigurationTest",
+        "tests": "2",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.K3ErrorsTest",
+        "tests": "6",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.K3LegacyProtocolTest",
+        "tests": "1",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.LegacyErrorCatalogTest",
+        "tests": "1",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.MaintenanceScheduleTest",
+        "tests": "3",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.sn.service.support.SequenceCodecTest",
+        "tests": "9",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      }
+    ]
+  },
+  "javaIntegration": {
+    "totals": {
+      "tests": 193,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "suites": [
+      {
+        "name": "com.adtek.server.AuditIT",
+        "tests": "7",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.AuthenticationIT",
+        "tests": "23",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.ConfigurationIT",
+        "tests": "9",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.DurableTaskIT",
+        "tests": "9",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.IncrementalMigrationIT",
+        "tests": "1",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.LegacyCliIT",
+        "tests": "2",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.LegacyInventoryIT",
+        "tests": "7",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.LegacyMasterIT",
+        "tests": "5",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.LegacySnapshotIT",
+        "tests": "5",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.LegacyStageIT",
+        "tests": "5",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.ProcessTaskRecoveryIT",
+        "tests": "1",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.RuntimeIT",
+        "tests": "6",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.SnAcquireIT",
+        "tests": "15",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.SnAuditIT",
+        "tests": "10",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.SnFoundationIT",
+        "tests": "25",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.SnMaintenanceIT",
+        "tests": "14",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.SnQueryIT",
+        "tests": "8",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.SnTransferIT",
+        "tests": "13",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.adtek.server.SnWorkIT",
+        "tests": "28",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      }
+    ]
+  },
+  "pythonBackend": {
+    "tests": 104,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "browser": [
+    {
+      "kind": "java",
+      "pages": [
+        {
+          "route": "/dashboard",
+          "actual": "/dashboard",
+          "heading": ["工作台"],
+          "containsSyntheticData": true,
+          "bodyLength": 454
+        },
+        {
+          "route": "/orders",
+          "actual": "/orders",
+          "heading": ["生产订单快照", "定时全量同步"],
+          "containsSyntheticData": true,
+          "bodyLength": 711
+        },
+        {
+          "route": "/generate",
+          "actual": "/generate",
+          "heading": ["生成与分配"],
+          "containsSyntheticData": false,
+          "bodyLength": 253
+        },
+        {
+          "route": "/pi-init",
+          "actual": "/pi-init",
+          "heading": ["起始号与历史导入"],
+          "containsSyntheticData": false,
+          "bodyLength": 220
+        },
+        {
+          "route": "/rules",
+          "actual": "/rules",
+          "heading": ["规则模板"],
+          "containsSyntheticData": true,
+          "bodyLength": 461
+        },
+        {
+          "route": "/acquire",
+          "actual": "/acquire",
+          "heading": ["领取 / 打印"],
+          "containsSyntheticData": true,
+          "bodyLength": 733
+        },
+        {
+          "route": "/transfer",
+          "actual": "/transfer",
+          "heading": ["转厂"],
+          "containsSyntheticData": false,
+          "bodyLength": 423
+        },
+        {
+          "route": "/query",
+          "actual": "/query",
+          "heading": ["SN 查询"],
+          "containsSyntheticData": true,
+          "bodyLength": 1977
+        },
+        {
+          "route": "/audit",
+          "actual": "/audit",
+          "heading": ["操作痕迹"],
+          "containsSyntheticData": true,
+          "bodyLength": 1531
+        },
+        {
+          "route": "/factories",
+          "actual": "/factories",
+          "heading": ["工厂"],
+          "containsSyntheticData": true,
+          "bodyLength": 322
+        },
+        {
+          "route": "/system/users",
+          "actual": "/system/users",
+          "heading": ["用户管理"],
+          "containsSyntheticData": false,
+          "bodyLength": 265
+        },
+        {
+          "route": "/system/roles",
+          "actual": "/system/roles",
+          "heading": ["角色管理"],
+          "containsSyntheticData": false,
+          "bodyLength": 390
+        },
+        {
+          "route": "/system/departments",
+          "actual": "/system/departments",
+          "heading": ["部门管理"],
+          "containsSyntheticData": false,
+          "bodyLength": 240
+        },
+        {
+          "route": "/system/menus",
+          "actual": "/system/menus",
+          "heading": ["菜单管理"],
+          "containsSyntheticData": false,
+          "bodyLength": 945
+        },
+        {
+          "route": "/system/dictionaries",
+          "actual": "/system/dictionaries",
+          "heading": ["字典管理"],
+          "containsSyntheticData": false,
+          "bodyLength": 228
+        },
+        {
+          "route": "/system/audit",
+          "actual": "/system/audit",
+          "heading": ["操作日志"],
+          "containsSyntheticData": false,
+          "bodyLength": 1292
+        }
+      ],
+      "errors": [],
+      "badResponses": [],
+      "expectedAnonymousResponses": [
+        {
+          "path": "/api/v1/system/auth/refresh",
+          "status": 401,
+          "authenticated": false
+        }
+      ],
+      "storageKeys": {
+        "local": ["adtek-language"],
+        "session": []
+      },
+      "refreshHttpOnly": [true],
+      "reloadAuthenticated": true
+    },
+    {
+      "kind": "python",
+      "pages": [
+        {
+          "route": "/",
+          "actual": "/",
+          "heading": ["你好，系统管理员"],
+          "containsSyntheticData": true,
+          "bodyLength": 392
+        },
+        {
+          "route": "/orders",
+          "actual": "/orders",
+          "heading": ["生产订单快照"],
+          "containsSyntheticData": true,
+          "bodyLength": 589
+        },
+        {
+          "route": "/generate",
+          "actual": "/generate",
+          "heading": ["生成与分配"],
+          "containsSyntheticData": false,
+          "bodyLength": 314
+        },
+        {
+          "route": "/pi-init",
+          "actual": "/pi-init",
+          "heading": ["起始号与历史导入"],
+          "containsSyntheticData": false,
+          "bodyLength": 233
+        },
+        {
+          "route": "/rules",
+          "actual": "/rules",
+          "heading": ["规则模板"],
+          "containsSyntheticData": true,
+          "bodyLength": 469
+        },
+        {
+          "route": "/acquire",
+          "actual": "/acquire",
+          "heading": ["领取与打印"],
+          "containsSyntheticData": true,
+          "bodyLength": 509
+        },
+        {
+          "route": "/transfer",
+          "actual": "/transfer",
+          "heading": ["转厂"],
+          "containsSyntheticData": false,
+          "bodyLength": 389
+        },
+        {
+          "route": "/query",
+          "actual": "/query",
+          "heading": ["SN 查询"],
+          "containsSyntheticData": true,
+          "bodyLength": 2039
+        },
+        {
+          "route": "/audit",
+          "actual": "/audit",
+          "heading": ["操作痕迹"],
+          "containsSyntheticData": true,
+          "bodyLength": 1804
+        },
+        {
+          "route": "/factories",
+          "actual": "/factories",
+          "heading": ["工厂"],
+          "containsSyntheticData": true,
+          "bodyLength": 308
+        },
+        {
+          "route": "/users",
+          "actual": "/users",
+          "heading": ["账户"],
+          "containsSyntheticData": false,
+          "bodyLength": 364
+        }
+      ],
+      "errors": [],
+      "badResponses": [],
+      "expectedAnonymousResponses": [],
+      "storageKeys": {
+        "local": ["sn_user", "sn_token"],
+        "session": []
+      },
+      "refreshHttpOnly": [],
+      "reloadAuthenticated": true
+    }
+  ],
+  "files": {
+    "java": {
+      "xlsx": {
+        "http": 200,
+        "dataRows": 10,
+        "sns": [
+          "CMP00001",
+          "CMP00009",
+          "CMP00002",
+          "CMP00003",
+          "CMP00010",
+          "CMP00006",
+          "CMP00008",
+          "CMP00005",
+          "CMP00004",
+          "CMP00007"
+        ],
+        "bytes": 4314
+      },
+      "csv": {
+        "http": 200,
+        "dataRows": 10,
+        "sns": [
+          "CMP00001",
+          "CMP00009",
+          "CMP00002",
+          "CMP00003",
+          "CMP00010",
+          "CMP00006",
+          "CMP00008",
+          "CMP00005",
+          "CMP00004",
+          "CMP00007"
+        ],
+        "bytes": 1718
+      },
+      "queryAssertions": "10 PRINTED before transfer; CMP00001 TO_ACQUIRE in target PI after transfer"
+    },
+    "python": {
+      "xlsx": {
+        "http": 200,
+        "dataRows": 9,
+        "sns": [
+          "CMP00002",
+          "CMP00003",
+          "CMP00004",
+          "CMP00005",
+          "CMP00006",
+          "CMP00007",
+          "CMP00008",
+          "CMP00009",
+          "CMP00010"
+        ],
+        "bytes": 5566
+      },
+      "csv": {
+        "http": 200,
+        "dataRows": 9,
+        "sns": [
+          "CMP00002",
+          "CMP00003",
+          "CMP00004",
+          "CMP00005",
+          "CMP00006",
+          "CMP00007",
+          "CMP00008",
+          "CMP00009",
+          "CMP00010"
+        ],
+        "bytes": 1010
+      },
+      "queryAssertions": "10 PRINTED before transfer; CMP00001 TO_ACQUIRE in target PI after transfer"
+    }
+  },
+  "comparison": {
+    "java": {
+      "factoryCount": 2,
+      "orderCount": 3,
+      "printedBeforeTransfer": 10,
+      "targetAfterTransfer": [
+        {
+          "sn": "CMP00001",
+          "status": "TO_ACQUIRE"
+        }
+      ],
+      "fractionPreviewHttp": 409,
+      "incomingFirstSn": "CMP00002",
+      "scheduleRestoredDisabled": true,
+      "unauthorizedOrdersHttp": 401,
+      "readiness": {
+        "http": 200,
+        "body": {
+          "status": "UP"
+        }
+      }
+    },
+    "python": {
+      "factoryCount": 2,
+      "orderCount": 3,
+      "printedBeforeTransfer": 10,
+      "targetAfterTransfer": [
+        {
+          "sn": "CMP00001",
+          "status": "TO_ACQUIRE"
+        }
+      ],
+      "fractionPreviewHttp": 200,
+      "incomingFirstSn": "CMP00002",
+      "scheduleRestoredDisabled": true,
+      "unauthorizedOrdersHttp": 401,
+      "readiness": {
+        "http": 200,
+        "body": {
+          "status": "ok",
+          "db": "mysql"
+        }
+      }
+    }
+  },
+  "screenshots": {
+    "java-orders.png": "33ff3260f2c25a2e28e1bccbe02234fffc27965b27233473724f3f82962cf545",
+    "java-query.png": "66d226316ec7b3aad95833eab084dcdda792194a5aef865760c4624e288ea6ad",
+    "python-orders.png": "7d93b19402f9c2f567f8e7625100a457453bdb5a6ac85b1815feaf8ba0b44662",
+    "python-query.png": "3979f498a7e59e4bb5126c6d9463b31a578b7e0f9a2b221720bdd53c42dea354"
+  },
+  "javaBuildSuccess": true,
+  "javaFrontend": {
+    "tests": 46,
+    "failures": 0,
+    "skipped": 0
+  },
+  "pythonFrontend": {
+    "tests": 10,
+    "failures": 0,
+    "skipped": 0
+  }
+}

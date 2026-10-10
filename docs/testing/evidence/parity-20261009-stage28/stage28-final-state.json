@@ -1,0 +1,151 @@
+{
+  "java": {
+    "sn_item": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_key": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_pi_counter": {
+      "rows": 2,
+      "unchanged": true
+    },
+    "sn_rule": {
+      "rows": 3,
+      "unchanged": true
+    },
+    "sn_rule_version": {
+      "rows": 3,
+      "unchanged": true
+    },
+    "sn_acquire_batch": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_print": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_transfer": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_acquire_member": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_print_member": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_pi_rule_choice": {
+      "rows": 0,
+      "unchanged": true
+    },
+    "sn_generation_job": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_bill_generation": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_source_entry_quota": {
+      "rows": 156,
+      "unchanged": true
+    },
+    "sn_transfer_member": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "accountSecurityUnchanged": true,
+    "schema": "33",
+    "legacyQuerySnapshotsPreservedAsFormat1": 2,
+    "exportFormats": [
+      {
+        "format_version": 2,
+        "count": 41
+      },
+      {
+        "format_version": 1,
+        "count": 2
+      }
+    ]
+  },
+  "python": {
+    "sn_item": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_key": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_pi_counter": {
+      "rows": 2,
+      "unchanged": true
+    },
+    "sn_rule": {
+      "rows": 3,
+      "unchanged": true
+    },
+    "sn_rule_version": {
+      "rows": 3,
+      "unchanged": true
+    },
+    "sn_acquire_batch": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_print": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_transfer": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_bill_gen": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_allocation": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_transfer_item": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "accountSecurityUnchanged": true
+  },
+  "V1ThroughV32Unchanged": true,
+  "originalFileBytesUnchanged": 386,
+  "noActiveTasksOrOwnedFixtures": true,
+  "stage26FrozenFilesUnchanged": 635,
+  "stage27FrozenFilesUnchanged": 360,
+  "health": {
+    "status": "UP"
+  },
+  "pythonHealth": {
+    "status": "ok",
+    "db": "mysql"
+  },
+  "web": {
+    "8000": 200,
+    "15173": 200
+  },
+  "k3": {
+    "fixture": "synthetic comparison only",
+    "extrasSupported": true,
+    "controlsSupported": true,
+    "queryRequests": 1690,
+    "inflight": 0,
+    "orders": 3,
+    "entries": 4
+  },
+  "liveOpenApiMatches": true,
+  "prototypeStatus": "?? sn.env"
+}

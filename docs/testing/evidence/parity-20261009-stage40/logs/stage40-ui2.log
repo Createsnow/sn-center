@@ -1,0 +1,33 @@
+
+Running 2 tests using 1 worker
+
+(node:14160) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\account-editor.spec.ts:65:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages (3.4s)
+(node:26180) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [migration] › e2e\parity\account-editor.spec.ts:65:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages (31.2s)
+
+
+  1) [prototype] › e2e\parity\account-editor.spec.ts:65:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 409
+
+      123 |       writeFileSync(statePath, JSON.stringify(state));
+      124 |     }
+    > 125 |     expect(response.status()).toBe(expected);
+          |                               ^
+      126 |     if (reason) await expect(page.getByText(reason, { exact: true })).toBeVisible();
+      127 |     if (expected === 200) await expect(dialog).toBeHidden();
+      128 |   };
+        at save (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-editor.spec.ts:125:31)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-editor.spec.ts:164:5
+
+    Error Context: test-results\stage40-editor2\account-editor-P13-account-41ce0--cancel-and-three-languages-prototype\error-context.md
+
+  1 failed
+    [prototype] › e2e\parity\account-editor.spec.ts:65:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages 
+  1 passed (41.6s)

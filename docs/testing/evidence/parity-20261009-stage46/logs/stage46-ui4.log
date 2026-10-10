@@ -1,0 +1,36 @@
+
+Running 1 test using 1 worker
+
+(node:8148) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\factory-identity.spec.ts:9:1 › P14 organization changes: snapshot name, manual factory, changed ID/code, rename and directory filters (19.0s)
+
+
+  1) [prototype] › e2e\parity\factory-identity.spec.ts:9:1 › P14 organization changes: snapshot name, manual factory, changed ID/code, rename and directory filters 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: '生产订单', exact: true })
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: '生产订单', exact: true }) with timeout 15000ms
+      - waiting for getByRole('heading', { name: '生产订单', exact: true })
+
+
+      24 |   const menu = async (name: string) => {
+      25 |     await page.getByRole('menuitem', { name, exact: true }).click();
+    > 26 |     await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+         |                                                                    ^
+      27 |     await page.waitForLoadState('networkidle');
+      28 |     await expect.poll(() => page.locator(prototype ? 'main > .page' : 'main > .sn-page').evaluate(el => getComputedStyle(el).opacity)).toBe('1');
+      29 |   };
+        at menu (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\factory-identity.spec.ts:26:68)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\factory-identity.spec.ts:86:5
+
+    Error Context: test-results\stage46-ui4\factory-identity-P14-organ-bbe1f-ename-and-directory-filters-prototype\error-context.md
+
+  1 failed
+    [prototype] › e2e\parity\factory-identity.spec.ts:9:1 › P14 organization changes: snapshot name, manual factory, changed ID/code, rename and directory filters 

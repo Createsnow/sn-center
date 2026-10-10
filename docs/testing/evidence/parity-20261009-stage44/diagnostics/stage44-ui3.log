@@ -1,0 +1,38 @@
+
+Running 4 tests using 1 worker
+
+(node:44252) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\account-actions.spec.ts:9:1 › P13 account actions: disable, enable, repeated same-password reset and self reset (10.2s)
+  x  2 [prototype] › e2e\parity\factories.spec.ts:12:1 › P14 factories: full catalog, create validation, Unicode, cancel, sync conflicts and recovery (16.9s)
+(node:35928) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 [migration] › e2e\parity\account-actions.spec.ts:9:1 › P13 account actions: disable, enable, repeated same-password reset and self reset (34.5s)
+  ok 4 [migration] › e2e\parity\factories.spec.ts:12:1 › P14 factories: full catalog, create validation, Unicode, cancel, sync conflicts and recovery (1.4m)
+
+
+  1) [prototype] › e2e\parity\factories.spec.ts:12:1 › P14 factories: full catalog, create validation, Unicode, cancel, sync conflicts and recovery 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 440
+    Received: 1440
+
+    Call Log:
+    - Timeout 15000ms exceeded while waiting on the predicate
+
+      49 |       // 弹窗挂载后的下一帧才开始缩放；先跨过进入动画，再测实际最终位置。
+      50 |       await page.waitForTimeout(350);
+    > 51 |       await expect.poll(async () => (await dialog.boundingBox())?.width).toBe(440);
+         |                                                                          ^
+      52 |     }
+      53 |     await page.evaluate(async () => {
+      54 |       await document.fonts.ready;
+        at capture (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\factories.spec.ts:51:74)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\factories.spec.ts:247:5
+
+    Error Context: test-results\parity\factories-P14-factories-fu-da0b0-sync-conflicts-and-recovery-prototype\error-context.md
+
+  1 failed
+    [prototype] › e2e\parity\factories.spec.ts:12:1 › P14 factories: full catalog, create validation, Unicode, cancel, sync conflicts and recovery 
+  3 passed (2.5m)

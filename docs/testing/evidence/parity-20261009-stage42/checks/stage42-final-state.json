@@ -1,0 +1,225 @@
+{
+  "java": {
+    "sn_item": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_key": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_pi_counter": {
+      "rows": 2,
+      "unchanged": true
+    },
+    "sn_rule": {
+      "rows": 3,
+      "unchanged": true
+    },
+    "sn_rule_version": {
+      "rows": 3,
+      "unchanged": true
+    },
+    "sn_acquire_batch": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_print": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_transfer": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_acquire_member": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_print_member": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_pi_rule_choice": {
+      "rows": 0,
+      "unchanged": true
+    },
+    "sn_generation_job": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_bill_generation": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_source_entry_quota": {
+      "rows": 156,
+      "unchanged": true
+    },
+    "sn_transfer_member": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "accountSecurityUnchanged": true,
+    "existingCredentialVersionsUnchanged": true,
+    "sn_auditOldRowsPreserved": 5392,
+    "sys_oper_logOldRowsPreserved": 9506,
+    "sn_audit_archiveOldRowsPreserved": 0,
+    "sn_audit_identityOldRowsPreserved": 426,
+    "sn_audit_exportOldRowsPreserved": 73,
+    "sn_audit_export_rowOldRowsPreserved": 664,
+    "sn_query_exportOldRowsPreserved": 108,
+    "sn_query_export_rowOldRowsPreserved": 1840,
+    "sys_fileOldRowsPreserved": 565,
+    "schema": "38"
+  },
+  "auditFormats": [
+    {
+      "format_version": 5,
+      "n": 28
+    },
+    {
+      "format_version": 6,
+      "n": 29
+    },
+    {
+      "format_version": 3,
+      "n": 4
+    },
+    {
+      "format_version": 1,
+      "n": 6
+    },
+    {
+      "format_version": 4,
+      "n": 4
+    },
+    {
+      "format_version": 2,
+      "n": 2
+    }
+  ],
+  "python": {
+    "sn_item": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_key": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_pi_counter": {
+      "rows": 2,
+      "unchanged": true
+    },
+    "sn_rule": {
+      "rows": 3,
+      "unchanged": true
+    },
+    "sn_rule_version": {
+      "rows": 3,
+      "unchanged": true
+    },
+    "sn_acquire_batch": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_print": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_transfer": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_bill_gen": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_allocation": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_transfer_item": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "accountSecurityUnchanged": true,
+    "sn_auditOldRowsPreserved": 6683
+  },
+  "V1ThroughV38Unchanged": true,
+  "V38DeployedBytesUnchanged": true,
+  "oldFileBytesUnchanged": 565,
+  "noActiveTasksOrOwnedFixtures": true,
+  "prototypeSourcesUnchanged": true,
+  "parity-20261008-stage17FrozenUnchanged": 85,
+  "parity-20261008-stage18FrozenUnchanged": 95,
+  "parity-20261009-audit-observedFrozenUnchanged": 10,
+  "parity-20261009-stage19FrozenUnchanged": 132,
+  "parity-20261009-stage20FrozenUnchanged": 285,
+  "parity-20261009-stage21FrozenUnchanged": 480,
+  "parity-20261009-stage22FrozenUnchanged": 190,
+  "parity-20261009-stage23FrozenUnchanged": 324,
+  "parity-20261009-stage24FrozenUnchanged": 409,
+  "parity-20261009-stage25FrozenUnchanged": 476,
+  "parity-20261009-stage26FrozenUnchanged": 635,
+  "parity-20261009-stage27FrozenUnchanged": 360,
+  "parity-20261009-stage28FrozenUnchanged": 449,
+  "parity-20261009-stage29FrozenUnchanged": 429,
+  "parity-20261009-stage30FrozenUnchanged": 473,
+  "parity-20261009-stage31FrozenUnchanged": 426,
+  "parity-20261009-stage32FrozenUnchanged": 309,
+  "parity-20261009-stage33FrozenUnchanged": 401,
+  "parity-20261009-stage34FrozenUnchanged": 423,
+  "parity-20261009-stage35FrozenUnchanged": 597,
+  "parity-20261009-stage36FrozenUnchanged": 648,
+  "parity-20261009-stage36-drawn-textFrozenUnchanged": 83,
+  "parity-20261009-stage37FrozenUnchanged": 736,
+  "parity-20261009-stage38FrozenUnchanged": 726,
+  "parity-20261009-stage39FrozenUnchanged": 506,
+  "parity-20261009-stage39-doc-checkFrozenUnchanged": 3,
+  "parity-20261009-stage40FrozenUnchanged": 499,
+  "parity-20261009-stage40-doc-checkFrozenUnchanged": 3,
+  "parity-20261009-stage41FrozenUnchanged": 322,
+  "javaReady": {
+    "status": "UP"
+  },
+  "pythonReady": {
+    "status": "ok",
+    "db": "mysql"
+  },
+  "web": {
+    "8000": 200,
+    "15173": 200
+  },
+  "k3": {
+    "fixture": "synthetic comparison only",
+    "extrasSupported": true,
+    "controlsSupported": true,
+    "queryRequests": 1744,
+    "inflight": 0,
+    "orders": 3,
+    "entries": 4
+  },
+  "liveOpenApiMatches": true,
+  "prototypeStatus": "?? sn.env",
+  "backendChangedFiles": [
+    "backend/adtek-framework/src/main/java/com/adtek/framework/security/AccountAdministrationPort.java",
+    "backend/adtek-framework/src/main/java/com/adtek/framework/security/AuthorizationPort.java",
+    "backend/adtek-framework/src/main/java/com/adtek/framework/security/RedisSessionStore.java",
+    "backend/adtek-framework/src/main/java/com/adtek/framework/security/SecurityConfiguration.java",
+    "backend/adtek-framework/src/main/java/com/adtek/framework/security/SessionJwtAuthenticationConverter.java",
+    "backend/adtek-framework/src/main/java/com/adtek/framework/security/SessionStore.java",
+    "backend/adtek-server/src/test/java/com/adtek/server/AuthenticationIT.java",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/controller/SnAccountController.java",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/SnAccountService.java",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnAccountServiceImpl.java",
+    "backend/adtek-system/src/main/java/com/adtek/system/controller/AuthenticationController.java",
+    "backend/adtek-system/src/main/java/com/adtek/system/service/UserManagementService.java",
+    "backend/adtek-system/src/main/java/com/adtek/system/service/impl/AccountAdministrationServiceImpl.java",
+    "backend/adtek-system/src/main/java/com/adtek/system/service/impl/AuthenticationServiceImpl.java",
+    "backend/adtek-system/src/main/java/com/adtek/system/service/impl/CurrentAuthorizationServiceImpl.java",
+    "backend/adtek-system/src/main/java/com/adtek/system/service/impl/UserManagementServiceImpl.java"
+  ],
+  "deployedJarSha256": "2174b24e45b789fa3e90b25a084ddd95f334dc3e3bcb683c3f8d09adb23c6d3d"
+}

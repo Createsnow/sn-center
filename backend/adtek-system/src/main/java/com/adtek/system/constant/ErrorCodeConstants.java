@@ -2,7 +2,7 @@ package com.adtek.system.constant;
 
 import com.adtek.common.core.ErrorCode;
 
-/** system 区间：1002000000—1002999999。账号存在与停用在匿名登录时使用相同拒绝码。 */
+/** system 区间：1002000000—1002999999。错误密码不暴露账号状态，密码正确时明确提示停用。 */
 public final class ErrorCodeConstants {
     public static final ErrorCode LOGIN_FAILED =
             new ErrorCode(1_002_000_001, 401, "system.loginFailed");
@@ -16,6 +16,9 @@ public final class ErrorCodeConstants {
             new ErrorCode(1_002_000_005, 401, "system.accountChanged");
     public static final ErrorCode ALREADY_INITIALIZED =
             new ErrorCode(1_002_000_006, 409, "system.alreadyInitialized");
+
+    public static final ErrorCode ACCOUNT_DISABLED =
+            new ErrorCode(1_002_000_018, 401, "system.accountDisabled");
 
     private ErrorCodeConstants() {}
 

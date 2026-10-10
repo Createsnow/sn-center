@@ -19,10 +19,12 @@ final class K3ProtocolFixture implements AutoCloseable {
     volatile List<List<Object>> organizations =
             List.of(List.of("101", "ERP-A", "甲工厂", "A"), List.of("102", "ERP-B", "乙工厂", "A"));
     volatile String failure = "";
+    volatile String errorMessage = "SYNTHETIC_SECRET_MUST_NOT_LEAK";
     volatile CountDownLatch barrier;
     volatile boolean legacyWire;
     final List<JsonNode> envelopes = new CopyOnWriteArrayList<>();
     final List<Integer> orderOffsets = new CopyOnWriteArrayList<>();
+    final Map<String, String> responses = new ConcurrentHashMap<>();
 
     K3ProtocolFixture() {
         try {
@@ -44,10 +46,12 @@ final class K3ProtocolFixture implements AutoCloseable {
         organizations =
                 List.of(List.of("101", "ERP-A", "甲工厂", "A"), List.of("102", "ERP-B", "乙工厂", "A"));
         failure = "";
+        errorMessage = "SYNTHETIC_SECRET_MUST_NOT_LEAK";
         barrier = null;
         legacyWire = false;
         envelopes.clear();
         orderOffsets.clear();
+        responses.clear();
     }
 
     static List<Object> row(
@@ -85,6 +89,17 @@ final class K3ProtocolFixture implements AutoCloseable {
             String path = exchange.getRequestURI().getPath();
             Object body;
             envelopes.add(request);
+            String operation =
+                    path.contains("LoginByAppSecret")
+                            ? "login"
+                            : path.contains("ExecuteBillQuery") ? "query" : "view";
+            String overridden = responses.get(operation);
+            if (overridden != null) {
+                byte[] bytes = overridden.getBytes(StandardCharsets.UTF_8);
+                exchange.sendResponseHeaders(200, bytes.length);
+                exchange.getResponseBody().write(bytes);
+                return;
+            }
             if (failure.equals("http-login") && path.contains("LoginByAppSecret")) {
                 exchange.sendResponseHeaders(403, -1);
                 return;
@@ -104,11 +119,7 @@ final class K3ProtocolFixture implements AutoCloseable {
             if (path.contains("LoginByAppSecret")) {
                 body =
                         failure.equals("login")
-                                ? Map.of(
-                                        "LoginResultType",
-                                        0,
-                                        "Message",
-                                        "SYNTHETIC_SECRET_MUST_NOT_LEAK")
+                                ? Map.of("LoginResultType", 0, "Message", errorMessage)
                                 : Map.of(
                                         "LoginResultType", 1, "KDSVCSessionId", "isolated-session");
             } else if (!Optional.ofNullable(exchange.getRequestHeaders().getFirst("Cookie"))
@@ -140,10 +151,7 @@ final class K3ProtocolFixture implements AutoCloseable {
                                                     "IsSuccess",
                                                     false,
                                                     "Errors",
-                                                    List.of(
-                                                            Map.of(
-                                                                    "Message",
-                                                                    "SYNTHETIC_SECRET_MUST_NOT_LEAK")))));
+                                                    List.of(Map.of("Message", errorMessage)))));
                     if (failure.startsWith("array-")) body = List.of(body);
                     if (failure.startsWith("nested-")) body = List.of(List.of(body));
                 } else if (failure.equals("timeout") && !org) {

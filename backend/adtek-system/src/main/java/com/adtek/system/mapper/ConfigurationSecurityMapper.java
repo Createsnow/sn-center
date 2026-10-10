@@ -40,7 +40,9 @@ public interface ConfigurationSecurityMapper {
 
     @Update(
             "UPDATE sys_user SET"
-                    + " security_version=security_version+1,update_by=#{actorId},"
+                    + " security_version=security_version+1,"
+                    + "credential_version=credential_version+1,"
+                    + "update_by=#{actorId},"
                     + "update_time=UTC_TIMESTAMP(6)"
                     + " WHERE id=#{id}")
     int invalidate(@Param("id") long id, @Param("actorId") long actorId);

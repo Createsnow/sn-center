@@ -1,0 +1,248 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.parity.config.ts",
+      "transfer-targets.spec.ts",
+      "acquire-print.spec.ts",
+      "--grep",
+      "P10 snapshot|P09 transferred print",
+      "--max-failures=1",
+      "--output=test-results/stage24-snapshot-submit-ui"
+    ],
+    "configFile": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\playwright.parity.config.ts",
+    "rootDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 1,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage24-snapshot-submit-ui",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "prototype",
+        "name": "prototype",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage24-snapshot-submit-ui",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "migration",
+        "name": "migration",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/parity/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "acquire-print.spec.ts",
+      "file": "acquire-print.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P09 transferred print: real factory round trip, current batch details and historical files",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 360000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 50537,
+                  "error": {
+                    "message": "Error: Command failed: D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Scripts\\python.exe -X utf8 D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-acquire-fixture.py python clean --profile transfer\nTraceback (most recent call last):\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-acquire-fixture.py\", line 568, in <module>\r\n    main()\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-acquire-fixture.py\", line 554, in main\r\n    clean(c, java, args.profile)\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-acquire-fixture.py\", line 400, in clean\r\n    clean_transfers(c, java)\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-acquire-fixture.py\", line 269, in clean_transfers\r\n    raise RuntimeError(\"Unexpected transfer ownership\")\r\nRuntimeError: Unexpected transfer ownership\r\n",
+                    "stack": "Error: Command failed: D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Scripts\\python.exe -X utf8 D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-acquire-fixture.py python clean --profile transfer\nTraceback (most recent call last):\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-acquire-fixture.py\", line 568, in <module>\r\n    main()\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-acquire-fixture.py\", line 554, in main\r\n    clean(c, java, args.profile)\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-acquire-fixture.py\", line 400, in clean\r\n    clean_transfers(c, java)\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-acquire-fixture.py\", line 269, in clean_transfers\r\n    raise RuntimeError(\"Unexpected transfer ownership\")\r\nRuntimeError: Unexpected transfer ownership\r\n\n    at fixture (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:29:10)\n    at clean (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:133:3)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:890:5",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts",
+                      "column": 10,
+                      "line": 29
+                    },
+                    "snippet": "  27 |   action: 'begin' | 'seed' | 'history' | 'observe' | 'active' | 'clean',\n  28 | ) {\n> 29 |   return execFileSync(\n     |          ^\n  30 |     resolve('../../sn-center-python/.venv/Scripts/python.exe'),\n  31 |     [\n  32 |       '-X',"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts",
+                        "column": 10,
+                        "line": 29
+                      },
+                      "message": "Error: Command failed: D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Scripts\\python.exe -X utf8 D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-acquire-fixture.py python clean --profile transfer\nTraceback (most recent call last):\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-acquire-fixture.py\", line 568, in <module>\r\n    main()\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-acquire-fixture.py\", line 554, in main\r\n    clean(c, java, args.profile)\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-acquire-fixture.py\", line 400, in clean\r\n    clean_transfers(c, java)\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-acquire-fixture.py\", line 269, in clean_transfers\r\n    raise RuntimeError(\"Unexpected transfer ownership\")\r\nRuntimeError: Unexpected transfer ownership\r\n\n\n  27 |   action: 'begin' | 'seed' | 'history' | 'observe' | 'active' | 'clean',\n  28 | ) {\n> 29 |   return execFileSync(\n     |          ^\n  30 |     resolve('../../sn-center-python/.venv/Scripts/python.exe'),\n  31 |     [\n  32 |       '-X',\n    at fixture (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:29:10)\n    at clean (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:133:3)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:890:5"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "Traceback (most recent call last):\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-acquire-fixture.py\", line 568, in <module>\r\n    main()\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-acquire-fixture.py\", line 554, in main\r\n    clean(c, java, args.profile)\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-acquire-fixture.py\", line 400, in clean\r\n    clean_transfers(c, java)\r\n  File \"D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\tools\\testing\\parity-acquire-fixture.py\", line 269, in clean_transfers\r\n    raise RuntimeError(\"Unexpected transfer ownership\")\r\nRuntimeError: Unexpected transfer ownership\r\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-08T19:43:23.753Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage24-snapshot-submit-ui\\acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts",
+                    "column": 10,
+                    "line": 29
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f16e7ea15ddbda844a2a-6538d3d2a6765f6cbe4b",
+          "file": "acquire-print.spec.ts",
+          "line": 576,
+          "column": 1
+        },
+        {
+          "title": "P09 transferred print: real factory round trip, current batch details and historical files",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f16e7ea15ddbda844a2a-991130938c96ec32dd2b",
+          "file": "acquire-print.spec.ts",
+          "line": 576,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "transfer-targets.spec.ts",
+      "file": "transfer-targets.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P10 snapshot picker: fifty rows, literal bill search, grouping, unmapped target and persistent selection",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "d59a32118c6f33d3d27c-817d6d2d1e91380b9b4f",
+          "file": "transfer-targets.spec.ts",
+          "line": 149,
+          "column": 1
+        },
+        {
+          "title": "P10 snapshot picker: fifty rows, literal bill search, grouping, unmapped target and persistent selection",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "d59a32118c6f33d3d27c-85257cb4057432fabd16",
+          "file": "transfer-targets.spec.ts",
+          "line": 149,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "message": "\u001b[31mTesting stopped early after 1 maximum allowed failures.\u001b[39m"
+    }
+  ],
+  "stats": {
+    "startTime": "2026-10-08T19:43:23.189Z",
+    "duration": 52079.32,
+    "expected": 0,
+    "skipped": 3,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

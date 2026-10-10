@@ -8,7 +8,7 @@ import java.time.Instant;
  * 同步记录与发布状态；失败保留旧有效版本，不把FETCHING当成功。
  *
  * @param publishedVersion 本次成功发布的精确版本，失败/进行中为空
- * @param orgSyncFailed 全量订单拉取成功但附带组织拉取失败，沿用原映射并提示
+ * @param orgSyncFailed 附带工厂读取或发布失败的诊断标志，页面仍显示订单结果及未建档组织
  */
 @Schema(
         requiredProperties = {

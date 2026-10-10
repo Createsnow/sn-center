@@ -1,0 +1,3223 @@
+{
+  "records": [
+    {
+      "mode": "cold-fast",
+      "frames": [
+        {
+          "event": "frame",
+          "time": 434.1000000089407,
+          "wallTime": 1791546894665,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "workspace-content prototype-main",
+          "pageBox": null,
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 2
+        },
+        {
+          "event": "focus",
+          "time": 468.70000000298023,
+          "wallTime": 1791546894699,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "workspace-content prototype-main",
+          "pageBox": null,
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item"
+          },
+          "loading": 2
+        },
+        {
+          "event": "frame",
+          "time": 498.5,
+          "wallTime": 1791546894729,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "workspace-content prototype-main",
+          "pageBox": null,
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 2
+        },
+        {
+          "event": "frame",
+          "time": 606.7999999970198,
+          "wallTime": 1791546894837,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 917,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            876.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 702.1000000089407,
+          "wallTime": 1791546894933,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "before-sync",
+          "time": 736.7999999970198,
+          "wallTime": 1791546894967,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 770.2000000029802,
+          "wallTime": 1791546895001,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-primary ant-btn-color-primary ant-btn-variant-solid"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 811.2999999970198,
+          "wallTime": 1791546895042,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-primary ant-btn-color-primary ant-btn-variant-solid ant-btn-loading"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 815.2999999970198,
+          "wallTime": 1791546895046,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "sync-response",
+          "time": 1024.7999999970198,
+          "wallTime": 1791546895255,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 1041,
+          "wallTime": 1791546895272,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 1074.5,
+          "wallTime": 1791546895305,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "settled",
+          "time": 4600.20000000298,
+          "wallTime": 1791546898831,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "stop",
+          "time": 4657.4000000059605,
+          "wallTime": 1791546898888,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        }
+      ]
+    },
+    {
+      "mode": "warm-fast-1",
+      "frames": [
+        {
+          "event": "frame",
+          "time": 4855.100000008941,
+          "wallTime": 1791546899086,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-dashboard-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 4885.9000000059605,
+          "wallTime": 1791546899117,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-dashboard-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 4976.600000008941,
+          "wallTime": 1791546899207,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "before-sync",
+          "time": 4989.9000000059605,
+          "wallTime": 1791546899221,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 5031.600000008941,
+          "wallTime": 1791546899262,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 5033.29999999702,
+          "wallTime": 1791546899264,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-primary ant-btn-color-primary ant-btn-variant-solid"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 5074.70000000298,
+          "wallTime": 1791546899305,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-primary ant-btn-color-primary ant-btn-variant-solid ant-btn-loading"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 5082.20000000298,
+          "wallTime": 1791546899313,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "sync-response",
+          "time": 5253.20000000298,
+          "wallTime": 1791546899484,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 5265,
+          "wallTime": 1791546899496,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 5315.70000000298,
+          "wallTime": 1791546899546,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "settled",
+          "time": 8817,
+          "wallTime": 1791546903048,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "stop",
+          "time": 8873.90000000596,
+          "wallTime": 1791546903105,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        }
+      ]
+    },
+    {
+      "mode": "warm-mouse-1",
+      "frames": [
+        {
+          "event": "frame",
+          "time": 9049.70000000298,
+          "wallTime": 1791546903280,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-dashboard-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 9087,
+          "wallTime": 1791546903318,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-dashboard-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 9172.40000000596,
+          "wallTime": 1791546903403,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "before-sync",
+          "time": 9176.10000000894,
+          "wallTime": 1791546903407,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "focus",
+          "time": 9219,
+          "wallTime": 1791546903450,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-primary ant-btn-color-primary ant-btn-variant-solid"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 9255.70000000298,
+          "wallTime": 1791546903486,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-primary ant-btn-color-primary ant-btn-variant-solid ant-btn-loading"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 9265.20000000298,
+          "wallTime": 1791546903496,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "sync-response",
+          "time": 9444.29999999702,
+          "wallTime": 1791546903675,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 9456,
+          "wallTime": 1791546903687,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 9479.70000000298,
+          "wallTime": 1791546903710,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "settled",
+          "time": 13000.70000000298,
+          "wallTime": 1791546907231,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "stop",
+          "time": 13058.5,
+          "wallTime": 1791546907289,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        }
+      ]
+    },
+    {
+      "mode": "warm-fast-2",
+      "frames": [
+        {
+          "event": "frame",
+          "time": 13234.5,
+          "wallTime": 1791546907465,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-dashboard-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 13269.5,
+          "wallTime": 1791546907500,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-dashboard-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 13341.90000000596,
+          "wallTime": 1791546907573,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "before-sync",
+          "time": 13345.40000000596,
+          "wallTime": 1791546907576,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "focus",
+          "time": 13393.79999999702,
+          "wallTime": 1791546907624,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-primary ant-btn-color-primary ant-btn-variant-solid"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 13422.10000000894,
+          "wallTime": 1791546907653,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-primary ant-btn-color-primary ant-btn-variant-solid ant-btn-loading"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 13432.10000000894,
+          "wallTime": 1791546907663,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "sync-response",
+          "time": 13574.40000000596,
+          "wallTime": 1791546907805,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 13585.79999999702,
+          "wallTime": 1791546907816,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 13615.40000000596,
+          "wallTime": 1791546907846,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "settled",
+          "time": 17134.20000000298,
+          "wallTime": 1791546911365,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "stop",
+          "time": 17194.79999999702,
+          "wallTime": 1791546911425,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        }
+      ]
+    },
+    {
+      "mode": "warm-mouse-2",
+      "frames": [
+        {
+          "event": "frame",
+          "time": 17385.29999999702,
+          "wallTime": 1791546911616,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-dashboard-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 17421.29999999702,
+          "wallTime": 1791546911652,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-dashboard-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 17493.29999999702,
+          "wallTime": 1791546911724,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "before-sync",
+          "time": 17497.10000000894,
+          "wallTime": 1791546911728,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "focus",
+          "time": 17513.20000000298,
+          "wallTime": 1791546911744,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-primary ant-btn-color-primary ant-btn-variant-solid"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 17540,
+          "wallTime": 1791546911771,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-primary ant-btn-color-primary ant-btn-variant-solid ant-btn-loading"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 17561.20000000298,
+          "wallTime": 1791546911792,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 17565.5,
+          "wallTime": 1791546911796,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "sync-response",
+          "time": 17708.20000000298,
+          "wallTime": 1791546911939,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 17738.70000000298,
+          "wallTime": 1791546911969,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 17769.60000000894,
+          "wallTime": 1791546912000,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "settled",
+          "time": 21299.90000000596,
+          "wallTime": 1791546915530,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "stop",
+          "time": 21356.90000000596,
+          "wallTime": 1791546915588,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        }
+      ]
+    },
+    {
+      "mode": "warm-settled",
+      "frames": [
+        {
+          "event": "frame",
+          "time": 21534.10000000894,
+          "wallTime": 1791546915765,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-dashboard-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 21570.79999999702,
+          "wallTime": 1791546915801,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-dashboard-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 21650.5,
+          "wallTime": 1791546915881,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 21715.10000000894,
+          "wallTime": 1791546915946,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "before-sync",
+          "time": 22151.40000000596,
+          "wallTime": 1791546916382,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 22186,
+          "wallTime": 1791546916417,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-primary ant-btn-color-primary ant-btn-variant-solid"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 22221.70000000298,
+          "wallTime": 1791546916452,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-primary ant-btn-color-primary ant-btn-variant-solid ant-btn-loading"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 22231.79999999702,
+          "wallTime": 1791546916462,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "sync-response",
+          "time": 22365.90000000596,
+          "wallTime": 1791546916597,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 22378,
+          "wallTime": 1791546916609,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 22400.60000000894,
+          "wallTime": 1791546916631,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "settled",
+          "time": 25916.70000000298,
+          "wallTime": 1791546920147,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "stop",
+          "time": 25969.70000000298,
+          "wallTime": 1791546920200,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        }
+      ]
+    },
+    {
+      "mode": "warm-mouse-settled",
+      "frames": [
+        {
+          "event": "frame",
+          "time": 26167.10000000894,
+          "wallTime": 1791546920398,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-dashboard-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 26202.90000000596,
+          "wallTime": 1791546920433,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-dashboard-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 26274.5,
+          "wallTime": 1791546920505,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 26332.90000000596,
+          "wallTime": 1791546920563,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "before-sync",
+          "time": 26749.60000000894,
+          "wallTime": 1791546920980,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 26756.90000000596,
+          "wallTime": 1791546920988,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-primary ant-btn-color-primary ant-btn-variant-solid"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 26787.29999999702,
+          "wallTime": 1791546921018,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-primary ant-btn-color-primary ant-btn-variant-solid ant-btn-loading"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 26798.40000000596,
+          "wallTime": 1791546921029,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "sync-response",
+          "time": 26947.70000000298,
+          "wallTime": 1791546921178,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 26964,
+          "wallTime": 1791546921195,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 27031,
+          "wallTime": 1791546921262,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "settled",
+          "time": 30551,
+          "wallTime": 1791546924782,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "stop",
+          "time": 30603.29999999702,
+          "wallTime": 1791546924834,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        }
+      ]
+    },
+    {
+      "mode": "hold-meta",
+      "frames": [
+        {
+          "event": "frame",
+          "time": 372.69999998807907,
+          "wallTime": 1791546925251,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "workspace-content prototype-main",
+          "pageBox": null,
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 2
+        },
+        {
+          "event": "focus",
+          "time": 406.69999998807907,
+          "wallTime": 1791546925285,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "workspace-content prototype-main",
+          "pageBox": null,
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item"
+          },
+          "loading": 2
+        },
+        {
+          "event": "frame",
+          "time": 434.3999999910593,
+          "wallTime": 1791546925313,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "workspace-content prototype-main",
+          "pageBox": null,
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 2
+        },
+        {
+          "event": "frame",
+          "time": 511,
+          "wallTime": 1791546925389,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 917,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            876.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "before-sync",
+          "time": 517.2999999970198,
+          "wallTime": 1791546925396,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 917,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            876.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 592.0999999940395,
+          "wallTime": 1791546925470,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 603.8999999910593,
+          "wallTime": 1791546925482,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 607.2999999970198,
+          "wallTime": 1791546925486,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-primary ant-btn-color-primary ant-btn-variant-solid"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 644.6999999880791,
+          "wallTime": 1791546925523,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-primary ant-btn-color-primary ant-btn-variant-solid ant-btn-loading"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 650.6999999880791,
+          "wallTime": 1791546925529,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "sync-response",
+          "time": 820,
+          "wallTime": 1791546925698,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 837.8999999910593,
+          "wallTime": 1791546925716,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 870.5,
+          "wallTime": 1791546925749,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "settled",
+          "time": 4419.199999988079,
+          "wallTime": 1791546929297,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "stop",
+          "time": 4480.5999999940395,
+          "wallTime": 1791546929359,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        }
+      ]
+    },
+    {
+      "mode": "hold-orders",
+      "frames": [
+        {
+          "event": "frame",
+          "time": 554.2000000029802,
+          "wallTime": 1791546929966,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "workspace-content prototype-main",
+          "pageBox": null,
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 2
+        },
+        {
+          "event": "focus",
+          "time": 587.5999999940395,
+          "wallTime": 1791546930000,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "workspace-content prototype-main",
+          "pageBox": null,
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item"
+          },
+          "loading": 2
+        },
+        {
+          "event": "frame",
+          "time": 616.7000000029802,
+          "wallTime": 1791546930029,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "workspace-content prototype-main",
+          "pageBox": null,
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 2
+        },
+        {
+          "event": "frame",
+          "time": 697,
+          "wallTime": 1791546930109,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 917,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            876.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 740.0999999940395,
+          "wallTime": 1791546930152,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 920,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            879.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "before-sync",
+          "time": 957.7000000029802,
+          "wallTime": 1791546930370,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 920,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            879.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "prototype-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "focus",
+          "time": 988.9000000059605,
+          "wallTime": 1791546930401,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 920,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            879.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-primary ant-btn-color-primary ant-btn-variant-solid"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 1017.5,
+          "wallTime": 1791546930430,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 920,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            879.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-primary ant-btn-color-primary ant-btn-variant-solid ant-btn-loading"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 1033.9000000059605,
+          "wallTime": 1791546930446,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 920,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            879.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "sync-response",
+          "time": 1173,
+          "wallTime": 1791546930585,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 920,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            879.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 1247.9000000059605,
+          "wallTime": 1791546930660,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "settled",
+          "time": 4768.9000000059605,
+          "wallTime": 1791546934181,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "stop",
+          "time": 4829.70000000298,
+          "wallTime": 1791546934242,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "workspace-content prototype-main",
+          "pageClass": "sn-page sn-orders-page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        }
+      ]
+    }
+  ],
+  "requests": [
+    {
+      "phase": "cold-fast",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "at": 1791546894837
+    },
+    {
+      "phase": "cold-fast",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "at": 1791546894837
+    },
+    {
+      "phase": "cold-fast",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "at": 1791546894837
+    },
+    {
+      "phase": "cold-fast",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546894871
+    },
+    {
+      "phase": "cold-fast",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "status": 200,
+      "at": 1791546894881
+    },
+    {
+      "phase": "cold-fast",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "status": 200,
+      "at": 1791546894938
+    },
+    {
+      "phase": "cold-fast",
+      "event": "request",
+      "method": "POST",
+      "path": "/api/v1/sn/orders/sync",
+      "at": 1791546895045
+    },
+    {
+      "phase": "cold-fast",
+      "event": "response",
+      "method": "POST",
+      "path": "/api/v1/sn/orders/sync",
+      "status": 200,
+      "at": 1791546895230
+    },
+    {
+      "phase": "cold-fast",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "at": 1791546895232
+    },
+    {
+      "phase": "cold-fast",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "at": 1791546895232
+    },
+    {
+      "phase": "cold-fast",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "at": 1791546895232
+    },
+    {
+      "phase": "cold-fast",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "status": 200,
+      "at": 1791546895274
+    },
+    {
+      "phase": "cold-fast",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546895274
+    },
+    {
+      "phase": "cold-fast",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "status": 200,
+      "at": 1791546895276
+    },
+    {
+      "phase": "warm-fast-1",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "at": 1791546899207
+    },
+    {
+      "phase": "warm-fast-1",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "status": 200,
+      "at": 1791546899234
+    },
+    {
+      "phase": "warm-fast-1",
+      "event": "request",
+      "method": "POST",
+      "path": "/api/v1/sn/orders/sync",
+      "at": 1791546899309
+    },
+    {
+      "phase": "warm-fast-1",
+      "event": "response",
+      "method": "POST",
+      "path": "/api/v1/sn/orders/sync",
+      "status": 200,
+      "at": 1791546899459
+    },
+    {
+      "phase": "warm-fast-1",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "at": 1791546899461
+    },
+    {
+      "phase": "warm-fast-1",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "at": 1791546899461
+    },
+    {
+      "phase": "warm-fast-1",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "at": 1791546899461
+    },
+    {
+      "phase": "warm-fast-1",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "status": 200,
+      "at": 1791546899500
+    },
+    {
+      "phase": "warm-fast-1",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546899520
+    },
+    {
+      "phase": "warm-fast-1",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "status": 200,
+      "at": 1791546899520
+    },
+    {
+      "phase": "warm-mouse-1",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "at": 1791546903401
+    },
+    {
+      "phase": "warm-mouse-1",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "status": 200,
+      "at": 1791546903430
+    },
+    {
+      "phase": "warm-mouse-1",
+      "event": "request",
+      "method": "POST",
+      "path": "/api/v1/sn/orders/sync",
+      "at": 1791546903490
+    },
+    {
+      "phase": "warm-mouse-1",
+      "event": "response",
+      "method": "POST",
+      "path": "/api/v1/sn/orders/sync",
+      "status": 200,
+      "at": 1791546903643
+    },
+    {
+      "phase": "warm-mouse-1",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "at": 1791546903645
+    },
+    {
+      "phase": "warm-mouse-1",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "at": 1791546903645
+    },
+    {
+      "phase": "warm-mouse-1",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "at": 1791546903645
+    },
+    {
+      "phase": "warm-mouse-1",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "status": 200,
+      "at": 1791546903677
+    },
+    {
+      "phase": "warm-mouse-1",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546903677
+    },
+    {
+      "phase": "warm-mouse-1",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "status": 200,
+      "at": 1791546903677
+    },
+    {
+      "phase": "warm-fast-2",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "at": 1791546907573
+    },
+    {
+      "phase": "warm-fast-2",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "status": 200,
+      "at": 1791546907599
+    },
+    {
+      "phase": "warm-fast-2",
+      "event": "request",
+      "method": "POST",
+      "path": "/api/v1/sn/orders/sync",
+      "at": 1791546907655
+    },
+    {
+      "phase": "warm-fast-2",
+      "event": "response",
+      "method": "POST",
+      "path": "/api/v1/sn/orders/sync",
+      "status": 200,
+      "at": 1791546907786
+    },
+    {
+      "phase": "warm-fast-2",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "at": 1791546907787
+    },
+    {
+      "phase": "warm-fast-2",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "at": 1791546907787
+    },
+    {
+      "phase": "warm-fast-2",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "at": 1791546907787
+    },
+    {
+      "phase": "warm-fast-2",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546907817
+    },
+    {
+      "phase": "warm-fast-2",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "status": 200,
+      "at": 1791546907825
+    },
+    {
+      "phase": "warm-fast-2",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "status": 200,
+      "at": 1791546907825
+    },
+    {
+      "phase": "warm-mouse-2",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "at": 1791546911724
+    },
+    {
+      "phase": "warm-mouse-2",
+      "event": "request",
+      "method": "POST",
+      "path": "/api/v1/sn/orders/sync",
+      "at": 1791546911773
+    },
+    {
+      "phase": "warm-mouse-2",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "status": 200,
+      "at": 1791546911773
+    },
+    {
+      "phase": "warm-mouse-2",
+      "event": "response",
+      "method": "POST",
+      "path": "/api/v1/sn/orders/sync",
+      "status": 200,
+      "at": 1791546911915
+    },
+    {
+      "phase": "warm-mouse-2",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "at": 1791546911917
+    },
+    {
+      "phase": "warm-mouse-2",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "at": 1791546911917
+    },
+    {
+      "phase": "warm-mouse-2",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "at": 1791546911917
+    },
+    {
+      "phase": "warm-mouse-2",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "status": 200,
+      "at": 1791546911941
+    },
+    {
+      "phase": "warm-mouse-2",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546911973
+    },
+    {
+      "phase": "warm-mouse-2",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "status": 200,
+      "at": 1791546911974
+    },
+    {
+      "phase": "warm-settled",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "at": 1791546915881
+    },
+    {
+      "phase": "warm-settled",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "status": 200,
+      "at": 1791546915915
+    },
+    {
+      "phase": "warm-settled",
+      "event": "request",
+      "method": "POST",
+      "path": "/api/v1/sn/orders/sync",
+      "at": 1791546916455
+    },
+    {
+      "phase": "warm-settled",
+      "event": "response",
+      "method": "POST",
+      "path": "/api/v1/sn/orders/sync",
+      "status": 200,
+      "at": 1791546916570
+    },
+    {
+      "phase": "warm-settled",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "at": 1791546916572
+    },
+    {
+      "phase": "warm-settled",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "at": 1791546916572
+    },
+    {
+      "phase": "warm-settled",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "at": 1791546916572
+    },
+    {
+      "phase": "warm-settled",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "status": 200,
+      "at": 1791546916599
+    },
+    {
+      "phase": "warm-settled",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546916599
+    },
+    {
+      "phase": "warm-settled",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "status": 200,
+      "at": 1791546916599
+    },
+    {
+      "phase": "warm-mouse-settled",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "at": 1791546920504
+    },
+    {
+      "phase": "warm-mouse-settled",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "status": 200,
+      "at": 1791546920534
+    },
+    {
+      "phase": "warm-mouse-settled",
+      "event": "request",
+      "method": "POST",
+      "path": "/api/v1/sn/orders/sync",
+      "at": 1791546921021
+    },
+    {
+      "phase": "warm-mouse-settled",
+      "event": "response",
+      "method": "POST",
+      "path": "/api/v1/sn/orders/sync",
+      "status": 200,
+      "at": 1791546921150
+    },
+    {
+      "phase": "warm-mouse-settled",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "at": 1791546921152
+    },
+    {
+      "phase": "warm-mouse-settled",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "at": 1791546921152
+    },
+    {
+      "phase": "warm-mouse-settled",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "at": 1791546921152
+    },
+    {
+      "phase": "warm-mouse-settled",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546921181
+    },
+    {
+      "phase": "warm-mouse-settled",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "status": 200,
+      "at": 1791546921201
+    },
+    {
+      "phase": "warm-mouse-settled",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "status": 200,
+      "at": 1791546921235
+    },
+    {
+      "phase": "hold-meta",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "at": 1791546925389
+    },
+    {
+      "phase": "hold-meta",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "at": 1791546925391
+    },
+    {
+      "phase": "hold-meta",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "at": 1791546925391
+    },
+    {
+      "phase": "hold-meta",
+      "event": "held",
+      "path": "/api/v1/sn/orders/meta",
+      "at": 1791546925392
+    },
+    {
+      "phase": "hold-meta",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "status": 200,
+      "at": 1791546925423
+    },
+    {
+      "phase": "hold-meta",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546925476
+    },
+    {
+      "phase": "hold-meta",
+      "event": "request",
+      "method": "POST",
+      "path": "/api/v1/sn/orders/sync",
+      "at": 1791546925525
+    },
+    {
+      "phase": "hold-meta",
+      "event": "response",
+      "method": "POST",
+      "path": "/api/v1/sn/orders/sync",
+      "status": 200,
+      "at": 1791546925670
+    },
+    {
+      "phase": "hold-meta",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "at": 1791546925672
+    },
+    {
+      "phase": "hold-meta",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "at": 1791546925673
+    },
+    {
+      "phase": "hold-meta",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546925705
+    },
+    {
+      "phase": "hold-meta",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "status": 200,
+      "at": 1791546925721
+    },
+    {
+      "phase": "hold-meta",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "status": 200,
+      "at": 1791546925751
+    },
+    {
+      "phase": "hold-orders",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "at": 1791546930108
+    },
+    {
+      "phase": "hold-orders",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "at": 1791546930110
+    },
+    {
+      "phase": "hold-orders",
+      "event": "held",
+      "path": "/api/v1/sn/orders",
+      "at": 1791546930110
+    },
+    {
+      "phase": "hold-orders",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "at": 1791546930110
+    },
+    {
+      "phase": "hold-orders",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546930144
+    },
+    {
+      "phase": "hold-orders",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "status": 200,
+      "at": 1791546930155
+    },
+    {
+      "phase": "hold-orders",
+      "event": "request",
+      "method": "POST",
+      "path": "/api/v1/sn/orders/sync",
+      "at": 1791546930430
+    },
+    {
+      "phase": "hold-orders",
+      "event": "response",
+      "method": "POST",
+      "path": "/api/v1/sn/orders/sync",
+      "status": 200,
+      "at": 1791546930574
+    },
+    {
+      "phase": "hold-orders",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "at": 1791546930575
+    },
+    {
+      "phase": "hold-orders",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "at": 1791546930576
+    },
+    {
+      "phase": "hold-orders",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546930605
+    },
+    {
+      "phase": "hold-orders",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders/meta",
+      "status": 200,
+      "at": 1791546930608
+    },
+    {
+      "phase": "hold-orders",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/v1/sn/orders",
+      "status": 200,
+      "at": 1791546930624
+    }
+  ],
+  "errors": []
+}

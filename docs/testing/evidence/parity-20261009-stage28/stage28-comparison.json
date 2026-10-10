@@ -1,0 +1,231 @@
+{
+  "files": [
+    {
+      "case": "04-draft-single-csv.json",
+      "rows": 1,
+      "columns": 11,
+      "allColumnValuesTypesAndOriginalOrderEqualAfterExplicitBatchIdentityMapping": true,
+      "rawTypesAndBytesRetained": true,
+      "fileBytesIdentical": true,
+      "numericXmlMayUseIntegerOrDecimalNotation": false
+    },
+    {
+      "case": "04-draft-single-xlsx.json",
+      "rows": 1,
+      "columns": 11,
+      "allColumnValuesTypesAndOriginalOrderEqualAfterExplicitBatchIdentityMapping": true,
+      "rawTypesAndBytesRetained": true,
+      "fileBytesIdentical": false,
+      "numericXmlMayUseIntegerOrDecimalNotation": true
+    },
+    {
+      "case": "05-pi-creation-order-csv.json",
+      "rows": 51,
+      "columns": 11,
+      "allColumnValuesTypesAndOriginalOrderEqualAfterExplicitBatchIdentityMapping": true,
+      "rawTypesAndBytesRetained": true,
+      "fileBytesIdentical": true,
+      "numericXmlMayUseIntegerOrDecimalNotation": false
+    },
+    {
+      "case": "05-pi-creation-order-xlsx.json",
+      "rows": 51,
+      "columns": 11,
+      "allColumnValuesTypesAndOriginalOrderEqualAfterExplicitBatchIdentityMapping": true,
+      "rawTypesAndBytesRetained": true,
+      "fileBytesIdentical": false,
+      "numericXmlMayUseIntegerOrDecimalNotation": true
+    },
+    {
+      "case": "06-batch-all-csv.json",
+      "rows": 51,
+      "columns": 11,
+      "allColumnValuesTypesAndOriginalOrderEqualAfterExplicitBatchIdentityMapping": true,
+      "rawTypesAndBytesRetained": true,
+      "fileBytesIdentical": false,
+      "numericXmlMayUseIntegerOrDecimalNotation": true
+    },
+    {
+      "case": "06-batch-all-xlsx.json",
+      "rows": 51,
+      "columns": 11,
+      "allColumnValuesTypesAndOriginalOrderEqualAfterExplicitBatchIdentityMapping": true,
+      "rawTypesAndBytesRetained": true,
+      "fileBytesIdentical": false,
+      "numericXmlMayUseIntegerOrDecimalNotation": true
+    },
+    {
+      "case": "07-empty-csv.json",
+      "rows": 0,
+      "columns": 11,
+      "allColumnValuesTypesAndOriginalOrderEqualAfterExplicitBatchIdentityMapping": true,
+      "rawTypesAndBytesRetained": true,
+      "fileBytesIdentical": true,
+      "numericXmlMayUseIntegerOrDecimalNotation": false
+    },
+    {
+      "case": "07-empty-xlsx.json",
+      "rows": 0,
+      "columns": 11,
+      "allColumnValuesTypesAndOriginalOrderEqualAfterExplicitBatchIdentityMapping": true,
+      "rawTypesAndBytesRetained": true,
+      "fileBytesIdentical": false,
+      "numericXmlMayUseIntegerOrDecimalNotation": false
+    }
+  ],
+  "layouts": [
+    {
+      "case": "01-default-descending-20.json",
+      "identical": true,
+      "differences": {}
+    },
+    {
+      "case": "02-size-first-page.json",
+      "identical": true,
+      "differences": {}
+    },
+    {
+      "case": "02-third-page.json",
+      "identical": true,
+      "differences": {}
+    },
+    {
+      "case": "03-pi-material-sequence.json",
+      "identical": true,
+      "differences": {}
+    },
+    {
+      "case": "03-whitespace-material-ignored.json",
+      "identical": true,
+      "differences": {}
+    },
+    {
+      "case": "04-draft-export-keeps-query.json",
+      "identical": true,
+      "differences": {}
+    },
+    {
+      "case": "06-business-batch.json",
+      "identical": true,
+      "differences": {}
+    },
+    {
+      "case": "07-empty-batch.json",
+      "identical": true,
+      "differences": {}
+    },
+    {
+      "case": "08-layout-en-1440.json",
+      "identical": true,
+      "differences": {}
+    },
+    {
+      "case": "08-layout-en-900.json",
+      "identical": true,
+      "differences": {}
+    },
+    {
+      "case": "08-layout-vi-1440.json",
+      "identical": true,
+      "differences": {}
+    },
+    {
+      "case": "08-layout-vi-900.json",
+      "identical": true,
+      "differences": {}
+    },
+    {
+      "case": "08-layout-zh-1440.json",
+      "identical": true,
+      "differences": {}
+    },
+    {
+      "case": "08-layout-zh-900.json",
+      "identical": true,
+      "differences": {}
+    }
+  ],
+  "orderedTables": [
+    {
+      "case": "01-default-descending-20.json",
+      "rows": 20,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "02-size-first-page.json",
+      "rows": 50,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "02-third-page.json",
+      "rows": 14,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "03-pi-material-sequence.json",
+      "rows": 50,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "03-whitespace-material-ignored.json",
+      "rows": 50,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "04-draft-export-keeps-query.json",
+      "rows": 30,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "06-business-batch.json",
+      "rows": 20,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "07-empty-batch.json",
+      "rows": 0,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "08-layout-en-1440.json",
+      "rows": 20,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "08-layout-en-900.json",
+      "rows": 20,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "08-layout-vi-1440.json",
+      "rows": 20,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "08-layout-vi-900.json",
+      "rows": 20,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "08-layout-zh-1440.json",
+      "rows": 20,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    },
+    {
+      "case": "08-layout-zh-900.json",
+      "rows": 20,
+      "equalExceptIndependentCreationTimeAndBatchIdentity": true
+    }
+  ],
+  "independentBatchIdentities": {
+    "prototype": "B202610090538259195",
+    "migration": "B202610090539066974"
+  },
+  "notProven": [
+    "sourcePageSizeRace",
+    "legacyCreationOrder",
+    "allRolesAndFilters",
+    "downloadRecoveryUI",
+    "capAndPerformance"
+  ]
+}

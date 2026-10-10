@@ -1,0 +1,29 @@
+
+Running 1 test using 1 worker
+
+(node:15540) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [migration] › e2e\parity\account-audit.spec.ts:10:1 › P13 management audit: real account writes, rejected writes, no-change edit and complete export (17.2s)
+
+
+  1) [migration] › e2e\parity\account-audit.spec.ts:10:1 › P13 management audit: real account writes, rejected writes, no-change edit and complete export 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 409
+
+      163 |       versions.push({ resetRequestVersion: body.version, response: value });
+      164 |     }
+    > 165 |     expect(response.status()).toBe(status);
+          |                               ^
+      166 |     await expect(dialog).toBeHidden();
+      167 |     await expect(
+      168 |       actor
+        at reset (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-audit.spec.ts:165:31)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-audit.spec.ts:216:5
+
+    Error Context: test-results\stage43-audit4\account-audit-P13-manageme-2824c-ge-edit-and-complete-export-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\account-audit.spec.ts:10:1 › P13 management audit: real account writes, rejected writes, no-change edit and complete export 

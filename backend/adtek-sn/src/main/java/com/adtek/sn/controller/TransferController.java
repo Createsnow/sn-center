@@ -47,20 +47,20 @@ public class TransferController {
             @RequestParam(defaultValue = "PI") String scope,
             @RequestParam(required = false) String material,
             @RequestParam(required = false) String sn,
+            @RequestParam(required = false) String toPi,
             HttpServletRequest request) {
         return Result.success(
-                service.candidates(factoryId, pi, scope, material, sn),
+                service.candidates(factoryId, pi, scope, material, sn, toPi),
                 TraceFilter.current(request));
     }
 
     @GetMapping("/targets")
-    public Result<PageResult<TransferTargetVO>> targets(
+    public Result<PageResult<TransferSnapshotVO>> targets(
             @RequestParam(required = false) String query,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "50") int size,
             HttpServletRequest request) {
-        return Result.success(
-                service.targets(false, query, page, size), TraceFilter.current(request));
+        return Result.success(service.targets(query, page, size), TraceFilter.current(request));
     }
 
     @GetMapping("/factories")
@@ -69,8 +69,7 @@ public class TransferController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size,
             HttpServletRequest request) {
-        return Result.success(
-                service.targets(true, query, page, size), TraceFilter.current(request));
+        return Result.success(service.factories(query, page, size), TraceFilter.current(request));
     }
 
     @GetMapping
@@ -98,6 +97,16 @@ public class TransferController {
             @RequestParam(defaultValue = "100") int size,
             HttpServletRequest request) {
         return Result.success(service.items(id, cursor, size), TraceFilter.current(request));
+    }
+
+    @GetMapping("/{id}/items/page")
+    @Operation(summary = "页面转厂明细按固定流水顺序分页，保留原固定成员游标接口")
+    public Result<PageResult<TransferDetailVO>> itemPage(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "50") int size,
+            HttpServletRequest request) {
+        return Result.success(service.itemPage(id, page, size), TraceFilter.current(request));
     }
 
     @Operation(summary = "工厂申请转厂", description = "执行时固定全部可转成员并冻结；返回任务，业务生效须等待SUCCESS。")

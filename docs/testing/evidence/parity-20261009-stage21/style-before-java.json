@@ -1,0 +1,54 @@
+{
+  "tag": {
+    "class": "ant-tag ant-tag-filled ant-tag-success css-dev-only-do-not-override-oc1rc0 css-var-_r_0_",
+    "color": "rgb(63, 125, 90)",
+    "background": "rgb(177, 189, 180)",
+    "border": "rgb(225, 243, 216)",
+    "padding": "0px 7px",
+    "margin": "0px",
+    "filter": "none",
+    "transform": "none",
+    "font": "12px / 18px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+    "height": 20,
+    "width": 52
+  },
+  "close": {
+    "class": "ant-drawer-close",
+    "color": "rgba(0, 0, 0, 0.45)",
+    "background": "rgba(0, 0, 0, 0)",
+    "border": "rgba(0, 0, 0, 0.45)",
+    "padding": "1px 6px",
+    "margin": "0px 8px 0px 0px",
+    "filter": "none",
+    "transform": "none",
+    "font": "600 16px / 16px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+    "height": 24,
+    "width": 24
+  },
+  "mask": {
+    "class": "ant-drawer-mask",
+    "color": "rgb(15, 23, 42)",
+    "background": "rgba(0, 0, 0, 0.45)",
+    "border": "rgb(15, 23, 42)",
+    "padding": "0px",
+    "margin": "0px",
+    "filter": "none",
+    "transform": "none",
+    "font": "14px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+    "height": 900,
+    "width": 900
+  },
+  "title": {
+    "class": "ant-drawer-title",
+    "color": "rgb(48, 49, 51)",
+    "background": "rgba(0, 0, 0, 0)",
+    "border": "rgb(48, 49, 51)",
+    "padding": "0px",
+    "margin": "0px",
+    "filter": "none",
+    "transform": "none",
+    "font": "16px / 24px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+    "height": 24,
+    "width": 688
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "writes": [
+    {
+      "label": "01-full",
+      "status": 200,
+      "body": {
+        "mode": "all",
+        "bill_no": "",
+        "rows": 4,
+        "bills": 3,
+        "synced_at": "2026-10-09 16:19:09",
+        "removed": false,
+        "unmapped_orgs": []
+      }
+    },
+    {
+      "label": "02-single",
+      "status": 200,
+      "body": {
+        "mode": "one",
+        "bill_no": "CMP-MO-001",
+        "rows": 2,
+        "bills": 1,
+        "synced_at": "2026-10-09 16:19:09",
+        "removed": false,
+        "unmapped_orgs": []
+      }
+    },
+    {
+      "label": "03-missing",
+      "status": 200,
+      "body": {
+        "mode": "one",
+        "bill_no": "CMP-MISSING",
+        "rows": 0,
+        "bills": 0,
+        "synced_at": "2026-10-09 16:19:09",
+        "removed": true,
+        "unmapped_orgs": []
+      }
+    }
+  ],
+  "errors": []
+}

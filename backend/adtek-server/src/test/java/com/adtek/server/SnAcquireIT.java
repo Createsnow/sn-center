@@ -111,6 +111,7 @@ class SnAcquireIT {
                         "sys_file",
                         "sys_task",
                         "sys_operation",
+                        "sn_bill_generation",
                         "sn_source_entry_quota",
                         "sn_order_entry",
                         "sn_order_bill",
@@ -427,6 +428,57 @@ class SnAcquireIT {
     }
 
     @Test
+    void currentBatchPageUsesSequenceOrderLiveStatusAndMembershipWhileHistoryRemainsFixed()
+            throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            String factory = allocated(b), batch = acquire(b, factory);
+            String endpoint = "/acquire-batches/" + batch + "/current-items";
+            var first = data(b.get(endpoint + "?page=1&size=5"));
+            assertThat(first.path("total").asString()).isEqualTo("13");
+            assertThat(first.path("items").size()).isEqualTo(5);
+            for (int i = 0; i < 5; i++) {
+                assertThat(first.path("items").get(i).path("seqDec").asString())
+                        .isEqualTo(Integer.toString(i + 1));
+                assertThat(first.path("items").get(i).path("status").asString())
+                        .isEqualTo("TO_PRINT");
+            }
+            var last = data(b.get(endpoint + "?page=3&size=5"));
+            assertThat(last.path("items").size()).isEqualTo(3);
+            assertThat(last.path("items").get(2).path("material").asString()).isEmpty();
+            // 转厂/重领会清除或替换当前批次指针；固定成员与头数量必须原样保留。
+            jdbc.update(
+                    "UPDATE sn_item SET current_batch_id=NULL,status='TO_ACQUIRE' WHERE sn='G0001'");
+            jdbc.update("UPDATE sn_item SET current_batch_id=? WHERE sn='G0002'", uuid());
+            jdbc.update("UPDATE sn_item SET status='APPLYING' WHERE sn='G0003'");
+            jdbc.update("UPDATE sn_item SET status='PRINTED' WHERE sn='G0004'");
+            jdbc.update(
+                    "UPDATE sn_item SET seq_pi=NULL,seq_dec=NULL,rule_version_id=NULL WHERE sn='G0013'");
+            jdbc.update("UPDATE sn_item SET seq_pi='A-ORIGINAL' WHERE sn='G0012'");
+            var current = data(b.get(endpoint));
+            assertThat(current.path("total").asString()).isEqualTo("11");
+            var rows = current.path("items");
+            assertThat(rows.get(0).path("sn").asString()).isEqualTo("G0013");
+            assertThat(rows.get(0).path("seqDec").isNull()).isTrue();
+            assertThat(rows.get(0).path("seqText").isNull()).isTrue();
+            assertThat(rows.get(1).path("sn").asString()).isEqualTo("G0012");
+            assertThat(rows.get(2).path("status").asString()).isEqualTo("APPLYING");
+            assertThat(rows.get(3).path("status").asString()).isEqualTo("PRINTED");
+            assertThat(data(b.get(endpoint + "?page=4&size=5")).path("items").size()).isZero();
+            assertThat(members(b, batch)).hasSize(13);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT quantity FROM sn_acquire_batch WHERE id=?",
+                                    Long.class,
+                                    batch))
+                    .isEqualTo(13);
+            for (String invalid : List.of("?page=0", "?size=0", "?size=101", "?page=-1"))
+                assertThat(b.get(endpoint + invalid).statusCode()).isEqualTo(400);
+            assertThat(b.get("/acquire-batches/" + uuid() + "/current-items").statusCode())
+                    .isEqualTo(404);
+        }
+    }
+
+    @Test
     void callbackProtectsOriginalBatchAndReturnsCompleteDeduplicatedClassification()
             throws Exception {
         try (var b = new Browser("sn_hq")) {
@@ -537,10 +589,42 @@ class SnAcquireIT {
             try (var workbook =
                     org.apache.poi.ss.usermodel.WorkbookFactory.create(
                             new java.io.ByteArrayInputStream(xlsxBefore))) {
-                assertThat(workbook.getSheetAt(0).getLastRowNum()).isEqualTo(13);
-                assertThat(workbook.getSheetAt(0).getRow(1).getCell(1).getCellType())
+                var sheet = workbook.getSheetAt(0);
+                assertThat(sheet.getLastRowNum()).isEqualTo(13);
+                assertThat(sheet.getRow(0).getPhysicalNumberOfCells()).isEqualTo(11);
+                assertThat(sheet.getRow(0).getCell(0).getStringCellValue()).isEqualTo("序号");
+                assertThat(sheet.getPaneInformation().isFreezePane()).isTrue();
+                assertThat(sheet.getPaneInformation().getHorizontalSplitPosition())
+                        .isEqualTo((short) 1);
+                var record = data(b.get("/prints/" + print));
+                assertThat(record.path("printNo").asString()).matches("P[0-9]{18}");
+                assertThat(record.path("actorName").asString()).isEqualTo("sn_hq");
+                assertThat(sheet.getSheetName()).isEqualTo(record.path("printNo").asString());
+                String batchNo =
+                        jdbc.queryForObject("SELECT batch_no FROM sn_acquire_batch", String.class);
+                assertThat(batchNo).matches("B[0-9]{18}");
+                for (int no = 1; no <= 13; no++) {
+                    var row = sheet.getRow(no);
+                    assertThat(row.getCell(0).getNumericCellValue()).isEqualTo(no);
+                    assertThat(row.getCell(1).getStringCellValue())
+                            .isEqualTo(String.format("G%04d", no));
+                    assertThat(row.getCell(3).getNumericCellValue()).isEqualTo(no);
+                    assertThat(row.getCell(8).getStringCellValue()).isEqualTo("PRINTED");
+                    assertThat(row.getCell(9).getStringCellValue()).isEqualTo(batchNo);
+                }
+                assertThat(sheet.getRow(1).getCell(1).getCellType())
                         .isEqualTo(org.apache.poi.ss.usermodel.CellType.STRING);
             }
+            jdbc.update("UPDATE sys_user SET username='renamed_hq' WHERE username='sn_hq'");
+            assertThat(data(b.get("/prints/" + print)).path("actorName").asString())
+                    .isEqualTo("sn_hq");
+            assertThat(
+                            data(b.get("/acquire-batches"))
+                                    .path("items")
+                                    .get(0)
+                                    .path("actorName")
+                                    .asString())
+                    .isEqualTo("sn_hq");
             jdbc.update(
                     "UPDATE sn_item SET"
                             + " pi='TRANSFERRED',current_batch_id=NULL,current_print_id=NULL,status='TO_ACQUIRE'");
@@ -556,6 +640,144 @@ class SnAcquireIT {
             data(b.raw("POST", "/tasks/" + print + "/recover", Map.of(), b.token, b.csrf));
             drain();
             assertThat(download(b, print)).isEqualTo(xlsxBefore);
+            assertThat(count("sn_print")).isEqualTo(1);
+        }
+    }
+
+    @Test
+    void currentPrintDownloadTracksRealTransfersAndReacquisitionWithoutChangingFixedArtifacts()
+            throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            String factory = allocated(b), batch = acquire(b, factory);
+            String print =
+                    data(b.post("/prints", take(uuid(), factory, "PI-1")))
+                            .path("taskId")
+                            .asString();
+            drain();
+            byte[] fixed = download(b, print);
+            String endpoint = "/prints/" + print + "/file?format=csv";
+            var initial = b.get(endpoint);
+            assertThat(initial.statusCode()).isEqualTo(200);
+            assertThat(initial.body().lines().count()).isEqualTo(14);
+            assertThat(initial.body()).contains("G0001", "PRINTED");
+            long tasksBefore = count("sys_task"), auditBefore = count("sys_oper_log");
+            assertThat(b.get(endpoint).body()).isEqualTo(initial.body());
+            assertThat(count("sys_task")).isEqualTo(tasksBefore);
+            assertThat(count("sys_oper_log")).isEqualTo(auditBefore);
+            String other =
+                    jdbc.queryForObject(
+                            "SELECT CAST(id AS CHAR) FROM sn_factory WHERE id<>? LIMIT 1",
+                            String.class,
+                            factory);
+            movePrinted(b, factory, other, "G0001");
+            var moved = b.get(endpoint);
+            assertThat(moved.statusCode()).isEqualTo(200);
+            assertThat(moved.body().lines().count()).isEqualTo(13);
+            assertThat(moved.body()).doesNotContain("G0001");
+            assertThat(
+                            data(b.get("/acquire-batches/" + batch + "/current-items"))
+                                    .path("total")
+                                    .asString())
+                    .isEqualTo("12");
+            String nextBatch = acquire(b, other);
+            String nextPrint =
+                    data(b.post("/prints", take(uuid(), other, "PI-1"))).path("taskId").asString();
+            drain();
+            assertThat(b.get("/prints/" + nextPrint + "/file?format=csv").body()).contains("G0001");
+            assertThat(b.get(endpoint).body()).isEqualTo(moved.body());
+            movePrinted(b, other, factory, "G0001");
+            acquire(b, factory);
+            data(b.post("/prints", take(uuid(), factory, "PI-1")));
+            drain();
+            assertThat(b.get(endpoint).body()).isEqualTo(moved.body());
+            assertThat(b.get("/prints/" + nextPrint + "/file?format=csv").body().lines().count())
+                    .isEqualTo(1);
+            assertThat(
+                            data(b.get("/acquire-batches/" + nextBatch + "/current-items"))
+                                    .path("total")
+                                    .asString())
+                    .isEqualTo("0");
+            // 尚在原打印单内的申请中成员，下载应反映当前状态而非固定 PRINTED。
+            jdbc.update("UPDATE sn_item SET status='APPLYING' WHERE sn='G0002'");
+            assertThat(b.get(endpoint).body()).contains("APPLYING");
+            assertThat(members(b, batch)).hasSize(13);
+            assertThat(download(b, print)).isEqualTo(fixed);
+            assertThat(b.get("/prints/" + print + "/file?format=pdf").statusCode()).isEqualTo(400);
+            assertThat(b.get("/prints/" + uuid() + "/file").statusCode()).isEqualTo(404);
+            // 旧头缺少业务号时仍可生成当前十一列文件，固定格式和已发布摘要不变。
+            jdbc.update("UPDATE sn_print SET print_no=NULL WHERE id=?", nextPrint);
+            var oldXlsx =
+                    b.client.send(
+                            HttpRequest.newBuilder(
+                                            URI.create(
+                                                    "http://127.0.0.1:"
+                                                            + port
+                                                            + "/api/v1/sn/prints/"
+                                                            + nextPrint
+                                                            + "/file"))
+                                    .header("Authorization", "Bearer " + b.token)
+                                    .build(),
+                            HttpResponse.BodyHandlers.ofByteArray());
+            assertThat(oldXlsx.statusCode()).isEqualTo(200);
+            try (var workbook =
+                    org.apache.poi.ss.usermodel.WorkbookFactory.create(
+                            new java.io.ByteArrayInputStream(oldXlsx.body()))) {
+                assertThat(workbook.getSheetAt(0).getSheetName()).isEqualTo("SN");
+                assertThat(workbook.getSheetAt(0).getPhysicalNumberOfRows()).isEqualTo(1);
+                assertThat(workbook.getSheetAt(0).getRow(0).getPhysicalNumberOfCells())
+                        .isEqualTo(11);
+            }
+        }
+    }
+
+    void movePrinted(Browser b, String source, String target, String sn) throws Exception {
+        var body = new HashMap<String, Object>();
+        body.put("operationId", uuid());
+        body.put("factoryId", source);
+        body.put("pi", "PI-1");
+        body.put("scope", "SINGLE");
+        body.put("sn", sn);
+        body.put("toFactoryId", target);
+        body.put("toPi", "PI-1");
+        body.put("toCustomer", "");
+        body.put("toMaterial", "");
+        body.put("targetSource", "MANUAL");
+        body.put("reason", "打印历史当前成员验证");
+        run(data(b.post("/transfers/direct", body)).path("taskId").asString());
+    }
+
+    @Test
+    void legacyPrintFormatSurvivesRecoveryAfterVersionedWriterUpgrade() throws Exception {
+        try (var b = new Browser("sn_hq")) {
+            String factory = allocated(b);
+            acquire(b, factory);
+            String print =
+                    data(b.post("/prints", take(uuid(), factory, "PI-1")))
+                            .path("taskId")
+                            .asString();
+            // 模拟升级前已确认但待产出的固定成员；历史版本只能走旧编码器。
+            jdbc.update("UPDATE sn_print SET format_version=1,print_no=NULL WHERE id=?", print);
+            drain();
+            byte[] before = download(b, print);
+            try (var workbook =
+                    org.apache.poi.ss.usermodel.WorkbookFactory.create(
+                            new java.io.ByteArrayInputStream(before))) {
+                var sheet = workbook.getSheetAt(0);
+                assertThat(sheet.getSheetName()).isEqualTo("SN");
+                assertThat(sheet.getRow(0).getPhysicalNumberOfCells()).isEqualTo(14);
+                assertThat(sheet.getRow(0).getCell(0).getStringCellValue()).isEqualTo("ordinal");
+                assertThat(sheet.getRow(1).getCell(0).getCellType())
+                        .isEqualTo(org.apache.poi.ss.usermodel.CellType.STRING);
+            }
+            var root = java.nio.file.Path.of(taskSettings.fileRoot()).toAbsolutePath().normalize();
+            var file = root.resolve("objects").resolve(print + ".xlsx").normalize();
+            assertThat(file.startsWith(root)).isTrue();
+            java.nio.file.Files.delete(file);
+            assertThat(b.raw("GET", "/files/" + print, null, b.token, null).statusCode())
+                    .isEqualTo(409);
+            data(b.raw("POST", "/tasks/" + print + "/recover", Map.of(), b.token, b.csrf));
+            drain();
+            assertThat(download(b, print)).isEqualTo(before);
             assertThat(count("sn_print")).isEqualTo(1);
         }
     }
@@ -963,7 +1185,18 @@ class SnAcquireIT {
             try (var local = new Browser("local_reader");
                     var foreign = new Browser("other_reader")) {
                 assertThat(download(local, print)).isNotEmpty();
+                assertThat(local.get("/prints/" + print + "/file?format=csv").statusCode())
+                        .isEqualTo(200);
+                assertThat(foreign.get("/prints/" + print + "/file?format=csv").statusCode())
+                        .isEqualTo(403);
                 assertThat(members(local, batch)).hasSize(13);
+                assertThat(
+                                data(local.get("/acquire-batches/" + batch + "/current-items"))
+                                        .path("total")
+                                        .asString())
+                        .isEqualTo("11");
+                assertThat(foreign.get("/acquire-batches/" + batch + "/current-items").statusCode())
+                        .isEqualTo(403);
                 assertThat(
                                 local.raw("GET", "/tasks/" + print, null, local.token, null)
                                         .statusCode())
@@ -985,6 +1218,14 @@ class SnAcquireIT {
                         .isEqualTo(403);
                 jdbc.update("DELETE FROM sn_user_factory WHERE user_id=11");
                 jdbc.update("UPDATE sys_user SET security_version=security_version+1 WHERE id=11");
+                // 业务绑定变更保留登录，但旧文件按当前工厂范围立即拒绝。
+                assertThat(
+                                local.raw("GET", "/files/" + print, null, local.token, null)
+                                        .statusCode())
+                        .isEqualTo(403);
+                // 显式撤销凭据时，才拒绝认证本身；两条路径都不能继续下载旧文件。
+                jdbc.update(
+                        "UPDATE sys_user SET credential_version=credential_version+1 WHERE id=11");
                 assertThat(
                                 local.raw("GET", "/files/" + print, null, local.token, null)
                                         .statusCode())
@@ -1176,9 +1417,11 @@ class SnAcquireIT {
             rule.put("base", 36);
             rule.put("length", 12);
             data(b.post("/rules", rule));
-            jdbc.update(
-                    "UPDATE sn_order_entry SET qty=10001 WHERE bill_id=? AND source_entry_id='11'",
-                    bill);
+            // 通过 ERP 发布保持表头整单额度与分录数量一致，容量测试不伪造不一致快照。
+            var largeRows = new ArrayList<>(ERP.orders);
+            largeRows.set(0, row("9007199254740993", "11", "MO-1", "M1", "10001"));
+            ERP.orders = largeRows;
+            data(b.post("/orders/sync", Map.of("billNo", "MO-1")));
             var preview =
                     data(
                             b.post(
@@ -1233,6 +1476,12 @@ class SnAcquireIT {
             } while (cursor != null);
             assertThat(total).isEqualTo(10001);
             assertThat(sns).hasSize(10001);
+            var finalPage =
+                    data(b.get("/acquire-batches/" + batch + "/current-items?page=201&size=50"));
+            assertThat(finalPage.path("total").asString()).isEqualTo("10001");
+            assertThat(finalPage.path("items").size()).isEqualTo(1);
+            assertThat(finalPage.path("items").get(0).path("seqDec").asString())
+                    .isEqualTo("9007199254750993");
             began = System.nanoTime();
             String print =
                     data(b.post("/prints", take(uuid(), factory, "PI-1")))
@@ -1254,6 +1503,8 @@ class SnAcquireIT {
                     assertThat(row.getCell(1).getStringCellValue()).startsWith("=甲");
                     assertThat(row.getCell(3).getCellType())
                             .isEqualTo(org.apache.poi.ss.usermodel.CellType.STRING);
+                    assertThat(row.getCell(3).getStringCellValue())
+                            .isEqualTo(Long.toString(9007199254740992L + row.getRowNum()));
                     seq.add(row.getCell(3).getStringCellValue());
                 }
                 assertThat(seq).hasSize(10001).contains("9007199254740993", "9007199254750993");
@@ -1263,7 +1514,10 @@ class SnAcquireIT {
                             "SELECT csv_task_id FROM sn_print WHERE id=?", String.class, print);
             String content = new String(download(b, csv), java.nio.charset.StandardCharsets.UTF_8);
             assertThat(content.lines().count()).isEqualTo(10002);
-            assertThat(content).contains("\"9007199254740993\"", "\"9007199254750993\"", "\"=甲");
+            var currentCsv = b.get("/prints/" + print + "/file?format=csv");
+            assertThat(currentCsv.statusCode()).isEqualTo(200);
+            assertThat(currentCsv.body()).isEqualTo(content);
+            assertThat(content).contains(",9007199254740993,", ",9007199254750993,", ",'=甲");
             assertThat(count("sn_print_member")).isEqualTo(10001);
             java.nio.file.Files.writeString(
                     java.nio.file.Path.of("target/s5-batch-timing.json"),

@@ -1,0 +1,215 @@
+{
+  "posted": [
+    {
+      "operationId": "529e0aad-de55-41b8-a2e1-cb3535881a7c",
+      "format": "CSV",
+      "filters": {
+        "pi": "",
+        "material": "",
+        "piAll": false,
+        "customer": "CMP-QUERY-SCOPE-CUSTOMER",
+        "materialMode": "ALL"
+      }
+    },
+    {
+      "operationId": "529e0aad-de55-41b8-a2e1-cb3535881a7c",
+      "format": "CSV",
+      "filters": {
+        "pi": "",
+        "material": "",
+        "piAll": false,
+        "customer": "CMP-QUERY-SCOPE-CUSTOMER",
+        "materialMode": "ALL"
+      }
+    },
+    {
+      "operationId": "cfc42576-f880-4362-8ad2-92f7b200aaa0",
+      "format": "XLSX",
+      "filters": {
+        "pi": "",
+        "material": "",
+        "piAll": false,
+        "customer": "CMP-QUERY-SCOPE-CUSTOMER",
+        "materialMode": "ALL"
+      }
+    },
+    {
+      "operationId": "ab17dd48-ff5b-46c7-acea-2caa716222d9",
+      "format": "CSV",
+      "filters": {
+        "pi": "",
+        "material": "",
+        "piAll": false,
+        "customer": "CMP-QUERY-SCOPE-CUSTOMER",
+        "materialMode": "ALL"
+      }
+    },
+    {
+      "operationId": "8a31fb4b-5c79-4b48-b3b5-875e18c2b953",
+      "format": "XLSX",
+      "filters": {
+        "pi": "",
+        "material": "",
+        "piAll": false,
+        "customer": "CMP-QUERY-SCOPE-CUSTOMER",
+        "materialMode": "ALL"
+      }
+    }
+  ],
+  "first": {
+    "id": "0a26103f-54f7-44f6-99a1-3e83665f8e7c",
+    "format": "CSV",
+    "quantity": 6,
+    "format_version": 2,
+    "task_state": "SUCCESS",
+    "execution_epoch": 1,
+    "operation_id": "529e0aad-de55-41b8-a2e1-cb3535881a7c",
+    "operation_state": "SUCCEEDED",
+    "file_state": "READY",
+    "storage_key": "0a26103f-54f7-44f6-99a1-3e83665f8e7c.csv",
+    "sha256": "acbc6f3094156d91219b5f47c60d1757c6d9673071be646210913c677a6eee21",
+    "byte_size": 886,
+    "snapshot_digest": "4681ef7d9b5299edbfbf78524789a11c81b8921fb12c54e3f6380d63987a1f7f"
+  },
+  "acceptedId": "04dda80f-1ff7-4f36-a9db-222c23ecb27b",
+  "hidden": {
+    "id": "03747ac8-8530-46f1-b919-e9a4b943afad",
+    "format": "CSV",
+    "quantity": 6,
+    "format_version": 2,
+    "task_state": "SUCCESS",
+    "execution_epoch": 1,
+    "operation_id": "ab17dd48-ff5b-46c7-acea-2caa716222d9",
+    "operation_state": "SUCCEEDED",
+    "file_state": "READY",
+    "storage_key": "03747ac8-8530-46f1-b919-e9a4b943afad.csv",
+    "sha256": "acbc6f3094156d91219b5f47c60d1757c6d9673071be646210913c677a6eee21",
+    "byte_size": 886,
+    "snapshot_digest": "4681ef7d9b5299edbfbf78524789a11c81b8921fb12c54e3f6380d63987a1f7f"
+  },
+  "after": [
+    {
+      "id": "03747ac8-8530-46f1-b919-e9a4b943afad",
+      "format": "CSV",
+      "quantity": 6,
+      "format_version": 2,
+      "task_state": "SUCCESS",
+      "execution_epoch": 2,
+      "operation_id": "ab17dd48-ff5b-46c7-acea-2caa716222d9",
+      "operation_state": "SUCCEEDED",
+      "file_state": "READY",
+      "storage_key": "03747ac8-8530-46f1-b919-e9a4b943afad.csv",
+      "sha256": "acbc6f3094156d91219b5f47c60d1757c6d9673071be646210913c677a6eee21",
+      "byte_size": 886,
+      "snapshot_digest": "4681ef7d9b5299edbfbf78524789a11c81b8921fb12c54e3f6380d63987a1f7f"
+    },
+    {
+      "id": "04dda80f-1ff7-4f36-a9db-222c23ecb27b",
+      "format": "XLSX",
+      "quantity": 6,
+      "format_version": 2,
+      "task_state": "SUCCESS",
+      "execution_epoch": 1,
+      "operation_id": "cfc42576-f880-4362-8ad2-92f7b200aaa0",
+      "operation_state": "SUCCEEDED",
+      "file_state": "READY",
+      "storage_key": "04dda80f-1ff7-4f36-a9db-222c23ecb27b.xlsx",
+      "sha256": "5d10c76060905b787bbd1dcabd639c31320783ae41b22e6ee037b64b4fd4bc59",
+      "byte_size": 4099,
+      "snapshot_digest": "4681ef7d9b5299edbfbf78524789a11c81b8921fb12c54e3f6380d63987a1f7f"
+    },
+    {
+      "id": "0a26103f-54f7-44f6-99a1-3e83665f8e7c",
+      "format": "CSV",
+      "quantity": 6,
+      "format_version": 2,
+      "task_state": "SUCCESS",
+      "execution_epoch": 1,
+      "operation_id": "529e0aad-de55-41b8-a2e1-cb3535881a7c",
+      "operation_state": "SUCCEEDED",
+      "file_state": "READY",
+      "storage_key": "0a26103f-54f7-44f6-99a1-3e83665f8e7c.csv",
+      "sha256": "acbc6f3094156d91219b5f47c60d1757c6d9673071be646210913c677a6eee21",
+      "byte_size": 886,
+      "snapshot_digest": "4681ef7d9b5299edbfbf78524789a11c81b8921fb12c54e3f6380d63987a1f7f"
+    }
+  ],
+  "excelHidden": {
+    "id": "90982330-1539-48f7-87e6-6baca667fc0d",
+    "format": "XLSX",
+    "quantity": 6,
+    "format_version": 2,
+    "task_state": "SUCCESS",
+    "execution_epoch": 1,
+    "operation_id": "8a31fb4b-5c79-4b48-b3b5-875e18c2b953",
+    "operation_state": "SUCCEEDED",
+    "file_state": "READY",
+    "storage_key": "90982330-1539-48f7-87e6-6baca667fc0d.xlsx",
+    "sha256": "e3b1196b19b04397a5a0e3dc286957e327faf2c9ec8c927397bedc5e49088cc1",
+    "byte_size": 4100,
+    "snapshot_digest": "4681ef7d9b5299edbfbf78524789a11c81b8921fb12c54e3f6380d63987a1f7f"
+  },
+  "recoveryAccepted": true,
+  "final": [
+    {
+      "id": "03747ac8-8530-46f1-b919-e9a4b943afad",
+      "format": "CSV",
+      "quantity": 6,
+      "format_version": 2,
+      "task_state": "SUCCESS",
+      "execution_epoch": 2,
+      "operation_id": "ab17dd48-ff5b-46c7-acea-2caa716222d9",
+      "operation_state": "SUCCEEDED",
+      "file_state": "READY",
+      "storage_key": "03747ac8-8530-46f1-b919-e9a4b943afad.csv",
+      "sha256": "acbc6f3094156d91219b5f47c60d1757c6d9673071be646210913c677a6eee21",
+      "byte_size": 886,
+      "snapshot_digest": "4681ef7d9b5299edbfbf78524789a11c81b8921fb12c54e3f6380d63987a1f7f"
+    },
+    {
+      "id": "04dda80f-1ff7-4f36-a9db-222c23ecb27b",
+      "format": "XLSX",
+      "quantity": 6,
+      "format_version": 2,
+      "task_state": "SUCCESS",
+      "execution_epoch": 1,
+      "operation_id": "cfc42576-f880-4362-8ad2-92f7b200aaa0",
+      "operation_state": "SUCCEEDED",
+      "file_state": "READY",
+      "storage_key": "04dda80f-1ff7-4f36-a9db-222c23ecb27b.xlsx",
+      "sha256": "5d10c76060905b787bbd1dcabd639c31320783ae41b22e6ee037b64b4fd4bc59",
+      "byte_size": 4099,
+      "snapshot_digest": "4681ef7d9b5299edbfbf78524789a11c81b8921fb12c54e3f6380d63987a1f7f"
+    },
+    {
+      "id": "0a26103f-54f7-44f6-99a1-3e83665f8e7c",
+      "format": "CSV",
+      "quantity": 6,
+      "format_version": 2,
+      "task_state": "SUCCESS",
+      "execution_epoch": 1,
+      "operation_id": "529e0aad-de55-41b8-a2e1-cb3535881a7c",
+      "operation_state": "SUCCEEDED",
+      "file_state": "READY",
+      "storage_key": "0a26103f-54f7-44f6-99a1-3e83665f8e7c.csv",
+      "sha256": "acbc6f3094156d91219b5f47c60d1757c6d9673071be646210913c677a6eee21",
+      "byte_size": 886,
+      "snapshot_digest": "4681ef7d9b5299edbfbf78524789a11c81b8921fb12c54e3f6380d63987a1f7f"
+    },
+    {
+      "id": "90982330-1539-48f7-87e6-6baca667fc0d",
+      "format": "XLSX",
+      "quantity": 6,
+      "format_version": 2,
+      "task_state": "SUCCESS",
+      "execution_epoch": 2,
+      "operation_id": "8a31fb4b-5c79-4b48-b3b5-875e18c2b953",
+      "operation_state": "SUCCEEDED",
+      "file_state": "READY",
+      "storage_key": "90982330-1539-48f7-87e6-6baca667fc0d.xlsx",
+      "sha256": "e3b1196b19b04397a5a0e3dc286957e327faf2c9ec8c927397bedc5e49088cc1",
+      "byte_size": 4100,
+      "snapshot_digest": "4681ef7d9b5299edbfbf78524789a11c81b8921fb12c54e3f6380d63987a1f7f"
+    }
+  ]
+}

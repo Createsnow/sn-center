@@ -17,6 +17,41 @@ public class UserQuery {
 
     private Boolean enabled;
 
+    @Size(max = 20)
+    private java.util.List<@Pattern(regexp = "[A-Z][A-Z0-9_]{0,63}") String> roleCodes =
+            java.util.List.of();
+
+    @Size(max = 20)
+    private java.util.List<@Pattern(regexp = "[A-Z][A-Z0-9_]{0,63}") String> excludedRoleCodes =
+            java.util.List.of();
+
+    @Pattern(regexp = "[1-9][0-9]{0,18}")
+    private String factoryId;
+
+    public java.util.List<String> getRoleCodes() {
+        return roleCodes;
+    }
+
+    public void setRoleCodes(java.util.List<String> value) {
+        roleCodes = value;
+    }
+
+    public java.util.List<String> getExcludedRoleCodes() {
+        return excludedRoleCodes;
+    }
+
+    public void setExcludedRoleCodes(java.util.List<String> value) {
+        excludedRoleCodes = value;
+    }
+
+    public String getFactoryId() {
+        return factoryId;
+    }
+
+    public void setFactoryId(String value) {
+        factoryId = value;
+    }
+
     public int getPage() {
         return page;
     }

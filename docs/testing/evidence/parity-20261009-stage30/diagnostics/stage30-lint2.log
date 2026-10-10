@@ -1,0 +1,12 @@
+
+> adtek-platform-sn-web@0.1.0 lint D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> eslint . --max-warnings 0
+
+
+D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\src\features\sn\useQueryExport.ts
+  83:6  warning  React Hook useEffect has missing dependencies: 'csv' and 'xlsx'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+✖ 1 problem (0 errors, 1 warning)
+
+ESLint found too many warnings (maximum: 0).
+ ELIFECYCLE  Command failed with exit code 1.

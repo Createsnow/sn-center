@@ -1,0 +1,112 @@
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] adtek-platform-sn                                                  [pom]
+[INFO] adtek-common                                                       [jar]
+[INFO] adtek-framework                                                    [jar]
+[INFO] adtek-system                                                       [jar]
+[INFO] adtek-sn                                                           [jar]
+[INFO] adtek-integration                                                  [jar]
+[INFO] adtek-server                                                       [jar]
+[INFO] 
+[INFO] -----------------------< com.adtek:adtek-parent >-----------------------
+[INFO] Building adtek-platform-sn 0.1.0-SNAPSHOT                          [1/7]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- spotless:3.10.3:apply (default-cli) @ adtek-parent ---
+[INFO] Spotless.Pom is keeping 1 files clean - 0 were changed to be clean, 0 were already clean, 1 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- checkstyle:3.6.0:check (default-cli) @ adtek-parent ---
+[INFO] ��ʼ��顭��
+�����ɡ�
+[INFO] You have 0 Checkstyle violations.
+[INFO] 
+[INFO] -----------------------< com.adtek:adtek-common >-----------------------
+[INFO] Building adtek-common 0.1.0-SNAPSHOT                               [2/7]
+[INFO]   from adtek-common\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- spotless:3.10.3:apply (default-cli) @ adtek-common ---
+[INFO] Spotless.Java is keeping 17 files clean - 0 were changed to be clean, 0 were already clean, 17 were skipped because caching determined they were already clean
+[INFO] Spotless.Pom is keeping 1 files clean - 0 were changed to be clean, 0 were already clean, 1 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- checkstyle:3.6.0:check (default-cli) @ adtek-common ---
+[INFO] ��ʼ��顭��
+�����ɡ�
+[INFO] You have 0 Checkstyle violations.
+[INFO] 
+[INFO] ---------------------< com.adtek:adtek-framework >----------------------
+[INFO] Building adtek-framework 0.1.0-SNAPSHOT                            [3/7]
+[INFO]   from adtek-framework\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- spotless:3.10.3:apply (default-cli) @ adtek-framework ---
+[INFO] Spotless.Java is keeping 87 files clean - 0 were changed to be clean, 0 were already clean, 87 were skipped because caching determined they were already clean
+[INFO] Spotless.Pom is keeping 1 files clean - 0 were changed to be clean, 0 were already clean, 1 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- checkstyle:3.6.0:check (default-cli) @ adtek-framework ---
+[INFO] ��ʼ��顭��
+�����ɡ�
+[INFO] You have 0 Checkstyle violations.
+[INFO] 
+[INFO] -----------------------< com.adtek:adtek-system >-----------------------
+[INFO] Building adtek-system 0.1.0-SNAPSHOT                               [4/7]
+[INFO]   from adtek-system\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- spotless:3.10.3:apply (default-cli) @ adtek-system ---
+[INFO] Spotless.Java is keeping 110 files clean - 0 were changed to be clean, 0 were already clean, 110 were skipped because caching determined they were already clean
+[INFO] Spotless.Pom is keeping 1 files clean - 0 were changed to be clean, 0 were already clean, 1 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- checkstyle:3.6.0:check (default-cli) @ adtek-system ---
+[INFO] ��ʼ��顭��
+�����ɡ�
+[INFO] You have 0 Checkstyle violations.
+[INFO] 
+[INFO] -------------------------< com.adtek:adtek-sn >-------------------------
+[INFO] Building adtek-sn 0.1.0-SNAPSHOT                                   [5/7]
+[INFO]   from adtek-sn\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- spotless:3.10.3:apply (default-cli) @ adtek-sn ---
+[INFO] clean file: D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-sn\src\main\java\com\adtek\sn\mapper\OrganizationMappingMapper.java
+[INFO] clean file: D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-sn\src\main\java\com\adtek\sn\service\impl\FactoryPublishServiceImpl.java
+[INFO] clean file: D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-sn\src\main\java\com\adtek\sn\service\impl\OrderPublishServiceImpl.java
+[INFO] clean file: D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-sn\src\main\java\com\adtek\sn\service\port\ErpProductionOrderPort.java
+[INFO] Spotless.Java is keeping 272 files clean - 4 were changed to be clean, 3 were already clean, 265 were skipped because caching determined they were already clean
+[INFO] Spotless.Pom is keeping 1 files clean - 0 were changed to be clean, 0 were already clean, 1 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- checkstyle:3.6.0:check (default-cli) @ adtek-sn ---
+[INFO] ��ʼ��顭��
+[ERROR] D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-sn\src\main\java\com\adtek\sn\mapper\OrganizationMappingMapper.java:13: �����ַ��� 103������ࣺ100���� [LineLength]
+�����ɡ�
+[INFO] There is 1 error reported by Checkstyle 9.3 with D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\backend\adtek-sn\target\checkstyle-rules.xml ruleset.
+[ERROR] src\main\java\com\adtek\sn\mapper\OrganizationMappingMapper.java:[13] (sizes) LineLength: �����ַ��� 103������ࣺ100����
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for adtek-platform-sn 0.1.0-SNAPSHOT:
+[INFO] 
+[INFO] adtek-platform-sn .................................. SUCCESS [  1.443 s]
+[INFO] adtek-common ....................................... SUCCESS [  0.055 s]
+[INFO] adtek-framework .................................... SUCCESS [  0.058 s]
+[INFO] adtek-system ....................................... SUCCESS [  0.065 s]
+[INFO] adtek-sn ........................................... FAILURE [  0.713 s]
+[INFO] adtek-integration .................................. SKIPPED
+[INFO] adtek-server ....................................... SKIPPED
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.860 s
+[INFO] Finished at: 2026-10-09T14:51:43+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-checkstyle-plugin:3.6.0:check (default-cli) on project adtek-sn: You have 1 Checkstyle violation. -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+[ERROR] 
+[ERROR] After correcting the problems, you can resume the build with the command
+[ERROR]   mvn <args> -rf :adtek-sn

@@ -1,0 +1,100 @@
+{
+  "stage": 27,
+  "goalComplete": false,
+  "allCasesRerun": false,
+  "ui": {
+    "startTime": "2026-10-08T20:57:10.967Z",
+    "duration": 94008.02799999999,
+    "expected": 10,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "workers": 1,
+  "retries": 0,
+  "registeredCases": 168,
+  "exactLayoutPairs": 15,
+  "uiScreenshots": 54,
+  "queryObservationScreenshots": 12,
+  "queryObservationIsParityPass": false,
+  "queryExportDifference": {
+    "prototype": {
+      "columns": 11,
+      "rows": 1
+    },
+    "migration": {
+      "columns": 22,
+      "rows": 10
+    }
+  },
+  "queryBusinessBatchFormat": {
+    "prototypeHttp": 200,
+    "migrationHttp": 400,
+    "independentLegacyBatchIdsNotEqual": true
+  },
+  "frontendChecks": [
+    "format",
+    "formatCheck",
+    "lint",
+    "typecheckAndBuild",
+    "apiCheck"
+  ],
+  "frontendUnitTestsRerun": false,
+  "backendTestsRerun": false,
+  "schema": "32",
+  "nextMigration": "33",
+  "sourceHashes": {
+    "backend/adtek-sn/src/main/java/com/adtek/sn/controller/TransferController.java": "86427ede04e545e16f58fd9435bb613d9dd8cbf26c616c6406e59caf1a4c6abe",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/TransferService.java": "5d055ff10219a2e4990cd3732ba1f3f2ab3f6422860f259a5839ee7c786a40d1",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/TransferServiceImpl.java": "b43becc78e7fa34b55fa6aa9ea3c94657e06bc057874e1788471d112e168d4e4",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnDataPermissionRules.java": "dfbce6927f034bae2818a1f4454acbb4510291a0b3a7b640573b6b56a6e51769",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/convert/TransferConvert.java": "bff6255140945d9c20f8832a932d6405e79108d4468b4ca39880c478d9b11ff2",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/TransferMapper.java": "f38bf654891c054d10b9d53da3c12e506c2a6e628b1a4550de98d127128a2449",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/domain/TransferDetailEntity.java": "8c4fae131bb42c49eb1f64bc2b1ba91d63d873b0043cfd79d270a6c1f8c8a6b1",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/vo/TransferDetailVO.java": "146500d49c9c093cee5bc091a87a3e4c8401763cf2ee76b373494d4857a5d51c",
+    "backend/adtek-server/src/main/resources/db/migration/V32__transfer_display_number_and_actor.sql": "0286bf4c449dd7f92701f18a61a4450454f7ce064acc0acb597d3a0a02bc0e54",
+    "backend/adtek-server/src/test/java/com/adtek/server/SnTransferIT.java": "c34256c94a4afb6352d9d6a1dd656fed1301229bcc5938fc8cfc6be19e92d47a",
+    "backend/adtek-server/target/adtek-server-acceptance.jar": "88c9a7bf6009fd1a5cc767d50a7af5b517cbcb24fcf7eb4a4bd623db36bbd3d4",
+    "frontend/src/features/sn/pages/TransferPage.tsx": "813bead9113963d09147fa8c0abff8082712db4c85a052c029b6b9b50e780786",
+    "frontend/src/features/sn/components/TransferHistory.tsx": "4c946e4d58c65c59dd579cafe3403822994b396c705a7019c56b682845a5f10c",
+    "frontend/src/features/sn/transferJump.ts": "ca74f7e1ac9e2f3f0d50b178ee6a68175ca71e45c02865b3cae8e0d16a38e049",
+    "frontend/src/features/sn/transferJump.test.ts": "7c51edbb96ff739d4cb13757b2d606962e56eeebcc7ef173709eda3a5cf5382b",
+    "frontend/src/styles.css": "2e59415062fd1e57af3e0bb17dac897806428fb6d7d1afbb4b5788687e7632d0",
+    "frontend/src/api/snTransfer.ts": "7acc955e11ed9bf80b39f1cab7a582f2de3a1cde687d5bfa96770895a68b663a",
+    "frontend/src/api/snTransfer.test.ts": "e9f30487e42306e4dd493b17527a52457a636be9bbc101263d6617d53ad4e759",
+    "frontend/openapi/adtek-sn.json": "81ee4776e55c68aa0614de0d286622e3725ed422952a53738d4367001fa72061",
+    "frontend/src/api/generated/schema.d.ts": "dd2cba57e57bf623a7fa90acf9868fbcfa870660e0b4e6225d7f066407ab29fa",
+    "frontend/e2e/parity/transfer-form.spec.ts": "0793c7a0d6a36e808be1e538a1598af16f0a3fb2e262dac287038ec990fd4bec",
+    "frontend/e2e/parity/transfer-lifecycle.spec.ts": "8f9d0160f97d0df426fe86144089b0c5ebcd4586dcf3944fb9027134f683fff5",
+    "frontend/e2e/parity/acquire-print.spec.ts": "c85ea3a816a87f3f366191f5b0e99eed444324c1af9a851a50fad74003c96d82",
+    "tools/testing/parity-acquire-fixture.py": "5c094ca4d87ab2c92c15bde4f86e862c069b157c4b692dd36fdf0c8dfa3e12d9",
+    "tools/testing/compare-transfer-print-files.py": "f8536d28ccb1e2493f5d14c4718fb1444c6394a4a660758f4972d7f7d07a5f46",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/domain/TransferSnapshotEntity.java": "56c94883f08f6130962a807f928855f8a92eb65855a38d322843ab41ce863b8e",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/vo/TransferSnapshotVO.java": "d4a39dc9c6c8442d2ef3eb0284edb4ef9c0a3f740156b3c867d6aff44b40339c",
+    "frontend/e2e/parity/transfer-targets.spec.ts": "aedada2556bd9ffa381eced8f4252bf934a5aba77d524d48890b79edb20c6ec3",
+    "frontend/e2e/parity/transfer-impact.spec.ts": "f59ad3936883753f10a89416257a05d431880ab3f90d3e52b30155fa38d3b229",
+    "frontend/e2e/parity/transfer-layout.spec.ts": "cfc864b29641f552787d921a9b8457e7f2aa92160ad4ccba7cf246d34bec6492",
+    "frontend/src/components/prototype/icons.json": "30766115bc54537d35eb2134d190cecede040f1f033a33a3b77d2f715989428f",
+    "tools/testing/parity-target-fixture.py": "071f0196c0cf355691071720869301390970d24ba7195ce09a0b314617516cc9",
+    "frontend/src/features/sn/pages/QueryPage.tsx": "7d4d242e1cdb29907957b8fe50150c41829efd810ad12735984015ecd558b04b",
+    "frontend/src/api/snQuery.ts": "aea12713be003ecd4ad70fcd8c55b7f6e794f21f80e2440673290774c189742d",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/SnQueryMapper.java": "92482a4a8665e2690389e0d2393a86daf6bd3f8391ed7b112ab0243c214c7a41",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnQueryServiceImpl.java": "9604a766336ec3ec004cd279a6063d83e806071f94a835570b1ee6857e7b2373",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/SnQueryFiles.java": "669635c5ab7534fc089820adc33dda0686904277df037b9d201abf1d9bf9a0c3",
+    "../sn-center-python/frontend/src/views/Query.vue": "0d165653b692baff1931f26e7e06f6386bd649fed26c591c24b3cc38860a10d2",
+    "../sn-center-python/app/services/query.py": "e8402b43d0fb04be9bc670f24f088f4d0384c02d75a3d06e6c688c254a29b37a",
+    "../sn-center-python/app/services/sn_items.py": "7916b4c3ec7914f8e28beca704d7e70d50996118fa96c524a9fb3c28656d0c21"
+  },
+  "changedSinceStage26": [
+    "frontend/src/styles.css",
+    "frontend/e2e/parity/transfer-targets.spec.ts",
+    "frontend/e2e/parity/transfer-layout.spec.ts"
+  ],
+  "remaining": [
+    "P11 behavior and full layout",
+    "P01 shared navigation",
+    "P09/P10 pending boundaries",
+    "P01-P16 full acceptance",
+    "500000-row import performance"
+  ]
+}

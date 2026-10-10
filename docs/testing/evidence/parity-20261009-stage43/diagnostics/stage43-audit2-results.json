@@ -1,0 +1,179 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\node_modules\\.pnpm\\@playwright+test@1.63.0\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.parity.config.ts",
+      "account-audit.spec.ts",
+      "--project=migration",
+      "--output=test-results/stage43-audit2"
+    ],
+    "configFile": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\playwright.parity.config.ts",
+    "rootDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage43-audit2",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "prototype",
+        "name": "prototype",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [
+          "**/query-recovery.spec.ts"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage43-audit2",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "migration",
+        "name": "migration",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/parity/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "account-audit.spec.ts",
+      "file": "account-audit.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P13 management audit: real account writes, rejected writes, no-change edit and complete export",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1022,
+                  "error": {
+                    "message": "SyntaxError: Unexpected token 'i', \"import { c\"... is not valid JSON",
+                    "stack": "SyntaxError: Unexpected token 'i', \"import { c\"... is not valid JSON\n    at _Page.<anonymous> (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-audit.spec.ts:60:23)",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-audit.spec.ts",
+                      "column": 23,
+                      "line": 60
+                    },
+                    "snippet": "  58 |       const route = new URL(response.url()).pathname;\n  59 |       if (!prototype && route.includes('/users')) {\n> 60 |         const value = await response.json();\n     |                       ^\n  61 |         const body = response.request().postDataJSON() as { version?: string } | null;\n  62 |         versions.push({ route, status: response.status(), requestVersion: body?.version, code: value.code, users: value.data?.items?.map((u: { id: string; version: string; enabled: boolean }) => ({ id: u.id, version: u.version, enabled: u.enabled })), version: value.data?.version });\n  63 |       }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-audit.spec.ts",
+                        "column": 23,
+                        "line": 60
+                      },
+                      "message": "SyntaxError: Unexpected token 'i', \"import { c\"... is not valid JSON\n\n  58 |       const route = new URL(response.url()).pathname;\n  59 |       if (!prototype && route.includes('/users')) {\n> 60 |         const value = await response.json();\n     |                       ^\n  61 |         const body = response.request().postDataJSON() as { version?: string } | null;\n  62 |         versions.push({ route, status: response.status(), requestVersion: body?.version, code: value.code, users: value.data?.items?.map((u: { id: string; version: string; enabled: boolean }) => ({ id: u.id, version: u.version, enabled: u.enabled })), version: value.data?.version });\n  63 |       }\n    at _Page.<anonymous> (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-audit.spec.ts:60:23)"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-audit.spec.ts",
+                        "column": 15,
+                        "line": 67
+                      },
+                      "message": "Error: page.goto: Test ended.\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:15173/login\", waiting until \"load\"\u001b[22m\n\n\n  65 |   }\n  66 |   const login = async (tab: Page, username: string, password: string) => {\n> 67 |     await tab.goto('/login');\n     |               ^\n  68 |     await paceComparisonLogin(tab);\n  69 |     await tab.locator('input[autocomplete=\"username\"]').fill(username);\n  70 |     await tab.locator('input[autocomplete=\"current-password\"]').fill(password);\n    at login (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-audit.spec.ts:67:15)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-audit.spec.ts:169:11"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T05:16:29.052Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage43-audit2\\account-audit-P13-manageme-2824c-ge-edit-and-complete-export-migration\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-audit.spec.ts",
+                    "column": 23,
+                    "line": 60
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2a0f5e0ddf9b2f30fc5d-48c8aa4f0168385b2b24",
+          "file": "account-audit.spec.ts",
+          "line": 10,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-09T05:16:28.595Z",
+    "duration": 2416.164,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

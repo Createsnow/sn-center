@@ -1,0 +1,61 @@
+{
+  "keys": [
+    {
+      "pi": "CMP-UI-INIT-NONE",
+      "sn": "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL",
+      "seq_pi": null,
+      "seq_dec": null
+    },
+    {
+      "pi": "CMP-UI-INIT-NONE",
+      "sn": "UNPARSED",
+      "seq_pi": null,
+      "seq_dec": null
+    }
+  ],
+  "items": [
+    {
+      "sn": "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL",
+      "pi": "CMP-UI-INIT-NONE",
+      "source_pi": "CMP-UI-INIT-NONE",
+      "seq_dec": null,
+      "customer": "",
+      "material": "",
+      "factory_code": "",
+      "status": "PRINTED",
+      "source": "IMPORT"
+    },
+    {
+      "sn": "UNPARSED",
+      "pi": "CMP-UI-INIT-NONE",
+      "source_pi": "CMP-UI-INIT-NONE",
+      "seq_dec": null,
+      "customer": "",
+      "material": "",
+      "factory_code": "",
+      "status": "PRINTED",
+      "source": "IMPORT"
+    }
+  ],
+  "counters": [
+    {
+      "pi": "CMP-UI-INIT-NONE",
+      "last_seq": 9,
+      "generated_qty": 0,
+      "imported_qty": 2,
+      "start_seq": 10,
+      "start_locked": 1
+    }
+  ],
+  "history": [
+    {
+      "pi": "CMP-UI-INIT-NONE",
+      "start_seq": 10,
+      "qty": 2,
+      "max_seq": null,
+      "factory_code": "",
+      "file_name": "",
+      "operator": "admin"
+    }
+  ]
+}

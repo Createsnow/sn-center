@@ -1,0 +1,422 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\node_modules\\.pnpm\\@playwright+test@1.63.0\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.parity.config.ts",
+      "factory-audit.spec.ts",
+      "factories.spec.ts",
+      "account-editor.spec.ts",
+      "--output=test-results/stage45-final3"
+    ],
+    "configFile": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\playwright.parity.config.ts",
+    "rootDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage45-final3",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "prototype",
+        "name": "prototype",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [
+          "**/query-recovery.spec.ts"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage45-final3",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "migration",
+        "name": "migration",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/parity/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "account-editor.spec.ts",
+      "file": "account-editor.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P13 account editor: real create/edit, ordered validation, roles, cancel and three languages",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 210000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 414,
+                  "error": {
+                    "message": "Error: ENOENT: no such file or directory, open 'D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\deploy\\.secrets\\comparison-20261008\\account-editor-python.json'",
+                    "stack": "Error: ENOENT: no such file or directory, open 'D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\deploy\\.secrets\\comparison-20261008\\account-editor-python.json'\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-editor.spec.ts:116:28",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-editor.spec.ts",
+                      "column": 28,
+                      "line": 116
+                    },
+                    "snippet": "  114 |   const kind = source(info) ? 'python' : 'java';\n  115 |   const statePath = resolve(`../deploy/.secrets/comparison-20261008/account-editor-${kind}.json`);\n> 116 |   const state = JSON.parse(readFileSync(statePath, 'utf8')) as {\n      |                            ^\n  117 |     password: string;\n  118 |     names: [string, string, string];\n  119 |     created: string[];"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-editor.spec.ts",
+                        "column": 28,
+                        "line": 116
+                      },
+                      "message": "Error: ENOENT: no such file or directory, open 'D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\deploy\\.secrets\\comparison-20261008\\account-editor-python.json'\n\n  114 |   const kind = source(info) ? 'python' : 'java';\n  115 |   const statePath = resolve(`../deploy/.secrets/comparison-20261008/account-editor-${kind}.json`);\n> 116 |   const state = JSON.parse(readFileSync(statePath, 'utf8')) as {\n      |                            ^\n  117 |     password: string;\n  118 |     names: [string, string, string];\n  119 |     created: string[];\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-editor.spec.ts:116:28"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T06:25:00.210Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage45-final3\\account-editor-P13-account-41ce0--cancel-and-three-languages-prototype\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-editor.spec.ts",
+                    "column": 28,
+                    "line": 116
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "9bc909f121c7d7c1adae-73c4ebe16bd924d2d949",
+          "file": "account-editor.spec.ts",
+          "line": 109,
+          "column": 1
+        },
+        {
+          "title": "P13 account editor: real create/edit, ordered validation, roles, cancel and three languages",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 210000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 411,
+                  "error": {
+                    "message": "Error: ENOENT: no such file or directory, open 'D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\deploy\\.secrets\\comparison-20261008\\account-editor-java.json'",
+                    "stack": "Error: ENOENT: no such file or directory, open 'D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\deploy\\.secrets\\comparison-20261008\\account-editor-java.json'\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-editor.spec.ts:116:28",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-editor.spec.ts",
+                      "column": 28,
+                      "line": 116
+                    },
+                    "snippet": "  114 |   const kind = source(info) ? 'python' : 'java';\n  115 |   const statePath = resolve(`../deploy/.secrets/comparison-20261008/account-editor-${kind}.json`);\n> 116 |   const state = JSON.parse(readFileSync(statePath, 'utf8')) as {\n      |                            ^\n  117 |     password: string;\n  118 |     names: [string, string, string];\n  119 |     created: string[];"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-editor.spec.ts",
+                        "column": 28,
+                        "line": 116
+                      },
+                      "message": "Error: ENOENT: no such file or directory, open 'D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\deploy\\.secrets\\comparison-20261008\\account-editor-java.json'\n\n  114 |   const kind = source(info) ? 'python' : 'java';\n  115 |   const statePath = resolve(`../deploy/.secrets/comparison-20261008/account-editor-${kind}.json`);\n> 116 |   const state = JSON.parse(readFileSync(statePath, 'utf8')) as {\n      |                            ^\n  117 |     password: string;\n  118 |     names: [string, string, string];\n  119 |     created: string[];\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-editor.spec.ts:116:28"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T06:26:33.022Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage45-final3\\account-editor-P13-account-41ce0--cancel-and-three-languages-migration\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\account-editor.spec.ts",
+                    "column": 28,
+                    "line": 116
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "9bc909f121c7d7c1adae-7535608d8a1c8ee25e65",
+          "file": "account-editor.spec.ts",
+          "line": 109,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "factories.spec.ts",
+      "file": "factories.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P14 factories: full catalog, create validation, Unicode, cancel, sync conflicts and recovery",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 66611,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T06:25:09.987Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "51726dabe6643b269413-b788dcae9f0607cfdf00",
+          "file": "factories.spec.ts",
+          "line": 12,
+          "column": 1
+        },
+        {
+          "title": "P14 factories: full catalog, create validation, Unicode, cancel, sync conflicts and recovery",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 81709,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T06:26:35.158Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "51726dabe6643b269413-7908a7082831b46af374",
+          "file": "factories.spec.ts",
+          "line": 12,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "factory-audit.spec.ts",
+      "file": "factory-audit.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P14 factory audit: real create, validation, sync conflicts, failure recovery and complete export",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14424,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T06:26:17.360Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "57ef1b278b308ad65ba0-53b027e1832b2c2ef1a4",
+          "file": "factory-audit.spec.ts",
+          "line": 10,
+          "column": 1
+        },
+        {
+          "title": "P14 factory audit: real create, validation, sync conflicts, failure recovery and complete export",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 40750,
+                  "error": {
+                    "message": "TimeoutError: page.waitForResponse: Timeout 15000ms exceeded while waiting for event \"response\"",
+                    "stack": "TimeoutError: page.waitForResponse: Timeout 15000ms exceeded while waiting for event \"response\"\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\factory-audit.spec.ts:307:28",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\factory-audit.spec.ts",
+                      "column": 28,
+                      "line": 307
+                    },
+                    "snippet": "  305 |     await page.getByRole('menuitem', { name: zh.nav.audit, exact: true }).click();\n  306 |     await page.getByPlaceholder(zh.audit.operator, { exact: true }).fill(state.names[0]!);\n> 307 |     const refreshed = page.waitForResponse(\n      |                            ^\n  308 |       (r) =>\n  309 |         r.request().method() === 'GET' &&\n  310 |         new URL(r.url()).pathname === (prototype ? '/api/audits' : '/api/v1/sn/audits/page') &&"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\factory-audit.spec.ts",
+                        "column": 28,
+                        "line": 307
+                      },
+                      "message": "TimeoutError: page.waitForResponse: Timeout 15000ms exceeded while waiting for event \"response\"\n\n  305 |     await page.getByRole('menuitem', { name: zh.nav.audit, exact: true }).click();\n  306 |     await page.getByPlaceholder(zh.audit.operator, { exact: true }).fill(state.names[0]!);\n> 307 |     const refreshed = page.waitForResponse(\n      |                            ^\n  308 |       (r) =>\n  309 |         r.request().method() === 'GET' &&\n  310 |         new URL(r.url()).pathname === (prototype ? '/api/audits' : '/api/v1/sn/audits/page') &&\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\factory-audit.spec.ts:307:28"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "D:\\AdtekProjects\\mf-sn-uniq-guard\\sn-center-python\\.venv\\Lib\\site-packages\\openpyxl\\styles\\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default\r\n  warn(\"Workbook contains no default style, apply openpyxl's default\")\r\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-09T06:27:57.626Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage45-final3\\factory-audit-P14-factory--086fb-ecovery-and-complete-export-migration\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\factory-audit.spec.ts",
+                    "column": 28,
+                    "line": 307
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "57ef1b278b308ad65ba0-126e9c0d8a0af3fa37d9",
+          "file": "factory-audit.spec.ts",
+          "line": 10,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-09T06:24:59.596Z",
+    "duration": 219703.389,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

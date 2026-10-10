@@ -1,0 +1,13 @@
+
+Running 2 tests using 1 worker
+
+(node:44400) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\account-audit.spec.ts:10:1 › P13 management audit: real account writes, rejected writes, no-change edit and complete export (16.5s)
+(node:6068) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok 2 [migration] › e2e\parity\account-audit.spec.ts:10:1 › P13 management audit: real account writes, rejected writes, no-change edit and complete export (24.0s)
+
+  2 passed (43.2s)

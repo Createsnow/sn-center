@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.Instant;
 
-/** 不暴露固定输入中的历史SN清单；任务进度另查，SUCCESS的业务结果才是已提交事实。 */
+/** 不暴露固定输入中的历史SN清单；进度只表示当前执行代次，SUCCESS的业务结果才是已提交事实。 */
 @Schema(
         requiredProperties = {
             "taskId",
@@ -26,7 +26,11 @@ import java.time.Instant;
             "fileName",
             "errorCode",
             "createdAt",
-            "finishedAt"
+            "finishedAt",
+            "actorName",
+            "generationNumber",
+            "processed",
+            "errorParams"
         })
 public record SnWorkVO(
         String taskId,
@@ -48,4 +52,8 @@ public record SnWorkVO(
         String fileName,
         @Schema(nullable = true) Integer errorCode,
         Instant createdAt,
-        @Schema(nullable = true) Instant finishedAt) {}
+        @Schema(nullable = true) Instant finishedAt,
+        @Schema(nullable = true) String actorName,
+        @Schema(nullable = true) String generationNumber,
+        String processed,
+        java.util.Map<String, String> errorParams) {}

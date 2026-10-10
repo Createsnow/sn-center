@@ -1,0 +1,99 @@
+{
+  "kind": "java",
+  "items": [
+    {
+      "sn": "G0600001",
+      "seq_dec": 1,
+      "status": "PENDING_ALLOC",
+      "material": "FACTORY-CHANGE",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600002",
+      "seq_dec": 2,
+      "status": "PENDING_ALLOC",
+      "material": "FACTORY-CHANGE",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600003",
+      "seq_dec": 3,
+      "status": "PENDING_ALLOC",
+      "material": "FACTORY-CHANGE",
+      "customer": "CMP-UI-CHANGED-CUSTOMER"
+    },
+    {
+      "sn": "G0600004",
+      "seq_dec": 4,
+      "status": "PENDING_ALLOC",
+      "material": "FACTORY-CHANGE",
+      "customer": "CMP-UI-CHANGED-CUSTOMER"
+    },
+    {
+      "sn": "G0600005",
+      "seq_dec": 5,
+      "status": "PENDING_ALLOC",
+      "material": "FACTORY-CHANGE",
+      "customer": "CMP-UI-CHANGED-CUSTOMER"
+    }
+  ],
+  "allocations": [],
+  "jobs": [
+    {
+      "state": "SUCCESS",
+      "qty": 2,
+      "error_code": null,
+      "error_params": null
+    },
+    {
+      "state": "SUCCESS",
+      "qty": 3,
+      "error_code": null,
+      "error_params": null
+    }
+  ],
+  "identities": [
+    {
+      "sn": "G0600001",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null,
+      "source_factory_code": "CMP-A"
+    },
+    {
+      "sn": "G0600002",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null,
+      "source_factory_code": "CMP-A"
+    },
+    {
+      "sn": "G0600003",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-CHANGED-CUSTOMER",
+      "factory_code": null,
+      "source_factory_code": "CMP-B"
+    },
+    {
+      "sn": "G0600004",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-CHANGED-CUSTOMER",
+      "factory_code": null,
+      "source_factory_code": "CMP-B"
+    },
+    {
+      "sn": "G0600005",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-CHANGED-CUSTOMER",
+      "factory_code": null,
+      "source_factory_code": "CMP-B"
+    }
+  ],
+  "generationIdentity": [
+    {
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": "CMP-B"
+    }
+  ]
+}

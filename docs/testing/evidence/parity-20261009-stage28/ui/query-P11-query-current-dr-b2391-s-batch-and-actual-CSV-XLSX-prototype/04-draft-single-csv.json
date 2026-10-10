@@ -1,0 +1,89 @@
+{
+  "filename": "sn_export.csv",
+  "sha256": "21ce0a6c5a01374f2d5817b91434ef9b4a77b352d8441a386986060528a9eb36",
+  "sheet": null,
+  "raw": [
+    [
+      "序号",
+      "完整SN",
+      "进制流水",
+      "十进制流水",
+      "PI",
+      "物料编码",
+      "客户编码",
+      "工厂",
+      "状态",
+      "领取批次",
+      "来源订单"
+    ],
+    [
+      "1",
+      "Q28A00002",
+      "00002",
+      "2",
+      "CMP-UI-QUERY-PI-A",
+      "CMP-QUERY-MAT-Z",
+      "CMP-QUERY-CUSTOMER",
+      "CMP-A",
+      "TO_ACQUIRE",
+      "",
+      "CMP-UI-QUERY-MO-A"
+    ]
+  ],
+  "types": [
+    [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ]
+  ],
+  "rows": [
+    [
+      "序号",
+      "完整SN",
+      "进制流水",
+      "十进制流水",
+      "PI",
+      "物料编码",
+      "客户编码",
+      "工厂",
+      "状态",
+      "领取批次",
+      "来源订单"
+    ],
+    [
+      "1",
+      "Q28A00002",
+      "00002",
+      "2",
+      "CMP-UI-QUERY-PI-A",
+      "CMP-QUERY-MAT-Z",
+      "CMP-QUERY-CUSTOMER",
+      "CMP-A",
+      "TO_ACQUIRE",
+      "",
+      "CMP-UI-QUERY-MO-A"
+    ]
+  ]
+}

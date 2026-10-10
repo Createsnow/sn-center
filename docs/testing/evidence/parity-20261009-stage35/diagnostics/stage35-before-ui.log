@@ -1,0 +1,39 @@
+
+Running 2 tests using 1 worker
+
+(node:36808) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\audit-auth.spec.ts:69:1 › P12 real anonymous login failure appears in audit and downloaded file (2.4s)
+(node:15364) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [migration] › e2e\parity\audit-auth.spec.ts:69:1 › P12 real anonymous login failure appears in audit and downloaded file (16.1s)
+
+
+  1) [migration] › e2e\parity\audit-auth.spec.ts:69:1 › P12 real anonymous login failure appears in audit and downloaded file 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('工号或密码错误', { exact: true })
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('工号或密码错误', { exact: true }) with timeout 15000ms
+      - waiting for getByText('工号或密码错误', { exact: true })
+
+
+      72 |   const username=`cmp_auth_${tag}U`;
+      73 |   await attempt(page,info,username,'Invalid9!comparison',401);
+    > 74 |   await expect(page.getByText('工号或密码错误',{exact:true})).toBeVisible();
+         |                                                        ^
+      75 |   await page.screenshot({path:info.outputPath('rejected-login.png'),animations:'disabled'});
+      76 |   await inspect(page,info,username,[{action:'LOGIN',result:'FAIL',detail:'client=127.0.0.1',error:'工号或密码错误',factory:null}]);
+      77 | });
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-auth.spec.ts:74:56
+
+    Error Context: test-results\stage35-before-ui\audit-auth-P12-real-anonym-8f7f1-n-audit-and-downloaded-file-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\audit-auth.spec.ts:69:1 › P12 real anonymous login failure appears in audit and downloaded file 
+  1 passed (26.5s)

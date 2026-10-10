@@ -24,7 +24,21 @@ export function isManagedUser(value: unknown): value is ManagedUser {
     Array.isArray(value.roleIds) &&
     value.roleIds.every(id) &&
     Array.isArray(value.factoryIds) &&
-    value.factoryIds.every(id)
+    value.factoryIds.every(id) &&
+    Array.isArray(value.roleCodes) &&
+    value.roleCodes.every((code) => typeof code === 'string') &&
+    Array.isArray(value.factories) &&
+    value.factories.every(
+      (factory: unknown) =>
+        isRecord(factory) &&
+        id(factory.id) &&
+        typeof factory.name === 'string' &&
+        typeof factory.code === 'string',
+    ) &&
+    (value.createdByName === null || typeof value.createdByName === 'string') &&
+    [value.lastLoginAt, value.createdAt].every(
+      (time) => time === null || (typeof time === 'string' && Number.isFinite(Date.parse(time))),
+    )
   );
 }
 function isUserPage(value: unknown): value is UserPage {
@@ -71,7 +85,15 @@ function isMenus(value: unknown): value is MenuEntry[] {
   );
 }
 export const usersApi = {
-  list(input: { page: number; size: number; keyword: string; enabled?: boolean }) {
+  list(input: {
+    page: number;
+    size: number;
+    keyword: string;
+    enabled?: boolean;
+    roleCodes?: string[];
+    excludedRoleCodes?: string[];
+    factoryId?: string;
+  }) {
     const parameters = new URLSearchParams({
       page: String(input.page),
       size: String(input.size),
@@ -80,6 +102,9 @@ export const usersApi = {
     if (input.enabled !== undefined) {
       parameters.set('enabled', String(input.enabled));
     }
+    input.roleCodes?.forEach((code) => parameters.append('roleCodes', code));
+    input.excludedRoleCodes?.forEach((code) => parameters.append('excludedRoleCodes', code));
+    if (input.factoryId) parameters.set('factoryId', input.factoryId);
     return query(`/system/users?${parameters.toString()}`, isUserPage);
   },
   options(operation: 'add' | 'update') {

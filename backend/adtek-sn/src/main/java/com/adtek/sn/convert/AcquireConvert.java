@@ -19,7 +19,7 @@ public interface AcquireConvert {
 
     AcquireBatchVO batch(AcquireBatchEntity row);
 
-    AcquireWorkVO work(AcquireWorkEntity row);
+    AcquireWorkVO work(AcquireWorkEntity row, String batchNo);
 
     AcquireResultVO result(AcquireResultEntity row);
 

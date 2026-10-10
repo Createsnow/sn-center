@@ -1,0 +1,115 @@
+{
+  "observations": [
+    {
+      "label": "initial",
+      "values": [
+        "2026-10-09 19:54:47",
+        "3",
+        "4"
+      ],
+      "amount": null,
+      "unit": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "last_run_at": "2026-10-09 16:25:00",
+          "last_ok": 1,
+          "last_bills": 3,
+          "last_rows": 4,
+          "last_message": "",
+          "updated_by": "audit20261009520014",
+          "updated_at": "2026-10-09 19:39:02"
+        }
+      ],
+      "at": 1791547117214
+    },
+    {
+      "label": "returned",
+      "values": [
+        "2026-10-09 19:58:37",
+        "4",
+        "5"
+      ],
+      "amount": null,
+      "unit": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 120,
+          "next_run_at": null,
+          "last_run_at": "2026-10-09 16:25:00",
+          "last_ok": 1,
+          "last_bills": 3,
+          "last_rows": 4,
+          "last_message": "",
+          "updated_by": "audit20261009530004",
+          "updated_at": "2026-10-09 19:58:42"
+        }
+      ],
+      "at": 1791547139696
+    },
+    {
+      "label": "schedule-after-return",
+      "values": [
+        "2026-10-09 19:58:37",
+        "4",
+        "5"
+      ],
+      "amount": "2",
+      "unit": "小时",
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 120,
+          "next_run_at": null,
+          "last_run_at": "2026-10-09 16:25:00",
+          "last_ok": 1,
+          "last_bills": 3,
+          "last_rows": 4,
+          "last_message": "",
+          "updated_by": "audit20261009530004",
+          "updated_at": "2026-10-09 19:58:42"
+        }
+      ],
+      "at": 1791547149948
+    }
+  ],
+  "requests": [
+    {
+      "path": "/api/orders/meta",
+      "method": "GET",
+      "at": 1791547116434
+    },
+    {
+      "path": "/api/orders/sync-schedule",
+      "method": "GET",
+      "at": 1791547116434
+    },
+    {
+      "path": "/api/orders",
+      "method": "GET",
+      "at": 1791547116446
+    },
+    {
+      "path": "/api/orders/meta",
+      "method": "GET",
+      "at": 1791547129484
+    },
+    {
+      "path": "/api/orders/sync-schedule",
+      "method": "GET",
+      "at": 1791547129484
+    },
+    {
+      "path": "/api/orders",
+      "method": "GET",
+      "at": 1791547129498
+    }
+  ],
+  "errors": []
+}

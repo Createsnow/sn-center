@@ -1,0 +1,52 @@
+{
+  "snapshots": [],
+  "requests": [
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200,
+      "authenticated": false
+    },
+    {
+      "route": "/api/v1/system/auth/refresh",
+      "status": 401,
+      "authenticated": false
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200,
+      "authenticated": false
+    },
+    {
+      "route": "/api/v1/system/auth/login",
+      "status": 200,
+      "authenticated": false
+    },
+    {
+      "route": "/api/v1/system/auth/csrf",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/auth/password",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/system/menus/current",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/sn/context",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "route": "/api/v1/sn/dashboard",
+      "status": 200,
+      "authenticated": true
+    }
+  ],
+  "memberLogins": 1,
+  "failures": []
+}

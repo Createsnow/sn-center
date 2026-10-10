@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
-/** 公开列表/详情/统计/候选执行相同工厂范围；内部发布按来源命名空间整体变更，不删除历史头。 */
+/** 公开列表/详情/候选执行相同工厂范围；同步摘要由所有订单可读角色共享；内部发布按来源命名空间整体变更，不删除历史头。 */
 @Mapper
 public interface OrderBillMapper extends BaseMapper<OrderBillEntity> {
     @Select(

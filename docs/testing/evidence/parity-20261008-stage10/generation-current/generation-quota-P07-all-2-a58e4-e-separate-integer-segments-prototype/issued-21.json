@@ -1,0 +1,296 @@
+{
+  "kind": "python",
+  "items": [
+    {
+      "sn": "G0600001",
+      "seq_dec": 1,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-1",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600002",
+      "seq_dec": 2,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-2",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600003",
+      "seq_dec": 3,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-3",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600004",
+      "seq_dec": 4,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-4",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600005",
+      "seq_dec": 5,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-5",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600006",
+      "seq_dec": 6,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-6",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600007",
+      "seq_dec": 7,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-7",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600008",
+      "seq_dec": 8,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-8",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600009",
+      "seq_dec": 9,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-9",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600010",
+      "seq_dec": 10,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-10",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600011",
+      "seq_dec": 11,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-11",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600012",
+      "seq_dec": 12,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-12",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600013",
+      "seq_dec": 13,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-13",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600014",
+      "seq_dec": 14,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-14",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600015",
+      "seq_dec": 15,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-15",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600016",
+      "seq_dec": 16,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-16",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600017",
+      "seq_dec": 17,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-17",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600018",
+      "seq_dec": 18,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-18",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600019",
+      "seq_dec": 19,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-19",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600020",
+      "seq_dec": 20,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-20",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600021",
+      "seq_dec": 21,
+      "status": "PENDING_ALLOC",
+      "material": "LINE-21",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    }
+  ],
+  "allocations": [],
+  "jobs": [
+    {
+      "state": "SUCCESS",
+      "qty": 21,
+      "error_code": null,
+      "error_msg": null
+    }
+  ],
+  "identities": [
+    {
+      "sn": "G0600001",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null
+    },
+    {
+      "sn": "G0600002",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null
+    },
+    {
+      "sn": "G0600003",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null
+    },
+    {
+      "sn": "G0600004",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null
+    },
+    {
+      "sn": "G0600005",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null
+    },
+    {
+      "sn": "G0600006",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null
+    },
+    {
+      "sn": "G0600007",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null
+    },
+    {
+      "sn": "G0600008",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null
+    },
+    {
+      "sn": "G0600009",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null
+    },
+    {
+      "sn": "G0600010",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null
+    },
+    {
+      "sn": "G0600011",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null
+    },
+    {
+      "sn": "G0600012",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null
+    },
+    {
+      "sn": "G0600013",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null
+    },
+    {
+      "sn": "G0600014",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null
+    },
+    {
+      "sn": "G0600015",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null
+    },
+    {
+      "sn": "G0600016",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null
+    },
+    {
+      "sn": "G0600017",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null
+    },
+    {
+      "sn": "G0600018",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null
+    },
+    {
+      "sn": "G0600019",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null
+    },
+    {
+      "sn": "G0600020",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null
+    },
+    {
+      "sn": "G0600021",
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": null
+    }
+  ],
+  "generationIdentity": [
+    {
+      "pi": "CMP-UI-GEN-PI",
+      "customer": "CMP-UI-GEN-CUSTOMER",
+      "factory_code": "CMP-A"
+    }
+  ]
+}

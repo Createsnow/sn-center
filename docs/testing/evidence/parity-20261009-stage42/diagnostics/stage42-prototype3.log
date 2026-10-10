@@ -1,0 +1,33 @@
+
+Running 1 test using 1 worker
+
+(node:12072) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\account-actions.spec.ts:10:1 › P13 account actions: disable, enable, repeated same-password reset and self reset (9.7s)
+
+
+  1) [prototype] › e2e\parity\account-actions.spec.ts:10:1 › P13 account actions: disable, enable, repeated same-password reset and self reset 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "登录已失效，请重新登录",
+    + ]
+
+      245 |     await capture(member, '09-self-reset-forced-change');
+      246 |     // 原型令牌失效会冒泡已显示的业务拒绝；保留原始记录，只豁免该已知401。
+    > 247 |     expect(pageErrors.filter((message) => !prototype || message !== errors.TOKEN_INVALID)).toEqual(
+          |                                                                                            ^
+      248 |       [],
+      249 |     );
+      250 |   } finally {
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-actions.spec.ts:247:92
+
+    Error Context: test-results\stage42-prototype3\account-actions-P13-accoun-72ac6-ssword-reset-and-self-reset-prototype\error-context.md
+
+  1 failed
+    [prototype] › e2e\parity\account-actions.spec.ts:10:1 › P13 account actions: disable, enable, repeated same-password reset and self reset 

@@ -1,0 +1,87 @@
+
+Running 8 tests using 1 worker
+
+(node:34940) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\account-actions.spec.ts:9:1 › P13 account actions: disable, enable, repeated same-password reset and self reset (9.5s)
+  x  2 [prototype] › e2e\parity\account-editor.spec.ts:109:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages (158ms)
+(node:25936) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 [prototype] › e2e\parity\account-session.spec.ts:9:1 › P13 account sessions: edit name, role, factory and self without another login (13.2s)
+  x  4 [prototype] › e2e\parity\users-directory.spec.ts:94:1 › P13 account directory: prefix/name search, roles, factories, status, pagination and metadata (204ms)
+(node:38448) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 5 [migration] › e2e\parity\account-actions.spec.ts:9:1 › P13 account actions: disable, enable, repeated same-password reset and self reset (34.8s)
+  x  6 [migration] › e2e\parity\account-editor.spec.ts:109:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages (256ms)
+(node:35620) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 7 [migration] › e2e\parity\account-session.spec.ts:9:1 › P13 account sessions: edit name, role, factory and self without another login (20.6s)
+  x  8 [migration] › e2e\parity\users-directory.spec.ts:94:1 › P13 account directory: prefix/name search, roles, factories, status, pagination and metadata (165ms)
+
+
+  1) [prototype] › e2e\parity\account-editor.spec.ts:109:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages 
+
+    Error: ENOENT: no such file or directory, open 'D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\deploy\.secrets\comparison-20261008\account-editor-python.json'
+
+      114 |   const kind = source(info) ? 'python' : 'java';
+      115 |   const statePath = resolve(`../deploy/.secrets/comparison-20261008/account-editor-${kind}.json`);
+    > 116 |   const state = JSON.parse(readFileSync(statePath, 'utf8')) as {
+          |                            ^
+      117 |     password: string;
+      118 |     names: [string, string, string];
+      119 |     created: string[];
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-editor.spec.ts:116:28
+
+    Error Context: test-results\stage42-accounts-final\account-editor-P13-account-41ce0--cancel-and-three-languages-prototype\error-context.md
+
+  2) [prototype] › e2e\parity\users-directory.spec.ts:94:1 › P13 account directory: prefix/name search, roles, factories, status, pagination and metadata 
+
+    Error: ENOENT: no such file or directory, open 'D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\deploy\.secrets\comparison-20261008\users-directory-python.json'
+
+      105 |   protectTestSecrets(password);
+      106 |   const fixture = JSON.parse(
+    > 107 |     readFileSync(
+          |     ^
+      108 |       resolve(`../deploy/.secrets/comparison-20261008/users-directory-${kind}.json`),
+      109 |       'utf8',
+      110 |     ),
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\users-directory.spec.ts:107:5
+
+    Error Context: test-results\stage42-accounts-final\users-directory-P13-accoun-f2ea4-tus-pagination-and-metadata-prototype\error-context.md
+
+  3) [migration] › e2e\parity\account-editor.spec.ts:109:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages 
+
+    Error: ENOENT: no such file or directory, open 'D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\deploy\.secrets\comparison-20261008\account-editor-java.json'
+
+      114 |   const kind = source(info) ? 'python' : 'java';
+      115 |   const statePath = resolve(`../deploy/.secrets/comparison-20261008/account-editor-${kind}.json`);
+    > 116 |   const state = JSON.parse(readFileSync(statePath, 'utf8')) as {
+          |                            ^
+      117 |     password: string;
+      118 |     names: [string, string, string];
+      119 |     created: string[];
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-editor.spec.ts:116:28
+
+    Error Context: test-results\stage42-accounts-final\account-editor-P13-account-41ce0--cancel-and-three-languages-migration\error-context.md
+
+  4) [migration] › e2e\parity\users-directory.spec.ts:94:1 › P13 account directory: prefix/name search, roles, factories, status, pagination and metadata 
+
+    Error: ENOENT: no such file or directory, open 'D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\deploy\.secrets\comparison-20261008\users-directory-java.json'
+
+      105 |   protectTestSecrets(password);
+      106 |   const fixture = JSON.parse(
+    > 107 |     readFileSync(
+          |     ^
+      108 |       resolve(`../deploy/.secrets/comparison-20261008/users-directory-${kind}.json`),
+      109 |       'utf8',
+      110 |     ),
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\users-directory.spec.ts:107:5
+
+    Error Context: test-results\stage42-accounts-final\users-directory-P13-accoun-f2ea4-tus-pagination-and-metadata-migration\error-context.md
+
+  4 failed
+    [prototype] › e2e\parity\account-editor.spec.ts:109:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages 
+    [prototype] › e2e\parity\users-directory.spec.ts:94:1 › P13 account directory: prefix/name search, roles, factories, status, pagination and metadata 
+    [migration] › e2e\parity\account-editor.spec.ts:109:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages 
+    [migration] › e2e\parity\users-directory.spec.ts:94:1 › P13 account directory: prefix/name search, roles, factories, status, pagination and metadata 
+  4 passed (1.4m)

@@ -1,0 +1,19 @@
+{
+  "cells": [
+    [
+      "",
+      "2026-10-08 12:00:07",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "API",
+      "Generate",
+      "OK",
+      "比较测试甲厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00007",
+      "7",
+      "To allocate → To acquire",
+      ""
+    ]
+  ],
+  "text": "SN Center\nHQ generates & allocates\nWORKSPACE\nDashboard\nHQ OPERATIONS\nProduction orders\nGenerate & allocate\nStart no. & history import\nSN rules\nFACTORY OPERATIONS\nAcquire & print\nFactory transfer\nQUERY & AUDIT\nSN query\nAudit trail\nSYSTEM\nAccounts\nFactories\nSN Center\n/\nAudit trail\nHQ\nEnglish\n系\n系统管理员 · Administrator (HQ)\nAudit trail\n\nKept permanently.\n\nExport Excel\n-\nAction\nResult\nSource\nFactory\nSearch\n\t\nTime\n\t\nOperator\n\t\nSource\n\t\nAction\n\t\nResult\n\t\nFactory\n\t\nPI\n\t\nRange\n\t\nQty\n\t\nStatus change\n\t\nError\n\t\n2026-10-08 12:00:07\n\t\nCMP_AUDIT_VIEW 审计界面样本\n\t\nAPI\n\t\nGenerate\n\t\nOK\n\t\n比较测试甲厂\n\t\nCMP-UI-AUDIT-VIEW-PI\n\t\nAV00007\n\t\n7\n\t\nTo allocate → To acquire\n\t\nTotal 1\n50/page\n1"
+}

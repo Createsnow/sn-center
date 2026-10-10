@@ -27,7 +27,10 @@ package com.adtek.sn.vo;
             "note",
             "createdAt",
             "decidedAt",
-            "direction"
+            "direction",
+            "transferNo",
+            "actorName",
+            "decidedName"
         })
 public record TransferVO(
         String id,
@@ -55,4 +58,7 @@ public record TransferVO(
         String note,
         java.time.Instant createdAt,
         @io.swagger.v3.oas.annotations.media.Schema(nullable = true) java.time.Instant decidedAt,
-        String direction) {}
+        String direction,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String transferNo,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String actorName,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String decidedName) {}

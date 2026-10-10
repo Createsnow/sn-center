@@ -8,7 +8,10 @@ package com.adtek.sn.vo;
             "toPrint",
             "printed",
             "applying",
-            "pendingAllocation"
+            "pendingAllocation",
+            "materials",
+            "duplicateCount",
+            "duplicateSamples"
         })
 public record TransferCandidateVO(
         String total,
@@ -17,4 +20,7 @@ public record TransferCandidateVO(
         String toPrint,
         String printed,
         String applying,
-        String pendingAllocation) {}
+        String pendingAllocation,
+        java.util.List<String> materials,
+        String duplicateCount,
+        java.util.List<String> duplicateSamples) {}

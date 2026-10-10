@@ -1,0 +1,11 @@
+
+> adtek-platform-sn-web@0.1.0 lint D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> eslint . --max-warnings 0
+
+
+D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-editor.spec.ts
+  225:26  error  Unsafe usage of ReturnStatement  no-unsafe-finally
+
+✖ 1 problem (1 error, 0 warnings)
+
+ ELIFECYCLE  Command failed with exit code 1.

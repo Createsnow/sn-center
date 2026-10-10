@@ -1,0 +1,40 @@
+
+Running 1 test using 1 worker
+
+(node:29404) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [migration] › e2e\parity\account-audit.spec.ts:10:1 › P13 management audit: real account writes, rejected writes, no-change edit and complete export (1.0s)
+
+
+  1) [migration] › e2e\parity\account-audit.spec.ts:10:1 › P13 management audit: real account writes, rejected writes, no-change edit and complete export 
+
+    SyntaxError: Unexpected token 'i', "import { c"... is not valid JSON
+
+      58 |       const route = new URL(response.url()).pathname;
+      59 |       if (!prototype && route.includes('/users')) {
+    > 60 |         const value = await response.json();
+         |                       ^
+      61 |         const body = response.request().postDataJSON() as { version?: string } | null;
+      62 |         versions.push({ route, status: response.status(), requestVersion: body?.version, code: value.code, users: value.data?.items?.map((u: { id: string; version: string; enabled: boolean }) => ({ id: u.id, version: u.version, enabled: u.enabled })), version: value.data?.version });
+      63 |       }
+        at _Page.<anonymous> (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-audit.spec.ts:60:23)
+
+    Error: page.goto: Test ended.
+    Call log:
+      - navigating to "http://127.0.0.1:15173/login", waiting until "load"
+
+
+      65 |   }
+      66 |   const login = async (tab: Page, username: string, password: string) => {
+    > 67 |     await tab.goto('/login');
+         |               ^
+      68 |     await paceComparisonLogin(tab);
+      69 |     await tab.locator('input[autocomplete="username"]').fill(username);
+      70 |     await tab.locator('input[autocomplete="current-password"]').fill(password);
+        at login (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-audit.spec.ts:67:15)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-audit.spec.ts:169:11
+
+    Error Context: test-results\stage43-audit2\account-audit-P13-manageme-2824c-ge-edit-and-complete-export-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\account-audit.spec.ts:10:1 › P13 management audit: real account writes, rejected writes, no-change edit and complete export 

@@ -1,0 +1,99 @@
+{
+  "kind": "java",
+  "items": [
+    {
+      "sn": "G0600001",
+      "seq_dec": 1,
+      "status": "TO_ACQUIRE",
+      "material": "PART-A"
+    },
+    {
+      "sn": "G0600002",
+      "seq_dec": 2,
+      "status": "TO_ACQUIRE",
+      "material": "PART-A"
+    },
+    {
+      "sn": "G0600003",
+      "seq_dec": 3,
+      "status": "TO_ACQUIRE",
+      "material": "PART-A"
+    },
+    {
+      "sn": "G0600004",
+      "seq_dec": 4,
+      "status": "TO_ACQUIRE",
+      "material": "PART-A"
+    },
+    {
+      "sn": "G0600005",
+      "seq_dec": 5,
+      "status": "TO_ACQUIRE",
+      "material": "PART-A"
+    },
+    {
+      "sn": "G0600006",
+      "seq_dec": 6,
+      "status": "TO_ACQUIRE",
+      "material": "PART-A"
+    },
+    {
+      "sn": "G0600007",
+      "seq_dec": 7,
+      "status": "TO_ACQUIRE",
+      "material": "PART-A"
+    },
+    {
+      "sn": "G0600008",
+      "seq_dec": 8,
+      "status": "TO_ACQUIRE",
+      "material": "PART-A"
+    },
+    {
+      "sn": "G0600009",
+      "seq_dec": 9,
+      "status": "TO_ACQUIRE",
+      "material": "PART-B"
+    },
+    {
+      "sn": "G0600010",
+      "seq_dec": 10,
+      "status": "TO_ACQUIRE",
+      "material": "PART-B"
+    },
+    {
+      "sn": "G0600011",
+      "seq_dec": 11,
+      "status": "PENDING_ALLOC",
+      "material": "PART-B"
+    },
+    {
+      "sn": "G0600012",
+      "seq_dec": 12,
+      "status": "PENDING_ALLOC",
+      "material": "PART-B"
+    },
+    {
+      "sn": "G0600013",
+      "seq_dec": 13,
+      "status": "PENDING_ALLOC",
+      "material": "PART-B"
+    }
+  ],
+  "allocations": [
+    {
+      "qty": 7,
+      "start_sn": "G0600004",
+      "end_sn": "G0600010",
+      "created_by": "admin",
+      "factory_code": "CMP-A"
+    },
+    {
+      "qty": 3,
+      "start_sn": "G0600001",
+      "end_sn": "G0600003",
+      "created_by": "admin",
+      "factory_code": "CMP-A"
+    }
+  ]
+}

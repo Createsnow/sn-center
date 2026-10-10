@@ -1,0 +1,21 @@
+
+Running 12 tests using 1 worker
+
+(node:30952) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [prototype] › e2e\parity\acquire-print.spec.ts:186:1 › P09 single take and print: cancel, focus, material filtering, automatic XLSX and stable reload (12.0s)
+  ok  2 [prototype] › e2e\parity\acquire-print.spec.ts:300:1 › P09 paged history: current detail 50+1 rows, print status, eleven histories and filter reset (19.6s)
+  ok  3 [prototype] › e2e\parity\acquire-print.spec.ts:451:1 › P09 bulk print continues when one selected PI was printed in another browser page (8.0s)
+  ok  4 [prototype] › e2e\parity\acquire-print.spec.ts:501:1 › P09 factory cross-PI read-only and query-role controls preserve state (9.5s)
+  ok  5 [prototype] › e2e\parity\acquire-print.spec.ts:561:1 › P09 transferred print: real factory round trip, current batch details and historical files (57.6s)
+  ok  6 [prototype] › e2e\parity\acquire-print.spec.ts:813:1 › P09 two-PI bulk take and print: independent requests, per-PI files and focus history (9.1s)
+(node:37080) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  7 [migration] › e2e\parity\acquire-print.spec.ts:186:1 › P09 single take and print: cancel, focus, material filtering, automatic XLSX and stable reload (24.8s)
+  ok  8 [migration] › e2e\parity\acquire-print.spec.ts:300:1 › P09 paged history: current detail 50+1 rows, print status, eleven histories and filter reset (1.2m)
+  ok  9 [migration] › e2e\parity\acquire-print.spec.ts:451:1 › P09 bulk print continues when one selected PI was printed in another browser page (23.8s)
+  ok 10 [migration] › e2e\parity\acquire-print.spec.ts:501:1 › P09 factory cross-PI read-only and query-role controls preserve state (36.9s)
+  ok 11 [migration] › e2e\parity\acquire-print.spec.ts:561:1 › P09 transferred print: real factory round trip, current batch details and historical files (1.2m)
+  ok 12 [migration] › e2e\parity\acquire-print.spec.ts:813:1 › P09 two-PI bulk take and print: independent requests, per-PI files and focus history (23.3s)
+
+  12 passed (6.1m)

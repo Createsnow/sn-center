@@ -1,0 +1,43 @@
+
+> adtek-platform-sn-web@0.1.0 test D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> vitest run
+
+
+ RUN  v5.0.2 D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend
+
+ ✓ src/i18n/errors.test.ts (2 tests) 18ms
+ ✓ src/features/sn/ruleErrorText.test.ts (3 tests) 8ms
+ ✓ src/api/contract.test.ts (4 tests) 4ms
+ ✓ src/features/sn/generationErrorText.test.ts (2 tests) 7ms
+ ✓ src/api/catalog.test.ts (3 tests) 6ms
+ ✓ src/features/sn/queryErrorText.test.ts (2 tests) 7ms
+ ✓ src/features/sn/accountErrorText.test.ts (1 test) 8ms
+ ✓ src/features/sn/initializationErrorText.test.ts (2 tests) 9ms
+ ✓ src/api/snAcquireSubmission.test.ts (3 tests) 10ms
+ ✓ src/features/sn/syncErrorText.test.ts (2 tests) 7ms
+ ✓ src/features/sn/snInput.test.ts (6 tests) 6ms
+ ✓ src/features/sn/printDownloadErrorText.test.ts (3 tests) 8ms
+ ✓ src/features/sn/accountRoles.test.ts (2 tests) 4ms
+ ✓ src/features/sn/queryExportState.test.ts (3 tests) 4ms
+ ✓ src/features/sn/transferJump.test.ts (2 tests) 3ms
+ ✓ src/api/sn.test.ts (8 tests) 5ms
+ ✓ src/api/snAcquire.test.ts (5 tests) 5ms
+ ✓ src/api/snTransfer.test.ts (6 tests) 3ms
+ ✓ src/api/snWork.test.ts (4 tests) 3ms
+ ✓ src/api/snQuery.test.ts (6 tests) 3ms
+ ✓ src/api/tasks.test.ts (2 tests) 2ms
+ ✓ src/api/snAudit.test.ts (4 tests) 3ms
+ ✓ src/api/users.test.ts (2 tests) 2ms
+ ✓ src/api/configuration.test.ts (2 tests) 2ms
+ ✓ src/api/audit.test.ts (2 tests) 2ms
+
+ Test Files  25 passed (25)
+      Tests  81 passed (81)
+   Start at  12:05:56
+   Duration  1.15s (import 57%, transform 38%, tests 2%, worker 2%)
+
+  Transform  transforming modules took 2.12s · 38% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+
+JSON report written to D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/unit.json

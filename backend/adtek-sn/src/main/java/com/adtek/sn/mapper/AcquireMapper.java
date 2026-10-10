@@ -48,10 +48,10 @@ public interface AcquireMapper {
     @Insert(
             "<script>INSERT INTO"
                     + " sn_print_member(print_id,ordinal,gen_month,item_id,batch_id,"
-                    + "snapshot) VALUES"
+                    + "snapshot,batch_no) VALUES"
                     + " <foreach collection='rows' item='r'"
                     + " separator=','>(#{r.printId},#{r.ordinal},#{r.genMonth},#{r.itemId},"
-                    + "#{r.batchId},#{r.snapshot})</foreach></script>")
+                    + "#{r.batchId},#{r.snapshot},#{r.batchNo})</foreach></script>")
     int printMemberBatch(@Param("rows") List<PrintMemberEntity> rows);
 
     record Scope(boolean all, List<Long> factories, Long factoryId, String pi, boolean piAll) {}
@@ -189,6 +189,22 @@ public interface AcquireMapper {
             @Param("after") String after,
             @Param("size") int size);
 
+    /** 同事务写入的自增护栏顺序对应原型创建 ID；游标不受打印状态更新影响。 */
+    @Select(
+            "<script>SELECT "
+                    + CURRENT
+                    + "'NOT_CHECKED' AS eligibility FROM sn_item i "
+                    + "JOIN sn_key k ON k.id=i.id AND k.gen_month=i.gen_month "
+                    + "WHERE i.factory_id=#{factory} AND i.pi=#{pi} AND i.status='TO_PRINT' "
+                    + "<if test='after!=null'>AND k.creation_order &gt; "
+                    + "(SELECT creation_order FROM sn_key WHERE id=#{after}) </if>"
+                    + "ORDER BY k.creation_order LIMIT #{size}</script>")
+    List<SnCurrentEntity> printCandidates(
+            @Param("factory") long factory,
+            @Param("pi") String pi,
+            @Param("after") String after,
+            @Param("size") int size);
+
     @Select(
             "SELECT "
                     + CURRENT
@@ -276,19 +292,46 @@ public interface AcquireMapper {
     String BATCH =
             "SELECT"
                     + " i.id,i.factory_id,i.factory_code,i.factory_name,i.pi,i.quantity,"
-                    + "i.actor_id,i.origin,i.operation_id,i.created_at"
+                    + "i.actor_id,i.origin,i.operation_id,i.created_at,i.batch_no,i.actor_name"
                     + " FROM sn_acquire_batch i ";
 
     @Insert(
             "INSERT INTO"
                     + " sn_acquire_batch(id,factory_id,factory_code,factory_name,pi,quantity,"
-                    + "actor_id,origin,operation_id)"
+                    + "actor_id,origin,operation_id,batch_no,actor_name)"
                     + " VALUES(#{id},#{factoryId},#{factoryCode},#{factoryName},#{pi},"
-                    + "#{quantity},#{actorId},#{origin},#{operationId})")
+                    + "#{quantity},#{actorId},#{origin},#{operationId},#{batchNo},#{actorName})")
     int batch(AcquireBatchEntity batch);
 
     @Select(BATCH + "WHERE i.id=#{id}")
     AcquireBatchEntity batchById(String id);
+
+    /** 当前指针决定页面成员；原始成员表继续保存回调及审计事实。 */
+    @Select(
+            "SELECT "
+                    + CURRENT
+                    + "'NOT_CHECKED' AS eligibility FROM sn_item i "
+                    + "JOIN sn_key k ON k.id=i.id AND k.gen_month=i.gen_month "
+                    + "WHERE i.current_batch_id=#{batch} "
+                    + "ORDER BY i.seq_pi,i.seq_dec,k.creation_order LIMIT #{size} OFFSET #{offset}")
+    List<SnCurrentEntity> currentBatchItems(
+            @Param("batch") String batch, @Param("offset") long offset, @Param("size") int size);
+
+    @Select("SELECT COUNT(*) FROM sn_item WHERE current_batch_id=#{batch}")
+    long currentBatchCount(@Param("batch") String batch);
+
+    /** 页面重新下载按当前打印指针读取，创建顺序不随转厂或重领改变。 */
+    @Select(
+            "<script>SELECT "
+                    + CURRENT
+                    + "'NOT_CHECKED' AS eligibility FROM sn_item i "
+                    + "JOIN sn_key k ON k.id=i.id AND k.gen_month=i.gen_month "
+                    + "WHERE i.current_print_id=#{print} "
+                    + "<if test='after!=null'>AND k.creation_order &gt; "
+                    + "(SELECT creation_order FROM sn_key WHERE id=#{after}) </if>"
+                    + "ORDER BY k.creation_order LIMIT #{size}</script>")
+    List<SnCurrentEntity> currentPrintItems(
+            @Param("print") String print, @Param("after") String after, @Param("size") int size);
 
     @Select(
             "<script>"
@@ -355,15 +398,17 @@ public interface AcquireMapper {
     String PRINT =
             "SELECT"
                     + " i.id,i.factory_id,i.factory_code,i.factory_name,i.pi,i.quantity,"
-                    + "i.actor_id,i.operation_id,i.csv_task_id,i.created_at"
+                    + "i.actor_id,i.operation_id,i.csv_task_id,i.created_at,"
+                    + "i.print_no,i.actor_name,i.format_version"
                     + " FROM sn_print i ";
 
     @Insert(
             "INSERT INTO"
                     + " sn_print(id,factory_id,factory_code,factory_name,pi,quantity,actor_id,"
-                    + "operation_id,csv_task_id)"
+                    + "operation_id,csv_task_id,print_no,actor_name,format_version)"
                     + " VALUES(#{id},#{factoryId},#{factoryCode},#{factoryName},#{pi},"
-                    + "#{quantity},#{actorId},#{operationId},#{csvTaskId})")
+                    + "#{quantity},#{actorId},#{operationId},#{csvTaskId},#{printNo},"
+                    + "#{actorName},#{formatVersion})")
     int print(PrintEntity print);
 
     @Select(PRINT + "WHERE i.id=#{id} OR i.csv_task_id=#{id}")
@@ -383,14 +428,15 @@ public interface AcquireMapper {
     long printCount(@Param("s") Scope scope);
 
     @Insert(
-            "INSERT INTO sn_print_member(print_id,ordinal,gen_month,item_id,batch_id,snapshot)"
+            "INSERT INTO sn_print_member(print_id,ordinal,gen_month,item_id,batch_id,"
+                    + "snapshot,batch_no)"
                     + " VALUES(#{printId},#{ordinal},#{genMonth},#{itemId},#{batchId},"
-                    + "#{snapshot})")
+                    + "#{snapshot},#{batchNo})")
     int printMember(PrintMemberEntity member);
 
     @Select(
             "SELECT print_id,ordinal,gen_month,item_id,batch_id,"
-                    + "CAST(snapshot AS CHAR) AS snapshot"
+                    + "CAST(snapshot AS CHAR) AS snapshot,batch_no"
                     + " FROM sn_print_member WHERE print_id=#{id} AND ordinal>"
                     + "#{after} ORDER BY ordinal"
                     + " LIMIT #{size}")

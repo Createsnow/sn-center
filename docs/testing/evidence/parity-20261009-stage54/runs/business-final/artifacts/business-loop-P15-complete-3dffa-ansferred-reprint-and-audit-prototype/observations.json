@@ -1,0 +1,344 @@
+{
+  "pi": "CMP-LOOP-20261009540006",
+  "bill": "CMP-LOOP-MO-20261009540006",
+  "sns": [
+    "L2026100954000600001",
+    "L2026100954000600002",
+    "L2026100954000600003"
+  ],
+  "files": [
+    {
+      "name": "06-first-print.xlsx",
+      "sns": [
+        "L2026100954000600001",
+        "L2026100954000600002",
+        "L2026100954000600003"
+      ]
+    },
+    {
+      "name": "09-second-print.xlsx",
+      "sns": [
+        "L2026100954000600001",
+        "L2026100954000600002",
+        "L2026100954000600003"
+      ]
+    }
+  ],
+  "facts": [
+    {
+      "stage": "05-allocated",
+      "observed": [
+        {
+          "sn": "L2026100954000600001",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540006",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000600002",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540006",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000600003",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540006",
+          "factory": "CMP-A"
+        }
+      ]
+    },
+    {
+      "stage": "07-printed",
+      "observed": [
+        {
+          "sn": "L2026100954000600001",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009540006",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000600002",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009540006",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100954000600003",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009540006",
+          "factory": "CMP-A"
+        }
+      ]
+    },
+    {
+      "stage": "08-transferred",
+      "observed": [
+        {
+          "sn": "L2026100954000600001",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540006",
+          "factory": "CMP-B"
+        },
+        {
+          "sn": "L2026100954000600002",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540006",
+          "factory": "CMP-B"
+        },
+        {
+          "sn": "L2026100954000600003",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009540006",
+          "factory": "CMP-B"
+        }
+      ]
+    },
+    {
+      "stage": "10-reprinted",
+      "observed": [
+        {
+          "sn": "L2026100954000600001",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009540006",
+          "factory": "CMP-B"
+        },
+        {
+          "sn": "L2026100954000600002",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009540006",
+          "factory": "CMP-B"
+        },
+        {
+          "sn": "L2026100954000600003",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009540006",
+          "factory": "CMP-B"
+        }
+      ]
+    },
+    {
+      "stage": "audit",
+      "audits": [
+        {
+          "id": 811,
+          "created_at": "2026-10-09 20:36:12",
+          "operator": "audit20261009540006",
+          "operator_name": "同步痕迹操作员",
+          "role": "admin",
+          "source": "PAGE",
+          "action": "SN_PRINT",
+          "result": "OK",
+          "factory_code": "CMP-B",
+          "pi_no": "CMP-LOOP-20261009540006",
+          "customer_code": null,
+          "material_code": null,
+          "bill_no": null,
+          "start_sn": "L2026100954000600001",
+          "end_sn": "L2026100954000600003",
+          "qty": 3,
+          "before_status": "TO_PRINT",
+          "after_status": "PRINTED",
+          "batch_no": null,
+          "request_no": "ef684220-70e2-48d8-8ad2-93b3adb7cd50",
+          "transfer_no": null,
+          "reason": null,
+          "error_msg": null,
+          "trace_id": "943aece4-a337-4d49-817a-ad6f135bdb5c",
+          "detail": "print_no=P202610092036124818"
+        },
+        {
+          "id": 810,
+          "created_at": "2026-10-09 20:36:11",
+          "operator": "audit20261009540006",
+          "operator_name": "同步痕迹操作员",
+          "role": "admin",
+          "source": "PAGE",
+          "action": "SN_ACQUIRE",
+          "result": "OK",
+          "factory_code": "CMP-B",
+          "pi_no": "CMP-LOOP-20261009540006",
+          "customer_code": null,
+          "material_code": null,
+          "bill_no": null,
+          "start_sn": "L2026100954000600001",
+          "end_sn": "L2026100954000600003",
+          "qty": 3,
+          "before_status": "TO_ACQUIRE",
+          "after_status": "TO_PRINT",
+          "batch_no": "B202610092036118015",
+          "request_no": "0a9b48d0-a2a2-45e2-9a5a-4296670a3333",
+          "transfer_no": null,
+          "reason": null,
+          "error_msg": null,
+          "trace_id": "017fb361-2f47-4995-8ed2-23603b70874c",
+          "detail": null
+        },
+        {
+          "id": 809,
+          "created_at": "2026-10-09 20:36:09",
+          "operator": "audit20261009540006",
+          "operator_name": "同步痕迹操作员",
+          "role": "admin",
+          "source": "PAGE",
+          "action": "TRANSFER_DIRECT",
+          "result": "OK",
+          "factory_code": "CMP-A",
+          "pi_no": "CMP-LOOP-20261009540006",
+          "customer_code": "CMP-LOOP-CUSTOMER",
+          "material_code": "",
+          "bill_no": null,
+          "start_sn": null,
+          "end_sn": null,
+          "qty": 3,
+          "before_status": null,
+          "after_status": "TO_ACQUIRE",
+          "batch_no": null,
+          "request_no": null,
+          "transfer_no": "T202610092036094638",
+          "reason": "完整界面闭环 20261009540006",
+          "error_msg": null,
+          "trace_id": "966d0c93-d0d3-4f77-ba36-0aa0b1464228",
+          "detail": "scope=PI to=CMP-B/CMP-LOOP-20261009540006/(原客户)/(原物料) target=MANUAL"
+        },
+        {
+          "id": 808,
+          "created_at": "2026-10-09 20:36:06",
+          "operator": "audit20261009540006",
+          "operator_name": "同步痕迹操作员",
+          "role": "admin",
+          "source": "PAGE",
+          "action": "SN_PRINT",
+          "result": "OK",
+          "factory_code": "CMP-A",
+          "pi_no": "CMP-LOOP-20261009540006",
+          "customer_code": null,
+          "material_code": null,
+          "bill_no": null,
+          "start_sn": "L2026100954000600001",
+          "end_sn": "L2026100954000600003",
+          "qty": 3,
+          "before_status": "TO_PRINT",
+          "after_status": "PRINTED",
+          "batch_no": null,
+          "request_no": "4682c858-c4c5-44df-a250-ff437d1801ff",
+          "transfer_no": null,
+          "reason": null,
+          "error_msg": null,
+          "trace_id": "835d323c-7f40-40a2-b17b-2905f2681fa7",
+          "detail": "print_no=P202610092036061417"
+        },
+        {
+          "id": 807,
+          "created_at": "2026-10-09 20:36:06",
+          "operator": "audit20261009540006",
+          "operator_name": "同步痕迹操作员",
+          "role": "admin",
+          "source": "PAGE",
+          "action": "SN_ACQUIRE",
+          "result": "OK",
+          "factory_code": "CMP-A",
+          "pi_no": "CMP-LOOP-20261009540006",
+          "customer_code": null,
+          "material_code": null,
+          "bill_no": null,
+          "start_sn": "L2026100954000600001",
+          "end_sn": "L2026100954000600003",
+          "qty": 3,
+          "before_status": "TO_ACQUIRE",
+          "after_status": "TO_PRINT",
+          "batch_no": "B202610092036061564",
+          "request_no": "f62a66bb-b309-4c5d-8a33-8575c7f7ec31",
+          "transfer_no": null,
+          "reason": null,
+          "error_msg": null,
+          "trace_id": "a13a97fa-2dcb-418b-8ba0-d5d6139357f8",
+          "detail": null
+        },
+        {
+          "id": 806,
+          "created_at": "2026-10-09 20:36:04",
+          "operator": "audit20261009540006",
+          "operator_name": "同步痕迹操作员",
+          "role": "admin",
+          "source": "PAGE",
+          "action": "SN_ALLOCATE",
+          "result": "OK",
+          "factory_code": "CMP-A",
+          "pi_no": "CMP-LOOP-20261009540006",
+          "customer_code": "CMP-LOOP-CUSTOMER",
+          "material_code": null,
+          "bill_no": "CMP-LOOP-MO-20261009540006",
+          "start_sn": "L2026100954000600001",
+          "end_sn": "L2026100954000600003",
+          "qty": 3,
+          "before_status": "PENDING_ALLOC",
+          "after_status": "TO_ACQUIRE",
+          "batch_no": null,
+          "request_no": null,
+          "transfer_no": null,
+          "reason": null,
+          "error_msg": null,
+          "trace_id": "aa580873-0094-4aab-bb0c-384b91f807af",
+          "detail": null
+        },
+        {
+          "id": 805,
+          "created_at": "2026-10-09 20:36:03",
+          "operator": "audit20261009540006",
+          "operator_name": "同步痕迹操作员",
+          "role": "admin",
+          "source": "PAGE",
+          "action": "SN_GENERATE",
+          "result": "OK",
+          "factory_code": "CMP-A",
+          "pi_no": "CMP-LOOP-20261009540006",
+          "customer_code": "CMP-LOOP-CUSTOMER",
+          "material_code": null,
+          "bill_no": "CMP-LOOP-MO-20261009540006",
+          "start_sn": "L2026100954000600001",
+          "end_sn": "L2026100954000600003",
+          "qty": 3,
+          "before_status": null,
+          "after_status": "PENDING_ALLOC",
+          "batch_no": null,
+          "request_no": null,
+          "transfer_no": null,
+          "reason": null,
+          "error_msg": null,
+          "trace_id": "c6b154da-786b-4f24-85c1-4dcfe75427b6",
+          "detail": "job=7 rule_version=7 rule_source=PI segments=1"
+        },
+        {
+          "id": 804,
+          "created_at": "2026-10-09 20:36:01",
+          "operator": "audit20261009540006",
+          "operator_name": "同步痕迹操作员",
+          "role": "admin",
+          "source": "PAGE",
+          "action": "RULE_CREATE",
+          "result": "OK",
+          "factory_code": null,
+          "pi_no": "CMP-LOOP-20261009540006",
+          "customer_code": null,
+          "material_code": null,
+          "bill_no": null,
+          "start_sn": null,
+          "end_sn": null,
+          "qty": null,
+          "before_status": null,
+          "after_status": null,
+          "batch_no": null,
+          "request_no": null,
+          "transfer_no": null,
+          "reason": null,
+          "error_msg": null,
+          "trace_id": "d915cc03-534d-45aa-ae94-5799d9d9d35a",
+          "detail": "LOOP_20261009540006 v1 prefix=L20261009540006 suffix= base=10 len=5 charset=0123456789"
+        }
+      ]
+    }
+  ],
+  "mesObservations": [],
+  "errors": []
+}

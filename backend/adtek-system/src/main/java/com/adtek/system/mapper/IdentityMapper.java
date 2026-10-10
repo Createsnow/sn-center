@@ -12,6 +12,15 @@ import java.util.List;
 /** 认证专用读写，查找范围由已验证的用户名或可信用户 ID 决定，不向普通管理查询暴露。 后续数据范围拦截器仅对这些明确登记的认证语句豁免；不能豁免整个 Mapper 包。 */
 @Mapper
 public interface IdentityMapper {
+    /** 与登录审计同事务；条件更新拒绝并发停用/改密后的旧认证结果。 */
+    @Update(
+            """
+            UPDATE sys_user SET last_login_at=UTC_TIMESTAMP(6)
+            WHERE id=#{id} AND security_version=#{version}
+              AND enabled=TRUE AND principal_type='USER'
+            """)
+    int recordLogin(@Param("id") long id, @Param("version") long version);
+
     @Select("SELECT * FROM sys_user WHERE username = #{username}")
     SysUserEntity findByUsername(@Param("username") String username);
 
@@ -49,7 +58,8 @@ public interface IdentityMapper {
     @Update(
             """
             UPDATE sys_user SET password_hash=#{passwordHash}, must_change_password=FALSE,
-              security_version=security_version+1, update_by=#{userId}, update_time=UTC_TIMESTAMP(6)
+              security_version=security_version+1, credential_version=credential_version+1,
+              update_by=#{userId}, update_time=UTC_TIMESTAMP(6)
             WHERE id=#{userId} AND security_version=#{version}
             """)
     int changePassword(

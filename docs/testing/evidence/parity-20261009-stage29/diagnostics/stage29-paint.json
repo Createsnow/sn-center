@@ -1,0 +1,262 @@
+{
+  "python": {
+    "bound": [
+      {
+        "font": "12px / 12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "color": "rgb(194, 120, 3)",
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(243, 209, 158)",
+        "borderRadius": "4px",
+        "padding": "0px 11px",
+        "margin": "0px",
+        "gap": "normal",
+        "width": 96,
+        "height": 32,
+        "x": 261,
+        "y": 164.796875
+      }
+    ],
+    "switch": [
+      {
+        "font": "14px / 20px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(30, 74, 138)",
+        "border": "1px solid rgb(30, 74, 138)",
+        "borderRadius": "10px",
+        "padding": "0px",
+        "margin": "0px",
+        "gap": "normal",
+        "width": 40,
+        "height": 20,
+        "x": 891,
+        "y": 212.796875
+      }
+    ],
+    "label": [
+      {
+        "font": "500 14px / 20px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "color": "rgb(30, 74, 138)",
+        "background": "rgba(0, 0, 0, 0)",
+        "border": "0px none rgb(30, 74, 138)",
+        "borderRadius": "0px",
+        "padding": "0px",
+        "margin": "0px 0px 0px 10px",
+        "gap": "normal",
+        "width": 117.703125,
+        "height": 20,
+        "x": 941,
+        "y": 212.796875
+      }
+    ],
+    "alert": [
+      {
+        "font": "16px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "color": "rgb(144, 147, 153)",
+        "background": "rgb(244, 244, 245)",
+        "border": "0px none rgb(144, 147, 153)",
+        "borderRadius": "8px",
+        "padding": "8px 16px",
+        "margin": "0px 0px 12px",
+        "gap": "normal",
+        "width": 1138,
+        "height": 40,
+        "x": 261,
+        "y": 250.796875
+      }
+    ],
+    "alertTitle": [
+      {
+        "font": "14px / 24px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "color": "rgb(144, 147, 153)",
+        "background": "rgba(0, 0, 0, 0)",
+        "border": "0px none rgb(144, 147, 153)",
+        "borderRadius": "0px",
+        "padding": "0px",
+        "margin": "0px",
+        "gap": "normal",
+        "width": 383.25,
+        "height": 24,
+        "x": 301,
+        "y": 258.796875
+      }
+    ],
+    "icon": [
+      {
+        "font": "italic 16px / 16px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "color": "rgb(144, 147, 153)",
+        "background": "rgba(0, 0, 0, 0)",
+        "border": "0px none rgb(144, 147, 153)",
+        "borderRadius": "0px",
+        "padding": "0px",
+        "margin": "0px 8px 0px 0px",
+        "gap": "normal",
+        "width": 16,
+        "height": 16,
+        "x": 277,
+        "y": 262.796875
+      }
+    ],
+    "handle": [
+      {
+        "font": "14px / 20px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "color": "rgb(30, 74, 138)",
+        "background": "rgb(255, 255, 255)",
+        "border": "0px none rgb(30, 74, 138)",
+        "borderRadius": "100%",
+        "padding": "0px",
+        "margin": "0px",
+        "gap": "normal",
+        "width": 16,
+        "height": 16,
+        "x": 913,
+        "y": 214.796875
+      }
+    ],
+    "search": [
+      {
+        "font": "500 14px / 14px Arial",
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(30, 74, 138)",
+        "border": "1px solid rgb(30, 74, 138)",
+        "borderRadius": "8px",
+        "padding": "8px 15px",
+        "margin": "0px",
+        "gap": "normal",
+        "width": 60,
+        "height": 32,
+        "x": 1068.703125,
+        "y": 206.796875
+      }
+    ]
+  },
+  "java": {
+    "bound": [
+      {
+        "font": "12px / 12px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "color": "rgb(194, 120, 3)",
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(243, 209, 158)",
+        "borderRadius": "4px",
+        "padding": "0px 11px",
+        "margin": "0px",
+        "gap": "normal",
+        "width": 96,
+        "height": 32,
+        "x": 261,
+        "y": 164.796875
+      }
+    ],
+    "switch": [
+      {
+        "font": "14px / 20px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(30, 74, 138)",
+        "border": "0px none rgb(15, 23, 42)",
+        "borderRadius": "10px",
+        "padding": "0px",
+        "margin": "0px",
+        "gap": "normal",
+        "width": 40,
+        "height": 20,
+        "x": 891,
+        "y": 212.796875
+      }
+    ],
+    "label": [
+      {
+        "font": "500 14px / 20px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "color": "rgb(30, 74, 138)",
+        "background": "rgba(0, 0, 0, 0)",
+        "border": "0px none rgb(30, 74, 138)",
+        "borderRadius": "0px",
+        "padding": "0px",
+        "margin": "0px",
+        "gap": "normal",
+        "width": 117.703125,
+        "height": 20,
+        "x": 941,
+        "y": 212.796875
+      }
+    ],
+    "alert": [
+      {
+        "font": "14px / 24px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "color": "rgb(144, 147, 153)",
+        "background": "rgb(244, 244, 245)",
+        "border": "0px none rgb(144, 147, 153)",
+        "borderRadius": "8px",
+        "padding": "8px 16px",
+        "margin": "0px 0px 12px",
+        "gap": "normal",
+        "width": 1138,
+        "height": 40,
+        "x": 261,
+        "y": 250.796875
+      }
+    ],
+    "alertTitle": [
+      {
+        "font": "14px / 24px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "color": "rgb(144, 147, 153)",
+        "background": "rgba(0, 0, 0, 0)",
+        "border": "0px none rgb(144, 147, 153)",
+        "borderRadius": "0px",
+        "padding": "0px",
+        "margin": "0px",
+        "gap": "normal",
+        "width": 1082,
+        "height": 24,
+        "x": 301,
+        "y": 258.796875
+      }
+    ],
+    "icon": [
+      {
+        "font": "16px / 0px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "color": "rgb(144, 147, 153)",
+        "background": "rgba(0, 0, 0, 0)",
+        "border": "0px none rgb(144, 147, 153)",
+        "borderRadius": "0px",
+        "padding": "0px",
+        "margin": "0px 8px 0px 0px",
+        "gap": "normal",
+        "width": 16,
+        "height": 16,
+        "x": 277,
+        "y": 262.796875
+      }
+    ],
+    "handle": [
+      {
+        "font": "14px / 20px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "border": "0px none rgb(15, 23, 42)",
+        "borderRadius": "0px",
+        "padding": "0px",
+        "margin": "0px",
+        "gap": "normal",
+        "width": 16,
+        "height": 16,
+        "x": 913,
+        "y": 214.796875
+      }
+    ],
+    "search": [
+      {
+        "font": "500 14px / 14px Arial, sans-serif",
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(30, 74, 138)",
+        "border": "1px solid rgba(0, 0, 0, 0)",
+        "borderRadius": "8px",
+        "padding": "8px 15px",
+        "margin": "0px",
+        "gap": "6px",
+        "width": 60,
+        "height": 32,
+        "x": 1068.703125,
+        "y": 206.796875
+      }
+    ]
+  }
+}

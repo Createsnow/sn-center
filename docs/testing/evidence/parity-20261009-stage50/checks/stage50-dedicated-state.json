@@ -1,0 +1,34 @@
+{
+  "java": {
+    "schedule": {
+      "enabled": 0,
+      "interval_minutes": 1440,
+      "next_run_at": null
+    },
+    "triggers": 0,
+    "syncStates": [
+      {
+        "state": "FAILED",
+        "n": 130
+      },
+      {
+        "state": "SUCCESS",
+        "n": 77
+      }
+    ],
+    "taskStates": [
+      {
+        "state": "SUCCESS",
+        "n": 3
+      }
+    ]
+  },
+  "python": {
+    "schedule": {
+      "enabled": 0,
+      "interval_minutes": 1440,
+      "next_run_at": null
+    },
+    "triggers": 0
+  }
+}

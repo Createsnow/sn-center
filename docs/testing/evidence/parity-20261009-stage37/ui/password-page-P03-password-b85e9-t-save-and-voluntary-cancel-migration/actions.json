@@ -1,0 +1,8 @@
+{
+  "language": "en",
+  "invalidFormsSentNoRequests": true,
+  "forcedLogoutWorked": true,
+  "passwordRequests": 1,
+  "changedPasswordSucceeded": true,
+  "voluntaryCancelWorked": true
+}

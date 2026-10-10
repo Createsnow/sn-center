@@ -1,0 +1,15 @@
+
+Running 4 tests using 1 worker
+
+(node:13668) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\factories.spec.ts:12:1 › P14 factories: full catalog, create validation, Unicode, cancel, sync conflicts and recovery (1.1m)
+  ok 2 [prototype] › e2e\parity\factory-audit.spec.ts:10:1 › P14 factory audit: real create, validation, sync conflicts, failure recovery and complete export (13.3s)
+(node:21472) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 [migration] › e2e\parity\factories.spec.ts:12:1 › P14 factories: full catalog, create validation, Unicode, cancel, sync conflicts and recovery (1.5m)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok 4 [migration] › e2e\parity\factory-audit.spec.ts:10:1 › P14 factory audit: real create, validation, sync conflicts, failure recovery and complete export (28.1s)
+
+  4 passed (3.4m)

@@ -1,0 +1,77 @@
+
+Running 1 test using 1 worker
+
+(node:38304) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Traceback (most recent call last):
+  File "D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-factory-identity-fixture.py", line 98, in <module>
+    main()
+  File "D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-factory-identity-fixture.py", line 49, in main
+    c.execute(f'INSERT INTO sn_factory({fields},source) VALUES(%s,%s,\'MANUAL\')',
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\cursors.py", line 170, in execute
+    result = self._query(query)
+             ^^^^^^^^^^^^^^^^^^
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\cursors.py", line 335, in _query
+    conn.query(q)
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 581, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 857, in _read_query_result
+    result.read()
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 1290, in read
+    first_packet = self.connection._read_packet()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 810, in _read_packet
+    packet.raise_for_error()
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+  File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\err.py", line 154, in raise_mysql_exception
+    raise errorclass(errno, errval, sqlstate=sqlstate)
+pymysql.err.OperationalError: (1364, "Field 'created_at' doesn't have a default value")
+  x  1 [prototype] › e2e\parity\factory-identity.spec.ts:9:1 › P14 organization changes: snapshot name, manual factory, changed ID/code, rename and directory filters (1.1s)
+
+
+  1) [prototype] › e2e\parity\factory-identity.spec.ts:9:1 › P14 organization changes: snapshot name, manual factory, changed ID/code, rename and directory filters 
+
+    Error: Command failed: D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Scripts\python.exe -X utf8 D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-factory-identity-fixture.py python prepare
+    Traceback (most recent call last):
+      File "D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-factory-identity-fixture.py", line 98, in <module>
+        main()
+      File "D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-factory-identity-fixture.py", line 49, in main
+        c.execute(f'INSERT INTO sn_factory({fields},source) VALUES(%s,%s,\'MANUAL\')',
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\cursors.py", line 170, in execute
+        result = self._query(query)
+                 ^^^^^^^^^^^^^^^^^^
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\cursors.py", line 335, in _query
+        conn.query(q)
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 581, in query
+        self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 857, in _read_query_result
+        result.read()
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 1290, in read
+        first_packet = self.connection._read_packet()
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\connections.py", line 810, in _read_packet
+        packet.raise_for_error()
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+        err.raise_mysql_exception(self._data)
+      File "D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\pymysql\err.py", line 154, in raise_mysql_exception
+        raise errorclass(errno, errval, sqlstate=sqlstate)
+    pymysql.err.OperationalError: (1364, "Field 'created_at' doesn't have a default value")
+
+
+      12 |   const kind = prototype ? 'python' : 'java';
+      13 |   const run = resolve('../tools/.runtime/comparison-20261008');
+    > 14 |   const fixture = (action: string) => execFileSync(resolve('../../sn-center-python/.venv/Scripts/python.exe'),
+         |                                       ^
+      15 |     ['-X', 'utf8', resolve('../tools/testing/parity-factory-identity-fixture.py'), kind, action],
+      16 |     { windowsHide: true, encoding: 'utf8' });
+      17 |   const password = readFileSync(resolve(`../deploy/.secrets/comparison-20261008/${kind}-admin-password`), 'utf8').trim();
+        at fixture (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\factory-identity.spec.ts:14:39)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\factory-identity.spec.ts:75:3
+
+    Error Context: test-results\stage46-ui1\factory-identity-P14-organ-bbe1f-ename-and-directory-filters-prototype\error-context.md
+
+  1 failed
+    [prototype] › e2e\parity\factory-identity.spec.ts:9:1 › P14 organization changes: snapshot name, manual factory, changed ID/code, rename and directory filters 

@@ -1,0 +1,315 @@
+{
+  "text": "SN 管控中心\n总部统一生成与分配\n工作台\n首页\n总部作业\n生产订单\n生成与分配\n起始号与历史导入\n规则模板\n工厂作业\n领取与打印\n转厂\n查询与留痕\nSN 查询\n操作痕迹\n系统管理\n账户\n工厂\nSN 管控中心\n/\n操作痕迹\n总部\n简体中文\n初\n初始管理员 · 系统管理员（总部）\n操作痕迹\n\n痕迹永久保存。\n\n导出 Excel\n-\n动作\n结果\n来源\n工厂\n查询\n\t时间\t操作人工号\t来源\t动作\t结果\t工厂\tPI\t号段\t数量\t状态变化\t失败原因\n\n \n\t\n时间\n\t\n操作人工号\n\t\n来源\n\t\n动作\n\t\n结果\n\t\n工厂\n\t\nPI\n\t\n号段\n\t\n数量\n\t\n状态变化\n\t\n失败原因\n\n\n\t2026-10-09 06:58:52\tadmin 初始管理员\t页面\tsn:audit:export\t成功\t\t\t\t1\t\t\n\n客户编码\t\t物料编码\t\t来源订单\t\n批次号\t\t请求号\t31809b9e-c729-4e01-8780-bc11d9f29508\t转厂单号\t\n转厂原因\t\n失败原因\t\n详情\t{\"format\": \"XLSX\", \"quantity\": \"1\"}\nTrace ID\t73d831a5-9f6a-435f-80f2-cb6df4b898f7\n\n\n\t2026-10-09 06:58:52\tadmin 初始管理员\t页面\tsn:audit:export:submit\t成功\t\t\t\t0\t\t\n\n\t2026-10-09 06:57:09\tadmin 初始管理员\t页面\tsn:audit:export\t成功\t\t\t\t1\t\t\n\n\t2026-10-09 06:57:09\tadmin 初始管理员\t页面\tsn:audit:export:submit\t成功\t\t\t\t0\t\t\n\n\t2026-10-09 06:55:23\tadmin 初始管理员\t页面\tsn:audit:export\t成功\t\t\t\t1\t\t\n\n\t2026-10-09 06:55:23\tadmin 初始管理员\t页面\tsn:audit:export:submit\t成功\t\t\t\t0\t\t\n\n\t2026-10-09 06:53:31\tadmin 初始管理员\t页面\tsn:audit:export\t成功\t\t\t\t1\t\t\n\n\t2026-10-09 06:53:29\tadmin 初始管理员\t页面\tsn:audit:export:submit\t成功\t\t\t\t0\t\t\n\n\t2026-10-09 06:35:09\tadmin 初始管理员\t页面\t同步生产订单\t成功\t\t\t\t0\t\t\n\n\t2026-10-09 06:35:07\tadmin 初始管理员\t页面\tsn:query:export\t成功\t\t\t\t6\t\t\n\n\t2026-10-09 06:35:05\tadmin 初始管理员\t页面\tsn:query:export:submit\t成功\t\t\t\t0\t\t\n\n\t2026-10-09 06:35:03\tadmin 初始管理员\t页面\tsn:query:export\t成功\t\t\t\t6\t\t\n\n\t2026-10-09 06:35:03\tadmin 初始管理员\t页面\tsn:query:export:submit\t成功\t\t\t\t0\t\t\n\n\t2026-10-09 06:35:01\tcmp_operator 比较操作员\t页面\tsn:query:export\t成功\t\t\t\t3\t\t\n\n\t2026-10-09 06:35:01\tcmp_operator 比较操作员\t页面\tsn:query:export:submit\t成功\t\t\t\t0\t\t\n\n\t2026-10-09 06:34:32\tadmin 初始管理员\t页面\t直接转移\t成功\t比较测试甲厂\tCMP-UI-QUERY-SCOPE-PI-A\tQ29A00003\t1\t待领取 → 待领取\t\n\n\t2026-10-09 06:34:31\tadmin 初始管理员\t页面\t分配\t成功\t比较测试乙厂\tCMP-UI-QUERY-SCOPE-PI-B\tQ29B00001 ~ Q29B00003\t3\t待分配 → 待领取\t\n\n\t2026-10-09 06:34:30\tadmin 初始管理员\t页面\tsn:allocation:submit\t成功\t比较测试乙厂\tCMP-UI-QUERY-SCOPE-PI-B\t\t0\t待分配 → 申请前状态\t\n\n\t2026-10-09 06:34:30\tadmin 初始管理员\t页面\t生成\t成功\t比较测试乙厂\tCMP-UI-QUERY-SCOPE-PI-B\tQ29B00001 ~ Q29B00003\t3\t— → 待分配\t\n\n\t2026-10-09 06:34:30\tadmin 初始管理员\t页面\tsn:generation:submit\t成功\t比较测试乙厂\tCMP-UI-QUERY-SCOPE-PI-B\t\t0\t\t\n共 4962 条\n1\n2\n3\n4\n5\n249\n20 条/页",
+  "url": "/audit",
+  "headers": [
+    "",
+    "时间",
+    "操作人工号",
+    "来源",
+    "动作",
+    "结果",
+    "工厂",
+    "PI",
+    "号段",
+    "数量",
+    "状态变化",
+    "失败原因",
+    "客户编码",
+    "物料编码",
+    "来源订单",
+    "批次号",
+    "请求号",
+    "转厂单号",
+    "转厂原因",
+    "失败原因",
+    "详情",
+    "Trace ID"
+  ],
+  "inputs": [
+    {
+      "placeholder": "",
+      "ariaLabel": "语言",
+      "value": "",
+      "type": "text"
+    },
+    {
+      "placeholder": "开始日期",
+      "ariaLabel": null,
+      "value": "2026-09-09",
+      "type": "text"
+    },
+    {
+      "placeholder": "结束日期",
+      "ariaLabel": null,
+      "value": "2026-10-09",
+      "type": "text"
+    },
+    {
+      "placeholder": "",
+      "ariaLabel": "动作",
+      "value": "",
+      "type": "text"
+    },
+    {
+      "placeholder": "",
+      "ariaLabel": "结果",
+      "value": "",
+      "type": "text"
+    },
+    {
+      "placeholder": "",
+      "ariaLabel": "来源",
+      "value": "",
+      "type": "text"
+    },
+    {
+      "placeholder": "操作人工号",
+      "ariaLabel": "操作人工号",
+      "value": "",
+      "type": "text"
+    },
+    {
+      "placeholder": "",
+      "ariaLabel": "工厂",
+      "value": "",
+      "type": "text"
+    },
+    {
+      "placeholder": "PI",
+      "ariaLabel": "PI",
+      "value": "",
+      "type": "text"
+    },
+    {
+      "placeholder": "批次号",
+      "ariaLabel": "批次号",
+      "value": "",
+      "type": "text"
+    },
+    {
+      "placeholder": "SN / 请求号 / 单号",
+      "ariaLabel": "SN / 请求号 / 单号",
+      "value": "",
+      "type": "text"
+    },
+    {
+      "placeholder": "",
+      "ariaLabel": "页码",
+      "value": "",
+      "type": "text"
+    }
+  ],
+  "buttons": [
+    {
+      "text": "首页",
+      "title": "",
+      "label": "首页"
+    },
+    {
+      "text": "生产订单",
+      "title": "",
+      "label": "生产订单"
+    },
+    {
+      "text": "生成与分配",
+      "title": "",
+      "label": "生成与分配"
+    },
+    {
+      "text": "起始号与历史导入",
+      "title": "",
+      "label": "起始号与历史导入"
+    },
+    {
+      "text": "规则模板",
+      "title": "",
+      "label": "规则模板"
+    },
+    {
+      "text": "领取与打印",
+      "title": "",
+      "label": "领取与打印"
+    },
+    {
+      "text": "转厂",
+      "title": "",
+      "label": "转厂"
+    },
+    {
+      "text": "SN 查询",
+      "title": "",
+      "label": "SN 查询"
+    },
+    {
+      "text": "操作痕迹",
+      "title": "",
+      "label": "操作痕迹"
+    },
+    {
+      "text": "账户",
+      "title": "",
+      "label": "账户"
+    },
+    {
+      "text": "工厂",
+      "title": "",
+      "label": "工厂"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "收起导航"
+    },
+    {
+      "text": "初\n初始管理员 · 系统管理员（总部）",
+      "title": "",
+      "label": "初始管理员"
+    },
+    {
+      "text": "导出 Excel",
+      "title": "",
+      "label": null
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "清除"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": null
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": null
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": null
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": null
+    },
+    {
+      "text": "查询",
+      "title": "",
+      "label": null
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "详情"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "详情"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "详情"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "详情"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "详情"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "详情"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "详情"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "详情"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "详情"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "详情"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "详情"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "详情"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "详情"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "详情"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "详情"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "详情"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "详情"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "详情"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "详情"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "详情"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": null
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": null
+    }
+  ],
+  "rowCount": 20
+}

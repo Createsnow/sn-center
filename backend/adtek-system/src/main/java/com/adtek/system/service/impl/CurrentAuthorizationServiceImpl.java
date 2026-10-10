@@ -50,6 +50,21 @@ public class CurrentAuthorizationServiceImpl
 
     @Override
     @Transactional(readOnly = true)
+    public Optional<Actor> loadForSession(long userId, long credentialVersion) {
+        var user = identities.findById(userId);
+        if (user == null || user.getCredentialVersion() != credentialVersion)
+            return Optional.empty();
+        if (!Boolean.TRUE.equals(user.getEnabled())) {
+            if ("USER".equals(user.getPrincipalType()))
+                throw new com.adtek.framework.security.SessionSuspendedException(
+                        com.adtek.system.constant.ErrorCodeConstants.ACCOUNT_DISABLED);
+            return Optional.empty();
+        }
+        return Optional.of(resolve(user));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Actor describe(long userId) {
         var user = identities.findById(userId);
         if (user == null) {
@@ -68,7 +83,13 @@ public class CurrentAuthorizationServiceImpl
                             false,
                             factories.factoryIds(userId));
             clients.permissions(userId).forEach(permission -> serviceGrants.put(permission, scope));
-            return new Actor(userId, user.getSecurityVersion(), false, serviceGrants, "SERVICE");
+            return new Actor(
+                    userId,
+                    user.getSecurityVersion(),
+                    false,
+                    serviceGrants,
+                    "SERVICE",
+                    user.getCredentialVersion());
         }
         var rows = identities.findRolePermissions(userId);
         Set<Long> factoryIds = factories.factoryIds(userId);
@@ -112,7 +133,13 @@ public class CurrentAuthorizationServiceImpl
             var current = new AuthorizationScope(departments, row.allFactories(), factoryIds);
             grants.merge(row.permissionCode(), current, CurrentAuthorizationServiceImpl::union);
         }
-        return new Actor(userId, user.getSecurityVersion(), user.getMustChangePassword(), grants);
+        return new Actor(
+                userId,
+                user.getSecurityVersion(),
+                user.getMustChangePassword(),
+                grants,
+                "USER",
+                user.getCredentialVersion());
     }
 
     private static AuthorizationScope union(AuthorizationScope first, AuthorizationScope second) {

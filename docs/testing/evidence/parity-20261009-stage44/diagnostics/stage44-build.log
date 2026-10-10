@@ -1,0 +1,6 @@
+
+> adtek-platform-sn-web@0.1.0 build D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> tsc --noEmit && vite build
+
+src/features/sn/pages/FactoriesPage.tsx(69,34): error TS2322: Type '"Refresh"' is not assignable to type '"Switch" | "Calendar" | "Upload" | "Stamp" | "Odometer" | "Tickets" | "Finished" | "SetUp" | "Printer" | "Search" | "Notebook" | "User" | "OfficeBuilding" | "Fold" | "Expand" | ... 10 more ... | "Plus"'.
+ ELIFECYCLE  Command failed with exit code 2.

@@ -8,8 +8,10 @@ import { isNextSequence } from './snWork';
 
 export type Transfer = components['schemas']['TransferVO'];
 export type TransferItem = components['schemas']['TransferItemVO'];
+export type TransferDetail = components['schemas']['TransferDetailVO'];
 export type TransferCandidate = components['schemas']['TransferCandidateVO'];
 export type TransferTarget = components['schemas']['TransferTargetVO'];
+export type TransferSnapshot = components['schemas']['TransferSnapshotVO'];
 export type TransferCreate = components['schemas']['TransferCreateDTO'];
 export type TransferDecision = components['schemas']['TransferDecisionDTO'] & { id: string };
 export type TransferAction = 'APPROVE' | 'REJECT' | 'WITHDRAW';
@@ -56,6 +58,9 @@ export const isTransfer = (v: unknown): v is Transfer =>
   nullable(v.material, text) &&
   nullable(v.sn, text) &&
   nullable(v.decidedBy, decimal) &&
+  nullable(v.transferNo, (value) => text(value) && /^T\d{18}$/.test(value)) &&
+  nullable(v.actorName, text) &&
+  nullable(v.decidedName, text) &&
   date(v.createdAt) &&
   nullable(v.decidedAt, date);
 export const isTransferCandidate = (v: unknown): v is TransferCandidate =>
@@ -64,11 +69,23 @@ export const isTransferCandidate = (v: unknown): v is TransferCandidate =>
     v,
     ['total', 'transferable', 'toAcquire', 'toPrint', 'printed', 'applying', 'pendingAllocation'],
     decimal,
-  );
+  ) &&
+  Array.isArray(v.materials) &&
+  v.materials.every(text) &&
+  decimal(v.duplicateCount) &&
+  Array.isArray(v.duplicateSamples) &&
+  v.duplicateSamples.length <= 5 &&
+  v.duplicateSamples.every(text);
 export const isTransferTarget = (v: unknown): v is TransferTarget =>
   isRecord(v) &&
   decimal(v.factoryId) &&
   fields(v, ['factoryCode', 'factoryName', 'pi', 'customer', 'material'], text);
+export const isTransferSnapshot = (v: unknown): v is TransferSnapshot =>
+  isRecord(v) &&
+  fields(v, ['orgName', 'pi', 'customer', 'material', 'materialName'], text) &&
+  (v.factoryId === null
+    ? v.factoryCode === null && v.factoryName === null
+    : decimal(v.factoryId) && fields(v, ['factoryCode', 'factoryName'], text));
 export const isTransferItem = (v: unknown): v is TransferItem =>
   isRecord(v) &&
   isAcquireItem({ ...v, currentMember: false }) &&
@@ -82,6 +99,22 @@ const params = (input: Record<string, string | number | undefined>) => {
   });
   return result.toString();
 };
+export const isTransferDetail = (v: unknown): v is TransferDetail =>
+  isRecord(v) &&
+  decimal(v.ordinal) &&
+  text(v.sn) &&
+  fields(
+    v,
+    ['seqText', 'seqPi', 'fromBatchNo', 'currentFactoryCode', 'currentFactoryName', 'currentPi'],
+    (x) => nullable(x, text),
+  ) &&
+  fields(v, ['seqDec', 'currentFactoryId'], (x) => nullable(x, decimal)) &&
+  ['TO_ACQUIRE', 'TO_PRINT', 'PRINTED'].includes(String(v.fromStatus)) &&
+  nullable(v.currentStatus, (x) =>
+    ['PENDING_ALLOC', 'TO_ACQUIRE', 'TO_PRINT', 'PRINTED', 'APPLYING', 'TRANSFERRED_OUT'].includes(
+      String(x),
+    ),
+  );
 export const transferApi = {
   hint: (input: TransferHint) => submit('/sn/transfers/target-hint', input, isTransferImpact),
   pendingHint: (id: string) =>
@@ -92,17 +125,30 @@ export const transferApi = {
     scope: string;
     material?: string;
     sn?: string;
+    toPi?: string;
   }) => query('/sn/transfers/candidates?' + params(input), isTransferCandidate),
-  targets: (factoryOnly: boolean, search: string, page: number) =>
+  factories: (search: string, page: number) =>
     query(
-      '/sn/transfers/' +
-        (factoryOnly ? 'factories' : 'targets') +
-        '?' +
-        params({ query: search, page, size: 20 }),
+      '/sn/transfers/factories?' + params({ query: search, page, size: 20 }),
       pageGuard(isTransferTarget),
     ),
-  list: (input: { factoryId?: string; pi?: string; status?: string; page: number }) =>
-    query('/sn/transfers?' + params({ ...input, size: 20 }), pageGuard(isTransfer)),
+  targets: (search: string) =>
+    query(
+      '/sn/transfers/targets?' + params({ query: search, page: 1, size: 50 }),
+      pageGuard(isTransferSnapshot),
+    ),
+  list: (input: {
+    factoryId?: string;
+    pi?: string;
+    status?: string;
+    page: number;
+    size?: number;
+  }) => query('/sn/transfers?' + params({ size: 20, ...input }), pageGuard(isTransfer)),
+  itemPage: (id: string, page: number) =>
+    query(
+      '/sn/transfers/' + encodeURIComponent(id) + '/items/page?' + params({ page, size: 50 }),
+      pageGuard(isTransferDetail),
+    ),
   get: (id: string) => query('/sn/transfers/' + encodeURIComponent(id), isTransfer),
   items: (id: string, cursor?: string) =>
     query(

@@ -1,0 +1,9 @@
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Progress: resolved 330, reused 305, downloaded 0, added 0
+Already up to date
+Progress: resolved 330, reused 305, downloaded 0, added 0, done
+
+dependencies:
++ dayjs 1.11.23
+
+Done in 1.5s using pnpm v10.34.6

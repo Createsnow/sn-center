@@ -1,0 +1,182 @@
+{
+  "tables": [
+    {
+      "case": "01-default-20.json",
+      "rows": 20,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "02-second-page.json",
+      "rows": 20,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "03-third-page.json",
+      "rows": 14,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "04-fifty-rows.json",
+      "rows": 50,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "05-inline-detail.json",
+      "rows": 50,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "06-draft-keeps-query.json",
+      "rows": 50,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "07-keyword.json",
+      "rows": 1,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "08-combined.json",
+      "rows": 3,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "09-factory-empty.json",
+      "rows": 0,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "10-date-cleared.json",
+      "rows": 50,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "10-date-inclusive.json",
+      "rows": 50,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "10-literal-wildcard-empty.json",
+      "rows": 0,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "11-layout-en.json",
+      "rows": 1,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "11-layout-vi.json",
+      "rows": 1,
+      "allRawCellsAndOrderEqual": true
+    },
+    {
+      "case": "11-layout-zh.json",
+      "rows": 1,
+      "allRawCellsAndOrderEqual": true
+    }
+  ],
+  "layouts": [
+    {
+      "case": "01-default-20.json",
+      "equal": true
+    },
+    {
+      "case": "02-second-page.json",
+      "equal": true
+    },
+    {
+      "case": "03-third-page.json",
+      "equal": true
+    },
+    {
+      "case": "04-fifty-rows.json",
+      "equal": true
+    },
+    {
+      "case": "05-inline-detail.json",
+      "equal": true
+    },
+    {
+      "case": "06-draft-keeps-query.json",
+      "equal": true
+    },
+    {
+      "case": "07-keyword.json",
+      "equal": true
+    },
+    {
+      "case": "08-combined.json",
+      "equal": true
+    },
+    {
+      "case": "09-factory-empty.json",
+      "equal": true
+    },
+    {
+      "case": "10-date-cleared.json",
+      "equal": true
+    },
+    {
+      "case": "10-date-inclusive.json",
+      "equal": true
+    },
+    {
+      "case": "10-literal-wildcard-empty.json",
+      "equal": true
+    },
+    {
+      "case": "11-layout-en.json",
+      "equal": true
+    },
+    {
+      "case": "11-layout-vi.json",
+      "equal": true
+    },
+    {
+      "case": "11-layout-zh.json",
+      "equal": true
+    }
+  ],
+  "details": [
+    {
+      "case": "05-inline-detail.json",
+      "cells": 20,
+      "textGeometryAndStylesEqual": true
+    }
+  ],
+  "files": [
+    {
+      "case": "audit-page-06-draft-export.json",
+      "rows": 1,
+      "columns": 24,
+      "allCellValuesTypesOrderSheetAndFilenameEqual": true,
+      "sourceSha256": "8a922591bedb8194a398fe7661045d16b3f04feeca4e2471c344af967ab6ecfd",
+      "migrationSha256": "a5e529e02b4c894f76bfb37a0ad4db595b76c2fdd3fd4003adad38b8ac190650"
+    },
+    {
+      "case": "audit-files-01-all.json",
+      "rows": 54,
+      "columns": 24,
+      "allCellValuesTypesOrderSheetAndFilenameEqual": true,
+      "sourceSha256": "dfa60768d3be5445242f1191fa81ef0b3cd35151287983cdd519a7bfb507721a",
+      "migrationSha256": "4b865c3c4615d417d90e35ff9d95eeac4b067ded495021edbd32aa9303973fc4"
+    },
+    {
+      "case": "audit-files-02-text.json",
+      "rows": 1,
+      "columns": 24,
+      "allCellValuesTypesOrderSheetAndFilenameEqual": true,
+      "sourceSha256": "5b3a655f80260e1af94442e814e09c3acd9ce916e577dcbc377815b6e4e998c9",
+      "migrationSha256": "6f18dc17f2ebdbd426b6ea197e79278bfadb095ae0d434b7c3d59786f46d0b40"
+    },
+    {
+      "case": "audit-files-03-empty.json",
+      "rows": 0,
+      "columns": 24,
+      "allCellValuesTypesOrderSheetAndFilenameEqual": true,
+      "sourceSha256": "6ac624faaf6cba65950d09b75aa3b5de338713e38a774caa3b850ed0f35dde19",
+      "migrationSha256": "47a58a216a7de1a3eecf4541099f4b227a240f54afe6f9014273caa7da7a3a81"
+    }
+  ]
+}

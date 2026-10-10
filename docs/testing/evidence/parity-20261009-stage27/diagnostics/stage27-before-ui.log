@@ -1,0 +1,37 @@
+
+Running 2 tests using 1 worker
+
+(node:30220) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\transfer-layout.spec.ts:134:3 › P10 layout vi: field rhythm, clear control, alerts and snapshot at wide and narrow widths (6.3s)
+(node:7864) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [migration] › e2e\parity\transfer-layout.spec.ts:134:3 › P10 layout vi: field rhythm, clear control, alerts and snapshot at wide and narrow widths (8.6s)
+Testing stopped early after 1 maximum allowed failures.
+
+
+  1) [migration] › e2e\parity\transfer-layout.spec.ts:134:3 › P10 layout vi: field rhythm, clear control, alerts and snapshot at wide and narrow widths 
+
+    Error: 快照表格内容必须留在固定视区内
+
+    expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 605
+    Received:    628
+
+      121 |     const body = metrics.body[0];
+      122 |     expect(table.height).toBe(360);
+    > 123 |     expect(body.y + body.height, '快照表格内容必须留在固定视区内').toBeLessThanOrEqual(
+          |                                                     ^
+      124 |       table.y + table.height,
+      125 |     );
+      126 |   }
+        at capture (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\transfer-layout.spec.ts:123:53)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\transfer-layout.spec.ts:232:9
+
+    Error Context: test-results\stage27-before-ui\transfer-layout-P10-layout-ca236-t-at-wide-and-narrow-widths-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\transfer-layout.spec.ts:134:3 › P10 layout vi: field rhythm, clear control, alerts and snapshot at wide and narrow widths 
+  1 passed (18.8s)
+  1 error was not a part of any test, see above for details

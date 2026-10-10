@@ -1,0 +1,123 @@
+{
+  "writes": [
+    {
+      "status": 400,
+      "route": "/api/factories",
+      "body": {
+        "code": "FACTORY_CODE_INVALID",
+        "message": "工厂编码与名称必填，编码不超过 64 位",
+        "params": {}
+      }
+    },
+    {
+      "status": 400,
+      "route": "/api/factories",
+      "body": {
+        "code": "FACTORY_CODE_INVALID",
+        "message": "工厂编码与名称必填，编码不超过 64 位",
+        "params": {}
+      }
+    },
+    {
+      "status": 400,
+      "route": "/api/factories",
+      "body": {
+        "code": "FACTORY_CODE_INVALID",
+        "message": "工厂编码与名称必填，编码不超过 64 位",
+        "params": {}
+      }
+    },
+    {
+      "status": 200,
+      "route": "/api/factories",
+      "body": {
+        "factory_code": "CMP_F44_MANUAL",
+        "factory_name": "工厂审计手工",
+        "enabled": true,
+        "source": "MANUAL",
+        "created_at": "2026-10-09 15:13:43",
+        "updated_at": "2026-10-09 15:13:43"
+      }
+    },
+    {
+      "status": 409,
+      "route": "/api/factories",
+      "body": {
+        "code": "FACTORY_EXISTS",
+        "message": "工厂编码或名称已存在：CMP_F44_MANUAL/重复编码",
+        "params": {
+          "factory": "CMP_F44_MANUAL/重复编码"
+        }
+      }
+    },
+    {
+      "status": 409,
+      "route": "/api/factories",
+      "body": {
+        "code": "FACTORY_EXISTS",
+        "message": "工厂编码或名称已存在：CMP_F44_CONFLICT/工厂审计手工",
+        "params": {
+          "factory": "CMP_F44_CONFLICT/工厂审计手工"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "route": "/api/factories/sync",
+      "body": {
+        "total": 3,
+        "inserted": 1,
+        "updated": 1,
+        "conflicts": [
+          "CMP_F44_CONFLICT/比较工厂44-00"
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "route": "/api/factories/sync",
+      "body": {
+        "total": 3,
+        "inserted": 0,
+        "updated": 0,
+        "conflicts": [
+          "CMP_F44_CONFLICT/比较工厂44-00"
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "route": "/api/factories/sync",
+      "body": {
+        "total": 1,
+        "inserted": 0,
+        "updated": 0,
+        "conflicts": [
+          "CMP_F44_MANUAL/比较工厂44-00"
+        ]
+      }
+    },
+    {
+      "status": 502,
+      "route": "/api/factories/sync",
+      "body": {
+        "code": "K3_QUERY_FAILED",
+        "message": "金蝶查询失败：HTTP 503",
+        "params": {
+          "message": "HTTP 503"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "route": "/api/factories/sync",
+      "body": {
+        "total": 0,
+        "inserted": 0,
+        "updated": 0,
+        "conflicts": []
+      }
+    }
+  ],
+  "pageErrors": []
+}

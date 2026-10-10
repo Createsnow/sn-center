@@ -1,0 +1,120 @@
+{
+  "cells": [
+    [
+      "",
+      "2026-10-08 12:00:07",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "API",
+      "Generate",
+      "OK",
+      "比较测试甲厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00007",
+      "7",
+      "To allocate → To acquire",
+      ""
+    ]
+  ],
+  "text": "SN Center\nHQ generates & allocates\nWORKSPACE\nDashboard\nHQ OPERATIONS\nProduction orders\nGenerate & allocate\nStart no. & history import\nSN rules\nFACTORY OPERATIONS\nAcquire & print\nFactory transfer\nQUERY & AUDIT\nSN query\nAudit trail\nSYSTEM\nAccounts\nFactories\nSN Center\n/\nAudit trail\nHQ\nEnglish\n初\n初始管理员 · Administrator (HQ)\nAudit trail\n\nKept permanently.\n\nExport Excel\n-\nAction\nResult\nSource\nFactory\nSearch\n\tTime\tOperator\tSource\tAction\tResult\tFactory\tPI\tRange\tQty\tStatus change\tError\n\n \n\t\nTime\n\t\nOperator\n\t\nSource\n\t\nAction\n\t\nResult\n\t\nFactory\n\t\nPI\n\t\nRange\n\t\nQty\n\t\nStatus change\n\t\nError\n\n\n\t2026-10-08 12:00:07\tCMP_AUDIT_VIEW 审计界面样本\tAPI\tGenerate\tOK\t比较测试甲厂\tCMP-UI-AUDIT-VIEW-PI\tAV00007\t7\tTo allocate → To acquire\t\nTotal 1\n1\n50 / page",
+  "layout": [
+    [
+      {
+        "x": 240,
+        "y": 76,
+        "width": 1180,
+        "height": 55.796875
+      }
+    ],
+    [
+      {
+        "x": 240,
+        "y": 147.796875,
+        "width": 1180,
+        "height": 293
+      }
+    ],
+    [
+      {
+        "x": 261,
+        "y": 164.796875,
+        "width": 1138,
+        "height": 116
+      }
+    ],
+    [
+      {
+        "x": 261,
+        "y": 292.796875,
+        "width": 51.328125,
+        "height": 32
+      },
+      {
+        "x": 312.328125,
+        "y": 292.796875,
+        "width": 181.796875,
+        "height": 32
+      },
+      {
+        "x": 494.125,
+        "y": 292.796875,
+        "width": 139.03125,
+        "height": 32
+      },
+      {
+        "x": 633.15625,
+        "y": 292.796875,
+        "width": 74.859375,
+        "height": 32
+      },
+      {
+        "x": 708.015625,
+        "y": 292.796875,
+        "width": 128.328125,
+        "height": 32
+      },
+      {
+        "x": 836.34375,
+        "y": 292.796875,
+        "width": 74.859375,
+        "height": 32
+      },
+      {
+        "x": 911.203125,
+        "y": 292.796875,
+        "width": 117.640625,
+        "height": 32
+      },
+      {
+        "x": 1028.84375,
+        "y": 292.796875,
+        "width": 149.71875,
+        "height": 32
+      },
+      {
+        "x": 1178.5625,
+        "y": 292.796875,
+        "width": 245.96875,
+        "height": 32
+      },
+      {
+        "x": 1424.53125,
+        "y": 292.796875,
+        "width": 74.859375,
+        "height": 32
+      },
+      {
+        "x": 1499.390625,
+        "y": 292.796875,
+        "width": 160.421875,
+        "height": 32
+      },
+      {
+        "x": 1659.8125,
+        "y": 292.796875,
+        "width": 171.1875,
+        "height": 32
+      }
+    ],
+    []
+  ]
+}

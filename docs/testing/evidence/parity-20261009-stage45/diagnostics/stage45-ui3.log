@@ -1,0 +1,71 @@
+
+Running 6 tests using 1 worker
+
+(node:37532) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\account-editor.spec.ts:109:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages (414ms)
+(node:20792) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [prototype] › e2e\parity\factories.spec.ts:12:1 › P14 factories: full catalog, create validation, Unicode, cancel, sync conflicts and recovery (1.1m)
+  ok 3 [prototype] › e2e\parity\factory-audit.spec.ts:10:1 › P14 factory audit: real create, validation, sync conflicts, failure recovery and complete export (14.4s)
+(node:25668) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  4 [migration] › e2e\parity\account-editor.spec.ts:109:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages (411ms)
+(node:27748) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 5 [migration] › e2e\parity\factories.spec.ts:12:1 › P14 factories: full catalog, create validation, Unicode, cancel, sync conflicts and recovery (1.4m)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  x  6 [migration] › e2e\parity\factory-audit.spec.ts:10:1 › P14 factory audit: real create, validation, sync conflicts, failure recovery and complete export (40.8s)
+
+
+  1) [prototype] › e2e\parity\account-editor.spec.ts:109:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages 
+
+    Error: ENOENT: no such file or directory, open 'D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\deploy\.secrets\comparison-20261008\account-editor-python.json'
+
+      114 |   const kind = source(info) ? 'python' : 'java';
+      115 |   const statePath = resolve(`../deploy/.secrets/comparison-20261008/account-editor-${kind}.json`);
+    > 116 |   const state = JSON.parse(readFileSync(statePath, 'utf8')) as {
+          |                            ^
+      117 |     password: string;
+      118 |     names: [string, string, string];
+      119 |     created: string[];
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-editor.spec.ts:116:28
+
+    Error Context: test-results\stage45-final3\account-editor-P13-account-41ce0--cancel-and-three-languages-prototype\error-context.md
+
+  2) [migration] › e2e\parity\account-editor.spec.ts:109:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages 
+
+    Error: ENOENT: no such file or directory, open 'D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\deploy\.secrets\comparison-20261008\account-editor-java.json'
+
+      114 |   const kind = source(info) ? 'python' : 'java';
+      115 |   const statePath = resolve(`../deploy/.secrets/comparison-20261008/account-editor-${kind}.json`);
+    > 116 |   const state = JSON.parse(readFileSync(statePath, 'utf8')) as {
+          |                            ^
+      117 |     password: string;
+      118 |     names: [string, string, string];
+      119 |     created: string[];
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-editor.spec.ts:116:28
+
+    Error Context: test-results\stage45-final3\account-editor-P13-account-41ce0--cancel-and-three-languages-migration\error-context.md
+
+  3) [migration] › e2e\parity\factory-audit.spec.ts:10:1 › P14 factory audit: real create, validation, sync conflicts, failure recovery and complete export 
+
+    TimeoutError: page.waitForResponse: Timeout 15000ms exceeded while waiting for event "response"
+
+      305 |     await page.getByRole('menuitem', { name: zh.nav.audit, exact: true }).click();
+      306 |     await page.getByPlaceholder(zh.audit.operator, { exact: true }).fill(state.names[0]!);
+    > 307 |     const refreshed = page.waitForResponse(
+          |                            ^
+      308 |       (r) =>
+      309 |         r.request().method() === 'GET' &&
+      310 |         new URL(r.url()).pathname === (prototype ? '/api/audits' : '/api/v1/sn/audits/page') &&
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\factory-audit.spec.ts:307:28
+
+    Error Context: test-results\stage45-final3\factory-audit-P14-factory--086fb-ecovery-and-complete-export-migration\error-context.md
+
+  3 failed
+    [prototype] › e2e\parity\account-editor.spec.ts:109:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages 
+    [migration] › e2e\parity\account-editor.spec.ts:109:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages 
+    [migration] › e2e\parity\factory-audit.spec.ts:10:1 › P14 factory audit: real create, validation, sync conflicts, failure recovery and complete export 
+  3 passed (3.7m)

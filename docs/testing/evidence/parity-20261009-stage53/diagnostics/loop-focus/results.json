@@ -1,0 +1,349 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\node_modules\\.pnpm\\@playwright+test@1.63.0\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.parity.config.ts",
+      "business-loop.spec.ts",
+      "order-focus.spec.ts",
+      "--output=test-results/stage53-loop-focus"
+    ],
+    "configFile": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\playwright.parity.config.ts",
+    "rootDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage53-loop-focus",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "prototype",
+        "name": "prototype",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [
+          "**/query-recovery.spec.ts"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage53-loop-focus",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "migration",
+        "name": "migration",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/parity/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "business-loop.spec.ts",
+      "file": "business-loop.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P15 complete UI business loop from order sync and rule creation to transferred reprint and audit",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 30791,
+                  "error": {
+                    "message": "TimeoutError: locator.fill: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('tabpanel').visible().locator('.el-form-item').filter({ has: locator('label').filter({ hasText: /^\\s*转厂原因\\s*$/ }) }).locator('input').first()\u001b[22m\n",
+                    "stack": "TimeoutError: locator.fill: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('tabpanel').visible().locator('.el-form-item').filter({ has: locator('label').filter({ hasText: /^\\s*转厂原因\\s*$/ }) }).locator('input').first()\u001b[22m\n\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\business-loop.spec.ts:219:48",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\business-loop.spec.ts",
+                      "column": 48,
+                      "line": 219
+                    },
+                    "snippet": "  217 |       await field(panel(), 'PI').fill(pi);\n  218 |       await field(panel(), zh.transfer.toPi).fill(pi);\n> 219 |       await field(panel(), zh.transfer.reason).fill('完整界面闭环 ' + run);\n      |                                                ^\n  220 |     } else {\n  221 |       await panel().getByRole('combobox', { name: ui.snPages.common.factory, exact: true }).click();\n  222 |       await page.getByRole('option', { name: '比较测试甲厂（CMP-A）', exact: true }).click();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\business-loop.spec.ts",
+                        "column": 48,
+                        "line": 219
+                      },
+                      "message": "TimeoutError: locator.fill: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('tabpanel').visible().locator('.el-form-item').filter({ has: locator('label').filter({ hasText: /^\\s*转厂原因\\s*$/ }) }).locator('input').first()\u001b[22m\n\n\n  217 |       await field(panel(), 'PI').fill(pi);\n  218 |       await field(panel(), zh.transfer.toPi).fill(pi);\n> 219 |       await field(panel(), zh.transfer.reason).fill('完整界面闭环 ' + run);\n      |                                                ^\n  220 |     } else {\n  221 |       await panel().getByRole('combobox', { name: ui.snPages.common.factory, exact: true }).click();\n  222 |       await page.getByRole('option', { name: '比较测试甲厂（CMP-A）', exact: true }).click();\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\business-loop.spec.ts:219:48"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "buffer": ""
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-09T12:11:18.544Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage53-loop-focus\\business-loop-P15-complete-3dffa-ansferred-reprint-and-audit-prototype\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\business-loop.spec.ts",
+                    "column": 48,
+                    "line": 219
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "914d25a7ff305456c1e9-0f1c559c2e12db1cb334",
+          "file": "business-loop.spec.ts",
+          "line": 10,
+          "column": 1
+        },
+        {
+          "title": "P15 complete UI business loop from order sync and rule creation to transferred reprint and audit",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 18321,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\business-loop.spec.ts:276:86",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\business-loop.spec.ts",
+                      "column": 86,
+                      "line": 276
+                    },
+                    "snippet": "  274 |       'TRANSFER_DIRECT',\n  275 |     ]) {\n> 276 |       expect(audits.some((r) => (actions[String(r.action)] ?? r.action) === action)).toBe(true);\n      |                                                                                      ^\n  277 |     }\n  278 |     await capture('11-audit');\n  279 |     expect(errors).toEqual([]);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\business-loop.spec.ts",
+                        "column": 86,
+                        "line": 276
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  274 |       'TRANSFER_DIRECT',\n  275 |     ]) {\n> 276 |       expect(audits.some((r) => (actions[String(r.action)] ?? r.action) === action)).toBe(true);\n      |                                                                                      ^\n  277 |     }\n  278 |     await capture('11-audit');\n  279 |     expect(errors).toEqual([]);\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\business-loop.spec.ts:276:86"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "buffer": ""
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-09T12:12:32.804Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage53-loop-focus\\business-loop-P15-complete-3dffa-ansferred-reprint-and-audit-migration\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\business-loop.spec.ts",
+                    "column": 86,
+                    "line": 276
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "914d25a7ff305456c1e9-48528a758f2d40e31f67",
+          "file": "business-loop.spec.ts",
+          "line": 10,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "order-focus.spec.ts",
+      "file": "order-focus.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P05 focus: schedule closing, unit text, keyboard steps and scroll restoration",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 40615,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('spinbutton')\nExpected: \u001b[32m\"10080\"\u001b[39m\nReceived: \u001b[31m\"7\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" getByRole('spinbutton') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('spinbutton')\u001b[22m\n\u001b[2m    33 × locator resolved to <input min=\"1\" step=\"1\" max=\"10080\" tabindex=\"0\" type=\"number\" role=\"spinbutton\" aria-valuemax=\"7\" aria-valuemin=\"1\" aria-valuenow=\"1\" autocomplete=\"off\" id=\"el-id-2284-50\" aria-disabled=\"false\" class=\"el-input__inner\"/>\u001b[22m\n\u001b[2m       - unexpected value \"7\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('spinbutton')\nExpected: \u001b[32m\"10080\"\u001b[39m\nReceived: \u001b[31m\"7\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" getByRole('spinbutton') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('spinbutton')\u001b[22m\n\u001b[2m    33 × locator resolved to <input min=\"1\" step=\"1\" max=\"10080\" tabindex=\"0\" type=\"number\" role=\"spinbutton\" aria-valuemax=\"7\" aria-valuemin=\"1\" aria-valuenow=\"1\" autocomplete=\"off\" id=\"el-id-2284-50\" aria-disabled=\"false\" class=\"el-input__inner\"/>\u001b[22m\n\u001b[2m       - unexpected value \"7\"\u001b[22m\n\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\order-focus.spec.ts:266:26",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\order-focus.spec.ts",
+                      "column": 26,
+                      "line": 266
+                    },
+                    "snippet": "  264 |     const amount = page.getByRole('spinbutton');\n  265 |     // 单位选择落定后再输入，确认测试读取的是分钟控件和已提交的输入值。\n> 266 |     await expect(amount).toHaveAttribute('aria-valuemax', '10080');\n      |                          ^\n  267 |     await amount.fill('10');\n  268 |     await expect(amount).toHaveValue('10');\n  269 |     await amount.press('ArrowUp');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\order-focus.spec.ts",
+                        "column": 26,
+                        "line": 266
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('spinbutton')\nExpected: \u001b[32m\"10080\"\u001b[39m\nReceived: \u001b[31m\"7\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" getByRole('spinbutton') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('spinbutton')\u001b[22m\n\u001b[2m    33 × locator resolved to <input min=\"1\" step=\"1\" max=\"10080\" tabindex=\"0\" type=\"number\" role=\"spinbutton\" aria-valuemax=\"7\" aria-valuemin=\"1\" aria-valuenow=\"1\" autocomplete=\"off\" id=\"el-id-2284-50\" aria-disabled=\"false\" class=\"el-input__inner\"/>\u001b[22m\n\u001b[2m       - unexpected value \"7\"\u001b[22m\n\n\n  264 |     const amount = page.getByRole('spinbutton');\n  265 |     // 单位选择落定后再输入，确认测试读取的是分钟控件和已提交的输入值。\n> 266 |     await expect(amount).toHaveAttribute('aria-valuemax', '10080');\n      |                          ^\n  267 |     await amount.fill('10');\n  268 |     await expect(amount).toHaveValue('10');\n  269 |     await amount.press('ArrowUp');\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\order-focus.spec.ts:266:26"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T12:11:50.735Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage53-loop-focus\\order-focus-P05-focus-sche-1888b-teps-and-scroll-restoration-prototype\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\order-focus.spec.ts",
+                    "column": 26,
+                    "line": 266
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "0414585337cc791e3436-562eef9a93e6affdb942",
+          "file": "order-focus.spec.ts",
+          "line": 11,
+          "column": 1
+        },
+        {
+          "title": "P05 focus: schedule closing, unit text, keyboard steps and scroll restoration",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 47544,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T12:12:52.511Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0414585337cc791e3436-7e31a69da4a87f6a6fbb",
+          "file": "order-focus.spec.ts",
+          "line": 11,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-09T12:11:18.024Z",
+    "duration": 143061.005,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

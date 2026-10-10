@@ -1,0 +1,83 @@
+
+Running 4 tests using 1 worker
+
+(node:21428) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\order-focus.spec.ts:10:1 › P05 focus: schedule closing, unit text, keyboard steps and scroll restoration (25.3s)
+(node:38192) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [prototype] › e2e\parity\order-interactions.spec.ts:12:1 › P05 interactions: overflow, line details, schedule limits and cancellation in three languages (2.4m)
+(node:36976) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 [migration] › e2e\parity\order-focus.spec.ts:10:1 › P05 focus: schedule closing, unit text, keyboard steps and scroll restoration (34.1s)
+  x  4 [migration] › e2e\parity\order-interactions.spec.ts:12:1 › P05 interactions: overflow, line details, schedule limits and cancellation in three languages (3.9m)
+
+
+  1) [prototype] › e2e\parity\order-focus.spec.ts:10:1 › P05 focus: schedule closing, unit text, keyboard steps and scroll restoration 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('button', { name: '设置', exact: true })
+    Expected: focused
+    Received: inactive
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('button', { name: '设置', exact: true }) with timeout 15000ms
+      - waiting for getByRole('button', { name: '设置', exact: true })
+        33 × locator resolved to <button type="button" data-v-ba804486="" aria-disabled="false" class="el-button el-button--primary is-link">…</button>
+           - unexpected value "inactive"
+
+
+      193 |     await expect(
+      194 |       page.getByRole('button', { name: zh.orders.sched.settings, exact: true }),
+    > 195 |     ).toBeFocused();
+          |       ^
+      196 |     await capture('backdrop');
+      197 |     await open();
+      198 |     await unit(zh.orders.sched.unit.minute);
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-focus.spec.ts:195:7
+
+    Error Context: test-results\stage52-ui4\order-focus-P05-focus-sche-1888b-teps-and-scroll-restoration-prototype\error-context.md
+
+  2) [migration] › e2e\parity\order-interactions.spec.ts:12:1 › P05 interactions: overflow, line details, schedule limits and cancellation in three languages 
+
+    Error: locator.click: Target crashed 
+    Call log:
+      - waiting for getByRole('option', { name: '分钟', exact: true })
+        - locator resolved to <div title="分钟" role="option" id="unit_list_0" aria-selected="false" aria-disabled="false" class="ant-select-item ant-select-item-option">…</div>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not stable
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not stable
+        - retrying click action
+          - waiting 100ms
+        - waiting for element to be visible, enabled and stable
+        - element is not stable
+      407 × retrying click action
+            - waiting 500ms
+            - waiting for element to be visible, enabled and stable
+            - element is not visible
+      - retrying click action
+        - waiting 500ms
+
+
+      203 |       .locator(prototype ? '.el-select' : '.ant-select')
+      204 |       .click();
+    > 205 |     await page.getByRole('option', { name: text.orders.sched.unit[unit], exact: true }).click();
+          |                                                                                         ^
+      206 |   };
+      207 |   const save = async (minutes: number) => {
+      208 |     await open();
+        at choose (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-interactions.spec.ts:205:89)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-interactions.spec.ts:309:7
+
+    Error Context: test-results\stage52-ui4\order-interactions-P05-int-971d6-ellation-in-three-languages-migration\error-context.md
+
+  2 failed
+    [prototype] › e2e\parity\order-focus.spec.ts:10:1 › P05 focus: schedule closing, unit text, keyboard steps and scroll restoration 
+    [migration] › e2e\parity\order-interactions.spec.ts:12:1 › P05 interactions: overflow, line details, schedule limits and cancellation in three languages 
+  2 passed (7.4m)

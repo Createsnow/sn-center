@@ -1,0 +1,438 @@
+{
+  "surface": [
+    {
+      "text": "-ActionResultSourceFactorySearchTimeOperatorSourceActionResultFactoryPIRangeQtyStatus changeError TimeOperatorSourceActionResultFactoryPIRangeQtyStatus changeError2026-10-08 12:00:01CMP_AUDIT_VIEW 审计界面样本APIGenerateOK比较测试甲厂CMP-UI-AUDIT-VIEW-PIAV000011To allocate → To acquireTotal 1120 / page",
+      "x": 240,
+      "y": 147.796875,
+      "width": 1180,
+      "height": 293,
+      "color": "rgb(15, 23, 42)",
+      "font": "16px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "16px 20px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 1178,
+      "clientWidth": 1178
+    }
+  ],
+  "toolbar": [
+    {
+      "text": "-ActionResultSourceFactorySearch",
+      "x": 261,
+      "y": 164.796875,
+      "width": 1138,
+      "height": 116,
+      "color": "rgb(15, 23, 42)",
+      "font": "16px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px",
+      "gap": "10px",
+      "margin": "0px 0px 12px",
+      "scrollLeft": 0,
+      "scrollWidth": 1138,
+      "clientWidth": 1138
+    }
+  ],
+  "headers": [
+    {
+      "text": "",
+      "x": 261,
+      "y": 292.796875,
+      "width": 48,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 48,
+      "clientWidth": 48
+    },
+    {
+      "text": "Time",
+      "x": 309,
+      "y": 292.796875,
+      "width": 170,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 170,
+      "clientWidth": 170
+    },
+    {
+      "text": "Operator",
+      "x": 479,
+      "y": 292.796875,
+      "width": 130,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 130,
+      "clientWidth": 130
+    },
+    {
+      "text": "Source",
+      "x": 609,
+      "y": 292.796875,
+      "width": 70,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 70,
+      "clientWidth": 70
+    },
+    {
+      "text": "Action",
+      "x": 679,
+      "y": 292.796875,
+      "width": 120,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 120,
+      "clientWidth": 120
+    },
+    {
+      "text": "Result",
+      "x": 799,
+      "y": 292.796875,
+      "width": 70,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 70,
+      "clientWidth": 70
+    },
+    {
+      "text": "Factory",
+      "x": 869,
+      "y": 292.796875,
+      "width": 110,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 110,
+      "clientWidth": 110
+    },
+    {
+      "text": "PI",
+      "x": 979,
+      "y": 292.796875,
+      "width": 140,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 140,
+      "clientWidth": 140
+    },
+    {
+      "text": "Range",
+      "x": 1119,
+      "y": 292.796875,
+      "width": 230,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 230,
+      "clientWidth": 230
+    },
+    {
+      "text": "Qty",
+      "x": 1349,
+      "y": 292.796875,
+      "width": 70,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 70,
+      "clientWidth": 70
+    },
+    {
+      "text": "Status change",
+      "x": 1419,
+      "y": 292.796875,
+      "width": 150,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 150,
+      "clientWidth": 150
+    },
+    {
+      "text": "Error",
+      "x": 1569,
+      "y": 292.796875,
+      "width": 160,
+      "height": 32,
+      "color": "rgb(144, 147, 153)",
+      "font": "600 12px / 23px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "4px 8px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 160,
+      "clientWidth": 160
+    }
+  ],
+  "cells": [],
+  "pager": [
+    {
+      "text": "Total 1120 / page",
+      "x": 261,
+      "y": 391.796875,
+      "width": 1138,
+      "height": 32,
+      "color": "rgb(48, 49, 51)",
+      "font": "14px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 1138,
+      "clientWidth": 1138
+    }
+  ],
+  "total": [
+    {
+      "text": "Total 1",
+      "x": 1099.828125,
+      "y": 397.796875,
+      "width": 43.171875,
+      "height": 20,
+      "color": "rgb(96, 98, 102)",
+      "font": "14px / 20px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px 16px 0px 0px",
+      "scrollLeft": 0,
+      "scrollWidth": 43,
+      "clientWidth": 43
+    }
+  ],
+  "size": [
+    {
+      "text": "20 / page",
+      "x": 1159,
+      "y": 391.796875,
+      "width": 128,
+      "height": 32,
+      "color": "rgb(48, 49, 51)",
+      "font": "14px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px 16px 0px 0px",
+      "scrollLeft": 0,
+      "scrollWidth": 128,
+      "clientWidth": 128
+    }
+  ],
+  "prev": [
+    {
+      "text": "",
+      "x": 1303,
+      "y": 391.796875,
+      "width": 32,
+      "height": 32,
+      "color": "rgb(15, 23, 42)",
+      "font": "14px / 32px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 32,
+      "clientWidth": 32
+    }
+  ],
+  "pages": [
+    {
+      "text": "1",
+      "x": 1335,
+      "y": 391.796875,
+      "width": 32,
+      "height": 32,
+      "color": "rgb(48, 49, 51)",
+      "font": "700 14px / 30px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 32,
+      "clientWidth": 32
+    }
+  ],
+  "next": [
+    {
+      "text": "",
+      "x": 1367,
+      "y": 391.796875,
+      "width": 32,
+      "height": 32,
+      "color": "rgb(15, 23, 42)",
+      "font": "14px / 32px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 32,
+      "clientWidth": 32
+    }
+  ],
+  "date": [
+    {
+      "text": "-",
+      "x": 261,
+      "y": 164.796875,
+      "width": 508,
+      "height": 32,
+      "color": "rgb(15, 23, 42)",
+      "font": "14px / 14px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px 10px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 508,
+      "clientWidth": 508
+    }
+  ],
+  "dateInput": [
+    {
+      "text": "2026-09-09",
+      "x": 285,
+      "y": 165.796875,
+      "width": 190.3125,
+      "height": 30,
+      "color": "rgb(96, 98, 102)",
+      "font": "14px / 30px Arial, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 190,
+      "clientWidth": 190
+    },
+    {
+      "text": "2026-10-09",
+      "x": 554.6875,
+      "y": 165.796875,
+      "width": 190.3125,
+      "height": 30,
+      "color": "rgb(96, 98, 102)",
+      "font": "14px / 30px Arial, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 190,
+      "clientWidth": 190
+    }
+  ],
+  "dateIcon": [
+    {
+      "text": "",
+      "x": 271,
+      "y": 164.796875,
+      "width": 14,
+      "height": 32,
+      "color": "rgb(168, 171, 178)",
+      "font": "14px / 14px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 14,
+      "clientWidth": 14
+    }
+  ],
+  "separator": [
+    {
+      "text": "-",
+      "x": 475.3125,
+      "y": 164.796875,
+      "width": 79.375,
+      "height": 32,
+      "color": "rgb(48, 49, 51)",
+      "font": "14px / 14px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px 5px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 79,
+      "clientWidth": 79
+    }
+  ],
+  "table": [
+    {
+      "text": "TimeOperatorSourceActionResultFactoryPIRangeQtyStatus changeError TimeOperatorSourceActionResultFactoryPIRangeQtyStatus changeError2026-10-08 12:00:01CMP_AUDIT_VIEW 审计界面样本APIGenerateOK比较测试甲厂CMP-UI-AUDIT-VIEW-PIAV000011To allocate → To acquire",
+      "x": 261,
+      "y": 292.796875,
+      "width": 1468,
+      "height": 87,
+      "color": "rgb(15, 23, 42)",
+      "font": "14px / 22px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 1468,
+      "clientWidth": 1468
+    }
+  ],
+  "scroll": [
+    {
+      "text": "TimeOperatorSourceActionResultFactoryPIRangeQtyStatus changeError TimeOperatorSourceActionResultFactoryPIRangeQtyStatus changeError2026-10-08 12:00:01CMP_AUDIT_VIEW 审计界面样本APIGenerateOK比较测试甲厂CMP-UI-AUDIT-VIEW-PIAV000011To allocate → To acquire",
+      "x": 261,
+      "y": 292.796875,
+      "width": 1138,
+      "height": 87,
+      "color": "rgb(15, 23, 42)",
+      "font": "14px / 22px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px",
+      "scrollLeft": 0,
+      "scrollWidth": 1468,
+      "clientWidth": 1138
+    }
+  ]
+}

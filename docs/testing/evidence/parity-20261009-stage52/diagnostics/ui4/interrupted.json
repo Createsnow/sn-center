@@ -1,0 +1,5 @@
+{
+  "runner": 47636,
+  "stoppedProcessCount": 9,
+  "reason": "Correct known failed backdrop assertion and incompatible Switch event type; migration last capture zh-CN-768-dialog. This interrupted run is diagnostic only."
+}

@@ -1,0 +1,11 @@
+
+Running 2 tests using 1 worker
+
+(node:15872) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\account-editor.spec.ts:109:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages (19.3s)
+(node:7664) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [migration] › e2e\parity\account-editor.spec.ts:109:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages (32.0s)
+
+  2 passed (54.3s)

@@ -36,6 +36,15 @@ public class SnAuditController {
         return Result.success(service.items(filters, cursor, size), TraceFilter.current(request));
     }
 
+    @GetMapping("/page")
+    public Result<PageResult<SnAuditVO>> page(
+            @ParameterObject @ModelAttribute SnAuditQuery filters,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size,
+            HttpServletRequest request) {
+        return Result.success(service.page(filters, page, size), TraceFilter.current(request));
+    }
+
     @GetMapping("/count")
     public Result<SnCountVO> count(
             @ParameterObject @ModelAttribute SnAuditQuery filters, HttpServletRequest request) {

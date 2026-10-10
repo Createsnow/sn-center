@@ -1,0 +1,341 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.parity.config.ts",
+      "acquire-print.spec.ts",
+      "--output=test-results/stage17-acquire-final",
+      "--max-failures=1"
+    ],
+    "configFile": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\playwright.parity.config.ts",
+    "rootDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 1,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage17-acquire-final",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "prototype",
+        "name": "prototype",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage17-acquire-final",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "migration",
+        "name": "migration",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/parity/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "acquire-print.spec.ts",
+      "file": "acquire-print.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P09 single take and print: cancel, focus, material filtering, automatic XLSX and stable reload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10829,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T14:50:35.454Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f16e7ea15ddbda844a2a-45e736b2faae966306ce",
+          "file": "acquire-print.spec.ts",
+          "line": 123,
+          "column": 1
+        },
+        {
+          "title": "P09 bulk print continues when one selected PI was printed in another browser page",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8038,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T14:50:46.740Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f16e7ea15ddbda844a2a-fa6f042ff3852bdd40e7",
+          "file": "acquire-print.spec.ts",
+          "line": 198,
+          "column": 1
+        },
+        {
+          "title": "P09 factory cross-PI read-only and query-role controls preserve state",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 25485,
+                  "error": {
+                    "message": "TimeoutError: locator.click: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('switch')\u001b[22m\n\u001b[2m    - locator resolved to <input name=\"\" role=\"switch\" type=\"checkbox\" true-value=\"true\" id=\"el-id-6171-30\" false-value=\"false\" aria-checked=\"false\" aria-disabled=\"false\" class=\"el-switch__input\"/>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is not stable\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is not visible\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    38 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n",
+                    "stack": "TimeoutError: locator.click: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('switch')\u001b[22m\n\u001b[2m    - locator resolved to <input name=\"\" role=\"switch\" type=\"checkbox\" true-value=\"true\" id=\"el-id-6171-30\" false-value=\"false\" aria-checked=\"false\" aria-disabled=\"false\" class=\"el-switch__input\"/>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is not stable\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is not visible\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    38 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:280:46",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts",
+                      "column": 46,
+                      "line": 280
+                    },
+                    "snippet": "  278 |           await expect(rolePage.getByRole('switch')).toBeDisabled();\n  279 |           await rolePage.getByPlaceholder('PI', { exact: true }).fill(PIS[0]!);\n> 280 |           await rolePage.getByRole('switch').click();\n      |                                              ^\n  281 |           await expect(rolePage.getByText(zh.acquire.piAllReadOnly, { exact: true })).toBeVisible();\n  282 |           await expect(rolePage.getByRole('tab', { name: /^待领取|^待打印/ })).toHaveCount(0);\n  283 |           await expect("
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts",
+                        "column": 46,
+                        "line": 280
+                      },
+                      "message": "TimeoutError: locator.click: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('switch')\u001b[22m\n\u001b[2m    - locator resolved to <input name=\"\" role=\"switch\" type=\"checkbox\" true-value=\"true\" id=\"el-id-6171-30\" false-value=\"false\" aria-checked=\"false\" aria-disabled=\"false\" class=\"el-switch__input\"/>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is not stable\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is not visible\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    38 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n\n  278 |           await expect(rolePage.getByRole('switch')).toBeDisabled();\n  279 |           await rolePage.getByPlaceholder('PI', { exact: true }).fill(PIS[0]!);\n> 280 |           await rolePage.getByRole('switch').click();\n      |                                              ^\n  281 |           await expect(rolePage.getByText(zh.acquire.piAllReadOnly, { exact: true })).toBeVisible();\n  282 |           await expect(rolePage.getByRole('tab', { name: /^待领取|^待打印/ })).toHaveCount(0);\n  283 |           await expect(\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:280:46"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T14:50:54.787Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage17-acquire-final\\acquire-print-P09-factory--dc129-ole-controls-preserve-state-prototype\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts",
+                    "column": 46,
+                    "line": 280
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f16e7ea15ddbda844a2a-0196b387d42ed3463d91",
+          "file": "acquire-print.spec.ts",
+          "line": 248,
+          "column": 1
+        },
+        {
+          "title": "P09 two-PI bulk take and print: independent requests, per-PI files and focus history",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f16e7ea15ddbda844a2a-ad9ba567217352153e15",
+          "file": "acquire-print.spec.ts",
+          "line": 306,
+          "column": 1
+        },
+        {
+          "title": "P09 single take and print: cancel, focus, material filtering, automatic XLSX and stable reload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f16e7ea15ddbda844a2a-6d8c0fdf9d8ea597a5d4",
+          "file": "acquire-print.spec.ts",
+          "line": 123,
+          "column": 1
+        },
+        {
+          "title": "P09 bulk print continues when one selected PI was printed in another browser page",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f16e7ea15ddbda844a2a-81f463eefc5d03156dfd",
+          "file": "acquire-print.spec.ts",
+          "line": 198,
+          "column": 1
+        },
+        {
+          "title": "P09 factory cross-PI read-only and query-role controls preserve state",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f16e7ea15ddbda844a2a-8bf4599423267bbcd325",
+          "file": "acquire-print.spec.ts",
+          "line": 248,
+          "column": 1
+        },
+        {
+          "title": "P09 two-PI bulk take and print: independent requests, per-PI files and focus history",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f16e7ea15ddbda844a2a-ace820c9802155c73f65",
+          "file": "acquire-print.spec.ts",
+          "line": 306,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "message": "\u001b[31mTesting stopped early after 1 maximum allowed failures.\u001b[39m"
+    }
+  ],
+  "stats": {
+    "startTime": "2026-10-08T14:50:35.001Z",
+    "duration": 45730.233,
+    "expected": 2,
+    "skipped": 5,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

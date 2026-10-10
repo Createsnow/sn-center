@@ -1,0 +1,236 @@
+{
+  "text": "修改账户 cmp_account40_operator\n工号\n姓名\n角色\n系统管理员（总部）\n厂区操作员\n查询员\n只读；不绑厂 = 跨厂只读，绑厂 = 只看该厂。\n工厂\n工厂\n取消\n保存",
+  "drawnLabels": [
+    [
+      [
+        "工",
+        536,
+        207,
+        14,
+        20
+      ],
+      [
+        "号",
+        550,
+        207,
+        14,
+        20
+      ]
+    ],
+    [
+      [
+        "姓",
+        536,
+        257,
+        14,
+        20
+      ],
+      [
+        "名",
+        550,
+        257,
+        14,
+        20
+      ]
+    ],
+    [
+      [
+        "角",
+        536,
+        307,
+        14,
+        20
+      ],
+      [
+        "色",
+        550,
+        307,
+        14,
+        20
+      ]
+    ],
+    [
+      [
+        "工",
+        536,
+        389,
+        14,
+        20
+      ],
+      [
+        "厂",
+        550,
+        389,
+        14,
+        20
+      ]
+    ]
+  ],
+  "factoryMarkup": "<div data-v-9fb291fe=\"\" data-v-f95763dd=\"\" class=\"el-select factory-select\"><div class=\"el-select__wrapper is-focused is-filterable el-tooltip__trigger el-tooltip__trigger\" tabindex=\"-1\"><!--v-if--><div class=\"el-select__selection\"><!--v-if--><div class=\"el-select__selected-item el-select__input-wrapper\"><input type=\"text\" class=\"el-select__input\" autocomplete=\"off\" tabindex=\"0\" role=\"combobox\" spellcheck=\"false\" aria-activedescendant=\"\" aria-controls=\"el-id-9150-45\" aria-expanded=\"false\" aria-autocomplete=\"none\" aria-haspopup=\"listbox\" value=\"\" id=\"el-id-9150-53\" style=\"min-width: 11px;\"><span aria-hidden=\"true\" class=\"el-select__input-calculator\"></span></div><div class=\"el-select__selected-item el-select__placeholder is-transparent\"><span>工厂</span></div></div><div class=\"el-select__suffix\"><i class=\"el-icon el-select__caret el-select__icon\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1024 1024\"><path fill=\"currentColor\" d=\"M831.872 340.864 512 652.672 192.128 340.864a30.59 30.59 0 0 0-42.752 0 29.12 29.12 0 0 0 0 41.6L489.664 714.24a32 32 0 0 0 44.672 0l340.288-331.712a29.12 29.12 0 0 0 0-41.728 30.59 30.59 0 0 0-42.752 0z\"></path></svg></i><!--v-if--><!--v-if--></div></div></div>",
+  "styles": [
+    {
+      "text": "系统管理员（总部）",
+      "font": "500 14px / 14px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "letterSpacing": "normal",
+      "boxSizing": "border-box",
+      "padding": "8px 15px",
+      "border": "0px none rgb(96, 98, 102)",
+      "margin": "0px",
+      "display": "inline-block",
+      "width": "156px"
+    },
+    {
+      "text": "厂区操作员",
+      "font": "500 14px / 14px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "letterSpacing": "normal",
+      "boxSizing": "border-box",
+      "padding": "8px 15px",
+      "border": "0px none rgb(96, 98, 102)",
+      "margin": "0px",
+      "display": "inline-block",
+      "width": "100px"
+    },
+    {
+      "text": "查询员",
+      "font": "500 14px / 14px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "letterSpacing": "normal",
+      "boxSizing": "border-box",
+      "padding": "8px 15px",
+      "border": "0px none rgb(30, 74, 138)",
+      "margin": "0px",
+      "display": "inline-block",
+      "width": "72px"
+    },
+    {
+      "text": "只读；不绑厂 = 跨厂只读，绑厂 = 只看该厂。",
+      "font": "12px / 32px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "letterSpacing": "normal",
+      "boxSizing": "border-box",
+      "padding": "0px",
+      "border": "0px none rgb(100, 116, 139)",
+      "margin": "0px",
+      "display": "block",
+      "width": "240.078px"
+    }
+  ],
+  "geometry": {
+    "dialog": [
+      [
+        460,
+        144,
+        520,
+        353
+      ]
+    ],
+    "title": [
+      [
+        476,
+        159,
+        292.953125,
+        26
+      ]
+    ],
+    "rows": [
+      [
+        476,
+        201,
+        488,
+        32
+      ],
+      [
+        476,
+        251,
+        488,
+        32
+      ],
+      [
+        476,
+        301,
+        488,
+        64
+      ],
+      [
+        476,
+        383,
+        488,
+        32
+      ]
+    ],
+    "labels": [
+      [
+        476,
+        201,
+        100,
+        32
+      ],
+      [
+        476,
+        251,
+        100,
+        32
+      ],
+      [
+        476,
+        301,
+        100,
+        32
+      ],
+      [
+        476,
+        383,
+        100,
+        32
+      ]
+    ],
+    "inputs": [
+      [
+        576,
+        201,
+        388,
+        32
+      ],
+      [
+        576,
+        251,
+        388,
+        32
+      ]
+    ],
+    "hints": [
+      [
+        576,
+        333,
+        240.078125,
+        32
+      ]
+    ],
+    "roles": [
+      [
+        576,
+        301,
+        156,
+        32
+      ],
+      [
+        732,
+        301,
+        100,
+        32
+      ],
+      [
+        832,
+        301,
+        72,
+        32
+      ]
+    ],
+    "footer": [
+      [
+        476,
+        433,
+        488,
+        48
+      ]
+    ]
+  }
+}

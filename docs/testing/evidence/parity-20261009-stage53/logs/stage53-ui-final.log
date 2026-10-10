@@ -1,0 +1,49 @@
+
+Running 6 tests using 1 worker
+
+(node:10576) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\order-focus.spec.ts:11:1 › P05 focus: schedule closing, unit text, keyboard steps and scroll restoration (43.1s)
+  ok 2 [prototype] › e2e\parity\order-interactions.spec.ts:12:1 › P05 interactions: overflow, line details, schedule limits and cancellation in three languages (2.4m)
+
+  ok 3 [prototype] › e2e\parity\order-scroll.spec.ts:11:1 › P05 scroll: initial navigation and full sync with real request overlap (1.0m)
+(node:22200) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  4 [migration] › e2e\parity\order-focus.spec.ts:11:1 › P05 focus: schedule closing, unit text, keyboard steps and scroll restoration (45.5s)
+(node:25648) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 5 [migration] › e2e\parity\order-interactions.spec.ts:12:1 › P05 interactions: overflow, line details, schedule limits and cancellation in three languages (2.5m)
+
+  ok 6 [migration] › e2e\parity\order-scroll.spec.ts:11:1 › P05 scroll: initial navigation and full sync with real request overlap (55.8s)
+
+
+  1) [migration] › e2e\parity\order-focus.spec.ts:11:1 › P05 focus: schedule closing, unit text, keyboard steps and scroll restoration 
+
+    Error: expect(locator).toHaveValue(expected) failed
+
+    Locator:  getByRole('spinbutton')
+    Expected: "11"
+    Received: "2"
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveValue" getByRole('spinbutton') with timeout 15000ms
+      - waiting for getByRole('spinbutton')
+        33 × locator resolved to <input step="1" value="2" id="amount" role="spinbutton" aria-valuemin="1" aria-valuenow="2" aria-label="同步间隔" autocomplete="off" aria-valuemax="10080" class="ant-input-number-input"/>
+           - unexpected value "2"
+
+
+      265 |     await amount.fill('10');
+      266 |     await amount.press('ArrowUp');
+    > 267 |     await expect(amount).toHaveValue('11');
+          |                          ^
+      268 |     await capture('keyboard-up');
+      269 |     await amount.press('ArrowDown');
+      270 |     await expect(amount).toHaveValue('10');
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-focus.spec.ts:267:26
+
+    Error Context: test-results\stage53-ui-final\order-focus-P05-focus-sche-1888b-teps-and-scroll-restoration-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\order-focus.spec.ts:11:1 › P05 focus: schedule closing, unit text, keyboard steps and scroll restoration 
+  5 passed (8.4m)

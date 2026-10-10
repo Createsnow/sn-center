@@ -1,0 +1,1 @@
+{"status":400,"body":{"code":"TR_MATERIAL_REQUIRED","message":"按物料转移时物料编码必填","params":{}},"sourceMaterialUiBlocked":true}

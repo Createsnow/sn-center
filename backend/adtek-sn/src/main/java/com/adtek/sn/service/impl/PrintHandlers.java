@@ -66,6 +66,9 @@ public class PrintHandlers {
             public String execute(TaskEntity task, Actor actor) throws Exception {
                 var print = e.rows.printByTask(task.id());
                 var fresh = e.policy.lock(actor, AcquirePolicy.PRINT, print.factoryId());
+                if (print.formatVersion() != 1 && print.formatVersion() != 2)
+                    throw new IllegalStateException("Unsupported print format version");
+                boolean prototype = print.formatVersion() == 2;
                 e.policy.require(fresh, AcquirePolicy.DOWNLOAD, print.factoryId());
                 var file = files.find(task.id());
                 if (file == null) throw new IllegalStateException("Missing print file metadata");
@@ -80,12 +83,14 @@ public class PrintHandlers {
                                     if (member.ordinal() != ++ordinal)
                                         throw new IllegalStateException(
                                                 "Broken print snapshot ordinal");
+                                    var snapshot =
+                                            e.json.readValue(
+                                                    member.snapshot(), AcquireSnapshot.class);
                                     consumer.accept(
-                                            PrintFiles.cells(
-                                                    ordinal,
-                                                    e.json.readValue(
-                                                            member.snapshot(),
-                                                            AcquireSnapshot.class)));
+                                            prototype
+                                                    ? PrintFiles.prototypeCells(
+                                                            ordinal, snapshot, member.batchNo())
+                                                    : PrintFiles.cells(ordinal, snapshot));
                                 }
                                 e.progress.record(
                                         task.id(), task.executionEpoch(), ordinal, "WRITING");
@@ -99,16 +104,27 @@ public class PrintHandlers {
                                 file.storageKey(),
                                 file.sha256(),
                                 output -> {
-                                    if (format.equals("xlsx"))
-                                        PrintFiles.xlsx(output, print, settings.fileBytes(), rows);
-                                    else {
+                                    if (format.equals("xlsx")) {
+                                        if (prototype)
+                                            PrintFiles.prototypeXlsx(
+                                                    output, print, settings.fileBytes(), rows);
+                                        else
+                                            PrintFiles.xlsx(
+                                                    output, print, settings.fileBytes(), rows);
+                                    } else {
                                         output.write(
                                                 new byte[] {(byte) 0xef, (byte) 0xbb, (byte) 0xbf});
-                                        PrintFiles.csvRow(output, PrintFiles.HEADER);
+                                        if (prototype)
+                                            PrintFiles.prototypeCsvRow(
+                                                    output, PrintFiles.PROTOTYPE_HEADER);
+                                        else PrintFiles.csvRow(output, PrintFiles.HEADER);
                                         rows.each(
                                                 values -> {
                                                     try {
-                                                        PrintFiles.csvRow(output, values);
+                                                        if (prototype)
+                                                            PrintFiles.prototypeCsvRow(
+                                                                    output, values);
+                                                        else PrintFiles.csvRow(output, values);
                                                     } catch (IOException error) {
                                                         throw new UncheckedIOException(error);
                                                     }

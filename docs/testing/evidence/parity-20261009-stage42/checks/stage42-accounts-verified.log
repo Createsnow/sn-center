@@ -1,0 +1,17 @@
+
+Running 8 tests using 1 worker
+
+(node:25648) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\account-actions.spec.ts:9:1 › P13 account actions: disable, enable, repeated same-password reset and self reset (9.7s)
+  ok 2 [prototype] › e2e\parity\account-editor.spec.ts:109:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages (18.2s)
+  ok 3 [prototype] › e2e\parity\account-session.spec.ts:9:1 › P13 account sessions: edit name, role, factory and self without another login (13.9s)
+  ok 4 [prototype] › e2e\parity\users-directory.spec.ts:94:1 › P13 account directory: prefix/name search, roles, factories, status, pagination and metadata (9.6s)
+(node:16092) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 5 [migration] › e2e\parity\account-actions.spec.ts:9:1 › P13 account actions: disable, enable, repeated same-password reset and self reset (34.4s)
+  ok 6 [migration] › e2e\parity\account-editor.spec.ts:109:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages (38.3s)
+  ok 7 [migration] › e2e\parity\account-session.spec.ts:9:1 › P13 account sessions: edit name, role, factory and self without another login (20.4s)
+  ok 8 [migration] › e2e\parity\users-directory.spec.ts:94:1 › P13 account directory: prefix/name search, roles, factories, status, pagination and metadata (19.5s)
+
+  8 passed (2.8m)

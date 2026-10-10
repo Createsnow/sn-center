@@ -38,6 +38,16 @@ public class SnQueryController {
         return Result.success(query.items(filters, cursor, size), TraceFilter.current(request));
     }
 
+    @Operation(summary = "SN页面分页", description = "默认创建顺序倒序；指定PI按物料/流水归属/流水/创建顺序排序；总数封顶十万并显式标记。")
+    @GetMapping("/items/page")
+    public Result<SnQueryPageVO> page(
+            @ParameterObject @ModelAttribute SnItemQuery filters,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size,
+            HttpServletRequest request) {
+        return Result.success(query.page(filters, page, size), TraceFilter.current(request));
+    }
+
     @GetMapping("/items/count")
     public Result<SnCountVO> count(
             @ParameterObject @ModelAttribute SnItemQuery filters, HttpServletRequest request) {

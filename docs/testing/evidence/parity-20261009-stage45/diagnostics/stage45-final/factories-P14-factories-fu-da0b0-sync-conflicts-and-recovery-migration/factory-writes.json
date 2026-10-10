@@ -1,0 +1,244 @@
+[
+  {
+    "label": "04-empty-invalid",
+    "status": 400,
+    "body": {
+      "code": 1004000033,
+      "message": "sn.factoryInvalid",
+      "data": null,
+      "params": {},
+      "traceId": "794a1cb5-c6b3-47c0-af5a-0a6492740344"
+    }
+  },
+  {
+    "label": "05-code-too-long",
+    "status": 400,
+    "body": {
+      "code": 1004000033,
+      "message": "sn.factoryInvalid",
+      "data": null,
+      "params": {},
+      "traceId": "6ea05176-81db-4f19-bbeb-a01f4a3f11d9"
+    }
+  },
+  {
+    "label": "06-name-too-long",
+    "status": 400,
+    "body": {
+      "code": 1004000033,
+      "message": "sn.factoryInvalid",
+      "data": null,
+      "params": {},
+      "traceId": "34d86497-2ff4-4921-b1c7-981bc5e975cc"
+    }
+  },
+  {
+    "label": "07-created",
+    "status": 200,
+    "body": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "id": "361",
+        "code": "CMP_F44_MANUAL",
+        "name": "比较工厂44-手工",
+        "source": "MANUAL",
+        "enabled": true,
+        "version": "1",
+        "createdAt": "2026-10-09T06:20:14.073826900Z",
+        "updatedAt": "2026-10-09T06:20:14.073826900Z"
+      },
+      "params": {},
+      "traceId": "6f363ec8-899c-4b42-a244-6f1837ab0fcd"
+    }
+  },
+  {
+    "label": "08-duplicate-code",
+    "status": 409,
+    "body": {
+      "code": 1004000003,
+      "message": "sn.factoryExists",
+      "data": null,
+      "params": {
+        "factory": "CMP_F44_MANUAL/比较工厂44-重复编码"
+      },
+      "traceId": "04f90e11-41b4-4f84-9cfd-31ef8efd4088"
+    }
+  },
+  {
+    "label": "09-duplicate-name",
+    "status": 409,
+    "body": {
+      "code": 1004000003,
+      "message": "sn.factoryExists",
+      "data": null,
+      "params": {
+        "factory": "CMP_F44_CONFLICT/比较工厂44-手工"
+      },
+      "traceId": "31045f76-7de8-4bcf-8595-7912d5abb34a"
+    }
+  },
+  {
+    "label": "10-case-distinct",
+    "status": 200,
+    "body": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "id": "364",
+        "code": "cmp_f44_manual",
+        "name": "比较工厂44-小写",
+        "source": "MANUAL",
+        "enabled": true,
+        "version": "1",
+        "createdAt": "2026-10-09T06:20:24.686037800Z",
+        "updatedAt": "2026-10-09T06:20:24.686037800Z"
+      },
+      "params": {},
+      "traceId": "68ea499e-5096-4453-ab5a-bb93f80d4bc8"
+    }
+  },
+  {
+    "label": "11-accent",
+    "status": 200,
+    "body": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "id": "365",
+        "code": "CMP_F44_é",
+        "name": "比较工厂44-é",
+        "source": "MANUAL",
+        "enabled": true,
+        "version": "1",
+        "createdAt": "2026-10-09T06:20:29.122912900Z",
+        "updatedAt": "2026-10-09T06:20:29.122912900Z"
+      },
+      "params": {},
+      "traceId": "d57b47b5-bf03-4299-8a23-a83fcfa912a0"
+    }
+  },
+  {
+    "label": "12-plain",
+    "status": 200,
+    "body": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "id": "366",
+        "code": "CMP_F44_e",
+        "name": "比较工厂44-e",
+        "source": "MANUAL",
+        "enabled": true,
+        "version": "1",
+        "createdAt": "2026-10-09T06:20:33.666199700Z",
+        "updatedAt": "2026-10-09T06:20:33.666199700Z"
+      },
+      "params": {},
+      "traceId": "760a69a7-353c-4a6e-9114-77271685ce8a"
+    }
+  },
+  {
+    "label": "13-codepoint-limit",
+    "status": 200,
+    "body": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "id": "367",
+        "code": "🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭",
+        "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+        "source": "MANUAL",
+        "enabled": true,
+        "version": "1",
+        "createdAt": "2026-10-09T06:20:38.218109300Z",
+        "updatedAt": "2026-10-09T06:20:38.218109300Z"
+      },
+      "params": {},
+      "traceId": "38d2691b-7208-4f17-bce8-d7f16c042baa"
+    }
+  },
+  {
+    "label": "14-sync-new-update-conflict",
+    "status": 200,
+    "body": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "total": "3",
+        "inserted": "1",
+        "updated": "1",
+        "conflicts": [
+          "CMP_F44_CONFLICT/比较工厂44-00"
+        ]
+      },
+      "params": {},
+      "traceId": "fb78787f-e763-4302-be22-0916de0193b0"
+    }
+  },
+  {
+    "label": "15-sync-unchanged",
+    "status": 200,
+    "body": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "total": "3",
+        "inserted": "0",
+        "updated": "0",
+        "conflicts": [
+          "CMP_F44_CONFLICT/比较工厂44-00"
+        ]
+      },
+      "params": {},
+      "traceId": "b6532595-dc16-4a3f-9535-476e42898e6a"
+    }
+  },
+  {
+    "label": "16-sync-rename-conflict",
+    "status": 200,
+    "body": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "total": "1",
+        "inserted": "0",
+        "updated": "0",
+        "conflicts": [
+          "CMP_F44_MANUAL/比较工厂44-00"
+        ]
+      },
+      "params": {},
+      "traceId": "eb3cf6f1-929f-4acf-b7c0-6d6a6406f85e"
+    }
+  },
+  {
+    "label": "17-sync-failure",
+    "status": 502,
+    "body": {
+      "code": 1005000006,
+      "message": "integration.k3QueryRejected",
+      "data": null,
+      "params": {
+        "message": "HTTP 503"
+      },
+      "traceId": "974243f9-e87b-44bb-bffd-7e2b378da621"
+    }
+  },
+  {
+    "label": "18-sync-empty-recovery",
+    "status": 200,
+    "body": {
+      "code": 0,
+      "message": "common.success",
+      "data": {
+        "total": "0",
+        "inserted": "0",
+        "updated": "0",
+        "conflicts": []
+      },
+      "params": {},
+      "traceId": "88bbc6cb-b82b-49e5-9758-7811f1bfa462"
+    }
+  }
+]

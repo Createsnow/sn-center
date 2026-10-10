@@ -16,7 +16,17 @@ public interface SnConvert {
 
     PiCounterVO counter(PiCounterEntity entity);
 
-    SnWorkVO work(SnWorkEntity entity, String factoryCode);
+    @Mapping(target = "errorParams", source = "errorParams")
+    @Mapping(target = "firstSn", source = "firstSn")
+    @Mapping(target = "lastSn", source = "lastSn")
+    SnWorkVO work(
+            SnWorkEntity entity,
+            String factoryCode,
+            String generationNumber,
+            String processed,
+            java.util.Map<String, String> errorParams,
+            String firstSn,
+            String lastSn);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "source", ignore = true)
@@ -45,7 +55,7 @@ public interface SnConvert {
 
     OrderSyncVO sync(OrderSyncEntity entity);
 
-    OrderScheduleVO schedule(OrderScheduleEntity entity, boolean workerEnabled);
+    OrderScheduleVO schedule(OrderScheduleEntity entity, boolean workerEnabled, String ownerName);
 
     OrderPiVO pi(OrderPiEntity entity);
 

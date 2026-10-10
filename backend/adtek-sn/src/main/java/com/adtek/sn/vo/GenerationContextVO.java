@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
-/** 来源变动、消耗超过计划等issues必须阻止预演；PI汇总含离开快照的历史订单，线表和历史另有分页。 */
+/** 当前生成条件控制预演；PI汇总按当前组织和历史生成身份合并，线表和历史另有分页。 */
 @Schema(
         requiredProperties = {
             "bill",

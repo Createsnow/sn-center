@@ -1,0 +1,37 @@
+{
+  "auditVisualRecheck": {
+    "startTime": "2026-10-09T06:37:03.523Z",
+    "duration": 47038.029,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "auditVisualScreenshots": 26,
+  "stage": 45,
+  "completeGoal": false,
+  "schema": "39",
+  "unitTests": 89,
+  "integrationTests": {
+    "AuthenticationIT": 33,
+    "SnAuditIT": 17,
+    "SnFoundationIT": 30
+  },
+  "frontendUnitTests": 81,
+  "ui": {
+    "startTime": "2026-10-09T06:29:38.809Z",
+    "duration": 259504.99599999998,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "screenshots": 106,
+  "diagnosticScreenshots": 169,
+  "sourceFiles": 64,
+  "pending": [
+    "P14 ERP identity/code/name projection changes and deduplication; complete error, role, concurrency, loading and focus boundaries",
+    "P13 remaining account boundaries",
+    "full P01-P16 matrix, end-to-end UI business loop and historical ordering/capacity/recovery gaps"
+  ]
+}

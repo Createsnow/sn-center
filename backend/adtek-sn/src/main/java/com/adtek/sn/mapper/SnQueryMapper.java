@@ -29,7 +29,9 @@ public interface SnQueryMapper {
                     + " i.material=#{q.material}</if><if test='q.status!=null'> AND"
                     + " i.status=#{q.status}</if><if test='q.sn!=null'> AND i.sn=#{q.sn}</if><if"
                     + " test='q.billNo!=null'> AND i.bill_no=#{q.billNo}</if><if"
-                    + " test='q.batchId!=null'> AND i.current_batch_id=#{q.batchId}</if>";
+                    + " test='q.batchId!=null'> AND i.current_batch_id=#{q.batchId}</if>"
+                    + "<if test='q.batchNo!=null'> AND EXISTS (SELECT 1 FROM sn_acquire_batch b"
+                    + " WHERE b.id=i.current_batch_id AND b.batch_no=#{q.batchNo})</if>";
     String COLUMNS =
             "i.gen_month,i.id,i.sn,i.pi,i.seq_pi,i.seq_dec,i.rule_version_id,"
                     + "i.customer,i.material,i.factory_id,f.code"
@@ -37,12 +39,17 @@ public interface SnQueryMapper {
                     + " factory_name,i.status,i.source,i.bill_no,i.source_system,"
                     + "i.source_account,i.source_bill_id,i.source_entry_id,i.current_batch_id,"
                     + "i.current_print_id,i.current_transfer_id,i.created_at,i.acquired_at,"
-                    + "i.printed_at";
+                    + "i.printed_at,b.batch_no current_batch_no,k.creation_order";
+
+    String ITEM_FROM =
+            " FROM sn_item i JOIN sn_key k ON k.sn=i.sn"
+                    + " LEFT JOIN sn_factory f ON f.id=i.factory_id"
+                    + " LEFT JOIN sn_acquire_batch b ON b.id=i.current_batch_id WHERE 1=1 ";
 
     @Select(
             "<script>SELECT "
                     + COLUMNS
-                    + " FROM sn_item i LEFT JOIN sn_factory f ON f.id=i.factory_id WHERE 1=1 "
+                    + ITEM_FROM
                     + SCOPE
                     + FILTER
                     + "<if test='month!=null'> AND (i.gen_month&gt;#{month} OR"
@@ -58,10 +65,48 @@ public interface SnQueryMapper {
     @Select("<script>SELECT COUNT(*) FROM sn_item i WHERE 1=1 " + SCOPE + FILTER + "</script>")
     long count(@Param("s") Scope scope, @Param("q") SnItemQuery query);
 
+    @Select(
+            "<script>SELECT COUNT(*) FROM (SELECT 1 FROM sn_item i WHERE 1=1 "
+                    + SCOPE
+                    + FILTER
+                    + " LIMIT 100001) capped</script>")
+    long cappedCount(@Param("s") Scope scope, @Param("q") SnItemQuery query);
+
+    @Select(
+            "<script>SELECT "
+                    + COLUMNS
+                    + ITEM_FROM
+                    + SCOPE
+                    + FILTER
+                    + " ORDER BY <choose><when test='q.pi!=null'>"
+                    + " i.material,i.seq_pi,i.seq_dec,k.creation_order"
+                    + "</when><otherwise>k.creation_order DESC</otherwise></choose>"
+                    + " LIMIT #{size} OFFSET #{offset}</script>")
+    List<SnQueryItemEntity> page(
+            @Param("s") Scope scope,
+            @Param("q") SnItemQuery query,
+            @Param("offset") long offset,
+            @Param("size") int size);
+
+    @Select(
+            "<script>SELECT "
+                    + COLUMNS
+                    + ITEM_FROM
+                    + SCOPE
+                    + FILTER
+                    + " AND k.creation_order&gt;#{after} ORDER BY k.creation_order"
+                    + " LIMIT #{size}</script>")
+    List<SnQueryItemEntity> exportItems(
+            @Param("s") Scope scope,
+            @Param("q") SnItemQuery query,
+            @Param("after") long after,
+            @Param("size") int size);
+
     @Insert(
-            "INSERT INTO sn_query_export(task_id,actor_id,format,filters,quantity)"
-                    + " VALUES(#{taskId},#{actorId},#{format},#{filters},#{quantity})")
-    int export(SnExportEntity row);
+            "INSERT INTO sn_query_export(task_id,actor_id,format,filters,quantity,format_version)"
+                    + " VALUES(#{taskId},#{actorId},#{format},#{filters},"
+                    + "#{quantity},#{formatVersion})")
+    int export(SnQueryExportEntity row);
 
     @Insert(
             "<script>INSERT INTO sn_query_export_row(task_id,ordinal,factory_id,pi,cells) VALUES"
@@ -72,9 +117,9 @@ public interface SnQueryMapper {
 
     @Select(
             "SELECT task_id,actor_id,format,CAST(filters AS CHAR) filters,quantity,"
-                    + "created_at FROM"
+                    + "created_at,format_version FROM"
                     + " sn_query_export WHERE task_id=#{id}")
-    SnExportEntity exportById(String id);
+    SnQueryExportEntity exportById(String id);
 
     @Select(
             "SELECT task_id,ordinal,factory_id,pi,CAST(cells AS CHAR) cells FROM"
@@ -92,18 +137,19 @@ public interface SnQueryMapper {
 
     @Select(
             "SELECT task_id,actor_id,format,CAST(filters AS CHAR) filters,quantity,"
-                    + "created_at FROM"
+                    + "created_at,format_version FROM"
                     + " sn_query_export WHERE actor_id=#{actor} ORDER BY created_at DESC,"
                     + "task_id DESC"
                     + " LIMIT #{size} OFFSET #{offset}")
-    List<SnExportEntity> history(
+    List<SnQueryExportEntity> history(
             @Param("actor") long actor, @Param("offset") long offset, @Param("size") int size);
 
     @Select("SELECT COUNT(*) FROM sn_query_export WHERE actor_id=#{actor}")
     long historyCount(long actor);
 
     @Select(
-            "<script>SELECT i.status name,COUNT(*) quantity FROM sn_item i WHERE 1=1 "
+            "<script>SELECT i.status name,COUNT(*) quantity FROM sn_item i WHERE"
+                    + " i.status IN ('PENDING_ALLOC','TO_ACQUIRE','TO_PRINT','APPLYING') "
                     + SCOPE
                     + " GROUP BY i.status</script>")
     List<SnCountEntity> states(@Param("s") Scope scope);
@@ -115,17 +161,15 @@ public interface SnQueryMapper {
     long imported();
 
     String TODAY =
-            "SELECT kind name,quantity,factory_id,finished_at at_time FROM sn_work WHERE"
-                    + " state='SUCCESS' UNION ALL SELECT"
-                    + " kind,IF(kind='TAKE',eligible,updated_qty),factory_id,finished_at FROM"
-                    + " sn_acquire_work WHERE state='SUCCESS' UNION ALL SELECT"
-                    + " 'PRINT',quantity,factory_id,created_at FROM sn_print UNION ALL SELECT"
-                    + " 'TRANSFER_APPLY',quantity,from_factory_id,"
-                    + "created_at FROM sn_transfer WHERE"
-                    + " mode='APPLY' UNION ALL SELECT"
-                    + " 'TRANSFER_APPROVE',quantity,to_factory_id,"
-                    + "decided_at FROM sn_transfer WHERE"
-                    + " status='APPROVED'";
+            "SELECT CASE action WHEN 'sn:generation:execute' THEN 'GENERATE'"
+                    + " WHEN 'sn:allocation:execute' THEN 'ALLOCATE'"
+                    + " WHEN 'sn:acquire:take' THEN 'TAKE'"
+                    + " WHEN 'sn:print:execute' THEN 'PRINT'"
+                    + " WHEN 'sn:acquire:callback' THEN 'CALLBACK' END name,"
+                    + " quantity,factory_id,created_at at_time FROM sn_audit"
+                    + " WHERE result='SUCCESS' AND action IN ('sn:generation:execute',"
+                    + " 'sn:allocation:execute','sn:acquire:take','sn:print:execute',"
+                    + " 'sn:acquire:callback')";
 
     @Select(
             "<script>SELECT i.name,SUM(i.quantity) quantity FROM ("
@@ -137,8 +181,12 @@ public interface SnQueryMapper {
             @Param("s") Scope scope, @Param("from") Instant from, @Param("to") Instant to);
 
     @Select(
-            "<script>SELECT i.* FROM sn_work i WHERE i.kind='GENERATE' "
+            "<script>SELECT i.* FROM sn_work i JOIN sn_generation_job j ON j.task_id=i.task_id"
+                    + " WHERE i.kind='GENERATE' "
                     + SCOPE
-                    + " ORDER BY i.created_at DESC,i.task_id DESC LIMIT 8</script>")
+                    + " ORDER BY j.id DESC LIMIT 8</script>")
     List<SnWorkEntity> recent(@Param("s") Scope scope);
+
+    @Select("SELECT id FROM sn_generation_job WHERE task_id=#{taskId}")
+    long generationNumber(String taskId);
 }

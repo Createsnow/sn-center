@@ -1,0 +1,29 @@
+
+Running 20 tests using 1 worker
+
+(node:45760) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [prototype] › e2e\parity\dashboard-layout.spec.ts:171:1 › P01 P04 factory operator header and shortcuts: three languages, four widths and real navigation (10.3s)
+  ok  2 [prototype] › e2e\parity\dashboard-roles.spec.ts:91:1 › P04 管理员首页指标 近期订单进度 快捷入口和窄屏 (3.9s)
+  ok  3 [prototype] › e2e\parity\dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_operator 首次改密 角色范围与首页入口 (1.7s)
+  ok  4 [prototype] › e2e\parity\dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_query_all 首次改密 角色范围与首页入口 (1.6s)
+  ok  5 [prototype] › e2e\parity\dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_query_factory 首次改密 角色范围与首页入口 (1.8s)
+  ok  6 [prototype] › e2e\parity\dashboard-roles.spec.ts:236:1 › P04 首页三语文案与刷新保持 (2.1s)
+  ok  7 [prototype] › e2e\parity\login-layout.spec.ts:90:1 › P02 login layout: three languages, four widths, focus, reveal and empty submission (5.3s)
+  ok  8 [prototype] › e2e\parity\password-page.spec.ts:121:3 › P03 password zh-CN: forced form, blur validation, logout, save and voluntary cancel (7.5s)
+  ok  9 [prototype] › e2e\parity\password-page.spec.ts:121:3 › P03 password en: forced form, blur validation, logout, save and voluntary cancel (7.5s)
+  ok 10 [prototype] › e2e\parity\password-page.spec.ts:121:3 › P03 password vi: forced form, blur validation, logout, save and voluntary cancel (7.7s)
+(node:45448) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 11 [migration] › e2e\parity\dashboard-layout.spec.ts:171:1 › P01 P04 factory operator header and shortcuts: three languages, four widths and real navigation (11.5s)
+  ok 12 [migration] › e2e\parity\dashboard-roles.spec.ts:91:1 › P04 管理员首页指标 近期订单进度 快捷入口和窄屏 (3.3s)
+  ok 13 [migration] › e2e\parity\dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_operator 首次改密 角色范围与首页入口 (21.8s)
+  ok 14 [migration] › e2e\parity\dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_query_all 首次改密 角色范围与首页入口 (24.3s)
+  ok 15 [migration] › e2e\parity\dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_query_factory 首次改密 角色范围与首页入口 (24.3s)
+  ok 16 [migration] › e2e\parity\dashboard-roles.spec.ts:236:1 › P04 首页三语文案与刷新保持 (13.0s)
+  ok 17 [migration] › e2e\parity\login-layout.spec.ts:90:1 › P02 login layout: three languages, four widths, focus, reveal and empty submission (5.8s)
+  ok 18 [migration] › e2e\parity\password-page.spec.ts:121:3 › P03 password zh-CN: forced form, blur validation, logout, save and voluntary cancel (12.2s)
+  ok 19 [migration] › e2e\parity\password-page.spec.ts:121:3 › P03 password en: forced form, blur validation, logout, save and voluntary cancel (16.1s)
+  ok 20 [migration] › e2e\parity\password-page.spec.ts:121:3 › P03 password vi: forced form, blur validation, logout, save and voluntary cancel (16.3s)
+
+  20 passed (3.4m)

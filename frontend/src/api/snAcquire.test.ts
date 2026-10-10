@@ -5,9 +5,29 @@ import {
   isAcquireResult,
   isAcquireWork,
   isPrintRecord,
+  isCurrentBatchItem,
 } from './snAcquire';
 const id = '10000000-0000-4000-8000-000000000001';
 describe('S5固定历史、精度与文件状态契约', () => {
+  it('当前批次页允许未知流水和空物料，拒绝丢精度数字和缺少成员身份', () => {
+    const value = {
+      id,
+      sn: 'SN',
+      pi: 'P',
+      seqPi: null,
+      seqDec: null,
+      seqText: null,
+      customer: '',
+      material: '',
+      factoryId: '9007199254740993',
+      status: 'PRINTED',
+      currentBatchId: id,
+    };
+    expect(isCurrentBatchItem(value)).toBe(true);
+    expect(isCurrentBatchItem({ ...value, seqDec: '9007199254740993' })).toBe(true);
+    expect(isCurrentBatchItem({ ...value, seqDec: Number('9007199254740993') })).toBe(false);
+    expect(isCurrentBatchItem({ ...value, id: undefined })).toBe(false);
+  });
   it('未知流水与当前批次失效仍保留历史快照，拒绝数字型流水', () => {
     const value = {
       ordinal: '1',
@@ -67,6 +87,7 @@ describe('S5固定历史、精度与文件状态契约', () => {
       updatedQty: '0',
       alreadyQty: '0',
       batchId: null,
+      batchNo: null,
       errorCode: null,
       createdAt: '2026-09-30T00:00:00Z',
       finishedAt: '2026-09-30T00:00:01Z',
@@ -96,6 +117,8 @@ describe('S5固定历史、精度与文件状态契约', () => {
       pi: 'P',
       quantity: '13',
       actorId: '9007199254740993',
+      printNo: 'P202610082300000001',
+      actorName: 'admin',
       createdAt: '2026-09-30T00:00:00Z',
       xlsxState: 'RECOVERING',
       csvState: 'FAILED',

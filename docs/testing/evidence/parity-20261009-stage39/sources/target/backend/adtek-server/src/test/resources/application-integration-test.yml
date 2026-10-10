@@ -1,0 +1,15 @@
+adtek:
+  sn:
+    work:
+      # 故障注入测试手动驱动工作器；同步执行专项在自己的用例中临时启用。
+      inline-generation-quantity: 0
+    order-sync-worker:
+      enabled: false
+  tasks:
+    enabled: false
+    file-root: ./target/task-files/${random.uuid}
+  security:
+    cookie-secure: false
+springdoc:
+  api-docs:
+    enabled: true

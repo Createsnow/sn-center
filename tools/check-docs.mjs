@@ -35,20 +35,35 @@ function walk(directory) {
 walk('docs');
 walk('memory');
 let checked = 0;
+let localScreenshotsUnavailable = 0;
 for (const path of files) {
   // 来源基线里的原环境链接是历史内容，不改写、不自动联网。
   if (path.startsWith(`${archive}/docs/references/baselines/`)) continue;
+  // 验收来源副本保留原字节；相对链接按其原仓库位置检查，不要求复制整棵文档目录。
+  const sourceCopy = path.match(/^docs\/testing\/evidence\/[^/]+\/sources\/(target|prototype)\/(.+)$/);
+  const documentPath = sourceCopy
+    ? resolve(sourceCopy[1] === 'target' ? root : resolve(root, '../sn-center-python'), sourceCopy[2])
+    : resolve(root, path);
+  if (!existsSync(documentPath)) failures.push(`Missing source document: ${path}`);
   const content = readFileSync(resolve(root, path), 'utf8').replace(/```[\s\S]*?```/g, '');
   for (const match of content.matchAll(/\]\(([^)]+)\)/g)) {
     const target = match[1].replace(/^<|>$/g, '').split('#')[0];
     if (!target || /^[a-z][a-z0-9+.-]*:/i.test(target)) continue;
-    const absolute = resolve(root, dirname(path), decodeURIComponent(target));
+    const absolute = resolve(dirname(documentPath), decodeURIComponent(target));
     checked++;
-    if (!existsSync(absolute)) failures.push(`${path} -> ${relative(root, absolute)}`);
+    if (!existsSync(absolute)) {
+      const targetPath = relative(root, absolute).replaceAll('\\', '/');
+      // 用户要求截图仅留本地；冻结清单保留摘要，克隆仓库不包含该类图片。
+      if (targetPath.startsWith('docs/testing/evidence/') && targetPath.endsWith('.png')) {
+        localScreenshotsUnavailable++;
+      } else {
+        failures.push(`${path} -> ${relative(root, absolute)}`);
+      }
+    }
   }
 }
 if (failures.length) {
   console.error(failures.join('\n'));
   process.exit(1);
 }
-console.log(`Documentation links=${checked}; archive files=${archived.length} byte-identical; frozen SQL=${frozen.length} unchanged.`);
+console.log(`Documentation links=${checked}; archive files=${archived.length} byte-identical; frozen SQL=${frozen.length} unchanged; local-only screenshot links unavailable=${localScreenshotsUnavailable}.`);

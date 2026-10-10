@@ -1,0 +1,4050 @@
+[
+  {
+    "label": "01-manual-name-matches-different-erp-code",
+    "scroll": 0,
+    "data": {
+      "orders": [
+        {
+          "bill_no": "CMP-F46-MO",
+          "org_name": "比较46旧名",
+          "factory_code": "CMP_F46_OLD",
+          "source_entry_id": "94601",
+          "qty": "5.0000",
+          "factory_id": 1238,
+          "snapshot_version": 1021
+        }
+      ],
+      "factories": [
+        {
+          "id": 1185,
+          "code": "CMP_F46_LIST_00",
+          "name": "比较46列表00",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1186,
+          "code": "CMP_F46_LIST_01",
+          "name": "比较46列表01",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1187,
+          "code": "CMP_F46_LIST_02",
+          "name": "比较46列表02",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1188,
+          "code": "CMP_F46_LIST_03",
+          "name": "比较46列表03",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1189,
+          "code": "CMP_F46_LIST_04",
+          "name": "比较46列表04",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1190,
+          "code": "CMP_F46_LIST_05",
+          "name": "比较46列表05",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1191,
+          "code": "CMP_F46_LIST_06",
+          "name": "比较46列表06",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1192,
+          "code": "CMP_F46_LIST_07",
+          "name": "比较46列表07",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1193,
+          "code": "CMP_F46_LIST_08",
+          "name": "比较46列表08",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1194,
+          "code": "CMP_F46_LIST_09",
+          "name": "比较46列表09",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1195,
+          "code": "CMP_F46_LIST_10",
+          "name": "比较46列表10",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1196,
+          "code": "CMP_F46_LIST_11",
+          "name": "比较46列表11",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1197,
+          "code": "CMP_F46_LIST_12",
+          "name": "比较46列表12",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1198,
+          "code": "CMP_F46_LIST_13",
+          "name": "比较46列表13",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1199,
+          "code": "CMP_F46_LIST_14",
+          "name": "比较46列表14",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1200,
+          "code": "CMP_F46_LIST_15",
+          "name": "比较46列表15",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1201,
+          "code": "CMP_F46_LIST_16",
+          "name": "比较46列表16",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1202,
+          "code": "CMP_F46_LIST_17",
+          "name": "比较46列表17",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1203,
+          "code": "CMP_F46_LIST_18",
+          "name": "比较46列表18",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1204,
+          "code": "CMP_F46_LIST_19",
+          "name": "比较46列表19",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1205,
+          "code": "CMP_F46_LIST_20",
+          "name": "比较46列表20",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1206,
+          "code": "CMP_F46_LIST_21",
+          "name": "比较46列表21",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1207,
+          "code": "CMP_F46_LIST_22",
+          "name": "比较46列表22",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1208,
+          "code": "CMP_F46_LIST_23",
+          "name": "比较46列表23",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1209,
+          "code": "CMP_F46_LIST_24",
+          "name": "比较46列表24",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1210,
+          "code": "CMP_F46_LIST_25",
+          "name": "比较46列表25",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1211,
+          "code": "CMP_F46_LIST_26",
+          "name": "比较46列表26",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1212,
+          "code": "CMP_F46_LIST_27",
+          "name": "比较46列表27",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1213,
+          "code": "CMP_F46_LIST_28",
+          "name": "比较46列表28",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1214,
+          "code": "CMP_F46_LIST_29",
+          "name": "比较46列表29",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1215,
+          "code": "CMP_F46_LIST_30",
+          "name": "比较46列表30",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1216,
+          "code": "CMP_F46_LIST_31",
+          "name": "比较46列表31",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1217,
+          "code": "CMP_F46_LIST_32",
+          "name": "比较46列表32",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1218,
+          "code": "CMP_F46_LIST_33",
+          "name": "比较46列表33",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1219,
+          "code": "CMP_F46_LIST_34",
+          "name": "比较46列表34",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1220,
+          "code": "CMP_F46_LIST_35",
+          "name": "比较46列表35",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1221,
+          "code": "CMP_F46_LIST_36",
+          "name": "比较46列表36",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1222,
+          "code": "CMP_F46_LIST_37",
+          "name": "比较46列表37",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1223,
+          "code": "CMP_F46_LIST_38",
+          "name": "比较46列表38",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1224,
+          "code": "CMP_F46_LIST_39",
+          "name": "比较46列表39",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1225,
+          "code": "CMP_F46_LIST_40",
+          "name": "比较46列表40",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1226,
+          "code": "CMP_F46_LIST_41",
+          "name": "比较46列表41",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1227,
+          "code": "CMP_F46_LIST_42",
+          "name": "比较46列表42",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1228,
+          "code": "CMP_F46_LIST_43",
+          "name": "比较46列表43",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1229,
+          "code": "CMP_F46_LIST_44",
+          "name": "比较46列表44",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1230,
+          "code": "CMP_F46_LIST_45",
+          "name": "比较46列表45",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1231,
+          "code": "CMP_F46_LIST_46",
+          "name": "比较46列表46",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1232,
+          "code": "CMP_F46_LIST_47",
+          "name": "比较46列表47",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1233,
+          "code": "CMP_F46_LIST_48",
+          "name": "比较46列表48",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1234,
+          "code": "CMP_F46_LIST_49",
+          "name": "比较46列表49",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1235,
+          "code": "CMP_F46_LIST_50",
+          "name": "比较46列表50",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1236,
+          "code": "CMP_F46_LIST_51",
+          "name": "比较46列表51",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1237,
+          "code": "CMP_F46_LIST_52",
+          "name": "比较46列表52",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1238,
+          "code": "CMP_F46_OLD",
+          "name": "比较46旧名",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 07:51:39.647577",
+          "updated_at": "2026-10-09 07:51:39.647577"
+        }
+      ]
+    },
+    "text": "生产订单快照\n\n来自金蝶生产订单（只保留计划、计划确认），按物料明细落地。左表按单据汇总数量，右表为各物料行。客户编码为空的单据不显示。\n\n按单据同步\n全量同步\n最近同步：2026-10-09 15:51:40\n单据数：4\n物料行：5\n另有 0 张单据无客户编码，未显示\n定时全量同步：\n未开启\n设置\n工厂\n查询\n单据编号\t客户编码\tPI\t生产组织\t业务状态\t订单数量\t已生成\t可生成\n单据编号\n\t\n客户编码\n\t\nPI\n\t\n生产组织\n\t\n业务状态\n\t\n订单数量\n\t\n已生成\n\t\n可生成\n\nCMP-MO-FRACTION\tCMP-CUSTOMER\tCMP-PI-FRACTION\t比较测试甲厂\t计划\t2\t0\t2\nCMP-MO-002\tCMP-CUSTOMER\tCMP-PI-002\t比较测试乙厂\t计划\t5\t0\t5\nCMP-MO-001\tCMP-CUSTOMER\tCMP-PI-001\t比较测试甲厂\t计划\t10\t10\t0\nCMP-F46-MO\tCMP-F46-CUSTOMER\tCMP-F46-PI\t比较46旧名\t计划\t5\t0\t5\n共 4 条\n1\n20 条/页\nCMP-F46-MO 的物料明细\n去生成\nPI\tCMP-F46-PI\nPO\tCMP-F46-PO\n客户编码\tCMP-F46-CUSTOMER\n工厂\t比较46旧名（CMP_F46_OLD）\n#\t物料编码\t物料名称\t数量\n\n#\n\t\n物料编码\n\t\n物料名称\n\t\n数量\n\n1\tCMP-F46-MAT\t比较46物料\n需求单据号 CMP-F46-SO\n\t5",
+    "warning": []
+  },
+  {
+    "label": "02-name-conflict-still-resolves-order",
+    "scroll": 0,
+    "data": {
+      "orders": [
+        {
+          "bill_no": "CMP-F46-MO",
+          "org_name": "比较46旧名",
+          "factory_code": "CMP_F46_OLD",
+          "source_entry_id": "94601",
+          "qty": "5.0000",
+          "factory_id": 1238,
+          "snapshot_version": 1021
+        }
+      ],
+      "factories": [
+        {
+          "id": 1185,
+          "code": "CMP_F46_LIST_00",
+          "name": "比较46列表00",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1186,
+          "code": "CMP_F46_LIST_01",
+          "name": "比较46列表01",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1187,
+          "code": "CMP_F46_LIST_02",
+          "name": "比较46列表02",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1188,
+          "code": "CMP_F46_LIST_03",
+          "name": "比较46列表03",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1189,
+          "code": "CMP_F46_LIST_04",
+          "name": "比较46列表04",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1190,
+          "code": "CMP_F46_LIST_05",
+          "name": "比较46列表05",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1191,
+          "code": "CMP_F46_LIST_06",
+          "name": "比较46列表06",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1192,
+          "code": "CMP_F46_LIST_07",
+          "name": "比较46列表07",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1193,
+          "code": "CMP_F46_LIST_08",
+          "name": "比较46列表08",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1194,
+          "code": "CMP_F46_LIST_09",
+          "name": "比较46列表09",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1195,
+          "code": "CMP_F46_LIST_10",
+          "name": "比较46列表10",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1196,
+          "code": "CMP_F46_LIST_11",
+          "name": "比较46列表11",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1197,
+          "code": "CMP_F46_LIST_12",
+          "name": "比较46列表12",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1198,
+          "code": "CMP_F46_LIST_13",
+          "name": "比较46列表13",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1199,
+          "code": "CMP_F46_LIST_14",
+          "name": "比较46列表14",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1200,
+          "code": "CMP_F46_LIST_15",
+          "name": "比较46列表15",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1201,
+          "code": "CMP_F46_LIST_16",
+          "name": "比较46列表16",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1202,
+          "code": "CMP_F46_LIST_17",
+          "name": "比较46列表17",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1203,
+          "code": "CMP_F46_LIST_18",
+          "name": "比较46列表18",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1204,
+          "code": "CMP_F46_LIST_19",
+          "name": "比较46列表19",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1205,
+          "code": "CMP_F46_LIST_20",
+          "name": "比较46列表20",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1206,
+          "code": "CMP_F46_LIST_21",
+          "name": "比较46列表21",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1207,
+          "code": "CMP_F46_LIST_22",
+          "name": "比较46列表22",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1208,
+          "code": "CMP_F46_LIST_23",
+          "name": "比较46列表23",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1209,
+          "code": "CMP_F46_LIST_24",
+          "name": "比较46列表24",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1210,
+          "code": "CMP_F46_LIST_25",
+          "name": "比较46列表25",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1211,
+          "code": "CMP_F46_LIST_26",
+          "name": "比较46列表26",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1212,
+          "code": "CMP_F46_LIST_27",
+          "name": "比较46列表27",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1213,
+          "code": "CMP_F46_LIST_28",
+          "name": "比较46列表28",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1214,
+          "code": "CMP_F46_LIST_29",
+          "name": "比较46列表29",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1215,
+          "code": "CMP_F46_LIST_30",
+          "name": "比较46列表30",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1216,
+          "code": "CMP_F46_LIST_31",
+          "name": "比较46列表31",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1217,
+          "code": "CMP_F46_LIST_32",
+          "name": "比较46列表32",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1218,
+          "code": "CMP_F46_LIST_33",
+          "name": "比较46列表33",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1219,
+          "code": "CMP_F46_LIST_34",
+          "name": "比较46列表34",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1220,
+          "code": "CMP_F46_LIST_35",
+          "name": "比较46列表35",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1221,
+          "code": "CMP_F46_LIST_36",
+          "name": "比较46列表36",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1222,
+          "code": "CMP_F46_LIST_37",
+          "name": "比较46列表37",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1223,
+          "code": "CMP_F46_LIST_38",
+          "name": "比较46列表38",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1224,
+          "code": "CMP_F46_LIST_39",
+          "name": "比较46列表39",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1225,
+          "code": "CMP_F46_LIST_40",
+          "name": "比较46列表40",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1226,
+          "code": "CMP_F46_LIST_41",
+          "name": "比较46列表41",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1227,
+          "code": "CMP_F46_LIST_42",
+          "name": "比较46列表42",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1228,
+          "code": "CMP_F46_LIST_43",
+          "name": "比较46列表43",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1229,
+          "code": "CMP_F46_LIST_44",
+          "name": "比较46列表44",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1230,
+          "code": "CMP_F46_LIST_45",
+          "name": "比较46列表45",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1231,
+          "code": "CMP_F46_LIST_46",
+          "name": "比较46列表46",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1232,
+          "code": "CMP_F46_LIST_47",
+          "name": "比较46列表47",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1233,
+          "code": "CMP_F46_LIST_48",
+          "name": "比较46列表48",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1234,
+          "code": "CMP_F46_LIST_49",
+          "name": "比较46列表49",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1235,
+          "code": "CMP_F46_LIST_50",
+          "name": "比较46列表50",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1236,
+          "code": "CMP_F46_LIST_51",
+          "name": "比较46列表51",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1237,
+          "code": "CMP_F46_LIST_52",
+          "name": "比较46列表52",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1238,
+          "code": "CMP_F46_OLD",
+          "name": "比较46旧名",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 07:51:39.647577",
+          "updated_at": "2026-10-09 07:51:39.647577"
+        }
+      ]
+    },
+    "text": "生产订单快照\n\n来自金蝶生产订单（只保留计划、计划确认），按物料明细落地。左表按单据汇总数量，右表为各物料行。客户编码为空的单据不显示。\n\n按单据同步\n全量同步\n最近同步：2026-10-09 15:51:40\n单据数：4\n物料行：5\n另有 0 张单据无客户编码，未显示\n定时全量同步：\n未开启\n设置\n工厂\n查询\n单据编号\t客户编码\tPI\t生产组织\t业务状态\t订单数量\t已生成\t可生成\n单据编号\n\t\n客户编码\n\t\nPI\n\t\n生产组织\n\t\n业务状态\n\t\n订单数量\n\t\n已生成\n\t\n可生成\n\nCMP-MO-FRACTION\tCMP-CUSTOMER\tCMP-PI-FRACTION\t比较测试甲厂\t计划\t2\t0\t2\nCMP-MO-002\tCMP-CUSTOMER\tCMP-PI-002\t比较测试乙厂\t计划\t5\t0\t5\nCMP-MO-001\tCMP-CUSTOMER\tCMP-PI-001\t比较测试甲厂\t计划\t10\t10\t0\nCMP-F46-MO\tCMP-F46-CUSTOMER\tCMP-F46-PI\t比较46旧名\t计划\t5\t0\t5\n共 4 条\n1\n20 条/页\nCMP-F46-MO 的物料明细\n去生成\nPI\tCMP-F46-PI\nPO\tCMP-F46-PO\n客户编码\tCMP-F46-CUSTOMER\n工厂\t比较46旧名（CMP_F46_OLD）\n#\t物料编码\t物料名称\t数量\n\n#\n\t\n物料编码\n\t\n物料名称\n\t\n数量\n\n1\tCMP-F46-MAT\t比较46物料\n需求单据号 CMP-F46-SO\n\t5",
+    "warning": []
+  },
+  {
+    "label": "03-replaced-id-preserves-factory",
+    "scroll": 0,
+    "data": {
+      "orders": [
+        {
+          "bill_no": "CMP-F46-MO",
+          "org_name": "比较46旧名",
+          "factory_code": "CMP_F46_OLD",
+          "source_entry_id": "94601",
+          "qty": "5.0000",
+          "factory_id": 1238,
+          "snapshot_version": 1021
+        }
+      ],
+      "factories": [
+        {
+          "id": 1185,
+          "code": "CMP_F46_LIST_00",
+          "name": "比较46列表00",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1186,
+          "code": "CMP_F46_LIST_01",
+          "name": "比较46列表01",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1187,
+          "code": "CMP_F46_LIST_02",
+          "name": "比较46列表02",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1188,
+          "code": "CMP_F46_LIST_03",
+          "name": "比较46列表03",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1189,
+          "code": "CMP_F46_LIST_04",
+          "name": "比较46列表04",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1190,
+          "code": "CMP_F46_LIST_05",
+          "name": "比较46列表05",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1191,
+          "code": "CMP_F46_LIST_06",
+          "name": "比较46列表06",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1192,
+          "code": "CMP_F46_LIST_07",
+          "name": "比较46列表07",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1193,
+          "code": "CMP_F46_LIST_08",
+          "name": "比较46列表08",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1194,
+          "code": "CMP_F46_LIST_09",
+          "name": "比较46列表09",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1195,
+          "code": "CMP_F46_LIST_10",
+          "name": "比较46列表10",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1196,
+          "code": "CMP_F46_LIST_11",
+          "name": "比较46列表11",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1197,
+          "code": "CMP_F46_LIST_12",
+          "name": "比较46列表12",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1198,
+          "code": "CMP_F46_LIST_13",
+          "name": "比较46列表13",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1199,
+          "code": "CMP_F46_LIST_14",
+          "name": "比较46列表14",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1200,
+          "code": "CMP_F46_LIST_15",
+          "name": "比较46列表15",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1201,
+          "code": "CMP_F46_LIST_16",
+          "name": "比较46列表16",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1202,
+          "code": "CMP_F46_LIST_17",
+          "name": "比较46列表17",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1203,
+          "code": "CMP_F46_LIST_18",
+          "name": "比较46列表18",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1204,
+          "code": "CMP_F46_LIST_19",
+          "name": "比较46列表19",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1205,
+          "code": "CMP_F46_LIST_20",
+          "name": "比较46列表20",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1206,
+          "code": "CMP_F46_LIST_21",
+          "name": "比较46列表21",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1207,
+          "code": "CMP_F46_LIST_22",
+          "name": "比较46列表22",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1208,
+          "code": "CMP_F46_LIST_23",
+          "name": "比较46列表23",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1209,
+          "code": "CMP_F46_LIST_24",
+          "name": "比较46列表24",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1210,
+          "code": "CMP_F46_LIST_25",
+          "name": "比较46列表25",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1211,
+          "code": "CMP_F46_LIST_26",
+          "name": "比较46列表26",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1212,
+          "code": "CMP_F46_LIST_27",
+          "name": "比较46列表27",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1213,
+          "code": "CMP_F46_LIST_28",
+          "name": "比较46列表28",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1214,
+          "code": "CMP_F46_LIST_29",
+          "name": "比较46列表29",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1215,
+          "code": "CMP_F46_LIST_30",
+          "name": "比较46列表30",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1216,
+          "code": "CMP_F46_LIST_31",
+          "name": "比较46列表31",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1217,
+          "code": "CMP_F46_LIST_32",
+          "name": "比较46列表32",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1218,
+          "code": "CMP_F46_LIST_33",
+          "name": "比较46列表33",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1219,
+          "code": "CMP_F46_LIST_34",
+          "name": "比较46列表34",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1220,
+          "code": "CMP_F46_LIST_35",
+          "name": "比较46列表35",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1221,
+          "code": "CMP_F46_LIST_36",
+          "name": "比较46列表36",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1222,
+          "code": "CMP_F46_LIST_37",
+          "name": "比较46列表37",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1223,
+          "code": "CMP_F46_LIST_38",
+          "name": "比较46列表38",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1224,
+          "code": "CMP_F46_LIST_39",
+          "name": "比较46列表39",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1225,
+          "code": "CMP_F46_LIST_40",
+          "name": "比较46列表40",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1226,
+          "code": "CMP_F46_LIST_41",
+          "name": "比较46列表41",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1227,
+          "code": "CMP_F46_LIST_42",
+          "name": "比较46列表42",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1228,
+          "code": "CMP_F46_LIST_43",
+          "name": "比较46列表43",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1229,
+          "code": "CMP_F46_LIST_44",
+          "name": "比较46列表44",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1230,
+          "code": "CMP_F46_LIST_45",
+          "name": "比较46列表45",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1231,
+          "code": "CMP_F46_LIST_46",
+          "name": "比较46列表46",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1232,
+          "code": "CMP_F46_LIST_47",
+          "name": "比较46列表47",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1233,
+          "code": "CMP_F46_LIST_48",
+          "name": "比较46列表48",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1234,
+          "code": "CMP_F46_LIST_49",
+          "name": "比较46列表49",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1235,
+          "code": "CMP_F46_LIST_50",
+          "name": "比较46列表50",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1236,
+          "code": "CMP_F46_LIST_51",
+          "name": "比较46列表51",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1237,
+          "code": "CMP_F46_LIST_52",
+          "name": "比较46列表52",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1238,
+          "code": "CMP_F46_OLD",
+          "name": "比较46旧名",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 07:51:39.647577",
+          "updated_at": "2026-10-09 07:51:39.647577"
+        }
+      ]
+    },
+    "text": "生产订单快照\n\n来自金蝶生产订单（只保留计划、计划确认），按物料明细落地。左表按单据汇总数量，右表为各物料行。客户编码为空的单据不显示。\n\n按单据同步\n全量同步\n最近同步：2026-10-09 15:51:40\n单据数：4\n物料行：5\n另有 0 张单据无客户编码，未显示\n定时全量同步：\n未开启\n设置\n工厂\n查询\n单据编号\t客户编码\tPI\t生产组织\t业务状态\t订单数量\t已生成\t可生成\n单据编号\n\t\n客户编码\n\t\nPI\n\t\n生产组织\n\t\n业务状态\n\t\n订单数量\n\t\n已生成\n\t\n可生成\n\nCMP-MO-FRACTION\tCMP-CUSTOMER\tCMP-PI-FRACTION\t比较测试甲厂\t计划\t2\t0\t2\nCMP-MO-002\tCMP-CUSTOMER\tCMP-PI-002\t比较测试乙厂\t计划\t5\t0\t5\nCMP-MO-001\tCMP-CUSTOMER\tCMP-PI-001\t比较测试甲厂\t计划\t10\t10\t0\nCMP-F46-MO\tCMP-F46-CUSTOMER\tCMP-F46-PI\t比较46旧名\t计划\t5\t0\t5\n共 4 条\n1\n20 条/页\nCMP-F46-MO 的物料明细\n去生成\nPI\tCMP-F46-PI\nPO\tCMP-F46-PO\n客户编码\tCMP-F46-CUSTOMER\n工厂\t比较46旧名（CMP_F46_OLD）\n#\t物料编码\t物料名称\t数量\n\n#\n\t\n物料编码\n\t\n物料名称\n\t\n数量\n\n1\tCMP-F46-MAT\t比较46物料\n需求单据号 CMP-F46-SO\n\t5",
+    "warning": []
+  },
+  {
+    "label": "04-new-code-leaves-old-snapshot",
+    "scroll": 0,
+    "data": {
+      "orders": [
+        {
+          "bill_no": "CMP-F46-MO",
+          "org_name": "比较46旧名",
+          "factory_code": "CMP_F46_OLD",
+          "source_entry_id": "94601",
+          "qty": "5.0000",
+          "factory_id": 1238,
+          "snapshot_version": 1021
+        }
+      ],
+      "factories": [
+        {
+          "id": 1185,
+          "code": "CMP_F46_LIST_00",
+          "name": "比较46列表00",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1186,
+          "code": "CMP_F46_LIST_01",
+          "name": "比较46列表01",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1187,
+          "code": "CMP_F46_LIST_02",
+          "name": "比较46列表02",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1188,
+          "code": "CMP_F46_LIST_03",
+          "name": "比较46列表03",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1189,
+          "code": "CMP_F46_LIST_04",
+          "name": "比较46列表04",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1190,
+          "code": "CMP_F46_LIST_05",
+          "name": "比较46列表05",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1191,
+          "code": "CMP_F46_LIST_06",
+          "name": "比较46列表06",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1192,
+          "code": "CMP_F46_LIST_07",
+          "name": "比较46列表07",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1193,
+          "code": "CMP_F46_LIST_08",
+          "name": "比较46列表08",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1194,
+          "code": "CMP_F46_LIST_09",
+          "name": "比较46列表09",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1195,
+          "code": "CMP_F46_LIST_10",
+          "name": "比较46列表10",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1196,
+          "code": "CMP_F46_LIST_11",
+          "name": "比较46列表11",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1197,
+          "code": "CMP_F46_LIST_12",
+          "name": "比较46列表12",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1198,
+          "code": "CMP_F46_LIST_13",
+          "name": "比较46列表13",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1199,
+          "code": "CMP_F46_LIST_14",
+          "name": "比较46列表14",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1200,
+          "code": "CMP_F46_LIST_15",
+          "name": "比较46列表15",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1201,
+          "code": "CMP_F46_LIST_16",
+          "name": "比较46列表16",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1202,
+          "code": "CMP_F46_LIST_17",
+          "name": "比较46列表17",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1203,
+          "code": "CMP_F46_LIST_18",
+          "name": "比较46列表18",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1204,
+          "code": "CMP_F46_LIST_19",
+          "name": "比较46列表19",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1205,
+          "code": "CMP_F46_LIST_20",
+          "name": "比较46列表20",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1206,
+          "code": "CMP_F46_LIST_21",
+          "name": "比较46列表21",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1207,
+          "code": "CMP_F46_LIST_22",
+          "name": "比较46列表22",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1208,
+          "code": "CMP_F46_LIST_23",
+          "name": "比较46列表23",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1209,
+          "code": "CMP_F46_LIST_24",
+          "name": "比较46列表24",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1210,
+          "code": "CMP_F46_LIST_25",
+          "name": "比较46列表25",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1211,
+          "code": "CMP_F46_LIST_26",
+          "name": "比较46列表26",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1212,
+          "code": "CMP_F46_LIST_27",
+          "name": "比较46列表27",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1213,
+          "code": "CMP_F46_LIST_28",
+          "name": "比较46列表28",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1214,
+          "code": "CMP_F46_LIST_29",
+          "name": "比较46列表29",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1215,
+          "code": "CMP_F46_LIST_30",
+          "name": "比较46列表30",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1216,
+          "code": "CMP_F46_LIST_31",
+          "name": "比较46列表31",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1217,
+          "code": "CMP_F46_LIST_32",
+          "name": "比较46列表32",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1218,
+          "code": "CMP_F46_LIST_33",
+          "name": "比较46列表33",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1219,
+          "code": "CMP_F46_LIST_34",
+          "name": "比较46列表34",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1220,
+          "code": "CMP_F46_LIST_35",
+          "name": "比较46列表35",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1221,
+          "code": "CMP_F46_LIST_36",
+          "name": "比较46列表36",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1222,
+          "code": "CMP_F46_LIST_37",
+          "name": "比较46列表37",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1223,
+          "code": "CMP_F46_LIST_38",
+          "name": "比较46列表38",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1224,
+          "code": "CMP_F46_LIST_39",
+          "name": "比较46列表39",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1225,
+          "code": "CMP_F46_LIST_40",
+          "name": "比较46列表40",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1226,
+          "code": "CMP_F46_LIST_41",
+          "name": "比较46列表41",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1227,
+          "code": "CMP_F46_LIST_42",
+          "name": "比较46列表42",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1228,
+          "code": "CMP_F46_LIST_43",
+          "name": "比较46列表43",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1229,
+          "code": "CMP_F46_LIST_44",
+          "name": "比较46列表44",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1230,
+          "code": "CMP_F46_LIST_45",
+          "name": "比较46列表45",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1231,
+          "code": "CMP_F46_LIST_46",
+          "name": "比较46列表46",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1232,
+          "code": "CMP_F46_LIST_47",
+          "name": "比较46列表47",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1233,
+          "code": "CMP_F46_LIST_48",
+          "name": "比较46列表48",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1234,
+          "code": "CMP_F46_LIST_49",
+          "name": "比较46列表49",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1235,
+          "code": "CMP_F46_LIST_50",
+          "name": "比较46列表50",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1236,
+          "code": "CMP_F46_LIST_51",
+          "name": "比较46列表51",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1237,
+          "code": "CMP_F46_LIST_52",
+          "name": "比较46列表52",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1239,
+          "code": "CMP_F46_NEW",
+          "name": "比较46新编码",
+          "source": "K3",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 07:51:48.000628",
+          "updated_at": "2026-10-09 07:51:48.000628"
+        },
+        {
+          "id": 1238,
+          "code": "CMP_F46_OLD",
+          "name": "比较46旧名",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 07:51:39.647577",
+          "updated_at": "2026-10-09 07:51:39.647577"
+        }
+      ]
+    },
+    "text": "生产订单快照\n\n来自金蝶生产订单（只保留计划、计划确认），按物料明细落地。左表按单据汇总数量，右表为各物料行。客户编码为空的单据不显示。\n\n按单据同步\n全量同步\n最近同步：2026-10-09 15:51:40\n单据数：4\n物料行：5\n另有 0 张单据无客户编码，未显示\n定时全量同步：\n未开启\n设置\n工厂\n查询\n单据编号\t客户编码\tPI\t生产组织\t业务状态\t订单数量\t已生成\t可生成\n单据编号\n\t\n客户编码\n\t\nPI\n\t\n生产组织\n\t\n业务状态\n\t\n订单数量\n\t\n已生成\n\t\n可生成\n\nCMP-MO-FRACTION\tCMP-CUSTOMER\tCMP-PI-FRACTION\t比较测试甲厂\t计划\t2\t0\t2\nCMP-MO-002\tCMP-CUSTOMER\tCMP-PI-002\t比较测试乙厂\t计划\t5\t0\t5\nCMP-MO-001\tCMP-CUSTOMER\tCMP-PI-001\t比较测试甲厂\t计划\t10\t10\t0\nCMP-F46-MO\tCMP-F46-CUSTOMER\tCMP-F46-PI\t比较46旧名\t计划\t5\t0\t5\n共 4 条\n1\n20 条/页\nCMP-F46-MO 的物料明细\n去生成\nPI\tCMP-F46-PI\nPO\tCMP-F46-PO\n客户编码\tCMP-F46-CUSTOMER\n工厂\t比较46旧名（CMP_F46_OLD）\n#\t物料编码\t物料名称\t数量\n\n#\n\t\n物料编码\n\t\n物料名称\n\t\n数量\n\n1\tCMP-F46-MAT\t比较46物料\n需求单据号 CMP-F46-SO\n\t5",
+    "warning": []
+  },
+  {
+    "label": "05-rename-leaves-snapshot-unmapped",
+    "scroll": 0,
+    "data": {
+      "orders": [
+        {
+          "bill_no": "CMP-F46-MO",
+          "org_name": "比较46旧名",
+          "factory_code": null,
+          "source_entry_id": "94601",
+          "qty": "5.0000",
+          "factory_id": null,
+          "snapshot_version": 1026
+        }
+      ],
+      "factories": [
+        {
+          "id": 1185,
+          "code": "CMP_F46_LIST_00",
+          "name": "比较46列表00",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1186,
+          "code": "CMP_F46_LIST_01",
+          "name": "比较46列表01",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1187,
+          "code": "CMP_F46_LIST_02",
+          "name": "比较46列表02",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1188,
+          "code": "CMP_F46_LIST_03",
+          "name": "比较46列表03",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1189,
+          "code": "CMP_F46_LIST_04",
+          "name": "比较46列表04",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1190,
+          "code": "CMP_F46_LIST_05",
+          "name": "比较46列表05",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1191,
+          "code": "CMP_F46_LIST_06",
+          "name": "比较46列表06",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1192,
+          "code": "CMP_F46_LIST_07",
+          "name": "比较46列表07",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1193,
+          "code": "CMP_F46_LIST_08",
+          "name": "比较46列表08",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1194,
+          "code": "CMP_F46_LIST_09",
+          "name": "比较46列表09",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1195,
+          "code": "CMP_F46_LIST_10",
+          "name": "比较46列表10",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1196,
+          "code": "CMP_F46_LIST_11",
+          "name": "比较46列表11",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1197,
+          "code": "CMP_F46_LIST_12",
+          "name": "比较46列表12",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1198,
+          "code": "CMP_F46_LIST_13",
+          "name": "比较46列表13",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1199,
+          "code": "CMP_F46_LIST_14",
+          "name": "比较46列表14",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1200,
+          "code": "CMP_F46_LIST_15",
+          "name": "比较46列表15",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1201,
+          "code": "CMP_F46_LIST_16",
+          "name": "比较46列表16",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1202,
+          "code": "CMP_F46_LIST_17",
+          "name": "比较46列表17",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1203,
+          "code": "CMP_F46_LIST_18",
+          "name": "比较46列表18",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1204,
+          "code": "CMP_F46_LIST_19",
+          "name": "比较46列表19",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1205,
+          "code": "CMP_F46_LIST_20",
+          "name": "比较46列表20",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1206,
+          "code": "CMP_F46_LIST_21",
+          "name": "比较46列表21",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1207,
+          "code": "CMP_F46_LIST_22",
+          "name": "比较46列表22",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1208,
+          "code": "CMP_F46_LIST_23",
+          "name": "比较46列表23",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1209,
+          "code": "CMP_F46_LIST_24",
+          "name": "比较46列表24",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1210,
+          "code": "CMP_F46_LIST_25",
+          "name": "比较46列表25",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1211,
+          "code": "CMP_F46_LIST_26",
+          "name": "比较46列表26",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1212,
+          "code": "CMP_F46_LIST_27",
+          "name": "比较46列表27",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1213,
+          "code": "CMP_F46_LIST_28",
+          "name": "比较46列表28",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1214,
+          "code": "CMP_F46_LIST_29",
+          "name": "比较46列表29",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1215,
+          "code": "CMP_F46_LIST_30",
+          "name": "比较46列表30",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1216,
+          "code": "CMP_F46_LIST_31",
+          "name": "比较46列表31",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1217,
+          "code": "CMP_F46_LIST_32",
+          "name": "比较46列表32",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1218,
+          "code": "CMP_F46_LIST_33",
+          "name": "比较46列表33",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1219,
+          "code": "CMP_F46_LIST_34",
+          "name": "比较46列表34",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1220,
+          "code": "CMP_F46_LIST_35",
+          "name": "比较46列表35",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1221,
+          "code": "CMP_F46_LIST_36",
+          "name": "比较46列表36",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1222,
+          "code": "CMP_F46_LIST_37",
+          "name": "比较46列表37",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1223,
+          "code": "CMP_F46_LIST_38",
+          "name": "比较46列表38",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1224,
+          "code": "CMP_F46_LIST_39",
+          "name": "比较46列表39",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1225,
+          "code": "CMP_F46_LIST_40",
+          "name": "比较46列表40",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1226,
+          "code": "CMP_F46_LIST_41",
+          "name": "比较46列表41",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1227,
+          "code": "CMP_F46_LIST_42",
+          "name": "比较46列表42",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1228,
+          "code": "CMP_F46_LIST_43",
+          "name": "比较46列表43",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1229,
+          "code": "CMP_F46_LIST_44",
+          "name": "比较46列表44",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1230,
+          "code": "CMP_F46_LIST_45",
+          "name": "比较46列表45",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1231,
+          "code": "CMP_F46_LIST_46",
+          "name": "比较46列表46",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1232,
+          "code": "CMP_F46_LIST_47",
+          "name": "比较46列表47",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1233,
+          "code": "CMP_F46_LIST_48",
+          "name": "比较46列表48",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1234,
+          "code": "CMP_F46_LIST_49",
+          "name": "比较46列表49",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1235,
+          "code": "CMP_F46_LIST_50",
+          "name": "比较46列表50",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1236,
+          "code": "CMP_F46_LIST_51",
+          "name": "比较46列表51",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1237,
+          "code": "CMP_F46_LIST_52",
+          "name": "比较46列表52",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1239,
+          "code": "CMP_F46_NEW",
+          "name": "比较46新编码",
+          "source": "K3",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 07:51:48.000628",
+          "updated_at": "2026-10-09 07:51:48.000628"
+        },
+        {
+          "id": 1238,
+          "code": "CMP_F46_OLD",
+          "name": "比较46改名",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 2,
+          "created_at": "2026-10-09 07:51:39.647577",
+          "updated_at": "2026-10-09 07:51:49.999910"
+        }
+      ]
+    },
+    "text": "生产订单快照\n\n来自金蝶生产订单（只保留计划、计划确认），按物料明细落地。左表按单据汇总数量，右表为各物料行。客户编码为空的单据不显示。\n\n按单据同步\n全量同步\n以下生产组织尚未建档为工厂，其订单不能生成：比较46旧名\n最近同步：2026-10-09 15:51:40\n单据数：4\n物料行：5\n另有 0 张单据无客户编码，未显示\n定时全量同步：\n未开启\n设置\n工厂\n查询\n单据编号\t客户编码\tPI\t生产组织\t业务状态\t订单数量\t已生成\t可生成\n单据编号\n\t\n客户编码\n\t\nPI\n\t\n生产组织\n\t\n业务状态\n\t\n订单数量\n\t\n已生成\n\t\n可生成\n\nCMP-MO-FRACTION\tCMP-CUSTOMER\tCMP-PI-FRACTION\t比较测试甲厂\t计划\t2\t0\t2\nCMP-MO-002\tCMP-CUSTOMER\tCMP-PI-002\t比较测试乙厂\t计划\t5\t0\t5\nCMP-MO-001\tCMP-CUSTOMER\tCMP-PI-001\t比较测试甲厂\t计划\t10\t10\t0\nCMP-F46-MO\tCMP-F46-CUSTOMER\tCMP-F46-PI\t比较46旧名未建档\t计划\t5\t0\t5\n共 4 条\n1\n20 条/页\nCMP-F46-MO 的物料明细\n去生成\nPI\tCMP-F46-PI\nPO\tCMP-F46-PO\n客户编码\tCMP-F46-CUSTOMER\n工厂\t比较46旧名（—）\n#\t物料编码\t物料名称\t数量\n\n#\n\t\n物料编码\n\t\n物料名称\n\t\n数量\n\n1\tCMP-F46-MAT\t比较46物料\n需求单据号 CMP-F46-SO\n\t5",
+    "warning": [
+      {
+        "box": {
+          "text": "以下生产组织尚未建档为工厂，其订单不能生成：比较46旧名",
+          "x": 240,
+          "y": 195.796875,
+          "width": 1180,
+          "height": 40,
+          "padding": "8px 16px",
+          "color": "rgb(194, 120, 3)",
+          "background": "rgb(253, 246, 236)",
+          "fontSize": "16px",
+          "lineHeight": "normal"
+        },
+        "parts": [
+          {
+            "text": "",
+            "x": 256,
+            "y": 207.796875,
+            "width": 16,
+            "height": 16,
+            "padding": "0px",
+            "color": "rgb(194, 120, 3)",
+            "background": "rgba(0, 0, 0, 0)",
+            "fontSize": "16px",
+            "lineHeight": "16px"
+          },
+          {
+            "text": "以下生产组织尚未建档为工厂，其订单不能生成：比较46旧名",
+            "x": 280,
+            "y": 203.796875,
+            "width": 379.546875,
+            "height": 24,
+            "padding": "0px",
+            "color": "rgb(194, 120, 3)",
+            "background": "rgba(0, 0, 0, 0)",
+            "fontSize": "14px",
+            "lineHeight": "24px"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "label": "06-create-matching-name-reprojects",
+    "scroll": 0,
+    "data": {
+      "orders": [
+        {
+          "bill_no": "CMP-F46-MO",
+          "org_name": "比较46旧名",
+          "factory_code": "CMP_F46_MANUAL",
+          "source_entry_id": "94601",
+          "qty": "5.0000",
+          "factory_id": 1240,
+          "snapshot_version": 1027
+        }
+      ],
+      "factories": [
+        {
+          "id": 1185,
+          "code": "CMP_F46_LIST_00",
+          "name": "比较46列表00",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1186,
+          "code": "CMP_F46_LIST_01",
+          "name": "比较46列表01",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1187,
+          "code": "CMP_F46_LIST_02",
+          "name": "比较46列表02",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1188,
+          "code": "CMP_F46_LIST_03",
+          "name": "比较46列表03",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1189,
+          "code": "CMP_F46_LIST_04",
+          "name": "比较46列表04",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1190,
+          "code": "CMP_F46_LIST_05",
+          "name": "比较46列表05",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1191,
+          "code": "CMP_F46_LIST_06",
+          "name": "比较46列表06",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1192,
+          "code": "CMP_F46_LIST_07",
+          "name": "比较46列表07",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1193,
+          "code": "CMP_F46_LIST_08",
+          "name": "比较46列表08",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1194,
+          "code": "CMP_F46_LIST_09",
+          "name": "比较46列表09",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1195,
+          "code": "CMP_F46_LIST_10",
+          "name": "比较46列表10",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1196,
+          "code": "CMP_F46_LIST_11",
+          "name": "比较46列表11",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1197,
+          "code": "CMP_F46_LIST_12",
+          "name": "比较46列表12",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1198,
+          "code": "CMP_F46_LIST_13",
+          "name": "比较46列表13",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1199,
+          "code": "CMP_F46_LIST_14",
+          "name": "比较46列表14",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1200,
+          "code": "CMP_F46_LIST_15",
+          "name": "比较46列表15",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1201,
+          "code": "CMP_F46_LIST_16",
+          "name": "比较46列表16",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1202,
+          "code": "CMP_F46_LIST_17",
+          "name": "比较46列表17",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1203,
+          "code": "CMP_F46_LIST_18",
+          "name": "比较46列表18",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1204,
+          "code": "CMP_F46_LIST_19",
+          "name": "比较46列表19",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1205,
+          "code": "CMP_F46_LIST_20",
+          "name": "比较46列表20",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1206,
+          "code": "CMP_F46_LIST_21",
+          "name": "比较46列表21",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1207,
+          "code": "CMP_F46_LIST_22",
+          "name": "比较46列表22",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1208,
+          "code": "CMP_F46_LIST_23",
+          "name": "比较46列表23",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1209,
+          "code": "CMP_F46_LIST_24",
+          "name": "比较46列表24",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1210,
+          "code": "CMP_F46_LIST_25",
+          "name": "比较46列表25",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1211,
+          "code": "CMP_F46_LIST_26",
+          "name": "比较46列表26",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1212,
+          "code": "CMP_F46_LIST_27",
+          "name": "比较46列表27",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1213,
+          "code": "CMP_F46_LIST_28",
+          "name": "比较46列表28",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1214,
+          "code": "CMP_F46_LIST_29",
+          "name": "比较46列表29",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1215,
+          "code": "CMP_F46_LIST_30",
+          "name": "比较46列表30",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1216,
+          "code": "CMP_F46_LIST_31",
+          "name": "比较46列表31",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1217,
+          "code": "CMP_F46_LIST_32",
+          "name": "比较46列表32",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1218,
+          "code": "CMP_F46_LIST_33",
+          "name": "比较46列表33",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1219,
+          "code": "CMP_F46_LIST_34",
+          "name": "比较46列表34",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1220,
+          "code": "CMP_F46_LIST_35",
+          "name": "比较46列表35",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1221,
+          "code": "CMP_F46_LIST_36",
+          "name": "比较46列表36",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1222,
+          "code": "CMP_F46_LIST_37",
+          "name": "比较46列表37",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1223,
+          "code": "CMP_F46_LIST_38",
+          "name": "比较46列表38",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1224,
+          "code": "CMP_F46_LIST_39",
+          "name": "比较46列表39",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1225,
+          "code": "CMP_F46_LIST_40",
+          "name": "比较46列表40",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1226,
+          "code": "CMP_F46_LIST_41",
+          "name": "比较46列表41",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1227,
+          "code": "CMP_F46_LIST_42",
+          "name": "比较46列表42",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1228,
+          "code": "CMP_F46_LIST_43",
+          "name": "比较46列表43",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1229,
+          "code": "CMP_F46_LIST_44",
+          "name": "比较46列表44",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1230,
+          "code": "CMP_F46_LIST_45",
+          "name": "比较46列表45",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1231,
+          "code": "CMP_F46_LIST_46",
+          "name": "比较46列表46",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1232,
+          "code": "CMP_F46_LIST_47",
+          "name": "比较46列表47",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1233,
+          "code": "CMP_F46_LIST_48",
+          "name": "比较46列表48",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1234,
+          "code": "CMP_F46_LIST_49",
+          "name": "比较46列表49",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1235,
+          "code": "CMP_F46_LIST_50",
+          "name": "比较46列表50",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1236,
+          "code": "CMP_F46_LIST_51",
+          "name": "比较46列表51",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1237,
+          "code": "CMP_F46_LIST_52",
+          "name": "比较46列表52",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1240,
+          "code": "CMP_F46_MANUAL",
+          "name": "比较46旧名",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 07:51:52.478007",
+          "updated_at": "2026-10-09 07:51:52.478007"
+        },
+        {
+          "id": 1239,
+          "code": "CMP_F46_NEW",
+          "name": "比较46新编码",
+          "source": "K3",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 07:51:48.000628",
+          "updated_at": "2026-10-09 07:51:48.000628"
+        },
+        {
+          "id": 1238,
+          "code": "CMP_F46_OLD",
+          "name": "比较46改名",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 2,
+          "created_at": "2026-10-09 07:51:39.647577",
+          "updated_at": "2026-10-09 07:51:49.999910"
+        }
+      ]
+    },
+    "text": "生产订单快照\n\n来自金蝶生产订单（只保留计划、计划确认），按物料明细落地。左表按单据汇总数量，右表为各物料行。客户编码为空的单据不显示。\n\n按单据同步\n全量同步\n最近同步：2026-10-09 15:51:40\n单据数：4\n物料行：5\n另有 0 张单据无客户编码，未显示\n定时全量同步：\n未开启\n设置\n工厂\n查询\n单据编号\t客户编码\tPI\t生产组织\t业务状态\t订单数量\t已生成\t可生成\n单据编号\n\t\n客户编码\n\t\nPI\n\t\n生产组织\n\t\n业务状态\n\t\n订单数量\n\t\n已生成\n\t\n可生成\n\nCMP-MO-FRACTION\tCMP-CUSTOMER\tCMP-PI-FRACTION\t比较测试甲厂\t计划\t2\t0\t2\nCMP-MO-002\tCMP-CUSTOMER\tCMP-PI-002\t比较测试乙厂\t计划\t5\t0\t5\nCMP-MO-001\tCMP-CUSTOMER\tCMP-PI-001\t比较测试甲厂\t计划\t10\t10\t0\nCMP-F46-MO\tCMP-F46-CUSTOMER\tCMP-F46-PI\t比较46旧名\t计划\t5\t0\t5\n共 4 条\n1\n20 条/页\nCMP-F46-MO 的物料明细\n去生成\nPI\tCMP-F46-PI\nPO\tCMP-F46-PO\n客户编码\tCMP-F46-CUSTOMER\n工厂\t比较46旧名（CMP_F46_MANUAL）\n#\t物料编码\t物料名称\t数量\n\n#\n\t\n物料编码\n\t\n物料名称\n\t\n数量\n\n1\tCMP-F46-MAT\t比较46物料\n需求单据号 CMP-F46-SO\n\t5",
+    "warning": []
+  },
+  {
+    "label": "07-deduplicated-active-directory",
+    "scroll": 0,
+    "data": {
+      "orders": [
+        {
+          "bill_no": "CMP-F46-MO",
+          "org_name": "比较46旧名",
+          "factory_code": "CMP_F46_MANUAL",
+          "source_entry_id": "94601",
+          "qty": "5.0000",
+          "factory_id": 1240,
+          "snapshot_version": 1027
+        }
+      ],
+      "factories": [
+        {
+          "id": 1241,
+          "code": "CMP_F46_DUP",
+          "name": "比较46去重",
+          "source": "K3",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 07:51:54.631967",
+          "updated_at": "2026-10-09 07:51:54.631967"
+        },
+        {
+          "id": 1185,
+          "code": "CMP_F46_LIST_00",
+          "name": "比较46列表00",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1186,
+          "code": "CMP_F46_LIST_01",
+          "name": "比较46列表01",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1187,
+          "code": "CMP_F46_LIST_02",
+          "name": "比较46列表02",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1188,
+          "code": "CMP_F46_LIST_03",
+          "name": "比较46列表03",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1189,
+          "code": "CMP_F46_LIST_04",
+          "name": "比较46列表04",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1190,
+          "code": "CMP_F46_LIST_05",
+          "name": "比较46列表05",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1191,
+          "code": "CMP_F46_LIST_06",
+          "name": "比较46列表06",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1192,
+          "code": "CMP_F46_LIST_07",
+          "name": "比较46列表07",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1193,
+          "code": "CMP_F46_LIST_08",
+          "name": "比较46列表08",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1194,
+          "code": "CMP_F46_LIST_09",
+          "name": "比较46列表09",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1195,
+          "code": "CMP_F46_LIST_10",
+          "name": "比较46列表10",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1196,
+          "code": "CMP_F46_LIST_11",
+          "name": "比较46列表11",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1197,
+          "code": "CMP_F46_LIST_12",
+          "name": "比较46列表12",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1198,
+          "code": "CMP_F46_LIST_13",
+          "name": "比较46列表13",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1199,
+          "code": "CMP_F46_LIST_14",
+          "name": "比较46列表14",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1200,
+          "code": "CMP_F46_LIST_15",
+          "name": "比较46列表15",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1201,
+          "code": "CMP_F46_LIST_16",
+          "name": "比较46列表16",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1202,
+          "code": "CMP_F46_LIST_17",
+          "name": "比较46列表17",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1203,
+          "code": "CMP_F46_LIST_18",
+          "name": "比较46列表18",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1204,
+          "code": "CMP_F46_LIST_19",
+          "name": "比较46列表19",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1205,
+          "code": "CMP_F46_LIST_20",
+          "name": "比较46列表20",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1206,
+          "code": "CMP_F46_LIST_21",
+          "name": "比较46列表21",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1207,
+          "code": "CMP_F46_LIST_22",
+          "name": "比较46列表22",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1208,
+          "code": "CMP_F46_LIST_23",
+          "name": "比较46列表23",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1209,
+          "code": "CMP_F46_LIST_24",
+          "name": "比较46列表24",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1210,
+          "code": "CMP_F46_LIST_25",
+          "name": "比较46列表25",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1211,
+          "code": "CMP_F46_LIST_26",
+          "name": "比较46列表26",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1212,
+          "code": "CMP_F46_LIST_27",
+          "name": "比较46列表27",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1213,
+          "code": "CMP_F46_LIST_28",
+          "name": "比较46列表28",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1214,
+          "code": "CMP_F46_LIST_29",
+          "name": "比较46列表29",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1215,
+          "code": "CMP_F46_LIST_30",
+          "name": "比较46列表30",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1216,
+          "code": "CMP_F46_LIST_31",
+          "name": "比较46列表31",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1217,
+          "code": "CMP_F46_LIST_32",
+          "name": "比较46列表32",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1218,
+          "code": "CMP_F46_LIST_33",
+          "name": "比较46列表33",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1219,
+          "code": "CMP_F46_LIST_34",
+          "name": "比较46列表34",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1220,
+          "code": "CMP_F46_LIST_35",
+          "name": "比较46列表35",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1221,
+          "code": "CMP_F46_LIST_36",
+          "name": "比较46列表36",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1222,
+          "code": "CMP_F46_LIST_37",
+          "name": "比较46列表37",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1223,
+          "code": "CMP_F46_LIST_38",
+          "name": "比较46列表38",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1224,
+          "code": "CMP_F46_LIST_39",
+          "name": "比较46列表39",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1225,
+          "code": "CMP_F46_LIST_40",
+          "name": "比较46列表40",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1226,
+          "code": "CMP_F46_LIST_41",
+          "name": "比较46列表41",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1227,
+          "code": "CMP_F46_LIST_42",
+          "name": "比较46列表42",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1228,
+          "code": "CMP_F46_LIST_43",
+          "name": "比较46列表43",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1229,
+          "code": "CMP_F46_LIST_44",
+          "name": "比较46列表44",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1230,
+          "code": "CMP_F46_LIST_45",
+          "name": "比较46列表45",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1231,
+          "code": "CMP_F46_LIST_46",
+          "name": "比较46列表46",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1232,
+          "code": "CMP_F46_LIST_47",
+          "name": "比较46列表47",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1233,
+          "code": "CMP_F46_LIST_48",
+          "name": "比较46列表48",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1234,
+          "code": "CMP_F46_LIST_49",
+          "name": "比较46列表49",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1235,
+          "code": "CMP_F46_LIST_50",
+          "name": "比较46列表50",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1236,
+          "code": "CMP_F46_LIST_51",
+          "name": "比较46列表51",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1237,
+          "code": "CMP_F46_LIST_52",
+          "name": "比较46列表52",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 10:00:00",
+          "updated_at": "2026-10-09 10:00:00"
+        },
+        {
+          "id": 1240,
+          "code": "CMP_F46_MANUAL",
+          "name": "比较46旧名",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 07:51:52.478007",
+          "updated_at": "2026-10-09 07:51:52.478007"
+        },
+        {
+          "id": 1239,
+          "code": "CMP_F46_NEW",
+          "name": "比较46新编码",
+          "source": "K3",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 07:51:48.000628",
+          "updated_at": "2026-10-09 07:51:48.000628"
+        },
+        {
+          "id": 1242,
+          "code": "CMP_F46_NOID",
+          "name": "比较46无内码",
+          "source": "K3",
+          "enabled": 1,
+          "version": 1,
+          "created_at": "2026-10-09 07:51:54.659340",
+          "updated_at": "2026-10-09 07:51:54.659340"
+        },
+        {
+          "id": 1238,
+          "code": "CMP_F46_OLD",
+          "name": "比较46改名",
+          "source": "MANUAL",
+          "enabled": 1,
+          "version": 2,
+          "created_at": "2026-10-09 07:51:39.647577",
+          "updated_at": "2026-10-09 07:51:49.999910"
+        }
+      ]
+    },
+    "text": "工厂\n\n工厂即金蝶生产组织，快照中的生产组织按名称对应。转厂手工填写的生产组织必须是这里已有的工厂。\n\n手工新增\n从金蝶同步\n工厂编码\t工厂名称\t来源\t时间\nCMP-A\t比较测试甲厂\t金蝶\t2026-10-08 09:37:16\nCMP-B\t比较测试乙厂\t金蝶\t2026-10-08 09:37:16\nCMP_F46_DUP\t比较46去重\t金蝶\t2026-10-09 15:51:54\nCMP_F46_LIST_00\t比较46列表00\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_01\t比较46列表01\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_02\t比较46列表02\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_03\t比较46列表03\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_04\t比较46列表04\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_05\t比较46列表05\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_06\t比较46列表06\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_07\t比较46列表07\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_08\t比较46列表08\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_09\t比较46列表09\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_10\t比较46列表10\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_11\t比较46列表11\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_12\t比较46列表12\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_13\t比较46列表13\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_14\t比较46列表14\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_15\t比较46列表15\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_16\t比较46列表16\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_17\t比较46列表17\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_18\t比较46列表18\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_19\t比较46列表19\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_20\t比较46列表20\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_21\t比较46列表21\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_22\t比较46列表22\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_23\t比较46列表23\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_24\t比较46列表24\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_25\t比较46列表25\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_26\t比较46列表26\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_27\t比较46列表27\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_28\t比较46列表28\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_29\t比较46列表29\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_30\t比较46列表30\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_31\t比较46列表31\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_32\t比较46列表32\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_33\t比较46列表33\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_34\t比较46列表34\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_35\t比较46列表35\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_36\t比较46列表36\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_37\t比较46列表37\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_38\t比较46列表38\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_39\t比较46列表39\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_40\t比较46列表40\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_41\t比较46列表41\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_42\t比较46列表42\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_43\t比较46列表43\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_44\t比较46列表44\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_45\t比较46列表45\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_46\t比较46列表46\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_47\t比较46列表47\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_48\t比较46列表48\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_49\t比较46列表49\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_50\t比较46列表50\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_51\t比较46列表51\t手工\t2026-10-09 18:00:00\nCMP_F46_LIST_52\t比较46列表52\t手工\t2026-10-09 18:00:00\nCMP_F46_MANUAL\t比较46旧名\t手工\t2026-10-09 15:51:52\nCMP_F46_NEW\t比较46新编码\t金蝶\t2026-10-09 15:51:48\nCMP_F46_NOID\t比较46无内码\t金蝶\t2026-10-09 15:51:54\nCMP_F46_OLD\t比较46改名\t手工\t2026-10-09 15:51:49",
+    "warning": []
+  }
+]

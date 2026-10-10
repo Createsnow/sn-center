@@ -1,0 +1,13 @@
+
+Running 2 tests using 1 worker
+
+(node:37088) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ok 1 [prototype] › e2e\parity\order-scroll.spec.ts:10:1 › P05 scroll: initial navigation and full sync with real request overlap (35.6s)
+(node:24388) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ok 2 [migration] › e2e\parity\order-scroll.spec.ts:10:1 › P05 scroll: initial navigation and full sync with real request overlap (35.0s)
+
+  2 passed (1.2m)

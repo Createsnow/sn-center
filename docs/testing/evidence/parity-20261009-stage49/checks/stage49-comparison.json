@@ -1,0 +1,463 @@
+{
+  "pairedStates": 19,
+  "exactLocalizedErrorPairs": 6,
+  "geometryChecks": [
+    {
+      "label": "zh-CN-nel",
+      "group": "buttons",
+      "elements": 2
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "headers",
+      "elements": 8
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "meta",
+      "elements": 5
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "input",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "summary",
+      "elements": 4
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "inputText",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "toolbarButtons",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "table",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "pager",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "pagerTotal",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "pagerSize",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "pagerSelect",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "pagerPrev",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "pagerNext",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-nel",
+      "group": "pagerNumber",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "buttons",
+      "elements": 2
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "headers",
+      "elements": 8
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "meta",
+      "elements": 5
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "input",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "summary",
+      "elements": 4
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "inputText",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "toolbarButtons",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "table",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "pager",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "pagerTotal",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "pagerSize",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "pagerSelect",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "pagerPrev",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "pagerNext",
+      "elements": 1
+    },
+    {
+      "label": "zh-CN-pager",
+      "group": "pagerNumber",
+      "elements": 1
+    },
+    {
+      "label": "en-nel",
+      "group": "buttons",
+      "elements": 2
+    },
+    {
+      "label": "en-nel",
+      "group": "headers",
+      "elements": 8
+    },
+    {
+      "label": "en-nel",
+      "group": "meta",
+      "elements": 5
+    },
+    {
+      "label": "en-nel",
+      "group": "input",
+      "elements": 1
+    },
+    {
+      "label": "en-nel",
+      "group": "summary",
+      "elements": 4
+    },
+    {
+      "label": "en-nel",
+      "group": "inputText",
+      "elements": 1
+    },
+    {
+      "label": "en-nel",
+      "group": "toolbarButtons",
+      "elements": 1
+    },
+    {
+      "label": "en-nel",
+      "group": "table",
+      "elements": 1
+    },
+    {
+      "label": "en-nel",
+      "group": "pager",
+      "elements": 1
+    },
+    {
+      "label": "en-nel",
+      "group": "pagerTotal",
+      "elements": 1
+    },
+    {
+      "label": "en-nel",
+      "group": "pagerSize",
+      "elements": 1
+    },
+    {
+      "label": "en-nel",
+      "group": "pagerSelect",
+      "elements": 1
+    },
+    {
+      "label": "en-nel",
+      "group": "pagerPrev",
+      "elements": 1
+    },
+    {
+      "label": "en-nel",
+      "group": "pagerNext",
+      "elements": 1
+    },
+    {
+      "label": "en-nel",
+      "group": "pagerNumber",
+      "elements": 1
+    },
+    {
+      "label": "en-pager",
+      "group": "buttons",
+      "elements": 2
+    },
+    {
+      "label": "en-pager",
+      "group": "headers",
+      "elements": 8
+    },
+    {
+      "label": "en-pager",
+      "group": "meta",
+      "elements": 5
+    },
+    {
+      "label": "en-pager",
+      "group": "input",
+      "elements": 1
+    },
+    {
+      "label": "en-pager",
+      "group": "summary",
+      "elements": 4
+    },
+    {
+      "label": "en-pager",
+      "group": "inputText",
+      "elements": 1
+    },
+    {
+      "label": "en-pager",
+      "group": "toolbarButtons",
+      "elements": 1
+    },
+    {
+      "label": "en-pager",
+      "group": "table",
+      "elements": 1
+    },
+    {
+      "label": "en-pager",
+      "group": "pager",
+      "elements": 1
+    },
+    {
+      "label": "en-pager",
+      "group": "pagerTotal",
+      "elements": 1
+    },
+    {
+      "label": "en-pager",
+      "group": "pagerSize",
+      "elements": 1
+    },
+    {
+      "label": "en-pager",
+      "group": "pagerSelect",
+      "elements": 1
+    },
+    {
+      "label": "en-pager",
+      "group": "pagerPrev",
+      "elements": 1
+    },
+    {
+      "label": "en-pager",
+      "group": "pagerNext",
+      "elements": 1
+    },
+    {
+      "label": "en-pager",
+      "group": "pagerNumber",
+      "elements": 1
+    },
+    {
+      "label": "vi-nel",
+      "group": "buttons",
+      "elements": 2
+    },
+    {
+      "label": "vi-nel",
+      "group": "headers",
+      "elements": 8
+    },
+    {
+      "label": "vi-nel",
+      "group": "meta",
+      "elements": 5
+    },
+    {
+      "label": "vi-nel",
+      "group": "input",
+      "elements": 1
+    },
+    {
+      "label": "vi-nel",
+      "group": "summary",
+      "elements": 4
+    },
+    {
+      "label": "vi-nel",
+      "group": "inputText",
+      "elements": 1
+    },
+    {
+      "label": "vi-nel",
+      "group": "toolbarButtons",
+      "elements": 1
+    },
+    {
+      "label": "vi-nel",
+      "group": "table",
+      "elements": 1
+    },
+    {
+      "label": "vi-nel",
+      "group": "pager",
+      "elements": 1
+    },
+    {
+      "label": "vi-nel",
+      "group": "pagerTotal",
+      "elements": 1
+    },
+    {
+      "label": "vi-nel",
+      "group": "pagerSize",
+      "elements": 1
+    },
+    {
+      "label": "vi-nel",
+      "group": "pagerSelect",
+      "elements": 1
+    },
+    {
+      "label": "vi-nel",
+      "group": "pagerPrev",
+      "elements": 1
+    },
+    {
+      "label": "vi-nel",
+      "group": "pagerNext",
+      "elements": 1
+    },
+    {
+      "label": "vi-nel",
+      "group": "pagerNumber",
+      "elements": 1
+    },
+    {
+      "label": "vi-pager",
+      "group": "buttons",
+      "elements": 2
+    },
+    {
+      "label": "vi-pager",
+      "group": "headers",
+      "elements": 8
+    },
+    {
+      "label": "vi-pager",
+      "group": "meta",
+      "elements": 5
+    },
+    {
+      "label": "vi-pager",
+      "group": "input",
+      "elements": 1
+    },
+    {
+      "label": "vi-pager",
+      "group": "summary",
+      "elements": 4
+    },
+    {
+      "label": "vi-pager",
+      "group": "inputText",
+      "elements": 1
+    },
+    {
+      "label": "vi-pager",
+      "group": "toolbarButtons",
+      "elements": 1
+    },
+    {
+      "label": "vi-pager",
+      "group": "table",
+      "elements": 1
+    },
+    {
+      "label": "vi-pager",
+      "group": "pager",
+      "elements": 1
+    },
+    {
+      "label": "vi-pager",
+      "group": "pagerTotal",
+      "elements": 1
+    },
+    {
+      "label": "vi-pager",
+      "group": "pagerSize",
+      "elements": 1
+    },
+    {
+      "label": "vi-pager",
+      "group": "pagerSelect",
+      "elements": 1
+    },
+    {
+      "label": "vi-pager",
+      "group": "pagerPrev",
+      "elements": 1
+    },
+    {
+      "label": "vi-pager",
+      "group": "pagerNext",
+      "elements": 1
+    },
+    {
+      "label": "vi-pager",
+      "group": "pagerNumber",
+      "elements": 1
+    }
+  ],
+  "differences": [],
+  "directApiOperationsPerSystem": 20,
+  "matchingAuditFacts": 20,
+  "limits": [
+    "Only the recorded administrator scenarios and desktop viewport are verified here.",
+    "This does not establish completion of P01-P16 or all request coercion and K3 response boundaries."
+  ]
+}

@@ -1,0 +1,139 @@
+{
+  "filePairs": [
+    {
+      "file": "original-automatic.xlsx",
+      "dataRows": 3,
+      "allColumnsAndOrderEqual": true,
+      "prototypeSha256": "6ffa32e91c4bad3e73b8d14bcb9cc75439858ffc8dd8eb47ce1402b56f1065d6",
+      "migrationSha256": "41161583bc824284f6da077e543d55581e11e4814d58f859616ac5b0615947a0"
+    },
+    {
+      "file": "at-b-automatic.xlsx",
+      "dataRows": 1,
+      "allColumnsAndOrderEqual": true,
+      "prototypeSha256": "0f3fcf4f8bf80ea6dce9bcaa083a7474fb9f7722eae29a2f64c3a7ce44690c0a",
+      "migrationSha256": "85d455403791c8087c42f35118b8c8c94e072f072f8997013f3a2166ca8b1e35"
+    },
+    {
+      "file": "returned-automatic.xlsx",
+      "dataRows": 3,
+      "allColumnsAndOrderEqual": true,
+      "prototypeSha256": "db061f4d5d42b245aade8cf42ad0241b55ce3f70be4180af4572691270bc14f6",
+      "migrationSha256": "8244f91211d281544effeefe69f46978ef23e09aec5b3064705600bb49a21943"
+    },
+    {
+      "file": "01-original-original.csv",
+      "dataRows": 3,
+      "allColumnsAndOrderEqual": true,
+      "prototypeSha256": "89d833ca0472c3aff3b595c70d8bb170c8f035ac4bb07fd3061c5694f867b975",
+      "migrationSha256": "766800554a8e949b2c49f6e620ffa314ab5ce3bbe01520f5682141312405f0bf"
+    },
+    {
+      "file": "01-original-original.xlsx",
+      "dataRows": 3,
+      "allColumnsAndOrderEqual": true,
+      "prototypeSha256": "49ce1e083d21052a6f1d5fc97125ea5bcc5727f0bbc2153fa92d92e817aa7b5e",
+      "migrationSha256": "41161583bc824284f6da077e543d55581e11e4814d58f859616ac5b0615947a0"
+    },
+    {
+      "file": "02-partial-original.csv",
+      "dataRows": 2,
+      "allColumnsAndOrderEqual": true,
+      "prototypeSha256": "04bf9e538afbe1018c7c9041bbe0ff09d7dc97162165ad19eeb3b2100f514ab4",
+      "migrationSha256": "6e53936e6e1cdb598bbfc38381804de7593411fed4d6bc1298d34c6dc2064a32"
+    },
+    {
+      "file": "02-partial-original.xlsx",
+      "dataRows": 2,
+      "allColumnsAndOrderEqual": true,
+      "prototypeSha256": "197fff4dc7dde021e5e2dd462d16ae16453373221933ac7ae373882450713e23",
+      "migrationSha256": "660e45419d9812688cfc4d1df81b5c9ec1675118fe950f07429cf728a97f36cd"
+    },
+    {
+      "file": "03-reacquired-original.csv",
+      "dataRows": 2,
+      "allColumnsAndOrderEqual": true,
+      "prototypeSha256": "04bf9e538afbe1018c7c9041bbe0ff09d7dc97162165ad19eeb3b2100f514ab4",
+      "migrationSha256": "6e53936e6e1cdb598bbfc38381804de7593411fed4d6bc1298d34c6dc2064a32"
+    },
+    {
+      "file": "03-reacquired-original.xlsx",
+      "dataRows": 2,
+      "allColumnsAndOrderEqual": true,
+      "prototypeSha256": "8b32c1e4f0a7acad4cf3f2e00d0f766a098f19ea547abf993284e1b26f6e2b7c",
+      "migrationSha256": "660e45419d9812688cfc4d1df81b5c9ec1675118fe950f07429cf728a97f36cd"
+    },
+    {
+      "file": "03-at-b-at-b.csv",
+      "dataRows": 1,
+      "allColumnsAndOrderEqual": true,
+      "prototypeSha256": "e931b2e2deb57dfedecbf3983078d289a8a1365a81b67e407dd64875a5013230",
+      "migrationSha256": "ad3e98dd03044c0a143d081ac9a465816a54d16e769f2215978dfdeb86249125"
+    },
+    {
+      "file": "03-at-b-at-b.xlsx",
+      "dataRows": 1,
+      "allColumnsAndOrderEqual": true,
+      "prototypeSha256": "0f208515220bc3054c4e11ca06ec177198a7d41544aeb660ad6df874c61d7251",
+      "migrationSha256": "85d455403791c8087c42f35118b8c8c94e072f072f8997013f3a2166ca8b1e35"
+    },
+    {
+      "file": "04-all-out-original.csv",
+      "dataRows": 0,
+      "allColumnsAndOrderEqual": true,
+      "prototypeSha256": "cf14efdd855eb23ec404f7ee33ea02e4ab84ca458a5fad4cf49c650498b1bae1",
+      "migrationSha256": "cf14efdd855eb23ec404f7ee33ea02e4ab84ca458a5fad4cf49c650498b1bae1"
+    },
+    {
+      "file": "04-all-out-original.xlsx",
+      "dataRows": 0,
+      "allColumnsAndOrderEqual": true,
+      "prototypeSha256": "77f6a20cb452219f06298fcb3139a1a995c324b424aac338d8560dd84362fd20",
+      "migrationSha256": "249ae73ee55c0662b1d05c04065302b0414d3cb6181aba631b1bfc2c053a0b7a"
+    },
+    {
+      "file": "05-returned-old-original.csv",
+      "dataRows": 0,
+      "allColumnsAndOrderEqual": true,
+      "prototypeSha256": "cf14efdd855eb23ec404f7ee33ea02e4ab84ca458a5fad4cf49c650498b1bae1",
+      "migrationSha256": "cf14efdd855eb23ec404f7ee33ea02e4ab84ca458a5fad4cf49c650498b1bae1"
+    },
+    {
+      "file": "05-returned-old-original.xlsx",
+      "dataRows": 0,
+      "allColumnsAndOrderEqual": true,
+      "prototypeSha256": "92c6fc3c1c8e6f708d9666bde2325a3276b141ee5f7b5b0bc835f27a38161d49",
+      "migrationSha256": "249ae73ee55c0662b1d05c04065302b0414d3cb6181aba631b1bfc2c053a0b7a"
+    },
+    {
+      "file": "06-returned-b-at-b.csv",
+      "dataRows": 0,
+      "allColumnsAndOrderEqual": true,
+      "prototypeSha256": "cf14efdd855eb23ec404f7ee33ea02e4ab84ca458a5fad4cf49c650498b1bae1",
+      "migrationSha256": "cf14efdd855eb23ec404f7ee33ea02e4ab84ca458a5fad4cf49c650498b1bae1"
+    },
+    {
+      "file": "06-returned-b-at-b.xlsx",
+      "dataRows": 0,
+      "allColumnsAndOrderEqual": true,
+      "prototypeSha256": "afef0bb3625ae29d2e4d793d3306dd0c56bb84c3a2b067d155539684d42c7f64",
+      "migrationSha256": "dd6bab561ea3a917e94d969330d5b6c595028989cdefa5b47604acc8b0e8347c"
+    },
+    {
+      "file": "07-returned-new-returned.csv",
+      "dataRows": 3,
+      "allColumnsAndOrderEqual": true,
+      "prototypeSha256": "30aa41a245d0e2557c93a6e26b854710485ea53b796bae315a8648daea05a127",
+      "migrationSha256": "d4df94a1df523aca8bddd54c5eae61a2e9baa25b7b7daec01f354654824e9954"
+    },
+    {
+      "file": "07-returned-new-returned.xlsx",
+      "dataRows": 3,
+      "allColumnsAndOrderEqual": true,
+      "prototypeSha256": "12ae5e13a64c13975582b60f3d4333c7aae2c2d313f6095ffcb2ee0cba1afb10",
+      "migrationSha256": "8244f91211d281544effeefe69f46978ef23e09aec5b3064705600bb49a21943"
+    }
+  ],
+  "emptyFilePairs": 6,
+  "normalization": "Only independent current batch numbers; print titles match each actual UI record."
+}

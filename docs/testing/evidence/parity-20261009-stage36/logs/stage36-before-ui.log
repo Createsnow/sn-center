@@ -1,0 +1,43 @@
+
+Running 2 tests using 1 worker
+
+(node:32064) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\login-layout.spec.ts:49:1 › P02 login layout: three languages, four widths, focus, reveal and empty submission (5.3s)
+(node:36216) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [migration] › e2e\parity\login-layout.spec.ts:49:1 › P02 login layout: three languages, four widths, focus, reveal and empty submission (21.1s)
+
+
+  1) [migration] › e2e\parity\login-layout.spec.ts:49:1 › P02 login layout: three languages, four widths, focus, reveal and empty submission 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.el-form-item__error,.ant-form-item-explain-error')
+    Expected: 0
+    Received: 2
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.el-form-item__error,.ant-form-item-explain-error') with timeout 15000ms
+      - waiting for locator('.el-form-item__error,.ant-form-item-explain-error')
+        3 × locator resolved to 4 elements
+          - unexpected value "4"
+        30 × locator resolved to 2 elements
+           - unexpected value "2"
+
+
+       98 |   await page.mouse.move(0, 0);
+       99 |   await capture(page, info, 'empty-submit');
+    > 100 |   await expect(page.locator('.el-form-item__error,.ant-form-item-explain-error')).toHaveCount(0);
+          |                                                                                   ^
+      101 |   expect(loginRequests).toBe(0);
+      102 |   await expect(page).toHaveURL(/\/login$/);
+      103 | });
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\login-layout.spec.ts:100:83
+
+    Error Context: test-results\stage36-before-ui\login-layout-P02-login-lay-40d9d-reveal-and-empty-submission-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\login-layout.spec.ts:49:1 › P02 login layout: three languages, four widths, focus, reveal and empty submission 
+  1 passed (32.4s)

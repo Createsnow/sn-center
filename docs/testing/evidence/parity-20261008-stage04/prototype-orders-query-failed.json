@@ -1,0 +1,20 @@
+[
+  {
+    "classes": "el-message el-message--error is-closable is-center el-message-fade-enter-active el-message-fade-enter-to",
+    "rect": {
+      "x": 589,
+      "y": 16,
+      "width": 262,
+      "height": 40,
+      "top": 16,
+      "right": 851,
+      "bottom": 56,
+      "left": 589
+    },
+    "color": "rgb(15, 23, 42)",
+    "background": "rgb(254, 240, 240)",
+    "fontSize": "16px",
+    "lineHeight": "normal",
+    "opacity": "1"
+  }
+]

@@ -1,0 +1,186 @@
+{
+  "states": [
+    {
+      "name": "01-catalog",
+      "rows": 55,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 110
+    },
+    {
+      "name": "02-dialog-empty",
+      "rows": 55,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 110
+    },
+    {
+      "name": "03-cancel-retains",
+      "rows": 55,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 110
+    },
+    {
+      "name": "04-empty-invalid",
+      "rows": 55,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 110
+    },
+    {
+      "name": "05-code-too-long",
+      "rows": 55,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 110
+    },
+    {
+      "name": "06-name-too-long",
+      "rows": 55,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 110
+    },
+    {
+      "name": "07-created",
+      "rows": 56,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 112
+    },
+    {
+      "name": "08-duplicate-code",
+      "rows": 56,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 112
+    },
+    {
+      "name": "09-duplicate-name",
+      "rows": 56,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 112
+    },
+    {
+      "name": "10-case-distinct",
+      "rows": 57,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 114
+    },
+    {
+      "name": "11-accent",
+      "rows": 58,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 116
+    },
+    {
+      "name": "12-plain",
+      "rows": 59,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 118
+    },
+    {
+      "name": "13-codepoint-limit",
+      "rows": 60,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 120
+    },
+    {
+      "name": "14-sync-new-update-conflict",
+      "rows": 61,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 122
+    },
+    {
+      "name": "15-sync-unchanged",
+      "rows": 61,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 122
+    },
+    {
+      "name": "16-sync-rename-conflict",
+      "rows": 61,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 122
+    },
+    {
+      "name": "17-sync-failure",
+      "rows": 61,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 122
+    },
+    {
+      "name": "18-sync-empty-recovery",
+      "rows": 61,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 122
+    },
+    {
+      "name": "19-en-900-page",
+      "rows": 61,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 122
+    },
+    {
+      "name": "20-en-900-dialog",
+      "rows": 61,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 122
+    },
+    {
+      "name": "21-en-1440-dialog",
+      "rows": 61,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 122
+    },
+    {
+      "name": "19-vi-900-page",
+      "rows": 61,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 122
+    },
+    {
+      "name": "20-vi-900-dialog",
+      "rows": 61,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 122
+    },
+    {
+      "name": "21-vi-1440-dialog",
+      "rows": 61,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 122
+    },
+    {
+      "name": "19-zh-CN-900-page",
+      "rows": 61,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 122
+    },
+    {
+      "name": "20-zh-CN-900-dialog",
+      "rows": 61,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 122
+    },
+    {
+      "name": "21-zh-CN-1440-dialog",
+      "rows": 61,
+      "orderedBusinessCellsEqual": true,
+      "storedTimesCheckedForBothProjects": 122
+    }
+  ],
+  "geometryDifferences": [],
+  "paintDifferences": [],
+  "businessRowsEqual": true,
+  "timeCellsMatchOwnStoredValues": true,
+  "geometryGroups": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+  ]
+}

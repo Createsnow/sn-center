@@ -1,0 +1,178 @@
+{
+  "java": {
+    "sn_item": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_key": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_pi_counter": {
+      "rows": 2,
+      "unchanged": true
+    },
+    "sn_rule": {
+      "rows": 3,
+      "unchanged": true
+    },
+    "sn_rule_version": {
+      "rows": 3,
+      "unchanged": true
+    },
+    "sn_acquire_batch": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_print": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_transfer": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_acquire_member": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_print_member": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_pi_rule_choice": {
+      "rows": 0,
+      "unchanged": true
+    },
+    "sn_generation_job": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_bill_generation": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_source_entry_quota": {
+      "rows": 156,
+      "unchanged": true
+    },
+    "sn_transfer_member": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "accountSecurityUnchanged": true,
+    "sn_auditOldRowsPreserved": 5000,
+    "sn_audit_archiveOldRowsPreserved": 0,
+    "sn_audit_identityOldRowsPreserved": 34,
+    "sn_audit_exportOldRowsPreserved": 16,
+    "sn_audit_export_rowOldRowsPreserved": 173,
+    "sn_query_exportOldRowsPreserved": 107,
+    "sn_query_export_rowOldRowsPreserved": 1830,
+    "sys_fileOldRowsPreserved": 507,
+    "schema": "35"
+  },
+  "auditFormats": [
+    {
+      "format_version": 5,
+      "n": 16
+    },
+    {
+      "format_version": 3,
+      "n": 4
+    },
+    {
+      "format_version": 1,
+      "n": 6
+    },
+    {
+      "format_version": 4,
+      "n": 4
+    },
+    {
+      "format_version": 2,
+      "n": 2
+    }
+  ],
+  "python": {
+    "sn_item": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_key": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_pi_counter": {
+      "rows": 2,
+      "unchanged": true
+    },
+    "sn_rule": {
+      "rows": 3,
+      "unchanged": true
+    },
+    "sn_rule_version": {
+      "rows": 3,
+      "unchanged": true
+    },
+    "sn_acquire_batch": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_print": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_transfer": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_bill_gen": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_allocation": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_transfer_item": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "accountSecurityUnchanged": true,
+    "sn_auditOldRowsPreserved": 6137
+  },
+  "V1ThroughV34Unchanged": true,
+  "oldFileBytesUnchanged": 507,
+  "noActiveTasksOrOwnedFixtures": true,
+  "prototypeSourcesUnchanged": true,
+  "parity-20261009-stage26FrozenUnchanged": 635,
+  "parity-20261009-stage27FrozenUnchanged": 360,
+  "parity-20261009-stage28FrozenUnchanged": 449,
+  "parity-20261009-stage29FrozenUnchanged": 429,
+  "parity-20261009-stage30FrozenUnchanged": 473,
+  "parity-20261009-stage31FrozenUnchanged": 426,
+  "parity-20261009-stage32FrozenUnchanged": 309,
+  "parity-20261009-audit-observedFrozenUnchanged": 10,
+  "javaReady": {
+    "status": "UP"
+  },
+  "pythonReady": {
+    "status": "ok",
+    "db": "mysql"
+  },
+  "web": {
+    "8000": 200,
+    "15173": 200
+  },
+  "k3": {
+    "fixture": "synthetic comparison only",
+    "extrasSupported": true,
+    "controlsSupported": true,
+    "queryRequests": 1744,
+    "inflight": 0,
+    "orders": 3,
+    "entries": 4
+  },
+  "liveOpenApiMatches": true,
+  "prototypeStatus": "?? sn.env"
+}

@@ -1,0 +1,204 @@
+{
+  "stage": 22,
+  "goalComplete": false,
+  "schema": "V32",
+  "nextMigration": "V33",
+  "ui": {
+    "startTime": "2026-10-08T18:20:23.329Z",
+    "duration": 209238.697,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "workers": 1,
+  "retries": 0,
+  "registeredCases": 152,
+  "allCasesRerun": false,
+  "frontendUnitPassed": 68,
+  "backend": {
+    "unitPassed": 79,
+    "integrationPassed": 32
+  },
+  "screenshots": 53,
+  "businessPairs": [
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/01-original-detail-current.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/01-original-history-current.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/02-partial-detail-current.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/02-partial-history-current.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/03-at-b-history-current.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/03-reacquired-detail-current.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/03-reacquired-history-current.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/04-all-out-detail-current.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/04-all-out-history-current.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/05-returned-old-detail-current.json",
+      "rawEqual": false,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/05-returned-old-history-current.json",
+      "rawEqual": false,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/06-returned-b-detail-current.json",
+      "rawEqual": false,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/06-returned-b-history-current.json",
+      "rawEqual": false,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/07-returned-new-detail-current.json",
+      "rawEqual": false,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/07-returned-new-history-current.json",
+      "rawEqual": false,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/transfer-1-completed.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/transfer-2-completed.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/transfer-3-completed.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-form-P10-transfer-0512d--and-cancelled-confirmation-prototype/01-pi-candidates.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-form-P10-transfer-0512d--and-cancelled-confirmation-prototype/03-single-ready.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-form-P10-transfer-0512d--and-cancelled-confirmation-prototype/04-confirm-factory-name.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-form-P10-transfer-0512d--and-cancelled-confirmation-prototype/05-empty-narrow.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-form-P10-transfer-f0d8e-accounts-preserve-inventory-prototype/role-cmp_operator.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-form-P10-transfer-f0d8e-accounts-preserve-inventory-prototype/role-cmp_query_all.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    },
+    {
+      "file": "ui/transfer-form-P10-transfer-f0d8e-accounts-preserve-inventory-prototype/role-cmp_query_factory.json",
+      "rawEqual": true,
+      "samePiHistoryMultisetEqual": true
+    }
+  ],
+  "domRowPairs": [
+    "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/01-original-detail-rows.json",
+    "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/02-partial-detail-rows.json",
+    "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/03-reacquired-detail-rows.json",
+    "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/04-all-out-detail-rows.json",
+    "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/05-returned-old-detail-rows.json",
+    "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/06-returned-b-detail-rows.json",
+    "ui/acquire-print-P09-transfer-8999c-etails-and-historical-files-prototype/07-returned-new-detail-rows.json"
+  ],
+  "filePairs": 19,
+  "emptyFilePairs": 6,
+  "knownSourceDifferences": [
+    {
+      "file": "material-known-difference.json",
+      "source": "Empty material is dropped by client; candidates fail and dropdown remains empty.",
+      "target": "Source-wide material candidates remain selectable.",
+      "parityProven": false
+    }
+  ],
+  "fullTransferParityProven": false,
+  "sourceHashes": {
+    "backend/adtek-sn/src/main/java/com/adtek/sn/controller/TransferController.java": "6d8f6e5877201036262de5d668d8e16886c51ac7b1ff5901c0fa3708a675b89e",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/TransferService.java": "7d5d19b853ce0dae4689ab3303680a4dcc7ac6d5f6bb1eb77e59d47638e76c92",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/TransferServiceImpl.java": "14034f3d8761e3df92c06410cb81dfc21e92a7054b19fb314366881a0a9f8616",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/TransferEngine.java": "1b81d43460f3159f960e2fa677fc76119fa756730b64fa1fc470412437a8793b",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnDataPermissionRules.java": "900e8e4b4bf0221886a67c9aae28e2eacac13d595b91b593112cf8dbb39b4156",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/BusinessNumbers.java": "b1d344d640e8f763f973d659ca1c51947a00085d4e3697b689b766eb15caff2b",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/convert/TransferConvert.java": "f457bf8b3ff7d8e7a4eafa1f88cc0febda3c64ad5756124f5d60ba44f438dca9",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/TransferMapper.java": "26d5e5253cadfc9ac5cdd9847178c69540a971921298b0928f14dacf032cf4dc",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/domain/TransferEntity.java": "ed5c3f6cccceedf49dfa857c1e8fd47a68e43410b0ac23adbf485188da2e4d52",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/vo/TransferVO.java": "3970cd47c28379d054a911948fb4d4ddb2831f8b31ea5521d5f7679f4f45dc49",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/vo/TransferCandidateVO.java": "a6537087bcb4a184d4502bc63551fbc79862be854d0242436ebda92bfeceeade",
+    "backend/adtek-server/src/main/resources/db/migration/V32__transfer_display_number_and_actor.sql": "0286bf4c449dd7f92701f18a61a4450454f7ce064acc0acb597d3a0a02bc0e54",
+    "backend/adtek-server/src/test/java/com/adtek/server/SnTransferIT.java": "8af436a5c985aefeb25bb6e3cddfba8cc772b0665afdd2516a8d1a6513d69f15",
+    "backend/adtek-server/target/adtek-server-acceptance.jar": "5716e1305fc8897ca04314ef8fe140fddd0539708cbdc653e5017f3a2fea2650",
+    "frontend/src/features/sn/pages/TransferPage.tsx": "e1c7104598cb0ea26a0411a9e5581ade9e0920cd85fe7e30a0a19b479d5ce6e9",
+    "frontend/src/features/sn/components/TransferHistory.tsx": "cfbea50ac6b9f9366546d31036d40a87ebd2bc1f7523b93e2d879313429181b7",
+    "frontend/src/styles.css": "5b9d4fd5cf3018236dd1b612fee247e56e683de0d76b342fb336392ee7796ac1",
+    "frontend/src/api/snTransfer.ts": "42e6b52846af297249d07767f3b0d3f9c23b8da6c70f66ae1d0761abc4f2c39f",
+    "frontend/src/api/snTransfer.test.ts": "e6339b52ca635d5d88bd53ebf3266cdd9dfa95d2e1426058846a288dcc5b3142",
+    "frontend/openapi/adtek-sn.json": "2f5624fa91437206c56d095148904e09e3b27cab4f024f1442cbfb30d5fc116e",
+    "frontend/src/api/generated/schema.d.ts": "418641fd82c06afccc8a55c8da2af56599b70dca072b0548000a63c913dd152c",
+    "frontend/e2e/parity/transfer-form.spec.ts": "0793c7a0d6a36e808be1e538a1598af16f0a3fb2e262dac287038ec990fd4bec",
+    "frontend/e2e/parity/acquire-print.spec.ts": "d5787c24612499e7e77ccb141ea93304d8f92f48267557fbd8bf6c8a63a177bd",
+    "tools/testing/parity-acquire-fixture.py": "3a4b5eaeaa3a8ba43bac40653676ba31e91c434f3e9edde7f9045d1dd5371dff",
+    "tools/testing/compare-transfer-print-files.py": "f8536d28ccb1e2493f5d14c4718fb1444c6394a4a660758f4972d7f7d07a5f46"
+  },
+  "remaining": [
+    "P10 snapshot directory, apply/approve/reject/withdraw through UI, duplicates and sequence hints through UI, history/detail pagination and complete visual fidelity.",
+    "Prototype first material-scope selection fails; keep the original source unchanged and do not label differing behavior as parity.",
+    "P09 permissions/person/factory changes, unknown submission responses and queue recovery, old records and download capacity/performance.",
+    "All outstanding P01-P08/P11-P16 and 500000-row import performance requirements."
+  ]
+}

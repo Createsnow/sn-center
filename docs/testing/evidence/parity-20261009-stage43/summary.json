@@ -1,0 +1,30 @@
+{
+  "stage": 43,
+  "completeGoal": false,
+  "schema": "38",
+  "unitTests": 89,
+  "integrationTests": {
+    "AuthenticationIT": 33,
+    "SnAuditIT": 14,
+    "AuditIT": 7,
+    "ConfigurationIT": 9
+  },
+  "frontendUnitTests": 81,
+  "ui": {
+    "startTime": "2026-10-09T05:20:29.421Z",
+    "duration": 259218.758,
+    "expected": 12,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "screenshots": 104,
+  "diagnosticScreenshots": 65,
+  "sourceFiles": 37,
+  "pending": [
+    "remaining account rejection/parameter/self-demotion/concurrency boundaries",
+    "full P13 boundary/permission/concurrency/narrow/locale checks",
+    "P14 factories and remaining full matrix",
+    "earlier historical ordering and capacity/recovery gaps"
+  ]
+}

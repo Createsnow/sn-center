@@ -1,0 +1,78 @@
+{
+  "keys": [
+    {
+      "pi": "CMP-UI-INIT-PI",
+      "sn": "INI00000",
+      "seq_pi": "CMP-UI-INIT-PI",
+      "seq_dec": 0
+    },
+    {
+      "pi": "CMP-UI-INIT-PI",
+      "sn": "INI00005",
+      "seq_pi": "CMP-UI-INIT-PI",
+      "seq_dec": 5
+    },
+    {
+      "pi": "CMP-UI-INIT-PI",
+      "sn": "UNPARSED",
+      "seq_pi": null,
+      "seq_dec": null
+    }
+  ],
+  "items": [
+    {
+      "sn": "INI00000",
+      "pi": "CMP-UI-INIT-PI",
+      "source_pi": "CMP-UI-INIT-PI",
+      "seq_dec": 0,
+      "customer": "CMP-INIT-CUSTOMER",
+      "material": "CMP-INIT-MAT",
+      "factory_code": "CMP-A",
+      "status": "PRINTED",
+      "source": "IMPORT"
+    },
+    {
+      "sn": "INI00005",
+      "pi": "CMP-UI-INIT-PI",
+      "source_pi": "CMP-UI-INIT-PI",
+      "seq_dec": 5,
+      "customer": "CMP-INIT-CUSTOMER",
+      "material": "CMP-INIT-MAT",
+      "factory_code": "CMP-A",
+      "status": "PRINTED",
+      "source": "IMPORT"
+    },
+    {
+      "sn": "UNPARSED",
+      "pi": "CMP-UI-INIT-PI",
+      "source_pi": "CMP-UI-INIT-PI",
+      "seq_dec": null,
+      "customer": "CMP-INIT-CUSTOMER",
+      "material": "CMP-INIT-MAT",
+      "factory_code": "CMP-A",
+      "status": "PRINTED",
+      "source": "IMPORT"
+    }
+  ],
+  "counters": [
+    {
+      "pi": "CMP-UI-INIT-PI",
+      "last_seq": 19,
+      "generated_qty": 0,
+      "imported_qty": 3,
+      "start_seq": 20,
+      "start_locked": 1
+    }
+  ],
+  "history": [
+    {
+      "pi": "CMP-UI-INIT-PI",
+      "start_seq": 20,
+      "qty": 3,
+      "max_seq": 5,
+      "factory_code": "CMP-A",
+      "file_name": "",
+      "operator": "admin"
+    }
+  ]
+}

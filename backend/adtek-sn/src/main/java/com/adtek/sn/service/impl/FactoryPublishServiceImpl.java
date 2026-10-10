@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.*;
 import java.time.Instant;
 import java.util.*;
 
-/** 安全锁→快照发布锁→工厂；外部网络已完成，冲突不能改派组织或认领同名手工厂。 */
+/** 安全锁→快照发布锁→工厂；目录按编码合并，订单按快照名称匹配，显式绑定不被同步覆盖。 */
 @Service
 public class FactoryPublishServiceImpl implements FactoryPublishService {
     private final SnPolicy policy;
@@ -29,7 +29,8 @@ public class FactoryPublishServiceImpl implements FactoryPublishService {
     private final OrganizationMappingMapper mappings;
     private final SnConvert convert;
     private final ManagementAuditPort audit;
-    private final com.adtek.framework.security.AuthorizationMutationPort authorization;
+    private final OrderPublicationGuard publicationGuard;
+    private final OrderSyncMapper attempts;
 
     public FactoryPublishServiceImpl(
             SnPolicy policy,
@@ -38,14 +39,16 @@ public class FactoryPublishServiceImpl implements FactoryPublishService {
             OrganizationMappingMapper mappings,
             SnConvert convert,
             ManagementAuditPort audit,
-            com.adtek.framework.security.AuthorizationMutationPort authorization) {
+            OrderPublicationGuard publicationGuard,
+            OrderSyncMapper attempts) {
         this.policy = policy;
         this.control = control;
         this.factories = factories;
         this.mappings = mappings;
         this.convert = convert;
         this.audit = audit;
-        this.authorization = authorization;
+        this.publicationGuard = publicationGuard;
+        this.attempts = attempts;
     }
 
     @Override
@@ -55,17 +58,31 @@ public class FactoryPublishServiceImpl implements FactoryPublishService {
         long revision = control.lock() + 1;
         var result = merge(source, orgs, revision);
         control.advance();
-        success(actor, "sn:factory:sync", source.system(), Map.of());
+        syncSuccess(actor, source, result, false);
         return result;
     }
 
     @Override
-    @Transactional(propagation = Propagation.MANDATORY)
-    public FactorySyncVO withinOrderPublish(
-            Actor requested, Source source, List<Organization> orgs, long revision) {
-        // HTTP与定时执行共享显式主体；不依赖调度线程没有的SecurityContext。
-        policy.require(authorization.lockCurrent(requested), "sn:factory:sync", true);
-        return merge(source, orgs, revision);
+    @Transactional(
+            isolation = Isolation.READ_COMMITTED,
+            propagation = Propagation.REQUIRES_NEW,
+            timeout = 60,
+            rollbackFor = Exception.class)
+    public FactorySyncVO publishForOrderSync(
+            Actor requested, String attemptId, Source source, List<Organization> orgs) {
+        var locked = publicationGuard.lock(requested, attemptId);
+        var actor = locked.actor();
+        policy.require(actor, "sn:factory:sync", true);
+        var attempt = locked.attempt();
+        if ("one".equals(attempt.getMode()) || attempt.getFactoryVersion() != null)
+            throw new BusinessException(SNAPSHOT_CHANGED);
+        long revision = locked.revision() + 1;
+        var result = merge(source, orgs, revision);
+        control.advance();
+        attempt.setFactoryVersion(revision);
+        attempts.updateById(attempt);
+        syncSuccess(actor, source, result, "scheduled".equals(attempt.getMode()));
+        return result;
     }
 
     private FactorySyncVO merge(Source source, List<Organization> orgs, long revision) {
@@ -75,57 +92,35 @@ public class FactoryPublishServiceImpl implements FactoryPublishService {
         int inserted = 0, updated = 0;
         List<String> conflicts = new ArrayList<>();
         for (var org : orgs) {
-            var old = links.get(org.id());
+            var factory = factories.byCode(org.code());
             var sameName = factories.byName(org.name());
-            if (old != null) {
-                var factory = factories.lock(old.factoryId());
-                if (factory == null) throw new BusinessException(MAPPING_CONFLICT);
-                if ((sameName != null && !sameName.getId().equals(factory.getId()))
-                        || links.values().stream()
-                                .anyMatch(
-                                        l ->
-                                                !l.orgId().equals(org.id())
-                                                        && l.orgCode().equals(org.code()))) {
-                    conflicts.add(org.code() + "/" + org.name());
-                    continue;
-                }
-                boolean changed =
-                        !factory.getName().equals(org.name())
-                                || !old.orgCode().equals(org.code())
-                                || !old.orgName().equals(org.name());
-                if (changed) {
-                    factory.setName(org.name());
-                    factory.setVersion(factory.getVersion() + 1);
-                    factory.setUpdatedAt(Instant.now());
-                    factories.updateById(factory);
-                    mappings.update(
-                            new OrganizationMappingEntity(
-                                    source.system(),
-                                    source.account(),
-                                    org.id(),
-                                    org.code(),
-                                    org.name(),
-                                    factory.getId()));
-                    updated++;
-                }
-                project(source, org.id(), factory, revision);
-                continue;
-            }
-            if (factories.byCode(org.code()) != null
-                    || sameName != null
-                    || links.values().stream().anyMatch(l -> l.orgCode().equals(org.code()))) {
+            if (sameName != null
+                    && (factory == null || !sameName.getId().equals(factory.getId()))) {
                 conflicts.add(org.code() + "/" + org.name());
                 continue;
             }
-            var factory = new FactoryEntity();
-            factory.setCode(org.code());
-            factory.setName(org.name());
-            factory.setSource("K3");
-            factory.setEnabled(true);
-            factory.setVersion(1L);
-            factory.setCreatedAt(Instant.now());
-            factory.setUpdatedAt(factory.getCreatedAt());
-            factories.insert(factory);
+            if (factory == null) {
+                factory = new FactoryEntity();
+                factory.setCode(org.code());
+                factory.setName(org.name());
+                factory.setSource("K3");
+                factory.setEnabled(true);
+                factory.setVersion(1L);
+                factory.setCreatedAt(Instant.now());
+                factory.setUpdatedAt(factory.getCreatedAt());
+                factories.insert(factory);
+                inserted++;
+            } else if (!factory.getName().equals(org.name())) {
+                factory.setName(org.name());
+                factory.setVersion(factory.getVersion() + 1);
+                factory.setUpdatedAt(Instant.now());
+                factories.updateById(factory);
+                updated++;
+            }
+            // 内码只补充来源信息；替换内码、改编码不会把旧名称订单搬到另一个工厂。
+            if (org.id() == null) continue;
+            var old = links.get(org.id());
+            if (old != null && old.explicit()) continue;
             var link =
                     new OrganizationMappingEntity(
                             source.system(),
@@ -133,12 +128,14 @@ public class FactoryPublishServiceImpl implements FactoryPublishService {
                             org.id(),
                             org.code(),
                             org.name(),
-                            factory.getId());
-            mappings.insert(link);
+                            factory.getId(),
+                            "AUTO");
+            if (old == null) mappings.insert(link);
+            else if (!old.equals(link)) mappings.update(link);
             links.put(org.id(), link);
-            project(source, org.id(), factory, revision);
-            inserted++;
         }
+        mappings.projectAutomaticBills(revision);
+        mappings.projectAutomaticEntries(revision);
         return new FactorySyncVO(
                 Integer.toString(orgs.size()),
                 Integer.toString(inserted),
@@ -155,7 +152,10 @@ public class FactoryPublishServiceImpl implements FactoryPublishService {
         if (factory == null) throw SnPolicy.missing();
         if (factory.getVersion() != version) throw new BusinessException(VERSION_CHANGED);
         var links = mappings.list(source.system(), source.account());
+        OrganizationMappingEntity previous = null;
         for (var link : links) {
+            if (link.orgId().equals(org.id())) previous = link;
+            if (!link.explicit()) continue;
             if (link.orgId().equals(org.id()) && link.factoryId() == factoryId)
                 return convert.factory(factory);
             if (link.orgId().equals(org.id())
@@ -163,14 +163,17 @@ public class FactoryPublishServiceImpl implements FactoryPublishService {
                     || link.factoryId() == factoryId) throw new BusinessException(MAPPING_CONFLICT);
         }
         try {
-            mappings.insert(
+            var link =
                     new OrganizationMappingEntity(
                             source.system(),
                             source.account(),
                             org.id(),
                             org.code(),
                             org.name(),
-                            factoryId));
+                            factoryId,
+                            "EXPLICIT");
+            if (previous == null) mappings.insert(link);
+            else mappings.update(link);
         } catch (DuplicateKeyException e) {
             throw new BusinessException(MAPPING_CONFLICT);
         }
@@ -179,7 +182,17 @@ public class FactoryPublishServiceImpl implements FactoryPublishService {
         factories.updateById(factory);
         project(source, org.id(), factory, revision);
         control.advance();
-        success(actor, "sn:factory:map", Long.toString(factoryId), Map.of());
+        success(
+                actor,
+                "sn:factory:map",
+                Long.toString(factoryId),
+                Map.of(
+                        "sourceSystem",
+                        source.system(),
+                        "sourceAccount",
+                        source.account(),
+                        "orgId",
+                        org.id()));
         return convert.factory(factory);
     }
 
@@ -192,6 +205,25 @@ public class FactoryPublishServiceImpl implements FactoryPublishService {
                 factory.getCode(),
                 revision);
         mappings.mapEntries(source.system(), source.account(), orgId, revision);
+    }
+
+    /** 工厂同步即使没有变化仍记录原型计数；与业务发布在同一事务中提交。 */
+    private void syncSuccess(Actor actor, Source source, FactorySyncVO result, boolean scheduled) {
+        success(
+                actor,
+                "sn:factory:sync",
+                source.system(),
+                Map.of(
+                        "total",
+                        result.total(),
+                        "inserted",
+                        result.inserted(),
+                        "updated",
+                        result.updated(),
+                        "conflicts",
+                        result.conflicts(),
+                        "scheduled",
+                        scheduled));
     }
 
     private void success(Actor actor, String action, String object, Map<String, Object> changes) {

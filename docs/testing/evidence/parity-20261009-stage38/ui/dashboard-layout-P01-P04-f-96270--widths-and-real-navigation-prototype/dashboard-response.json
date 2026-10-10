@@ -1,0 +1,18 @@
+{
+  "status_counts": {
+    "PENDING_ALLOC": 0,
+    "TO_ACQUIRE": 0,
+    "TO_PRINT": 0,
+    "APPLYING": 0
+  },
+  "total_generated": 0,
+  "pending_transfers": 0,
+  "running_jobs": 0,
+  "today_actions": {
+    "SN_ACQUIRE": 1604,
+    "SN_ALLOCATE": 2150,
+    "SN_GENERATE": 2150,
+    "SN_PRINT": 737
+  },
+  "recent_jobs": []
+}

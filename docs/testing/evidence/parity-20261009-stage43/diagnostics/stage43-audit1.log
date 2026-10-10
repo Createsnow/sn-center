@@ -1,0 +1,33 @@
+
+Running 2 tests using 1 worker
+
+(node:35296) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\account-audit.spec.ts:10:1 › P13 management audit: real account writes, rejected writes, no-change edit and complete export (17.1s)
+(node:20256) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [migration] › e2e\parity\account-audit.spec.ts:10:1 › P13 management audit: real account writes, rejected writes, no-change edit and complete export (18.0s)
+
+
+  1) [migration] › e2e\parity\account-audit.spec.ts:10:1 › P13 management audit: real account writes, rejected writes, no-change edit and complete export 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 409
+
+      147 |     const response = await pending;
+      148 |     writes.push({ route: new URL(response.url()).pathname, status: response.status() });
+    > 149 |     expect(response.status()).toBe(status);
+          |                               ^
+      150 |     await expect(dialog).toBeHidden();
+      151 |     await expect(
+      152 |       actor
+        at reset (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-audit.spec.ts:149:31)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-audit.spec.ts:200:5
+
+    Error Context: test-results\stage43-audit1\account-audit-P13-manageme-2824c-ge-edit-and-complete-export-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\account-audit.spec.ts:10:1 › P13 management audit: real account writes, rejected writes, no-change edit and complete export 
+  1 passed (37.7s)

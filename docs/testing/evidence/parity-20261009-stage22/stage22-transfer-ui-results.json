@@ -1,0 +1,469 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.parity.config.ts",
+      "acquire-print.spec.ts",
+      "transfer-form.spec.ts",
+      "--grep",
+      "P09 transferred print|P10 transfer",
+      "--output=test-results/stage22-transfer-ui"
+    ],
+    "configFile": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\playwright.parity.config.ts",
+    "rootDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage22-transfer-ui",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "prototype",
+        "name": "prototype",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage22-transfer-ui",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "migration",
+        "name": "migration",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/parity/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "acquire-print.spec.ts",
+      "file": "acquire-print.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P09 transferred print: real factory round trip, current batch details and historical files",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 360000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 57605,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T18:08:31.983Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f16e7ea15ddbda844a2a-6538d3d2a6765f6cbe4b",
+          "file": "acquire-print.spec.ts",
+          "line": 576,
+          "column": 1
+        },
+        {
+          "title": "P09 transferred print: real factory round trip, current batch details and historical files",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 360000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 22995,
+                  "error": {
+                    "message": "Error: locator.click: Error: strict mode violation: locator('.ant-select-item-option-content').getByText('比较测试乙厂（CMP-B）', { exact: true }) resolved to 2 elements:\n    1) <div class=\"ant-select-item-option-content\">比较测试乙厂（CMP-B）</div> aka locator('[id=\"_r_15__list_1\"]').getByText('比较测试乙厂（CMP-B）')\n    2) <div class=\"ant-select-item-option-content\">比较测试乙厂（CMP-B）</div> aka getByText('比较测试乙厂（CMP-B）').nth(1)\n\nCall log:\n\u001b[2m  - waiting for locator('.ant-select-item-option-content').getByText('比较测试乙厂（CMP-B）', { exact: true })\u001b[22m\n",
+                    "stack": "Error: locator.click: Error: strict mode violation: locator('.ant-select-item-option-content').getByText('比较测试乙厂（CMP-B）', { exact: true }) resolved to 2 elements:\n    1) <div class=\"ant-select-item-option-content\">比较测试乙厂（CMP-B）</div> aka locator('[id=\"_r_15__list_1\"]').getByText('比较测试乙厂（CMP-B）')\n    2) <div class=\"ant-select-item-option-content\">比较测试乙厂（CMP-B）</div> aka getByText('比较测试乙厂（CMP-B）').nth(1)\n\nCall log:\n\u001b[2m  - waiting for locator('.ant-select-item-option-content').getByText('比较测试乙厂（CMP-B）', { exact: true })\u001b[22m\n\n    at transfer (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:760:10)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:789:5",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts",
+                      "column": 10,
+                      "line": 760
+                    },
+                    "snippet": "  758 |         .locator('.ant-select-item-option-content')\n  759 |         .getByText(`${names[to]}（${to}）`, { exact: true })\n> 760 |         .click();\n      |          ^\n  761 |       await page.getByRole('textbox', { name: uiZh.snTransfer.toPi, exact: true }).fill(pi);\n  762 |       await page\n  763 |         .getByRole('textbox', { name: uiZh.snTransfer.reason, exact: true })"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts",
+                        "column": 10,
+                        "line": 760
+                      },
+                      "message": "Error: locator.click: Error: strict mode violation: locator('.ant-select-item-option-content').getByText('比较测试乙厂（CMP-B）', { exact: true }) resolved to 2 elements:\n    1) <div class=\"ant-select-item-option-content\">比较测试乙厂（CMP-B）</div> aka locator('[id=\"_r_15__list_1\"]').getByText('比较测试乙厂（CMP-B）')\n    2) <div class=\"ant-select-item-option-content\">比较测试乙厂（CMP-B）</div> aka getByText('比较测试乙厂（CMP-B）').nth(1)\n\nCall log:\n\u001b[2m  - waiting for locator('.ant-select-item-option-content').getByText('比较测试乙厂（CMP-B）', { exact: true })\u001b[22m\n\n\n  758 |         .locator('.ant-select-item-option-content')\n  759 |         .getByText(`${names[to]}（${to}）`, { exact: true })\n> 760 |         .click();\n      |          ^\n  761 |       await page.getByRole('textbox', { name: uiZh.snTransfer.toPi, exact: true }).fill(pi);\n  762 |       await page\n  763 |         .getByRole('textbox', { name: uiZh.snTransfer.reason, exact: true })\n    at transfer (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:760:10)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:789:5"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T18:10:11.645Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage22-transfer-ui\\acquire-print-P09-transfer-8999c-etails-and-historical-files-migration\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts",
+                    "column": 10,
+                    "line": 760
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f16e7ea15ddbda844a2a-991130938c96ec32dd2b",
+          "file": "acquire-print.spec.ts",
+          "line": 576,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "transfer-form.spec.ts",
+      "file": "transfer-form.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P10 transfer form: automatic candidates, material scope, single SN and cancelled confirmation",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 20296,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true }) with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true })\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true }) with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true })\u001b[22m\n\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts:156:84",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts",
+                      "column": 84,
+                      "line": 156
+                    },
+                    "snippet": "  154 |     const material = field(page, info, zh.common.material).getByRole('combobox');\n  155 |     await material.click();\n> 156 |     await expect(page.getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true })).toBeVisible();\n      |                                                                                    ^\n  157 |     await expect(page.getByRole('option', { name: 'CMP-ACQ-MAT-1', exact: true })).toBeVisible();\n  158 |     if (source(info))\n  159 |       await page.getByRole('option', { name: 'CMP-ACQ-MAT-1', exact: true }).click();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts",
+                        "column": 84,
+                        "line": 156
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true }) with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true })\u001b[22m\n\n\n  154 |     const material = field(page, info, zh.common.material).getByRole('combobox');\n  155 |     await material.click();\n> 156 |     await expect(page.getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true })).toBeVisible();\n      |                                                                                    ^\n  157 |     await expect(page.getByRole('option', { name: 'CMP-ACQ-MAT-1', exact: true })).toBeVisible();\n  158 |     if (source(info))\n  159 |       await page.getByRole('option', { name: 'CMP-ACQ-MAT-1', exact: true }).click();\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts:156:84"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T18:09:30.069Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage22-transfer-ui\\transfer-form-P10-transfer-0512d--and-cancelled-confirmation-prototype\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts",
+                    "column": 84,
+                    "line": 156
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2724a8bbfbe8e031c5c6-fae63d6da84b118f94d3",
+          "file": "transfer-form.spec.ts",
+          "line": 138,
+          "column": 1
+        },
+        {
+          "title": "P10 transfer roles: bound factory and query accounts preserve inventory",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 19194,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('menuitem', { name: '生产订单', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('menuitem', { name: '生产订单', exact: true }) with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('menuitem', { name: '生产订单', exact: true })\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('menuitem', { name: '生产订单', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('menuitem', { name: '生产订单', exact: true }) with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('menuitem', { name: '生产订单', exact: true })\u001b[22m\n\n    at login (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts:75:82)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts:213:9",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts",
+                      "column": 82,
+                      "line": 75
+                    },
+                    "snippet": "  73 |   await page.locator('input[autocomplete=\"current-password\"]').fill(password);\n  74 |   await page.getByRole('button', { name: zh.login.submit, exact: true }).click();\n> 75 |   await expect(page.getByRole('menuitem', { name: zh.nav.orders, exact: true })).toBeVisible();\n     |                                                                                  ^\n  76 | }\n  77 | async function sync(page: Page, include: boolean) {\n  78 |   const entries = include"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts",
+                        "column": 82,
+                        "line": 75
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('menuitem', { name: '生产订单', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('menuitem', { name: '生产订单', exact: true }) with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('menuitem', { name: '生产订单', exact: true })\u001b[22m\n\n\n  73 |   await page.locator('input[autocomplete=\"current-password\"]').fill(password);\n  74 |   await page.getByRole('button', { name: zh.login.submit, exact: true }).click();\n> 75 |   await expect(page.getByRole('menuitem', { name: zh.nav.orders, exact: true })).toBeVisible();\n     |                                                                                  ^\n  76 | }\n  77 | async function sync(page: Page, include: boolean) {\n  78 |   const entries = include\n    at login (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts:75:82)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts:213:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T18:09:51.185Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage22-transfer-ui\\transfer-form-P10-transfer-f0d8e-accounts-preserve-inventory-prototype\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts",
+                    "column": 82,
+                    "line": 75
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2724a8bbfbe8e031c5c6-f7bf9ddd96cf86e445e3",
+          "file": "transfer-form.spec.ts",
+          "line": 198,
+          "column": 1
+        },
+        {
+          "title": "P10 transfer form: automatic candidates, material scope, single SN and cancelled confirmation",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 30773,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true })\nExpected: visible\nReceived: hidden\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true }) with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true })\u001b[22m\n\u001b[2m    33 × locator resolved to <div role=\"option\" id=\"material_list_0\" aria-selected=\"false\" aria-label=\"CMP-ACQ-MAT-0\">CMP-ACQ-MAT-0</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true })\nExpected: visible\nReceived: hidden\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true }) with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true })\u001b[22m\n\u001b[2m    33 × locator resolved to <div role=\"option\" id=\"material_list_0\" aria-selected=\"false\" aria-label=\"CMP-ACQ-MAT-0\">CMP-ACQ-MAT-0</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts:156:84",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts",
+                      "column": 84,
+                      "line": 156
+                    },
+                    "snippet": "  154 |     const material = field(page, info, zh.common.material).getByRole('combobox');\n  155 |     await material.click();\n> 156 |     await expect(page.getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true })).toBeVisible();\n      |                                                                                    ^\n  157 |     await expect(page.getByRole('option', { name: 'CMP-ACQ-MAT-1', exact: true })).toBeVisible();\n  158 |     if (source(info))\n  159 |       await page.getByRole('option', { name: 'CMP-ACQ-MAT-1', exact: true }).click();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts",
+                        "column": 84,
+                        "line": 156
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true })\nExpected: visible\nReceived: hidden\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true }) with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true })\u001b[22m\n\u001b[2m    33 × locator resolved to <div role=\"option\" id=\"material_list_0\" aria-selected=\"false\" aria-label=\"CMP-ACQ-MAT-0\">CMP-ACQ-MAT-0</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n\n  154 |     const material = field(page, info, zh.common.material).getByRole('combobox');\n  155 |     await material.click();\n> 156 |     await expect(page.getByRole('option', { name: 'CMP-ACQ-MAT-0', exact: true })).toBeVisible();\n      |                                                                                    ^\n  157 |     await expect(page.getByRole('option', { name: 'CMP-ACQ-MAT-1', exact: true })).toBeVisible();\n  158 |     if (source(info))\n  159 |       await page.getByRole('option', { name: 'CMP-ACQ-MAT-1', exact: true }).click();\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts:156:84"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T18:10:35.908Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage22-transfer-ui\\transfer-form-P10-transfer-0512d--and-cancelled-confirmation-migration\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts",
+                    "column": 84,
+                    "line": 156
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2724a8bbfbe8e031c5c6-c170cf9ee8ff9af3fafc",
+          "file": "transfer-form.spec.ts",
+          "line": 138,
+          "column": 1
+        },
+        {
+          "title": "P10 transfer roles: bound factory and query accounts preserve inventory",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 34089,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('menuitem', { name: '生产订单', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('menuitem', { name: '生产订单', exact: true }) with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('menuitem', { name: '生产订单', exact: true })\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('menuitem', { name: '生产订单', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('menuitem', { name: '生产订单', exact: true }) with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('menuitem', { name: '生产订单', exact: true })\u001b[22m\n\n    at login (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts:75:82)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts:213:9",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts",
+                      "column": 82,
+                      "line": 75
+                    },
+                    "snippet": "  73 |   await page.locator('input[autocomplete=\"current-password\"]').fill(password);\n  74 |   await page.getByRole('button', { name: zh.login.submit, exact: true }).click();\n> 75 |   await expect(page.getByRole('menuitem', { name: zh.nav.orders, exact: true })).toBeVisible();\n     |                                                                                  ^\n  76 | }\n  77 | async function sync(page: Page, include: boolean) {\n  78 |   const entries = include"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts",
+                        "column": 82,
+                        "line": 75
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('menuitem', { name: '生产订单', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('menuitem', { name: '生产订单', exact: true }) with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('menuitem', { name: '生产订单', exact: true })\u001b[22m\n\n\n  73 |   await page.locator('input[autocomplete=\"current-password\"]').fill(password);\n  74 |   await page.getByRole('button', { name: zh.login.submit, exact: true }).click();\n> 75 |   await expect(page.getByRole('menuitem', { name: zh.nav.orders, exact: true })).toBeVisible();\n     |                                                                                  ^\n  76 | }\n  77 | async function sync(page: Page, include: boolean) {\n  78 |   const entries = include\n    at login (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts:75:82)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts:213:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T18:11:07.888Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage22-transfer-ui\\transfer-form-P10-transfer-f0d8e-accounts-preserve-inventory-migration\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\transfer-form.spec.ts",
+                    "column": 82,
+                    "line": 75
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2724a8bbfbe8e031c5c6-38ff968508ded6f2736f",
+          "file": "transfer-form.spec.ts",
+          "line": 198,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-08T18:08:31.445Z",
+    "duration": 191488.175,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 5,
+    "flaky": 0
+  }
+}

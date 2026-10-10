@@ -3,6 +3,7 @@ package com.adtek.system.service.impl;
 import com.adtek.common.annotation.RateLimiter;
 import com.adtek.common.core.Actor;
 import com.adtek.common.core.BusinessException;
+import com.adtek.framework.audit.AuthenticationEventObserver.Outcome;
 import com.adtek.framework.security.AuthorizationPort;
 import com.adtek.framework.security.CommandValidator;
 import com.adtek.framework.security.CurrentActor;
@@ -85,7 +86,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         try {
             return authenticate(command);
         } catch (BusinessException error) {
-            if (error.getError().equals(ErrorCodeConstants.LOGIN_LOCKED)) rejected(true, false);
+            if (error.getError().equals(ErrorCodeConstants.LOGIN_LOCKED))
+                rejected(
+                        command.username(),
+                        null,
+                        Outcome.LOCKED,
+                        false,
+                        Integer.valueOf(error.getParams().get("minutes")));
             throw error;
         }
     }
@@ -95,12 +102,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var user = identities.findByUsername(command.username());
         boolean matched =
                 matches(command.password(), user == null ? dummyHash : user.getPasswordHash());
-        if (user == null
-                || !Boolean.TRUE.equals(user.getEnabled())
-                || !"USER".equals(user.getPrincipalType())
-                || !matched) {
-            rejected(false, loginGuard.failed(command.username()));
+        if (user == null || !"USER".equals(user.getPrincipalType()) || !matched) {
+            rejected(
+                    command.username(),
+                    user != null && "USER".equals(user.getPrincipalType()) ? user.getId() : null,
+                    Outcome.CREDENTIALS_REJECTED,
+                    loginGuard.failed(command.username()),
+                    null);
             throw new BusinessException(ErrorCodeConstants.LOGIN_FAILED);
+        }
+        if (!Boolean.TRUE.equals(user.getEnabled())) {
+            rejected(command.username(), user.getId(), Outcome.DISABLED, false, null);
+            throw new BusinessException(ErrorCodeConstants.ACCOUNT_DISABLED);
         }
         if (passwords.upgradeEncoding(user.getPasswordHash())
                 && identities.upgradePasswordHash(
@@ -116,14 +129,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         .loadCurrent(user.getId())
                         .orElseThrow(() -> new BusinessException(ErrorCodeConstants.LOGIN_FAILED));
         loginGuard.succeeded(command.username());
-        var session = sessions.create(actor.userId(), actor.securityVersion(), refreshLifetime());
+        if (actor.securityVersion() != user.getSecurityVersion()
+                || identities.recordLogin(actor.userId(), user.getSecurityVersion()) != 1) {
+            throw new BusinessException(ErrorCodeConstants.LOGIN_FAILED);
+        }
+        var session = sessions.create(actor.userId(), actor.credentialVersion(), refreshLifetime());
         audit.recordSuccess(actor.userId(), AuthenticationAuditService.Action.LOGIN);
         return issue(actor, user, session.sessionId(), session.credential());
     }
 
-    private void rejected(boolean locked, boolean lockStarted) {
+    private void rejected(
+            String username, Long userId, Outcome outcome, boolean lockStarted, Integer minutes) {
         try {
-            audit.recordLoginFailure(locked, lockStarted);
+            audit.recordLoginFailure(username, userId, outcome, lockStarted, minutes);
             com.adtek.framework.audit.RequestAuditState.failureCommitted();
         } catch (RuntimeException error) {
             LOG.error(
@@ -140,11 +158,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (command == null) {
             throw new BusinessException(ErrorCodeConstants.ACCOUNT_CHANGED);
         }
+        var identity = sessions.inspectRefresh(command.credential());
+        var actor = authorizations.loadForSession(identity.userId(), identity.credentialVersion());
+        if (actor.isEmpty() || !"USER".equals(actor.get().principalType())) {
+            sessions.revoke(identity.sessionId());
+            throw new BusinessException(ErrorCodeConstants.ACCOUNT_CHANGED);
+        }
         var rotated = sessions.rotate(command.credential(), refreshLifetime());
-        var actor = authorizations.loadCurrent(rotated.userId());
-        if (actor.isEmpty()
-                || actor.get().securityVersion() != rotated.securityVersion()
-                || !"USER".equals(actor.get().principalType())) {
+        if (rotated.userId() != identity.userId()
+                || rotated.credentialVersion() != identity.credentialVersion()) {
             sessions.revoke(rotated.sessionId());
             throw new BusinessException(ErrorCodeConstants.ACCOUNT_CHANGED);
         }
@@ -181,9 +203,36 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     @Transactional
-    public void changePassword(PasswordChangeDTO command) {
+    public AuthenticationResult changePassword(PasswordChangeDTO command) {
         validator.requireValid(command);
         Actor actor = current.requireAuthenticated();
+        try {
+            return changePassword(actor, command);
+        } catch (BusinessException error) {
+            Outcome outcome =
+                    error.getError().equals(ErrorCodeConstants.PASSWORD_WRONG)
+                            ? Outcome.PASSWORD_WRONG
+                            : error.getError().equals(ErrorCodeConstants.PASSWORD_SAME)
+                                    ? Outcome.PASSWORD_SAME
+                                    : error.getError().equals(ErrorCodeConstants.PASSWORD_WEAK)
+                                            ? Outcome.PASSWORD_WEAK
+                                            : null;
+            if (outcome != null) {
+                try {
+                    audit.recordPasswordFailure(actor.userId(), outcome);
+                    com.adtek.framework.audit.RequestAuditState.failureCommitted();
+                } catch (RuntimeException unavailable) {
+                    LOG.error(
+                            "Password rejection audit unavailable traceId={} exceptionType={}",
+                            org.slf4j.MDC.get("traceId"),
+                            unavailable.getClass().getSimpleName());
+                }
+            }
+            throw error;
+        }
+    }
+
+    private AuthenticationResult changePassword(Actor actor, PasswordChangeDTO command) {
         var user = lockCurrent(actor);
         if (!matches(command.oldPassword(), user.getPasswordHash())) {
             throw new BusinessException(ErrorCodeConstants.PASSWORD_WRONG);
@@ -201,6 +250,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
         // 所有请求/刷新都重新比较 MySQL 版本，提交后不依赖 Redis 删除成功才失效。
         audit.recordSuccess(actor.userId(), AuthenticationAuditService.Action.PASSWORD_CHANGE);
+        var fresh =
+                authorizations
+                        .loadCurrent(actor.userId())
+                        .orElseThrow(
+                                () -> new BusinessException(ErrorCodeConstants.ACCOUNT_CHANGED));
+        var session = sessions.create(fresh.userId(), fresh.credentialVersion(), refreshLifetime());
+        return issue(
+                fresh,
+                identities.findById(fresh.userId()),
+                session.sessionId(),
+                session.credential());
     }
 
     @Override
@@ -218,9 +278,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private SysUserEntity lockCurrent(Actor actor) {
         requirePerson(actor);
         var user = identities.lockById(actor.userId());
-        if (user == null
-                || !Boolean.TRUE.equals(user.getEnabled())
-                || user.getSecurityVersion() != actor.securityVersion()) {
+        if (user == null || user.getSecurityVersion() != actor.securityVersion()) {
             throw new BusinessException(ErrorCodeConstants.ACCOUNT_CHANGED);
         }
         return user;

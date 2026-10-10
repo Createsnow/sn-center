@@ -1,0 +1,9 @@
+
+> adtek-platform-sn-web@0.1.0 lint D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> eslint . --max-warnings 0
+
+
+> adtek-platform-sn-web@0.1.0 api:check D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> openapi-typescript openapi/adtek-sn.json -o src/api/generated/schema.d.ts --check
+
+✨ openapi-typescript 7.13.0

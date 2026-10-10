@@ -59,7 +59,13 @@ class LegacyInventoryIT {
         try (var c = source.getConnection()) {
             ScriptUtils.executeSqlScript(c, new ClassPathResource("legacy/repository-v1.sql"));
         }
-        Flyway.configure().dataSource(target).locations("classpath:db/migration").load().migrate();
+        // 离线导入合同仅批准 V14—V19；本套件不能随 Web 最新迁移隐式扩大目标范围。
+        Flyway.configure()
+                .dataSource(target)
+                .locations("classpath:db/migration")
+                .target("19")
+                .load()
+                .migrate();
     }
 
     private void resetTarget() {

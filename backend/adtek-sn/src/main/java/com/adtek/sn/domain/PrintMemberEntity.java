@@ -7,4 +7,5 @@ public record PrintMemberEntity(
         java.time.LocalDate genMonth,
         String itemId,
         String batchId,
-        String snapshot) {}
+        String snapshot,
+        String batchNo) {}

@@ -1,0 +1,153 @@
+
+Running 2 tests using 1 worker
+
+(node:15044) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\k3-responses.spec.ts:99:1 › P05/P12 K3 response shapes, messages, later-page rejection and empty documents (2.9m)
+(node:14292) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [migration] › e2e\parity\k3-responses.spec.ts:99:1 › P05/P12 K3 response shapes, messages, later-page rejection and empty documents (2.6m)
+
+
+  1) [migration] › e2e\parity\k3-responses.spec.ts:99:1 › P05/P12 K3 response shapes, messages, later-page rejection and empty documents 
+
+    Error: expect(received).toHaveLength(expected)
+
+    Expected length: 0
+    Received length: 1
+    Received array:  [{"active": 0, "bill_no": "CMP-MO-001", "customer": "CMP-CUSTOMER", "factory_code": "CMP-A", "factory_id": 1, "id": 1, "line_count": 2, "org_code": "CMP-A", "org_id": "101", "org_name": "比较测试甲厂", "pi": "CMP-PI-001", "po": "CMP-PO", "quantity_ready": 1, "snapshot_version": 52, "source_account": "COMPARISON_SYNTHETIC", "source_bill_id": "9007199254740993", "source_system": "K3", "statuses": "1", "synced_at": "2026-10-09 09:52:26.432377", "total_qty": "10.0000"}]
+
+      263 |               observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001'),
+      264 |             )
+    > 265 |             .toHaveLength(0);
+          |              ^
+      266 |           control({});
+      267 |           await sync(
+      268 |             locale + '-' + example.label + '-restore',
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\k3-responses.spec.ts:265:14
+
+    Error: expect(received).toHaveLength(expected)
+
+    Expected length: 0
+    Received length: 1
+    Received array:  [{"active": 0, "bill_no": "CMP-MO-001", "customer": "CMP-CUSTOMER", "factory_code": "CMP-A", "factory_id": 1, "id": 1, "line_count": 2, "org_code": "CMP-A", "org_id": "101", "org_name": "比较测试甲厂", "pi": "CMP-PI-001", "po": "CMP-PO", "quantity_ready": 1, "snapshot_version": 55, "source_account": "COMPARISON_SYNTHETIC", "source_bill_id": "9007199254740993", "source_system": "K3", "statuses": "1", "synced_at": "2026-10-09 09:52:34.426834", "total_qty": "10.0000"}]
+
+      263 |               observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001'),
+      264 |             )
+    > 265 |             .toHaveLength(0);
+          |              ^
+      266 |           control({});
+      267 |           await sync(
+      268 |             locale + '-' + example.label + '-restore',
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\k3-responses.spec.ts:265:14
+
+    Error: expect(received).toHaveLength(expected)
+
+    Expected length: 0
+    Received length: 1
+    Received array:  [{"active": 0, "bill_no": "CMP-MO-001", "customer": "CMP-CUSTOMER", "factory_code": "CMP-A", "factory_id": 1, "id": 1, "line_count": 2, "org_code": "CMP-A", "org_id": "101", "org_name": "比较测试甲厂", "pi": "CMP-PI-001", "po": "CMP-PO", "quantity_ready": 1, "snapshot_version": 58, "source_account": "COMPARISON_SYNTHETIC", "source_bill_id": "9007199254740993", "source_system": "K3", "statuses": "1", "synced_at": "2026-10-09 09:52:42.567924", "total_qty": "10.0000"}]
+
+      263 |               observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001'),
+      264 |             )
+    > 265 |             .toHaveLength(0);
+          |              ^
+      266 |           control({});
+      267 |           await sync(
+      268 |             locale + '-' + example.label + '-restore',
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\k3-responses.spec.ts:265:14
+
+    Error: expect(received).toHaveLength(expected)
+
+    Expected length: 0
+    Received length: 1
+    Received array:  [{"active": 0, "bill_no": "CMP-MO-001", "customer": "CMP-CUSTOMER", "factory_code": "CMP-A", "factory_id": 1, "id": 1, "line_count": 2, "org_code": "CMP-A", "org_id": "101", "org_name": "比较测试甲厂", "pi": "CMP-PI-001", "po": "CMP-PO", "quantity_ready": 1, "snapshot_version": 63, "source_account": "COMPARISON_SYNTHETIC", "source_bill_id": "9007199254740993", "source_system": "K3", "statuses": "1", "synced_at": "2026-10-09 09:53:13.804493", "total_qty": "10.0000"}]
+
+      263 |               observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001'),
+      264 |             )
+    > 265 |             .toHaveLength(0);
+          |              ^
+      266 |           control({});
+      267 |           await sync(
+      268 |             locale + '-' + example.label + '-restore',
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\k3-responses.spec.ts:265:14
+
+    Error: expect(received).toHaveLength(expected)
+
+    Expected length: 0
+    Received length: 1
+    Received array:  [{"active": 0, "bill_no": "CMP-MO-001", "customer": "CMP-CUSTOMER", "factory_code": "CMP-A", "factory_id": 1, "id": 1, "line_count": 2, "org_code": "CMP-A", "org_id": "101", "org_name": "比较测试甲厂", "pi": "CMP-PI-001", "po": "CMP-PO", "quantity_ready": 1, "snapshot_version": 66, "source_account": "COMPARISON_SYNTHETIC", "source_bill_id": "9007199254740993", "source_system": "K3", "statuses": "1", "synced_at": "2026-10-09 09:53:21.409762", "total_qty": "10.0000"}]
+
+      263 |               observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001'),
+      264 |             )
+    > 265 |             .toHaveLength(0);
+          |              ^
+      266 |           control({});
+      267 |           await sync(
+      268 |             locale + '-' + example.label + '-restore',
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\k3-responses.spec.ts:265:14
+
+    Error: expect(received).toHaveLength(expected)
+
+    Expected length: 0
+    Received length: 1
+    Received array:  [{"active": 0, "bill_no": "CMP-MO-001", "customer": "CMP-CUSTOMER", "factory_code": "CMP-A", "factory_id": 1, "id": 1, "line_count": 2, "org_code": "CMP-A", "org_id": "101", "org_name": "比较测试甲厂", "pi": "CMP-PI-001", "po": "CMP-PO", "quantity_ready": 1, "snapshot_version": 69, "source_account": "COMPARISON_SYNTHETIC", "source_bill_id": "9007199254740993", "source_system": "K3", "statuses": "1", "synced_at": "2026-10-09 09:53:29.078923", "total_qty": "10.0000"}]
+
+      263 |               observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001'),
+      264 |             )
+    > 265 |             .toHaveLength(0);
+          |              ^
+      266 |           control({});
+      267 |           await sync(
+      268 |             locale + '-' + example.label + '-restore',
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\k3-responses.spec.ts:265:14
+
+    Error: expect(received).toHaveLength(expected)
+
+    Expected length: 0
+    Received length: 1
+    Received array:  [{"active": 0, "bill_no": "CMP-MO-001", "customer": "CMP-CUSTOMER", "factory_code": "CMP-A", "factory_id": 1, "id": 1, "line_count": 2, "org_code": "CMP-A", "org_id": "101", "org_name": "比较测试甲厂", "pi": "CMP-PI-001", "po": "CMP-PO", "quantity_ready": 1, "snapshot_version": 74, "source_account": "COMPARISON_SYNTHETIC", "source_bill_id": "9007199254740993", "source_system": "K3", "statuses": "1", "synced_at": "2026-10-09 09:53:59.508050", "total_qty": "10.0000"}]
+
+      263 |               observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001'),
+      264 |             )
+    > 265 |             .toHaveLength(0);
+          |              ^
+      266 |           control({});
+      267 |           await sync(
+      268 |             locale + '-' + example.label + '-restore',
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\k3-responses.spec.ts:265:14
+
+    Error: expect(received).toHaveLength(expected)
+
+    Expected length: 0
+    Received length: 1
+    Received array:  [{"active": 0, "bill_no": "CMP-MO-001", "customer": "CMP-CUSTOMER", "factory_code": "CMP-A", "factory_id": 1, "id": 1, "line_count": 2, "org_code": "CMP-A", "org_id": "101", "org_name": "比较测试甲厂", "pi": "CMP-PI-001", "po": "CMP-PO", "quantity_ready": 1, "snapshot_version": 77, "source_account": "COMPARISON_SYNTHETIC", "source_bill_id": "9007199254740993", "source_system": "K3", "statuses": "1", "synced_at": "2026-10-09 09:54:07.417525", "total_qty": "10.0000"}]
+
+      263 |               observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001'),
+      264 |             )
+    > 265 |             .toHaveLength(0);
+          |              ^
+      266 |           control({});
+      267 |           await sync(
+      268 |             locale + '-' + example.label + '-restore',
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\k3-responses.spec.ts:265:14
+
+    Error: expect(received).toHaveLength(expected)
+
+    Expected length: 0
+    Received length: 1
+    Received array:  [{"active": 0, "bill_no": "CMP-MO-001", "customer": "CMP-CUSTOMER", "factory_code": "CMP-A", "factory_id": 1, "id": 1, "line_count": 2, "org_code": "CMP-A", "org_id": "101", "org_name": "比较测试甲厂", "pi": "CMP-PI-001", "po": "CMP-PO", "quantity_ready": 1, "snapshot_version": 80, "source_account": "COMPARISON_SYNTHETIC", "source_bill_id": "9007199254740993", "source_system": "K3", "statuses": "1", "synced_at": "2026-10-09 09:54:14.838096", "total_qty": "10.0000"}]
+
+      263 |               observed.after.orders.filter((r: { bill_no: string }) => r.bill_no === 'CMP-MO-001'),
+      264 |             )
+    > 265 |             .toHaveLength(0);
+          |              ^
+      266 |           control({});
+      267 |           await sync(
+      268 |             locale + '-' + example.label + '-restore',
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\k3-responses.spec.ts:265:14
+
+    Error Context: test-results\stage50-ui2\k3-responses-P05-P12-K3-re-6f6f9-jection-and-empty-documents-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\k3-responses.spec.ts:99:1 › P05/P12 K3 response shapes, messages, later-page rejection and empty documents 
+  1 passed (5.6m)

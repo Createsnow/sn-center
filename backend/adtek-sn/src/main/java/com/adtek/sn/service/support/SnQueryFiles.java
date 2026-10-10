@@ -4,9 +4,24 @@ import com.adtek.sn.vo.SnQueryItemVO;
 
 import java.util.*;
 
-/** 固定查询文件保留旧11列及不可变身份/当前投影扩展；编码字段用文本，不推断数值或公式。 */
+/** 新查询文件使用原型十一列；旧二十二列仅用于恢复已有固定产物。 */
 public final class SnQueryFiles {
     private SnQueryFiles() {}
+
+    public static List<String> prototypeCells(long ordinal, SnQueryItemVO v) {
+        return Arrays.asList(
+                Long.toString(ordinal),
+                v.sn(),
+                v.seqText(),
+                v.seqDec(),
+                v.pi(),
+                v.material(),
+                v.customer(),
+                v.factoryCode(),
+                v.status(),
+                v.currentBatchNo(),
+                v.billNo());
+    }
 
     public static final List<String> HEADER =
             List.of(

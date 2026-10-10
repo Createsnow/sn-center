@@ -1,0 +1,75 @@
+
+Running 2 tests using 1 worker
+
+(node:16476) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\query.spec.ts:220:1 › P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX (24.5s)
+(node:39244) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [migration] › e2e\parity\query.spec.ts:220:1 › P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX (39.7s)
+
+
+  1) [prototype] › e2e\parity\query.spec.ts:220:1 › P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX 
+
+    TimeoutError: locator.click: Timeout 20000ms exceeded.
+    Call log:
+      - waiting for locator('.el-pagination').getByRole('combobox')
+        - locator resolved to <input readonly value="" type="text" tabindex="0" role="combobox" autocomplete="off" spellcheck="false" id="el-id-9719-64" aria-expanded="false" aria-haspopup="listbox" class="el-select__input" aria-activedescendant="" aria-autocomplete="none" aria-controls="el-id-9719-50"/>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <span>20条/页</span> from <div class="el-select__selected-item el-select__placeholder">…</div> subtree intercepts pointer events
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <span>20条/页</span> from <div class="el-select__selected-item el-select__placeholder">…</div> subtree intercepts pointer events
+        - retrying click action
+          - waiting 100ms
+        38 × waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <span>20条/页</span> from <div class="el-select__selected-item el-select__placeholder">…</div> subtree intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+
+
+      155 | async function size(page: Page, info: TestInfo, value: number) {
+      156 |   const pager = page.locator(source(info) ? '.el-pagination' : '.sn-query-foot .ant-pagination');
+    > 157 |   await pager.getByRole('combobox').click();
+          |                                     ^
+      158 |   await page.getByRole('option', { name: new RegExp('^' + value + '\\s*条/页$') }).click();
+      159 | }
+      160 |
+        at size (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\query.spec.ts:157:37)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\query.spec.ts:249:11
+
+    Error Context: test-results\parity-stage28-query-second\query-P11-query-current-dr-b2391-s-batch-and-actual-CSV-XLSX-prototype\error-context.md
+
+  2) [migration] › e2e\parity\query.spec.ts:220:1 › P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX 
+
+    TimeoutError: page.waitForEvent: Timeout 20000ms exceeded while waiting for event "download"
+    =========================== logs ===========================
+    waiting for event "download"
+    ============================================================
+
+      180 |   batchNo = '',
+      181 | ) {
+    > 182 |   const ready = page.waitForEvent('download');
+          |                      ^
+      183 |   await page
+      184 |     .getByRole('button', { name: format === 'csv' ? 'CSV' : zh.query.exportXlsx, exact: true })
+      185 |     .click();
+        at download (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\query.spec.ts:182:22)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\query.spec.ts:262:11
+
+    Error Context: test-results\parity-stage28-query-second\query-P11-query-current-dr-b2391-s-batch-and-actual-CSV-XLSX-migration\error-context.md
+
+  2 failed
+    [prototype] › e2e\parity\query.spec.ts:220:1 › P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX 
+    [migration] › e2e\parity\query.spec.ts:220:1 › P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX 

@@ -1,0 +1,194 @@
+{
+  "cells": [
+    [
+      "",
+      "2026-10-08 12:00:07",
+      "CMP_AUDIT_VIEW 审计界面样本",
+      "API",
+      "Tạo",
+      "Thành công",
+      "比较测试甲厂",
+      "CMP-UI-AUDIT-VIEW-PI",
+      "AV00007",
+      "7",
+      "Chờ phân bổ → Chờ nhận",
+      ""
+    ]
+  ],
+  "text": "Trung tâm SN\nTổng bộ tạo & phân bổ\nBÀN LÀM VIỆC\nTổng quan\nNGHIỆP VỤ TỔNG BỘ\nLệnh sản xuất\nTạo & phân bổ\nSố bắt đầu & nhập lịch sử\nQuy tắc SN\nNGHIỆP VỤ NHÀ MÁY\nNhận & in\nChuyển nhà máy\nTRA CỨU & NHẬT KÝ\nTra cứu SN\nNhật ký thao tác\nHỆ THỐNG\nTài khoản\nNhà máy\nTrung tâm SN\n/\nNhật ký thao tác\nTổng bộ\nTiếng Việt\n初\n初始管理员 · Quản trị viên (tổng bộ)\nNhật ký thao tác\n\nLưu vĩnh viễn.\n\nXuất Excel\n-\nHành động\nKết quả\nNguồn\nNhà máy\nTìm\n\tThời gian\tNgười thao tác\tNguồn\tHành động\tKết quả\tNhà máy\tPI\tDải số\tSố lượng\tThay đổi trạng thái\tLỗi\n\n \n\t\nThời gian\n\t\nNgười thao tác\n\t\nNguồn\n\t\nHành động\n\t\nKết quả\n\t\nNhà máy\n\t\nPI\n\t\nDải số\n\t\nSố lượng\n\t\nThay đổi trạng thái\n\t\nLỗi\n\n\n\t2026-10-08 12:00:07\tCMP_AUDIT_VIEW 审计界面样本\tAPI\tTạo\tThành công\t比较测试甲厂\tCMP-UI-AUDIT-VIEW-PI\tAV00007\t7\tChờ phân bổ → Chờ nhận\t\nTổng 1\n1\n50 / trang",
+  "details": [],
+  "layout": [
+    [
+      {
+        "x": 240,
+        "y": 76,
+        "width": 1180,
+        "height": 55.796875
+      }
+    ],
+    [
+      {
+        "x": 240,
+        "y": 147.796875,
+        "width": 1180,
+        "height": 251
+      }
+    ],
+    [
+      {
+        "x": 261,
+        "y": 164.796875,
+        "width": 1138,
+        "height": 74
+      }
+    ],
+    [
+      {
+        "x": 261,
+        "y": 250.796875,
+        "width": 48,
+        "height": 32
+      },
+      {
+        "x": 309,
+        "y": 250.796875,
+        "width": 170,
+        "height": 32
+      },
+      {
+        "x": 479,
+        "y": 250.796875,
+        "width": 130,
+        "height": 32
+      },
+      {
+        "x": 609,
+        "y": 250.796875,
+        "width": 70,
+        "height": 32
+      },
+      {
+        "x": 679,
+        "y": 250.796875,
+        "width": 120,
+        "height": 32
+      },
+      {
+        "x": 799,
+        "y": 250.796875,
+        "width": 70,
+        "height": 32
+      },
+      {
+        "x": 869,
+        "y": 250.796875,
+        "width": 110,
+        "height": 32
+      },
+      {
+        "x": 979,
+        "y": 250.796875,
+        "width": 140,
+        "height": 32
+      },
+      {
+        "x": 1119,
+        "y": 250.796875,
+        "width": 230,
+        "height": 32
+      },
+      {
+        "x": 1349,
+        "y": 250.796875,
+        "width": 70,
+        "height": 32
+      },
+      {
+        "x": 1419,
+        "y": 250.796875,
+        "width": 150,
+        "height": 32
+      },
+      {
+        "x": 1569,
+        "y": 250.796875,
+        "width": 160,
+        "height": 32
+      }
+    ],
+    [
+      {
+        "x": 261,
+        "y": 282.796875,
+        "width": 48,
+        "height": 55
+      },
+      {
+        "x": 309,
+        "y": 282.796875,
+        "width": 170,
+        "height": 55
+      },
+      {
+        "x": 479,
+        "y": 282.796875,
+        "width": 130,
+        "height": 55
+      },
+      {
+        "x": 609,
+        "y": 282.796875,
+        "width": 70,
+        "height": 55
+      },
+      {
+        "x": 679,
+        "y": 282.796875,
+        "width": 120,
+        "height": 55
+      },
+      {
+        "x": 799,
+        "y": 282.796875,
+        "width": 70,
+        "height": 55
+      },
+      {
+        "x": 869,
+        "y": 282.796875,
+        "width": 110,
+        "height": 55
+      },
+      {
+        "x": 979,
+        "y": 282.796875,
+        "width": 140,
+        "height": 55
+      },
+      {
+        "x": 1119,
+        "y": 282.796875,
+        "width": 230,
+        "height": 55
+      },
+      {
+        "x": 1349,
+        "y": 282.796875,
+        "width": 70,
+        "height": 55
+      },
+      {
+        "x": 1419,
+        "y": 282.796875,
+        "width": 150,
+        "height": 55
+      },
+      {
+        "x": 1569,
+        "y": 282.796875,
+        "width": 160,
+        "height": 55
+      }
+    ]
+  ]
+}

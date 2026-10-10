@@ -1,0 +1,266 @@
+{
+  "tables": [
+    {
+      "case": "01-default-20.json",
+      "rows": 20,
+      "rawCellsAndOrderEqual": true
+    },
+    {
+      "case": "02-second-page.json",
+      "rows": 20,
+      "rawCellsAndOrderEqual": true
+    },
+    {
+      "case": "03-third-page.json",
+      "rows": 14,
+      "rawCellsAndOrderEqual": true
+    },
+    {
+      "case": "04-fifty-rows.json",
+      "rows": 50,
+      "rawCellsAndOrderEqual": true
+    },
+    {
+      "case": "05-inline-detail.json",
+      "rows": 50,
+      "rawCellsAndOrderEqual": true
+    },
+    {
+      "case": "06-draft-keeps-query.json",
+      "rows": 50,
+      "rawCellsAndOrderEqual": true
+    },
+    {
+      "case": "07-keyword.json",
+      "rows": 1,
+      "rawCellsAndOrderEqual": true
+    },
+    {
+      "case": "08-combined.json",
+      "rows": 3,
+      "rawCellsAndOrderEqual": true
+    },
+    {
+      "case": "09-factory-empty.json",
+      "rows": 0,
+      "rawCellsAndOrderEqual": true
+    },
+    {
+      "case": "10-date-cleared.json",
+      "rows": 50,
+      "rawCellsAndOrderEqual": true
+    },
+    {
+      "case": "10-date-inclusive.json",
+      "rows": 50,
+      "rawCellsAndOrderEqual": true
+    },
+    {
+      "case": "10-literal-wildcard-empty.json",
+      "rows": 0,
+      "rawCellsAndOrderEqual": true
+    },
+    {
+      "case": "11-layout-en.json",
+      "rows": 1,
+      "rawCellsAndOrderEqual": true
+    },
+    {
+      "case": "11-layout-vi.json",
+      "rows": 1,
+      "rawCellsAndOrderEqual": true
+    },
+    {
+      "case": "11-layout-zh.json",
+      "rows": 1,
+      "rawCellsAndOrderEqual": true
+    }
+  ],
+  "layouts": [
+    {
+      "case": "01-default-20.json",
+      "equal": true,
+      "differences": []
+    },
+    {
+      "case": "02-second-page.json",
+      "equal": true,
+      "differences": []
+    },
+    {
+      "case": "03-third-page.json",
+      "equal": true,
+      "differences": []
+    },
+    {
+      "case": "04-fifty-rows.json",
+      "equal": true,
+      "differences": []
+    },
+    {
+      "case": "05-inline-detail.json",
+      "equal": true,
+      "differences": []
+    },
+    {
+      "case": "06-draft-keeps-query.json",
+      "equal": true,
+      "differences": []
+    },
+    {
+      "case": "07-keyword.json",
+      "equal": true,
+      "differences": []
+    },
+    {
+      "case": "08-combined.json",
+      "equal": true,
+      "differences": []
+    },
+    {
+      "case": "09-factory-empty.json",
+      "equal": true,
+      "differences": []
+    },
+    {
+      "case": "10-date-cleared.json",
+      "equal": true,
+      "differences": []
+    },
+    {
+      "case": "10-date-inclusive.json",
+      "equal": true,
+      "differences": []
+    },
+    {
+      "case": "10-literal-wildcard-empty.json",
+      "equal": true,
+      "differences": []
+    },
+    {
+      "case": "11-layout-en.json",
+      "equal": true,
+      "differences": []
+    },
+    {
+      "case": "11-layout-vi.json",
+      "equal": true,
+      "differences": []
+    },
+    {
+      "case": "11-layout-zh.json",
+      "equal": true,
+      "differences": []
+    }
+  ],
+  "export": {
+    "draftFilterScopeEqual": true,
+    "completeFilesEqual": false,
+    "sourceColumns": 24,
+    "migrationColumns": 28,
+    "sourceFilename": "audit_export.xlsx",
+    "migrationFilename": "sn-audit-4f50d48a-024d-47ac-87bb-d8c93e705b71.xlsx",
+    "sourceSheet": "audit",
+    "migrationSheet": "SN",
+    "sharedColumnDifferences": [
+      {
+        "column": "时间",
+        "source": "2026-10-08 12:00:07",
+        "migration": "2026-10-08T04:00:07.000000Z",
+        "sourceType": "s",
+        "migrationType": "s"
+      },
+      {
+        "column": "角色",
+        "source": "admin",
+        "migration": "[\"SN_HQ\"]",
+        "sourceType": "s",
+        "migrationType": "s"
+      },
+      {
+        "column": "动作",
+        "source": "SN_GENERATE",
+        "migration": "sn:generation:execute",
+        "sourceType": "s",
+        "migrationType": "s"
+      },
+      {
+        "column": "结果",
+        "source": "OK",
+        "migration": "SUCCESS",
+        "sourceType": "s",
+        "migrationType": "s"
+      },
+      {
+        "column": "数量",
+        "source": 7,
+        "migration": "7",
+        "sourceType": "n",
+        "migrationType": "s"
+      },
+      {
+        "column": "批次号",
+        "source": null,
+        "migration": "",
+        "sourceType": "n",
+        "migrationType": "s"
+      },
+      {
+        "column": "转厂单号",
+        "source": null,
+        "migration": "",
+        "sourceType": "n",
+        "migrationType": "s"
+      },
+      {
+        "column": "失败原因",
+        "source": null,
+        "migration": "",
+        "sourceType": "n",
+        "migrationType": "s"
+      },
+      {
+        "column": "详情",
+        "source": "{\"case\":\"CMP_AUDIT_VIEW_007\"}",
+        "migration": "{\"case\": \"CMP_AUDIT_VIEW_007\"}",
+        "sourceType": "s",
+        "migrationType": "s"
+      }
+    ]
+  },
+  "inlineDetails": [
+    {
+      "case": "05-inline-detail.json",
+      "cells": 20,
+      "geometryAndStylesEqual": true,
+      "textEqual": false,
+      "differences": [
+        {
+          "cell": 17,
+          "source": {
+            "text": "{\"case\":\"CMP_AUDIT_VIEW_054\"}",
+            "x": 432.4375,
+            "y": 474.296875,
+            "width": 1248.0625,
+            "height": 32,
+            "padding": "4px 7px",
+            "lineHeight": "23px",
+            "border": "1px solid rgb(235, 238, 245)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          "migration": {
+            "text": "{\"case\": \"CMP_AUDIT_VIEW_054\"}",
+            "x": 432.4375,
+            "y": 474.296875,
+            "width": 1248.0625,
+            "height": 32,
+            "padding": "4px 7px",
+            "lineHeight": "23px",
+            "border": "1px solid rgb(235, 238, 245)",
+            "background": "rgba(0, 0, 0, 0)"
+          }
+        }
+      ]
+    }
+  ]
+}

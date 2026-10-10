@@ -1,0 +1,1591 @@
+{
+  "header": [
+    {
+      "x": 220,
+      "y": 0,
+      "width": 1220,
+      "height": 56,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "color": "rgb(15, 23, 42)",
+      "background": "rgb(255, 255, 255)",
+      "borderRadius": "0px",
+      "border": "",
+      "padding": "0px 16px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    }
+  ],
+  "left": [
+    {
+      "x": 236,
+      "y": 11.5,
+      "width": 238.890625,
+      "height": 32,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "color": "rgb(15, 23, 42)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(15, 23, 42)",
+      "padding": "0px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    }
+  ],
+  "right": [
+    {
+      "x": 920.4375,
+      "y": 13.5,
+      "width": 503.5625,
+      "height": 28,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "color": "rgb(15, 23, 42)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(15, 23, 42)",
+      "padding": "0px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    }
+  ],
+  "fold": [
+    {
+      "x": 236,
+      "y": 11.5,
+      "width": 48,
+      "height": 32,
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "lineHeight": "14px",
+      "color": "rgb(96, 98, 102)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "8px",
+      "border": "0px solid rgba(0, 0, 0, 0)",
+      "padding": "8px 15px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    }
+  ],
+  "breadcrumb": [
+    {
+      "x": 294,
+      "y": 20.5,
+      "width": 180.890625,
+      "height": 14,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "14px",
+      "color": "rgb(15, 23, 42)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(15, 23, 42)",
+      "padding": "0px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    }
+  ],
+  "breadcrumbText": [
+    {
+      "x": 294,
+      "y": 20.5,
+      "width": 88.484375,
+      "height": 14,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "14px",
+      "color": "rgb(96, 98, 102)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(96, 98, 102)",
+      "padding": "0px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    },
+    {
+      "x": 405.90625,
+      "y": 20.5,
+      "width": 68.984375,
+      "height": 14,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "14px",
+      "color": "rgb(96, 98, 102)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(96, 98, 102)",
+      "padding": "0px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    }
+  ],
+  "title": [
+    {
+      "x": 240,
+      "y": 76,
+      "width": 191.359375,
+      "height": 29,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "20px",
+      "fontWeight": "600",
+      "lineHeight": "normal",
+      "color": "rgb(15, 23, 42)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(15, 23, 42)",
+      "padding": "0px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    }
+  ],
+  "description": [
+    {
+      "x": 240,
+      "y": 111,
+      "width": 191.359375,
+      "height": 20.796875,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "13px",
+      "fontWeight": "400",
+      "lineHeight": "20.8px",
+      "color": "rgb(100, 116, 139)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(100, 116, 139)",
+      "padding": "0px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    }
+  ],
+  "factory": [
+    {
+      "x": 920.4375,
+      "y": 15.5,
+      "width": 108.703125,
+      "height": 24,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "lineHeight": "12px",
+      "color": "rgb(194, 120, 3)",
+      "background": "rgb(255, 255, 255)",
+      "borderRadius": "4px",
+      "border": "1px solid rgb(243, 209, 158)",
+      "padding": "0px 9px",
+      "characters": [],
+      "text": "比较测试甲厂",
+      "paths": []
+    }
+  ],
+  "factoryIcon": [
+    {
+      "x": 930.4375,
+      "y": 20.5,
+      "width": 14,
+      "height": 14,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "lineHeight": "12px",
+      "color": "rgb(194, 120, 3)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "50%",
+      "border": "0px none rgb(194, 120, 3)",
+      "padding": "0px",
+      "characters": [],
+      "text": null,
+      "paths": [
+        "M192 128v704h384V128zm-32-64h448a32 32 0 0 1 32 32v768a32 32 0 0 1-32 32H160a32 32 0 0 1-32-32V96a32 32 0 0 1 32-32",
+        "M256 256h256v64H256zm0 192h256v64H256zm0 192h256v64H256zm384-128h128v64H640zm0 128h128v64H640zM64 832h896v64H64z",
+        "M640 384v448h192V384zm-32-64h256a32 32 0 0 1 32 32v512a32 32 0 0 1-32 32H608a32 32 0 0 1-32-32V352a32 32 0 0 1 32-32"
+      ]
+    }
+  ],
+  "language": [
+    {
+      "x": 1039.140625,
+      "y": 15.5,
+      "width": 118,
+      "height": 24,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "lineHeight": "20px",
+      "color": "rgb(15, 23, 42)",
+      "background": "rgb(255, 255, 255)",
+      "borderRadius": "8px",
+      "border": "0px none rgb(15, 23, 42)",
+      "padding": "2px 8px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    }
+  ],
+  "languageText": [
+    {
+      "x": 1047.140625,
+      "y": 17.5,
+      "width": 84,
+      "height": 20,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "lineHeight": "20px",
+      "color": "rgb(96, 98, 102)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(96, 98, 102)",
+      "padding": "0px",
+      "characters": [
+        {
+          "text": "T",
+          "x": 0,
+          "y": 1,
+          "width": 7.203125,
+          "height": 17
+        },
+        {
+          "text": "i",
+          "x": 7.1875,
+          "y": 1,
+          "width": 3.3125,
+          "height": 17
+        },
+        {
+          "text": "ế",
+          "x": 10.484375,
+          "y": 1,
+          "width": 6.65625,
+          "height": 17
+        },
+        {
+          "text": "n",
+          "x": 17.125,
+          "y": 1,
+          "width": 7.34375,
+          "height": 17
+        },
+        {
+          "text": "g",
+          "x": 24.453125,
+          "y": 1,
+          "width": 6.78125,
+          "height": 17
+        },
+        {
+          "text": " ",
+          "x": 31.21875,
+          "y": 1,
+          "width": 2.703125,
+          "height": 17
+        },
+        {
+          "text": "V",
+          "x": 33.90625,
+          "y": 1,
+          "width": 6.90625,
+          "height": 17
+        },
+        {
+          "text": "i",
+          "x": 40.796875,
+          "y": 1,
+          "width": 3.328125,
+          "height": 17
+        },
+        {
+          "text": "ệ",
+          "x": 44.109375,
+          "y": 1,
+          "width": 6.484375,
+          "height": 17
+        },
+        {
+          "text": "t",
+          "x": 50.578125,
+          "y": 1,
+          "width": 4.546875,
+          "height": 17
+        }
+      ],
+      "text": "Tiếng Việt",
+      "paths": []
+    }
+  ],
+  "languageArrow": [
+    {
+      "x": 1135.140625,
+      "y": 20.5,
+      "width": 14,
+      "height": 14,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "14px",
+      "color": "rgb(168, 171, 178)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(168, 171, 178)",
+      "padding": "0px",
+      "characters": [],
+      "text": null,
+      "paths": [
+        "M831.872 340.864 512 652.672 192.128 340.864a30.59 30.59 0 0 0-42.752 0 29.12 29.12 0 0 0 0 41.6L489.664 714.24a32 32 0 0 0 44.672 0l340.288-331.712a29.12 29.12 0 0 0 0-41.728 30.59 30.59 0 0 0-42.752 0z"
+      ]
+    }
+  ],
+  "user": [
+    {
+      "x": 1167.140625,
+      "y": 13.5,
+      "width": 256.859375,
+      "height": 28,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "13px",
+      "fontWeight": "400",
+      "lineHeight": "13px",
+      "color": "rgb(15, 23, 42)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(15, 23, 42)",
+      "padding": "0px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    }
+  ],
+  "avatar": [
+    {
+      "x": 1167.140625,
+      "y": 13.5,
+      "width": 28,
+      "height": 28,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "14px",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(192, 196, 204)",
+      "borderRadius": "50%",
+      "border": "0px none rgb(255, 255, 255)",
+      "padding": "0px",
+      "characters": [
+        {
+          "text": "比",
+          "x": 7,
+          "y": 4,
+          "width": 14,
+          "height": 20
+        }
+      ],
+      "text": null,
+      "paths": []
+    }
+  ],
+  "userName": [
+    {
+      "x": 1203.140625,
+      "y": 21,
+      "width": 199.859375,
+      "height": 13,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "13px",
+      "fontWeight": "400",
+      "lineHeight": "13px",
+      "color": "rgb(15, 23, 42)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(15, 23, 42)",
+      "padding": "0px",
+      "characters": [
+        {
+          "text": "比",
+          "x": 0,
+          "y": -3,
+          "width": 13,
+          "height": 19
+        },
+        {
+          "text": "较",
+          "x": 13,
+          "y": -3,
+          "width": 13,
+          "height": 19
+        },
+        {
+          "text": "操",
+          "x": 26,
+          "y": -3,
+          "width": 13,
+          "height": 19
+        },
+        {
+          "text": "作",
+          "x": 39,
+          "y": -3,
+          "width": 13,
+          "height": 19
+        },
+        {
+          "text": "员",
+          "x": 52,
+          "y": -3,
+          "width": 13,
+          "height": 19
+        },
+        {
+          "text": " ",
+          "x": 65,
+          "y": -3,
+          "width": 2.921875,
+          "height": 19
+        },
+        {
+          "text": "·",
+          "x": 67.90625,
+          "y": -3,
+          "width": 13.015625,
+          "height": 19
+        },
+        {
+          "text": " ",
+          "x": 80.90625,
+          "y": -3,
+          "width": 2.921875,
+          "height": 19
+        },
+        {
+          "text": "N",
+          "x": 83.8125,
+          "y": -3,
+          "width": 9.421875,
+          "height": 19
+        },
+        {
+          "text": "h",
+          "x": 93.21875,
+          "y": -3,
+          "width": 7.90625,
+          "height": 19
+        },
+        {
+          "text": "â",
+          "x": 101.109375,
+          "y": -3,
+          "width": 7.328125,
+          "height": 19
+        },
+        {
+          "text": "n",
+          "x": 108.421875,
+          "y": -3,
+          "width": 7.953125,
+          "height": 19
+        },
+        {
+          "text": " ",
+          "x": 116.359375,
+          "y": -3,
+          "width": 2.921875,
+          "height": 19
+        },
+        {
+          "text": "v",
+          "x": 119.265625,
+          "y": -3,
+          "width": 6.796875,
+          "height": 19
+        },
+        {
+          "text": "i",
+          "x": 126.046875,
+          "y": -3,
+          "width": 3.578125,
+          "height": 19
+        },
+        {
+          "text": "ê",
+          "x": 129.609375,
+          "y": -3,
+          "width": 7.21875,
+          "height": 19
+        },
+        {
+          "text": "n",
+          "x": 136.8125,
+          "y": -3,
+          "width": 7.953125,
+          "height": 19
+        },
+        {
+          "text": " ",
+          "x": 144.75,
+          "y": -3,
+          "width": 2.921875,
+          "height": 19
+        },
+        {
+          "text": "n",
+          "x": 147.65625,
+          "y": -3,
+          "width": 7.953125,
+          "height": 19
+        },
+        {
+          "text": "h",
+          "x": 155.59375,
+          "y": -3,
+          "width": 7.90625,
+          "height": 19
+        },
+        {
+          "text": "à",
+          "x": 163.484375,
+          "y": -3,
+          "width": 7.328125,
+          "height": 19
+        },
+        {
+          "text": " ",
+          "x": 170.796875,
+          "y": -3,
+          "width": 2.9375,
+          "height": 19
+        },
+        {
+          "text": "m",
+          "x": 173.71875,
+          "y": -3,
+          "width": 12.046875,
+          "height": 19
+        },
+        {
+          "text": "á",
+          "x": 185.75,
+          "y": -3,
+          "width": 7.328125,
+          "height": 19
+        },
+        {
+          "text": "y",
+          "x": 193.0625,
+          "y": -3,
+          "width": 6.796875,
+          "height": 19
+        }
+      ],
+      "text": "比较操作员 · Nhân viên nhà máy",
+      "paths": []
+    }
+  ],
+  "userArrow": [
+    {
+      "x": 1411,
+      "y": 21,
+      "width": 13,
+      "height": 13,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "13px",
+      "fontWeight": "400",
+      "lineHeight": "13px",
+      "color": "rgb(15, 23, 42)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(15, 23, 42)",
+      "padding": "0px",
+      "characters": [],
+      "text": null,
+      "paths": [
+        "M831.872 340.864 512 652.672 192.128 340.864a30.59 30.59 0 0 0-42.752 0 29.12 29.12 0 0 0 0 41.6L489.664 714.24a32 32 0 0 0 44.672 0l340.288-331.712a29.12 29.12 0 0 0 0-41.728 30.59 30.59 0 0 0-42.752 0z"
+      ]
+    }
+  ],
+  "page": [
+    {
+      "x": 240,
+      "y": 76,
+      "width": 1180,
+      "height": 416.796875,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "color": "rgb(15, 23, 42)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(15, 23, 42)",
+      "padding": "0px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    }
+  ],
+  "head": [
+    {
+      "x": 240,
+      "y": 76,
+      "width": 1180,
+      "height": 55.796875,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "color": "rgb(15, 23, 42)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(15, 23, 42)",
+      "padding": "0px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    }
+  ],
+  "kpis": [
+    {
+      "x": 240,
+      "y": 147.796875,
+      "width": 286,
+      "height": 86,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "color": "rgb(15, 23, 42)",
+      "background": "rgb(255, 255, 255)",
+      "borderRadius": "10px",
+      "border": "1px solid rgb(221, 228, 239)",
+      "padding": "14px 16px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    },
+    {
+      "x": 538,
+      "y": 147.796875,
+      "width": 286,
+      "height": 86,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "color": "rgb(15, 23, 42)",
+      "background": "rgb(255, 255, 255)",
+      "borderRadius": "10px",
+      "border": "1px solid rgb(221, 228, 239)",
+      "padding": "14px 16px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    },
+    {
+      "x": 836,
+      "y": 147.796875,
+      "width": 286,
+      "height": 86,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "color": "rgb(15, 23, 42)",
+      "background": "rgb(255, 255, 255)",
+      "borderRadius": "10px",
+      "border": "1px solid rgb(221, 228, 239)",
+      "padding": "14px 16px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    },
+    {
+      "x": 1134,
+      "y": 147.796875,
+      "width": 286,
+      "height": 86,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "color": "rgb(15, 23, 42)",
+      "background": "rgb(255, 255, 255)",
+      "borderRadius": "10px",
+      "border": "1px solid rgb(221, 228, 239)",
+      "padding": "14px 16px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    }
+  ],
+  "kpiValues": [
+    {
+      "x": 257,
+      "y": 162.796875,
+      "width": 252,
+      "height": 35,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "24px",
+      "fontWeight": "700",
+      "lineHeight": "normal",
+      "color": "rgb(30, 74, 138)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(30, 74, 138)",
+      "padding": "0px",
+      "characters": [],
+      "text": "0",
+      "paths": []
+    },
+    {
+      "x": 555,
+      "y": 162.796875,
+      "width": 252,
+      "height": 35,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "24px",
+      "fontWeight": "700",
+      "lineHeight": "normal",
+      "color": "rgb(30, 74, 138)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(30, 74, 138)",
+      "padding": "0px",
+      "characters": [],
+      "text": "0",
+      "paths": []
+    },
+    {
+      "x": 853,
+      "y": 162.796875,
+      "width": 252,
+      "height": 35,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "24px",
+      "fontWeight": "700",
+      "lineHeight": "normal",
+      "color": "rgb(30, 74, 138)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(30, 74, 138)",
+      "padding": "0px",
+      "characters": [],
+      "text": "0",
+      "paths": []
+    },
+    {
+      "x": 1151,
+      "y": 162.796875,
+      "width": 252,
+      "height": 35,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "24px",
+      "fontWeight": "700",
+      "lineHeight": "normal",
+      "color": "rgb(30, 74, 138)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(30, 74, 138)",
+      "padding": "0px",
+      "characters": [],
+      "text": "0",
+      "paths": []
+    }
+  ],
+  "kpiLabels": [
+    {
+      "x": 257,
+      "y": 201.796875,
+      "width": 252,
+      "height": 17,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "color": "rgb(100, 116, 139)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(100, 116, 139)",
+      "padding": "0px",
+      "characters": [],
+      "text": "Chờ nhận",
+      "paths": []
+    },
+    {
+      "x": 555,
+      "y": 201.796875,
+      "width": 252,
+      "height": 17,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "color": "rgb(100, 116, 139)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(100, 116, 139)",
+      "padding": "0px",
+      "characters": [],
+      "text": "Chờ in",
+      "paths": []
+    },
+    {
+      "x": 853,
+      "y": 201.796875,
+      "width": 252,
+      "height": 17,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "color": "rgb(100, 116, 139)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(100, 116, 139)",
+      "padding": "0px",
+      "characters": [],
+      "text": "Đang xin chuyển",
+      "paths": []
+    },
+    {
+      "x": 1151,
+      "y": 201.796875,
+      "width": 252,
+      "height": 17,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "color": "rgb(100, 116, 139)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(100, 116, 139)",
+      "padding": "0px",
+      "characters": [],
+      "text": "Chuyển chờ xử lý",
+      "paths": []
+    }
+  ],
+  "surfaces": [
+    {
+      "x": 240,
+      "y": 249.796875,
+      "width": 582,
+      "height": 227,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "color": "rgb(15, 23, 42)",
+      "background": "rgb(255, 255, 255)",
+      "borderRadius": "10px",
+      "border": "1px solid rgb(221, 228, 239)",
+      "padding": "16px 20px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    },
+    {
+      "x": 838,
+      "y": 249.796875,
+      "width": 582,
+      "height": 139,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "color": "rgb(15, 23, 42)",
+      "background": "rgb(255, 255, 255)",
+      "borderRadius": "10px",
+      "border": "1px solid rgb(221, 228, 239)",
+      "padding": "16px 20px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    }
+  ],
+  "titles": [
+    {
+      "x": 261,
+      "y": 266.796875,
+      "width": 540,
+      "height": 21,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "15px",
+      "fontWeight": "600",
+      "lineHeight": "normal",
+      "color": "rgb(15, 23, 42)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(15, 23, 42)",
+      "padding": "0px",
+      "characters": [],
+      "text": "Hôm nay",
+      "paths": []
+    },
+    {
+      "x": 859,
+      "y": 266.796875,
+      "width": 540,
+      "height": 21,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "15px",
+      "fontWeight": "600",
+      "lineHeight": "normal",
+      "color": "rgb(15, 23, 42)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(15, 23, 42)",
+      "padding": "0px",
+      "characters": [],
+      "text": "Lối tắt",
+      "paths": []
+    }
+  ],
+  "shortcuts": [
+    {
+      "x": 859,
+      "y": 299.796875,
+      "width": 540,
+      "height": 72,
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "color": "rgb(15, 23, 42)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(15, 23, 42)",
+      "padding": "0px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    }
+  ],
+  "buttons": [
+    {
+      "x": 859,
+      "y": 299.796875,
+      "width": 111.484375,
+      "height": 32,
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "lineHeight": "14px",
+      "color": "rgb(96, 98, 102)",
+      "background": "rgb(255, 255, 255)",
+      "borderRadius": "8px",
+      "border": "1px solid rgb(220, 223, 230)",
+      "padding": "8px 15px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    },
+    {
+      "x": 978.484375,
+      "y": 299.796875,
+      "width": 155.84375,
+      "height": 32,
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "lineHeight": "14px",
+      "color": "rgb(96, 98, 102)",
+      "background": "rgb(255, 255, 255)",
+      "borderRadius": "8px",
+      "border": "1px solid rgb(220, 223, 230)",
+      "padding": "8px 15px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    },
+    {
+      "x": 1142.328125,
+      "y": 299.796875,
+      "width": 121.875,
+      "height": 32,
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "lineHeight": "14px",
+      "color": "rgb(96, 98, 102)",
+      "background": "rgb(255, 255, 255)",
+      "borderRadius": "8px",
+      "border": "1px solid rgb(220, 223, 230)",
+      "padding": "8px 15px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    },
+    {
+      "x": 859,
+      "y": 339.796875,
+      "width": 151.171875,
+      "height": 32,
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "lineHeight": "14px",
+      "color": "rgb(96, 98, 102)",
+      "background": "rgb(255, 255, 255)",
+      "borderRadius": "8px",
+      "border": "1px solid rgb(220, 223, 230)",
+      "padding": "8px 15px",
+      "characters": [],
+      "text": null,
+      "paths": []
+    }
+  ],
+  "icons": [
+    {
+      "x": 875,
+      "y": 308.796875,
+      "width": 14,
+      "height": 14,
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "lineHeight": "14px",
+      "color": "rgb(96, 98, 102)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(96, 98, 102)",
+      "padding": "0px",
+      "characters": [],
+      "text": null,
+      "paths": [
+        "M256 768H105.024c-14.272 0-19.456-1.472-24.64-4.288a29.06 29.06 0 0 1-12.16-12.096C65.536 746.432 64 741.248 64 727.04V379.072c0-42.816 4.48-58.304 12.8-73.984 8.384-15.616 20.672-27.904 36.288-36.288 15.68-8.32 31.168-12.8 73.984-12.8H256V64h512v192h68.928c42.816 0 58.304 4.48 73.984 12.8 15.616 8.384 27.904 20.672 36.288 36.288 8.32 15.68 12.8 31.168 12.8 73.984v347.904c0 14.272-1.472 19.456-4.288 24.64a29.06 29.06 0 0 1-12.096 12.16c-5.184 2.752-10.368 4.224-24.64 4.224H768v192H256zm64-192v320h384V576zm-64 128V512h512v192h128V379.072c0-29.376-1.408-36.48-5.248-43.776a23.3 23.3 0 0 0-10.048-10.048c-7.232-3.84-14.4-5.248-43.776-5.248H187.072c-29.376 0-36.48 1.408-43.776 5.248a23.3 23.3 0 0 0-10.048 10.048c-3.84 7.232-5.248 14.4-5.248 43.776V704zm64-448h384V128H320zm-64 128h64v64h-64zm128 0h64v64h-64z"
+      ]
+    },
+    {
+      "x": 994.484375,
+      "y": 308.796875,
+      "width": 14,
+      "height": 14,
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "lineHeight": "14px",
+      "color": "rgb(96, 98, 102)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(96, 98, 102)",
+      "padding": "0px",
+      "characters": [],
+      "text": null,
+      "paths": [
+        "M118.656 438.656a32 32 0 0 1 0-45.248L416 96l4.48-3.776A32 32 0 0 1 461.248 96l3.712 4.48a32.064 32.064 0 0 1-3.712 40.832L218.56 384H928a32 32 0 1 1 0 64H141.248a32 32 0 0 1-22.592-9.344M64 608a32 32 0 0 1 32-32h786.752a32 32 0 0 1 22.656 54.592L608 928l-4.48 3.776a32.064 32.064 0 0 1-40.832-49.024L805.632 640H96a32 32 0 0 1-32-32"
+      ]
+    },
+    {
+      "x": 1158.328125,
+      "y": 308.796875,
+      "width": 14,
+      "height": 14,
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "lineHeight": "14px",
+      "color": "rgb(96, 98, 102)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(96, 98, 102)",
+      "padding": "0px",
+      "characters": [],
+      "text": null,
+      "paths": [
+        "m795.904 750.72 124.992 124.928a32 32 0 0 1-45.248 45.248L750.656 795.904a416 416 0 1 1 45.248-45.248zM480 832a352 352 0 1 0 0-704 352 352 0 0 0 0 704"
+      ]
+    },
+    {
+      "x": 875,
+      "y": 348.796875,
+      "width": 14,
+      "height": 14,
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "lineHeight": "14px",
+      "color": "rgb(96, 98, 102)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(96, 98, 102)",
+      "padding": "0px",
+      "characters": [],
+      "text": null,
+      "paths": [
+        "M192 128v768h640V128zm-32-64h704a32 32 0 0 1 32 32v832a32 32 0 0 1-32 32H160a32 32 0 0 1-32-32V96a32 32 0 0 1 32-32",
+        "M672 128h64v768h-64zM96 192h128q32 0 32 32t-32 32H96q-32 0-32-32t32-32m0 192h128q32 0 32 32t-32 32H96q-32 0-32-32t32-32m0 192h128q32 0 32 32t-32 32H96q-32 0-32-32t32-32m0 192h128q32 0 32 32t-32 32H96q-32 0-32-32t32-32"
+      ]
+    }
+  ],
+  "buttonTexts": [
+    {
+      "x": 893,
+      "y": 308.796875,
+      "width": 61.484375,
+      "height": 14,
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "lineHeight": "14px",
+      "color": "rgb(96, 98, 102)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(96, 98, 102)",
+      "padding": "0px",
+      "characters": [
+        {
+          "text": "N",
+          "x": 0,
+          "y": -1,
+          "width": 10.125,
+          "height": 16
+        },
+        {
+          "text": "h",
+          "x": 10.109375,
+          "y": -1,
+          "width": 7.796875,
+          "height": 16
+        },
+        {
+          "text": "ậ",
+          "x": 17.890625,
+          "y": -1,
+          "width": 7.796875,
+          "height": 16
+        },
+        {
+          "text": "n",
+          "x": 25.671875,
+          "y": -1,
+          "width": 7.796875,
+          "height": 16
+        },
+        {
+          "text": " ",
+          "x": 33.46875,
+          "y": -1,
+          "width": 3.890625,
+          "height": 16
+        },
+        {
+          "text": "&",
+          "x": 37.34375,
+          "y": -1,
+          "width": 9.359375,
+          "height": 16
+        },
+        {
+          "text": " ",
+          "x": 46.6875,
+          "y": -1,
+          "width": 3.90625,
+          "height": 16
+        },
+        {
+          "text": "i",
+          "x": 50.578125,
+          "y": -1,
+          "width": 3.125,
+          "height": 16
+        },
+        {
+          "text": "n",
+          "x": 53.6875,
+          "y": -1,
+          "width": 7.796875,
+          "height": 16
+        }
+      ],
+      "text": "Nhận & in",
+      "paths": []
+    },
+    {
+      "x": 1012.484375,
+      "y": 308.796875,
+      "width": 105.84375,
+      "height": 14,
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "lineHeight": "14px",
+      "color": "rgb(96, 98, 102)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(96, 98, 102)",
+      "padding": "0px",
+      "characters": [
+        {
+          "text": "C",
+          "x": 0,
+          "y": -1,
+          "width": 10.125,
+          "height": 16
+        },
+        {
+          "text": "h",
+          "x": 10.109375,
+          "y": -1,
+          "width": 7.796875,
+          "height": 16
+        },
+        {
+          "text": "u",
+          "x": 17.890625,
+          "y": -1,
+          "width": 7.796875,
+          "height": 16
+        },
+        {
+          "text": "y",
+          "x": 25.671875,
+          "y": -1,
+          "width": 7.015625,
+          "height": 16
+        },
+        {
+          "text": "ể",
+          "x": 32.671875,
+          "y": -1,
+          "width": 7.796875,
+          "height": 16
+        },
+        {
+          "text": "n",
+          "x": 40.46875,
+          "y": -1,
+          "width": 7.796875,
+          "height": 16
+        },
+        {
+          "text": " ",
+          "x": 48.25,
+          "y": -1,
+          "width": 3.90625,
+          "height": 16
+        },
+        {
+          "text": "n",
+          "x": 52.140625,
+          "y": -1,
+          "width": 7.796875,
+          "height": 16
+        },
+        {
+          "text": "h",
+          "x": 59.921875,
+          "y": -1,
+          "width": 7.796875,
+          "height": 16
+        },
+        {
+          "text": "à",
+          "x": 67.703125,
+          "y": -1,
+          "width": 7.8125,
+          "height": 16
+        },
+        {
+          "text": " ",
+          "x": 75.5,
+          "y": -1,
+          "width": 3.90625,
+          "height": 16
+        },
+        {
+          "text": "m",
+          "x": 79.390625,
+          "y": -1,
+          "width": 11.671875,
+          "height": 16
+        },
+        {
+          "text": "á",
+          "x": 91.046875,
+          "y": -1,
+          "width": 7.796875,
+          "height": 16
+        },
+        {
+          "text": "y",
+          "x": 98.828125,
+          "y": -1,
+          "width": 7.015625,
+          "height": 16
+        }
+      ],
+      "text": "Chuyển nhà máy",
+      "paths": []
+    },
+    {
+      "x": 1176.328125,
+      "y": 308.796875,
+      "width": 71.875,
+      "height": 14,
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "lineHeight": "14px",
+      "color": "rgb(96, 98, 102)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(96, 98, 102)",
+      "padding": "0px",
+      "characters": [
+        {
+          "text": "T",
+          "x": 0,
+          "y": -1,
+          "width": 8.046875,
+          "height": 16
+        },
+        {
+          "text": "r",
+          "x": 8.03125,
+          "y": -1,
+          "width": 4.671875,
+          "height": 16
+        },
+        {
+          "text": "a",
+          "x": 12.6875,
+          "y": -1,
+          "width": 7.796875,
+          "height": 16
+        },
+        {
+          "text": " ",
+          "x": 20.46875,
+          "y": -1,
+          "width": 3.90625,
+          "height": 16
+        },
+        {
+          "text": "c",
+          "x": 24.359375,
+          "y": -1,
+          "width": 7.015625,
+          "height": 16
+        },
+        {
+          "text": "ứ",
+          "x": 31.359375,
+          "y": -1,
+          "width": 9.390625,
+          "height": 16
+        },
+        {
+          "text": "u",
+          "x": 40.734375,
+          "y": -1,
+          "width": 7.796875,
+          "height": 16
+        },
+        {
+          "text": " ",
+          "x": 48.515625,
+          "y": -1,
+          "width": 3.90625,
+          "height": 16
+        },
+        {
+          "text": "S",
+          "x": 52.40625,
+          "y": -1,
+          "width": 9.359375,
+          "height": 16
+        },
+        {
+          "text": "N",
+          "x": 61.75,
+          "y": -1,
+          "width": 10.125,
+          "height": 16
+        }
+      ],
+      "text": "Tra cứu SN",
+      "paths": []
+    },
+    {
+      "x": 893,
+      "y": 348.796875,
+      "width": 101.171875,
+      "height": 14,
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "lineHeight": "14px",
+      "color": "rgb(96, 98, 102)",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "border": "0px none rgb(96, 98, 102)",
+      "padding": "0px",
+      "characters": [
+        {
+          "text": "N",
+          "x": 0,
+          "y": -1,
+          "width": 10.125,
+          "height": 16
+        },
+        {
+          "text": "h",
+          "x": 10.109375,
+          "y": -1,
+          "width": 7.796875,
+          "height": 16
+        },
+        {
+          "text": "ậ",
+          "x": 17.890625,
+          "y": -1,
+          "width": 7.796875,
+          "height": 16
+        },
+        {
+          "text": "t",
+          "x": 25.671875,
+          "y": -1,
+          "width": 3.90625,
+          "height": 16
+        },
+        {
+          "text": " ",
+          "x": 29.5625,
+          "y": -1,
+          "width": 3.90625,
+          "height": 16
+        },
+        {
+          "text": "k",
+          "x": 33.453125,
+          "y": -1,
+          "width": 7.015625,
+          "height": 16
+        },
+        {
+          "text": "ý",
+          "x": 40.453125,
+          "y": -1,
+          "width": 7.015625,
+          "height": 16
+        },
+        {
+          "text": " ",
+          "x": 47.453125,
+          "y": -1,
+          "width": 3.90625,
+          "height": 16
+        },
+        {
+          "text": "t",
+          "x": 51.34375,
+          "y": -1,
+          "width": 3.90625,
+          "height": 16
+        },
+        {
+          "text": "h",
+          "x": 55.234375,
+          "y": -1,
+          "width": 7.796875,
+          "height": 16
+        },
+        {
+          "text": "a",
+          "x": 63.015625,
+          "y": -1,
+          "width": 7.8125,
+          "height": 16
+        },
+        {
+          "text": "o",
+          "x": 70.8125,
+          "y": -1,
+          "width": 7.796875,
+          "height": 16
+        },
+        {
+          "text": " ",
+          "x": 78.59375,
+          "y": -1,
+          "width": 3.90625,
+          "height": 16
+        },
+        {
+          "text": "t",
+          "x": 82.484375,
+          "y": -1,
+          "width": 3.90625,
+          "height": 16
+        },
+        {
+          "text": "á",
+          "x": 86.375,
+          "y": -1,
+          "width": 7.796875,
+          "height": 16
+        },
+        {
+          "text": "c",
+          "x": 94.15625,
+          "y": -1,
+          "width": 7.015625,
+          "height": 16
+        }
+      ],
+      "text": "Nhật ký thao tác",
+      "paths": []
+    }
+  ],
+  "todayBorders": [
+    {
+      "borderBottom": "1px solid rgb(235, 238, 245)"
+    },
+    {
+      "borderBottom": "1px solid rgb(235, 238, 245)"
+    },
+    {
+      "borderBottom": "1px solid rgb(235, 238, 245)"
+    },
+    {
+      "borderBottom": "1px solid rgb(235, 238, 245)"
+    },
+    {
+      "borderBottom": "1px solid rgb(235, 238, 245)"
+    },
+    {
+      "borderBottom": "1px solid rgb(235, 238, 245)"
+    },
+    {
+      "borderBottom": "1px solid rgb(235, 238, 245)"
+    },
+    {
+      "borderBottom": "1px solid rgb(235, 238, 245)"
+    },
+    {
+      "borderBottom": "1px solid rgb(235, 238, 245)"
+    },
+    {
+      "borderBottom": "1px solid rgb(235, 238, 245)"
+    }
+  ]
+}

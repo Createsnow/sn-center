@@ -1,0 +1,11 @@
+
+Running 2 tests using 1 worker
+
+(node:49408) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\order-interactions.spec.ts:11:1 › P05 interactions: overflow, line details, schedule limits and cancellation in three languages (2.3m)
+(node:48016) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [migration] › e2e\parity\order-interactions.spec.ts:11:1 › P05 interactions: overflow, line details, schedule limits and cancellation in three languages (2.3m)
+
+  2 passed (4.6m)

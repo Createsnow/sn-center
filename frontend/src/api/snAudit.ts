@@ -17,8 +17,8 @@ export const isSnAudit = (v: unknown): v is SnAudit =>
   isOperationId(v.id) &&
   text(v.createdAt) &&
   Number.isFinite(Date.parse(v.createdAt)) &&
-  decimal(v.actorId) &&
-  decimal(v.quantity) &&
+  nullable(v.actorId, decimal) &&
+  nullable(v.quantity, decimal) &&
   ['operator', 'operatorName', 'roles', 'source', 'action', 'detail'].every((k) => text(v[k])) &&
   ['SUCCESS', 'FAILED'].includes(String(v.result)) &&
   ['factoryId', 'toFactoryId'].every((k) => nullable(v[k], decimal)) &&
@@ -31,12 +31,15 @@ export const isSnAudit = (v: unknown): v is SnAudit =>
     'customer',
     'material',
     'billNo',
+    'batchNo',
+    'transferNo',
     'startSn',
     'endSn',
     'beforeStatus',
     'afterStatus',
     'reason',
     'errorCode',
+    'errorMessage',
     'traceId',
   ].every((k) => nullable(v[k], text)) &&
   ['batchId', 'operationId', 'transferId'].every((k) => nullable(v[k], isOperationId));
@@ -55,6 +58,11 @@ const params = (filter: SnAuditFilter, cursor?: string, size?: number) => {
   return p.toString();
 };
 export const snAuditApi = {
+  page: (filter: SnAuditFilter, page: number, size: number) =>
+    query(
+      '/sn/audits/page?' + params(filter, undefined, size) + '&page=' + page,
+      pageGuard(isSnAudit),
+    ),
   items: (filter: SnAuditFilter, cursor?: string, size = 50) =>
     query('/sn/audits?' + params(filter, cursor, size), cursorGuard(isSnAudit)),
   count: (filter: SnAuditFilter) => query('/sn/audits/count?' + params(filter), isSnCount),

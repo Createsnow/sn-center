@@ -1,0 +1,31 @@
+
+Running 2 tests using 1 worker
+
+(node:18840) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\dashboard-layout.spec.ts:174:1 › P01 P04 factory operator header and shortcuts: three languages, four widths and real navigation (3.0m)
+(node:27800) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [migration] › e2e\parity\dashboard-layout.spec.ts:174:1 › P01 P04 factory operator header and shortcuts: three languages, four widths and real navigation (11.9s)
+
+
+  1) [prototype] › e2e\parity\dashboard-layout.spec.ts:174:1 › P01 P04 factory operator header and shortcuts: three languages, four widths and real navigation 
+
+    Test timeout of 180000ms exceeded.
+
+    Error: page.setViewportSize: Target page, context or browser has been closed
+
+      261 |     );
+      262 |   } finally {
+    > 263 |     await page.setViewportSize({ width: 1440, height: 960 });
+          |                ^
+      264 |     await language(page, info, '简体中文');
+      265 |   }
+      266 | });
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\dashboard-layout.spec.ts:263:16
+
+    Error Context: test-results\stage38-narrow-ui\dashboard-layout-P01-P04-f-96270--widths-and-real-navigation-prototype\error-context.md
+
+  1 failed
+    [prototype] › e2e\parity\dashboard-layout.spec.ts:174:1 › P01 P04 factory operator header and shortcuts: three languages, four widths and real navigation 
+  1 passed (3.2m)

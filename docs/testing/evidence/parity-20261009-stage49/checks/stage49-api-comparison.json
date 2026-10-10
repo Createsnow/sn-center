@@ -1,0 +1,941 @@
+{
+  "python": {
+    "requests": [
+      {
+        "label": "absent-body",
+        "status": 200,
+        "result": {
+          "mode": "all",
+          "bill_no": "",
+          "rows": 4,
+          "bills": 3,
+          "synced_at": "2026-10-09 16:47:48",
+          "removed": false,
+          "unmapped_orgs": []
+        }
+      },
+      {
+        "label": "null-body",
+        "status": 200,
+        "result": {
+          "mode": "all",
+          "bill_no": "",
+          "rows": 4,
+          "bills": 3,
+          "synced_at": "2026-10-09 16:47:48",
+          "removed": false,
+          "unmapped_orgs": []
+        }
+      },
+      {
+        "label": "empty-object",
+        "status": 200,
+        "result": {
+          "mode": "all",
+          "bill_no": "",
+          "rows": 4,
+          "bills": 3,
+          "synced_at": "2026-10-09 16:47:48",
+          "removed": false,
+          "unmapped_orgs": []
+        }
+      },
+      {
+        "label": "null-bill",
+        "status": 200,
+        "result": {
+          "mode": "all",
+          "bill_no": "",
+          "rows": 4,
+          "bills": 3,
+          "synced_at": "2026-10-09 16:47:48",
+          "removed": false,
+          "unmapped_orgs": []
+        }
+      },
+      {
+        "label": "blank-0",
+        "status": 400,
+        "result": {
+          "code": "ORDER_BILL_REQUIRED",
+          "message": "请输入单据编号",
+          "params": {}
+        }
+      },
+      {
+        "label": "blank-1",
+        "status": 400,
+        "result": {
+          "code": "ORDER_BILL_REQUIRED",
+          "message": "请输入单据编号",
+          "params": {}
+        }
+      },
+      {
+        "label": "blank-2",
+        "status": 400,
+        "result": {
+          "code": "ORDER_BILL_REQUIRED",
+          "message": "请输入单据编号",
+          "params": {}
+        }
+      },
+      {
+        "label": "blank-3",
+        "status": 400,
+        "result": {
+          "code": "ORDER_BILL_REQUIRED",
+          "message": "请输入单据编号",
+          "params": {}
+        }
+      },
+      {
+        "label": "set-hour",
+        "status": 200,
+        "result": {
+          "enabled": true,
+          "interval_minutes": 60,
+          "next_run_at": "2026-10-09 17:47:48",
+          "last_run_at": "2026-10-09 16:25:00",
+          "last_ok": true,
+          "last_bills": 3,
+          "last_rows": 4,
+          "last_message": "",
+          "updated_by": "audit202610094990",
+          "updated_at": "2026-10-09 16:47:48",
+          "min_interval": 10,
+          "max_interval": 10080
+        }
+      },
+      {
+        "label": "omitted-interval",
+        "status": 200,
+        "result": {
+          "enabled": true,
+          "interval_minutes": 60,
+          "next_run_at": "2026-10-09 17:47:48",
+          "last_run_at": "2026-10-09 16:25:00",
+          "last_ok": true,
+          "last_bills": 3,
+          "last_rows": 4,
+          "last_message": "",
+          "updated_by": "audit202610094990",
+          "updated_at": "2026-10-09 16:47:48",
+          "min_interval": 10,
+          "max_interval": 10080
+        }
+      },
+      {
+        "label": "null-interval",
+        "status": 200,
+        "result": {
+          "enabled": true,
+          "interval_minutes": 60,
+          "next_run_at": "2026-10-09 17:47:48",
+          "last_run_at": "2026-10-09 16:25:00",
+          "last_ok": true,
+          "last_bills": 3,
+          "last_rows": 4,
+          "last_message": "",
+          "updated_by": "audit202610094990",
+          "updated_at": "2026-10-09 16:47:48",
+          "min_interval": 10,
+          "max_interval": 10080
+        }
+      },
+      {
+        "label": "interval--1",
+        "status": 400,
+        "result": {
+          "code": "ORDER_SYNC_INTERVAL_INVALID",
+          "message": "定时同步间隔须为 10–10080 分钟",
+          "params": {
+            "min": 10,
+            "max": 10080
+          }
+        }
+      },
+      {
+        "label": "interval-0",
+        "status": 400,
+        "result": {
+          "code": "ORDER_SYNC_INTERVAL_INVALID",
+          "message": "定时同步间隔须为 10–10080 分钟",
+          "params": {
+            "min": 10,
+            "max": 10080
+          }
+        }
+      },
+      {
+        "label": "interval-9",
+        "status": 400,
+        "result": {
+          "code": "ORDER_SYNC_INTERVAL_INVALID",
+          "message": "定时同步间隔须为 10–10080 分钟",
+          "params": {
+            "min": 10,
+            "max": 10080
+          }
+        }
+      },
+      {
+        "label": "interval-10081",
+        "status": 400,
+        "result": {
+          "code": "ORDER_SYNC_INTERVAL_INVALID",
+          "message": "定时同步间隔须为 10–10080 分钟",
+          "params": {
+            "min": 10,
+            "max": 10080
+          }
+        }
+      },
+      {
+        "label": "interval-2147483647",
+        "status": 400,
+        "result": {
+          "code": "ORDER_SYNC_INTERVAL_INVALID",
+          "message": "定时同步间隔须为 10–10080 分钟",
+          "params": {
+            "min": 10,
+            "max": 10080
+          }
+        }
+      },
+      {
+        "label": "disable-keep-hour",
+        "status": 200,
+        "result": {
+          "enabled": false,
+          "interval_minutes": 60,
+          "next_run_at": null,
+          "last_run_at": "2026-10-09 16:25:00",
+          "last_ok": true,
+          "last_bills": 3,
+          "last_rows": 4,
+          "last_message": "",
+          "updated_by": "audit202610094990",
+          "updated_at": "2026-10-09 16:47:48",
+          "min_interval": 10,
+          "max_interval": 10080
+        }
+      },
+      {
+        "label": "valid-interval-10",
+        "status": 200,
+        "result": {
+          "enabled": false,
+          "interval_minutes": 10,
+          "next_run_at": null,
+          "last_run_at": "2026-10-09 16:25:00",
+          "last_ok": true,
+          "last_bills": 3,
+          "last_rows": 4,
+          "last_message": "",
+          "updated_by": "audit202610094990",
+          "updated_at": "2026-10-09 16:47:48",
+          "min_interval": 10,
+          "max_interval": 10080
+        }
+      },
+      {
+        "label": "valid-interval-10080",
+        "status": 200,
+        "result": {
+          "enabled": false,
+          "interval_minutes": 10080,
+          "next_run_at": null,
+          "last_run_at": "2026-10-09 16:25:00",
+          "last_ok": true,
+          "last_bills": 3,
+          "last_rows": 4,
+          "last_message": "",
+          "updated_by": "audit202610094990",
+          "updated_at": "2026-10-09 16:47:48",
+          "min_interval": 10,
+          "max_interval": 10080
+        }
+      },
+      {
+        "label": "valid-interval-1440",
+        "status": 200,
+        "result": {
+          "enabled": false,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "last_run_at": "2026-10-09 16:25:00",
+          "last_ok": true,
+          "last_bills": 3,
+          "last_rows": 4,
+          "last_message": "",
+          "updated_by": "audit202610094990",
+          "updated_at": "2026-10-09 16:47:48",
+          "min_interval": 10,
+          "max_interval": 10080
+        }
+      }
+    ],
+    "audits": [
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "OK",
+        "enabled=False interval_minutes=1440 before=enabled=False interval_minutes=10080",
+        null,
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "OK",
+        "enabled=False interval_minutes=10080 before=enabled=False interval_minutes=10",
+        null,
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "OK",
+        "enabled=False interval_minutes=10 before=enabled=False interval_minutes=60",
+        null,
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "OK",
+        "enabled=False interval_minutes=60 before=enabled=True interval_minutes=60",
+        null,
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "FAIL",
+        "PUT /api/orders/sync-schedule",
+        "定时同步间隔须为 10–10080 分钟",
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "FAIL",
+        "PUT /api/orders/sync-schedule",
+        "定时同步间隔须为 10–10080 分钟",
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "FAIL",
+        "PUT /api/orders/sync-schedule",
+        "定时同步间隔须为 10–10080 分钟",
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "FAIL",
+        "PUT /api/orders/sync-schedule",
+        "定时同步间隔须为 10–10080 分钟",
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "FAIL",
+        "PUT /api/orders/sync-schedule",
+        "定时同步间隔须为 10–10080 分钟",
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "OK",
+        "enabled=True interval_minutes=60 before=enabled=True interval_minutes=60",
+        null,
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "OK",
+        "enabled=True interval_minutes=60 before=enabled=True interval_minutes=60",
+        null,
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "OK",
+        "enabled=True interval_minutes=60 before=enabled=False interval_minutes=1440",
+        null,
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC",
+        "FAIL",
+        "POST /api/orders/sync",
+        "请输入单据编号",
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC",
+        "FAIL",
+        "POST /api/orders/sync",
+        "请输入单据编号",
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC",
+        "FAIL",
+        "POST /api/orders/sync",
+        "请输入单据编号",
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC",
+        "FAIL",
+        "POST /api/orders/sync",
+        "请输入单据编号",
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC",
+        "OK",
+        "mode=all rows=4",
+        null,
+        null,
+        3
+      ],
+      [
+        "ORDER_SYNC",
+        "OK",
+        "mode=all rows=4",
+        null,
+        null,
+        3
+      ],
+      [
+        "ORDER_SYNC",
+        "OK",
+        "mode=all rows=4",
+        null,
+        null,
+        3
+      ],
+      [
+        "ORDER_SYNC",
+        "OK",
+        "mode=all rows=4",
+        null,
+        null,
+        3
+      ]
+    ]
+  },
+  "java": {
+    "requests": [
+      {
+        "label": "absent-body",
+        "status": 200,
+        "result": {
+          "id": "a810da33-78d0-47b5-926f-7acb6830f0ab",
+          "mode": "all",
+          "billNo": "",
+          "state": "SUCCESS",
+          "baseVersion": "13",
+          "publishedVersion": "15",
+          "rowsCount": "4",
+          "billsCount": "3",
+          "errorCode": null,
+          "orgSyncFailed": false,
+          "startedAt": "2026-10-09T08:47:48.774290Z",
+          "finishedAt": "2026-10-09T08:47:49.048978800Z"
+        }
+      },
+      {
+        "label": "null-body",
+        "status": 200,
+        "result": {
+          "id": "5e21706a-c6e7-441f-a7fe-5c5a7a496750",
+          "mode": "all",
+          "billNo": "",
+          "state": "SUCCESS",
+          "baseVersion": "15",
+          "publishedVersion": "17",
+          "rowsCount": "4",
+          "billsCount": "3",
+          "errorCode": null,
+          "orgSyncFailed": false,
+          "startedAt": "2026-10-09T08:47:49.146634Z",
+          "finishedAt": "2026-10-09T08:47:49.225668300Z"
+        }
+      },
+      {
+        "label": "empty-object",
+        "status": 200,
+        "result": {
+          "id": "36dc1165-d922-4216-98f1-cbd50b9aff65",
+          "mode": "all",
+          "billNo": "",
+          "state": "SUCCESS",
+          "baseVersion": "17",
+          "publishedVersion": "19",
+          "rowsCount": "4",
+          "billsCount": "3",
+          "errorCode": null,
+          "orgSyncFailed": false,
+          "startedAt": "2026-10-09T08:47:49.312205Z",
+          "finishedAt": "2026-10-09T08:47:49.395313400Z"
+        }
+      },
+      {
+        "label": "null-bill",
+        "status": 200,
+        "result": {
+          "id": "6ce0f3de-fd5a-4e50-bfb6-0c42b7df0727",
+          "mode": "all",
+          "billNo": "",
+          "state": "SUCCESS",
+          "baseVersion": "19",
+          "publishedVersion": "21",
+          "rowsCount": "4",
+          "billsCount": "3",
+          "errorCode": null,
+          "orgSyncFailed": false,
+          "startedAt": "2026-10-09T08:47:49.481272Z",
+          "finishedAt": "2026-10-09T08:47:49.581116400Z"
+        }
+      },
+      {
+        "label": "blank-0",
+        "status": 400,
+        "result": {
+          "code": 1004000034,
+          "message": "sn.orderBillRequired",
+          "data": null,
+          "params": {},
+          "traceId": "aa007ac5-8097-4606-8287-a77a65dcaa69"
+        }
+      },
+      {
+        "label": "blank-1",
+        "status": 400,
+        "result": {
+          "code": 1004000034,
+          "message": "sn.orderBillRequired",
+          "data": null,
+          "params": {},
+          "traceId": "5b95520b-8cb3-4033-8d59-405fb24af747"
+        }
+      },
+      {
+        "label": "blank-2",
+        "status": 400,
+        "result": {
+          "code": 1004000034,
+          "message": "sn.orderBillRequired",
+          "data": null,
+          "params": {},
+          "traceId": "87cea872-c2e4-41ab-a7ae-f66755cd0994"
+        }
+      },
+      {
+        "label": "blank-3",
+        "status": 400,
+        "result": {
+          "code": 1004000034,
+          "message": "sn.orderBillRequired",
+          "data": null,
+          "params": {},
+          "traceId": "0f73ffba-f5af-4cb5-beab-de4e127161c8"
+        }
+      },
+      {
+        "label": "set-hour",
+        "status": 200,
+        "result": {
+          "enabled": true,
+          "workerEnabled": true,
+          "intervalMinutes": 60,
+          "nextRunAt": "2026-10-09T09:47:49.847062Z",
+          "ownerId": "900202610094990",
+          "ownerName": "audit202610094990",
+          "lastRunId": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "lastRunAt": "2026-10-09T08:26:45.775734Z",
+          "lastState": "SUCCESS",
+          "lastErrorCode": null,
+          "lastOk": true,
+          "lastErrorMessage": "",
+          "lastBills": "3",
+          "lastRows": "4",
+          "updatedAt": "2026-10-09T08:47:49.849417Z"
+        }
+      },
+      {
+        "label": "omitted-interval",
+        "status": 200,
+        "result": {
+          "enabled": true,
+          "workerEnabled": true,
+          "intervalMinutes": 60,
+          "nextRunAt": "2026-10-09T09:47:49.847062Z",
+          "ownerId": "900202610094990",
+          "ownerName": "audit202610094990",
+          "lastRunId": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "lastRunAt": "2026-10-09T08:26:45.775734Z",
+          "lastState": "SUCCESS",
+          "lastErrorCode": null,
+          "lastOk": true,
+          "lastErrorMessage": "",
+          "lastBills": "3",
+          "lastRows": "4",
+          "updatedAt": "2026-10-09T08:47:49.882065Z"
+        }
+      },
+      {
+        "label": "null-interval",
+        "status": 200,
+        "result": {
+          "enabled": true,
+          "workerEnabled": true,
+          "intervalMinutes": 60,
+          "nextRunAt": "2026-10-09T09:47:49.847062Z",
+          "ownerId": "900202610094990",
+          "ownerName": "audit202610094990",
+          "lastRunId": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "lastRunAt": "2026-10-09T08:26:45.775734Z",
+          "lastState": "SUCCESS",
+          "lastErrorCode": null,
+          "lastOk": true,
+          "lastErrorMessage": "",
+          "lastBills": "3",
+          "lastRows": "4",
+          "updatedAt": "2026-10-09T08:47:49.923309Z"
+        }
+      },
+      {
+        "label": "interval--1",
+        "status": 400,
+        "result": {
+          "code": 1004000035,
+          "message": "sn.orderSyncIntervalInvalid",
+          "data": null,
+          "params": {
+            "max": "10080",
+            "min": "10"
+          },
+          "traceId": "8a9ccb74-c090-439e-af27-61a9d4cb047d"
+        }
+      },
+      {
+        "label": "interval-0",
+        "status": 400,
+        "result": {
+          "code": 1004000035,
+          "message": "sn.orderSyncIntervalInvalid",
+          "data": null,
+          "params": {
+            "max": "10080",
+            "min": "10"
+          },
+          "traceId": "14aed5a9-76e4-449a-95ee-c0f19593b6ea"
+        }
+      },
+      {
+        "label": "interval-9",
+        "status": 400,
+        "result": {
+          "code": 1004000035,
+          "message": "sn.orderSyncIntervalInvalid",
+          "data": null,
+          "params": {
+            "max": "10080",
+            "min": "10"
+          },
+          "traceId": "cbb3f293-37e2-40ff-9989-99a72aff084c"
+        }
+      },
+      {
+        "label": "interval-10081",
+        "status": 400,
+        "result": {
+          "code": 1004000035,
+          "message": "sn.orderSyncIntervalInvalid",
+          "data": null,
+          "params": {
+            "max": "10080",
+            "min": "10"
+          },
+          "traceId": "a7a97af7-1e47-4f18-93e4-b23f9cf5ad03"
+        }
+      },
+      {
+        "label": "interval-2147483647",
+        "status": 400,
+        "result": {
+          "code": 1004000035,
+          "message": "sn.orderSyncIntervalInvalid",
+          "data": null,
+          "params": {
+            "max": "10080",
+            "min": "10"
+          },
+          "traceId": "a1189e2f-98df-4867-a87a-6379a11fd29d"
+        }
+      },
+      {
+        "label": "disable-keep-hour",
+        "status": 200,
+        "result": {
+          "enabled": false,
+          "workerEnabled": true,
+          "intervalMinutes": 60,
+          "nextRunAt": null,
+          "ownerId": "900202610094990",
+          "ownerName": "audit202610094990",
+          "lastRunId": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "lastRunAt": "2026-10-09T08:26:45.775734Z",
+          "lastState": "SUCCESS",
+          "lastErrorCode": null,
+          "lastOk": true,
+          "lastErrorMessage": "",
+          "lastBills": "3",
+          "lastRows": "4",
+          "updatedAt": "2026-10-09T08:47:50.294064Z"
+        }
+      },
+      {
+        "label": "valid-interval-10",
+        "status": 200,
+        "result": {
+          "enabled": false,
+          "workerEnabled": true,
+          "intervalMinutes": 10,
+          "nextRunAt": null,
+          "ownerId": "900202610094990",
+          "ownerName": "audit202610094990",
+          "lastRunId": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "lastRunAt": "2026-10-09T08:26:45.775734Z",
+          "lastState": "SUCCESS",
+          "lastErrorCode": null,
+          "lastOk": true,
+          "lastErrorMessage": "",
+          "lastBills": "3",
+          "lastRows": "4",
+          "updatedAt": "2026-10-09T08:47:50.337034Z"
+        }
+      },
+      {
+        "label": "valid-interval-10080",
+        "status": 200,
+        "result": {
+          "enabled": false,
+          "workerEnabled": true,
+          "intervalMinutes": 10080,
+          "nextRunAt": null,
+          "ownerId": "900202610094990",
+          "ownerName": "audit202610094990",
+          "lastRunId": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "lastRunAt": "2026-10-09T08:26:45.775734Z",
+          "lastState": "SUCCESS",
+          "lastErrorCode": null,
+          "lastOk": true,
+          "lastErrorMessage": "",
+          "lastBills": "3",
+          "lastRows": "4",
+          "updatedAt": "2026-10-09T08:47:50.378583Z"
+        }
+      },
+      {
+        "label": "valid-interval-1440",
+        "status": 200,
+        "result": {
+          "enabled": false,
+          "workerEnabled": true,
+          "intervalMinutes": 1440,
+          "nextRunAt": null,
+          "ownerId": "900202610094990",
+          "ownerName": "audit202610094990",
+          "lastRunId": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "lastRunAt": "2026-10-09T08:26:45.775734Z",
+          "lastState": "SUCCESS",
+          "lastErrorCode": null,
+          "lastOk": true,
+          "lastErrorMessage": "",
+          "lastBills": "3",
+          "lastRows": "4",
+          "updatedAt": "2026-10-09T08:47:50.416661Z"
+        }
+      }
+    ],
+    "audits": [
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "OK",
+        "enabled=False interval_minutes=1440 before=enabled=False interval_minutes=10080",
+        null,
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "OK",
+        "enabled=False interval_minutes=10080 before=enabled=False interval_minutes=10",
+        null,
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "OK",
+        "enabled=False interval_minutes=10 before=enabled=False interval_minutes=60",
+        null,
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "OK",
+        "enabled=False interval_minutes=60 before=enabled=True interval_minutes=60",
+        null,
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "FAIL",
+        "PUT /api/orders/sync-schedule",
+        "定时同步间隔须为 10–10080 分钟",
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "FAIL",
+        "PUT /api/orders/sync-schedule",
+        "定时同步间隔须为 10–10080 分钟",
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "FAIL",
+        "PUT /api/orders/sync-schedule",
+        "定时同步间隔须为 10–10080 分钟",
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "FAIL",
+        "PUT /api/orders/sync-schedule",
+        "定时同步间隔须为 10–10080 分钟",
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "FAIL",
+        "PUT /api/orders/sync-schedule",
+        "定时同步间隔须为 10–10080 分钟",
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "OK",
+        "enabled=True interval_minutes=60 before=enabled=True interval_minutes=60",
+        null,
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "OK",
+        "enabled=True interval_minutes=60 before=enabled=True interval_minutes=60",
+        null,
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC_SCHEDULE",
+        "OK",
+        "enabled=True interval_minutes=60 before=enabled=False interval_minutes=1440",
+        null,
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC",
+        "FAIL",
+        "POST /api/orders/sync",
+        "请输入单据编号",
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC",
+        "FAIL",
+        "POST /api/orders/sync",
+        "请输入单据编号",
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC",
+        "FAIL",
+        "POST /api/orders/sync",
+        "请输入单据编号",
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC",
+        "FAIL",
+        "POST /api/orders/sync",
+        "请输入单据编号",
+        null,
+        null
+      ],
+      [
+        "ORDER_SYNC",
+        "OK",
+        "mode=all rows=4",
+        null,
+        null,
+        3
+      ],
+      [
+        "ORDER_SYNC",
+        "OK",
+        "mode=all rows=4",
+        null,
+        null,
+        3
+      ],
+      [
+        "ORDER_SYNC",
+        "OK",
+        "mode=all rows=4",
+        null,
+        null,
+        3
+      ],
+      [
+        "ORDER_SYNC",
+        "OK",
+        "mode=all rows=4",
+        null,
+        null,
+        3
+      ]
+    ]
+  }
+}

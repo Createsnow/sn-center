@@ -10,6 +10,7 @@ import com.adtek.framework.task.service.DurableTaskService;
 import com.adtek.framework.task.vo.TaskVO;
 import com.adtek.sn.domain.*;
 import com.adtek.sn.dto.*;
+import com.adtek.sn.query.AcquireItemsQuery;
 import com.adtek.sn.query.AcquireQuery;
 import com.adtek.sn.service.AcquireService;
 import com.adtek.sn.service.support.*;
@@ -245,7 +246,9 @@ public class AcquireServiceImpl implements AcquireService {
     @Override
     @Transactional(readOnly = true)
     public AcquireWorkVO result(String id) {
-        return e.convert.work(own(id));
+        var work = own(id);
+        var batch = work.batchId() == null ? null : e.rows.batchById(work.batchId());
+        return e.convert.work(work, batch == null ? null : batch.batchNo());
     }
 
     private void size(int size) {
@@ -324,6 +327,30 @@ public class AcquireServiceImpl implements AcquireService {
                         .toList();
         return new CursorResult<>(
                 output, more ? cursors.next(binding, page.getLast().ordinal(), null, null) : null);
+    }
+
+    @Override
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public PageResult<SnReadItemVO> currentItems(String id, AcquireItemsQuery query) {
+        validator.requireValid(query);
+        String batchId = TaskAccess.uuid(id);
+        var actor = e.policy.read(AcquirePolicy.VIEW);
+        var batch = e.rows.batchById(batchId);
+        if (batch == null) throw SnPolicy.missing();
+        e.policy.require(actor, AcquirePolicy.VIEW, batch.factoryId());
+        Map<Long, RuleVersionEntity> cache = new HashMap<>();
+        // 列表和总数共享读快照，避免并发转厂造成同一响应中的数量不一致。
+        return new PageResult<>(
+                e
+                        .rows
+                        .currentBatchItems(
+                                batchId, (long) (query.page() - 1) * query.size(), query.size())
+                        .stream()
+                        .map(row -> e.convert.item(row, e.seqText(row, cache)))
+                        .toList(),
+                Long.toString(e.rows.currentBatchCount(batchId)),
+                query.page(),
+                query.size());
     }
 
     @Override

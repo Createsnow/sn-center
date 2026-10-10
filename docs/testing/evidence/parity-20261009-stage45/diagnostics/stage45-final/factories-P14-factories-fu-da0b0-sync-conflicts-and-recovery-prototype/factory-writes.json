@@ -1,0 +1,168 @@
+[
+  {
+    "label": "04-empty-invalid",
+    "status": 400,
+    "body": {
+      "code": "FACTORY_CODE_INVALID",
+      "message": "工厂编码与名称必填，编码不超过 64 位",
+      "params": {}
+    }
+  },
+  {
+    "label": "05-code-too-long",
+    "status": 400,
+    "body": {
+      "code": "FACTORY_CODE_INVALID",
+      "message": "工厂编码与名称必填，编码不超过 64 位",
+      "params": {}
+    }
+  },
+  {
+    "label": "06-name-too-long",
+    "status": 400,
+    "body": {
+      "code": "FACTORY_CODE_INVALID",
+      "message": "工厂编码与名称必填，编码不超过 64 位",
+      "params": {}
+    }
+  },
+  {
+    "label": "07-created",
+    "status": 200,
+    "body": {
+      "factory_code": "CMP_F44_MANUAL",
+      "factory_name": "比较工厂44-手工",
+      "enabled": true,
+      "source": "MANUAL",
+      "created_at": "2026-10-09 14:18:40",
+      "updated_at": "2026-10-09 14:18:40"
+    }
+  },
+  {
+    "label": "08-duplicate-code",
+    "status": 409,
+    "body": {
+      "code": "FACTORY_EXISTS",
+      "message": "工厂编码或名称已存在：CMP_F44_MANUAL/比较工厂44-重复编码",
+      "params": {
+        "factory": "CMP_F44_MANUAL/比较工厂44-重复编码"
+      }
+    }
+  },
+  {
+    "label": "09-duplicate-name",
+    "status": 409,
+    "body": {
+      "code": "FACTORY_EXISTS",
+      "message": "工厂编码或名称已存在：CMP_F44_CONFLICT/比较工厂44-手工",
+      "params": {
+        "factory": "CMP_F44_CONFLICT/比较工厂44-手工"
+      }
+    }
+  },
+  {
+    "label": "10-case-distinct",
+    "status": 200,
+    "body": {
+      "factory_code": "cmp_f44_manual",
+      "factory_name": "比较工厂44-小写",
+      "enabled": true,
+      "source": "MANUAL",
+      "created_at": "2026-10-09 14:18:48",
+      "updated_at": "2026-10-09 14:18:48"
+    }
+  },
+  {
+    "label": "11-accent",
+    "status": 200,
+    "body": {
+      "factory_code": "CMP_F44_é",
+      "factory_name": "比较工厂44-é",
+      "enabled": true,
+      "source": "MANUAL",
+      "created_at": "2026-10-09 14:18:52",
+      "updated_at": "2026-10-09 14:18:52"
+    }
+  },
+  {
+    "label": "12-plain",
+    "status": 200,
+    "body": {
+      "factory_code": "CMP_F44_e",
+      "factory_name": "比较工厂44-e",
+      "enabled": true,
+      "source": "MANUAL",
+      "created_at": "2026-10-09 14:18:56",
+      "updated_at": "2026-10-09 14:18:56"
+    }
+  },
+  {
+    "label": "13-codepoint-limit",
+    "status": 200,
+    "body": {
+      "factory_code": "🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭🏭",
+      "factory_name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+      "enabled": true,
+      "source": "MANUAL",
+      "created_at": "2026-10-09 14:19:01",
+      "updated_at": "2026-10-09 14:19:01"
+    }
+  },
+  {
+    "label": "14-sync-new-update-conflict",
+    "status": 200,
+    "body": {
+      "total": 3,
+      "inserted": 1,
+      "updated": 1,
+      "conflicts": [
+        "CMP_F44_CONFLICT/比较工厂44-00"
+      ]
+    }
+  },
+  {
+    "label": "15-sync-unchanged",
+    "status": 200,
+    "body": {
+      "total": 3,
+      "inserted": 0,
+      "updated": 0,
+      "conflicts": [
+        "CMP_F44_CONFLICT/比较工厂44-00"
+      ]
+    }
+  },
+  {
+    "label": "16-sync-rename-conflict",
+    "status": 200,
+    "body": {
+      "total": 1,
+      "inserted": 0,
+      "updated": 0,
+      "conflicts": [
+        "CMP_F44_MANUAL/比较工厂44-00"
+      ]
+    }
+  },
+  {
+    "label": "17-sync-failure",
+    "status": 502,
+    "body": {
+      "code": "K3_QUERY_FAILED",
+      "message": "金蝶查询失败：HTTP 503",
+      "params": {
+        "message": "HTTP 503"
+      }
+    }
+  },
+  {
+    "label": "18-sync-empty-recovery",
+    "status": 200,
+    "body": {
+      "total": 0,
+      "inserted": 0,
+      "updated": 0,
+      "conflicts": []
+    }
+  }
+]

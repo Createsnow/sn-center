@@ -1,0 +1,201 @@
+{
+  "date": "2026-10-09",
+  "goal": "active",
+  "schema": 41,
+  "backend": [
+    {
+      "name": "com.adtek.common.core.DataScopeTest",
+      "count": 3,
+      "seconds": 0.068
+    },
+    {
+      "name": "com.adtek.framework.audit.AuditContextTest",
+      "count": 3,
+      "seconds": 0.1
+    },
+    {
+      "name": "com.adtek.framework.audit.RequestFailureAuditFilterTest",
+      "count": 4,
+      "seconds": 0.132
+    },
+    {
+      "name": "com.adtek.framework.mybatis.ScopedDataPermissionInterceptorTest",
+      "count": 6,
+      "seconds": 0.144
+    },
+    {
+      "name": "com.adtek.framework.security.CurrentActorTest",
+      "count": 3,
+      "seconds": 0.009
+    },
+    {
+      "name": "com.adtek.framework.security.JwtTokenCodecTest",
+      "count": 3,
+      "seconds": 0.151
+    },
+    {
+      "name": "com.adtek.framework.security.PasswordEncodingTest",
+      "count": 3,
+      "seconds": 0.309
+    },
+    {
+      "name": "com.adtek.framework.security.RedisFailureTest",
+      "count": 2,
+      "seconds": 0.76
+    },
+    {
+      "name": "com.adtek.framework.task.FileStorageTest",
+      "count": 6,
+      "seconds": 0.329
+    },
+    {
+      "name": "com.adtek.framework.web.LegacyBoundaryTest",
+      "count": 2,
+      "seconds": 1.009
+    },
+    {
+      "name": "com.adtek.framework.web.ResultSerializationTest",
+      "count": 1,
+      "seconds": 0.017
+    },
+    {
+      "name": "com.adtek.framework.web.TraceFilterTest",
+      "count": 1,
+      "seconds": 0.003
+    },
+    {
+      "name": "com.adtek.server.SnAuditIT",
+      "count": 23,
+      "seconds": 61.679
+    },
+    {
+      "name": "com.adtek.server.SnFoundationIT",
+      "count": 37,
+      "seconds": 38.46
+    },
+    {
+      "name": "com.adtek.server.ArchitectureTest",
+      "count": 3,
+      "seconds": 4.27
+    },
+    {
+      "name": "com.adtek.server.ArchiveRestoreProofTest",
+      "count": 5,
+      "seconds": 0.634
+    },
+    {
+      "name": "com.adtek.server.AuditProjectionTest",
+      "count": 3,
+      "seconds": 0.011
+    },
+    {
+      "name": "com.adtek.server.ErrorCodeCatalogTest",
+      "count": 1,
+      "seconds": 0.505
+    },
+    {
+      "name": "com.adtek.server.K3ConfigurationTest",
+      "count": 2,
+      "seconds": 0.601
+    },
+    {
+      "name": "com.adtek.server.K3ErrorsTest",
+      "count": 7,
+      "seconds": 1.209
+    },
+    {
+      "name": "com.adtek.server.K3LegacyProtocolTest",
+      "count": 1,
+      "seconds": 0.045
+    },
+    {
+      "name": "com.adtek.server.LegacyErrorCatalogTest",
+      "count": 1,
+      "seconds": 0.015
+    },
+    {
+      "name": "com.adtek.server.MaintenanceScheduleTest",
+      "count": 3,
+      "seconds": 0.021
+    },
+    {
+      "name": "com.adtek.sn.service.support.InitializationErrorsTest",
+      "count": 3,
+      "seconds": 0.253
+    },
+    {
+      "name": "com.adtek.sn.service.support.PrintFilesTest",
+      "count": 2,
+      "seconds": 0.667
+    },
+    {
+      "name": "com.adtek.sn.service.support.SequenceCodecTest",
+      "count": 10,
+      "seconds": 0.062
+    },
+    {
+      "name": "com.adtek.sn.service.support.SnAuditFilesTest",
+      "count": 10,
+      "seconds": 0.293
+    },
+    {
+      "name": "com.adtek.sn.service.support.SnImportDigestTest",
+      "count": 1,
+      "seconds": 0.023
+    }
+  ],
+  "frontendUnit": 83,
+  "ui": {
+    "startTime": "2026-10-09T09:19:37.143Z",
+    "duration": 86505.852,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "screenshots": 38,
+  "diagnosticScreenshots": 115,
+  "registeredUiTests": 225,
+  "registeredUiFiles": 39,
+  "fullUiMatrixRerun": false,
+  "statePairs": 19,
+  "geometryGroups": 90,
+  "directApiOperationsPerSystem": 20,
+  "matchingAuditFacts": 20,
+  "sourceFiles": {
+    "backend/adtek-server/src/test/java/com/adtek/server/SnAuditIT.java": "e7a48db2c5b75f992cef408806632def419a063a4a8531465520e8a8efd4b58a",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/constant/ErrorCodeConstants.java": "628540c71b5efba509a401e7abdb2df25ee2dd3dd826d0b62ddb1011beee2e47",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/controller/OrderController.java": "e289a8041f701aac9516fdb2e7fcf31de04d953e5d3eaa9f982c2673d663aaf0",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/dto/OrderScheduleDTO.java": "836f11261b92550d907edcb898dc50060242b75227410c8d138ad6db5e37e732",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/dto/OrderSyncDTO.java": "04a6f949e883ff525bcdb65aba45c5e4dbbf60191db70e435a6c0e291e674ec6",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/OrderScheduleServiceImpl.java": "9553b6175ea054b4195cd51fd8771a1b3bcba1357d77fe879299915e68465f72",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/OrderServiceImpl.java": "6dcac08d6ceb6b891d015ae40fd9fb6556e6ddd2a6f780b1248ae4a296c5e75f",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/OrderAuditText.java": "46e60c7dd8a40bfce22a313fba605bf7e2cbc76046fcf9fe86e0bcb2152b025e",
+    "frontend/e2e/parity/order-boundaries.spec.ts": "4167848bc088ba8bbbd3e6b969df6dc6452e7688d75174464f054a867e2c2ebf",
+    "frontend/openapi/adtek-sn.json": "ebefa4e7d3fdfdccff88bc81f746c22d4a5c2168f359b194acef05fb80603d11",
+    "frontend/playwright.parity.config.ts": "702e61f4c28f3873f17b8716eba5391aaa25083a90a08040751f15a7c49ea918",
+    "frontend/src/api/generated/schema.d.ts": "3e82716115d0e503cdececc7634413f708dc6c30dde9481b8acb3ddbe27dc1d2",
+    "frontend/src/components/prototype/icons.json": "3ffc63580e9bc76cf956e067821fcdfd4ef30f8e9b58e55057b9d22dcf0c1a31",
+    "frontend/src/features/sn/components/OrderSyncSchedule.tsx": "478690cf5fd2e6fce4e00859497270355e74d4b44567178c0df7213017d47ccf",
+    "frontend/src/features/sn/pages/OrdersPage.tsx": "653777c071a97be193159d7b559d20103f2b68e34ea8c7e13eb3b42d4d59935a",
+    "frontend/src/features/sn/syncErrorText.test.ts": "dc9b632248a16c4116fcf386704b1f3e74bd8e8ca602da3bd21eaca0af6e9d85",
+    "frontend/src/features/sn/syncErrorText.ts": "d138431447c9cbed4339ff4f040ccfc16e996ec53c79058464bf3ffd627d472d",
+    "frontend/src/i18n/locales/en.json": "b2a59255ef51fbd160abeecc8a934ca291e41f0eab6758351ae84f03cb9993d8",
+    "frontend/src/i18n/locales/vi.json": "dd959a237d3de9031c8820314d46f1bcd182a56965a7209561de4726ad3b04ea",
+    "frontend/src/i18n/locales/zh-CN.json": "289b371da2bc47e06991705ecc8460296409dd95e9473b6578389ba0728288ef",
+    "frontend/src/i18n/prototype/errors.en.json": "70ab0fb07e12071db65ec4e6851ed34e453189157b87b8532b5bf97fd828aeac",
+    "frontend/src/i18n/prototype/errors.vi.json": "3e9e8a7af1c94ae00dfca732715d7a137dd8ba56d0697ce2221fd09087938760",
+    "frontend/src/i18n/prototype/errors.zh-CN.json": "107cdaaf7551ad517bf85ce825dc4f2bda4da2ee0caa0fa1da2c7480b99dd971",
+    "frontend/src/styles.css": "dd3bcb8b0af84934aeaa57df62ca2d2d86378e9e6e00d03d673aa8f1396ab0c4",
+    "tools/testing/parity-order-audit-fixture.py": "cfe06bf8d5ca3763dd820db97224b6bb32f3e5c4de318c6f2ca288ae1fb27686",
+    "tools/testing/parity-order-boundary-api.py": "bd2a6cc219c2a6a71c5307b1647c8e681fafc42457857efeaafd323b19ebb75e"
+  },
+  "mainDataPreserved": true,
+  "dedicatedServicesStopped": true,
+  "remaining": [
+    "Full K3 response/error cases and request coercion/oversized boundaries",
+    "P01-P16 complete UI/role/language/viewport matrix",
+    "Generation after factory changes, concurrency, recovery, MES and full UI business loop",
+    "Scheduled internal SQL text, table ellipsis/tooltips and remaining dialog/visual details"
+  ]
+}

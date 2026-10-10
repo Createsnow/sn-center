@@ -1,0 +1,32 @@
+[
+  {
+    "label": "factories-before",
+    "top": 151,
+    "height": 2142,
+    "client": 904
+  },
+  {
+    "label": "audit-after-long",
+    "top": 0,
+    "height": 962,
+    "client": 904
+  },
+  {
+    "label": "factories-return",
+    "top": 0,
+    "height": 2142,
+    "client": 904
+  },
+  {
+    "label": "orders-after-long",
+    "top": 0,
+    "height": 964,
+    "client": 904
+  },
+  {
+    "label": "factories-after-short",
+    "top": 0,
+    "height": 2142,
+    "client": 904
+  }
+]

@@ -1,0 +1,11 @@
+-------------------------------------------------------------------------------
+Test set: com.adtek.server.SnFoundationIT
+-------------------------------------------------------------------------------
+Tests run: 37, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 92.35 s <<< FAILURE! -- in com.adtek.server.SnFoundationIT
+com.adtek.server.SnFoundationIT.duplicateIdentityAndResourceLimitNeverPublishPartialOrders -- Time elapsed: 1.161 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: 2L
+ but was: 3L
+	at com.adtek.server.SnFoundationIT.duplicateIdentityAndResourceLimitNeverPublishPartialOrders(SnFoundationIT.java:976)
+

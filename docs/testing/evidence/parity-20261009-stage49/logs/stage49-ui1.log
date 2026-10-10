@@ -1,0 +1,66 @@
+
+Running 2 tests using 1 worker
+
+(node:26028) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\order-boundaries.spec.ts:14:1 › P05 boundaries: Unicode blank bill, three-language validation and schedule owner handover (3.8s)
+(node:25048) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [migration] › e2e\parity\order-boundaries.spec.ts:14:1 › P05 boundaries: Unicode blank bill, three-language validation and schedule owner handover (6.1s)
+
+
+  1) [prototype] › e2e\parity\order-boundaries.spec.ts:14:1 › P05 boundaries: Unicode blank bill, three-language validation and schedule owner handover 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: locator('.el-message--error')
+    Expected: "请输入单据编号"
+    Error: strict mode violation: locator('.el-message--error') resolved to 2 elements:
+        1) <div role="alert" id="message_1" class="el-message el-message--error is-closable is-center el-message-fade-leave-active el-message-fade-leave-to">…</div> aka locator('#message_1')
+        2) <div role="alert" id="message_2" class="el-message el-message--error is-closable is-center el-message-fade-enter-from el-message-fade-enter-active">…</div> aka locator('#message_2')
+
+    Call log:
+      - Expect "toHaveText" locator('.el-message--error') with timeout 15000ms
+      - waiting for locator('.el-message--error')
+
+
+      79 |         await button.click();const response=await pending;expect(response.status()).toBe(400);writes.push({locale,suffix,body:await response.json()});
+      80 |         const message=page.locator(prototype?'.el-message--error':'.sn-prototype-error-message');
+    > 81 |         await expect(message).toHaveText(errors.ORDER_BILL_REQUIRED);
+         |                               ^
+      82 |         expect(fixture('snapshot').orders).toEqual(ordersBefore);
+      83 |         expect((await (await request.get('http://127.0.0.1:19091')).json()).queryRequests).toBe(erpBefore);
+      84 |         await capture(locale+'-'+suffix);
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-boundaries.spec.ts:81:31
+
+    Error Context: test-results\stage49-ui1\order-boundaries-P05-bound-0fcda-and-schedule-owner-handover-prototype\error-context.md
+
+  2) [migration] › e2e\parity\order-boundaries.spec.ts:14:1 › P05 boundaries: Unicode blank bill, three-language validation and schedule owner handover 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: locator('.sn-prototype-error-message')
+    Expected: "请输入单据编号"
+    Error: strict mode violation: locator('.sn-prototype-error-message') resolved to 2 elements:
+        1) <div role="alert" data-notification-index="0" class="ant-message-notice ant-message-notice-error sn-prototype-error-message ant-message-fade-leave ant-message-fade-leave-active ant-message-fade">…</div> aka getByRole('alert').first()
+        2) <div role="alert" data-notification-index="0" class="ant-message-notice ant-message-notice-error sn-prototype-error-message ant-message-fade-appear ant-message-fade-appear-start ant-message-fade">…</div> aka getByRole('alert').nth(1)
+
+    Call log:
+      - Expect "toHaveText" locator('.sn-prototype-error-message') with timeout 15000ms
+      - waiting for locator('.sn-prototype-error-message')
+
+
+      79 |         await button.click();const response=await pending;expect(response.status()).toBe(400);writes.push({locale,suffix,body:await response.json()});
+      80 |         const message=page.locator(prototype?'.el-message--error':'.sn-prototype-error-message');
+    > 81 |         await expect(message).toHaveText(errors.ORDER_BILL_REQUIRED);
+         |                               ^
+      82 |         expect(fixture('snapshot').orders).toEqual(ordersBefore);
+      83 |         expect((await (await request.get('http://127.0.0.1:19091')).json()).queryRequests).toBe(erpBefore);
+      84 |         await capture(locale+'-'+suffix);
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-boundaries.spec.ts:81:31
+
+    Error Context: test-results\stage49-ui1\order-boundaries-P05-bound-0fcda-and-schedule-owner-handover-migration\error-context.md
+
+  2 failed
+    [prototype] › e2e\parity\order-boundaries.spec.ts:14:1 › P05 boundaries: Unicode blank bill, three-language validation and schedule owner handover 
+    [migration] › e2e\parity\order-boundaries.spec.ts:14:1 › P05 boundaries: Unicode blank bill, three-language validation and schedule owner handover 

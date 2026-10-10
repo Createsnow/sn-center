@@ -1,0 +1,34 @@
+{
+  "kind": "java",
+  "items": [
+    {
+      "sn": "G0600001",
+      "seq_dec": 1,
+      "status": "PENDING_ALLOC",
+      "material": "QUOTA",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600002",
+      "seq_dec": 2,
+      "status": "PENDING_ALLOC",
+      "material": "QUOTA",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    }
+  ],
+  "allocations": [],
+  "jobs": [
+    {
+      "state": "FAILED",
+      "qty": 3,
+      "error_code": 1004000018,
+      "error_params": "{\"qty\": \"3\", \"quota\": \"2\", \"reason\": \"GEN_QUOTA_EXCEEDED\"}"
+    },
+    {
+      "state": "SUCCESS",
+      "qty": 2,
+      "error_code": null,
+      "error_params": null
+    }
+  ]
+}

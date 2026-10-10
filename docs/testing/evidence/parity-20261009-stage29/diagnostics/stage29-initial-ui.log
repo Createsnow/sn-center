@@ -1,0 +1,59 @@
+
+Running 2 tests using 1 worker
+
+(node:38920) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\query-roles.spec.ts:138:1 › P11 roles: factory scope, cross-factory read-only, denied PI and scoped exports (11.7s)
+(node:24156) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  x  2 [migration] › e2e\parity\query-roles.spec.ts:138:1 › P11 roles: factory scope, cross-factory read-only, denied PI and scoped exports (40.5s)
+
+
+  1) [migration] › e2e\parity\query-roles.spec.ts:138:1 › P11 roles: factory scope, cross-factory read-only, denied PI and scoped exports 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 3
+    Received: 0
+
+      217 |           await capture(rolePage, info, user + '-03-denied');
+      218 |           // 拒绝后继续显示最后成功的结果；错误为原型五秒可关闭提示。
+    > 219 |           expect.soft(await rows(rolePage, info).count()).toBe(3);
+          |                                                           ^
+      220 |           await expect
+      221 |             .soft(
+      222 |               rolePage.getByText(`本厂没有 PI ${PIS[1]} 的号，不能查看其他工厂`, { exact: true }),
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\query-roles.spec.ts:219:59
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('本厂没有 PI CMP-UI-QUERY-SCOPE-PI-B 的号，不能查看其他工厂', { exact: true })
+    Expected: visible
+    Timeout: 3000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "soft toBeVisible" getByText('本厂没有 PI CMP-UI-QUERY-SCOPE-PI-B 的号，不能查看其他工厂', { exact: true }) with timeout 3000ms
+      - waiting for getByText('本厂没有 PI CMP-UI-QUERY-SCOPE-PI-B 的号，不能查看其他工厂', { exact: true })
+
+
+      222 |               rolePage.getByText(`本厂没有 PI ${PIS[1]} 的号，不能查看其他工厂`, { exact: true }),
+      223 |             )
+    > 224 |             .toBeVisible({ timeout: 3000 });
+          |              ^
+      225 |           await rolePage.getByPlaceholder('PI', { exact: true }).fill('');
+      226 |           await expect(rolePage.getByRole('switch')).toBeDisabled();
+      227 |           await expect(rolePage.getByText(zh.acquire.piAllReadOnly, { exact: true })).toHaveCount(
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\query-roles.spec.ts:224:14
+
+    Error Context: test-results\stage29-initial-ui\query-roles-P11-roles-fact-33aba-enied-PI-and-scoped-exports-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\query-roles.spec.ts:138:1 › P11 roles: factory scope, cross-factory read-only, denied PI and scoped exports 
+  1 passed (55.1s)

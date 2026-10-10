@@ -1,0 +1,7 @@
+
+> adtek-platform-sn-web@0.1.0 typecheck D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> tsc --noEmit
+
+src/app/App.tsx(145,21): error TS2741: Property 'username' is missing in type '{ mandatory: boolean; }' but required in type '{ mandatory?: boolean | undefined; username: string; }'.
+src/app/App.tsx(149,21): error TS2741: Property 'username' is missing in type '{ mandatory: boolean; }' but required in type '{ mandatory?: boolean | undefined; username: string; }'.
+ ELIFECYCLE  Command failed with exit code 2.

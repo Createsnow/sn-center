@@ -4,6 +4,8 @@ package com.adtek.sn.vo;
 @io.swagger.v3.oas.annotations.media.Schema(
         requiredProperties = {
             "id",
+            "printNo",
+            "actorName",
             "factoryId",
             "factoryCode",
             "factoryName",
@@ -18,6 +20,8 @@ package com.adtek.sn.vo;
         })
 public record PrintVO(
         String id,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String printNo,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String actorName,
         String factoryId,
         String factoryCode,
         String factoryName,

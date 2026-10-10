@@ -1,0 +1,25 @@
+
+Running 16 tests using 1 worker
+
+(node:43740) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [prototype] › e2e\parity\acquire-print.spec.ts:576:1 › P09 transferred print: real factory round trip, current batch details and historical files (59.2s)
+  ok  2 [prototype] › e2e\parity\transfer-form.spec.ts:141:1 › P10 transfer form: automatic candidates, material scope, single SN and cancelled confirmation (9.9s)
+  ok  3 [prototype] › e2e\parity\transfer-form.spec.ts:225:1 › P10 transfer roles: bound factory and query accounts preserve inventory (8.9s)
+  ok  4 [prototype] › e2e\parity\transfer-impact.spec.ts:212:1 › P10 cross PI hints: wait for impact, zero skipped positions, gaps and actual transfer (16.6s)
+  ok  5 [prototype] › e2e\parity\transfer-impact.spec.ts:299:1 › P10 cross PI duplicate: exact count and five samples, single SN and same PI reset (7.3s)
+  ok  6 [prototype] › e2e\parity\transfer-lifecycle.spec.ts:337:1 › P10 applied transfers: withdraw, reject, approve and fixed 50-row detail pages (37.5s)
+  ok  7 [prototype] › e2e\parity\transfer-targets.spec.ts:149:1 › P10 snapshot picker: fifty rows, literal bill search, grouping, unmapped target and persistent selection (8.3s)
+  ok  8 [prototype] › e2e\parity\transfer-targets.spec.ts:278:1 › P10 snapshot pending search: retain visible rows and selection while a real request waits (4.6s)
+(node:35236) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  9 [migration] › e2e\parity\acquire-print.spec.ts:576:1 › P09 transferred print: real factory round trip, current batch details and historical files (1.2m)
+  ok 10 [migration] › e2e\parity\transfer-form.spec.ts:141:1 › P10 transfer form: automatic candidates, material scope, single SN and cancelled confirmation (22.1s)
+  ok 11 [migration] › e2e\parity\transfer-form.spec.ts:225:1 › P10 transfer roles: bound factory and query accounts preserve inventory (37.0s)
+  ok 12 [migration] › e2e\parity\transfer-impact.spec.ts:212:1 › P10 cross PI hints: wait for impact, zero skipped positions, gaps and actual transfer (35.0s)
+  ok 13 [migration] › e2e\parity\transfer-impact.spec.ts:299:1 › P10 cross PI duplicate: exact count and five samples, single SN and same PI reset (19.3s)
+  ok 14 [migration] › e2e\parity\transfer-lifecycle.spec.ts:337:1 › P10 applied transfers: withdraw, reject, approve and fixed 50-row detail pages (1.1m)
+  ok 15 [migration] › e2e\parity\transfer-targets.spec.ts:149:1 › P10 snapshot picker: fifty rows, literal bill search, grouping, unmapped target and persistent selection (16.7s)
+  ok 16 [migration] › e2e\parity\transfer-targets.spec.ts:278:1 › P10 snapshot pending search: retain visible rows and selection while a real request waits (9.0s)
+
+  16 passed (7.2m)

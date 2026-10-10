@@ -9,7 +9,8 @@ import org.apache.ibatis.annotations.*;
 public interface OrderScheduleMapper {
     String COLUMNS =
             "enabled,interval_minutes,next_run_at,owner_id,last_run_id,last_run_at,"
-                    + "lease_until,last_state,last_error_code,last_bills,last_rows,updated_at";
+                    + "lease_until,last_state,last_error_code,last_ok,last_error_message,"
+                    + "last_bills,last_rows,updated_at";
 
     @Select("SELECT " + COLUMNS + " FROM sn_order_sync_schedule WHERE id=1")
     OrderScheduleEntity get();
@@ -28,7 +29,7 @@ public interface OrderScheduleMapper {
 
     @Update(
             "UPDATE sn_order_sync_schedule SET last_run_id=#{runId},"
-                    + "last_run_at=CURRENT_TIMESTAMP(6),last_state='FETCHING',last_error_code=NULL,"
+                    + "last_run_at=CURRENT_TIMESTAMP(6),last_state='FETCHING',"
                     + "lease_until=TIMESTAMPADD(SECOND,300,CURRENT_TIMESTAMP(6)),"
                     + "next_run_at=TIMESTAMPADD(MINUTE,interval_minutes,CURRENT_TIMESTAMP(6))"
                     + " WHERE id=1")
@@ -36,13 +37,15 @@ public interface OrderScheduleMapper {
 
     @Update(
             "UPDATE sn_order_sync_schedule SET last_state='SUCCESS',last_error_code=NULL,"
+                    + "last_ok=TRUE,last_error_message='',"
                     + "last_bills=#{bills},last_rows=#{rows},lease_until=NULL WHERE id=1"
                     + " AND last_run_id=#{runId} AND last_state='FETCHING'")
     int succeeded(String runId, long bills, long rows);
 
     @Update(
             "UPDATE sn_order_sync_schedule SET last_state='FAILED',last_error_code=#{code},"
-                    + "lease_until=NULL WHERE id=1 AND last_run_id=#{runId}"
+                    + "last_ok=FALSE,last_error_message=#{message},lease_until=NULL"
+                    + " WHERE id=1 AND last_run_id=#{runId}"
                     + " AND last_state='FETCHING'")
-    int failed(String runId, int code);
+    int failed(String runId, int code, String message);
 }

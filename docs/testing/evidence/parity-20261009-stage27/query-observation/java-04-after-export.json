@@ -1,0 +1,223 @@
+{
+  "columns": [
+    "SN",
+    "进制流水",
+    "十进制流水",
+    "PI",
+    "物料编码",
+    "客户编码",
+    "工厂",
+    "状态",
+    "流水归属 PI",
+    "单据编号",
+    "批次号",
+    "来源",
+    "创建时间",
+    "打印时间"
+  ],
+  "rows": [
+    [
+      "CMP00001",
+      "00001",
+      "1",
+      "CMP-PI-002",
+      "CMP-MAT-A",
+      "CMP-CUSTOMER",
+      "CMP-B",
+      "待领取",
+      "CMP-PI-001",
+      "CMP-MO-001",
+      "",
+      "生成",
+      "2026/10/8 09:38:16",
+      "—"
+    ],
+    [
+      "CMP00009",
+      "00009",
+      "9",
+      "CMP-PI-001",
+      "CMP-MAT-B",
+      "CMP-CUSTOMER",
+      "CMP-A",
+      "已打印",
+      "CMP-PI-001",
+      "CMP-MO-001",
+      "184d45d8-2a8b-49de-8e52-38b5007358c8",
+      "生成",
+      "2026/10/8 09:38:16",
+      "2026/10/8 09:39:06"
+    ],
+    [
+      "CMP00002",
+      "00002",
+      "2",
+      "CMP-PI-001",
+      "CMP-MAT-A",
+      "CMP-CUSTOMER",
+      "CMP-A",
+      "已打印",
+      "CMP-PI-001",
+      "CMP-MO-001",
+      "184d45d8-2a8b-49de-8e52-38b5007358c8",
+      "生成",
+      "2026/10/8 09:38:16",
+      "2026/10/8 09:39:06"
+    ],
+    [
+      "CMP00003",
+      "00003",
+      "3",
+      "CMP-PI-001",
+      "CMP-MAT-A",
+      "CMP-CUSTOMER",
+      "CMP-A",
+      "已打印",
+      "CMP-PI-001",
+      "CMP-MO-001",
+      "184d45d8-2a8b-49de-8e52-38b5007358c8",
+      "生成",
+      "2026/10/8 09:38:16",
+      "2026/10/8 09:39:06"
+    ],
+    [
+      "CMP00010",
+      "00010",
+      "10",
+      "CMP-PI-001",
+      "CMP-MAT-B",
+      "CMP-CUSTOMER",
+      "CMP-A",
+      "已打印",
+      "CMP-PI-001",
+      "CMP-MO-001",
+      "184d45d8-2a8b-49de-8e52-38b5007358c8",
+      "生成",
+      "2026/10/8 09:38:16",
+      "2026/10/8 09:39:06"
+    ],
+    [
+      "CMP00006",
+      "00006",
+      "6",
+      "CMP-PI-001",
+      "CMP-MAT-A",
+      "CMP-CUSTOMER",
+      "CMP-A",
+      "已打印",
+      "CMP-PI-001",
+      "CMP-MO-001",
+      "184d45d8-2a8b-49de-8e52-38b5007358c8",
+      "生成",
+      "2026/10/8 09:38:16",
+      "2026/10/8 09:39:06"
+    ],
+    [
+      "CMP00008",
+      "00008",
+      "8",
+      "CMP-PI-001",
+      "CMP-MAT-A",
+      "CMP-CUSTOMER",
+      "CMP-A",
+      "已打印",
+      "CMP-PI-001",
+      "CMP-MO-001",
+      "184d45d8-2a8b-49de-8e52-38b5007358c8",
+      "生成",
+      "2026/10/8 09:38:16",
+      "2026/10/8 09:39:06"
+    ],
+    [
+      "CMP00005",
+      "00005",
+      "5",
+      "CMP-PI-001",
+      "CMP-MAT-A",
+      "CMP-CUSTOMER",
+      "CMP-A",
+      "已打印",
+      "CMP-PI-001",
+      "CMP-MO-001",
+      "184d45d8-2a8b-49de-8e52-38b5007358c8",
+      "生成",
+      "2026/10/8 09:38:16",
+      "2026/10/8 09:39:06"
+    ],
+    [
+      "CMP00004",
+      "00004",
+      "4",
+      "CMP-PI-001",
+      "CMP-MAT-A",
+      "CMP-CUSTOMER",
+      "CMP-A",
+      "已打印",
+      "CMP-PI-001",
+      "CMP-MO-001",
+      "184d45d8-2a8b-49de-8e52-38b5007358c8",
+      "生成",
+      "2026/10/8 09:38:16",
+      "2026/10/8 09:39:06"
+    ],
+    [
+      "CMP00007",
+      "00007",
+      "7",
+      "CMP-PI-001",
+      "CMP-MAT-A",
+      "CMP-CUSTOMER",
+      "CMP-A",
+      "已打印",
+      "CMP-PI-001",
+      "CMP-MO-001",
+      "184d45d8-2a8b-49de-8e52-38b5007358c8",
+      "生成",
+      "2026/10/8 09:38:16",
+      "2026/10/8 09:39:06"
+    ]
+  ],
+  "controls": "SN 查询\n\n按工厂、客户、PI、物料、状态、完整 SN、来源订单或当前领取批次查询。\n\n工厂\n全部物料\n状态\n同 PI 跨厂\n同 PI 跨厂\n查询\n操作号: 22869449-0cc4-44ea-a373-885e7a272db8\n已完成\n查询快照已固定。文件：可下载；恢复文件不会重新查询当前 SN。\n查询原操作\n关闭本次操作状态\n操作号: 48db8e2b-4957-44d0-b86b-a086aa8cedd2\n已完成\n查询快照已固定。文件：可下载；恢复文件不会重新查询当前 SN。\n查询原操作\n关闭本次操作状态\nSN 明细\n导出记录\n共 10 枚\n导出 CSV\n导出 XLSX\nSN\t进制流水\t十进制流水\tPI\t物料编码\t客户编码\t工厂\t状态\t流水归属 PI\t单据编号\t批次号\t来源\t创建时间\t打印时间\n\nSN\n\t\n进制流水\n\t\n十进制流水\n\t\nPI\n\t\n物料编码\n\t\n客户编码\n\t\n工厂\n\t\n状态\n\t\n流水归属 PI\n\t\n单据编号\n\t\n批次号\n\t\n来源\n\t\n创建时间\n\t\n打印时间\n\nCMP00001\n\t00001\t1\tCMP-PI-002\tCMP-MAT-A\tCMP-CUSTOMER\tCMP-B\t待领取\tCMP-PI-001\tCMP-MO-001\t\t生成\t2026/10/8 09:38:16\t—\nCMP00009\n\t00009\t9\tCMP-PI-001\tCMP-MAT-B\tCMP-CUSTOMER\tCMP-A\t已打印\tCMP-PI-001\tCMP-MO-001\t184d45d8-2a8b-49de-8e52-38b5007358c8\t生成\t2026/10/8 09:38:16\t2026/10/8 09:39:06\nCMP00002\n\t00002\t2\tCMP-PI-001\tCMP-MAT-A\tCMP-CUSTOMER\tCMP-A\t已打印\tCMP-PI-001\tCMP-MO-001\t184d45d8-2a8b-49de-8e52-38b5007358c8\t生成\t2026/10/8 09:38:16\t2026/10/8 09:39:06\nCMP00003\n\t00003\t3\tCMP-PI-001\tCMP-MAT-A\tCMP-CUSTOMER\tCMP-A\t已打印\tCMP-PI-001\tCMP-MO-001\t184d45d8-2a8b-49de-8e52-38b5007358c8\t生成\t2026/10/8 09:38:16\t2026/10/8 09:39:06\nCMP00010\n\t00010\t10\tCMP-PI-001\tCMP-MAT-B\tCMP-CUSTOMER\tCMP-A\t已打印\tCMP-PI-001\tCMP-MO-001\t184d45d8-2a8b-49de-8e52-38b5007358c8\t生成\t2026/10/8 09:38:16\t2026/10/8 09:39:06\nCMP00006\n\t00006\t6\tCMP-PI-001\tCMP-MAT-A\tCMP-CUSTOMER\tCMP-A\t已打印\tCMP-PI-001\tCMP-MO-001\t184d45d8-2a8b-49de-8e52-38b5007358c8\t生成\t2026/10/8 09:38:16\t2026/10/8 09:39:06\nCMP00008\n\t00008\t8\tCMP-PI-001\tCMP-MAT-A\tCMP-CUSTOMER\tCMP-A\t已打印\tCMP-PI-001\tCMP-MO-001\t184d45d8-2a8b-49de-8e52-38b5007358c8\t生成\t2026/10/8 09:38:16\t2026/10/8 09:39:06\nCMP00005\n\t00005\t5\tCMP-PI-001\tCMP-MAT-A\tCMP-CUSTOMER\tCMP-A\t已打印\tCMP-PI-001\tCMP-MO-001\t184d45d8-2a8b-49de-8e52-38b5007358c8\t生成\t2026/10/8 09:38:16\t2026/10/8 09:39:06\nCMP00004\n\t00004\t4\tCMP-PI-001\tCMP-MAT-A\tCMP-CUSTOMER\tCMP-A\t已打印\tCMP-PI-001\tCMP-MO-001\t184d45d8-2a8b-49de-8e52-38b5007358c8\t生成\t2026/10/8 09:38:16\t2026/10/8 09:39:06\nCMP00007\n\t00007\t7\tCMP-PI-001\tCMP-MAT-A\tCMP-CUSTOMER\tCMP-A\t已打印\tCMP-PI-001\tCMP-MO-001\t184d45d8-2a8b-49de-8e52-38b5007358c8\t生成\t2026/10/8 09:38:16\t2026/10/8 09:39:06\n上一页\n1\n下一页\n50 条/页",
+  "inputHints": [
+    {
+      "placeholder": "",
+      "ariaLabel": "语言"
+    },
+    {
+      "placeholder": "",
+      "ariaLabel": "工厂"
+    },
+    {
+      "placeholder": "客户编码",
+      "ariaLabel": "客户编码"
+    },
+    {
+      "placeholder": "PI",
+      "ariaLabel": "PI"
+    },
+    {
+      "placeholder": "完整 SN",
+      "ariaLabel": "完整 SN"
+    },
+    {
+      "placeholder": "来源订单",
+      "ariaLabel": "来源订单"
+    },
+    {
+      "placeholder": "领取批次",
+      "ariaLabel": "领取批次"
+    },
+    {
+      "placeholder": "",
+      "ariaLabel": "物料范围"
+    },
+    {
+      "placeholder": "",
+      "ariaLabel": "状态"
+    },
+    {
+      "placeholder": "",
+      "ariaLabel": "每页条数"
+    }
+  ]
+}

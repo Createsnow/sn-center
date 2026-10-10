@@ -18,6 +18,14 @@ export class ApiError extends Error {
   }
 }
 
+/** 下载响应不是 JSON 时保留 HTTP 状态，避免与有效的业务错误码混淆。 */
+export class DownloadHttpError extends ApiError {
+  constructor(status: number) {
+    super(1_000_000_006, status);
+    this.name = 'DownloadHttpError';
+  }
+}
+
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

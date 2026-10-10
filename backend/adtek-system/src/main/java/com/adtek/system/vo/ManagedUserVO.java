@@ -16,7 +16,12 @@ import java.util.List;
             "mustChangePassword",
             "version",
             "roleIds",
-            "factoryIds"
+            "factoryIds",
+            "roleCodes",
+            "factories",
+            "lastLoginAt",
+            "createdAt",
+            "createdByName"
         })
 public record ManagedUserVO(
         String id,
@@ -28,4 +33,15 @@ public record ManagedUserVO(
         Boolean mustChangePassword,
         String version,
         List<String> roleIds,
-        List<String> factoryIds) {}
+        List<String> factoryIds,
+        List<String> roleCodes,
+        List<com.adtek.framework.security.FactoryMembershipPort.Factory> factories,
+        @Schema(
+                        types = {"string", "null"},
+                        format = "date-time")
+                java.time.Instant lastLoginAt,
+        @Schema(
+                        types = {"string", "null"},
+                        format = "date-time")
+                java.time.Instant createdAt,
+        @Schema(types = {"string", "null"}) String createdByName) {}

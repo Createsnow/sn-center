@@ -1,0 +1,167 @@
+{
+  "writes": [
+    {
+      "status": 400,
+      "route": "/api/v1/sn/factories",
+      "body": {
+        "code": 1004000033,
+        "message": "sn.factoryInvalid",
+        "data": null,
+        "params": {},
+        "traceId": "8dba1da5-488b-4ad8-813b-076d5d05f4d5"
+      }
+    },
+    {
+      "status": 400,
+      "route": "/api/v1/sn/factories",
+      "body": {
+        "code": 1004000033,
+        "message": "sn.factoryInvalid",
+        "data": null,
+        "params": {},
+        "traceId": "49e954d4-51d0-42e7-a29c-943a83248754"
+      }
+    },
+    {
+      "status": 400,
+      "route": "/api/v1/sn/factories",
+      "body": {
+        "code": 1004000033,
+        "message": "sn.factoryInvalid",
+        "data": null,
+        "params": {},
+        "traceId": "c7a0726c-69fb-44f1-8a2c-ef04b05c031d"
+      }
+    },
+    {
+      "status": 200,
+      "route": "/api/v1/sn/factories",
+      "body": {
+        "code": 0,
+        "message": "common.success",
+        "data": {
+          "id": "540",
+          "code": "CMP_F44_MANUAL",
+          "name": "工厂审计手工",
+          "source": "MANUAL",
+          "enabled": true,
+          "version": "1",
+          "createdAt": "2026-10-09T06:28:11.393808800Z",
+          "updatedAt": "2026-10-09T06:28:11.393808800Z"
+        },
+        "params": {},
+        "traceId": "2a58cd8f-1d2f-4368-9986-dd7751c8cbad"
+      }
+    },
+    {
+      "status": 409,
+      "route": "/api/v1/sn/factories",
+      "body": {
+        "code": 1004000003,
+        "message": "sn.factoryExists",
+        "data": null,
+        "params": {
+          "factory": "CMP_F44_MANUAL/重复编码"
+        },
+        "traceId": "90d26903-1f12-4dfe-a232-12e9b8821f01"
+      }
+    },
+    {
+      "status": 409,
+      "route": "/api/v1/sn/factories",
+      "body": {
+        "code": 1004000003,
+        "message": "sn.factoryExists",
+        "data": null,
+        "params": {
+          "factory": "CMP_F44_CONFLICT/工厂审计手工"
+        },
+        "traceId": "013e57d0-e12f-4101-8c16-4cf41928803c"
+      }
+    },
+    {
+      "status": 200,
+      "route": "/api/v1/sn/factories/sync",
+      "body": {
+        "code": 0,
+        "message": "common.success",
+        "data": {
+          "total": "3",
+          "inserted": "1",
+          "updated": "1",
+          "conflicts": [
+            "CMP_F44_CONFLICT/比较工厂44-00"
+          ]
+        },
+        "params": {},
+        "traceId": "f9eaa190-1151-4664-a35b-e66fcc50906d"
+      }
+    },
+    {
+      "status": 200,
+      "route": "/api/v1/sn/factories/sync",
+      "body": {
+        "code": 0,
+        "message": "common.success",
+        "data": {
+          "total": "3",
+          "inserted": "0",
+          "updated": "0",
+          "conflicts": [
+            "CMP_F44_CONFLICT/比较工厂44-00"
+          ]
+        },
+        "params": {},
+        "traceId": "667923d7-1622-4230-9fe6-64b90e38499c"
+      }
+    },
+    {
+      "status": 200,
+      "route": "/api/v1/sn/factories/sync",
+      "body": {
+        "code": 0,
+        "message": "common.success",
+        "data": {
+          "total": "1",
+          "inserted": "0",
+          "updated": "0",
+          "conflicts": [
+            "CMP_F44_MANUAL/比较工厂44-00"
+          ]
+        },
+        "params": {},
+        "traceId": "7f382a19-8670-4086-88fd-6b5674e57ea5"
+      }
+    },
+    {
+      "status": 502,
+      "route": "/api/v1/sn/factories/sync",
+      "body": {
+        "code": 1005000006,
+        "message": "integration.k3QueryRejected",
+        "data": null,
+        "params": {
+          "message": "HTTP 503"
+        },
+        "traceId": "c114eadd-ab0d-489d-a2eb-7f37d5ecfb6b"
+      }
+    },
+    {
+      "status": 200,
+      "route": "/api/v1/sn/factories/sync",
+      "body": {
+        "code": 0,
+        "message": "common.success",
+        "data": {
+          "total": "0",
+          "inserted": "0",
+          "updated": "0",
+          "conflicts": []
+        },
+        "params": {},
+        "traceId": "7eb72cb4-043d-4ab9-b283-56ccc25d9ed7"
+      }
+    }
+  ],
+  "pageErrors": []
+}

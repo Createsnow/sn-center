@@ -1,0 +1,135 @@
+[
+  {
+    "file": "backend/adtek-server/src/main/resources/db/migration/V10__sn_transfers.sql",
+    "workingSha256": "291db6331b52043f7223355ebe197ca340f3d95560ea476e2c2704dfac77fc1f",
+    "headSha256": "f5743ead89f585e45e962f8365829f87c9973922734517db2aa55bac7eedb822",
+    "rawBytesEqual": false,
+    "contentEqualAfterOnlyCrLfNormalization": true
+  },
+  {
+    "file": "backend/adtek-server/src/main/resources/db/migration/V11__sn_query_exports_and_dashboard.sql",
+    "workingSha256": "4e950610b8d72e84e79a3e11b9b23c461a57414a77b826a180e921cd0a771496",
+    "headSha256": "137d4d133544bcaf40e3ea47ed3d302bfb8c9e66d75a122f339b26c34c3babf5",
+    "rawBytesEqual": false,
+    "contentEqualAfterOnlyCrLfNormalization": true
+  },
+  {
+    "file": "backend/adtek-server/src/main/resources/db/migration/V12__sn_business_audit.sql",
+    "workingSha256": "eac32f50f8edbdac0d77c295d920aea8869052ec402b4c249cf5ddaf9a48d293",
+    "headSha256": "786f41561c37e0a3a58dd14f693ecbc6a9ea2d12b63a4919947733fb20cf8e41",
+    "rawBytesEqual": false,
+    "contentEqualAfterOnlyCrLfNormalization": true
+  },
+  {
+    "file": "backend/adtek-server/src/main/resources/db/migration/V13__maintenance_runs.sql",
+    "workingSha256": "9680cf359199140b07a66d502beae7d50c2dba33111210af90e07a07fc2b8d9f",
+    "headSha256": "9680cf359199140b07a66d502beae7d50c2dba33111210af90e07a07fc2b8d9f",
+    "rawBytesEqual": true,
+    "contentEqualAfterOnlyCrLfNormalization": true
+  },
+  {
+    "file": "backend/adtek-server/src/main/resources/db/migration/V14__legacy_migration_staging.sql",
+    "workingSha256": "2be2b857eecf8538e683d73c5fe05ff560ca76a7fa7b2188e951b93d9a0e7590",
+    "headSha256": "2be2b857eecf8538e683d73c5fe05ff560ca76a7fa7b2188e951b93d9a0e7590",
+    "rawBytesEqual": true,
+    "contentEqualAfterOnlyCrLfNormalization": true
+  },
+  {
+    "file": "backend/adtek-server/src/main/resources/db/migration/V15__legacy_master_data.sql",
+    "workingSha256": "f602077a7503d62e8d82978d3bf3ef616cbc980213874c88a3131e4c016cf115",
+    "headSha256": "f602077a7503d62e8d82978d3bf3ef616cbc980213874c88a3131e4c016cf115",
+    "rawBytesEqual": true,
+    "contentEqualAfterOnlyCrLfNormalization": true
+  },
+  {
+    "file": "backend/adtek-server/src/main/resources/db/migration/V16__legacy_import_inventory.sql",
+    "workingSha256": "13af3d7421ecf8eff4370ea47fa07889dd559808742318792e1a8af2d2dec103",
+    "headSha256": "13af3d7421ecf8eff4370ea47fa07889dd559808742318792e1a8af2d2dec103",
+    "rawBytesEqual": true,
+    "contentEqualAfterOnlyCrLfNormalization": true
+  },
+  {
+    "file": "backend/adtek-server/src/main/resources/db/migration/V17__exact_erp_planned_quantity.sql",
+    "workingSha256": "df99681915ee873ac876c2b8af498eca459e0694fd81854512ea2b3334669067",
+    "headSha256": "df99681915ee873ac876c2b8af498eca459e0694fd81854512ea2b3334669067",
+    "rawBytesEqual": true,
+    "contentEqualAfterOnlyCrLfNormalization": true
+  },
+  {
+    "file": "backend/adtek-server/src/main/resources/db/migration/V18__order_sync_schedule.sql",
+    "workingSha256": "faa56d6f7c24f216fc36d6d896f59064f30af395fcc121185a1309cd131b89b8",
+    "headSha256": "faa56d6f7c24f216fc36d6d896f59064f30af395fcc121185a1309cd131b89b8",
+    "rawBytesEqual": true,
+    "contentEqualAfterOnlyCrLfNormalization": true
+  },
+  {
+    "file": "backend/adtek-server/src/main/resources/db/migration/V19__pi_generation_rule_choice.sql",
+    "workingSha256": "58fdd9adfbdf5e3ffc3bd748f9812ec804eefcddc1158722bea5cc93888916bd",
+    "headSha256": "b64d594787cb037ef0c2083408e2f6c34f63b24211ce38af627470011b7709c2",
+    "rawBytesEqual": false,
+    "contentEqualAfterOnlyCrLfNormalization": true
+  },
+  {
+    "file": "backend/adtek-server/src/main/resources/db/migration/V1__system_foundation.sql",
+    "workingSha256": "20ee7487e1c2e6413b1b4f58e41f8152f3273532d0c4ac9631eed41ae91fb52a",
+    "headSha256": "20ee7487e1c2e6413b1b4f58e41f8152f3273532d0c4ac9631eed41ae91fb52a",
+    "rawBytesEqual": true,
+    "contentEqualAfterOnlyCrLfNormalization": true
+  },
+  {
+    "file": "backend/adtek-server/src/main/resources/db/migration/V2__identity_authorization_and_audit.sql",
+    "workingSha256": "feca2b5e8fff8cd4f80d48ccf3dbeac3221a7935f6e9c395677f35c4db5ee3ab",
+    "headSha256": "feca2b5e8fff8cd4f80d48ccf3dbeac3221a7935f6e9c395677f35c4db5ee3ab",
+    "rawBytesEqual": true,
+    "contentEqualAfterOnlyCrLfNormalization": true
+  },
+  {
+    "file": "backend/adtek-server/src/main/resources/db/migration/V3__user_management_audit.sql",
+    "workingSha256": "41e514fedfd4fb5a0409f11c4014078e43d6e68aca688a1775a3139d2001dd5d",
+    "headSha256": "41e514fedfd4fb5a0409f11c4014078e43d6e68aca688a1775a3139d2001dd5d",
+    "rawBytesEqual": true,
+    "contentEqualAfterOnlyCrLfNormalization": true
+  },
+  {
+    "file": "backend/adtek-server/src/main/resources/db/migration/V4__system_configuration.sql",
+    "workingSha256": "92a4c4693a31b0376aac350f3639bd2d8d8ab1b6d20d66039da16de8e98623e4",
+    "headSha256": "92a4c4693a31b0376aac350f3639bd2d8d8ab1b6d20d66039da16de8e98623e4",
+    "rawBytesEqual": true,
+    "contentEqualAfterOnlyCrLfNormalization": true
+  },
+  {
+    "file": "backend/adtek-server/src/main/resources/db/migration/V5__audit_query_and_request_failures.sql",
+    "workingSha256": "28874030d0f764447512c14f8e6ab2425ae9c53a8fad97e9950ba683a90f0529",
+    "headSha256": "28874030d0f764447512c14f8e6ab2425ae9c53a8fad97e9950ba683a90f0529",
+    "rawBytesEqual": true,
+    "contentEqualAfterOnlyCrLfNormalization": true
+  },
+  {
+    "file": "backend/adtek-server/src/main/resources/db/migration/V6__durable_operations_tasks_and_files.sql",
+    "workingSha256": "f5b7399a070a559e8a741554c762f11e7587bd93b5e76c6d5987b59b00924b4d",
+    "headSha256": "f5b7399a070a559e8a741554c762f11e7587bd93b5e76c6d5987b59b00924b4d",
+    "rawBytesEqual": true,
+    "contentEqualAfterOnlyCrLfNormalization": true
+  },
+  {
+    "file": "backend/adtek-server/src/main/resources/db/migration/V7__sn_factories_orders_and_rules.sql",
+    "workingSha256": "cb8c4daba1cf0890f0681153cc182f685ac232d59b27a52014e538452cb74b48",
+    "headSha256": "03ec43a09987d8761a6f52fac8bc5a564da1cd0fad2ad03d04cb5f60970e9781",
+    "rawBytesEqual": false,
+    "contentEqualAfterOnlyCrLfNormalization": true
+  },
+  {
+    "file": "backend/adtek-server/src/main/resources/db/migration/V8__sn_initialization_generation_allocation.sql",
+    "workingSha256": "8f87d950ee0f77b1e0adf400aebdccbfca0f02d552604460818b28948b519f72",
+    "headSha256": "41fd8767237c6b8abb781124999d219b96f1e39378df0b52618696e49014c3fe",
+    "rawBytesEqual": false,
+    "contentEqualAfterOnlyCrLfNormalization": true
+  },
+  {
+    "file": "backend/adtek-server/src/main/resources/db/migration/V9__sn_acquisition_print_and_service_clients.sql",
+    "workingSha256": "54eb806df720e95d1589ca6c02c1e106b5ee75305174f3a7dcd1865eb4238eca",
+    "headSha256": "54eb806df720e95d1589ca6c02c1e106b5ee75305174f3a7dcd1865eb4238eca",
+    "rawBytesEqual": true,
+    "contentEqualAfterOnlyCrLfNormalization": true
+  }
+]

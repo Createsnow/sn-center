@@ -13,6 +13,11 @@ describe('user management API boundary', () => {
     version: '1',
     roleIds: ['9007199254741002'],
     factoryIds: ['9007199254741003'],
+    roleCodes: ['FACTORY_OPERATOR'],
+    factories: [{ id: '9007199254741003', name: '测试工厂', code: 'TEST' }],
+    lastLoginAt: null,
+    createdAt: '2026-10-09T00:00:00Z',
+    createdByName: 'admin',
   };
   it('keeps identifiers beyond JavaScript precision and nullable legacy department intact', () => {
     expect(isManagedUser(user)).toBe(true);
@@ -22,5 +27,7 @@ describe('user management API boundary', () => {
   it('rejects missing version and string status instead of permitting an unsafe edit', () => {
     expect(isManagedUser({ ...user, version: undefined })).toBe(false);
     expect(isManagedUser({ ...user, enabled: 'false' })).toBe(false);
+    expect(isManagedUser({ ...user, lastLoginAt: 'invalid date' })).toBe(false);
+    expect(isManagedUser({ ...user, factories: [{ id: 1, name: 'x', code: 'x' }] })).toBe(false);
   });
 });

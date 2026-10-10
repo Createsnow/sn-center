@@ -11,6 +11,9 @@ public interface SnAuditService {
     /** 稳定时间+ID游标，默认上海最近30天；在线/归档/合并同范围，无跨厂PI例外。 */
     CursorResult<SnAuditVO> items(SnAuditQuery query, String cursor, int size);
 
+    /** 页面数字分页与精确总数在同一快照读取，在线/归档仍复核当前工厂权限。 */
+    PageResult<SnAuditVO> page(SnAuditQuery query, int page, int size);
+
     /** 精确计数与列表同过滤；全部工厂范围才可读无工厂的全局配置事实。 */
     SnCountVO count(SnAuditQuery query);
 

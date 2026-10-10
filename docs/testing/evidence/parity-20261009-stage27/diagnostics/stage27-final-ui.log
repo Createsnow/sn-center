@@ -1,0 +1,19 @@
+
+Running 10 tests using 1 worker
+
+(node:38872) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [prototype] › e2e\parity\transfer-layout.spec.ts:134:3 › P10 layout zh-CN: field rhythm, clear control, alerts and snapshot at wide and narrow widths (5.6s)
+  ok  2 [prototype] › e2e\parity\transfer-layout.spec.ts:134:3 › P10 layout en: field rhythm, clear control, alerts and snapshot at wide and narrow widths (6.3s)
+  ok  3 [prototype] › e2e\parity\transfer-layout.spec.ts:134:3 › P10 layout vi: field rhythm, clear control, alerts and snapshot at wide and narrow widths (6.3s)
+  ok  4 [prototype] › e2e\parity\transfer-targets.spec.ts:149:1 › P10 snapshot picker: fifty rows, literal bill search, grouping, unmapped target and persistent selection (8.5s)
+  ok  5 [prototype] › e2e\parity\transfer-targets.spec.ts:278:1 › P10 snapshot pending search: retain visible rows and selection while a real request waits (4.6s)
+(node:45124) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  6 [migration] › e2e\parity\transfer-layout.spec.ts:134:3 › P10 layout zh-CN: field rhythm, clear control, alerts and snapshot at wide and narrow widths (10.9s)
+  ok  7 [migration] › e2e\parity\transfer-layout.spec.ts:134:3 › P10 layout en: field rhythm, clear control, alerts and snapshot at wide and narrow widths (11.4s)
+  ok  8 [migration] › e2e\parity\transfer-layout.spec.ts:134:3 › P10 layout vi: field rhythm, clear control, alerts and snapshot at wide and narrow widths (11.7s)
+  ok  9 [migration] › e2e\parity\transfer-targets.spec.ts:149:1 › P10 snapshot picker: fifty rows, literal bill search, grouping, unmapped target and persistent selection (16.6s)
+  ok 10 [migration] › e2e\parity\transfer-targets.spec.ts:278:1 › P10 snapshot pending search: retain visible rows and selection while a real request waits (9.4s)
+
+  10 passed (1.6m)

@@ -1,0 +1,90 @@
+{
+  "kind": "python",
+  "items": [
+    {
+      "sn": "G0600001",
+      "seq_dec": 1,
+      "status": "PENDING_ALLOC",
+      "material": "OLD-A",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600002",
+      "seq_dec": 2,
+      "status": "PENDING_ALLOC",
+      "material": "OLD-A",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600003",
+      "seq_dec": 3,
+      "status": "PENDING_ALLOC",
+      "material": "OLD-A",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600004",
+      "seq_dec": 4,
+      "status": "PENDING_ALLOC",
+      "material": "OLD-A",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600005",
+      "seq_dec": 5,
+      "status": "PENDING_ALLOC",
+      "material": "OLD-A",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600006",
+      "seq_dec": 6,
+      "status": "PENDING_ALLOC",
+      "material": "NEW",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600007",
+      "seq_dec": 7,
+      "status": "PENDING_ALLOC",
+      "material": "NEW",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600008",
+      "seq_dec": 8,
+      "status": "PENDING_ALLOC",
+      "material": "NEW",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600009",
+      "seq_dec": 9,
+      "status": "PENDING_ALLOC",
+      "material": "NEW",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600010",
+      "seq_dec": 10,
+      "status": "PENDING_ALLOC",
+      "material": "REPLACED",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600011",
+      "seq_dec": 11,
+      "status": "PENDING_ALLOC",
+      "material": "REPLACED",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    },
+    {
+      "sn": "G0600012",
+      "seq_dec": 12,
+      "status": "PENDING_ALLOC",
+      "material": "REPLACED",
+      "customer": "CMP-UI-GEN-CUSTOMER"
+    }
+  ],
+  "allocations": []
+}

@@ -1,0 +1,206 @@
+{
+  "java": {
+    "sn_item": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_key": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_pi_counter": {
+      "rows": 2,
+      "unchanged": true
+    },
+    "sn_rule": {
+      "rows": 3,
+      "unchanged": true
+    },
+    "sn_rule_version": {
+      "rows": 3,
+      "unchanged": true
+    },
+    "sn_acquire_batch": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_print": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_transfer": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_acquire_member": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_print_member": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_pi_rule_choice": {
+      "rows": 0,
+      "unchanged": true
+    },
+    "sn_generation_job": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_bill_generation": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_source_entry_quota": {
+      "rows": 156,
+      "unchanged": true
+    },
+    "sn_transfer_member": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "accountSecurityUnchanged": true,
+    "sn_auditOldRowsPreserved": 5340,
+    "sn_audit_archiveOldRowsPreserved": 0,
+    "sn_audit_identityOldRowsPreserved": 374,
+    "sn_audit_exportOldRowsPreserved": 73,
+    "sn_audit_export_rowOldRowsPreserved": 664,
+    "sn_query_exportOldRowsPreserved": 108,
+    "sn_query_export_rowOldRowsPreserved": 1840,
+    "sys_fileOldRowsPreserved": 565,
+    "schema": "37"
+  },
+  "auditFormats": [
+    {
+      "format_version": 5,
+      "n": 28
+    },
+    {
+      "format_version": 6,
+      "n": 29
+    },
+    {
+      "format_version": 3,
+      "n": 4
+    },
+    {
+      "format_version": 1,
+      "n": 6
+    },
+    {
+      "format_version": 4,
+      "n": 4
+    },
+    {
+      "format_version": 2,
+      "n": 2
+    }
+  ],
+  "python": {
+    "sn_item": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_key": {
+      "rows": 10,
+      "unchanged": true
+    },
+    "sn_pi_counter": {
+      "rows": 2,
+      "unchanged": true
+    },
+    "sn_rule": {
+      "rows": 3,
+      "unchanged": true
+    },
+    "sn_rule_version": {
+      "rows": 3,
+      "unchanged": true
+    },
+    "sn_acquire_batch": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_print": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_transfer": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_bill_gen": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_allocation": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "sn_transfer_item": {
+      "rows": 1,
+      "unchanged": true
+    },
+    "accountSecurityUnchanged": true,
+    "sn_auditOldRowsPreserved": 6451
+  },
+  "V1ThroughV36Unchanged": true,
+  "oldFileBytesUnchanged": 565,
+  "noActiveTasksOrOwnedFixtures": true,
+  "prototypeSourcesUnchanged": true,
+  "parity-20261009-stage26FrozenUnchanged": 635,
+  "parity-20261009-stage27FrozenUnchanged": 360,
+  "parity-20261009-stage28FrozenUnchanged": 449,
+  "parity-20261009-stage29FrozenUnchanged": 429,
+  "parity-20261009-stage30FrozenUnchanged": 473,
+  "parity-20261009-stage31FrozenUnchanged": 426,
+  "parity-20261009-stage32FrozenUnchanged": 309,
+  "parity-20261009-stage33FrozenUnchanged": 401,
+  "parity-20261009-stage34FrozenUnchanged": 423,
+  "parity-20261009-stage35FrozenUnchanged": 597,
+  "parity-20261009-stage36FrozenUnchanged": 648,
+  "parity-20261009-stage37FrozenUnchanged": 736,
+  "parity-20261009-stage38FrozenUnchanged": 726,
+  "parity-20261009-audit-observedFrozenUnchanged": 10,
+  "parity-20261009-stage36-drawn-textFrozenUnchanged": 83,
+  "javaReady": {
+    "status": "UP"
+  },
+  "pythonReady": {
+    "status": "ok",
+    "db": "mysql"
+  },
+  "web": {
+    "8000": 200,
+    "15173": 200
+  },
+  "k3": {
+    "fixture": "synthetic comparison only",
+    "extrasSupported": true,
+    "controlsSupported": true,
+    "queryRequests": 1744,
+    "inflight": 0,
+    "orders": 3,
+    "entries": 4
+  },
+  "liveOpenApiMatches": true,
+  "prototypeStatus": "?? sn.env",
+  "backendChangedFiles": [
+    "backend\\adtek-framework\\src\\main\\java\\com\\adtek\\framework\\security\\FactoryMembershipPort.java",
+    "backend\\adtek-server\\src\\test\\java\\com\\adtek\\server\\AuthenticationIT.java",
+    "backend\\adtek-sn\\src\\main\\java\\com\\adtek\\sn\\mapper\\FactoryMembershipMapper.java",
+    "backend\\adtek-sn\\src\\main\\java\\com\\adtek\\sn\\service\\impl\\FactoryMembershipServiceImpl.java",
+    "backend\\adtek-sn\\src\\main\\java\\com\\adtek\\sn\\service\\impl\\SnDataPermissionRules.java",
+    "backend\\adtek-system\\src\\main\\java\\com\\adtek\\system\\convert\\UserConvert.java",
+    "backend\\adtek-system\\src\\main\\java\\com\\adtek\\system\\domain\\SysUserEntity.java",
+    "backend\\adtek-system\\src\\main\\java\\com\\adtek\\system\\mapper\\IdentityMapper.java",
+    "backend\\adtek-system\\src\\main\\java\\com\\adtek\\system\\mapper\\UserSecurityMapper.java",
+    "backend\\adtek-system\\src\\main\\java\\com\\adtek\\system\\query\\UserQuery.java",
+    "backend\\adtek-system\\src\\main\\java\\com\\adtek\\system\\vo\\ManagedUserVO.java",
+    "backend\\adtek-system\\src\\main\\java\\com\\adtek\\system\\service\\impl\\AuthenticationServiceImpl.java",
+    "backend\\adtek-system\\src\\main\\java\\com\\adtek\\system\\service\\impl\\SystemDataPermissionRules.java",
+    "backend\\adtek-system\\src\\main\\java\\com\\adtek\\system\\service\\impl\\UserManagementServiceImpl.java"
+  ],
+  "deployedJarSha256": "6cdca92dc154423b206a5b9c9ace437502813e4dffaca5761993bc60a6df20d2"
+}

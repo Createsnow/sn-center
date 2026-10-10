@@ -1,0 +1,80 @@
+{
+  "items": [
+    {
+      "sn": "\"OPEN",
+      "pi": "CMP-UI-INIT-NONE",
+      "source_pi": "CMP-UI-INIT-NONE",
+      "seq_dec": null,
+      "customer": "CMP-CSV",
+      "material": "CMP-CSV-MAT",
+      "factory_code": "",
+      "status": "PRINTED",
+      "source": "IMPORT"
+    },
+    {
+      "sn": "'KEEP'",
+      "pi": "CMP-UI-INIT-NONE",
+      "source_pi": "CMP-UI-INIT-NONE",
+      "seq_dec": null,
+      "customer": "CMP-CSV",
+      "material": "CMP-CSV-MAT",
+      "factory_code": "",
+      "status": "PRINTED",
+      "source": "IMPORT"
+    },
+    {
+      "sn": "EDITED-SN",
+      "pi": "CMP-UI-INIT-NONE",
+      "source_pi": "CMP-UI-INIT-NONE",
+      "seq_dec": null,
+      "customer": "CMP-CSV",
+      "material": "CMP-CSV-MAT",
+      "factory_code": "",
+      "status": "PRINTED",
+      "source": "IMPORT"
+    },
+    {
+      "sn": "RAW-CSV",
+      "pi": "CMP-UI-INIT-NONE",
+      "source_pi": "CMP-UI-INIT-NONE",
+      "seq_dec": null,
+      "customer": "CMP-CSV",
+      "material": "CMP-CSV-MAT",
+      "factory_code": "",
+      "status": "PRINTED",
+      "source": "IMPORT"
+    },
+    {
+      "sn": "TAIL\"",
+      "pi": "CMP-UI-INIT-NONE",
+      "source_pi": "CMP-UI-INIT-NONE",
+      "seq_dec": null,
+      "customer": "CMP-CSV",
+      "material": "CMP-CSV-MAT",
+      "factory_code": "",
+      "status": "PRINTED",
+      "source": "IMPORT"
+    }
+  ],
+  "counters": [
+    {
+      "pi": "CMP-UI-INIT-NONE",
+      "last_seq": 0,
+      "generated_qty": 0,
+      "imported_qty": 5,
+      "start_seq": null,
+      "start_locked": 1
+    }
+  ],
+  "history": [
+    {
+      "pi": "CMP-UI-INIT-NONE",
+      "start_seq": null,
+      "qty": 5,
+      "max_seq": null,
+      "factory_code": "",
+      "file_name": "history.csv",
+      "operator": "admin"
+    }
+  ]
+}

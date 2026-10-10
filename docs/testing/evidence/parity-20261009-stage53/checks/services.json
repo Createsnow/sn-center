@@ -1,0 +1,55 @@
+{
+  "main": [
+    {
+      "LocalAddress": "127.0.0.1",
+      "LocalPort": 19090,
+      "OwningProcess": 38548
+    },
+    {
+      "LocalAddress": "127.0.0.1",
+      "LocalPort": 18080,
+      "OwningProcess": 2868
+    },
+    {
+      "LocalAddress": "127.0.0.1",
+      "LocalPort": 15173,
+      "OwningProcess": 45356
+    },
+    {
+      "LocalAddress": "127.0.0.1",
+      "LocalPort": 8000,
+      "OwningProcess": 31084
+    }
+  ],
+  "dedicatedPortsClosed": true,
+  "stopped": [
+    {
+      "service": "java",
+      "port": 18081,
+      "listenerPid": 50988,
+      "wrapperPid": 50988,
+      "verifiedLauncher": true
+    },
+    {
+      "service": "vite",
+      "port": 15174,
+      "listenerPid": 2492,
+      "wrapperPid": 2492,
+      "verifiedLauncher": true
+    },
+    {
+      "service": "python",
+      "port": 8001,
+      "listenerPid": 41156,
+      "wrapperPid": 3792,
+      "verifiedLauncher": true
+    },
+    {
+      "service": "k3",
+      "port": 19091,
+      "listenerPid": 20596,
+      "wrapperPid": 43324,
+      "verifiedLauncher": true
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+
+Running 2 tests using 1 worker
+
+(node:38052) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\query.spec.ts:220:1 › P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX (18.5s)
+(node:26636) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [migration] › e2e\parity\query.spec.ts:220:1 › P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX (28.8s)
+
+
+  1) [prototype] › e2e\parity\query.spec.ts:220:1 › P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 6
+
+    @@ -11,6 +11,12 @@
+        "Q28A00005",
+        "Q28A00004",
+        "Q28A00003",
+        "Q28A00002",
+        "Q28A00001",
+    +   "CMP00010",
+    +   "CMP00009",
+    +   "CMP00008",
+    +   "CMP00007",
+    +   "CMP00006",
+    +   "CMP00005",
+      ]
+
+    Call Log:
+    - Timeout 15000ms exceeded while waiting on the predicate
+
+      103 |       ),
+      104 |     )
+    > 105 |     .toEqual(expected);
+          |      ^
+      106 | }
+      107 |
+      108 | async function capture(page: Page, info: TestInfo, name: string) {
+        at expectRows (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\query.spec.ts:105:6)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\query.spec.ts:245:11
+
+    Error Context: test-results\parity-stage28-query-initial\query-P11-query-current-dr-b2391-s-batch-and-actual-CSV-XLSX-prototype\error-context.md
+
+  2) [migration] › e2e\parity\query.spec.ts:220:1 › P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 6
+
+    @@ -11,6 +11,12 @@
+        "Q28A00005",
+        "Q28A00004",
+        "Q28A00003",
+        "Q28A00002",
+        "Q28A00001",
+    +   "CMP00007",
+    +   "CMP00004",
+    +   "CMP00005",
+    +   "CMP00008",
+    +   "CMP00006",
+    +   "CMP00010",
+      ]
+
+    Call Log:
+    - Timeout 15000ms exceeded while waiting on the predicate
+
+      103 |       ),
+      104 |     )
+    > 105 |     .toEqual(expected);
+          |      ^
+      106 | }
+      107 |
+      108 | async function capture(page: Page, info: TestInfo, name: string) {
+        at expectRows (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\query.spec.ts:105:6)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\query.spec.ts:245:11
+
+    Error Context: test-results\parity-stage28-query-initial\query-P11-query-current-dr-b2391-s-batch-and-actual-CSV-XLSX-migration\error-context.md
+
+  2 failed
+    [prototype] › e2e\parity\query.spec.ts:220:1 › P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX 
+    [migration] › e2e\parity\query.spec.ts:220:1 › P11 query: current drafts, ordered pagination, business batch and actual CSV/XLSX 

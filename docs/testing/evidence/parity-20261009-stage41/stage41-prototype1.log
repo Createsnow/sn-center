@@ -1,0 +1,29 @@
+
+Running 1 test using 1 worker
+
+(node:30216) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\account-session.spec.ts:9:1 › P13 account sessions: edit name, role, factory and self without another login (7.6s)
+
+
+  1) [prototype] › e2e\parity\account-session.spec.ts:9:1 › P13 account sessions: edit name, role, factory and self without another login 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      150 |     const names = await menu.allTextContents();
+      151 |     expect(names.some((n) => n.trim() === zh.nav.users)).toBe(value === 'admin');
+    > 152 |     expect(names.some((n) => n.trim() === zh.nav.acquire)).toBe(value !== 'query');
+          |                                                            ^
+      153 |     if (bound)
+      154 |       await expect(
+      155 |         member.locator(prototype ? '.header .fac' : '.prototype-header .prototype-factory-tag'),
+        at capture (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-session.spec.ts:152:60)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-session.spec.ts:216:5
+
+    Error Context: test-results\stage41-prototype1\account-session-P13-accoun-542a3--self-without-another-login-prototype\error-context.md
+
+  1 failed
+    [prototype] › e2e\parity\account-session.spec.ts:9:1 › P13 account sessions: edit name, role, factory and self without another login 

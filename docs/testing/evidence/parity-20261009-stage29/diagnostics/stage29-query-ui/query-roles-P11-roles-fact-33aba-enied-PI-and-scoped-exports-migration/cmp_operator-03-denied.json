@@ -1,0 +1,53 @@
+{
+  "cells": [
+    [
+      "Q29A00003",
+      "00003",
+      "3",
+      "CMP-UI-QUERY-SCOPE-PI-A",
+      "CMP-SCOPE-MAT-A",
+      "CMP-QUERY-SCOPE-CUSTOMER",
+      "比较测试乙厂",
+      "待领取",
+      "CMP-UI-QUERY-SCOPE-PI-A",
+      "CMP-UI-QUERY-SCOPE-MO-A",
+      "",
+      "生成",
+      "2026-10-09 05:58:02",
+      ""
+    ],
+    [
+      "Q29A00001",
+      "00001",
+      "1",
+      "CMP-UI-QUERY-SCOPE-PI-A",
+      "CMP-SCOPE-MAT-Z",
+      "CMP-QUERY-SCOPE-CUSTOMER",
+      "比较测试甲厂",
+      "待领取",
+      "CMP-UI-QUERY-SCOPE-PI-A",
+      "CMP-UI-QUERY-SCOPE-MO-A",
+      "",
+      "生成",
+      "2026-10-09 05:58:02",
+      ""
+    ],
+    [
+      "Q29A00002",
+      "00002",
+      "2",
+      "CMP-UI-QUERY-SCOPE-PI-A",
+      "CMP-SCOPE-MAT-Z",
+      "CMP-QUERY-SCOPE-CUSTOMER",
+      "比较测试甲厂",
+      "待领取",
+      "CMP-UI-QUERY-SCOPE-PI-A",
+      "CMP-UI-QUERY-SCOPE-MO-A",
+      "",
+      "生成",
+      "2026-10-09 05:58:02",
+      ""
+    ]
+  ],
+  "text": "SN 管控中心\n总部统一生成与分配\n工作台\n首页\n工厂作业\n领取与打印\n转厂\n查询与留痕\nSN 查询\n操作痕迹\nSN 管控中心\n/\nSN 查询\n比较测试甲厂\n简体中文\n比\n比较操作员 · 厂区操作员\nSN 查询\n\n只读查询，不能在这里转走号。工厂默认只看已分给本厂的号，可切换为只读查看同一 PI 下已分到各个厂的号。\n\n导出 Excel\nCSV\n比较测试甲厂\n状态\n同 PI 各厂（只读）\n查询\n只读：查看同一张 PI 下已分到各个厂的号，不能领取或打印。\n完整 SN\t进制流水\t十进制流水\tPI\t物料编码\t客户编码\t工厂\t状态\t流水归属 PI\t来源订单\t批次号\t来源\t生成时间\t打印时间\n\n完整 SN\n\t\n进制流水\n\t\n十进制流水\n\t\nPI\n\t\n物料编码\n\t\n客户编码\n\t\n工厂\n\t\n状态\n\t\n流水归属 PI\n\t\n来源订单\n\t\n批次号\n\t\n来源\n\t\n生成时间\n\t\n打印时间\n\nQ29A00003\t00003\t3\tCMP-UI-QUERY-SCOPE-PI-A\tCMP-SCOPE-MAT-A\tCMP-QUERY-SCOPE-CUSTOMER\t比较测试乙厂\t待领取\tCMP-UI-QUERY-SCOPE-PI-A\tCMP-UI-QUERY-SCOPE-MO-A\t\t生成\t2026-10-09 05:58:02\t\nQ29A00001\t00001\t1\tCMP-UI-QUERY-SCOPE-PI-A\tCMP-SCOPE-MAT-Z\tCMP-QUERY-SCOPE-CUSTOMER\t比较测试甲厂\t待领取\tCMP-UI-QUERY-SCOPE-PI-A\tCMP-UI-QUERY-SCOPE-MO-A\t\t生成\t2026-10-09 05:58:02\t\nQ29A00002\t00002\t2\tCMP-UI-QUERY-SCOPE-PI-A\tCMP-SCOPE-MAT-Z\tCMP-QUERY-SCOPE-CUSTOMER\t比较测试甲厂\t待领取\tCMP-UI-QUERY-SCOPE-PI-A\tCMP-UI-QUERY-SCOPE-MO-A\t\t生成\t2026-10-09 05:58:02\t\n共 3 条\n1\n20 条/页\n本厂没有 PI CMP-UI-QUERY-SCOPE-PI-B 的号，不能查看其他工厂"
+}

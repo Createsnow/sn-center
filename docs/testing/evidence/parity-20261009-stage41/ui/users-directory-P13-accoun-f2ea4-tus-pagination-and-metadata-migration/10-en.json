@@ -1,0 +1,340 @@
+{
+  "styles": {
+    "tags": [],
+    "firstTags": [
+      {
+        "className": "ant-tag ant-tag-filled ant-tag-success css-dev-only-do-not-override-oc1rc0 css-var-_r_0_",
+        "width": 49.890625,
+        "height": 20,
+        "color": "rgb(63, 125, 90)",
+        "background": "rgb(240, 249, 235)",
+        "fontSize": "12px",
+        "lineHeight": "12px",
+        "padding": "0px 7px",
+        "margin": "0px",
+        "verticalAlign": "middle",
+        "display": "inline-flex"
+      },
+      {
+        "className": "ant-tag ant-tag-filled ant-tag-warning css-dev-only-do-not-override-oc1rc0 css-var-_r_0_",
+        "width": 113.265625,
+        "height": 20,
+        "color": "rgb(194, 120, 3)",
+        "background": "rgb(253, 246, 236)",
+        "fontSize": "12px",
+        "lineHeight": "12px",
+        "padding": "0px 7px",
+        "margin": "0px 0px 0px 4px",
+        "verticalAlign": "middle",
+        "display": "inline-flex"
+      },
+      {
+        "className": "ant-tag ant-tag-filled ant-tag-success css-dev-only-do-not-override-oc1rc0 css-var-_r_0_",
+        "width": 49.890625,
+        "height": 20,
+        "color": "rgb(63, 125, 90)",
+        "background": "rgb(240, 249, 235)",
+        "fontSize": "12px",
+        "lineHeight": "12px",
+        "padding": "0px 7px",
+        "margin": "0px",
+        "verticalAlign": "middle",
+        "display": "inline-flex"
+      }
+    ],
+    "buttons": [
+      {
+        "className": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-link ant-btn-color-link ant-btn-variant-link",
+        "width": 30.125,
+        "height": 20,
+        "color": "rgb(30, 74, 138)",
+        "background": "rgba(0, 0, 0, 0)",
+        "fontSize": "14px",
+        "lineHeight": "14px",
+        "padding": "2px",
+        "margin": "0px",
+        "verticalAlign": "middle",
+        "display": "inline-flex"
+      },
+      {
+        "className": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-link ant-btn-color-link ant-btn-variant-link",
+        "width": 106.390625,
+        "height": 20,
+        "color": "rgb(96, 98, 102)",
+        "background": "rgba(0, 0, 0, 0)",
+        "fontSize": "14px",
+        "lineHeight": "14px",
+        "padding": "2px",
+        "margin": "0px 0px 0px 12px",
+        "verticalAlign": "middle",
+        "display": "inline-flex"
+      },
+      {
+        "className": "ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-link ant-btn-dangerous ant-btn-color-dangerous ant-btn-variant-link",
+        "width": 52.703125,
+        "height": 20,
+        "color": "rgb(180, 35, 24)",
+        "background": "rgba(0, 0, 0, 0)",
+        "fontSize": "14px",
+        "lineHeight": "14px",
+        "padding": "2px",
+        "margin": "0px 0px 0px 12px",
+        "verticalAlign": "middle",
+        "display": "inline-flex"
+      }
+    ],
+    "plus": [
+      {
+        "className": "prototype-icon",
+        "width": 14,
+        "height": 14,
+        "color": "rgb(255, 255, 255)",
+        "background": "rgba(0, 0, 0, 0)",
+        "fontSize": "14px",
+        "lineHeight": "normal",
+        "padding": "0px",
+        "margin": "0px",
+        "verticalAlign": "middle",
+        "display": "flex"
+      }
+    ]
+  },
+  "rows": [
+    [
+      "cmp_dir39_00",
+      "目录成员00",
+      "Factory operator",
+      "比较测试甲厂（CMP-A）",
+      "ActiveMust change pwd",
+      "",
+      "admin · 2026-10-09 12:18:17",
+      "EditReset passwordDisable"
+    ],
+    [
+      "cmp_dir39_01",
+      "目录成员01",
+      "Factory operator",
+      "比较测试甲厂（CMP-A）",
+      "ActiveMust change pwd",
+      "",
+      "admin · 2026-10-09 12:18:17",
+      "EditReset passwordDisable"
+    ],
+    [
+      "cmp_dir39_02",
+      "目录成员02",
+      "Factory operator",
+      "比较测试甲厂（CMP-A）",
+      "ActiveMust change pwd",
+      "",
+      "admin · 2026-10-09 12:18:16",
+      "EditReset passwordDisable"
+    ],
+    [
+      "cmp_dir39_03",
+      "目录成员03",
+      "Factory operator",
+      "比较测试甲厂（CMP-A）",
+      "ActiveMust change pwd",
+      "",
+      "admin · 2026-10-09 12:18:16",
+      "EditReset passwordDisable"
+    ],
+    [
+      "cmp_dir39_04",
+      "目录成员04",
+      "Factory operator",
+      "比较测试甲厂（CMP-A）",
+      "ActiveMust change pwd",
+      "",
+      "admin · 2026-10-09 12:18:16",
+      "EditReset passwordDisable"
+    ],
+    [
+      "cmp_dir39_05",
+      "目录成员05",
+      "Factory operator",
+      "比较测试甲厂（CMP-A）",
+      "DisabledMust change pwd",
+      "",
+      "admin · 2026-10-09 12:18:16",
+      "EditReset passwordEnable"
+    ],
+    [
+      "cmp_dir39_06",
+      "目录成员06",
+      "Factory operator",
+      "比较测试甲厂（CMP-A）",
+      "ActiveMust change pwd",
+      "",
+      "admin · 2026-10-09 12:18:16",
+      "EditReset passwordDisable"
+    ],
+    [
+      "cmp_dir39_07",
+      "目录成员07",
+      "Factory operator",
+      "比较测试甲厂（CMP-A）",
+      "ActiveMust change pwd",
+      "",
+      "admin · 2026-10-09 12:18:16",
+      "EditReset passwordDisable"
+    ],
+    [
+      "cmp_dir39_08",
+      "目录成员08",
+      "Factory operator",
+      "比较测试甲厂（CMP-A）",
+      "ActiveMust change pwd",
+      "",
+      "admin · 2026-10-09 12:18:16",
+      "EditReset passwordDisable"
+    ],
+    [
+      "cmp_dir39_09",
+      "目录成员09",
+      "Factory operator",
+      "比较测试甲厂（CMP-A）",
+      "ActiveMust change pwd",
+      "",
+      "admin · 2026-10-09 12:18:15",
+      "EditReset passwordDisable"
+    ],
+    [
+      "cmp_dir39_10",
+      "目录成员10",
+      "Factory operator",
+      "比较测试甲厂（CMP-A）",
+      "ActiveMust change pwd",
+      "",
+      "admin · 2026-10-09 12:18:15",
+      "EditReset passwordDisable"
+    ],
+    [
+      "cmp_dir39_11",
+      "目录成员11",
+      "Factory operator",
+      "比较测试甲厂（CMP-A）",
+      "ActiveMust change pwd",
+      "",
+      "admin · 2026-10-09 12:18:15",
+      "EditReset passwordDisable"
+    ],
+    [
+      "cmp_dir39_12",
+      "目录成员12",
+      "Factory operator",
+      "比较测试甲厂（CMP-A）",
+      "ActiveMust change pwd",
+      "",
+      "admin · 2026-10-09 12:18:15",
+      "EditReset passwordDisable"
+    ],
+    [
+      "cmp_dir39_13",
+      "目录成员13",
+      "Factory operator",
+      "比较测试甲厂（CMP-A）",
+      "ActiveMust change pwd",
+      "",
+      "admin · 2026-10-09 12:18:15",
+      "EditReset passwordDisable"
+    ],
+    [
+      "cmp_dir39_14",
+      "目录成员14",
+      "Factory operator",
+      "比较测试甲厂（CMP-A）",
+      "ActiveMust change pwd",
+      "",
+      "admin · 2026-10-09 12:18:15",
+      "EditReset passwordDisable"
+    ],
+    [
+      "cmp_dir39_15",
+      "目录成员15",
+      "Factory operator",
+      "比较测试甲厂（CMP-A）",
+      "ActiveMust change pwd",
+      "",
+      "admin · 2026-10-09 12:18:15",
+      "EditReset passwordDisable"
+    ],
+    [
+      "cmp_dir39_16",
+      "目录成员16",
+      "Factory operator",
+      "比较测试甲厂（CMP-A）",
+      "ActiveMust change pwd",
+      "",
+      "admin · 2026-10-09 12:18:14",
+      "EditReset passwordDisable"
+    ],
+    [
+      "cmp_dir39_17",
+      "目录成员17",
+      "Factory operator",
+      "比较测试甲厂（CMP-A）",
+      "ActiveMust change pwd",
+      "",
+      "admin · 2026-10-09 12:18:14",
+      "EditReset passwordDisable"
+    ],
+    [
+      "cmp_dir39_18",
+      "目录成员18",
+      "Factory operator",
+      "比较测试甲厂（CMP-A）",
+      "ActiveMust change pwd",
+      "",
+      "admin · 2026-10-09 12:18:14",
+      "EditReset passwordDisable"
+    ],
+    [
+      "cmp_dir39_19",
+      "目录成员19",
+      "Factory operator",
+      "比较测试甲厂（CMP-A）",
+      "ActiveMust change pwd",
+      "",
+      "admin · 2026-10-09 12:18:14",
+      "EditReset passwordDisable"
+    ]
+  ],
+  "headings": [
+    "Employee No.",
+    "Name",
+    "Role",
+    "Factory",
+    "Status",
+    "Last sign-in",
+    "Created",
+    "Actions"
+  ],
+  "geometry": {
+    "surface": {
+      "x": 240,
+      "y": 168.59375,
+      "width": 1180,
+      "height": 1283.375
+    },
+    "toolbar": {
+      "x": 261,
+      "y": 185.59375,
+      "width": 1138,
+      "height": 32
+    },
+    "table": {
+      "x": 261,
+      "y": 229.59375,
+      "width": 1138,
+      "height": 1161.375
+    },
+    "pager": {
+      "x": 261,
+      "y": 1402.96875,
+      "width": 1138,
+      "height": 32
+    }
+  }
+}

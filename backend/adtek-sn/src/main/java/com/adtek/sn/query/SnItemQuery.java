@@ -13,7 +13,8 @@ public record SnItemQuery(
         @Size(max = 64) String sn,
         @Size(max = 64) String billNo,
         String batchId,
-        Boolean piAll) {
+        Boolean piAll,
+        @Size(max = 64) String batchNo) {
     public SnItemQuery {
         if (piAll == null) piAll = false;
         if (materialMode == null) materialMode = "ALL";

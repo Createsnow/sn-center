@@ -1,0 +1,11 @@
+
+Running 2 tests using 1 worker
+
+(node:18816) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\order-focus.spec.ts:9:1 › P05 focus: schedule closing, unit text, keyboard steps and scroll restoration (23.0s)
+(node:50784) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [migration] › e2e\parity\order-focus.spec.ts:9:1 › P05 focus: schedule closing, unit text, keyboard steps and scroll restoration (24.8s)
+
+  2 passed (50.9s)

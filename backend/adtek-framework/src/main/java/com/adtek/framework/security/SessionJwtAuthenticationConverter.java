@@ -9,7 +9,7 @@ import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
-/** 标准 Resource Server 验签后的转换扩展点；每次请求均读取当前 MySQL 授权版本。 */
+/** 每次验签后核对 MySQL 凭据版本，并装配当前权限、工厂范围及授权并发版本。 */
 @Component
 public class SessionJwtAuthenticationConverter
         implements Converter<Jwt, AbstractAuthenticationToken> {
@@ -31,12 +31,12 @@ public class SessionJwtAuthenticationConverter
             sessions.requireActive(sid, userId, version);
             var actor =
                     authorizations
-                            .loadCurrent(userId)
+                            .loadForSession(userId, version)
                             .orElseThrow(
                                     () ->
                                             new BusinessException(
                                                     ErrorCodeConstants.SESSION_INVALID));
-            if (actor.securityVersion() != version
+            if (actor.credentialVersion() != version
                     || !actor.principalType()
                             .equals(
                                     jwt.getClaimAsString("pt") == null
@@ -45,6 +45,8 @@ public class SessionJwtAuthenticationConverter
                 throw new BusinessException(ErrorCodeConstants.SESSION_INVALID);
             }
             return new ActorAuthenticationToken(actor, sid);
+        } catch (SessionSuspendedException error) {
+            throw new ActorAuthenticationException(error.error(), error);
         } catch (BusinessException error) {
             throw new ActorAuthenticationException(error.getError(), error);
         } catch (DataAccessException error) {

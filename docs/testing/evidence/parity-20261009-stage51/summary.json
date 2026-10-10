@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-09",
+  "goal": "active",
+  "schema": 41,
+  "ui": {
+    "ui6": {
+      "startTime": "2026-10-09T10:39:33.441Z",
+      "duration": 278057.338,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "boundaries": {
+      "startTime": "2026-10-09T10:36:57.400Z",
+      "duration": 83310.349,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  },
+  "frontendUnit": 84,
+  "backendRerun": false,
+  "backendBytesUnchanged": 603,
+  "jarSha256": "b21de36437a1dd15138c476dd98df763b6dcd88b6e307c4e2916d8b78e40ff6f",
+  "statePairs": 76,
+  "overflowPairs": 36,
+  "shortTextPairs": 6,
+  "scrollClosePairs": 3,
+  "functionalDifferences": 0,
+  "visualDifferences": 1807,
+  "principalBoxMismatchPairs": 1,
+  "timestampChecks": 84,
+  "screenshots": 190,
+  "diagnosticScreenshots": 512,
+  "sourceFiles": {
+    "frontend/e2e/parity/order-boundaries.spec.ts": "4167848bc088ba8bbbd3e6b969df6dc6452e7688d75174464f054a867e2c2ebf",
+    "frontend/e2e/parity/order-interactions.spec.ts": "2bf7c76b82733019a5fb2ab404f99fe35ec72af25bb4b6a13540b287a21ebead",
+    "frontend/playwright.parity.config.ts": "702e61f4c28f3873f17b8716eba5391aaa25083a90a08040751f15a7c49ea918",
+    "frontend/src/features/sn/components/OrderOverflowCell.tsx": "6fe7e65a6fc97e43876897e36283a06ec88fedbdd8c56a9d52ae9543f37757bd",
+    "frontend/src/features/sn/components/OrderSyncSchedule.tsx": "e6f903352011acfdcfd4c0264a455ab373736f7efb40a70b6ac1827d29b0baab",
+    "frontend/src/features/sn/pages/OrdersPage.tsx": "d30b94b490eaa958283995b476d149cbcf133ba54936c13d15d4c4842a1c96f4",
+    "frontend/src/styles.css": "6922255684f61061e94668f978f1a80e3d28118175a5633d260515bb4170b6c5",
+    "tools/testing/parity-k3-fixture.py": "bc7af24adb2def4cb774cad5e77db358bcf316865d3a65c2deb2fcb3808306fe",
+    "tools/testing/parity-order-audit-fixture.py": "f987dba601f6fd1078309938b7b941e351cdfd746839edcc9d8b81468ac35bf7"
+  },
+  "registeredUiTests": 229,
+  "registeredUiFiles": 41,
+  "fullUiMatrixRerun": false,
+  "mainDataAllUnchanged": false,
+  "mainDatabaseChanges": "Concurrent PAGE/admin operations retained and inventoried, not restored.",
+  "originalFilesPreserved": 576,
+  "prototypeFilesPreserved": 146,
+  "frozenSqlPreserved": 41,
+  "dedicatedServicesStopped": true,
+  "remaining": [
+    "Scrolling/focus after full sync and schedule save; remaining internal visual details",
+    "Complete P01-P16 role/language/viewport UI matrix",
+    "K3 malformed/oversized/coercion, generation concurrency, recovery, MES and end-to-end UI business loop"
+  ]
+}

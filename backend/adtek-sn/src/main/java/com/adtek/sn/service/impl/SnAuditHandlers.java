@@ -52,6 +52,9 @@ public class SnAuditHandlers {
                 var fresh = service.authorization.lockCurrent(actor);
                 service.authorize(fresh, task.id());
                 var export = service.rows.exportById(task.id());
+                if (export.formatVersion() < 1 || export.formatVersion() > 7)
+                    throw new IllegalStateException("Unsupported audit export format");
+                boolean prototype = export.formatVersion() >= 2;
                 var file = service.files.find(task.id());
                 if (file == null) throw new IllegalStateException("Missing export file");
                 storage.cleanInterrupted(task.id());
@@ -64,10 +67,35 @@ public class SnAuditHandlers {
                                 for (var row : batch) {
                                     if (row.ordinal() != ++ordinal)
                                         throw new IllegalStateException("Broken export ordinal");
-                                    consumer.accept(
+                                    var cells =
                                             Arrays.asList(
                                                     service.json.readValue(
-                                                            row.cells(), String[].class)));
+                                                            row.cells(), String[].class));
+                                    if (prototype) {
+                                        var roles =
+                                                new HashSet<>(
+                                                        Arrays.asList(
+                                                                service.json.readValue(
+                                                                        cells.get(3),
+                                                                        String[].class)));
+                                        cells =
+                                                export.formatVersion() == 7
+                                                        ? SnAuditFiles.prototypeCellsV7(
+                                                                cells, roles)
+                                                        : export.formatVersion() == 6
+                                                                ? SnAuditFiles.prototypeCellsV6(
+                                                                        cells, roles)
+                                                                : export.formatVersion() == 5
+                                                                        ? SnAuditFiles
+                                                                                .prototypeCellsV5(
+                                                                                        cells,
+                                                                                        roles)
+                                                                        : SnAuditFiles
+                                                                                .prototypeCells(
+                                                                                        cells,
+                                                                                        roles);
+                                    }
+                                    consumer.accept(cells);
                                 }
                                 service.progress.record(
                                         task.id(), task.executionEpoch(), ordinal, "WRITING");
@@ -81,22 +109,47 @@ public class SnAuditHandlers {
                                 file.storageKey(),
                                 file.sha256(),
                                 output -> {
-                                    if (format.equals("XLSX"))
-                                        PrintFiles.xlsx(
-                                                output,
-                                                export.createdAt(),
-                                                SnAuditFiles.HEADER,
-                                                settings.fileBytes(),
-                                                rows);
-                                    else {
+                                    if (format.equals("XLSX")) {
+                                        if (export.formatVersion() >= 3)
+                                            PrintFiles.auditXlsx(
+                                                    output,
+                                                    export.createdAt(),
+                                                    settings.fileBytes(),
+                                                    export.formatVersion(),
+                                                    rows);
+                                        else if (prototype)
+                                            PrintFiles.typedXlsx(
+                                                    output,
+                                                    export.createdAt(),
+                                                    SnAuditFiles.PROTOTYPE_HEADER,
+                                                    "audit",
+                                                    Set.of(14),
+                                                    settings.fileBytes(),
+                                                    rows);
+                                        else
+                                            PrintFiles.xlsx(
+                                                    output,
+                                                    export.createdAt(),
+                                                    SnAuditFiles.HEADER,
+                                                    settings.fileBytes(),
+                                                    rows);
+                                    } else {
                                         output.write(
                                                 new byte[] {(byte) 0xef, (byte) 0xbb, (byte) 0xbf});
-                                        PrintFiles.csvRow(output, SnAuditFiles.HEADER);
+                                        if (prototype)
+                                            SnAuditFiles.prototypeCsvRow(
+                                                    output, SnAuditFiles.PROTOTYPE_HEADER);
+                                        else PrintFiles.csvRow(output, SnAuditFiles.HEADER);
                                         rows.each(
                                                 values -> {
                                                     try {
-                                                        PrintFiles.csvRow(
-                                                                output, SnAuditFiles.csv(values));
+                                                        if (prototype)
+                                                            SnAuditFiles.prototypeCsvRow(
+                                                                    output, values);
+                                                        else
+                                                            PrintFiles.csvRow(
+                                                                    output,
+                                                                    SnAuditFiles.csv(values));
                                                     } catch (IOException error) {
                                                         throw new UncheckedIOException(error);
                                                     }

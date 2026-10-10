@@ -11,6 +11,9 @@ public interface SnQueryService {
     /** 全部原筛选的稳定keyset页；游标绑定主体/授权版本/完整筛选，当前明细随业务合法变化。 */
     CursorResult<SnQueryItemVO> items(SnItemQuery query, String cursor, int size);
 
+    /** 页面按原型顺序分页；编号排序使用不可变创建顺序，不依赖随机 UUID。 */
+    SnQueryPageVO page(SnItemQuery query, int page, int size);
+
     /** 相同当前范围和筛选的精确数量；不以旧100000展示截断冒充总量。 */
     SnCountVO count(SnItemQuery query);
 

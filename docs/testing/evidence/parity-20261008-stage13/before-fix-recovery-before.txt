@@ -1,0 +1,39 @@
+
+Running 1 test using 1 worker
+
+(node:31908) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [migration] › e2e\parity\pi-initialization.spec.ts:513:1 › P08 committed initialization survives failed result reading and manual query without another submission (28.8s)
+Testing stopped early after 1 maximum allowed failures.
+
+
+  1) [migration] › e2e\parity\pi-initialization.spec.ts:513:1 › P08 committed initialization survives failed result reading and manual query without another submission 
+
+    Error: expect(locator).toBeDisabled() failed
+
+    Locator:  getByRole('button', { name: '执行初始化', exact: true })
+    Expected: disabled
+    Received: enabled
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toBeDisabled" getByRole('button', { name: '执行初始化', exact: true }) with timeout 15000ms
+      - waiting for getByRole('button', { name: '执行初始化', exact: true })
+        33 × locator resolved to <button type="button" aria-label="执行初始化" class="ant-btn css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-btn-primary ant-btn-color-primary ant-btn-variant-solid">…</button>
+           - unexpected value "enabled"
+
+
+      549 |         .last(),
+      550 |     ).toBeVisible();
+    > 551 |     await expect(submit(page)).toBeDisabled();
+          |                                ^
+      552 |     await capture(page, info, 'result-read-failed');
+      553 |     denyResult = false;
+      554 |     await page.getByRole('button', { name: zh.common.search, exact: true }).click();
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\pi-initialization.spec.ts:551:32
+
+    Error Context: test-results\parity\pi-initialization-P08-comm-ad1b7--without-another-submission-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\pi-initialization.spec.ts:513:1 › P08 committed initialization survives failed result reading and manual query without another submission 
+  1 error was not a part of any test, see above for details

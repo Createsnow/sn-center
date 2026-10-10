@@ -1,0 +1,32 @@
+{
+  "status": 409,
+  "code": 1004000016,
+  "emptyBeforeRetry": true,
+  "afterRetry": {
+    "kind": "java",
+    "items": [
+      {
+        "sn": "G0600001",
+        "seq_dec": 1,
+        "status": "PENDING_ALLOC",
+        "material": "BEFORE-B",
+        "customer": "CMP-UI-GEN-CUSTOMER"
+      },
+      {
+        "sn": "G0600002",
+        "seq_dec": 2,
+        "status": "PENDING_ALLOC",
+        "material": "BEFORE-B",
+        "customer": "CMP-UI-GEN-CUSTOMER"
+      },
+      {
+        "sn": "G0600003",
+        "seq_dec": 3,
+        "status": "PENDING_ALLOC",
+        "material": "BEFORE-B",
+        "customer": "CMP-UI-GEN-CUSTOMER"
+      }
+    ],
+    "allocations": []
+  }
+}

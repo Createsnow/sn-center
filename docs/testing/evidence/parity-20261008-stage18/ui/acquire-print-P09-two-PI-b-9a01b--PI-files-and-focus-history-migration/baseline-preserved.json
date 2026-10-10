@@ -1,0 +1,61 @@
+{
+  "originalRowsUnchanged": {
+    "items": {
+      "count": 10,
+      "sha256": "606511e3555a5a65685e1725b9efb1238c6651bf9b420e21d933d9343ef8e601"
+    },
+    "keys": {
+      "count": 10,
+      "sha256": "8731c4eaeab52578402b7dc357d79eea494a166e2afda0fa28db67820fe5f9e1"
+    },
+    "counters": {
+      "count": 2,
+      "sha256": "572e4fe78a6a79d72135da3858d98152a9214117b187480e7a10e58388ec3e29"
+    },
+    "rules": {
+      "count": 3,
+      "sha256": "2b3945bc6ba55c27f4a6ccbf6f1ea1d512f003a9aebae86b986bc8454bde3c80"
+    },
+    "versions": {
+      "count": 3,
+      "sha256": "d01d91aa95352e978eb5564f65e57ad242572c20fe33a239228765c1513a7f08"
+    },
+    "allocations": {
+      "count": 1,
+      "sha256": "6f89688c64e053c3f48961b9b45e6e495c28df44431f1bb2e6079cfa54741e10"
+    },
+    "ledger": {
+      "count": 156,
+      "sha256": "dfaea356e77e3b79660c13c61f61da33f88ed7d72952726fc63ab3a5165b756b"
+    },
+    "generation_identity": {
+      "count": 1,
+      "sha256": "89370c52d59ea61ad81db24ecd34b4d6ead202f8c79908953604d20554f183de"
+    },
+    "choices": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "sn_acquire_batch": {
+      "count": 1,
+      "sha256": "bdd7335731330c0a8bd1ee4bafa4cc1146f7158de3fbd17663688905a16dffb7"
+    },
+    "sn_print": {
+      "count": 1,
+      "sha256": "0bd3bbc483650508aa6c58838036ee38405e41e1bf875c16ece98e68e9c65ceb"
+    },
+    "sn_acquire_member": {
+      "count": 10,
+      "sha256": "63d5159b74816bf37fad81e98065b6fffee53675fc41eebdcef38325e9318633"
+    },
+    "sn_print_member": {
+      "count": 10,
+      "sha256": "ee3f46d446c66051a8b0ed0d41b4b1a97ac09a7b17488ddf933d1659701f706d"
+    },
+    "accounts": {
+      "count": 4,
+      "sha256": "cf944813487b65fbd5dc2ed65b19bb519f40998195c993962f4d3d67e7b9df82"
+    }
+  },
+  "ownedFixtureRemoved": true
+}

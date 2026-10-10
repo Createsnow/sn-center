@@ -1,0 +1,504 @@
+{
+  "text": "Tạo tài khoản\nMã NV\nHọ tên\nVai trò\nQuản trị viên (tổng bộ)\nNhân viên nhà máy\nNgười tra cứu\nPhải gắn một nhà máy và chỉ thao tác cho nhà máy đó.\nNhà máy\nNhà máy\nMật khẩu ban đầu\n8–64 ký tự, gồm cả chữ và số. Phải đổi khi đăng nhập lần đầu.\nHủy\nLưu",
+  "drawnLabels": [
+    [
+      [
+        "M",
+        523.4375,
+        207,
+        11.375,
+        20
+      ],
+      [
+        "ã",
+        534.796875,
+        207,
+        7.890625,
+        20
+      ],
+      [
+        " ",
+        542.671875,
+        207,
+        3.15625,
+        20
+      ],
+      [
+        "N",
+        545.8125,
+        207,
+        10.140625,
+        20
+      ],
+      [
+        "V",
+        555.9375,
+        207,
+        8.0625,
+        20
+      ]
+    ],
+    [
+      [
+        "H",
+        520.859375,
+        257,
+        10.203125,
+        20
+      ],
+      [
+        "ọ",
+        531.046875,
+        257,
+        8.5,
+        20
+      ],
+      [
+        " ",
+        539.53125,
+        257,
+        3.140625,
+        20
+      ],
+      [
+        "t",
+        542.65625,
+        257,
+        5.046875,
+        20
+      ],
+      [
+        "ê",
+        547.6875,
+        257,
+        7.765625,
+        20
+      ],
+      [
+        "n",
+        555.4375,
+        257,
+        8.5625,
+        20
+      ]
+    ],
+    [
+      [
+        "V",
+        522.453125,
+        307,
+        7.671875,
+        20
+      ],
+      [
+        "a",
+        530.109375,
+        307,
+        7.90625,
+        20
+      ],
+      [
+        "i",
+        538,
+        307,
+        3.859375,
+        20
+      ],
+      [
+        " ",
+        541.84375,
+        307,
+        3.15625,
+        20
+      ],
+      [
+        "t",
+        544.984375,
+        307,
+        5.296875,
+        20
+      ],
+      [
+        "r",
+        550.265625,
+        307,
+        5.25,
+        20
+      ],
+      [
+        "ò",
+        555.5,
+        307,
+        8.5,
+        20
+      ]
+    ],
+    [
+      [
+        "N",
+        506.21875,
+        421,
+        10.125,
+        20
+      ],
+      [
+        "h",
+        516.328125,
+        421,
+        8.515625,
+        20
+      ],
+      [
+        "à",
+        524.828125,
+        421,
+        7.90625,
+        20
+      ],
+      [
+        " ",
+        532.71875,
+        421,
+        3.140625,
+        20
+      ],
+      [
+        "m",
+        535.84375,
+        421,
+        12.984375,
+        20
+      ],
+      [
+        "á",
+        548.8125,
+        421,
+        7.890625,
+        20
+      ],
+      [
+        "y",
+        556.6875,
+        421,
+        7.3125,
+        20
+      ]
+    ],
+    [
+      [
+        "M",
+        503.96875,
+        471,
+        11.375,
+        20
+      ],
+      [
+        "ậ",
+        515.328125,
+        471,
+        7.640625,
+        20
+      ],
+      [
+        "t",
+        522.953125,
+        471,
+        5.296875,
+        20
+      ],
+      [
+        " ",
+        528.234375,
+        471,
+        3.15625,
+        20
+      ],
+      [
+        "k",
+        531.375,
+        471,
+        7.734375,
+        20
+      ],
+      [
+        "h",
+        539.09375,
+        471,
+        8.515625,
+        20
+      ],
+      [
+        "ẩ",
+        547.59375,
+        471,
+        7.90625,
+        20
+      ],
+      [
+        "u",
+        555.484375,
+        471,
+        8.515625,
+        20
+      ],
+      [
+        " ",
+        563.984375,
+        471,
+        0,
+        20
+      ],
+      [
+        "b",
+        510.984375,
+        503,
+        8.390625,
+        20
+      ],
+      [
+        "a",
+        519.359375,
+        503,
+        7.890625,
+        20
+      ],
+      [
+        "n",
+        527.234375,
+        503,
+        8.5625,
+        20
+      ],
+      [
+        " ",
+        535.78125,
+        503,
+        3.15625,
+        20
+      ],
+      [
+        "đ",
+        538.921875,
+        503,
+        8.6875,
+        20
+      ],
+      [
+        "ầ",
+        547.59375,
+        503,
+        7.90625,
+        20
+      ],
+      [
+        "u",
+        555.484375,
+        503,
+        8.515625,
+        20
+      ]
+    ]
+  ],
+  "factoryMarkup": "<div data-v-9fb291fe=\"\" data-v-f95763dd=\"\" class=\"el-select factory-select\"><div class=\"el-select__wrapper is-filterable el-tooltip__trigger el-tooltip__trigger\" tabindex=\"-1\"><!--v-if--><div class=\"el-select__selection\"><!--v-if--><div class=\"el-select__selected-item el-select__input-wrapper\"><input type=\"text\" class=\"el-select__input\" autocomplete=\"off\" tabindex=\"0\" role=\"combobox\" spellcheck=\"false\" aria-activedescendant=\"\" aria-controls=\"el-id-9150-70\" aria-expanded=\"false\" aria-autocomplete=\"none\" aria-haspopup=\"listbox\" value=\"\" id=\"el-id-9150-74\" style=\"min-width: 11px;\"><span aria-hidden=\"true\" class=\"el-select__input-calculator\"></span></div><div class=\"el-select__selected-item el-select__placeholder is-transparent\"><span>Nhà máy</span></div></div><div class=\"el-select__suffix\"><i class=\"el-icon el-select__caret el-select__icon\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1024 1024\"><path fill=\"currentColor\" d=\"M831.872 340.864 512 652.672 192.128 340.864a30.59 30.59 0 0 0-42.752 0 29.12 29.12 0 0 0 0 41.6L489.664 714.24a32 32 0 0 0 44.672 0l340.288-331.712a29.12 29.12 0 0 0 0-41.728 30.59 30.59 0 0 0-42.752 0z\"></path></svg></i><!--v-if--><!--v-if--></div></div></div>",
+  "styles": [
+    {
+      "text": "Quản trị viên (tổng bộ)",
+      "font": "500 14px / 14px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "letterSpacing": "normal",
+      "boxSizing": "border-box",
+      "padding": "8px 15px",
+      "border": "0px none rgb(96, 98, 102)",
+      "margin": "0px",
+      "display": "inline-block",
+      "width": "180.328px"
+    },
+    {
+      "text": "Nhân viên nhà máy",
+      "font": "500 14px / 14px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "letterSpacing": "normal",
+      "boxSizing": "border-box",
+      "padding": "8px 15px",
+      "border": "0px none rgb(30, 74, 138)",
+      "margin": "0px",
+      "display": "inline-block",
+      "width": "157.891px"
+    },
+    {
+      "text": "Người tra cứu",
+      "font": "500 14px / 14px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "letterSpacing": "normal",
+      "boxSizing": "border-box",
+      "padding": "8px 15px",
+      "border": "0px none rgb(96, 98, 102)",
+      "margin": "0px",
+      "display": "inline-block",
+      "width": "119.469px"
+    },
+    {
+      "text": "Phải gắn một nhà máy và chỉ thao tác cho nhà máy đó.",
+      "font": "12px / 32px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "letterSpacing": "normal",
+      "boxSizing": "border-box",
+      "padding": "0px",
+      "border": "0px none rgb(100, 116, 139)",
+      "margin": "0px",
+      "display": "block",
+      "width": "302.281px"
+    },
+    {
+      "text": "8–64 ký tự, gồm cả chữ và số. Phải đổi khi đăng nhập lần đầu.",
+      "font": "12px / 32px \"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "letterSpacing": "normal",
+      "boxSizing": "border-box",
+      "padding": "0px",
+      "border": "0px none rgb(100, 116, 139)",
+      "margin": "0px",
+      "display": "block",
+      "width": "338.703px"
+    }
+  ],
+  "geometry": {
+    "dialog": [
+      [
+        460,
+        144,
+        520,
+        467
+      ]
+    ],
+    "title": [
+      [
+        476,
+        159,
+        112.3125,
+        26
+      ]
+    ],
+    "rows": [
+      [
+        476,
+        201,
+        488,
+        32
+      ],
+      [
+        476,
+        251,
+        488,
+        32
+      ],
+      [
+        476,
+        301,
+        488,
+        96
+      ],
+      [
+        476,
+        415,
+        488,
+        32
+      ],
+      [
+        476,
+        465,
+        488,
+        64
+      ]
+    ],
+    "labels": [
+      [
+        476,
+        201,
+        100,
+        32
+      ],
+      [
+        476,
+        251,
+        100,
+        32
+      ],
+      [
+        476,
+        301,
+        100,
+        32
+      ],
+      [
+        476,
+        415,
+        100,
+        32
+      ],
+      [
+        476,
+        465,
+        100,
+        32
+      ]
+    ],
+    "inputs": [
+      [
+        576,
+        201,
+        388,
+        32
+      ],
+      [
+        576,
+        251,
+        388,
+        32
+      ],
+      [
+        576,
+        465,
+        388,
+        32
+      ]
+    ],
+    "hints": [
+      [
+        576,
+        365,
+        302.28125,
+        32
+      ],
+      [
+        576,
+        497,
+        338.703125,
+        32
+      ]
+    ],
+    "roles": [
+      [
+        576,
+        301,
+        180.328125,
+        32
+      ],
+      [
+        756.328125,
+        301,
+        157.890625,
+        32
+      ],
+      [
+        576,
+        333,
+        119.46875,
+        32
+      ]
+    ],
+    "footer": [
+      [
+        476,
+        547,
+        488,
+        48
+      ]
+    ]
+  }
+}

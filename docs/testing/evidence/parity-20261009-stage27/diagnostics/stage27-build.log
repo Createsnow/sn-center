@@ -1,0 +1,12 @@
+
+> adtek-platform-sn-web@0.1.0 build D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> tsc --noEmit && vite build
+
+e2e/parity/transfer-layout.spec.ts(120,19): error TS18048: 'metrics.table' is possibly 'undefined'.
+e2e/parity/transfer-layout.spec.ts(121,18): error TS18048: 'metrics.body' is possibly 'undefined'.
+e2e/parity/transfer-layout.spec.ts(122,12): error TS18048: 'table' is possibly 'undefined'.
+e2e/parity/transfer-layout.spec.ts(123,12): error TS18048: 'body' is possibly 'undefined'.
+e2e/parity/transfer-layout.spec.ts(123,21): error TS18048: 'body' is possibly 'undefined'.
+e2e/parity/transfer-layout.spec.ts(124,7): error TS18048: 'table' is possibly 'undefined'.
+e2e/parity/transfer-layout.spec.ts(124,17): error TS18048: 'table' is possibly 'undefined'.
+ ELIFECYCLE  Command failed with exit code 2.

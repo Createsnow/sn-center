@@ -31,17 +31,20 @@ import java.time.Instant;
             "beforeStatus",
             "afterStatus",
             "batchId",
+            "batchNo",
+            "transferNo",
             "operationId",
             "transferId",
             "reason",
             "errorCode",
+            "errorMessage",
             "traceId",
             "detail"
         })
 public record SnAuditVO(
         String id,
         Instant createdAt,
-        String actorId,
+        @Schema(types = {"string", "null"}) String actorId,
         String operator,
         String operatorName,
         String roles,
@@ -60,7 +63,7 @@ public record SnAuditVO(
         @Schema(types = {"string", "null"}) String billNo,
         @Schema(types = {"string", "null"}) String startSn,
         @Schema(types = {"string", "null"}) String endSn,
-        String quantity,
+        @Schema(types = {"string", "null"}) String quantity,
         @Schema(types = {"string", "null"}) String beforeStatus,
         @Schema(types = {"string", "null"}) String afterStatus,
         @Schema(types = {"string", "null"}) String batchId,
@@ -68,5 +71,8 @@ public record SnAuditVO(
         @Schema(types = {"string", "null"}) String transferId,
         @Schema(types = {"string", "null"}) String reason,
         @Schema(types = {"string", "null"}) String errorCode,
+        @Schema(types = {"string", "null"}) String errorMessage,
         @Schema(types = {"string", "null"}) String traceId,
-        String detail) {}
+        String detail,
+        @Schema(types = {"string", "null"}) String batchNo,
+        @Schema(types = {"string", "null"}) String transferNo) {}

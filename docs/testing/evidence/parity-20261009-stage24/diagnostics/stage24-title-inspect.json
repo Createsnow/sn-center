@@ -1,0 +1,150 @@
+{
+  "html": "<div class=\"ant-modal-header\"><div class=\"ant-modal-title\" id=\"_r_e_\">从订单快照选择</div></div>",
+  "styles": [
+    {
+      "name": "DIV",
+      "class": "ant-modal-title",
+      "styles": {
+        "color": "rgb(48, 49, 51)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "fontSize": "18px",
+        "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "fontWeight": "400",
+        "lineHeight": "24px",
+        "textIndent": "0px",
+        "webkitTextFillColor": "rgb(48, 49, 51)",
+        "opacity": "1",
+        "visibility": "visible",
+        "position": "static",
+        "zIndex": "auto",
+        "overflow": "visible",
+        "clipPath": "none",
+        "transform": "none"
+      }
+    },
+    {
+      "name": "DIV",
+      "class": "ant-modal-header",
+      "styles": {
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "fontSize": "14px",
+        "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "fontWeight": "400",
+        "lineHeight": "22px",
+        "textIndent": "0px",
+        "webkitTextFillColor": "rgb(15, 23, 42)",
+        "opacity": "1",
+        "visibility": "visible",
+        "position": "static",
+        "zIndex": "auto",
+        "overflow": "visible",
+        "clipPath": "none",
+        "transform": "none"
+      }
+    },
+    {
+      "name": "DIV",
+      "class": "ant-modal-container",
+      "styles": {
+        "color": "rgb(96, 98, 102)",
+        "background": "rgb(255, 255, 255) none repeat scroll 0% 0% / auto padding-box padding-box",
+        "fontSize": "14px",
+        "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+        "fontWeight": "400",
+        "lineHeight": "22px",
+        "textIndent": "0px",
+        "webkitTextFillColor": "rgb(96, 98, 102)",
+        "opacity": "1",
+        "visibility": "visible",
+        "position": "relative",
+        "zIndex": "auto",
+        "overflow": "visible",
+        "clipPath": "none",
+        "transform": "none"
+      }
+    }
+  ],
+  "stack": [
+    {
+      "name": "DIV",
+      "class": "ant-modal-title",
+      "text": "从订单快照选择"
+    },
+    {
+      "name": "DIV",
+      "class": "ant-modal-header",
+      "text": "从订单快照选择"
+    },
+    {
+      "name": "DIV",
+      "class": "ant-modal-container",
+      "text": "从订单快照选择生产组织客户编码PI物料编码物料名称生产组织客户编码PI物料编码物料名称比较测试甲厂CMP-CUSTOMERCMP-PI-001CMP-MAT-A"
+    },
+    {
+      "name": "DIV",
+      "class": "ant-modal-wrap",
+      "text": "从订单快照选择生产组织客户编码PI物料编码物料名称生产组织客户编码PI物料编码物料名称比较测试甲厂CMP-CUSTOMERCMP-PI-001CMP-MAT-A"
+    },
+    {
+      "name": "DIV",
+      "class": "ant-tabs-tab",
+      "text": "转厂记录"
+    },
+    {
+      "name": "DIV",
+      "class": "ant-tabs-nav-list",
+      "text": "直接转移转厂记录"
+    },
+    {
+      "name": "DIV",
+      "class": "ant-tabs-nav-wrap",
+      "text": "直接转移转厂记录"
+    },
+    {
+      "name": "DIV",
+      "class": "ant-tabs-nav",
+      "text": "直接转移转厂记录"
+    },
+    {
+      "name": "DIV",
+      "class": "ant-tabs ant-tabs-top ant-tabs-card sn-transfer-tabs css-dev-only-do-not-override-oc1rc0 css-var-_r_0_ ant-tabs-css-var",
+      "text": "直接转移转厂记录来源来源工厂工厂PI转移范围整张 PIPI + 物料单枚 SN待分配、申请中的号不能转移；同一枚号同时只能有一张未完成的申请。转入目标手工填写从"
+    },
+    {
+      "name": "DIV",
+      "class": "sn-page sn-transfer-page",
+      "text": "转厂待领取、待打印、已打印的号可以转移；来源限同一张 PI。工厂提交申请后号变为申请中，总部确认后改挂转入目标（转入厂待领取），驳回或撤回则恢复原状态。转入 P"
+    },
+    {
+      "name": "MAIN",
+      "class": "workspace-content prototype-main",
+      "text": "转厂待领取、待打印、已打印的号可以转移；来源限同一张 PI。工厂提交申请后号变为申请中，总部确认后改挂转入目标（转入厂待领取），驳回或撤回则恢复原状态。转入 P"
+    },
+    {
+      "name": "DIV",
+      "class": "prototype-body",
+      "text": "SN 管控中心/转厂总部简体中文初初始管理员 · 系统管理员（总部）转厂待领取、待打印、已打印的号可以转移；来源限同一张 PI。工厂提交申请后号变为申请中，总部"
+    },
+    {
+      "name": "DIV",
+      "class": "workspace prototype-workspace",
+      "text": "SN 管控中心总部统一生成与分配工作台首页总部作业生产订单生成与分配起始号与历史导入规则模板工厂作业领取与打印转厂查询与留痕SN 查询操作痕迹系统管理账户工厂S"
+    },
+    {
+      "name": "DIV",
+      "class": "",
+      "text": "SN 管控中心总部统一生成与分配工作台首页总部作业生产订单生成与分配起始号与历史导入规则模板工厂作业领取与打印转厂查询与留痕SN 查询操作痕迹系统管理账户工厂S"
+    },
+    {
+      "name": "BODY",
+      "class": "",
+      "text": "\n    SN 管控中心总部统一生成与分配工作台首页总部作业生产订单生成与分配起始号与历史导入规则模板工厂作业领取与打印转厂查询与留痕SN 查询操作痕迹系统管理"
+    },
+    {
+      "name": "HTML",
+      "class": "",
+      "text": "\n.anticon {\n  display: inline-flex;\n  align-items: center;\n  color: inherit;\n  f"
+    }
+  ]
+}

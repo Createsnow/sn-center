@@ -1,0 +1,40 @@
+
+Running 4 tests using 1 worker
+
+(node:37552) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\audit-files.spec.ts:10:1 › P12 audit files: original insertion order, typed cells and empty workbook (5.1s)
+  ok 2 [prototype] › e2e\parity\audit-page.spec.ts:138:1 › P12 audit: numbered pages, draft export scope, filters and inline detail (13.5s)
+(node:23072) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  x  3 [migration] › e2e\parity\audit-files.spec.ts:10:1 › P12 audit files: original insertion order, typed cells and empty workbook (2.9m)
+(node:6636) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok 4 [migration] › e2e\parity\audit-page.spec.ts:138:1 › P12 audit: numbered pages, draft export scope, filters and inline detail (33.1s)
+
+
+  1) [migration] › e2e\parity\audit-files.spec.ts:10:1 › P12 audit files: original insertion order, typed cells and empty workbook 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "inlineStr"
+    Received: "s"
+
+       95 |         expect(parsed.raw[row('AV00010')]?.[2]).toBe('=2+2');
+       96 |         expect(parsed.raw[row('AV00010')]?.[10]).toBe('000001');
+    >  97 |         expect(parsed.types[row('AV00012')]?.[20]).toBe('inlineStr');
+          |                                                    ^
+       98 |         expect(parsed.types[row('AV00013')]?.[20]).toBe('n');
+       99 |       }
+      100 |       writeFileSync(
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\audit-files.spec.ts:97:52
+
+    Error Context: test-results\stage32-audit-initial-ui\audit-files-P12-audit-file-59f6b-ed-cells-and-empty-workbook-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\audit-files.spec.ts:10:1 › P12 audit files: original insertion order, typed cells and empty workbook 
+  3 passed (3.8m)

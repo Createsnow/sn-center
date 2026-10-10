@@ -13,6 +13,7 @@ import com.adtek.sn.query.OrderCandidateQuery;
 import com.adtek.sn.query.SnPageQuery;
 import com.adtek.sn.service.*;
 import com.adtek.sn.service.port.ErpProductionOrderPort;
+import com.adtek.sn.service.support.FactoryText;
 import com.adtek.sn.service.support.PlannedQuantity;
 import com.adtek.sn.service.support.SnPolicy;
 import com.adtek.sn.vo.*;
@@ -38,6 +39,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderSyncMapper attempts;
     private final ErpProductionOrderPort erp;
     private final OrderPublishService publisher;
+    private final FactoryPublishService factoryPublisher;
     private final SnConvert convert;
 
     public OrderServiceImpl(
@@ -50,6 +52,7 @@ public class OrderServiceImpl implements OrderService {
             OrderSyncMapper attempts,
             ErpProductionOrderPort erp,
             OrderPublishService publisher,
+            FactoryPublishService factoryPublisher,
             SnConvert convert) {
         this.policy = policy;
         this.validator = validator;
@@ -60,6 +63,7 @@ public class OrderServiceImpl implements OrderService {
         this.attempts = attempts;
         this.erp = erp;
         this.publisher = publisher;
+        this.factoryPublisher = factoryPublisher;
         this.convert = convert;
     }
 
@@ -76,11 +80,6 @@ public class OrderServiceImpl implements OrderService {
             return new PageResult<>(
                     List.of(), Long.toString(total), query.getPage(), query.getSize());
         var history = quotas.forBills(ids);
-        var current =
-                entries.selectList(
-                        Wrappers.<OrderEntryEntity>lambdaQuery()
-                                .in(OrderEntryEntity::getBillId, ids)
-                                .eq(OrderEntryEntity::getActive, true));
         var result =
                 records.stream()
                         .map(
@@ -111,13 +110,10 @@ public class OrderServiceImpl implements OrderService {
                                                                     BigInteger.ZERO,
                                                                     BigInteger::add);
                                     BigInteger remaining =
-                                            current.stream()
-                                                    .filter(e -> e.getBillId().equals(bill.getId()))
-                                                    .map(
-                                                            e ->
-                                                                    BigInteger.valueOf(
-                                                                            remaining(e, ledger)))
-                                                    .reduce(BigInteger.ZERO, BigInteger::add);
+                                            bill.getTotalQty()
+                                                    .toBigIntegerExact()
+                                                    .subtract(generated)
+                                                    .max(BigInteger.ZERO);
                                     return convert.bill(
                                             bill,
                                             generated.toString(),
@@ -176,21 +172,20 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     @DataScope(resource = "sn:order", permission = "sn:order:list")
     public OrderMetaVO meta() {
-        var actor = policy.read("sn:order:list", false);
+        policy.read("sn:order:list", false);
         var stats = bills.stats();
         var unmapped = bills.unmapped();
         if (unmapped.size() > 1000) throw new BusinessException(RESOURCE_LIMIT);
-        // 合法空快照仍有最近成功时间；受限主体不能借此读取全局同步活动。
-        var time =
-                actor.grants().get("sn:order:list").allFactories()
-                        ? attempts.lastSuccess()
-                        : stats.syncedAt();
         return new OrderMetaVO(
-                time,
+                stats.syncedAt(),
                 Long.toString(stats.bills()),
                 Long.toString(stats.rowsCount()),
                 Long.toString(stats.excluded()),
-                unmapped.stream().map(o -> o.orgCode() + " / " + o.orgName()).toList());
+                unmapped.stream()
+                        .map(OrderBillMapper.Unmapped::orgName)
+                        .distinct()
+                        .sorted()
+                        .toList());
     }
 
     @Override
@@ -238,7 +233,9 @@ public class OrderServiceImpl implements OrderService {
     public OrderSyncVO synchronize(OrderSyncDTO command) {
         validator.requireValid(command);
         var actor = policy.read("sn:order:sync", true);
-        String no = SnPolicy.optional(command.billNo());
+        // 只有缺省值表示全量；空白单号必须在任何ERP请求/持久同步之前拒绝。
+        String no = command.billNo() == null ? null : FactoryText.trim(command.billNo());
+        if (no != null && no.isEmpty()) throw new BusinessException(ORDER_BILL_REQUIRED);
         var attempt = publisher.begin(no);
         return fetchAndPublish(actor, attempt.id(), no);
     }
@@ -259,25 +256,35 @@ public class OrderServiceImpl implements OrderService {
         try {
             var source = erp.source();
             var rows = erp.orders(no);
-            List<ErpProductionOrderPort.Organization> orgs = null;
             boolean orgFailed = false;
             if (no == null
                     && actor.grants().containsKey("sn:factory:sync")
                     && actor.grants().get("sn:factory:sync").allFactories()) {
                 try {
-                    orgs = erp.organizations();
-                } catch (BusinessException e) {
+                    factoryPublisher.publishForOrderSync(
+                            actor, attemptId, source, erp.organizations());
+                } catch (RuntimeException e) {
+                    // 原型吞掉附带工厂同步失败；后续订单事务仍复核主体、基准和租约。
                     orgFailed = true;
+                    LOG.warn(
+                            "SN attached factory sync failed traceId={} exceptionType={}",
+                            MDC.get("traceId"),
+                            e.getClass().getSimpleName());
                 }
             }
-            return publisher.publish(actor, attemptId, source, rows, orgs, orgFailed);
+            return publisher.publish(actor, attemptId, source, rows, orgFailed);
         } catch (RuntimeException error) {
             int code =
                     error instanceof BusinessException business
                             ? business.getError().code()
                             : SYNC_FAILED.code();
             try {
-                publisher.failed(attemptId, code);
+                publisher.failed(
+                        attemptId,
+                        code,
+                        error instanceof BusinessException business
+                                ? business.getParams().getOrDefault("message", "")
+                                : "");
             } catch (RuntimeException failure) {
                 LOG.error(
                         "SN sync failure record unavailable traceId={} exceptionType={}",

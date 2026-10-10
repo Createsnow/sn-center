@@ -1,0 +1,71 @@
+{
+  "files": {
+    "manual": {
+      "rows": 7,
+      "columns": 24,
+      "identicalBusinessColumns": 22,
+      "allCellTypesAndNullsEqual": true,
+      "individualTimesAndTraceIdsVerified": true,
+      "visibleTableBusinessCellsEqual": true
+    },
+    "settings": {
+      "rows": 3,
+      "columns": 24,
+      "identicalBusinessColumns": 22,
+      "allCellTypesAndNullsEqual": true,
+      "individualTimesAndTraceIdsVerified": true,
+      "visibleTableBusinessCellsEqual": true
+    },
+    "system": {
+      "rows": 3,
+      "columns": 24,
+      "identicalBusinessColumns": 22,
+      "allCellTypesAndNullsEqual": true,
+      "individualTimesAndTraceIdsVerified": true,
+      "visibleTableBusinessCellsEqual": true
+    }
+  },
+  "filters": {
+    "01-bill": {
+      "rows": 2,
+      "visibleBusinessCellsEqual": true
+    },
+    "02-detail": {
+      "rows": 2,
+      "visibleBusinessCellsEqual": true
+    },
+    "03-system": {
+      "rows": 3,
+      "visibleBusinessCellsEqual": true
+    },
+    "04-system-failure": {
+      "rows": 1,
+      "visibleBusinessCellsEqual": true
+    },
+    "05-no-match": {
+      "rows": 0,
+      "visibleBusinessCellsEqual": true
+    }
+  },
+  "scheduledFactories": {
+    "09-scheduled-success": [
+      "system",
+      "系统",
+      "SYSTEM",
+      "admin",
+      2,
+      "inserted=0 updated=0 conflicts=[]",
+      null
+    ],
+    "11-scheduled-recovered": [
+      "system",
+      "系统",
+      "SYSTEM",
+      "admin",
+      2,
+      "inserted=0 updated=0 conflicts=[]",
+      null
+    ]
+  },
+  "remaining": "Scheduled internal SQL error text, API validation semantics, complete K3 error families and full P01-P16 UI matrix remain unverified or different."
+}

@@ -1,0 +1,22 @@
+{
+  "before": {
+    "x": 639.9296875,
+    "y": 40,
+    "width": 160.140625,
+    "height": 44,
+    "color": "rgb(103, 194, 58)",
+    "background": "rgb(240, 249, 235)",
+    "text": "Đã đổi mật khẩu",
+    "opacity": 1
+  },
+  "after": {
+    "x": 639.9296875,
+    "y": 40,
+    "width": 160.140625,
+    "height": 44,
+    "color": "rgb(103, 194, 58)",
+    "background": "rgb(240, 249, 235)",
+    "text": "Đã đổi mật khẩu",
+    "opacity": 1
+  }
+}

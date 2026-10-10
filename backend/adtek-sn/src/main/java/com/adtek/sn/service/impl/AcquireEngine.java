@@ -29,6 +29,8 @@ public class AcquireEngine {
     final RuleVersionMapper versions;
     final TaskProgressService progress;
     final ManagementAuditPort audit;
+    final com.adtek.framework.security.IdentityNamePort names;
+    final BusinessNumbers numbers;
 
     public AcquireEngine(
             AcquireMapper rows,
@@ -38,7 +40,9 @@ public class AcquireEngine {
             AcquireConvert convert,
             RuleVersionMapper versions,
             TaskProgressService progress,
-            ManagementAuditPort audit) {
+            ManagementAuditPort audit,
+            com.adtek.framework.security.IdentityNamePort names,
+            BusinessNumbers numbers) {
         this.rows = rows;
         this.policy = policy;
         this.work = work;
@@ -47,6 +51,8 @@ public class AcquireEngine {
         this.versions = versions;
         this.progress = progress;
         this.audit = audit;
+        this.names = names;
+        this.numbers = numbers;
     }
 
     static String type(String kind) {
@@ -148,7 +154,9 @@ public class AcquireEngine {
                             input.actorId(),
                             input.origin(),
                             input.operationId(),
-                            null));
+                            null,
+                            numbers.next("B"),
+                            names.username(input.actorId()).orElse(null)));
         rows.complete(
                 task.id(),
                 total,

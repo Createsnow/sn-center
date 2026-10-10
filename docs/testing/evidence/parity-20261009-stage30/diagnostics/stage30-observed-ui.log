@@ -1,0 +1,62 @@
+
+Running 2 tests using 1 worker
+
+(node:33324) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\query-export-errors.spec.ts:22:1 › P11 export errors: denied PI, HTTP download failure and retry (7.3s)
+(node:29304) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [migration] › e2e\parity\query-export-errors.spec.ts:22:1 › P11 export errors: denied PI, HTTP download failure and retry (27.3s)
+
+
+  1) [migration] › e2e\parity\query-export-errors.spec.ts:22:1 › P11 export errors: denied PI, HTTP download failure and retry 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('本厂没有 PI CMP-UI-QUERY-SCOPE-PI-B 的号，不能查看其他工厂', { exact: true })
+    Expected: visible
+    Timeout: 1500ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "soft toBeVisible" getByText('本厂没有 PI CMP-UI-QUERY-SCOPE-PI-B 的号，不能查看其他工厂', { exact: true }) with timeout 1500ms
+      - waiting for getByText('本厂没有 PI CMP-UI-QUERY-SCOPE-PI-B 的号，不能查看其他工厂', { exact: true })
+
+
+      74 |       await expect
+      75 |         .soft(role.getByText(`本厂没有 PI ${PIS[1]} 的号，不能查看其他工厂`, { exact: true }))
+    > 76 |         .toBeVisible({ timeout: 1500 });
+         |          ^
+      77 |       await expect
+      78 |         .soft(
+      79 |           role.locator(
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\query-export-errors.spec.ts:76:10
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.sn-page-actions button.ant-btn-loading')
+    Expected: 0
+    Received: 2
+    Timeout:  1500ms
+
+    Call log:
+      - Expect "soft toHaveCount" locator('.sn-page-actions button.ant-btn-loading') with timeout 1500ms
+      - waiting for locator('.sn-page-actions button.ant-btn-loading')
+        15 × locator resolved to 2 elements
+           - unexpected value "2"
+
+
+      83 |           ),
+      84 |         )
+    > 85 |         .toHaveCount(0, { timeout: 1500 });
+         |          ^
+      86 |       await expectRows(role, info, sns('A', 2, 1));
+      87 |     } finally {
+      88 |       await context.close();
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\query-export-errors.spec.ts:85:10
+
+    Error Context: test-results\stage30-observed-ui\query-export-errors-P11-ex-0bd87--download-failure-and-retry-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\query-export-errors.spec.ts:22:1 › P11 export errors: denied PI, HTTP download failure and retry 
+  1 passed (37.4s)

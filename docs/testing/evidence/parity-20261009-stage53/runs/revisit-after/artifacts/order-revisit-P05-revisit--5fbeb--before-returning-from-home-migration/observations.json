@@ -1,0 +1,132 @@
+{
+  "observations": [
+    {
+      "label": "initial",
+      "values": [
+        "2026-10-09 19:59:54",
+        "3",
+        "4"
+      ],
+      "amount": null,
+      "unit": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 1440,
+          "next_run_at": null,
+          "owner_id": 90020261009530000,
+          "last_run_id": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "last_run_at": "2026-10-09 08:26:45.775734",
+          "lease_until": null,
+          "last_state": "SUCCESS",
+          "last_error_code": null,
+          "last_bills": 3,
+          "last_rows": 4,
+          "updated_at": "2026-10-09 11:59:58.716518",
+          "last_ok": 1,
+          "last_error_message": ""
+        }
+      ],
+      "at": 1791547297164
+    },
+    {
+      "label": "returned",
+      "values": [
+        "2026-10-09 20:01:38",
+        "4",
+        "5"
+      ],
+      "amount": null,
+      "unit": null,
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 120,
+          "next_run_at": null,
+          "owner_id": 90020261009530000,
+          "last_run_id": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "last_run_at": "2026-10-09 08:26:45.775734",
+          "lease_until": null,
+          "last_state": "SUCCESS",
+          "last_error_code": null,
+          "last_bills": 3,
+          "last_rows": 4,
+          "updated_at": "2026-10-09 12:01:43.324190",
+          "last_ok": 1,
+          "last_error_message": ""
+        }
+      ],
+      "at": 1791547316316
+    },
+    {
+      "label": "schedule-after-return",
+      "values": [
+        "2026-10-09 20:01:38",
+        "4",
+        "5"
+      ],
+      "amount": "2",
+      "unit": "小时",
+      "schedule": [
+        {
+          "id": 1,
+          "enabled": 0,
+          "interval_minutes": 120,
+          "next_run_at": null,
+          "owner_id": 90020261009530000,
+          "last_run_id": "59e86019-3972-46bb-9a16-a8c77006d582",
+          "last_run_at": "2026-10-09 08:26:45.775734",
+          "lease_until": null,
+          "last_state": "SUCCESS",
+          "last_error_code": null,
+          "last_bills": 3,
+          "last_rows": 4,
+          "updated_at": "2026-10-09 12:01:43.324190",
+          "last_ok": 1,
+          "last_error_message": ""
+        }
+      ],
+      "at": 1791547326585
+    }
+  ],
+  "requests": [
+    {
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "method": "GET",
+      "at": 1791547296138
+    },
+    {
+      "path": "/api/v1/sn/orders",
+      "method": "GET",
+      "at": 1791547296138
+    },
+    {
+      "path": "/api/v1/sn/orders/meta",
+      "method": "GET",
+      "at": 1791547296138
+    },
+    {
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "method": "GET",
+      "at": 1791547306883
+    },
+    {
+      "path": "/api/v1/sn/orders",
+      "method": "GET",
+      "at": 1791547306883
+    },
+    {
+      "path": "/api/v1/sn/orders/meta",
+      "method": "GET",
+      "at": 1791547306883
+    },
+    {
+      "path": "/api/v1/sn/orders/sync-schedule",
+      "method": "GET",
+      "at": 1791547321952
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,52 @@
+
+Running 2 tests using 1 worker
+
+(node:36888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\account-session.spec.ts:9:1 › P13 account sessions: edit name, role, factory and self without another login (3.9s)
+(node:36724) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [migration] › e2e\parity\account-session.spec.ts:9:1 › P13 account sessions: edit name, role, factory and self without another login (11.2s)
+
+
+  1) [prototype] › e2e\parity\account-session.spec.ts:9:1 › P13 account sessions: edit name, role, factory and self without another login 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      176 |         expect(
+      177 |           queryRows.every((row) => row[6] === `比较测试${bound === 'A' ? '甲' : '乙'}厂`),
+    > 178 |         ).toBe(true);
+          |           ^
+      179 |     }
+      180 |     snapshots.push({
+      181 |       queryRows,
+        at capture (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-session.spec.ts:178:11)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-session.spec.ts:215:5
+
+    Error Context: test-results\stage41-session3\account-session-P13-accoun-542a3--self-without-another-login-prototype\error-context.md
+
+  2) [migration] › e2e\parity\account-session.spec.ts:9:1 › P13 account sessions: edit name, role, factory and self without another login 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      176 |         expect(
+      177 |           queryRows.every((row) => row[6] === `比较测试${bound === 'A' ? '甲' : '乙'}厂`),
+    > 178 |         ).toBe(true);
+          |           ^
+      179 |     }
+      180 |     snapshots.push({
+      181 |       queryRows,
+        at capture (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-session.spec.ts:178:11)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-session.spec.ts:215:5
+
+    Error Context: test-results\stage41-session3\account-session-P13-accoun-542a3--self-without-another-login-migration\error-context.md
+
+  2 failed
+    [prototype] › e2e\parity\account-session.spec.ts:9:1 › P13 account sessions: edit name, role, factory and self without another login 
+    [migration] › e2e\parity\account-session.spec.ts:9:1 › P13 account sessions: edit name, role, factory and self without another login 

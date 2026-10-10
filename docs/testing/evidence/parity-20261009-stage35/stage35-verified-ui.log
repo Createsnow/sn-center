@@ -1,0 +1,45 @@
+
+Running 16 tests using 1 worker
+
+(node:13664) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [prototype] › e2e\parity\audit-auth.spec.ts:180:1 › P12 real anonymous login failure appears in audit and downloaded file (2.8s)
+  ok  2 [prototype] › e2e\parity\audit-auth.spec.ts:200:1 › P12 real known login password rejection change and disabled account facts (8.5s)
+  ok  3 [prototype] › e2e\parity\audit-auth.spec.ts:331:1 › P12 real fifth failed login and subsequent lock retain exact audit facts (4.2s)
+  ok  4 [prototype] › e2e\parity\audit-files.spec.ts:10:1 › P12 audit files: original insertion order, typed cells and empty workbook (4.1s)
+  ok  5 [prototype] › e2e\parity\audit-layout.spec.ts:98:1 › P12 layout: single row table, date range and pagination across widths and languages (7.4s)
+  ok  6 [prototype] › e2e\parity\audit-page.spec.ts:138:1 › P12 audit: numbered pages, draft export scope, filters and inline detail (13.8s)
+  ok  7 [prototype] › e2e\parity\audit-rules.spec.ts:129:3 › P12 real rule audits: create edit rename combined and no-op (8.8s)
+  ok  8 [prototype] › e2e\parity\audit-rules.spec.ts:129:3 › P12 real rule audits: used version and rename (5.4s)
+(node:37144) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok  9 [migration] › e2e\parity\audit-auth.spec.ts:180:1 › P12 real anonymous login failure appears in audit and downloaded file (12.0s)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok 10 [migration] › e2e\parity\audit-auth.spec.ts:200:1 › P12 real known login password rejection change and disabled account facts (49.4s)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok 11 [migration] › e2e\parity\audit-auth.spec.ts:331:1 › P12 real fifth failed login and subsequent lock retain exact audit facts (57.2s)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok 12 [migration] › e2e\parity\audit-files.spec.ts:10:1 › P12 audit files: original insertion order, typed cells and empty workbook (12.2s)
+  ok 13 [migration] › e2e\parity\audit-layout.spec.ts:98:1 › P12 layout: single row table, date range and pagination across widths and languages (11.2s)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok 14 [migration] › e2e\parity\audit-page.spec.ts:138:1 › P12 audit: numbered pages, draft export scope, filters and inline detail (33.7s)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok 15 [migration] › e2e\parity\audit-rules.spec.ts:129:3 › P12 real rule audits: create edit rename combined and no-op (9.4s)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok 16 [migration] › e2e\parity\audit-rules.spec.ts:129:3 › P12 real rule audits: used version and rename (6.4s)
+
+  16 passed (4.2m)

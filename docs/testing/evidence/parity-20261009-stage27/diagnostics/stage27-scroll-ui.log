@@ -1,0 +1,40 @@
+
+Running 2 tests using 1 worker
+
+(node:37796) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\transfer-targets.spec.ts:149:1 › P10 snapshot picker: fifty rows, literal bill search, grouping, unmapped target and persistent selection (19.4s)
+Testing stopped early after 1 maximum allowed failures.
+
+
+  1) [prototype] › e2e\parity\transfer-targets.spec.ts:149:1 › P10 snapshot picker: fifty rows, literal bill search, grouping, unmapped target and persistent selection 
+
+    Error: expect(locator).toBeInViewport() failed
+
+    Locator:  getByRole('dialog', { name: '从订单快照选择', exact: true }).locator('.el-table__body-wrapper tbody tr').last()
+    Expected: in viewport
+    Received: viewport ratio 0
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toBeInViewport" getByRole('dialog', { name: '从订单快照选择', exact: true }).locator('.el-table__body-wrapper tbody tr').last() with timeout 15000ms
+      - waiting for getByRole('dialog', { name: '从订单快照选择', exact: true }).locator('.el-table__body-wrapper tbody tr').last()
+        33 × locator resolved to <tr class="el-table__row">…</tr>
+           - unexpected value "viewport ratio 0"
+
+
+      196 |     await viewport.hover();
+      197 |     await page.mouse.wheel(0, 2000);
+    > 198 |     await expect(rows.last()).toBeInViewport();
+          |                               ^
+      199 |     await capture(page, info, '02b-scroll-last-row');
+      200 |     await rows.last().click();
+      201 |     await expect(modal).not.toBeVisible();
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\transfer-targets.spec.ts:198:31
+
+    Error Context: test-results\stage27-scroll-ui\transfer-targets-P10-snaps-d0fab-et-and-persistent-selection-prototype\error-context.md
+
+  1 failed
+    [prototype] › e2e\parity\transfer-targets.spec.ts:149:1 › P10 snapshot picker: fifty rows, literal bill search, grouping, unmapped target and persistent selection 
+  1 did not run
+  1 error was not a part of any test, see above for details

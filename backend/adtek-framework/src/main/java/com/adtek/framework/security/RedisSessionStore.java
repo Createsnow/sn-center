@@ -47,6 +47,18 @@ public class RedisSessionStore implements SessionStore {
                     return uid .. ':' .. version
                     """,
                     String.class);
+    private static final DefaultRedisScript<String> INSPECT =
+            new DefaultRedisScript<>(
+                    """
+        local saved = redis.call('HGET', KEYS[1], 'refresh')
+        if not saved then return '' end
+        if saved ~= ARGV[1] then redis.call('DEL', KEYS[1]); return '' end
+        local uid = redis.call('HGET', KEYS[1], 'uid')
+        local version = redis.call('HGET', KEYS[1], 'version')
+        if not uid or not version then redis.call('DEL', KEYS[1]); return '' end
+        return uid .. ':' .. version
+        """,
+                    String.class);
     private final StringRedisTemplate redis;
 
     public RedisSessionStore(StringRedisTemplate redis) {
@@ -54,9 +66,9 @@ public class RedisSessionStore implements SessionStore {
     }
 
     @Override
-    public CreatedSession create(long userId, long securityVersion, Duration lifetime) {
+    public CreatedSession create(long userId, long credentialVersion, Duration lifetime) {
         validateLifetime(lifetime);
-        if (userId <= 0 || securityVersion <= 0) {
+        if (userId <= 0 || credentialVersion <= 0) {
             throw new IllegalArgumentException("Invalid session identity");
         }
         String sid = UUID.randomUUID().toString();
@@ -67,7 +79,7 @@ public class RedisSessionStore implements SessionStore {
                             CREATE,
                             List.of(key(sid)),
                             Long.toString(userId),
-                            Long.toString(securityVersion),
+                            Long.toString(credentialVersion),
                             digest(secret),
                             Long.toString(lifetime.toMillis()));
             if (!Long.valueOf(1).equals(created)) {
@@ -80,14 +92,14 @@ public class RedisSessionStore implements SessionStore {
     }
 
     @Override
-    public void requireActive(String sessionId, long userId, long securityVersion) {
+    public void requireActive(String sessionId, long userId, long credentialVersion) {
         requireSessionId(sessionId);
         try {
             List<Object> values =
                     redis.opsForHash().multiGet(key(sessionId), List.of("uid", "version"));
             if (values.size() != 2
                     || !Long.toString(userId).equals(values.get(0))
-                    || !Long.toString(securityVersion).equals(values.get(1))) {
+                    || !Long.toString(credentialVersion).equals(values.get(1))) {
                 throw invalid();
             }
         } catch (DataAccessException error) {
@@ -96,17 +108,36 @@ public class RedisSessionStore implements SessionStore {
     }
 
     @Override
+    public RefreshIdentity inspectRefresh(String credential) {
+        String sid = credentialSession(credential);
+        try {
+            String value =
+                    redis.execute(INSPECT, List.of(key(sid)), digest(credential.substring(37)));
+            if (value == null || value.isEmpty()) throw invalid();
+            String[] parts = value.split(":", -1);
+            if (parts.length != 2) throw invalid();
+            return new RefreshIdentity(sid, Long.parseLong(parts[0]), Long.parseLong(parts[1]));
+        } catch (DataAccessException error) {
+            throw unavailable();
+        } catch (NumberFormatException error) {
+            throw invalid();
+        }
+    }
+
+    private static String credentialSession(String credential) {
+        if (credential == null || credential.length() != 101) throw invalid();
+        String sid = credential.substring(0, 36);
+        requireSessionId(sid);
+        if (credential.charAt(36) != '.' || !SECRET.matcher(credential.substring(37)).matches())
+            throw invalid();
+        return sid;
+    }
+
+    @Override
     public RotatedSession rotate(String credential, Duration lifetime) {
         validateLifetime(lifetime);
-        if (credential == null || credential.length() != 101) {
-            throw invalid();
-        }
-        String sid = credential.substring(0, 36);
+        String sid = credentialSession(credential);
         String oldSecret = credential.substring(37);
-        requireSessionId(sid);
-        if (credential.charAt(36) != '.' || !SECRET.matcher(oldSecret).matches()) {
-            throw invalid();
-        }
         String replacement = secret();
         try {
             String value =

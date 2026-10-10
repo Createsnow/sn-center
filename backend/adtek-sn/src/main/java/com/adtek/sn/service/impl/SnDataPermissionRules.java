@@ -13,6 +13,17 @@ public class SnDataPermissionRules implements DataPermissionRules {
     public Map<String, Rule> statements() {
         Map<String, Rule> rules = new HashMap<>();
         internal(
+                rules,
+                "BusinessNumberMapper",
+                "领取/打印用例复核当前工厂写授权并持 PI 锁；仅在业务事务内保留服务生成的单号",
+                "reserve");
+        internal(
+                rules,
+                "SnImportMapper",
+                "初始化全厂资格先复核；固定输入与任务同事务登记，工作器持任务代次及PI锁读取",
+                "insert",
+                "next");
+        internal(
                 rules, "IncomingSnMapper", "全厂生成/初始化或转厂提示服务装配PI；只读护栏分页，写用例持快照/PI锁，不更改流水归属", "page");
         internal(
                 rules,
@@ -24,7 +35,7 @@ public class SnDataPermissionRules implements DataPermissionRules {
         internal(
                 rules,
                 "OrderCandidateMapper",
-                "服务当前order:list授权装配工厂交集；历史额度仅按可见订单聚合，含小数整单不生成",
+                "服务当前order:list授权装配工厂交集；历史额度仅按可见订单聚合，数量按逐分录取整后汇总",
                 "bills",
                 "billCount",
                 "pis",
@@ -43,8 +54,10 @@ public class SnDataPermissionRules implements DataPermissionRules {
         internal(
                 rules,
                 "FactoryMembershipMapper",
-                "可信主体ID装配；替换由身份事务持协调/账号锁，逐工厂校验assign资格并递增账号版本",
+                "可信主体ID装配；members核对账号读取及工厂list资格，调用方仍按账号数据范围分页；替换持协调/账号锁并校验assign资格",
                 "factoryIds",
+                "details",
+                "members",
                 "clear",
                 "add");
         internal(
@@ -52,7 +65,7 @@ public class SnDataPermissionRules implements DataPermissionRules {
         internal(
                 rules,
                 "FactoryMapper",
-                "全部工厂管理服务的冲突校验/写入，持安全及发布协调锁",
+                "工厂管理写入持安全及发布协调锁；业务身份按当前首页授权的工厂ID读取",
                 "byCode",
                 "byName",
                 "lock",
@@ -71,10 +84,12 @@ public class SnDataPermissionRules implements DataPermissionRules {
         internal(
                 rules,
                 "OrganizationMappingMapper",
-                "全部工厂管理的显式稳定映射/快照发布，不接受自由SQL或名称推断",
+                "全部工厂管理持安全及发布锁，自动订单按名称重算；显式绑定独立保留",
                 "list",
                 "insert",
                 "update",
+                "projectAutomaticBills",
+                "projectAutomaticEntries",
                 "mapBills",
                 "mapEntries");
         internal(
@@ -109,8 +124,6 @@ public class SnDataPermissionRules implements DataPermissionRules {
                 "selectList",
                 "selectCount",
                 "selectById",
-                "stats",
-                "unmapped",
                 "customers",
                 "customerCount");
         scoped(
@@ -123,6 +136,7 @@ public class SnDataPermissionRules implements DataPermissionRules {
                 "selectList",
                 "selectCount",
                 "selectById");
+        internal(rules, "OrderBillMapper", "订单可读角色共享同步摘要和未建档组织；不返回越权订单明细", "stats", "unmapped");
         internal(
                 rules,
                 "OrderBillMapper",
@@ -163,8 +177,18 @@ public class SnDataPermissionRules implements DataPermissionRules {
                 "lastSuccess");
         internal(
                 rules,
+                "BillGenerationMapper",
+                "全厂生成/分配用例复核当前权限；身份写入持控制/PI锁同事务，历史汇总仅全厂生成查看资格",
+                "find",
+                "generated",
+                "current",
+                "historical");
+        internal(
+                rules,
                 "SnWorkMapper",
-                "初始化/生成/整单分配要求当前对应操作全部工厂资格；任务按本人和当前授权复核，持任务/安全/快照/PI控制锁后写，不接受任意SQL",
+                "初始化/生成/按数量分配要求当前对应操作全部工厂资格；历史进度仅对应全部工厂查看资格；任务按本人和当前授权复核，固定成员持锁写入",
+                "generationNumber",
+                "generationLabel",
                 "counter",
                 "ensure",
                 "lock",
@@ -172,7 +196,6 @@ public class SnDataPermissionRules implements DataPermissionRules {
                 "release",
                 "advance",
                 "bill",
-                "summary",
                 "inSnapshot",
                 "lines",
                 "lockQuota",
@@ -188,11 +211,12 @@ public class SnDataPermissionRules implements DataPermissionRules {
                 "success",
                 "ended",
                 "pendingCount",
-                "pendingMismatch",
                 "workCount",
                 "billHistory",
-                "pending",
+                "pendingBatch",
                 "keys",
+                "importedSnConflict",
+                "importedSequenceConflict",
                 "items",
                 "allocate");
         internal(
@@ -206,6 +230,7 @@ public class SnDataPermissionRules implements DataPermissionRules {
                 "segmentCount",
                 "count",
                 "candidates",
+                "printCandidates",
                 "current",
                 "currentFor",
                 "acquire",
@@ -218,6 +243,9 @@ public class SnDataPermissionRules implements DataPermissionRules {
                 "results",
                 "batch",
                 "batchById",
+                "currentBatchItems",
+                "currentBatchCount",
+                "currentPrintItems",
                 "batches",
                 "batchCount",
                 "member",
@@ -243,6 +271,11 @@ public class SnDataPermissionRules implements DataPermissionRules {
                 "TransferMapper",
                 "源厂命令逐动作当前授权，总部批准/直转全厂；双PI占用及快照/授权锁保护写。历史源或目标厂，targets单独最小交接目录权限",
                 "candidates",
+                "materials",
+                "duplicateCount",
+                "duplicateSamples",
+                "detailPage",
+                "detailCount",
                 "candidateItems",
                 "get",
                 "insert",
@@ -272,6 +305,9 @@ public class SnDataPermissionRules implements DataPermissionRules {
                 "SnQueryMapper",
                 "查询由各自权限范围装配；导出快照持安全/快照控制锁并求读/导出交集，下载核对全部原成员；首页按当前范围，全部水位统计仅全厂分支",
                 "items",
+                "page",
+                "cappedCount",
+                "exportItems",
                 "count",
                 "export",
                 "rows",
@@ -284,13 +320,17 @@ public class SnDataPermissionRules implements DataPermissionRules {
                 "generated",
                 "imported",
                 "today",
-                "recent");
+                "recent",
+                "generationNumber");
         internal(
                 rules,
                 "SnAuditMapper",
                 "同事务业务审计追加；读/导出由当前工厂范围装配，转厂双方可读；快照单条SQL同一视图，下载复核每条原范围",
                 "insert",
+                "creationIdentity",
+                "prototypeSnapshot",
                 "page",
+                "numberedPage",
                 "count",
                 "get",
                 "export",

@@ -123,7 +123,10 @@ public class TransferEngine {
                         direct ? actor.userId() : null,
                         "",
                         null,
-                        direct ? Instant.now() : null);
+                        direct ? Instant.now() : null,
+                        acquire.numbers.next("T"),
+                        acquire.names.username(actor.userId()).orElse(null),
+                        direct ? acquire.names.username(actor.userId()).orElse(null) : null);
         rows.insert(transfer);
         long ordinal = 0;
         LocalDate month = null;
@@ -226,7 +229,13 @@ public class TransferEngine {
             if (ordinal != transfer.quantity()) throw new BusinessException(TRANSFER_CHANGED);
         } else if (rows.restore(transfer.id(), transfer.fromFactoryId(), transfer.fromPi())
                 != transfer.quantity()) throw new BusinessException(TRANSFER_CHANGED);
-        if (rows.decide(transfer.id(), transfer.version(), state, actor.userId(), input.note())
+        if (rows.decide(
+                        transfer.id(),
+                        transfer.version(),
+                        state,
+                        actor.userId(),
+                        acquire.names.username(actor.userId()).orElse(null),
+                        input.note())
                 != 1) throw new BusinessException(TRANSFER_CHANGED);
         fact(actor, work.kind(), transfer, input.note(), task.id());
     }

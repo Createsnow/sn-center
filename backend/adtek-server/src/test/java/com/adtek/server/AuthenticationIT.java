@@ -69,7 +69,13 @@ class AuthenticationIT {
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry properties) {
-        properties.add("ADTEK_DB_URL", MYSQL::getJdbcUrl);
+        // 与运行环境一致固定 JDBC 会话时区；DATETIME 不携带时区，不能依赖测试宿主机默认值。
+        properties.add(
+                "ADTEK_DB_URL",
+                () ->
+                        MYSQL.getJdbcUrl()
+                                + (MYSQL.getJdbcUrl().contains("?") ? "&" : "?")
+                                + "connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true");
         properties.add("ADTEK_DB_USER", MYSQL::getUsername);
         properties.add("ADTEK_DB_PASSWORD", MYSQL::getPassword);
         properties.add("ADTEK_MIGRATION_USER", MYSQL::getUsername);
@@ -87,10 +93,14 @@ class AuthenticationIT {
     @Autowired AuthorizationPort authorizations;
     @Autowired ObjectMapper json;
     @Autowired com.adtek.system.service.support.LoginFailureGuard loginGuard;
+    @Autowired com.adtek.framework.security.AuthorizationMutationPort mutations;
+    @Autowired org.springframework.transaction.PlatformTransactionManager transactions;
     @LocalServerPort int port;
 
     @BeforeEach
     void resetOnlyDisposableTestData() {
+        jdbc.update("DELETE FROM sn_audit_identity");
+        jdbc.update("DELETE FROM sn_audit");
         jdbc.update("DELETE FROM sys_user_role");
         jdbc.update("DELETE FROM sn_user_factory");
         jdbc.update("DELETE FROM sys_user");
@@ -125,6 +135,162 @@ class AuthenticationIT {
                 docker.unpauseContainerCmd(REDIS.getContainerId()).exec();
             }
             assertThat(browser.get("me", access).statusCode()).isEqualTo(200);
+        }
+    }
+
+    @Test
+    void snAuthenticationFactsKeepIdentityFailuresAndPasswordChangesWithoutCredentials()
+            throws Exception {
+        seedUser(false);
+        try (var browser = new Browser()) {
+            assertThat(
+                            browser.post(
+                                            "login",
+                                            Map.of(
+                                                    "username",
+                                                    "missing_auth_it",
+                                                    "password",
+                                                    INITIAL_PASSWORD),
+                                            null,
+                                            true)
+                                    .statusCode())
+                    .isEqualTo(401);
+            var anonymous =
+                    jdbc.queryForMap("SELECT * FROM sn_audit WHERE operator='missing_auth_it'");
+            assertThat(anonymous.get("actor_id")).isNull();
+            assertThat(anonymous.get("operator_name")).isEqualTo("");
+            assertThat(anonymous.get("roles")).isEqualTo("[]");
+            assertThat(anonymous.get("quantity")).isNull();
+            assertThat(anonymous.get("error_message")).isEqualTo("工号或密码错误");
+            assertThat(browser.login(CHANGED_PASSWORD).statusCode()).isEqualTo(401);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT actor_id FROM sn_audit WHERE operator='auth_it'",
+                                    Long.class))
+                    .isEqualTo(USER_ID);
+            jdbc.update("UPDATE sys_user SET enabled=FALSE WHERE id=?", USER_ID);
+            var disabled = browser.login(INITIAL_PASSWORD);
+            assertThat(json.readTree(disabled.body()).path("code").asInt())
+                    .isEqualTo(1_002_000_018);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT COUNT(*) FROM sn_audit WHERE error_message='账户已停用'",
+                                    Integer.class))
+                    .isEqualTo(1);
+            jdbc.update("UPDATE sys_user SET enabled=TRUE WHERE id=?", USER_ID);
+            var login = browser.login(INITIAL_PASSWORD);
+            String token = json.readTree(login.body()).path("data").path("accessToken").asString();
+            assertThat(
+                            browser.post(
+                                            "password",
+                                            Map.of(
+                                                    "oldPassword",
+                                                    CHANGED_PASSWORD,
+                                                    "newPassword",
+                                                    INITIAL_PASSWORD),
+                                            token,
+                                            true)
+                                    .statusCode())
+                    .isEqualTo(400);
+            assertThat(
+                            browser.post(
+                                            "password",
+                                            Map.of(
+                                                    "oldPassword",
+                                                    INITIAL_PASSWORD,
+                                                    "newPassword",
+                                                    INITIAL_PASSWORD),
+                                            token,
+                                            true)
+                                    .statusCode())
+                    .isEqualTo(400);
+            assertThat(
+                            browser.post(
+                                            "password",
+                                            Map.of(
+                                                    "oldPassword",
+                                                    INITIAL_PASSWORD,
+                                                    "newPassword",
+                                                    "weak"),
+                                            token,
+                                            true)
+                                    .statusCode())
+                    .isEqualTo(400);
+            assertThat(
+                            jdbc.queryForList(
+                                    "SELECT error_message FROM sn_audit WHERE action='auth:PASSWORD_CHANGE'",
+                                    String.class))
+                    .containsExactlyInAnyOrder("原密码不正确", "新密码不能与原密码相同", "密码须为 8–64 位，且同时包含字母和数字");
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT COUNT(*) FROM sn_audit WHERE action='auth:PASSWORD_CHANGE' AND detail_text='POST /api/auth/password' AND factory_id IS NULL AND quantity IS NULL",
+                                    Integer.class))
+                    .isEqualTo(3);
+        }
+        for (var row : jdbc.queryForList("SELECT * FROM sn_audit")) {
+            assertThat(row.toString())
+                    .doesNotContain(INITIAL_PASSWORD, CHANGED_PASSWORD, "198.51.100.");
+            assertThat(row.get("trace_id")).isNotNull();
+        }
+    }
+
+    @Test
+    void authenticationProjectionFailureRollsBackSuccessAndCannotReplacePasswordRejection()
+            throws Exception {
+        seedUser(false);
+        String originalHash =
+                jdbc.queryForObject(
+                        "SELECT password_hash FROM sys_user WHERE id=?", String.class, USER_ID);
+        try (var browser = new Browser()) {
+            var login = browser.login(INITIAL_PASSWORD);
+            String access = json.readTree(login.body()).path("data").path("accessToken").asString();
+            jdbc.execute(
+                    "ALTER TABLE sn_audit ADD CONSTRAINT ck_auth_projection CHECK(action<>'auth:PASSWORD_CHANGE')");
+            try {
+                assertThat(
+                                browser.post(
+                                                "password",
+                                                Map.of(
+                                                        "oldPassword",
+                                                        INITIAL_PASSWORD,
+                                                        "newPassword",
+                                                        CHANGED_PASSWORD),
+                                                access,
+                                                true)
+                                        .statusCode())
+                        .isEqualTo(500);
+                assertThat(
+                                jdbc.queryForObject(
+                                        "SELECT password_hash FROM sys_user WHERE id=?",
+                                        String.class,
+                                        USER_ID))
+                        .isEqualTo(originalHash);
+                assertThat(
+                                jdbc.queryForObject(
+                                        "SELECT security_version FROM sys_user WHERE id=?",
+                                        Long.class,
+                                        USER_ID))
+                        .isEqualTo(1);
+                assertThat(
+                                browser.post(
+                                                "password",
+                                                Map.of(
+                                                        "oldPassword",
+                                                        CHANGED_PASSWORD,
+                                                        "newPassword",
+                                                        INITIAL_PASSWORD),
+                                                access,
+                                                true)
+                                        .statusCode())
+                        .isEqualTo(400);
+                assertThat(
+                                jdbc.queryForObject(
+                                        "SELECT COUNT(*) FROM sys_oper_log WHERE action='auth:PASSWORD_CHANGE'",
+                                        Integer.class))
+                        .isZero();
+            } finally {
+                jdbc.execute("ALTER TABLE sn_audit DROP CHECK ck_auth_projection");
+            }
         }
     }
 
@@ -253,20 +419,37 @@ class AuthenticationIT {
             assertThat(data.path("profile").path("mustChangePassword").asBoolean()).isTrue();
             String access = data.path("accessToken").asString();
             assertThat(browser.get("me", access).statusCode()).isEqualTo(200);
-            assertThat(
-                            browser.post(
-                                            "password",
-                                            Map.of(
-                                                    "oldPassword",
-                                                    INITIAL_PASSWORD,
-                                                    "newPassword",
-                                                    CHANGED_PASSWORD),
-                                            access,
-                                            true)
-                                    .statusCode())
-                    .isEqualTo(200);
+            String oldRefresh = browser.refreshCredential();
+            var changed =
+                    browser.post(
+                            "password",
+                            Map.of(
+                                    "oldPassword",
+                                    INITIAL_PASSWORD,
+                                    "newPassword",
+                                    CHANGED_PASSWORD),
+                            access,
+                            true);
+            assertThat(changed.statusCode()).isEqualTo(200);
+            String freshAccess =
+                    json.readTree(changed.body()).path("data").path("accessToken").asString();
             assertThat(browser.get("me", access).statusCode()).isEqualTo(401);
+            assertThat(browser.get("me", freshAccess).statusCode()).isEqualTo(200);
+            String freshRefresh = browser.refreshCredential();
+            browser.replaceRefreshCredential(oldRefresh);
             assertThat(browser.post("refresh", Map.of(), null, true).statusCode()).isEqualTo(401);
+            browser.replaceRefreshCredential(freshRefresh);
+            assertThat(browser.post("refresh", Map.of(), null, true).statusCode()).isEqualTo(200);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT COUNT(*) FROM sn_audit WHERE action='LOGIN'",
+                                    Integer.class))
+                    .isEqualTo(1);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT detail_text FROM sn_audit WHERE action='auth:PASSWORD_CHANGE'",
+                                    String.class))
+                    .isEqualTo("auth_it");
             var relogin = browser.login(CHANGED_PASSWORD);
             assertThat(relogin.statusCode()).isEqualTo(200);
             assertThat(
@@ -1154,6 +1337,801 @@ class AuthenticationIT {
         }
     }
 
+    @Test
+    void accountDirectoryFiltersBeforePaginationAndReportsOnlyActualSuccessfulLogin()
+            throws Exception {
+        seedUser(false);
+        jdbc.update("INSERT INTO sys_user_role(user_id,role_id) VALUES (?,2)", USER_ID);
+        jdbc.update(
+                "INSERT INTO sn_factory(id,code,name,enabled,source) VALUES (9039001,'DIR_A','目录工厂',TRUE,'MANUAL')");
+        String hash = passwords.encode(INITIAL_PASSWORD);
+        for (int n = 0; n < 24; n++) {
+            long id = USER_ID + n + 1;
+            jdbc.update(
+                    """
+                    INSERT INTO sys_user(id,principal_type,username,password_hash,display_name,dept_id,
+                      enabled,must_change_password,security_version,create_by,create_time)
+                    VALUES (?,'USER',?,?,?,1,?,FALSE,1,?,'2026-10-09 00:00:00')
+                    """,
+                    id,
+                    "dir_" + String.format("%02d", n),
+                    hash,
+                    "目录成员" + n,
+                    n != 23,
+                    USER_ID);
+            jdbc.update(
+                    "INSERT INTO sys_user_role(user_id,role_id) VALUES (?,?)", id, n < 22 ? 3 : 4);
+            if (n < 21)
+                jdbc.update(
+                        "INSERT INTO sn_user_factory(user_id,factory_id) VALUES (?,9039001)", id);
+        }
+        try (var browser = new Browser()) {
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT last_login_at FROM sys_user WHERE id=?",
+                                    java.sql.Timestamp.class,
+                                    USER_ID))
+                    .isNull();
+            String access =
+                    json.readTree(browser.login(INITIAL_PASSWORD).body())
+                            .path("data")
+                            .path("accessToken")
+                            .asString();
+            var logged =
+                    jdbc.queryForObject(
+                            "SELECT last_login_at FROM sys_user WHERE id=?",
+                            java.sql.Timestamp.class,
+                            USER_ID);
+            assertThat(logged).isNotNull();
+            assertThat(browser.login(CHANGED_PASSWORD).statusCode()).isEqualTo(401);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT last_login_at FROM sys_user WHERE id=?",
+                                    java.sql.Timestamp.class,
+                                    USER_ID))
+                    .isEqualTo(logged);
+            var response =
+                    browser.get(
+                            "/users?keyword=dir_&roleCodes=FACTORY_OPERATOR&factoryId=9039001&page=2&size=20",
+                            access);
+            assertThat(response.statusCode()).as(response.body()).isEqualTo(200);
+            var data = json.readTree(response.body()).path("data");
+            assertThat(data.path("total").asString()).isEqualTo("21");
+            assertThat(data.path("items").size()).isEqualTo(1);
+            var item = data.path("items").get(0);
+            assertThat(item.path("username").asString()).isEqualTo("dir_20");
+            assertThat(item.path("createdByName").asString()).isEqualTo("auth_it");
+            assertThat(item.path("createdAt").asString()).isEqualTo("2026-10-09T00:00:00Z");
+            assertThat(item.path("lastLoginAt").isNull()).isTrue();
+            assertThat(item.path("factories").get(0).path("code").asString()).isEqualTo("DIR_A");
+            assertThat(item.has("passwordHash")).isFalse();
+            var tail =
+                    json.readTree(browser.get("/users?keyword=ir_&page=1&size=20", access).body())
+                            .path("data");
+            assertThat(tail.path("total").asString()).isEqualTo("0");
+            var queryOnly =
+                    json.readTree(
+                                    browser.get(
+                                                    "/users?keyword=dir_&excludedRoleCodes=FACTORY_OPERATOR&enabled=false",
+                                                    access)
+                                            .body())
+                            .path("data");
+            assertThat(queryOnly.path("total").asString()).isEqualTo("1");
+            assertThat(queryOnly.path("items").get(0).path("username").asString())
+                    .isEqualTo("dir_23");
+            assertThat(browser.get("/users?roleCodes=%27OR1", access).statusCode()).isEqualTo(400);
+        }
+    }
+
+    @Test
+    void snAccountValidationPreservesPrototypeOrderAndNeverCreatesRejectedAccounts()
+            throws Exception {
+        seedUser(false);
+        jdbc.update("INSERT INTO sys_user_role(user_id,role_id) VALUES (?,2)", USER_ID);
+        try (var browser = new Browser()) {
+            String token =
+                    json.readTree(browser.login(INITIAL_PASSWORD).body())
+                            .path("data")
+                            .path("accessToken")
+                            .asString();
+            var cases =
+                    java.util.List.of(
+                            Map.of(
+                                    "username",
+                                    "!",
+                                    "displayName",
+                                    "",
+                                    "role",
+                                    "factory_operator",
+                                    "password",
+                                    ""),
+                            Map.of(
+                                    "username",
+                                    "valid",
+                                    "displayName",
+                                    " ",
+                                    "role",
+                                    "factory_operator",
+                                    "password",
+                                    ""),
+                            Map.of(
+                                    "username",
+                                    "valid",
+                                    "displayName",
+                                    "姓名",
+                                    "role",
+                                    "invalid",
+                                    "password",
+                                    ""),
+                            Map.of(
+                                    "username",
+                                    "valid",
+                                    "displayName",
+                                    "姓名",
+                                    "role",
+                                    "factory_operator",
+                                    "password",
+                                    ""),
+                            Map.of(
+                                    "username",
+                                    "valid",
+                                    "displayName",
+                                    "姓名",
+                                    "role",
+                                    "admin",
+                                    "factoryId",
+                                    "999999",
+                                    "password",
+                                    ""),
+                            Map.of(
+                                    "username",
+                                    "valid",
+                                    "displayName",
+                                    "姓名",
+                                    "role",
+                                    "query",
+                                    "password",
+                                    ""));
+            var reasons =
+                    java.util.List.of(
+                            "USER_EMP_NO_INVALID",
+                            "USER_NAME_REQUIRED",
+                            "USER_ROLE_INVALID",
+                            "USER_FACTORY_REQUIRED",
+                            "USER_ADMIN_NO_FACTORY",
+                            "USER_PASSWORD_WEAK");
+            for (int i = 0; i < cases.size(); i++) {
+                var response = browser.post("/sn/users", cases.get(i), token, true);
+                assertThat(response.statusCode()).isEqualTo(400);
+                var data = json.readTree(response.body());
+                assertThat(data.path("code").asInt()).isEqualTo(1_004_000_030);
+                assertThat(data.path("params").path("reason").asString()).isEqualTo(reasons.get(i));
+            }
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM sys_user", Integer.class))
+                    .isEqualTo(1);
+        }
+    }
+
+    @Test
+    void snAccountCreatesAndEditsEachRoleWithServerManagedDepartmentAndVersion() throws Exception {
+        seedUser(false);
+        jdbc.update("INSERT INTO sys_user_role(user_id,role_id) VALUES (?,2)", USER_ID);
+        jdbc.update(
+                "INSERT INTO sn_factory(id,code,name,enabled,source) VALUES (9040001,'ACC40','账号测试工厂',TRUE,'MANUAL')");
+        try (var browser = new Browser()) {
+            String token =
+                    json.readTree(browser.login(INITIAL_PASSWORD).body())
+                            .path("data")
+                            .path("accessToken")
+                            .asString();
+            var create =
+                    Map.of(
+                            "username",
+                            " account40 ",
+                            "displayName",
+                            " 姓名 ",
+                            "role",
+                            "factory_operator",
+                            "factoryId",
+                            "9040001",
+                            "password",
+                            INITIAL_PASSWORD);
+            var response = browser.post("/sn/users", create, token, true);
+            assertThat(response.statusCode()).as(response.body()).isEqualTo(200);
+            String id = json.readTree(response.body()).path("data").path("id").asString();
+            var row = jdbc.queryForMap("SELECT * FROM sys_user WHERE id=?", id);
+            assertThat(row.get("username")).isEqualTo("account40");
+            assertThat(row.get("display_name")).isEqualTo("姓名");
+            assertThat(((Number) row.get("dept_id")).longValue()).isEqualTo(1L);
+            assertThat(row.get("must_change_password")).isEqualTo(true);
+            assertThat(passwords.matches(INITIAL_PASSWORD, (String) row.get("password_hash")))
+                    .isTrue();
+            assertThat(
+                            json.readTree(browser.post("/sn/users", create, token, true).body())
+                                    .path("params")
+                                    .path("reason")
+                                    .asString())
+                    .isEqualTo("USER_EMP_NO_EXISTS");
+            for (String role : java.util.List.of("query", "admin", "factory_operator")) {
+                long version =
+                        jdbc.queryForObject(
+                                "SELECT security_version FROM sys_user WHERE id=?", Long.class, id);
+                var update = new java.util.HashMap<String, String>();
+                update.put("displayName", "名".repeat(64));
+                update.put("role", role);
+                update.put("version", Long.toString(version));
+                if (!role.equals("admin")) update.put("factoryId", "9040001");
+                var changed = browser.post("/sn/users/" + id + "/update", update, token, true);
+                assertThat(changed.statusCode()).as(changed.body()).isEqualTo(200);
+                assertThat(
+                                jdbc.queryForObject(
+                                        "SELECT display_name FROM sys_user WHERE id=?",
+                                        String.class,
+                                        id))
+                        .isEqualTo("名".repeat(64));
+                assertThat(
+                                jdbc.queryForObject(
+                                        "SELECT COUNT(*) FROM sn_user_factory WHERE user_id=?",
+                                        Integer.class,
+                                        id))
+                        .isEqualTo(role.equals("admin") ? 0 : 1);
+                var roles =
+                        jdbc.queryForList(
+                                "SELECT r.role_code FROM sys_user_role ur JOIN sys_role r ON r.id=ur.role_id WHERE ur.user_id=? ORDER BY r.role_code",
+                                String.class,
+                                id);
+                assertThat(roles)
+                        .containsExactlyElementsOf(
+                                role.equals("admin")
+                                        ? java.util.List.of("PLATFORM_ADMIN", "SN_HQ")
+                                        : java.util.List.of(
+                                                role.equals("query")
+                                                        ? "SN_QUERY_FACTORY"
+                                                        : "FACTORY_OPERATOR"));
+                assertThat(
+                                browser.post("/sn/users/" + id + "/update", update, token, true)
+                                        .statusCode())
+                        .isEqualTo(409);
+            }
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT password_hash FROM sys_user WHERE id=?",
+                                    String.class,
+                                    id))
+                    .isEqualTo(row.get("password_hash"));
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT COUNT(*) FROM sys_oper_log WHERE object_id=? AND success=TRUE",
+                                    Integer.class,
+                                    id))
+                    .isEqualTo(4);
+            jdbc.update("INSERT INTO sys_user_role(user_id,role_id) VALUES (?,1)", id);
+            var extended =
+                    browser.post(
+                            "/sn/users/" + id + "/update",
+                            Map.of("displayName", "overwrite", "role", "query", "version", "4"),
+                            token,
+                            true);
+            assertThat(extended.statusCode()).isEqualTo(409);
+            assertThat(json.readTree(extended.body()).path("code").asInt())
+                    .isEqualTo(1_004_000_031);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT COUNT(*) FROM sys_user_role WHERE user_id=?",
+                                    Integer.class,
+                                    id))
+                    .isEqualTo(2);
+        }
+    }
+
+    @Test
+    void snEditsPreserveCredentialButApplyCurrentScopeAndRejectStaleWrites() throws Exception {
+        seedUser(false);
+        jdbc.update("INSERT INTO sys_user_role(user_id,role_id) VALUES (?,2)", USER_ID);
+        jdbc.update(
+                "INSERT INTO sn_factory(id,code,name,enabled,source) VALUES (9041001,'ACC41A','甲厂',TRUE,'MANUAL'),(9041002,'ACC41B','乙厂',TRUE,'MANUAL')");
+        long member = USER_ID + 1;
+        jdbc.update(
+                "INSERT INTO sys_user(id,username,password_hash,display_name,dept_id,must_change_password) VALUES (?,'member41',?,'成员',1,FALSE)",
+                member,
+                passwords.encode(INITIAL_PASSWORD));
+        jdbc.update(
+                "INSERT INTO sys_user_role(user_id,role_id) SELECT ?,id FROM sys_role WHERE role_code='FACTORY_OPERATOR'",
+                member);
+        jdbc.update("INSERT INTO sn_user_factory(user_id,factory_id) VALUES (?,9041001)", member);
+        var before = authorizations.loadCurrent(member).orElseThrow();
+        try (var admin = new Browser();
+                var target = new Browser()) {
+            String adminToken = access(admin.login(INITIAL_PASSWORD));
+            String targetToken =
+                    access(
+                            target.post(
+                                    "login",
+                                    Map.of("username", "member41", "password", INITIAL_PASSWORD),
+                                    null,
+                                    true));
+            var update =
+                    Map.of(
+                            "displayName",
+                            "已编辑成员",
+                            "role",
+                            "query",
+                            "factoryId",
+                            "9041002",
+                            "version",
+                            "1");
+            assertThat(
+                            admin.post("/sn/users/" + member + "/update", update, adminToken, true)
+                                    .statusCode())
+                    .isEqualTo(200);
+            assertThat(
+                            admin.post("/sn/users/" + member + "/update", update, adminToken, true)
+                                    .statusCode())
+                    .isEqualTo(409);
+            var me = target.get("me", targetToken);
+            assertThat(me.statusCode()).as(me.body()).isEqualTo(200);
+            assertThat(json.readTree(me.body()).path("data").path("displayName").asString())
+                    .isEqualTo("已编辑成员");
+            assertThat(
+                            json.readTree(me.body())
+                                    .path("data")
+                                    .path("authorizationVersion")
+                                    .asString())
+                    .isEqualTo("2");
+            var context = json.readTree(target.get("/sn/context", targetToken).body()).path("data");
+            assertThat(context.path("role").asString()).isEqualTo("query");
+            assertThat(context.path("factories").size()).isEqualTo(1);
+            assertThat(context.path("factories").get(0).path("code").asString())
+                    .isEqualTo("ACC41B");
+            assertThat(target.get("/sn/items/page?factoryId=9041001", targetToken).statusCode())
+                    .isEqualTo(403);
+            assertThat(target.get("/sn/items/page?factoryId=9041002", targetToken).statusCode())
+                    .isEqualTo(200);
+            var after = authorizations.loadCurrent(member).orElseThrow();
+            assertThat(before.permissions()).contains("sn:acquire:take");
+            assertThat(after.permissions()).doesNotContain("sn:acquire:take");
+            assertThat(after.securityVersion()).isEqualTo(before.securityVersion() + 1);
+            assertThat(after.credentialVersion()).isEqualTo(before.credentialVersion());
+            assertThatThrownBy(
+                            () ->
+                                    new org.springframework.transaction.support.TransactionTemplate(
+                                                    transactions)
+                                            .execute(status -> mutations.lockCurrent(before)))
+                    .isInstanceOf(com.adtek.common.core.BusinessException.class);
+            assertThat(target.post("refresh", Map.of(), null, true).statusCode()).isEqualTo(200);
+            assertThat(target.get("me", targetToken).statusCode()).isEqualTo(200);
+            // 按原型升为管理员后，同一登录立即得到新授权；再自改姓名也不退出。
+            assertThat(
+                            admin.post(
+                                            "/sn/users/" + member + "/update",
+                                            Map.of(
+                                                    "displayName",
+                                                    "新管理员",
+                                                    "role",
+                                                    "admin",
+                                                    "version",
+                                                    "2"),
+                                            adminToken,
+                                            true)
+                                    .statusCode())
+                    .isEqualTo(200);
+            assertThat(target.get("/users", targetToken).statusCode()).isEqualTo(200);
+            assertThat(
+                            target.post(
+                                            "/sn/users/" + member + "/update",
+                                            Map.of(
+                                                    "displayName",
+                                                    "本人修改",
+                                                    "role",
+                                                    "admin",
+                                                    "version",
+                                                    "3"),
+                                            targetToken,
+                                            true)
+                                    .statusCode())
+                    .isEqualTo(200);
+            assertThat(target.get("me", targetToken).statusCode()).isEqualTo(200);
+            // 通用管理入口仍显式撤销会话；拆分版本不弱化该入口原有契约。
+            assertThat(
+                            admin.post(
+                                            "/users/" + member + "/update",
+                                            Map.of(
+                                                    "displayName",
+                                                    "通用更新",
+                                                    "deptId",
+                                                    "1",
+                                                    "roleIds",
+                                                    java.util.List.of("1", "2"),
+                                                    "factoryIds",
+                                                    java.util.List.of(),
+                                                    "version",
+                                                    "4"),
+                                            adminToken,
+                                            true)
+                                    .statusCode())
+                    .isEqualTo(200);
+            assertThat(target.get("me", targetToken).statusCode()).isEqualTo(401);
+            assertThat(target.post("refresh", Map.of(), null, true).statusCode()).isEqualTo(401);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT credential_version FROM sys_user WHERE id=?",
+                                    Long.class,
+                                    member))
+                    .isEqualTo(2L);
+        }
+    }
+
+    @Test
+    void snDisableKeepsCredentialAndValidRefreshWhileSuspendingAllAccess() throws Exception {
+        seedUser(false);
+        jdbc.update("INSERT INTO sys_user_role(user_id,role_id) VALUES (?,2)", USER_ID);
+        long member = USER_ID + 42;
+        jdbc.update(
+                "INSERT INTO sys_user(id,username,password_hash,display_name,dept_id,must_change_password) VALUES (?,'member42',?,'成员',1,FALSE)",
+                member,
+                passwords.encode(INITIAL_PASSWORD));
+        jdbc.update(
+                "INSERT INTO sys_user_role(user_id,role_id) SELECT ?,id FROM sys_role WHERE role_code='SN_QUERY_ALL'",
+                member);
+        try (var admin = new Browser();
+                var target = new Browser();
+                var refresh = new Browser()) {
+            String token = access(admin.login(INITIAL_PASSWORD));
+            String held =
+                    access(
+                            target.post(
+                                    "login",
+                                    Map.of("username", "member42", "password", INITIAL_PASSWORD),
+                                    null,
+                                    true));
+            access(
+                    refresh.post(
+                            "login",
+                            Map.of("username", "member42", "password", INITIAL_PASSWORD),
+                            null,
+                            true));
+            String refreshCredential = refresh.refreshCredential();
+            var suspended =
+                    admin.post(
+                            "/sn/users/" + member + "/status",
+                            Map.of("enabled", false, "version", "1"),
+                            token,
+                            true);
+            assertThat(suspended.statusCode()).as(suspended.body()).isEqualTo(200);
+            assertThat(json.readTree(suspended.body()).path("data").path("version").asString())
+                    .isEqualTo("2");
+            assertThat(
+                            admin.post(
+                                            "/sn/users/" + member + "/status",
+                                            Map.of("enabled", false, "version", "1"),
+                                            token,
+                                            true)
+                                    .statusCode())
+                    .isEqualTo(200);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT credential_version FROM sys_user WHERE id=?",
+                                    Long.class,
+                                    member))
+                    .isEqualTo(1L);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT security_version FROM sys_user WHERE id=?",
+                                    Long.class,
+                                    member))
+                    .isEqualTo(2L);
+            var denied = target.get("me", held);
+            assertThat(denied.statusCode()).isEqualTo(401);
+            assertThat(json.readTree(denied.body()).path("code").asInt()).isEqualTo(1002000018);
+            assertThat(denied.headers().allValues("set-cookie"))
+                    .anyMatch(c -> c.startsWith("ADTEK-REFRESH=") && c.contains("Max-Age=0"));
+            var deniedRefresh = refresh.post("refresh", Map.of(), null, true);
+            assertThat(deniedRefresh.statusCode()).isEqualTo(401);
+            assertThat(json.readTree(deniedRefresh.body()).path("code").asInt())
+                    .isEqualTo(1002000018);
+            assertThat(deniedRefresh.headers().allValues("set-cookie"))
+                    .anyMatch(c -> c.startsWith("ADTEK-REFRESH=") && c.contains("Max-Age=0"));
+            assertThat(redis.hasKey("adtek:session:" + refreshCredential.substring(0, 36)))
+                    .isTrue();
+            assertThat(
+                            admin.post(
+                                            "/sn/users/" + member + "/status",
+                                            Map.of("enabled", true, "version", "1"),
+                                            token,
+                                            true)
+                                    .statusCode())
+                    .isEqualTo(409);
+            assertThat(
+                            admin.post(
+                                            "/sn/users/" + member + "/status",
+                                            Map.of("enabled", true, "version", "2"),
+                                            token,
+                                            true)
+                                    .statusCode())
+                    .isEqualTo(200);
+            assertThat(target.get("me", held).statusCode()).isEqualTo(200);
+            // 浏览器被拒绝后Cookie已清除，重新启用不能自动恢复；持有的有效原秘密仍能正常轮换。
+            assertThat(refresh.post("refresh", Map.of(), null, true).statusCode()).isEqualTo(401);
+            var cookie = new java.net.HttpCookie("ADTEK-REFRESH", refreshCredential);
+            cookie.setPath("/api/v1/system/auth");
+            cookie.setVersion(0);
+            refresh.cookies.getCookieStore().add(refresh.uri("refresh"), cookie);
+            assertThat(refresh.post("refresh", Map.of(), null, true).statusCode()).isEqualTo(200);
+        }
+    }
+
+    @Test
+    void snResetAllowsSelfAndSamePasswordAndRequiresAnotherChangeOnNextLogin() throws Exception {
+        seedUser(false);
+        jdbc.update("INSERT INTO sys_user_role(user_id,role_id) VALUES (?,2)", USER_ID);
+        try (var admin = new Browser()) {
+            String token = access(admin.login(INITIAL_PASSWORD));
+            var selfDisable =
+                    admin.post(
+                            "/sn/users/" + USER_ID + "/status",
+                            Map.of("enabled", false, "version", "1"),
+                            token,
+                            true);
+            assertThat(selfDisable.statusCode()).isEqualTo(400);
+            assertThat(json.readTree(selfDisable.body()).path("params").path("reason").asString())
+                    .isEqualTo("USER_SELF_DISABLE");
+            var weak =
+                    admin.post(
+                            "/sn/users/" + USER_ID + "/password",
+                            Map.of("password", "", "version", "1"),
+                            token,
+                            true);
+            assertThat(weak.statusCode()).isEqualTo(400);
+            assertThat(json.readTree(weak.body()).path("params").path("reason").asString())
+                    .isEqualTo("USER_PASSWORD_WEAK");
+            var reset =
+                    admin.post(
+                            "/sn/users/" + USER_ID + "/password",
+                            Map.of("password", INITIAL_PASSWORD, "version", "1"),
+                            token,
+                            true);
+            assertThat(reset.statusCode()).as(reset.body()).isEqualTo(200);
+            assertThat(json.readTree(reset.body()).path("data").path("version").asString())
+                    .isEqualTo("2");
+            assertThat(admin.get("me", token).statusCode()).isEqualTo(401);
+            assertThat(admin.post("refresh", Map.of(), null, true).statusCode()).isEqualTo(401);
+            String fresh = access(admin.login(INITIAL_PASSWORD));
+            assertThat(
+                            json.readTree(admin.get("me", fresh).body())
+                                    .path("data")
+                                    .path("mustChangePassword")
+                                    .asBoolean())
+                    .isTrue();
+            assertThat(admin.get("/users", fresh).statusCode()).isEqualTo(403);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT credential_version FROM sys_user WHERE id=?",
+                                    Long.class,
+                                    USER_ID))
+                    .isEqualTo(2L);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT security_version FROM sys_user WHERE id=?",
+                                    Long.class,
+                                    USER_ID))
+                    .isEqualTo(2L);
+            assertThat(jdbc.queryForList("SELECT * FROM sys_oper_log").toString())
+                    .doesNotContain(INITIAL_PASSWORD);
+        }
+    }
+
+    @Test
+    void snAccountAuditMatchesManagementFactsIncludingNoChangeAndSelfEdit() throws Exception {
+        seedUser(false);
+        jdbc.update("INSERT INTO sys_user_role(user_id,role_id) VALUES (?,2)", USER_ID);
+        jdbc.update(
+                "INSERT INTO sn_factory(id,code,name,enabled,source) VALUES (9043001,'ACC43A','账户审计甲厂',TRUE,'MANUAL'),(9043002,'ACC43B','账户审计乙厂',TRUE,'MANUAL')");
+        try (var admin = new Browser()) {
+            String token = access(admin.login(INITIAL_PASSWORD));
+            var body =
+                    Map.of(
+                            "username",
+                            "account43",
+                            "displayName",
+                            "成员",
+                            "role",
+                            "factory_operator",
+                            "factoryId",
+                            "9043001",
+                            "password",
+                            INITIAL_PASSWORD);
+            var created = admin.post("/sn/users", body, token, true);
+            assertThat(created.statusCode()).as(created.body()).isEqualTo(200);
+            String id = json.readTree(created.body()).path("data").path("id").asString();
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT detail_text FROM sn_audit WHERE action='system:user:add'",
+                                    String.class))
+                    .isEqualTo("emp_no=account43 role=factory_operator");
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT factory_code FROM sn_audit WHERE action='system:user:add'",
+                                    String.class))
+                    .isEqualTo("ACC43A");
+            assertThat(admin.post("/sn/users", body, token, true).statusCode()).isEqualTo(409);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT error_message FROM sn_audit WHERE action='system:user:add' AND result='FAILED'",
+                                    String.class))
+                    .isEqualTo("工号已存在：account43");
+            for (int n = 1; n <= 2; n++) {
+                var updated =
+                        admin.post(
+                                "/sn/users/" + id + "/update",
+                                Map.of(
+                                        "displayName",
+                                        "成员",
+                                        "role",
+                                        "query",
+                                        "factoryId",
+                                        "9043002",
+                                        "version",
+                                        Integer.toString(n)),
+                                token,
+                                true);
+                assertThat(updated.statusCode()).as(updated.body()).isEqualTo(200);
+            }
+            assertThat(
+                            jdbc.queryForList(
+                                    "SELECT detail_text FROM sn_audit WHERE action='system:user:update' AND result='SUCCESS' ORDER BY created_at",
+                                    String.class))
+                    .containsExactly(
+                            "emp_no=account43 role=factory_operator->query factory=ACC43A->ACC43B",
+                            "emp_no=account43 role=query->query factory=ACC43B->ACC43B");
+            for (boolean enabled : new boolean[] {false, false, true, true}) {
+                String version =
+                        jdbc.queryForObject(
+                                "SELECT CAST(security_version AS CHAR) FROM sys_user WHERE id=?",
+                                String.class,
+                                id);
+                assertThat(
+                                admin.post(
+                                                "/sn/users/" + id + "/status",
+                                                Map.of("enabled", enabled, "version", version),
+                                                token,
+                                                true)
+                                        .statusCode())
+                        .isEqualTo(200);
+            }
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT COUNT(*) FROM sn_audit WHERE action IN ('USER_DISABLE','USER_ENABLE')",
+                                    Long.class))
+                    .isEqualTo(2L);
+            for (int n = 0; n < 2; n++) {
+                String version =
+                        jdbc.queryForObject(
+                                "SELECT CAST(security_version AS CHAR) FROM sys_user WHERE id=?",
+                                String.class,
+                                id);
+                assertThat(
+                                admin.post(
+                                                "/sn/users/" + id + "/password",
+                                                Map.of(
+                                                        "password",
+                                                        INITIAL_PASSWORD,
+                                                        "version",
+                                                        version),
+                                                token,
+                                                true)
+                                        .statusCode())
+                        .isEqualTo(200);
+            }
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT COUNT(*) FROM sn_audit WHERE action='system:user:reset' AND detail_text='emp_no=account43'",
+                                    Long.class))
+                    .isEqualTo(2L);
+            String oldName =
+                    jdbc.queryForObject(
+                            "SELECT display_name FROM sys_user WHERE id=?", String.class, USER_ID);
+            assertThat(
+                            admin.post(
+                                            "/sn/users/" + USER_ID + "/update",
+                                            Map.of(
+                                                    "displayName",
+                                                    "自己改名",
+                                                    "role",
+                                                    "admin",
+                                                    "version",
+                                                    "1"),
+                                            token,
+                                            true)
+                                    .statusCode())
+                    .isEqualTo(200);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT operator_name FROM sn_audit WHERE detail_text='emp_no=auth_it role=admin->admin factory=null->null'",
+                                    String.class))
+                    .isEqualTo(oldName);
+            assertThat(
+                            admin.post(
+                                            "/sn/users/" + id + "/password",
+                                            Map.of("password", "short", "version", "7"),
+                                            token,
+                                            true)
+                                    .statusCode())
+                    .isEqualTo(400);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT detail_text FROM sn_audit WHERE error_message='密码须为 8–64 位，且同时包含字母和数字'",
+                                    String.class))
+                    .isEqualTo("POST /api/users/" + id + "/reset-password");
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT COUNT(*) FROM sn_audit WHERE action LIKE 'system:user:%' AND quantity IS NOT NULL",
+                                    Long.class))
+                    .isZero();
+            assertThat(
+                            jdbc.queryForList(
+                                            "SELECT detail,detail_text,error_message FROM sn_audit")
+                                    .toString())
+                    .doesNotContain(INITIAL_PASSWORD, "short");
+        }
+    }
+
+    @Test
+    void accountAuditFailureRollsBackSuccessButDoesNotReplaceOriginalRejection() throws Exception {
+        seedUser(false);
+        jdbc.update("INSERT INTO sys_user_role(user_id,role_id) VALUES (?,2)", USER_ID);
+        try (var admin = new Browser()) {
+            String token = access(admin.login(INITIAL_PASSWORD));
+            jdbc.update(
+                    "ALTER TABLE sn_audit ADD CONSTRAINT ck_account43 CHECK(action<>'system:user:add')");
+            try {
+                var valid =
+                        Map.of(
+                                "username",
+                                "blocked43",
+                                "displayName",
+                                "成员",
+                                "role",
+                                "query",
+                                "password",
+                                INITIAL_PASSWORD);
+                assertThat(admin.post("/sn/users", valid, token, true).statusCode()).isEqualTo(500);
+                assertThat(
+                                jdbc.queryForObject(
+                                        "SELECT COUNT(*) FROM sys_user WHERE username='blocked43'",
+                                        Long.class))
+                        .isZero();
+                assertThat(
+                                jdbc.queryForObject(
+                                        "SELECT COUNT(*) FROM sys_oper_log WHERE action='system:user:add' AND success=TRUE",
+                                        Long.class))
+                        .isZero();
+                assertThat(
+                                admin.post(
+                                                "/sn/users",
+                                                Map.of(
+                                                        "username",
+                                                        "x",
+                                                        "displayName",
+                                                        "",
+                                                        "role",
+                                                        "admin",
+                                                        "password",
+                                                        ""),
+                                                token,
+                                                true)
+                                        .statusCode())
+                        .isEqualTo(400);
+            } finally {
+                jdbc.update("ALTER TABLE sn_audit DROP CHECK ck_account43");
+            }
+        }
+    }
+
+    private String access(HttpResponse<String> response) throws Exception {
+        assertThat(response.statusCode()).as(response.body()).isEqualTo(200);
+        return json.readTree(response.body()).path("data").path("accessToken").asString();
+    }
+
     private final class Browser implements AutoCloseable {
         private final CookieManager cookies = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
         private final HttpClient client = HttpClient.newBuilder().cookieHandler(cookies).build();
@@ -1164,8 +2142,10 @@ class AuthenticationIT {
             return URI.create(
                     "http://127.0.0.1:"
                             + port
-                            + "/api/v1/system"
-                            + (path.startsWith("/") ? path : "/auth/" + path));
+                            + (path.startsWith("/sn/")
+                                    ? "/api/v1" + path
+                                    : "/api/v1/system"
+                                            + (path.startsWith("/") ? path : "/auth/" + path)));
         }
 
         HttpResponse<String> login(String password) throws Exception {

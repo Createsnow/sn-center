@@ -29,11 +29,30 @@ public class SysUserEntity {
     private Boolean enabled;
     private Boolean mustChangePassword;
     private Long securityVersion;
+    private Long credentialVersion;
+
+    public Long getCredentialVersion() {
+        return credentialVersion;
+    }
+
+    public void setCredentialVersion(Long value) {
+        credentialVersion = value;
+    }
+
     private String language;
     private Long createBy;
     private Instant createTime;
     private Long updateBy;
     private Instant updateTime;
+    private Instant lastLoginAt;
+
+    public Instant getLastLoginAt() {
+        return lastLoginAt;
+    }
+
+    public void setLastLoginAt(Instant value) {
+        lastLoginAt = value;
+    }
 
     public Long getId() {
         return id;

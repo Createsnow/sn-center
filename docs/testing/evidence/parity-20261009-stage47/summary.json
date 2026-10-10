@@ -1,0 +1,301 @@
+{
+  "goal": "active",
+  "date": "2026-10-09",
+  "schema": "41",
+  "frontendUnitTests": 82,
+  "registeredUiTests": 219,
+  "backendUnitTests": 89,
+  "backendIntegration": [
+    {
+      "name": "com.adtek.server.FactoryMappingMigrationIT",
+      "tests": 1,
+      "seconds": 35.66
+    },
+    {
+      "name": "com.adtek.server.SnAuditIT",
+      "tests": 17,
+      "seconds": 115.2
+    },
+    {
+      "name": "com.adtek.server.SnFoundationIT",
+      "tests": 37,
+      "seconds": 101.6
+    }
+  ],
+  "ui": {
+    "startTime": "2026-10-09T07:53:35.351Z",
+    "duration": 102579.115,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "screenshots": 40,
+  "diagnosticScreenshots": 202,
+  "sources": {
+    "backend/adtek-server/src/main/resources/db/migration/V41__order_sync_factory_commit.sql": "e74230c288c0dbe568be32183e7cda284773957c90e8d96b3a12e5f2be865b2d",
+    "backend/adtek-server/src/test/java/com/adtek/server/SnFoundationIT.java": "ba9555098c5b9d9f409586ce7e1fd346de0f1df2f21c4e648afde8fc34a7750b",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/domain/OrderSyncEntity.java": "2d4ba66b8399938eec7660c03a6b7f6c3f515e9695d72103618ce73031fd14f2",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/FactoryPublishService.java": "1a7ad6b87be1d67a9a0977894c344b1e808fe90136fdfae40cc93354fb61bf50",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/OrderPublishService.java": "ca28e7b3cf1facb6dbd2e8697ce77dddc9a289009af75b8829e4998d288c2818",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/FactoryPublishServiceImpl.java": "9663735932893d2d31bff90aaf890938a06d89b26b0c31ce6fdb78c9a3933615",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/OrderPublicationGuard.java": "2d2c25271c2eb090432d11dfd9efa53082e84d13c4c3a439d6b2fc46a294ed32",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/OrderPublishServiceImpl.java": "f9d3f42dab22bd375a35fbdd9f128389a5d7a6feffb00276c0501e7957e4b78c",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/OrderServiceImpl.java": "8b8184ad4ba6aa0d9195bd6bf066713189cbc414d4034ad9882ecb81d02d01fa",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/vo/OrderSyncVO.java": "0d04ecd3b794e2621361ad409539311e4adea31eccf1a700054cc2ebe7be413a",
+    "frontend/e2e/parity/factory-identity.spec.ts": "9074dda65aae84612307bd431f581f36e5166479ee182b1c5a01be637e65887d",
+    "frontend/e2e/parity/order-transactions.spec.ts": "a68f25007052d298408eefa1c500fd9b3d54866d48763cac1bf012a0440d7635",
+    "frontend/playwright.parity.config.ts": "702e61f4c28f3873f17b8716eba5391aaa25083a90a08040751f15a7c49ea918",
+    "frontend/src/app/App.tsx": "b23fc2451c2a2db7d567d4960d4da605bdb9d410f040d56119ad07f92cd39a85",
+    "frontend/src/features/sn/pages/OrdersPage.tsx": "1284d445617daf69f28d3133d9dbcb7fb669da46501f45e6773248bfe3361ded",
+    "frontend/src/features/sn/syncErrorText.test.ts": "c2474d2c6de13f1d79a6ab51e430718fe00d7813f87727845a42b57bf4872c0c",
+    "frontend/src/features/sn/syncErrorText.ts": "8876fcce029dd191338106519eabc6fb693b8a8f7c3ddd1cb415ed47e852a6e5",
+    "frontend/src/features/sn/useSyncFeedback.tsx": "bf222801a7e7536635f7f396fd0bb0b6b949649c134352b5c701dcf57d631471",
+    "frontend/src/styles.css": "13a777820dcb1366e62aa220c27289ffcadd3ff2c2400650483afd496fe5620b",
+    "tools/testing/parity-factory-identity-fixture.py": "c9ceaff2057dfd9ca000ab4ed386eaabb2b3d233e32706906981f1d547ba9ae4",
+    "tools/testing/parity-k3-fixture.py": "8dbbfdd542391104e984fc8c7f9942dea7eb0be82c23e178165ce09f43687a28",
+    "tools/testing/parity-order-transactions-fixture.py": "dcdeb68ae9215d44c00bc84331609868011201d93e276320059b663e78c6d203"
+  },
+  "runtime": {
+    "java": {
+      "sn_item": {
+        "rows": 10,
+        "unchanged": true
+      },
+      "sn_key": {
+        "rows": 10,
+        "unchanged": true
+      },
+      "sn_pi_counter": {
+        "rows": 2,
+        "unchanged": true
+      },
+      "sn_rule": {
+        "rows": 3,
+        "unchanged": true
+      },
+      "sn_rule_version": {
+        "rows": 3,
+        "unchanged": true
+      },
+      "sn_acquire_batch": {
+        "rows": 1,
+        "unchanged": true
+      },
+      "sn_print": {
+        "rows": 1,
+        "unchanged": true
+      },
+      "sn_transfer": {
+        "rows": 1,
+        "unchanged": true
+      },
+      "sn_acquire_member": {
+        "rows": 10,
+        "unchanged": true
+      },
+      "sn_print_member": {
+        "rows": 10,
+        "unchanged": true
+      },
+      "sn_pi_rule_choice": {
+        "rows": 0,
+        "unchanged": true
+      },
+      "sn_generation_job": {
+        "rows": 1,
+        "unchanged": true
+      },
+      "sn_bill_generation": {
+        "rows": 1,
+        "unchanged": true
+      },
+      "sn_source_entry_quota": {
+        "rows": 156,
+        "unchanged": true
+      },
+      "sn_transfer_member": {
+        "rows": 1,
+        "unchanged": true
+      },
+      "oldMappingColumnsPreservedAndOriginBackfillVerified": 2,
+      "accountSecurityUnchanged": true,
+      "existingCredentialVersionsUnchanged": true,
+      "sn_auditOldRowsPreserved": 5851,
+      "sn_order_syncOldRowsPreserved": 890,
+      "flyway_schema_historyOldRowsPreserved": 40,
+      "sys_oper_logOldRowsPreserved": 10231,
+      "sn_audit_archiveOldRowsPreserved": 0,
+      "sn_audit_identityOldRowsPreserved": 885,
+      "sn_audit_exportOldRowsPreserved": 84,
+      "sn_audit_export_rowOldRowsPreserved": 764,
+      "sn_query_exportOldRowsPreserved": 108,
+      "sn_query_export_rowOldRowsPreserved": 1840,
+      "sys_fileOldRowsPreserved": 576,
+      "sys_taskOldRowsPreserved": 1844,
+      "sys_operationOldRowsPreserved": 1844,
+      "sys_task_progressOldRowsPreserved": 1777,
+      "schema": "41",
+      "snapshotRevision": {
+        "before": 1001,
+        "after": 1037
+      }
+    },
+    "auditFormats": [
+      {
+        "format_version": 5,
+        "n": 28
+      },
+      {
+        "format_version": 6,
+        "n": 29
+      },
+      {
+        "format_version": 3,
+        "n": 4
+      },
+      {
+        "format_version": 1,
+        "n": 6
+      },
+      {
+        "format_version": 7,
+        "n": 11
+      },
+      {
+        "format_version": 4,
+        "n": 4
+      },
+      {
+        "format_version": 2,
+        "n": 2
+      }
+    ],
+    "python": {
+      "sn_item": {
+        "rows": 10,
+        "unchanged": true
+      },
+      "sn_key": {
+        "rows": 10,
+        "unchanged": true
+      },
+      "sn_pi_counter": {
+        "rows": 2,
+        "unchanged": true
+      },
+      "sn_rule": {
+        "rows": 3,
+        "unchanged": true
+      },
+      "sn_rule_version": {
+        "rows": 3,
+        "unchanged": true
+      },
+      "sn_acquire_batch": {
+        "rows": 1,
+        "unchanged": true
+      },
+      "sn_print": {
+        "rows": 1,
+        "unchanged": true
+      },
+      "sn_transfer": {
+        "rows": 1,
+        "unchanged": true
+      },
+      "sn_bill_gen": {
+        "rows": 1,
+        "unchanged": true
+      },
+      "sn_allocation": {
+        "rows": 1,
+        "unchanged": true
+      },
+      "sn_transfer_item": {
+        "rows": 1,
+        "unchanged": true
+      },
+      "accountSecurityUnchanged": true,
+      "sn_auditOldRowsPreserved": 7249
+    },
+    "V1ThroughV39Unchanged": true,
+    "oldFileBytesUnchanged": 576,
+    "noActiveTasksOrOwnedFixtures": true,
+    "prototypeSourcesUnchanged": true,
+    "frozenSqlVersionsUnchanged": 40,
+    "parity-20261008-stage17FrozenUnchanged": 85,
+    "parity-20261008-stage18FrozenUnchanged": 95,
+    "parity-20261009-audit-observedFrozenUnchanged": 10,
+    "parity-20261009-stage19FrozenUnchanged": 132,
+    "parity-20261009-stage20FrozenUnchanged": 285,
+    "parity-20261009-stage21FrozenUnchanged": 480,
+    "parity-20261009-stage22FrozenUnchanged": 190,
+    "parity-20261009-stage23FrozenUnchanged": 324,
+    "parity-20261009-stage24FrozenUnchanged": 409,
+    "parity-20261009-stage25FrozenUnchanged": 476,
+    "parity-20261009-stage26FrozenUnchanged": 635,
+    "parity-20261009-stage27FrozenUnchanged": 360,
+    "parity-20261009-stage28FrozenUnchanged": 449,
+    "parity-20261009-stage29FrozenUnchanged": 429,
+    "parity-20261009-stage30FrozenUnchanged": 473,
+    "parity-20261009-stage31FrozenUnchanged": 426,
+    "parity-20261009-stage32FrozenUnchanged": 309,
+    "parity-20261009-stage33FrozenUnchanged": 401,
+    "parity-20261009-stage34FrozenUnchanged": 423,
+    "parity-20261009-stage35FrozenUnchanged": 597,
+    "parity-20261009-stage36FrozenUnchanged": 648,
+    "parity-20261009-stage36-drawn-textFrozenUnchanged": 83,
+    "parity-20261009-stage37FrozenUnchanged": 736,
+    "parity-20261009-stage38FrozenUnchanged": 726,
+    "parity-20261009-stage39FrozenUnchanged": 506,
+    "parity-20261009-stage39-doc-checkFrozenUnchanged": 3,
+    "parity-20261009-stage40FrozenUnchanged": 499,
+    "parity-20261009-stage40-doc-checkFrozenUnchanged": 3,
+    "parity-20261009-stage41FrozenUnchanged": 322,
+    "parity-20261009-stage42FrozenUnchanged": 344,
+    "parity-20261009-stage42-doc-checkFrozenUnchanged": 2,
+    "parity-20261009-stage43FrozenUnchanged": 375,
+    "parity-20261009-stage43-doc-checkFrozenUnchanged": 2,
+    "parity-20261009-stage44FrozenUnchanged": 457,
+    "parity-20261009-stage44-doc-checkFrozenUnchanged": 2,
+    "parity-20261009-stage45FrozenUnchanged": 542,
+    "parity-20261009-stage45-doc-checkFrozenUnchanged": 2,
+    "parity-20261009-stage46FrozenUnchanged": 312,
+    "parity-20261009-stage46-doc-checkFrozenUnchanged": 2,
+    "javaReady": {
+      "status": "UP"
+    },
+    "pythonReady": {
+      "status": "ok",
+      "db": "mysql"
+    },
+    "web": {
+      "8000": 200,
+      "15173": 200
+    },
+    "k3": {
+      "fixture": "synthetic comparison only",
+      "extrasSupported": true,
+      "controlsSupported": true,
+      "queryRequests": 18,
+      "inflight": 0,
+      "orders": 3,
+      "entries": 4
+    },
+    "liveOpenApiMatches": true,
+    "prototypeStatus": "?? sn.env",
+    "backendChangedFiles": [
+      "backend/adtek-server/src/test/java/com/adtek/server/SnFoundationIT.java",
+      "backend/adtek-sn/src/main/java/com/adtek/sn/domain/OrderSyncEntity.java",
+      "backend/adtek-sn/src/main/java/com/adtek/sn/service/FactoryPublishService.java",
+      "backend/adtek-sn/src/main/java/com/adtek/sn/service/OrderPublishService.java",
+      "backend/adtek-sn/src/main/java/com/adtek/sn/vo/OrderSyncVO.java",
+      "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/FactoryPublishServiceImpl.java",
+      "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/OrderPublishServiceImpl.java",
+      "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/OrderServiceImpl.java"
+    ],
+    "deployedJarSha256": "da87a407b226bb5fdaaa13c57babb4005126e569d2330ecf3381fe85db91fb8b"
+  },
+  "scope": "Independent factory/order commits, fault UI feedback and sync button display. ORDER_SYNC audit fields, K3 edge cases, all P01–P16 and role/concurrency matrices remain incomplete."
+}

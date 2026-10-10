@@ -1,0 +1,73 @@
+{
+  "status": 409,
+  "code": "GEN_PREVIEW_CHANGED",
+  "emptyBeforeRetry": true,
+  "afterRetry": {
+    "kind": "python",
+    "items": [
+      {
+        "sn": "G0600001",
+        "seq_dec": 1,
+        "status": "PENDING_ALLOC",
+        "material": "BEFORE-A",
+        "customer": "CMP-UI-GEN-CUSTOMER"
+      },
+      {
+        "sn": "G0600002",
+        "seq_dec": 2,
+        "status": "PENDING_ALLOC",
+        "material": "BEFORE-A",
+        "customer": "CMP-UI-GEN-CUSTOMER"
+      },
+      {
+        "sn": "G0600003",
+        "seq_dec": 3,
+        "status": "PENDING_ALLOC",
+        "material": "BEFORE-A",
+        "customer": "CMP-UI-GEN-CUSTOMER"
+      }
+    ],
+    "allocations": [],
+    "jobs": [
+      {
+        "state": "FAILED",
+        "qty": 3,
+        "error_code": "GEN_PREVIEW_CHANGED",
+        "error_msg": "预演条件已改变，请重新预演"
+      },
+      {
+        "state": "SUCCESS",
+        "qty": 3,
+        "error_code": null,
+        "error_msg": null
+      }
+    ],
+    "identities": [
+      {
+        "sn": "G0600001",
+        "pi": "CMP-UI-GEN-PI",
+        "customer": "CMP-UI-GEN-CUSTOMER",
+        "factory_code": null
+      },
+      {
+        "sn": "G0600002",
+        "pi": "CMP-UI-GEN-PI",
+        "customer": "CMP-UI-GEN-CUSTOMER",
+        "factory_code": null
+      },
+      {
+        "sn": "G0600003",
+        "pi": "CMP-UI-GEN-PI",
+        "customer": "CMP-UI-GEN-CUSTOMER",
+        "factory_code": null
+      }
+    ],
+    "generationIdentity": [
+      {
+        "pi": "CMP-UI-GEN-PI",
+        "customer": "CMP-UI-GEN-CUSTOMER",
+        "factory_code": "CMP-A"
+      }
+    ]
+  }
+}

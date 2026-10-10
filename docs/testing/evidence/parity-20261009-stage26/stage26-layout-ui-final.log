@@ -1,0 +1,15 @@
+
+Running 6 tests using 1 worker
+
+(node:27896) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\transfer-layout.spec.ts:119:3 › P10 layout zh-CN: field rhythm, clear control, alerts and snapshot at wide and narrow widths (5.0s)
+  ok 2 [prototype] › e2e\parity\transfer-layout.spec.ts:119:3 › P10 layout en: field rhythm, clear control, alerts and snapshot at wide and narrow widths (5.9s)
+  ok 3 [prototype] › e2e\parity\transfer-layout.spec.ts:119:3 › P10 layout vi: field rhythm, clear control, alerts and snapshot at wide and narrow widths (6.0s)
+(node:40360) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 4 [migration] › e2e\parity\transfer-layout.spec.ts:119:3 › P10 layout zh-CN: field rhythm, clear control, alerts and snapshot at wide and narrow widths (11.0s)
+  ok 5 [migration] › e2e\parity\transfer-layout.spec.ts:119:3 › P10 layout en: field rhythm, clear control, alerts and snapshot at wide and narrow widths (11.4s)
+  ok 6 [migration] › e2e\parity\transfer-layout.spec.ts:119:3 › P10 layout vi: field rhythm, clear control, alerts and snapshot at wide and narrow widths (11.5s)
+
+  6 passed (53.7s)

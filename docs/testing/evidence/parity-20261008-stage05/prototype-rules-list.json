@@ -1,0 +1,30 @@
+[
+  {
+    "class": "el-table--fit el-table--scrollable-x el-table--enable-row-transition el-table--small el-table el-table--layout-fixed is-scrolling-left",
+    "rect": {
+      "x": 261,
+      "y": 229.59375,
+      "width": 1138,
+      "height": 155.734375,
+      "top": 229.59375,
+      "right": 1399,
+      "bottom": 385.328125,
+      "left": 261
+    },
+    "font": "12px"
+  },
+  {
+    "class": "el-drawer rtl",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0,
+      "top": 0,
+      "right": 0,
+      "bottom": 0,
+      "left": 0
+    },
+    "font": "16px"
+  }
+]

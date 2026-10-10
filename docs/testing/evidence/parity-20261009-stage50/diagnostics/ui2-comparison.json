@@ -1,0 +1,457 @@
+{
+  "pairs": [
+    {
+      "label": "initial-snapshot",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "zh-CN-login-missing",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "zh-CN-login-boolean",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "zh-CN-login-number-message",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "zh-CN-login-scalar",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "zh-CN-query-object",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "zh-CN-query-scalar",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "zh-CN-query-message-values",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "zh-CN-query-empty-message",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "zh-CN-query-nested-encoded",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "zh-CN-view-missing-status",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "zh-CN-view-fallback-message",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "zh-CN-query-http-503",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "zh-CN-query-later-page",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "zh-CN-login-decimal",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "zh-CN-login-empty-session",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "zh-CN-view-decimal-missing",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 2,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "zh-CN-view-decimal-missing-restore",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "zh-CN-view-empty-document",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 2,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "zh-CN-view-empty-document-restore",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "zh-CN-view-empty-lines",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 2,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "zh-CN-view-empty-lines-restore",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "en-login-missing",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "en-login-boolean",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "en-login-number-message",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "en-login-scalar",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "en-query-object",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "en-query-scalar",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "en-query-message-values",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "en-query-empty-message",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "en-query-nested-encoded",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "en-view-missing-status",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "en-view-fallback-message",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "en-query-http-503",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "en-query-later-page",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "en-login-decimal",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "en-login-empty-session",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "en-view-decimal-missing",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 2,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "en-view-decimal-missing-restore",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "en-view-empty-document",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 2,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "en-view-empty-document-restore",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "en-view-empty-lines",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 2,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "en-view-empty-lines-restore",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "vi-login-missing",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "vi-login-boolean",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "vi-login-number-message",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "vi-login-scalar",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "vi-query-object",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "vi-query-scalar",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "vi-query-message-values",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "vi-query-empty-message",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "vi-query-nested-encoded",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "vi-view-missing-status",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "vi-view-fallback-message",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "vi-query-http-503",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "vi-query-later-page",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "vi-login-decimal",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "vi-login-empty-session",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "vi-view-decimal-missing",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 2,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "vi-view-decimal-missing-restore",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "vi-view-empty-document",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 2,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "vi-view-empty-document-restore",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "vi-view-empty-lines",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 2,
+      "wireOperationsEqual": true
+    },
+    {
+      "label": "vi-view-empty-lines-restore",
+      "responseEqual": true,
+      "businessRowsEqual": true,
+      "activeRows": 4,
+      "wireOperationsEqual": true
+    }
+  ],
+  "differences": [],
+  "matchingAuditFacts": 39,
+  "expandedDetailsPerSystem": 39,
+  "businessColumnsPerRow": 11,
+  "scope": "three languages, administrator, 1440x960; not the complete UI matrix"
+}

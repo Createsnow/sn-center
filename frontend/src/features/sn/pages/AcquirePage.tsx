@@ -1,359 +1,574 @@
+import { ExclamationCircleFilled } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Alert,
-  Button,
-  Input,
-  Popconfirm,
-  Select,
-  Space,
-  Switch,
-  Table,
-  Tabs,
-  Typography,
-} from 'antd';
+import { Alert, Button, Input, Modal, Radio, Switch, Table, Tabs, Tag } from 'antd';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { UserProfile } from '../../../api/contract';
-import { acquireApi } from '../../../api/snAcquire';
+import { loadCatalog } from '../../../api/catalog';
+import { acquireApi, type AcquireSummary } from '../../../api/snAcquire';
 import { paginationTotal } from '../../../api/sn';
 import { ApiErrorAlert } from '../../../components/ApiErrorAlert';
 import { SnPageHead } from '../components/SnPageHead';
 import { FactoryPicker } from '../components/FactoryPicker';
 import { SnOperation } from '../components/SnOperation';
 import { AcquireBatches, AcquirePrints, AcquireDetails } from '../components/AcquireHistory';
-import { useSnOperation } from '../useSnOperation';
+import { useSnContext } from '../useSnContext';
+import {
+  useAcquireQueue,
+  acquireQuantity,
+  acquireRowKey,
+  type AcquireStep,
+} from '../useAcquireQueue';
 
-/** 物料/状态只筛展示；领取/打印命令只取汇总行的整厂+PI，不借跨厂只读模式写入。 */
+type Filter = { factoryId?: string; pi: string; piAll: boolean };
+const STEPS: AcquireStep[] = ['TO_ACQUIRE', 'TO_PRINT'];
+const emptySelection = () => ({ TO_ACQUIRE: [] as string[], TO_PRINT: [] as string[] });
+
+/** 保留工序、批量和聚焦浏览；所有写入按整厂 + PI 执行，号段筛选不能缩小命令范围。 */
 export function AcquirePage({ profile }: { profile: UserProfile }) {
-  const { t } = useTranslation();
-  const [factoryId, setFactoryId] = useState<string>(),
-    [pi, setPi] = useState(''),
-    [materialMode, setMaterialMode] = useState('ALL'),
-    [material, setMaterial] = useState(''),
-    [status, setStatus] = useState(''),
-    [piAll, setPiAll] = useState(false),
-    [page, setPage] = useState(1),
-    [segmentPage, setSegmentPage] = useState(1),
-    [tab, setTab] = useState('batches'),
-    [details, setDetails] = useState(false);
-  const [filter, setFilter] = useState<{ factoryId?: string; pi: string; piAll: boolean }>({
-    pi: '',
-    piAll: false,
-  });
-  const prefix = ['sn', 'acquire', profile.id, profile.authorizationVersion, filter];
-  const displayFilter = { ...filter, factoryId: filter.piAll ? undefined : filter.factoryId };
+  const { t } = useTranslation('prototype');
+  const { t: common } = useTranslation();
+  const context = useSnContext(profile);
+  const [modal, modalHolder] = Modal.useModal();
+  const [draft, setDraft] = useState<Filter>({ pi: '', piAll: false });
+  const [filter, setFilter] = useState<Filter>(draft);
+  const [revision, setRevision] = useState(0);
+  const [tab, setTab] = useState('TO_ACQUIRE');
+  const [focus, setFocus] = useState<AcquireSummary>();
+  const [resultId, setResultId] = useState<string>();
+  const [picked, setPicked] = useState(emptySelection);
+  const [material, setMaterial] = useState('');
+  const [segment, setSegment] = useState({ material: '', status: '', page: 1, size: 20 });
+  const actions = useAcquireQueue(profile, () => setPicked(emptySelection()));
+  const isFactory = context.data?.role === 'factory_operator';
+  const bound =
+    !context.data?.allFactories && context.data?.factories.length === 1
+      ? context.data.factories[0]
+      : undefined;
+  const scope = focus
+    ? { factoryId: focus.factoryId, pi: focus.pi }
+    : { factoryId: filter.factoryId, pi: filter.pi };
   const summary = useQuery({
-    queryKey: [...prefix, 'summary', page],
-    queryFn: () => acquireApi.summaries({ ...displayFilter, page, size: 10 }),
+    queryKey: ['sn', 'acquire-summary', profile.id, profile.authorizationVersion, filter, revision],
+    queryFn: ({ signal }) =>
+      loadCatalog((page) => acquireApi.summaries({ ...filter, page, size: 100 }), signal),
+    enabled: !filter.piAll,
   });
+  const rows = filter.piAll ? [] : (summary.data ?? []);
+  const totals = rows.reduce(
+    (sum, row) => ({
+      acquire: sum.acquire + BigInt(row.toAcquire),
+      print: sum.print + BigInt(row.toPrint),
+      applying: sum.applying + BigInt(row.applying),
+    }),
+    { acquire: 0n, print: 0n, applying: 0n },
+  );
   const segments = useQuery({
-    queryKey: [...prefix, 'segments', materialMode, material, status, segmentPage],
+    queryKey: [
+      'sn',
+      'acquire-segments',
+      profile.id,
+      profile.authorizationVersion,
+      scope,
+      filter.piAll,
+      segment,
+      revision,
+    ],
     queryFn: () =>
       acquireApi.segments({
-        ...displayFilter,
-        materialMode,
-        material,
-        status,
-        page: segmentPage,
-        size: 20,
+        ...scope,
+        ...segment,
+        piAll: filter.piAll,
+        factoryId: filter.piAll ? undefined : scope.factoryId,
+        materialMode: segment.material ? 'VALUE' : 'ALL',
       }),
-    enabled: materialMode !== 'VALUE' || !!material,
+    enabled: tab === 'segments',
   });
-  const take = useSnOperation(profile, 'TAKE', acquireApi.take),
-    print = useSnOperation(profile, 'PRINT', acquireApi.print);
-  const result = useQuery({
-    queryKey: [...prefix, 'result', take.task.data?.taskId, take.task.data?.state],
-    queryFn: () => acquireApi.work(take.task.data!.taskId),
-    enabled: take.task.data?.state === 'SUCCESS',
-  });
-  const actable = !filter.piAll && !take.busy && !print.busy;
-  const reload = () => {
-    setPage(1);
-    setSegmentPage(1);
-    setFilter({ factoryId, pi: pi.trim(), piAll: piAll && !!pi.trim() });
-    void summary.refetch();
-    void segments.refetch();
+  const nameOf = (code: string) =>
+    context.data?.factories.find((factory) => factory.code === code)?.name || code;
+  const canAct = (step: AcquireStep) =>
+    !filter.piAll &&
+    profile.permissions.includes(step === 'TO_ACQUIRE' ? 'sn:acquire:take' : 'sn:print:execute');
+  const reload = (next = draft) => {
+    const applied = {
+      ...next,
+      pi: next.pi.trim(),
+      piAll: isFactory && next.piAll && !!next.pi.trim(),
+    };
+    setDraft({ ...next, piAll: applied.piAll });
+    setFilter(applied);
+    setFocus(undefined);
+    setSegment((current) => ({ ...current, material: material.trim(), page: 1 }));
+    setPicked(emptySelection());
+    setRevision((value) => value + 1);
+    if (applied.piAll && STEPS.includes(tab as AcquireStep)) setTab('segments');
   };
-  return (
-    <div className="sn-page">
-      <SnPageHead title={t('snAcquire.title')} description={t('snAcquire.desc')}>
-        <Space wrap>
-          <FactoryPicker profile={profile} value={factoryId} onChange={setFactoryId} />
-          <Input
-            aria-label="PI"
-            placeholder="PI"
-            value={pi}
-            onChange={(e) => setPi(e.target.value)}
-            onPressEnter={reload}
-            style={{ width: 240 }}
-          />
-          <Switch
-            checked={piAll}
-            disabled={!pi.trim()}
-            onChange={setPiAll}
-            checkedChildren={t('snAcquire.piAll')}
-            unCheckedChildren={t('snAcquire.piAll')}
-          />
-          <Button type="primary" onClick={reload}>
-            {t('snPages.common.search')}
-          </Button>
-        </Space>
-      </SnPageHead>
-      {filter.piAll ? (
-        <Alert type="info" showIcon title={t('snAcquire.piAllReadOnly')} />
-      ) : (
-        !profile.permissions.includes('sn:acquire:take') &&
-        !profile.permissions.includes('sn:print:execute') && (
-          <Alert type="info" showIcon title={t('snAcquire.queryReadOnly')} />
-        )
-      )}
-      <div className="sn-section">
-        <Typography.Title level={4}>{t('snAcquire.byPi')}</Typography.Title>
-        <Alert type="info" title={t('snAcquire.rule')} showIcon />
-        <ApiErrorAlert error={summary.error} />
-        <Table
-          rowKey={(r) => r.factoryId + ':' + r.pi}
-          data-testid="acquire-summary"
-          dataSource={summary.data?.items}
+  const confirm = (step: AcquireStep, selected: AcquireSummary[], bulk: boolean) => {
+    if (!selected.length || actions.busy || !canAct(step)) return;
+    const row = selected[0]!;
+    const quantity = selected
+      .reduce((sum, item) => sum + BigInt(acquireQuantity(item, step)), 0n)
+      .toString();
+    modal.confirm({
+      title: t(step === 'TO_ACQUIRE' ? 'acquire.take' : 'acquire.print'),
+      icon: null,
+      className: 'sn-init-confirm',
+      width: 420,
+      centered: true,
+      closable: true,
+      content: (
+        <div className="sn-init-confirm-message">
+          <ExclamationCircleFilled aria-hidden />
+          <span>
+            {t(
+              bulk
+                ? step === 'TO_ACQUIRE'
+                  ? 'acquire.bulkTakeConfirm'
+                  : 'acquire.bulkPrintConfirm'
+                : step === 'TO_ACQUIRE'
+                  ? 'acquire.takeConfirm'
+                  : 'acquire.printConfirm',
+              {
+                n: bulk ? selected.length : quantity,
+                q: quantity,
+                pi: row.pi,
+                factory: row.factoryName || row.factoryCode,
+              },
+            )}
+          </span>
+        </div>
+      ),
+      okText: common('snAcquire.confirmButton'),
+      cancelText: common('snAcquire.cancelButton'),
+      onOk: () => actions.start(step, selected, bulk),
+    });
+  };
+  const focusBar = focus && (
+    <div className="sn-acquire-focus">
+      <b>
+        {focus.factoryName || focus.factoryCode} · PI {focus.pi}
+      </b>
+      <Button
+        size="small"
+        onClick={() => {
+          setFocus(undefined);
+          setSegment((current) => ({ ...current, page: 1 }));
+        }}
+      >
+        {t('acquire.showAll')}
+      </Button>
+    </div>
+  );
+  const stepTable = (step: AcquireStep) => {
+    const list = rows.filter((row) => BigInt(acquireQuantity(row, step)) > 0n);
+    const selection = list.filter((row) => picked[step].includes(acquireRowKey(row)));
+    const quantity = selection
+      .reduce((sum, row) => sum + BigInt(acquireQuantity(row, step)), 0n)
+      .toString();
+    return (
+      <>
+        <Table<AcquireSummary>
+          rowKey={acquireRowKey}
+          size="small"
+          data-testid={`acquire-${step}`}
+          dataSource={list}
           loading={summary.isFetching}
-          scroll={{ x: 1000 }}
-          pagination={{
-            current: page,
-            pageSize: 10,
-            total: paginationTotal(summary.data?.total),
-            showSizeChanger: false,
-            onChange: setPage,
+          pagination={false}
+          locale={{
+            emptyText: t(step === 'TO_ACQUIRE' ? 'acquire.emptyAcquire' : 'acquire.emptyPrint'),
           }}
-          locale={{ emptyText: t('snAcquire.emptyPis') }}
+          rowSelection={
+            canAct(step)
+              ? {
+                  selectedRowKeys: picked[step],
+                  columnWidth: 40,
+                  onChange: (keys) =>
+                    setPicked((current) => ({ ...current, [step]: keys.map(String) })),
+                  getCheckboxProps: () => ({ disabled: actions.busy }),
+                }
+              : undefined
+          }
           columns={[
-            { title: t('snPages.common.factory'), dataIndex: 'factoryCode' },
             {
               title: 'PI',
-              render: (_, row) => (
-                <Button
-                  type="link"
-                  onClick={() => {
-                    setPi(row.pi!);
-                    setFilter((f) => ({ ...f, pi: row.pi! }));
-                    setSegmentPage(1);
-                  }}
-                >
-                  {row.pi}
-                </Button>
-              ),
+              dataIndex: 'pi',
+              width: '29%',
+              render: (value: string) => <b>{value}</b>,
             },
-            { title: t('snPages.common.customer'), dataIndex: 'customer' },
             {
-              title: t('snAcquire.status.TO_ACQUIRE'),
+              title: t('common.factory'),
+              width: '19%',
+              render: (_, row) => row.factoryName || row.factoryCode,
+            },
+            { title: t('common.customer'), dataIndex: 'customer' },
+            {
+              title: t(`status.${step}`),
+              width: 100,
+              align: 'right',
+              render: (_, row) => <b>{acquireQuantity(row, step)}</b>,
+            },
+            {
+              title: t('status.APPLYING'),
+              width: 90,
+              align: 'right',
               render: (_, row) => (
-                <Space>
-                  <span>{row.toAcquire}</span>
-                  {profile.permissions.includes('sn:acquire:take') && !filter.piAll && (
-                    <Popconfirm
-                      title={t('snAcquire.takeConfirm', {
-                        factory: row.factoryCode,
-                        pi: row.pi,
-                        n: row.toAcquire,
-                      })}
-                      okText={t('users.confirm')}
-                      cancelText={t('snPages.common.cancel')}
-                      onConfirm={() =>
-                        take.begin({
-                          operationId: crypto.randomUUID(),
-                          factoryId: row.factoryId!,
-                          pi: row.pi!,
-                        })
-                      }
-                    >
-                      <Button
-                        type="primary"
-                        size="small"
-                        disabled={!actable || row.toAcquire === '0'}
-                      >
-                        {t('snAcquire.take')}
-                      </Button>
-                    </Popconfirm>
-                  )}
-                </Space>
+                <span className={row.applying === '0' ? 'sn-muted' : 'sn-acquire-warn'}>
+                  {row.applying}
+                </span>
               ),
             },
             {
-              title: t('snAcquire.status.TO_PRINT'),
+              title: t('common.actions'),
+              width: 170,
+              align: 'center',
               render: (_, row) => (
-                <Space>
-                  <span>{row.toPrint}</span>
-                  {profile.permissions.includes('sn:print:execute') && !filter.piAll && (
-                    <Popconfirm
-                      title={t('snAcquire.printConfirm', {
-                        factory: row.factoryCode,
-                        pi: row.pi,
-                        n: row.toPrint,
-                      })}
-                      okText={t('users.confirm')}
-                      cancelText={t('snPages.common.cancel')}
-                      onConfirm={() => {
-                        setTab('prints');
-                        print.begin({
-                          operationId: crypto.randomUUID(),
-                          factoryId: row.factoryId!,
-                          pi: row.pi!,
-                        });
-                      }}
+                <>
+                  {canAct(step) && (
+                    <Button
+                      size="small"
+                      type="primary"
+                      className={step === 'TO_PRINT' ? 'sn-acquire-print' : undefined}
+                      loading={actions.active === `${step}:${acquireRowKey(row)}`}
+                      disabled={actions.busy && actions.active !== `${step}:${acquireRowKey(row)}`}
+                      onClick={() => confirm(step, [row], false)}
                     >
-                      <Button size="small" disabled={!actable || row.toPrint === '0'}>
-                        {t('snAcquire.print')}
-                      </Button>
-                    </Popconfirm>
+                      {t(step === 'TO_ACQUIRE' ? 'acquire.take' : 'acquire.print')}
+                    </Button>
                   )}
-                </Space>
+                  <Button
+                    type="link"
+                    onClick={() => {
+                      setFocus(row);
+                      setTab('segments');
+                      setSegment((current) => ({ ...current, page: 1 }));
+                    }}
+                  >
+                    {t('acquire.segments')}
+                  </Button>
+                </>
               ),
             },
-            { title: t('snAcquire.status.APPLYING'), dataIndex: 'applying' },
           ]}
         />
-        <SnOperation work={take} />
-        {result.data && (
-          <Alert
-            type="success"
-            title={t('snAcquire.result', {
-              eligible: result.data.eligible,
-              blocked: result.data.blocked,
-            })}
-            description={
-              <Button onClick={() => setDetails(true)}>{t('snAcquire.resultItems')}</Button>
-            }
-          />
+        {canAct(step) && list.length > 0 && (
+          <div className="sn-acquire-bulk">
+            <span>{t('acquire.picked', { n: selection.length, q: quantity })}</span>
+            <Button
+              size="small"
+              type="primary"
+              className={step === 'TO_PRINT' ? 'sn-acquire-print' : undefined}
+              disabled={!selection.length || actions.busy}
+              loading={actions.active === `bulk:${step}`}
+              onClick={() => confirm(step, selection, true)}
+            >
+              {t(step === 'TO_ACQUIRE' ? 'acquire.bulkTake' : 'acquire.bulkPrint')}
+            </Button>
+            <span className="sn-muted">{t('acquire.bulkNote')}</span>
+          </div>
         )}
-        <ApiErrorAlert error={result.error} />
-        <SnOperation work={print} />
-      </div>
-      <div className="sn-section">
-        <Typography.Title level={4}>{t('snAcquire.segments')}</Typography.Title>
-        <Space wrap>
-          <Select
-            aria-label={t('snAcquire.materialMode')}
-            value={materialMode}
-            onChange={(v) => {
-              setMaterialMode(v);
-              setSegmentPage(1);
-            }}
-            options={['ALL', 'EMPTY', 'VALUE'].map((value) => ({
-              value,
-              label: t('snAcquire.materialModes.' + value),
-            }))}
-          />
-          {materialMode === 'VALUE' && (
-            <Input
-              aria-label={t('snPages.common.material')}
-              value={material}
-              onChange={(e) => {
-                setMaterial(e.target.value);
-                setSegmentPage(1);
-              }}
+        {step === 'TO_ACQUIRE' && <p className="sn-muted sn-acquire-rule">{t('acquire.rule')}</p>}
+      </>
+    );
+  };
+  return (
+    <section className="sn-page sn-acquire-page">
+      {modalHolder}
+      {actions.holder}
+      <SnPageHead title={t('acquire.title')} description={t('acquire.desc')} />
+      <div className="sn-surface sn-acquire-filters">
+        <div className="sn-toolbar">
+          {bound ? (
+            <Tag color="warning">{bound.name || bound.code}</Tag>
+          ) : (
+            <FactoryPicker
+              profile={profile}
+              value={draft.factoryId}
+              placeholder={t('acquire.allFactories')}
+              onChange={(factoryId) => reload({ ...draft, factoryId })}
             />
           )}
-          <Select
-            aria-label={t('snPages.common.status')}
-            value={status}
-            onChange={(v) => {
-              setStatus(v);
-              setSegmentPage(1);
+          <Input
+            placeholder="PI"
+            aria-label="PI"
+            allowClear
+            value={draft.pi}
+            onChange={(event) => {
+              const next = { ...draft, pi: event.target.value };
+              setDraft(next);
+              if (!next.pi) reload(next);
             }}
-            options={['', 'TO_ACQUIRE', 'TO_PRINT', 'APPLYING'].map((value) => ({
-              value,
-              label: value ? t('snAcquire.status.' + value) : t('snPages.common.all'),
-            }))}
+            onPressEnter={() => reload()}
           />
-        </Space>
-        <ApiErrorAlert error={segments.error} />
-        <Table
-          rowKey={(r) => [r.factoryId, r.pi, r.material, r.status, r.seqPi, r.groupId].join(':')}
-          data-testid="acquire-segments"
-          dataSource={segments.data?.items}
-          loading={segments.isFetching}
-          scroll={{ x: 1150 }}
-          pagination={{
-            current: segmentPage,
-            pageSize: 20,
-            total: paginationTotal(segments.data?.total),
-            showSizeChanger: false,
-            onChange: setSegmentPage,
-          }}
-          columns={[
-            { title: t('snPages.common.factory'), dataIndex: 'factoryCode' },
-            { title: 'PI', dataIndex: 'pi' },
-            {
-              title: t('snPages.common.material'),
-              dataIndex: 'material',
-              render: (v: string) => v || t('snPages.orders.noMaterial'),
-            },
-            {
-              title: t('snPages.common.status'),
-              dataIndex: 'status',
-              render: (v: string) => t('snAcquire.status.' + v),
-            },
-            {
-              title: t('snAcquire.range'),
-              render: (_, row) => (
-                <span className="sn-mono">
-                  {row.startSn} ~ {row.endSn}
+          {isFactory && (
+            <label className="sn-acquire-pi-all">
+              <Switch
+                aria-label={t('acquire.piAll')}
+                checked={draft.piAll}
+                disabled={!draft.pi.trim()}
+                onChange={(piAll) => reload({ ...draft, piAll })}
+              />
+              <span>{t('acquire.piAll')}</span>
+            </label>
+          )}
+          <Button type="primary" onClick={() => reload()}>
+            {t('common.search')}
+          </Button>
+          {!filter.piAll && (
+            <span className="sn-muted sn-acquire-summary">
+              {t('acquire.summary', {
+                n: rows.length,
+                a: totals.acquire.toString(),
+                p: totals.print.toString(),
+              })}
+              {totals.applying > 0n && (
+                <span className="sn-acquire-warn">
+                  {' '}
+                  · {t('acquire.summaryApplying', { x: totals.applying.toString() })}
                 </span>
-              ),
-            },
-            {
-              title: t('snAcquire.decRange'),
-              render: (_, row) => (
-                <span className="sn-mono">
-                  {row.startSeq ?? '—'} ~ {row.endSeq ?? '—'}
-                </span>
-              ),
-            },
-            { title: t('snPages.common.qty'), dataIndex: 'quantity' },
-            { title: t('snAcquire.seqOwner'), dataIndex: 'seqPi' },
-          ]}
-        />
+              )}
+            </span>
+          )}
+        </div>
+        {(context.data?.role === 'query' || filter.piAll) && (
+          <Alert
+            type="info"
+            showIcon
+            title={t(
+              context.data?.role === 'query' ? 'acquire.queryReadOnly' : 'acquire.piAllReadOnly',
+            )}
+          />
+        )}
       </div>
-      <div className="sn-section">
+      <ApiErrorAlert error={summary.error ?? context.error} />
+      <div className="sn-surface">
         <Tabs
           activeKey={tab}
-          onChange={setTab}
+          onChange={(key) => {
+            setTab(key);
+            setSegment((current) => ({ ...current, page: 1 }));
+            setRevision((value) => value + 1);
+          }}
           items={[
+            ...(!filter.piAll
+              ? STEPS.map((step) => ({
+                  key: step,
+                  label: (
+                    <>
+                      {t(`status.${step}`)}
+                      <span className="sn-acquire-count">
+                        {rows.filter((row) => BigInt(acquireQuantity(row, step)) > 0n).length}
+                      </span>
+                    </>
+                  ),
+                  children: stepTable(step),
+                }))
+              : []),
             {
               key: 'batches',
-              label: t('snAcquire.batches'),
+              label: t('acquire.batches'),
               children: (
-                <AcquireBatches
-                  key={JSON.stringify(filter)}
-                  profile={profile}
-                  factoryId={filter.factoryId}
-                  pi={filter.pi}
-                />
+                <>
+                  {focusBar}
+                  <AcquireBatches
+                    key={JSON.stringify([scope, revision])}
+                    profile={profile}
+                    factoryId={scope.factoryId}
+                    pi={scope.pi}
+                  />
+                </>
               ),
             },
             {
               key: 'prints',
-              label: t('snAcquire.prints'),
+              label: t('acquire.prints'),
               children: (
-                <AcquirePrints
-                  key={JSON.stringify(filter)}
-                  profile={profile}
-                  factoryId={filter.factoryId}
-                  pi={filter.pi}
-                />
+                <>
+                  {focusBar}
+                  <AcquirePrints
+                    key={JSON.stringify([scope, revision])}
+                    profile={profile}
+                    factoryId={scope.factoryId}
+                    pi={scope.pi}
+                  />
+                </>
+              ),
+            },
+            {
+              key: 'segments',
+              label: t('acquire.segments'),
+              children: (
+                <>
+                  {focusBar}
+                  <div className="sn-acquire-seg-bar">
+                    <Radio.Group
+                      size="small"
+                      optionType="button"
+                      value={segment.status}
+                      onChange={(event) =>
+                        setSegment((current) => ({
+                          ...current,
+                          status: String(event.target.value),
+                          page: 1,
+                        }))
+                      }
+                      options={['', 'TO_ACQUIRE', 'TO_PRINT', 'APPLYING'].map((value) => ({
+                        value,
+                        label: value ? t(`status.${value}`) : t('common.all'),
+                      }))}
+                    />
+                    <Input
+                      size="small"
+                      placeholder={t('common.material')}
+                      aria-label={t('common.material')}
+                      allowClear
+                      value={material}
+                      onChange={(event) => {
+                        setMaterial(event.target.value);
+                        if (!event.target.value)
+                          setSegment((current) => ({ ...current, material: '', page: 1 }));
+                      }}
+                      onPressEnter={() =>
+                        setSegment((current) => ({
+                          ...current,
+                          material: material.trim(),
+                          page: 1,
+                        }))
+                      }
+                    />
+                    <span className="sn-muted">{t('acquire.segmentsHint')}</span>
+                  </div>
+                  <ApiErrorAlert error={segments.error} />
+                  <Table
+                    rowKey={(row) =>
+                      [
+                        row.factoryId,
+                        row.pi,
+                        row.material,
+                        row.status,
+                        row.seqPi,
+                        row.groupId,
+                      ].join(':')
+                    }
+                    size="small"
+                    data-testid="acquire-segments"
+                    dataSource={segments.data?.items}
+                    loading={segments.isFetching}
+                    locale={{ emptyText: t('common.empty') }}
+                    pagination={{
+                      current: segment.page,
+                      pageSize: segment.size,
+                      total: paginationTotal(segments.data?.total),
+                      showSizeChanger: true,
+                      pageSizeOptions: [20, 50, 100],
+                      onChange: (page, size) =>
+                        setSegment((current) => ({
+                          ...current,
+                          page: current.size === size ? page : 1,
+                          size,
+                        })),
+                    }}
+                    columns={[
+                      {
+                        title: t('common.factory'),
+                        width: 120,
+                        render: (_, row) => nameOf(row.factoryCode),
+                      },
+                      { title: 'PI', dataIndex: 'pi' },
+                      {
+                        title: t('common.material'),
+                        dataIndex: 'material',
+                        render: (value: string) => value || t('orders.noMaterial'),
+                      },
+                      {
+                        title: t('common.status'),
+                        dataIndex: 'status',
+                        render: (value: string) => (
+                          <Tag
+                            color={
+                              value === 'TO_ACQUIRE'
+                                ? 'blue'
+                                : value === 'TO_PRINT'
+                                  ? 'warning'
+                                  : value === 'APPLYING'
+                                    ? 'error'
+                                    : 'success'
+                            }
+                          >
+                            {t(`status.${value}`)}
+                          </Tag>
+                        ),
+                      },
+                      {
+                        title: t('acquire.range'),
+                        render: (_, row) => (
+                          <span className="sn-mono">
+                            {row.startSn} ~ {row.endSn}
+                          </span>
+                        ),
+                      },
+                      {
+                        title: t('acquire.decRange'),
+                        render: (_, row) => (
+                          <span className="sn-mono">
+                            {row.startSeq ?? '—'} ~ {row.endSeq ?? '—'}
+                          </span>
+                        ),
+                      },
+                      { title: t('common.qty'), dataIndex: 'quantity', align: 'right' },
+                      { title: t('acquire.seqOwner'), dataIndex: 'seqPi' },
+                    ]}
+                  />
+                </>
               ),
             },
           ]}
         />
       </div>
-      {details && take.task.data && (
-        <AcquireDetails
-          key={take.task.data.taskId}
-          profile={profile}
-          id={take.task.data.taskId}
-          result
-          onClose={() => setDetails(false)}
+      {(actions.take.task.isError || actions.take.mutation.isError) && (
+        <SnOperation work={actions.take} />
+      )}
+      {(actions.print.task.isError || actions.print.mutation.isError) && (
+        <SnOperation work={actions.print} />
+      )}
+      {actions.completion.isError && (
+        <Alert
+          type="warning"
+          showIcon
+          title={common('export.unknown')}
+          action={
+            <Button
+              onClick={() =>
+                actions.completion.variables &&
+                actions.completion.mutate(actions.completion.variables)
+              }
+            >
+              {common('export.check')}
+            </Button>
+          }
         />
       )}
-    </div>
+      {actions.exceptions.map((result) => (
+        <Alert
+          key={result.taskId}
+          type="warning"
+          showIcon
+          title={`${result.pi} · ${common('snAcquire.result', { eligible: result.eligible, blocked: result.blocked })}`}
+          action={
+            <Button onClick={() => setResultId(result.taskId)}>
+              {common('snAcquire.resultItems')}
+            </Button>
+          }
+        />
+      ))}
+      {resultId && (
+        <AcquireDetails
+          key={resultId}
+          profile={profile}
+          id={resultId}
+          result
+          onClose={() => setResultId(undefined)}
+        />
+      )}
+    </section>
   );
 }

@@ -1,0 +1,299 @@
+{
+  "page": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 390,
+      "height": 960,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "padding": "0px",
+      "background": "rgb(241, 244, 249)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "display": "grid"
+    }
+  ],
+  "hero": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0,
+      "color": "rgb(226, 232, 240)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "padding": "115.2px 31.2px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "display": "none"
+    }
+  ],
+  "panel": [
+    {
+      "x": 19.5,
+      "y": 296.3125,
+      "width": 351,
+      "height": 367.375,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "padding": "28px 28px 20px",
+      "background": "rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "borderRadius": "12px",
+      "display": "block"
+    }
+  ],
+  "top": [
+    {
+      "x": 48.5,
+      "y": 325.3125,
+      "width": 293,
+      "height": 29,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "display": "flex"
+    }
+  ],
+  "title": [
+    {
+      "x": 48.5,
+      "y": 325.3125,
+      "width": 106.28125,
+      "height": 29,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "20px",
+      "fontWeight": "700",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "display": "block"
+    }
+  ],
+  "labels": [
+    {
+      "x": 48.5,
+      "y": 366.3125,
+      "width": 86.4375,
+      "height": 22,
+      "color": "rgb(96, 98, 102)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "22px",
+      "letterSpacing": "normal",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "display": "block"
+    },
+    {
+      "x": 48.5,
+      "y": 454.3125,
+      "width": 60.03125,
+      "height": 22,
+      "color": "rgb(96, 98, 102)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "22px",
+      "letterSpacing": "normal",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "display": "block"
+    }
+  ],
+  "fields": [
+    {
+      "x": 48.5,
+      "y": 396.3125,
+      "width": 293,
+      "height": 40,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "40px",
+      "letterSpacing": "normal",
+      "padding": "1px 15px",
+      "background": "rgb(255, 255, 255)",
+      "boxShadow": "rgb(220, 223, 230) 0px 0px 0px 1px inset",
+      "borderRadius": "8px",
+      "display": "flex"
+    },
+    {
+      "x": 48.5,
+      "y": 484.3125,
+      "width": 293,
+      "height": 40,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "40px",
+      "letterSpacing": "normal",
+      "padding": "1px 15px",
+      "background": "rgb(255, 255, 255)",
+      "boxShadow": "rgb(220, 223, 230) 0px 0px 0px 1px inset",
+      "borderRadius": "8px",
+      "display": "flex"
+    }
+  ],
+  "inputs": [
+    {
+      "x": 85.5,
+      "y": 397.3125,
+      "width": 241,
+      "height": 38,
+      "color": "rgb(96, 98, 102)",
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "38px",
+      "letterSpacing": "normal",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "display": "block"
+    },
+    {
+      "x": 85.5,
+      "y": 485.3125,
+      "width": 241,
+      "height": 38,
+      "color": "rgb(96, 98, 102)",
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "38px",
+      "letterSpacing": "normal",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "display": "block"
+    }
+  ],
+  "prefixes": [
+    {
+      "x": 63.5,
+      "y": 409.3125,
+      "width": 14,
+      "height": 14,
+      "color": "rgb(168, 171, 178)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "38px",
+      "letterSpacing": "normal",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "display": "flex"
+    },
+    {
+      "x": 63.5,
+      "y": 497.3125,
+      "width": 14,
+      "height": 14,
+      "color": "rgb(168, 171, 178)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "38px",
+      "letterSpacing": "normal",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "display": "flex"
+    }
+  ],
+  "eye": [],
+  "button": [
+    {
+      "x": 48.5,
+      "y": 548.3125,
+      "width": 293,
+      "height": 40,
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "Arial",
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "lineHeight": "14px",
+      "letterSpacing": "normal",
+      "padding": "12px 19px",
+      "background": "rgb(30, 74, 138)",
+      "boxShadow": "none",
+      "borderRadius": "8px",
+      "display": "inline-flex"
+    }
+  ],
+  "note": [
+    {
+      "x": 48.5,
+      "y": 604.3125,
+      "width": 293,
+      "height": 38.375,
+      "color": "rgb(100, 116, 139)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "lineHeight": "19.2px",
+      "letterSpacing": "normal",
+      "padding": "0px",
+      "background": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "display": "block"
+    }
+  ],
+  "language": [
+    {
+      "x": 223.5,
+      "y": 327.8125,
+      "width": 118,
+      "height": 24,
+      "color": "rgb(15, 23, 42)",
+      "fontFamily": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "lineHeight": "20px",
+      "letterSpacing": "normal",
+      "padding": "2px 8px",
+      "background": "rgb(255, 255, 255)",
+      "boxShadow": "rgb(220, 223, 230) 0px 0px 0px 1px inset",
+      "borderRadius": "8px",
+      "display": "flex"
+    }
+  ]
+}

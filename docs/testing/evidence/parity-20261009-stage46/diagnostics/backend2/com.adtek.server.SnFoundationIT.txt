@@ -1,0 +1,189 @@
+-------------------------------------------------------------------------------
+Test set: com.adtek.server.SnFoundationIT
+-------------------------------------------------------------------------------
+Tests run: 33, Failures: 23, Errors: 0, Skipped: 0, Time elapsed: 73.59 s <<< FAILURE! -- in com.adtek.server.SnFoundationIT
+com.adtek.server.SnFoundationIT.organizationCatalogFiltersDisabledEmptyAndDuplicateNamesWithoutRequiringIdentity -- Time elapsed: 0.782 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"6e8128b6-355c-49d7-9941-f1cb4f6aaca6"}] 
+expected: 200
+ but was: 500
+	at com.adtek.server.SnFoundationIT.data(SnFoundationIT.java:148)
+	at com.adtek.server.SnFoundationIT.organizationCatalogFiltersDisabledEmptyAndDuplicateNamesWithoutRequiringIdentity(SnFoundationIT.java:422)
+
+com.adtek.server.SnFoundationIT.dueScheduleHasOneWinnerAndPublishesFullSnapshotAndLastResult -- Time elapsed: 1.217 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: "SUCCESS"
+ but was: "FAILED"
+	at com.adtek.server.SnFoundationIT.dueScheduleHasOneWinnerAndPublishesFullSnapshotAndLastResult(SnFoundationIT.java:1240)
+
+com.adtek.server.SnFoundationIT.sourceOrganizationChangeToUnmappedClearsPreviousFactoryScope -- Time elapsed: 0.848 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"478a6552-5504-40c4-ba7b-a3dcf18a5a51"}] 
+expected: 200
+ but was: 500
+	at com.adtek.server.SnFoundationIT.data(SnFoundationIT.java:148)
+	at com.adtek.server.SnFoundationIT.sourceOrganizationChangeToUnmappedClearsPreviousFactoryScope(SnFoundationIT.java:795)
+
+com.adtek.server.SnFoundationIT.factoryCreateMatchesBinaryCaseUnicodeLengthAndTrim -- Time elapsed: 0.768 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"4fe72e93-6553-4c55-b79c-02b091050b2a"}] 
+expected: 200
+ but was: 500
+	at com.adtek.server.SnFoundationIT.factoryCreateMatchesBinaryCaseUnicodeLengthAndTrim(SnFoundationIT.java:251)
+
+com.adtek.server.SnFoundationIT.pendingOrderAndPiPagesIncludeUnallocatedHistoryAndExcludeFinishedBills -- Time elapsed: 0.844 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"cad02ea4-3e7e-4a1f-9ff3-f78bb514d1e4"}] 
+expected: 200
+ but was: 500
+	at com.adtek.server.SnFoundationIT.data(SnFoundationIT.java:148)
+	at com.adtek.server.SnFoundationIT.pendingOrderAndPiPagesIncludeUnallocatedHistoryAndExcludeFinishedBills(SnFoundationIT.java:1072)
+
+com.adtek.server.SnFoundationIT.stableEntryLedgerSurvivesReorderRemovalAndEmptySnapshotWithoutMovingQuota -- Time elapsed: 0.854 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"c2477637-f54f-47ef-8135-eef1aca70b62"}] 
+expected: 200
+ but was: 500
+	at com.adtek.server.SnFoundationIT.data(SnFoundationIT.java:148)
+	at com.adtek.server.SnFoundationIT.stableEntryLedgerSurvivesReorderRemovalAndEmptySnapshotWithoutMovingQuota(SnFoundationIT.java:471)
+
+com.adtek.server.SnFoundationIT.singleBillNotFoundIsLegalEmptyButOtherViewFailuresPreserveSnapshot -- Time elapsed: 0.928 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"34eee503-d006-47f0-a4c1-c9d9ca183a94"}] 
+expected: 200
+ but was: 500
+	at com.adtek.server.SnFoundationIT.data(SnFoundationIT.java:148)
+	at com.adtek.server.SnFoundationIT.singleBillNotFoundIsLegalEmptyButOtherViewFailuresPreserveSnapshot(SnFoundationIT.java:601)
+
+com.adtek.server.SnFoundationIT.fractionalPlansAreStoredExactlyEvenWhenTheirSumIsAnInteger -- Time elapsed: 0.756 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"db88baae-09a3-4b3c-b16e-34f973307f1d"}] 
+expected: 200
+ but was: 500
+	at com.adtek.server.SnFoundationIT.data(SnFoundationIT.java:148)
+	at com.adtek.server.SnFoundationIT.fractionalPlansAreStoredExactlyEvenWhenTheirSumIsAnInteger(SnFoundationIT.java:1041)
+
+com.adtek.server.SnFoundationIT.userFactoryAssignmentIsAtomicScopedAndRevokesPreviousSession -- Time elapsed: 0.911 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"b0dc506b-a441-4f7b-899e-8135a3fb0af2"}] 
+expected: 200
+ but was: 500
+	at com.adtek.server.SnFoundationIT.data(SnFoundationIT.java:148)
+	at com.adtek.server.SnFoundationIT.userFactoryAssignmentIsAtomicScopedAndRevokesPreviousSession(SnFoundationIT.java:831)
+
+com.adtek.server.SnFoundationIT.piAggregationIncludesVisibleOrdersOnlyAndUsesWholeBillQuota -- Time elapsed: 0.949 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"117bbee7-ad95-453d-9df8-5ae58f7bab4c"}] 
+expected: 200
+ but was: 500
+	at com.adtek.server.SnFoundationIT.data(SnFoundationIT.java:148)
+	at com.adtek.server.SnFoundationIT.piAggregationIncludesVisibleOrdersOnlyAndUsesWholeBillQuota(SnFoundationIT.java:1114)
+
+com.adtek.server.SnFoundationIT.directoryIdentityChangesReprojectOnlyCurrentOrdersBySnapshotName -- Time elapsed: 0.877 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"4e189382-a39d-440c-a24e-3a418802338a"}] 
+expected: 200
+ but was: 500
+	at com.adtek.server.SnFoundationIT.data(SnFoundationIT.java:148)
+	at com.adtek.server.SnFoundationIT.directoryIdentityChangesReprojectOnlyCurrentOrdersBySnapshotName(SnFoundationIT.java:319)
+
+com.adtek.server.SnFoundationIT.completePagingPreservesOldOrderColumnsEmptyMaterialSameMaterialAndExactIds -- Time elapsed: 0.817 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"5ce3edb5-c584-406b-9cdf-12fcacefdd0f"}] 
+expected: 200
+ but was: 500
+	at com.adtek.server.SnFoundationIT.data(SnFoundationIT.java:148)
+	at com.adtek.server.SnFoundationIT.completePagingPreservesOldOrderColumnsEmptyMaterialSameMaterialAndExactIds(SnFoundationIT.java:445)
+
+com.adtek.server.SnFoundationIT.explicitBindingSurvivesNameChangesAndAutoBindingCanBeUpgraded -- Time elapsed: 0.776 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"36678c75-a073-40dc-bb0d-bbb95657088b"}] 
+expected: 200
+ but was: 500
+	at com.adtek.server.SnFoundationIT.data(SnFoundationIT.java:148)
+	at com.adtek.server.SnFoundationIT.explicitBindingSurvivesNameChangesAndAutoBindingCanBeUpgraded(SnFoundationIT.java:381)
+
+com.adtek.server.SnFoundationIT.schedulePreservesLastResultDuringFetchAndRecoversFromQueryFailure -- Time elapsed: 1.049 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+Expecting value to be true but was false
+	at com.adtek.server.SnFoundationIT.schedulePreservesLastResultDuringFetchAndRecoversFromQueryFailure(SnFoundationIT.java:1270)
+
+com.adtek.server.SnFoundationIT.effectiveRuleInfersCustomerFromCurrentPiAsOriginalPage -- Time elapsed: 0.851 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"155a4d7b-f6ab-475f-8fdd-92eb1d9057b3"}] 
+expected: 200
+ but was: 500
+	at com.adtek.server.SnFoundationIT.data(SnFoundationIT.java:148)
+	at com.adtek.server.SnFoundationIT.effectiveRuleInfersCustomerFromCurrentPiAsOriginalPage(SnFoundationIT.java:951)
+
+com.adtek.server.SnFoundationIT.factorySyncUpdatesSameCodeManualAndPreservesSourceAndIdentity -- Time elapsed: 0.640 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"8bbf8f7a-b787-4f78-9503-2032a8a44a13"}] 
+expected: 200
+ but was: 500
+	at com.adtek.server.SnFoundationIT.data(SnFoundationIT.java:148)
+	at com.adtek.server.SnFoundationIT.factorySyncUpdatesSameCodeManualAndPreservesSourceAndIdentity(SnFoundationIT.java:275)
+
+com.adtek.server.SnFoundationIT.twoConcurrentFetchesCannotPublishOlderSnapshotOverNewerVersion -- Time elapsed: 1.011 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting actual:
+  [500, 500]
+to contain exactly in any order:
+  [200, 409]
+elements not found:
+  [200, 409]
+and elements not expected:
+  [500, 500]
+
+	at com.adtek.server.SnFoundationIT.twoConcurrentFetchesCannotPublishOlderSnapshotOverNewerVersion(SnFoundationIT.java:626)
+
+com.adtek.server.SnFoundationIT.duplicateIdentityAndResourceLimitNeverPublishPartialOrders -- Time elapsed: 0.803 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"481a0886-ca10-4281-818b-ecd380941f38"}] 
+expected: 200
+ but was: 500
+	at com.adtek.server.SnFoundationIT.data(SnFoundationIT.java:148)
+	at com.adtek.server.SnFoundationIT.duplicateIdentityAndResourceLimitNeverPublishPartialOrders(SnFoundationIT.java:965)
+
+com.adtek.server.SnFoundationIT.factoryScopeProtectsOrdersWhileSyncMetadataIsSharedAndExplicitFilterCannotExpandIt -- Time elapsed: 0.904 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"1ef51121-db1f-49f4-8316-5dbb6aadf666"}] 
+expected: 200
+ but was: 500
+	at com.adtek.server.SnFoundationIT.data(SnFoundationIT.java:148)
+	at com.adtek.server.SnFoundationIT.factoryScopeProtectsOrdersWhileSyncMetadataIsSharedAndExplicitFilterCannotExpandIt(SnFoundationIT.java:520)
+
+com.adtek.server.SnFoundationIT.manualFactoryNameResolvesOrdersAndExplicitMappingRemainsAvailable -- Time elapsed: 0.561 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"a290ffc0-fd8f-4c98-afc2-1599565d17af"}] 
+expected: 200
+ but was: 500
+	at com.adtek.server.SnFoundationIT.data(SnFoundationIT.java:148)
+	at com.adtek.server.SnFoundationIT.manualFactoryNameResolvesOrdersAndExplicitMappingRemainsAvailable(SnFoundationIT.java:205)
+
+com.adtek.server.SnFoundationIT.laterPageFailureAndInvalidStableIdentityOrExcessPrecisionKeepPreviousVersion -- Time elapsed: 0.822 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"ee832240-1304-4157-8c3a-6f6cddc71a9b"}] 
+expected: 200
+ but was: 500
+	at com.adtek.server.SnFoundationIT.data(SnFoundationIT.java:148)
+	at com.adtek.server.SnFoundationIT.laterPageFailureAndInvalidStableIdentityOrExcessPrecisionKeepPreviousVersion(SnFoundationIT.java:576)
+
+com.adtek.server.SnFoundationIT.materialSearchAggregatesMatchingLinesButDetailsStayComplete -- Time elapsed: 0.811 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[{"code":1000000002,"message":"common.internalError","data":null,"params":{},"traceId":"1ecf1b2d-b48e-49d4-80b5-e3ea91d35983"}] 
+expected: 200
+ but was: 500
+	at com.adtek.server.SnFoundationIT.data(SnFoundationIT.java:148)
+	at com.adtek.server.SnFoundationIT.materialSearchAggregatesMatchingLinesButDetailsStayComplete(SnFoundationIT.java:1142)
+
+com.adtek.server.SnFoundationIT.expiredRunIsRecoveredAndLateWorkerCannotPublishOrOverwriteReplacementResult -- Time elapsed: 1.329 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: "SUCCESS"
+ but was: "FAILED"
+	at com.adtek.server.SnFoundationIT.expiredRunIsRecoveredAndLateWorkerCannotPublishOrOverwriteReplacementResult(SnFoundationIT.java:1360)
+

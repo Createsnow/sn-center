@@ -1,0 +1,6 @@
+
+> adtek-platform-sn-web@0.1.0 api:generate D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> openapi-typescript openapi/adtek-sn.json -o src/api/generated/schema.d.ts
+
+✨ openapi-typescript 7.13.0
+🚀 openapi/adtek-sn.json → src/api/generated/schema.d.ts [181.7ms]

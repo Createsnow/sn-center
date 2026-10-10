@@ -1,0 +1,20 @@
+[
+  {
+    "state": "FAILED",
+    "error_code": 1004000015,
+    "error_params": "{\"pi\": \"CMP-UI-INIT-NONE\", \"sn\": \"UNPARSED\", \"reason\": \"PI_IMPORT_DUP_EXISTING\"}",
+    "processed": 1000
+  },
+  {
+    "state": "FAILED",
+    "error_code": 1004000015,
+    "error_params": "{\"pi\": \"CMP-UI-INIT-NONE\", \"sn\": \"UNPARSED\", \"reason\": \"PI_IMPORT_DUP_EXISTING\"}",
+    "processed": 1000
+  },
+  {
+    "state": "FAILED",
+    "error_code": 1004000015,
+    "error_params": "{\"pi\": \"CMP-UI-INIT-NONE\", \"sn\": \"UNPARSED\", \"reason\": \"PI_IMPORT_DUP_EXISTING\"}",
+    "processed": 1000
+  }
+]

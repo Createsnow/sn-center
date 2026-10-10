@@ -1,0 +1,22 @@
+{
+  "before": {
+    "x": 631.0234375,
+    "y": 16,
+    "width": 177.953125,
+    "height": 40,
+    "color": "rgb(15, 23, 42)",
+    "background": "rgb(240, 249, 235)",
+    "text": "Password changed",
+    "opacity": 1
+  },
+  "after": {
+    "x": 631.0234375,
+    "y": 16,
+    "width": 177.953125,
+    "height": 40,
+    "color": "rgb(15, 23, 42)",
+    "background": "rgb(240, 249, 235)",
+    "text": "Password changed",
+    "opacity": 1
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "writes": [
+    {
+      "route": "/api/v1/sn/users",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/users",
+      "status": 400
+    },
+    {
+      "route": "/api/v1/sn/users",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/users",
+      "status": 409
+    },
+    {
+      "route": "/api/v1/sn/users/168/update",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/users/168/update",
+      "status": 200
+    },
+    {
+      "route": "/api/v1/sn/users/168/password",
+      "status": 409
+    }
+  ],
+  "pageErrors": []
+}

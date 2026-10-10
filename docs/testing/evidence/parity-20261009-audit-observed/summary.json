@@ -1,0 +1,18 @@
+{
+  "goalComplete": false,
+  "parityVerified": false,
+  "observationOnly": true,
+  "screenshots": 4,
+  "sourceRowsPerPage": 20,
+  "migrationRowsPerPage": 50,
+  "sourceDetail": "inline expansion",
+  "migrationDetail": "modal",
+  "sourceHashes": {
+    "../sn-center-python/frontend/src/views/Audit.vue": "ea22539933cd43c03c309a76adcf1e3079cdfe722b0a3553a7224ec8d2d7be99",
+    "frontend/src/features/sn/pages/SnAuditPage.tsx": "78d55bc1be96e29c08baf82a0660b4f78b66f87c8292b26f4aed733fff0e461c",
+    "frontend/src/api/snAudit.ts": "a7349bc47447dad444368c8ef3f35420996164582130e3ebd1d2755d2d324615",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/controller/SnAuditController.java": "0879df28df33319631a0365651abcf990a56402ced740e59f1e578f014e18c37",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnAuditServiceImpl.java": "a338abf452af34e262ba858ca6e0f86ddf72157bdb757ed055f134ffa1012558",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/SnAuditMapper.java": "2ee49d18cdc1bea897054ec68b4bc26c2835896fb696db71f311bac55f42f11b"
+  }
+}

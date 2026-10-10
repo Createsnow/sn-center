@@ -97,7 +97,8 @@ public final class JwtTokenCodec {
                         .notBefore(now)
                         .expiresAt(expiresAt)
                         .claim("sid", sessionId)
-                        .claim("sv", Long.toString(actor.securityVersion()))
+                        // 保留 sv 声明名称以兼容既有令牌；V38 将旧安全版本复制为凭据版本。
+                        .claim("sv", Long.toString(actor.credentialVersion()))
                         .claim("pt", actor.principalType())
                         .build();
         String value =

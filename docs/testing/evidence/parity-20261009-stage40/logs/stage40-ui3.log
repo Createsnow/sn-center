@@ -1,0 +1,42 @@
+
+Running 1 test using 1 worker
+
+(node:38064) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\account-editor.spec.ts:88:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages (33.9s)
+
+
+  1) [prototype] › e2e\parity\account-editor.spec.ts:88:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages 
+
+    TimeoutError: locator.click: Timeout 15000ms exceeded.
+    Call log:
+      - waiting for getByRole('dialog').locator('.el-dialog__headerbtn')
+        - locator resolved to <button type="button" aria-label="关闭此对话框" class="el-dialog__headerbtn">…</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not stable
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not stable
+        - retrying click action
+          - waiting 100ms
+        29 × waiting for element to be visible, enabled and stable
+           - element is not visible
+         - retrying click action
+           - waiting 500ms
+
+
+      254 |     if (!page.isClosed()) {
+      255 |       if (await dialog.isVisible())
+    > 256 |         await dialog.locator(source(info) ? '.el-dialog__headerbtn' : '.ant-modal-close').click();
+          |                                                                                           ^
+      257 |       const language = page.locator(
+      258 |         source(info) ? '.header .lang' : '.prototype-language .ant-select',
+      259 |       );
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\account-editor.spec.ts:256:91
+
+    Error Context: test-results\stage40-source3\account-editor-P13-account-41ce0--cancel-and-three-languages-prototype\error-context.md
+
+  1 failed
+    [prototype] › e2e\parity\account-editor.spec.ts:88:1 › P13 account editor: real create/edit, ordered validation, roles, cancel and three languages 

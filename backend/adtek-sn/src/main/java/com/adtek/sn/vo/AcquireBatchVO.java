@@ -4,6 +4,8 @@ package com.adtek.sn.vo;
 @io.swagger.v3.oas.annotations.media.Schema(
         requiredProperties = {
             "id",
+            "batchNo",
+            "actorName",
             "factoryId",
             "factoryCode",
             "factoryName",
@@ -16,6 +18,8 @@ package com.adtek.sn.vo;
         })
 public record AcquireBatchVO(
         String id,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String batchNo,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String actorName,
         String factoryId,
         String factoryCode,
         String factoryName,

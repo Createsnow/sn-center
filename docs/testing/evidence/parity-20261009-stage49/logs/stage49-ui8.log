@@ -1,0 +1,29 @@
+
+Running 2 tests using 1 worker
+
+(node:43944) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\order-boundaries.spec.ts:14:1 › P05 boundaries: Unicode blank bill, three-language validation and schedule owner handover (41.0s)
+(node:22592) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [migration] › e2e\parity\order-boundaries.spec.ts:14:1 › P05 boundaries: Unicode blank bill, three-language validation and schedule owner handover (27.4s)
+
+
+  1) [migration] › e2e\parity\order-boundaries.spec.ts:14:1 › P05 boundaries: Unicode blank bill, three-language validation and schedule owner handover 
+
+    TimeoutError: page.waitForResponse: Timeout 15000ms exceeded while waiting for event "response"
+
+      258 |       const sizeSuffix = locale === 'zh-CN' ? '条/页' : locale === 'en' ? '/page' : '/trang';
+      259 |       for (const size of [100, 20]) {
+    > 260 |         const changed = page.waitForResponse((r) => {
+          |                              ^
+      261 |           const address = new URL(r.url());
+      262 |           return (
+      263 |             r.request().method() === 'GET' &&
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-boundaries.spec.ts:260:30
+
+    Error Context: test-results\stage49-ui8\order-boundaries-P05-bound-0fcda-and-schedule-owner-handover-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\order-boundaries.spec.ts:14:1 › P05 boundaries: Unicode blank bill, three-language validation and schedule owner handover 
+  1 passed (1.2m)

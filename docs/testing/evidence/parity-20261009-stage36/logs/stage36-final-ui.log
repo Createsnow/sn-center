@@ -1,0 +1,25 @@
+
+Running 8 tests using 1 worker
+
+(node:42740) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\audit-auth.spec.ts:180:1 › P12 real anonymous login failure appears in audit and downloaded file (2.8s)
+  ok 2 [prototype] › e2e\parity\audit-auth.spec.ts:200:1 › P12 real known login password rejection change and disabled account facts (7.8s)
+  ok 3 [prototype] › e2e\parity\audit-auth.spec.ts:331:1 › P12 real fifth failed login and subsequent lock retain exact audit facts (4.0s)
+  ok 4 [prototype] › e2e\parity\login-layout.spec.ts:90:1 › P02 login layout: three languages, four widths, focus, reveal and empty submission (5.2s)
+(node:15196) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok 5 [migration] › e2e\parity\audit-auth.spec.ts:180:1 › P12 real anonymous login failure appears in audit and downloaded file (11.9s)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok 6 [migration] › e2e\parity\audit-auth.spec.ts:200:1 › P12 real known login password rejection change and disabled account facts (49.5s)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok 7 [migration] › e2e\parity\audit-auth.spec.ts:331:1 › P12 real fifth failed login and subsequent lock retain exact audit facts (56.9s)
+  ok 8 [migration] › e2e\parity\login-layout.spec.ts:90:1 › P02 login layout: three languages, four widths, focus, reveal and empty submission (5.8s)
+
+  8 passed (2.4m)

@@ -1,0 +1,68 @@
+{
+  "pi": "CMP-LOOP-20261009530009",
+  "bill": "CMP-LOOP-MO-20261009530009",
+  "sns": [
+    "L2026100953000900001",
+    "L2026100953000900002",
+    "L2026100953000900003"
+  ],
+  "files": [
+    {
+      "name": "06-first-print.xlsx",
+      "sns": [
+        "L2026100953000900001",
+        "L2026100953000900002",
+        "L2026100953000900003"
+      ]
+    }
+  ],
+  "facts": [
+    {
+      "stage": "05-allocated",
+      "observed": [
+        {
+          "sn": "L2026100953000900001",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009530009",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100953000900002",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009530009",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100953000900003",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009530009",
+          "factory": "CMP-A"
+        }
+      ]
+    },
+    {
+      "stage": "07-printed",
+      "observed": [
+        {
+          "sn": "L2026100953000900003",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009530009",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100953000900002",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009530009",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100953000900001",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009530009",
+          "factory": "CMP-A"
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

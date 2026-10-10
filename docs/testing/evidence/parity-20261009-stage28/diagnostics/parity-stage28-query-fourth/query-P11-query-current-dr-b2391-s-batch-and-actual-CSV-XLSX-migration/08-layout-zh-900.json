@@ -1,0 +1,609 @@
+{
+  "head": [
+    {
+      "text": "SN 查询只读查询，不能在这里转走号。工厂默认只看已分给本厂的号，可切换为只读查看同一 PI 下已分到各个厂的号。导出 ExcelCSV",
+      "x": 84,
+      "y": 76,
+      "width": 796,
+      "height": 103.796875
+    }
+  ],
+  "surface": [
+    {
+      "text": "工厂状态查询完整 SN进制流水十进制流水PI物料编码客户编码工厂状态流水归属 PI来源订单批次号来源生成时间打印时间完整 SN进制流水十进制流水PI物料编码客户编码工厂状态流水归属 PI来源订单批次号来源生成时间打印时间Q28A000510005151CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000500005050CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000490004949CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000480004848CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000470004747CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000460004646CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000450004545CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000440004444CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000430004343CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000420004242CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000410004141CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000400004040CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000390003939CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000380003838CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000370003737CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000360003636CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000350003535CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000340003434CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000330003333CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000320003232CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34共 51 条12320 条/页",
+      "x": 84,
+      "y": 195.796875,
+      "width": 796,
+      "height": 1338
+    }
+  ],
+  "toolbar": [
+    {
+      "text": "工厂状态查询",
+      "x": 105,
+      "y": 212.796875,
+      "width": 754,
+      "height": 116
+    }
+  ],
+  "table": [
+    {
+      "text": "完整 SN进制流水十进制流水PI物料编码客户编码工厂状态流水归属 PI来源订单批次号来源生成时间打印时间完整 SN进制流水十进制流水PI物料编码客户编码工厂状态流水归属 PI来源订单批次号来源生成时间打印时间Q28A000510005151CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000500005050CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000490004949CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000480004848CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000470004747CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000460004646CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000450004545CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000440004444CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000430004343CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000420004242CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000410004141CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000400004040CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000390003939CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000380003838CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000370003737CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000360003636CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000350003535CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000340003434CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000330003333CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34Q28A000320003232CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34",
+      "x": 105,
+      "y": 340.796875,
+      "width": 754,
+      "height": 1132
+    }
+  ],
+  "foot": [
+    {
+      "text": "共 51 条12320 条/页",
+      "x": 105,
+      "y": 1484.796875,
+      "width": 754,
+      "height": 32
+    }
+  ],
+  "header": [
+    {
+      "text": "完整 SN",
+      "x": 105,
+      "y": 340.796875,
+      "width": 179.546875,
+      "height": 32
+    },
+    {
+      "text": "进制流水",
+      "x": 284.546875,
+      "y": 340.796875,
+      "width": 116.171875,
+      "height": 32
+    },
+    {
+      "text": "十进制流水",
+      "x": 400.71875,
+      "y": 340.796875,
+      "width": 105.609375,
+      "height": 32
+    },
+    {
+      "text": "PI",
+      "x": 506.328125,
+      "y": 340.796875,
+      "width": 158.421875,
+      "height": 32
+    },
+    {
+      "text": "物料编码",
+      "x": 664.75,
+      "y": 340.796875,
+      "width": 116.171875,
+      "height": 32
+    },
+    {
+      "text": "客户编码",
+      "x": 780.921875,
+      "y": 340.796875,
+      "width": 95.046875,
+      "height": 32
+    },
+    {
+      "text": "工厂",
+      "x": 875.96875,
+      "y": 340.796875,
+      "width": 116.171875,
+      "height": 32
+    },
+    {
+      "text": "状态",
+      "x": 992.140625,
+      "y": 340.796875,
+      "width": 95.046875,
+      "height": 32
+    },
+    {
+      "text": "流水归属 PI",
+      "x": 1087.1875,
+      "y": 340.796875,
+      "width": 158.421875,
+      "height": 32
+    },
+    {
+      "text": "来源订单",
+      "x": 1245.609375,
+      "y": 340.796875,
+      "width": 137.296875,
+      "height": 32
+    },
+    {
+      "text": "批次号",
+      "x": 1382.90625,
+      "y": 340.796875,
+      "width": 179.546875,
+      "height": 32
+    },
+    {
+      "text": "来源",
+      "x": 1562.453125,
+      "y": 340.796875,
+      "width": 84.484375,
+      "height": 32
+    },
+    {
+      "text": "生成时间",
+      "x": 1646.9375,
+      "y": 340.796875,
+      "width": 168.984375,
+      "height": 32
+    },
+    {
+      "text": "打印时间",
+      "x": 1815.921875,
+      "y": 340.796875,
+      "width": 169.078125,
+      "height": 32
+    }
+  ],
+  "row": [
+    {
+      "text": "Q28A000510005151CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34",
+      "x": 105,
+      "y": 372.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00051",
+        "00051",
+        "51",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待打印",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090527547764",
+        "生成",
+        "2026-10-09 05:27:34",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000500005050CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34",
+      "x": 105,
+      "y": 427.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00050",
+        "00050",
+        "50",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待打印",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090527547764",
+        "生成",
+        "2026-10-09 05:27:34",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000490004949CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34",
+      "x": 105,
+      "y": 482.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00049",
+        "00049",
+        "49",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待打印",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090527547764",
+        "生成",
+        "2026-10-09 05:27:34",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000480004848CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34",
+      "x": 105,
+      "y": 537.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00048",
+        "00048",
+        "48",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待打印",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090527547764",
+        "生成",
+        "2026-10-09 05:27:34",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000470004747CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34",
+      "x": 105,
+      "y": 592.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00047",
+        "00047",
+        "47",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待打印",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090527547764",
+        "生成",
+        "2026-10-09 05:27:34",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000460004646CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34",
+      "x": 105,
+      "y": 647.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00046",
+        "00046",
+        "46",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待打印",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090527547764",
+        "生成",
+        "2026-10-09 05:27:34",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000450004545CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34",
+      "x": 105,
+      "y": 702.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00045",
+        "00045",
+        "45",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待打印",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090527547764",
+        "生成",
+        "2026-10-09 05:27:34",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000440004444CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34",
+      "x": 105,
+      "y": 757.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00044",
+        "00044",
+        "44",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待打印",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090527547764",
+        "生成",
+        "2026-10-09 05:27:34",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000430004343CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34",
+      "x": 105,
+      "y": 812.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00043",
+        "00043",
+        "43",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待打印",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090527547764",
+        "生成",
+        "2026-10-09 05:27:34",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000420004242CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34",
+      "x": 105,
+      "y": 867.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00042",
+        "00042",
+        "42",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待打印",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090527547764",
+        "生成",
+        "2026-10-09 05:27:34",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000410004141CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34",
+      "x": 105,
+      "y": 922.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00041",
+        "00041",
+        "41",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待打印",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090527547764",
+        "生成",
+        "2026-10-09 05:27:34",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000400004040CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34",
+      "x": 105,
+      "y": 977.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00040",
+        "00040",
+        "40",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待打印",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090527547764",
+        "生成",
+        "2026-10-09 05:27:34",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000390003939CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34",
+      "x": 105,
+      "y": 1032.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00039",
+        "00039",
+        "39",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待打印",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090527547764",
+        "生成",
+        "2026-10-09 05:27:34",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000380003838CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34",
+      "x": 105,
+      "y": 1087.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00038",
+        "00038",
+        "38",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待打印",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090527547764",
+        "生成",
+        "2026-10-09 05:27:34",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000370003737CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34",
+      "x": 105,
+      "y": 1142.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00037",
+        "00037",
+        "37",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待打印",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090527547764",
+        "生成",
+        "2026-10-09 05:27:34",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000360003636CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34",
+      "x": 105,
+      "y": 1197.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00036",
+        "00036",
+        "36",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待打印",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090527547764",
+        "生成",
+        "2026-10-09 05:27:34",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000350003535CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34",
+      "x": 105,
+      "y": 1252.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00035",
+        "00035",
+        "35",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待打印",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090527547764",
+        "生成",
+        "2026-10-09 05:27:34",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000340003434CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34",
+      "x": 105,
+      "y": 1307.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00034",
+        "00034",
+        "34",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待打印",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090527547764",
+        "生成",
+        "2026-10-09 05:27:34",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000330003333CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34",
+      "x": 105,
+      "y": 1362.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00033",
+        "00033",
+        "33",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待打印",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090527547764",
+        "生成",
+        "2026-10-09 05:27:34",
+        ""
+      ]
+    },
+    {
+      "text": "Q28A000320003232CMP-UI-QUERY-PI-ACMP-QUERY-MAT-ACMP-QUERY-CUSTOMER比较测试甲厂待打印CMP-UI-QUERY-PI-ACMP-UI-QUERY-MO-AB202610090527547764生成2026-10-09 05:27:34",
+      "x": 105,
+      "y": 1417.796875,
+      "width": 1880,
+      "height": 55,
+      "cells": [
+        "Q28A00032",
+        "00032",
+        "32",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-QUERY-MAT-A",
+        "CMP-QUERY-CUSTOMER",
+        "比较测试甲厂",
+        "待打印",
+        "CMP-UI-QUERY-PI-A",
+        "CMP-UI-QUERY-MO-A",
+        "B202610090527547764",
+        "生成",
+        "2026-10-09 05:27:34",
+        ""
+      ]
+    }
+  ]
+}

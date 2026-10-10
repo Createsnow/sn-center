@@ -1,0 +1,13 @@
+
+Running 2 tests using 1 worker
+
+(node:27800) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ok 1 [prototype] › e2e\parity\business-loop.spec.ts:11:1 › P15 complete UI business loop from order sync and rule creation to transferred reprint and audit (16.4s)
+(node:47608) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ok 2 [migration] › e2e\parity\business-loop.spec.ts:11:1 › P15 complete UI business loop from order sync and rule creation to transferred reprint and audit (18.7s)
+
+  2 passed (38.0s)

@@ -1,0 +1,65 @@
+{
+  "kind": "python",
+  "items": [
+    {
+      "sn": "G0600001",
+      "seq_dec": 1,
+      "status": "PENDING_ALLOC",
+      "material": "M1"
+    },
+    {
+      "sn": "G0600002",
+      "seq_dec": 2,
+      "status": "PENDING_ALLOC",
+      "material": "M1"
+    },
+    {
+      "sn": "G0600003",
+      "seq_dec": 3,
+      "status": "PENDING_ALLOC",
+      "material": "M1"
+    },
+    {
+      "sn": "G0600004",
+      "seq_dec": 4,
+      "status": "PENDING_ALLOC",
+      "material": "M1"
+    },
+    {
+      "sn": "G0600005",
+      "seq_dec": 5,
+      "status": "PENDING_ALLOC",
+      "material": "M1"
+    },
+    {
+      "sn": "G0600006",
+      "seq_dec": 6,
+      "status": "PENDING_ALLOC",
+      "material": "M2"
+    },
+    {
+      "sn": "G0600007",
+      "seq_dec": 7,
+      "status": "PENDING_ALLOC",
+      "material": "M2"
+    },
+    {
+      "sn": "G0600008",
+      "seq_dec": 8,
+      "status": "PENDING_ALLOC",
+      "material": "M1"
+    },
+    {
+      "sn": "G0600009",
+      "seq_dec": 9,
+      "status": "PENDING_ALLOC",
+      "material": "M1"
+    },
+    {
+      "sn": "G0600010",
+      "seq_dec": 10,
+      "status": "PENDING_ALLOC",
+      "material": "M1"
+    }
+  ]
+}

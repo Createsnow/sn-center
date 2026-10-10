@@ -1,0 +1,50 @@
+{
+  "locale": "en",
+  "injectedFailures": 2,
+  "successfulPrintCommands": 2,
+  "downloadError": "Download failed (HTTP 503)",
+  "confirm": "OK",
+  "cancel": "Cancel",
+  "noticeElapsedMs": 3825,
+  "noCloseButton": true,
+  "noPersistentAlert": true,
+  "retryLeavesBusinessUnchanged": true,
+  "detailHeaders": [
+    "Full SN",
+    "Encoded serial",
+    "Decimal serial",
+    "Material",
+    "Status",
+    "PI"
+  ],
+  "detailViewport": {
+    "width": 900,
+    "height": 900
+  },
+  "drawer": {
+    "x": 140,
+    "y": 0,
+    "width": 760,
+    "height": 900
+  },
+  "appearance": {
+    "tag": {
+      "color": "rgb(63, 125, 90)",
+      "background": "rgb(240, 249, 235)",
+      "width": 57.28125,
+      "height": 20
+    },
+    "close": {
+      "color": "rgb(48, 49, 51)",
+      "background": "rgba(0, 0, 0, 0)",
+      "width": 32,
+      "height": 22
+    },
+    "mask": {
+      "color": "rgb(15, 23, 42)",
+      "background": "rgba(0, 0, 0, 0.5)",
+      "width": 900,
+      "height": 900
+    }
+  }
+}

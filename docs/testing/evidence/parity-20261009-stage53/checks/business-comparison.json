@@ -1,0 +1,130 @@
+{
+  "scope": "Administrator, three newly generated SN, all business writes through UI, dedicated local a48 databases and synthetic K3. No API generation or seeded SN. No claim of complete audit detail equality.",
+  "statePairs": [
+    {
+      "stage": "05-allocated",
+      "members": [
+        {
+          "sn": "L2026100953001400001",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009530014",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100953001400002",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009530014",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100953001400003",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009530014",
+          "factory": "CMP-A"
+        }
+      ]
+    },
+    {
+      "stage": "07-printed",
+      "members": [
+        {
+          "sn": "L2026100953001400001",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009530014",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100953001400002",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009530014",
+          "factory": "CMP-A"
+        },
+        {
+          "sn": "L2026100953001400003",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009530014",
+          "factory": "CMP-A"
+        }
+      ]
+    },
+    {
+      "stage": "08-transferred",
+      "members": [
+        {
+          "sn": "L2026100953001400001",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009530014",
+          "factory": "CMP-B"
+        },
+        {
+          "sn": "L2026100953001400002",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009530014",
+          "factory": "CMP-B"
+        },
+        {
+          "sn": "L2026100953001400003",
+          "status": "TO_ACQUIRE",
+          "pi": "CMP-LOOP-20261009530014",
+          "factory": "CMP-B"
+        }
+      ]
+    },
+    {
+      "stage": "10-reprinted",
+      "members": [
+        {
+          "sn": "L2026100953001400001",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009530014",
+          "factory": "CMP-B"
+        },
+        {
+          "sn": "L2026100953001400002",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009530014",
+          "factory": "CMP-B"
+        },
+        {
+          "sn": "L2026100953001400003",
+          "status": "PRINTED",
+          "pi": "CMP-LOOP-20261009530014",
+          "factory": "CMP-B"
+        }
+      ]
+    }
+  ],
+  "filePairs": [
+    {
+      "name": "06-first-print.xlsx",
+      "dataRows": 3,
+      "columns": 11,
+      "matchingBusinessColumns": 10,
+      "distinctBatchNumbersExpected": true
+    },
+    {
+      "name": "09-second-print.xlsx",
+      "dataRows": 3,
+      "columns": 11,
+      "matchingBusinessColumns": 10,
+      "distinctBatchNumbersExpected": true
+    }
+  ],
+  "auditActions": {
+    "prototype": {
+      "SN_PRINT": 2,
+      "SN_ACQUIRE": 2,
+      "TRANSFER_DIRECT": 1,
+      "SN_ALLOCATE": 1,
+      "SN_GENERATE": 1
+    },
+    "migration": {
+      "SN_PRINT": 2,
+      "SN_ACQUIRE": 2,
+      "TRANSFER_DIRECT": 1,
+      "SN_ALLOCATE": 1,
+      "SN_GENERATE": 1
+    }
+  },
+  "uiCheckpointsPerSystem": 11
+}

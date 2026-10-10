@@ -25,7 +25,7 @@ import java.util.concurrent.Flow;
 /**
  * K3旧协议的严格只读适配：LoginByAppSecret/ExecuteBillQuery/View。
  * 字段映射增加FID、FTreeEntity_FEntryId、FPrdOrgId/FNumber；组织内码直接取FPrdOrgId，已通过目标账套只读核验。
- * 没有稳定字段即拒绝，不以显示行号推测；计划小数完整保留，由SN用例阻止生成。原始ERP错误/凭据不返回或日志记录。
+ * 没有稳定字段即拒绝，不以显示行号推测；计划小数完整保留。仅返回经过长度与秘密检查的业务错误摘要，不记录原报文。
  */
 @Component
 public class K3ProductionOrderAdapter implements ErpProductionOrderPort {
@@ -119,26 +119,36 @@ public class K3ProductionOrderAdapter implements ErpProductionOrderPort {
         try (var call = new Call()) {
             call.login();
             List<Organization> out = new ArrayList<>();
-            Set<String> ids = new HashSet<>(), codes = new HashSet<>();
+            Set<String> names = new HashSet<>();
             for (var row :
                     pages(
                             call,
                             "ORG_Organizations",
                             "FOrgID,FNumber,FName,FForbidStatus",
                             "FForbidStatus='A'",
-                            "FOrgID ASC")) {
-                if (!row.isArray() || row.size() != 4) throw invalid();
-                if (!text(row.get(3), 1, true).equals("A")) throw invalid();
-                var org =
-                        new Organization(
-                                identity(row.get(0)),
-                                text(row.get(1), 64, true),
-                                name(row.get(2), 128, true));
-                if (!ids.add(org.id()) || !codes.add(org.code())) throw invalid();
+                            "FNumber")) {
+                if (!row.isArray() || row.size() < 3) continue;
+                String status = row.size() > 3 ? directoryText(row.get(3)) : "A";
+                String code = directoryText(row.get(1));
+                String label = directoryText(row.get(2));
+                if (code.isEmpty()
+                        || label.isEmpty()
+                        || !status.equalsIgnoreCase("A")
+                        || !names.add(label)) continue;
+                // 原型目录不要求内码；缺失或非法内码不能用于显式绑定，仍可按编码维护工厂。
+                String id = directoryText(row.get(0));
+                if (!id.matches("[1-9][0-9]{0,63}")) id = null;
+                var org = new Organization(id, code, label);
                 out.add(org);
             }
             return List.copyOf(out);
         }
+    }
+
+    private static String directoryText(JsonNode node) {
+        if (node == null || node.isNull()) return "";
+        return com.adtek.sn.service.support.FactoryText.trim(
+                (node.isObject() || node.isArray()) ? name(node, 128, false) : node.asString());
     }
 
     private List<JsonNode> pages(
@@ -164,7 +174,10 @@ public class K3ProductionOrderAdapter implements ErpProductionOrderPort {
             var body =
                     call.post(QUERY, invoke(json.writeValueAsString(data)), config.querySeconds());
             rejectQueryFailure(body);
-            if (!body.isArray() || body.size() > config.pageSize()) throw invalid();
+            if (!body.isArray())
+                throw new BusinessException(
+                        K3_QUERY_REJECTED, Map.of("message", "unexpected response"));
+            if (body.size() > config.pageSize()) throw invalid();
             for (var row : body) {
                 rejectQueryFailure(row);
                 if (!row.isArray()) throw invalid();
@@ -176,12 +189,50 @@ public class K3ProductionOrderAdapter implements ErpProductionOrderPort {
         throw new BusinessException(K3_RESOURCE_LIMIT);
     }
 
-    /** 旧K3可直接返回错误对象，也可用数组包装；任何失败均中止整次读取，错误原文不外传。 */
-    private static void rejectQueryFailure(JsonNode body) {
+    /** 旧K3可直接返回错误对象，也可用数组包装；任何失败均中止整次读取。 */
+    private void rejectQueryFailure(JsonNode body) {
         while (body.isArray() && !body.isEmpty()) body = body.get(0);
         var response = body.path("Result").path("ResponseStatus").path("IsSuccess");
-        if (response.isBoolean() && !response.asBoolean())
-            throw new BusinessException(K3_QUERY_REJECTED);
+        if (response.isBoolean() && !response.asBoolean()) throw queryFailure(body);
+    }
+
+    private BusinessException queryFailure(JsonNode body) {
+        List<String> messages = new ArrayList<>();
+        var errors = body.path("Result").path("ResponseStatus").path("Errors");
+        if (errors.isArray())
+            for (var error : errors)
+                if (error.has("Message") && !error.path("Message").isNull())
+                    messages.add(errorText(error.get("Message")));
+        return new BusinessException(
+                K3_QUERY_REJECTED,
+                Map.of(
+                        "message",
+                        safeMessage(
+                                String.join("; ", messages), messages.isEmpty() ? "查询失败" : "")));
+    }
+
+    /** 原型错误字段允许数字和布尔摘要，各片段先按Python空白规则去除首尾空白。 */
+    private static String errorText(JsonNode value) {
+        if (value == null || value.isNull()) return "";
+        return com.adtek.sn.service.support.FactoryText.trim(value.asString(""));
+    }
+
+    /** 业务拒绝允许展示摘要；包含凭据字段或当前连接秘密的整段内容回退，不截出部分秘密。 */
+    private String safeMessage(String raw, String fallback) {
+        String value = com.adtek.sn.service.support.FactoryText.trim(raw);
+        if (value.isEmpty()
+                || java.util.regex.Pattern.compile(
+                                "password|passwd|secret|token|credential|authorization|密钥|密码|凭据|令牌",
+                                java.util.regex.Pattern.CASE_INSENSITIVE)
+                        .matcher(value)
+                        .find()) return fallback;
+        for (String secret :
+                List.of(config.appSecret(), config.appId(), config.account(), config.username()))
+            if (!blank(secret) && value.contains(secret)) return fallback;
+        value = value.replaceAll("[\\p{Cntrl}]", " ");
+        return value.codePointCount(0, value.length()) <= 500
+                ? value
+                : value.substring(0, value.offsetByCodePoints(0, 500));
     }
 
     private void view(Call call, String billNo, List<Row> rows) {
@@ -193,14 +244,22 @@ public class K3ProductionOrderAdapter implements ErpProductionOrderPort {
                         config.querySeconds());
         var result = body.path("Result");
         var response = result.path("ResponseStatus");
-        if (!response.path("IsSuccess").isBoolean()) throw invalid();
-        if (!response.path("IsSuccess").asBoolean()) {
-            if (response.path("MsgCode").isIntegralNumber()
-                    && response.path("MsgCode").asInt() == 10) return;
-            throw new BusinessException(K3_QUERY_REJECTED);
+        if (!response.path("IsSuccess").isBoolean() || !response.path("IsSuccess").asBoolean()) {
+            if (legacyNumber(response.path("MsgCode"), 10)) return;
+            var failure =
+                    response.path("IsSuccess").isBoolean()
+                            ? queryFailure(body)
+                            : new BusinessException(
+                                    K3_QUERY_REJECTED, Map.of("message", "View failed"));
+            if (failure.getParams().getOrDefault("message", "").isEmpty())
+                throw new BusinessException(K3_QUERY_REJECTED, Map.of("message", "View failed"));
+            throw failure;
         }
         var doc = result.path("Result");
-        if (!doc.isObject() || !doc.path("TreeEntity").isArray()) throw invalid();
+        // 原型将成功但无分录的View视为该单退出计划；有实际分录时仍校验来源稳定身份。
+        if (!doc.isObject()
+                || !doc.path("TreeEntity").isArray()
+                || doc.path("TreeEntity").isEmpty()) return;
         String returned = text(doc.get("BillNo"), 64, true);
         if (!billNo.equals(returned)) throw invalid();
         String bill = identity(doc.get("Id"));
@@ -255,6 +314,14 @@ public class K3ProductionOrderAdapter implements ErpProductionOrderPort {
 
     private static boolean blank(String value) {
         return value == null || value.isBlank();
+    }
+
+    /** 对齐原型对正数协议状态执行int()；用区间比较避免巨大指数转换为无界整数。 */
+    private static boolean legacyNumber(JsonNode value, int expected) {
+        if (!value.isNumber()) return false;
+        var number = new BigDecimal(value.asString());
+        return number.compareTo(BigDecimal.valueOf(expected)) >= 0
+                && number.compareTo(BigDecimal.valueOf(expected + 1)) < 0;
     }
 
     private static BusinessException invalid() {
@@ -351,13 +418,18 @@ public class K3ProductionOrderAdapter implements ErpProductionOrderPort {
                                     config.appSecret(),
                                     config.lcid()),
                             config.loginSeconds());
-            if (!body.path("LoginResultType").isIntegralNumber()) throw invalid();
-            if (body.path("LoginResultType").asInt() != 1)
-                throw new BusinessException(K3_LOGIN_REJECTED);
+            if (!legacyNumber(body.path("LoginResultType"), 1))
+                throw new BusinessException(
+                        K3_LOGIN_REJECTED,
+                        Map.of(
+                                "message",
+                                safeMessage(
+                                        errorText(body.path("Message")), "LoginResultType != 1")));
             // 与旧httpx相同的Version=0 Cookie；Java默认Version=1会添加引号，目标K3无法识别其会话。
             var sid = body.get("KDSVCSessionId");
             if (sid != null && !sid.isNull()) {
-                String value = text(sid, 4096, true);
+                String value = text(sid, 4096, false);
+                if (value.isEmpty()) return;
                 var cookie = new HttpCookie("kdservice-sessionid", value);
                 cookie.setVersion(0);
                 cookie.setPath("/");
@@ -383,16 +455,16 @@ public class K3ProductionOrderAdapter implements ErpProductionOrderPort {
                 var response = future.get(timeout, TimeUnit.NANOSECONDS);
                 if (response.statusCode() != 200)
                     throw new BusinessException(
-                            service.equals(LOGIN)
-                                            && Set.of(401, 403).contains(response.statusCode())
-                                    ? K3_LOGIN_REJECTED
-                                    : K3_UNAVAILABLE);
+                            service.equals(LOGIN) ? K3_LOGIN_REJECTED : K3_QUERY_REJECTED,
+                            Map.of("message", "HTTP " + response.statusCode()));
                 try {
                     var reader =
                             json.reader().with(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
                     JsonNode body = reader.readTree(response.body());
                     if (body == null) throw invalid();
-                    if (body.isString()) body = reader.readTree(body.asString());
+                    if (body.isString()
+                            && (body.asString().startsWith("[") || body.asString().startsWith("{")))
+                        body = reader.readTree(body.asString());
                     if (body == null) throw invalid();
                     return body;
                 } catch (BusinessException e) {

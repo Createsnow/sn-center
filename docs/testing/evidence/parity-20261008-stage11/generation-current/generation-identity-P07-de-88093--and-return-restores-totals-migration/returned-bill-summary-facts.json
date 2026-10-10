@@ -1,0 +1,49 @@
+{
+  "items": [
+    {
+      "sn": "IDA00001",
+      "pi": "CMP-UI-ID-PI-A",
+      "source_pi": "CMP-UI-ID-PI-A",
+      "seq_dec": 1,
+      "customer": "CMP-ID-CUSTOMER-A",
+      "status": "TO_ACQUIRE",
+      "factory_code": "CMP-A"
+    },
+    {
+      "sn": "IDA00002",
+      "pi": "CMP-UI-ID-PI-A",
+      "source_pi": "CMP-UI-ID-PI-A",
+      "seq_dec": 2,
+      "customer": "CMP-ID-CUSTOMER-A",
+      "status": "PENDING_ALLOC",
+      "factory_code": null
+    },
+    {
+      "sn": "IDA00003",
+      "pi": "CMP-UI-ID-PI-A",
+      "source_pi": "CMP-UI-ID-PI-A",
+      "seq_dec": 3,
+      "customer": "CMP-ID-CUSTOMER-A",
+      "status": "PENDING_ALLOC",
+      "factory_code": null
+    }
+  ],
+  "allocations": [
+    {
+      "pi": "CMP-UI-ID-PI-A",
+      "customer": "CMP-ID-CUSTOMER-A",
+      "start_sn": "IDA00001",
+      "end_sn": "IDA00001",
+      "qty": 1,
+      "factory_code": "CMP-A"
+    }
+  ],
+  "ledger": [
+    {
+      "bill_no": "CMP-UI-ID-MO",
+      "pi": "CMP-UI-ID-PI-A",
+      "customer": "CMP-ID-CUSTOMER-A",
+      "factory_code": "CMP-A"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.adtek.server.SnAuditIT
+-------------------------------------------------------------------------------
+Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 116.5 s -- in com.adtek.server.SnAuditIT

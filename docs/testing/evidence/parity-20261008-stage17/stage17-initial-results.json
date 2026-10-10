@@ -1,0 +1,322 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.parity.config.ts",
+      "acquire-print.spec.ts",
+      "--output=test-results/stage17-acquire-initial"
+    ],
+    "configFile": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\playwright.parity.config.ts",
+    "rootDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage17-acquire-initial",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "prototype",
+        "name": "prototype",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/test-results/stage17-acquire-initial",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "migration",
+        "name": "migration",
+        "testDir": "D:/AdtekProjects/mf-sn-uniq-guard/adtek-platform-sn/frontend/e2e/parity",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/parity/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "acquire-print.spec.ts",
+      "file": "acquire-print.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P09 single take and print: cancel, focus, material filtering, automatic XLSX and stable reload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10607,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T14:39:32.523Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f16e7ea15ddbda844a2a-45e736b2faae966306ce",
+          "file": "acquire-print.spec.ts",
+          "line": 76,
+          "column": 1
+        },
+        {
+          "title": "P09 two-PI bulk take and print: independent requests, per-PI files and focus history",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "prototype",
+              "projectName": "prototype",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 180061,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts",
+                        "column": 14,
+                        "line": 62
+                      },
+                      "message": "Error: page.goto: Target page, context or browser has been closed\n\n  60 | }\n  61 | async function clean(page: Page, info: TestInfo) {\n> 62 |   await page.goto('/orders');\n     |              ^\n  63 |   await sync(page, false);\n  64 |   fixture(info, 'clean');\n  65 |   writeFileSync(info.outputPath('baseline-preserved.json'), readFileSync(resolve(`../tools/.runtime/comparison-20261008/acquire-clean-${kind(info)}.json`)));\n    at clean (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:62:14)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:148:21"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T14:39:43.576Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage17-acquire-initial\\acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype\\error-context.md"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f16e7ea15ddbda844a2a-ad9ba567217352153e15",
+          "file": "acquire-print.spec.ts",
+          "line": 120,
+          "column": 1
+        },
+        {
+          "title": "P09 single take and print: cancel, focus, material filtering, automatic XLSX and stable reload",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 330,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 66\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-A\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791001\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"2\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"11\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-A\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-A\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791001\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"1\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"12\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-A\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-B\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791002\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"2\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"11\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-B\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-B\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791002\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"1\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"12\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-B\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 66\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-A\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791001\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"2\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"11\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-A\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-A\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791001\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"1\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"12\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-A\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-B\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791002\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"2\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"11\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-B\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-B\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791002\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"1\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"12\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-B\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at setup (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:46:51)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:78:9",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts",
+                      "column": 51,
+                      "line": 46
+                    },
+                    "snippet": "  44 | }\n  45 | async function setup(page: Page, info: TestInfo) {\n> 46 |   expect(JSON.parse(readFileSync(extra, 'utf8'))).toEqual([]);\n     |                                                   ^\n  47 |   fixture(info, 'begin');\n  48 |   await page.goto('/login'); await paceComparisonLogin(page);\n  49 |   const password = readFileSync(resolve(`../deploy/.secrets/comparison-20261008/${kind(info)}-admin-password`), 'utf8').trim();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts",
+                        "column": 51,
+                        "line": 46
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 66\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-A\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791001\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"2\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"11\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-A\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-A\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791001\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"1\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"12\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-A\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-B\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791002\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"2\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"11\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-B\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-B\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791002\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"1\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"12\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-B\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  44 | }\n  45 | async function setup(page: Page, info: TestInfo) {\n> 46 |   expect(JSON.parse(readFileSync(extra, 'utf8'))).toEqual([]);\n     |                                                   ^\n  47 |   fixture(info, 'begin');\n  48 |   await page.goto('/login'); await paceComparisonLogin(page);\n  49 |   const password = readFileSync(resolve(`../deploy/.secrets/comparison-20261008/${kind(info)}-admin-password`), 'utf8').trim();\n    at setup (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:46:51)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:78:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T14:42:44.418Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage17-acquire-initial\\acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts",
+                    "column": 51,
+                    "line": 46
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f16e7ea15ddbda844a2a-6d8c0fdf9d8ea597a5d4",
+          "file": "acquire-print.spec.ts",
+          "line": 76,
+          "column": 1
+        },
+        {
+          "title": "P09 two-PI bulk take and print: independent requests, per-PI files and focus history",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "migration",
+              "projectName": "migration",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 312,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 66\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-A\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791001\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"2\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"11\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-A\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-A\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791001\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"1\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"12\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-A\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-B\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791002\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"2\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"11\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-B\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-B\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791002\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"1\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"12\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-B\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 66\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-A\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791001\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"2\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"11\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-A\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-A\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791001\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"1\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"12\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-A\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-B\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791002\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"2\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"11\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-B\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-B\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791002\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"1\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"12\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-B\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at setup (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:46:51)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:122:9",
+                    "location": {
+                      "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts",
+                      "column": 51,
+                      "line": 46
+                    },
+                    "snippet": "  44 | }\n  45 | async function setup(page: Page, info: TestInfo) {\n> 46 |   expect(JSON.parse(readFileSync(extra, 'utf8'))).toEqual([]);\n     |                                                   ^\n  47 |   fixture(info, 'begin');\n  48 |   await page.goto('/login'); await paceComparisonLogin(page);\n  49 |   const password = readFileSync(resolve(`../deploy/.secrets/comparison-20261008/${kind(info)}-admin-password`), 'utf8').trim();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts",
+                        "column": 51,
+                        "line": 46
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 66\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-A\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791001\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"2\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"11\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-A\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-A\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791001\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"1\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"12\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-A\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-B\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791002\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-0\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"2\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"11\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-B\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"FBillNo\": \"CMP-UI-ACQ-MO-B\",\u001b[39m\n\u001b[31m+     \"FID\": \"9007199254791002\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FName\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FMaterialId.FNumber\": \"CMP-ACQ-MAT-1\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId\": \"101\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FName\": \"比较测试甲厂\",\u001b[39m\n\u001b[31m+     \"FPrdOrgId.FNumber\": \"CMP-A\",\u001b[39m\n\u001b[31m+     \"FQty\": \"1\",\u001b[39m\n\u001b[31m+     \"FSaleOrderNo\": \"CMP-ACQ-SO\",\u001b[39m\n\u001b[31m+     \"FStatus\": \"1\",\u001b[39m\n\u001b[31m+     \"FTreeEntity_FEntryId\": \"12\",\u001b[39m\n\u001b[31m+     \"F_HX_PI\": \"CMP-UI-ACQ-PI-B\",\u001b[39m\n\u001b[31m+     \"F_HX_PO\": \"CMP-ACQ-PO\",\u001b[39m\n\u001b[31m+     \"F_ora_kh.FNumber\": \"CMP-ACQ-CUSTOMER\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  44 | }\n  45 | async function setup(page: Page, info: TestInfo) {\n> 46 |   expect(JSON.parse(readFileSync(extra, 'utf8'))).toEqual([]);\n     |                                                   ^\n  47 |   fixture(info, 'begin');\n  48 |   await page.goto('/login'); await paceComparisonLogin(page);\n  49 |   const password = readFileSync(resolve(`../deploy/.secrets/comparison-20261008/${kind(info)}-admin-password`), 'utf8').trim();\n    at setup (D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:46:51)\n    at D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts:122:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-08T14:42:53.129Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\test-results\\stage17-acquire-initial\\acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "D:\\AdtekProjects\\mf-sn-uniq-guard\\adtek-platform-sn\\frontend\\e2e\\parity\\acquire-print.spec.ts",
+                    "column": 51,
+                    "line": 46
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f16e7ea15ddbda844a2a-ace820c9802155c73f65",
+          "file": "acquire-print.spec.ts",
+          "line": 120,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-08T14:39:32.068Z",
+    "duration": 202198.208,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

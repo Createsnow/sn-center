@@ -1,0 +1,102 @@
+
+Running 4 tests using 1 worker
+
+(node:48304) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\order-focus.spec.ts:10:1 › P05 focus: schedule closing, unit text, keyboard steps and scroll restoration (19.9s)
+(node:47744) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Traceback (most recent call last):
+  File "D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-order-audit-fixture.py", line 30, in <module>
+    assert c.fetchone()["n"] == 0, "Use existing prepared fixture; never overwrite an account"
+           ^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Use existing prepared fixture; never overwrite an account
+  x  2 [prototype] › e2e\parity\order-interactions.spec.ts:12:1 › P05 interactions: overflow, line details, schedule limits and cancellation in three languages (550ms)
+(node:35160) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 [migration] › e2e\parity\order-focus.spec.ts:10:1 › P05 focus: schedule closing, unit text, keyboard steps and scroll restoration (34.6s)
+Traceback (most recent call last):
+  File "D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-order-audit-fixture.py", line 30, in <module>
+    assert c.fetchone()["n"] == 0, "Use existing prepared fixture; never overwrite an account"
+           ^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Use existing prepared fixture; never overwrite an account
+  x  4 [migration] › e2e\parity\order-interactions.spec.ts:12:1 › P05 interactions: overflow, line details, schedule limits and cancellation in three languages (481ms)
+
+
+  1) [prototype] › e2e\parity\order-focus.spec.ts:10:1 › P05 focus: schedule closing, unit text, keyboard steps and scroll restoration 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('dialog')
+    Expected: focused
+    Received: inactive
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('dialog') with timeout 15000ms
+      - waiting for getByRole('dialog')
+        33 × locator resolved to <div role="dialog" aria-modal="true" aria-label="定时全量同步设置" class="el-overlay-dialog" aria-describedby="el-id-8900-22">…</div>
+           - unexpected value "inactive"
+
+
+      111 |     await page.getByRole('button', { name: zh.orders.sched.settings, exact: true }).click();
+      112 |     await expect(page.getByRole('dialog')).toBeVisible();
+    > 113 |     await expect(page.getByRole('dialog')).toBeFocused();
+          |                                            ^
+      114 |   };
+      115 |   const close = async () => {
+      116 |     await page
+        at open (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-focus.spec.ts:113:44)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-focus.spec.ts:169:5
+
+    Error Context: test-results\stage52-ui3\order-focus-P05-focus-sche-1888b-teps-and-scroll-restoration-prototype\error-context.md
+
+  2) [prototype] › e2e\parity\order-interactions.spec.ts:12:1 › P05 interactions: overflow, line details, schedule limits and cancellation in three languages 
+
+    Error: Command failed: D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Scripts\python.exe -X utf8 D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-order-audit-fixture.py python prepare 20261009520003
+    Traceback (most recent call last):
+      File "D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-order-audit-fixture.py", line 30, in <module>
+        assert c.fetchone()["n"] == 0, "Use existing prepared fixture; never overwrite an account"
+               ^^^^^^^^^^^^^^^^^^^^^^
+    AssertionError: Use existing prepared fixture; never overwrite an account
+
+
+      21 |   const helper = (action: string) =>
+      22 |     JSON.parse(
+    > 23 |       execFileSync(
+         |       ^
+      24 |         resolve('../../sn-center-python/.venv/Scripts/python.exe'),
+      25 |         [
+      26 |           '-X',
+        at helper (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-interactions.spec.ts:23:7)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-interactions.spec.ts:36:3
+
+    Error Context: test-results\stage52-ui3\order-interactions-P05-int-971d6-ellation-in-three-languages-prototype\error-context.md
+
+  3) [migration] › e2e\parity\order-interactions.spec.ts:12:1 › P05 interactions: overflow, line details, schedule limits and cancellation in three languages 
+
+    Error: Command failed: D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Scripts\python.exe -X utf8 D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-order-audit-fixture.py java prepare 20261009520003
+    Traceback (most recent call last):
+      File "D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\tools\testing\parity-order-audit-fixture.py", line 30, in <module>
+        assert c.fetchone()["n"] == 0, "Use existing prepared fixture; never overwrite an account"
+               ^^^^^^^^^^^^^^^^^^^^^^
+    AssertionError: Use existing prepared fixture; never overwrite an account
+
+
+      21 |   const helper = (action: string) =>
+      22 |     JSON.parse(
+    > 23 |       execFileSync(
+         |       ^
+      24 |         resolve('../../sn-center-python/.venv/Scripts/python.exe'),
+      25 |         [
+      26 |           '-X',
+        at helper (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-interactions.spec.ts:23:7)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-interactions.spec.ts:36:3
+
+    Error Context: test-results\stage52-ui3\order-interactions-P05-int-971d6-ellation-in-three-languages-migration\error-context.md
+
+  3 failed
+    [prototype] › e2e\parity\order-focus.spec.ts:10:1 › P05 focus: schedule closing, unit text, keyboard steps and scroll restoration 
+    [prototype] › e2e\parity\order-interactions.spec.ts:12:1 › P05 interactions: overflow, line details, schedule limits and cancellation in three languages 
+    [migration] › e2e\parity\order-interactions.spec.ts:12:1 › P05 interactions: overflow, line details, schedule limits and cancellation in three languages 
+  1 passed (60.0s)

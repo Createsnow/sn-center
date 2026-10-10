@@ -22,7 +22,7 @@ public final class MaintenanceMapper {
                     + "result,factory_id,factory_code,factory_name,pi,to_factory_id,"
                     + "to_factory_code,to_pi,customer,material,bill_no,start_sn,end_sn,"
                     + "quantity,before_status,after_status,batch_id,operation_id,transfer_id,"
-                    + "reason,error_code,trace_id,detail";
+                    + "reason,error_code,trace_id,detail,detail_text,error_message";
 
     public record Partition(String name, LocalDate upper) {}
 
@@ -232,13 +232,32 @@ public final class MaintenanceMapper {
             try (var r = p.executeQuery()) {
                 int columns = r.getMetaData().getColumnCount();
                 while (r.next()) {
-                    for (int i = 1; i <= columns; i++) {
+                    for (int i = 1; i < columns - 1; i++) {
                         byte[] bytes = r.getBytes(i);
                         digest.update(
                                 ByteBuffer.allocate(4)
                                         .putInt(bytes == null ? -1 : bytes.length)
                                         .array());
                         if (bytes != null) digest.update(bytes);
+                    }
+                    // 旧行的新列为空时保留原摘要；新文本用不可能为字段长度的标记扩展帧。
+                    byte[] text = r.getBytes(columns - 1);
+                    if (text != null) {
+                        digest.update(
+                                ByteBuffer.allocate(8)
+                                        .putInt(Integer.MIN_VALUE)
+                                        .putInt(text.length)
+                                        .array());
+                        digest.update(text);
+                    }
+                    byte[] error = r.getBytes(columns);
+                    if (error != null) {
+                        digest.update(
+                                ByteBuffer.allocate(8)
+                                        .putInt(Integer.MIN_VALUE + 1)
+                                        .putInt(error.length)
+                                        .array());
+                        digest.update(error);
                     }
                     rows++;
                 }

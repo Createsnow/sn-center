@@ -12,6 +12,11 @@ import java.util.regex.Pattern;
 public class SnRequestAuditRoutes implements RequestAuditRoutes {
     private static final List<String> PATHS =
             List.of(
+                    "/context",
+                    "/users",
+                    "/users/{id}/update",
+                    "/users/{id}/status",
+                    "/users/{id}/password",
                     "/factories",
                     "/factories/sync",
                     "/factories/organizations",

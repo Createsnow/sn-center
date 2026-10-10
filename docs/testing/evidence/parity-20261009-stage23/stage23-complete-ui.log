@@ -1,0 +1,17 @@
+
+Running 8 tests using 1 worker
+
+(node:35156) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\acquire-print.spec.ts:576:1 › P09 transferred print: real factory round trip, current batch details and historical files (58.3s)
+  ok 2 [prototype] › e2e\parity\transfer-form.spec.ts:141:1 › P10 transfer form: automatic candidates, material scope, single SN and cancelled confirmation (9.7s)
+  ok 3 [prototype] › e2e\parity\transfer-form.spec.ts:225:1 › P10 transfer roles: bound factory and query accounts preserve inventory (8.9s)
+  ok 4 [prototype] › e2e\parity\transfer-lifecycle.spec.ts:337:1 › P10 applied transfers: withdraw, reject, approve and fixed 50-row detail pages (37.4s)
+(node:41272) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 5 [migration] › e2e\parity\acquire-print.spec.ts:576:1 › P09 transferred print: real factory round trip, current batch details and historical files (1.2m)
+  ok 6 [migration] › e2e\parity\transfer-form.spec.ts:141:1 › P10 transfer form: automatic candidates, material scope, single SN and cancelled confirmation (22.2s)
+  ok 7 [migration] › e2e\parity\transfer-form.spec.ts:225:1 › P10 transfer roles: bound factory and query accounts preserve inventory (37.0s)
+  ok 8 [migration] › e2e\parity\transfer-lifecycle.spec.ts:337:1 › P10 applied transfers: withdraw, reject, approve and fixed 50-row detail pages (1.2m)
+
+  8 passed (5.3m)

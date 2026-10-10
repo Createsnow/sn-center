@@ -1,0 +1,62 @@
+
+> adtek-platform-sn-web@0.1.0 build D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend
+> tsc --noEmit && vite build
+
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 3314 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                              1.31 kB │ gzip:   0.47 kB
+dist/assets/index-BxZ-HdTz.css              21.55 kB │ gzip:   5.03 kB
+dist/assets/snTime-9ttSLFII.js               0.23 kB │ gzip:   0.19 kB
+dist/assets/SnPageHead-B--uKZUQ.js           0.34 kB │ gzip:   0.22 kB
+dist/assets/syncErrorText-CLvP24hm.js        0.38 kB │ gzip:   0.26 kB
+dist/assets/PlusOutlined-DYLx7dDI.js         0.71 kB │ gzip:   0.48 kB
+dist/assets/rolldown-runtime-hePW80VL.js     0.71 kB │ gzip:   0.42 kB
+dist/assets/context-BOHn7zR5.js              0.80 kB │ gzip:   0.49 kB
+dist/assets/ActionButton-DO6igOE3.js         0.90 kB │ gzip:   0.56 kB
+dist/assets/useInfiniteQuery-Bkkgynmt.js     1.12 kB │ gzip:   0.47 kB
+dist/assets/FactoryPicker-Bi68ktpY.js        1.18 kB │ gzip:   0.71 kB
+dist/assets/ReloadOutlined-BVeZl2pD.js       1.26 kB │ gzip:   0.78 kB
+dist/assets/tasks-CJCv2Xvu.js                1.39 kB │ gzip:   0.63 kB
+dist/assets/style-D8Lr_I6C.js                1.97 kB │ gzip:   0.83 kB
+dist/assets/SnExportHistory-D6IBZXQC.js      1.99 kB │ gzip:   1.03 kB
+dist/assets/snQuery-B6zfXfjv.js              2.22 kB │ gzip:   1.10 kB
+dist/assets/auditLabels-DmFmDRYm.js          2.97 kB │ gzip:   1.09 kB
+dist/assets/snAcquire-RzMOLSZt.js            3.07 kB │ gzip:   1.33 kB
+dist/assets/snWork-By26w6G5.js               3.28 kB │ gzip:   1.32 kB
+dist/assets/useSnOperation-D_cpNcwE.js       3.38 kB │ gzip:   1.48 kB
+dist/assets/popconfirm-B0BIY_ur.js           3.55 kB │ gzip:   1.59 kB
+dist/assets/snInput-DmkrugM6.js              3.83 kB │ gzip:   1.72 kB
+dist/assets/FactoriesPage-BnG4fgyT.js        4.80 kB │ gzip:   1.85 kB
+dist/assets/PiInitPage-CVSnNt0s.js           5.03 kB │ gzip:   2.02 kB
+dist/assets/QueryPage-sfh9ePbO.js            5.27 kB │ gzip:   1.99 kB
+dist/assets/sn-3h18q9VE.js                   5.64 kB │ gzip:   2.16 kB
+dist/assets/UsersPage-BU2seexC.js            6.43 kB │ gzip:   2.52 kB
+dist/assets/switch-b5v_dvA5.js               7.50 kB │ gzip:   2.63 kB
+dist/assets/SnAuditPage-Bmg3xqQk.js          8.54 kB │ gzip:   3.34 kB
+dist/assets/skeleton-rOA0JgD_.js             9.49 kB │ gzip:   3.27 kB
+dist/assets/ConfigurationPage-bA_RgRLO.js   10.68 kB │ gzip:   3.43 kB
+dist/assets/AuditPage-C8gyX5AX.js           11.69 kB │ gzip:   3.96 kB
+dist/assets/AcquirePage-DT6SvH0P.js         12.22 kB │ gzip:   3.58 kB
+dist/assets/GeneratePage-BwtVsArj.js        13.86 kB │ gzip:   3.97 kB
+dist/assets/drawer-BLudUUiE.js              14.44 kB │ gzip:   5.57 kB
+dist/assets/TransferPage-Dxij2WEp.js        16.56 kB │ gzip:   5.24 kB
+dist/assets/RulesPage-B5r-Klvv.js           17.05 kB │ gzip:   5.94 kB
+dist/assets/OrdersPage-C5srSvvL.js          17.36 kB │ gzip:   6.09 kB
+dist/assets/DashboardPage-Ky4uv7wn.js       20.72 kB │ gzip:   7.87 kB
+dist/assets/input-number-0Nl7ceP_.js        20.74 kB │ gzip:   7.53 kB
+dist/assets/modal-DztT2GDX.js               25.93 kB │ gzip:   8.93 kB
+dist/assets/steps-BRKeV2Np.js               29.79 kB │ gzip:   8.52 kB
+dist/assets/tabs-C5UUnjY0.js                34.82 kB │ gzip:  10.88 kB
+dist/assets/table-KMy5J46L.js              182.60 kB │ gzip:  56.72 kB
+dist/assets/index-DV4K2Cv4.js              441.95 kB │ gzip: 149.05 kB
+dist/assets/ApiErrorAlert-MQLZCP7g.js      755.84 kB │ gzip: 245.68 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 545ms

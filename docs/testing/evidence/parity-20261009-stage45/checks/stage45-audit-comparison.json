@@ -1,0 +1,17 @@
+{
+  "generatedColumnsMatchOwnApi": true,
+  "factoryLabelGlyphGeometryEqual": true,
+  "refreshedOrderedRows": 12,
+  "factoryAuditRows": 10,
+  "authenticationRows": 2,
+  "workbookColumns": 24,
+  "sameBusinessColumns": 22,
+  "typesAndNullsEqual": true,
+  "excludedGeneratedColumns": [
+    "time",
+    "requestId"
+  ],
+  "orderedVisibleTableRows": 12,
+  "visibleColumnsCompared": 11,
+  "completeGoal": false
+}

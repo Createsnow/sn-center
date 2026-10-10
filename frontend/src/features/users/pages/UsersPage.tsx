@@ -21,7 +21,7 @@ import { usersApi, type ManagedUser } from '../../../api/users';
 import { FactoryPicker } from '../../sn/components/FactoryPicker';
 import { ApiErrorAlert } from '../../../components/ApiErrorAlert';
 
-type Editor = { kind: 'add' } | { kind: 'update' | 'reset'; user: ManagedUser };
+export type Editor = { kind: 'add' } | { kind: 'update' | 'reset'; user: ManagedUser };
 type FormValues = {
   username: string;
   displayName: string;
@@ -31,7 +31,7 @@ type FormValues = {
   password: string;
 };
 
-function UserEditor({
+export function UserEditor({
   editor,
   profile,
   done,

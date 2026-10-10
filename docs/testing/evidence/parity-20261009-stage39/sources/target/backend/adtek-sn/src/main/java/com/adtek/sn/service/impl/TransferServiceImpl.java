@@ -1,0 +1,420 @@
+package com.adtek.sn.service.impl;
+
+import static com.adtek.sn.constant.ErrorCodeConstants.*;
+
+import com.adtek.common.annotation.Idempotent;
+import com.adtek.common.core.*;
+import com.adtek.framework.security.CommandValidator;
+import com.adtek.framework.task.*;
+import com.adtek.framework.task.service.DurableTaskService;
+import com.adtek.framework.task.vo.TaskVO;
+import com.adtek.sn.domain.*;
+import com.adtek.sn.dto.*;
+import com.adtek.sn.query.TransferQuery;
+import com.adtek.sn.service.TransferService;
+import com.adtek.sn.service.support.*;
+import com.adtek.sn.vo.*;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.*;
+
+import java.util.*;
+
+@Service
+public class TransferServiceImpl implements TransferService {
+    private final TransferEngine e;
+    private final DurableTaskService tasks;
+    private final CommandValidator validator;
+    private final SnCursor cursors;
+
+    public TransferServiceImpl(
+            TransferEngine e,
+            DurableTaskService tasks,
+            CommandValidator validator,
+            SnCursor cursors) {
+        this.e = e;
+        this.tasks = tasks;
+        this.validator = validator;
+        this.cursors = cursors;
+    }
+
+    private String value(String input, int limit, boolean required) {
+        String text = SnPolicy.text(input);
+        if (text.length() > limit
+                || (required && text.isEmpty())
+                || text.codePoints().anyMatch(Character::isISOControl)) throw SnPolicy.invalid();
+        return text;
+    }
+
+    private TransferInput source(
+            String factory, String pi, String scope, String material, String sn) {
+        if (!Set.of("PI", "MATERIAL", "SINGLE").contains(scope)) throw SnPolicy.invalid();
+        if ("MATERIAL".equals(scope) && material == null) throw SnPolicy.invalid();
+        return new TransferInput(
+                SnPolicy.id(factory),
+                AcquirePolicy.pi(pi),
+                scope,
+                "MATERIAL".equals(scope) ? value(material, 128, false) : null,
+                "SINGLE".equals(scope) ? value(sn, 64, true) : null,
+                0,
+                "",
+                "",
+                "",
+                "MANUAL",
+                "",
+                null,
+                null,
+                "");
+    }
+
+    @Override
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public TransferCandidateVO candidates(
+            String factory, String pi, String scope, String material, String sn, String toPi) {
+        var input = source(factory, pi, scope, material, sn);
+        e.policy.require(
+                e.policy.read(TransferPolicy.VIEW), TransferPolicy.VIEW, input.factoryId());
+        String target = toPi == null || toPi.isBlank() ? "" : AcquirePolicy.pi(toPi);
+        // 仅揭示来源可见且可转的号的冲突，不提供目标库存枚举权限。
+        long duplicates =
+                target.isEmpty() || target.equals(input.pi())
+                        ? 0
+                        : e.rows.duplicateCount(input, target);
+        return e.convert.candidate(
+                e.rows.candidates(input),
+                e.rows.materials(input.factoryId(), input.pi()),
+                duplicates,
+                duplicates == 0 ? List.of() : e.rows.duplicateSamples(input, target));
+    }
+
+    @Override
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public PageResult<TransferSnapshotVO> targets(String query, int page, int size) {
+        e.policy.read(TransferPolicy.TARGETS);
+        if (page < 1 || size < 1 || size > 100) throw SnPolicy.invalid();
+        String q = SnPolicy.like(value(query, 128, false));
+        long offset = (long) (page - 1) * size;
+        return new PageResult<>(
+                e.rows.targets(q, offset, size).stream().map(e.convert::snapshot).toList(),
+                Long.toString(e.rows.targetCount(q)),
+                page,
+                size);
+    }
+
+    @Override
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public PageResult<TransferTargetVO> factories(String query, int page, int size) {
+        e.policy.read(TransferPolicy.TARGETS);
+        if (page < 1 || size < 1 || size > 100) throw SnPolicy.invalid();
+        String q = SnPolicy.like(value(query, 128, false));
+        long offset = (long) (page - 1) * size;
+        return new PageResult<>(
+                e.rows.factories(q, offset, size).stream().map(e.convert::target).toList(),
+                Long.toString(e.rows.factoryCount(q)),
+                page,
+                size);
+    }
+
+    @Override
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public TransferImpactVO hint(TransferHintDTO command) {
+        validator.requireValid(command);
+        var input =
+                source(
+                        command.factoryId(),
+                        command.pi(),
+                        command.scope(),
+                        command.material(),
+                        command.sn());
+        var actor =
+                e.policy.require(
+                        e.policy.read(TransferPolicy.VIEW), TransferPolicy.VIEW, input.factoryId());
+        e.policy.read(TransferPolicy.TARGETS);
+        String toPi = AcquirePolicy.pi(command.toPi());
+        String customer = value(command.toCustomer(), 64, false);
+        if (!actor.grants().get(TransferPolicy.VIEW).allFactories()) return emptyImpact(false);
+        e.acquire.work.resource(e.rows.candidates(input).transferable());
+        List<String> sns = new ArrayList<>();
+        java.time.LocalDate month = null;
+        String after = null;
+        while (true) {
+            var page = e.rows.candidateItems(input, month, after, 500);
+            if (page.isEmpty()) break;
+            if (sns.isEmpty() && customer.isEmpty()) customer = page.getFirst().customer();
+            page.forEach(item -> sns.add(item.sn()));
+            month = page.getLast().genMonth();
+            after = page.getLast().id();
+        }
+        return impact(input.pi(), toPi, customer, sns);
+    }
+
+    @Override
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public TransferImpactVO pendingHint(String id) {
+        var actor = e.policy.read(TransferPolicy.VIEW);
+        var transfer = visible(actor, id);
+        if (!actor.grants().get(TransferPolicy.VIEW).allFactories()) return emptyImpact(false);
+        if (!"PENDING".equals(transfer.status())) return emptyImpact(true);
+        e.acquire.work.resource(transfer.quantity());
+        List<String> sns = new ArrayList<>();
+        long ordinal = 0;
+        String customer = transfer.toCustomer();
+        while (true) {
+            var page = e.rows.page(transfer.id(), ordinal, 500);
+            if (page.isEmpty()) break;
+            for (var member : page) {
+                var item = e.acquire.json.readValue(member.snapshot(), AcquireSnapshot.class);
+                if (sns.isEmpty() && customer.isEmpty()) customer = item.customer();
+                sns.add(item.sn());
+            }
+            ordinal = page.getLast().ordinal();
+        }
+        return impact(transfer.fromPi(), transfer.toPi(), customer, sns);
+    }
+
+    private TransferImpactVO emptyImpact(boolean available) {
+        return new TransferImpactVO(available, "", "", null, null, null);
+    }
+
+    private TransferImpactVO impact(String from, String to, String customer, List<String> sns) {
+        if (from.equals(to) || sns.isEmpty()) return emptyImpact(true);
+        String currentCustomer = e.acquire.work.customer(to, "");
+        var rule =
+                e.acquire.work.resolver.effective(
+                        to, currentCustomer.isEmpty() ? customer : currentCustomer);
+        if (rule == null) return emptyImpact(true);
+        var spec = SnWorkEngine.spec(rule.version());
+        var before = e.acquire.work.next.current(to, e.acquire.work.counter(to).lastSeq(), spec);
+        var sequences = new TreeSet<Long>();
+        for (String sn : sns) SequenceCodec.parse(sn, spec).ifPresent(sequences::add);
+        long top = sequences.isEmpty() ? before.base() : Math.max(before.base(), sequences.last());
+        var after =
+                top == before.base()
+                        ? before
+                        : new SnNextSequence.Position(
+                                before.ownLast(), top, SequenceCodec.format(top, spec));
+        long unused = top - before.base() - sequences.tailSet(before.base(), false).size();
+        return new TransferImpactVO(
+                true,
+                rule.head().getCode(),
+                rule.source(),
+                before.view(spec),
+                after.view(spec),
+                Long.toString(unused));
+    }
+
+    @Override
+    @Idempotent
+    public TaskVO create(String mode, TransferCreateDTO command) {
+        if (!Set.of("APPLY", "DIRECT").contains(mode)) throw SnPolicy.invalid();
+        validator.requireValid(command);
+        var source =
+                source(
+                        command.factoryId(),
+                        command.pi(),
+                        command.scope(),
+                        command.material(),
+                        command.sn());
+        if (!Set.of("MANUAL", "SNAPSHOT").contains(command.targetSource()))
+            throw SnPolicy.invalid();
+        var input =
+                new TransferInput(
+                        source.factoryId(),
+                        source.pi(),
+                        source.scope(),
+                        source.material(),
+                        source.sn(),
+                        SnPolicy.id(command.toFactoryId()),
+                        AcquirePolicy.pi(command.toPi()),
+                        value(command.toCustomer(), 64, false),
+                        value(command.toMaterial(), 128, false),
+                        command.targetSource(),
+                        value(command.reason(), 500, true),
+                        null,
+                        null,
+                        "");
+        return submit(mode, command.operationId(), input);
+    }
+
+    @Override
+    @Idempotent
+    public TaskVO decide(String id, String action, TransferDecisionDTO command) {
+        if (!Set.of("APPROVE", "REJECT", "WITHDRAW").contains(action)) throw SnPolicy.invalid();
+        validator.requireValid(command);
+        // 服务先校验动作资格再查询头；版本/状态校验放入提交回调以保留原操作重放。
+        e.policy.read(TransferPolicy.permission(action));
+        var transfer = e.rows.get(TaskAccess.uuid(id));
+        if (transfer == null) throw SnPolicy.missing();
+        return submit(
+                action,
+                command.operationId(),
+                TransferEngine.from(
+                        transfer,
+                        SnPolicy.id(command.version()),
+                        value(command.note(), 500, false)));
+    }
+
+    private TaskVO submit(String kind, String operation, TransferInput input) {
+        String permission = TransferPolicy.permission(kind);
+        var actor = e.policy.require(e.policy.read(permission), permission, input.factoryId());
+        String payload = e.acquire.json.writeValueAsString(input);
+        String canonical =
+                e.acquire.json.writeValueAsString(
+                        new TreeMap<>(
+                                Map.of("v", 1, "payloadDigest", TaskDigests.sha256(payload))));
+        return tasks.submit(
+                TransferEngine.type(kind),
+                operation,
+                canonical,
+                TaskDigests.sha256(actor.userId() + ":" + input.factoryId()),
+                task -> {
+                    e.policy.lock(actor, permission, input.factoryId());
+                    e.reserve(input, task.id());
+                    e.acquire.work.factory(input.factoryId());
+                    if (input.transferId() == null) e.acquire.work.factory(input.toFactoryId());
+                    else {
+                        var current = e.rows.get(input.transferId());
+                        if (current == null
+                                || !"PENDING".equals(current.status())
+                                || current.version() != input.version())
+                            throw new BusinessException(TRANSFER_CHANGED);
+                    }
+                    e.rows.work(
+                            new TransferWorkEntity(
+                                    task.id(),
+                                    kind,
+                                    input.transferId() == null ? task.id() : input.transferId(),
+                                    input.factoryId(),
+                                    input.pi(),
+                                    input.toPi(),
+                                    payload,
+                                    "PENDING",
+                                    null,
+                                    null,
+                                    null));
+                });
+    }
+
+    @Override
+    public TaskVO operation(String kind, String operation) {
+        return tasks.operation(TransferEngine.type(kind), operation);
+    }
+
+    @Override
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public PageResult<TransferVO> list(TransferQuery query) {
+        validator.requireValid(query);
+        String state = SnPolicy.optional(query.status());
+        if (state != null
+                && !Set.of("PENDING", "APPROVED", "REJECTED", "WITHDRAWN").contains(state))
+            throw SnPolicy.invalid();
+        var actor = e.policy.read(TransferPolicy.VIEW);
+        Long factory =
+                SnPolicy.optional(query.factoryId()) == null
+                        ? null
+                        : SnPolicy.id(query.factoryId());
+        var scope = e.policy.scope(actor, factory);
+        String pi = SnPolicy.optional(query.pi());
+        return new PageResult<>(
+                e
+                        .rows
+                        .list(
+                                scope,
+                                pi,
+                                state,
+                                (long) (query.page() - 1) * query.size(),
+                                query.size())
+                        .stream()
+                        .map(
+                                row ->
+                                        e.convert.transfer(
+                                                row, e.policy.direction(actor, row, factory)))
+                        .toList(),
+                Long.toString(e.rows.count(scope, pi, state)),
+                query.page(),
+                query.size());
+    }
+
+    private TransferEntity visible(Actor actor, String id) {
+        var transfer = e.rows.get(TaskAccess.uuid(id));
+        if (transfer == null) throw SnPolicy.missing();
+        e.policy.visible(actor, transfer);
+        return transfer;
+    }
+
+    @Override
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public PageResult<TransferDetailVO> itemPage(String id, int page, int size) {
+        if (page < 1 || size < 1 || size > 1000) throw SnPolicy.invalid();
+        var actor = e.policy.read(TransferPolicy.VIEW);
+        var transfer = visible(actor, id);
+        var grant = actor.grants().get(TransferPolicy.VIEW);
+        boolean sourceOnly =
+                "APPROVED".equals(transfer.status())
+                        && !grant.allFactories()
+                        && grant.factoryIds().size() == 1
+                        && grant.factoryIds().contains(transfer.fromFactoryId());
+        var items =
+                e.rows.detailPage(transfer.id(), (long) (page - 1) * size, size).stream()
+                        .map(
+                                row ->
+                                        e.convert.detail(
+                                                row,
+                                                sourceOnly
+                                                                && !Objects.equals(
+                                                                        row.currentFactoryId(),
+                                                                        transfer.fromFactoryId())
+                                                        ? "TRANSFERRED_OUT"
+                                                        : row.currentStatus()))
+                        .toList();
+        return new PageResult<>(
+                items, Long.toString(e.rows.detailCount(transfer.id())), page, size);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public TransferVO get(String id) {
+        var actor = e.policy.read(TransferPolicy.VIEW);
+        var row = visible(actor, id);
+        return e.convert.transfer(row, e.policy.direction(actor, row, null));
+    }
+
+    @Override
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public CursorResult<TransferItemVO> items(String id, String cursor, int size) {
+        if (size < 1 || size > 1000) throw SnPolicy.invalid();
+        var actor = e.policy.read(TransferPolicy.VIEW);
+        var transfer = visible(actor, id);
+        String binding = cursors.binding(actor, "transfer:" + transfer.id());
+        var position = cursors.read(cursor, binding);
+        var records = e.rows.page(transfer.id(), position.ordinal(), size + 1);
+        boolean more = records.size() > size;
+        var page = records.stream().limit(size).toList();
+        Map<String, SnCurrentEntity> current = new HashMap<>();
+        if (!page.isEmpty())
+            e.rows.current(transfer.id(), position.ordinal(), page.getLast().ordinal())
+                    .forEach(row -> current.put(row.id(), row));
+        var items =
+                page.stream()
+                        .map(
+                                member -> {
+                                    var row = current.get(member.itemId());
+                                    return new TransferItemVO(
+                                            Long.toString(member.ordinal()),
+                                            e.acquire.json.readValue(
+                                                    member.snapshot(), AcquireSnapshot.class),
+                                            member.fromStatus(),
+                                            member.fromBatchId(),
+                                            member.fromPrintId(),
+                                            row == null ? null : row.status(),
+                                            row == null || row.factoryId() == null
+                                                    ? null
+                                                    : row.factoryId().toString(),
+                                            row == null ? null : row.pi(),
+                                            row == null ? null : row.currentBatchId());
+                                })
+                        .toList();
+        return new CursorResult<>(
+                items, more ? cursors.next(binding, page.getLast().ordinal(), null, null) : null);
+    }
+}

@@ -6,6 +6,9 @@ frontend/dist/
 frontend/coverage/
 frontend/test-results/
 frontend/playwright-report/
+*.tsbuildinfo
+__pycache__/
+*.pyc
 .env
 .env.*
 *.env
@@ -15,6 +18,12 @@ frontend/playwright-report/
 *.log
 # 公开的历史依赖冲突证据；不开放一般运行日志入库。
 !docs/archive/python-migration/docs/reports/evidence/20260929-auth-runtime/typescript-6-peer-failure.log
+# 已冻结并校验的验收日志与目标源码副本；不放开实际构建目录和运行日志。
+!docs/testing/evidence/**/*.log
+!docs/testing/evidence/**/sources/target/
+!docs/testing/evidence/**/sources/target/**
+# 用户要求验收截图仅留本地；清单保留其摘要，图片不提交。
+docs/testing/evidence/**/*.png
 .idea/
 .vscode/
 .DS_Store

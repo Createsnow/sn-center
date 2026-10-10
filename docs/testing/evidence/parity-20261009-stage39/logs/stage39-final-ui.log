@@ -1,0 +1,21 @@
+
+Running 12 tests using 1 worker
+
+(node:27012) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [prototype] › e2e\parity\dashboard-roles.spec.ts:91:1 › P04 管理员首页指标 近期订单进度 快捷入口和窄屏 (4.2s)
+  ok  2 [prototype] › e2e\parity\dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_operator 首次改密 角色范围与首页入口 (1.8s)
+  ok  3 [prototype] › e2e\parity\dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_query_all 首次改密 角色范围与首页入口 (1.7s)
+  ok  4 [prototype] › e2e\parity\dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_query_factory 首次改密 角色范围与首页入口 (1.8s)
+  ok  5 [prototype] › e2e\parity\dashboard-roles.spec.ts:236:1 › P04 首页三语文案与刷新保持 (2.3s)
+  ok  6 [prototype] › e2e\parity\users-directory.spec.ts:61:1 › P13 account directory: prefix/name search, roles, factories, status, pagination and metadata (9.9s)
+(node:19900) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  7 [migration] › e2e\parity\dashboard-roles.spec.ts:91:1 › P04 管理员首页指标 近期订单进度 快捷入口和窄屏 (3.3s)
+  ok  8 [migration] › e2e\parity\dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_operator 首次改密 角色范围与首页入口 (21.9s)
+  ok  9 [migration] › e2e\parity\dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_query_all 首次改密 角色范围与首页入口 (24.4s)
+  ok 10 [migration] › e2e\parity\dashboard-roles.spec.ts:182:3 › P01 P03 P04 cmp_query_factory 首次改密 角色范围与首页入口 (24.4s)
+  ok 11 [migration] › e2e\parity\dashboard-roles.spec.ts:236:1 › P04 首页三语文案与刷新保持 (12.8s)
+  ok 12 [migration] › e2e\parity\users-directory.spec.ts:61:1 › P13 account directory: prefix/name search, roles, factories, status, pagination and metadata (21.9s)
+
+  12 passed (2.2m)

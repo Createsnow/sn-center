@@ -1,0 +1,132 @@
+{
+  "java": {
+    "schedule": {
+      "enabled": false,
+      "intervalMinutes": 1440
+    },
+    "dashboard": {
+      "states": [
+        {
+          "name": "TO_ACQUIRE",
+          "quantity": "1"
+        }
+      ],
+      "pendingTransfers": "0",
+      "totalGenerated": "10",
+      "totalImported": "0",
+      "today": [
+        {
+          "name": "ALLOCATE",
+          "quantity": "10"
+        },
+        {
+          "name": "GENERATE",
+          "quantity": "10"
+        },
+        {
+          "name": "PRINT",
+          "quantity": "10"
+        },
+        {
+          "name": "TAKE",
+          "quantity": "10"
+        }
+      ],
+      "recentJobs": [
+        {
+          "taskId": "3493c982-85ca-4bc4-897c-e298c308add8",
+          "kind": "GENERATE",
+          "pi": "CMP-PI-001",
+          "billId": "1",
+          "factoryId": "1",
+          "factoryCode": "CMP-A",
+          "actorId": "1",
+          "state": "SUCCESS",
+          "quantity": "10",
+          "startSeq": "1",
+          "endSeq": "10",
+          "decodedQty": null,
+          "maxSeq": null,
+          "lastSeq": "10",
+          "firstSn": "CMP00001",
+          "lastSn": "CMP00010",
+          "fileName": "",
+          "errorCode": null,
+          "createdAt": "2026-10-08T01:38:15.843135Z",
+          "finishedAt": "2026-10-08T01:38:16.099395Z"
+        }
+      ],
+      "jobs": [
+        {
+          "id": "1",
+          "taskId": "3493c982-85ca-4bc4-897c-e298c308add8",
+          "billNo": "CMP-MO-001",
+          "pi": "CMP-PI-001",
+          "factoryCode": "CMP-A",
+          "quantity": "10",
+          "processed": "10",
+          "state": "SUCCESS",
+          "createdAt": "2026-10-08T01:38:15.843135Z"
+        }
+      ],
+      "date": "2026-10-08",
+      "zone": "Asia/Shanghai",
+      "allFactories": true
+    }
+  },
+  "python": {
+    "schedule": {
+      "enabled": false,
+      "interval_minutes": 1440
+    },
+    "dashboard": {
+      "status_counts": {
+        "PENDING_ALLOC": 0,
+        "TO_ACQUIRE": 1,
+        "TO_PRINT": 0,
+        "APPLYING": 0
+      },
+      "total_generated": 10,
+      "pending_transfers": 0,
+      "running_jobs": 0,
+      "today_actions": {
+        "SN_ACQUIRE": 10,
+        "SN_ALLOCATE": 10,
+        "SN_GENERATE": 10,
+        "SN_PRINT": 10
+      },
+      "recent_jobs": [
+        {
+          "id": 1,
+          "bill_no": "CMP-MO-001",
+          "pi_no": "CMP-PI-001",
+          "factory_code": "CMP-A",
+          "qty": 10,
+          "done_qty": 10,
+          "status": "SUCCESS",
+          "error_msg": null,
+          "created_at": "2026-10-08 09:39:12"
+        }
+      ]
+    }
+  },
+  "javaSchema": "21",
+  "generationNumbers": [
+    1,
+    1,
+    1
+  ],
+  "rolePasswordsChanged": {
+    "java": {
+      "cmp_operator": true,
+      "cmp_query_all": true,
+      "cmp_query_factory": true
+    },
+    "python": {
+      "cmp_operator": true,
+      "cmp_query_all": true,
+      "cmp_query_factory": true
+    }
+  },
+  "k3ExtraOrders": []
+}

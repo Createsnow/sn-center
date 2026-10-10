@@ -1,6 +1,7 @@
 package com.adtek.framework.task.service;
 
 import com.adtek.framework.task.domain.TaskEntity;
+import com.adtek.framework.task.vo.TaskProgressVO;
 import com.adtek.framework.task.vo.TaskVO;
 
 import java.util.function.Consumer;
@@ -26,6 +27,9 @@ public interface DurableTaskService {
 
     /** 只读本人的持久任务；当前完整快照范围不满足则拒绝，不返回历史结果。 */
     TaskVO get(String id);
+
+    /** 内部业务看板调用：重新验证当前主体与任务处理器完整业务授权，可读跨提交人的进度，不返回任务或文件内容。 */
+    TaskProgressVO businessProgress(String id);
 
     /** 当前本人且完整快照授权通过后，事务锁定任务，仅取消从未领取的QUEUED； 与领取互斥，其余409，不声称撤销已提交业务。 */
     TaskVO cancel(String id);

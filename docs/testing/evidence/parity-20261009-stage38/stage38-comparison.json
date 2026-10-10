@@ -1,0 +1,707 @@
+{
+  "dashboard": [
+    {
+      "case": "en-1440.json",
+      "all29GroupsEqual": true,
+      "visibleTextCharacterRectanglesEqual": true
+    },
+    {
+      "case": "en-1920.json",
+      "all29GroupsEqual": true,
+      "visibleTextCharacterRectanglesEqual": true
+    },
+    {
+      "case": "en-390-scrolled.json",
+      "all29GroupsEqual": true,
+      "visibleTextCharacterRectanglesEqual": true
+    },
+    {
+      "case": "en-390.json",
+      "all29GroupsEqual": true,
+      "visibleTextCharacterRectanglesEqual": true
+    },
+    {
+      "case": "en-900.json",
+      "all29GroupsEqual": true,
+      "visibleTextCharacterRectanglesEqual": true
+    },
+    {
+      "case": "vi-1440.json",
+      "all29GroupsEqual": true,
+      "visibleTextCharacterRectanglesEqual": true
+    },
+    {
+      "case": "vi-1920.json",
+      "all29GroupsEqual": true,
+      "visibleTextCharacterRectanglesEqual": true
+    },
+    {
+      "case": "vi-390-scrolled.json",
+      "all29GroupsEqual": true,
+      "visibleTextCharacterRectanglesEqual": true
+    },
+    {
+      "case": "vi-390.json",
+      "all29GroupsEqual": true,
+      "visibleTextCharacterRectanglesEqual": true
+    },
+    {
+      "case": "vi-900.json",
+      "all29GroupsEqual": true,
+      "visibleTextCharacterRectanglesEqual": true
+    },
+    {
+      "case": "zh-CN-1440.json",
+      "all29GroupsEqual": true,
+      "visibleTextCharacterRectanglesEqual": true
+    },
+    {
+      "case": "zh-CN-1920.json",
+      "all29GroupsEqual": true,
+      "visibleTextCharacterRectanglesEqual": true
+    },
+    {
+      "case": "zh-CN-390-scrolled.json",
+      "all29GroupsEqual": true,
+      "visibleTextCharacterRectanglesEqual": true
+    },
+    {
+      "case": "zh-CN-390.json",
+      "all29GroupsEqual": true,
+      "visibleTextCharacterRectanglesEqual": true
+    },
+    {
+      "case": "zh-CN-900.json",
+      "all29GroupsEqual": true,
+      "visibleTextCharacterRectanglesEqual": true
+    }
+  ],
+  "dashboardActions": {
+    "languageReloads": 3,
+    "shortcutNavigations": 12,
+    "narrowShortcutNavigations": 6,
+    "narrowMenuReturns": 3,
+    "pageErrors": []
+  },
+  "todayApiMatchesOwnStoredFacts": true,
+  "collapsedMenuAccessibleNameProbe": {
+    "prototype": [
+      {
+        "language": "zh-CN",
+        "namedDashboardItems": 0
+      },
+      {
+        "language": "en",
+        "namedDashboardItems": 0
+      },
+      {
+        "language": "vi",
+        "namedDashboardItems": 0
+      }
+    ],
+    "migration": [
+      {
+        "language": "zh-CN",
+        "namedDashboardItems": 1
+      },
+      {
+        "language": "en",
+        "namedDashboardItems": 1
+      },
+      {
+        "language": "vi",
+        "namedDashboardItems": 1
+      }
+    ]
+  },
+  "loginLayout": [
+    {
+      "case": "button-hover.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "empty-submit.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "en-1440.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "en-1920.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "en-390.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "en-900.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "initial.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "password-focus.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "password-visible.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "username-focus.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "vi-1440.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "vi-1920.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "vi-390.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "vi-900.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "zh-CN-1440.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "zh-CN-1920.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "zh-CN-390.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    },
+    {
+      "case": "zh-CN-900.json",
+      "geometryStyleAndIconGroupsEqual": [
+        "page",
+        "hero",
+        "panel",
+        "top",
+        "title",
+        "labels",
+        "fields",
+        "inputs",
+        "prefixes",
+        "eye",
+        "button",
+        "note",
+        "language",
+        "languageValue",
+        "languageArrow"
+      ],
+      "groupCount": 15
+    }
+  ],
+  "passwordPages": [
+    {
+      "case": "password-page-P03-password-60ebb-t-save-and-voluntary-cancel-prototype/corrected.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-60ebb-t-save-and-voluntary-cancel-prototype/empty-submit.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-60ebb-t-save-and-voluntary-cancel-prototype/forced-1440.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-60ebb-t-save-and-voluntary-cancel-prototype/forced-390.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-60ebb-t-save-and-voluntary-cancel-prototype/forced-900.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-60ebb-t-save-and-voluntary-cancel-prototype/mismatch.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-60ebb-t-save-and-voluntary-cancel-prototype/visible-demo-password.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-60ebb-t-save-and-voluntary-cancel-prototype/voluntary-1440.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-60ebb-t-save-and-voluntary-cancel-prototype/voluntary-390.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-60ebb-t-save-and-voluntary-cancel-prototype/weak-blurred.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-60ebb-t-save-and-voluntary-cancel-prototype/weak-typing.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-b85e9-t-save-and-voluntary-cancel-prototype/corrected.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-b85e9-t-save-and-voluntary-cancel-prototype/empty-submit.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-b85e9-t-save-and-voluntary-cancel-prototype/forced-1440.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-b85e9-t-save-and-voluntary-cancel-prototype/forced-390.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-b85e9-t-save-and-voluntary-cancel-prototype/forced-900.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-b85e9-t-save-and-voluntary-cancel-prototype/mismatch.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-b85e9-t-save-and-voluntary-cancel-prototype/visible-demo-password.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-b85e9-t-save-and-voluntary-cancel-prototype/voluntary-1440.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-b85e9-t-save-and-voluntary-cancel-prototype/voluntary-390.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-b85e9-t-save-and-voluntary-cancel-prototype/weak-blurred.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-b85e9-t-save-and-voluntary-cancel-prototype/weak-typing.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-cc225-t-save-and-voluntary-cancel-prototype/corrected.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-cc225-t-save-and-voluntary-cancel-prototype/empty-submit.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-cc225-t-save-and-voluntary-cancel-prototype/forced-1440.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-cc225-t-save-and-voluntary-cancel-prototype/forced-390.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-cc225-t-save-and-voluntary-cancel-prototype/forced-900.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-cc225-t-save-and-voluntary-cancel-prototype/mismatch.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-cc225-t-save-and-voluntary-cancel-prototype/visible-demo-password.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-cc225-t-save-and-voluntary-cancel-prototype/voluntary-1440.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-cc225-t-save-and-voluntary-cancel-prototype/voluntary-390.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-cc225-t-save-and-voluntary-cancel-prototype/weak-blurred.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    },
+    {
+      "case": "password-page-P03-password-cc225-t-save-and-voluntary-cancel-prototype/weak-typing.json",
+      "all15GeometryStyleTextIconGroupsEqual": true,
+      "warningCharacterRectanglesEqual": true
+    }
+  ],
+  "passwordActions": [
+    {
+      "language": "zh-CN",
+      "invalidFormsSentNoRequests": true,
+      "forcedLogoutWorked": true,
+      "passwordRequests": 1,
+      "changedPasswordSucceeded": true,
+      "voluntaryCancelWorked": true
+    },
+    {
+      "language": "en",
+      "invalidFormsSentNoRequests": true,
+      "forcedLogoutWorked": true,
+      "passwordRequests": 1,
+      "changedPasswordSucceeded": true,
+      "voluntaryCancelWorked": true
+    },
+    {
+      "language": "vi",
+      "invalidFormsSentNoRequests": true,
+      "forcedLogoutWorked": true,
+      "passwordRequests": 1,
+      "changedPasswordSucceeded": true,
+      "voluntaryCancelWorked": true
+    }
+  ],
+  "passwordSuccess": [
+    {
+      "case": "password-page-P03-password-60ebb-t-save-and-voluntary-cancel-prototype",
+      "paintedBeforeAndAfterScreenshot": true,
+      "stableMessageGeometryAndTextEqual": true
+    },
+    {
+      "case": "password-page-P03-password-b85e9-t-save-and-voluntary-cancel-prototype",
+      "paintedBeforeAndAfterScreenshot": true,
+      "stableMessageGeometryAndTextEqual": true
+    },
+    {
+      "case": "password-page-P03-password-cc225-t-save-and-voluntary-cancel-prototype",
+      "paintedBeforeAndAfterScreenshot": true,
+      "stableMessageGeometryAndTextEqual": true
+    }
+  ]
+}

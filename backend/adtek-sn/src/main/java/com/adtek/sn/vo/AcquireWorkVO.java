@@ -16,6 +16,7 @@ package com.adtek.sn.vo;
             "updatedQty",
             "alreadyQty",
             "batchId",
+            "batchNo",
             "errorCode",
             "createdAt",
             "finishedAt"
@@ -34,6 +35,7 @@ public record AcquireWorkVO(
         String updatedQty,
         String alreadyQty,
         @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String batchId,
+        @io.swagger.v3.oas.annotations.media.Schema(nullable = true) String batchNo,
         @io.swagger.v3.oas.annotations.media.Schema(nullable = true) Integer errorCode,
         java.time.Instant createdAt,
         @io.swagger.v3.oas.annotations.media.Schema(nullable = true)

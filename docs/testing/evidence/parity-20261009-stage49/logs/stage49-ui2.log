@@ -1,0 +1,76 @@
+
+Running 2 tests using 1 worker
+
+(node:24436) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\order-boundaries.spec.ts:14:1 › P05 boundaries: Unicode blank bill, three-language validation and schedule owner handover (35.5s)
+(node:20636) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [migration] › e2e\parity\order-boundaries.spec.ts:14:1 › P05 boundaries: Unicode blank bill, three-language validation and schedule owner handover (34.7s)
+
+
+  1) [prototype] › e2e\parity\order-boundaries.spec.ts:14:1 › P05 boundaries: Unicode blank bill, three-language validation and schedule owner handover 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('请输入单据编号', { exact: true })
+    Expected: visible
+    Error: strict mode violation: getByText('请输入单据编号', { exact: true }) resolved to 7 elements:
+        1) <div class="cell el-tooltip">…</div> aka getByText('请输入单据编号').first()
+        2) <td colspan="5" class="el-descriptions__cell el-descriptions__content is-bordered-content">请输入单据编号</td> aka getByRole('cell', { name: '请输入单据编号' }).nth(2)
+        3) <div class="cell el-tooltip">…</div> aka getByText('请输入单据编号').nth(2)
+        4) <div class="cell el-tooltip">…</div> aka getByText('请输入单据编号').nth(3)
+        5) <div class="cell el-tooltip">…</div> aka getByText('请输入单据编号').nth(4)
+        6) <div class="cell el-tooltip">…</div> aka getByText('请输入单据编号').nth(5)
+        7) <div class="cell el-tooltip">…</div> aka locator('div').filter({ hasText: /^请输入单据编号$/ }).nth(5)
+
+    Call log:
+      - Expect "toBeVisible" getByText('请输入单据编号', { exact: true }) with timeout 15000ms
+      - waiting for getByText('请输入单据编号', { exact: true })
+
+
+      120 |     const rows=page.locator(prototype?'.el-table__row':'.ant-table-row');
+      121 |     await rows.first().locator(prototype?'.el-table__expand-icon':'.sn-audit-expand').click();
+    > 122 |     await expect(page.getByText(errZh.ORDER_BILL_REQUIRED,{exact:true})).toBeVisible();
+          |                                                                          ^
+      123 |     await capture('audit-rejection-detail');
+      124 |     expect(pageErrors).toEqual([]);
+      125 |   } finally {
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-boundaries.spec.ts:122:74
+
+    Error Context: test-results\stage49-ui2\order-boundaries-P05-bound-0fcda-and-schedule-owner-handover-prototype\error-context.md
+
+  2) [migration] › e2e\parity\order-boundaries.spec.ts:14:1 › P05 boundaries: Unicode blank bill, three-language validation and schedule owner handover 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('请输入单据编号', { exact: true })
+    Expected: visible
+    Error: strict mode violation: getByText('请输入单据编号', { exact: true }) resolved to 7 elements:
+        1) <td title="请输入单据编号" class="ant-table-cell ant-table-cell-ellipsis ant-table-cell-row-hover">请输入单据编号</td> aka getByRole('cell', { name: '请输入单据编号' }).first()
+        2) <span>请输入单据编号</span> aka locator('span').filter({ hasText: '请输入单据编号' })
+        3) <td title="请输入单据编号" class="ant-table-cell ant-table-cell-ellipsis">请输入单据编号</td> aka getByRole('cell', { name: '请输入单据编号' }).nth(3)
+        4) <td title="请输入单据编号" class="ant-table-cell ant-table-cell-ellipsis">请输入单据编号</td> aka getByRole('cell', { name: '请输入单据编号' }).nth(4)
+        5) <td title="请输入单据编号" class="ant-table-cell ant-table-cell-ellipsis">请输入单据编号</td> aka getByRole('cell', { name: '请输入单据编号' }).nth(5)
+        6) <td title="请输入单据编号" class="ant-table-cell ant-table-cell-ellipsis">请输入单据编号</td> aka getByRole('cell', { name: '请输入单据编号', description: '请输入单据编号' }).nth(4)
+        7) <td title="请输入单据编号" class="ant-table-cell ant-table-cell-ellipsis">请输入单据编号</td> aka getByRole('cell', { name: '请输入单据编号', description: '请输入单据编号' }).nth(5)
+
+    Call log:
+      - Expect "toBeVisible" getByText('请输入单据编号', { exact: true }) with timeout 15000ms
+      - waiting for getByText('请输入单据编号', { exact: true })
+
+
+      120 |     const rows=page.locator(prototype?'.el-table__row':'.ant-table-row');
+      121 |     await expect(rows).toHaveCount(6);
+    > 122 |     await rows.first().locator(prototype?'.el-table__expand-icon':'.sn-audit-expand').click();
+          |                                                                          ^
+      123 |     await expect(page.locator(prototype?'.el-descriptions':'.sn-audit-details').getByText(errZh.ORDER_BILL_REQUIRED,{exact:true})).toBeVisible();
+      124 |     await capture('audit-rejection-detail');
+      125 |     expect(pageErrors).toEqual([]);
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-boundaries.spec.ts:122:74
+
+    Error Context: test-results\stage49-ui2\order-boundaries-P05-bound-0fcda-and-schedule-owner-handover-migration\error-context.md
+
+  2 failed
+    [prototype] › e2e\parity\order-boundaries.spec.ts:14:1 › P05 boundaries: Unicode blank bill, three-language validation and schedule owner handover 
+    [migration] › e2e\parity\order-boundaries.spec.ts:14:1 › P05 boundaries: Unicode blank bill, three-language validation and schedule owner handover 

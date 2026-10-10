@@ -1,0 +1,37 @@
+
+Running 2 tests using 1 worker
+
+(node:50748) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ok 1 [prototype] › e2e\parity\business-loop.spec.ts:11:1 › P16 MES lifecycle with UI generation, callback state, transfer protection and audit (12.1s)
+(node:42008) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  x  2 [migration] › e2e\parity\business-loop.spec.ts:11:1 › P16 MES lifecycle with UI generation, callback state, transfer protection and audit (9.6s)
+
+
+  1) [migration] › e2e\parity\business-loop.spec.ts:11:1 › P16 MES lifecycle with UI generation, callback state, transfer protection and audit 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+       at mes-probe.ts:80
+
+      78 |       factories.set(f.code, f.id);
+      79 |     factoryIds = ['CMP-A', 'CMP-B'].map((code) => factories.get(code)!);
+    > 80 |     expect(factoryIds.every(Boolean)).toBe(true);
+         |                                       ^
+      81 |     const credential = await manage('/api/v1/system/service-clients', {
+      82 |       displayName: 'MES闭环 ' + username,
+      83 |       factoryIds,
+        at createMesProbe (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\mes-probe.ts:80:39)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\business-loop.spec.ts:235:15
+
+    Error Context: test-results\stage54-mes1\business-loop-P16-MES-life-d40ba-ansfer-protection-and-audit-migration\error-context.md
+
+  1 failed
+    [migration] › e2e\parity\business-loop.spec.ts:11:1 › P16 MES lifecycle with UI generation, callback state, transfer protection and audit 
+  1 passed (24.5s)

@@ -1,0 +1,77 @@
+[
+  {
+    "file": "frontend\\test-results\\stage26-layout-ui-final\\transfer-layout-P10-layout-26583-t-at-wide-and-narrow-widths-prototype\\01-wide-pi-geometry.json",
+    "identical": true,
+    "differences": []
+  },
+  {
+    "file": "frontend\\test-results\\stage26-layout-ui-final\\transfer-layout-P10-layout-26583-t-at-wide-and-narrow-widths-prototype\\02-narrow-single-geometry.json",
+    "identical": true,
+    "differences": []
+  },
+  {
+    "file": "frontend\\test-results\\stage26-layout-ui-final\\transfer-layout-P10-layout-26583-t-at-wide-and-narrow-widths-prototype\\02-wide-single-geometry.json",
+    "identical": true,
+    "differences": []
+  },
+  {
+    "file": "frontend\\test-results\\stage26-layout-ui-final\\transfer-layout-P10-layout-26583-t-at-wide-and-narrow-widths-prototype\\03-narrow-snapshot-geometry.json",
+    "identical": true,
+    "differences": []
+  },
+  {
+    "file": "frontend\\test-results\\stage26-layout-ui-final\\transfer-layout-P10-layout-26583-t-at-wide-and-narrow-widths-prototype\\03-wide-snapshot-geometry.json",
+    "identical": true,
+    "differences": []
+  },
+  {
+    "file": "frontend\\test-results\\stage26-layout-ui-final\\transfer-layout-P10-layout-3ef73-t-at-wide-and-narrow-widths-prototype\\01-wide-pi-geometry.json",
+    "identical": true,
+    "differences": []
+  },
+  {
+    "file": "frontend\\test-results\\stage26-layout-ui-final\\transfer-layout-P10-layout-3ef73-t-at-wide-and-narrow-widths-prototype\\02-narrow-single-geometry.json",
+    "identical": true,
+    "differences": []
+  },
+  {
+    "file": "frontend\\test-results\\stage26-layout-ui-final\\transfer-layout-P10-layout-3ef73-t-at-wide-and-narrow-widths-prototype\\02-wide-single-geometry.json",
+    "identical": true,
+    "differences": []
+  },
+  {
+    "file": "frontend\\test-results\\stage26-layout-ui-final\\transfer-layout-P10-layout-3ef73-t-at-wide-and-narrow-widths-prototype\\03-narrow-snapshot-geometry.json",
+    "identical": true,
+    "differences": []
+  },
+  {
+    "file": "frontend\\test-results\\stage26-layout-ui-final\\transfer-layout-P10-layout-3ef73-t-at-wide-and-narrow-widths-prototype\\03-wide-snapshot-geometry.json",
+    "identical": true,
+    "differences": []
+  },
+  {
+    "file": "frontend\\test-results\\stage26-layout-ui-final\\transfer-layout-P10-layout-ca236-t-at-wide-and-narrow-widths-prototype\\01-wide-pi-geometry.json",
+    "identical": true,
+    "differences": []
+  },
+  {
+    "file": "frontend\\test-results\\stage26-layout-ui-final\\transfer-layout-P10-layout-ca236-t-at-wide-and-narrow-widths-prototype\\02-narrow-single-geometry.json",
+    "identical": true,
+    "differences": []
+  },
+  {
+    "file": "frontend\\test-results\\stage26-layout-ui-final\\transfer-layout-P10-layout-ca236-t-at-wide-and-narrow-widths-prototype\\02-wide-single-geometry.json",
+    "identical": true,
+    "differences": []
+  },
+  {
+    "file": "frontend\\test-results\\stage26-layout-ui-final\\transfer-layout-P10-layout-ca236-t-at-wide-and-narrow-widths-prototype\\03-narrow-snapshot-geometry.json",
+    "identical": true,
+    "differences": []
+  },
+  {
+    "file": "frontend\\test-results\\stage26-layout-ui-final\\transfer-layout-P10-layout-ca236-t-at-wide-and-narrow-widths-prototype\\03-wide-snapshot-geometry.json",
+    "identical": true,
+    "differences": []
+  }
+]

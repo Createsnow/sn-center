@@ -1,0 +1,78 @@
+{
+  "keys": [
+    {
+      "pi": "CMP-UI-INIT-PI",
+      "sn": "INI00008",
+      "seq_pi": "CMP-UI-INIT-PI",
+      "seq_dec": 8
+    },
+    {
+      "pi": "CMP-UI-INIT-PI",
+      "sn": "UNPARSED",
+      "seq_pi": null,
+      "seq_dec": null
+    }
+  ],
+  "items": [
+    {
+      "sn": "INI00008",
+      "pi": "CMP-UI-INIT-PI",
+      "source_pi": "CMP-UI-INIT-PI",
+      "seq_dec": 8,
+      "customer": "CMP-OVERRIDE",
+      "material": "CMP-INIT-MAT",
+      "factory_code": "CMP-A",
+      "status": "PRINTED",
+      "source": "IMPORT"
+    },
+    {
+      "sn": "UNPARSED",
+      "pi": "CMP-UI-INIT-PI",
+      "source_pi": "CMP-UI-INIT-PI",
+      "seq_dec": null,
+      "customer": "CMP-OVERRIDE",
+      "material": "CMP-INIT-MAT",
+      "factory_code": "CMP-A",
+      "status": "PRINTED",
+      "source": "IMPORT"
+    }
+  ],
+  "counters": [
+    {
+      "pi": "CMP-UI-INIT-NONE",
+      "last_seq": 20,
+      "generated_qty": 0,
+      "imported_qty": 0,
+      "start_seq": 21,
+      "start_locked": 1
+    },
+    {
+      "pi": "CMP-UI-INIT-PI",
+      "last_seq": 8,
+      "generated_qty": 0,
+      "imported_qty": 2,
+      "start_seq": null,
+      "start_locked": 1
+    }
+  ],
+  "history": [
+    {
+      "pi": "CMP-UI-INIT-PI",
+      "start_seq": null,
+      "qty": 2,
+      "max_seq": 8,
+      "factory_code": "CMP-A",
+      "file_name": "",
+      "operator": "admin"
+    },
+    {
+      "pi": "CMP-UI-INIT-NONE",
+      "start_seq": 21,
+      "qty": 0,
+      "max_seq": null,
+      "factory_code": "CMP-A",
+      "file_name": "",
+      "operator": "admin"
+    }
+  ]
+}

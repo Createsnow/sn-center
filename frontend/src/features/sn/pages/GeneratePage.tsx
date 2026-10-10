@@ -1,3 +1,4 @@
+import { CheckOutlined, EyeOutlined, SendOutlined } from '@ant-design/icons';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   Alert,
@@ -6,32 +7,39 @@ import {
   Empty,
   Form,
   Input,
-  Popconfirm,
+  InputNumber,
+  Modal,
+  Progress,
   Space,
-  Steps,
   Table,
   Tabs,
   Tag,
-  Typography,
 } from 'antd';
-import { useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import type { UserProfile } from '../../../api/contract';
-import { snApi, paginationTotal, type SnRule } from '../../../api/sn';
+import { ApiError, type UserProfile } from '../../../api/contract';
+import { snApi, type SnRule } from '../../../api/sn';
+import { loadCatalog } from '../../../api/catalog';
 import { snWorkApi } from '../../../api/snWork';
+import type { Task } from '../../../api/tasks';
 import { ApiErrorAlert } from '../../../components/ApiErrorAlert';
+import { formatSnTime } from '../../../utils/snTime';
 import { GenerationOrderPicker } from '../components/GenerationOrderPicker';
 import { GenerationRulePicker } from '../components/GenerationRulePicker';
-import { NextSequenceHint } from '../components/NextSequenceHint';
+import { GenerationCounter, GenerationRuleDetails } from '../components/GenerationDetails';
+import { GenerationHistory } from '../components/GenerationHistory';
+import { GenerationSteps } from '../components/GenerationSteps';
 import { SnPageHead } from '../components/SnPageHead';
 import { SnOperation } from '../components/SnOperation';
 import { useSnOperation } from '../useSnOperation';
-import { SnCounter, SnRuleDetails, SnBillHistory } from '../components/SnWorkViews';
+import { usePrototypeFeedback } from '../usePrototypeFeedback';
+import { generationPercent } from '../generationProgress';
+import { generationErrorText, generationFailureText } from '../generationErrorText';
 import { positiveDecimal, suggestedQuantity } from '../snInput';
 
 export function GeneratePage({ profile }: { profile: UserProfile }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('prototype');
   const [params, setParams] = useSearchParams();
   const billId = params.get('billId') ?? '';
   const context = useQuery({
@@ -39,100 +47,297 @@ export function GeneratePage({ profile }: { profile: UserProfile }) {
     queryFn: () => snWorkApi.context(billId),
     enabled: !!billId,
   });
-  // 地址栏和前进/后退切换订单也必须清空本地输入、规则选择及预演。
   return (
-    <>
-      <SnPageHead title={t('snPages.generate.title')} description={t('snPages.generate.desc')}>
-        <GenerationOrderPicker
-          profile={profile}
-          billId={billId}
-          bill={context.data?.bill}
-          onChange={(id) => setParams(id ? { billId: id } : {})}
-        />
-      </SnPageHead>
-      <GenerationForm key={billId} profile={profile} />
-    </>
+    <div className="sn-page sn-generate-page">
+      <SnPageHead title={t('generate.title')} description={t('generate.desc')} />
+      <GenerationOrderPicker
+        profile={profile}
+        billId={billId}
+        bill={context.data?.bill}
+        onChange={(id) => setParams(id ? { billId: id } : {})}
+      />
+      <GenerationForm key={billId} profile={profile} billId={billId} />
+    </div>
   );
 }
 
-function GenerationForm({ profile }: { profile: UserProfile }) {
-  const { t, i18n } = useTranslation(),
-    [params] = useSearchParams();
-  const billId = params.get('billId') ?? '';
+function GenerationForm({ profile, billId }: { profile: UserProfile; billId: string }) {
+  const { t } = useTranslation('prototype'),
+    { t: common, i18n } = useTranslation();
+  const feedback = usePrototypeFeedback();
+  const [modal, modalHolder] = Modal.useModal();
   const [chosenRule, setChosenRule] = useState<SnRule>();
   const [limit, setLimit] = useState('10000'),
-    [qty, setQty] = useState(''),
-    [start, setStart] = useState(''),
-    [linePage, setLinePage] = useState(1),
-    [consumed, setConsumed] = useState('');
+    [qty, setQty] = useState('');
+  const [allocQty, setAllocQty] = useState(''),
+    [start, setStart] = useState('');
+  const [consumed, setConsumed] = useState(''),
+    [refreshing, setRefreshing] = useState(false);
+  const watched = useRef(new Set<string>());
+  const reportedErrors = useRef(new Set<unknown>());
+  const submittedQuantity = useRef('0');
+  const lastGeneratedQuantity = useRef<string | undefined>(undefined);
   const prefix = ['sn', 'generate', profile.id, profile.authorizationVersion];
   const context = useQuery({
     queryKey: [...prefix, billId],
     queryFn: () => snWorkApi.context(billId),
     enabled: !!billId,
+    refetchInterval: (q) => (q.state.data?.counter.activeTaskId ? 1000 : false),
   });
   const lines = useQuery({
-    queryKey: [...prefix, 'lines', billId, linePage],
-    queryFn: () => snApi.lines(billId, { page: linePage, size: 20 }),
+    queryKey: [...prefix, 'lines', billId],
+    queryFn: ({ signal }) => snApi.allLines(billId, signal),
+    enabled: !!billId,
+  });
+  const allocations = useQuery({
+    queryKey: [...prefix, 'allocations', billId],
+    queryFn: ({ signal }) =>
+      loadCatalog((page) => snWorkApi.history(billId, 'ALLOCATE', page), signal),
     enabled: !!billId,
   });
   const preview = useMutation({ mutationFn: snWorkApi.preview });
-  const generate = useSnOperation(profile, 'GENERATE', snWorkApi.generate),
-    allocate = useSnOperation(profile, 'ALLOCATE', snWorkApi.allocate);
+  const generate = useSnOperation(profile, 'GENERATE', snWorkApi.generate);
+  const allocate = useSnOperation(profile, 'ALLOCATE', snWorkApi.allocate);
   const value = context.data,
-    quantity = qty || suggestedQuantity(value?.bill.quota ?? '0', limit),
-    p = preview.data;
-  const valid =
-    positiveDecimal(quantity) &&
-    positiveDecimal(limit) &&
-    (start === '' || positiveDecimal(start)) &&
-    BigInt(quantity) <= BigInt(limit);
+    p = consumed === preview.data?.id ? undefined : preview.data;
+  const maxQty = suggestedQuantity(value?.bill.quota ?? '0', limit);
+  const maxAlloc = suggestedQuantity(value?.pendingQuantity ?? '0', limit);
+  const quantity = qty || maxQty,
+    allocationQuantity = allocQty || maxAlloc;
   const ready =
     !!value &&
     !value.issues.length &&
-    valid &&
     !generate.busy &&
     !allocate.busy &&
+    !refreshing &&
     (!value.ruleChoiceRequired || !!chosenRule);
+  const runningJob = value?.jobs.find((row) => row.state === 'PENDING');
   const change = () => {
     preview.reset();
     setConsumed('');
   };
+  const errorText = (error: unknown) => generationErrorText(error, common);
+  // 终态事件只处理本页提交或实际观察到运行中的任务；旧已完成操作不能在换单时反复提示。
+  const settled = useEffectEvent(async (kind: 'GENERATE' | 'ALLOCATE', task: Task) => {
+    setRefreshing(true);
+    const work = kind === 'GENERATE' ? generate : allocate;
+    try {
+      const [result] = await Promise.all([context.refetch(), lines.refetch()]);
+      if (task.state === 'SUCCESS') {
+        const row = (kind === 'GENERATE' ? result.data?.jobs : result.data?.allocations)?.find(
+          (r) => r.taskId === task.taskId,
+        );
+        if (kind === 'GENERATE') {
+          const completedQuantity = row?.quantity ?? submittedQuantity.current;
+          lastGeneratedQuantity.current = completedQuantity;
+          feedback.success(t('generate.done', { qty: completedQuantity }));
+          setAllocQty(
+            suggestedQuantity(
+              result.data?.pendingQuantity ?? '0',
+              suggestedQuantity(completedQuantity, limit),
+            ),
+          );
+          change();
+        } else {
+          feedback.success(
+            t('generate.allocDone', {
+              qty: row?.quantity ?? allocationQuantity,
+              start: row?.firstSn ?? '',
+              end: row?.lastSn ?? '',
+            }),
+          );
+          setAllocQty('');
+        }
+        setQty('');
+      } else if (task.state === 'FAILED') {
+        const failed = result.data?.jobs.find((row) => row.taskId === task.taskId);
+        feedback.error(
+          kind === 'GENERATE'
+            ? t('generate.failed', {
+                msg: generationFailureText(
+                  task.errorCode,
+                  failed?.errorParams ?? {},
+                  i18n.getFixedT('zh-CN'),
+                ),
+              })
+            : common('errors.' + task.errorCode),
+          kind === 'GENERATE' ? 8 : 5,
+        );
+        if (kind === 'GENERATE') {
+          change();
+          setQty('');
+          const pending = result.data?.pendingQuantity ?? '0';
+          setAllocQty(
+            suggestedQuantity(
+              pending,
+              suggestedQuantity(lastGeneratedQuantity.current ?? pending, limit),
+            ),
+          );
+        }
+      }
+      work.clear();
+    } finally {
+      setRefreshing(false);
+    }
+  });
+  const rejected = useEffectEvent(async (kind: 'GENERATE' | 'ALLOCATE', error: unknown) => {
+    feedback.error(errorText(error));
+    // 业务拒绝可能已留下同步失败任务，统一刷新历史；未知结果保留原意图以便同号核对。
+    if (error instanceof ApiError && error.status >= 400 && error.status < 500) {
+      const operation = kind === 'GENERATE' ? generate : allocate;
+      if (operation.operation) watched.current.delete(operation.operation);
+      operation.clear();
+      if (kind === 'GENERATE') {
+        change();
+        setRefreshing(true);
+        try {
+          const [result] = await Promise.all([context.refetch(), lines.refetch()]);
+          setQty('');
+          const pending = result.data?.pendingQuantity ?? '0';
+          setAllocQty(
+            suggestedQuantity(
+              pending,
+              suggestedQuantity(lastGeneratedQuantity.current ?? pending, limit),
+            ),
+          );
+        } finally {
+          setRefreshing(false);
+        }
+      }
+    }
+  });
+  useEffect(() => {
+    for (const [kind, task] of [
+      ['GENERATE', generate.task.data],
+      ['ALLOCATE', allocate.task.data],
+    ] as const) {
+      if (!task) continue;
+      if (['QUEUED', 'RUNNING', 'RETRY_WAIT'].includes(task.state))
+        watched.current.add(task.operationId);
+      else if (watched.current.delete(task.operationId)) void settled(kind, task);
+    }
+  }, [generate.task.data, allocate.task.data]);
+  useEffect(() => {
+    for (const [kind, error] of [
+      ['GENERATE', generate.mutation.error],
+      ['ALLOCATE', allocate.mutation.error],
+    ] as const) {
+      if (error && !reportedErrors.current.has(error)) {
+        reportedErrors.current.add(error);
+        void rejected(kind, error);
+      }
+    }
+  }, [generate.mutation.error, allocate.mutation.error]);
+  const doPreview = () => {
+    const trimmed = start.trim();
+    if (trimmed && !positiveDecimal(trimmed)) {
+      feedback.error(t('generate.startInvalid'));
+      return;
+    }
+    preview.mutate(
+      {
+        billId,
+        quantity,
+        start: trimmed || undefined,
+        ruleId: value?.ruleChoiceRequired ? chosenRule?.id : undefined,
+      },
+      {
+        onError: (error) => feedback.error(errorText(error)),
+      },
+    );
+  };
+  const confirmGenerate = () => {
+    if (!p) return;
+    const fixed = p;
+    modal.confirm({
+      title: t('generate.generate'),
+      content: t('generate.confirm', {
+        qty: fixed.quantity,
+        start: fixed.firstSn,
+        end: fixed.lastSn,
+      }),
+      centered: true,
+      width: 420,
+      className: 'sn-generation-confirm',
+      okText: common('users.confirm'),
+      cancelText: t('common.cancel'),
+      onOk: () => {
+        const operationId = crypto.randomUUID();
+        watched.current.add(operationId);
+        submittedQuantity.current = fixed.quantity;
+        setConsumed(fixed.id);
+        generate.begin({ operationId, previewId: fixed.id });
+      },
+    });
+  };
+  const confirmAllocate = () => {
+    if (!value) return;
+    const fixed = {
+      operationId: crypto.randomUUID(),
+      billId,
+      expectedQuantity: value.pendingQuantity,
+      quantity: allocationQuantity,
+      factoryCode: value.bill.factoryCode ?? '',
+    };
+    modal.confirm({
+      title: t('generate.allocate'),
+      content: t('generate.allocConfirm', {
+        qty: fixed.quantity,
+        factory: value.factoryName || value.bill.factoryCode,
+      }),
+      centered: true,
+      width: 420,
+      className: 'sn-generation-confirm',
+      okText: common('users.confirm'),
+      cancelText: t('common.cancel'),
+      onOk: () => {
+        watched.current.add(fixed.operationId);
+        allocate.begin(fixed);
+      },
+    });
+  };
   return (
-    <div className="sn-page">
-      <ApiErrorAlert error={context.error ?? lines.error ?? preview.error} />
+    <>
+      {feedback.holder}
+      {modalHolder}
+      <ApiErrorAlert error={context.error ?? lines.error ?? allocations.error} />
       {!value ? (
-        <Empty description={t('snPages.generate.empty')} />
+        <Empty description={t('generate.empty')} />
       ) : (
         <>
           {value.issues.map((issue) => (
             <Alert
               key={issue}
+              className="sn-generation-issue"
               type="error"
               showIcon
-              title={t('snPages.generate.issue.' + issue, { org: value.bill.orgName })}
+              title={
+                issue === 'ORG_UNMAPPED'
+                  ? t('generate.issue.FACTORY_UNMAPPED', { org: value.bill.orgName })
+                  : common('snPages.generate.issue.' + issue, { org: value.bill.orgName })
+              }
             />
           ))}
           <div className="sn-generation-grid">
             <section className="sn-surface">
-              <Typography.Title level={4}>{t('snPages.generate.order')}</Typography.Title>
+              <div className="sn-surface-title">{t('generate.order')}</div>
               <Descriptions
                 size="small"
                 bordered
-                column={{ xs: 1, sm: 3 }}
+                column={3}
                 items={[
-                  { key: 'bill', label: t('snPages.common.billNo'), children: value.bill.billNo },
+                  { key: 'bill', label: t('common.billNo'), children: value.bill.billNo },
                   { key: 'pi', label: 'PI', children: <b>{value.bill.pi}</b> },
                   { key: 'po', label: 'PO', children: value.bill.po },
-                  {
-                    key: 'customer',
-                    label: t('snPages.common.customer'),
-                    children: value.bill.customer,
-                  },
+                  { key: 'customer', label: t('common.customer'), children: value.bill.customer },
                   {
                     key: 'org',
-                    label: t('snPages.orders.org'),
-                    children: `${value.bill.orgName} (${value.bill.factoryCode ?? '—'})`,
+                    label: t('orders.org'),
+                    children:
+                      value.bill.orgName +
+                      '（' +
+                      (value.bill.factoryCode ?? t('orders.noFactory')) +
+                      '）',
                     span: 2,
                   },
                 ]}
@@ -146,7 +351,7 @@ function GenerationForm({ profile }: { profile: UserProfile }) {
                   ['orders.quota', value.bill.quota],
                 ].map(([label, n]) => (
                   <div key={label}>
-                    <span className="sn-muted">{t('snPages.' + label)}</span>
+                    <span className="sn-muted">{t(label!)}</span>
                     <b>{n}</b>
                   </div>
                 ))}
@@ -154,331 +359,318 @@ function GenerationForm({ profile }: { profile: UserProfile }) {
               <Table
                 size="small"
                 rowKey="id"
-                dataSource={lines.data?.items ?? []}
-                scroll={{ x: 450 }}
+                dataSource={lines.data ?? []}
+                pagination={false}
                 columns={[
-                  { title: '#', dataIndex: 'ordinal', width: 60 },
+                  { title: '#', dataIndex: 'ordinal', width: 48 },
                   {
-                    title: t('snPages.common.material'),
+                    title: t('common.material'),
                     dataIndex: 'material',
-                    render: (s: string) => s || t('snPages.orders.noMaterial'),
+                    render: (v: string) => v || t('orders.noMaterial'),
                   },
-                  { title: t('snPages.orders.materialName'), dataIndex: 'materialName' },
-                  { title: t('snPages.common.qty'), dataIndex: 'qty', align: 'right' },
+                  { title: t('orders.materialName'), dataIndex: 'materialName', ellipsis: true },
+                  {
+                    title: t('common.qty'),
+                    dataIndex: 'qty',
+                    align: 'right',
+                    width: 90,
+                    render: (v: string) => v.split('.')[0],
+                  },
                 ]}
-                pagination={{
-                  current: linePage,
-                  pageSize: 20,
-                  total: paginationTotal(lines.data?.total),
-                  onChange: setLinePage,
-                  showSizeChanger: false,
-                }}
               />
             </section>
             <section className="sn-surface">
-              <Typography.Title level={4}>{t('snPages.generate.rule')}</Typography.Title>
-              {value.ruleChoiceRequired ? (
-                <>
-                  <GenerationRulePicker
-                    profile={profile}
-                    value={chosenRule}
-                    onChange={(rule) => {
-                      setChosenRule(rule);
-                      change();
-                    }}
-                  />
-                  {chosenRule && (
-                    <SnRuleDetails
-                      rule={chosenRule.current}
-                      details={{
-                        ruleCode: chosenRule.code,
-                        ruleScope: chosenRule.bindScope,
-                        ruleBinding: chosenRule.bindValue,
-                      }}
-                    />
-                  )}
-                </>
-              ) : (
-                <>
-                  <Tag>{t('snPages.generate.ruleSource.' + value.ruleSource)}</Tag>
-                  <SnRuleDetails rule={value.rule} details={value} />
-                </>
+              <div className="sn-surface-title">{t('generate.rule')}</div>
+              {value.ruleChoiceRequired && (
+                <GenerationRulePicker
+                  profile={profile}
+                  value={chosenRule}
+                  onChange={(rule) => {
+                    setChosenRule(rule);
+                    change();
+                  }}
+                />
               )}
-              <Typography.Title level={4}>{t('snPages.generate.counter')}</Typography.Title>
-              <SnCounter value={value.counter} />
-              <NextSequenceHint value={p && consumed !== p.id ? p.nextStart : value.nextStart} />
+              <GenerationRuleDetails context={value} chosen={chosenRule} />
+              <div className="sn-surface-title sn-generation-mt">{t('generate.counter')}</div>
+              <GenerationCounter context={value} />
             </section>
           </div>
           <section className="sn-surface">
-            <Typography.Title level={4}>
-              {t('snPages.generate.piSummary', {
+            <div className="sn-surface-title">
+              {t('generate.piSummary', {
                 factory: value.bill.factoryCode ?? value.bill.orgName,
                 pi: value.bill.pi,
               })}
-            </Typography.Title>
+            </div>
             <Table
               size="small"
               rowKey="billId"
               dataSource={value.piSummary}
-              scroll={{ x: 650 }}
               pagination={false}
+              tableLayout="fixed"
               columns={[
                 {
-                  title: t('snPages.common.billNo'),
+                  title: t('common.billNo'),
                   dataIndex: 'billNo',
-                  render: (_, r) => (
+                  width: '20%',
+                  render: (_, row) => (
                     <>
-                      <b>{r.billNo}</b>
-                      {!r.inSnapshot && <Tag>{t('snPages.generate.leftSnapshot')}</Tag>}
+                      {row.billId === billId ? <b>{row.billNo}</b> : row.billNo}
+                      {!row.inSnapshot && <Tag>{t('generate.leftSnapshot')}</Tag>}
                     </>
                   ),
                 },
-                { title: t('snPages.orders.totalQty'), dataIndex: 'totalQty' },
-                { title: t('snPages.orders.generated'), dataIndex: 'generatedQty' },
-                { title: t('snPages.generate.allocated'), dataIndex: 'allocatedQty' },
-                { title: t('snPages.orders.quota'), dataIndex: 'quota' },
+                {
+                  title: t('orders.totalQty'),
+                  dataIndex: 'totalQty',
+                  align: 'right',
+                  width: '20%',
+                },
+                {
+                  title: t('orders.generated'),
+                  dataIndex: 'generatedQty',
+                  align: 'right',
+                  width: '20%',
+                },
+                {
+                  title: t('generate.allocated'),
+                  dataIndex: 'allocatedQty',
+                  align: 'right',
+                  width: '20%',
+                },
+                { title: t('orders.quota'), dataIndex: 'quota', align: 'right', width: '20%' },
               ]}
             />
           </section>
           <section className="sn-surface">
-            <Steps
-              size="small"
+            <GenerationSteps
               current={
-                BigInt(value.pendingQuantity) > 0n
+                value.pendingQuantity !== '0'
                   ? 1
-                  : BigInt(value.bill.allocatedQty) > 0n
+                  : value.bill.quota === '0' && value.bill.allocatedQty !== '0'
                     ? 2
                     : 0
               }
-              items={[
-                { title: t('snPages.generate.step1') },
-                { title: t('snPages.generate.step2') },
-              ]}
             />
-            <div className="sn-generation-grid">
+            <div className="sn-generation-actions">
               <div>
-                <Typography.Title level={4}>{t('snPages.generate.step1')}</Typography.Title>
+                <h4>{t('generate.step1')}</h4>
                 <Form layout="vertical" className="sn-work-form">
                   <Form.Item
-                    label={t('snPages.generate.limit')}
-                    help={t('snPages.generate.limitHint')}
+                    label={t('generate.limit')}
+                    help={common('snPages.generate.limitHint')}
                   >
-                    <Input
-                      aria-label={t('snPages.generate.limit')}
+                    <InputNumber<string>
+                      stringMode
+                      aria-label={t('generate.limit')}
+                      min="1"
+                      step="1000"
                       value={limit}
-                      onChange={(e) => {
-                        setLimit(e.target.value);
+                      onChange={(v) => {
+                        const next = v ?? '1';
+                        setLimit(next);
+                        setQty(
+                          suggestedQuantity(quantity, suggestedQuantity(value.bill.quota, next)),
+                        );
                         change();
                       }}
-                      inputMode="numeric"
                     />
                   </Form.Item>
                   <Form.Item
-                    label={t('snPages.generate.qty')}
-                    help={t('snPages.generate.qtyHint', { quota: value.bill.quota, limit })}
+                    label={t('generate.qty')}
+                    help={t('generate.qtyHint', { quota: value.bill.quota, limit })}
                   >
-                    <Input
-                      aria-label={t('snPages.generate.qty')}
+                    <InputNumber<string>
+                      stringMode
+                      aria-label={t('generate.qty')}
+                      min="1"
+                      max={maxQty}
                       value={quantity}
-                      onChange={(e) => {
-                        setQty(e.target.value);
+                      onChange={(v) => {
+                        setQty(v ?? '1');
                         change();
                       }}
-                      inputMode="numeric"
                     />
                   </Form.Item>
                   {!value.counter.startLocked && (
-                    <Form.Item
-                      label={t('snPages.generate.start')}
-                      help={t('snPages.generate.startHint')}
-                    >
+                    <Form.Item label={t('generate.start')} help={t('generate.startHint')}>
                       <Input
-                        aria-label={t('snPages.generate.start')}
+                        aria-label={t('generate.start')}
                         value={start}
+                        allowClear
+                        placeholder={t('generate.startPlaceholder')}
                         onChange={(e) => {
                           setStart(e.target.value);
                           change();
                         }}
-                        placeholder={t('snPages.generate.startPlaceholder')}
-                        inputMode="numeric"
                       />
                     </Form.Item>
                   )}
                 </Form>
-                <Space wrap>
+                <Space size={8}>
                   <Button
+                    icon={<EyeOutlined aria-hidden="true" />}
                     disabled={!ready || !profile.permissions.includes('sn:generation:preview')}
                     loading={preview.isPending}
-                    onClick={() =>
-                      preview.mutate({
-                        billId,
-                        quantity,
-                        start: start || undefined,
-                        ruleId: value.ruleChoiceRequired ? chosenRule?.id : undefined,
-                      })
-                    }
+                    onClick={doPreview}
                   >
-                    {t('snPages.generate.preview')}
+                    {t('generate.preview')}
                   </Button>
-                  <Popconfirm
-                    title={t('snPages.generate.confirm', {
-                      qty: p?.quantity,
-                      start: p?.firstSn,
-                      end: p?.lastSn,
-                    })}
-                    okText={t('users.confirm')}
-                    cancelText={t('snPages.common.cancel')}
-                    onConfirm={() => {
-                      if (p) {
-                        setConsumed(p.id);
-                        generate.begin({ operationId: crypto.randomUUID(), previewId: p.id });
-                      }
-                    }}
-                    disabled={!p || !ready || consumed === p.id}
+                  <Button
+                    type="primary"
+                    icon={<CheckOutlined aria-hidden="true" />}
+                    disabled={
+                      !p || !ready || !profile.permissions.includes('sn:generation:execute')
+                    }
+                    loading={generate.busy || refreshing}
+                    onClick={confirmGenerate}
                   >
-                    <Button
-                      type="primary"
-                      disabled={
-                        !p ||
-                        !ready ||
-                        consumed === p.id ||
-                        !profile.permissions.includes('sn:generation:execute')
-                      }
-                      loading={generate.mutation.isPending}
-                    >
-                      {t('snPages.generate.generate')}
-                    </Button>
-                  </Popconfirm>
+                    {t('generate.generate')}
+                  </Button>
                 </Space>
                 {!p ? (
                   <Alert
-                    className="sn-operation-actions"
+                    className="sn-generation-mt"
                     type="info"
-                    title={t('snPages.generate.needPreview')}
+                    title={t('generate.needPreview')}
                   />
                 ) : (
                   <>
+                    {p.nextStart.adjusted && !start.trim() && (
+                      <Alert
+                        className="sn-generation-mt"
+                        type="warning"
+                        showIcon
+                        title={t('generate.startAdjusted', {
+                          sn: p.nextStart.bySn,
+                          start: p.firstSn,
+                        })}
+                      />
+                    )}
                     <Descriptions
                       bordered
                       size="small"
                       column={2}
-                      className="sn-operation-actions"
+                      className="sn-generation-mt"
                       items={[
                         {
                           key: 'start',
-                          label: t('snPages.generate.startSn'),
+                          label: t('generate.startSn'),
                           children: <span className="sn-mono">{p.firstSn}</span>,
                         },
                         {
                           key: 'end',
-                          label: t('snPages.generate.endSn'),
+                          label: t('generate.endSn'),
                           children: <span className="sn-mono">{p.lastSn}</span>,
                         },
-                        { key: 'qty', label: t('snPages.common.qty'), children: p.quantity },
-                        {
-                          key: 'base',
-                          label: t('snPages.generate.baseLast'),
-                          children: p.baseLastSeq,
-                        },
+                        { key: 'qty', label: t('common.qty'), children: <b>{p.quantity}</b> },
+                        { key: 'base', label: t('generate.baseLast'), children: p.baseLastSeq },
                         {
                           key: 'range',
-                          label: t('snPages.generate.seqRange'),
-                          children: `${p.startSeq} ~ ${p.endSeq}`,
+                          label: t('generate.seqRange'),
+                          children: p.startSeq + ' ~ ' + p.endSeq,
                         },
                         {
                           key: 'expires',
-                          label: t('snPages.generate.expires'),
-                          children: new Date(p.expiresAt).toLocaleString(i18n.language),
+                          label: t('generate.expires'),
+                          children: formatSnTime(p.expiresAt),
                         },
                       ]}
                     />
                     <Table
                       size="small"
                       rowKey="sourceEntryId"
+                      className="sn-generation-mt"
                       dataSource={p.segments}
                       pagination={false}
-                      scroll={{ x: 500 }}
+                      scroll={{ x: 490 }}
                       columns={[
-                        { title: '#', dataIndex: 'ordinal' },
+                        { title: '#', dataIndex: 'ordinal', width: 48 },
                         {
-                          title: t('snPages.common.material'),
+                          title: t('common.material'),
                           dataIndex: 'material',
-                          render: (s: string) => s || t('snPages.orders.noMaterial'),
+                          render: (v: string) => v || t('orders.noMaterial'),
                         },
                         {
-                          title: t('snPages.generate.segment'),
-                          render: (_, s) => (
+                          title: t('generate.segment'),
+                          minWidth: 220,
+                          render: (_, row) => (
                             <span className="sn-mono">
-                              {s.firstSn} ~ {s.lastSn}
+                              {row.firstSn} ~ {row.lastSn}
                             </span>
                           ),
                         },
-                        { title: t('snPages.common.qty'), dataIndex: 'quantity' },
+                        {
+                          title: t('common.qty'),
+                          dataIndex: 'quantity',
+                          align: 'right',
+                          width: 80,
+                        },
                       ]}
                     />
                   </>
                 )}
-                <SnOperation work={generate} />
+                {runningJob && (
+                  <div className="sn-generation-mt">
+                    <div className="sn-muted">
+                      {t('generate.running', { id: runningJob.generationNumber ?? '—' })}
+                    </div>
+                    <Progress
+                      percent={generationPercent(runningJob)}
+                      strokeWidth={14}
+                      status="active"
+                    />
+                  </div>
+                )}
               </div>
               <div>
-                <Typography.Title level={4}>{t('snPages.generate.step2')}</Typography.Title>
+                <h4>{t('generate.step2')}</h4>
                 <Form layout="vertical" className="sn-work-form">
                   <Form.Item
-                    label={t('snPages.generate.allocQty')}
-                    help={t('snPages.generate.allocHint', { pending: value.pendingQuantity })}
+                    label={t('generate.allocQty')}
+                    help={t('generate.allocHint', { pending: value.pendingQuantity })}
                   >
-                    <Input
-                      aria-label={t('snPages.generate.allocQty')}
-                      value={value.pendingQuantity}
-                      readOnly
+                    <InputNumber<string>
+                      stringMode
+                      aria-label={t('generate.allocQty')}
+                      min="1"
+                      max={maxAlloc}
+                      value={allocationQuantity}
+                      onChange={(v) => setAllocQty(v ?? '1')}
                     />
                   </Form.Item>
                   <Form.Item
-                    label={t('snPages.generate.allocFactory')}
-                    help={t('snPages.generate.allocFactoryHint')}
+                    label={t('generate.allocFactory')}
+                    help={t('generate.allocFactoryHint')}
                   >
                     <Input
-                      value={`${value.factoryName} (${value.bill.factoryCode ?? '—'})`}
+                      value={
+                        value.bill.factoryCode
+                          ? value.factoryName + '（' + value.bill.factoryCode + '）'
+                          : ''
+                      }
                       disabled
                     />
                   </Form.Item>
                 </Form>
-                <Popconfirm
-                  title={t('snPages.generate.allocConfirm', {
-                    qty: value.pendingQuantity,
-                    factory: value.factoryName,
-                  })}
-                  okText={t('users.confirm')}
-                  cancelText={t('snPages.common.cancel')}
-                  onConfirm={() =>
-                    allocate.begin({
-                      operationId: crypto.randomUUID(),
-                      billId,
-                      expectedQuantity: value.pendingQuantity,
-                    })
+                <Button
+                  type="primary"
+                  icon={<SendOutlined aria-hidden="true" />}
+                  disabled={
+                    !profile.permissions.includes('sn:allocation:execute') ||
+                    value.pendingQuantity === '0' ||
+                    generate.busy ||
+                    allocate.busy ||
+                    refreshing ||
+                    !!value.counter.activeTaskId
                   }
-                  disabled={value.pendingQuantity === '0' || allocate.busy || generate.busy}
+                  loading={allocate.busy}
+                  onClick={confirmAllocate}
                 >
-                  <Button
-                    type="primary"
-                    disabled={
-                      !profile.permissions.includes('sn:allocation:execute') ||
-                      value.pendingQuantity === '0' ||
-                      allocate.busy ||
-                      generate.busy ||
-                      !!value.counter.activeTaskId
-                    }
-                    loading={allocate.mutation.isPending}
-                  >
-                    {t('snPages.generate.allocate')}
-                  </Button>
-                </Popconfirm>
-                <Alert
-                  className="sn-operation-actions"
-                  type="info"
-                  title={t('snPages.generate.allocNote')}
-                />
-                <SnOperation work={allocate} />
+                  {t('generate.allocate')}
+                </Button>
+                <Alert className="sn-generation-mt" type="info" title={t('generate.allocNote')} />
               </div>
             </div>
           </section>
@@ -487,25 +679,16 @@ function GenerationForm({ profile }: { profile: UserProfile }) {
               items={[
                 {
                   key: 'jobs',
-                  label: t('snPages.generate.jobs'),
-                  children: (
-                    <SnBillHistory
-                      key={billId + 'GENERATE'}
-                      profile={profile}
-                      billId={billId}
-                      kind="GENERATE"
-                    />
-                  ),
+                  label: t('generate.jobs'),
+                  children: <GenerationHistory rows={value.jobs} />,
                 },
                 {
                   key: 'allocations',
-                  label: t('snPages.generate.allocations'),
+                  label: t('generate.allocations'),
                   children: (
-                    <SnBillHistory
-                      key={billId + 'ALLOCATE'}
-                      profile={profile}
-                      billId={billId}
-                      kind="ALLOCATE"
+                    <GenerationHistory
+                      allocations
+                      rows={(allocations.data ?? []).filter((row) => row.state === 'SUCCESS')}
                     />
                   ),
                 },
@@ -514,12 +697,12 @@ function GenerationForm({ profile }: { profile: UserProfile }) {
           </section>
         </>
       )}
-      {!value && (
-        <>
-          <SnOperation work={generate} />
-          <SnOperation work={allocate} />
-        </>
-      )}
-    </div>
+      {generate.operation &&
+        !generate.task.data &&
+        (generate.mutation.error || generate.task.error) && <SnOperation work={generate} />}
+      {allocate.operation &&
+        !allocate.task.data &&
+        (allocate.mutation.error || allocate.task.error) && <SnOperation work={allocate} />}
+    </>
   );
 }

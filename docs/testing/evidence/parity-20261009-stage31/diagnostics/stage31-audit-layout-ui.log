@@ -1,0 +1,13 @@
+
+Running 2 tests using 1 worker
+
+(node:43780) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\audit-page.spec.ts:106:1 › P12 audit: numbered pages, draft export scope, filters and inline detail (13.5s)
+(node:45616) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+D:\AdtekProjects\mf-sn-uniq-guard\sn-center-python\.venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+  ok 2 [migration] › e2e\parity\audit-page.spec.ts:106:1 › P12 audit: numbered pages, draft export scope, filters and inline detail (32.3s)
+
+  2 passed (48.6s)

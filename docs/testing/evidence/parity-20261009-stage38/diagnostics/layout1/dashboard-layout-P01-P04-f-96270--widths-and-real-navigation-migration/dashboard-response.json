@@ -1,0 +1,35 @@
+{
+  "code": 0,
+  "message": "common.success",
+  "data": {
+    "states": [],
+    "pendingTransfers": "0",
+    "totalGenerated": null,
+    "totalImported": null,
+    "today": [
+      {
+        "name": "ALLOCATE",
+        "quantity": "2059"
+      },
+      {
+        "name": "GENERATE",
+        "quantity": "2059"
+      },
+      {
+        "name": "PRINT",
+        "quantity": "655"
+      },
+      {
+        "name": "TAKE",
+        "quantity": "1636"
+      }
+    ],
+    "recentJobs": [],
+    "jobs": [],
+    "date": "2026-10-09",
+    "zone": "Asia/Shanghai",
+    "allFactories": false
+  },
+  "params": {},
+  "traceId": "3c7901c7-c1e4-46b8-8eab-7ad427550a27"
+}

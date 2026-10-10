@@ -1,0 +1,491 @@
+{
+  "text": "SN 管控中心\n总部统一生成与分配\n工作台\n首页\n总部作业\n生产订单\n生成与分配\n起始号与历史导入\n规则模板\n工厂作业\n领取与打印\n转厂\n查询与留痕\nSN 查询\n操作痕迹\n系统管理\n账户\n工厂\nSN 管控中心\n/\n操作痕迹\n总部\n简体中文\n初\n初始管理员 · 系统管理员（总部）\n操作痕迹\n\n保留操作当时的人员、工厂、数量和状态。默认查询上海时区最近 30 天，归档使用同一权限。\n\n动作\n结果\n来源\n工厂\n在线与归档\n查询\n痕迹永久保存。 单次最多导出 100000 条；CSV 对姓名等自由文本防公式解释，精确文本表格建议使用 XLSX。\n操作痕迹\n导出记录\n共 4954 条\n导出 CSV\n导出 XLSX\n时间\t操作人工号\t来源\t动作\t结果\t工厂\tPI\t号段\t数量\t状态变化\t失败原因\t操作\n\n时间\n\t\n操作人工号\n\t\n来源\n\t\n动作\n\t\n结果\n\t\n工厂\n\t\nPI\n\t\n号段\n\t\n数量\n\t\n状态变化\n\t\n失败原因\n\t\n操作\n\n2026/10/9 06:35:09\tadmin 初始管理员\t页面\t同步订单\t成功\t—\t\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:35:07\tadmin 初始管理员\t页面\t生成查询导出文件\t成功\t—\t\t—\t6\t— → —\t—\t\n明细\n\n2026/10/9 06:35:05\tadmin 初始管理员\t页面\t固定查询导出快照\t成功\t—\t\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:35:03\tadmin 初始管理员\t页面\t生成查询导出文件\t成功\t—\t\t—\t6\t— → —\t—\t\n明细\n\n2026/10/9 06:35:03\tadmin 初始管理员\t页面\t固定查询导出快照\t成功\t—\t\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:35:01\tcmp_operator 比较操作员\t页面\t生成查询导出文件\t成功\t—\t\t—\t3\t— → —\t—\t\n明细\n\n2026/10/9 06:35:01\tcmp_operator 比较操作员\t页面\t固定查询导出快照\t成功\t—\t\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:34:32\tadmin 初始管理员\t页面\t直接转厂\t成功\tCMP-A · 比较测试甲厂\tCMP-UI-QUERY-SCOPE-PI-A\tQ29A00003\t1\t待领取 → 待领取\t—\t\n明细\n\n2026/10/9 06:34:31\tadmin 初始管理员\t页面\t整单分配\t成功\tCMP-B · 比较测试乙厂\tCMP-UI-QUERY-SCOPE-PI-B\tQ29B00001 ~ Q29B00003\t3\t待分配 → 待领取\t—\t\n明细\n\n2026/10/9 06:34:30\tadmin 初始管理员\t页面\t提交整单分配\t成功\tCMP-B · 比较测试乙厂\tCMP-UI-QUERY-SCOPE-PI-B\t—\t0\t待分配 → —\t—\t\n明细\n\n2026/10/9 06:34:30\tadmin 初始管理员\t页面\t生成SN\t成功\tCMP-B · 比较测试乙厂\tCMP-UI-QUERY-SCOPE-PI-B\tQ29B00001 ~ Q29B00003\t3\t— → 待分配\t—\t\n明细\n\n2026/10/9 06:34:30\tadmin 初始管理员\t页面\t提交生成\t成功\tCMP-B · 比较测试乙厂\tCMP-UI-QUERY-SCOPE-PI-B\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:34:30\tadmin 初始管理员\t页面\t新建规则\t成功\t—\t\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:34:30\tadmin 初始管理员\t页面\t整单分配\t成功\tCMP-A · 比较测试甲厂\tCMP-UI-QUERY-SCOPE-PI-A\tQ29A00001 ~ Q29A00003\t3\t待分配 → 待领取\t—\t\n明细\n\n2026/10/9 06:34:29\tadmin 初始管理员\t页面\t提交整单分配\t成功\tCMP-A · 比较测试甲厂\tCMP-UI-QUERY-SCOPE-PI-A\t—\t0\t待分配 → —\t—\t\n明细\n\n2026/10/9 06:34:29\tadmin 初始管理员\t页面\t生成SN\t成功\tCMP-A · 比较测试甲厂\tCMP-UI-QUERY-SCOPE-PI-A\tQ29A00001 ~ Q29A00003\t3\t— → 待分配\t—\t\n明细\n\n2026/10/9 06:34:29\tadmin 初始管理员\t页面\t提交生成\t成功\tCMP-A · 比较测试甲厂\tCMP-UI-QUERY-SCOPE-PI-A\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:34:29\tadmin 初始管理员\t页面\t新建规则\t成功\t—\t\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:34:21\tadmin 初始管理员\t页面\t同步订单\t成功\t—\t\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:31:32\tadmin 初始管理员\t页面\t同步订单\t成功\t—\t\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:31:29\tadmin 初始管理员\t页面\t生成查询导出文件\t成功\t—\t\t—\t6\t— → —\t—\t\n明细\n\n2026/10/9 06:31:29\tadmin 初始管理员\t页面\t固定查询导出快照\t成功\t—\t\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:31:27\tadmin 初始管理员\t页面\t生成查询导出文件\t成功\t—\t\t—\t6\t— → —\t—\t\n明细\n\n2026/10/9 06:31:27\tadmin 初始管理员\t页面\t固定查询导出快照\t成功\t—\t\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:31:25\tcmp_operator 比较操作员\t页面\t生成查询导出文件\t成功\t—\t\t—\t3\t— → —\t—\t\n明细\n\n2026/10/9 06:31:25\tcmp_operator 比较操作员\t页面\t固定查询导出快照\t成功\t—\t\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:30:55\tadmin 初始管理员\t页面\t直接转厂\t成功\tCMP-A · 比较测试甲厂\tCMP-UI-QUERY-SCOPE-PI-A\tQ29A00003\t1\t待领取 → 待领取\t—\t\n明细\n\n2026/10/9 06:30:54\tadmin 初始管理员\t页面\t整单分配\t成功\tCMP-B · 比较测试乙厂\tCMP-UI-QUERY-SCOPE-PI-B\tQ29B00001 ~ Q29B00003\t3\t待分配 → 待领取\t—\t\n明细\n\n2026/10/9 06:30:53\tadmin 初始管理员\t页面\t提交整单分配\t成功\tCMP-B · 比较测试乙厂\tCMP-UI-QUERY-SCOPE-PI-B\t—\t0\t待分配 → —\t—\t\n明细\n\n2026/10/9 06:30:53\tadmin 初始管理员\t页面\t生成SN\t成功\tCMP-B · 比较测试乙厂\tCMP-UI-QUERY-SCOPE-PI-B\tQ29B00001 ~ Q29B00003\t3\t— → 待分配\t—\t\n明细\n\n2026/10/9 06:30:53\tadmin 初始管理员\t页面\t提交生成\t成功\tCMP-B · 比较测试乙厂\tCMP-UI-QUERY-SCOPE-PI-B\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:30:53\tadmin 初始管理员\t页面\t新建规则\t成功\t—\t\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:30:53\tadmin 初始管理员\t页面\t整单分配\t成功\tCMP-A · 比较测试甲厂\tCMP-UI-QUERY-SCOPE-PI-A\tQ29A00001 ~ Q29A00003\t3\t待分配 → 待领取\t—\t\n明细\n\n2026/10/9 06:30:53\tadmin 初始管理员\t页面\t提交整单分配\t成功\tCMP-A · 比较测试甲厂\tCMP-UI-QUERY-SCOPE-PI-A\t—\t0\t待分配 → —\t—\t\n明细\n\n2026/10/9 06:30:53\tadmin 初始管理员\t页面\t生成SN\t成功\tCMP-A · 比较测试甲厂\tCMP-UI-QUERY-SCOPE-PI-A\tQ29A00001 ~ Q29A00003\t3\t— → 待分配\t—\t\n明细\n\n2026/10/9 06:30:52\tadmin 初始管理员\t页面\t提交生成\t成功\tCMP-A · 比较测试甲厂\tCMP-UI-QUERY-SCOPE-PI-A\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:30:52\tadmin 初始管理员\t页面\t新建规则\t成功\t—\t\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:30:45\tadmin 初始管理员\t页面\t同步订单\t成功\t—\t\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:26:22\tadmin 初始管理员\t页面\t同步订单\t成功\t—\t\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:26:14\tadmin 初始管理员\t页面\t生成查询导出文件\t成功\t—\t\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:26:13\tadmin 初始管理员\t页面\t固定查询导出快照\t成功\t—\t\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:26:12\tadmin 初始管理员\t页面\t生成查询导出文件\t成功\t—\t\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:26:12\tadmin 初始管理员\t页面\t固定查询导出快照\t成功\t—\t\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:26:10\tadmin 初始管理员\t页面\t生成查询导出文件\t成功\t—\t\t—\t51\t— → —\t—\t\n明细\n\n2026/10/9 06:26:10\tadmin 初始管理员\t页面\t固定查询导出快照\t成功\t—\t\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:26:09\tadmin 初始管理员\t页面\t生成查询导出文件\t成功\t—\t\t—\t51\t— → —\t—\t\n明细\n\n2026/10/9 06:26:08\tadmin 初始管理员\t页面\t固定查询导出快照\t成功\t—\t\t—\t0\t— → —\t—\t\n明细\n\n2026/10/9 06:26:05\tadmin 初始管理员\t页面\t领取SN\t成功\tCMP-A · 比较测试甲厂\tCMP-UI-QUERY-PI-A\tQ28A00001 ~ Q28A00051\t51\t待领取 → 待打印\t—\t\n明细\n\n2026/10/9 06:26:04\tadmin 初始管理员\t页面\t提交领取\t成功\tCMP-A · 比较测试甲厂\tCMP-UI-QUERY-PI-A\t—\t0\t待领取 → —\t—\t\n明细\n\n2026/10/9 06:26:03\tadmin 初始管理员\t页面\t生成查询导出文件\t成功\t—\t\t—\t51\t— → —\t—\t\n明细\n上一页\n下一页\n50 条/页\n详情\n客户\t—\t物料\t—\n来源订单\t—\t领取批次号\t—\n请求号\t—\t转厂单号\t—\n转厂原因\t—\n当时角色\t[\"PLATFORM_ADMIN\", \"SN_HQ\"]\t原工厂编码\t—\n原工厂名称\t—\t转入工厂\t—\n转入 PI\t—\t请求追踪号\t1a5cd1f3-181a-437b-8b1e-2fae89704fd1\n\n失败错误码\t—\t详情\t{}",
+  "url": "/audit",
+  "headers": [
+    "时间",
+    "操作人工号",
+    "来源",
+    "动作",
+    "结果",
+    "工厂",
+    "PI",
+    "号段",
+    "数量",
+    "状态变化",
+    "失败原因",
+    "操作",
+    "客户",
+    "物料",
+    "来源订单",
+    "领取批次号",
+    "请求号",
+    "转厂单号",
+    "转厂原因",
+    "当时角色",
+    "原工厂编码",
+    "原工厂名称",
+    "转入工厂",
+    "转入 PI",
+    "请求追踪号",
+    "失败错误码",
+    "详情"
+  ],
+  "inputs": [
+    {
+      "placeholder": "",
+      "ariaLabel": "语言",
+      "value": "",
+      "type": "text"
+    },
+    {
+      "placeholder": "",
+      "ariaLabel": "开始日期",
+      "value": "2026-09-09",
+      "type": "date"
+    },
+    {
+      "placeholder": "",
+      "ariaLabel": "结束日期",
+      "value": "2026-10-09",
+      "type": "date"
+    },
+    {
+      "placeholder": "",
+      "ariaLabel": "动作",
+      "value": "",
+      "type": "text"
+    },
+    {
+      "placeholder": "",
+      "ariaLabel": "结果",
+      "value": "",
+      "type": "text"
+    },
+    {
+      "placeholder": "",
+      "ariaLabel": "来源",
+      "value": "",
+      "type": "text"
+    },
+    {
+      "placeholder": "",
+      "ariaLabel": "工厂",
+      "value": "",
+      "type": "text"
+    },
+    {
+      "placeholder": "操作人工号",
+      "ariaLabel": "操作人工号",
+      "value": "",
+      "type": "text"
+    },
+    {
+      "placeholder": "PI",
+      "ariaLabel": "PI",
+      "value": "",
+      "type": "text"
+    },
+    {
+      "placeholder": "领取批次号",
+      "ariaLabel": "领取批次号",
+      "value": "",
+      "type": "text"
+    },
+    {
+      "placeholder": "SN / 请求号 / 单号",
+      "ariaLabel": "SN / 请求号 / 单号",
+      "value": "",
+      "type": "text"
+    },
+    {
+      "placeholder": "",
+      "ariaLabel": "记录范围",
+      "value": "",
+      "type": "text"
+    },
+    {
+      "placeholder": "",
+      "ariaLabel": "每页条数",
+      "value": "",
+      "type": "text"
+    }
+  ],
+  "buttons": [
+    {
+      "text": "首页",
+      "title": "",
+      "label": "首页"
+    },
+    {
+      "text": "生产订单",
+      "title": "",
+      "label": "生产订单"
+    },
+    {
+      "text": "生成与分配",
+      "title": "",
+      "label": "生成与分配"
+    },
+    {
+      "text": "起始号与历史导入",
+      "title": "",
+      "label": "起始号与历史导入"
+    },
+    {
+      "text": "规则模板",
+      "title": "",
+      "label": "规则模板"
+    },
+    {
+      "text": "领取与打印",
+      "title": "",
+      "label": "领取与打印"
+    },
+    {
+      "text": "转厂",
+      "title": "",
+      "label": "转厂"
+    },
+    {
+      "text": "SN 查询",
+      "title": "",
+      "label": "SN 查询"
+    },
+    {
+      "text": "操作痕迹",
+      "title": "",
+      "label": "操作痕迹"
+    },
+    {
+      "text": "账户",
+      "title": "",
+      "label": "账户"
+    },
+    {
+      "text": "工厂",
+      "title": "",
+      "label": "工厂"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "收起导航"
+    },
+    {
+      "text": "初\n初始管理员 · 系统管理员（总部）",
+      "title": "",
+      "label": "初始管理员"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": null
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": null
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": null
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": null
+    },
+    {
+      "text": "查询",
+      "title": "",
+      "label": "查询"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": null
+    },
+    {
+      "text": "导出 CSV",
+      "title": "",
+      "label": null
+    },
+    {
+      "text": "导出 XLSX",
+      "title": "",
+      "label": null
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "明细",
+      "title": "",
+      "label": "明细"
+    },
+    {
+      "text": "上一页",
+      "title": "",
+      "label": null
+    },
+    {
+      "text": "下一页",
+      "title": "",
+      "label": null
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "关闭"
+    },
+    {
+      "text": "",
+      "title": "",
+      "label": "复制"
+    }
+  ],
+  "rowCount": 50
+}

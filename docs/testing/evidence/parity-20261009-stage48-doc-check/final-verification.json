@@ -1,0 +1,34 @@
+{
+  "goal": "active",
+  "mainJavaReady": {
+    "status": "UP"
+  },
+  "mainPythonReady": {
+    "status": "ok",
+    "db": "mysql"
+  },
+  "mainSchema": 41,
+  "frozenEvidenceFilesVerified": 174,
+  "currentSourceFilesVerified": 12,
+  "temporaryPortsStopped": [
+    18081,
+    15174,
+    8001,
+    19091
+  ],
+  "docSha256": "4f3b5246dcf487b2be079f447e248bacc15749e9963e766c8368aaea2d41dd12",
+  "accountsUnchanged": {
+    "java": {
+      "rows": 4,
+      "allRowsUnchanged": true
+    },
+    "python": {
+      "rows": 4,
+      "allRowsUnchanged": true
+    }
+  },
+  "mainFiles": {
+    "files": 576,
+    "allBytesUnchanged": true
+  }
+}

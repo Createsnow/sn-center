@@ -47,5 +47,6 @@ public record SnWorkInput(
             long start,
             long end,
             long entryVersion,
-            long consumed) {}
+            long consumed,
+            String materialName) {}
 }

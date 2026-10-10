@@ -1,0 +1,106 @@
+{
+  "states": [
+    {
+      "state": "01-first-page",
+      "businessColumnsEqual": true,
+      "headingsEqual": true,
+      "geometryEqual": true,
+      "tagsEqual": true,
+      "buttonsEqual": true
+    },
+    {
+      "state": "02-second-page",
+      "businessColumnsEqual": true,
+      "headingsEqual": true,
+      "geometryEqual": true,
+      "tagsEqual": true,
+      "buttonsEqual": true
+    },
+    {
+      "state": "03-operator-page-two",
+      "businessColumnsEqual": true,
+      "headingsEqual": true,
+      "geometryEqual": true,
+      "tagsEqual": true,
+      "buttonsEqual": true
+    },
+    {
+      "state": "04-disabled-query",
+      "businessColumnsEqual": true,
+      "headingsEqual": true,
+      "geometryEqual": true,
+      "tagsEqual": true,
+      "buttonsEqual": true
+    },
+    {
+      "state": "05-combined-empty",
+      "businessColumnsEqual": true,
+      "headingsEqual": true,
+      "geometryEqual": true,
+      "tagsEqual": true,
+      "buttonsEqual": true
+    },
+    {
+      "state": "06-query-factory",
+      "businessColumnsEqual": true,
+      "headingsEqual": true,
+      "geometryEqual": true,
+      "tagsEqual": true,
+      "buttonsEqual": true
+    },
+    {
+      "state": "07-admin",
+      "businessColumnsEqual": true,
+      "headingsEqual": true,
+      "geometryEqual": true,
+      "tagsEqual": true,
+      "buttonsEqual": true
+    },
+    {
+      "state": "08-name-substring",
+      "businessColumnsEqual": true,
+      "headingsEqual": true,
+      "geometryEqual": true,
+      "tagsEqual": true,
+      "buttonsEqual": true
+    },
+    {
+      "state": "09-username-suffix-rejected",
+      "businessColumnsEqual": true,
+      "headingsEqual": true,
+      "geometryEqual": true,
+      "tagsEqual": true,
+      "buttonsEqual": true
+    },
+    {
+      "state": "10-en",
+      "businessColumnsEqual": true,
+      "headingsEqual": true,
+      "geometryEqual": true,
+      "tagsEqual": true,
+      "buttonsEqual": true
+    },
+    {
+      "state": "10-vi",
+      "businessColumnsEqual": true,
+      "headingsEqual": true,
+      "geometryEqual": true,
+      "tagsEqual": true,
+      "buttonsEqual": true
+    },
+    {
+      "state": "10-zh-CN",
+      "businessColumnsEqual": true,
+      "headingsEqual": true,
+      "geometryEqual": true,
+      "tagsEqual": true,
+      "buttonsEqual": true
+    }
+  ],
+  "crossSystemExcludedColumns": [
+    "last login timestamp",
+    "creation timestamp and creator"
+  ],
+  "metadataCheckedAgainstEachRealApi": true,
+  "fullPixelEqualityClaimed": false
+}

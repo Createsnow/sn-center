@@ -1,0 +1,89 @@
+{
+  "date": "2026-10-09",
+  "goal": "active",
+  "previousGoalTurn": "progress",
+  "schema": 41,
+  "userPriority": "Finish functional gaps and complete UI workflow; minor visual differences no longer block acceptance.",
+  "runs": {
+    "revisit-after": {
+      "startTime": "2026-10-09T12:00:47.722Z",
+      "duration": 88310.304,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "ui-final": {
+      "startTime": "2026-10-09T12:02:37.072Z",
+      "duration": 505365.828,
+      "expected": 5,
+      "skipped": 0,
+      "unexpected": 1,
+      "flaky": 0
+    },
+    "loop-focus-final": {
+      "startTime": "2026-10-09T12:14:25.542Z",
+      "duration": 110787.872,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 2,
+      "flaky": 0
+    },
+    "business-final2": {
+      "startTime": "2026-10-09T12:18:16.958Z",
+      "duration": 39051.956,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  },
+  "note": "ui-final includes one failed rapid keyboard-step attempt; loop-focus-final includes two failed first-query observation attempts. Their logs remain failures. Focus then passes on both systems; business-final is the corrected final paired workflow.",
+  "frontendUnit": 84,
+  "backendRerun": false,
+  "backendBytesUnchanged": 603,
+  "jarSha256": "b21de36437a1dd15138c476dd98df763b6dcd88b6e307c4e2916d8b78e40ff6f",
+  "sourceFiles": {
+    "frontend/e2e/parity/business-loop.spec.ts": "cffd2dbc6045b815f3cb3aab42975b5998915ae228f0be50fe51f1f136c7f669",
+    "frontend/e2e/parity/clickVisibleControl.ts": "81bbbe284226348203fb6124203f541a7343e1043dd32416bb7af972a884166d",
+    "frontend/e2e/parity/order-focus.spec.ts": "29abfd149ad4c6c3faa9ac4ce1a312b8cdd137382687edcef064567d411942be",
+    "frontend/e2e/parity/order-interactions.spec.ts": "60e9a25b21860c34166ac1944865e6f836e565441b68d9ec0af3834fa5a3a241",
+    "frontend/e2e/parity/order-revisit.spec.ts": "8a9eec002efd82f7292dc029e0d72872a0f03320de2d4659dd3f3d7341e170c6",
+    "frontend/e2e/parity/order-scroll.spec.ts": "063929e3d4eca80f6d47afb507b0867fb4f6c6a182ff9631bac4d0a741759d33",
+    "frontend/e2e/parity/settleOrderPage.ts": "cabf2a3dad4acba823449908c80509983c35f840937284fdfb774df13073423f",
+    "frontend/playwright.parity.config.ts": "702e61f4c28f3873f17b8716eba5391aaa25083a90a08040751f15a7c49ea918",
+    "frontend/src/features/sn/components/OrderSyncSchedule.tsx": "b7b7dc11b05af74970b9eed8365ba39af41e06ff460171d8d102577055b8352e",
+    "frontend/src/features/sn/pages/OrdersPage.tsx": "c897336ead43bb7cb467a404a46909e51ed525b0a14f0f6a611a72896839a303",
+    "tools/testing/parity-order-audit-fixture.py": "f987dba601f6fd1078309938b7b941e351cdfd746839edcc9d8b81468ac35bf7"
+  },
+  "focusPairs": 27,
+  "businessStatePairs": 4,
+  "businessXlsxFiles": 4,
+  "businessAuditFactsPerSystem": 7,
+  "screenshots": 313,
+  "diagnosticScreenshots": 118,
+  "mainDatabaseChanges": {
+    "java": {
+      "sys_oper_log": {
+        "beforeRows": 10312,
+        "afterRows": 10314,
+        "originalKeysPresent": true,
+        "changedOriginalFields": {},
+        "allRowsUnchanged": false,
+        "newActions": {
+          "auth:REFRESH": 2
+        }
+      }
+    },
+    "python": {}
+  },
+  "originalFilesPreserved": 580,
+  "prototypeFilesPreserved": 146,
+  "frozenSqlPreserved": 41,
+  "dedicatedServicesStopped": true,
+  "fullUiMatrixRerun": false,
+  "remaining": [
+    "Review P01-P16 functional evidence using the latest user priority; stop expanding cosmetic matrices.",
+    "P16 MES and remaining concrete functional differences; production/company-network integration remains outside local acceptance."
+  ]
+}

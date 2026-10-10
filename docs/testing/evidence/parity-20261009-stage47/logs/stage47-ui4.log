@@ -1,0 +1,11 @@
+
+Running 2 tests using 1 worker
+
+(node:33988) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [prototype] › e2e\parity\order-transactions.spec.ts:9:1 › P05 full sync commits factories separately and continues after factory write/audit failures (26.0s)
+(node:34148) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [migration] › e2e\parity\order-transactions.spec.ts:9:1 › P05 full sync commits factories separately and continues after factory write/audit failures (27.7s)
+
+  2 passed (57.9s)

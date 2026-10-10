@@ -1,0 +1,16 @@
+
+service  port listenerPid wrapperPid verifiedLauncher
+-------  ---- ----------- ---------- ----------------
+java    18081       42404      42404             True
+vite    15174       33580      33580             True
+python   8001       46716      38460             True
+k3      19091       36592      20364             True
+
+
+LocalAddress LocalPort OwningProcess
+------------ --------- -------------
+127.0.0.1        19090         38548
+127.0.0.1        18080          2868
+127.0.0.1        15173         45356
+127.0.0.1         8000         31084
+

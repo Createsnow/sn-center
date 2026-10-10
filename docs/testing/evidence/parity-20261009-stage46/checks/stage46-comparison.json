@@ -1,0 +1,95 @@
+{
+  "states": [
+    {
+      "label": "01-manual-name-matches-different-erp-code",
+      "orderedFactoryBusinessRows": 54,
+      "orders": 1,
+      "scrollTop": 0,
+      "warningGeometryAndPaintEqual": false
+    },
+    {
+      "label": "02-name-conflict-still-resolves-order",
+      "orderedFactoryBusinessRows": 54,
+      "orders": 1,
+      "scrollTop": 0,
+      "warningGeometryAndPaintEqual": false
+    },
+    {
+      "label": "03-replaced-id-preserves-factory",
+      "orderedFactoryBusinessRows": 54,
+      "orders": 1,
+      "scrollTop": 0,
+      "warningGeometryAndPaintEqual": false
+    },
+    {
+      "label": "04-new-code-leaves-old-snapshot",
+      "orderedFactoryBusinessRows": 55,
+      "orders": 1,
+      "scrollTop": 0,
+      "warningGeometryAndPaintEqual": false
+    },
+    {
+      "label": "05-rename-leaves-snapshot-unmapped",
+      "orderedFactoryBusinessRows": 55,
+      "orders": 1,
+      "scrollTop": 0,
+      "warningGeometryAndPaintEqual": true
+    },
+    {
+      "label": "06-create-matching-name-reprojects",
+      "orderedFactoryBusinessRows": 56,
+      "orders": 1,
+      "scrollTop": 0,
+      "warningGeometryAndPaintEqual": false
+    },
+    {
+      "label": "07-deduplicated-active-directory",
+      "orderedFactoryBusinessRows": 58,
+      "orders": 1,
+      "scrollTop": 0,
+      "warningGeometryAndPaintEqual": false
+    }
+  ],
+  "syncResults": [
+    {
+      "total": 1,
+      "inserted": 0,
+      "updated": 0,
+      "conflicts": [
+        "CMP_F46_MANUAL/比较46旧名"
+      ]
+    },
+    {
+      "total": 1,
+      "inserted": 0,
+      "updated": 0,
+      "conflicts": []
+    },
+    {
+      "total": 1,
+      "inserted": 0,
+      "updated": 0,
+      "conflicts": []
+    },
+    {
+      "total": 1,
+      "inserted": 1,
+      "updated": 0,
+      "conflicts": []
+    },
+    {
+      "total": 1,
+      "inserted": 0,
+      "updated": 1,
+      "conflicts": []
+    },
+    {
+      "total": 2,
+      "inserted": 2,
+      "updated": 0,
+      "conflicts": []
+    }
+  ],
+  "screenshots": 14,
+  "scope": "owned single-bill and organization changes; full UI matrix remains incomplete"
+}

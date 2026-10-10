@@ -1,0 +1,156 @@
+{
+  "writes": [
+    {
+      "label": "01-full",
+      "status": 200,
+      "body": {
+        "code": 0,
+        "message": "common.success",
+        "data": {
+          "id": "233c0200-9720-4544-97ca-f7d23ee8449e",
+          "mode": "all",
+          "billNo": "",
+          "state": "SUCCESS",
+          "baseVersion": "0",
+          "publishedVersion": "2",
+          "rowsCount": "4",
+          "billsCount": "3",
+          "errorCode": null,
+          "orgSyncFailed": false,
+          "startedAt": "2026-10-09T08:25:20.997932Z",
+          "finishedAt": "2026-10-09T08:25:21.490018600Z"
+        },
+        "params": {},
+        "traceId": "c8ff5882-2a81-4c28-8aaf-86d647f09402"
+      }
+    },
+    {
+      "label": "02-single",
+      "status": 200,
+      "body": {
+        "code": 0,
+        "message": "common.success",
+        "data": {
+          "id": "5d5118e3-b70d-4674-9ae8-c729361492e0",
+          "mode": "one",
+          "billNo": "CMP-MO-001",
+          "state": "SUCCESS",
+          "baseVersion": "2",
+          "publishedVersion": "3",
+          "rowsCount": "2",
+          "billsCount": "1",
+          "errorCode": null,
+          "orgSyncFailed": false,
+          "startedAt": "2026-10-09T08:25:22.052781Z",
+          "finishedAt": "2026-10-09T08:25:22.124711200Z"
+        },
+        "params": {},
+        "traceId": "9faaf5b0-fe69-4d29-8f15-65036cc6f71e"
+      }
+    },
+    {
+      "label": "03-missing",
+      "status": 200,
+      "body": {
+        "code": 0,
+        "message": "common.success",
+        "data": {
+          "id": "f16818a1-984f-4586-b074-de3806a33af1",
+          "mode": "one",
+          "billNo": "CMP-MISSING",
+          "state": "SUCCESS",
+          "baseVersion": "3",
+          "publishedVersion": "4",
+          "rowsCount": "0",
+          "billsCount": "0",
+          "errorCode": null,
+          "orgSyncFailed": false,
+          "startedAt": "2026-10-09T08:25:22.581994Z",
+          "finishedAt": "2026-10-09T08:25:22.670830800Z"
+        },
+        "params": {},
+        "traceId": "0b04ac56-441f-456b-a205-2dcc34a344c8"
+      }
+    },
+    {
+      "label": "04-empty",
+      "status": 200,
+      "body": {
+        "code": 0,
+        "message": "common.success",
+        "data": {
+          "id": "e9e2b722-036f-4f44-b3b2-4d42508e57e1",
+          "mode": "all",
+          "billNo": "",
+          "state": "SUCCESS",
+          "baseVersion": "4",
+          "publishedVersion": "6",
+          "rowsCount": "0",
+          "billsCount": "0",
+          "errorCode": null,
+          "orgSyncFailed": false,
+          "startedAt": "2026-10-09T08:25:25.565116Z",
+          "finishedAt": "2026-10-09T08:25:25.750584800Z"
+        },
+        "params": {},
+        "traceId": "d3b4f3c7-38b2-4951-945e-4a551f2c544a"
+      }
+    },
+    {
+      "label": "05-query-failed",
+      "status": 502,
+      "body": {
+        "code": 1005000006,
+        "message": "integration.k3QueryRejected",
+        "data": null,
+        "params": {
+          "message": "比较查询失败"
+        },
+        "traceId": "dc0d702e-3c8d-4907-9b3d-eae5922fc14c"
+      }
+    },
+    {
+      "label": "06-login-failed",
+      "status": 502,
+      "body": {
+        "code": 1005000002,
+        "message": "integration.k3LoginRejected",
+        "data": null,
+        "params": {
+          "message": "比较登录失败"
+        },
+        "traceId": "e9c41871-c688-464e-a54a-d62f6e31833a"
+      }
+    },
+    {
+      "label": "07-sql-failed",
+      "status": 500,
+      "body": null
+    },
+    {
+      "label": "08-recovered",
+      "status": 200,
+      "body": {
+        "code": 0,
+        "message": "common.success",
+        "data": {
+          "id": "8bcba9ea-1cbd-48d8-9ec2-109ac0a4582e",
+          "mode": "all",
+          "billNo": "",
+          "state": "SUCCESS",
+          "baseVersion": "7",
+          "publishedVersion": "9",
+          "rowsCount": "4",
+          "billsCount": "3",
+          "errorCode": null,
+          "orgSyncFailed": false,
+          "startedAt": "2026-10-09T08:25:28.757437Z",
+          "finishedAt": "2026-10-09T08:25:29.015608700Z"
+        },
+        "params": {},
+        "traceId": "4311ac73-1b20-4c1f-839d-ed01daa55657"
+      }
+    }
+  ],
+  "errors": []
+}

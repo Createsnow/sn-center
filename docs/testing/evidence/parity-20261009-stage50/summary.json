@@ -1,0 +1,185 @@
+{
+  "date": "2026-10-09",
+  "goal": "active",
+  "schema": 41,
+  "backend": [
+    {
+      "name": "com.adtek.common.core.DataScopeTest",
+      "count": 3,
+      "seconds": 0.068
+    },
+    {
+      "name": "com.adtek.framework.audit.AuditContextTest",
+      "count": 3,
+      "seconds": 0.086
+    },
+    {
+      "name": "com.adtek.framework.audit.RequestFailureAuditFilterTest",
+      "count": 4,
+      "seconds": 0.13
+    },
+    {
+      "name": "com.adtek.framework.mybatis.ScopedDataPermissionInterceptorTest",
+      "count": 6,
+      "seconds": 0.135
+    },
+    {
+      "name": "com.adtek.framework.security.CurrentActorTest",
+      "count": 3,
+      "seconds": 0.008
+    },
+    {
+      "name": "com.adtek.framework.security.JwtTokenCodecTest",
+      "count": 3,
+      "seconds": 0.146
+    },
+    {
+      "name": "com.adtek.framework.security.PasswordEncodingTest",
+      "count": 3,
+      "seconds": 0.312
+    },
+    {
+      "name": "com.adtek.framework.security.RedisFailureTest",
+      "count": 2,
+      "seconds": 0.756
+    },
+    {
+      "name": "com.adtek.framework.task.FileStorageTest",
+      "count": 6,
+      "seconds": 0.32
+    },
+    {
+      "name": "com.adtek.framework.web.LegacyBoundaryTest",
+      "count": 2,
+      "seconds": 1.081
+    },
+    {
+      "name": "com.adtek.framework.web.ResultSerializationTest",
+      "count": 1,
+      "seconds": 0.018
+    },
+    {
+      "name": "com.adtek.framework.web.TraceFilterTest",
+      "count": 1,
+      "seconds": 0.005
+    },
+    {
+      "name": "com.adtek.server.SnAuditIT",
+      "count": 23,
+      "seconds": 58.206
+    },
+    {
+      "name": "com.adtek.server.SnFoundationIT",
+      "count": 37,
+      "seconds": 36.95
+    },
+    {
+      "name": "com.adtek.server.ArchitectureTest",
+      "count": 3,
+      "seconds": 5.187
+    },
+    {
+      "name": "com.adtek.server.ArchiveRestoreProofTest",
+      "count": 5,
+      "seconds": 0.82
+    },
+    {
+      "name": "com.adtek.server.AuditProjectionTest",
+      "count": 3,
+      "seconds": 0.018
+    },
+    {
+      "name": "com.adtek.server.ErrorCodeCatalogTest",
+      "count": 1,
+      "seconds": 0.673
+    },
+    {
+      "name": "com.adtek.server.K3ConfigurationTest",
+      "count": 2,
+      "seconds": 0.928
+    },
+    {
+      "name": "com.adtek.server.K3ErrorsTest",
+      "count": 12,
+      "seconds": 1.674
+    },
+    {
+      "name": "com.adtek.server.K3LegacyProtocolTest",
+      "count": 1,
+      "seconds": 0.046
+    },
+    {
+      "name": "com.adtek.server.LegacyErrorCatalogTest",
+      "count": 1,
+      "seconds": 0.012
+    },
+    {
+      "name": "com.adtek.server.MaintenanceScheduleTest",
+      "count": 3,
+      "seconds": 0.025
+    },
+    {
+      "name": "com.adtek.sn.service.support.InitializationErrorsTest",
+      "count": 3,
+      "seconds": 0.244
+    },
+    {
+      "name": "com.adtek.sn.service.support.PrintFilesTest",
+      "count": 2,
+      "seconds": 0.625
+    },
+    {
+      "name": "com.adtek.sn.service.support.SequenceCodecTest",
+      "count": 10,
+      "seconds": 0.059
+    },
+    {
+      "name": "com.adtek.sn.service.support.SnAuditFilesTest",
+      "count": 10,
+      "seconds": 0.31
+    },
+    {
+      "name": "com.adtek.sn.service.support.SnImportDigestTest",
+      "count": 1,
+      "seconds": 0.028
+    }
+  ],
+  "frontendUnit": 84,
+  "ui": {
+    "startTime": "2026-10-09T09:55:11.979Z",
+    "duration": 340152.39999999997,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "screenshots": 208,
+  "diagnosticScreenshots": 338,
+  "registeredUiTests": 227,
+  "registeredUiFiles": 40,
+  "fullUiMatrixRerun": false,
+  "statePairs": 64,
+  "businessColumnsPerRow": 11,
+  "expandedAuditDetailsPerSystem": 39,
+  "matchingAuditFacts": 39,
+  "sourceFiles": {
+    "backend/adtek-integration/src/main/java/com/adtek/integration/k3/K3ProductionOrderAdapter.java": "e122d476bcb72ce1e0163496d1f12c2ee40e0e887b54fe588232ce00840d8bdd",
+    "backend/adtek-server/src/test/java/com/adtek/server/K3ErrorsTest.java": "29f60c17ab869d9fd19c126d70ab41006a51046e34cf9991689adab718bece4b",
+    "backend/adtek-server/src/test/java/com/adtek/server/K3ProtocolFixture.java": "e71b9f0cfe4b15ca66ef7306ffcde151670523fb170eab23e650c20429075cda",
+    "frontend/e2e/parity/k3-responses.spec.ts": "cd441fdf5d4de1e291e4ed6d9384426ab057df6be4fd8ba1e654cc1f8118e727",
+    "frontend/openapi/adtek-sn.json": "ebefa4e7d3fdfdccff88bc81f746c22d4a5c2168f359b194acef05fb80603d11",
+    "frontend/playwright.parity.config.ts": "702e61f4c28f3873f17b8716eba5391aaa25083a90a08040751f15a7c49ea918",
+    "frontend/src/features/sn/syncErrorText.test.ts": "44bd38b09f7d5ee1b1fda12cdbcab24ddc51bf88efcac00fdbd2e1aa42c27904",
+    "frontend/src/features/sn/syncErrorText.ts": "becc29c70f2679a7c4d711675b566c23f2a3f24faf9dd949fd7df7e069dfc8a1",
+    "tools/testing/parity-k3-fixture.py": "bc7af24adb2def4cb774cad5e77db358bcf316865d3a65c2deb2fcb3808306fe",
+    "tools/testing/parity-order-audit-fixture.py": "f987dba601f6fd1078309938b7b941e351cdfd746839edcc9d8b81468ac35bf7"
+  },
+  "mainDataPreserved": true,
+  "dedicatedServicesStopped": true,
+  "remaining": [
+    "Full K3 response/error cases and request coercion/oversized boundaries",
+    "P01-P16 complete UI/role/language/viewport matrix",
+    "Generation after factory changes, concurrency, recovery, MES and full UI business loop",
+    "Scheduled internal SQL text, table ellipsis/tooltips and remaining dialog/visual details"
+  ]
+}

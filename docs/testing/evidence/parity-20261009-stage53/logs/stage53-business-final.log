@@ -1,0 +1,48 @@
+
+Running 2 tests using 1 worker
+
+(node:16836) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  x  1 [prototype] › e2e\parity\business-loop.spec.ts:10:1 › P15 complete UI business loop from order sync and rule creation to transferred reprint and audit (29.0s)
+(node:39448) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  x  2 [migration] › e2e\parity\business-loop.spec.ts:10:1 › P15 complete UI business loop from order sync and rule creation to transferred reprint and audit (30.4s)
+
+
+  1) [prototype] › e2e\parity\business-loop.spec.ts:10:1 › P15 complete UI business loop from order sync and rule creation to transferred reprint and audit 
+
+    TimeoutError: page.waitForResponse: Timeout 20000ms exceeded while waiting for event "response"
+
+      82 |     await go(zh.nav.query);
+      83 |     await page.getByPlaceholder('PI', { exact: true }).fill(pi);
+    > 84 |     const response = page.waitForResponse(
+         |                           ^
+      85 |       (r) =>
+      86 |         r.request().method() === 'GET' &&
+      87 |         new URL(r.url()).pathname === (source ? '/api/sn' : '/api/v1/sn/items/page') &&
+        at query (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\business-loop.spec.ts:84:27)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\business-loop.spec.ts:206:5
+
+    Error Context: test-results\stage53-business-final\business-loop-P15-complete-3dffa-ansferred-reprint-and-audit-prototype\error-context.md
+
+  2) [migration] › e2e\parity\business-loop.spec.ts:10:1 › P15 complete UI business loop from order sync and rule creation to transferred reprint and audit 
+
+    TimeoutError: page.waitForResponse: Timeout 20000ms exceeded while waiting for event "response"
+
+      82 |     await go(zh.nav.query);
+      83 |     await page.getByPlaceholder('PI', { exact: true }).fill(pi);
+    > 84 |     const response = page.waitForResponse(
+         |                           ^
+      85 |       (r) =>
+      86 |         r.request().method() === 'GET' &&
+      87 |         new URL(r.url()).pathname === (source ? '/api/sn' : '/api/v1/sn/items/page') &&
+        at query (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\business-loop.spec.ts:84:27)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\business-loop.spec.ts:206:5
+
+    Error Context: test-results\stage53-business-final\business-loop-P15-complete-3dffa-ansferred-reprint-and-audit-migration\error-context.md
+
+  2 failed
+    [prototype] › e2e\parity\business-loop.spec.ts:10:1 › P15 complete UI business loop from order sync and rule creation to transferred reprint and audit 
+    [migration] › e2e\parity\business-loop.spec.ts:10:1 › P15 complete UI business loop from order sync and rule creation to transferred reprint and audit 

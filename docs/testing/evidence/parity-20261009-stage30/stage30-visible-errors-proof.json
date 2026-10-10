@@ -1,0 +1,53 @@
+{
+  "toasts": [
+    {
+      "case": "01-denied-en-csv-paint.json",
+      "text": "Your factory has no SNs in PI CMP-UI-QUERY-SCOPE-PI-B",
+      "bothSidesOpaqueBeforeAndAfterScreenshot": true
+    },
+    {
+      "case": "01-denied-en-xlsx-paint.json",
+      "text": "Your factory has no SNs in PI CMP-UI-QUERY-SCOPE-PI-B",
+      "bothSidesOpaqueBeforeAndAfterScreenshot": true
+    },
+    {
+      "case": "01-denied-vi-csv-paint.json",
+      "text": "Nhà máy của bạn không có SN trong PI CMP-UI-QUERY-SCOPE-PI-B",
+      "bothSidesOpaqueBeforeAndAfterScreenshot": true
+    },
+    {
+      "case": "01-denied-vi-xlsx-paint.json",
+      "text": "Nhà máy của bạn không có SN trong PI CMP-UI-QUERY-SCOPE-PI-B",
+      "bothSidesOpaqueBeforeAndAfterScreenshot": true
+    },
+    {
+      "case": "01-denied-zh-csv-paint.json",
+      "text": "本厂没有 PI CMP-UI-QUERY-SCOPE-PI-B 的号，不能查看其他工厂",
+      "bothSidesOpaqueBeforeAndAfterScreenshot": true
+    },
+    {
+      "case": "01-denied-zh-xlsx-paint.json",
+      "text": "本厂没有 PI CMP-UI-QUERY-SCOPE-PI-B 的号，不能查看其他工厂",
+      "bothSidesOpaqueBeforeAndAfterScreenshot": true
+    },
+    {
+      "case": "02-http-failure-paint.json",
+      "text": "下载失败（HTTP 500）",
+      "bothSidesOpaqueBeforeAndAfterScreenshot": true
+    }
+  ],
+  "tablePairs": [
+    "01-denied-en-csv.json",
+    "01-denied-en-xlsx.json",
+    "01-denied-vi-csv.json",
+    "01-denied-vi-xlsx.json",
+    "01-denied-zh-csv.json",
+    "01-denied-zh-xlsx.json",
+    "02-http-failure.json",
+    "03-retried.json"
+  ],
+  "filePairs": [
+    "01-corrected-pi-csv.json",
+    "03-retry-csv.json"
+  ]
+}

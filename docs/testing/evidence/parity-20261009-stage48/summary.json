@@ -1,0 +1,201 @@
+{
+  "date": "2026-10-09",
+  "goal": "active",
+  "schema": 41,
+  "backend": [
+    {
+      "name": "com.adtek.common.core.DataScopeTest",
+      "count": 3,
+      "seconds": 0.099
+    },
+    {
+      "name": "com.adtek.framework.audit.AuditContextTest",
+      "count": 3,
+      "seconds": 0.15
+    },
+    {
+      "name": "com.adtek.framework.audit.RequestFailureAuditFilterTest",
+      "count": 4,
+      "seconds": 0.155
+    },
+    {
+      "name": "com.adtek.framework.mybatis.ScopedDataPermissionInterceptorTest",
+      "count": 6,
+      "seconds": 0.173
+    },
+    {
+      "name": "com.adtek.framework.security.CurrentActorTest",
+      "count": 3,
+      "seconds": 0.01
+    },
+    {
+      "name": "com.adtek.framework.security.JwtTokenCodecTest",
+      "count": 3,
+      "seconds": 0.196
+    },
+    {
+      "name": "com.adtek.framework.security.PasswordEncodingTest",
+      "count": 3,
+      "seconds": 0.358
+    },
+    {
+      "name": "com.adtek.framework.security.RedisFailureTest",
+      "count": 2,
+      "seconds": 1.139
+    },
+    {
+      "name": "com.adtek.framework.task.FileStorageTest",
+      "count": 6,
+      "seconds": 0.456
+    },
+    {
+      "name": "com.adtek.framework.web.LegacyBoundaryTest",
+      "count": 2,
+      "seconds": 1.531
+    },
+    {
+      "name": "com.adtek.framework.web.ResultSerializationTest",
+      "count": 1,
+      "seconds": 0.032
+    },
+    {
+      "name": "com.adtek.framework.web.TraceFilterTest",
+      "count": 1,
+      "seconds": 0.005
+    },
+    {
+      "name": "com.adtek.server.FactoryMappingMigrationIT",
+      "count": 1,
+      "seconds": 40.943
+    },
+    {
+      "name": "com.adtek.server.SnAuditIT",
+      "count": 21,
+      "seconds": 121.689
+    },
+    {
+      "name": "com.adtek.server.SnFoundationIT",
+      "count": 37,
+      "seconds": 95.553
+    },
+    {
+      "name": "com.adtek.server.ArchitectureTest",
+      "count": 3,
+      "seconds": 6.0
+    },
+    {
+      "name": "com.adtek.server.ArchiveRestoreProofTest",
+      "count": 5,
+      "seconds": 0.874
+    },
+    {
+      "name": "com.adtek.server.AuditProjectionTest",
+      "count": 3,
+      "seconds": 0.023
+    },
+    {
+      "name": "com.adtek.server.ErrorCodeCatalogTest",
+      "count": 1,
+      "seconds": 0.77
+    },
+    {
+      "name": "com.adtek.server.K3ConfigurationTest",
+      "count": 2,
+      "seconds": 0.932
+    },
+    {
+      "name": "com.adtek.server.K3ErrorsTest",
+      "count": 7,
+      "seconds": 1.265
+    },
+    {
+      "name": "com.adtek.server.K3LegacyProtocolTest",
+      "count": 1,
+      "seconds": 0.102
+    },
+    {
+      "name": "com.adtek.server.LegacyErrorCatalogTest",
+      "count": 1,
+      "seconds": 0.019
+    },
+    {
+      "name": "com.adtek.server.MaintenanceScheduleTest",
+      "count": 3,
+      "seconds": 0.029
+    },
+    {
+      "name": "com.adtek.sn.service.support.InitializationErrorsTest",
+      "count": 3,
+      "seconds": 0.368
+    },
+    {
+      "name": "com.adtek.sn.service.support.PrintFilesTest",
+      "count": 2,
+      "seconds": 0.959
+    },
+    {
+      "name": "com.adtek.sn.service.support.SequenceCodecTest",
+      "count": 10,
+      "seconds": 0.102
+    },
+    {
+      "name": "com.adtek.sn.service.support.SnAuditFilesTest",
+      "count": 10,
+      "seconds": 0.457
+    },
+    {
+      "name": "com.adtek.sn.service.support.SnImportDigestTest",
+      "count": 1,
+      "seconds": 0.036
+    }
+  ],
+  "frontendUnit": 82,
+  "ui": {
+    "ui3": {
+      "startTime": "2026-10-09T08:23:45.868Z",
+      "duration": 201189.926,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "filters": {
+      "startTime": "2026-10-09T08:27:42.125Z",
+      "duration": 16323.529999999999,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  },
+  "screenshots": 64,
+  "diagnosticScreenshots": 10,
+  "registeredUiTests": 223,
+  "registeredUiFiles": 38,
+  "fullUiMatrixRerun": false,
+  "actualExcelPairs": 3,
+  "actualExcelRows": 13,
+  "equalBusinessColumns": 22,
+  "sourceFiles": {
+    "backend/adtek-server/src/test/java/com/adtek/server/SnAuditIT.java": "46b14fd2a3561a88eafc09f85a606ac8f0b3ec34e89ed09b767ffe408c311a5a",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/SnOrderFailureAuditService.java": "55451cadcbb956d9ee74344f2af8015fa454a7a6a3ba4bf94eaf8a32fc3a72c7",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/FactoryPublishServiceImpl.java": "12ab236deed7848b58fa43946adfb04963bf9b8d0d8a690389d248ca7d413095",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/OrderPublishServiceImpl.java": "5fee68474caf784ab27aa8a3fe84901cccab2f2adaf89198b036c64294167b83",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnAuditObserver.java": "ef525790af6069cd642dd5e12a31bdfa5dbbd771d8eb6d1350c900cdda8ff570",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnOrderFailureAuditAspect.java": "3b0e95a1411d91a9742b16469d07f14ad6c2007ca3309127d4079ca4edb599e5",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnOrderFailureAuditServiceImpl.java": "b5268249f90700316854734f75f308887a14c65b7266a7f11d9bfa8b70eaae4c",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/support/OrderAuditText.java": "aef8c7327436d91217456aa404e6ac59388f4fa9821868dd9e698d5d2756a035",
+    "frontend/e2e/parity/order-audit.spec.ts": "d24ddd6de771b910e5734a1ff16c0f47512ce06e14eebef692536b12c078c60f",
+    "frontend/playwright.parity.config.ts": "702e61f4c28f3873f17b8716eba5391aaa25083a90a08040751f15a7c49ea918",
+    "tools/testing/parity-k3-fixture.py": "8dbbfdd542391104e984fc8c7f9942dea7eb0be82c23e178165ce09f43687a28",
+    "tools/testing/parity-order-audit-fixture.py": "a8a2aefb43051d73291f01e1be2e6d09f94db9fcc3b2c8fda71667c723a821b8"
+  },
+  "mainDataPreserved": true,
+  "temporaryServicesStopped": true,
+  "remaining": [
+    "Scheduled SQL/internal error text",
+    "Blank bill and schedule interval API validation semantics",
+    "Full K3 response/error cases",
+    "P01-P16 full UI matrix, generation, MES, concurrency and recovery"
+  ]
+}

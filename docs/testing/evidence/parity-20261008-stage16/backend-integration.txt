@@ -1,0 +1,12 @@
+[INFO] Running com.adtek.server.DurableTaskIT
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 29.26 s -- in com.adtek.server.DurableTaskIT
+[INFO] Running com.adtek.server.SnAcquireIT
+[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 43.33 s -- in com.adtek.server.SnAcquireIT
+[INFO] Running com.adtek.server.SnTransferIT
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 29.60 s -- in com.adtek.server.SnTransferIT
+[INFO] Running com.adtek.server.SnWorkIT
+[INFO] Tests run: 52, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 77.53 s -- in com.adtek.server.SnWorkIT
+[INFO] Tests run: 89, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[INFO] Total time:  03:14 min
+[INFO] Finished at: 2026-10-08T20:25:36+08:00

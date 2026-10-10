@@ -1,0 +1,20 @@
+{
+  "uiFlowsPassed": 4,
+  "fullFileComparisonPassed": false,
+  "differences": [
+    {
+      "file": "01-all.json",
+      "row": 45,
+      "column": 20,
+      "prototype": "逗号,引号\"与\n\n换行",
+      "migration": "逗号,引号\"与\r\n换行"
+    },
+    {
+      "file": "02-text.json",
+      "row": 1,
+      "column": 20,
+      "prototype": "逗号,引号\"与\n\n换行",
+      "migration": "逗号,引号\"与\r\n换行"
+    }
+  ]
+}

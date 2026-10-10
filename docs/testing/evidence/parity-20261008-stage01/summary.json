@@ -1,0 +1,230 @@
+{
+  "goalComplete": false,
+  "stage": "Public shell, authentication entry points and orders — partial parity",
+  "testRun": {
+    "startTime": "2026-10-08T02:40:32.492Z",
+    "duration": 45532.60400000001,
+    "expected": 16,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "checks": [
+    {
+      "project": "prototype",
+      "scenario": "P02 登录三语文案与移动布局",
+      "status": "passed",
+      "durationMs": 1994,
+      "mobileGeometry": {
+        "viewport": 390,
+        "scrollWidth": 1282
+      }
+    },
+    {
+      "project": "prototype",
+      "scenario": "P01 菜单分组顺序 收起展开 用户菜单与退出",
+      "status": "passed",
+      "durationMs": 2276
+    },
+    {
+      "project": "prototype",
+      "scenario": "P03 修改密码打开 校验和取消",
+      "status": "passed",
+      "durationMs": 1396
+    },
+    {
+      "project": "prototype",
+      "scenario": "P05 全量与按单同步 搜索清空 订单分录和生成入口",
+      "status": "passed",
+      "durationMs": 2483
+    },
+    {
+      "project": "prototype",
+      "scenario": "P05 定时弹窗 换算 保存和取消",
+      "status": "passed",
+      "durationMs": 5379
+    },
+    {
+      "project": "prototype",
+      "scenario": "P01 三语导航 用户偏好刷新持久化 窄屏收起与展开",
+      "status": "passed",
+      "durationMs": 3360
+    },
+    {
+      "project": "prototype",
+      "scenario": "P02 首次访问跟随浏览器语言",
+      "status": "passed",
+      "durationMs": 1264
+    },
+    {
+      "project": "prototype",
+      "scenario": "P05 超过一页的分录连续展示 按单据删除过期快照",
+      "status": "passed",
+      "durationMs": 1555
+    },
+    {
+      "project": "migration",
+      "scenario": "P02 登录三语文案与移动布局",
+      "status": "passed",
+      "durationMs": 2040,
+      "mobileGeometry": {
+        "viewport": 390,
+        "scrollWidth": 1278
+      }
+    },
+    {
+      "project": "migration",
+      "scenario": "P01 菜单分组顺序 收起展开 用户菜单与退出",
+      "status": "passed",
+      "durationMs": 2648
+    },
+    {
+      "project": "migration",
+      "scenario": "P03 修改密码打开 校验和取消",
+      "status": "passed",
+      "durationMs": 1748
+    },
+    {
+      "project": "migration",
+      "scenario": "P05 全量与按单同步 搜索清空 订单分录和生成入口",
+      "status": "passed",
+      "durationMs": 2533
+    },
+    {
+      "project": "migration",
+      "scenario": "P05 定时弹窗 换算 保存和取消",
+      "status": "passed",
+      "durationMs": 4153
+    },
+    {
+      "project": "migration",
+      "scenario": "P01 三语导航 用户偏好刷新持久化 窄屏收起与展开",
+      "status": "passed",
+      "durationMs": 4819
+    },
+    {
+      "project": "migration",
+      "scenario": "P02 首次访问跟随浏览器语言",
+      "status": "passed",
+      "durationMs": 2257
+    },
+    {
+      "project": "migration",
+      "scenario": "P05 超过一页的分录连续展示 按单据删除过期快照",
+      "status": "passed",
+      "durationMs": 2950
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "prototype-login-desktop.png",
+      "sha256": "30d1c4c0a38bd34dd1cf38e63f43fc3a9b65c6f28beec37a830e66c73cca098e"
+    },
+    {
+      "file": "prototype-login-mobile.png",
+      "sha256": "e681e763cf407dd07c87410d3a6248e2b0d39e79f150dbe5cdcd3422dd694070"
+    },
+    {
+      "file": "prototype-orders-desktop.png",
+      "sha256": "7c593f592b84f1d1862420b1cc8d9c19ae42fb85b20f73aac6eca8e49c2acae7"
+    },
+    {
+      "file": "prototype-orders-narrow.png",
+      "sha256": "fc90895351db5ace389861e479a7d3f7e02f580e3f3e7b07098112de6be86f1e"
+    },
+    {
+      "file": "prototype-order-101-lines.png",
+      "sha256": "2da2f6599137d6b79d440b83e00fae41faa62e82c882c3b72b61f6dff1790b59"
+    },
+    {
+      "file": "migration-login-desktop.png",
+      "sha256": "d2a960e568428b53dccdb708c2ab366fb87a90ce88f277035f151a8d9ca3b149"
+    },
+    {
+      "file": "migration-login-mobile.png",
+      "sha256": "6936de9444f99112f659749a47411d583a0283f7bad281019496420c11a70af1"
+    },
+    {
+      "file": "migration-orders-desktop.png",
+      "sha256": "76d99bdb92444b0fa51e760fa88b1621a543bb1440457db00d28d6392b66bd20"
+    },
+    {
+      "file": "migration-orders-narrow.png",
+      "sha256": "013d84fb6940828c9b40e41447c9a8aa6bd3ed59d35f7f1e34bce65c66f7f67c"
+    },
+    {
+      "file": "migration-order-101-lines.png",
+      "sha256": "2824eb74c585229b1bebe08a29015327a3a9bfec0d48f297db7efe4eb29abae0"
+    }
+  ],
+  "sourceSha256": {
+    "frontend/e2e/parity/shell-orders.spec.ts": "f00f82b27b628e52e8798e9d6ca4223c561ce08272f171cdbddb88fd4f8a7a01",
+    "frontend/playwright.parity.config.ts": "4da6d33ff41d11123b647eaf964d89fe9deefd3c9b8ee497f2e37fd962e0923e",
+    "frontend/src/api/sn.ts": "f156c1f6d0e4055d362eaa74d6498ed5571b652583b072cba5fc6c643f4c749f",
+    "frontend/src/app/App.tsx": "88d4cce39cb90f662694c66174107a07439b0b95c2f6d8ef42ff003f91f07394",
+    "frontend/src/app/WorkspaceShell.tsx": "bc9bb6e6c9525bfcfe3c1da5947d9f78fab21cf70836e6a2727a3a294bcbd1e3",
+    "frontend/src/components/LanguageSelect.tsx": "5fc493c51b93139baa431ef82b38da295c0b3ec238299b3ef9e30fe42e1662ce",
+    "frontend/src/components/prototype/ELEMENT-PLUS-ICONS-LICENSE": "5db4ebb3abd8353774ae148723ccc14087d6dab99473f77a7b799b55defd8dfe",
+    "frontend/src/components/prototype/ELEMENT-PLUS-LICENSE": "0790118bb4d66681db1d63181f72ef68e632d632f6db0373ef87cf328561af27",
+    "frontend/src/components/prototype/PrototypeEmpty.tsx": "7a5064964e333c271bd704e83bc08f07c6f0216fd5cba15b62a29b738bd0a626",
+    "frontend/src/components/prototype/PrototypeIcon.tsx": "1ac0c1ca524d27498c61a0c4333572dbeb9583a9aec10e19124cc800b4f4dc4b",
+    "frontend/src/components/prototype/empty.json": "ff4b0abee25e6bf5c08f95d0f6a671bcf3b5b82e0cd64ef80f601dc184be7ce7",
+    "frontend/src/components/prototype/icons.json": "7a99a353d2c091cbb08ec83a98256c23a7bb65e8ebc9a1b1cd4865da245593a9",
+    "frontend/src/features/auth/pages/LoginPage.tsx": "241b83c989c7fcaf01afc4d4fbfff87e7cea38a9ebeaa389ed149d6afaa8fb40",
+    "frontend/src/features/auth/pages/PasswordPage.tsx": "130e3334148af1708cffb5da04d09f3e76a28cebfcdf13388f5f41e29c32c13b",
+    "frontend/src/features/sn/components/FactoryPicker.tsx": "217e11a7bc2e244121928fa1e3d39b34f9a607a34545546f2db29fb4083ea1e4",
+    "frontend/src/features/sn/components/OrderSyncSchedule.tsx": "11127d001aaf4d6db909d9af26a22cbed3c454a2118d4e004db96f44e7fcc43b",
+    "frontend/src/features/sn/pages/OrdersPage.tsx": "75fb560aa499a7985752669491aceca9daf274e0b1d0dde19527637297c3bfae",
+    "frontend/src/i18n/index.ts": "912072cc13ac0045b60b060db2ed546e3cc169a4a27f7bf28b92fb78e5a63c6c",
+    "frontend/src/i18n/locales/en.json": "60debf88be51977a37d618e984a75675a914772b5b546cdef71034cc3b0b9871",
+    "frontend/src/i18n/locales/vi.json": "9d12f7a5aec0ca2612b81b1ab91bec5bd492f345f67027963486266d27298f32",
+    "frontend/src/i18n/locales/zh-CN.json": "ccfd3a2dcf7fdf29b297c948d63173971b122e801fdcf0d58012a5101ae54821",
+    "frontend/src/i18n/prototype/en.json": "de45aa852e6f5cce84e19ef1018b3b61e68d5f5e9a3e80e5d0b602d686893c95",
+    "frontend/src/i18n/prototype/vi.json": "ccd1ae337d37868adfc9ccce04a3af5c11070602ff8131c3419da5af444787fa",
+    "frontend/src/i18n/prototype/zh-CN.json": "899ce384f7b7f3fc63b32b6049876d4a4fe57f8be30c5f5337c6d2c98c4c9753",
+    "frontend/src/styles.css": "b8d3b30476f0b4ac49ef0762787cd6b597467013996b98518c22931b0264b4ca",
+    "frontend/src/utils/snTime.ts": "a2230f75f1a83ba55369b3298a4f9a4092a251eb460458e22649123e3814a587",
+    "frontend/vite.config.ts": "f5f165faa51497cd370701dcb42761b83af04637152e7b816824dfadfd83241f",
+    "tools/testing/parity-k3-fixture.py": "8514311cc785b6e44ebe0106a41fceb29e5240f65cabffb8fc133241ae6c547c"
+  },
+  "baseline": {
+    "migration": "46f607c936ab3b2deef5e025edd87f2e0e31dc88",
+    "prototype": "f8bc2d722cfde38cfb3ee892a50dcd1d90d58a4a"
+  },
+  "routeSmoke": [
+    {
+      "project": "java",
+      "pages": 16,
+      "javascriptErrors": [],
+      "failedApiResponses": []
+    },
+    {
+      "project": "python",
+      "pages": 11,
+      "javascriptErrors": [],
+      "failedApiResponses": []
+    }
+  ],
+  "checksAdditional": {
+    "frontendUnitTests": 46,
+    "typecheck": "passed",
+    "lint": "passed",
+    "formatCheck": "passed",
+    "build": "passed, existing >500 kB chunk warning",
+    "backendTests": "not rerun; backend unchanged"
+  },
+  "cleanup": {
+    "k3BaseOrders": 3,
+    "k3BaseEntries": 4,
+    "extraOrderRows": 0,
+    "javaSchedule": {
+      "enabled": false,
+      "intervalMinutes": 1440
+    },
+    "pythonSchedule": {
+      "enabled": false,
+      "intervalMinutes": 1440
+    }
+  },
+  "remaining": "See SN页面与功能一致性验收清单.md; not all pages, roles, boundaries or business semantics have been verified."
+}

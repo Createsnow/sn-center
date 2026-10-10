@@ -1,0 +1,28 @@
+{
+  "stage": 44,
+  "completeGoal": false,
+  "schema": "39",
+  "unitTests": 89,
+  "integrationTests": {
+    "AuthenticationIT": 33,
+    "SnAuditIT": 14,
+    "SnFoundationIT": 30
+  },
+  "frontendUnitTests": 81,
+  "ui": {
+    "startTime": "2026-10-09T05:56:03.510Z",
+    "duration": 197687.381,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "screenshots": 72,
+  "diagnosticScreenshots": 226,
+  "sourceFiles": 51,
+  "pending": [
+    "P14 factory audit/export, stable ERP identity changes and deduplication, role/concurrency/loading/focus boundaries",
+    "P13 remaining account boundaries",
+    "full P01-P16 matrix, end-to-end UI business loop and historical ordering/capacity/recovery gaps"
+  ]
+}

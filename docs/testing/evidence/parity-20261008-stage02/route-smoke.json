@@ -1,0 +1,287 @@
+[
+  {
+    "kind": "java",
+    "pages": [
+      {
+        "route": "/dashboard",
+        "actual": "/dashboard",
+        "heading": [
+          "你好，初始管理员"
+        ],
+        "containsSyntheticData": true,
+        "bodyLength": 358
+      },
+      {
+        "route": "/orders",
+        "actual": "/orders",
+        "heading": [
+          "生产订单快照"
+        ],
+        "containsSyntheticData": true,
+        "bodyLength": 583
+      },
+      {
+        "route": "/generate",
+        "actual": "/generate",
+        "heading": [
+          "生成与分配"
+        ],
+        "containsSyntheticData": false,
+        "bodyLength": 264
+      },
+      {
+        "route": "/pi-init",
+        "actual": "/pi-init",
+        "heading": [
+          "起始号与历史导入"
+        ],
+        "containsSyntheticData": false,
+        "bodyLength": 233
+      },
+      {
+        "route": "/rules",
+        "actual": "/rules",
+        "heading": [
+          "规则模板"
+        ],
+        "containsSyntheticData": true,
+        "bodyLength": 544
+      },
+      {
+        "route": "/acquire",
+        "actual": "/acquire",
+        "heading": [
+          "领取 / 打印"
+        ],
+        "containsSyntheticData": true,
+        "bodyLength": 743
+      },
+      {
+        "route": "/transfer",
+        "actual": "/transfer",
+        "heading": [
+          "转厂"
+        ],
+        "containsSyntheticData": false,
+        "bodyLength": 431
+      },
+      {
+        "route": "/query",
+        "actual": "/query",
+        "heading": [
+          "SN 查询"
+        ],
+        "containsSyntheticData": true,
+        "bodyLength": 1987
+      },
+      {
+        "route": "/audit",
+        "actual": "/audit",
+        "heading": [
+          "操作痕迹"
+        ],
+        "containsSyntheticData": true,
+        "bodyLength": 3877
+      },
+      {
+        "route": "/factories",
+        "actual": "/factories",
+        "heading": [
+          "工厂"
+        ],
+        "containsSyntheticData": true,
+        "bodyLength": 330
+      },
+      {
+        "route": "/system/users",
+        "actual": "/system/users",
+        "heading": [
+          "用户管理"
+        ],
+        "containsSyntheticData": false,
+        "bodyLength": 404
+      },
+      {
+        "route": "/system/roles",
+        "actual": "/system/roles",
+        "heading": [
+          "角色管理"
+        ],
+        "containsSyntheticData": false,
+        "bodyLength": 393
+      },
+      {
+        "route": "/system/departments",
+        "actual": "/system/departments",
+        "heading": [
+          "部门管理"
+        ],
+        "containsSyntheticData": false,
+        "bodyLength": 247
+      },
+      {
+        "route": "/system/menus",
+        "actual": "/system/menus",
+        "heading": [
+          "菜单管理"
+        ],
+        "containsSyntheticData": false,
+        "bodyLength": 933
+      },
+      {
+        "route": "/system/dictionaries",
+        "actual": "/system/dictionaries",
+        "heading": [
+          "字典管理"
+        ],
+        "containsSyntheticData": false,
+        "bodyLength": 236
+      },
+      {
+        "route": "/system/audit",
+        "actual": "/system/audit",
+        "heading": [
+          "操作日志"
+        ],
+        "containsSyntheticData": false,
+        "bodyLength": 1351
+      }
+    ],
+    "errors": [],
+    "badResponses": [],
+    "expectedAnonymousResponses": [
+      {
+        "path": "/api/v1/system/auth/refresh",
+        "status": 401,
+        "authenticated": false
+      }
+    ],
+    "storageKeys": {
+      "local": [
+        "adtek-language"
+      ],
+      "session": []
+    },
+    "refreshHttpOnly": [
+      true
+    ],
+    "reloadAuthenticated": true
+  },
+  {
+    "kind": "python",
+    "pages": [
+      {
+        "route": "/",
+        "actual": "/",
+        "heading": [
+          "你好，系统管理员"
+        ],
+        "containsSyntheticData": true,
+        "bodyLength": 392
+      },
+      {
+        "route": "/orders",
+        "actual": "/orders",
+        "heading": [
+          "生产订单快照"
+        ],
+        "containsSyntheticData": true,
+        "bodyLength": 589
+      },
+      {
+        "route": "/generate",
+        "actual": "/generate",
+        "heading": [
+          "生成与分配"
+        ],
+        "containsSyntheticData": false,
+        "bodyLength": 314
+      },
+      {
+        "route": "/pi-init",
+        "actual": "/pi-init",
+        "heading": [
+          "起始号与历史导入"
+        ],
+        "containsSyntheticData": false,
+        "bodyLength": 233
+      },
+      {
+        "route": "/rules",
+        "actual": "/rules",
+        "heading": [
+          "规则模板"
+        ],
+        "containsSyntheticData": true,
+        "bodyLength": 559
+      },
+      {
+        "route": "/acquire",
+        "actual": "/acquire",
+        "heading": [
+          "领取与打印"
+        ],
+        "containsSyntheticData": true,
+        "bodyLength": 509
+      },
+      {
+        "route": "/transfer",
+        "actual": "/transfer",
+        "heading": [
+          "转厂"
+        ],
+        "containsSyntheticData": false,
+        "bodyLength": 389
+      },
+      {
+        "route": "/query",
+        "actual": "/query",
+        "heading": [
+          "SN 查询"
+        ],
+        "containsSyntheticData": true,
+        "bodyLength": 2039
+      },
+      {
+        "route": "/audit",
+        "actual": "/audit",
+        "heading": [
+          "操作痕迹"
+        ],
+        "containsSyntheticData": false,
+        "bodyLength": 1742
+      },
+      {
+        "route": "/factories",
+        "actual": "/factories",
+        "heading": [
+          "工厂"
+        ],
+        "containsSyntheticData": true,
+        "bodyLength": 308
+      },
+      {
+        "route": "/users",
+        "actual": "/users",
+        "heading": [
+          "账户"
+        ],
+        "containsSyntheticData": true,
+        "bodyLength": 711
+      }
+    ],
+    "errors": [],
+    "badResponses": [],
+    "expectedAnonymousResponses": [],
+    "storageKeys": {
+      "local": [
+        "sn_user",
+        "sn_lang",
+        "sn_token"
+      ],
+      "session": []
+    },
+    "refreshHttpOnly": [],
+    "reloadAuthenticated": true
+  }
+]

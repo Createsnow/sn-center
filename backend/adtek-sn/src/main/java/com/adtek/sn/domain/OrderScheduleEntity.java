@@ -13,6 +13,8 @@ public record OrderScheduleEntity(
         Instant leaseUntil,
         String lastState,
         Integer lastErrorCode,
+        Boolean lastOk,
+        String lastErrorMessage,
         Long lastBills,
         Long lastRows,
         Instant updatedAt) {}

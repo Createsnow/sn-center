@@ -1,0 +1,10 @@
+{
+  "before": {
+    "opacity": 1,
+    "text": "Your factory has no SNs in PI CMP-UI-QUERY-SCOPE-PI-B"
+  },
+  "after": {
+    "opacity": 1,
+    "text": "Your factory has no SNs in PI CMP-UI-QUERY-SCOPE-PI-B"
+  }
+}

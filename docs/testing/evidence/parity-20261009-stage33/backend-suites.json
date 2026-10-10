@@ -1,0 +1,234 @@
+[
+  {
+    "tests": 28,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.SnFoundationIT",
+    "log": "stage33-verify2.log"
+  },
+  {
+    "tests": 15,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.SnMaintenanceIT",
+    "log": "stage33-verify2.log"
+  },
+  {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.common.core.DataScopeTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.audit.AuditContextTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.audit.RequestFailureAuditFilterTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.mybatis.ScopedDataPermissionInterceptorTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.security.CurrentActorTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.security.JwtTokenCodecTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.security.PasswordEncodingTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.security.RedisFailureTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.task.FileStorageTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.web.LegacyBoundaryTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.web.ResultSerializationTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.framework.web.TraceFilterTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.sn.service.support.InitializationErrorsTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.sn.service.support.PrintFilesTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.sn.service.support.SequenceCodecTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.sn.service.support.SnAuditFilesTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.sn.service.support.SnImportDigestTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.ArchitectureTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.ArchiveRestoreProofTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.AuditProjectionTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.ErrorCodeCatalogTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.K3ConfigurationTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.K3ErrorsTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.K3LegacyProtocolTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.LegacyErrorCatalogTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.MaintenanceScheduleTest",
+    "log": "stage33-verify4.log"
+  },
+  {
+    "tests": 14,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "name": "com.adtek.server.SnAuditIT",
+    "log": "stage33-verify4.log"
+  }
+]

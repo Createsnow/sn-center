@@ -1,0 +1,460 @@
+{
+  "snapshots": [
+    {
+      "name": "01-disable-confirm",
+      "measurements": [
+        {
+          "x": 510,
+          "y": 404,
+          "width": 420,
+          "height": 152,
+          "text": "停用\n\n停用 cmp_account42_member 启停重置测试？停用后不能登录，历史痕迹保留。\n\n取消\n确定",
+          "color": "rgb(15, 23, 42)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "18px",
+          "lineHeight": "normal"
+        },
+        {
+          "x": 522,
+          "y": 416,
+          "width": 396,
+          "height": 36,
+          "text": "停用",
+          "color": "rgb(15, 23, 42)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "18px",
+          "lineHeight": "normal"
+        },
+        {
+          "x": 522,
+          "y": 452,
+          "width": 396,
+          "height": 48,
+          "text": "停用 cmp_account42_member 启停重置测试？停用后不能登录，历史痕迹保留。",
+          "color": "rgb(96, 98, 102)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "14px",
+          "lineHeight": "normal"
+        },
+        null,
+        {
+          "x": 522,
+          "y": 500,
+          "width": 396,
+          "height": 44,
+          "text": "取消\n确定",
+          "color": "rgb(15, 23, 42)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "18px",
+          "lineHeight": "normal"
+        },
+        null
+      ]
+    },
+    {
+      "name": "02-disabled",
+      "measurements": [
+        {
+          "x": 510,
+          "y": 403.00054931640625,
+          "width": 420,
+          "height": 152,
+          "text": "停用\n\n停用 cmp_account42_member 启停重置测试？停用后不能登录，历史痕迹保留。\n\n取消\n确定",
+          "color": "rgb(15, 23, 42)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "18px",
+          "lineHeight": "normal"
+        },
+        {
+          "x": 522,
+          "y": 415.00054931640625,
+          "width": 396,
+          "height": 36,
+          "text": "停用",
+          "color": "rgb(15, 23, 42)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "18px",
+          "lineHeight": "normal"
+        },
+        {
+          "x": 522,
+          "y": 451.00054931640625,
+          "width": 396,
+          "height": 48,
+          "text": "停用 cmp_account42_member 启停重置测试？停用后不能登录，历史痕迹保留。",
+          "color": "rgb(96, 98, 102)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "14px",
+          "lineHeight": "normal"
+        },
+        null,
+        {
+          "x": 522,
+          "y": 499.00054931640625,
+          "width": 396,
+          "height": 44,
+          "text": "取消\n确定",
+          "color": "rgb(15, 23, 42)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "18px",
+          "lineHeight": "normal"
+        },
+        null
+      ]
+    },
+    {
+      "name": "03-enabled",
+      "measurements": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "name": "04-reset-empty",
+      "measurements": [
+        {
+          "x": 510,
+          "y": 386,
+          "width": 420,
+          "height": 188,
+          "text": "重置密码\n为 cmp_account42_member 设置新的初始密码（下次登录须修改）\n取消\n确定",
+          "color": "rgb(15, 23, 42)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "18px",
+          "lineHeight": "normal"
+        },
+        {
+          "x": 522,
+          "y": 398,
+          "width": 396,
+          "height": 36,
+          "text": "重置密码",
+          "color": "rgb(15, 23, 42)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "18px",
+          "lineHeight": "normal"
+        },
+        {
+          "x": 522,
+          "y": 434,
+          "width": 396,
+          "height": 40,
+          "text": "为 cmp_account42_member 设置新的初始密码（下次登录须修改）",
+          "color": "rgb(96, 98, 102)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "14px",
+          "lineHeight": "normal"
+        },
+        {
+          "x": 522,
+          "y": 474,
+          "width": 396,
+          "height": 44,
+          "text": "",
+          "color": "rgb(96, 98, 102)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "14px",
+          "lineHeight": "normal"
+        },
+        {
+          "x": 522,
+          "y": 518,
+          "width": 396,
+          "height": 44,
+          "text": "取消\n确定",
+          "color": "rgb(15, 23, 42)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "18px",
+          "lineHeight": "normal"
+        },
+        {
+          "x": 522,
+          "y": 518,
+          "width": 396,
+          "height": 0,
+          "text": "",
+          "color": "rgb(245, 108, 108)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "12px",
+          "lineHeight": "24px"
+        }
+      ]
+    },
+    {
+      "name": "05-reset-invalid",
+      "measurements": [
+        {
+          "x": 510,
+          "y": 374,
+          "width": 420,
+          "height": 212,
+          "text": "重置密码\n为 cmp_account42_member 设置新的初始密码（下次登录须修改）\n8–64 位，同时包含字母和数字。\n取消\n确定",
+          "color": "rgb(15, 23, 42)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "18px",
+          "lineHeight": "normal"
+        },
+        {
+          "x": 522,
+          "y": 386,
+          "width": 396,
+          "height": 36,
+          "text": "重置密码",
+          "color": "rgb(15, 23, 42)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "18px",
+          "lineHeight": "normal"
+        },
+        {
+          "x": 522,
+          "y": 422,
+          "width": 396,
+          "height": 40,
+          "text": "为 cmp_account42_member 设置新的初始密码（下次登录须修改）",
+          "color": "rgb(96, 98, 102)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "14px",
+          "lineHeight": "normal"
+        },
+        {
+          "x": 522,
+          "y": 462,
+          "width": 396,
+          "height": 68,
+          "text": "8–64 位，同时包含字母和数字。",
+          "color": "rgb(96, 98, 102)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "14px",
+          "lineHeight": "normal"
+        },
+        {
+          "x": 522,
+          "y": 530,
+          "width": 396,
+          "height": 44,
+          "text": "取消\n确定",
+          "color": "rgb(15, 23, 42)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "18px",
+          "lineHeight": "normal"
+        },
+        {
+          "x": 522,
+          "y": 506,
+          "width": 396,
+          "height": 24,
+          "text": "8–64 位，同时包含字母和数字。",
+          "color": "rgb(245, 108, 108)",
+          "font": "\"Source Han Sans SC\", \"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", ui-sans-serif, system-ui, sans-serif",
+          "fontSize": "12px",
+          "lineHeight": "24px"
+        }
+      ]
+    },
+    {
+      "name": "06-reset-done-no-reload",
+      "measurements": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "name": "07-self-actions",
+      "measurements": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "name": "08-self-reset-done",
+      "measurements": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "name": "09-self-reset-forced-change",
+      "measurements": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    }
+  ],
+  "requests": [
+    {
+      "route": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "route": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "route": "/api/dashboard",
+      "status": 200
+    },
+    {
+      "route": "/api/factories",
+      "status": 200
+    },
+    {
+      "route": "/api/users",
+      "status": 200
+    },
+    {
+      "route": "/api/users",
+      "status": 200
+    },
+    {
+      "route": "/api/users",
+      "status": 200
+    },
+    {
+      "route": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "route": "/api/auth/password",
+      "status": 200
+    },
+    {
+      "route": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "route": "/api/dashboard",
+      "status": 200
+    },
+    {
+      "route": "/api/users",
+      "status": 200
+    },
+    {
+      "route": "/api/users/129/disable",
+      "status": 200
+    },
+    {
+      "route": "/api/users",
+      "status": 200
+    },
+    {
+      "route": "/api/auth/me",
+      "status": 401
+    },
+    {
+      "route": "/api/dashboard",
+      "status": 401
+    },
+    {
+      "route": "/api/users/129/enable",
+      "status": 200
+    },
+    {
+      "route": "/api/users",
+      "status": 200
+    },
+    {
+      "route": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "route": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "route": "/api/dashboard",
+      "status": 200
+    },
+    {
+      "route": "/api/users",
+      "status": 200
+    },
+    {
+      "route": "/api/users/129/reset-password",
+      "status": 200
+    },
+    {
+      "route": "/api/users/129/reset-password",
+      "status": 200
+    },
+    {
+      "route": "/api/dashboard",
+      "status": 401
+    },
+    {
+      "route": "/api/auth/me",
+      "status": 401
+    },
+    {
+      "route": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "route": "/api/auth/password",
+      "status": 200
+    },
+    {
+      "route": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "route": "/api/dashboard",
+      "status": 200
+    },
+    {
+      "route": "/api/factories",
+      "status": 200
+    },
+    {
+      "route": "/api/users",
+      "status": 200
+    },
+    {
+      "route": "/api/users",
+      "status": 200
+    },
+    {
+      "route": "/api/users/129/reset-password",
+      "status": 200
+    },
+    {
+      "route": "/api/factories",
+      "status": 401
+    },
+    {
+      "route": "/api/users",
+      "status": 401
+    },
+    {
+      "route": "/api/auth/me",
+      "status": 401
+    },
+    {
+      "route": "/api/auth/login",
+      "status": 200
+    }
+  ],
+  "pageErrors": [
+    "登录已失效，请重新登录"
+  ]
+}

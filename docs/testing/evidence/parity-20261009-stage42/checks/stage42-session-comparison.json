@@ -1,0 +1,32 @@
+{
+  "publicStatesEqual": true,
+  "oneLoginPerSystem": true,
+  "noAuthenticated401": true,
+  "queries": [
+    {
+      "state": "01-operator",
+      "rows": 9,
+      "firstEightColumnsEqualBySN": true,
+      "rawRowOrderEqual": false
+    },
+    {
+      "state": "02-renamed",
+      "rows": 9,
+      "firstEightColumnsEqualBySN": true,
+      "rawRowOrderEqual": false
+    },
+    {
+      "state": "03-query-b",
+      "rows": 1,
+      "firstEightColumnsEqualBySN": true,
+      "rawRowOrderEqual": true
+    },
+    {
+      "state": "04-admin",
+      "rows": 10,
+      "firstEightColumnsEqualBySN": true,
+      "rawRowOrderEqual": false
+    }
+  ],
+  "historicalRowOrderStillPending": true
+}

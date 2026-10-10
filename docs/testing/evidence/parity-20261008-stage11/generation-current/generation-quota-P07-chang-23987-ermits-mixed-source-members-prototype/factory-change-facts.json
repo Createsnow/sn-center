@@ -1,0 +1,153 @@
+{
+  "before": {
+    "kind": "python",
+    "items": [
+      {
+        "sn": "G0600001",
+        "seq_dec": 1,
+        "status": "PENDING_ALLOC",
+        "material": "FACTORY-CHANGE",
+        "customer": "CMP-UI-GEN-CUSTOMER"
+      },
+      {
+        "sn": "G0600002",
+        "seq_dec": 2,
+        "status": "PENDING_ALLOC",
+        "material": "FACTORY-CHANGE",
+        "customer": "CMP-UI-GEN-CUSTOMER"
+      }
+    ],
+    "allocations": [],
+    "jobs": [
+      {
+        "state": "SUCCESS",
+        "qty": 2,
+        "error_code": null,
+        "error_msg": null
+      }
+    ],
+    "identities": [
+      {
+        "sn": "G0600001",
+        "pi": "CMP-UI-GEN-PI",
+        "customer": "CMP-UI-GEN-CUSTOMER",
+        "factory_code": null
+      },
+      {
+        "sn": "G0600002",
+        "pi": "CMP-UI-GEN-PI",
+        "customer": "CMP-UI-GEN-CUSTOMER",
+        "factory_code": null
+      }
+    ],
+    "generationIdentity": [
+      {
+        "pi": "CMP-UI-GEN-PI",
+        "customer": "CMP-UI-GEN-CUSTOMER",
+        "factory_code": "CMP-A"
+      }
+    ]
+  },
+  "after": {
+    "kind": "python",
+    "items": [
+      {
+        "sn": "G0600001",
+        "seq_dec": 1,
+        "status": "TO_ACQUIRE",
+        "material": "FACTORY-CHANGE",
+        "customer": "CMP-UI-GEN-CUSTOMER"
+      },
+      {
+        "sn": "G0600002",
+        "seq_dec": 2,
+        "status": "TO_ACQUIRE",
+        "material": "FACTORY-CHANGE",
+        "customer": "CMP-UI-GEN-CUSTOMER"
+      },
+      {
+        "sn": "G0600003",
+        "seq_dec": 3,
+        "status": "TO_ACQUIRE",
+        "material": "FACTORY-CHANGE",
+        "customer": "CMP-UI-CHANGED-CUSTOMER"
+      },
+      {
+        "sn": "G0600004",
+        "seq_dec": 4,
+        "status": "PENDING_ALLOC",
+        "material": "FACTORY-CHANGE",
+        "customer": "CMP-UI-CHANGED-CUSTOMER"
+      },
+      {
+        "sn": "G0600005",
+        "seq_dec": 5,
+        "status": "PENDING_ALLOC",
+        "material": "FACTORY-CHANGE",
+        "customer": "CMP-UI-CHANGED-CUSTOMER"
+      }
+    ],
+    "allocations": [
+      {
+        "qty": 3,
+        "start_sn": "G0600001",
+        "end_sn": "G0600003",
+        "created_by": "admin",
+        "factory_code": "CMP-B"
+      }
+    ],
+    "jobs": [
+      {
+        "state": "SUCCESS",
+        "qty": 2,
+        "error_code": null,
+        "error_msg": null
+      },
+      {
+        "state": "SUCCESS",
+        "qty": 3,
+        "error_code": null,
+        "error_msg": null
+      }
+    ],
+    "identities": [
+      {
+        "sn": "G0600001",
+        "pi": "CMP-UI-GEN-PI",
+        "customer": "CMP-UI-GEN-CUSTOMER",
+        "factory_code": "CMP-B"
+      },
+      {
+        "sn": "G0600002",
+        "pi": "CMP-UI-GEN-PI",
+        "customer": "CMP-UI-GEN-CUSTOMER",
+        "factory_code": "CMP-B"
+      },
+      {
+        "sn": "G0600003",
+        "pi": "CMP-UI-GEN-PI",
+        "customer": "CMP-UI-CHANGED-CUSTOMER",
+        "factory_code": "CMP-B"
+      },
+      {
+        "sn": "G0600004",
+        "pi": "CMP-UI-GEN-PI",
+        "customer": "CMP-UI-CHANGED-CUSTOMER",
+        "factory_code": null
+      },
+      {
+        "sn": "G0600005",
+        "pi": "CMP-UI-GEN-PI",
+        "customer": "CMP-UI-CHANGED-CUSTOMER",
+        "factory_code": null
+      }
+    ],
+    "generationIdentity": [
+      {
+        "pi": "CMP-UI-GEN-PI",
+        "customer": "CMP-UI-GEN-CUSTOMER",
+        "factory_code": "CMP-B"
+      }
+    ]
+  }
+}

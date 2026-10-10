@@ -1,0 +1,36 @@
+
+Running 1 test using 1 worker
+
+(node:26648) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [prototype] › e2e\parity\order-audit.spec.ts:9:1 › P05/P12 order audit: manual outcomes, system schedule, filters, details and 24-column files (19.1s)
+
+
+  1) [prototype] › e2e\parity\order-audit.spec.ts:9:1 › P05/P12 order audit: manual outcomes, system schedule, filters, details and 24-column files 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: locator('.el-message').filter({ hasText: '单据 CMP-MISSING 已同步，0 行' })
+    Expected: "单据 CMP-MISSING 已同步，0 行"
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveText" locator('.el-message').filter({ hasText: '单据 CMP-MISSING 已同步，0 行' }) with timeout 15000ms
+      - waiting for locator('.el-message').filter({ hasText: '单据 CMP-MISSING 已同步，0 行' })
+
+
+      36 |     expect(response.status()).toBe(status);
+      37 |     const message = page.locator(prototype ? '.el-message' : '.ant-message-notice').filter({ hasText: expected });
+    > 38 |     await expect(message).toHaveText(expected);
+         |                           ^
+      39 |     await capture(label);
+      40 |     if (status !== 200) await message.locator(prototype ? '.el-message__closeBtn' : 'button').click();
+      41 |     await expect(page.getByRole('button', { name: zh.orders.syncAll, exact: true })).toBeEnabled();
+        at sync (D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-audit.spec.ts:38:27)
+        at D:\AdtekProjects\mf-sn-uniq-guard\adtek-platform-sn\frontend\e2e\parity\order-audit.spec.ts:118:5
+
+    Error Context: test-results\stage48-ui1\order-audit-P05-P12-order--20943-details-and-24-column-files-prototype\error-context.md
+
+  1 failed
+    [prototype] › e2e\parity\order-audit.spec.ts:9:1 › P05/P12 order audit: manual outcomes, system schedule, filters, details and 24-column files 

@@ -1,0 +1,5451 @@
+{
+  "records": [
+    {
+      "mode": "fast-1",
+      "frames": [
+        {
+          "event": "frame",
+          "time": 490.69999998807907,
+          "wallTime": 1791546710029,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 526,
+          "wallTime": 1791546710064,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 572.0999999940395,
+          "wallTime": 1791546710110,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-from page-leave-active",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 605.5,
+          "wallTime": 1791546710143,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            75.55035400390625,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 622.3999999910593,
+          "wallTime": 1791546710160,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            74.61502838134766,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 638.7999999970198,
+          "wallTime": 1791546710177,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            73.6990737915039,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 656.2999999970198,
+          "wallTime": 1791546710194,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            73.03600311279297,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 672.0999999940395,
+          "wallTime": 1791546710210,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.590576171875,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 688.7999999970198,
+          "wallTime": 1791546710227,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.30142974853516,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 705.3999999910593,
+          "wallTime": 1791546710243,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.12252044677734,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 722.0999999940395,
+          "wallTime": 1791546710260,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.02822875976562,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 738.8999999910593,
+          "wallTime": 1791546710277,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 773.1999999880791,
+          "wallTime": 1791546710311,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-from page-enter-active",
+          "pageBox": [
+            240,
+            82,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 792.8999999910593,
+          "wallTime": 1791546710331,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            82,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 807.1999999880791,
+          "wallTime": 1791546710345,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            81.34271240234375,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 822.0999999940395,
+          "wallTime": 1791546710360,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            79.9461669921875,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 838.8999999910593,
+          "wallTime": 1791546710377,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            78.55997467041016,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 855.7999999970198,
+          "wallTime": 1791546710394,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            77.56666564941406,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 872.0999999940395,
+          "wallTime": 1791546710410,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.89749908447266,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 888.6999999880791,
+          "wallTime": 1791546710427,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.45750427246094,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "before-sync",
+          "time": 899.3999999910593,
+          "wallTime": 1791546710437,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.45750427246094,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 905.2999999970198,
+          "wallTime": 1791546710443,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.1868896484375,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 922.0999999940395,
+          "wallTime": 1791546710460,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.04371643066406,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 938.5999999940395,
+          "wallTime": 1791546710477,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.00000762939453,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 956.0999999940395,
+          "wallTime": 1791546710494,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "focus",
+          "time": 964,
+          "wallTime": 1791546710502,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "el-button el-button--primary"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 972.5,
+          "wallTime": 1791546710511,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "el-button el-button--primary is-loading"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 988.8999999910593,
+          "wallTime": 1791546710527,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "sync-response",
+          "time": 1040.7999999970198,
+          "wallTime": 1791546710579,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 1055.699999988079,
+          "wallTime": 1791546710594,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 2
+        },
+        {
+          "event": "frame",
+          "time": 1106,
+          "wallTime": 1791546710644,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 1139.3999999910593,
+          "wallTime": 1791546710677,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "settled",
+          "time": 4674.399999991059,
+          "wallTime": 1791546714212,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "stop",
+          "time": 4732.399999991059,
+          "wallTime": 1791546714270,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        }
+      ]
+    },
+    {
+      "mode": "settled",
+      "frames": [
+        {
+          "event": "frame",
+          "time": 498.69999998807907,
+          "wallTime": 1791546714829,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 536,
+          "wallTime": 1791546714866,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 563.7999999970198,
+          "wallTime": 1791546714894,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-from page-leave-active",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 597,
+          "wallTime": 1791546714927,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            75.55457305908203,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 613.5,
+          "wallTime": 1791546714944,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            74.6147232055664,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 630.5,
+          "wallTime": 1791546714960,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            73.68933868408203,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 646.7999999970198,
+          "wallTime": 1791546714977,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            73.03909301757812,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 663.5,
+          "wallTime": 1791546714994,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.59262084960938,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 680.0999999940395,
+          "wallTime": 1791546715010,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.29998779296875,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 696.6999999880791,
+          "wallTime": 1791546715027,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.12248229980469,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 713.2999999970198,
+          "wallTime": 1791546715043,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.02821350097656,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 730,
+          "wallTime": 1791546715060,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 752.2999999970198,
+          "wallTime": 1791546715082,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-from page-enter-active",
+          "pageBox": [
+            240,
+            82,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 766.2999999970198,
+          "wallTime": 1791546715096,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-from page-enter-active",
+          "pageBox": [
+            240,
+            82,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 781.2999999970198,
+          "wallTime": 1791546715111,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            81.3191146850586,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 796.8999999910593,
+          "wallTime": 1791546715127,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            79.92290496826172,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 813.7999999970198,
+          "wallTime": 1791546715144,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            78.54176330566406,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 830.3999999910593,
+          "wallTime": 1791546715160,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            77.54933166503906,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 847,
+          "wallTime": 1791546715177,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.88599395751953,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 863.5999999940395,
+          "wallTime": 1791546715194,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.4501724243164,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 880.0999999940395,
+          "wallTime": 1791546715210,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.18382263183594,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 896.5999999940395,
+          "wallTime": 1791546715227,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.0423583984375,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 914.3999999910593,
+          "wallTime": 1791546715245,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "before-sync",
+          "time": 1198.5999999940395,
+          "wallTime": 1791546715529,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 1235.0999999940395,
+          "wallTime": 1791546715565,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "el-button el-button--primary"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 1247,
+          "wallTime": 1791546715577,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "el-button el-button--primary is-loading"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 1263.2999999970198,
+          "wallTime": 1791546715593,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "sync-response",
+          "time": 1283.3999999910593,
+          "wallTime": 1791546715613,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 1297.199999988079,
+          "wallTime": 1791546715627,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 1351.5999999940395,
+          "wallTime": 1791546715682,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "settled",
+          "time": 4866,
+          "wallTime": 1791546719196,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "stop",
+          "time": 4924.79999999702,
+          "wallTime": 1791546719255,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        }
+      ]
+    },
+    {
+      "mode": "hold-meta",
+      "frames": [
+        {
+          "event": "frame",
+          "time": 505.79999999701977,
+          "wallTime": 1791546719816,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 538.2000000029802,
+          "wallTime": 1791546719849,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 616.5,
+          "wallTime": 1791546719927,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-from page-leave-active",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 649.7000000029802,
+          "wallTime": 1791546719960,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 666.7999999970198,
+          "wallTime": 1791546719977,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            75.54906463623047,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 683.0999999940395,
+          "wallTime": 1791546719993,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            74.61326599121094,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 699.7999999970198,
+          "wallTime": 1791546720010,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            73.69293975830078,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 716.5,
+          "wallTime": 1791546720027,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            73.03506469726562,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 733.3999999910593,
+          "wallTime": 1791546720044,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.58995056152344,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 749.7000000029802,
+          "wallTime": 1791546720060,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.30103302001953,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 766.3999999910593,
+          "wallTime": 1791546720077,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.12149047851562,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 783,
+          "wallTime": 1791546720093,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.02848052978516,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 812.2999999970198,
+          "wallTime": 1791546720123,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-from page-enter-active",
+          "pageBox": [
+            240,
+            82,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 833.2000000029802,
+          "wallTime": 1791546720143,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            82,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 849.7999999970198,
+          "wallTime": 1791546720160,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            81.32733154296875,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 866.5,
+          "wallTime": 1791546720177,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            79.91588592529297,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 883.2000000029802,
+          "wallTime": 1791546720193,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            78.54339599609375,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 900.2000000029802,
+          "wallTime": 1791546720211,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            77.55045318603516,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 916.3999999910593,
+          "wallTime": 1791546720227,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.88673400878906,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 933.3999999910593,
+          "wallTime": 1791546720244,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.45064544677734,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 949.5999999940395,
+          "wallTime": 1791546720260,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.18409729003906,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "before-sync",
+          "time": 950.0999999940395,
+          "wallTime": 1791546720260,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.18409729003906,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 966.3999999910593,
+          "wallTime": 1791546720277,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.04248046875,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 983.5,
+          "wallTime": 1791546720294,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 1021.5999999940395,
+          "wallTime": 1791546720332,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "el-button el-button--primary"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 1033.3999999910593,
+          "wallTime": 1791546720344,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "el-button el-button--primary is-loading"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 1049.7000000029802,
+          "wallTime": 1791546720360,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "sync-response",
+          "time": 1081.8999999910593,
+          "wallTime": 1791546720392,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 1104.5999999940395,
+          "wallTime": 1791546720415,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 1151.5999999940395,
+          "wallTime": 1791546720462,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "settled",
+          "time": 4702.0999999940395,
+          "wallTime": 1791546724012,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "stop",
+          "time": 4758,
+          "wallTime": 1791546724068,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        }
+      ]
+    },
+    {
+      "mode": "hold-orders",
+      "frames": [
+        {
+          "event": "frame",
+          "time": 501.30000001192093,
+          "wallTime": 1791546724614,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 537.2000000029802,
+          "wallTime": 1791546724649,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 614.5,
+          "wallTime": 1791546724727,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-from page-leave-active",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 647.9000000059605,
+          "wallTime": 1791546724760,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            75.54812622070312,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 664.5,
+          "wallTime": 1791546724777,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            74.6180648803711,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 681.2000000029802,
+          "wallTime": 1791546724793,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            73.69669342041016,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 697.9000000059605,
+          "wallTime": 1791546724810,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            73.03437805175781,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 714.6000000089407,
+          "wallTime": 1791546724827,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.5895004272461,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 731.5,
+          "wallTime": 1791546724844,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.30074310302734,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 748,
+          "wallTime": 1791546724860,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.12133026123047,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 764.7000000029802,
+          "wallTime": 1791546724877,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.0280532836914,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 781.4000000059605,
+          "wallTime": 1791546724894,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 813,
+          "wallTime": 1791546724925,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-from page-enter-active",
+          "pageBox": [
+            240,
+            82,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 832,
+          "wallTime": 1791546724944,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            82,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 848.1000000089407,
+          "wallTime": 1791546724960,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            81.32179260253906,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 864.8000000119209,
+          "wallTime": 1791546724977,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            79.91743469238281,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 881.4000000059605,
+          "wallTime": 1791546724994,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            78.54461669921875,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 898.3000000119209,
+          "wallTime": 1791546725011,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            77.55128479003906,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 914.7000000029802,
+          "wallTime": 1791546725027,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.8840560913086,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 931.2000000029802,
+          "wallTime": 1791546725043,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.45099639892578,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "before-sync",
+          "time": 938.4000000059605,
+          "wallTime": 1791546725051,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.45099639892578,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 947.7000000029802,
+          "wallTime": 1791546725060,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.18311309814453,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 964.5,
+          "wallTime": 1791546725077,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.04257202148438,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 982.4000000059605,
+          "wallTime": 1791546725095,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "focus",
+          "time": 1004.4000000059605,
+          "wallTime": 1791546725117,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "el-button el-button--primary"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 1017.3000000119209,
+          "wallTime": 1791546725130,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "el-button el-button--primary is-loading"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 1031.300000011921,
+          "wallTime": 1791546725144,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "sync-response",
+          "time": 1070.800000011921,
+          "wallTime": 1791546725183,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 1415.7000000029802,
+          "wallTime": 1791546725528,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "settled",
+          "time": 4983.300000011921,
+          "wallTime": 1791546729096,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "stop",
+          "time": 5045.600000008941,
+          "wallTime": 1791546729158,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        }
+      ]
+    },
+    {
+      "mode": "mouse-fast-1",
+      "frames": [
+        {
+          "event": "frame",
+          "time": 547.2999999970198,
+          "wallTime": 1791546729762,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 584.3999999910593,
+          "wallTime": 1791546729799,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 612.3999999910593,
+          "wallTime": 1791546729827,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-from page-leave-active",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 645.7000000029802,
+          "wallTime": 1791546729861,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            75.55107116699219,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 665.7999999970198,
+          "wallTime": 1791546729881,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            74.61599731445312,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 679,
+          "wallTime": 1791546729894,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            73.69507598876953,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 695.3999999910593,
+          "wallTime": 1791546729910,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            73.03327941894531,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 711.8999999910593,
+          "wallTime": 1791546729927,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.5909194946289,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 728.3999999910593,
+          "wallTime": 1791546729943,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.30027770996094,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 745.0999999940395,
+          "wallTime": 1791546729960,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.12265014648438,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 761.8999999910593,
+          "wallTime": 1791546729977,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.02828216552734,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 796.2000000029802,
+          "wallTime": 1791546730011,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-from page-enter-active",
+          "pageBox": [
+            240,
+            82,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 812.7000000029802,
+          "wallTime": 1791546730028,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            82,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 828.7999999970198,
+          "wallTime": 1791546730044,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            81.32218933105469,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "before-sync",
+          "time": 832.7999999970198,
+          "wallTime": 1791546730048,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            81.32218933105469,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 846,
+          "wallTime": 1791546730061,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            79.91798400878906,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "focus",
+          "time": 849.2000000029802,
+          "wallTime": 1791546730064,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            79.91798400878906,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "el-button el-button--primary"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 862.3999999910593,
+          "wallTime": 1791546730077,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            78.5450439453125,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "el-button el-button--primary is-loading"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 878.7000000029802,
+          "wallTime": 1791546730094,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            77.55157470703125,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 895.3999999910593,
+          "wallTime": 1791546730110,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.8874740600586,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 912,
+          "wallTime": 1791546730127,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.45111846923828,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 931.0999999940395,
+          "wallTime": 1791546730146,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.18318176269531,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "sync-response",
+          "time": 932.8999999910593,
+          "wallTime": 1791546730148,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.18318176269531,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 945.5,
+          "wallTime": 1791546730160,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.0426025390625,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 2
+        },
+        {
+          "event": "frame",
+          "time": 963.2000000029802,
+          "wallTime": 1791546730178,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 2
+        },
+        {
+          "event": "frame",
+          "time": 1162.5999999940395,
+          "wallTime": 1791546730377,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 1295.7000000029802,
+          "wallTime": 1791546730511,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "settled",
+          "time": 4798.5999999940395,
+          "wallTime": 1791546734013,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "stop",
+          "time": 4863,
+          "wallTime": 1791546734078,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        }
+      ]
+    },
+    {
+      "mode": "mouse-fast-2",
+      "frames": [
+        {
+          "event": "frame",
+          "time": 484.79999999701977,
+          "wallTime": 1791546734613,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 523.4000000059605,
+          "wallTime": 1791546734652,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 552.4000000059605,
+          "wallTime": 1791546734681,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-from page-leave-active",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 581.7999999970198,
+          "wallTime": 1791546734710,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            75.55479431152344,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 598.5999999940395,
+          "wallTime": 1791546734727,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            74.61502838134766,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 615.0999999940395,
+          "wallTime": 1791546734743,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            73.69432067871094,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 631.7999999970198,
+          "wallTime": 1791546734760,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            73.03600311279297,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 651.0999999940395,
+          "wallTime": 1791546734779,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.590576171875,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 665.2999999970198,
+          "wallTime": 1791546734793,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.30006408691406,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 681.9000000059605,
+          "wallTime": 1791546734810,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.1217269897461,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 698.5,
+          "wallTime": 1791546734827,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.02857971191406,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 715.0999999940395,
+          "wallTime": 1791546734843,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 739.9000000059605,
+          "wallTime": 1791546734868,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-from page-enter-active",
+          "pageBox": [
+            240,
+            82,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 752.2999999970198,
+          "wallTime": 1791546734880,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-from page-enter-active",
+          "pageBox": [
+            240,
+            82,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 766.4000000059605,
+          "wallTime": 1791546734895,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            81.32633209228516,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 782,
+          "wallTime": 1791546734910,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            79.91452026367188,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 799.5999999940395,
+          "wallTime": 1791546734928,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            78.53521728515625,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 816,
+          "wallTime": 1791546734944,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            77.54486846923828,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 832.0999999940395,
+          "wallTime": 1791546734960,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.88624572753906,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 848.7000000029802,
+          "wallTime": 1791546734977,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.45033264160156,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 865.2000000029802,
+          "wallTime": 1791546734993,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.18392181396484,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "before-sync",
+          "time": 868,
+          "wallTime": 1791546734996,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.18392181396484,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 883.5999999940395,
+          "wallTime": 1791546735012,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.04240417480469,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 886,
+          "wallTime": 1791546735014,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.04240417480469,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "el-button el-button--primary"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 899.7000000029802,
+          "wallTime": 1791546735028,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "el-button el-button--primary is-loading"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 915.4000000059605,
+          "wallTime": 1791546735044,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "sync-response",
+          "time": 958.0999999940395,
+          "wallTime": 1791546735086,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 966.0999999940395,
+          "wallTime": 1791546735094,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 1017.5,
+          "wallTime": 1791546735146,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "settled",
+          "time": 4551.29999999702,
+          "wallTime": 1791546738679,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "stop",
+          "time": 4606.0999999940395,
+          "wallTime": 1791546738734,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        }
+      ]
+    },
+    {
+      "mode": "mouse-settled",
+      "frames": [
+        {
+          "event": "frame",
+          "time": 503.40000000596046,
+          "wallTime": 1791546739279,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 538.5,
+          "wallTime": 1791546739314,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 567.5,
+          "wallTime": 1791546739343,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-from page-leave-active",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 601,
+          "wallTime": 1791546739377,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            75.55110931396484,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 617.4000000059605,
+          "wallTime": 1791546739393,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            74.61605834960938,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 634.2000000029802,
+          "wallTime": 1791546739410,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            73.69512939453125,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 650.7999999970198,
+          "wallTime": 1791546739427,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            73.03330993652344,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 667.5,
+          "wallTime": 1791546739443,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.5909423828125,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 684,
+          "wallTime": 1791546739460,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.30029296875,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 700.7999999970198,
+          "wallTime": 1791546739477,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.12185668945312,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 717.4000000059605,
+          "wallTime": 1791546739493,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 904,
+          "mainClass": "el-main main",
+          "pageClass": "page page-leave-active page-leave-to",
+          "pageBox": [
+            240,
+            72.02793884277344,
+            1180,
+            523.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 751.4000000059605,
+          "wallTime": 1791546739527,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 961,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-from page-enter-active",
+          "pageBox": [
+            240,
+            82,
+            1180,
+            920.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 769.7000000029802,
+          "wallTime": 1791546739546,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            82,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 784.4000000059605,
+          "wallTime": 1791546739560,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            81.32333374023438,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 800.7999999970198,
+          "wallTime": 1791546739577,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            79.9195327758789,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 817.5,
+          "wallTime": 1791546739594,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            78.54624938964844,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 834.2000000029802,
+          "wallTime": 1791546739610,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            77.55239868164062,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 851,
+          "wallTime": 1791546739627,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.88802337646484,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 867.6000000089407,
+          "wallTime": 1791546739644,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.45146942138672,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 884,
+          "wallTime": 1791546739660,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.18338775634766,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 900.7999999970198,
+          "wallTime": 1791546739677,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76.04216766357422,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 917.4000000059605,
+          "wallTime": 1791546739693,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page page-enter-active page-enter-to",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 936.1000000089407,
+          "wallTime": 1791546739712,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 1117.6000000089407,
+          "wallTime": 1791546739894,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "before-sync",
+          "time": 1335.6000000089407,
+          "wallTime": 1791546740112,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "LI",
+            "cls": "el-menu-item is-active"
+          },
+          "loading": 0
+        },
+        {
+          "event": "focus",
+          "time": 1353.7000000029802,
+          "wallTime": 1791546740130,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "el-button el-button--primary"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 1367.9000000059605,
+          "wallTime": 1791546740144,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BUTTON",
+            "cls": "el-button el-button--primary is-loading"
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 1384.1000000089407,
+          "wallTime": 1791546740160,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "sync-response",
+          "time": 1420.7000000029802,
+          "wallTime": 1791546740197,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "frame",
+          "time": 1451,
+          "wallTime": 1791546740227,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 1
+        },
+        {
+          "event": "frame",
+          "time": 1784.5,
+          "wallTime": 1791546740560,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "settled",
+          "time": 5285.79999999702,
+          "wallTime": 1791546744062,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        },
+        {
+          "event": "stop",
+          "time": 5347.70000000298,
+          "wallTime": 1791546744124,
+          "scroll": 0,
+          "height": 904,
+          "scrollHeight": 964,
+          "mainClass": "el-main main",
+          "pageClass": "page",
+          "pageBox": [
+            240,
+            76,
+            1180,
+            923.796875
+          ],
+          "focus": {
+            "tag": "BODY",
+            "cls": ""
+          },
+          "loading": 0
+        }
+      ]
+    }
+  ],
+  "requests": [
+    {
+      "phase": "fast-1",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "at": 1791546710311
+    },
+    {
+      "phase": "fast-1",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "at": 1791546710311
+    },
+    {
+      "phase": "fast-1",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546710323
+    },
+    {
+      "phase": "fast-1",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "status": 200,
+      "at": 1791546710330
+    },
+    {
+      "phase": "fast-1",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders",
+      "at": 1791546710330
+    },
+    {
+      "phase": "fast-1",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders",
+      "status": 200,
+      "at": 1791546710345
+    },
+    {
+      "phase": "fast-1",
+      "event": "request",
+      "method": "POST",
+      "path": "/api/orders/sync",
+      "at": 1791546710505
+    },
+    {
+      "phase": "fast-1",
+      "event": "response",
+      "method": "POST",
+      "path": "/api/orders/sync",
+      "status": 200,
+      "at": 1791546710576
+    },
+    {
+      "phase": "fast-1",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "at": 1791546710578
+    },
+    {
+      "phase": "fast-1",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "at": 1791546710578
+    },
+    {
+      "phase": "fast-1",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546710584
+    },
+    {
+      "phase": "fast-1",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "status": 200,
+      "at": 1791546710588
+    },
+    {
+      "phase": "fast-1",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders",
+      "at": 1791546710588
+    },
+    {
+      "phase": "fast-1",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders",
+      "status": 200,
+      "at": 1791546710603
+    },
+    {
+      "phase": "settled",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "at": 1791546715082
+    },
+    {
+      "phase": "settled",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "at": 1791546715082
+    },
+    {
+      "phase": "settled",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546715092
+    },
+    {
+      "phase": "settled",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "status": 200,
+      "at": 1791546715096
+    },
+    {
+      "phase": "settled",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders",
+      "at": 1791546715096
+    },
+    {
+      "phase": "settled",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders",
+      "status": 200,
+      "at": 1791546715111
+    },
+    {
+      "phase": "settled",
+      "event": "request",
+      "method": "POST",
+      "path": "/api/orders/sync",
+      "at": 1791546715568
+    },
+    {
+      "phase": "settled",
+      "event": "response",
+      "method": "POST",
+      "path": "/api/orders/sync",
+      "status": 200,
+      "at": 1791546715611
+    },
+    {
+      "phase": "settled",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "at": 1791546715613
+    },
+    {
+      "phase": "settled",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "at": 1791546715613
+    },
+    {
+      "phase": "settled",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546715618
+    },
+    {
+      "phase": "settled",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "status": 200,
+      "at": 1791546715621
+    },
+    {
+      "phase": "settled",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders",
+      "at": 1791546715621
+    },
+    {
+      "phase": "settled",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders",
+      "status": 200,
+      "at": 1791546715633
+    },
+    {
+      "phase": "hold-meta",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "at": 1791546720123
+    },
+    {
+      "phase": "hold-meta",
+      "event": "held",
+      "path": "/api/orders/meta",
+      "at": 1791546720124
+    },
+    {
+      "phase": "hold-meta",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "at": 1791546720124
+    },
+    {
+      "phase": "hold-meta",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546720134
+    },
+    {
+      "phase": "hold-meta",
+      "event": "request",
+      "method": "POST",
+      "path": "/api/orders/sync",
+      "at": 1791546720334
+    },
+    {
+      "phase": "hold-meta",
+      "event": "response",
+      "method": "POST",
+      "path": "/api/orders/sync",
+      "status": 200,
+      "at": 1791546720389
+    },
+    {
+      "phase": "hold-meta",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "at": 1791546720390
+    },
+    {
+      "phase": "hold-meta",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "at": 1791546720391
+    },
+    {
+      "phase": "hold-meta",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546720405
+    },
+    {
+      "phase": "hold-meta",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "status": 200,
+      "at": 1791546720407
+    },
+    {
+      "phase": "hold-meta",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders",
+      "at": 1791546720407
+    },
+    {
+      "phase": "hold-meta",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "status": 200,
+      "at": 1791546720408
+    },
+    {
+      "phase": "hold-meta",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders",
+      "at": 1791546720408
+    },
+    {
+      "phase": "hold-meta",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders",
+      "status": 200,
+      "at": 1791546720421
+    },
+    {
+      "phase": "hold-meta",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders",
+      "status": 200,
+      "at": 1791546720427
+    },
+    {
+      "phase": "hold-orders",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "at": 1791546724927
+    },
+    {
+      "phase": "hold-orders",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "at": 1791546724928
+    },
+    {
+      "phase": "hold-orders",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546724936
+    },
+    {
+      "phase": "hold-orders",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "status": 200,
+      "at": 1791546724940
+    },
+    {
+      "phase": "hold-orders",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders",
+      "at": 1791546724940
+    },
+    {
+      "phase": "hold-orders",
+      "event": "held",
+      "path": "/api/orders",
+      "at": 1791546724940
+    },
+    {
+      "phase": "hold-orders",
+      "event": "request",
+      "method": "POST",
+      "path": "/api/orders/sync",
+      "at": 1791546725119
+    },
+    {
+      "phase": "hold-orders",
+      "event": "response",
+      "method": "POST",
+      "path": "/api/orders/sync",
+      "status": 200,
+      "at": 1791546725180
+    },
+    {
+      "phase": "hold-orders",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "at": 1791546725182
+    },
+    {
+      "phase": "hold-orders",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "at": 1791546725182
+    },
+    {
+      "phase": "hold-orders",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546725195
+    },
+    {
+      "phase": "hold-orders",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "status": 200,
+      "at": 1791546725196
+    },
+    {
+      "phase": "hold-orders",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders",
+      "at": 1791546725197
+    },
+    {
+      "phase": "hold-orders",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders",
+      "status": 200,
+      "at": 1791546725206
+    },
+    {
+      "phase": "hold-orders",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders",
+      "status": 200,
+      "at": 1791546725211
+    },
+    {
+      "phase": "mouse-fast-1",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "at": 1791546730016
+    },
+    {
+      "phase": "mouse-fast-1",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "at": 1791546730016
+    },
+    {
+      "phase": "mouse-fast-1",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546730020
+    },
+    {
+      "phase": "mouse-fast-1",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "status": 200,
+      "at": 1791546730023
+    },
+    {
+      "phase": "mouse-fast-1",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders",
+      "at": 1791546730023
+    },
+    {
+      "phase": "mouse-fast-1",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders",
+      "status": 200,
+      "at": 1791546730038
+    },
+    {
+      "phase": "mouse-fast-1",
+      "event": "request",
+      "method": "POST",
+      "path": "/api/orders/sync",
+      "at": 1791546730066
+    },
+    {
+      "phase": "mouse-fast-1",
+      "event": "response",
+      "method": "POST",
+      "path": "/api/orders/sync",
+      "status": 200,
+      "at": 1791546730146
+    },
+    {
+      "phase": "mouse-fast-1",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "at": 1791546730147
+    },
+    {
+      "phase": "mouse-fast-1",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "at": 1791546730147
+    },
+    {
+      "phase": "mouse-fast-1",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546730152
+    },
+    {
+      "phase": "mouse-fast-1",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "status": 200,
+      "at": 1791546730155
+    },
+    {
+      "phase": "mouse-fast-1",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders",
+      "at": 1791546730156
+    },
+    {
+      "phase": "mouse-fast-1",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders",
+      "status": 200,
+      "at": 1791546730184
+    },
+    {
+      "phase": "mouse-fast-2",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "at": 1791546734868
+    },
+    {
+      "phase": "mouse-fast-2",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "at": 1791546734868
+    },
+    {
+      "phase": "mouse-fast-2",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546734876
+    },
+    {
+      "phase": "mouse-fast-2",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "status": 200,
+      "at": 1791546734880
+    },
+    {
+      "phase": "mouse-fast-2",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders",
+      "at": 1791546734880
+    },
+    {
+      "phase": "mouse-fast-2",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders",
+      "status": 200,
+      "at": 1791546734895
+    },
+    {
+      "phase": "mouse-fast-2",
+      "event": "request",
+      "method": "POST",
+      "path": "/api/orders/sync",
+      "at": 1791546735016
+    },
+    {
+      "phase": "mouse-fast-2",
+      "event": "response",
+      "method": "POST",
+      "path": "/api/orders/sync",
+      "status": 200,
+      "at": 1791546735084
+    },
+    {
+      "phase": "mouse-fast-2",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "at": 1791546735085
+    },
+    {
+      "phase": "mouse-fast-2",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "at": 1791546735085
+    },
+    {
+      "phase": "mouse-fast-2",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546735091
+    },
+    {
+      "phase": "mouse-fast-2",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "status": 200,
+      "at": 1791546735094
+    },
+    {
+      "phase": "mouse-fast-2",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders",
+      "at": 1791546735094
+    },
+    {
+      "phase": "mouse-fast-2",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders",
+      "status": 200,
+      "at": 1791546735107
+    },
+    {
+      "phase": "mouse-settled",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "at": 1791546739532
+    },
+    {
+      "phase": "mouse-settled",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "at": 1791546739532
+    },
+    {
+      "phase": "mouse-settled",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546739535
+    },
+    {
+      "phase": "mouse-settled",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "status": 200,
+      "at": 1791546739539
+    },
+    {
+      "phase": "mouse-settled",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders",
+      "at": 1791546739539
+    },
+    {
+      "phase": "mouse-settled",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders",
+      "status": 200,
+      "at": 1791546739554
+    },
+    {
+      "phase": "mouse-settled",
+      "event": "request",
+      "method": "POST",
+      "path": "/api/orders/sync",
+      "at": 1791546740133
+    },
+    {
+      "phase": "mouse-settled",
+      "event": "response",
+      "method": "POST",
+      "path": "/api/orders/sync",
+      "status": 200,
+      "at": 1791546740194
+    },
+    {
+      "phase": "mouse-settled",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "at": 1791546740196
+    },
+    {
+      "phase": "mouse-settled",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "at": 1791546740196
+    },
+    {
+      "phase": "mouse-settled",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/meta",
+      "status": 200,
+      "at": 1791546740202
+    },
+    {
+      "phase": "mouse-settled",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders/sync-schedule",
+      "status": 200,
+      "at": 1791546740213
+    },
+    {
+      "phase": "mouse-settled",
+      "event": "request",
+      "method": "GET",
+      "path": "/api/orders",
+      "at": 1791546740213
+    },
+    {
+      "phase": "mouse-settled",
+      "event": "response",
+      "method": "GET",
+      "path": "/api/orders",
+      "status": 200,
+      "at": 1791546740224
+    }
+  ],
+  "errors": []
+}

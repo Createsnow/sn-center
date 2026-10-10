@@ -1,0 +1,284 @@
+{
+  "stage": 19,
+  "goalComplete": false,
+  "schema": "V31 unchanged",
+  "nextMigration": "V32",
+  "ui": {
+    "startTime": "2026-10-08T16:14:17.041Z",
+    "duration": 249487.103,
+    "expected": 10,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "workers": 1,
+  "retries": 0,
+  "registeredCases": 140,
+  "allCasesRerun": false,
+  "screenshots": 40,
+  "businessPairs": [
+    {
+      "source": "ui/acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page-prototype/partial-failure-continues.json",
+      "migration": "ui/acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page-migration/partial-failure-continues.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-prototype/cmp_operator.json",
+      "migration": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-migration/cmp_operator.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-prototype/cmp_query_all.json",
+      "migration": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-migration/cmp_query_all.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-prototype/cmp_query_factory.json",
+      "migration": "ui/acquire-print-P09-factory--dc129-ole-controls-preserve-state-migration/cmp_query_factory.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/19-detail-first-page.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/19-detail-first-page.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/20-detail-last-page.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/20-detail-last-page.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/21-detail-current-printed.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/21-detail-current-printed.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/22-batches-page-two.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/22-batches-page-two.json",
+      "rawEqual": false,
+      "multisetEqual": true,
+      "difference": "Read-only SQL projection orders only by PI; equal-PI batch/print row storage order differs. Raw arrays retained; UI independently checks newest ten and oldest 51-member record on page two."
+    },
+    {
+      "source": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/23-prints-page-two.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/23-prints-page-two.json",
+      "rawEqual": false,
+      "multisetEqual": true,
+      "difference": "Read-only SQL projection orders only by PI; equal-PI batch/print row storage order differs. Raw arrays retained; UI independently checks newest ten and oldest 51-member record on page two."
+    },
+    {
+      "source": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/01-steps.json",
+      "migration": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/01-steps.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/02-take-confirm.json",
+      "migration": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/02-take-confirm.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/03-focused-material.json",
+      "migration": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/03-focused-material.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/04-batch-number-and-operator.json",
+      "migration": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/04-batch-number-and-operator.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/04-taken.json",
+      "migration": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/04-taken.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/05-print-confirm.json",
+      "migration": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/05-print-confirm.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-prototype/06-print-history.json",
+      "migration": "ui/acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload-migration/06-print-history.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/01-bulk-take-confirm.json",
+      "migration": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/01-bulk-take-confirm.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/02-bulk-selected.json",
+      "migration": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/02-bulk-selected.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/03-bulk-batches.json",
+      "migration": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/03-bulk-batches.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-prototype/04-bulk-prints.json",
+      "migration": "ui/acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history-migration/04-bulk-prints.json",
+      "rawEqual": true
+    }
+  ],
+  "domRowPairs": [
+    {
+      "source": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/19-detail-first-page-rows.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/19-detail-first-page-rows.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/20-detail-last-page-rows.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/20-detail-last-page-rows.json",
+      "rawEqual": true
+    },
+    {
+      "source": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/21-detail-current-printed-rows.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/21-detail-current-printed-rows.json",
+      "rawEqual": true
+    }
+  ],
+  "geometryPairs": [
+    {
+      "source": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/19-detail-first-page-geometry.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/19-detail-first-page-geometry.json",
+      "rawEqual": false,
+      "verified": "Drawer width/location, table top, body row geometry, cell font size/color; other raw style fields retained."
+    },
+    {
+      "source": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/20-detail-last-page-geometry.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/20-detail-last-page-geometry.json",
+      "rawEqual": false,
+      "verified": "Drawer width/location, table top, body row geometry, cell font size/color; other raw style fields retained."
+    },
+    {
+      "source": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-prototype/21-detail-current-printed-geometry.json",
+      "migration": "ui/acquire-print-P09-paged-hi-1341c--histories-and-filter-reset-migration/21-detail-current-printed-geometry.json",
+      "rawEqual": false,
+      "verified": "Drawer width/location, table top, body row geometry, cell font size/color; other raw style fields retained."
+    }
+  ],
+  "backend": {
+    "unitPassed": 79,
+    "integrationPassed": 30,
+    "integrationClasses": {
+      "com.adtek.server.SnAcquireIT": 17,
+      "com.adtek.server.SnTransferIT": 13
+    },
+    "logSha256": "9b3e6a68e5bcc2c4ccc056854b050abb691efec499cdbe816c0e4e510fe1ff17"
+  },
+  "frontendUnitPassed": 62,
+  "files": {
+    "filePairs": [
+      {
+        "case": "acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page",
+        "file": "competing.xlsx",
+        "rows": 3,
+        "rawSnOrderEqual": true,
+        "allElevenColumnsEqualAfterBusinessNumberNormalization": true,
+        "cellTypesEqual": true,
+        "freezePanes": "A2",
+        "prototypeSha256": "a4d4c699919095b3686eb4b3d14bedd2668d1eb7b9c3aad8349616d149ab1ed5",
+        "migrationSha256": "9f71322f3d0008c59e1750e0bf6f0ed08e28bbef2830947e5e3901800c4bd9a6"
+      },
+      {
+        "case": "acquire-print-P09-bulk-pri-469a4-ted-in-another-browser-page",
+        "file": "remaining.xlsx",
+        "rows": 3,
+        "rawSnOrderEqual": true,
+        "allElevenColumnsEqualAfterBusinessNumberNormalization": true,
+        "cellTypesEqual": true,
+        "freezePanes": "A2",
+        "prototypeSha256": "d6b55f7d7f0bbfc5a01b2d0ff05ec5efca303881ed09226e5395bbdef9ba241c",
+        "migrationSha256": "1c8273704f6f91535b2bf8b1fc80816c78e6d4dc9c4a2b679098c6a03caeef4a"
+      },
+      {
+        "case": "acquire-print-P09-paged-hi-1341c--histories-and-filter-reset",
+        "file": "history-first.xlsx",
+        "rows": 51,
+        "rawSnOrderEqual": true,
+        "allElevenColumnsEqualAfterBusinessNumberNormalization": true,
+        "cellTypesEqual": true,
+        "freezePanes": "A2",
+        "prototypeSha256": "bf2df22bfbe0d41d34162fa0ffbd277a845b5ba6761f23a4d9520b5b3097daf9",
+        "migrationSha256": "809f8b1f1842bd45496fdb67e1bdcc7cf319bf04aa1d432a9ddaaea2e232dcec"
+      },
+      {
+        "case": "acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload",
+        "file": "single-again.xlsx",
+        "rows": 3,
+        "rawSnOrderEqual": true,
+        "allElevenColumnsEqualAfterBusinessNumberNormalization": true,
+        "cellTypesEqual": true,
+        "freezePanes": "A2",
+        "prototypeSha256": "a540e0a1378811e679d8ee1f7ee7243fb6d4306da6d52cc557c9be34f61ebf82",
+        "migrationSha256": "a759acb0c49724b34107c4fbacd42a65fb9498a47f363963b1d327c4c8cd0c56"
+      },
+      {
+        "case": "acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload",
+        "file": "single.xlsx",
+        "rows": 3,
+        "rawSnOrderEqual": true,
+        "allElevenColumnsEqualAfterBusinessNumberNormalization": true,
+        "cellTypesEqual": true,
+        "freezePanes": "A2",
+        "prototypeSha256": "1be5171c88ef6888595f700def02bf9d4a7434f29b9779b547028c104f3391c3",
+        "migrationSha256": "a759acb0c49724b34107c4fbacd42a65fb9498a47f363963b1d327c4c8cd0c56"
+      },
+      {
+        "case": "acquire-print-P09-single-t-5090c-atic-XLSX-and-stable-reload",
+        "file": "single.csv",
+        "bom": true,
+        "encoding": "UTF-8",
+        "bytesEqualAfterBatchNumberNormalization": true
+      },
+      {
+        "case": "acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history",
+        "file": "bulk-1.xlsx",
+        "rows": 3,
+        "rawSnOrderEqual": true,
+        "allElevenColumnsEqualAfterBusinessNumberNormalization": true,
+        "cellTypesEqual": true,
+        "freezePanes": "A2",
+        "prototypeSha256": "7a9f08d224507b428ad3ac4d9ef66deef3ec2bbd5bb0273ce90d4a763016d2b6",
+        "migrationSha256": "953cea876f7a424998a81d84de89e222084e341a374bbcf1b3b49daaa922c95e"
+      },
+      {
+        "case": "acquire-print-P09-two-PI-b-9a01b--PI-files-and-focus-history",
+        "file": "bulk-2.xlsx",
+        "rows": 3,
+        "rawSnOrderEqual": true,
+        "allElevenColumnsEqualAfterBusinessNumberNormalization": true,
+        "cellTypesEqual": true,
+        "freezePanes": "A2",
+        "prototypeSha256": "6f1127803993bf18e7d206fbca036130fc180f851e91009835fe92cb2c8fda6f",
+        "migrationSha256": "09e3d9a44b481afd712d27ca01e602b4b8cf9170cbefa6f5fd80b3323fff459b"
+      }
+    ],
+    "note": "Independent B/P numbers and ZIP metadata differ. All columns, raw row order, cell types and CSV encoding/quoting are checked, not an SN-sorted shared-field projection."
+  },
+  "sourceHashes": {
+    "backend/adtek-sn/src/main/java/com/adtek/sn/mapper/AcquireMapper.java": "b40bf378333291877533df4818b3f8fb06393b3ea1ca0a65cf4506abaf99b8d9",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/controller/AcquireController.java": "09078c46cfb1c5c53ae49bb623ba130456c67b375155525b5d960c2940fe2837",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/AcquireService.java": "9be2e80afdf7da7a5b91fcb335fa5e73af88fb07b4efc50379ed5f81492441c3",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/AcquireServiceImpl.java": "0939b9538c6d7aff9dede803e08398bd1baea395893c48d7ff4641c897f8b430",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/service/impl/SnDataPermissionRules.java": "71fa02ba7913e50dcafc8314b237e3fe8d8bc8b4b00a297abd847cf96cb4c61b",
+    "backend/adtek-sn/src/main/java/com/adtek/sn/query/AcquireItemsQuery.java": "37b55b70782819b8b8330415ab878e8491dbd946ce1f83ed5459630eaf419119",
+    "backend/adtek-server/src/test/java/com/adtek/server/SnAcquireIT.java": "c6e40d051d7d7b73d16e6c83faac531483b24e8ceeed7bcef8da8bf59bfbf0d1",
+    "frontend/src/api/snAcquire.ts": "95bc699b73652771492d9e176809699493b8ce543998400695b24b10908f435f",
+    "frontend/src/api/snAcquire.test.ts": "92cc0a94384fd1db208580d6feca2abd55495f4ebd8442852cde611f78bcf26c",
+    "frontend/src/styles.css": "cde789515be883a5762f8bf187af8fd2ba4e6529f17e8ecac89c765b4d303778",
+    "frontend/src/features/sn/components/AcquireHistory.tsx": "9e446c563a4c9a979bc846e900acfa9b0aa7a9a832a6bb712006c610bf6c9f39",
+    "frontend/e2e/parity/acquire-print.spec.ts": "f7e519ab4db51c0682426b3cacfedbe09d8d12bda4d25c271350411433617efb",
+    "tools/testing/parity-acquire-fixture.py": "b2b444654aa5accae3e17fecabe40dc97c4b059f3c79aa7ef33f7d34ae95c15c",
+    "tools/testing/compare-print-files.py": "a3487b2be4862a0e161ef1faa9897b8fd6441ff642841a358ba023cf73e21cc6",
+    "backend/adtek-server/target/adtek-server-acceptance.jar": "1c86d21323ac4fc5e8fb971afed103add1ae1b08023fedc0623e52cc6c441678"
+  },
+  "remaining": [
+    "Real transfer/reacquisition via both UIs and re-downloaded print membership semantics.",
+    "Legacy UUID history, pre-V31 creation order, old 14-column artifacts.",
+    "P09 multilingual/narrow view, permissions after changes, zero/resource cases and unknown-response/full queue recovery.",
+    "All remaining P01-P08/P10-P16, including 500000-row import performance."
+  ]
+}

@@ -19,7 +19,6 @@ import com.adtek.sn.vo.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.*;
 
-import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -76,7 +75,8 @@ public class SnQueryServiceImpl implements SnQueryService {
                 SnPolicy.optional(q.sn()),
                 SnPolicy.optional(q.billNo()),
                 batch,
-                q.piAll());
+                q.piAll(),
+                SnPolicy.optional(q.batchNo()));
     }
 
     SnQueryItemVO view(SnQueryItemEntity row, Map<Long, RuleVersionEntity> cache) {
@@ -112,6 +112,25 @@ public class SnQueryServiceImpl implements SnQueryService {
                 more
                         ? cursors.next(binding, 0, page.getLast().genMonth(), page.getLast().id())
                         : null);
+    }
+
+    @Override
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public SnQueryPageVO page(SnItemQuery query, int page, int size) {
+        if (page < 1 || size < 1 || size > 1000) throw SnPolicy.invalid();
+        var q = normalized(query);
+        var actor = policy.read(SnQueryPolicy.VIEW);
+        var scope = policy.scope(actor, SnQueryPolicy.VIEW, q);
+        long total = rows.cappedCount(scope, q);
+        Map<Long, RuleVersionEntity> cache = new HashMap<>();
+        return new SnQueryPageVO(
+                rows.page(scope, q, (long) (page - 1) * size, size).stream()
+                        .map(row -> view(row, cache))
+                        .toList(),
+                Long.toString(Math.min(total, 100000)),
+                page,
+                size,
+                total > 100000);
     }
 
     @Override
@@ -167,14 +186,13 @@ public class SnQueryServiceImpl implements SnQueryService {
                     long total = rows.count(scope, q);
                     acquire.work.resource(total);
                     long ordinal = 0;
-                    LocalDate month = null;
-                    String after = null;
+                    long after = 0;
                     Map<Long, RuleVersionEntity> cache = new HashMap<>();
                     rows.export(
-                            new SnExportEntity(
-                                    task.id(), fresh.userId(), format, payload, total, null));
+                            new SnQueryExportEntity(
+                                    task.id(), fresh.userId(), format, payload, total, null, 2));
                     while (true) {
-                        var chunk = rows.items(scope, q, month, after, 500);
+                        var chunk = rows.exportItems(scope, q, after, 500);
                         if (chunk.isEmpty()) break;
                         var fixed = new ArrayList<SnExportRowEntity>();
                         for (var row : chunk)
@@ -185,12 +203,11 @@ public class SnQueryServiceImpl implements SnQueryService {
                                             row.factoryId(),
                                             row.pi(),
                                             acquire.json.writeValueAsString(
-                                                    SnQueryFiles.cells(
+                                                    SnQueryFiles.prototypeCells(
                                                             ordinal, view(row, cache)))));
                         rows.rows(fixed);
                         var last = chunk.getLast();
-                        month = last.genMonth();
-                        after = last.id();
+                        after = last.creationOrder();
                     }
                     if (ordinal != total)
                         throw new IllegalStateException("Inconsistent SN export snapshot");
@@ -198,7 +215,7 @@ public class SnQueryServiceImpl implements SnQueryService {
                     files.insert(task.id(), task.id() + "." + extension, total);
                     files.metadata(
                             task.id(),
-                            "sn-export-" + task.id() + "." + extension,
+                            "sn_export." + extension,
                             format.equals("CSV") ? "text/csv;charset=UTF-8" : PrintFiles.XLSX);
                     tasks.confirmBusiness(task.id(), task.id());
                     acquire.audit.success(
