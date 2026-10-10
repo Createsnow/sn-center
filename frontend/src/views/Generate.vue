@@ -11,7 +11,7 @@
       <div class="toolbar">
         <el-radio-group v-model="view">
           <el-radio-button v-for="v in VIEWS" :key="v" :value="v">
-            {{ t(`generate.view${v}`) }}<span class="cnt num">{{ rowsOf(v).length }}</span>
+            {{ t(`generate.view${v}`) }}<span v-if="v !== 'TO_GEN'" class="cnt num">{{ rowsOf(v).length }}</span>
           </el-radio-button>
         </el-radio-group>
         <el-input v-model="kw" class="kw" :placeholder="t('generate.search')" clearable prefix-icon="Search" @keyup.enter="reload" @clear="reload" />
