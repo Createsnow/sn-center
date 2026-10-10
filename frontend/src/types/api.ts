@@ -93,11 +93,13 @@ export interface GenJob {
   qty: number;
   start_sn: string;
   end_sn: string;
-  status: "RUNNING" | "SUCCESS" | "FAILED";
+  status: "RUNNING" | "SUCCESS" | "FAILED" | "REVOKED";
   done_qty: number;
   error_code: string | null;
   error_msg: string | null;
   created_by: string;
   created_at: string;
   finished_at: string | null;
+  /** 按 PI 的上下文里才有：可撤销（PI 流水排在最后、号全部仍待分配的成功任务） */
+  revocable?: boolean;
 }

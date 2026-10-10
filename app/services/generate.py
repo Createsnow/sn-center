@@ -6,6 +6,9 @@
 
 分配：把该订单的待分配号整单分到订单的生产组织，状态变为待领取。
 
+撤销生成（点错了重来）：只能撤销这张 PI 流水排在最后的一次成功生成，且这次的号全部仍待分配；
+号与查重护栏一并删除，PI 最大号、已生成数退回，订单额度恢复，重新预演生成的号与撤销前相同。
+
 页面以 PI 为单位：按 PI 预演会给该 PI 的每张订单各记一份接续的预演；按 PI 生成把这些订单放进同一个事务依次生成
 （每张一个任务，校验与写号同按单据生成），任何一张失败整张 PI 回滚；按 PI 分配同样在一个事务里分到各订单的生产组织。
 """
@@ -36,6 +39,7 @@ CHUNK = 1000
 RUNNING = "RUNNING"
 SUCCESS = "SUCCESS"
 FAILED = "FAILED"
+REVOKED = "REVOKED"
 
 JOB_FIELDS = (
     "id",
@@ -298,6 +302,7 @@ def pi_context(pi_in: str | None, bill_no: str | None = None) -> dict:
         issues.append(ErrorCode.RULE_MISSING.name)
     running = db.one("SELECT * FROM sn_gen_job WHERE running_pi = %s", pi)
     recent = db.all("SELECT * FROM sn_gen_job WHERE pi_no = %s ORDER BY id DESC LIMIT 20", pi)
+    revocable = None if running is not None else _revocable_id(pi)
     return {
         "pi_no": pi,
         "customer_code": customer,
@@ -313,7 +318,7 @@ def pi_context(pi_in: str | None, bill_no: str | None = None) -> dict:
         "rule_options": rule_options,
         "issues": issues,
         "running_job": job_json(running),
-        "jobs": [job_json(j) for j in recent],
+        "jobs": [{**job_json(j), "revocable": j["id"] == revocable} for j in recent],
         "allocations": allocations([x["bill_no"] for x in bills]),
     }
 
@@ -856,6 +861,130 @@ def _progress(job_id: int, done: int) -> None:
             db.exec("UPDATE sn_gen_job SET done_qty = %s WHERE id = %s", done, job_id)
     except Exception:  # noqa: BLE001
         log.debug("progress_update_failed", job=job_id)
+
+
+# ================================================================== 撤销生成
+
+
+def _job_pending(j: dict) -> int:
+    """该任务写出的号中仍待分配的枚数（按单据 + 状态 + 流水区间走 ix_item_bill）。"""
+    return db.count(
+        "SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND status = 'PENDING_ALLOC' "
+        "AND seq_dec BETWEEN %s AND %s AND job_id = %s",
+        j["bill_no"],
+        j["start_seq_dec"],
+        j["end_seq_dec"],
+        j["id"],
+    )
+
+
+def _revocable_id(pi: str) -> int | None:
+    """这张 PI 当前可撤销的生成任务：终点即 PI 最大号的成功任务，且号全部仍待分配；没有返回 None。"""
+    last = _last_seq(pi)
+    if last == 0:
+        return None
+    j = db.one(
+        "SELECT * FROM sn_gen_job WHERE pi_no = %s AND status = %s AND end_seq_dec = %s ORDER BY id DESC LIMIT 1",
+        pi,
+        SUCCESS,
+        last,
+    )
+    return None if j is None or _job_pending(j) != j["qty"] else j["id"]
+
+
+def revoke(cu: CurrentUser, job_id: int, reason_in: str | None) -> dict:
+    """撤销一次生成（点错了重来）：删除这次写出的号与查重护栏，退回 PI 最大号与已生成数，恢复订单额度。
+
+    只能撤销这张 PI 流水排在最后的一次成功生成（多张订单一起生成的，从最后一张起逐张撤销），
+    且这次的号必须全部仍待分配；分配出去的号可能已领取、打印，不能撤销。流水退回后重新生成的号与撤销前相同，
+    号段不留空洞。规则版本的「已使用」标记不退回（该版本之后改格式仍须另出一版）。
+    """
+    reason = util.trim(reason_in)
+    if not reason:
+        raise biz(ErrorCode.GEN_REVOKE_REASON_REQUIRED)
+    with db.tx():
+        j = db.one("SELECT * FROM sn_gen_job WHERE id = %s", job_id)
+        if j is None:
+            raise biz(ErrorCode.GEN_JOB_NOT_FOUND)
+        pi = j["pi_no"]
+        # 生成事务全程持有计数器行锁：有任务在跑时直接拒绝，不去排队等锁
+        if db.one("SELECT id FROM sn_gen_job WHERE running_pi = %s", pi) is not None:
+            raise biz(ErrorCode.GEN_BUSY, pi=pi)
+        # 加锁顺序与生成一致：先 PI 计数器，再订单已生成数
+        c = db.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s FOR UPDATE", pi)
+        j = db.one("SELECT * FROM sn_gen_job WHERE id = %s FOR UPDATE", job_id)
+        if j["status"] != SUCCESS:
+            raise biz(ErrorCode.GEN_REVOKE_NOT_SUCCESS)
+        if c is None or c["last_seq_dec"] != j["end_seq_dec"]:
+            raise biz(ErrorCode.GEN_REVOKE_NOT_LAST, pi=pi)
+        g = _bill_gen(j["bill_no"], lock=True)
+        qty = j["qty"]
+        pending = _job_pending(j)
+        if g is None or pending != qty:
+            raise biz(ErrorCode.GEN_REVOKE_ALLOCATED, count=qty - pending)
+        s, e = j["start_seq_dec"], j["end_seq_dec"]
+        n_items = db.exec(
+            "DELETE FROM sn_item WHERE bill_no = %s AND status = 'PENDING_ALLOC' "
+            "AND seq_dec BETWEEN %s AND %s AND job_id = %s",
+            j["bill_no"],
+            s,
+            e,
+            job_id,
+        )
+        n_keys = db.exec(
+            "DELETE FROM sn_key WHERE seq_pi_no = %s AND seq_dec BETWEEN %s AND %s AND pi_no = %s", pi, s, e, pi
+        )
+        if n_items != qty or n_keys != qty:
+            raise biz(ErrorCode.CONFLICT_RETRY)
+        # 退回到这张 PI 其余成功生成的最大号（计数器只由生成推进）
+        prev = db.scalar(
+            "SELECT COALESCE(MAX(end_seq_dec), 0) FROM sn_gen_job WHERE pi_no = %s AND status = %s AND id <> %s",
+            pi,
+            SUCCESS,
+            job_id,
+        )
+        now = util.now()
+        generated = c["generated_qty"] - qty
+        sets = "last_seq_dec = %s, generated_qty = %s, updated_at = %s"
+        args: list = [prev, generated, now]
+        if generated == 0 and c["imported_qty"] == 0 and c["start_seq_dec"] is None:
+            # 一枚都不剩：回到从未生成的状态（规则指定保留，可在页面解绑重选）
+            sets += ", start_locked = 0, locked_by = NULL, locked_at = NULL"
+        db.exec(f"UPDATE sn_pi_counter SET {sets} WHERE pi_no = %s", *args, pi)
+        left = g["generated_qty"] - qty
+        if left == 0:
+            db.exec("DELETE FROM sn_bill_gen WHERE bill_no = %s", j["bill_no"])
+        else:
+            db.exec(
+                "UPDATE sn_bill_gen SET generated_qty = %s, updated_at = %s WHERE bill_no = %s",
+                left,
+                now,
+                j["bill_no"],
+            )
+        db.exec("UPDATE sn_gen_job SET status = %s WHERE id = %s", REVOKED, job_id)
+        audit.record(
+            cu,
+            audit.entry(audit.SN_REVOKE)
+            .factory(j["factory_code"])
+            .pi(pi)
+            .customer(j["customer_code"])
+            .bill(j["bill_no"])
+            .range(j["start_sn"], j["end_sn"])
+            .count(qty)
+            .status(util.PENDING_ALLOC, None)
+            .why(reason)
+            .info(f"job={job_id} last_seq {e} -> {prev}"),
+        )
+    log.info("gen_revoked", job=job_id, pi=pi, qty=qty)
+    return {
+        "job_id": job_id,
+        "pi_no": pi,
+        "bill_no": j["bill_no"],
+        "qty": qty,
+        "start_sn": j["start_sn"],
+        "end_sn": j["end_sn"],
+        "last_seq_dec": prev,
+    }
 
 
 # ================================================================== 分配

@@ -79,6 +79,7 @@
   },
   "actions": {
     "SN_GENERATE": "生成",
+    "SN_REVOKE": "撤销生成",
     "SN_ALLOCATE": "分配",
     "SN_ACQUIRE": "领取",
     "SN_PRINT": "页面打印",
@@ -264,6 +265,12 @@
     "jobSUCCESS": "成功",
     "jobFAILED": "失败",
     "jobRUNNING": "生成中",
+    "jobREVOKED": "已撤销",
+    "revoke": "撤销",
+    "revokeHint": "点错了可撤销：只能撤销流水排在最后、号全部仍待分配的一次生成；多张订单一起生成的从最后一张起逐张撤销。",
+    "revokeConfirm": "撤销单据 {bill} 的这次生成：删除 {start} ~ {end} 共 {qty} 枚，PI 最大号与订单额度退回，重新生成的号与原来相同。请填写原因：",
+    "revokeReason": "撤销原因（必填）",
+    "revoked": "已撤销 {qty} 枚，可重新预演生成",
     "issue": {
       "ORDER_NO_CUSTOMER": "该订单没有客户编码，不能生成",
       "ORDER_NO_PI": "该订单没有 PI，不能生成",

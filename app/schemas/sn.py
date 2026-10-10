@@ -32,6 +32,10 @@ class PiAllocateIn(In):
     pi_no: str | None = None
 
 
+class RevokeIn(In):
+    reason: str | None = None
+
+
 class AllocateIn(In):
     bill_no: str | None = None
     qty: int | None = None

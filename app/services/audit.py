@@ -39,6 +39,7 @@ RULE_PI_BIND = "RULE_PI_BIND"
 RULE_PI_UNBIND = "RULE_PI_UNBIND"
 SN_GENERATE = "SN_GENERATE"
 SN_ALLOCATE = "SN_ALLOCATE"
+SN_REVOKE = "SN_REVOKE"
 SN_ACQUIRE = "SN_ACQUIRE"
 SN_PRINT = "SN_PRINT"
 SN_CALLBACK = "SN_CALLBACK"
@@ -207,6 +208,8 @@ _PATH_ACTIONS = (
 
 
 def action_for(method: str, path: str) -> str:
+    if re.fullmatch(r"/api/generate/jobs/\d+/revoke", path):
+        return SN_REVOKE
     if re.fullmatch(r"/api/transfers/\d+/approve", path):
         return TRANSFER_APPROVE
     if re.fullmatch(r"/api/transfers/\d+/reject", path):

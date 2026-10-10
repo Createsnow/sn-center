@@ -611,3 +611,95 @@ def test_pi_generate_runs_in_background_when_the_pi_total_is_large(api, admin, w
     assert statuses == ["SUCCESS", "SUCCESS"]
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND bill_no = %s", pi, b2) == 2000
     assert ok(api.get("/api/generate/pi-context" + q(pi=pi), admin))["pending_alloc"] == 4000
+
+
+# ---------------------------------------------------------------- 撤销生成
+
+
+def _revoke(api, admin, job_id, reason="点错数量"):
+    return api.post(f"/api/generate/jobs/{job_id}/revoke", m(reason=reason), admin)
+
+
+def test_revoke_last_generation_rolls_back_and_regenerates_the_same_sns(api, admin, w, sql):
+    pi, bill = uid("PI"), uid("MO")
+    w.pi_rule(pi, "RV", 10, 5)
+    w.order(bill, ORG, "C1", pi, ("A", 10))
+    j1 = w.generate(bill, 3)
+    j2 = w.generate(bill, 4)
+    ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin)).body
+    assert {j["id"]: j["revocable"] for j in ctx["jobs"]} == {j1["id"]: False, j2["id"]: True}
+
+    assert _revoke(api, admin, j1["id"]).code == "GEN_REVOKE_NOT_LAST"
+    assert _revoke(api, admin, j2["id"], " ").code == "GEN_REVOKE_REASON_REQUIRED"
+    assert (
+        sql.count(
+            "SELECT COUNT(*) FROM sn_audit WHERE action = 'SN_REVOKE' AND result = 'FAIL' AND pi_no IS NULL "
+            "AND detail LIKE %s",
+            f"%/jobs/{j2['id']}/revoke",
+        )
+        == 1
+    ), "被拒绝的撤销按 SN_REVOKE 记失败痕迹"
+    assert api.post("/api/generate/jobs/999999999/revoke", m(reason="x"), admin).code == "GEN_JOB_NOT_FOUND"
+
+    r = ok(_revoke(api, admin, j2["id"])).body
+    assert (r["qty"], r["start_sn"], r["end_sn"], r["last_seq_dec"]) == (4, "RV00004", "RV00007", 3)
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 3
+    assert sql.count("SELECT COUNT(*) FROM sn_key WHERE pi_no = %s", pi) == 3
+    assert ok(api.get(f"/api/generate/jobs/{j2['id']}", admin)).text("status") == "REVOKED"
+    assert _revoke(api, admin, j2["id"]).code == "GEN_REVOKE_NOT_SUCCESS"
+    a = sql.one("SELECT * FROM sn_audit WHERE action = 'SN_REVOKE' AND result = 'OK' AND pi_no = %s", pi)
+    assert (a["qty"], a["start_sn"], a["end_sn"], a["reason"], a["before_status"]) == (
+        4,
+        "RV00004",
+        "RV00007",
+        "点错数量",
+        "PENDING_ALLOC",
+    )
+
+    ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin)).body
+    assert (ctx["generated_qty"], ctx["pending_alloc"], ctx["quota"]) == (3, 3, 7)
+    assert ctx["counter"]["last_seq_dec"] == 3 and ctx["next"]["start_sn"] == "RV00004"
+    assert {j["id"]: j["revocable"] for j in ctx["jobs"]} == {j1["id"]: True, j2["id"]: False}
+
+    # 重新生成：号与撤销前相同，号段不留空洞
+    j3 = w.generate(bill, 2)
+    assert (j3["start_sn"], j3["end_sn"]) == ("RV00004", "RV00005")
+
+
+def test_revoke_refused_once_any_sn_of_the_generation_is_allocated(api, admin, w, sql):
+    pi, bill = uid("PI"), uid("MO")
+    w.pi_rule(pi, "RA", 10, 5)
+    w.order(bill, ORG, "C1", pi, ("A", 10))
+    j = w.generate(bill, 5)
+    ok(api.post("/api/generate/allocate", m(bill_no=bill, qty=2), admin))
+    r = _revoke(api, admin, j["id"])
+    assert r.code == "GEN_REVOKE_ALLOCATED" and r["params"]["count"] == 2
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 5
+    ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin)).body
+    assert ctx["jobs"][0]["revocable"] is False and ctx["generated_qty"] == 5
+
+
+def test_revoke_whole_pi_generation_from_last_order_back_to_never_generated(api, admin, w, sql):
+    pi = uid("PI")
+    b1, b2 = pi + "-MO1", pi + "-MO2"
+    w.pi_rule(pi, "RP", 10, 5)
+    w.order(b1, ORG, "C1", pi, ("A", 3))
+    w.order(b2, "生成测试二厂", "C1", pi, ("A", 4))
+    p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=6), admin)).body
+    jobs = _pi_generate(api, admin, p)["jobs"]
+    first, last = jobs[0]["id"], jobs[1]["id"]
+    assert _revoke(api, admin, first).code == "GEN_REVOKE_NOT_LAST"
+    ok(_revoke(api, admin, last))
+    ok(_revoke(api, admin, first))
+
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 0
+    assert sql.count("SELECT COUNT(*) FROM sn_key WHERE pi_no = %s", pi) == 0
+    assert sql.count("SELECT COUNT(*) FROM sn_bill_gen WHERE pi_no = %s", pi) == 0
+    c = sql.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s", pi)
+    assert (c["last_seq_dec"], c["generated_qty"], c["start_locked"], c["locked_by"]) == (0, 0, 0, None)
+    ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin)).body
+    assert [(b["bill_no"], b["generated_qty"], b["quota"]) for b in ctx["bills"]] == [(b1, 0, 3), (b2, 0, 4)]
+    assert ctx["next"]["start_sn"] == "RP00001"
+
+    p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=7), admin)).body
+    assert (p["start_sn"], p["end_sn"]) == ("RP00001", "RP00007")

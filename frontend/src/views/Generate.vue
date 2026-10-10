@@ -210,13 +210,20 @@
                   <el-table-column :label="t('common.qty')" align="right" width="70"><template #default="{ row }"><span class="num">{{ row.qty }}</span></template></el-table-column>
                   <el-table-column :label="t('common.status')" width="90">
                     <template #default="{ row }">
-                      <el-tooltip v-if="row.error_msg" :content="row.error_msg"><el-tag size="small" type="danger">{{ t("generate.jobFAILED") }}</el-tag></el-tooltip>
-                      <el-tag v-else size="small" :type="row.status === 'SUCCESS' ? 'success' : 'info'">{{ t(`generate.job${row.status}`) }}</el-tag>
+                      <el-tooltip v-if="row.status === 'FAILED' && row.error_msg" :content="row.error_msg"><el-tag size="small" type="danger">{{ t("generate.jobFAILED") }}</el-tag></el-tooltip>
+                      <el-tag v-else size="small" :type="row.status === 'SUCCESS' ? 'success' : row.status === 'REVOKED' ? 'warning' : 'info'">{{ t(`generate.job${row.status}`) }}</el-tag>
                     </template>
                   </el-table-column>
                   <el-table-column prop="created_by" :label="t('common.operator')" width="80" />
                   <el-table-column prop="created_at" :label="t('common.time')" width="150" />
+                  <el-table-column width="64" align="right">
+                    <template #default="{ row }">
+                      <el-button v-if="row.revocable" link type="danger" size="small" :disabled="!!busy || !!running" :loading="busy === `revoke:${row.id}`"
+                        @click="revokeJob(row)">{{ t("generate.revoke") }}</el-button>
+                    </template>
+                  </el-table-column>
                 </el-table>
+                <div class="muted hint">{{ t("generate.revokeHint") }}</div>
               </el-tab-pane>
               <el-tab-pane :label="t('generate.allocations')">
                 <el-table :data="ctx.allocations" size="small" :empty-text="t('common.empty')">
@@ -530,6 +537,29 @@ async function allocatePi(pi: string, n: number) {
     const r = await api.allocatePi(pi);
     ElMessage.success(t("generate.allocDone", { qty: r.qty, n: r.items.length }));
     await refresh(pi);
+  } finally {
+    busy.value = "";
+  }
+}
+
+/** 撤销一次生成（点错了重来）：只对 PI 流水排在最后、号全部仍待分配的任务开放，原因必填。 */
+async function revokeJob(j: GenJob) {
+  let reason: string;
+  try {
+    const { value } = await ElMessageBox.prompt(
+      t("generate.revokeConfirm", { qty: j.qty, start: j.start_sn, end: j.end_sn, bill: j.bill_no }),
+      t("generate.revoke"),
+      { type: "warning", inputPlaceholder: t("generate.revokeReason"), inputValidator: (v: string) => !!v?.trim() || t("generate.revokeReason") },
+    );
+    reason = value.trim();
+  } catch {
+    return;
+  }
+  busy.value = `revoke:${j.id}`;
+  try {
+    await api.revokeJob(j.id, reason);
+    ElMessage.success(t("generate.revoked", { qty: j.qty }));
+    await refresh(j.pi_no);
   } finally {
     busy.value = "";
   }

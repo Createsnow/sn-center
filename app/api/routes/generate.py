@@ -4,7 +4,7 @@ from fastapi import APIRouter, Query
 
 from app.api.deps import AdminDep
 from app.schemas.common import OptInt
-from app.schemas.sn import AllocateIn, GenerateIn, PiAllocateIn, PiGenerateIn, PiPreviewIn, PreviewIn
+from app.schemas.sn import AllocateIn, GenerateIn, PiAllocateIn, PiGenerateIn, PiPreviewIn, PreviewIn, RevokeIn
 from app.services import generate
 
 router = APIRouter(tags=["generate"])
@@ -69,6 +69,15 @@ def gen_job(id: int, cu: AdminDep) -> dict:
 @router.get("/generate/jobs")
 def gen_jobs(cu: AdminDep, bill_no: str | None = None, pi: str | None = None, limit: OptInt = None) -> list:
     return generate.jobs(bill_no, pi, 50 if limit is None else limit)
+
+
+@router.post(
+    "/generate/jobs/{id}/revoke",
+    summary="撤销生成（点错了重来）：只能撤销该 PI 流水排在最后、号全部仍待分配的一次成功生成；"
+    "号与查重护栏删除，PI 最大号与订单额度退回，原因必填",
+)
+def gen_revoke(id: int, body: RevokeIn, cu: AdminDep) -> dict:
+    return generate.revoke(cu, id, body.reason)
 
 
 @router.post("/generate/allocate", summary="确认分配：整单分到订单的生产组织，待分配 → 待领取")

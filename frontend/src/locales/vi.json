@@ -79,6 +79,7 @@
   },
   "actions": {
     "SN_GENERATE": "Tạo",
+    "SN_REVOKE": "Hủy lần tạo",
     "SN_ALLOCATE": "Phân bổ",
     "SN_ACQUIRE": "Nhận",
     "SN_PRINT": "In (trang)",
@@ -264,6 +265,12 @@
     "jobSUCCESS": "Xong",
     "jobFAILED": "Lỗi",
     "jobRUNNING": "Đang tạo",
+    "jobREVOKED": "Đã hủy",
+    "revoke": "Hủy",
+    "revokeHint": "Tạo nhầm? Chỉ hủy được lần tạo cuối cùng theo số thứ tự của PI mà mọi SN vẫn chờ phân bổ; lần tạo nhiều lệnh thì hủy lần lượt từ lệnh cuối.",
+    "revokeConfirm": "Hủy lần tạo này của lệnh {bill}: xóa {start} ~ {end} ({qty} SN), hoàn lại số lớn nhất của PI và hạn mức lệnh; SN tạo lại sẽ giống như cũ. Lý do:",
+    "revokeReason": "Lý do (bắt buộc)",
+    "revoked": "Đã hủy {qty} SN; có thể xem trước và tạo lại",
     "issue": {
       "ORDER_NO_CUSTOMER": "Lệnh không có khách hàng; không thể tạo",
       "ORDER_NO_PI": "Lệnh không có PI; không thể tạo",

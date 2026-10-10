@@ -40,7 +40,7 @@
         <el-table-column :label="t('generate.progress')" width="220">
           <template #default="{ row }">
             <el-progress :percentage="row.qty ? Math.round((row.done_qty * 100) / row.qty) : 0"
-              :status="row.status === 'SUCCESS' ? 'success' : row.status === 'FAILED' ? 'exception' : undefined" />
+              :status="row.status === 'SUCCESS' ? 'success' : row.status === 'FAILED' ? 'exception' : row.status === 'REVOKED' ? 'warning' : undefined" />
           </template>
         </el-table-column>
         <el-table-column prop="created_at" :label="t('common.time')" width="170" />
