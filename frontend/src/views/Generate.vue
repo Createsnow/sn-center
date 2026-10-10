@@ -11,7 +11,7 @@
       <div class="toolbar">
         <el-radio-group v-model="view">
           <el-radio-button v-for="v in VIEWS" :key="v" :value="v">
-            {{ t(`generate.view${v}`) }}<span v-if="v !== 'ALL'" class="cnt num">{{ rowsOf(v).length }}</span>
+            {{ t(`generate.view${v}`) }}<span class="cnt num">{{ rowsOf(v).length }}</span>
           </el-radio-button>
         </el-radio-group>
         <el-input v-model="kw" class="kw" :placeholder="t('generate.search')" clearable prefix-icon="Search" @keyup.enter="reload" @clear="reload" />
@@ -56,7 +56,7 @@
       </div>
       <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="shown.length" :page-size="pageSize"
         :current-page="page" :page-sizes="[20, 50, 100]" @current-change="(p: number) => (page = p)" @size-change="onSize" />
-      <p v-if="pis.length >= LIST_LIMIT" class="muted">{{ t("generate.more", { n: LIST_LIMIT }) }}</p>
+      <p v-if="pis.length >= LIST_LIMIT || allPis.length >= LIST_LIMIT" class="muted">{{ t("generate.more", { n: LIST_LIMIT }) }}</p>
     </div>
 
     <el-drawer :model-value="!!detailPi" size="780px" @close="closeDetail">
@@ -269,8 +269,9 @@ import { useFactories } from "@/composables/useFactories";
 import type { GenJob } from "@/types/api";
 import PageHead from "@/components/PageHead.vue";
 
-type View = "TO_GEN" | "TO_ALLOC" | "ALL";
-const VIEWS: View[] = ["ALL", "TO_GEN", "TO_ALLOC"];
+// 待生成页签展示全部 PI（含已生成完的），待分配页签只看还有待分配的号
+type View = "TO_GEN" | "TO_ALLOC";
+const VIEWS: View[] = ["TO_GEN", "TO_ALLOC"];
 const LIST_LIMIT = 500;
 
 /** 进度条：已分配 / 已生成待分配 / 未生成，占订单总数（已生成超过总数时以已生成为准）。 */
@@ -320,8 +321,8 @@ let alive = true;
 const defaultQty = (quota: number) => suggestQty(quota, DEFAULT_PAGE_LIMIT);
 // 已生成过的 PI 规则已确定，行上可直接生成；首次生成要在抽屉里选规则
 const canQuickGen = (row: any) => row.start_locked && !row.unmapped;
-// 「分配 N 枚」只在待分配页签显示；全部页签里没有可生成量时也给出分配
-const showAlloc = (row: any) => row.pending_alloc > 0 && (view.value === "TO_ALLOC" || (view.value === "ALL" && !row.quota));
+// 「分配 N 枚」在待分配页签显示；待生成页签里没有可生成量时也给出分配
+const showAlloc = (row: any) => row.pending_alloc > 0 && (view.value === "TO_ALLOC" || !row.quota);
 const totals = computed(() => pis.value.reduce((s, r) => ({ quota: s.quota + r.quota, pending: s.pending + r.pending_alloc }), { quota: 0, pending: 0 }));
 const shown = computed(() => rowsOf(view.value));
 const paged = computed(() => shown.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value));
@@ -330,8 +331,7 @@ const lastRevocable = computed<GenJob | undefined>(() => ctx.value?.jobs.find((j
 const nextSn = computed(() => ctx.value?.next?.start_sn ?? ctx.value?.rule_options.find((o: any) => o.rule_id === ruleId.value)?.sample_sn ?? null);
 
 function rowsOf(v: View) {
-  if (v === "ALL") return allPis.value;
-  if (v === "TO_GEN") return pis.value.filter((r) => r.quota > 0);
+  if (v === "TO_GEN") return allPis.value;
   return pis.value.filter((r) => r.pending_alloc > 0);
 }
 
@@ -367,7 +367,7 @@ async function reload() {
     const q = kw.value.trim();
     const [p, a] = await Promise.all([
       api.orderPis({ q, pending: 1, limit: LIST_LIMIT }),
-      view.value === "ALL" ? api.orderPis({ q, limit: LIST_LIMIT }) : Promise.resolve(allPis.value),
+      view.value === "TO_GEN" ? api.orderPis({ q, limit: LIST_LIMIT }) : Promise.resolve(allPis.value),
     ]);
     pis.value = p;
     allPis.value = a;
@@ -377,7 +377,7 @@ async function reload() {
 }
 watch(view, (v) => {
   page.value = 1;
-  if (v === "ALL") reload();
+  if (v === "TO_GEN") reload();
 });
 watch(kw, () => (page.value = 1));
 // 生成 / 分配后列表变短时，页码退回最后一页
