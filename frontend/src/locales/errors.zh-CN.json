@@ -96,5 +96,8 @@
   "TR_CONCURRENT": "部分号的状态刚刚变化，请刷新后重试",
   "QUERY_PI_REQUIRED": "查看同一 PI 各厂的号时必须指定 PI",
   "QUERY_PI_NOT_OWNED": "本厂没有 PI {pi} 的号，不能查看其他工厂",
+  "QUERY_RANGE_PI_REQUIRED": "按流水号范围查询时必须指定 PI",
+  "QUERY_RANGE_INVALID": "{value} 不是 PI {pi} 的流水号或完整 SN",
+  "QUERY_RANGE_REVERSED": "起始流水号 {start} 大于截止流水号 {end}",
   "EXPORT_TOO_LARGE": "单次导出最多 {max} 条，请缩小筛选范围"
 }

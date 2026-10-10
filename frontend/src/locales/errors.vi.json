@@ -96,5 +96,8 @@
   "TR_CONCURRENT": "Một số SN vừa đổi trạng thái; hãy làm mới và thử lại",
   "QUERY_PI_REQUIRED": "Phải nhập PI để xem mọi nhà máy của PI",
   "QUERY_PI_NOT_OWNED": "Nhà máy của bạn không có SN trong PI {pi}",
+  "QUERY_RANGE_PI_REQUIRED": "Phải chỉ định PI khi tìm theo dải số thứ tự",
+  "QUERY_RANGE_INVALID": "{value} không phải số thứ tự hoặc SN đầy đủ của PI {pi}",
+  "QUERY_RANGE_REVERSED": "Số bắt đầu {start} lớn hơn số kết thúc {end}",
   "EXPORT_TOO_LARGE": "Tối đa {max} dòng mỗi lần xuất; hãy thu hẹp điều kiện"
 }

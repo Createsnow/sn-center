@@ -381,6 +381,45 @@ def test_read_scopes(api, admin, w, ctx):
     assert ok(api.get("/api/audits" + q(pi=pi), op_b))["total"] >= 1
 
 
+def test_query_by_serial_range(api, admin, w, ctx):
+    qry, op_a = ctx["query"], ctx["op_a"]
+    pi = ready(w, "SR", 5, 3)  # SR00001..SR00008，甲厂待领取
+
+    def get(user=qry, **kw):
+        return api.get("/api/sn" + q(pi=pi, **kw), user)
+
+    r = ok(get(seq_from="00002", seq_to="00006"))
+    assert [i["sn"] for i in r["items"]] == ["SR00002", "SR00003", "SR00004", "SR00005", "SR00006"], "ordered by serial"
+    assert r["range"] == {"found": 5, "expected": 5, "by_status": {"TO_ACQUIRE": 5}}
+    # 左侧补位可省略、可填完整 SN、只填一端
+    assert ok(get(seq_from="2", seq_to="SR00006"))["total"] == 5
+    assert ok(get(seq_from="7"))["total"] == 2
+    assert ok(get(seq_to="00003"))["range"]["expected"] is None
+    # 范围超出已生成的号：应有 10 枚，查到 8 枚
+    assert ok(get(seq_from="1", seq_to="10"))["range"] == {"found": 8, "expected": 10, "by_status": {"TO_ACQUIRE": 8}}
+    # 与其他条件组合
+    assert ok(get(seq_from="1", seq_to="8", material_code="MB"))["total"] == 3
+    # 转到乙厂的号：甲厂账户查不到，未绑定查询员仍能看到
+    ok(
+        api.post(
+            "/api/transfers/direct",
+            m(factory_code=FA, pi_no=pi, scope="SINGLE", sn="SR00004", to_factory=FB, to_pi=pi, reason="分一枚"),
+            admin,
+        )
+    )
+    assert ok(get(op_a, seq_from="3", seq_to="5"))["range"]["found"] == 2
+    assert ok(get(seq_from="3", seq_to="5"))["range"]["found"] == 3
+    # 导出带上范围
+    export = api.get("/api/sn/export" + q(pi=pi, seq_from="7", seq_to="8", format="csv"), qry)
+    body = export.raw.decode("utf-8")
+    assert "SR00007" in body and "SR00008" in body and "SR00006" not in body
+    # 校验
+    assert api.get("/api/sn" + q(seq_from="1"), qry).code == "QUERY_RANGE_PI_REQUIRED"
+    assert get(seq_from="X9").code == "QUERY_RANGE_INVALID"
+    assert get(seq_from="AB00001").code == "QUERY_RANGE_INVALID"
+    assert get(seq_from="00006", seq_to="00002").code == "QUERY_RANGE_REVERSED"
+
+
 def test_failed_write_is_audited(api, w, ctx, sql):
     pi = uid("PI")
     assert w.acquire(ctx["op_a"], None, pi, req()).code == "ACQ_PI_NOT_IN_ERP"

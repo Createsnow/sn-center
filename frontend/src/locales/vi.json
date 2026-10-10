@@ -444,7 +444,14 @@
     "printedAt": "Thời gian in",
     "exportXlsx": "Xuất Excel",
     "capped": "Hơn {n} kết quả; hãy thu hẹp điều kiện hoặc xuất tệp.",
-    "tabSn": "Chi tiết SN"
+    "tabSn": "Chi tiết SN",
+    "seqRange": "Dải số thứ tự",
+    "seqFrom": "Từ, vd. 0001",
+    "seqTo": "Đến, vd. 0030",
+    "seqRangeTip": "Cần nhập PI để tìm theo dải số thứ tự. Nhập số thứ tự (có thể bỏ số 0 ở đầu) hoặc SN đầy đủ; bao gồm cả hai đầu, để trống một đầu là không giới hạn. Chỉ tìm số do chính PI này tạo; SN chuyển vào PI này không được tính.",
+    "rangeFound": "Tìm thấy {n} SN trong dải",
+    "rangeMissing": "Dải có {expected} SN; {n} SN không có trong kết quả (chưa tạo, đã chuyển đi hoặc không khớp điều kiện khác)",
+    "rangeFull": "Đủ toàn bộ SN trong dải"
   },
   "audit": {
     "title": "Nhật ký thao tác",

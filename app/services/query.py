@@ -8,12 +8,13 @@ from __future__ import annotations
 from collections.abc import Iterator
 from dataclasses import dataclass
 
+from app.core import encoding as codec
 from app.core import utils as util
 from app.core.config import settings
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db
-from app.services import acquire, files, sn_items
+from app.services import acquire, files, rules, sn_items
 
 COUNT_CAP = 100_000
 
@@ -31,9 +32,64 @@ class Filter:
     bill_no: str | None = None
     batch_no: str | None = None
     pi_all: bool = False
+    seq_from: str | None = None
+    seq_to: str | None = None
+
+    @property
+    def has_range(self) -> bool:
+        return not (util.blank(self.seq_from) and util.blank(self.seq_to))
 
 
-def _where(cu: CurrentUser, f: Filter) -> tuple[str, list, bool]:
+@dataclass(frozen=True)
+class SeqRange:
+    """流水号范围：PI 自己的流水（seq_pi_no = PI），两端都含；只填一端时另一端不限。"""
+
+    pi_no: str
+    lo: int | None
+    hi: int | None
+
+
+def _seq_of(text: str, specs: list[codec.Spec]) -> int | None:
+    """流水号（可省略左侧补位，如 1 → 0001）或完整 SN → 十进制流水；按 PI 用过的规则版本从新到旧试。"""
+    for s in specs:
+        if len(text) <= s.seq_len and all(c in s.charset for c in text):
+            v = codec.parse(s.prefix + text.rjust(s.seq_len, s.charset[0]) + s.suffix, s)
+        else:
+            v = codec.parse(text, s)
+        if v is not None:
+            return v
+    return None
+
+
+def seq_range(f: Filter) -> SeqRange | None:
+    if not f.has_range:
+        return None
+    if util.blank(f.pi_no):
+        raise biz(ErrorCode.QUERY_RANGE_PI_REQUIRED)
+    pi = f.pi_no.strip()
+    versions = db.all(
+        "SELECT rule_version_id v FROM sn_item WHERE pi_no = %s AND seq_pi_no = %s AND rule_version_id IS NOT NULL "
+        "GROUP BY rule_version_id ORDER BY rule_version_id DESC",
+        pi,
+        pi,
+    )
+    specs = [s for s in (rules.cached_spec(r["v"]) for r in versions) if s is not None]
+    bounds: list[int | None] = []
+    for v in (f.seq_from, f.seq_to):
+        if util.blank(v):
+            bounds.append(None)
+            continue
+        n = _seq_of(v.strip(), specs)
+        if n is None:
+            raise biz(ErrorCode.QUERY_RANGE_INVALID, value=v.strip(), pi=pi)
+        bounds.append(n)
+    lo, hi = bounds
+    if lo is not None and hi is not None and lo > hi:
+        raise biz(ErrorCode.QUERY_RANGE_REVERSED, start=f.seq_from.strip(), end=f.seq_to.strip())
+    return SeqRange(pi, lo, hi)
+
+
+def _where(cu: CurrentUser, f: Filter) -> tuple[str, list, bool, SeqRange | None]:
     sql = " WHERE 1=1"
     args: list = []
     sc = acquire.read_scope(cu, f.factory_code, f.pi_no, f.pi_all)
@@ -59,20 +115,42 @@ def _where(cu: CurrentUser, f: Filter) -> tuple[str, list, bool]:
         if not util.blank(v):
             sql += f" AND {col} = %s"
             args.append(v.strip())
-    return sql, args, not util.blank(f.pi_no)
+    rg = seq_range(f)
+    if rg is not None:
+        sql += " AND seq_pi_no = %s"
+        args.append(rg.pi_no)
+        for op, n in ((">=", rg.lo), ("<=", rg.hi)):
+            if n is not None:
+                sql += f" AND seq_dec {op} %s"
+                args.append(n)
+    return sql, args, not util.blank(f.pi_no), rg
+
+
+def _range_summary(sql: str, args: list, rg: SeqRange) -> dict:
+    """范围小计：查到几枚、各状态几枚；两端都填时给出范围内应有的枚数。"""
+    rows = db.all(f"SELECT status, COUNT(*) n FROM sn_item{sql} GROUP BY status", *args)
+    by_status = {r["status"]: r["n"] for r in rows}
+    expected = None if rg.lo is None or rg.hi is None else rg.hi - rg.lo + 1
+    return {"found": sum(by_status.values()), "expected": expected, "by_status": by_status}
 
 
 def list_items(cu: CurrentUser, f: Filter, page: util.Page) -> dict:
-    sql, args, has_pi = _where(cu, f)
+    sql, args, has_pi, rg = _where(cu, f)
     total = db.count(f"SELECT COUNT(*) FROM (SELECT 1 FROM sn_item{sql} LIMIT %s) c", *args, COUNT_CAP + 1)
-    order = " ORDER BY material_code, seq_pi_no, seq_dec, id" if has_pi else " ORDER BY id DESC"
+    if rg is not None:
+        order = " ORDER BY seq_dec, id"
+    else:
+        order = " ORDER BY material_code, seq_pi_no, seq_dec, id" if has_pi else " ORDER BY id DESC"
     rows = db.all(f"SELECT {sn_items.COLS} FROM sn_item{sql}{order} LIMIT %s, %s", *args, page.offset, page.size)
-    return util.page_capped([sn_items.view(r) for r in rows], total, page, COUNT_CAP)
+    out = util.page_capped([sn_items.view(r) for r in rows], total, page, COUNT_CAP)
+    if rg is not None:
+        out["range"] = _range_summary(sql, args, rg)
+    return out
 
 
 def check_exportable(cu: CurrentUser, f: Filter) -> None:
     """导出前的行数检查（让页面在下载前就能提示超限）。"""
-    sql, args, _ = _where(cu, f)
+    sql, args, _, _ = _where(cu, f)
     limit = settings.sn_export_limit
     total = db.count(f"SELECT COUNT(*) FROM (SELECT 1 FROM sn_item{sql} LIMIT %s) c", *args, limit + 1)
     if total > limit:
@@ -80,7 +158,7 @@ def check_exportable(cu: CurrentUser, f: Filter) -> None:
 
 
 def _export_rows(cu: CurrentUser, f: Filter) -> Iterator[list]:
-    sql, args, _ = _where(cu, f)
+    sql, args, _, _ = _where(cu, f)
     last_id = 0
     no = 0
     while True:

@@ -96,5 +96,8 @@
   "TR_CONCURRENT": "Some SNs just changed status; refresh and retry",
   "QUERY_PI_REQUIRED": "A PI is required to view all factories of a PI",
   "QUERY_PI_NOT_OWNED": "Your factory has no SNs in PI {pi}",
+  "QUERY_RANGE_PI_REQUIRED": "A PI is required to search by serial range",
+  "QUERY_RANGE_INVALID": "{value} is not a serial or full SN of PI {pi}",
+  "QUERY_RANGE_REVERSED": "Start serial {start} is greater than end serial {end}",
   "EXPORT_TOO_LARGE": "At most {max} rows per export; narrow the filter"
 }

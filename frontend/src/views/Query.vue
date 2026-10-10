@@ -19,12 +19,26 @@
               <el-option v-for="s in STATUS_CODES" :key="s" :value="s" :label="statusLabel(s)" />
             </el-select>
             <el-input v-model="f.sn" :placeholder="t('common.sn')" clearable class="sn-mono" />
+            <div class="seq-range">
+              <span class="seq-range__label">{{ t("query.seqRange") }}</span>
+              <el-input v-model="f.seq_from" :placeholder="t('query.seqFrom')" clearable class="sn-mono" @keyup.enter="load(1)" />
+              <span>–</span>
+              <el-input v-model="f.seq_to" :placeholder="t('query.seqTo')" clearable class="sn-mono" @keyup.enter="load(1)" />
+            </div>
             <el-input v-model="f.bill_no" :placeholder="t('query.sourceBill')" clearable />
             <el-input v-model="f.batch_no" :placeholder="t('acquire.batchNo')" clearable />
             <el-switch v-if="store.isFactory" v-model="f.pi_all" :active-text="t('acquire.piAll')" :disabled="!f.pi.trim()" />
             <el-button type="primary" @click="load(1)">{{ t("common.search") }}</el-button>
           </div>
           <el-alert v-if="f.pi_all" type="info" :closable="false" show-icon :title="t('acquire.piAllReadOnly')" class="mb" />
+          <el-alert v-if="hasRange" type="info" :closable="false" show-icon :title="t('query.seqRangeTip')" class="mb" />
+          <div v-if="range" class="range-sum mb">
+            <span>{{ t("query.rangeFound", { n: range.found }) }}</span>
+            <span v-for="(n, s) in range.by_status" :key="s"><StatusTag :status="s" /> <b>{{ n }}</b></span>
+            <span v-if="range.expected != null" class="range-sum__note">
+              {{ range.expected > range.found ? t("query.rangeMissing", { expected: range.expected, n: range.expected - range.found }) : t("query.rangeFull") }}
+            </span>
+          </div>
           <div class="fill-body">
           <el-table v-loading="state.loading" height="100%" :data="items" size="small" :empty-text="t('common.empty')">
             <el-table-column :label="t('common.sn')" min-width="170" fixed><template #default="{ row }"><span class="sn-mono">{{ row.sn }}</span></template></el-table-column>
@@ -135,7 +149,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { ElMessage } from "element-plus";
@@ -160,16 +174,28 @@ const str = (v: unknown) => (typeof v === "string" ? v : "");
 const initFactory = store.boundFactory ? "" : str(route.query.factory);
 const initPi = str(route.query.pi);
 const tab = ref(TABS.includes(str(route.query.tab)) ? str(route.query.tab) : "sn");
-const f = reactive({ factory_code: initFactory, pi: initPi, material_code: "", customer_code: "", status: "", sn: "", bill_no: "", batch_no: "", pi_all: false });
+const f = reactive({
+  factory_code: initFactory, pi: initPi, material_code: "", customer_code: "", status: "", sn: "", bill_no: "", batch_no: "", pi_all: false,
+  seq_from: "", seq_to: "",
+});
 const bf = reactive({ factory_code: initFactory, pi: initPi, batch_no: "", request_no: "", source: "" });
 const pf = reactive({ factory_code: initFactory, pi: initPi, print_no: "", request_no: "" });
 const exporting = ref(false);
 const batchNo = ref("");
 const loaded = new Set<string>();
 
-const params = () => ({ ...f, pi: f.pi.trim(), pi_all: f.pi_all || undefined });
+const params = () => ({ ...f, pi: f.pi.trim(), pi_all: f.pi_all || undefined, seq_from: f.seq_from.trim(), seq_to: f.seq_to.trim() });
 const trimmed = (o: Record<string, string>) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v.trim()]));
-const { items, state, load, onSize } = usePaged<any>((q) => api.items({ ...params(), ...q }));
+/** 按流水号范围查时接口附带的小计：查到几枚、各状态几枚、范围应有几枚。 */
+type RangeSummary = { found: number; expected: number | null; by_status: Record<string, number> };
+const range = ref<RangeSummary | null>(null);
+const hasRange = computed(() => !!(f.seq_from.trim() || f.seq_to.trim()));
+const { items, state, load, onSize } = usePaged<any>(async (q) => {
+  range.value = null;
+  const r = await api.items({ ...params(), ...q });
+  range.value = r.range ?? null;
+  return r;
+});
 const { items: batches, state: batchState, load: loadBatches, onSize: batchSize } = usePaged<any>((q) => api.batches({ ...trimmed(bf), ...q }));
 const { items: prints, state: printState, load: loadPrints, onSize: printSize } = usePaged<any>((q) => api.prints({ ...trimmed(pf), ...q }));
 const { items: batchItems, state: itemState, load: loadBatchItems } = usePaged<any>((q) => api.batchItems(batchNo.value, q), 50);
@@ -230,5 +256,11 @@ onMounted(onTab);
 .tabs-fill :deep(.el-tabs__content) { flex: 1; min-height: 0; }
 .tabs-fill :deep(.el-tab-pane) { height: 100%; display: flex; flex-direction: column; }
 @media (max-width: 1199px) { .tabs-fill :deep(.el-tab-pane) { height: auto; } }
+.seq-range { display: flex; align-items: center; gap: 6px; }
+.seq-range .el-input { width: 130px; }
+.seq-range__label { color: var(--el-text-color-regular); white-space: nowrap; }
+.range-sum { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 8px 12px; border-radius: 4px; background: var(--el-fill-color-light); font-size: 13px; }
+.range-sum b { font-variant-numeric: tabular-nums; }
+.range-sum__note { color: var(--el-text-color-secondary); }
 .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
 </style>

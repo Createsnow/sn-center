@@ -97,5 +97,8 @@ E = {
 "TR_CONCURRENT": ("Some SNs just changed status; refresh and retry", "Một số SN vừa đổi trạng thái; hãy làm mới và thử lại"),
 "QUERY_PI_REQUIRED": ("A PI is required to view all factories of a PI", "Phải nhập PI để xem mọi nhà máy của PI"),
 "QUERY_PI_NOT_OWNED": ("Your factory has no SNs in PI {pi}", "Nhà máy của bạn không có SN trong PI {pi}"),
+"QUERY_RANGE_PI_REQUIRED": ("A PI is required to search by serial range", "Phải chỉ định PI khi tìm theo dải số thứ tự"),
+"QUERY_RANGE_INVALID": ("{value} is not a serial or full SN of PI {pi}", "{value} không phải số thứ tự hoặc SN đầy đủ của PI {pi}"),
+"QUERY_RANGE_REVERSED": ("Start serial {start} is greater than end serial {end}", "Số bắt đầu {start} lớn hơn số kết thúc {end}"),
 "EXPORT_TOO_LARGE": ("At most {max} rows per export; narrow the filter", "Tối đa {max} dòng mỗi lần xuất; hãy thu hẹp điều kiện"),
 }

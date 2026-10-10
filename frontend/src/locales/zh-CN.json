@@ -444,7 +444,14 @@
     "printedAt": "打印时间",
     "exportXlsx": "导出 Excel",
     "capped": "结果超过 {n} 条，只统计到此；请缩小条件或导出。",
-    "tabSn": "SN 明细"
+    "tabSn": "SN 明细",
+    "seqRange": "流水号范围",
+    "seqFrom": "起始，如 0001",
+    "seqTo": "截止，如 0030",
+    "seqRangeTip": "按流水号范围查询需先填 PI。可填流水号（左侧的 0 可省略）或完整 SN，两端都包含；只填一端表示另一端不限。只查本 PI 自己生成的流水，转入本 PI 的号不在范围内。",
+    "rangeFound": "范围内查到 {n} 枚",
+    "rangeMissing": "范围应有 {expected} 枚，另有 {n} 枚不在结果中（未生成、已转出，或不符合其他筛选条件）",
+    "rangeFull": "范围内的号都在"
   },
   "audit": {
     "title": "操作痕迹",

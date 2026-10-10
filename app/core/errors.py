@@ -121,6 +121,9 @@ class ErrorCode(Enum):
     # ---------- 查询 / 审计 ----------
     QUERY_PI_REQUIRED = (400, "查看同一 PI 各厂的号时必须指定 PI")
     QUERY_PI_NOT_OWNED = (403, "本厂没有 PI {pi} 的号，不能查看其他工厂")
+    QUERY_RANGE_PI_REQUIRED = (400, "按流水号范围查询时必须指定 PI")
+    QUERY_RANGE_INVALID = (400, "{value} 不是 PI {pi} 的流水号或完整 SN")
+    QUERY_RANGE_REVERSED = (400, "起始流水号 {start} 大于截止流水号 {end}")
     EXPORT_TOO_LARGE = (400, "单次导出最多 {max} 条，请缩小筛选范围")
 
     @property
