@@ -62,4 +62,19 @@
 uv run --with pypandoc_binary --with python-docx --with pillow --with pymupdf python docs/build_tech_docx.py
 ```
 
-装有 LibreOffice 时目录带页码，否则只有标题。图的源文件是 `images/系统技术方案/*.drawio`（draw.io / diagrams.net 编辑后导出同名 PNG、SVG）。
+装有 LibreOffice 时目录带页码，否则只有标题。图的源文件是 `images/系统技术方案/*.drawio`（draw.io / diagrams.net 编辑后导出同名 PNG、SVG）。用 draw.io 桌面版命令行导出时与现有图保持同样的边距和倍率（Linux 无界面服务器前面加 `xvfb-run -a`）：
+
+```bash
+cd docs/images/系统技术方案
+drawio -x -f png -b 8 -s 3 -o fig2-1-function.png fig2-1-function.drawio
+drawio -x -f svg -b 8 -o fig2-1-function.svg fig2-1-function.drawio
+```
+
+新版 draw.io 导出的 SVG 背景透明且随深色模式变色；与现有图一致的做法是把根元素 `style` 改成 `background-color: #ffffff; color-scheme: light;`。
+
+| 改了什么 | 要重画的图 |
+| --- | --- |
+| 页面菜单或模块 | 图 2-1 功能架构、图 2-2 技术架构 |
+| 表、表间关系 | 图 2-5 / 2-6 ER 图，图 2-3 数据分层 |
+| 号的状态 | 图 2-4 状态流转 |
+| 预演、生成流程或接口 | 图 3-1 预演与生成时序 |

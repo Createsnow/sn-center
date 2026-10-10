@@ -1,6 +1,6 @@
 # MES 对接接口文档
 
-> **读者**：工厂 MES、现场打印系统的对接方（被调方：SN 管控中心）　**对应代码**：`app/api/routes/open.py`、`app/api/routes/auth.py`、`app/services/acquire.py`　**更新**：2026-10-09
+> **读者**：工厂 MES、现场打印系统的对接方（被调方：SN 管控中心）　**对应代码**：`app/api/routes/open.py`、`app/api/routes/auth.py`、`app/services/acquire.py`　**更新**：2026-10-10
 > **相关**：本文自成一体，对接方只需要本文；在线版见 `/docs` 的 `open` 分组
 
 MES 主动调用本系统。本系统不向 MES 推送，也不回调 MES。号池只在本系统。MES 领取、取明细、打完后回写；生成、分配、转厂留在工作台，不提供给 MES。
@@ -263,7 +263,7 @@ sequenceDiagram
 | --- | --- |
 | `sn` | 完整 SN，打标用这个 |
 | `seq_text` | 按规则编码后的流水。没有规则或没有十进制流水时为空字符串 |
-| `seq_dec` | 十进制流水。历史导入里反解不出的号可能为 `null` |
+| `seq_dec` | 十进制流水。正常生成的号都有值；只有旧版历史导入（功能已移除）里反解不出的号可能为 `null` |
 | `seq_pi_no` | 流水归属 PI。转厂后业务 PI 会变，流水归属不变 |
 | `pi_no` | 当前业务 PI |
 | `customer_code` / `material_code` / `factory_code` | 客户、物料、当前工厂。物料可空 |
@@ -271,7 +271,7 @@ sequenceDiagram
 | `status` | 见第 7 节 |
 | `batch_no` | 领取批次。未领取或转厂确认后清空，为 `null` |
 | `print_no` | 页面打印单号。MES 回调不产生打印单，一般为 `null` |
-| `source` | 号的来源，如生成 `GEN`、历史导入 `IMPORT` |
+| `source` | 号的来源：生成为 `GEN`；`IMPORT` 只见于旧版历史导入（功能已移除）留下的数据 |
 | `acquired_at` / `printed_at` | 领取时间、打印回写时间 |
 
 ### 幂等
