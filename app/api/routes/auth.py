@@ -29,7 +29,7 @@ def me(cu: UserDep) -> dict:
     return users.me(cu)
 
 
-@router.post("/password", summary="修改自己的密码（首次登录必须先改）；返回新令牌")
+@router.post("/password", summary="修改自己的密码（被管理员重置后必须先改）；返回新令牌")
 def change_password(body: PasswordIn, cu: UserDep) -> dict:
     return users.change_password(cu, body.old_password, body.new_password)
 

@@ -4,7 +4,7 @@
   "LOGIN_FAILED": "Wrong employee number or password",
   "ACCOUNT_DISABLED": "Account is disabled",
   "LOGIN_LOCKED": "Too many failed sign-ins, please try again in {minutes} minutes",
-  "PASSWORD_CHANGE_REQUIRED": "Please change your password first",
+  "PASSWORD_CHANGE_REQUIRED": "Your password was reset by the administrator: please change it first",
   "FORBIDDEN": "Your role is not allowed to do this",
   "FACTORY_FORBIDDEN": "You can only operate SNs of your factory: {factory}",
   "VALIDATION": "Invalid parameter: {detail}",

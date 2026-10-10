@@ -22,7 +22,7 @@ class ErrorCode(Enum):
     LOGIN_FAILED = (401, "工号或密码错误")
     ACCOUNT_DISABLED = (401, "账户已停用")
     LOGIN_LOCKED = (429, "登录失败次数过多，请 {minutes} 分钟后再试")
-    PASSWORD_CHANGE_REQUIRED = (403, "首次登录或密码已重置，请先修改密码")
+    PASSWORD_CHANGE_REQUIRED = (403, "密码已被管理员重置，请先修改密码")
     FORBIDDEN = (403, "当前角色无权执行该操作")
     FACTORY_FORBIDDEN = (403, "只能操作本厂的号：{factory}")
     VALIDATION = (422, "参数不合法：{detail}")
