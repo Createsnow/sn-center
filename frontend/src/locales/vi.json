@@ -267,6 +267,8 @@
     "jobRUNNING": "Đang tạo",
     "jobREVOKED": "Đã hủy",
     "revoke": "Hủy",
+    "lastGen": "Lần tạo gần nhất: lệnh {bill}, {qty} SN, vẫn chờ phân bổ; có thể hủy nếu tạo nhầm",
+    "revokeLast": "Hủy lần tạo này",
     "revokeHint": "Tạo nhầm? Chỉ hủy được lần tạo cuối cùng theo số thứ tự của PI mà mọi SN vẫn chờ phân bổ; lần tạo nhiều lệnh thì hủy lần lượt từ lệnh cuối.",
     "revokeConfirm": "Hủy lần tạo này của lệnh {bill}: xóa {start} ~ {end} ({qty} SN), hoàn lại số lớn nhất của PI và hạn mức lệnh; SN tạo lại sẽ giống như cũ. Lý do:",
     "revokeReason": "Lý do (bắt buộc)",

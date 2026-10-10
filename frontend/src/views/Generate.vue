@@ -113,6 +113,17 @@
           </div>
         </div>
 
+        <!-- 最近一次生成点错了：在分配之前可撤销重来 -->
+        <div v-if="lastRevocable && !running" class="revoke-bar">
+          <span class="small">
+            {{ t("generate.lastGen", { bill: lastRevocable.bill_no, qty: lastRevocable.qty }) }}
+            <span class="sn-mono">{{ lastRevocable.start_sn }} ~ {{ lastRevocable.end_sn }}</span>
+          </span>
+          <el-button size="small" type="danger" plain :disabled="!!busy" :loading="busy === `revoke:${lastRevocable.id}`" @click="revokeJob(lastRevocable)">
+            {{ t("generate.revokeLast") }}
+          </el-button>
+        </div>
+
         <!-- 分配：整张 PI，各订单分到各自的生产组织 -->
         <div v-if="ctx.pending_alloc" class="card on">
           <h4><el-tag size="small" type="warning">{{ t("generate.current") }}</el-tag>{{ t("generate.allocTitle", { n: ctx.pending_alloc }) }}</h4>
@@ -315,6 +326,7 @@ const totals = computed(() => pis.value.reduce((s, r) => ({ quota: s.quota + r.q
 const shown = computed(() => rowsOf(view.value));
 const paged = computed(() => shown.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value));
 const ruleLabel = (o: any) => `${o.rule_code} · ${o.rule_name}`;
+const lastRevocable = computed<GenJob | undefined>(() => ctx.value?.jobs.find((j: GenJob) => j.revocable));
 const nextSn = computed(() => ctx.value?.next?.start_sn ?? ctx.value?.rule_options.find((o: any) => o.rule_id === ruleId.value)?.sample_sn ?? null);
 
 function rowsOf(v: View) {
@@ -621,6 +633,7 @@ onUnmounted(() => {
 .card h4 { margin: 0; font-size: 14px; display: flex; align-items: center; gap: 8px; }
 .result { background: var(--el-fill-color-light); border-radius: 6px; padding: 8px 10px; font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
 .result.err { color: var(--el-color-danger); }
+.revoke-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 8px 12px; border: 1px dashed var(--el-color-danger-light-5); border-radius: 6px; background: var(--el-color-danger-light-9); }
 .lines { margin: 0 12px 0 48px; width: auto; }
 :deep(.bar) { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--el-fill-color-dark); min-width: 100px; }
 :deep(.bar.big) { height: 10px; }

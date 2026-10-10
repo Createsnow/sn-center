@@ -267,6 +267,8 @@
     "jobRUNNING": "生成中",
     "jobREVOKED": "已撤销",
     "revoke": "撤销",
+    "lastGen": "最近一次生成：单据 {bill}，{qty} 枚，号全部待分配，点错了可撤销重来",
+    "revokeLast": "撤销这次生成",
     "revokeHint": "点错了可撤销：只能撤销流水排在最后、号全部仍待分配的一次生成；多张订单一起生成的从最后一张起逐张撤销。",
     "revokeConfirm": "撤销单据 {bill} 的这次生成：删除 {start} ~ {end} 共 {qty} 枚，PI 最大号与订单额度退回，重新生成的号与原来相同。请填写原因：",
     "revokeReason": "撤销原因（必填）",
