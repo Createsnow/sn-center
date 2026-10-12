@@ -20,6 +20,8 @@
   "USER_PASSWORD_SAME": "新密码不能与原密码相同",
   "USER_SELF_DISABLE": "不能停用自己的账户",
   "USER_LAST_ADMIN": "系统须保留至少一名启用中的管理员",
+  "USER_MANAGE_FORBIDDEN": "只有 admin 账户可以管理账户",
+  "USER_SUPER_ADMIN_FIXED": "admin 账户必须是启用中的系统管理员，不能改角色或停用",
   "FACTORY_NOT_FOUND": "工厂不存在：{factory}",
   "FACTORY_EXISTS": "工厂编码或名称已存在：{factory}",
   "FACTORY_CODE_INVALID": "工厂编码与名称必填，编码不超过 64 位",

@@ -21,6 +21,8 @@ export interface UserView {
   factory_code: string | null;
   factory_name: string | null;
   status: string;
+  /** 内置 admin 账户（唯一能管理账户） */
+  super_admin: boolean;
   must_change_pwd: boolean;
   lang: string | null;
   last_login_at: string | null;

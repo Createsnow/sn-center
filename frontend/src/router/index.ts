@@ -22,7 +22,7 @@ export const MENU = [
     { path: "/audit", title: "nav.audit", icon: "Notebook", roles: ALL },
   ] },
   { group: "nav.groupSystem", items: [
-    { path: "/users", title: "nav.users", icon: "User", roles: ADMIN },
+    { path: "/users", title: "nav.users", icon: "User", roles: ADMIN, superAdmin: true },
     { path: "/factories", title: "nav.factories", icon: "OfficeBuilding", roles: ADMIN },
   ] },
 ];
@@ -43,7 +43,7 @@ const views: Record<string, () => Promise<unknown>> = {
 const children = MENU.flatMap((g) => g.items).map((m) => ({
   path: m.path === "/" ? "" : m.path.slice(1),
   component: views[m.path],
-  meta: { roles: m.roles, title: m.title },
+  meta: { roles: m.roles, title: m.title, superAdmin: "superAdmin" in m && m.superAdmin },
 }));
 
 const router = createRouter({
@@ -63,6 +63,7 @@ router.beforeEach((to) => {
   if (store.mustChangePwd && to.name !== "password") return { name: "password" };
   const roles = to.meta.roles as string[] | undefined;
   if (roles && !roles.includes(store.role)) return { path: "/" };
+  if (to.meta.superAdmin && !store.isSuperAdmin) return { path: "/" };
   return true;
 });
 

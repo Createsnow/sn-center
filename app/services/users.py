@@ -40,6 +40,7 @@ def _view(u: dict, factory_name: str | None) -> dict:
         "factory_code": u["factory_code"],
         "factory_name": factory_name,
         "status": u["status"],
+        "super_admin": util.is_super_admin(u["emp_no"], u["role"]),
         "must_change_pwd": bool(u["must_change_pwd"]),
         "lang": u["lang"],
         "last_login_at": util.fmt(u["last_login_at"]),
@@ -235,6 +236,8 @@ def update(cu: CurrentUser, uid: int, name: str | None, role: str | None, factor
             raise biz(ErrorCode.USER_NAME_REQUIRED)
         r = util.trim(role)
         f = _check_role_factory(r, factory_code, u["factory_code"])
+        if u["emp_no"] == settings.init_admin_emp_no and r != util.ADMIN:
+            raise biz(ErrorCode.USER_SUPER_ADMIN_FIXED)
         if u["role"] == util.ADMIN and r != util.ADMIN:
             _check_not_last_admin(u)
         db.exec(
@@ -263,6 +266,8 @@ def disable(cu: CurrentUser, uid: int) -> dict:
         u = _must_get(uid)
         if u["id"] == cu.id:
             raise biz(ErrorCode.USER_SELF_DISABLE)
+        if u["emp_no"] == settings.init_admin_emp_no:
+            raise biz(ErrorCode.USER_SUPER_ADMIN_FIXED)
         if u["status"] == DISABLED:
             return view(u)
         _check_not_last_admin(u)

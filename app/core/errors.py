@@ -39,6 +39,8 @@ class ErrorCode(Enum):
     USER_PASSWORD_SAME = (400, "新密码不能与原密码相同")
     USER_SELF_DISABLE = (400, "不能停用自己的账户")
     USER_LAST_ADMIN = (400, "系统须保留至少一名启用中的管理员")
+    USER_MANAGE_FORBIDDEN = (403, "只有 admin 账户可以管理账户")
+    USER_SUPER_ADMIN_FIXED = (400, "admin 账户必须是启用中的系统管理员，不能改角色或停用")
     # ---------- 工厂 / 金蝶 ----------
     FACTORY_NOT_FOUND = (400, "工厂不存在：{factory}")
     FACTORY_EXISTS = (409, "工厂编码或名称已存在：{factory}")

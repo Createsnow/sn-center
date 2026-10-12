@@ -131,6 +131,11 @@ class CurrentUser:
         return self.role == util.ADMIN
 
     @property
+    def is_super_admin(self) -> bool:
+        """内置 admin 账户：唯一可以管理账户的人；其他系统管理员不能建账户。"""
+        return self.source != SYSTEM and util.is_super_admin(self.emp_no, self.role)
+
+    @property
     def is_factory(self) -> bool:
         return self.role == util.FACTORY
 

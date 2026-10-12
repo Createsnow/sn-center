@@ -26,6 +26,12 @@ FACTORY = "factory_operator"
 QUERY = "query"
 ROLES = frozenset((ADMIN, FACTORY, QUERY))
 
+
+def is_super_admin(emp_no: str | None, role: str | None) -> bool:
+    """内置管理员（工号 = SN_INIT_ADMIN_EMP_NO，默认 admin）：只有它能管理账户（建、改、停用、启用、重置密码）。"""
+    return role == ADMIN and emp_no == settings.init_admin_emp_no
+
+
 # ---------------------------------------------------------------- 字符串
 
 #: 编码类字段（PI、SN、工厂、客户、物料）的最大长度，与表结构 VARCHAR(64) 一致

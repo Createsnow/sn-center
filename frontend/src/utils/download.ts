@@ -1,9 +1,9 @@
 import { currentLocale, t, translateApiError } from "@/i18n";
-import { TOKEN_KEY } from "@/api/http";
+import { getToken } from "@/api/http";
 
 /** 带 Bearer 令牌下载文件；非 2xx 时抛出本地化后的后端错误。文件名取响应头，缺省用 fallback。 */
 export async function downloadWithToken(url: string, fallback: string): Promise<void> {
-  const token = localStorage.getItem(TOKEN_KEY);
+  const token = getToken();
   const headers: Record<string, string> = { "Accept-Language": currentLocale.value };
   if (token) headers.Authorization = `Bearer ${token}`;
   const res = await fetch(url, { headers });

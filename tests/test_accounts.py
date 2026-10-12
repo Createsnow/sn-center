@@ -79,7 +79,7 @@ def test_cannot_disable_self_or_last_admin_and_only_admin_manages_users(api, adm
     admin_id = ok(api.get("/api/auth/me", admin))["id"]
     assert api.post(f"/api/users/{admin_id}/disable", None, admin).code == "USER_SELF_DISABLE"
     qt = w.user(uid("q"), "query", None)
-    assert api.get("/api/users", qt).code == "FORBIDDEN"
+    assert api.get("/api/users", qt).code == "USER_MANAGE_FORBIDDEN"
     assert api.post("/api/users", m(emp_no=uid("x"), name="x", role="admin", password="Init@1234"), qt).status != 200
 
 
@@ -121,3 +121,25 @@ def test_login_with_unknown_emp_no_is_audited(api, sql):
     assert row["result"] == "FAIL"
     assert row["error_msg"] == "工号或密码错误"
     assert row["detail"].startswith("client=")
+
+
+def test_only_builtin_admin_manages_accounts(api, admin, w):
+    """只有内置 admin 能建各角色账户；被创建的系统管理员不能建、改账户。"""
+    me = ok(api.get("/api/auth/me", admin))
+    assert me["super_admin"] is True
+    hq = w.user(uid("hq"), "admin", None)
+    assert ok(api.get("/api/auth/me", hq))["super_admin"] is False
+    assert api.get("/api/users", hq).code == "USER_MANAGE_FORBIDDEN"
+    created = api.post("/api/users", m(emp_no=uid("x"), name="x", role="query", password="Init@1234"), hq)
+    assert created.status == 403
+    assert created.code == "USER_MANAGE_FORBIDDEN"
+    assert api.get("/api/sn", hq).status == 200, "other admin permissions are unchanged"
+    assert api.put(f"/api/users/{me['id']}", m(name="管理员", role="query"), admin).code == "USER_SUPER_ADMIN_FIXED"
+
+
+def test_same_machine_can_stay_logged_in_as_several_accounts(api, admin, w):
+    a = w.user(uid("ma"), "query", None)
+    b = w.user(uid("mb"), "query", None)
+    assert api.get("/api/auth/me", a).status == 200
+    assert api.get("/api/auth/me", b).status == 200
+    assert api.get("/api/auth/me", admin).status == 200

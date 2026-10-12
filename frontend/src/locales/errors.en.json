@@ -20,6 +20,8 @@
   "USER_PASSWORD_SAME": "New password must differ from the current one",
   "USER_SELF_DISABLE": "You cannot disable your own account",
   "USER_LAST_ADMIN": "At least one active administrator is required",
+  "USER_MANAGE_FORBIDDEN": "Only the admin account can manage accounts",
+  "USER_SUPER_ADMIN_FIXED": "The admin account must stay an active administrator; its role cannot be changed and it cannot be disabled",
   "FACTORY_NOT_FOUND": "Factory not found: {factory}",
   "FACTORY_EXISTS": "Factory code or name already exists: {factory}",
   "FACTORY_CODE_INVALID": "Factory code and name are required (code ≤ 64)",

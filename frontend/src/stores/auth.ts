@@ -1,16 +1,18 @@
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { api } from "@/api";
-import { TOKEN_KEY, USER_KEY } from "@/api/http";
+import { clearSession, getSavedUser, getToken, saveSession } from "@/api/http";
 import { normalizeLocale, setLocale, type Locale } from "@/i18n";
 import type { UserView } from "@/types/api";
 
 export const useAuthStore = defineStore("auth", () => {
-  const token = ref<string>(localStorage.getItem(TOKEN_KEY) || "");
-  const profile = ref<UserView | null>(JSON.parse(localStorage.getItem(USER_KEY) || "null"));
+  const token = ref<string>(getToken());
+  const profile = ref<UserView | null>(token.value ? getSavedUser<UserView>() : null);
 
   const role = computed(() => profile.value?.role || "");
   const isAdmin = computed(() => role.value === "admin");
+  /** 内置 admin 账户：唯一能管理账户的人。 */
+  const isSuperAdmin = computed(() => !!profile.value?.super_admin);
   const isFactory = computed(() => role.value === "factory_operator");
   const isQuery = computed(() => role.value === "query");
   /** 绑厂账户（厂区操作员、绑厂查询员）只能看本厂。 */
@@ -22,8 +24,7 @@ export const useAuthStore = defineStore("auth", () => {
   function persist(t: string, user: UserView) {
     token.value = t;
     profile.value = user;
-    localStorage.setItem(TOKEN_KEY, t);
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    saveSession(t, user);
   }
 
   async function login(empNo: string, password: string) {
@@ -42,7 +43,7 @@ export const useAuthStore = defineStore("auth", () => {
     if (!token.value) return;
     const me = await api.me();
     profile.value = me;
-    localStorage.setItem(USER_KEY, JSON.stringify(me));
+    saveSession(null, me);
   }
 
   async function changeLocale(locale: Locale) {
@@ -51,7 +52,7 @@ export const useAuthStore = defineStore("auth", () => {
     try {
       const me = await api.setLang(locale);
       profile.value = me;
-      localStorage.setItem(USER_KEY, JSON.stringify(me));
+      saveSession(null, me);
     } catch {
       /* 保存偏好失败不影响本地切换 */
     }
@@ -60,12 +61,11 @@ export const useAuthStore = defineStore("auth", () => {
   function clear() {
     token.value = "";
     profile.value = null;
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+    clearSession();
   }
 
   return {
-    token, profile, role, isAdmin, isFactory, isQuery, boundFactory, mustChangePwd, canAct,
+    token, profile, role, isAdmin, isSuperAdmin, isFactory, isQuery, boundFactory, mustChangePwd, canAct,
     login, changePassword, refresh, changeLocale, clear,
   };
 });

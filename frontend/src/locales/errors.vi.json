@@ -20,6 +20,8 @@
   "USER_PASSWORD_SAME": "Mật khẩu mới phải khác mật khẩu cũ",
   "USER_SELF_DISABLE": "Không thể vô hiệu tài khoản của chính mình",
   "USER_LAST_ADMIN": "Phải còn ít nhất một quản trị viên hoạt động",
+  "USER_MANAGE_FORBIDDEN": "Chỉ tài khoản admin mới được quản lý tài khoản",
+  "USER_SUPER_ADMIN_FIXED": "Tài khoản admin phải luôn là quản trị viên đang hoạt động; không thể đổi vai trò hoặc vô hiệu",
   "FACTORY_NOT_FOUND": "Không tìm thấy nhà máy: {factory}",
   "FACTORY_EXISTS": "Mã hoặc tên nhà máy đã tồn tại: {factory}",
   "FACTORY_CODE_INVALID": "Bắt buộc mã và tên nhà máy (mã ≤ 64)",

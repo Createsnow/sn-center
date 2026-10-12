@@ -82,7 +82,7 @@ const router = useRouter();
 const collapsed = ref(false);
 
 const menus = computed(() =>
-  MENU.map((g) => ({ ...g, items: g.items.filter((m) => m.roles.includes(store.role)) })).filter((g) => g.items.length),
+  MENU.map((g) => ({ ...g, items: g.items.filter((m) => m.roles.includes(store.role) && (!("superAdmin" in m) || store.isSuperAdmin)) })).filter((g) => g.items.length),
 );
 const activePath = computed(() => route.path);
 const pageTitle = computed(() => {

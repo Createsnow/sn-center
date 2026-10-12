@@ -539,7 +539,7 @@
     "initPwd": "Initial password",
     "pwdHint": "Usable right away; the user can change it at any time.",
     "roleHint": {
-      "admin": "HQ: no factory, full permissions, may act for any factory.",
+      "admin": "HQ: no factory, full business permissions, may act for any factory; cannot create or manage accounts (only the admin account can).",
       "factory_operator": "Must be bound to one factory and can only act for it.",
       "query": "Read-only; no factory = all factories, bound = that factory only."
     },

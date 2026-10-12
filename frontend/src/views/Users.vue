@@ -33,7 +33,7 @@
           <template #default="{ row }">
             <el-button link type="primary" @click="openEdit(row)">{{ t("common.edit") }}</el-button>
             <el-button link @click="reset(row)">{{ t("users.resetPwd") }}</el-button>
-            <el-button v-if="row.status === 'ACTIVE'" link type="danger" :disabled="row.id === store.profile?.id" @click="disable(row)">{{ t("users.disable") }}</el-button>
+            <el-button v-if="row.status === 'ACTIVE'" link type="danger" :disabled="row.id === store.profile?.id || row.super_admin" @click="disable(row)">{{ t("users.disable") }}</el-button>
             <el-button v-else link type="success" @click="enable(row)">{{ t("users.enable") }}</el-button>
           </template>
         </el-table-column>
@@ -47,7 +47,7 @@
         <el-form-item :label="t('users.empNo')" required><el-input v-model="form.emp_no" :disabled="!!editing" /></el-form-item>
         <el-form-item :label="t('users.name')" required><el-input v-model="form.name" /></el-form-item>
         <el-form-item :label="t('users.role')" required>
-          <el-radio-group v-model="form.role">
+          <el-radio-group v-model="form.role" :disabled="!!editing?.super_admin">
             <el-radio-button v-for="r in ROLE_CODES" :key="r" :value="r">{{ roleLabel(r) }}</el-radio-button>
           </el-radio-group>
           <div class="muted">{{ t(`users.roleHint.${form.role}`) }}</div>

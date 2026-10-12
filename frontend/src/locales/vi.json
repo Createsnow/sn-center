@@ -539,7 +539,7 @@
     "initPwd": "Mật khẩu ban đầu",
     "pwdHint": "Dùng được ngay; người dùng có thể tự đổi bất cứ lúc nào.",
     "roleHint": {
-      "admin": "Tổng bộ: không gắn nhà máy, toàn quyền, thao tác thay mọi nhà máy.",
+      "admin": "Tổng bộ: không gắn nhà máy, toàn quyền nghiệp vụ, thao tác thay mọi nhà máy; không được tạo hay quản lý tài khoản (chỉ tài khoản admin được).",
       "factory_operator": "Phải gắn một nhà máy và chỉ thao tác cho nhà máy đó.",
       "query": "Chỉ xem; không gắn = mọi nhà máy, gắn = chỉ nhà máy đó."
     },

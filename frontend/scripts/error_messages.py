@@ -21,6 +21,8 @@ E = {
 "USER_PASSWORD_SAME": ("New password must differ from the current one", "Mật khẩu mới phải khác mật khẩu cũ"),
 "USER_SELF_DISABLE": ("You cannot disable your own account", "Không thể vô hiệu tài khoản của chính mình"),
 "USER_LAST_ADMIN": ("At least one active administrator is required", "Phải còn ít nhất một quản trị viên hoạt động"),
+"USER_MANAGE_FORBIDDEN": ("Only the admin account can manage accounts", "Chỉ tài khoản admin mới được quản lý tài khoản"),
+"USER_SUPER_ADMIN_FIXED": ("The admin account must stay an active administrator; its role cannot be changed and it cannot be disabled", "Tài khoản admin phải luôn là quản trị viên đang hoạt động; không thể đổi vai trò hoặc vô hiệu"),
 "FACTORY_NOT_FOUND": ("Factory not found: {factory}", "Không tìm thấy nhà máy: {factory}"),
 "FACTORY_EXISTS": ("Factory code or name already exists: {factory}", "Mã hoặc tên nhà máy đã tồn tại: {factory}"),
 "FACTORY_CODE_INVALID": ("Factory code and name are required (code ≤ 64)", "Bắt buộc mã và tên nhà máy (mã ≤ 64)"),

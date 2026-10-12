@@ -28,7 +28,7 @@ cp .env.example .env     # 填 DB_HOST / DB_PORT / DB_NAME / DB_USER / DB_PASSWO
 python start.py          # Windows 可双击 start.bat；需要 Python 3.12+、Node.js 20+
 ```
 
-浏览器打开 `http://127.0.0.1:8000`，用 `.env` 里的 `SN_INIT_ADMIN_EMP_NO` + `SN_INIT_ADMIN_PASSWORD`（默认 `admin` / `Admin@123`）登录，再在「账户」页创建其他账户。
+浏览器打开 `http://127.0.0.1:8000`，用 `.env` 里的 `SN_INIT_ADMIN_EMP_NO` + `SN_INIT_ADMIN_PASSWORD`（默认 `admin` / `Admin@123`）登录，再在「账户」页创建其他账户（只有这个内置管理员能建、改账户，它建的管理员不能再建账户）。同一台机器可在不同浏览器标签页同时登录不同账户。
 本机没有金蝶时可设 `SN_DEMO_SEED=true` 灌入演示工厂、规则、订单与账户（**连公司库务必关闭**）。
 
 服务器：`docker compose up -d --build`（详见运维手册；Docker 方式为 `ENVIRONMENT=production`，`SN_SECRET` 为空、为示例值或不足 32 位会拒绝启动）。接口文档：`/docs`（对外接口在 `open` 分组）。
@@ -45,7 +45,7 @@ python start.py          # Windows 可双击 start.bat；需要 Python 3.12+、N
 | 转厂 | 全部（查询员只读） | 转厂单列表（总部默认看待处理）；新建时按「转哪些号 → 转到哪里 → 原因」填写，转入目标从订单快照搜索或手工填写，右侧实时校验；工厂申请 / 撤回；总部确认 / 驳回 / 直接转移；整张 PI、PI + 物料、单枚 SN 三种范围；转出厂可查已转出的号 |
 | SN 查询 | 全部 | SN 明细：按工厂 / 客户 / PI / 物料 / 状态 / SN / 来源订单 / 批次筛选，可按流水号范围查（如 0001-0030，须填 PI），附范围内各状态枚数与缺号数，厂区可只读查看同 PI 各厂，导出 xlsx / csv；领取批次、打印记录：按批次号 / 打印单号 / 请求号 / 来源（页面或 MES 接口）查找，看批次明细、重新下载打印文件 |
 | 操作痕迹 | 全部（按范围） | 登录、账户、工厂、订单同步、规则、SN、转厂全流程留痕（含失败）；筛选、导出；保存期与归档 |
-| 账户 / 工厂 | 总部 | 工号唯一；新建账户直接可用，管理员重置密码后下次登录须改密；只停用不删除，可重新启用；工厂从金蝶同步或手工建档 |
+| 账户 / 工厂 | 总部（账户仅内置管理员） | 只有内置管理员能建（任一角色）、改、停用账户；工号唯一；新建账户直接可用，管理员重置密码后下次登录须改密；只停用不删除，可重新启用；工厂从金蝶同步或手工建档 |
 
 对外接口（MES / 打印系统）：`POST /api/open/acquire`（按 PI 整批领取，请求号幂等）、`GET /api/open/batches/{batch_no}/items`（分页明细）、`POST /api/open/callback`（打印回调）、`GET /api/open/sn`（只读拉取）。
 
