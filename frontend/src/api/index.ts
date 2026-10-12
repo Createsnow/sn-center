@@ -19,7 +19,9 @@ const del = <T = any>(url: string, params?: Q) => http.delete<T, T>(url, { param
 
 export const api = {
   // 账户与登录
-  login: (emp_no: string, password: string) => post("/auth/login", { emp_no, password }),
+  /** 带 X-SN-Client: web：页面登录，同一账户只在最后登录的页面有效（MES 不带，不受影响）。 */
+  login: (emp_no: string, password: string) =>
+    http.post<any, any>("/auth/login", { emp_no, password }, { headers: { "X-SN-Client": "web" } }),
   me: () => get("/auth/me"),
   changePassword: (old_password: string, new_password: string) => post("/auth/password", { old_password, new_password }),
   setLang: (lang: string | null) => put("/auth/lang", { lang }),

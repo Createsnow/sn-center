@@ -212,8 +212,10 @@ class Api:
     def __init__(self, client) -> None:
         self.client = client
 
-    def call(self, method: str, path: str, body: Any = None, token: str | None = None) -> Res:
-        headers = {"Content-Type": "application/json"}
+    def call(
+        self, method: str, path: str, body: Any = None, token: str | None = None, extra: dict | None = None
+    ) -> Res:
+        headers = {"Content-Type": "application/json", **(extra or {})}
         if token:
             headers["Authorization"] = f"Bearer {token}"
         content = None if body is None else json.dumps(body, ensure_ascii=False).encode("utf-8")
@@ -226,6 +228,10 @@ class Api:
 
     def post(self, path: str, body: Any, token: str | None) -> Res:
         return self.call("POST", path, body, token)
+
+    def page_login(self, emp_no: str, password: str) -> Res:
+        """页面登录（前端带 X-SN-Client: web）；不带该头的是 MES 等对接方登录。"""
+        return self.call("POST", "/api/auth/login", m(emp_no=emp_no, password=password), None, {"X-SN-Client": "web"})
 
     def put(self, path: str, body: Any, token: str | None) -> Res:
         return self.call("PUT", path, body, token)

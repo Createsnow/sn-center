@@ -1,7 +1,7 @@
 """口令哈希、登录令牌与当前操作人。
 
-令牌带口令版本与登录版本：改密 / 重置后旧令牌失效；同一账户再次登录后，之前签发的令牌也失效
-（一个账户同一时刻只在一个页面 / 一个调用方上有效，后登录的覆盖先登录的）。
+令牌带口令版本：改密 / 重置后旧令牌失效。页面登录的令牌另带登录版本：同一账户在页面上再次登录后，
+之前页面上的令牌失效（一个账户同一时刻只在一个页面有效）；MES 等对接方登录的令牌不带登录版本，不受影响。
 """
 
 from __future__ import annotations
@@ -75,9 +75,12 @@ def _sign(raw: str) -> str:
     return hmac.new(settings.secret_key.encode("utf-8"), raw.encode("ascii"), hashlib.sha256).hexdigest()
 
 
-def issue_token(user_id: int, pv: int, sv: int) -> str:
-    """base64url(JSON{uid, pv, sv, exp}) + "." + HMAC-SHA256。"""
-    body = {"uid": user_id, "pv": pv, "sv": sv, "exp": int(time.time()) + settings.access_token_ttl_seconds}
+def issue_token(user_id: int, pv: int, sv: int | None = None) -> str:
+    """base64url(JSON{uid, pv[, sv], exp}) + "." + HMAC-SHA256；sv 只有页面登录的令牌才有。"""
+    body: dict[str, int] = {"uid": user_id, "pv": pv}
+    if sv is not None:
+        body["sv"] = sv
+    body["exp"] = int(time.time()) + settings.access_token_ttl_seconds
     raw = base64.urlsafe_b64encode(json.dumps(body, separators=(",", ":")).encode()).decode().rstrip("=")
     return raw + "." + _sign(raw)
 
@@ -86,8 +89,9 @@ def issue_token(user_id: int, pv: int, sv: int) -> str:
 class Claims:
     user_id: int
     pwd_version: int
-    session_version: int
     exp: int
+    #: 页面登录的令牌才有；None = 对接方令牌，不做单页面校验
+    session_version: int | None = None
 
 
 def parse_token(token: str) -> Claims:
@@ -102,7 +106,8 @@ def parse_token(token: str) -> Claims:
         raise biz(ErrorCode.TOKEN_INVALID)
     try:
         m = json.loads(base64.urlsafe_b64decode(raw + "=" * (-len(raw) % 4)))
-        c = Claims(int(m["uid"]), int(m["pv"]), int(m["sv"]), int(m["exp"]))
+        sv = m.get("sv")
+        c = Claims(int(m["uid"]), int(m["pv"]), int(m["exp"]), None if sv is None else int(sv))
     except (ValueError, KeyError, TypeError):
         raise biz(ErrorCode.TOKEN_INVALID) from None
     if c.exp < int(time.time()):

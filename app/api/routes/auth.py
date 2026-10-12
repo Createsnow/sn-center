@@ -14,7 +14,17 @@ router = APIRouter(prefix="/auth", tags=["auth"])
     summary="登录（页面与对外接口共用），返回 Bearer 令牌",
 )
 def login(body: LoginIn, request: Request) -> dict:
-    return users.login(body.emp_no, body.password, getattr(request.state, "request_id", None), _client(request))
+    return users.login(
+        body.emp_no, body.password, getattr(request.state, "request_id", None), _client(request), _is_page(request)
+    )
+
+
+#: 页面登录时前端带的请求头；不带的（MES 等对接方）不参与「一个账户只在一个页面有效」
+PAGE_CLIENT_HEADER = "X-SN-Client"
+
+
+def _is_page(request: Request) -> bool:
+    return request.headers.get(PAGE_CLIENT_HEADER, "").strip().lower() == "web"
 
 
 def _client(request: Request) -> str | None:
@@ -30,8 +40,9 @@ def me(cu: UserDep) -> dict:
 
 
 @router.post("/password", summary="修改自己的密码（被管理员重置后必须先改）；返回新令牌")
-def change_password(body: PasswordIn, cu: UserDep) -> dict:
-    return users.change_password(cu, body.old_password, body.new_password)
+def change_password(body: PasswordIn, cu: UserDep, request: Request) -> dict:
+    page = getattr(request.state, "page_session", False)
+    return users.change_password(cu, body.old_password, body.new_password, page)
 
 
 @router.put("/lang")

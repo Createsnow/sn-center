@@ -1,4 +1,4 @@
-"""/api 鉴权依赖：Bearer 令牌 → 账户（停用即拒绝；已在别处重新登录即拒绝）→ 强制改密 → 角色。
+"""/api 鉴权依赖：Bearer 令牌 → 账户（停用即拒绝；页面令牌在别的页面重新登录即拒绝）→ 强制改密 → 角色。
 
 当前账户挂到 request.state.user，全局 BizError 处理据此记失败痕迹。
 """
@@ -45,8 +45,9 @@ def authenticate(request: Request) -> CurrentUser:
         raise biz(ErrorCode.TOKEN_INVALID)
     if user["status"] != "ACTIVE":
         raise biz(ErrorCode.ACCOUNT_DISABLED)
-    if session_version(user["last_login_at"]) != claims.session_version:
+    if claims.session_version is not None and session_version(user["last_login_at"]) != claims.session_version:
         raise biz(ErrorCode.SESSION_REPLACED)
+    request.state.page_session = claims.session_version is not None
     path = request.url.path
     source = API if path.startswith("/api/open/") else PAGE
     cu = CurrentUser(

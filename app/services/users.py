@@ -104,8 +104,18 @@ def _login_failed(actor: CurrentUser, e: BizError, detail: str) -> BizError:
     return e
 
 
-def login(emp_no: str | None, password: str | None, trace_id: str | None = None, client: str | None = None) -> dict:
-    """登录。成功、失败（含停用）都留痕；不做失败次数锁定。"""
+def login(
+    emp_no: str | None,
+    password: str | None,
+    trace_id: str | None = None,
+    client: str | None = None,
+    page: bool = False,
+) -> dict:
+    """登录。成功、失败（含停用）都留痕；不做失败次数锁定。
+
+    page = 页面登录：本次登录后，该账户之前在页面上的令牌全部失效（后登录的页面覆盖先登录的）。
+    对接方（MES）登录不改登录版本，既不挤掉页面，也不会被页面登录挤掉。
+    """
     emp = util.trim(emp_no)
     where = f"client={client or '-'}"
     u = _by_emp_no(emp) if emp else None
@@ -115,24 +125,26 @@ def login(emp_no: str | None, password: str | None, trace_id: str | None = None,
     if u["status"] != ACTIVE:
         raise _login_failed(_login_actor(emp, u, trace_id), biz(ErrorCode.ACCOUNT_DISABLED), where) from None
     with db.tx():
-        # 登录时间即登录版本：本次登录后，该账户之前签发的令牌全部失效（后登录的页面覆盖先登录的）
-        prev = db.scalar("SELECT last_login_at FROM sn_user WHERE id = %s FOR UPDATE", u["id"])
-        u["last_login_at"] = _next_version(prev, util.now())
-        db.exec("UPDATE sn_user SET last_login_at = %s WHERE id = %s", u["last_login_at"], u["id"])
+        if page:
+            # 页面最近登录时间即登录版本
+            prev = db.scalar("SELECT last_login_at FROM sn_user WHERE id = %s FOR UPDATE", u["id"])
+            u["last_login_at"] = _next_version(prev, util.now())
+            db.exec("UPDATE sn_user SET last_login_at = %s WHERE id = %s", u["last_login_at"], u["id"])
         audit.record(_login_actor(emp, u, trace_id), audit.entry(audit.LOGIN).factory(u["factory_code"]).info(where))
-    return {"token": _token(u), "user": view(u)}
+    return {"token": _token(u, page), "user": view(u)}
 
 
-def _token(u: dict) -> str:
-    return issue_token(u["id"], pwd_version(u["pwd_changed_at"]), session_version(u["last_login_at"]))
+def _token(u: dict, page: bool) -> str:
+    sv = session_version(u["last_login_at"]) if page else None
+    return issue_token(u["id"], pwd_version(u["pwd_changed_at"]), sv)
 
 
 def me(cu: CurrentUser) -> dict:
     return view(_must_get(cu.id))
 
 
-def change_password(cu: CurrentUser, old_password: str | None, new_password: str | None) -> dict:
-    """改自己的密码；返回新令牌（旧令牌随口令版本失效）。"""
+def change_password(cu: CurrentUser, old_password: str | None, new_password: str | None, page: bool = False) -> dict:
+    """改自己的密码；返回新令牌（旧令牌随口令版本失效；页面令牌沿用当前登录版本）。"""
     with db.tx():
         u = _must_get(cu.id)
         if not verify_password(old_password, u["password_hash"]):
@@ -151,7 +163,7 @@ def change_password(cu: CurrentUser, old_password: str | None, new_password: str
         )
         audit.record(cu, audit.entry(audit.PASSWORD_CHANGE).info(u["emp_no"]))
         fresh = _must_get(u["id"])
-        return {"token": _token(fresh), "user": view(fresh)}
+        return {"token": _token(fresh, page), "user": view(fresh)}
 
 
 def set_lang(cu: CurrentUser, lang: str | None) -> dict:
