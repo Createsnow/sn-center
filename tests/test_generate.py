@@ -54,15 +54,15 @@ def test_generate_requires_matching_unused_unexpired_preview(api, admin, w, sql)
     pi, bill = uid("PI"), uid("MO")
     w.pi_rule(pi, "H", 10, 5)
     w.order(bill, ORG, "C1", pi, ("A", 10))
-    assert api.post("/api/generate", m(preview_token="nope", bill_no=bill, qty=2), admin).code == "GEN_PREVIEW_REQUIRED"
+    assert w.gen("nope", bill, 2).code == "GEN_PREVIEW_REQUIRED"
     token = ok(w.preview(bill, 2)).text("token")
-    assert api.post("/api/generate", m(preview_token=token, bill_no=bill, qty=3), admin).code == "GEN_PREVIEW_CHANGED"
-    ok(api.post("/api/generate", m(preview_token=token, bill_no=bill, qty=2), admin))
-    assert api.post("/api/generate", m(preview_token=token, bill_no=bill, qty=2), admin).code == "GEN_PREVIEW_USED"
+    assert w.gen(token, bill, 3).code == "GEN_PREVIEW_CHANGED"
+    ok(w.gen(token, bill, 2))
+    assert w.gen(token, bill, 2).code == "GEN_PREVIEW_USED"
     sql.exec("UPDATE sn_gen_preview SET expires_at = DATE_SUB(NOW(), INTERVAL 1 HOUR) WHERE bill_no = %s", bill)
     t2 = ok(w.preview(bill, 1)).text("token")
     sql.exec("UPDATE sn_gen_preview SET expires_at = '2000-01-01 00:00:00' WHERE token = %s", t2)
-    assert api.post("/api/generate", m(preview_token=t2, bill_no=bill, qty=1), admin).code == "GEN_PREVIEW_EXPIRED"
+    assert w.gen(t2, bill, 1).code == "GEN_PREVIEW_EXPIRED"
 
 
 def test_preview_goes_stale_when_pi_max_changes_via_another_order(api, admin, w):
@@ -70,15 +70,18 @@ def test_preview_goes_stale_when_pi_max_changes_via_another_order(api, admin, w)
     w.pi_rule(pi, "S", 10, 5)
     w.order(b1, ORG, "C1", pi, ("A", 5))
     w.order(b2, ORG, "C1", pi, ("A", 5))
-    t2 = ok(w.preview(b2, 2)).text("token")
-    w.generate(b1, 3)
-    stale = api.post("/api/generate", m(preview_token=t2, bill_no=b2, qty=2), admin)
+    pi_of = sorted([b1, b2])
+    first = pi_of[0]
+    t1 = ok(w.preview(first, 2)).text("token")
+    w.generate(first, 3)
+    stale = w.gen(t1, first, 2)
     assert stale.code == "GEN_PREVIEW_STALE"
     assert stale["params"]["actual"] == 3
-    # 重新预演后，两张订单在同一张 PI 的一套流水上接续
-    j = w.generate(b2, 2)
-    assert j["start_sn"] == "S00004"
-    summary = ok(api.get("/api/generate/context" + q(bill_no=b2), admin))["pi_summary"]
+    # 重新预演后接着排；排在前面的订单额度用完，再接到后一张订单，两张订单在同一张 PI 的一套流水上接续
+    assert w.generate(first, 2)["start_sn"] == "S00004"
+    j = w.generate(pi_of[1], 2)
+    assert j["start_sn"] == "S00006"
+    summary = ok(api.get("/api/generate/context" + q(bill_no=pi_of[1]), admin))["pi_summary"]
     assert len(summary) == 2
 
 
@@ -89,7 +92,7 @@ def test_quota_is_order_qty_minus_generated(api, admin, w):
     assert w.preview(bill, 6).code == "GEN_QUOTA_EXCEEDED"
     assert w.preview(bill, 0).code == "GEN_QTY_INVALID"
     w.generate(bill, 5)
-    assert w.preview(bill, 1).code == "GEN_QUOTA_EMPTY"
+    assert w.preview(bill, 1).code == "GEN_PI_QUOTA_EMPTY"
     ctx = ok(api.get("/api/generate/context" + q(bill_no=bill), admin)).body
     assert ctx["quota"] == 0
     assert "GEN_QUOTA_EMPTY" in ctx["issues"]
@@ -109,7 +112,7 @@ def test_busy_when_another_generation_runs_on_same_pi(api, admin, w, sql):
         uid("tok"),
     )
     try:
-        assert api.post("/api/generate", m(preview_token=token, bill_no=bill, qty=2), admin).code == "GEN_BUSY"
+        assert w.gen(token, bill, 2).code == "GEN_BUSY"
     finally:
         sql.exec("UPDATE sn_gen_job SET running_pi = NULL, status = 'FAILED' WHERE running_pi = %s", pi)
 
@@ -157,7 +160,7 @@ def test_generation_continues_after_contiguous_transferred_sns(api, admin, w, sq
     assert p["next"]["adjusted"] is True
     assert p["next"]["by_sn"] == "D00005"
     assert p["base_last_seq"] == 2, "own counter itself is not raised by the transfer"
-    j = ok(api.post("/api/generate", m(preview_token=p.text("token"), bill_no=b_b, qty=3), admin)).body
+    j = ok(w.gen(p.text("token"), b_b, 3)).body
     assert j["status"] == "SUCCESS"
     assert (j["start_sn"], j["end_sn"]) == ("D00006", "D00008")
     assert sql.count("SELECT last_seq_dec FROM sn_pi_counter WHERE pi_no = %s", pi_b) == 8
@@ -210,7 +213,7 @@ def test_transfer_after_preview_makes_preview_stale(api, admin, w):
     p = ok(w.preview(b_b, 2))
     assert p.text("start_sn") == "G00002"
     ok(_transfer(api, admin, pi_a, pi_b, scope="SINGLE", sn="G00004"))
-    g = api.post("/api/generate", m(preview_token=p.text("token"), bill_no=b_b, qty=2), admin)
+    g = w.gen(p.text("token"), b_b, 2)
     assert g.code == "GEN_PREVIEW_STALE", str(g)
     assert ok(w.preview(b_b, 2)).text("start_sn") == "G00005"
 
@@ -240,7 +243,7 @@ def test_duplicate_full_sn_still_stops_whole_batch_and_rolls_back(api, admin, w,
     sql.exec("INSERT INTO sn_key(pi_no, sn, seq_pi_no, seq_dec) VALUES (%s, 'D00003', %s, 999)", pi_b, pi_b)
     p = ok(w.preview(b_b, 5))
     assert p.text("start_sn") == "D00001"
-    g = api.post("/api/generate", m(preview_token=p.text("token"), bill_no=b_b, qty=5), admin)
+    g = w.gen(p.text("token"), b_b, 5)
     assert g.code == "GEN_DUPLICATE_SN", str(g)
     assert g["params"]["sn"] == "D00003"
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi_b) == 0
@@ -286,7 +289,7 @@ def test_large_quantity_runs_as_background_job_with_progress(api, admin, w, sql)
     w.pi_rule(pi, "BIG", 32, 6)
     w.order(bill, ORG, "C1", pi, ("A", 8000))
     p = ok(w.preview(bill, 8000))
-    j = ok(api.post("/api/generate", m(preview_token=p.text("token"), bill_no=bill, qty=8000), admin))
+    j = ok(w.gen(p.text("token"), bill, 8000))
     job_id = j["id"]
     status = j.text("status")
     for _ in range(240):
@@ -301,8 +304,14 @@ def test_large_quantity_runs_as_background_job_with_progress(api, admin, w, sql)
 
 def test_only_admin_generates(api, admin, w):
     op = w.user(uid("op"), "factory_operator", FAC)
-    assert api.post("/api/generate/preview", m(bill_no="x", qty=1), op).code == "FORBIDDEN"
+    assert api.post("/api/generate/pi-preview", m(pi_no="x", qty=1), op).code == "FORBIDDEN"
     assert api.get("/api/rules", op).status != 200
+
+
+def test_single_bill_generation_endpoints_are_gone(api, admin):
+    # 只能按整张 PI 生成：按单张订单预演 / 生成的接口已删除
+    assert api.post("/api/generate/preview", m(bill_no="x", qty=1), admin).status in (404, 405)
+    assert api.post("/api/generate", m(preview_token="x", bill_no="x", qty=1), admin).status in (404, 405)
 
 
 def _stuck_job(sql, bill: str, pi: str, token: str) -> int:
@@ -328,7 +337,7 @@ def test_interrupted_job_is_recovered_on_startup_and_pi_can_generate_again(api, 
     w.order(bill, ORG, "C1", pi, ("A", 5))
     job_id = _stuck_job(sql, bill, pi, uuid.uuid4().hex)
     token = ok(w.preview(bill, 2)).text("token")
-    assert api.post("/api/generate", m(preview_token=token, bill_no=bill, qty=2), admin).code == "GEN_BUSY"
+    assert w.gen(token, bill, 2).code == "GEN_BUSY"
     assert generate.recover_interrupted() >= 1
     j = sql.one("SELECT status, error_code, running_pi FROM sn_gen_job WHERE id = %s", job_id)
     assert (j["status"], j["error_code"], j["running_pi"]) == ("FAILED", "INTERRUPTED", None)
@@ -374,7 +383,7 @@ def test_recovered_job_never_writes_numbers_afterwards(w, sql):
     generate.recover_interrupted()
     # 例如另一实例排队中的任务在回收后才轮到执行：必须放弃，不能再写号
     with pytest.raises(BizError):
-        generate._run_job(CurrentUser.system(), job_id, p, True)
+        generate._run_jobs(CurrentUser.system(), [(job_id, p)], True)
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 0
     assert sql.one("SELECT error_code FROM sn_gen_job WHERE id = %s", job_id)["error_code"] == "INTERRUPTED"
 
@@ -858,7 +867,7 @@ def test_cancel_after_some_chunks_were_written_deletes_them(api, admin, w, sql, 
         return original(job_id, done)
 
     monkeypatch.setattr(gen, "_progress", progress)
-    r = api.post("/api/generate", m(preview_token=p.text("token"), bill_no=bill, qty=2500), admin)
+    r = w.gen(p.text("token"), bill, 2500)
     assert r.code == "GEN_CANCELED"
     j = sql.one("SELECT * FROM sn_gen_job WHERE bill_no = %s", bill)
     assert (j["status"], j["done_qty"], j["running_pi"]) == ("CANCELED", 0, None)

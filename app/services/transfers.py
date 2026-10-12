@@ -457,6 +457,10 @@ def _lock_pending(tid: int) -> dict:
 def approve(cu: CurrentUser, tid: int, note: str | None) -> dict:
     with db.tx():
         t = _lock_pending(tid)
+        # 申请之后转入工厂可能已被停用：停用的工厂不能作为转入目标，号保持申请中，由总部驳回或先启用
+        f = factories.must_get(t["to_factory"])
+        if not f["enabled"]:
+            raise biz(ErrorCode.TR_TARGET_DISABLED, factory=f"{f['factory_name']}（{f['factory_code']}）")
         now = util.now()
         hint = _hint_of(t)
         _move(t, True, now)
@@ -541,7 +545,20 @@ def list_transfers(cu: CurrentUser, status: str | None, factory: str | None, pi:
         args += [f, f]
     total = db.count("SELECT COUNT(*) FROM sn_transfer" + where, *args)
     rows = db.all(f"SELECT * FROM sn_transfer{where} ORDER BY id DESC LIMIT %s,%s", *args, page.offset, page.size)
-    return util.page_result([{"transfer": transfer_json(t), "direction": _direction(cu, t)} for t in rows], total, page)
+    disabled = factories.disabled_codes()
+    return util.page_result(
+        [
+            {
+                "transfer": transfer_json(t),
+                "direction": _direction(cu, t),
+                # 待确认的申请转入工厂已停用：不能确认，只能驳回（或先启用工厂）
+                "to_factory_disabled": t["status"] == PENDING and t["to_factory"] in disabled,
+            }
+            for t in rows
+        ],
+        total,
+        page,
+    )
 
 
 def _get(cu: CurrentUser, tid: int) -> dict:

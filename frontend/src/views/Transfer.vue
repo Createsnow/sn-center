@@ -37,6 +37,9 @@
             <div>
               → {{ nameOf(row.transfer.to_factory) }} · <b>{{ row.transfer.to_pi }}</b>
               <el-tag v-if="row.transfer.target_source === 'MANUAL'" size="small" type="warning" class="ml">{{ t("transfer.srcMANUAL") }}</el-tag>
+              <el-tooltip v-if="row.to_factory_disabled" :content="t('transfer.targetDisabledTip')">
+                <el-tag size="small" type="danger" class="ml">{{ t("transfer.targetDisabled") }}</el-tag>
+              </el-tooltip>
             </div>
           </template>
         </el-table-column>
@@ -49,7 +52,7 @@
           <template #default="{ row }">
             <template v-if="row.transfer.status === 'PENDING'">
               <template v-if="store.isAdmin">
-                <el-button size="small" type="success" @click="decide(row.transfer, 'approve')">{{ t("transfer.approve") }}</el-button>
+                <el-button size="small" type="success" :disabled="row.to_factory_disabled" @click="decide(row.transfer, 'approve')">{{ t("transfer.approve") }}</el-button>
                 <el-button size="small" @click="decide(row.transfer, 'reject')">{{ t("transfer.reject") }}</el-button>
               </template>
               <el-button v-if="store.isFactory && row.transfer.from_factory === store.boundFactory" size="small"

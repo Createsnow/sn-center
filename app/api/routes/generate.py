@@ -1,10 +1,14 @@
-"""生成与分配：只有总部。"""
+"""生成与分配：只有总部。
+
+生成只能按整张 PI（/generate/pi-preview → /generate/pi）：不提供按单张订单生成，
+避免绕开「有订单的生产组织未建档时整张 PI 不能生成」「按单据编号顺序占用额度」。
+"""
 
 from fastapi import APIRouter, Query
 
 from app.api.deps import AdminDep
 from app.schemas.common import OptInt
-from app.schemas.sn import AllocateIn, GenerateIn, PiAllocateIn, PiGenerateIn, PiPreviewIn, PreviewIn, RevokeIn
+from app.schemas.sn import AllocateIn, PiAllocateIn, PiGenerateIn, PiPreviewIn, RevokeIn
 from app.services import generate
 
 router = APIRouter(tags=["generate"])
@@ -46,19 +50,6 @@ def gen_pi_generate(body: PiGenerateIn, cu: AdminDep) -> dict:
 @router.post("/generate/pi-allocate", summary="整张 PI 分配：各订单待分配号分到各自的生产组织，同一事务")
 def gen_pi_allocate(body: PiAllocateIn, cu: AdminDep) -> dict:
     return generate.allocate_pi(cu, body.pi_no)
-
-
-@router.post(
-    "/generate/preview",
-    summary="预演：只给起止号、数量与号段，不落库；返回预演令牌。PI 没有绑定规则且未选定过时须传 rule_id",
-)
-def gen_preview(body: PreviewIn, cu: AdminDep) -> dict:
-    return generate.preview(cu, body.bill_no, body.qty, body.rule_id)
-
-
-@router.post("/generate", summary="凭本次预演令牌生成；数量大时返回 RUNNING，轮询任务进度")
-def gen_generate(body: GenerateIn, cu: AdminDep) -> dict:
-    return generate.generate(cu, body.preview_token, body.bill_no, body.qty)
 
 
 @router.get("/generate/jobs/{id}")

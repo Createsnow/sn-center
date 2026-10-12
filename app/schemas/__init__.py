@@ -6,9 +6,7 @@ from app.schemas.sn import (
     AcquireIn,
     AllocateIn,
     CallbackIn,
-    GenerateIn,
     OpenAcquireIn,
-    PreviewIn,
     RangeIn,
 )
 from app.schemas.transfer import NoteIn, TransferIn
@@ -26,8 +24,6 @@ __all__ = [
     "RuleIn",
     "RuleUpdateIn",
     "RulePreviewIn",
-    "PreviewIn",
-    "GenerateIn",
     "AllocateIn",
     "AcquireIn",
     "OpenAcquireIn",

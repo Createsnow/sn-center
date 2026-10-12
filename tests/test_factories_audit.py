@@ -34,11 +34,12 @@ def _row(api, admin, code):
 
 def test_disabled_factory_blocks_generate_allocate_transfer_and_binding(api, admin, w, sql):
     pi = uid("PI")
-    b1, b2 = pi + "-MO1", pi + "-MO2"
+    # b2 单据编号在前：按 PI 生成时先占用 b2 的额度
+    b1, b2 = pi + "-MO2", pi + "-MO1"
     w.pi_rule(pi, "DS", 10, 5)
     w.order(b1, ORG, "C1", pi, ("A", 3))
     w.order(b2, ORG2, "C1", pi, ("A", 2))
-    w.generate(b2, 2)
+    w.generate_pi(pi, 2)
     ok(api.post(f"/api/factories/{FAC}/disable", m(), admin))
     assert _row(api, admin, FAC)["enabled"] is False
 

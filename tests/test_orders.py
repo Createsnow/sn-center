@@ -24,7 +24,8 @@ def test_empty_customer_hidden_and_cannot_generate(api, admin, w):
     bill = uid("MO")
     w.order(bill, "订单测试厂", "", uid("PI"), ("M1", 10))
     assert ok(api.get("/api/orders" + q(q=bill), admin))["total"] == 0
-    assert w.preview(bill, 1).code == "ORDER_NO_CUSTOMER"
+    # 客户编码为空的单据不计入 PI：按 PI 生成时这张 PI 没有可生成的订单
+    assert w.preview(bill, 1).code == "GEN_PI_QUOTA_EMPTY"
 
 
 def test_single_bill_sync_replaces_and_removes_released_order(api, admin, w):
@@ -36,7 +37,7 @@ def test_single_bill_sync_replaces_and_removes_released_order(api, admin, w):
     # 订单下达：金蝶里不再是计划 / 计划确认 → 从快照消失
     w.order(bill, "订单测试厂", "C1", pi, ("M1", 7, "4"))
     assert len(ok(api.get(f"/api/orders/{bill}/lines", admin)).body) == 0
-    assert w.preview(bill, 1).code == "ORDER_NOT_FOUND"
+    assert w.preview(bill, 1).code == "GEN_PI_QUOTA_EMPTY"
 
 
 def test_full_sync_failure_keeps_snapshot(api, admin, w):

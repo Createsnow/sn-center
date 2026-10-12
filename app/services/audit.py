@@ -257,7 +257,7 @@ def record_failure(u: CurrentUser, method: str, path: str, body: bytes | None, m
         if isinstance(m, dict):
             (
                 e.factory(_str(m, "factory_code"))
-                .pi(_str(m, "pi_no"))
+                .pi(_str(m, "pi_no") or _str(m, "pi"))
                 .bill(_str(m, "bill_no"))
                 .material(_str(m, "material_code"))
                 .request(_str(m, "request_no"))

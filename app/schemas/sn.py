@@ -1,16 +1,6 @@
 from app.schemas.common import In
 
 
-class PreviewIn(In):
-    bill_no: str | None = None
-    qty: int | None = None
-    rule_id: int | None = None
-
-
-class GenerateIn(PreviewIn):
-    preview_token: str | None = None
-
-
 class PiPreviewIn(In):
     pi_no: str | None = None
     qty: int | None = None

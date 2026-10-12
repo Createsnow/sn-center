@@ -99,6 +99,7 @@ E = {
 "TR_DUPLICATE": ("Target PI {pi} already has {count} identical full SNs (e.g. {sn}); transfer rejected", "PI đích {pi} đã có {count} SN trùng (ví dụ {sn}); từ chối toàn bộ"),
 "TR_NOT_FOUND": ("Transfer record not found", "Không tìm thấy phiếu chuyển"),
 "TR_NOT_PENDING": ("Transfer {transfer_no} was already processed", "Phiếu chuyển {transfer_no} đã được xử lý"),
+"TR_TARGET_DISABLED": ("Target factory {factory} is disabled; reject this request, or enable the factory on the Factories page first", "Nhà máy nhận {factory} đã ngừng dùng; hãy từ chối yêu cầu này, hoặc bật lại nhà máy ở trang Nhà máy trước"),
 "TR_WITHDRAW_FORBIDDEN": ("Only your factory's own requests can be withdrawn", "Chỉ rút được yêu cầu của nhà máy mình"),
 "TR_CONCURRENT": ("Some SNs just changed status; refresh and retry", "Một số SN vừa đổi trạng thái; hãy làm mới và thử lại"),
 "QUERY_PI_REQUIRED": ("A PI is required to view all factories of a PI", "Phải nhập PI để xem mọi nhà máy của PI"),

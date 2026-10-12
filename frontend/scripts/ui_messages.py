@@ -415,6 +415,8 @@ M = {
   "SNs that are to-acquire, to-print or printed can move; the source is limited to one PI. A factory request puts SNs into pending; HQ approval moves them to the target (to-acquire there); rejection or withdrawal restores them. Any duplicate full SN in the target PI rejects the whole transfer.",
   "SN chờ nhận, chờ in hoặc đã in có thể chuyển; nguồn giới hạn trong một PI. Nhà máy gửi yêu cầu thì SN thành đang xin chuyển; tổng bộ duyệt thì chuyển sang đích (chờ nhận); từ chối hoặc rút lại thì khôi phục. Trùng SN trong PI đích sẽ từ chối toàn bộ."),
 "transfer.applyTab": ("提交申请", "New request", "Gửi yêu cầu"),
+"transfer.targetDisabled": ("转入厂已停用", "Target disabled", "Nhà máy nhận đã ngừng"),
+"transfer.targetDisabledTip": ("转入工厂已停用，不能确认；请驳回，或先在「工厂」页启用", "The target factory is disabled; reject the request, or enable the factory first", "Nhà máy nhận đã ngừng; hãy từ chối, hoặc bật lại nhà máy trước"),
 "transfer.directTab": ("直接转移", "Direct transfer", "Chuyển trực tiếp"),
 "transfer.source": ("来源", "Source", "Nguồn"),
 "transfer.target": ("转入目标", "Target", "Đích"),

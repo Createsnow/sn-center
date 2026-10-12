@@ -98,6 +98,7 @@
   "TR_DUPLICATE": "PI đích {pi} đã có {count} SN trùng (ví dụ {sn}); từ chối toàn bộ",
   "TR_NOT_FOUND": "Không tìm thấy phiếu chuyển",
   "TR_NOT_PENDING": "Phiếu chuyển {transfer_no} đã được xử lý",
+  "TR_TARGET_DISABLED": "Nhà máy nhận {factory} đã ngừng dùng; hãy từ chối yêu cầu này, hoặc bật lại nhà máy ở trang Nhà máy trước",
   "TR_WITHDRAW_FORBIDDEN": "Chỉ rút được yêu cầu của nhà máy mình",
   "TR_CONCURRENT": "Một số SN vừa đổi trạng thái; hãy làm mới và thử lại",
   "QUERY_PI_REQUIRED": "Phải nhập PI để xem mọi nhà máy của PI",

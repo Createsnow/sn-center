@@ -4,8 +4,9 @@
 同一 PI 同一时刻只有一个生成任务（sn_gen_job.running_pi 唯一）；生成在一个事务内完成，
 失败整批回滚；遇到与本 PI 已有号（含转入号）相同的完整 SN 立即停止，不跳号。
 
-页面以 PI 为单位：按 PI 预演会给该 PI 的每张订单各记一份接续的预演；按 PI 生成把这些订单放进同一个事务依次生成
-（每张一个任务，同一个生成批次 gen_batch），任何一张失败整张 PI 回滚。有订单的生产组织未建档时整张 PI 不能生成。
+只能以 PI 为单位生成（不提供按单张订单生成）：按 PI 预演会给该 PI 的每张订单各记一份接续的预演；按 PI 生成把这些
+订单放进同一个事务依次生成（每张一个任务，同一个生成批次 gen_batch），任何一张失败整张 PI 回滚。
+有订单的生产组织未建档时整张 PI 不能生成。
 单次数量不超过 SN_GEN_MAX_PER_RUN；页面默认单次上限 SN_GEN_DEFAULT_LIMIT（可解除）。
 
 进度与取消按批次：进度 = 整批已写入枚数 / 总数；生成中可请求取消，生成线程看到后整批回滚，任务记为 CANCELED，
@@ -350,28 +351,6 @@ def _next_json(pi: str, spec: codec.Spec) -> dict:
 # ================================================================== 预演
 
 
-def _check_bill(bill_no: str | None, qty: int) -> tuple[orders.Bill, int]:
-    """生成前校验订单，返回订单与已生成数。"""
-    b = orders.bill(bill_no)
-    if util.blank(b.customer_code):
-        raise biz(ErrorCode.ORDER_NO_CUSTOMER, bill_no=b.bill_no)
-    if util.blank(b.pi):
-        raise biz(ErrorCode.ORDER_NO_PI, bill_no=b.bill_no)
-    if b.factory_code is None:
-        raise biz(ErrorCode.FACTORY_UNMAPPED, org=b.prd_org_name)
-    factories.must_be_enabled(b.factory_code)
-    if qty <= 0:
-        raise biz(ErrorCode.GEN_QTY_INVALID)
-    g = _bill_gen(b.bill_no)
-    generated = 0 if g is None else g["generated_qty"]
-    quota = max(0, b.total_qty - generated)
-    if quota == 0:
-        raise biz(ErrorCode.GEN_QUOTA_EMPTY, bill_no=b.bill_no)
-    if qty > quota:
-        raise biz(ErrorCode.GEN_QUOTA_EXCEEDED, qty=qty, quota=quota)
-    return b, generated
-
-
 def _check_max(qty: int) -> None:
     mx = settings.gen_max_per_run
     if qty > mx:
@@ -386,23 +365,6 @@ def _check_capacity(end: int, spec: codec.Spec) -> None:
 
 def segments_json(segs: list[sn_items.Segment]) -> str:
     return json.dumps([s.as_camel() for s in segs], ensure_ascii=False, separators=(",", ":"))
-
-
-def preview(cu: CurrentUser, bill_no: str | None, qty_in: int | None, rule_id: int | None = None) -> dict:
-    qty = 0 if qty_in is None else qty_in
-    b, generated = _check_bill(bill_no, qty)
-    _check_max(qty)
-    r = rules.for_generation(b.pi, b.customer_code, rule_id)
-    spec = rules.spec_of(r.version)
-    c = db.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s", b.pi)
-    base = 0 if c is None else c["last_seq_dec"]
-    ns = next_start(b.pi, base, spec)
-    start = ns.start
-    _check_capacity(start + qty - 1, spec)
-    out = _save_preview(cu, b, generated, qty, start, base, r, spec)
-    out["next"] = ns.as_json(spec)
-    out["rule"] = rules.rule_info(r)
-    return out
 
 
 def _save_preview(
@@ -514,21 +476,6 @@ def pi_preview(cu: CurrentUser, pi_in: str | None, qty_in: int | None, rule_id: 
 
 
 # ================================================================== 生成
-
-
-def generate(cu: CurrentUser, token: str | None, bill_no: str | None, qty: int | None) -> dict:
-    p = _usable_preview(cu, token, bill_no, qty)
-    _check_base(p, _last_seq(p["pi_no"]))
-    try:
-        job_id = _insert_job(cu, p, p["pi_no"], _new_batch())
-    except pymysql.err.IntegrityError as e:
-        _raise_job_conflict(e, p["pi_no"])
-    db.exec("UPDATE sn_gen_preview SET used_at = %s WHERE token = %s", util.now(), p["token"])
-    if p["qty"] <= settings.gen_sync_threshold:
-        _run_job(cu, job_id, p, True)
-    else:
-        executor.submit(_run_job, cu, job_id, p, False)
-    return job_json(db.one("SELECT * FROM sn_gen_job WHERE id = %s", job_id))
 
 
 def generate_pi(cu: CurrentUser, pi_in: str | None, items: list[dict] | None) -> dict:
@@ -654,10 +601,6 @@ def jobs(bill_no: str | None, pi: str | None, limit: int) -> list[dict]:
         args.append(util.trim(pi))
     sql += f" ORDER BY id DESC LIMIT {min(max(limit, 1), 200)}"
     return [job_json(j) for j in db.all(sql, *args)]
-
-
-def _run_job(cu: CurrentUser, job_id: int, p: dict, rethrow: bool) -> None:
-    _run_jobs(cu, [(job_id, p)], rethrow)
 
 
 def _run_jobs(cu: CurrentUser, work: list[tuple[int, dict]], rethrow: bool) -> None:

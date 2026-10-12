@@ -98,6 +98,7 @@
   "TR_DUPLICATE": "Target PI {pi} already has {count} identical full SNs (e.g. {sn}); transfer rejected",
   "TR_NOT_FOUND": "Transfer record not found",
   "TR_NOT_PENDING": "Transfer {transfer_no} was already processed",
+  "TR_TARGET_DISABLED": "Target factory {factory} is disabled; reject this request, or enable the factory on the Factories page first",
   "TR_WITHDRAW_FORBIDDEN": "Only your factory's own requests can be withdrawn",
   "TR_CONCURRENT": "Some SNs just changed status; refresh and retry",
   "QUERY_PI_REQUIRED": "A PI is required to view all factories of a PI",

@@ -170,10 +170,10 @@ def test_preview_of_picked_rule_goes_stale_when_pi_chose_another_meanwhile(api, 
     pi, bill1, bill2, cust = uid("PI"), uid("MO"), uid("MO"), uid("CU")
     w.order(bill1, ORG, cust, pi, ("A", 5))
     w.order(bill2, ORG, cust, pi, ("A", 5))
-    token = ok(w.preview(bill1, 1, rule_id=tpl_b)).text("token")
-    # 同 PI 另一张订单先以另一条规则生成：这张 PI 已选定 A，按 B 做的预演失效
-    w.generate(bill2, 1, rule_id=tpl_a)
-    r = api.post("/api/generate", m(preview_token=token, bill_no=bill1, qty=1), admin)
+    p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=1, rule_id=tpl_b), admin)).body["items"][0]
+    # 期间这张 PI 先以另一条规则生成：已选定 A，按 B 做的预演失效
+    w.generate_pi(pi, 1, rule_id=tpl_a)
+    r = w.gen(p["token"], p["bill_no"], 1)
     assert r.code in ("GEN_PREVIEW_CHANGED", "GEN_PREVIEW_STALE"), str(r)
 
 

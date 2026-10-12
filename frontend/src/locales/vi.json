@@ -433,6 +433,8 @@
     "title": "Chuyển nhà máy",
     "desc": "SN chờ nhận, chờ in hoặc đã in có thể chuyển; nguồn giới hạn trong một PI. Nhà máy gửi yêu cầu thì SN thành đang xin chuyển; tổng bộ duyệt thì chuyển sang đích (chờ nhận); từ chối hoặc rút lại thì khôi phục. Trùng SN trong PI đích sẽ từ chối toàn bộ.",
     "applyTab": "Gửi yêu cầu",
+    "targetDisabled": "Nhà máy nhận đã ngừng",
+    "targetDisabledTip": "Nhà máy nhận đã ngừng; hãy từ chối, hoặc bật lại nhà máy trước",
     "directTab": "Chuyển trực tiếp",
     "source": "Nguồn",
     "target": "Đích",

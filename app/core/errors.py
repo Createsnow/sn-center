@@ -122,6 +122,7 @@ class ErrorCode(Enum):
     TR_DUPLICATE = (409, "转入 PI {pi} 下已存在 {count} 个相同完整 SN（如 {sn}），拒绝整次转移")
     TR_NOT_FOUND = (404, "转厂记录不存在")
     TR_NOT_PENDING = (409, "转厂申请 {transfer_no} 已处理，不能重复操作")
+    TR_TARGET_DISABLED = (409, "转入工厂 {factory} 已停用，不能确认：请驳回该申请，或先在「工厂」页启用")
     TR_WITHDRAW_FORBIDDEN = (403, "只能撤回本厂提交的申请")
     TR_CONCURRENT = (409, "部分号的状态刚刚变化，请刷新后重试")
     # ---------- 查询 / 审计 ----------

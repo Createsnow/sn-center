@@ -421,15 +421,40 @@ class World:
             )
         )
 
+    def pi_of(self, bill: str) -> str:
+        """订单所属的 PI；订单不在快照时原样返回单号（按 PI 预演会报无额度）。"""
+        r = self.api.get("/api/generate/context" + q(bill_no=bill), self.admin)
+        return r.body["bill"]["pi"] if r.status == 200 else bill
+
     def preview(self, bill: str, qty: int, rule_id: int | None = None) -> Res:
-        return self.api.post("/api/generate/preview", m(bill_no=bill, qty=qty, rule_id=rule_id), self.admin)
+        """按该订单的 PI 预演（生成只能按整张 PI）；本次数量须只落在这一张订单上，结果并入该订单的预演令牌。"""
+        r = self.api.post("/api/generate/pi-preview", m(pi_no=self.pi_of(bill), qty=qty, rule_id=rule_id), self.admin)
+        if r.status != 200:
+            return r
+        items = r.body["items"]
+        assert [x["bill_no"] for x in items] == [bill], f"按 PI 预演占用了其他订单：{items}"
+        return Res(r.status, {**r.body, **items[0]}, r.raw)
+
+    def gen(self, token: str | None, bill: str, qty: int) -> Res:
+        """凭一张订单的预演令牌按 PI 生成，成功时返回该订单的任务。"""
+        item = m(preview_token=token, bill_no=bill, qty=qty)
+        r = self.api.post("/api/generate/pi", m(pi_no=self.pi_of(bill), items=[item]), self.admin)
+        return Res(r.status, r.body["jobs"][0], r.raw) if r.status == 200 else r
 
     def generate(self, bill: str, qty: int, rule_id: int | None = None) -> dict:
         """预演 + 生成（同步完成），返回任务。"""
         p = ok(self.preview(bill, qty, rule_id))
-        j = ok(self.api.post("/api/generate", m(preview_token=p.text("token"), bill_no=bill, qty=qty), self.admin))
+        j = ok(self.gen(p.text("token"), bill, qty))
         assert j.text("status") == "SUCCESS", str(j)
         return j.body
+
+    def generate_pi(self, pi: str, qty: int, rule_id: int | None = None) -> dict:
+        """按整张 PI 预演 + 生成（同步完成），返回 {pi_no, batch, qty, jobs}。"""
+        p = ok(self.api.post("/api/generate/pi-preview", m(pi_no=pi, qty=qty, rule_id=rule_id), self.admin))
+        items = [m(preview_token=x["token"], bill_no=x["bill_no"], qty=x["qty"]) for x in p.body["items"]]
+        r = ok(self.api.post("/api/generate/pi", m(pi_no=pi, items=items), self.admin)).body
+        assert {j["status"] for j in r["jobs"]} == {"SUCCESS"}, r
+        return r
 
     def allocate(self, bill: str) -> dict:
         return ok(self.api.post("/api/generate/allocate", m(bill_no=bill), self.admin)).body

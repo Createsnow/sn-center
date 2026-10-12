@@ -433,6 +433,8 @@
     "title": "Factory transfer",
     "desc": "SNs that are to-acquire, to-print or printed can move; the source is limited to one PI. A factory request puts SNs into pending; HQ approval moves them to the target (to-acquire there); rejection or withdrawal restores them. Any duplicate full SN in the target PI rejects the whole transfer.",
     "applyTab": "New request",
+    "targetDisabled": "Target disabled",
+    "targetDisabledTip": "The target factory is disabled; reject the request, or enable the factory first",
     "directTab": "Direct transfer",
     "source": "Source",
     "target": "Target",

@@ -35,6 +35,9 @@ from app.services import demo_seed, generate, order_sync_schedule, partitions, u
 
 log = structlog.get_logger()
 
+#: 系统内部错误时失败痕迹的原因（不把异常细节写进痕迹）
+INTERNAL_FAIL = "系统内部错误"
+
 
 def _dist() -> Path:
     return settings.root / "frontend" / "dist"
@@ -173,24 +176,31 @@ def create_app() -> FastAPI:
     )
     app.add_middleware(RequestIdMiddleware)
 
+    async def audit_failure(request: Request, message: str) -> None:
+        """已登录账户的 /api 写请求被拒绝或失败（业务拒绝、参数不合法、冲突、系统错误）：另记一条 FAIL 痕迹。"""
+        user = getattr(request.state, "user", None)
+        if not (
+            isinstance(user, CurrentUser) and request.method in WRITE_METHODS and request.url.path.startswith("/api/")
+        ):
+            return
+        try:
+            await run_sync(
+                audit_svc.record_failure,
+                user,
+                request.method,
+                request.url.path,
+                getattr(request.state, "body", None),
+                message,
+            )
+        except Exception:  # noqa: BLE001
+            # 留痕失败不能盖掉原来的错误响应
+            log.exception("failure_audit_failed", path=request.url.path)
+
     @app.exception_handler(AppError)
     async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
         # 业务错误：{code, message, params}；已登录账户的 /api 写请求被拒绝时另记一条 FAIL 痕迹
         if isinstance(exc, BizError):
-            user = getattr(request.state, "user", None)
-            if (
-                isinstance(user, CurrentUser)
-                and request.method in WRITE_METHODS
-                and request.url.path.startswith("/api/")
-            ):
-                await run_sync(
-                    audit_svc.record_failure,
-                    user,
-                    request.method,
-                    request.url.path,
-                    getattr(request.state, "body", None),
-                    exc.message,
-                )
+            await audit_failure(request, exc.message)
             return JSONResponse(_body(exc.code, exc.message, _json_safe(exc.params)), status_code=exc.status_code)
         return JSONResponse(_body(exc.code, exc.message), status_code=exc.status_code)
 
@@ -201,6 +211,7 @@ def create_app() -> FastAPI:
         loc = errs[0].get("loc", ("body",)) if errs else ("body",)
         detail = "body" if loc and loc[0] == "body" else _snake_to_camel(str(loc[-1]))
         b = biz(ErrorCode.VALIDATION, detail=detail)
+        await audit_failure(request, b.message)
         return JSONResponse(_body(b.code, b.message, b.params), status_code=422)
 
     @app.exception_handler(StarletteHTTPException)
@@ -217,6 +228,7 @@ def create_app() -> FastAPI:
             # 超长 / 格式不符是请求本身的问题，重试也不会成功
             log.warning("db_data_error", path=request.url.path, err=str(exc))
             b = biz(ErrorCode.VALIDATION, detail="body")
+            await audit_failure(request, b.message)
             return JSONResponse(_body(b.code, b.message, b.params), status_code=422)
         if is_lock_conflict(exc) or is_integrity(exc):
             # 死锁 / 锁等待超时 / 约束冲突 / 连接池满：让调用方重试；池满单独记，便于看出 DB_POOL_SIZE 不够
@@ -225,13 +237,16 @@ def create_app() -> FastAPI:
             else:
                 log.warning("db_conflict", path=request.url.path, err=str(exc))
             b = biz(ErrorCode.CONFLICT_RETRY)
+            await audit_failure(request, b.message)
             return JSONResponse(_body(b.code, b.message), status_code=409)
         log.error("db_error", path=request.url.path, exc_info=exc)
+        await audit_failure(request, INTERNAL_FAIL)
         return JSONResponse(_body("INTERNAL", "Internal Server Error"), status_code=500)
 
     @app.exception_handler(Exception)
     async def internal_handler(request: Request, exc: Exception) -> JSONResponse:
         log.error("unhandled_error", path=request.url.path, exc_info=exc)
+        await audit_failure(request, INTERNAL_FAIL)
         return JSONResponse(_body("INTERNAL", "Internal Server Error"), status_code=500)
 
     app.include_router(health.router)

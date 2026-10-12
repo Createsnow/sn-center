@@ -429,6 +429,49 @@ def test_failed_write_is_audited(api, w, ctx, sql):
     )
 
 
+def test_failed_open_acquire_audit_keeps_pi(api, w, ctx, sql):
+    # 对外接口的字段叫 pi（页面叫 pi_no）：失败痕迹同样记下 PI
+    pi = uid("PI")
+    assert api.post("/api/open/acquire", m(pi=pi, request_no=req()), ctx["op_a"]).code == "ACQ_PI_NOT_IN_ERP"
+    row = sql.one("SELECT source, result FROM sn_audit WHERE action = 'SN_ACQUIRE' AND pi_no = %s", pi)
+    assert (row["source"], row["result"]) == ("API", "FAIL")
+
+
+def test_invalid_write_request_is_audited(api, w, ctx, sql):
+    # 参数不合法（422）同样留失败痕迹
+    pi = uid("PI")
+    r = api.post("/api/acquire/take", m(pi_no=pi, request_no=["not", "a", "string"]), ctx["op_a"])
+    assert r.status == 422
+    row = sql.one("SELECT result, error_msg FROM sn_audit WHERE action = 'SN_ACQUIRE' AND pi_no = %s", pi)
+    assert row["result"] == "FAIL" and "参数不合法" in row["error_msg"]
+
+
+def test_approve_refused_when_target_factory_disabled_after_apply(api, admin, w, ctx, sql):
+    fc = "F-ACQ-C"
+    w.factory(fc, "领取测试丙厂")
+    pi = ready(w, "TD", 2, 1)
+    t = ok(
+        api.post(
+            "/api/transfers",
+            m(pi_no=pi, scope="PI", to_factory=fc, to_pi=pi, target_source="MANUAL", reason="改厂"),
+            ctx["op_a"],
+        )
+    ).body
+    ok(api.post(f"/api/factories/{fc}/disable", m(), admin))
+    try:
+        rows = ok(api.get("/api/transfers" + q(pi=pi), admin))["items"]
+        assert rows[0]["to_factory_disabled"] is True
+        assert api.post(f"/api/transfers/{t['id']}/approve", m(), admin).code == "TR_TARGET_DISABLED"
+        # 号保持申请中、仍在原厂；只能驳回
+        assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'APPLYING'", pi) == 3
+        assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND factory_code = %s", pi, fc) == 0
+        ok(api.post(f"/api/transfers/{t['id']}/reject", m(note="转入厂已停用"), admin))
+        assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'TO_ACQUIRE'", pi) == 3
+        assert ok(api.get("/api/transfers" + q(pi=pi), admin))["items"][0]["to_factory_disabled"] is False
+    finally:
+        ok(api.post(f"/api/factories/{fc}/enable", m(), admin))
+
+
 def test_xlsx_exports_open_with_headers_and_rows(api, admin, w, ctx):
     import io
 
