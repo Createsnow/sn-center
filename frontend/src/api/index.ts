@@ -56,7 +56,9 @@ export const api = {
   generatePi: (data: Q) => post("/generate/pi", data),
   genJob: (id: number) => get(`/generate/jobs/${id}`),
   genJobs: (params?: Q) => get("/generate/jobs", params),
-  revokeJob: (id: number, reason: string) => post(`/generate/jobs/${id}/revoke`, { reason }),
+  genBatch: (batch: string) => get(`/generate/batches/${encodeURIComponent(batch)}`),
+  cancelGen: (batch: string) => post(`/generate/batches/${encodeURIComponent(batch)}/cancel`, {}),
+  revokeBatch: (batch: string, reason: string) => post(`/generate/batches/${encodeURIComponent(batch)}/revoke`, { reason }),
   allocate: (data: Q) => post("/generate/allocate", data),
   allocatePi: (pi_no: string) => post("/generate/pi-allocate", { pi_no }),
   // 领取与打印

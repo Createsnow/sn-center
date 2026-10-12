@@ -149,11 +149,13 @@ def test_every_error_code_translated(lang):
 
 
 def test_migration_flyway_checksum():
-    """演示阶段只有一个 V1__init.sql；校验和按 Flyway 算法固定，改了建表脚本须同步更新这里。"""
+    """校验和按 Flyway 算法固定：已发布的脚本不能再改（改了已升级的库会校验失败），新增脚本须同步登记这里。"""
     ours = {m.script: m for m in migrations()}
-    assert list(ours) == ["V1__init.sql"]
+    assert list(ours) == ["V1__init.sql", "V2__gen_batch_cancel.sql"]
     assert ours["V1__init.sql"].checksum() == -66636356
     assert len(ours["V1__init.sql"].statements()) == 21
+    assert ours["V2__gen_batch_cancel.sql"].checksum() == 1400424156
+    assert len(ours["V2__gen_batch_cancel.sql"].statements()) == 2
 
 
 # ---------------------------------------------------------------------- 定时任务

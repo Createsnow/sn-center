@@ -37,8 +37,9 @@ class RevokeIn(In):
 
 
 class AllocateIn(In):
+    """整单分配（不再接受数量；旧调用方传 qty 会被忽略）。"""
+
     bill_no: str | None = None
-    qty: int | None = None
     factory_code: str | None = None
 
 

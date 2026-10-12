@@ -73,16 +73,37 @@ def gen_jobs(cu: AdminDep, bill_no: str | None = None, pi: str | None = None, li
 
 @router.post(
     "/generate/jobs/{id}/revoke",
-    summary="撤销生成（点错了重来）：只能撤销该 PI 流水排在最后、号全部仍待分配的一次成功生成；"
-    "号与查重护栏删除，PI 最大号与订单额度退回，原因必填",
+    summary="撤销该任务所属的整次生成（同 /generate/batches/{batch}/revoke）",
 )
 def gen_revoke(id: int, body: RevokeIn, cu: AdminDep) -> dict:
     return generate.revoke(cu, id, body.reason)
 
 
-@router.post("/generate/allocate", summary="确认分配：整单分到订单的生产组织，待分配 → 待领取")
+@router.get("/generate/batches/{batch}", summary="一次生成的整体进度：已写入枚数 / 总数、已写到的号、状态")
+def gen_batch(batch: str, cu: AdminDep) -> dict:
+    return generate.batch_progress(batch)
+
+
+@router.post(
+    "/generate/batches/{batch}/cancel",
+    summary="取消正在进行的生成：整批回滚，已写入的号全部删除，任务记为 CANCELED；取消留痕",
+)
+def gen_cancel(batch: str, cu: AdminDep) -> dict:
+    return generate.cancel(cu, batch)
+
+
+@router.post(
+    "/generate/batches/{batch}/revoke",
+    summary="撤销一次生成（整次）：只能撤销该 PI 流水排在最后、号全部仍待分配的一次成功生成；"
+    "号与查重护栏删除，PI 最大号与各订单额度退回，原因必填",
+)
+def gen_revoke_batch(batch: str, body: RevokeIn, cu: AdminDep) -> dict:
+    return generate.revoke_batch(cu, batch, body.reason)
+
+
+@router.post("/generate/allocate", summary="确认分配：整单分到订单的生产组织，待分配 → 待领取（不能只分一部分）")
 def gen_allocate(body: AllocateIn, cu: AdminDep) -> dict:
-    return generate.allocate(cu, body.bill_no, body.qty, body.factory_code)
+    return generate.allocate(cu, body.bill_no, body.factory_code)
 
 
 @router.get("/generate/allocations")

@@ -275,6 +275,7 @@ def app_client():
         "SN_SECRET": "test-secret",
         "SN_DEMO_SEED": "false",
         "SN_GEN_SYNC_THRESHOLD": "3000",
+        "SN_GEN_MAX_PER_RUN": "20000",
         "K3_SERVER_URL": K3.url,
         "K3_ACCT_ID": "acct",
         "K3_APP_ID": "app",

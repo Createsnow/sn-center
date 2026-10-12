@@ -11,11 +11,11 @@
       <div class="toolbar">
         <el-radio-group v-model="view">
           <el-radio-button v-for="v in VIEWS" :key="v" :value="v">
-            {{ t(`generate.view${v}`) }}<span v-if="v !== 'TO_GEN'" class="cnt num">{{ rowsOf(v).length }}</span>
+            {{ t(`generate.view${v}`) }}<span v-if="!capped(v)" class="cnt num">{{ rowsOf(v).length }}</span>
           </el-radio-button>
         </el-radio-group>
         <el-input v-model="kw" class="kw" :placeholder="t('generate.search')" clearable prefix-icon="Search" @keyup.enter="reload" @clear="reload" />
-        <span class="muted summary">{{ t("generate.summary", { q: totals.quota, p: totals.pending }) }}</span>
+        <span class="muted summary">{{ t("generate.summary", { q: fmt(totals.quota), p: fmt(totals.pending) }) }}</span>
       </div>
 
       <div class="fill-body">
@@ -23,43 +23,46 @@
         <el-table-column label="PI" min-width="170">
           <template #default="{ row }">
             <b>{{ row.pi }}</b>
-            <el-tag v-if="row.unmapped" size="small" type="danger" class="ml">{{ t("generate.unmappedTag") }}</el-tag>
+            <el-tag v-if="row.unmapped && row.quota" size="small" type="danger" class="ml">{{ t("generate.unmappedTag") }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="customer_number" :label="t('common.customer')" min-width="100" />
-        <el-table-column :label="t('generate.bills')" align="right" width="70">
+        <el-table-column :label="t('generate.bills')" align="right" width="64">
           <template #default="{ row }"><span class="num">{{ row.bills }}</span></template>
         </el-table-column>
-        <el-table-column :label="t('orders.org')" min-width="150" show-overflow-tooltip>
+        <el-table-column :label="t('orders.org')" min-width="140" show-overflow-tooltip>
           <template #default="{ row }">{{ row.orgs.map((o: any) => o.name).join("、") }}</template>
         </el-table-column>
-        <el-table-column :label="t('generate.progress')" min-width="150">
-          <template #default="{ row }"><ProgressBar :row="row" /></template>
+        <el-table-column :label="t('common.status')" min-width="210">
+          <template #default="{ row }"><RowState :row="row" :prog="progressOf(row)" /></template>
         </el-table-column>
-        <el-table-column :label="t('orders.quota')" align="right" width="90">
-          <template #default="{ row }"><span class="num" :class="{ zero: !row.quota }">{{ row.quota }}</span></template>
+        <el-table-column :label="t('generate.orderTotal')" align="right" width="90">
+          <template #default="{ row }"><span class="num">{{ fmt(row.total_qty) }}</span></template>
         </el-table-column>
-        <el-table-column :label="t('generate.pendingAlloc')" align="right" width="90">
-          <template #default="{ row }"><span class="num" :class="{ zero: !row.pending_alloc }">{{ row.pending_alloc }}</span></template>
+        <el-table-column :label="t('generate.generated')" align="right" width="90">
+          <template #default="{ row }"><span class="num" :class="{ zero: !row.generated_qty }">{{ progressOf(row) ? "—" : fmt(row.generated_qty) }}</span></template>
         </el-table-column>
-        <el-table-column :label="t('common.actions')" width="150" align="right" class-name="acts">
+        <el-table-column :label="t('generate.allocated')" align="right" width="90">
+          <template #default="{ row }"><span class="num" :class="{ zero: !row.allocated_qty }">{{ fmt(row.allocated_qty) }}</span></template>
+        </el-table-column>
+        <el-table-column :label="t('common.actions')" width="110" align="right" class-name="acts">
           <template #default="{ row }">
-            <el-button v-if="showAlloc(row)" size="small" type="success" :loading="busy === `alloc:${row.pi}`" :disabled="!!busy && busy !== `alloc:${row.pi}`"
-              @click.stop="allocatePi(row.pi, row.pending_alloc)">{{ t("generate.allocN", { n: row.pending_alloc }) }}</el-button>
-            <el-button v-else-if="row.quota && row.generated_qty > 0" size="small" type="primary" @click.stop="openDetail(row.pi)">{{ t("generate.genMore") }}</el-button>
-            <el-button v-else-if="row.quota && canQuickGen(row)" size="small" type="primary" :loading="busy === `gen:${row.pi}`" :disabled="!!busy && busy !== `gen:${row.pi}`"
-              @click.stop="quickGenerate(row)">{{ t("generate.genN", { n: defaultQty(row.quota) }) }}</el-button>
-            <el-button v-else-if="row.quota" size="small" @click.stop="openDetail(row.pi)">{{ t("generate.genFirst") }}</el-button>
+            <el-button v-if="actionOf(row) === 'gen'" size="small" type="primary" :disabled="!!busy" @click.stop="openGen(row.pi)">{{ t("generate.btnGen") }}</el-button>
+            <el-button v-else-if="actionOf(row) === 'pick'" size="small" type="primary" plain @click.stop="openDetail(row.pi)">{{ t("generate.btnPick") }}</el-button>
+            <el-button v-else-if="actionOf(row) === 'alloc'" size="small" type="success" :loading="busy === `alloc:${row.pi}`" :disabled="!!busy && busy !== `alloc:${row.pi}`"
+              @click.stop="allocatePi(row.pi, row.pending_alloc)">{{ t("generate.btnAlloc") }}</el-button>
+            <el-button v-else size="small" @click.stop="openDetail(row.pi)">{{ t("generate.btnView") }}</el-button>
           </template>
         </el-table-column>
       </el-table>
       </div>
       <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="shown.length" :page-size="pageSize"
         :current-page="page" :page-sizes="[20, 50, 100]" @current-change="(p: number) => (page = p)" @size-change="onSize" />
-      <p v-if="view === 'TO_GEN' && allPis.length > genCap" class="muted">{{ t("generate.recentOnly", { n: GEN_PAGES }) }}</p>
+      <p v-if="capped(view) && allPis.length > listCap" class="muted">{{ t("generate.recentOnly", { n: GEN_PAGES }) }}</p>
       <p v-else-if="pis.length >= LIST_LIMIT || allPis.length >= LIST_LIMIT" class="muted">{{ t("generate.more", { n: LIST_LIMIT }) }}</p>
     </div>
 
+    <!-- 详情：按状态只显示一个主操作（生成中 / 生成 / 分配） -->
     <el-drawer :model-value="!!detailPi" size="780px" @close="closeDetail">
       <template #header>
         <div v-if="ctx" class="dh">
@@ -70,15 +73,14 @@
       <div v-if="ctx" v-loading="ctxLoading" class="drawer">
         <el-alert v-for="msg in issueTexts" :key="msg" type="error" show-icon :closable="false" :title="msg" />
 
-        <!-- PI 流水与规则：按 PI 记录，各订单共用 -->
         <dl class="kv">
           <dt>{{ t("generate.rule") }}</dt>
           <dd>
             <template v-if="ctx.rule">
               {{ ctx.rule.rule_code }} · {{ ctx.rule.rule_name }} · v{{ ctx.rule.version }}
               <el-tag size="small" :type="ctx.rule.source === 'CHOSEN' ? 'warning' : 'success'" class="ml">{{ t(`generate.ruleSrc${ctx.rule.source}`) }}</el-tag>
-              <el-button v-if="ctx.rule.source === 'CHOSEN'" link type="primary" size="small" class="ml" :loading="ruleBusy" @click="unbindRule">{{ t("generate.ruleUnbind") }}</el-button>
-              <div v-else class="muted hint">{{ t("generate.ruleBoundHint") }}</div>
+              <el-button v-if="ctx.rule.source === 'CHOSEN' && !detailRun" link type="primary" size="small" class="ml" :loading="ruleBusy" @click="unbindRule">{{ t("generate.ruleUnbind") }}</el-button>
+              <div v-else-if="ctx.rule.source !== 'CHOSEN'" class="muted hint">{{ t("generate.ruleBoundHint") }}</div>
             </template>
             <template v-else-if="ctx.rule_options.length">
               <el-select v-model="ruleId" filterable size="small" :placeholder="t('generate.rulePick')" class="rule-picker">
@@ -97,83 +99,78 @@
             <el-tooltip v-if="ctx.next?.adjusted" :content="t('generate.startAdjusted', { sn: ctx.next.by_sn, start: ctx.next.start_sn })">
               <el-tag size="small" type="warning" class="ml">{{ t("generate.adjustedTag") }}</el-tag>
             </el-tooltip>
-            <span class="muted ml">
-              {{ t("generate.lastSeq") }} <span class="num">{{ ctx.counter.last_seq_dec }}</span>
-            </span>
+            <span class="muted ml">{{ t("generate.lastSeq") }} <span class="num">{{ ctx.counter.last_seq_dec }}</span></span>
           </dd>
         </dl>
 
-        <div class="totals">
-          <ProgressBar :row="ctx" big />
-          <div class="legend num">
-            <span class="a">{{ t("generate.allocated") }} {{ ctx.allocated_qty }}</span>
-            <span class="p">{{ t("generate.pendingAlloc") }} {{ ctx.pending_alloc }}</span>
-            <span>{{ t("orders.quota") }} {{ ctx.quota }}</span>
-            <span class="sp" />
-            <span>{{ t("generate.total", { n: ctx.total_qty }) }}</span>
-          </div>
+        <div class="stats" :class="{ dim: !!detailRun }">
+          <div class="stat"><span>{{ t("generate.orderTotal") }}</span><b class="num">{{ fmt(ctx.total_qty) }}</b></div>
+          <div class="stat"><span>{{ t("generate.generated") }}</span><b class="num">{{ detailRun ? "—" : fmt(ctx.generated_qty) }}</b></div>
+          <div class="stat"><span>{{ t("generate.allocated") }}</span><b class="num">{{ fmt(ctx.allocated_qty) }}</b></div>
         </div>
 
-        <!-- 最近一次生成点错了：在分配之前可撤销重来 -->
-        <div v-if="lastRevocable && !running" class="revoke-bar">
-          <span class="small">
-            {{ t("generate.lastGen", { bill: lastRevocable.bill_no, qty: lastRevocable.qty }) }}
-            <span class="sn-mono">{{ lastRevocable.start_sn }} ~ {{ lastRevocable.end_sn }}</span>
-          </span>
-          <el-button size="small" type="danger" plain :disabled="!!busy" :loading="busy === `revoke:${lastRevocable.id}`" @click="revokeJob(lastRevocable)">
-            {{ t("generate.revokeLast") }}
-          </el-button>
-        </div>
-
-        <!-- 分配：整张 PI，各订单分到各自的生产组织 -->
-        <div v-if="ctx.pending_alloc" class="card on">
-          <h4><el-tag size="small" type="warning">{{ t("generate.current") }}</el-tag>{{ t("generate.allocTitle", { n: ctx.pending_alloc }) }}</h4>
-          <div class="result num">
-            <div v-for="g in allocGroups" :key="g.factory">
-              {{ g.name }} <b>{{ g.qty }}</b>
-              <span class="muted"> · {{ g.bills.map((b: any) => `${b.bill_no} ${b.pending_alloc}`).join(" · ") }}</span>
-            </div>
+        <!-- 生成中：整张 PI 一个实时进度，可取消 -->
+        <div v-if="detailRun" class="card on">
+          <div class="run-head">
+            <h4>{{ detailRun.cancel_at ? t("generate.stCANCELING") : t("generate.runTitle") }}</h4>
+            <span class="muted small">{{ t("generate.runMeta", { time: detailRun.created_at, who: detailRun.created_by }) }}</span>
           </div>
+          <div class="run-num">
+            <b class="pct num">{{ pctText(detailRun) }}%</b>
+            <span class="num">{{ t("generate.runCount", { done: fmt(detailRun.done_qty), qty: fmt(detailRun.qty) }) }}</span>
+          </div>
+          <el-progress :percentage="pctOf(detailRun)" :stroke-width="14" :show-text="false" :status="detailRun.cancel_at ? 'warning' : undefined" striped striped-flow />
+          <div class="run-grid">
+            <div><span class="muted small">{{ t("generate.writtenTo") }}</span><span class="sn-mono">{{ detailRun.current_sn || "—" }}</span></div>
+            <div><span class="muted small">{{ t("generate.speed") }}</span><span>{{ speedOf(detailRun) ? t("generate.speedVal", { n: fmt(speedOf(detailRun)) }) : "—" }}</span></div>
+            <div><span class="muted small">{{ t("generate.eta") }}</span><span>{{ etaOf(detailRun) != null ? t("generate.etaVal", { n: etaOf(detailRun) }) : "—" }}</span></div>
+          </div>
+          <div class="result muted">{{ t("generate.runNote") }}</div>
           <div class="row">
-            <el-button type="success" :loading="busy === `alloc:${ctx.pi_no}`" :disabled="!!busy || !!running" @click="allocatePi(ctx.pi_no, ctx.pending_alloc)">
-              {{ t("generate.allocConfirmBtn", { n: ctx.pending_alloc }) }}
-            </el-button>
-            <span class="muted small">{{ t("generate.allocNote") }}</span>
+            <el-button type="danger" plain :disabled="!!detailRun.cancel_at" :loading="busy === `cancel:${detailRun.batch}`" @click="cancelGen(detailRun)">{{ t("generate.cancelGen") }}</el-button>
           </div>
         </div>
 
-        <!-- 生成：数量按单据号顺序占用各订单额度，输入停顿后自动预演 -->
-        <div v-if="ctx.quota || running" class="card" :class="{ on: !ctx.pending_alloc }">
-          <h4>
-            <el-tag size="small" :type="ctx.pending_alloc ? 'info' : 'warning'">{{ ctx.pending_alloc ? t("generate.also") : t("generate.current") }}</el-tag>
-            {{ t("generate.genTitle", { n: ctx.quota }) }}
-          </h4>
-          <template v-if="!running">
-            <div class="row">
-              <span class="muted small">{{ t("generate.qty") }}</span>
-              <el-input-number v-model="qty" :min="1" :max="Math.max(1, ctx.quota)" :step="1000" controls-position="right" />
-            </div>
-            <div v-if="previewing" class="result muted">{{ t("generate.previewing") }}</div>
-            <div v-else-if="previewError" class="result err">{{ previewError }}</div>
-            <div v-else-if="preview" class="result">
-              <el-alert v-if="preview.next?.adjusted" type="warning" :closable="false" show-icon
-                :title="t('generate.startAdjusted', { sn: preview.next.by_sn, start: preview.start_sn })" />
-              <span class="sn-mono">{{ preview.start_sn }} ~ {{ preview.end_sn }}</span>
-              <span class="muted num">
-                {{ t("generate.byBill") }}{{ preview.items.map((it: any) => `${it.bill_no} ${it.qty}`).join(" · ") }}
-              </span>
+        <template v-else>
+          <!-- 生成：数量在弹窗里填 -->
+          <div v-if="ctx.quota && canGenerate" class="card" :class="{ on: !ctx.pending_alloc }">
+            <h4>{{ t("generate.genCardTitle") }}<span class="muted light">{{ t("generate.quotaN", { n: fmt(ctx.quota) }) }}</span></h4>
+            <div class="result">
+              <span v-if="nextSn">{{ t("generate.genCardHint", { sn: nextSn }) }}</span>
+              <span v-if="ctx.quota > ctx.limits.default" class="muted">{{ t("generate.genCardLimit", { n: fmt(ctx.limits.default) }) }}</span>
             </div>
             <div class="row">
-              <el-button type="primary" :disabled="!preview || !!busy" :loading="busy === `gen:${ctx.pi_no}`" @click="runGenerate(preview)">
-                {{ t("generate.generate") }}
-              </el-button>
+              <el-button type="primary" :disabled="!!busy || (!ctx.rule && ruleId == null)" @click="openGen(ctx.pi_no)">{{ t("generate.btnGenOpen") }}</el-button>
+              <span v-if="!ctx.rule && ruleId == null" class="muted small">{{ t("generate.rulePickRequired") }}</span>
             </div>
-          </template>
-          <div v-else>
-            <div class="muted small">{{ t("generate.runningPi", { n: running.bills, qty: running.qty }) }}</div>
-            <el-progress :percentage="running.pct" :stroke-width="14" striped striped-flow />
           </div>
-        </div>
+
+          <!-- 分配：整张 PI 一次分完 -->
+          <div v-if="ctx.pending_alloc" class="card ok on">
+            <h4>{{ t("generate.allocCardTitle") }}</h4>
+            <div class="result num">
+              <div v-for="g in allocGroups" :key="g.factory" class="alloc-row">
+                <span><b>{{ g.name }}</b> <span class="muted">{{ g.bills.map((b: any) => b.bill_no).join(" · ") }}</span></span>
+                <b>{{ fmt(g.qty) }}</b>
+              </div>
+            </div>
+            <div class="row">
+              <el-button type="success" :loading="busy === `alloc:${ctx.pi_no}`" :disabled="!!busy" @click="allocatePi(ctx.pi_no, ctx.pending_alloc)">{{ t("generate.allocate") }}</el-button>
+              <span class="muted small">{{ t("generate.allocNote") }}</span>
+            </div>
+          </div>
+
+          <!-- 最近一次生成点错了：在分配之前可整次撤销 -->
+          <div v-if="ctx.revocable_batch" class="revoke-bar">
+            <span class="small">
+              {{ t("generate.lastGen", { time: ctx.revocable_batch.created_at, who: ctx.revocable_batch.created_by, n: ctx.revocable_batch.bills.length, qty: fmt(ctx.revocable_batch.qty) }) }}
+              <span class="sn-mono">{{ ctx.revocable_batch.start_sn }} ~ {{ ctx.revocable_batch.end_sn }}</span>
+            </span>
+            <el-button size="small" type="danger" plain :disabled="!!busy" :loading="busy === `revoke:${ctx.revocable_batch.batch}`" @click="revokeBatch(ctx.revocable_batch)">
+              {{ t("generate.revokeLast") }}
+            </el-button>
+          </div>
+        </template>
 
         <el-table :data="ctx.bills" size="small" row-key="bill_no" class="bills">
           <el-table-column type="expand">
@@ -199,15 +196,9 @@
               <el-tag v-if="!row.factory_code" size="small" type="danger" class="ml">{{ t("generate.unmappedTag") }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column :label="t('orders.totalQty')" align="right" width="70"><template #default="{ row }"><span class="num">{{ row.total_qty }}</span></template></el-table-column>
-          <el-table-column :label="t('generate.allocated')" align="right" width="70"><template #default="{ row }"><span class="num">{{ row.allocated_qty }}</span></template></el-table-column>
-          <el-table-column :label="t('generate.pendingAlloc')" align="right" width="70"><template #default="{ row }"><span class="num">{{ row.pending_alloc }}</span></template></el-table-column>
-          <el-table-column :label="t('orders.quota')" align="right" width="70"><template #default="{ row }"><span class="num">{{ row.quota }}</span></template></el-table-column>
-          <el-table-column width="96" align="right">
-            <template #default="{ row }">
-              <el-button v-if="row.pending_alloc && allocGroups.reduce((n, g) => n + g.bills.length, 0) > 1" link type="primary" :disabled="!!busy || !!running" @click="allocateBill(row)">{{ t("generate.allocOne") }}</el-button>
-            </template>
-          </el-table-column>
+          <el-table-column :label="t('orders.totalQty')" align="right" width="90"><template #default="{ row }"><span class="num">{{ fmt(row.total_qty) }}</span></template></el-table-column>
+          <el-table-column :label="t('generate.generated')" align="right" width="90"><template #default="{ row }"><span class="num">{{ detailRun ? "—" : fmt(row.generated_qty) }}</span></template></el-table-column>
+          <el-table-column :label="t('generate.allocated')" align="right" width="90"><template #default="{ row }"><span class="num">{{ fmt(row.allocated_qty) }}</span></template></el-table-column>
         </el-table>
 
         <el-collapse>
@@ -222,18 +213,14 @@
                   <el-table-column :label="t('common.qty')" align="right" width="70"><template #default="{ row }"><span class="num">{{ row.qty }}</span></template></el-table-column>
                   <el-table-column :label="t('common.status')" width="90">
                     <template #default="{ row }">
-                      <el-tooltip v-if="row.status === 'FAILED' && row.error_msg" :content="row.error_msg"><el-tag size="small" type="danger">{{ t("generate.jobFAILED") }}</el-tag></el-tooltip>
+                      <el-tooltip v-if="(row.status === 'FAILED' || row.status === 'CANCELED') && row.error_msg" :content="row.error_msg">
+                        <el-tag size="small" :type="row.status === 'FAILED' ? 'danger' : 'info'">{{ t(`generate.job${row.status}`) }}</el-tag>
+                      </el-tooltip>
                       <el-tag v-else size="small" :type="row.status === 'SUCCESS' ? 'success' : row.status === 'REVOKED' ? 'warning' : 'info'">{{ t(`generate.job${row.status}`) }}</el-tag>
                     </template>
                   </el-table-column>
                   <el-table-column prop="created_by" :label="t('common.operator')" width="80" />
                   <el-table-column prop="created_at" :label="t('common.time')" width="150" />
-                  <el-table-column width="64" align="right">
-                    <template #default="{ row }">
-                      <el-button v-if="row.revocable" link type="danger" size="small" :disabled="!!busy || !!running" :loading="busy === `revoke:${row.id}`"
-                        @click="revokeJob(row)">{{ t("generate.revoke") }}</el-button>
-                    </template>
-                  </el-table-column>
                 </el-table>
                 <div class="muted hint">{{ t("generate.revokeHint") }}</div>
               </el-tab-pane>
@@ -254,49 +241,141 @@
         </el-collapse>
       </div>
     </el-drawer>
+
+    <!-- 生成弹窗：数量默认填满额度；额度超过默认上限时先按上限，可解除限制；超过上限自动纠正 -->
+    <el-dialog v-model="gen.open" :title="gen.ctx ? t('generate.dlgTitle', { pi: gen.ctx.pi_no }) : ''" width="520px" :close-on-click-modal="false" @closed="resetGen">
+      <div v-if="gen.ctx" class="gen-dlg">
+        <div class="field">
+          <label class="muted" for="gen-qty">{{ t("generate.qtyLabel", { quota: fmt(gen.ctx.quota) }) }}</label>
+          <div class="row">
+            <el-input-number id="gen-qty" v-model="gen.qty" :min="1" :step="1000" :precision="0" controls-position="right" class="qty" @change="onQty" />
+            <span class="muted">{{ t("generate.capOf", { n: fmt(genCap) }) }}</span>
+          </div>
+          <div v-if="gen.corrected" class="warn small">{{ gen.corrected }}</div>
+          <el-alert v-if="limited && !gen.unlocked" type="warning" :closable="false" show-icon :title="t('generate.limitHint', { n: fmt(gen.ctx.limits.default) })" />
+          <el-checkbox v-if="limited" v-model="gen.unlocked" @change="onUnlock">{{ t("generate.unlock", { n: fmt(Math.min(gen.ctx.quota, gen.ctx.limits.max)) }) }}</el-checkbox>
+          <div v-if="gen.unlocked && gen.ctx.quota > gen.ctx.limits.max" class="muted small">{{ t("generate.maxHint", { n: fmt(gen.ctx.limits.max) }) }}</div>
+        </div>
+
+        <div v-if="gen.previewing" class="result muted">{{ t("generate.previewing") }}</div>
+        <div v-else-if="gen.error" class="result err">{{ gen.error }}</div>
+        <dl v-else-if="gen.preview" class="result kv">
+          <dt>{{ t("generate.rule") }}</dt>
+          <dd>{{ gen.preview.rule.rule_code }} · {{ gen.preview.rule.rule_name }} · v{{ gen.preview.rule.version }}</dd>
+          <dt>{{ t("generate.range") }}</dt>
+          <dd>
+            <span class="sn-mono">{{ gen.preview.start_sn }} ~ {{ gen.preview.end_sn }}</span>
+            <el-tooltip v-if="gen.preview.next?.adjusted" :content="t('generate.startAdjusted', { sn: gen.preview.next.by_sn, start: gen.preview.start_sn })">
+              <el-tag size="small" type="warning" class="ml">{{ t("generate.adjustedTag") }}</el-tag>
+            </el-tooltip>
+          </dd>
+          <dt>{{ t("generate.byBills") }}</dt>
+          <dd class="bill-list">
+            <span v-for="it in gen.preview.items" :key="it.bill_no">{{ it.bill_no }}　{{ nameOf(it.factory_code) }}　<span class="num">{{ fmt(it.qty) }}</span></span>
+          </dd>
+          <dt>{{ t("generate.after") }}</dt>
+          <dd>{{ gen.ctx.quota - gen.preview.qty > 0 ? t("generate.afterLeft", { n: fmt(gen.ctx.quota - gen.preview.qty) }) : t("generate.afterDone") }}</dd>
+        </dl>
+      </div>
+      <template #footer>
+        <el-button @click="gen.open = false">{{ t("common.cancel") }}</el-button>
+        <el-button type="primary" :disabled="!gen.preview || gen.previewing || !!busy" :loading="busy === 'gen'" @click="runGenerate">
+          {{ t("generate.confirmBtn", { n: fmt(gen.qty || 0) }) }}
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, defineComponent, h, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
-import { ElMessage, ElMessageBox } from "element-plus";
+import { ElMessage, ElMessageBox, ElTag } from "element-plus";
 import { api } from "@/api";
-import { ApiError } from "@/api/http";
-import { DEFAULT_PAGE_LIMIT } from "@/constants";
-import { suggestQty } from "@/snList.js";
+import { clampQty, genQtyCap } from "@/snList.js";
 import { useFactories } from "@/composables/useFactories";
-import type { GenJob } from "@/types/api";
+import type { GenBatch } from "@/types/api";
 import PageHead from "@/components/PageHead.vue";
 
-// 待生成页签展示全部 PI（含已生成完的），待分配页签只看还有待分配的号
-type View = "TO_GEN" | "TO_ALLOC";
-const VIEWS: View[] = ["TO_GEN", "TO_ALLOC"];
+type View = "ALL" | "TO_GEN" | "RUNNING" | "TO_ALLOC" | "DONE";
+const VIEWS: View[] = ["ALL", "TO_GEN", "RUNNING", "TO_ALLOC", "DONE"];
 const LIST_LIMIT = 500;
-/** 待生成页签只列最近下单的几页 PI，更早的用搜索找。 */
+/** 「全部」「已完成」只列最近下单的几页 PI，更早的用搜索找。 */
 const GEN_PAGES = 3;
-
-/** 进度条：已分配 / 已生成待分配 / 未生成，占订单总数（已生成超过总数时以已生成为准）。 */
-const ProgressBar = defineComponent({
-  props: { row: { type: Object, required: true }, big: Boolean },
-  setup(props) {
-    return () => {
-      const r: any = props.row;
-      const whole = Math.max(r.total_qty, r.generated_qty, 1);
-      const w = (n: number) => `${Math.min(100, (n * 100) / whole)}%`;
-      return h("div", { class: ["bar", { big: props.big }] }, [
-        h("i", { class: "a", style: { width: w(r.allocated_qty) } }),
-        h("i", { class: "p", style: { width: w(r.pending_alloc) } }),
-      ]);
-    };
-  },
-});
+type TagType = "info" | "primary" | "success" | "warning" | "danger";
 
 const { t } = useI18n();
 const route = useRoute();
 const { nameOf } = useFactories();
-const view = ref<View>("TO_GEN");
+const fmt = (n: number | null | undefined) => (n == null ? "—" : Number(n).toLocaleString());
+
+/** 跟踪中的生成：PI → 最新整体进度，加首个采样点（算速度与预计剩余，不受服务器时钟影响）。 */
+type Tracked = GenBatch & { t0: number; d0: number; t1: number };
+const tracked = reactive<Record<string, Tracked>>({});
+
+const pctOf = (b: { qty: number; done_qty: number }) => (b.qty ? Math.min(100, (b.done_qty * 100) / b.qty) : 0);
+const pctText = (b: { qty: number; done_qty: number }) => pctOf(b).toFixed(1).replace(/\.0$/, "");
+function speedOf(b: Tracked) {
+  const s = (b.t1 - b.t0) / 1000;
+  return s >= 1 && b.done_qty > b.d0 ? Math.round((b.done_qty - b.d0) / s) : 0;
+}
+function etaOf(b: Tracked) {
+  const v = speedOf(b);
+  return v ? Math.max(0, Math.ceil((b.qty - b.done_qty) / v)) : null;
+}
+
+/** 正在生成的 PI 的进度：本页跟踪中的优先，否则用列表接口带回的。 */
+const progressOf = (row: any): any => tracked[row.pi] ?? row.running ?? null;
+
+/** 一行的状态：生成中 / 不能生成 / 需先选规则 / 还可生成 / 待生成 / 待分配 / 已完成。 */
+function stateOf(row: any): string {
+  if (progressOf(row)) return "RUNNING";
+  if (row.quota > 0) {
+    if (row.unmapped) return "BLOCKED";
+    if (row.generated_qty > 0) return "MORE";
+    return row.rule_fixed ? "TO_GEN" : "PICK";
+  }
+  if (row.pending_alloc > 0) return "TO_ALLOC";
+  return "DONE";
+}
+const STATE_TYPE: Record<string, TagType> = {
+  TO_GEN: "primary", PICK: "info", BLOCKED: "danger", MORE: "primary", TO_ALLOC: "warning", DONE: "success",
+};
+
+/** 行上按钮（下一步）：生成 / 选规则 / 分配 / 查看。 */
+function actionOf(row: any): "gen" | "pick" | "alloc" | "view" {
+  const st = stateOf(row);
+  if (st === "RUNNING" || st === "BLOCKED") return "view";
+  if (view.value === "TO_ALLOC" && row.pending_alloc > 0) return "alloc";
+  if (st === "TO_GEN" || st === "MORE") return "gen";
+  if (st === "PICK") return "pick";
+  return st === "TO_ALLOC" ? "alloc" : "view";
+}
+
+const RowState = defineComponent({
+  props: { row: { type: Object, required: true }, prog: { type: Object, default: null } },
+  setup(props) {
+    return () => {
+      const r: any = props.row;
+      const p: any = props.prog;
+      if (p) {
+        const label = p.cancel_at ? t("generate.stCANCELING") : t("generate.stRUNNING", { pct: pctText(p) });
+        return h("div", { class: "run-cell" }, [
+          h("div", { class: "run-cell__top" }, [h("span", { class: "run-cell__label" }, label), h("span", { class: "muted num" }, `${fmt(p.done_qty)} / ${fmt(p.qty)}`)]),
+          h("div", { class: "mini-bar" }, [h("i", { style: { width: `${pctOf(p)}%` }, class: { warn: !!p.cancel_at } })]),
+        ]);
+      }
+      const st = stateOf(r);
+      const kids = [h(ElTag, { size: "small", type: STATE_TYPE[st], disableTransitions: true }, () => t(`generate.st${st}`))];
+      if (st === "MORE") kids.push(h("span", { class: "row-sub num" }, fmt(r.quota)));
+      if ((st === "MORE" || st === "TO_GEN") && r.pending_alloc > 0) kids.push(h("span", { class: "row-sub" }, t("generate.alsoPending", { n: fmt(r.pending_alloc) })));
+      return h("span", { class: "row-state" }, kids);
+    };
+  },
+});
+
+const view = ref<View>("ALL");
 const page = ref(1);
 const pageSize = ref(20);
 const kw = ref("");
@@ -311,32 +390,23 @@ const ctx = ref<any>(null);
 const ctxLoading = ref(false);
 const ruleId = ref<number | null>(null);
 const ruleBusy = ref(false);
-const qty = ref(1);
-const preview = ref<any>(null);
-const previewing = ref(false);
-const previewError = ref("");
-/** 整张 PI 正在生成（含后台任务）：bills 张订单共 qty 枚。 */
-const running = ref<{ pi: string; bills: number; qty: number; pct: number } | null>(null);
-let previewTimer: number | undefined;
-let previewSeq = 0;
 let alive = true;
 
-const defaultQty = (quota: number) => suggestQty(quota, DEFAULT_PAGE_LIMIT);
-// 已生成过的 PI 规则已确定，行上可直接生成；首次生成要在抽屉里选规则
-const canQuickGen = (row: any) => row.start_locked && !row.unmapped;
-// 「分配 N 枚」在待分配页签显示；待生成页签里没有可生成量时也给出分配
-const showAlloc = (row: any) => row.pending_alloc > 0 && (view.value === "TO_ALLOC" || !row.quota);
+const ruleLabel = (o: any) => `${o.rule_code} · ${o.rule_name}`;
+const nextSn = computed(() => ctx.value?.next?.start_sn ?? ctx.value?.rule_options.find((o: any) => o.rule_id === ruleId.value)?.sample_sn ?? null);
+const detailRun = computed<Tracked | null>(() => (detailPi.value ? tracked[detailPi.value] ?? null : null));
+const canGenerate = computed(() => !!ctx.value && !ctx.value.issues.some((c: string) => c === "FACTORY_UNMAPPED" || c === "RULE_MISSING"));
 const totals = computed(() => pis.value.reduce((s, r) => ({ quota: s.quota + r.quota, pending: s.pending + r.pending_alloc }), { quota: 0, pending: 0 }));
+const listCap = computed(() => GEN_PAGES * pageSize.value);
+const capped = (v: View) => v === "ALL" || v === "DONE";
 const shown = computed(() => rowsOf(view.value));
 const paged = computed(() => shown.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value));
-const ruleLabel = (o: any) => `${o.rule_code} · ${o.rule_name}`;
-const lastRevocable = computed<GenJob | undefined>(() => ctx.value?.jobs.find((j: GenJob) => j.revocable));
-const nextSn = computed(() => ctx.value?.next?.start_sn ?? ctx.value?.rule_options.find((o: any) => o.rule_id === ruleId.value)?.sample_sn ?? null);
-
-const genCap = computed(() => GEN_PAGES * pageSize.value);
 
 function rowsOf(v: View) {
-  if (v === "TO_GEN") return allPis.value.slice(0, genCap.value);
+  if (v === "ALL") return allPis.value.slice(0, listCap.value);
+  if (v === "DONE") return allPis.value.filter((r) => stateOf(r) === "DONE" && r.generated_qty > 0).slice(0, listCap.value);
+  if (v === "RUNNING") return pis.value.filter((r) => !!progressOf(r));
+  if (v === "TO_GEN") return pis.value.filter((r) => r.quota > 0 && !progressOf(r));
   return pis.value.filter((r) => r.pending_alloc > 0);
 }
 
@@ -372,20 +442,21 @@ async function reload() {
     const q = kw.value.trim();
     const [p, a] = await Promise.all([
       api.orderPis({ q, pending: 1, limit: LIST_LIMIT }),
-      view.value === "TO_GEN" ? api.orderPis({ q, limit: LIST_LIMIT }) : Promise.resolve(allPis.value),
+      capped(view.value) ? api.orderPis({ q, limit: LIST_LIMIT }) : Promise.resolve(allPis.value),
     ]);
     pis.value = p;
     allPis.value = a;
+    // 打开页面前就在生成的 PI（别人发起的、或刷新过页面）：接着跟踪进度
+    for (const r of [...p, ...a]) if (r.running && !tracked[r.pi]) track(r.pi, r.running.batch);
   } finally {
     loading.value = false;
   }
 }
 watch(view, (v) => {
   page.value = 1;
-  if (v === "TO_GEN") reload();
+  if (capped(v)) reload();
 });
 watch(kw, () => (page.value = 1));
-// 生成 / 分配后列表变短时，页码退回最后一页
 watch(() => shown.value.length, (n) => {
   page.value = Math.min(page.value, Math.max(1, Math.ceil(n / pageSize.value)));
 });
@@ -401,9 +472,21 @@ async function openDetail(pi: string) {
 }
 
 function closeDetail() {
-  if (running.value) return;
   detailPi.value = "";
   ctx.value = null;
+}
+
+async function loadContext(params: { pi?: string; bill_no?: string }) {
+  ctxLoading.value = true;
+  try {
+    const c = await api.genPiContext(params);
+    ctx.value = c;
+    detailPi.value = c.pi_no;
+    if (!c.rule_options.some((o: any) => o.rule_id === ruleId.value)) ruleId.value = c.rule_options[0]?.rule_id ?? null;
+    if (c.running_batch && !tracked[c.pi_no]) track(c.pi_no, c.running_batch.batch);
+  } finally {
+    ctxLoading.value = false;
+  }
 }
 
 async function bindRule() {
@@ -413,7 +496,7 @@ async function bindRule() {
   try {
     await api.bindPiRule(c.pi_no, ruleId.value);
     ElMessage.success(t("generate.ruleAssigned"));
-    await loadContext({ pi: c.pi_no });
+    await refresh(c.pi_no);
   } finally {
     ruleBusy.value = false;
   }
@@ -431,116 +514,162 @@ async function unbindRule() {
   try {
     await api.unbindPiRule(c.pi_no);
     ElMessage.success(t("generate.ruleUnbound"));
-    await loadContext({ pi: c.pi_no });
+    await refresh(c.pi_no);
   } finally {
     ruleBusy.value = false;
   }
 }
 
-async function loadContext(params: { pi?: string; bill_no?: string }) {
-  ctxLoading.value = true;
-  try {
-    const c = await api.genPiContext(params);
-    ctx.value = c;
-    detailPi.value = c.pi_no;
-    if (!c.rule_options.some((o: any) => o.rule_id === ruleId.value)) {
-      ruleId.value = c.rule_options[0]?.rule_id ?? null;
-    }
-    qty.value = Math.max(1, defaultQty(c.quota));
-    schedulePreview();
-    // 打开时这张 PI 正在后台生成（如刷新过页面）：接着显示进度
-    const busyJobs = c.jobs.filter((j: GenJob) => j.status === "RUNNING");
-    if (busyJobs.length && !running.value) settle(c.pi_no, busyJobs);
-  } finally {
-    ctxLoading.value = false;
+// ------------------------------------------------------------------ 生成弹窗
+
+const gen = reactive<{
+  open: boolean;
+  ctx: any;
+  ruleId: number | null;
+  qty: number | undefined;
+  unlocked: boolean;
+  corrected: string;
+  preview: any;
+  previewing: boolean;
+  error: string;
+}>({ open: false, ctx: null, ruleId: null, qty: undefined, unlocked: false, corrected: "", preview: null, previewing: false, error: "" });
+const genCap = computed(() => (gen.ctx ? genQtyCap(gen.ctx.quota, gen.ctx.limits, gen.unlocked) : 0));
+const limited = computed(() => !!gen.ctx && gen.ctx.quota > gen.ctx.limits.default);
+let previewTimer: number | undefined;
+let previewSeq = 0;
+
+/** 打开生成弹窗；规则还没确定时先打开详情选规则。 */
+async function openGen(pi: string) {
+  const c = ctx.value?.pi_no === pi ? ctx.value : await api.genPiContext({ pi });
+  const picked = ctx.value?.pi_no === pi ? ruleId.value : null;
+  if (!c.rule && picked == null) {
+    await openDetail(pi);
+    return;
   }
+  gen.ctx = c;
+  gen.ruleId = c.rule ? null : picked;
+  gen.unlocked = false;
+  gen.corrected = "";
+  gen.qty = genQtyCap(c.quota, c.limits, false);
+  gen.open = true;
+  schedulePreview();
 }
 
-// 数量、所选规则停顿后自动预演；预演结果过时就丢弃
+function resetGen() {
+  window.clearTimeout(previewTimer);
+  previewSeq++;
+  Object.assign(gen, { ctx: null, preview: null, previewing: false, error: "", corrected: "" });
+}
+
+/** 数量改动：超过上限自动改为上限并提示。 */
+function onQty(v: number | undefined) {
+  const r = clampQty(v, genCap.value);
+  gen.corrected = r.corrected ? t("generate.qtyCorrected", { n: fmt(Math.floor(Number(v))), cap: fmt(r.qty) }) : "";
+  gen.qty = r.qty;
+  schedulePreview();
+}
+
+function onUnlock() {
+  gen.corrected = "";
+  if ((gen.qty ?? 0) > genCap.value) gen.qty = genCap.value;
+  schedulePreview();
+}
+
+// 数量停顿后自动计算号段（后台预演，不写号）；结果过时就丢弃
 function schedulePreview() {
   window.clearTimeout(previewTimer);
   previewSeq++;
-  previewing.value = false;
-  preview.value = null;
-  previewError.value = "";
-  const c = ctx.value;
-  if (!c || !c.quota || running.value || c.issues.includes("RULE_MISSING")) return;
-  if (!c.rule && ruleId.value == null) {
-    previewError.value = t("generate.rulePickRequired");
-    return;
-  }
+  gen.preview = null;
+  gen.error = "";
+  gen.previewing = true;
   previewTimer = window.setTimeout(doPreview, 400);
 }
-watch([qty, ruleId], schedulePreview);
 
 async function doPreview() {
-  const c = ctx.value;
   const seq = ++previewSeq;
-  previewing.value = true;
   try {
-    const p = await api.genPiPreview({ pi_no: c.pi_no, qty: qty.value, rule_id: c.rule ? null : ruleId.value }, true);
-    if (seq === previewSeq) preview.value = p;
+    const p = await api.genPiPreview({ pi_no: gen.ctx.pi_no, qty: gen.qty, rule_id: gen.ruleId }, true);
+    if (seq === previewSeq) gen.preview = p;
   } catch (e: any) {
-    if (seq === previewSeq) previewError.value = e.message;
+    if (seq === previewSeq) gen.error = e.message;
   } finally {
-    if (seq === previewSeq) previewing.value = false;
+    if (seq === previewSeq) gen.previewing = false;
   }
 }
 
-/** 行上直接生成：已生成过的 PI 规则已定，预演后确认即可；预演失败（如需选规则）转到抽屉。 */
-async function quickGenerate(row: any) {
-  busy.value = `gen:${row.pi}`;
-  let p: any;
-  try {
-    p = await api.genPiPreview({ pi_no: row.pi, qty: defaultQty(row.quota) }, true);
-  } catch (e: any) {
-    busy.value = "";
-    if (e instanceof ApiError && e.code === "RULE_CHOICE_REQUIRED") return openDetail(row.pi);
-    ElMessage.error(e.message);
-    return;
-  }
-  busy.value = "";
-  await runGenerate(p);
-}
-
-/** 凭按 PI 预演的各订单令牌一次生成：后端在一个事务里依次生成各订单，任何一张失败整张 PI 回滚。 */
-async function runGenerate(p: any) {
-  await ElMessageBox.confirm(
-    t("generate.confirm", { qty: p.qty, start: p.start_sn, end: p.end_sn, n: p.items.length }),
-    t("generate.generate"),
-    { type: "warning" },
-  );
-  busy.value = `gen:${p.pi_no}`;
+/** 凭预演令牌一次生成整张 PI：后台在一个事务里依次生成各订单，失败或取消整批回滚。 */
+async function runGenerate() {
+  const p = gen.preview;
+  if (!p) return;
+  busy.value = "gen";
   try {
     const items = p.items.map((it: any) => ({ preview_token: it.token, bill_no: it.bill_no, qty: it.qty }));
     const r = await api.generatePi({ pi_no: p.pi_no, items });
-    await settle(p.pi_no, r.jobs);
+    gen.open = false;
+    if (r.jobs.some((j: any) => j.status === "RUNNING")) track(p.pi_no, r.batch);
+    else ElMessage.success(t("generate.done", { qty: fmt(r.qty) }));
+    await refresh(p.pi_no);
   } catch {
-    // 错误已由请求层提示；预演可能已失效，刷新后重新预演
+    // 错误已由请求层提示；预演可能已失效，重新计算号段
+    if (gen.open) schedulePreview();
     await refresh(p.pi_no).catch(() => undefined);
   } finally {
     busy.value = "";
   }
 }
 
-/** 等整张 PI 的任务结束（大批量在后台执行，轮询进度），再提示结果并刷新。 */
-async function settle(pi: string, jobs: GenJob[]) {
-  const qty = jobs.reduce((s, j) => s + j.qty, 0);
-  let js = jobs;
-  running.value = { pi, bills: js.length, qty, pct: 0 };
+// ------------------------------------------------------------------ 进度 / 取消
+
+/** 轮询一次生成的整体进度；结束时提示结果并刷新。 */
+async function track(pi: string, batch: string) {
+  if (tracked[pi]) return;
+  let b: GenBatch;
   try {
-    while (alive && js.some((j) => j.status === "RUNNING")) {
-      await new Promise((r) => window.setTimeout(r, 1000));
-      js = await Promise.all(js.map((j) => api.genJob(j.id)));
-      if (running.value) running.value.pct = qty ? Math.min(100, Math.round((js.reduce((s, j) => s + j.done_qty, 0) * 100) / qty)) : 0;
-    }
-  } finally {
-    running.value = null;
+    b = await api.genBatch(batch);
+  } catch {
+    return;
   }
-  const failed = js.find((j) => j.status === "FAILED");
-  if (failed) ElMessage.error({ message: t("generate.failed", { msg: failed.error_msg || "" }), duration: 8000, showClose: true });
-  else if (js.length) ElMessage.success(t("generate.done", { qty }));
+  const now = Date.now();
+  tracked[pi] = { ...b, t0: now, d0: b.done_qty, t1: now };
+  try {
+    while (alive && b.status === "RUNNING") {
+      await new Promise((r) => window.setTimeout(r, 1000));
+      b = await api.genBatch(batch);
+      const cur = tracked[pi];
+      tracked[pi] = { ...b, t0: cur?.t0 ?? now, d0: cur?.d0 ?? 0, t1: Date.now() };
+    }
+  } catch {
+    // 网络中断：下次刷新列表时会重新接上
+  } finally {
+    delete tracked[pi];
+    // 列表行上带回的进度已过时：等下面刷新列表拿最新状态
+    for (const r of [...pis.value, ...allPis.value]) if (r.pi === pi) r.running = null;
+  }
+  if (!alive) return;
+  if (b.status === "SUCCESS") ElMessage.success(t("generate.done", { qty: fmt(b.qty) }));
+  else if (b.status === "CANCELED") ElMessage.warning({ message: t("generate.canceled"), duration: 6000, showClose: true });
+  else if (b.status === "FAILED") ElMessage.error({ message: t("generate.failed", { msg: b.error_msg || "" }), duration: 8000, showClose: true });
   await refresh(pi);
+}
+
+/** 取消正在进行的生成：整批回滚，已写入的号全部删除；取消留痕。 */
+async function cancelGen(b: Tracked) {
+  try {
+    await ElMessageBox.confirm(t("generate.cancelConfirm"), t("generate.cancelGen"), { type: "warning" });
+  } catch {
+    return;
+  }
+  busy.value = `cancel:${b.batch}`;
+  try {
+    const r = await api.cancelGen(b.batch);
+    const cur = tracked[b.pi_no];
+    if (cur) tracked[b.pi_no] = { ...cur, ...r };
+    ElMessage.info(t("generate.cancelRequested"));
+  } catch {
+    // 已结束等错误已由请求层提示；进度轮询会带回最终结果
+  } finally {
+    busy.value = "";
+  }
 }
 
 async function refresh(pi: string) {
@@ -548,47 +677,34 @@ async function refresh(pi: string) {
 }
 
 async function allocatePi(pi: string, n: number) {
-  await ElMessageBox.confirm(t("generate.allocConfirm", { qty: n, pi }), t("generate.allocate"), { type: "warning" });
+  await ElMessageBox.confirm(t("generate.allocConfirm", { qty: fmt(n), pi }), t("generate.allocate"), { type: "warning" });
   busy.value = `alloc:${pi}`;
   try {
     const r = await api.allocatePi(pi);
-    ElMessage.success(t("generate.allocDone", { qty: r.qty, n: r.items.length }));
+    ElMessage.success(t("generate.allocDone", { qty: fmt(r.qty), n: r.items.length }));
     await refresh(pi);
   } finally {
     busy.value = "";
   }
 }
 
-/** 撤销一次生成（点错了重来）：只对 PI 流水排在最后、号全部仍待分配的任务开放，原因必填。 */
-async function revokeJob(j: GenJob) {
+/** 整次撤销最近一次生成（点错了重来）：只对 PI 流水排在最后、号全部仍待分配的那次开放，原因必填。 */
+async function revokeBatch(rb: any) {
   let reason: string;
   try {
     const { value } = await ElMessageBox.prompt(
-      t("generate.revokeConfirm", { qty: j.qty, start: j.start_sn, end: j.end_sn, bill: j.bill_no }),
-      t("generate.revoke"),
+      t("generate.revokeConfirm", { qty: fmt(rb.qty), start: rb.start_sn, end: rb.end_sn, n: rb.bills.length }),
+      t("generate.revokeLast"),
       { type: "warning", inputPlaceholder: t("generate.revokeReason"), inputValidator: (v: string) => !!v?.trim() || t("generate.revokeReason") },
     );
     reason = value.trim();
   } catch {
     return;
   }
-  busy.value = `revoke:${j.id}`;
+  busy.value = `revoke:${rb.batch}`;
   try {
-    await api.revokeJob(j.id, reason);
-    ElMessage.success(t("generate.revoked", { qty: j.qty }));
-    await refresh(j.pi_no);
-  } finally {
-    busy.value = "";
-  }
-}
-
-async function allocateBill(b: any) {
-  const factory = b.factory_name || b.factory_code;
-  await ElMessageBox.confirm(t("generate.allocOneConfirm", { qty: b.pending_alloc, bill: b.bill_no, factory }), t("generate.allocOne"), { type: "warning" });
-  busy.value = `alloc:${b.bill_no}`;
-  try {
-    const r = await api.allocate({ bill_no: b.bill_no, factory_code: b.factory_code });
-    ElMessage.success(t("generate.allocOneDone", { qty: r.qty, start: r.start_sn, end: r.end_sn }));
+    await api.revokeBatch(rb.batch, reason);
+    ElMessage.success(t("generate.revoked", { qty: fmt(rb.qty) }));
     await refresh(ctx.value.pi_no);
   } finally {
     busy.value = "";
@@ -614,12 +730,11 @@ onUnmounted(() => {
 .snap { font-size: 12px; }
 .cnt { margin-left: 6px; font-size: 12px; opacity: 0.75; }
 .pis :deep(.el-table__row) { cursor: pointer; }
-/* 行上按钮等宽，「首次生成」「继续生成」「生成 N 枚」右侧对齐、宽度一致 */
-.pis :deep(.acts .el-button) { min-width: 88px; }
+.pis :deep(.acts .el-button) { min-width: 76px; }
 .zero { color: var(--app-muted); }
 .ml { margin-left: 6px; }
 .small { font-size: 12px; }
-.sp { flex: 1; }
+.light { font-weight: 400; margin-left: 8px; font-size: 13px; }
 .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .dh { display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--app-text); }
 .drawer { display: flex; flex-direction: column; gap: 14px; }
@@ -629,22 +744,37 @@ onUnmounted(() => {
 .rule-picker { width: 100%; max-width: 420px; }
 .hint { margin-top: 4px; font-size: 12px; }
 .opt { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
-.totals { display: flex; flex-direction: column; gap: 6px; }
-.legend { display: flex; gap: 14px; font-size: 12px; color: var(--app-muted); flex-wrap: wrap; }
-.legend span::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 5px; background: var(--el-fill-color-dark); }
-.legend .sp::before, .legend span:last-child::before { display: none; }
-.legend .a::before { background: var(--el-color-success); }
-.legend .p::before { background: var(--el-color-warning); }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.stats.dim { opacity: 0.6; }
+.stat { border: 1px solid var(--el-border-color-lighter); border-radius: 6px; padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; }
+.stat span { color: var(--app-muted); font-size: 12px; }
+.stat b { font-size: 20px; }
 .card { border: 1px solid var(--el-border-color); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
 .card.on { border-color: var(--el-color-primary); }
-.card h4 { margin: 0; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+.card.ok.on { border-color: var(--el-color-success); }
+.card h4 { margin: 0; font-size: 14px; display: flex; align-items: baseline; gap: 8px; }
 .result { background: var(--el-fill-color-light); border-radius: 6px; padding: 8px 10px; font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
+.result.kv { display: grid; }
 .result.err { color: var(--el-color-danger); }
+.alloc-row { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.run-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.run-num { display: flex; align-items: baseline; gap: 10px; }
+.run-num .pct { font-size: 28px; color: var(--el-color-primary); }
+.run-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.run-grid > div { display: flex; flex-direction: column; gap: 2px; }
 .revoke-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 8px 12px; border: 1px dashed var(--el-color-danger-light-5); border-radius: 6px; background: var(--el-color-danger-light-9); }
 .lines { margin: 0 12px 0 48px; width: auto; }
-:deep(.bar) { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--el-fill-color-dark); min-width: 100px; }
-:deep(.bar.big) { height: 10px; }
-:deep(.bar i) { display: block; }
-:deep(.bar .a) { background: var(--el-color-success); }
-:deep(.bar .p) { background: var(--el-color-warning); }
+.gen-dlg { display: flex; flex-direction: column; gap: 14px; }
+.field { display: flex; flex-direction: column; gap: 8px; }
+.qty { width: 180px; }
+.warn { color: var(--el-color-warning-dark-2); }
+.bill-list { display: flex; flex-direction: column; gap: 2px; }
+:deep(.row-state) { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+:deep(.row-sub) { color: var(--app-muted); font-size: 12px; }
+:deep(.run-cell) { display: flex; flex-direction: column; gap: 4px; }
+:deep(.run-cell__top) { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; }
+:deep(.run-cell__label) { color: var(--el-color-primary); font-weight: 500; }
+:deep(.mini-bar) { height: 6px; border-radius: 3px; overflow: hidden; background: var(--el-fill-color-dark); }
+:deep(.mini-bar i) { display: block; height: 100%; background: var(--el-color-primary); }
+:deep(.mini-bar i.warn) { background: var(--el-color-warning); }
 </style>

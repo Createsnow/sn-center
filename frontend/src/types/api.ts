@@ -89,17 +89,41 @@ export interface GenJob {
   id: number;
   bill_no: string;
   pi_no: string;
+  /** 生成批次：同一次生成（整张 PI 的各订单）共用 */
+  gen_batch: string;
   factory_code: string;
   qty: number;
   start_sn: string;
   end_sn: string;
-  status: "RUNNING" | "SUCCESS" | "FAILED" | "REVOKED";
+  status: "RUNNING" | "SUCCESS" | "FAILED" | "CANCELED" | "REVOKED";
   done_qty: number;
   error_code: string | null;
   error_msg: string | null;
   created_by: string;
   created_at: string;
   finished_at: string | null;
-  /** 按 PI 的上下文里才有：可撤销（PI 流水排在最后、号全部仍待分配的成功任务） */
+  cancel_by?: string | null;
+  cancel_at?: string | null;
+  /** 按 PI 的上下文里才有：属于可撤销的那次生成（PI 流水排在最后、号全部仍待分配） */
   revocable?: boolean;
+}
+
+/** 一次生成（整张 PI）的整体进度。 */
+export interface GenBatch {
+  batch: string;
+  pi_no: string;
+  status: "RUNNING" | "SUCCESS" | "FAILED" | "CANCELED" | "REVOKED";
+  qty: number;
+  done_qty: number;
+  bills: number;
+  start_sn: string;
+  end_sn: string;
+  current_sn: string | null;
+  created_by: string;
+  created_at: string;
+  finished_at: string | null;
+  cancel_by: string | null;
+  cancel_at: string | null;
+  error_code: string | null;
+  error_msg: string | null;
 }

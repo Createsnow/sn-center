@@ -154,6 +154,16 @@ class Settings:
         return self.get_int("SN_GEN_SYNC_THRESHOLD", 5000)
 
     @property
+    def gen_default_limit(self) -> int:
+        """生成弹窗的默认单次上限：额度超过它时数量默认填它，用户可勾选「解除限制」。"""
+        return max(1, self.get_int("SN_GEN_DEFAULT_LIMIT", 10_000))
+
+    @property
+    def gen_max_per_run(self) -> int:
+        """单次生成的硬上限（一次生成在一个事务里写完，过大易超时 / 撑爆事务）。"""
+        return max(1, self.get_int("SN_GEN_MAX_PER_RUN", 500_000))
+
+    @property
     def preview_ttl_minutes(self) -> int:
         return self.get_int("SN_PREVIEW_TTL_MINUTES", 30)
 

@@ -5,7 +5,7 @@ import uuid
 
 import pymysql
 import pytest
-from conftest import m, ok, q, uid
+from conftest import m, ok, q, raw_conn, uid
 
 ORG = "生成测试厂"
 FAC = "F-GEN"
@@ -261,18 +261,15 @@ def test_allocate_whole_order_to_its_factory_only(api, admin, w, sql):
         api.post("/api/generate/allocate", m(bill_no=bill, factory_code="F-GEN2"), admin).code
         == "ALLOC_FACTORY_MISMATCH"
     )
-    assert api.post("/api/generate/allocate", m(bill_no=bill, qty=7), admin).code == "ALLOC_QTY_EXCEEDED"
+    # 不能只分一部分：旧调用方传的数量被忽略，整单分完
     a = ok(api.post("/api/generate/allocate", m(bill_no=bill, qty=4), admin)).body
-    assert a["start_sn"] == "L00001"
-    assert a["end_sn"] == "L00004"
-    assert a["pending_left"] == 2
+    assert (a["start_sn"], a["end_sn"], a["qty"], a["pending_left"]) == ("L00001", "L00006", 6, 0)
     assert (
         sql.count(
             "SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'TO_ACQUIRE' AND factory_code = %s", pi, FAC
         )
-        == 4
+        == 6
     )
-    w.allocate(bill)
     assert api.post("/api/generate/allocate", m(bill_no=bill), admin).code == "ALLOC_NOTHING"
 
 
@@ -549,11 +546,10 @@ def test_pi_allocate_sends_each_bill_to_its_own_factory_in_one_go(api, admin, w,
     w.order(b2, "生成测试二厂", "C1", pi, ("A", 2))
     assert api.post("/api/generate/pi-allocate", m(pi_no=pi), admin).code == "ALLOC_PI_NOTHING"
     _pi_generate(api, admin, ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=5), admin)).body)
-    ok(api.post("/api/generate/allocate", m(bill_no=b1, qty=1), admin))
 
     a = ok(api.post("/api/generate/pi-allocate", m(pi_no=pi), admin)).body
-    assert a["qty"] == 4
-    assert [(x["bill_no"], x["factory_code"], x["qty"]) for x in a["items"]] == [(b1, FAC, 2), (b2, "F-GEN2", 2)]
+    assert a["qty"] == 5
+    assert [(x["bill_no"], x["factory_code"], x["qty"]) for x in a["items"]] == [(b1, FAC, 3), (b2, "F-GEN2", 2)]
     assert (
         sql.count(
             "SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND factory_code = 'F-GEN2' AND status = 'TO_ACQUIRE'", b2
@@ -562,7 +558,7 @@ def test_pi_allocate_sends_each_bill_to_its_own_factory_in_one_go(api, admin, w,
     )
     ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin)).body
     assert ctx["pending_alloc"] == 0 and ctx["allocated_qty"] == 5
-    assert len(ctx["allocations"]) == 3
+    assert len(ctx["allocations"]) == 2
 
 
 def test_pi_list_shows_orgs_and_matches_by_bill(api, admin, w):
@@ -579,7 +575,8 @@ def test_pi_list_shows_orgs_and_matches_by_bill(api, admin, w):
     assert r["unmapped"] is False and r["start_locked"] is False
 
 
-def test_pi_preview_skips_bills_whose_org_is_not_a_factory_yet(api, admin, w):
+def test_pi_cannot_generate_while_any_bill_org_is_not_a_factory_yet(api, admin, w):
+    """有订单的生产组织未建档：整张 PI 都不能生成（不先生成其余订单），建档后再一起生成。"""
     pi = uid("PI")
     b1, b2 = pi + "-MO1", pi + "-MO2"
     w.pi_rule(pi, "U", 10, 5)
@@ -587,9 +584,10 @@ def test_pi_preview_skips_bills_whose_org_is_not_a_factory_yet(api, admin, w):
     w.order(b2, ORG, "C1", pi, ("A", 2))
     ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin)).body
     assert "FACTORY_UNMAPPED" in ctx["issues"] and ctx["bills"][0]["factory_code"] is None
-    p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=2), admin)).body
-    assert [it["bill_no"] for it in p["items"]] == [b2]
-    assert api.post("/api/generate/pi-preview", m(pi_no=pi, qty=3), admin).code == "GEN_QUOTA_EXCEEDED"
+    r = api.post("/api/generate/pi-preview", m(pi_no=pi, qty=2), admin)
+    assert r.code == "FACTORY_UNMAPPED" and r["params"]["org"] == "未建档组织"
+    row = ok(api.get("/api/orders/pis" + q(q=pi), admin)).body[0]
+    assert row["unmapped"] is True and row["quota"] == 5
 
 
 def test_pi_generate_runs_in_background_when_the_pi_total_is_large(api, admin, w, sql):
@@ -667,16 +665,19 @@ def test_revoke_last_generation_rolls_back_and_regenerates_the_same_sns(api, adm
 
 
 def test_revoke_refused_once_any_sn_of_the_generation_is_allocated(api, admin, w, sql):
-    pi, bill = uid("PI"), uid("MO")
+    pi = uid("PI")
+    b1, b2 = pi + "-MO1", pi + "-MO2"
     w.pi_rule(pi, "RA", 10, 5)
-    w.order(bill, ORG, "C1", pi, ("A", 10))
-    j = w.generate(bill, 5)
-    ok(api.post("/api/generate/allocate", m(bill_no=bill, qty=2), admin))
-    r = _revoke(api, admin, j["id"])
+    w.order(b1, ORG, "C1", pi, ("A", 2))
+    w.order(b2, ORG, "C1", pi, ("A", 3))
+    r = _pi_generate(api, admin, ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=5), admin)).body)
+    w.allocate(b1)
+    r = api.post(f"/api/generate/batches/{r['batch']}/revoke", m(reason="点错"), admin)
     assert r.code == "GEN_REVOKE_ALLOCATED" and r["params"]["count"] == 2
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 5
     ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin)).body
-    assert ctx["jobs"][0]["revocable"] is False and ctx["generated_qty"] == 5
+    assert ctx["revocable_batch"] is None and ctx["generated_qty"] == 5
+    assert not any(j["revocable"] for j in ctx["jobs"])
 
 
 def test_revoke_whole_pi_generation_from_last_order_back_to_never_generated(api, admin, w, sql):
@@ -686,11 +687,25 @@ def test_revoke_whole_pi_generation_from_last_order_back_to_never_generated(api,
     w.order(b1, ORG, "C1", pi, ("A", 3))
     w.order(b2, "生成测试二厂", "C1", pi, ("A", 4))
     p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=6), admin)).body
-    jobs = _pi_generate(api, admin, p)["jobs"]
-    first, last = jobs[0]["id"], jobs[1]["id"]
-    assert _revoke(api, admin, first).code == "GEN_REVOKE_NOT_LAST"
-    ok(_revoke(api, admin, last))
-    ok(_revoke(api, admin, first))
+    g1 = _pi_generate(api, admin, p)
+    # 第二次生成（剩下的 1 枚）在后：要先撤销它
+    g2 = _pi_generate(api, admin, ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=1), admin)).body)
+    ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin)).body
+    assert ctx["revocable_batch"]["batch"] == g2["batch"] and ctx["revocable_batch"]["qty"] == 1
+    assert api.post(f"/api/generate/batches/{g1['batch']}/revoke", m(reason="x"), admin).code == "GEN_REVOKE_NOT_LAST"
+    ok(api.post(f"/api/generate/batches/{g2['batch']}/revoke", m(reason="x"), admin))
+    # 整次撤销：两张订单的号一次退回（按任务号调用也撤销它所属的整次）
+    r = ok(_revoke(api, admin, g1["jobs"][1]["id"])).body
+    assert (r["batch"], r["qty"], r["bills"], r["start_sn"], r["end_sn"]) == (
+        g1["batch"],
+        6,
+        [b1, b2],
+        "RP00001",
+        "RP00006",
+    )
+    assert (
+        sql.count("SELECT COUNT(*) FROM sn_audit WHERE action = 'SN_REVOKE' AND result = 'OK' AND pi_no = %s", pi) == 3
+    )
 
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 0
     assert sql.count("SELECT COUNT(*) FROM sn_key WHERE pi_no = %s", pi) == 0
@@ -703,3 +718,149 @@ def test_revoke_whole_pi_generation_from_last_order_back_to_never_generated(api,
 
     p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=7), admin)).body
     assert (p["start_sn"], p["end_sn"]) == ("RP00001", "RP00007")
+
+
+# ---------------------------------------------------------------- 数量上限 / 进度 / 取消
+
+
+def test_generation_limits_are_exposed_and_hard_max_is_enforced(api, admin, w):
+    """弹窗默认单次上限（可解除）与单次硬上限（测试里 20000）。"""
+    pi = uid("PI")
+    bill = pi + "-MO1"
+    w.pi_rule(pi, "LM", 32, 6)
+    w.order(bill, ORG, "C1", pi, ("A", 25000))
+    ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin)).body
+    assert ctx["limits"] == {"default": 10000, "max": 20000} and ctx["quota"] == 25000
+    r = api.post("/api/generate/pi-preview", m(pi_no=pi, qty=20001), admin)
+    assert r.code == "GEN_QTY_OVER_MAX" and r["params"] == {"qty": 20001, "max": 20000}
+    assert w.preview(bill, 20001).code == "GEN_QTY_OVER_MAX"
+    assert ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=20000), admin))["qty"] == 20000
+
+
+def test_pi_list_shows_rule_fixed_and_running_progress(api, admin, w, sql):
+    pi = uid("PI")
+    bill = pi + "-MO1"
+    w.order(bill, ORG, "C1", pi, ("A", 4))
+    row = ok(api.get("/api/orders/pis" + q(q=pi), admin)).body[0]
+    assert row["rule_fixed"] is False and row["running"] is None, "没有绑定、也没指定过：要先选规则"
+    w.pi_rule(pi, "RF", 10, 5)
+    row = ok(api.get("/api/orders/pis" + q(q=pi), admin)).body[0]
+    assert row["rule_fixed"] is True
+    sql.exec(
+        "INSERT INTO sn_gen_job(bill_no, pi_no, gen_batch, factory_code, customer_code, rule_version_id, qty, "
+        "start_seq_dec, end_seq_dec, start_sn, end_sn, status, done_qty, running_pi, preview_token, segments_json, "
+        "created_by, created_at) VALUES (%s,%s,'GTEST1',%s,'C1',1,4,1,4,'x','y','RUNNING',3,%s,%s,'[]','t',NOW())",
+        bill,
+        pi,
+        FAC,
+        pi,
+        uuid.uuid4().hex,
+    )
+    try:
+        row = ok(api.get("/api/orders/pis" + q(q=pi), admin)).body[0]
+        assert row["running"] == {"batch": "GTEST1", "qty": 4, "done_qty": 3}
+    finally:
+        sql.exec("DELETE FROM sn_gen_job WHERE pi_no = %s", pi)
+
+
+def _wait_batch(api, admin, batch):
+    b = ok(api.get(f"/api/generate/batches/{batch}", admin)).body
+    for _ in range(240):
+        if b["status"] != "RUNNING":
+            break
+        time.sleep(0.25)
+        b = ok(api.get(f"/api/generate/batches/{batch}", admin)).body
+    return b
+
+
+def test_batch_progress_covers_the_whole_pi_generation(api, admin, w):
+    pi = uid("PI")
+    b1, b2 = pi + "-MO1", pi + "-MO2"
+    w.pi_rule(pi, "PG", 32, 6)
+    w.order(b1, ORG, "C1", pi, ("A", 2000))
+    w.order(b2, "生成测试二厂", "C1", pi, ("A", 2000))
+    p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=4000), admin)).body
+    r = ok(api.post("/api/generate/pi", m(pi_no=pi, items=_pi_items(p)), admin)).body
+    assert {j["gen_batch"] for j in r["jobs"]} == {r["batch"]}
+    b = _wait_batch(api, admin, r["batch"])
+    assert (b["status"], b["qty"], b["done_qty"], b["bills"]) == ("SUCCESS", 4000, 4000, 2)
+    assert (b["start_sn"], b["end_sn"], b["current_sn"]) == (p["start_sn"], p["end_sn"], p["end_sn"])
+    assert api.get("/api/generate/batches/NOPE", admin).code == "GEN_BATCH_NOT_FOUND"
+    assert api.post(f"/api/generate/batches/{r['batch']}/cancel", m(), admin).code == "GEN_CANCEL_NOT_RUNNING"
+
+
+def test_cancel_running_generation_rolls_back_everything_but_keeps_audit(api, admin, w, sql):
+    """生成中取消：已写入的号、查重护栏、计数器、订单已生成数、规则使用标记都不留；任务记为已取消；痕迹保留。"""
+    pi = uid("PI")
+    b1, b2 = pi + "-MO1", pi + "-MO2"
+    w.pi_rule(pi, "CX", 32, 6)
+    w.order(b1, ORG, "C1", pi, ("A", 2000))
+    w.order(b2, "生成测试二厂", "C1", pi, ("A", 2000))
+    p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=4000), admin)).body
+    version = sql.one("SELECT rule_version_id v FROM sn_gen_preview WHERE token = %s", p["items"][0]["token"])["v"]
+    # 先占住这张 PI 的计数器，让后台生成停在开头，保证取消发生在生成过程中
+    holder = raw_conn()
+    holder.autocommit(False)
+    with holder.cursor() as c:
+        c.execute(
+            "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, imported_qty, start_locked, updated_at) "
+            "VALUES (%s,0,0,0,0,NOW()) ON DUPLICATE KEY UPDATE pi_no = pi_no",
+            (pi,),
+        )
+        holder.commit()
+        c.execute("SELECT * FROM sn_pi_counter WHERE pi_no = %s FOR UPDATE", (pi,))
+    try:
+        r = ok(api.post("/api/generate/pi", m(pi_no=pi, items=_pi_items(p)), admin)).body
+        c = ok(api.post(f"/api/generate/batches/{r['batch']}/cancel", m(), admin)).body
+        assert c["status"] == "RUNNING" and c["cancel_by"] == "admin"
+        # 重复取消不报错，也不重复留痕
+        ok(api.post(f"/api/generate/batches/{r['batch']}/cancel", m(), admin))
+    finally:
+        holder.rollback()
+        holder.close()
+    b = _wait_batch(api, admin, r["batch"])
+    assert (b["status"], b["done_qty"], b["error_code"]) == ("CANCELED", 0, "GEN_CANCELED")
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 0
+    assert sql.count("SELECT COUNT(*) FROM sn_key WHERE pi_no = %s", pi) == 0
+    assert sql.count("SELECT COUNT(*) FROM sn_bill_gen WHERE pi_no = %s", pi) == 0
+    c = sql.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s", pi)
+    assert (c["last_seq_dec"], c["generated_qty"], c["start_locked"]) == (0, 0, 0)
+    assert sql.one("SELECT used FROM sn_rule_version WHERE id = %s", version)["used"] == 0
+    assert (
+        sql.count("SELECT COUNT(*) FROM sn_audit WHERE action = 'SN_GEN_CANCEL' AND result = 'OK' AND pi_no = %s", pi)
+        == 1
+    )
+    assert (
+        sql.count("SELECT COUNT(*) FROM sn_audit WHERE action = 'SN_GENERATE' AND result = 'FAIL' AND pi_no = %s", pi)
+        == 2
+    )
+    ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin)).body
+    assert ctx["running_batch"] is None and ctx["quota"] == 4000
+    assert {j["status"] for j in ctx["jobs"]} == {"CANCELED"}
+    # 取消后可重新预演、生成，号从头开始
+    p2 = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=10), admin)).body
+    assert p2["start_sn"] == p["start_sn"]
+
+
+def test_cancel_after_some_chunks_were_written_deletes_them(api, admin, w, sql, monkeypatch):
+    """取消请求在写了几块号之后才到：整批回滚，已写入的号全部删除。"""
+    from app.services import generate as gen
+
+    pi, bill = uid("PI"), uid("MO")
+    w.pi_rule(pi, "CY", 32, 6)
+    w.order(bill, ORG, "C1", pi, ("A", 2500))
+    p = ok(w.preview(bill, 2500))
+    original = gen._progress
+
+    def progress(job_id, done):
+        if done >= 2000:  # 已写入两块（2000 枚）后有人点了取消
+            sql.exec("UPDATE sn_gen_job SET cancel_at = NOW(), cancel_by = 'admin' WHERE id = %s", job_id)
+        return original(job_id, done)
+
+    monkeypatch.setattr(gen, "_progress", progress)
+    r = api.post("/api/generate", m(preview_token=p.text("token"), bill_no=bill, qty=2500), admin)
+    assert r.code == "GEN_CANCELED"
+    j = sql.one("SELECT * FROM sn_gen_job WHERE bill_no = %s", bill)
+    assert (j["status"], j["done_qty"], j["running_pi"]) == ("CANCELED", 0, None)
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 0
+    assert sql.count("SELECT COUNT(*) FROM sn_key WHERE pi_no = %s", pi) == 0

@@ -86,9 +86,12 @@ class ErrorCode(Enum):
     GEN_REVOKE_NOT_SUCCESS = (409, "只能撤销已成功的生成任务")
     GEN_REVOKE_NOT_LAST = (409, "只能撤销 PI {pi} 流水排在最后的一次生成；之后还有生成，请先撤销之后的")
     GEN_REVOKE_ALLOCATED = (409, "这次生成的号已有 {count} 枚分配出去，不能撤销")
+    GEN_QTY_OVER_MAX = (400, "单次最多生成 {max} 枚，本次 {qty} 枚；如需更多请联系管理员")
+    GEN_BATCH_NOT_FOUND = (404, "生成批次不存在")
+    GEN_CANCELED = (409, "生成已取消，已写入的号全部删除")
+    GEN_CANCEL_NOT_RUNNING = (409, "这次生成已经结束，不能取消")
     ALLOC_NOTHING = (400, "生产订单 {bill_no} 没有待分配的号")
     ALLOC_PI_NOTHING = (400, "PI {pi} 没有待分配的号")
-    ALLOC_QTY_EXCEEDED = (400, "分配数量 {qty} 超出待分配数量 {pending}")
     ALLOC_FACTORY_MISMATCH = (400, "只能分到该订单的生产组织 {factory}")
     PI_REQUIRED = (400, "PI 必填")
     # ---------- 领取 / 打印 / 回调 ----------

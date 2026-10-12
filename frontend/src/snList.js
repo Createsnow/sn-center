@@ -25,13 +25,29 @@ export function parseSnList(text) {
 }
 
 /**
- * 页面单次上限（默认 10000，可改）下的建议数量：min(额度, 上限)，额度或上限无效时为 0。
- * @param {number} quota
- * @param {number} limit
+ * 生成弹窗的数量上限。额度不超过默认上限时就是额度；超过时，未解除限制取默认上限，解除后取额度。
+ * 都不超过单次硬上限 limits.max。
+ * @param {number} quota 可生成额度
+ * @param {{ default?: number, max?: number }} limits 后台给出的默认上限与硬上限
+ * @param {boolean} unlocked 是否勾选「解除限制」
  */
-export function suggestQty(quota, limit) {
-  const q = Number(quota) || 0;
-  const l = Number(limit) || 0;
-  if (q <= 0 || l <= 0) return 0;
-  return Math.min(q, l);
+export function genQtyCap(quota, limits, unlocked) {
+  const q = Math.max(0, Math.floor(Number(quota) || 0));
+  const def = Number(limits?.default) > 0 ? Number(limits.default) : q;
+  const max = Number(limits?.max) > 0 ? Number(limits.max) : q;
+  return Math.min(q > def && !unlocked ? def : q, max);
+}
+
+/**
+ * 把输入的数量纠正到 1 ~ cap 的整数；超过上限时改为上限并标记 corrected（页面据此提示）。
+ * @param {unknown} input
+ * @param {number} cap
+ * @returns {{ qty: number, corrected: boolean }}
+ */
+export function clampQty(input, cap) {
+  const c = Math.max(0, Math.floor(Number(cap) || 0));
+  const n = Math.floor(Number(input));
+  if (!Number.isFinite(n) || n < 1) return { qty: Math.min(1, c), corrected: false };
+  if (n > c) return { qty: c, corrected: true };
+  return { qty: n, corrected: false };
 }

@@ -272,13 +272,17 @@ def pis(cu: CurrentUser, q: str | None, customer: str | None, pending: bool, lim
     rows = db.all(
         "SELECT b.pi, MAX(b.customer_number) customer_number, COUNT(*) bills, SUM(b.total_qty) total_qty, "
         "SUM(b.gen) generated_qty, SUM(b.alloc) allocated_qty, SUM(GREATEST(b.total_qty - b.gen, 0)) quota, "
-        "GROUP_CONCAT(DISTINCT b.org ORDER BY b.org SEPARATOR '\\n') orgs, MAX(c.start_locked) start_locked "
+        "GROUP_CONCAT(DISTINCT b.org ORDER BY b.org SEPARATOR '\\n') orgs, MAX(c.start_locked) start_locked, "
+        "MAX(c.rule_id) chosen_rule "
         f"FROM ({bills}) b LEFT JOIN sn_pi_counter c ON c.pi_no = b.pi GROUP BY b.pi{having} "
         "ORDER BY MAX(b.bill_no) DESC LIMIT %s",
         *args,
         min(max(limit, 1), 500),
     )
     codes = factories.code_by_name()
+    running = _running([r["pi"] for r in rows])
+    bound_pis = set(db.column("SELECT bind_value FROM sn_rule WHERE bind_scope = 'PI'"))
+    bound_customers = set(db.column("SELECT bind_value FROM sn_rule WHERE bind_scope = 'CUSTOMER'"))
     out = []
     for r in rows:
         orgs = [o for o in (r["orgs"] or "").split("\n") if o]
@@ -290,6 +294,11 @@ def pis(cu: CurrentUser, q: str | None, customer: str | None, pending: bool, lim
                 "orgs": [{"name": o, "factory_code": codes.get(o)} for o in orgs],
                 "unmapped": any(o not in codes for o in orgs),
                 "start_locked": bool(r["start_locked"]),
+                # 规则已确定（按 PI / 按客户绑定，或已指定给此 PI）：不用先选规则就能生成
+                "rule_fixed": r["chosen_rule"] is not None
+                or r["pi"] in bound_pis
+                or r["customer_number"] in bound_customers,
+                "running": running.get(r["pi"]),
                 "total_qty": int(r["total_qty"]),
                 "generated_qty": int(r["generated_qty"]),
                 "allocated_qty": int(r["allocated_qty"]),
@@ -298,6 +307,19 @@ def pis(cu: CurrentUser, q: str | None, customer: str | None, pending: bool, lim
             }
         )
     return out
+
+
+def _running(pis: list[str]) -> dict[str, dict]:
+    """正在生成的 PI → 本次生成的批次与整体进度（已写入枚数 / 总数）。"""
+    if not pis:
+        return {}
+    rows = db.all(
+        "SELECT pi_no, gen_batch, SUM(qty) qty, SUM(done_qty) done FROM sn_gen_job WHERE gen_batch IN "
+        f"(SELECT gen_batch FROM sn_gen_job WHERE status = 'RUNNING' AND pi_no IN ({marks(len(pis))})) "
+        "GROUP BY pi_no, gen_batch",
+        *pis,
+    )
+    return {r["pi_no"]: {"batch": r["gen_batch"], "qty": int(r["qty"]), "done_qty": int(r["done"])} for r in rows}
 
 
 def pi_bills(pi: str) -> list[str]:
