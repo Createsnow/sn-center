@@ -1,6 +1,6 @@
 # MES 对接接口文档
 
-> **读者**：工厂 MES、现场打印系统的对接方（被调方：SN 管控中心）　**对应代码**：`app/api/routes/open.py`、`app/api/routes/auth.py`、`app/services/acquire.py`　**更新**：2026-10-10
+> **读者**：工厂 MES、现场打印系统的对接方（被调方：SN 管控中心）　**对应代码**：`app/api/routes/open.py`、`app/api/routes/auth.py`、`app/services/acquire.py`　**更新**：2026-10-12
 > **相关**：本文自成一体，对接方只需要本文；在线版见 `/docs` 的 `open` 分组
 
 MES 主动调用本系统。本系统不向 MES 推送，也不回调 MES。号池只在本系统。MES 领取、取明细、打完后回写；生成、分配、转厂留在工作台，不提供给 MES。
@@ -55,6 +55,8 @@ MES 使用本系统账户，角色取值如下。
 | `query` | 查询员 | 拒绝，`403 FORBIDDEN` | 可读。绑了厂则只本厂 | 拒绝，`403 FORBIDDEN` | 绑了厂则只本厂 |
 
 厂区账户操作其他工厂返回 `403 FACTORY_FORBIDDEN`，`params.factory` 是该账户自己的工厂编码。
+
+工厂在工作台被停用后，已经分到该厂的号仍可领取、取明细、回调和只读查号，绑定该厂的账户也不会自动停用。停用只挡住往该厂生成、分配、转入新号。
 
 密码被管理员重置后，`user.must_change_pwd` 为 `true`（新建账户为 `false`，可直接调用）。此时除改密接口外，开放接口都返回 `403 PASSWORD_CHANGE_REQUIRED`。先改密，再用新令牌继续。
 
@@ -127,6 +129,7 @@ sequenceDiagram
     "factory_code": "100",
     "factory_name": "甲厂",
     "status": "ACTIVE",
+    "super_admin": false,
     "must_change_pwd": false,
     "lang": null,
     "last_login_at": "2026-09-30 14:00:00",
@@ -137,6 +140,8 @@ sequenceDiagram
   }
 }
 ```
+
+`super_admin` 只对页面有意义（是否内置 admin 账户，可管理账户），对接可忽略。
 
 之后每次调用把 `token` 放进 `Authorization: Bearer {token}`。
 
@@ -415,7 +420,7 @@ MES 打印完成后调用。只把同时满足下面四条的号改为已打印�
 
 | 字段 | 必填 | 说明 |
 | --- | --- | --- |
-| `factory_code` | 是 | 工厂编码。厂区、绑厂查询员只能传本厂 |
+| `factory_code` | 是 | 工厂编码。厂区、绑厂查询员只能传本厂。必须传非空值：总部或未绑厂查询员传空串时不按工厂过滤，会返回各厂（含尚未分配）的号 |
 | `pi` | 是 | PI。必须传非空值：传空串时不按 PI 过滤，会返回该厂全部号 |
 | `customer_code` | 否 | 客户编码。不传则不按客户过滤 |
 | `material_code` | 否 | 物料编码。不传或空串则不按物料过滤 |
