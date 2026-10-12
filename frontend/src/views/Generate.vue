@@ -11,7 +11,7 @@
       <div class="toolbar">
         <el-radio-group v-model="view">
           <el-radio-button v-for="v in VIEWS" :key="v" :value="v">
-            {{ t(`generate.view${v}`) }}<span v-if="!capped(v)" class="cnt num">{{ rowsOf(v).length }}</span>
+            {{ t(`generate.view${v}`) }}<span class="cnt num">{{ countText(v) }}</span>
           </el-radio-button>
         </el-radio-group>
         <el-input v-model="kw" class="kw" :placeholder="t('generate.search')" clearable prefix-icon="Search" @keyup.enter="reload" @clear="reload" />
@@ -59,8 +59,8 @@
       </div>
       <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="shown.length" :page-size="pageSize"
         :current-page="page" :page-sizes="[20, 50, 100]" @current-change="(p: number) => (page = p)" @size-change="onSize" />
-      <p v-if="capped(view) && allPis.length > listCap" class="muted">{{ t("generate.recentOnly", { n: GEN_PAGES }) }}</p>
-      <p v-else-if="pis.length >= LIST_LIMIT || allPis.length >= LIST_LIMIT" class="muted">{{ t("generate.more", { n: LIST_LIMIT }) }}</p>
+      <p v-if="capped(view) && fullRows(view).length > listCap" class="muted">{{ t("generate.recentOnly", { n: GEN_PAGES }) }}</p>
+      <p v-else-if="!capped(view) && fullRows(view).length >= LIST_LIMIT" class="muted">{{ t("generate.more", { n: LIST_LIMIT }) }}</p>
     </div>
 
     <!-- 详情：按状态只显示一个主操作（生成中 / 生成 / 分配） -->
@@ -303,7 +303,7 @@ import PageHead from "@/components/PageHead.vue";
 type View = "ALL" | "TO_GEN" | "RUNNING" | "TO_ALLOC" | "DONE";
 const VIEWS: View[] = ["ALL", "TO_GEN", "RUNNING", "TO_ALLOC", "DONE"];
 const LIST_LIMIT = 500;
-/** 「全部」「已完成」只列最近下单的几页 PI，更早的用搜索找。 */
+/** 各页签只列最近下单的几页 PI（「生成中」除外），更早的用搜索找；搜索时不受页数限制。 */
 const GEN_PAGES = 3;
 type TagType = "info" | "primary" | "success" | "warning" | "danger";
 
@@ -400,16 +400,29 @@ const detailRun = computed<Tracked | null>(() => (detailPi.value ? tracked[detai
 const canGenerate = computed(() => !!ctx.value && !ctx.value.issues.some((c: string) => ["FACTORY_UNMAPPED", "FACTORY_DISABLED", "RULE_MISSING"].includes(c)));
 const totals = computed(() => pis.value.reduce((s, r) => ({ quota: s.quota + r.quota, pending: s.pending + r.pending_alloc }), { quota: 0, pending: 0 }));
 const listCap = computed(() => GEN_PAGES * pageSize.value);
-const capped = (v: View) => v === "ALL" || v === "DONE";
+/** 本次列表是否按关键字搜索得到（搜索结果不受页数限制）。 */
+const searched = ref("");
+const capped = (v: View) => v !== "RUNNING" && !searched.value;
 const shown = computed(() => rowsOf(view.value));
 const paged = computed(() => shown.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value));
 
-function rowsOf(v: View) {
-  if (v === "ALL") return allPis.value.slice(0, listCap.value);
-  if (v === "DONE") return allPis.value.filter((r) => stateOf(r) === "DONE" && r.generated_qty > 0).slice(0, listCap.value);
+/** 该页签的全部行（未截页）。 */
+function fullRows(v: View) {
+  if (v === "ALL") return allPis.value;
+  if (v === "DONE") return allPis.value.filter((r) => stateOf(r) === "DONE" && r.generated_qty > 0);
   if (v === "RUNNING") return pis.value.filter((r) => !!progressOf(r));
   if (v === "TO_GEN") return pis.value.filter((r) => r.quota > 0 && !progressOf(r));
   return pis.value.filter((r) => r.pending_alloc > 0);
+}
+function rowsOf(v: View) {
+  const rows = fullRows(v);
+  return capped(v) ? rows.slice(0, listCap.value) : rows;
+}
+/** 页签上的总数：列表取满上限时写成「500+」，表示还有更多。 */
+function countText(v: View) {
+  const n = fullRows(v).length;
+  const src = v === "ALL" || v === "DONE" ? allPis.value : pis.value;
+  return src.length >= LIST_LIMIT ? `${n}+` : String(n);
 }
 
 const issueTexts = computed(() => {
@@ -444,8 +457,9 @@ async function reload() {
     const q = kw.value.trim();
     const [p, a] = await Promise.all([
       api.orderPis({ q, pending: 1, limit: LIST_LIMIT }),
-      capped(view.value) ? api.orderPis({ q, limit: LIST_LIMIT }) : Promise.resolve(allPis.value),
+      api.orderPis({ q, limit: LIST_LIMIT }),
     ]);
+    searched.value = q;
     pis.value = p;
     allPis.value = a;
     // 打开页面前就在生成的 PI（别人发起的、或刷新过页面）：接着跟踪进度
@@ -454,9 +468,8 @@ async function reload() {
     loading.value = false;
   }
 }
-watch(view, (v) => {
+watch(view, () => {
   page.value = 1;
-  if (capped(v)) reload();
 });
 watch(kw, () => (page.value = 1));
 watch(() => shown.value.length, (n) => {

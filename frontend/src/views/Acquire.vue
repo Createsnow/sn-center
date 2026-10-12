@@ -7,7 +7,7 @@
     <div class="surface">
       <div class="toolbar">
         <el-radio-group v-model="view" @change="clearPicked">
-          <el-radio-button v-for="v in VIEWS" :key="v" :value="v">{{ t(`acquire.view${v}`) }}<span class="cnt num">{{ rowsOf(v).length }}</span></el-radio-button>
+          <el-radio-button v-for="v in VIEWS" :key="v" :value="v">{{ t(`acquire.view${v}`) }}<span class="cnt num">{{ countText(v) }}</span></el-radio-button>
         </el-radio-group>
         <FactorySelect v-if="!store.boundFactory" v-model="f.factory_code" clearable :placeholder="t('acquire.allFactories')" @update:model-value="reload" />
         <el-tag v-else type="warning" effect="plain" size="large">{{ store.profile?.factory_name || store.boundFactory }}</el-tag>
@@ -19,7 +19,7 @@
       </div>
       <el-alert v-if="store.isQuery" type="info" :closable="false" show-icon :title="t('acquire.queryReadOnly')" class="mb" />
 
-      <el-table ref="table" v-loading="pisLoading" :data="rowsOf(view)" size="small" row-key="_key" class="pis"
+      <el-table ref="table" v-loading="pisLoading" :data="paged" size="small" row-key="_key" class="pis"
         :empty-text="t(`acquire.empty${view}`)" @selection-change="(rows: any[]) => (picked = rows)" @row-click="onRowClick">
         <el-table-column v-if="actable" type="selection" width="40" />
         <el-table-column prop="pi_no" label="PI" min-width="170"><template #default="{ row }"><b>{{ row.pi_no }}</b></template></el-table-column>
@@ -48,6 +48,9 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="rowsOf(view).length" :page-size="pageSize"
+        :current-page="page" :page-sizes="[20, 50, 100]" @current-change="(p: number) => (page = p)" @size-change="onSize" />
+      <p v-if="capped && fullRows(view).length > listCap" class="muted">{{ t("acquire.recentOnly", { n: LIST_PAGES }) }}</p>
       <p class="muted">{{ t("acquire.rule") }}</p>
     </div>
 
@@ -128,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -148,6 +151,10 @@ type Step = "TO_ACQUIRE" | "TO_PRINT";
 type View = "ALL" | Step | "APPLYING";
 const VIEWS: View[] = ["ALL", "APPLYING", "TO_ACQUIRE", "TO_PRINT"];
 const MOVABLE = ["TO_ACQUIRE", "TO_PRINT", "PRINTED"];
+/** 各页签只列最近有动作的几页「工厂 + PI」，更早的按 PI 搜索；搜索时不受页数限制。 */
+const LIST_PAGES = 3;
+/** 后端列表最多返回的行数（与 acquire.PIS_LIMIT 一致）。 */
+const PIS_LIMIT = 2000;
 
 const { t } = useI18n();
 const router = useRouter();
@@ -157,6 +164,10 @@ const f = reactive({ factory_code: "", pi: "" });
 const view = ref<View>("ALL");
 const pis = ref<any[]>([]);
 const pisLoading = ref(false);
+const page = ref(1);
+const pageSize = ref(20);
+/** 本次列表是否按 PI 搜索得到。 */
+const searched = ref("");
 const busy = ref("");
 const table = ref<any>(null);
 const picked = ref<any[]>([]);
@@ -187,11 +198,28 @@ const pickedOf = (st: Step) => picked.value.filter((r) => rowStep(r) === st);
 const pickedQty = (st: Step) => pickedOf(st).reduce((s, r) => s + qtyOf(r, st), 0);
 const bulkShows = (st: Step) => pickedOf(st).length > 0;
 
-function rowsOf(v: View) {
+function fullRows(v: View) {
   if (v === "ALL") return pis.value;
   if (v === "APPLYING") return pis.value.filter((r) => r.applying > 0);
   return pis.value.filter((r) => qtyOf(r, v) > 0);
 }
+const capped = computed(() => !searched.value);
+const listCap = computed(() => LIST_PAGES * pageSize.value);
+function rowsOf(v: View) {
+  const rows = fullRows(v);
+  return capped.value ? rows.slice(0, listCap.value) : rows;
+}
+const paged = computed(() => rowsOf(view.value).slice((page.value - 1) * pageSize.value, page.value * pageSize.value));
+/** 页签上的总数：后端取满上限时写成「2000+」。 */
+const countText = (v: View) => (pis.value.length >= PIS_LIMIT ? `${fullRows(v).length}+` : String(fullRows(v).length));
+function onSize(s: number) {
+  pageSize.value = s;
+  page.value = 1;
+}
+watch(view, () => (page.value = 1));
+watch(() => rowsOf(view.value).length, (n) => {
+  page.value = Math.min(page.value, Math.max(1, Math.ceil(n / pageSize.value)));
+});
 
 const segParams = () => {
   const d = detail.value;
@@ -210,7 +238,9 @@ function clearPicked() {
 async function reload() {
   pisLoading.value = true;
   try {
-    pis.value = (await api.acquirePis({ factory_code: f.factory_code, pi: f.pi.trim() })).map((r: any) => ({ ...r, _key: `${r.factory_code}|${r.pi_no}` }));
+    const pi = f.pi.trim();
+    pis.value = (await api.acquirePis({ factory_code: f.factory_code, pi })).map((r: any) => ({ ...r, _key: `${r.factory_code}|${r.pi_no}` }));
+    searched.value = pi;
   } finally {
     pisLoading.value = false;
   }

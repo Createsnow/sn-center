@@ -18,6 +18,8 @@ from app.db.session import db, is_duplicate, marks
 from app.services import audit, factories, files, orders, sn_items
 
 CHUNK = 1000
+#: 领取页列表最多返回的「工厂 + PI」行数
+PIS_LIMIT = 2000
 BATCH_FIELDS = ("batch_no", "factory_code", "pi_no", "request_no", "source", "qty", "created_by", "created_at")
 PRINT_FIELDS = ("print_no", "factory_code", "pi_no", "request_no", "qty", "created_by", "created_at")
 
@@ -61,7 +63,8 @@ def pis(cu: CurrentUser, factory: str | None, pi: str | None) -> list[dict]:
     if not util.blank(pi):
         sql += " AND pi_no = %s"
         args.append(pi.strip())
-    sql += " GROUP BY factory_code, pi_no ORDER BY factory_code, pi_no LIMIT 2000"
+    # 最近有动作（分配、领取、转入等）的「工厂 + PI」在前：页面只列最近几页，更早的按 PI 搜索
+    sql += f" GROUP BY factory_code, pi_no ORDER BY MAX(updated_at) DESC, factory_code, pi_no LIMIT {PIS_LIMIT}"
     return [
         {
             "factory_code": r["factory_code"],
