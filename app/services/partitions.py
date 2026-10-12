@@ -2,7 +2,9 @@
 
 - sn_item（RANGE gen_month）、sn_audit（RANGE COLUMNS created_at）提前建好未来 N 个月分区，
   兜底分区 pmax 始终为空，拆分几乎零成本；
-- 痕迹保存期（默认 3 年，0 = 永久）之外的整月分区先整体拷入 sn_audit_archive，再 DROP PARTITION。
+- 痕迹保存期（默认 3 年，0 = 永久）之外的整月分区先整体拷入 sn_audit_archive，再 DROP PARTITION；
+- 归档表设总保存上限（SN_AUDIT_ARCHIVE_RETENTION_DAYS，默认 5 年，0 = 永久，不短于在线保存期）：
+  发生时间超过上限的归档痕迹分批删除，删除本身留痕。
 
 多实例部署时用 MySQL 命名锁保证同一时刻只有一个实例做 DDL（与 Java 后端同名锁，混跑也安全）。
 """
@@ -57,6 +59,7 @@ def maintain() -> None:
             _ensure_item(c)
             _ensure_audit(c)
             _archive(c, settings.audit_retention_days)
+            purge_archive(settings.audit_archive_retention_days)
             c.execute("DELETE FROM sn_gen_preview WHERE created_at < DATE_SUB(NOW(), INTERVAL 7 DAY)")
         finally:
             c.execute("SELECT RELEASE_LOCK('sn_partition')")
@@ -120,3 +123,32 @@ def _archive(c, days: int) -> int:
             .info(f"partition={name} before={bound} at={datetime.now().isoformat()}"),
         )
     return archived
+
+
+PURGE_BATCH = 10_000
+
+
+def purge_archive(days: int) -> int:
+    """删除发生时间早于（今天 − 保存天数）的归档痕迹；返回删除的条数。
+
+    days = 0 或在线痕迹永久保存时不删；days 短于在线保存天数时按在线保存天数算（总保存期不会短于在线期）。
+    """
+    online = settings.audit_retention_days
+    if days <= 0 or online <= 0:
+        return 0
+    keep = max(days, online)
+    cutoff = datetime.combine(date(*util.now().timetuple()[:3]) - timedelta(days=keep), datetime.min.time())
+    total = 0
+    while True:
+        with db.new_tx():
+            n = db.exec("DELETE FROM sn_audit_archive WHERE created_at < %s LIMIT %s", cutoff, PURGE_BATCH)
+        total += n
+        if n < PURGE_BATCH:
+            break
+    if total:
+        log.info("audit_archive_purged", rows=total, before=str(cutoff))
+        audit.record_isolated(
+            CurrentUser.system(),
+            audit.entry(audit.AUDIT_ARCHIVE_PURGE).count(total).info(f"before={cutoff} keep_days={keep}"),
+        )
+    return total

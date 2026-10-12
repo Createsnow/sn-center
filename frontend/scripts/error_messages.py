@@ -25,6 +25,7 @@ E = {
 "FACTORY_EXISTS": ("Factory code or name already exists: {factory}", "Mã hoặc tên nhà máy đã tồn tại: {factory}"),
 "FACTORY_CODE_INVALID": ("Factory code and name are required (code ≤ 64)", "Bắt buộc mã và tên nhà máy (mã ≤ 64)"),
 "FACTORY_UNMAPPED": ("Production org “{org}” is not set up as a factory; sync factories first", "Tổ chức sản xuất “{org}” chưa là nhà máy; hãy đồng bộ nhà máy"),
+"FACTORY_DISABLED": ("Factory {factory} is disabled", "Nhà máy {factory} đã ngừng dùng"),
 "K3_CONFIG_MISSING": ("Kingdee configuration missing: {missing}", "Thiếu cấu hình Kingdee: {missing}"),
 "K3_LOGIN_FAILED": ("Kingdee login failed: {message}", "Đăng nhập Kingdee thất bại: {message}"),
 "K3_QUERY_FAILED": ("Kingdee query failed: {message}", "Truy vấn Kingdee thất bại: {message}"),

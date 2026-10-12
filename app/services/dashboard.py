@@ -19,7 +19,7 @@ def load(cu: CurrentUser) -> dict:
         args.append(fac)
     for r in db.all("SELECT status, COUNT(*) c FROM sn_item" + where + " GROUP BY status", *args):
         counts[r["status"]] = int(r["c"])
-    total = db.count("SELECT COALESCE(SUM(generated_qty + imported_qty), 0) FROM sn_pi_counter")
+    total = db.count("SELECT COALESCE(SUM(generated_qty), 0) FROM sn_pi_counter")
     if fac is None:
         pending = db.count("SELECT COUNT(*) FROM sn_transfer WHERE status = 'PENDING'")
     else:

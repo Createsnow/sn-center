@@ -421,8 +421,8 @@ def bind_pi(cu: CurrentUser, pi_in: str | None, rule_id: int | None) -> dict:
             raise biz(ErrorCode.RULE_NOT_GENERAL, rule_code=r["rule_code"])
         now = util.now()
         db.exec(
-            "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, imported_qty, start_locked, rule_id, "
-            "updated_at) VALUES (%s,0,0,0,0,%s,%s) ON DUPLICATE KEY UPDATE rule_id = %s, updated_at = %s",
+            "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, start_locked, rule_id, "
+            "updated_at) VALUES (%s,0,0,0,%s,%s) ON DUPLICATE KEY UPDATE rule_id = %s, updated_at = %s",
             pi,
             r["id"],
             now,

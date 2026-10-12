@@ -20,7 +20,6 @@ TABLES = (
     "sn_print",
     "sn_transfer",
     "sn_transfer_item",
-    "sn_pi_import",
     "sn_audit",
     "sn_audit_archive",
 )

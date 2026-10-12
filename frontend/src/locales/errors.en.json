@@ -24,6 +24,7 @@
   "FACTORY_EXISTS": "Factory code or name already exists: {factory}",
   "FACTORY_CODE_INVALID": "Factory code and name are required (code ≤ 64)",
   "FACTORY_UNMAPPED": "Production org “{org}” is not set up as a factory; sync factories first",
+  "FACTORY_DISABLED": "Factory {factory} is disabled",
   "K3_CONFIG_MISSING": "Kingdee configuration missing: {missing}",
   "K3_LOGIN_FAILED": "Kingdee login failed: {message}",
   "K3_QUERY_FAILED": "Kingdee query failed: {message}",

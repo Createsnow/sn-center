@@ -28,6 +28,9 @@ USER_ENABLE = "USER_ENABLE"
 USER_RESET_PWD = "USER_RESET_PWD"
 FACTORY_SYNC = "FACTORY_SYNC"
 FACTORY_CREATE = "FACTORY_CREATE"
+FACTORY_UPDATE = "FACTORY_UPDATE"
+FACTORY_DISABLE = "FACTORY_DISABLE"
+FACTORY_ENABLE = "FACTORY_ENABLE"
 ORDER_SYNC = "ORDER_SYNC"
 ORDER_SYNC_SCHEDULE = "ORDER_SYNC_SCHEDULE"
 RULE_CREATE = "RULE_CREATE"
@@ -50,6 +53,7 @@ TRANSFER_APPROVE = "TRANSFER_APPROVE"
 TRANSFER_REJECT = "TRANSFER_REJECT"
 TRANSFER_DIRECT = "TRANSFER_DIRECT"
 AUDIT_ARCHIVE = "AUDIT_ARCHIVE"
+AUDIT_ARCHIVE_PURGE = "AUDIT_ARCHIVE_PURGE"
 OTHER = "OTHER"
 
 
@@ -221,6 +225,14 @@ def action_for(method: str, path: str) -> str:
         return TRANSFER_WITHDRAW
     if path == "/api/users" and method == "POST":
         return USER_CREATE
+    if re.fullmatch(r"/api/factories/[^/]+/disable", path):
+        return FACTORY_DISABLE
+    if re.fullmatch(r"/api/factories/[^/]+/enable", path):
+        return FACTORY_ENABLE
+    if path.startswith("/api/factories/") and method == "PUT":
+        return FACTORY_UPDATE
+    if path == "/api/factories" and method == "POST":
+        return FACTORY_CREATE
     if path.endswith("/disable"):
         return USER_DISABLE
     for prefix, action in _PATH_ACTIONS:

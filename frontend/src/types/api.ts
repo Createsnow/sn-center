@@ -35,13 +35,16 @@ export interface Factory {
   factory_name: string;
   enabled: boolean;
   source: string;
+  updated_at?: string;
+  /** 绑定该厂的启用账户数（工厂列表才有） */
+  bound_users?: number;
 }
 
 export interface SnItem {
   id: number;
   sn: string;
   seq_text: string;
-  seq_dec: number | null;
+  seq_dec: number;
   seq_pi_no: string;
   pi_no: string;
   customer_code: string;

@@ -233,7 +233,7 @@ def _create(cu: CurrentUser, factory: str, r: Request, mode: str) -> dict:
     to_pi = util.trim(r.to_pi)
     if not to_pi:
         raise biz(ErrorCode.TR_TO_PI_REQUIRED)
-    to_factory = factories.must_get(r.to_factory)["factory_code"]
+    to_factory = factories.must_be_enabled(r.to_factory)["factory_code"]
     to_customer = util.trim(r.to_customer)
     to_material = util.trim(r.to_material)
     target = (
@@ -377,8 +377,8 @@ def _move(t: dict, from_applying: bool, now) -> None:
     if t["to_pi"] != t["from_pi"]:
         # 与转入 PI 的生成互斥：生成持有该 PI 计数器行锁期间，不会有号转入
         db.exec(
-            "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, imported_qty, start_locked, updated_at) "
-            "VALUES (%s,0,0,0,0,%s) ON DUPLICATE KEY UPDATE pi_no = pi_no",
+            "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, start_locked, updated_at) "
+            "VALUES (%s,0,0,0,%s) ON DUPLICATE KEY UPDATE pi_no = pi_no",
             t["to_pi"],
             now,
         )
@@ -391,8 +391,7 @@ def _move(t: dict, from_applying: bool, now) -> None:
             t["id"],
         )
         db.exec(
-            "INSERT INTO sn_key(pi_no, sn, seq_pi_no, seq_dec) SELECT %s, sn, "
-            "CASE WHEN seq_dec IS NULL THEN NULL ELSE seq_pi_no END, seq_dec FROM sn_transfer_item "
+            "INSERT INTO sn_key(pi_no, sn, seq_pi_no, seq_dec) SELECT %s, sn, seq_pi_no, seq_dec FROM sn_transfer_item "
             "WHERE transfer_id = %s",
             t["to_pi"],
             t["id"],

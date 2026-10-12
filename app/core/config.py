@@ -142,6 +142,12 @@ class Settings:
         return max(0, self.get_int("SN_AUDIT_RETENTION_DAYS", 1095))
 
     @property
+    def audit_archive_retention_days(self) -> int:
+        """痕迹总保存天数上限（按发生时间算，含在线与归档）：超过的归档痕迹每日清理；0 = 归档永久保留。
+        不会短于在线保存天数 SN_AUDIT_RETENTION_DAYS。"""
+        return max(0, self.get_int("SN_AUDIT_ARCHIVE_RETENTION_DAYS", 1825))
+
+    @property
     def audit_export_limit(self) -> int:
         return self.get_int("AUDIT_EXPORT_LIMIT", 200_000)
 

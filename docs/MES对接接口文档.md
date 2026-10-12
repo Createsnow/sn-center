@@ -229,7 +229,6 @@ sequenceDiagram
         "factory_code": "100",
         "bill_no": "MO0001",
         "status": "TO_PRINT",
-        "source": "GEN",
         "batch_no": "B202609301407120042",
         "print_no": null,
         "created_at": "2026-09-28 10:00:00",
@@ -262,7 +261,7 @@ sequenceDiagram
 | --- | --- |
 | `sn` | 完整 SN，打标用这个 |
 | `seq_text` | 按规则编码后的流水。没有规则或没有十进制流水时为空字符串 |
-| `seq_dec` | 十进制流水。正常生成的号都有值；只有旧版历史导入（功能已移除）里反解不出的号可能为 `null` |
+| `seq_dec` | 十进制流水，一定有值 |
 | `seq_pi_no` | 流水归属 PI。转厂后业务 PI 会变，流水归属不变 |
 | `pi_no` | 当前业务 PI |
 | `customer_code` / `material_code` / `factory_code` | 客户、物料、当前工厂。物料可空 |
@@ -270,7 +269,6 @@ sequenceDiagram
 | `status` | 见第 7 节 |
 | `batch_no` | 领取批次。未领取或转厂确认后清空，为 `null` |
 | `print_no` | 页面打印单号。MES 回调不产生打印单，一般为 `null` |
-| `source` | 号的来源：生成为 `GEN`；`IMPORT` 只见于旧版历史导入（功能已移除）留下的数据 |
 | `acquired_at` / `printed_at` | 领取时间、打印回写时间 |
 
 ### 幂等

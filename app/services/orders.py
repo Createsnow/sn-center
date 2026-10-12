@@ -280,6 +280,7 @@ def pis(cu: CurrentUser, q: str | None, customer: str | None, pending: bool, lim
         min(max(limit, 1), 500),
     )
     codes = factories.code_by_name()
+    disabled = factories.disabled_codes()
     running = _running([r["pi"] for r in rows])
     bound_pis = set(db.column("SELECT bind_value FROM sn_rule WHERE bind_scope = 'PI'"))
     bound_customers = set(db.column("SELECT bind_value FROM sn_rule WHERE bind_scope = 'CUSTOMER'"))
@@ -293,6 +294,8 @@ def pis(cu: CurrentUser, q: str | None, customer: str | None, pending: bool, lim
                 "bills": int(r["bills"]),
                 "orgs": [{"name": o, "factory_code": codes.get(o)} for o in orgs],
                 "unmapped": any(o not in codes for o in orgs),
+                # 订单的生产组织对应的工厂已停用：不能生成、分配
+                "disabled": any(codes.get(o) in disabled for o in orgs),
                 "start_locked": bool(r["start_locked"]),
                 # 规则已确定（按 PI / 按客户绑定，或已指定给此 PI）：不用先选规则就能生成
                 "rule_fixed": r["chosen_rule"] is not None

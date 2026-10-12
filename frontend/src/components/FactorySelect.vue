@@ -8,7 +8,7 @@
     class="factory-select"
     @update:model-value="(v: string) => emit('update:modelValue', v ?? '')"
   >
-    <el-option v-for="f in factories" :key="f.factory_code" :label="`${f.factory_name}（${f.factory_code}）`" :value="f.factory_code" />
+    <el-option v-for="f in factories" :key="f.factory_code" :label="`${f.factory_name}（${f.factory_code}）${f.enabled ? '' : t('factories.disabledSuffix')}`" :value="f.factory_code" />
   </el-select>
 </template>
 

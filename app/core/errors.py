@@ -44,6 +44,7 @@ class ErrorCode(Enum):
     FACTORY_EXISTS = (409, "工厂编码或名称已存在：{factory}")
     FACTORY_CODE_INVALID = (400, "工厂编码与名称必填，编码不超过 64 位")
     FACTORY_UNMAPPED = (400, "生产组织「{org}」尚未建档为工厂，请先同步工厂")
+    FACTORY_DISABLED = (400, "工厂 {factory} 已停用")
     K3_CONFIG_MISSING = (503, "金蝶配置缺失：{missing}")
     K3_LOGIN_FAILED = (502, "金蝶登录失败：{message}")
     K3_QUERY_FAILED = (502, "金蝶查询失败：{message}")

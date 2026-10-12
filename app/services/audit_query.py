@@ -1,4 +1,7 @@
-"""痕迹查询与导出。绑厂账户只看本厂相关的痕迹。时间范围默认最近 30 天，便于分区裁剪。"""
+"""痕迹查询与导出。绑厂账户只看本厂相关的痕迹。时间范围默认最近 30 天，便于分区裁剪。
+
+查询的时间范围覆盖到已归档的痕迹时，同时查归档表（sn_audit_archive），结果标 archived，页面照常可查、可导出。
+"""
 
 from __future__ import annotations
 
@@ -82,9 +85,35 @@ class Filter:
     keyword: str | None = None
 
 
+COLS = ", ".join(ROW_FIELDS)
+
+
 def meta() -> dict:
     d = settings.audit_retention_days
-    return {"retention_days": d, "permanent": d == 0, "export_limit": settings.audit_export_limit}
+    a = db.one("SELECT MIN(created_at) lo, MAX(created_at) hi FROM sn_audit_archive")
+    return {
+        "retention_days": d,
+        "permanent": d == 0,
+        "archive_retention_days": settings.audit_archive_retention_days,
+        "archive_from": util.fmt(a["lo"]) if a else None,
+        "archive_to": util.fmt(a["hi"]) if a else None,
+        "export_limit": settings.audit_export_limit,
+    }
+
+
+def _with_archive(args: list) -> bool:
+    """查询起点早于归档表里最新一条痕迹时，归档表里可能有命中的痕迹，要一起查。"""
+    hi = db.scalar("SELECT MAX(created_at) FROM sn_audit_archive")
+    return hi is not None and hi >= args[0]
+
+
+def _source(sql: str, args: list, extra: str = "", extra_args: tuple = ()) -> tuple[str, list]:
+    """在线表（加上需要时的归档表）按同一条件取痕迹，archived = 是否来自归档表。"""
+    main = f"SELECT {COLS}, 0 archived FROM sn_audit{sql}{extra}"
+    if not _with_archive(args):
+        return main, [*args, *extra_args]
+    arc = f"SELECT {COLS}, 1 archived FROM sn_audit_archive{sql}{extra}"
+    return f"{main} UNION ALL {arc}", [*args, *extra_args, *args, *extra_args]
 
 
 def _where(cu: CurrentUser, f: Filter) -> tuple[str, list]:
@@ -126,18 +155,25 @@ def _where(cu: CurrentUser, f: Filter) -> tuple[str, list]:
     return sql, args
 
 
+def _count(sql: str, args: list) -> int:
+    n = db.count("SELECT COUNT(*) FROM sn_audit" + sql, *args)
+    if _with_archive(args):
+        n += db.count("SELECT COUNT(*) FROM sn_audit_archive" + sql, *args)
+    return n
+
+
 def list_audits(cu: CurrentUser, f: Filter, page: util.Page) -> dict:
     sql, args = _where(cu, f)
-    total = db.count("SELECT COUNT(*) FROM sn_audit" + sql, *args)
-    rows = db.all(
-        f"SELECT * FROM sn_audit{sql} ORDER BY created_at DESC, id DESC LIMIT %s, %s", *args, page.offset, page.size
-    )
-    return util.page_result([util.jrow(r, ROW_FIELDS) for r in rows], total, page)
+    total = _count(sql, args)
+    src, sargs = _source(sql, args)
+    sql_page = f"SELECT * FROM ({src}) u ORDER BY created_at DESC, id DESC LIMIT %s, %s"
+    rows = db.all(sql_page, *sargs, page.offset, page.size)
+    return util.page_result([{**util.jrow(r, ROW_FIELDS), "archived": bool(r["archived"])} for r in rows], total, page)
 
 
 def check_exportable(cu: CurrentUser, f: Filter) -> None:
     sql, args = _where(cu, f)
-    if db.count("SELECT COUNT(*) FROM sn_audit" + sql, *args) > settings.audit_export_limit:
+    if _count(sql, args) > settings.audit_export_limit:
         raise biz(ErrorCode.EXPORT_TOO_LARGE, max=settings.audit_export_limit)
 
 
@@ -145,7 +181,9 @@ def _rows(cu: CurrentUser, f: Filter) -> Iterator[list]:
     sql, args = _where(cu, f)
     last_id = 2**63 - 1
     while True:
-        page = db.all(f"SELECT * FROM sn_audit{sql} AND id < %s ORDER BY id DESC LIMIT 5000", *args, last_id)
+        # 归档的痕迹保留原 id，与在线表同一序列，可按 id 游标倒序连续读
+        src, sargs = _source(sql, args, " AND id < %s", (last_id,))
+        page = db.all(f"SELECT * FROM ({src}) u ORDER BY id DESC LIMIT 5000", *sargs)
         if not page:
             return
         for r in page:

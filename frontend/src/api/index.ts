@@ -33,6 +33,8 @@ export const api = {
   factories: () => get("/factories"),
   syncFactories: () => http.post("/factories/sync", null, { timeout: 0 }),
   createFactory: (data: Q) => post("/factories", data),
+  renameFactory: (code: string, factory_name: string) => put(`/factories/${encodeURIComponent(code)}`, { factory_name }),
+  setFactoryEnabled: (code: string, enabled: boolean) => post(`/factories/${encodeURIComponent(code)}/${enabled ? "enable" : "disable"}`, {}),
   // 生产订单快照
   orders: (params?: Q) => get("/orders", params),
   orderMeta: () => get("/orders/meta"),

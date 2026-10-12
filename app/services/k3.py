@@ -56,6 +56,7 @@ class Row:
 class Org:
     number: str
     name: str
+    enabled: bool = True
 
 
 @dataclass(frozen=True)
@@ -345,7 +346,7 @@ def fetch_bill(bill_no: str) -> list[Row]:
 
 
 def fetch_organizations() -> list[Org]:
-    """未禁用（FForbidStatus=A）的组织机构。"""
+    """组织机构（含已禁用的：FForbidStatus 不是 A 即禁用，本地同步为停用）。"""
     c = _config()
     with _client() as http:
         _login(http, c)
@@ -355,7 +356,7 @@ def fetch_organizations() -> list[Org]:
             {
                 "FormId": FORM_ORG,
                 "FieldKeys": ORG_FIELDS,
-                "FilterString": "FForbidStatus='A'",
+                "FilterString": "",
                 "OrderString": "FNumber",
                 "TopRowCount": 0,
                 "StartRow": 0,
@@ -368,7 +369,7 @@ def fetch_organizations() -> list[Org]:
         if isinstance(o, list) and len(o) >= 2:
             number, name = text(o[0]), text(o[1])
             forbid = text(o[2]) if len(o) > 2 else "A"
-            if number and name and forbid.upper() == "A" and name not in seen:
+            if number and name and name not in seen:
                 seen.add(name)
-                out.append(Org(number, name))
+                out.append(Org(number, name, forbid.upper() == "A"))
     return out

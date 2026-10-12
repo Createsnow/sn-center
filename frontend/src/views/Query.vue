@@ -54,7 +54,6 @@
             <el-table-column :label="t('acquire.batchNo')" min-width="170">
               <template #default="{ row }"><el-button v-if="row.batch_no" link type="primary" @click="openBatch(row.batch_no)">{{ row.batch_no }}</el-button></template>
             </el-table-column>
-            <el-table-column :label="t('query.source')" width="80"><template #default="{ row }">{{ t(`query.src${row.source}`) }}</template></el-table-column>
             <el-table-column prop="created_at" :label="t('query.createdAt')" width="160" />
             <el-table-column prop="printed_at" :label="t('query.printedAt')" width="160" />
           </el-table>

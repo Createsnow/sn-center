@@ -121,12 +121,10 @@ CREATE TABLE sn_pi_counter (
   pi_no          VARCHAR(64) NOT NULL,
   last_seq_dec   BIGINT      NOT NULL DEFAULT 0 COMMENT '本 PI 已占用的最大十进制流水',
   generated_qty  BIGINT      NOT NULL DEFAULT 0 COMMENT '本 PI 自己生成的枚数',
-  imported_qty   BIGINT      NOT NULL DEFAULT 0 COMMENT '历史导入的枚数',
-  start_seq_dec  BIGINT      NULL COMMENT '指定过的起始号',
   rule_id        BIGINT      NULL COMMENT '给该 PI 指定的通用规则（sn_rule.id），可解绑',
-  start_locked   TINYINT(1)  NOT NULL DEFAULT 0 COMMENT '1 = 已指定起始号或已生成，不再提供起始号',
-  locked_by      VARCHAR(32) NULL,
-  locked_at      DATETIME    NULL,
+  start_locked   TINYINT(1)  NOT NULL DEFAULT 0 COMMENT '1 = 已生成过（撤销到一枚不剩时归 0）',
+  locked_by      VARCHAR(32) NULL COMMENT '首次生成的账户',
+  locked_at      DATETIME    NULL COMMENT '首次生成的时间',
   updated_at     DATETIME    NOT NULL,
   PRIMARY KEY (pi_no)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='PI 流水计数器';
@@ -157,7 +155,6 @@ CREATE TABLE sn_gen_preview (
   end_sn          VARCHAR(64) NOT NULL,
   rule_version_id BIGINT      NOT NULL,
   base_last_seq   BIGINT      NOT NULL COMMENT '预演时该 PI 的最大号',
-  start_override  BIGINT      NULL,
   segments_json   TEXT        NOT NULL,
   created_by      VARCHAR(32) NOT NULL,
   created_at      DATETIME    NOT NULL,
@@ -167,11 +164,13 @@ CREATE TABLE sn_gen_preview (
   KEY ix_preview_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='生成预演';
 
--- 生成任务：running_pi 唯一 → 同一 PI 同一时刻只有一个生成
+-- 生成任务：running_pi 唯一 → 同一 PI 同一时刻只有一个生成。
+-- 一次生成（整张 PI 的各订单）的任务共用 gen_batch：进度、取消、撤销都按批次整体进行
 CREATE TABLE sn_gen_job (
   id              BIGINT        NOT NULL AUTO_INCREMENT,
   bill_no         VARCHAR(64)   NOT NULL,
   pi_no           VARCHAR(64)   NOT NULL,
+  gen_batch       VARCHAR(40)   NOT NULL COMMENT '生成批次：同一次生成的各订单任务共用',
   factory_code    VARCHAR(64)   NOT NULL,
   customer_code   VARCHAR(64)   NOT NULL DEFAULT '',
   rule_version_id BIGINT        NOT NULL,
@@ -180,7 +179,7 @@ CREATE TABLE sn_gen_job (
   end_seq_dec     BIGINT        NOT NULL,
   start_sn        VARCHAR(64)   NOT NULL,
   end_sn          VARCHAR(64)   NOT NULL,
-  status          VARCHAR(16)   NOT NULL COMMENT 'RUNNING / SUCCESS / FAILED',
+  status          VARCHAR(16)   NOT NULL COMMENT 'RUNNING / SUCCESS / FAILED / CANCELED / REVOKED',
   done_qty        BIGINT        NOT NULL DEFAULT 0,
   error_code      VARCHAR(64)   NULL,
   error_msg       VARCHAR(1000) NULL,
@@ -188,13 +187,16 @@ CREATE TABLE sn_gen_job (
   preview_token   CHAR(32)      NOT NULL,
   segments_json   TEXT          NOT NULL,
   created_by      VARCHAR(32)   NOT NULL,
+  cancel_by       VARCHAR(32)   NULL COMMENT '请求取消的账户',
+  cancel_at       DATETIME      NULL COMMENT '请求取消的时间（生成线程看到后整批回滚）',
   created_at      DATETIME      NOT NULL,
   finished_at     DATETIME      NULL,
   PRIMARY KEY (id),
   UNIQUE KEY ux_job_running_pi (running_pi),
   UNIQUE KEY ux_job_preview (preview_token),
   KEY ix_job_bill (bill_no),
-  KEY ix_job_pi (pi_no)
+  KEY ix_job_pi (pi_no),
+  KEY ix_job_batch (gen_batch)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='生成任务';
 
 -- SN 明细：按生成月分区
@@ -209,10 +211,9 @@ CREATE TABLE sn_item (
   bill_no         VARCHAR(64) NOT NULL DEFAULT '' COMMENT '来源生产订单单据编号',
   rule_version_id BIGINT      NULL,
   seq_pi_no       VARCHAR(64) NOT NULL COMMENT '流水归属 PI（转厂不变）',
-  seq_dec         BIGINT      NULL COMMENT '十进制流水；历史导入无法解析时为空',
+  seq_dec         BIGINT      NOT NULL COMMENT '十进制流水',
   status          VARCHAR(16) NOT NULL COMMENT 'PENDING_ALLOC/TO_ACQUIRE/TO_PRINT/PRINTED/APPLYING',
   prev_status     VARCHAR(16) NULL COMMENT '申请中之前的状态（驳回 / 撤回时恢复）',
-  source          VARCHAR(8)  NOT NULL COMMENT 'GEN / IMPORT',
   job_id          BIGINT      NULL,
   batch_no        VARCHAR(40) NULL COMMENT '领取批次',
   print_no        VARCHAR(40) NULL COMMENT '页面打印单号',
@@ -238,8 +239,8 @@ PARTITION BY RANGE (gen_month) (PARTITION pmax VALUES LESS THAN MAXVALUE);
 CREATE TABLE sn_key (
   pi_no      VARCHAR(64) NOT NULL COMMENT '当前挂靠 PI',
   sn         VARCHAR(64) NOT NULL,
-  seq_pi_no  VARCHAR(64) NULL,
-  seq_dec    BIGINT      NULL,
+  seq_pi_no  VARCHAR(64) NOT NULL COMMENT '流水归属 PI（转厂不变）',
+  seq_dec    BIGINT      NOT NULL,
   PRIMARY KEY (pi_no, sn),
   UNIQUE KEY ux_key_seq (seq_pi_no, seq_dec)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='SN 查重护栏';
@@ -326,7 +327,7 @@ CREATE TABLE sn_transfer_item (
   gen_month     INT         NOT NULL,
   sn            VARCHAR(64) NOT NULL,
   seq_pi_no     VARCHAR(64) NOT NULL,
-  seq_dec       BIGINT      NULL,
+  seq_dec       BIGINT      NOT NULL,
   from_status   VARCHAR(16) NOT NULL,
   from_customer VARCHAR(64) NOT NULL DEFAULT '',
   from_material VARCHAR(64) NOT NULL DEFAULT '',
@@ -335,20 +336,6 @@ CREATE TABLE sn_transfer_item (
   KEY ix_transfer_item_sn (sn),
   KEY ix_transfer_item_batch (from_batch_no, sn)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='转厂明细（转出厂可查）';
-
-CREATE TABLE sn_pi_import (
-  id            BIGINT       NOT NULL AUTO_INCREMENT,
-  pi_no         VARCHAR(64)  NOT NULL,
-  start_seq_dec BIGINT       NULL,
-  import_qty    BIGINT       NOT NULL DEFAULT 0,
-  max_seq_dec   BIGINT       NULL,
-  factory_code  VARCHAR(64)  NULL,
-  file_name     VARCHAR(255) NULL,
-  created_by    VARCHAR(32)  NOT NULL,
-  created_at    DATETIME     NOT NULL,
-  PRIMARY KEY (id),
-  KEY ix_import_pi (pi_no)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='起始号 / 历史导入';
 
 -- 审计：按月分区；过期分区整体移入归档表
 CREATE TABLE sn_audit (

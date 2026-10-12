@@ -10,7 +10,7 @@ from app.services import rules
 
 COLS = (
     "id, gen_month, sn, pi_no, customer_code, material_code, factory_code, bill_no, rule_version_id, seq_pi_no, "
-    "seq_dec, status, source, batch_no, print_no, transfer_id, created_at, allocated_at, acquired_at, printed_at"
+    "seq_dec, status, batch_no, print_no, transfer_id, created_at, allocated_at, acquired_at, printed_at"
 )
 
 
@@ -29,7 +29,6 @@ def view(r: dict) -> dict:
         "factory_code": r["factory_code"],
         "bill_no": r["bill_no"],
         "status": r["status"],
-        "source": r["source"],
         "batch_no": r["batch_no"],
         "print_no": r["print_no"],
         "created_at": util.fmt(r["created_at"]),

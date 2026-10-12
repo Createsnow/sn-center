@@ -148,6 +148,10 @@ def _query_rows(doc: dict) -> list[list]:
     ]
 
 
+#: 假金蝶的组织机构：(FNumber, FName, FForbidStatus)，用例按需填写
+ORGS: list[tuple[str, str, str]] = []
+
+
 def install_k3() -> None:
     """View 按单据编号返回 BILLS；ExecuteBillQuery（全量）返回 BILLS 全部明细。"""
 
@@ -165,7 +169,7 @@ def install_k3() -> None:
         if "ExecuteBillQuery" in call.path:
             data = FakeK3.param(call, 0)
             if data.get("FormId") == "ORG_Organizations":
-                return []
+                return [list(o) for o in ORGS]
             if int(data["StartRow"]) > 0:
                 return []
             rows: list = []

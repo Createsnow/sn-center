@@ -76,8 +76,8 @@ ALLOCATION_FIELDS = ("id", "bill_no", "pi_no", "factory_code", "qty", "start_sn"
 
 _INSERT_ITEM = (
     "INSERT INTO sn_item(gen_month, sn, pi_no, customer_code, material_code, factory_code, bill_no, rule_version_id, "
-    "seq_pi_no, seq_dec, status, source, job_id, created_at, updated_at) "
-    "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+    "seq_pi_no, seq_dec, status, job_id, created_at, updated_at) "
+    "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 )
 _INSERT_KEY = "INSERT INTO sn_key(pi_no, sn, seq_pi_no, seq_dec) VALUES (%s,%s,%s,%s)"
 
@@ -99,16 +99,12 @@ def counter(pi: str) -> dict:
             "pi_no": pi,
             "last_seq_dec": 0,
             "generated_qty": 0,
-            "imported_qty": 0,
-            "start_seq_dec": None,
             "start_locked": False,
         }
     return {
         "pi_no": pi,
         "last_seq_dec": c["last_seq_dec"],
         "generated_qty": c["generated_qty"],
-        "imported_qty": c["imported_qty"],
-        "start_seq_dec": c["start_seq_dec"],
         "start_locked": bool(c["start_locked"]),
     }
 
@@ -161,7 +157,7 @@ def max_parsed(sns, spec: codec.Spec) -> tuple[int, str] | None:
 def foreign_max(pi: str, spec: codec.Spec) -> tuple[int, str] | None:
     """本 PI 下流水不归属本 PI 的号（转入的号）按当前规则的最大流水。"""
     sns = db.column(
-        "SELECT sn FROM sn_key WHERE pi_no = %s AND (seq_pi_no IS NULL OR seq_pi_no <> %s) AND CHAR_LENGTH(sn) = %s",
+        "SELECT sn FROM sn_key WHERE pi_no = %s AND seq_pi_no <> %s AND CHAR_LENGTH(sn) = %s",
         pi,
         pi,
         len(spec.prefix) + spec.seq_len + len(spec.suffix),
@@ -191,6 +187,8 @@ def context(bill_no: str) -> dict:
         issues.append(ErrorCode.ORDER_NO_PI.name)
     if b.factory_code is None:
         issues.append(ErrorCode.FACTORY_UNMAPPED.name)
+    elif b.factory_code in factories.disabled_codes():
+        issues.append(ErrorCode.FACTORY_DISABLED.name)
     g = _bill_gen(b.bill_no)
     generated = 0 if g is None else g["generated_qty"]
     quota = max(0, b.total_qty - generated)
@@ -254,12 +252,15 @@ def pi_context(pi_in: str | None, bill_no: str | None = None) -> dict:
     names = {f["factory_code"]: f["factory_name"] for f in db.all("SELECT factory_code, factory_name FROM sn_factory")}
     gens = {g["bill_no"]: g for g in db.all("SELECT * FROM sn_bill_gen WHERE pi_no = %s ORDER BY bill_no", pi)}
     pending = _pending_by_bill(pi)
+    disabled = factories.disabled_codes()
     bills, issues, customer = [], [], ""
     for b, generated, quota in _pi_quota(pi):
         customer = customer or b.customer_code
         g = gens.get(b.bill_no)
         if b.factory_code is None and quota > 0 and ErrorCode.FACTORY_UNMAPPED.name not in issues:
             issues.append(ErrorCode.FACTORY_UNMAPPED.name)
+        if b.factory_code in disabled and quota > 0 and ErrorCode.FACTORY_DISABLED.name not in issues:
+            issues.append(ErrorCode.FACTORY_DISABLED.name)
         bills.append(
             {
                 "bill_no": b.bill_no,
@@ -268,6 +269,7 @@ def pi_context(pi_in: str | None, bill_no: str | None = None) -> dict:
                 "prd_org_name": b.prd_org_name,
                 "factory_code": b.factory_code,
                 "factory_name": names.get(b.factory_code or ""),
+                "factory_disabled": b.factory_code in disabled,
                 "in_snapshot": True,
                 "total_qty": b.total_qty,
                 "generated_qty": generated,
@@ -290,6 +292,7 @@ def pi_context(pi_in: str | None, bill_no: str | None = None) -> dict:
                 "prd_org_name": names.get(g["factory_code"], ""),
                 "factory_code": g["factory_code"],
                 "factory_name": names.get(g["factory_code"]),
+                "factory_disabled": g["factory_code"] in disabled,
                 "in_snapshot": False,
                 "total_qty": g["generated_qty"],
                 "generated_qty": g["generated_qty"],
@@ -356,6 +359,7 @@ def _check_bill(bill_no: str | None, qty: int) -> tuple[orders.Bill, int]:
         raise biz(ErrorCode.ORDER_NO_PI, bill_no=b.bill_no)
     if b.factory_code is None:
         raise biz(ErrorCode.FACTORY_UNMAPPED, org=b.prd_org_name)
+    factories.must_be_enabled(b.factory_code)
     if qty <= 0:
         raise biz(ErrorCode.GEN_QTY_INVALID)
     g = _bill_gen(b.bill_no)
@@ -472,6 +476,9 @@ def pi_preview(cu: CurrentUser, pi_in: str | None, qty_in: int | None, rule_id: 
     unmapped = list(dict.fromkeys(b.prd_org_name for b, _, _ in todo if b.factory_code is None))
     if unmapped:
         raise biz(ErrorCode.FACTORY_UNMAPPED, org="、".join(unmapped))
+    # 生产组织对应的工厂已停用：同样整张 PI 不能生成
+    for code in dict.fromkeys(b.factory_code for b, _, _ in todo):
+        factories.must_be_enabled(code)
     total = sum(q for _, _, q in todo)
     if qty > total:
         raise biz(ErrorCode.GEN_QUOTA_EXCEEDED, qty=qty, quota=total)
@@ -725,8 +732,8 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
     pi = p["pi_no"]
     # 1) 锁 PI 计数器（一张 PI 一行），核对预演时的最大号
     db.exec(
-        "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, imported_qty, start_locked, updated_at) "
-        "VALUES (%s,0,0,0,0,%s) ON DUPLICATE KEY UPDATE pi_no = pi_no",
+        "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, start_locked, updated_at) "
+        "VALUES (%s,0,0,0,%s) ON DUPLICATE KEY UPDATE pi_no = pi_no",
         pi,
         now,
     )
@@ -799,7 +806,6 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
                     pi,
                     s + i,
                     util.PENDING_ALLOC,
-                    "GEN",
                     job_id,
                     now,
                     now,
@@ -1111,7 +1117,7 @@ def revoke_batch(cu: CurrentUser, batch_in: str | None, reason_in: str | None) -
         generated = c["generated_qty"] - qty
         sets = "last_seq_dec = %s, generated_qty = %s, updated_at = %s"
         args: list = [prev, generated, now]
-        if generated == 0 and c["imported_qty"] == 0 and c["start_seq_dec"] is None:
+        if generated == 0:
             # 一枚都不剩：回到从未生成的状态（规则指定保留，可在页面解绑重选）
             sets += ", start_locked = 0, locked_by = NULL, locked_at = NULL"
         db.exec(f"UPDATE sn_pi_counter SET {sets} WHERE pi_no = %s", *args, pi)
@@ -1164,6 +1170,7 @@ def allocate(cu: CurrentUser, bill_no: str | None, factory_code: str | None = No
             raise biz(ErrorCode.ALLOC_NOTHING, bill_no=no)
         if not util.blank(factory_code) and g["factory_code"] != factory_code.strip():
             raise biz(ErrorCode.ALLOC_FACTORY_MISMATCH, factory=g["factory_code"])
+        factories.must_be_enabled(g["factory_code"])
         qty = _pending_alloc(no)
         if qty == 0:
             raise biz(ErrorCode.ALLOC_NOTHING, bill_no=no)

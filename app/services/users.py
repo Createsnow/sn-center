@@ -23,7 +23,7 @@ from app.core.security import (
     verify_password,
 )
 from app.db.session import db
-from app.services import audit
+from app.services import audit, factories
 
 ACTIVE = "ACTIVE"
 DISABLED = "DISABLED"
@@ -167,7 +167,8 @@ def list_users(q: str | None, role: str | None, status: str | None, factory: str
     return util.page_result([_view(u, names.get(u["factory_code"])) for u in rows], total, page)
 
 
-def _check_role_factory(role: str, factory_code: str | None) -> str | None:
+def _check_role_factory(role: str, factory_code: str | None, current: str | None = None) -> str | None:
+    """角色与绑定工厂；新绑定（与 current 不同）的工厂须存在且启用，保留原来已停用的绑定不报错。"""
     if role not in util.ROLES:
         raise biz(ErrorCode.USER_ROLE_INVALID)
     f = util.trim_or_none(factory_code)
@@ -175,8 +176,8 @@ def _check_role_factory(role: str, factory_code: str | None) -> str | None:
         raise biz(ErrorCode.USER_ADMIN_NO_FACTORY)
     if role == util.FACTORY and f is None:
         raise biz(ErrorCode.USER_FACTORY_REQUIRED)
-    if f is not None and db.one("SELECT 1 FROM sn_factory WHERE factory_code = %s", f) is None:
-        raise biz(ErrorCode.FACTORY_NOT_FOUND, factory=f)
+    if f is not None and f != current:
+        factories.must_be_enabled(f)
     return f
 
 
@@ -233,7 +234,7 @@ def update(cu: CurrentUser, uid: int, name: str | None, role: str | None, factor
         if not n or len(n) > 64:
             raise biz(ErrorCode.USER_NAME_REQUIRED)
         r = util.trim(role)
-        f = _check_role_factory(r, factory_code)
+        f = _check_role_factory(r, factory_code, u["factory_code"])
         if u["role"] == util.ADMIN and r != util.ADMIN:
             _check_not_last_admin(u)
         db.exec(

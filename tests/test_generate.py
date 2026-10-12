@@ -101,9 +101,9 @@ def test_busy_when_another_generation_runs_on_same_pi(api, admin, w, sql):
     w.order(bill, ORG, "C1", pi, ("A", 5))
     token = ok(w.preview(bill, 2)).text("token")
     sql.exec(
-        "INSERT INTO sn_gen_job(bill_no, pi_no, factory_code, rule_version_id, qty, start_seq_dec, end_seq_dec, "
-        "start_sn, end_sn, status, running_pi, preview_token, segments_json, created_by, created_at) "
-        "VALUES ('X', %s, 'F', 0, 1, 1, 1, 'a', 'a', 'RUNNING', %s, %s, '[]', 'x', NOW())",
+        "INSERT INTO sn_gen_job(bill_no, pi_no, gen_batch, factory_code, rule_version_id, qty, start_seq_dec, "
+        "end_seq_dec, start_sn, end_sn, status, running_pi, preview_token, segments_json, created_by, created_at) "
+        "VALUES ('X', %s, 'GTEST', 'F', 0, 1, 1, 1, 'a', 'a', 'RUNNING', %s, %s, '[]', 'x', NOW())",
         pi,
         pi,
         uid("tok"),
@@ -308,9 +308,9 @@ def test_only_admin_generates(api, admin, w):
 def _stuck_job(sql, bill: str, pi: str, token: str) -> int:
     """模拟进程在后台生成途中退出：任务行停在 RUNNING，running_pi 仍占着该 PI。"""
     sql.exec(
-        "INSERT INTO sn_gen_job(bill_no, pi_no, factory_code, rule_version_id, qty, start_seq_dec, end_seq_dec, "
-        "start_sn, end_sn, status, running_pi, preview_token, segments_json, created_by, created_at) "
-        "VALUES (%s, %s, %s, 0, 1, 1, 1, 'a', 'a', 'RUNNING', %s, %s, '[]', 'x', NOW())",
+        "INSERT INTO sn_gen_job(bill_no, pi_no, gen_batch, factory_code, rule_version_id, qty, start_seq_dec, "
+        "end_seq_dec, start_sn, end_sn, status, running_pi, preview_token, segments_json, created_by, created_at) "
+        "VALUES (%s, %s, 'GTEST', %s, 0, 1, 1, 1, 'a', 'a', 'RUNNING', %s, %s, '[]', 'x', NOW())",
         bill,
         pi,
         FAC,
@@ -523,9 +523,9 @@ def test_pi_generate_holds_the_pi_until_every_bill_is_done(api, admin, w, sql):
     p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=4), admin)).body
     # 模拟别的生成正占着这张 PI
     sql.exec(
-        "INSERT INTO sn_gen_job(bill_no, pi_no, factory_code, customer_code, rule_version_id, qty, start_seq_dec, "
-        "end_seq_dec, start_sn, end_sn, status, done_qty, running_pi, preview_token, segments_json, created_by, "
-        "created_at) VALUES (%s,%s,%s,'C1',1,1,1,1,'x','x','RUNNING',0,%s,%s,'[]','t',NOW())",
+        "INSERT INTO sn_gen_job(bill_no, pi_no, gen_batch, factory_code, customer_code, rule_version_id, qty, "
+        "start_seq_dec, end_seq_dec, start_sn, end_sn, status, done_qty, running_pi, preview_token, segments_json, "
+        "created_by, created_at) VALUES (%s,%s,'GTEST',%s,'C1',1,1,1,1,'x','x','RUNNING',0,%s,%s,'[]','t',NOW())",
         b1,
         pi,
         FAC,
@@ -803,8 +803,8 @@ def test_cancel_running_generation_rolls_back_everything_but_keeps_audit(api, ad
     holder.autocommit(False)
     with holder.cursor() as c:
         c.execute(
-            "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, imported_qty, start_locked, updated_at) "
-            "VALUES (%s,0,0,0,0,NOW()) ON DUPLICATE KEY UPDATE pi_no = pi_no",
+            "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, start_locked, updated_at) "
+            "VALUES (%s,0,0,0,NOW()) ON DUPLICATE KEY UPDATE pi_no = pi_no",
             (pi,),
         )
         holder.commit()

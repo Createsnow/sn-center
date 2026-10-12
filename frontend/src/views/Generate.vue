@@ -24,6 +24,7 @@
           <template #default="{ row }">
             <b>{{ row.pi }}</b>
             <el-tag v-if="row.unmapped && row.quota" size="small" type="danger" class="ml">{{ t("generate.unmappedTag") }}</el-tag>
+            <el-tag v-else-if="row.disabled && (row.quota || row.pending_alloc)" size="small" type="danger" class="ml">{{ t("generate.disabledTag") }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="customer_number" :label="t('common.customer')" min-width="100" />
@@ -194,6 +195,7 @@
             <template #default="{ row }">
               {{ row.factory_name || row.prd_org_name }}
               <el-tag v-if="!row.factory_code" size="small" type="danger" class="ml">{{ t("generate.unmappedTag") }}</el-tag>
+              <el-tag v-else-if="row.factory_disabled" size="small" type="danger" class="ml">{{ t("generate.disabledTag") }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column :label="t('orders.totalQty')" align="right" width="90"><template #default="{ row }"><span class="num">{{ fmt(row.total_qty) }}</span></template></el-table-column>
@@ -332,7 +334,7 @@ const progressOf = (row: any): any => tracked[row.pi] ?? row.running ?? null;
 function stateOf(row: any): string {
   if (progressOf(row)) return "RUNNING";
   if (row.quota > 0) {
-    if (row.unmapped) return "BLOCKED";
+    if (row.unmapped || row.disabled) return "BLOCKED";
     if (row.generated_qty > 0) return "MORE";
     return row.rule_fixed ? "TO_GEN" : "PICK";
   }
@@ -395,7 +397,7 @@ let alive = true;
 const ruleLabel = (o: any) => `${o.rule_code} · ${o.rule_name}`;
 const nextSn = computed(() => ctx.value?.next?.start_sn ?? ctx.value?.rule_options.find((o: any) => o.rule_id === ruleId.value)?.sample_sn ?? null);
 const detailRun = computed<Tracked | null>(() => (detailPi.value ? tracked[detailPi.value] ?? null : null));
-const canGenerate = computed(() => !!ctx.value && !ctx.value.issues.some((c: string) => c === "FACTORY_UNMAPPED" || c === "RULE_MISSING"));
+const canGenerate = computed(() => !!ctx.value && !ctx.value.issues.some((c: string) => ["FACTORY_UNMAPPED", "FACTORY_DISABLED", "RULE_MISSING"].includes(c)));
 const totals = computed(() => pis.value.reduce((s, r) => ({ quota: s.quota + r.quota, pending: s.pending + r.pending_alloc }), { quota: 0, pending: 0 }));
 const listCap = computed(() => GEN_PAGES * pageSize.value);
 const capped = (v: View) => v === "ALL" || v === "DONE";

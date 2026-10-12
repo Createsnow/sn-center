@@ -86,7 +86,7 @@ def segments(
 ) -> dict:
     """一行 = 工厂 + PI + 物料 + 连续号段 + 状态（按每枚 SN 当前状态现拼）。"""
     sc = read_scope(cu, factory, pi, pi_all_factories)
-    where = " WHERE factory_code IS NOT NULL AND seq_dec IS NOT NULL"
+    where = " WHERE factory_code IS NOT NULL"
     args: list = []
     if not util.blank(status) and status.strip() in util.SN_STATUSES:
         where += " AND status = %s"
@@ -578,14 +578,13 @@ def _expand_range(batch_no: str, r: dict) -> list[str]:
 
 def _locate(batch_no: str, sn: str) -> dict | None:
     hit = db.one(
-        "SELECT seq_pi_no, seq_dec FROM sn_item WHERE batch_no = %s AND sn = %s AND seq_dec IS NOT NULL LIMIT 1",
+        "SELECT seq_pi_no, seq_dec FROM sn_item WHERE batch_no = %s AND sn = %s LIMIT 1",
         batch_no,
         sn,
     )
     if hit is None:
         hit = db.one(
-            "SELECT seq_pi_no, seq_dec FROM sn_transfer_item WHERE from_batch_no = %s AND sn = %s "
-            "AND seq_dec IS NOT NULL LIMIT 1",
+            "SELECT seq_pi_no, seq_dec FROM sn_transfer_item WHERE from_batch_no = %s AND sn = %s LIMIT 1",
             batch_no,
             sn,
         )

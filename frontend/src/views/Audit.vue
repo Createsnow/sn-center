@@ -40,7 +40,9 @@
             </el-descriptions>
           </template>
         </el-table-column>
-        <el-table-column prop="created_at" :label="t('common.time')" width="170" />
+        <el-table-column :label="t('common.time')" width="190">
+          <template #default="{ row }">{{ row.created_at }}<el-tag v-if="row.archived" size="small" type="info" class="arc">{{ t("audit.archived") }}</el-tag></template>
+        </el-table-column>
         <el-table-column :label="t('audit.operator')" width="130"><template #default="{ row }">{{ row.operator }} {{ row.operator_name }}</template></el-table-column>
         <el-table-column :label="t('audit.source')" width="70"><template #default="{ row }">{{ t(`audit.src${row.source}`) }}</template></el-table-column>
         <el-table-column :label="t('audit.action')" width="120"><template #default="{ row }">{{ actionLabel(row.action) }}</template></el-table-column>
@@ -94,9 +96,14 @@ const statusLabel = (s?: string | null) => (s === "PREVIOUS" ? t("audit.previous
 
 const params = () => ({ ...f, from: range.value?.[0], to: range.value?.[1] });
 const { items, state, load, onSize } = usePaged<any>((q) => api.audits({ ...params(), ...q }));
-const retention = computed(() =>
-  meta.value ? (meta.value.permanent ? t("audit.retentionForever") : t("audit.retention", { days: meta.value.retention_days })) : "",
-);
+const retention = computed(() => {
+  const m = meta.value;
+  if (!m) return "";
+  const online = m.permanent ? t("audit.retentionForever") : t("audit.retention", { days: m.retention_days });
+  const arc = m.archive_retention_days ? t("audit.archiveKeep", { days: m.archive_retention_days }) : t("audit.archiveForever");
+  const span = m.archive_from ? t("audit.archiveSpan", { from: m.archive_from.slice(0, 10), to: m.archive_to.slice(0, 10) }) : "";
+  return m.permanent ? online : `${online}${arc}${span}`;
+});
 
 async function exportFile() {
   exporting.value = true;
@@ -116,5 +123,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.arc { margin-left: 6px; }
 .exp { padding: 4px 48px; }
 </style>

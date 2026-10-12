@@ -24,6 +24,7 @@
   "FACTORY_EXISTS": "Mã hoặc tên nhà máy đã tồn tại: {factory}",
   "FACTORY_CODE_INVALID": "Bắt buộc mã và tên nhà máy (mã ≤ 64)",
   "FACTORY_UNMAPPED": "Tổ chức sản xuất “{org}” chưa là nhà máy; hãy đồng bộ nhà máy",
+  "FACTORY_DISABLED": "Nhà máy {factory} đã ngừng dùng",
   "K3_CONFIG_MISSING": "Thiếu cấu hình Kingdee: {missing}",
   "K3_LOGIN_FAILED": "Đăng nhập Kingdee thất bại: {message}",
   "K3_QUERY_FAILED": "Truy vấn Kingdee thất bại: {message}",
