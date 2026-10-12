@@ -167,7 +167,6 @@ sequenceDiagram
 | --- | --- | --- |
 | 401 | `LOGIN_FAILED` | 工号或密码错误 |
 | 401 | `ACCOUNT_DISABLED` | 账户已停用 |
-| 429 | `LOGIN_LOCKED` | 同一工号连续失败达到上限。`params.minutes` 为剩余锁定分钟。默认 5 次失败锁 15 分钟（`SN_LOGIN_MAX_FAILURES`、`SN_LOGIN_LOCK_MINUTES`）。锁定期间密码正确也拒绝 |
 | 400 | `USER_PASSWORD_WRONG` | 改密时原密码不对 |
 | 400 | `USER_PASSWORD_WEAK` | 新密码不合规则 |
 | 400 | `USER_PASSWORD_SAME` | 新密码与原密码相同 |
@@ -476,7 +475,6 @@ MES 只推动领取和打印这两步。
 | 403 | `PASSWORD_CHANGE_REQUIRED` | 先 `POST /api/auth/password` |
 | 403 | `FORBIDDEN` | 角色不允许。查询员不能领取和回调 |
 | 403 | `FACTORY_FORBIDDEN` | 厂区账户碰了其他工厂。`params.factory` 为本厂编码 |
-| 429 | `LOGIN_LOCKED` | 等待 `params.minutes` 分钟后再登录 |
 
 ### 8.2 领取、明细、回调、查询
 

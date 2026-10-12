@@ -88,28 +88,18 @@ def test_login_fails_with_wrong_password(api, admin):
     assert api.get("/api/sn", None).code == "UNAUTHENTICATED"
 
 
-def test_login_locks_after_repeated_failures_and_is_audited(api, w, sql):
-    from app.services import login_guard
-
+def test_repeated_login_failures_never_lock_and_are_audited(api, w, sql):
     emp = uid("lk")
     w.user(emp, "query", None)
-    for _ in range(4):
+    for _ in range(8):
         assert api.post("/api/auth/login", m(emp_no=emp, password="bad"), None).code == "LOGIN_FAILED"
-    fifth = api.post("/api/auth/login", m(emp_no=emp, password="bad"), None)
-    assert fifth.code == "LOGIN_FAILED", "the attempt that reaches the limit still reports wrong password"
-    locked = api.post("/api/auth/login", m(emp_no=emp, password="Pass@1234"), None)
-    assert locked.status == 429
-    assert locked.code == "LOGIN_LOCKED"
-    assert locked["params"]["minutes"] == 15
-    assert (
-        sql.count("SELECT COUNT(*) FROM sn_audit WHERE action = 'LOGIN' AND result = 'FAIL' AND operator = %s", emp)
-        == 6
-    )
-    assert sql.count("SELECT COUNT(*) FROM sn_audit WHERE operator = %s AND detail LIKE '%%locked=15m%%'", emp) == 1
-    login_guard.reset()
     ok(api.post("/api/auth/login", m(emp_no=emp, password="Pass@1234"), None))
     assert (
-        sql.count("SELECT COUNT(*) FROM sn_audit WHERE action = 'LOGIN' AND result = 'OK' AND operator = %s", emp) >= 2
+        sql.count("SELECT COUNT(*) FROM sn_audit WHERE action = 'LOGIN' AND result = 'FAIL' AND operator = %s", emp)
+        == 8
+    )
+    assert (
+        sql.count("SELECT COUNT(*) FROM sn_audit WHERE action = 'LOGIN' AND result = 'OK' AND operator = %s", emp) >= 1
     )
 
 

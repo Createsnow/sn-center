@@ -116,16 +116,6 @@ class Settings:
         return self.get_int("ACCESS_TOKEN_TTL_SECONDS", 12 * 3600)
 
     @property
-    def login_max_failures(self) -> int:
-        """同一工号连续登录失败达到该次数即锁定；0 = 不锁定。"""
-        return max(0, self.get_int("SN_LOGIN_MAX_FAILURES", 5))
-
-    @property
-    def login_lock_minutes(self) -> int:
-        """登录锁定时长（分钟），也是失败次数的统计窗口。"""
-        return max(1, self.get_int("SN_LOGIN_LOCK_MINUTES", 15))
-
-    @property
     def init_admin_emp_no(self) -> str:
         """内置管理员的工号；空库首次启动按它建管理员，SN_RESET_ADMIN 也重置这个工号。"""
         return self.get("SN_INIT_ADMIN_EMP_NO", "") or DEFAULT_ADMIN_EMP_NO

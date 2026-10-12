@@ -11,7 +11,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.post(
     "/login",
     tags=["open"],
-    summary="登录（页面与对外接口共用），返回 Bearer 令牌；同一工号连续失败过多会临时锁定（429 LOGIN_LOCKED）",
+    summary="登录（页面与对外接口共用），返回 Bearer 令牌",
 )
 def login(body: LoginIn, request: Request) -> dict:
     return users.login(body.emp_no, body.password, getattr(request.state, "request_id", None), _client(request))
