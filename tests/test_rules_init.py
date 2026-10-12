@@ -87,11 +87,16 @@ def test_partitions_maintained_and_old_audit_archived(app_client, sql):
 
     partitions.maintain()
     partitions.maintain()
+    audit_parts = sql.count(
+        "SELECT COUNT(*) FROM information_schema.PARTITIONS WHERE TABLE_SCHEMA = DATABASE() "
+        "AND TABLE_NAME = 'sn_audit' AND PARTITION_NAME LIKE 'p2%%'"
+    )
+    assert audit_parts >= 4, "current + 3 months ahead"
     item_parts = sql.count(
         "SELECT COUNT(*) FROM information_schema.PARTITIONS WHERE TABLE_SCHEMA = DATABASE() "
-        "AND TABLE_NAME = 'sn_item' AND PARTITION_NAME LIKE 'p2%%'"
+        "AND TABLE_NAME = 'sn_item' AND PARTITION_NAME IS NOT NULL"
     )
-    assert item_parts >= 4, "current + 3 months ahead"
+    assert item_parts == 0, "sn_item 不分区"
     # 造一个很早的月分区并放一条痕迹，按 30 天保存期归档
     first = sql.one(
         "SELECT PARTITION_NAME n FROM information_schema.PARTITIONS WHERE TABLE_SCHEMA = DATABASE() "

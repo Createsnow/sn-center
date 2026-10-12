@@ -9,7 +9,7 @@ from app.core import utils as util
 from app.services import rules
 
 COLS = (
-    "id, gen_month, sn, pi_no, customer_code, material_code, factory_code, bill_no, rule_version_id, seq_pi_no, "
+    "id, sn, pi_no, customer_code, material_code, factory_code, bill_no, rule_version_id, seq_pi_no, "
     "seq_dec, status, batch_no, print_no, transfer_id, created_at, allocated_at, acquired_at, printed_at"
 )
 
@@ -18,7 +18,7 @@ def view(r: dict) -> dict:
     """一枚 SN：完整 SN、进制流水、十进制流水同时给出。"""
     return {
         "id": r["id"],
-        "gen_month": r["gen_month"],
+        "gen_month": util.month_of(r["created_at"]),
         "sn": r["sn"],
         "seq_text": rules.seq_text(r["rule_version_id"], r["seq_dec"]),
         "seq_dec": r["seq_dec"],

@@ -1,8 +1,8 @@
 -- =====================================================================
 -- 多工厂 SN 防重管控 · MySQL 8 初始表结构
 -- 约定：utf8mb4；编码类字段（SN、PI、物料、工厂）用 utf8mb4_bin，区分大小写、精确比较。
--- sn_item / sn_audit 按月 RANGE 分区；分区由应用启动与每日任务维护（PartitionService），
--- 初始只有兜底分区 pmax。
+-- sn_audit 按月 RANGE 分区（过期整月归档后 DROP PARTITION）；分区由应用启动与每日任务维护（PartitionService），
+-- 初始只有兜底分区 pmax。sn_item 不分区：号不删不归档、查询也不按月份，查重唯一键直接建在它上面。
 -- =====================================================================
 
 -- 工厂（= 金蝶生产组织）
@@ -199,10 +199,9 @@ CREATE TABLE sn_gen_job (
   KEY ix_job_batch (gen_batch)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='生成任务';
 
--- SN 明细：按生成月分区
+-- SN 明细（号池）。不分区：两条查重唯一键直接建在本表上
 CREATE TABLE sn_item (
   id              BIGINT      NOT NULL AUTO_INCREMENT,
-  gen_month       INT         NOT NULL COMMENT '分区键 yyyymm',
   sn              VARCHAR(64) NOT NULL COMMENT '完整 SN，写出后不再修改',
   pi_no           VARCHAR(64) NOT NULL COMMENT '当前挂靠 PI（转厂后为转入 PI）',
   customer_code   VARCHAR(64) NOT NULL DEFAULT '',
@@ -214,7 +213,6 @@ CREATE TABLE sn_item (
   seq_dec         BIGINT      NOT NULL COMMENT '十进制流水',
   status          VARCHAR(16) NOT NULL COMMENT 'PENDING_ALLOC/TO_ACQUIRE/TO_PRINT/PRINTED/APPLYING',
   prev_status     VARCHAR(16) NULL COMMENT '申请中之前的状态（驳回 / 撤回时恢复）',
-  job_id          BIGINT      NULL,
   batch_no        VARCHAR(40) NULL COMMENT '领取批次',
   print_no        VARCHAR(40) NULL COMMENT '页面打印单号',
   transfer_id     BIGINT      NULL COMMENT '未完成的转厂申请',
@@ -223,27 +221,17 @@ CREATE TABLE sn_item (
   acquired_at     DATETIME    NULL,
   printed_at      DATETIME    NULL,
   updated_at      DATETIME    NOT NULL,
-  PRIMARY KEY (id, gen_month),
+  PRIMARY KEY (id),
+  UNIQUE KEY ux_item_pi_sn (pi_no, sn) COMMENT '同一 PI 完整 SN 唯一（转入号随 pi_no 改挂）',
+  UNIQUE KEY ux_item_seq (seq_pi_no, seq_dec) COMMENT '同一流水归属 PI 的十进制流水唯一',
   KEY ix_item_sn (sn),
   KEY ix_item_fac (factory_code, status, pi_no, material_code, seq_pi_no, seq_dec),
   KEY ix_item_status (status, factory_code),
   KEY ix_item_pi (pi_no, status, factory_code),
   KEY ix_item_bill (bill_no, status, seq_dec),
   KEY ix_item_batch (batch_no),
-  KEY ix_item_print (print_no),
-  KEY ix_item_transfer (transfer_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='SN 明细（号池）'
-PARTITION BY RANGE (gen_month) (PARTITION pmax VALUES LESS THAN MAXVALUE);
-
--- 查重护栏（不分区）：同一 PI 完整 SN 唯一；同一流水归属 PI 的十进制流水唯一
-CREATE TABLE sn_key (
-  pi_no      VARCHAR(64) NOT NULL COMMENT '当前挂靠 PI',
-  sn         VARCHAR(64) NOT NULL,
-  seq_pi_no  VARCHAR(64) NOT NULL COMMENT '流水归属 PI（转厂不变）',
-  seq_dec    BIGINT      NOT NULL,
-  PRIMARY KEY (pi_no, sn),
-  UNIQUE KEY ux_key_seq (seq_pi_no, seq_dec)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='SN 查重护栏';
+  KEY ix_item_print (print_no)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='SN 明细（号池）';
 
 CREATE TABLE sn_allocation (
   id           BIGINT      NOT NULL AUTO_INCREMENT,
@@ -324,7 +312,6 @@ CREATE TABLE sn_transfer (
 CREATE TABLE sn_transfer_item (
   transfer_id   BIGINT      NOT NULL,
   item_id       BIGINT      NOT NULL,
-  gen_month     INT         NOT NULL,
   sn            VARCHAR(64) NOT NULL,
   seq_pi_no     VARCHAR(64) NOT NULL,
   seq_dec       BIGINT      NOT NULL,
@@ -333,7 +320,6 @@ CREATE TABLE sn_transfer_item (
   from_material VARCHAR(64) NOT NULL DEFAULT '',
   from_batch_no VARCHAR(40) NULL,
   PRIMARY KEY (transfer_id, item_id),
-  KEY ix_transfer_item_sn (sn),
   KEY ix_transfer_item_batch (from_batch_no, sn)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='转厂明细（转出厂可查）';
 

@@ -56,7 +56,7 @@ FIELDS = (
     "decided_at",
     "decide_note",
 )
-_JOIN = "sn_item i JOIN sn_transfer_item t ON t.item_id = i.id AND t.gen_month = i.gen_month"
+_JOIN = "sn_item i JOIN sn_transfer_item t ON t.item_id = i.id"
 
 
 def transfer_json(t: dict | None) -> dict | None:
@@ -157,7 +157,7 @@ def candidates(cu: CurrentUser, r: Request) -> dict:
             + ELIGIBLE
             + s.where().replace(" AND ", " AND i.")
         )
-        dup_from = " FROM sn_item i JOIN sn_key k ON k.pi_no = %s AND k.sn = i.sn" + where
+        dup_from = " FROM sn_item i JOIN sn_item k ON k.pi_no = %s AND k.sn = i.sn" + where
         n = db.count("SELECT COUNT(*)" + dup_from, to_pi, *s.args())
         if n:
             samples = db.column(f"SELECT i.sn{dup_from} ORDER BY i.sn LIMIT {DUP_SAMPLES}", to_pi, *s.args())
@@ -268,8 +268,8 @@ def _create(cu: CurrentUser, factory: str, r: Request, mode: str) -> dict:
     )
     # 锁定范围内可转的号，记下原状态 / 原批次（回调据此识别已转走的号）
     n = db.exec(
-        "INSERT INTO sn_transfer_item(transfer_id, item_id, gen_month, sn, seq_pi_no, seq_dec, from_status, "
-        "from_customer, from_material, from_batch_no) SELECT %s, id, gen_month, sn, seq_pi_no, seq_dec, status, "
+        "INSERT INTO sn_transfer_item(transfer_id, item_id, sn, seq_pi_no, seq_dec, from_status, "
+        "from_customer, from_material, from_batch_no) SELECT %s, id, sn, seq_pi_no, seq_dec, status, "
         "customer_code, material_code, batch_no FROM sn_item WHERE factory_code = %s AND pi_no = %s AND status IN "
         + ELIGIBLE
         + s.where()
@@ -365,7 +365,7 @@ def _check_duplicates(t: dict) -> None:
     """转入 PI 下已有相同完整 SN（不含本次这批自身）→ 拒绝整次转移。"""
     if t["to_pi"] == t["from_pi"]:
         return
-    join = "FROM sn_transfer_item t JOIN sn_key k ON k.pi_no = %s AND k.sn = t.sn WHERE t.transfer_id = %s"
+    join = "FROM sn_transfer_item t JOIN sn_item k ON k.pi_no = %s AND k.sn = t.sn WHERE t.transfer_id = %s"
     n = db.count("SELECT COUNT(*) " + join, t["to_pi"], t["id"])
     if n:
         dup = db.column(f"SELECT t.sn {join} ORDER BY t.sn LIMIT {DUP_SAMPLES}", t["to_pi"], t["id"])
@@ -373,7 +373,7 @@ def _check_duplicates(t: dict) -> None:
 
 
 def _move(t: dict, from_applying: bool, now) -> None:
-    """改挂到转入目标：查重护栏换 PI；号变为转入厂的待领取；批次 / 打印单清空。"""
+    """改挂到转入目标：号改挂转入 PI（ux_item_pi_sn 兜底查重）；变为转入厂的待领取；批次 / 打印单清空。"""
     if t["to_pi"] != t["from_pi"]:
         # 与转入 PI 的生成互斥：生成持有该 PI 计数器行锁期间，不会有号转入
         db.exec(
@@ -384,18 +384,6 @@ def _move(t: dict, from_applying: bool, now) -> None:
         )
         db.all("SELECT pi_no FROM sn_pi_counter WHERE pi_no = %s FOR UPDATE", t["to_pi"])
     _check_duplicates(t)
-    if t["to_pi"] != t["from_pi"]:
-        db.exec(
-            "DELETE k FROM sn_key k JOIN sn_transfer_item t ON k.pi_no = %s AND k.sn = t.sn WHERE t.transfer_id = %s",
-            t["from_pi"],
-            t["id"],
-        )
-        db.exec(
-            "INSERT INTO sn_key(pi_no, sn, seq_pi_no, seq_dec) SELECT %s, sn, seq_pi_no, seq_dec FROM sn_transfer_item "
-            "WHERE transfer_id = %s",
-            t["to_pi"],
-            t["id"],
-        )
     guard = "i.status = 'APPLYING' AND i.transfer_id = %s" if from_applying else f"i.status IN {ELIGIBLE}"
     args = [
         t["to_pi"],
@@ -583,7 +571,7 @@ def items(cu: CurrentUser, tid: int, page: util.Page) -> dict:
     rows = db.all(
         "SELECT t.sn, t.seq_dec, t.seq_pi_no, t.from_status, t.from_customer, t.from_material, t.from_batch_no, "
         "i.status, i.factory_code, i.pi_no, i.rule_version_id FROM sn_transfer_item t "
-        "LEFT JOIN sn_item i ON i.id = t.item_id AND i.gen_month = t.gen_month "
+        "LEFT JOIN sn_item i ON i.id = t.item_id "
         "WHERE t.transfer_id = %s ORDER BY t.seq_pi_no, t.seq_dec, t.item_id LIMIT %s, %s",
         tid,
         page.offset,

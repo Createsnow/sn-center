@@ -86,7 +86,7 @@ def today() -> date:
 
 
 def month_of(t: datetime) -> int:
-    """yyyymm，sn_item 的分区键。"""
+    """yyyymm（对外仍给出号的生成月份，由 created_at 推出）。"""
     return t.year * 100 + t.month
 
 

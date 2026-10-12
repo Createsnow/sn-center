@@ -4,7 +4,7 @@
 
 - 前端：Vue 3 + TypeScript + Vite + Element Plus（简体中文 / English / Tiếng Việt）
 - 后端：Python 3.12 + FastAPI + PyMySQL + structlog（目录结构与 `main` 分支相同：`app/{api,core,db,middleware,models,schemas,services}`；SQL 直接写在 services 里，不另设仓储层）
-- 数据库：**MySQL 8**（启动时自动建表，Flyway 兼容的 `flyway_schema_history`；SN 明细与操作痕迹按月分区）
+- 数据库：**MySQL 8**（启动时自动建表，Flyway 兼容的 `flyway_schema_history`；操作痕迹按月分区）
 - 外部：金蝶 K3 Cloud 生产订单 / 组织机构（只读同步到本地快照）
 
 ## 文档

@@ -131,6 +131,18 @@ def _transfer(api, admin, pi_from, pi_to, **scope):
     return api.post("/api/transfers/direct", body, admin)
 
 
+def _plant_sn(sql, pi: str, sn: str, seq: int) -> None:
+    """直接在号池里放一枚本 PI 已有的号（已打印），模拟库里已存在的完整 SN。"""
+    sql.exec(
+        "INSERT INTO sn_item(sn, pi_no, seq_pi_no, seq_dec, status, created_at, updated_at) "
+        "VALUES (%s, %s, %s, %s, 'PRINTED', NOW(), NOW())",
+        sn,
+        pi,
+        pi,
+        seq,
+    )
+
+
 def _two_pis(w, prefix_a: str, prefix_b: str, qty_a: int, own_b: int):
     """PI-A 生成 qty_a 枚并分配；PI-B 自己生成 own_b 枚。"""
     pi_a, pi_b, b_a, b_b = uid("PI"), uid("PI"), uid("MO"), uid("MO")
@@ -238,15 +250,15 @@ def test_pending_transfer_shows_target_hint_before_approval(api, admin, w, sql):
 
 
 def test_duplicate_full_sn_still_stops_whole_batch_and_rolls_back(api, admin, w, sql):
-    # 兜底：库里已有与本 PI 将生成的号相同的完整 SN（这里直接写护栏模拟）→ 停止并整批回滚
+    # 兜底：库里已有与本 PI 将生成的号相同的完整 SN（这里直接写号池模拟）→ 停止并整批回滚
     pi_a, pi_b, b_a, b_b = _two_pis(w, "D", "D", 5, 0)
-    sql.exec("INSERT INTO sn_key(pi_no, sn, seq_pi_no, seq_dec) VALUES (%s, 'D00003', %s, 999)", pi_b, pi_b)
+    _plant_sn(sql, pi_b, "D00003", 999)
     p = ok(w.preview(b_b, 5))
     assert p.text("start_sn") == "D00001"
     g = w.gen(p.text("token"), b_b, 5)
     assert g.code == "GEN_DUPLICATE_SN", str(g)
     assert g["params"]["sn"] == "D00003"
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi_b) == 0
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi_b) == 1, "只剩预置的那枚"
     assert sql.count("SELECT COALESCE(MAX(last_seq_dec), 0) FROM sn_pi_counter WHERE pi_no = %s", pi_b) == 0
     job = ok(api.get("/api/generate/jobs" + q(bill_no=b_b), admin)).body[0]
     assert job["status"] == "FAILED"
@@ -299,7 +311,6 @@ def test_large_quantity_runs_as_background_job_with_progress(api, admin, w, sql)
         status = ok(api.get(f"/api/generate/jobs/{job_id}", admin)).text("status")
     assert status == "SUCCESS"
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 8000
-    assert sql.count("SELECT COUNT(*) FROM sn_key WHERE pi_no = %s", pi) == 8000
 
 
 def test_only_admin_generates(api, admin, w):
@@ -510,11 +521,10 @@ def test_pi_generate_rolls_back_every_bill_when_a_later_bill_fails(api, admin, w
     w.order(b3, ORG, "C1", pi, ("A", 3))
     p = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=9), admin)).body
     # 第三张号段里的 R00008 已被本 PI 占用（流水归属本 PI，不影响起点），生成到第三张时查重失败
-    sql.exec("INSERT INTO sn_key(pi_no, sn, seq_pi_no, seq_dec) VALUES (%s, 'R00008', %s, 8)", pi, pi)
+    _plant_sn(sql, pi, "R00008", 8)
     r = api.post("/api/generate/pi", m(pi_no=pi, items=_pi_items(p)), admin)
     assert r.code == "GEN_DUPLICATE_SN"
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 0, "前两张也回滚"
-    assert sql.count("SELECT COUNT(*) FROM sn_key WHERE pi_no = %s", pi) == 1
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 1, "前两张也回滚，只剩预置的那枚"
     assert sql.count("SELECT COUNT(*) FROM sn_bill_gen WHERE pi_no = %s AND generated_qty > 0", pi) == 0
     assert sql.count("SELECT COUNT(*) FROM sn_pi_counter WHERE pi_no = %s AND last_seq_dec > 0", pi) == 0
     rows = sql.all("SELECT status, error_code, error_msg, running_pi FROM sn_gen_job WHERE pi_no = %s", pi)
@@ -651,7 +661,6 @@ def test_revoke_last_generation_rolls_back_and_regenerates_the_same_sns(api, adm
     r = ok(_revoke(api, admin, j2["id"])).body
     assert (r["qty"], r["start_sn"], r["end_sn"], r["last_seq_dec"]) == (4, "RV00004", "RV00007", 3)
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 3
-    assert sql.count("SELECT COUNT(*) FROM sn_key WHERE pi_no = %s", pi) == 3
     assert ok(api.get(f"/api/generate/jobs/{j2['id']}", admin)).text("status") == "REVOKED"
     assert _revoke(api, admin, j2["id"]).code == "GEN_REVOKE_NOT_SUCCESS"
     a = sql.one("SELECT * FROM sn_audit WHERE action = 'SN_REVOKE' AND result = 'OK' AND pi_no = %s", pi)
@@ -717,7 +726,6 @@ def test_revoke_whole_pi_generation_from_last_order_back_to_never_generated(api,
     )
 
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 0
-    assert sql.count("SELECT COUNT(*) FROM sn_key WHERE pi_no = %s", pi) == 0
     assert sql.count("SELECT COUNT(*) FROM sn_bill_gen WHERE pi_no = %s", pi) == 0
     c = sql.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s", pi)
     assert (c["last_seq_dec"], c["generated_qty"], c["start_locked"], c["locked_by"]) == (0, 0, 0, None)
@@ -830,7 +838,6 @@ def test_cancel_running_generation_rolls_back_everything_but_keeps_audit(api, ad
     b = _wait_batch(api, admin, r["batch"])
     assert (b["status"], b["done_qty"], b["error_code"]) == ("CANCELED", 0, "GEN_CANCELED")
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 0
-    assert sql.count("SELECT COUNT(*) FROM sn_key WHERE pi_no = %s", pi) == 0
     assert sql.count("SELECT COUNT(*) FROM sn_bill_gen WHERE pi_no = %s", pi) == 0
     c = sql.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s", pi)
     assert (c["last_seq_dec"], c["generated_qty"], c["start_locked"]) == (0, 0, 0)
@@ -872,4 +879,3 @@ def test_cancel_after_some_chunks_were_written_deletes_them(api, admin, w, sql, 
     j = sql.one("SELECT * FROM sn_gen_job WHERE bill_no = %s", bill)
     assert (j["status"], j["done_qty"], j["running_pi"]) == ("CANCELED", 0, None)
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 0
-    assert sql.count("SELECT COUNT(*) FROM sn_key WHERE pi_no = %s", pi) == 0

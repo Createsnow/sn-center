@@ -76,11 +76,10 @@ JOB_FIELDS = (
 ALLOCATION_FIELDS = ("id", "bill_no", "pi_no", "factory_code", "qty", "start_sn", "end_sn", "created_by", "created_at")
 
 _INSERT_ITEM = (
-    "INSERT INTO sn_item(gen_month, sn, pi_no, customer_code, material_code, factory_code, bill_no, rule_version_id, "
-    "seq_pi_no, seq_dec, status, job_id, created_at, updated_at) "
-    "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+    "INSERT INTO sn_item(sn, pi_no, customer_code, material_code, factory_code, bill_no, rule_version_id, "
+    "seq_pi_no, seq_dec, status, created_at, updated_at) "
+    "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 )
-_INSERT_KEY = "INSERT INTO sn_key(pi_no, sn, seq_pi_no, seq_dec) VALUES (%s,%s,%s,%s)"
 
 #: 大批量生成走后台线程
 executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="sn-gen")
@@ -158,7 +157,7 @@ def max_parsed(sns, spec: codec.Spec) -> tuple[int, str] | None:
 def foreign_max(pi: str, spec: codec.Spec) -> tuple[int, str] | None:
     """本 PI 下流水不归属本 PI 的号（转入的号）按当前规则的最大流水。"""
     sns = db.column(
-        "SELECT sn FROM sn_key WHERE pi_no = %s AND seq_pi_no <> %s AND CHAR_LENGTH(sn) = %s",
+        "SELECT sn FROM sn_item WHERE pi_no = %s AND seq_pi_no <> %s AND CHAR_LENGTH(sn) = %s",
         pi,
         pi,
         len(spec.prefix) + spec.seq_len + len(spec.suffix),
@@ -724,8 +723,7 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
     ns = next_start(pi, c["last_seq_dec"], spec)
     if ns.start != p["start_seq_dec"]:
         raise biz(ErrorCode.GEN_PREVIEW_STALE, pi=pi, expected=p["start_seq_dec"] - 1, actual=ns.base)
-    # 4) 逐块写号：先查重，再写护栏与明细
-    month = util.month_of(now)
+    # 4) 逐块写号：先查重，再写明细（唯一键兜底）
     done = 0
     for seg in segs:
         s = seg.start_seq
@@ -735,10 +733,8 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
             dup = _first_existing(pi, sns)
             if dup is not None:
                 raise biz(ErrorCode.GEN_DUPLICATE_SN, sn=dup, pi=pi)
-            keys = [(pi, sn, pi, s + i) for i, sn in enumerate(sns)]
             items = [
                 (
-                    month,
                     sn,
                     pi,
                     b.customer_code,
@@ -749,20 +745,18 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
                     pi,
                     s + i,
                     util.PENDING_ALLOC,
-                    job_id,
                     now,
                     now,
                 )
                 for i, sn in enumerate(sns)
             ]
             try:
-                db.exec_many(_INSERT_KEY, keys)
+                db.exec_many(_INSERT_ITEM, items)
             except pymysql.err.IntegrityError as ex:
                 if not is_duplicate(ex):
                     raise
                 again = _first_existing(pi, sns)
                 raise biz(ErrorCode.GEN_DUPLICATE_SN, sn=again or sns[0], pi=pi) from None
-            db.exec_many(_INSERT_ITEM, items)
             done += len(sns)
             if _progress(job_id, done):
                 raise biz(ErrorCode.GEN_CANCELED)
@@ -840,7 +834,7 @@ def recover_interrupted() -> int:
 
 def _first_existing(pi: str, sns: list[str]) -> str | None:
     """本 PI 下（含转入号）已存在的第一个 SN；没有返回 None。"""
-    hit = db.column(f"SELECT sn FROM sn_key WHERE pi_no = %s AND sn IN ({marks(len(sns))}) LIMIT 1", pi, *sns)
+    hit = db.column(f"SELECT sn FROM sn_item WHERE pi_no = %s AND sn IN ({marks(len(sns))}) LIMIT 1", pi, *sns)
     return hit[0] if hit else None
 
 
@@ -958,14 +952,14 @@ def cancel(cu: CurrentUser, batch_in: str | None) -> dict:
 
 
 def _job_pending(j: dict) -> int:
-    """该任务写出的号中仍待分配的枚数（按单据 + 状态 + 流水区间走 ix_item_bill）。"""
+    """该任务写出的号中仍待分配的枚数（任务的流水区间在本 PI 内唯一，走 ux_item_seq）。"""
     return db.count(
-        "SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND status = 'PENDING_ALLOC' "
-        "AND seq_dec BETWEEN %s AND %s AND job_id = %s",
-        j["bill_no"],
+        "SELECT COUNT(*) FROM sn_item WHERE seq_pi_no = %s AND seq_dec BETWEEN %s AND %s "
+        "AND bill_no = %s AND status = 'PENDING_ALLOC'",
+        j["pi_no"],
         j["start_seq_dec"],
         j["end_seq_dec"],
-        j["id"],
+        j["bill_no"],
     )
 
 
@@ -1036,17 +1030,15 @@ def revoke_batch(cu: CurrentUser, batch_in: str | None, reason_in: str | None) -
         for j in js:
             s, e = j["start_seq_dec"], j["end_seq_dec"]
             n_items = db.exec(
-                "DELETE FROM sn_item WHERE bill_no = %s AND status = 'PENDING_ALLOC' "
-                "AND seq_dec BETWEEN %s AND %s AND job_id = %s",
-                j["bill_no"],
+                "DELETE FROM sn_item WHERE seq_pi_no = %s AND seq_dec BETWEEN %s AND %s "
+                "AND pi_no = %s AND bill_no = %s AND status = 'PENDING_ALLOC'",
+                pi,
                 s,
                 e,
-                j["id"],
+                pi,
+                j["bill_no"],
             )
-            n_keys = db.exec(
-                "DELETE FROM sn_key WHERE seq_pi_no = %s AND seq_dec BETWEEN %s AND %s AND pi_no = %s", pi, s, e, pi
-            )
-            if n_items != j["qty"] or n_keys != j["qty"]:
+            if n_items != j["qty"]:
                 raise biz(ErrorCode.CONFLICT_RETRY)
         # 退回到这张 PI 其余成功生成的最大号（计数器只由生成推进）
         prev = db.scalar(

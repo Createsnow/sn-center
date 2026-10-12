@@ -294,7 +294,6 @@ def test_approve_moves_to_target_keeps_serial_owner_and_source_count(api, admin,
         )
         == 2
     )
-    assert sql.count("SELECT COUNT(*) FROM sn_key WHERE pi_no = %s AND seq_pi_no = %s", to_pi, pi) == 2
     assert sql.count("SELECT COALESCE(MAX(last_seq_dec), 0) FROM sn_pi_counter WHERE pi_no = %s", to_pi) == 0, (
         "target counter not raised"
     )

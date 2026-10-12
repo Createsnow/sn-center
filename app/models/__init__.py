@@ -14,7 +14,6 @@ TABLES = (
     "sn_gen_preview",
     "sn_gen_job",
     "sn_item",
-    "sn_key",
     "sn_allocation",
     "sn_acquire_batch",
     "sn_print",

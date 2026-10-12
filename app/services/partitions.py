@@ -1,7 +1,7 @@
 """按月分区维护：
 
-- sn_item（RANGE gen_month）、sn_audit（RANGE COLUMNS created_at）提前建好未来 N 个月分区，
-  兜底分区 pmax 始终为空，拆分几乎零成本；
+- sn_audit（RANGE COLUMNS created_at）提前建好未来 N 个月分区，兜底分区 pmax 始终为空，拆分几乎零成本
+  （sn_item 不分区：号不删不归档，查询也不按月份）；
 - 痕迹保存期（默认 3 年，0 = 永久）之外的整月分区先整体拷入 sn_audit_archive，再 DROP PARTITION；
 - 归档表设总保存上限（SN_AUDIT_ARCHIVE_RETENTION_DAYS，默认 5 年，0 = 永久，不短于在线保存期）：
   发生时间超过上限的归档痕迹分批删除，删除本身留痕。
@@ -56,23 +56,12 @@ def maintain() -> None:
             log.info("partition_maintain_skipped", reason="other instance holds lock")
             return
         try:
-            _ensure_item(c)
             _ensure_audit(c)
             _archive(c, settings.audit_retention_days)
             purge_archive(settings.audit_archive_retention_days)
             c.execute("DELETE FROM sn_gen_preview WHERE created_at < DATE_SUB(NOW(), INTERVAL 7 DAY)")
         finally:
             c.execute("SELECT RELEASE_LOCK('sn_partition')")
-
-
-def _ensure_item(c) -> None:
-    highest = max((int(b) for _, b in _partitions(c, "sn_item") if b is not None), default=-(2**63))
-    defs = []
-    for y, m in _wanted():
-        bound = _ym(*_add_months(y, m, 1))
-        if bound > highest:
-            defs.append(f"PARTITION p{_ym(y, m)} VALUES LESS THAN ({bound})")
-    _reorganize(c, "sn_item", defs, "PARTITION pmax VALUES LESS THAN MAXVALUE")
 
 
 def _ensure_audit(c) -> None:
