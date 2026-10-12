@@ -6,7 +6,24 @@
     "hq": "Tổng bộ",
     "empNo": "Mã NV",
     "changePassword": "Đổi mật khẩu",
-    "logout": "Đăng xuất"
+    "logout": "Đăng xuất",
+    "account": "Tài khoản hiện tại",
+    "language": "Ngôn ngữ",
+    "allFactories": "Tất cả nhà máy",
+    "readonly": "Chỉ xem",
+    "superAdmin": "Quản trị cấp cao",
+    "scope": "Phạm vi dữ liệu",
+    "roleShort": {
+      "admin": "Quản trị viên",
+      "factory_operator": "Nhân viên nhà máy",
+      "query": "Người tra cứu"
+    },
+    "scopeTip": {
+      "hq": "Góc nhìn tổng bộ: xem mọi nhà máy và có thể nhận / in thay cho bất kỳ nhà máy nào",
+      "factory": "Chỉ xem và thao tác dữ liệu của nhà máy này",
+      "queryAll": "Tra cứu dữ liệu của mọi nhà máy, không thể thao tác",
+      "queryFactory": "Chỉ tra cứu dữ liệu của nhà máy này, không thể thao tác"
+    }
   },
   "nav": {
     "groupWork": "Bàn làm việc",
