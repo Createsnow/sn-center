@@ -8,7 +8,7 @@ from fastapi import APIRouter, Query
 from app.api.deps import AdminOrFactoryDep, UserDep, page_of
 from app.core import utils as util
 from app.schemas.common import OptInt, blank_to_none
-from app.schemas.sn import CallbackIn, OpenAcquireIn
+from app.schemas.sn import CallbackIn, OpenAcquireIn, SnPageOut
 from app.services import acquire, query
 
 router = APIRouter(prefix="/open", tags=["open"])
@@ -25,7 +25,13 @@ def open_acquire(body: OpenAcquireIn, cu: AdminOrFactoryDep) -> dict:
     return {"batch": b, "items": acquire.batch_items(cu, b["batch_no"], util.Page.of(1, size))}
 
 
-@router.get("/batches/{batch_no}/items", summary="按批次号分页取明细（可反复读取）：完整 SN、进制流水、十进制数")
+@router.get(
+    "/batches/{batch_no}/items",
+    response_model=SnPageOut,
+    summary="按批次号分页取明细（可反复读取）：完整 SN、进制流水、十进制数",
+    description="当前仍挂在该批次上的号，按 seq_pi_no、seq_dec、id 升序；total 为精确值，total_capped 恒为 false。"
+    "转厂确认后离开本批次的号不再出现。",
+)
 def open_batch_items(batch_no: str, cu: UserDep, page: OptInt = None, page_size: OptInt = None) -> dict:
     return acquire.batch_items(cu, batch_no, page_of(page, page_size, 1000))
 
