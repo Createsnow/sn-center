@@ -6,7 +6,24 @@
     "hq": "HQ",
     "empNo": "Employee No.",
     "changePassword": "Change password",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "account": "Signed in as",
+    "language": "Language",
+    "allFactories": "All factories",
+    "readonly": "Read-only",
+    "superAdmin": "Super admin",
+    "scope": "Data scope",
+    "roleShort": {
+      "admin": "Administrator",
+      "factory_operator": "Factory operator",
+      "query": "Viewer"
+    },
+    "scopeTip": {
+      "hq": "HQ view: sees every factory and can acquire / print on behalf of any factory",
+      "factory": "Can only view and act on this factory's data",
+      "queryAll": "Can look up data of every factory, but cannot take any action",
+      "queryFactory": "Can only look up this factory's data, and cannot take any action"
+    }
   },
   "nav": {
     "groupWork": "Workspace",

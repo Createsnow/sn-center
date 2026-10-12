@@ -6,7 +6,24 @@
     "hq": "总部",
     "empNo": "工号",
     "changePassword": "修改密码",
-    "logout": "退出登录"
+    "logout": "退出登录",
+    "account": "当前账户",
+    "language": "界面语言",
+    "allFactories": "全部工厂",
+    "readonly": "只读",
+    "superAdmin": "超级管理员",
+    "scope": "数据范围",
+    "roleShort": {
+      "admin": "系统管理员",
+      "factory_operator": "厂区操作员",
+      "query": "查询员"
+    },
+    "scopeTip": {
+      "hq": "总部视角：可查看全部工厂，并可代任一工厂领取 / 打印",
+      "factory": "仅能查看和操作本厂的数据",
+      "queryAll": "可查询全部工厂的数据，不能做任何操作",
+      "queryFactory": "仅能查询本厂的数据，不能做任何操作"
+    }
   },
   "nav": {
     "groupWork": "工作台",
