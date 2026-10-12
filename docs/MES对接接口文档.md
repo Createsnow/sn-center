@@ -258,23 +258,7 @@ sequenceDiagram
 | `batch.source` | 经本接口领取为 `API` |
 | `items` | 该批次当前仍挂着这个 `batch_no` 的号，第 1 页。排序：流水归属、十进制流水、内部 id |
 
-`total` 大于 `page_size` 时，用第 4 节把后续页取完。打印以明细里的 `sn` 为准。
-
-一枚号的字段：
-
-| 字段 | 说明 |
-| --- | --- |
-| `sn` | 完整 SN，打标用这个 |
-| `seq_text` | 按规则编码后的流水。没有规则或没有十进制流水时为空字符串 |
-| `seq_dec` | 十进制流水，一定有值 |
-| `seq_pi_no` | 流水归属 PI。转厂后业务 PI 会变，流水归属不变 |
-| `pi_no` | 当前业务 PI |
-| `customer_code` / `material_code` / `factory_code` | 客户、物料、当前工厂。物料可空 |
-| `bill_no` | 来源生产订单编号 |
-| `status` | 见第 7 节 |
-| `batch_no` | 领取批次。未领取或转厂确认后清空，为 `null` |
-| `print_no` | 页面打印单号。MES 回调不产生打印单，一般为 `null` |
-| `acquired_at` / `printed_at` | 领取时间、打印回写时间 |
+`total` 大于 `page_size` 时，用第 4 节把后续页取完。打印以明细里的 `sn` 为准。`items` 的结构与每枚号的字段见第 4 节。
 
 ### 幂等
 
@@ -317,7 +301,75 @@ Authorization: Bearer {token}
 
 ### 成功
 
-响应体就是分页对象，`items[]` 的字段与领取接口第一页相同。`total` 是当前仍属于该批次的枚数，可以小于 `batch.qty`（转走之后）。
+响应体就是分页对象，不再包一层 `batch`。与领取响应里的 `items` 结构相同。
+
+```json
+{
+  "items": [
+    {
+      "id": 91001,
+      "gen_month": 202609,
+      "sn": "81260908201001",
+      "seq_text": "01001",
+      "seq_dec": 1001,
+      "seq_pi_no": "ADT260730-0832-1711",
+      "pi_no": "ADT260730-0832-1711",
+      "customer_code": "C100",
+      "material_code": "MAT-01",
+      "factory_code": "100",
+      "bill_no": "MO0001",
+      "status": "TO_PRINT",
+      "batch_no": "B202609301407120042",
+      "print_no": null,
+      "created_at": "2026-09-28 10:00:00",
+      "allocated_at": "2026-09-28 10:05:00",
+      "acquired_at": "2026-09-30 14:07:12",
+      "printed_at": null
+    }
+  ],
+  "total": 1200,
+  "page": 2,
+  "page_size": 1000,
+  "total_capped": false
+}
+```
+
+分页字段：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `items` | 数组 | 本页的号，每个元素见下表。超出最后一页时为空数组 |
+| `total` | 整数 | 当前仍挂在该批次上的枚数，精确值。可以小于 `batch.qty`（转厂确认后离开本批次的号不计） |
+| `page` | 整数 | 实际使用的页码（小于 1 按 1） |
+| `page_size` | 整数 | 实际使用的每页条数（超过 5000 按 5000） |
+| `total_capped` | 布尔 | 本接口恒为 `false` |
+
+排序：流水归属（`seq_pi_no`）、十进制流水（`seq_dec`）、内部 `id`，均升序。翻页期间号的状态可能被页面或回调改变，但不会增减本批次的号，只有转厂确认会让号离开。
+
+每枚号的字段（第 3 节领取响应、第 6 节只读查号的 `items[]` 相同）：
+
+| 字段 | 类型 | 可空 | 说明 |
+| --- | --- | --- | --- |
+| `id` | 整数 | 否 | 本系统内部 id，仅用于排查，对接不要依赖 |
+| `gen_month` | 整数 | 否 | 号的生成月份，`yyyyMM` |
+| `sn` | 字符串 | 否 | 完整 SN，打标用这个 |
+| `seq_text` | 字符串 | 否 | 按规则编码后的流水。没有规则或无法编码时为空字符串 `""` |
+| `seq_dec` | 整数 | 否 | 十进制流水。同一 `seq_pi_no` 下唯一 |
+| `seq_pi_no` | 字符串 | 否 | 流水归属 PI。转厂后业务 PI 可能变，流水归属不变 |
+| `pi_no` | 字符串 | 否 | 当前业务 PI |
+| `customer_code` | 字符串 | 否 | 客户编码 |
+| `material_code` | 字符串 | 否 | 物料编码。没有物料时为空字符串 `""` |
+| `factory_code` | 字符串 | 否 | 当前工厂编码（批次里的号一定已分到工厂） |
+| `bill_no` | 字符串 | 否 | 来源生产订单编号 |
+| `status` | 字符串 | 否 | `TO_PRINT` 待打印、`PRINTED` 已打印、`APPLYING` 转厂申请中，见第 7 节 |
+| `batch_no` | 字符串 | 是 | 领取批次号。本接口返回的号都等于所查批次 |
+| `print_no` | 字符串 | 是 | 页面打印单号。只有工作台页面打印过才有；MES 回调不产生打印单，为 `null` |
+| `created_at` | 字符串 | 否 | 生成时间 |
+| `allocated_at` | 字符串 | 是 | 分配到工厂的时间 |
+| `acquired_at` | 字符串 | 是 | 领取时间 |
+| `printed_at` | 字符串 | 是 | 改为已打印的时间（页面打印或回调）。未打印为 `null` |
+
+时间格式均为 `yyyy-MM-dd HH:mm:ss`。可空字段为空时值是 `null`，字段本身总会出现。
 
 建议按 `page` 递增，直到本页条数小于 `page_size`，或已读条数达到 `total`。
 
@@ -431,7 +483,7 @@ GET /api/open/sn?factory_code=100&pi=ADT260730-0832-1711&page=1&page_size=1000
 Authorization: Bearer {token}
 ```
 
-成功体与批次明细分页相同，`items[]` 字段相同。有 PI 时按物料、流水归属、十进制流水排序。`total` 计数封顶 10 万：达到封顶时 `total` 为 `100000` 且 `total_capped` 为 `true`。
+成功体与批次明细分页相同，`items[]` 字段见第 4 节。区别：`status` 还可能是 `TO_ACQUIRE`，未领取的号 `batch_no`、`acquired_at` 为 `null`。有 PI 时按物料、流水归属、十进制流水排序。`total` 计数封顶 10 万：达到封顶时 `total` 为 `100000` 且 `total_capped` 为 `true`。
 
 结果里可能包含待分配以外的各种状态（待领取、待打印、已打印、申请中）。尚未分到工厂的号不在厂区可见范围内。
 
