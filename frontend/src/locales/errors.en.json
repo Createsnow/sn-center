@@ -3,6 +3,7 @@
   "TOKEN_INVALID": "Session expired, please sign in again",
   "LOGIN_FAILED": "Wrong employee number or password",
   "ACCOUNT_DISABLED": "Account is disabled",
+  "SESSION_REPLACED": "This account signed in on another page; this page has been signed out",
   "PASSWORD_CHANGE_REQUIRED": "Your password was reset by the administrator: please change it first",
   "FORBIDDEN": "Your role is not allowed to do this",
   "FACTORY_FORBIDDEN": "You can only operate SNs of your factory: {factory}",

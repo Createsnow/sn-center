@@ -1,4 +1,4 @@
-"""/api 鉴权依赖：Bearer 令牌 → 账户（停用即拒绝）→ 强制改密 → 角色。
+"""/api 鉴权依赖：Bearer 令牌 → 账户（停用即拒绝；已在别处重新登录即拒绝）→ 强制改密 → 角色。
 
 当前账户挂到 request.state.user，全局 BizError 处理据此记失败痕迹。
 """
@@ -15,7 +15,7 @@ from fastapi.responses import StreamingResponse
 
 from app.core import utils as util
 from app.core.errors import ErrorCode, biz
-from app.core.security import API, PAGE, CurrentUser, parse_token, pwd_version
+from app.core.security import API, PAGE, CurrentUser, parse_token, pwd_version, session_version
 from app.db.session import db
 
 
@@ -37,14 +37,16 @@ def authenticate(request: Request) -> CurrentUser:
         raise biz(ErrorCode.UNAUTHENTICATED)
     claims = parse_token(token)
     user = db.one(
-        "SELECT id, emp_no, name, role, factory_code, status, must_change_pwd, pwd_changed_at FROM sn_user "
-        "WHERE id = %s",
+        "SELECT id, emp_no, name, role, factory_code, status, must_change_pwd, pwd_changed_at, last_login_at "
+        "FROM sn_user WHERE id = %s",
         claims.user_id,
     )
     if user is None or pwd_version(user["pwd_changed_at"]) != claims.pwd_version:
         raise biz(ErrorCode.TOKEN_INVALID)
     if user["status"] != "ACTIVE":
         raise biz(ErrorCode.ACCOUNT_DISABLED)
+    if session_version(user["last_login_at"]) != claims.session_version:
+        raise biz(ErrorCode.SESSION_REPLACED)
     path = request.url.path
     source = API if path.startswith("/api/open/") else PAGE
     cu = CurrentUser(

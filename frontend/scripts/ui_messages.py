@@ -523,7 +523,7 @@ M = {
 "users.editTitle": ("修改账户 {emp}", "Edit account {emp}", "Sửa tài khoản {emp}"),
 "users.initPwd": ("初始密码", "Initial password", "Mật khẩu ban đầu"),
 "users.pwdHint": ("创建后直接可用，本人可随时自行修改。", "Usable right away; the user can change it at any time.", "Dùng được ngay; người dùng có thể tự đổi bất cứ lúc nào."),
-"users.roleHint.admin": ("总部账号：不绑厂，具备全部操作权限，可代任一工厂领取、打印、转厂。", "HQ: no factory, full permissions, may act for any factory.", "Tổng bộ: không gắn nhà máy, toàn quyền, thao tác thay mọi nhà máy."),
+"users.roleHint.admin": ("总部账号：不绑厂，具备全部业务权限，可代任一工厂领取、打印、转厂；不能创建或管理账户（只有 admin 账户可以）。", "HQ: no factory, full business permissions, may act for any factory; cannot create or manage accounts (only the admin account can).", "Tổng bộ: không gắn nhà máy, toàn quyền nghiệp vụ, thao tác thay mọi nhà máy; không được tạo hay quản lý tài khoản (chỉ tài khoản admin được)."),
 "users.roleHint.factory_operator": ("必须绑定一个工厂，只能操作本厂。", "Must be bound to one factory and can only act for it.", "Phải gắn một nhà máy và chỉ thao tác cho nhà máy đó."),
 "users.roleHint.query": ("只读；不绑厂 = 跨厂只读，绑厂 = 只看该厂。", "Read-only; no factory = all factories, bound = that factory only.", "Chỉ xem; không gắn = mọi nhà máy, gắn = chỉ nhà máy đó."),
 "users.disableConfirm": ("停用 {emp} {name}？停用后不能登录，历史痕迹保留。", "Disable {emp} {name}? They can no longer sign in; history is kept.", "Vô hiệu {emp} {name}? Không thể đăng nhập; lịch sử được giữ."),

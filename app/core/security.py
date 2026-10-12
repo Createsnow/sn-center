@@ -1,6 +1,7 @@
 """口令哈希、登录令牌与当前操作人。
 
-口令哈希与令牌格式与 Java 后端完全一致：两个后端签发的令牌可以互认（同一 SN_SECRET）。
+令牌带口令版本与登录版本：改密 / 重置后旧令牌失效；同一账户再次登录后，之前签发的令牌也失效
+（一个账户同一时刻只在一个页面 / 一个调用方上有效，后登录的覆盖先登录的）。
 """
 
 from __future__ import annotations
@@ -59,19 +60,24 @@ def check_policy(password: str | None) -> None:
 
 
 def pwd_version(pwd_changed_at: datetime | None) -> int:
-    """口令版本 = 改密时间按 UTC 解释的秒数（与 Java toEpochSecond(UTC) 相同）。"""
+    """口令版本 = 改密时间按 UTC 解释的秒数。"""
     if pwd_changed_at is None:
         return 0
     return int((pwd_changed_at - datetime(1970, 1, 1)).total_seconds())
+
+
+def session_version(last_login_at: datetime | None) -> int:
+    """登录版本 = 最近一次登录时间的秒数；每次登录都会变（同一秒内再登录顺延一秒）。"""
+    return pwd_version(last_login_at)
 
 
 def _sign(raw: str) -> str:
     return hmac.new(settings.secret_key.encode("utf-8"), raw.encode("ascii"), hashlib.sha256).hexdigest()
 
 
-def issue_token(user_id: int, pv: int) -> str:
-    """base64url(JSON{uid, pv, exp}) + "." + HMAC-SHA256。"""
-    body = {"uid": user_id, "pv": pv, "exp": int(time.time()) + settings.access_token_ttl_seconds}
+def issue_token(user_id: int, pv: int, sv: int) -> str:
+    """base64url(JSON{uid, pv, sv, exp}) + "." + HMAC-SHA256。"""
+    body = {"uid": user_id, "pv": pv, "sv": sv, "exp": int(time.time()) + settings.access_token_ttl_seconds}
     raw = base64.urlsafe_b64encode(json.dumps(body, separators=(",", ":")).encode()).decode().rstrip("=")
     return raw + "." + _sign(raw)
 
@@ -80,6 +86,7 @@ def issue_token(user_id: int, pv: int) -> str:
 class Claims:
     user_id: int
     pwd_version: int
+    session_version: int
     exp: int
 
 
@@ -95,7 +102,7 @@ def parse_token(token: str) -> Claims:
         raise biz(ErrorCode.TOKEN_INVALID)
     try:
         m = json.loads(base64.urlsafe_b64decode(raw + "=" * (-len(raw) % 4)))
-        c = Claims(int(m["uid"]), int(m["pv"]), int(m["exp"]))
+        c = Claims(int(m["uid"]), int(m["pv"]), int(m["sv"]), int(m["exp"]))
     except (ValueError, KeyError, TypeError):
         raise biz(ErrorCode.TOKEN_INVALID) from None
     if c.exp < int(time.time()):

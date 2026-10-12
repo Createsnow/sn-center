@@ -9,16 +9,21 @@ export const TOKEN_KEY = "sn_token";
 export const USER_KEY = "sn_user";
 
 /**
- * 登录态按浏览器标签页隔离（sessionStorage），同一台机器可在不同标签页同时登录不同账户，互不覆盖。
- * localStorage 只记「最近一次登录」，供新开的空白标签页沿用；之后各标签页各自独立。
+ * 登录态只存在本标签页（sessionStorage），不跨标签页共享：新开的页面要自己登录，
+ * 同一台机器可在不同标签页同时登录不同账户。同一账户只在一个页面有效，后登录的覆盖先登录的
+ * （后端令牌校验 + 本浏览器内 stores/auth 的页面广播）。
  */
+try {
+  // 旧版本把「最近一次登录」记在 localStorage 供新标签页沿用，现已不用
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+} catch {
+  /* ignore */
+}
+
 function read(key: string): string | null {
   try {
-    const own = sessionStorage.getItem(key);
-    if (own !== null || sessionStorage.getItem(TOKEN_KEY) !== null) return own;
-    const last = localStorage.getItem(key);
-    if (last !== null) sessionStorage.setItem(key, last);
-    return last;
+    return sessionStorage.getItem(key);
   } catch {
     return null;
   }
@@ -38,14 +43,8 @@ export function getSavedUser<T>(): T | null {
 
 export function saveSession(token: string | null, user: unknown): void {
   try {
-    if (token !== null) {
-      sessionStorage.setItem(TOKEN_KEY, token);
-      localStorage.setItem(TOKEN_KEY, token);
-    }
-    const json = JSON.stringify(user);
-    sessionStorage.setItem(USER_KEY, json);
-    // 只有本页仍是「最近一次登录」时才同步资料，避免把别的标签页的账户信息改掉
-    if (localStorage.getItem(TOKEN_KEY) === sessionStorage.getItem(TOKEN_KEY)) localStorage.setItem(USER_KEY, json);
+    if (token !== null) sessionStorage.setItem(TOKEN_KEY, token);
+    sessionStorage.setItem(USER_KEY, JSON.stringify(user));
   } catch {
     /* 存储不可用时仅保留内存中的登录态 */
   }
@@ -53,17 +52,22 @@ export function saveSession(token: string | null, user: unknown): void {
 
 export function clearSession(): void {
   try {
-    const mine = sessionStorage.getItem(TOKEN_KEY);
-    // 本页退出：sessionStorage 留一个空令牌，表示「本页已退出」，不再沿用最近一次登录
-    sessionStorage.setItem(TOKEN_KEY, "");
+    sessionStorage.removeItem(TOKEN_KEY);
     sessionStorage.removeItem(USER_KEY);
-    if (mine && localStorage.getItem(TOKEN_KEY) === mine) {
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
-    }
   } catch {
     /* ignore */
   }
+}
+
+/** 整页跳到登录页（清掉内存状态）；reason 为错误码时登录页显示原因，并记下当前页供登录后返回。 */
+export function goLogin(reason?: string): void {
+  const { pathname, search } = window.location;
+  if (pathname.endsWith("/login")) return;
+  const q = new URLSearchParams();
+  if (reason) q.set("reason", reason);
+  if (pathname !== "/" || search) q.set("redirect", pathname + search);
+  const qs = q.toString();
+  window.location.href = "/login" + (qs ? "?" + qs : "");
 }
 
 export const http = axios.create({
@@ -110,9 +114,7 @@ http.interceptors.response.use(
     if (status === 401 && !isLogin) {
       const { useAuthStore } = await import("@/stores/auth");
       useAuthStore().clear();
-      if (!window.location.pathname.endsWith("/login")) {
-        window.location.href = "/login";
-      }
+      goLogin(code === "SESSION_REPLACED" ? code : undefined);
     } else if (code === "PASSWORD_CHANGE_REQUIRED") {
       if (!window.location.pathname.endsWith("/password")) {
         window.location.href = "/password";

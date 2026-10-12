@@ -1,9 +1,18 @@
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { api } from "@/api";
-import { clearSession, getSavedUser, getToken, saveSession } from "@/api/http";
+import { clearSession, getSavedUser, getToken, goLogin, saveSession } from "@/api/http";
 import { normalizeLocale, setLocale, type Locale } from "@/i18n";
 import type { UserView } from "@/types/api";
+
+/** 本浏览器内的页面广播：某页登录（或带登录态打开 / 刷新）某账户时，其他页面上的同一账户退出。 */
+const PAGE_ID = Math.random().toString(36).slice(2) + Date.now().toString(36);
+let channel: BroadcastChannel | null = null;
+try {
+  channel = new BroadcastChannel("sn_session");
+} catch {
+  /* 不支持时只靠后端令牌校验 */
+}
 
 export const useAuthStore = defineStore("auth", () => {
   const token = ref<string>(getToken());
@@ -25,7 +34,21 @@ export const useAuthStore = defineStore("auth", () => {
     token.value = t;
     profile.value = user;
     saveSession(t, user);
+    announce();
   }
+
+  /** 宣告本页正在使用该账户（复制标签页、刷新也算），同浏览器其他页上的该账户随即退出。 */
+  function announce() {
+    if (token.value && profile.value) channel?.postMessage({ uid: profile.value.id, page: PAGE_ID });
+  }
+
+  channel?.addEventListener("message", (e: MessageEvent) => {
+    const msg = e.data as { uid?: number; page?: string } | null;
+    if (!token.value || !profile.value || msg?.page === PAGE_ID || msg?.uid !== profile.value.id) return;
+    clear();
+    goLogin("SESSION_REPLACED");
+  });
+  announce();
 
   async function login(empNo: string, password: string) {
     const res = await api.login(empNo, password);

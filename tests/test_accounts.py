@@ -143,3 +143,26 @@ def test_same_machine_can_stay_logged_in_as_several_accounts(api, admin, w):
     assert api.get("/api/auth/me", a).status == 200
     assert api.get("/api/auth/me", b).status == 200
     assert api.get("/api/auth/me", admin).status == 200
+
+
+def test_same_account_only_active_on_latest_login_other_accounts_unaffected(api, w):
+    emp = uid("s")
+    first = w.user(emp, "query", None)
+    other = w.user(uid("o"), "query", None)
+    second = ok(api.post("/api/auth/login", m(emp_no=emp, password="Pass@1234"), None)).text("token")
+    assert second != first
+    replaced = api.get("/api/auth/me", first)
+    assert replaced.status == 401
+    assert replaced.code == "SESSION_REPLACED"
+    assert api.get("/api/auth/me", second).status == 200
+    assert api.get("/api/auth/me", other).status == 200, "other accounts on the same machine stay signed in"
+    third = ok(api.post("/api/auth/login", m(emp_no=emp, password="Pass@1234"), None)).text("token")
+    assert api.get("/api/auth/me", second).code == "SESSION_REPLACED"
+    assert api.get("/api/sn", third).status == 200
+
+
+def test_password_change_keeps_current_session(api, w):
+    emp = uid("p")
+    token = w.user(emp, "query", None)
+    fresh = ok(api.post("/api/auth/password", m(old_password="Pass@1234", new_password="Better@123"), token))
+    assert api.get("/api/sn", fresh.text("token")).status == 200

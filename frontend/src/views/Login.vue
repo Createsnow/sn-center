@@ -17,6 +17,7 @@
           <el-option v-for="l in LOCALES" :key="l.value" :label="l.label" :value="l.value" />
         </el-select>
       </div>
+      <el-alert v-if="notice" type="warning" :closable="false" show-icon :title="notice" class="notice" />
       <el-form label-position="top" @submit.prevent="onLogin">
         <el-form-item :label="t('login.empNo')">
           <el-input v-model="empNo" size="large" prefix-icon="User" autocomplete="username" />
@@ -35,11 +36,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/auth";
-import { LOCALES, setLocale, type Locale } from "@/i18n";
+import { LOCALES, setLocale, translateApiError, type Locale } from "@/i18n";
 
 const { t, locale } = useI18n();
 const router = useRouter();
@@ -48,6 +49,11 @@ const store = useAuthStore();
 const empNo = ref("");
 const password = ref("");
 const loading = ref(false);
+/** 被挤下线等原因（错误码）跳到登录页时的提示。 */
+const notice = computed(() => {
+  const reason = route.query.reason;
+  return typeof reason === "string" && reason ? translateApiError({ code: reason }, "") : "";
+});
 
 function onLocale(v: Locale) {
   setLocale(v);
@@ -77,6 +83,7 @@ async function onLogin() {
 .hero h1 { margin: 8px 0 0; font-size: 28px; color: #fff; }
 .hero p { color: #cbd5e1; margin: 0; line-height: 1.7; max-width: 520px; }
 .hero ul { margin: 16px 0 0; padding-left: 18px; color: #cbd5e1; line-height: 2; }
+.notice { margin-bottom: 16px; }
 .panel { align-self: center; justify-self: center; width: min(420px, 90%); background: var(--app-surface);
   border: 1px solid var(--app-line); border-radius: 12px; padding: 28px 28px 20px; }
 .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }

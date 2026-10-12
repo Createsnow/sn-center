@@ -20,6 +20,7 @@ from app.core.security import (
     hash_password,
     issue_token,
     pwd_version,
+    session_version,
     verify_password,
 )
 from app.db.session import db
@@ -72,7 +73,11 @@ def _must_get(uid: int) -> dict:
 
 def _next_pv(u: dict, now: datetime) -> datetime:
     """同一秒内连改两次时口令版本仍须变化。"""
-    prev = u["pwd_changed_at"]
+    return _next_version(u["pwd_changed_at"], now)
+
+
+def _next_version(prev: datetime | None, now: datetime) -> datetime:
+    """版本时间（秒）必须严格递增：不晚于上一次时顺延一秒。"""
     return prev + timedelta(seconds=1) if prev is not None and not now > prev else now
 
 
@@ -109,11 +114,17 @@ def login(emp_no: str | None, password: str | None, trace_id: str | None = None,
         raise _login_failed(_login_actor(emp, u, trace_id), biz(ErrorCode.LOGIN_FAILED), where) from None
     if u["status"] != ACTIVE:
         raise _login_failed(_login_actor(emp, u, trace_id), biz(ErrorCode.ACCOUNT_DISABLED), where) from None
-    u["last_login_at"] = util.now()
     with db.tx():
+        # 登录时间即登录版本：本次登录后，该账户之前签发的令牌全部失效（后登录的页面覆盖先登录的）
+        prev = db.scalar("SELECT last_login_at FROM sn_user WHERE id = %s FOR UPDATE", u["id"])
+        u["last_login_at"] = _next_version(prev, util.now())
         db.exec("UPDATE sn_user SET last_login_at = %s WHERE id = %s", u["last_login_at"], u["id"])
         audit.record(_login_actor(emp, u, trace_id), audit.entry(audit.LOGIN).factory(u["factory_code"]).info(where))
-    return {"token": issue_token(u["id"], pwd_version(u["pwd_changed_at"])), "user": view(u)}
+    return {"token": _token(u), "user": view(u)}
+
+
+def _token(u: dict) -> str:
+    return issue_token(u["id"], pwd_version(u["pwd_changed_at"]), session_version(u["last_login_at"]))
 
 
 def me(cu: CurrentUser) -> dict:
@@ -140,7 +151,7 @@ def change_password(cu: CurrentUser, old_password: str | None, new_password: str
         )
         audit.record(cu, audit.entry(audit.PASSWORD_CHANGE).info(u["emp_no"]))
         fresh = _must_get(u["id"])
-        return {"token": issue_token(fresh["id"], pwd_version(fresh["pwd_changed_at"])), "user": view(fresh)}
+        return {"token": _token(fresh), "user": view(fresh)}
 
 
 def set_lang(cu: CurrentUser, lang: str | None) -> dict:

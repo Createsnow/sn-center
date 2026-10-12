@@ -21,6 +21,7 @@ class ErrorCode(Enum):
     TOKEN_INVALID = (401, "登录已失效，请重新登录")
     LOGIN_FAILED = (401, "工号或密码错误")
     ACCOUNT_DISABLED = (401, "账户已停用")
+    SESSION_REPLACED = (401, "该账户已在其他页面登录，本页已退出")
     PASSWORD_CHANGE_REQUIRED = (403, "密码已被管理员重置，请先修改密码")
     FORBIDDEN = (403, "当前角色无权执行该操作")
     FACTORY_FORBIDDEN = (403, "只能操作本厂的号：{factory}")
