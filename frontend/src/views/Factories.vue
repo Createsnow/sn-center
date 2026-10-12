@@ -113,7 +113,8 @@ async function toggle(f: Factory, enabled: boolean) {
   }
 }
 
-load(true);
+/** 每次进入页面：先显示现有工厂，再自动从金蝶同步一次（失败时本地不动，提示由请求层弹出）。 */
+load(true).then(() => sync());
 </script>
 
 <style scoped>

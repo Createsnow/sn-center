@@ -264,7 +264,11 @@ async function syncOne() {
   }
 }
 
-onMounted(refresh);
+/** 每次进入页面：先显示现有快照，总部再自动全量同步一次（失败时快照不动，提示由请求层弹出）。 */
+onMounted(async () => {
+  await refresh();
+  if (store.isAdmin && !syncing.value) await syncAll();
+});
 </script>
 
 <style scoped>
