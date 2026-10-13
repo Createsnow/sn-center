@@ -124,20 +124,47 @@
               <div class="v">
                 <template v-if="picking">
                   <div class="inl">
-                    <el-select v-model="pickKey" filterable :filter-method="(q: string) => (ruleQ = q)" class="rule-pick" :placeholder="t('generate.rulePick')" @visible-change="(v: boolean) => !v && (ruleQ = '')">
-                      <el-option-group :label="ruleQ ? t('generate.ruleLibraryN', { n: filteredOptions.length }) : t('generate.ruleLibrary')">
-                        <el-option v-for="o in filteredOptions" :key="o.rule_id" :value="o.rule_id" :label="o.rule_name">
-                          <div class="opt">
-                            <span>{{ o.rule_name }}<el-tag v-if="o.category_scope !== 'NONE'" size="small" effect="plain" class="cat" disable-transitions>{{ o.category_value }}</el-tag></span>
-                            <span class="muted sn-mono">{{ fmtOf(o) }}</span>
-                          </div>
-                        </el-option>
-                      </el-option-group>
-                      <el-option value="manual" :label="t('generate.ruleManual')">＋ {{ t("generate.ruleManual") }}</el-option>
-                    </el-select>
-                    <el-button v-if="ruleId != null" :loading="ruleBusy" @click="bindRule">{{ t("generate.ruleAssign") }}</el-button>
-                    <el-button v-if="override" link @click="override = false">{{ t("common.cancel") }}</el-button>
+                    <el-radio-group v-model="ruleTab">
+                      <el-radio-button value="lib">{{ t("generate.ruleLibrary") }}</el-radio-button>
+                      <el-radio-button value="custom">{{ t("generate.ruleCustom") }}</el-radio-button>
+                    </el-radio-group>
+                    <span class="push inl">
+                      <el-button v-if="ruleId != null" size="small" :loading="ruleBusy" @click="bindRule">{{ t("generate.ruleAssign") }}</el-button>
+                      <el-button v-if="override" link @click="override = false">{{ t("common.cancel") }}</el-button>
+                    </span>
                   </div>
+                  <!-- 规则库：搜索 + 分类 + 固定高度可滚动列表；与本 PI 客户 / PI 匹配的排在前面并标「推荐」 -->
+                  <template v-if="ruleTab === 'lib'">
+                    <el-input v-model.trim="ruleQ" clearable prefix-icon="Search" :placeholder="t('generate.ruleSearch')" />
+                    <div class="chips">
+                      <button v-for="c in RULE_CATS" :key="c" type="button" class="chip" :class="{ on: ruleCat === c }" @click="ruleCat = c">
+                        {{ t(`generate.ruleCat${c}`) }} <span class="num">{{ catCount(c) }}</span>
+                      </button>
+                    </div>
+                    <div class="rule-list">
+                      <template v-for="grp in ruleGroups" :key="grp.key">
+                        <div class="grp">{{ t(`generate.ruleGrp${grp.key}`) }}</div>
+                        <div v-for="o in grp.items" :key="o.rule_id" class="it" :class="{ on: libPick === o.rule_id }" role="radio" :aria-checked="libPick === o.rule_id" tabindex="0"
+                          @click="libPick = o.rule_id" @keydown.enter.space.prevent="libPick = o.rule_id">
+                          <span class="radio" />
+                          <span class="nm">
+                            <b>{{ o.rule_name }}</b>
+                            <span v-if="grp.key === 'REC'" class="ct rec">{{ t("generate.ruleRec") }}</span>
+                            <span class="ct" :class="o.category_scope">{{ o.category_scope === "NONE" ? t("generate.ruleCatNONE") : o.category_value }}</span>
+                          </span>
+                          <span class="meta">
+                            <span class="sn-mono">{{ fmtOf(o) }}</span>
+                            <span v-if="o.used_pis != null"> · {{ o.used_pis ? t("generate.ruleUsedN", { n: o.used_pis }) : t("generate.ruleUnused") }}</span>
+                          </span>
+                        </div>
+                      </template>
+                      <div v-if="!ruleGroups.length" class="empty">{{ t("generate.ruleNoMatch") }}</div>
+                    </div>
+                    <div class="inl small muted">
+                      <span>{{ t("generate.ruleShown", { n: ctx.rule_options.length, m: shownOptions.length }) }}</span>
+                      <router-link to="/rules" class="push">{{ t("generate.ruleManage") }}</router-link>
+                    </div>
+                  </template>
                   <div v-if="manualMode" class="combo" :class="{ bad: !manual.prefix }">
                     <input v-model.trim="manual.prefix" :placeholder="t('generate.prefixPh')" :aria-label="t('generate.rulePrefix')" maxlength="40" />
                     <span class="seq">
@@ -439,7 +466,10 @@ let alive = true;
 // ------------------------------------------------------------------ 详情里的 SN 规则
 
 /** 未绑定（或按客户绑定时为本 PI 单独设置）时的选择：规则库里的一条模板，或 "manual" = 手动设置。 */
-const pickKey = ref<number | "manual" | null>(null);
+/** 规则库 / 自定义规则两个页签；规则库里选中的模板单独记住，来回切换不丢。 */
+const ruleTab = ref<"lib" | "custom">("lib");
+const libPick = ref<number | null>(null);
+const pickKey = computed<number | "manual" | null>(() => (ruleTab.value === "custom" ? "manual" : libPick.value));
 /** 按客户绑定时点了「为本 PI 单独设置」。 */
 const override = ref(false);
 const unbindAsk = ref(false);
@@ -467,14 +497,35 @@ const ruleReady = computed(() => {
   return ruleId.value != null;
 });
 
-/** 按模板名称（也匹配编码、分类的客户 / PI）筛选规则库；当前选中的一条始终保留，免得选择框只显示 id。 */
+/** 规则库筛选：关键字（名称 / 编码 / 前后缀 / 分类的客户或 PI）+ 分类；与本 PI 的客户或 PI 匹配的为「推荐」，排在前面。 */
+const RULE_CATS = ["ALL", "REC", "CUSTOMER", "PI", "NONE"] as const;
+type RuleCat = (typeof RULE_CATS)[number];
 const ruleQ = ref("");
-const filteredOptions = computed<any[]>(() => {
-  const all: any[] = ctx.value?.rule_options ?? [];
+const ruleCat = ref<RuleCat>("ALL");
+const isRec = (o: any) =>
+  !!ctx.value && ((o.category_scope === "CUSTOMER" && o.category_value === ctx.value.customer_code) || (o.category_scope === "PI" && o.category_value === ctx.value.pi_no));
+const inCat = (o: any, c: RuleCat) => c === "ALL" || (c === "REC" ? isRec(o) : o.category_scope === c);
+const catCount = (c: RuleCat) => (ctx.value?.rule_options ?? []).filter((o: any) => inCat(o, c)).length;
+const shownOptions = computed<any[]>(() => {
   const k = ruleQ.value.toLowerCase();
-  if (!k) return all;
-  return all.filter((o) => o.rule_id === pickKey.value || [o.rule_name, o.rule_code, o.category_value].some((x) => x?.toLowerCase().includes(k)));
+  return (ctx.value?.rule_options ?? []).filter(
+    (o: any) => inCat(o, ruleCat.value) && (!k || [o.rule_name, o.rule_code, o.prefix, o.suffix, o.category_value].some((x) => x?.toLowerCase().includes(k))),
+  );
 });
+const ruleGroups = computed(() => {
+  const rec = shownOptions.value.filter(isRec);
+  const rest = shownOptions.value.filter((o) => !isRec(o));
+  return [
+    { key: "REC", items: rec },
+    { key: "OTHER", items: rest },
+  ].filter((g) => g.items.length);
+});
+/** 默认选中：第一个推荐模板，否则第一个模板；规则库为空时直接进自定义规则。 */
+function defaultPick(c: any) {
+  const opts: any[] = c?.rule_options ?? [];
+  libPick.value = (opts.find(isRec) ?? opts[0])?.rule_id ?? null;
+  if (!opts.length) ruleTab.value = "custom";
+}
 const fmtOf = (o: any) => `${o.prefix}${"#".repeat(o.seq_len)}${o.suffix}`;
 const inW = (v: string) => `${Math.max(4, (v || "").length + 1)}ch`;
 
@@ -542,12 +593,13 @@ function resetRulePick(c: any) {
   override.value = false;
   ruleQ.value = "";
   unbindAsk.value = false;
-  if (!c.rule_options.some((o: any) => o.rule_id === pickKey.value) && pickKey.value !== "manual") pickKey.value = c.rule_options[0]?.rule_id ?? "manual";
+  ruleCat.value = "ALL";
+  if (!c.rule_options.some((o: any) => o.rule_id === libPick.value)) defaultPick(c);
 }
 
 function startOverride() {
   override.value = true;
-  if (pickKey.value == null) pickKey.value = ctx.value?.rule_options[0]?.rule_id ?? "manual";
+  if (libPick.value == null) defaultPick(ctx.value);
 }
 const detailRun = computed<Tracked | null>(() => (detailPi.value ? tracked[detailPi.value] ?? null : null));
 const canGenerate = computed(() => !!ctx.value && !ctx.value.issues.some((c: string) => ["FACTORY_UNMAPPED", "FACTORY_DISABLED"].includes(c)));
@@ -692,7 +744,8 @@ async function loadContext(params: { pi?: string; bill_no?: string }) {
     detailPi.value = c.pi_no;
     if (switched) {
       Object.assign(manual, { prefix: "", seq_len: 6, suffix: "" });
-      pickKey.value = null;
+      libPick.value = null;
+      ruleTab.value = "lib";
       detailTab.value = "bills";
     }
     if (switched || c.quota !== prevQuota) resetQty(c);
@@ -924,8 +977,6 @@ onUnmounted(() => {
 .err { color: var(--el-color-danger); }
 .warn { color: var(--el-color-warning-dark-2); }
 .hint { margin-top: 8px; font-size: 12px; }
-.opt { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
-.opt .cat { margin-left: 6px; }
 .dh { display: flex; flex-direction: column; gap: 3px; color: var(--app-text); min-width: 0; }
 .dh-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 16px; }
 .drawer { display: flex; flex-direction: column; gap: 18px; font-size: 13px; }
@@ -948,7 +999,25 @@ onUnmounted(() => {
 .act { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-top: 1px solid var(--el-border-color-lighter); background: var(--el-fill-color-light); border-radius: 0 0 10px 10px; }
 .act .msg { flex: 1; min-width: 0; color: var(--app-muted); font-size: 12px; }
 .act .msg.err { color: var(--el-color-danger); }
-.rule-pick { flex: 1 1 260px; max-width: 420px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--el-border-color-lighter); background: var(--el-fill-color-light); border-radius: 14px; padding: 1px 10px; font: inherit; font-size: 12px; color: var(--app-muted); cursor: pointer; }
+.chip.on { border-color: var(--el-color-primary); background: var(--el-color-primary-light-9); color: var(--el-color-primary); }
+.rule-list { border: 1px solid var(--el-border-color-lighter); border-radius: 8px; max-height: 240px; overflow: auto; }
+.rule-list .grp { position: sticky; top: 0; z-index: 1; padding: 5px 12px; font-size: 12px; color: var(--app-muted); background: var(--el-fill-color-light); border-bottom: 1px solid var(--el-border-color-lighter); }
+.rule-list .it { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--el-border-color-lighter); outline: none; }
+.rule-list .it:last-child { border-bottom: none; }
+.rule-list .it:hover, .rule-list .it:focus-visible { background: var(--el-fill-color-light); }
+.rule-list .it.on { background: var(--el-color-primary-light-9); }
+.rule-list .radio { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--el-border-color-darker); }
+.rule-list .it.on .radio { border: 4px solid var(--el-color-primary); }
+.rule-list .nm { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.rule-list .nm b { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rule-list .meta { font-size: 12px; color: var(--app-muted); white-space: nowrap; }
+.rule-list .empty { padding: 20px; text-align: center; color: var(--app-muted); }
+.ct { font-size: 11px; line-height: 18px; padding: 0 6px; border-radius: 4px; white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis; flex: none; color: var(--app-muted); background: var(--el-fill-color); }
+.ct.CUSTOMER { color: var(--el-color-warning-dark-2); background: var(--el-color-warning-light-9); }
+.ct.PI { color: var(--el-color-primary); background: var(--el-color-primary-light-9); }
+.ct.rec { color: #fff; background: var(--el-color-success); }
 .combo { display: inline-flex; align-self: flex-start; max-width: 100%; height: 34px; border: 1px solid var(--el-border-color); border-radius: 6px; overflow: hidden; }
 .combo:focus-within { border-color: var(--el-color-primary); }
 .combo input { border: none; outline: none; width: 130px; min-width: 0; padding: 0 10px; font: 15px var(--sn-mono, ui-monospace, SFMono-Regular, Consolas, monospace); color: var(--app-text); background: transparent; }

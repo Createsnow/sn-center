@@ -698,7 +698,10 @@ def options(pi: str | None = None, start_seq: int = 1) -> list[dict]:
         base = mine.get(r["current_version"])
         if base is None:
             continue
-        out.append(rule_info(_plan_from(pi, r, base, mine.values(), pinned), start_seq))
+        info = rule_info(_plan_from(pi, r, base, mine.values(), pinned), start_seq)
+        # 已被几张 PI 用过（各版本归属的 PI 去重），供生成页规则库列表展示
+        info["used_pis"] = len({v["claimed_pi"] for v in mine.values() if v["claimed_pi"]})
+        out.append(info)
     return out
 
 

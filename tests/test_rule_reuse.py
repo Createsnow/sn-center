@@ -59,7 +59,7 @@ def test_template_reused_by_other_pis_gets_a_derived_version_each(api, admin, w,
     opt = next(
         o for o in ok(api.get("/api/generate/pi-context" + q(pi=pi2), admin))["rule_options"] if o["rule_id"] == tpl
     )
-    assert (opt["plan"], opt["sample_sn"]) == ("DERIVE", "TR0001K_v2")
+    assert (opt["plan"], opt["sample_sn"], opt["used_pis"]) == ("DERIVE", "TR0001K_v2", 1)
     assert _gen(w, pi2, 3, tpl) == ("TR0001K_v2", "TR0003K_v2")
     assert _gen(w, pi3, 1, tpl) == ("TR0001K_v3", "TR0001K_v3")
 
@@ -72,6 +72,10 @@ def test_template_reused_by_other_pis_gets_a_derived_version_each(api, admin, w,
     assert (by_v[1]["claimed_pi"], by_v[1]["derived_from"]) == (pi1, None)
     assert (by_v[2]["suffix"], by_v[2]["claimed_pi"]) == ("K_v2", pi2)
     assert (by_v[3]["suffix"], by_v[3]["claimed_pi"]) == ("K_v3", pi3)
+    # 规则库列表上显示模板已被几张 PI 用过
+    pi4, _ = _pi(w)
+    opts = ok(api.get("/api/generate/pi-context" + q(pi=pi4), admin))["rule_options"]
+    assert next(o for o in opts if o["rule_id"] == tpl)["used_pis"] == 3
     assert sql.count("SELECT COUNT(*) FROM sn_item") == sql.count("SELECT COUNT(DISTINCT sn) FROM sn_item")
 
 
