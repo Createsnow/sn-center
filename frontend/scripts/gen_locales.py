@@ -45,7 +45,10 @@ def main():
     if JAVA.exists():
         zh_errors = dict(re.findall(r'^\s+([A-Z0-9_]+)\(\d+, "([^"]*)"\)', JAVA.read_text("utf-8"), re.M))
     else:  # 仓库里只有 Python 后端时取 app/core/errors.py
-        zh_errors = dict(re.findall(r'^\s+([A-Z0-9_]+) = \(\d+, "([^"]*)"\)', PY.read_text("utf-8"), re.M))
+        # 格式化工具会把长的拆成多行：(\n 409,\n "…",\n)
+        zh_errors = dict(
+            re.findall(r'^\s+([A-Z0-9_]+) = \(\s*\d+,\s*"([^"]*)",?\s*\)', PY.read_text("utf-8"), re.M)
+        )
     errs = {lang: {} for lang in LANGS}
     for code, zh in zh_errors.items():
         if code not in E:
