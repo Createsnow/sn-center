@@ -1,4 +1,4 @@
-"""SN 规则。生效：按 PI 绑定 ＞ 给该 PI 指定的规则 ＞ 按客户绑定；都没有时，由用户在生成页选一条规则模板
+"""SN 规则。生效：按 PI 绑定 ＞ 给该 PI 指定的规则 ＞ 按客户绑定；都没有时，由用户在生成页从规则库选一条规则
 （通用规则或别的 PI 的规则），或手动设置一条新规则。
 
 全局不重：
@@ -678,7 +678,7 @@ def pickable_rule(rule_id: int | None) -> dict:
 
 
 def options(pi: str | None = None, start_seq: int = 1) -> list[dict]:
-    """可选的规则模板（见 _pickable），第一条即默认；给了 PI 时按该 PI 算出各自要用的版本与第一个号。"""
+    """规则库中可选的规则（见 _pickable），第一条即默认；给了 PI 时按该 PI 算出各自要用的版本与第一个号。"""
     rows = _pickable()
     if not rows:
         return []
@@ -770,7 +770,7 @@ def realize(cu: CurrentUser, pi: str, r: Resolved) -> dict:
 
 
 def bind_pi(cu: CurrentUser, pi_in: str | None, rule_id: int | None) -> dict:
-    """给 PI 指定规则模板（通用规则或别的 PI 的规则）：之后生成默认用它；已指定过的直接换成这条。"""
+    """给 PI 指定规则库中的规则（通用规则或别的 PI 的规则）：之后生成默认用它；已指定过的直接换成这条。"""
     pi = util.trim(pi_in)
     if not pi:
         raise biz(ErrorCode.PI_REQUIRED)
