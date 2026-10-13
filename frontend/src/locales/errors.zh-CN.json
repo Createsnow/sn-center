@@ -45,6 +45,8 @@
   "RULE_CATEGORY_INVALID": "分类只能是未分类、客户或 PI",
   "RULE_CATEGORY_REQUIRED": "按客户或 PI 分类时，须填写客户或 PI（不超过 64 位）",
   "RULE_BIND_EXISTS": "该绑定对象已有规则：{rule_code}",
+  "RULE_IN_USE": "规则 {rule_code} 已生成过号，不能删除",
+  "RULE_ASSIGNED": "规则 {rule_code} 已指定给 PI {pi}，请先解除指定再删除",
   "RULE_NOT_GENERAL": "不能选用按客户绑定的规则：{rule_code}",
   "RULE_PREFIX_REQUIRED": "前缀必填",
   "RULE_AFFIX_INVALID": "前缀、后缀只能用字母、数字和 _",

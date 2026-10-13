@@ -50,6 +50,7 @@ export const api = {
   rules: (params?: Q) => get("/rules", params),
   createRule: (data: Q) => post("/rules", data),
   updateRule: (id: number, data: Q) => put(`/rules/${id}`, data),
+  deleteRule: (id: number) => del(`/rules/${id}`),
   previewRule: (data: Q) => post("/rules/preview", data, true),
   effectiveRule: (pi: string) => get("/rules/effective", { pi }),
   bindPiRule: (pi_no: string, rule_id: number) => put("/rules/pi-binding", { pi_no, rule_id }),

@@ -45,6 +45,8 @@
   "RULE_CATEGORY_INVALID": "Phân loại phải là chưa phân loại, khách hàng hoặc PI",
   "RULE_CATEGORY_REQUIRED": "Phân loại theo khách hàng hoặc PI cần nhập khách hàng hoặc PI (tối đa 64 ký tự)",
   "RULE_BIND_EXISTS": "Đối tượng này đã có quy tắc: {rule_code}",
+  "RULE_IN_USE": "Quy tắc {rule_code} đã tạo SN, không thể xóa",
+  "RULE_ASSIGNED": "Quy tắc {rule_code} đang chỉ định cho PI {pi}; hãy bỏ chỉ định trước khi xóa",
   "RULE_NOT_GENERAL": "Không thể chọn quy tắc gắn theo khách hàng: {rule_code}",
   "RULE_PREFIX_REQUIRED": "Bắt buộc nhập tiền tố",
   "RULE_AFFIX_INVALID": "Tiền tố và hậu tố chỉ được gồm chữ cái, chữ số và _",

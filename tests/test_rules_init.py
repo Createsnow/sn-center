@@ -358,3 +358,60 @@ def test_rule_library_only_categorizes(api, admin, w):
     assert api.post("/api/rules", bad, admin).code == "RULE_CATEGORY_REQUIRED"
     bad = m(rule_code=uid("RK"), rule_name="x", prefix="CTGY", base=10, seq_len=4, category_scope="FOO")
     assert api.post("/api/rules", bad, admin).code == "RULE_CATEGORY_INVALID"
+
+
+def test_delete_rule_only_when_unused_and_unassigned(api, admin, w, sql):
+    def new_rule(prefix: str) -> tuple[int, str]:
+        code = uid("RD")
+        rid = ok(
+            api.post(
+                "/api/rules",
+                m(rule_code=code, rule_name="rd", bind_scope="GENERAL", prefix=prefix, base=10, seq_len=4),
+                admin,
+            )
+        )["rule"]["id"]
+        return rid, code
+
+    # 没用过：连同全部版本删除，并留痕
+    rid, code = new_rule(uid("DA").replace("-", "_"))
+    assert ok(api.delete(f"/api/rules/{rid}", admin)).text("rule_code") == code
+    assert sql.count("SELECT COUNT(*) FROM sn_rule WHERE id = %s", rid) == 0
+    assert sql.count("SELECT COUNT(*) FROM sn_rule_version WHERE rule_id = %s", rid) == 0
+    assert (
+        sql.count(
+            "SELECT COUNT(*) FROM sn_audit WHERE action = 'RULE_DELETE' AND result = 'OK' AND detail LIKE %s",
+            code + " %",
+        )
+        == 1
+    )
+    assert api.delete(f"/api/rules/{rid}", admin).code == "RULE_NOT_FOUND"
+
+    # 已指定给 PI：先解除指定才能删
+    pi = uid("PI")
+    rid, code = new_rule(uid("DB").replace("-", "_"))
+    ok(api.put("/api/rules/pi-binding", m(pi_no=pi, rule_id=rid), admin))
+    assert api.delete(f"/api/rules/{rid}", admin).code == "RULE_ASSIGNED"
+    ok(api.delete("/api/rules/pi-binding" + q(pi=pi), admin))
+    ok(api.delete(f"/api/rules/{rid}", admin))
+
+    # 已生成过号：不能删；失败也留痕
+    pi, bill, prefix = uid("PI"), uid("MO"), uid("DC").replace("-", "_")
+    rid = ok(
+        api.post(
+            "/api/rules",
+            m(rule_code=uid("RD"), rule_name="rd", bind_scope="PI", bind_value=pi, prefix=prefix, base=10, seq_len=4),
+            admin,
+        )
+    )["rule"]["id"]
+    w.order(bill, ORG, "C1", pi, ("A", 3))
+    w.generate(bill, 1)
+    assert api.delete(f"/api/rules/{rid}", admin).code == "RULE_IN_USE"
+    assert sql.count("SELECT COUNT(*) FROM sn_rule WHERE id = %s", rid) == 1
+    code = sql.one("SELECT rule_code FROM sn_rule WHERE id = %s", rid)["rule_code"]
+    assert (
+        sql.count(
+            "SELECT COUNT(*) FROM sn_audit WHERE action = 'RULE_DELETE' AND result = 'FAIL' AND error_msg LIKE %s",
+            "%" + code + "%",
+        )
+        == 1
+    )

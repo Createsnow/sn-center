@@ -488,6 +488,39 @@ def update(
         return {"action": action, "rule": view(db.one("SELECT * FROM sn_rule WHERE id = %s", r["id"]))}
 
 
+def delete(cu: CurrentUser, rule_id: int) -> dict:
+    """删除规则（连同全部版本）。只能删从没生成过号、也没被指定给任何 PI 的规则；已发出的号永远能查到所用规则。"""
+    with db.tx():
+        r = db.one("SELECT * FROM sn_rule WHERE id = %s FOR UPDATE", rule_id)
+        if r is None:
+            raise biz(ErrorCode.RULE_NOT_FOUND)
+        vs = db.all("SELECT * FROM sn_rule_version WHERE rule_id = %s FOR UPDATE", r["id"])
+        # used 一经置上不再清：生成成功时在锁住本规则的同一事务里置上，所以这里锁住规则后判断即可
+        if any(v["used"] for v in vs):
+            raise biz(ErrorCode.RULE_IN_USE, rule_code=r["rule_code"])
+        pi = db.scalar("SELECT pi_no FROM sn_pi_counter WHERE rule_id = %s LIMIT 1", r["id"])
+        if pi is not None:
+            raise biz(ErrorCode.RULE_ASSIGNED, rule_code=r["rule_code"], pi=pi)
+        ids = [v["id"] for v in vs]
+        db.exec("DELETE FROM sn_rule_version WHERE rule_id = %s", r["id"])
+        db.exec("DELETE FROM sn_rule WHERE id = %s", r["id"])
+        with _cache_lock:
+            for i in ids:
+                _spec_cache.pop(i, None)
+        cur = next((v for v in vs if v["version"] == r["current_version"]), None)
+        audit.record(
+            cu,
+            audit.entry(audit.RULE_DELETE)
+            .pi(r["bind_value"] if r["bind_scope"] == PI else None)
+            .customer(r["bind_value"] if r["bind_scope"] == CUSTOMER else None)
+            .info(
+                f"{r['rule_code']} {r['rule_name']} v{r['current_version']}"
+                f"{' ' + describe(spec_of(cur)) if cur else ''} {_bind_text(r['bind_scope'], r['bind_value'])}"
+            ),
+        )
+        return {"id": r["id"], "rule_code": r["rule_code"]}
+
+
 def _audit_rebind(cu: CurrentUser, r: dict, sc: str, bv: str) -> None:
     old = _bind_text(r["bind_scope"], r["bind_value"])
     audit.record(

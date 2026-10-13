@@ -45,6 +45,8 @@
   "RULE_CATEGORY_INVALID": "Category must be uncategorized, customer or PI",
   "RULE_CATEGORY_REQUIRED": "A customer or PI (up to 64 characters) is required for this category",
   "RULE_BIND_EXISTS": "This target already has a rule: {rule_code}",
+  "RULE_IN_USE": "Rule {rule_code} has issued SNs and cannot be deleted",
+  "RULE_ASSIGNED": "Rule {rule_code} is assigned to PI {pi}; unassign it before deleting",
   "RULE_NOT_GENERAL": "A rule bound to a customer cannot be picked: {rule_code}",
   "RULE_PREFIX_REQUIRED": "Prefix is required",
   "RULE_AFFIX_INVALID": "Prefix and suffix may only contain letters, digits and _",

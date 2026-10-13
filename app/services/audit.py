@@ -41,6 +41,7 @@ RULE_REBIND = "RULE_REBIND"
 RULE_CATEGORY = "RULE_CATEGORY"
 RULE_PI_BIND = "RULE_PI_BIND"
 RULE_PI_UNBIND = "RULE_PI_UNBIND"
+RULE_DELETE = "RULE_DELETE"
 SN_GENERATE = "SN_GENERATE"
 SN_ALLOCATE = "SN_ALLOCATE"
 SN_REVOKE = "SN_REVOKE"
@@ -224,6 +225,8 @@ def action_for(method: str, path: str) -> str:
         return TRANSFER_REJECT
     if re.fullmatch(r"/api/transfers/\d+/withdraw", path):
         return TRANSFER_WITHDRAW
+    if method == "DELETE" and re.fullmatch(r"/api/rules/\d+", path):
+        return RULE_DELETE
     if path == "/api/users" and method == "POST":
         return USER_CREATE
     if re.fullmatch(r"/api/factories/[^/]+/disable", path):

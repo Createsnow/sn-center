@@ -65,6 +65,11 @@ def rule_update(id: int, body: RuleUpdateIn, cu: AdminDep) -> dict:
     )
 
 
+@router.delete("/{id}", summary="删除规则（连同全部版本）：只能删没生成过号、也没指定给任何 PI 的规则")
+def rule_delete(id: int, cu: AdminDep) -> dict:
+    return rules.delete(cu, id)
+
+
 @router.post("/preview")
 def rule_preview(body: RulePreviewIn, cu: AdminDep) -> dict:
     return rules.preview(_spec(body), body.start)

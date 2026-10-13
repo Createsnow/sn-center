@@ -66,6 +66,8 @@ class ErrorCode(Enum):
     RULE_CATEGORY_INVALID = (400, "分类只能是未分类、客户或 PI")
     RULE_CATEGORY_REQUIRED = (400, "按客户或 PI 分类时，须填写客户或 PI（不超过 64 位）")
     RULE_BIND_EXISTS = (409, "该绑定对象已有规则：{rule_code}")
+    RULE_IN_USE = (409, "规则 {rule_code} 已生成过号，不能删除")
+    RULE_ASSIGNED = (409, "规则 {rule_code} 已指定给 PI {pi}，请先解除指定再删除")
     RULE_NOT_GENERAL = (400, "不能选用按客户绑定的规则：{rule_code}")
     RULE_PREFIX_REQUIRED = (400, "前缀必填")
     RULE_AFFIX_INVALID = (400, "前缀、后缀只能用字母、数字和 _")

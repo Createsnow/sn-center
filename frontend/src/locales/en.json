@@ -121,6 +121,7 @@
     "RULE_CATEGORY": "Rule category changed",
     "RULE_PI_BIND": "Rule assigned to PI",
     "RULE_PI_UNBIND": "PI rule unassigned",
+    "RULE_DELETE": "Rule deleted",
     "ORDER_SYNC": "Order sync",
     "ORDER_SYNC_SCHEDULE": "Scheduled sync settings",
     "FACTORY_SYNC": "Factory sync",
@@ -414,7 +415,12 @@
     "catCUSTOMER": "Customer",
     "catPI": "PI",
     "categoryHint": "Optional. The category is only for filtering here and finding templates on the generation page; it doesn't make the rule take effect, and a customer or PI can have several. Bind rules to a PI on the generation page.",
-    "resultRECATEGORIZED": "Category changed"
+    "resultRECATEGORIZED": "Category changed",
+    "delete": "Delete",
+    "deleteUsed": "A rule that has issued SNs cannot be deleted",
+    "deleteConfirm": "Delete rule {code} ({name}) and all its versions? This cannot be undone and will be recorded in the audit trail.",
+    "deleteBound": "This rule is bound to {bind}; after deletion those PIs will no longer use it.",
+    "deleted": "Rule {code} deleted"
   },
   "acquire": {
     "title": "Acquire & print",

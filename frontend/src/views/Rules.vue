@@ -44,10 +44,13 @@
         <el-table-column :label="t('rules.used')" width="80">
           <template #default="{ row }"><el-tag size="small" :type="row.current.used ? 'success' : 'info'">{{ row.current.used ? t("common.yes") : t("common.no") }}</el-tag></template>
         </el-table-column>
-        <el-table-column :label="t('common.actions')" width="150" fixed="right">
+        <el-table-column :label="t('common.actions')" width="190" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openEdit(row)">{{ t("common.edit") }}</el-button>
             <el-button link @click="versions = row">{{ t("rules.versions") }}</el-button>
+            <el-tooltip :disabled="!usedOf(row)" :content="t('rules.deleteUsed')">
+              <span class="ml"><el-button link type="danger" :disabled="usedOf(row)" @click="remove(row)">{{ t("rules.delete") }}</el-button></span>
+            </el-tooltip>
           </template>
         </el-table-column>
       </el-table>
@@ -120,7 +123,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { api } from "@/api";
 import PageHead from "@/components/PageHead.vue";
 import { BASES, CHARSETS } from "@/constants";
@@ -214,6 +217,19 @@ async function save() {
   } finally {
     saving.value = false;
   }
+}
+
+/** 任一版本生成过号就不能删（后端同样校验，另外还拒绝已指定给 PI 的规则）。 */
+const usedOf = (row: any) => row.versions.some((v: any) => v.used);
+
+async function remove(row: any) {
+  const r = row.rule;
+  let msg = t("rules.deleteConfirm", { code: r.rule_code, name: r.rule_name });
+  if (r.bind_scope !== "GENERAL") msg += "\n" + t("rules.deleteBound", { bind: `${t(`rules.scope${r.bind_scope}`)} ${r.bind_value}` });
+  await ElMessageBox.confirm(msg, t("rules.delete"), { type: "warning", confirmButtonText: t("rules.delete"), cancelButtonText: t("common.cancel"), confirmButtonClass: "el-button--danger" });
+  await api.deleteRule(r.id);
+  ElMessage.success(t("rules.deleted", { code: r.rule_code }));
+  await load();
 }
 
 onMounted(load);

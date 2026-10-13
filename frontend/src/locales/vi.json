@@ -121,6 +121,7 @@
     "RULE_CATEGORY": "Đổi phân loại quy tắc",
     "RULE_PI_BIND": "Chỉ định quy tắc cho PI",
     "RULE_PI_UNBIND": "Bỏ chỉ định quy tắc của PI",
+    "RULE_DELETE": "Xóa quy tắc",
     "ORDER_SYNC": "Đồng bộ lệnh",
     "ORDER_SYNC_SCHEDULE": "Cài đặt đồng bộ định kỳ",
     "FACTORY_SYNC": "Đồng bộ nhà máy",
@@ -414,7 +415,12 @@
     "catCUSTOMER": "Khách hàng",
     "catPI": "PI",
     "categoryHint": "Không bắt buộc. Phân loại chỉ để lọc ở đây và tìm mẫu ở trang tạo SN, không làm quy tắc có hiệu lực; một khách hàng hoặc PI có thể có nhiều mẫu. Gắn quy tắc cho PI ở trang tạo SN.",
-    "resultRECATEGORIZED": "Đã đổi phân loại"
+    "resultRECATEGORIZED": "Đã đổi phân loại",
+    "delete": "Xóa",
+    "deleteUsed": "Không thể xóa quy tắc đã tạo SN",
+    "deleteConfirm": "Xóa quy tắc {code} ({name}) và mọi phiên bản? Không thể khôi phục, thao tác sẽ được ghi vào nhật ký.",
+    "deleteBound": "Quy tắc này đang gắn với {bind}; sau khi xóa các PI đó sẽ không dùng nó nữa.",
+    "deleted": "Đã xóa quy tắc {code}"
   },
   "acquire": {
     "title": "Nhận & in",
