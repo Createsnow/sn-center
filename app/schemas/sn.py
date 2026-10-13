@@ -4,9 +4,10 @@ from app.schemas.common import In
 
 
 class ManualRuleIn(In):
-    """生成页手动设置的规则：前缀（必填）+ 流水位数（补 0 位数，10 进制）+ 后缀（选填）。"""
+    """生成页手动设置的规则：前缀（必填）+ 进制（10 / 16 / 32 / 36，默认 10）+ 流水位数 + 后缀（选填）。"""
 
     prefix: str | None = None
+    base: int | None = None
     seq_len: int | None = None
     suffix: str | None = None
 

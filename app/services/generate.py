@@ -487,7 +487,7 @@ def pi_preview(
 
 def _manual_json(m: rules.ManualIn) -> str:
     return json.dumps(
-        {"prefix": util.trim(m.prefix), "seq_len": m.seq_len, "suffix": util.trim(m.suffix)},
+        {"prefix": util.trim(m.prefix), "base": m.base, "seq_len": m.seq_len, "suffix": util.trim(m.suffix)},
         ensure_ascii=False,
         separators=(",", ":"),
     )
@@ -497,7 +497,7 @@ def _manual_of(p: dict) -> rules.ManualIn | None:
     if not p.get("manual_json"):
         return None
     d = json.loads(p["manual_json"])
-    return rules.ManualIn(d.get("prefix"), d.get("seq_len"), d.get("suffix"))
+    return rules.ManualIn(d.get("prefix"), d.get("seq_len"), d.get("suffix"), d.get("base"))
 
 
 def rule_plan(pi_in: str | None, rule_id: int | None, manual: rules.ManualIn | None) -> dict:

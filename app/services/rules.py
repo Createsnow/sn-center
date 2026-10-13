@@ -12,8 +12,9 @@
 归类（category_scope / category_value）：规则库只维护归类——未分类 / 客户 / PI，一个对象下可以有多条，
 只用于规则库筛选和生成页查找，不影响生效；绑定给 PI 在生成页完成。规则库新建的规则都是通用规则。
 
-生成页手动设置的规则：前缀 + 流水位数 + 后缀（10 进制），生成成功后自动存为按 PI 绑定的规则（归类为该 PI），
-名称 PI号_v序号；生成失败或取消不留规则。按 PI 绑定的规则在生成页解绑后转为通用规则，可作模板给别的 PI 用。
+生成页手动设置的规则：前缀 + 进制 + 流水位数 + 后缀（字符表用该进制的系统默认表），
+生成成功后自动存为按 PI 绑定的规则（归类为该 PI），名称 PI号_v序号；生成失败或取消不留规则。
+按 PI 绑定的规则在生成页解绑后转为通用规则，可作模板给别的 PI 用。
 
 改前缀 / 后缀 / 进制 / 位数 / 字符集：该版本还没生成过号时就地修改，否则另出一版；只改名称不出版本。
 新版本只作用于之后新生成的号，已发出的号仍记旧版本。
@@ -42,7 +43,7 @@ CATEGORIES = frozenset((NONE, CUSTOMER, PI))
 _CODE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 #: 前缀、后缀：字母、数字和 _
 _AFFIX = re.compile(r"^[A-Za-z0-9_]*$")
-#: 生成页手动设置的规则固定 10 进制
+#: 生成页手动设置的规则不选进制时默认 10 进制
 MANUAL_BASE = 10
 
 RULE_FIELDS = (
@@ -609,11 +610,12 @@ class ManualIn:
     prefix: str | None
     seq_len: int | None
     suffix: str | None
+    base: int | None = None
 
 
 def manual_plan(pi: str, m: ManualIn) -> Resolved:
     """生成页手动设置：校验参数，给出生成成功后要新建的规则（按 PI 绑定，名称 PI号_v序号）。"""
-    spec = normalize(SpecIn(m.prefix, m.suffix, MANUAL_BASE, m.seq_len, None))
+    spec = normalize(SpecIn(m.prefix, m.suffix, MANUAL_BASE if m.base is None else m.base, m.seq_len, None))
     check_affixes(spec)
     _check_bind_free(PI, pi)
     code, name = _manual_names(pi)

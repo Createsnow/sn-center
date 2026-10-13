@@ -127,7 +127,7 @@ CREATE TABLE sn_pi_counter (
   pi_no          VARCHAR(64) NOT NULL,
   last_seq_dec   BIGINT      NOT NULL DEFAULT 0 COMMENT '本 PI 已占用的最大十进制流水',
   generated_qty  BIGINT      NOT NULL DEFAULT 0 COMMENT '本 PI 自己生成的枚数',
-  rule_id        BIGINT      NULL COMMENT '给该 PI 指定的规则模板（sn_rule.id），可解绑',
+  rule_id        BIGINT      NULL COMMENT '给该 PI 指定的规则库规则（sn_rule.id），可解绑',
   rule_version_id BIGINT     NULL COMMENT '本 PI 固定使用的规则版本（首次用该规则生成时确定）',
   start_locked   TINYINT(1)  NOT NULL DEFAULT 0 COMMENT '1 = 已生成过（撤销到一枚不剩时归 0）',
   locked_by      VARCHAR(32) NULL COMMENT '首次生成的账户',
