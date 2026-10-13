@@ -174,6 +174,12 @@
                     </span>
                     <input v-model.trim="manual.suffix" :placeholder="t('generate.suffixPh')" :aria-label="t('generate.ruleSuffix')" maxlength="40" />
                   </div>
+                  <div v-if="manualMode" class="inl small">
+                    <span class="muted">{{ t("rules.base") }}</span>
+                    <el-radio-group v-model="manual.base" size="small" :aria-label="t('rules.base')">
+                      <el-radio-button v-for="b in BASES" :key="b" :value="b">{{ b }}</el-radio-button>
+                    </el-radio-group>
+                  </div>
                 </template>
                 <div v-else-if="ctx.rule" class="inl">
                   <b>{{ ctx.rule.rule_name }}</b>
@@ -473,7 +479,8 @@ const pickKey = computed<number | "manual" | null>(() => (ruleTab.value === "cus
 /** 按客户绑定时点了「为本 PI 单独设置」。 */
 const override = ref(false);
 const unbindAsk = ref(false);
-const manual = reactive({ prefix: "", seq_len: 6, suffix: "" });
+const BASES = [10, 16, 32, 36];
+const manual = reactive({ prefix: "", base: 10, seq_len: 6, suffix: "" });
 /** 手动设置的即时判断结果（后台校验前缀冲突、给出第一个号）。 */
 const manualPlan = ref<any>(null);
 const manualError = ref("");
@@ -567,7 +574,7 @@ const status = computed<{ cls: string; text: string }>(() => {
 
 let planTimer: number | undefined;
 let planSeq = 0;
-watch(() => [manualMode.value, manual.prefix, manual.suffix, manual.seq_len], () => {
+watch(() => [manualMode.value, manual.prefix, manual.suffix, manual.base, manual.seq_len], () => {
   window.clearTimeout(planTimer);
   planSeq++;
   if (!manualMode.value || !ctx.value) return;
@@ -743,7 +750,7 @@ async function loadContext(params: { pi?: string; bill_no?: string }) {
     ctx.value = c;
     detailPi.value = c.pi_no;
     if (switched) {
-      Object.assign(manual, { prefix: "", seq_len: 6, suffix: "" });
+      Object.assign(manual, { prefix: "", base: 10, seq_len: 6, suffix: "" });
       libPick.value = null;
       ruleTab.value = "lib";
       detailTab.value = "bills";

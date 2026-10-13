@@ -47,7 +47,7 @@ def gen_rule_plan(body: RulePlanIn, cu: AdminDep) -> dict:
 
 
 def _manual(m: ManualRuleIn | None) -> rules.ManualIn | None:
-    return None if m is None else rules.ManualIn(m.prefix, m.seq_len, m.suffix)
+    return None if m is None else rules.ManualIn(m.prefix, m.seq_len, m.suffix, m.base)
 
 
 @router.post(

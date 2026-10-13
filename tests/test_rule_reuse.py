@@ -162,6 +162,23 @@ def test_manual_rule_is_saved_after_generation_and_unbinds_to_template(api, admi
     assert (p2["rule_code"], p2["rule_name"]) == (f"PI-{pi}-2", f"{pi}_v2")
 
 
+def test_manual_rule_with_base(api, admin, w, sql):
+    pi, _ = _pi(w)
+    assert _plan(api, admin, pi, manual=m(prefix="MH", base=8, seq_len=3)).code == "RULE_BASE_INVALID"
+    manual = m(prefix="MH", base=16, seq_len=3)
+    assert ok(_plan(api, admin, pi, manual=manual))["rule"]["start_sn"] == "MH001"
+    pv = ok(api.post("/api/generate/pi-preview", m(pi_no=pi, qty=12, manual=manual), admin)).body
+    items = [m(preview_token=x["token"], bill_no=x["bill_no"], qty=x["qty"]) for x in pv["items"]]
+    g = ok(api.post("/api/generate/pi", m(pi_no=pi, items=items), admin)).body
+    assert (g["jobs"][0]["start_sn"], g["jobs"][0]["end_sn"]) == ("MH001", "MH00C")
+    v = sql.one(
+        "SELECT v.base, v.charset FROM sn_rule r JOIN sn_rule_version v ON v.rule_id = r.id "
+        "WHERE r.bind_scope = 'PI' AND r.bind_value = %s",
+        pi,
+    )
+    assert (v["base"], v["charset"]) == (16, "0123456789ABCDEF")
+
+
 def test_manual_rule_validation_and_no_rule_left_when_generation_fails(api, admin, w, sql):
     _rule(api, admin, "VA")
     pi, _ = _pi(w)
