@@ -14,7 +14,7 @@ from app.core.config import settings
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db
-from app.services import files
+from app.services import factories, files
 
 HEADERS = [
     "时间",
@@ -123,17 +123,20 @@ def _where(cu: CurrentUser, f: Filter) -> tuple[str, list]:
         raise biz(ErrorCode.VALIDATION, detail="from > to")
     sql = " WHERE created_at >= %s AND created_at < %s"
     args: list = [datetime.combine(frm, time()), datetime.combine(to + timedelta(days=1), time())]
-    fac = cu.read_factory(f.factory_code)
-    if fac is not None and cu.bound:
+    facs = cu.read_factories(f.factory_code)
+    if facs is not None and cu.bound:
         # 绑厂账户：本厂的痕迹，加上转入本厂的转厂痕迹（转厂痕迹记在转出厂名下）
+        own, oa = factories.scope_sql(facs)
+        into, ia = factories.scope_sql(facs, "to_factory")
         sql += (
-            " AND (factory_code = %s OR (transfer_no IS NOT NULL AND transfer_no IN "
-            "(SELECT transfer_no FROM sn_transfer WHERE to_factory = %s)))"
+            f" AND ((1=1{own}) OR (transfer_no IS NOT NULL AND transfer_no IN "
+            f"(SELECT transfer_no FROM sn_transfer WHERE 1=1{into})))"
         )
-        args += [fac, fac]
-    elif fac is not None:
-        sql += " AND factory_code = %s"
-        args.append(fac)
+        args += [*oa, *ia]
+    else:
+        fsql, fa = factories.scope_sql(facs)
+        sql += fsql
+        args += fa
     for col, v in (
         ("action", f.action),
         ("operator", f.operator),

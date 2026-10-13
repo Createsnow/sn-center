@@ -23,7 +23,7 @@ CREATE TABLE sn_user (
   emp_no          VARCHAR(32)  NOT NULL COMMENT '公司工号，唯一',
   name            VARCHAR(64)  NOT NULL,
   role            VARCHAR(32)  NOT NULL COMMENT 'admin / factory_operator / query',
-  factory_code    VARCHAR(64)  NULL COMMENT '绑定工厂；厂区操作员必填，查询员可空',
+  factory_code    VARCHAR(64)  NULL COMMENT '厂区操作员的工厂（必填）；查询员的工厂见 sn_user_factory',
   status          VARCHAR(16)  NOT NULL DEFAULT 'ACTIVE' COMMENT 'ACTIVE / DISABLED',
   password_hash   VARCHAR(128) NOT NULL,
   must_change_pwd TINYINT(1)   NOT NULL DEFAULT 1 COMMENT '首次登录 / 重置后必须改密',
@@ -39,6 +39,14 @@ CREATE TABLE sn_user (
   UNIQUE KEY ux_user_emp_no (emp_no),
   KEY ix_user_factory (factory_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='账户';
+
+-- 查询员绑定的工厂：可绑一个或多个；没有记录 = 可看全部工厂
+CREATE TABLE sn_user_factory (
+  user_id       BIGINT      NOT NULL,
+  factory_code  VARCHAR(64) NOT NULL,
+  PRIMARY KEY (user_id, factory_code),
+  KEY ix_user_factory_code (factory_code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='查询员绑定的工厂';
 
 -- 规则（绑定对象）+ 规则版本（编码参数）
 CREATE TABLE sn_rule (

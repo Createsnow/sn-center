@@ -9,7 +9,7 @@ from __future__ import annotations
 from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
-from app.db.session import db
+from app.db.session import db, marks
 from app.services import audit, k3
 
 FIELDS = ("factory_code", "factory_name", "enabled", "source", "created_at", "updated_at")
@@ -19,12 +19,23 @@ def factory_json(f: dict | None) -> dict | None:
     return util.jrow(f, FIELDS, ("enabled",))
 
 
+def scope_sql(facs: tuple[str, ...] | None, col: str = "factory_code") -> tuple[str, list]:
+    """读范围的工厂条件（" AND ..."）与参数；None = 全部工厂，条件为空。"""
+    if facs is None:
+        return "", []
+    if len(facs) == 1:
+        return f" AND {col} = %s", [facs[0]]
+    return f" AND {col} IN ({marks(len(facs))})", list(facs)
+
+
 def list_factories() -> list[dict]:
     """全部工厂，附绑定该厂的启用账户数（停用前提示用）。"""
     users = {
         r["factory_code"]: int(r["n"])
         for r in db.all(
-            "SELECT factory_code, COUNT(*) n FROM sn_user WHERE status = 'ACTIVE' AND factory_code IS NOT NULL "
+            "SELECT factory_code, COUNT(*) n FROM (SELECT factory_code, id FROM sn_user "
+            "WHERE status = 'ACTIVE' AND factory_code IS NOT NULL UNION ALL SELECT b.factory_code, u.id "
+            "FROM sn_user_factory b JOIN sn_user u ON u.id = b.user_id WHERE u.status = 'ACTIVE') t "
             "GROUP BY factory_code"
         )
     }

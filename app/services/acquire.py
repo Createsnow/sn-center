@@ -29,10 +29,14 @@ PRINT_FIELDS = ("print_no", "factory_code", "pi_no", "request_no", "qty", "creat
 
 @dataclass(frozen=True)
 class Scope:
-    """可读范围：all_factories_of_pi = 跨厂只读（同一 PI 已分到各厂的号）。"""
+    """可读范围：factories = None 为全部工厂；all_factories_of_pi = 跨厂只读（同一 PI 已分到各厂的号）。"""
 
-    factory: str | None
+    factories: tuple[str, ...] | None
     all_factories_of_pi: bool
+
+    def sql(self, col: str = "factory_code") -> tuple[str, list]:
+        """工厂条件（" AND ..."）与参数；全部工厂时为空。"""
+        return factories.scope_sql(self.factories, col)
 
 
 def read_scope(cu: CurrentUser, factory: str | None, pi: str | None, pi_all_factories: bool) -> Scope:
@@ -45,7 +49,7 @@ def read_scope(cu: CurrentUser, factory: str | None, pi: str | None, pi_all_fact
         if not owns:
             raise biz(ErrorCode.QUERY_PI_NOT_OWNED, pi=pi.strip())
         return Scope(None, True)
-    return Scope(cu.read_factory(factory), False)
+    return Scope(cu.read_factories(factory), False)
 
 
 def pis(cu: CurrentUser, factory: str | None, pi: str | None) -> list[dict]:
@@ -56,10 +60,8 @@ def pis(cu: CurrentUser, factory: str | None, pi: str | None) -> list[dict]:
         "SUM(status = 'TO_PRINT') to_print, SUM(status = 'APPLYING') applying FROM sn_item "
         "WHERE status IN ('TO_ACQUIRE','TO_PRINT','APPLYING') AND factory_code IS NOT NULL"
     )
-    args: list = []
-    if sc.factory is not None:
-        sql += " AND factory_code = %s"
-        args.append(sc.factory)
+    fsql, args = sc.sql()
+    sql += fsql
     if not util.blank(pi):
         sql += " AND pi_no = %s"
         args.append(pi.strip())
@@ -96,9 +98,9 @@ def segments(
         args.append(status.strip())
     else:
         where += " AND status IN ('TO_ACQUIRE','TO_PRINT','APPLYING')"
-    if sc.factory is not None:
-        where += " AND factory_code = %s"
-        args.append(sc.factory)
+    fsql, fargs = sc.sql()
+    where += fsql
+    args += fargs
     if not util.blank(pi):
         where += " AND pi_no = %s"
         args.append(pi.strip())
@@ -264,8 +266,7 @@ def batch(cu: CurrentUser, batch_no: str | None) -> dict:
     b = db.one("SELECT * FROM sn_acquire_batch WHERE batch_no = %s", util.trim(batch_no))
     if b is None:
         raise biz(ErrorCode.ACQ_BATCH_NOT_FOUND, batch_no=util.trim(batch_no))
-    if cu.bound and cu.factory_code != b["factory_code"]:
-        raise biz(ErrorCode.FACTORY_FORBIDDEN, factory=cu.factory_code)
+    cu.check_read(b["factory_code"])
     return b
 
 
@@ -292,12 +293,8 @@ def _paged(
     exact: dict[str, str | None] | None = None,
 ) -> dict:
     """exact：额外的等值筛选（单号、请求号、来源），空值不参与。"""
-    where = " WHERE 1=1"
-    args: list = []
-    f = cu.read_factory(factory)
-    if f is not None:
-        where += " AND factory_code = %s"
-        args.append(f)
+    fsql, args = factories.scope_sql(cu.read_factories(factory))
+    where = " WHERE 1=1" + fsql
     if not util.blank(pi):
         where += " AND pi_no = %s"
         args.append(util.trim(pi))
@@ -408,8 +405,7 @@ def print_record(cu: CurrentUser, print_no: str | None) -> dict:
     p = db.one("SELECT * FROM sn_print WHERE print_no = %s", util.trim(print_no))
     if p is None:
         raise biz(ErrorCode.PRINT_NOT_FOUND, print_no=util.trim(print_no))
-    if cu.bound and cu.factory_code != p["factory_code"]:
-        raise biz(ErrorCode.FACTORY_FORBIDDEN, factory=cu.factory_code)
+    cu.check_read(p["factory_code"])
     return p
 
 

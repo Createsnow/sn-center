@@ -66,7 +66,7 @@ const data = ref<any>(null);
 
 const fmt = (n: number | undefined) => (n ?? 0).toLocaleString();
 const scopeDesc = computed(() =>
-  store.boundFactory ? t("dashboard.scopeFactory", { f: store.profile?.factory_name || store.boundFactory }) : t("dashboard.scopeAll"),
+  store.bound ? t("dashboard.scopeFactory", { f: store.scopeNames }) : t("dashboard.scopeAll"),
 );
 const kpis = computed(() => {
   const c = data.value?.status_counts || {};
@@ -77,7 +77,7 @@ const kpis = computed(() => {
     { key: "APPLYING", label: statusLabel("APPLYING"), value: c.APPLYING },
     { key: "transfers", label: t("dashboard.pendingTransferKpi"), value: data.value?.pending_transfers },
   ];
-  if (!store.boundFactory) rows.push({ key: "total", label: t("dashboard.totalGenerated"), value: data.value?.total_generated });
+  if (!store.bound) rows.push({ key: "total", label: t("dashboard.totalGenerated"), value: data.value?.total_generated });
   return rows;
 });
 const todayRows = computed(() =>

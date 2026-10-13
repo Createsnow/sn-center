@@ -68,7 +68,7 @@
           <div class="toolbar">
             <el-input v-model="f.q" :placeholder="t('orders.search')" clearable prefix-icon="Search" class="w-search" @keyup.enter="load(1)" @clear="load(1)" />
             <el-input v-model="f.customer" :placeholder="t('common.customer')" clearable @keyup.enter="load(1)" @clear="load(1)" />
-            <FactorySelect v-if="!store.boundFactory" v-model="f.factory_code" clearable @update:model-value="load(1)" />
+            <FactorySelect v-if="!store.bound" v-model="f.factory_code" clearable @update:model-value="load(1)" />
             <el-button type="primary" @click="load(1)">{{ t("common.search") }}</el-button>
           </div>
           <div class="fill-body">

@@ -176,10 +176,11 @@ def _bill_filter(cu: CurrentUser, q: str | None, customer: str | None, pi: str |
     if not util.blank(pi):
         where += " AND m.pi = %s"
         args.append(util.trim(pi))
-    fac = cu.read_factory(factory)
-    if fac is not None:
-        where += " AND m.prd_org_name = (SELECT factory_name FROM sn_factory WHERE factory_code = %s)"
-        args.append(fac)
+    facs = cu.read_factories(factory)
+    if facs is not None:
+        fsql, fa = factories.scope_sql(facs)
+        where += f" AND m.prd_org_name IN (SELECT factory_name FROM sn_factory WHERE 1=1{fsql})"
+        args += fa
     return where, args
 
 
@@ -336,20 +337,19 @@ def lines(bill_no: str | None) -> list[dict]:
     return db.all("SELECT * FROM sn_prd_mo WHERE bill_no = %s ORDER BY line_seq ASC", util.trim(bill_no))
 
 
-def _own_org(cu: CurrentUser) -> str | None:
-    """绑厂账户本厂的生产组织名称；未绑厂返回 None（可看全部）。"""
+def _own_orgs(cu: CurrentUser) -> set[str] | None:
+    """绑厂账户可看工厂的生产组织名称；未绑厂返回 None（可看全部）。"""
     if not cu.bound:
         return None
-    f = factories.get(cu.factory_code)
-    return "" if f is None else f["factory_name"]
+    return {f["factory_name"] for f in (factories.get(c) for c in cu.factories) if f is not None}
 
 
 def lines_of(cu: CurrentUser, bill_no: str | None) -> list[dict]:
     """订单页右表：绑厂查询员只能看本厂（生产组织 = 本厂）的订单，与左表范围一致。"""
     ls = lines(bill_no)
-    org = _own_org(cu)
-    if org is not None and ls and ls[0]["prd_org_name"] != org:
-        raise biz(ErrorCode.FACTORY_FORBIDDEN, factory=cu.factory_code)
+    orgs = _own_orgs(cu)
+    if orgs is not None and ls and ls[0]["prd_org_name"] not in orgs:
+        raise biz(ErrorCode.FACTORY_FORBIDDEN, factory=cu.scope_text())
     return ls
 
 
@@ -477,10 +477,12 @@ def customers(cu: CurrentUser, q: str | None) -> list[str]:
     if text:
         sql += " AND customer_number LIKE %s"
         args.append(util.like_any(text))
-    org = _own_org(cu)
-    if org is not None:
-        sql += " AND prd_org_name = %s"
-        args.append(org)
+    orgs = _own_orgs(cu)
+    if orgs is not None:
+        if not orgs:
+            return []
+        sql += f" AND prd_org_name IN ({marks(len(orgs))})"
+        args += sorted(orgs)
     return db.column(sql + " ORDER BY customer_number LIMIT 200", *args)
 
 

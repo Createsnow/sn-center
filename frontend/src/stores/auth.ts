@@ -24,8 +24,12 @@ export const useAuthStore = defineStore("auth", () => {
   const isSuperAdmin = computed(() => !!profile.value?.super_admin);
   const isFactory = computed(() => role.value === "factory_operator");
   const isQuery = computed(() => role.value === "query");
-  /** 绑厂账户（厂区操作员、绑厂查询员）只能看本厂。 */
+  /** 厂区操作员的本厂。 */
   const boundFactory = computed(() => profile.value?.factory_code || "");
+  /** 可看的工厂：厂区操作员 = 本厂，查询员 = 绑定的一个或多个厂；空 = 全部。 */
+  const scopeFactories = computed<string[]>(() => profile.value?.factory_codes ?? (boundFactory.value ? [boundFactory.value] : []));
+  const scopeNames = computed(() => (profile.value?.factory_names ?? [profile.value?.factory_name || boundFactory.value]).join("、"));
+  const bound = computed(() => scopeFactories.value.length > 0);
   const mustChangePwd = computed(() => !!profile.value?.must_change_pwd);
   /** 能做领取 / 打印（总部代任一厂、本厂操作员）。 */
   const canAct = computed(() => isAdmin.value || isFactory.value);
@@ -88,7 +92,8 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   return {
-    token, profile, role, isAdmin, isSuperAdmin, isFactory, isQuery, boundFactory, mustChangePwd, canAct,
+    token, profile, role, isAdmin, isSuperAdmin, isFactory, isQuery, boundFactory, scopeFactories, scopeNames, bound,
+    mustChangePwd, canAct,
     login, changePassword, refresh, changeLocale, clear,
   };
 });

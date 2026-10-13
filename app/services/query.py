@@ -96,9 +96,10 @@ def _where(cu: CurrentUser, f: Filter) -> tuple[str, list, bool, SeqRange | None
     if sc.all_factories_of_pi:
         # 未分配（工厂为空）的号不在只读范围内
         sql += " AND factory_code IS NOT NULL"
-    elif sc.factory is not None:
-        sql += " AND factory_code = %s"
-        args.append(sc.factory)
+    else:
+        fsql, fargs = sc.sql()
+        sql += fsql
+        args += fargs
     if not util.blank(f.customer_code):
         sql += " AND customer_code = %s"
         args.append(f.customer_code.strip())

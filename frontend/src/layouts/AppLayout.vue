@@ -122,10 +122,10 @@ const pageTitle = computed(() => {
 
 /** 数据范围：总部 / 本厂 / 全部工厂（只读）/ 本厂（只读），角色与范围分开展示，不再重复。 */
 const scope = computed(() => {
-  const factory = store.profile?.factory_name || store.boundFactory;
+  const factory = store.scopeNames;
   if (store.isAdmin) return { kind: "hq", icon: "OfficeBuilding", label: t("app.hq"), tip: t("app.scopeTip.hq"), readonly: false };
   if (store.isFactory) return { kind: "factory", icon: "School", label: factory, tip: t("app.scopeTip.factory"), readonly: false };
-  if (store.boundFactory) return { kind: "factory", icon: "School", label: factory, tip: t("app.scopeTip.queryFactory"), readonly: true };
+  if (store.bound) return { kind: "factory", icon: "School", label: factory, tip: t("app.scopeTip.queryFactory"), readonly: true };
   return { kind: "all", icon: "Search", label: t("app.allFactories"), tip: t("app.scopeTip.queryAll"), readonly: true };
 });
 const roleShort = computed(() => {

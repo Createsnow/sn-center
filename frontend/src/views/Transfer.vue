@@ -13,7 +13,7 @@
             {{ s ? transferStatusLabel(s) : t("common.all") }}<span v-if="s === 'PENDING' && pendingCount" class="cnt num">{{ pendingCount }}</span>
           </el-radio-button>
         </el-radio-group>
-        <FactorySelect v-if="!store.boundFactory" v-model="rf.factory_code" clearable @update:model-value="loadRecords(1)" />
+        <FactorySelect v-if="!store.bound" v-model="rf.factory_code" clearable @update:model-value="loadRecords(1)" />
         <el-input v-model="rf.pi" class="pi" :placeholder="t('transfer.recordSearch')" clearable prefix-icon="Search" @keyup.enter="loadRecords(1)" @clear="loadRecords(1)" />
       </div>
       <el-table v-loading="recState.loading" :data="records" size="small" :empty-text="t('common.empty')">

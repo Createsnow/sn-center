@@ -19,7 +19,7 @@
         <el-table-column prop="name" :label="t('users.name')" width="120" />
         <el-table-column :label="t('users.role')" width="120"><template #default="{ row }">{{ roleLabel(row.role) }}</template></el-table-column>
         <el-table-column :label="t('common.factory')" min-width="140">
-          <template #default="{ row }">{{ row.factory_code ? `${row.factory_name || ""}（${row.factory_code}）` : t("users.noFactory") }}</template>
+          <template #default="{ row }">{{ factoryText(row) }}</template>
         </el-table-column>
         <el-table-column :label="t('common.status')" width="120">
           <template #default="{ row }">
@@ -52,8 +52,18 @@
           </el-radio-group>
           <div class="muted">{{ t(`users.roleHint.${form.role}`) }}</div>
         </el-form-item>
-        <el-form-item v-if="form.role !== 'admin'" :label="t('common.factory')" :required="form.role === 'factory_operator'">
+        <el-form-item v-if="form.role === 'factory_operator'" :label="t('common.factory')" required>
           <FactorySelect v-model="form.factory_code" clearable />
+        </el-form-item>
+        <el-form-item v-if="form.role === 'query'" :label="t('users.queryFactories')">
+          <div class="query-factories">
+            <el-select v-model="form.factory_codes" multiple filterable clearable collapse-tags collapse-tags-tooltip
+              :max-collapse-tags="3" :placeholder="t('users.allFactoriesOption')">
+              <el-option v-for="x in factories" :key="x.factory_code" :value="x.factory_code"
+                :label="`${x.factory_name}（${x.factory_code}）${x.enabled ? '' : t('factories.disabledSuffix')}`" />
+            </el-select>
+            <el-button link type="primary" @click="form.factory_codes = factories.filter((x) => x.enabled).map((x) => x.factory_code)">{{ t("users.selectAll") }}</el-button>
+          </div>
         </el-form-item>
         <el-form-item v-if="!editing" :label="t('users.initPwd')" required>
           <el-input v-model="form.password" type="password" show-password />
@@ -78,36 +88,45 @@ import { usePaged } from "@/composables/usePaged";
 import { ROLE_CODES, roleLabel } from "@/constants";
 import PageHead from "@/components/PageHead.vue";
 import FactorySelect from "@/components/FactorySelect.vue";
+import { useFactories } from "@/composables/useFactories";
 
 const { t } = useI18n();
 const store = useAuthStore();
+const { factories } = useFactories();
 const f = reactive({ q: "", role: "", status: "", factory_code: "" });
 const dialog = ref(false);
 const editing = ref<any>(null);
 const saving = ref(false);
-const form = reactive({ emp_no: "", name: "", role: "factory_operator", factory_code: "", password: "" });
+const form = reactive({ emp_no: "", name: "", role: "factory_operator", factory_code: "", factory_codes: [] as string[], password: "" });
 const { items, state, load } = usePaged<any>((q) => api.users({ ...f, ...q }));
 
 function openCreate() {
   editing.value = null;
-  Object.assign(form, { emp_no: "", name: "", role: "factory_operator", factory_code: "", password: "" });
+  Object.assign(form, { emp_no: "", name: "", role: "factory_operator", factory_code: "", factory_codes: [], password: "" });
   dialog.value = true;
 }
 
 function openEdit(row: any) {
   editing.value = row;
-  Object.assign(form, { emp_no: row.emp_no, name: row.name, role: row.role, factory_code: row.factory_code || "", password: "" });
+  Object.assign(form, {
+    emp_no: row.emp_no, name: row.name, role: row.role, factory_code: row.factory_code || "",
+    factory_codes: row.role === "query" ? [...(row.factory_codes || [])] : [], password: "",
+  });
   dialog.value = true;
 }
 
 async function save() {
   saving.value = true;
-  const factory = form.role === "admin" ? null : form.factory_code || null;
+  // 厂区操作员绑一个厂；查询员绑一个或多个厂（不选 = 全部）；管理员不绑
+  const binding = {
+    factory_code: form.role === "factory_operator" ? form.factory_code || null : null,
+    factory_codes: form.role === "query" ? form.factory_codes : [],
+  };
   try {
     if (editing.value) {
-      await api.updateUser(editing.value.id, { name: form.name, role: form.role, factory_code: factory });
+      await api.updateUser(editing.value.id, { name: form.name, role: form.role, ...binding });
     } else {
-      await api.createUser({ emp_no: form.emp_no.trim(), name: form.name, role: form.role, factory_code: factory, password: form.password });
+      await api.createUser({ emp_no: form.emp_no.trim(), name: form.name, role: form.role, ...binding, password: form.password });
     }
     ElMessage.success(t("common.saved"));
     dialog.value = false;
@@ -115,6 +134,12 @@ async function save() {
   } finally {
     saving.value = false;
   }
+}
+
+function factoryText(row: any) {
+  const codes: string[] = row.factory_codes || [];
+  if (!codes.length) return row.role === "query" ? t("app.allFactories") : t("users.noFactory");
+  return codes.map((c, i) => `${row.factory_names?.[i] || ""}（${c}）`).join("、");
 }
 
 async function disable(row: any) {
@@ -144,4 +169,6 @@ onMounted(() => load(1));
 
 <style scoped>
 .ml { margin-left: 4px; }
+.query-factories { display: flex; align-items: center; gap: 8px; width: 100%; }
+.query-factories .el-select { flex: 1; }
 </style>

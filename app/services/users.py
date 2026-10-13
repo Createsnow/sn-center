@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import re
 import secrets
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from app.core import utils as util
@@ -23,7 +24,7 @@ from app.core.security import (
     session_version,
     verify_password,
 )
-from app.db.session import db
+from app.db.session import db, marks
 from app.services import audit, factories
 
 ACTIVE = "ACTIVE"
@@ -32,14 +33,18 @@ _EMP_NO = re.compile(r"^[A-Za-z0-9_-]{2,32}$")
 LANGS = frozenset(("zh-CN", "en", "vi"))
 
 
-def _view(u: dict, factory_name: str | None) -> dict:
+def _view(u: dict, names: dict[str, str], bound: list[str]) -> dict:
+    codes = [u["factory_code"]] if u["factory_code"] is not None else bound
     return {
         "id": u["id"],
         "emp_no": u["emp_no"],
         "name": u["name"],
         "role": u["role"],
         "factory_code": u["factory_code"],
-        "factory_name": factory_name,
+        "factory_name": names.get(u["factory_code"]) if u["factory_code"] is not None else None,
+        # 可看的工厂：厂区操作员 = 本厂，查询员 = 绑定的厂；空 = 全部
+        "factory_codes": codes,
+        "factory_names": [names.get(c, c) for c in codes],
         "status": u["status"],
         "super_admin": util.is_super_admin(u["emp_no"], u["role"]),
         "must_change_pwd": bool(u["must_change_pwd"]),
@@ -52,12 +57,26 @@ def _view(u: dict, factory_name: str | None) -> dict:
     }
 
 
+def _factory_names() -> dict[str, str]:
+    return {f["factory_code"]: f["factory_name"] for f in db.all("SELECT factory_code, factory_name FROM sn_factory")}
+
+
+def bound_factories(uid: int) -> list[str]:
+    """查询员绑定的工厂（没有 = 全部）。"""
+    return db.column("SELECT factory_code FROM sn_user_factory WHERE user_id = %s ORDER BY factory_code", uid)
+
+
+def read_scope(uid: int, role: str, factory_code: str | None) -> tuple[str, ...]:
+    """账户可读的工厂；空 = 全部。"""
+    if role == util.FACTORY:
+        return (factory_code,) if factory_code else ()
+    if role == util.QUERY:
+        return tuple(bound_factories(uid))
+    return ()
+
+
 def view(u: dict) -> dict:
-    name = None
-    if u["factory_code"] is not None:
-        f = db.one("SELECT factory_name FROM sn_factory WHERE factory_code = %s", u["factory_code"])
-        name = None if f is None else f["factory_name"]
-    return _view(u, name)
+    return _view(u, _factory_names(), bound_factories(u["id"]) if u["role"] == util.QUERY else [])
 
 
 def _by_emp_no(emp_no: str) -> dict | None:
@@ -181,28 +200,77 @@ def list_users(q: str | None, role: str | None, status: str | None, factory: str
     if text:
         where += " AND (emp_no LIKE %s OR name LIKE %s)"
         args += [text + "%", "%" + text + "%"]
-    for col, v in (("role", role), ("status", status), ("factory_code", factory)):
+    for col, v in (("role", role), ("status", status)):
         if not util.blank(v):
             where += f" AND {col} = %s"
             args.append(util.trim(v))
+    if not util.blank(factory):
+        where += " AND (factory_code = %s OR id IN (SELECT user_id FROM sn_user_factory WHERE factory_code = %s))"
+        args += [util.trim(factory), util.trim(factory)]
     total = db.count("SELECT COUNT(*) FROM sn_user" + where, *args)
-    names = {f["factory_code"]: f["factory_name"] for f in db.all("SELECT factory_code, factory_name FROM sn_factory")}
+    names = _factory_names()
     rows = db.all(f"SELECT * FROM sn_user{where} ORDER BY emp_no ASC LIMIT %s,%s", *args, page.offset, page.size)
-    return util.page_result([_view(u, names.get(u["factory_code"])) for u in rows], total, page)
+    bound: dict[int, list[str]] = {}
+    if rows:
+        ids = [u["id"] for u in rows]
+        for r in db.all(
+            f"SELECT user_id, factory_code FROM sn_user_factory WHERE user_id IN ({marks(len(ids))}) "
+            "ORDER BY factory_code",
+            *ids,
+        ):
+            bound.setdefault(r["user_id"], []).append(r["factory_code"])
+    return util.page_result([_view(u, names, bound.get(u["id"], [])) for u in rows], total, page)
 
 
-def _check_role_factory(role: str, factory_code: str | None, current: str | None = None) -> str | None:
-    """角色与绑定工厂；新绑定（与 current 不同）的工厂须存在且启用，保留原来已停用的绑定不报错。"""
+@dataclass(frozen=True)
+class Binding:
+    """factory = 厂区操作员的工厂；query_factories = 查询员绑定的工厂（空 = 全部）。"""
+
+    factory: str | None
+    query_factories: tuple[str, ...]
+
+    def codes(self) -> tuple[str, ...]:
+        return (self.factory,) if self.factory is not None else self.query_factories
+
+    def text(self) -> str:
+        if self.factory is not None:
+            return self.factory
+        return ",".join(self.query_factories) or "*"
+
+
+def _check_role_factory(
+    role: str, factory_code: str | None, factory_codes: list[str | None] | None, current: tuple[str, ...] = ()
+) -> Binding:
+    """角色与绑定工厂；新绑定（不在 current 里）的工厂须存在且启用，保留原来已停用的绑定不报错。
+
+    查询员可绑一个、多个或不绑（= 全部工厂）；只传 factory_code 时按绑一个处理。
+    """
     if role not in util.ROLES:
         raise biz(ErrorCode.USER_ROLE_INVALID)
     f = util.trim_or_none(factory_code)
-    if role == util.ADMIN and f is not None:
-        raise biz(ErrorCode.USER_ADMIN_NO_FACTORY)
-    if role == util.FACTORY and f is None:
-        raise biz(ErrorCode.USER_FACTORY_REQUIRED)
-    if f is not None and f != current:
-        factories.must_be_enabled(f)
-    return f
+    many = list(dict.fromkeys(c for c in (util.trim(x) for x in factory_codes or []) if c))
+    if role == util.ADMIN:
+        if f is not None or many:
+            raise biz(ErrorCode.USER_ADMIN_NO_FACTORY)
+        return Binding(None, ())
+    if role == util.FACTORY:
+        f = f or (many[0] if len(many) == 1 else None)
+        if f is None or len(many) > 1:
+            raise biz(ErrorCode.USER_FACTORY_REQUIRED)
+        if f not in current:
+            factories.must_be_enabled(f)
+        return Binding(f, ())
+    codes = many if factory_codes is not None else ([f] if f is not None else [])
+    for c in codes:
+        if c not in current:
+            factories.must_be_enabled(c)
+    return Binding(None, tuple(sorted(codes)))
+
+
+def _save_binding(uid: int, b: Binding) -> None:
+    db.exec("DELETE FROM sn_user_factory WHERE user_id = %s", uid)
+    for c in b.query_factories:
+        db.exec("INSERT INTO sn_user_factory(user_id, factory_code) VALUES (%s,%s)", uid, c)
 
 
 def _check_not_last_admin(target: dict) -> None:
@@ -220,6 +288,7 @@ def create(
     role: str | None,
     factory_code: str | None,
     password: str | None,
+    factory_codes: list[str | None] | None = None,
 ) -> dict:
     with db.tx():
         emp = util.trim(emp_no)
@@ -229,7 +298,7 @@ def create(
         if not n or len(n) > 64:
             raise biz(ErrorCode.USER_NAME_REQUIRED)
         r = util.trim(role)
-        f = _check_role_factory(r, factory_code)
+        b = _check_role_factory(r, factory_code, factory_codes)
         check_policy(password)
         if _by_emp_no(emp) is not None:
             raise biz(ErrorCode.USER_EMP_NO_EXISTS, emp_no=emp)
@@ -240,25 +309,36 @@ def create(
             emp,
             n,
             r,
-            f,
+            b.factory,
             ACTIVE,
             hash_password(password),
             cu.emp_no,
             now,
             now,
         )
-        audit.record(cu, audit.entry(audit.USER_CREATE).factory(f).info(f"emp_no={emp} role={r}"))
+        _save_binding(uid, b)
+        audit.record(
+            cu, audit.entry(audit.USER_CREATE).factory(b.factory).info(f"emp_no={emp} role={r} factory={b.text()}")
+        )
         return view(_must_get(uid))
 
 
-def update(cu: CurrentUser, uid: int, name: str | None, role: str | None, factory_code: str | None) -> dict:
+def update(
+    cu: CurrentUser,
+    uid: int,
+    name: str | None,
+    role: str | None,
+    factory_code: str | None,
+    factory_codes: list[str | None] | None = None,
+) -> dict:
     with db.tx():
         u = _must_get(uid)
+        old = Binding(u["factory_code"], tuple(bound_factories(uid)))
         n = util.trim(name)
         if not n or len(n) > 64:
             raise biz(ErrorCode.USER_NAME_REQUIRED)
         r = util.trim(role)
-        f = _check_role_factory(r, factory_code, u["factory_code"])
+        b = _check_role_factory(r, factory_code, factory_codes, old.codes())
         if u["emp_no"] == settings.init_admin_emp_no and r != util.ADMIN:
             raise biz(ErrorCode.USER_SUPER_ADMIN_FIXED)
         if u["role"] == util.ADMIN and r != util.ADMIN:
@@ -267,21 +347,18 @@ def update(cu: CurrentUser, uid: int, name: str | None, role: str | None, factor
             "UPDATE sn_user SET name = %s, role = %s, factory_code = %s, updated_at = %s WHERE id = %s",
             n,
             r,
-            f,
+            b.factory,
             util.now(),
             uid,
         )
+        _save_binding(uid, b)
         audit.record(
             cu,
             audit.entry(audit.USER_UPDATE)
-            .factory(f)
-            .info(f"emp_no={u['emp_no']} role={u['role']}->{r} factory={_jstr(u['factory_code'])}->{_jstr(f)}"),
+            .factory(b.factory)
+            .info(f"emp_no={u['emp_no']} role={u['role']}->{r} factory={old.text()}->{b.text()}"),
         )
         return view(_must_get(uid))
-
-
-def _jstr(v: str | None) -> str:
-    return "null" if v is None else v
 
 
 def disable(cu: CurrentUser, uid: int) -> dict:
@@ -383,6 +460,7 @@ def reset_admin(password: str) -> None:
                 now,
                 u["id"],
             )
+            db.exec("DELETE FROM sn_user_factory WHERE user_id = %s", u["id"])
         audit.record(CurrentUser.system(), audit.entry(audit.USER_RESET_PWD).info(f"emp_no={emp} SN_RESET_ADMIN"))
 
 

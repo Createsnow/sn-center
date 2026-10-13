@@ -185,3 +185,49 @@ def test_password_change_keeps_current_page_session(api, w):
     assert api.get("/api/sn", fresh.text("token")).status == 200
     ok(api.page_login(emp, "Better@123"))
     assert api.get("/api/sn", fresh.text("token")).code == "SESSION_REPLACED"
+
+
+def test_query_account_binds_one_many_or_all_factories(api, admin, w):
+    w.factory("F-QB1", "查询绑定一厂")
+    w.factory("F-QB2", "查询绑定二厂")
+    emp = uid("qb")
+    u = ok(
+        api.post(
+            "/api/users",
+            m(emp_no=emp, name="Q", role="query", factory_codes=["F-QB1", "F-QB2"], password="Init@1234"),
+            admin,
+        )
+    )
+    assert u["factory_codes"] == ["F-QB1", "F-QB2"]
+    assert u["factory_names"] == ["查询绑定一厂", "查询绑定二厂"]
+    assert ok(api.get("/api/users" + q(factory_code="F-QB2", q=emp), admin))["total"] == 1
+    one = ok(api.put(f"/api/users/{u['id']}", m(name="Q", role="query", factory_codes=["F-QB2"]), admin))
+    assert one["factory_codes"] == ["F-QB2"]
+    every = ok(api.put(f"/api/users/{u['id']}", m(name="Q", role="query", factory_codes=[]), admin))
+    assert every["factory_codes"] == []
+    assert (
+        api.post(
+            "/api/users",
+            m(emp_no=uid("qx"), name="Q", role="query", factory_codes=["NO-SUCH-F"], password="Init@1234"),
+            admin,
+        ).code
+        == "FACTORY_NOT_FOUND"
+    )
+    assert (
+        api.post(
+            "/api/users",
+            m(
+                emp_no=uid("fx"),
+                name="F",
+                role="factory_operator",
+                factory_codes=["F-QB1", "F-QB2"],
+                password="Init@1234",
+            ),
+            admin,
+        ).code
+        == "USER_FACTORY_REQUIRED"
+    )
+    # 改成管理员时清掉查询员的绑定
+    adm = ok(api.put(f"/api/users/{u['id']}", m(name="Q", role="query", factory_codes=["F-QB1"]), admin))
+    assert adm["factory_codes"] == ["F-QB1"]
+    assert ok(api.put(f"/api/users/{u['id']}", m(name="Q", role="admin"), admin))["factory_codes"] == []

@@ -9,8 +9,7 @@
         <el-radio-group v-model="view" @change="clearPicked">
           <el-radio-button v-for="v in VIEWS" :key="v" :value="v">{{ t(`acquire.view${v}`) }}<span class="cnt num">{{ countText(v) }}</span></el-radio-button>
         </el-radio-group>
-        <FactorySelect v-if="!store.boundFactory" v-model="f.factory_code" clearable :placeholder="t('acquire.allFactories')" @update:model-value="reload" />
-        <el-tag v-else type="warning" effect="plain" size="large">{{ store.profile?.factory_name || store.boundFactory }}</el-tag>
+        <FactorySelect v-if="store.isAdmin" v-model="f.factory_code" clearable :placeholder="t('acquire.allFactories')" @update:model-value="reload" />
         <el-input v-model="f.pi" class="pi" :placeholder="t('acquire.piSearch')" clearable prefix-icon="Search" @keyup.enter="reload" @clear="reload" />
         <span class="muted summary">
           {{ t("acquire.summary", { a: totals.to_acquire, p: totals.to_print }) }}
@@ -23,7 +22,7 @@
         :empty-text="t(`acquire.empty${view}`)" @selection-change="(rows: any[]) => (picked = rows)" @row-click="onRowClick">
         <el-table-column v-if="actable" type="selection" width="40" />
         <el-table-column prop="pi_no" label="PI" min-width="170"><template #default="{ row }"><b>{{ row.pi_no }}</b></template></el-table-column>
-        <el-table-column v-if="!store.boundFactory" :label="t('common.factory')" min-width="110"><template #default="{ row }">{{ nameOf(row.factory_code) }}</template></el-table-column>
+        <el-table-column v-if="store.scopeFactories.length !== 1" :label="t('common.factory')" min-width="110"><template #default="{ row }">{{ nameOf(row.factory_code) }}</template></el-table-column>
         <el-table-column prop="customer_code" :label="t('common.customer')" min-width="100" />
         <el-table-column :label="t('acquire.progress')" min-width="230">
           <template #default="{ row }">

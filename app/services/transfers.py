@@ -127,7 +127,11 @@ def _source(factory: str, r: Request) -> _Source:
 
 def candidates(cu: CurrentUser, r: Request) -> dict:
     """选定范围内各状态枚数（页面提交前展示）；填了转入 PI 时另给重复的号与转入后下一个号的提示。"""
-    factory = factories.must_get(r.factory_code)["factory_code"] if cu.is_admin else cu.read_factory(r.factory_code)
+    if cu.is_admin:
+        factory = factories.must_get(r.factory_code)["factory_code"]
+    else:
+        facs = cu.read_factories(r.factory_code)
+        factory = facs[0] if facs is not None and len(facs) == 1 else None
     if factory is None:
         raise biz(ErrorCode.FACTORY_NOT_FOUND, factory="")
     s = _source(factory, r)
@@ -515,7 +519,7 @@ def _direction(cu: CurrentUser, t: dict) -> str:
     """相对当前账户的方向：OUT 转出 / IN 转入 / 空 = 总部视角。"""
     if not cu.bound:
         return ""
-    return "OUT" if cu.factory_code == t["from_factory"] else "IN"
+    return "OUT" if t["from_factory"] in cu.factories else "IN"
 
 
 def list_transfers(cu: CurrentUser, status: str | None, factory: str | None, pi: str | None, page: util.Page) -> dict:
@@ -527,10 +531,12 @@ def list_transfers(cu: CurrentUser, status: str | None, factory: str | None, pi:
     if not util.blank(pi):
         where += " AND (from_pi = %s OR to_pi = %s)"
         args += [pi.strip(), pi.strip()]
-    f = cu.read_factory(factory)
-    if f is not None:
-        where += " AND (from_factory = %s OR to_factory = %s)"
-        args += [f, f]
+    facs = cu.read_factories(factory)
+    if facs is not None:
+        fr, fa = factories.scope_sql(facs, "from_factory")
+        to, ta = factories.scope_sql(facs, "to_factory")
+        where += f" AND ((1=1{fr}) OR (1=1{to}))"
+        args += [*fa, *ta]
     total = db.count("SELECT COUNT(*) FROM sn_transfer" + where, *args)
     rows = db.all(f"SELECT * FROM sn_transfer{where} ORDER BY id DESC LIMIT %s,%s", *args, page.offset, page.size)
     disabled = factories.disabled_codes()
@@ -553,8 +559,7 @@ def _get(cu: CurrentUser, tid: int) -> dict:
     t = db.one("SELECT * FROM sn_transfer WHERE id = %s", tid)
     if t is None:
         raise biz(ErrorCode.TR_NOT_FOUND)
-    if cu.bound and cu.factory_code not in (t["from_factory"], t["to_factory"]):
-        raise biz(ErrorCode.FACTORY_FORBIDDEN, factory=cu.factory_code)
+    cu.check_read(t["from_factory"], t["to_factory"])
     return t
 
 
@@ -584,8 +589,8 @@ def items(cu: CurrentUser, tid: int, page: util.Page) -> dict:
         if (
             t["status"] == APPROVED
             and cu.bound
-            and cu.factory_code == t["from_factory"]
-            and cu.factory_code != r["factory_code"]
+            and t["from_factory"] in cu.factories
+            and not cu.can_read(r["factory_code"])
         ):
             cur = "TRANSFERRED_OUT"
         out.append(

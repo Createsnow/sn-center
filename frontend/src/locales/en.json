@@ -22,7 +22,7 @@
       "hq": "HQ view: sees every factory and can acquire / print on behalf of any factory",
       "factory": "Can only view and act on this factory's data",
       "queryAll": "Can look up data of every factory, but cannot take any action",
-      "queryFactory": "Can only look up this factory's data, and cannot take any action"
+      "queryFactory": "Can only look up data of the bound factories, and cannot take any action"
     }
   },
   "nav": {
@@ -610,8 +610,11 @@
     "roleHint": {
       "admin": "HQ: no factory, full business permissions, may act for any factory; cannot create or manage accounts (only the admin account can).",
       "factory_operator": "Must be bound to one factory and can only act for it.",
-      "query": "Read-only; no factory = all factories, bound = that factory only."
+      "query": "Read-only; bind one or more factories to see only those; none selected = all factories."
     },
+    "queryFactories": "Visible factories",
+    "allFactoriesOption": "All factories (leave empty)",
+    "selectAll": "Select all",
     "disableConfirm": "Disable {emp} {name}? They can no longer sign in; history is kept.",
     "resetPrompt": "New initial password for {emp} (must change at next sign-in)",
     "resetDone": "Password reset; the account must change it at next sign-in"

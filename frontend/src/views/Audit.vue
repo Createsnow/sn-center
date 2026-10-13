@@ -16,7 +16,7 @@
           <el-option v-for="s in ['PAGE', 'API', 'SYSTEM']" :key="s" :value="s" :label="t(`audit.src${s}`)" />
         </el-select>
         <el-input v-model="f.operator" :placeholder="t('audit.operator')" clearable />
-        <FactorySelect v-if="!store.boundFactory" v-model="f.factory_code" clearable />
+        <FactorySelect v-if="!store.bound" v-model="f.factory_code" clearable />
         <el-input v-model="f.pi" placeholder="PI" clearable />
         <el-input v-model="f.batch_no" :placeholder="t('acquire.batchNo')" clearable />
         <el-input v-model="f.keyword" :placeholder="t('audit.keyword')" clearable />

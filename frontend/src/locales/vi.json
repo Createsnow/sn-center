@@ -22,7 +22,7 @@
       "hq": "Góc nhìn tổng bộ: xem mọi nhà máy và có thể nhận / in thay cho bất kỳ nhà máy nào",
       "factory": "Chỉ xem và thao tác dữ liệu của nhà máy này",
       "queryAll": "Tra cứu dữ liệu của mọi nhà máy, không thể thao tác",
-      "queryFactory": "Chỉ tra cứu dữ liệu của nhà máy này, không thể thao tác"
+      "queryFactory": "Chỉ tra cứu dữ liệu của các nhà máy được gắn, không thể thao tác"
     }
   },
   "nav": {
@@ -610,8 +610,11 @@
     "roleHint": {
       "admin": "Tổng bộ: không gắn nhà máy, toàn quyền nghiệp vụ, thao tác thay mọi nhà máy; không được tạo hay quản lý tài khoản (chỉ tài khoản admin được).",
       "factory_operator": "Phải gắn một nhà máy và chỉ thao tác cho nhà máy đó.",
-      "query": "Chỉ xem; không gắn = mọi nhà máy, gắn = chỉ nhà máy đó."
+      "query": "Chỉ xem; gắn một hoặc nhiều nhà máy để chỉ xem các nhà máy đó; không chọn = mọi nhà máy."
     },
+    "queryFactories": "Nhà máy được xem",
+    "allFactoriesOption": "Tất cả nhà máy (để trống)",
+    "selectAll": "Chọn tất cả",
     "disableConfirm": "Vô hiệu {emp} {name}? Không thể đăng nhập; lịch sử được giữ.",
     "resetPrompt": "Mật khẩu ban đầu mới cho {emp} (phải đổi khi đăng nhập)",
     "resetDone": "Đã đặt lại; tài khoản phải đổi khi đăng nhập"

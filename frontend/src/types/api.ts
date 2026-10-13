@@ -20,6 +20,9 @@ export interface UserView {
   role: string;
   factory_code: string | null;
   factory_name: string | null;
+  /** 可看的工厂：厂区操作员 = 本厂，查询员 = 绑定的厂；空 = 全部 */
+  factory_codes: string[];
+  factory_names: string[];
   status: string;
   /** 内置 admin 账户（唯一能管理账户） */
   super_admin: boolean;

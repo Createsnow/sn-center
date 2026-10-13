@@ -133,6 +133,8 @@ class CurrentUser:
     factory_code: str | None
     source: str
     trace_id: str | None
+    #: 可读的工厂：厂区操作员 = 本厂；查询员 = 绑定的一个或多个厂；空 = 全部（总部、未绑厂查询员）
+    factories: tuple[str, ...] = ()
 
     @staticmethod
     def system(trace_id: str | None = None) -> CurrentUser:
@@ -157,7 +159,18 @@ class CurrentUser:
 
     @property
     def bound(self) -> bool:
-        return not util.blank(self.factory_code)
+        return bool(self.factories)
+
+    def scope_text(self) -> str:
+        return "、".join(self.factories)
+
+    def can_read(self, factory: str | None) -> bool:
+        return not self.factories or factory in self.factories
+
+    def check_read(self, *factories: str | None) -> None:
+        """记录涉及的工厂里至少有一个在可读范围内，否则拒绝。"""
+        if not any(self.can_read(f) for f in factories):
+            raise biz(ErrorCode.FACTORY_FORBIDDEN, factory=self.scope_text())
 
     def write_factory(self, requested: str | None) -> str:
         """写操作（领取、打印、转厂申请）的工厂：总部必须指定工厂；厂区只能是本厂；查询员不能写。"""
@@ -172,11 +185,10 @@ class CurrentUser:
             return self.factory_code  # type: ignore[return-value]
         raise biz(ErrorCode.FORBIDDEN)
 
-    def read_factory(self, requested: str | None) -> str | None:
-        """读范围的工厂：总部 / 未绑厂查询员可看任意厂（空 = 全部）；绑厂账户固定本厂。"""
+    def read_factories(self, requested: str | None) -> tuple[str, ...] | None:
+        """读范围的工厂：None = 全部；指定了工厂须在可读范围内，没指定 = 全部可读的厂。"""
         req = util.trim(requested)
-        if not self.bound:
-            return req or None
-        if req and req != self.factory_code:
-            raise biz(ErrorCode.FACTORY_FORBIDDEN, factory=self.factory_code)
-        return self.factory_code
+        if req:
+            self.check_read(req)
+            return (req,)
+        return self.factories or None

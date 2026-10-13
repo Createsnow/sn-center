@@ -25,12 +25,12 @@ def user_list(
 
 @router.post("")
 def user_create(body: UserCreateIn, cu: SuperAdminDep) -> dict:
-    return users.create(cu, body.emp_no, body.name, body.role, body.factory_code, body.password)
+    return users.create(cu, body.emp_no, body.name, body.role, body.factory_code, body.password, body.factory_codes)
 
 
 @router.put("/{id}")
 def user_update(id: int, body: UserUpdateIn, cu: SuperAdminDep) -> dict:
-    return users.update(cu, id, body.name, body.role, body.factory_code)
+    return users.update(cu, id, body.name, body.role, body.factory_code, body.factory_codes)
 
 
 @router.post("/{id}/disable")

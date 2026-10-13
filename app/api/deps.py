@@ -17,6 +17,7 @@ from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import API, PAGE, CurrentUser, parse_token, pwd_version, session_version
 from app.db.session import db
+from app.services import users
 
 
 async def run_sync(fn: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
@@ -58,6 +59,7 @@ def authenticate(request: Request) -> CurrentUser:
         user["factory_code"],
         source,
         getattr(request.state, "request_id", None),
+        users.read_scope(user["id"], user["role"], user["factory_code"]),
     )
     request.state.user = cu
     if user["must_change_pwd"] and path not in PWD_CHANGE_ALLOWED:

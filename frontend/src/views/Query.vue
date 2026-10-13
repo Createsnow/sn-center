@@ -10,8 +10,7 @@
       <el-tabs v-model="tab" class="tabs-fill" @tab-change="onTab">
         <el-tab-pane :label="t('query.tabSn')" name="sn">
           <div class="toolbar">
-            <FactorySelect v-if="!store.boundFactory" v-model="f.factory_code" clearable :disabled="f.pi_all" />
-            <el-tag v-else type="warning" effect="plain" size="large">{{ store.profile?.factory_name || store.boundFactory }}</el-tag>
+            <FactorySelect v-if="store.isAdmin" v-model="f.factory_code" clearable :disabled="f.pi_all" />
             <el-input v-model="f.pi" placeholder="PI" clearable />
             <el-input v-model="f.material_code" :placeholder="t('common.material')" clearable />
             <el-input v-model="f.customer_code" :placeholder="t('common.customer')" clearable />
@@ -67,7 +66,7 @@
 
         <el-tab-pane :label="t('acquire.batches')" name="batches">
           <div class="toolbar">
-            <FactorySelect v-if="!store.boundFactory" v-model="bf.factory_code" clearable />
+            <FactorySelect v-if="store.isAdmin" v-model="bf.factory_code" clearable />
             <el-input v-model="bf.pi" placeholder="PI" clearable @keyup.enter="loadBatches(1)" />
             <el-input v-model="bf.batch_no" :placeholder="t('acquire.batchNo')" clearable @keyup.enter="loadBatches(1)" />
             <el-input v-model="bf.request_no" :placeholder="t('acquire.requestNo')" clearable @keyup.enter="loadBatches(1)" />
@@ -103,7 +102,7 @@
 
         <el-tab-pane :label="t('acquire.prints')" name="prints">
           <div class="toolbar">
-            <FactorySelect v-if="!store.boundFactory" v-model="pf.factory_code" clearable />
+            <FactorySelect v-if="store.isAdmin" v-model="pf.factory_code" clearable />
             <el-input v-model="pf.pi" placeholder="PI" clearable @keyup.enter="loadPrints(1)" />
             <el-input v-model="pf.print_no" :placeholder="t('acquire.printNo')" clearable @keyup.enter="loadPrints(1)" />
             <el-input v-model="pf.request_no" :placeholder="t('acquire.requestNo')" clearable @keyup.enter="loadPrints(1)" />
@@ -169,8 +168,8 @@ const route = useRoute();
 const store = useAuthStore();
 const { nameOf } = useFactories();
 const str = (v: unknown) => (typeof v === "string" ? v : "");
-/** 从领取页跳来时带 ?tab=&factory=&pi=，三个标签共用这两个初始条件。 */
-const initFactory = store.boundFactory ? "" : str(route.query.factory);
+/** 从领取页跳来时带 ?tab=&factory=&pi=，三个标签共用这两个初始条件；只有总部有工厂筛选，其他账户按可看范围。 */
+const initFactory = store.isAdmin ? str(route.query.factory) : "";
 const initPi = str(route.query.pi);
 const tab = ref(TABS.includes(str(route.query.tab)) ? str(route.query.tab) : "sn");
 const f = reactive({

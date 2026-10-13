@@ -375,6 +375,39 @@ def test_read_scopes(api, admin, w, ctx):
     assert ok(api.get("/api/audits" + q(pi=pi), op_b))["total"] >= 1
 
 
+def test_query_bound_to_several_factories(api, admin, w, ctx):
+    """查询员绑多个厂：只看这几个厂（不填工厂 = 全部绑定的厂），指定别的厂拒绝。"""
+    pi = ready(w, "MQ", 2, 0)
+    ok(
+        api.post(
+            "/api/transfers/direct",
+            m(factory_code=FA, pi_no=pi, scope="SINGLE", sn="MQ00002", to_factory=FB, to_pi=pi, reason="分一枚"),
+            admin,
+        )
+    )
+    w.factory("F-ACQ-C", "领取测试丙厂")
+    emp = uid("qm")
+    created = ok(
+        api.post(
+            "/api/users",
+            m(emp_no=emp, name=emp, role="query", factory_codes=[FB, FA, FA], password="Pass@1234"),
+            admin,
+        )
+    )
+    assert created["factory_codes"] == [FA, FB]
+    assert created["factory_code"] is None
+    both = ok(api.post("/api/auth/login", m(emp_no=emp, password="Pass@1234"), None)).text("token")
+    assert ok(api.get("/api/sn" + q(pi=pi), both))["total"] == 2
+    assert ok(api.get("/api/sn" + q(pi=pi, factory_code=FB), both))["total"] == 1
+    assert api.get("/api/sn" + q(pi=pi, factory_code="F-ACQ-C"), both).code == "FACTORY_FORBIDDEN"
+    assert {r["factory_code"] for r in ok(api.get("/api/acquire/pis" + q(pi=pi), both)).body} == {FA, FB}
+    assert ok(api.get("/api/transfers" + q(pi=pi), both))["total"] >= 1
+    only_c = w.user(uid("qc"), "query", "F-ACQ-C")
+    assert ok(api.get("/api/sn" + q(pi=pi), only_c))["total"] == 0
+    assert ok(api.get("/api/acquire/pis" + q(pi=pi), only_c)).body == []
+    assert ok(api.get("/api/transfers" + q(pi=pi), only_c))["total"] == 0
+
+
 def test_query_by_serial_range(api, admin, w, ctx):
     qry, op_a = ctx["query"], ctx["op_a"]
     pi = ready(w, "SR", 5, 3)  # SR00001..SR00008，甲厂待领取
