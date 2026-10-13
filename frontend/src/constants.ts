@@ -9,6 +9,14 @@ export const STATUS_TYPE: Record<string, "" | "info" | "primary" | "success" | "
   APPLYING: "danger",
   TRANSFERRED_OUT: "info",
 };
+/** 规则进制 → 系统默认字符表（与后端 encoding.DEFAULT_CHARSETS 一致）。 */
+export const CHARSETS: Record<number, string> = {
+  10: "0123456789",
+  16: "0123456789ABCDEF",
+  32: "0123456789ABCDEFGHIJKLMNOPQRSTUV",
+  36: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+};
+export const BASES = Object.keys(CHARSETS).map(Number);
 export const STATUS_CODES = ["PENDING_ALLOC", "TO_ACQUIRE", "TO_PRINT", "PRINTED", "APPLYING"];
 export const ROLE_CODES = ["admin", "factory_operator", "query"];
 export const TRANSFER_STATUS_TYPE: Record<string, "" | "info" | "primary" | "success" | "warning" | "danger"> = {

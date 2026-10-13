@@ -78,7 +78,7 @@
         <el-form-item :label="t('rules.suffix')"><el-input v-model="form.suffix" /></el-form-item>
         <el-form-item :label="t('rules.base')">
           <el-radio-group v-model="form.base" @change="form.charset = ''">
-            <el-radio-button v-for="b in [10, 16, 32, 36]" :key="b" :value="b">{{ b }}</el-radio-button>
+            <el-radio-button v-for="b in BASES" :key="b" :value="b">{{ b }}</el-radio-button>
           </el-radio-group>
         </el-form-item>
         <el-form-item :label="t('rules.seqLen')"><el-input-number v-model="form.seq_len" :min="1" :max="12" /></el-form-item>
@@ -123,18 +123,13 @@ import { useI18n } from "vue-i18n";
 import { ElMessage } from "element-plus";
 import { api } from "@/api";
 import PageHead from "@/components/PageHead.vue";
+import { BASES, CHARSETS } from "@/constants";
 
 const { t } = useI18n();
 /** 归类：只用于筛选和查找，不影响生效（绑定在生成页做）。 */
 const CATEGORIES = ["NONE", "CUSTOMER", "PI"];
 /** 列表筛选：全部 / 未分类 / 客户 / PI；选了客户或 PI 后可再选具体对象。 */
 const FILTERS = ["ALL", ...CATEGORIES];
-const CHARSETS: Record<number, string> = {
-  10: "0123456789",
-  16: "0123456789ABCDEF",
-  32: "0123456789ABCDEFGHIJKLMNOPQRSTUV",
-  36: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-};
 const rows = ref<any[]>([]);
 const loading = ref(false);
 const cat = ref("ALL");

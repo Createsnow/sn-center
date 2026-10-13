@@ -180,6 +180,10 @@
                       <el-radio-button v-for="b in BASES" :key="b" :value="b">{{ b }}</el-radio-button>
                     </el-radio-group>
                   </div>
+                  <div v-if="manualMode" class="inl small">
+                    <span class="muted">{{ t("rules.charset") }}</span>
+                    <span class="sn-mono charset">{{ CHARSETS[manual.base] }}</span>
+                  </div>
                 </template>
                 <div v-else-if="ctx.rule" class="inl">
                   <b>{{ ctx.rule.rule_name }}</b>
@@ -374,6 +378,7 @@ import { clampQty, genQtyCap } from "@/snList.js";
 import { useFactories } from "@/composables/useFactories";
 import type { GenBatch } from "@/types/api";
 import PageHead from "@/components/PageHead.vue";
+import { BASES, CHARSETS } from "@/constants";
 
 type View = "ALL" | "TO_GEN" | "RUNNING" | "TO_ALLOC" | "DONE";
 const VIEWS: View[] = ["ALL", "TO_GEN", "RUNNING", "TO_ALLOC", "DONE"];
@@ -479,7 +484,6 @@ const pickKey = computed<number | "manual" | null>(() => (ruleTab.value === "cus
 /** 按客户绑定时点了「为本 PI 单独设置」。 */
 const override = ref(false);
 const unbindAsk = ref(false);
-const BASES = [10, 16, 32, 36];
 const manual = reactive({ prefix: "", base: 10, seq_len: 6, suffix: "" });
 /** 手动设置的即时判断结果（后台校验前缀冲突、给出第一个号）。 */
 const manualPlan = ref<any>(null);
@@ -981,6 +985,7 @@ onUnmounted(() => {
 .small { font-size: 12px; }
 .push { margin-left: auto; }
 .inl { display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; }
+.charset { word-break: break-all; letter-spacing: 0.04em; }
 .err { color: var(--el-color-danger); }
 .warn { color: var(--el-color-warning-dark-2); }
 .hint { margin-top: 8px; font-size: 12px; }
