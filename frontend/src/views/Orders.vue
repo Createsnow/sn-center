@@ -151,6 +151,7 @@ import { api } from "@/api";
 import { useAuthStore } from "@/stores/auth";
 import { usePaged } from "@/composables/usePaged";
 import PageHead from "@/components/PageHead.vue";
+import { firstSyncThisLogin } from "@/utils/syncOnce";
 import FactorySelect from "@/components/FactorySelect.vue";
 
 const { t } = useI18n();
@@ -264,10 +265,13 @@ async function syncOne() {
   }
 }
 
-/** 每次进入页面：先显示现有快照，总部再自动全量同步一次（失败时快照不动，提示由请求层弹出）。 */
+/**
+ * 进入页面先显示现有快照；总部只在新开 / 刷新页面或重新登录后第一次进入时自动全量同步一次，
+ * 之后在系统内切换回来不再自动同步（失败时快照不动，提示由请求层弹出，也不再自动重试）。
+ */
 onMounted(async () => {
   await refresh();
-  if (store.isAdmin && !syncing.value) await syncAll();
+  if (store.isAdmin && !syncing.value && firstSyncThisLogin("orders", store.token)) await syncAll();
 });
 </script>
 
