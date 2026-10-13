@@ -1,395 +1,308 @@
-# Python 项目迁移 Java 企业级通用指南
+# Python 项目迁移 Java 技术栈等价替换指南（企业级通用）
 
-> **文档性质**：独立、自包含的企业级迁移指南。不依赖任何特定工程，可直接用于将任意 Python Web 项目（Django / Flask / FastAPI 等）完整迁移到 Java。
+> **文档性质**：独立、自包含的迁移手册，不依赖任何特定工程即可使用。
 >
-> **占位约定**：公司包名 `com.company`，应用名 `app`，示例业务模块 `order`（订单）、`customer`（客户）。实施时替换为实际名称。
+> **核心定位**：**只替换技术栈，不新增功能，不改变行为。**Python 系统原来用了什么，就换成对应的 Java 技术；原系统没有的能力本次一律不引入（列入附录 A“可选增强”）。验收标准只有一条：**新系统对外行为与原系统一致**。
 >
-> **版本说明**：文中版本为 2026 年下半年的主流稳定线。落地时以各项目官网当期最新的稳定补丁版本为准，并在工程中锁定精确版本。
+> **占位约定**：公司包名 `com.company`，应用名 `app`，示例业务“订单（order）”。实施时替换为实际名称。
+>
+> **版本基线**（2026 年下半年）：**Java 25 LTS**（受平台限制时用 Java 21 LTS）、**Spring Boot 4.1.x**（4.2 正式发布后跟进）。落地时锁定当期最新补丁版本。
 
 ---
 
 ## 目录
 
-1. [目标与总体决策](#1-目标与总体决策)
-2. [目标架构：为什么是这套](#2-目标架构为什么是这套)
-3. [迁移策略：渐进替换还是一次切换](#3-迁移策略渐进替换还是一次切换)
-4. [实施路线与阶段](#4-实施路线与阶段)
-5. [第 0 阶段：盘点与评估](#5-第-0-阶段盘点与评估)
-6. [工程结构与骨架](#6-工程结构与骨架)
-7. [Python → Java 映射大全](#7-python--java-映射大全)
-8. [分层实现规范与标准代码](#8-分层实现规范与标准代码)
-9. [数据层迁移](#9-数据层迁移)
-10. [API 契约迁移](#10-api-契约迁移)
-11. [认证与授权迁移](#11-认证与授权迁移)
-12. [事务、并发与幂等](#12-事务并发与幂等)
-13. [异步、定时与批处理](#13-异步定时与批处理)
-14. [外部集成、缓存与文件](#14-外部集成缓存与文件)
-15. [可观测性](#15-可观测性)
-16. [测试体系与新旧对照](#16-测试体系与新旧对照)
-17. [构建、质量门禁与 CI/CD](#17-构建质量门禁与-cicd)
-18. [部署与运行](#18-部署与运行)
-19. [前端处理](#19-前端处理)
-20. [切换、回退与下线](#20-切换回退与下线)
-21. [常见陷阱](#21-常见陷阱)
-22. [按规模裁剪](#22-按规模裁剪)
-23. [附录：模板与检查清单](#23-附录模板与检查清单)
+1. [范围与原则](#1-范围与原则)
+2. [迁移方式：可随时回退的逐步替换](#2-迁移方式可随时回退的逐步替换)
+3. [盘点：原系统技术清单](#3-盘点原系统技术清单)
+4. [技术替换对照表](#4-技术替换对照表)
+5. [工程骨架（最小依赖）](#5-工程骨架最小依赖)
+6. [逐层替换方法与代码](#6-逐层替换方法与代码)
+7. [行为一致性专题](#7-行为一致性专题)
+8. [认证与权限：按原机制复刻](#8-认证与权限按原机制复刻)
+9. [数据库：结构零改动](#9-数据库结构零改动)
+10. [后台任务与定时任务：按原机制映射](#10-后台任务与定时任务按原机制映射)
+11. [缓存、文件、外部调用、日志、配置](#11-缓存文件外部调用日志配置)
+12. [测试：逐接口对照验收](#12-测试逐接口对照验收)
+13. [构建与部署：沿用原方式](#13-构建与部署沿用原方式)
+14. [切换、回退与下线](#14-切换回退与下线)
+15. [差异清单：发现但不在本次修复的问题](#15-差异清单发现但不在本次修复的问题)
+16. [常见陷阱](#16-常见陷阱)
+- [附录 A：可选增强（不在本次范围）](#附录-a可选增强不在本次范围)
+- [附录 B：模板与检查清单](#附录-b模板与检查清单)
 
 ---
 
-## 1. 目标与总体决策
+## 1. 范围与原则
 
-### 1.1 迁移目标
+### 1.1 本次做什么、不做什么
 
-把现有 Python 系统的**全部有效业务能力**迁移到 Java 平台，并同时补齐企业级能力：安全、可观测、可测试、可运维、可扩展。具体包括：
+| 做 | 不做 |
+| --- | --- |
+| Python 后端代码用 Java 重写 | 新增业务功能 |
+| Python 依赖库替换为 Java 对应库 | 引入原系统没有的基础设施（身份服务、消息队列、K8s、监控平台、对象存储等） |
+| 原有后台任务、定时任务、外部集成迁移到 Java | 修改接口路径、字段名、状态码、错误格式、分页结构 |
+| 测试改写为 Java，并建立新旧对照测试 | 修改数据库表结构、字段含义、时区语义 |
+| 构建、启动脚本替换为 Java 方式 | 修改认证方式、密码哈希算法、权限模型 |
+| | 改动前端（前端保持不变） |
 
-- 后端业务逻辑、接口、后台任务、定时任务、外部集成；
-- 数据库结构（以及按需迁移的存量数据）；
-- 认证授权、审计日志、多语言、文件导入导出；
-- 测试、构建、部署、监控、运维手册。
+### 1.2 七条原则
 
-完成后，生产运行**不依赖 Python**（第 1.3 节列出的明确例外除外）。
-
-### 1.2 一页纸决策总表
-
-| 决策项 | 推荐（默认） | 备选 / 何时选备选 |
+| # | 原则 | 说明 |
 | --- | --- | --- |
-| 语言/运行时 | **Java 21 LTS**（新项目可直接 Java 25 LTS） | — |
-| 应用框架 | **Spring Boot 4.x** | Quarkus / Micronaut：强需求原生镜像、极低内存时 |
-| 架构形态 | **模块化单体（Spring Modulith）** | 微服务：团队 > 50 人、模块需独立扩缩容和发布节奏时，从单体按模块拆出 |
-| 编程模型 | **Spring MVC + 虚拟线程**（阻塞式） | WebFlux：只有极高并发流式场景才考虑 |
-| 迁移策略 | **渐进替换（绞杀者模式）** | 一次切换：系统小（< 30 个接口）、可停机窗口充足时 |
-| 构建工具 | **Maven** | Gradle：团队已熟悉，或需要复杂构建逻辑 |
-| 数据访问 | **Spring Data JPA（Hibernate）+ JdbcClient 处理复杂查询** | MyBatis / MyBatis-Plus：原项目以手写 SQL 为主或团队熟悉；jOOQ：SQL 复杂且要类型安全 |
-| 数据库迁移 | **Flyway** | Liquibase：需多数据库方言或回滚脚本时 |
-| 对象映射 | **MapStruct** | — |
-| API | **REST + OpenAPI 3（springdoc）+ RFC 9457 ProblemDetail** | GraphQL（Spring for GraphQL）、gRPC：已有此类接口时 |
-| 认证 | **OIDC 身份服务（Keycloak 等）+ 资源服务器**；SPA 采用 **BFF** | 无 SSO 需求：Spring Security 表单登录 + Spring Session（Redis） |
-| 授权 | **RBAC（权限码）+ 方法级 `@PreAuthorize`** + 数据范围过滤 | ABAC / OPA：规则高度动态时 |
-| 后台任务 | **JobRunr** 或 **db-scheduler**（持久化、可重试、集群安全） | 消息队列（RabbitMQ / Kafka）：跨系统异步、削峰 |
-| 定时任务 | **`@Scheduled` + ShedLock** | Quartz（JDBC 存储）：需要复杂日历与动态调度 |
-| 模块间事件 | **Spring Modulith 事件 + 事件发布登记表（事务性发件箱）** | Kafka 外部化：需要跨系统发布事件时 |
-| 批处理/数据迁移 | **Spring Batch** | 简单场景用 CLI + JdbcClient |
-| 缓存 | **Spring Cache + Caffeine（本地）/ Redis（分布式）** | — |
-| HTTP 客户端 | **RestClient + HTTP 接口（`@HttpExchange`）** + 重试/熔断 | — |
-| 韧性 | **Spring Framework 7 `@Retryable` / `@ConcurrencyLimit` + Resilience4j 熔断** | — |
-| 可观测 | **Actuator + Micrometer + Prometheus + OpenTelemetry + 结构化 JSON 日志** | 商业 APM |
-| 测试 | **JUnit 5 + AssertJ + Mockito + Testcontainers + Spring Modulith 测试 + ArchUnit + WireMock** | Pact：多个外部消费者的契约测试 |
-| 质量 | **Spotless、Checkstyle、SpotBugs、JaCoCo、依赖漏洞扫描、SonarQube** | — |
-| 交付 | **容器镜像 + Kubernetes（Helm）** | Docker Compose / 虚拟机：规模小、无 K8s 平台时 |
-| 前端 | **保持现有前端不变，先迁后端**；如需重写用 React + TypeScript | 服务端渲染页面多：Thymeleaf |
+| 1 | **行为一致优先** | 同样的请求 + 同样的数据 → 同样的响应和同样的数据库结果 |
+| 2 | **按原系统决定技术** | 每项技术都写成“若原来用 X，则替换为 Y；原来没有就不引入” |
+| 3 | **缺陷原样保持** | 迁移中发现的旧缺陷登记到差异清单（第 15 节），本次不修。**例外**：安全漏洞和会导致数据损坏的问题，经业务负责人确认后可在本次修复 |
+| 4 | **重写而非逐行翻译** | 对外行为一致，内部按 Java 分层规范实现；只改变实现方式、不改变对外结果的写法可以采用（如用数据库唯一约束代替代码判重，前提是返回结果相同） |
+| 5 | **可随时回退** | 数据库结构、数据格式、会话、密码哈希都保持 Python 可读写，任何时候都能把流量切回 Python |
+| 6 | **证据验收** | 每个接口都要有新旧对照测试结果，不以“代码写完”作为完成标准 |
+| 7 | **不应迁移的保留 Python** | 机器学习、重度数据分析、无 Java 等价物的功能，保留为独立 Python 进程，接口不变 |
 
-### 1.3 哪些不应该迁移
+### 1.3 完成定义
 
-并非所有 Python 代码都适合迁到 Java。下列情况建议**保留为独立 Python 服务**，由 Java 主系统通过 HTTP / 消息调用：
-
-- 机器学习训练与推理（PyTorch、TensorFlow、scikit-learn），除非可以导出为 ONNX 后由 ONNX Runtime for Java 推理；
-- 重度数据分析与科学计算（pandas、numpy、scipy）；
-- 依赖 Python 专有生态、没有成熟 Java 等价物的功能。
-
-这类功能在盘点阶段单独标记为“保留 Python 服务”，并定义清晰的接口契约。
+- 盘点清单中每一项都有替换结果：已替换 / Java 内置可替代 / 删除（确认无用）/ 保留 Python；
+- 每个接口通过新旧对照测试，差异为零或已登记并确认；
+- 后台任务、定时任务在 Java 侧运行，Python 侧已停用；
+- 生产流量全部由 Java 处理，观察期内无回退；
+- Python 后端下线（保留 Python 的部分除外）。
 
 ---
 
-## 2. 目标架构：为什么是这套
+## 2. 迁移方式：可随时回退的逐步替换
 
-### 2.1 架构总览
-
-```mermaid
-flowchart TB
-    subgraph 客户端
-        Web[浏览器 SPA / 页面]
-        Ext[外部系统]
-    end
-    subgraph 接入层
-        GW[网关 / Nginx / Ingress<br/>TLS、路由、限流]
-        BFF[BFF（可选）<br/>OIDC 登录、会话 Cookie]
-    end
-    subgraph 应用["Spring Boot 模块化单体"]
-        direction TB
-        M1[order 模块]
-        M2[customer 模块]
-        M3[其他业务模块]
-        SH[shared 共享内核]
-        M1 -. 公开接口/事件 .-> M2
-    end
-    subgraph 基础设施
-        DB[(关系数据库<br/>MySQL / PostgreSQL)]
-        RD[(Redis<br/>缓存/会话)]
-        MQ[[消息队列（可选）]]
-        OBJ[(对象存储<br/>S3 / MinIO)]
-        IDP[身份服务 OIDC<br/>Keycloak 等]
-    end
-    subgraph 可观测
-        PROM[Prometheus/Grafana]
-        OTEL[OpenTelemetry 收集器]
-        LOG[日志平台]
-    end
-    Web --> GW --> BFF --> 应用
-    Ext --> GW --> 应用
-    应用 --> DB
-    应用 --> RD
-    应用 --> MQ
-    应用 --> OBJ
-    BFF --> IDP
-    应用 --> IDP
-    应用 --> PROM
-    应用 --> OTEL
-    应用 --> LOG
-```
-
-### 2.2 为什么选模块化单体
-
-| 方案 | 优点 | 缺点 | 结论 |
-| --- | --- | --- | --- |
-| 传统分层单体（controller/service/dao 全局分包） | 简单 | 随规模膨胀成“大泥球”，边界无约束 | 不推荐 |
-| **模块化单体** | 一次部署、一个数据库事务、调试简单；模块边界清晰并可自动校验；将来可按模块拆服务 | 需要纪律（由工具保证） | **推荐默认** |
-| 微服务 | 独立部署和扩缩容 | 分布式事务、网络故障、运维成本、数据一致性复杂度高 | 只在组织规模和需求确实需要时采用 |
-
-迁移本身已经是高风险工程，**不要同时引入“迁移语言”和“拆微服务”两个变量**。先迁成模块化单体，稳定后再按需拆分。
-
-### 2.3 模块化的规则（Spring Modulith 约定）
-
-1. 主应用类所在包的**每个直接子包是一个业务模块**，例如 `com.company.app.order`。
-2. 模块根包中的类型是**公开 API**，子包（`internal`、`web`、`domain` 等）中的类型对其他模块**不可见**。
-3. 模块之间只能：
-   - 调用对方根包中的公开接口（同步）；
-   - 监听对方发布的领域事件（异步、解耦，**首选**）。
-4. 不允许循环依赖，不允许直接访问其他模块的 Repository / 表。
-5. 以上规则由 `ApplicationModules.of(Application.class).verify()` 在测试中自动校验。
-6. 共享内核 `shared` 的子包需要被所有模块使用，须声明为**开放模块**：
-
-   ```java
-   // src/main/java/com/company/app/shared/package-info.java
-   @org.springframework.modulith.ApplicationModule(type = org.springframework.modulith.ApplicationModule.Type.OPEN)
-   package com.company.app.shared;
-   ```
-
-   共享内核只放真正通用的技术类型（错误、分页、审计基类、安全工具），**不放业务逻辑**。
-
-### 2.4 模块内部分层
+### 2.1 基本做法
 
 ```mermaid
 flowchart LR
-    Web[web<br/>Controller + 请求/响应 DTO] --> App[application<br/>用例服务、事务、权限]
-    App --> Domain[domain<br/>实体、值对象、领域规则、仓储接口]
-    Infra[infrastructure<br/>外部客户端、复杂查询、文件] --> Domain
-    App --> Infra
+    C[客户端<br/>前端不变] --> N[原 Nginx / 网关]
+    N -->|已替换的接口| J[Java 应用]
+    N -->|未替换的接口| P[Python 应用]
+    J --> DB[(原数据库<br/>结构不变)]
+    P --> DB
 ```
 
-| 层 | 职责 | 禁止 |
-| --- | --- | --- |
-| web | HTTP 协议、参数校验、DTO 转换 | 业务判断、直接访问 Repository |
-| application | 用例编排、事务边界、权限校验、发布事件 | HTTP 细节 |
-| domain | 实体、值对象、状态机与业务规则、Repository 接口 | 依赖 web / 框架细节（JPA 注解除外） |
-| infrastructure | 外部系统适配、复杂 SQL、文件存储、消息 | 业务规则 |
+1. 复用原有 Nginx（或网关），按路径把接口逐批转到 Java；
+2. Java 与 Python **共用同一个数据库**，表结构不变；
+3. 每批接口先通过对照测试，再切换路由；出问题时把路由改回 Python 即可回退；
+4. 全部接口切换完成并度过观察期后，下线 Python。
 
----
+只有系统很小、允许停机时，才考虑一次性整体切换（第 14.3 节）。
 
-## 3. 迁移策略：渐进替换还是一次切换
-
-### 3.1 推荐默认：渐进替换（绞杀者模式）
-
-```mermaid
-flowchart LR
-    C[客户端] --> P[路由层<br/>Nginx / 网关]
-    P -->|已迁移路由| J[Java 新系统]
-    P -->|未迁移路由| Y[Python 旧系统]
-    J --> DB[(数据库)]
-    Y --> DB
-```
-
-做法：
-
-1. 在 Python 前面放一个路由层（若已有 Nginx 则直接复用）。
-2. 按模块逐个用 Java 实现，**保持接口契约与旧系统完全一致**（路径、JSON 字段名、错误格式）。
-3. 先用影子流量或对照测试验证结果一致，再把该模块路由切到 Java，可按比例灰度。
-4. 一个模块稳定运行一段时间后，删除 Python 中对应代码。
-5. 全部模块迁完后下线 Python，再按需推出新版 API（v2）。
-
-Nginx 路由示例：
+### 2.2 Nginx 路由示例
 
 ```nginx
-upstream python_app { server python-app:8000; }
-upstream java_app   { server java-app:8080; }
-
-# 灰度：按客户端地址把 10% 流量分到 Java（仅用于已验证的只读接口）
-split_clients "${remote_addr}" $orders_backend {
-    10%     java_app;
-    *       python_app;
-}
+upstream python_app { server 127.0.0.1:8000; }   # 原 gunicorn / uvicorn
+upstream java_app   { server 127.0.0.1:8080; }   # 新 Java 应用
 
 server {
-    listen 443 ssl;
-    # 已完全迁移的模块
+    # ……保持原有 listen、ssl、静态资源等配置不变……
+
+    # 第 1 批：已替换的接口
     location /api/customers/ { proxy_pass http://java_app; }
-    # 灰度中的模块
-    location /api/orders/    { proxy_pass http://$orders_backend; }
+    location /api/dicts/     { proxy_pass http://java_app; }
+
     # 其余仍由 Python 处理
     location /api/           { proxy_pass http://python_app; }
 }
 ```
 
-### 3.2 何时选一次切换
+原系统没有 Nginx 时，可在 Python 前临时加一层 Nginx 作为切换工具，迁移结束后按原部署方式保留或移除。
 
-| 条件 | 渐进替换 | 一次切换 |
+### 2.3 迁移顺序
+
+| 顺序 | 内容 | 原因 |
 | --- | --- | --- |
-| 系统规模 | 中大型 | 小型（接口少、模块少） |
-| 停机窗口 | 不允许或很短 | 允许较长停机 |
-| 风险承受 | 低 | 可接受 |
-| 是否同时大改数据模型 | 否（共享库更容易） | 是（新库 + 一次性 ETL 更清晰） |
-| 总周期 | 较长，但持续交付价值 | 较短，但价值集中在最后 |
+| 1 | 只读查询接口（字典、基础资料、列表、详情） | 风险最低，便于建立对照测试 |
+| 2 | 简单写接口（基础资料增删改） | 验证事务和数据一致性 |
+| 3 | 核心业务写接口 | 团队熟悉后再迁 |
+| 4 | 后台任务、定时任务 | 必须与其生产者/消费者一起切换（第 10 节） |
+| 5 | 登录、登出、改密等认证接口 | 共存期由 Python 继续负责认证最简单（第 8.2 节），最后切换 |
 
-### 3.3 共存期的三个关键问题
-
-**1. 数据库**
-
-| 方案 | 说明 | 适用 |
-| --- | --- | --- |
-| **共享数据库（推荐）** | Java 直接使用现有库；**结构变更权在切换开始时统一交给 Flyway**，Python 端只同步改模型、不再生成迁移 | 渐进替换的默认选择 |
-| 新库 + 同步 | 新库结构重新设计，用 CDC（如 Debezium）或批处理同步 | 数据模型必须大改时；复杂度高 |
-| 双写 | 应用同时写两个库 | **不推荐**，极易不一致 |
-
-**2. 登录态**：两套系统必须认同同一身份。最佳做法是先引入 OIDC 身份服务，Python 与 Java 都作为资源服务器校验同一签发者的令牌；过渡期也可以让 Java 临时校验 Python 现有令牌（同密钥、同算法），切换完成后再移除。
-
-**3. 后台任务与定时任务**：同一任务在任何时刻只能由一方执行。迁移某个任务时，先在 Python 侧关闭，再在 Java 侧开启，并用分布式锁防止重复执行。
+同一业务的读写接口如果共享缓存或内存状态，必须同批切换（第 11.1 节）。
 
 ---
 
-## 4. 实施路线与阶段
+## 3. 盘点：原系统技术清单
 
-```mermaid
-flowchart LR
-    P0[P0 盘点评估] --> P1[P1 平台底座]
-    P1 --> P2[P2 样板模块]
-    P2 --> P3[P3 模块批量迁移<br/>按依赖顺序迭代]
-    P3 --> P4[P4 数据与性能硬化]
-    P4 --> P5[P5 全量切换与下线]
-```
+### 3.1 盘点表
 
-| 阶段 | 主要工作 | 退出条件（全部满足才能进入下一阶段） |
-| --- | --- | --- |
-| **P0 盘点评估** | 资产盘点、功能矩阵、依赖图、差异清单、风险登记、迁移顺序、团队与排期 | 范围冻结；每个模块有负责人；“保留 Python”的部分已标出 |
-| **P1 平台底座** | 工程骨架、CI/CD、Flyway 基线、认证授权、统一错误、日志/指标/链路、测试容器、路由层 | 空应用可经 CI 构建并部署到测试环境；监控可见；认证接通 |
-| **P2 样板模块** | 选一个中等复杂度模块完整迁移（含写操作、事务、权限、后台任务） | 对照测试通过；代码评审确认样板；形成团队模板 |
-| **P3 批量迁移** | 按依赖顺序（被依赖的先迁）逐模块迁移、对照、灰度、切换 | 每个模块满足完成定义（DoD，附录 C） |
-| **P4 硬化** | 性能压测、故障演练、存量数据迁移演练（如需）、安全扫描、运维手册 | 达到容量与 SLO 目标；演练记录完整 |
-| **P5 切换下线** | 全量切流、观察期、Python 下线、旧资产归档 | 观察期无严重问题；回退预案保留到观察期结束 |
-
-**迁移顺序原则**：
-
-1. 被依赖多、依赖少的基础模块先迁（如字典、组织、客户）；
-2. 先迁只读查询，再迁写操作；
-3. 风险最高的核心交易模块在团队熟悉模板后迁移，但不能放到最后；
-4. 横切能力（认证、审计、文件）在 P1 完成，不要每个模块各做一套。
-
----
-
-## 5. 第 0 阶段：盘点与评估
-
-### 5.1 资产盘点清单
+逐项填写，每项结论要有依据（文件路径、配置、命令输出）。
 
 | 方面 | 需要查清的事实 | 产出 |
 | --- | --- | --- |
-| 框架与入口 | Django / Flask / FastAPI 版本；WSGI/ASGI；全部路由、方法、请求响应模型 | 接口清单（可从 OpenAPI 或路由表导出） |
-| 业务模块 | 按业务能力划分的模块、模块间调用关系 | 模块依赖图 |
-| 数据访问 | ORM 还是裸 SQL；SQL 所在层；事务边界（autocommit？`atomic`？） | 事务边界清单 |
-| 数据库 | 表、索引、约束、触发器、存储过程、视图、分区；迁移工具 | 结构导出（`mysqldump --no-data` / `pg_dump -s`） |
-| 认证 | 密码哈希算法与格式；令牌/会话机制；第三方登录 | 账号迁移方案 |
-| 授权 | 角色、权限、数据过滤规则所在位置 | 权限模型对照表 |
-| 后台与定时 | Celery / RQ / APScheduler / cron / 线程；任务清单、频率、幂等性 | 任务清单 |
-| 外部集成 | 出站：地址、协议、认证、超时、重试；入站：调用方清单 | 集成清单与调用方联系人 |
-| 文件 | 上传、导入解析、导出（Excel/CSV/PDF）、存储位置 | 文件能力清单 |
-| 配置与秘密 | 配置项、环境差异、**硬编码的口令和密钥** | 配置清单；秘密清理计划 |
-| 非功能 | 峰值 QPS、数据量、响应时间、可用性要求 | 容量与 SLO 目标 |
-| 测试 | 现有测试数量和覆盖的场景；可复用的测试数据 | 场景清单（用于对照测试） |
-| 运维 | 部署方式、监控、备份、告警 | 运维现状 |
-| 依赖库 | `requirements.txt` / `pyproject.toml` 全部依赖 | 依赖映射表（第 7 节） |
+| 框架 | Django / Flask / FastAPI 及版本；WSGI/ASGI 服务器 | 框架清单 |
+| 接口 | 全部路由、方法、请求参数、响应结构、状态码、错误格式；是否依赖末尾斜杠 | 接口清单（含示例请求/响应） |
+| 依赖 | `requirements.txt` / `pyproject.toml` 每一项 | 依赖替换表（3.2 节） |
+| 数据访问 | ORM（Django ORM / SQLAlchemy）或裸 SQL；默认排序；事务边界（`ATOMIC_REQUESTS`、`atomic`、手动 commit） | 事务边界清单 |
+| 数据库 | 表、列、类型、约束、索引、触发器；`USE_TZ` 和时区设置；字符集与排序规则 | 结构导出 |
+| 认证 | 会话还是令牌；会话存储位置（数据库/Redis/签名 Cookie）；Cookie 名称与属性；JWT 算法、密钥、有效期、声明；CSRF 机制 | 认证方案说明 |
+| 密码 | 哈希算法、参数、存储格式 | 哈希格式说明 |
+| 权限 | 角色判断位置与逻辑；数据过滤条件 | 权限规则清单 |
+| 后台任务 | Celery / RQ / 线程等；broker（RabbitMQ/Redis）；队列名；重试；结果存储 | 任务清单 |
+| 定时任务 | Celery beat / APScheduler / cron；表达式与时区 | 定时清单 |
+| 缓存 | 缓存后端、键、过期时间、失效逻辑 | 缓存清单 |
+| 文件 | 上传/导出格式、存储路径、文件命名、编码 | 文件清单 |
+| 外部调用 | 地址、认证、超时、重试 | 集成清单 |
+| 日志 | 格式、输出位置、轮转 | 日志格式说明 |
+| 配置 | 环境变量名、配置文件、默认值 | 配置清单 |
+| 国际化 | 是否使用 gettext、语言列表 | 有/无 |
+| 管理后台 | 是否使用 Django Admin | 有/无及使用人 |
+| 部署 | 启动命令、进程管理（systemd/supervisor/Docker）、端口、健康检查路径 | 部署说明 |
+| 测试 | pytest 用例及覆盖的场景；是否有接口级测试 | 场景清单 |
 
-可借助的工具：
-- 路由清单：Django `show_urls`（django-extensions）、Flask `flask routes`、FastAPI `/openapi.json`；
-- 代码规模：`cloc`；依赖关系：`pydeps`；
-- 运行时行为：从网关/访问日志统计接口调用频率，识别“死接口”（无调用的接口不迁移，或经确认后下线）。
+辅助手段：
 
-### 5.2 功能矩阵
+- 路由：Django `show_urls`（django-extensions）、Flask `flask routes`、FastAPI `/openapi.json`；
+- 实际使用情况：从 Nginx 访问日志统计接口调用量，找出无人调用的接口（经确认后可不迁移，属于“删除”，需登记）；
+- 真实响应样本：在测试环境或通过日志采集各接口的真实请求/响应，作为对照测试的基准（第 12 节）。
 
-| 功能ID | 模块 | 功能 | 旧接口/页面 | 新接口 | 权限 | 关键规则/不变量 | 测试 | 负责人 | 状态 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| F-001 | order | 创建订单 | `POST /api/orders` | 同左（兼容） | `order:create` | 订单号唯一 | OrderApiIT | 张三 | 已验证 |
+### 3.2 依赖替换表模板
 
-状态：未开始 / 开发中 / 对照中 / 灰度中 / 已切换 / 已下线旧代码 / 不迁移（注明原因）。
+`requirements.txt` 每一项都必须有结论：
 
-### 5.3 差异清单（GAP）
-
-迁移中发现的“旧实现缺陷或与需求不符”必须登记，**禁止悄悄修复或悄悄保留**：
-
-| 编号 | 位置 | 旧行为 | 问题 | 决定 | 对外影响 | 确认人 |
-| --- | --- | --- | --- | --- | --- | --- |
-| GAP-001 | `orders/views.py:88` | 先查询再插入判重 | 并发下会重复 | 修复：唯一约束 | 并发重复提交改为返回 409 | 业务负责人 |
-
-决定只能是：修复（行为改变需通知调用方）/ 保持兼容 / 待确认（写明期限）。
-
-### 5.4 风险登记
-
-| 风险 | 概率 | 影响 | 应对 | 负责人 |
+| Python 依赖 | 用途 | 结论 | Java 替换 | 备注 |
 | --- | --- | --- | --- | --- |
-| 旧系统隐性逻辑没被发现 | 高 | 高 | 对照测试 + 生产流量回放 | |
-| 数值/时间语义差异 | 中 | 高 | 第 7.3 节专项测试 | |
-| 外部调用方无法同步升级 | 中 | 中 | 保持旧契约；新契约另起版本 | |
+| Django 4.2 | Web 框架 | 替换 | Spring Boot 4.1（Spring MVC） | |
+| djangorestframework | 接口序列化/分页 | 替换 | Jackson + 自定义 DRF 兼容分页结构 | 第 6.3 节 |
+| mysqlclient | 数据库驱动 | 替换 | mysql-connector-j | |
+| celery | 后台任务 | 替换 | Spring AMQP（沿用原 RabbitMQ） | 第 10 节 |
+| redis | 缓存 | 替换 | Spring Data Redis | |
+| requests | 调用 ERP | 替换 | RestClient | |
+| openpyxl | 导出 Excel | 替换 | Apache POI | |
+| python-dateutil | 日期解析 | Java 内置可替代 | java.time | |
+| gunicorn | 运行服务器 | Java 内置可替代 | 内嵌 Tomcat | |
+| pandas | 报表计算 | 替换 / 保留 Python | SQL 聚合；复杂分析保留 Python | 需评估 |
+| django-debug-toolbar | 开发调试 | 删除 | — | 仅开发环境 |
 
-### 5.5 工作量估算方法
-
-按“功能点 × 复杂度系数”估算，再加上固定成本：
-
-- 简单 CRUD 接口：系数 1；含事务/并发/状态机：系数 3；含外部集成或后台任务：系数 2–4；
-- 固定成本：平台底座（P1）、样板（P2）、对照测试基础设施、数据迁移演练、压测与切换。
-
-以样板模块（P2）的实际耗时校准系数后再出正式排期，不要在 P0 就承诺精确工期。
+结论只能是：**替换 / Java 内置可替代 / 删除（写明原因）/ 保留 Python**。
 
 ---
 
-## 6. 工程结构与骨架
+## 4. 技术替换对照表
 
-### 6.1 仓库结构（单 Maven 模块 + Spring Modulith，默认推荐）
+**使用方法**：先看左列“原系统用的是什么”，只替换实际用到的行；原系统没有用到的行，Java 侧也不引入。
+
+### 4.1 Web 与接口
+
+| 原系统使用 | Java 替换 | 关键点 |
+| --- | --- | --- |
+| Django views / DRF ViewSet | `@RestController` | 路径、方法、状态码与原接口逐一对应 |
+| Flask `@app.route` / Blueprint | `@RestController` + `@RequestMapping` | 同上 |
+| FastAPI `@router.get` | `@RestController` | FastAPI POST 默认返回 200（不是 201），保持原状态码 |
+| Pydantic / Marshmallow / DRF Serializer 校验 | Bean Validation（`@NotBlank` 等）+ 自定义错误输出 | **错误响应结构与原系统一致**（第 7.3 节） |
+| DRF 分页 `{count,next,previous,results}` | 自定义同结构 record | 第 6.3 节 |
+| Django Middleware / Flask `before_request` | `Filter` / `HandlerInterceptor` | 执行顺序与原中间件一致 |
+| Django `APPEND_SLASH` | 精确映射原路径 + 重定向过滤器 | 第 7.2 节 |
+| CORS（django-cors-headers / flask-cors） | Spring `CorsConfiguration` | 允许的来源、方法、头与原配置一致 |
+| 原系统有 OpenAPI 文档（FastAPI 自带、drf-spectacular） | springdoc-openapi | 原来没有文档则不必新增 |
+| WebSocket（Channels / FastAPI） | Spring WebSocket | 消息格式不变 |
+| Jinja2 / Django 模板页面 | Thymeleaf | 页面输出 HTML 一致 |
+
+### 4.2 数据
+
+| 原系统使用 | Java 替换 | 关键点 |
+| --- | --- | --- |
+| Django ORM / SQLAlchemy ORM | Spring Data JPA（Hibernate） | 实体完全映射现有表，`ddl-auto: validate` |
+| 裸 SQL（PyMySQL、psycopg、`cursor.execute`） | `JdbcClient`（或 MyBatis） | SQL 原样迁移，结果一致 |
+| Django signals / SQLAlchemy events | JPA 实体回调 / Spring 事件 | 只替换已有的钩子 |
+| Alembic / Django migrations | Flyway **仅做基线** | 本次不新增结构（第 9 节） |
+| MySQL / PostgreSQL 驱动 | mysql-connector-j / PostgreSQL JDBC | |
+| 连接池（SQLAlchemy pool / Django CONN_MAX_AGE） | HikariCP | 池大小参考原配置 |
+
+### 4.3 认证与权限
+
+| 原系统使用 | Java 替换 | 关键点 |
+| --- | --- | --- |
+| Django 会话（数据库/缓存存储） | Spring Security；共存期借助原系统校验（第 8.2 节） | Cookie 名称、属性、有效期一致 |
+| Flask 签名 Cookie 会话（itsdangerous） | 同上 | |
+| PyJWT / python-jose / FastAPI OAuth2PasswordBearer | Spring Security OAuth2 资源服务器（`NimbusJwtDecoder`） | **相同算法、密钥、有效期、声明结构** |
+| Django CSRF（`csrftoken` Cookie + `X-CSRFToken` 头） | `CookieCsrfTokenRepository`，名称配置为同名 | 第 8.4 节 |
+| Django PBKDF2 / passlib bcrypt / argon2 | 相同算法的 `PasswordEncoder`，**生成与校验格式都与原来相同** | 第 8.5 节 |
+| 装饰器 / 依赖中的角色判断 | `@PreAuthorize` 或服务层判断，**逻辑与原代码一致** | 第 8.6 节 |
+| 原系统有登录失败限制 | 按原规则实现 | 原来没有就不加 |
+
+### 4.4 任务、缓存、集成、文件
+
+| 原系统使用 | Java 替换 | 关键点 |
+| --- | --- | --- |
+| Celery + RabbitMQ | Spring AMQP，**沿用原 RabbitMQ** | 第 10 节 |
+| Celery + Redis broker / RQ | Spring Data Redis 实现的队列，或 JobRunr（Redis/数据库存储） | 第 10 节 |
+| Celery beat / APScheduler | `@Scheduled`（相同 cron 与时区） | 多实例且原来有防重机制时才加 ShedLock |
+| 系统 crontab 调用脚本 | 保留 crontab，命令改为调用 Java（CLI 模式或 HTTP） | |
+| `threading` / `concurrent.futures` | `ExecutorService`（虚拟线程） | |
+| Django cache / Flask-Caching（Redis） | Spring Cache + Redis | 第 11.1 节 |
+| Django cache（本地内存） | Spring Cache + Caffeine | |
+| requests / httpx | `RestClient`（+ `@HttpExchange` 接口） | 超时、重试次数与原来一致 |
+| tenacity / backoff 重试 | Spring Framework 7 `@Retryable` | 重试条件、次数、间隔一致 |
+| openpyxl / xlsxwriter | Apache POI | 第 11.2 节 |
+| `csv` 模块 | Apache Commons CSV | 编码、BOM、换行符一致 |
+| ReportLab / WeasyPrint | OpenPDF / PDFBox / OpenHTMLtoPDF | |
+| Pillow | Thumbnailator / ImageIO | |
+| boto3（原来就用 S3） | AWS SDK for Java v2 | 原来存本地就继续存本地 |
+| smtplib / Django mail | Spring Mail | 发件人、模板一致 |
+| gettext（.po） | `MessageSource`（.properties，由 .po 转换） | 原来没有国际化就不加 |
+
+### 4.5 运维与工程
+
+| 原系统使用 | Java 替换 | 关键点 |
+| --- | --- | --- |
+| gunicorn / uvicorn | 内嵌 Tomcat（`java -jar`） | 端口、监听地址一致 |
+| systemd / supervisor | systemd / supervisor（只改启动命令） | |
+| Docker（python 镜像） | Docker（Temurin JRE 镜像） | 第 13 节 |
+| Kubernetes（原来就有） | 修改镜像和探针路径 | 原来没有就不引入 |
+| 原有健康检查路径（如 `/health`） | 同路径的控制器或 Actuator 映射 | 路径和返回内容一致 |
+| logging / structlog | SLF4J + Logback | **日志格式与原来一致**（第 11.4 节） |
+| prometheus_client（原来就有） | Micrometer + Prometheus | 指标名称尽量一致；原来没有就不加 |
+| Sentry（原来就有） | Sentry Java SDK | |
+| settings.py / `.env` / pydantic-settings | `application.yml` + `@ConfigurationProperties` | **环境变量名保持不变**（第 11.5 节） |
+| click / Django management command | Spring Boot CLI 模式（`ApplicationRunner` + 参数）或 picocli | 命令名、参数一致 |
+| pytest | JUnit 5 + AssertJ + Testcontainers | 第 12 节 |
+| black / isort | Spotless | 原来有格式检查才加对应工具 |
+| flake8 / ruff / pylint | Checkstyle | 同上 |
+| mypy | Java 编译器 | |
+| coverage.py | JaCoCo | 同上 |
+| pip / poetry / uv | Maven | |
+
+### 4.6 Django Admin
+
+Django Admin 没有 Java 等价物，重写它等于新开发一个管理前端，超出“等价替换”范围。可选两种做法：
+
+1. **保留 Django Admin**（推荐）：作为“保留 Python”的部分继续运行，只连同一个数据库，仅供内部管理员使用；
+2. 若必须去除 Python，单独立项开发管理页面，不纳入本次迁移。
+
+---
+
+## 5. 工程骨架（最小依赖）
+
+### 5.1 目录结构
+
+按业务分包（与原 Django app / Flask blueprint 一一对应），每个业务包内部分层：
 
 ```text
 app/
 ├─ pom.xml
 ├─ mvnw, mvnw.cmd, .mvn/
-├─ compose.yaml                         本地开发依赖（数据库、Redis 等）
-├─ Dockerfile
-├─ .github/workflows/ci.yml             或 .gitlab-ci.yml
-├─ docs/                                架构、契约、运维、ADR（架构决策记录）
+├─ Dockerfile                          原来用 Docker 才需要
 └─ src/
    ├─ main/java/com/company/app/
    │  ├─ Application.java
-   │  ├─ shared/                        共享内核（显式声明为开放模块）
-   │  │  ├─ error/   ErrorCode、BusinessException、GlobalExceptionHandler
-   │  │  ├─ web/     PageResponse、TraceId 处理
-   │  │  ├─ security/ 当前用户、数据范围
-   │  │  └─ jpa/     审计基类 BaseEntity
-   │  ├─ order/                         业务模块
-   │  │  ├─ OrderApi.java               公开接口（供其他模块调用）
-   │  │  ├─ OrderCreatedEvent.java      公开领域事件
-   │  │  ├─ web/          OrderController、请求/响应 DTO
-   │  │  ├─ application/  OrderService（实现 OrderApi）
-   │  │  ├─ domain/       Order、OrderStatus、OrderRepository
-   │  │  └─ infrastructure/ OrderQueryDao、外部客户端
+   │  ├─ common/                       跨业务的兼容层：错误格式、分页格式、JSON 配置、认证过滤器
+   │  ├─ order/                        对应原 Django app "orders"
+   │  │  ├─ web/          控制器、请求/响应 DTO（字段名与原接口一致）
+   │  │  ├─ service/      业务逻辑、事务
+   │  │  ├─ domain/       实体（映射现有表）、仓储
+   │  │  └─ infra/        外部调用、复杂 SQL、文件
    │  └─ customer/ …
    ├─ main/resources/
    │  ├─ application.yml
-   │  ├─ application-local.yml
-   │  ├─ db/migration/                  Flyway 脚本
-   │  └─ i18n/messages*.properties
+   │  └─ db/migration/V1__baseline.sql   仅用于新建空库，见第 9 节
    └─ test/java/com/company/app/
-      ├─ ModularityTest.java
       ├─ ArchitectureTest.java
       ├─ TestcontainersConfiguration.java
-      └─ order/ …
+      └─ parity/                       新旧对照测试
 ```
 
-**何时改为 Maven 多模块**：团队较大（例如超过 15 人）或需要在编译期强制隔离时，把每个业务模块拆为独立 Maven 子模块（`app-order`、`app-customer`、`app-shared`、`app-boot`），Spring Modulith 规则保持不变。
-
-### 6.2 pom.xml（核心部分）
+### 5.2 pom.xml
 
 ```xml
 <project>
@@ -397,7 +310,7 @@ app/
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.1.x</version><!-- 锁定为当期最新补丁版本 -->
+    <version>4.1.x</version><!-- 锁定当期最新补丁版本 -->
     <relativePath/>
   </parent>
   <groupId>com.company</groupId>
@@ -405,71 +318,46 @@ app/
   <version>1.0.0-SNAPSHOT</version>
 
   <properties>
-    <java.version>21</java.version>
-    <spring-modulith.version>2.x.x</spring-modulith.version>
+    <java.version>25</java.version><!-- 平台只支持 21 时改为 21 -->
     <mapstruct.version>1.6.x</mapstruct.version>
-    <springdoc.version>3.x.x</springdoc.version>
-    <shedlock.version>6.x.x</shedlock.version>
   </properties>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.springframework.modulith</groupId>
-        <artifactId>spring-modulith-bom</artifactId>
-        <version>${spring-modulith.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
   <dependencies>
-    <!-- Web / 校验 / 安全 -->
+    <!-- ===== 基础（必选） ===== -->
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-webmvc</artifactId></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-validation</artifactId></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-security</artifactId></dependency>
-    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId></dependency>
-
-    <!-- 数据 -->
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-data-jpa</artifactId></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-flyway</artifactId></dependency>
     <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-mysql</artifactId></dependency>
     <dependency><groupId>com.mysql</groupId><artifactId>mysql-connector-j</artifactId><scope>runtime</scope></dependency>
-    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-data-redis</artifactId></dependency>
-    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-cache</artifactId></dependency>
-    <!-- 仅在采用第 11.3 节“会话登录”方案时加入：spring-session-data-redis -->
-
-    <!-- 模块化 + 事务性事件（发件箱） -->
-    <dependency><groupId>org.springframework.modulith</groupId><artifactId>spring-modulith-starter-core</artifactId></dependency>
-    <dependency><groupId>org.springframework.modulith</groupId><artifactId>spring-modulith-starter-jpa</artifactId></dependency>
-
-    <!-- 定时任务分布式锁 -->
-    <dependency><groupId>net.javacrumbs.shedlock</groupId><artifactId>shedlock-spring</artifactId><version>${shedlock.version}</version></dependency>
-    <dependency><groupId>net.javacrumbs.shedlock</groupId><artifactId>shedlock-provider-jdbc-template</artifactId><version>${shedlock.version}</version></dependency>
-
-    <!-- 可观测 -->
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-actuator</artifactId></dependency>
-    <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-registry-prometheus</artifactId></dependency>
-    <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-tracing-bridge-otel</artifactId></dependency>
-    <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-otlp</artifactId></dependency>
-
-    <!-- API 文档、对象映射 -->
-    <dependency><groupId>org.springdoc</groupId><artifactId>springdoc-openapi-starter-webmvc-ui</artifactId><version>${springdoc.version}</version></dependency>
     <dependency><groupId>org.mapstruct</groupId><artifactId>mapstruct</artifactId><version>${mapstruct.version}</version></dependency>
 
-    <!-- 本地开发：启动时自动拉起 compose.yaml -->
-    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-docker-compose</artifactId><optional>true</optional></dependency>
+    <!-- ===== 按原系统情况选择（原来没有就删除） ===== -->
+    <!-- 原系统用 JWT：-->
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId></dependency>
+    <!-- 原系统用 Redis（缓存/会话/队列）：-->
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-data-redis</artifactId></dependency>
+    <!-- 原系统有缓存：-->
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-cache</artifactId></dependency>
+    <!-- 原系统用 Celery + RabbitMQ：-->
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-amqp</artifactId></dependency>
+    <!-- 原系统导出 Excel：-->
+    <dependency><groupId>org.apache.poi</groupId><artifactId>poi-ooxml</artifactId><version>5.x.x</version></dependency>
+    <!-- 原系统导出 CSV：-->
+    <dependency><groupId>org.apache.commons</groupId><artifactId>commons-csv</artifactId><version>1.x</version></dependency>
+    <!-- 原系统有 OpenAPI 文档：springdoc-openapi-starter-webmvc-ui（3.x） -->
+    <!-- 原系统有 prometheus_client 指标：micrometer-registry-prometheus -->
 
-    <!-- 测试 -->
+    <!-- ===== 测试（工具，不影响运行） ===== -->
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-webmvc-test</artifactId><scope>test</scope></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-testcontainers</artifactId><scope>test</scope></dependency>
     <dependency><groupId>org.testcontainers</groupId><artifactId>testcontainers-mysql</artifactId><scope>test</scope></dependency>
     <dependency><groupId>org.testcontainers</groupId><artifactId>testcontainers-junit-jupiter</artifactId><scope>test</scope></dependency>
-    <dependency><groupId>org.springframework.modulith</groupId><artifactId>spring-modulith-starter-test</artifactId><scope>test</scope></dependency>
-    <dependency><groupId>com.tngtech.archunit</groupId><artifactId>archunit-junit5</artifactId><version>1.4.x</version><scope>test</scope></dependency>
     <dependency><groupId>org.springframework.security</groupId><artifactId>spring-security-test</artifactId><scope>test</scope></dependency>
+    <dependency><groupId>com.tngtech.archunit</groupId><artifactId>archunit-junit5</artifactId><version>1.4.x</version><scope>test</scope></dependency>
   </dependencies>
 
   <build>
@@ -493,15 +381,14 @@ app/
           </compilerArgs>
         </configuration>
       </plugin>
-      <!-- 质量插件见第 17 节 -->
     </plugins>
   </build>
 </project>
 ```
 
-> Spring Boot 4 对 starter 做了模块化拆分（如 `spring-boot-starter-webmvc`、`spring-boot-starter-flyway`、`spring-boot-starter-webmvc-test`）。如果使用 Boot 3.x，对应名称为 `spring-boot-starter-web`、`flyway-core` 等。
+> Spring Boot 4 的 starter 名称与 3.x 不同（如 `spring-boot-starter-webmvc`、`spring-boot-starter-flyway`），默认 JSON 库为 Jackson 3（包名 `tools.jackson`）。网上基于 3.x 的示例需按此调整。
 
-### 6.3 application.yml（基线）
+### 5.3 application.yml
 
 ```yaml
 spring:
@@ -509,44 +396,29 @@ spring:
     name: app
   threads:
     virtual:
-      enabled: true                      # Java 21 虚拟线程：阻塞式代码获得高并发
+      enabled: true                 # Java 25 下推荐开启；Java 21 需注意 synchronized 导致的线程钉住
   datasource:
-    url: ${DB_URL}
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${DB_NAME}   # 环境变量名沿用原 Python 配置
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     hikari:
-      maximum-pool-size: 20
-      connection-timeout: 5000
+      maximum-pool-size: 10        # 参考原连接池配置
   jpa:
-    open-in-view: false                  # 禁止在视图层懒加载，避免隐式查询
+    open-in-view: false
     hibernate:
-      ddl-auto: validate                 # 结构只由 Flyway 管理，启动时校验实体与表一致
+      ddl-auto: validate            # 只校验，绝不修改表结构
     properties:
-      hibernate.jdbc.time_zone: UTC
-      hibernate.jdbc.batch_size: 100
-      hibernate.order_inserts: true
+      hibernate.jdbc.time_zone: UTC # 与原系统的时区语义一致（第 9.3 节），原来存本地时间则改为对应时区
   flyway:
-    enabled: true
-    validate-on-migrate: true
-    clean-disabled: true
-  data:
-    redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
-  mvc:
-    problemdetails:
-      enabled: true                      # 框架异常统一输出 RFC 9457
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${OIDC_ISSUER_URI}
+    baseline-on-migrate: true       # 接入现有库：只登记基线，不执行任何结构变更
+    baseline-version: 1
+  jackson:
+    property-naming-strategy: SNAKE_CASE    # 与原接口字段命名一致（原来是 camelCase 则删除此行）
   lifecycle:
     timeout-per-shutdown-phase: 30s
 
 server:
-  port: 8080
+  port: ${PORT:8080}
   shutdown: graceful
   error:
     include-message: never
@@ -556,1206 +428,889 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus
-  endpoint:
-    health:
-      probes:
-        enabled: true
-      show-details: never
-  tracing:
-    sampling:
-      probability: 0.1
-
-logging:
-  structured:
-    format:
-      console: ecs                       # JSON 结构化日志，便于日志平台检索
-
-springdoc:
-  api-docs:
-    enabled: ${API_DOCS_ENABLED:false}   # 生产默认关闭
-
-app:                                     # 业务配置统一前缀，用 @ConfigurationProperties 绑定并校验
-  export:
-    max-rows: 100000
+        include: health
 ```
-
-### 6.4 本地开发依赖（compose.yaml）
-
-```yaml
-services:
-  mysql:
-    image: mysql:8.4
-    environment:
-      MYSQL_DATABASE: app
-      MYSQL_USER: app
-      MYSQL_PASSWORD: app
-      MYSQL_ROOT_PASSWORD: root
-    command: [--character-set-server=utf8mb4, --collation-server=utf8mb4_0900_ai_ci, --default-time-zone=+00:00]
-    ports: ['3306:3306']
-  redis:
-    image: redis:8
-    ports: ['6379:6379']
-```
-
-依赖 `spring-boot-docker-compose` 后，本地 `./mvnw spring-boot:run` 会自动启动这些容器并注入连接信息。
 
 ---
 
-## 7. Python → Java 映射大全
+## 6. 逐层替换方法与代码
 
-### 7.1 框架与库映射
+### 6.1 单个接口的替换步骤
 
-| 类别 | Python | Java（推荐） | 备注 |
-| --- | --- | --- | --- |
-| Web 框架 | Django / Flask / FastAPI | Spring Boot + Spring MVC | |
-| 路由/视图 | `urls.py` + views；`@app.route`；`@router.get` | `@RestController` + `@GetMapping` 等 | |
-| 依赖注入 | FastAPI `Depends`；全局单例 | 构造器注入（Spring IoC） | |
-| 中间件 | Django Middleware；`before_request` | `Filter` / `HandlerInterceptor` | |
-| 请求校验 | Pydantic、Marshmallow、DRF Serializer、WTForms | `record` DTO + Jakarta Bean Validation（`@NotBlank`、`@Size`…） | 复杂规则写自定义约束注解 |
-| 序列化 | Pydantic `.dict()`、DRF | Jackson 3 + MapStruct | |
-| ORM | SQLAlchemy、Django ORM、Peewee、Tortoise | Spring Data JPA（Hibernate 7） | |
-| 裸 SQL | PyMySQL、psycopg、`text()` | `JdbcClient` / MyBatis / jOOQ | |
-| 数据库迁移 | Alembic、Django migrations | Flyway | |
-| 事务 | `transaction.atomic`、`session.begin()` | `@Transactional` | |
-| 信号/钩子 | Django signals、SQLAlchemy events | `ApplicationEventPublisher` + `@ApplicationModuleListener`；JPA `@PrePersist` | |
-| 管理后台 | Django Admin | 无直接等价物：自建管理页面，或使用低代码后台工具 | 需单独排期 |
-| 认证 | Django auth、Flask-Login、FastAPI Security、PyJWT、authlib | Spring Security、OAuth2 Resource Server / Client | |
-| 密码哈希 | Django PBKDF2、passlib bcrypt/argon2 | `DelegatingPasswordEncoder`（BCrypt/Argon2/PBKDF2） | 兼容旧格式见第 11.4 节 |
-| 权限 | Django permissions、DRF permissions、装饰器 | `@PreAuthorize` + 权限码 | |
-| 后台任务 | Celery、RQ、Dramatiq、Huey | JobRunr / db-scheduler；或 RabbitMQ/Kafka + 监听器 | |
-| 定时任务 | Celery beat、APScheduler、cron | `@Scheduled` + ShedLock；Quartz | |
-| 批处理/ETL | 脚本 + pandas | Spring Batch | |
-| 缓存 | django-cache、Flask-Caching、redis-py | Spring Cache + Caffeine / Redis | |
-| HTTP 客户端 | requests、httpx、aiohttp | `RestClient` + `@HttpExchange` 接口 | |
-| 重试/熔断 | tenacity、backoff | `@Retryable`（Spring 7）、Resilience4j | |
-| 消息 | kombu、pika、kafka-python | Spring AMQP、Spring for Apache Kafka | |
-| WebSocket | Django Channels、FastAPI WebSocket | Spring WebSocket（STOMP） | |
-| GraphQL | Graphene、Strawberry | Spring for GraphQL | |
-| gRPC | grpcio | grpc-java / Spring gRPC | |
-| 模板 | Jinja2、Django Templates | Thymeleaf | |
-| 邮件 | smtplib、django.core.mail | Spring Mail（JavaMailSender） | |
-| Excel | openpyxl、xlsxwriter、pandas | Apache POI（`SXSSFWorkbook` 流式）/ FastExcel | |
-| CSV | `csv` | Apache Commons CSV | |
-| PDF | ReportLab、WeasyPrint | OpenPDF、Apache PDFBox、OpenHTMLtoPDF | |
-| 图片 | Pillow | Thumbnailator、ImageIO | |
-| 对象存储 | boto3 | AWS SDK for Java v2 / MinIO Java SDK | |
-| 日志 | logging、structlog、loguru | SLF4J + Logback（Boot 结构化日志） | |
-| 配置 | settings.py、pydantic-settings、python-dotenv | `application.yml` + `@ConfigurationProperties` + `@Validated` | |
-| 命令行 | click、argparse、Django management command | Spring Shell / picocli；或 `ApplicationRunner` + profile | |
-| 国际化 | gettext、Babel | `MessageSource`（`messages_*.properties`） | |
-| 数据分析 | pandas、numpy | SQL 聚合 / Tablesaw / Apache Commons Math；**重度分析保留 Python** | |
-| 机器学习 | scikit-learn、PyTorch | ONNX Runtime、DJL；**通常保留 Python 服务** | |
-| 测试框架 | pytest、unittest | JUnit 5 + AssertJ | |
-| Mock | unittest.mock、pytest-mock、monkeypatch | Mockito；依赖注入替换 | |
-| 测试数据 | factory_boy、Faker | 测试数据构建器、Instancio、Datafaker | |
-| HTTP Mock | responses、httpretty、respx | WireMock、`MockRestServiceServer` | |
-| 时间冻结 | freezegun | 注入 `java.time.Clock` | |
-| 数据库测试 | pytest-django、SQLite 内存库 | Testcontainers（真实数据库） | 不用 H2 代替 |
-| 接口测试 | Django test client、TestClient | `MockMvcTester`、REST Assured | |
-| 压测 | Locust | Gatling、k6（与语言无关） | |
-| 代码格式 | black、isort | Spotless（google-java-format / palantir-java-format） | |
-| 静态检查 | flake8、ruff、mypy、pylint | 编译器 + Checkstyle、SpotBugs、Error Prone、SonarQube | |
-| 依赖管理 | pip、poetry、uv | Maven / Gradle | |
-| 运行服务器 | gunicorn、uvicorn | 内嵌 Tomcat（可执行 JAR） | |
+1. 从接口清单取出该接口的**真实请求/响应样本**（成功、校验失败、无权限、不存在、冲突等各种情况）；
+2. 在 Java 中按相同路径、方法实现控制器，DTO 字段名、类型、可空性与原响应一致；
+3. 业务逻辑按原代码语义重写，事务边界与原来一致；
+4. 跑对照测试，逐字段比对，直到一致；
+5. 加入 Nginx 路由，切换。
 
-### 7.2 语言惯用法映射
+### 6.2 示例：Django REST Framework 订单接口
 
-| Python | Java | 说明 |
-| --- | --- | --- |
-| `dict` 承载业务数据 | `record` / 类 | 禁止用 `Map<String,Object>` 在层间传业务数据 |
-| `dataclass`、`NamedTuple` | `record` | 不可变 |
-| 鸭子类型 | 接口（`interface`） | |
-| Mixin、多重继承 | 组合 + 接口默认方法 | |
-| 装饰器（横切） | 注解 + AOP（`@Transactional`、`@Cacheable`、自定义切面） | |
-| 上下文管理器 `with` | try-with-resources | |
-| 生成器 `yield` | `Stream`、`Iterator`；大结果集用 `Stream<T>` 查询或分页游标 | |
-| 列表推导式 | `stream().filter().map().toList()` | |
-| `None` | `null` + `Optional`（只用于返回值）；JSpecify `@Nullable` 标注 | |
-| 异常体系 | 非受检异常（`RuntimeException`）为主 | 业务异常统一 `BusinessException` |
-| `async def` / `await` | **普通阻塞代码 + 虚拟线程** | 不必改成响应式 |
-| `asyncio.gather` 并发 | `StructuredTaskScope`（预览）或 `ExecutorService`（虚拟线程）+ `Future` | |
-| `threading.Lock` | 单机：`ReentrantLock`；**集群：数据库行锁 / 分布式锁** | |
-| 全局变量/模块级状态 | Spring Bean（单例）+ 不可变配置 | 禁止可变静态状态 |
-| `getattr` / 动态属性 | 明确的字段与类型 | |
-| 枚举字符串 | `enum` | |
-| `typing` 类型注解 | 编译期类型 | |
-| `__str__` / `__repr__` | `toString()`（record 自动生成） | 不要输出敏感字段 |
-| `__eq__` / `__hash__` | `equals` / `hashCode`（record 自动生成；JPA 实体按 ID 规则实现） | |
+**原 Python：**
 
-### 7.3 必须专项测试的语义差异（高频 Bug 来源）
+```python
+# orders/models.py
+class Order(models.Model):
+    order_no = models.CharField(max_length=64, unique=True)
+    customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
+    amount = models.DecimalField(max_digits=18, decimal_places=2)
+    status = models.CharField(max_length=16, choices=[("new", "New"), ("paid", "Paid")], default="new")
+    created_at = models.DateTimeField(auto_now_add=True)
 
-| 场景 | Python 行为 | Java 行为 | 正确迁移 |
-| --- | --- | --- | --- |
-| 整数范围 | 任意精度，不会溢出 | `int`/`long` 会溢出 | `Math.addExact` / `multiplyExact`；超大值用 `BigInteger` |
-| 整除 | `-7 // 2 == -4`（向下取整） | `-7 / 2 == -3`（向零取整） | `Math.floorDiv` |
-| 取模 | `-7 % 3 == 2` | `-7 % 3 == -1` | `Math.floorMod` |
-| 四舍五入 | `round(2.5) == 2`（银行家舍入） | `Math.round(2.5) == 3` | 用 `BigDecimal.setScale(n, RoundingMode.HALF_EVEN)` 并与业务确认规则 |
-| 小数 | `Decimal` 精确 | `double` 不精确 | 金额/数量用 `BigDecimal`（构造用字符串 `new BigDecimal("0.1")`） |
-| 字符串长度/切片 | 按 Unicode 码点 | `length()` 按 UTF-16 单元，表情等占 2 | 需要按字符处理时用 `codePoints()` |
-| 大小写 | `str.lower()` 与区域无关 | `toLowerCase()` 受默认区域影响（土耳其语 i） | `toLowerCase(Locale.ROOT)` |
-| 去空白 | `strip()` 去除 Unicode 空白 | `trim()` 只去 ≤ U+0020 | 用 `strip()` |
-| 真值判断 | 空串、0、空列表为假 | 无隐式真值 | 显式判断 |
-| 字典顺序 | 插入有序 | `HashMap` 无序 | 需要顺序用 `LinkedHashMap` |
-| 时间 | 常见 naive datetime（无时区） | — | 统一 `Instant`（UTC）存储，`ZoneId` 显式转换 |
-| 日期格式化 | `strftime` | `DateTimeFormatter`（注意 `yyyy` 与 `YYYY` 不同） | |
-| 正则 | `re`（`\d` 默认匹配 Unicode 数字） | `java.util.regex`（`\d` 默认只匹配 ASCII） | 写对照测试 |
-| JSON 数字 | 大整数原样输出 | JS 前端会丢精度 | ID/大数在 API 中输出为字符串 |
-| 排序 | 稳定 | `List.sort` 稳定；`Arrays.sort(int[])` 不涉及稳定性 | 比较器写全 |
-| 可变默认参数 | 常见 Bug | 不存在 | 迁移时修复对应缺陷 |
-| 字符编码 | 默认 UTF-8 | Java 18+ 默认 UTF-8 | 仍建议显式指定 |
+    class Meta:
+        db_table = "orders_order"
+        ordering = ["-created_at"]
 
----
+# orders/views.py
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
 
-## 8. 分层实现规范与标准代码
-
-以下代码全部基于标准 Spring 组件，可直接作为团队模板。
-
-### 8.1 共享内核：错误码与业务异常
-
-```java
-package com.company.app.shared.error;
-
-import org.springframework.http.HttpStatus;
-
-/** 稳定错误码：对外公开后含义不得改变。前缀按模块划分。 */
-public enum ErrorCode {
-    VALIDATION_FAILED("COMMON-0001", HttpStatus.BAD_REQUEST),
-    FORBIDDEN("COMMON-0002", HttpStatus.FORBIDDEN),
-    NOT_FOUND("COMMON-0003", HttpStatus.NOT_FOUND),
-    CONCURRENT_MODIFICATION("COMMON-0004", HttpStatus.CONFLICT),
-    IDEMPOTENCY_CONFLICT("COMMON-0005", HttpStatus.CONFLICT),
-    ORDER_NO_DUPLICATED("ORDER-0001", HttpStatus.CONFLICT),
-    ORDER_STATUS_INVALID("ORDER-0002", HttpStatus.CONFLICT);
-
-    private final String code;
-    private final HttpStatus status;
-
-    ErrorCode(String code, HttpStatus status) {
-        this.code = code;
-        this.status = status;
-    }
-
-    public String code() { return code; }
-    public HttpStatus status() { return status; }
-}
+    def perform_create(self, serializer):
+        if not self.request.user.groups.filter(name="sales").exists():
+            raise PermissionDenied()
+        serializer.save()
 ```
 
-```java
-package com.company.app.shared.error;
-
-import java.util.Map;
-
-/** 可向客户端公开的业务失败。消息键用于国际化，参数不得包含敏感信息。 */
-public class BusinessException extends RuntimeException {
-    private final ErrorCode error;
-    private final Map<String, Object> params;
-
-    public BusinessException(ErrorCode error) {
-        this(error, Map.of());
-    }
-
-    public BusinessException(ErrorCode error, Map<String, Object> params) {
-        super(error.code());
-        this.error = error;
-        this.params = Map.copyOf(params);
-    }
-
-    public ErrorCode error() { return error; }
-    public Map<String, Object> params() { return params; }
-}
-```
-
-### 8.2 全局异常处理（RFC 9457 ProblemDetail）
+**Java 实体（映射现有表，不改结构）：**
 
 ```java
-package com.company.app.shared.error;
-
-import io.micrometer.tracing.Tracer;
-import java.net.URI;
-import java.util.Locale;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.MessageSource;
-import org.springframework.dao.OptimisticLockingFailureException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
-@RestControllerAdvice
-public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
-    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-    private final MessageSource messages;
-    private final Tracer tracer;
-
-    public GlobalExceptionHandler(MessageSource messages, Tracer tracer) {
-        this.messages = messages;
-        this.tracer = tracer;
-    }
-
-    @ExceptionHandler(BusinessException.class)
-    ProblemDetail business(BusinessException e, Locale locale) {
-        return problem(e.error(), e.params(), locale);
-    }
-
-    /** @PreAuthorize 等抛出的拒绝异常必须单独处理，否则会被兜底处理器误报为 500。 */
-    @ExceptionHandler(org.springframework.security.authorization.AuthorizationDeniedException.class)
-    ProblemDetail denied(Exception e, Locale locale) {
-        return problem(ErrorCode.FORBIDDEN, java.util.Map.of(), locale);
-    }
-
-    @ExceptionHandler(OptimisticLockingFailureException.class)
-    ProblemDetail conflict(OptimisticLockingFailureException e, Locale locale) {
-        return problem(ErrorCode.CONCURRENT_MODIFICATION, java.util.Map.of(), locale);
-    }
-
-    @ExceptionHandler(Exception.class)
-    ProblemDetail unexpected(Exception e) {
-        log.error("Unhandled exception", e);              // 详细信息只进日志
-        var pd = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
-        pd.setTitle("Internal error");
-        pd.setProperty("traceId", traceId());
-        return pd;                                          // 不向客户端暴露异常消息
-    }
-
-    private ProblemDetail problem(ErrorCode error, java.util.Map<String, Object> params, Locale locale) {
-        var detail = messages.getMessage("error." + error.code(), params.values().toArray(), error.code(), locale);
-        var pd = ProblemDetail.forStatusAndDetail(error.status(), detail);
-        pd.setType(URI.create("urn:problem:" + error.code()));
-        pd.setTitle(error.code());
-        pd.setProperty("code", error.code());
-        pd.setProperty("params", params);
-        pd.setProperty("traceId", traceId());
-        return pd;
-    }
-
-    private String traceId() {
-        var span = tracer.currentSpan();
-        return span == null ? null : span.context().traceId();
-    }
-}
-```
-
-> 校验失败（`MethodArgumentNotValidException`）等框架异常由 `ResponseEntityExceptionHandler` 统一转为 ProblemDetail；如需附加字段级错误，覆写 `handleMethodArgumentNotValid`。
->
-> **兼容旧契约**：渐进替换期间若旧客户端依赖旧错误格式，可在该处理器中按路径或请求头输出旧格式，新版 API 再统一使用 ProblemDetail。
-
-### 8.3 审计基类与实体
-
-```java
-package com.company.app.shared.jpa;
+package com.company.app.order.domain;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.Instant;
-import org.springframework.data.annotation.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-@MappedSuperclass
-@EntityListeners(AuditingEntityListener.class)
-public abstract class BaseEntity {
+@Entity
+@Table(name = "orders_order")                     // 沿用 Django 表名
+public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Version
-    private long version;                    // 乐观锁
-
-    @CreatedDate @Column(updatable = false)
-    private Instant createdAt;
-    @CreatedBy @Column(updatable = false)
-    private String createdBy;
-    @LastModifiedDate
-    private Instant updatedAt;
-    @LastModifiedBy
-    private String updatedBy;
-
-    public Long getId() { return id; }
-    public long getVersion() { return version; }
-    public Instant getCreatedAt() { return createdAt; }
-    // 其余 getter 省略
-}
-```
-
-```java
-// 开启审计：提供当前用户
-@Configuration
-@EnableJpaAuditing
-class JpaAuditingConfig {
-    @Bean
-    AuditorAware<String> auditorAware() {
-        return () -> Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
-                .filter(Authentication::isAuthenticated)
-                .map(Authentication::getName);
-    }
-}
-```
-
-```java
-package com.company.app.order.domain;
-
-import com.company.app.shared.error.*;
-import com.company.app.shared.jpa.BaseEntity;
-import jakarta.persistence.*;
-import java.math.BigDecimal;
-
-@Entity
-@Table(name = "orders")
-public class Order extends BaseEntity {
-    @Column(nullable = false, unique = true, length = 64)
+    @Column(name = "order_no", nullable = false, length = 64)
     private String orderNo;
 
-    @Column(nullable = false)
+    @Column(name = "customer_id", nullable = false) // Django ForeignKey 列名为 <字段>_id
     private Long customerId;
 
-    @Column(nullable = false, precision = 18, scale = 2)
+    @Column(name = "amount", nullable = false, precision = 18, scale = 2)
     private BigDecimal amount;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 32)
+    @Convert(converter = OrderStatusConverter.class)
+    @Column(name = "status", nullable = false, length = 16)
     private OrderStatus status;
 
-    protected Order() {}                      // JPA 需要
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
 
-    public static Order create(String orderNo, Long customerId, BigDecimal amount) {
-        if (amount.signum() <= 0) throw new BusinessException(ErrorCode.VALIDATION_FAILED);
-        var o = new Order();
-        o.orderNo = orderNo;
-        o.customerId = customerId;
-        o.amount = amount;
-        o.status = OrderStatus.CREATED;
-        return o;
+    protected Order() {}
+
+    public Order(String orderNo, Long customerId, BigDecimal amount) {
+        this.orderNo = orderNo;
+        this.customerId = customerId;
+        this.amount = amount;
+        this.status = OrderStatus.NEW;                // 对应 Django default="new"
     }
 
-    /** 状态迁移规则写在实体内，而不是散落在服务中。 */
-    public void confirm() {
-        if (status != OrderStatus.CREATED) throw new BusinessException(ErrorCode.ORDER_STATUS_INVALID);
-        status = OrderStatus.CONFIRMED;
-    }
+    @PrePersist
+    void onCreate() { this.createdAt = Instant.now(); }   // 对应 auto_now_add
 
-    public String getOrderNo() { return orderNo; }
-    public Long getCustomerId() { return customerId; }
-    public BigDecimal getAmount() { return amount; }
-    public OrderStatus getStatus() { return status; }
+    // getter 省略
 }
 ```
 
-### 8.4 仓储
+**枚举与原存储值一致（不能用枚举名或序号）：**
 
 ```java
-package com.company.app.order.domain;
+public enum OrderStatus {
+    NEW("new"), PAID("paid");
 
-import jakarta.persistence.LockModeType;
-import java.util.Optional;
-import org.springframework.data.jpa.repository.*;  // JpaRepository、JpaSpecificationExecutor、Lock
+    private final String dbValue;
+    OrderStatus(String dbValue) { this.dbValue = dbValue; }
+    public String dbValue() { return dbValue; }
 
-public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
-    Optional<Order> findByOrderNo(String orderNo);
-
-    /** 需要悲观锁的写路径：生成 SELECT ... FOR UPDATE（派生查询，避免 Order 与 JPQL 关键字冲突） */
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<Order> findWithLockById(Long id);
-}
-```
-
-复杂报表或批量 SQL 放在 infrastructure，使用 `JdbcClient`：
-
-```java
-@Repository
-class OrderQueryDao {
-    private final JdbcClient jdbc;
-
-    OrderQueryDao(JdbcClient jdbc) { this.jdbc = jdbc; }
-
-    List<DailyTotal> dailyTotals(LocalDate from, LocalDate to) {
-        return jdbc.sql("""
-                SELECT DATE(created_at) AS day, COUNT(*) AS cnt, SUM(amount) AS total
-                FROM orders WHERE created_at >= :from AND created_at < :to
-                GROUP BY DATE(created_at) ORDER BY day
-                """)
-                .param("from", from.atStartOfDay(ZoneOffset.UTC).toInstant())
-                .param("to", to.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant())
-                .query(DailyTotal.class)
-                .list();
+    public static OrderStatus fromDb(String v) {
+        for (var s : values()) if (s.dbValue.equals(v)) return s;
+        throw new IllegalStateException("Unknown status in database: " + v);
     }
 }
+
+@Converter
+class OrderStatusConverter implements AttributeConverter<OrderStatus, String> {
+    @Override public String convertToDatabaseColumn(OrderStatus s) { return s == null ? null : s.dbValue(); }
+    @Override public OrderStatus convertToEntityAttribute(String v) { return v == null ? null : OrderStatus.fromDb(v); }
+}
 ```
 
-### 8.5 DTO 与 MapStruct
+**仓储（默认排序与 Django `Meta.ordering` 一致）：**
 
 ```java
-package com.company.app.order.web;
+public interface OrderRepository extends JpaRepository<Order, Long> {
+    // Django 的 Meta.ordering 会自动加 ORDER BY；Java 必须显式写出，否则顺序不确定
+    Page<Order> findAllByOrderByCreatedAtDesc(Pageable pageable);
+}
+```
 
-import jakarta.validation.constraints.*;
-import java.math.BigDecimal;
+**响应 DTO（字段、类型、格式与原 DRF 输出一致）：**
 
-public record CreateOrderRequest(
-        @NotBlank @Size(max = 64) String orderNo,
-        @NotBlank @Pattern(regexp = "\\d{1,19}") String customerId,   // ID 以字符串接收
-        @NotNull @Positive @Digits(integer = 16, fraction = 2) BigDecimal amount) {}
-
+```java
+// 原 DRF 输出：{"id": 1, "order_no": "A001", "customer": 3, "amount": "99.00", "status": "new", "created_at": "2026-10-12T08:00:00Z"}
 public record OrderResponse(
-        String id, String orderNo, String customerId, String amount, String status,
-        String version, java.time.Instant createdAt) {}
+        long id,                    // 原来输出数字，就保持数字
+        String orderNo,             // SNAKE_CASE 策略输出为 order_no
+        long customer,              // DRF 外键默认输出为字段名 customer（值为 ID）
+        String amount,              // DRF DecimalField 默认输出字符串 "99.00"
+        String status,              // 原存储值 "new"
+        String createdAt) {}        // 按原格式输出，见第 7.1 节
 ```
 
-```java
-package com.company.app.order.web;
-
-import com.company.app.order.domain.Order;
-import org.mapstruct.*;
-
-@Mapper
-interface OrderWebMapper {
-    @Mapping(target = "amount", expression = "java(order.getAmount().toPlainString())")
-    OrderResponse toResponse(Order order);   // Long → String、enum → String 自动转换
-}
-```
-
-### 8.6 应用服务（事务、权限、事件）
+**控制器：**
 
 ```java
-package com.company.app.order;
-
-/** 模块公开接口：其他模块只能通过它同步调用 order。 */
-public interface OrderApi {
-    OrderSummary findSummary(long orderId);
-}
-
-public record OrderSummary(long id, String orderNo, String status) {}
-
-public record OrderCreatedEvent(long orderId, String orderNo, long customerId) {}
-```
-
-```java
-package com.company.app.order.application;
-
-import com.company.app.order.*;
-import com.company.app.order.domain.*;
-import com.company.app.shared.error.*;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-@Service
-public class OrderService implements OrderApi {
-    private final OrderRepository orders;
-    private final ApplicationEventPublisher events;
-    private final CurrentUserProvider currentUser;       // shared.security：从 SecurityContext 解析当前用户与数据范围
-
-    public OrderService(OrderRepository orders, ApplicationEventPublisher events, CurrentUserProvider currentUser) {
-        this.orders = orders;
-        this.events = events;
-        this.currentUser = currentUser;
-    }
-
-    @Transactional
-    @PreAuthorize("hasAuthority('order:create')")
-    public Order create(String orderNo, long customerId, java.math.BigDecimal amount) {
-        try {
-            var order = orders.saveAndFlush(Order.create(orderNo, customerId, amount));
-            // 事件随事务提交；Spring Modulith 事件发布登记表保证监听方失败可重试（事务性发件箱）
-            events.publishEvent(new OrderCreatedEvent(order.getId(), order.getOrderNo(), customerId));
-            return order;
-        } catch (DataIntegrityViolationException e) {   // 唯一约束兜底并发重复
-            throw new BusinessException(ErrorCode.ORDER_NO_DUPLICATED);
-        }
-    }
-
-    @Transactional
-    @PreAuthorize("hasAuthority('order:confirm')")
-    public Order confirm(long id) {
-        var order = orders.findWithLockById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
-        order.confirm();
-        return order;                                     // 脏检查自动更新
-    }
-
-    @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('order:list')")
-    public Page<Order> search(OrderSearch search, Pageable pageable) {
-        Specification<Order> spec = DataScopeSpecs.<Order>visibleTo(currentUser.get()).and(search.toSpecification());
-        return orders.findAll(spec, pageable);           // 数据范围 + 查询条件，见第 9.4 节
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public OrderSummary findSummary(long orderId) {
-        var o = orders.findById(orderId).orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
-        return new OrderSummary(o.getId(), o.getOrderNo(), o.getStatus().name());
-    }
-}
-```
-
-其他模块监听事件：
-
-```java
-package com.company.app.customer.application;
-
-import com.company.app.order.OrderCreatedEvent;
-import org.springframework.modulith.events.ApplicationModuleListener;
-import org.springframework.stereotype.Component;
-
-@Component
-class CustomerStatisticsListener {
-    /** 原事务提交后异步执行、使用新事务；失败的事件保留在登记表中可重新投递。 */
-    @ApplicationModuleListener
-    void on(OrderCreatedEvent event) {
-        // 更新客户下单统计……
-    }
-}
-```
-
-### 8.7 控制器
-
-```java
-package com.company.app.order.web;
-
-import com.company.app.order.application.OrderService;
-import com.company.app.shared.web.PageResponse;
-import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.Valid;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
-
 @RestController
-@RequestMapping("/api/v1/orders")
+@RequestMapping("/api/orders/")                    // 与原路径完全一致，包括末尾斜杠
 class OrderController {
     private final OrderService service;
-    private final OrderWebMapper mapper;
 
-    OrderController(OrderService service, OrderWebMapper mapper) {
-        this.service = service;
-        this.mapper = mapper;
+    OrderController(OrderService service) { this.service = service; }
+
+    @GetMapping
+    DrfPage<OrderResponse> list(@RequestParam(defaultValue = "1") int page, HttpServletRequest request) {
+        return service.list(page, request);
     }
 
     @PostMapping
-    @Operation(summary = "创建订单", description = "需要 order:create；订单号唯一")
-    ResponseEntity<OrderResponse> create(@Valid @RequestBody CreateOrderRequest req) {
-        var order = service.create(req.orderNo(), Long.parseLong(req.customerId()), req.amount());
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toResponse(order));
-    }
-
-    @PostMapping("/{id}/confirm")
-    @Operation(summary = "确认订单", description = "需要 order:confirm；状态必须为 CREATED")
-    OrderResponse confirm(@PathVariable long id) {
-        return mapper.toResponse(service.confirm(id));
-    }
-
-    @GetMapping
-    PageResponse<OrderResponse> list(OrderSearch search, @PageableDefault(size = 20) Pageable pageable) {
-        return PageResponse.of(service.search(search, pageable).map(mapper::toResponse));
+    ResponseEntity<OrderResponse> create(@RequestBody CreateOrderRequest req) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(req));   // DRF create 返回 201
     }
 }
 ```
 
-```java
-package com.company.app.order.web;
+**服务（权限判断复刻原逻辑）：**
 
-/** 查询条件：只拼接用户提供的条件，数据范围由服务层统一追加。 */
-public record OrderSearch(String orderNo, OrderStatus status) {
-    public Specification<Order> toSpecification() {
-        Specification<Order> spec = (root, q, cb) -> cb.conjunction();
-        if (orderNo != null && !orderNo.isBlank()) {
-            spec = spec.and((root, q, cb) -> cb.equal(root.get("orderNo"), orderNo.strip()));
+```java
+@Service
+class OrderService {
+    private final OrderRepository orders;
+    private final CurrentUser currentUser;
+
+    OrderService(OrderRepository orders, CurrentUser currentUser) {
+        this.orders = orders;
+        this.currentUser = currentUser;
+    }
+
+    @Transactional                                   // 仅当原代码在事务中执行（ATOMIC_REQUESTS 或 atomic）
+    OrderResponse create(CreateOrderRequest req) {
+        if (!currentUser.inGroup("sales")) {         // 复刻 groups.filter(name="sales")
+            throw new LegacyApiException(HttpStatus.FORBIDDEN, DrfErrors.permissionDenied());
         }
-        if (status != null) {
-            spec = spec.and((root, q, cb) -> cb.equal(root.get("status"), status));
-        }
-        return spec;
+        // 校验与原 Serializer 一致，失败时输出 DRF 格式错误（第 7.3 节）
+        var order = orders.save(new Order(req.orderNo(), req.customer(), req.amount()));
+        return OrderMapper.toResponse(order);
     }
 }
 ```
 
+### 6.3 兼容原分页结构
+
 ```java
-package com.company.app.shared.web;
+/** 与 DRF PageNumberPagination 输出一致：{"count":..,"next":..,"previous":..,"results":[..]} */
+public record DrfPage<T>(long count, String next, String previous, List<T> results) {
 
-import java.util.List;
-import org.springframework.data.domain.Page;
+    public static <T> DrfPage<T> of(Page<T> page, HttpServletRequest request) {
+        int current = page.getNumber() + 1;            // DRF 页码从 1 开始
+        return new DrfPage<>(
+                page.getTotalElements(),
+                page.hasNext() ? pageUrl(request, current + 1) : null,
+                page.hasPrevious() ? pageUrl(request, current - 1) : null,
+                page.getContent());
+    }
 
-/** 稳定的分页结构，不直接序列化 Spring 的 Page。 */
-public record PageResponse<T>(List<T> items, long total, int page, int size) {
-    public static <T> PageResponse<T> of(Page<T> p) {
-        return new PageResponse<>(p.getContent(), p.getTotalElements(), p.getNumber(), p.getSize());
+    private static String pageUrl(HttpServletRequest request, int page) {
+        var builder = ServletUriComponentsBuilder.fromRequest(request);
+        // DRF 在第 1 页时会去掉 page 参数
+        return (page == 1 ? builder.replaceQueryParam("page") : builder.replaceQueryParam("page", page))
+                .toUriString();
     }
 }
 ```
 
-### 8.8 配置属性（替代 settings.py）
+> `next`/`previous` 中的协议与主机取自请求，需确认 Nginx 传递了正确的 `Host` 和 `X-Forwarded-Proto`，并配置 `server.forward-headers-strategy: native`，否则链接会与原系统不同。
 
-```java
-@ConfigurationProperties(prefix = "app.export")
-@Validated
-public record ExportProperties(@Min(1) @Max(1_000_000) int maxRows) {}
+### 6.4 FastAPI / Flask 的对应点
 
-// 启用：@ConfigurationPropertiesScan 放在 Application 类上
-```
+| 原框架特性 | Java 处理 |
+| --- | --- |
+| FastAPI `response_model` 过滤字段 | DTO 只包含 response_model 中的字段 |
+| FastAPI `response_model_exclude_none=True` | 该 DTO 上加 `@JsonInclude(JsonInclude.Include.NON_NULL)` |
+| FastAPI 路径参数类型校验失败返回 422 | 自定义异常处理返回 422 和相同结构（第 7.3 节） |
+| Flask 返回 `jsonify(...)` | 控制器返回对应 record / Map |
+| Flask 返回 `(body, status)` 元组 | `ResponseEntity.status(...).body(...)` |
+| Flask `abort(404)` 返回 HTML 错误页 | 若客户端依赖该 HTML，原样返回相同内容 |
 
-配置非法时应用启动即失败，杜绝 Python 中常见的“读不到就用默认值”。
+### 6.5 分层规范（只约束内部实现，不影响对外行为）
 
-### 8.9 新功能开发步骤（团队 SOP）
+| 层 | 职责 |
+| --- | --- |
+| web | 路由、参数接收、调用服务、按原格式输出 |
+| service | 业务逻辑、事务、权限判断（复刻原逻辑） |
+| domain | 实体、仓储 |
+| infra | 外部调用、复杂 SQL、文件读写 |
 
-1. 在契约文档/OpenAPI 中定义接口、权限、错误码；
-2. 写 Flyway 脚本（表、约束、索引、权限种子数据）；
-3. 实体 + 仓储（领域规则写在实体）；
-4. 应用服务（事务、权限、事件）；
-5. DTO + MapStruct + 控制器；
-6. 错误码与 `messages*.properties` 多语言文案；
-7. 单元测试（领域规则）+ 集成测试（Testcontainers）+ 对照测试（迁移功能）；
-8. `./mvnw verify` 全绿后提交，代码评审。
+用 ArchUnit 约束：控制器不能直接访问仓储；domain 不依赖 web。
 
 ---
 
-## 9. 数据层迁移
+## 7. 行为一致性专题
 
-### 9.1 结构迁移
+这是等价替换中最容易出错、也最需要投入的部分。
 
-**场景 A：共享现有数据库（渐进替换默认）**
+### 7.1 JSON 序列化
 
-1. 导出现有结构：`mysqldump --no-data --routines --triggers app > V1__baseline.sql`，整理后放入 `db/migration`（仅用于新建环境）。
-2. 对已有生产/测试库执行 Flyway 基线，使 V1 不被重复执行：
+| 项 | Python 常见行为 | Java（Jackson 3）默认 | 一致化方法 |
+| --- | --- | --- | --- |
+| 字段命名 | snake_case | 字段名原样（camelCase） | `spring.jackson.property-naming-strategy: SNAKE_CASE`，或 DTO 上 `@JsonProperty` |
+| null 字段 | 输出 `null`（DRF、Pydantic 默认） | 输出 `null` | 保持默认；原来省略的接口加 `@JsonInclude(NON_NULL)` |
+| 字段顺序 | 按定义/插入顺序 | record 按声明顺序 | DTO 按原顺序声明；必要时 `@JsonPropertyOrder` |
+| Decimal | DRF 默认输出字符串 `"99.00"`；Pydantic v2 默认输出字符串 | `BigDecimal` 输出数字 | 原来是字符串就用 `String` 字段并 `toPlainString()`，**保留原小数位数** |
+| float | `1e-05`、`10000000.0` 等 | `1.0E-5`、`1.0E7` | 原来输出浮点数的字段，用自定义序列化器模拟 Python `repr` 规则，或与客户端确认数值等价即可 |
+| 大整数 | 任意精度 | `long` 范围 | 超出 `long` 的用 `BigInteger` |
+| 日期时间 | DRF：`2026-10-12T08:00:00Z`；`datetime.isoformat()`：`2026-10-12T08:00:00+00:00`；微秒非零时输出 6 位 | `Instant` 输出 `2026-10-12T08:00:00Z`，小数位按实际精度 | **以真实样本为准**，用固定格式化器（见下） |
+| 日期 | `2026-10-12` | `LocalDate` 相同 | — |
+| 布尔 | `true/false` | 相同 | — |
+| 非 ASCII | `json.dumps` 默认转义为 `\uXXXX`（Django JsonResponse、Flask 默认）；FastAPI 不转义 | 不转义 | 解析后语义相同，一般无需处理；**仅当客户端按字节比对或签名时**才需要开启转义 |
+| 空列表/空对象 | `[]` / `{}` | 相同 | — |
 
-   ```yaml
-   spring:
-     flyway:
-       baseline-on-migrate: true   # 仅首次接入现有库时开启
-       baseline-version: 1
-   ```
-
-3. 从这一刻起**结构变更唯一入口为 Flyway**：Python 端冻结 Alembic / Django migrations，仅同步修改模型定义（Django 可用 `managed = False`）。
-4. JPA `ddl-auto: validate` 保证实体与表一致。
-
-**场景 B：新建数据库**
-
-用 Flyway 从 V1 编写目标结构，存量数据通过 9.3 节的 ETL 迁入。
-
-### 9.2 结构规范与类型映射
-
-| 项 | 规范 |
-| --- | --- |
-| 字符集 | MySQL：`utf8mb4`；PostgreSQL：UTF8 |
-| 主键 | `BIGINT` 自增（内部）；对外暴露的标识可另设 UUIDv7 或业务编号 |
-| 金额/数量 | `DECIMAL(p,s)`，Java `BigDecimal`；禁止 `FLOAT/DOUBLE` |
-| 时间 | 存 UTC：MySQL `DATETIME(6)`，PostgreSQL `timestamptz`；Java `Instant` |
-| 日期 | `DATE`，Java `LocalDate` |
-| 枚举 | `VARCHAR` + `CHECK` 约束，Java `@Enumerated(EnumType.STRING)`；禁止 `ORDINAL` |
-| 布尔 | MySQL `TINYINT(1)` / PostgreSQL `boolean` |
-| JSON | `JSON` / `jsonb`，Hibernate `@JdbcTypeCode(SqlTypes.JSON)` |
-| 乐观锁 | `version BIGINT NOT NULL` |
-| 审计列 | `created_at`、`created_by`、`updated_at`、`updated_by` |
-| 唯一性 | 一律数据库唯一约束，应用层判重仅用于友好提示 |
-| 外键 | 模块内可用；跨模块不建外键，只存 ID |
-| 软删除 | 确有需要才用，并配合唯一约束设计（如 `deleted_at` 参与唯一键） |
-| 命名 | 表/列 `snake_case`，Java 字段 `camelCase`（Hibernate 默认命名策略自动转换） |
-
-Flyway 规则：
-
-- 文件名 `V{版本}__{描述}.sql`；**已发布的脚本永不修改**，修改一律新增版本；
-- 生产禁用 `clean`；`validate-on-migrate` 保持开启；
-- 大表变更评估锁表时间，必要时使用在线 DDL 工具（gh-ost / pt-online-schema-change）并在脚本外执行，脚本中记录说明；
-- 迁移与应用使用不同数据库账号（迁移账号有 DDL 权限，应用账号只有 DML 权限）。
-
-### 9.3 存量数据迁移（新库场景）
-
-```mermaid
-flowchart LR
-    S[(旧库<br/>只读)] --> E[抽取]
-    E --> ST[(暂存表<br/>原样拷贝)]
-    ST --> T[转换/清洗<br/>记录映射与异常]
-    T --> L[(新库)]
-    L --> V[核对<br/>行数、金额汇总、抽样比对、摘要]
-```
-
-- 用 **Spring Batch** 实现：分块读写、断点续跑、跳过与重试策略、执行记录。
-- 每张表制定“旧字段 → 新字段 → 转换规则 → 异常处理”映射表。
-- 无法自动转换的数据输出异常报告，由业务确认处理方式。
-- 核对至少包括：行数、关键金额/数量汇总、按主键抽样逐字段比对、关键业务状态分布。
-- **至少完整演练两次**（一次在测试环境，一次用生产数据脱敏副本），记录耗时，用于确定切换窗口。
-
-### 9.4 数据权限与多租户
-
-| 需求 | 推荐实现 |
-| --- | --- |
-| 多租户（按租户隔离） | Hibernate `@TenantId`（列隔离）或按租户分库，由 `CurrentTenantIdentifierResolver` 提供租户 |
-| 按部门/组织等数据范围过滤 | Spring Data `Specification` 统一追加范围条件；复杂场景用 Hibernate `@Filter` 在请求开始时启用 |
-| 行级精细权限 | 服务层显式校验 + 查询条件，必要时引入 ABAC |
-
-数据范围示例：
+模拟 Python `datetime.isoformat()` 的格式化（微秒为 0 时不输出小数，否则输出 6 位）：
 
 ```java
-public final class DataScopeSpecs {
-    private DataScopeSpecs() {}
+public final class PythonTime {
+    private PythonTime() {}
 
-    public static <T> Specification<T> visibleTo(CurrentUser user) {
-        return (root, query, cb) -> user.allDepartments()
-                ? cb.conjunction()
-                : root.get("departmentId").in(user.departmentIds());   // 空集合时由调用方拒绝或返回空
+    /** 输出与 Python datetime.isoformat() 相同的 UTC 字符串，例如 2026-10-12T08:00:00+00:00 */
+    public static String isoformat(Instant instant) {
+        var t = instant.atOffset(ZoneOffset.UTC);
+        var base = t.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+        int micros = t.getNano() / 1_000;
+        return (micros == 0 ? base : base + String.format(".%06d", micros)) + "+00:00";
+    }
+
+    /** DRF 风格：将 +00:00 替换为 Z */
+    public static String drf(Instant instant) {
+        return isoformat(instant).replace("+00:00", "Z");
     }
 }
-
-// 使用：orders.findAll(DataScopeSpecs.<Order>visibleTo(user).and(searchSpec), pageable)
 ```
 
----
+> 注意：Python 用 `datetime.now()` 写入的时间带微秒，而 Java `Instant.now()` 在部分系统上可能精确到纳秒，写库前应截断到微秒：`Instant.now().truncatedTo(ChronoUnit.MICROS)`，否则同一数据在两边的输出会不同。
 
-## 10. API 契约迁移
+### 7.2 HTTP 层
 
-### 10.1 两阶段契约策略
+| 项 | 一致化方法 |
+| --- | --- |
+| 路径末尾斜杠 | Spring 6+ 默认**不再**把 `/a/` 与 `/a` 视为同一路径。按原路径精确映射；原系统依赖 Django `APPEND_SLASH`（缺少斜杠时 301 重定向）时，加一个过滤器复刻该重定向 |
+| 状态码 | 逐接口对照：DRF 创建 201、删除 204；FastAPI 默认 200；校验失败 DRF 400、FastAPI 422 |
+| 响应头 | `Content-Type`（含 charset）、缓存头、自定义头逐项对照 |
+| Cookie | 名称、`Path`、`Domain`、`HttpOnly`、`Secure`、`SameSite`、`Max-Age` 与原系统一致 |
+| CORS | 来源、方法、头、是否允许凭据一致 |
+| 请求体大小限制 | 与原 Nginx/框架限制一致（`spring.servlet.multipart.*`） |
+| HEAD / OPTIONS | 原框架自动处理的，确认 Spring 行为相同 |
+| 404 / 405 响应体 | 原系统返回的 JSON 或 HTML 原样复刻 |
 
-| 阶段 | 契约 | 原因 |
+`APPEND_SLASH` 重定向过滤器：
+
+```java
+@Component
+@Order(Ordered.HIGHEST_PRECEDENCE)        // 与 Django CommonMiddleware 一样，在认证之前处理
+class AppendSlashFilter extends OncePerRequestFilter {
+    @Override
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
+            throws ServletException, IOException {
+        String uri = req.getRequestURI();
+        boolean isFile = uri.substring(uri.lastIndexOf('/') + 1).contains(".");
+        if (uri.startsWith("/api/") && !uri.endsWith("/") && !isFile && "GET".equals(req.getMethod())) {
+            String query = req.getQueryString();
+            res.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);   // 与 Django 一致：301
+            res.setHeader("Location", uri + "/" + (query == null ? "" : "?" + query));
+            return;
+        }
+        chain.doFilter(req, res);
+    }
+}
+```
+
+### 7.3 错误响应
+
+原系统的错误格式必须原样复刻。常见格式：
+
+| 框架 | 场景 | 原格式示例 |
 | --- | --- | --- |
-| 迁移期（渐进替换） | **与旧 Python 接口完全兼容**：路径、方法、JSON 字段名（如 snake_case）、分页与错误格式 | 客户端无需改动，可随时切回 |
-| 迁移完成后 | 推出 `/api/v2` 新规范契约，旧版本设定下线日期 | 一次性统一规范 |
+| DRF | 校验失败（400） | `{"order_no": ["This field is required."]}` |
+| DRF | 未登录（401/403） | `{"detail": "Authentication credentials were not provided."}` |
+| DRF | 无权限（403） | `{"detail": "You do not have permission to perform this action."}` |
+| DRF | 不存在（404） | `{"detail": "Not found."}` |
+| FastAPI | 校验失败（422） | `{"detail": [{"type": "missing", "loc": ["body", "order_no"], "msg": "Field required", "input": {...}}]}` |
+| FastAPI | `HTTPException` | `{"detail": "..."}` |
+| Flask | 自定义 | 以实际代码为准 |
 
-兼容 snake_case 的方式（仅迁移期、仅需要的接口）：
+统一异常处理（DRF 风格示例）：
 
 ```java
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public record LegacyOrderResponse(String orderNo, String customerId, String amount) {}
+/** 携带“原系统格式”响应体的异常。 */
+public class LegacyApiException extends RuntimeException {
+    private final HttpStatus status;
+    private final Object body;
+
+    public LegacyApiException(HttpStatus status, Object body) {
+        super(status.toString());
+        this.status = status;
+        this.body = body;
+    }
+    public HttpStatus status() { return status; }
+    public Object body() { return body; }
+}
+
+public final class DrfErrors {
+    private DrfErrors() {}
+    public static Map<String, String> detail(String message) { return Map.of("detail", message); }
+    public static Map<String, String> permissionDenied() {
+        return detail("You do not have permission to perform this action.");
+    }
+    public static Map<String, String> notFound() { return detail("Not found."); }
+}
+
+@RestControllerAdvice
+class LegacyErrorHandler {
+    @ExceptionHandler(LegacyApiException.class)
+    ResponseEntity<Object> legacy(LegacyApiException e) {
+        return ResponseEntity.status(e.status()).body(e.body());
+    }
+
+    /** Bean Validation 失败 → DRF 字段错误格式：{"field": ["message"]} */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    ResponseEntity<Map<String, List<String>>> invalid(MethodArgumentNotValidException e) {
+        var errors = new LinkedHashMap<String, List<String>>();
+        for (var f : e.getBindingResult().getFieldErrors()) {
+            errors.computeIfAbsent(toSnakeCase(f.getField()), k -> new ArrayList<>()).add(f.getDefaultMessage());
+        }
+        return ResponseEntity.badRequest().body(errors);
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    ResponseEntity<Map<String, String>> denied() {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(DrfErrors.permissionDenied());
+    }
+
+    private static String toSnakeCase(String s) {
+        return s.replaceAll("([a-z0-9])([A-Z])", "$1_$2").toLowerCase(Locale.ROOT);
+    }
+}
 ```
 
-或全局配置 `spring.jackson.property-naming-strategy: SNAKE_CASE`（影响所有接口，慎用）。
+校验消息文本与原系统一致：在注解上写明原文，例如 `@NotBlank(message = "This field is required.")`；多语言系统则放入 `ValidationMessages.properties`。
 
-### 10.2 目标契约规范（v2 及新接口）
+### 7.4 ORM 与 SQL 行为
 
-| 方面 | 规范 |
+| 项 | Python 侧常见行为 | Java 一致化 |
+| --- | --- | --- |
+| 默认排序 | Django `Meta.ordering` 自动加 `ORDER BY` | 查询中显式写出相同排序；**无排序的查询结果顺序不保证一致**，原系统依赖顺序的需补上相同的 ORDER BY |
+| 空串与 NULL | Django `CharField` 常存空串 `""` 而非 NULL | 写入时保持相同约定 |
+| 自动时间 | `auto_now_add` / `auto_now` | `@PrePersist` / `@PreUpdate` |
+| 默认值 | 模型 `default=` 在应用层赋值（数据库无默认值） | 在实体构造或 `@PrePersist` 中赋值 |
+| 外键删除 | `on_delete=CASCADE` 在 **Django 应用层**执行（数据库无级联） | Java 服务层显式执行相同的级联删除 |
+| 软删除 | 自定义 Manager 自动过滤 | 仓储方法或 Hibernate `@SQLRestriction` 加同样条件 |
+| 批量更新 | `QuerySet.update()` 不触发 `save()` 和信号 | 用批量 UPDATE 语句，同样不触发实体回调 |
+| 信号 | `post_save` 等 | 只复刻原系统确实注册了的信号逻辑 |
+| 大小写比较 | 由数据库排序规则决定（`iexact` 等显式不区分） | 同一数据库，SQL 条件写法保持一致即可 |
+| `get_or_create` | 先查后插（存在并发重复风险） | 等价实现；并发问题登记为差异 |
+
+### 7.5 数值、字符串、时间语义
+
+| 场景 | Python | Java | 一致化 |
+| --- | --- | --- | --- |
+| 整除 | `-7 // 2 == -4` | `-7 / 2 == -3` | `Math.floorDiv` |
+| 取模 | `-7 % 3 == 2` | `-7 % 3 == -1` | `Math.floorMod` |
+| `round()` | 银行家舍入：`round(2.5) == 2` | `Math.round(2.5) == 3` | `BigDecimal.setScale(n, RoundingMode.HALF_EVEN)` |
+| `Decimal.quantize` | 默认 `ROUND_HALF_EVEN`（可配置） | — | 使用与原代码相同的 `RoundingMode` |
+| 整数溢出 | 不溢出 | 溢出 | `Math.addExact` 等，或 `BigInteger` |
+| 浮点运算 | IEEE 754 双精度 | 相同 | 运算顺序保持一致即可得到相同结果 |
+| 字符串长度/切片 | 按 Unicode 码点 | 按 UTF-16 单元 | 涉及表情等字符时用 `codePointCount` / `offsetByCodePoints` |
+| `lower()` / `upper()` | 与区域无关 | 受默认区域影响 | `toLowerCase(Locale.ROOT)` |
+| `strip()` | 去除 Unicode 空白 | `trim()` 只去 ASCII 控制字符和空格 | 用 `String.strip()` |
+| `split()` 无参数 | 按任意空白分割并去掉空项 | `split(" ")` 行为不同 | `s.strip().split("\\s+")`（空串需单独处理） |
+| 正则 `\d`、`\w` | 默认匹配 Unicode | 默认只匹配 ASCII | 需要时加 `Pattern.UNICODE_CHARACTER_CLASS` |
+| 排序 | 字符串按码点排序 | `compareTo` 按 UTF-16 单元 | 只在含增补字符时有差异 |
+| 字典迭代顺序 | 插入顺序 | `HashMap` 无序 | `LinkedHashMap` |
+| `datetime.now()` | 本地时间（naive） | — | 与原代码相同的时区，用注入的 `Clock` |
+| `strftime` | `%Y-%m-%d` 等 | `DateTimeFormatter` | 注意 `yyyy`（年）与 `YYYY`（周年）不同 |
+| 真值判断 | 空串、0、空列表为假 | 无隐式转换 | 显式写出与原代码相同的判断 |
+
+### 7.6 事务边界
+
+| 原系统情况 | Java 做法 |
 | --- | --- |
-| 路径 | `/api/v{n}/{资源复数}`；资源名用名词 |
-| 方法 | `GET` 查询、`POST` 创建、`PUT` 全量替换、`PATCH` 部分更新、`DELETE` 删除；非 CRUD 动作用 `POST /{id}/{动作}`（如 `/orders/{id}/confirm`） |
-| 字段命名 | camelCase |
-| 成功响应 | 直接返回资源或 `PageResponse`；创建返回 201 |
-| 错误响应 | RFC 9457 ProblemDetail，`Content-Type: application/problem+json`，含 `code`、`traceId` |
-| 标识与大数 | ID、超过 2^53 的整数、高精度小数输出为**字符串** |
-| 时间 | ISO-8601，UTC（`2026-10-12T08:00:00Z`） |
-| 分页 | `page`、`size`（设上限）、`sort`；超大数据集用游标分页 |
-| 并发控制 | 返回 `version` 或 `ETag`；更新携带 `If-Match` / `version`，冲突返回 409/412 |
-| 幂等 | 有副作用的 `POST` 支持 `Idempotency-Key` 请求头（第 12.4 节） |
-| 版本 | URL 版本（`/v1`、`/v2`）；不兼容变更才升版本 |
-| 文档 | 代码即文档：springdoc 生成 OpenAPI，CI 中检查契约变更（openapi-diff） |
-| 限流 | 网关或应用层返回 429 + `Retry-After` |
-
-### 10.3 OpenAPI 与客户端生成
-
-- 后端：springdoc 生成 `/v3/api-docs`，在 CI 中导出为 `openapi.json` 并纳入版本控制；
-- 前端：用 `openapi-typescript` 或 OpenAPI Generator 生成类型/客户端，禁止手写重复类型；
-- 外部调用方：提供 OpenAPI 文档和示例；重要调用方建立契约测试（Pact 或 Spring Cloud Contract）。
+| Django `ATOMIC_REQUESTS=True`（每个请求一个事务） | 每个写接口的服务方法 `@Transactional` |
+| 代码中 `transaction.atomic()` 块 | 对应方法加 `@Transactional`，范围相同 |
+| Django 默认 autocommit（每条 SQL 单独提交） | 原样复刻**会保留“中途失败留下部分数据”的行为**。登记为差异，由业务确认：保持原样，或加事务（只改变失败时的结果，属于数据安全修复） |
+| SQLAlchemy 手动 `session.commit()` | 按原提交点划分事务；一个方法内多次提交的，拆成多个事务方法 |
+| 事务中调用外部系统 | 保持原顺序；风险登记为差异 |
 
 ---
 
-## 11. 认证与授权迁移
+## 8. 认证与权限：按原机制复刻
 
-### 11.1 推荐架构
+### 8.1 总原则
+
+- 认证方式、Cookie/令牌格式、有效期、密码哈希**全部保持不变**；
+- 共存期同一个用户的登录态在 Python 与 Java 两边都有效；
+- 登录、登出、改密接口最后迁移。
+
+### 8.2 原系统使用会话（Django / Flask）：共存期由 Nginx 向 Python 校验
+
+Java 自己解析 Django/Flask 的会话格式容易出错（签名、序列化、密码变更后会话失效等细节）。共存期最稳妥的做法是：**由 Nginx 的 `auth_request` 请 Python 判断会话是否有效，再把用户 ID 传给 Java**。
 
 ```mermaid
 sequenceDiagram
-    participant B as 浏览器
-    participant BFF as BFF / 网关
-    participant IdP as OIDC 身份服务
-    participant API as Java 应用（资源服务器）
-    B->>BFF: 访问页面
-    BFF->>IdP: 授权码 + PKCE 登录
-    IdP-->>BFF: ID Token / Access Token
-    BFF-->>B: HttpOnly 会话 Cookie（令牌不进浏览器）
-    B->>BFF: /api/... (Cookie)
-    BFF->>API: 转发 + Bearer Access Token
-    API->>API: 校验 JWT 签名/签发者/受众 → 映射权限 → @PreAuthorize
+    participant B as 浏览器（Cookie 不变）
+    participant N as Nginx
+    participant P as Python（/internal/whoami）
+    participant J as Java
+    B->>N: GET /api/customers/（携带原会话 Cookie）
+    N->>P: 子请求 /internal/whoami（转发 Cookie）
+    P-->>N: 200 + X-User-Id / 401
+    N->>J: 转发请求 + X-User-Id（并清除客户端伪造的同名头）
+    J-->>B: 响应
 ```
 
-- **身份服务**：Keycloak（开源）或企业已有的 IdP（Azure AD / Okta / 国内统一身份平台）。
-- **BFF 模式**：浏览器不持有令牌，这是当前浏览器端应用的推荐安全实践。BFF 可用 Spring Cloud Gateway + `spring-boot-starter-oauth2-client`（`TokenRelay` 过滤器）实现。
-- **Java 应用**：作为资源服务器，只校验 JWT 并做授权，不处理登录页面。
+Python 侧新增一个仅供内部调用的接口（共存期专用，下线 Python 时随之删除）：
 
-### 11.2 资源服务器配置
+```python
+# 仅限内网访问
+@login_required
+def whoami(request):
+    resp = HttpResponse(status=200)
+    resp["X-User-Id"] = str(request.user.id)
+    return resp
+```
+
+Nginx：
+
+```nginx
+location = /internal/whoami {
+    internal;
+    proxy_pass http://python_app/internal/whoami;
+    proxy_pass_request_body off;
+    proxy_set_header Content-Length "";
+    proxy_set_header Cookie $http_cookie;
+}
+
+location /api/customers/ {
+    auth_request /internal/whoami;
+    auth_request_set $user_id $upstream_http_x_user_id;
+    proxy_set_header X-User-Id $user_id;       # 覆盖客户端可能伪造的同名头
+    proxy_pass http://java_app;
+}
+```
+
+Java 侧过滤器（只信任来自 Nginx 的请求，Java 端口不对外开放）。注意它必须加入 Spring Security 过滤链，不能只注册为普通 Bean，否则会在安全检查之后才执行：
+
+```java
+/** 不加 @Component，由安全配置显式加入过滤链。 */
+class GatewayUserFilter extends OncePerRequestFilter {
+    private final UserRepository users;
+
+    GatewayUserFilter(UserRepository users) { this.users = users; }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
+            throws ServletException, IOException {
+        String userId = req.getHeader("X-User-Id");
+        if (userId != null && !userId.isBlank()) {
+            users.findById(Long.parseLong(userId)).ifPresent(user -> {
+                var auth = UsernamePasswordAuthenticationToken.authenticated(
+                        user, null, user.authorities());    // 角色/组从原表读取
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            });
+        }
+        chain.doFilter(req, res);
+    }
+}
+
+@Configuration
+@EnableMethodSecurity
+class GatewaySecurityConfig {
+    @Bean
+    SecurityFilterChain api(HttpSecurity http, UserRepository users) throws Exception {
+        return http
+                .addFilterBefore(new GatewayUserFilter(users), AuthorizationFilter.class)
+                .authorizeHttpRequests(a -> a.anyRequest().authenticated())   // 按原接口逐一配置，见 8.6 节
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(c -> c.disable())                                       // 共存期 CSRF 由 Python 校验，见 8.4 节
+                .build();
+    }
+}
+```
+
+切换认证接口（最后一批）时，再由 Java 实现会话管理：
+
+- 使用 Spring Security + Spring Session（会话存储与原系统相同：原来存 Redis 就用 Spring Session Redis，原来存数据库就用 Spring Session JDBC）；
+- 会话 Cookie 名称配置为与原系统相同（如 `sessionid`），属性一致；
+- 切换时原会话会失效，需要用户重新登录一次。若不能接受，切换前需评估实现原会话格式的读取（工作量较大，单独评估）。
+
+### 8.3 原系统使用 JWT：两边直接互认
+
+Java 使用**相同的算法、密钥和声明结构**校验令牌，两边签发的令牌互相有效：
 
 ```java
 @Configuration
 @EnableMethodSecurity
-class SecurityConfig {
+class JwtSecurityConfig {
+    @Bean
+    JwtDecoder jwtDecoder(@Value("${JWT_SECRET}") String secret) {       // 与 Python 相同的环境变量和密钥
+        var key = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        var decoder = NimbusJwtDecoder.withSecretKey(key).macAlgorithm(MacAlgorithm.HS256).build();
+        // 原系统校验了哪些声明（exp、iss、aud），这里就校验哪些，不多也不少
+        decoder.setJwtValidator(JwtValidators.createDefault());
+        return decoder;
+    }
+
     @Bean
     SecurityFilterChain api(HttpSecurity http) throws Exception {
         return http
-                .authorizeHttpRequests(a -> a
-                        .requestMatchers("/actuator/health/**", "/actuator/info").permitAll()
-                        .requestMatchers("/actuator/**").hasAuthority("ops:actuator")
-                        .anyRequest().authenticated())
-                .oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(jwtConverter())))
+                .authorizeHttpRequests(a -> a.anyRequest().permitAll())          // 访问规则见 8.6 节，按原接口逐一配置
+                .oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(converter())))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .csrf(c -> c.disable())               // 无 Cookie 的 Bearer API 不需要 CSRF
+                .csrf(c -> c.disable())
                 .build();
     }
 
-    /** 把令牌中的权限声明映射为 Spring 权限，例如 claim "permissions": ["order:create", ...] */
-    private JwtAuthenticationConverter jwtConverter() {
+    /** 把原令牌中的声明（例如 "user_id"、"roles"）映射为当前用户 */
+    private JwtAuthenticationConverter converter() {
         var authorities = new JwtGrantedAuthoritiesConverter();
-        authorities.setAuthoritiesClaimName("permissions");
-        authorities.setAuthorityPrefix("");
-        var converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(authorities);
-        return converter;
+        authorities.setAuthoritiesClaimName("roles");     // 与原令牌字段一致
+        authorities.setAuthorityPrefix("ROLE_");
+        var c = new JwtAuthenticationConverter();
+        c.setJwtGrantedAuthoritiesConverter(authorities);
+        c.setPrincipalClaimName("user_id");               // 与原令牌字段一致
+        return c;
     }
 }
 ```
 
-> 若权限变化必须立即生效，不要只依赖令牌中的权限声明：令牌有效期设短（如 5–15 分钟），或在 `JwtAuthenticationConverter` 中按用户 ID 从数据库/缓存加载当前权限。
+> PyJWT 的 HS256 密钥按 UTF-8 字节使用，与上面的写法一致。若原系统用 RS256，则用 `NimbusJwtDecoder.withPublicKey(...)` 加载同一公钥。Java 侧签发令牌（迁移登录接口时）使用 `NimbusJwtEncoder`，声明结构、有效期与原系统完全相同。
 
-### 11.3 备选：无 SSO 的自建登录（会话 + Redis）
+### 8.4 CSRF（与 Django 兼容）
 
-适用于内部系统、没有身份服务的场景：
+前端不变，因此 CSRF 的 Cookie 名和请求头名必须与 Django 相同：
 
 ```java
-@Configuration
-@EnableMethodSecurity
-class SessionSecurityConfig {                // 引入 spring-session-data-redis 后，Boot 自动把会话存入 Redis
-    @Bean
-    SecurityFilterChain web(HttpSecurity http) throws Exception {
-        return http
-                .authorizeHttpRequests(a -> a
-                        .requestMatchers("/api/auth/login", "/actuator/health/**").permitAll()
-                        .anyRequest().authenticated())
-                .csrf(c -> c
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())   // SPA 读取 XSRF-TOKEN
-                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
-                .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-                .logout(l -> l.logoutUrl("/api/auth/logout")
-                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()))
-                .build();
-    }
-
-    @Bean
-    AuthenticationManager authenticationManager(UserDetailsService users, PasswordEncoder encoder) {
-        var provider = new DaoAuthenticationProvider(users);
-        provider.setPasswordEncoder(encoder);
-        return new ProviderManager(provider);
-    }
-}
+var csrf = CookieCsrfTokenRepository.withHttpOnlyFalse();
+csrf.setCookieName("csrftoken");          // Django 默认 Cookie 名
+csrf.setHeaderName("X-CSRFToken");        // Django 默认请求头名
+http.csrf(c -> c.csrfTokenRepository(csrf)
+        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()));
 ```
 
-```java
-@RestController
-@RequestMapping("/api/auth")
-class LoginController {
-    private final AuthenticationManager authManager;
-    private final SecurityContextRepository contextRepository = new HttpSessionSecurityContextRepository();
+> 共存期由哪一方签发 `csrftoken`、另一方是否接受，需要在对照测试中验证。Django 的 CSRF 令牌带掩码格式，Spring 默认不认识；共存期建议对迁移到 Java 的写接口在 Nginx 层沿用 Python 的校验（同 8.2 节的 `auth_request` 方式，由 Python 一并校验 CSRF），或在认证切换批次统一切换。
 
-    LoginController(AuthenticationManager authManager) { this.authManager = authManager; }
+### 8.5 密码哈希：生成与校验都保持原格式
 
-    @PostMapping("/login")
-    void login(@Valid @RequestBody LoginRequest req, HttpServletRequest request, HttpServletResponse response) {
-        var auth = authManager.authenticate(
-                UsernamePasswordAuthenticationToken.unauthenticated(req.username(), req.password()));
-        var context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(auth);
-        SecurityContextHolder.setContext(context);
-        request.changeSessionId();                       // 防会话固定
-        contextRepository.saveContext(context, request, response);
-    }
-}
-```
+为保证随时可回退，Java 写入的密码哈希必须能被 Python 校验。**不使用带 `{id}` 前缀的格式，也不升级算法。**
 
-会话 Cookie 配置为 `HttpOnly`、`Secure`、`SameSite=Lax/Strict`；登录接口加限流和失败锁定。
-
-### 11.4 账号与旧密码哈希迁移
-
-目标：**用户无感迁移**，首次登录成功后自动升级为新哈希。
+Django PBKDF2 格式（`pbkdf2_sha256$迭代次数$盐$哈希`）的完整实现：
 
 ```java
-@Bean
-PasswordEncoder passwordEncoder() {
-    Map<String, PasswordEncoder> encoders = new HashMap<>();
-    encoders.put("bcrypt", new BCryptPasswordEncoder(12));
-    encoders.put("argon2", Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8());   // 需要 bcprov 依赖
-    encoders.put("django", new DjangoPbkdf2PasswordEncoder());   // 兼容旧 Django 哈希
-    return new DelegatingPasswordEncoder("bcrypt", encoders);    // 新密码一律 bcrypt
-}
-```
-
-旧哈希迁移时加前缀写入新表：
-
-| 旧来源 | 旧格式示例 | 新库存储 |
-| --- | --- | --- |
-| passlib / bcrypt | `$2b$12$...` | `{bcrypt}$2b$12$...`（Spring 原生支持） |
-| Django 默认 | `pbkdf2_sha256$600000$salt$hash` | `{django}pbkdf2_sha256$600000$salt$hash` |
-| passlib argon2 | `$argon2id$v=19$...` | `{argon2}$argon2id$...`（参数需验证） |
-| 无法识别 / 明文 / MD5 | — | 不迁移哈希，标记“必须重置密码” |
-
-Django PBKDF2 兼容编码器：
-
-```java
-/** 只用于校验旧 Django 哈希；不用于生成新密码。 */
+/** 与 Django PBKDF2PasswordHasher 完全兼容的编码器：生成和校验同一格式。 */
 public class DjangoPbkdf2PasswordEncoder implements PasswordEncoder {
+    private static final String ALGORITHM = "pbkdf2_sha256";
+    private static final String SALT_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private final int iterations;              // 与原 Django 版本的默认值一致（例如 Django 4.2 为 600000）
+    private final SecureRandom random = new SecureRandom();
+
+    public DjangoPbkdf2PasswordEncoder(int iterations) { this.iterations = iterations; }
+
     @Override
     public String encode(CharSequence raw) {
-        throw new UnsupportedOperationException("Legacy format is verify-only");
+        var salt = new StringBuilder(22);       // Django 默认盐长度 22（以原系统实际为准）
+        for (int i = 0; i < 22; i++) salt.append(SALT_CHARS.charAt(random.nextInt(SALT_CHARS.length())));
+        return ALGORITHM + "$" + iterations + "$" + salt + "$" + hash(raw, salt.toString(), iterations);
     }
 
     @Override
     public boolean matches(CharSequence raw, String encoded) {
-        String[] p = encoded.split("\\$");                    // algorithm$iterations$salt$hash
-        if (p.length != 4 || !"pbkdf2_sha256".equals(p[0])) return false;
+        if (encoded == null) return false;
+        String[] p = encoded.split("\\$");
+        if (p.length != 4 || !ALGORITHM.equals(p[0])) return false;
         try {
-            int iterations = Integer.parseInt(p[1]);
-            byte[] expected = Base64.getDecoder().decode(p[3]);
-            var spec = new PBEKeySpec(raw.toString().toCharArray(),
-                    p[2].getBytes(StandardCharsets.UTF_8), iterations, expected.length * 8);
-            byte[] actual = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256").generateSecret(spec).getEncoded();
-            return MessageDigest.isEqual(expected, actual);   // 常量时间比较
-        } catch (GeneralSecurityException | IllegalArgumentException e) {
+            String actual = hash(raw, p[2], Integer.parseInt(p[1]));
+            return MessageDigest.isEqual(actual.getBytes(StandardCharsets.US_ASCII),
+                    p[3].getBytes(StandardCharsets.US_ASCII));
+        } catch (NumberFormatException e) {
             return false;
         }
     }
 
-    @Override
-    public boolean upgradeEncoding(String encoded) { return true; }
-}
-```
-
-自动升级：实现 `UserDetailsPasswordService`，`DaoAuthenticationProvider` 在登录成功且 `upgradeEncoding` 为真时会调用它写入新哈希：
-
-```java
-@Service
-class UserPasswordUpgrader implements UserDetailsPasswordService {
-    private final UserRepository users;
-    UserPasswordUpgrader(UserRepository users) { this.users = users; }
-
-    @Override
-    @Transactional
-    public UserDetails updatePassword(UserDetails user, String newEncodedPassword) {
-        users.updatePasswordHash(user.getUsername(), newEncodedPassword);
-        return User.withUserDetails(user).password(newEncodedPassword).build();
-    }
-}
-// 并在 DaoAuthenticationProvider 上调用 provider.setUserDetailsPasswordService(upgrader)
-```
-
-使用 OIDC 身份服务时，Keycloak 等也支持导入旧哈希或通过“用户存储联邦”在首次登录时校验旧系统密码，原理相同。
-
-### 11.5 授权模型
-
-| 层次 | 做法 |
-| --- | --- |
-| 权限码 | `模块:资源:动作`，例如 `order:create`、`order:confirm`；由 Flyway 种子数据维护 |
-| 角色 | 角色 = 权限码集合，存数据库或 IdP；用户 ↔ 角色多对多 |
-| 接口/方法 | `@PreAuthorize("hasAuthority('order:create')")` 写在**应用服务**上，而非仅在控制器 |
-| 数据范围 | 第 9.4 节的 Specification / Filter |
-| 对象级 | 服务层加载对象后校验归属（防止越权访问他人数据，即 IDOR） |
-| 服务间/外部系统 | OAuth2 客户端凭证模式（client credentials），独立服务账号、最小权限 |
-
-迁移旧权限时输出“旧角色 → 新角色 → 权限码”对照表，并为每个权限至少写一个**越权负例测试**。
-
----
-
-## 12. 事务、并发与幂等
-
-### 12.1 事务规范
-
-| 规则 | 说明 |
-| --- | --- |
-| 事务只在应用服务层 | `@Transactional` 放在 service 的 public 方法上；控制器、仓储不开事务 |
-| 只读查询 | `@Transactional(readOnly = true)` |
-| 同类内部调用不生效 | 代理机制决定 `this.method()` 不经过事务切面，需拆到另一个 Bean |
-| 不在事务中做远程调用 | 先调外部、再开事务写库；或写库后通过事件/发件箱异步调用 |
-| 异常回滚 | 默认只回滚运行时异常；业务异常继承 `RuntimeException` |
-| 隔离级别 | MySQL 默认 `REPEATABLE READ`，PostgreSQL 默认 `READ COMMITTED`；需要“读最新值再写”的场景用显式行锁，不靠隔离级别 |
-| 长事务 | 禁止；大批量处理按块提交（Spring Batch） |
-
-### 12.2 Python 常见并发问题的改造
-
-| Python 中的写法 | 问题 | Java 正确做法 |
-| --- | --- | --- |
-| autocommit 下执行多条 SQL | 中途失败留下半成品 | 整个用例一个事务 |
-| 先查询判重，再插入 | 并发下重复 | 唯一约束 + 捕获异常 |
-| 读余额 → 计算 → 写回 | 丢失更新 | `@Version` 乐观锁，或 `SELECT ... FOR UPDATE` |
-| `threading.Lock` 保护共享资源 | 多实例无效 | 数据库行锁 / 唯一约束 / 分布式锁 |
-| Redis `SETNX` 当作业务锁且无过期处理 | 死锁或锁失效 | 优先数据库锁；必须用分布式锁时用成熟实现并设置租约 |
-| 批量操作部分成功 | 数据不一致 | 明确语义：整批原子，或逐条结果返回 |
-| `UPDATE ... SET x = x - 1` 不判断结果 | 超卖 | `UPDATE ... WHERE stock >= :n`，检查影响行数 |
-
-### 12.3 锁的选择
-
-| 场景 | 选择 |
-| --- | --- |
-| 冲突少，用户编辑表单 | 乐观锁 `@Version`，冲突返回 409 让用户刷新 |
-| 冲突多、必须串行（库存、额度、序号） | 悲观锁 `PESSIMISTIC_WRITE`，**多个资源按固定顺序加锁**防死锁 |
-| 唯一性 | 数据库唯一约束 |
-| 跨实例定时任务互斥 | ShedLock |
-| 计数类原子更新 | 条件更新语句 `UPDATE ... WHERE ...` |
-
-### 12.4 幂等（Idempotency-Key）
-
-```sql
-CREATE TABLE idempotency_record (
-  idempotency_key VARCHAR(64)  NOT NULL,
-  principal       VARCHAR(128) NOT NULL,
-  request_hash    CHAR(64)     NOT NULL,
-  status          VARCHAR(16)  NOT NULL,         -- PROCESSING / COMPLETED
-  response_status INT          NULL,
-  response_body   JSON         NULL,
-  created_at      DATETIME(6)  NOT NULL,
-  PRIMARY KEY (principal, idempotency_key)
-);
-```
-
-```java
-@Service
-public class IdempotencyService {
-    private final IdempotencyRepository records;
-    private final ObjectMapper json;
-
-    public IdempotencyService(IdempotencyRepository records, ObjectMapper json) {
-        this.records = records;
-        this.json = json;
-    }
-
-    /** 与业务在同一事务中执行：同键同请求返回首次结果；同键不同请求返回冲突。 */
-    @Transactional
-    public <T> T execute(String key, String principal, Object request, Class<T> type, Supplier<T> action) {
-        String hash = DigestUtils.sha256Hex(json.writeValueAsBytes(request));
-        var existing = records.findForUpdate(principal, key);
-        if (existing.isPresent()) {
-            var r = existing.get();
-            if (!r.requestHash().equals(hash)) throw new BusinessException(ErrorCode.IDEMPOTENCY_CONFLICT);
-            return json.readValue(r.responseBody(), type);
+    private static String hash(CharSequence raw, String salt, int iterations) {
+        try {
+            var spec = new PBEKeySpec(raw.toString().toCharArray(),
+                    salt.getBytes(StandardCharsets.UTF_8), iterations, 256);
+            byte[] dk = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256").generateSecret(spec).getEncoded();
+            return Base64.getEncoder().encodeToString(dk);
+        } catch (GeneralSecurityException e) {
+            throw new IllegalStateException(e);
         }
-        T result = action.get();
-        records.insert(principal, key, hash, json.writeValueAsString(result));  // 主键冲突说明并发重复，整体回滚
-        return result;
+    }
+}
+
+@Bean
+PasswordEncoder passwordEncoder() {
+    return new DjangoPbkdf2PasswordEncoder(600_000);   // 与原系统迭代次数一致
+}
+```
+
+其他格式：
+
+| 原格式 | Java 编码器 | 注意 |
+| --- | --- | --- |
+| passlib / bcrypt `$2b$12$...` | `new BCryptPasswordEncoder(BCryptVersion.$2B, 12)` | 版本前缀和成本因子与原来一致，生成的哈希 Python 可直接校验 |
+| argon2 `$argon2id$...` | `Argon2PasswordEncoder`（参数与原配置一致） | 需要 BouncyCastle；先用样本验证互认 |
+| werkzeug `pbkdf2:sha256:600000$盐$十六进制哈希` | 参照上例自定义（哈希为十六进制、盐为 ASCII） | 用样本验证 |
+| werkzeug 3.x 默认 `scrypt:32768:8:1$盐$十六进制哈希` | 用 `SCryptPasswordEncoder` 的底层算法（BouncyCastle `SCrypt`）自定义编码器，参数取自哈希串 | 用样本验证 |
+| 其他自定义算法 | 按原代码逐字节实现 | 必须用原系统生成的样本做互认测试 |
+
+**互认测试**：用 Python 生成一批哈希，Java 必须全部校验通过；用 Java 生成一批哈希，Python 必须全部校验通过。
+
+### 8.6 权限：复刻原判断逻辑
+
+| 原系统写法 | Java 写法 |
+| --- | --- |
+| DRF `IsAuthenticated` | `.requestMatchers("/api/orders/**").authenticated()` |
+| DRF `AllowAny` | `.permitAll()` |
+| `request.user.is_staff` / `is_superuser` | 从原用户表读取同名字段，`@PreAuthorize("principal.staff")` 或服务层判断 |
+| `user.groups.filter(name=...)` | 从原 `auth_user_groups` / `auth_group` 表加载组，服务层判断 |
+| `user.has_perm("app.change_order")` | 从原 `auth_permission` 等表加载权限，`hasAuthority("app.change_order")` |
+| 查询中按用户/部门过滤 | 仓储查询加完全相同的条件 |
+| 自定义装饰器 | 自定义注解 + 切面，或服务层判断，逻辑逐行对照 |
+
+无权限时返回的状态码与响应体与原系统一致（DRF 未登录时可能返回 401 或 403，取决于认证类配置，以实际样本为准）。
+
+---
+
+## 9. 数据库：结构零改动
+
+### 9.1 接入现有库
+
+1. 导出当前结构作为基线文件（仅用于新建空库，如测试环境）：
+
+   ```bash
+   mysqldump --no-data --routines --triggers --skip-add-drop-table app > V1__baseline.sql
+   ```
+
+2. 对已有数据库，Flyway 只登记基线版本，**不执行任何脚本**：
+
+   ```yaml
+   spring:
+     flyway:
+       baseline-on-migrate: true
+       baseline-version: 1
+   ```
+
+3. JPA 设置 `ddl-auto: validate`，实体与表不一致时启动失败，防止映射错误；
+4. 迁移期间**冻结结构变更**。确需变更时（例如线上紧急修复），统一由一方执行，并同步修改 Python 模型与 Java 实体。
+
+### 9.2 实体映射规则
+
+| Django / SQLAlchemy | JPA |
+| --- | --- |
+| `db_table` / `__tablename__` | `@Table(name = "...")`，照抄原表名 |
+| 字段名 | `@Column(name = "...")`，照抄原列名 |
+| `AutoField` / `BigAutoField` | `@Id @GeneratedValue(strategy = IDENTITY)`，类型 `Integer` / `Long` 与原列一致 |
+| `ForeignKey` | 默认只映射外键 ID（`Long customerId`），需要关联查询时再用 `@ManyToOne(fetch = LAZY)` |
+| `ManyToManyField` | `@ManyToMany` + `@JoinTable(name = 原中间表)`，或映射中间表为实体 |
+| `DecimalField` | `BigDecimal`，精度一致 |
+| `DateTimeField` | 见 9.3 节 |
+| `BooleanField` | `boolean` / `Boolean`（MySQL `TINYINT(1)`） |
+| `JSONField` | `@JdbcTypeCode(SqlTypes.JSON)` + `Map`/record |
+| `choices` | 枚举 + `AttributeConverter`（存原值） |
+| `null=True` | 包装类型（`Integer`、`Boolean`），不要用基本类型 |
+| 模型继承（多表继承） | `@Inheritance(strategy = JOINED)`，与原表结构一致 |
+
+### 9.3 时间与时区
+
+| 原系统设置 | 数据库中的值 | Java 映射 |
+| --- | --- | --- |
+| Django `USE_TZ=True`（默认） | UTC 时间（MySQL `DATETIME` 无时区） | `Instant` + `hibernate.jdbc.time_zone: UTC` |
+| Django `USE_TZ=False` | `TIME_ZONE` 指定的本地时间 | `LocalDateTime`，不做时区转换；或 `hibernate.jdbc.time_zone` 设为该时区 |
+| SQLAlchemy naive datetime | 以原代码写入时使用的时区为准 | 同上 |
+
+**必须用真实数据验证**：同一条记录在 Python 和 Java 中读出的时间、输出的字符串完全一致。
+
+### 9.4 原生 SQL
+
+原系统用裸 SQL 的地方，用 `JdbcClient` 原样迁移，语义（排序、分组、空值处理）保持不变：
+
+```java
+List<DailyTotal> totals = jdbc.sql("""
+        SELECT DATE(created_at) AS day, COUNT(*) AS cnt, SUM(amount) AS total
+        FROM orders_order
+        WHERE created_at >= :start AND created_at < :end
+        GROUP BY DATE(created_at)
+        ORDER BY day
+        """)
+        .param("start", start)
+        .param("end", end)
+        .query(DailyTotal.class)
+        .list();
+```
+
+### 9.5 数据迁移
+
+共用原数据库，**不需要数据迁移**。如果原系统有需要转换的数据（例如 Python `pickle` 序列化存储的字段），Java 无法读取，需要：
+
+- 由 Python 一次性转换为 JSON 格式写回（这属于数据格式变更，需登记、在切换前完成并确认 Python 仍可读）；或
+- 该功能保留 Python。
+
+---
+
+## 10. 后台任务与定时任务：按原机制映射
+
+### 10.1 映射规则
+
+| 原系统 | Java 替换 | 共存期切换方式 |
+| --- | --- | --- |
+| Celery + RabbitMQ | Spring AMQP，沿用原 RabbitMQ 服务器 | 生产者和消费者**同批切换**（见 10.2） |
+| Celery + Redis broker | Spring Data Redis 队列，或 JobRunr（Redis/数据库存储） | 同上 |
+| RQ（Redis） | 同上 | 同上 |
+| Celery beat | `@Scheduled`，cron 与 `CELERY_TIMEZONE` 一致 | 先停 Python 的该项调度，再启用 Java |
+| APScheduler | `@Scheduled` | 同上 |
+| crontab 调用 `manage.py xxx` | crontab 调用 Java CLI（`java -jar app.jar --task=xxx`） | 修改 crontab 一行即可切换和回退 |
+| 请求中开线程异步处理 | `@Async`（虚拟线程执行器） | 随接口一起切换 |
+| 多实例部署且用 Redis 锁防止重复执行 | ShedLock（Redis 实现）或沿用相同的 Redis 锁键 | 锁键一致时两边可互斥 |
+
+### 10.2 Celery 任务的切换方法
+
+Celery 的消息格式是 Celery 专有协议，Java 直接消费 Celery 消息成本高、易出错。推荐**按任务类型整体切换**：
+
+1. 该任务的**生产者**（发送任务的接口）和**消费者**（worker）一起迁到 Java；
+2. Java 使用新的队列名（如 `java.order.export`），消息体为 JSON；
+3. 切换步骤：Nginx 把生产者接口切到 Java → 等待 Python 队列中该类任务处理完 → 停掉 Python worker 对该任务的监听；
+4. 回退：把接口切回 Python 即可，Java 队列中剩余消息处理完后停止 Java 消费者。
+
+Java 消费者示例：
+
+```java
+@Configuration
+class OrderExportQueueConfig {
+    @Bean
+    Queue orderExportQueue() { return QueueBuilder.durable("java.order.export").build(); }
+
+    @Bean
+    MessageConverter jsonConverter(JsonMapper mapper) { return new JacksonJsonMessageConverter(mapper); }
+}
+
+@Component
+class OrderExportWorker {
+    private final OrderExportService exports;
+
+    OrderExportWorker(OrderExportService exports) { this.exports = exports; }
+
+    /** 重试次数、失败处理与原 Celery 任务（max_retries、autoretry_for）一致 */
+    @RabbitListener(queues = "java.order.export")
+    void handle(OrderExportMessage message) {
+        exports.export(message.exportId());
     }
 }
 ```
 
-（`DigestUtils` 来自 Apache Commons Codec，也可用 `MessageDigest` 自行实现；示例按 Spring Boot 4 的 Jackson 3 编写，其异常为非受检异常，Jackson 2 需处理 `JsonProcessingException`。规范化载荷时应排除时间戳等易变字段。）
+> Spring AMQP 的 JSON 消息转换器类名随版本变化（Jackson 2 为 `Jackson2JsonMessageConverter`，Jackson 3 对应新类），以所用版本文档为准。重试策略通过 `spring.rabbitmq.listener.simple.retry.*` 配置为与原任务相同。
 
----
+原任务的结果存储（Celery result backend）如果被接口查询（例如前端轮询任务状态），Java 侧要实现同样的状态查询接口和返回结构。
 
-## 13. 异步、定时与批处理
-
-### 13.1 选型
-
-| Python 原方案 | 场景 | Java 方案 |
-| --- | --- | --- |
-| Celery 任务（导出、通知、计算） | 应用内可靠后台任务 | **JobRunr** 或 **db-scheduler**（数据库持久化、重试、集群安全、仪表盘） |
-| Celery + 跨服务消费 | 跨系统、削峰、多消费者 | **RabbitMQ**（Spring AMQP）/ **Kafka**（Spring for Apache Kafka） |
-| Django signals / 进程内回调 | 模块解耦 | **Spring Modulith 事件 + 发布登记表** |
-| Celery beat / APScheduler / cron | 周期任务 | **`@Scheduled` + ShedLock**；复杂调度用 Quartz（JDBC 存储） |
-| 数据迁移/批量脚本 | 大批量处理 | **Spring Batch** |
-| `ThreadPoolExecutor` 临时并发 | 请求内并行 IO | 虚拟线程 `Executors.newVirtualThreadPerTaskExecutor()` |
-
-**原则**：任何“丢了会出问题”的异步工作都不能只放在内存线程池中；必须持久化并可在重启后恢复。
-
-### 13.2 定时任务 + ShedLock
-
-```sql
-CREATE TABLE shedlock (
-  name       VARCHAR(64)  NOT NULL PRIMARY KEY,
-  lock_until TIMESTAMP(3) NOT NULL,
-  locked_at  TIMESTAMP(3) NOT NULL,
-  locked_by  VARCHAR(255) NOT NULL
-);
-```
+### 10.3 定时任务
 
 ```java
 @Configuration
 @EnableScheduling
-@EnableSchedulerLock(defaultLockAtMostFor = "PT10M")
-class SchedulingConfig {
-    @Bean
-    LockProvider lockProvider(DataSource dataSource) {
-        return new JdbcTemplateLockProvider(JdbcTemplateLockProvider.Configuration.builder()
-                .withJdbcTemplate(new JdbcTemplate(dataSource))
-                .usingDbTime()
-                .build());
-    }
-}
+class SchedulingConfig { }
 
 @Component
-class OrderTimeoutJob {
-    private final OrderService orders;
-    OrderTimeoutJob(OrderService orders) { this.orders = orders; }
+class DailyReportJob {
+    private final ReportService reports;
+    DailyReportJob(ReportService reports) { this.reports = reports; }
 
-    @Scheduled(cron = "0 */5 * * * *", zone = "Asia/Shanghai")
-    @SchedulerLock(name = "orderTimeoutJob", lockAtLeastFor = "PT30S", lockAtMostFor = "PT4M")
-    void closeExpiredOrders() {
-        orders.closeExpired(Instant.now());       // 方法内部分批、每批独立事务，可重复执行
+    // 原 Celery beat：crontab(hour=2, minute=0)，CELERY_TIMEZONE = "Asia/Shanghai"
+    @Scheduled(cron = "0 0 2 * * *", zone = "Asia/Shanghai")
+    void run() {
+        reports.generateDaily();
     }
 }
 ```
 
-### 13.3 持久后台任务（以 JobRunr 为例）
-
-```java
-@Service
-class ExportService {
-    private final JobScheduler jobs;
-    ExportService(JobScheduler jobs) { this.jobs = jobs; }
-
-    /** 请求线程只登记任务并返回任务 ID；任务落库，重启后继续，失败按策略重试。 */
-    @Transactional
-    public UUID requestExport(long requestId) {
-        return jobs.enqueue(() -> generateExport(requestId)).asUUID();
-    }
-
-    @Job(name = "导出订单 %0", retries = 3)
-    public void generateExport(long requestId) {
-        // 读取固定的查询条件快照 → 生成文件 → 上传对象存储 → 标记完成
-        // 必须幂等：重复执行不会产生重复副作用
-    }
-}
-```
-
-> JobRunr 开源版为 LGPL，部分高级功能需商业版；若需完全 Apache 许可证，可选 db-scheduler。选型时确认许可证合规。
-
-后台任务设计要点：
-
-1. 任务参数只放 ID 或**固定的输入快照**，不要依赖“提交时的内存状态”；
-2. 任务必须**幂等**（可安全重试）；
-3. 执行时重新校验权限和数据状态；
-4. 前端通过任务 ID 查询进度和结果。
-
-### 13.4 消息队列（需要跨系统时）
-
-- 生产者：使用 Spring Modulith 事件外部化（`@Externalized`）或事务性发件箱，保证“数据库提交”和“消息发送”一致；
-- 消费者：手动/自动确认 + 幂等处理（消息 ID 去重表）+ 死信队列；
-- 禁止在数据库事务中直接同步发送消息后再提交（提交失败会产生“幽灵消息”）。
+注意 cron 格式差异：Celery `crontab()` / Linux crontab 为 5 段，Spring 为 6 段（首位是秒）。
 
 ---
 
-## 14. 外部集成、缓存与文件
+## 11. 缓存、文件、外部调用、日志、配置
 
-### 14.1 HTTP 客户端（替代 requests / httpx）
+### 11.1 缓存
+
+| 要点 | 说明 |
+| --- | --- |
+| 只替换已有缓存 | 缓存位置、过期时间与原系统一致；原来没有缓存的地方不加 |
+| 两边缓存不能互读 | Python 缓存值多为 pickle 格式，Java 无法读取；Java 使用**不同的键前缀** |
+| 共存期的数据新鲜度 | 若 Python 缓存了某数据，而该数据改由 Java 写入，Python 会读到旧缓存。处理：该数据的读写接口同批切换；或 Java 写入后按原键删除 Python 缓存（键名规则需与原系统一致，例如 Django 默认 `:1:<key>`） |
+
+```java
+@Cacheable(cacheNames = "dict", key = "#type")    // 过期时间在 RedisCacheConfiguration 中配置为原值
+public List<DictItem> items(String type) { ... }
+```
+
+### 11.2 文件导入导出
+
+| 项 | 一致化要求 |
+| --- | --- |
+| 存储位置 | 原来存本地磁盘就存同一目录（Java 进程需有相同权限）；原来存 S3 就用同一桶 |
+| 文件名 | 命名规则、下载时 `Content-Disposition` 一致 |
+| Excel | 工作表名、表头文字、列顺序、单元格类型（文本/数字/日期）、数字格式、日期格式一致；列宽、样式按需 |
+| CSV | 编码（UTF-8 / GBK）、是否带 BOM、分隔符、引号规则、**换行符**（Python `csv` 默认 `\r\n`）一致 |
+| 导入 | 支持的格式、表头匹配规则、错误提示文本和返回结构一致 |
+| 上传限制 | 大小、类型限制一致 |
+
+```java
+// 与 Python csv.writer 默认行为一致：逗号分隔、必要时加双引号、\r\n 换行
+var format = CSVFormat.DEFAULT.builder().setRecordSeparator("\r\n").build();
+try (var printer = new CSVPrinter(new OutputStreamWriter(out, StandardCharsets.UTF_8), format)) {
+    printer.printRecord("order_no", "amount", "status");
+    for (var row : rows) printer.printRecord(row.orderNo(), row.amount(), row.status());
+}
+```
+
+用对照测试比对导出文件：CSV 逐字节比对；Excel 解析后逐单元格比对值和类型。
+
+### 11.3 外部调用
+
+超时、重试次数、重试间隔、请求头、认证方式与原代码一致：
 
 ```java
 public interface ErpClient {
     @GetExchange("/orders/{no}")
     ErpOrder getOrder(@PathVariable String no);
-
-    @PostExchange("/orders")
-    ErpOrder createOrder(@RequestBody ErpOrderRequest request);
 }
 
 @Configuration
-@EnableResilientMethods               // 启用 Spring Framework 7 的 @Retryable / @ConcurrencyLimit
+@EnableResilientMethods
 class ErpClientConfig {
     @Bean
-    ErpClient erpClient(RestClient.Builder builder, ErpProperties props) {
+    ErpClient erpClient(RestClient.Builder builder, @Value("${ERP_BASE_URL}") String baseUrl) {
         var http = java.net.http.HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(5))
-                .followRedirects(java.net.http.HttpClient.Redirect.NEVER)
+                .connectTimeout(Duration.ofSeconds(5))          // 与原 requests timeout 一致
                 .build();
         var factory = new JdkClientHttpRequestFactory(http);
         factory.setReadTimeout(Duration.ofSeconds(30));
-        var restClient = builder
-                .baseUrl(props.baseUrl())
-                .requestFactory(factory)
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + props.token())
-                .build();
-        return HttpServiceProxyFactory.builderFor(RestClientAdapter.create(restClient))
-                .build()
-                .createClient(ErpClient.class);
+        var client = builder.baseUrl(baseUrl).requestFactory(factory).build();
+        return HttpServiceProxyFactory.builderFor(RestClientAdapter.create(client))
+                .build().createClient(ErpClient.class);
     }
 }
 
@@ -1764,292 +1319,221 @@ class ErpGateway {
     private final ErpClient client;
     ErpGateway(ErpClient client) { this.client = client; }
 
-    @Retryable(includes = ResourceAccessException.class, maxRetries = 3, delay = 500, multiplier = 2)
-    public ErpOrder fetch(String no) {
-        return client.getOrder(no);
-    }
+    // 原代码：@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1))
+    @Retryable(includes = ResourceAccessException.class, maxRetries = 2, delay = 1000, multiplier = 2)
+    public ErpOrder fetch(String no) { return client.getOrder(no); }
 }
 ```
 
-集成规范：
+> 注意重试次数的计数方式：tenacity `stop_after_attempt(3)` 表示总共 3 次尝试，对应 Spring `maxRetries = 2`（首次之外再重试 2 次）。
 
-- 每个外部系统一个适配器（infrastructure 层），业务层只依赖自己定义的接口；
-- 必须设置连接/读取超时；只对**幂等**操作自动重试；
-- 下游不稳定时加 Resilience4j 熔断与舱壁；
-- 日志不记录凭据和完整报文中的敏感字段；
-- 用 WireMock 编写集成测试，覆盖超时、5xx、错误报文、分页中断。
+### 11.4 日志
 
-### 14.2 缓存
+日志格式与原系统一致，运维的日志检索、告警规则无需改动：
+
+```xml
+<!-- logback-spring.xml：模拟 Python logging 格式 "%(asctime)s %(levelname)s %(name)s %(message)s" -->
+<configuration>
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %level %logger %msg%n</pattern>
+    </encoder>
+  </appender>
+  <root level="INFO"><appender-ref ref="CONSOLE"/></root>
+</configuration>
+```
+
+原系统用 JSON 日志（structlog）的，使用 Logstash 编码器或 Boot 结构化日志，并确保字段名与原来一致。日志输出位置（标准输出/文件路径/轮转策略）保持不变。
+
+### 11.5 配置
+
+- **环境变量名保持不变**（`DATABASE_URL`、`SECRET_KEY`、`REDIS_URL` 等），运维脚本和部署配置无需修改；
+- 原来用 `DATABASE_URL` 这类组合格式的，在 Java 中解析后设置数据源：
 
 ```java
 @Configuration
-@EnableCaching
-class CacheConfig { }   // 配置 spring.cache.type=redis 或引入 Caffeine
-
-@Service
-class DictionaryService {
-    @Cacheable(cacheNames = "dict", key = "#type")
-    public List<DictItem> items(String type) { ... }
-
-    @CacheEvict(cacheNames = "dict", key = "#type")
-    public void update(String type, ...) { ... }
+class DatabaseUrlConfig {
+    /** 兼容原 DATABASE_URL=mysql://user:pass@host:3306/db 格式 */
+    @Bean
+    DataSource dataSource(@Value("${DATABASE_URL}") String url) {
+        var u = URI.create(url);
+        String[] cred = u.getUserInfo().split(":", 2);
+        var ds = new HikariDataSource();
+        ds.setJdbcUrl("jdbc:mysql://" + u.getHost() + ":" + (u.getPort() > 0 ? u.getPort() : 3306) + u.getPath());
+        ds.setUsername(URLDecoder.decode(cred[0], StandardCharsets.UTF_8));
+        ds.setPassword(cred.length > 1 ? URLDecoder.decode(cred[1], StandardCharsets.UTF_8) : "");
+        return ds;
+    }
 }
 ```
 
-规则：缓存只用于**可丢失、可重建**的数据；必须设置过期时间；业务最终状态以数据库为准。
-
-### 14.3 文件导入导出
-
-| 需求 | 做法 |
-| --- | --- |
-| 大 Excel 导出 | Apache POI `SXSSFWorkbook`（流式，内存恒定）或 FastExcel；编号/长数字列显式设为文本 |
-| Excel 导入 | 流式读取（POI 事件模式 / FastExcel），逐行校验，汇总错误后整体拒绝或按规则部分导入 |
-| CSV | Apache Commons CSV；UTF-8（Excel 打开需 BOM 时显式添加）；防公式注入（单元格以 `= + - @` 开头时转义） |
-| 大文件/耗时导出 | 后台任务生成 → 存对象存储 → 返回下载链接（预签名 URL，限时） |
-| 上传 | 限制大小与类型（校验内容而非仅扩展名）；存对象存储，不存数据库/本地磁盘 |
-| 下载 | 下载时重新校验权限 |
+- 业务配置用 `@ConfigurationProperties` 绑定，默认值与原系统一致；
+- 原系统读不到配置时用默认值的行为，按原样保持（不改为启动失败，避免切换时因配置缺失而无法启动）；此类隐患登记为差异。
 
 ---
 
-## 15. 可观测性
+## 12. 测试：逐接口对照验收
 
-| 维度 | 实现 | 要点 |
+### 12.1 测试组成
+
+| 类型 | 工具 | 用途 |
 | --- | --- | --- |
-| 健康 | Actuator `/actuator/health/liveness`、`/readiness` | readiness 包含数据库、Redis 等关键依赖 |
-| 指标 | Micrometer + Prometheus（`/actuator/prometheus`）+ Grafana | JVM、HTTP、连接池、缓存、任务指标；业务指标（如下单数）用 `Counter`/`Timer` |
-| 链路追踪 | Micrometer Tracing + OpenTelemetry（OTLP 导出），或 OpenTelemetry Java Agent | traceId 贯穿日志、响应和下游调用 |
-| 日志 | Boot 结构化日志（ECS / Logstash JSON） | 包含 traceId、spanId；禁止记录密码、令牌、身份证号等 |
-| 审计 | 独立审计表或审计事件：谁、何时、对什么、做了什么、结果 | 与业务同事务写入；敏感字段脱敏 |
-| 告警 | Prometheus Alertmanager / 平台告警 | 错误率、P95 延迟、可用性、任务积压、连接池耗尽 |
+| **新旧对照测试（核心）** | 录制回放 / 复用原 pytest 接口测试 | 证明行为一致 |
+| 单元测试 | JUnit 5 + AssertJ | 计算、规则、格式化函数（如第 7 节各项） |
+| 集成测试 | Testcontainers（与生产相同的数据库版本） | 实体映射、SQL、事务 |
+| 互认测试 | Python 与 Java 交叉验证 | 密码哈希、JWT、缓存键、文件格式 |
+| 架构测试 | ArchUnit | 分层约束 |
 
-业务指标示例：
+### 12.2 方法一：复用原 pytest 接口测试（推荐优先）
+
+如果原系统有基于 HTTP 的接口测试（如 DRF `APIClient`、FastAPI `TestClient`），把它们改造为**对任意地址发请求的黑盒测试**，分别对 Python 和 Java 运行：
+
+```python
+# conftest.py：通过环境变量切换被测系统
+import os, requests, pytest
+
+BASE_URL = os.environ.get("TARGET_BASE_URL", "http://127.0.0.1:8000")
+
+@pytest.fixture
+def api():
+    session = requests.Session()
+    session.base_url = BASE_URL
+    return session
+```
+
+```bash
+TARGET_BASE_URL=http://127.0.0.1:8000 pytest tests/api   # 对 Python 运行
+TARGET_BASE_URL=http://127.0.0.1:8080 pytest tests/api   # 对 Java 运行，结果必须相同
+```
+
+这样原有测试资产直接成为验收标准。测试本身属于测试工具，Python 下线后可以保留在测试仓库中运行。
+
+### 12.3 方法二：录制回放比对
+
+1. 在测试环境准备一份固定数据（数据库快照）；
+2. 对 Python 执行一组请求（覆盖成功、各类失败、边界值），录制请求、响应、执行后的数据库变化；
+3. 将数据库恢复到同一快照，对 Java 重放同一组请求；
+4. 比对响应（状态码、响应头、响应体）和数据库变化。
 
 ```java
-@Component
-class OrderMetrics {
-    private final Counter created;
-    OrderMetrics(MeterRegistry registry) {
-        this.created = Counter.builder("orders.created").description("已创建订单数").register(registry);
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Import(TestcontainersConfiguration.class)
+class OrderParityTest {
+    @LocalServerPort int port;
+
+    @ParameterizedTest
+    @MethodSource("recordedCases")                 // 从 src/test/resources/parity/orders/*.json 读取录制样本
+    void sameAsPython(RecordedCase c) throws Exception {
+        var response = RestClient.create("http://localhost:" + port)
+                .method(HttpMethod.valueOf(c.method()))
+                .uri(c.path())
+                .headers(h -> c.headers().forEach(h::add))
+                .body(c.requestBody() == null ? "" : c.requestBody())
+                .exchange((req, res) -> new Recorded(res.getStatusCode().value(), res.bodyTo(String.class)));
+
+        assertThat(response.status()).isEqualTo(c.expectedStatus());
+        // 严格比较 JSON（字段、类型、值、数组顺序），只忽略事先列明的易变字段
+        JSONAssert.assertEquals(c.expectedBody(), response.body(),
+                new CustomComparator(JSONCompareMode.STRICT, c.ignoredPaths()));
     }
-    void onCreated() { created.increment(); }
 }
 ```
 
-建议定义 SLO（如：99.9% 可用、P95 < 300ms），迁移前后用同一套指标对比。
+（`JSONAssert` 来自 `org.skyscreamer:jsonassert`，Spring Boot 测试依赖已包含。）
 
----
+**比对规则**：
 
-## 16. 测试体系与新旧对照
+- 只允许忽略事先列明的字段（自增 ID、当前时间、随机令牌），并记录忽略原因；
+- 数组顺序必须一致（原系统顺序不确定的，先在 Python 侧确认是否依赖顺序）；
+- 数据库比对：受影响表的行数和每行字段值。
 
-### 16.1 测试金字塔
-
-| 层次 | 工具 | 覆盖内容 | 运行时机 |
-| --- | --- | --- | --- |
-| 单元 | JUnit 5、AssertJ、Mockito | 领域规则、计算、状态机、工具类 | 每次提交 |
-| 模块结构 | Spring Modulith `verify()`、ArchUnit | 模块边界、分层依赖、命名规范 | 每次提交 |
-| 切片 | `@WebMvcTest` + `MockMvcTester`、`@DataJpaTest` | 控制器协议/校验/权限、仓储查询 | 每次提交 |
-| 集成 | `@SpringBootTest` + Testcontainers | 事务、并发、锁、唯一约束、Flyway、Redis、消息 | 每次提交（CI） |
-| 外部契约 | WireMock；Pact / Spring Cloud Contract | 外部系统交互、对外接口兼容 | 每次提交 |
-| 对照 | 旧系统录制结果 / 影子流量比对 | 新旧行为一致性 | 每个模块切换前 |
-| 端到端 | Playwright | 关键业务流程 | 每日 / 发布前 |
-| 性能 | Gatling / k6 | 容量、延迟、资源 | 发布前、重大变更后 |
-| 安全 | OWASP ZAP、依赖扫描 | 常见漏洞、已知 CVE | 每日 / 发布前 |
-
-### 16.2 测试代码模板
-
-模块结构测试：
-
-```java
-class ModularityTest {
-    static final ApplicationModules modules = ApplicationModules.of(Application.class);
-
-    @Test
-    void verifiesModularStructure() {
-        modules.verify();                         // 无循环、未访问其他模块内部类型
-    }
-
-    @Test
-    void writesDocumentation() {
-        new Documenter(modules).writeDocumentation();   // 生成模块关系图（PlantUML/C4）
-    }
-}
-```
-
-分层规则（ArchUnit）：
-
-```java
-@AnalyzeClasses(packages = "com.company.app")
-class ArchitectureTest {
-    @ArchTest
-    static final ArchRule controllersDoNotUseRepositories = noClasses()
-            .that().resideInAPackage("..web..")
-            .should().dependOnClassesThat().haveSimpleNameEndingWith("Repository");
-
-    @ArchTest
-    static final ArchRule domainDoesNotDependOnWeb = noClasses()
-            .that().resideInAPackage("..domain..")
-            .should().dependOnClassesThat().resideInAnyPackage("..web..", "org.springframework.web..");
-
-    @ArchTest
-    static final ArchRule noFieldInjection = noFields()
-            .should().beAnnotatedWith(org.springframework.beans.factory.annotation.Autowired.class);
-}
-```
-
-Testcontainers 共享配置：
+### 12.4 Testcontainers 配置
 
 ```java
 @TestConfiguration(proxyBeanMethods = false)
 public class TestcontainersConfiguration {
     @Bean
     @ServiceConnection
-    MySQLContainer mysql() {                       // Testcontainers 2.x：org.testcontainers.mysql.MySQLContainer
-        return new MySQLContainer("mysql:8.4");
-    }
-
-    @Bean
-    @ServiceConnection(name = "redis")
-    GenericContainer<?> redis() {
-        return new GenericContainer<>("redis:8").withExposedPorts(6379);
+    MySQLContainer mysql() {                                  // Testcontainers 2.x：org.testcontainers.mysql.MySQLContainer
+        return new MySQLContainer("mysql:8.0.36")             // 与生产相同的版本
+                .withCopyFileToContainer(MountableFile.forClasspathResource("db/migration/V1__baseline.sql"),
+                        "/docker-entrypoint-initdb.d/01-schema.sql");
     }
 }
 ```
 
-集成测试（含并发）：
+### 12.5 每批接口的验收标准
 
-```java
-@SpringBootTest
-@Import(TestcontainersConfiguration.class)
-class OrderServiceIT {
-    @Autowired OrderService service;
+- 对照测试 100% 通过（或差异已登记并获确认）；
+- 互认测试通过（涉及认证、缓存、文件的批次）；
+- 性能不低于原接口（同环境、同数据量对比平均和 P95 响应时间）；
+- 预发布环境用真实流量副本验证一段时间（可用 Nginx `mirror` 指令把只读请求复制到 Java，只比对不返回）。
 
-    @Test
-    void duplicateOrderNoIsRejectedUnderConcurrency() throws Exception {
-        try (var pool = Executors.newVirtualThreadPerTaskExecutor()) {
-            var tasks = IntStream.range(0, 10)
-                    .mapToObj(i -> (Callable<Boolean>) () -> {
-                        try {
-                            runAs("order:create", () -> service.create("NO-1", 1L, new BigDecimal("10.00")));
-                            return true;
-                        } catch (BusinessException e) {
-                            return false;
-                        }
-                    }).toList();
-            long success = pool.invokeAll(tasks).stream().filter(f -> get(f)).count();
-            assertThat(success).isEqualTo(1);       // 并发只成功一次
-        }
-    }
-    // runAs / get 为测试辅助方法：在新线程中设置 SecurityContext、包装受检异常
+```nginx
+location /api/customers/ {
+    mirror /mirror_customers;          # 复制请求到 Java，只用于比对，Java 的响应被丢弃
+    proxy_pass http://python_app;
+}
+location = /mirror_customers {
+    internal;
+    proxy_pass http://java_app$request_uri;
 }
 ```
 
-控制器切片测试：
-
-```java
-@WebMvcTest(OrderController.class)
-class OrderControllerTest {
-    @Autowired MockMvcTester mvc;
-    @MockitoBean OrderService service;
-    @MockitoBean OrderWebMapper mapper;
-
-    @Test
-    @WithMockUser
-    void rejectsInvalidRequest() {
-        assertThat(mvc.post().uri("/api/v1/orders").with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"orderNo\":\"\"}"))
-                .hasStatus(HttpStatus.BAD_REQUEST);
-    }
-}
-```
-
-### 16.3 迁移 pytest 用例
-
-1. 列出全部 pytest 用例，提取“前置数据 → 操作 → 期望结果”为场景表；
-2. 每个场景在 Java 中重写（单元或集成），场景表标注对应的 Java 测试；
-3. 旧断言与已登记的 GAP 冲突时，以 GAP 决定为准并注明；
-4. 旧测试中依赖 SQLite/内存库的，改为 Testcontainers 真实数据库。
-
-### 16.4 新旧对照测试（迁移成败的关键）
-
-| 方法 | 说明 | 适用 |
-| --- | --- | --- |
-| **黄金样本（录制回放）** | 在旧系统上执行场景，录制请求与响应（含数据库状态快照）存为文件；Java 测试回放并比较 | 所有模块，首选 |
-| **影子流量** | 网关将生产请求复制一份发给 Java（只读或写入影子库），异步比较响应差异 | 只读接口、高价值模块 |
-| **数据对账** | 同一批操作分别在两套系统执行后，比较数据库结果 | 写操作 |
-| **报表/文件比对** | 解析导出文件逐行逐列比较 | 导出、打印、报表 |
-
-比较时需要忽略的字段（时间戳、自增 ID、traceId）要显式列出；差异按“新系统缺陷 / 旧系统缺陷 / 有意变更”归类并处理。JSON 比较可用 JSONAssert 或 AssertJ 的递归比较。
+> 镜像流量只能用于**只读接口**，写接口镜像会导致重复写入。
 
 ---
 
-## 17. 构建、质量门禁与 CI/CD
+## 13. 构建与部署：沿用原方式
 
-### 17.1 质量插件
+### 13.1 构建
 
-| 工具 | 作用 | 门禁 |
-| --- | --- | --- |
-| Spotless（google-java-format 或 palantir-java-format） | 统一格式 | `spotless:check` 失败即构建失败 |
-| Checkstyle | 编码规范 | 无违规 |
-| SpotBugs / Error Prone | 静态缺陷检测 | 无高优先级问题 |
-| JaCoCo | 覆盖率 | 例如行覆盖 ≥ 70%（领域层更高） |
-| OWASP Dependency-Check 或 Trivy / Grype | 依赖漏洞 | 无高危 CVE |
-| SonarQube | 综合质量 | 质量门通过 |
-| Maven Enforcer | 锁定 JDK/Maven 版本、禁止问题依赖 | 无违规 |
-| Renovate / Dependabot | 自动升级依赖 | 定期合并 |
-
-### 17.2 CI 流水线（GitHub Actions 示例）
-
-```yaml
-name: ci
-on: [push, pull_request]
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-          cache: maven
-      - name: Build, test, quality gates
-        run: ./mvnw -B verify          # 包含格式检查、单元/集成测试（Testcontainers）、覆盖率、静态分析
-      - name: Dependency scan
-        run: ./mvnw -B org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=7
-      - name: Build image
-        if: github.ref == 'refs/heads/main'
-        run: docker build -t registry.company.com/app:${{ github.sha }} .
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: test-reports
-          path: target/*-reports/
+```bash
+./mvnw -B verify          # 编译、单元测试、集成测试、对照测试
+# 产物：target/app.jar
 ```
 
-CD 建议：主干合并后自动部署测试环境 → 自动化测试 → 人工审批 → 预发布 → 生产（滚动或蓝绿发布）；镜像只构建一次，在各环境间晋级。
+原系统有 CI 的，在原 CI 中把 Python 步骤替换为上面的命令，CI 平台不变。
 
-### 17.3 分支与评审
+### 13.2 部署方式对照
 
-- 主干开发 + 短生命周期特性分支；
-- 合并前：CI 全绿 + 至少一名评审；涉及事务、并发、安全、数据迁移的变更需资深评审；
-- 每个架构决策写 ADR（架构决策记录），存放于 `docs/adr/`。
+| 原部署方式 | Java 部署 |
+| --- | --- |
+| systemd + gunicorn | systemd，`ExecStart=/usr/bin/java -jar /opt/app/app.jar`；端口、用户、工作目录不变 |
+| supervisor + gunicorn | supervisor，`command=java -jar /opt/app/app.jar` |
+| Docker（python 镜像） | Docker（Temurin JRE 镜像），端口、环境变量、挂载目录不变 |
+| docker-compose | 只替换该服务的镜像和启动命令 |
+| Kubernetes | 只替换镜像，探针路径改为原健康检查路径 |
 
----
+systemd 示例：
 
-## 18. 部署与运行
+```ini
+[Unit]
+Description=app (Java)
+After=network.target
 
-### 18.1 Dockerfile（分层 + 非 root）
+[Service]
+User=app
+WorkingDirectory=/opt/app
+EnvironmentFile=/opt/app/.env          # 沿用原环境变量文件
+ExecStart=/usr/bin/java -XX:MaxRAMPercentage=75 -jar /opt/app/app.jar
+SuccessExitStatus=143
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Dockerfile 示例：
 
 ```dockerfile
-# 构建阶段（测试已在 CI 中执行）
-FROM eclipse-temurin:21-jdk AS build
+FROM eclipse-temurin:25-jdk AS build
 WORKDIR /src
 COPY . .
 RUN ./mvnw -B -DskipTests package \
  && java -Djarmode=tools -jar target/app.jar extract --layers --launcher --destination /extracted
 
-# 运行阶段
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:25-jre
 RUN groupadd --system app && useradd --system --gid app --uid 10001 app
 WORKDIR /app
 COPY --from=build /extracted/dependencies/ ./
@@ -2058,219 +1542,204 @@ COPY --from=build /extracted/snapshot-dependencies/ ./
 COPY --from=build /extracted/application/ ./
 USER 10001
 EXPOSE 8080
-ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-XX:+ExitOnOutOfMemoryError", \
-            "org.springframework.boot.loader.launch.JarLauncher"]
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "org.springframework.boot.loader.launch.JarLauncher"]
 ```
 
-也可使用 `./mvnw spring-boot:build-image`（Cloud Native Buildpacks）或 Jib 构建，无需 Dockerfile。生产镜像固定基础镜像摘要并定期扫描。
+### 13.3 健康检查
 
-### 18.2 Kubernetes 要点
+原系统有健康检查路径（如 `/health` 返回 `{"status":"ok"}`）的，Java 提供相同路径和响应，负载均衡和监控配置无需修改：
 
-```yaml
-# Deployment 片段
-containers:
-  - name: app
-    image: registry.company.com/app:1.0.0
-    ports: [{ containerPort: 8080 }]
-    env:
-      - { name: SPRING_PROFILES_ACTIVE, value: prod }
-    envFrom:
-      - secretRef: { name: app-secrets }        # 数据库、Redis、OIDC 等秘密
-    resources:
-      requests: { cpu: 500m, memory: 1Gi }
-      limits:   { memory: 1Gi }
-    readinessProbe:
-      httpGet: { path: /actuator/health/readiness, port: 8080 }
-      periodSeconds: 10
-    livenessProbe:
-      httpGet: { path: /actuator/health/liveness, port: 8080 }
-      initialDelaySeconds: 60
-      periodSeconds: 20
-    lifecycle:
-      preStop:
-        exec: { command: ['sh', '-c', 'sleep 10'] }   # 等待流量摘除后再优雅停机
-securityContext:
-  runAsNonRoot: true
-  readOnlyRootFilesystem: true
+```java
+@RestController
+class HealthController {
+    private final JdbcClient jdbc;
+    HealthController(JdbcClient jdbc) { this.jdbc = jdbc; }
+
+    @GetMapping("/health")
+    Map<String, String> health() {
+        jdbc.sql("SELECT 1").query(Integer.class).single();   // 与原检查内容一致
+        return Map.of("status", "ok");
+    }
+}
 ```
 
-- 数据库迁移：作为独立 Job（或 initContainer）在部署前执行 Flyway，应用启动时 `spring.flyway.enabled=false`；也可让单副本应用启动时自动迁移（小规模）。
-- 秘密：Kubernetes Secret + 外部秘密管理（Vault / 云 KMS），不进镜像和仓库。
-- 至少 2 个副本，配置 PodDisruptionBudget 与 HPA。
+### 13.4 资源规划
 
-### 18.3 无 Kubernetes 时
-
-使用 Docker Compose 或虚拟机 + systemd 运行可执行 JAR，Nginx 反向代理；同样遵守健康检查、优雅停机、秘密外置、日志集中收集的要求。
+Java 进程内存占用模型与 Python 不同（JVM 堆 + 元空间 + 线程栈），通常单进程即可替代多个 gunicorn worker。按压测结果确定内存上限，`-XX:MaxRAMPercentage` 控制堆占比。
 
 ---
 
-## 19. 前端处理
+## 14. 切换、回退与下线
 
-| 现状 | 推荐 |
-| --- | --- |
-| 已有独立 SPA（Vue / React / Angular） | **前端不动，先迁后端**；保持 API 兼容。前端升级/重写另立项目 |
-| Django / Jinja2 服务端渲染页面，页面少 | 迁移到 **Thymeleaf**（模板语法相近，成本最低） |
-| 服务端渲染页面多、需要现代化 | 新建 **React + TypeScript + Vite** SPA（UI 组件库按团队习惯选 Ant Design / MUI 等），按模块逐页替换 |
-| Django Admin 重度使用 | 单独评估：自建管理界面或采用低代码后台工具 |
+### 14.1 每批接口的切换步骤
 
-新建 SPA 的约定：
+| 步骤 | 操作 | 回退方式 |
+| --- | --- | --- |
+| 1 | 对照测试全部通过 | — |
+| 2 | 部署 Java 新版本（不接流量） | — |
+| 3 | 只读接口可先镜像流量比对（第 12.5 节） | 删除镜像配置 |
+| 4 | 修改 Nginx 路由，`nginx -s reload` | 改回路由并 reload |
+| 5 | 观察错误率、响应时间、业务数据 | 发现问题立即执行回退 |
+| 6 | 观察期结束（建议至少一个完整业务周期） | — |
 
-- 服务端数据用 TanStack Query 管理，令牌不存 localStorage（采用 BFF + HttpOnly Cookie）；
-- 由后端 OpenAPI 生成 TypeScript 类型；
-- ID、大数、金额以字符串处理；
-- 多语言 i18next；单元测试 Vitest，端到端 Playwright。
+由于数据库结构、数据格式、会话、密码哈希都与 Python 兼容，**任何一批在任何时候都可以通过改回路由回退**。这是本方案最重要的保障，任何破坏兼容的改动都必须拒绝。
 
----
+### 14.2 后台任务的切换
 
-## 20. 切换、回退与下线
+按第 10 节：生产者与消费者同批切换，先停 Python 侧再启 Java 侧，确认队列排空。
 
-### 20.1 单个模块切换检查清单
+### 14.3 一次性整体切换（仅限小系统）
 
-- [ ] 功能矩阵中该模块所有功能为“已验证”
-- [ ] 对照测试通过，差异已归类处理
-- [ ] 性能测试达到旧系统同等或更好水平
-- [ ] 监控面板、告警已配置
-- [ ] 相关后台/定时任务已规划切换顺序（先停 Python，再启 Java）
-- [ ] 回退步骤已演练（路由切回 Python 即可回退的前提：共享数据库且结构兼容）
-- [ ] 通知相关业务方与外部调用方
+1. 所有接口和任务在测试环境全部通过对照测试；
+2. 选定停机窗口，停止 Python 服务；
+3. 启动 Java，修改 Nginx 全部指向 Java；
+4. 冒烟测试；
+5. 失败时停止 Java、恢复 Python（数据库未改动，可直接恢复）。
 
-### 20.2 全量切换（一次切换策略或最终切换）
+### 14.4 下线 Python
 
-```mermaid
-flowchart LR
-    A[公告与冻结变更] --> B[停止旧系统写入]
-    B --> C[最终数据同步/迁移]
-    C --> D[数据核对]
-    D --> E[切换路由/DNS]
-    E --> F[冒烟测试]
-    F --> G{正常?}
-    G -->|是| H[观察期]
-    G -->|否| R[执行回退]
-```
-
-- 每一步有负责人、预计时长、检查标准和“回退触发条件”；
-- **任何时刻只有一个系统写生产数据**；
-- 回退预案需在预发布环境完整演练；
-- 观察期（建议至少 2 周或一个完整业务周期）内保留回退能力。
-
-### 20.3 下线旧系统
-
-1. 观察期结束且无回退需求；
-2. 删除路由中的 Python 上游，停止服务；
-3. 旧代码仓库设为只读归档，旧文档归档；
-4. 回收服务器、域名、凭据（旧密钥全部轮换或吊销）；
-5. 旧数据库按数据保留策略归档或删除；
-6. 输出迁移总结：范围、差异处理结果、遗留事项、经验教训。
+1. 全部接口和任务切换完成，并度过观察期；
+2. 删除 Nginx 中的 Python 上游和共存期专用配置（`auth_request`、镜像）；
+3. 删除 Python 侧共存期专用接口（如 `/internal/whoami`）；
+4. 停止 Python 服务，归档代码仓库；
+5. 保留 Python 的部分（如 Django Admin、ML 服务）继续运行，接口不变；
+6. 输出迁移总结：替换清单、差异清单、遗留事项。
 
 ---
 
-## 21. 常见陷阱
+## 15. 差异清单：发现但不在本次修复的问题
+
+迁移过程中一定会发现旧系统的问题。按“等价替换”原则，默认**原样保持**，统一登记在这里，迁移完成后作为独立事项处理。
+
+### 15.1 登记表
+
+| 编号 | 位置 | 旧行为 | 问题 | 本次处理 | 后续建议 | 确认人 |
+| --- | --- | --- | --- | --- | --- | --- |
+| D-001 | `orders/views.py:42` | 先查询后插入判断订单号重复 | 并发下可能重复 | 保持（Java 同样先查后插） | 加唯一约束 | |
+| D-002 | `reports/tasks.py:18` | 多条 SQL 无事务 | 中途失败留下部分数据 | 经确认加事务（数据安全修复） | — | 业务负责人 |
+| D-003 | 订单列表 | 无 ORDER BY，顺序随机 | 分页可能重复/遗漏 | 保持 | 增加排序 | |
+
+### 15.2 本次允许修复的范围
+
+只有以下两类问题可以在迁移中修复，且必须经业务负责人确认并在对照测试中标注为“有意差异”：
+
+1. **安全漏洞**：SQL 注入、越权访问、敏感信息泄露、明文密码等；
+2. **数据损坏**：会导致数据不一致或丢失的问题（如无事务的多步写入）。
+
+其他一律原样保持，包括：性能问题、代码质量问题、不合理的接口设计、前端精度问题、缺少的功能。
+
+### 15.3 迁移后的常见改进方向
+
+以下改进在迁移完成、Python 下线后再单独立项，见附录 A：接口规范化（统一错误格式、版本化）、ID 字符串化、密码哈希升级、统一认证（OIDC）、可观测性、唯一约束与并发控制、自动化质量门禁等。
+
+---
+
+## 16. 常见陷阱
 
 | 陷阱 | 后果 | 预防 |
 | --- | --- | --- |
-| 逐行翻译 Python 代码 | 得到“用 Java 写的 Python”，难维护 | 按目标分层重写，保留业务意图 |
-| 迁移的同时拆微服务 | 风险叠加 | 先模块化单体，后按需拆分 |
-| 没有对照测试就切换 | 隐性逻辑丢失 | 黄金样本 + 数据对账 |
-| 忽略数值/时间语义差异 | 金额、取整、时区错误 | 第 7.3 节专项测试 |
-| 前端用 Number 处理大 ID | 精度丢失 | API 输出字符串 |
-| 先查后插判重 | 并发重复 | 唯一约束 |
-| 后台任务放内存线程池 | 重启丢任务 | JobRunr / db-scheduler / 消息队列 |
-| 在事务中调用外部系统 | 长事务、不一致 | 先调外部或用发件箱 |
-| `open-in-view` 开启 + 懒加载 | N+1 查询、隐式数据库访问 | 关闭并显式抓取（`@EntityGraph` / join fetch） |
-| JPA `ddl-auto=update` | 生产结构失控 | 只用 Flyway，`validate` |
-| `@Transactional` 同类调用 | 事务不生效 | 拆分 Bean |
-| 权限只在前端或控制器 | 越权 | 服务层 `@PreAuthorize` + 对象级校验 |
-| 秘密写在配置文件 | 泄露 | 环境变量 / 秘密管理系统 |
-| 用 H2 跑集成测试 | 线上行为不同 | Testcontainers |
-| 一次性大爆炸切换且无回退 | 事故不可逆 | 渐进替换；回退演练 |
-| 两边同时执行同一定时任务 | 重复处理 | 切换顺序 + ShedLock |
+| 顺手“优化”接口格式 | 前端或外部调用方出错 | 对照测试零差异；改进进差异清单 |
+| 顺手修复旧缺陷 | 行为变化，回退后数据不兼容 | 按第 15 节处理 |
+| 忽略 Django `Meta.ordering` | 列表顺序不同 | 显式 ORDER BY |
+| 枚举按名称或序号存储 | 写入值与 Python 不兼容 | `AttributeConverter` 存原值 |
+| 时区处理不同 | 时间偏移 8 小时等 | 9.3 节逐项确认 |
+| 时间精度不同 | 输出的小数位不同 | 截断到微秒；按原格式输出 |
+| Decimal 输出为数字 | 原接口是字符串，客户端解析失败 | DTO 用 `String` |
+| 末尾斜杠 | 404 或重定向行为不同 | 精确映射 + 重定向过滤器 |
+| 使用新的密码哈希格式 | 回退后用户无法登录 | 与原格式一致，互认测试 |
+| Java 写入后 Python 缓存未失效 | Python 返回旧数据 | 同批切换或按原键删除 |
+| Celery 任务只迁一半 | 任务丢失或重复 | 生产者消费者同批切换 |
+| 定时任务两边同时运行 | 重复执行 | 先停 Python 再启 Java |
+| cron 表达式段数不同 | 执行时间错误 | Spring 为 6 段（含秒） |
+| 重试次数计数方式不同 | 多重试或少重试一次 | 对照原库的语义换算 |
+| 修改环境变量名 | 部署失败 | 沿用原变量名 |
+| 日志格式改变 | 运维检索和告警失效 | 沿用原格式 |
+| Hibernate `ddl-auto=update` | 自动修改生产表结构 | 只用 `validate` |
+| 引入原系统没有的中间件 | 运维负担和风险增加 | 按第 4 节“原来没有就不引入” |
 
 ---
 
-## 22. 按规模裁剪
+## 附录 A：可选增强（不在本次范围）
 
-| 项目规模 | 建议裁剪 |
-| --- | --- |
-| **小型**（< 30 接口，1–3 人） | 一次切换即可；单 Maven 模块 + 按包分模块（可不引入 Spring Modulith，用 ArchUnit 守边界）；`@Scheduled` + ShedLock 代替 JobRunr；自建登录 + Spring Session；Docker Compose 部署；对照测试只做黄金样本 |
-| **中型**（30–200 接口，3–15 人） | 本文默认方案全部适用 |
-| **大型**（> 200 接口，> 15 人，多团队） | Maven 多模块编译期隔离；独立平台团队维护共享内核与 CI 模板；必须有 OIDC 身份服务、消息队列、K8s；影子流量对照；按模块组建迁移小组并行推进；架构委员会评审 ADR |
+以下内容**不属于等价替换**，迁移完成并稳定运行后，按需单独立项：
+
+| 增强项 | 内容 | 价值 |
+| --- | --- | --- |
+| 接口规范化 | 统一 camelCase、RFC 9457 错误格式、`/api/v2` 版本化、ID 与大数字符串化 | 规范统一、前端精度安全 |
+| 统一身份认证 | OIDC 身份服务（Keycloak 等）+ BFF | 单点登录、令牌不进浏览器 |
+| 密码哈希升级 | `DelegatingPasswordEncoder`，登录时自动升级为 bcrypt/argon2 | 安全性提升 |
+| 权限模型 | 权限码 RBAC、数据范围、多租户 | 精细化授权 |
+| 并发与一致性 | 唯一约束、乐观锁版本列、幂等键 | 消除并发缺陷 |
+| 模块化架构 | Spring Modulith 模块边界校验与事件 | 长期可维护性 |
+| 可靠后台任务 | JobRunr / db-scheduler、事务性发件箱 | 任务可恢复、可观测 |
+| 可观测性 | Micrometer + Prometheus + OpenTelemetry + 结构化日志 + 告警 | 故障定位、容量规划 |
+| 质量门禁 | SpotBugs、SonarQube、依赖漏洞扫描、覆盖率门槛、自动依赖升级 | 持续保障质量 |
+| 容器编排 | Kubernetes / Helm、自动扩缩容 | 弹性与高可用 |
+| 对象存储 | S3 / MinIO 替代本地文件 | 多实例共享、容量扩展 |
+| 前端现代化 | React + TypeScript 重写 | 用户体验与可维护性 |
 
 ---
 
-## 23. 附录：模板与检查清单
+## 附录 B：模板与检查清单
 
-### 附录 A：模块迁移工作包模板
-
-```markdown
-# 工作包：<模块名> 迁移
-
-- 功能范围：F-xxx ～ F-yyy
-- 依赖模块：<已迁移/未迁移>
-- 输入契约：<旧接口清单、OpenAPI、数据表>
-- 差异处理：GAP-xxx（决定）
-- 数据影响：<新增/修改表、Flyway 版本>
-- 后台/定时任务：<清单与切换顺序>
-- 验证：单元 / 集成 / 对照 / 性能 / 安全
-- 退出条件：附录 C 全部满足
-- 未决问题：<问题、负责人、期限>
-```
-
-### 附录 B：阶段验收记录模板
+### B.1 每批接口工作包模板
 
 ```markdown
-# <阶段/模块> 验收记录 YYYY-MM-DD
+# 工作包：第 N 批接口替换
 
-- 受检版本：<commit / 镜像标签>
-- 环境：<环境名、JDK、数据库版本>
-- 执行与结果：
-  - ./mvnw verify：单元 N、集成 M、失败 0、跳过 0
-  - 对照测试：场景 K 个，一致 K1，差异 K2（已归类）
-  - 性能：P95 = xx ms，吞吐 = xx req/s（旧系统基线 yy）
-- 未验证项及原因：
-- 遗留问题与负责人：
-- 结论：通过 / 有条件通过 / 不通过
+- 接口清单：GET /api/customers/、POST /api/customers/、……
+- 依赖：数据表、缓存、外部系统、后台任务
+- 行为一致性要点：排序 / 时间格式 / Decimal / 错误格式 / 权限
+- 对照测试：用例数 X，覆盖成功与各类失败
+- 互认测试：（如涉及）密码 / JWT / 缓存 / 文件
+- 差异登记：D-xxx
+- 切换计划：路由变更内容、观察期、回退方式
+- 负责人：
 ```
 
-### 附录 C：模块完成定义（Definition of Done）
+### B.2 对照验收记录模板
 
-- [ ] 功能矩阵中全部功能实现并通过测试
-- [ ] 业务规则在领域层实现，有单元测试
-- [ ] 事务、并发、唯一性有集成测试（Testcontainers）
-- [ ] 每个权限至少一个越权负例测试
-- [ ] 对照测试通过，差异已归类并获确认
-- [ ] OpenAPI 文档准确；契约变更已通知调用方
-- [ ] 错误码与多语言文案齐全
-- [ ] 日志、指标、链路追踪可见，告警已配置
-- [ ] Flyway 脚本经评审，可在空库与现有库上执行
-- [ ] 代码评审通过，CI 全部门禁通过
-- [ ] 运维文档（配置项、任务、故障处理）已更新
-- [ ] 旧 Python 对应代码已标记为待下线
+```markdown
+# 第 N 批接口对照验收记录 YYYY-MM-DD
 
-### 附录 D：总体检查清单
+- Java 版本：<commit / 镜像标签>；Python 版本：<commit>
+- 环境与数据快照：<说明>
+- 对照测试：用例 X 个，一致 X1 个，差异 X2 个（全部已登记：D-xxx）
+- 忽略字段及原因：<列表>
+- 互认测试：通过 / 不涉及
+- 性能：Python 平均 / P95 = a / b ms；Java = c / d ms
+- 镜像流量比对（只读接口）：<时长、请求数、差异数>
+- 结论：可切换 / 不可切换（原因）
+```
 
-**规划**
-- [ ] 资产盘点完成（第 5.1 节 14 项）
-- [ ] 功能矩阵、差异清单、风险登记建立
-- [ ] 迁移策略（渐进/一次）与数据库策略（共享/新库）已决策并记录 ADR
-- [ ] “保留 Python”的部分已明确接口
+### B.3 总体检查清单
 
-**平台**
-- [ ] 工程骨架、版本锁定、CI/CD、质量门禁
-- [ ] Flyway 基线（共享库）或 V1（新库）
-- [ ] 认证（OIDC/BFF 或会话）与授权模型
-- [ ] 统一错误（ProblemDetail）、日志、指标、追踪
-- [ ] 后台任务、定时任务、事件、缓存基础设施
-- [ ] Testcontainers 测试基础、对照测试框架
-- [ ] 路由层支持按路径/比例切流
+**盘点**
+- [ ] 第 3.1 节盘点表全部完成
+- [ ] 依赖替换表每一项都有结论
+- [ ] 接口清单含真实请求/响应样本
+- [ ] 确定保留 Python 的部分（Django Admin、ML 等）
 
-**迁移**
-- [ ] 样板模块通过评审并形成模板
-- [ ] 各模块按依赖顺序迁移，满足 DoD
-- [ ] 旧密码哈希兼容与自动升级
-- [ ] 存量数据迁移演练 ≥ 2 次（如需）
+**骨架**
+- [ ] 只引入原系统已有能力对应的依赖
+- [ ] 实体映射全部现有表，`ddl-auto: validate` 启动通过
+- [ ] Flyway 只做基线，结构零改动
+- [ ] JSON、日期、Decimal、错误格式、分页结构与原系统一致
+- [ ] 环境变量名、日志格式、健康检查路径与原系统一致
 
-**上线**
-- [ ] 性能、安全、故障演练完成
-- [ ] 切换与回退演练完成
-- [ ] 观察期结束，旧系统下线与归档
-- [ ] 迁移总结输出
+**认证**
+- [ ] 共存期认证方案（`auth_request` 或 JWT 互认）验证通过
+- [ ] 密码哈希双向互认测试通过
+- [ ] CSRF、Cookie 名称与属性一致
+- [ ] 权限判断逐接口对照
+
+**任务**
+- [ ] 每个后台任务的生产者/消费者同批切换计划
+- [ ] 定时任务 cron、时区一致，切换顺序明确
+
+**验收与切换**
+- [ ] 每批接口对照测试通过、差异已登记
+- [ ] 每批切换都有回退演练
+- [ ] 全部切换后观察期无回退
+- [ ] Python 下线，共存期专用配置和接口已删除
+- [ ] 输出迁移总结（替换清单、差异清单、遗留事项）
