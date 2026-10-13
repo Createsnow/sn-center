@@ -368,7 +368,8 @@
     "ruleUnused": "Unused",
     "ruleNoMatch": "No matching template; switch to Custom rule",
     "ruleShown": "{m} of {n} templates",
-    "ruleManage": "Manage in Rule templates ›"
+    "ruleManage": "Manage in Rule templates ›",
+    "prefixRequired": "Enter a prefix first"
   },
   "rules": {
     "title": "SN rules",

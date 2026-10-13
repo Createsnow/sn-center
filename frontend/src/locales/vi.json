@@ -368,7 +368,8 @@
     "ruleUnused": "Chưa dùng",
     "ruleNoMatch": "Không có mẫu phù hợp; hãy chuyển sang Quy tắc tùy chỉnh",
     "ruleShown": "Hiển thị {m}/{n} mẫu",
-    "ruleManage": "Quản lý ở trang Mẫu quy tắc ›"
+    "ruleManage": "Quản lý ở trang Mẫu quy tắc ›",
+    "prefixRequired": "Hãy nhập tiền tố trước"
   },
   "rules": {
     "title": "Quy tắc SN",

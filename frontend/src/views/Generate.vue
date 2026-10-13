@@ -239,7 +239,7 @@
 
             <div class="act">
               <span class="msg" :class="{ err: !ruleReady || !canGenerate }">
-                {{ !canGenerate ? t("generate.stBLOCKED") : !ruleReady ? t("generate.rulePickRequired") : t("generate.genNote", { n: ctx.bills.length }) }}
+                {{ !canGenerate ? t("generate.stBLOCKED") : manualMode && !manual.prefix ? t("generate.prefixRequired") : !ruleReady ? t("generate.rulePickRequired") : t("generate.genNote", { n: ctx.bills.length }) }}
               </span>
               <el-button type="primary" :loading="busy === 'gen'" :disabled="!canGenerate || !ruleReady || !gq.preview || gq.previewing || (!!busy && busy !== 'gen')" @click="runGenerate">
                 {{ busy === "gen" ? t("generate.submitting") : t("generate.genBtnN", { n: fmt(gq.qty || 0) }) }}

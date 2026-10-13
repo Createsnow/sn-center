@@ -368,7 +368,8 @@
     "ruleUnused": "未使用",
     "ruleNoMatch": "没有匹配的模板，可切换到「自定义规则」",
     "ruleShown": "共 {n} 个模板，显示 {m} 个",
-    "ruleManage": "去「规则模板」页管理 ›"
+    "ruleManage": "去「规则模板」页管理 ›",
+    "prefixRequired": "请先填写前缀"
   },
   "rules": {
     "title": "规则模板",
