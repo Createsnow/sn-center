@@ -5,26 +5,32 @@
     </PageHead>
     <div class="surface">
       <div class="toolbar">
-        <el-radio-group v-model="scope">
+        <el-radio-group v-model="cat">
           <el-radio-button v-for="s in FILTERS" :key="s" :value="s">
-            {{ t(`rules.scope${s}`) }}<span class="cnt">{{ countOf(s) }}</span>
+            {{ t(`rules.cat${s}`) }}<span class="cnt">{{ countOf(s) }}</span>
           </el-radio-button>
         </el-radio-group>
-        <el-select v-if="scope === 'CUSTOMER' || scope === 'PI'" v-model="bindVal" filterable clearable
-          :placeholder="t(scope === 'CUSTOMER' ? 'rules.filterCustomer' : 'rules.filterPi')">
-          <el-option v-for="v in bindValues" :key="v" :value="v" :label="v" />
+        <el-select v-if="cat === 'CUSTOMER' || cat === 'PI'" v-model="catVal" filterable clearable
+          :placeholder="t(cat === 'CUSTOMER' ? 'rules.filterCustomer' : 'rules.filterPi')">
+          <el-option v-for="v in catValues" :key="v" :value="v" :label="v" />
         </el-select>
         <el-input v-model="q" clearable :placeholder="t('rules.search')" prefix-icon="Search" @keyup.enter="load" @clear="load" />
       </div>
       <el-table v-loading="loading" :data="shown" size="small" :empty-text="t('common.empty')">
         <el-table-column :label="t('rules.code')" min-width="120"><template #default="{ row }"><b>{{ row.rule.rule_code }}</b></template></el-table-column>
         <el-table-column :label="t('rules.name')" min-width="140"><template #default="{ row }">{{ row.rule.rule_name }}</template></el-table-column>
-        <el-table-column :label="t('rules.bind')" min-width="160">
+        <el-table-column :label="t('rules.category')" min-width="160">
           <template #default="{ row }">
-            <el-tag size="small" :type="row.rule.bind_scope === 'PI' ? 'danger' : row.rule.bind_scope === 'CUSTOMER' ? 'warning' : 'info'">
-              {{ t(`rules.scope${row.rule.bind_scope}`) }}
+            <el-tag size="small" :type="row.rule.category_scope === 'PI' ? 'danger' : row.rule.category_scope === 'CUSTOMER' ? 'warning' : 'info'">
+              {{ t(`rules.cat${row.rule.category_scope}`) }}
             </el-tag>
-            <span class="ml">{{ row.rule.bind_value }}</span>
+            <span class="ml">{{ row.rule.category_value }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column :label="t('rules.bind')" min-width="140">
+          <template #default="{ row }">
+            <span v-if="row.rule.bind_scope === 'GENERAL'" class="muted">—</span>
+            <template v-else>{{ t(`rules.scope${row.rule.bind_scope}`) }} <span class="ml">{{ row.rule.bind_value }}</span></template>
           </template>
         </el-table-column>
         <el-table-column :label="t('rules.version')" width="70"><template #default="{ row }">v{{ row.rule.current_version }}</template></el-table-column>
@@ -53,18 +59,18 @@
       <el-form label-width="110px">
         <el-form-item v-if="!editing" :label="t('rules.code')" required><el-input v-model="form.rule_code" /></el-form-item>
         <el-form-item :label="t('rules.name')" required><el-input v-model="form.rule_name" /></el-form-item>
-        <el-form-item :label="t('rules.bind')" required>
-          <el-radio-group v-model="form.bind_scope">
-            <el-radio-button v-for="s in SCOPES" :key="s" :value="s">{{ t(`rules.scope${s}`) }}</el-radio-button>
+        <el-form-item :label="t('rules.category')">
+          <el-radio-group v-model="form.category_scope">
+            <el-radio-button v-for="s in CATEGORIES" :key="s" :value="s">{{ t(`rules.cat${s}`) }}</el-radio-button>
           </el-radio-group>
-          <div class="muted">{{ t("rules.bindHint") }}</div>
+          <div class="muted">{{ t("rules.categoryHint") }}</div>
         </el-form-item>
-        <el-form-item v-if="form.bind_scope === 'CUSTOMER'" :label="t('common.customer')" required>
-          <el-select v-model="form.bind_value" filterable allow-create remote :remote-method="searchCustomers" class="w100">
+        <el-form-item v-if="form.category_scope === 'CUSTOMER'" :label="t('common.customer')" required>
+          <el-select v-model="form.category_value" filterable allow-create default-first-option remote :remote-method="searchCustomers" class="w100">
             <el-option v-for="c in customers" :key="c" :value="c" :label="c" />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="form.bind_scope === 'PI'" label="PI" required><el-input v-model="form.bind_value" /></el-form-item>
+        <el-form-item v-if="form.category_scope === 'PI'" label="PI" required><el-input v-model.trim="form.category_value" /></el-form-item>
         <el-form-item :label="t('rules.prefix')" required>
           <el-input v-model.trim="form.prefix" />
           <div class="muted">{{ t("rules.prefixHint") }}</div>
@@ -119,9 +125,10 @@ import { api } from "@/api";
 import PageHead from "@/components/PageHead.vue";
 
 const { t } = useI18n();
-const SCOPES = ["GENERAL", "CUSTOMER", "PI"];
-/** 列表筛选：全部 / 未分类（通用）/ 按客户 / 按 PI；选了客户或 PI 后可再选具体对象。 */
-const FILTERS = ["ALL", "GENERAL", "CUSTOMER", "PI"];
+/** 归类：只用于筛选和查找，不影响生效（绑定在生成页做）。 */
+const CATEGORIES = ["NONE", "CUSTOMER", "PI"];
+/** 列表筛选：全部 / 未分类 / 客户 / PI；选了客户或 PI 后可再选具体对象。 */
+const FILTERS = ["ALL", ...CATEGORIES];
 const CHARSETS: Record<number, string> = {
   10: "0123456789",
   16: "0123456789ABCDEF",
@@ -130,10 +137,10 @@ const CHARSETS: Record<number, string> = {
 };
 const rows = ref<any[]>([]);
 const loading = ref(false);
-const scope = ref("ALL");
+const cat = ref("ALL");
 const q = ref("");
-/** 按客户 / 按 PI 时选中的具体客户或 PI，空 = 该分类全部。 */
-const bindVal = ref("");
+/** 选了客户 / PI 分类时的具体客户或 PI，空 = 该分类全部。 */
+const catVal = ref("");
 const dialog = ref(false);
 const editing = ref<any>(null);
 const saving = ref(false);
@@ -141,13 +148,14 @@ const versions = ref<any>(null);
 const customers = ref<string[]>([]);
 const sample = ref<any>(null);
 const sampleError = ref("");
-const form = reactive({ rule_code: "", rule_name: "", bind_scope: "GENERAL", bind_value: "", prefix: "", suffix: "", base: 10, seq_len: 5, charset: "" });
+const EMPTY = { rule_code: "", rule_name: "", category_scope: "NONE", category_value: "", prefix: "", suffix: "", base: 10, seq_len: 5, charset: "" };
+const form = reactive({ ...EMPTY });
 const defaultCharset = computed(() => CHARSETS[form.base]);
-const inScope = (s: string) => (s === "ALL" ? rows.value : rows.value.filter((r) => r.rule.bind_scope === s));
-const bindValues = computed(() => [...new Set(inScope(scope.value).map((r) => r.rule.bind_value as string))].filter(Boolean).sort());
-const shown = computed(() => (bindVal.value ? inScope(scope.value).filter((r) => r.rule.bind_value === bindVal.value) : inScope(scope.value)));
-const countOf = (s: string) => inScope(s).length;
-watch(scope, () => (bindVal.value = ""));
+const inCat = (s: string) => (s === "ALL" ? rows.value : rows.value.filter((r) => r.rule.category_scope === s));
+const catValues = computed(() => [...new Set(inCat(cat.value).map((r) => r.rule.category_value as string))].filter(Boolean).sort());
+const shown = computed(() => (catVal.value ? inCat(cat.value).filter((r) => r.rule.category_value === catVal.value) : inCat(cat.value)));
+const countOf = (s: string) => inCat(s).length;
+watch(cat, () => (catVal.value = ""));
 const versionNo = (id: number) => versions.value?.versions.find((v: any) => v.id === id)?.version ?? "?";
 
 async function load() {
@@ -165,14 +173,14 @@ async function searchCustomers(text: string) {
 
 function openCreate() {
   editing.value = null;
-  Object.assign(form, { rule_code: "", rule_name: "", bind_scope: "GENERAL", bind_value: "", prefix: "", suffix: "", base: 10, seq_len: 5, charset: "" });
+  Object.assign(form, EMPTY);
   dialog.value = true;
 }
 
 function openEdit(row: any) {
   editing.value = row;
   const c = row.current;
-  Object.assign(form, { rule_name: row.rule.rule_name, bind_scope: row.rule.bind_scope, bind_value: row.rule.bind_value, prefix: c.prefix, suffix: c.suffix, base: c.base, seq_len: c.seq_len,
+  Object.assign(form, { rule_name: row.rule.rule_name, category_scope: row.rule.category_scope, category_value: row.rule.category_value, prefix: c.prefix, suffix: c.suffix, base: c.base, seq_len: c.seq_len,
     charset: c.charset === CHARSETS[c.base] ? "" : c.charset });
   dialog.value = true;
 }
@@ -192,16 +200,18 @@ watch(() => [form.prefix, form.suffix, form.base, form.seq_len, form.charset, di
   }, 250);
 });
 
+/** 只提交归类，不提交绑定：规则库新建的都是通用规则，绑定在生成页做。 */
+const category = () => ({ category_scope: form.category_scope, category_value: form.category_scope === "NONE" ? "" : form.category_value });
+
 async function save() {
   saving.value = true;
   try {
     if (editing.value) {
       const r: any = await api.updateRule(editing.value.rule.id, { rule_name: form.rule_name, prefix: form.prefix, suffix: form.suffix,
-        base: form.base, seq_len: form.seq_len, charset: form.charset,
-        bind_scope: form.bind_scope, bind_value: form.bind_scope === "GENERAL" ? "" : form.bind_value });
+        base: form.base, seq_len: form.seq_len, charset: form.charset, ...category() });
       ElMessage.success(t(`rules.result${r.action}`));
     } else {
-      await api.createRule({ ...form, bind_value: form.bind_scope === "GENERAL" ? "" : form.bind_value });
+      await api.createRule({ ...form, ...category() });
       ElMessage.success(t("common.saved"));
     }
     dialog.value = false;

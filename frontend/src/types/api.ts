@@ -68,6 +68,8 @@ export interface RuleInfo {
   rule_name: string;
   bind_scope: string;
   bind_value: string;
+  category_scope: string;
+  category_value: string;
   version_id: number;
   version: number;
   prefix: string;

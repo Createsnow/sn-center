@@ -13,14 +13,31 @@ def _spec(b: RuleSpecIn) -> rules.SpecIn:
     return rules.SpecIn(b.prefix, b.suffix, b.base, b.seq_len, b.charset)
 
 
-@router.get("")
-def rule_list(cu: AdminDep, scope: str | None = None, q: str | None = None) -> list:
-    return rules.list_rules(scope, q)
+@router.get(
+    "", summary="规则库：可按绑定方式、归类（NONE / CUSTOMER / PI）及归类对象筛选，q 模糊匹配编码 / 名称 / 对象"
+)
+def rule_list(
+    cu: AdminDep,
+    scope: str | None = None,
+    q: str | None = None,
+    category: str | None = None,
+    category_value: str | None = None,
+) -> list:
+    return rules.list_rules(scope, q, category, category_value)
 
 
 @router.post("")
 def rule_create(body: RuleIn, cu: AdminDep) -> dict:
-    return rules.create(cu, body.rule_code, body.rule_name, body.bind_scope, body.bind_value, _spec(body))
+    return rules.create(
+        cu,
+        body.rule_code,
+        body.rule_name,
+        body.bind_scope,
+        body.bind_value,
+        _spec(body),
+        body.category_scope,
+        body.category_value,
+    )
 
 
 @router.put(
@@ -32,7 +49,7 @@ def rule_pi_bind(body: RulePiBindIn, cu: AdminDep) -> dict:
 
 @router.delete(
     "/pi-binding",
-    summary="解除该 PI 生效的绑定：按 PI 绑定的规则转为通用规则，指定的规则取消指定；按客户绑定的不能解绑",
+    summary="解除该 PI 生效的绑定：按 PI / 按客户绑定的规则转为通用规则（按客户的该客户全部 PI 解除）；指定的取消指定",
 )
 def rule_pi_unbind(cu: AdminDep, pi: str = Query(...)) -> dict:
     return rules.unbind_pi(cu, pi)
@@ -40,10 +57,12 @@ def rule_pi_unbind(cu: AdminDep, pi: str = Query(...)) -> dict:
 
 @router.put(
     "/{id}",
-    summary="修改：只改名称不出版本；改编码参数时未生成过号就地修改，否则另出一版；可改绑定，改成通用即解绑",
+    summary="修改：只改名称 / 归类不出版本；改编码参数时未生成过号就地修改，否则另出一版；可改绑定，改成通用即解绑",
 )
 def rule_update(id: int, body: RuleUpdateIn, cu: AdminDep) -> dict:
-    return rules.update(cu, id, body.rule_name, _spec(body), body.bind_scope, body.bind_value)
+    return rules.update(
+        cu, id, body.rule_name, _spec(body), body.bind_scope, body.bind_value, body.category_scope, body.category_value
+    )
 
 
 @router.post("/preview")

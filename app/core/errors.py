@@ -63,9 +63,10 @@ class ErrorCode(Enum):
     RULE_NAME_REQUIRED = (400, "规则名称必填")
     RULE_SCOPE_INVALID = (400, "绑定方式只能是通用、按客户或按 PI")
     RULE_BIND_REQUIRED = (400, "按客户或按 PI 绑定时，绑定对象必填")
+    RULE_CATEGORY_INVALID = (400, "分类只能是未分类、客户或 PI")
+    RULE_CATEGORY_REQUIRED = (400, "按客户或 PI 分类时，须填写客户或 PI（不超过 64 位）")
     RULE_BIND_EXISTS = (409, "该绑定对象已有规则：{rule_code}")
     RULE_NOT_GENERAL = (400, "不能选用按客户绑定的规则：{rule_code}")
-    RULE_UNBIND_CUSTOMER = (400, "规则 {rule_code} 按客户绑定，影响该客户全部 PI：请到规则模板页修改")
     RULE_PREFIX_REQUIRED = (400, "前缀必填")
     RULE_AFFIX_INVALID = (400, "前缀、后缀只能用字母、数字和 _")
     RULE_PREFIX_CONFLICT = (

@@ -9,7 +9,10 @@
   PI 首次用某条规则生成时固定下所用版本，之后一直沿用；规则改了参数（另出新版）后，各 PI 按上面的办法重新确定。
 - 兜底：sn_item.sn 全局唯一键。
 
-生成页手动设置的规则：前缀 + 流水位数 + 后缀（10 进制），生成成功后自动存为按 PI 绑定的规则，
+归类（category_scope / category_value）：规则库只维护归类——未分类 / 客户 / PI，一个对象下可以有多条，
+只用于规则库筛选和生成页查找，不影响生效；绑定给 PI 在生成页完成。规则库新建的规则都是通用规则。
+
+生成页手动设置的规则：前缀 + 流水位数 + 后缀（10 进制），生成成功后自动存为按 PI 绑定的规则（归类为该 PI），
 名称 PI号_v序号；生成失败或取消不留规则。按 PI 绑定的规则在生成页解绑后转为通用规则，可作模板给别的 PI 用。
 
 改前缀 / 后缀 / 进制 / 位数 / 字符集：该版本还没生成过号时就地修改，否则另出一版；只改名称不出版本。
@@ -33,6 +36,9 @@ GENERAL = "GENERAL"
 CUSTOMER = "CUSTOMER"
 PI = "PI"
 SCOPES = frozenset((GENERAL, CUSTOMER, PI))
+#: 归类：未分类 / 客户 / PI
+NONE = "NONE"
+CATEGORIES = frozenset((NONE, CUSTOMER, PI))
 _CODE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 #: 前缀、后缀：字母、数字和 _
 _AFFIX = re.compile(r"^[A-Za-z0-9_]*$")
@@ -45,6 +51,8 @@ RULE_FIELDS = (
     "rule_name",
     "bind_scope",
     "bind_value",
+    "category_scope",
+    "category_value",
     "current_version",
     "created_by",
     "created_at",
@@ -133,18 +141,27 @@ def view(r: dict) -> dict:
     return {"rule": rule_json(r), "current": version_json(cur), "versions": [version_json(v) for v in vs]}
 
 
-def list_rules(scope: str | None, q: str | None) -> list[dict]:
+def list_rules(
+    scope: str | None, q: str | None, category: str | None = None, category_value: str | None = None
+) -> list[dict]:
     sql = "SELECT * FROM sn_rule WHERE 1=1"
     args: list = []
     if not util.blank(scope):
         sql += " AND bind_scope = %s"
         args.append(util.trim(scope))
+    if not util.blank(category):
+        sql += " AND category_scope = %s"
+        args.append(util.trim(category))
+    if not util.blank(category_value):
+        sql += " AND category_value = %s"
+        args.append(util.trim(category_value))
     text = util.trim(q)
     if text:
         like = "%" + text + "%"
-        sql += " AND (rule_code LIKE %s OR rule_name LIKE %s OR bind_value LIKE %s)"
-        args += [like, like, like]
-    sql += " ORDER BY bind_scope ASC, bind_value ASC"
+        sql += " AND (rule_code LIKE %s OR rule_name LIKE %s OR bind_value LIKE %s OR category_value LIKE %s)"
+        args += [like, like, like, like]
+    sql += " ORDER BY category_scope = %s DESC, category_scope ASC, category_value ASC, rule_code ASC"
+    args.append(NONE)
     return [view(r) for r in db.all(sql, *args)]
 
 
@@ -244,8 +261,16 @@ def _insert_version(
 
 
 def create(
-    cu: CurrentUser, code: str | None, name: str | None, scope: str | None, bind_value: str | None, s: SpecIn
+    cu: CurrentUser,
+    code: str | None,
+    name: str | None,
+    scope: str | None,
+    bind_value: str | None,
+    s: SpecIn,
+    category: str | None = None,
+    category_value: str | None = None,
 ) -> dict:
+    """规则库新建：不传绑定方式时为通用规则（绑定在生成页做）；归类不传时同绑定对象，都没有为未分类。"""
     with db.tx():
         c = util.trim(code)
         if not _CODE.match(c):
@@ -253,13 +278,14 @@ def create(
         n = util.trim(name)
         if not n or len(n) > 128:
             raise biz(ErrorCode.RULE_NAME_REQUIRED)
-        sc, bv = _check_bind(scope, bind_value)
+        sc, bv = _check_bind(GENERAL if util.blank(scope) else scope, bind_value)
+        cat = _check_category(category, category_value) if not util.blank(category) else _category_of_bind(sc, bv)
         spec = normalize(s)
         check_affixes(spec)
         if db.count("SELECT COUNT(*) FROM sn_rule WHERE rule_code = %s", c) > 0:
             raise biz(ErrorCode.RULE_CODE_EXISTS, rule_code=c)
         _check_bind_free(sc, bv)
-        rid = _insert_rule(cu, c, n, sc, bv, spec)
+        rid = _insert_rule(cu, c, n, sc, bv, spec, category=cat)
         return view(db.one("SELECT * FROM sn_rule WHERE id = %s", rid))
 
 
@@ -273,15 +299,19 @@ def _insert_rule(
     *,
     claimed_pi: str | None = None,
     note: str = "",
+    category: tuple[str, str] | None = None,
 ) -> int:
     now = util.now()
+    cs, cv = category or _category_of_bind(sc, bv)
     rid = db.insert(
-        "INSERT INTO sn_rule(rule_code, rule_name, bind_scope, bind_value, current_version, created_by, "
-        "created_at, updated_by, updated_at) VALUES (%s,%s,%s,%s,1,%s,%s,%s,%s)",
+        "INSERT INTO sn_rule(rule_code, rule_name, bind_scope, bind_value, category_scope, category_value, "
+        "current_version, created_by, created_at, updated_by, updated_at) VALUES (%s,%s,%s,%s,%s,%s,1,%s,%s,%s,%s)",
         code,
         name,
         sc,
         bv,
+        cs,
+        cv,
         cu.emp_no,
         now,
         cu.emp_no,
@@ -308,6 +338,27 @@ def _check_bind(scope: str | None, bind_value: str | None) -> tuple[str, str]:
     return sc, bv
 
 
+def _check_category(category: str | None, value: str | None) -> tuple[str, str]:
+    """归类：未分类 / 客户 / PI；客户、PI 须给对象。只是归类，同一对象下可以有多条。"""
+    cs = util.trim(category) or NONE
+    if cs not in CATEGORIES:
+        raise biz(ErrorCode.RULE_CATEGORY_INVALID)
+    cv = "" if cs == NONE else util.trim(value)
+    if cs != NONE and not cv:
+        raise biz(ErrorCode.RULE_CATEGORY_REQUIRED)
+    if len(cv) > 64:
+        raise biz(ErrorCode.RULE_CATEGORY_REQUIRED)
+    return cs, cv
+
+
+def _category_of_bind(sc: str, bv: str) -> tuple[str, str]:
+    return (NONE, "") if sc == GENERAL else (sc, bv)
+
+
+def _category_text(cs: str, cv: str) -> str:
+    return cs if cs == NONE else f"{cs}:{cv}"
+
+
 def _check_bind_free(sc: str, bv: str, self_id: int | None = None) -> None:
     """按客户 / 按 PI 每个对象只能一条；通用规则可以有多条。"""
     if sc == GENERAL:
@@ -328,10 +379,13 @@ def update(
     s: SpecIn,
     scope: str | None = None,
     bind_value: str | None = None,
+    category: str | None = None,
+    category_value: str | None = None,
 ) -> dict:
-    """修改结果：RENAMED 只改名 / REBOUND 改了绑定 / UPDATED 就地修改当前版 / NEW_VERSION 另出一版 / UNCHANGED。
+    """修改结果：RENAMED 只改名 / RECATEGORIZED 改了归类 / REBOUND 改了绑定 / UPDATED 就地修改当前版 /
+    NEW_VERSION 另出一版 / UNCHANGED。
 
-    不传绑定方式时绑定不变；改成通用即解绑。
+    不传绑定方式时绑定不变（规则库页不传，绑定在生成页做）；改成通用即解绑。不传归类时归类不变。
     """
     with db.tx():
         r = db.one("SELECT * FROM sn_rule WHERE id = %s FOR UPDATE", rule_id)
@@ -348,6 +402,12 @@ def update(
         )
         sc, bv = (r["bind_scope"], r["bind_value"]) if scope is None else _check_bind(scope, bind_value)
         rebound = (sc, bv) != (r["bind_scope"], r["bind_value"])
+        cs, cv = (
+            (r["category_scope"], r["category_value"])
+            if category is None
+            else _check_category(category, category_value)
+        )
+        recategorized = (cs, cv) != (r["category_scope"], r["category_value"])
         if rebound:
             _check_bind_free(sc, bv, r["id"])
         spec_changed = spec != spec_of(cur)
@@ -393,17 +453,32 @@ def update(
             _audit_rebind(cu, r, sc, bv)
             if action == "UNCHANGED":
                 action = "REBOUND"
+        if recategorized:
+            audit.record(
+                cu,
+                audit.entry(audit.RULE_CATEGORY)
+                .pi(cv if cs == PI else None)
+                .customer(cv if cs == CUSTOMER else None)
+                .info(
+                    f"{r['rule_code']} {_category_text(r['category_scope'], r['category_value'])} -> "
+                    f"{_category_text(cs, cv)}"
+                ),
+            )
+            if action == "UNCHANGED":
+                action = "RECATEGORIZED"
         if renamed:
             audit.record(cu, audit.entry(audit.RULE_RENAME).info(f"{r['rule_code']} {r['rule_name']} -> {n}"))
             if action == "UNCHANGED":
                 action = "RENAMED"
-        if spec_changed or renamed or rebound:
+        if spec_changed or renamed or rebound or recategorized:
             db.exec(
-                "UPDATE sn_rule SET rule_name = %s, bind_scope = %s, bind_value = %s, current_version = %s, "
-                "updated_by = %s, updated_at = %s WHERE id = %s",
+                "UPDATE sn_rule SET rule_name = %s, bind_scope = %s, bind_value = %s, category_scope = %s, "
+                "category_value = %s, current_version = %s, updated_by = %s, updated_at = %s WHERE id = %s",
                 n,
                 sc,
                 bv,
+                cs,
+                cv,
                 version,
                 cu.emp_no,
                 now,
@@ -548,6 +623,8 @@ def manual_plan(pi: str, m: ManualIn) -> Resolved:
         "rule_name": name,
         "bind_scope": PI,
         "bind_value": pi,
+        "category_scope": PI,
+        "category_value": pi,
         "current_version": 1,
     }
     return Resolved(rule, _draft_version(None, 1, spec), SRC_MANUAL, PLAN_NEW)
@@ -714,9 +791,8 @@ def bind_pi(cu: CurrentUser, pi_in: str | None, rule_id: int | None) -> dict:
 
 
 def unbind_pi(cu: CurrentUser, pi_in: str | None) -> dict:
-    """解除该 PI 当前生效的绑定：按 PI 绑定的规则转为通用规则（可作模板）；给该 PI 指定的规则取消指定。
-
-    按客户绑定的规则影响该客户全部 PI，不能在这里解绑。下次生成前重新选择。
+    """解除该 PI 当前生效的绑定：按 PI 绑定的规则转为通用规则（可作模板）；给该 PI 指定的规则取消指定；
+    按客户绑定的规则转为通用规则（该客户的全部 PI 都解除）。归类不变。下次生成前重新选择。
     """
     pi = util.trim(pi_in)
     if not pi:
@@ -739,7 +815,16 @@ def unbind_pi(cu: CurrentUser, pi_in: str | None) -> dict:
             db.exec("UPDATE sn_pi_counter SET rule_id = NULL, updated_at = %s WHERE pi_no = %s", util.now(), pi)
             audit.record(cu, audit.entry(audit.RULE_PI_UNBIND).pi(pi).info(f"{r.rule['rule_code']}"))
         else:
-            raise biz(ErrorCode.RULE_UNBIND_CUSTOMER, rule_code=r.rule["rule_code"])
+            # 按客户绑定：规则库不再管绑定，在这里解除，该客户全部 PI 都不再默认用它；规则转为通用、归类不变
+            rule = db.one("SELECT * FROM sn_rule WHERE id = %s FOR UPDATE", r.rule["id"])
+            db.exec(
+                "UPDATE sn_rule SET bind_scope = %s, bind_value = '', updated_by = %s, updated_at = %s WHERE id = %s",
+                GENERAL,
+                cu.emp_no,
+                util.now(),
+                rule["id"],
+            )
+            _audit_rebind(cu, rule, GENERAL, "")
     return _effective_info(pi)
 
 
@@ -790,6 +875,8 @@ def rule_info(r: Resolved, start_seq: int = 1) -> dict:
         "rule_name": r.rule["rule_name"],
         "bind_scope": r.rule["bind_scope"],
         "bind_value": r.rule["bind_value"],
+        "category_scope": r.rule.get("category_scope", NONE),
+        "category_value": r.rule.get("category_value", ""),
         "version_id": r.version["id"],
         "version": r.version["version"],
         "derived": r.version.get("derived_from") is not None,

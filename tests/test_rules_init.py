@@ -316,3 +316,45 @@ def test_rule_binding_can_be_changed_and_unbound(api, admin, w):
     assert r["rule"]["rule"]["bind_scope"] == "GENERAL" and r["rule"]["rule"]["bind_value"] == ""
     ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin))
     assert ctx["rule"] is None and rid in {o["rule_id"] for o in ctx["rule_options"]}
+
+
+def test_rule_library_only_categorizes(api, admin, w):
+    """规则库只归类：同一客户 / PI 下可以有多条，都不生效（仍是通用规则），生成页可按名称找到并选用。"""
+    pi, bill, cust = uid("PI"), uid("MO"), uid("CU")
+    w.order(bill, ORG, cust, pi, ("A", 5))
+
+    def make(prefix, **cat):
+        body = m(rule_code=uid("RK"), rule_name="归类" + prefix, prefix=prefix, base=10, seq_len=4, **cat)
+        return ok(api.post("/api/rules", body, admin)).body
+
+    a = make("CTGA", category_scope="CUSTOMER", category_value=cust)
+    b = make("CTGB", category_scope="CUSTOMER", category_value=cust)
+    c = make("CTGC")
+    assert (a["rule"]["bind_scope"], a["rule"]["category_scope"], a["rule"]["category_value"]) == (
+        "GENERAL",
+        "CUSTOMER",
+        cust,
+    )
+    assert (c["rule"]["category_scope"], c["rule"]["category_value"]) == ("NONE", "")
+    # 归类对客户的 PI 不生效，生成页仍要选；选项里带归类
+    ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin))
+    assert ctx["rule"] is None
+    opts = {o["rule_id"]: o for o in ctx["rule_options"]}
+    assert opts[a["rule"]["id"]]["category_value"] == cust and opts[c["rule"]["id"]]["category_scope"] == "NONE"
+    # 按归类筛选
+    got = ok(api.get("/api/rules" + q(category="CUSTOMER", category_value=cust), admin))
+    assert {r["rule"]["id"] for r in got} == {a["rule"]["id"], b["rule"]["id"]}
+    assert cust in {r["rule"]["category_value"] for r in ok(api.get("/api/rules" + q(q=cust), admin))}
+    # 改归类：不出版本；不传归类时不变
+    spec = dict(rule_name=c["rule"]["rule_name"], prefix=c["current"]["prefix"], base=10, seq_len=4)
+    r = ok(api.put(f"/api/rules/{c['rule']['id']}", m(category_scope="PI", category_value=pi, **spec), admin))
+    assert r.text("action") == "RECATEGORIZED" and r["rule"]["rule"]["current_version"] == 1
+    assert r["rule"]["rule"]["bind_scope"] == "GENERAL"
+    assert ok(api.put(f"/api/rules/{c['rule']['id']}", m(**spec), admin)).text("action") == "UNCHANGED"
+    r = ok(api.put(f"/api/rules/{c['rule']['id']}", m(category_scope="NONE", category_value="x", **spec), admin))
+    assert (r["rule"]["rule"]["category_scope"], r["rule"]["rule"]["category_value"]) == ("NONE", "")
+    # 校验
+    bad = m(rule_code=uid("RK"), rule_name="x", prefix="CTGX", base=10, seq_len=4, category_scope="PI")
+    assert api.post("/api/rules", bad, admin).code == "RULE_CATEGORY_REQUIRED"
+    bad = m(rule_code=uid("RK"), rule_name="x", prefix="CTGY", base=10, seq_len=4, category_scope="FOO")
+    assert api.post("/api/rules", bad, admin).code == "RULE_CATEGORY_INVALID"

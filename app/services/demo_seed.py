@@ -77,11 +77,14 @@ _ORDERS = [
 
 def _rule(code, name, scope, value, prefix, suffix, base, length, charset, ts) -> None:
     rid = db.insert(
-        "INSERT INTO sn_rule(rule_code, rule_name, bind_scope, bind_value, current_version, created_by, created_at, "
-        "updated_by, updated_at) VALUES (%s,%s,%s,%s,1,'demo',%s,'demo',%s)",
+        "INSERT INTO sn_rule(rule_code, rule_name, bind_scope, bind_value, category_scope, category_value, "
+        "current_version, created_by, created_at, updated_by, updated_at) "
+        "VALUES (%s,%s,%s,%s,%s,%s,1,'demo',%s,'demo',%s)",
         code,
         name,
         scope,
+        value,
+        "NONE" if scope == "GENERAL" else scope,
         value,
         ts,
         ts,

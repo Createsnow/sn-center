@@ -102,8 +102,7 @@ def test_customer_rule_shared_by_its_pis_and_pi_can_pick_its_own(api, admin, w, 
     assert cr not in {o["rule_id"] for o in ctx["rule_options"]}
     assert _gen(w, pi2, 1) == ("CQ0001_v2", "CQ0001_v2")
 
-    # 按客户绑定的不能在生成页解绑；为本 PI 单独指定模板后优先于按客户
-    assert api.delete("/api/rules/pi-binding" + q(pi=pi2), admin).code == "RULE_UNBIND_CUSTOMER"
+    # 为本 PI 单独指定模板后优先于按客户
     r = ok(api.put("/api/rules/pi-binding", m(pi_no=pi2, rule_id=tpl), admin))
     assert r["rule"]["source"] == "CHOSEN" and r["rule"]["rule_id"] == tpl
     assert _gen(w, pi2, 1) == ("OWN0002", "OWN0002"), "流水接续，换成新格式"
@@ -203,3 +202,19 @@ def test_admin_rules_need_a_prefix_not_overlapping_others(api, admin):
         ok(api.put(f"/api/rules/{rid}", m(rule_name="y", prefix="PY", suffix="S", base=10, seq_len=4), admin))["action"]
         == "RENAMED"
     )
+
+
+def test_customer_binding_can_be_removed_on_generate_page(api, admin, w, sql):
+    """规则库不管绑定：按客户绑定的规则在生成页解除，转为通用规则（该客户全部 PI 都解除），归类不变。"""
+    cust = uid("CU")
+    cr = _rule(api, admin, "CUB", scope="CUSTOMER", bind=cust)
+    pi1, _ = _pi(w, customer=cust)
+    pi2, _ = _pi(w, customer=cust)
+    assert ok(api.get("/api/rules/effective" + q(pi=pi1), admin)).text("source") == "CUSTOMER"
+    r = ok(api.delete("/api/rules/pi-binding" + q(pi=pi1), admin))
+    assert r["rule"] is None
+    row = sql.one("SELECT * FROM sn_rule WHERE id = %s", cr)
+    assert (row["bind_scope"], row["bind_value"]) == ("GENERAL", "")
+    assert (row["category_scope"], row["category_value"]) == ("CUSTOMER", cust), "归类不变"
+    ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi2), admin))
+    assert ctx["rule"] is None and cr in {o["rule_id"] for o in ctx["rule_options"]}
