@@ -350,17 +350,19 @@
     "ruleStUSE": "This PI uses v{v}",
     "ruleStDERIVE": "Template already used by {pi}: this PI gets a new version v{v}, with _v{v} added to the suffix",
     "ruleStNEW": "New rule: saved as {name} and bound to this PI once generation succeeds",
-    "ruleStCUSTOMER": "Bound to the customer and applies to all of its PIs; change it on the SN rules page"
+    "ruleStCUSTOMER": "Bound to the customer and applies to all of its PIs; change it on the SN rules page",
+    "ruleFilter": "Filter by template name",
+    "ruleLibraryN": "Rule library ({n} matched)"
   },
   "rules": {
     "title": "SN rules",
     "desc": "Precedence: single PI > assigned to the PI > customer. The prefix is required and must not start with, or be the start of, another rule's prefix; when several PIs use the same rule, later PIs get their own version with _v<version> added to the suffix, so SNs are unique globally. Changing prefix, suffix, base, length or charset edits the current version in place if it has not generated any SN yet, otherwise creates a new version; renaming does not. A new version only applies to SNs generated afterwards.",
     "create": "New rule",
-    "search": "Code / name / binding",
+    "search": "Code / name / customer / PI",
     "code": "Rule code",
     "name": "Name",
-    "bind": "Binding",
-    "scopeGENERAL": "General",
+    "bind": "Category",
+    "scopeGENERAL": "Uncategorized",
     "scopeCUSTOMER": "Customer",
     "scopePI": "PI",
     "version": "Version",
@@ -383,12 +385,14 @@
     "resultUPDATED": "Current version updated",
     "resultRENAMED": "Renamed",
     "resultREBOUND": "Binding changed",
-    "bindHint": "There can be several general rules; an unbound PI picks a template from the library or sets a rule manually on the generation page. Each customer / PI can have only one rule. Change it to \"General\" to unbind.",
+    "bindHint": "The category is optional (there can be several uncategorized templates for PIs to pick on the generation page). A template categorized by customer / PI applies to that customer / PI directly; each customer or PI can have only one. Change it to \"Uncategorized\" to remove the category.",
     "resultUNCHANGED": "No changes",
     "scopeALL": "All",
     "prefixHint": "Required; letters, digits and _ only. It must not start with, or be the start of, another rule's prefix (e.g. AX and AXB), so SNs of different rules never collide.",
     "versionPi": "Used by {pi}",
-    "versionDerived": "Derived from v{v}"
+    "versionDerived": "Derived from v{v}",
+    "filterCustomer": "Pick a customer",
+    "filterPi": "Pick a PI"
   },
   "acquire": {
     "title": "Acquire & print",

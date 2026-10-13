@@ -350,17 +350,19 @@
     "ruleStUSE": "PI này dùng v{v}",
     "ruleStDERIVE": "Mẫu đã được {pi} dùng: PI này dùng phiên bản mới v{v}, hậu tố tự thêm _v{v}",
     "ruleStNEW": "Quy tắc mới: lưu thành {name} và gắn cho PI này sau khi tạo thành công",
-    "ruleStCUSTOMER": "Gắn theo khách hàng, áp dụng cho mọi PI của khách hàng đó; muốn sửa hãy vào trang Quy tắc SN"
+    "ruleStCUSTOMER": "Gắn theo khách hàng, áp dụng cho mọi PI của khách hàng đó; muốn sửa hãy vào trang Quy tắc SN",
+    "ruleFilter": "Lọc theo tên mẫu",
+    "ruleLibraryN": "Thư viện quy tắc (khớp {n})"
   },
   "rules": {
     "title": "Quy tắc SN",
     "desc": "Thứ tự áp dụng: theo PI > chỉ định cho PI > theo khách hàng. Tiền tố là bắt buộc và không được là phần đầu của tiền tố quy tắc khác hoặc ngược lại; khi nhiều PI dùng cùng một quy tắc, các PI sau tự có phiên bản riêng với hậu tố thêm _v<phiên bản>, nên SN không trùng trên toàn hệ thống. Đổi tiền tố, hậu tố, cơ số, độ dài hoặc bảng ký tự: sửa trực tiếp nếu phiên bản chưa tạo SN nào, nếu không thì tạo phiên bản mới; chỉ đổi tên thì không. Phiên bản mới chỉ áp dụng cho SN tạo sau đó.",
     "create": "Tạo quy tắc",
-    "search": "Mã / tên / đối tượng",
+    "search": "Mã / tên / khách hàng / PI",
     "code": "Mã quy tắc",
     "name": "Tên",
-    "bind": "Ràng buộc",
-    "scopeGENERAL": "Chung",
+    "bind": "Phân loại",
+    "scopeGENERAL": "Chưa phân loại",
     "scopeCUSTOMER": "Theo khách hàng",
     "scopePI": "Theo PI",
     "version": "Phiên bản",
@@ -383,12 +385,14 @@
     "resultUPDATED": "Đã sửa phiên bản hiện tại",
     "resultRENAMED": "Đã đổi tên",
     "resultREBOUND": "Đã đổi ràng buộc",
-    "bindHint": "Có thể có nhiều quy tắc chung; PI chưa gắn sẽ chọn mẫu trong thư viện hoặc tự thiết lập ở trang tạo SN. Mỗi khách hàng / PI chỉ gắn được một quy tắc. Đổi thành \"Chung\" để bỏ gắn.",
+    "bindHint": "Có thể không chọn phân loại (có thể có nhiều mẫu chưa phân loại để các PI chọn ở trang tạo SN). Mẫu phân loại theo khách hàng / PI áp dụng trực tiếp cho khách hàng / PI đó; mỗi khách hàng hoặc PI chỉ có một mẫu. Đổi thành \"Chưa phân loại\" để bỏ phân loại.",
     "resultUNCHANGED": "Không thay đổi",
     "scopeALL": "Tất cả",
     "prefixHint": "Bắt buộc; chỉ gồm chữ cái, chữ số và _. Không được là phần đầu của tiền tố quy tắc khác hoặc ngược lại (vd. AX và AXB), để SN của các quy tắc không bao giờ trùng.",
     "versionPi": "{pi} dùng",
-    "versionDerived": "Phái sinh từ v{v}"
+    "versionDerived": "Phái sinh từ v{v}",
+    "filterCustomer": "Chọn khách hàng",
+    "filterPi": "Chọn PI"
   },
   "acquire": {
     "title": "Nhận & in",

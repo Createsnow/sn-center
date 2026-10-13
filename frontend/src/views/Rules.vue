@@ -10,6 +10,10 @@
             {{ t(`rules.scope${s}`) }}<span class="cnt">{{ countOf(s) }}</span>
           </el-radio-button>
         </el-radio-group>
+        <el-select v-if="scope === 'CUSTOMER' || scope === 'PI'" v-model="bindVal" filterable clearable
+          :placeholder="t(scope === 'CUSTOMER' ? 'rules.filterCustomer' : 'rules.filterPi')">
+          <el-option v-for="v in bindValues" :key="v" :value="v" :label="v" />
+        </el-select>
         <el-input v-model="q" clearable :placeholder="t('rules.search')" prefix-icon="Search" @keyup.enter="load" @clear="load" />
       </div>
       <el-table v-loading="loading" :data="shown" size="small" :empty-text="t('common.empty')">
@@ -116,8 +120,8 @@ import PageHead from "@/components/PageHead.vue";
 
 const { t } = useI18n();
 const SCOPES = ["GENERAL", "CUSTOMER", "PI"];
-/** 列表筛选：全部（含通用）/ 按客户 / 按 PI。 */
-const FILTERS = ["ALL", "CUSTOMER", "PI"];
+/** 列表筛选：全部 / 未分类（通用）/ 按客户 / 按 PI；选了客户或 PI 后可再选具体对象。 */
+const FILTERS = ["ALL", "GENERAL", "CUSTOMER", "PI"];
 const CHARSETS: Record<number, string> = {
   10: "0123456789",
   16: "0123456789ABCDEF",
@@ -128,6 +132,8 @@ const rows = ref<any[]>([]);
 const loading = ref(false);
 const scope = ref("ALL");
 const q = ref("");
+/** 按客户 / 按 PI 时选中的具体客户或 PI，空 = 该分类全部。 */
+const bindVal = ref("");
 const dialog = ref(false);
 const editing = ref<any>(null);
 const saving = ref(false);
@@ -137,8 +143,11 @@ const sample = ref<any>(null);
 const sampleError = ref("");
 const form = reactive({ rule_code: "", rule_name: "", bind_scope: "GENERAL", bind_value: "", prefix: "", suffix: "", base: 10, seq_len: 5, charset: "" });
 const defaultCharset = computed(() => CHARSETS[form.base]);
-const shown = computed(() => (scope.value === "ALL" ? rows.value : rows.value.filter((r) => r.rule.bind_scope === scope.value)));
-const countOf = (s: string) => (s === "ALL" ? rows.value.length : rows.value.filter((r) => r.rule.bind_scope === s).length);
+const inScope = (s: string) => (s === "ALL" ? rows.value : rows.value.filter((r) => r.rule.bind_scope === s));
+const bindValues = computed(() => [...new Set(inScope(scope.value).map((r) => r.rule.bind_value as string))].filter(Boolean).sort());
+const shown = computed(() => (bindVal.value ? inScope(scope.value).filter((r) => r.rule.bind_value === bindVal.value) : inScope(scope.value)));
+const countOf = (s: string) => inScope(s).length;
+watch(scope, () => (bindVal.value = ""));
 const versionNo = (id: number) => versions.value?.versions.find((v: any) => v.id === id)?.version ?? "?";
 
 async function load() {

@@ -78,9 +78,10 @@
         <div class="rule-card">
           <div class="rule-top">
             <template v-if="picking">
+              <el-input v-model.trim="ruleQ" clearable class="rule-q" prefix-icon="Search" :placeholder="t('generate.ruleFilter')" :disabled="!!detailRun" />
               <el-select v-model="pickKey" filterable class="rule-pick" :placeholder="t('generate.rulePick')" :disabled="!!detailRun">
-                <el-option-group :label="t('generate.ruleLibrary')">
-                  <el-option v-for="o in ctx.rule_options" :key="o.rule_id" :value="o.rule_id" :label="o.rule_name">
+                <el-option-group :label="ruleQ ? t('generate.ruleLibraryN', { n: filteredOptions.length }) : t('generate.ruleLibrary')">
+                  <el-option v-for="o in filteredOptions" :key="o.rule_id" :value="o.rule_id" :label="o.rule_name">
                     <div class="opt"><span>{{ o.rule_name }}</span><span class="muted sn-mono">{{ fmtOf(o) }}</span></div>
                   </el-option>
                 </el-option-group>
@@ -457,6 +458,14 @@ const ruleReady = computed(() => {
   return ruleId.value != null;
 });
 
+/** 按模板名称（也匹配编码）筛选规则库；当前选中的一条始终保留，免得选择框只显示 id。 */
+const ruleQ = ref("");
+const filteredOptions = computed<any[]>(() => {
+  const all: any[] = ctx.value?.rule_options ?? [];
+  const k = ruleQ.value.toLowerCase();
+  if (!k) return all;
+  return all.filter((o) => o.rule_id === pickKey.value || o.rule_name.toLowerCase().includes(k) || o.rule_code.toLowerCase().includes(k));
+});
 const fmtOf = (o: any) => `${o.prefix}${"#".repeat(o.seq_len)}${o.suffix}`;
 const inW = (v: string) => `${Math.max(4, (v || "").length + 1)}ch`;
 
@@ -522,6 +531,7 @@ watch(() => [manualMode.value, manual.prefix, manual.suffix, manual.seq_len], ()
 
 function resetRulePick(c: any) {
   override.value = false;
+  ruleQ.value = "";
   unbindAsk.value = false;
   if (!c.rule_options.some((o: any) => o.rule_id === pickKey.value) && pickKey.value !== "manual") pickKey.value = c.rule_options[0]?.rule_id ?? "manual";
 }
@@ -896,6 +906,7 @@ onUnmounted(() => {
 .rule-card { border: 1px solid var(--el-border-color-lighter); border-radius: 10px; padding: 14px 18px 16px; display: flex; flex-direction: column; gap: 14px; }
 .rule-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 32px; }
 .rule-top b { font-weight: 600; }
+.rule-q { flex: 0 1 200px; }
 .rule-pick { flex: 1 1 260px; max-width: 460px; }
 .rule-act { margin-left: auto; }
 .sn-big { display: flex; align-items: flex-start; gap: 2px; flex-wrap: wrap; }
