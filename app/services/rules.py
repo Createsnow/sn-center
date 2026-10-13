@@ -1,8 +1,16 @@
-"""SN 规则。绑定：按单张 PI ＞ 按客户 ＞ 给该 PI 指定的规则；都没有时，由用户从全部通用规则中选一条
-（默认编码最小的通用规则），首次生成时记为该 PI 的指定规则，之后生成默认用它。
+"""SN 规则。生效：按 PI 绑定 ＞ 给该 PI 指定的规则 ＞ 按客户绑定；都没有时，由用户在生成页选一条规则模板
+（通用规则或别的 PI 的规则），或手动设置一条新规则。
 
-按客户 / 按 PI 每个对象只能绑一条，规则的绑定可以改、可以解绑（改回通用）；通用规则可以有多条。
-给 PI 指定的规则可以解绑后重新选择；改用别的规则后流水接续，只是之后生成的号换成新格式。
+全局不重：
+- 前缀区分模板：任何两条规则的前缀不能互为开头（AX 与 AXB、A 与 AX 都不行），前缀必填。
+  于是不同规则生成的号在前缀部分必有一位不同。
+- 同一条规则被多张 PI 使用时，每张 PI 用自己的一版：最先用它生成的 PI 直接用当前版本；
+  别的 PI 再用，另出一个派生版，后缀 = 原后缀 + _v版本号（版本号在规则内统一递增），流水仍从本 PI 自己的最大号接续。
+  PI 首次用某条规则生成时固定下所用版本，之后一直沿用；规则改了参数（另出新版）后，各 PI 按上面的办法重新确定。
+- 兜底：sn_item.sn 全局唯一键。
+
+生成页手动设置的规则：前缀 + 流水位数 + 后缀（10 进制），生成成功后自动存为按 PI 绑定的规则，
+名称 PI号_v序号；生成失败或取消不留规则。按 PI 绑定的规则在生成页解绑后转为通用规则，可作模板给别的 PI 用。
 
 改前缀 / 后缀 / 进制 / 位数 / 字符集：该版本还没生成过号时就地修改，否则另出一版；只改名称不出版本。
 新版本只作用于之后新生成的号，已发出的号仍记旧版本。
@@ -12,7 +20,7 @@ from __future__ import annotations
 
 import re
 import threading
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from app.core import encoding as codec
 from app.core import utils as util
@@ -26,6 +34,10 @@ CUSTOMER = "CUSTOMER"
 PI = "PI"
 SCOPES = frozenset((GENERAL, CUSTOMER, PI))
 _CODE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+#: 前缀、后缀：字母、数字和 _
+_AFFIX = re.compile(r"^[A-Za-z0-9_]*$")
+#: 生成页手动设置的规则固定 10 进制
+MANUAL_BASE = 10
 
 RULE_FIELDS = (
     "id",
@@ -49,6 +61,8 @@ VERSION_FIELDS = (
     "seq_len",
     "charset",
     "used",
+    "claimed_pi",
+    "derived_from",
     "created_by",
     "created_at",
     "updated_at",
@@ -67,23 +81,33 @@ def spec_of(v: dict) -> codec.Spec:
     return codec.Spec(v["prefix"], v["suffix"], v["base"], v["seq_len"], v["charset"])
 
 
-#: 规则来源：按 PI 绑定 / 按客户绑定 / 该 PI 首次生成时选定 / 本次所选 / 未选定时默认的通用规则
+#: 规则来源：按 PI 绑定 / 按客户绑定 / 给该 PI 指定的 / 本次所选模板 / 本次手动设置
 SRC_PI = "PI"
 SRC_CUSTOMER = "CUSTOMER"
 SRC_CHOSEN = "CHOSEN"
 SRC_PICKED = "PICKED"
-SRC_GENERAL = "GENERAL"
+SRC_MANUAL = "MANUAL"
+
+#: 本 PI 用哪一版：已固定的 / 该版还没有 PI 用过（直接用）/ 已被别的 PI 用过（另出派生版）/ 手动设置（新建规则）
+PLAN_USE = "USE"
+PLAN_CLAIM = "CLAIM"
+PLAN_DERIVE = "DERIVE"
+PLAN_NEW = "NEW"
 
 
 @dataclass(frozen=True)
 class Resolved:
     rule: dict
+    #: 派生版 / 手动设置时是尚未落库的版本（id 为 None），生成时由 realize 落库
     version: dict
-    source: str = SRC_GENERAL
+    source: str = SRC_PICKED
+    plan: str = PLAN_USE
+    #: 派生版：当前版本已被哪张 PI 使用
+    shared_by: str | None = None
 
     @property
     def fixed(self) -> bool:
-        """已确定、生成时不再让用户选：有绑定或该 PI 已选定过。"""
+        """已确定、生成时不再让用户选：有绑定或该 PI 已指定。"""
         return self.source in (SRC_PI, SRC_CUSTOMER, SRC_CHOSEN)
 
 
@@ -142,6 +166,32 @@ def normalize(s: SpecIn) -> codec.Spec:
     return spec
 
 
+def check_affixes(spec: codec.Spec, self_rule_id: int | None = None) -> None:
+    """新参数的前后缀：前缀必填，前后缀只能是字母、数字和 _，前缀不能与别的规则的前缀互为开头。
+
+    比较别的规则的全部版本（含派生版）；没有前缀的旧规则不参与比较（由 SN 全局唯一键兜底）。
+    前缀里的 _ 在 LIKE 里是通配符：SQL 只做粗筛，命中后再按 startswith 精确判断。
+    """
+    if not spec.prefix:
+        raise biz(ErrorCode.RULE_PREFIX_REQUIRED)
+    if not _AFFIX.match(spec.prefix) or not _AFFIX.match(spec.suffix):
+        raise biz(ErrorCode.RULE_AFFIX_INVALID)
+    rows = db.all(
+        "SELECT DISTINCT r.id, r.rule_name, v.prefix FROM sn_rule_version v JOIN sn_rule r ON r.id = v.rule_id "
+        "WHERE v.prefix <> '' AND (%s LIKE CONCAT(v.prefix, '%%') OR v.prefix LIKE CONCAT(%s, '%%')) "
+        "ORDER BY r.id",
+        spec.prefix,
+        spec.prefix,
+    )
+    for row in rows:
+        if row["id"] != self_rule_id and (
+            spec.prefix.startswith(row["prefix"]) or row["prefix"].startswith(spec.prefix)
+        ):
+            raise biz(
+                ErrorCode.RULE_PREFIX_CONFLICT, prefix=spec.prefix, rule_name=row["rule_name"], other=row["prefix"]
+            )
+
+
 def preview(s: SpecIn, start: int | None) -> dict:
     spec = normalize(s)
     mx = codec.max_seq(spec)
@@ -160,10 +210,20 @@ def describe(s: codec.Spec) -> str:
     return f"prefix={s.prefix} suffix={s.suffix} base={s.base} len={s.seq_len} charset={s.charset}"
 
 
-def _insert_version(cu: CurrentUser, rule_id: int, version: int, spec: codec.Spec, now) -> None:
-    db.insert(
-        "INSERT INTO sn_rule_version(rule_id, version, prefix, suffix, base, seq_len, charset, used, created_by, "
-        "created_at, updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s,0,%s,%s,%s)",
+def _insert_version(
+    cu: CurrentUser,
+    rule_id: int,
+    version: int,
+    spec: codec.Spec,
+    now,
+    *,
+    used: bool = False,
+    claimed_pi: str | None = None,
+    derived_from: int | None = None,
+) -> int:
+    return db.insert(
+        "INSERT INTO sn_rule_version(rule_id, version, prefix, suffix, base, seq_len, charset, used, claimed_pi, "
+        "derived_from, created_by, created_at, updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
         rule_id,
         version,
         spec.prefix,
@@ -171,6 +231,9 @@ def _insert_version(cu: CurrentUser, rule_id: int, version: int, spec: codec.Spe
         spec.base,
         spec.seq_len,
         spec.charset,
+        1 if used else 0,
+        claimed_pi,
+        derived_from,
         cu.emp_no,
         now,
         now,
@@ -192,31 +255,47 @@ def create(
             raise biz(ErrorCode.RULE_NAME_REQUIRED)
         sc, bv = _check_bind(scope, bind_value)
         spec = normalize(s)
+        check_affixes(spec)
         if db.count("SELECT COUNT(*) FROM sn_rule WHERE rule_code = %s", c) > 0:
             raise biz(ErrorCode.RULE_CODE_EXISTS, rule_code=c)
         _check_bind_free(sc, bv)
-        now = util.now()
-        rid = db.insert(
-            "INSERT INTO sn_rule(rule_code, rule_name, bind_scope, bind_value, current_version, created_by, "
-            "created_at, updated_by, updated_at) VALUES (%s,%s,%s,%s,1,%s,%s,%s,%s)",
-            c,
-            n,
-            sc,
-            bv,
-            cu.emp_no,
-            now,
-            cu.emp_no,
-            now,
-        )
-        _insert_version(cu, rid, 1, spec, now)
-        audit.record(
-            cu,
-            audit.entry(audit.RULE_CREATE)
-            .pi(bv if sc == PI else None)
-            .customer(bv if sc == CUSTOMER else None)
-            .info(f"{c} v1 {describe(spec)}"),
-        )
+        rid = _insert_rule(cu, c, n, sc, bv, spec)
         return view(db.one("SELECT * FROM sn_rule WHERE id = %s", rid))
+
+
+def _insert_rule(
+    cu: CurrentUser,
+    code: str,
+    name: str,
+    sc: str,
+    bv: str,
+    spec: codec.Spec,
+    *,
+    claimed_pi: str | None = None,
+    note: str = "",
+) -> int:
+    now = util.now()
+    rid = db.insert(
+        "INSERT INTO sn_rule(rule_code, rule_name, bind_scope, bind_value, current_version, created_by, "
+        "created_at, updated_by, updated_at) VALUES (%s,%s,%s,%s,1,%s,%s,%s,%s)",
+        code,
+        name,
+        sc,
+        bv,
+        cu.emp_no,
+        now,
+        cu.emp_no,
+        now,
+    )
+    _insert_version(cu, rid, 1, spec, now, used=claimed_pi is not None, claimed_pi=claimed_pi)
+    audit.record(
+        cu,
+        audit.entry(audit.RULE_CREATE)
+        .pi(bv if sc == PI else None)
+        .customer(bv if sc == CUSTOMER else None)
+        .info(f"{code} v1 {describe(spec)}{note}"),
+    )
+    return rid
 
 
 def _check_bind(scope: str | None, bind_value: str | None) -> tuple[str, str]:
@@ -272,6 +351,8 @@ def update(
         if rebound:
             _check_bind_free(sc, bv, r["id"])
         spec_changed = spec != spec_of(cur)
+        if spec_changed:
+            check_affixes(spec, r["id"])
         before = describe(spec_of(cur))
         renamed = n != r["rule_name"]
         now = util.now()
@@ -279,7 +360,7 @@ def update(
         version = r["current_version"]
         if spec_changed:
             if cur["used"]:
-                version = r["current_version"] + 1
+                version = _next_version(r["id"])
                 _insert_version(cu, r["id"], version, spec, now)
                 action = "NEW_VERSION"
                 audit.record(
@@ -309,14 +390,7 @@ def update(
                     ),
                 )
         if rebound:
-            old = _bind_text(r["bind_scope"], r["bind_value"])
-            audit.record(
-                cu,
-                audit.entry(audit.RULE_REBIND)
-                .pi(bv if sc == PI else r["bind_value"] if r["bind_scope"] == PI else None)
-                .customer(bv if sc == CUSTOMER else r["bind_value"] if r["bind_scope"] == CUSTOMER else None)
-                .info(f"{r['rule_code']} {old} -> {_bind_text(sc, bv)}"),
-            )
+            _audit_rebind(cu, r, sc, bv)
             if action == "UNCHANGED":
                 action = "REBOUND"
         if renamed:
@@ -338,87 +412,293 @@ def update(
         return {"action": action, "rule": view(db.one("SELECT * FROM sn_rule WHERE id = %s", r["id"]))}
 
 
+def _audit_rebind(cu: CurrentUser, r: dict, sc: str, bv: str) -> None:
+    old = _bind_text(r["bind_scope"], r["bind_value"])
+    audit.record(
+        cu,
+        audit.entry(audit.RULE_REBIND)
+        .pi(bv if sc == PI else r["bind_value"] if r["bind_scope"] == PI else None)
+        .customer(bv if sc == CUSTOMER else r["bind_value"] if r["bind_scope"] == CUSTOMER else None)
+        .info(f"{r['rule_code']} {old} -> {_bind_text(sc, bv)}"),
+    )
+
+
+def _next_version(rule_id: int) -> int:
+    """规则内统一递增的下一个版本号（派生版也占号）。"""
+    return int(db.scalar("SELECT COALESCE(MAX(version), 0) FROM sn_rule_version WHERE rule_id = %s", rule_id)) + 1
+
+
 # ---------------------------------------------------------------- 生效规则
 
 
-def bound(pi: str, customer: str | None) -> Resolved | None:
-    """绑定到该 PI 的规则：按 PI ＞ 按客户。没有返回 None。"""
+def _counter_row(pi: str) -> dict:
+    c = db.one("SELECT rule_id, rule_version_id FROM sn_pi_counter WHERE pi_no = %s", pi)
+    return c or {"rule_id": None, "rule_version_id": None}
+
+
+def _derived_spec(base: dict, version: int) -> codec.Spec:
+    """派生版的参数：后缀 = 原后缀 + _v版本号，其余同原版。"""
+    s = spec_of(base)
+    return replace(s, suffix=f"{s.suffix}_v{version}")
+
+
+def plan_for(pi: str, r: dict, source: str, ctr: dict | None = None) -> Resolved:
+    """本 PI 用规则 r 时用哪一版（见模块说明）。"""
+    ctr = ctr or _counter_row(pi)
+    base = current_version(r)
+    pinned = None if ctr.get("rule_version_id") is None else _version(ctr["rule_version_id"])
+    if pinned is not None and pinned["rule_id"] == r["id"] and base["id"] in (pinned["id"], pinned["derived_from"]):
+        return Resolved(r, pinned, source, PLAN_USE)
+    if base["claimed_pi"] is None:
+        return Resolved(r, base, source, PLAN_CLAIM)
+    if base["claimed_pi"] == pi:
+        return Resolved(r, base, source, PLAN_USE)
+    d = db.one(
+        "SELECT * FROM sn_rule_version WHERE derived_from = %s AND claimed_pi = %s ORDER BY version DESC LIMIT 1",
+        base["id"],
+        pi,
+    )
+    if d is not None:
+        return Resolved(r, d, source, PLAN_USE)
+    n = _next_version(r["id"])
+    spec = _derived_spec(base, n)
+    if codec.validate(spec) is not None:
+        raise biz(ErrorCode.RULE_SN_TOO_LONG)
+    v = _draft_version(r["id"], n, spec, derived_from=base["id"])
+    return Resolved(r, v, source, PLAN_DERIVE, shared_by=base["claimed_pi"])
+
+
+def _version(version_id: int) -> dict | None:
+    return db.one("SELECT * FROM sn_rule_version WHERE id = %s", version_id)
+
+
+def _draft_version(rule_id: int | None, version: int, spec: codec.Spec, derived_from: int | None = None) -> dict:
+    return {
+        "id": None,
+        "rule_id": rule_id,
+        "version": version,
+        "prefix": spec.prefix,
+        "suffix": spec.suffix,
+        "base": spec.base,
+        "seq_len": spec.seq_len,
+        "charset": spec.charset,
+        "used": 0,
+        "claimed_pi": None,
+        "derived_from": derived_from,
+    }
+
+
+def bound(pi: str, customer: str | None, ctr: dict | None = None) -> Resolved | None:
+    """绑定到该 PI 的规则：按 PI ＞ 给该 PI 指定的 ＞ 按客户。没有返回 None。"""
+    ctr = ctr or _counter_row(pi)
     r = db.one("SELECT * FROM sn_rule WHERE bind_scope = %s AND bind_value = %s", PI, pi)
     if r is not None:
-        return Resolved(r, current_version(r), SRC_PI)
+        return plan_for(pi, r, SRC_PI, ctr)
+    if ctr.get("rule_id") is not None:
+        r = db.one("SELECT * FROM sn_rule WHERE id = %s", ctr["rule_id"])
+        if r is not None:
+            return plan_for(pi, r, SRC_CHOSEN, ctr)
     if not util.blank(customer):
         r = db.one("SELECT * FROM sn_rule WHERE bind_scope = %s AND bind_value = %s", CUSTOMER, customer)
         if r is not None:
-            return Resolved(r, current_version(r), SRC_CUSTOMER)
+            return plan_for(pi, r, SRC_CUSTOMER, ctr)
     return None
 
 
-def chosen_rule_id(pi: str, counter_rule_id: int | None = None) -> int | None:
-    """给该 PI 指定的规则（手动绑定，或首次生成时所选）；解绑后为 None。"""
-    if counter_rule_id is not None:
-        return counter_rule_id
-    return db.scalar("SELECT rule_id FROM sn_pi_counter WHERE pi_no = %s", pi)
-
-
-def by_id(rule_id: int, source: str) -> Resolved:
-    r = db.one("SELECT * FROM sn_rule WHERE id = %s", rule_id)
-    if r is None:
-        raise biz(ErrorCode.RULE_NOT_FOUND)
-    return Resolved(r, current_version(r), source)
-
-
-def fixed(pi: str, customer: str | None, counter_rule_id: int | None = None) -> Resolved | None:
-    """已确定的规则：绑定 ＞ 给该 PI 指定的规则。没有返回 None（生成时须由用户选）。"""
-    r = bound(pi, customer)
-    if r is not None:
-        return r
-    rid = chosen_rule_id(pi, counter_rule_id)
-    return None if rid is None else by_id(rid, SRC_CHOSEN)
-
-
-def general() -> Resolved | None:
-    """未选定时的默认：通用规则中编码最小的一条（与选项列表的顺序一致）。"""
-    r = db.one("SELECT * FROM sn_rule WHERE bind_scope = %s ORDER BY rule_code ASC LIMIT 1", GENERAL)
-    return None if r is None else Resolved(r, current_version(r), SRC_GENERAL)
+def fixed(pi: str, customer: str | None, ctr: dict | None = None) -> Resolved | None:
+    """已确定的规则（按 PI ＞ 指定 ＞ 按客户）。没有返回 None（生成时须由用户选模板或手动设置）。"""
+    return bound(pi, customer, ctr)
 
 
 def resolve(pi: str, customer: str | None) -> Resolved | None:
-    """该 PI 生效的规则：按 PI ＞ 按客户 ＞ 已指定 ＞ 通用（尚未指定时的默认）。没有返回 None。"""
-    return fixed(pi, customer) or general()
-
-
-def for_generation(pi: str, customer: str | None, rule_id: int | None, counter_rule_id: int | None = None) -> Resolved:
-    """本次生成用的规则：已确定的规则优先（忽略所选）；否则必须由用户选一条通用规则。"""
-    r = fixed(pi, customer, counter_rule_id)
+    """该 PI 生效的规则；尚未确定时为第一条可选模板（与选项列表的顺序一致）。没有返回 None。"""
+    r = fixed(pi, customer)
     if r is not None:
         return r
+    opts = _pickable()
+    return None if not opts else plan_for(pi, opts[0], SRC_PICKED)
+
+
+def _pickable() -> list[dict]:
+    """可作模板的规则：通用规则在前，其后是各 PI 的规则；各按编码排序。按客户绑定的规则不能选。"""
+    return db.all(
+        "SELECT * FROM sn_rule WHERE bind_scope IN (%s, %s) ORDER BY bind_scope = %s DESC, rule_code ASC",
+        GENERAL,
+        PI,
+        GENERAL,
+    )
+
+
+@dataclass(frozen=True)
+class ManualIn:
+    prefix: str | None
+    seq_len: int | None
+    suffix: str | None
+
+
+def manual_plan(pi: str, m: ManualIn) -> Resolved:
+    """生成页手动设置：校验参数，给出生成成功后要新建的规则（按 PI 绑定，名称 PI号_v序号）。"""
+    spec = normalize(SpecIn(m.prefix, m.suffix, MANUAL_BASE, m.seq_len, None))
+    check_affixes(spec)
+    _check_bind_free(PI, pi)
+    code, name = _manual_names(pi)
+    rule = {
+        "id": None,
+        "rule_code": code,
+        "rule_name": name,
+        "bind_scope": PI,
+        "bind_value": pi,
+        "current_version": 1,
+    }
+    return Resolved(rule, _draft_version(None, 1, spec), SRC_MANUAL, PLAN_NEW)
+
+
+_CODE_UNSAFE = re.compile(r"[^A-Za-z0-9_-]")
+
+
+def _manual_names(pi: str) -> tuple[str, str]:
+    """手动规则的编码与名称：PI-<PI号>、PI号_v1；同一 PI 再手动设置时序号递增（PI-<PI号>-2、PI号_v2）。"""
+    stem = "PI-" + _CODE_UNSAFE.sub("_", pi)[:52]
+    taken = set(db.column("SELECT rule_code FROM sn_rule WHERE rule_code = %s OR rule_code LIKE %s", stem, stem + "-%"))
+    k = 1
+    while (stem if k == 1 else f"{stem}-{k}") in taken:
+        k += 1
+    return (stem if k == 1 else f"{stem}-{k}"), util.cut(f"{pi}_v{k}", 128)
+
+
+def for_generation(
+    pi: str,
+    customer: str | None,
+    rule_id: int | None,
+    manual: ManualIn | None = None,
+    ctr: dict | None = None,
+) -> Resolved:
+    """本次生成用的规则：已确定的规则优先（忽略所选）；否则用所选模板或手动设置的规则。
+
+    按客户绑定的规则可以被本 PI 单独覆盖：传了别的模板或手动参数时用它们（生成后记为本 PI 的规则）。
+    """
+    ctr = ctr or _counter_row(pi)
+    r = fixed(pi, customer, ctr)
+    overriding = manual is not None or (rule_id is not None and r is not None and rule_id != r.rule["id"])
+    if r is not None and not (r.source == SRC_CUSTOMER and overriding):
+        return r
+    if manual is not None:
+        return manual_plan(pi, manual)
     if rule_id is None:
         if db.count("SELECT COUNT(*) FROM sn_rule") == 0:
             raise biz(ErrorCode.RULE_MISSING, pi=pi, customer=customer or "")
         raise biz(ErrorCode.RULE_CHOICE_REQUIRED, pi=pi)
-    r = by_id(rule_id, SRC_PICKED)
-    if r.rule["bind_scope"] != GENERAL:
-        raise biz(ErrorCode.RULE_NOT_GENERAL, rule_code=r.rule["rule_code"])
+    return plan_for(pi, pickable_rule(rule_id), SRC_PICKED, ctr)
+
+
+def pickable_rule(rule_id: int | None) -> dict:
+    r = None if rule_id is None else db.one("SELECT * FROM sn_rule WHERE id = %s", rule_id)
+    if r is None:
+        raise biz(ErrorCode.RULE_NOT_FOUND)
+    if r["bind_scope"] == CUSTOMER:
+        raise biz(ErrorCode.RULE_NOT_GENERAL, rule_code=r["rule_code"])
     return r
 
 
-def options() -> list[dict]:
-    """未绑定的 PI 可选的规则：全部通用规则（各取当前版本），按编码排序，第一条即默认。"""
-    rows = db.all("SELECT * FROM sn_rule WHERE bind_scope = %s ORDER BY rule_code ASC", GENERAL)
-    return [rule_info(Resolved(r, current_version(r))) for r in rows]
+def options(pi: str | None = None, start_seq: int = 1) -> list[dict]:
+    """可选的规则模板（见 _pickable），第一条即默认；给了 PI 时按该 PI 算出各自要用的版本与第一个号。"""
+    rows = _pickable()
+    if not rows:
+        return []
+    ids = [r["id"] for r in rows]
+    marks = ",".join(["%s"] * len(ids))
+    vs = db.all(f"SELECT * FROM sn_rule_version WHERE rule_id IN ({marks})", *ids)
+    by_rule: dict[int, dict[int, dict]] = {}
+    for v in vs:
+        by_rule.setdefault(v["rule_id"], {})[v["version"]] = v
+    ctr = {"rule_id": None, "rule_version_id": None} if not pi else _counter_row(pi)
+    pinned = (
+        None if ctr["rule_version_id"] is None else next((v for v in vs if v["id"] == ctr["rule_version_id"]), None)
+    )
+    out = []
+    for r in rows:
+        mine = by_rule.get(r["id"], {})
+        base = mine.get(r["current_version"])
+        if base is None:
+            continue
+        out.append(rule_info(_plan_from(pi, r, base, mine.values(), pinned), start_seq))
+    return out
+
+
+def _plan_from(pi: str | None, r: dict, base: dict, versions, pinned: dict | None) -> Resolved:
+    """plan_for 的批量版（版本已一次查出）。"""
+    if pinned is not None and pinned["rule_id"] == r["id"] and base["id"] in (pinned["id"], pinned["derived_from"]):
+        return Resolved(r, pinned, SRC_PICKED, PLAN_USE)
+    if base["claimed_pi"] is None:
+        return Resolved(r, base, SRC_PICKED, PLAN_CLAIM)
+    if pi is None or base["claimed_pi"] == pi:
+        return Resolved(r, base, SRC_PICKED, PLAN_USE)
+    mine = [v for v in versions if v["derived_from"] == base["id"] and v["claimed_pi"] == pi]
+    if mine:
+        return Resolved(r, max(mine, key=lambda v: v["version"]), SRC_PICKED, PLAN_USE)
+    n = max(v["version"] for v in versions) + 1
+    v = _draft_version(r["id"], n, _derived_spec(base, n), derived_from=base["id"])
+    return Resolved(r, v, SRC_PICKED, PLAN_DERIVE, shared_by=base["claimed_pi"])
+
+
+def realize(cu: CurrentUser, pi: str, r: Resolved) -> dict:
+    """生成事务内：把本次要用的版本落库并标记已使用、归属本 PI，返回该版本。
+
+    与预演时的判断不一致（期间别的 PI 抢先用了这一版、别人也派生了同号的版本、前缀被占用）时报预演已变化。
+    """
+    if r.plan == PLAN_NEW:
+        spec = spec_of(r.version)
+        check_affixes(spec)
+        _check_bind_free(PI, pi)
+        code, name = _manual_names(pi)
+        if (code, name) != (r.rule["rule_code"], r.rule["rule_name"]):
+            raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
+        rid = _insert_rule(cu, code, name, PI, pi, spec, claimed_pi=pi, note=" (生成页手动设置)")
+        return db.one("SELECT * FROM sn_rule_version WHERE rule_id = %s AND version = 1", rid)
+    rule = db.one("SELECT * FROM sn_rule WHERE id = %s FOR UPDATE", r.rule["id"])
+    if rule is None:
+        raise biz(ErrorCode.RULE_NOT_FOUND)
+    if r.plan == PLAN_DERIVE:
+        base = current_version(rule)
+        n = _next_version(rule["id"])
+        if base["id"] != r.version["derived_from"] or base["claimed_pi"] in (None, pi) or n != r.version["version"]:
+            raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
+        vid = _insert_version(
+            cu, rule["id"], n, spec_of(r.version), util.now(), used=True, claimed_pi=pi, derived_from=base["id"]
+        )
+        audit.record(
+            cu,
+            audit.entry(audit.RULE_VERSION)
+            .pi(pi)
+            .info(f"{rule['rule_code']} v{n} {describe(spec_of(r.version))} (沿用 v{base['version']}，派生给 {pi})"),
+        )
+        return _version(vid)
+    if r.plan == PLAN_CLAIM:
+        # 预演时这一版还没有 PI 用过：期间被别的 PI 抢先用了就要重新预演（会改成派生版）
+        n = db.exec(
+            "UPDATE sn_rule_version SET used = 1, claimed_pi = %s "
+            "WHERE id = %s AND (claimed_pi IS NULL OR claimed_pi = %s)",
+            pi,
+            r.version["id"],
+            pi,
+        )
+        if n == 0:
+            raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
+    else:
+        db.exec("UPDATE sn_rule_version SET used = 1 WHERE id = %s", r.version["id"])
+    return _version(r.version["id"])
 
 
 def bind_pi(cu: CurrentUser, pi_in: str | None, rule_id: int | None) -> dict:
-    """给 PI 指定规则（只能选通用规则）：之后生成默认用它；已指定过的直接换成这条。"""
+    """给 PI 指定规则模板（通用规则或别的 PI 的规则）：之后生成默认用它；已指定过的直接换成这条。"""
     pi = util.trim(pi_in)
     if not pi:
         raise biz(ErrorCode.PI_REQUIRED)
     with db.tx():
-        r = None if rule_id is None else db.one("SELECT * FROM sn_rule WHERE id = %s", rule_id)
-        if r is None:
-            raise biz(ErrorCode.RULE_NOT_FOUND)
-        if r["bind_scope"] != GENERAL:
-            raise biz(ErrorCode.RULE_NOT_GENERAL, rule_code=r["rule_code"])
+        r = pickable_rule(rule_id)
+        own = db.one("SELECT rule_code FROM sn_rule WHERE bind_scope = %s AND bind_value = %s", PI, pi)
+        if own is not None:
+            raise biz(ErrorCode.RULE_BIND_EXISTS, rule_code=own["rule_code"])
         now = util.now()
         db.exec(
             "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, start_locked, rule_id, "
@@ -434,28 +714,38 @@ def bind_pi(cu: CurrentUser, pi_in: str | None, rule_id: int | None) -> dict:
 
 
 def unbind_pi(cu: CurrentUser, pi_in: str | None) -> dict:
-    """解除给 PI 指定的规则：下次生成前重新选择。"""
+    """解除该 PI 当前生效的绑定：按 PI 绑定的规则转为通用规则（可作模板）；给该 PI 指定的规则取消指定。
+
+    按客户绑定的规则影响该客户全部 PI，不能在这里解绑。下次生成前重新选择。
+    """
     pi = util.trim(pi_in)
     if not pi:
         raise biz(ErrorCode.PI_REQUIRED)
     with db.tx():
-        rid = db.scalar("SELECT rule_id FROM sn_pi_counter WHERE pi_no = %s FOR UPDATE", pi)
-        if rid is not None:
-            code = db.scalar("SELECT rule_code FROM sn_rule WHERE id = %s", rid)
+        r = fixed(pi, orders.customer_of_pi(pi))
+        if r is None:
+            pass
+        elif r.source == SRC_PI:
+            rule = db.one("SELECT * FROM sn_rule WHERE id = %s FOR UPDATE", r.rule["id"])
+            db.exec(
+                "UPDATE sn_rule SET bind_scope = %s, bind_value = '', updated_by = %s, updated_at = %s WHERE id = %s",
+                GENERAL,
+                cu.emp_no,
+                util.now(),
+                rule["id"],
+            )
+            _audit_rebind(cu, rule, GENERAL, "")
+        elif r.source == SRC_CHOSEN:
             db.exec("UPDATE sn_pi_counter SET rule_id = NULL, updated_at = %s WHERE pi_no = %s", util.now(), pi)
-            audit.record(cu, audit.entry(audit.RULE_PI_UNBIND).pi(pi).info(f"{code or rid}"))
+            audit.record(cu, audit.entry(audit.RULE_PI_UNBIND).pi(pi).info(f"{r.rule['rule_code']}"))
+        else:
+            raise biz(ErrorCode.RULE_UNBIND_CUSTOMER, rule_code=r.rule["rule_code"])
     return _effective_info(pi)
 
 
 def _effective_info(pi: str) -> dict:
     r = fixed(pi, orders.customer_of_pi(pi))
     return {"pi_no": pi, "rule": None if r is None else rule_info(r)}
-
-
-def lock_for_generation(version_id: int) -> dict:
-    """生成事务内：锁住并标记版本已使用，返回最新参数。"""
-    db.exec("UPDATE sn_rule_version SET used = 1 WHERE id = %s", version_id)
-    return db.one("SELECT * FROM sn_rule_version WHERE id = %s", version_id)
 
 
 # 已被号引用的版本参数不可变，可放心缓存（用于把十进制流水显示成进制流水）
@@ -488,22 +778,27 @@ def seq_text(version_id: int | None, seq_dec: int | None) -> str:
         return ""
 
 
-def rule_info(r: Resolved) -> dict:
+def rule_info(r: Resolved, start_seq: int = 1) -> dict:
     s = spec_of(r.version)
+    mx = codec.max_seq(s)
     return {
         "rule_id": r.rule["id"],
         "source": r.source,
+        "plan": r.plan,
+        "shared_by": r.shared_by,
         "rule_code": r.rule["rule_code"],
         "rule_name": r.rule["rule_name"],
         "bind_scope": r.rule["bind_scope"],
         "bind_value": r.rule["bind_value"],
         "version_id": r.version["id"],
         "version": r.version["version"],
+        "derived": r.version.get("derived_from") is not None,
         "prefix": s.prefix,
         "suffix": s.suffix,
         "base": s.base,
         "seq_len": s.seq_len,
         "charset": s.charset,
-        "max_seq": codec.max_seq(s),
+        "max_seq": mx,
         "sample_sn": codec.format_sn(1, s),
+        "start_sn": codec.format_sn(start_seq, s) if 0 < start_seq <= mx else None,
     }

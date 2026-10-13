@@ -468,6 +468,34 @@ def w(api, admin) -> World:
     return World(api, admin)
 
 
+#: 号与规则相关的表：每个用例开始前清空。SN 全局唯一、规则前缀不能互为开头，
+#: 各用例写死的前缀（"B"、"Q"……）跨用例会互相冲突；工厂、账户、订单快照、留痕不清。
+_SN_TABLES = (
+    "sn_transfer_item",
+    "sn_transfer",
+    "sn_print",
+    "sn_acquire_batch",
+    "sn_allocation",
+    "sn_item",
+    "sn_gen_job",
+    "sn_gen_preview",
+    "sn_bill_gen",
+    "sn_pi_counter",
+    "sn_rule_version",
+    "sn_rule",
+)
+
+
+@pytest.fixture(autouse=True)
+def _fresh_sn(request):
+    if "app_client" in request.fixturenames:
+        request.getfixturevalue("app_client")
+        with raw_conn() as c, c.cursor() as cur:
+            for t in _SN_TABLES:
+                cur.execute(f"DELETE FROM {t}")
+    yield
+
+
 _once: dict[str, Any] = {}
 
 

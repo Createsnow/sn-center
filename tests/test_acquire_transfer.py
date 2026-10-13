@@ -306,22 +306,17 @@ def test_approve_moves_to_target_keeps_serial_owner_and_source_count(api, admin,
     assert ok(w.acquire(op_b, None, to_pi, req()))["qty"] == 2
 
 
-def test_direct_transfer_rejects_duplicate_in_target_pi(api, admin, w, ctx, sql):
+def test_direct_transfer_rejects_bad_target_and_same_prefix_cannot_be_reused(api, admin, w, ctx, sql):
     pi1 = ready(w, "DU", 3, 0)
-    pi2, bill2 = uid("PI"), uid("MO")
-    w.pi_rule(pi2, "DU", 10, 5)
-    w.order(bill2, ORG_A, "C1", pi2, ("MA", 3))
-    w.generate(bill2, 2)
-    w.allocate(bill2)
-    dup = api.post(
-        "/api/transfers/direct",
-        m(factory_code=FA, pi_no=pi1, scope="PI", to_factory=FA, to_pi=pi2, reason="合并"),
-        admin,
-    )
-    assert dup.code == "TR_DUPLICATE"
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'TO_ACQUIRE'", pi1) == 3, (
-        "whole transfer rejected"
-    )
+    pi2 = uid("PI")
+    # SN 全局唯一：别的 PI 不能再建同前缀（或互为开头）的规则，转入 PI 也就不会出现相同的号
+    for prefix in ("DU", "D", "DUX"):
+        r = api.post(
+            "/api/rules",
+            m(rule_code=uid("R"), rule_name="r", bind_scope="PI", bind_value=pi2, prefix=prefix, base=10, seq_len=5),
+            admin,
+        )
+        assert r.code == "RULE_PREFIX_CONFLICT", prefix
     assert (
         api.post(
             "/api/transfers/direct",
@@ -524,8 +519,8 @@ def test_exports_never_carry_formulas(api, admin, w, ctx):
 def test_concurrent_print_with_same_request_no_replays_one_print(api, admin, w, ctx, sql):
     from concurrent.futures import ThreadPoolExecutor
 
-    for _ in range(3):
-        pi = ready(w, "N", 1500, 500)
+    for i in range(3):
+        pi = ready(w, f"N{i}", 1500, 500)
         ok(w.acquire(admin, FA, pi, req()))
         r = req()
         body = m(factory_code=FA, pi_no=pi, request_no=r)

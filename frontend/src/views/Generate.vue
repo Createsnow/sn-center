@@ -74,35 +74,68 @@
       <div v-if="ctx" v-loading="ctxLoading" class="drawer">
         <el-alert v-for="msg in issueTexts" :key="msg" type="error" show-icon :closable="false" :title="msg" />
 
-        <dl class="kv">
-          <dt>{{ t("generate.rule") }}</dt>
-          <dd>
-            <template v-if="ctx.rule">
-              {{ ctx.rule.rule_code }} · {{ ctx.rule.rule_name }} · v{{ ctx.rule.version }}
-              <el-tag size="small" :type="ctx.rule.source === 'CHOSEN' ? 'warning' : 'success'" class="ml">{{ t(`generate.ruleSrc${ctx.rule.source}`) }}</el-tag>
-              <el-button v-if="ctx.rule.source === 'CHOSEN' && !detailRun" link type="primary" size="small" class="ml" :loading="ruleBusy" @click="unbindRule">{{ t("generate.ruleUnbind") }}</el-button>
-              <div v-else-if="ctx.rule.source !== 'CHOSEN'" class="muted hint">{{ t("generate.ruleBoundHint") }}</div>
-            </template>
-            <template v-else-if="ctx.rule_options.length">
-              <el-select v-model="ruleId" filterable size="small" :placeholder="t('generate.rulePick')" class="rule-picker">
-                <el-option v-for="o in ctx.rule_options" :key="o.rule_id" :value="o.rule_id" :label="ruleLabel(o)">
-                  <div class="opt"><span><b>{{ o.rule_code }}</b> · {{ o.rule_name }}</span><span class="muted sn-mono">{{ o.sample_sn }}</span></div>
-                </el-option>
+        <!-- SN 规则：选规则 / 大号显示下一个号（前缀 · 流水 · 后缀，手动设置时就地编辑）/ 一行说明 -->
+        <div class="rule-card">
+          <div class="rule-top">
+            <template v-if="picking">
+              <el-select v-model="pickKey" filterable class="rule-pick" :placeholder="t('generate.rulePick')" :disabled="!!detailRun">
+                <el-option-group :label="t('generate.ruleLibrary')">
+                  <el-option v-for="o in ctx.rule_options" :key="o.rule_id" :value="o.rule_id" :label="o.rule_name">
+                    <div class="opt"><span>{{ o.rule_name }}</span><span class="muted sn-mono">{{ fmtOf(o) }}</span></div>
+                  </el-option>
+                </el-option-group>
+                <el-option value="manual" :label="t('generate.ruleManual')">＋ {{ t("generate.ruleManual") }}</el-option>
               </el-select>
-              <el-button size="small" class="ml" :disabled="ruleId == null" :loading="ruleBusy" @click="bindRule">{{ t("generate.ruleAssign") }}</el-button>
-              <div class="muted hint">{{ t("generate.rulePickHint") }}</div>
+              <el-button v-if="ruleId != null" :loading="ruleBusy" :disabled="!!detailRun" @click="bindRule">{{ t("generate.ruleAssign") }}</el-button>
+              <el-button v-if="override" link @click="override = false">{{ t("common.cancel") }}</el-button>
             </template>
-            <span v-else class="muted">—</span>
-          </dd>
-          <dt>{{ t("generate.nextStart") }}</dt>
-          <dd>
-            <span class="sn-mono">{{ nextSn || "—" }}</span>
-            <el-tooltip v-if="ctx.next?.adjusted" :content="t('generate.startAdjusted', { sn: ctx.next.by_sn, start: ctx.next.start_sn })">
-              <el-tag size="small" type="warning" class="ml">{{ t("generate.adjustedTag") }}</el-tag>
+            <template v-else-if="ctx.rule">
+              <b>{{ ctx.rule.rule_name }}</b>
+              <span class="muted small">v{{ ctx.rule.version }}</span>
+              <el-tag size="small" round :type="ctx.rule.source === 'CUSTOMER' ? 'warning' : 'primary'" disable-transitions>{{ t(`generate.ruleSrc${ctx.rule.source}`) }}</el-tag>
+              <span class="rule-act">
+                <el-button v-if="ctx.rule.source === 'CUSTOMER'" link type="primary" :disabled="!!detailRun" @click="startOverride">{{ t("generate.ruleOverride") }}</el-button>
+                <el-button v-else-if="!detailRun && !unbindAsk" link type="danger" @click="unbindAsk = true">{{ t("generate.ruleUnbind") }}</el-button>
+              </span>
+            </template>
+          </div>
+
+          <div v-if="parts" class="sn-big">
+            <div class="seg">
+              <input v-if="manualMode" v-model.trim="manual.prefix" class="v in" :class="{ bad: !manual.prefix }" :style="{ width: inW(manual.prefix) }" :placeholder="t('generate.rulePrefix')" :aria-label="t('generate.rulePrefix')" maxlength="40" />
+              <span v-else class="v">{{ parts.prefix }}</span>
+              <span class="cap">{{ manualMode ? t("generate.rulePrefixReq") : t("generate.rulePrefix") }}</span>
+            </div>
+            <div class="seg">
+              <span class="v"><span class="z">{{ parts.zeros }}</span>{{ parts.digits }}</span>
+              <span class="cap">
+                {{ t("generate.ruleSeq", { n: parts.width }) }}
+                <el-input-number v-if="manualMode" v-model="manual.seq_len" size="small" :min="1" :max="12" class="width-in" />
+              </span>
+            </div>
+            <div v-if="manualMode || parts.suffix || parts.ver" class="seg">
+              <input v-if="manualMode" v-model.trim="manual.suffix" class="v in" :style="{ width: inW(manual.suffix) }" :placeholder="t('generate.ruleSuffix')" :aria-label="t('generate.ruleSuffix')" maxlength="40" />
+              <span v-else class="v">{{ parts.suffix }}<span class="ver">{{ parts.ver }}</span></span>
+              <span class="cap">{{ manualMode ? t("generate.ruleSuffixOpt") : t("generate.ruleSuffix") }}</span>
+            </div>
+          </div>
+
+          <div v-if="unbindAsk && ctx.rule && !picking" class="unbind-ask">
+            <span>{{ t("generate.ruleUnbindAsk") }}</span>
+            <span class="row">
+              <el-button link type="danger" :loading="ruleBusy" @click="unbindRule">{{ t("generate.ruleUnbindYes") }}</el-button>
+              <el-button link @click="unbindAsk = false">{{ t("common.cancel") }}</el-button>
+            </span>
+          </div>
+          <div v-else class="rule-status" :class="status.cls">
+            <i />
+            <span>{{ status.text }}</span>
+            <el-tooltip v-if="!picking && ctx.next?.adjusted" :content="t('generate.startAdjusted', { sn: ctx.next.by_sn, start: ctx.next.start_sn })">
+              <el-tag size="small" type="warning">{{ t("generate.adjustedTag") }}</el-tag>
             </el-tooltip>
-            <span class="muted ml">{{ t("generate.lastSeq") }} <span class="num">{{ ctx.counter.last_seq_dec }}</span></span>
-          </dd>
-        </dl>
+            <span class="last muted">{{ t("generate.lastSeq") }} <span class="num">{{ ctx.counter.last_seq_dec }}</span></span>
+          </div>
+        </div>
 
         <div class="stats" :class="{ dim: !!detailRun }">
           <div class="stat"><span>{{ t("generate.orderTotal") }}</span><b class="num">{{ fmt(ctx.total_qty) }}</b></div>
@@ -141,8 +174,8 @@
               <span v-if="ctx.quota > ctx.limits.default" class="muted">{{ t("generate.genCardLimit", { n: fmt(ctx.limits.default) }) }}</span>
             </div>
             <div class="row">
-              <el-button type="primary" :disabled="!!busy || (!ctx.rule && ruleId == null)" @click="openGen(ctx.pi_no)">{{ t("generate.btnGenOpen") }}</el-button>
-              <span v-if="!ctx.rule && ruleId == null" class="muted small">{{ t("generate.rulePickRequired") }}</span>
+              <el-button type="primary" :disabled="!!busy || !ruleReady" @click="openGen(ctx.pi_no)">{{ t("generate.btnGenOpen") }}</el-button>
+              <span v-if="!ruleReady" class="muted small">{{ t("generate.rulePickRequired") }}</span>
             </div>
           </div>
 
@@ -390,14 +423,115 @@ const busy = ref("");
 const detailPi = ref("");
 const ctx = ref<any>(null);
 const ctxLoading = ref(false);
-const ruleId = ref<number | null>(null);
 const ruleBusy = ref(false);
 let alive = true;
 
-const ruleLabel = (o: any) => `${o.rule_code} · ${o.rule_name}`;
-const nextSn = computed(() => ctx.value?.next?.start_sn ?? ctx.value?.rule_options.find((o: any) => o.rule_id === ruleId.value)?.sample_sn ?? null);
+// ------------------------------------------------------------------ 详情里的 SN 规则
+
+/** 未绑定（或按客户绑定时为本 PI 单独设置）时的选择：规则库里的一条模板，或 "manual" = 手动设置。 */
+const pickKey = ref<number | "manual" | null>(null);
+/** 按客户绑定时点了「为本 PI 单独设置」。 */
+const override = ref(false);
+const unbindAsk = ref(false);
+const manual = reactive({ prefix: "", seq_len: 6, suffix: "" });
+/** 手动设置的即时判断结果（后台校验前缀冲突、给出第一个号）。 */
+const manualPlan = ref<any>(null);
+const manualError = ref("");
+const manualChecking = ref(false);
+
+const picking = computed(() => !!ctx.value && (!ctx.value.rule || override.value));
+const manualMode = computed(() => picking.value && pickKey.value === "manual");
+const ruleId = computed<number | null>(() => (picking.value && typeof pickKey.value === "number" ? pickKey.value : null));
+const pickedOpt = computed(() => (ruleId.value == null ? null : ctx.value?.rule_options.find((o: any) => o.rule_id === ruleId.value) ?? null));
+/** 当前显示的规则（含本 PI 要用的版本与第一个号）。 */
+const shownRule = computed<any>(() => (manualMode.value ? manualPlan.value?.rule ?? null : picking.value ? pickedOpt.value : ctx.value?.rule ?? null));
+const nextSn = computed<string | null>(() => {
+  if (!picking.value) return ctx.value?.next?.start_sn ?? null;
+  if (manualMode.value) return manualError.value ? null : manualPlan.value?.next?.start_sn ?? null;
+  return pickedOpt.value?.start_sn ?? null;
+});
+const ruleReady = computed(() => {
+  if (!ctx.value) return false;
+  if (!picking.value) return !!ctx.value.rule;
+  if (manualMode.value) return !!manualPlan.value && !manualError.value && !manualChecking.value;
+  return ruleId.value != null;
+});
+
+const fmtOf = (o: any) => `${o.prefix}${"#".repeat(o.seq_len)}${o.suffix}`;
+const inW = (v: string) => `${Math.max(4, (v || "").length + 1)}ch`;
+
+/** 大号 SN 的三段：前缀 / 流水（前导 0 浅色）/ 后缀（沿用派生的 _v版本号 单独标色）。 */
+const parts = computed(() => {
+  if (manualMode.value) {
+    const w = manual.seq_len || 1;
+    const sn = manualChecking.value ? null : nextSn.value;
+    const seq = sn ? sn.slice(manual.prefix.length, sn.length - manual.suffix.length) : "1".padStart(w, "0");
+    return { prefix: manual.prefix, ...splitSeq(seq), width: w, suffix: manual.suffix, ver: "" };
+  }
+  const r = shownRule.value;
+  if (!r) return null;
+  const sn = nextSn.value ?? r.sample_sn;
+  const seq = sn.slice(r.prefix.length, sn.length - r.suffix.length);
+  const tag = `_v${r.version}`;
+  const derived = (r.plan === "DERIVE" || r.derived) && r.suffix.endsWith(tag);
+  return { prefix: r.prefix, ...splitSeq(seq), width: r.seq_len, suffix: derived ? r.suffix.slice(0, -tag.length) : r.suffix, ver: derived ? tag : "" };
+});
+function splitSeq(seq: string) {
+  const i = seq.search(/[^0]/);
+  const cut = i < 0 ? Math.max(0, seq.length - 1) : i;
+  return { zeros: seq.slice(0, cut), digits: seq.slice(cut) };
+}
+
+/** 一行说明：本 PI 用哪一版、为什么。 */
+const status = computed<{ cls: string; text: string }>(() => {
+  if (manualMode.value) {
+    if (manualError.value) return { cls: "err", text: manualError.value };
+    if (manualChecking.value || !manualPlan.value) return { cls: "", text: t("generate.ruleChecking") };
+    return { cls: "new", text: t("generate.ruleStNEW", { name: manualPlan.value.rule.rule_name }) };
+  }
+  const r = shownRule.value;
+  if (!r) return { cls: "", text: picking.value ? t("generate.rulePickRequired") : "—" };
+  if (r.plan === "DERIVE") return { cls: "ok", text: t("generate.ruleStDERIVE", { pi: r.shared_by, v: r.version }) };
+  if (!picking.value && r.source === "CUSTOMER") return { cls: "", text: t("generate.ruleStCUSTOMER") };
+  return { cls: "ok", text: t(r.plan === "CLAIM" ? "generate.ruleStCLAIM" : "generate.ruleStUSE", { v: r.version }) };
+});
+
+let planTimer: number | undefined;
+let planSeq = 0;
+watch(() => [manualMode.value, manual.prefix, manual.suffix, manual.seq_len], () => {
+  window.clearTimeout(planTimer);
+  planSeq++;
+  if (!manualMode.value || !ctx.value) return;
+  manualChecking.value = true;
+  manualError.value = "";
+  const seq = planSeq;
+  planTimer = window.setTimeout(async () => {
+    try {
+      const p = await api.genRulePlan({ pi_no: ctx.value.pi_no, manual: { ...manual } });
+      if (seq === planSeq) manualPlan.value = p;
+    } catch (e: any) {
+      if (seq === planSeq) {
+        manualPlan.value = null;
+        manualError.value = e?.message || "";
+      }
+    } finally {
+      if (seq === planSeq) manualChecking.value = false;
+    }
+  }, 300);
+});
+
+function resetRulePick(c: any) {
+  override.value = false;
+  unbindAsk.value = false;
+  if (!c.rule_options.some((o: any) => o.rule_id === pickKey.value) && pickKey.value !== "manual") pickKey.value = c.rule_options[0]?.rule_id ?? "manual";
+}
+
+function startOverride() {
+  override.value = true;
+  if (pickKey.value == null) pickKey.value = ctx.value?.rule_options[0]?.rule_id ?? "manual";
+}
 const detailRun = computed<Tracked | null>(() => (detailPi.value ? tracked[detailPi.value] ?? null : null));
-const canGenerate = computed(() => !!ctx.value && !ctx.value.issues.some((c: string) => ["FACTORY_UNMAPPED", "FACTORY_DISABLED", "RULE_MISSING"].includes(c)));
+const canGenerate = computed(() => !!ctx.value && !ctx.value.issues.some((c: string) => ["FACTORY_UNMAPPED", "FACTORY_DISABLED"].includes(c)));
 const totals = computed(() => pis.value.reduce((s, r) => ({ quota: s.quota + r.quota, pending: s.pending + r.pending_alloc }), { quota: 0, pending: 0 }));
 const listCap = computed(() => GEN_PAGES * pageSize.value);
 /** 本次列表是否按关键字搜索得到（搜索结果不受页数限制）。 */
@@ -495,9 +629,14 @@ async function loadContext(params: { pi?: string; bill_no?: string }) {
   ctxLoading.value = true;
   try {
     const c = await api.genPiContext(params);
+    const switched = ctx.value?.pi_no !== c.pi_no;
     ctx.value = c;
     detailPi.value = c.pi_no;
-    if (!c.rule_options.some((o: any) => o.rule_id === ruleId.value)) ruleId.value = c.rule_options[0]?.rule_id ?? null;
+    if (switched) {
+      Object.assign(manual, { prefix: "", seq_len: 6, suffix: "" });
+      pickKey.value = null;
+    }
+    resetRulePick(c);
     if (c.running_batch && !tracked[c.pi_no]) track(c.pi_no, c.running_batch.batch);
   } finally {
     ctxLoading.value = false;
@@ -520,11 +659,6 @@ async function bindRule() {
 async function unbindRule() {
   const c = ctx.value;
   if (!c?.rule) return;
-  try {
-    await ElMessageBox.confirm(t("generate.ruleUnbindConfirm", { pi: c.pi_no, code: c.rule.rule_code }), t("generate.ruleUnbind"), { type: "warning" });
-  } catch {
-    return;
-  }
   ruleBusy.value = true;
   try {
     await api.unbindPiRule(c.pi_no);
@@ -541,13 +675,14 @@ const gen = reactive<{
   open: boolean;
   ctx: any;
   ruleId: number | null;
+  manual: { prefix: string; seq_len: number; suffix: string } | null;
   qty: number | undefined;
   unlocked: boolean;
   corrected: string;
   preview: any;
   previewing: boolean;
   error: string;
-}>({ open: false, ctx: null, ruleId: null, qty: undefined, unlocked: false, corrected: "", preview: null, previewing: false, error: "" });
+}>({ open: false, ctx: null, ruleId: null, manual: null, qty: undefined, unlocked: false, corrected: "", preview: null, previewing: false, error: "" });
 const genCap = computed(() => (gen.ctx ? genQtyCap(gen.ctx.quota, gen.ctx.limits, gen.unlocked) : 0));
 const limited = computed(() => !!gen.ctx && gen.ctx.quota > gen.ctx.limits.default);
 let previewTimer: number | undefined;
@@ -555,14 +690,15 @@ let previewSeq = 0;
 
 /** 打开生成弹窗；规则还没确定时先打开详情选规则。 */
 async function openGen(pi: string) {
-  const c = ctx.value?.pi_no === pi ? ctx.value : await api.genPiContext({ pi });
-  const picked = ctx.value?.pi_no === pi ? ruleId.value : null;
-  if (!c.rule && picked == null) {
+  const here = ctx.value?.pi_no === pi;
+  const c = here ? ctx.value : await api.genPiContext({ pi });
+  if (here ? !ruleReady.value : !c.rule) {
     await openDetail(pi);
     return;
   }
   gen.ctx = c;
-  gen.ruleId = c.rule ? null : picked;
+  gen.ruleId = here ? ruleId.value : null;
+  gen.manual = here && manualMode.value ? { ...manual } : null;
   gen.unlocked = false;
   gen.corrected = "";
   gen.qty = genQtyCap(c.quota, c.limits, false);
@@ -603,7 +739,7 @@ function schedulePreview() {
 async function doPreview() {
   const seq = ++previewSeq;
   try {
-    const p = await api.genPiPreview({ pi_no: gen.ctx.pi_no, qty: gen.qty, rule_id: gen.ruleId }, true);
+    const p = await api.genPiPreview({ pi_no: gen.ctx.pi_no, qty: gen.qty, rule_id: gen.ruleId, manual: gen.manual }, true);
     if (seq === previewSeq) gen.preview = p;
   } catch (e: any) {
     if (seq === previewSeq) gen.error = e.message;
@@ -756,9 +892,31 @@ onUnmounted(() => {
 .kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 0; font-size: 13px; }
 .kv dt { color: var(--app-muted); }
 .kv dd { margin: 0; }
-.rule-picker { width: 100%; max-width: 420px; }
-.hint { margin-top: 4px; font-size: 12px; }
 .opt { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+.rule-card { border: 1px solid var(--el-border-color-lighter); border-radius: 10px; padding: 14px 18px 16px; display: flex; flex-direction: column; gap: 14px; }
+.rule-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 32px; }
+.rule-top b { font-weight: 600; }
+.rule-pick { flex: 1 1 260px; max-width: 460px; }
+.rule-act { margin-left: auto; }
+.sn-big { display: flex; align-items: flex-start; gap: 2px; flex-wrap: wrap; }
+.seg { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.seg .v { font-family: var(--sn-mono, ui-monospace, SFMono-Regular, Consolas, monospace); font-size: 28px; line-height: 1.2; font-weight: 600; letter-spacing: 0.02em; padding: 2px 4px; border-radius: 6px; white-space: nowrap; color: var(--app-text); }
+.seg .v .z { color: var(--el-text-color-placeholder); font-weight: 400; }
+.seg .v .ver { color: var(--el-color-primary); }
+.seg input.v { background: var(--el-fill-color-light); border: 1px dashed var(--el-border-color-darker); outline: none; min-width: 3ch; }
+.seg input.v:focus { border-color: var(--el-color-primary); border-style: solid; }
+.seg input.v::placeholder { color: var(--el-text-color-placeholder); font-weight: 400; font-size: 20px; }
+.seg input.v.bad { border-color: var(--el-color-danger); background: var(--el-color-danger-light-9); }
+.seg .cap { font-size: 12px; color: var(--app-muted); padding-left: 4px; display: flex; align-items: center; gap: 8px; }
+.width-in { width: 92px; }
+.rule-status { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--app-muted); }
+.rule-status > i { width: 7px; height: 7px; border-radius: 50%; background: var(--el-border-color-darker); flex: none; }
+.rule-status.ok > i { background: var(--el-color-success); }
+.rule-status.new > i { background: var(--el-color-primary); }
+.rule-status.err { color: var(--el-color-danger); }
+.rule-status.err > i { background: var(--el-color-danger); }
+.rule-status .last { margin-left: auto; font-size: 12px; }
+.unbind-ask { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 13px; padding: 8px 12px; border-radius: 8px; background: var(--el-color-warning-light-9); }
 .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .stats.dim { opacity: 0.6; }
 .stat { border: 1px solid var(--el-border-color-lighter); border-radius: 6px; padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; }

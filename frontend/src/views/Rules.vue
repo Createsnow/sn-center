@@ -5,12 +5,14 @@
     </PageHead>
     <div class="surface">
       <div class="toolbar">
-        <el-select v-model="scope" clearable :placeholder="t('rules.bind')" @change="load">
-          <el-option v-for="s in SCOPES" :key="s" :value="s" :label="t(`rules.scope${s}`)" />
-        </el-select>
+        <el-radio-group v-model="scope">
+          <el-radio-button v-for="s in FILTERS" :key="s" :value="s">
+            {{ t(`rules.scope${s}`) }}<span class="cnt">{{ countOf(s) }}</span>
+          </el-radio-button>
+        </el-radio-group>
         <el-input v-model="q" clearable :placeholder="t('rules.search')" prefix-icon="Search" @keyup.enter="load" @clear="load" />
       </div>
-      <el-table v-loading="loading" :data="rows" size="small" :empty-text="t('common.empty')">
+      <el-table v-loading="loading" :data="shown" size="small" :empty-text="t('common.empty')">
         <el-table-column :label="t('rules.code')" min-width="120"><template #default="{ row }"><b>{{ row.rule.rule_code }}</b></template></el-table-column>
         <el-table-column :label="t('rules.name')" min-width="140"><template #default="{ row }">{{ row.rule.rule_name }}</template></el-table-column>
         <el-table-column :label="t('rules.bind')" min-width="160">
@@ -59,7 +61,10 @@
           </el-select>
         </el-form-item>
         <el-form-item v-if="form.bind_scope === 'PI'" label="PI" required><el-input v-model="form.bind_value" /></el-form-item>
-        <el-form-item :label="t('rules.prefix')"><el-input v-model="form.prefix" /></el-form-item>
+        <el-form-item :label="t('rules.prefix')" required>
+          <el-input v-model.trim="form.prefix" />
+          <div class="muted">{{ t("rules.prefixHint") }}</div>
+        </el-form-item>
         <el-form-item :label="t('rules.suffix')"><el-input v-model="form.suffix" /></el-form-item>
         <el-form-item :label="t('rules.base')">
           <el-radio-group v-model="form.base" @change="form.charset = ''">
@@ -92,6 +97,10 @@
           <span class="sn-mono ml">{{ v.prefix }}<i>{{ "#".repeat(v.seq_len) }}</i>{{ v.suffix }}</span>
           <span class="muted ml">{{ t("rules.base") }} {{ v.base }} · {{ v.created_by }}</span>
           <el-tag v-if="v.used" size="small" type="success" class="ml">{{ t("rules.used") }}</el-tag>
+          <div v-if="v.claimed_pi || v.derived_from" class="muted small">
+            <span v-if="v.claimed_pi">{{ t("rules.versionPi", { pi: v.claimed_pi }) }}</span>
+            <span v-if="v.derived_from" class="ml">{{ t("rules.versionDerived", { v: versionNo(v.derived_from) }) }}</span>
+          </div>
         </el-timeline-item>
       </el-timeline>
     </el-drawer>
@@ -107,6 +116,8 @@ import PageHead from "@/components/PageHead.vue";
 
 const { t } = useI18n();
 const SCOPES = ["GENERAL", "CUSTOMER", "PI"];
+/** 列表筛选：全部（含通用）/ 按客户 / 按 PI。 */
+const FILTERS = ["ALL", "CUSTOMER", "PI"];
 const CHARSETS: Record<number, string> = {
   10: "0123456789",
   16: "0123456789ABCDEF",
@@ -115,7 +126,7 @@ const CHARSETS: Record<number, string> = {
 };
 const rows = ref<any[]>([]);
 const loading = ref(false);
-const scope = ref("");
+const scope = ref("ALL");
 const q = ref("");
 const dialog = ref(false);
 const editing = ref<any>(null);
@@ -126,11 +137,14 @@ const sample = ref<any>(null);
 const sampleError = ref("");
 const form = reactive({ rule_code: "", rule_name: "", bind_scope: "GENERAL", bind_value: "", prefix: "", suffix: "", base: 10, seq_len: 5, charset: "" });
 const defaultCharset = computed(() => CHARSETS[form.base]);
+const shown = computed(() => (scope.value === "ALL" ? rows.value : rows.value.filter((r) => r.rule.bind_scope === scope.value)));
+const countOf = (s: string) => (s === "ALL" ? rows.value.length : rows.value.filter((r) => r.rule.bind_scope === s).length);
+const versionNo = (id: number) => versions.value?.versions.find((v: any) => v.id === id)?.version ?? "?";
 
 async function load() {
   loading.value = true;
   try {
-    rows.value = await api.rules({ scope: scope.value, q: q.value });
+    rows.value = await api.rules({ q: q.value });
   } finally {
     loading.value = false;
   }
@@ -194,6 +208,8 @@ onMounted(load);
 <style scoped>
 .ml { margin-left: 6px; }
 .mb { margin-bottom: 12px; }
+.small { font-size: 12px; margin-top: 2px; }
+.cnt { margin-left: 6px; font-size: 12px; opacity: 0.75; }
 .w100 { width: 100%; }
 .samples { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 i { font-style: normal; color: var(--app-muted); }

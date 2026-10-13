@@ -69,11 +69,14 @@ CREATE TABLE sn_rule_version (
   seq_len     INT         NOT NULL COMMENT '流水位数',
   charset     VARCHAR(64) NOT NULL COMMENT '字符表，长度 = 进制',
   used        TINYINT(1)  NOT NULL DEFAULT 0 COMMENT '已生成过号：再改编码参数必须另出一版',
+  claimed_pi  VARCHAR(64) NULL COMMENT '最先用这一版生成的 PI；别的 PI 再用这条规则时另出派生版',
+  derived_from BIGINT     NULL COMMENT '沿用派生版：派生自的版本（sn_rule_version.id）；后缀 = 原后缀 + _v版本号',
   created_by  VARCHAR(32) NULL,
   created_at  DATETIME    NOT NULL,
   updated_at  DATETIME    NOT NULL,
   PRIMARY KEY (id),
-  UNIQUE KEY ux_rule_version (rule_id, version)
+  UNIQUE KEY ux_rule_version (rule_id, version),
+  KEY ix_rule_version_derived (derived_from, claimed_pi)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='SN 规则版本';
 
 -- 金蝶生产订单快照：一张单的每条物料一行；不存单据头与内码
@@ -121,7 +124,8 @@ CREATE TABLE sn_pi_counter (
   pi_no          VARCHAR(64) NOT NULL,
   last_seq_dec   BIGINT      NOT NULL DEFAULT 0 COMMENT '本 PI 已占用的最大十进制流水',
   generated_qty  BIGINT      NOT NULL DEFAULT 0 COMMENT '本 PI 自己生成的枚数',
-  rule_id        BIGINT      NULL COMMENT '给该 PI 指定的通用规则（sn_rule.id），可解绑',
+  rule_id        BIGINT      NULL COMMENT '给该 PI 指定的规则模板（sn_rule.id），可解绑',
+  rule_version_id BIGINT     NULL COMMENT '本 PI 固定使用的规则版本（首次用该规则生成时确定）',
   start_locked   TINYINT(1)  NOT NULL DEFAULT 0 COMMENT '1 = 已生成过（撤销到一枚不剩时归 0）',
   locked_by      VARCHAR(32) NULL COMMENT '首次生成的账户',
   locked_at      DATETIME    NULL COMMENT '首次生成的时间',
@@ -153,7 +157,9 @@ CREATE TABLE sn_gen_preview (
   end_seq_dec     BIGINT      NOT NULL,
   start_sn        VARCHAR(64) NOT NULL,
   end_sn          VARCHAR(64) NOT NULL,
-  rule_version_id BIGINT      NOT NULL,
+  rule_version_id BIGINT      NULL COMMENT '已有版本；沿用派生 / 手动设置时为空，生成时才落库',
+  rule_id         BIGINT      NULL COMMENT '预演所用规则（手动设置时为空）',
+  manual_json     VARCHAR(500) NULL COMMENT '生成页手动设置的规则参数（JSON）',
   base_last_seq   BIGINT      NOT NULL COMMENT '预演时该 PI 的最大号',
   segments_json   TEXT        NOT NULL,
   created_by      VARCHAR(32) NOT NULL,
@@ -173,7 +179,7 @@ CREATE TABLE sn_gen_job (
   gen_batch       VARCHAR(40)   NOT NULL COMMENT '生成批次：同一次生成的各订单任务共用',
   factory_code    VARCHAR(64)   NOT NULL,
   customer_code   VARCHAR(64)   NOT NULL DEFAULT '',
-  rule_version_id BIGINT        NOT NULL,
+  rule_version_id BIGINT        NULL COMMENT '生成成功后为实际使用的版本',
   qty             BIGINT        NOT NULL,
   start_seq_dec   BIGINT        NOT NULL,
   end_seq_dec     BIGINT        NOT NULL,
@@ -199,7 +205,7 @@ CREATE TABLE sn_gen_job (
   KEY ix_job_batch (gen_batch)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='生成任务';
 
--- SN 明细（号池）。不分区：两条查重唯一键直接建在本表上
+-- SN 明细（号池）。不分区：两条查重唯一键（完整 SN 全局唯一、流水归属 PI 内流水唯一）直接建在本表上
 CREATE TABLE sn_item (
   id              BIGINT      NOT NULL AUTO_INCREMENT,
   sn              VARCHAR(64) NOT NULL COMMENT '完整 SN，写出后不再修改',
@@ -222,9 +228,8 @@ CREATE TABLE sn_item (
   printed_at      DATETIME    NULL,
   updated_at      DATETIME    NOT NULL,
   PRIMARY KEY (id),
-  UNIQUE KEY ux_item_pi_sn (pi_no, sn) COMMENT '同一 PI 完整 SN 唯一（转入号随 pi_no 改挂）',
+  UNIQUE KEY ux_item_sn (sn) COMMENT '完整 SN 全局唯一',
   UNIQUE KEY ux_item_seq (seq_pi_no, seq_dec) COMMENT '同一流水归属 PI 的十进制流水唯一',
-  KEY ix_item_sn (sn),
   KEY ix_item_fac (factory_code, status, pi_no, material_code, seq_pi_no, seq_dec),
   KEY ix_item_status (status, factory_code),
   KEY ix_item_pi (pi_no, status, factory_code),

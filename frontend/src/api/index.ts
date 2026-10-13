@@ -57,6 +57,7 @@ export const api = {
   // 生成与分配
   genPiContext: (params: { pi?: string; bill_no?: string }) => get("/generate/pi-context", params),
   genPiPreview: (data: Q, silent = false) => post("/generate/pi-preview", data, silent),
+  genRulePlan: (data: Q) => post("/generate/rule-plan", data, true),
   generatePi: (data: Q) => post("/generate/pi", data),
   genJob: (id: number) => get(`/generate/jobs/${id}`),
   genJobs: (params?: Q) => get("/generate/jobs", params),

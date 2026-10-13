@@ -8,8 +8,8 @@ from fastapi import APIRouter, Query
 
 from app.api.deps import AdminDep
 from app.schemas.common import OptInt
-from app.schemas.sn import AllocateIn, PiAllocateIn, PiGenerateIn, PiPreviewIn, RevokeIn
-from app.services import generate
+from app.schemas.sn import AllocateIn, ManualRuleIn, PiAllocateIn, PiGenerateIn, PiPreviewIn, RevokeIn, RulePlanIn
+from app.services import generate, rules
 
 router = APIRouter(tags=["generate"])
 
@@ -34,7 +34,20 @@ def gen_pi_context(cu: AdminDep, pi: str | None = None, bill_no: str | None = No
     "每张订单各返回一个预演令牌，凭这些令牌调用 /generate/pi",
 )
 def gen_pi_preview(body: PiPreviewIn, cu: AdminDep) -> dict:
-    return generate.pi_preview(cu, body.pi_no, body.qty, body.rule_id)
+    return generate.pi_preview(cu, body.pi_no, body.qty, body.rule_id, _manual(body.manual))
+
+
+@router.post(
+    "/generate/rule-plan",
+    summary="选模板 / 手动设置时的即时判断：本 PI 将用哪一版（沿用时另出派生版，后缀加 _v版本号）、第一个号；"
+    "手动设置的参数不合法或前缀冲突时报错",
+)
+def gen_rule_plan(body: RulePlanIn, cu: AdminDep) -> dict:
+    return generate.rule_plan(body.pi_no, body.rule_id, _manual(body.manual))
+
+
+def _manual(m: ManualRuleIn | None) -> rules.ManualIn | None:
+    return None if m is None else rules.ManualIn(m.prefix, m.seq_len, m.suffix)
 
 
 @router.post(

@@ -196,7 +196,7 @@ def context(bill_no: str) -> dict:
         issues.append(ErrorCode.GEN_QUOTA_EMPTY.name)
     # 有绑定或该 PI 已选定过：规则确定；否则列出规则让用户选（默认通用规则）
     r = None if util.blank(b.pi) else rules.fixed(b.pi, b.customer_code)
-    rule_options = [] if r is not None else rules.options()
+    rule_options = [] if r is not None else rules.options(b.pi or None)
     if r is None and not rule_options:
         issues.append(ErrorCode.RULE_MISSING.name)
     f = factories.get(b.factory_code)
@@ -308,9 +308,8 @@ def pi_context(pi_in: str | None, bill_no: str | None = None) -> dict:
     if quota == 0:
         issues.append(ErrorCode.GEN_QUOTA_EMPTY.name)
     r = rules.fixed(pi, customer)
-    rule_options = [] if r is not None else rules.options()
-    if r is None and not rule_options:
-        issues.append(ErrorCode.RULE_MISSING.name)
+    # 选项总是给出：未绑定时从中选；按客户绑定时可为本 PI 单独选一条。没有模板时也能手动设置，不算缺规则
+    rule_options = rules.options(pi, counter(pi)["last_seq_dec"] + 1)
     running = db.one("SELECT * FROM sn_gen_job WHERE running_pi = %s", pi)
     recent = db.all("SELECT * FROM sn_gen_job WHERE pi_no = %s ORDER BY id DESC LIMIT 20", pi)
     revocable = None if running is not None else _revocable_batch(pi)
@@ -375,6 +374,7 @@ def _save_preview(
     base: int,
     r: rules.Resolved,
     spec: codec.Spec,
+    manual_json: str | None,
 ) -> dict:
     """记下一张订单的预演（不落 SN）：base 为生成时该 PI 计数器应有的最大号。"""
     end = start + qty - 1
@@ -385,8 +385,8 @@ def _save_preview(
     expires = now + timedelta(minutes=settings.preview_ttl_minutes)
     db.exec(
         "INSERT INTO sn_gen_preview(token, bill_no, pi_no, factory_code, qty, start_seq_dec, end_seq_dec, start_sn, "
-        "end_sn, rule_version_id, base_last_seq, segments_json, created_by, created_at, expires_at) "
-        "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+        "end_sn, rule_version_id, rule_id, manual_json, base_last_seq, segments_json, created_by, created_at, "
+        "expires_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
         token,
         b.bill_no,
         b.pi,
@@ -397,6 +397,8 @@ def _save_preview(
         start_sn,
         end_sn,
         r.version["id"],
+        r.rule["id"],
+        manual_json,
         base,
         segments_json(segs),
         cu.emp_no,
@@ -419,8 +421,16 @@ def _save_preview(
     }
 
 
-def pi_preview(cu: CurrentUser, pi_in: str | None, qty_in: int | None, rule_id: int | None = None) -> dict:
+def pi_preview(
+    cu: CurrentUser,
+    pi_in: str | None,
+    qty_in: int | None,
+    rule_id: int | None = None,
+    manual: rules.ManualIn | None = None,
+) -> dict:
     """按 PI 预演：数量按单据号顺序依次占用各订单的额度，号段在 PI 的一套流水上接续。
+
+    规则未确定时用所选模板（rule_id）或生成页手动设置的参数（manual）；沿用派生版与手动规则在生成成功时才落库。
 
     每张订单各记一份预演（base 为前一张生成后的最大号），凭这些令牌调用 generate_pi 在一个事务里一次生成。
     """
@@ -444,8 +454,9 @@ def pi_preview(cu: CurrentUser, pi_in: str | None, qty_in: int | None, rule_id: 
     if qty > total:
         raise biz(ErrorCode.GEN_QUOTA_EXCEEDED, qty=qty, quota=total)
     _check_max(qty)
-    r = rules.for_generation(pi, todo[0][0].customer_code, rule_id)
+    r = rules.for_generation(pi, todo[0][0].customer_code, rule_id, manual)
     spec = rules.spec_of(r.version)
+    mj = None if r.plan != rules.PLAN_NEW else _manual_json(manual)
     c = db.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s", pi)
     base = 0 if c is None else c["last_seq_dec"]
     ns = next_start(pi, base, spec)
@@ -457,7 +468,7 @@ def pi_preview(cu: CurrentUser, pi_in: str | None, qty_in: int | None, rule_id: 
         if left == 0:
             break
         n = min(quota, left)
-        items.append(_save_preview(cu, b, gen, n, cur, prev, r, spec))
+        items.append(_save_preview(cu, b, gen, n, cur, prev, r, spec, mj))
         prev, cur, left = cur + n - 1, cur + n, left - n
     return {
         "pi_no": pi,
@@ -468,10 +479,39 @@ def pi_preview(cu: CurrentUser, pi_in: str | None, qty_in: int | None, rule_id: 
         "end_sn": items[-1]["end_sn"],
         "base_last_seq": base,
         "next": ns.as_json(spec),
-        "rule": rules.rule_info(r),
+        "rule": rules.rule_info(r, start),
         "items": items,
         "expires_at": items[0]["expires_at"],
     }
+
+
+def _manual_json(m: rules.ManualIn) -> str:
+    return json.dumps(
+        {"prefix": util.trim(m.prefix), "seq_len": m.seq_len, "suffix": util.trim(m.suffix)},
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+
+
+def _manual_of(p: dict) -> rules.ManualIn | None:
+    if not p.get("manual_json"):
+        return None
+    d = json.loads(p["manual_json"])
+    return rules.ManualIn(d.get("prefix"), d.get("seq_len"), d.get("suffix"))
+
+
+def rule_plan(pi_in: str | None, rule_id: int | None, manual: rules.ManualIn | None) -> dict:
+    """生成页选模板 / 手动设置时的即时判断：本 PI 将用哪一版、第一个号；参数不合法时报错。"""
+    pi = util.trim(pi_in)
+    if not pi:
+        raise biz(ErrorCode.PI_REQUIRED)
+    if manual is not None:
+        r = rules.manual_plan(pi, manual)
+    else:
+        r = rules.plan_for(pi, rules.pickable_rule(rule_id), rules.SRC_PICKED)
+    spec = rules.spec_of(r.version)
+    ns = next_start(pi, _last_seq(pi), spec)
+    return {"rule": rules.rule_info(r, ns.start), "next": ns.as_json(spec)}
 
 
 # ================================================================== 生成
@@ -496,7 +536,7 @@ def generate_pi(cu: CurrentUser, pi_in: str | None, items: list[dict] | None) ->
         if (
             p["pi_no"] != pi
             or (prev is not None and p["base_last_seq"] != prev["end_seq_dec"])
-            or (prev is not None and p["rule_version_id"] != prev["rule_version_id"])
+            or (prev is not None and _plan_key(p) != _plan_key(prev))
             or any(x["bill_no"] == p["bill_no"] for x in ps)
         ):
             raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
@@ -518,6 +558,11 @@ def generate_pi(cu: CurrentUser, pi_in: str | None, items: list[dict] | None) ->
         executor.submit(_run_jobs, cu, work, False)
     rows = db.all(f"SELECT * FROM sn_gen_job WHERE id IN ({marks(len(ids))}) ORDER BY id", *ids)
     return {"pi_no": pi, "batch": batch, "qty": sum(p["qty"] for p in ps), "jobs": [job_json(j) for j in rows]}
+
+
+def _plan_key(p: dict) -> tuple:
+    """同一次预演的各订单用同一条规则、同一版（或同一份手动参数）。"""
+    return p["rule_version_id"], p["rule_id"], p["manual_json"]
 
 
 def _new_batch() -> str:
@@ -608,16 +653,20 @@ def _run_jobs(cu: CurrentUser, work: list[tuple[int, dict]], rethrow: bool) -> N
     try:
         # 号与任务状态同一事务提交：不会出现「号已写入、任务仍是 RUNNING」
         with db.tx():
+            version = None
             for item in work:
                 current = item
-                _generate_in_tx(cu, *item)
+                # 同一次生成的各订单用同一版：第一张确定（必要时落库）后，后面几张直接沿用
+                version = _generate_in_tx(cu, *item, version)
             for job_id, p in work:
                 # 当前读：取消请求已提交就整批回滚；取消请求晚到时会等本事务提交，再看到「已结束」
+                # 实际所用版本在这里才写回任务：生成过程中任务行要留给独立事务写进度
                 n = db.exec(
-                    "UPDATE sn_gen_job SET status = %s, done_qty = %s, running_pi = NULL, finished_at = %s "
-                    "WHERE id = %s AND status = %s AND cancel_at IS NULL",
+                    "UPDATE sn_gen_job SET status = %s, done_qty = %s, rule_version_id = %s, running_pi = NULL, "
+                    "finished_at = %s WHERE id = %s AND status = %s AND cancel_at IS NULL",
                     SUCCESS,
                     p["qty"],
+                    version["id"],
                     util.now(),
                     job_id,
                     RUNNING,
@@ -669,7 +718,7 @@ def _run_jobs(cu: CurrentUser, work: list[tuple[int, dict]], rethrow: bool) -> N
             raise
 
 
-def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
+def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict, version: dict | None = None) -> dict:
     now = util.now()
     pi = p["pi_no"]
     # 1) 锁 PI 计数器（一张 PI 一行），核对预演时的最大号
@@ -703,17 +752,18 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
     quota = b.total_qty - g["generated_qty"]
     if p["qty"] > quota:
         raise biz(ErrorCode.GEN_QUOTA_EXCEEDED, qty=p["qty"], quota=max(0, quota))
-    # 3) 规则版本未变（锁版本并标记已使用，之后该版本只能另出新版）；
-    #    没有绑定时须仍是预演所选的规则，且期间该 PI 没被别的生成选定成另一条
-    v = rules.lock_for_generation(p["rule_version_id"])
-    r = rules.for_generation(b.pi, b.customer_code, v["rule_id"], c["rule_id"])
+    # 3) 规则与版本未变：按预演时的输入重新判断，须仍是同一条规则、同一版（或同样要派生 / 新建）；
+    #    确认后落库（派生版 / 手动规则）并标记已使用、归属本 PI，之后该版本只能另出新版
+    source = None
+    if version is None:
+        r = rules.for_generation(b.pi, b.customer_code, p["rule_id"], _manual_of(p), c)
+        if r.version["id"] != p["rule_version_id"] or (p["rule_id"] is not None and r.rule["id"] != p["rule_id"]):
+            raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
+        source = r.source
+        version = rules.realize(cu, pi, r)
+    v = version
     spec = rules.spec_of(v)
-    if (
-        r.version["id"] != v["id"]
-        or codec.format_sn(p["start_seq_dec"], spec) != p["start_sn"]
-        or b.pi != pi
-        or p["factory_code"] != b.factory_code
-    ):
+    if codec.format_sn(p["start_seq_dec"], spec) != p["start_sn"] or b.pi != pi or p["factory_code"] != b.factory_code:
         raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
     segs = sn_items.split(b.lines, g["generated_qty"], p["qty"], p["start_seq_dec"], spec)
     if segments_json(segs) != p["segments_json"]:
@@ -723,16 +773,13 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
     ns = next_start(pi, c["last_seq_dec"], spec)
     if ns.start != p["start_seq_dec"]:
         raise biz(ErrorCode.GEN_PREVIEW_STALE, pi=pi, expected=p["start_seq_dec"] - 1, actual=ns.base)
-    # 4) 逐块写号：先查重，再写明细（唯一键兜底）
+    # 4) 逐块写号：SN 全局唯一键查重，撞号时再查出是哪个号、属于哪张 PI
     done = 0
     for seg in segs:
         s = seg.start_seq
         while s <= seg.end_seq:
             e = min(seg.end_seq, s + CHUNK - 1)
             sns = [codec.format_sn(q, spec) for q in range(s, e + 1)]
-            dup = _first_existing(pi, sns)
-            if dup is not None:
-                raise biz(ErrorCode.GEN_DUPLICATE_SN, sn=dup, pi=pi)
             items = [
                 (
                     sn,
@@ -755,19 +802,21 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
             except pymysql.err.IntegrityError as ex:
                 if not is_duplicate(ex):
                     raise
-                again = _first_existing(pi, sns)
-                raise biz(ErrorCode.GEN_DUPLICATE_SN, sn=again or sns[0], pi=pi) from None
+                hit = _first_existing(sns)
+                if hit is None:
+                    raise biz(ErrorCode.CONFLICT_RETRY) from None
+                raise biz(ErrorCode.GEN_DUPLICATE_SN, sn=hit["sn"], pi=hit["pi_no"]) from None
             done += len(sns)
             if _progress(job_id, done):
                 raise biz(ErrorCode.GEN_CANCELED)
             s += CHUNK
     # 5) 推进计数器、订单已生成数；留痕
-    sets = "last_seq_dec = %s, generated_qty = %s, start_locked = 1, updated_at = %s"
-    args: list = [p["end_seq_dec"], c["generated_qty"] + p["qty"], now]
-    if r.source == rules.SRC_PICKED:
-        # 没有绑定：记下所选规则，这张 PI 之后一直沿用
+    sets = "last_seq_dec = %s, generated_qty = %s, start_locked = 1, rule_version_id = %s, updated_at = %s"
+    args: list = [p["end_seq_dec"], c["generated_qty"] + p["qty"], v["id"], now]
+    if source == rules.SRC_PICKED:
+        # 没有绑定：记下所选模板，这张 PI 之后一直沿用（手动设置的规则已按 PI 绑定）
         sets += ", rule_id = %s"
-        args.append(r.rule["id"])
+        args.append(v["rule_id"])
     if not c["start_locked"]:
         sets += ", locked_by = %s, locked_at = %s"
         args += [cu.emp_no, now]
@@ -779,7 +828,7 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
         now,
         b.bill_no,
     )
-    detail = f"job={job_id} rule_version={v['id']} rule_source={r.source} segments={len(segs)}"
+    detail = f"job={job_id} rule_version={v['id']} rule_source={source or 'BATCH'} segments={len(segs)}"
     if ns.adjusted:
         detail += f" start_after_transferred={ns.foreign_sn}(seq {ns.foreign_seq}, own_last {ns.own_last})"
     audit.record(
@@ -794,6 +843,7 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict) -> None:
         .status(None, util.PENDING_ALLOC)
         .info(detail),
     )
+    return v
 
 
 INTERRUPTED = "INTERRUPTED"
@@ -832,10 +882,9 @@ def recover_interrupted() -> int:
     return recovered
 
 
-def _first_existing(pi: str, sns: list[str]) -> str | None:
-    """本 PI 下（含转入号）已存在的第一个 SN；没有返回 None。"""
-    hit = db.column(f"SELECT sn FROM sn_item WHERE pi_no = %s AND sn IN ({marks(len(sns))}) LIMIT 1", pi, *sns)
-    return hit[0] if hit else None
+def _first_existing(sns: list[str]) -> dict | None:
+    """库里（任一 PI）已存在的第一个 SN 及其所在 PI；没有返回 None。"""
+    return db.one(f"SELECT sn, pi_no FROM sn_item WHERE sn IN ({marks(len(sns))}) LIMIT 1", *sns)
 
 
 def _progress(job_id: int, done: int) -> bool:

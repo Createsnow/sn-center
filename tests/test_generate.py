@@ -162,53 +162,35 @@ def _audit_detail(api, admin, transfer_no: str) -> str:
     return rows[0]["detail"]
 
 
-def test_generation_continues_after_contiguous_transferred_sns(api, admin, w, sql):
-    # PI-B 自己到 D00002；A 的 D00003..D00005 转入 → B 从 D00006 接着排，不重号、不断号
-    pi_a, pi_b, _, b_b = _two_pis(w, "D", "D", 5, 2)
-    for sn in ("D00003", "D00004", "D00005"):
-        ok(_transfer(api, admin, pi_a, pi_b, scope="SINGLE", sn=sn))
-    p = ok(w.preview(b_b, 3))
-    assert p.text("start_sn") == "D00006"
-    assert p["next"]["adjusted"] is True
-    assert p["next"]["by_sn"] == "D00005"
-    assert p["base_last_seq"] == 2, "own counter itself is not raised by the transfer"
-    j = ok(w.gen(p.text("token"), b_b, 3)).body
-    assert j["status"] == "SUCCESS"
-    assert (j["start_sn"], j["end_sn"]) == ("D00006", "D00008")
-    assert sql.count("SELECT last_seq_dec FROM sn_pi_counter WHERE pi_no = %s", pi_b) == 8
-    assert sql.count("SELECT COUNT(DISTINCT sn) FROM sn_item WHERE pi_no = %s", pi_b) == 8
-    detail = sql.one(
-        "SELECT detail FROM sn_audit WHERE action = 'SN_GENERATE' AND pi_no = %s ORDER BY id DESC LIMIT 1", pi_b
-    )["detail"]
-    assert "start_after_transferred=D00005" in detail
-
-
-def test_generation_jumps_past_non_contiguous_transferred_sns(api, admin, w):
-    # PI-B 自己到 E00002；A 的 E00012 转入 → B 从 E00013 生成，E00003..E00011 不再由 B 生成
-    pi_a, pi_b, _, b_b = _two_pis(w, "E", "E", 12, 2)
+def test_transfer_between_pis_never_moves_target_start(api, admin, w, sql):
+    # 前缀不能互为开头：两张 PI 的号格式必然不同，转入的号不会与本 PI 将来的号重复，也不会让起点后移
+    pi_a, pi_b, _, b_b = _two_pis(w, "D", "E", 12, 2)
     c = ok(api.get("/api/transfers/candidates" + q(factory_code=FAC, pi=pi_a, scope="PI", to_pi=pi_b), admin))
-    assert c["duplicates"] == {"count": 2, "samples": ["E00001", "E00002"]}
-    d = _transfer(api, admin, pi_a, pi_b, scope="PI")
-    assert d.code == "TR_DUPLICATE"
-    assert d["params"]["count"] == 2
-    assert d["params"]["sn"] == "E00001、E00002"
+    assert c["duplicates"] is None
     single = ok(
         api.get(
-            "/api/transfers/candidates" + q(factory_code=FAC, pi=pi_a, scope="SINGLE", sn="E00012", to_pi=pi_b),
+            "/api/transfers/candidates" + q(factory_code=FAC, pi=pi_a, scope="SINGLE", sn="D00012", to_pi=pi_b),
             admin,
         )
     )
     assert single["duplicates"] is None
-    assert single["target"]["before"]["start_sn"] == "E00003"
-    assert single["target"]["after"]["start_sn"] == "E00013"
-    assert single["target"]["unused"] == 9
-    r = ok(_transfer(api, admin, pi_a, pi_b, scope="SINGLE", sn="E00012"))
-    assert r["target_hint"]["after"]["start_sn"] == "E00013"
-    assert "to_next=E00003->E00013 unused=9" in _audit_detail(api, admin, r["transfer_no"])
-    r2 = ok(_transfer(api, admin, pi_a, pi_b, scope="SINGLE", sn="E00010"))
-    assert r2["target_hint"] is None, "E00010 is below the new start: nothing moves"
+    r = ok(_transfer(api, admin, pi_a, pi_b, scope="SINGLE", sn="D00012"))
+    assert r["target_hint"] is None
+    op = w.user(uid("opj"), "factory_operator", FAC)
+    t = ok(
+        api.post(
+            "/api/transfers",
+            m(pi_no=pi_a, scope="SINGLE", sn="D00011", to_factory=FAC, to_pi=pi_b, reason="申请转入"),
+            op,
+        )
+    )
+    assert t["target_hint"] is None
     p = ok(w.preview(b_b, 2))
-    assert (p.text("start_sn"), p.text("end_sn")) == ("E00013", "E00014")
+    assert (p.text("start_sn"), p.text("end_sn")) == ("E00003", "E00004")
+    assert p["next"]["adjusted"] is False
+    ok(w.gen(p.text("token"), b_b, 2))
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi_b) == 5
+    assert sql.count("SELECT COUNT(*) FROM sn_item") == sql.count("SELECT COUNT(DISTINCT sn) FROM sn_item")
 
 
 def test_transferred_sns_of_other_format_do_not_move_start(api, admin, w):
@@ -220,45 +202,16 @@ def test_transferred_sns_of_other_format_do_not_move_start(api, admin, w):
     assert p["next"]["adjusted"] is False
 
 
-def test_transfer_after_preview_makes_preview_stale(api, admin, w):
-    pi_a, pi_b, _, b_b = _two_pis(w, "G", "G", 5, 1)
-    p = ok(w.preview(b_b, 2))
-    assert p.text("start_sn") == "G00002"
-    ok(_transfer(api, admin, pi_a, pi_b, scope="SINGLE", sn="G00004"))
-    g = w.gen(p.text("token"), b_b, 2)
-    assert g.code == "GEN_PREVIEW_STALE", str(g)
-    assert ok(w.preview(b_b, 2)).text("start_sn") == "G00005"
-
-
-def test_pending_transfer_shows_target_hint_before_approval(api, admin, w, sql):
-    pi_a, pi_b, _, _ = _two_pis(w, "J", "J", 8, 1)
-    op = w.user(uid("opj"), "factory_operator", FAC)
-    t = ok(
-        api.post(
-            "/api/transfers",
-            m(pi_no=pi_a, scope="SINGLE", sn="J00008", to_factory=FAC, to_pi=pi_b, reason="申请转入"),
-            op,
-        )
-    )
-    assert t["target_hint"]["after"]["start_sn"] == "J00009"
-    got = ok(api.get(f"/api/transfers/{t['id']}", admin))
-    assert got["target_hint"]["before"]["start_sn"] == "J00002"
-    assert got["target_hint"]["unused"] == 6
-    a = ok(api.post(f"/api/transfers/{t['id']}/approve", m(note="ok"), admin))
-    assert a["target_hint"]["after"]["start_sn"] == "J00009"
-    assert ok(api.get(f"/api/transfers/{t['id']}", admin))["target_hint"] is None, "only pending ones carry a hint"
-
-
 def test_duplicate_full_sn_still_stops_whole_batch_and_rolls_back(api, admin, w, sql):
-    # 兜底：库里已有与本 PI 将生成的号相同的完整 SN（这里直接写号池模拟）→ 停止并整批回滚
-    pi_a, pi_b, b_a, b_b = _two_pis(w, "D", "D", 5, 0)
-    _plant_sn(sql, pi_b, "D00003", 999)
+    # 兜底：库里（别的 PI 下）已有与本 PI 将生成的号相同的完整 SN（这里直接写号池模拟）→ 停止并整批回滚
+    pi_a, pi_b, b_a, b_b = _two_pis(w, "D", "Y", 5, 0)
+    _plant_sn(sql, pi_a, "Y00003", 999)
     p = ok(w.preview(b_b, 5))
-    assert p.text("start_sn") == "D00001"
+    assert p.text("start_sn") == "Y00001"
     g = w.gen(p.text("token"), b_b, 5)
     assert g.code == "GEN_DUPLICATE_SN", str(g)
-    assert g["params"]["sn"] == "D00003"
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi_b) == 1, "只剩预置的那枚"
+    assert (g["params"]["sn"], g["params"]["pi"]) == ("Y00003", pi_a), "报出撞号的号与它所在的 PI"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi_b) == 0
     assert sql.count("SELECT COALESCE(MAX(last_seq_dec), 0) FROM sn_pi_counter WHERE pi_no = %s", pi_b) == 0
     job = ok(api.get("/api/generate/jobs" + q(bill_no=b_b), admin)).body[0]
     assert job["status"] == "FAILED"

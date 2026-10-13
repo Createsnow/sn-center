@@ -187,11 +187,19 @@ def _general(api, admin, prefix: str = "G") -> int:
 
 
 def test_multiple_general_rules_all_offered_to_unbound_pi(api, admin, w):
-    ids = [_general(api, admin), _general(api, admin)]
+    ids = [_general(api, admin, "G1"), _general(api, admin, "G2")]
     bound = ok(
         api.post(
             "/api/rules",
-            m(rule_code=uid("RC"), rule_name="c", bind_scope="CUSTOMER", bind_value=uid("CU"), base=10, seq_len=4),
+            m(
+                rule_code=uid("RC"),
+                rule_name="c",
+                bind_scope="CUSTOMER",
+                bind_value=uid("CU"),
+                prefix="CA",
+                base=10,
+                seq_len=4,
+            ),
             admin,
         )
     )["rule"]["id"]
@@ -199,20 +207,25 @@ def test_multiple_general_rules_all_offered_to_unbound_pi(api, admin, w):
     w.order(bill, ORG, uid("CU"), pi, ("A", 5))
     ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin))
     opts = ctx["rule_options"]
-    # 只列通用规则，全部可见，按编码排序
+    # 通用规则全部可见，按编码排序；按客户绑定的不列
     assert {o["bind_scope"] for o in opts} == {"GENERAL"}
     assert set(ids) <= {o["rule_id"] for o in opts}
     assert bound not in {o["rule_id"] for o in opts}
     assert [o["rule_code"] for o in opts] == sorted(o["rule_code"] for o in opts)
+    assert {o["plan"] for o in opts} == {"CLAIM"}, "还没有 PI 用过：直接用当前版本"
     eff = ok(api.get("/api/rules/effective" + q(pi=pi), admin))
-    assert eff.text("source") == "GENERAL" and eff["rule_id"] == opts[0]["rule_id"]
-    # 不能挑按客户 / 按 PI 绑定的规则来生成
+    assert eff.text("source") == "PICKED" and eff["rule_id"] == opts[0]["rule_id"]
+    # 不能挑按客户绑定的规则来生成
     assert w.preview(bill, 1, rule_id=bound).code == "RULE_NOT_GENERAL"
     # 按客户仍然一个对象只能绑一条
     cust = uid("CU")
-    body = m(rule_code=uid("RC"), rule_name="c", bind_scope="CUSTOMER", bind_value=cust, base=10, seq_len=4)
+    body = m(
+        rule_code=uid("RC"), rule_name="c", bind_scope="CUSTOMER", bind_value=cust, prefix="CB", base=10, seq_len=4
+    )
     ok(api.post("/api/rules", body, admin))
-    body = m(rule_code=uid("RC"), rule_name="c", bind_scope="CUSTOMER", bind_value=cust, base=10, seq_len=4)
+    body = m(
+        rule_code=uid("RC"), rule_name="c", bind_scope="CUSTOMER", bind_value=cust, prefix="CC", base=10, seq_len=4
+    )
     assert api.post("/api/rules", body, admin).code == "RULE_BIND_EXISTS"
 
 
@@ -225,7 +238,7 @@ def test_assign_rule_to_pi_then_unbind_and_pick_again(api, admin, w, sql):
     r = ok(api.put("/api/rules/pi-binding", m(pi_no=pi, rule_id=tpl_b), admin))
     assert r["rule"]["rule_id"] == tpl_b and r["rule"]["source"] == "CHOSEN"
     ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin))
-    assert ctx["rule"]["rule_id"] == tpl_b and ctx["rule_options"] == []
+    assert ctx["rule"]["rule_id"] == tpl_b and ctx["rule"]["source"] == "CHOSEN"
     w.generate(bill, 2)
     assert ok(w.preview(bill, 1)).text("start_sn") == "ASB0003"
 
@@ -243,11 +256,19 @@ def test_assign_rule_to_pi_then_unbind_and_pick_again(api, admin, w, sql):
     ok(api.put("/api/rules/pi-binding", m(pi_no=pi, rule_id=tpl_b), admin))
     assert ok(w.preview(bill, 1)).text("start_sn") == "ASB0004"
 
-    # 只能指定通用规则
+    # 不能指定按客户绑定的规则
     cr = ok(
         api.post(
             "/api/rules",
-            m(rule_code=uid("RC"), rule_name="c", bind_scope="CUSTOMER", bind_value=uid("CU"), base=10, seq_len=4),
+            m(
+                rule_code=uid("RC"),
+                rule_name="c",
+                bind_scope="CUSTOMER",
+                bind_value=uid("CU"),
+                prefix="CU",
+                base=10,
+                seq_len=4,
+            ),
             admin,
         )
     )["rule"]["id"]
