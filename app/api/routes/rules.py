@@ -1,4 +1,4 @@
-"""规则模板：只有总部维护；任何账户可查看某 PI 当前生效的规则。"""
+"""规则库：只有总部维护；任何账户可查看某 PI 当前生效的规则。"""
 
 from fastapi import APIRouter, Query
 
@@ -41,7 +41,7 @@ def rule_create(body: RuleIn, cu: AdminDep) -> dict:
 
 
 @router.put(
-    "/pi-binding", summary="给 PI 指定规则模板（通用规则或别的 PI 的规则，不能选按客户绑定的）：之后生成默认用它"
+    "/pi-binding", summary="给 PI 指定规则库中的规则（通用规则或别的 PI 的规则，不能选按客户绑定的）：之后生成默认用它"
 )
 def rule_pi_bind(body: RulePiBindIn, cu: AdminDep) -> dict:
     return rules.bind_pi(cu, body.pi_no, body.rule_id)
