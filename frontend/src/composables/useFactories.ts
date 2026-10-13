@@ -20,6 +20,12 @@ export function useFactories() {
     if (!code) return "";
     return list.value.find((f) => f.factory_code === code)?.factory_name || code;
   }
+  /** 「名称（编码）」，查不到名称时只给编码。 */
+  function labelOf(code?: string | null) {
+    if (!code) return "";
+    const name = list.value.find((f) => f.factory_code === code)?.factory_name;
+    return name ? `${name}（${code}）` : code;
+  }
   load();
-  return { factories: list, load, nameOf };
+  return { factories: list, load, nameOf, labelOf };
 }

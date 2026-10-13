@@ -47,7 +47,7 @@
             <el-table-column prop="pi_no" label="PI" min-width="150" />
             <el-table-column prop="material_code" :label="t('common.material')" width="110" />
             <el-table-column prop="customer_code" :label="t('common.customer')" width="90" />
-            <el-table-column :label="t('common.factory')" width="110"><template #default="{ row }">{{ nameOf(row.factory_code) }}</template></el-table-column>
+            <el-table-column :label="t('common.factory')" width="140" show-overflow-tooltip><template #default="{ row }">{{ labelOf(row.factory_code) }}</template></el-table-column>
             <el-table-column :label="t('common.status')" width="90"><template #default="{ row }"><StatusTag :status="row.status" /></template></el-table-column>
             <el-table-column prop="seq_pi_no" :label="t('acquire.seqOwner')" min-width="150" show-overflow-tooltip />
             <el-table-column prop="bill_no" :label="t('query.sourceBill')" min-width="130" />
@@ -79,7 +79,7 @@
           <div class="fill-body">
           <el-table v-loading="batchState.loading" height="100%" :data="batches" size="small" :empty-text="t('common.empty')">
             <el-table-column prop="batch_no" :label="t('acquire.batchNo')" min-width="190" />
-            <el-table-column :label="t('common.factory')" width="120"><template #default="{ row }">{{ nameOf(row.factory_code) }}</template></el-table-column>
+            <el-table-column :label="t('common.factory')" width="140" show-overflow-tooltip><template #default="{ row }">{{ labelOf(row.factory_code) }}</template></el-table-column>
             <el-table-column prop="pi_no" label="PI" min-width="150" />
             <el-table-column prop="qty" :label="t('common.qty')" align="right" width="80" />
             <el-table-column :label="t('audit.source')" width="80"><template #default="{ row }">{{ t(`audit.src${row.source}`) }}</template></el-table-column>
@@ -112,7 +112,7 @@
           <div class="fill-body">
           <el-table v-loading="printState.loading" height="100%" :data="prints" size="small" :empty-text="t('common.empty')">
             <el-table-column prop="print_no" :label="t('acquire.printNo')" min-width="190" />
-            <el-table-column :label="t('common.factory')" width="120"><template #default="{ row }">{{ nameOf(row.factory_code) }}</template></el-table-column>
+            <el-table-column :label="t('common.factory')" width="140" show-overflow-tooltip><template #default="{ row }">{{ labelOf(row.factory_code) }}</template></el-table-column>
             <el-table-column prop="pi_no" label="PI" min-width="150" />
             <el-table-column prop="qty" :label="t('common.qty')" align="right" width="80" />
             <el-table-column prop="request_no" :label="t('acquire.requestNo')" min-width="200" show-overflow-tooltip />
@@ -167,7 +167,7 @@ const TABS = ["sn", "batches", "prints"];
 const { t } = useI18n();
 const route = useRoute();
 const store = useAuthStore();
-const { nameOf } = useFactories();
+const { labelOf } = useFactories();
 const str = (v: unknown) => (typeof v === "string" ? v : "");
 /** 从领取页跳来时带 ?tab=&factory=&pi=，三个标签共用这两个初始条件。 */
 const initFactory = store.boundFactory ? "" : str(route.query.factory);

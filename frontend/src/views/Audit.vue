@@ -49,7 +49,7 @@
         <el-table-column :label="t('audit.result')" width="70">
           <template #default="{ row }"><el-tag size="small" :type="row.result === 'OK' ? 'success' : 'danger'">{{ row.result === "OK" ? t("audit.ok") : t("audit.fail") }}</el-tag></template>
         </el-table-column>
-        <el-table-column :label="t('common.factory')" width="110"><template #default="{ row }">{{ nameOf(row.factory_code) }}</template></el-table-column>
+        <el-table-column :label="t('common.factory')" width="140" show-overflow-tooltip><template #default="{ row }">{{ labelOf(row.factory_code) }}</template></el-table-column>
         <el-table-column prop="pi_no" label="PI" min-width="140" show-overflow-tooltip />
         <el-table-column :label="t('audit.range')" min-width="230">
           <template #default="{ row }"><span v-if="row.start_sn" class="sn-mono">{{ row.start_sn }}<template v-if="row.end_sn && row.end_sn !== row.start_sn"> ~ {{ row.end_sn }}</template></span></template>
@@ -84,7 +84,7 @@ import FactorySelect from "@/components/FactorySelect.vue";
 
 const { t } = useI18n();
 const store = useAuthStore();
-const { nameOf } = useFactories();
+const { labelOf } = useFactories();
 const today = new Date();
 const monthAgo = new Date(Date.now() - 30 * 86400_000);
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
