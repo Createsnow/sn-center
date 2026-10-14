@@ -6,9 +6,11 @@
 TABLES = (
     "sn_factory",
     "sn_user",
+    "sn_user_factory",
     "sn_rule",
     "sn_rule_version",
     "sn_prd_mo",
+    "sn_order_sync_schedule",
     "sn_pi_counter",
     "sn_bill_gen",
     "sn_gen_preview",

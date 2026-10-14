@@ -377,7 +377,8 @@ def _check_duplicates(t: dict) -> None:
 
 
 def _move(t: dict, from_applying: bool, now) -> None:
-    """改挂到转入目标：号改挂转入 PI（ux_item_pi_sn 兜底查重）；变为转入厂的待领取；批次 / 打印单清空。"""
+    """改挂到转入目标：号改挂转入 PI（SN 不变，全局唯一键 ux_item_sn 保证不与任何号重复）；
+    变为转入厂的待领取；批次 / 打印单清空。"""
     if t["to_pi"] != t["from_pi"]:
         # 与转入 PI 的生成互斥：生成持有该 PI 计数器行锁期间，不会有号转入
         db.exec(

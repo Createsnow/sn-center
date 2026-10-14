@@ -13,7 +13,7 @@
 取消请求本身留痕。
 
 撤销生成（点错了重来）：按批次整次撤销，只能撤销这张 PI 流水排在最后的一次生成，且这次的号全部仍待分配；
-号与查重护栏一并删除，PI 最大号、各订单已生成数退回，额度恢复，重新预演生成的号与撤销前相同。
+号一并删除，PI 最大号、各订单已生成数退回，额度恢复，重新预演生成的号与撤销前相同。
 
 分配：按 PI 一次分完，各订单的待分配号分到各自订单的生产组织；按单据分配也只能整单分配。
 """
@@ -684,7 +684,7 @@ def _run_jobs(cu: CurrentUser, work: list[tuple[int, dict]], rethrow: bool) -> N
         if len(work) > 1 and not canceled:
             msg = f"{current[1]['bill_no']}: {msg}"
         msg = util.cut(msg, 1000)
-        # 整批已回滚（号、查重护栏、计数器、订单已生成数、规则使用标记都没写入）；任务只记结果
+        # 整批已回滚（号、计数器、订单已生成数、规则使用标记都没写入）；任务只记结果
         for job_id, p in work:
             try:
                 db.exec(
@@ -965,7 +965,7 @@ def batch_progress(batch_in: str | None) -> dict:
 
 
 def cancel(cu: CurrentUser, batch_in: str | None) -> dict:
-    """请求取消正在进行的生成：生成线程在下一块写号前后看到请求，整批回滚（已写入的号、查重护栏、计数器、
+    """请求取消正在进行的生成：生成线程在下一块写号前后看到请求，整批回滚（已写入的号、计数器、
     订单已生成数都不保留），任务记为 CANCELED。取消请求本身留痕。"""
     with db.tx():
         js = _batch_jobs(batch_in, lock=True)
@@ -1049,7 +1049,7 @@ def revoke(cu: CurrentUser, job_id: int, reason_in: str | None) -> dict:
 
 
 def revoke_batch(cu: CurrentUser, batch_in: str | None, reason_in: str | None) -> dict:
-    """撤销一次生成（点错了重来），整次撤销：删除这次各订单写出的号与查重护栏，退回 PI 最大号与各订单已生成数。
+    """撤销一次生成（点错了重来），整次撤销：删除这次各订单写出的号，退回 PI 最大号与各订单已生成数。
 
     只能撤销这张 PI 流水排在最后的一次生成，且各任务都已成功、号全部仍待分配；分配出去的号可能已领取、打印，
     不能撤销。流水退回后重新生成的号与撤销前相同，号段不留空洞。规则版本的「已使用」标记不退回。

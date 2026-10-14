@@ -72,6 +72,8 @@ drawio -x -f svg -b 8 -o fig2-1-function.svg fig2-1-function.drawio
 
 新版 draw.io 导出的 SVG 背景透明且随深色模式变色；与现有图一致的做法是把根元素 `style` 改成 `background-color: #ffffff; color-scheme: light;`。
 
+手边没有 draw.io、只改图上的文字时：在 `.drawio`（值经过 HTML 转义，如 `&lt;br&gt;`）和同名 `.svg` 里把同一段文字一起替换，再用无头 Chromium 按 3 倍把 SVG 渲染成 PNG（窗口高度留出余量后裁到 SVG 尺寸的 3 倍，否则底部会被截掉）。版式有改动时仍须用 draw.io 编辑后导出。
+
 | 改了什么 | 要重画的图 |
 | --- | --- |
 | 页面菜单或模块 | 图 2-1 功能架构、图 2-2 技术架构 |

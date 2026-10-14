@@ -99,7 +99,7 @@ def gen_cancel(batch: str, cu: AdminDep) -> dict:
 @router.post(
     "/generate/batches/{batch}/revoke",
     summary="撤销一次生成（整次）：只能撤销该 PI 流水排在最后、号全部仍待分配的一次成功生成；"
-    "号与查重护栏删除，PI 最大号与各订单额度退回，原因必填",
+    "号删除，PI 最大号与各订单额度退回，原因必填",
 )
 def gen_revoke_batch(batch: str, body: RevokeIn, cu: AdminDep) -> dict:
     return generate.revoke_batch(cu, batch, body.reason)

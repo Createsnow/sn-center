@@ -1,6 +1,6 @@
 # MES 对接接口文档
 
-> **读者**：工厂 MES、现场打印系统的对接方（被调方：SN 管控中心）　**对应代码**：`app/api/routes/open.py`、`app/api/routes/auth.py`、`app/services/acquire.py`　**更新**：2026-10-12
+> **读者**：工厂 MES、现场打印系统的对接方（被调方：SN 管控中心）　**对应代码**：`app/api/routes/open.py`、`app/api/routes/auth.py`、`app/services/acquire.py`　**更新**：2026-10-14
 > **相关**：本文自成一体，对接方只需要本文；在线版见 `/docs` 的 `open` 分组
 
 MES 主动调用本系统。本系统不向 MES 推送，也不回调 MES。号池只在本系统。MES 领取、取明细、打完后回写；生成、分配、转厂留在工作台，不提供给 MES。
@@ -52,9 +52,9 @@ MES 使用本系统账户，角色取值如下。
 | --- | --- | --- | --- | --- | --- |
 | `factory_operator` | 厂区操作员，必须绑定一个工厂 | 只能本厂。`factory_code` 可省略；若传，必须等于本厂 | 只能读本厂批次 | 只能回调本厂批次 | `factory_code` 必须是本厂 |
 | `admin` | 总部，不绑定工厂 | 必须传 `factory_code` | 可读任意厂批次 | 按批次号回调，请求体不带工厂 | 可指定任意工厂（不校验是否建档，未建档查不到号） |
-| `query` | 查询员 | 拒绝，`403 FORBIDDEN` | 可读。绑了厂则只本厂 | 拒绝，`403 FORBIDDEN` | 绑了厂则只本厂 |
+| `query` | 查询员，可绑一个、多个工厂或不绑（= 全部工厂） | 拒绝，`403 FORBIDDEN` | 可读。绑了厂则只读所绑工厂的批次 | 拒绝，`403 FORBIDDEN` | 绑了厂则 `factory_code` 必须是所绑工厂之一 |
 
-厂区账户操作其他工厂返回 `403 FACTORY_FORBIDDEN`，`params.factory` 是该账户自己的工厂编码。
+厂区账户操作其他工厂返回 `403 FACTORY_FORBIDDEN`，`params.factory` 是该账户自己的工厂编码；绑厂查询员读范围外的工厂时同样返回 `403 FACTORY_FORBIDDEN`，`params.factory` 是所绑工厂编码（多个用「、」分隔）。
 
 工厂在工作台被停用后，已经分到该厂的号仍可领取、取明细、回调和只读查号，绑定该厂的账户也不会自动停用。停用只挡住往该厂生成、分配、转入新号。
 
@@ -128,6 +128,8 @@ sequenceDiagram
     "role": "factory_operator",
     "factory_code": "100",
     "factory_name": "甲厂",
+    "factory_codes": ["100"],
+    "factory_names": ["甲厂"],
     "status": "ACTIVE",
     "super_admin": false,
     "must_change_pwd": false,
@@ -141,7 +143,7 @@ sequenceDiagram
 }
 ```
 
-`super_admin` 只对页面有意义（是否内置 admin 账户，可管理账户），对接可忽略。
+`super_admin` 只对页面有意义（是否内置 admin 账户，可管理账户），对接可忽略。`factory_codes` / `factory_names` 是该账户可看的工厂：厂区操作员为本厂，查询员为所绑的工厂，空数组表示全部工厂（总部、不绑厂的查询员）。
 
 之后每次调用把 `token` 放进 `Authorization: Bearer {token}`。
 
@@ -282,7 +284,7 @@ sequenceDiagram
 ## 4. 按批次取明细
 
 `GET /api/open/batches/{batch_no}/items`  
-已登录即可。厂区、绑厂的查询员只能读本厂批次。
+已登录即可。厂区操作员只能读本厂批次，绑厂查询员只能读所绑工厂的批次。
 
 不改变状态。可反复读。转厂确认后离开本批次的号不再出现；申请中的号仍在，`status` 为 `APPLYING`。
 
@@ -472,7 +474,7 @@ MES 打印完成后调用。只把同时满足下面四条的号改为已打印�
 
 | 字段 | 必填 | 说明 |
 | --- | --- | --- |
-| `factory_code` | 是 | 工厂编码。厂区、绑厂查询员只能传本厂。必须传非空值：总部或未绑厂查询员传空串时不按工厂过滤，会返回各厂（含尚未分配）的号 |
+| `factory_code` | 是 | 工厂编码。厂区操作员只能传本厂，绑厂查询员只能传所绑工厂之一。必须传非空值：总部或未绑厂查询员传空串时不按工厂过滤，会返回各厂（含尚未分配）的号 |
 | `pi` | 是 | PI。必须传非空值：传空串时不按 PI 过滤，会返回该厂全部号 |
 | `customer_code` | 否 | 客户编码。不传则不按客户过滤 |
 | `material_code` | 否 | 物料编码。不传或空串则不按物料过滤 |
@@ -529,7 +531,7 @@ MES 只推动领取和打印这两步。
 | 401 | `ACCOUNT_DISABLED` | 账户停用。换可用账户 |
 | 403 | `PASSWORD_CHANGE_REQUIRED` | 先 `POST /api/auth/password` |
 | 403 | `FORBIDDEN` | 角色不允许。查询员不能领取和回调 |
-| 403 | `FACTORY_FORBIDDEN` | 厂区账户碰了其他工厂。`params.factory` 为本厂编码 |
+| 403 | `FACTORY_FORBIDDEN` | 厂区账户碰了其他工厂，或绑厂查询员读了范围外的工厂。`params.factory` 为本账户可看的工厂编码 |
 
 ### 8.2 领取、明细、回调、查询
 
