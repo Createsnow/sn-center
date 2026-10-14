@@ -1,7 +1,7 @@
 """建表 / 升级：执行 app/db/migration/V*__*.sql，并写 Flyway 兼容的 flyway_schema_history。
 
-脚本与 Java 后端 backend/src/main/resources/db/migration 完全相同（tests/test_parity.py 校验），
-校验和按 Flyway 的算法（逐行 CRC32）计算，所以两个后端可以轮流连同一个库。
+校验和按 Flyway 的算法（逐行 CRC32）计算（tests/test_unit.py::test_migration_flyway_checksum 校验），
+库里的 flyway_schema_history 也能被 Flyway 本身识别。
 """
 
 from __future__ import annotations

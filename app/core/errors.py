@@ -1,7 +1,7 @@
 """业务错误码：默认 HTTP 状态 + 中文模板（{name} 为参数占位）。
 
-与 Java 后端 ErrorCode 一一对应（tests/test_parity.py 校验）；前端 locales/errors.*.json
-必须有同名词条且占位一致（tests/test_i18n_contract.py 校验）。
+前端 locales/errors.*.json 必须有同名词条且占位一致（tests/test_unit.py::test_every_error_code_translated 校验）；
+新增错误码时在 frontend/scripts/error_messages.py 补英 / 越译文后运行 gen_locales.py。
 """
 
 from __future__ import annotations

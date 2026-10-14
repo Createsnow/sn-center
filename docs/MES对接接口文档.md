@@ -58,7 +58,7 @@ MES 使用本系统账户，角色取值如下。
 
 工厂在工作台被停用后，已经分到该厂的号仍可领取、取明细、回调和只读查号，绑定该厂的账户也不会自动停用。停用只挡住往该厂生成、分配、转入新号。
 
-密码被管理员重置后，`user.must_change_pwd` 为 `true`（新建账户为 `false`，可直接调用）。此时除改密接口外，开放接口都返回 `403 PASSWORD_CHANGE_REQUIRED`。先改密，再用新令牌继续。
+密码被管理员重置后，`user.must_change_pwd` 为 `true`（新建账户为 `false`，可直接调用）。此时除改密（`POST /api/auth/password`）、`GET /api/auth/me`、`PUT /api/auth/lang` 外，其他接口（含全部开放接口）都返回 `403 PASSWORD_CHANGE_REQUIRED`。先改密，再用新令牌继续。
 
 密码规则：8–64 位，同时包含字母和数字。
 

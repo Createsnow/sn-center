@@ -6,7 +6,7 @@
 - 归档表设总保存上限（SN_AUDIT_ARCHIVE_RETENTION_DAYS，默认 5 年，0 = 永久，不短于在线保存期）：
   发生时间超过上限的归档痕迹分批删除，删除本身留痕。
 
-多实例部署时用 MySQL 命名锁保证同一时刻只有一个实例做 DDL（与 Java 后端同名锁，混跑也安全）。
+多实例部署时用 MySQL 命名锁 sn_partition 保证同一时刻只有一个实例做 DDL。
 """
 
 from __future__ import annotations
