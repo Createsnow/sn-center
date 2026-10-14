@@ -96,7 +96,7 @@ function apply(ids, push = true) {
   for (const [id, file, title] of chosen) {
     const s = document.createElement('section');
     s.id = 'v' + id;
-    s.innerHTML = `<h2><span class="n">${id}</span>${title}<a href="${file}.html">打开交互版 ↗</a><a href="${file}.svg">SVG</a><a href="${file}.png">PNG</a></h2>
+    s.innerHTML = `<h2><span class="n">${id}</span>${title}<a href="${file}.html">打开交互版 ↗</a><a href="${file}.svg" download>下载 SVG</a><a href="${file}.png" download>下载 PNG</a></h2>
       <div class="frame"><a href="${file}.html"><img src="${file}.svg" alt="${title}" loading="lazy"></a></div>`;
     stage.append(s);
   }
