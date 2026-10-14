@@ -1,0 +1,39 @@
+{
+  "type": "dependency",
+  "lang": "zh-CN",
+  "dir": "LR",
+  "title": "服务依赖 · 领取、转厂与查询",
+  "subtitle": "app/services 的 import 关系（省略各服务都依赖的 audit 留痕）",
+  "eyebrow": "04 · 拆分：履约域",
+  "motion": "reveal",
+  "nodes": [
+    {"id":"query","label":"query","sub":"SN 查询 · 导出","row":0,"col":0},
+    {"id":"acq","label":"acquire","sub":"领取 · 打印 · 回调","focal":true,"row":1,"col":1},
+    {"id":"tr","label":"transfers","sub":"转厂","row":3,"col":0},
+    {"id":"files","label":"files","sub":"xlsx · csv · 打印文件","row":0,"col":2},
+    {"id":"items","label":"sn_items","row":1,"col":2},
+    {"id":"gen","label":"generate","kind":"muted","row":4,"col":1},
+    {"id":"rules","label":"rules","row":2,"col":2},
+    {"id":"orders","label":"orders","row":3,"col":2},
+    {"id":"fac","label":"factories","row":4,"col":2}
+  ],
+  "edges": [
+    ["query","acq"],
+    ["query","files"],
+    ["query","rules"],
+    ["query","items"],
+    ["acq","files","打印文件","primary"],
+    ["acq","items","改状态","primary"],
+    ["acq","orders"],
+    ["tr","gen"],
+    ["tr","rules"],
+    ["tr","orders"],
+    ["tr","fac"],
+    ["acq","fac"]
+  ],
+  "evidence": [
+    {"id":"acq","file":"app/services/acquire.py"},
+    {"id":"tr","file":"app/services/transfers.py"},
+    {"id":"query","file":"app/services/query.py"}
+  ]
+}

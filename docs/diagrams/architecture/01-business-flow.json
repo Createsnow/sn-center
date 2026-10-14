@@ -1,0 +1,15 @@
+{"type":"data-flow","lang":"zh-CN","title":"业务主流程","subtitle":"同步 → 预演 → 生成 → 分配 → 领取 → 打印，转厂可从领取后任一节点插入","eyebrow":"01 · 数据流","motion":"trace",
+"nodes":[
+ {"id":"k3","label":"金蝶生产订单","kind":"input","row":0,"col":0},
+ {"id":"snap","label":"订单快照","sub":"sn_prd_mo","kind":"store","row":0,"col":1},
+ {"id":"pre","label":"预演","sub":"按单据占额度","row":0,"col":2},
+ {"id":"gen","label":"生成","sub":"整张 PI 一个事务","focal":true,"row":0,"col":3},
+ {"id":"alloc","label":"分配","sub":"到生产组织","row":0,"col":4},
+ {"id":"acq","label":"领取","sub":"页面 / MES","row":0,"col":5},
+ {"id":"print","label":"打印","sub":"文件 / 回调","row":0,"col":6},
+ {"id":"rule","label":"规则库","sub":"通用 · 客户 · PI","kind":"store","row":1,"col":2},
+ {"id":"tr","label":"转厂","sub":"申请 · 确认 · 直接转移","row":1,"col":5}],
+"edges":[["k3","snap","订单行","primary"],["snap","pre","可生成额度","primary"],["rule","pre","编码规则"],["pre","gen","号段方案","primary"],
+ ["gen","alloc","待分配 SN","primary"],["alloc","acq","待领取 SN","primary"],["acq","print","批次","primary"],
+ ["acq","tr","转厂申请","async"],["print","tr","转厂申请","async"],["tr","acq","改挂转入厂","async"]],
+"evidence":[{"id":"gen","file":"app/services/generate.py"},{"id":"acq","file":"app/services/acquire.py"},{"id":"tr","file":"app/services/transfers.py"},{"id":"snap","file":"app/services/orders.py"}]}

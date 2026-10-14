@@ -1,0 +1,11 @@
+{"type":"deployment","lang":"zh-CN","title":"部署","subtitle":"docker compose 两个容器；本机也可 start.py 单端口运行（API 托管前端）","eyebrow":"07 · 运行","motion":"reveal",
+"groups":[{"id":"compose","label":"docker compose · sn-center"},{"id":"corp","label":"公司网络","style":"dashed"}],
+"nodes":[
+ {"id":"user","label":"浏览器","kind":"input","icon":"people","row":0,"col":0},
+ {"id":"mes","label":"MES","kind":"external","row":1,"col":0},
+ {"id":"web","label":"web","sub":"nginx · :80","tag":"WEB","row":0,"col":1,"group":"compose"},
+ {"id":"api","label":"api","sub":"uvicorn · :8000","tag":"API","focal":true,"row":1,"col":1,"group":"compose"},
+ {"id":"db","label":"MySQL 8","sub":".env DB_HOST","kind":"store","row":1,"col":2,"group":"corp"},
+ {"id":"k3","label":"金蝶 K3 Cloud","sub":"WebAPI","kind":"external","row":0,"col":2,"group":"corp"}],
+"edges":[["user","web",":80","primary"],["mes","web","/api/open"],["web","api","/api 反代","primary"],["api","db","PyMySQL","primary"],["api","k3","HTTPS"]],
+"evidence":[{"id":"web","file":"frontend/nginx.conf"},{"id":"api","file":"Dockerfile"},{"id":"db","file":"docker-compose.yml","line":3}]}

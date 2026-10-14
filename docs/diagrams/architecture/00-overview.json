@@ -1,0 +1,45 @@
+{
+  "type": "architecture",
+  "lang": "zh-CN",
+  "title": "系统总览",
+  "subtitle": "多工厂 SN 防重管控：谁在用、经过哪里、数据落在哪",
+  "eyebrow": "00 · 组合入口",
+  "motion": "trace",
+  "groups": [{"id":"users","label":"使用方"},{"id":"ext","label":"外部系统","style":"dashed"}],
+  "nodes": [
+    {"id":"hq","label":"总部","sub":"浏览器","kind":"input","icon":"people","row":0,"col":0,"group":"users"},
+    {
+      "id": "plant",
+      "label": "厂区 / 查询员",
+      "sub": "浏览器",
+      "kind": "input",
+      "icon": "person",
+      "row": 1,
+      "col": 0,
+      "group": "users"
+    },
+    {"id":"mes","label":"MES / 打印系统","kind":"external","row":2,"col":0,"group":"users"},
+    {"id":"web","label":"前端 SPA","sub":"Vue 3 · Element Plus","tag":"WEB","row":0,"col":1},
+    {"id":"api","label":"后端 API","sub":"FastAPI · Python 3.12","tag":"API","focal":true,"row":1,"col":2},
+    {"id":"sched","label":"定时任务","sub":"订单同步 · 分区维护","icon":"clock","row":2,"col":2},
+    {"id":"db","label":"MySQL 8","sub":"SN · 快照 · 痕迹","kind":"store","row":1,"col":3},
+    {"id":"k3","label":"金蝶 K3 Cloud","sub":"生产订单 · 组织","kind":"external","row":0,"col":3,"group":"ext"}
+  ],
+  "edges": [
+    ["hq","web","页面"],
+    ["plant","web","页面"],
+    ["web","api","/api","primary"],
+    ["mes","api","/api/open","link"],
+    ["api","db","事务读写","primary"],
+    ["api","k3","只读同步","link"],
+    ["sched","db","分区 / 归档","async"],
+    ["sched","k3","","async"]
+  ],
+  "caption": "拆分阅读：01 业务流程 · 02 后端分层 · 03/04 服务依赖 · 05 SN 状态 · 06 MES 对接 · 07 部署",
+  "evidence": [
+    {"id":"api","file":"app/main.py","line":144},
+    {"id":"sched","file":"app/main.py","line":133},
+    {"id":"k3","file":"app/services/k3.py","line":295},
+    {"id":"web","file":"frontend/src/main.ts"}
+  ]
+}

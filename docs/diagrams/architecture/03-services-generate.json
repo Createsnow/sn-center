@@ -1,0 +1,35 @@
+{
+  "type": "dependency",
+  "lang": "zh-CN",
+  "dir": "TB",
+  "title": "服务依赖 · 订单与生成",
+  "subtitle": "app/services 的 import 关系（省略各服务都依赖的 audit 留痕）",
+  "eyebrow": "03 · 拆分：生成域",
+  "motion": "reveal",
+  "nodes": [
+    {"id":"oss","label":"order_sync_schedule","sub":"定时同步","row":0,"col":0},
+    {"id":"gen","label":"generate","sub":"预演 · 生成 · 撤销","focal":true,"row":0,"col":1},
+    {"id":"orders","label":"orders","sub":"订单快照","row":1,"col":0},
+    {"id":"rules","label":"rules","sub":"规则 · 版本","row":1,"col":1},
+    {"id":"items","label":"sn_items","sub":"号段写入","row":1,"col":2},
+    {"id":"fac","label":"factories","sub":"工厂 · 可看范围","row":2,"col":0},
+    {"id":"k3","label":"k3","sub":"金蝶客户端","kind":"external","row":3,"col":1}
+  ],
+  "edges": [
+    ["oss","orders","全量同步","async"],
+    ["gen","orders","额度","primary"],
+    ["gen","rules","规则","primary"],
+    ["gen","items","写号","primary"],
+    ["gen","fac"],
+    ["orders","fac"],
+    ["orders","k3","拉单"],
+    ["fac","k3","拉组织"],
+    ["rules","orders"],
+    ["items","rules"]
+  ],
+  "evidence": [
+    {"id":"gen","file":"app/services/generate.py"},
+    {"id":"orders","file":"app/services/orders.py"},
+    {"id":"oss","file":"app/services/order_sync_schedule.py"}
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "type": "state",
+  "lang": "zh-CN",
+  "title": "SN 状态机",
+  "subtitle": "总部「直接转移」：待领取 / 待打印 / 已打印的号直接回到转入厂的待领取；申请被驳回或撤回时回到申请前的状态",
+  "eyebrow": "05 · 状态",
+  "motion": "trace",
+  "nodes": [
+    {"id":"s","shape":"start","row":0,"col":0},
+    {"id":"un","label":"待分配","row":0,"col":1},
+    {"id":"ta","label":"待领取","row":0,"col":2},
+    {"id":"tp","label":"待打印","row":0,"col":3},
+    {"id":"pd","label":"已打印","focal":true,"row":0,"col":4},
+    {"id":"ap","label":"申请中","kind":"muted","row":1,"col":3},
+    {"id":"e","shape":"end","row":1,"col":1}
+  ],
+  "edges": [
+    ["s","un","生成"],
+    ["un","e","撤销生成"],
+    ["un","ta","确认分配","primary"],
+    ["ta","tp","整批领取","primary"],
+    ["tp","pd","打印 / 回调","primary"],
+    ["ta","ap","转厂申请"],
+    ["tp","ap","转厂申请"],
+    ["pd","ap","转厂申请"],
+    ["ap","ta","总部确认"]
+  ],
+  "evidence": [{"id":"ap","file":"app/services/transfers.py"},{"id":"pd","file":"app/services/acquire.py"}]
+}

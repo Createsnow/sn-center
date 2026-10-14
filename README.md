@@ -20,6 +20,7 @@
 | [技术文档](docs/技术文档.md) | 代码结构、权限矩阵、状态机、时序图、金蝶调用、接口清单、需求落地说明 |
 | [数据库表设计](docs/数据库表设计.md) | ER 图、每张表字段与索引、分区与归档、容量估算、性能测试与设计决定 |
 | [运维手册](docs/运维手册.md) | MySQL 准备、`.env`、三种启动方式、上线步骤、排障 |
+| [架构流动图](docs/diagrams/architecture/README.md) | 交互式架构图，可单张看也可按角色组合（[组合视图](docs/diagrams/architecture/compose.html)） |
 
 ## 快速开始
 

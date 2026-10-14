@@ -1,0 +1,36 @@
+{
+  "type": "dependency",
+  "lang": "zh-CN",
+  "dir": "TB",
+  "title": "后端分层",
+  "subtitle": "箭头指向被依赖方；SQL 直接写在 services，不另设仓储层",
+  "eyebrow": "02 · 依赖",
+  "motion": "reveal",
+  "nodes": [
+    {"id":"main","label":"main.py","sub":"装配 · 错误处理 · 托管前端","row":0,"col":1},
+    {"id":"mw","label":"middleware","sub":"请求号","row":1,"col":0},
+    {"id":"routes","label":"api/routes","sub":"12 组路由","row":1,"col":1},
+    {"id":"deps","label":"api/deps","sub":"鉴权 · 角色","kind":"security","row":1,"col":2},
+    {"id":"schemas","label":"schemas","sub":"Pydantic","row":2,"col":0},
+    {"id":"svc","label":"services","sub":"业务 + SQL","focal":true,"row":2,"col":1},
+    {"id":"db","label":"db","sub":"连接池 · 事务 · 迁移","kind":"store","row":3,"col":1},
+    {"id":"core","label":"core","sub":"配置 · 错误码 · 编码 · 调度","kind":"muted","row":3,"col":2}
+  ],
+  "edges": [
+    ["main","mw"],
+    ["main","routes","挂载 /api","primary"],
+    ["routes","deps","Depends"],
+    ["routes","schemas"],
+    ["routes","svc","调用","primary"],
+    ["deps","svc"],
+    ["svc","db","事务","primary"],
+    ["svc","core"],
+    ["db","core"],
+    ["main","core"]
+  ],
+  "evidence": [
+    {"id":"routes","file":"app/api/routes/__init__.py","line":20},
+    {"id":"main","file":"app/main.py","line":252},
+    {"id":"db","file":"app/db/session.py"}
+  ]
+}

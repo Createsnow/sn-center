@@ -1,0 +1,8 @@
+{"type":"sequence","lang":"zh-CN","title":"MES 对接：一次发放","subtitle":"领取用请求号幂等；回调只把本批待打印的号改为已打印","eyebrow":"06 · 时序","motion":"trace","numbered":true,
+"participants":[{"id":"m","label":"MES","kind":"external"},{"id":"o","label":"routes/open","sub":"/api/open"},{"id":"s","label":"services/acquire","focal":true},{"id":"db","label":"MySQL","kind":"store"}],
+"messages":[["m","o","POST /api/auth/login"],["o","m","token","reply"],["m","o","POST /open/acquire (pi, request_no)","primary"],["o","s","acquire（同页面代码路径）"],
+ ["s","db","待领取 → 待打印 · 建批次"],["s","m","batch_no + 第一页","reply"],["m","o","GET /batches/{no}/items?page=n"],["o","m","明细页","reply"],
+ ["m","m","打印"],["m","o","POST /open/callback","primary"],["s","db","待打印 → 已打印 · 留痕"],["s","m","updated · skipped","reply"]],
+"fragments":[{"kind":"loop","label":"直到取完","from":6,"to":7}],
+"notes":[{"at":3,"over":["m","o"],"text":"超时重试用原 request_no，返回同一批次"}],
+"evidence":[{"id":"o","file":"app/api/routes/open.py","line":17},{"id":"s","file":"app/services/acquire.py"}]}

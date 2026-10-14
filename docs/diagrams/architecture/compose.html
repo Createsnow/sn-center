@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>架构流动图组合</title>
+<style>
+:root{--paper:#f6f5f1;--paper-2:#eceae4;--ink:#1d2433;--muted:#4a5568;--rule:rgba(29,36,51,.12);--accent:#2f54eb;--tint:rgba(47,84,235,.08);--card:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#1a1a1a;--paper-2:#222;--ink:#e8e6e3;--muted:#a9a6a1;--rule:rgba(232,230,227,.14);--accent:#7b93ff;--tint:rgba(123,147,255,.14);--card:#f6f5f1}}
+:root[data-theme="dark"]{--paper:#1a1a1a;--paper-2:#222;--ink:#e8e6e3;--muted:#a9a6a1;--rule:rgba(232,230,227,.14);--accent:#7b93ff;--tint:rgba(123,147,255,.14);--card:#f6f5f1}
+*{box-sizing:border-box;margin:0}
+body{background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans','Noto Sans SC','PingFang SC','Microsoft YaHei',system-ui,sans-serif;line-height:1.5}
+header{position:sticky;top:0;z-index:2;background:var(--paper);border-bottom:1px solid var(--rule);padding:16px}
+.wrap{max-width:1200px;margin:0 auto}
+h1{font-size:22px;font-weight:600}
+.sub{color:var(--muted);font-size:13px;margin-top:2px}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+.label{font-size:12px;color:var(--muted);margin-right:4px}
+button,.chip{font:inherit;font-size:13px;border:1px solid var(--rule);background:transparent;color:var(--ink);border-radius:999px;padding:4px 12px;cursor:pointer}
+button:hover,.chip:hover{border-color:var(--accent)}
+.chip{display:inline-flex;gap:6px;align-items:center;user-select:none}
+.chip input{accent-color:var(--accent);margin:0}
+.chip:has(input:checked){background:var(--tint);border-color:var(--accent)}
+main{padding:16px}
+section{margin:0 auto 28px;max-width:1200px}
+section h2{font-size:15px;font-weight:600;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;margin-bottom:8px}
+section h2 .n{font-family:'IBM Plex Mono',ui-monospace,monospace;color:var(--muted);font-weight:400}
+section h2 a{font-size:12px;font-weight:400;color:var(--accent)}
+.frame{background:var(--card);border:1px solid var(--rule);border-radius:8px;overflow:hidden}
+.frame img{display:block;width:100%;height:auto}
+.empty{color:var(--muted);text-align:center;padding:64px 0}
+@media (max-width:600px){h1{font-size:18px}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>多工厂 SN 防重管控 · 架构流动图</h1>
+  <p class="sub">每张图可单独打开（拆分），也可勾选几张叠在一页里看（组合）。勾选结果记在网址里，复制链接就能分享这个组合。</p>
+  <div class="row" id="presets"><span class="label">按角色</span></div>
+  <div class="row" id="picks"><span class="label">视图</span></div>
+</div></header>
+<main id="stage"></main>
+<script>
+const VIEWS = [
+  ['00', '00-overview', '系统总览'],
+  ['01', '01-business-flow', '业务主流程'],
+  ['02', '02-backend-layers', '后端分层'],
+  ['03', '03-services-generate', '服务依赖 · 订单与生成'],
+  ['04', '04-services-fulfil', '服务依赖 · 领取、转厂与查询'],
+  ['05', '05-sn-state', 'SN 状态机'],
+  ['06', '06-mes-sequence', 'MES 对接：一次发放'],
+  ['07', '07-deployment', '部署'],
+];
+const PRESETS = [
+  ['全部', VIEWS.map(v => v[0])],
+  ['业务 / 新成员', ['00', '01', '05']],
+  ['开发', ['00', '02', '03', '04', '05']],
+  ['MES 对接方', ['00', '05', '06']],
+  ['运维 / 实施', ['00', '07']],
+];
+const picks = document.getElementById('picks');
+const stage = document.getElementById('stage');
+
+for (const [id, , title] of VIEWS) {
+  const l = document.createElement('label');
+  l.className = 'chip';
+  l.innerHTML = `<input type="checkbox" value="${id}">${id} ${title}`;
+  picks.append(l);
+}
+for (const [name, ids] of PRESETS) {
+  const b = document.createElement('button');
+  b.textContent = name;
+  b.onclick = () => apply(ids);
+  document.getElementById('presets').append(b);
+}
+picks.addEventListener('change', () => apply(checked()));
+window.addEventListener('hashchange', () => apply(fromHash(), false));
+
+function checked() {
+  return [...picks.querySelectorAll('input:checked')].map(i => i.value);
+}
+function fromHash() {
+  const m = location.hash.match(/v=([\d,]*)/);
+  return m ? m[1].split(',').filter(Boolean) : PRESETS[0][1];
+}
+function apply(ids, push = true) {
+  const want = new Set(ids);
+  picks.querySelectorAll('input').forEach(i => { i.checked = want.has(i.value); });
+  if (push) history.replaceState(null, '', '#v=' + [...want].sort().join(','));
+  stage.replaceChildren();
+  const chosen = VIEWS.filter(v => want.has(v[0]));
+  if (!chosen.length) {
+    stage.innerHTML = '<p class="empty">没有选中任何视图</p>';
+    return;
+  }
+  for (const [id, file, title] of chosen) {
+    const s = document.createElement('section');
+    s.id = 'v' + id;
+    s.innerHTML = `<h2><span class="n">${id}</span>${title}<a href="${file}.html">打开交互版 ↗</a><a href="${file}.svg">SVG</a><a href="${file}.png">PNG</a></h2>
+      <div class="frame"><a href="${file}.html"><img src="${file}.svg" alt="${title}" loading="lazy"></a></div>`;
+    stage.append(s);
+  }
+}
+apply(fromHash(), false);
+</script>
+</body>
+</html>
