@@ -24,7 +24,7 @@
 ## 快速开始
 
 ```bash
-cp .env.example .env     # 填 DB_HOST / DB_PORT / DB_NAME / DB_USER / DB_PASSWORD、SN_SECRET（≥ 32 位随机串）、K3_*
+cp .env.example .env     # 填 DB_HOST / DB_PORT / DB_NAME（开发 sn_dev、测试 sn_test、正式 sn_prod）/ DB_USER / DB_PASSWORD、SN_SECRET（≥ 32 位随机串）、K3_*
 python start.py          # Windows 可双击 start.bat；需要 Python 3.12+、Node.js 20+
 ```
 
@@ -55,7 +55,7 @@ python start.py          # Windows 可双击 start.bat；需要 Python 3.12+、N
 uv sync && uv run uvicorn app.main:app --reload --port 8000   # 后端（读仓库根 .env）
 cd frontend && npm install && npm run dev      # 前端 5173，代理 /api 到 8000
 
-uv run pytest -q                               # 单元 + 集成测试（集成测试需 MySQL，默认 127.0.0.1:3306/sndb_test_py，连不上自动跳过）
+uv run pytest -q                               # 单元 + 集成测试（集成测试需 MySQL，默认 127.0.0.1:3306/sndb_test_py，会整库重建，不要指向 sn_dev / sn_test / sn_prod；连不上自动跳过）
 uv run ruff check app tests                    # 代码检查
 node --test frontend/src/*.test.js             # 前端测试
 python3 frontend/scripts/gen_locales.py        # 改了词条 / 错误码后重新生成三种语言文件

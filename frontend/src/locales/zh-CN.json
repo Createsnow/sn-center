@@ -491,7 +491,6 @@
     "fromFactory": "来源工厂",
     "scope": "转移范围",
     "candidates": "可转移 {ok} 枚（范围内共 {total} 枚）",
-    "dupWarn": "转入 PI {pi} 下已有 {n} 个相同的完整 SN（如 {sns}），不能转移",
     "jumpWarn": "转入后，PI {pi} 下一次生成将从 {after} 开始（原为 {before}），有 {unused} 个号不再生成",
     "rule": "待分配、申请中的号不能转移；同一枚号同时只能有一张未完成的申请。",
     "srcSNAPSHOT": "快照选择",
@@ -540,7 +539,6 @@
     "directNote": "提交后这些号直接挂到转入目标，成为转入厂的待领取。",
     "chkSource": "填写来源工厂、PI 和转移范围",
     "chkTarget": "选择转入目标（工厂和 PI）",
-    "chkNoDup": "转入 PI 下没有相同的完整 SN",
     "chkReason": "已填写转厂原因",
     "chkNoReason": "填写转厂原因"
   },

@@ -103,7 +103,6 @@ E = {
 "TR_NOTHING": ("Nothing transferable in the scope (to-allocate or pending SNs cannot move)", "Không có SN có thể chuyển (SN chờ phân bổ hoặc đang xin chuyển không thể chuyển)"),
 "TR_SN_NOT_TRANSFERABLE": ("SN {sn} cannot be transferred in its current status", "SN {sn} không thể chuyển ở trạng thái hiện tại"),
 "TR_SAME_TARGET": ("Target is identical to the source", "Đích trùng với nguồn"),
-"TR_DUPLICATE": ("Target PI {pi} already has {count} identical full SNs (e.g. {sn}); transfer rejected", "PI đích {pi} đã có {count} SN trùng (ví dụ {sn}); từ chối toàn bộ"),
 "TR_NOT_FOUND": ("Transfer record not found", "Không tìm thấy phiếu chuyển"),
 "TR_NOT_PENDING": ("Transfer {transfer_no} was already processed", "Phiếu chuyển {transfer_no} đã được xử lý"),
 "TR_TARGET_DISABLED": ("Target factory {factory} is disabled; reject this request, or enable the factory on the Factories page first", "Nhà máy nhận {factory} đã ngừng dùng; hãy từ chối yêu cầu này, hoặc bật lại nhà máy ở trang Nhà máy trước"),

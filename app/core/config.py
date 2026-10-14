@@ -263,7 +263,7 @@ class Settings:
 
         host = pick("DB_HOST", parts.hostname, "127.0.0.1")
         port = self.get_int("DB_PORT", url_port or 3306)
-        database = pick("DB_NAME", parts.path.lstrip("/"), "sndb")
+        database = pick("DB_NAME", parts.path.lstrip("/"), "sn_dev")
         user = pick("DB_USER", unquote(parts.username) if parts.username else query.get("user", [""])[0], "appuser")
         # 密码可以含空格、可以为空，不做 strip
         password = self.raw("DB_PASSWORD")

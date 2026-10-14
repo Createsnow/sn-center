@@ -102,7 +102,6 @@
   "TR_NOTHING": "Nothing transferable in the scope (to-allocate or pending SNs cannot move)",
   "TR_SN_NOT_TRANSFERABLE": "SN {sn} cannot be transferred in its current status",
   "TR_SAME_TARGET": "Target is identical to the source",
-  "TR_DUPLICATE": "Target PI {pi} already has {count} identical full SNs (e.g. {sn}); transfer rejected",
   "TR_NOT_FOUND": "Transfer record not found",
   "TR_NOT_PENDING": "Transfer {transfer_no} was already processed",
   "TR_TARGET_DISABLED": "Target factory {factory} is disabled; reject this request, or enable the factory on the Factories page first",

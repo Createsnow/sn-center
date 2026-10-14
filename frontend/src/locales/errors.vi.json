@@ -102,7 +102,6 @@
   "TR_NOTHING": "Không có SN có thể chuyển (SN chờ phân bổ hoặc đang xin chuyển không thể chuyển)",
   "TR_SN_NOT_TRANSFERABLE": "SN {sn} không thể chuyển ở trạng thái hiện tại",
   "TR_SAME_TARGET": "Đích trùng với nguồn",
-  "TR_DUPLICATE": "PI đích {pi} đã có {count} SN trùng (ví dụ {sn}); từ chối toàn bộ",
   "TR_NOT_FOUND": "Không tìm thấy phiếu chuyển",
   "TR_NOT_PENDING": "Phiếu chuyển {transfer_no} đã được xử lý",
   "TR_TARGET_DISABLED": "Nhà máy nhận {factory} đã ngừng dùng; hãy từ chối yêu cầu này, hoặc bật lại nhà máy ở trang Nhà máy trước",

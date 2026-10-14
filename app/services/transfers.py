@@ -2,7 +2,7 @@
 
 可转：待领取 / 待打印 / 已打印；来源限同一张 PI，范围 = 整张 PI、PI + 物料、单枚 SN。
 工厂申请 → 号变申请中 → 总部确认（改挂转入目标，转入厂待领取）/ 驳回或申请厂撤回（恢复申请前状态）；
-总部也可不经申请直接转。转入 PI 已有相同完整 SN 时拒绝整次转移。
+总部也可不经申请直接转。转厂不改 SN 字符串，完整 SN 全局唯一（ux_item_sn），转入后不会与任何号重复，无需另行查重。
 流水归属（seq_pi_no）不变，不抬高转入 PI 的计数器；转入 PI 之后从「自己的最大号与转入号按其规则解析出的
 最大流水」两者取大再加 1 生成（见 generate.NextStart），转厂时提示转入后的下一个号。
 """
@@ -126,7 +126,7 @@ def _source(factory: str, r: Request) -> _Source:
 
 
 def candidates(cu: CurrentUser, r: Request) -> dict:
-    """选定范围内各状态枚数（页面提交前展示）；填了转入 PI 时另给重复的号与转入后下一个号的提示。"""
+    """选定范围内各状态枚数（页面提交前展示）；填了转入 PI 时另给转入后下一个号的提示。"""
     if cu.is_admin:
         factory = factories.must_get(r.factory_code)["factory_code"]
     else:
@@ -151,8 +151,7 @@ def candidates(cu: CurrentUser, r: Request) -> dict:
         factory,
         s.pi,
     )
-    out: dict = {"total": total, "transferable": ok, "by_status": by, "materials": materials}
-    out.update(duplicates=None, target=None)
+    out: dict = {"total": total, "transferable": ok, "by_status": by, "materials": materials, "target": None}
     to_pi = util.trim(r.to_pi)
     if to_pi and to_pi != s.pi:
         # 与 _create 锁定的范围一致：可转状态的号
@@ -161,17 +160,9 @@ def candidates(cu: CurrentUser, r: Request) -> dict:
             + ELIGIBLE
             + s.where().replace(" AND ", " AND i.")
         )
-        dup_from = " FROM sn_item i JOIN sn_item k ON k.pi_no = %s AND k.sn = i.sn" + where
-        n = db.count("SELECT COUNT(*)" + dup_from, to_pi, *s.args())
-        if n:
-            samples = db.column(f"SELECT i.sn{dup_from} ORDER BY i.sn LIMIT {DUP_SAMPLES}", to_pi, *s.args())
-            out["duplicates"] = {"count": n, "samples": samples}
         sns = db.column("SELECT i.sn FROM sn_item i" + where, *s.args())
         out["target"] = target_hint(to_pi, util.trim(r.to_customer) or None, sns)
     return out
-
-
-DUP_SAMPLES = 5
 
 
 def target_hint(to_pi: str, customer: str | None, sns: list[str]) -> dict | None:
@@ -291,7 +282,6 @@ def _create(cu: CurrentUser, factory: str, r: Request, mode: str) -> dict:
             raise biz(ErrorCode.TR_SN_NOT_TRANSFERABLE, sn=s.sn)
         raise biz(ErrorCode.TR_NOTHING)
     _check_same_target(t)
-    _check_duplicates(t)
     from_customer = db.scalar("SELECT MIN(from_customer) FROM sn_transfer_item WHERE transfer_id = %s", t["id"])
     t["qty"] = n
     t["from_customer"] = from_customer or ""
@@ -365,17 +355,6 @@ def _check_same_target(t: dict) -> None:
         raise biz(ErrorCode.TR_SAME_TARGET)
 
 
-def _check_duplicates(t: dict) -> None:
-    """转入 PI 下已有相同完整 SN（不含本次这批自身）→ 拒绝整次转移。"""
-    if t["to_pi"] == t["from_pi"]:
-        return
-    join = "FROM sn_transfer_item t JOIN sn_item k ON k.pi_no = %s AND k.sn = t.sn WHERE t.transfer_id = %s"
-    n = db.count("SELECT COUNT(*) " + join, t["to_pi"], t["id"])
-    if n:
-        dup = db.column(f"SELECT t.sn {join} ORDER BY t.sn LIMIT {DUP_SAMPLES}", t["to_pi"], t["id"])
-        raise biz(ErrorCode.TR_DUPLICATE, pi=t["to_pi"], count=n, sn="、".join(dup))
-
-
 def _move(t: dict, from_applying: bool, now) -> None:
     """改挂到转入目标：号改挂转入 PI（SN 不变，全局唯一键 ux_item_sn 保证不与任何号重复）；
     变为转入厂的待领取；批次 / 打印单清空。"""
@@ -388,7 +367,6 @@ def _move(t: dict, from_applying: bool, now) -> None:
             now,
         )
         db.all("SELECT pi_no FROM sn_pi_counter WHERE pi_no = %s FOR UPDATE", t["to_pi"])
-    _check_duplicates(t)
     guard = "i.status = 'APPLYING' AND i.transfer_id = %s" if from_applying else f"i.status IN {ELIGIBLE}"
     args = [
         t["to_pi"],

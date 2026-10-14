@@ -272,12 +272,7 @@ const checks = computed<Check[]>(() => {
     out.push({ key: "n", state: c.transferable > 0 ? "ok" : "bad", text: t("transfer.candidates", { ok: c.transferable, total: c.total }) });
   }
   if (!targetReady.value) out.push({ key: "tgt", state: "bad", text: t("transfer.chkTarget") });
-  else if (c) {
-    out.push(c.duplicates
-      ? { key: "dup", state: "bad", text: t("transfer.dupWarn", { pi: target.to_pi.trim(), n: c.duplicates.count, sns: c.duplicates.samples.join("、") }) }
-      : { key: "dup", state: "ok", text: t("transfer.chkNoDup") });
-    if (c.target) out.push({ key: "jump", state: "warn", text: jumpText(c.target) });
-  }
+  else if (c?.target) out.push({ key: "jump", state: "warn", text: jumpText(c.target) });
   out.push(reason.value.trim() ? { key: "reason", state: "ok", text: t("transfer.chkReason") } : { key: "reason", state: "bad", text: t("transfer.chkNoReason") });
   return out;
 });

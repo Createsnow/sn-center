@@ -10,7 +10,7 @@ from app.services import orders, transfers
 router = APIRouter(prefix="/transfers", tags=["transfers"])
 
 
-@router.get("/candidates", summary="范围内各状态枚数；传 to_pi 时另给与转入 PI 重复的号、转入后下一个号的提示")
+@router.get("/candidates", summary="范围内各状态枚数；传 to_pi 时另给转入后下一个号的提示")
 def tr_candidates(
     cu: UserDep,
     pi: str = Query(...),

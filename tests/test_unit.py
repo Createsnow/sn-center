@@ -267,15 +267,15 @@ def test_db_target_reads_separate_keys(monkeypatch):
 
 def test_db_target_defaults(monkeypatch):
     t = _db_target(monkeypatch)
-    assert (t.host, t.port, t.database, t.user, t.password) == ("127.0.0.1", 3306, "sndb", "appuser", "")
+    assert (t.host, t.port, t.database, t.user, t.password) == ("127.0.0.1", 3306, "sn_dev", "appuser", "")
 
 
 def test_db_target_legacy_url_still_works_and_single_keys_win(monkeypatch):
     url = "jdbc:mysql://10.0.0.5:3310/legacy?useUnicode=true&characterEncoding=utf8"
     t = _db_target(monkeypatch, DB_URL=url, DB_USER="appuser", DB_PASSWORD="x")
     assert (t.host, t.port, t.database) == ("10.0.0.5", 3310, "legacy")
-    t = _db_target(monkeypatch, DB_URL=url, DB_NAME="sndb_b", DB_HOST="10.0.0.6")
-    assert (t.host, t.port, t.database) == ("10.0.0.6", 3310, "sndb_b")
+    t = _db_target(monkeypatch, DB_URL=url, DB_NAME="sn_test", DB_HOST="10.0.0.6")
+    assert (t.host, t.port, t.database) == ("10.0.0.6", 3310, "sn_test")
     t = _db_target(monkeypatch, DB_URL="mysql://me:p%40ss@h1/d1")
     assert (t.host, t.port, t.database, t.user, t.password) == ("h1", 3306, "d1", "me", "p@ss")
 

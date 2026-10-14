@@ -166,14 +166,14 @@ def test_transfer_between_pis_never_moves_target_start(api, admin, w, sql):
     # 前缀不能互为开头：两张 PI 的号格式必然不同，转入的号不会与本 PI 将来的号重复，也不会让起点后移
     pi_a, pi_b, _, b_b = _two_pis(w, "D", "E", 12, 2)
     c = ok(api.get("/api/transfers/candidates" + q(factory_code=FAC, pi=pi_a, scope="PI", to_pi=pi_b), admin))
-    assert c["duplicates"] is None
+    assert "duplicates" not in c.body
     single = ok(
         api.get(
             "/api/transfers/candidates" + q(factory_code=FAC, pi=pi_a, scope="SINGLE", sn="D00012", to_pi=pi_b),
             admin,
         )
     )
-    assert single["duplicates"] is None
+    assert "duplicates" not in single.body
     r = ok(_transfer(api, admin, pi_a, pi_b, scope="SINGLE", sn="D00012"))
     assert r["target_hint"] is None
     op = w.user(uid("opj"), "factory_operator", FAC)

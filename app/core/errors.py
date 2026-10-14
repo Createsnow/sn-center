@@ -129,7 +129,6 @@ class ErrorCode(Enum):
     TR_NOTHING = (400, "所选范围内没有可转移的号（待分配、申请中的号不能转移）")
     TR_SN_NOT_TRANSFERABLE = (400, "SN {sn} 当前状态不能转移")
     TR_SAME_TARGET = (400, "转入目标与来源完全相同")
-    TR_DUPLICATE = (409, "转入 PI {pi} 下已存在 {count} 个相同完整 SN（如 {sn}），拒绝整次转移")
     TR_NOT_FOUND = (404, "转厂记录不存在")
     TR_NOT_PENDING = (409, "转厂申请 {transfer_no} 已处理，不能重复操作")
     TR_TARGET_DISABLED = (409, "转入工厂 {factory} 已停用，不能确认：请驳回该申请，或先在「工厂」页启用")

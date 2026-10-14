@@ -491,7 +491,6 @@
     "fromFactory": "Nhà máy nguồn",
     "scope": "Phạm vi",
     "candidates": "{ok} có thể chuyển ({total} trong phạm vi)",
-    "dupWarn": "PI đích {pi} đã có {n} SN trùng (ví dụ {sns}); không thể chuyển",
     "jumpWarn": "Sau khi chuyển, PI {pi} sẽ sinh từ {after} (trước là {before}); {unused} số sẽ không được sinh",
     "rule": "SN chờ phân bổ hoặc đang xin chuyển không thể chuyển; mỗi SN chỉ một yêu cầu mở.",
     "srcSNAPSHOT": "Từ ảnh chụp",
@@ -540,7 +539,6 @@
     "directNote": "Sau khi gửi, các SN này chuyển ngay sang đích và thành chờ nhận tại nhà máy đích.",
     "chkSource": "Nhập nhà máy nguồn, PI và phạm vi",
     "chkTarget": "Chọn nhà máy và PI đích",
-    "chkNoDup": "PI đích không có SN đầy đủ trùng",
     "chkReason": "Đã nhập lý do",
     "chkNoReason": "Nhập lý do chuyển"
   },

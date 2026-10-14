@@ -553,9 +553,6 @@ M = {
 "transfer.fromFactory": ("来源工厂", "Source factory", "Nhà máy nguồn"),
 "transfer.scope": ("转移范围", "Scope", "Phạm vi"),
 "transfer.candidates": ("可转移 {ok} 枚（范围内共 {total} 枚）", "{ok} transferable ({total} in scope)", "{ok} có thể chuyển ({total} trong phạm vi)"),
-"transfer.dupWarn": ("转入 PI {pi} 下已有 {n} 个相同的完整 SN（如 {sns}），不能转移",
-  "Target PI {pi} already has {n} identical full SNs (e.g. {sns}); cannot transfer",
-  "PI đích {pi} đã có {n} SN trùng (ví dụ {sns}); không thể chuyển"),
 "transfer.jumpWarn": ("转入后，PI {pi} 下一次生成将从 {after} 开始（原为 {before}），有 {unused} 个号不再生成",
   "After this transfer PI {pi} will generate from {after} (was {before}); {unused} numbers will never be generated",
   "Sau khi chuyển, PI {pi} sẽ sinh từ {after} (trước là {before}); {unused} số sẽ không được sinh"),
@@ -614,7 +611,6 @@ M = {
   "Sau khi gửi, các SN này chuyển ngay sang đích và thành chờ nhận tại nhà máy đích."),
 "transfer.chkSource": ("填写来源工厂、PI 和转移范围", "Enter source factory, PI and scope", "Nhập nhà máy nguồn, PI và phạm vi"),
 "transfer.chkTarget": ("选择转入目标（工厂和 PI）", "Choose the target factory and PI", "Chọn nhà máy và PI đích"),
-"transfer.chkNoDup": ("转入 PI 下没有相同的完整 SN", "No identical full SN in the target PI", "PI đích không có SN đầy đủ trùng"),
 "transfer.chkReason": ("已填写转厂原因", "Reason entered", "Đã nhập lý do"),
 "transfer.chkNoReason": ("填写转厂原因", "Enter a reason", "Nhập lý do chuyển"),
 # ---------------- query ----------------

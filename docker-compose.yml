@@ -1,6 +1,6 @@
 name: sn-center
 
-# 连接 .env 里 DB_HOST / DB_PORT / DB_NAME 指向的 MySQL（如公司库 10.0.200.125:3306/sndb），不随附数据库。
+# 连接 .env 里 DB_HOST / DB_PORT / DB_NAME 指向的 MySQL（公司库 10.0.200.125:3306：正式 sn_prod、测试 sn_test、开发 sn_dev），不随附数据库。
 services:
   api:
     build:
