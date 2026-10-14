@@ -473,9 +473,7 @@ def w(api, admin) -> World:
 _SN_TABLES = (
     "sn_transfer_item",
     "sn_transfer",
-    "sn_print",
-    "sn_acquire_batch",
-    "sn_allocation",
+    "sn_batch",
     "sn_item",
     "sn_gen_job",
     "sn_gen_preview",

@@ -273,7 +273,7 @@ def pis(cu: CurrentUser, q: str | None, customer: str | None, pending: bool, lim
     rows = db.all(
         "SELECT b.pi, MAX(b.customer_number) customer_number, COUNT(*) bills, SUM(b.total_qty) total_qty, "
         "SUM(b.gen) generated_qty, SUM(b.alloc) allocated_qty, SUM(GREATEST(b.total_qty - b.gen, 0)) quota, "
-        "GROUP_CONCAT(DISTINCT b.org ORDER BY b.org SEPARATOR '\\n') orgs, MAX(c.start_locked) start_locked, "
+        "GROUP_CONCAT(DISTINCT b.org ORDER BY b.org SEPARATOR '\\n') orgs, MAX(c.generated_qty) > 0 start_locked, "
         "MAX(c.rule_id) chosen_rule "
         f"FROM ({bills}) b LEFT JOIN sn_pi_counter c ON c.pi_no = b.pi GROUP BY b.pi{having} "
         "ORDER BY MAX(b.bill_no) DESC LIMIT %s",

@@ -110,6 +110,6 @@ def gen_allocate(body: AllocateIn, cu: AdminDep) -> dict:
     return generate.allocate(cu, body.bill_no, body.factory_code)
 
 
-@router.get("/generate/allocations")
+@router.get("/generate/allocations", summary="订单的分配记录（取自分配痕迹）")
 def gen_allocations(cu: AdminDep, bill_no: str = Query(...)) -> list:
-    return generate.allocations([bill_no])
+    return generate.bill_allocations(bill_no)

@@ -134,12 +134,9 @@ INSERT INTO sn_order_sync_schedule (id, enabled, interval_minutes) VALUES (1, 0,
 CREATE TABLE sn_pi_counter (
   pi_no          VARCHAR(64) NOT NULL,
   last_seq_dec   BIGINT      NOT NULL DEFAULT 0 COMMENT '本 PI 已占用的最大十进制流水',
-  generated_qty  BIGINT      NOT NULL DEFAULT 0 COMMENT '本 PI 自己生成的枚数',
+  generated_qty  BIGINT      NOT NULL DEFAULT 0 COMMENT '本 PI 自己生成的枚数；> 0 即已生成过（起点锁定）',
   rule_id        BIGINT      NULL COMMENT '给该 PI 指定的规则库规则（sn_rule.id），可解绑',
   rule_version_id BIGINT     NULL COMMENT '本 PI 固定使用的规则版本（首次用该规则生成时确定）',
-  start_locked   TINYINT(1)  NOT NULL DEFAULT 0 COMMENT '1 = 已生成过（撤销到一枚不剩时归 0）',
-  locked_by      VARCHAR(32) NULL COMMENT '首次生成的账户',
-  locked_at      DATETIME    NULL COMMENT '首次生成的时间',
   updated_at     DATETIME    NOT NULL,
   PRIMARY KEY (pi_no)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='PI 流水计数器';
@@ -175,8 +172,7 @@ CREATE TABLE sn_gen_preview (
   segments_json   TEXT        NOT NULL,
   created_by      VARCHAR(32) NOT NULL,
   created_at      DATETIME    NOT NULL,
-  expires_at      DATETIME    NOT NULL,
-  used_at         DATETIME    NULL,
+  expires_at      DATETIME    NOT NULL COMMENT '是否已用于生成以 sn_gen_job.ux_job_preview 为准',
   PRIMARY KEY (token),
   KEY ix_preview_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='生成预演';
@@ -228,10 +224,9 @@ CREATE TABLE sn_item (
   rule_version_id BIGINT      NULL,
   seq_pi_no       VARCHAR(64) NOT NULL COMMENT '流水归属 PI（转厂不变）',
   seq_dec         BIGINT      NOT NULL COMMENT '十进制流水',
-  status          VARCHAR(16) NOT NULL COMMENT 'PENDING_ALLOC/TO_ACQUIRE/TO_PRINT/PRINTED/APPLYING',
-  prev_status     VARCHAR(16) NULL COMMENT '申请中之前的状态（驳回 / 撤回时恢复）',
-  batch_no        VARCHAR(40) NULL COMMENT '领取批次',
-  print_no        VARCHAR(40) NULL COMMENT '页面打印单号',
+  status          VARCHAR(16) NOT NULL COMMENT 'PENDING_ALLOC/TO_ACQUIRE/TO_PRINT/PRINTED/APPLYING（申请前的状态见 sn_transfer_item.from_status）',
+  batch_no        VARCHAR(40) NULL COMMENT '领取批次（sn_batch.batch_no，kind = ACQUIRE）',
+  print_no        VARCHAR(40) NULL COMMENT '页面打印单号（sn_batch.batch_no，kind = PRINT）',
   transfer_id     BIGINT      NULL COMMENT '未完成的转厂申请',
   created_at      DATETIME    NOT NULL,
   allocated_at    DATETIME    NULL,
@@ -241,31 +236,17 @@ CREATE TABLE sn_item (
   PRIMARY KEY (id),
   UNIQUE KEY ux_item_sn (sn) COMMENT '完整 SN 全局唯一',
   UNIQUE KEY ux_item_seq (seq_pi_no, seq_dec) COMMENT '同一流水归属 PI 的十进制流水唯一',
-  KEY ix_item_fac (factory_code, status, pi_no, material_code, seq_pi_no, seq_dec),
-  KEY ix_item_status (status, factory_code),
+  KEY ix_item_status (status, factory_code, pi_no, material_code, seq_pi_no, seq_dec) COMMENT '状态打头：在途统计、按厂 + PI + 状态领取 / 打印 / 转厂、号段拼接',
   KEY ix_item_pi (pi_no, status, factory_code),
   KEY ix_item_bill (bill_no, status, seq_dec),
   KEY ix_item_batch (batch_no),
   KEY ix_item_print (print_no)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='SN 明细（号池）';
 
-CREATE TABLE sn_allocation (
-  id           BIGINT      NOT NULL AUTO_INCREMENT,
-  bill_no      VARCHAR(64) NOT NULL,
-  pi_no        VARCHAR(64) NOT NULL,
-  factory_code VARCHAR(64) NOT NULL,
-  qty          BIGINT      NOT NULL,
-  start_sn     VARCHAR(64) NOT NULL,
-  end_sn       VARCHAR(64) NOT NULL,
-  created_by   VARCHAR(32) NOT NULL,
-  created_at   DATETIME    NOT NULL,
-  PRIMARY KEY (id),
-  KEY ix_alloc_bill (bill_no)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='分配记录';
-
--- 领取批次：同厂同请求号幂等
-CREATE TABLE sn_acquire_batch (
-  batch_no     VARCHAR(40) NOT NULL,
+-- 领取批次与页面打印单：kind 区分；同厂、同类、同请求号幂等（打印单可反复下载打印文件）
+CREATE TABLE sn_batch (
+  batch_no     VARCHAR(40) NOT NULL COMMENT '领取批次号 B… / 打印单号 P…',
+  kind         VARCHAR(8)  NOT NULL COMMENT 'ACQUIRE 领取批次 / PRINT 页面打印单',
   factory_code VARCHAR(64) NOT NULL,
   pi_no        VARCHAR(64) NOT NULL,
   request_no   VARCHAR(64) NOT NULL,
@@ -274,23 +255,10 @@ CREATE TABLE sn_acquire_batch (
   created_by   VARCHAR(32) NOT NULL,
   created_at   DATETIME    NOT NULL,
   PRIMARY KEY (batch_no),
-  UNIQUE KEY ux_batch_request (factory_code, request_no),
-  KEY ix_batch_fac_pi (factory_code, pi_no, created_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='领取批次';
-
--- 页面打印单：待打印 → 已打印，并可重新下载打印文件
-CREATE TABLE sn_print (
-  print_no     VARCHAR(40) NOT NULL,
-  factory_code VARCHAR(64) NOT NULL,
-  pi_no        VARCHAR(64) NOT NULL,
-  request_no   VARCHAR(64) NOT NULL,
-  qty          BIGINT      NOT NULL,
-  created_by   VARCHAR(32) NOT NULL,
-  created_at   DATETIME    NOT NULL,
-  PRIMARY KEY (print_no),
-  UNIQUE KEY ux_print_request (factory_code, request_no),
-  KEY ix_print_fac_pi (factory_code, pi_no, created_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='页面打印单';
+  UNIQUE KEY ux_batch_request (factory_code, kind, request_no),
+  KEY ix_batch_fac_pi (kind, factory_code, pi_no, created_at),
+  KEY ix_batch_created (kind, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='领取批次 / 页面打印单';
 
 -- 转厂
 CREATE TABLE sn_transfer (

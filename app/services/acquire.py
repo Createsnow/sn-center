@@ -1,6 +1,6 @@
 """领取与打印。页面与对外接口共用：状态记在每一枚 SN 上；领取只按「工厂 + PI」整批，
 该厂该 PI 下全部待领取的号 → 待打印（申请中的号不参与）；打印 / 回调 → 已打印。
-领取与页面打印都以「工厂 + 请求号」幂等。
+领取与页面打印都以「工厂 + 请求号」幂等（各自分开）；领取批次与打印单同存 sn_batch，kind 区分。
 """
 
 from __future__ import annotations
@@ -22,6 +22,11 @@ CHUNK = 1000
 PIS_LIMIT = 2000
 BATCH_FIELDS = ("batch_no", "factory_code", "pi_no", "request_no", "source", "qty", "created_by", "created_at")
 PRINT_FIELDS = ("print_no", "factory_code", "pi_no", "request_no", "qty", "created_by", "created_at")
+#: sn_batch.kind
+KIND_ACQUIRE = "ACQUIRE"
+KIND_PRINT = "PRINT"
+#: 打印单对外叫 print_no
+_PRINT_COLS = "batch_no print_no, factory_code, pi_no, request_no, source, qty, created_by, created_at"
 
 
 # ================================================================== 页面视图
@@ -170,7 +175,12 @@ def _request_no(raw: str | None) -> str:
 
 
 def _existing_batch(factory: str, request_no: str) -> dict | None:
-    return db.one("SELECT * FROM sn_acquire_batch WHERE factory_code = %s AND request_no = %s", factory, request_no)
+    return db.one(
+        "SELECT * FROM sn_batch WHERE factory_code = %s AND kind = %s AND request_no = %s",
+        factory,
+        KIND_ACQUIRE,
+        request_no,
+    )
 
 
 def _replay(b: dict, pi: str, req: str) -> dict:
@@ -197,9 +207,10 @@ def acquire(cu: CurrentUser, factory_in: str | None, pi_in: str | None, request_
             now = util.now()
             batch_no = util.next_id("B")
             db.exec(
-                "INSERT INTO sn_acquire_batch(batch_no, factory_code, pi_no, request_no, source, qty, created_by, "
-                "created_at) VALUES (%s,%s,%s,%s,%s,0,%s,%s)",
+                "INSERT INTO sn_batch(batch_no, kind, factory_code, pi_no, request_no, source, qty, created_by, "
+                "created_at) VALUES (%s,%s,%s,%s,%s,%s,0,%s,%s)",
                 batch_no,
+                KIND_ACQUIRE,
                 factory,
                 pi,
                 req,
@@ -218,7 +229,7 @@ def acquire(cu: CurrentUser, factory_in: str | None, pi_in: str | None, request_
             )
             if n == 0:
                 raise biz(ErrorCode.ACQ_NOTHING, factory=factory, pi=pi)
-            db.exec("UPDATE sn_acquire_batch SET qty = %s WHERE batch_no = %s", n, batch_no)
+            db.exec("UPDATE sn_batch SET qty = %s WHERE batch_no = %s", n, batch_no)
             first, last = _range("batch_no", batch_no)
             audit.record(
                 cu,
@@ -263,7 +274,7 @@ def _range(col: str, value: str) -> tuple[str | None, str | None]:
 
 
 def batch(cu: CurrentUser, batch_no: str | None) -> dict:
-    b = db.one("SELECT * FROM sn_acquire_batch WHERE batch_no = %s", util.trim(batch_no))
+    b = db.one("SELECT * FROM sn_batch WHERE batch_no = %s AND kind = %s", util.trim(batch_no), KIND_ACQUIRE)
     if b is None:
         raise biz(ErrorCode.ACQ_BATCH_NOT_FOUND, batch_no=util.trim(batch_no))
     cu.check_read(b["factory_code"])
@@ -284,7 +295,7 @@ def batch_items(cu: CurrentUser, batch_no: str | None, page: util.Page) -> dict:
 
 
 def _paged(
-    table: str,
+    kind: str,
     fields: tuple[str, ...],
     cu: CurrentUser,
     factory: str | None,
@@ -293,8 +304,9 @@ def _paged(
     exact: dict[str, str | None] | None = None,
 ) -> dict:
     """exact：额外的等值筛选（单号、请求号、来源），空值不参与。"""
-    fsql, args = factories.scope_sql(cu.read_factories(factory))
-    where = " WHERE 1=1" + fsql
+    fsql, fargs = factories.scope_sql(cu.read_factories(factory))
+    where = " WHERE kind = %s" + fsql
+    args = [kind, *fargs]
     if not util.blank(pi):
         where += " AND pi_no = %s"
         args.append(util.trim(pi))
@@ -302,8 +314,11 @@ def _paged(
         if not util.blank(v):
             where += f" AND {col} = %s"
             args.append(util.trim(v))
-    total = db.count(f"SELECT COUNT(*) FROM {table}{where}", *args)
-    rows = db.all(f"SELECT * FROM {table}{where} ORDER BY created_at DESC LIMIT %s,%s", *args, page.offset, page.size)
+    cols = _PRINT_COLS if kind == KIND_PRINT else "*"
+    total = db.count(f"SELECT COUNT(*) FROM sn_batch{where}", *args)
+    rows = db.all(
+        f"SELECT {cols} FROM sn_batch{where} ORDER BY created_at DESC LIMIT %s,%s", *args, page.offset, page.size
+    )
     return util.page_result([util.jrow(r, fields) for r in rows], total, page)
 
 
@@ -317,7 +332,7 @@ def batches(
     source: str | None = None,
 ) -> dict:
     exact = {"batch_no": batch_no, "request_no": request_no, "source": source}
-    return _paged("sn_acquire_batch", BATCH_FIELDS, cu, factory, pi, page, exact)
+    return _paged(KIND_ACQUIRE, BATCH_FIELDS, cu, factory, pi, page, exact)
 
 
 # ================================================================== 页面打印
@@ -345,7 +360,12 @@ def print_pi(cu: CurrentUser, factory_in: str | None, pi_in: str | None, request
 
 
 def _existing_print(factory: str, request_no: str) -> dict | None:
-    return db.one("SELECT * FROM sn_print WHERE factory_code = %s AND request_no = %s", factory, request_no)
+    return db.one(
+        f"SELECT {_PRINT_COLS} FROM sn_batch WHERE factory_code = %s AND kind = %s AND request_no = %s",
+        factory,
+        KIND_PRINT,
+        request_no,
+    )
 
 
 def _replay_print(p: dict, pi: str, req: str) -> dict:
@@ -365,12 +385,14 @@ def _print_in_tx(cu: CurrentUser, factory: str, pi: str, req: str) -> dict:
         now = util.now()
         print_no = util.next_id("P")
         db.exec(
-            "INSERT INTO sn_print(print_no, factory_code, pi_no, request_no, qty, created_by, created_at) "
-            "VALUES (%s,%s,%s,%s,0,%s,%s)",
+            "INSERT INTO sn_batch(batch_no, kind, factory_code, pi_no, request_no, source, qty, created_by, "
+            "created_at) VALUES (%s,%s,%s,%s,%s,%s,0,%s,%s)",
             print_no,
+            KIND_PRINT,
             factory,
             pi,
             req,
+            cu.source,
             cu.emp_no,
             now,
         )
@@ -385,7 +407,7 @@ def _print_in_tx(cu: CurrentUser, factory: str, pi: str, req: str) -> dict:
         )
         if n == 0:
             raise biz(ErrorCode.PRINT_NOTHING, factory=factory, pi=pi)
-        db.exec("UPDATE sn_print SET qty = %s WHERE print_no = %s", n, print_no)
+        db.exec("UPDATE sn_batch SET qty = %s WHERE batch_no = %s", n, print_no)
         first, last = _range("print_no", print_no)
         audit.record(
             cu,
@@ -402,7 +424,7 @@ def _print_in_tx(cu: CurrentUser, factory: str, pi: str, req: str) -> dict:
 
 
 def print_record(cu: CurrentUser, print_no: str | None) -> dict:
-    p = db.one("SELECT * FROM sn_print WHERE print_no = %s", util.trim(print_no))
+    p = db.one(f"SELECT {_PRINT_COLS} FROM sn_batch WHERE batch_no = %s AND kind = %s", util.trim(print_no), KIND_PRINT)
     if p is None:
         raise biz(ErrorCode.PRINT_NOT_FOUND, print_no=util.trim(print_no))
     cu.check_read(p["factory_code"])
@@ -417,7 +439,7 @@ def prints(
     print_no: str | None = None,
     request_no: str | None = None,
 ) -> dict:
-    return _paged("sn_print", PRINT_FIELDS, cu, factory, pi, page, {"print_no": print_no, "request_no": request_no})
+    return _paged(KIND_PRINT, PRINT_FIELDS, cu, factory, pi, page, {"batch_no": print_no, "request_no": request_no})
 
 
 def _file_rows(col: str, value: str) -> Iterator[list]:

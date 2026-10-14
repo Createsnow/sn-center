@@ -105,7 +105,7 @@ def counter(pi: str) -> dict:
         "pi_no": pi,
         "last_seq_dec": c["last_seq_dec"],
         "generated_qty": c["generated_qty"],
-        "start_locked": bool(c["start_locked"]),
+        "start_locked": c["generated_qty"] > 0,
     }
 
 
@@ -333,7 +333,7 @@ def pi_context(pi_in: str | None, bill_no: str | None = None) -> dict:
         "revocable_batch": revocable,
         "limits": limits(),
         "jobs": [{**job_json(j), "revocable": rb is not None and j["gen_batch"] == rb} for j in recent],
-        "allocations": allocations([x["bill_no"] for x in bills]),
+        "allocations": allocations(pi),
     }
 
 
@@ -544,11 +544,9 @@ def generate_pi(cu: CurrentUser, pi_in: str | None, items: list[dict] | None) ->
     _check_base(ps[0], _last_seq(pi))
     batch = _new_batch()
     try:
+        # 一个预演只能生成一次：靠 sn_gen_job.ux_job_preview（任务与预演令牌一一对应）
         with db.tx():
             ids = [_insert_job(cu, p, pi if i == 0 else None, batch) for i, p in enumerate(ps)]
-            now = util.now()
-            for p in ps:
-                db.exec("UPDATE sn_gen_preview SET used_at = %s WHERE token = %s", now, p["token"])
     except pymysql.err.IntegrityError as e:
         _raise_job_conflict(e, pi)
     work = list(zip(ids, ps, strict=True))
@@ -575,7 +573,7 @@ def _usable_preview(cu: CurrentUser, token: str | None, bill_no: str | None, qty
     p = None if util.blank(token) else db.one("SELECT * FROM sn_gen_preview WHERE token = %s", token.strip())
     if p is None or p["created_by"] != cu.emp_no:
         raise biz(ErrorCode.GEN_PREVIEW_REQUIRED)
-    if p["used_at"] is not None:
+    if db.exists("SELECT EXISTS(SELECT 1 FROM sn_gen_job WHERE preview_token = %s)", p["token"]):
         raise biz(ErrorCode.GEN_PREVIEW_USED)
     if util.now() > p["expires_at"]:
         raise biz(ErrorCode.GEN_PREVIEW_EXPIRED)
@@ -723,8 +721,8 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict, version: dict | None 
     pi = p["pi_no"]
     # 1) 锁 PI 计数器（一张 PI 一行），核对预演时的最大号
     db.exec(
-        "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, start_locked, updated_at) "
-        "VALUES (%s,0,0,0,%s) ON DUPLICATE KEY UPDATE pi_no = pi_no",
+        "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, updated_at) "
+        "VALUES (%s,0,0,%s) ON DUPLICATE KEY UPDATE pi_no = pi_no",
         pi,
         now,
     )
@@ -811,15 +809,12 @@ def _generate_in_tx(cu: CurrentUser, job_id: int, p: dict, version: dict | None 
                 raise biz(ErrorCode.GEN_CANCELED)
             s += CHUNK
     # 5) 推进计数器、订单已生成数；留痕
-    sets = "last_seq_dec = %s, generated_qty = %s, start_locked = 1, rule_version_id = %s, updated_at = %s"
+    sets = "last_seq_dec = %s, generated_qty = %s, rule_version_id = %s, updated_at = %s"
     args: list = [p["end_seq_dec"], c["generated_qty"] + p["qty"], v["id"], now]
     if source == rules.SRC_PICKED:
         # 没有绑定：记下所选模板，这张 PI 之后一直沿用（手动设置的规则已按 PI 绑定）
         sets += ", rule_id = %s"
         args.append(v["rule_id"])
-    if not c["start_locked"]:
-        sets += ", locked_by = %s, locked_at = %s"
-        args += [cu.emp_no, now]
     db.exec(f"UPDATE sn_pi_counter SET {sets} WHERE pi_no = %s", *args, pi)
     db.exec(
         "UPDATE sn_bill_gen SET generated_qty = %s, factory_code = %s, updated_at = %s WHERE bill_no = %s",
@@ -1098,13 +1093,14 @@ def revoke_batch(cu: CurrentUser, batch_in: str | None, reason_in: str | None) -
         )
         qty = sum(j["qty"] for j in js)
         now = util.now()
-        generated = c["generated_qty"] - qty
-        sets = "last_seq_dec = %s, generated_qty = %s, updated_at = %s"
-        args: list = [prev, generated, now]
-        if generated == 0:
-            # 一枚都不剩：回到从未生成的状态（规则指定保留，可在页面解绑重选）
-            sets += ", start_locked = 0, locked_by = NULL, locked_at = NULL"
-        db.exec(f"UPDATE sn_pi_counter SET {sets} WHERE pi_no = %s", *args, pi)
+        # 一枚都不剩时 generated_qty 归 0，即回到从未生成的状态（规则指定保留，可在页面解绑重选）
+        db.exec(
+            "UPDATE sn_pi_counter SET last_seq_dec = %s, generated_qty = %s, updated_at = %s WHERE pi_no = %s",
+            prev,
+            c["generated_qty"] - qty,
+            now,
+            pi,
+        )
         by_bill: dict[str, int] = {}
         for j in js:
             by_bill[j["bill_no"]] = by_bill.get(j["bill_no"], 0) + j["qty"]
@@ -1184,18 +1180,7 @@ def allocate(cu: CurrentUser, bill_no: str | None, factory_code: str | None = No
             now,
             no,
         )
-        db.insert(
-            "INSERT INTO sn_allocation(bill_no, pi_no, factory_code, qty, start_sn, end_sn, created_by, "
-            "created_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
-            no,
-            g["pi_no"],
-            g["factory_code"],
-            qty,
-            first,
-            last,
-            cu.emp_no,
-            now,
-        )
+        # 分配记录即这条痕迹（与分配同一事务写入），不另存表
         audit.record(
             cu,
             audit.entry(audit.SN_ALLOCATE)
@@ -1231,9 +1216,22 @@ def allocate_pi(cu: CurrentUser, pi_in: str | None) -> dict:
     return {"pi_no": pi, "qty": sum(x["qty"] for x in items), "items": items}
 
 
-def allocations(bill_nos: list[str]) -> list[dict]:
-    nos = [n for n in (util.trim(x) for x in bill_nos) if n]
-    if not nos:
-        return []
-    rows = db.all(f"SELECT * FROM sn_allocation WHERE bill_no IN ({marks(len(nos))}) ORDER BY id DESC LIMIT 100", *nos)
+_ALLOCATION_SQL = (
+    "SELECT id, bill_no, pi_no, factory_code, qty, start_sn, end_sn, operator created_by, created_at FROM {table} "
+    "WHERE pi_no = %s AND action = 'SN_ALLOCATE' AND result = 'OK'"
+)
+
+
+def allocations(pi: str, bill_nos: list[str] | None = None) -> list[dict]:
+    """分配记录：取自 SN_ALLOCATE 痕迹（在线表 + 归档表，按 PI 索引查），最近 100 条；bill_nos 为空 = 整张 PI。"""
+    nos = [n for n in (util.trim(x) for x in bill_nos or []) if n]
+    extra, extra_args = ("", []) if not nos else (f" AND bill_no IN ({marks(len(nos))})", nos)
+    sql = " UNION ALL ".join(_ALLOCATION_SQL.format(table=t) + extra for t in ("sn_audit", "sn_audit_archive"))
+    rows = db.all(f"{sql} ORDER BY created_at DESC, id DESC LIMIT 100", pi, *extra_args, pi, *extra_args)
     return [util.jrow(a, ALLOCATION_FIELDS) for a in rows]
+
+
+def bill_allocations(bill_no: str | None) -> list[dict]:
+    no = util.trim(bill_no)
+    g = _bill_gen(no) if no else None
+    return [] if g is None else allocations(g["pi_no"], [no])

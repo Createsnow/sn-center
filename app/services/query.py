@@ -13,7 +13,7 @@ from app.core import utils as util
 from app.core.config import settings
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
-from app.db.session import db
+from app.db.session import db, marks
 from app.services import acquire, files, rules, sn_items
 
 COUNT_CAP = 100_000
@@ -93,6 +93,7 @@ def _where(cu: CurrentUser, f: Filter) -> tuple[str, list, bool, SeqRange | None
     sql = " WHERE 1=1"
     args: list = []
     sc = acquire.read_scope(cu, f.factory_code, f.pi_no, f.pi_all)
+    by_factory = False
     if sc.all_factories_of_pi:
         # 未分配（工厂为空）的号不在只读范围内
         sql += " AND factory_code IS NOT NULL"
@@ -100,6 +101,7 @@ def _where(cu: CurrentUser, f: Filter) -> tuple[str, list, bool, SeqRange | None
         fsql, fargs = sc.sql()
         sql += fsql
         args += fargs
+        by_factory = bool(fsql)
     if not util.blank(f.customer_code):
         sql += " AND customer_code = %s"
         args.append(f.customer_code.strip())
@@ -112,6 +114,10 @@ def _where(cu: CurrentUser, f: Filter) -> tuple[str, list, bool, SeqRange | None
     if not util.blank(f.status) and f.status.strip() in util.SN_STATUSES:
         sql += " AND status = %s"
         args.append(f.status.strip())
+    elif by_factory:
+        # 限了工厂、没限状态：列出全部状态，按厂查才能走状态打头的 ix_item_status
+        sql += f" AND status IN ({marks(len(util.SN_STATUSES))})"
+        args += util.SN_STATUSES
     for col, v in (("sn", f.sn), ("bill_no", f.bill_no), ("batch_no", f.batch_no)):
         if not util.blank(v):
             sql += f" AND {col} = %s"

@@ -562,4 +562,9 @@ def test_concurrent_print_with_same_request_no_replays_one_print(api, admin, w, 
         assert all(o.status == 200 for o in out), [str(o) for o in out]
         assert len({o.text("print_no") for o in out}) == 1
         assert sum(1 for o in out if o["replayed"] is False) == 1
-        assert sql.count("SELECT COUNT(*) FROM sn_print WHERE factory_code = %s AND request_no = %s", FA, r) == 1
+        assert (
+            sql.count(
+                "SELECT COUNT(*) FROM sn_batch WHERE factory_code = %s AND kind = 'PRINT' AND request_no = %s", FA, r
+            )
+            == 1
+        )

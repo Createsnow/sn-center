@@ -506,7 +506,8 @@ def test_pi_generate_holds_the_pi_until_every_bill_is_done(api, admin, w, sql):
     )
     assert api.post("/api/generate/pi", m(pi_no=pi, items=_pi_items(p)), admin).code == "GEN_BUSY"
     sql.exec("DELETE FROM sn_gen_job WHERE pi_no = %s", pi)
-    assert sql.count("SELECT COUNT(*) FROM sn_gen_preview WHERE pi_no = %s AND used_at IS NOT NULL", pi) == 0
+    used = "SELECT COUNT(*) FROM sn_gen_job j JOIN sn_gen_preview p ON p.token = j.preview_token WHERE p.pi_no = %s"
+    assert sql.count(used, pi) == 0
     _pi_generate(api, admin, p)
 
 
@@ -531,6 +532,13 @@ def test_pi_allocate_sends_each_bill_to_its_own_factory_in_one_go(api, admin, w,
     ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin)).body
     assert ctx["pending_alloc"] == 0 and ctx["allocated_qty"] == 5
     assert len(ctx["allocations"]) == 2
+    # 分配记录取自 SN_ALLOCATE 痕迹：按订单过滤，字段与原分配记录一致
+    by_bill = ok(api.get("/api/generate/allocations" + q(bill_no=b2), admin)).body
+    assert [(x["bill_no"], x["pi_no"], x["factory_code"], x["qty"], x["created_by"]) for x in by_bill] == [
+        (b2, pi, "F-GEN2", 2, "admin")
+    ]
+    assert by_bill[0]["start_sn"] and by_bill[0]["end_sn"] and by_bill[0]["created_at"]
+    assert ok(api.get("/api/generate/allocations" + q(bill_no="NO-SUCH-BILL"), admin)).body == []
 
 
 def test_pi_list_shows_orgs_and_matches_by_bill(api, admin, w):
@@ -681,7 +689,7 @@ def test_revoke_whole_pi_generation_from_last_order_back_to_never_generated(api,
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 0
     assert sql.count("SELECT COUNT(*) FROM sn_bill_gen WHERE pi_no = %s", pi) == 0
     c = sql.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s", pi)
-    assert (c["last_seq_dec"], c["generated_qty"], c["start_locked"], c["locked_by"]) == (0, 0, 0, None)
+    assert (c["last_seq_dec"], c["generated_qty"]) == (0, 0)
     ctx = ok(api.get("/api/generate/pi-context" + q(pi=pi), admin)).body
     assert [(b["bill_no"], b["generated_qty"], b["quota"]) for b in ctx["bills"]] == [(b1, 0, 3), (b2, 0, 4)]
     assert ctx["next"]["start_sn"] == "RP00001"
@@ -773,8 +781,8 @@ def test_cancel_running_generation_rolls_back_everything_but_keeps_audit(api, ad
     holder.autocommit(False)
     with holder.cursor() as c:
         c.execute(
-            "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, start_locked, updated_at) "
-            "VALUES (%s,0,0,0,NOW()) ON DUPLICATE KEY UPDATE pi_no = pi_no",
+            "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, updated_at) "
+            "VALUES (%s,0,0,NOW()) ON DUPLICATE KEY UPDATE pi_no = pi_no",
             (pi,),
         )
         holder.commit()
@@ -793,7 +801,7 @@ def test_cancel_running_generation_rolls_back_everything_but_keeps_audit(api, ad
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 0
     assert sql.count("SELECT COUNT(*) FROM sn_bill_gen WHERE pi_no = %s", pi) == 0
     c = sql.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s", pi)
-    assert (c["last_seq_dec"], c["generated_qty"], c["start_locked"]) == (0, 0, 0)
+    assert (c["last_seq_dec"], c["generated_qty"]) == (0, 0)
     assert sql.one("SELECT used FROM sn_rule_version WHERE id = %s", version)["used"] == 0
     assert (
         sql.count("SELECT COUNT(*) FROM sn_audit WHERE action = 'SN_GEN_CANCEL' AND result = 'OK' AND pi_no = %s", pi)

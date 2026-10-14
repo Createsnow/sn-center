@@ -152,11 +152,13 @@ def test_migration_flyway_checksum():
     """测试阶段只保留一个 V1__init.sql；校验和按 Flyway 算法固定，改了建表脚本须同步更新这里（并重建测试库）。"""
     ours = {m.script: m for m in migrations()}
     assert list(ours) == ["V1__init.sql"]
-    assert ours["V1__init.sql"].checksum() == 1672955580
+    assert ours["V1__init.sql"].checksum() == -1754696995
     statements = ours["V1__init.sql"].statements()
-    assert len(statements) == 20
+    assert len(statements) == 18
     assert not any("sn_pi_import" in st or "imported_qty" in st for st in statements), "历史导入已彻底移除"
     assert not any("sn_key" in st for st in statements), "查重唯一键已并入 sn_item"
+    for gone in ("sn_allocation", "sn_acquire_batch", "sn_print ", "prev_status", "start_locked", "used_at"):
+        assert not any(gone in st for st in statements), f"{gone} 已精简掉"
 
 
 # ---------------------------------------------------------------------- 定时任务

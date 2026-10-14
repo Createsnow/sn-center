@@ -31,6 +31,8 @@ SCOPES = frozenset((SCOPE_PI, SCOPE_MATERIAL, SCOPE_SINGLE))
 TARGET_SNAPSHOT = "SNAPSHOT"
 TARGET_MANUAL = "MANUAL"
 ELIGIBLE = "('TO_ACQUIRE','TO_PRINT','PRINTED')"
+#: 全部状态：按「工厂 + PI」查而不限状态时也列出，让查询走状态打头的 ix_item_status（覆盖物料、流水）
+ANY_STATUS = " AND status IN ('PENDING_ALLOC','TO_ACQUIRE','TO_PRINT','PRINTED','APPLYING')"
 
 FIELDS = (
     "id",
@@ -139,6 +141,7 @@ def candidates(cu: CurrentUser, r: Request) -> dict:
         row["status"]: int(row["c"])
         for row in db.all(
             "SELECT status, COUNT(*) c FROM sn_item WHERE factory_code = %s AND pi_no = %s"
+            + ANY_STATUS
             + s.where()
             + " GROUP BY status",
             *s.args(),
@@ -147,7 +150,8 @@ def candidates(cu: CurrentUser, r: Request) -> dict:
     total = sum(by.values())
     ok = sum(v for k, v in by.items() if k in util.TRANSFERABLE)
     materials = db.column(
-        "SELECT DISTINCT material_code FROM sn_item WHERE factory_code = %s AND pi_no = %s ORDER BY material_code",
+        f"SELECT DISTINCT material_code FROM sn_item WHERE factory_code = %s AND pi_no = %s{ANY_STATUS} "
+        "ORDER BY material_code",
         factory,
         s.pi,
     )
@@ -288,7 +292,7 @@ def _create(cu: CurrentUser, factory: str, r: Request, mode: str) -> dict:
     hint = _hint_of(t)
     if mode == MODE_APPLY:
         m = db.exec(
-            f"UPDATE {_JOIN} SET i.prev_status = i.status, i.status = 'APPLYING', i.transfer_id = %s, "
+            f"UPDATE {_JOIN} SET i.status = 'APPLYING', i.transfer_id = %s, "
             f"i.updated_at = %s WHERE t.transfer_id = %s AND i.status IN {ELIGIBLE}",
             t["id"],
             now,
@@ -361,8 +365,8 @@ def _move(t: dict, from_applying: bool, now) -> None:
     if t["to_pi"] != t["from_pi"]:
         # 与转入 PI 的生成互斥：生成持有该 PI 计数器行锁期间，不会有号转入
         db.exec(
-            "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, start_locked, updated_at) "
-            "VALUES (%s,0,0,0,%s) ON DUPLICATE KEY UPDATE pi_no = pi_no",
+            "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, updated_at) "
+            "VALUES (%s,0,0,%s) ON DUPLICATE KEY UPDATE pi_no = pi_no",
             t["to_pi"],
             now,
         )
@@ -384,7 +388,7 @@ def _move(t: dict, from_applying: bool, now) -> None:
     n = db.exec(
         f"UPDATE {_JOIN} SET i.pi_no = %s, i.factory_code = %s, "
         "i.customer_code = IF(%s = '', i.customer_code, %s), i.material_code = IF(%s = '', i.material_code, %s), "
-        "i.status = 'TO_ACQUIRE', i.prev_status = NULL, i.batch_no = NULL, i.print_no = NULL, i.transfer_id = NULL, "
+        "i.status = 'TO_ACQUIRE', i.batch_no = NULL, i.print_no = NULL, i.transfer_id = NULL, "
         "i.acquired_at = NULL, i.printed_at = NULL, i.allocated_at = %s, i.updated_at = %s "
         "WHERE t.transfer_id = %s AND " + guard,
         *args,
@@ -481,9 +485,9 @@ def withdraw(cu: CurrentUser, tid: int) -> dict:
 
 
 def _restore(t: dict) -> None:
-    """驳回 / 撤回：恢复为申请前的状态。"""
+    """驳回 / 撤回：恢复为申请前的状态（sn_transfer_item.from_status，申请时与锁定同一事务记下）。"""
     db.exec(
-        f"UPDATE {_JOIN} SET i.status = i.prev_status, i.prev_status = NULL, i.transfer_id = NULL, "
+        f"UPDATE {_JOIN} SET i.status = t.from_status, i.transfer_id = NULL, "
         "i.updated_at = %s WHERE t.transfer_id = %s AND i.status = 'APPLYING' AND i.transfer_id = %s",
         util.now(),
         t["id"],
