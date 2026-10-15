@@ -87,6 +87,7 @@ M = {
 "transferStatus.REJECTED": ("已驳回", "Rejected", "Đã từ chối"),
 "transferStatus.WITHDRAWN": ("已撤回", "Withdrawn", "Đã rút lại"),
 # ---------------- audit actions ----------------
+"actions.LOGIN": ("登录", "Login", "Đăng nhập"),
 "actions.SN_GENERATE": ("生成", "Generate", "Tạo"),
 "actions.SN_REVOKE": ("撤销生成", "Revoke generation", "Hủy lần tạo"),
 "actions.SN_GEN_CANCEL": ("取消生成", "Generation cancelled", "Hủy tạo"),
@@ -151,7 +152,8 @@ M = {
 "dashboard.title": ("你好，{name}", "Hello, {name}", "Xin chào, {name}"),
 "dashboard.scopeAll": ("统计范围：全部工厂", "Scope: all factories", "Phạm vi: tất cả nhà máy"),
 "dashboard.scopeFactory": ("统计范围：{f}", "Scope: {f}", "Phạm vi: {f}"),
-"dashboard.totalGenerated": ("累计生成 / 导入", "Total generated / imported", "Tổng tạo / nhập"),
+"dashboard.totalGenerated": ("累计生成", "Total generated", "Tổng đã tạo"),
+"dashboard.runningJobs": ("生成中的任务", "Running generation jobs", "Tác vụ đang tạo"),
 "dashboard.pendingTransferKpi": ("待处理转厂", "Pending transfers", "Chuyển chờ xử lý"),
 "dashboard.pendingTransfers": ("有 {n} 张转厂申请等待处理", "{n} transfer request(s) waiting", "Có {n} yêu cầu chuyển đang chờ"),
 "dashboard.today": ("今日作业量", "Today", "Hôm nay"),

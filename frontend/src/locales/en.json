@@ -95,6 +95,7 @@
     "WITHDRAWN": "Withdrawn"
   },
   "actions": {
+    "LOGIN": "Login",
     "SN_GENERATE": "Generate",
     "SN_REVOKE": "Revoke generation",
     "SN_GEN_CANCEL": "Generation cancelled",
@@ -158,7 +159,8 @@
     "title": "Hello, {name}",
     "scopeAll": "Scope: all factories",
     "scopeFactory": "Scope: {f}",
-    "totalGenerated": "Total generated / imported",
+    "totalGenerated": "Total generated",
+    "runningJobs": "Running generation jobs",
     "pendingTransferKpi": "Pending transfers",
     "pendingTransfers": "{n} transfer request(s) waiting",
     "today": "Today",

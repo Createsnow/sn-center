@@ -291,3 +291,41 @@ def test_db_target_env_overrides_dotenv(monkeypatch):
     s = Settings()
     s._dotenv = {"DB_NAME": "from_file"}
     assert s.db_target().database == "from_env"
+
+
+# ---------------------------------------------------------------------- 失败痕迹的动作归类
+
+
+@pytest.mark.parametrize(
+    ("method", "path", "action"),
+    [
+        ("POST", "/api/transfers", "TRANSFER_APPLY"),
+        ("POST", "/api/transfers/direct", "TRANSFER_DIRECT"),
+        ("POST", "/api/transfers/12/approve", "TRANSFER_APPROVE"),
+        ("POST", "/api/transfers/12/reject", "TRANSFER_REJECT"),
+        ("POST", "/api/transfers/12/withdraw", "TRANSFER_WITHDRAW"),
+        ("POST", "/api/generate/pi-allocate", "SN_ALLOCATE"),
+        ("POST", "/api/generate/allocate", "SN_ALLOCATE"),
+        ("POST", "/api/generate/pi", "SN_GENERATE"),
+        ("POST", "/api/generate/batches/G1/cancel", "SN_GEN_CANCEL"),
+        ("POST", "/api/generate/batches/G1/revoke", "SN_REVOKE"),
+        ("PUT", "/api/rules/pi-binding", "RULE_PI_BIND"),
+        ("DELETE", "/api/rules/pi-binding", "RULE_PI_UNBIND"),
+        ("DELETE", "/api/rules/3", "RULE_DELETE"),
+        ("PUT", "/api/rules/3", "RULE_UPDATE"),
+        ("POST", "/api/users", "USER_CREATE"),
+        ("PUT", "/api/users/5", "USER_UPDATE"),
+        ("POST", "/api/users/5/disable", "USER_DISABLE"),
+        ("POST", "/api/users/5/enable", "USER_ENABLE"),
+        ("POST", "/api/users/5/reset-password", "USER_RESET_PWD"),
+        ("POST", "/api/factories/100/disable", "FACTORY_DISABLE"),
+        ("POST", "/api/factories/100/enable", "FACTORY_ENABLE"),
+        ("POST", "/api/acquire/take", "SN_ACQUIRE"),
+        ("POST", "/api/open/callback", "SN_CALLBACK"),
+        ("PUT", "/api/auth/lang", "OTHER"),
+    ],
+)
+def test_failed_write_action_follows_the_path(method, path, action):
+    from app.services.audit import action_for
+
+    assert action_for(method, path) == action

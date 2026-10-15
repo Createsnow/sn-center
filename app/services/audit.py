@@ -204,13 +204,15 @@ _PATH_ACTIONS = (
     ("/api/orders", ORDER_SYNC),
     ("/api/rules", RULE_UPDATE),
     ("/api/generate/allocate", SN_ALLOCATE),
+    ("/api/generate/pi-allocate", SN_ALLOCATE),
     ("/api/generate", SN_GENERATE),
     ("/api/acquire/take", SN_ACQUIRE),
     ("/api/acquire/print", SN_PRINT),
     ("/api/open/acquire", SN_ACQUIRE),
     ("/api/open/callback", SN_CALLBACK),
     ("/api/transfers/direct", TRANSFER_DIRECT),
-    ("/api/transfers/", TRANSFER_APPLY),
+    # 申请是 POST /api/transfers（不带结尾斜杠）；确认 / 驳回 / 撤回已在 action_for 里按路径单独识别
+    ("/api/transfers", TRANSFER_APPLY),
 )
 
 
@@ -227,6 +229,12 @@ def action_for(method: str, path: str) -> str:
         return TRANSFER_WITHDRAW
     if method == "DELETE" and re.fullmatch(r"/api/rules/\d+", path):
         return RULE_DELETE
+    if path == "/api/rules/pi-binding":
+        return RULE_PI_UNBIND if method == "DELETE" else RULE_PI_BIND
+    if re.fullmatch(r"/api/users/\d+/enable", path):
+        return USER_ENABLE
+    if re.fullmatch(r"/api/users/\d+/reset-password", path):
+        return USER_RESET_PWD
     if path == "/api/users" and method == "POST":
         return USER_CREATE
     if re.fullmatch(r"/api/factories/[^/]+/disable", path):

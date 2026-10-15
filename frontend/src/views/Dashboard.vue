@@ -77,6 +77,7 @@ const kpis = computed(() => {
     { key: "APPLYING", label: statusLabel("APPLYING"), value: c.APPLYING },
     { key: "transfers", label: t("dashboard.pendingTransferKpi"), value: data.value?.pending_transfers },
   ];
+  if (store.isAdmin) rows.push({ key: "running", label: t("dashboard.runningJobs"), value: data.value?.running_jobs });
   if (!store.bound) rows.push({ key: "total", label: t("dashboard.totalGenerated"), value: data.value?.total_generated });
   return rows;
 });

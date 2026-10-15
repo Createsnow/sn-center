@@ -274,7 +274,10 @@ def test_assign_rule_to_pi_then_unbind_and_pick_again(api, admin, w, sql):
     )["rule"]["id"]
     assert api.put("/api/rules/pi-binding", m(pi_no=pi, rule_id=cr), admin).code == "RULE_NOT_GENERAL"
     assert api.put("/api/rules/pi-binding", m(pi_no=pi, rule_id=999999999), admin).code == "RULE_NOT_FOUND"
-    assert sql.count("SELECT COUNT(*) FROM sn_audit WHERE action = 'RULE_PI_BIND' AND pi_no = %s", pi) == 2
+    binds = "SELECT COUNT(*) FROM sn_audit WHERE action = 'RULE_PI_BIND' AND result = %s AND pi_no = %s"
+    assert sql.count(binds, "OK", pi) == 2
+    # 被拒绝的指定也按「给 PI 指定规则」记失败痕迹（不再笼统记成修改规则）
+    assert sql.count(binds, "FAIL", pi) == 2
     assert sql.count("SELECT COUNT(*) FROM sn_audit WHERE action = 'RULE_PI_UNBIND' AND pi_no = %s", pi) == 1
 
 
