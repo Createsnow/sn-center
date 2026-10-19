@@ -331,7 +331,8 @@ def fill_attach(cu: CurrentUser, bill_no: str | None, seq: int | None, value: st
             .material(line["material_code"])
             .info(f"seq={seq} {'' if prev is None else prev['manual_value']} -> {v}"),
         )
-    return line_view(db.one("SELECT * FROM sn_prd_mo WHERE bill_no = %s AND seq = %s", no, seq))
+    counts, fills = line_extras([(no, seq)])
+    return line_view(line, counts.get((no, seq)), fills.get((no, seq)))
 
 
 # ================================================================== 查询

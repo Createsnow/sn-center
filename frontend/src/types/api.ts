@@ -17,15 +17,21 @@ export interface UserView {
   id: number;
   emp_no: string;
   name: string;
+  /** admin / factory_operator / query / mes */
   role: string;
   factory_code: string | null;
   factory_name: string | null;
-  /** 可看的工厂：厂区操作员 = 本厂，查询员 = 绑定的厂；空 = 全部 */
+  /** 可看的生产组织：操作员 = 本组织，查询员 = 绑定的组织；空 = 全部 */
   factory_codes: string[];
   factory_names: string[];
   status: string;
   /** 内置 admin 账户（唯一能管理账户） */
   super_admin: boolean;
+  /** MES 接口账户的来源地址白名单 */
+  ip_whitelist: string | null;
+  locked_until: string | null;
+  /** 显示时区（分钟，东八区 = 480） */
+  tz_offset_min: number;
   must_change_pwd: boolean;
   lang: string | null;
   last_login_at: string | null;
@@ -33,107 +39,198 @@ export interface UserView {
   created_by: string | null;
   disabled_at: string | null;
   disabled_by: string | null;
+  /** 新建 / 重置密钥时返回一次 */
+  secret?: string;
 }
 
+/** 生产组织；MES 配置字段只有总部能看到。 */
 export interface Factory {
   factory_code: string;
   factory_name: string;
   enabled: boolean;
-  source: string;
-  updated_at?: string;
-  /** 绑定该厂的启用账户数（工厂列表才有） */
+  mes_enabled: boolean;
+  tz_offset_min: number;
+  mes_url?: string;
+  mes_auth_type?: "TOKEN" | "HMAC";
+  batch_size?: number;
+  push_timeout_sec?: number;
+  push_concurrency?: number;
+  /** UNCONFIGURED / OK / FAILED / CHANGED */
+  cfg_status?: string;
+  cfg_message?: string;
+  cfg_checked_at?: string | null;
+  credential_set?: boolean;
+  tested?: boolean;
   bound_users?: number;
+  updated_at?: string;
+}
+
+/** 物料行实际使用的规则（含来源与本 PI 的使用方式）。 */
+export interface LineRule {
+  /** LINE 物料行选定 / PI 绑定 / CUSTOMER 客户默认 */
+  source: "LINE" | "PI" | "CUSTOMER";
+  mode: "LIBRARY" | "CUSTOM";
+  /** USE 已归属本 PI / CLAIM 首次归属 / NEW 新建版本 / PREFIX 须换前缀 */
+  plan: "USE" | "CLAIM" | "NEW" | "PREFIX";
+  rule_id: number | null;
+  rule_code: string | null;
+  rule_name: string | null;
+  version_id: number | null;
+  version: number;
+  other_pi: string | null;
+  custom: { prefix: string; base: number; seq_len: number; with_length: boolean; suffix: string } | null;
+  format: string;
+  first_sn: string | null;
+  max_seq: number;
+  prefix: string;
+  base: number;
+  seq_len: number;
+  with_length: boolean;
+  suffix: string;
+}
+
+export interface BillState {
+  suspend: "REVERSAL" | "CHANGE" | null;
+  leave_state: string | null;
+  pi_frozen: boolean;
+  open_alerts: number;
+  issued: boolean;
+}
+
+export interface OrderLine {
+  bill_no: string;
+  seq: number;
+  customer_code: string;
+  pi: string;
+  po: string;
+  org_code: string;
+  org_name: string;
+  attach_no: string;
+  /** K3 金蝶值 / MANUAL 手工补填 / EMPTY 待填写 */
+  attach_source: "K3" | "MANUAL" | "EMPTY";
+  attach_k3: string;
+  attach_manual: string | null;
+  attach_k3_conflict: boolean;
+  material_code: string;
+  material_name: string;
+  length_raw: string;
+  length: string;
+  qty: number;
+  generated_qty: number;
+  own_generated_qty: number;
+  allocated_qty: number;
+  quota: number;
+  rule: LineRule | null;
+  synced_at: string;
+  /** 生成页才有：不能生成的原因代码 */
+  issues?: string[];
+}
+
+export interface OrderBill extends BillState {
+  bill_no: string;
+  customer_code: string;
+  po: string;
+  pi: string;
+  org_code: string;
+  org_name: string;
+  total_qty: number;
+  line_count: number;
+  generated_qty: number;
+  quota: number;
 }
 
 export interface SnItem {
   id: number;
   sn: string;
   seq_text: string;
-  seq_dec: number;
+  seq_dec: string;
   seq_pi_no: string;
   pi_no: string;
-  customer_code: string;
-  material_code: string;
-  factory_code: string | null;
   bill_no: string;
+  bill_seq: number;
+  material_code: string;
+  length: string;
+  customer_code: string;
+  factory_code: string | null;
   status: string;
-  source: string;
-  batch_no: string | null;
-  print_no: string | null;
+  delivery_mode: string | null;
+  delivery_batch_no: string | null;
+  acquire_batch_no: string | null;
+  suspend: string | null;
+  rev: number;
+  mes_holder: string | null;
+  push_type: string | null;
+  pi_changed: boolean;
+  transferred_in: boolean;
   created_at: string;
   allocated_at: string | null;
-  acquired_at: string | null;
-  printed_at: string | null;
-}
-
-export interface RuleInfo {
-  rule_code: string;
-  rule_name: string;
-  bind_scope: string;
-  bind_value: string;
-  category_scope: string;
-  category_value: string;
-  version_id: number;
-  version: number;
-  prefix: string;
-  suffix: string;
-  base: number;
-  seq_len: number;
-  charset: string;
-  max_seq: number;
-  sample_sn: string;
-}
-
-export interface Segment {
-  line_seq: number;
-  material_code: string;
-  material_name: string;
-  qty: number;
-  start_seq: number;
-  end_seq: number;
-  start_sn: string;
-  end_sn: string;
+  delivered_at: string | null;
 }
 
 export interface GenJob {
   id: number;
-  bill_no: string;
-  pi_no: string;
-  /** 生成批次：同一次生成（整张 PI 的各订单）共用 */
   gen_batch: string;
-  factory_code: string;
+  pi_no: string;
+  scope: string;
   qty: number;
+  start_seq_dec: number;
+  end_seq_dec: number;
   start_sn: string;
   end_sn: string;
   status: "RUNNING" | "SUCCESS" | "FAILED" | "CANCELED" | "REVOKED";
   done_qty: number;
+  current_sn: string | null;
   error_code: string | null;
   error_msg: string | null;
   created_by: string;
-  created_at: string;
-  finished_at: string | null;
-  cancel_by?: string | null;
-  cancel_at?: string | null;
-  /** 按 PI 的上下文里才有：属于可撤销的那次生成（PI 流水排在最后、号全部仍待分配） */
-  revocable?: boolean;
-}
-
-/** 一次生成（整张 PI）的整体进度。 */
-export interface GenBatch {
-  batch: string;
-  pi_no: string;
-  status: "RUNNING" | "SUCCESS" | "FAILED" | "CANCELED" | "REVOKED";
-  qty: number;
-  done_qty: number;
-  bills: number;
-  start_sn: string;
-  end_sn: string;
-  current_sn: string | null;
-  created_by: string;
-  created_at: string;
-  finished_at: string | null;
   cancel_by: string | null;
   cancel_at: string | null;
-  error_code: string | null;
-  error_msg: string | null;
+  revoke_reason: string | null;
+  created_at: string;
+  started_at: string | null;
+  finished_at: string | null;
+  lines: { bill_no: string; seq: number; material_code: string; length: string; qty: number; start_sn: string; end_sn: string; rule_label: string }[];
+  bills: string[];
+  revocable?: boolean;
+  percent?: number;
+  speed_per_sec?: number | null;
+  eta_seconds?: number | null;
+}
+
+export interface DeliveryBatch {
+  id: number;
+  batch_no: string;
+  source: "PUSH" | "PULL";
+  batch_type: "DELIVERY" | "TRANSFER_OUT";
+  factory_code: string;
+  pi_no: string;
+  qty: number;
+  items_digest: string;
+  result: "UNCONFIRMED" | "SUCCESS" | "SUCCESS_CONFLICT" | "FAILED" | "VOIDED";
+  confirm_method: string | null;
+  confirmed_at: string | null;
+  fail_code: string | null;
+  fail_reason: string | null;
+  voidable: boolean;
+  accepted_qty: number;
+  duplicate_qty: number;
+  conflict_qty: number;
+  stale_qty: number;
+  push_state: string;
+  retry_count: number;
+  next_retry_at: string | null;
+  push_count: number;
+  repush_count: number;
+  last_push_at: string | null;
+  pulled_at: string | null;
+  transfer_kind: string | null;
+  transfer_doc_no: string | null;
+  rebuilt_from: string | null;
+  rebuilt_to: string | null;
+  manual_reason: string | null;
+  manual_basis: string | null;
+  manual_by: string | null;
+  manual_at: string | null;
+  created_by: string;
+  created_at: string;
 }

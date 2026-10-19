@@ -25,7 +25,10 @@ def test_prefix_conflicts_in_both_directions(w, api):
     for p in ("AXB", "A", "AX"):
         r = api.post("/api/rules", m(rule_code=uid("R"), rule_name="x", prefix=p, base=10, seq_len=5), w.admin)
         assert r.code == "RULE_PREFIX_CONFLICT", p
-    assert api.post("/api/rules", m(rule_code=uid("R"), rule_name="x", prefix="ax", base=10, seq_len=5), w.admin).status == 200
+    assert (
+        api.post("/api/rules", m(rule_code=uid("R"), rule_name="x", prefix="ax", base=10, seq_len=5), w.admin).status
+        == 200
+    )
 
 
 def test_used_version_needs_new_prefix_for_format_change(w, api, sql):
@@ -38,9 +41,12 @@ def test_used_version_needs_new_prefix_for_format_change(w, api, sql):
     assert api.put(f"/api/rules/{rid}", base, w.admin).code == "RULE_USED_FORMAT"
     r = ok(api.put(f"/api/rules/{rid}", {**base, "prefix": P()}, w.admin))
     assert r["action"] == "NEW_VERSION" and r["rule"]["rule"]["current_version"] == 2
-    assert ok(api.put(f"/api/rules/{rid}", {**base, "prefix": r["rule"]["current"]["prefix"], "rule_name": "y"}, w.admin))[
-        "action"
-    ] == "RENAMED"
+    assert (
+        ok(api.put(f"/api/rules/{rid}", {**base, "prefix": r["rule"]["current"]["prefix"], "rule_name": "y"}, w.admin))[
+            "action"
+        ]
+        == "RENAMED"
+    )
     assert api.delete(f"/api/rules/{rid}", w.admin).code == "RULE_IN_USE"
 
 
@@ -137,7 +143,9 @@ def test_click_order_and_repeated_material_lines(w, sql):
     w.generate(pi, 130, lines=[(bill, 3), (bill, 1)])
     rows = {
         r["bill_seq"]: (r["a"], r["b"])
-        for r in sql.all("SELECT bill_seq, MIN(seq_dec) a, MAX(seq_dec) b FROM sn_item WHERE pi_no = %s GROUP BY bill_seq", pi)
+        for r in sql.all(
+            "SELECT bill_seq, MIN(seq_dec) a, MAX(seq_dec) b FROM sn_item WHERE pi_no = %s GROUP BY bill_seq", pi
+        )
     }
     assert rows == {3: (1, 30), 1: (31, 130)}, "先点序号 3 再点序号 1"
     c = {r["seq"]: r for r in sql.all("SELECT * FROM sn_line_count WHERE bill_no = %s", bill)}
@@ -150,7 +158,9 @@ def test_whole_bill_order(w, sql):
     w.generate(pi, 180)
     rows = {
         r["bill_seq"]: (r["a"], r["b"])
-        for r in sql.all("SELECT bill_seq, MIN(seq_dec) a, MAX(seq_dec) b FROM sn_item WHERE pi_no = %s GROUP BY bill_seq", pi)
+        for r in sql.all(
+            "SELECT bill_seq, MIN(seq_dec) a, MAX(seq_dec) b FROM sn_item WHERE pi_no = %s GROUP BY bill_seq", pi
+        )
     }
     assert rows == {1: (1, 100), 2: (101, 150), 3: (151, 180)}
 
@@ -178,7 +188,10 @@ def test_revoke_last_only_and_not_allocated(w, api, sql):
     ok(w.bind_pi(pi, w.rule(P())))
     j1 = w.generate(pi, 3)
     j2 = w.generate(pi, 4)
-    assert api.post(f"/api/generate/batches/{j1['gen_batch']}/revoke", m(reason="x"), w.admin).code == "GEN_REVOKE_NOT_LAST"
+    assert (
+        api.post(f"/api/generate/batches/{j1['gen_batch']}/revoke", m(reason="x"), w.admin).code
+        == "GEN_REVOKE_NOT_LAST"
+    )
     assert api.post(f"/api/generate/batches/{j2['gen_batch']}/revoke", m(), w.admin).code == "REASON_REQUIRED"
     ok(api.post(f"/api/generate/batches/{j2['gen_batch']}/revoke", m(reason="点错了"), w.admin))
     assert sql.scalar("SELECT last_seq_dec FROM sn_pi_counter WHERE pi_no = %s", pi) == 3
@@ -186,7 +199,10 @@ def test_revoke_last_only_and_not_allocated(w, api, sql):
     j3 = w.generate(pi, 1)
     assert j3["start_seq_dec"] == 4, "撤销后流水退回，号与撤销前相同"
     w.allocate(pi)
-    assert api.post(f"/api/generate/batches/{j3['gen_batch']}/revoke", m(reason="x"), w.admin).code == "GEN_REVOKE_ALLOCATED"
+    assert (
+        api.post(f"/api/generate/batches/{j3['gen_batch']}/revoke", m(reason="x"), w.admin).code
+        == "GEN_REVOKE_ALLOCATED"
+    )
 
 
 def test_background_generation_and_cancel(w, api, sql, monkeypatch):

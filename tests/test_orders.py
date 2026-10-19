@@ -105,7 +105,8 @@ def test_attach_fill_and_k3_value_later(w, api, sql):
     lines = ok(api.get(f"/api/orders/{a}/lines", w.admin))["lines"]
     assert lines[0]["attach_source"] == "EMPTY"
     assert api.put("/api/orders/attach", m(bill_no=a, seq=1, value=" "), w.admin).code == "ATTACH_INVALID"
-    ok(api.put("/api/orders/attach", m(bill_no=a, seq=1, value="X"), w.admin))
+    r = ok(api.put("/api/orders/attach", m(bill_no=a, seq=1, value="X"), w.admin))
+    assert (r["attach_no"], r["attach_source"]) == ("X", "MANUAL")
     assert ok(api.get(f"/api/orders/{a}/lines", w.admin))["lines"][0]["attach_source"] == "MANUAL"
     BILLS[a]["TreeEntity"][0]["FAttach"] = "Y"
     w.touch(a)
@@ -155,7 +156,13 @@ def test_reversal_suspends_undelivered_and_resumes(w, api, sql):
     al = [x for x in alerts(api, w.admin, bill) if x["alert_type"] == "REVERSAL"]
     assert al and al[0]["suspended_qty"] == 2
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND suspend = 'REVERSAL'", bill) == 2
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND delivery_batch_no IS NOT NULL AND suspend IS NULL", bill) == 4
+    assert (
+        sql.count(
+            "SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND delivery_batch_no IS NOT NULL AND suspend IS NULL",
+            bill,
+        )
+        == 4
+    )
     # 拉取：已入批的未确认批次照常可取；暂停的号不建新批
     token, _ = w.mes_account(org)
     r = ok(w.mes_next(token))
@@ -232,7 +239,10 @@ def test_material_lost_map_moves_counts_and_items(w, api, sql):
     ok(api.post(f"/api/orders/alerts/{al['id']}/handle", m(action="MAP", target_seq=3), w.admin))
     c3 = sql.one("SELECT * FROM sn_line_count WHERE bill_no = %s AND seq = 3", bill)
     assert (c3["own_generated"], c3["gen_count"]) == (5, 5)
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND bill_seq = 3 AND material_code = 'M9'", bill) == 5
+    assert (
+        sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND bill_seq = 3 AND material_code = 'M9'", bill)
+        == 5
+    )
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND suspend IS NOT NULL", bill) == 0
 
 

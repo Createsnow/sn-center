@@ -187,7 +187,7 @@ class CurrentUser:
         return not self.factories or factory in self.factories
 
     def check_read(self, *factories: str | None) -> None:
-        """记录涉及的工厂里至少有一个在可读范围内，否则拒绝。"""
+        """记录涉及的生产组织里至少有一个在可读范围内，否则拒绝。"""
         if not any(self.can_read(f) for f in factories):
             raise biz(ErrorCode.FACTORY_FORBIDDEN, factory=self.scope_text())
 
@@ -205,7 +205,7 @@ class CurrentUser:
         raise biz(ErrorCode.FORBIDDEN)
 
     def read_factories(self, requested: str | None) -> tuple[str, ...] | None:
-        """读范围的工厂：None = 全部；指定了工厂须在可读范围内，没指定 = 全部可读的厂。"""
+        """读范围的生产组织：None = 全部；指定了组织须在可读范围内，没指定 = 全部可读的组织。"""
         req = util.trim(requested)
         if req:
             self.check_read(req)

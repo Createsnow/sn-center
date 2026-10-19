@@ -152,18 +152,22 @@ def self_check() -> dict:
         if int(b["n"]) != int(b["qty"]):
             found.append((b["factory_code"], b["batch_no"], None, f"回执枚数 {b['n']} 与批次枚数 {b['qty']} 不一致"))
     for r in db.all(
-        "SELECT d.sn, d.rev, COUNT(DISTINCT d.batch_id) n, GROUP_CONCAT(DISTINCT b.batch_no) nos, MIN(b.factory_code) f "
+        "SELECT d.sn, d.rev, COUNT(DISTINCT d.batch_id) n, GROUP_CONCAT(DISTINCT b.batch_no) nos, "
+        "MIN(b.factory_code) f "
         "FROM sn_delivery_item d JOIN sn_delivery_batch b ON b.id = d.batch_id WHERE b.batch_type = 'DELIVERY' "
         "AND b.result IN ('SUCCESS','SUCCESS_CONFLICT') AND d.sn IN (SELECT d2.sn FROM sn_delivery_item d2 "
-        "JOIN sn_delivery_batch b2 ON b2.id = d2.batch_id WHERE b2.confirmed_at >= %s) GROUP BY d.sn, d.rev HAVING n > 1 "
+        "JOIN sn_delivery_batch b2 ON b2.id = d2.batch_id WHERE b2.confirmed_at >= %s) GROUP BY d.sn, d.rev HAVING n "
+        "> 1 "
         "LIMIT 500",
         since,
     ):
         found.append((r["f"], r["nos"][:40], r["sn"], f"同一 SN（rev {r['rev']}）出现在多个成功交付批次：{r['nos']}"))
     for r in db.all(
-        "SELECT i.sn, i.factory_code, i.acquire_batch_no, b.batch_no FROM sn_item i JOIN sn_delivery_item d ON d.item_id = i.id "
+        "SELECT i.sn, i.factory_code, i.acquire_batch_no, b.batch_no FROM sn_item i JOIN sn_delivery_item d ON "
+        "d.item_id = i.id "
         "AND d.rev = i.rev JOIN sn_delivery_batch b ON b.id = d.batch_id WHERE i.status = 'ACQUIRED' "
-        "AND b.batch_type = 'DELIVERY' AND b.result IN ('SUCCESS','SUCCESS_CONFLICT') AND i.delivered_at >= %s LIMIT 500",
+        "AND b.batch_type = 'DELIVERY' AND b.result IN ('SUCCESS','SUCCESS_CONFLICT') AND i.delivered_at >= %s LIMIT "
+        "500",
         since,
     ):
         found.append(
@@ -171,7 +175,8 @@ def self_check() -> dict:
         )
     cutoff = now - timedelta(minutes=settings.batch_unconfirmed_alert_minutes)
     unconfirmed = db.all(
-        "SELECT factory_code, batch_no, created_at FROM sn_delivery_batch WHERE result = 'UNCONFIRMED' AND created_at < %s",
+        "SELECT factory_code, batch_no, created_at FROM sn_delivery_batch WHERE result = 'UNCONFIRMED' AND "
+        "created_at < %s",
         cutoff,
     )
     for b in unconfirmed:

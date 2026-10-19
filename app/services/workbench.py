@@ -2,7 +2,8 @@
 
 每张 PI 一行：客户、单据数、生产组织、状态、订单总数、已生成（各订单已生成数之和；转组织改 PI 的号仍计入原 PI）、
 转入号（挂在本 PI 下、由别的 PI 生成的号）、已分配（含已推送、已拉取）；行上按钮按 F-10 第 3 条的顺序判断。
-详情：步骤条「SN 规则 → 生成 → 分配」+ 订单（到物料行）/ 生成任务（最近 20 条）/ 分配记录（最近 100 条，推送与拉取批次）。
+详情：步骤条「SN 规则 → 生成 → 分配」+ 订单（到物料行）/ 生成任务（最近 20 条）/
+分配记录（最近 100 条，推送与拉取批次）。
 """
 
 from __future__ import annotations
@@ -72,7 +73,8 @@ def _item_stats(pis: list[str]) -> dict[str, dict]:
     ):
         out.setdefault(r["pi_no"], {})["interrupted"] = int(r["n"])
     for r in db.all(
-        f"SELECT task_key, COUNT(*) n FROM sn_push_task WHERE task_key IN ({ph}) AND state IN ('QUEUED','RUNNING','WAITING') "
+        f"SELECT task_key, COUNT(*) n FROM sn_push_task WHERE task_key IN ({ph}) AND state IN "
+        "('QUEUED','RUNNING','WAITING') "
         "GROUP BY task_key",
         *pis,
     ):
@@ -130,7 +132,8 @@ def pis(cu: CurrentUser, q: str | None, tab: str | None) -> dict:
     frozen = {
         r["pi"]: r["n"]
         for r in db.all(
-            "SELECT l.pi, COUNT(*) n FROM sn_bill_ledger l WHERE (l.pi_frozen = 1 OR l.suspend IS NOT NULL) GROUP BY l.pi"
+            "SELECT l.pi, COUNT(*) n FROM sn_bill_ledger l WHERE (l.pi_frozen = 1 OR l.suspend IS NOT NULL) GROUP BY "
+            "l.pi"
         )
     }
     out = []
@@ -337,7 +340,8 @@ def push_status(pi: str) -> list[dict]:
             pi,
         )
         last_fail = db.one(
-            "SELECT batch_no, fail_reason, result, push_state FROM sn_delivery_batch WHERE factory_code = %s AND pi_no = %s "
+            "SELECT batch_no, fail_reason, result, push_state FROM sn_delivery_batch WHERE factory_code = %s AND "
+            "pi_no = %s "
             "AND batch_type = 'DELIVERY' AND (result = 'FAILED' OR push_state IN ('WAIT_RETRY','EXHAUSTED')) "
             "ORDER BY id DESC LIMIT 1",
             org,

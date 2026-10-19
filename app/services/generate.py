@@ -70,7 +70,8 @@ JOB_FIELDS = (
 
 _INSERT_ITEM = (
     "INSERT INTO sn_item(sn, factory_code, pi_no, customer_code, bill_no, bill_seq, material_code, rev, gen_org_code, "
-    "gen_bill_no, gen_bill_seq, gen_material_code, seq_pi_no, seq_dec, length_text, rule_version_id, gen_batch, status, "
+    "gen_bill_no, gen_bill_seq, gen_material_code, seq_pi_no, seq_dec, length_text, rule_version_id, gen_batch, "
+    "status, "
     "push_type, created_at, updated_at) VALUES (%s,NULL,%s,%s,%s,%s,%s,1,%s,%s,%s,%s,%s,%s,%s,%s,%s,'PENDING_ALLOC',"
     "'NEW',%s,%s)"
 )
@@ -581,7 +582,8 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
             x["seq"],
         )
     db.exec(
-        "UPDATE sn_pi_counter SET last_seq_dec = %s, generated_qty = generated_qty + %s, updated_at = %s WHERE pi_no = %s",
+        "UPDATE sn_pi_counter SET last_seq_dec = %s, generated_qty = generated_qty + %s, updated_at = %s WHERE pi_no "
+        "= %s",
         plan["end_seq"],
         plan["qty"],
         now,
@@ -914,9 +916,8 @@ def alloc_preview(pi_in: str | None, bills: list[str] | None, lines: list[dict] 
         o["bills"].append(g["bill_no"])
     cond, args = _alloc_scope(pi, bills, lines)
     for r in db.all(
-        "SELECT bill_no, GROUP_CONCAT(DISTINCT material_code) m FROM sn_item WHERE pi_no = %s AND status = 'PENDING_ALLOC'"
-        + cond
-        + " GROUP BY bill_no",
+        "SELECT bill_no, GROUP_CONCAT(DISTINCT material_code) m FROM sn_item WHERE pi_no = %s AND status = "
+        "'PENDING_ALLOC'" + cond + " GROUP BY bill_no",
         pi,
         *args,
     ):
@@ -1003,7 +1004,8 @@ def allocate(
                         break
                 for pl in per_line:
                     db.exec(
-                        "UPDATE sn_line_count SET alloc_count = alloc_count + %s, updated_at = %s WHERE bill_no = %s AND seq = %s",
+                        "UPDATE sn_line_count SET alloc_count = alloc_count + %s, updated_at = %s WHERE bill_no = %s "
+                        "AND seq = %s",
                         int(pl["n"]),
                         now,
                         g["bill_no"],
@@ -1032,7 +1034,8 @@ def allocate(
 
 def _range_of(pi: str, bill: str, org: str, at) -> tuple[str | None, str | None]:
     rows = db.all(
-        "SELECT MIN(sn) a, MAX(sn) b FROM (SELECT sn FROM sn_item WHERE pi_no = %s AND bill_no = %s AND factory_code = %s "
+        "SELECT MIN(sn) a, MAX(sn) b FROM (SELECT sn FROM sn_item WHERE pi_no = %s AND bill_no = %s AND factory_code "
+        "= %s "
         "AND allocated_at = %s) t",
         pi,
         bill,

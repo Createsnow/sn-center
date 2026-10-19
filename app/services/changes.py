@@ -445,7 +445,8 @@ def _on_present(cu: CurrentUser, bill_no: str) -> None:
     if L["leave_state"] is not None:
         _close_auto(cu, bill_no, (REVERSAL,), "重新审核回到快照")
     db.exec(
-        "UPDATE sn_bill_ledger SET in_snapshot = 1, leave_state = NULL, left_at = NULL, updated_at = %s WHERE bill_no = %s",
+        "UPDATE sn_bill_ledger SET in_snapshot = 1, leave_state = NULL, left_at = NULL, updated_at = %s WHERE "
+        "bill_no = %s",
         util.now(),
         bill_no,
     )
@@ -480,7 +481,8 @@ def _on_absent(cu: CurrentUser, bill_no: str, view: k3.BillView | None) -> None:
         _on_present(cu, bill_no)
         return
     db.exec(
-        "UPDATE sn_bill_ledger SET in_snapshot = 0, left_at = COALESCE(left_at, %s), updated_at = %s WHERE bill_no = %s",
+        "UPDATE sn_bill_ledger SET in_snapshot = 0, left_at = COALESCE(left_at, %s), updated_at = %s WHERE bill_no = "
+        "%s",
         now,
         now,
         bill_no,

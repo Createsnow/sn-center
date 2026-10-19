@@ -47,7 +47,7 @@ def _view(u: dict, names: dict[str, str], bound: list[str]) -> dict:
         "role": u["role"],
         "factory_code": u["factory_code"],
         "factory_name": names.get(u["factory_code"]) if u["factory_code"] is not None else None,
-        # 可看的工厂：厂区操作员 = 本厂，查询员 = 绑定的厂；空 = 全部
+        # 可看的生产组织：操作员 = 本组织，查询员 = 绑定的组织；空 = 全部
         "factory_codes": codes,
         "factory_names": [names.get(c, c) for c in codes],
         "status": u["status"],
@@ -70,7 +70,7 @@ def _factory_names() -> dict[str, str]:
 
 
 def bound_factories(uid: int) -> list[str]:
-    """查询员绑定的工厂（没有 = 全部）。"""
+    """查询员绑定的生产组织（没有 = 全部）。"""
     return db.column("SELECT factory_code FROM sn_user_factory WHERE user_id = %s ORDER BY factory_code", uid)
 
 
@@ -234,7 +234,7 @@ def list_users(q: str | None, role: str | None, status: str | None, factory: str
 
 @dataclass(frozen=True)
 class Binding:
-    """factory = 厂区操作员的工厂；query_factories = 查询员绑定的工厂（空 = 全部）。"""
+    """factory = 操作员（或 MES 接口账户）的生产组织；query_factories = 查询员绑定的生产组织（空 = 全部）。"""
 
     factory: str | None
     query_factories: tuple[str, ...]

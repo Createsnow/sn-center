@@ -273,7 +273,8 @@ def _insert_version(
 ) -> int:
     return db.insert(
         "INSERT INTO sn_rule_version(rule_id, version, prefix, suffix, base, seq_len, charset, with_length, used, "
-        "claimed_pi, derived_from, created_by, created_at, updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+        "claimed_pi, derived_from, created_by, created_at, updated_at) VALUES "
+        "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
         rule_id,
         version,
         spec.prefix,
@@ -454,7 +455,8 @@ def delete(cu: CurrentUser, rule_id: int) -> dict:
         audit.record(
             cu,
             audit.entry(audit.RULE_DELETE).info(
-                f"{r['rule_code']} {r['rule_name']} v{r['current_version']}{' ' + describe(spec_of(cur)) if cur else ''}"
+                f"{r['rule_code']} {r['rule_name']} "
+                f"v{r['current_version']}{' ' + describe(spec_of(cur)) if cur else ''}"
             ),
         )
         return {"id": r["id"], "rule_code": r["rule_code"]}
@@ -734,7 +736,8 @@ def select_for_lines(
         for no, seq, line in keys:
             db.exec(
                 "INSERT INTO sn_line_rule(bill_no, seq, pi_no, rule_id, custom_json, set_by, set_at) "
-                "VALUES (%s,%s,%s,%s,%s,%s,%s) ON DUPLICATE KEY UPDATE pi_no = VALUES(pi_no), rule_id = VALUES(rule_id), "
+                "VALUES (%s,%s,%s,%s,%s,%s,%s) ON DUPLICATE KEY UPDATE pi_no = VALUES(pi_no), rule_id = "
+                "VALUES(rule_id), "
                 "custom_json = VALUES(custom_json), set_by = VALUES(set_by), set_at = VALUES(set_at)",
                 no,
                 seq,
@@ -787,7 +790,8 @@ def bind_pi(cu: CurrentUser, pi_in: str | None, rule_id: int | None, new_prefix:
         now = util.now()
         db.exec(
             "INSERT INTO sn_pi_rule(pi_no, rule_id, bound_by, bound_at) VALUES (%s,%s,%s,%s) "
-            "ON DUPLICATE KEY UPDATE rule_id = VALUES(rule_id), bound_by = VALUES(bound_by), bound_at = VALUES(bound_at)",
+            "ON DUPLICATE KEY UPDATE rule_id = VALUES(rule_id), bound_by = VALUES(bound_by), bound_at = "
+            "VALUES(bound_at)",
             pi,
             rule["id"],
             cu.emp_no,
@@ -931,7 +935,8 @@ def realize(cu: CurrentUser, pi: str, res: Resolved, material: str, lines: list[
     if res.version is None:
         raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
     n = db.exec(
-        "UPDATE sn_rule_version SET used = 1, claimed_pi = %s WHERE id = %s AND (claimed_pi IS NULL OR claimed_pi = %s)",
+        "UPDATE sn_rule_version SET used = 1, claimed_pi = %s WHERE id = %s AND (claimed_pi IS NULL OR claimed_pi = "
+        "%s)",
         pi,
         res.version["id"],
         pi,

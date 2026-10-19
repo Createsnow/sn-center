@@ -26,8 +26,13 @@ def test_range_query_counts_missing_for_bound_operator(w, api):
     b = w.org(uid("O")[:10])
     sns = [x["sn"] for x in ok(api.get(f"/api/sn?pi={pi}&page_size=100", w.admin))["items"]]
     for sn in sns[:3]:
-        ok(w.api.post("/api/transfers/org/direct", m(factory_code=a, pi_no=pi, scope="SINGLE", sn=sn, to_factory=b,
-                                                     to_pi=pi, reason="x"), w.admin))
+        ok(
+            w.api.post(
+                "/api/transfers/org/direct",
+                m(factory_code=a, pi_no=pi, scope="SINGLE", sn=sn, to_factory=b, to_pi=pi, reason="x"),
+                w.admin,
+            )
+        )
     op = w.user(emp("F"), "factory_operator", a)
     r = ok(api.get(f"/api/sn?pi={pi}&seq_from=1&seq_to=10", op))
     assert r["range"] == {"found": 7, "expected": 10, "missing": 3, "by_status": {"TO_ACQUIRE": 7}}
@@ -94,8 +99,16 @@ def test_audit_scope_and_filters(w, api):
 def test_dashboard_counts_and_today(w, api):
     a, pi, bill = make(w, 4, mes=True)
     w.allocate(pi)
-    MES.behavior[a] = lambda b, h: (200, {"schemaVersion": "1.0", "batchNo": b["batchNo"], "outcome": "REJECTED",
-                                          "rejectCode": "X", "rejectMessage": "x"})
+    MES.behavior[a] = lambda b, h: (
+        200,
+        {
+            "schemaVersion": "1.0",
+            "batchNo": b["batchNo"],
+            "outcome": "REJECTED",
+            "rejectCode": "X",
+            "rejectMessage": "x",
+        },
+    )
     w.push()
     d = ok(api.get("/api/dashboard", w.admin))
     assert d["push_interrupted"] >= 1 and d["status_counts"]["TO_PUSH"] >= 4

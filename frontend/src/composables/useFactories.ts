@@ -5,7 +5,7 @@ import type { Factory } from "@/types/api";
 const list = ref<Factory[]>([]);
 let loading: Promise<void> | null = null;
 
-/** 工厂主数据（全局缓存一份）。 */
+/** 生产组织（全局缓存一份）。 */
 export function useFactories() {
   function load(force = false) {
     if (!force && (list.value.length || loading)) return loading ?? Promise.resolve();

@@ -276,7 +276,7 @@ def _str(m: dict, key: str) -> str | None:
 
 
 def record_failure(u: CurrentUser, method: str, path: str, body: bytes | None, message: str) -> None:
-    """已登录账户的 /api 写请求被业务拒绝：独立事务记一条 FAIL，PI / 工厂 / 数量等从请求体抽取。"""
+    """已登录账户的 /api 写请求被业务拒绝：独立事务记一条 FAIL，PI / 生产组织 / 数量等从请求体抽取。"""
     e = entry(action_for(method, path)).fail(message)
     if body:
         try:

@@ -62,6 +62,7 @@
           </el-breadcrumb>
         </div>
         <div class="right">
+          <span class="tz muted">{{ t("app.tz", { tz }) }}</span>
           <el-tooltip :content="scope.tip" placement="bottom">
             <span class="scope" :class="scope.kind">
               <el-icon><component :is="scope.icon" /></el-icon>
@@ -104,12 +105,14 @@ import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/auth";
 import { LOCALES, type Locale } from "@/i18n";
 import { MENU } from "@/router";
+import { useTime } from "@/composables/useTime";
 
 const { t, locale } = useI18n();
 const store = useAuthStore();
 const route = useRoute();
 const router = useRouter();
 const collapsed = ref(false);
+const { tz } = useTime();
 
 const menus = computed(() =>
   MENU.map((g) => ({ ...g, items: g.items.filter((m) => m.roles.includes(store.role) && (!("superAdmin" in m) || store.isSuperAdmin)) })).filter((g) => g.items.length),
@@ -120,7 +123,7 @@ const pageTitle = computed(() => {
   return title ? t(title) : "";
 });
 
-/** 数据范围：总部 / 本厂 / 全部工厂（只读）/ 本厂（只读），角色与范围分开展示，不再重复。 */
+/** 数据范围：总部 / 本组织 / 全部生产组织（只读）/ 绑定组织（只读），角色与范围分开展示。 */
 const scope = computed(() => {
   const factory = store.scopeNames;
   if (store.isAdmin) return { kind: "hq", icon: "OfficeBuilding", label: t("app.hq"), tip: t("app.scopeTip.hq"), readonly: false };
@@ -207,5 +210,6 @@ onUnmounted(() => window.removeEventListener("resize", onResize));
 .card-line { font-size: 12px; color: var(--app-muted); margin-top: 2px; }
 .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
 .main { padding: 20px; background: var(--app-canvas); overflow: auto; }
-@media (max-width: 760px) { .scope-text, .lang-code { display: none; } .scope { padding: 0 8px; } }
+.tz { white-space: nowrap; margin-right: 4px; }
+@media (max-width: 760px) { .tz, .scope-text, .lang-code { display: none; } .scope { padding: 0 8px; } }
 </style>

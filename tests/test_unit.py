@@ -97,9 +97,25 @@ def test_validation():
 
 
 def test_query_rows_trim_spaces_and_read_header_fields():
-    cfg = k3._Config("u", "a", "i", "s", "n", 2052, 1, 1, 1, 0, 0, "F_HX_PO", "F_ATT", "Flength", "F_HX_PO", "Att", "Flength")
-    row = ["VT1", "C", "0001 ", " ", "PO1", "110", [{"Key": 2052, "Value": "越南"}], 2.0, " ", "9148363", "缆", "0100",
-           10.0, "2026-10-01T08:00:00"]
+    cfg = k3._Config(
+        "u", "a", "i", "s", "n", 2052, 1, 1, 1, 0, 0, "F_HX_PO", "F_ATT", "Flength", "F_HX_PO", "Att", "Flength"
+    )
+    row = [
+        "VT1",
+        "C",
+        "0001 ",
+        " ",
+        "PO1",
+        "110",
+        [{"Key": 2052, "Value": "越南"}],
+        2.0,
+        " ",
+        "9148363",
+        "缆",
+        "0100",
+        10.0,
+        "2026-10-01T08:00:00",
+    ]
     r = k3._row_of_query(row, cfg)
     assert (r.bill_no, r.customer_code, r.pi, r.org_code, r.org_name, r.seq) == ("VT1", "0001", "", "110", "越南", 2)
     assert r.attach_no == "" and r.length_raw == "0100"
@@ -184,13 +200,14 @@ def test_migration_flyway_checksum():
     """测试阶段只保留一个 V1__init.sql；校验和按 Flyway 算法固定，改了建表脚本须同步更新这里（并重建测试库）。"""
     ours = {m.script: m for m in migrations()}
     assert list(ours) == ["V1__init.sql"]
-    assert ours["V1__init.sql"].checksum() == -1754696995
+    assert ours["V1__init.sql"].checksum() == -1915956260
     statements = ours["V1__init.sql"].statements()
-    assert len(statements) == 18
-    assert not any("sn_pi_import" in st or "imported_qty" in st for st in statements), "历史导入已彻底移除"
-    assert not any("sn_key" in st for st in statements), "查重唯一键已并入 sn_item"
-    for gone in ("sn_allocation", "sn_acquire_batch", "sn_print ", "prev_status", "start_locked", "used_at"):
-        assert not any(gone in st for st in statements), f"{gone} 已精简掉"
+    assert len(statements) == 34
+    text = "\n".join(statements)
+    for table in ("sn_line_count", "sn_delivery_batch", "sn_push_task", "sn_acquire_batch", "sn_transfer_item"):
+        assert f"CREATE TABLE {table}" in text, table
+    for gone in ("sn_print", "sn_pi_import", "print_no", "sn_allocation"):
+        assert gone not in text, f"{gone} 已随 PRD V30 移除（不再打印、不再按 PI 导入）"
 
 
 # ---------------------------------------------------------------------- 定时任务

@@ -274,11 +274,20 @@ class FakeMes:
     def handle(self, org: str, batch: dict) -> tuple[int, dict]:
         if batch.get("batchType") == "PING":
             if batch.get("orgCode") != org:
-                return 200, {"schemaVersion": "1.0", "batchNo": batch.get("batchNo"), "outcome": "REJECTED",
-                             "rejectCode": "ORG_MISMATCH", "rejectMessage": "orgCode"}
-            return 200, {"schemaVersion": "1.0", "batchNo": batch["batchNo"], "outcome": "PROCESSED",
-                         "summary": {"total": 0, "accepted": 0, "duplicate": 0, "conflict": 0, "stale": 0},
-                         "results": []}
+                return 200, {
+                    "schemaVersion": "1.0",
+                    "batchNo": batch.get("batchNo"),
+                    "outcome": "REJECTED",
+                    "rejectCode": "ORG_MISMATCH",
+                    "rejectMessage": "orgCode",
+                }
+            return 200, {
+                "schemaVersion": "1.0",
+                "batchNo": batch["batchNo"],
+                "outcome": "PROCESSED",
+                "summary": {"total": 0, "accepted": 0, "duplicate": 0, "conflict": 0, "stale": 0},
+                "results": [],
+            }
         r = self.process(org, batch)
         if "__status" in r:
             status = r.pop("__status")
@@ -305,8 +314,13 @@ class FakeMes:
             elif batch["batchType"] == "TRANSFER_OUT" and any(x["pushType"] != "TRANSFER_OUT" for x in items):
                 problem = ("TYPE_MISMATCH", "type")
             if problem:
-                return {"schemaVersion": "1.0", "batchNo": no, "outcome": "REJECTED", "rejectCode": problem[0],
-                        "rejectMessage": problem[1]}
+                return {
+                    "schemaVersion": "1.0",
+                    "batchNo": no,
+                    "outcome": "REJECTED",
+                    "rejectCode": problem[0],
+                    "rejectMessage": problem[1],
+                }
             # 第 2 步：查重
             seen = self.batches.setdefault(org, {})
             if no in seen:
@@ -324,11 +338,22 @@ class FakeMes:
                 if cur is None or x["rev"] > cur["rev"]:
                     rec = {"rev": x["rev"], "lastBatchNo": no, "suspended": False}
                     if x["pushType"] == "TRANSFER_OUT":
-                        rec.update(transferredOut=True, toOrgCode=x["toOrgCode"], pi=x["from"]["pi"],
-                                   billNo=x["from"]["billNo"], billSeq=x["from"]["billSeq"])
+                        rec.update(
+                            transferredOut=True,
+                            toOrgCode=x["toOrgCode"],
+                            pi=x["from"]["pi"],
+                            billNo=x["from"]["billNo"],
+                            billSeq=x["from"]["billSeq"],
+                        )
                     else:
-                        rec.update(transferredOut=False, toOrgCode=None, pi=x["pi"], billNo=x["billNo"],
-                                   billSeq=x["billSeq"], materialCode=x["materialCode"])
+                        rec.update(
+                            transferredOut=False,
+                            toOrgCode=None,
+                            pi=x["pi"],
+                            billNo=x["billNo"],
+                            billSeq=x["billSeq"],
+                            materialCode=x["materialCode"],
+                        )
                     store[x["sn"]] = rec
                     out["result"] = "ACCEPTED"
                 elif x["rev"] == cur["rev"] and cur["lastBatchNo"] == no:
@@ -340,8 +365,14 @@ class FakeMes:
                     out.update(result="STALE", existingRev=cur["rev"], existingBatchNo=cur["lastBatchNo"])
                 summary[out["result"].lower()] += 1
                 results.append(out)
-            receipt = {"schemaVersion": "1.0", "batchNo": no, "outcome": "PROCESSED",
-                       "receivedAt": "2026-10-19T02:37:03Z", "summary": summary, "results": results}
+            receipt = {
+                "schemaVersion": "1.0",
+                "batchNo": no,
+                "outcome": "PROCESSED",
+                "receivedAt": "2026-10-19T02:37:03Z",
+                "summary": summary,
+                "results": results,
+            }
             seen[no] = (batch["itemsDigest"], receipt)
             return receipt
 
@@ -555,8 +586,14 @@ class World:
         ok(
             self.api.post(
                 "/api/users",
-                m(emp_no=emp, name=emp, role=role, factory_code=factory, factory_codes=factory_codes,
-                  password="Pass1234"),
+                m(
+                    emp_no=emp,
+                    name=emp,
+                    role=role,
+                    factory_code=factory,
+                    factory_codes=factory_codes,
+                    password="Pass1234",
+                ),
                 self.admin,
             )
         )
@@ -572,8 +609,9 @@ class World:
     def enable_mes(self, code: str, batch_size: int = 5000, auth: str = "TOKEN") -> None:
         token = f"tok-{code}"
         MES.tokens[code] = token
-        cfg = m(mes_url=MES.url(code), mes_auth_type=auth, mes_credential=token, batch_size=batch_size,
-                push_timeout_sec=10)
+        cfg = m(
+            mes_url=MES.url(code), mes_auth_type=auth, mes_credential=token, batch_size=batch_size, push_timeout_sec=10
+        )
         t = ok(self.api.post(f"/api/factories/{code}/mes-test", cfg, self.admin))
         assert t["ok"], str(t)
         ok(self.api.put(f"/api/factories/{code}/mes-config", cfg, self.admin))
@@ -643,8 +681,15 @@ class World:
         r = ok(
             self.api.post(
                 "/api/rules",
-                m(rule_code=uid("R"), rule_name="rule " + prefix, prefix=prefix, suffix=suffix, base=base,
-                  seq_len=seq_len, with_length=with_length),
+                m(
+                    rule_code=uid("R"),
+                    rule_name="rule " + prefix,
+                    prefix=prefix,
+                    suffix=suffix,
+                    base=base,
+                    seq_len=seq_len,
+                    with_length=with_length,
+                ),
                 self.admin,
             )
         )
@@ -653,18 +698,34 @@ class World:
     def bind_pi(self, pi: str, rule_id: int, new_prefix: str | None = None) -> Res:
         return self.api.put("/api/rules/pi-binding", m(pi_no=pi, rule_id=rule_id, new_prefix=new_prefix), self.admin)
 
-    def select(self, pi: str, lines: list[tuple[str, int]], rule_id: int | None = None, custom: dict | None = None,
-               new_prefix: str | None = None) -> Res:
+    def select(
+        self,
+        pi: str,
+        lines: list[tuple[str, int]],
+        rule_id: int | None = None,
+        custom: dict | None = None,
+        new_prefix: str | None = None,
+    ) -> Res:
         return self.api.post(
             "/api/rules/line-select",
-            m(pi_no=pi, lines=[m(bill_no=b, seq=s) for b, s in lines], rule_id=rule_id, custom=custom,
-              new_prefix=new_prefix),
+            m(
+                pi_no=pi,
+                lines=[m(bill_no=b, seq=s) for b, s in lines],
+                rule_id=rule_id,
+                custom=custom,
+                new_prefix=new_prefix,
+            ),
             self.admin,
         )
 
     # ---------------- 生成 / 分配 / 推送
-    def preview(self, pi: str, qty: int | None = None, bills: list[str] | None = None,
-                lines: list[tuple[str, int]] | None = None) -> Res:
+    def preview(
+        self,
+        pi: str,
+        qty: int | None = None,
+        bills: list[str] | None = None,
+        lines: list[tuple[str, int]] | None = None,
+    ) -> Res:
         scope = "LINES" if lines else "BILLS"
         if not lines and not bills:
             bills = sorted({d["BillNo"] for d in BILLS.values() if d["F_HX_PI"] == pi and d["DocumentStatus"] == "C"})
@@ -674,8 +735,13 @@ class World:
             self.admin,
         )
 
-    def generate(self, pi: str, qty: int | None = None, bills: list[str] | None = None,
-                 lines: list[tuple[str, int]] | None = None) -> dict:
+    def generate(
+        self,
+        pi: str,
+        qty: int | None = None,
+        bills: list[str] | None = None,
+        lines: list[tuple[str, int]] | None = None,
+    ) -> dict:
         p = ok(self.preview(pi, qty, bills, lines))
         assert p["generatable"], str(p)
         j = ok(self.api.post("/api/generate/run", m(token=p["token"]), self.admin))

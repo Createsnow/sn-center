@@ -2,68 +2,51 @@
   <div class="page page--fill">
     <PageHead :title="t('orders.title')" :desc="t('orders.desc')">
       <template v-if="store.isAdmin">
-        <el-input v-model="syncBillNo" :placeholder="t('orders.billToSync')" clearable class="w200" @keyup.enter="syncOne" />
-        <el-button :loading="syncing === 'one'" :disabled="!syncBillNo.trim()" @click="syncOne">{{ t("orders.syncOne") }}</el-button>
-        <el-button type="primary" :loading="syncing === 'all'" @click="syncAll">
-          <el-icon><Refresh /></el-icon><span>{{ t("orders.syncAll") }}</span>
+        <el-input v-model="syncBillNo" :placeholder="t('common.billNo')" clearable class="w200" @keyup.enter="syncOne()" />
+        <el-button :loading="syncing === 'one'" :disabled="!syncBillNo.trim()" @click="syncOne()">{{ t("orders.syncOne") }}</el-button>
+        <el-button type="primary" :loading="syncing === 'compare'" @click="compareNow">
+          <el-icon><Refresh /></el-icon><span>{{ t("orders.compareNow") }}</span>
         </el-button>
+        <el-button :loading="syncing === 'rebuild'" @click="rebuild">{{ t("orders.rebuild") }}</el-button>
       </template>
     </PageHead>
 
-    <el-alert v-if="meta?.unmapped_orgs?.length" type="warning" show-icon :closable="false"
-      :title="t('orders.unmapped', { orgs: meta.unmapped_orgs.join('、') })" />
+    <el-alert v-if="meta?.compare?.last_ok === false" type="error" show-icon :closable="false"
+      :title="t('orders.syncFailed', { time: fmt(meta.compare.last_run_at), msg: meta.compare.last_message })" />
 
     <div class="surface meta">
-      <span>{{ t("orders.syncedAt") }}：<b>{{ meta?.synced_at || "—" }}</b></span>
+      <span>{{ t("orders.syncedAt") }}：<b>{{ fmt(meta?.synced_at) }}</b></span>
       <span>{{ t("orders.bills") }}：<b class="num">{{ meta?.bills ?? 0 }}</b></span>
       <span>{{ t("orders.rows") }}：<b class="num">{{ meta?.rows ?? 0 }}</b></span>
       <span class="muted">{{ t("orders.excluded", { n: meta?.excluded_empty_customer ?? 0 }) }}</span>
-      <span v-if="sched" class="sched">
-        <span>{{ t("orders.sched.title") }}：</span>
-        <el-tag v-if="sched.enabled" size="small" type="success">{{ t("orders.sched.every", { every: intervalText(sched.interval_minutes) }) }}</el-tag>
-        <el-tag v-else size="small" type="info">{{ t("orders.sched.off") }}</el-tag>
-        <span v-if="sched.enabled" class="muted">{{ t("orders.sched.next") }} {{ sched.next_run_at || "—" }}</span>
-        <el-tooltip v-if="sched.last_run_at" :content="lastText" placement="bottom">
-          <el-icon :class="sched.last_ok ? 'ok' : 'bad'">
-            <CircleCheckFilled v-if="sched.last_ok" /><WarningFilled v-else />
-          </el-icon>
-        </el-tooltip>
-        <el-button v-if="store.isAdmin" link type="primary" @click="openSched">
-          <el-icon><Setting /></el-icon><span>{{ t("orders.sched.settings") }}</span>
-        </el-button>
+      <span>{{ t("orders.attachPending") }}：<b class="num" :class="{ warn: meta?.attach_pending }">{{ meta?.attach_pending ?? 0 }}</b></span>
+      <span>
+        {{ t("orders.compare") }}：
+        <template v-if="meta?.compare?.last_run_at">
+          <span>{{ fmt(meta.compare.last_run_at) }}</span>
+          <el-tag size="small" class="ml" :type="meta.compare.last_ok ? 'success' : 'danger'">
+            {{ meta.compare.last_ok ? t("orders.compareOk") : t("orders.compareFail") }}
+          </el-tag>
+        </template>
+        <span v-else class="muted">—</span>
       </span>
+      <el-button link :type="meta?.open_alerts ? 'danger' : 'info'" @click="tab = 'alerts'">
+        {{ t("orders.openAlerts", { n: meta?.open_alerts ?? 0 }) }}
+      </el-button>
     </div>
 
-    <el-dialog v-model="schedOpen" :title="t('orders.sched.dialogTitle')" width="480px">
-      <el-form label-width="110px">
-        <el-form-item :label="t('orders.sched.enabled')">
-          <el-switch v-model="form.enabled" />
-        </el-form-item>
-        <el-form-item :label="t('orders.sched.interval')">
-          <div class="interval">
-            <el-input-number v-model="form.amount" :min="1" :max="unitMax" :step="1" step-strictly controls-position="right" />
-            <el-select v-model="form.unit" class="unit">
-              <el-option v-for="u in UNITS" :key="u.key" :value="u.key" :label="t(`orders.sched.unit.${u.key}`)" />
-            </el-select>
-          </div>
-          <div class="muted hint">{{ t("orders.sched.intervalHint", { min: sched?.min_interval ?? 10 }) }}</div>
-        </el-form-item>
-        <el-form-item v-if="sched?.last_run_at" :label="t('orders.sched.last')">
-          <span :class="sched.last_ok ? 'ok' : 'bad'">{{ lastText }}</span>
-        </el-form-item>
-        <el-form-item v-if="sched?.updated_at" :label="t('orders.sched.updated')">
-          <span class="muted">{{ sched.updated_by }} · {{ sched.updated_at }}</span>
-        </el-form-item>
-      </el-form>
-      <el-alert type="info" :closable="false" :title="t('orders.sched.note')" />
-      <template #footer>
-        <el-button @click="schedOpen = false">{{ t("common.cancel") }}</el-button>
-        <el-button type="primary" :loading="savingSched" @click="saveSched">{{ t("common.save") }}</el-button>
-      </template>
-    </el-dialog>
+    <el-tabs v-model="tab" class="tabs">
+      <el-tab-pane :label="t('orders.tabBills')" name="bills" />
+      <el-tab-pane name="alerts">
+        <template #label>
+          <span>{{ t("orders.tabAlerts") }}</span>
+          <el-badge v-if="meta?.open_alerts" :value="meta.open_alerts" class="badge" />
+        </template>
+      </el-tab-pane>
+    </el-tabs>
 
-    <el-row :gutter="16" class="cols">
-      <el-col :lg="16" :xs="24">
+    <el-row v-show="tab === 'bills'" :gutter="16" class="cols">
+      <el-col :lg="14" :xs="24">
         <div class="surface fill">
           <div class="toolbar">
             <el-input v-model="f.q" :placeholder="t('orders.search')" clearable prefix-icon="Search" class="w-search" @keyup.enter="load(1)" @clear="load(1)" />
@@ -72,223 +55,415 @@
             <el-button type="primary" @click="load(1)">{{ t("common.search") }}</el-button>
           </div>
           <div class="fill-body">
-          <el-table v-loading="state.loading" :data="items" highlight-current-row size="small" height="100%"
-            :empty-text="t('common.empty')" @current-change="select">
-            <el-table-column prop="bill_no" :label="t('common.billNo')" min-width="120" show-overflow-tooltip />
-            <el-table-column prop="customer_number" :label="t('common.customer')" width="80" show-overflow-tooltip />
-            <el-table-column prop="pi" label="PI" min-width="140" show-overflow-tooltip />
-            <el-table-column :label="t('orders.org')" min-width="100" show-overflow-tooltip>
-              <template #default="{ row }">
-                <span>{{ row.prd_org_name }}</span>
-                <el-tag v-if="!row.factory_code" size="small" type="danger" class="ml">{{ t("orders.noFactory") }}</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column :label="t('orders.status')" width="84" show-overflow-tooltip>
-              <template #default="{ row }">{{ statusText(row.statuses) }}</template>
-            </el-table-column>
-            <el-table-column :label="t('orders.totalQty')" align="right" width="76">
-              <template #default="{ row }"><span class="num">{{ row.total_qty }}</span></template>
-            </el-table-column>
-            <el-table-column :label="t('orders.generated')" align="right" width="70">
-              <template #default="{ row }"><span class="num">{{ row.generated_qty }}</span></template>
-            </el-table-column>
-            <el-table-column :label="t('orders.quota')" align="right" width="70">
-              <template #default="{ row }"><span class="num" :class="{ zero: !row.quota }">{{ row.quota }}</span></template>
-            </el-table-column>
-          </el-table>
+            <el-table v-loading="state.loading" :data="items" highlight-current-row size="small" height="100%"
+              :empty-text="t('common.empty')" @current-change="select">
+              <el-table-column prop="bill_no" :label="t('common.billNo')" min-width="130" show-overflow-tooltip />
+              <el-table-column prop="customer_code" :label="t('common.customer')" width="90" show-overflow-tooltip />
+              <el-table-column prop="pi" label="PI" min-width="130" show-overflow-tooltip />
+              <el-table-column prop="po" label="PO" min-width="110" show-overflow-tooltip />
+              <el-table-column :label="t('common.factory')" min-width="120" show-overflow-tooltip>
+                <template #default="{ row }">{{ row.org_name }}<span class="muted">（{{ row.org_code }}）</span></template>
+              </el-table-column>
+              <el-table-column :label="t('orders.totalQty')" align="right" width="80">
+                <template #default="{ row }"><span class="num">{{ row.total_qty }}</span></template>
+              </el-table-column>
+              <el-table-column :label="t('orders.generated')" align="right" width="72">
+                <template #default="{ row }"><span class="num">{{ row.generated_qty }}</span></template>
+              </el-table-column>
+              <el-table-column :label="t('orders.quota')" align="right" width="72">
+                <template #default="{ row }"><span class="num" :class="{ zero: !row.quota }">{{ row.quota }}</span></template>
+              </el-table-column>
+              <el-table-column :label="t('orders.state')" min-width="120">
+                <template #default="{ row }"><BillTags :s="row" /></template>
+              </el-table-column>
+            </el-table>
           </div>
           <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="state.total" :page-size="state.pageSize"
             :current-page="state.page" :page-sizes="[20, 50, 100]" @current-change="load" @size-change="onSize" />
         </div>
       </el-col>
-      <el-col :lg="8" :xs="24">
+      <el-col :lg="10" :xs="24">
         <div class="surface fill">
           <div class="surface__title">
-            <span>{{ current ? t("orders.linesOf", { bill: current.bill_no }) : t("orders.lines") }}</span>
-            <el-button v-if="current && store.isAdmin" type="primary" size="small"
-              @click="router.push({ path: '/generate', query: { bill_no: current.bill_no } })">
+            <span>{{ detail ? t("orders.linesOf", { bill: detail.bill_no }) : t("orders.lines") }}</span>
+            <el-button v-if="detail && store.isAdmin" type="primary" size="small"
+              @click="router.push({ path: '/generate', query: { bill_no: detail.bill_no } })">
               {{ t("orders.toGenerate") }}
             </el-button>
           </div>
-          <template v-if="current">
-            <el-descriptions :column="1" size="small" border class="mb">
-              <el-descriptions-item label="PI">{{ current.pi }}</el-descriptions-item>
-              <el-descriptions-item label="PO">{{ current.po }}</el-descriptions-item>
-              <el-descriptions-item :label="t('common.customer')">{{ current.customer_number }}</el-descriptions-item>
-              <el-descriptions-item :label="t('common.factory')">{{ current.prd_org_name }}（{{ current.factory_code || "—" }}）</el-descriptions-item>
+          <template v-if="detail">
+            <el-descriptions :column="2" size="small" border class="mb">
+              <el-descriptions-item label="PI">{{ detail.pi }}</el-descriptions-item>
+              <el-descriptions-item label="PO">{{ detail.po }}</el-descriptions-item>
+              <el-descriptions-item :label="t('common.customer')">{{ detail.customer_code }}</el-descriptions-item>
+              <el-descriptions-item :label="t('common.factory')">{{ detail.org_name }}（{{ detail.org_code }}）</el-descriptions-item>
+              <el-descriptions-item :label="t('orders.state')" :span="2"><BillTags :s="detail.state" show-none /></el-descriptions-item>
             </el-descriptions>
             <div class="fill-body">
-            <el-table v-loading="linesLoading" :data="lines" size="small" height="100%" :empty-text="t('common.empty')">
-              <el-table-column prop="line_seq" label="#" width="48" />
-              <el-table-column :label="t('common.material')" min-width="100">
-                <template #default="{ row }"><span v-if="row.material_number">{{ row.material_number }}</span><span v-else class="muted">{{ t("orders.noMaterial") }}</span></template>
-              </el-table-column>
-              <el-table-column :label="t('orders.materialName')" min-width="120" show-overflow-tooltip>
-                <template #default="{ row }">
-                  <div>{{ row.material_name }}</div>
-                  <div v-if="row.demand_bill_no" class="muted">{{ t("orders.demand") }} {{ row.demand_bill_no }}</div>
-                </template>
-              </el-table-column>
-              <el-table-column :label="t('common.qty')" align="right" width="70">
-                <template #default="{ row }"><span class="num">{{ Number(row.qty) }}</span></template>
-              </el-table-column>
-            </el-table>
+              <el-table v-loading="linesLoading" :data="detail.lines" size="small" height="100%" :empty-text="t('common.empty')">
+                <el-table-column prop="seq" label="#" width="44" />
+                <el-table-column :label="t('common.attachNo')" min-width="120">
+                  <template #default="{ row }">
+                    <div class="attach">
+                      <span v-if="row.attach_source === 'EMPTY'"><el-tag size="small" type="warning">{{ t("orders.attachEmpty") }}</el-tag></span>
+                      <template v-else>
+                        <span>{{ row.attach_no }}</span>
+                        <el-tag v-if="row.attach_source === 'MANUAL'" size="small" type="info">{{ t("orders.attachManual") }}</el-tag>
+                      </template>
+                      <el-button v-if="store.isAdmin && row.attach_source !== 'K3'" link type="primary" size="small" @click="fillAttach(row)">
+                        <el-icon><EditPen /></el-icon>
+                      </el-button>
+                    </div>
+                    <div v-if="row.attach_k3_conflict" class="muted warn">
+                      {{ t("orders.attachConflict", { k3: row.attach_k3, manual: row.attach_manual }) }}
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column :label="t('common.material')" min-width="110" show-overflow-tooltip>
+                  <template #default="{ row }">
+                    <div>{{ row.material_code }}</div>
+                    <div class="muted">{{ row.material_name }}</div>
+                  </template>
+                </el-table-column>
+                <el-table-column :label="t('common.length')" width="70" show-overflow-tooltip>
+                  <template #default="{ row }">
+                    <span v-if="row.length">{{ row.length }}</span><span v-else class="warn">{{ t("orders.lengthEmpty") }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column :label="t('common.qty')" align="right" width="60">
+                  <template #default="{ row }"><span class="num">{{ row.qty }}</span></template>
+                </el-table-column>
+                <el-table-column :label="t('orders.generated')" align="right" width="64">
+                  <template #default="{ row }"><span class="num">{{ row.generated_qty }}</span></template>
+                </el-table-column>
+                <el-table-column :label="t('orders.quota')" align="right" width="64">
+                  <template #default="{ row }"><span class="num" :class="{ zero: !row.quota }">{{ row.quota }}</span></template>
+                </el-table-column>
+                <el-table-column :label="t('orders.rule')" min-width="160" show-overflow-tooltip>
+                  <template #default="{ row }">
+                    <template v-if="row.rule">
+                      <el-tag size="small" effect="plain">{{ t(`orders.ruleSource.${row.rule.source}`) }}</el-tag>
+                      <span class="ml">{{ row.rule.format }}</span>
+                    </template>
+                    <span v-else class="muted">{{ t("orders.noRule") }}</span>
+                  </template>
+                </el-table-column>
+              </el-table>
             </div>
           </template>
           <el-empty v-else :description="t('orders.pick')" />
         </div>
       </el-col>
     </el-row>
+
+    <div v-show="tab === 'alerts'" class="surface fill">
+      <div class="toolbar">
+        <el-radio-group v-model="af.status" @change="loadAlerts(1)">
+          <el-radio-button value="OPEN">{{ t("orders.alertOpen") }}</el-radio-button>
+          <el-radio-button value="CLOSED">{{ t("orders.alertClosed") }}</el-radio-button>
+          <el-radio-button value="ALL">{{ t("common.all") }}</el-radio-button>
+        </el-radio-group>
+        <el-select v-model="af.alert_type" clearable :placeholder="t('orders.alertType')" @change="loadAlerts(1)">
+          <el-option v-for="x in ALERT_TYPES" :key="x" :value="x" :label="t(`orders.alertTypes.${x}`)" />
+        </el-select>
+        <el-input v-model="af.bill_no" :placeholder="t('common.billNo')" clearable @keyup.enter="loadAlerts(1)" @clear="loadAlerts(1)" />
+        <el-button type="primary" @click="loadAlerts(1)">{{ t("common.search") }}</el-button>
+      </div>
+      <div class="fill-body">
+        <el-table v-loading="alerts.state.loading" :data="alerts.items.value" size="small" height="100%" :empty-text="t('common.empty')">
+          <el-table-column :label="t('common.time')" width="150">
+            <template #default="{ row }">{{ fmt(row.created_at) }}</template>
+          </el-table-column>
+          <el-table-column prop="bill_no" :label="t('common.billNo')" min-width="120" show-overflow-tooltip />
+          <el-table-column :label="t('orders.alertType')" min-width="110">
+            <template #default="{ row }">
+              <el-tag size="small" :type="ALERT_TAG[row.alert_type] || 'info'">{{ t(`orders.alertTypes.${row.alert_type}`) }}</el-tag>
+              <span v-if="row.seq" class="muted ml">#{{ row.seq }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="t('orders.change')" min-width="180" show-overflow-tooltip>
+            <template #default="{ row }">
+              <span>{{ row.before_value || "—" }}</span><span class="arrow">→</span><span>{{ row.after_value || "—" }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="pi" label="PI" min-width="120" show-overflow-tooltip />
+          <el-table-column :label="t('common.factory')" min-width="110" show-overflow-tooltip>
+            <template #default="{ row }">{{ row.org_name || row.org_code || "—" }}</template>
+          </el-table-column>
+          <el-table-column :label="t('orders.state')" min-width="110">
+            <template #default="{ row }"><BillTags :s="row" /></template>
+          </el-table-column>
+          <el-table-column :label="t('orders.counts')" min-width="150">
+            <template #default="{ row }">
+              <div class="muted">{{ t("orders.countSuspended", { n: row.suspended_qty }) }}</div>
+              <div class="muted">{{ t("orders.countDelivered", { n: row.delivered_qty }) }}</div>
+              <div class="muted">{{ t("orders.countInOrg", { n: row.in_org_qty }) }}</div>
+            </template>
+          </el-table-column>
+          <el-table-column :label="t('common.status')" min-width="130">
+            <template #default="{ row }">
+              <el-tag v-if="row.status === 'OPEN'" size="small" type="warning">{{ t("orders.alertOpen") }}</el-tag>
+              <template v-else>
+                <el-tag size="small" type="success">{{ t("orders.alertClosed") }}</el-tag>
+                <div class="muted">{{ row.close_action ? t(`orders.alertActions.${row.close_action}`) : "" }} {{ row.closed_by || "" }}</div>
+                <div v-if="row.note" class="muted">{{ row.note }}</div>
+              </template>
+            </template>
+          </el-table-column>
+          <el-table-column v-if="store.isAdmin" :label="t('common.actions')" min-width="170" fixed="right">
+            <template #default="{ row }">
+              <el-button v-for="a in row.actions" :key="a" link type="primary" @click="handle(row, a)">{{ t(`orders.alertActions.${a}`) }}</el-button>
+              <el-button v-if="row.status === 'OPEN' && row.alert_type === 'REVERSAL'" link @click="syncOne(row.bill_no)">
+                {{ t("orders.syncNow") }}
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+      <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="alerts.state.total" :page-size="alerts.state.pageSize"
+        :current-page="alerts.state.page" :page-sizes="[20, 50, 100]" @current-change="loadAlerts" @size-change="alerts.onSize" />
+    </div>
+
+    <el-dialog v-model="mapDlg.open" :title="t('orders.mapTitle')" width="520px">
+      <p class="muted">{{ t("orders.mapHint", { bill: mapDlg.alert?.bill_no, seq: mapDlg.alert?.seq, material: mapDlg.alert?.before_value }) }}</p>
+      <el-form label-width="110px">
+        <el-form-item :label="t('orders.mapTarget')" required>
+          <el-select v-model="mapDlg.target" class="w-full">
+            <el-option v-for="l in mapDlg.lines" :key="l.seq" :value="l.seq"
+              :label="`#${l.seq} ${l.material_code} ${l.material_name}（${t('common.qty')} ${l.qty}）`" />
+          </el-select>
+        </el-form-item>
+        <el-form-item :label="t('common.note')">
+          <el-input v-model="mapDlg.note" type="textarea" :rows="2" maxlength="500" show-word-limit />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="mapDlg.open = false">{{ t("common.cancel") }}</el-button>
+        <el-button type="primary" :disabled="!mapDlg.target" :loading="mapDlg.saving" @click="submitMap">{{ t("common.confirm") }}</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
-import { useRouter } from "vue-router";
+import { defineComponent, h, onMounted, reactive, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox, ElTag } from "element-plus";
 import { api } from "@/api";
 import { useAuthStore } from "@/stores/auth";
 import { usePaged } from "@/composables/usePaged";
+import { useTime } from "@/composables/useTime";
 import PageHead from "@/components/PageHead.vue";
-import { firstSyncThisLogin } from "@/utils/syncOnce";
 import FactorySelect from "@/components/FactorySelect.vue";
+import { firstSyncThisLogin } from "@/utils/syncOnce";
+import { leaveStateLabel, suspendLabel } from "@/constants";
+import type { BillState, OrderBill, OrderLine } from "@/types/api";
 
 const { t } = useI18n();
+const route = useRoute();
 const router = useRouter();
 const store = useAuthStore();
-const f = reactive({ q: "", customer: "", factory_code: "" });
-const meta = ref<any>(null);
-const current = ref<any>(null);
-const lines = ref<any[]>([]);
-const linesLoading = ref(false);
-const syncBillNo = ref("");
-const syncing = ref<"" | "all" | "one">("");
+const { fmt } = useTime();
 
-const sched = ref<any>(null);
-const schedOpen = ref(false);
-const savingSched = ref(false);
-const UNITS = [
-  { key: "minute", minutes: 1 },
-  { key: "hour", minutes: 60 },
-  { key: "day", minutes: 1440 },
-] as const;
-type Unit = (typeof UNITS)[number]["key"];
-const form = reactive<{ enabled: boolean; amount: number; unit: Unit }>({ enabled: false, amount: 1, unit: "day" });
-const unitMinutes = (u: Unit) => UNITS.find((x) => x.key === u)!.minutes;
-const unitMax = computed(() => Math.floor((sched.value?.max_interval ?? 10080) / unitMinutes(form.unit)));
+const ALERT_TYPES = ["PI", "ORG", "CUSTOMER", "QTY", "MATERIAL", "ATTACH", "REVERSAL", "DELETED"];
+const ALERT_TAG: Record<string, "" | "info" | "warning" | "danger" | "success" | "primary"> = {
+  PI: "danger", ORG: "danger", CUSTOMER: "danger", MATERIAL: "danger", REVERSAL: "danger", QTY: "warning", ATTACH: "warning", DELETED: "info",
+};
 
-/** 分钟数拆成「最大的整除单位」：1440 → 1 天，120 → 2 小时，90 → 90 分钟 */
-function splitInterval(minutes: number): { amount: number; unit: Unit } {
-  const u = [...UNITS].reverse().find((x) => minutes % x.minutes === 0)!;
-  return { amount: minutes / u.minutes, unit: u.key };
-}
-function intervalText(minutes: number) {
-  const { amount, unit } = splitInterval(minutes);
-  return `${amount} ${t(`orders.sched.unit.${unit}`)}`;
-}
-const lastText = computed(() => {
-  const s = sched.value;
-  if (!s?.last_run_at) return "";
-  return s.last_ok
-    ? t("orders.sched.lastOk", { time: s.last_run_at, bills: s.last_bills ?? 0, rows: s.last_rows ?? 0 })
-    : t("orders.sched.lastFail", { time: s.last_run_at, msg: s.last_message });
+/** 单据状态标签：暂停交付、离开快照、PI 冻结、未处理提醒。 */
+const BillTags = defineComponent({
+  props: { s: { type: Object as () => Partial<BillState> | null, default: null }, showNone: Boolean },
+  setup(props) {
+    return () => {
+      const s = props.s || {};
+      const tags = [];
+      if (s.suspend) tags.push(h(ElTag, { size: "small", type: "danger" }, () => suspendLabel(s.suspend)));
+      if (s.leave_state) tags.push(h(ElTag, { size: "small", type: "warning" }, () => leaveStateLabel(s.leave_state)));
+      if (s.pi_frozen) tags.push(h(ElTag, { size: "small", type: "danger" }, () => t("orders.piFrozen")));
+      if (s.open_alerts) tags.push(h(ElTag, { size: "small", type: "warning", effect: "plain" }, () => t("orders.alertsN", { n: s.open_alerts })));
+      if (!tags.length && props.showNone) tags.push(h("span", { class: "muted" }, t("orders.stateNormal")));
+      return h("div", { class: "tags" }, tags);
+    };
+  },
 });
 
-function openSched() {
-  const s = sched.value;
-  Object.assign(form, { enabled: !!s?.enabled, ...splitInterval(s?.interval_minutes ?? 1440) });
-  schedOpen.value = true;
-}
+const tab = ref<"bills" | "alerts">("bills");
+const f = reactive({ q: "", customer: "", factory_code: "" });
+const meta = ref<any>(null);
+const current = ref<OrderBill | null>(null);
+const detail = ref<(OrderBill & { lines: OrderLine[]; state: BillState }) | null>(null);
+const linesLoading = ref(false);
+const syncBillNo = ref("");
+const syncing = ref<"" | "one" | "compare" | "rebuild">("");
 
-async function saveSched() {
-  const minutes = form.amount * unitMinutes(form.unit);
-  const min = sched.value?.min_interval ?? 10;
-  const max = sched.value?.max_interval ?? 10080;
-  if (minutes < min || minutes > max) {
-    ElMessage.error(t("orders.sched.intervalHint", { min }));
-    return;
-  }
-  savingSched.value = true;
-  try {
-    sched.value = await api.saveOrderSyncSchedule({ enabled: form.enabled, interval_minutes: minutes });
-    ElMessage.success(t("common.saved"));
-    schedOpen.value = false;
-  } finally {
-    savingSched.value = false;
-  }
-}
+const { items, state, load, onSize } = usePaged<OrderBill>((q) => api.orders({ ...f, ...q }));
 
-const { items, state, load, onSize } = usePaged<any>((q) => api.orders({ ...f, ...q }));
+const af = reactive({ status: "OPEN", alert_type: "", bill_no: "" });
+const alerts = usePaged<any>((q) => api.orderAlerts({ ...af, ...q }));
+const loadAlerts = (p?: number) => alerts.load(p);
 
-function statusText(s: string) {
-  return (s || "").split(",").map((x) => t(`orders.st${x}`)).join(" / ");
-}
-
-async function select(row: any) {
+async function select(row: OrderBill | null) {
   current.value = row;
   if (!row) return;
+  await loadLines(row.bill_no);
+}
+
+async function loadLines(billNo: string) {
   linesLoading.value = true;
   try {
-    lines.value = await api.orderLines(row.bill_no);
+    detail.value = await api.orderLines(billNo);
+  } catch {
+    detail.value = null;
   } finally {
     linesLoading.value = false;
   }
 }
 
 async function refresh() {
-  [meta.value, sched.value] = await Promise.all([api.orderMeta(), api.orderSyncSchedule()]);
-  await load(1);
+  meta.value = await api.orderMeta();
+  await load();
+  if (current.value) await loadLines(current.value.bill_no);
+  if (tab.value === "alerts") await loadAlerts();
 }
 
-async function syncAll() {
-  syncing.value = "all";
-  try {
-    const r: any = await api.syncOrders();
-    ElMessage.success(t("orders.syncedAll", { bills: r.bills, rows: r.rows }));
-    await refresh();
-  } finally {
-    syncing.value = "";
-  }
-}
-
-async function syncOne() {
-  const no = syncBillNo.value.trim();
+async function syncOne(bill?: string) {
+  const no = (bill ?? syncBillNo.value).trim();
   if (!no) return;
   syncing.value = "one";
   try {
-    const r: any = await api.syncOrders(no);
-    ElMessage.success(r.removed ? t("orders.syncedRemoved", { bill: no }) : t("orders.syncedOne", { bill: no, rows: r.rows }));
+    const r: any = await api.syncOrder(no);
+    const msg = t(`orders.outcome.${r.outcome}`, { bill: no, rows: r.rows, status: r.doc_status || "—" });
+    if (r.outcome === "REPLACED") ElMessage.success(msg);
+    else ElMessage.warning({ message: msg, duration: 6000, showClose: true });
     await refresh();
   } finally {
     syncing.value = "";
   }
 }
 
+async function compareNow() {
+  syncing.value = "compare";
+  try {
+    const r: any = await api.compareOrders();
+    if (r.skipped) ElMessage.info(t("orders.compareSkipped"));
+    else ElMessage.success(t("orders.compareDone", { replaced: r.replaced, removed: r.removed, rows: r.rows }));
+    await refresh();
+  } finally {
+    syncing.value = "";
+  }
+}
+
+async function rebuild() {
+  try {
+    await ElMessageBox.confirm(t("orders.rebuildConfirm"), t("orders.rebuild"), { type: "warning" });
+  } catch {
+    return;
+  }
+  syncing.value = "rebuild";
+  try {
+    const r: any = await api.rebuildOrders();
+    ElMessage.success(t("orders.rebuildDone", { bills: r.bills, rows: r.rows }));
+    await refresh();
+  } finally {
+    syncing.value = "";
+  }
+}
+
+async function fillAttach(row: OrderLine) {
+  let value: string;
+  try {
+    const r = await ElMessageBox.prompt(t("orders.attachFillHint"), t("orders.attachFillTitle", { bill: row.bill_no, seq: row.seq }), {
+      inputValue: row.attach_manual || "",
+      inputValidator: (v: string) => (!!v && !!v.trim() && v.trim().length <= 64) || t("orders.attachInvalid"),
+    });
+    value = (r as { value: string }).value.trim();
+  } catch {
+    return;
+  }
+  await api.fillAttach(row.bill_no, row.seq, value);
+  ElMessage.success(t("common.saved"));
+  meta.value = await api.orderMeta();
+  await loadLines(row.bill_no);
+}
+
+const mapDlg = reactive<{ open: boolean; alert: any; lines: OrderLine[]; target: number | undefined; note: string; saving: boolean }>({
+  open: false, alert: null, lines: [], target: undefined, note: "", saving: false,
+});
+
+async function handle(row: any, action: string) {
+  if (action === "MAP") {
+    const r: any = await api.orderLines(row.bill_no);
+    Object.assign(mapDlg, { open: true, alert: row, lines: (r.lines || []).filter((l: OrderLine) => l.seq !== row.seq), target: undefined, note: "" });
+    return;
+  }
+  let note = "";
+  try {
+    if (action === "VOID") {
+      const r = await ElMessageBox.prompt(t("orders.voidHint"), t("orders.alertActions.VOID"), {
+        inputType: "textarea",
+        inputPlaceholder: t("common.reasonPlaceholder"),
+        inputValidator: (v: string) => (!!v && !!v.trim() && v.trim().length <= 500) || t("orders.reasonRequired"),
+      });
+      note = (r as { value: string }).value.trim();
+    } else {
+      await ElMessageBox.confirm(t(`orders.actionHint.${action}`, { bill: row.bill_no }), t(`orders.alertActions.${action}`), { type: "warning" });
+    }
+  } catch {
+    return;
+  }
+  await api.handleOrderAlert(row.id, { action, note: note || undefined });
+  ElMessage.success(t("common.done"));
+  await refresh();
+  await loadAlerts();
+}
+
+async function submitMap() {
+  if (!mapDlg.alert || !mapDlg.target) return;
+  mapDlg.saving = true;
+  try {
+    await api.handleOrderAlert(mapDlg.alert.id, { action: "MAP", target_seq: mapDlg.target, note: mapDlg.note.trim() || undefined });
+    ElMessage.success(t("common.done"));
+    mapDlg.open = false;
+    await refresh();
+    await loadAlerts();
+  } finally {
+    mapDlg.saving = false;
+  }
+}
+
+watch(tab, (v) => {
+  if (v === "alerts") loadAlerts(1);
+});
+
 /**
- * 进入页面先显示现有快照；总部只在新开 / 刷新页面或重新登录后第一次进入时自动全量同步一次，
- * 之后在系统内切换回来不再自动同步（失败时快照不动，提示由请求层弹出，也不再自动重试）。
+ * 进入页面先显示现有快照，同时触发一次进页同步（后台比对同步，立即返回）；
+ * 本页面、本次登录只触发一次，稍后刷新一次列表以显示同步结果。
  */
 onMounted(async () => {
+  if (route.query.tab === "alerts") tab.value = "alerts";
   await refresh();
-  if (store.isAdmin && !syncing.value && firstSyncThisLogin("orders", store.token)) await syncAll();
+  if (firstSyncThisLogin("orders", store.token)) {
+    const r: any = await api.pageSyncOrders().catch(() => null);
+    if (r?.started) setTimeout(() => refresh().catch(() => undefined), 4000);
+  }
 });
 </script>
 
 <style scoped>
-.meta { display: flex; gap: 24px; flex-wrap: wrap; align-items: center; font-size: 13px; padding: 12px 20px; }
+.meta { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; font-size: 13px; padding: 12px 20px; }
 .w200 { width: 200px; }
+.w-full { width: 100%; }
 .toolbar .w-search { width: 280px; }
-.sched { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; }
-.sched .el-icon { font-size: 16px; }
-.ok { color: var(--el-color-success); }
-.bad { color: var(--el-color-danger); }
-.interval { display: flex; gap: 8px; }
-.interval .unit { width: 100px; }
-.hint { width: 100%; margin-top: 4px; }
+.tabs { margin-bottom: -16px; }
+.badge { margin-left: 6px; vertical-align: top; }
 .ml { margin-left: 6px; }
 .mb { margin-bottom: 12px; }
 .zero { color: var(--app-muted); }
+.warn { color: var(--el-color-warning); }
+.arrow { margin: 0 6px; color: var(--app-muted); }
+.attach { display: flex; align-items: center; gap: 6px; }
+:deep(.tags) { display: flex; flex-wrap: wrap; gap: 4px; }
 .el-col { margin-bottom: 16px; }
 /* 宽屏左右两栏铺满剩余高度，各自在卡片内滚动 */
 @media (min-width: 1200px) {

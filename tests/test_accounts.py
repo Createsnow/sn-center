@@ -38,7 +38,13 @@ def test_mes_account_cannot_login_page_and_secret_once(w, api, sql):
     assert r.code == "USER_MES_FACTORY_REQUIRED", "MES 接口账户须绑「对接 MES = 是」的组织"
     w.enable_mes(org)
     e = emp("M")
-    r = ok(api.post("/api/users", m(emp_no=e, name="M", role="mes", factory_code=org, ip_whitelist="127.0.0.1, 10.0.0.0/8"), w.admin))
+    r = ok(
+        api.post(
+            "/api/users",
+            m(emp_no=e, name="M", role="mes", factory_code=org, ip_whitelist="127.0.0.1, 10.0.0.0/8"),
+            w.admin,
+        )
+    )
     assert r["secret"] and r["role"] == "mes"
     lst = ok(api.get(f"/api/users?q={e}", w.admin))["items"][0]
     assert "secret" not in lst and lst["ip_whitelist"] == "127.0.0.1,10.0.0.0/8"
@@ -52,7 +58,9 @@ def test_mes_ip_whitelist(w, api):
     org = w.org(uid("O")[:10])
     w.enable_mes(org)
     e = emp("M")
-    r = ok(api.post("/api/users", m(emp_no=e, name="M", role="mes", factory_code=org, ip_whitelist="10.9.9.9"), w.admin))
+    r = ok(
+        api.post("/api/users", m(emp_no=e, name="M", role="mes", factory_code=org, ip_whitelist="10.9.9.9"), w.admin)
+    )
     x = api.post("/api/mes/v1/auth/token", m(empNo=e, secret=r["secret"]), None)
     assert (x.status, x.code) == (403, "IP_NOT_ALLOWED")
 
@@ -76,8 +84,14 @@ def test_org_sync_keeps_code_and_marks_disabled(w, api, sql):
     w.org(code, "新名", enabled=False)
     assert sql.scalar("SELECT enabled FROM sn_factory WHERE factory_code = %s", code) == 0
     q = emp()
-    assert api.post("/api/users", m(emp_no=q, name="x", role="factory_operator", factory_code=code, password="Pass1234"),
-                    w.admin).code == "FACTORY_DISABLED"
+    assert (
+        api.post(
+            "/api/users",
+            m(emp_no=q, name="x", role="factory_operator", factory_code=code, password="Pass1234"),
+            w.admin,
+        ).code
+        == "FACTORY_DISABLED"
+    )
 
 
 def test_mes_enable_requires_test_and_disable_blocked(w, api, sql):

@@ -261,7 +261,8 @@ def acquire(cu: CurrentUser, factory_in: str | None, pi_in: str | None, request_
         try:
             batch_no = util.next_id("AQ")
             db.exec(
-                "INSERT INTO sn_acquire_batch(batch_no, factory_code, pi_no, request_no, mes_org, status, qty, created_by, "
+                "INSERT INTO sn_acquire_batch(batch_no, factory_code, pi_no, request_no, mes_org, status, qty, "
+                "created_by, "
                 "created_at) VALUES (%s,%s,%s,%s,%s,%s,0,%s,%s)",
                 batch_no,
                 factory,
@@ -292,7 +293,8 @@ def acquire(cu: CurrentUser, factory_in: str | None, pi_in: str | None, request_
             )
             if ids:
                 db.exec(
-                    f"UPDATE sn_item SET acquire_batch_no = %s, updated_at = %s WHERE id IN ({','.join(['%s'] * len(ids))})",
+                    "UPDATE sn_item SET acquire_batch_no = %s, updated_at = %s WHERE id IN "
+                    f"({','.join(['%s'] * len(ids))})",
                     b["batch_no"],
                     util.now(),
                     *ids,

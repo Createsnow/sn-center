@@ -14,7 +14,7 @@ export const MENU = [
     { path: "/rules", title: "nav.rules", icon: "SetUp", roles: ADMIN },
   ] },
   { group: "nav.groupFactory", items: [
-    { path: "/acquire", title: "nav.acquire", icon: "Printer", roles: ALL },
+    { path: "/acquire", title: "nav.acquire", icon: "Download", roles: ALL },
     { path: "/transfer", title: "nav.transfer", icon: "Switch", roles: ALL },
   ] },
   { group: "nav.groupQuery", items: [

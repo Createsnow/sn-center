@@ -87,7 +87,8 @@ def seed_if_empty() -> None:
         ):
             db.exec(
                 "INSERT IGNORE INTO sn_user(emp_no, name, role, factory_code, status, password_hash, must_change_pwd, "
-                "pwd_changed_at, created_by, created_at, updated_at) VALUES (%s,%s,%s,%s,'ACTIVE',%s,0,%s,'demo',%s,%s)",
+                "pwd_changed_at, created_by, created_at, updated_at) VALUES "
+                "(%s,%s,%s,%s,'ACTIVE',%s,0,%s,'demo',%s,%s)",
                 emp,
                 name,
                 role,

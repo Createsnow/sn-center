@@ -98,7 +98,8 @@ def require_super_admin(request: Request) -> CurrentUser:
 
 
 def mes_user(request: Request) -> CurrentUser:
-    """/api/mes/v1 的鉴权：错误用 MES 错误结构（401 TOKEN_EXPIRED / TOKEN_INVALID、403 IP_NOT_ALLOWED / ACCOUNT_DISABLED）。
+    """/api/mes/v1 的鉴权：错误用 MES 错误结构
+    （401 TOKEN_EXPIRED / TOKEN_INVALID、403 IP_NOT_ALLOWED / ACCOUNT_DISABLED）。
     MES 接口账户只限所绑生产组织；其他账户（查询员等）按可看范围，只能调只读接口。"""
     header = request.headers.get("Authorization")
     token = header[7:].strip() if header is not None and header[:7].lower() == "bearer " else ""

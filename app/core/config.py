@@ -86,7 +86,7 @@ class Settings:
 
     @property
     def app_name(self) -> str:
-        return self.get("APP_NAME", "多工厂 SN 防重管控")
+        return self.get("APP_NAME", "多生产组织 SN 防重管控")
 
     @property
     def production(self) -> bool:

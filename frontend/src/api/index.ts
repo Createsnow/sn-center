@@ -16,10 +16,11 @@ const get = <T = any>(url: string, params?: Q) => http.get<T, T>(url, { params: 
 const post = <T = any>(url: string, data?: unknown, silent = false) => http.post<T, T>(url, data, { silent });
 const put = <T = any>(url: string, data?: unknown) => http.put<T, T>(url, data);
 const del = <T = any>(url: string, params?: Q) => http.delete<T, T>(url, { params: clean(params) });
+const enc = encodeURIComponent;
 
 export const api = {
-  // 账户与登录
-  /** 带 X-SN-Client: web：页面登录，同一账户只在最后登录的页面有效（MES 不带，不受影响）。 */
+  // ---------------- 账户与登录
+  /** 带 X-SN-Client: web：页面登录，同一账户只在最后登录的页面有效。 */
   login: (emp_no: string, password: string) =>
     http.post<any, any>("/auth/login", { emp_no, password }, { headers: { "X-SN-Client": "web" } }),
   me: () => get("/auth/me"),
@@ -31,66 +32,97 @@ export const api = {
   disableUser: (id: number) => post(`/users/${id}/disable`),
   enableUser: (id: number) => post(`/users/${id}/enable`),
   resetPassword: (id: number, password: string) => post(`/users/${id}/reset-password`, { password }),
-  // 工厂
+  resetSecret: (id: number) => post(`/users/${id}/reset-secret`),
+
+  // ---------------- 生产组织与 MES 对接配置
   factories: () => get("/factories"),
   syncFactories: () => http.post("/factories/sync", null, { timeout: 0 }),
-  createFactory: (data: Q) => post("/factories", data),
-  renameFactory: (code: string, factory_name: string) => put(`/factories/${encodeURIComponent(code)}`, { factory_name }),
-  setFactoryEnabled: (code: string, enabled: boolean) => post(`/factories/${encodeURIComponent(code)}/${enabled ? "enable" : "disable"}`, {}),
-  // 生产订单快照
+  saveMesConfig: (code: string, data: Q) => put(`/factories/${enc(code)}/mes-config`, data),
+  testMes: (code: string, data: Q) => post(`/factories/${enc(code)}/mes-test`, data),
+  mesTogglePreview: (code: string) => get(`/factories/${enc(code)}/mes-toggle`),
+  toggleMes: (code: string, enabled: boolean) => post(`/factories/${enc(code)}/mes-toggle`, { enabled }),
+
+  // ---------------- 生产订单快照
   orders: (params?: Q) => get("/orders", params),
   orderMeta: () => get("/orders/meta"),
-  orderLines: (billNo: string) => get(`/orders/${encodeURIComponent(billNo)}/lines`),
+  orderLines: (billNo: string) => get(`/orders/${enc(billNo)}/lines`),
   orderCustomers: (q?: string) => get("/orders/customers", { q }),
-  orderPis: (params?: Q) => get("/orders/pis", params),
-  orderSyncSchedule: () => get("/orders/sync-schedule"),
-  saveOrderSyncSchedule: (data: { enabled: boolean; interval_minutes?: number }) => put("/orders/sync-schedule", data),
-  syncOrders: (bill_no?: string) => http.post("/orders/sync", bill_no ? { bill_no } : {}, { timeout: 0 }),
-  // 规则
+  orderTargets: (q?: string, limit?: number) => get("/orders/targets", { q, limit }),
+  syncOrder: (bill_no: string) => http.post<any, any>("/orders/sync", { bill_no }, { timeout: 0 }),
+  compareOrders: () => http.post<any, any>("/orders/compare", {}, { timeout: 0 }),
+  pageSyncOrders: () => post("/orders/page-sync", {}, true),
+  rebuildOrders: () => http.post<any, any>("/orders/rebuild", {}, { timeout: 0 }),
+  fillAttach: (bill_no: string, seq: number, value: string) => put("/orders/attach", { bill_no, seq, value }),
+  orderAlerts: (params?: Q) => get("/orders/alerts", params),
+  handleOrderAlert: (id: number, data: Q) => post(`/orders/alerts/${id}/handle`, data),
+
+  // ---------------- 规则
   rules: (params?: Q) => get("/rules", params),
   createRule: (data: Q) => post("/rules", data),
   updateRule: (id: number, data: Q) => put(`/rules/${id}`, data),
   deleteRule: (id: number) => del(`/rules/${id}`),
   previewRule: (data: Q) => post("/rules/preview", data, true),
-  effectiveRule: (pi: string) => get("/rules/effective", { pi }),
-  bindPiRule: (pi_no: string, rule_id: number) => put("/rules/pi-binding", { pi_no, rule_id }),
+  ruleOptions: (params: Q) => get("/rules/options", params),
+  selectLineRule: (data: Q) => post("/rules/line-select", data),
+  clearLineRule: (data: Q) => post("/rules/line-clear", data),
+  bindPiRule: (data: Q) => put("/rules/pi-binding", data),
   unbindPiRule: (pi: string) => del("/rules/pi-binding", { pi }),
-  // 生成与分配
-  genPiContext: (params: { pi?: string; bill_no?: string }) => get("/generate/pi-context", params),
-  genPiPreview: (data: Q, silent = false) => post("/generate/pi-preview", data, silent),
-  genRulePlan: (data: Q) => post("/generate/rule-plan", data, true),
-  generatePi: (data: Q) => post("/generate/pi", data),
-  genJob: (id: number) => get(`/generate/jobs/${id}`),
-  genJobs: (params?: Q) => get("/generate/jobs", params),
-  genBatch: (batch: string) => get(`/generate/batches/${encodeURIComponent(batch)}`),
-  cancelGen: (batch: string) => post(`/generate/batches/${encodeURIComponent(batch)}/cancel`, {}),
-  revokeBatch: (batch: string, reason: string) => post(`/generate/batches/${encodeURIComponent(batch)}/revoke`, { reason }),
+  customerTemplate: (data: Q) => post("/rules/customer-template", data),
+  bindCustomerRule: (data: Q) => post("/rules/customer-binding", data),
+  unbindCustomerRule: (customer: string) => del("/rules/customer-binding", { customer }),
+
+  // ---------------- 生成与分配
+  genPis: (params?: Q) => get("/generate/pis", params),
+  genContext: (params: { pi?: string; bill_no?: string }) => get("/generate/context", params),
+  genPreview: (data: Q, silent = false) => post("/generate/preview", data, silent),
+  genRun: (token: string) => post("/generate/run", { token }),
+  genJobs: (pi: string, limit?: number) => get("/generate/jobs", { pi, limit }),
+  genProgress: (batch: string) => get(`/generate/batches/${enc(batch)}`),
+  cancelGen: (batch: string) => post(`/generate/batches/${enc(batch)}/cancel`, {}),
+  revokeGen: (batch: string, reason: string) => post(`/generate/batches/${enc(batch)}/revoke`, { reason }),
+  allocPreview: (data: Q) => post("/generate/alloc-preview", data),
   allocate: (data: Q) => post("/generate/allocate", data),
-  allocatePi: (pi_no: string) => post("/generate/pi-allocate", { pi_no }),
-  // 领取与打印
+
+  // ---------------- 交付批次与推送
+  deliveryBatches: (params?: Q) => get("/delivery/batches", params),
+  deliveryBatch: (batchNo: string) => get(`/delivery/batches/${enc(batchNo)}`),
+  deliveryBatchItems: (batchNo: string, params?: Q) => get(`/delivery/batches/${enc(batchNo)}/items`, params),
+  confirmBatch: (batchNo: string, reason: string, basis: string) => post(`/delivery/batches/${enc(batchNo)}/confirm`, { reason, basis }),
+  voidBatch: (batchNo: string, reason: string, basis: string) => post(`/delivery/batches/${enc(batchNo)}/void`, { reason, basis }),
+  resumePush: (factory_code: string, key: string) => post("/delivery/resume", { factory_code, key }),
+  remainingPush: (factory_code: string, key: string) => get("/delivery/remaining", { factory_code, key }),
+  deliveryAlerts: (params?: Q) => get("/delivery/alerts", params),
+  handleDeliveryAlert: (id: number, action: string, note: string) => post(`/delivery/alerts/${id}/handle`, { action, note }),
+
+  // ---------------- 页面领取
   acquirePis: (params?: Q) => get("/acquire/pis", params),
+  acquirePreview: (params: Q) => get("/acquire/preview", params),
   acquireSegments: (params?: Q) => get("/acquire/segments", params),
   take: (data: Q, silent = false) => post("/acquire/take", data, silent),
-  print: (data: Q, silent = false) => post("/acquire/print", data, silent),
-  prints: (params?: Q) => get("/acquire/prints", params),
-  batches: (params?: Q) => get("/acquire/batches", params),
-  batchItems: (batchNo: string, params?: Q) => get(`/acquire/batches/${encodeURIComponent(batchNo)}/items`, params),
-  // 转厂
-  // 空物料（material_code = ""）是一个真实的物料分组，不能被 clean 去掉
-  transferCandidates: (params: Q) =>
-    http.get<any, any>("/transfers/candidates", { params: { ...clean(params), ...(params.material_code === "" ? { material_code: "" } : {}) } }),
-  transferTargets: (q?: string) => get("/transfers/targets", { q }),
-  applyTransfer: (data: Q) => post("/transfers", data),
-  directTransfer: (data: Q) => post("/transfers/direct", data),
-  approveTransfer: (id: number, note?: string) => post(`/transfers/${id}/approve`, { note }),
-  rejectTransfer: (id: number, note?: string) => post(`/transfers/${id}/reject`, { note }),
-  withdrawTransfer: (id: number) => post(`/transfers/${id}/withdraw`),
-  transfers: (params?: Q) => get("/transfers", params),
-  transferItems: (id: number, params?: Q) => get(`/transfers/${id}/items`, params),
-  transfer: (id: number) => get(`/transfers/${id}`),
-  // 查询与留痕
+  acquireBatches: (params?: Q) => get("/acquire/batches", params),
+  acquireBatchItems: (batchNo: string, params?: Q) => get(`/acquire/batches/${enc(batchNo)}/items`, params),
+
+  // ---------------- 转单 / 转组织
+  billTransferPreview: (data: Q) => post("/transfers/bill/preview", data),
+  billTransfer: (data: Q) => post("/transfers/bill", data),
+  billTransfers: (params?: Q) => get("/transfers/bill", params),
+  billTransferOne: (id: number) => get(`/transfers/bill/${id}`),
+  billTransferItems: (id: number, params?: Q) => get(`/transfers/bill/${id}/items`, params),
+  orgCandidates: (data: Q) => post("/transfers/org/candidates", data),
+  orgApply: (data: Q) => post("/transfers/org", data),
+  orgDirect: (data: Q) => post("/transfers/org/direct", data),
+  orgTransfers: (params?: Q) => get("/transfers/org", params),
+  orgTransfer: (id: number) => get(`/transfers/org/${id}`),
+  orgTransferItems: (id: number, params?: Q) => get(`/transfers/org/${id}/items`, params),
+  approveOrg: (id: number, note?: string) => post(`/transfers/org/${id}/approve`, { note }),
+  rejectOrg: (id: number, note?: string) => post(`/transfers/org/${id}/reject`, { note }),
+  withdrawOrg: (id: number) => post(`/transfers/org/${id}/withdraw`),
+
+  // ---------------- 查询与留痕
   items: (params?: Q) => get("/sn", params),
+  snExportCheck: (params?: Q) => get("/sn/export-check", params),
   audits: (params?: Q) => get("/audits", params),
+  auditExportCheck: (params?: Q) => get("/audits/export-check", params),
   auditMeta: () => get("/audits/meta"),
   dashboard: () => get("/dashboard"),
 };
@@ -104,10 +136,9 @@ function withQuery(path: string, params: Q) {
 
 const base = import.meta.env.VITE_API_BASE_URL || "/api";
 export const urls = {
-  printFile: (printNo: string, format = "xlsx") =>
-    withQuery(`${base}/acquire/prints/${encodeURIComponent(printNo)}/file`, { format }),
-  batchFile: (batchNo: string, format = "xlsx") =>
-    withQuery(`${base}/acquire/batches/${encodeURIComponent(batchNo)}/file`, { format }),
+  acquireFile: (batchNo: string, format = "xlsx") => withQuery(`${base}/acquire/batches/${enc(batchNo)}/file`, { format }),
+  deliveryExport: (batchNo: string, format = "xlsx") => withQuery(`${base}/delivery/batches/${enc(batchNo)}/export`, { format }),
+  outList: (id: number, format = "xlsx") => withQuery(`${base}/transfers/org/${id}/out-list`, { format }),
   snExport: (params: Q) => withQuery(`${base}/sn/export`, params),
   auditExport: (params: Q) => withQuery(`${base}/audits/export`, params),
 };

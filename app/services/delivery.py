@@ -231,7 +231,8 @@ def _insert_batch(
     )
     db.exec_many(
         "INSERT INTO sn_delivery_item(batch_id, line_no, item_id, sn, rev, push_type, pi_no, bill_no, bill_seq, "
-        "material_code, customer_code, seq_pi_no, seq_dec, to_factory) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+        "material_code, customer_code, seq_pi_no, seq_dec, to_factory) VALUES "
+        "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
         [(bid, i + 1, *r) for i, r in enumerate(rows)],
     )
     return db.one("SELECT * FROM sn_delivery_batch WHERE id = %s", bid)
@@ -529,7 +530,8 @@ def apply_receipt(cu: CurrentUser, batch_no: str, r: dict, method: str) -> Appli
 
 def _fail(b: dict, code: str, reason: str, voidable: bool, now) -> None:
     db.exec(
-        "UPDATE sn_delivery_batch SET result = %s, fail_code = %s, fail_reason = %s, voidable = %s, push_state = 'IDLE', "
+        "UPDATE sn_delivery_batch SET result = %s, fail_code = %s, fail_reason = %s, voidable = %s, push_state = "
+        "'IDLE', "
         "next_retry_at = NULL, updated_at = %s WHERE id = %s",
         FAILED,
         code,
@@ -905,7 +907,8 @@ def _drive(t: dict) -> None:
         if nxt is None:
             other = (
                 db.count(
-                    "SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND factory_code = %s AND status IN ('TO_PUSH','PUSHED','ACQUIRED') "
+                    "SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND factory_code = %s AND status IN "
+                    "('TO_PUSH','PUSHED','ACQUIRED') "
                     "AND delivery_mode IN ('PULL','PAGE')",
                     t["task_key"],
                     t["factory_code"],
@@ -1263,7 +1266,8 @@ def handle_alert(cu: CurrentUser, alert_id: int, action: str | None, note: str |
         else:
             raise biz(ErrorCode.ALERT_ACTION_INVALID)
         db.exec(
-            "UPDATE sn_delivery_alert SET status = 'CLOSED', close_action = %s, closed_by = %s, closed_at = %s, note = %s "
+            "UPDATE sn_delivery_alert SET status = 'CLOSED', close_action = %s, closed_by = %s, closed_at = %s, note "
+            "= %s "
             "WHERE id = %s",
             act,
             cu.emp_no,
@@ -1643,7 +1647,8 @@ def list_batches(
             args.append(util.trim(v))
     total = db.count("SELECT COUNT(*) FROM sn_delivery_batch" + where, *args)
     rows = db.all(
-        f"SELECT {', '.join(BATCH_FIELDS)} FROM sn_delivery_batch{where} ORDER BY created_at DESC, id DESC LIMIT %s, %s",
+        f"SELECT {', '.join(BATCH_FIELDS)} FROM sn_delivery_batch{where} ORDER BY created_at DESC, id DESC LIMIT %s, "
+        "%s",
         *args,
         page.offset,
         page.size,

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """生成 src/locales/{zh-CN,en,vi}.json 与 errors.*.json。
 
-UI 词条来自 ui_messages.py；错误码中文来自后端 ErrorCode.java，英 / 越来自 error_messages.py。
+UI 词条来自 ui_messages.py（公共）与 ui/*.py（各页面）；错误码中文来自后端 app/core/errors.py，英 / 越来自 error_messages.py。
 缺译或占位符不一致时直接失败。用法：python3 frontend/scripts/gen_locales.py
 """
 import json
@@ -11,7 +11,7 @@ import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-from ui_messages import M  # noqa: E402
+from ui_messages import M as COMMON  # noqa: E402
 from error_messages import E  # noqa: E402
 
 ROOT = HERE.parent
@@ -33,8 +33,22 @@ def nest(flat):
     return out
 
 
+def load_ui(problems):
+    """公共词条 + scripts/ui/*.py 各页面词条；键重复时报错。"""
+    merged = dict(COMMON)
+    for f in sorted((HERE / "ui").glob("*.py")):
+        ns = {}
+        exec(compile(f.read_text("utf-8"), str(f), "exec"), ns)
+        for key, vals in ns["M"].items():
+            if key in merged:
+                problems.append(f"ui {key}: duplicated in {f.name}")
+            merged[key] = vals
+    return merged
+
+
 def main():
     problems = []
+    M = load_ui(problems)
     ui = {lang: {} for lang in LANGS}
     for key, vals in M.items():
         phs = [sorted(PH.findall(v)) for v in vals]

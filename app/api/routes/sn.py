@@ -19,7 +19,8 @@ def _filter(**kw) -> query.Filter:
 
 @router.get(
     "",
-    summary="SN 明细；status 另可为 SUSPENDED（暂停交付）；seq_from / seq_to 按 PI 自己的流水范围查（须带 pi），附 range 小计",
+    summary="SN 明细；status 另可为 SUSPENDED（暂停交付）；"
+    "seq_from / seq_to 按 PI 自己的流水范围查（须带 pi），附 range 小计",
 )
 def sn_list(
     cu: UserDep,

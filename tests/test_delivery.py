@@ -30,11 +30,15 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
     assert len({b["batch_no"] for b in batches}) == 3
     assert {b["result"] for b in batches} == {"SUCCESS"}
     assert {b["confirm_method"] for b in batches} == {"PUSH_RESPONSE"}
-    assert sql.count(
-        "SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED' AND mes_holder = %s AND delivery_mode = 'PUSH'",
-        pi,
-        org,
-    ) == 12
+    assert (
+        sql.count(
+            "SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED' AND mes_holder = %s "
+            "AND delivery_mode = 'PUSH'",
+            pi,
+            org,
+        )
+        == 12
+    )
     # 报文：逐枚带单据编号、序号、当前 PI、流水归属 PI；十进制流水、长度按字符串
     item = MES.received[-1]["batch"]["items"][0]
     assert item["billNo"] == bill and item["billSeq"] == 1 and item["pi"] == pi and item["serialPi"] == pi
@@ -67,7 +71,10 @@ def test_retry_then_exhaust_then_resume_with_same_batch(w, sql):
     attempts = [x["headers"]["x-sn-attempt"] for x in MES.received if x["batch"].get("batchNo") == b[1]["batch_no"]]
     assert attempts == ["1", "2", "3", "4"]
     # 号保持冻结：不能页面领取
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE delivery_batch_no = %s AND status = 'TO_PUSH'", b[1]["batch_no"]) == 5
+    assert (
+        sql.count("SELECT COUNT(*) FROM sn_item WHERE delivery_batch_no = %s AND status = 'TO_PUSH'", b[1]["batch_no"])
+        == 5
+    )
     rem = ok(w.api.get(f"/api/delivery/remaining?factory_code={org}&key={pi}", w.admin))
     assert rem["pushes"] == 2, "剩余 = 1 个未确认批次 + 2 枚未入批折 1 次"
     MES.behavior.pop(org)
@@ -82,8 +89,13 @@ def test_reject_marks_failed_and_resume_after_fix(w, sql):
     org, pi, bill = setup_pi(w, qty=4, batch_size=5)
     MES.behavior[org] = lambda batch, h: (
         200,
-        {"schemaVersion": "1.0", "batchNo": batch["batchNo"], "outcome": "REJECTED", "rejectCode": "FIELD_TOO_LONG",
-         "rejectMessage": "materialCode 超长"},
+        {
+            "schemaVersion": "1.0",
+            "batchNo": batch["batchNo"],
+            "outcome": "REJECTED",
+            "rejectCode": "FIELD_TOO_LONG",
+            "rejectMessage": "materialCode 超长",
+        },
     )
     w.allocate(pi)
     w.push()
@@ -156,7 +168,12 @@ def test_pull_returns_same_unconfirmed_batch_until_receipt(w, sql):
     assert (rc["batchResult"], rc["firstConfirmation"]) == ("SUCCESS", True)
     again = ok(w.mes_receipt(token, pushed["batch_no"], receipt))
     assert again["firstConfirmation"] is False, "已确认的只存档"
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE delivery_batch_no = %s AND delivery_mode = 'PULL'", pushed["batch_no"]) == 5
+    assert (
+        sql.count(
+            "SELECT COUNT(*) FROM sn_item WHERE delivery_batch_no = %s AND delivery_mode = 'PULL'", pushed["batch_no"]
+        )
+        == 5
+    )
     # 再取：建一个拉取批次
     r3 = ok(w.mes_next(token))
     assert r3["newlyCreated"] is True and r3["batchSource"] == "PULL" and r3["batch"]["count"] == 2
@@ -201,7 +218,9 @@ def test_void_returns_items_to_pool_and_rebatches(w, sql):
         "BATCH_BASIS_REQUIRED"
     )
     ok(w.api.post(f"/api/delivery/batches/{b['batch_no']}/void", m(reason="报文过大", basis="MES 书面确认"), w.admin))
-    assert sql.scalar("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND delivery_batch_no IS NULL AND rev = 1", pi) == 6
+    assert (
+        sql.scalar("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND delivery_batch_no IS NULL AND rev = 1", pi) == 6
+    )
     w.push()
     rows = sql.all("SELECT qty, result FROM sn_delivery_batch WHERE pi_no = %s AND id <> %s ORDER BY id", pi, b["id"])
     assert rows == [{"qty": 4, "result": "SUCCESS"}, {"qty": 2, "result": "SUCCESS"}], "按调小后的单批枚数重新组批"
@@ -218,7 +237,10 @@ def test_manual_confirm_stops_retry(w, sql):
     ok(w.api.post(f"/api/delivery/batches/{b['batch_no']}/confirm", m(reason="MES 已入库", basis="邮件确认"), w.admin))
     b2 = sql.one("SELECT * FROM sn_delivery_batch WHERE id = %s", b["id"])
     assert (b2["result"], b2["confirm_method"], b2["push_state"]) == ("SUCCESS", "MANUAL", "IDLE")
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED' AND mes_holder = %s", pi, org) == 3
+    assert (
+        sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED' AND mes_holder = %s", pi, org)
+        == 3
+    )
 
 
 def test_mes_token_lock_after_failures(w, api, sql, monkeypatch):

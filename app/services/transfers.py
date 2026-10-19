@@ -232,7 +232,8 @@ def _move(
         db.exec(
             "UPDATE sn_item SET factory_code = %s, pi_no = %s, customer_code = %s, bill_no = %s, bill_seq = %s, "
             "material_code = %s, rev = %s, status = %s, push_type = %s, delivery_mode = %s, delivery_batch_no = NULL, "
-            "acquire_batch_no = NULL, transfer_id = NULL, applying_from = NULL, transfer_kind = %s, transfer_doc_no = %s, "
+            "acquire_batch_no = NULL, transfer_id = NULL, applying_from = NULL, transfer_kind = %s, transfer_doc_no "
+            "= %s, "
             "transfer_from_org = %s, updated_at = %s WHERE id = %s",
             new_org,
             t.pi,
@@ -286,10 +287,12 @@ def _move(
         )
     db.exec_many(
         "INSERT INTO sn_transfer_item(kind, transfer_id, item_id, sn, seq_pi_no, seq_dec, from_status, from_factory, "
-        "from_pi, from_customer, from_bill, from_seq, from_material, from_delivery_batch, from_acquire_batch, from_rev, "
+        "from_pi, from_customer, from_bill, from_seq, from_material, from_delivery_batch, from_acquire_batch, "
+        "from_rev, "
         "to_status, to_factory, to_pi, to_customer, to_bill, to_seq, to_material, to_rev) VALUES "
         "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) "
-        "ON DUPLICATE KEY UPDATE to_status = VALUES(to_status), to_factory = VALUES(to_factory), to_pi = VALUES(to_pi), "
+        "ON DUPLICATE KEY UPDATE to_status = VALUES(to_status), to_factory = VALUES(to_factory), to_pi = "
+        "VALUES(to_pi), "
         "to_customer = VALUES(to_customer), to_bill = VALUES(to_bill), to_seq = VALUES(to_seq), "
         "to_material = VALUES(to_material), to_rev = VALUES(to_rev), from_rev = VALUES(from_rev), "
         "from_delivery_batch = VALUES(from_delivery_batch), from_acquire_batch = VALUES(from_acquire_batch)",
@@ -298,8 +301,10 @@ def _move(
     for (no, seq), d in line_moves.items():
         if d:
             db.exec(
-                "INSERT INTO sn_line_count(bill_no, seq, material_code, own_generated, gen_count, alloc_count, updated_at) "
-                "VALUES (%s,%s,COALESCE((SELECT material_code FROM sn_prd_mo WHERE bill_no = %s AND seq = %s), ''),0,0,0,%s) "
+                "INSERT INTO sn_line_count(bill_no, seq, material_code, own_generated, gen_count, alloc_count, "
+                "updated_at) "
+                "VALUES (%s,%s,COALESCE((SELECT material_code FROM sn_prd_mo WHERE bill_no = %s AND seq = %s), "
+                "''),0,0,0,%s) "
                 "ON DUPLICATE KEY UPDATE bill_no = bill_no",
                 no,
                 seq,
@@ -707,7 +712,8 @@ def apply(cu: CurrentUser, r: OrgRequest) -> dict:
                 )
             )
         db.exec_many(
-            "INSERT INTO sn_transfer_item(kind, transfer_id, item_id, sn, seq_pi_no, seq_dec, from_status, from_factory, "
+            "INSERT INTO sn_transfer_item(kind, transfer_id, item_id, sn, seq_pi_no, seq_dec, from_status, "
+            "from_factory, "
             "from_pi, from_customer, from_bill, from_seq, from_material, from_delivery_batch, from_acquire_batch, "
             "from_rev) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
             rows,
@@ -974,7 +980,8 @@ def map_material(cu: CurrentUser, alert: dict, target_seq: int | None, note: str
         oc = db.one("SELECT * FROM sn_line_count WHERE bill_no = %s AND seq = %s FOR UPDATE", bill, old)
         if oc is not None:
             db.exec(
-                "INSERT INTO sn_line_count(bill_no, seq, material_code, own_generated, gen_count, alloc_count, updated_at) "
+                "INSERT INTO sn_line_count(bill_no, seq, material_code, own_generated, gen_count, alloc_count, "
+                "updated_at) "
                 "VALUES (%s,%s,%s,%s,%s,%s,%s) ON DUPLICATE KEY UPDATE material_code = VALUES(material_code), "
                 "own_generated = own_generated + VALUES(own_generated), gen_count = gen_count + VALUES(gen_count), "
                 "alloc_count = alloc_count + VALUES(alloc_count), updated_at = VALUES(updated_at)",
@@ -1001,7 +1008,8 @@ def map_material(cu: CurrentUser, alert: dict, target_seq: int | None, note: str
             .count(len(items))
             .why(note)
             .info(
-                f"alert={alert['id']} type=MATERIAL action=MAP seq {old} -> {target_seq} material={line['material_code']}"
+                f"alert={alert['id']} type=MATERIAL action=MAP seq {old} -> {target_seq} "
+                f"material={line['material_code']}"
             ),
         )
         changes.close_material_alert(cu, alert["id"], note)
