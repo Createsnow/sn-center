@@ -373,7 +373,7 @@ def list_bills(
     rows = db.all(
         "SELECT m.bill_no, MAX(m.customer_code) customer_code, MAX(m.po) po, MAX(m.pi) pi, MAX(m.org_code) org_code, "
         "MAX(m.org_name) org_name, SUM(FLOOR(m.qty)) total_qty, COUNT(*) line_count, "
-        "SUM(COALESCE(c.gen_count, 0)) generated, "
+        "SUM(COALESCE(c.gen_count, 0)) gen_sum, "
         "SUM(GREATEST(FLOOR(m.qty) - COALESCE(c.own_generated, 0), 0)) quota "
         "FROM sn_prd_mo m LEFT JOIN sn_line_count c ON c.bill_no = m.bill_no AND c.seq = m.seq"
         + where
@@ -393,7 +393,7 @@ def list_bills(
             "org_name": r["org_name"],
             "total_qty": int(r["total_qty"] or 0),
             "line_count": int(r["line_count"]),
-            "generated_qty": int(r["generated"] or 0),
+            "generated_qty": int(r["gen_sum"] or 0),
             "quota": int(r["quota"] or 0),
             **states.get(r["bill_no"], changes.EMPTY_STATE),
         }

@@ -41,7 +41,7 @@ def _pi_rows(q: str | None) -> list[dict]:
     return db.all(
         "SELECT m.pi, MAX(m.customer_code) customer_code, COUNT(DISTINCT m.bill_no) bills, "
         "GROUP_CONCAT(DISTINCT m.org_code ORDER BY m.org_code) orgs, SUM(FLOOR(m.qty)) total_qty, "
-        "SUM(COALESCE(c.gen_count, 0)) generated, SUM(GREATEST(FLOOR(m.qty) - COALESCE(c.own_generated, 0), 0)) quota, "
+        "SUM(COALESCE(c.gen_count, 0)) gen_sum, SUM(GREATEST(FLOOR(m.qty) - COALESCE(c.own_generated, 0), 0)) quota, "
         "MAX(m.bill_no) last_bill FROM sn_prd_mo m LEFT JOIN sn_line_count c ON c.bill_no = m.bill_no AND c.seq = m.seq"
         + where
         + " GROUP BY m.pi ORDER BY last_bill DESC LIMIT %s",
@@ -149,7 +149,7 @@ def pis(cu: CurrentUser, q: str | None, tab: str | None) -> dict:
             if interrupted:
                 status = PUSH_INTERRUPTED
             elif quota > 0:
-                status = PARTIAL if int(r["generated"] or 0) > 0 else TO_GENERATE
+                status = PARTIAL if int(r["gen_sum"] or 0) > 0 else TO_GENERATE
             elif pending > 0:
                 status = TO_ALLOCATE
             else:

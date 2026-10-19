@@ -7,6 +7,8 @@
 from __future__ import annotations
 
 import gzip
+import hashlib
+import hmac
 import itertools
 import json
 import os
@@ -234,7 +236,7 @@ class FakeMes:
                 batch = json.loads(raw or b"{}")
                 headers = {k.lower(): v for k, v in self.headers.items()}
                 fake.received.append({"org": org, "batch": batch, "headers": headers, "raw": raw})
-                if headers.get("authorization") != f"Bearer {fake.tokens.get(org)}":
+                if not fake.authorized(org, batch, headers, raw):
                     status, body = 401, {"schemaVersion": "1.0", "code": "UNAUTHORIZED", "message": "bad token"}
                 else:
                     beh = fake.behavior.get(org)
@@ -256,6 +258,15 @@ class FakeMes:
 
         self.server = ThreadingHTTPServer(("127.0.0.1", 0), H)
         threading.Thread(target=self.server.serve_forever, daemon=True).start()
+
+    def authorized(self, org: str, batch: dict, headers: dict, raw: bytes) -> bool:
+        """A：固定 Bearer 令牌；B：HMAC-SHA256 签名（timestamp \\n batchNo \\n hex(sha256(解压后的请求体))）。"""
+        secret = self.tokens.get(org)
+        if "x-sn-signature" in headers:
+            msg = f"{headers.get('x-sn-timestamp')}\n{batch.get('batchNo')}\n{hashlib.sha256(raw).hexdigest()}"
+            good = hmac.new((secret or "").encode(), msg.encode(), hashlib.sha256).hexdigest()
+            return hmac.compare_digest(good, headers["x-sn-signature"])
+        return headers.get("authorization") == f"Bearer {secret}"
 
     def url(self, org: str) -> str:
         return f"http://127.0.0.1:{self.server.server_address[1]}/mes/{org}"

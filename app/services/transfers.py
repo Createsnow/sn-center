@@ -134,6 +134,26 @@ def _summary(items: list[dict], bad: dict[int, str]) -> dict:
     }
 
 
+def _check_any(items: list[dict], ok: list[dict], bad: dict[int, str], scope: str | None = None) -> None:
+    """范围内一枚可转的都没有：单枚时说明原因；有不可转的列出原因；否则没有号。"""
+    if ok:
+        return
+    if scope == SCOPE_SINGLE and items:
+        raise biz(ErrorCode.TR_SN_NOT_TRANSFERABLE, sn=items[0]["sn"], reason=_REASON_TEXT.get(bad[items[0]["id"]], ""))
+    _raise_if_blocked(bad)
+    raise biz(ErrorCode.TR_NOTHING)
+
+
+def _check_any(items: list[dict], ok: list[dict], bad: dict[int, str], scope: str | None = None) -> None:
+    """范围内一枚可转的都没有：单枚时说明原因；有不可转的列出原因；否则没有号。"""
+    if ok:
+        return
+    if scope == SCOPE_SINGLE and items:
+        raise biz(ErrorCode.TR_SN_NOT_TRANSFERABLE, sn=items[0]["sn"], reason=_REASON_TEXT.get(bad[items[0]["id"]], ""))
+    _raise_if_blocked(bad)
+    raise biz(ErrorCode.TR_NOTHING)
+
+
 def _raise_if_blocked(bad: dict[int, str]) -> None:
     if not bad:
         return
@@ -488,7 +508,10 @@ def transfer_bill(cu: CurrentUser, req: BillRequest) -> dict:
             f"SELECT {ITEM_COLS} FROM sn_item WHERE id IN ({marks(len(ids))}) ORDER BY seq_pi_no, seq_dec FOR UPDATE",
             *ids,
         )
-        _raise_if_blocked(blocked(items, True))
+        bad = blocked(items, True)
+        ok = [x for x in items if x["id"] not in bad]
+        _check_any(items, ok, bad)
+        items = ok
         src = util.trim(req.from_bill)
         no = util.next_id("TB")
         tid = db.insert(
@@ -658,14 +681,7 @@ def apply(cu: CurrentUser, r: OrgRequest) -> dict:
         t = _check_org_target(r, items, factory, pi)
         bad = blocked(items, False)
         ok = [x for x in items if x["id"] not in bad]
-        if not ok:
-            if scope == SCOPE_SINGLE and items:
-                raise biz(
-                    ErrorCode.TR_SN_NOT_TRANSFERABLE,
-                    sn=items[0]["sn"],
-                    reason=_REASON_TEXT.get(bad[items[0]["id"]], ""),
-                )
-            raise biz(ErrorCode.TR_NOTHING)
+        _check_any(items, ok, bad, scope)
         tid, no = _insert_org(cu, MODE_APPLY, PENDING, factory, pi, scope, r, t, len(ok), reason)
         now = util.now()
         rows = []
@@ -768,14 +784,7 @@ def direct(cu: CurrentUser, r: OrgRequest) -> dict:
         t = _check_org_target(r, items, factory, pi)
         bad = blocked(items, False)
         ok = [x for x in items if x["id"] not in bad]
-        if not ok:
-            if scope == SCOPE_SINGLE and items:
-                raise biz(
-                    ErrorCode.TR_SN_NOT_TRANSFERABLE,
-                    sn=items[0]["sn"],
-                    reason=_REASON_TEXT.get(bad[items[0]["id"]], ""),
-                )
-            raise biz(ErrorCode.TR_NOTHING)
+        _check_any(items, ok, bad, scope)
         tid, no = _insert_org(cu, MODE_DIRECT, APPROVED, factory, pi, scope, r, t, len(ok), reason)
         db.exec("UPDATE sn_transfer SET decided_by = %s, decided_at = %s WHERE id = %s", cu.emp_no, util.now(), tid)
         moved = _move(cu, KIND_ORG, tid, no, ok, _org_targets(t, ok))
