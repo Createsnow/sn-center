@@ -1,4 +1,4 @@
-"""痕迹查询与导出。绑厂账户只看本厂相关的痕迹。时间范围默认最近 30 天，便于分区裁剪。
+"""痕迹查询与导出（F-21）。绑定生产组织的账户只看本组织相关的痕迹。时间范围默认最近 30 天（按账户显示时区的自然日），便于分区裁剪。
 
 查询的时间范围覆盖到已归档的痕迹时，同时查归档表（sn_audit_archive），结果标 archived，页面照常可查、可导出。
 """
@@ -24,11 +24,11 @@ HEADERS = [
     "来源",
     "动作",
     "结果",
-    "工厂",
+    "生产组织",
     "PI",
     "客户",
     "物料",
-    "来源订单",
+    "单据编号",
     "起始SN",
     "结束SN",
     "数量",
@@ -36,7 +36,7 @@ HEADERS = [
     "操作后状态",
     "批次号",
     "请求号",
-    "转厂单号",
+    "转单 / 转组织单号",
     "原因",
     "失败原因",
     "请求ID",
@@ -83,6 +83,7 @@ class Filter:
     result: str | None = None
     batch_no: str | None = None
     keyword: str | None = None
+    bill_no: str | None = None
 
 
 COLS = ", ".join(ROW_FIELDS)
@@ -117,15 +118,17 @@ def _source(sql: str, args: list, extra: str = "", extra_args: tuple = ()) -> tu
 
 
 def _where(cu: CurrentUser, f: Filter) -> tuple[str, list]:
-    to = f.date_to or util.today()
+    # 日期按账户显示时区的自然日，换算为 UTC 区间
+    off = timedelta(minutes=factories.tz_offset(cu.factories))
+    to = f.date_to or (util.now() + off).date()
     frm = f.date_from or to - timedelta(days=30)
     if frm > to:
         raise biz(ErrorCode.VALIDATION, detail="from > to")
     sql = " WHERE created_at >= %s AND created_at < %s"
-    args: list = [datetime.combine(frm, time()), datetime.combine(to + timedelta(days=1), time())]
+    args: list = [datetime.combine(frm, time()) - off, datetime.combine(to + timedelta(days=1), time()) - off]
     facs = cu.read_factories(f.factory_code)
     if facs is not None and cu.bound:
-        # 绑厂账户：本厂的痕迹，加上转入本厂的转厂痕迹（转厂痕迹记在转出厂名下）
+        # 绑定的账户：本组织的痕迹，加上转入本组织的转组织痕迹（记在转出组织名下）
         own, oa = factories.scope_sql(facs)
         into, ia = factories.scope_sql(facs, "to_factory")
         sql += (
@@ -144,6 +147,7 @@ def _where(cu: CurrentUser, f: Filter) -> tuple[str, list]:
         ("source", f.source),
         ("result", f.result),
         ("batch_no", f.batch_no),
+        ("bill_no", f.bill_no),
     ):
         if not util.blank(v):
             sql += f" AND {col} = %s"
@@ -174,22 +178,28 @@ def list_audits(cu: CurrentUser, f: Filter, page: util.Page) -> dict:
     return util.page_result([{**util.jrow(r, ROW_FIELDS), "archived": bool(r["archived"])} for r in rows], total, page)
 
 
-def check_exportable(cu: CurrentUser, f: Filter) -> None:
+def export_check(cu: CurrentUser, f: Filter) -> dict:
+    """导出前：超过上限（默认 20 万条）只导出前 N 条并提示。"""
     sql, args = _where(cu, f)
-    if _count(sql, args) > settings.audit_export_limit:
-        raise biz(ErrorCode.EXPORT_TOO_LARGE, max=settings.audit_export_limit)
+    n = _count(sql, args)
+    limit = settings.audit_export_limit
+    return {"limit": limit, "truncated": n > limit, "rows": min(n, limit)}
 
 
 def _rows(cu: CurrentUser, f: Filter) -> Iterator[list]:
     sql, args = _where(cu, f)
     last_id = 2**63 - 1
-    while True:
+    left = settings.audit_export_limit
+    while left > 0:
         # 归档的痕迹保留原 id，与在线表同一序列，可按 id 游标倒序连续读
         src, sargs = _source(sql, args, " AND id < %s", (last_id,))
         page = db.all(f"SELECT * FROM ({src}) u ORDER BY id DESC LIMIT 5000", *sargs)
         if not page:
             return
         for r in page:
+            if left <= 0:
+                return
+            left -= 1
             yield [util.fmt(r["created_at"])] + [r[c] for c in ROW_FIELDS[2:]]
             last_id = r["id"]
 

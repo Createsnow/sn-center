@@ -1,115 +1,65 @@
-"""生成与分配：只有总部。
+"""生成与分配（F-09、F-10、F-11 分配）：只有总部。"""
 
-生成只能按整张 PI（/generate/pi-preview → /generate/pi）：不提供按单张订单生成，
-避免绕开「有订单的生产组织未建档时整张 PI 不能生成」「按单据编号顺序占用额度」。
-"""
-
-from fastapi import APIRouter, Query
+from fastapi import APIRouter
 
 from app.api.deps import AdminDep
 from app.schemas.common import OptInt
-from app.schemas.sn import AllocateIn, ManualRuleIn, PiAllocateIn, PiGenerateIn, PiPreviewIn, RevokeIn, RulePlanIn
-from app.services import generate, rules
+from app.schemas.gen import AllocateIn, PreviewIn, RevokeIn, RunIn
+from app.services import generate, workbench
 
-router = APIRouter(tags=["generate"])
-
-
-@router.get("/generate/context", summary="订单生成上下文：物料行、额度、「工厂 + PI」汇总、规则、计数器、任务")
-def gen_context(cu: AdminDep, bill_no: str = Query(...)) -> dict:
-    return generate.context(bill_no)
+router = APIRouter(prefix="/generate", tags=["generate"])
 
 
 @router.get(
-    "/generate/pi-context",
-    summary="按 PI 的生成上下文：PI 流水与规则、各订单额度 / 已生成 / 已分配 / 待分配、任务与分配记录；"
-    "只给单据时取其 PI",
+    "/pis", summary="PI 列表：状态、行上按钮依据、上方汇总；tab = ALL / TO_GENERATE / GENERATING / TO_ALLOCATE / DONE"
 )
-def gen_pi_context(cu: AdminDep, pi: str | None = None, bill_no: str | None = None) -> dict:
-    return generate.pi_context(pi, bill_no)
+def gen_pis(cu: AdminDep, q: str | None = None, tab: str | None = None) -> dict:
+    return workbench.pis(cu, q, tab)
 
 
-@router.post(
-    "/generate/pi-preview",
-    summary="按 PI 预演：数量按单据号顺序占用各订单额度，号段接续；"
-    "每张订单各返回一个预演令牌，凭这些令牌调用 /generate/pi",
-)
-def gen_pi_preview(body: PiPreviewIn, cu: AdminDep) -> dict:
-    return generate.pi_preview(cu, body.pi_no, body.qty, body.rule_id, _manual(body.manual))
+@router.get("/context", summary="PI 详情（只给单据时取其 PI）")
+def gen_context(cu: AdminDep, pi: str | None = None, bill_no: str | None = None) -> dict:
+    return workbench.context(cu, pi, bill_no)
 
 
-@router.post(
-    "/generate/rule-plan",
-    summary="选模板 / 手动设置时的即时判断：本 PI 将用哪一版（沿用时另出派生版，后缀加 _v版本号）、第一个号；"
-    "手动设置的参数不合法或前缀冲突时报错",
-)
-def gen_rule_plan(body: RulePlanIn, cu: AdminDep) -> dict:
-    return generate.rule_plan(body.pi_no, body.rule_id, _manual(body.manual))
+@router.post("/preview", summary="预演：范围、数量 → 起止号、各物料行数量与号段；不能生成时逐行列出原因")
+def gen_preview(body: PreviewIn, cu: AdminDep) -> dict:
+    lines = [x.model_dump() for x in body.lines or []]
+    return generate.preview(cu, body.pi_no, body.scope, body.bills, lines, body.qty)
 
 
-def _manual(m: ManualRuleIn | None) -> rules.ManualIn | None:
-    return None if m is None else rules.ManualIn(m.prefix, m.seq_len, m.suffix, m.base)
+@router.post("/run", summary="凭预演令牌生成：数量不大时当场完成，否则返回 RUNNING，轮询进度")
+def gen_run(body: RunIn, cu: AdminDep) -> dict:
+    return generate.generate(cu, body.token)
 
 
-@router.post(
-    "/generate/pi",
-    summary="按 PI 生成：凭按 PI 预演的各订单令牌（按原顺序），同一个事务里依次生成，任何一张失败整张 PI 回滚；"
-    "数量大时返回 RUNNING，轮询各任务进度",
-)
-def gen_pi_generate(body: PiGenerateIn, cu: AdminDep) -> dict:
-    items = [x.model_dump() for x in body.items or []]
-    return generate.generate_pi(cu, body.pi_no, items)
+@router.get("/jobs", summary="生成任务（最近 N 条），revocable 标出可撤销的最后一次")
+def gen_jobs(cu: AdminDep, pi: str, limit: OptInt = None) -> list:
+    return generate.jobs(pi, 20 if limit is None else limit)
 
 
-@router.post("/generate/pi-allocate", summary="整张 PI 分配：各订单待分配号分到各自的生产组织，同一事务")
-def gen_pi_allocate(body: PiAllocateIn, cu: AdminDep) -> dict:
-    return generate.allocate_pi(cu, body.pi_no)
+@router.get("/batches/{batch}", summary="一次生成的进度：百分比、已生成 / 总数、已写到的号、速度、预计剩余时间")
+def gen_progress(batch: str, cu: AdminDep) -> dict:
+    return generate.progress(batch)
 
 
-@router.get("/generate/jobs/{id}")
-def gen_job(id: int, cu: AdminDep) -> dict:
-    return generate.job(id)
-
-
-@router.get("/generate/jobs")
-def gen_jobs(cu: AdminDep, bill_no: str | None = None, pi: str | None = None, limit: OptInt = None) -> list:
-    return generate.jobs(bill_no, pi, 50 if limit is None else limit)
-
-
-@router.post(
-    "/generate/jobs/{id}/revoke",
-    summary="撤销该任务所属的整次生成（同 /generate/batches/{batch}/revoke）",
-)
-def gen_revoke(id: int, body: RevokeIn, cu: AdminDep) -> dict:
-    return generate.revoke(cu, id, body.reason)
-
-
-@router.get("/generate/batches/{batch}", summary="一次生成的整体进度：已写入枚数 / 总数、已写到的号、状态")
-def gen_batch(batch: str, cu: AdminDep) -> dict:
-    return generate.batch_progress(batch)
-
-
-@router.post(
-    "/generate/batches/{batch}/cancel",
-    summary="取消正在进行的生成：整批回滚，已写入的号全部删除，任务记为 CANCELED；取消留痕",
-)
+@router.post("/batches/{batch}/cancel", summary="取消生成：已写入的号全部删除，任务记为已取消")
 def gen_cancel(batch: str, cu: AdminDep) -> dict:
     return generate.cancel(cu, batch)
 
 
 @router.post(
-    "/generate/batches/{batch}/revoke",
-    summary="撤销一次生成（整次）：只能撤销该 PI 流水排在最后、号全部仍待分配的一次成功生成；"
-    "号删除，PI 最大号与各订单额度退回，原因必填",
+    "/batches/{batch}/revoke", summary="撤销生成：只能撤这张 PI 流水排在最后、号全部仍待分配且没转过单的一次；原因必填"
 )
-def gen_revoke_batch(batch: str, body: RevokeIn, cu: AdminDep) -> dict:
-    return generate.revoke_batch(cu, batch, body.reason)
+def gen_revoke(batch: str, body: RevokeIn, cu: AdminDep) -> dict:
+    return generate.revoke(cu, batch, body.reason)
 
 
-@router.post("/generate/allocate", summary="确认分配：整单分到订单的生产组织，待分配 → 待领取（不能只分一部分）")
+@router.post("/alloc-preview", summary="分配面板：按生产组织汇总枚数、单据和物料、是否对接 MES、推送次数")
+def gen_alloc_preview(body: AllocateIn, cu: AdminDep) -> dict:
+    return generate.alloc_preview(body.pi_no, body.bills, [x.model_dump() for x in body.lines or []] or None)
+
+
+@router.post("/allocate", summary="分配到订单的生产组织：对接 MES 的改为待推送并自动推送，未对接的改为待领取")
 def gen_allocate(body: AllocateIn, cu: AdminDep) -> dict:
-    return generate.allocate(cu, body.bill_no, body.factory_code)
-
-
-@router.get("/generate/allocations", summary="订单的分配记录（取自分配痕迹）")
-def gen_allocations(cu: AdminDep, bill_no: str = Query(...)) -> list:
-    return generate.bill_allocations(bill_no)
+    return generate.allocate(cu, body.pi_no, body.bills, [x.model_dump() for x in body.lines or []] or None)

@@ -5,10 +5,11 @@ from app.api.routes import (
     audits,
     auth,
     dashboard,
+    delivery,
     factories,
     generate,
     health,
-    open,
+    mes,
     orders,
     rules,
     sn,
@@ -23,11 +24,12 @@ api_router.include_router(factories.router)
 api_router.include_router(orders.router)
 api_router.include_router(rules.router)
 api_router.include_router(generate.router)
+api_router.include_router(delivery.router)
 api_router.include_router(acquire.router)
-api_router.include_router(open.router)
 api_router.include_router(transfers.router)
 api_router.include_router(sn.router)
 api_router.include_router(audits.router)
 api_router.include_router(dashboard.router)
+api_router.include_router(mes.router)
 
 __all__ = ["api_router", "health"]

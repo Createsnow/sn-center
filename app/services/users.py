@@ -1,10 +1,14 @@
-"""登录、改密与账户管理。账户用公司工号创建，只停用不删除。
+"""登录、改密与账户管理（F-01）。账户只停用不删除；只有内置管理员能维护账户。
 
-管理员建账户时给定的密码直接可用，不强制改密；只有管理员重置别人的密码后，下次登录必须改密。
+页面账户（系统管理员 / 生产组织操作员 / 查询员）用初始密码直接登录，不强制改密；管理员重置他人密码后下次登录须改密。
+MES 接口账户不能登录页面：创建或重置时系统生成密钥（只显示一次），MES 用工号 + 密钥换取令牌；
+连续失败 SN_MES_AUTH_MAX_FAILURES 次锁定 SN_MES_AUTH_LOCK_MINUTES 分钟（锁定期间密钥正确也拒绝），锁定和解锁留痕；
+可配置来源地址白名单。重置密钥后旧密钥和旧令牌立即失效。
 """
 
 from __future__ import annotations
 
+import ipaddress
 import re
 import secrets
 from dataclasses import dataclass
@@ -13,8 +17,9 @@ from datetime import datetime, timedelta
 from app.core import utils as util
 from app.core.config import settings
 from app.core.errors import ErrorCode, biz
-from app.core.exceptions import BizError
+from app.core.exceptions import BizError, MesError
 from app.core.security import (
+    API,
     PAGE,
     CurrentUser,
     check_policy,
@@ -29,7 +34,7 @@ from app.services import audit, factories
 
 ACTIVE = "ACTIVE"
 DISABLED = "DISABLED"
-_EMP_NO = re.compile(r"^[A-Za-z0-9_-]{2,32}$")
+_EMP_NO = re.compile(r"^[A-Za-z0-9]{4,32}$")
 LANGS = frozenset(("zh-CN", "en", "vi"))
 
 
@@ -47,6 +52,9 @@ def _view(u: dict, names: dict[str, str], bound: list[str]) -> dict:
         "factory_names": [names.get(c, c) for c in codes],
         "status": u["status"],
         "super_admin": util.is_super_admin(u["emp_no"], u["role"]),
+        "ip_whitelist": u["ip_whitelist"] if u["role"] == util.MES else None,
+        "locked_until": util.fmt(u["locked_until"]) if u["role"] == util.MES else None,
+        "tz_offset_min": factories.tz_offset(tuple(codes)),
         "must_change_pwd": bool(u["must_change_pwd"]),
         "lang": u["lang"],
         "last_login_at": util.fmt(u["last_login_at"]),
@@ -67,8 +75,8 @@ def bound_factories(uid: int) -> list[str]:
 
 
 def read_scope(uid: int, role: str, factory_code: str | None) -> tuple[str, ...]:
-    """账户可读的工厂；空 = 全部。"""
-    if role == util.FACTORY:
+    """账户可读的生产组织；空 = 全部。"""
+    if role in (util.FACTORY, util.MES):
         return (factory_code,) if factory_code else ()
     if role == util.QUERY:
         return tuple(bound_factories(uid))
@@ -143,6 +151,8 @@ def login(
         raise _login_failed(_login_actor(emp, u, trace_id), biz(ErrorCode.LOGIN_FAILED), where) from None
     if u["status"] != ACTIVE:
         raise _login_failed(_login_actor(emp, u, trace_id), biz(ErrorCode.ACCOUNT_DISABLED), where) from None
+    if u["role"] == util.MES:
+        raise _login_failed(_login_actor(emp, u, trace_id), biz(ErrorCode.MES_NO_PAGE_LOGIN), where) from None
     with db.tx():
         if page:
             # 页面最近登录时间即登录版本
@@ -241,9 +251,9 @@ class Binding:
 def _check_role_factory(
     role: str, factory_code: str | None, factory_codes: list[str | None] | None, current: tuple[str, ...] = ()
 ) -> Binding:
-    """角色与绑定工厂；新绑定（不在 current 里）的工厂须存在且启用，保留原来已停用的绑定不报错。
+    """角色与绑定生产组织；新绑定（不在 current 里）的须在列表中且金蝶启用，保留原来已禁用的绑定不报错。
 
-    查询员可绑一个、多个或不绑（= 全部工厂）；只传 factory_code 时按绑一个处理。
+    操作员绑一个；查询员可多选，不选为全部；系统管理员不绑；MES 接口账户绑一个「对接 MES = 是」的生产组织。
     """
     if role not in util.ROLES:
         raise biz(ErrorCode.USER_ROLE_INVALID)
@@ -253,18 +263,61 @@ def _check_role_factory(
         if f is not None or many:
             raise biz(ErrorCode.USER_ADMIN_NO_FACTORY)
         return Binding(None, ())
-    if role == util.FACTORY:
+    if role in (util.FACTORY, util.MES):
         f = f or (many[0] if len(many) == 1 else None)
         if f is None or len(many) > 1:
-            raise biz(ErrorCode.USER_FACTORY_REQUIRED)
+            raise biz(ErrorCode.USER_FACTORY_REQUIRED if role == util.FACTORY else ErrorCode.USER_MES_FACTORY_REQUIRED)
         if f not in current:
-            factories.must_be_enabled(f)
+            fac = factories.must_be_enabled(f)
+            if role == util.MES and not fac["mes_enabled"]:
+                raise biz(ErrorCode.USER_MES_FACTORY_REQUIRED)
         return Binding(f, ())
     codes = many if factory_codes is not None else ([f] if f is not None else [])
     for c in codes:
         if c not in current:
             factories.must_be_enabled(c)
     return Binding(None, tuple(sorted(codes)))
+
+
+_IP = re.compile(r"^[0-9A-Fa-f:.]+(/\d{1,3})?$")
+
+
+def _ip_list(raw: str | None) -> str:
+    """来源地址白名单：逗号或空白分隔的 IP / CIDR；空 = 不限。"""
+    items = [x for x in re.split(r"[\s,;]+", util.trim(raw)) if x]
+    for x in items:
+        try:
+            if not _IP.match(x):
+                raise ValueError
+            ipaddress.ip_network(x, strict=False)
+        except ValueError:
+            raise biz(ErrorCode.USER_IP_LIST_INVALID, value=x) from None
+    out = ",".join(dict.fromkeys(items))
+    if len(out) > 1000:
+        raise biz(ErrorCode.USER_IP_LIST_INVALID, value=out[:40] + "…")
+    return out
+
+
+def ip_allowed(whitelist: str, client: str | None) -> bool:
+    if not whitelist:
+        return True
+    if not client:
+        return False
+    try:
+        addr = ipaddress.ip_address(client)
+    except ValueError:
+        return False
+    for x in whitelist.split(","):
+        try:
+            if addr in ipaddress.ip_network(x, strict=False):
+                return True
+        except ValueError:
+            continue
+    return False
+
+
+def new_secret() -> str:
+    return secrets.token_urlsafe(24)
 
 
 def _save_binding(uid: int, b: Binding) -> None:
@@ -289,7 +342,9 @@ def create(
     factory_code: str | None,
     password: str | None,
     factory_codes: list[str | None] | None = None,
+    ip_whitelist: str | None = None,
 ) -> dict:
+    """新建账户。MES 接口账户不填密码：系统生成密钥，只在本次返回（secret），之后不回显。"""
     with db.tx():
         emp = util.trim(emp_no)
         if not _EMP_NO.match(emp):
@@ -299,28 +354,44 @@ def create(
             raise biz(ErrorCode.USER_NAME_REQUIRED)
         r = util.trim(role)
         b = _check_role_factory(r, factory_code, factory_codes)
-        check_policy(password)
+        secret = None
+        if r == util.MES:
+            secret = new_secret()
+            password = secret
+            ips = _ip_list(ip_whitelist)
+        else:
+            check_policy(password)
+            ips = ""
         if _by_emp_no(emp) is not None:
             raise biz(ErrorCode.USER_EMP_NO_EXISTS, emp_no=emp)
         now = util.now()
         uid = db.insert(
-            "INSERT INTO sn_user(emp_no, name, role, factory_code, status, password_hash, must_change_pwd, created_by, "
-            "created_at, updated_at) VALUES (%s,%s,%s,%s,%s,%s,0,%s,%s,%s)",
+            "INSERT INTO sn_user(emp_no, name, role, factory_code, status, password_hash, must_change_pwd, "
+            "pwd_changed_at, ip_whitelist, created_by, created_at, updated_at) "
+            "VALUES (%s,%s,%s,%s,%s,%s,0,%s,%s,%s,%s,%s)",
             emp,
             n,
             r,
             b.factory,
             ACTIVE,
             hash_password(password),
+            now,
+            ips,
             cu.emp_no,
             now,
             now,
         )
         _save_binding(uid, b)
         audit.record(
-            cu, audit.entry(audit.USER_CREATE).factory(b.factory).info(f"emp_no={emp} role={r} factory={b.text()}")
+            cu,
+            audit.entry(audit.USER_CREATE)
+            .factory(b.factory)
+            .info(f"emp_no={emp} role={r} factory={b.text()}" + (" secret=generated" if secret else "")),
         )
-        return view(_must_get(uid))
+        out = view(_must_get(uid))
+        if secret is not None:
+            out["secret"] = secret
+        return out
 
 
 def update(
@@ -330,6 +401,7 @@ def update(
     role: str | None,
     factory_code: str | None,
     factory_codes: list[str | None] | None = None,
+    ip_whitelist: str | None = None,
 ) -> dict:
     with db.tx():
         u = _must_get(uid)
@@ -337,17 +409,22 @@ def update(
         n = util.trim(name)
         if not n or len(n) > 64:
             raise biz(ErrorCode.USER_NAME_REQUIRED)
-        r = util.trim(role)
+        r = util.trim(role) or u["role"]
+        if (r == util.MES) != (u["role"] == util.MES):
+            raise biz(ErrorCode.USER_ROLE_FIXED)
         b = _check_role_factory(r, factory_code, factory_codes, old.codes())
         if u["emp_no"] == settings.init_admin_emp_no and r != util.ADMIN:
             raise biz(ErrorCode.USER_SUPER_ADMIN_FIXED)
         if u["role"] == util.ADMIN and r != util.ADMIN:
             _check_not_last_admin(u)
+        ips = _ip_list(ip_whitelist) if r == util.MES and ip_whitelist is not None else u["ip_whitelist"]
         db.exec(
-            "UPDATE sn_user SET name = %s, role = %s, factory_code = %s, updated_at = %s WHERE id = %s",
+            "UPDATE sn_user SET name = %s, role = %s, factory_code = %s, ip_whitelist = %s, updated_at = %s "
+            "WHERE id = %s",
             n,
             r,
             b.factory,
+            ips,
             util.now(),
             uid,
         )
@@ -356,9 +433,34 @@ def update(
             cu,
             audit.entry(audit.USER_UPDATE)
             .factory(b.factory)
-            .info(f"emp_no={u['emp_no']} role={u['role']}->{r} factory={old.text()}->{b.text()}"),
+            .info(
+                f"emp_no={u['emp_no']} role={u['role']}->{r} factory={old.text()}->{b.text()}"
+                + (f" ip={u['ip_whitelist'] or '*'}->{ips or '*'}" if r == util.MES else "")
+            ),
         )
         return view(_must_get(uid))
+
+
+def reset_secret(cu: CurrentUser, uid: int) -> dict:
+    """重置 MES 接口账户密钥：新密钥只显示一次；旧密钥和旧令牌立即失效，解除锁定。"""
+    with db.tx():
+        u = _must_get(uid)
+        if u["role"] != util.MES:
+            raise biz(ErrorCode.USER_NOT_MES)
+        secret = new_secret()
+        now = util.now()
+        db.exec(
+            "UPDATE sn_user SET password_hash = %s, pwd_changed_at = %s, auth_failures = 0, locked_until = NULL, "
+            "updated_at = %s WHERE id = %s",
+            hash_password(secret),
+            _next_pv(u, now),
+            now,
+            uid,
+        )
+        audit.record(cu, audit.entry(audit.USER_RESET_SECRET).factory(u["factory_code"]).info(f"emp_no={u['emp_no']}"))
+        out = view(_must_get(uid))
+        out["secret"] = secret
+        return out
 
 
 def disable(cu: CurrentUser, uid: int) -> dict:
@@ -403,6 +505,8 @@ def reset_password(cu: CurrentUser, uid: int, password: str | None) -> dict:
     """重置为管理员给定的初始密码；下次登录必须改密，旧令牌失效。"""
     with db.tx():
         u = _must_get(uid)
+        if u["role"] == util.MES:
+            raise biz(ErrorCode.USER_ROLE_FIXED)
         check_policy(password)
         now = util.now()
         db.exec(
@@ -420,7 +524,7 @@ def reset_password(cu: CurrentUser, uid: int, password: str | None) -> dict:
 def _admin_emp_no() -> str:
     emp = settings.init_admin_emp_no
     if not _EMP_NO.match(emp):
-        raise RuntimeError(f"SN_INIT_ADMIN_EMP_NO={emp!r} 不是合法工号（2–32 位字母、数字、_ -）")
+        raise RuntimeError(f"SN_INIT_ADMIN_EMP_NO={emp!r} 不是合法工号（4–32 位字母和数字）")
     return emp
 
 
@@ -477,3 +581,82 @@ def bootstrap_admin(password: str) -> bool:
         _insert_admin(emp, password, util.now())
         audit.record(CurrentUser.system(), audit.entry(audit.USER_CREATE).info(f"emp_no={emp} bootstrap"))
         return True
+
+
+# ================================================================== MES 接口账户换取令牌
+
+
+def mes_token(emp_no: str | None, secret: str | None, client: str | None, trace_id: str | None) -> dict:
+    """接口 ②：工号 + 密钥换令牌（有效期同登录令牌）。换新令牌不会使旧令牌失效；重置密钥后旧令牌全部失效。
+
+    错误：401 INVALID_CREDENTIALS；连续错 N 次锁定 M 分钟，锁定期间返回 423 ACCOUNT_LOCKED（密钥正确也拒绝）；
+    403 IP_NOT_ALLOWED / ACCOUNT_DISABLED。失败、锁定、解锁都留痕。
+    """
+    emp = util.trim(emp_no)
+    u = _by_emp_no(emp) if emp else None
+    if u is not None and u["role"] != util.MES:
+        u = None
+    actor = CurrentUser(
+        None if u is None else u["id"],
+        util.cut(emp, 32) or "-",
+        "" if u is None else u["name"],
+        util.MES,
+        None if u is None else u["factory_code"],
+        API,
+        trace_id,
+    )
+    where = f"client={client or '-'}"
+
+    def fail(status: int, code: str, message: str) -> MesError:
+        audit.record_isolated(actor, audit.entry(audit.MES_AUTH).factory(actor.factory_code).fail(message).info(where))
+        return MesError(status, code, message)
+
+    matched = verify_password(secret, _dummy() if u is None else u["password_hash"])
+    if u is None:
+        raise fail(401, "INVALID_CREDENTIALS", "工号或密钥错误")
+    if u["status"] != ACTIVE:
+        raise fail(403, "ACCOUNT_DISABLED", "账户已停用")
+    if not ip_allowed(u["ip_whitelist"], client):
+        raise fail(403, "IP_NOT_ALLOWED", f"来源地址 {client or '-'} 不在白名单内")
+    now = util.now()
+    with db.tx():
+        row = db.one("SELECT auth_failures, locked_until FROM sn_user WHERE id = %s FOR UPDATE", u["id"])
+        locked = row["locked_until"]
+        if locked is not None and locked > now:
+            raise fail(423, "ACCOUNT_LOCKED", f"连续换取令牌失败已锁定，{util.fmt(locked)} 后解锁")
+        failures = row["auth_failures"]
+        if locked is not None:
+            # 锁定期已过：解锁（留痕），重新计数
+            db.exec("UPDATE sn_user SET auth_failures = 0, locked_until = NULL WHERE id = %s", u["id"])
+            audit.record(actor, audit.entry(audit.MES_AUTH_UNLOCK).factory(u["factory_code"]).info(where))
+            failures = 0
+        if not matched:
+            failures += 1
+            lock = failures >= settings.mes_auth_max_failures
+            until = now + timedelta(minutes=settings.mes_auth_lock_minutes) if lock else None
+            db.exec(
+                "UPDATE sn_user SET auth_failures = %s, locked_until = %s WHERE id = %s",
+                0 if lock else failures,
+                until,
+                u["id"],
+            )
+            if lock:
+                audit.record(
+                    actor,
+                    audit.entry(audit.MES_AUTH_LOCK)
+                    .factory(u["factory_code"])
+                    .info(f"{where} until={util.fmt(until)}"),
+                )
+        elif failures:
+            db.exec("UPDATE sn_user SET auth_failures = 0 WHERE id = %s", u["id"])
+    if not matched:
+        raise fail(401, "INVALID_CREDENTIALS", "工号或密钥错误")
+    ttl = settings.access_token_ttl_seconds
+    return {
+        "schemaVersion": "1.0",
+        "code": "OK",
+        "accessToken": issue_token(u["id"], pwd_version(u["pwd_changed_at"])),
+        "tokenType": "Bearer",
+        "expiresIn": ttl,
+        "expiresAt": util.fmt(now + timedelta(seconds=ttl)),
+    }

@@ -1,494 +1,602 @@
-"""金蝶生产订单快照：按物料明细一行，不存单据头与内码。
+"""金蝶生产订单快照（F-05、F-07）：已审核单据的每条物料行一行，物料行 = 单据编号 + 序号（金蝶明细行号）。
 
-全量同步 = 先完整拉取，再在一个事务里清空并写入；按单据编号同步只替换该单。金蝶失败时快照不动。
+同步方式：
+1. 比对同步（日常，默认每 10 分钟）：只拉已审核单据的编号与修改时间，与快照比对：新出现、修改时间不同的单据
+   整单替换，快照有、金蝶没有的移出；每张变动的单据随即做订单变更比对（changes）；同一周期对反审核中的
+   已出号单据按单号复查。任一页拉取失败（重试后）本周期不改快照。
+2. 按单据编号同步：不带单据状态条件查询，只看单据状态。
+3. 进页同步：进入订单页时在后台触发一次比对同步；正有同步在运行时跳过。
+4. 全量重建：完整拉取后写入新表、原子换表（RENAME），失败旧快照完整保留；完成后对全部已出号单据比对。
+各种同步共用一把同步锁：按单据同步排队，比对同步和进页同步直接跳过。
 """
 
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass
+from decimal import Decimal
 
 import structlog
 
+from app.core import encoding as codec
 from app.core import utils as util
 from app.core.errors import ErrorCode, biz
+from app.core.exceptions import BizError
 from app.core.security import CurrentUser
 from app.db.session import db, marks
-from app.services import audit, factories, k3
+from app.services import audit, changes, factories, k3, locks
 
 log = structlog.get_logger()
 
-PRD_MO_FIELDS = (
-    "id",
-    "bill_no",
-    "line_seq",
-    "customer_number",
-    "po",
-    "pi",
-    "material_number",
-    "material_name",
-    "qty",
-    "status",
-    "demand_bill_no",
-    "prd_org_name",
-    "synced_at",
+PRD_MO_COLS = (
+    "bill_no, seq, doc_status, customer_code, pi, po, org_code, org_name, attach_no, material_code, material_name, "
+    "length_raw, qty, modify_time, synced_at"
 )
-
-_INSERT = (
-    "INSERT INTO sn_prd_mo(bill_no, line_seq, customer_number, po, pi, material_number, material_name, qty, status, "
-    "demand_bill_no, prd_org_name, synced_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-)
+_INSERT = f"INSERT INTO {{table}}({PRD_MO_COLS}) VALUES ({marks(15)})"
 
 
-def prd_mo_json(r: dict) -> dict:
-    return util.jrow(r, PRD_MO_FIELDS)
+# ================================================================== 写快照
 
 
-# ------------------------------------------------------------------ 同步
-
-
-def _to_args(rows: list[k3.Row], ts) -> list[tuple]:
-    """保留金蝶返回顺序作为单内物料行顺序（号段按此切分）。"""
-    seq: dict[str, int] = {}
+def _args(rows: list[k3.Row], ts) -> list[tuple]:
     out = []
+    seen: set[tuple[str, int]] = set()
     for r in rows:
-        seq[r.bill_no] = seq.get(r.bill_no, 0) + 1
+        key = (r.bill_no, r.seq)
+        if key in seen:
+            continue
+        seen.add(key)
         out.append(
             (
                 r.bill_no,
-                seq[r.bill_no],
-                r.customer_number,
-                r.po,
-                r.pi,
-                r.material_number,
+                r.seq,
+                r.doc_status or k3.APPROVED,
+                util.cut(r.customer_code, 64),
+                util.cut(r.pi, 64),
+                util.cut(r.po, 128),
+                util.cut(r.org_code, 64),
+                util.cut(r.org_name, 128),
+                util.cut(r.attach_no, 64),
+                util.cut(r.material_code, 64),
                 util.cut(r.material_name, 255),
+                util.cut(r.length_raw, 64),
                 r.qty,
-                r.status,
-                r.demand_bill_no,
-                r.prd_org_name,
+                r.modify_time,
                 ts,
             )
         )
     return out
 
 
-def _batch_insert(args: list[tuple]) -> None:
+def _insert(table: str, args: list[tuple]) -> None:
+    sql = _INSERT.format(table=table)
     for i in range(0, len(args), 1000):
-        db.exec_many(_INSERT, args[i : i + 1000])
+        db.exec_many(sql, args[i : i + 1000])
 
 
-def sync_all(cu: CurrentUser) -> dict:
-    rows = k3.fetch_all()
+def _replace_bills(bills: dict[str, list[k3.Row]], ts) -> None:
+    """同一事务内先删该单全部行再插入（金蝶删掉的物料行随之消失）。"""
+    for no, rows in bills.items():
+        db.exec("DELETE FROM sn_prd_mo WHERE bill_no = %s", no)
+        _insert("sn_prd_mo", _args(rows, ts))
+
+
+def _remove_bills(nos: list[str]) -> None:
+    for i in range(0, len(nos), 500):
+        part = nos[i : i + 500]
+        db.exec(f"DELETE FROM sn_prd_mo WHERE bill_no IN ({marks(len(part))})", *part)
+
+
+def _local_heads() -> dict[str, object]:
+    return {r["bill_no"]: r["t"] for r in db.all("SELECT bill_no, MAX(modify_time) t FROM sn_prd_mo GROUP BY bill_no")}
+
+
+def _group(rows: list[k3.Row]) -> dict[str, list[k3.Row]]:
+    out: dict[str, list[k3.Row]] = {}
+    for r in rows:
+        out.setdefault(r.bill_no, []).append(r)
+    return out
+
+
+# ================================================================== 比对同步
+
+
+def compare_sync(cu: CurrentUser, trigger: str = "SCHEDULED") -> dict | None:
+    """比对同步；拿不到同步锁（已有同步在运行）返回 None。trigger = SCHEDULED / PAGE / MANUAL。"""
+    held = locks.sync_lock(wait=False)
+    if held is None:
+        return None
     try:
-        factories.sync_from_k3(cu)
-    except Exception as e:  # noqa: BLE001
-        # 工厂同步失败不影响订单快照，页面会提示未建档的生产组织
-        log.warning("factory_sync_during_order_sync_failed", err=str(e))
+        return _compare(cu, trigger)
+    finally:
+        held.release()
+
+
+def _compare(cu: CurrentUser, trigger: str) -> dict:
     ts = util.now()
-    args = _to_args(rows, ts)
-    bills = list(dict.fromkeys(r.bill_no for r in rows))
+    try:
+        heads = k3.fetch_approved_heads()
+        remote = {h.bill_no: h.modify_time for h in heads}
+        local = _local_heads()
+        changed = [no for no, t in remote.items() if no not in local or t is None or local[no] != t]
+        removed = [no for no in local if no not in remote]
+        fetched = _group(k3.fetch_bills(changed)) if changed else {}
+    except BizError as e:
+        _finish(ts, False, e.message, None, None)
+        audit.record_isolated(cu, audit.entry(audit.ORDER_SYNC).fail(e.message).info(f"mode=compare trigger={trigger}"))
+        raise
+    # 有修改时间、却按单号拉不到明细（期间被反审核）：当作移出
+    removed += [no for no in changed if no not in fetched and no in local]
+    rows = sum(len(v) for v in fetched.values())
     with db.tx():
-        db.exec("DELETE FROM sn_prd_mo")
-        _batch_insert(args)
-        audit.record(cu, audit.entry(audit.ORDER_SYNC).count(len(bills)).info(f"mode=all rows={len(rows)}"))
+        _replace_bills(fetched, ts)
+        _remove_bills(removed)
+    notes = changes.after_sync(cu, list(fetched), removed)
+    # 反审核中的已出号单据按单号复查（发现重新审核或删除）
+    notes += changes.recheck_reversed(cu, set(remote))
+    n_bills = len(fetched) + len(removed)
+    _finish(ts, True, "", n_bills, rows)
+    if n_bills:
+        audit.record_isolated(
+            cu,
+            audit.entry(audit.ORDER_SYNC)
+            .count(n_bills)
+            .info(f"mode=compare trigger={trigger} replaced={len(fetched)} removed={len(removed)} rows={rows}"),
+        )
+    else:
+        changes.count_daily("ORDER_SYNC_NOCHANGE")
     return {
-        "mode": "all",
-        "bill_no": "",
-        "rows": len(rows),
-        "bills": len(bills),
+        "mode": "compare",
+        "bills": n_bills,
+        "replaced": len(fetched),
+        "removed": len(removed),
+        "rows": rows,
         "synced_at": util.fmt(ts),
-        "removed": False,
-        "unmapped_orgs": unmapped_orgs(),
+        "attach_k3_filled": notes.count("ATTACH"),
     }
+
+
+def _finish(ts, ok: bool, message: str, bills: int | None, rows: int | None) -> None:
+    if ok:
+        db.exec(
+            "UPDATE sn_sync_state SET last_run_at = %s, last_ok = 1, last_message = '', last_bills = %s, "
+            "last_rows = %s WHERE id = 1",
+            ts,
+            bills,
+            rows,
+        )
+    else:
+        db.exec(
+            "UPDATE sn_sync_state SET last_run_at = %s, last_ok = 0, last_message = %s WHERE id = 1",
+            ts,
+            util.cut(message, 500),
+        )
+
+
+def run_scheduled() -> None:
+    """后台定时：每个周期一次（多实例靠同步锁只跑一份）。"""
+    try:
+        compare_sync(CurrentUser.system(), "SCHEDULED")
+    except BizError as e:
+        log.warning("compare_sync_failed", err=e.message)
+
+
+_page_thread_lock = threading.Lock()
+
+
+def page_entry_sync(cu: CurrentUser) -> bool:
+    """进页同步：后台触发一次比对同步，立即返回；正有同步在运行时跳过（返回 False）。"""
+    if not _page_thread_lock.acquire(blocking=False):
+        return False
+
+    def run() -> None:
+        try:
+            compare_sync(cu, "PAGE")
+        except Exception as e:  # noqa: BLE001
+            log.warning("page_sync_failed", err=str(e))
+        finally:
+            _page_thread_lock.release()
+
+    threading.Thread(target=run, name="sn-page-sync", daemon=True).start()
+    return True
+
+
+# ================================================================== 按单据同步
 
 
 def sync_bill(cu: CurrentUser, bill_no: str | None) -> dict:
+    """不带单据状态条件按单号查询：已审核替换该单；不是已审核移出；查无此单移出。"""
     no = util.trim(bill_no)
     if not no:
         raise biz(ErrorCode.ORDER_BILL_REQUIRED)
-    rows = [r for r in k3.fetch_bill(no) if r.bill_no == no]
-    ts = util.now()
-    args = _to_args(rows, ts)
-    with db.tx():
-        db.exec("DELETE FROM sn_prd_mo WHERE bill_no = %s", no)
-        _batch_insert(args)
-        audit.record(
-            cu, audit.entry(audit.ORDER_SYNC).bill(no).count(1 if rows else 0).info(f"mode=one rows={len(rows)}")
-        )
+    held = locks.sync_lock(wait=True)
+    if held is None:
+        raise biz(ErrorCode.ORDER_SYNC_BUSY)
+    try:
+        v = k3.view_bill(no)
+        ts = util.now()
+        had = db.exists("SELECT EXISTS(SELECT 1 FROM sn_prd_mo WHERE bill_no = %s)", no)
+        if v.found and v.doc_status == k3.APPROVED:
+            with db.tx():
+                _replace_bills({no: v.rows}, ts)
+                audit.record(cu, audit.entry(audit.ORDER_SYNC).bill(no).count(1).info(f"mode=bill rows={len(v.rows)}"))
+            changes.after_sync(cu, [no], [])
+            outcome = "REPLACED"
+        else:
+            with db.tx():
+                _remove_bills([no])
+                audit.record(
+                    cu,
+                    audit.entry(audit.ORDER_SYNC)
+                    .bill(no)
+                    .count(1 if had else 0)
+                    .info(f"mode=bill found={v.found} status={v.doc_status or '-'}"),
+                )
+            changes.after_removed(cu, no, v)
+            outcome = ("NOT_APPROVED" if had else "NOT_APPROVED_NEW") if v.found else "NOT_FOUND"
+    finally:
+        held.release()
     return {
-        "mode": "one",
+        "mode": "bill",
         "bill_no": no,
-        "rows": len(rows),
-        "bills": 1 if rows else 0,
+        "outcome": outcome,
+        "doc_status": v.doc_status,
+        "rows": len(v.rows) if outcome == "REPLACED" else 0,
         "synced_at": util.fmt(ts),
-        "removed": not rows,
-        "unmapped_orgs": unmapped_orgs(),
     }
 
 
-def unmapped_orgs() -> list[str]:
-    """快照里出现、但工厂表没有同名工厂的生产组织。"""
-    return db.column(
-        "SELECT DISTINCT m.prd_org_name FROM sn_prd_mo m LEFT JOIN sn_factory f ON f.factory_name = m.prd_org_name "
-        "WHERE f.factory_code IS NULL AND m.customer_number <> '' ORDER BY m.prd_org_name"
-    )
+# ================================================================== 全量重建
 
 
-# ------------------------------------------------------------------ 查询
+def rebuild(cu: CurrentUser) -> dict:
+    """全量重建：完整拉取 → 写入新表 → 原子换表；失败整体回滚，旧快照完整保留。"""
+    held = locks.sync_lock(wait=True)
+    if held is None:
+        raise biz(ErrorCode.ORDER_SYNC_BUSY)
+    try:
+        rows = k3.fetch_all()
+        try:
+            factories.sync_from_k3(cu)
+        except Exception as e:  # noqa: BLE001
+            # 生产组织同步失败不影响订单快照
+            log.warning("factory_sync_during_rebuild_failed", err=str(e))
+        ts = util.now()
+        with db.connection() as conn, conn.cursor() as c:
+            c.execute("DROP TABLE IF EXISTS sn_prd_mo_new")
+            c.execute("DROP TABLE IF EXISTS sn_prd_mo_old")
+            c.execute("CREATE TABLE sn_prd_mo_new LIKE sn_prd_mo")
+        try:
+            with db.tx():
+                _insert("sn_prd_mo_new", _args(rows, ts))
+            with db.connection() as conn, conn.cursor() as c:
+                c.execute("RENAME TABLE sn_prd_mo TO sn_prd_mo_old, sn_prd_mo_new TO sn_prd_mo")
+                c.execute("DROP TABLE sn_prd_mo_old")
+        except Exception:
+            with db.connection() as conn, conn.cursor() as c:
+                c.execute("DROP TABLE IF EXISTS sn_prd_mo_new")
+            raise
+        bills = len({r.bill_no for r in rows})
+        db.exec("UPDATE sn_sync_state SET last_full_at = %s WHERE id = 1", ts)
+        audit.record_isolated(cu, audit.entry(audit.ORDER_SYNC).count(bills).info(f"mode=rebuild rows={len(rows)}"))
+        changes.after_rebuild(cu)
+    finally:
+        held.release()
+    return {"mode": "rebuild", "bills": bills, "rows": len(rows), "synced_at": util.fmt(ts)}
 
 
-def meta() -> dict:
-    m = db.one(
-        "SELECT MAX(synced_at) ts, COUNT(DISTINCT CASE WHEN customer_number <> '' THEN bill_no END) bills, "
-        "COUNT(*) row_count, COUNT(DISTINCT CASE WHEN customer_number = '' THEN bill_no END) excluded FROM sn_prd_mo"
-    )
-    return {
-        "synced_at": util.fmt(m["ts"]),
-        "bills": int(m["bills"]),
-        "rows": int(m["row_count"]),
-        "excluded_empty_customer": int(m["excluded"]),
-        "unmapped_orgs": unmapped_orgs(),
-    }
+# ================================================================== 附件项次补填
 
 
-def _bill_gens(bills: list[str]) -> dict[str, dict]:
-    if not bills:
-        return {}
-    return {
-        g["bill_no"]: g for g in db.all(f"SELECT * FROM sn_bill_gen WHERE bill_no IN ({marks(len(bills))})", *bills)
-    }
+def effective_attach(line: dict, fill: dict | None) -> tuple[str, str]:
+    """附件项次的生效值与来源：K3 金蝶值 / MANUAL 手工填写 / EMPTY 待填写。"""
+    k3v = util.trim(line.get("attach_no"))
+    if k3v:
+        return k3v, "K3"
+    if fill is not None and fill["material_code"] == (line.get("material_code") or ""):
+        return fill["manual_value"], "MANUAL"
+    return "", "EMPTY"
+
+
+def fill_attach(cu: CurrentUser, bill_no: str | None, seq: int | None, value: str | None) -> dict:
+    no = util.trim(bill_no)
+    v = util.trim(value)
+    if not v or len(v) > 64:
+        raise biz(ErrorCode.ATTACH_INVALID)
+    with db.tx():
+        line = db.one("SELECT * FROM sn_prd_mo WHERE bill_no = %s AND seq = %s", no, seq)
+        if line is None:
+            raise biz(ErrorCode.ORDER_LINE_NOT_FOUND, bill_no=no, seq=seq)
+        prev = db.one("SELECT * FROM sn_line_attach WHERE bill_no = %s AND seq = %s FOR UPDATE", no, seq)
+        now = util.now()
+        db.exec(
+            "INSERT INTO sn_line_attach(bill_no, seq, manual_value, material_code, k3_value, filled_by, filled_at, "
+            "updated_at) VALUES (%s,%s,%s,%s,'',%s,%s,%s) ON DUPLICATE KEY UPDATE manual_value = VALUES(manual_value), "
+            "material_code = VALUES(material_code), k3_value = '', filled_by = VALUES(filled_by), "
+            "filled_at = VALUES(filled_at), updated_at = VALUES(updated_at)",
+            no,
+            seq,
+            v,
+            line["material_code"],
+            cu.emp_no,
+            now,
+            now,
+        )
+        audit.record(
+            cu,
+            audit.entry(audit.ORDER_ATTACH_FILL)
+            .bill(no)
+            .pi(line["pi"])
+            .factory(line["org_code"])
+            .material(line["material_code"])
+            .info(f"seq={seq} {'' if prev is None else prev['manual_value']} -> {v}"),
+        )
+    return line_view(db.one("SELECT * FROM sn_prd_mo WHERE bill_no = %s AND seq = %s", no, seq))
+
+
+# ================================================================== 查询
+
+
+def _scope(cu: CurrentUser, factory: str | None, col: str = "m.org_code") -> tuple[str, list]:
+    facs = cu.read_factories(factory)
+    return factories.scope_sql(facs, col)
 
 
 def _bill_filter(cu: CurrentUser, q: str | None, customer: str | None, pi: str | None, factory: str | None):
-    """订单列表 / PI 列表共用的快照筛选（m = sn_prd_mo）。客户编码为空的单据不显示；绑厂查询员只看本厂。"""
-    where = " WHERE m.customer_number <> ''"
+    """订单页左表筛选（m = sn_prd_mo）：客户编码为空的单据不显示；绑定的账户只看本组织。"""
+    where = " WHERE m.customer_code <> ''"
     args: list = []
     text = util.trim(q)
     if text:
         where += (
-            " AND (m.bill_no LIKE %s OR m.pi LIKE %s OR m.po LIKE %s OR m.material_number LIKE %s"
-            " OR m.customer_number LIKE %s)"
+            " AND m.bill_no IN (SELECT x.bill_no FROM sn_prd_mo x WHERE x.bill_no LIKE %s OR x.pi LIKE %s"
+            " OR x.po LIKE %s OR x.material_code LIKE %s OR x.customer_code LIKE %s)"
         )
         like = util.like_any(text)
-        args += [like, like, like, like, like]
+        args += [like] * 5
     if not util.blank(customer):
-        where += " AND m.customer_number = %s"
+        where += " AND m.customer_code = %s"
         args.append(util.trim(customer))
     if not util.blank(pi):
         where += " AND m.pi = %s"
         args.append(util.trim(pi))
-    facs = cu.read_factories(factory)
-    if facs is not None:
-        fsql, fa = factories.scope_sql(facs)
-        where += f" AND m.prd_org_name IN (SELECT factory_name FROM sn_factory WHERE 1=1{fsql})"
-        args += fa
-    return where, args
-
-
-#: 单据仍有待办：还有额度可生成，或已生成还没分配完（g = sn_bill_gen，按单 GROUP BY 后用）
-_PENDING_HAVING = (
-    " HAVING SUM(FLOOR(m.qty)) > COALESCE(MAX(g.generated_qty), 0)"
-    " OR COALESCE(MAX(g.generated_qty), 0) > COALESCE(MAX(g.allocated_qty), 0)"
-)
+    fsql, fargs = _scope(cu, factory)
+    return where + fsql, args + fargs
 
 
 def list_bills(
-    cu: CurrentUser,
-    q: str | None,
-    customer: str | None,
-    pi: str | None,
-    factory: str | None,
-    page: util.Page,
-    pending: bool = False,
+    cu: CurrentUser, q: str | None, customer: str | None, pi: str | None, factory: str | None, page: util.Page
 ) -> dict:
-    """订单页左表、生成页选单。pending = 只要还有额度或待分配的单据。"""
+    """左表：每张单据一行，单据编号大的在前；订单数量、已生成、可生成（额度）按物料行汇总。"""
     where, args = _bill_filter(cu, q, customer, pi, factory)
-    if pending:
-        src = " FROM sn_prd_mo m LEFT JOIN sn_bill_gen g ON g.bill_no = m.bill_no" + where + " GROUP BY m.bill_no"
-        src += _PENDING_HAVING
-        total = db.count("SELECT COUNT(*) FROM (SELECT m.bill_no" + src + ") t", *args)
-    else:
-        src = " FROM sn_prd_mo m" + where + " GROUP BY m.bill_no"
-        total = db.count("SELECT COUNT(DISTINCT m.bill_no) FROM sn_prd_mo m" + where, *args)
+    total = db.count("SELECT COUNT(DISTINCT m.bill_no) FROM sn_prd_mo m" + where, *args)
     rows = db.all(
-        "SELECT m.bill_no, MAX(m.customer_number) customer_number, MAX(m.po) po, MAX(m.pi) pi, "
-        "MAX(m.prd_org_name) prd_org_name, GROUP_CONCAT(DISTINCT m.status ORDER BY m.status) statuses, "
-        "SUM(FLOOR(m.qty)) total_qty, COUNT(*) line_count, MAX(m.synced_at) synced_at"
-        + src
-        + " ORDER BY m.bill_no DESC LIMIT %s, %s",
+        "SELECT m.bill_no, MAX(m.customer_code) customer_code, MAX(m.po) po, MAX(m.pi) pi, MAX(m.org_code) org_code, "
+        "MAX(m.org_name) org_name, SUM(FLOOR(m.qty)) total_qty, COUNT(*) line_count, "
+        "SUM(COALESCE(c.gen_count, 0)) generated, "
+        "SUM(GREATEST(FLOOR(m.qty) - COALESCE(c.own_generated, 0), 0)) quota "
+        "FROM sn_prd_mo m LEFT JOIN sn_line_count c ON c.bill_no = m.bill_no AND c.seq = m.seq"
+        + where
+        + " GROUP BY m.bill_no ORDER BY m.bill_no DESC LIMIT %s, %s",
         *args,
         page.offset,
         page.size,
     )
-    gen = _bill_gens([r["bill_no"] for r in rows])
-    codes = factories.code_by_name()
-    items = []
-    for r in rows:
-        g = gen.get(r["bill_no"])
-        total_qty = int(r["total_qty"])
-        generated = 0 if g is None else g["generated_qty"]
-        allocated = 0 if g is None else g["allocated_qty"]
-        items.append(
-            {
-                "bill_no": r["bill_no"],
-                "customer_number": r["customer_number"],
-                "po": r["po"],
-                "pi": r["pi"],
-                "prd_org_name": r["prd_org_name"],
-                "factory_code": codes.get(r["prd_org_name"]),
-                "statuses": r["statuses"],
-                "total_qty": total_qty,
-                "line_count": int(r["line_count"]),
-                "generated_qty": generated,
-                "allocated_qty": allocated,
-                "pending_alloc": generated - allocated,
-                "quota": max(0, total_qty - generated),
-                "synced_at": util.fmt(r["synced_at"]),
-            }
-        )
+    states = changes.bill_states([r["bill_no"] for r in rows])
+    items = [
+        {
+            "bill_no": r["bill_no"],
+            "customer_code": r["customer_code"],
+            "po": r["po"],
+            "pi": r["pi"],
+            "org_code": r["org_code"],
+            "org_name": r["org_name"],
+            "total_qty": int(r["total_qty"] or 0),
+            "line_count": int(r["line_count"]),
+            "generated_qty": int(r["generated"] or 0),
+            "quota": int(r["quota"] or 0),
+            **states.get(r["bill_no"], changes.EMPTY_STATE),
+        }
+        for r in rows
+    ]
     return util.page_result(items, total, page)
 
 
-def pis(cu: CurrentUser, q: str | None, customer: str | None, pending: bool, limit: int) -> list[dict]:
-    """生成页 PI 列表：按 PI 汇总快照里的单据数、额度与生产组织，最近下单的 PI 在前。
-
-    q 匹配 PI / 单据 / PO / 客户，命中任一单据即列出整张 PI；customer 精确匹配。
-    pending = 只要还有额度或待分配的 PI。
-    """
-    where, args = _bill_filter(cu, None, customer, None, None)
-    where += " AND m.pi <> ''"
-    text = util.trim(q)
-    if text:
-        where += (
-            " AND m.pi IN (SELECT x.pi FROM sn_prd_mo x WHERE x.pi LIKE %s OR x.bill_no LIKE %s OR x.po LIKE %s"
-            " OR x.customer_number LIKE %s)"
-        )
-        like = util.like_any(text)
-        args += [like, like, like, like]
-    bills = (
-        "SELECT m.bill_no, MAX(m.pi) pi, MAX(m.customer_number) customer_number, MAX(m.prd_org_name) org, "
-        "SUM(FLOOR(m.qty)) total_qty, COALESCE(MAX(g.generated_qty), 0) gen, COALESCE(MAX(g.allocated_qty), 0) alloc "
-        "FROM sn_prd_mo m LEFT JOIN sn_bill_gen g ON g.bill_no = m.bill_no" + where + " GROUP BY m.bill_no"
-    )
-    having = " HAVING SUM(GREATEST(b.total_qty - b.gen, 0)) > 0 OR SUM(b.gen - b.alloc) > 0" if pending else ""
-    rows = db.all(
-        "SELECT b.pi, MAX(b.customer_number) customer_number, COUNT(*) bills, SUM(b.total_qty) total_qty, "
-        "SUM(b.gen) generated_qty, SUM(b.alloc) allocated_qty, SUM(GREATEST(b.total_qty - b.gen, 0)) quota, "
-        "GROUP_CONCAT(DISTINCT b.org ORDER BY b.org SEPARATOR '\\n') orgs, MAX(c.generated_qty) > 0 start_locked, "
-        "MAX(c.rule_id) chosen_rule "
-        f"FROM ({bills}) b LEFT JOIN sn_pi_counter c ON c.pi_no = b.pi GROUP BY b.pi{having} "
-        "ORDER BY MAX(b.bill_no) DESC LIMIT %s",
-        *args,
-        min(max(limit, 1), 500),
-    )
-    codes = factories.code_by_name()
-    disabled = factories.disabled_codes()
-    running = _running([r["pi"] for r in rows])
-    bound_pis = set(db.column("SELECT bind_value FROM sn_rule WHERE bind_scope = 'PI'"))
-    bound_customers = set(db.column("SELECT bind_value FROM sn_rule WHERE bind_scope = 'CUSTOMER'"))
-    out = []
-    for r in rows:
-        orgs = [o for o in (r["orgs"] or "").split("\n") if o]
-        out.append(
-            {
-                "pi": r["pi"],
-                "customer_number": r["customer_number"],
-                "bills": int(r["bills"]),
-                "orgs": [{"name": o, "factory_code": codes.get(o)} for o in orgs],
-                "unmapped": any(o not in codes for o in orgs),
-                # 订单的生产组织对应的工厂已停用：不能生成、分配
-                "disabled": any(codes.get(o) in disabled for o in orgs),
-                "start_locked": bool(r["start_locked"]),
-                # 规则已确定（按 PI / 按客户绑定，或已指定给此 PI）：不用先选规则就能生成
-                "rule_fixed": r["chosen_rule"] is not None
-                or r["pi"] in bound_pis
-                or r["customer_number"] in bound_customers,
-                "running": running.get(r["pi"]),
-                "total_qty": int(r["total_qty"]),
-                "generated_qty": int(r["generated_qty"]),
-                "allocated_qty": int(r["allocated_qty"]),
-                "pending_alloc": int(r["generated_qty"]) - int(r["allocated_qty"]),
-                "quota": int(r["quota"]),
-            }
-        )
-    return out
+def line_view(r: dict, count: dict | None = None, fill: dict | None = None, rule: dict | None = None) -> dict:
+    qty = sn_qty(r)
+    own = 0 if count is None else int(count["own_generated"])
+    attach, attach_src = effective_attach(r, fill)
+    norm = codec.normalize_length(r["length_raw"])
+    return {
+        "bill_no": r["bill_no"],
+        "seq": r["seq"],
+        "customer_code": r["customer_code"],
+        "pi": r["pi"],
+        "po": r["po"],
+        "org_code": r["org_code"],
+        "org_name": r["org_name"],
+        "attach_no": attach,
+        "attach_source": attach_src,
+        "attach_k3": r["attach_no"],
+        "attach_manual": None if fill is None else fill["manual_value"],
+        "attach_k3_conflict": fill is not None and bool(r["attach_no"]) and r["attach_no"] != fill["manual_value"],
+        "material_code": r["material_code"],
+        "material_name": r["material_name"],
+        "length_raw": r["length_raw"],
+        "length": norm,
+        "qty": qty,
+        "generated_qty": 0 if count is None else int(count["gen_count"]),
+        "own_generated_qty": own,
+        "allocated_qty": 0 if count is None else int(count["alloc_count"]),
+        "quota": max(0, qty - own),
+        "rule": rule,
+        "synced_at": util.fmt(r["synced_at"]),
+    }
 
 
-def _running(pis: list[str]) -> dict[str, dict]:
-    """正在生成的 PI → 本次生成的批次与整体进度（已写入枚数 / 总数）。"""
-    if not pis:
-        return {}
-    rows = db.all(
-        "SELECT pi_no, gen_batch, SUM(qty) qty, SUM(done_qty) done FROM sn_gen_job WHERE gen_batch IN "
-        f"(SELECT gen_batch FROM sn_gen_job WHERE status = 'RUNNING' AND pi_no IN ({marks(len(pis))})) "
-        "GROUP BY pi_no, gen_batch",
-        *pis,
-    )
-    return {r["pi_no"]: {"batch": r["gen_batch"], "qty": int(r["qty"]), "done_qty": int(r["done"])} for r in rows}
+def sn_qty(line: dict) -> int:
+    """物料行数量：有小数时按整数部分计。"""
+    q = line.get("qty")
+    return 0 if q is None else max(0, int(Decimal(q)))
 
 
-def pi_bills(pi: str) -> list[str]:
-    """该 PI 在快照中的单据，单据号从小到大（生成时按这个顺序接续号段）。"""
-    return db.column(
-        "SELECT DISTINCT bill_no FROM sn_prd_mo WHERE pi = %s AND customer_number <> '' ORDER BY bill_no", pi
-    )
+def line_extras(keys: list[tuple[str, int]]) -> tuple[dict, dict]:
+    """物料行计数与附件项次补填：(bill, seq) → 行。"""
+    if not keys:
+        return {}, {}
+    bills = sorted({k[0] for k in keys})
+    counts = {
+        (c["bill_no"], c["seq"]): c
+        for c in db.all(f"SELECT * FROM sn_line_count WHERE bill_no IN ({marks(len(bills))})", *bills)
+    }
+    fills = {
+        (f["bill_no"], f["seq"]): f
+        for f in db.all(f"SELECT * FROM sn_line_attach WHERE bill_no IN ({marks(len(bills))})", *bills)
+    }
+    return counts, fills
 
 
 def lines(bill_no: str | None) -> list[dict]:
-    return db.all("SELECT * FROM sn_prd_mo WHERE bill_no = %s ORDER BY line_seq ASC", util.trim(bill_no))
+    return db.all("SELECT * FROM sn_prd_mo WHERE bill_no = %s ORDER BY seq ASC", util.trim(bill_no))
 
 
-def _own_orgs(cu: CurrentUser) -> set[str] | None:
-    """绑厂账户可看工厂的生产组织名称；未绑厂返回 None（可看全部）。"""
-    if not cu.bound:
-        return None
-    return {f["factory_name"] for f in (factories.get(c) for c in cu.factories) if f is not None}
+def lines_of(cu: CurrentUser, bill_no: str | None) -> dict:
+    """右表：该单表头与各物料行（序号、附件项次、物料、长度、数量、已生成、可生成、SN 规则）。"""
+    from app.services import rules
 
-
-def lines_of(cu: CurrentUser, bill_no: str | None) -> list[dict]:
-    """订单页右表：绑厂查询员只能看本厂（生产组织 = 本厂）的订单，与左表范围一致。"""
     ls = lines(bill_no)
-    orgs = _own_orgs(cu)
-    if orgs is not None and ls and ls[0]["prd_org_name"] not in orgs:
-        raise biz(ErrorCode.FACTORY_FORBIDDEN, factory=cu.scope_text())
-    return ls
+    if not ls:
+        raise biz(ErrorCode.ORDER_NOT_FOUND, bill_no=util.trim(bill_no))
+    cu.check_read(ls[0]["org_code"])
+    keys = [(r["bill_no"], r["seq"]) for r in ls]
+    counts, fills = line_extras(keys)
+    rmap = rules.line_rules_brief(ls[0]["pi"], keys)
+    h = ls[0]
+    return {
+        "bill_no": h["bill_no"],
+        "pi": h["pi"],
+        "po": h["po"],
+        "customer_code": h["customer_code"],
+        "org_code": h["org_code"],
+        "org_name": h["org_name"],
+        "state": changes.bill_states([h["bill_no"]]).get(h["bill_no"], changes.EMPTY_STATE),
+        "lines": [line_view(r, counts.get(k), fills.get(k), rmap.get(k)) for r, k in zip(ls, keys, strict=True)],
+    }
 
 
-# ------------------------------------------------------------------ 生成用的订单视图
+def meta(cu: CurrentUser) -> dict:
+    """顶部：最近同步时间、快照单据数和物料行数、客户为空的单据数、附件项次待填写行数、比对同步状态、未处理提醒数。"""
+    fsql, fargs = _scope(cu, None)
+    m = db.one(
+        "SELECT MAX(m.synced_at) ts, COUNT(DISTINCT CASE WHEN m.customer_code <> '' THEN m.bill_no END) bills, "
+        "COUNT(*) row_count, COUNT(DISTINCT CASE WHEN m.customer_code = '' THEN m.bill_no END) excluded "
+        "FROM sn_prd_mo m WHERE 1=1" + fsql,
+        *fargs,
+    )
+    pending_attach = db.count(
+        "SELECT COUNT(*) FROM sn_prd_mo m LEFT JOIN sn_line_attach a ON a.bill_no = m.bill_no AND a.seq = m.seq "
+        "WHERE m.customer_code <> '' AND m.attach_no = '' AND (a.bill_no IS NULL OR a.material_code <> m.material_code)"
+        + fsql,
+        *fargs,
+    )
+    st = db.one("SELECT * FROM sn_sync_state WHERE id = 1") or {}
+    return {
+        "synced_at": util.fmt(m["ts"]),
+        "bills": int(m["bills"] or 0),
+        "rows": int(m["row_count"] or 0),
+        "excluded_empty_customer": int(m["excluded"] or 0),
+        "attach_pending": pending_attach,
+        "compare": {
+            "last_run_at": util.fmt(st.get("last_run_at")),
+            "last_ok": None if st.get("last_ok") is None else bool(st["last_ok"]),
+            "last_message": st.get("last_message") or "",
+            "last_bills": st.get("last_bills"),
+            "last_full_at": util.fmt(st.get("last_full_at")),
+        },
+        "open_alerts": changes.open_alert_count(cu),
+    }
+
+
+def customers(cu: CurrentUser, q: str | None) -> list[str]:
+    """快照中出现过的客户编码；绑定的账户只看本组织订单的客户。"""
+    sql = "SELECT DISTINCT m.customer_code FROM sn_prd_mo m WHERE m.customer_code <> ''"
+    args: list = []
+    text = util.trim(q)
+    if text:
+        sql += " AND m.customer_code LIKE %s"
+        args.append(util.like_any(text))
+    fsql, fargs = _scope(cu, None)
+    return db.column(sql + fsql + " ORDER BY m.customer_code LIMIT 200", *args, *fargs)
+
+
+# ================================================================== 其他服务用的订单视图
 
 
 @dataclass(frozen=True)
 class Bill:
-    """一张生产订单（快照中）：表头取自各行，物料行按顺序。"""
+    """快照中的一张订单：表头取自首行，物料行按序号。"""
 
     bill_no: str
     customer_code: str
     po: str
     pi: str
-    prd_org_name: str
-    factory_code: str | None
+    org_code: str
+    org_name: str
     lines: list[dict]
-    total_qty: int
-
-    def as_json(self) -> dict:
-        return {
-            "bill_no": self.bill_no,
-            "customer_code": self.customer_code,
-            "po": self.po,
-            "pi": self.pi,
-            "prd_org_name": self.prd_org_name,
-            "factory_code": self.factory_code,
-            "lines": [prd_mo_json(x) for x in self.lines],
-            "total_qty": self.total_qty,
-        }
 
 
-def bill(bill_no: str | None) -> Bill:
-    """快照中的订单；不在快照 = 已不是计划 / 计划确认。"""
+def bill(bill_no: str | None) -> Bill | None:
     ls = lines(bill_no)
     if not ls:
-        raise biz(ErrorCode.ORDER_NOT_FOUND, bill_no=util.trim(bill_no))
-    from app.services.sn_items import sn_qty
-
+        return None
     h = ls[0]
-    total = sum(sn_qty(x) for x in ls)
-    code = factories.code_by_name().get(h["prd_org_name"])
-    return Bill(h["bill_no"], h["customer_number"], h["po"], h["pi"], h["prd_org_name"], code, ls, total)
+    return Bill(h["bill_no"], h["customer_code"], h["po"], h["pi"], h["org_code"], h["org_name"], ls)
 
 
-def pi_summary(factory_code: str | None, prd_org_name: str, pi: str) -> list[dict]:
-    """「工厂 + PI」汇总：快照里同厂同 PI 的订单，加上已生成过但已离开快照的订单。"""
-    out: dict[str, dict] = {}
-    for r in db.all(
-        "SELECT bill_no, SUM(FLOOR(qty)) total_qty FROM sn_prd_mo WHERE pi = %s AND prd_org_name = %s "
-        "AND customer_number <> '' GROUP BY bill_no ORDER BY bill_no",
-        pi,
-        prd_org_name,
-    ):
-        total = int(r["total_qty"])
-        out[r["bill_no"]] = {
-            "bill_no": r["bill_no"],
-            "in_snapshot": True,
-            "total_qty": total,
-            "generated_qty": 0,
-            "allocated_qty": 0,
-            "quota": total,
-        }
-    gens = (
-        []
-        if factory_code is None
-        else db.all(
-            "SELECT * FROM sn_bill_gen WHERE pi_no = %s AND factory_code = %s ORDER BY bill_no ASC", pi, factory_code
-        )
-    )
-    for g in gens:
-        cur = out.get(g["bill_no"])
-        total = 0 if cur is None else cur["total_qty"]
-        out[g["bill_no"]] = {
-            "bill_no": g["bill_no"],
-            "in_snapshot": cur is not None,
-            "total_qty": total,
-            "generated_qty": g["generated_qty"],
-            "allocated_qty": g["allocated_qty"],
-            "quota": 0 if cur is None else max(0, total - g["generated_qty"]),
-        }
-    return list(out.values())
+def must_bill(bill_no: str | None) -> Bill:
+    b = bill(bill_no)
+    if b is None:
+        raise biz(ErrorCode.ORDER_NOT_FOUND, bill_no=util.trim(bill_no))
+    return b
 
 
-def pi_in_snapshot(pi: str) -> bool:
-    return db.exists("SELECT EXISTS(SELECT 1 FROM sn_prd_mo WHERE pi = %s AND customer_number <> '')", pi)
-
-
-def targets(q: str | None, limit: int) -> list[dict]:
-    """转厂目标候选：快照中的「生产组织 + 客户 + PI + 物料」。"""
-    text = util.trim(q)
-    args: list = []
-    where = " WHERE m.customer_number <> '' AND m.pi <> ''"
-    if text:
-        where += " AND (m.pi LIKE %s OR m.bill_no LIKE %s OR m.material_number LIKE %s OR m.customer_number LIKE %s)"
-        like = util.like_any(text)
-        args += [like, like, like, like]
-    args.append(min(max(limit, 1), 200))
-    rows = db.all(
-        "SELECT f.factory_code, m.prd_org_name, m.customer_number, m.pi, m.material_number, "
-        "MAX(m.material_name) material_name FROM sn_prd_mo m LEFT JOIN sn_factory f ON f.factory_name = m.prd_org_name"
-        + where
-        + " GROUP BY f.factory_code, m.prd_org_name, m.customer_number, m.pi, m.material_number "
-        "ORDER BY m.pi, m.material_number LIMIT %s",
-        *args,
-    )
-    return [
-        {
-            "factory_code": r["factory_code"],
-            "prd_org_name": r["prd_org_name"],
-            "customer_code": r["customer_number"],
-            "pi": r["pi"],
-            "material_code": r["material_number"],
-            "material_name": r["material_name"],
-        }
-        for r in rows
-    ]
-
-
-def customers(cu: CurrentUser, q: str | None) -> list[str]:
-    """快照中出现过的客户编码（规则绑定选择用）；绑厂查询员只看本厂订单的客户。"""
-    sql = "SELECT DISTINCT customer_number FROM sn_prd_mo WHERE customer_number <> ''"
-    args: list = []
-    text = util.trim(q)
-    if text:
-        sql += " AND customer_number LIKE %s"
-        args.append(util.like_any(text))
-    orgs = _own_orgs(cu)
-    if orgs is not None:
-        if not orgs:
-            return []
-        sql += f" AND prd_org_name IN ({marks(len(orgs))})"
-        args += sorted(orgs)
-    return db.column(sql + " ORDER BY customer_number LIMIT 200", *args)
+def snapshot_org(bill_no: str) -> tuple[str, str] | None:
+    r = db.one("SELECT org_code, org_name FROM sn_prd_mo WHERE bill_no = %s LIMIT 1", bill_no)
+    return None if r is None else (r["org_code"], r["org_name"])
 
 
 def customer_of_pi(pi: str) -> str | None:
-    """PI 在快照中的客户编码（取第一个）。"""
     v = db.column(
-        "SELECT customer_number FROM sn_prd_mo WHERE pi = %s AND customer_number <> '' ORDER BY bill_no LIMIT 1", pi
+        "SELECT customer_code FROM sn_prd_mo WHERE pi = %s AND customer_code <> '' ORDER BY bill_no LIMIT 1", pi
     )
     return v[0] if v else None
+
+
+def targets(q: str | None, limit: int) -> list[dict]:
+    """转单、转组织目标候选：快照中的物料行（生产组织 + 客户 + PI + 单据 + 序号 + 物料 + 长度）。"""
+    text = util.trim(q)
+    args: list = []
+    where = " WHERE m.customer_code <> '' AND m.pi <> ''"
+    if text:
+        where += " AND (m.pi LIKE %s OR m.bill_no LIKE %s OR m.material_code LIKE %s OR m.customer_code LIKE %s)"
+        like = util.like_any(text)
+        args += [like] * 4
+    rows = db.all(
+        "SELECT m.* FROM sn_prd_mo m" + where + " ORDER BY m.pi, m.bill_no, m.seq LIMIT %s",
+        *args,
+        min(max(limit, 1), 200),
+    )
+    return [
+        {
+            "org_code": r["org_code"],
+            "org_name": r["org_name"],
+            "customer_code": r["customer_code"],
+            "pi": r["pi"],
+            "bill_no": r["bill_no"],
+            "seq": r["seq"],
+            "material_code": r["material_code"],
+            "material_name": r["material_name"],
+            "length": codec.normalize_length(r["length_raw"]),
+        }
+        for r in rows
+    ]

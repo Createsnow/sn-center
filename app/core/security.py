@@ -10,6 +10,7 @@ import base64
 import hashlib
 import hmac
 import json
+import re
 import secrets
 import time
 from dataclasses import dataclass
@@ -44,13 +45,15 @@ def verify_password(password: str | None, stored: str | None) -> bool:
     return hmac.compare_digest(stored[32:].encode("ascii", "replace"), _pbkdf2(password, salt).hex().encode())
 
 
+_PWD = re.compile(r"^[A-Za-z0-9!@#$&*]{8,64}$")
+
+
 def check_policy(password: str | None) -> None:
-    """8–64 位，同时含字母与数字。"""
+    """8–64 位，须同时含字母和数字；只能用字母、数字和 ! @ # $ & *（不能含空格、中文等）。"""
     if (
         password is None
-        or len(password) < 8
-        or len(password) > 64
-        or not any(ch.isalpha() for ch in password)
+        or not _PWD.match(password)
+        or not any(ch.isascii() and ch.isalpha() for ch in password)
         or not any(ch.isdigit() for ch in password)
     ):
         raise biz(ErrorCode.USER_PASSWORD_WEAK)
@@ -94,6 +97,18 @@ class Claims:
     session_version: int | None = None
 
 
+def is_expired(token: str) -> bool:
+    """签名正确但已过期（MES 接口区分 TOKEN_EXPIRED 与 TOKEN_INVALID）。"""
+    raw, dot, sig = token.partition(".")
+    try:
+        if not dot or not hmac.compare_digest(_sign(raw).encode(), sig.encode("ascii")):
+            return False
+        m = json.loads(base64.urlsafe_b64decode(raw + "=" * (-len(raw) % 4)))
+        return int(m["exp"]) < int(time.time())
+    except (ValueError, KeyError, TypeError, UnicodeEncodeError, UnicodeDecodeError):
+        return False
+
+
 def parse_token(token: str) -> Claims:
     raw, dot, sig = token.partition(".")
     if not dot:
@@ -124,7 +139,7 @@ SYSTEM = "SYSTEM"
 
 @dataclass(frozen=True)
 class CurrentUser:
-    """当前操作人。source = PAGE（页面）/ API（对外接口 /api/open）/ SYSTEM（定时任务）。"""
+    """当前操作人。source = PAGE（页面）/ API（对外接口 /api/mes）/ SYSTEM（定时任务）。"""
 
     id: int | None
     emp_no: str
@@ -133,7 +148,7 @@ class CurrentUser:
     factory_code: str | None
     source: str
     trace_id: str | None
-    #: 可读的工厂：厂区操作员 = 本厂；查询员 = 绑定的一个或多个厂；空 = 全部（总部、未绑厂查询员）
+    #: 可读的生产组织：操作员、MES 接口账户 = 本组织；查询员 = 绑定的一个或多个；空 = 全部（总部、未绑的查询员）
     factories: tuple[str, ...] = ()
 
     @staticmethod
@@ -158,6 +173,10 @@ class CurrentUser:
         return self.role == util.QUERY
 
     @property
+    def is_mes(self) -> bool:
+        return self.role == util.MES
+
+    @property
     def bound(self) -> bool:
         return bool(self.factories)
 
@@ -173,7 +192,7 @@ class CurrentUser:
             raise biz(ErrorCode.FACTORY_FORBIDDEN, factory=self.scope_text())
 
     def write_factory(self, requested: str | None) -> str:
-        """写操作（领取、打印、转厂申请）的工厂：总部必须指定工厂；厂区只能是本厂；查询员不能写。"""
+        """写操作（领取、转组织申请）的生产组织：总部必须指定；操作员只能是本组织；查询员不能写。"""
         req = util.trim(requested)
         if self.is_admin:
             if not req:

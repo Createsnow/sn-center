@@ -1,14 +1,22 @@
-"""金蝶 K3 Cloud WebAPI（只读）：LoginByAppSecret 登录；全量用 ExecuteBillQuery 分页；单张用 View；
-组织机构用 ExecuteBillQuery(ORG_Organizations)。只保留业务状态 1 计划、2 计划确认的明细行，不返回单据内码。
+"""金蝶 K3 Cloud WebAPI（只读，PRD 附录 D.1）。
+
+- LoginByAppSecret 登录；批量查询用 ExecuteBillQuery 分页，单张用 View。
+- 比对同步只取已审核（FDocumentStatus = 'C'）单据的单据编号与修改时间两列，比对在本地完成；
+  变动的单据再按单据编号批量拉明细。全量重建按已审核条件完整拉取。
+- 按单据编号同步、离开快照检测用 View，不带单据状态条件，只看单据状态。
+- 不读业务状态、作废状态、需求单据号，不读写金蝶序列号字段；不返回单据内码、分录内码。
+- 文本未填写时金蝶常返回一个空格：一律去首尾空格；基础资料未填写时为 null，视为空。
+- PO、附件项次的字段位置待金蝶实施方核对（Q7），列名可在 .env 配置。
 """
 
 from __future__ import annotations
 
 import json
 import re
+import time
 import uuid
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
@@ -20,15 +28,13 @@ from app.core.exceptions import BizError
 
 FORM_PRD_MO = "PRD_MO"
 FORM_ORG = "ORG_Organizations"
-FIELD_KEYS = (
-    "F_ora_kh.FNumber,FBillNo,F_HX_PO,F_HX_PI,"
-    "FMaterialId.FNumber,FMaterialId.FName,FQty,FStatus,FSaleOrderNo,FPrdOrgId.FName"
-)
-STATUS_FILTER = "(FStatus='1' OR FStatus='2')"
-ORDER_BY = "FID ASC, FTreeEntity_FEntryId ASC"
+APPROVED = "C"
+APPROVED_FILTER = "FDocumentStatus='C'"
+ORDER_BY = "FBillNo ASC, FTreeEntity_FSeq ASC"
 ORG_FIELDS = "FNumber,FName,FForbidStatus"
-KEEP_STATUS = frozenset(("1", "2"))
 PAGE_SIZE = 2000
+#: 按单据编号批量拉明细时每次的单据数
+BILLS_PER_QUERY = 100
 LCID_ZH = 2052
 LOGIN_SVC = "Kingdee.BOS.WebApi.ServicesStub.AuthService.LoginByAppSecret.common.kdsvc"
 VIEW_SVC = "Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.View.common.kdsvc"
@@ -38,18 +44,39 @@ REQUIRED = ("K3_SERVER_URL", "K3_ACCT_ID", "K3_APP_ID", "K3_APP_SECRET", "K3_USE
 
 @dataclass(frozen=True)
 class Row:
-    """快照的一行（金蝶顺序即物料行顺序）。"""
+    """快照的一行（一条物料行）。"""
 
-    customer_number: str
     bill_no: str
-    po: str
+    doc_status: str
+    customer_code: str
     pi: str
-    material_number: str
+    po: str
+    org_code: str
+    org_name: str
+    seq: int
+    attach_no: str
+    material_code: str
     material_name: str
+    length_raw: str
     qty: Decimal
-    status: str
-    demand_bill_no: str
-    prd_org_name: str
+    modify_time: datetime | None
+
+
+@dataclass(frozen=True)
+class Head:
+    """比对同步用：已审核单据的编号与修改时间。"""
+
+    bill_no: str
+    modify_time: datetime | None
+
+
+@dataclass(frozen=True)
+class BillView:
+    """按单据编号查询的结果：found = False 为查无此单（已删除）。"""
+
+    found: bool
+    doc_status: str
+    rows: list[Row]
 
 
 @dataclass(frozen=True)
@@ -70,6 +97,14 @@ class _Config:
     login_timeout: int
     query_timeout: int
     view_timeout: int
+    page_retries: int
+    page_retry_seconds: float
+    po_field: str
+    attach_field: str
+    length_field: str
+    po_view: str
+    attach_view: str
+    length_view: str
 
 
 def _config() -> _Config:
@@ -86,7 +121,35 @@ def _config() -> _Config:
         settings.get_int("K3_LOGIN_TIMEOUT", 30),
         settings.get_int("K3_QUERY_TIMEOUT", 120),
         settings.get_int("K3_VIEW_TIMEOUT", 60),
+        max(0, settings.get_int("K3_PAGE_RETRIES", 3)),
+        max(0.0, float(settings.get_int("K3_PAGE_RETRY_SECONDS", 10))),
+        settings.get("K3_FIELD_PO", "F_HX_PO"),
+        settings.get("K3_FIELD_ATTACH_NO", ""),
+        settings.get("K3_FIELD_LENGTH", "Flength"),
+        settings.get("K3_VIEW_PO", "F_HX_PO"),
+        settings.get("K3_VIEW_ATTACH_NO", ""),
+        settings.get("K3_VIEW_LENGTH", "Flength"),
     )
+
+
+def _detail_keys(c: _Config) -> list[str]:
+    """明细查询列（顺序即 _row_of_query 的取值顺序）；未配置的列用占位列 FBillNo 代替、取值时丢弃。"""
+    return [
+        "FBillNo",
+        "FDocumentStatus",
+        "F_ora_kh.FNumber",
+        "F_HX_PI",
+        c.po_field or "FBillNo",
+        "FPrdOrgId.FNumber",
+        "FPrdOrgId.FName",
+        "FTreeEntity_FSeq",
+        c.attach_field or "FBillNo",
+        "FMaterialId.FNumber",
+        "FMaterialId.FName",
+        c.length_field or "FBillNo",
+        "FQty",
+        "FModifyDate",
+    ]
 
 
 # ------------------------------------------------------------------ 字段归一
@@ -101,15 +164,15 @@ def _java_str(v: Any) -> str:
 
 
 def text(v: Any) -> str:
+    """文本：去首尾空格，None → 空。"""
     return "" if v is None else _java_str(v).strip()
 
 
-def status(v: Any) -> str:
-    if isinstance(v, (int, float)) and not isinstance(v, bool):
-        d = float(v)
-        return str(int(d)) if d == int(d) else repr(d)
-    t = text(v)
-    return t[: t.index(".")] if re.fullmatch(r"\d+\.0+", t) else t
+def number_text(v: Any) -> str:
+    """数字类文本（长度）：整数型浮点按整数写，其余原样（规范化在生成时做）。"""
+    if isinstance(v, float) and v == int(v):
+        return str(int(v))
+    return text(v)
 
 
 def qty(v: Any) -> Decimal:
@@ -119,6 +182,13 @@ def qty(v: Any) -> Decimal:
         return Decimal(_java_str(v) if isinstance(v, (int, float)) else text(v))
     except (InvalidOperation, ValueError):
         return Decimal(0)
+
+
+def seq_of(v: Any) -> int:
+    try:
+        return int(float(text(v)))
+    except ValueError:
+        return 0
 
 
 def locale_name(v: Any) -> str:
@@ -137,22 +207,95 @@ def locale_name(v: Any) -> str:
     return text(v)
 
 
-def row(customer, bill_no, po, pi, material_no, material_name, q, st, demand, org) -> Row | None:
-    code = status(st)
-    if code not in KEEP_STATUS:
+def number_of(v: Any) -> str:
+    """基础资料的编码：对象为 null 或内码为 0 时视为空。"""
+    if isinstance(v, dict):
+        return text(v.get("Number"))
+    return text(v)
+
+
+_DATE_MS = re.compile(r"/Date\((-?\d+)")
+
+
+def modify_time(v: Any) -> datetime | None:
+    """金蝶修改时间：ISO 文本或 /Date(毫秒)/；只用于比对，取不到为 None（视为有变动）。"""
+    t = text(v)
+    if not t:
+        return None
+    m = _DATE_MS.search(t)
+    if m:
+        return datetime.fromtimestamp(int(m.group(1)) / 1000, UTC).replace(tzinfo=None, microsecond=0)
+    try:
+        return datetime.fromisoformat(t.replace("Z", "")[:19].replace(" ", "T"))
+    except ValueError:
+        return None
+
+
+def _row_of_query(o: list, c: _Config) -> Row | None:
+    p = [o[i] if i < len(o) else None for i in range(14)]
+    bill = text(p[0])
+    if not bill:
         return None
     return Row(
-        text(customer),
-        text(bill_no),
-        text(po),
-        text(pi),
-        text(material_no),
-        locale_name(material_name),
-        qty(q),
-        code,
-        text(demand),
-        locale_name(org),
+        bill,
+        text(p[1]),
+        text(p[2]),
+        text(p[3]),
+        text(p[4]) if c.po_field else "",
+        text(p[5]),
+        locale_name(p[6]),
+        seq_of(p[7]),
+        text(p[8]) if c.attach_field else "",
+        text(p[9]),
+        locale_name(p[10]),
+        number_text(p[11]) if c.length_field else "",
+        qty(p[12]),
+        modify_time(p[13]),
     )
+
+
+def rows_from_view(doc: dict | None, c: _Config) -> list[Row]:
+    """View 单据：表头客户在 F_ora_Base.Number，生产组织在 PrdOrgId，明细在 TreeEntity。"""
+    out: list[Row] = []
+    if not doc:
+        return out
+    customer = number_of(doc.get("F_ora_Base"))
+    org = doc.get("PrdOrgId") if isinstance(doc.get("PrdOrgId"), dict) else {}
+    head = {
+        "bill_no": text(doc.get("BillNo")),
+        "doc_status": text(doc.get("DocumentStatus")),
+        "customer_code": customer,
+        "pi": text(doc.get("F_HX_PI")),
+        "po": text(doc.get(c.po_view)) if c.po_view else "",
+        "org_code": text(org.get("Number")),
+        "org_name": locale_name(org.get("Name")),
+        "modify_time": modify_time(doc.get("ModifyDate")),
+    }
+    lines = doc.get("TreeEntity")
+    if isinstance(lines, list):
+        for lm in lines:
+            if not isinstance(lm, dict):
+                continue
+            material = lm.get("MaterialId") if isinstance(lm.get("MaterialId"), dict) else {}
+            out.append(
+                Row(
+                    head["bill_no"],
+                    head["doc_status"],
+                    head["customer_code"],
+                    head["pi"],
+                    head["po"],
+                    head["org_code"],
+                    head["org_name"],
+                    seq_of(lm.get("Seq")),
+                    text(lm.get(c.attach_view)) if c.attach_view else "",
+                    text(material.get("Number")),
+                    locale_name(material.get("Name")),
+                    number_text(lm.get(c.length_view)) if c.length_view else "",
+                    qty(lm.get("Qty")),
+                    head["modify_time"],
+                )
+            )
+    return out
 
 
 def error_of(result: Any) -> str | None:
@@ -169,49 +312,6 @@ def error_of(result: Any) -> str | None:
             msgs = [text(e["Message"]) for e in errs if isinstance(e, dict) and e.get("Message") is not None]
         return "; ".join(msgs) if msgs else "查询失败"
     return None
-
-
-def rows_from_query(raw: list) -> list[Row]:
-    out = []
-    for o in raw:
-        if not isinstance(o, list):
-            continue
-        p = [o[i] if i < len(o) else None for i in range(10)]
-        r = row(*p)
-        if r is not None:
-            out.append(r)
-    return out
-
-
-def rows_from_view(doc: dict | None) -> list[Row]:
-    """View 单据：表头客户在 F_ora_Base.Number，明细在 TreeEntity。"""
-    out: list[Row] = []
-    if not doc:
-        return out
-    base = doc.get("F_ora_Base")
-    customer = base.get("Number") if isinstance(base, dict) else ""
-    org = doc.get("PrdOrgId")
-    lines = doc.get("TreeEntity")
-    if isinstance(lines, list):
-        for lm in lines:
-            if not isinstance(lm, dict):
-                continue
-            material = lm.get("MaterialId") if isinstance(lm.get("MaterialId"), dict) else {}
-            r = row(
-                customer,
-                doc.get("BillNo"),
-                doc.get("F_HX_PO"),
-                doc.get("F_HX_PI"),
-                material.get("Number"),
-                material.get("Name"),
-                lm.get("Qty"),
-                lm.get("Status"),
-                lm.get("SaleOrderNo"),
-                org,
-            )
-            if r is not None:
-                out.append(r)
-    return out
 
 
 # ------------------------------------------------------------------ HTTP
@@ -292,40 +392,96 @@ def _query(http: httpx.Client, c: _Config, data: dict) -> list:
     return page
 
 
+def _query_retry(http: httpx.Client, c: _Config, data: dict) -> list:
+    """一页查询：失败时间隔重试（默认 10 秒、3 次），仍失败抛出（调用方本周期不改快照）。"""
+    attempt = 0
+    while True:
+        try:
+            return _query(http, c, data)
+        except BizError:
+            if attempt >= c.page_retries:
+                raise
+            attempt += 1
+            time.sleep(c.page_retry_seconds)
+
+
+def _paged(http: httpx.Client, c: _Config, field_keys: str, filter_string: str, order: str) -> list:
+    """分页直到本页不足一页。任何一页（重试后）失败即整体失败。"""
+    merged: list = []
+    start = 0
+    while True:
+        page = _query_retry(
+            http,
+            c,
+            {
+                "FormId": FORM_PRD_MO,
+                "FieldKeys": field_keys,
+                "FilterString": filter_string,
+                "OrderString": order,
+                "TopRowCount": 0,
+                "StartRow": start,
+                "Limit": PAGE_SIZE,
+            },
+        )
+        merged.extend(page)
+        if len(page) < PAGE_SIZE:
+            return merged
+        start += PAGE_SIZE
+
+
+def fetch_approved_heads() -> list[Head]:
+    """比对同步：已审核单据的编号与修改时间（按明细返回多行时本地去重）。"""
+    c = _config()
+    with _client() as http:
+        _login(http, c)
+        raw = _paged(http, c, "FBillNo,FModifyDate", APPROVED_FILTER, "FBillNo ASC")
+    out: dict[str, Head] = {}
+    for o in raw:
+        if isinstance(o, list) and o:
+            no = text(o[0])
+            if no and no not in out:
+                out[no] = Head(no, modify_time(o[1] if len(o) > 1 else None))
+    return list(out.values())
+
+
+def _quote(s: str) -> str:
+    return "'" + s.replace("'", "''") + "'"
+
+
+def fetch_bills(bill_nos: list[str]) -> list[Row]:
+    """按单据编号批量拉已审核单据的全部物料行（不按业务状态过滤）。"""
+    if not bill_nos:
+        return []
+    c = _config()
+    keys = ",".join(_detail_keys(c))
+    rows: list[Row] = []
+    with _client() as http:
+        _login(http, c)
+        for i in range(0, len(bill_nos), BILLS_PER_QUERY):
+            part = bill_nos[i : i + BILLS_PER_QUERY]
+            flt = f"{APPROVED_FILTER} AND FBillNo IN ({','.join(_quote(b) for b in part)})"
+            for o in _paged(http, c, keys, flt, ORDER_BY):
+                r = _row_of_query(o, c) if isinstance(o, list) else None
+                if r is not None:
+                    rows.append(r)
+    return rows
+
+
 def fetch_all() -> list[Row]:
-    """全量：分页直到本页不足 2000 行。任何一页失败即整体失败，调用方不写快照。"""
+    """全量重建：按已审核条件完整拉取。任何一页失败即整体失败，调用方不写快照。"""
     c = _config()
     with _client() as http:
         _login(http, c)
-        merged: list = []
-        start = 0
-        while True:
-            page = _query(
-                http,
-                c,
-                {
-                    "FormId": FORM_PRD_MO,
-                    "FieldKeys": FIELD_KEYS,
-                    "FilterString": STATUS_FILTER,
-                    "OrderString": ORDER_BY,
-                    "TopRowCount": 0,
-                    "StartRow": start,
-                    "Limit": PAGE_SIZE,
-                },
-            )
-            merged.extend(page)
-            if len(page) < PAGE_SIZE:
-                break
-            start += PAGE_SIZE
-    return rows_from_query(merged)
+        raw = _paged(http, c, ",".join(_detail_keys(c)), APPROVED_FILTER, ORDER_BY)
+    return [r for r in (_row_of_query(o, c) for o in raw if isinstance(o, list)) if r is not None]
 
 
-def fetch_bill(bill_no: str) -> list[Row]:
-    """单张：View。单据不存在时金蝶返回失败或空，一律视为「该单已不在计划 / 计划确认」。"""
+def view_bill(bill_no: str) -> BillView:
+    """按单据编号查询（不带单据状态条件）。查无此单返回 found = False；调用失败抛出。"""
     c = _config()
     with _client() as http:
         _login(http, c)
-        data = {"CreateOrgId": 0, "Number": bill_no, "Id": "", "IsSortBySeq": False}
+        data = {"CreateOrgId": 0, "Number": bill_no, "Id": "", "IsSortBySeq": True}
         body = _post(
             http,
             _url(c, VIEW_SVC),
@@ -336,40 +492,48 @@ def fetch_bill(bill_no: str) -> list[Row]:
     result = body.get("Result") if isinstance(body, dict) and isinstance(body.get("Result"), dict) else {}
     st = result.get("ResponseStatus") if isinstance(result.get("ResponseStatus"), dict) else {}
     if st.get("IsSuccess") is not True:
-        # MsgCode 10 = 未找到对应数据：单据已删除，按「从快照消失」处理
+        # MsgCode 10 = 未找到对应数据：单据已删除
         code = st.get("MsgCode")
         if isinstance(code, (int, float)) and not isinstance(code, bool) and int(code) == 10:
-            return []
+            return BillView(False, "", [])
         raise biz(ErrorCode.K3_QUERY_FAILED, message=error_of(body) or "View failed")
     doc = result.get("Result") if isinstance(result.get("Result"), dict) else {}
-    return rows_from_view(doc)
+    rows = [r for r in rows_from_view(doc, c) if r.bill_no == bill_no]
+    return BillView(True, text(doc.get("DocumentStatus")), rows)
 
 
 def fetch_organizations() -> list[Org]:
-    """组织机构（含已禁用的：FForbidStatus 不是 A 即禁用，本地同步为停用）。"""
+    """组织机构（含已禁用的：FForbidStatus 不是 A 即禁用）。"""
     c = _config()
     with _client() as http:
         _login(http, c)
-        raw = _query(
-            http,
-            c,
-            {
-                "FormId": FORM_ORG,
-                "FieldKeys": ORG_FIELDS,
-                "FilterString": "",
-                "OrderString": "FNumber",
-                "TopRowCount": 0,
-                "StartRow": 0,
-                "Limit": PAGE_SIZE,
-            },
-        )
+        raw = []
+        start = 0
+        while True:
+            page = _query(
+                http,
+                c,
+                {
+                    "FormId": FORM_ORG,
+                    "FieldKeys": ORG_FIELDS,
+                    "FilterString": "",
+                    "OrderString": "FNumber",
+                    "TopRowCount": 0,
+                    "StartRow": start,
+                    "Limit": PAGE_SIZE,
+                },
+            )
+            raw.extend(page)
+            if len(page) < PAGE_SIZE:
+                break
+            start += PAGE_SIZE
     out: list[Org] = []
     seen: set[str] = set()
     for o in raw:
         if isinstance(o, list) and len(o) >= 2:
-            number, name = text(o[0]), text(o[1])
+            number, name = text(o[0]), locale_name(o[1])
             forbid = text(o[2]) if len(o) > 2 else "A"
-            if number and name and name not in seen:
-                seen.add(name)
-                out.append(Org(number, name, forbid.upper() == "A"))
+            if number and number not in seen:
+                seen.add(number)
+                out.append(Org(number, name or number, forbid.upper() == "A"))
     return out

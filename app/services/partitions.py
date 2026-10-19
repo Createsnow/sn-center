@@ -3,6 +3,7 @@
 - sn_audit（RANGE COLUMNS created_at）提前建好未来 N 个月分区，兜底分区 pmax 始终为空，拆分几乎零成本
   （sn_item 不分区：号不删不归档，查询也不按月份）；
 - 痕迹保存期（默认 3 年，0 = 永久）之外的整月分区先整体拷入 sn_audit_archive，再 DROP PARTITION；
+- 同步生产组织、每日交付自检；
 - 归档表设总保存上限（SN_AUDIT_ARCHIVE_RETENTION_DAYS，默认 5 年，0 = 永久，不短于在线保存期）：
   发生时间超过上限的归档痕迹分批删除，删除本身留痕。
 
@@ -59,9 +60,25 @@ def maintain() -> None:
             _ensure_audit(c)
             _archive(c, settings.audit_retention_days)
             purge_archive(settings.audit_archive_retention_days)
-            c.execute("DELETE FROM sn_gen_preview WHERE created_at < DATE_SUB(NOW(), INTERVAL 7 DAY)")
+            c.execute("DELETE FROM sn_gen_preview WHERE created_at < DATE_SUB(UTC_TIMESTAMP(), INTERVAL 7 DAY)")
+            c.execute("DELETE FROM sn_rate_counter WHERE win < DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 DAY)")
+            _daily_jobs()
         finally:
             c.execute("SELECT RELEASE_LOCK('sn_partition')")
+
+
+def _daily_jobs() -> None:
+    """每天 2:10 维护任务的其余部分：同步生产组织（F-03）、每日交付自检（5.2.5 第 5 条）。各自失败互不影响。"""
+    from app.services import dashboard, factories
+
+    try:
+        factories.sync_from_k3(CurrentUser.system())
+    except Exception as e:  # noqa: BLE001
+        log.warning("daily_factory_sync_failed", err=str(e))
+    try:
+        dashboard.self_check()
+    except Exception:  # noqa: BLE001
+        log.exception("daily_self_check_failed")
 
 
 def _ensure_audit(c) -> None:

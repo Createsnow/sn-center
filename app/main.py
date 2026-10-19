@@ -1,7 +1,8 @@
-"""多工厂 SN 防重管控 · FastAPI + MySQL 8。
+"""多生产组织 SN 防重管控 · FastAPI + MySQL 8。
 
 启动顺序：检查签名密钥 → 建表 / 升级（Flyway 兼容）→ 回收中断的生成任务
-          → 建首个管理员 → 维护月分区 → 可选演示数据 → 每日分区维护定时任务。
+          → 建首个管理员 → 维护月分区 → 可选演示数据
+          → 定时任务：每日维护（分区、归档、生产组织同步、交付自检）、比对同步、推送调度。
 请求链路：RequestIdMiddleware（请求号 / 缓存写请求体）→ CORS → 路由（鉴权依赖）→ services → MySQL。
 """
 
@@ -15,6 +16,7 @@ import structlog
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -24,14 +26,14 @@ from app.api.routes import api_router, health
 from app.core import scheduler
 from app.core.config import reload_settings, settings
 from app.core.errors import ErrorCode, biz
-from app.core.exceptions import AppError, BizError
+from app.core.exceptions import AppError, BizError, MesError
 from app.core.logging import setup_logging
 from app.core.security import CurrentUser
 from app.db import init_db
 from app.db.session import PoolExhausted, db, is_integrity, is_lock_conflict
 from app.middleware.request_id import WRITE_METHODS, RequestIdMiddleware
 from app.services import audit as audit_svc
-from app.services import demo_seed, generate, order_sync_schedule, partitions, users
+from app.services import delivery, demo_seed, generate, orders, partitions, users
 
 log = structlog.get_logger()
 
@@ -131,13 +133,21 @@ def startup() -> None:
 async def lifespan(app: FastAPI):
     await run_sync(startup)
     job = scheduler.start_daily(settings.partition_cron, partitions.maintain)
-    order_sync = scheduler.start_every(order_sync_schedule.POLL_SECONDS, order_sync_schedule.run_due, "sn-order-sync")
+    order_sync = (
+        scheduler.start_every(settings.sync_interval_minutes * 60, orders.run_scheduled, "sn-order-sync")
+        if settings.get_bool("SN_SYNC_ENABLED", True)
+        else None
+    )
+    push = delivery.start_scheduler()
     try:
         yield
     finally:
         # 后台生成任务由线程池自行跑完（解释器退出前会等待）
         job.stop()
-        order_sync.stop()
+        if order_sync is not None:
+            order_sync.stop()
+        if push is not None:
+            push.stop()
         db.close()
 
 
@@ -148,8 +158,8 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title=settings.app_name,
         description=(
-            "总部统一生成并分配 SN，工厂按 PI 领取、打印。对外只有 open 分组：领取、批次明细、回调、只读拉取。"
-            "先调 POST /api/auth/login 取令牌，再放在 Authorization: Bearer <token>。"
+            "总部统一生成并分配 SN，推送到各生产组织 MES（或由 MES 拉取、页面领取）。对外接口在 open 分组："
+            "MES 用 POST /api/mes/v1/auth/token 换令牌，再放在 Authorization: Bearer <token>。"
         ),
         version="1.0.0",
         lifespan=lifespan,
@@ -159,8 +169,7 @@ def create_app() -> FastAPI:
         openapi_tags=[
             {
                 "name": "open",
-                "description": "对外接口：领取（按 PI 整批，请求号幂等）、按批次号分页取明细、打印回调、"
-                "按生产组织 / 客户 / PI 只读拉取。",
+                "description": "对外接口：MES 换令牌、取下一批、提交回执、只读核对；按客户绑定规则。",
             },
         ],
         swagger_ui_parameters={"persistAuthorization": True},
@@ -174,6 +183,7 @@ def create_app() -> FastAPI:
         allow_headers=["Authorization", "Content-Type", "X-Request-ID", "Accept-Language"],
         expose_headers=["Content-Disposition", "X-Request-ID"],
     )
+    app.add_middleware(GZipMiddleware, minimum_size=1024)
     app.add_middleware(RequestIdMiddleware)
 
     async def audit_failure(request: Request, message: str) -> None:
@@ -196,10 +206,34 @@ def create_app() -> FastAPI:
             # 留痕失败不能盖掉原来的错误响应
             log.exception("failure_audit_failed", path=request.url.path)
 
+    def is_mes(request: Request) -> bool:
+        return request.url.path.startswith("/api/mes/")
+
+    @app.exception_handler(MesError)
+    async def mes_error_handler(request: Request, exc: MesError) -> JSONResponse:
+        # 被拒绝的 MES 请求（越权、限流、批次不存在等）留失败痕迹；回执不符已在处理时留痕
+        user = getattr(request.state, "user", None)
+        if isinstance(user, CurrentUser) and exc.code != "RECEIPT_MISMATCH":
+            try:
+                await run_sync(
+                    audit_svc.record_failure,
+                    user,
+                    request.method,
+                    request.url.path,
+                    getattr(request.state, "body", None),
+                    f"{exc.code} {exc.message}",
+                )
+            except Exception:  # noqa: BLE001
+                log.exception("failure_audit_failed", path=request.url.path)
+        headers = {"Retry-After": str(exc.retry_after)} if exc.retry_after is not None else None
+        return JSONResponse(exc.body(), status_code=exc.status_code, headers=headers)
+
     @app.exception_handler(AppError)
     async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
         # 业务错误：{code, message, params}；已登录账户的 /api 写请求被拒绝时另记一条 FAIL 痕迹
         if isinstance(exc, BizError):
+            if is_mes(request):
+                return await mes_error_handler(request, MesError(exc.status_code, exc.code, exc.message))
             await audit_failure(request, exc.message)
             return JSONResponse(_body(exc.code, exc.message, _json_safe(exc.params)), status_code=exc.status_code)
         return JSONResponse(_body(exc.code, exc.message), status_code=exc.status_code)
@@ -209,6 +243,10 @@ def create_app() -> FastAPI:
         # 请求体问题报 body；查询 / 路径参数报形参名（bill_no → billNo，与既有契约一致）
         errs = exc.errors()
         loc = errs[0].get("loc", ("body",)) if errs else ("body",)
+        if is_mes(request):
+            return JSONResponse(
+                MesError(400, "INVALID_REQUEST", f"参数不合法：{_snake_to_camel(str(loc[-1]))}").body(), status_code=400
+            )
         detail = "body" if loc and loc[0] == "body" else _snake_to_camel(str(loc[-1]))
         b = biz(ErrorCode.VALIDATION, detail=detail)
         await audit_failure(request, b.message)

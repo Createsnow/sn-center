@@ -21,34 +21,52 @@ log = structlog.get_logger()
 
 LOGIN = "LOGIN"
 PASSWORD_CHANGE = "PASSWORD_CHANGE"
+MES_AUTH = "MES_AUTH"
+MES_AUTH_LOCK = "MES_AUTH_LOCK"
+MES_AUTH_UNLOCK = "MES_AUTH_UNLOCK"
 USER_CREATE = "USER_CREATE"
 USER_UPDATE = "USER_UPDATE"
 USER_DISABLE = "USER_DISABLE"
 USER_ENABLE = "USER_ENABLE"
 USER_RESET_PWD = "USER_RESET_PWD"
+USER_RESET_SECRET = "USER_RESET_SECRET"
 FACTORY_SYNC = "FACTORY_SYNC"
-FACTORY_CREATE = "FACTORY_CREATE"
-FACTORY_UPDATE = "FACTORY_UPDATE"
-FACTORY_DISABLE = "FACTORY_DISABLE"
-FACTORY_ENABLE = "FACTORY_ENABLE"
+FACTORY_MES_CONFIG = "FACTORY_MES_CONFIG"
+FACTORY_MES_TOGGLE = "FACTORY_MES_TOGGLE"
+FACTORY_MES_TEST = "FACTORY_MES_TEST"
 ORDER_SYNC = "ORDER_SYNC"
-ORDER_SYNC_SCHEDULE = "ORDER_SYNC_SCHEDULE"
+ORDER_ATTACH_FILL = "ORDER_ATTACH_FILL"
+ORDER_ALERT = "ORDER_ALERT"
+ORDER_ALERT_HANDLE = "ORDER_ALERT_HANDLE"
+ORDER_SUSPEND = "ORDER_SUSPEND"
+ORDER_RESUME = "ORDER_RESUME"
 RULE_CREATE = "RULE_CREATE"
 RULE_UPDATE = "RULE_UPDATE"
 RULE_VERSION = "RULE_VERSION"
 RULE_RENAME = "RULE_RENAME"
-RULE_REBIND = "RULE_REBIND"
 RULE_CATEGORY = "RULE_CATEGORY"
 RULE_PI_BIND = "RULE_PI_BIND"
 RULE_PI_UNBIND = "RULE_PI_UNBIND"
+RULE_LINE_SELECT = "RULE_LINE_SELECT"
+RULE_PREFIX_VERSION = "RULE_PREFIX_VERSION"
+RULE_CUSTOMER_BIND = "RULE_CUSTOMER_BIND"
+RULE_CUSTOMER_UNBIND = "RULE_CUSTOMER_UNBIND"
 RULE_DELETE = "RULE_DELETE"
 SN_GENERATE = "SN_GENERATE"
-SN_ALLOCATE = "SN_ALLOCATE"
-SN_REVOKE = "SN_REVOKE"
 SN_GEN_CANCEL = "SN_GEN_CANCEL"
+SN_REVOKE = "SN_REVOKE"
+SN_ALLOCATE = "SN_ALLOCATE"
+SN_BATCH_CREATE = "SN_BATCH_CREATE"
+SN_PUSH = "SN_PUSH"
+SN_PUSH_RESUME = "SN_PUSH_RESUME"
+SN_PULL = "SN_PULL"
+SN_RECEIPT = "SN_RECEIPT"
+SN_BATCH_MANUAL = "SN_BATCH_MANUAL"
+SN_BATCH_VOID = "SN_BATCH_VOID"
+SN_ALERT_HANDLE = "SN_ALERT_HANDLE"
 SN_ACQUIRE = "SN_ACQUIRE"
-SN_PRINT = "SN_PRINT"
-SN_CALLBACK = "SN_CALLBACK"
+SN_READ = "SN_READ"
+TRANSFER_BILL = "TRANSFER_BILL"
 TRANSFER_APPLY = "TRANSFER_APPLY"
 TRANSFER_WITHDRAW = "TRANSFER_WITHDRAW"
 TRANSFER_APPROVE = "TRANSFER_APPROVE"
@@ -56,6 +74,7 @@ TRANSFER_REJECT = "TRANSFER_REJECT"
 TRANSFER_DIRECT = "TRANSFER_DIRECT"
 AUDIT_ARCHIVE = "AUDIT_ARCHIVE"
 AUDIT_ARCHIVE_PURGE = "AUDIT_ARCHIVE_PURGE"
+SELF_CHECK = "SELF_CHECK"
 OTHER = "OTHER"
 
 
@@ -195,60 +214,58 @@ def record_isolated(u: CurrentUser, e: Entry) -> None:
 
 # ---------------------------------------------------------------- 失败留痕
 
-#: 路径前缀 → 痕迹动作（按顺序匹配）
+#: 路径 → 痕迹动作（正则全匹配，按顺序）
 _PATH_ACTIONS = (
-    ("/api/auth/password", PASSWORD_CHANGE),
-    ("/api/users", USER_UPDATE),
-    ("/api/factories", FACTORY_SYNC),
-    ("/api/orders/sync-schedule", ORDER_SYNC_SCHEDULE),
-    ("/api/orders", ORDER_SYNC),
-    ("/api/rules", RULE_UPDATE),
-    ("/api/generate/allocate", SN_ALLOCATE),
-    ("/api/generate/pi-allocate", SN_ALLOCATE),
-    ("/api/generate", SN_GENERATE),
-    ("/api/acquire/take", SN_ACQUIRE),
-    ("/api/acquire/print", SN_PRINT),
-    ("/api/open/acquire", SN_ACQUIRE),
-    ("/api/open/callback", SN_CALLBACK),
-    ("/api/transfers/direct", TRANSFER_DIRECT),
-    # 申请是 POST /api/transfers（不带结尾斜杠）；确认 / 驳回 / 撤回已在 action_for 里按路径单独识别
-    ("/api/transfers", TRANSFER_APPLY),
+    (r"/api/auth/password", PASSWORD_CHANGE),
+    (r"/api/users", USER_CREATE),
+    (r"/api/users/\d+/disable", USER_DISABLE),
+    (r"/api/users/\d+/enable", USER_ENABLE),
+    (r"/api/users/\d+/reset-password", USER_RESET_PWD),
+    (r"/api/users/\d+/reset-secret", USER_RESET_SECRET),
+    (r"/api/users/\d+", USER_UPDATE),
+    (r"/api/factories/sync", FACTORY_SYNC),
+    (r"/api/factories/[^/]+/mes-config", FACTORY_MES_CONFIG),
+    (r"/api/factories/[^/]+/mes-test", FACTORY_MES_TEST),
+    (r"/api/factories/[^/]+/mes-toggle", FACTORY_MES_TOGGLE),
+    (r"/api/orders/attach", ORDER_ATTACH_FILL),
+    (r"/api/orders/alerts/\d+/handle", ORDER_ALERT_HANDLE),
+    (r"/api/orders/.*", ORDER_SYNC),
+    (r"/api/rules/line-(select|clear)", RULE_LINE_SELECT),
+    (r"/api/rules/pi-binding", RULE_PI_BIND),
+    (r"/api/rules/customer-template", RULE_PI_BIND),
+    (r"/api/rules/customer-binding", RULE_CUSTOMER_BIND),
+    (r"/api/rules/\d+", RULE_UPDATE),
+    (r"/api/rules", RULE_CREATE),
+    (r"/api/generate/batches/[^/]+/cancel", SN_GEN_CANCEL),
+    (r"/api/generate/batches/[^/]+/revoke", SN_REVOKE),
+    (r"/api/generate/allocate", SN_ALLOCATE),
+    (r"/api/generate/.*", SN_GENERATE),
+    (r"/api/delivery/batches/[^/]+/confirm", SN_BATCH_MANUAL),
+    (r"/api/delivery/batches/[^/]+/void", SN_BATCH_VOID),
+    (r"/api/delivery/resume", SN_PUSH_RESUME),
+    (r"/api/delivery/alerts/\d+/handle", SN_ALERT_HANDLE),
+    (r"/api/acquire/.*", SN_ACQUIRE),
+    (r"/api/transfers/bill.*", TRANSFER_BILL),
+    (r"/api/transfers/org/direct", TRANSFER_DIRECT),
+    (r"/api/transfers/org/\d+/approve", TRANSFER_APPROVE),
+    (r"/api/transfers/org/\d+/reject", TRANSFER_REJECT),
+    (r"/api/transfers/org/\d+/withdraw", TRANSFER_WITHDRAW),
+    (r"/api/transfers/org.*", TRANSFER_APPLY),
+    (r"/api/mes/v1/batches/next", SN_PULL),
+    (r"/api/mes/v1/batches/[^/]+/receipt", SN_RECEIPT),
+    (r"/api/mes/v1/.*", SN_READ),
 )
 
 
 def action_for(method: str, path: str) -> str:
-    if re.fullmatch(r"/api/generate/(jobs/\d+|batches/[^/]+)/revoke", path):
-        return SN_REVOKE
-    if re.fullmatch(r"/api/generate/batches/[^/]+/cancel", path):
-        return SN_GEN_CANCEL
-    if re.fullmatch(r"/api/transfers/\d+/approve", path):
-        return TRANSFER_APPROVE
-    if re.fullmatch(r"/api/transfers/\d+/reject", path):
-        return TRANSFER_REJECT
-    if re.fullmatch(r"/api/transfers/\d+/withdraw", path):
-        return TRANSFER_WITHDRAW
     if method == "DELETE" and re.fullmatch(r"/api/rules/\d+", path):
         return RULE_DELETE
-    if path == "/api/rules/pi-binding":
-        return RULE_PI_UNBIND if method == "DELETE" else RULE_PI_BIND
-    if re.fullmatch(r"/api/users/\d+/enable", path):
-        return USER_ENABLE
-    if re.fullmatch(r"/api/users/\d+/reset-password", path):
-        return USER_RESET_PWD
-    if path == "/api/users" and method == "POST":
-        return USER_CREATE
-    if re.fullmatch(r"/api/factories/[^/]+/disable", path):
-        return FACTORY_DISABLE
-    if re.fullmatch(r"/api/factories/[^/]+/enable", path):
-        return FACTORY_ENABLE
-    if path.startswith("/api/factories/") and method == "PUT":
-        return FACTORY_UPDATE
-    if path == "/api/factories" and method == "POST":
-        return FACTORY_CREATE
-    if path.endswith("/disable"):
-        return USER_DISABLE
-    for prefix, action in _PATH_ACTIONS:
-        if path.startswith(prefix):
+    if path == "/api/rules/pi-binding" and method == "DELETE":
+        return RULE_PI_UNBIND
+    if path == "/api/rules/customer-binding" and method == "DELETE":
+        return RULE_CUSTOMER_UNBIND
+    for pattern, action in _PATH_ACTIONS:
+        if re.fullmatch(pattern, path):
             return action
     return OTHER
 
@@ -268,12 +285,12 @@ def record_failure(u: CurrentUser, method: str, path: str, body: bytes | None, m
             m = None  # 非 JSON 请求体：只记动作与原因
         if isinstance(m, dict):
             (
-                e.factory(_str(m, "factory_code"))
+                e.factory(_str(m, "factory_code") or u.factory_code)
                 .pi(_str(m, "pi_no") or _str(m, "pi"))
-                .bill(_str(m, "bill_no"))
+                .bill(_str(m, "bill_no") or _str(m, "billNo") or _str(m, "from_bill"))
                 .material(_str(m, "material_code"))
                 .request(_str(m, "request_no"))
-                .batch(_str(m, "batch_no"))
+                .batch(_str(m, "batch_no") or _str(m, "batchNo"))
                 .why(_str(m, "reason"))
             )
             q = m.get("qty")

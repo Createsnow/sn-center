@@ -1,5 +1,6 @@
-"""单元测试：编码、号段切分、金蝶解析、多语言契约、与 Java 后端的一致性、cron。"""
+"""单元测试：编码（含长度写法）、金蝶解析、MES 报文、多语言契约、迁移校验和、cron、导出防注入、配置。"""
 
+import gzip
 import json
 import re
 from datetime import datetime
@@ -13,109 +14,113 @@ from app.core.encoding import DEFAULT_CHARSETS, Spec
 from app.core.errors import ErrorCode
 from app.core.scheduler import Cron
 from app.db.migrate import migrations
-from app.services import files, k3
-from app.services.sn_items import sn_qty, split
+from app.services import files, k3, mes_client
 
 ROOT = Path(__file__).resolve().parents[1]
 
-# ---------------------------------------------------------------------- SnCodec（对应 SnCodecTest）
+# ---------------------------------------------------------------------- SN 编码（5.2.2）
 
-DEC5 = Spec("AVM", "X", 10, 5, "0123456789")
-B32 = Spec("", "", 32, 4, DEFAULT_CHARSETS[32])
+HX = Spec("HX", "A", 10, 6, "0123456789", True)
+NOLEN = Spec("AVM", "X", 10, 5, "0123456789", False)
+B32 = Spec("Q", "", 32, 4, DEFAULT_CHARSETS[32], False)
 
 
-def test_formats_fixed_width_with_prefix_suffix():
-    assert codec.format_sn(1, DEC5) == "AVM00001X"
-    assert codec.format_sn(99_999, DEC5) == "AVM99999X"
-    assert codec.encode_seq(31, B32) == "000V"
+def test_sn_is_prefix_length_serial_suffix():
+    assert codec.format_sn(1, HX, "100") == "HX100000001A"
+    assert codec.format_sn(1, HX, "10.5") == "HX10.5000001A"
+    assert codec.format_sn(1, NOLEN, "100") == "AVM00001X", "规则不带长度时不写长度"
+    assert codec.encode_seq(31, B32) == "000Z"
     assert codec.encode_seq(32, B32) == "0010"
+
+
+def test_default_32_charset_drops_confusable_letters():
+    assert DEFAULT_CHARSETS[32] == "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+    assert not set("ILOU") & set(DEFAULT_CHARSETS[32])
 
 
 def test_rejects_overflow_instead_of_widening():
     with pytest.raises(codec.SeqOverflow):
-        codec.format_sn(100_000, DEC5)
-    assert codec.max_seq(DEC5) == 99_999
+        codec.format_sn(100_000, NOLEN)
+    assert codec.max_seq(NOLEN) == 99_999
     assert codec.max_seq(B32) == 32**4 - 1
 
 
-def test_parse_is_inverse_of_format():
+def test_parse_recovers_length_and_serial():
+    assert codec.parse("HX100000001A", HX) == ("100", 1)
+    assert codec.parse("HX10.5000042A", HX) == ("10.5", 42)
+    assert codec.parse("HX0000042A", HX) == ("0", 42)
+    assert codec.parse("AVM00042X", NOLEN) == ("", 42)
+    assert codec.parse("AVM0042X", NOLEN) is None, "wrong length"
+    assert codec.parse("BVM00042X", NOLEN) is None, "wrong prefix"
+    assert codec.parse("HX0100000001A", HX) is None, "长度写法不规范"
     for s in (0, 1, 31, 32, 1023, 1_048_575):
-        assert codec.parse(codec.format_sn(s, B32), B32) == s
-    assert codec.parse("AVM00042X", DEC5) == 42
-    assert codec.parse("AVM0042X", DEC5) is None, "wrong length"
-    assert codec.parse("BVM00042X", DEC5) is None, "wrong prefix"
-    assert codec.parse("AVM0004AX", DEC5) is None, "char outside charset"
+        assert codec.parse(codec.format_sn(s, B32), B32) == ("", s)
 
 
-def test_custom_charset_keeps_order_of_table():
-    s = Spec("", "", 10, 3, "ABCDEFGHJK")
-    assert codec.encode_seq(10, s) == "ABA"
-    assert codec.parse("ABA", s) == 10
+@pytest.mark.parametrize(
+    ("raw", "norm"),
+    [
+        ("0100", "100"),
+        ("0.5", "0.5"),
+        ("0", "0"),
+        ("10.50", "10.5"),
+        ("10.0", "10"),
+        (" 100 ", "100"),
+        ("000", "0"),
+        (".5", "0.5"),
+        ("", None),
+        ("  ", None),
+        ("-1", None),
+        ("1,000", None),
+        ("1e3", None),
+        ("1.2.3", None),
+        ("abc", None),
+        (".", None),
+    ],
+)
+def test_length_has_one_spelling(raw, norm):
+    assert codec.normalize_length(raw) == norm
 
 
 def test_validation():
-    assert codec.validate(Spec("", "", 8, 4, "01234567")) is ErrorCode.RULE_BASE_INVALID
-    assert codec.validate(Spec("", "", 10, 13, "0123456789")) is ErrorCode.RULE_SEQ_LEN_INVALID
-    assert codec.validate(Spec("", "", 10, 4, "012345678")) is ErrorCode.RULE_CHARSET_LENGTH
-    assert codec.validate(Spec("", "", 10, 4, "0123456788")) is ErrorCode.RULE_CHARSET_DUPLICATE
-    assert codec.validate(DEC5) is None
+    assert codec.validate(Spec("A", "", 8, 4, "01234567")) is ErrorCode.RULE_BASE_INVALID
+    assert codec.validate(Spec("A", "", 10, 13, "0123456789")) is ErrorCode.RULE_SEQ_LEN_INVALID
+    assert codec.validate(Spec("A", "", 10, 4, "012345678")) is ErrorCode.RULE_CHARSET_LENGTH
+    assert codec.validate(Spec("A", "", 10, 4, "0123456788")) is ErrorCode.RULE_CHARSET_DUPLICATE
+    assert codec.validate(Spec("", "", 10, 4, "0123456789")) is ErrorCode.RULE_PREFIX_REQUIRED
+    assert codec.validate(Spec("A_B", "", 10, 4, "0123456789")) is ErrorCode.RULE_AFFIX_INVALID
+    assert codec.validate(Spec("AB", "x_1", 10, 4, "0123456789")) is None
+    assert codec.validate(HX) is None
 
 
-# ---------------------------------------------------------------------- Segments（对应 SegmentsTest）
-
-SPEC4 = Spec("S", "", 10, 4, "0123456789")
+# ---------------------------------------------------------------------- 金蝶解析（附录 D.1）
 
 
-def line(seq, material, qty):
-    return {"line_seq": seq, "material_number": material, "material_name": material, "qty": Decimal(qty)}
+def test_query_rows_trim_spaces_and_read_header_fields():
+    cfg = k3._Config("u", "a", "i", "s", "n", 2052, 1, 1, 1, 0, 0, "F_HX_PO", "F_ATT", "Flength", "F_HX_PO", "Att", "Flength")
+    row = ["VT1", "C", "0001 ", " ", "PO1", "110", [{"Key": 2052, "Value": "越南"}], 2.0, " ", "9148363", "缆", "0100",
+           10.0, "2026-10-01T08:00:00"]
+    r = k3._row_of_query(row, cfg)
+    assert (r.bill_no, r.customer_code, r.pi, r.org_code, r.org_name, r.seq) == ("VT1", "0001", "", "110", "越南", 2)
+    assert r.attach_no == "" and r.length_raw == "0100"
+    assert r.qty == Decimal("10.0")
+    assert r.modify_time == datetime(2026, 10, 1, 8, 0, 0)
 
 
-def test_splits_by_line_order_including_repeated_and_empty_material():
-    segs = split([line(1, "A", 3), line(2, "B", 2), line(3, "A", 2), line(4, "", 1)], 0, 8, 11, SPEC4)
-    assert len(segs) == 4
-    assert segs[0].material_code == "A"
-    assert (segs[0].start_seq, segs[0].end_seq) == (11, 13)
-    assert segs[1].start_sn == "S0014"
-    assert segs[2].material_code == "A"
-    assert segs[3].material_code == ""
-    assert segs[3].end_seq == 18
-
-
-def test_continues_after_already_generated_positions():
-    segs = split([line(1, "A", 3), line(2, "B", 2)], 2, 2, 100, SPEC4)
-    assert len(segs) == 2
-    assert (segs[0].material_code, segs[0].qty, segs[0].start_seq) == ("A", 1, 100)
-    assert (segs[1].material_code, segs[1].start_seq) == ("B", 101)
-
-
-def test_fractional_quantity_counts_integer_part():
-    assert sn_qty({"qty": Decimal("2.9")}) == 2
-
-
-def test_segments_json_matches_java_jackson_layout():
-    from app.services.generate import segments_json
-
-    s = segments_json(split([line(1, "物料", 2)], 0, 2, 1, SPEC4))
-    assert s == (
-        '[{"lineSeq":1,"materialCode":"物料","materialName":"物料","qty":2,"startSeq":1,"endSeq":2,'
-        '"startSn":"S0001","endSn":"S0002"}]'
-    )
-
-
-# ---------------------------------------------------------------------- 金蝶解析（对应 K3ParsingTest）
-
-
-def test_query_rows_keep_only_plan_statuses_and_order():
-    raw = [
-        ["C1", "MO1", "PO", "PI1", "M1", "物料1", 10.0, "1", "SO1", "工厂A"],
-        ["C1", "MO1", "PO", "PI1", "M2", "物料2", 5, 2.0, "", "工厂A"],
-        ["C1", "MO2", "PO", "PI1", "M1", "物料1", 7, "4", "", "工厂A"],
-    ]
-    rows = k3.rows_from_query(raw)
-    assert len(rows) == 2
-    assert rows[1].material_number == "M2"
-    assert rows[1].status == "2"
-    assert rows[1].qty == Decimal("5")
+def test_view_reads_document_status_and_lines():
+    cfg = k3._Config("u", "a", "i", "s", "n", 2052, 1, 1, 1, 0, 0, "F_HX_PO", "", "Flength", "F_HX_PO", "", "Flength")
+    doc = {
+        "BillNo": "VT2026090001",
+        "DocumentStatus": "D",
+        "F_HX_PI": "000001",
+        "F_ora_Base": None,
+        "PrdOrgId": {"Number": "110", "Name": [{"Key": 2052, "Value": "光纤连接（越南）有限公司"}]},
+        "TreeEntity": [{"Seq": 1, "MaterialId": {"Number": "9148363", "Name": "x"}, "Qty": 10.0, "Flength": " "}],
+    }
+    rows = k3.rows_from_view(doc, cfg)
+    assert rows[0].doc_status == "D"
+    assert rows[0].customer_code == "", "基础资料为 null 视为空"
+    assert rows[0].length_raw == ""
 
 
 def test_locale_name_picks_simplified_chinese():
@@ -126,6 +131,33 @@ def test_error_is_extracted():
     err = [[{"Result": {"ResponseStatus": {"IsSuccess": False, "Errors": [{"Message": "字段不存在"}]}}}]]
     assert k3.error_of(err) == "字段不存在"
     assert k3.error_of([["a"]]) is None
+
+
+# ---------------------------------------------------------------------- MES 报文
+
+
+def test_gzip_body_is_byte_identical_across_calls():
+    raw = mes_client.canonical({"a": 1, "b": "中"})
+    assert mes_client.gzip_bytes(raw) == mes_client.gzip_bytes(raw)
+    assert gzip.decompress(mes_client.gzip_bytes(raw)) == raw
+
+
+def test_hmac_signature_string():
+    import hashlib
+    import hmac
+
+    raw = b'{"x":1}'
+    sig = mes_client.sign("k", "2026-10-19T02:37:00Z", "PS-1", raw)
+    want = hmac.new(
+        b"k", f"2026-10-19T02:37:00Z\nPS-1\n{hashlib.sha256(raw).hexdigest()}".encode(), hashlib.sha256
+    ).hexdigest()
+    assert sig == want
+
+
+def test_ping_batch_has_no_items():
+    body = json.loads(gzip.decompress(mes_client.ping_body("110", "PING-1")))
+    assert body["batchType"] == "PING" and body["count"] == 0 and body["items"] == []
+    assert body["itemsDigest"].startswith("sha256:") and len(body["itemsDigest"]) == 71
 
 
 # ---------------------------------------------------------------------- 多语言契约（对应 I18nContractTest）
@@ -299,18 +331,20 @@ def test_db_target_env_overrides_dotenv(monkeypatch):
 @pytest.mark.parametrize(
     ("method", "path", "action"),
     [
-        ("POST", "/api/transfers", "TRANSFER_APPLY"),
-        ("POST", "/api/transfers/direct", "TRANSFER_DIRECT"),
-        ("POST", "/api/transfers/12/approve", "TRANSFER_APPROVE"),
-        ("POST", "/api/transfers/12/reject", "TRANSFER_REJECT"),
-        ("POST", "/api/transfers/12/withdraw", "TRANSFER_WITHDRAW"),
-        ("POST", "/api/generate/pi-allocate", "SN_ALLOCATE"),
+        ("POST", "/api/transfers/org", "TRANSFER_APPLY"),
+        ("POST", "/api/transfers/org/direct", "TRANSFER_DIRECT"),
+        ("POST", "/api/transfers/org/12/approve", "TRANSFER_APPROVE"),
+        ("POST", "/api/transfers/org/12/reject", "TRANSFER_REJECT"),
+        ("POST", "/api/transfers/org/12/withdraw", "TRANSFER_WITHDRAW"),
+        ("POST", "/api/transfers/bill", "TRANSFER_BILL"),
         ("POST", "/api/generate/allocate", "SN_ALLOCATE"),
-        ("POST", "/api/generate/pi", "SN_GENERATE"),
+        ("POST", "/api/generate/run", "SN_GENERATE"),
         ("POST", "/api/generate/batches/G1/cancel", "SN_GEN_CANCEL"),
         ("POST", "/api/generate/batches/G1/revoke", "SN_REVOKE"),
         ("PUT", "/api/rules/pi-binding", "RULE_PI_BIND"),
         ("DELETE", "/api/rules/pi-binding", "RULE_PI_UNBIND"),
+        ("POST", "/api/rules/customer-binding", "RULE_CUSTOMER_BIND"),
+        ("POST", "/api/rules/line-select", "RULE_LINE_SELECT"),
         ("DELETE", "/api/rules/3", "RULE_DELETE"),
         ("PUT", "/api/rules/3", "RULE_UPDATE"),
         ("POST", "/api/users", "USER_CREATE"),
@@ -318,10 +352,17 @@ def test_db_target_env_overrides_dotenv(monkeypatch):
         ("POST", "/api/users/5/disable", "USER_DISABLE"),
         ("POST", "/api/users/5/enable", "USER_ENABLE"),
         ("POST", "/api/users/5/reset-password", "USER_RESET_PWD"),
-        ("POST", "/api/factories/100/disable", "FACTORY_DISABLE"),
-        ("POST", "/api/factories/100/enable", "FACTORY_ENABLE"),
+        ("POST", "/api/users/5/reset-secret", "USER_RESET_SECRET"),
+        ("PUT", "/api/factories/110/mes-config", "FACTORY_MES_CONFIG"),
+        ("POST", "/api/factories/110/mes-toggle", "FACTORY_MES_TOGGLE"),
+        ("POST", "/api/delivery/batches/PS-1/void", "SN_BATCH_VOID"),
+        ("POST", "/api/delivery/batches/PS-1/confirm", "SN_BATCH_MANUAL"),
+        ("POST", "/api/delivery/resume", "SN_PUSH_RESUME"),
         ("POST", "/api/acquire/take", "SN_ACQUIRE"),
-        ("POST", "/api/open/callback", "SN_CALLBACK"),
+        ("POST", "/api/orders/attach", "ORDER_ATTACH_FILL"),
+        ("POST", "/api/orders/alerts/3/handle", "ORDER_ALERT_HANDLE"),
+        ("POST", "/api/mes/v1/batches/next", "SN_PULL"),
+        ("POST", "/api/mes/v1/batches/PS-1/receipt", "SN_RECEIPT"),
         ("PUT", "/api/auth/lang", "OTHER"),
     ],
 )

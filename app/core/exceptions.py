@@ -33,3 +33,34 @@ class BizError(AppError):
     @property
     def status(self) -> int:
         return self.status_code
+
+
+class MesError(AppError):
+    """MES 接口（/api/mes/v1）的错误：{"schemaVersion", "code", "message", "batchNo", "details"}。
+
+    程序只按 code 判断，message 给人看。出错不返回 200。
+    """
+
+    code = "MES_ERROR"
+
+    def __init__(
+        self,
+        status_code: int,
+        code: str,
+        message: str,
+        batch_no: str | None = None,
+        details: list[dict] | None = None,
+        retry_after: int | None = None,
+    ):
+        super().__init__(message, status_code, code)
+        self.batch_no = batch_no
+        self.details = details or []
+        self.retry_after = retry_after
+
+    def body(self) -> dict:
+        out: dict = {"schemaVersion": "1.0", "code": self.code, "message": self.message}
+        if self.batch_no is not None:
+            out["batchNo"] = self.batch_no
+        if self.details:
+            out["details"] = self.details
+        return out

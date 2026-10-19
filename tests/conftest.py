@@ -6,9 +6,11 @@
 
 from __future__ import annotations
 
+import gzip
 import itertools
 import json
 import os
+import re
 import threading
 import time
 from collections.abc import Callable
@@ -115,8 +117,10 @@ class FakeK3:
 
 
 K3 = FakeK3()
-#: 假金蝶里的单据：单据编号 → View 返回的单据
+#: 假金蝶里的单据：单据编号 → View 返回的单据（含 DocumentStatus）
 BILLS: dict[str, dict] = {}
+#: 置为 True 时 ExecuteBillQuery 返回失败（模拟金蝶故障）
+K3_FAIL = {"query": False, "view": False}
 
 
 def _zh(v: Any) -> str:
@@ -128,35 +132,40 @@ def _zh(v: Any) -> str:
     return "" if v is None else str(v)
 
 
-def _query_rows(doc: dict) -> list[list]:
-    customer = doc["F_ora_Base"]["Number"]
-    org = _zh(doc["PrdOrgId"]["Name"])
+def _detail_rows(doc: dict) -> list[list]:
+    """与 k3._detail_keys 的列顺序一致。"""
+    base = doc.get("F_ora_Base") or {}
+    org = doc["PrdOrgId"]
     return [
         [
-            customer,
             doc["BillNo"],
-            doc["F_HX_PO"],
+            doc["DocumentStatus"],
+            base.get("Number", ""),
             doc["F_HX_PI"],
+            doc["F_HX_PO"],
+            org["Number"],
+            org["Name"],
+            line["Seq"],
+            line.get("FAttach", " "),
             line["MaterialId"]["Number"],
-            _zh(line["MaterialId"]["Name"]),
+            line["MaterialId"]["Name"],
+            line.get("Flength", " "),
             line["Qty"],
-            line["Status"],
-            "",
-            org,
+            doc["ModifyDate"],
         ]
         for line in doc["TreeEntity"]
     ]
 
 
-#: 假金蝶的组织机构：(FNumber, FName, FForbidStatus)，用例按需填写
-ORGS: list[tuple[str, str, str]] = []
+_IN = re.compile(r"FBillNo IN \((.*)\)")
 
 
 def install_k3() -> None:
-    """View 按单据编号返回 BILLS；ExecuteBillQuery（全量）返回 BILLS 全部明细。"""
-
     def then(call: Call) -> Any:
+        fail = {"Result": {"ResponseStatus": {"IsSuccess": False, "Errors": [{"Message": "金蝶故障"}]}}}
         if "View" in call.path:
+            if K3_FAIL["view"]:
+                return fail
             data = FakeK3.param(call, 1)
             doc = BILLS.get(str(data.get("Number")))
             if doc is None:
@@ -170,11 +179,20 @@ def install_k3() -> None:
             data = FakeK3.param(call, 0)
             if data.get("FormId") == "ORG_Organizations":
                 return [list(o) for o in ORGS]
+            if K3_FAIL["query"]:
+                return [[fail]]
             if int(data["StartRow"]) > 0:
                 return []
+            docs = [d for d in list(BILLS.values()) if d["DocumentStatus"] == "C"]
+            if data["FieldKeys"] == "FBillNo,FModifyDate":
+                return [[d["BillNo"], d["ModifyDate"]] for d in docs]
+            m = _IN.search(data.get("FilterString", ""))
+            if m:
+                wanted = {x.strip().strip("'") for x in m.group(1).split(",")}
+                docs = [d for d in docs if d["BillNo"] in wanted]
             rows: list = []
-            for doc in list(BILLS.values()):
-                rows += _query_rows(doc)
+            for d in docs:
+                rows += _detail_rows(d)
             return rows
         return {}
 
@@ -182,6 +200,142 @@ def install_k3() -> None:
 
 
 install_k3()
+
+#: 假金蝶的组织机构：(FNumber, FName, FForbidStatus)
+ORGS: list[tuple[str, str, str]] = []
+
+
+# ---------------------------------------------------------------------- 假 MES
+
+
+class FakeMes:
+    """各组织一套 MES（路径 /mes/<组织>）：按 MES 对接说明第 3 节的 process(batch) 处理推送来的批次，
+    也可在测试里对拉取到的批次调用 process 生成回执。behavior[org] 可覆盖应答（模拟故障）。"""
+
+    def __init__(self) -> None:
+        self.received: list[dict] = []
+        #: org -> callable(batch, headers) -> (status, body | None) ；None = 正常处理
+        self.behavior: dict[str, Callable[[dict, dict], tuple[int, Any]] | None] = {}
+        #: org -> sn -> {"rev", "lastBatchNo", "transferredOut", "toOrgCode", "pi", "billNo", "billSeq", "suspended"}
+        self.store: dict[str, dict[str, dict]] = {}
+        #: org -> batchNo -> (itemsDigest, receipt)
+        self.batches: dict[str, dict[str, tuple[str, dict]]] = {}
+        self.tokens: dict[str, str] = {}
+        self.lock = threading.Lock()
+        fake = self
+
+        class H(BaseHTTPRequestHandler):
+            def do_POST(self):  # noqa: N802
+                org = self.path.rstrip("/").split("/")[-1]
+                n = int(self.headers.get("Content-Length") or 0)
+                raw = self.rfile.read(n)
+                if self.headers.get("Content-Encoding") == "gzip":
+                    raw = gzip.decompress(raw)
+                batch = json.loads(raw or b"{}")
+                headers = {k.lower(): v for k, v in self.headers.items()}
+                fake.received.append({"org": org, "batch": batch, "headers": headers, "raw": raw})
+                if headers.get("authorization") != f"Bearer {fake.tokens.get(org)}":
+                    status, body = 401, {"schemaVersion": "1.0", "code": "UNAUTHORIZED", "message": "bad token"}
+                else:
+                    beh = fake.behavior.get(org)
+                    status, body = (None, None) if beh is None else beh(batch, headers)
+                    if status is None:
+                        status, body = fake.handle(org, batch)
+                if status == "drop":
+                    self.connection.close()
+                    return
+                out = json.dumps(body, ensure_ascii=False).encode("utf-8")
+                self.send_response(status)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(out)))
+                self.end_headers()
+                self.wfile.write(out)
+
+            def log_message(self, *args):  # noqa: D401
+                pass
+
+        self.server = ThreadingHTTPServer(("127.0.0.1", 0), H)
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+
+    def url(self, org: str) -> str:
+        return f"http://127.0.0.1:{self.server.server_address[1]}/mes/{org}"
+
+    def handle(self, org: str, batch: dict) -> tuple[int, dict]:
+        if batch.get("batchType") == "PING":
+            if batch.get("orgCode") != org:
+                return 200, {"schemaVersion": "1.0", "batchNo": batch.get("batchNo"), "outcome": "REJECTED",
+                             "rejectCode": "ORG_MISMATCH", "rejectMessage": "orgCode"}
+            return 200, {"schemaVersion": "1.0", "batchNo": batch["batchNo"], "outcome": "PROCESSED",
+                         "summary": {"total": 0, "accepted": 0, "duplicate": 0, "conflict": 0, "stale": 0},
+                         "results": []}
+        r = self.process(org, batch)
+        if "__status" in r:
+            status = r.pop("__status")
+            return status, {"schemaVersion": "1.0", **r, "message": "batch content mismatch"}
+        return 200, r
+
+    def process(self, org: str, batch: dict) -> dict:
+        """MES 处理逻辑（MES 对接说明第 3 节）。"""
+        with self.lock:
+            no = batch["batchNo"]
+            items = batch.get("items") or []
+            # 第 1 步：校验（不通过整批拒收，且不登记批次号）
+            problem = None
+            if batch.get("orgCode") != org:
+                problem = ("ORG_MISMATCH", "orgCode 不是本组织")
+            elif batch.get("count") != len(items):
+                problem = ("COUNT_MISMATCH", "count")
+            elif len({x["sn"] for x in items}) != len(items):
+                problem = ("DUPLICATE_SN", "dup")
+            elif batch["batchType"] == "DELIVERY" and any(
+                x["pi"] != batch["pi"] or x["pushType"] == "TRANSFER_OUT" for x in items
+            ):
+                problem = ("PI_MISMATCH", "pi")
+            elif batch["batchType"] == "TRANSFER_OUT" and any(x["pushType"] != "TRANSFER_OUT" for x in items):
+                problem = ("TYPE_MISMATCH", "type")
+            if problem:
+                return {"schemaVersion": "1.0", "batchNo": no, "outcome": "REJECTED", "rejectCode": problem[0],
+                        "rejectMessage": problem[1]}
+            # 第 2 步：查重
+            seen = self.batches.setdefault(org, {})
+            if no in seen:
+                digest, receipt = seen[no]
+                if digest != batch["itemsDigest"]:
+                    return {"__status": 409, "code": "BATCH_CONTENT_MISMATCH"}
+                return {**receipt, "replayed": True}
+            # 第 3 步：逐枚比对 rev
+            store = self.store.setdefault(org, {})
+            results = []
+            summary = {"total": len(items), "accepted": 0, "duplicate": 0, "conflict": 0, "stale": 0}
+            for x in items:
+                cur = store.get(x["sn"])
+                out = {"sn": x["sn"], "rev": x["rev"]}
+                if cur is None or x["rev"] > cur["rev"]:
+                    rec = {"rev": x["rev"], "lastBatchNo": no, "suspended": False}
+                    if x["pushType"] == "TRANSFER_OUT":
+                        rec.update(transferredOut=True, toOrgCode=x["toOrgCode"], pi=x["from"]["pi"],
+                                   billNo=x["from"]["billNo"], billSeq=x["from"]["billSeq"])
+                    else:
+                        rec.update(transferredOut=False, toOrgCode=None, pi=x["pi"], billNo=x["billNo"],
+                                   billSeq=x["billSeq"], materialCode=x["materialCode"])
+                    store[x["sn"]] = rec
+                    out["result"] = "ACCEPTED"
+                elif x["rev"] == cur["rev"] and cur["lastBatchNo"] == no:
+                    out["result"] = "DUPLICATE"
+                elif x["rev"] == cur["rev"]:
+                    cur["suspended"] = True
+                    out.update(result="CONFLICT", existingRev=cur["rev"], existingBatchNo=cur["lastBatchNo"])
+                else:
+                    out.update(result="STALE", existingRev=cur["rev"], existingBatchNo=cur["lastBatchNo"])
+                summary[out["result"].lower()] += 1
+                results.append(out)
+            receipt = {"schemaVersion": "1.0", "batchNo": no, "outcome": "PROCESSED",
+                       "receivedAt": "2026-10-19T02:37:03Z", "summary": summary, "results": results}
+            seen[no] = (batch["itemsDigest"], receipt)
+            return receipt
+
+
+MES = FakeMes()
 
 
 # ---------------------------------------------------------------------- HTTP 客户端
@@ -256,6 +410,11 @@ def uid(prefix: str) -> str:
     return f"{prefix}{int(time.time() * 1000) % 100000}-{next(_seq)}"
 
 
+def emp(prefix: str = "U") -> str:
+    """合法工号：4–32 位字母和数字。"""
+    return f"{prefix}{int(time.time() * 1000) % 100000}{next(_seq)}"
+
+
 def ok(r: Res) -> Res:
     assert r.status == 200, str(r)
     return r
@@ -282,15 +441,23 @@ def app_client():
         "SN_INIT_ADMIN_EMP_NO": "admin",
         "SN_INIT_ADMIN_PASSWORD": ADMIN_PASSWORD,
         "SN_RESET_ADMIN": "false",
-        "SN_SECRET": "test-secret",
+        "SN_SECRET": "test-secret-test-secret-test-secret",
         "SN_DEMO_SEED": "false",
         "SN_GEN_SYNC_THRESHOLD": "3000",
         "SN_GEN_MAX_PER_RUN": "20000",
+        # 后台推送调度、比对同步定时任务关闭：测试里手动驱动
+        "SN_PUSH_ENABLED": "false",
+        "SN_SYNC_ENABLED": "false",
+        "SN_PUSH_RETRY_INTERVALS_MINUTES": "0,0,0",
+        "SN_MES_PULL_RATE_PER_MINUTE": "100000",
         "K3_SERVER_URL": K3.url,
         "K3_ACCT_ID": "acct",
         "K3_APP_ID": "app",
         "K3_APP_SECRET": "secret",
         "K3_USERNAME": "tester",
+        "K3_PAGE_RETRY_SECONDS": "0",
+        "K3_FIELD_ATTACH_NO": "F_ATT",
+        "K3_VIEW_ATTACH_NO": "FAttach",
     }
     saved = {k: os.environ.get(k) for k in env}
     os.environ.update(env)
@@ -312,7 +479,7 @@ def app_client():
 @pytest.fixture(scope="session")
 def admin(app_client) -> str:
     api = Api(app_client)
-    r = api.post("/api/auth/login", m(emp_no="admin", password=ADMIN_PASSWORD), None)
+    r = api.page_login("admin", ADMIN_PASSWORD)
     assert r.status == 200, str(r)
     assert r["user"]["must_change_pwd"] is False, "built-in admin from .env works without a password change"
     return r.text("token")
@@ -345,6 +512,10 @@ def sql():
                 c.execute(s, args or None)
                 return list(c.fetchall())
 
+        def scalar(self, s: str, *args: Any) -> Any:
+            row = self.one(s, *args)
+            return None if row is None else next(iter(row.values()))
+
         def exec(self, s: str, *args: Any) -> int:
             with conn.cursor() as c:
                 return c.execute(s, args or None)
@@ -357,110 +528,167 @@ def sql():
 
 # ---------------------------------------------------------------------- 数据构造
 
+_MODIFY = itertools.count(1)
+
 
 class World:
-    """ITBase 的数据构造助手。"""
+    """数据构造助手：生产组织、订单、规则、生成、分配、推送、MES 调用。"""
 
     def __init__(self, api: Api, admin: str) -> None:
         self.api = api
         self.admin = admin
 
-    def factory(self, code: str, name: str) -> None:
-        r = self.api.post("/api/factories", m(factory_code=code, factory_name=name), self.admin)
-        assert r.status == 200 or r.code == "FACTORY_EXISTS", str(r)
-
-    def user(self, emp: str, role: str, factory: str | None) -> str:
-        """建账户并登录（新建账户直接可用），返回令牌。"""
+    # ---------------- 账户
+    def user(self, emp: str, role: str, factory: str | None, factory_codes: list[str] | None = None) -> str:
+        """建页面账户并页面登录（新建账户直接可用），返回令牌。"""
         ok(
             self.api.post(
-                "/api/users", m(emp_no=emp, name=emp, role=role, factory_code=factory, password="Pass@1234"), self.admin
-            )
-        )
-        return ok(self.api.post("/api/auth/login", m(emp_no=emp, password="Pass@1234"), None)).text("token")
-
-    def order(self, bill_no: str, org: str, customer: str, pi: str, *lines: tuple) -> Res:
-        """在假金蝶登记一张生产订单并按单据编号同步进快照。lines = (物料, 数量[, 状态])。"""
-        entries = []
-        for line in lines:
-            material, qty = line[0], line[1]
-            status = line[2] if len(line) > 2 else "2"
-            entries.append(
-                {
-                    "MaterialId": {"Number": material, "Name": [{"Key": 2052, "Value": "物料" + material}]},
-                    "Qty": float(qty),
-                    "Status": status,
-                    "SaleOrderNo": "SO",
-                }
-            )
-        BILLS[bill_no] = {
-            "BillNo": bill_no,
-            "F_ora_Base": {"Number": customer},
-            "F_HX_PO": "PO-" + bill_no,
-            "F_HX_PI": pi,
-            "PrdOrgId": {"Name": [{"Key": 2052, "Value": org}]},
-            "TreeEntity": entries,
-        }
-        return ok(self.api.post("/api/orders/sync", m(bill_no=bill_no), self.admin))
-
-    def pi_rule(self, pi: str, prefix: str, base: int, length: int) -> None:
-        ok(
-            self.api.post(
-                "/api/rules",
-                m(
-                    rule_code=uid("R"),
-                    rule_name="rule " + pi,
-                    bind_scope="PI",
-                    bind_value=pi,
-                    prefix=prefix,
-                    suffix="",
-                    base=base,
-                    seq_len=length,
-                    charset="",
-                ),
+                "/api/users",
+                m(emp_no=emp, name=emp, role=role, factory_code=factory, factory_codes=factory_codes,
+                  password="Pass1234"),
                 self.admin,
             )
         )
+        return ok(self.api.page_login(emp, "Pass1234")).text("token")
 
-    def pi_of(self, bill: str) -> str:
-        """订单所属的 PI；订单不在快照时原样返回单号（按 PI 预演会报无额度）。"""
-        r = self.api.get("/api/generate/context" + q(bill_no=bill), self.admin)
-        return r.body["bill"]["pi"] if r.status == 200 else bill
+    # ---------------- 生产组织与 MES
+    def org(self, code: str, name: str | None = None, enabled: bool = True) -> str:
+        global ORGS
+        ORGS[:] = [o for o in ORGS if o[0] != code] + [(code, name or f"组织{code}", "A" if enabled else "B")]
+        ok(self.api.post("/api/factories/sync", {}, self.admin))
+        return code
 
-    def preview(self, bill: str, qty: int, rule_id: int | None = None) -> Res:
-        """按该订单的 PI 预演（生成只能按整张 PI）；本次数量须只落在这一张订单上，结果并入该订单的预演令牌。"""
-        r = self.api.post("/api/generate/pi-preview", m(pi_no=self.pi_of(bill), qty=qty, rule_id=rule_id), self.admin)
-        if r.status != 200:
-            return r
-        items = r.body["items"]
-        assert [x["bill_no"] for x in items] == [bill], f"按 PI 预演占用了其他订单：{items}"
-        return Res(r.status, {**r.body, **items[0]}, r.raw)
+    def enable_mes(self, code: str, batch_size: int = 5000, auth: str = "TOKEN") -> None:
+        token = f"tok-{code}"
+        MES.tokens[code] = token
+        cfg = m(mes_url=MES.url(code), mes_auth_type=auth, mes_credential=token, batch_size=batch_size,
+                push_timeout_sec=10)
+        t = ok(self.api.post(f"/api/factories/{code}/mes-test", cfg, self.admin))
+        assert t["ok"], str(t)
+        ok(self.api.put(f"/api/factories/{code}/mes-config", cfg, self.admin))
+        ok(self.api.post(f"/api/factories/{code}/mes-toggle", m(enabled=True), self.admin))
 
-    def gen(self, token: str | None, bill: str, qty: int) -> Res:
-        """凭一张订单的预演令牌按 PI 生成，成功时返回该订单的任务。"""
-        item = m(preview_token=token, bill_no=bill, qty=qty)
-        r = self.api.post("/api/generate/pi", m(pi_no=self.pi_of(bill), items=[item]), self.admin)
-        return Res(r.status, r.body["jobs"][0], r.raw) if r.status == 200 else r
+    def mes_account(self, code: str) -> tuple[str, str]:
+        """建 MES 接口账户并换令牌，返回（令牌，工号）。"""
+        e = emp("M")
+        r = ok(self.api.post("/api/users", m(emp_no=e, name="MES", role="mes", factory_code=code), self.admin))
+        t = ok(self.api.post("/api/mes/v1/auth/token", m(empNo=e, secret=r["secret"]), None))
+        return t.text("accessToken"), e
 
-    def generate(self, bill: str, qty: int, rule_id: int | None = None) -> dict:
-        """预演 + 生成（同步完成），返回任务。"""
-        p = ok(self.preview(bill, qty, rule_id))
-        j = ok(self.gen(p.text("token"), bill, qty))
-        assert j.text("status") == "SUCCESS", str(j)
+    # ---------------- 订单
+    def order(self, bill_no: str, org: str, customer: str, pi: str, *lines: tuple, status: str = "C") -> Res:
+        """在假金蝶登记一张生产订单并按单据编号同步进快照。lines = (物料, 数量[, 长度[, 附件项次]])。"""
+        BILLS[bill_no] = self.doc(bill_no, org, customer, pi, *lines, status=status)
+        return ok(self.api.post("/api/orders/sync", m(bill_no=bill_no), self.admin))
+
+    @staticmethod
+    def doc(bill_no: str, org: str, customer: str, pi: str, *lines: tuple, status: str = "C") -> dict:
+        entries = []
+        for i, line in enumerate(lines, start=1):
+            material, qty = line[0], line[1]
+            length = line[2] if len(line) > 2 else "100"
+            attach = line[3] if len(line) > 3 else "1"
+            entries.append(
+                {
+                    "Seq": i,
+                    "MaterialId": {"Number": material, "Name": [{"Key": 2052, "Value": "物料" + material}]},
+                    "Qty": float(qty),
+                    "Flength": length,
+                    "FAttach": attach,
+                }
+            )
+        return {
+            "BillNo": bill_no,
+            "DocumentStatus": status,
+            "F_ora_Base": {"Number": customer},
+            "F_HX_PO": "PO-" + bill_no,
+            "F_HX_PI": pi,
+            "PrdOrgId": {"Number": org, "Name": [{"Key": 2052, "Value": f"组织{org}"}]},
+            "ModifyDate": f"2026-10-01T00:00:{next(_MODIFY) % 60:02d}",
+            "TreeEntity": entries,
+        }
+
+    def touch(self, bill_no: str, **changes: Any) -> None:
+        """改假金蝶里的单据（表头字段或 DocumentStatus），并刷新修改时间。"""
+        d = BILLS[bill_no]
+        for k, v in changes.items():
+            if k == "org":
+                d["PrdOrgId"] = {"Number": v, "Name": [{"Key": 2052, "Value": f"组织{v}"}]}
+            elif k == "customer":
+                d["F_ora_Base"] = {"Number": v}
+            elif k == "pi":
+                d["F_HX_PI"] = v
+            elif k == "status":
+                d["DocumentStatus"] = v
+            else:
+                d[k] = v
+        d["ModifyDate"] = f"2026-10-02T{next(_MODIFY) % 24:02d}:{next(_MODIFY) % 60:02d}:00"
+
+    def compare(self) -> dict:
+        return ok(self.api.post("/api/orders/compare", {}, self.admin)).body
+
+    # ---------------- 规则
+    def rule(self, prefix: str, base: int = 10, seq_len: int = 6, with_length: bool = True, suffix: str = "") -> int:
+        r = ok(
+            self.api.post(
+                "/api/rules",
+                m(rule_code=uid("R"), rule_name="rule " + prefix, prefix=prefix, suffix=suffix, base=base,
+                  seq_len=seq_len, with_length=with_length),
+                self.admin,
+            )
+        )
+        return r["rule"]["id"]
+
+    def bind_pi(self, pi: str, rule_id: int, new_prefix: str | None = None) -> Res:
+        return self.api.put("/api/rules/pi-binding", m(pi_no=pi, rule_id=rule_id, new_prefix=new_prefix), self.admin)
+
+    def select(self, pi: str, lines: list[tuple[str, int]], rule_id: int | None = None, custom: dict | None = None,
+               new_prefix: str | None = None) -> Res:
+        return self.api.post(
+            "/api/rules/line-select",
+            m(pi_no=pi, lines=[m(bill_no=b, seq=s) for b, s in lines], rule_id=rule_id, custom=custom,
+              new_prefix=new_prefix),
+            self.admin,
+        )
+
+    # ---------------- 生成 / 分配 / 推送
+    def preview(self, pi: str, qty: int | None = None, bills: list[str] | None = None,
+                lines: list[tuple[str, int]] | None = None) -> Res:
+        scope = "LINES" if lines else "BILLS"
+        if not lines and not bills:
+            bills = sorted({d["BillNo"] for d in BILLS.values() if d["F_HX_PI"] == pi and d["DocumentStatus"] == "C"})
+        return self.api.post(
+            "/api/generate/preview",
+            m(pi_no=pi, scope=scope, bills=bills, lines=[m(bill_no=b, seq=s) for b, s in lines or []], qty=qty),
+            self.admin,
+        )
+
+    def generate(self, pi: str, qty: int | None = None, bills: list[str] | None = None,
+                 lines: list[tuple[str, int]] | None = None) -> dict:
+        p = ok(self.preview(pi, qty, bills, lines))
+        assert p["generatable"], str(p)
+        j = ok(self.api.post("/api/generate/run", m(token=p["token"]), self.admin))
+        assert j["status"] == "SUCCESS", str(j)
         return j.body
 
-    def generate_pi(self, pi: str, qty: int, rule_id: int | None = None) -> dict:
-        """按整张 PI 预演 + 生成（同步完成），返回 {pi_no, batch, qty, jobs}。"""
-        p = ok(self.api.post("/api/generate/pi-preview", m(pi_no=pi, qty=qty, rule_id=rule_id), self.admin))
-        items = [m(preview_token=x["token"], bill_no=x["bill_no"], qty=x["qty"]) for x in p.body["items"]]
-        r = ok(self.api.post("/api/generate/pi", m(pi_no=pi, items=items), self.admin)).body
-        assert {j["status"] for j in r["jobs"]} == {"SUCCESS"}, r
-        return r
+    def allocate(self, pi: str, bills: list[str] | None = None) -> dict:
+        return ok(self.api.post("/api/generate/allocate", m(pi_no=pi, bills=bills), self.admin)).body
 
-    def allocate(self, bill: str) -> dict:
-        return ok(self.api.post("/api/generate/allocate", m(bill_no=bill), self.admin)).body
+    @staticmethod
+    def push() -> int:
+        from app.services import delivery
 
-    def acquire(self, token: str, factory: str | None, pi: str, req: str) -> Res:
-        return self.api.post("/api/acquire/take", m(factory_code=factory, pi_no=pi, request_no=req), token)
+        return delivery.run_pending()
+
+    def acquire(self, token: str, factory: str | None, pi: str, req: str | None = None) -> Res:
+        return self.api.post("/api/acquire/take", m(factory_code=factory, pi_no=pi, request_no=req or uid("Q")), token)
+
+    # ---------------- MES 调用
+    def mes_next(self, token: str, **kw: Any) -> Res:
+        return self.api.post("/api/mes/v1/batches/next", m(schemaVersion="1.0", **kw), token)
+
+    def mes_receipt(self, token: str, batch_no: str, receipt: dict) -> Res:
+        return self.api.post(f"/api/mes/v1/batches/{batch_no}/receipt", receipt, token)
 
 
 @pytest.fixture
@@ -468,19 +696,33 @@ def w(api, admin) -> World:
     return World(api, admin)
 
 
-#: 号与规则相关的表：每个用例开始前清空。SN 全局唯一、规则前缀不能互为开头，
-#: 各用例写死的前缀（"B"、"Q"……）跨用例会互相冲突；工厂、账户、订单快照、留痕不清。
+#: 号、规则、批次相关的表：每个用例开始前清空（SN 全局唯一、前缀不能互为开头，跨用例会冲突）；
+#: 生产组织、账户、订单快照、留痕不清。
 _SN_TABLES = (
     "sn_transfer_item",
     "sn_transfer",
-    "sn_batch",
+    "sn_bill_transfer",
+    "sn_acquire_batch",
+    "sn_delivery_alert",
+    "sn_delivery_receipt",
+    "sn_delivery_item",
+    "sn_delivery_batch",
+    "sn_push_task",
     "sn_item",
     "sn_gen_job",
     "sn_gen_preview",
-    "sn_bill_gen",
+    "sn_line_count",
+    "sn_line_rule",
+    "sn_line_attach",
     "sn_pi_counter",
+    "sn_pi_rule",
+    "sn_customer_rule",
     "sn_rule_version",
     "sn_rule",
+    "sn_bill_ledger",
+    "sn_bill_ledger_line",
+    "sn_order_alert",
+    "sn_prd_mo",
 )
 
 
@@ -491,6 +733,12 @@ def _fresh_sn(request):
         with raw_conn() as c, c.cursor() as cur:
             for t in _SN_TABLES:
                 cur.execute(f"DELETE FROM {t}")
+        BILLS.clear()
+        MES.behavior.clear()
+        MES.store.clear()
+        MES.batches.clear()
+        MES.received.clear()
+        K3_FAIL.update(query=False, view=False)
     yield
 
 

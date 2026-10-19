@@ -174,12 +174,55 @@ class Settings:
         return self.get_int("SN_PREVIEW_TTL_MINUTES", 30)
 
     @property
-    def acquire_require_snapshot(self) -> bool:
-        return self.get_bool("SN_ACQUIRE_REQUIRE_SNAPSHOT", True)
+    def sync_interval_minutes(self) -> int:
+        """比对同步间隔（分钟）。"""
+        return max(1, self.get_int("SN_SYNC_INTERVAL_MINUTES", 10))
 
     @property
-    def callback_max(self) -> int:
-        return self.get_int("SN_CALLBACK_MAX", 200_000)
+    def push_retry_intervals(self) -> list[int]:
+        """推送未确认时自动重试的间隔（分钟）；个数即次数。"""
+        raw = self.get("SN_PUSH_RETRY_INTERVALS_MINUTES", "1,5,15")
+        out = []
+        for part in raw.split(","):
+            try:
+                v = int(part.strip())
+            except ValueError:
+                continue
+            if v >= 0:
+                out.append(v)
+        return out
+
+    @property
+    def batch_unconfirmed_alert_minutes(self) -> int:
+        return max(1, self.get_int("SN_BATCH_UNCONFIRMED_ALERT_MINUTES", 30))
+
+    @property
+    def acquire_sync_file_limit(self) -> int:
+        """领取文件当场生成上限；更多时页面提示到领取批次中下载。"""
+        return max(1, self.get_int("SN_ACQUIRE_SYNC_FILE_LIMIT", 50_000))
+
+    @property
+    def mes_auth_max_failures(self) -> int:
+        return max(1, self.get_int("SN_MES_AUTH_MAX_FAILURES", 10))
+
+    @property
+    def mes_auth_lock_minutes(self) -> int:
+        return max(1, self.get_int("SN_MES_AUTH_LOCK_MINUTES", 15))
+
+    @property
+    def mes_pull_rate_per_minute(self) -> int:
+        """同一生产组织每分钟调用 MES 接口（取批、回执、只读）的次数上限。"""
+        return max(1, self.get_int("SN_MES_PULL_RATE_PER_MINUTE", 60))
+
+    @property
+    def push_poll_seconds(self) -> int:
+        """推送调度检查间隔（秒）。"""
+        return max(1, self.get_int("SN_PUSH_POLL_SECONDS", 5))
+
+    @property
+    def push_enabled(self) -> bool:
+        """后台推送调度开关（测试时可关闭，改为手动驱动）。"""
+        return self.get_bool("SN_PUSH_ENABLED", True)
 
     @property
     def partition_ahead_months(self) -> int:

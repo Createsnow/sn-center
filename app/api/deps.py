@@ -15,7 +15,8 @@ from fastapi.responses import StreamingResponse
 
 from app.core import utils as util
 from app.core.errors import ErrorCode, biz
-from app.core.security import API, PAGE, CurrentUser, parse_token, pwd_version, session_version
+from app.core.exceptions import BizError, MesError
+from app.core.security import API, PAGE, CurrentUser, is_expired, parse_token, pwd_version, session_version
 from app.db.session import db
 from app.services import users
 
@@ -48,9 +49,12 @@ def authenticate(request: Request) -> CurrentUser:
         raise biz(ErrorCode.ACCOUNT_DISABLED)
     if claims.session_version is not None and session_version(user["last_login_at"]) != claims.session_version:
         raise biz(ErrorCode.SESSION_REPLACED)
+    if user["role"] == util.MES:
+        # MES 接口账户只能调 /api/mes/v1
+        raise biz(ErrorCode.FORBIDDEN)
     request.state.page_session = claims.session_version is not None
     path = request.url.path
-    source = API if path.startswith("/api/open/") else PAGE
+    source = API if path.startswith("/api/mes/") or claims.session_version is None else PAGE
     cu = CurrentUser(
         user["id"],
         user["emp_no"],
@@ -90,6 +94,49 @@ def require_super_admin(request: Request) -> CurrentUser:
     cu = authenticate(request)
     if not cu.is_super_admin:
         raise biz(ErrorCode.USER_MANAGE_FORBIDDEN)
+    return cu
+
+
+def mes_user(request: Request) -> CurrentUser:
+    """/api/mes/v1 的鉴权：错误用 MES 错误结构（401 TOKEN_EXPIRED / TOKEN_INVALID、403 IP_NOT_ALLOWED / ACCOUNT_DISABLED）。
+    MES 接口账户只限所绑生产组织；其他账户（查询员等）按可看范围，只能调只读接口。"""
+    header = request.headers.get("Authorization")
+    token = header[7:].strip() if header is not None and header[:7].lower() == "bearer " else ""
+    if not token:
+        raise MesError(401, "TOKEN_INVALID", "缺少令牌")
+    try:
+        claims = parse_token(token)
+    except BizError:
+        if is_expired(token):
+            raise MesError(401, "TOKEN_EXPIRED", "令牌已过期，请重新换取") from None
+        raise MesError(401, "TOKEN_INVALID", "令牌无效") from None
+    user = db.one(
+        "SELECT id, emp_no, name, role, factory_code, status, pwd_changed_at, last_login_at, ip_whitelist "
+        "FROM sn_user WHERE id = %s",
+        claims.user_id,
+    )
+    if user is None or pwd_version(user["pwd_changed_at"]) != claims.pwd_version:
+        raise MesError(401, "TOKEN_INVALID", "令牌已失效")
+    if user["status"] != "ACTIVE":
+        raise MesError(403, "ACCOUNT_DISABLED", "账户已停用")
+    if claims.session_version is not None and session_version(user["last_login_at"]) != claims.session_version:
+        raise MesError(401, "TOKEN_INVALID", "该账户已在其他页面登录")
+    if user["role"] == util.MES:
+        real = request.headers.get("X-Real-IP")
+        client = real.strip() if real and real.strip() else (request.client.host if request.client else None)
+        if not users.ip_allowed(user["ip_whitelist"], client):
+            raise MesError(403, "IP_NOT_ALLOWED", f"来源地址 {client or '-'} 不在白名单内")
+    cu = CurrentUser(
+        user["id"],
+        user["emp_no"],
+        user["name"],
+        user["role"],
+        user["factory_code"],
+        API,
+        getattr(request.state, "request_id", None),
+        users.read_scope(user["id"], user["role"], user["factory_code"]),
+    )
+    request.state.user = cu
     return cu
 
 
