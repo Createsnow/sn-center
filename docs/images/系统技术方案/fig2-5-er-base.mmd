@@ -1,0 +1,129 @@
+erDiagram
+  sn_factory ||--o{ sn_user : "操作员 / MES 账户绑定"
+  sn_user ||--o{ sn_user_factory : "查询员绑定"
+  sn_factory ||--o{ sn_user_factory : ""
+  sn_prd_mo ||--o| sn_line_count : "单据 + 序号"
+  sn_prd_mo ||--o| sn_line_attach : "单据 + 序号"
+  sn_prd_mo ||--o| sn_line_rule : "单据 + 序号"
+  sn_rule ||--|{ sn_rule_version : "版本"
+  sn_rule ||--o{ sn_pi_rule : "PI 绑定"
+  sn_rule ||--o{ sn_customer_rule : "客户绑定"
+  sn_rule ||--o{ sn_line_rule : "物料行选定"
+  sn_pi_counter ||--o{ sn_prd_mo : "PI"
+  sn_pi_counter ||--o{ sn_gen_job : "PI"
+  sn_gen_preview ||--o| sn_gen_job : "预演令牌只用一次"
+  sn_bill_ledger ||--|{ sn_bill_ledger_line : "物料行"
+  sn_bill_ledger ||--o{ sn_order_alert : "变更提醒"
+  sn_factory {
+    varchar factory_code PK
+    varchar factory_name
+    tinyint enabled
+    tinyint mes_enabled
+    varchar mes_url
+    varchar mes_auth_type
+    varchar mes_credential "AES-GCM 加密"
+    int batch_size
+    int tz_offset_min
+  }
+  sn_user {
+    bigint id PK
+    varchar emp_no UK
+    varchar role "admin / factory_operator / query / mes"
+    varchar factory_code FK
+    varchar ip_whitelist
+    datetime locked_until
+  }
+  sn_user_factory {
+    bigint user_id PK
+    varchar factory_code PK
+  }
+  sn_prd_mo {
+    bigint id PK
+    varchar bill_no UK
+    int seq UK
+    varchar doc_status
+    varchar customer_code
+    varchar pi
+    varchar org_code
+    varchar material_code
+    varchar length_raw
+    decimal qty
+  }
+  sn_line_count {
+    varchar bill_no PK
+    int seq PK
+    bigint own_generated
+    bigint gen_count
+    bigint alloc_count
+  }
+  sn_line_attach {
+    varchar bill_no PK
+    int seq PK
+    varchar manual_value
+  }
+  sn_line_rule {
+    varchar bill_no PK
+    int seq PK
+    varchar pi_no
+    bigint rule_id FK
+    varchar custom_json "自定义规则参数"
+  }
+  sn_rule {
+    bigint id PK
+    varchar rule_code UK
+    varchar category_scope
+    int current_version
+  }
+  sn_rule_version {
+    bigint id PK
+    bigint rule_id FK
+    int version
+    varchar prefix UK
+    int base
+    int seq_len
+    tinyint with_length
+    varchar claimed_pi
+  }
+  sn_pi_rule {
+    varchar pi_no PK
+    bigint rule_id FK
+  }
+  sn_customer_rule {
+    varchar customer_code PK
+    bigint rule_id FK
+  }
+  sn_pi_counter {
+    varchar pi_no PK
+    bigint last_seq_dec
+  }
+  sn_gen_preview {
+    char token PK
+    varchar pi_no
+    bigint base_last_seq
+    mediumtext plan_json
+  }
+  sn_gen_job {
+    bigint id PK
+    varchar gen_batch UK
+    varchar running_pi UK
+    char preview_token UK
+    varchar status
+  }
+  sn_bill_ledger {
+    varchar bill_no PK
+    varchar pi
+    varchar customer_code
+    varchar org_code
+    varchar leave_state
+  }
+  sn_bill_ledger_line {
+    varchar bill_no PK
+    int seq PK
+    varchar material_code
+  }
+  sn_order_alert {
+    bigint id PK
+    varchar bill_no
+    varchar alert_type
+    varchar status
+  }

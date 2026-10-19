@@ -117,7 +117,9 @@ def _archive(c, days: int) -> int:
     for name, bound in parts:
         if bound is None or bound > cutoff or bounded <= 1:
             continue
-        moved = c.execute(f"INSERT IGNORE INTO sn_audit_archive SELECT a.*, NOW() FROM sn_audit PARTITION ({name}) a")
+        moved = c.execute(
+            f"INSERT IGNORE INTO sn_audit_archive SELECT a.*, UTC_TIMESTAMP() FROM sn_audit PARTITION ({name}) a"
+        )
         c.execute(f"ALTER TABLE sn_audit DROP PARTITION {name}")
         bounded -= 1
         archived += 1
