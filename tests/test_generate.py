@@ -134,6 +134,20 @@ def test_preview_lists_reasons(w, api):
     assert ok(w.preview(pi))["generatable"] is True, "补填长度后可以生成"
 
 
+def test_batch_length_fills_pending_lines_only(w, api, sql):
+    org, pi, bill = mk(w, ("M1", 1, " "), ("M2", 1, "x1"), ("M3", 1, "100"), ("M4", 1, ""))
+    ok(api.put("/api/orders/length", m(bill_no=bill, seq=4, value="7"), w.admin))
+    assert api.put("/api/orders/length/batch", m(pi_no=pi, value="x"), w.admin).code == "LENGTH_FILL_INVALID"
+    r = ok(api.put("/api/orders/length/batch", m(pi_no=pi, value="000"), w.admin))
+    assert r["filled"] == 2, "只补填待填写的（为空、不是数字），金蝶已有和已补填的不改"
+    got = {
+        x["seq"]: (x["length"], x["length_source"]) for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"]
+    }
+    assert got == {1: ("000", "MANUAL"), 2: ("000", "MANUAL"), 3: ("100", "K3"), 4: ("7", "MANUAL")}
+    r = ok(api.put("/api/orders/length/batch", m(pi_no=pi, lines=[m(bill_no=bill, seq=1)], value="5"), w.admin))
+    assert r["filled"] == 0, "按物料行范围；已补填的不改"
+
+
 def test_empty_length_defaults_to_000(w, sql):
     org, pi, bill = mk(w, ("M1", 1, " "))
     p = P()

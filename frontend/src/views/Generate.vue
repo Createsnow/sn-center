@@ -328,6 +328,7 @@
                 {{ t("generate.ruleForSelected", { n: selectedLineRows.length }) }}
               </el-button>
               <el-button v-if="selBills.length || selLines.length" size="small" link @click="clearSelection">{{ t("generate.clearSel") }}</el-button>
+              <el-button size="small" class="push" :loading="busy === 'lengths'" @click="fillLengths">{{ t("generate.lengthBatch") }}</el-button>
             </div>
             <div v-for="b in ctx.bills" :key="b.bill_no" class="bill">
               <div class="bill-h">
@@ -373,10 +374,11 @@
                 <el-table-column :label="t('common.length')" width="130">
                   <template #default="{ row }">
                     <span class="cell-edit">
-                      <span v-if="row.length === null" class="err">{{ row.length_raw }}</span>
-                      <span v-else>{{ row.length }}</span>
-                      <el-tag v-if="row.length_source === 'DEFAULT'" size="small" type="warning">{{ t("generate.lengthDefault") }}</el-tag>
-                      <el-tag v-else-if="row.length_source === 'MANUAL'" size="small">{{ t("generate.lengthManual") }}</el-tag>
+                      <el-tooltip v-if="row.length_source === 'DEFAULT'" :content="t('generate.lengthDefaultTip')">
+                        <span class="err">{{ t("generate.lengthEmpty") }}</span>
+                      </el-tooltip>
+                      <span v-else-if="row.length === null" class="err">{{ row.length_raw }}</span>
+                      <span v-else>{{ row.length }}<el-tag v-if="row.length_source === 'MANUAL'" size="small" class="ml">{{ t("generate.lengthManual") }}</el-tag></span>
                       <el-button v-if="row.length_source !== 'K3' || row.length === null" link type="primary" size="small" @click.stop="fillLength(row)">
                         <el-icon><EditPen /></el-icon>
                       </el-button>
@@ -856,6 +858,38 @@ async function fillLength(row: OrderLine) {
   ElMessage.success(t("common.saved"));
   await reloadCtx();
 }
+/** 统一设置长度：所选物料行 / 勾选的单据 / 都没选 = 整张 PI 内长度待填写的物料行一次补填，默认 000。 */
+async function fillLengths() {
+  if (!ctx.value) return;
+  const byLines = scope.value === "LINES" && selLines.value.length;
+  const range = byLines
+    ? t("generate.scopeLinesN", { n: selLines.value.length })
+    : selBills.value.length
+      ? t("generate.scopeBillsN", { n: selBills.value.length, bills: selBills.value.join("、") })
+      : t("generate.scopeWholePiLines", { pi: ctx.value.pi_no });
+  let value: string;
+  try {
+    const r = await ElMessageBox.prompt(t("generate.lengthBatchHint", { range }), t("generate.lengthBatch"), {
+      inputValue: "000",
+      inputValidator: (v: string) => /^(?=.*\d)\d*(\.\d*)?$/.test((v || "").trim()) || t("orders.lengthInvalid"),
+    });
+    value = (r as { value: string }).value.trim();
+  } catch {
+    return;
+  }
+  busy.value = "lengths";
+  try {
+    const r: any = await api.fillLengths({
+      pi_no: ctx.value.pi_no,
+      value,
+      ...(byLines ? { lines: selLines.value } : selBills.value.length ? { bills: selBills.value } : {}),
+    });
+    ElMessage.success(t("generate.lengthBatchDone", { n: r.filled, v: r.value }));
+    await reloadCtx();
+  } finally {
+    busy.value = "";
+  }
+}
 function lineClass({ row }: { row: OrderLine }) {
   return scope.value === "LINES" && lineIdx(row) >= 0 ? "picked" : "";
 }
@@ -1159,7 +1193,7 @@ onUnmounted(() => {
 .run-grid > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .bill { border: 1px solid var(--el-border-color-lighter); border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
 .bill-h { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 12px; background: var(--el-fill-color-light); }
-.bill-h .push { margin-left: auto; }
+.bill-h .push, .toolbar .push { margin-left: auto; }
 .order { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; font-size: 11px; color: #fff; background: var(--el-color-primary); }
 .sel { display: inline-flex; align-items: center; gap: 4px; }
 .lines :deep(tr.picked > td) { background: var(--el-color-primary-light-9); }

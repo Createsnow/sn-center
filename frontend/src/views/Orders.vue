@@ -110,9 +110,6 @@
                         <span>{{ row.attach_no }}</span>
                         <el-tag v-if="row.attach_source === 'MANUAL'" size="small" type="info">{{ t("orders.attachManual") }}</el-tag>
                       </template>
-                      <el-button v-if="store.isAdmin && row.attach_source !== 'K3'" link type="primary" size="small" @click="fillAttach(row)">
-                        <el-icon><EditPen /></el-icon>
-                      </el-button>
                     </div>
                     <div v-if="row.attach_k3_conflict" class="muted warn">
                       {{ t("orders.attachConflict", { k3: row.attach_k3, manual: row.attach_manual }) }}
@@ -373,23 +370,6 @@ async function rebuild() {
   } finally {
     syncing.value = "";
   }
-}
-
-async function fillAttach(row: OrderLine) {
-  let value: string;
-  try {
-    const r = await ElMessageBox.prompt(t("orders.attachFillHint"), t("orders.attachFillTitle", { bill: row.bill_no, seq: row.seq }), {
-      inputValue: row.attach_manual || "",
-      inputValidator: (v: string) => (!!v && !!v.trim() && v.trim().length <= 64) || t("orders.attachInvalid"),
-    });
-    value = (r as { value: string }).value.trim();
-  } catch {
-    return;
-  }
-  await api.fillAttach(row.bill_no, row.seq, value);
-  ElMessage.success(t("common.saved"));
-  meta.value = await api.orderMeta();
-  await loadLines(row.bill_no);
 }
 
 const mapDlg = reactive<{ open: boolean; alert: any; lines: OrderLine[]; target: number | undefined; note: string; saving: boolean }>({

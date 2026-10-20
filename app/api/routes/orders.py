@@ -4,7 +4,7 @@ from fastapi import APIRouter
 
 from app.api.deps import AdminDep, AdminOrQueryDep, page_of
 from app.schemas.common import OptInt
-from app.schemas.misc import AlertHandleIn, AttachIn, SyncIn
+from app.schemas.misc import AlertHandleIn, AttachIn, LengthBatchIn, SyncIn
 from app.services import changes, orders
 
 router = APIRouter(prefix="/orders", tags=["orders"])
@@ -74,6 +74,13 @@ def order_attach(body: AttachIn, cu: AdminDep) -> dict:
 @router.put("/length", summary="长度补填（金蝶为空或不是数字时）；金蝶为空且未补填时生成用默认长度 000")
 def order_length(body: AttachIn, cu: AdminDep) -> dict:
     return orders.fill_length(cu, body.bill_no, body.seq, body.value)
+
+
+@router.put("/length/batch", summary="统一设置长度：范围内长度待填写的物料行一次补填为同一个值（已补填的不改）")
+def order_length_batch(body: LengthBatchIn, cu: AdminDep) -> dict:
+    return orders.fill_lengths(
+        cu, body.pi_no, body.bills, [x.model_dump() for x in body.lines or []] or None, body.value
+    )
 
 
 @router.get("/alerts", summary="订单变更提醒；status = OPEN（默认）/ CLOSED / ALL")

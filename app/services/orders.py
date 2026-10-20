@@ -352,18 +352,39 @@ def effective_length(line: dict, fill: dict | None) -> tuple[str | None, str]:
     return None, "K3"
 
 
+def _length_pending(line: dict, fill: dict | None) -> bool:
+    """长度待填写：金蝶为空或不是数字、且未补填（生成时为空的取默认 000）。"""
+    v, src = effective_length(line, fill)
+    return v is None or src == "DEFAULT"
+
+
 def length_of(line: dict) -> str | None:
     """单条物料行的生效长度（查补填）。"""
     fill = db.one("SELECT * FROM sn_line_length WHERE bill_no = %s AND seq = %s", line["bill_no"], line["seq"])
     return effective_length(line, fill)[0]
 
 
-def fill_length(cu: CurrentUser, bill_no: str | None, seq: int | None, value: str | None) -> dict:
-    """长度补填：金蝶为空或不是数字时由总部补填；须为十进制数字，按长度写法规范化后保存。"""
-    no = util.trim(bill_no)
-    v = codec.normalize_length(value)
+def _length_value(value: str | None) -> str:
+    """补填值：须为十进制数字，按长度写法规范化；默认长度 000 原样保存。"""
+    raw = util.trim(value)
+    v = codec.DEFAULT_LENGTH if raw == codec.DEFAULT_LENGTH else codec.normalize_length(raw)
     if v is None or len(v) > 64:
         raise biz(ErrorCode.LENGTH_FILL_INVALID)
+    return v
+
+
+_LENGTH_UPSERT = (
+    "INSERT INTO sn_line_length(bill_no, seq, manual_value, material_code, filled_by, filled_at, updated_at) "
+    "VALUES (%s,%s,%s,%s,%s,%s,%s) ON DUPLICATE KEY UPDATE manual_value = VALUES(manual_value), "
+    "material_code = VALUES(material_code), filled_by = VALUES(filled_by), filled_at = VALUES(filled_at), "
+    "updated_at = VALUES(updated_at)"
+)
+
+
+def fill_length(cu: CurrentUser, bill_no: str | None, seq: int | None, value: str | None) -> dict:
+    """长度补填：金蝶为空或不是数字时由总部补填。"""
+    no = util.trim(bill_no)
+    v = _length_value(value)
     with db.tx():
         line = db.one("SELECT * FROM sn_prd_mo WHERE bill_no = %s AND seq = %s", no, seq)
         if line is None:
@@ -372,19 +393,7 @@ def fill_length(cu: CurrentUser, bill_no: str | None, seq: int | None, value: st
             raise biz(ErrorCode.LENGTH_FILL_K3)
         prev = db.one("SELECT * FROM sn_line_length WHERE bill_no = %s AND seq = %s FOR UPDATE", no, seq)
         now = util.now()
-        db.exec(
-            "INSERT INTO sn_line_length(bill_no, seq, manual_value, material_code, filled_by, filled_at, updated_at) "
-            "VALUES (%s,%s,%s,%s,%s,%s,%s) ON DUPLICATE KEY UPDATE manual_value = VALUES(manual_value), "
-            "material_code = VALUES(material_code), filled_by = VALUES(filled_by), filled_at = VALUES(filled_at), "
-            "updated_at = VALUES(updated_at)",
-            no,
-            seq,
-            v,
-            line["material_code"],
-            cu.emp_no,
-            now,
-            now,
-        )
+        db.exec(_LENGTH_UPSERT, no, seq, v, line["material_code"], cu.emp_no, now, now)
         audit.record(
             cu,
             audit.entry(audit.ORDER_LENGTH_FILL)
@@ -396,6 +405,40 @@ def fill_length(cu: CurrentUser, bill_no: str | None, seq: int | None, value: st
         )
     counts, fills, lens = line_extras([(no, seq)])
     return line_view(line, counts.get((no, seq)), fills.get((no, seq)), lfill=lens.get((no, seq)))
+
+
+def fill_lengths(
+    cu: CurrentUser, pi_in: str | None, bills_in: list[str] | None, lines_in: list[dict] | None, value: str | None
+) -> dict:
+    """统一设置长度：范围（点选的物料行 / 勾选的单据 / 都不填 = 整张 PI）内长度待填写的物料行
+    （金蝶为空或不是数字、且未补填）一次补填为同一个值；已补填的不改。返回补填行数。"""
+    pi = util.trim(pi_in)
+    if not pi:
+        raise biz(ErrorCode.PI_REQUIRED)
+    v = _length_value(value)
+    keys = {(util.trim(x.get("bill_no")), int(x.get("seq") or 0)) for x in lines_in or []}
+    bills = {util.trim(b) for b in bills_in or [] if util.trim(b)}
+    with db.tx():
+        rows = [
+            r
+            for r in db.all("SELECT * FROM sn_prd_mo WHERE pi = %s ORDER BY bill_no, seq", pi)
+            if ((r["bill_no"], r["seq"]) in keys if keys else r["bill_no"] in bills if bills else True)
+        ]
+        _, _, lens = line_extras([(r["bill_no"], r["seq"]) for r in rows])
+        todo = [r for r in rows if _length_pending(r, lens.get((r["bill_no"], r["seq"])))]
+        if todo:
+            now = util.now()
+            db.exec_many(
+                _LENGTH_UPSERT, [(r["bill_no"], r["seq"], v, r["material_code"], cu.emp_no, now, now) for r in todo]
+            )
+            audit.record(
+                cu,
+                audit.entry(audit.ORDER_LENGTH_FILL)
+                .pi(pi)
+                .count(len(todo))
+                .info(f"batch value={v} " + ",".join(f"{r['bill_no']}/{r['seq']}" for r in todo)),
+            )
+    return {"pi_no": pi, "value": v, "filled": len(todo)}
 
 
 # ================================================================== 查询

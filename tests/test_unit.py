@@ -403,6 +403,7 @@ def test_db_target_env_overrides_dotenv(monkeypatch):
         ("POST", "/api/acquire/take", "SN_ACQUIRE"),
         ("POST", "/api/orders/attach", "ORDER_ATTACH_FILL"),
         ("PUT", "/api/orders/length", "ORDER_LENGTH_FILL"),
+        ("PUT", "/api/orders/length/batch", "ORDER_LENGTH_FILL"),
         ("POST", "/api/orders/alerts/3/handle", "ORDER_ALERT_HANDLE"),
         ("POST", "/api/mes/v1/batches/next", "SN_PULL"),
         ("POST", "/api/mes/v1/batches/PS-1/receipt", "SN_RECEIPT"),
