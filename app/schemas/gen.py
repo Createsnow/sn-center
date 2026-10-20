@@ -24,6 +24,14 @@ class RevokeIn(In):
     seq: int | None = None
 
 
+class RevokeLinesIn(In):
+    """撤到所选物料行为止：从 PI 流水末尾往前撤，流水排在所选行之后的物料行一并撤销。"""
+
+    pi_no: str | None = None
+    lines: list[LineRef] | None = None
+    reason: str | None = None
+
+
 class AllocateIn(In):
     """分配范围：整张 PI（都不填）/ 单据 / 物料行。"""
 

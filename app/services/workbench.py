@@ -1,9 +1,9 @@
-"""生成与分配页（F-10）：以 PI 为单位的工作台。
+"""SN 生成页与分配页（F-10）：以 PI 为单位的工作台。
 
 每张 PI 一行：客户、单据数、生产组织、状态、订单总数、已生成（各订单已生成数之和；转组织改 PI 的号仍计入原 PI）、
 转入号（挂在本 PI 下、由别的 PI 生成的号）、已分配（含已推送、已拉取）；行上按钮按 F-10 第 3 条的顺序判断。
-详情：步骤条「SN 规则 → 生成 → 分配」+ 订单（到物料行）/ 生成任务（最近 20 条）/
-分配记录（最近 100 条，推送与拉取批次）。
+生成详情：单据 → 物料行（规则、附件项次、长度、号段）、生成任务（最近 20 条）、可撤销的号段。
+分配详情：待分配的物料行（号段、目标生产组织）、推送进度、分配记录（最近 100 条，推送与拉取批次）。
 """
 
 from __future__ import annotations
@@ -121,7 +121,8 @@ def _line_issue_summary(pi: str) -> tuple[bool, bool, dict]:
 
 
 def pis(cu: CurrentUser, q: str | None, tab: str | None) -> dict:
-    """PI 列表与上方汇总（还可生成、待分配、待推送）。tab：TO_GENERATE（含生成中）/ TO_ALLOCATE / DONE，不传为全部。"""
+    """PI 列表与上方汇总（还可生成、待分配、待推送）。tab：生成页 TO_GENERATE（含生成中）/ GENERATED（已生成完），
+    分配页 TO_ALLOCATE（有号待分配或推送中断）/ ALLOCATED（已分配完）；不传为全部。"""
     rows = _pi_rows(q)
     names = [r["pi"] for r in rows]
     stats = _item_stats(names)
@@ -176,10 +177,12 @@ def pis(cu: CurrentUser, q: str | None, tab: str | None) -> dict:
                 "reasons": reasons,
             }
         )
+    to_alloc = lambda x: x["pending_alloc"] > 0 or x["push_interrupted"]  # noqa: E731
     tabs = {
         "TO_GENERATE": lambda x: x["quota"] > 0 or x["status"] == GENERATING,
-        "TO_ALLOCATE": lambda x: x["pending_alloc"] > 0 or x["push_interrupted"],
-        "DONE": lambda x: x["status"] == DONE,
+        "GENERATED": lambda x: x["quota"] == 0 and x["status"] != GENERATING,
+        "TO_ALLOCATE": to_alloc,
+        "ALLOCATED": lambda x: not to_alloc(x) and x["allocated_qty"] > 0,
     }
     t = util.trim(tab)
     shown = [x for x in out if tabs[t](x)] if t in tabs else out
@@ -199,7 +202,7 @@ def pis(cu: CurrentUser, q: str | None, tab: str | None) -> dict:
 
 
 def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> dict:
-    """详情：PI 头、各单据（含已离开快照的已出号单据）及物料行、规则选项、计数、任务、分配面板、分配记录。"""
+    """生成详情：PI 头、各单据（含已离开快照的已出号单据）及物料行、规则选项、计数、生成任务、可撤销的号段。"""
     from app.core.errors import ErrorCode, biz
 
     pi = util.trim(pi_in)
@@ -291,9 +294,70 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
         "limits": generate.limits(),
         "running_job": None if running is None else generate.progress(running["gen_batch"]),
         "jobs": generate.jobs(pi, 20),
-        # 当前可撤销的物料行（流水排在最后的那一段），物料行上直接给「撤销生成」
+        # 当前可撤销的物料行（流水排在最后的那一段）
         "revocable": generate.revocable(pi),
-        "allocation": generate.alloc_preview(pi, None, None),
+        # 未撤销的号段，从流水最末往前；物料行上的「撤销」= 撤到该行为止（流水在其后的行一并撤）
+        "segments": generate.revoke_chain(pi),
+    }
+
+
+def alloc_context(cu: CurrentUser, pi_in: str | None) -> dict:
+    """分配详情：待分配的号按物料行列出（枚数、号段、分到哪个生产组织、是否对接 MES、不能分配的原因），
+    以及各组织的推送进度与分配记录。"""
+    from app.core.errors import ErrorCode, biz
+
+    pi = util.trim(pi_in)
+    if not pi:
+        raise biz(ErrorCode.PI_REQUIRED)
+    rows = db.all(
+        "SELECT bill_no, bill_seq, gen_org_code, MAX(material_code) material_code, MAX(length_text) length, "
+        "COUNT(*) n, MIN(sn) a, MAX(sn) b FROM sn_item WHERE pi_no = %s AND status = 'PENDING_ALLOC' "
+        "GROUP BY bill_no, bill_seq, gen_org_code ORDER BY bill_no, bill_seq",
+        pi,
+    )
+    names = factories.names()
+    targets: dict[str, tuple[str | None, str | None]] = {}
+    lines = []
+    for r in rows:
+        if r["bill_no"] not in targets:
+            targets[r["bill_no"]] = generate._target_org(r["bill_no"])
+        org, block = targets[r["bill_no"]]
+        org = None if block else org or r["gen_org_code"]
+        f = factories.get(org) if org else None
+        lines.append(
+            {
+                "bill_no": r["bill_no"],
+                "seq": r["bill_seq"],
+                "material_code": r["material_code"],
+                "length": r["length"],
+                "qty": int(r["n"]),
+                "start_sn": r["a"],
+                "end_sn": r["b"],
+                "org_code": org,
+                "org_name": names.get(org, "") if org else "",
+                "mes_enabled": bool(f and f["mes_enabled"]),
+                "skip": block,
+            }
+        )
+    stats = _item_stats([pi]).get(pi, {})
+    quota = db.scalar(
+        "SELECT SUM(GREATEST(FLOOR(m.qty) - COALESCE(c.own_generated, 0), 0)) FROM sn_prd_mo m "
+        "LEFT JOIN sn_line_count c ON c.bill_no = m.bill_no AND c.seq = m.seq WHERE m.pi = %s",
+        pi,
+    )
+    return {
+        "pi_no": pi,
+        "customer_code": orders.customer_of_pi(pi) or "",
+        "summary": {
+            "generated_qty": _gen_own([pi]).get(pi, 0),
+            "transferred_in": stats.get("transferred_in", 0),
+            "pending_alloc": stats.get("pending", 0),
+            "allocated_qty": stats.get("allocated", 0),
+            "unbatched": stats.get("unbatched", 0),
+            "suspended": stats.get("suspended", 0),
+            "quota": int(quota or 0),
+        },
+        "lines": lines,
         "push": push_status(pi),
         "batches": delivery.list_batches(cu, None, pi, None, None, "DELIVERY", None, None, util.Page.of(1, 100))[
             "items"

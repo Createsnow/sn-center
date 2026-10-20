@@ -1,7 +1,7 @@
 sequenceDiagram
   autonumber
   actor A as 总部管理员
-  participant P as 生成与分配页
+  participant P as SN 生成页
   participant G as generate 服务
   participant D as MySQL
   A->>P: 打开 PI，为物料行确定规则，勾选范围（整单 / 物料行，每行整行生成）

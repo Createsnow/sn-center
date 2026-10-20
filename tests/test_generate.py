@@ -1,4 +1,4 @@
-"""规则库与规则选取（F-08）、SN 生成（F-09）、生成与分配页（F-10）。"""
+"""规则库与规则选取（F-08）、SN 生成（F-09）、生成页与分配页（F-10）。"""
 
 from __future__ import annotations
 
@@ -339,6 +339,60 @@ def test_revoke_rest_of_generation_at_once(w, api, sql):
     assert all(x["own_generated"] == 0 for x in sql.all("SELECT * FROM sn_line_count WHERE bill_no = %s", bill))
 
 
+def test_revoke_up_to_selected_lines_in_one_go(w, api, sql):
+    org, pi, bill = mk(w, ("M1", 3), ("M2", 4), ("M3", 2), ("M4", 1))
+    ok(w.bind_pi(pi, w.rule(P())))
+    j1 = w.generate(pi, lines=[(bill, 1), (bill, 2)])
+    j2 = w.generate(pi, lines=[(bill, 3), (bill, 4)])
+
+    def chain() -> list[tuple]:
+        segs = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))["segments"]
+        return [(x["seq"], x["qty"], x["ok"]) for x in segs]
+
+    assert chain() == [(4, 1, True), (3, 2, True), (2, 4, True), (1, 3, True)], "从流水最末往前排"
+
+    def revoke(lines, reason="填错了"):
+        body = m(pi_no=pi, lines=[m(bill_no=bill, seq=s) for s in lines], reason=reason)
+        return api.post("/api/generate/revoke", body, w.admin)
+
+    assert revoke([2], None).code == "REASON_REQUIRED"
+    # 撤序号 2：流水在它之后的序号 3、4（另一次生成）一并撤销，一个事务内完成
+    r = ok(revoke([2]))
+    assert (r["qty"], r["last_seq_dec"]) == (7, 3)
+    assert [(x["seq"], x["gen_batch"]) for x in r["lines"]] == [
+        (2, j1["gen_batch"]),
+        (3, j2["gen_batch"]),
+        (4, j2["gen_batch"]),
+    ]
+    assert sql.scalar("SELECT status FROM sn_gen_job WHERE gen_batch = %s", j2["gen_batch"]) == "REVOKED"
+    assert sql.scalar("SELECT status FROM sn_gen_job WHERE gen_batch = %s", j1["gen_batch"]) == "SUCCESS"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 3
+    assert chain() == [(1, 3, True)]
+    assert revoke([3]).code == "GEN_REVOKE_LINE_INVALID", "已撤销的行不能再撤"
+    # 重新生成后号与撤销前相同
+    j3 = w.generate(pi, lines=[(bill, 2), (bill, 3)])
+    assert j3["start_seq_dec"] == 4
+    # 序号 3 已分配：撤序号 2（连带序号 3）被拒绝，什么都不撤
+    w.allocate(pi, lines=[(bill, 3)])
+    assert chain() == [(3, 2, False), (2, 4, False), (1, 3, False)]
+    assert revoke([2]).code == "GEN_REVOKE_ALLOCATED"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 9
+
+
+def test_alloc_context_lists_pending_lines(w, api):
+    org, pi, b1 = mk(w, ("M1", 2), ("M2", 3))
+    _, _, b2 = mk(w, ("M1", 1), pi=pi, org=org)
+    ok(w.bind_pi(pi, w.rule(P())))
+    w.generate(pi)
+    w.touch(b2, status="D")
+    w.compare()
+    ctx = ok(api.get(f"/api/generate/alloc-context?pi={pi}", w.admin))
+    rows = [(x["bill_no"], x["seq"], x["qty"], x["org_code"], x["skip"]) for x in ctx["lines"]]
+    assert rows == [(b1, 1, 2, org, None), (b1, 2, 3, org, None), (b2, 1, 1, None, "REVERSAL")]
+    assert ctx["lines"][0]["start_sn"] <= ctx["lines"][0]["end_sn"]
+    assert ctx["summary"]["pending_alloc"] == 6 and ctx["push"] == []
+
+
 def test_background_generation_and_cancel(w, api, sql, monkeypatch):
     monkeypatch.setenv("SN_GEN_SYNC_THRESHOLD", "10")
     org, pi, bill = mk(w, ("M1", 5000))
@@ -365,20 +419,24 @@ def test_workbench_lists_status_and_buttons(w, api):
     ok(w.bind_pi(pi, w.rule(P())))
     assert ok(api.get(f"/api/generate/pis?q={pi}", w.admin))["items"][0]["status"] == "TO_GENERATE"
 
-    def tab(t: str) -> list[str]:
-        return [x["pi_no"] for x in ok(api.get(f"/api/generate/pis?q={pi}&tab={t}", w.admin))["items"]]
+    def tabs() -> tuple[list[str], ...]:
+        names = ("TO_GENERATE", "GENERATED", "TO_ALLOCATE", "ALLOCATED")
+        return tuple(
+            [x["pi_no"] for x in ok(api.get(f"/api/generate/pis?q={pi}&tab={t}", w.admin))["items"]] for t in names
+        )
 
-    assert (tab("TO_GENERATE"), tab("TO_ALLOCATE"), tab("DONE")) == ([pi], [], [])
+    assert tabs() == ([pi], [], [], [])
     w.generate(pi)
     x = ok(api.get(f"/api/generate/pis?q={pi}", w.admin))["items"][0]
     assert (x["status"], x["pending_alloc"], x["generated_qty"]) == ("TO_ALLOCATE", 10, 10)
     ctx = ok(api.get(f"/api/generate/context?bill_no={bill}", w.admin))
-    assert ctx["pi_no"] == pi and ctx["allocation"]["qty"] == 10
-    assert ctx["bills"][0]["lines"][0]["rule"]["format"].startswith("P")
-    assert (tab("TO_GENERATE"), tab("TO_ALLOCATE"), tab("DONE")) == ([], [pi], [])
+    assert ctx["pi_no"] == pi and ctx["bills"][0]["lines"][0]["rule"]["format"].startswith("P")
+    actx = ok(api.get(f"/api/generate/alloc-context?pi={pi}", w.admin))
+    assert actx["summary"]["pending_alloc"] == 10 and actx["summary"]["quota"] == 0
+    assert tabs() == ([], [pi], [pi], [])
     w.allocate(pi)
     assert ok(api.get(f"/api/generate/pis?q={pi}", w.admin))["items"][0]["status"] == "DONE"
-    assert (tab("TO_GENERATE"), tab("TO_ALLOCATE"), tab("DONE")) == ([], [], [pi])
+    assert tabs() == ([], [pi], [], [pi])
 
 
 def test_generating_pi_listed_first_under_to_generate(w, api, sql):

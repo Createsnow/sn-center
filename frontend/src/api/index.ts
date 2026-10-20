@@ -76,14 +76,15 @@ export const api = {
   // ---------------- 生成与分配
   genPis: (params?: Q) => get("/generate/pis", params),
   genContext: (params: { pi?: string; bill_no?: string }) => get("/generate/context", params),
+  allocContext: (pi: string) => get("/generate/alloc-context", { pi }),
   genPreview: (data: Q, silent = false) => post("/generate/preview", data, silent),
   genRun: (token: string) => post("/generate/run", { token }),
   genJobs: (pi: string, limit?: number) => get("/generate/jobs", { pi, limit }),
   genProgress: (batch: string) => get(`/generate/batches/${enc(batch)}`),
   cancelGen: (batch: string) => post(`/generate/batches/${enc(batch)}/cancel`, {}),
-  /** 给物料行 = 只撤这一行；不给 = 撤这次生成剩下的全部物料行。 */
-  revokeGen: (batch: string, reason: string, line?: { bill_no: string; seq: number }) =>
-    post(`/generate/batches/${enc(batch)}/revoke`, { reason, ...line }),
+  /** 撤到所选物料行为止：从流水最末往前撤，流水排在所选行之后的物料行一并撤销。 */
+  revokeLines: (pi_no: string, lines: { bill_no: string; seq: number }[], reason: string) =>
+    post("/generate/revoke", { pi_no, lines, reason }),
   allocPreview: (data: Q) => post("/generate/alloc-preview", data),
   allocate: (data: Q) => post("/generate/allocate", data),
 

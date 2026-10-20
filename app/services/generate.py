@@ -8,8 +8,9 @@
 同步改了范围内物料行数量时预演失效。
 一次生成在一个事务里完成（共用一个生成批次），撞号整次回滚、不跳号；不超过 SN_GEN_SYNC_THRESHOLD 当场完成，
 更多转后台任务（进度、可取消）；服务重启时没跑完的任务视为失败。起点 = 本 PI 自己生成的最大流水 + 1。
-撤销：最小单位也是物料行——只能撤这张 PI 流水排在最后的物料行号段（撤完一行，前一行成为最后，可接着撤；
-也可一次撤一次生成中剩下的全部物料行），号须全部仍待分配、都没转过单；号删除，最大号和计数一并退回，流水仍连续。
+撤销：最小单位也是物料行——只能从这张 PI 流水最末的物料行号段往前撤（撤完一行，前一行成为最后，可接着撤）；
+可一次撤一次生成中剩下的全部物料行，或撤到所选物料行为止（流水在其后的行一并撤，在一个事务里完成）；
+号须全部仍待分配、都没转过单；号删除，最大号和计数一并退回，流水仍连续。
 
 分配：号只能分到订单的生产组织（快照中订单的生产组织；订单已不在快照时取号上的生成时订单生产组织；
 反审核中、PI 变更待确认、暂停交付的单据跳过）。对接 MES 的改为待推送（未入批）并自动开始推送；未对接的改为待领取。
@@ -763,6 +764,134 @@ def revocable(pi: str) -> dict | None:
     return {k: x[k] for k in ("bill_no", "seq", "qty", "start_sn", "end_sn")} | {"gen_batch": j["gen_batch"]}
 
 
+def revoke_chain(pi_in: str | None) -> list[dict]:
+    """PI 流水上还没撤销的物料行号段，从流水最末往前排。撤某一段须连同流水在它之后的段一起撤（从后往前），
+    ok 标出撤到这一段是否可行：这一段及之后的号全部仍待分配、没转过单，且没有生成中的任务；
+    bad 为这一段自己不可撤的枚数。"""
+    pi = util.trim(pi_in)
+    segs = sorted(
+        (
+            (j, x)
+            for j in db.all("SELECT * FROM sn_gen_job WHERE pi_no = %s AND status = %s", pi, SUCCESS)
+            for x in json.loads(j["plan_json"])["items"]
+            if not x.get("revoked")
+        ),
+        key=lambda t: t[1]["end_seq"],
+        reverse=True,
+    )
+    if not segs:
+        return []
+    ok_n = {
+        (r["gen_batch"], r["gen_bill_no"], r["gen_bill_seq"]): int(r["n"])
+        for r in db.all(
+            "SELECT gen_batch, gen_bill_no, gen_bill_seq, COUNT(*) n FROM sn_item WHERE seq_pi_no = %s "
+            "AND status = 'PENDING_ALLOC' AND rev = 1 AND bill_no = gen_bill_no AND bill_seq = gen_bill_seq "
+            "AND pi_no = seq_pi_no GROUP BY gen_batch, gen_bill_no, gen_bill_seq",
+            pi,
+        )
+    }
+    good = not db.exists("SELECT EXISTS(SELECT 1 FROM sn_gen_job WHERE running_pi = %s)", pi)
+    last = last_seq(pi)
+    out = []
+    for j, x in segs:
+        bad = x["qty"] - ok_n.get((j["gen_batch"], x["bill_no"], x["seq"]), 0)
+        good = good and bad == 0 and x["end_seq"] == last
+        last = x["start_seq"] - 1
+        out.append(
+            {k: x[k] for k in ("bill_no", "seq", "qty", "start_sn", "end_sn")}
+            | {"gen_batch": j["gen_batch"], "bad": bad, "ok": good}
+        )
+    return out
+
+
+def _check_chain(pi: str, c: dict | None, targets: list[tuple[dict, dict, dict]]) -> None:
+    """要撤的号段（已按流水从后往前排）须从 PI 流水末尾起依次相接，号全部仍待分配且没转过单。"""
+    last = 0 if c is None else c["last_seq_dec"]
+    for _, _, x in targets:
+        if x["end_seq"] != last:
+            raise biz(ErrorCode.GEN_REVOKE_NOT_LAST, pi=pi)
+        last = x["start_seq"] - 1
+    bad = sum(_not_revocable_count(j, x) for j, _, x in targets)
+    if bad:
+        raise biz(ErrorCode.GEN_REVOKE_ALLOCATED, count=bad)
+
+
+def _revoke_in_tx(cu: CurrentUser, pi: str, targets: list[tuple[dict, dict, dict]], reason: str) -> tuple[int, int]:
+    """在事务内撤销号段（任务、该任务的计划、号段；已按流水从后往前排好并核对过）：删号、退回计数和 PI 最大号，
+    在各任务计划上标记已撤，任务的物料行全部撤完记为已撤销；每个任务按单据各留一条痕迹。返回（枚数，撤后的最大流水）。"""
+    now = util.now()
+    mark = {"at": util.fmt(now), "by": cu.emp_no, "reason": util.cut(reason, 500)}
+    for j, _, x in targets:
+        n = db.exec(
+            "DELETE FROM sn_item WHERE seq_pi_no = %s AND seq_dec BETWEEN %s AND %s AND gen_batch = %s "
+            "AND status = 'PENDING_ALLOC'",
+            pi,
+            x["start_seq"],
+            x["end_seq"],
+            j["gen_batch"],
+        )
+        if n != x["qty"]:
+            raise biz(ErrorCode.CONFLICT_RETRY)
+        db.exec(
+            "UPDATE sn_line_count SET own_generated = own_generated - %s, gen_count = gen_count - %s, "
+            "updated_at = %s WHERE bill_no = %s AND seq = %s",
+            x["qty"],
+            x["qty"],
+            now,
+            x["bill_no"],
+            x["seq"],
+        )
+        x["revoked"] = mark
+    qty = sum(x["qty"] for _, _, x in targets)
+    last = targets[-1][2]["start_seq"] - 1
+    db.exec(
+        "UPDATE sn_pi_counter SET last_seq_dec = %s, generated_qty = generated_qty - %s, updated_at = %s "
+        "WHERE pi_no = %s",
+        last,
+        qty,
+        now,
+        pi,
+    )
+    jobs_of: dict[int, tuple[dict, dict, list[dict]]] = {}
+    for j, plan, x in reversed(targets):
+        jobs_of.setdefault(j["id"], (j, plan, []))[2].append(x)
+    for j, plan, items in jobs_of.values():
+        whole = all(x.get("revoked") for x in plan["items"])
+        db.exec(
+            "UPDATE sn_gen_job SET status = %s, plan_json = %s, revoke_reason = %s WHERE id = %s",
+            REVOKED if whole else SUCCESS,
+            json.dumps(plan, ensure_ascii=False, separators=(",", ":")),
+            util.cut(reason, 500),
+            j["id"],
+        )
+        for no, xs in _by_bill(items).items():
+            audit.record(
+                cu,
+                audit.entry(audit.SN_REVOKE)
+                .factory(xs[0]["org_code"])
+                .pi(pi)
+                .bill(no)
+                .range(xs[0]["start_sn"], xs[-1]["end_sn"])
+                .count(sum(x["qty"] for x in xs))
+                .status(util.PENDING_ALLOC, None)
+                .batch(j["gen_batch"])
+                .why(reason)
+                .info(
+                    f"job={j['id']} lines="
+                    + ",".join(f"{x['seq']}:{x['qty']}@{x['start_sn']}~{x['end_sn']}" for x in xs)
+                    + f" last_seq -> {last}"
+                ),
+            )
+    return qty, last
+
+
+def _reason(reason_in: str | None) -> str:
+    reason = util.trim(reason_in)
+    if not reason or len(reason) > 500:
+        raise biz(ErrorCode.REASON_REQUIRED)
+    return reason
+
+
 def revoke(
     cu: CurrentUser,
     batch: str | None,
@@ -772,9 +901,7 @@ def revoke(
 ) -> dict:
     """撤销生成，最小单位物料行：给了单据和序号时只撤这一行，否则撤这次生成中剩下的全部物料行。
     要撤的号段须从 PI 流水末尾起依次相接（即只能从后往前撤），号全部仍待分配且没转过单。"""
-    reason = util.trim(reason_in)
-    if not reason or len(reason) > 500:
-        raise biz(ErrorCode.REASON_REQUIRED)
+    reason = _reason(reason_in)
     j0 = _job_by_batch(batch)
     pi = j0["pi_no"]
     with locks.with_pi_lock(pi), db.tx():
@@ -789,81 +916,53 @@ def revoke(
             left = [x for x in left if x["bill_no"] == no and x["seq"] == seq]
             if not left:
                 raise biz(ErrorCode.GEN_REVOKE_LINE_INVALID)
-        targets = sorted(left, key=lambda x: x["end_seq"], reverse=True)
-        last = 0 if c is None else c["last_seq_dec"]
-        for x in targets:
-            if x["end_seq"] != last:
-                raise biz(ErrorCode.GEN_REVOKE_NOT_LAST, pi=pi)
-            last = x["start_seq"] - 1
-        bad = sum(_not_revocable_count(j, x) for x in targets)
-        if bad:
-            raise biz(ErrorCode.GEN_REVOKE_ALLOCATED, count=bad)
-        now = util.now()
-        mark = {"at": util.fmt(now), "by": cu.emp_no, "reason": util.cut(reason, 500)}
-        for x in targets:
-            n = db.exec(
-                "DELETE FROM sn_item WHERE seq_pi_no = %s AND seq_dec BETWEEN %s AND %s AND gen_batch = %s "
-                "AND status = 'PENDING_ALLOC'",
-                pi,
-                x["start_seq"],
-                x["end_seq"],
-                j["gen_batch"],
-            )
-            if n != x["qty"]:
-                raise biz(ErrorCode.CONFLICT_RETRY)
-            db.exec(
-                "UPDATE sn_line_count SET own_generated = own_generated - %s, gen_count = gen_count - %s, "
-                "updated_at = %s WHERE bill_no = %s AND seq = %s",
-                x["qty"],
-                x["qty"],
-                now,
-                x["bill_no"],
-                x["seq"],
-            )
-            x["revoked"] = mark
-        qty = sum(x["qty"] for x in targets)
-        db.exec(
-            "UPDATE sn_pi_counter SET last_seq_dec = %s, generated_qty = generated_qty - %s, updated_at = %s "
-            "WHERE pi_no = %s",
-            last,
-            qty,
-            now,
-            pi,
-        )
+        targets = [(j, plan, x) for x in sorted(left, key=lambda x: x["end_seq"], reverse=True)]
+        _check_chain(pi, c, targets)
+        qty, last = _revoke_in_tx(cu, pi, targets, reason)
         whole = all(x.get("revoked") for x in plan["items"])
-        db.exec(
-            "UPDATE sn_gen_job SET status = %s, plan_json = %s, revoke_reason = %s WHERE id = %s",
-            REVOKED if whole else SUCCESS,
-            json.dumps(plan, ensure_ascii=False, separators=(",", ":")),
-            util.cut(reason, 500),
-            j["id"],
-        )
-        targets.reverse()
-        for no, items in _by_bill(targets).items():
-            audit.record(
-                cu,
-                audit.entry(audit.SN_REVOKE)
-                .factory(items[0]["org_code"])
-                .pi(pi)
-                .bill(no)
-                .range(items[0]["start_sn"], items[-1]["end_sn"])
-                .count(sum(x["qty"] for x in items))
-                .status(util.PENDING_ALLOC, None)
-                .batch(j["gen_batch"])
-                .why(reason)
-                .info(
-                    f"job={j['id']} lines="
-                    + ",".join(f"{x['seq']}:{x['qty']}@{x['start_sn']}~{x['end_sn']}" for x in items)
-                    + f" last_seq -> {last}"
-                ),
-            )
     return {
         "gen_batch": j["gen_batch"],
         "pi_no": pi,
         "qty": qty,
-        "lines": [{"bill_no": x["bill_no"], "seq": x["seq"], "qty": x["qty"]} for x in targets],
+        "lines": [{"bill_no": x["bill_no"], "seq": x["seq"], "qty": x["qty"]} for _, _, x in reversed(targets)],
         "last_seq_dec": last,
         "job_status": REVOKED if whole else SUCCESS,
+    }
+
+
+def revoke_lines(cu: CurrentUser, pi_in: str | None, lines: list[dict] | None, reason_in: str | None) -> dict:
+    """按物料行撤销（可多行，跨多次生成）：从 PI 流水末尾往前，一直撤到所选物料行中流水最靠前的那一段为止，
+    流水排在其后的物料行一并撤销；在一个事务里完成，号须全部仍待分配且没转过单，否则整次不撤。"""
+    reason = _reason(reason_in)
+    pi = util.trim(pi_in)
+    if not pi:
+        raise biz(ErrorCode.PI_REQUIRED)
+    keys = {(util.trim(x.get("bill_no")), int(x.get("seq") or 0)) for x in lines or []}
+    if not keys:
+        raise biz(ErrorCode.RULE_LINE_REQUIRED)
+    with locks.with_pi_lock(pi), db.tx():
+        if db.exists("SELECT EXISTS(SELECT 1 FROM sn_gen_job WHERE running_pi = %s)", pi):
+            raise biz(ErrorCode.GEN_BUSY, pi=pi)
+        c = db.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s FOR UPDATE", pi)
+        segs = []
+        for j in db.all("SELECT * FROM sn_gen_job WHERE pi_no = %s AND status = %s FOR UPDATE", pi, SUCCESS):
+            plan = json.loads(j["plan_json"])
+            segs += [(j, plan, x) for x in plan["items"] if not x.get("revoked")]
+        picked = [x for _, _, x in segs if (x["bill_no"], x["seq"]) in keys]
+        if not picked:
+            raise biz(ErrorCode.GEN_REVOKE_LINE_INVALID)
+        start = min(x["start_seq"] for x in picked)
+        targets = sorted((t for t in segs if t[2]["start_seq"] >= start), key=lambda t: t[2]["end_seq"], reverse=True)
+        _check_chain(pi, c, targets)
+        qty, last = _revoke_in_tx(cu, pi, targets, reason)
+    return {
+        "pi_no": pi,
+        "qty": qty,
+        "lines": [
+            {"gen_batch": j["gen_batch"], "bill_no": x["bill_no"], "seq": x["seq"], "qty": x["qty"]}
+            for j, _, x in reversed(targets)
+        ],
+        "last_seq_dec": last,
     }
 
 

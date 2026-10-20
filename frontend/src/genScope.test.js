@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { billMark, emptySel, genLimit, lineOrder, scopeBody, selectedLines, toggleBill, toggleLine } from "./genScope.js";
+import { billMark, emptySel, genLimit, lineOrder, revokeRange, scopeBody, selectedLines, toggleBill, toggleLine } from "./genScope.js";
 
 const BILLS = { A: [1, 2, 3], B: [1, 2] };
 const linesOf = (no) => (BILLS[no] || []).map((seq) => ({ bill_no: no, seq }));
@@ -45,4 +45,22 @@ test("genLimit: over the default needs unlock, over the hard max is refused", ()
   assert.equal(genLimit(10001, limits, true), null);
   assert.equal(genLimit(500001, limits, true), "MAX");
   assert.equal(genLimit(5, {}, false), null);
+});
+
+test("revoking a line takes every segment after it in the serial", () => {
+  // 从流水最末往前：A/3、B/1（另一次生成）、A/1；A/1 自己已分配
+  const segs = [
+    { bill_no: "A", seq: 3, bad: 0, ok: true },
+    { bill_no: "B", seq: 1, bad: 0, ok: true },
+    { bill_no: "A", seq: 1, bad: 2, ok: false },
+  ];
+  assert.equal(revokeRange(segs, [L("A", 2)]), null, "没有号的行不能撤");
+  const r = revokeRange(segs, [L("B", 1)]);
+  assert.deepEqual(r.segs.map((s) => `${s.bill_no}/${s.seq}`), ["A/3", "B/1"]);
+  assert.equal(r.ok, true);
+  const both = revokeRange(segs, [L("A", 3), L("A", 1)]);
+  assert.equal(both.segs.length, 3, "撤到所选行中流水最靠前的一段");
+  assert.deepEqual([both.ok, both.own], [false, true]);
+  const later = revokeRange([{ bill_no: "A", seq: 3, bad: 1, ok: false }, { bill_no: "B", seq: 1, bad: 0, ok: false }], [L("B", 1)]);
+  assert.deepEqual([later.ok, later.own], [false, false], "之后的行已分配");
 });

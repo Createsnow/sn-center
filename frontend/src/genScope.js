@@ -71,3 +71,19 @@ export function genLimit(qty, limits, unlocked) {
   if (Number(limits?.default) > 0 && q > Number(limits.default) && !unlocked) return "UNLOCK";
   return null;
 }
+
+/**
+ * 撤销范围（F-09 撤销生成）：segments 为 PI 流水上未撤销的物料行号段，从流水最末往前排（后台给出，
+ * ok = 撤到这一段为止是否可行，bad = 这一段自己已分配或转过单的枚数）。撤所选物料行 = 从流水最末往前，
+ * 一直撤到所选行中流水最靠前的那一段，流水排在其后的段一并撤。
+ * 返回 { segs, ok, own }：segs 为要撤的段（从最末往前），own = 所选行自己有不能撤的号；所选行都没有号时为 null。
+ */
+export function revokeRange(segments, picked) {
+  let at = -1;
+  (segments || []).forEach((s, i) => {
+    if (picked.some((p) => same(p, s))) at = i;
+  });
+  if (at < 0) return null;
+  const segs = segments.slice(0, at + 1);
+  return { segs, ok: !!segments[at].ok, own: segs.some((s) => s.bad > 0 && picked.some((p) => same(p, s))) };
+}

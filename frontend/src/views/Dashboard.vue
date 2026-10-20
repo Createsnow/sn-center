@@ -161,7 +161,7 @@ const kpis = computed<Kpi[]>(() => {
   const c = d.status_counts || {};
   const alerts = Object.values(d.delivery_alerts || {}).reduce((a: number, b) => a + Number(b || 0), 0);
   const rows: Kpi[] = [];
-  if ("PENDING_ALLOC" in c) rows.push({ key: "PENDING_ALLOC", label: statusLabel("PENDING_ALLOC"), value: c.PENDING_ALLOC, to: "/generate" });
+  if ("PENDING_ALLOC" in c) rows.push({ key: "PENDING_ALLOC", label: statusLabel("PENDING_ALLOC"), value: c.PENDING_ALLOC, to: "/allocate" });
   rows.push(
     { key: "TO_PUSH", label: statusLabel("TO_PUSH"), value: c.TO_PUSH },
     { key: "TO_ACQUIRE", label: statusLabel("TO_ACQUIRE"), value: c.TO_ACQUIRE, to: "/acquire" },
@@ -176,7 +176,7 @@ const kpis = computed<Kpi[]>(() => {
   if (store.isAdmin) rows.push({ key: "running", label: t("dashboard.runningJobs"), value: d.running_jobs, to: "/generate" });
   if (d.total_generated !== null && d.total_generated !== undefined) rows.push({ key: "total", label: t("dashboard.totalGenerated"), value: d.total_generated });
   // 只有总部能处理的告警，其他角色不给跳转
-  return store.isAdmin ? rows : rows.map((r) => (r.to?.startsWith("/query") || r.to === "/generate" ? { ...r, to: r.to?.startsWith("/query") ? "/query" : undefined } : r));
+  return store.isAdmin ? rows : rows.map((r) => (r.to?.startsWith("/query") || r.to === "/generate" || r.to === "/allocate" ? { ...r, to: r.to?.startsWith("/query") ? "/query" : undefined } : r));
 });
 
 /** 今日：生成、分配、推送（按确认方式分列）、MES 拉取、领取（对接 MES 的组织单列）、转单。 */
