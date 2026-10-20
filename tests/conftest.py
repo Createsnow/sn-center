@@ -720,34 +720,38 @@ class World:
     def preview(
         self,
         pi: str,
-        qty: int | None = None,
         bills: list[str] | None = None,
         lines: list[tuple[str, int]] | None = None,
     ) -> Res:
+        """预演：范围内每个还有额度的物料行整行生成；不给范围 = 这张 PI 在快照中的全部单据。"""
         scope = "LINES" if lines else "BILLS"
         if not lines and not bills:
             bills = sorted({d["BillNo"] for d in BILLS.values() if d["F_HX_PI"] == pi and d["DocumentStatus"] == "C"})
         return self.api.post(
             "/api/generate/preview",
-            m(pi_no=pi, scope=scope, bills=bills, lines=[m(bill_no=b, seq=s) for b, s in lines or []], qty=qty),
+            m(pi_no=pi, scope=scope, bills=bills, lines=[m(bill_no=b, seq=s) for b, s in lines or []]),
             self.admin,
         )
 
     def generate(
         self,
         pi: str,
-        qty: int | None = None,
         bills: list[str] | None = None,
         lines: list[tuple[str, int]] | None = None,
     ) -> dict:
-        p = ok(self.preview(pi, qty, bills, lines))
+        p = ok(self.preview(pi, bills, lines))
         assert p["generatable"], str(p)
         j = ok(self.api.post("/api/generate/run", m(token=p["token"]), self.admin))
         assert j["status"] == "SUCCESS", str(j)
         return j.body
 
-    def allocate(self, pi: str, bills: list[str] | None = None) -> dict:
-        return ok(self.api.post("/api/generate/allocate", m(pi_no=pi, bills=bills), self.admin)).body
+    def allocate(self, pi: str, bills: list[str] | None = None, lines: list[tuple[str, int]] | None = None) -> dict:
+        body = m(pi_no=pi, bills=bills, lines=[m(bill_no=b, seq=s) for b, s in lines] if lines else None)
+        return ok(self.api.post("/api/generate/allocate", body, self.admin)).body
+
+    def revoke(self, batch: str, reason: str | None = "x", line: tuple[str, int] | None = None) -> Res:
+        body = m(reason=reason) if line is None else m(reason=reason, bill_no=line[0], seq=line[1])
+        return self.api.post(f"/api/generate/batches/{batch}/revoke", body, self.admin)
 
     @staticmethod
     def push() -> int:

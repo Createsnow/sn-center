@@ -4,7 +4,7 @@ sequenceDiagram
   participant P as 生成与分配页
   participant G as generate 服务
   participant D as MySQL
-  A->>P: 打开 PI，为物料行确定规则，选范围（整单 / 物料行）、填数量
+  A->>P: 打开 PI，为物料行确定规则，勾选范围（整单 / 物料行，每行整行生成）
   P->>G: POST /api/generate/preview
   G->>D: 读快照、物料行计数、规则、PI 最大流水
   G->>G: 校验条件（客户、规则、长度、附件项次、冻结）<br/>按排号顺序切号段，计算起止 SN

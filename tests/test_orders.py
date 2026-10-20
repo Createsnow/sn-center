@@ -10,8 +10,8 @@ def P() -> str:
     return "P" + uid("").replace("-", "")
 
 
-def issued(w, *lines, mes=False, qty=None, org=None, pi=None):
-    """一张已出号单据：已生成；返回 (org, pi, bill)。"""
+def issued(w, *lines, mes=False, gen=None, org=None, pi=None):
+    """一张已出号单据：已生成（gen 给序号时只生成这些物料行）；返回 (org, pi, bill)。"""
     org = org or w.org(uid("O")[:10])
     if mes:
         w.enable_mes(org, batch_size=100)
@@ -19,7 +19,7 @@ def issued(w, *lines, mes=False, qty=None, org=None, pi=None):
     bill = uid("MO")
     w.order(bill, org, "C1", pi, *(lines or (("M1", 10),)))
     ok(w.bind_pi(pi, w.rule(P())))
-    w.generate(pi, qty)
+    w.generate(pi, lines=[(bill, s) for s in gen] if gen else None)
     return org, pi, bill
 
 
@@ -140,7 +140,7 @@ def test_attach_fill_and_k3_value_later(w, api, sql):
 
 
 def test_pi_change_freezes_until_confirmed(w, api, sql):
-    org, p1, bill = issued(w, ("M1", 10), qty=4)
+    org, p1, bill = issued(w, ("M1", 4), ("M1", 6), gen=[1])
     p2 = uid("PI")
     w.touch(bill, pi=p2)
     w.compare()
@@ -154,12 +154,12 @@ def test_pi_change_freezes_until_confirmed(w, api, sql):
     assert sql.scalar("SELECT pi_frozen FROM sn_bill_ledger WHERE bill_no = %s", bill) == 0
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND suspend IS NOT NULL", bill) == 0
     ok(w.bind_pi(p2, w.rule(P())))
-    j = w.generate(p2, 2)
+    j = w.generate(p2)
     assert j["pi_no"] == p2 and j["start_seq_dec"] == 1, "之后该单生成的号进新 PI 的流水"
 
 
 def test_reversal_suspends_undelivered_and_resumes(w, api, sql):
-    org, pi, bill = issued(w, ("M1", 10), mes=True, qty=6)
+    org, pi, bill = issued(w, ("M1", 6), mes=True)
     w.allocate(pi)
     MES.behavior[org] = lambda b, h: (503, {"code": "X"})
     from app.services import delivery
@@ -239,7 +239,7 @@ def test_confirm_void_lifts(w, api, sql):
 
 
 def test_material_lost_map_moves_counts_and_items(w, api, sql):
-    org, pi, bill = issued(w, ("M1", 5), ("M2", 5), qty=10)
+    org, pi, bill = issued(w, ("M1", 5), ("M2", 5))
     BILLS[bill]["TreeEntity"][0]["MaterialId"] = {"Number": "M9", "Name": "x"}
     w.touch(bill)
     w.compare()
@@ -264,7 +264,7 @@ def test_material_lost_map_moves_counts_and_items(w, api, sql):
 
 
 def test_qty_below_generated_only_reminds(w, api, sql):
-    org, pi, bill = issued(w, ("M1", 10), qty=8)
+    org, pi, bill = issued(w, ("M1", 8))
     BILLS[bill]["TreeEntity"][0]["Qty"] = 5.0
     w.touch(bill)
     w.compare()

@@ -81,7 +81,9 @@ export const api = {
   genJobs: (pi: string, limit?: number) => get("/generate/jobs", { pi, limit }),
   genProgress: (batch: string) => get(`/generate/batches/${enc(batch)}`),
   cancelGen: (batch: string) => post(`/generate/batches/${enc(batch)}/cancel`, {}),
-  revokeGen: (batch: string, reason: string) => post(`/generate/batches/${enc(batch)}/revoke`, { reason }),
+  /** 给物料行 = 只撤这一行；不给 = 撤这次生成剩下的全部物料行。 */
+  revokeGen: (batch: string, reason: string, line?: { bill_no: string; seq: number }) =>
+    post(`/generate/batches/${enc(batch)}/revoke`, { reason, ...line }),
   allocPreview: (data: Q) => post("/generate/alloc-preview", data),
   allocate: (data: Q) => post("/generate/allocate", data),
 

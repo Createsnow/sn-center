@@ -1,12 +1,15 @@
 """SN 生成（F-09）与分配（F-11 分配部分）。
 
-生成：在一张 PI 下整单（勾选单据，单据内按序号）或按物料行（按点选顺序）生成；号都排在该 PI 的一套流水上，
-各物料行按自己的规则写出（前缀 + 长度 + 流水 + 后缀）。必须先预演（只给出起止号、各物料行数量和号段，不落库），
+生成：在一张 PI 下整单（勾选单据，单据内按序号）或按物料行（按点选顺序）生成；最小单位是物料行——范围内每个
+还有额度的物料行一次生成它的全部额度，不拆成两次。号都排在该 PI 的一套流水上，各物料行按自己的规则写出
+（前缀 + 长度 + 流水 + 后缀）。
+必须先预演（只给出起止号、各物料行数量和号段，不落库），
 预演只对发起人有效、默认 30 分钟、只能生成一次；范围或条件改变、所选规则版本被别的 PI 先用、PI 最大号变化、
 同步改了范围内物料行数量时预演失效。
 一次生成在一个事务里完成（共用一个生成批次），撞号整次回滚、不跳号；不超过 SN_GEN_SYNC_THRESHOLD 当场完成，
 更多转后台任务（进度、可取消）；服务重启时没跑完的任务视为失败。起点 = 本 PI 自己生成的最大流水 + 1。
-撤销：只能撤这张 PI 流水排在最后的一次生成，且号全部仍待分配、都没转过单；号删除，最大号和计数一并退回。
+撤销：最小单位也是物料行——只能撤这张 PI 流水排在最后的物料行号段（撤完一行，前一行成为最后，可接着撤；
+也可一次撤一次生成中剩下的全部物料行），号须全部仍待分配、都没转过单；号删除，最大号和计数一并退回，流水仍连续。
 
 分配：号只能分到订单的生产组织（快照中订单的生产组织；订单已不在快照时取号上的生成时订单生产组织；
 反审核中、PI 变更待确认、暂停交付的单据跳过）。对接 MES 的改为待推送（未入批）并自动开始推送；未对接的改为待领取。
@@ -80,15 +83,16 @@ _INSERT_ITEM = (
 executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="sn-gen")
 
 
+_LINE_FIELDS = ("bill_no", "seq", "material_code", "length", "qty", "start_sn", "end_sn", "rule_label")
+
+
 def job_json(j: dict | None) -> dict | None:
     out = util.jrow(j, JOB_FIELDS)
     if out is not None and j is not None:
         plan = json.loads(j["plan_json"])
-        out["lines"] = [
-            {k: x[k] for k in ("bill_no", "seq", "material_code", "length", "qty", "start_sn", "end_sn", "rule_label")}
-            for x in plan["items"]
-        ]
+        out["lines"] = [{k: x[k] for k in _LINE_FIELDS} | {"revoked": bool(x.get("revoked"))} for x in plan["items"]]
         out["bills"] = sorted({x["bill_no"] for x in plan["items"]})
+        out["revoked_qty"] = sum(x["qty"] for x in plan["items"] if x.get("revoked"))
     return out
 
 
@@ -211,8 +215,8 @@ def _scope_keys(pi: str, scope: str, bills_in: list[str] | None, lines_in: list[
 # ================================================================== 预演
 
 
-def _plan(pi: str, scope: str, keys: list[tuple[str, int]], qty_in: int | None, base: int) -> dict:
-    """按排号顺序依次占满各物料行额度、切出号段。返回计划（不落库）；不能生成时 issues 非空。"""
+def _plan(pi: str, scope: str, keys: list[tuple[str, int]], base: int) -> dict:
+    """按排号顺序给每个还有额度的物料行切出一段号（整行额度，不拆行）。返回计划（不落库）；不能生成时 issues 非空。"""
     ls = _load_lines(pi, keys)
     todo = [x for x in ls if x.quota > 0]
     quota = sum(x.quota for x in todo)
@@ -227,18 +231,12 @@ def _plan(pi: str, scope: str, keys: list[tuple[str, int]], qty_in: int | None, 
         return out
     if issues:
         return out
-    qty = min(quota, settings.gen_default_limit) if qty_in is None else qty_in
-    if qty <= 0:
-        raise biz(ErrorCode.GEN_QTY_INVALID)
-    if qty > quota:
-        raise biz(ErrorCode.GEN_QUOTA_EXCEEDED, qty=qty, quota=quota)
+    qty = quota
     if qty > settings.gen_max_per_run:
         raise biz(ErrorCode.GEN_QTY_OVER_MAX, qty=qty, max=settings.gen_max_per_run)
-    cur, left = base + 1, qty
+    cur = base + 1
     for x in todo:
-        if left == 0:
-            break
-        n = min(x.quota, left)
+        n = x.quota
         spec = x.res.spec()
         end = cur + n - 1
         mx = codec.max_seq(spec)
@@ -275,7 +273,7 @@ def _plan(pi: str, scope: str, keys: list[tuple[str, int]], qty_in: int | None, 
                 + f"（{rules.format_text(spec)}）",
             }
         )
-        cur, left = end + 1, left - n
+        cur = end + 1
     out["qty"] = qty
     out["start_seq"] = base + 1
     out["end_seq"] = base + qty
@@ -290,15 +288,15 @@ def preview(
     scope: str | None,
     bills: list[str] | None,
     lines: list[dict] | None,
-    qty: int | None,
 ) -> dict:
-    """预演：可生成时返回令牌与号段；不能生成时 generatable = false 并逐行列出原因（可缩小范围后再预演）。"""
+    """预演：范围内每个还有额度的物料行整行生成。可生成时返回令牌与号段；不能生成时 generatable = false 并逐行列出原因
+    （可缩小范围后再预演）。"""
     pi = util.trim(pi_in)
     if not pi:
         raise biz(ErrorCode.PI_REQUIRED)
     sc = util.trim(scope) or SCOPE_BILLS
     keys = _scope_keys(pi, sc, bills, lines)
-    plan = _plan(pi, sc, keys, qty, last_seq(pi))
+    plan = _plan(pi, sc, keys, last_seq(pi))
     if plan["issues"]:
         return {**plan, "generatable": False, "limits": limits()}
     now = util.now()
@@ -361,7 +359,7 @@ def generate(cu: CurrentUser, token: str | None) -> dict:
         if actual != p["base_last_seq"]:
             raise biz(ErrorCode.GEN_PREVIEW_STALE, pi=pi, expected=p["base_last_seq"], actual=actual)
         keys = [tuple(k) for k in stored["keys"]]
-        fresh = _plan(pi, stored["scope"], keys, stored["qty"], actual)
+        fresh = _plan(pi, stored["scope"], keys, actual)
         if fresh["issues"] or not _same_plan(stored, fresh):
             raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
         batch = util.next_id("G") + util.token_hex()[:4]
@@ -721,39 +719,59 @@ def cancel(cu: CurrentUser, batch: str | None) -> dict:
     return progress(j["gen_batch"])
 
 
-def _revocable(pi: str) -> dict | None:
-    """这张 PI 当前可撤销的一次生成：流水排在最后、成功，号全部仍待分配且都没转过单。"""
+def _tail(pi: str) -> tuple[dict, dict] | None:
+    """这张 PI 流水排在最后的物料行号段：（所在的成功生成任务，号段）；没有时 None。"""
     last = last_seq(pi)
     if last == 0:
         return None
-    j = db.one(
-        "SELECT * FROM sn_gen_job WHERE pi_no = %s AND status = %s AND end_seq_dec = %s ORDER BY id DESC LIMIT 1",
+    for j in db.all(
+        "SELECT * FROM sn_gen_job WHERE pi_no = %s AND status = %s AND start_seq_dec <= %s AND end_seq_dec >= %s "
+        "ORDER BY id DESC",
         pi,
         SUCCESS,
         last,
-    )
-    if j is None or db.exists("SELECT EXISTS(SELECT 1 FROM sn_gen_job WHERE running_pi = %s)", pi):
-        return None
-    if _not_revocable_count(j):
-        return None
-    return {"gen_batch": j["gen_batch"], "qty": j["qty"], "start_sn": j["start_sn"], "end_sn": j["end_sn"]}
+        last,
+    ):
+        for x in json.loads(j["plan_json"])["items"]:
+            if not x.get("revoked") and x["end_seq"] == last:
+                return j, x
+    return None
 
 
-def _not_revocable_count(j: dict) -> int:
-    """这次生成的号中已分配、或转过单（挂靠变了、版本号加过）的枚数；号已不在号池也算。"""
+def _not_revocable_count(j: dict, x: dict) -> int:
+    """一个物料行号段中已分配、或转过单（挂靠变了、版本号加过）的枚数；号已不在号池也算。"""
     ok = db.count(
         "SELECT COUNT(*) FROM sn_item WHERE seq_pi_no = %s AND seq_dec BETWEEN %s AND %s AND gen_batch = %s "
         "AND status = 'PENDING_ALLOC' AND rev = 1 AND bill_no = gen_bill_no AND bill_seq = gen_bill_seq "
         "AND pi_no = seq_pi_no",
         j["pi_no"],
-        j["start_seq_dec"],
-        j["end_seq_dec"],
+        x["start_seq"],
+        x["end_seq"],
         j["gen_batch"],
     )
-    return j["qty"] - ok
+    return x["qty"] - ok
 
 
-def revoke(cu: CurrentUser, batch: str | None, reason_in: str | None) -> dict:
+def revocable(pi: str) -> dict | None:
+    """当前可撤销的物料行（流水排在最后、号全部仍待分配且没转过单）；生成中或没有时 None。"""
+    if db.exists("SELECT EXISTS(SELECT 1 FROM sn_gen_job WHERE running_pi = %s)", pi):
+        return None
+    t = _tail(pi)
+    if t is None or _not_revocable_count(*t):
+        return None
+    j, x = t
+    return {k: x[k] for k in ("bill_no", "seq", "qty", "start_sn", "end_sn")} | {"gen_batch": j["gen_batch"]}
+
+
+def revoke(
+    cu: CurrentUser,
+    batch: str | None,
+    reason_in: str | None,
+    bill_no: str | None = None,
+    seq: int | None = None,
+) -> dict:
+    """撤销生成，最小单位物料行：给了单据和序号时只撤这一行，否则撤这次生成中剩下的全部物料行。
+    要撤的号段须从 PI 流水末尾起依次相接（即只能从后往前撤），号全部仍待分配且没转过单。"""
     reason = util.trim(reason_in)
     if not reason or len(reason) > 500:
         raise biz(ErrorCode.REASON_REQUIRED)
@@ -764,38 +782,35 @@ def revoke(cu: CurrentUser, batch: str | None, reason_in: str | None) -> dict:
         j = _job_by_batch(batch, lock=True)
         if j["status"] != SUCCESS:
             raise biz(ErrorCode.GEN_REVOKE_NOT_SUCCESS)
-        if c is None or c["last_seq_dec"] != j["end_seq_dec"]:
-            raise biz(ErrorCode.GEN_REVOKE_NOT_LAST, pi=pi)
-        bad = _not_revocable_count(j)
+        plan = json.loads(j["plan_json"])
+        left = [x for x in plan["items"] if not x.get("revoked")]
+        if bill_no is not None:
+            no = util.trim(bill_no)
+            left = [x for x in left if x["bill_no"] == no and x["seq"] == seq]
+            if not left:
+                raise biz(ErrorCode.GEN_REVOKE_LINE_INVALID)
+        targets = sorted(left, key=lambda x: x["end_seq"], reverse=True)
+        last = 0 if c is None else c["last_seq_dec"]
+        for x in targets:
+            if x["end_seq"] != last:
+                raise biz(ErrorCode.GEN_REVOKE_NOT_LAST, pi=pi)
+            last = x["start_seq"] - 1
+        bad = sum(_not_revocable_count(j, x) for x in targets)
         if bad:
             raise biz(ErrorCode.GEN_REVOKE_ALLOCATED, count=bad)
-        plan = json.loads(j["plan_json"])
-        n = db.exec(
-            "DELETE FROM sn_item WHERE seq_pi_no = %s AND seq_dec BETWEEN %s AND %s AND gen_batch = %s "
-            "AND status = 'PENDING_ALLOC'",
-            pi,
-            j["start_seq_dec"],
-            j["end_seq_dec"],
-            j["gen_batch"],
-        )
-        if n != j["qty"]:
-            raise biz(ErrorCode.CONFLICT_RETRY)
-        prev = db.scalar(
-            "SELECT COALESCE(MAX(end_seq_dec), 0) FROM sn_gen_job WHERE pi_no = %s AND status = %s AND id <> %s",
-            pi,
-            SUCCESS,
-            j["id"],
-        )
         now = util.now()
-        db.exec(
-            "UPDATE sn_pi_counter SET last_seq_dec = %s, generated_qty = generated_qty - %s, updated_at = %s "
-            "WHERE pi_no = %s",
-            prev,
-            j["qty"],
-            now,
-            pi,
-        )
-        for x in plan["items"]:
+        mark = {"at": util.fmt(now), "by": cu.emp_no, "reason": util.cut(reason, 500)}
+        for x in targets:
+            n = db.exec(
+                "DELETE FROM sn_item WHERE seq_pi_no = %s AND seq_dec BETWEEN %s AND %s AND gen_batch = %s "
+                "AND status = 'PENDING_ALLOC'",
+                pi,
+                x["start_seq"],
+                x["end_seq"],
+                j["gen_batch"],
+            )
+            if n != x["qty"]:
+                raise biz(ErrorCode.CONFLICT_RETRY)
             db.exec(
                 "UPDATE sn_line_count SET own_generated = own_generated - %s, gen_count = gen_count - %s, "
                 "updated_at = %s WHERE bill_no = %s AND seq = %s",
@@ -805,13 +820,26 @@ def revoke(cu: CurrentUser, batch: str | None, reason_in: str | None) -> dict:
                 x["bill_no"],
                 x["seq"],
             )
+            x["revoked"] = mark
+        qty = sum(x["qty"] for x in targets)
         db.exec(
-            "UPDATE sn_gen_job SET status = %s, revoke_reason = %s WHERE id = %s",
-            REVOKED,
+            "UPDATE sn_pi_counter SET last_seq_dec = %s, generated_qty = generated_qty - %s, updated_at = %s "
+            "WHERE pi_no = %s",
+            last,
+            qty,
+            now,
+            pi,
+        )
+        whole = all(x.get("revoked") for x in plan["items"])
+        db.exec(
+            "UPDATE sn_gen_job SET status = %s, plan_json = %s, revoke_reason = %s WHERE id = %s",
+            REVOKED if whole else SUCCESS,
+            json.dumps(plan, ensure_ascii=False, separators=(",", ":")),
             util.cut(reason, 500),
             j["id"],
         )
-        for no, items in _by_bill(plan["items"]).items():
+        targets.reverse()
+        for no, items in _by_bill(targets).items():
             audit.record(
                 cu,
                 audit.entry(audit.SN_REVOKE)
@@ -823,20 +851,37 @@ def revoke(cu: CurrentUser, batch: str | None, reason_in: str | None) -> dict:
                 .status(util.PENDING_ALLOC, None)
                 .batch(j["gen_batch"])
                 .why(reason)
-                .info(f"job={j['id']} last_seq {j['end_seq_dec']} -> {prev}"),
+                .info(
+                    f"job={j['id']} lines="
+                    + ",".join(f"{x['seq']}:{x['qty']}@{x['start_sn']}~{x['end_sn']}" for x in items)
+                    + f" last_seq -> {last}"
+                ),
             )
-    return {"gen_batch": j["gen_batch"], "pi_no": pi, "qty": j["qty"], "last_seq_dec": prev}
+    return {
+        "gen_batch": j["gen_batch"],
+        "pi_no": pi,
+        "qty": qty,
+        "lines": [{"bill_no": x["bill_no"], "seq": x["seq"], "qty": x["qty"]} for x in targets],
+        "last_seq_dec": last,
+        "job_status": REVOKED if whole else SUCCESS,
+    }
 
 
 def jobs(pi: str | None, limit: int = 20) -> list[dict]:
-    rows = db.all(
-        "SELECT * FROM sn_gen_job WHERE pi_no = %s ORDER BY id DESC LIMIT %s", util.trim(pi), min(max(limit, 1), 200)
-    )
-    rb = _revocable(util.trim(pi))
+    """最近的生成任务；revocable 标出可整次撤销（剩下的物料行都能从流水末尾依次撤掉）的那一次，
+    各物料行的 revocable 标出当前可单独撤销的那一行。"""
+    pi = util.trim(pi)
+    rows = db.all("SELECT * FROM sn_gen_job WHERE pi_no = %s ORDER BY id DESC LIMIT %s", pi, min(max(limit, 1), 200))
+    rb = revocable(pi)
     out = []
     for j in rows:
         v = job_json(j)
-        v["revocable"] = rb is not None and rb["gen_batch"] == j["gen_batch"]
+        mine = rb is not None and rb["gen_batch"] == j["gen_batch"]
+        for line in v["lines"]:
+            line["revocable"] = mine and (line["bill_no"], line["seq"]) == (rb["bill_no"], rb["seq"])
+        v["revocable"] = mine and not any(
+            _not_revocable_count(j, x) for x in json.loads(j["plan_json"])["items"] if not x.get("revoked")
+        )
         out.append(v)
     return out
 

@@ -20,10 +20,10 @@ def gen_context(cu: AdminDep, pi: str | None = None, bill_no: str | None = None)
     return workbench.context(cu, pi, bill_no)
 
 
-@router.post("/preview", summary="预演：范围、数量 → 起止号、各物料行数量与号段；不能生成时逐行列出原因")
+@router.post("/preview", summary="预演：范围内物料行整行生成 → 起止号、各物料行数量与号段；不能生成时逐行列出原因")
 def gen_preview(body: PreviewIn, cu: AdminDep) -> dict:
     lines = [x.model_dump() for x in body.lines or []]
-    return generate.preview(cu, body.pi_no, body.scope, body.bills, lines, body.qty)
+    return generate.preview(cu, body.pi_no, body.scope, body.bills, lines)
 
 
 @router.post("/run", summary="凭预演令牌生成：数量不大时当场完成，否则返回 RUNNING，轮询进度")
@@ -31,7 +31,7 @@ def gen_run(body: RunIn, cu: AdminDep) -> dict:
     return generate.generate(cu, body.token)
 
 
-@router.get("/jobs", summary="生成任务（最近 N 条），revocable 标出可撤销的最后一次")
+@router.get("/jobs", summary="生成任务（最近 N 条），revocable 标出可整次撤销的那一次，物料行上标出可单独撤销的那一行")
 def gen_jobs(cu: AdminDep, pi: str, limit: OptInt = None) -> list:
     return generate.jobs(pi, 20 if limit is None else limit)
 
@@ -47,10 +47,12 @@ def gen_cancel(batch: str, cu: AdminDep) -> dict:
 
 
 @router.post(
-    "/batches/{batch}/revoke", summary="撤销生成：只能撤这张 PI 流水排在最后、号全部仍待分配且没转过单的一次；原因必填"
+    "/batches/{batch}/revoke",
+    summary="撤销生成（最小单位物料行）：给单据与序号只撤这一行，否则撤这次剩下的全部行；"
+    "只能从 PI 流水末尾往前撤，号须全部仍待分配且没转过单；原因必填",
 )
 def gen_revoke(batch: str, body: RevokeIn, cu: AdminDep) -> dict:
-    return generate.revoke(cu, batch, body.reason)
+    return generate.revoke(cu, batch, body.reason, body.bill_no, body.seq)
 
 
 @router.post("/alloc-preview", summary="分配面板：按生产组织汇总枚数、单据和物料、是否对接 MES、推送次数")

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from conftest import m, ok, uid
+from conftest import BILLS, m, ok, uid
 
 
 def mk(w, *lines, pi=None, org=None, bill=None, customer="C1"):
@@ -33,7 +33,7 @@ def test_used_version_needs_new_prefix_for_format_change(w, api, sql):
     org, pi, bill = mk(w, ("M1", 10))
     rid = w.rule(P(), seq_len=5)
     ok(w.bind_pi(pi, rid))
-    w.generate(pi, 2)
+    w.generate(pi)
     cur = sql.one("SELECT * FROM sn_rule_version WHERE rule_id = %s", rid)
     base = m(rule_name="x", prefix=cur["prefix"], base=16, seq_len=5)
     assert api.put(f"/api/rules/{rid}", base, w.admin).code == "RULE_USED_FORMAT"
@@ -53,12 +53,12 @@ def test_other_pi_must_change_prefix(w, sql):
     _, p2, b2 = mk(w, ("M1", 10), org=org)
     rid = w.rule("HX" + uid("").replace("-", "")[-4:], seq_len=6)
     ok(w.bind_pi(p1, rid))
-    w.generate(p1, 1)
+    w.generate(p1)
     r = w.bind_pi(p2, rid)
     assert r.code == "RULE_PREFIX_CHANGE_REQUIRED"
     newp = "HY" + uid("").replace("-", "")[-4:]
     ok(w.bind_pi(p2, rid, newp))
-    w.generate(p2, 1)
+    w.generate(p2)
     assert sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s", p2).startswith(newp)
     v = sql.one("SELECT * FROM sn_rule_version WHERE prefix = %s", newp)
     assert v["claimed_pi"] == p2 and v["derived_from"] is not None
@@ -69,7 +69,7 @@ def test_lines_with_different_rules_share_one_serial(w, sql):
     ra, rb = w.rule(P()), w.rule(P())
     ok(w.select(pi, [(bill, 1)], rule_id=ra))
     ok(w.select(pi, [(bill, 2)], rule_id=rb))
-    w.generate(pi, 150)
+    w.generate(pi)
     rows = sql.all(
         "SELECT bill_seq, MIN(seq_dec) a, MAX(seq_dec) b, COUNT(DISTINCT rule_version_id) v FROM sn_item "
         "WHERE pi_no = %s GROUP BY bill_seq ORDER BY bill_seq",
@@ -107,12 +107,29 @@ def test_customer_template_requires_prefix(w, api):
 
 
 def test_start_after_own_max_ignoring_transferred_in(w, sql):
-    org, pi, bill = mk(w, ("M1", 1300))
+    org, pi, bill = mk(w, ("M1", 1200), ("M1", 100))
     rid = w.rule(P())
     ok(w.bind_pi(pi, rid))
-    w.generate(pi, 1200)
-    j = w.generate(pi, 100)
+    w.generate(pi, lines=[(bill, 1)])
+    j = w.generate(pi, lines=[(bill, 2)])
     assert (j["start_seq_dec"], j["end_seq_dec"]) == (1201, 1300)
+
+
+def test_generation_takes_whole_lines(w, api, sql):
+    org, pi, bill = mk(w, ("M1", 7), ("M2", 5), ("M3", 3))
+    ok(w.bind_pi(pi, w.rule(P())))
+    r = api.post(
+        "/api/generate/preview",
+        m(pi_no=pi, scope="LINES", lines=[m(bill_no=bill, seq=2), m(bill_no=bill, seq=1)], qty=1),
+        w.admin,
+    )
+    p = ok(r)
+    assert p["qty"] == 12 and [(x["seq"], x["qty"]) for x in p["items"]] == [(2, 5), (1, 7)], "不填数量，每行整行生成"
+    w.generate(pi, lines=[(bill, 2), (bill, 1)])
+    c = {r["seq"]: r["own_generated"] for r in sql.all("SELECT * FROM sn_line_count WHERE bill_no = %s", bill)}
+    assert c == {1: 7, 2: 5}
+    p = ok(w.preview(pi))
+    assert p["qty"] == 3 and [(x["seq"], x["qty"]) for x in p["items"]] == [(3, 3)], "已生成满的行不再参与"
 
 
 def test_preview_lists_reasons(w, api):
@@ -155,14 +172,18 @@ def test_attach_and_length_locked_once_line_has_sns(w, api, sql):
     ok(w.bind_pi(pi, w.rule(p)))
     for seq in (1, 2):
         ok(api.put("/api/orders/attach", m(bill_no=bill, seq=seq, value="A1"), w.admin))
-    j = w.generate(pi, 2, lines=[(bill, 1)])
+    j = w.generate(pi, lines=[(bill, 1)])
     line = {x["seq"]: x for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"]}
     assert (line[1]["edit_lock"], line[2]["edit_lock"]) == ("GENERATED", None)
     assert api.put("/api/orders/attach", m(bill_no=bill, seq=1, value="A2"), w.admin).code == "LINE_EDIT_GENERATED"
     assert api.put("/api/orders/length", m(bill_no=bill, seq=1, value="5"), w.admin).code == "LINE_EDIT_GENERATED"
     r = ok(api.put("/api/orders/length/batch", m(pi_no=pi, value="9"), w.admin))
     assert r["filled"] == 1, "统一设置跳过已有号的物料行"
-    w.generate(pi, 2, lines=[(bill, 1)])
+    # 订单数量增加后，同一物料行接着生成新增的额度
+    BILLS[bill]["TreeEntity"][0]["Qty"] = 6.0
+    w.touch(bill)
+    w.compare()
+    w.generate(pi, lines=[(bill, 1)])
     assert [
         r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE bill_seq = 1 AND pi_no = %s ORDER BY seq_dec", pi)
     ] == [
@@ -170,16 +191,20 @@ def test_attach_and_length_locked_once_line_has_sns(w, api, sql):
         f"{p}000000002",
         f"{p}000000003",
         f"{p}000000004",
+        f"{p}000000005",
+        f"{p}000000006",
     ], "同一物料行接着生成仍用锁定的长度"
-    # 撤销该行的全部生成后可修改，再生成用新值
+    # 撤销该行的全部生成后可修改，再生成用新值（从流水末尾往前逐段撤）
     for x in ok(api.get(f"/api/generate/jobs?pi={pi}", w.admin)).body:
         if x["status"] == "SUCCESS":
-            ok(api.post(f"/api/generate/batches/{x['gen_batch']}/revoke", m(reason="改长度"), w.admin))
+            ok(w.revoke(x["gen_batch"], "改长度", (bill, 1)))
     assert j["status"] == "SUCCESS"
     r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=1, value="5"), w.admin))
     assert (r["length"], r["edit_lock"]) == ("5", None)
-    w.generate(pi, 1, lines=[(bill, 1)])
-    assert sql.scalar("SELECT sn FROM sn_item WHERE bill_seq = 1 AND pi_no = %s", pi) == f"{p}5000001"
+    w.generate(pi, lines=[(bill, 1)])
+    assert sql.scalar("SELECT sn FROM sn_item WHERE bill_seq = 1 AND pi_no = %s ORDER BY seq_dec LIMIT 1", pi) == (
+        f"{p}5000001"
+    )
     w.allocate(pi)
     line = {x["seq"]: x for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"]}
     assert line[1]["edit_lock"] == "ALLOCATED"
@@ -209,7 +234,7 @@ def test_length_is_written_as_string(w, sql):
 def test_click_order_and_repeated_material_lines(w, sql):
     org, pi, bill = mk(w, ("9148363", 100), ("9148363", 50), ("9150001", 30))
     ok(w.bind_pi(pi, w.rule(P())))
-    w.generate(pi, 130, lines=[(bill, 3), (bill, 1)])
+    w.generate(pi, lines=[(bill, 3), (bill, 1)])
     rows = {
         r["bill_seq"]: (r["a"], r["b"])
         for r in sql.all(
@@ -224,7 +249,7 @@ def test_click_order_and_repeated_material_lines(w, sql):
 def test_whole_bill_order(w, sql):
     org, pi, bill = mk(w, ("9148363", 100), ("9148363", 50), ("9150001", 30))
     ok(w.bind_pi(pi, w.rule(P())))
-    w.generate(pi, 180)
+    w.generate(pi)
     rows = {
         r["bill_seq"]: (r["a"], r["b"])
         for r in sql.all(
@@ -235,50 +260,90 @@ def test_whole_bill_order(w, sql):
 
 
 def test_preview_invalidated_by_other_generation(w, api):
-    org, pi, bill = mk(w, ("M1", 10))
+    org, pi, bill = mk(w, ("M1", 3), ("M2", 2))
     ok(w.bind_pi(pi, w.rule(P())))
-    p = ok(w.preview(pi, 3))
-    w.generate(pi, 2)
+    p = ok(w.preview(pi))
+    w.generate(pi, lines=[(bill, 2)])
     r = api.post("/api/generate/run", m(token=p["token"]), w.admin)
     assert r.code == "GEN_PREVIEW_STALE"
 
 
-def test_preview_single_use_and_quota(w, api):
-    org, pi, bill = mk(w, ("M1", 10))
+def test_preview_single_use_and_max(w, api, monkeypatch):
+    org, pi, bill = mk(w, ("M1", 10), ("M2", 3))
     ok(w.bind_pi(pi, w.rule(P())))
-    assert w.preview(pi, 11).code == "GEN_QUOTA_EXCEEDED"
-    p = ok(w.preview(pi, 3))
+    monkeypatch.setenv("SN_GEN_MAX_PER_RUN", "12")
+    assert w.preview(pi).code == "GEN_QTY_OVER_MAX", "整行合计超过单次硬上限：少选几行"
+    p = ok(w.preview(pi, lines=[(bill, 1)]))
     ok(api.post("/api/generate/run", m(token=p["token"]), w.admin))
     assert api.post("/api/generate/run", m(token=p["token"]), w.admin).code == "GEN_PREVIEW_USED"
 
 
-def test_revoke_last_only_and_not_allocated(w, api, sql):
-    org, pi, bill = mk(w, ("M1", 10))
+def test_revoke_last_only_and_not_allocated(w, sql):
+    org, pi, bill = mk(w, ("M1", 3), ("M2", 4), ("M3", 1))
     ok(w.bind_pi(pi, w.rule(P())))
-    j1 = w.generate(pi, 3)
-    j2 = w.generate(pi, 4)
-    assert (
-        api.post(f"/api/generate/batches/{j1['gen_batch']}/revoke", m(reason="x"), w.admin).code
-        == "GEN_REVOKE_NOT_LAST"
-    )
-    assert api.post(f"/api/generate/batches/{j2['gen_batch']}/revoke", m(), w.admin).code == "REASON_REQUIRED"
-    ok(api.post(f"/api/generate/batches/{j2['gen_batch']}/revoke", m(reason="点错了"), w.admin))
+    j1 = w.generate(pi, lines=[(bill, 1)])
+    j2 = w.generate(pi, lines=[(bill, 2)])
+    assert w.revoke(j1["gen_batch"]).code == "GEN_REVOKE_NOT_LAST"
+    assert w.revoke(j2["gen_batch"], None).code == "REASON_REQUIRED"
+    ok(w.revoke(j2["gen_batch"], "点错了"))
     assert sql.scalar("SELECT last_seq_dec FROM sn_pi_counter WHERE pi_no = %s", pi) == 3
-    assert sql.scalar("SELECT own_generated FROM sn_line_count WHERE bill_no = %s", bill) == 3
-    j3 = w.generate(pi, 1)
+    assert sql.scalar("SELECT own_generated FROM sn_line_count WHERE bill_no = %s AND seq = 2", bill) == 0
+    j3 = w.generate(pi, lines=[(bill, 3)])
     assert j3["start_seq_dec"] == 4, "撤销后流水退回，号与撤销前相同"
     w.allocate(pi)
-    assert (
-        api.post(f"/api/generate/batches/{j3['gen_batch']}/revoke", m(reason="x"), w.admin).code
-        == "GEN_REVOKE_ALLOCATED"
-    )
+    assert w.revoke(j3["gen_batch"]).code == "GEN_REVOKE_ALLOCATED"
+
+
+def test_revoke_by_line_from_the_end(w, api, sql):
+    org, pi, bill = mk(w, ("M1", 3), ("M2", 4), ("M3", 2))
+    ok(w.bind_pi(pi, w.rule(P())))
+    j = w.generate(pi)
+    batch = j["gen_batch"]
+
+    def ctx() -> dict:
+        return ok(api.get(f"/api/generate/context?pi={pi}", w.admin)).body
+
+    rb = ctx()["revocable"]
+    assert (rb["gen_batch"], rb["bill_no"], rb["seq"], rb["qty"]) == (batch, bill, 3, 2), "可撤销的是流水最末的物料行"
+    assert w.revoke(batch, line=(bill, 1)).code == "GEN_REVOKE_NOT_LAST", "中间的物料行不能先撤"
+    ok(w.revoke(batch, "长度填错", (bill, 3)))
+    assert sql.scalar("SELECT last_seq_dec FROM sn_pi_counter WHERE pi_no = %s", pi) == 7
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 7
+    assert w.revoke(batch, line=(bill, 3)).code == "GEN_REVOKE_LINE_INVALID", "已撤销的行不能再撤"
+    job = ok(api.get(f"/api/generate/jobs?pi={pi}", w.admin)).body[0]
+    assert job["status"] == "SUCCESS" and job["revoked_qty"] == 2 and job["revocable"] is True
+    assert [(x["seq"], x["revoked"], x["revocable"]) for x in job["lines"]] == [
+        (1, False, False),
+        (2, False, True),
+        (3, True, False),
+    ]
+    # 撤掉的行重新生成：接在流水末尾，号与撤销前相同
+    j2 = w.generate(pi, lines=[(bill, 3)])
+    assert (j2["start_seq_dec"], j2["end_seq_dec"]) == (8, 9)
+    # 末尾那行已分配：不能撤，前面的行也撤不到
+    w.allocate(pi, lines=[(bill, 3)])
+    assert ctx()["revocable"] is None
+    assert w.revoke(j2["gen_batch"], line=(bill, 3)).code == "GEN_REVOKE_ALLOCATED"
+    assert w.revoke(batch, line=(bill, 2)).code == "GEN_REVOKE_NOT_LAST"
+
+
+def test_revoke_rest_of_generation_at_once(w, api, sql):
+    org, pi, bill = mk(w, ("M1", 3), ("M2", 4), ("M3", 2))
+    ok(w.bind_pi(pi, w.rule(P())))
+    j = w.generate(pi)
+    ok(w.revoke(j["gen_batch"], "x", (bill, 3)))
+    r = ok(w.revoke(j["gen_batch"], "整次撤"))
+    assert (r["qty"], r["last_seq_dec"], r["job_status"]) == (7, 0, "REVOKED")
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 0
+    assert sql.scalar("SELECT status FROM sn_gen_job WHERE gen_batch = %s", j["gen_batch"]) == "REVOKED"
+    assert all(x["own_generated"] == 0 for x in sql.all("SELECT * FROM sn_line_count WHERE bill_no = %s", bill))
 
 
 def test_background_generation_and_cancel(w, api, sql, monkeypatch):
     monkeypatch.setenv("SN_GEN_SYNC_THRESHOLD", "10")
     org, pi, bill = mk(w, ("M1", 5000))
     ok(w.bind_pi(pi, w.rule(P())))
-    p = ok(w.preview(pi, 5000))
+    p = ok(w.preview(pi))
     j = ok(api.post("/api/generate/run", m(token=p["token"]), w.admin))
     batch = j["gen_batch"]
     import time
@@ -304,7 +369,7 @@ def test_workbench_lists_status_and_buttons(w, api):
         return [x["pi_no"] for x in ok(api.get(f"/api/generate/pis?q={pi}&tab={t}", w.admin))["items"]]
 
     assert (tab("TO_GENERATE"), tab("TO_ALLOCATE"), tab("DONE")) == ([pi], [], [])
-    w.generate(pi, 10)
+    w.generate(pi)
     x = ok(api.get(f"/api/generate/pis?q={pi}", w.admin))["items"][0]
     assert (x["status"], x["pending_alloc"], x["generated_qty"]) == ("TO_ALLOCATE", 10, 10)
     ctx = ok(api.get(f"/api/generate/context?bill_no={bill}", w.admin))
@@ -319,7 +384,7 @@ def test_workbench_lists_status_and_buttons(w, api):
 def test_generating_pi_listed_first_under_to_generate(w, api, sql):
     _, running_pi, _ = mk(w, ("M1", 10))
     ok(w.bind_pi(running_pi, w.rule(P())))
-    w.generate(running_pi, 10)
+    w.generate(running_pi)
     _, other, _ = mk(w, ("M1", 10))
     ok(w.bind_pi(other, w.rule(P())))
     # 模拟生成中：额度已用完，仍归「待生成」页签并排在最前

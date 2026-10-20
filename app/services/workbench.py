@@ -291,6 +291,8 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
         "limits": generate.limits(),
         "running_job": None if running is None else generate.progress(running["gen_batch"]),
         "jobs": generate.jobs(pi, 20),
+        # 当前可撤销的物料行（流水排在最后的那一段），物料行上直接给「撤销生成」
+        "revocable": generate.revocable(pi),
         "allocation": generate.alloc_preview(pi, None, None),
         "push": push_status(pi),
         "batches": delivery.list_batches(cu, None, pi, None, None, "DELIVERY", None, None, util.Page.of(1, 100))[
