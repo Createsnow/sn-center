@@ -35,7 +35,7 @@
     "dashboard": "Dashboard",
     "orders": "Production orders",
     "generate": "SN generation",
-    "allocate": "Allocate & push",
+    "allocate": "SN allocation",
     "rules": "Rule library",
     "acquire": "Page acquire",
     "transfer": "Bill & org transfer",
@@ -327,7 +327,7 @@
     "itemsOf": "Acquire batch {b}"
   },
   "allocate": {
-    "title": "Allocate & push",
+    "title": "SN allocation",
     "desc": "Allocate generated SNs to the order's production org: MES orgs get them pushed in batches automatically and confirm each batch, and an interrupted push can be resumed; other orgs acquire them on the “Page acquire” page. Allocate a whole PI or the ticked lines.",
     "summary": "To allocate {pending} · to push {unbatched}",
     "tab": {
@@ -519,7 +519,7 @@
   },
   "generate": {
     "title": "SN generation",
-    "desc": "Generate SNs per PI: complete the SN rule and attachment item of each material line, then tick lines and generate (each line gets its whole quota at once, all SNs share the PI's serial); revoking is also per line, from the end of the serial backwards. Generated SNs are allocated on the “Allocate & push” page.",
+    "desc": "Generate SNs per PI: complete the SN rule and attachment item of each material line, then tick lines and generate (each line gets its whole quota at once, all SNs share the PI's serial); revoking is also per line, from the end of the serial backwards. Generated SNs are allocated on the “SN allocation” page.",
     "snapshotAt": "Order snapshot last synced: {time}",
     "toOrders": "Go to orders",
     "search": "PI / customer / bill No. / material",
@@ -675,7 +675,7 @@
     "revokedQty": "{n} revoked",
     "summary": "Generatable {quota}",
     "summaryPending": "To allocate {n} →",
-    "toAllocate": "{n} SNs to allocate · go to Allocate & push",
+    "toAllocate": "{n} SNs to allocate · go to SN allocation",
     "piRuleBtn": "PI / customer rule",
     "onlyThese": "Show only these lines",
     "selHint": "Tick bills (whole bill, SNs follow the tick order) or material lines (SNs follow the click order) as the scope for generating; the same ticks drive bulk rule changes, revoking and setting lengths. Nothing ticked = the whole PI",

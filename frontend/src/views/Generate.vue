@@ -881,7 +881,7 @@ function resetGen() {
   Object.assign(gen, { unlocked: false, preview: null, error: "" });
 }
 
-/** 生成完成：清空勾选、刷新详情；号到「分配与推送」页分配。 */
+/** 生成完成：清空勾选、刷新详情；号到「SN 分配」页分配。 */
 async function afterGenerated(qty: number) {
   ElMessage.success(t("generate.genDone", { n: num(qty) }));
   clearSelection();

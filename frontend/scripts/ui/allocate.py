@@ -1,6 +1,6 @@
-# 分配与推送页（F-10 工作台、F-11 分配与分批推送、5.2.5 第 7 条批次人工处理）。
+# SN 分配页（F-10 工作台、F-11 分配与分批推送、5.2.5 第 7 条批次人工处理）。
 M = {
-"allocate.title": ("分配与推送", "Allocate & push", "Phân bổ & đẩy"),
+"allocate.title": ("SN 分配", "SN allocation", "Phân bổ SN"),
 "allocate.desc": ("把已生成的号分到订单的生产组织：对接 MES 的改为待推送并自动分批推送，MES 逐批回执确认，中断后可续推；未对接的进入「页面领取」。可按整张 PI 或勾选物料行分配。", "Allocate generated SNs to the order's production org: MES orgs get them pushed in batches automatically and confirm each batch, and an interrupted push can be resumed; other orgs acquire them on the “Page acquire” page. Allocate a whole PI or the ticked lines.", "Phân bổ SN đã tạo cho tổ chức sản xuất của lệnh: tổ chức kết nối MES được đẩy tự động theo lô, MES xác nhận từng lô, bị gián đoạn thì đẩy tiếp; tổ chức khác nhận ở trang “Nhận trên trang”. Có thể phân bổ cả PI hoặc các dòng đã chọn."),
 "allocate.summary": ("待分配 {pending} · 待推送 {unbatched}", "To allocate {pending} · to push {unbatched}", "Chờ phân bổ {pending} · chờ đẩy {unbatched}"),
 "allocate.tab.TO_ALLOCATE": ("待处理", "To do", "Cần xử lý"),

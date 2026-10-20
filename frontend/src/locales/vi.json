@@ -35,7 +35,7 @@
     "dashboard": "Tổng quan",
     "orders": "Lệnh sản xuất",
     "generate": "Tạo SN",
-    "allocate": "Phân bổ & đẩy",
+    "allocate": "Phân bổ SN",
     "rules": "Thư viện quy tắc",
     "acquire": "Nhận trên trang",
     "transfer": "Chuyển chứng từ & tổ chức",
@@ -327,7 +327,7 @@
     "itemsOf": "Chi tiết lô nhận {b}"
   },
   "allocate": {
-    "title": "Phân bổ & đẩy",
+    "title": "Phân bổ SN",
     "desc": "Phân bổ SN đã tạo cho tổ chức sản xuất của lệnh: tổ chức kết nối MES được đẩy tự động theo lô, MES xác nhận từng lô, bị gián đoạn thì đẩy tiếp; tổ chức khác nhận ở trang “Nhận trên trang”. Có thể phân bổ cả PI hoặc các dòng đã chọn.",
     "summary": "Chờ phân bổ {pending} · chờ đẩy {unbatched}",
     "tab": {
@@ -519,7 +519,7 @@
   },
   "generate": {
     "title": "Tạo SN",
-    "desc": "Tạo SN theo PI: bổ sung quy tắc SN và hạng mục đính kèm cho từng dòng vật tư, rồi chọn dòng để tạo (mỗi dòng tạo toàn bộ hạn mức một lần, mọi SN dùng chung dãy tuần tự của PI); thu hồi cũng theo dòng, từ cuối dãy trở về trước. SN đã tạo được phân bổ ở trang “Phân bổ & đẩy”.",
+    "desc": "Tạo SN theo PI: bổ sung quy tắc SN và hạng mục đính kèm cho từng dòng vật tư, rồi chọn dòng để tạo (mỗi dòng tạo toàn bộ hạn mức một lần, mọi SN dùng chung dãy tuần tự của PI); thu hồi cũng theo dòng, từ cuối dãy trở về trước. SN đã tạo được phân bổ ở trang “Phân bổ SN”.",
     "snapshotAt": "Ảnh chụp lệnh đồng bộ gần nhất: {time}",
     "toOrders": "Đến trang lệnh",
     "search": "PI / khách hàng / số chứng từ / vật tư",
@@ -675,7 +675,7 @@
     "revokedQty": "Đã thu hồi {n}",
     "summary": "Còn tạo được {quota}",
     "summaryPending": "Chờ phân bổ {n} →",
-    "toAllocate": "{n} SN chờ phân bổ · đến Phân bổ & đẩy",
+    "toAllocate": "{n} SN chờ phân bổ · đến Phân bổ SN",
     "piRuleBtn": "Quy tắc PI / khách hàng",
     "onlyThese": "Chỉ xem các dòng này",
     "selHint": "Chọn chứng từ (cả chứng từ, SN theo thứ tự chọn) hoặc dòng vật tư (SN theo thứ tự bấm) làm phạm vi tạo; cũng dùng để đổi quy tắc, thu hồi, đặt chiều dài hàng loạt. Không chọn = cả PI",

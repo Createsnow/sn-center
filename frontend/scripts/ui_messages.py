@@ -34,7 +34,7 @@ M = {
 "nav.dashboard": ("首页", "Dashboard", "Tổng quan"),
 "nav.orders": ("生产订单", "Production orders", "Lệnh sản xuất"),
 "nav.generate": ("SN 生成", "SN generation", "Tạo SN"),
-"nav.allocate": ("分配与推送", "Allocate & push", "Phân bổ & đẩy"),
+"nav.allocate": ("SN 分配", "SN allocation", "Phân bổ SN"),
 "nav.rules": ("规则库", "Rule library", "Thư viện quy tắc"),
 "nav.acquire": ("页面领取", "Page acquire", "Nhận trên trang"),
 "nav.transfer": ("转单与转组织", "Bill & org transfer", "Chuyển chứng từ & tổ chức"),

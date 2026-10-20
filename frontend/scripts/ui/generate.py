@@ -1,7 +1,7 @@
 # SN 生成页（F-08 规则选取、F-09 生成与撤销、F-10 工作台）。
 M = {
 "generate.title": ("SN 生成", "SN generation", "Tạo SN"),
-"generate.desc": ("以 PI 为单位生成 SN：先补齐各物料行的 SN 规则和附件项次，再勾选物料行生成（每行一次生成全部额度，号都排在该 PI 的同一套流水上）；撤销也按物料行，从流水最末往前。生成的号到「分配与推送」页分配。", "Generate SNs per PI: complete the SN rule and attachment item of each material line, then tick lines and generate (each line gets its whole quota at once, all SNs share the PI's serial); revoking is also per line, from the end of the serial backwards. Generated SNs are allocated on the “Allocate & push” page.", "Tạo SN theo PI: bổ sung quy tắc SN và hạng mục đính kèm cho từng dòng vật tư, rồi chọn dòng để tạo (mỗi dòng tạo toàn bộ hạn mức một lần, mọi SN dùng chung dãy tuần tự của PI); thu hồi cũng theo dòng, từ cuối dãy trở về trước. SN đã tạo được phân bổ ở trang “Phân bổ & đẩy”."),
+"generate.desc": ("以 PI 为单位生成 SN：先补齐各物料行的 SN 规则和附件项次，再勾选物料行生成（每行一次生成全部额度，号都排在该 PI 的同一套流水上）；撤销也按物料行，从流水最末往前。生成的号到「SN 分配」页分配。", "Generate SNs per PI: complete the SN rule and attachment item of each material line, then tick lines and generate (each line gets its whole quota at once, all SNs share the PI's serial); revoking is also per line, from the end of the serial backwards. Generated SNs are allocated on the “SN allocation” page.", "Tạo SN theo PI: bổ sung quy tắc SN và hạng mục đính kèm cho từng dòng vật tư, rồi chọn dòng để tạo (mỗi dòng tạo toàn bộ hạn mức một lần, mọi SN dùng chung dãy tuần tự của PI); thu hồi cũng theo dòng, từ cuối dãy trở về trước. SN đã tạo được phân bổ ở trang “Phân bổ SN”."),
 "generate.snapshotAt": ("订单快照最近同步：{time}", "Order snapshot last synced: {time}", "Ảnh chụp lệnh đồng bộ gần nhất: {time}"),
 "generate.toOrders": ("去订单页", "Go to orders", "Đến trang lệnh"),
 "generate.search": ("PI / 客户 / 单据编号 / 物料", "PI / customer / bill No. / material", "PI / khách hàng / số chứng từ / vật tư"),
@@ -133,7 +133,7 @@ M = {
 "generate.summaryPending": ("待分配 {n} →", "To allocate {n} →", "Chờ phân bổ {n} →"),
 "generate.tab.GENERATED": ("已生成完", "Fully generated", "Đã tạo xong"),
 "generate.status.GENERATED": ("已生成完", "Fully generated", "Đã tạo xong"),
-"generate.toAllocate": ("已生成待分配 {n} 枚 · 去分配与推送", "{n} SNs to allocate · go to Allocate & push", "{n} SN chờ phân bổ · đến Phân bổ & đẩy"),
+"generate.toAllocate": ("已生成待分配 {n} 枚 · 去 SN 分配", "{n} SNs to allocate · go to SN allocation", "{n} SN chờ phân bổ · đến Phân bổ SN"),
 "generate.piRuleBtn": ("PI / 客户规则", "PI / customer rule", "Quy tắc PI / khách hàng"),
 "generate.onlyThese": ("只看这些行", "Show only these lines", "Chỉ xem các dòng này"),
 "generate.selHint": ("勾选单据（整单，按勾选顺序排号）或物料行（按点选顺序排号）即为生成范围，也用于批量改规则、撤销、统一设置长度；不勾选 = 整张 PI", "Tick bills (whole bill, SNs follow the tick order) or material lines (SNs follow the click order) as the scope for generating; the same ticks drive bulk rule changes, revoking and setting lengths. Nothing ticked = the whole PI", "Chọn chứng từ (cả chứng từ, SN theo thứ tự chọn) hoặc dòng vật tư (SN theo thứ tự bấm) làm phạm vi tạo; cũng dùng để đổi quy tắc, thu hồi, đặt chiều dài hàng loạt. Không chọn = cả PI"),
