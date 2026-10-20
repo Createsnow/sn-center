@@ -1,7 +1,7 @@
 """SN 编码：完整 SN = 前缀 + 长度 + 定长进制流水 + 后缀（PRD 5.2.2）。
 
 - 流水左侧用字符表首字符补齐；10 / 16 / 32 / 36 进制。
-- 长度取所属物料行的长度，按「长度写法」规范化后写入；规则不带长度时不写。
+- 长度取所属物料行的长度，按「长度写法」规范化后写入；物料行长度为空时写默认长度 000；规则不带长度时不写。
 - 同一版本的前缀、流水位数、后缀固定，SN 总长减去这几部分就是长度位数，所以按版本可以把 SN 反解成（长度，流水）。
 """
 
@@ -27,6 +27,8 @@ PREFIX_RE = re.compile(r"^[A-Za-z0-9]+$")
 SUFFIX_RE = re.compile(r"^[A-Za-z0-9_]*$")
 _CHARSET_RE = re.compile(r"^[A-Za-z0-9]+$")
 _LENGTH_RE = re.compile(r"^(\d*)(?:\.(\d*))?$")
+#: 物料行长度为空（金蝶为空且未补填）时写入 SN 的默认长度，原样写入、不规范化
+DEFAULT_LENGTH = "000"
 
 
 class SeqOverflow(ArithmeticError):
@@ -117,7 +119,7 @@ def parse(sn: str | None, s: Spec) -> tuple[str, int] | None:
     length, seq_text = body[: len(body) - s.seq_len], body[len(body) - s.seq_len :]
     if not s.with_length and length:
         return None
-    if s.with_length and normalize_length(length) != length:
+    if s.with_length and length != DEFAULT_LENGTH and normalize_length(length) != length:
         return None
     n = decode_seq(seq_text, s)
     return None if n is None else (length, n)

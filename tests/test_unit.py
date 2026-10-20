@@ -49,6 +49,7 @@ def test_parse_recovers_length_and_serial():
     assert codec.parse("HX100000001A", HX) == ("100", 1)
     assert codec.parse("HX10.5000042A", HX) == ("10.5", 42)
     assert codec.parse("HX0000042A", HX) == ("0", 42)
+    assert codec.parse("HX000000042A", HX) == ("000", 42), "默认长度 000 原样写入"
     assert codec.parse("AVM00042X", NOLEN) == ("", 42)
     assert codec.parse("AVM0042X", NOLEN) is None, "wrong length"
     assert codec.parse("BVM00042X", NOLEN) is None, "wrong prefix"
@@ -217,11 +218,18 @@ def test_migration_flyway_checksum():
     """测试阶段只保留一个 V1__init.sql；校验和按 Flyway 算法固定，改了建表脚本须同步更新这里（并重建测试库）。"""
     ours = {m.script: m for m in migrations()}
     assert list(ours) == ["V1__init.sql"]
-    assert ours["V1__init.sql"].checksum() == -1915956260
+    assert ours["V1__init.sql"].checksum() == -1262439771
     statements = ours["V1__init.sql"].statements()
-    assert len(statements) == 34
+    assert len(statements) == 35
     text = "\n".join(statements)
-    for table in ("sn_line_count", "sn_delivery_batch", "sn_push_task", "sn_acquire_batch", "sn_transfer_item"):
+    for table in (
+        "sn_line_count",
+        "sn_line_length",
+        "sn_delivery_batch",
+        "sn_push_task",
+        "sn_acquire_batch",
+        "sn_transfer_item",
+    ):
         assert f"CREATE TABLE {table}" in text, table
     for gone in ("sn_print", "sn_pi_import", "print_no", "sn_allocation"):
         assert gone not in text, f"{gone} 已随 PRD V30 移除（不再打印、不再按 PI 导入）"
@@ -394,6 +402,7 @@ def test_db_target_env_overrides_dotenv(monkeypatch):
         ("POST", "/api/delivery/resume", "SN_PUSH_RESUME"),
         ("POST", "/api/acquire/take", "SN_ACQUIRE"),
         ("POST", "/api/orders/attach", "ORDER_ATTACH_FILL"),
+        ("PUT", "/api/orders/length", "ORDER_LENGTH_FILL"),
         ("POST", "/api/orders/alerts/3/handle", "ORDER_ALERT_HANDLE"),
         ("POST", "/api/mes/v1/batches/next", "SN_PULL"),
         ("POST", "/api/mes/v1/batches/PS-1/receipt", "SN_RECEIPT"),

@@ -14,7 +14,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from app.core import encoding as codec
 from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
@@ -447,7 +446,7 @@ def _bill_plan(req: BillRequest) -> tuple[list[dict], dict[int, Target], orders.
     targets: dict[int, Target] = {}
     for r in items:
         line = line_of[r["bill_seq"]]
-        tlen = codec.normalize_length(line["length_raw"])
+        tlen = orders.length_of(line)
         if r["length_text"] is not None and tlen != r["length_text"]:
             raise biz(ErrorCode.TR_LENGTH_MISMATCH, target=tlen or "(空)", current=r["length_text"])
         # 已分配的号按目标单据的生产组织（相同时同组织改挂，不同时等同转组织）；待分配的仍待分配
@@ -484,7 +483,7 @@ def bill_preview(req: BillRequest) -> dict:
         t = targets[r["id"]]
         moves[(r["bill_no"], r["bill_seq"])] = moves.get((r["bill_no"], r["bill_seq"]), 0) - 1
         moves[(t.bill, t.seq)] = moves.get((t.bill, t.seq), 0) + 1
-    counts, _ = orders.line_extras(list(moves))
+    counts, _, _ = orders.line_extras(list(moves))
     out["generated_changes"] = [
         {
             "bill_no": k[0],
@@ -635,12 +634,9 @@ def _check_org_target(r: OrgRequest, items: list[dict], from_factory: str, from_
         raise biz(ErrorCode.TR_SAME_TARGET)
     # 改了物料且能从快照取到目标长度时，与号上长度不同则拒绝；手工填写的物料不校验
     if to_material and "material" not in manual:
-        lens = {
-            codec.normalize_length(x)
-            for x in db.column(
-                "SELECT length_raw FROM sn_prd_mo WHERE pi = %s AND material_code = %s", to_pi, to_material
-            )
-        }
+        rows = db.all("SELECT * FROM sn_prd_mo WHERE pi = %s AND material_code = %s", to_pi, to_material)
+        _, _, fills = orders.line_extras([(r["bill_no"], r["seq"]) for r in rows])
+        lens = {orders.effective_length(r, fills.get((r["bill_no"], r["seq"])))[0] for r in rows}
         if len(lens) == 1:
             tl = lens.pop()
             for x in items:

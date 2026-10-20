@@ -114,7 +114,11 @@ export interface OrderLine {
   material_code: string;
   material_name: string;
   length_raw: string;
-  length: string;
+  /** 生效长度（规范化后）；金蝶长度不是数字且未补填时为 null */
+  length: string | null;
+  /** K3 金蝶值 / MANUAL 手工补填 / DEFAULT 金蝶为空且未补填，取默认 000 */
+  length_source: "K3" | "MANUAL" | "DEFAULT";
+  length_manual: string | null;
   qty: number;
   generated_qty: number;
   own_generated_qty: number;

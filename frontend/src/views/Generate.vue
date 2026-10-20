@@ -209,8 +209,13 @@
                 <template v-else-if="gen.preview && !gen.preview.generatable">
                   <span class="err">{{ t("generate.cannotGen") }}</span>
                   <ul class="issues">
-                    <li v-for="(x, i) in gen.preview.issues" :key="i">
-                      <span v-if="x.bill_no">{{ x.bill_no }} / {{ x.seq }} · {{ x.material_code || "—" }}：</span>{{ x.issues.map(issueText).join("、") }}
+                    <li v-for="g in issueGroups" :key="g.code">
+                      <b>{{ issueText(g.code) }}</b>
+                      <template v-if="g.total">
+                        <span class="muted">（{{ t("generate.issueLines", { n: num(g.total) }) }}）：</span>
+                        <span>{{ g.bills.map((b) => `${b.bill_no} #${b.seqs.join("、")}`).join("；") }}</span>
+                        <span v-if="g.more" class="muted"> …</span>
+                      </template>
                     </li>
                   </ul>
                 </template>
@@ -348,10 +353,15 @@
                   </template>
                 </el-table-column>
                 <el-table-column :label="t('common.billSeq')" prop="seq" width="56" />
-                <el-table-column :label="t('common.attachNo')" width="96">
+                <el-table-column :label="t('common.attachNo')" width="130">
                   <template #default="{ row }">
-                    <span v-if="row.attach_source === 'EMPTY'" class="err">{{ t("generate.attachEmpty") }}</span>
-                    <span v-else>{{ row.attach_no }}<el-tag v-if="row.attach_source === 'MANUAL'" size="small" class="ml">{{ t("generate.attachManual") }}</el-tag></span>
+                    <span class="cell-edit">
+                      <span v-if="row.attach_source === 'EMPTY'" class="err">{{ t("generate.attachEmpty") }}</span>
+                      <span v-else>{{ row.attach_no }}<el-tag v-if="row.attach_source === 'MANUAL'" size="small" class="ml">{{ t("generate.attachManual") }}</el-tag></span>
+                      <el-button v-if="row.attach_source !== 'K3'" link type="primary" size="small" @click.stop="fillAttach(row)">
+                        <el-icon><EditPen /></el-icon>
+                      </el-button>
+                    </span>
                   </template>
                 </el-table-column>
                 <el-table-column :label="t('common.material')" min-width="130" show-overflow-tooltip>
@@ -360,8 +370,18 @@
                     <div class="muted">{{ row.material_name }}</div>
                   </template>
                 </el-table-column>
-                <el-table-column :label="t('common.length')" width="70">
-                  <template #default="{ row }">{{ row.length || row.length_raw || "—" }}</template>
+                <el-table-column :label="t('common.length')" width="130">
+                  <template #default="{ row }">
+                    <span class="cell-edit">
+                      <span v-if="row.length === null" class="err">{{ row.length_raw }}</span>
+                      <span v-else>{{ row.length }}</span>
+                      <el-tag v-if="row.length_source === 'DEFAULT'" size="small" type="warning">{{ t("generate.lengthDefault") }}</el-tag>
+                      <el-tag v-else-if="row.length_source === 'MANUAL'" size="small">{{ t("generate.lengthManual") }}</el-tag>
+                      <el-button v-if="row.length_source !== 'K3' || row.length === null" link type="primary" size="small" @click.stop="fillLength(row)">
+                        <el-icon><EditPen /></el-icon>
+                      </el-button>
+                    </span>
+                  </template>
                 </el-table-column>
                 <el-table-column :label="t('common.qty')" align="right" width="66">
                   <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
@@ -561,6 +581,27 @@ const { fmt: fmtTime } = useTime();
 const num = (n: number | string | null | undefined) => (n == null ? "—" : Number(n).toLocaleString());
 const pct = (b: { qty: number; done_qty: number }) => (b.qty ? Math.min(100, Math.floor((b.done_qty * 100) / b.qty)) : 0);
 const issueText = (c: string) => t(`generate.issue.${c}`);
+/** 预演不能生成的原因按原因归并：每种原因一行，列出涉及的单据与序号（最多 ISSUE_SHOWN 个序号）。 */
+const ISSUE_SHOWN = 20;
+const issueGroups = computed(() => {
+  const groups = new Map<string, { code: string; total: number; more: boolean; bills: { bill_no: string; seqs: number[] }[] }>();
+  for (const x of gen.preview?.issues ?? []) {
+    for (const code of x.issues as string[]) {
+      let g = groups.get(code);
+      if (!g) groups.set(code, (g = { code, total: 0, more: false, bills: [] }));
+      if (!x.bill_no) continue;
+      g.total += 1;
+      if (g.total > ISSUE_SHOWN) {
+        g.more = true;
+        continue;
+      }
+      let b = g.bills.find((y) => y.bill_no === x.bill_no);
+      if (!b) g.bills.push((b = { bill_no: x.bill_no, seqs: [] }));
+      b.seqs.push(x.seq);
+    }
+  }
+  return [...groups.values()];
+});
 const busy = ref("");
 
 // ================================================================ PI 列表
@@ -782,6 +823,38 @@ const selectedLineRows = computed(() =>
 function onLineClick(row: OrderLine) {
   if (scope.value === "LINES") toggleLine(row, lineIdx(row) < 0);
   else openRuleDialog([row]);
+}
+
+/** 补填附件项次（金蝶为空时）、长度（金蝶为空或不是数字时）；保存后刷新详情并重新预演。 */
+async function fillAttach(row: OrderLine) {
+  let value: string;
+  try {
+    const r = await ElMessageBox.prompt(t("orders.attachFillHint"), t("orders.attachFillTitle", { bill: row.bill_no, seq: row.seq }), {
+      inputValue: row.attach_manual || "",
+      inputValidator: (v: string) => (!!v && !!v.trim() && v.trim().length <= 64) || t("orders.attachInvalid"),
+    });
+    value = (r as { value: string }).value.trim();
+  } catch {
+    return;
+  }
+  await api.fillAttach(row.bill_no, row.seq, value);
+  ElMessage.success(t("common.saved"));
+  await reloadCtx();
+}
+async function fillLength(row: OrderLine) {
+  let value: string;
+  try {
+    const r = await ElMessageBox.prompt(t("orders.lengthFillHint"), t("orders.lengthFillTitle", { bill: row.bill_no, seq: row.seq }), {
+      inputValue: row.length_manual || "",
+      inputValidator: (v: string) => /^(?=.*\d)\d*(\.\d*)?$/.test((v || "").trim()) || t("orders.lengthInvalid"),
+    });
+    value = (r as { value: string }).value.trim();
+  } catch {
+    return;
+  }
+  await api.fillLength(row.bill_no, row.seq, value);
+  ElMessage.success(t("common.saved"));
+  await reloadCtx();
 }
 function lineClass({ row }: { row: OrderLine }) {
   return scope.value === "LINES" && lineIdx(row) >= 0 ? "picked" : "";
@@ -1072,7 +1145,8 @@ onUnmounted(() => {
 .rule-now, .bind, .qty-row, .range, .push-h, .line-rule, .issue-tags { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .issue-tags { margin-top: 4px; gap: 4px; }
 .qty { width: 180px; }
-.issues { margin: 0; padding-left: 18px; font-size: 13px; }
+.issues { margin: 0; padding-left: 18px; font-size: 13px; max-height: 200px; overflow-y: auto; }
+.cell-edit { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 .skipped { display: flex; flex-direction: column; gap: 2px; font-size: 12px; }
 .push-row { display: flex; flex-direction: column; gap: 2px; padding: 6px 0; border-bottom: 1px dashed var(--el-border-color-lighter); }
 .push-row:last-child { border-bottom: none; }

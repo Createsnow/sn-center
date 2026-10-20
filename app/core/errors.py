@@ -68,6 +68,8 @@ class ErrorCode(Enum):
     ORDER_LINE_NOT_FOUND = (404, "物料行 {bill_no} / {seq} 不在快照中")
     ORDER_SYNC_BUSY = (409, "订单同步正在进行，请稍后再试")
     ATTACH_INVALID = (400, "附件项次不能为空，不超过 64 字")
+    LENGTH_FILL_INVALID = (400, "长度须为数字（只含数字和至多一个小数点），不超过 64 字")
+    LENGTH_FILL_K3 = (409, "金蝶已有长度，不能补填")
     ALERT_NOT_FOUND = (404, "订单变更提醒不存在或已处理")
     ALERT_ACTION_INVALID = (400, "该提醒不能这样处理")
     ALERT_MAP_TARGET_INVALID = (400, "确认对应的目标物料行须是该单据快照中的另一行：{seq}")

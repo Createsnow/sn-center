@@ -45,6 +45,8 @@
   "ORDER_LINE_NOT_FOUND": "Dòng vật tư {bill_no} / {seq} không có trong ảnh chụp",
   "ORDER_SYNC_BUSY": "Đang đồng bộ lệnh, vui lòng thử lại sau",
   "ATTACH_INVALID": "Hạng mục đính kèm không được trống, tối đa 64 ký tự",
+  "LENGTH_FILL_INVALID": "Chiều dài phải là số (chỉ gồm chữ số và tối đa một dấu thập phân), tối đa 64 ký tự",
+  "LENGTH_FILL_K3": "Kingdee đã có chiều dài, không thể điền",
   "ALERT_NOT_FOUND": "Không tìm thấy cảnh báo thay đổi lệnh hoặc đã xử lý",
   "ALERT_ACTION_INVALID": "Không thể xử lý cảnh báo theo cách này",
   "ALERT_MAP_TARGET_INVALID": "Dòng vật tư đích phải là một dòng khác của chứng từ này trong ảnh chụp: {seq}",

@@ -331,8 +331,71 @@ def fill_attach(cu: CurrentUser, bill_no: str | None, seq: int | None, value: st
             .material(line["material_code"])
             .info(f"seq={seq} {'' if prev is None else prev['manual_value']} -> {v}"),
         )
-    counts, fills = line_extras([(no, seq)])
-    return line_view(line, counts.get((no, seq)), fills.get((no, seq)))
+    counts, fills, lens = line_extras([(no, seq)])
+    return line_view(line, counts.get((no, seq)), fills.get((no, seq)), lfill=lens.get((no, seq)))
+
+
+# ================================================================== 长度补填
+
+
+def effective_length(line: dict, fill: dict | None) -> tuple[str | None, str]:
+    """长度的生效值（规范化后的写法）与来源：K3 金蝶值 / MANUAL 手工填写（金蝶为空或不是数字时）/
+    DEFAULT 金蝶为空且未补填时取默认长度 000。金蝶值不是数字且未补填时生效值为 None。"""
+    raw = line.get("length_raw")
+    k3v = codec.normalize_length(raw)
+    if k3v is not None:
+        return k3v, "K3"
+    if fill is not None and fill["material_code"] == (line.get("material_code") or ""):
+        return fill["manual_value"], "MANUAL"
+    if util.blank(raw):
+        return codec.DEFAULT_LENGTH, "DEFAULT"
+    return None, "K3"
+
+
+def length_of(line: dict) -> str | None:
+    """单条物料行的生效长度（查补填）。"""
+    fill = db.one("SELECT * FROM sn_line_length WHERE bill_no = %s AND seq = %s", line["bill_no"], line["seq"])
+    return effective_length(line, fill)[0]
+
+
+def fill_length(cu: CurrentUser, bill_no: str | None, seq: int | None, value: str | None) -> dict:
+    """长度补填：金蝶为空或不是数字时由总部补填；须为十进制数字，按长度写法规范化后保存。"""
+    no = util.trim(bill_no)
+    v = codec.normalize_length(value)
+    if v is None or len(v) > 64:
+        raise biz(ErrorCode.LENGTH_FILL_INVALID)
+    with db.tx():
+        line = db.one("SELECT * FROM sn_prd_mo WHERE bill_no = %s AND seq = %s", no, seq)
+        if line is None:
+            raise biz(ErrorCode.ORDER_LINE_NOT_FOUND, bill_no=no, seq=seq)
+        if codec.normalize_length(line["length_raw"]) is not None:
+            raise biz(ErrorCode.LENGTH_FILL_K3)
+        prev = db.one("SELECT * FROM sn_line_length WHERE bill_no = %s AND seq = %s FOR UPDATE", no, seq)
+        now = util.now()
+        db.exec(
+            "INSERT INTO sn_line_length(bill_no, seq, manual_value, material_code, filled_by, filled_at, updated_at) "
+            "VALUES (%s,%s,%s,%s,%s,%s,%s) ON DUPLICATE KEY UPDATE manual_value = VALUES(manual_value), "
+            "material_code = VALUES(material_code), filled_by = VALUES(filled_by), filled_at = VALUES(filled_at), "
+            "updated_at = VALUES(updated_at)",
+            no,
+            seq,
+            v,
+            line["material_code"],
+            cu.emp_no,
+            now,
+            now,
+        )
+        audit.record(
+            cu,
+            audit.entry(audit.ORDER_LENGTH_FILL)
+            .bill(no)
+            .pi(line["pi"])
+            .factory(line["org_code"])
+            .material(line["material_code"])
+            .info(f"seq={seq} {'' if prev is None else prev['manual_value']} -> {v}"),
+        )
+    counts, fills, lens = line_extras([(no, seq)])
+    return line_view(line, counts.get((no, seq)), fills.get((no, seq)), lfill=lens.get((no, seq)))
 
 
 # ================================================================== 查询
@@ -403,11 +466,13 @@ def list_bills(
     return util.page_result(items, total, page)
 
 
-def line_view(r: dict, count: dict | None = None, fill: dict | None = None, rule: dict | None = None) -> dict:
+def line_view(
+    r: dict, count: dict | None = None, fill: dict | None = None, rule: dict | None = None, lfill: dict | None = None
+) -> dict:
     qty = sn_qty(r)
     own = 0 if count is None else int(count["own_generated"])
     attach, attach_src = effective_attach(r, fill)
-    norm = codec.normalize_length(r["length_raw"])
+    length, length_src = effective_length(r, lfill)
     return {
         "bill_no": r["bill_no"],
         "seq": r["seq"],
@@ -424,7 +489,9 @@ def line_view(r: dict, count: dict | None = None, fill: dict | None = None, rule
         "material_code": r["material_code"],
         "material_name": r["material_name"],
         "length_raw": r["length_raw"],
-        "length": norm,
+        "length": length,
+        "length_source": length_src,
+        "length_manual": None if lfill is None else lfill["manual_value"],
         "qty": qty,
         "generated_qty": 0 if count is None else int(count["gen_count"]),
         "own_generated_qty": own,
@@ -441,10 +508,10 @@ def sn_qty(line: dict) -> int:
     return 0 if q is None else max(0, int(Decimal(q)))
 
 
-def line_extras(keys: list[tuple[str, int]]) -> tuple[dict, dict]:
-    """物料行计数与附件项次补填：(bill, seq) → 行。"""
+def line_extras(keys: list[tuple[str, int]]) -> tuple[dict, dict, dict]:
+    """物料行计数、附件项次补填与长度补填：(bill, seq) → 行。"""
     if not keys:
-        return {}, {}
+        return {}, {}, {}
     bills = sorted({k[0] for k in keys})
     counts = {
         (c["bill_no"], c["seq"]): c
@@ -454,7 +521,11 @@ def line_extras(keys: list[tuple[str, int]]) -> tuple[dict, dict]:
         (f["bill_no"], f["seq"]): f
         for f in db.all(f"SELECT * FROM sn_line_attach WHERE bill_no IN ({marks(len(bills))})", *bills)
     }
-    return counts, fills
+    lens = {
+        (f["bill_no"], f["seq"]): f
+        for f in db.all(f"SELECT * FROM sn_line_length WHERE bill_no IN ({marks(len(bills))})", *bills)
+    }
+    return counts, fills, lens
 
 
 def lines(bill_no: str | None) -> list[dict]:
@@ -470,7 +541,7 @@ def lines_of(cu: CurrentUser, bill_no: str | None) -> dict:
         raise biz(ErrorCode.ORDER_NOT_FOUND, bill_no=util.trim(bill_no))
     cu.check_read(ls[0]["org_code"])
     keys = [(r["bill_no"], r["seq"]) for r in ls]
-    counts, fills = line_extras(keys)
+    counts, fills, lens = line_extras(keys)
     rmap = rules.line_rules_brief(ls[0]["pi"], keys)
     h = ls[0]
     return {
@@ -481,7 +552,9 @@ def lines_of(cu: CurrentUser, bill_no: str | None) -> dict:
         "org_code": h["org_code"],
         "org_name": h["org_name"],
         "state": changes.bill_states([h["bill_no"]]).get(h["bill_no"], changes.EMPTY_STATE),
-        "lines": [line_view(r, counts.get(k), fills.get(k), rmap.get(k)) for r, k in zip(ls, keys, strict=True)],
+        "lines": [
+            line_view(r, counts.get(k), fills.get(k), rmap.get(k), lens.get(k)) for r, k in zip(ls, keys, strict=True)
+        ],
     }
 
 
@@ -574,7 +647,7 @@ def customer_of_pi(pi: str) -> str | None:
 
 
 def targets(q: str | None, limit: int) -> list[dict]:
-    """转单、转组织目标候选：快照中的物料行（生产组织 + 客户 + PI + 单据 + 序号 + 物料 + 长度）。"""
+    """转单、转组织目标候选：快照中的物料行（生产组织 + 客户 + PI + 单据 + 序号 + 物料 + 生效长度）。"""
     text = util.trim(q)
     args: list = []
     where = " WHERE m.pi <> ''"
@@ -587,6 +660,7 @@ def targets(q: str | None, limit: int) -> list[dict]:
         *args,
         min(max(limit, 1), 200),
     )
+    _, _, lens = line_extras([(r["bill_no"], r["seq"]) for r in rows])
     return [
         {
             "org_code": r["org_code"],
@@ -597,7 +671,7 @@ def targets(q: str | None, limit: int) -> list[dict]:
             "seq": r["seq"],
             "material_code": r["material_code"],
             "material_name": r["material_name"],
-            "length": codec.normalize_length(r["length_raw"]),
+            "length": effective_length(r, lens.get((r["bill_no"], r["seq"])))[0],
         }
         for r in rows
     ]

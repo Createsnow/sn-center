@@ -124,9 +124,22 @@ def test_preview_lists_reasons(w, api):
     p = ok(w.preview(pi))
     assert p["generatable"] is False
     got = {x["seq"]: x["issues"] for x in p["issues"]}
-    assert got == {1: ["LENGTH_EMPTY"], 2: ["LENGTH_INVALID"], 3: ["ATTACH_EMPTY"]}
+    assert got == {2: ["LENGTH_INVALID"], 3: ["ATTACH_EMPTY"]}, "长度为空取默认 000，不挡生成"
     ok(api.put("/api/orders/attach", m(bill_no=bill, seq=3, value="A9"), w.admin))
     assert ok(w.preview(pi, lines=[(bill, 3)]))["generatable"] is True, "补填附件项次后可以生成；可缩小范围"
+    assert api.put("/api/orders/length", m(bill_no=bill, seq=2, value="x"), w.admin).code == "LENGTH_FILL_INVALID"
+    assert api.put("/api/orders/length", m(bill_no=bill, seq=3, value="2"), w.admin).code == "LENGTH_FILL_K3"
+    r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=2, value="020.50"), w.admin))
+    assert (r["length"], r["length_source"]) == ("20.5", "MANUAL")
+    assert ok(w.preview(pi))["generatable"] is True, "补填长度后可以生成"
+
+
+def test_empty_length_defaults_to_000(w, sql):
+    org, pi, bill = mk(w, ("M1", 1, " "))
+    p = P()
+    ok(w.bind_pi(pi, w.rule(p)))
+    w.generate(pi)
+    assert sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s", pi) == f"{p}000000001"
 
 
 def test_length_normalized_in_sn(w, sql):

@@ -105,7 +105,7 @@
                 <el-table-column :label="t('common.attachNo')" min-width="120">
                   <template #default="{ row }">
                     <div class="attach">
-                      <span v-if="row.attach_source === 'EMPTY'"><el-tag size="small" type="warning">{{ t("orders.attachEmpty") }}</el-tag></span>
+                      <span v-if="row.attach_source === 'EMPTY'" class="err">{{ t("orders.attachEmpty") }}</span>
                       <template v-else>
                         <span>{{ row.attach_no }}</span>
                         <el-tag v-if="row.attach_source === 'MANUAL'" size="small" type="info">{{ t("orders.attachManual") }}</el-tag>
@@ -125,9 +125,14 @@
                     <div class="muted">{{ row.material_name }}</div>
                   </template>
                 </el-table-column>
-                <el-table-column :label="t('common.length')" width="70" show-overflow-tooltip>
+                <el-table-column :label="t('common.length')" width="90" show-overflow-tooltip>
                   <template #default="{ row }">
-                    <span v-if="row.length">{{ row.length }}</span><span v-else class="warn">{{ t("orders.lengthEmpty") }}</span>
+                    <span v-if="row.length_source === 'DEFAULT'" class="err">{{ t("orders.lengthEmpty") }}</span>
+                    <span v-else-if="row.length === null" class="err">{{ row.length_raw }}</span>
+                    <template v-else>
+                      <span>{{ row.length }}</span>
+                      <el-tag v-if="row.length_source === 'MANUAL'" size="small" type="info" class="ml">{{ t("generate.lengthManual") }}</el-tag>
+                    </template>
                   </template>
                 </el-table-column>
                 <el-table-column :label="t('common.qty')" align="right" width="60">
@@ -461,6 +466,7 @@ onMounted(async () => {
 .mb { margin-bottom: 12px; }
 .zero { color: var(--app-muted); }
 .warn { color: var(--el-color-warning); }
+.err { color: var(--el-color-danger); }
 .arrow { margin: 0 6px; color: var(--app-muted); }
 .attach { display: flex; align-items: center; gap: 6px; }
 :deep(.tags) { display: flex; flex-wrap: wrap; gap: 4px; }

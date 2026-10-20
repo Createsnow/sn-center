@@ -53,6 +53,7 @@ export const api = {
   pageSyncOrders: () => post("/orders/page-sync", {}, true),
   rebuildOrders: () => http.post<any, any>("/orders/rebuild", {}, { timeout: 0 }),
   fillAttach: (bill_no: string, seq: number, value: string) => put("/orders/attach", { bill_no, seq, value }),
+  fillLength: (bill_no: string, seq: number, value: string) => put("/orders/length", { bill_no, seq, value }),
   orderAlerts: (params?: Q) => get("/orders/alerts", params),
   handleOrderAlert: (id: number, data: Q) => post(`/orders/alerts/${id}/handle`, data),
 

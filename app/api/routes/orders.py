@@ -71,6 +71,11 @@ def order_attach(body: AttachIn, cu: AdminDep) -> dict:
     return orders.fill_attach(cu, body.bill_no, body.seq, body.value)
 
 
+@router.put("/length", summary="长度补填（金蝶为空或不是数字时）；金蝶为空且未补填时生成用默认长度 000")
+def order_length(body: AttachIn, cu: AdminDep) -> dict:
+    return orders.fill_length(cu, body.bill_no, body.seq, body.value)
+
+
 @router.get("/alerts", summary="订单变更提醒；status = OPEN（默认）/ CLOSED / ALL")
 def order_alerts(
     cu: AdminOrQueryDep,

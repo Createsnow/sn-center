@@ -119,7 +119,7 @@ class Line:
     pi: str
     qty: int
     own: int
-    length_raw: str
+    length: str | None
     attach: str
     res: rules.Resolved | None
     block: str | None = None
@@ -128,10 +128,6 @@ class Line:
     @property
     def quota(self) -> int:
         return max(0, self.qty - self.own)
-
-    @property
-    def length(self) -> str | None:
-        return codec.normalize_length(self.length_raw)
 
 
 def _load_lines(pi: str, keys: list[tuple[str, int]]) -> list[Line]:
@@ -143,7 +139,7 @@ def _load_lines(pi: str, keys: list[tuple[str, int]]) -> list[Line]:
         (r["bill_no"], r["seq"]): r
         for r in db.all(f"SELECT * FROM sn_prd_mo WHERE bill_no IN ({marks(len(bills))})", *bills)
     }
-    counts, fills = orders.line_extras(keys)
+    counts, fills, lens = orders.line_extras(keys)
     sels = rules.selections(keys)
     defaults: dict[str, rules.Resolved | None] = {}
     blocks = {b: changes.generation_block(b) for b in bills}
@@ -167,7 +163,7 @@ def _load_lines(pi: str, keys: list[tuple[str, int]]) -> list[Line]:
             r["pi"],
             orders.sn_qty(r),
             0 if c is None else int(c["own_generated"]),
-            r["length_raw"],
+            orders.effective_length(r, lens.get(k))[0],
             attach,
             rules.effective(pi, r["customer_code"], sels.get(k), defaults[r["customer_code"]]),
             blocks[r["bill_no"]],
@@ -187,11 +183,9 @@ def _check(line: Line) -> None:
         line.issues.append("NO_RULE")
     elif not line.res.ready:
         line.issues.append("RULE_PREFIX")
-    elif line.res.spec().with_length:
-        if util.blank(line.length_raw):
-            line.issues.append("LENGTH_EMPTY")
-        elif line.length is None:
-            line.issues.append("LENGTH_INVALID")
+    elif line.res.spec().with_length and line.length is None:
+        # 长度为空时取默认长度 000，只有金蝶长度不是数字且未补填时不能生成
+        line.issues.append("LENGTH_INVALID")
     if not line.attach:
         line.issues.append("ATTACH_EMPTY")
 
