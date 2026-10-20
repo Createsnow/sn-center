@@ -119,7 +119,7 @@ class Line:
     pi: str
     qty: int
     own: int
-    length: str | None
+    length: str
     attach: str
     res: rules.Resolved | None
     block: str | None = None
@@ -183,9 +183,7 @@ def _check(line: Line) -> None:
         line.issues.append("NO_RULE")
     elif not line.res.ready:
         line.issues.append("RULE_PREFIX")
-    elif line.res.spec().with_length and line.length is None:
-        # 长度为空时取默认长度 000，只有金蝶长度不是数字且未补填时不能生成
-        line.issues.append("LENGTH_INVALID")
+    # 长度选填（为空取默认 000），不挡生成；附件项次必填
     if not line.attach:
         line.issues.append("ATTACH_EMPTY")
 

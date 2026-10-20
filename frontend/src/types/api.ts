@@ -106,7 +106,7 @@ export interface OrderLine {
   org_code: string;
   org_name: string;
   attach_no: string;
-  /** K3 金蝶值 / MANUAL 手工补填 / EMPTY 待填写 */
+  /** K3 金蝶值 / MANUAL 页面填写 / EMPTY 待填写（必填） */
   attach_source: "K3" | "MANUAL" | "EMPTY";
   attach_k3: string;
   attach_manual: string | null;
@@ -114,15 +114,17 @@ export interface OrderLine {
   material_code: string;
   material_name: string;
   length_raw: string;
-  /** 生效长度（规范化后）；金蝶长度不是数字且未补填时为 null */
-  length: string | null;
-  /** K3 金蝶值 / MANUAL 手工补填 / DEFAULT 金蝶为空且未补填，取默认 000 */
+  /** 生效长度（字符串，原样写入 SN） */
+  length: string;
+  /** K3 金蝶值 / MANUAL 页面填写 / DEFAULT 金蝶为空且未填写，取默认 000 */
   length_source: "K3" | "MANUAL" | "DEFAULT";
   length_manual: string | null;
   qty: number;
   generated_qty: number;
   own_generated_qty: number;
   allocated_qty: number;
+  /** 附件项次、长度能否修改：null 可改 / GENERATED 已生成未分配（撤销生成后可改）/ ALLOCATED 已分配 */
+  edit_lock: "GENERATED" | "ALLOCATED" | null;
   quota: number;
   rule: LineRule | null;
   synced_at: string;

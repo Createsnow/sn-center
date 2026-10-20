@@ -20,15 +20,13 @@ def P() -> str:
 # ---------------------------------------------------------------- 规则库
 
 
-def test_prefix_conflicts_in_both_directions(w, api):
+def test_only_identical_prefix_conflicts(w, api):
     w.rule("AX")
-    for p in ("AXB", "A", "AX"):
+    r = api.post("/api/rules", m(rule_code=uid("R"), rule_name="x", prefix="AX", base=10, seq_len=5), w.admin)
+    assert r.code == "RULE_PREFIX_CONFLICT"
+    for p in ("AXB", "A", "ax"):
         r = api.post("/api/rules", m(rule_code=uid("R"), rule_name="x", prefix=p, base=10, seq_len=5), w.admin)
-        assert r.code == "RULE_PREFIX_CONFLICT", p
-    assert (
-        api.post("/api/rules", m(rule_code=uid("R"), rule_name="x", prefix="ax", base=10, seq_len=5), w.admin).status
-        == 200
-    )
+        assert r.status == 200, f"{p}：只是开头相同（如 SD 与 SDD）不算同号"
 
 
 def test_used_version_needs_new_prefix_for_format_change(w, api, sql):
@@ -89,7 +87,7 @@ def test_custom_rule_saved_only_after_success(w, sql):
     w.generate(pi)
     r = sql.one("SELECT * FROM sn_rule")
     assert r["rule_name"] == f"{pi}_9148363" and r["rule_code"] == f"PI-{pi}-1"
-    assert sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec LIMIT 1", pi) == f"{p}10.5000001"
+    assert sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec LIMIT 1", pi) == f"{p}10.50000001"
     assert sql.scalar("SELECT rule_id FROM sn_line_rule WHERE bill_no = %s", bill) == r["id"]
 
 
@@ -124,28 +122,68 @@ def test_preview_lists_reasons(w, api):
     p = ok(w.preview(pi))
     assert p["generatable"] is False
     got = {x["seq"]: x["issues"] for x in p["issues"]}
-    assert got == {2: ["LENGTH_INVALID"], 3: ["ATTACH_EMPTY"]}, "长度为空取默认 000，不挡生成"
+    assert got == {3: ["ATTACH_EMPTY"]}, "长度选填（为空取默认 000、字符串原样用），只有附件项次必填"
     ok(api.put("/api/orders/attach", m(bill_no=bill, seq=3, value="A9"), w.admin))
-    assert ok(w.preview(pi, lines=[(bill, 3)]))["generatable"] is True, "补填附件项次后可以生成；可缩小范围"
-    assert api.put("/api/orders/length", m(bill_no=bill, seq=2, value="x"), w.admin).code == "LENGTH_FILL_INVALID"
-    assert api.put("/api/orders/length", m(bill_no=bill, seq=3, value="2"), w.admin).code == "LENGTH_FILL_K3"
-    r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=2, value="020.50"), w.admin))
-    assert (r["length"], r["length_source"]) == ("20.5", "MANUAL")
-    assert ok(w.preview(pi))["generatable"] is True, "补填长度后可以生成"
+    assert ok(w.preview(pi, lines=[(bill, 3)]))["generatable"] is True, "填写附件项次后可以生成；可缩小范围"
+    assert api.put("/api/orders/attach", m(bill_no=bill, seq=1, value="A9"), w.admin).code == "ATTACH_FILL_K3"
+    assert api.put("/api/orders/length", m(bill_no=bill, seq=2, value="7"), w.admin).code == "LENGTH_FILL_K3"
+    assert api.put("/api/orders/length", m(bill_no=bill, seq=1, value="x" * 65), w.admin).code == "LENGTH_FILL_INVALID"
+    r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=1, value=" 020.50 "), w.admin))
+    assert (r["length"], r["length_source"]) == ("020.50", "MANUAL"), "长度是字符串，原样保存"
+    r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=1, value=""), w.admin))
+    assert (r["length"], r["length_source"]) == ("000", "DEFAULT"), "留空改回默认 000"
+    assert ok(w.preview(pi))["generatable"] is True
 
 
-def test_batch_length_fills_pending_lines_only(w, api, sql):
+def test_batch_length_sets_default_lines_only(w, api, sql):
     org, pi, bill = mk(w, ("M1", 1, " "), ("M2", 1, "x1"), ("M3", 1, "100"), ("M4", 1, ""))
     ok(api.put("/api/orders/length", m(bill_no=bill, seq=4, value="7"), w.admin))
-    assert api.put("/api/orders/length/batch", m(pi_no=pi, value="x"), w.admin).code == "LENGTH_FILL_INVALID"
-    r = ok(api.put("/api/orders/length/batch", m(pi_no=pi, value="000"), w.admin))
-    assert r["filled"] == 2, "只补填待填写的（为空、不是数字），金蝶已有和已补填的不改"
+    assert api.put("/api/orders/length/batch", m(pi_no=pi, value=" "), w.admin).code == "LENGTH_FILL_INVALID"
+    r = ok(api.put("/api/orders/length/batch", m(pi_no=pi, value="001"), w.admin))
+    assert r["filled"] == 1, "只设长度为默认 000 的（金蝶为空、未填写），金蝶已有和已填写的不改"
     got = {
         x["seq"]: (x["length"], x["length_source"]) for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"]
     }
-    assert got == {1: ("000", "MANUAL"), 2: ("000", "MANUAL"), 3: ("100", "K3"), 4: ("7", "MANUAL")}
+    assert got == {1: ("001", "MANUAL"), 2: ("x1", "K3"), 3: ("100", "K3"), 4: ("7", "MANUAL")}
     r = ok(api.put("/api/orders/length/batch", m(pi_no=pi, lines=[m(bill_no=bill, seq=1)], value="5"), w.admin))
-    assert r["filled"] == 0, "按物料行范围；已补填的不改"
+    assert r["filled"] == 0, "按物料行范围；已填写的不改"
+
+
+def test_attach_and_length_locked_once_line_has_sns(w, api, sql):
+    org, pi, bill = mk(w, ("M1", 4, "", ""), ("M2", 2, "", ""))
+    p = P()
+    ok(w.bind_pi(pi, w.rule(p)))
+    for seq in (1, 2):
+        ok(api.put("/api/orders/attach", m(bill_no=bill, seq=seq, value="A1"), w.admin))
+    j = w.generate(pi, 2, lines=[(bill, 1)])
+    line = {x["seq"]: x for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"]}
+    assert (line[1]["edit_lock"], line[2]["edit_lock"]) == ("GENERATED", None)
+    assert api.put("/api/orders/attach", m(bill_no=bill, seq=1, value="A2"), w.admin).code == "LINE_EDIT_GENERATED"
+    assert api.put("/api/orders/length", m(bill_no=bill, seq=1, value="5"), w.admin).code == "LINE_EDIT_GENERATED"
+    r = ok(api.put("/api/orders/length/batch", m(pi_no=pi, value="9"), w.admin))
+    assert r["filled"] == 1, "统一设置跳过已有号的物料行"
+    w.generate(pi, 2, lines=[(bill, 1)])
+    assert [
+        r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE bill_seq = 1 AND pi_no = %s ORDER BY seq_dec", pi)
+    ] == [
+        f"{p}000000001",
+        f"{p}000000002",
+        f"{p}000000003",
+        f"{p}000000004",
+    ], "同一物料行接着生成仍用锁定的长度"
+    # 撤销该行的全部生成后可修改，再生成用新值
+    for x in ok(api.get(f"/api/generate/jobs?pi={pi}", w.admin)).body:
+        if x["status"] == "SUCCESS":
+            ok(api.post(f"/api/generate/batches/{x['gen_batch']}/revoke", m(reason="改长度"), w.admin))
+    assert j["status"] == "SUCCESS"
+    r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=1, value="5"), w.admin))
+    assert (r["length"], r["edit_lock"]) == ("5", None)
+    w.generate(pi, 1, lines=[(bill, 1)])
+    assert sql.scalar("SELECT sn FROM sn_item WHERE bill_seq = 1 AND pi_no = %s", pi) == f"{p}5000001"
+    w.allocate(pi)
+    line = {x["seq"]: x for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"]}
+    assert line[1]["edit_lock"] == "ALLOCATED"
+    assert api.put("/api/orders/length", m(bill_no=bill, seq=1, value="6"), w.admin).code == "LINE_EDIT_ALLOCATED"
 
 
 def test_empty_length_defaults_to_000(w, sql):
@@ -156,12 +194,16 @@ def test_empty_length_defaults_to_000(w, sql):
     assert sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s", pi) == f"{p}000000001"
 
 
-def test_length_normalized_in_sn(w, sql):
-    org, pi, bill = mk(w, ("M1", 1, "10.50"))
+def test_length_is_written_as_string(w, sql):
+    org, pi, bill = mk(w, ("M1", 1, "10.50"), ("M2", 1, "001"), ("M3", 1, "L2"))
     p = P()
     ok(w.bind_pi(pi, w.rule(p)))
     w.generate(pi)
-    assert sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s", pi) == f"{p}10.5000001"
+    assert [r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)] == [
+        f"{p}10.50000001",
+        f"{p}001000002",
+        f"{p}L2000003",
+    ], "长度不按数值规范化，000 / 001 / 其他原样写入"
 
 
 def test_click_order_and_repeated_material_lines(w, sql):

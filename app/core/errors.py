@@ -68,8 +68,14 @@ class ErrorCode(Enum):
     ORDER_LINE_NOT_FOUND = (404, "物料行 {bill_no} / {seq} 不在快照中")
     ORDER_SYNC_BUSY = (409, "订单同步正在进行，请稍后再试")
     ATTACH_INVALID = (400, "附件项次不能为空，不超过 64 字")
-    LENGTH_FILL_INVALID = (400, "长度须为数字（只含数字和至多一个小数点），不超过 64 字")
-    LENGTH_FILL_K3 = (409, "金蝶已有长度，不能补填")
+    ATTACH_FILL_K3 = (409, "金蝶已有附件项次，不能在页面修改")
+    LENGTH_FILL_INVALID = (400, "长度不超过 64 字；统一设置时不能为空")
+    LENGTH_FILL_K3 = (409, "金蝶已有长度，不能在页面修改")
+    LINE_EDIT_GENERATED = (
+        409,
+        "物料行 {bill_no} / {seq} 已生成过号，附件项次和长度不能修改；号还未分配时可先撤销生成再修改",
+    )
+    LINE_EDIT_ALLOCATED = (409, "物料行 {bill_no} / {seq} 的号已分配，附件项次和长度不能再修改")
     ALERT_NOT_FOUND = (404, "订单变更提醒不存在或已处理")
     ALERT_ACTION_INVALID = (400, "该提醒不能这样处理")
     ALERT_MAP_TARGET_INVALID = (400, "确认对应的目标物料行须是该单据快照中的另一行：{seq}")
@@ -88,7 +94,7 @@ class ErrorCode(Enum):
     RULE_AFFIX_INVALID = (400, "前缀只能用字母或数字，后缀只能用字母、数字和 _")
     RULE_PREFIX_CONFLICT = (
         409,
-        "前缀 {prefix} 与规则 {rule_name} 版本 {version} 的前缀 {other} 相同或互为开头，会撞号",
+        "前缀 {prefix} 已被规则 {rule_name} 版本 {version} 使用，会撞号",
     )
     RULE_BASE_INVALID = (400, "进制仅支持 10 / 16 / 32 / 36")
     RULE_SEQ_LEN_INVALID = (400, "流水位数须为 1–12")

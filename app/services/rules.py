@@ -1,7 +1,8 @@
 """SN 规则库与规则选取（F-08）。
 
 全局不撞号（5.2.4）：
-- 任何两条规则（含各版本）的前缀不能相同或互为开头；区分大小写。
+- 任何两条规则（含各版本）的前缀不能相同；区分大小写。只是开头相同（如 SD 与 SDD）不算同号，
+  万一拼出的完整 SN 相同，由号池唯一约束拦下、整次生成回滚。
 - 一个前缀只用于一张 PI：规则版本首次用于生成（或为某张 PI 换前缀另出）时归属该 PI；别的 PI 要用同一条规则，
   须为它填新前缀，按原格式另出属于它的版本（derived_from 记由哪一版而来）。同一 PI 的多个物料行可共用一个版本。
 - 一个前缀只对应一种格式：生成过号的版本改格式须另出一版并换新前缀；只改名称或分类不另出版本。
@@ -140,31 +141,27 @@ def normalize(s: SpecIn) -> codec.Spec:
 
 
 def check_prefix(prefix: str, exclude_version: int | None = None) -> None:
-    """前缀不能与任何规则的任何版本（含本规则旧版本）相同或互为开头；区分大小写。
-
-    前缀只含字母和数字，LIKE 不会误匹配通配符；SQL 粗筛后再按 startswith 精确判断。
-    """
-    rows = db.all(
+    """前缀不能与任何规则的任何版本（含本规则旧版本）相同；区分大小写。只是开头相同（如 SD 与 SDD）不算同号。"""
+    row = db.one(
         "SELECT v.id, v.version, v.prefix, r.rule_name FROM sn_rule_version v JOIN sn_rule r ON r.id = v.rule_id "
-        "WHERE %s LIKE CONCAT(v.prefix, '%%') OR v.prefix LIKE CONCAT(%s, '%%') ORDER BY v.id",
+        "WHERE v.prefix = %s AND (%s IS NULL OR v.id <> %s) ORDER BY v.id LIMIT 1",
         prefix,
-        prefix,
+        exclude_version,
+        exclude_version,
     )
-    for row in rows:
-        if row["id"] != exclude_version and (prefix.startswith(row["prefix"]) or row["prefix"].startswith(prefix)):
-            raise biz(
-                ErrorCode.RULE_PREFIX_CONFLICT,
-                prefix=prefix,
-                rule_name=row["rule_name"],
-                version=row["version"],
-                other=row["prefix"],
-            )
+    if row is not None:
+        raise biz(
+            ErrorCode.RULE_PREFIX_CONFLICT,
+            prefix=prefix,
+            rule_name=row["rule_name"],
+            version=row["version"],
+        )
 
 
 def preview(s: SpecIn, length: str | None = None) -> dict:
     """编辑时的示例号：前 5 个和最大号（长度用示例值）、最大流水。"""
     spec = normalize(s)
-    sample_len = codec.normalize_length(length) or "100"
+    sample_len = codec.clean_length(length) or "100"
     mx = codec.max_seq(spec)
     samples = []
     i = 1

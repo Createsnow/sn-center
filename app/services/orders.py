@@ -285,11 +285,38 @@ def rebuild(cu: CurrentUser) -> dict:
     return {"mode": "rebuild", "bills": bills, "rows": len(rows), "synced_at": util.fmt(ts)}
 
 
-# ================================================================== 附件项次补填
+# ================================================================== 附件项次、长度（金蝶缺失时在生成页填写）
+
+
+def edit_lock(count: dict | None) -> str | None:
+    """附件项次、长度能否在页面修改：物料行还没有号时可改；已生成、未分配（GENERATED）不能改，撤销生成后可改；
+    已分配（ALLOCATED）不能再改。不影响转单、拆单、转组织。"""
+    if count is None:
+        return None
+    if int(count["alloc_count"]) > 0:
+        return "ALLOCATED"
+    if int(count["gen_count"]) > 0 or int(count["own_generated"]) > 0:
+        return "GENERATED"
+    return None
+
+
+def _check_editable(no: str, seq: int) -> None:
+    lock = edit_lock(db.one("SELECT * FROM sn_line_count WHERE bill_no = %s AND seq = %s", no, seq))
+    if lock == "ALLOCATED":
+        raise biz(ErrorCode.LINE_EDIT_ALLOCATED, bill_no=no, seq=seq)
+    if lock == "GENERATED":
+        raise biz(ErrorCode.LINE_EDIT_GENERATED, bill_no=no, seq=seq)
+
+
+def _must_line(no: str, seq: int | None) -> dict:
+    line = db.one("SELECT * FROM sn_prd_mo WHERE bill_no = %s AND seq = %s", no, seq)
+    if line is None:
+        raise biz(ErrorCode.ORDER_LINE_NOT_FOUND, bill_no=no, seq=seq)
+    return line
 
 
 def effective_attach(line: dict, fill: dict | None) -> tuple[str, str]:
-    """附件项次的生效值与来源：K3 金蝶值 / MANUAL 手工填写 / EMPTY 待填写。"""
+    """附件项次的生效值与来源：K3 金蝶值 / MANUAL 页面填写 / EMPTY 待填写（必填，不能生成）。"""
     k3v = util.trim(line.get("attach_no"))
     if k3v:
         return k3v, "K3"
@@ -299,14 +326,17 @@ def effective_attach(line: dict, fill: dict | None) -> tuple[str, str]:
 
 
 def fill_attach(cu: CurrentUser, bill_no: str | None, seq: int | None, value: str | None) -> dict:
+    """填写附件项次（金蝶为空时，必填）；物料行有号后不能改。值不写回金蝶，也不进推送报文和领取文件。"""
     no = util.trim(bill_no)
     v = util.trim(value)
     if not v or len(v) > 64:
         raise biz(ErrorCode.ATTACH_INVALID)
-    with db.tx():
-        line = db.one("SELECT * FROM sn_prd_mo WHERE bill_no = %s AND seq = %s", no, seq)
-        if line is None:
-            raise biz(ErrorCode.ORDER_LINE_NOT_FOUND, bill_no=no, seq=seq)
+    line = _must_line(no, seq)
+    with locks.with_pi_lock(line["pi"]), db.tx():
+        line = _must_line(no, seq)
+        if util.trim(line["attach_no"]):
+            raise biz(ErrorCode.ATTACH_FILL_K3)
+        _check_editable(no, line["seq"])
         prev = db.one("SELECT * FROM sn_line_attach WHERE bill_no = %s AND seq = %s FOR UPDATE", no, seq)
         now = util.now()
         db.exec(
@@ -335,40 +365,27 @@ def fill_attach(cu: CurrentUser, bill_no: str | None, seq: int | None, value: st
     return line_view(line, counts.get((no, seq)), fills.get((no, seq)), lfill=lens.get((no, seq)))
 
 
-# ================================================================== 长度补填
-
-
-def effective_length(line: dict, fill: dict | None) -> tuple[str | None, str]:
-    """长度的生效值（规范化后的写法）与来源：K3 金蝶值 / MANUAL 手工填写（金蝶为空或不是数字时）/
-    DEFAULT 金蝶为空且未补填时取默认长度 000。金蝶值不是数字且未补填时生效值为 None。"""
-    raw = line.get("length_raw")
-    k3v = codec.normalize_length(raw)
+def effective_length(line: dict, fill: dict | None) -> tuple[str, str]:
+    """长度（字符串，原样使用）的生效值与来源：K3 金蝶值 / MANUAL 页面填写（金蝶为空时）/
+    DEFAULT 金蝶为空且未填写时取默认长度 000。"""
+    k3v = codec.clean_length(line.get("length_raw"))
     if k3v is not None:
         return k3v, "K3"
     if fill is not None and fill["material_code"] == (line.get("material_code") or ""):
         return fill["manual_value"], "MANUAL"
-    if util.blank(raw):
-        return codec.DEFAULT_LENGTH, "DEFAULT"
-    return None, "K3"
+    return codec.DEFAULT_LENGTH, "DEFAULT"
 
 
-def _length_pending(line: dict, fill: dict | None) -> bool:
-    """长度待填写：金蝶为空或不是数字、且未补填（生成时为空的取默认 000）。"""
-    v, src = effective_length(line, fill)
-    return v is None or src == "DEFAULT"
-
-
-def length_of(line: dict) -> str | None:
-    """单条物料行的生效长度（查补填）。"""
+def length_of(line: dict) -> str:
+    """单条物料行的生效长度（含页面填写）。"""
     fill = db.one("SELECT * FROM sn_line_length WHERE bill_no = %s AND seq = %s", line["bill_no"], line["seq"])
     return effective_length(line, fill)[0]
 
 
-def _length_value(value: str | None) -> str:
-    """补填值：须为十进制数字，按长度写法规范化；默认长度 000 原样保存。"""
-    raw = util.trim(value)
-    v = codec.DEFAULT_LENGTH if raw == codec.DEFAULT_LENGTH else codec.normalize_length(raw)
-    if v is None or len(v) > 64:
+def _length_value(value: str | None) -> str | None:
+    """填写的长度：字符串原样保存（去首尾空格），不超过 64 字；留空返回 None（改回默认长度 000）。"""
+    v = codec.clean_length(value)
+    if v is not None and len(v) > 64:
         raise biz(ErrorCode.LENGTH_FILL_INVALID)
     return v
 
@@ -382,27 +399,31 @@ _LENGTH_UPSERT = (
 
 
 def fill_length(cu: CurrentUser, bill_no: str | None, seq: int | None, value: str | None) -> dict:
-    """长度补填：金蝶为空或不是数字时由总部补填。"""
+    """填写长度（金蝶为空时，选填）：留空即用默认长度 000；物料行有号后不能改。"""
     no = util.trim(bill_no)
     v = _length_value(value)
-    with db.tx():
-        line = db.one("SELECT * FROM sn_prd_mo WHERE bill_no = %s AND seq = %s", no, seq)
-        if line is None:
-            raise biz(ErrorCode.ORDER_LINE_NOT_FOUND, bill_no=no, seq=seq)
-        if codec.normalize_length(line["length_raw"]) is not None:
+    line = _must_line(no, seq)
+    with locks.with_pi_lock(line["pi"]), db.tx():
+        line = _must_line(no, seq)
+        if codec.clean_length(line["length_raw"]) is not None:
             raise biz(ErrorCode.LENGTH_FILL_K3)
+        _check_editable(no, line["seq"])
         prev = db.one("SELECT * FROM sn_line_length WHERE bill_no = %s AND seq = %s FOR UPDATE", no, seq)
         now = util.now()
-        db.exec(_LENGTH_UPSERT, no, seq, v, line["material_code"], cu.emp_no, now, now)
-        audit.record(
-            cu,
-            audit.entry(audit.ORDER_LENGTH_FILL)
-            .bill(no)
-            .pi(line["pi"])
-            .factory(line["org_code"])
-            .material(line["material_code"])
-            .info(f"seq={seq} {'' if prev is None else prev['manual_value']} -> {v}"),
-        )
+        if v is None:
+            db.exec("DELETE FROM sn_line_length WHERE bill_no = %s AND seq = %s", no, seq)
+        else:
+            db.exec(_LENGTH_UPSERT, no, seq, v, line["material_code"], cu.emp_no, now, now)
+        if (None if prev is None else prev["manual_value"]) != v:
+            audit.record(
+                cu,
+                audit.entry(audit.ORDER_LENGTH_FILL)
+                .bill(no)
+                .pi(line["pi"])
+                .factory(line["org_code"])
+                .material(line["material_code"])
+                .info(f"seq={seq} {'' if prev is None else prev['manual_value']} -> {v or codec.DEFAULT_LENGTH}"),
+            )
     counts, fills, lens = line_extras([(no, seq)])
     return line_view(line, counts.get((no, seq)), fills.get((no, seq)), lfill=lens.get((no, seq)))
 
@@ -410,22 +431,29 @@ def fill_length(cu: CurrentUser, bill_no: str | None, seq: int | None, value: st
 def fill_lengths(
     cu: CurrentUser, pi_in: str | None, bills_in: list[str] | None, lines_in: list[dict] | None, value: str | None
 ) -> dict:
-    """统一设置长度：范围（点选的物料行 / 勾选的单据 / 都不填 = 整张 PI）内长度待填写的物料行
-    （金蝶为空或不是数字、且未补填）一次补填为同一个值；已补填的不改。返回补填行数。"""
+    """统一设置长度：范围（点选的物料行 / 勾选的单据 / 都不填 = 整张 PI）内长度还是默认 000（金蝶为空、未填写）
+    且还没有号的物料行一次设为同一个值；已填写的、有号的不改。返回设置的行数。"""
     pi = util.trim(pi_in)
     if not pi:
         raise biz(ErrorCode.PI_REQUIRED)
     v = _length_value(value)
+    if v is None:
+        raise biz(ErrorCode.LENGTH_FILL_INVALID)
     keys = {(util.trim(x.get("bill_no")), int(x.get("seq") or 0)) for x in lines_in or []}
     bills = {util.trim(b) for b in bills_in or [] if util.trim(b)}
-    with db.tx():
+    with locks.with_pi_lock(pi), db.tx():
         rows = [
             r
             for r in db.all("SELECT * FROM sn_prd_mo WHERE pi = %s ORDER BY bill_no, seq", pi)
             if ((r["bill_no"], r["seq"]) in keys if keys else r["bill_no"] in bills if bills else True)
         ]
-        _, _, lens = line_extras([(r["bill_no"], r["seq"]) for r in rows])
-        todo = [r for r in rows if _length_pending(r, lens.get((r["bill_no"], r["seq"])))]
+        counts, _, lens = line_extras([(r["bill_no"], r["seq"]) for r in rows])
+        todo = [
+            r
+            for r in rows
+            if effective_length(r, lens.get((r["bill_no"], r["seq"])))[1] == "DEFAULT"
+            and edit_lock(counts.get((r["bill_no"], r["seq"]))) is None
+        ]
         if todo:
             now = util.now()
             db.exec_many(
@@ -539,6 +567,7 @@ def line_view(
         "generated_qty": 0 if count is None else int(count["gen_count"]),
         "own_generated_qty": own,
         "allocated_qty": 0 if count is None else int(count["alloc_count"]),
+        "edit_lock": edit_lock(count),
         "quota": max(0, qty - own),
         "rule": rule,
         "synced_at": util.fmt(r["synced_at"]),
@@ -552,7 +581,7 @@ def sn_qty(line: dict) -> int:
 
 
 def line_extras(keys: list[tuple[str, int]]) -> tuple[dict, dict, dict]:
-    """物料行计数、附件项次补填与长度补填：(bill, seq) → 行。"""
+    """物料行计数、页面填写的附件项次与长度：(bill, seq) → 行。"""
     if not keys:
         return {}, {}, {}
     bills = sorted({k[0] for k in keys})

@@ -354,15 +354,16 @@
                   </template>
                 </el-table-column>
                 <el-table-column :label="t('common.billSeq')" prop="seq" width="56" />
-                <el-table-column :label="t('common.attachNo')" width="130">
+                <el-table-column :label="t('common.attachNo')" width="140">
                   <template #default="{ row }">
-                    <span class="cell-edit">
-                      <span v-if="row.attach_source === 'EMPTY'" class="err">{{ t("generate.attachEmpty") }}</span>
-                      <span v-else>{{ row.attach_no }}<el-tag v-if="row.attach_source === 'MANUAL'" size="small" class="ml">{{ t("generate.attachManual") }}</el-tag></span>
-                      <el-button v-if="row.attach_source !== 'K3'" link type="primary" size="small" @click.stop="fillAttach(row)">
-                        <el-icon><EditPen /></el-icon>
-                      </el-button>
-                    </span>
+                    <span v-if="row.attach_source === 'K3'">{{ row.attach_no }}</span>
+                    <el-tooltip v-else :disabled="!row.edit_lock" :content="lockText(row)">
+                      <span class="cell-input" @click.stop>
+                        <el-input :model-value="draftOf(row, 'attach')" size="small" maxlength="64" :disabled="!!row.edit_lock"
+                          :class="{ missing: !row.edit_lock && !draftOf(row, 'attach') }" :placeholder="t('generate.attachRequired')"
+                          @update:model-value="(v: string) => setDraft(row, 'attach', v)" @change="saveAttach(row)" />
+                      </span>
+                    </el-tooltip>
                   </template>
                 </el-table-column>
                 <el-table-column :label="t('common.material')" min-width="130" show-overflow-tooltip>
@@ -371,18 +372,15 @@
                     <div class="muted">{{ row.material_name }}</div>
                   </template>
                 </el-table-column>
-                <el-table-column :label="t('common.length')" width="130">
+                <el-table-column :label="t('common.length')" width="120">
                   <template #default="{ row }">
-                    <span class="cell-edit">
-                      <el-tooltip v-if="row.length_source === 'DEFAULT'" :content="t('generate.lengthDefaultTip')">
-                        <span class="err">{{ t("generate.lengthEmpty") }}</span>
-                      </el-tooltip>
-                      <span v-else-if="row.length === null" class="err">{{ row.length_raw }}</span>
-                      <span v-else>{{ row.length }}<el-tag v-if="row.length_source === 'MANUAL'" size="small" class="ml">{{ t("generate.lengthManual") }}</el-tag></span>
-                      <el-button v-if="row.length_source !== 'K3' || row.length === null" link type="primary" size="small" @click.stop="fillLength(row)">
-                        <el-icon><EditPen /></el-icon>
-                      </el-button>
-                    </span>
+                    <span v-if="row.length_source === 'K3'">{{ row.length }}</span>
+                    <el-tooltip v-else :content="row.edit_lock ? lockText(row) : t('generate.lengthDefaultTip')">
+                      <span class="cell-input" @click.stop>
+                        <el-input :model-value="draftOf(row, 'length')" size="small" maxlength="64" :disabled="!!row.edit_lock"
+                          :placeholder="DEFAULT_LENGTH" @update:model-value="(v: string) => setDraft(row, 'length', v)" @change="saveLength(row)" />
+                      </span>
+                    </el-tooltip>
                   </template>
                 </el-table-column>
                 <el-table-column :label="t('common.qty')" align="right" width="66">
@@ -827,38 +825,51 @@ function onLineClick(row: OrderLine) {
   else openRuleDialog([row]);
 }
 
-/** 补填附件项次（金蝶为空时）、长度（金蝶为空或不是数字时）；保存后刷新详情并重新预演。 */
-async function fillAttach(row: OrderLine) {
-  let value: string;
+/** 金蝶缺失的附件项次（必填）、长度（选填，留空用默认 000）在表格里直接填写；物料行有号后置灰：
+ *  已生成未分配的撤销生成后可改，已分配的不能再改。失焦或回车保存，保存后刷新详情。 */
+const DEFAULT_LENGTH = "000";
+type DraftField = "attach" | "length";
+const drafts = reactive<Record<string, string>>({});
+const draftKey = (row: OrderLine, f: DraftField) => `${f}:${row.bill_no}/${row.seq}`;
+function draftOf(row: OrderLine, f: DraftField): string {
+  const k = draftKey(row, f);
+  if (k in drafts) return drafts[k];
+  return f === "attach" ? row.attach_no : row.length_source === "MANUAL" ? row.length : "";
+}
+function setDraft(row: OrderLine, f: DraftField, v: string) {
+  drafts[draftKey(row, f)] = v;
+}
+function lockText(row: OrderLine) {
+  return row.edit_lock === "ALLOCATED" ? t("generate.lockAllocated") : t("generate.lockGenerated");
+}
+async function saveDraft(row: OrderLine, f: DraftField, save: (value: string) => Promise<unknown>) {
+  const k = draftKey(row, f);
   try {
-    const r = await ElMessageBox.prompt(t("orders.attachFillHint"), t("orders.attachFillTitle", { bill: row.bill_no, seq: row.seq }), {
-      inputValue: row.attach_manual || "",
-      inputValidator: (v: string) => (!!v && !!v.trim() && v.trim().length <= 64) || t("orders.attachInvalid"),
-    });
-    value = (r as { value: string }).value.trim();
-  } catch {
+    await save(drafts[k].trim());
+    ElMessage.success(t("common.saved"));
+    await reloadCtx();
+  } finally {
+    delete drafts[k];
+  }
+}
+function saveAttach(row: OrderLine) {
+  const value = (drafts[draftKey(row, "attach")] ?? "").trim();
+  if (!value || value === row.attach_no) {
+    if (!value) ElMessage.warning(t("orders.attachInvalid"));
+    delete drafts[draftKey(row, "attach")];
     return;
   }
-  await api.fillAttach(row.bill_no, row.seq, value);
-  ElMessage.success(t("common.saved"));
-  await reloadCtx();
+  return saveDraft(row, "attach", (v) => api.fillAttach(row.bill_no, row.seq, v));
 }
-async function fillLength(row: OrderLine) {
-  let value: string;
-  try {
-    const r = await ElMessageBox.prompt(t("orders.lengthFillHint"), t("orders.lengthFillTitle", { bill: row.bill_no, seq: row.seq }), {
-      inputValue: row.length_manual || "",
-      inputValidator: (v: string) => /^(?=.*\d)\d*(\.\d*)?$/.test((v || "").trim()) || t("orders.lengthInvalid"),
-    });
-    value = (r as { value: string }).value.trim();
-  } catch {
+function saveLength(row: OrderLine) {
+  const value = (drafts[draftKey(row, "length")] ?? "").trim();
+  if (value === (row.length_source === "MANUAL" ? row.length : "")) {
+    delete drafts[draftKey(row, "length")];
     return;
   }
-  await api.fillLength(row.bill_no, row.seq, value);
-  ElMessage.success(t("common.saved"));
-  await reloadCtx();
+  return saveDraft(row, "length", (v) => api.fillLength(row.bill_no, row.seq, v));
 }
-/** 统一设置长度：所选物料行 / 勾选的单据 / 都没选 = 整张 PI 内长度待填写的物料行一次补填，默认 000。 */
+/** 统一设置长度：所选物料行 / 勾选的单据 / 都没选 = 整张 PI 内长度还是默认 000、还没有号的物料行一次设为同一个值。 */
 async function fillLengths() {
   if (!ctx.value) return;
   const byLines = scope.value === "LINES" && selLines.value.length;
@@ -870,8 +881,8 @@ async function fillLengths() {
   let value: string;
   try {
     const r = await ElMessageBox.prompt(t("generate.lengthBatchHint", { range }), t("generate.lengthBatch"), {
-      inputValue: "000",
-      inputValidator: (v: string) => /^(?=.*\d)\d*(\.\d*)?$/.test((v || "").trim()) || t("orders.lengthInvalid"),
+      inputValue: DEFAULT_LENGTH,
+      inputValidator: (v: string) => (!!(v || "").trim() && v.trim().length <= 64) || t("generate.lengthInvalid"),
     });
     value = (r as { value: string }).value.trim();
   } catch {
@@ -1180,7 +1191,8 @@ onUnmounted(() => {
 .issue-tags { margin-top: 4px; gap: 4px; }
 .qty { width: 180px; }
 .issues { margin: 0; padding-left: 18px; font-size: 13px; max-height: 200px; overflow-y: auto; }
-.cell-edit { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.cell-input { display: block; }
+.cell-input .missing :deep(.el-input__wrapper) { box-shadow: 0 0 0 1px var(--el-color-danger) inset; }
 .skipped { display: flex; flex-direction: column; gap: 2px; font-size: 12px; }
 .push-row { display: flex; flex-direction: column; gap: 2px; padding: 6px 0; border-bottom: 1px dashed var(--el-border-color-lighter); }
 .push-row:last-child { border-bottom: none; }

@@ -49,38 +49,32 @@ def test_parse_recovers_length_and_serial():
     assert codec.parse("HX100000001A", HX) == ("100", 1)
     assert codec.parse("HX10.5000042A", HX) == ("10.5", 42)
     assert codec.parse("HX0000042A", HX) == ("0", 42)
+    assert codec.parse("HX0100000001A", HX) == ("0100", 1), "长度是字符串，原样反解"
     assert codec.parse("HX000000042A", HX) == ("000", 42), "默认长度 000 原样写入"
     assert codec.parse("AVM00042X", NOLEN) == ("", 42)
     assert codec.parse("AVM0042X", NOLEN) is None, "wrong length"
     assert codec.parse("BVM00042X", NOLEN) is None, "wrong prefix"
-    assert codec.parse("HX0100000001A", HX) is None, "长度写法不规范"
+    assert codec.parse("HX000001A", HX) is None, "带长度的规则长度不能为空"
     for s in (0, 1, 31, 32, 1023, 1_048_575):
         assert codec.parse(codec.format_sn(s, B32), B32) == ("", s)
 
 
 @pytest.mark.parametrize(
-    ("raw", "norm"),
+    ("raw", "text"),
     [
-        ("0100", "100"),
-        ("0.5", "0.5"),
-        ("0", "0"),
-        ("10.50", "10.5"),
-        ("10.0", "10"),
+        ("0100", "0100"),
+        ("000", "000"),
+        ("001", "001"),
+        ("10.50", "10.50"),
         (" 100 ", "100"),
-        ("000", "0"),
-        (".5", "0.5"),
+        ("L-2", "L-2"),
         ("", None),
         ("  ", None),
-        ("-1", None),
-        ("1,000", None),
-        ("1e3", None),
-        ("1.2.3", None),
-        ("abc", None),
-        (".", None),
+        (None, None),
     ],
 )
-def test_length_has_one_spelling(raw, norm):
-    assert codec.normalize_length(raw) == norm
+def test_length_is_plain_string(raw, text):
+    assert codec.clean_length(raw) == text
 
 
 def test_validation():

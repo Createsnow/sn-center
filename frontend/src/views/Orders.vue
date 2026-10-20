@@ -106,10 +106,7 @@
                   <template #default="{ row }">
                     <div class="attach">
                       <span v-if="row.attach_source === 'EMPTY'" class="err">{{ t("orders.attachEmpty") }}</span>
-                      <template v-else>
-                        <span>{{ row.attach_no }}</span>
-                        <el-tag v-if="row.attach_source === 'MANUAL'" size="small" type="info">{{ t("orders.attachManual") }}</el-tag>
-                      </template>
+                      <span v-else>{{ row.attach_no }}</span>
                     </div>
                     <div v-if="row.attach_k3_conflict" class="muted warn">
                       {{ t("orders.attachConflict", { k3: row.attach_k3, manual: row.attach_manual }) }}
@@ -125,11 +122,7 @@
                 <el-table-column :label="t('common.length')" width="90" show-overflow-tooltip>
                   <template #default="{ row }">
                     <span v-if="row.length_source === 'DEFAULT'" class="err">{{ t("orders.lengthEmpty") }}</span>
-                    <span v-else-if="row.length === null" class="err">{{ row.length_raw }}</span>
-                    <template v-else>
-                      <span>{{ row.length }}</span>
-                      <el-tag v-if="row.length_source === 'MANUAL'" size="small" type="info" class="ml">{{ t("generate.lengthManual") }}</el-tag>
-                    </template>
+                    <span v-else>{{ row.length }}</span>
                   </template>
                 </el-table-column>
                 <el-table-column :label="t('common.qty')" align="right" width="60">

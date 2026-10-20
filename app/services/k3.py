@@ -157,7 +157,7 @@ def text(v: Any) -> str:
 
 
 def number_text(v: Any) -> str:
-    """数字类文本（长度）：整数型浮点按整数写，其余原样（规范化在生成时做）。"""
+    """长度文本：金蝶返回数值时整数型浮点按整数写；文本原样（去首尾空格），生成时作为字符串写入 SN。"""
     if isinstance(v, float) and v == int(v):
         return str(int(v))
     return text(v)

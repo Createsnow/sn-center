@@ -1,4 +1,4 @@
-"""生产订单快照（F-05、F-07）与订单变更提醒（F-06）：总部与查询员可看；同步、补填、处理只有总部。"""
+"""生产订单快照（F-05、F-07）与订单变更提醒（F-06）：总部与查询员可看；同步、填写附件项次与长度、处理只有总部。"""
 
 from fastapi import APIRouter
 
@@ -66,17 +66,17 @@ def order_rebuild(cu: AdminDep) -> dict:
     return orders.rebuild(cu)
 
 
-@router.put("/attach", summary="附件项次补填（金蝶为空时）；补填值不写回金蝶，也不进推送报文和领取文件")
+@router.put("/attach", summary="填写附件项次（金蝶为空时必填；物料行有号后不能改）；不写回金蝶，不进推送和领取文件")
 def order_attach(body: AttachIn, cu: AdminDep) -> dict:
     return orders.fill_attach(cu, body.bill_no, body.seq, body.value)
 
 
-@router.put("/length", summary="长度补填（金蝶为空或不是数字时）；金蝶为空且未补填时生成用默认长度 000")
+@router.put("/length", summary="填写长度（金蝶为空时选填，字符串原样写入 SN；留空用默认 000；物料行有号后不能改）")
 def order_length(body: AttachIn, cu: AdminDep) -> dict:
     return orders.fill_length(cu, body.bill_no, body.seq, body.value)
 
 
-@router.put("/length/batch", summary="统一设置长度：范围内长度待填写的物料行一次补填为同一个值（已补填的不改）")
+@router.put("/length/batch", summary="统一设置长度：范围内长度为默认 000、还没有号的物料行设为同一个值（已填写的不改）")
 def order_length_batch(body: LengthBatchIn, cu: AdminDep) -> dict:
     return orders.fill_lengths(
         cu, body.pi_no, body.bills, [x.model_dump() for x in body.lines or []] or None, body.value

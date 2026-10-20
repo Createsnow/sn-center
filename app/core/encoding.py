@@ -1,7 +1,8 @@
 """SN 编码：完整 SN = 前缀 + 长度 + 定长进制流水 + 后缀（PRD 5.2.2）。
 
 - 流水左侧用字符表首字符补齐；10 / 16 / 32 / 36 进制。
-- 长度取所属物料行的长度，按「长度写法」规范化后写入；物料行长度为空时写默认长度 000；规则不带长度时不写。
+- 长度是字符串，取所属物料行的长度原样写入（只去首尾空格，000 / 001 / 0.5 / 其他都可以，不按数值规范化）；
+  物料行长度为空时写默认长度 000；规则不带长度时不写。
 - 同一版本的前缀、流水位数、后缀固定，SN 总长减去这几部分就是长度位数，所以按版本可以把 SN 反解成（长度，流水）。
 """
 
@@ -26,8 +27,7 @@ LONG_MAX = 2**63 - 1
 PREFIX_RE = re.compile(r"^[A-Za-z0-9]+$")
 SUFFIX_RE = re.compile(r"^[A-Za-z0-9_]*$")
 _CHARSET_RE = re.compile(r"^[A-Za-z0-9]+$")
-_LENGTH_RE = re.compile(r"^(\d*)(?:\.(\d*))?$")
-#: 物料行长度为空（金蝶为空且未补填）时写入 SN 的默认长度，原样写入、不规范化
+#: 物料行长度为空（金蝶为空且页面未填写）时写入 SN 的默认长度
 DEFAULT_LENGTH = "000"
 
 
@@ -104,13 +104,13 @@ def decode_seq(text: str, s: Spec) -> int | None:
 
 
 def format_sn(seq: int, s: Spec, length: str | None = None) -> str:
-    """完整 SN；规则带长度时写入长度（已规范化的写法），不带长度时忽略。"""
+    """完整 SN；规则带长度时原样写入长度字符串，不带长度时忽略。"""
     mid = (length or "") if s.with_length else ""
     return s.prefix + mid + encode_seq(seq, s) + s.suffix
 
 
 def parse(sn: str | None, s: Spec) -> tuple[str, int] | None:
-    """按规则反解完整 SN →（长度写法，十进制流水）；前后缀、位数或字符不符返回 None。"""
+    """按规则反解完整 SN →（长度，十进制流水）；前后缀、位数或字符不符返回 None。带长度的规则长度不能为空。"""
     if sn is None or not sn.startswith(s.prefix) or not sn.endswith(s.suffix):
         return None
     body = sn[len(s.prefix) : len(sn) - len(s.suffix)]
@@ -119,22 +119,13 @@ def parse(sn: str | None, s: Spec) -> tuple[str, int] | None:
     length, seq_text = body[: len(body) - s.seq_len], body[len(body) - s.seq_len :]
     if not s.with_length and length:
         return None
-    if s.with_length and length != DEFAULT_LENGTH and normalize_length(length) != length:
+    if s.with_length and not length:
         return None
     n = decode_seq(seq_text, s)
     return None if n is None else (length, n)
 
 
-def normalize_length(raw: str | None) -> str | None:
-    """长度写法（5.2.2）：去首尾空格后须为十进制数字（只含数字和至多一个小数点）；
-    去掉整数部分的前导零（保留个位的 0）、去掉小数末尾的 0（全为 0 时连小数点一起去掉）。不是数字返回 None。"""
-    if raw is None:
-        return None
-    v = raw.strip()
-    m = _LENGTH_RE.match(v)
-    if not v or m is None or (not m.group(1) and not m.group(2)):
-        return None
-    ip, fp = m.group(1), m.group(2)
-    ip = ip.lstrip("0") or "0"
-    fp = (fp or "").rstrip("0")
-    return ip + ("." + fp if fp else "")
+def clean_length(raw: str | None) -> str | None:
+    """长度字符串：去首尾空格后原样使用；为空返回 None（生成时取默认长度 000）。"""
+    v = (raw or "").strip()
+    return v or None
