@@ -257,14 +257,38 @@ def test_workbench_lists_status_and_buttons(w, api):
     assert r["items"][0]["status"] == "NEED_RULE"
     ok(w.bind_pi(pi, w.rule(P())))
     assert ok(api.get(f"/api/generate/pis?q={pi}", w.admin))["items"][0]["status"] == "TO_GENERATE"
+
+    def tab(t: str) -> list[str]:
+        return [x["pi_no"] for x in ok(api.get(f"/api/generate/pis?q={pi}&tab={t}", w.admin))["items"]]
+
+    assert (tab("TO_GENERATE"), tab("TO_ALLOCATE"), tab("DONE")) == ([pi], [], [])
     w.generate(pi, 10)
     x = ok(api.get(f"/api/generate/pis?q={pi}", w.admin))["items"][0]
     assert (x["status"], x["pending_alloc"], x["generated_qty"]) == ("TO_ALLOCATE", 10, 10)
     ctx = ok(api.get(f"/api/generate/context?bill_no={bill}", w.admin))
     assert ctx["pi_no"] == pi and ctx["allocation"]["qty"] == 10
     assert ctx["bills"][0]["lines"][0]["rule"]["format"].startswith("P")
+    assert (tab("TO_GENERATE"), tab("TO_ALLOCATE"), tab("DONE")) == ([], [pi], [])
     w.allocate(pi)
     assert ok(api.get(f"/api/generate/pis?q={pi}", w.admin))["items"][0]["status"] == "DONE"
+    assert (tab("TO_GENERATE"), tab("TO_ALLOCATE"), tab("DONE")) == ([], [], [pi])
+
+
+def test_generating_pi_listed_first_under_to_generate(w, api, sql):
+    _, running_pi, _ = mk(w, ("M1", 10))
+    ok(w.bind_pi(running_pi, w.rule(P())))
+    w.generate(running_pi, 10)
+    _, other, _ = mk(w, ("M1", 10))
+    ok(w.bind_pi(other, w.rule(P())))
+    # 模拟生成中：额度已用完，仍归「待生成」页签并排在最前
+    sql.exec("UPDATE sn_gen_job SET running_pi = pi_no WHERE pi_no = %s", running_pi)
+    try:
+        items = ok(api.get("/api/generate/pis?tab=TO_GENERATE", w.admin))["items"]
+        names = [x["pi_no"] for x in items]
+        assert items[0]["status"] == "GENERATING" and running_pi in names and other in names
+        assert names.index(running_pi) < names.index(other)
+    finally:
+        sql.exec("UPDATE sn_gen_job SET running_pi = NULL WHERE pi_no = %s", running_pi)
 
 
 def test_allocation_skips_reversed_bill(w, api, sql):

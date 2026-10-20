@@ -468,9 +468,7 @@
     "recentOnly": "Chỉ liệt kê {n} trang gần nhất; hãy tìm kiếm PI cũ hơn",
     "capped": "Mỗi lần lấy tối đa {n} PI ({n}+); hãy thu hẹp bằng tìm kiếm",
     "tab": {
-      "ALL": "Tất cả",
       "TO_GENERATE": "Chờ tạo",
-      "GENERATING": "Đang tạo",
       "TO_ALLOCATE": "Chờ phân bổ",
       "DONE": "Hoàn tất"
     },

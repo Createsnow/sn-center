@@ -552,16 +552,16 @@ import type { OrderLine } from "@/types/api";
 import PageHead from "@/components/PageHead.vue";
 import RuleDialog from "@/views/generate/RuleDialog.vue";
 
-type Tab = "ALL" | "TO_GENERATE" | "GENERATING" | "TO_ALLOCATE" | "DONE";
+type Tab = "TO_GENERATE" | "TO_ALLOCATE" | "DONE";
 type Step = "rule" | "gen" | "alloc";
 type Action = "running" | "view" | "resume" | "alloc" | "gen" | "pick";
 type TagType = "" | "info" | "primary" | "success" | "warning" | "danger";
 type LineRef = { bill_no: string; seq: number };
 
-const TABS: Tab[] = ["ALL", "TO_GENERATE", "GENERATING", "TO_ALLOCATE", "DONE"];
+const TABS: Tab[] = ["TO_GENERATE", "TO_ALLOCATE", "DONE"];
 const STEPS: Step[] = ["rule", "gen", "alloc"];
 const PAGE = 20;
-/** 除「生成中」外各页签只列最近 3 页，更早的用搜索（F-10 第 2 条）。 */
+/** 各页签只列最近 3 页，更早的用搜索；生成中的 PI 排在「待生成」最前，不受此限（F-10 第 2 条）。 */
 const RECENT_PAGES = 3;
 const LIST_LIMIT = 500;
 const STATUS_TAG: Record<string, TagType> = {
@@ -608,12 +608,12 @@ const busy = ref("");
 
 // ================================================================ PI 列表
 
-const tab = ref<Tab>("ALL");
+const tab = ref<Tab>("TO_GENERATE");
 const q = ref("");
 const page = ref(1);
 const listLoading = ref(false);
 const list = ref<any>({ items: [], capped: false, summary: { quota: 0, pending_alloc: 0, unbatched: 0 }, synced_at: null });
-const limited = computed(() => !q.value.trim() && tab.value !== "GENERATING" && list.value.items.length > PAGE * RECENT_PAGES);
+const limited = computed(() => !q.value.trim() && list.value.items.length > PAGE * RECENT_PAGES);
 const shown = computed<any[]>(() => (limited.value ? list.value.items.slice(0, PAGE * RECENT_PAGES) : list.value.items));
 const paged = computed(() => shown.value.slice((page.value - 1) * PAGE, page.value * PAGE));
 let listTimer: ReturnType<typeof setTimeout> | undefined;

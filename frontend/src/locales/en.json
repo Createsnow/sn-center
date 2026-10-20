@@ -468,9 +468,7 @@
     "recentOnly": "Only the latest {n} pages are listed; search for older PIs",
     "capped": "At most {n} PIs are fetched ({n}+); narrow down with search",
     "tab": {
-      "ALL": "All",
       "TO_GENERATE": "To generate",
-      "GENERATING": "Generating",
       "TO_ALLOCATE": "To allocate",
       "DONE": "Done"
     },

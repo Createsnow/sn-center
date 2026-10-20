@@ -121,7 +121,7 @@ def _line_issue_summary(pi: str) -> tuple[bool, bool, dict]:
 
 
 def pis(cu: CurrentUser, q: str | None, tab: str | None) -> dict:
-    """PI 列表与上方汇总（还可生成、待分配、待推送）。tab：ALL / TO_GENERATE / GENERATING / TO_ALLOCATE / DONE。"""
+    """PI 列表与上方汇总（还可生成、待分配、待推送）。tab：TO_GENERATE（含生成中）/ TO_ALLOCATE / DONE，不传为全部。"""
     rows = _pi_rows(q)
     names = [r["pi"] for r in rows]
     stats = _item_stats(names)
@@ -177,13 +177,15 @@ def pis(cu: CurrentUser, q: str | None, tab: str | None) -> dict:
             }
         )
     tabs = {
-        "TO_GENERATE": lambda x: x["quota"] > 0 and x["status"] != GENERATING,
-        "GENERATING": lambda x: x["status"] == GENERATING,
+        "TO_GENERATE": lambda x: x["quota"] > 0 or x["status"] == GENERATING,
         "TO_ALLOCATE": lambda x: x["pending_alloc"] > 0 or x["push_interrupted"],
         "DONE": lambda x: x["status"] == DONE,
     }
-    t = util.trim(tab) or "ALL"
+    t = util.trim(tab)
     shown = [x for x in out if tabs[t](x)] if t in tabs else out
+    if t == "TO_GENERATE":
+        # 生成中的排最前，不被「只列最近 3 页」截掉
+        shown.sort(key=lambda x: x["status"] != GENERATING)
     return {
         "items": shown,
         "capped": len(rows) >= LIST_LIMIT,

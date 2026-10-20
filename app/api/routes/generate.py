@@ -10,9 +10,7 @@ from app.services import generate, workbench
 router = APIRouter(prefix="/generate", tags=["generate"])
 
 
-@router.get(
-    "/pis", summary="PI 列表：状态、行上按钮依据、上方汇总；tab = ALL / TO_GENERATE / GENERATING / TO_ALLOCATE / DONE"
-)
+@router.get("/pis", summary="PI 列表：状态、行上按钮依据、上方汇总；tab = TO_GENERATE（含生成中）/ TO_ALLOCATE / DONE")
 def gen_pis(cu: AdminDep, q: str | None = None, tab: str | None = None) -> dict:
     return workbench.pis(cu, q, tab)
 
