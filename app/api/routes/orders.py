@@ -10,7 +10,7 @@ from app.services import changes, orders
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 
-@router.get("", summary="左表：每张单据一行（客户编码为空的不显示），单据编号大的在前")
+@router.get("", summary="左表：每张单据一行（含客户编码为空的单据），单据编号大的在前")
 def order_list(
     cu: AdminOrQueryDep,
     q: str | None = None,

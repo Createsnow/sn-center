@@ -74,6 +74,23 @@ def test_blank_pi_visible_but_not_in_generate_list(w, api):
     assert ok(api.get(f"/api/generate/pis?q={a}", w.admin))["items"] == []
 
 
+def test_empty_customer_flows_like_normal_bills(w, api, sql):
+    org = w.org(uid("O")[:10])
+    pi, a, tgt = uid("PI"), uid("MO"), uid("MO")
+    w.order(a, org, "", pi, ("M1", 5))
+    lst = ok(api.get(f"/api/orders?q={a}", w.admin))["items"]
+    assert [x["bill_no"] for x in lst] == [a] and lst[0]["customer_code"] == ""
+    assert ok(api.get("/api/orders/meta", w.admin))["empty_customer_bills"] >= 1
+    assert [x["pi_no"] for x in ok(api.get(f"/api/generate/pis?q={pi}", w.admin))["items"]] == [pi]
+    ok(w.bind_pi(pi, w.rule(P())))
+    w.generate(pi)
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND customer_code = ''", a) == 5
+    # 客户编码为空的单据也能作转单目标
+    w.order(tgt, org, "", pi, ("M1", 5))
+    ok(api.post("/api/transfers/bill", m(from_bill=a, to_bill=tgt, mode="VOID", reason="整单作废"), w.admin))
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s", tgt) == 5
+
+
 def test_bill_sync_reports_status(w, api, sql):
     org = w.org(uid("O")[:10])
     a = uid("MO")

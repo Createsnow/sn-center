@@ -374,7 +374,7 @@ class BillRequest:
 
 def _target_bill(no: str | None, source: str) -> orders.Bill:
     b = orders.bill(no)
-    if b is None or not b.customer_code or not b.pi or b.bill_no == source:
+    if b is None or not b.pi or b.bill_no == source:
         raise biz(ErrorCode.TR_TARGET_BILL_INVALID, bill_no=util.trim(no))
     return b
 

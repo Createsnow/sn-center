@@ -181,8 +181,6 @@ def _check(line: Line) -> None:
     """生成条件（只对还有额度的物料行）。"""
     if line.quota <= 0:
         return
-    if not line.customer_code:
-        line.issues.append("NO_CUSTOMER")
     if line.block:
         line.issues.append(line.block)
     if line.res is None:

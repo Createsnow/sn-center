@@ -29,7 +29,7 @@ DONE = "DONE"
 
 
 def _pi_rows(q: str | None) -> list[dict]:
-    where = " WHERE m.customer_code <> '' AND m.pi <> ''"
+    where = " WHERE m.pi <> ''"
     args: list = []
     text = util.trim(q)
     if text:
@@ -107,9 +107,7 @@ def _line_issue_summary(pi: str) -> tuple[bool, bool, dict]:
     """（有额度的物料行中有未定规则的，全部不能生成，各原因的行数）。"""
     keys = [
         (r["bill_no"], r["seq"])
-        for r in db.all(
-            "SELECT bill_no, seq FROM sn_prd_mo WHERE pi = %s AND customer_code <> '' ORDER BY bill_no, seq", pi
-        )
+        for r in db.all("SELECT bill_no, seq FROM sn_prd_mo WHERE pi = %s ORDER BY bill_no, seq", pi)
     ]
     ls = generate._load_lines(pi, keys)
     todo = [x for x in ls if x.quota > 0]
@@ -212,10 +210,11 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
             pi = b.pi
     if not pi:
         raise biz(ErrorCode.PI_REQUIRED)
-    snap = db.all("SELECT * FROM sn_prd_mo WHERE pi = %s AND customer_code <> '' ORDER BY bill_no, seq", pi)
+    snap = db.all("SELECT * FROM sn_prd_mo WHERE pi = %s ORDER BY bill_no, seq", pi)
     keys = [(r["bill_no"], r["seq"]) for r in snap]
     counts, fills = orders.line_extras(keys)
-    customer = snap[0]["customer_code"] if snap else (orders.customer_of_pi(pi) or "")
+    # 表头客户取本 PI 第一个非空的客户编码（客户编码为空的单据照常列出）
+    customer = next((r["customer_code"] for r in snap if r["customer_code"]), None) or orders.customer_of_pi(pi) or ""
     last = generate.last_seq(pi)
     ls = {(x.bill_no, x.seq): x for x in generate._load_lines(pi, keys)}
     bills: dict[str, dict] = {}

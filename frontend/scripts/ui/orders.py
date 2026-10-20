@@ -1,9 +1,9 @@
 # 生产订单页词条：key -> (简体中文, English, Tiếng Việt)
 M = {
 "orders.title": ("生产订单快照", "Production order snapshot", "Ảnh chụp lệnh sản xuất"),
-"orders.desc": ("来自金蝶已审核的生产订单，按物料行（单据 + 序号）落地。左表按单据汇总，右表为各物料行。客户编码为空的单据不显示。",
-  "Approved Kingdee production orders, stored per material line (bill + line No.). Left: totals per bill; right: material lines. Bills without a customer are hidden.",
-  "Lệnh sản xuất đã duyệt từ Kingdee, lưu theo dòng vật tư (chứng từ + số dòng). Trái: tổng theo chứng từ; phải: các dòng vật tư. Chứng từ không có khách hàng bị ẩn."),
+"orders.desc": ("来自金蝶已审核的生产订单，按物料行（单据 + 序号）落地。左表按单据汇总，右表为各物料行。客户编码为空的单据照常显示、照常生成与流转。",
+  "Approved Kingdee production orders, stored per material line (bill + line No.). Left: totals per bill; right: material lines. Bills without a customer are shown and processed as usual.",
+  "Lệnh sản xuất đã duyệt từ Kingdee, lưu theo dòng vật tư (chứng từ + số dòng). Trái: tổng theo chứng từ; phải: các dòng vật tư. Chứng từ không có khách hàng vẫn hiển thị và xử lý như bình thường."),
 "orders.syncOne": ("按单据同步", "Sync bill", "Đồng bộ chứng từ"),
 "orders.syncNow": ("立即同步", "Sync now", "Đồng bộ ngay"),
 "orders.compareNow": ("立即比对同步", "Compare sync now", "Đồng bộ so sánh ngay"),
@@ -22,7 +22,7 @@ M = {
 "orders.syncedAt": ("最近同步", "Last sync", "Đồng bộ gần nhất"),
 "orders.bills": ("单据数", "Bills", "Số chứng từ"),
 "orders.rows": ("物料行", "Lines", "Số dòng"),
-"orders.excluded": ("另有 {n} 张单据无客户编码，未显示", "{n} more bills without customer are hidden", "{n} chứng từ không có khách hàng bị ẩn"),
+"orders.emptyCustomer": ("其中 {n} 张单据无客户编码", "{n} bills without customer", "{n} chứng từ không có khách hàng"),
 "orders.attachPending": ("附件项次待填写", "Attachment items to fill", "Hạng mục đính kèm cần điền"),
 "orders.compare": ("比对同步", "Compare sync", "Đồng bộ so sánh"),
 "orders.compareOk": ("成功", "OK", "Thành công"),

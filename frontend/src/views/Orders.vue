@@ -18,7 +18,7 @@
       <span>{{ t("orders.syncedAt") }}：<b>{{ fmt(meta?.synced_at) }}</b></span>
       <span>{{ t("orders.bills") }}：<b class="num">{{ meta?.bills ?? 0 }}</b></span>
       <span>{{ t("orders.rows") }}：<b class="num">{{ meta?.rows ?? 0 }}</b></span>
-      <span class="muted">{{ t("orders.excluded", { n: meta?.excluded_empty_customer ?? 0 }) }}</span>
+      <span class="muted">{{ t("orders.emptyCustomer", { n: meta?.empty_customer_bills ?? 0 }) }}</span>
       <span>{{ t("orders.attachPending") }}：<b class="num" :class="{ warn: meta?.attach_pending }">{{ meta?.attach_pending ?? 0 }}</b></span>
       <span>
         {{ t("orders.compare") }}：

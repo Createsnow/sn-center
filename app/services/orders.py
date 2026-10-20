@@ -344,8 +344,8 @@ def _scope(cu: CurrentUser, factory: str | None, col: str = "m.org_code") -> tup
 
 
 def _bill_filter(cu: CurrentUser, q: str | None, customer: str | None, pi: str | None, factory: str | None):
-    """订单页左表筛选（m = sn_prd_mo）：客户编码为空的单据不显示；绑定的账户只看本组织。"""
-    where = " WHERE m.customer_code <> ''"
+    """订单页左表筛选（m = sn_prd_mo）：客户编码为空的单据照常显示；绑定的账户只看本组织。"""
+    where = " WHERE 1=1"
     args: list = []
     text = util.trim(q)
     if text:
@@ -486,18 +486,18 @@ def lines_of(cu: CurrentUser, bill_no: str | None) -> dict:
 
 
 def meta(cu: CurrentUser) -> dict:
-    """顶部：最近同步时间、快照单据数和物料行数、客户为空的单据数、附件项次待填写行数、比对同步状态、未处理提醒数。"""
+    """顶部：最近同步时间、快照单据数和物料行数、客户为空的单据数（照常显示、照常流转，只作提示）、附件项次待填写行数、
+    比对同步状态、未处理提醒数。"""
     fsql, fargs = _scope(cu, None)
     m = db.one(
-        "SELECT MAX(m.synced_at) ts, COUNT(DISTINCT CASE WHEN m.customer_code <> '' THEN m.bill_no END) bills, "
-        "COUNT(*) row_count, COUNT(DISTINCT CASE WHEN m.customer_code = '' THEN m.bill_no END) excluded "
+        "SELECT MAX(m.synced_at) ts, COUNT(DISTINCT m.bill_no) bills, "
+        "COUNT(*) row_count, COUNT(DISTINCT CASE WHEN m.customer_code = '' THEN m.bill_no END) empty_customer "
         "FROM sn_prd_mo m WHERE 1=1" + fsql,
         *fargs,
     )
     pending_attach = db.count(
         "SELECT COUNT(*) FROM sn_prd_mo m LEFT JOIN sn_line_attach a ON a.bill_no = m.bill_no AND a.seq = m.seq "
-        "WHERE m.customer_code <> '' AND m.attach_no = '' AND (a.bill_no IS NULL OR a.material_code <> m.material_code)"
-        + fsql,
+        "WHERE m.attach_no = '' AND (a.bill_no IS NULL OR a.material_code <> m.material_code)" + fsql,
         *fargs,
     )
     st = db.one("SELECT * FROM sn_sync_state WHERE id = 1") or {}
@@ -505,7 +505,7 @@ def meta(cu: CurrentUser) -> dict:
         "synced_at": util.fmt(m["ts"]),
         "bills": int(m["bills"] or 0),
         "rows": int(m["row_count"] or 0),
-        "excluded_empty_customer": int(m["excluded"] or 0),
+        "empty_customer_bills": int(m["empty_customer"] or 0),
         "attach_pending": pending_attach,
         "compare": {
             "last_run_at": util.fmt(st.get("last_run_at")),
@@ -577,7 +577,7 @@ def targets(q: str | None, limit: int) -> list[dict]:
     """转单、转组织目标候选：快照中的物料行（生产组织 + 客户 + PI + 单据 + 序号 + 物料 + 长度）。"""
     text = util.trim(q)
     args: list = []
-    where = " WHERE m.customer_code <> '' AND m.pi <> ''"
+    where = " WHERE m.pi <> ''"
     if text:
         where += " AND (m.pi LIKE %s OR m.bill_no LIKE %s OR m.material_code LIKE %s OR m.customer_code LIKE %s)"
         like = util.like_any(text)

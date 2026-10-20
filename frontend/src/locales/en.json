@@ -578,7 +578,6 @@
     "needRule": "Pick a rule first",
     "noLines": "This bill is no longer in the snapshot; only its SNs can be viewed",
     "issue": {
-      "NO_CUSTOMER": "No customer",
       "PI_FROZEN": "PI change frozen",
       "MATERIAL_LOST": "Line mapping lost",
       "NO_RULE": "No rule",
@@ -668,7 +667,7 @@
   },
   "orders": {
     "title": "Production order snapshot",
-    "desc": "Approved Kingdee production orders, stored per material line (bill + line No.). Left: totals per bill; right: material lines. Bills without a customer are hidden.",
+    "desc": "Approved Kingdee production orders, stored per material line (bill + line No.). Left: totals per bill; right: material lines. Bills without a customer are shown and processed as usual.",
     "syncOne": "Sync bill",
     "syncNow": "Sync now",
     "compareNow": "Compare sync now",
@@ -687,7 +686,7 @@
     "syncedAt": "Last sync",
     "bills": "Bills",
     "rows": "Lines",
-    "excluded": "{n} more bills without customer are hidden",
+    "emptyCustomer": "{n} bills without customer",
     "attachPending": "Attachment items to fill",
     "compare": "Compare sync",
     "compareOk": "OK",

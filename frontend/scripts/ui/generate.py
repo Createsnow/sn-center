@@ -111,7 +111,6 @@ M = {
 "generate.firstSn": ("下一个号 {sn}", "Next SN {sn}", "SN kế tiếp {sn}"),
 "generate.needRule": ("需先选规则", "Pick a rule first", "Cần chọn quy tắc"),
 "generate.noLines": ("该单据已不在快照中，只能查看已生成的号", "This bill is no longer in the snapshot; only its SNs can be viewed", "Chứng từ không còn trong ảnh chụp; chỉ xem được SN đã tạo"),
-"generate.issue.NO_CUSTOMER": ("无客户编码", "No customer", "Không có khách hàng"),
 "generate.issue.PI_FROZEN": ("PI 变更冻结", "PI change frozen", "Đóng băng do đổi PI"),
 "generate.issue.MATERIAL_LOST": ("失去对应", "Line mapping lost", "Mất đối ứng"),
 "generate.issue.NO_RULE": ("需先选规则", "No rule", "Chưa có quy tắc"),

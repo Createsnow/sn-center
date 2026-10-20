@@ -578,7 +578,6 @@
     "needRule": "Cần chọn quy tắc",
     "noLines": "Chứng từ không còn trong ảnh chụp; chỉ xem được SN đã tạo",
     "issue": {
-      "NO_CUSTOMER": "Không có khách hàng",
       "PI_FROZEN": "Đóng băng do đổi PI",
       "MATERIAL_LOST": "Mất đối ứng",
       "NO_RULE": "Chưa có quy tắc",
@@ -668,7 +667,7 @@
   },
   "orders": {
     "title": "Ảnh chụp lệnh sản xuất",
-    "desc": "Lệnh sản xuất đã duyệt từ Kingdee, lưu theo dòng vật tư (chứng từ + số dòng). Trái: tổng theo chứng từ; phải: các dòng vật tư. Chứng từ không có khách hàng bị ẩn.",
+    "desc": "Lệnh sản xuất đã duyệt từ Kingdee, lưu theo dòng vật tư (chứng từ + số dòng). Trái: tổng theo chứng từ; phải: các dòng vật tư. Chứng từ không có khách hàng vẫn hiển thị và xử lý như bình thường.",
     "syncOne": "Đồng bộ chứng từ",
     "syncNow": "Đồng bộ ngay",
     "compareNow": "Đồng bộ so sánh ngay",
@@ -687,7 +686,7 @@
     "syncedAt": "Đồng bộ gần nhất",
     "bills": "Số chứng từ",
     "rows": "Số dòng",
-    "excluded": "{n} chứng từ không có khách hàng bị ẩn",
+    "emptyCustomer": "{n} chứng từ không có khách hàng",
     "attachPending": "Hạng mục đính kèm cần điền",
     "compare": "Đồng bộ so sánh",
     "compareOk": "Thành công",
