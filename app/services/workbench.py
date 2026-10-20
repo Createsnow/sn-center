@@ -1,9 +1,10 @@
-"""SN 生成页与分配页（F-10）：以 PI 为单位的工作台。
+"""SN 生成页与分配页共用的 PI 工作台（F-10），以及生成页详情。
 
 每张 PI 一行：客户、单据数、生产组织、状态、订单总数、已生成（各订单已生成数之和；转组织改 PI 的号仍计入原 PI）、
 转入号（挂在本 PI 下、由别的 PI 生成的号）、已分配（含已推送、已拉取）；行上按钮按 F-10 第 3 条的顺序判断。
+生成页、分配页各用自己的页签筛选同一份列表；各 PI 的号数统计（item_stats、gen_own）两页共用。
 生成详情：单据 → 物料行（规则、附件项次、长度、号段）、生成任务（最近 20 条）、可撤销的号段。
-分配详情：待分配的物料行（号段、目标生产组织）、推送进度、分配记录（最近 100 条，推送与拉取批次）。
+分配详情见 allocation.context。
 """
 
 from __future__ import annotations
@@ -11,7 +12,7 @@ from __future__ import annotations
 from app.core import utils as util
 from app.core.security import CurrentUser
 from app.db.session import db, marks
-from app.services import changes, delivery, factories, generate, orders, rules
+from app.services import changes, generate, orders, rules
 
 #: 列表一次最多取的 PI 数；逐行判断「需先选规则 / 不能生成」只对前 DETAIL_ROWS 行做
 LIST_LIMIT = 500
@@ -51,7 +52,7 @@ def _pi_rows(q: str | None) -> list[dict]:
     )
 
 
-def _item_stats(pis: list[str]) -> dict[str, dict]:
+def item_stats(pis: list[str]) -> dict[str, dict]:
     if not pis:
         return {}
     ph = marks(len(pis))
@@ -82,7 +83,7 @@ def _item_stats(pis: list[str]) -> dict[str, dict]:
     return out
 
 
-def _gen_own(pis: list[str]) -> dict[str, int]:
+def gen_own(pis: list[str]) -> dict[str, int]:
     """已生成（F-10 第 1 条）：本 PI 各订单的已生成数之和，按号上的生成 PI 计（转组织改 PI 的号仍计入原 PI）。"""
     if not pis:
         return {}
@@ -125,8 +126,8 @@ def pis(cu: CurrentUser, q: str | None, tab: str | None) -> dict:
     分配页 TO_ALLOCATE（有号待分配或推送中断）/ ALLOCATED（已分配完）；不传为全部。"""
     rows = _pi_rows(q)
     names = [r["pi"] for r in rows]
-    stats = _item_stats(names)
-    gen_own = _gen_own(names)
+    stats = item_stats(names)
+    own = gen_own(names)
     running = _running(names)
     frozen = {
         r["pi"]: r["n"]
@@ -163,7 +164,7 @@ def pis(cu: CurrentUser, q: str | None, tab: str | None) -> dict:
                 "bills": int(r["bills"]),
                 "orgs": [o for o in (r["orgs"] or "").split(",") if o],
                 "total_qty": int(r["total_qty"] or 0),
-                "generated_qty": gen_own.get(r["pi"], 0),
+                "generated_qty": own.get(r["pi"], 0),
                 "transferred_in": s.get("transferred_in", 0),
                 "allocated_qty": s.get("allocated", 0),
                 "pending_alloc": pending,
@@ -272,7 +273,7 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
         b["total_qty"] = sum(x["qty"] for x in b["lines"])
         b["generated_qty"] = sum(x["generated_qty"] for x in b["lines"])
         b["quota"] = sum(x["quota"] for x in b["lines"])
-    stats = _item_stats([pi]).get(pi, {})
+    stats = item_stats([pi]).get(pi, {})
     running = db.one("SELECT * FROM sn_gen_job WHERE running_pi = %s", pi)
     return {
         "pi_no": pi,
@@ -281,7 +282,7 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
         "counter": {"last_seq_dec": last, "next_seq": last + 1},
         "summary": {
             "total_qty": sum(b["total_qty"] for b in bills.values()),
-            "generated_qty": _gen_own([pi]).get(pi, 0),
+            "generated_qty": gen_own([pi]).get(pi, 0),
             "transferred_in": stats.get("transferred_in", 0),
             "allocated_qty": stats.get("allocated", 0),
             "pending_alloc": stats.get("pending", 0),
@@ -301,70 +302,6 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
     }
 
 
-def alloc_context(cu: CurrentUser, pi_in: str | None) -> dict:
-    """分配详情：待分配的号按物料行列出（枚数、号段、分到哪个生产组织、是否对接 MES、不能分配的原因），
-    以及各组织的推送进度与分配记录。"""
-    from app.core.errors import ErrorCode, biz
-
-    pi = util.trim(pi_in)
-    if not pi:
-        raise biz(ErrorCode.PI_REQUIRED)
-    rows = db.all(
-        "SELECT bill_no, bill_seq, gen_org_code, MAX(material_code) material_code, MAX(length_text) length, "
-        "COUNT(*) n, MIN(sn) a, MAX(sn) b FROM sn_item WHERE pi_no = %s AND status = 'PENDING_ALLOC' "
-        "GROUP BY bill_no, bill_seq, gen_org_code ORDER BY bill_no, bill_seq",
-        pi,
-    )
-    names = factories.names()
-    targets: dict[str, tuple[str | None, str | None]] = {}
-    lines = []
-    for r in rows:
-        if r["bill_no"] not in targets:
-            targets[r["bill_no"]] = generate._target_org(r["bill_no"])
-        org, block = targets[r["bill_no"]]
-        org = None if block else org or r["gen_org_code"]
-        f = factories.get(org) if org else None
-        lines.append(
-            {
-                "bill_no": r["bill_no"],
-                "seq": r["bill_seq"],
-                "material_code": r["material_code"],
-                "length": r["length"],
-                "qty": int(r["n"]),
-                "start_sn": r["a"],
-                "end_sn": r["b"],
-                "org_code": org,
-                "org_name": names.get(org, "") if org else "",
-                "mes_enabled": bool(f and f["mes_enabled"]),
-                "skip": block,
-            }
-        )
-    stats = _item_stats([pi]).get(pi, {})
-    quota = db.scalar(
-        "SELECT SUM(GREATEST(FLOOR(m.qty) - COALESCE(c.own_generated, 0), 0)) FROM sn_prd_mo m "
-        "LEFT JOIN sn_line_count c ON c.bill_no = m.bill_no AND c.seq = m.seq WHERE m.pi = %s",
-        pi,
-    )
-    return {
-        "pi_no": pi,
-        "customer_code": orders.customer_of_pi(pi) or "",
-        "summary": {
-            "generated_qty": _gen_own([pi]).get(pi, 0),
-            "transferred_in": stats.get("transferred_in", 0),
-            "pending_alloc": stats.get("pending", 0),
-            "allocated_qty": stats.get("allocated", 0),
-            "unbatched": stats.get("unbatched", 0),
-            "suspended": stats.get("suspended", 0),
-            "quota": int(quota or 0),
-        },
-        "lines": lines,
-        "push": push_status(pi),
-        "batches": delivery.list_batches(cu, None, pi, None, None, "DELIVERY", None, None, util.Page.of(1, 100))[
-            "items"
-        ],
-    }
-
-
 def _customer_rule(customer: str) -> dict | None:
     if not customer:
         return None
@@ -378,52 +315,3 @@ def _customer_rule(customer: str) -> dict | None:
         if r is None
         else {"customer_code": customer, "rule_id": r["id"], "rule_code": r["rule_code"], "rule_name": r["rule_name"]}
     )
-
-
-def push_status(pi: str) -> list[dict]:
-    """按生产组织：推送任务状态、「第 i / N 次」、已推送枚数、剩余次数、失败原因。"""
-    orgs = db.column(
-        "SELECT DISTINCT factory_code FROM sn_item WHERE pi_no = %s AND factory_code IS NOT NULL "
-        "UNION SELECT DISTINCT factory_code FROM sn_delivery_batch WHERE pi_no = %s AND batch_type = 'DELIVERY'",
-        pi,
-        pi,
-    )
-    out = []
-    for org in sorted(o for o in orgs if o):
-        f = factories.get(org)
-        if not (f and f["mes_enabled"]) and not db.exists(
-            "SELECT EXISTS(SELECT 1 FROM sn_delivery_batch WHERE factory_code = %s AND pi_no = %s)", org, pi
-        ):
-            continue
-        t = delivery.task_state(org, pi)
-        rem = delivery.remaining_pushes(org, pi)
-        pushed = db.count(
-            "SELECT COUNT(*) FROM sn_item WHERE factory_code = %s AND pi_no = %s AND status = 'PUSHED'", org, pi
-        )
-        done_batches = db.count(
-            "SELECT COUNT(*) FROM sn_delivery_batch WHERE factory_code = %s AND pi_no = %s AND batch_type = 'DELIVERY' "
-            "AND result IN ('SUCCESS','SUCCESS_CONFLICT')",
-            org,
-            pi,
-        )
-        last_fail = db.one(
-            "SELECT batch_no, fail_reason, result, push_state FROM sn_delivery_batch WHERE factory_code = %s AND "
-            "pi_no = %s "
-            "AND batch_type = 'DELIVERY' AND (result = 'FAILED' OR push_state IN ('WAIT_RETRY','EXHAUSTED')) "
-            "ORDER BY id DESC LIMIT 1",
-            org,
-            pi,
-        )
-        out.append(
-            {
-                "factory_code": org,
-                "mes_enabled": bool(f and f["mes_enabled"]),
-                "task": t,
-                "remaining": rem,
-                "done_batches": done_batches,
-                "total_batches": done_batches + rem["pushes"],
-                "pushed_qty": pushed,
-                "last_problem": None if last_fail is None else {k: util.jv(v) for k, v in last_fail.items()},
-            }
-        )
-    return out

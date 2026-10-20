@@ -747,7 +747,7 @@ class World:
 
     def allocate(self, pi: str, bills: list[str] | None = None, lines: list[tuple[str, int]] | None = None) -> dict:
         body = m(pi_no=pi, bills=bills, lines=[m(bill_no=b, seq=s) for b, s in lines] if lines else None)
-        return ok(self.api.post("/api/generate/allocate", body, self.admin)).body
+        return ok(self.api.post("/api/allocation/allocate", body, self.admin)).body
 
     def revoke(self, batch: str, reason: str | None = "x", line: tuple[str, int] | None = None) -> Res:
         body = m(reason=reason) if line is None else m(reason=reason, bill_no=line[0], seq=line[1])

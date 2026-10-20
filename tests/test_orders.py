@@ -149,7 +149,7 @@ def test_pi_change_freezes_until_confirmed(w, api, sql):
     assert sql.scalar("SELECT pi_frozen FROM sn_bill_ledger WHERE bill_no = %s", bill) == 1
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND suspend = 'CHANGE'", bill) == 4
     assert "PI_FROZEN" in ok(w.preview(p2))["issues"][0]["issues"]
-    assert w.api.post("/api/generate/allocate", m(pi_no=p1), w.admin).code == "ALLOC_NOTHING"
+    assert w.api.post("/api/allocation/allocate", m(pi_no=p1), w.admin).code == "ALLOC_NOTHING"
     ok(api.post(f"/api/orders/alerts/{al[0]['id']}/handle", m(action="CONFIRM"), w.admin))
     assert sql.scalar("SELECT pi_frozen FROM sn_bill_ledger WHERE bill_no = %s", bill) == 0
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND suspend IS NOT NULL", bill) == 0

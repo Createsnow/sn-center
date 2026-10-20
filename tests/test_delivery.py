@@ -20,7 +20,7 @@ def setup_pi(w, qty: int = 12, batch_size: int = 5, mes: bool = True, prefix: st
 
 def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
     org, pi, bill = setup_pi(w, qty=12, batch_size=5)
-    pre = ok(w.api.post("/api/generate/alloc-preview", m(pi_no=pi), w.admin))
+    pre = ok(w.api.post("/api/allocation/preview", m(pi_no=pi), w.admin))
     assert (pre["qty"], pre["pushes"]) == (12, 3), "分配 12 枚（推送 3 次）"
     w.allocate(pi)
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'TO_PUSH'", pi) == 12

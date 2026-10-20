@@ -373,7 +373,7 @@ def test_db_target_env_overrides_dotenv(monkeypatch):
         ("POST", "/api/transfers/org/12/reject", "TRANSFER_REJECT"),
         ("POST", "/api/transfers/org/12/withdraw", "TRANSFER_WITHDRAW"),
         ("POST", "/api/transfers/bill", "TRANSFER_BILL"),
-        ("POST", "/api/generate/allocate", "SN_ALLOCATE"),
+        ("POST", "/api/allocation/allocate", "SN_ALLOCATE"),
         ("POST", "/api/generate/run", "SN_GENERATE"),
         ("POST", "/api/generate/batches/G1/cancel", "SN_GEN_CANCEL"),
         ("POST", "/api/generate/batches/G1/revoke", "SN_REVOKE"),
