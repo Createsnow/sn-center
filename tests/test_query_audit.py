@@ -121,14 +121,14 @@ def test_dashboard_counts_and_today(w, api):
 
 
 def test_self_check_flags_unconfirmed(w, api, sql, monkeypatch):
-    from app.services import dashboard
+    from app.services import delivery
 
     a, pi, bill = make(w, 2, mes=True)
     w.allocate(pi)
     MES.behavior[a] = lambda b, h: (503, {"code": "X"})
     w.push()
     sql.exec("UPDATE sn_delivery_batch SET created_at = DATE_SUB(created_at, INTERVAL 1 DAY)")
-    r = dashboard.self_check()
+    r = delivery.self_check()
     assert r["problems"] >= 1
     assert sql.count("SELECT COUNT(*) FROM sn_delivery_alert WHERE alert_type = 'CHECK'") >= 1
     assert sql.count("SELECT COUNT(*) FROM sn_audit WHERE action = 'SELF_CHECK'") >= 1
