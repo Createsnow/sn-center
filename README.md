@@ -70,10 +70,14 @@ app/                         FastAPI 后端
   api/                       deps.py（鉴权依赖）、routes/（各接口）
   core/                      配置、.env、错误码、异常、SN 编码、口令与令牌、日志、定时任务
   db/                        MySQL 连接池与事务、建表迁移、migration/V1__init.sql
-  middleware/ models/ schemas/ services/
+  middleware/ models/ schemas/
+  services/                  业务服务：orders / changes（订单与变更）、rules、generate（生成与撤销）、allocation（分配）、
+                             workbench（生成页与分配页共用的 PI 列表）、delivery/（交付批次：建批、回执、推送、人工处理、
+                             MES 拉取、页面查询、每日自检）、acquire、transfers、query、audit 等
 tests/                       pytest：单元测试 + 集成测试（真实 MySQL + 假金蝶 + 假 MES）
 frontend/                    Vue 3 + Vite + Element Plus
-  src/views/                 各页面
+  src/views/                 各页面；页面的子组件放在同名小写目录（views/generate、views/query、views/transfer）
+  src/components/            共用组件；components/batch 为交付 / 领取批次详情与人工确认、作废（分配、转移、查询页共用）
   scripts/                   多语言词条源表（ui_messages.py 公共、ui/*.py 各页面、error_messages.py 错误码）与生成脚本
 docs/                        需求文档（PRD）、业务流程说明、MES 对接说明、系统技术方案、运维手册；k3/ 金蝶接口参考
 .env.example                 配置模板（.env 不提交）
