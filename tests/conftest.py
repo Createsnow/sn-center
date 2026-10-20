@@ -135,7 +135,7 @@ def _zh(v: Any) -> str:
 
 
 def _detail_rows(doc: dict) -> list[list]:
-    """与 k3._detail_keys 的列顺序一致。"""
+    """与 k3.DETAIL_KEYS 的列顺序一致。"""
     base = doc.get("F_ora_Base") or {}
     org = doc["PrdOrgId"]
     return [
@@ -147,12 +147,12 @@ def _detail_rows(doc: dict) -> list[list]:
             doc["F_HX_PO"],
             org["Number"],
             org["Name"],
-            line["Seq"],
-            line.get("FAttach", " "),
+            line.get("FTERM", " "),
             line["MaterialId"]["Number"],
             line["MaterialId"]["Name"],
             line.get("Flength", " "),
             line["Qty"],
+            line["Seq"],
             doc["ModifyDate"],
         ]
         for line in doc["TreeEntity"]
@@ -498,8 +498,6 @@ def app_client():
         "K3_APP_SECRET": "secret",
         "K3_USERNAME": "tester",
         "K3_PAGE_RETRY_SECONDS": "0",
-        "K3_FIELD_ATTACH_NO": "F_ATT",
-        "K3_VIEW_ATTACH_NO": "FAttach",
     }
     saved = {k: os.environ.get(k) for k in env}
     os.environ.update(env)
@@ -643,7 +641,7 @@ class World:
                     "MaterialId": {"Number": material, "Name": [{"Key": 2052, "Value": "物料" + material}]},
                     "Qty": float(qty),
                     "Flength": length,
-                    "FAttach": attach,
+                    "FTERM": attach,
                 }
             )
         return {

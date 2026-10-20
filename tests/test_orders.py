@@ -108,7 +108,7 @@ def test_attach_fill_and_k3_value_later(w, api, sql):
     r = ok(api.put("/api/orders/attach", m(bill_no=a, seq=1, value="X"), w.admin))
     assert (r["attach_no"], r["attach_source"]) == ("X", "MANUAL")
     assert ok(api.get(f"/api/orders/{a}/lines", w.admin))["lines"][0]["attach_source"] == "MANUAL"
-    BILLS[a]["TreeEntity"][0]["FAttach"] = "Y"
+    BILLS[a]["TreeEntity"][0]["FTERM"] = "Y"
     w.touch(a)
     r = w.compare()
     assert r["attach_k3_filled"] == 1
@@ -231,7 +231,7 @@ def test_material_lost_map_moves_counts_and_items(w, api, sql):
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND suspend = 'CHANGE'", bill) == 10
     # 「确认对应」到同单另一行：失去对应行的计数并入，号改挂（不是转单）
     BILLS[bill]["TreeEntity"].append(
-        {"Seq": 3, "MaterialId": {"Number": "M9", "Name": "x"}, "Qty": 5.0, "Flength": "100", "FAttach": "1"}
+        {"Seq": 3, "MaterialId": {"Number": "M9", "Name": "x"}, "Qty": 5.0, "Flength": "100", "FTERM": "1"}
     )
     w.touch(bill)
     w.compare()

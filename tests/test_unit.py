@@ -97,46 +97,63 @@ def test_validation():
 
 
 def test_query_rows_trim_spaces_and_read_header_fields():
-    cfg = k3._Config(
-        "u", "a", "i", "s", "n", 2052, 1, 1, 1, 0, 0, "F_HX_PO", "F_ATT", "Flength", "F_HX_PO", "Att", "Flength"
-    )
     row = [
         "VT1",
         "C",
         "0001 ",
         " ",
-        "PO1",
+        "PO1 ",
         "110",
         [{"Key": 2052, "Value": "越南"}],
-        2.0,
         " ",
         "9148363",
         "缆",
         "0100",
         10.0,
+        2.0,
         "2026-10-01T08:00:00",
     ]
-    r = k3._row_of_query(row, cfg)
-    assert (r.bill_no, r.customer_code, r.pi, r.org_code, r.org_name, r.seq) == ("VT1", "0001", "", "110", "越南", 2)
+    r = k3._row_of_query(row)
+    assert (r.bill_no, r.customer_code, r.pi, r.po, r.org_code, r.org_name, r.seq) == (
+        "VT1",
+        "0001",
+        "",
+        "PO1",
+        "110",
+        "越南",
+        2,
+    )
     assert r.attach_no == "" and r.length_raw == "0100"
     assert r.qty == Decimal("10.0")
     assert r.modify_time == datetime(2026, 10, 1, 8, 0, 0)
 
 
+def test_query_field_keys_follow_interface_doc():
+    """前 12 列与《生产订单查询接口》的 FieldKeys 一致，顺序不能变。"""
+    assert ",".join(k3.DETAIL_KEYS[:12]) == (
+        "FBillNo,FDocumentStatus,F_ora_kh.FNumber,F_HX_PI,F_HX_PO,FPrdOrgId.FNumber,FPrdOrgId.FName,"
+        "FTERM,FMaterialId.FNumber,FMaterialId.FName,Flength,FQty"
+    )
+    assert k3.ORDER_BY == "FBillNo ASC, FTreeEntity_FEntryId ASC"
+
+
 def test_view_reads_document_status_and_lines():
-    cfg = k3._Config("u", "a", "i", "s", "n", 2052, 1, 1, 1, 0, 0, "F_HX_PO", "", "Flength", "F_HX_PO", "", "Flength")
     doc = {
         "BillNo": "VT2026090001",
         "DocumentStatus": "D",
         "F_HX_PI": "000001",
+        "F_HX_PO": " ",
         "F_ora_Base": None,
         "PrdOrgId": {"Number": "110", "Name": [{"Key": 2052, "Value": "光纤连接（越南）有限公司"}]},
-        "TreeEntity": [{"Seq": 1, "MaterialId": {"Number": "9148363", "Name": "x"}, "Qty": 10.0, "Flength": " "}],
+        "TreeEntity": [
+            {"Seq": 1, "MaterialId": {"Number": "9148363", "Name": "x"}, "Qty": 10.0, "Flength": " ", "FTERM": "0002"}
+        ],
     }
-    rows = k3.rows_from_view(doc, cfg)
+    rows = k3.rows_from_view(doc)
     assert rows[0].doc_status == "D"
     assert rows[0].customer_code == "", "基础资料为 null 视为空"
-    assert rows[0].length_raw == ""
+    assert rows[0].po == "" and rows[0].length_raw == ""
+    assert rows[0].attach_no == "0002"
 
 
 def test_locale_name_picks_simplified_chinese():

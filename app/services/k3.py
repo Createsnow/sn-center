@@ -6,7 +6,8 @@
 - 按单据编号同步、离开快照检测用 View，不带单据状态条件，只看单据状态。
 - 不读业务状态、作废状态、需求单据号，不读写金蝶序列号字段；不返回单据内码、分录内码。
 - 文本未填写时金蝶常返回一个空格：一律去首尾空格；基础资料未填写时为 null，视为空。
-- PO、附件项次的字段位置待金蝶实施方核对（Q7），列名可在 .env 配置。
+- 字段位置按《生产订单查询接口》：PO 为表头 F_HX_PO，附件项次为明细 FTERM，长度为明细 Flength。
+  字段名是接口约定，写在代码里，不放 .env。
 """
 
 from __future__ import annotations
@@ -30,7 +31,26 @@ FORM_PRD_MO = "PRD_MO"
 FORM_ORG = "ORG_Organizations"
 APPROVED = "C"
 APPROVED_FILTER = "FDocumentStatus='C'"
-ORDER_BY = "FBillNo ASC, FTreeEntity_FSeq ASC"
+#: 分录内码只用于稳定翻页，不返回
+ORDER_BY = "FBillNo ASC, FTreeEntity_FEntryId ASC"
+#: 明细查询列（顺序即 _row_of_query 的取值顺序）。前 12 列与《生产订单查询接口》的 FieldKeys 一致；
+#: 末两列行号、修改时间是物料行标识与比对同步要用的，接在后面
+DETAIL_KEYS = (
+    "FBillNo",
+    "FDocumentStatus",
+    "F_ora_kh.FNumber",
+    "F_HX_PI",
+    "F_HX_PO",
+    "FPrdOrgId.FNumber",
+    "FPrdOrgId.FName",
+    "FTERM",
+    "FMaterialId.FNumber",
+    "FMaterialId.FName",
+    "Flength",
+    "FQty",
+    "FTreeEntity_FSeq",
+    "FModifyDate",
+)
 ORG_FIELDS = "FNumber,FName,FForbidStatus"
 PAGE_SIZE = 2000
 #: 按单据编号批量拉明细时每次的单据数
@@ -99,12 +119,6 @@ class _Config:
     view_timeout: int
     page_retries: int
     page_retry_seconds: float
-    po_field: str
-    attach_field: str
-    length_field: str
-    po_view: str
-    attach_view: str
-    length_view: str
 
 
 def _config() -> _Config:
@@ -123,33 +137,7 @@ def _config() -> _Config:
         settings.get_int("K3_VIEW_TIMEOUT", 60),
         max(0, settings.get_int("K3_PAGE_RETRIES", 3)),
         max(0.0, float(settings.get_int("K3_PAGE_RETRY_SECONDS", 10))),
-        settings.get("K3_FIELD_PO", "F_HX_PO"),
-        settings.get("K3_FIELD_ATTACH_NO", ""),
-        settings.get("K3_FIELD_LENGTH", "Flength"),
-        settings.get("K3_VIEW_PO", "F_HX_PO"),
-        settings.get("K3_VIEW_ATTACH_NO", ""),
-        settings.get("K3_VIEW_LENGTH", "Flength"),
     )
-
-
-def _detail_keys(c: _Config) -> list[str]:
-    """明细查询列（顺序即 _row_of_query 的取值顺序）；未配置的列用占位列 FBillNo 代替、取值时丢弃。"""
-    return [
-        "FBillNo",
-        "FDocumentStatus",
-        "F_ora_kh.FNumber",
-        "F_HX_PI",
-        c.po_field or "FBillNo",
-        "FPrdOrgId.FNumber",
-        "FPrdOrgId.FName",
-        "FTreeEntity_FSeq",
-        c.attach_field or "FBillNo",
-        "FMaterialId.FNumber",
-        "FMaterialId.FName",
-        c.length_field or "FBillNo",
-        "FQty",
-        "FModifyDate",
-    ]
 
 
 # ------------------------------------------------------------------ 字段归一
@@ -231,8 +219,9 @@ def modify_time(v: Any) -> datetime | None:
         return None
 
 
-def _row_of_query(o: list, c: _Config) -> Row | None:
-    p = [o[i] if i < len(o) else None for i in range(14)]
+def _row_of_query(o: list) -> Row | None:
+    """一行明细，列顺序见 DETAIL_KEYS。"""
+    p = [o[i] if i < len(o) else None for i in range(len(DETAIL_KEYS))]
     bill = text(p[0])
     if not bill:
         return None
@@ -241,21 +230,22 @@ def _row_of_query(o: list, c: _Config) -> Row | None:
         text(p[1]),
         text(p[2]),
         text(p[3]),
-        text(p[4]) if c.po_field else "",
+        text(p[4]),
         text(p[5]),
         locale_name(p[6]),
-        seq_of(p[7]),
-        text(p[8]) if c.attach_field else "",
-        text(p[9]),
-        locale_name(p[10]),
-        number_text(p[11]) if c.length_field else "",
-        qty(p[12]),
+        seq_of(p[12]),
+        text(p[7]),
+        text(p[8]),
+        locale_name(p[9]),
+        number_text(p[10]),
+        qty(p[11]),
         modify_time(p[13]),
     )
 
 
-def rows_from_view(doc: dict | None, c: _Config) -> list[Row]:
-    """View 单据：表头客户在 F_ora_Base.Number，生产组织在 PrdOrgId，明细在 TreeEntity。"""
+def rows_from_view(doc: dict | None) -> list[Row]:
+    """View 单据：表头客户在 F_ora_Base.Number，生产组织在 PrdOrgId，PI / PO 在 F_HX_PI / F_HX_PO；
+    明细在 TreeEntity，附件项次 FTERM、长度 Flength、数量 Qty。"""
     out: list[Row] = []
     if not doc:
         return out
@@ -266,7 +256,7 @@ def rows_from_view(doc: dict | None, c: _Config) -> list[Row]:
         "doc_status": text(doc.get("DocumentStatus")),
         "customer_code": customer,
         "pi": text(doc.get("F_HX_PI")),
-        "po": text(doc.get(c.po_view)) if c.po_view else "",
+        "po": text(doc.get("F_HX_PO")),
         "org_code": text(org.get("Number")),
         "org_name": locale_name(org.get("Name")),
         "modify_time": modify_time(doc.get("ModifyDate")),
@@ -287,10 +277,10 @@ def rows_from_view(doc: dict | None, c: _Config) -> list[Row]:
                     head["org_code"],
                     head["org_name"],
                     seq_of(lm.get("Seq")),
-                    text(lm.get(c.attach_view)) if c.attach_view else "",
+                    text(lm.get("FTERM")),
                     text(material.get("Number")),
                     locale_name(material.get("Name")),
-                    number_text(lm.get(c.length_view)) if c.length_view else "",
+                    number_text(lm.get("Flength")),
                     qty(lm.get("Qty")),
                     head["modify_time"],
                 )
@@ -453,7 +443,7 @@ def fetch_bills(bill_nos: list[str]) -> list[Row]:
     if not bill_nos:
         return []
     c = _config()
-    keys = ",".join(_detail_keys(c))
+    keys = ",".join(DETAIL_KEYS)
     rows: list[Row] = []
     with _client() as http:
         _login(http, c)
@@ -461,7 +451,7 @@ def fetch_bills(bill_nos: list[str]) -> list[Row]:
             part = bill_nos[i : i + BILLS_PER_QUERY]
             flt = f"{APPROVED_FILTER} AND FBillNo IN ({','.join(_quote(b) for b in part)})"
             for o in _paged(http, c, keys, flt, ORDER_BY):
-                r = _row_of_query(o, c) if isinstance(o, list) else None
+                r = _row_of_query(o) if isinstance(o, list) else None
                 if r is not None:
                     rows.append(r)
     return rows
@@ -472,8 +462,8 @@ def fetch_all() -> list[Row]:
     c = _config()
     with _client() as http:
         _login(http, c)
-        raw = _paged(http, c, ",".join(_detail_keys(c)), APPROVED_FILTER, ORDER_BY)
-    return [r for r in (_row_of_query(o, c) for o in raw if isinstance(o, list)) if r is not None]
+        raw = _paged(http, c, ",".join(DETAIL_KEYS), APPROVED_FILTER, ORDER_BY)
+    return [r for r in (_row_of_query(o) for o in raw if isinstance(o, list)) if r is not None]
 
 
 def view_bill(bill_no: str) -> BillView:
@@ -498,7 +488,7 @@ def view_bill(bill_no: str) -> BillView:
             return BillView(False, "", [])
         raise biz(ErrorCode.K3_QUERY_FAILED, message=error_of(body) or "View failed")
     doc = result.get("Result") if isinstance(result.get("Result"), dict) else {}
-    rows = [r for r in rows_from_view(doc, c) if r.bill_no == bill_no]
+    rows = [r for r in rows_from_view(doc) if r.bill_no == bill_no]
     return BillView(True, text(doc.get("DocumentStatus")), rows)
 
 

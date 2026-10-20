@@ -24,7 +24,7 @@
 | 表结构、索引、痕迹动作 | `app/db/migration/V1__init.sql` → 数据库表设计 | 系统技术方案、PRD 附录 D.3 |
 | 页面接口清单与权限 | 代码 `app/api/routes` → 技术文档 | 系统技术方案 |
 | MES 接口字段、错误码、处理逻辑 | MES 对接说明（在线版：`/docs` 的 `open` 分组） | 技术文档、PRD F-11 / F-12 |
-| 金蝶调用与字段 | PRD 附录 D.1 → 代码 `app/services/k3.py` | 技术文档、运维手册（`K3_FIELD_*` / `K3_VIEW_*`） |
+| 金蝶调用与字段 | [生产订单查询接口](k3/k3cloud_query.md)、[生产订单完整数据结构](k3/prd_mo_structure.md) → PRD 附录 D.1 → 代码 `app/services/k3.py` | 技术文档、运维手册 |
 | 状态机 | PRD 5.2.6 → 技术文档 | 系统技术方案、业务流程说明 §五 |
 | 配置项 | `.env.example`（PRD 附录 C 为业务口径） | 运维手册 §2、系统技术方案附录 |
 | 错误码 | `app/core/errors.py`；MES 接口错误码见 MES 对接说明 | 系统技术方案附录 |
