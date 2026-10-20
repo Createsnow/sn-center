@@ -191,22 +191,7 @@
     </el-drawer>
 
     <!-- 领取批次明细 -->
-    <el-drawer :model-value="!!itemsOf" size="820px" :title="itemsOf ? t('acquire.itemsOf', { b: itemsOf.batch_no }) : ''" @close="itemsOf = null">
-      <template v-if="itemsOf">
-        <el-table v-loading="bitems.state.loading" :data="bitems.items.value" size="small" :empty-text="t('common.empty')">
-          <el-table-column prop="line_no" label="#" width="60" />
-          <el-table-column :label="t('common.sn')" min-width="190"><template #default="{ row }"><span class="sn-mono">{{ row.sn }}</span></template></el-table-column>
-          <el-table-column prop="seq_text" :label="t('common.seqText')" width="100" />
-          <el-table-column prop="seq_dec" :label="t('common.seqDec')" width="100" />
-          <el-table-column :label="t('common.billNo')" min-width="120"><template #default="{ row }">{{ row.bill_no }} / {{ row.bill_seq }}</template></el-table-column>
-          <el-table-column prop="material_code" :label="t('common.material')" width="100" />
-          <el-table-column prop="length" :label="t('common.length')" width="70" />
-          <el-table-column :label="t('common.status')" width="100"><template #default="{ row }"><StatusTag :status="row.status" /></template></el-table-column>
-        </el-table>
-        <el-pagination class="pager" layout="total, prev, pager, next" :total="bitems.state.total" :page-size="bitems.state.pageSize"
-          :current-page="bitems.state.page" @current-change="bitems.load" />
-      </template>
-    </el-drawer>
+    <AcquireBatchDrawer :batch-no="itemsOf?.batch_no || ''" :downloadable="itemsOf?.status === 'DONE'" @update:batch-no="itemsOf = null" />
   </div>
 </template>
 
@@ -220,6 +205,7 @@ import { ApiError } from "@/api/http";
 import PageHead from "@/components/PageHead.vue";
 import FactorySelect from "@/components/FactorySelect.vue";
 import StatusTag from "@/components/StatusTag.vue";
+import AcquireBatchDrawer from "@/components/batch/AcquireBatchDrawer.vue";
 import { useFactories } from "@/composables/useFactories";
 import { usePaged } from "@/composables/usePaged";
 import { useTime } from "@/composables/useTime";
@@ -408,10 +394,8 @@ async function retryBatch(b: AcqBatch) {
 }
 
 const itemsOf = ref<AcqBatch | null>(null);
-const bitems = usePaged<any>((q) => api.acquireBatchItems(itemsOf.value!.batch_no, q), 50);
 function openItems(b: AcqBatch) {
   itemsOf.value = b;
-  bitems.load(1);
 }
 
 // ---------------- 详情：号段

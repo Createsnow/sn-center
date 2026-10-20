@@ -44,10 +44,4 @@ M = {
 "allocate.confirmMethod": ("确认方式", "Confirmed by", "Cách xác nhận"),
 "allocate.manualConfirm": ("人工确认", "Confirm manually", "Xác nhận thủ công"),
 "allocate.void": ("作废", "Void", "Hủy"),
-"allocate.manualTitle": ("人工确认批次", "Confirm batch manually", "Xác nhận lô thủ công"),
-"allocate.voidTitle": ("作废批次", "Void batch", "Hủy lô"),
-"allocate.manualNote": ("仅在 MES 方确认批次 {batch} 已全部入库、但无法回执时使用；确认后号改为已推送，不再重试。", "Use only when MES confirms batch {batch} is fully stored but cannot send a receipt; its SNs become pushed and are not retried.", "Chỉ dùng khi MES xác nhận lô {batch} đã nhập đủ nhưng không gửi được biên nhận; SN chuyển thành đã đẩy và không thử lại."),
-"allocate.voidNote": ("仅用于 MES 没有处理的批次 {batch}；作废后号回到未入批，重新组批推送。", "Only for batch {batch} that MES has not processed; its SNs go back to unbatched and are re-batched.", "Chỉ cho lô {batch} MES chưa xử lý; SN trở về chưa vào lô và được gom lô lại."),
-"allocate.basis": ("依据", "Basis", "Căn cứ"),
-"allocate.basisPlaceholder": ("如 MES 方书面确认，不超过 500 字", "e.g. written confirmation from MES, at most 500 characters", "vd. xác nhận bằng văn bản của MES, tối đa 500 ký tự"),
 }

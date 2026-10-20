@@ -323,8 +323,7 @@
     "piAll": "Xem PI này ở mọi tổ chức (chỉ xem)",
     "piAllNote": "Chỉ xem: các đoạn số của PI này ở mọi tổ chức sản xuất; không thể nhận SN của tổ chức khác.",
     "segment": "Đoạn số (SN đầy đủ / tuần tự thập phân)",
-    "seqOf": "tuần tự thuộc {pi}",
-    "itemsOf": "Chi tiết lô nhận {b}"
+    "seqOf": "tuần tự thuộc {pi}"
   },
   "allocate": {
     "title": "Phân bổ SN",
@@ -376,13 +375,7 @@
     "batchResult": "Kết quả",
     "confirmMethod": "Cách xác nhận",
     "manualConfirm": "Xác nhận thủ công",
-    "void": "Hủy",
-    "manualTitle": "Xác nhận lô thủ công",
-    "voidTitle": "Hủy lô",
-    "manualNote": "Chỉ dùng khi MES xác nhận lô {batch} đã nhập đủ nhưng không gửi được biên nhận; SN chuyển thành đã đẩy và không thử lại.",
-    "voidNote": "Chỉ cho lô {batch} MES chưa xử lý; SN trở về chưa vào lô và được gom lô lại.",
-    "basis": "Căn cứ",
-    "basisPlaceholder": "vd. xác nhận bằng văn bản của MES, tối đa 500 ký tự"
+    "void": "Hủy"
   },
   "audit": {
     "title": "Nhật ký thao tác",
@@ -412,6 +405,14 @@
     "detail": "Mô tả",
     "archived": "Đã lưu trữ",
     "exportXlsx": "Xuất Excel"
+  },
+  "batch": {
+    "confirmTitle": "Xác nhận thủ công lô {no}",
+    "voidTitle": "Hủy lô {no}",
+    "confirmTip": "Chỉ dùng khi MES xác nhận bằng văn bản đã xử lý hết nhưng không gửi được biên nhận: lô được ghi là thành công (xác nhận thủ công) và không thử lại; SN của lô giao chuyển thành đã đẩy.",
+    "voidTip": "Chỉ cho lô MES chưa xử lý: SN của lô giao trở về chờ đẩy (chưa vào lô) và được gom lô lại; lô chuyển ra được tạo lại từ chi tiết cũ và tự động đẩy.",
+    "basis": "Căn cứ",
+    "basisPlaceholder": "Ví dụ xác nhận bằng văn bản của MES, tối đa 500 ký tự"
   },
   "dashboard": {
     "title": "Xin chào, {name}",
@@ -868,12 +869,6 @@
     "rebuiltTo": "Đã tạo lại thành",
     "confirmBatch": "Xác nhận thủ công",
     "voidBatch": "Hủy lô",
-    "confirmTitle": "Xác nhận thủ công lô {no}",
-    "voidTitle": "Hủy lô {no}",
-    "confirmTip": "Chỉ dùng khi MES xác nhận bằng văn bản đã nhập đủ: lô được ghi thành công (xác nhận thủ công) và các SN trong lô thành đã đẩy.",
-    "voidTip": "Chỉ dùng cho lô MES chưa xử lý: SN trong lô trở về chờ đẩy và được giao trong lô mới; lô chuyển đi bị hủy sẽ tự tạo lại.",
-    "basis": "Căn cứ",
-    "basisPlaceholder": "Ví dụ xác nhận bằng văn bản của MES, tối đa 500 ký tự",
     "requestNo": "Số yêu cầu",
     "mesOrg": "Tổ chức MES",
     "acqStatus": {
@@ -1059,10 +1054,6 @@
     "failReason": "Lý do thất bại",
     "manualConfirm": "Xác nhận thủ công",
     "void": "Hủy",
-    "confirmTip": "Chỉ dùng khi MES xác nhận bằng văn bản đã xử lý hết; lô sẽ được ghi là đã giao.",
-    "voidTip": "Chỉ hủy được lô MES chưa xử lý; SN trở về chưa vào lô và có thể đẩy lại.",
-    "basis": "Căn cứ",
-    "basisPlaceholder": "Ví dụ xác nhận bằng văn bản của MES, tối đa 500 ký tự",
     "itemsTitle": "Các SN",
     "before": "Trước khi chuyển",
     "after": "Sau khi chuyển",

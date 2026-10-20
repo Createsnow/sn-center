@@ -119,19 +119,7 @@
         </div>
 
         <!-- 生成中：进度、取消 -->
-        <div v-if="running" class="banner run" :class="{ cx: !!running.cancel_at }">
-          <div class="prog-h">
-            <b class="pct num">{{ running.percent ?? pct(running) }}%</b>
-            <span class="num">{{ t("generate.runCount", { done: num(running.done_qty), qty: num(running.qty) }) }}</span>
-            <span class="muted">{{ t("generate.writtenTo") }} <span class="sn-mono">{{ running.current_sn || "—" }}</span></span>
-            <span class="muted">{{ t("generate.speed") }} {{ running.speed_per_sec ? t("generate.speedVal", { n: num(running.speed_per_sec) }) : "—" }}</span>
-            <span class="muted">{{ t("generate.eta") }} {{ formatDuration(running.eta_seconds) }}</span>
-            <span class="push muted small">{{ running.cancel_at ? t("generate.canceling") : t("generate.runNote") }}</span>
-            <el-button size="small" type="danger" plain :disabled="!!running.cancel_at" :loading="busy === 'cancel'" @click="cancelGen">{{ t("generate.cancelGen") }}</el-button>
-          </div>
-          <el-progress :percentage="Number(running.percent ?? pct(running))" :stroke-width="8" :show-text="false" striped striped-flow
-            :status="running.cancel_at ? 'warning' : undefined" />
-        </div>
+        <GenProgress v-if="running" :running="running" :canceling="busy === 'cancel'" @cancel="cancelGen" />
 
         <el-tabs v-model="dtab" class="dtabs">
           <el-tab-pane :label="t('generate.linesTitle')" name="lines">
@@ -251,56 +239,7 @@
 
           <!-- 生成记录：只看；整次撤销 = 勾选这次的物料行后在底部撤销 -->
           <el-tab-pane :label="t('generate.tabJobs', { n: ctx.jobs.length })" name="jobs">
-            <el-table :data="ctx.jobs" size="small" :empty-text="t('common.empty')">
-              <el-table-column type="expand">
-                <template #default="{ row: job }">
-                  <el-table :data="job.lines" size="small" class="job-lines">
-                    <el-table-column :label="t('common.billNo')" prop="bill_no" min-width="110" />
-                    <el-table-column :label="t('common.billSeq')" prop="seq" width="72" />
-                    <el-table-column :label="t('common.material')" prop="material_code" min-width="90" />
-                    <el-table-column :label="t('common.length')" prop="length" width="64" />
-                    <el-table-column :label="t('common.qty')" prop="qty" align="right" width="70" />
-                    <el-table-column :label="t('generate.segment')" min-width="220">
-                      <template #default="{ row: l }"><span class="sn-mono" :class="{ struck: l.revoked }">{{ l.start_sn }} ~ {{ l.end_sn }}</span></template>
-                    </el-table-column>
-                    <el-table-column :label="t('generate.ruleCol')" prop="rule_label" min-width="150" show-overflow-tooltip />
-                    <el-table-column width="80" align="right">
-                      <template #default="{ row: l }"><el-tag v-if="l.revoked" size="small" type="info">{{ t("generate.job.REVOKED") }}</el-tag></template>
-                    </el-table-column>
-                  </el-table>
-                </template>
-              </el-table-column>
-              <el-table-column :label="t('generate.genBatch')" prop="gen_batch" min-width="170" show-overflow-tooltip />
-              <el-table-column :label="t('generate.scope')" width="80">
-                <template #default="{ row }">{{ t(`generate.scopeShort.${row.scope}`) }}</template>
-              </el-table-column>
-              <el-table-column :label="t('common.qty')" align="right" width="100">
-                <template #default="{ row }">
-                  <span class="num">{{ num(row.qty) }}</span>
-                  <div v-if="row.revoked_qty && row.status !== 'REVOKED'" class="muted">{{ t("generate.revokedQty", { n: num(row.revoked_qty) }) }}</div>
-                </template>
-              </el-table-column>
-              <el-table-column :label="t('generate.segment')" min-width="220">
-                <template #default="{ row }"><span class="sn-mono">{{ row.start_sn }} ~ {{ row.end_sn }}</span></template>
-              </el-table-column>
-              <el-table-column :label="t('common.status')" width="90">
-                <template #default="{ row }">
-                  <el-tooltip :disabled="!row.error_msg && !row.revoke_reason" :content="row.error_msg || row.revoke_reason || ''">
-                    <el-tag size="small" :type="JOB_TAG[row.status] || 'info'">{{ t(`generate.job.${row.status}`) }}</el-tag>
-                  </el-tooltip>
-                </template>
-              </el-table-column>
-              <el-table-column :label="t('common.operator')" prop="created_by" width="80" show-overflow-tooltip />
-              <el-table-column :label="t('common.time')" width="140">
-                <template #default="{ row }">{{ fmtTime(row.created_at) }}</template>
-              </el-table-column>
-              <el-table-column :label="t('common.actions')" width="130" align="right">
-                <template #default="{ row }">
-                  <el-button v-if="jobLeft(row).length" link type="primary" @click="pickJob(row)">{{ t("generate.pickJobLines") }}</el-button>
-                </template>
-              </el-table-column>
-            </el-table>
-            <p class="muted small">{{ t("generate.jobsNote") }}</p>
+            <JobsTable :jobs="ctx.jobs" :segments="segments" @pick="pickJob" />
           </el-tab-pane>
         </el-tabs>
       </div>
@@ -354,103 +293,12 @@
 
     <RuleDialog v-if="ctx" v-model="ruleDlg.open" :pi="ctx.pi_no" :lines="ruleDlg.lines" :options="ctx.rule_options" @saved="reloadCtx" />
 
-    <!-- 确认生成：本次各物料行的号段 -->
-    <el-dialog v-model="genDlg" :title="t('generate.genTitle')" width="680px">
-      <template v-if="gen.preview?.generatable">
-        <p>{{ t("generate.genConfirm", { m: gen.preview.items.length, n: num(gen.preview.qty), a: gen.preview.start_sn, b: gen.preview.end_sn }) }}</p>
-        <el-table :data="gen.preview.items" size="small" max-height="320">
-          <el-table-column :label="t('common.billNo')" prop="bill_no" min-width="120" />
-          <el-table-column :label="t('common.billSeq')" prop="seq" width="72" />
-          <el-table-column :label="t('common.qty')" align="right" width="80">
-            <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
-          </el-table-column>
-          <el-table-column :label="t('generate.segment')" min-width="250">
-            <template #default="{ row }"><span class="sn-mono">{{ row.start_sn }} ~ {{ row.end_sn }}</span></template>
-          </el-table-column>
-        </el-table>
-        <p class="muted small">{{ t("generate.genNote", { n: num(limits.sync_threshold), time: fmtTime(gen.preview.expires_at) }) }}</p>
-      </template>
-      <template #footer>
-        <el-button @click="genDlg = false">{{ t("common.cancel") }}</el-button>
-        <el-button type="primary" :loading="busy === 'run'" @click="runGen">{{ t("generate.genBtn", { n: num(gen.preview?.qty || 0) }) }}</el-button>
-      </template>
-    </el-dialog>
+    <GenConfirmDialog v-model="genDlg" :preview="gen.preview" :sync-threshold="limits.sync_threshold" :loading="busy === 'run'" @confirm="runGen" />
 
-    <!-- 撤销：从流水最末往前，撤到所选物料行为止 -->
-    <el-dialog v-model="revokeDlg.open" :title="t('generate.revokeTitle')" width="680px">
-      <p>{{ t("generate.revokeConfirm", { m: revokeDlg.segs.length, n: num(revokeQty) }) }}<span v-if="revokeExtra">{{ t("generate.revokeExtra", { n: revokeExtra }) }}</span></p>
-      <el-table :data="revokeDlg.segs" size="small" max-height="280">
-        <el-table-column :label="t('common.billNo')" prop="bill_no" min-width="120" />
-        <el-table-column :label="t('common.billSeq')" prop="seq" width="72" />
-        <el-table-column :label="t('common.qty')" align="right" width="80">
-          <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
-        </el-table-column>
-        <el-table-column :label="t('generate.segment')" min-width="230">
-          <template #default="{ row }"><span class="sn-mono">{{ row.start_sn }} ~ {{ row.end_sn }}</span></template>
-        </el-table-column>
-        <el-table-column width="70">
-          <template #default="{ row }">
-            <el-tag size="small" :type="isRevokePicked(row) ? 'primary' : 'warning'" disable-transitions>
-              {{ isRevokePicked(row) ? t("generate.revokePicked") : t("generate.revokeWith") }}
-            </el-tag>
-          </template>
-        </el-table-column>
-      </el-table>
-      <el-input v-model="revokeDlg.reason" type="textarea" :rows="2" maxlength="500" show-word-limit class="mt" :placeholder="t('common.reasonPlaceholder')" />
-      <template #footer>
-        <el-button @click="revokeDlg.open = false">{{ t("common.cancel") }}</el-button>
-        <el-button type="danger" :disabled="!revokeDlg.reason.trim()" :loading="busy === 'revoke'" @click="doRevoke">{{ t("generate.revokeBtn", { n: num(revokeQty) }) }}</el-button>
-      </template>
-    </el-dialog>
+    <RevokeDialog v-if="ctx" ref="revokeDlg" :pi="ctx.pi_no" @done="afterRevoke" />
 
     <!-- PI / 客户规则：整张 PI 的默认规则，不常用 -->
-    <el-dialog v-model="piRuleOpen" :title="t('generate.piRuleBtn')" width="640px">
-      <template v-if="ctx">
-        <p class="muted small">{{ t("generate.ruleNote") }}</p>
-        <div class="rbox">
-          <b>{{ t("generate.piRule") }}</b>
-          <div v-if="ctx.pi_rule" class="rule-now">
-            <el-tag size="small" :type="ctx.pi_rule.source === 'PI' ? 'primary' : 'warning'">{{ t(`generate.source.${ctx.pi_rule.source}`) }}</el-tag>
-            <b>{{ ruleTitle(ctx.pi_rule) }}</b>
-            <span class="sn-mono">{{ ctx.pi_rule.format }}</span>
-            <el-tag size="small" :type="ctx.pi_rule.plan === 'PREFIX' ? 'danger' : 'info'">{{ t(`generate.plan.${ctx.pi_rule.plan}`) }}</el-tag>
-            <el-button v-if="ctx.pi_rule.source === 'PI'" link type="danger" :loading="busy === 'unbindPi'" @click="unbindPi">{{ t("generate.unbindPi") }}</el-button>
-          </div>
-          <span v-else class="muted">{{ t("generate.noPiRule") }}</span>
-          <div class="rule-now">
-            <el-select v-model="bind.rule_id" filterable clearable :placeholder="t('generate.pickLibRule')" class="w320" @change="bind.new_prefix = ''">
-              <el-option v-for="o in ctx.rule_options" :key="o.rule_id" :value="o.rule_id" :label="`${o.rule_code} · ${o.rule_name}`">
-                <span>{{ o.rule_code }} · {{ o.rule_name }}</span>
-                <el-tag v-if="o.recommended" size="small" type="success" class="ml">{{ t("generate.rule.recommended") }}</el-tag>
-                <span class="muted ml">{{ o.format }}</span>
-              </el-option>
-            </el-select>
-            <el-input v-if="bindOption?.plan === 'PREFIX'" v-model="bind.new_prefix" class="w160" maxlength="32" :placeholder="t('generate.rule.newPrefix')" />
-            <el-button type="primary" :disabled="!bind.rule_id || (bindOption?.plan === 'PREFIX' && !bind.new_prefix.trim())"
-              :loading="busy === 'bindPi'" @click="bindPi">{{ t("generate.bindPi") }}</el-button>
-          </div>
-          <span v-if="bindOption?.plan === 'PREFIX'" class="muted warn">{{ t("generate.rule.prefixNeeded", { pi: bindOption.other_pi || "—" }) }}</span>
-        </div>
-        <div class="rbox">
-          <b>{{ t("generate.customerRule") }}</b>
-          <template v-if="ctx.customer_rule">
-            <div class="rule-now">
-              <b>{{ ctx.customer_rule.rule_code }}</b><span class="muted">{{ ctx.customer_rule.rule_name }}</span>
-              <el-button link type="danger" :loading="busy === 'unbindCustomer'" @click="unbindCustomer">{{ t("generate.unbindCustomer") }}</el-button>
-            </div>
-            <div v-if="ctx.pi_rule?.source === 'CUSTOMER'" class="rule-now">
-              <el-input v-model="tpl.new_prefix" class="w160" maxlength="32" :placeholder="t('generate.rule.newPrefix')" />
-              <el-button type="primary" :disabled="!tpl.new_prefix.trim()" :loading="busy === 'template'" @click="adoptTemplate">{{ t("generate.useTemplate") }}</el-button>
-              <span class="muted">{{ t("generate.templateNote") }}</span>
-            </div>
-          </template>
-          <span v-else class="muted">{{ t("generate.noCustomerRule") }}</span>
-        </div>
-      </template>
-      <template #footer>
-        <el-button @click="piRuleOpen = false">{{ t("common.close") }}</el-button>
-      </template>
-    </el-dialog>
+    <PiRuleDialog v-if="ctx" v-model="piRuleOpen" :ctx="ctx" @saved="reloadCtx" />
   </div>
 </template>
 
@@ -464,11 +312,17 @@ import { ApiError } from "@/api/http";
 import { billMark, emptySel, genLimit, lineOrder, revokeRange, scopeBody, selectedLines, toggleBill, toggleLine } from "@/genScope.js";
 import { useFactories } from "@/composables/useFactories";
 import { useTime } from "@/composables/useTime";
-import { formatDuration } from "@/utils/time";
 import { leaveStateLabel, suspendLabel } from "@/constants";
 import type { OrderLine } from "@/types/api";
 import PageHead from "@/components/PageHead.vue";
 import RuleDialog from "@/views/generate/RuleDialog.vue";
+import PiRuleDialog from "@/views/generate/PiRuleDialog.vue";
+import RevokeDialog from "@/views/generate/RevokeDialog.vue";
+import GenConfirmDialog from "@/views/generate/GenConfirmDialog.vue";
+import GenProgress from "@/views/generate/GenProgress.vue";
+import JobsTable from "@/views/generate/JobsTable.vue";
+import { num, pct, ruleTitle as ruleTitleOf } from "@/views/generate/format";
+import { useLineDrafts } from "@/views/generate/useLineDrafts";
 
 type Tab = "TO_GENERATE" | "GENERATED";
 type Action = "running" | "view" | "gen" | "pick";
@@ -490,7 +344,6 @@ const STATUS_TAG: Record<string, TagType> = {
   GENERATING: "primary", CANNOT: "danger", NEED_RULE: "warning", TO_GENERATE: "primary", PARTIAL: "primary", GENERATED: "success",
 };
 const ACTION_TYPE: Record<Action, TagType> = { running: "primary", view: "", gen: "primary", pick: "primary" };
-const JOB_TAG: Record<string, TagType> = { RUNNING: "primary", SUCCESS: "success", FAILED: "danger", CANCELED: "info", REVOKED: "info" };
 const LINE_STATE_TAG: Record<LineState, TagType> = { TODO: "danger", GEN: "primary", GENERATED: "success", DONE: "info", NONE: "info" };
 
 const { t } = useI18n();
@@ -498,8 +351,6 @@ const route = useRoute();
 const router = useRouter();
 const { nameOf } = useFactories();
 const { fmt: fmtTime } = useTime();
-const num = (n: number | string | null | undefined) => (n == null ? "—" : Number(n).toLocaleString());
-const pct = (b: { qty: number; done_qty: number }) => (b.qty ? Math.min(100, Math.floor((b.done_qty * 100) / b.qty)) : 0);
 const issueText = (c: string) => t(`generate.issue.${c}`);
 const sameLine = (a: LineRef, b: LineRef) => a.bill_no === b.bill_no && a.seq === b.seq;
 const busy = ref("");
@@ -612,72 +463,15 @@ function closeDetail() {
   if (route.query.pi || route.query.bill_no) router.replace({ query: {} });
 }
 
-function ruleTitle(r: any) {
-  if (r.mode === "CUSTOM") return t("generate.rule.custom");
-  return `${r.rule_code} v${r.version}`;
-}
+const ruleTitle = (r: any) => ruleTitleOf(t, r);
 
-// ---------------- 规则：PI 绑定 / 客户模板 / 物料行
+// ---------------- 规则：物料行（PI 绑定 / 客户模板在 PiRuleDialog）
 
-const bind = reactive({ rule_id: undefined as number | undefined, new_prefix: "" });
-const tpl = reactive({ new_prefix: "" });
-const bindOption = computed(() => ctx.value?.rule_options.find((o: any) => o.rule_id === bind.rule_id));
 const ruleDlg = reactive({ open: false, lines: [] as OrderLine[] });
 
 function openRuleDialog(lines: OrderLine[]) {
   ruleDlg.lines = lines;
   ruleDlg.open = true;
-}
-
-async function bindPi() {
-  busy.value = "bindPi";
-  try {
-    const body: Record<string, unknown> = { pi_no: ctx.value.pi_no, rule_id: bind.rule_id };
-    if (bindOption.value?.plan === "PREFIX") body.new_prefix = bind.new_prefix.trim();
-    await api.bindPiRule(body);
-    ElMessage.success(t("common.saved"));
-    bind.rule_id = undefined;
-    bind.new_prefix = "";
-    await reloadCtx();
-  } finally {
-    busy.value = "";
-  }
-}
-
-async function unbindPi() {
-  await ElMessageBox.confirm(t("generate.unbindPiConfirm"), t("generate.piRule"), { type: "warning" });
-  busy.value = "unbindPi";
-  try {
-    await api.unbindPiRule(ctx.value.pi_no);
-    ElMessage.success(t("common.done"));
-    await reloadCtx();
-  } finally {
-    busy.value = "";
-  }
-}
-
-async function adoptTemplate() {
-  busy.value = "template";
-  try {
-    await api.customerTemplate({ pi_no: ctx.value.pi_no, new_prefix: tpl.new_prefix.trim() });
-    ElMessage.success(t("common.saved"));
-    tpl.new_prefix = "";
-    await reloadCtx();
-  } finally {
-    busy.value = "";
-  }
-}
-
-async function unbindCustomer() {
-  await ElMessageBox.confirm(t("generate.unbindCustomerConfirm", { customer: ctx.value.customer_code }), t("generate.customerRule"), { type: "warning" });
-  busy.value = "unbindCustomer";
-  try {
-    await api.unbindCustomerRule(ctx.value.customer_code);
-    ElMessage.success(t("common.done"));
-    await reloadCtx();
-  } finally {
-    busy.value = "";
-  }
 }
 
 // ---------------- 范围：勾选单据（整单，按勾选顺序）或物料行（按点选顺序）；生成、批量改规则、批量撤销、统一设置长度共用
@@ -757,50 +551,7 @@ const segsOf = (l: LineRef) => segments.value.filter((s) => sameLine(s, l)).reve
 /** 本次预演给该物料行排的号段。 */
 const planOf = (l: LineRef) => (gen.preview?.generatable ? gen.preview.items.find((x: any) => sameLine(x, l)) : null);
 
-/** 金蝶缺失的附件项次（必填）、长度（选填，留空用默认 000）在表格里直接填写；物料行有号后置灰：
- *  已生成未分配的撤销生成后可改，已分配的不能再改。失焦或回车保存，保存后刷新详情。 */
-const DEFAULT_LENGTH = "000";
-type DraftField = "attach" | "length";
-const drafts = reactive<Record<string, string>>({});
-const draftKey = (row: OrderLine, f: DraftField) => `${f}:${row.bill_no}/${row.seq}`;
-function draftOf(row: OrderLine, f: DraftField): string {
-  const k = draftKey(row, f);
-  if (k in drafts) return drafts[k];
-  return f === "attach" ? row.attach_no : row.length_source === "MANUAL" ? row.length : "";
-}
-function setDraft(row: OrderLine, f: DraftField, v: string) {
-  drafts[draftKey(row, f)] = v;
-}
-function lockText(row: OrderLine) {
-  return row.edit_lock === "ALLOCATED" ? t("generate.lockAllocated") : t("generate.lockGenerated");
-}
-async function saveDraft(row: OrderLine, f: DraftField, save: (value: string) => Promise<unknown>) {
-  const k = draftKey(row, f);
-  try {
-    await save(drafts[k].trim());
-    ElMessage.success(t("common.saved"));
-    await reloadCtx();
-  } finally {
-    delete drafts[k];
-  }
-}
-function saveAttach(row: OrderLine) {
-  const value = (drafts[draftKey(row, "attach")] ?? "").trim();
-  if (!value || value === row.attach_no) {
-    if (!value) ElMessage.warning(t("orders.attachInvalid"));
-    delete drafts[draftKey(row, "attach")];
-    return;
-  }
-  return saveDraft(row, "attach", (v) => api.fillAttach(row.bill_no, row.seq, v));
-}
-function saveLength(row: OrderLine) {
-  const value = (drafts[draftKey(row, "length")] ?? "").trim();
-  if (value === (row.length_source === "MANUAL" ? row.length : "")) {
-    delete drafts[draftKey(row, "length")];
-    return;
-  }
-  return saveDraft(row, "length", (v) => api.fillLength(row.bill_no, row.seq, v));
-}
+const { DEFAULT_LENGTH, draftOf, setDraft, lockText, saveAttach, saveLength } = useLineDrafts(reloadCtx);
 /** 统一设置长度：所选物料行 / 勾选的单据 / 都没选 = 整张 PI 内长度还是默认 000、还没有号的物料行一次设为同一个值。 */
 async function fillLengths() {
   if (!ctx.value) return;
@@ -959,34 +710,20 @@ function revokeTip(r: RevokeRange) {
   return r.segs.length > 1 ? t("generate.revokeWithLater", { n: r.segs.length }) : t("generate.revokeTail");
 }
 
-const revokeDlg = reactive({ open: false, segs: [] as Segment[], picked: [] as LineRef[], reason: "" });
-const revokeQty = computed(() => revokeDlg.segs.reduce((a, s) => a + s.qty, 0));
-const isRevokePicked = (s: LineRef) => revokeDlg.picked.some((p) => sameLine(p, s));
-const revokeExtra = computed(() => revokeDlg.segs.filter((s) => !isRevokePicked(s)).length);
+const revokeDlg = ref<InstanceType<typeof RevokeDialog> | null>(null);
 
 function openRevoke(rows: LineRef[]) {
   const r = revokeOf(rows);
-  if (!r?.ok) return;
-  Object.assign(revokeDlg, { open: true, segs: r.segs, picked: rows.map((x) => ({ bill_no: x.bill_no, seq: x.seq })), reason: "" });
+  if (r?.ok) revokeDlg.value?.open(r.segs, rows);
 }
 
-async function doRevoke() {
-  busy.value = "revoke";
-  try {
-    const r = await api.revokeLines(ctx.value.pi_no, revokeDlg.picked, revokeDlg.reason.trim());
-    ElMessage.success(t("generate.revokedN", { n: num(r.qty) }));
-    revokeDlg.open = false;
-    clearSelection();
-    await reloadCtx();
-  } finally {
-    busy.value = "";
-  }
+async function afterRevoke() {
+  clearSelection();
+  await reloadCtx();
 }
 
-/** 一次生成中还没撤销的物料行。 */
-const jobLeft = (job: any): LineRef[] => job.lines.filter((l: any) => !l.revoked && segments.value.some((s) => s.gen_batch === job.gen_batch && sameLine(s, l)));
-function pickJob(job: any) {
-  sel.value = { bills: [], lines: jobLeft(job).map((l) => ({ bill_no: l.bill_no, seq: l.seq })) };
+function pickJob(lines: LineRef[]) {
+  sel.value = { bills: [], lines };
   lineFilter.value = "ALL";
   dtab.value = "lines";
 }
@@ -1022,9 +759,6 @@ onUnmounted(() => {
 .kw { width: 260px; }
 .summary { margin-left: auto; display: inline-flex; gap: 10px; align-items: center; }
 .ml { margin-left: 6px; }
-.mt { margin-top: 10px; }
-.w160 { width: 160px; }
-.w320 { width: 320px; }
 .small { font-size: 12px; }
 .zero { color: var(--el-text-color-placeholder); }
 .warn { color: var(--el-color-warning-dark-2); }
@@ -1043,19 +777,13 @@ onUnmounted(() => {
 .drawer { display: flex; flex-direction: column; gap: 10px; }
 .banner { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 14px; border-radius: 8px; font-size: 13px; }
 .banner.danger { background: var(--el-color-danger-light-9); color: var(--el-color-danger-dark-2); }
-.banner.run { flex-direction: column; align-items: stretch; background: var(--el-color-primary-light-9); }
-.banner.run.cx { background: var(--el-color-warning-light-9); }
 .todo { display: inline-flex; align-items: center; gap: 6px; }
 .todo + .todo::before { content: "·"; color: var(--app-muted); margin-right: 4px; }
-.prog-h { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-.prog-h .pct { font-size: 20px; color: var(--el-color-primary); }
-.banner.cx .pct { color: var(--el-color-warning); }
 .dtabs :deep(.el-tabs__header) { margin-bottom: 8px; }
 .toolbar { margin-bottom: 8px; }
-.issue-tags, .rule-now, .plan, .ops { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.issue-tags, .plan, .ops { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .ops { justify-content: flex-end; flex-wrap: nowrap; }
 .plan .sn-mono { color: var(--el-color-primary); }
-.struck { text-decoration: line-through; color: var(--el-text-color-placeholder); }
 .cell-input { display: block; }
 .cell-input .missing :deep(.el-input__wrapper) { box-shadow: 0 0 0 1px var(--el-color-danger) inset; }
 .bill { border: 1px solid var(--el-border-color-lighter); border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
@@ -1065,13 +793,11 @@ onUnmounted(() => {
 .lines :deep(tr.picked > td) { background: var(--el-color-primary-light-9); }
 .lines :deep(.el-table__row) { cursor: pointer; }
 .no-lines { padding: 8px 12px; margin: 0; }
-.job-lines { margin: 0 12px 0 48px; width: calc(100% - 60px); }
 .bar { display: flex; align-items: center; gap: 10px; text-align: left; }
 .bar-scope { display: flex; flex-direction: column; gap: 2px; min-width: 160px; margin-right: 6px; font-size: 13px; }
 .bar-gen { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-size: 12px; max-width: 420px; min-height: 32px; justify-content: center; }
 .unlock { height: 18px; }
 .unlock :deep(.el-checkbox__label) { font-size: 12px; color: var(--el-color-warning-dark-2); }
-.rbox { display: flex; flex-direction: column; gap: 8px; padding: 12px; margin-bottom: 10px; border: 1px solid var(--el-border-color-lighter); border-radius: 8px; }
 </style>
 
 <style>

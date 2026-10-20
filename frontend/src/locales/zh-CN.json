@@ -323,8 +323,7 @@
     "piAll": "查看本 PI 各生产组织的号（只读）",
     "piAllNote": "只读查看：同一 PI 在各生产组织的号段，不能领取其他组织的号。",
     "segment": "号段（完整 SN / 十进制流水）",
-    "seqOf": "流水归属 {pi}",
-    "itemsOf": "领取批次 {b} 明细"
+    "seqOf": "流水归属 {pi}"
   },
   "allocate": {
     "title": "SN 分配",
@@ -376,13 +375,7 @@
     "batchResult": "结果",
     "confirmMethod": "确认方式",
     "manualConfirm": "人工确认",
-    "void": "作废",
-    "manualTitle": "人工确认批次",
-    "voidTitle": "作废批次",
-    "manualNote": "仅在 MES 方确认批次 {batch} 已全部入库、但无法回执时使用；确认后号改为已推送，不再重试。",
-    "voidNote": "仅用于 MES 没有处理的批次 {batch}；作废后号回到未入批，重新组批推送。",
-    "basis": "依据",
-    "basisPlaceholder": "如 MES 方书面确认，不超过 500 字"
+    "void": "作废"
   },
   "audit": {
     "title": "操作痕迹",
@@ -412,6 +405,14 @@
     "detail": "说明",
     "archived": "已归档",
     "exportXlsx": "导出 Excel"
+  },
+  "batch": {
+    "confirmTitle": "人工确认批次 {no}",
+    "voidTitle": "作废批次 {no}",
+    "confirmTip": "仅在 MES 方书面确认已全部处理、但回执交不上来时使用：批次记为成功（确认方式「人工」），不再重试；交付批次的号记为已推送。",
+    "voidTip": "仅用于 MES 没有处理的批次：交付批次的号回到待推送（未入批），重新组批推送；转出批次按原明细重建新的转出批次并自动推送。",
+    "basis": "依据",
+    "basisPlaceholder": "如 MES 方书面确认，不超过 500 字"
   },
   "dashboard": {
     "title": "你好，{name}",
@@ -868,12 +869,6 @@
     "rebuiltTo": "已重建为",
     "confirmBatch": "人工确认",
     "voidBatch": "作废",
-    "confirmTitle": "人工确认批次 {no}",
-    "voidTitle": "作废批次 {no}",
-    "confirmTip": "仅在 MES 方书面确认已全部入库时使用：批次记为成功（确认方式「人工」），批内的号记为已推送。",
-    "voidTip": "仅用于 MES 没有处理的批次：批内的号回到待推送，之后另建新批次推送；转出批次作废后自动重建。",
-    "basis": "依据",
-    "basisPlaceholder": "如 MES 方书面确认，不超过 500 字",
     "requestNo": "请求号",
     "mesOrg": "对接 MES 的组织",
     "acqStatus": {
@@ -1059,10 +1054,6 @@
     "failReason": "失败原因",
     "manualConfirm": "人工确认",
     "void": "作废",
-    "confirmTip": "仅在 MES 方书面确认已全部处理时使用；确认后按批次内容记为已交付。",
-    "voidTip": "只能作废 MES 没有处理过的批次；作废后号回到未入批，可重新推送。",
-    "basis": "依据",
-    "basisPlaceholder": "如 MES 方书面确认，不超过 500 字",
     "itemsTitle": "所含的号",
     "before": "转移前",
     "after": "转移后",

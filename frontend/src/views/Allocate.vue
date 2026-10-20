@@ -139,7 +139,7 @@
               <el-table :data="ctx.batches" size="small" max-height="360" :empty-text="t('common.empty')">
                 <el-table-column :label="t('common.batchNo')" min-width="200">
                   <template #default="{ row }">
-                    <router-link :to="{ path: '/query', query: { tab: 'delivery', batch_no: row.batch_no } }" class="sn-mono">{{ row.batch_no }}</router-link>
+                    <el-button link type="primary" class="sn-mono" @click="batchNo = row.batch_no">{{ row.batch_no }}</el-button>
                   </template>
                 </el-table-column>
                 <el-table-column :label="t('common.factory')" min-width="110" show-overflow-tooltip>
@@ -168,10 +168,8 @@
                 </el-table-column>
                 <el-table-column :label="t('common.actions')" width="130" align="right">
                   <template #default="{ row }">
-                    <template v-if="row.result === 'UNCONFIRMED' || row.result === 'FAILED'">
-                      <el-button link type="primary" @click="openManual(row, 'confirm')">{{ t("allocate.manualConfirm") }}</el-button>
-                      <el-button v-if="row.voidable || row.result === 'UNCONFIRMED'" link type="danger" @click="openManual(row, 'void')">{{ t("allocate.void") }}</el-button>
-                    </template>
+                    <el-button v-if="canConfirm(row)" link type="primary" @click="manual?.open(row.batch_no, 'confirm')">{{ t("allocate.manualConfirm") }}</el-button>
+                    <el-button v-if="canVoid(row)" link type="danger" @click="manual?.open(row.batch_no, 'void')">{{ t("allocate.void") }}</el-button>
                   </template>
                 </el-table-column>
               </el-table>
@@ -181,22 +179,8 @@
       </div>
     </div>
 
-    <el-dialog v-model="manual.open" :title="manual.kind === 'void' ? t('allocate.voidTitle') : t('allocate.manualTitle')" width="520px">
-      <p class="muted">{{ manual.kind === "void" ? t("allocate.voidNote", { batch: manual.batch }) : t("allocate.manualNote", { batch: manual.batch }) }}</p>
-      <el-form label-width="80px" @submit.prevent>
-        <el-form-item :label="t('common.reason')" required>
-          <el-input v-model="manual.reason" type="textarea" :rows="2" maxlength="500" show-word-limit :placeholder="t('common.reasonPlaceholder')" />
-        </el-form-item>
-        <el-form-item :label="t('allocate.basis')" required>
-          <el-input v-model="manual.basis" type="textarea" :rows="2" maxlength="500" show-word-limit :placeholder="t('allocate.basisPlaceholder')" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="manual.open = false">{{ t("common.cancel") }}</el-button>
-        <el-button :type="manual.kind === 'void' ? 'danger' : 'primary'" :disabled="!manual.reason.trim() || !manual.basis.trim()"
-          :loading="busy === 'manual'" @click="submitManual">{{ t("common.confirm") }}</el-button>
-      </template>
-    </el-dialog>
+    <BatchManualDialog ref="manual" @done="reload" />
+    <DeliveryBatchDrawer v-model:batch-no="batchNo" @changed="reload" />
   </div>
 </template>
 
@@ -211,7 +195,10 @@ import { useTime } from "@/composables/useTime";
 import {
   BATCH_RESULT_TYPE, batchResultLabel, batchSourceLabel, confirmMethodLabel, pushStateLabel, taskStateLabel,
 } from "@/constants";
+import { canConfirm, canVoid } from "@/utils/batch";
 import PageHead from "@/components/PageHead.vue";
+import BatchManualDialog from "@/components/batch/BatchManualDialog.vue";
+import DeliveryBatchDrawer from "@/components/batch/DeliveryBatchDrawer.vue";
 
 type Tab = "TO_ALLOCATE" | "ALLOCATED";
 type RowState = "INTERRUPTED" | "PENDING" | "ALLOCATED";
@@ -245,7 +232,7 @@ const paged = computed(() => list.value.items.slice((page.value - 1) * PAGE, pag
 async function loadList(silent = false) {
   if (!silent) listLoading.value = true;
   try {
-    list.value = await api.genPis({ tab: tab.value, q: q.value.trim() });
+    list.value = await api.allocPis({ tab: tab.value, q: q.value.trim() });
     if (!silent) page.value = 1;
   } finally {
     listLoading.value = false;
@@ -357,24 +344,10 @@ async function resume(org: string) {
   }
 }
 
-// ---------------- 批次人工确认 / 作废（5.2.5 第 7 条）
+// ---------------- 分配记录：批次详情、人工确认 / 作废（5.2.5 第 7 条）
 
-const manual = reactive({ open: false, kind: "confirm" as "confirm" | "void", batch: "", reason: "", basis: "" });
-function openManual(row: any, kind: "confirm" | "void") {
-  Object.assign(manual, { open: true, kind, batch: row.batch_no, reason: "", basis: "" });
-}
-async function submitManual() {
-  busy.value = "manual";
-  try {
-    const f = manual.kind === "void" ? api.voidBatch : api.confirmBatch;
-    await f(manual.batch, manual.reason.trim(), manual.basis.trim());
-    ElMessage.success(t("common.done"));
-    manual.open = false;
-    await reload();
-  } finally {
-    busy.value = "";
-  }
-}
+const manual = ref<InstanceType<typeof BatchManualDialog> | null>(null);
+const batchNo = ref("");
 
 // ================================================================ 联动
 

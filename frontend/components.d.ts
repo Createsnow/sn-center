@@ -7,6 +7,9 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AcquireBatchDrawer: typeof import('./src/components/batch/AcquireBatchDrawer.vue')['default']
+    BatchManualDialog: typeof import('./src/components/batch/BatchManualDialog.vue')['default']
+    DeliveryBatchDrawer: typeof import('./src/components/batch/DeliveryBatchDrawer.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAside: typeof import('element-plus/es')['ElAside']
     ElAutocomplete: typeof import('element-plus/es')['ElAutocomplete']

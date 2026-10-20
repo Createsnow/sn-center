@@ -73,10 +73,9 @@ export const api = {
   bindCustomerRule: (data: Q) => post("/rules/customer-binding", data),
   unbindCustomerRule: (customer: string) => del("/rules/customer-binding", { customer }),
 
-  // ---------------- 生成与分配
+  // ---------------- SN 生成与撤销
   genPis: (params?: Q) => get("/generate/pis", params),
   genContext: (params: { pi?: string; bill_no?: string }) => get("/generate/context", params),
-  allocContext: (pi: string) => get("/generate/alloc-context", { pi }),
   genPreview: (data: Q, silent = false) => post("/generate/preview", data, silent),
   genRun: (token: string) => post("/generate/run", { token }),
   genJobs: (pi: string, limit?: number) => get("/generate/jobs", { pi, limit }),
@@ -85,8 +84,12 @@ export const api = {
   /** 撤到所选物料行为止：从流水最末往前撤，流水排在所选行之后的物料行一并撤销。 */
   revokeLines: (pi_no: string, lines: { bill_no: string; seq: number }[], reason: string) =>
     post("/generate/revoke", { pi_no, lines, reason }),
-  allocPreview: (data: Q) => post("/generate/alloc-preview", data),
-  allocate: (data: Q) => post("/generate/allocate", data),
+
+  // ---------------- SN 分配
+  allocPis: (params?: Q) => get("/allocation/pis", params),
+  allocContext: (pi: string) => get("/allocation/context", { pi }),
+  allocPreview: (data: Q) => post("/allocation/preview", data),
+  allocate: (data: Q) => post("/allocation/allocate", data),
 
   // ---------------- 交付批次与推送
   deliveryBatches: (params?: Q) => get("/delivery/batches", params),
