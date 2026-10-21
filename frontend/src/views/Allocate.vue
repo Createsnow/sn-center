@@ -76,32 +76,48 @@
             <div class="box-h">
               <b>{{ t("allocate.linesTitle") }}</b>
               <span class="muted">{{ t("allocate.linesHint") }}</span>
+              <span class="push" />
+              <template v-if="bills.length">
+                <el-button link type="primary" size="small" @click="foldAll(false)">{{ t("common.expandAll") }}</el-button>
+                <el-button link type="primary" size="small" @click="foldAll(true)">{{ t("common.collapseAll") }}</el-button>
+              </template>
             </div>
-            <el-table ref="lineTable" :data="ctx.lines" size="small" max-height="360" row-key="key" :empty-text="t('allocate.nothingPending')"
-              @selection-change="onSelect">
-              <el-table-column type="selection" width="40" :selectable="(row: any) => !row.skip" />
-              <el-table-column :label="t('common.billNo')" prop="bill_no" min-width="120" />
-              <el-table-column :label="t('common.billSeq')" prop="seq" width="72" />
-              <el-table-column :label="t('common.material')" prop="material_code" min-width="100" show-overflow-tooltip />
-              <el-table-column :label="t('common.length')" width="70">
-                <template #default="{ row }">{{ row.length || "—" }}</template>
-              </el-table-column>
-              <el-table-column :label="t('generate.pendingAlloc')" align="right" width="80">
-                <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
-              </el-table-column>
-              <el-table-column :label="t('generate.snRange')" min-width="210">
-                <template #default="{ row }"><span class="sn-mono">{{ row.start_sn }} ~ {{ row.end_sn }}</span></template>
-              </el-table-column>
-              <el-table-column :label="t('allocate.toOrg')" min-width="110" show-overflow-tooltip>
-                <template #default="{ row }">{{ row.org_code ? row.org_name || nameOf(row.org_code) : "—" }}</template>
-              </el-table-column>
-              <el-table-column :label="t('allocate.way')" width="120">
-                <template #default="{ row }">
-                  <el-tag v-if="row.skip" size="small" type="danger" effect="plain">{{ t(`allocate.skip.${row.skip}`) }}</el-tag>
-                  <el-tag v-else size="small" :type="row.mes_enabled ? 'success' : 'info'">{{ row.mes_enabled ? t("allocate.wayPush") : t("allocate.wayAcquire") }}</el-tag>
-                </template>
-              </el-table-column>
-            </el-table>
+            <p v-if="!bills.length" class="muted empty-lines">{{ t("allocate.nothingPending") }}</p>
+            <!-- 按单据分组，点单据头展开 / 收起；收起只隐藏，勾选保留 -->
+            <div v-else class="bills">
+              <div v-for="b in bills" :key="`${ctxVer}:${b.bill_no}`" class="bill">
+                <div class="bill-h" :title="isFolded(b.bill_no) ? t('common.expand') : t('common.collapse')" @click="toggleFold(b.bill_no)">
+                  <el-icon class="fold" :class="{ open: !isFolded(b.bill_no) }"><ArrowRight /></el-icon>
+                  <b>{{ b.bill_no }}</b>
+                  <span class="muted num">{{ t("allocate.billCounts", { n: b.lines.length, qty: num(b.qty) }) }}</span>
+                  <el-tag v-if="selByBill[b.bill_no]?.length" size="small" disable-transitions>{{ t("allocate.billPicked", { n: selByBill[b.bill_no].length }) }}</el-tag>
+                </div>
+                <el-table v-show="!isFolded(b.bill_no)" ref="lineTables" :data="b.lines" size="small" row-key="key"
+                  @selection-change="(rows: any[]) => onSelect(b.bill_no, rows)">
+                  <el-table-column type="selection" width="40" :selectable="(row: any) => !row.skip" />
+                  <el-table-column :label="t('common.billSeq')" prop="seq" width="72" />
+                  <el-table-column :label="t('common.material')" prop="material_code" min-width="100" show-overflow-tooltip />
+                  <el-table-column :label="t('common.length')" width="70">
+                    <template #default="{ row }">{{ row.length || "—" }}</template>
+                  </el-table-column>
+                  <el-table-column :label="t('generate.pendingAlloc')" align="right" width="80">
+                    <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
+                  </el-table-column>
+                  <el-table-column :label="t('generate.snRange')" min-width="210">
+                    <template #default="{ row }"><span class="sn-mono">{{ row.start_sn }} ~ {{ row.end_sn }}</span></template>
+                  </el-table-column>
+                  <el-table-column :label="t('allocate.toOrg')" min-width="110" show-overflow-tooltip>
+                    <template #default="{ row }">{{ row.org_code ? row.org_name || nameOf(row.org_code) : "—" }}</template>
+                  </el-table-column>
+                  <el-table-column :label="t('allocate.way')" width="120">
+                    <template #default="{ row }">
+                      <el-tag v-if="row.skip" size="small" type="danger" effect="plain">{{ t(`allocate.skip.${row.skip}`) }}</el-tag>
+                      <el-tag v-else size="small" :type="row.mes_enabled ? 'success' : 'info'">{{ row.mes_enabled ? t("allocate.wayPush") : t("allocate.wayAcquire") }}</el-tag>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </div>
             <div class="bar">
               <span><span class="muted">{{ t("generate.scope") }}</span> <b>{{ picked.length ? t("generate.scopeLinesN", { n: picked.length }) : t("generate.scopeWholePi") }}</b></span>
               <el-button v-if="picked.length" link type="primary" @click="clearSel">{{ t("generate.clearSel") }}</el-button>
@@ -251,6 +267,8 @@ function rowState(row: any): RowState {
 const pi = computed(() => String(route.query.pi || ""));
 const ctx = ref<any>(null);
 const ctxLoading = ref(false);
+/** 非静默加载一次详情加 1：单据表格随之重建，表格内的勾选与 picked 一起清空。 */
+const ctxVer = ref(0);
 const dtab = ref("push");
 let ctxTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -273,7 +291,8 @@ async function loadCtx(silent = false) {
     ctxLoading.value = false;
   }
   if (!silent) {
-    picked.value = [];
+    ctxVer.value++;
+    selByBill.value = {};
     loadAlloc();
   }
   // 有推送任务在跑时，定时刷新推送状态
@@ -291,19 +310,45 @@ const brokenPush = computed(() => (ctx.value?.push ?? []).filter((p: any) => can
 
 // ---------------- 分配：勾选物料行为范围，不勾选 = 整张 PI；按钮写「分配 N 枚（推送 M 次）」
 
-const picked = ref<LineRef[]>([]);
-const lineTable = ref<any>(null);
+/** 待分配的物料行按单据分组（保持接口给的顺序）。 */
+const bills = computed(() => {
+  const m = new Map<string, { bill_no: string; qty: number; lines: any[] }>();
+  for (const l of ctx.value?.lines ?? []) {
+    let b = m.get(l.bill_no);
+    if (!b) m.set(l.bill_no, (b = { bill_no: l.bill_no, qty: 0, lines: [] }));
+    b.qty += Number(l.qty) || 0;
+    b.lines.push(l);
+  }
+  return [...m.values()];
+});
+
+/** 收起的单据（只影响显示，不影响勾选）；换 PI 时全部展开。 */
+const folded = ref(new Set<string>());
+const isFolded = (no: string) => folded.value.has(no);
+function toggleFold(no: string) {
+  const s = new Set(folded.value);
+  if (!s.delete(no)) s.add(no);
+  folded.value = s;
+}
+function foldAll(on: boolean) {
+  folded.value = new Set(on ? bills.value.map((b) => b.bill_no) : []);
+}
+
+/** 各单据表格里勾选的物料行；picked 按单据顺序拼起来。 */
+const selByBill = ref<Record<string, LineRef[]>>({});
+const picked = computed<LineRef[]>(() => bills.value.flatMap((b) => selByBill.value[b.bill_no] ?? []));
+const lineTables = ref<any[]>([]);
 const alloc = reactive({ loading: false, data: null as any });
 let allocTimer: ReturnType<typeof setTimeout> | undefined;
 const scopeBody = computed(() => (picked.value.length ? { lines: picked.value } : {}));
 
-function onSelect(rows: any[]) {
-  picked.value = rows.map((r) => ({ bill_no: r.bill_no, seq: r.seq }));
+function onSelect(no: string, rows: any[]) {
+  selByBill.value = { ...selByBill.value, [no]: rows.map((r) => ({ bill_no: r.bill_no, seq: r.seq })) };
   clearTimeout(allocTimer);
   allocTimer = setTimeout(loadAlloc, 300);
 }
 function clearSel() {
-  lineTable.value?.clearSelection();
+  lineTables.value.forEach((tb) => tb?.clearSelection());
 }
 
 async function loadAlloc() {
@@ -353,6 +398,7 @@ const batchNo = ref("");
 
 watch(pi, () => {
   dtab.value = "push";
+  foldAll(false);
   loadCtx();
 });
 
@@ -389,6 +435,13 @@ onUnmounted(() => {
 .warn-bg { background: var(--el-color-warning-light-9); color: var(--el-color-warning-dark-2); }
 .box { border: 1px solid var(--el-border-color-lighter); border-radius: 8px; }
 .box-h { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--el-fill-color-light); border-radius: 8px 8px 0 0; }
+.empty-lines { padding: 12px; margin: 0; text-align: center; }
+.bills { max-height: 420px; overflow-y: auto; padding: 8px 12px; display: flex; flex-direction: column; gap: 8px; }
+.bill { border: 1px solid var(--el-border-color-lighter); border-radius: 6px; overflow: hidden; flex: none; }
+.bill-h { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: var(--el-fill-color-lighter); font-size: 13px; cursor: pointer; user-select: none; }
+.bill-h:hover { background: var(--el-fill-color); }
+.fold { color: var(--app-muted); transition: transform 0.15s; }
+.fold.open { transform: rotate(90deg); }
 .bar { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--el-border-color); background: var(--el-fill-color-lighter); border-radius: 0 0 8px 8px; font-size: 13px; }
 .orgs { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; min-height: 28px; justify-content: center; }
 .tabs-box { padding: 0 12px 8px; }

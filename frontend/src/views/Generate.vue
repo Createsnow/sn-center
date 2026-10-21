@@ -128,10 +128,15 @@
                 <el-radio-button v-for="f in FILTERS" :key="f" :value="f">{{ t(`generate.filter.${f}`, { n: filterCount[f] }) }}</el-radio-button>
               </el-radio-group>
               <span class="muted small">{{ t("generate.selHint") }}</span>
+              <span class="push" />
+              <el-button link type="primary" size="small" @click="foldAll(false)">{{ t("common.expandAll") }}</el-button>
+              <el-button link type="primary" size="small" @click="foldAll(true)">{{ t("common.collapseAll") }}</el-button>
             </div>
             <div v-for="b in shownBills" :key="b.bill_no" class="bill">
-              <div class="bill-h">
-                <el-checkbox v-bind="billCheck(b.bill_no)" :disabled="!b.in_snapshot || !b.lines.length" @change="(v: any) => onBill(b.bill_no, !!v)" />
+              <!-- 点单据头展开 / 收起物料行；勾选框只管勾选 -->
+              <div class="bill-h" :title="isFolded(b.bill_no) ? t('common.expand') : t('common.collapse')" @click="toggleFold(b.bill_no)">
+                <el-icon class="fold" :class="{ open: !isFolded(b.bill_no) }"><ArrowRight /></el-icon>
+                <span @click.stop><el-checkbox v-bind="billCheck(b.bill_no)" :disabled="!b.in_snapshot || !b.lines.length" @change="(v: any) => onBill(b.bill_no, !!v)" /></span>
                 <span v-if="billCheck(b.bill_no).order >= 0" class="order">{{ billCheck(b.bill_no).order + 1 }}</span>
                 <b>{{ b.bill_no }}</b>
                 <span class="muted">PO {{ b.po || "—" }} · {{ b.org_name || nameOf(b.org_code) }}</span>
@@ -142,7 +147,7 @@
                 <el-tag v-if="b.state.open_alerts" size="small" type="warning">{{ t("generate.openAlerts", { n: b.state.open_alerts }) }}</el-tag>
                 <span class="push muted num">{{ t("generate.billCounts", { total: num(b.total_qty), gen: num(b.generated_qty), quota: num(b.quota) }) }}</span>
               </div>
-              <el-table v-if="b.shown.length" :data="b.shown" size="small" class="lines" :row-class-name="lineClass" @row-click="onLineClick">
+              <el-table v-if="b.shown.length" v-show="!isFolded(b.bill_no)" :data="b.shown" size="small" class="lines" :row-class-name="lineClass" @row-click="onLineClick">
                 <el-table-column width="52">
                   <template #default="{ row }">
                     <span class="sel" @click.stop>
@@ -232,7 +237,7 @@
                   </template>
                 </el-table-column>
               </el-table>
-              <p v-else-if="!b.lines.length" class="muted no-lines">{{ t("generate.noLines") }}</p>
+              <p v-else-if="!b.lines.length" v-show="!isFolded(b.bill_no)" class="muted no-lines">{{ t("generate.noLines") }}</p>
             </div>
             <p v-if="!shownBills.length" class="muted no-lines">{{ t("common.empty") }}</p>
           </el-tab-pane>
@@ -429,6 +434,7 @@ async function openDetail(key: { pi?: string; bill_no?: string }, filter: Filter
   clearSelection();
   dtab.value = "lines";
   lineFilter.value = filter;
+  foldAll(false);
   await loadCtx(key);
   if (!ctx.value) return;
   detailPi.value = ctx.value.pi_no;
@@ -543,6 +549,19 @@ const shownBills = computed(() => {
 function showTodo() {
   lineFilter.value = "TODO";
   dtab.value = "lines";
+  foldAll(false);
+}
+
+/** 收起的单据（只影响显示，不影响勾选）；换 PI 时全部展开。 */
+const folded = ref(new Set<string>());
+const isFolded = (no: string) => folded.value.has(no);
+function toggleFold(no: string) {
+  const s = new Set(folded.value);
+  if (!s.delete(no)) s.add(no);
+  folded.value = s;
+}
+function foldAll(on: boolean) {
+  folded.value = new Set(on ? shownBills.value.map((b: any) => b.bill_no as string) : []);
 }
 
 const segments = computed<Segment[]>(() => ctx.value?.segments ?? []);
@@ -726,6 +745,10 @@ function pickJob(lines: LineRef[]) {
   sel.value = { bills: [], lines };
   lineFilter.value = "ALL";
   dtab.value = "lines";
+  // 选中的物料行所在单据展开，免得勾上了看不见
+  const s = new Set(folded.value);
+  for (const l of lines) s.delete(l.bill_no);
+  folded.value = s;
 }
 
 // ================================================================ 联动
@@ -787,7 +810,10 @@ onUnmounted(() => {
 .cell-input { display: block; }
 .cell-input .missing :deep(.el-input__wrapper) { box-shadow: 0 0 0 1px var(--el-color-danger) inset; }
 .bill { border: 1px solid var(--el-border-color-lighter); border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
-.bill-h { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 12px; background: var(--el-fill-color-light); }
+.bill-h { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 12px; background: var(--el-fill-color-light); cursor: pointer; user-select: none; }
+.bill-h:hover { background: var(--el-fill-color); }
+.fold { color: var(--app-muted); transition: transform 0.15s; }
+.fold.open { transform: rotate(90deg); }
 .order { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; font-size: 11px; color: #fff; background: var(--el-color-primary); }
 .sel { display: inline-flex; align-items: center; gap: 4px; }
 .lines :deep(tr.picked > td) { background: var(--el-color-primary-light-9); }

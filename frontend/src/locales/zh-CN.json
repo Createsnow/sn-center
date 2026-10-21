@@ -101,7 +101,11 @@
     "mes": "对接 MES",
     "dateFrom": "开始日期",
     "dateTo": "结束日期",
-    "capped": "结果较多，只统计到 {n} 条"
+    "capped": "结果较多，只统计到 {n} 条",
+    "expand": "展开",
+    "collapse": "收起",
+    "expandAll": "全部展开",
+    "collapseAll": "全部收起"
   },
   "status": {
     "PENDING_ALLOC": "待分配",
@@ -347,6 +351,8 @@
     "linesTitle": "待分配的号",
     "linesHint": "勾选物料行作为分配范围，不勾选 = 整张 PI；同一物料行的号一起分到订单的生产组织",
     "nothingPending": "没有待分配的号",
+    "billCounts": "{n} 行 · 待分配 {qty}",
+    "billPicked": "已选 {n} 行",
     "toOrg": "分到",
     "way": "交付方式",
     "wayPush": "对接 MES · 推送",

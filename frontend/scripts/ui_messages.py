@@ -102,6 +102,10 @@ M = {
 "common.dateFrom": ("开始日期", "From", "Từ ngày"),
 "common.dateTo": ("结束日期", "To", "Đến ngày"),
 "common.capped": ("结果较多，只统计到 {n} 条", "Many results; counted up to {n}", "Nhiều kết quả; chỉ đếm tới {n}"),
+"common.expand": ("展开", "Expand", "Mở rộng"),
+"common.collapse": ("收起", "Collapse", "Thu gọn"),
+"common.expandAll": ("全部展开", "Expand all", "Mở rộng tất cả"),
+"common.collapseAll": ("全部收起", "Collapse all", "Thu gọn tất cả"),
 # ---------------- SN 状态 ----------------
 "status.PENDING_ALLOC": ("待分配", "To allocate", "Chờ phân bổ"),
 "status.TO_PUSH": ("待推送", "To push", "Chờ đẩy"),

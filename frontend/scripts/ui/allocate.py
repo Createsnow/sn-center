@@ -17,6 +17,8 @@ M = {
 "allocate.linesTitle": ("待分配的号", "SNs to allocate", "SN chờ phân bổ"),
 "allocate.linesHint": ("勾选物料行作为分配范围，不勾选 = 整张 PI；同一物料行的号一起分到订单的生产组织", "Tick lines as the scope, nothing ticked = whole PI; a line's SNs go together to the order's production org", "Chọn dòng làm phạm vi, không chọn = cả PI; SN của một dòng được phân bổ cùng nhau cho tổ chức SX của lệnh"),
 "allocate.nothingPending": ("没有待分配的号", "No SNs to allocate", "Không có SN chờ phân bổ"),
+"allocate.billCounts": ("{n} 行 · 待分配 {qty}", "{n} lines · to allocate {qty}", "{n} dòng · chờ phân bổ {qty}"),
+"allocate.billPicked": ("已选 {n} 行", "{n} lines ticked", "Đã chọn {n} dòng"),
 "allocate.toOrg": ("分到", "To org", "Phân bổ cho"),
 "allocate.way": ("交付方式", "Delivery", "Cách giao"),
 "allocate.wayPush": ("对接 MES · 推送", "MES · push", "MES · đẩy"),

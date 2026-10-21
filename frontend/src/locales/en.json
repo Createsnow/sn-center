@@ -101,7 +101,11 @@
     "mes": "MES integration",
     "dateFrom": "From",
     "dateTo": "To",
-    "capped": "Many results; counted up to {n}"
+    "capped": "Many results; counted up to {n}",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "expandAll": "Expand all",
+    "collapseAll": "Collapse all"
   },
   "status": {
     "PENDING_ALLOC": "To allocate",
@@ -347,6 +351,8 @@
     "linesTitle": "SNs to allocate",
     "linesHint": "Tick lines as the scope, nothing ticked = whole PI; a line's SNs go together to the order's production org",
     "nothingPending": "No SNs to allocate",
+    "billCounts": "{n} lines · to allocate {qty}",
+    "billPicked": "{n} lines ticked",
     "toOrg": "To org",
     "way": "Delivery",
     "wayPush": "MES · push",

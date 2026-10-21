@@ -101,7 +101,11 @@
     "mes": "Kết nối MES",
     "dateFrom": "Từ ngày",
     "dateTo": "Đến ngày",
-    "capped": "Nhiều kết quả; chỉ đếm tới {n}"
+    "capped": "Nhiều kết quả; chỉ đếm tới {n}",
+    "expand": "Mở rộng",
+    "collapse": "Thu gọn",
+    "expandAll": "Mở rộng tất cả",
+    "collapseAll": "Thu gọn tất cả"
   },
   "status": {
     "PENDING_ALLOC": "Chờ phân bổ",
@@ -347,6 +351,8 @@
     "linesTitle": "SN chờ phân bổ",
     "linesHint": "Chọn dòng làm phạm vi, không chọn = cả PI; SN của một dòng được phân bổ cùng nhau cho tổ chức SX của lệnh",
     "nothingPending": "Không có SN chờ phân bổ",
+    "billCounts": "{n} dòng · chờ phân bổ {qty}",
+    "billPicked": "Đã chọn {n} dòng",
     "toOrg": "Phân bổ cho",
     "way": "Cách giao",
     "wayPush": "MES · đẩy",
