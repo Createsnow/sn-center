@@ -161,7 +161,7 @@ class CurrentUser:
 
     @property
     def is_super_admin(self) -> bool:
-        """内置 admin 账户：唯一可以管理账户的人；其他系统管理员不能建账户。"""
+        """系统管理员账户：唯一可以管理账户的人；其他管理员不能建账户。"""
         return self.source != SYSTEM and util.is_super_admin(self.emp_no, self.role)
 
     @property

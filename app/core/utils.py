@@ -43,7 +43,7 @@ ROLES = frozenset((ADMIN, FACTORY, QUERY, MES))
 
 
 def is_super_admin(emp_no: str | None, role: str | None) -> bool:
-    """内置管理员（工号 = SN_INIT_ADMIN_EMP_NO，默认 admin）：只有它能管理账户（建、改、停用、启用、重置密码）。"""
+    """系统管理员（工号 = SN_INIT_ADMIN_EMP_NO，默认 admin）：只有它能管理账户（建、改、停用、启用、重置密码）。"""
     return role == ADMIN and emp_no == settings.init_admin_emp_no
 
 

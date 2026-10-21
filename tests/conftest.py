@@ -356,7 +356,7 @@ def admin(app_client) -> str:
     api = Api(app_client)
     r = api.page_login("admin", ADMIN_PASSWORD)
     assert r.status == 200, str(r)
-    assert r["user"]["must_change_pwd"] is False, "built-in admin from .env works without a password change"
+    assert r["user"]["must_change_pwd"] is False, "system admin from .env works without a password change"
     return r.text("token")
 
 

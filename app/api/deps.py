@@ -90,7 +90,7 @@ def require_role(*roles: str) -> Callable[[Request], CurrentUser]:
 
 
 def require_super_admin(request: Request) -> CurrentUser:
-    """账户管理：只有内置 admin 账户；其他系统管理员也不行。"""
+    """账户管理：只有系统管理员账户；其他管理员也不行。"""
     cu = authenticate(request)
     if not cu.is_super_admin:
         raise biz(ErrorCode.USER_MANAGE_FORBIDDEN)

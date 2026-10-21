@@ -11,7 +11,7 @@
     "language": "Ngôn ngữ",
     "allFactories": "Tất cả tổ chức sản xuất",
     "readonly": "Chỉ xem",
-    "superAdmin": "Quản trị tích hợp",
+    "superAdmin": "Quản trị hệ thống",
     "scope": "Phạm vi dữ liệu",
     "roleShort": {
       "admin": "Quản trị viên",
@@ -188,7 +188,7 @@
     "DELETED": "Đã xóa"
   },
   "roles": {
-    "admin": "Quản trị viên (trụ sở)",
+    "admin": "Quản trị viên",
     "factory_operator": "Nhân viên tổ chức sản xuất",
     "query": "Người tra cứu",
     "mes": "Tài khoản giao diện MES"
@@ -273,11 +273,11 @@
     "empNo": "Mã nhân viên",
     "password": "Mật khẩu",
     "submit": "Đăng nhập",
-    "hint": "Tài khoản do quản trị viên tích hợp tạo theo mã nhân viên; hãy hỏi quản trị viên mật khẩu."
+    "hint": "Tài khoản do quản trị viên hệ thống tạo theo mã nhân viên; hãy hỏi quản trị viên hệ thống mật khẩu."
   },
   "password": {
     "title": "Đổi mật khẩu",
-    "forced": "Mật khẩu đã được quản trị viên đặt lại: vui lòng đổi mật khẩu trước.",
+    "forced": "Mật khẩu đã được quản trị viên hệ thống đặt lại: vui lòng đổi mật khẩu trước.",
     "old": "Mật khẩu hiện tại",
     "new": "Mật khẩu mới",
     "confirm": "Xác nhận mật khẩu mới",
@@ -1068,7 +1068,7 @@
   },
   "users": {
     "title": "Tài khoản",
-    "desc": "Chỉ quản trị viên tích hợp mới được tạo, sửa, vô hiệu, kích hoạt tài khoản và đặt lại mật khẩu; tài khoản chỉ bị vô hiệu, không bị xóa. Tài khoản giao diện MES không đăng nhập trang, dùng mã NV + khóa bí mật để lấy mã thông báo gọi API MES.",
+    "desc": "Chỉ quản trị viên hệ thống mới được tạo, sửa, vô hiệu, kích hoạt tài khoản và đặt lại mật khẩu; tài khoản chỉ bị vô hiệu, không bị xóa. Tài khoản giao diện MES không đăng nhập trang, dùng mã NV + khóa bí mật để lấy mã thông báo gọi API MES.",
     "tabAll": "Tài khoản",
     "tabMes": "Tài khoản giao diện MES",
     "create": "Tạo tài khoản",
@@ -1080,7 +1080,7 @@
     "name": "Họ tên",
     "role": "Vai trò",
     "roleHint": {
-      "admin": "Trụ sở: mọi quyền nghiệp vụ, không gắn tổ chức; không quản lý tài khoản",
+      "admin": "Nhân viên trụ sở: mọi quyền nghiệp vụ, không gắn tổ chức; không quản lý tài khoản (chỉ quản trị viên hệ thống được)",
       "factory_operator": "Chỉ thao tác cho một tổ chức được gắn: nhận SN và gửi / rút yêu cầu chuyển tổ chức",
       "query": "Chỉ xem; không gắn thì xem tất cả, gắn thì chỉ xem tổ chức được gắn",
       "mes": "Chỉ gọi được API kéo, biên nhận và chỉ đọc của tổ chức mình"

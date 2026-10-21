@@ -1,9 +1,9 @@
 # 账户页词条：key -> (简体中文, English, Tiếng Việt)
 M = {
 "users.title": ("账户", "Accounts", "Tài khoản"),
-"users.desc": ("只有内置管理员能创建、修改、停用、启用账户和重置密码；账户只停用、不删除。MES 接口账户不能登录页面，用工号 + 密钥换取令牌后调用 MES 接口。",
-  "Only the built-in administrator can create, edit, disable and enable accounts and reset passwords; accounts are disabled, never deleted. MES interface accounts cannot sign in to pages; they exchange employee No. + secret for a token to call the MES API.",
-  "Chỉ quản trị viên tích hợp mới được tạo, sửa, vô hiệu, kích hoạt tài khoản và đặt lại mật khẩu; tài khoản chỉ bị vô hiệu, không bị xóa. Tài khoản giao diện MES không đăng nhập trang, dùng mã NV + khóa bí mật để lấy mã thông báo gọi API MES."),
+"users.desc": ("只有系统管理员能创建、修改、停用、启用账户和重置密码；账户只停用、不删除。MES 接口账户不能登录页面，用工号 + 密钥换取令牌后调用 MES 接口。",
+  "Only the system administrator can create, edit, disable and enable accounts and reset passwords; accounts are disabled, never deleted. MES interface accounts cannot sign in to pages; they exchange employee No. + secret for a token to call the MES API.",
+  "Chỉ quản trị viên hệ thống mới được tạo, sửa, vô hiệu, kích hoạt tài khoản và đặt lại mật khẩu; tài khoản chỉ bị vô hiệu, không bị xóa. Tài khoản giao diện MES không đăng nhập trang, dùng mã NV + khóa bí mật để lấy mã thông báo gọi API MES."),
 "users.tabAll": ("账户", "Accounts", "Tài khoản"),
 "users.tabMes": ("MES 接口账户", "MES interface accounts", "Tài khoản giao diện MES"),
 "users.create": ("新建账户", "New account", "Tạo tài khoản"),
@@ -14,7 +14,7 @@ M = {
 "users.empNoHint": ("4–32 位字母和数字，创建后不能改", "4–32 letters and digits; cannot change later", "4–32 chữ cái và chữ số; không đổi được sau khi tạo"),
 "users.name": ("姓名", "Name", "Họ tên"),
 "users.role": ("角色", "Role", "Vai trò"),
-"users.roleHint.admin": ("总部：具备全部业务权限，不绑生产组织；不能管理账户", "HQ: all business permissions, no production org; cannot manage accounts", "Trụ sở: mọi quyền nghiệp vụ, không gắn tổ chức; không quản lý tài khoản"),
+"users.roleHint.admin": ("总部人员：具备全部业务权限，不绑生产组织；不能管理账户（只有系统管理员能）", "HQ staff: all business permissions, no production org; cannot manage accounts (only the system administrator can)", "Nhân viên trụ sở: mọi quyền nghiệp vụ, không gắn tổ chức; không quản lý tài khoản (chỉ quản trị viên hệ thống được)"),
 "users.roleHint.factory_operator": ("只操作所绑的一个生产组织：领取本组织的号，提交、撤回本组织的转组织申请", "Acts only for one bound production org: acquires its SNs and submits / withdraws its org transfer requests", "Chỉ thao tác cho một tổ chức được gắn: nhận SN và gửi / rút yêu cầu chuyển tổ chức"),
 "users.roleHint.query": ("只读；不绑看全部，绑了只看所绑的生产组织", "Read-only; unbound sees everything, bound sees only the bound orgs", "Chỉ xem; không gắn thì xem tất cả, gắn thì chỉ xem tổ chức được gắn"),
 "users.roleHint.mes": ("只能调用本生产组织的 MES 拉取、回执与只读接口", "Can only call the MES pull, receipt and read-only APIs of its org", "Chỉ gọi được API kéo, biên nhận và chỉ đọc của tổ chức mình"),

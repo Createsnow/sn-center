@@ -11,7 +11,7 @@
     "language": "Language",
     "allFactories": "All production orgs",
     "readonly": "Read-only",
-    "superAdmin": "Built-in admin",
+    "superAdmin": "System admin",
     "scope": "Data scope",
     "roleShort": {
       "admin": "Administrator",
@@ -188,7 +188,7 @@
     "DELETED": "Deleted"
   },
   "roles": {
-    "admin": "Administrator (HQ)",
+    "admin": "Administrator",
     "factory_operator": "Production org operator",
     "query": "Viewer",
     "mes": "MES interface account"
@@ -273,11 +273,11 @@
     "empNo": "Employee No.",
     "password": "Password",
     "submit": "Sign in",
-    "hint": "Accounts are created by the built-in administrator with the company employee No.; ask the administrator for your password."
+    "hint": "Accounts are created by the system administrator with the company employee No.; ask the system administrator for your password."
   },
   "password": {
     "title": "Change password",
-    "forced": "Your password was reset by the administrator: please change it first.",
+    "forced": "Your password was reset by the system administrator: please change it first.",
     "old": "Current password",
     "new": "New password",
     "confirm": "Confirm new password",
@@ -1068,7 +1068,7 @@
   },
   "users": {
     "title": "Accounts",
-    "desc": "Only the built-in administrator can create, edit, disable and enable accounts and reset passwords; accounts are disabled, never deleted. MES interface accounts cannot sign in to pages; they exchange employee No. + secret for a token to call the MES API.",
+    "desc": "Only the system administrator can create, edit, disable and enable accounts and reset passwords; accounts are disabled, never deleted. MES interface accounts cannot sign in to pages; they exchange employee No. + secret for a token to call the MES API.",
     "tabAll": "Accounts",
     "tabMes": "MES interface accounts",
     "create": "New account",
@@ -1080,7 +1080,7 @@
     "name": "Name",
     "role": "Role",
     "roleHint": {
-      "admin": "HQ: all business permissions, no production org; cannot manage accounts",
+      "admin": "HQ staff: all business permissions, no production org; cannot manage accounts (only the system administrator can)",
       "factory_operator": "Acts only for one bound production org: acquires its SNs and submits / withdraws its org transfer requests",
       "query": "Read-only; unbound sees everything, bound sees only the bound orgs",
       "mes": "Can only call the MES pull, receipt and read-only APIs of its org"

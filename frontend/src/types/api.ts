@@ -25,7 +25,7 @@ export interface UserView {
   factory_codes: string[];
   factory_names: string[];
   status: string;
-  /** 内置 admin 账户（唯一能管理账户） */
+  /** 系统管理员账户（唯一能管理账户） */
   super_admin: boolean;
   /** MES 接口账户的来源地址白名单 */
   ip_whitelist: string | null;

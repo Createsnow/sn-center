@@ -25,8 +25,8 @@
         <el-table-column prop="name" :label="t('users.name')" min-width="110" show-overflow-tooltip />
         <el-table-column :label="t('users.role')" width="150">
           <template #default="{ row }">
-            <span>{{ roleLabel(row.role) }}</span>
-            <el-tag v-if="row.super_admin" size="small" class="ml">{{ t("app.superAdmin") }}</el-tag>
+            <el-tag v-if="row.super_admin" size="small">{{ t("app.superAdmin") }}</el-tag>
+            <span v-else>{{ roleLabel(row.role) }}</span>
           </template>
         </el-table-column>
         <el-table-column :label="t('common.factory')" min-width="160" show-overflow-tooltip>

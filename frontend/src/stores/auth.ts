@@ -20,7 +20,7 @@ export const useAuthStore = defineStore("auth", () => {
 
   const role = computed(() => profile.value?.role || "");
   const isAdmin = computed(() => role.value === "admin");
-  /** 内置 admin 账户：唯一能管理账户的人。 */
+  /** 系统管理员账户：唯一能管理账户的人。 */
   const isSuperAdmin = computed(() => !!profile.value?.super_admin);
   const isFactory = computed(() => role.value === "factory_operator");
   const isQuery = computed(() => role.value === "query");
