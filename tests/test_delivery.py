@@ -279,3 +279,49 @@ def test_pull_scope_checks(w, sql):
     w.enable_mes(other)
     t2, _ = w.mes_account(other)
     assert w.mes_next(t2, pi=pi).code == "ORG_NOT_ALLOWED", "不能拉别的组织的 PI"
+
+
+def test_stale_receipt_alerts_version_expired(w, sql):
+    """9.2-12：MES 已有更大的 rev（本系统数据曾回退）→ 回执 STALE，批次成功并告警「版本过期」。"""
+    org, pi, bill = setup_pi(w, qty=2, batch_size=5)
+    w.allocate(pi)
+    sn = sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec LIMIT 1", pi)
+    MES.store.setdefault(org, {})[sn] = {"rev": 5, "lastBatchNo": "PS-OLD", "transferredOut": False}
+    w.push()
+    b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
+    assert (b["result"], b["stale_qty"], b["accepted_qty"]) == ("SUCCESS", 1, 1)
+    a = sql.one("SELECT * FROM sn_delivery_alert WHERE sn = %s", sn)
+    assert (a["alert_type"], a["existing_rev"], a["existing_batch_no"]) == ("STALE", 5, "PS-OLD")
+    assert MES.store[org][sn]["rev"] == 5, "MES 不用更小的 rev 覆盖"
+
+
+def test_rejected_batch_voided_rebatches_and_refuses_voided(w, sql):
+    """9.2-5、9、15：整批拒收 → 取批跳过、可按批次号取回 → 作废后号重新组批送达；作废的批次取回、回执都被拒绝。"""
+    org, pi, bill = setup_pi(w, qty=3, batch_size=5)
+    MES.set_fault(org, {"mode": "reject"})
+    w.allocate(pi)
+    w.push()
+    b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
+    assert (b["result"], b["voidable"]) == ("FAILED", 1)
+    assert b["batch_no"] not in MES.batches.get(org, {}), "整批拒收不登记批次号"
+    token, _ = w.mes_account(org)
+    assert ok(w.mes_next(token))["batch"] is None, "失败的批次不再给"
+    back = ok(w.mes_next(token, batchNo=b["batch_no"]))
+    assert back["batch"]["batchNo"] == b["batch_no"] and back["batchResult"] == "FAILED"
+    ok(w.api.post(f"/api/delivery/batches/{b['batch_no']}/void", m(reason="整批拒收", basis="MES 确认未处理"), w.admin))
+    assert w.mes_next(token, batchNo=b["batch_no"]).code == "BATCH_VOIDED"
+    items = back["batch"]["items"]
+    late = {
+        "schemaVersion": "1.0",
+        "batchNo": b["batch_no"],
+        "outcome": "PROCESSED",
+        "summary": {"total": len(items), "accepted": len(items), "duplicate": 0, "conflict": 0, "stale": 0},
+        "results": [{"sn": x["sn"], "rev": x["rev"], "result": "ACCEPTED"} for x in items],
+    }
+    assert w.mes_receipt(token, b["batch_no"], late).code == "BATCH_VOIDED"
+    MES.clear_fault(org)
+    ok(w.api.post("/api/delivery/resume", m(factory_code=org, key=pi), w.admin))
+    w.push()
+    rows = sql.all("SELECT batch_no, qty, result FROM sn_delivery_batch WHERE pi_no = %s ORDER BY id", pi)
+    assert [(r["qty"], r["result"]) for r in rows] == [(3, "VOIDED"), (3, "SUCCESS")]
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED' AND rev = 1", pi) == 3

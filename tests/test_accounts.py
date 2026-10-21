@@ -97,7 +97,7 @@ def test_org_sync_keeps_code_and_marks_disabled(w, api, sql):
 def test_mes_enable_requires_test_and_disable_blocked(w, api, sql):
     org = w.org(uid("O")[:10])
     assert api.post(f"/api/factories/{org}/mes-toggle", m(enabled=True), w.admin).code == "MES_TEST_REQUIRED"
-    MES.tokens[org] = "t"
+    MES.secrets[org] = "t"
     bad = api.post(f"/api/factories/{org}/mes-test", m(mes_url=MES.url(org), mes_credential="wrong"), w.admin)
     assert ok(bad)["ok"] is False
     w.enable_mes(org, batch_size=5)

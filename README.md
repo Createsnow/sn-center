@@ -18,6 +18,7 @@
 | [MES 对接说明（精简版）](<docs/SN 防重管控 · MES 对接说明（精简版）.md>) | 给 MES 方的接口契约：推送、换令牌、取批、回执、只读核对、报文字段、处理逻辑 |
 | [系统技术方案](docs/系统技术方案.md) | 正式评审稿（Word 版用 `docs/build_tech_docx.py` 生成）：总体、数据、功能、非功能设计 |
 | [运维手册](docs/运维手册.md) | MySQL 准备、`.env`、启动方式、上线步骤、清库重建、排障 |
+| [MES 联调指南](<docs/MES 联调指南.md>) | MES 方未接入时的验证方法：模拟 MES、MES 接口契约测试、PRD 9.2 场景对照表 |
 
 ## 快速开始
 
@@ -57,10 +58,15 @@ uv sync && uv run uvicorn app.main:app --reload --port 8000   # 后端（读仓�
 cd frontend && npm install && npm run dev      # 前端 5173，代理 /api 到 8000
 
 uv run pytest -q                               # 单元 + 集成测试（集成测试需 MySQL，默认 127.0.0.1:3306/sndb_test_py，会整库重建，不要指向 sn_dev / sn_test / sn_prod；连不上自动跳过）
-uv run ruff check app tests                    # 代码检查
+uv run ruff check app tests devtools           # 代码检查
 node --test frontend/src/*.test.js             # 前端测试
 python3 frontend/scripts/gen_locales.py        # 改了词条 / 错误码后重新生成三种语言文件
+
+uv run python -m devtools.mes_mock serve --port 9001 --secret 110=tok-110   # 模拟 MES（接收推送、注入故障、取批）
+uv run python -m devtools.mes_conformance --url <MES 地址> --org 110 --secret <令牌>   # MES 接收接口契约测试
 ```
+
+MES 方未接入时的联调方法见 [MES 联调指南](<docs/MES 联调指南.md>)。
 
 ## 目录
 
@@ -74,7 +80,8 @@ app/                         FastAPI 后端
   services/                  业务服务：orders / changes（订单与变更）、rules、generate（生成与撤销）、allocation（分配）、
                              workbench（生成页与分配页共用的 PI 列表）、delivery/（交付批次：建批、回执、推送、人工处理、
                              MES 拉取、页面查询、每日自检）、acquire、transfers、query、audit 等
-tests/                       pytest：单元测试 + 集成测试（真实 MySQL + 假金蝶 + 假 MES）
+tests/                       pytest：单元测试 + 集成测试（真实 MySQL + 假金蝶 + 模拟 MES）
+devtools/                    联调工具（不随应用部署）：mes_mock.py 模拟 MES、mes_conformance.py MES 接口契约测试
 frontend/                    Vue 3 + Vite + Element Plus
   src/views/                 各页面；页面的子组件放在同名小写目录（views/generate、views/query、views/transfer）
   src/components/            共用组件；components/batch 为交付 / 领取批次详情与人工确认、作废（分配、转移、查询页共用）
