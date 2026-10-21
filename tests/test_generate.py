@@ -86,9 +86,19 @@ def test_custom_rule_saved_only_after_success(w, sql):
     assert sql.count("SELECT COUNT(*) FROM sn_rule") == 0, "生成前不留规则"
     w.generate(pi)
     r = sql.one("SELECT * FROM sn_rule")
-    assert r["rule_name"] == f"{pi}_9148363" and r["rule_code"] == f"PI-{pi}-1"
+    assert r["rule_name"] == f"{pi}_v1" and r["rule_code"] == f"PI-{pi}-1"
     assert sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec LIMIT 1", pi) == f"{p}10.50000001"
     assert sql.scalar("SELECT rule_id FROM sn_line_rule WHERE bill_no = %s", bill) == r["id"]
+
+
+def test_custom_rule_names_follow_code_number(w, sql):
+    """同一 PI 的第 n 条自定义规则：编码 PI-PI号-n，名称 PI号_vn。"""
+    org, pi, bill = mk(w, ("M1", 3), ("M2", 3))
+    ok(w.select(pi, [(bill, 1)], custom=m(prefix=P(), base=10, seq_len=6, with_length=True)))
+    ok(w.select(pi, [(bill, 2)], custom=m(prefix=P(), base=10, seq_len=6, with_length=True)))
+    w.generate(pi)
+    rows = sql.all("SELECT rule_code, rule_name FROM sn_rule ORDER BY rule_code")
+    assert [(r["rule_code"], r["rule_name"]) for r in rows] == [(f"PI-{pi}-1", f"{pi}_v1"), (f"PI-{pi}-2", f"{pi}_v2")]
 
 
 def test_customer_template_requires_prefix(w, api):

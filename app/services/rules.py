@@ -9,7 +9,8 @@
 
 规则选取按物料行：物料行已选规则 ＞ PI 绑定规则 ＞ 客户绑定规则（作模板，每张 PI 首次使用须换前缀）。
 选法：规则库（选一条规则，本 PI 用哪一版见 resolve）或自定义（前缀、进制、位数、是否带长度、后缀）；
-自定义规则生成成功后存入规则库并归属本 PI（名称 PI号_物料编码，编码 PI-PI号-n），生成失败或取消不留规则。
+自定义规则生成成功后存入规则库并归属本 PI（编码 PI-PI号-n，名称 PI号_vn，n 为本 PI 第几条自定义规则），
+生成失败或取消不留规则。
 物料行生成过号后可改选，已生成的号不变，流水接续。
 """
 
@@ -905,23 +906,23 @@ def options(pi: str | None, customer: str | None) -> list[dict]:
 _CODE_UNSAFE = re.compile(r"[^A-Za-z0-9_-]")
 
 
-def _custom_names(pi: str, material: str) -> tuple[str, str]:
-    """自定义规则：编码 PI-PI号-n，名称 PI号_物料编码。"""
+def _custom_names(pi: str) -> tuple[str, str]:
+    """自定义规则：编码 PI-PI号-n，名称 PI号_vn（n 为本 PI 第几条自定义规则，两者一致）。"""
     stem = "PI-" + _CODE_UNSAFE.sub("_", pi)[:50] + "-"
     taken = set(db.column("SELECT rule_code FROM sn_rule WHERE rule_code LIKE %s", util.like_prefix(stem)))
     k = 1
     while f"{stem}{k}" in taken:
         k += 1
-    return f"{stem}{k}", util.cut(f"{pi}_{material or '空'}", 128)
+    return f"{stem}{k}", util.cut(f"{pi}_v{k}", 128)
 
 
-def realize(cu: CurrentUser, pi: str, res: Resolved, material: str, lines: list[tuple[str, int]]) -> dict:
+def realize(cu: CurrentUser, pi: str, res: Resolved, lines: list[tuple[str, int]]) -> dict:
     """生成事务内：把本次要用的版本落库、标记已使用并归属本 PI，返回版本行。
     与预演时的判断不一致（期间被别的 PI 先用、前缀被占用）时报预演已失效。"""
     if res.plan == PLAN_NEW:
         spec = res.spec()
         check_prefix(spec.prefix)
-        code, name = _custom_names(pi, material)
+        code, name = _custom_names(pi)
         rid = _insert_rule(cu, code, name, spec, (PI, pi), " (自定义规则，生成成功后存入规则库)", claimed_pi=pi)
         # 物料行改记为这条规则
         for no, seq in lines:

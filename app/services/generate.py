@@ -510,7 +510,7 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
             continue
         same = [(y["bill_no"], y["seq"]) for y in plan["items"] if y["rule_key"] == x["rule_key"]]
         res = _resolved_of(pi, x)
-        versions[x["rule_key"]] = rules.realize(cu, pi, res, x["material_code"], same)
+        versions[x["rule_key"]] = rules.realize(cu, pi, res, same)
     for no in {x["bill_no"] for x in plan["items"]}:
         changes.ensure_ledger(no)
     done = 0
