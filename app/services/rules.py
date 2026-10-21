@@ -35,7 +35,7 @@ PI = "PI"
 CATEGORIES = frozenset((NONE, CUSTOMER, PI))
 _CODE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 #: 自定义规则的流水位数默认（规则库的默认值由页面给出）
-CUSTOM_SEQ_LEN = 6
+CUSTOM_SEQ_LEN = 4
 
 #: 规则来源（生效顺序）
 SRC_LINE = "LINE"
@@ -556,7 +556,7 @@ def _custom_spec(c: dict) -> codec.Spec:
             c.get("base") or 10,
             c.get("seq_len") or CUSTOM_SEQ_LEN,
             None,
-            c.get("with_length", True),
+            c.get("with_length", False),
         )
     )
 

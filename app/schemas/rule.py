@@ -36,12 +36,12 @@ class LineRef(In):
 
 
 class CustomRuleIn(In):
-    """自定义规则：前缀必填；进制默认 10，流水位数默认 6，默认带长度，后缀选填。"""
+    """自定义规则：前缀必填（生成页默认取单据号后 7 位）；进制默认 10，流水位数默认 4，默认不带长度，后缀选填。"""
 
     prefix: str | None = None
     base: int | None = None
     seq_len: int | None = None
-    with_length: bool | None = True
+    with_length: bool | None = False
     suffix: str | None = None
 
 

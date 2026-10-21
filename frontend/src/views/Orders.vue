@@ -58,11 +58,9 @@
             <el-table v-loading="state.loading" :data="items" highlight-current-row size="small" height="100%"
               :empty-text="t('common.empty')" @current-change="select">
               <el-table-column prop="bill_no" :label="t('common.billNo')" min-width="130" show-overflow-tooltip />
-              <el-table-column prop="customer_code" :label="t('common.customer')" width="90" show-overflow-tooltip />
               <el-table-column prop="pi" label="PI" min-width="130" show-overflow-tooltip />
-              <el-table-column prop="po" label="PO" min-width="110" show-overflow-tooltip />
-              <el-table-column :label="t('common.factory')" min-width="120" show-overflow-tooltip>
-                <template #default="{ row }">{{ row.org_name }}<span class="muted">（{{ row.org_code }}）</span></template>
+              <el-table-column :label="t('orders.state')" min-width="120">
+                <template #default="{ row }"><BillTags :s="row" /></template>
               </el-table-column>
               <el-table-column :label="t('orders.totalQty')" align="right" width="80">
                 <template #default="{ row }"><span class="num">{{ row.total_qty }}</span></template>
@@ -73,9 +71,11 @@
               <el-table-column :label="t('orders.quota')" align="right" width="72">
                 <template #default="{ row }"><span class="num" :class="{ zero: !row.quota }">{{ row.quota }}</span></template>
               </el-table-column>
-              <el-table-column :label="t('orders.state')" min-width="120">
-                <template #default="{ row }"><BillTags :s="row" /></template>
+              <el-table-column :label="t('common.factory')" min-width="120" show-overflow-tooltip>
+                <template #default="{ row }">{{ row.org_name }}<span class="muted">（{{ row.org_code }}）</span></template>
               </el-table-column>
+              <el-table-column prop="po" label="PO" min-width="110" show-overflow-tooltip />
+              <el-table-column prop="customer_code" :label="t('common.customer')" width="90" show-overflow-tooltip />
             </el-table>
           </div>
           <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="state.total" :page-size="state.pageSize"

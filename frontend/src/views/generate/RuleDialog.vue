@@ -5,7 +5,7 @@
       <span v-for="l in lines.slice(0, 6)" :key="`${l.bill_no}#${l.seq}`" class="tg">{{ l.bill_no }} / {{ l.seq }} · {{ l.material_code || "—" }}</span>
       <span v-if="lines.length > 6">…</span>
     </div>
-    <el-radio-group v-model="mode" class="mb">
+    <el-radio-group v-model="mode" class="mb" @change="(v: any) => v === 'CUSTOM' && schedule()">
       <el-radio-button value="LIBRARY" :disabled="!options.length">{{ t("generate.rule.library") }}</el-radio-button>
       <el-radio-button value="CUSTOM">{{ t("generate.rule.custom") }}</el-radio-button>
     </el-radio-group>
@@ -92,7 +92,9 @@ const mode = ref<"LIBRARY" | "CUSTOM">("LIBRARY");
 const kw = ref("");
 const picked = ref<any>(null);
 const newPrefix = ref("");
-const custom = reactive({ prefix: "", base: 10, seq_len: 6, with_length: true, suffix: "" });
+/** 自定义规则默认：前缀取单据号后 7 位，流水 4 位，不带长度。 */
+const customDefault = () => ({ prefix: (props.lines[0]?.bill_no ?? "").slice(-7), base: 10, seq_len: 4, with_length: false, suffix: "" });
+const custom = reactive(customDefault());
 const sample = reactive({ sn: "", format: "", max: 0, error: "" });
 const busy = ref("");
 
@@ -121,7 +123,7 @@ function onOpen() {
     Object.assign(custom, cur.custom);
   } else {
     mode.value = props.options.length ? "LIBRARY" : "CUSTOM";
-    Object.assign(custom, { prefix: "", base: 10, seq_len: 6, with_length: true, suffix: "" });
+    Object.assign(custom, customDefault());
   }
   picked.value = cur?.rule_id ? props.options.find((o) => o.rule_id === cur.rule_id) ?? null : null;
   if (mode.value === "CUSTOM") schedule();

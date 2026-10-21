@@ -88,6 +88,16 @@ def test_validation():
     assert codec.validate(HX) is None
 
 
+def test_custom_rule_defaults_four_digits_without_length():
+    from app.schemas.rule import CustomRuleIn
+    from app.services import rules
+
+    c = CustomRuleIn(prefix="6090001").model_dump()
+    s = rules._custom_spec(c)
+    assert (s.seq_len, s.with_length) == (4, False)
+    assert codec.format_sn(1, s, "100") == "60900010001"
+
+
 # ---------------------------------------------------------------------- 金蝶解析（附录 D.1）
 
 

@@ -176,7 +176,7 @@ const customers = ref<string[]>([]);
 const sample = ref<any>(null);
 const sampleError = ref("");
 const sampleLength = ref("");
-/** 规则库流水位数默认 5（自定义规则默认 6，在生成页）。 */
+/** 规则库流水位数默认 5（自定义规则默认 4，在生成页）。 */
 const EMPTY = { rule_code: "", rule_name: "", category_scope: "NONE", category_value: "", prefix: "", suffix: "", base: 10, seq_len: 5, charset: "", with_length: true };
 const form = reactive({ ...EMPTY });
 const defaultCharset = computed(() => CHARSETS[form.base]);
