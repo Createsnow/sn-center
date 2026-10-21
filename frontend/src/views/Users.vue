@@ -38,7 +38,6 @@
         <el-table-column :label="t('common.status')" width="150">
           <template #default="{ row }">
             <el-tag size="small" :type="row.status === 'ACTIVE' ? 'success' : 'info'">{{ row.status === "ACTIVE" ? t("users.active") : t("users.disabled") }}</el-tag>
-            <el-tag v-if="row.must_change_pwd" size="small" type="warning" class="ml">{{ t("users.mustChange") }}</el-tag>
             <el-tooltip v-if="isLocked(row)" :content="t('users.lockedUntil', { time: fmt(row.locked_until) })">
               <el-tag size="small" type="danger" class="ml">{{ t("users.locked") }}</el-tag>
             </el-tooltip>

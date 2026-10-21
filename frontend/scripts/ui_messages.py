@@ -245,7 +245,7 @@ M = {
   "Accounts are created by the system administrator with the company employee No.; ask the system administrator for your password.",
   "Tài khoản do quản trị viên hệ thống tạo theo mã nhân viên; hãy hỏi quản trị viên hệ thống mật khẩu."),
 "password.title": ("修改密码", "Change password", "Đổi mật khẩu"),
-"password.forced": ("密码已被系统管理员重置，请先修改密码。", "Your password was reset by the system administrator: please change it first.", "Mật khẩu đã được quản trị viên hệ thống đặt lại: vui lòng đổi mật khẩu trước."),
+"password.relogin": ("修改成功后本账户所有页面都会退出，须用新密码重新登录。", "After the change every page signed in with this account signs out; sign in again with the new password.", "Sau khi đổi, mọi trang đang đăng nhập tài khoản này sẽ thoát; hãy đăng nhập lại bằng mật khẩu mới."),
 "password.old": ("当前密码", "Current password", "Mật khẩu hiện tại"),
 "password.new": ("新密码", "New password", "Mật khẩu mới"),
 "password.confirm": ("确认新密码", "Confirm new password", "Xác nhận mật khẩu mới"),

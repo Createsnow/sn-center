@@ -7,7 +7,7 @@ E = {
 "ACCOUNT_DISABLED": ("Account is disabled", "Tài khoản đã bị vô hiệu"),
 "SESSION_REPLACED": ("This account signed in on another page; this page has been signed out", "Tài khoản đã đăng nhập ở trang khác; trang này đã đăng xuất"),
 "MES_NO_PAGE_LOGIN": ("MES interface accounts cannot sign in to pages", "Tài khoản giao diện MES không thể đăng nhập trang"),
-"PASSWORD_CHANGE_REQUIRED": ("Your password was reset by the system administrator: please change it first", "Mật khẩu đã được quản trị viên hệ thống đặt lại: vui lòng đổi mật khẩu trước"),
+"PASSWORD_CHANGED": ("Your password was changed or reset: please sign in again with the new password", "Mật khẩu đã được đổi hoặc đặt lại: vui lòng đăng nhập lại bằng mật khẩu mới"),
 "FORBIDDEN": ("Your role is not allowed to do this", "Vai trò của bạn không được phép"),
 "FACTORY_FORBIDDEN": ("You can only operate SNs of your production org: {factory}", "Chỉ được thao tác SN của tổ chức sản xuất mình: {factory}"),
 "VALIDATION": ("Invalid parameter: {detail}", "Tham số không hợp lệ: {detail}"),

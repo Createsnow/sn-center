@@ -32,7 +32,6 @@ export interface UserView {
   locked_until: string | null;
   /** 显示时区（分钟，东八区 = 480） */
   tz_offset_min: number;
-  must_change_pwd: boolean;
   lang: string | null;
   last_login_at: string | null;
   created_at: string;

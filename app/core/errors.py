@@ -23,7 +23,7 @@ class ErrorCode(Enum):
     ACCOUNT_DISABLED = (401, "账户已停用")
     SESSION_REPLACED = (401, "该账户已在其他页面登录，本页已退出")
     MES_NO_PAGE_LOGIN = (403, "MES 接口账户不能登录页面")
-    PASSWORD_CHANGE_REQUIRED = (403, "密码已被系统管理员重置，请先修改密码")
+    PASSWORD_CHANGED = (401, "密码已修改或被重置，请用新密码重新登录")
     FORBIDDEN = (403, "当前角色无权执行该操作")
     FACTORY_FORBIDDEN = (403, "只能操作本生产组织的号：{factory}")
     VALIDATION = (422, "参数不合法：{detail}")

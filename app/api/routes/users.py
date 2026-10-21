@@ -45,7 +45,7 @@ def user_enable(id: int, cu: SuperAdminDep) -> dict:
     return users.enable(cu, id)
 
 
-@router.post("/{id}/reset-password", summary="重置页面账户密码：下次登录须改密，旧令牌失效")
+@router.post("/{id}/reset-password", summary="重置页面账户密码：旧令牌失效，该账户须用新密码重新登录（不强制改密）")
 def user_reset(id: int, body: UserPasswordIn, cu: SuperAdminDep) -> dict:
     return users.reset_password(cu, id, body.password)
 

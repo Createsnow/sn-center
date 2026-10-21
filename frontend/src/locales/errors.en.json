@@ -5,7 +5,7 @@
   "ACCOUNT_DISABLED": "Account is disabled",
   "SESSION_REPLACED": "This account signed in on another page; this page has been signed out",
   "MES_NO_PAGE_LOGIN": "MES interface accounts cannot sign in to pages",
-  "PASSWORD_CHANGE_REQUIRED": "Your password was reset by the system administrator: please change it first",
+  "PASSWORD_CHANGED": "Your password was changed or reset: please sign in again with the new password",
   "FORBIDDEN": "Your role is not allowed to do this",
   "FACTORY_FORBIDDEN": "You can only operate SNs of your production org: {factory}",
   "VALIDATION": "Invalid parameter: {detail}",

@@ -62,7 +62,6 @@ router.beforeEach((to) => {
   const store = useAuthStore();
   if (to.meta.public) return true;
   if (!store.token) return { name: "login", query: { redirect: to.fullPath } };
-  if (store.mustChangePwd && to.name !== "password") return { name: "password" };
   const roles = to.meta.roles as string[] | undefined;
   if (roles && !roles.includes(store.role)) return { path: "/" };
   if (to.meta.superAdmin && !store.isSuperAdmin) return { path: "/" };

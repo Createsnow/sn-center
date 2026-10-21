@@ -39,10 +39,9 @@ def me(cu: UserDep) -> dict:
     return users.me(cu)
 
 
-@router.post("/password", summary="修改自己的密码（被管理员重置后必须先改）；返回新令牌")
-def change_password(body: PasswordIn, cu: UserDep, request: Request) -> dict:
-    page = getattr(request.state, "page_session", False)
-    return users.change_password(cu, body.old_password, body.new_password, page)
+@router.post("/password", summary="修改自己的密码；成功后该账户所有令牌失效（含当前页面），须用新密码重新登录")
+def change_password(body: PasswordIn, cu: UserDep) -> dict:
+    return users.change_password(cu, body.old_password, body.new_password)
 
 
 @router.put("/lang")
