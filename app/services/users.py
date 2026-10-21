@@ -648,8 +648,9 @@ def mes_token(emp_no: str | None, secret: str | None, client: str | None, trace_
                     .factory(u["factory_code"])
                     .info(f"{where} until={util.fmt(until)}"),
                 )
-        elif failures:
-            db.exec("UPDATE sn_user SET auth_failures = 0 WHERE id = %s", u["id"])
+        else:
+            # 账户页「最近换取令牌」；MES 令牌不带登录版本，改它不影响已发的令牌
+            db.exec("UPDATE sn_user SET auth_failures = 0, last_login_at = %s WHERE id = %s", now, u["id"])
     if not matched:
         raise fail(401, "INVALID_CREDENTIALS", "工号或密钥错误")
     ttl = settings.access_token_ttl_seconds

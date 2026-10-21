@@ -21,7 +21,7 @@
   "USER_FACTORY_REQUIRED": "生产组织操作员必须绑定一个生产组织",
   "USER_MES_FACTORY_REQUIRED": "MES 接口账户必须绑定一个「对接 MES = 是」的生产组织",
   "USER_ADMIN_NO_FACTORY": "管理员不绑定生产组织",
-  "USER_PASSWORD_WEAK": "密码须为 8–64 位，同时含字母和数字，只能用字母、数字和 ! @ # $ & *",
+  "USER_PASSWORD_WEAK": "密码须为 8–64 位，同时含字母和数字，只能用字母、数字和 ! {'@'} # $ & *",
   "USER_PASSWORD_WRONG": "原密码不正确",
   "USER_PASSWORD_SAME": "新密码不能与原密码相同",
   "USER_SELF_DISABLE": "不能停用自己的账户",

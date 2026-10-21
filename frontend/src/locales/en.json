@@ -281,7 +281,7 @@
     "old": "Current password",
     "new": "New password",
     "confirm": "Confirm new password",
-    "policy": "8–64 characters with both letters and digits; only letters, digits and ! @ # $ & *",
+    "policy": "8–64 characters with both letters and digits; only letters, digits and ! {'@'} # $ & *",
     "mismatch": "Passwords do not match",
     "done": "Password changed"
   },

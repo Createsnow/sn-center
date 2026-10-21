@@ -52,6 +52,7 @@ def test_mes_account_cannot_login_page_and_secret_once(w, api, sql):
     t = ok(api.call("POST", "/api/mes/v1/auth/token", m(empNo=e, secret=r["secret"]), None, {"X-Real-IP": "10.1.2.3"}))
     assert t["code"] == "OK" and t["expiresIn"] == 43200
     assert api.get("/api/dashboard", t["accessToken"]).code == "FORBIDDEN", "MES 接口账户只能调 MES 接口"
+    assert ok(api.get(f"/api/users?q={e}", w.admin))["items"][0]["last_login_at"], "账户页显示最近换取令牌时间"
 
 
 def test_mes_ip_whitelist(w, api):

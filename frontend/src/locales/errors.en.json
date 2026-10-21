@@ -21,7 +21,7 @@
   "USER_FACTORY_REQUIRED": "Production org operators must be bound to one production org",
   "USER_MES_FACTORY_REQUIRED": "MES interface accounts must be bound to a production org with “MES integration = Yes”",
   "USER_ADMIN_NO_FACTORY": "Administrators are not bound to a production org",
-  "USER_PASSWORD_WEAK": "Password must be 8–64 characters containing both letters and digits; only letters, digits and ! @ # $ & * are allowed",
+  "USER_PASSWORD_WEAK": "Password must be 8–64 characters containing both letters and digits; only letters, digits and ! {'@'} # $ & * are allowed",
   "USER_PASSWORD_WRONG": "Current password is incorrect",
   "USER_PASSWORD_SAME": "New password must differ from the current one",
   "USER_SELF_DISABLE": "You cannot disable your own account",

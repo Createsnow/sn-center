@@ -21,7 +21,7 @@
   "USER_FACTORY_REQUIRED": "Nhân viên tổ chức sản xuất phải gắn một tổ chức sản xuất",
   "USER_MES_FACTORY_REQUIRED": "Tài khoản giao diện MES phải gắn tổ chức sản xuất có “Kết nối MES = Có”",
   "USER_ADMIN_NO_FACTORY": "Quản trị viên không gắn tổ chức sản xuất",
-  "USER_PASSWORD_WEAK": "Mật khẩu 8–64 ký tự, gồm cả chữ và số; chỉ dùng chữ, số và ! @ # $ & *",
+  "USER_PASSWORD_WEAK": "Mật khẩu 8–64 ký tự, gồm cả chữ và số; chỉ dùng chữ, số và ! {'@'} # $ & *",
   "USER_PASSWORD_WRONG": "Mật khẩu hiện tại không đúng",
   "USER_PASSWORD_SAME": "Mật khẩu mới phải khác mật khẩu hiện tại",
   "USER_SELF_DISABLE": "Không thể vô hiệu tài khoản của chính mình",

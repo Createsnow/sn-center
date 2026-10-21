@@ -281,7 +281,7 @@
     "old": "Mật khẩu hiện tại",
     "new": "Mật khẩu mới",
     "confirm": "Xác nhận mật khẩu mới",
-    "policy": "8–64 ký tự, gồm cả chữ và số; chỉ dùng chữ, số và ! @ # $ & *",
+    "policy": "8–64 ký tự, gồm cả chữ và số; chỉ dùng chữ, số và ! {'@'} # $ & *",
     "mismatch": "Hai lần nhập không khớp",
     "done": "Đã đổi mật khẩu"
   },
