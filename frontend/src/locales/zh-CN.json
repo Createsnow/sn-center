@@ -19,7 +19,7 @@
       "query": "查询员"
     },
     "scopeTip": {
-      "hq": "总部视角：可查看全部生产组织，并可代任一生产组织领取",
+      "hq": "总部视角：可查看、导出全部生产组织的号",
       "factory": "仅能查看和操作本生产组织的数据",
       "queryAll": "可查询全部生产组织的数据，不能做任何操作",
       "queryFactory": "仅能查询绑定生产组织的数据，不能做任何操作"
@@ -37,7 +37,7 @@
     "generate": "SN 生成",
     "allocate": "SN 分配",
     "rules": "规则库",
-    "acquire": "页面领取",
+    "export": "SN 导出",
     "transfer": "转单与转组织",
     "query": "SN 与批次查询",
     "audit": "操作痕迹",
@@ -266,7 +266,7 @@
   },
   "login": {
     "title": "登录",
-    "lead": "总部按生产订单物料行统一生成 SN，分配到订单的生产组织；对接 MES 的自动推送，未对接的在页面领取。同一张 PI 下的 SN 不得重复。",
+    "lead": "总部按生产订单物料行统一生成 SN，分配到订单的生产组织；对接 MES 的自动推送，各组织都可在 SN 导出页下载。同一张 PI 下的 SN 不得重复。",
     "point1": "生成前预演，最大号变化即失效",
     "point2": "交付批次带回执，按批次号幂等",
     "point3": "转单、转组织全程留痕",
@@ -285,53 +285,9 @@
     "mismatch": "两次输入不一致",
     "done": "密码已修改"
   },
-  "acquire": {
-    "title": "页面领取",
-    "desc": "按「生产组织 + PI」整批领取，领取即下载文件。未对接 MES 的组织只能在这里领取；对接 MES 的组织在 MES 故障或现场急需时也可领取尚未推送的号，领取的号不会再推送到 MES。",
-    "tabPis": "按 PI 领取",
-    "tabBatches": "领取批次",
-    "tabALL": "全部",
-    "tabACQUIRABLE": "可领取",
-    "tabAPPLYING": "申请中",
-    "mesYes": "对接 MES",
-    "mesNo": "未对接 MES",
-    "piSearch": "按 PI 搜索",
-    "summary": "可领取 {a} 枚 · 申请中 {p} 枚",
-    "queryReadOnly": "查询员只能查看，不能领取",
-    "pushing": "推送中",
-    "acquirable": "可领取",
-    "frozen": "批次未确认",
-    "suspended": "暂停交付",
-    "reassign": "等待改挂重推",
-    "take": "领取",
-    "retry": "重试",
-    "rule": "只按 PI 整批领取。所在批次未确认或失败、单据暂停交付、已推送、已被 MES 拉取、申请中的号都不能领取；同一请求号重复提交返回同一批次。",
-    "picked": "已选 {n} 张 PI，共 {q} 枚",
-    "bulkTake": "批量领取 {n} 张",
-    "bulkConfirm": "逐张领取所选 {n} 张 PI（约 {q} 枚），某张失败不影响其他。继续？",
-    "bulkDone": "成功 {ok} 张，共 {q} 枚；失败 {fail} 张",
-    "bulkResult": "批量领取结果",
-    "requestNo": "请求号",
-    "batchStatus": {
-      "DONE": "已完成",
-      "INCOMPLETE": "未完成"
-    },
-    "confirmTitle": "确认领取",
-    "format": "文件格式",
-    "mesNote": "领取的号不会推送到 MES，MES 也不能再拉取；现场须按领取文件使用。",
-    "retryNote": "上次领取未完成，沿用原请求号接着领取，不会重复领取。",
-    "replayed": "该请求号已领取过，返回原批次 {b}",
-    "taken": "已领取 {n} 枚，批次 {b}",
-    "fileLater": "批次 {b} 枚数较多，请稍后在「领取批次」中下载文件",
-    "toTransfer": "转组织",
-    "piAll": "查看本 PI 各生产组织的号（只读）",
-    "piAllNote": "只读查看：同一 PI 在各生产组织的号段，不能领取其他组织的号。",
-    "segment": "号段（完整 SN / 十进制流水）",
-    "seqOf": "流水归属 {pi}"
-  },
   "allocate": {
     "title": "SN 分配",
-    "desc": "把已生成的号分到订单的生产组织：对接 MES 的改为待推送并自动分批推送，MES 逐批回执确认，中断后可续推；未对接的进入「页面领取」。可按整张 PI 或勾选物料行分配。",
+    "desc": "把已生成的号分到订单的生产组织：对接 MES 的改为待推送并自动分批推送，MES 逐批回执确认，中断后可续推；分配后的号都可在「SN 导出」页下载。可按整张 PI 或勾选物料行分配。",
     "summary": "待分配 {pending} · 待推送 {unbatched}",
     "tab": {
       "TO_ALLOCATE": "待处理",
@@ -356,14 +312,14 @@
     "toOrg": "分到",
     "way": "交付方式",
     "wayPush": "对接 MES · 推送",
-    "wayAcquire": "页面领取",
+    "wayAcquire": "SN 导出",
     "skip": {
       "PI_FROZEN": "PI 变更冻结",
       "REVERSAL": "反审核中",
       "SUSPENDED": "暂停交付"
     },
     "orgPush": "{org} {n} 枚（推送 {m} 次）",
-    "orgAcquire": "{org} {n} 枚（待领取）",
+    "orgAcquire": "{org} {n} 枚（SN 导出页下载）",
     "skippedN": "{n} 张单据将跳过（冻结、反审核或暂停交付）",
     "allocTitle": "分配",
     "allocBtn": "分配 {n} 枚",
@@ -376,7 +332,7 @@
     "tabBatches": "分配记录 {n}",
     "noPush": "还没有向 MES 推送",
     "pushProgress": "第 {i} / {n} 次 · 已推送 {qty} 枚",
-    "acquireNote": "未对接 MES 的组织分配后在页面领取：",
+    "acquireNote": "未对接 MES 的组织分配后在 SN 导出页下载号：",
     "batchSource": "建立方式",
     "batchResult": "结果",
     "confirmMethod": "确认方式",
@@ -445,8 +401,6 @@
       "CONFIRM_RECEIPT": "MES 回执确认",
       "CONFIRM_MANUAL": "人工确认",
       "SN_PULL": "MES 拉取",
-      "SN_ACQUIRE": "页面领取",
-      "SN_ACQUIRE_MES": "页面领取（对接 MES 的组织）",
       "TRANSFER_BILL": "转单"
     },
     "shortcuts": "快捷入口",
@@ -474,6 +428,21 @@
       "CANCELED": "已取消",
       "REVOKED": "已撤销"
     }
+  },
+  "export": {
+    "title": "SN 导出",
+    "desc": "已分配的号按「生产组织 + PI + 单据」列出，不论是否对接 MES。可点明细查看号段，或直接下载 xlsx / csv（列：PI、单据、物料编码、SN）。导出只读、可反复下载，不改变号的状态，对接 MES 的号照常推送、拉取。",
+    "mesYes": "对接 MES",
+    "mesNo": "未对接 MES",
+    "search": "按 PI 或单据编号搜索",
+    "qty": "SN 枚数",
+    "suspended": "暂停 {n}",
+    "rule": "只展示已分配到生产组织的号（待分配的不展示）；下载内容为下载时刻该单据在该生产组织下的全部号。",
+    "fileCols": "文件列：PI、单据、物料编码、SN",
+    "download": "下载 {f}",
+    "seq": "序号",
+    "segment": "号段（完整 SN / 十进制流水）",
+    "seqOf": "流水归属 {pi}"
   },
   "factories": {
     "title": "生产组织",
@@ -522,7 +491,7 @@
     "disableBlockedHint": "请先续推、等待 MES 回执；MES 已停用时，仍无法确认的批次由总部在交付批次中人工确认或作废。",
     "mesOn": "已开启对接 MES",
     "mesOff": "已关闭对接 MES",
-    "disableHint": "金蝶禁用的生产组织不能再绑定账户、不能作转组织转入方；已分到它的号照常领取、推送、拉取、转出。"
+    "disableHint": "金蝶禁用的生产组织不能再绑定账户、不能作转组织转入方；已分到它的号照常导出、推送、拉取、转出。"
   },
   "generate": {
     "title": "SN 生成",
@@ -816,7 +785,7 @@
     "desc": "只读查询 SN 明细、交付批次（推送、拉取、转出）、领取批次与交付告警，按账户可看的生产组织范围过滤；本页不能转走号。",
     "tabSn": "SN 明细",
     "tabDelivery": "交付批次",
-    "tabAcquire": "领取批次",
+    "tabAcquire": "历史领取批次",
     "tabAlerts": "交付告警",
     "suspended": "暂停交付",
     "deliveryMode": "交付方式",
@@ -1041,7 +1010,7 @@
     "toMaterial": "转入物料编码",
     "keepOriginal": "留空沿用原值",
     "pickMaterial": "选择物料（含空物料）",
-    "applyNote": "提交后号变为申请中，不能领取、推送、拉取，等待总部确认；处理前可以撤回。申请期间不通知 MES。",
+    "applyNote": "提交后号变为申请中，不能推送、拉取，等待总部确认；处理前可以撤回。申请期间不通知 MES。",
     "directNote": "总部直接转移：确认后立即改挂，需要时自动推送改挂和转出。",
     "submitApply": "提交申请",
     "submitDirect": "确认转移",
@@ -1055,7 +1024,7 @@
     "resume": "继续推送（剩余 {n} 次）",
     "resumeShort": "继续推送",
     "resumed": "已开始继续推送",
-    "noMes": "未对接 MES，在领取页领取",
+    "noMes": "未对接 MES，在 SN 导出页下载",
     "outBatch": "转出批次",
     "failReason": "失败原因",
     "manualConfirm": "人工确认",
@@ -1081,7 +1050,7 @@
     "role": "角色",
     "roleHint": {
       "admin": "总部人员：具备全部业务权限，不绑生产组织；不能管理账户（只有系统管理员能）",
-      "factory_operator": "只操作所绑的一个生产组织：领取本组织的号，提交、撤回本组织的转组织申请",
+      "factory_operator": "只操作所绑的一个生产组织：查看、导出本组织的号，提交、撤回本组织的转组织申请",
       "query": "只读；不绑看全部，绑了只看所绑的生产组织",
       "mes": "只能调用本生产组织的 MES 拉取、回执与只读接口"
     },

@@ -102,11 +102,9 @@ export const api = {
   deliveryAlerts: (params?: Q) => get("/delivery/alerts", params),
   handleDeliveryAlert: (id: number, action: string, note: string) => post(`/delivery/alerts/${id}/handle`, { action, note }),
 
-  // ---------------- 页面领取
-  acquirePis: (params?: Q) => get("/acquire/pis", params),
-  acquirePreview: (params: Q) => get("/acquire/preview", params),
-  acquireSegments: (params?: Q) => get("/acquire/segments", params),
-  take: (data: Q, silent = false) => post("/acquire/take", data, silent),
+  // ---------------- SN 导出（只读）；历史领取批次
+  exportBills: (params?: Q) => get("/export/bills", params),
+  exportSegments: (params?: Q) => get("/export/segments", params),
   acquireBatches: (params?: Q) => get("/acquire/batches", params),
   acquireBatchItems: (batchNo: string, params?: Q) => get(`/acquire/batches/${enc(batchNo)}/items`, params),
 
@@ -144,6 +142,7 @@ function withQuery(path: string, params: Q) {
 
 const base = import.meta.env.VITE_API_BASE_URL || "/api";
 export const urls = {
+  exportFile: (params: Q) => withQuery(`${base}/export/file`, params),
   acquireFile: (batchNo: string, format = "xlsx") => withQuery(`${base}/acquire/batches/${enc(batchNo)}/file`, { format }),
   deliveryExport: (batchNo: string, format = "xlsx") => withQuery(`${base}/delivery/batches/${enc(batchNo)}/export`, { format }),
   outList: (id: number, format = "xlsx") => withQuery(`${base}/transfers/org/${id}/out-list`, { format }),

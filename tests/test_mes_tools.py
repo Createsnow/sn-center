@@ -6,6 +6,8 @@
 
 from __future__ import annotations
 
+import threading
+
 import httpx
 import pytest
 from conftest import MES, emp, m, ok
@@ -186,3 +188,26 @@ def test_push_response_lost_then_pull_gets_same_receipt(w, sql, app_client):
     assert [d["batchNo"] for d in done] == [b["batch_no"]]
     assert done[0]["body"]["batchResult"] == "SUCCESS"
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 3
+
+
+def test_push_and_pull_concurrently_never_overlap(w, sql, app_client):
+    """9.2-2：推送建批、MES 拉取建批并发取号，同一枚号不会进入两个交付批次。"""
+    org, pi, bill = setup_pi(w, qty=3000, batch_size=300)
+    w.allocate(pi)
+    e, key = _account(w, org)
+    puller = Puller(MES, org, app_client, e, key, log=_quiet)
+    t = threading.Thread(target=puller.run_once)
+    t.start()
+    w.push()
+    t.join()
+    w.push()
+    puller.run_once()
+    twice = sql.count(
+        "SELECT COUNT(*) FROM (SELECT d.sn FROM sn_delivery_item d JOIN sn_delivery_batch b ON b.id = d.batch_id "
+        "WHERE b.pi_no = %s GROUP BY d.sn HAVING COUNT(*) > 1) t",
+        pi,
+    )
+    assert twice == 0, "同一枚号不会进入两个交付批次"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 3000
+    sources = {r["source"] for r in sql.all("SELECT DISTINCT source FROM sn_delivery_batch WHERE pi_no = %s", pi)}
+    assert sources <= {"PUSH", "PULL"} and sources

@@ -149,7 +149,7 @@
                   {{ t("allocate.resumeBtn", { n: p.remaining.pushes }) }}
                 </el-button>
               </div>
-              <p class="muted">{{ t("allocate.acquireNote") }} <router-link to="/acquire">{{ t("nav.acquire") }}</router-link></p>
+              <p class="muted">{{ t("allocate.acquireNote") }} <router-link to="/export">{{ t("nav.export") }}</router-link></p>
             </el-tab-pane>
             <el-tab-pane :label="t('allocate.tabBatches', { n: ctx.batches.length })" name="batches">
               <el-table :data="ctx.batches" size="small" max-height="360" :empty-text="t('common.empty')">

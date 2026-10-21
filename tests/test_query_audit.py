@@ -86,10 +86,9 @@ def test_audit_scope_and_filters(w, api):
     other = w.org(uid("O")[:10])
     op_a = w.user(emp("F"), "factory_operator", a)
     op_b = w.user(emp("F"), "factory_operator", other)
-    ok(w.acquire(op_a, None, pi))
-    rows_a = ok(api.get(f"/api/audits?action=SN_ACQUIRE&pi={pi}", op_a))["items"]
+    rows_a = ok(api.get(f"/api/audits?action=SN_ALLOCATE&pi={pi}", op_a))["items"]
     assert len(rows_a) == 1 and rows_a[0]["factory_code"] == a
-    assert ok(api.get(f"/api/audits?action=SN_ACQUIRE&pi={pi}", op_b))["items"] == []
+    assert ok(api.get(f"/api/audits?action=SN_ALLOCATE&pi={pi}", op_b))["items"] == []
     gen = ok(api.get(f"/api/audits?action=SN_GENERATE&bill_no={bill}", w.admin))["items"]
     assert gen and gen[0]["bill_no"] == bill
     c = ok(api.get("/api/audits/export-check", w.admin))

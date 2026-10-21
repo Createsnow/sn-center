@@ -164,7 +164,7 @@ const kpis = computed<Kpi[]>(() => {
   if ("PENDING_ALLOC" in c) rows.push({ key: "PENDING_ALLOC", label: statusLabel("PENDING_ALLOC"), value: c.PENDING_ALLOC, to: "/allocate" });
   rows.push(
     { key: "TO_PUSH", label: statusLabel("TO_PUSH"), value: c.TO_PUSH },
-    { key: "TO_ACQUIRE", label: statusLabel("TO_ACQUIRE"), value: c.TO_ACQUIRE, to: "/acquire" },
+    { key: "TO_ACQUIRE", label: statusLabel("TO_ACQUIRE"), value: c.TO_ACQUIRE, to: "/export" },
     { key: "APPLYING", label: statusLabel("APPLYING"), value: c.APPLYING, to: "/transfer" },
     { key: "suspended", label: t("dashboard.suspended"), value: d.suspended, alarm: true },
     { key: "interrupted", label: t("dashboard.pushInterrupted"), value: d.push_interrupted, alarm: true, to: "/query?tab=delivery" },
@@ -179,8 +179,8 @@ const kpis = computed<Kpi[]>(() => {
   return store.isAdmin ? rows : rows.map((r) => (r.to?.startsWith("/query") || r.to === "/generate" || r.to === "/allocate" ? { ...r, to: r.to?.startsWith("/query") ? "/query" : undefined } : r));
 });
 
-/** 今日：生成、分配、推送（按确认方式分列）、MES 拉取、领取（对接 MES 的组织单列）、转单。 */
-const TODAY_KEYS = ["SN_GENERATE", "SN_ALLOCATE", "CONFIRM_PUSH_RESPONSE", "CONFIRM_RECEIPT", "CONFIRM_MANUAL", "SN_PULL", "SN_ACQUIRE", "SN_ACQUIRE_MES", "TRANSFER_BILL"];
+/** 今日：生成、分配、推送（按确认方式分列）、MES 拉取、转单。 */
+const TODAY_KEYS = ["SN_GENERATE", "SN_ALLOCATE", "CONFIRM_PUSH_RESPONSE", "CONFIRM_RECEIPT", "CONFIRM_MANUAL", "SN_PULL", "TRANSFER_BILL"];
 const todayRows = computed(() => {
   const today: Record<string, number> = data.value?.today || {};
   const keys = [...TODAY_KEYS, ...Object.keys(today).filter((k) => !TODAY_KEYS.includes(k))];

@@ -328,9 +328,7 @@ def _drive(t: dict) -> None:
                 if t["task_key"] != XO_KEY
                 else 0
             )
-            _end_task(
-                t, "DONE", f"已推送 {sent} 批" + (f"；其余 {other} 枚已由 MES 拉取 / 在领取页领取" if other else "")
-            )
+            _end_task(t, "DONE", f"已推送 {sent} 批" + (f"；其余 {other} 枚已由 MES 拉取" if other else ""))
             return
         if isinstance(nxt, str):
             kind, _, info = nxt.partition(":")

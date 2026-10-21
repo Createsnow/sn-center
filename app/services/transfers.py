@@ -663,7 +663,7 @@ def org_candidates(cu: CurrentUser, r: OrgRequest) -> dict:
 
 
 def apply(cu: CurrentUser, r: OrgRequest) -> dict:
-    """生产组织操作员提交转组织申请：号变为申请中（不能领取、推送、拉取）；申请期间不通知 MES。"""
+    """生产组织操作员提交转组织申请：号变为申请中（不能推送、拉取）；申请期间不通知 MES。"""
     if not cu.is_factory:
         raise biz(ErrorCode.FORBIDDEN)
     factory = cu.write_factory(r.factory_code)

@@ -61,9 +61,3 @@ class DeliveryAlertIn(In):
 
     action: str | None = None
     note: str | None = None
-
-
-class AcquireIn(In):
-    factory_code: str | None = None
-    pi_no: str | None = None
-    request_no: str | None = None

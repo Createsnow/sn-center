@@ -15,7 +15,7 @@ M = {
 "users.name": ("姓名", "Name", "Họ tên"),
 "users.role": ("角色", "Role", "Vai trò"),
 "users.roleHint.admin": ("总部人员：具备全部业务权限，不绑生产组织；不能管理账户（只有系统管理员能）", "HQ staff: all business permissions, no production org; cannot manage accounts (only the system administrator can)", "Nhân viên trụ sở: mọi quyền nghiệp vụ, không gắn tổ chức; không quản lý tài khoản (chỉ quản trị viên hệ thống được)"),
-"users.roleHint.factory_operator": ("只操作所绑的一个生产组织：领取本组织的号，提交、撤回本组织的转组织申请", "Acts only for one bound production org: acquires its SNs and submits / withdraws its org transfer requests", "Chỉ thao tác cho một tổ chức được gắn: nhận SN và gửi / rút yêu cầu chuyển tổ chức"),
+"users.roleHint.factory_operator": ("只操作所绑的一个生产组织：查看、导出本组织的号，提交、撤回本组织的转组织申请", "Acts only for one bound production org: views and exports its SNs and submits / withdraws its org transfer requests", "Chỉ thao tác cho một tổ chức được gắn: xem, xuất SN và gửi / rút yêu cầu chuyển tổ chức"),
 "users.roleHint.query": ("只读；不绑看全部，绑了只看所绑的生产组织", "Read-only; unbound sees everything, bound sees only the bound orgs", "Chỉ xem; không gắn thì xem tất cả, gắn thì chỉ xem tổ chức được gắn"),
 "users.roleHint.mes": ("只能调用本生产组织的 MES 拉取、回执与只读接口", "Can only call the MES pull, receipt and read-only APIs of its org", "Chỉ gọi được API kéo, biên nhận và chỉ đọc của tổ chức mình"),
 "users.queryFactories": ("可看的生产组织", "Visible production orgs", "Tổ chức được xem"),

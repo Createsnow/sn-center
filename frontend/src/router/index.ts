@@ -15,7 +15,7 @@ export const MENU = [
     { path: "/rules", title: "nav.rules", icon: "SetUp", roles: ADMIN },
   ] },
   { group: "nav.groupFactory", items: [
-    { path: "/acquire", title: "nav.acquire", icon: "Download", roles: ALL },
+    { path: "/export", title: "nav.export", icon: "Download", roles: ALL },
     { path: "/transfer", title: "nav.transfer", icon: "Switch", roles: ALL },
   ] },
   { group: "nav.groupQuery", items: [
@@ -34,7 +34,7 @@ const views: Record<string, () => Promise<unknown>> = {
   "/generate": () => import("@/views/Generate.vue"),
   "/allocate": () => import("@/views/Allocate.vue"),
   "/rules": () => import("@/views/Rules.vue"),
-  "/acquire": () => import("@/views/Acquire.vue"),
+  "/export": () => import("@/views/SnExport.vue"),
   "/transfer": () => import("@/views/Transfer.vue"),
   "/query": () => import("@/views/Query.vue"),
   "/audit": () => import("@/views/Audit.vue"),
@@ -54,6 +54,8 @@ const router = createRouter({
     { path: "/login", name: "login", component: () => import("@/views/Login.vue"), meta: { public: true } },
     { path: "/password", name: "password", component: () => import("@/views/ChangePassword.vue") },
     { path: "/", component: () => import("@/layouts/AppLayout.vue"), children },
+    // 原「页面领取」页已改为「SN 导出」，旧书签跳到新页
+    { path: "/acquire", redirect: (to) => ({ path: "/export", query: to.query }) },
     { path: "/:pathMatch(.*)*", redirect: "/" },
   ],
 });

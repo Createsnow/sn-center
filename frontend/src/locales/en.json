@@ -19,7 +19,7 @@
       "query": "Viewer"
     },
     "scopeTip": {
-      "hq": "HQ view: sees every production org and can acquire on behalf of any org",
+      "hq": "HQ view: sees and exports SNs of every production org",
       "factory": "Can only view and act on this production org's data",
       "queryAll": "Can look up data of every production org, but cannot take any action",
       "queryFactory": "Can only look up data of the bound production orgs, and cannot take any action"
@@ -37,7 +37,7 @@
     "generate": "SN generation",
     "allocate": "SN allocation",
     "rules": "Rule library",
-    "acquire": "Page acquire",
+    "export": "SN export",
     "transfer": "Bill & org transfer",
     "query": "SN & batch query",
     "audit": "Audit trail",
@@ -266,7 +266,7 @@
   },
   "login": {
     "title": "Sign in",
-    "lead": "HQ generates SNs per production order material line and allocates them to the order's production org; MES orgs get them pushed, others acquire them on the page. SNs never repeat within a PI.",
+    "lead": "HQ generates SNs per production order material line and allocates them to the order's production org; MES orgs get them pushed, and every org can download them on the SN export page. SNs never repeat within a PI.",
     "point1": "Preview before generating; stale when the max changes",
     "point2": "Delivery batches with receipts, idempotent by batch No.",
     "point3": "Every bill and org transfer is audited",
@@ -285,53 +285,9 @@
     "mismatch": "Passwords do not match",
     "done": "Password changed"
   },
-  "acquire": {
-    "title": "Page acquire",
-    "desc": "Acquire a whole “production org + PI” at once; the file downloads on acquiring. Orgs without MES can only acquire here; MES orgs may acquire not-yet-pushed SNs when MES is down or urgently needed — acquired SNs are never pushed to MES.",
-    "tabPis": "Acquire by PI",
-    "tabBatches": "Acquire batches",
-    "tabALL": "All",
-    "tabACQUIRABLE": "Acquirable",
-    "tabAPPLYING": "Transfer pending",
-    "mesYes": "With MES",
-    "mesNo": "Without MES",
-    "piSearch": "Search PI",
-    "summary": "{a} acquirable · {p} transfer pending",
-    "queryReadOnly": "Viewers can only look, not acquire",
-    "pushing": "Pushing",
-    "acquirable": "Acquirable",
-    "frozen": "In unconfirmed batch",
-    "suspended": "Suspended",
-    "reassign": "Awaiting reassign push",
-    "take": "Acquire",
-    "retry": "Retry",
-    "rule": "Acquire a whole PI only. SNs in unconfirmed or failed batches, of suspended bills, already pushed, pulled by MES or pending transfer cannot be acquired; resubmitting the same request No. returns the same batch.",
-    "picked": "{n} PIs picked, {q} SNs",
-    "bulkTake": "Acquire {n} PIs",
-    "bulkConfirm": "Acquire the {n} picked PIs (about {q} SNs) one by one; a failure does not affect the others. Continue?",
-    "bulkDone": "{ok} PIs acquired, {q} SNs; {fail} failed",
-    "bulkResult": "Bulk acquire result",
-    "requestNo": "Request No.",
-    "batchStatus": {
-      "DONE": "Done",
-      "INCOMPLETE": "Incomplete"
-    },
-    "confirmTitle": "Confirm acquire",
-    "format": "File format",
-    "mesNote": "Acquired SNs will not be pushed to MES and MES can no longer pull them; the site must use them from the acquire file.",
-    "retryNote": "The last acquire did not finish; it continues with the same request No. and will not acquire twice.",
-    "replayed": "This request No. was already used; returning batch {b}",
-    "taken": "Acquired {n} SNs, batch {b}",
-    "fileLater": "Batch {b} is large; download its file later from “Acquire batches”",
-    "toTransfer": "Org transfer",
-    "piAll": "View this PI in every org (read-only)",
-    "piAllNote": "Read-only: segments of this PI in every production org; SNs of other orgs cannot be acquired.",
-    "segment": "Segment (full SN / decimal serial)",
-    "seqOf": "serial of {pi}"
-  },
   "allocate": {
     "title": "SN allocation",
-    "desc": "Allocate generated SNs to the order's production org: MES orgs get them pushed in batches automatically and confirm each batch, and an interrupted push can be resumed; other orgs acquire them on the “Page acquire” page. Allocate a whole PI or the ticked lines.",
+    "desc": "Allocate generated SNs to the order's production org: MES orgs get them pushed in batches automatically and confirm each batch, and an interrupted push can be resumed; every allocated SN can be downloaded on the “SN export” page. Allocate a whole PI or the ticked lines.",
     "summary": "To allocate {pending} · to push {unbatched}",
     "tab": {
       "TO_ALLOCATE": "To do",
@@ -356,14 +312,14 @@
     "toOrg": "To org",
     "way": "Delivery",
     "wayPush": "MES · push",
-    "wayAcquire": "Page acquire",
+    "wayAcquire": "SN export",
     "skip": {
       "PI_FROZEN": "PI change frozen",
       "REVERSAL": "Unapproved",
       "SUSPENDED": "Delivery suspended"
     },
     "orgPush": "{org} {n} ({m} pushes)",
-    "orgAcquire": "{org} {n} (to acquire)",
+    "orgAcquire": "{org} {n} (download on SN export)",
     "skippedN": "{n} bills will be skipped (frozen, unapproved or suspended)",
     "allocTitle": "Allocate",
     "allocBtn": "Allocate {n}",
@@ -376,7 +332,7 @@
     "tabBatches": "Allocation records {n}",
     "noPush": "Nothing pushed to MES yet",
     "pushProgress": "Push {i} / {n} · {qty} pushed",
-    "acquireNote": "Orgs without MES acquire their SNs on the page:",
+    "acquireNote": "Orgs without MES download their SNs on the SN export page:",
     "batchSource": "Created by",
     "batchResult": "Result",
     "confirmMethod": "Confirmed by",
@@ -445,8 +401,6 @@
       "CONFIRM_RECEIPT": "Confirmed by MES receipt",
       "CONFIRM_MANUAL": "Confirmed manually",
       "SN_PULL": "Pulled by MES",
-      "SN_ACQUIRE": "Acquired on page",
-      "SN_ACQUIRE_MES": "Acquired on page (MES orgs)",
       "TRANSFER_BILL": "Bill transfer"
     },
     "shortcuts": "Shortcuts",
@@ -474,6 +428,21 @@
       "CANCELED": "Canceled",
       "REVOKED": "Revoked"
     }
+  },
+  "export": {
+    "title": "SN export",
+    "desc": "Allocated SNs listed per “production org + PI + bill”, with or without MES. Open the detail to see segments, or download xlsx / csv directly (columns: PI, bill, material, SN). Exporting is read-only and repeatable; it does not change SN status, and MES orgs keep pushing and pulling as usual.",
+    "mesYes": "With MES",
+    "mesNo": "Without MES",
+    "search": "Search PI or bill No.",
+    "qty": "SNs",
+    "suspended": "{n} suspended",
+    "rule": "Only SNs allocated to a production org are shown (unallocated ones are not); a download contains every SN of the bill in that org at download time.",
+    "fileCols": "File columns: PI, bill, material, SN",
+    "download": "Download {f}",
+    "seq": "Line",
+    "segment": "Segment (full SN / decimal serial)",
+    "seqOf": "serial of {pi}"
   },
   "factories": {
     "title": "Production orgs",
@@ -522,7 +491,7 @@
     "disableBlockedHint": "Resume pushing or wait for MES receipts first; if MES is out of service, HQ confirms or voids the remaining batches manually under delivery batches.",
     "mesOn": "MES integration turned on",
     "mesOff": "MES integration turned off",
-    "disableHint": "Production orgs disabled in Kingdee cannot be bound to accounts or chosen as transfer targets; SNs already allocated to them can still be acquired, pushed, pulled and transferred out."
+    "disableHint": "Production orgs disabled in Kingdee cannot be bound to accounts or chosen as transfer targets; SNs already allocated to them can still be exported, pushed, pulled and transferred out."
   },
   "generate": {
     "title": "SN generation",
@@ -816,7 +785,7 @@
     "desc": "Read-only lookup of SN details, delivery batches (push, pull, transfer-out), acquire batches and delivery alerts, filtered by the production orgs your account can see; SNs cannot be moved from this page.",
     "tabSn": "SN details",
     "tabDelivery": "Delivery batches",
-    "tabAcquire": "Acquire batches",
+    "tabAcquire": "Past acquire batches",
     "tabAlerts": "Delivery alerts",
     "suspended": "Delivery suspended",
     "deliveryMode": "Delivery mode",
@@ -1041,7 +1010,7 @@
     "toMaterial": "Target material",
     "keepOriginal": "Empty = keep original",
     "pickMaterial": "Pick a material (incl. empty)",
-    "applyNote": "After submitting, SNs become transfer-pending and cannot be acquired, pushed or pulled until HQ decides; you may withdraw before that. MES is not notified meanwhile.",
+    "applyNote": "After submitting, SNs become transfer-pending and cannot be pushed or pulled until HQ decides; you may withdraw before that. MES is not notified meanwhile.",
     "directNote": "HQ direct transfer: SNs are re-attached at once, with reassign and transfer-out pushes as needed.",
     "submitApply": "Submit request",
     "submitDirect": "Transfer",
@@ -1055,7 +1024,7 @@
     "resume": "Resume push ({n} left)",
     "resumeShort": "Resume push",
     "resumed": "Push resumed",
-    "noMes": "No MES: acquire on the page",
+    "noMes": "No MES: download on the SN export page",
     "outBatch": "Transfer-out batch",
     "failReason": "Failure reason",
     "manualConfirm": "Confirm manually",
@@ -1081,7 +1050,7 @@
     "role": "Role",
     "roleHint": {
       "admin": "HQ staff: all business permissions, no production org; cannot manage accounts (only the system administrator can)",
-      "factory_operator": "Acts only for one bound production org: acquires its SNs and submits / withdraws its org transfer requests",
+      "factory_operator": "Acts only for one bound production org: views and exports its SNs and submits / withdraws its org transfer requests",
       "query": "Read-only; unbound sees everything, bound sees only the bound orgs",
       "mes": "Can only call the MES pull, receipt and read-only APIs of its org"
     },

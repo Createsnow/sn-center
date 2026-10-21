@@ -6,7 +6,7 @@ M = {
   "Tra cứu chỉ đọc chi tiết SN, lô giao (đẩy, kéo, chuyển đi), lô nhận và cảnh báo giao, lọc theo các tổ chức sản xuất mà tài khoản được xem; không thể chuyển SN tại trang này."),
 "query.tabSn": ("SN 明细", "SN details", "Chi tiết SN"),
 "query.tabDelivery": ("交付批次", "Delivery batches", "Lô giao"),
-"query.tabAcquire": ("领取批次", "Acquire batches", "Lô nhận"),
+"query.tabAcquire": ("历史领取批次", "Past acquire batches", "Lô nhận trước đây"),
 "query.tabAlerts": ("交付告警", "Delivery alerts", "Cảnh báo giao"),
 "query.suspended": ("暂停交付", "Delivery suspended", "Tạm dừng giao"),
 "query.deliveryMode": ("交付方式", "Delivery mode", "Cách giao"),

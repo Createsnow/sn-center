@@ -149,7 +149,7 @@ uv run python -m devtools.mes_conformance --url https://mes-test.example.com/sn/
 | # | 场景（PRD 9.2） | 自动化测试 | 契约测试 | 联调时重点 |
 | --- | --- | --- | --- | --- |
 | 1 | 推送超时后自动重试并续推；期间 MES 取到同一批并回执，系统停止重试 | `test_delivery::test_retry_then_exhaust_then_resume_with_same_batch`、`test_mes_tools::test_push_response_lost_then_pull_gets_same_receipt` | C06 | MES 实际处理时间接近超时（60 秒）时的表现 |
-| 2 | 推送建批、MES 拉取建批、页面领取三通道并发，同一枚号不进两个批次 | `test_acquire::test_push_pull_and_acquire_concurrently_never_overlap`、`test_acquire::test_concurrent_push_and_acquire_do_not_overlap` | — | MES 按真实频率取批时同时推送、领取 |
+| 2 | 推送建批、MES 拉取建批并发，同一枚号不进两个批次 | `test_mes_tools::test_push_and_pull_concurrently_never_overlap` | — | MES 按真实频率取批时同时推送 |
 | 3 | 推送与拉取同时送达同一批次，MES 只处理一次，两边回执相同 | `test_mes_tools::test_push_response_lost_then_pull_gets_same_receipt` | C06、C25 | MES 的批次号锁在多台服务器上是否生效 |
 | 4 | MES 取批后宕机未回执，再取仍是同一批；按 PI、单据、PI + 单据取；无批次时返回空并给出剩余、暂停枚数 | `test_delivery::test_pull_returns_same_unconfirmed_batch_until_receipt`、`test_orders::test_reversal_suspends_undelivered_and_resumes`、`test_delivery::test_pull_scope_checks` | — | PI + 单据组合取批（用 `mes_mock pull --pi --bill` 或 MES 客户端）；MES 重启后续取 |
 | 5 | MES 整批拒绝（含组织编码不符）：不登记批次号、取批跳过、修正后续推或取回补交 | `test_delivery::test_reject_marks_failed_and_resume_after_fix`、`test_delivery::test_rejected_batch_voided_rebatches_and_refuses_voided` | C02、C17～C23 | MES 修好后按批次号取回补交回执 |

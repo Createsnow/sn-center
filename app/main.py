@@ -32,8 +32,8 @@ from app.core.security import CurrentUser
 from app.db import init_db
 from app.db.session import PoolExhausted, db, is_integrity, is_lock_conflict
 from app.middleware.request_id import WRITE_METHODS, RequestIdMiddleware
+from app.services import acquire, delivery, demo_seed, generate, orders, partitions, users
 from app.services import audit as audit_svc
-from app.services import delivery, demo_seed, generate, orders, partitions, users
 
 log = structlog.get_logger()
 
@@ -122,6 +122,7 @@ def startup() -> None:
     db.configure(settings.db_target(), settings.db_pool_size)
     init_db()
     generate.recover_interrupted()
+    acquire.release_incomplete()
     init_admin()
     partitions.maintain()
     if settings.demo_seed:
@@ -158,7 +159,8 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title=settings.app_name,
         description=(
-            "总部统一生成并分配 SN，推送到各生产组织 MES（或由 MES 拉取、页面领取）。对外接口在 open 分组："
+            "总部统一生成并分配 SN，推送到各生产组织 MES（或由 MES 拉取），各组织可在 SN 导出页下载已分配的号。"
+            "对外接口在 open 分组："
             "MES 用 POST /api/mes/v1/auth/token 换令牌，再放在 Authorization: Bearer <token>。"
         ),
         version="1.0.0",

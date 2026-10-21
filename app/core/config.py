@@ -197,11 +197,6 @@ class Settings:
         return max(1, self.get_int("SN_BATCH_UNCONFIRMED_ALERT_MINUTES", 30))
 
     @property
-    def acquire_sync_file_limit(self) -> int:
-        """领取文件当场生成上限；更多时页面提示到领取批次中下载。"""
-        return max(1, self.get_int("SN_ACQUIRE_SYNC_FILE_LIMIT", 50_000))
-
-    @property
     def mes_auth_max_failures(self) -> int:
         return max(1, self.get_int("SN_MES_AUTH_MAX_FAILURES", 10))
 

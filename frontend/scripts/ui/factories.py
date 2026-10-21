@@ -58,7 +58,7 @@ M = {
   "Hãy đẩy tiếp hoặc chờ biên nhận MES; nếu MES đã ngừng, trụ sở xác nhận hoặc hủy thủ công các lô còn lại trong mục lô giao."),
 "factories.mesOn": ("已开启对接 MES", "MES integration turned on", "Đã bật kết nối MES"),
 "factories.mesOff": ("已关闭对接 MES", "MES integration turned off", "Đã tắt kết nối MES"),
-"factories.disableHint": ("金蝶禁用的生产组织不能再绑定账户、不能作转组织转入方；已分到它的号照常领取、推送、拉取、转出。",
-  "Production orgs disabled in Kingdee cannot be bound to accounts or chosen as transfer targets; SNs already allocated to them can still be acquired, pushed, pulled and transferred out.",
-  "Tổ chức sản xuất bị vô hiệu trong Kingdee không thể gắn tài khoản hay làm đích chuyển; SN đã phân bổ cho nó vẫn nhận, đẩy, kéo và chuyển đi bình thường."),
+"factories.disableHint": ("金蝶禁用的生产组织不能再绑定账户、不能作转组织转入方；已分到它的号照常导出、推送、拉取、转出。",
+  "Production orgs disabled in Kingdee cannot be bound to accounts or chosen as transfer targets; SNs already allocated to them can still be exported, pushed, pulled and transferred out.",
+  "Tổ chức sản xuất bị vô hiệu trong Kingdee không thể gắn tài khoản hay làm đích chuyển; SN đã phân bổ cho nó vẫn xuất, đẩy, kéo và chuyển đi bình thường."),
 }

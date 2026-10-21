@@ -404,7 +404,6 @@ def test_db_target_env_overrides_dotenv(monkeypatch):
         ("POST", "/api/delivery/batches/PS-1/void", "SN_BATCH_VOID"),
         ("POST", "/api/delivery/batches/PS-1/confirm", "SN_BATCH_MANUAL"),
         ("POST", "/api/delivery/resume", "SN_PUSH_RESUME"),
-        ("POST", "/api/acquire/take", "SN_ACQUIRE"),
         ("POST", "/api/orders/attach", "ORDER_ATTACH_FILL"),
         ("PUT", "/api/orders/length", "ORDER_LENGTH_FILL"),
         ("PUT", "/api/orders/length/batch", "ORDER_LENGTH_FILL"),

@@ -2,7 +2,7 @@
 
 在途：待推送、待领取、申请中、暂停交付各多少枚（待分配只给总部看）；推送中断的批次（含改挂、转出、整批拒绝）；
 拉取后超过告警时长仍未回执的批次；待处理的转组织申请；交付告警（疑似重复交付、版本过期、自检问题）；订单变更提醒。
-今日（按账户显示时区）：生成、分配、推送与拉取（按确认方式）、MES 取批、领取（对接 MES 组织单独标出）、转单。
+今日（按账户显示时区）：生成、分配、推送与拉取（按确认方式）、MES 取批、转单。
 """
 
 from __future__ import annotations
@@ -77,14 +77,6 @@ def load(cu: CurrentUser) -> dict:
             *fargs,
         )
     }
-    for r in db.all(
-        "SELECT SUM(qty) q, detail LIKE %s mes FROM sn_audit WHERE created_at >= %s AND result = 'OK' "
-        "AND action = 'SN_ACQUIRE'" + fsql + " GROUP BY mes",
-        "%mes_org=1%",
-        start,
-        *fargs,
-    ):
-        today["SN_ACQUIRE_MES" if r["mes"] else "SN_ACQUIRE"] = int(r["q"] or 0)
     for r in db.all(
         "SELECT confirm_method, SUM(qty) q FROM sn_delivery_batch WHERE batch_type = 'DELIVERY' AND confirmed_at >= %s"
         + fsql

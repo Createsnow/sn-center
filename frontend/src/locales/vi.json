@@ -19,7 +19,7 @@
       "query": "Người tra cứu"
     },
     "scopeTip": {
-      "hq": "Góc nhìn trụ sở: xem mọi tổ chức sản xuất và có thể nhận thay cho bất kỳ tổ chức nào",
+      "hq": "Góc nhìn trụ sở: xem và xuất SN của mọi tổ chức sản xuất",
       "factory": "Chỉ xem và thao tác dữ liệu của tổ chức sản xuất này",
       "queryAll": "Tra cứu dữ liệu của mọi tổ chức sản xuất, không thể thao tác",
       "queryFactory": "Chỉ tra cứu dữ liệu của các tổ chức sản xuất được gắn, không thể thao tác"
@@ -37,7 +37,7 @@
     "generate": "Tạo SN",
     "allocate": "Phân bổ SN",
     "rules": "Thư viện quy tắc",
-    "acquire": "Nhận trên trang",
+    "export": "Xuất SN",
     "transfer": "Chuyển chứng từ & tổ chức",
     "query": "Tra cứu SN & lô",
     "audit": "Nhật ký thao tác",
@@ -266,7 +266,7 @@
   },
   "login": {
     "title": "Đăng nhập",
-    "lead": "Trụ sở tạo SN theo dòng vật tư của lệnh sản xuất và phân bổ cho tổ chức sản xuất của lệnh; tổ chức kết nối MES được đẩy tự động, tổ chức khác nhận trên trang. SN không trùng trong cùng một PI.",
+    "lead": "Trụ sở tạo SN theo dòng vật tư của lệnh sản xuất và phân bổ cho tổ chức sản xuất của lệnh; tổ chức kết nối MES được đẩy tự động, mọi tổ chức đều có thể tải tại trang xuất SN. SN không trùng trong cùng một PI.",
     "point1": "Xem trước khi tạo; hết hiệu lực khi số lớn nhất thay đổi",
     "point2": "Lô giao có biên nhận, bất biến theo số lô",
     "point3": "Mọi lần chuyển chứng từ và tổ chức đều được ghi nhật ký",
@@ -285,53 +285,9 @@
     "mismatch": "Hai lần nhập không khớp",
     "done": "Đã đổi mật khẩu"
   },
-  "acquire": {
-    "title": "Nhận trên trang",
-    "desc": "Nhận toàn bộ theo “tổ chức sản xuất + PI”, nhận xong tải tệp ngay. Tổ chức không kết nối MES chỉ nhận ở đây; tổ chức có MES có thể nhận SN chưa đẩy khi MES lỗi hoặc cần gấp — SN đã nhận sẽ không được đẩy sang MES.",
-    "tabPis": "Nhận theo PI",
-    "tabBatches": "Lô nhận",
-    "tabALL": "Tất cả",
-    "tabACQUIRABLE": "Có thể nhận",
-    "tabAPPLYING": "Đang xin chuyển",
-    "mesYes": "Có MES",
-    "mesNo": "Không MES",
-    "piSearch": "Tìm PI",
-    "summary": "{a} có thể nhận · {p} đang xin chuyển",
-    "queryReadOnly": "Người tra cứu chỉ được xem, không thể nhận",
-    "pushing": "Đang đẩy",
-    "acquirable": "Có thể nhận",
-    "frozen": "Trong lô chưa xác nhận",
-    "suspended": "Tạm dừng giao",
-    "reassign": "Chờ đẩy điều chuyển",
-    "take": "Nhận",
-    "retry": "Thử lại",
-    "rule": "Chỉ nhận toàn bộ PI. SN trong lô chưa xác nhận hoặc thất bại, của chứng từ tạm dừng giao, đã đẩy, đã được MES kéo hoặc đang xin chuyển đều không thể nhận; gửi lại cùng số yêu cầu sẽ trả về cùng một lô.",
-    "picked": "Đã chọn {n} PI, {q} SN",
-    "bulkTake": "Nhận {n} PI",
-    "bulkConfirm": "Nhận lần lượt {n} PI đã chọn (khoảng {q} SN); một PI lỗi không ảnh hưởng PI khác. Tiếp tục?",
-    "bulkDone": "Thành công {ok} PI, {q} SN; thất bại {fail}",
-    "bulkResult": "Kết quả nhận hàng loạt",
-    "requestNo": "Số yêu cầu",
-    "batchStatus": {
-      "DONE": "Hoàn tất",
-      "INCOMPLETE": "Chưa hoàn tất"
-    },
-    "confirmTitle": "Xác nhận nhận",
-    "format": "Định dạng tệp",
-    "mesNote": "SN đã nhận sẽ không được đẩy sang MES và MES cũng không thể kéo nữa; hiện trường phải dùng theo tệp nhận.",
-    "retryNote": "Lần nhận trước chưa hoàn tất; tiếp tục với cùng số yêu cầu, không nhận trùng.",
-    "replayed": "Số yêu cầu này đã được dùng; trả về lô {b}",
-    "taken": "Đã nhận {n} SN, lô {b}",
-    "fileLater": "Lô {b} có nhiều SN; vui lòng tải tệp sau trong “Lô nhận”",
-    "toTransfer": "Chuyển tổ chức",
-    "piAll": "Xem PI này ở mọi tổ chức (chỉ xem)",
-    "piAllNote": "Chỉ xem: các đoạn số của PI này ở mọi tổ chức sản xuất; không thể nhận SN của tổ chức khác.",
-    "segment": "Đoạn số (SN đầy đủ / tuần tự thập phân)",
-    "seqOf": "tuần tự thuộc {pi}"
-  },
   "allocate": {
     "title": "Phân bổ SN",
-    "desc": "Phân bổ SN đã tạo cho tổ chức sản xuất của lệnh: tổ chức kết nối MES được đẩy tự động theo lô, MES xác nhận từng lô, bị gián đoạn thì đẩy tiếp; tổ chức khác nhận ở trang “Nhận trên trang”. Có thể phân bổ cả PI hoặc các dòng đã chọn.",
+    "desc": "Phân bổ SN đã tạo cho tổ chức sản xuất của lệnh: tổ chức kết nối MES được đẩy tự động theo lô, MES xác nhận từng lô, bị gián đoạn thì đẩy tiếp; mọi SN đã phân bổ đều tải được tại trang “Xuất SN”. Có thể phân bổ cả PI hoặc các dòng đã chọn.",
     "summary": "Chờ phân bổ {pending} · chờ đẩy {unbatched}",
     "tab": {
       "TO_ALLOCATE": "Cần xử lý",
@@ -356,14 +312,14 @@
     "toOrg": "Phân bổ cho",
     "way": "Cách giao",
     "wayPush": "MES · đẩy",
-    "wayAcquire": "Nhận trên trang",
+    "wayAcquire": "Xuất SN",
     "skip": {
       "PI_FROZEN": "Đóng băng do đổi PI",
       "REVERSAL": "Đang bỏ duyệt",
       "SUSPENDED": "Tạm dừng giao"
     },
     "orgPush": "{org} {n} ({m} lần đẩy)",
-    "orgAcquire": "{org} {n} (chờ nhận)",
+    "orgAcquire": "{org} {n} (tải tại trang xuất SN)",
     "skippedN": "{n} chứng từ sẽ bị bỏ qua (đóng băng, bỏ duyệt hoặc tạm dừng)",
     "allocTitle": "Phân bổ",
     "allocBtn": "Phân bổ {n}",
@@ -376,7 +332,7 @@
     "tabBatches": "Bản ghi phân bổ {n}",
     "noPush": "Chưa đẩy gì cho MES",
     "pushProgress": "Lần {i} / {n} · đã đẩy {qty}",
-    "acquireNote": "Tổ chức không kết nối MES nhận SN trên trang:",
+    "acquireNote": "Tổ chức không kết nối MES tải SN tại trang xuất SN:",
     "batchSource": "Cách tạo",
     "batchResult": "Kết quả",
     "confirmMethod": "Cách xác nhận",
@@ -445,8 +401,6 @@
       "CONFIRM_RECEIPT": "Xác nhận bằng biên nhận MES",
       "CONFIRM_MANUAL": "Xác nhận thủ công",
       "SN_PULL": "MES đã kéo",
-      "SN_ACQUIRE": "Nhận trên trang",
-      "SN_ACQUIRE_MES": "Nhận trên trang (tổ chức kết nối MES)",
       "TRANSFER_BILL": "Chuyển chứng từ"
     },
     "shortcuts": "Lối tắt",
@@ -474,6 +428,21 @@
       "CANCELED": "Đã hủy",
       "REVOKED": "Đã thu hồi"
     }
+  },
+  "export": {
+    "title": "Xuất SN",
+    "desc": "SN đã phân bổ được liệt kê theo “tổ chức sản xuất + PI + chứng từ”, dù có kết nối MES hay không. Mở chi tiết để xem các đoạn số, hoặc tải trực tiếp xlsx / csv (cột: PI, chứng từ, mã vật tư, SN). Xuất chỉ để đọc, có thể tải nhiều lần, không đổi trạng thái SN; tổ chức có MES vẫn đẩy, kéo như thường.",
+    "mesYes": "Có MES",
+    "mesNo": "Không MES",
+    "search": "Tìm PI hoặc số chứng từ",
+    "qty": "Số SN",
+    "suspended": "Tạm dừng {n}",
+    "rule": "Chỉ hiển thị SN đã phân bổ cho tổ chức sản xuất (SN chờ phân bổ không hiển thị); tệp tải về gồm mọi SN của chứng từ tại tổ chức đó ở thời điểm tải.",
+    "fileCols": "Cột tệp: PI, chứng từ, mã vật tư, SN",
+    "download": "Tải {f}",
+    "seq": "Dòng",
+    "segment": "Đoạn số (SN đầy đủ / tuần tự thập phân)",
+    "seqOf": "tuần tự thuộc {pi}"
   },
   "factories": {
     "title": "Tổ chức sản xuất",
@@ -522,7 +491,7 @@
     "disableBlockedHint": "Hãy đẩy tiếp hoặc chờ biên nhận MES; nếu MES đã ngừng, trụ sở xác nhận hoặc hủy thủ công các lô còn lại trong mục lô giao.",
     "mesOn": "Đã bật kết nối MES",
     "mesOff": "Đã tắt kết nối MES",
-    "disableHint": "Tổ chức sản xuất bị vô hiệu trong Kingdee không thể gắn tài khoản hay làm đích chuyển; SN đã phân bổ cho nó vẫn nhận, đẩy, kéo và chuyển đi bình thường."
+    "disableHint": "Tổ chức sản xuất bị vô hiệu trong Kingdee không thể gắn tài khoản hay làm đích chuyển; SN đã phân bổ cho nó vẫn xuất, đẩy, kéo và chuyển đi bình thường."
   },
   "generate": {
     "title": "Tạo SN",
@@ -816,7 +785,7 @@
     "desc": "Tra cứu chỉ đọc chi tiết SN, lô giao (đẩy, kéo, chuyển đi), lô nhận và cảnh báo giao, lọc theo các tổ chức sản xuất mà tài khoản được xem; không thể chuyển SN tại trang này.",
     "tabSn": "Chi tiết SN",
     "tabDelivery": "Lô giao",
-    "tabAcquire": "Lô nhận",
+    "tabAcquire": "Lô nhận trước đây",
     "tabAlerts": "Cảnh báo giao",
     "suspended": "Tạm dừng giao",
     "deliveryMode": "Cách giao",
@@ -1041,7 +1010,7 @@
     "toMaterial": "Vật tư đích",
     "keepOriginal": "Để trống = giữ nguyên",
     "pickMaterial": "Chọn vật tư (kể cả trống)",
-    "applyNote": "Sau khi gửi, SN chuyển sang đang xin chuyển, không thể nhận, đẩy hoặc kéo cho tới khi trụ sở xử lý; có thể rút lại trước đó. MES không được thông báo trong lúc này.",
+    "applyNote": "Sau khi gửi, SN chuyển sang đang xin chuyển, không thể đẩy hoặc kéo cho tới khi trụ sở xử lý; có thể rút lại trước đó. MES không được thông báo trong lúc này.",
     "directNote": "Trụ sở chuyển trực tiếp: SN được gắn lại ngay, tự đẩy điều chuyển và chuyển đi khi cần.",
     "submitApply": "Gửi yêu cầu",
     "submitDirect": "Chuyển",
@@ -1055,7 +1024,7 @@
     "resume": "Đẩy tiếp (còn {n} lần)",
     "resumeShort": "Đẩy tiếp",
     "resumed": "Đã đẩy tiếp",
-    "noMes": "Không MES: nhận trên trang",
+    "noMes": "Không MES: tải tại trang xuất SN",
     "outBatch": "Lô chuyển đi",
     "failReason": "Lý do thất bại",
     "manualConfirm": "Xác nhận thủ công",
@@ -1081,7 +1050,7 @@
     "role": "Vai trò",
     "roleHint": {
       "admin": "Nhân viên trụ sở: mọi quyền nghiệp vụ, không gắn tổ chức; không quản lý tài khoản (chỉ quản trị viên hệ thống được)",
-      "factory_operator": "Chỉ thao tác cho một tổ chức được gắn: nhận SN và gửi / rút yêu cầu chuyển tổ chức",
+      "factory_operator": "Chỉ thao tác cho một tổ chức được gắn: xem, xuất SN và gửi / rút yêu cầu chuyển tổ chức",
       "query": "Chỉ xem; không gắn thì xem tất cả, gắn thì chỉ xem tổ chức được gắn",
       "mes": "Chỉ gọi được API kéo, biên nhận và chỉ đọc của tổ chức mình"
     },

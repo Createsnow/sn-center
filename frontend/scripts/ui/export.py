@@ -1,0 +1,20 @@
+# SN 导出（F-14）
+M = {
+"export.title": ("SN 导出", "SN export", "Xuất SN"),
+"export.desc": ("已分配的号按「生产组织 + PI + 单据」列出，不论是否对接 MES。可点明细查看号段，或直接下载 xlsx / csv（列：PI、单据、物料编码、SN）。导出只读、可反复下载，不改变号的状态，对接 MES 的号照常推送、拉取。",
+  "Allocated SNs listed per “production org + PI + bill”, with or without MES. Open the detail to see segments, or download xlsx / csv directly (columns: PI, bill, material, SN). Exporting is read-only and repeatable; it does not change SN status, and MES orgs keep pushing and pulling as usual.",
+  "SN đã phân bổ được liệt kê theo “tổ chức sản xuất + PI + chứng từ”, dù có kết nối MES hay không. Mở chi tiết để xem các đoạn số, hoặc tải trực tiếp xlsx / csv (cột: PI, chứng từ, mã vật tư, SN). Xuất chỉ để đọc, có thể tải nhiều lần, không đổi trạng thái SN; tổ chức có MES vẫn đẩy, kéo như thường."),
+"export.mesYes": ("对接 MES", "With MES", "Có MES"),
+"export.mesNo": ("未对接 MES", "Without MES", "Không MES"),
+"export.search": ("按 PI 或单据编号搜索", "Search PI or bill No.", "Tìm PI hoặc số chứng từ"),
+"export.qty": ("SN 枚数", "SNs", "Số SN"),
+"export.suspended": ("暂停 {n}", "{n} suspended", "Tạm dừng {n}"),
+"export.rule": ("只展示已分配到生产组织的号（待分配的不展示）；下载内容为下载时刻该单据在该生产组织下的全部号。",
+  "Only SNs allocated to a production org are shown (unallocated ones are not); a download contains every SN of the bill in that org at download time.",
+  "Chỉ hiển thị SN đã phân bổ cho tổ chức sản xuất (SN chờ phân bổ không hiển thị); tệp tải về gồm mọi SN của chứng từ tại tổ chức đó ở thời điểm tải."),
+"export.fileCols": ("文件列：PI、单据、物料编码、SN", "File columns: PI, bill, material, SN", "Cột tệp: PI, chứng từ, mã vật tư, SN"),
+"export.download": ("下载 {f}", "Download {f}", "Tải {f}"),
+"export.seq": ("序号", "Line", "Dòng"),
+"export.segment": ("号段（完整 SN / 十进制流水）", "Segment (full SN / decimal serial)", "Đoạn số (SN đầy đủ / tuần tự thập phân)"),
+"export.seqOf": ("流水归属 {pi}", "serial of {pi}", "tuần tự thuộc {pi}"),
+}

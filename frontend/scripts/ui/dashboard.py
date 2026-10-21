@@ -23,8 +23,6 @@ M = {
 "dashboard.todayItem.CONFIRM_RECEIPT": ("MES 回执确认", "Confirmed by MES receipt", "Xác nhận bằng biên nhận MES"),
 "dashboard.todayItem.CONFIRM_MANUAL": ("人工确认", "Confirmed manually", "Xác nhận thủ công"),
 "dashboard.todayItem.SN_PULL": ("MES 拉取", "Pulled by MES", "MES đã kéo"),
-"dashboard.todayItem.SN_ACQUIRE": ("页面领取", "Acquired on page", "Nhận trên trang"),
-"dashboard.todayItem.SN_ACQUIRE_MES": ("页面领取（对接 MES 的组织）", "Acquired on page (MES orgs)", "Nhận trên trang (tổ chức kết nối MES)"),
 "dashboard.todayItem.TRANSFER_BILL": ("转单", "Bill transfer", "Chuyển chứng từ"),
 "dashboard.shortcuts": ("快捷入口", "Shortcuts", "Lối tắt"),
 "dashboard.recentFailures": ("最近的推送失败与超时未回执", "Recent push failures and missing receipts", "Lần đẩy thất bại và biên nhận quá hạn gần đây"),

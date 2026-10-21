@@ -115,8 +115,7 @@ def test_holder_correct_when_target_confirms_first(w, sql):
 def test_acquired_same_org_change_pi_stays_acquired(w, sql):
     a, pi, bill = setup(w, qty=4)
     w.allocate(pi)
-    tok = w.user(emp("F"), "factory_operator", a)
-    ok(w.acquire(tok, None, pi))
+    w.legacy_acquire(a, pi)
     to_pi = uid("PI")
     ok(org_direct(w, a, pi, a, to_pi=to_pi))
     rows = sql.all("SELECT status, pi_no, seq_pi_no FROM sn_item WHERE seq_pi_no = %s", pi)
@@ -162,7 +161,6 @@ def test_apply_withdraw_reject_approve(w, api, sql):
     body = m(pi_no=pi, scope="PI", to_factory=b, to_pi=pi, reason="调拨")
     t = ok(api.post("/api/transfers/org", body, op))
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'APPLYING'", pi) == 3
-    assert w.acquire(op, None, pi).code == "ACQ_NOTHING", "申请中不能领取"
     ok(api.post(f"/api/transfers/org/{t['id']}/withdraw", {}, op))
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'TO_ACQUIRE'", pi) == 3
     t2 = ok(api.post("/api/transfers/org", body, op))
@@ -262,8 +260,6 @@ def test_same_org_bill_transfer_reassigns_pushed(w, api, sql):
     ok(api.post("/api/transfers/bill", m(from_bill=src, to_bill=tgt, mode="VOID", reason="整单作废"), w.admin))
     rows = sql.all("SELECT status, push_type, rev, bill_no FROM sn_item WHERE pi_no = %s", pi)
     assert {(r["status"], r["push_type"], r["rev"], r["bill_no"]) for r in rows} == {("TO_PUSH", "REASSIGN", 2, tgt)}
-    op = w.user(emp("F"), "factory_operator", org)
-    assert w.acquire(op, None, pi).code == "ACQ_NOTHING", "推送完成前不能领取（MES 中已有）"
     w.push()
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 3
     sn = rows and sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s LIMIT 1", pi)
@@ -304,7 +300,8 @@ def test_bill_transfer_from_reversed_bill_releases(w, api, sql):
         == 2
     )
     op = w.user(emp("F"), "factory_operator", org)
-    assert ok(w.acquire(op, None, pi))["qty"] == 2
+    rows = ok(api.get(f"/api/export/bills?q={tgt}", op))["items"]
+    assert [(r["bill_no"], r["qty"], r["suspended"]) for r in rows] == [(tgt, 2, 0)]
 
 
 def test_bill_list_and_items(w, api):

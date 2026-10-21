@@ -112,12 +112,9 @@ E = {
 "DALERT_NOT_FOUND": ("Delivery alert not found or already handled", "Không tìm thấy cảnh báo giao hoặc đã xử lý"),
 "DALERT_RESEND_BLOCKED": ("SN {sn} cannot be re-pushed based on this system: {detail}", "SN {sn} không thể đẩy lại theo hệ thống này: {detail}"),
 # ---------- 领取 ----------
-"ACQ_REQUEST_NO_REQUIRED": ("Request No. is required (1–64 characters)", "Bắt buộc nhập số yêu cầu (1–64 ký tự)"),
-"ACQ_NOTHING": ("Production org {factory} has no SNs of PI {pi} to acquire", "Tổ chức sản xuất {factory} không có SN nào của PI {pi} để nhận"),
-"ACQ_REQUEST_CONFLICT": ("Request No. {request_no} was already used for PI {pi} of production org {factory}", "Số yêu cầu {request_no} đã dùng cho PI {pi} của tổ chức sản xuất {factory}"),
 "ACQ_BATCH_NOT_FOUND": ("Acquire batch {batch_no} not found", "Không tìm thấy lô nhận {batch_no}"),
-"ACQ_BATCH_INCOMPLETE": ("Acquire batch {batch_no} is incomplete; click “Retry” to continue acquiring before downloading", "Lô nhận {batch_no} chưa hoàn tất; bấm “Thử lại” để nhận tiếp rồi mới tải về"),
-"ACQ_RETRY_FORBIDDEN": ("Only the original operator or HQ can retry the acquire batch", "Chỉ người thao tác ban đầu hoặc trụ sở mới được thử lại lô nhận"),
+"ACQ_BATCH_INCOMPLETE": ("Acquire batch {batch_no} is incomplete and cannot be downloaded", "Lô nhận {batch_no} chưa hoàn tất, không thể tải về"),
+"EXPORT_NOTHING": ("Bill {bill_no} of PI {pi} has no allocated SNs", "Chứng từ {bill_no} của PI {pi} không có SN đã phân bổ"),
 # ---------- 转单 / 转组织 ----------
 "TR_SCOPE_INVALID": ("Transfer scope must be whole PI, PI + material, or a single SN", "Phạm vi chuyển chỉ có thể là toàn PI, PI + vật tư hoặc một SN"),
 "TR_MATERIAL_REQUIRED": ("Material code is required when transferring by material", "Bắt buộc nhập mã vật tư khi chuyển theo vật tư"),

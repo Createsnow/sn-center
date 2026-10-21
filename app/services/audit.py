@@ -247,7 +247,6 @@ _PATH_ACTIONS = (
     (r"/api/delivery/batches/[^/]+/void", SN_BATCH_VOID),
     (r"/api/delivery/resume", SN_PUSH_RESUME),
     (r"/api/delivery/alerts/\d+/handle", SN_ALERT_HANDLE),
-    (r"/api/acquire/.*", SN_ACQUIRE),
     (r"/api/transfers/bill.*", TRANSFER_BILL),
     (r"/api/transfers/org/direct", TRANSFER_DIRECT),
     (r"/api/transfers/org/\d+/approve", TRANSFER_APPROVE),

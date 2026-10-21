@@ -192,7 +192,7 @@ class CurrentUser:
             raise biz(ErrorCode.FACTORY_FORBIDDEN, factory=self.scope_text())
 
     def write_factory(self, requested: str | None) -> str:
-        """写操作（领取、转组织申请）的生产组织：总部必须指定；操作员只能是本组织；查询员不能写。"""
+        """写操作（转组织申请）的生产组织：总部必须指定；操作员只能是本组织；查询员不能写。"""
         req = util.trim(requested)
         if self.is_admin:
             if not req:
