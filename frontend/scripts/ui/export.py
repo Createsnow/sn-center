@@ -9,6 +9,8 @@ M = {
 "export.search": ("按 PI 或单据编号搜索", "Search PI or bill No.", "Tìm PI hoặc số chứng từ"),
 "export.qty": ("SN 枚数", "SNs", "Số SN"),
 "export.suspended": ("暂停 {n}", "{n} suspended", "Tạm dừng {n}"),
+"export.inMes": ("MES 已有 {n}", "{n} already in MES", "MES đã có {n}"),
+"export.applying": ("申请中 {n}", "{n} transfer pending", "Đang xin chuyển {n}"),
 "export.rule": ("只展示已分配到生产组织的号（待分配的不展示）；下载内容为下载时刻该单据在该生产组织下的全部号。",
   "Only SNs allocated to a production org are shown (unallocated ones are not); a download contains every SN of the bill in that org at download time.",
   "Chỉ hiển thị SN đã phân bổ cho tổ chức sản xuất (SN chờ phân bổ không hiển thị); tệp tải về gồm mọi SN của chứng từ tại tổ chức đó ở thời điểm tải."),

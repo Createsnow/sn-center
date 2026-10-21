@@ -26,13 +26,13 @@
             <span v-else class="muted">{{ t("common.no") }}</span>
           </template>
         </el-table-column>
-        <el-table-column :label="t('export.qty')" align="right" width="90">
-          <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
-        </el-table-column>
-        <el-table-column :label="t('common.status')" min-width="220">
+        <el-table-column :label="t('export.qty')" min-width="200">
           <template #default="{ row }">
-            <span v-for="(n, s) in row.statuses" :key="s" class="st"><StatusTag :status="String(s)" /><span class="num">{{ num(n) }}</span></span>
-            <el-tag v-if="row.suspended" size="small" type="danger" class="ml">{{ t("export.suspended", { n: num(row.suspended) }) }}</el-tag>
+            <span class="num">{{ num(row.qty) }}</span>
+            <!-- 只提示需要留意的号：MES 已有（已推送）、申请中、暂停；各状态明细在明细抽屉里看 -->
+            <el-tag v-if="row.statuses.PUSHED" size="small" type="warning" effect="plain" class="ml">{{ t("export.inMes", { n: num(row.statuses.PUSHED) }) }}</el-tag>
+            <el-tag v-if="row.statuses.APPLYING" size="small" type="warning" effect="plain" class="ml">{{ t("export.applying", { n: num(row.statuses.APPLYING) }) }}</el-tag>
+            <el-tag v-if="row.suspended" size="small" type="danger" effect="plain" class="ml">{{ t("export.suspended", { n: num(row.suspended) }) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column :label="t('common.actions')" width="150" align="right">
@@ -163,7 +163,6 @@ onMounted(() => list.load(1));
 .w220 { width: 220px; }
 .ml { margin-left: 6px; }
 .sp { flex: 1; }
-.st { display: inline-flex; align-items: center; gap: 4px; margin-right: 10px; }
 .clickable :deep(.el-table__row) { cursor: pointer; }
 .dh { display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--app-text); }
 </style>

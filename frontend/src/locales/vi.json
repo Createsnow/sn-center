@@ -437,6 +437,8 @@
     "search": "Tìm PI hoặc số chứng từ",
     "qty": "Số SN",
     "suspended": "Tạm dừng {n}",
+    "inMes": "MES đã có {n}",
+    "applying": "Đang xin chuyển {n}",
     "rule": "Chỉ hiển thị SN đã phân bổ cho tổ chức sản xuất (SN chờ phân bổ không hiển thị); tệp tải về gồm mọi SN của chứng từ tại tổ chức đó ở thời điểm tải.",
     "fileCols": "Cột tệp: PI, chứng từ, mã vật tư, SN",
     "download": "Tải {f}",

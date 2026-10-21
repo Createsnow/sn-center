@@ -437,6 +437,8 @@
     "search": "Search PI or bill No.",
     "qty": "SNs",
     "suspended": "{n} suspended",
+    "inMes": "{n} already in MES",
+    "applying": "{n} transfer pending",
     "rule": "Only SNs allocated to a production org are shown (unallocated ones are not); a download contains every SN of the bill in that org at download time.",
     "fileCols": "File columns: PI, bill, material, SN",
     "download": "Download {f}",
