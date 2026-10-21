@@ -274,6 +274,7 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
         b["quota"] = sum(x["quota"] for x in b["lines"])
     stats = _item_stats([pi]).get(pi, {})
     running = db.one("SELECT * FROM sn_gen_job WHERE running_pi = %s", pi)
+    revocable = generate.revocable(pi)
     return {
         "pi_no": pi,
         "customer_code": customer,
@@ -293,9 +294,9 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
         "rule_options": rules.options(pi, customer),
         "limits": generate.limits(),
         "running_job": None if running is None else generate.progress(running["gen_batch"]),
-        "jobs": generate.jobs(pi, 20),
+        "jobs": generate.jobs_with(pi, 20, revocable),
         # 当前可撤销的物料行（流水排在最后的那一段）
-        "revocable": generate.revocable(pi),
+        "revocable": revocable,
         # 未撤销的号段，从流水最末往前；物料行上的「撤销」= 撤到该行为止（流水在其后的行一并撤）
         "segments": generate.revoke_chain(pi),
     }

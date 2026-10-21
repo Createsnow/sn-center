@@ -263,6 +263,34 @@ def test_material_lost_map_moves_counts_and_items(w, api, sql):
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND suspend IS NOT NULL", bill) == 0
 
 
+def test_material_map_reassigns_delivered_items(w, api, sql):
+    """已交付给本组织 MES 的号：确认对应后 rev + 1、改为待推送改挂并自动重推；未交付的只改挂。"""
+    org, pi, bill = issued(w, ("M1", 4), ("M2", 3), mes=True)
+    w.allocate(pi, lines=[(bill, 1)])
+    w.push()
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND status = 'PUSHED' AND rev = 1", bill) == 4
+    BILLS[bill]["TreeEntity"][0]["MaterialId"] = {"Number": "M9", "Name": "x"}
+    BILLS[bill]["TreeEntity"].append(
+        {"Seq": 3, "MaterialId": {"Number": "M9", "Name": "x"}, "Qty": 4.0, "Flength": "100", "FTERM": "1"}
+    )
+    w.touch(bill)
+    w.compare()
+    al = [x for x in alerts(api, w.admin, bill) if x["alert_type"] == "MATERIAL"][0]
+    ok(api.post(f"/api/orders/alerts/{al['id']}/handle", m(action="MAP", target_seq=3), w.admin))
+    rows = sql.all(
+        "SELECT status, push_type, rev, delivery_batch_no FROM sn_item WHERE bill_no = %s AND bill_seq = 3", bill
+    )
+    assert len(rows) == 4
+    assert {(r["status"], r["push_type"], r["rev"], r["delivery_batch_no"]) for r in rows} == {
+        ("TO_PUSH", "REASSIGN", 2, None)
+    }
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND bill_seq = 2 AND rev = 1", bill) == 3
+    w.push()
+    item = MES.received[-1]["batch"]["items"][0]
+    assert (item["pushType"], item["rev"], item["billSeq"], item["materialCode"]) == ("REASSIGN", 2, 3, "M9")
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND status = 'PUSHED' AND rev = 2", bill) == 4
+
+
 def test_qty_below_generated_only_reminds(w, api, sql):
     org, pi, bill = issued(w, ("M1", 8))
     BILLS[bill]["TreeEntity"][0]["Qty"] = 5.0

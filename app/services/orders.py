@@ -29,10 +29,10 @@ from app.services import audit, changes, factories, k3, locks
 log = structlog.get_logger()
 
 PRD_MO_COLS = (
-    "bill_no, seq, doc_status, customer_code, pi, po, org_code, org_name, attach_no, material_code, material_name, "
+    "bill_no, seq, customer_code, pi, po, org_code, org_name, attach_no, material_code, material_name, "
     "length_raw, qty, modify_time, synced_at"
 )
-_INSERT = f"INSERT INTO {{table}}({PRD_MO_COLS}) VALUES ({marks(15)})"
+_INSERT = f"INSERT INTO {{table}}({PRD_MO_COLS}) VALUES ({marks(14)})"
 
 
 # ================================================================== 写快照
@@ -50,7 +50,6 @@ def _args(rows: list[k3.Row], ts) -> list[tuple]:
             (
                 r.bill_no,
                 r.seq,
-                r.doc_status or k3.APPROVED,
                 util.cut(r.customer_code, 64),
                 util.cut(r.pi, 64),
                 util.cut(r.po, 128),
@@ -122,7 +121,7 @@ def _compare(cu: CurrentUser, trigger: str) -> dict:
         removed = [no for no in local if no not in remote]
         fetched = _group(k3.fetch_bills(changed)) if changed else {}
     except BizError as e:
-        _finish(ts, False, e.message, None, None)
+        _finish(ts, False, e.message, None)
         audit.record_isolated(cu, audit.entry(audit.ORDER_SYNC).fail(e.message).info(f"mode=compare trigger={trigger}"))
         raise
     # 有修改时间、却按单号拉不到明细（期间被反审核）：当作移出
@@ -133,9 +132,9 @@ def _compare(cu: CurrentUser, trigger: str) -> dict:
         _remove_bills(removed)
     notes = changes.after_sync(cu, list(fetched), removed)
     # 反审核中的已出号单据按单号复查（发现重新审核或删除）
-    notes += changes.recheck_reversed(cu, set(remote))
+    changes.recheck_reversed(cu, set(remote))
     n_bills = len(fetched) + len(removed)
-    _finish(ts, True, "", n_bills, rows)
+    _finish(ts, True, "", n_bills)
     if n_bills:
         audit.record_isolated(
             cu,
@@ -156,14 +155,12 @@ def _compare(cu: CurrentUser, trigger: str) -> dict:
     }
 
 
-def _finish(ts, ok: bool, message: str, bills: int | None, rows: int | None) -> None:
+def _finish(ts, ok: bool, message: str, bills: int | None) -> None:
     if ok:
         db.exec(
-            "UPDATE sn_sync_state SET last_run_at = %s, last_ok = 1, last_message = '', last_bills = %s, "
-            "last_rows = %s WHERE id = 1",
+            "UPDATE sn_sync_state SET last_run_at = %s, last_ok = 1, last_message = '', last_bills = %s WHERE id = 1",
             ts,
             bills,
-            rows,
         )
     else:
         db.exec(
@@ -447,7 +444,8 @@ def fill_lengths(
             for r in db.all("SELECT * FROM sn_prd_mo WHERE pi = %s ORDER BY bill_no, seq", pi)
             if ((r["bill_no"], r["seq"]) in keys if keys else r["bill_no"] in bills if bills else True)
         ]
-        counts, _, lens = line_extras([(r["bill_no"], r["seq"]) for r in rows])
+        keys = [(r["bill_no"], r["seq"]) for r in rows]
+        counts, lens = line_counts(keys), line_lengths(keys)
         todo = [
             r
             for r in rows
@@ -580,24 +578,28 @@ def sn_qty(line: dict) -> int:
     return 0 if q is None else max(0, int(Decimal(q)))
 
 
+def _by_line(table: str, keys: list[tuple[str, int]]) -> dict:
+    """按物料行存的附表（计数、附件项次、长度）中这些单据的行：(bill, seq) → 行。"""
+    if not keys:
+        return {}
+    bills = sorted({k[0] for k in keys})
+    return {
+        (r["bill_no"], r["seq"]): r
+        for r in db.all(f"SELECT * FROM {table} WHERE bill_no IN ({marks(len(bills))})", *bills)
+    }
+
+
+def line_counts(keys: list[tuple[str, int]]) -> dict:
+    return _by_line("sn_line_count", keys)
+
+
+def line_lengths(keys: list[tuple[str, int]]) -> dict:
+    return _by_line("sn_line_length", keys)
+
+
 def line_extras(keys: list[tuple[str, int]]) -> tuple[dict, dict, dict]:
     """物料行计数、页面填写的附件项次与长度：(bill, seq) → 行。"""
-    if not keys:
-        return {}, {}, {}
-    bills = sorted({k[0] for k in keys})
-    counts = {
-        (c["bill_no"], c["seq"]): c
-        for c in db.all(f"SELECT * FROM sn_line_count WHERE bill_no IN ({marks(len(bills))})", *bills)
-    }
-    fills = {
-        (f["bill_no"], f["seq"]): f
-        for f in db.all(f"SELECT * FROM sn_line_attach WHERE bill_no IN ({marks(len(bills))})", *bills)
-    }
-    lens = {
-        (f["bill_no"], f["seq"]): f
-        for f in db.all(f"SELECT * FROM sn_line_length WHERE bill_no IN ({marks(len(bills))})", *bills)
-    }
-    return counts, fills, lens
+    return line_counts(keys), _by_line("sn_line_attach", keys), line_lengths(keys)
 
 
 def lines(bill_no: str | None) -> list[dict]:
@@ -732,7 +734,7 @@ def targets(q: str | None, limit: int) -> list[dict]:
         *args,
         min(max(limit, 1), 200),
     )
-    _, _, lens = line_extras([(r["bill_no"], r["seq"]) for r in rows])
+    lens = line_lengths([(r["bill_no"], r["seq"]) for r in rows])
     return [
         {
             "org_code": r["org_code"],

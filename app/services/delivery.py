@@ -555,23 +555,35 @@ def _confirm(cu: CurrentUser, b: dict, method: str, results: list[dict] | None, 
             "WHERE batch_id = %s AND sn = %s",
             rows,
         )
-        for x in results:
-            if x["result"] in ("CONFLICT", "STALE"):
-                item = db.one("SELECT item_id FROM sn_delivery_item WHERE batch_id = %s AND sn = %s", b["id"], x["sn"])
-                db.exec(
-                    "INSERT INTO sn_delivery_alert(alert_type, factory_code, batch_no, item_id, sn, rev, existing_rev, "
-                    "existing_batch_no, detail, created_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-                    x["result"],
-                    b["factory_code"],
-                    b["batch_no"],
-                    None if item is None else item["item_id"],
-                    x["sn"],
-                    x["rev"],
-                    x.get("existingRev"),
-                    x.get("existingBatchNo"),
-                    "疑似重复交付" if x["result"] == "CONFLICT" else "版本过期",
-                    now,
+        flagged = [x for x in results if x["result"] in ("CONFLICT", "STALE")]
+        if flagged:
+            item_of = {
+                r["sn"]: r["item_id"]
+                for r in db.all(
+                    f"SELECT sn, item_id FROM sn_delivery_item WHERE batch_id = %s AND sn IN ({marks(len(flagged))})",
+                    b["id"],
+                    *(x["sn"] for x in flagged),
                 )
+            }
+            db.exec_many(
+                "INSERT INTO sn_delivery_alert(alert_type, factory_code, batch_no, item_id, sn, rev, existing_rev, "
+                "existing_batch_no, detail, created_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                [
+                    (
+                        x["result"],
+                        b["factory_code"],
+                        b["batch_no"],
+                        item_of.get(x["sn"]),
+                        x["sn"],
+                        x["rev"],
+                        x.get("existingRev"),
+                        x.get("existingBatchNo"),
+                        "疑似重复交付" if x["result"] == "CONFLICT" else "版本过期",
+                        now,
+                    )
+                    for x in flagged
+                ],
+            )
     result = SUCCESS_CONFLICT if counts["CONFLICT"] else SUCCESS
     db.exec(
         "UPDATE sn_delivery_batch SET result = %s, confirm_method = %s, confirmed_at = %s, accepted_qty = %s, "
@@ -937,13 +949,6 @@ def _drive(t: dict) -> None:
         ok = push_once(nxt)
         if ok == "CONFIRMED":
             sent += 1
-            db.exec(
-                "UPDATE sn_push_task SET pushed_batches = pushed_batches + 1, pushed_qty = pushed_qty + %s "
-                "WHERE factory_code = %s AND task_key = %s",
-                nxt["qty"],
-                t["factory_code"],
-                t["task_key"],
-            )
             continue
         b = must_batch(nxt["batch_no"])
         if b["result"] in CONFIRMED:
@@ -1171,12 +1176,7 @@ def void(cu: CurrentUser, batch_no: str | None, reason: str | None, basis: str |
             changes.refresh_items(bills)
         else:
             entries = [
-                {
-                    **e,
-                    "transfer_kind": b["transfer_kind"],
-                    "transfer_doc_no": b["transfer_doc_no"],
-                    "rule_version_id": e["rule_version_id"],
-                }
+                {**e, "transfer_kind": b["transfer_kind"], "transfer_doc_no": b["transfer_doc_no"]}
                 for e in db.all(
                     "SELECT d.item_id, d.sn, d.rev, d.pi_no, d.bill_no, d.bill_seq, d.material_code, d.customer_code, "
                     "d.seq_pi_no, d.seq_dec, d.to_factory, i.rule_version_id FROM sn_delivery_item d "
@@ -1249,7 +1249,7 @@ def handle_alert(cu: CurrentUser, alert_id: int, action: str | None, note: str |
                 raise biz(ErrorCode.DALERT_RESEND_BLOCKED, sn=a["sn"] or "", detail="号在未确认或失败的批次中")
             if it["status"] not in (util.PUSHED, util.TO_PUSH):
                 raise biz(ErrorCode.DALERT_RESEND_BLOCKED, sn=a["sn"] or "", detail=f"号当前状态为 {it['status']}")
-            if _frozen_by_transfer_out([it["id"]]):
+            if frozen_by_transfer_out([it["id"]]):
                 raise biz(ErrorCode.DALERT_RESEND_BLOCKED, sn=a["sn"] or "", detail="号在未确认或失败的转出批次中")
             rev = max(int(it["rev"]), int(a["existing_rev"] or 0)) + 1
             db.exec(
@@ -1290,7 +1290,7 @@ def handle_alert(cu: CurrentUser, alert_id: int, action: str | None, note: str |
     return {"id": alert_id, "action": act}
 
 
-def _frozen_by_transfer_out(item_ids: list[int]) -> set[int]:
+def frozen_by_transfer_out(item_ids: list[int]) -> set[int]:
     """号所在转出批次未确认或失败（5.2.8 第 7 条）。"""
     if not item_ids:
         return set()
@@ -1306,9 +1306,6 @@ def _frozen_by_transfer_out(item_ids: list[int]) -> set[int]:
             )
         )
     return out
-
-
-frozen_by_transfer_out = _frozen_by_transfer_out
 
 
 def list_alerts(cu: CurrentUser, status: str | None, page: util.Page) -> dict:
@@ -1680,37 +1677,27 @@ def batch_detail(cu: CurrentUser, batch_no: str | None) -> dict:
 
 def segments_of(b: dict) -> list[dict]:
     """号段清单：连续的号合并为一段（被拉取、领取打散后可有多段）。"""
+    # 段内首尾号用窗口函数一并取出（一个批次内同一流水归属 PI 的十进制流水不重复）
     rows = db.all(
-        "SELECT seq_pi_no, MIN(seq_dec) s, MAX(seq_dec) e, COUNT(*) n, MIN(line_no) a, MAX(line_no) z FROM "
-        "(SELECT seq_pi_no, seq_dec, line_no, seq_dec - ROW_NUMBER() OVER (PARTITION BY seq_pi_no ORDER BY seq_dec) g "
-        "FROM sn_delivery_item WHERE batch_id = %s) t GROUP BY seq_pi_no, g ORDER BY seq_pi_no, s LIMIT 500",
+        "SELECT seq_pi_no, MIN(seq_dec) s, MAX(seq_dec) e, COUNT(*) n, MAX(first_sn) first_sn, MAX(last_sn) last_sn "
+        "FROM (SELECT seq_pi_no, seq_dec, g, FIRST_VALUE(sn) OVER w first_sn, "
+        "LAST_VALUE(sn) OVER (w ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) last_sn "
+        "FROM (SELECT seq_pi_no, seq_dec, sn, seq_dec - ROW_NUMBER() OVER (PARTITION BY seq_pi_no ORDER BY seq_dec) g "
+        "FROM sn_delivery_item WHERE batch_id = %s) t WINDOW w AS (PARTITION BY seq_pi_no, g ORDER BY seq_dec)) u "
+        "GROUP BY seq_pi_no, g ORDER BY seq_pi_no, s LIMIT 500",
         b["id"],
     )
-    out = []
-    for r in rows:
-        first = db.scalar(
-            "SELECT sn FROM sn_delivery_item WHERE batch_id = %s AND seq_pi_no = %s AND seq_dec = %s",
-            b["id"],
-            r["seq_pi_no"],
-            r["s"],
-        )
-        last = db.scalar(
-            "SELECT sn FROM sn_delivery_item WHERE batch_id = %s AND seq_pi_no = %s AND seq_dec = %s",
-            b["id"],
-            r["seq_pi_no"],
-            r["e"],
-        )
-        out.append(
-            {
-                "seq_pi_no": r["seq_pi_no"],
-                "start_seq": int(r["s"]),
-                "end_seq": int(r["e"]),
-                "qty": int(r["n"]),
-                "start_sn": first,
-                "end_sn": last,
-            }
-        )
-    return out
+    return [
+        {
+            "seq_pi_no": r["seq_pi_no"],
+            "start_seq": int(r["s"]),
+            "end_seq": int(r["e"]),
+            "qty": int(r["n"]),
+            "start_sn": r["first_sn"],
+            "end_sn": r["last_sn"],
+        }
+        for r in rows
+    ]
 
 
 def batch_items_page(cu: CurrentUser, batch_no: str | None, page: util.Page) -> dict:

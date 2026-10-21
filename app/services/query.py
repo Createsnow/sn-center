@@ -23,8 +23,7 @@ COUNT_CAP = 100_000
 COLS = (
     "i.id, i.sn, i.rule_version_id, i.seq_dec, i.seq_pi_no, i.pi_no, i.bill_no, i.bill_seq, i.material_code, "
     "i.length_text, i.customer_code, i.factory_code, i.status, i.delivery_mode, i.delivery_batch_no, "
-    "i.acquire_batch_no, i.suspend, i.rev, i.created_at, i.allocated_at, i.delivered_at, i.mes_holder, i.push_type, "
-    "i.gen_bill_no, i.gen_bill_seq"
+    "i.acquire_batch_no, i.suspend, i.rev, i.created_at, i.allocated_at, i.delivered_at, i.mes_holder, i.push_type"
 )
 
 

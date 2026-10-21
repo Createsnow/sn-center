@@ -73,11 +73,9 @@ JOB_FIELDS = (
 )
 
 _INSERT_ITEM = (
-    "INSERT INTO sn_item(sn, factory_code, pi_no, customer_code, bill_no, bill_seq, material_code, rev, gen_org_code, "
-    "gen_bill_no, gen_bill_seq, gen_material_code, seq_pi_no, seq_dec, length_text, rule_version_id, gen_batch, "
-    "status, "
-    "push_type, created_at, updated_at) VALUES (%s,NULL,%s,%s,%s,%s,%s,1,%s,%s,%s,%s,%s,%s,%s,%s,%s,'PENDING_ALLOC',"
-    "'NEW',%s,%s)"
+    "INSERT INTO sn_item(sn, pi_no, customer_code, bill_no, bill_seq, material_code, gen_org_code, gen_bill_no, "
+    "gen_bill_seq, seq_pi_no, seq_dec, length_text, rule_version_id, gen_batch, status, created_at, updated_at) "
+    "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'PENDING_ALLOC',%s,%s)"
 )
 
 #: 大批量生成走后台线程
@@ -147,6 +145,7 @@ def _load_lines(pi: str, keys: list[tuple[str, int]]) -> list[Line]:
     counts, fills, lens = orders.line_extras(keys)
     sels = rules.selections(keys)
     defaults: dict[str, rules.Resolved | None] = {}
+    memo: dict[int, rules.Resolved | None] = {}
     blocks = {b: changes.generation_block(b) for b in bills}
     out = []
     for k in keys:
@@ -170,7 +169,7 @@ def _load_lines(pi: str, keys: list[tuple[str, int]]) -> list[Line]:
             0 if c is None else int(c["own_generated"]),
             orders.effective_length(r, lens.get(k))[0],
             attach,
-            rules.effective(pi, r["customer_code"], sels.get(k), defaults[r["customer_code"]]),
+            rules.effective(pi, r["customer_code"], sels.get(k), defaults[r["customer_code"]], memo=memo),
             blocks[r["bill_no"]],
         )
         _check(line)
@@ -536,7 +535,6 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
                     x["org_code"],
                     x["bill_no"],
                     x["seq"],
-                    x["material_code"],
                     pi,
                     s + i,
                     x["length"],
@@ -970,8 +968,12 @@ def jobs(pi: str | None, limit: int = 20) -> list[dict]:
     """最近的生成任务；revocable 标出可整次撤销（剩下的物料行都能从流水末尾依次撤掉）的那一次，
     各物料行的 revocable 标出当前可单独撤销的那一行。"""
     pi = util.trim(pi)
+    return jobs_with(pi, limit, revocable(pi))
+
+
+def jobs_with(pi: str, limit: int, rb: dict | None) -> list[dict]:
+    """同 jobs，可撤销的物料行由调用方算好传入（生成详情里另要单独返回它）。"""
     rows = db.all("SELECT * FROM sn_gen_job WHERE pi_no = %s ORDER BY id DESC LIMIT %s", pi, min(max(limit, 1), 200))
-    rb = revocable(pi)
     out = []
     for j in rows:
         v = job_json(j)
@@ -1044,10 +1046,12 @@ def alloc_preview(pi_in: str | None, bills: list[str] | None, lines: list[dict] 
         raise biz(ErrorCode.PI_REQUIRED)
     groups, skipped = _alloc_groups(pi, bills, lines)
     by_org: dict[str, dict] = {}
+    orgs_of_bill: dict[str, set[str]] = {}
     for g in groups:
         o = by_org.setdefault(g["org"], {"org_code": g["org"], "qty": 0, "bills": [], "materials": set()})
         o["qty"] += g["qty"]
         o["bills"].append(g["bill_no"])
+        orgs_of_bill.setdefault(g["bill_no"], set()).add(g["org"])
     cond, args = _alloc_scope(pi, bills, lines)
     for r in db.all(
         "SELECT bill_no, GROUP_CONCAT(DISTINCT material_code) m FROM sn_item WHERE pi_no = %s AND status = "
@@ -1055,9 +1059,8 @@ def alloc_preview(pi_in: str | None, bills: list[str] | None, lines: list[dict] 
         pi,
         *args,
     ):
-        for o in by_org.values():
-            if r["bill_no"] in o["bills"]:
-                o["materials"].update(x for x in (r["m"] or "").split(",") if x is not None)
+        for org in orgs_of_bill.get(r["bill_no"], ()):
+            by_org[org]["materials"].update((r["m"] or "").split(","))
     names = factories.names()
     out_orgs, pushes = [], 0
     for o in by_org.values():
@@ -1108,34 +1111,30 @@ def allocate(
                 status = util.TO_PUSH if mes else util.TO_ACQUIRE
                 gen_cond = "" if g["snapshot"] else " AND gen_org_code = %s"
                 gen_args = [] if g["snapshot"] else [g["gen_org"]]
+                # 在 PI 操作锁与事务内，这里统计到的就是下面要改的号
                 per_line = db.all(
-                    "SELECT bill_seq, COUNT(*) n, MIN(sn) a FROM sn_item WHERE pi_no = %s AND bill_no = %s "
+                    "SELECT bill_seq, COUNT(*) n, MIN(sn) a, MAX(sn) b FROM sn_item WHERE pi_no = %s AND bill_no = %s "
                     "AND status = 'PENDING_ALLOC'" + gen_cond + cond + " GROUP BY bill_seq",
                     pi,
                     g["bill_no"],
                     *gen_args,
                     *args,
                 )
-                n = 0
-                while True:
-                    k = db.exec(
-                        "UPDATE sn_item SET status = %s, factory_code = %s, push_type = 'NEW', allocated_at = %s, "
-                        "updated_at = %s WHERE pi_no = %s AND bill_no = %s AND status = 'PENDING_ALLOC'"
-                        + gen_cond
-                        + cond
-                        + " ORDER BY seq_dec LIMIT 5000",
-                        status,
-                        g["org"],
-                        now,
-                        now,
-                        pi,
-                        g["bill_no"],
-                        *gen_args,
-                        *args,
-                    )
-                    n += k
-                    if k < 5000:
-                        break
+                if not per_line:
+                    # 同一单据有多个生成时组织、按快照组织分配时，前一组已一并分配
+                    continue
+                n = db.exec(
+                    "UPDATE sn_item SET status = %s, factory_code = %s, push_type = 'NEW', allocated_at = %s, "
+                    "updated_at = %s WHERE pi_no = %s AND bill_no = %s AND status = 'PENDING_ALLOC'" + gen_cond + cond,
+                    status,
+                    g["org"],
+                    now,
+                    now,
+                    pi,
+                    g["bill_no"],
+                    *gen_args,
+                    *args,
+                )
                 for pl in per_line:
                     db.exec(
                         "UPDATE sn_line_count SET alloc_count = alloc_count + %s, updated_at = %s WHERE bill_no = %s "
@@ -1145,14 +1144,13 @@ def allocate(
                         g["bill_no"],
                         pl["bill_seq"],
                     )
-                first, last = _range_of(pi, g["bill_no"], g["org"], now)
                 audit.record(
                     cu,
                     audit.entry(audit.SN_ALLOCATE)
                     .factory(g["org"])
                     .pi(pi)
                     .bill(g["bill_no"])
-                    .range(first, last)
+                    .range(min(pl["a"] for pl in per_line), max(pl["b"] for pl in per_line))
                     .count(n)
                     .status(util.PENDING_ALLOC, status)
                     .info(f"mes={int(mes)}"),
@@ -1164,16 +1162,3 @@ def allocate(
         for org in sorted(started):
             delivery.start_task(cu, org, pi)
     return {"pi_no": pi, "qty": total, "skipped": skipped, "orgs": sorted({g["org"] for g in groups})}
-
-
-def _range_of(pi: str, bill: str, org: str, at) -> tuple[str | None, str | None]:
-    rows = db.all(
-        "SELECT MIN(sn) a, MAX(sn) b FROM (SELECT sn FROM sn_item WHERE pi_no = %s AND bill_no = %s AND factory_code "
-        "= %s "
-        "AND allocated_at = %s) t",
-        pi,
-        bill,
-        org,
-        at,
-    )
-    return (rows[0]["a"], rows[0]["b"]) if rows else (None, None)

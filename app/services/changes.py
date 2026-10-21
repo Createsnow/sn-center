@@ -160,8 +160,8 @@ def ensure_ledger(bill_no: str) -> None:
     h = rows[0]
     now = util.now()
     db.exec(
-        "INSERT IGNORE INTO sn_bill_ledger(bill_no, pi, customer_code, org_code, org_name, in_snapshot, created_at, "
-        "updated_at) VALUES (%s,%s,%s,%s,%s,1,%s,%s)",
+        "INSERT IGNORE INTO sn_bill_ledger(bill_no, pi, customer_code, org_code, org_name, created_at, updated_at) "
+        "VALUES (%s,%s,%s,%s,%s,%s,%s)",
         bill_no,
         h["pi"],
         h["customer_code"],
@@ -171,8 +171,8 @@ def ensure_ledger(bill_no: str) -> None:
         now,
     )
     db.exec_many(
-        "INSERT IGNORE INTO sn_bill_ledger_line(bill_no, seq, material_code, qty) VALUES (%s,%s,%s,%s)",
-        [(bill_no, r["seq"], r["material_code"], r["qty"]) for r in rows],
+        "INSERT IGNORE INTO sn_bill_ledger_line(bill_no, seq, qty) VALUES (%s,%s,%s)",
+        [(bill_no, r["seq"], r["qty"]) for r in rows],
     )
 
 
@@ -180,20 +180,15 @@ def ensure_ledger(bill_no: str) -> None:
 
 
 def _set_items_suspend(bill_no: str, reason: str | None) -> int:
-    """把该单未交付、未入批的号的暂停标记改为 reason；分段更新、逐行加锁。"""
-    total = 0
-    while True:
-        n = db.exec(
-            f"UPDATE sn_item SET suspend = %s, updated_at = %s WHERE bill_no = %s AND {_UNDELIVERED} "
-            "AND NOT (suspend <=> %s) LIMIT 5000",
-            reason,
-            util.now(),
-            bill_no,
-            reason,
-        )
-        total += n
-        if n < 5000:
-            break
+    """把该单未交付、未入批的号的暂停标记改为 reason。"""
+    total = db.exec(
+        f"UPDATE sn_item SET suspend = %s, updated_at = %s WHERE bill_no = %s AND {_UNDELIVERED} "
+        "AND NOT (suspend <=> %s)",
+        reason,
+        util.now(),
+        bill_no,
+        reason,
+    )
     # 已交付或已入批的号不暂停
     db.exec(
         f"UPDATE sn_item SET suspend = NULL WHERE bill_no = %s AND suspend IS NOT NULL AND NOT {_UNDELIVERED}",
@@ -240,7 +235,8 @@ def _pending_kicks() -> set[str]:
     return _local.kicks
 
 
-def _kick_resumed() -> None:
+def kick_resumed() -> None:
+    """事务提交后：本线程处理中解除暂停的单据启动推送。"""
     from app.services import delivery
 
     bills = sorted(_pending_kicks())
@@ -352,7 +348,7 @@ def after_sync(cu: CurrentUser, present: list[str], removed: list[str]) -> list[
                 notes += _attach_k3(cu, no)
                 if ledger(no) is not None:
                     _on_present(cu, no)
-            _kick_resumed()
+            kick_resumed()
         except Exception:  # noqa: BLE001
             log.exception("order_change_compare_failed", bill=no)
     for no in removed:
@@ -367,8 +363,8 @@ def _attach_k3(cu: CurrentUser, bill_no: str) -> list[str]:
     """页面填写过附件项次的行金蝶后来返回非空值：标「金蝶已有值」并提醒（之后生成以金蝶值为准，填写值保留）。"""
     out = []
     for r in db.all(
-        "SELECT m.seq, m.attach_no, m.material_code, a.manual_value, a.k3_value, a.material_code fill_material "
-        "FROM sn_line_attach a JOIN sn_prd_mo m ON m.bill_no = a.bill_no AND m.seq = a.seq "
+        "SELECT m.seq, m.attach_no, a.manual_value FROM sn_line_attach a "
+        "JOIN sn_prd_mo m ON m.bill_no = a.bill_no AND m.seq = a.seq "
         "WHERE a.bill_no = %s AND m.attach_no <> '' AND a.k3_value <> m.attach_no",
         bill_no,
     ):
@@ -404,7 +400,12 @@ def _on_present(cu: CurrentUser, bill_no: str) -> None:
             _alert(cu, bill_no, typ, None, before if typ != ORG else f"{before} {L['org_name']}".strip(), label)
             keep.add((typ, None))
     by_seq = {r["seq"]: r for r in rows}
-    for c in db.all("SELECT * FROM sn_line_count WHERE bill_no = %s AND (gen_count > 0 OR own_generated > 0)", bill_no):
+    counts = db.all(
+        "SELECT seq, material_code, own_generated, gen_count FROM sn_line_count WHERE bill_no = %s", bill_no
+    )
+    for c in counts:
+        if not (c["gen_count"] > 0 or c["own_generated"] > 0):
+            continue
         line = by_seq.get(c["seq"])
         if line is None or line["material_code"] != c["material_code"]:
             _alert(
@@ -422,10 +423,7 @@ def _on_present(cu: CurrentUser, bill_no: str) -> None:
     old_qty = {
         r["seq"]: r["qty"] for r in db.all("SELECT seq, qty FROM sn_bill_ledger_line WHERE bill_no = %s", bill_no)
     }
-    own = {
-        c["seq"]: int(c["own_generated"])
-        for c in db.all("SELECT seq, own_generated FROM sn_line_count WHERE bill_no = %s", bill_no)
-    }
+    own = {c["seq"]: int(c["own_generated"]) for c in counts}
     for r in rows:
         q = sn_qty(r)
         if r["seq"] in old_qty and old_qty[r["seq"]] != r["qty"] and q < own.get(r["seq"], 0):
@@ -438,18 +436,18 @@ def _on_present(cu: CurrentUser, bill_no: str) -> None:
                 f"{q}（本单已生成 {own[r['seq']]}，多出 {own[r['seq']] - q}）",
             )
     db.exec_many(
-        "INSERT INTO sn_bill_ledger_line(bill_no, seq, material_code, qty) VALUES (%s,%s,%s,%s) "
+        "INSERT INTO sn_bill_ledger_line(bill_no, seq, qty) VALUES (%s,%s,%s) "
         "ON DUPLICATE KEY UPDATE qty = VALUES(qty)",
-        [(bill_no, r["seq"], r["material_code"], r["qty"]) for r in rows],
+        [(bill_no, r["seq"], r["qty"]) for r in rows],
     )
-    if L["leave_state"] is not None:
-        _close_auto(cu, bill_no, (REVERSAL,), "重新审核回到快照")
-    db.exec(
-        "UPDATE sn_bill_ledger SET in_snapshot = 1, leave_state = NULL, left_at = NULL, updated_at = %s WHERE "
-        "bill_no = %s",
-        util.now(),
-        bill_no,
-    )
+    if L["leave_state"] is not None or L["left_at"] is not None:
+        if L["leave_state"] is not None:
+            _close_auto(cu, bill_no, (REVERSAL,), "重新审核回到快照")
+        db.exec(
+            "UPDATE sn_bill_ledger SET leave_state = NULL, left_at = NULL, updated_at = %s WHERE bill_no = %s",
+            util.now(),
+            bill_no,
+        )
     _reevaluate(cu, bill_no)
 
 
@@ -465,7 +463,7 @@ def after_removed(cu: CurrentUser, bill_no: str, view: k3.BillView | None) -> No
             view = None
     with db.tx():
         _on_absent(cu, bill_no, view)
-    _kick_resumed()
+    kick_resumed()
 
 
 def _on_absent(cu: CurrentUser, bill_no: str, view: k3.BillView | None) -> None:
@@ -481,8 +479,7 @@ def _on_absent(cu: CurrentUser, bill_no: str, view: k3.BillView | None) -> None:
         _on_present(cu, bill_no)
         return
     db.exec(
-        "UPDATE sn_bill_ledger SET in_snapshot = 0, left_at = COALESCE(left_at, %s), updated_at = %s WHERE bill_no = "
-        "%s",
+        "UPDATE sn_bill_ledger SET left_at = COALESCE(left_at, %s), updated_at = %s WHERE bill_no = %s",
         now,
         now,
         bill_no,
@@ -506,7 +503,7 @@ def _on_absent(cu: CurrentUser, bill_no: str, view: k3.BillView | None) -> None:
     _reevaluate(cu, bill_no)
 
 
-def recheck_reversed(cu: CurrentUser, approved: set[str]) -> list[str]:
+def recheck_reversed(cu: CurrentUser, approved: set[str]) -> None:
     """比对同步周期内：反审核中的已出号单据按单号复查（重新审核回来的已在比对中处理，这里只查仍不在的）。"""
     for no in db.column("SELECT bill_no FROM sn_bill_ledger WHERE leave_state = %s", REVERSAL):
         if no in approved:
@@ -515,7 +512,6 @@ def recheck_reversed(cu: CurrentUser, approved: set[str]) -> list[str]:
             after_removed(cu, no, None)
         except Exception:  # noqa: BLE001
             log.exception("reversal_recheck_failed", bill=no)
-    return []
 
 
 def after_rebuild(cu: CurrentUser) -> None:
@@ -666,7 +662,7 @@ def handle(cu: CurrentUser, alert_id: int, action: str | None, note: str | None,
                 .info(f"alert={a['id']} type={a['alert_type']} action={act}"),
             )
             _reevaluate(cu, no)
-        _kick_resumed()
+        kick_resumed()
     return {"id": alert_id, "action": act}
 
 
@@ -675,7 +671,3 @@ def close_material_alert(cu: CurrentUser, alert_id: int, note: str | None) -> No
     a = db.one("SELECT bill_no FROM sn_order_alert WHERE id = %s", alert_id)
     _close(cu, alert_id, MAP, note)
     _reevaluate(cu, a["bill_no"])
-
-
-def kick_resumed() -> None:
-    _kick_resumed()

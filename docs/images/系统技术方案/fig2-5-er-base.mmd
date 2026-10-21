@@ -41,7 +41,6 @@ erDiagram
     bigint id PK
     varchar bill_no UK
     int seq UK
-    varchar doc_status
     varchar customer_code
     varchar pi
     varchar org_code
@@ -119,7 +118,7 @@ erDiagram
   sn_bill_ledger_line {
     varchar bill_no PK
     int seq PK
-    varchar material_code
+    decimal qty
   }
   sn_order_alert {
     bigint id PK

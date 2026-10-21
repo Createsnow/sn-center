@@ -33,8 +33,7 @@ CUSTOMER = "CUSTOMER"
 PI = "PI"
 CATEGORIES = frozenset((NONE, CUSTOMER, PI))
 _CODE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
-#: 流水位数默认：规则库 5，自定义 6
-LIBRARY_SEQ_LEN = 5
+#: 自定义规则的流水位数默认（规则库的默认值由页面给出）
 CUSTOM_SEQ_LEN = 6
 
 #: 规则来源（生效顺序）
@@ -191,26 +190,62 @@ def _versions_of(rule_id: int) -> list[dict]:
     return db.all("SELECT * FROM sn_rule_version WHERE rule_id = %s ORDER BY version DESC", rule_id)
 
 
+def _versions_by_rule(rule_ids: list[int] | None = None) -> dict[int, list[dict]]:
+    """各规则的全部版本（新版本在前）；rule_ids = None 为全部规则。"""
+    sql, args = "SELECT * FROM sn_rule_version", []
+    if rule_ids is not None:
+        if not rule_ids:
+            return {}
+        sql += f" WHERE rule_id IN ({marks(len(rule_ids))})"
+        args = rule_ids
+    out: dict[int, list[dict]] = {}
+    for v in db.all(sql + " ORDER BY rule_id, version DESC", *args):
+        out.setdefault(v["rule_id"], []).append(v)
+    return out
+
+
+def _current_of(r: dict, vs: list[dict]) -> dict | None:
+    return next((v for v in vs if v["version"] == r["current_version"]), None)
+
+
 def current_version(r: dict) -> dict | None:
     return db.one("SELECT * FROM sn_rule_version WHERE rule_id = %s AND version = %s", r["id"], r["current_version"])
 
 
+def _column_by_rule(sql: str, ids: list[int]) -> dict[int, list[str]]:
+    out: dict[int, list[str]] = {}
+    if ids:
+        for row in db.all(sql.format(marks(len(ids))), *ids):
+            out.setdefault(row["rule_id"], []).append(row["v"])
+    return out
+
+
+def _views(rs: list[dict]) -> list[dict]:
+    """规则库列表与详情：每条规则的版本、用过的 PI、PI 与客户绑定（一次取齐，不逐条查）。"""
+    ids = [r["id"] for r in rs]
+    versions = _versions_by_rule(ids)
+    pi_bind = _column_by_rule("SELECT rule_id, pi_no v FROM sn_pi_rule WHERE rule_id IN ({}) ORDER BY pi_no", ids)
+    cust_bind = _column_by_rule(
+        "SELECT rule_id, customer_code v FROM sn_customer_rule WHERE rule_id IN ({}) ORDER BY customer_code", ids
+    )
+    out = []
+    for r in rs:
+        vs = versions.get(r["id"], [])
+        out.append(
+            {
+                "rule": rule_json(r),
+                "current": version_json(_current_of(r, vs)),
+                "versions": [version_json(v) for v in vs],
+                "used": any(v["used"] for v in vs),
+                "pis": sorted({v["claimed_pi"] for v in vs if v["claimed_pi"]}),
+                "bindings": {"pi": pi_bind.get(r["id"], []), "customer": cust_bind.get(r["id"], [])},
+            }
+        )
+    return out
+
+
 def view(r: dict) -> dict:
-    vs = _versions_of(r["id"])
-    cur = next((v for v in vs if v["version"] == r["current_version"]), None)
-    return {
-        "rule": rule_json(r),
-        "current": version_json(cur),
-        "versions": [version_json(v) for v in vs],
-        "used": any(v["used"] for v in vs),
-        "pis": sorted({v["claimed_pi"] for v in vs if v["claimed_pi"]}),
-        "bindings": {
-            "pi": db.column("SELECT pi_no FROM sn_pi_rule WHERE rule_id = %s ORDER BY pi_no", r["id"]),
-            "customer": db.column(
-                "SELECT customer_code FROM sn_customer_rule WHERE rule_id = %s ORDER BY customer_code", r["id"]
-            ),
-        },
-    }
+    return _views([r])[0]
 
 
 def list_rules(q: str | None, category: str | None = None, category_value: str | None = None) -> list[dict]:
@@ -233,7 +268,7 @@ def list_rules(q: str | None, category: str | None = None, category_value: str |
         args += [like] * 5
     sql += " ORDER BY category_scope = %s DESC, category_scope ASC, category_value ASC, rule_code ASC"
     args.append(NONE)
-    return [view(r) for r in db.all(sql, *args)]
+    return _views(db.all(sql, *args))
 
 
 def get_rule(rule_id: int | None, lock: bool = False) -> dict:
@@ -494,16 +529,15 @@ class Resolved:
 def resolve(rule: dict, pi: str, source: str) -> Resolved:
     """规则 rule 在 PI 下用哪一版：当前版本尚无 PI 或已归属本 PI → 用它；已归属别的 PI → 用为本 PI 换前缀另出的版本，
     没有则须换前缀。客户模板：每张 PI 首次使用须换前缀（已为本 PI 另出过版本时直接用）。"""
-    t = current_version(rule)
+    return _resolve_in(rule, _versions_of(rule["id"]), pi, source)
+
+
+def _resolve_in(rule: dict, vs: list[dict], pi: str, source: str) -> Resolved:
+    """同 resolve，版本已取出（vs 为该规则全部版本，新版本在前）。"""
+    t = _current_of(rule, vs)
     if t is None:
         raise biz(ErrorCode.RULE_VERSION_NOT_FOUND)
-    own = db.one(
-        "SELECT * FROM sn_rule_version WHERE rule_id = %s AND derived_from = %s AND claimed_pi = %s "
-        "ORDER BY version DESC LIMIT 1",
-        rule["id"],
-        t["id"],
-        pi,
-    )
+    own = next((v for v in vs if v["derived_from"] == t["id"] and v["claimed_pi"] == pi), None)
     if source != SRC_CUSTOMER and t["claimed_pi"] == pi:
         return Resolved(source, MODE_LIBRARY, PLAN_USE, rule, t)
     if own is not None:
@@ -572,16 +606,29 @@ def pi_default(pi: str, customer: str | None) -> Resolved | None:
 
 
 def effective(
-    pi: str, customer: str | None, sel: dict | None, default: Resolved | None = None, use_default: bool = True
+    pi: str,
+    customer: str | None,
+    sel: dict | None,
+    default: Resolved | None = None,
+    use_default: bool = True,
+    memo: dict[int, Resolved | None] | None = None,
 ) -> Resolved | None:
-    """物料行生效的规则：物料行已选 ＞ PI 绑定 ＞ 客户绑定；都没有返回 None（须先选规则）。"""
+    """物料行生效的规则：物料行已选 ＞ PI 绑定 ＞ 客户绑定；都没有返回 None（须先选规则）。
+    memo：同一 PI 的多个物料行选了同一条规则时只解析一次（规则 id → 解析结果）。"""
     if sel is not None:
         if sel.get("custom_json"):
             return _custom_resolved(SRC_LINE, json.loads(sel["custom_json"]))
-        if sel.get("rule_id") is not None:
-            r = db.one("SELECT * FROM sn_rule WHERE id = %s", sel["rule_id"])
-            if r is not None:
-                return resolve(r, pi, SRC_LINE)
+        rid = sel.get("rule_id")
+        if rid is not None:
+            if memo is not None and rid in memo:
+                res = memo[rid]
+            else:
+                r = db.one("SELECT * FROM sn_rule WHERE id = %s", rid)
+                res = None if r is None else resolve(r, pi, SRC_LINE)
+                if memo is not None:
+                    memo[rid] = res
+            if res is not None:
+                return res
     if not use_default:
         return None
     return default if default is not None else pi_default(pi, customer)
@@ -642,11 +689,8 @@ def line_rules_brief(pi: str, keys: list[tuple[str, int]]) -> dict[tuple[str, in
     sels = selections(keys)
     customer = db.scalar("SELECT customer_code FROM sn_prd_mo WHERE bill_no = %s LIMIT 1", keys[0][0])
     default = pi_default(pi, customer)
-    out = {}
-    for k in keys:
-        res = effective(pi, customer, sels.get(k), default)
-        out[k] = info(res)
-    return out
+    memo: dict[int, Resolved | None] = {}
+    return {k: info(effective(pi, customer, sels.get(k), default, memo=memo)) for k in keys}
 
 
 # ================================================================== 选取 / 绑定
@@ -868,12 +912,14 @@ def unbind_customer(cu: CurrentUser, customer_in: str | None) -> dict:
 def options(pi: str | None, customer: str | None) -> list[dict]:
     """生成页规则库选项：分类与本 PI 或本 PI 客户相同的标「推荐」排前面；给出本 PI 用这条规则时的版本与是否须换前缀。"""
     out = []
+    versions = _versions_by_rule()
     for r in db.all("SELECT * FROM sn_rule ORDER BY rule_code"):
-        res = resolve(r, pi, SRC_LINE) if pi else None
+        vs = versions.get(r["id"], [])
+        res = _resolve_in(r, vs, pi, SRC_LINE) if pi else None
         recommended = (r["category_scope"] == PI and r["category_value"] == pi) or (
             r["category_scope"] == CUSTOMER and customer and r["category_value"] == customer
         )
-        t = current_version(r)
+        t = _current_of(r, vs)
         item = {
             "rule_id": r["id"],
             "rule_code": r["rule_code"],
@@ -883,14 +929,7 @@ def options(pi: str | None, customer: str | None) -> list[dict]:
             "recommended": bool(recommended),
             "format": None if t is None else format_text(spec_of(t)),
             "current_prefix": None if t is None else t["prefix"],
-            "used_pis": len(
-                set(
-                    db.column(
-                        "SELECT DISTINCT claimed_pi FROM sn_rule_version WHERE rule_id = %s AND claimed_pi IS NOT NULL",
-                        r["id"],
-                    )
-                )
-            ),
+            "used_pis": len({v["claimed_pi"] for v in vs if v["claimed_pi"] is not None}),
             "plan": None if res is None else res.plan,
             "other_pi": None if res is None else res.other_pi,
         }

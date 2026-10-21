@@ -143,16 +143,6 @@ def _check_any(items: list[dict], ok: list[dict], bad: dict[int, str], scope: st
     raise biz(ErrorCode.TR_NOTHING)
 
 
-def _check_any(items: list[dict], ok: list[dict], bad: dict[int, str], scope: str | None = None) -> None:
-    """范围内一枚可转的都没有：单枚时说明原因；有不可转的列出原因；否则没有号。"""
-    if ok:
-        return
-    if scope == SCOPE_SINGLE and items:
-        raise biz(ErrorCode.TR_SN_NOT_TRANSFERABLE, sn=items[0]["sn"], reason=_REASON_TEXT.get(bad[items[0]["id"]], ""))
-    _raise_if_blocked(bad)
-    raise biz(ErrorCode.TR_NOTHING)
-
-
 def _raise_if_blocked(bad: dict[int, str]) -> None:
     if not bad:
         return
@@ -188,6 +178,8 @@ def _move(
     xo: dict[str, list[dict]] = {}
     to_push: set[tuple[str, str]] = set()
     rows = []
+    #: 改挂后各列相同的号一起更新：(组织, PI, 客户, 单据, 序号, 物料, 状态, 推送类型, 交付方式, 原组织) → 号
+    groups: dict[tuple, list[int]] = {}
     line_moves: dict[tuple[str, int], int] = {}
     alloc_moves: dict[tuple[str, int], int] = {}
     for r in items:
@@ -228,28 +220,8 @@ def _move(
                     "transfer_doc_no": doc_no,
                 }
             )
-        db.exec(
-            "UPDATE sn_item SET factory_code = %s, pi_no = %s, customer_code = %s, bill_no = %s, bill_seq = %s, "
-            "material_code = %s, rev = %s, status = %s, push_type = %s, delivery_mode = %s, delivery_batch_no = NULL, "
-            "acquire_batch_no = NULL, transfer_id = NULL, applying_from = NULL, transfer_kind = %s, transfer_doc_no "
-            "= %s, "
-            "transfer_from_org = %s, updated_at = %s WHERE id = %s",
-            new_org,
-            t.pi,
-            t.customer,
-            t.bill,
-            t.seq,
-            t.material,
-            rev,
-            status,
-            push_type,
-            mode,
-            tkind,
-            doc_no,
-            old_org,
-            now,
-            r["id"],
-        )
+        key = (new_org, t.pi, t.customer, t.bill, t.seq, t.material, status, push_type, mode, old_org)
+        groups.setdefault(key, []).append(r["id"])
         if (t.bill, t.seq) != (r["bill_no"], r["bill_seq"]):
             line_moves[(r["bill_no"], r["bill_seq"])] = line_moves.get((r["bill_no"], r["bill_seq"]), 0) - 1
             line_moves[(t.bill, t.seq)] = line_moves.get((t.bill, t.seq), 0) + 1
@@ -284,6 +256,31 @@ def _move(
                 rev,
             )
         )
+    # 号已在本事务内 FOR UPDATE 锁住，rev + 1 与上面按读出值算的 rev 一致
+    for (new_org, pi, customer, bill, seq, material, status, push_type, mode, old_org), ids in groups.items():
+        for i in range(0, len(ids), 1000):
+            part = ids[i : i + 1000]
+            db.exec(
+                "UPDATE sn_item SET factory_code = %s, pi_no = %s, customer_code = %s, bill_no = %s, bill_seq = %s, "
+                "material_code = %s, rev = rev + 1, status = %s, push_type = %s, delivery_mode = %s, "
+                "delivery_batch_no = NULL, acquire_batch_no = NULL, transfer_id = NULL, applying_from = NULL, "
+                "transfer_kind = %s, transfer_doc_no = %s, transfer_from_org = %s, updated_at = %s "
+                f"WHERE id IN ({marks(len(part))})",
+                new_org,
+                pi,
+                customer,
+                bill,
+                seq,
+                material,
+                status,
+                push_type,
+                mode,
+                tkind,
+                doc_no,
+                old_org,
+                now,
+                *part,
+            )
     db.exec_many(
         "INSERT INTO sn_transfer_item(kind, transfer_id, item_id, sn, seq_pi_no, seq_dec, from_status, from_factory, "
         "from_pi, from_customer, from_bill, from_seq, from_material, from_delivery_batch, from_acquire_batch, "
@@ -325,23 +322,16 @@ def _move(
         bs = delivery.build_transfer_out(cu, org, entries)
         out_batches += bs
         for b in bs:
-            ids = [e["item_id"] for e in entries if e["sn"] in _sns_of(b)]
-            for i in range(0, len(ids), 1000):
-                part = ids[i : i + 1000]
-                db.exec(
-                    f"UPDATE sn_transfer_item SET out_batch_no = %s WHERE kind = %s AND transfer_id = %s "
-                    f"AND item_id IN ({marks(len(part))})",
-                    b["batch_no"],
-                    kind,
-                    transfer_id,
-                    *part,
-                )
+            db.exec(
+                "UPDATE sn_transfer_item t JOIN sn_delivery_item d ON d.batch_id = %s AND d.item_id = t.item_id "
+                "SET t.out_batch_no = %s WHERE t.kind = %s AND t.transfer_id = %s",
+                b["id"],
+                b["batch_no"],
+                kind,
+                transfer_id,
+            )
     changes.refresh_items({r["bill_no"] for r in items} | {t.bill for t in targets.values()})
     return {"to_push": to_push, "out": out_batches, "xo_orgs": sorted(xo)}
-
-
-def _sns_of(b: dict) -> set[str]:
-    return set(db.column("SELECT sn FROM sn_delivery_item WHERE batch_id = %s", b["id"]))
 
 
 def _after_move(cu: CurrentUser, moved: dict) -> None:
@@ -444,9 +434,10 @@ def _bill_plan(req: BillRequest) -> tuple[list[dict], dict[int, Target], orders.
     if not items:
         raise biz(ErrorCode.TR_NOTHING)
     targets: dict[int, Target] = {}
+    tlens = {seq: orders.length_of(line) for seq, line in line_of.items()}
     for r in items:
         line = line_of[r["bill_seq"]]
-        tlen = orders.length_of(line)
+        tlen = tlens[r["bill_seq"]]
         if r["length_text"] is not None and tlen != r["length_text"]:
             raise biz(ErrorCode.TR_LENGTH_MISMATCH, target=tlen or "(空)", current=r["length_text"])
         # 已分配的号按目标单据的生产组织（相同时同组织改挂，不同时等同转组织）；待分配的仍待分配
@@ -483,7 +474,7 @@ def bill_preview(req: BillRequest) -> dict:
         t = targets[r["id"]]
         moves[(r["bill_no"], r["bill_seq"])] = moves.get((r["bill_no"], r["bill_seq"]), 0) - 1
         moves[(t.bill, t.seq)] = moves.get((t.bill, t.seq), 0) + 1
-    counts, _, _ = orders.line_extras(list(moves))
+    counts = orders.line_counts(list(moves))
     out["generated_changes"] = [
         {
             "bill_no": k[0],
@@ -635,7 +626,7 @@ def _check_org_target(r: OrgRequest, items: list[dict], from_factory: str, from_
     # 改了物料且能从快照取到目标长度时，与号上长度不同则拒绝；手工填写的物料不校验
     if to_material and "material" not in manual:
         rows = db.all("SELECT * FROM sn_prd_mo WHERE pi = %s AND material_code = %s", to_pi, to_material)
-        _, _, fills = orders.line_extras([(r["bill_no"], r["seq"]) for r in rows])
+        fills = orders.line_lengths([(r["bill_no"], r["seq"]) for r in rows])
         lens = {orders.effective_length(r, fills.get((r["bill_no"], r["seq"])))[0] for r in rows}
         if len(lens) == 1:
             tl = lens.pop()
@@ -954,25 +945,32 @@ def map_material(cu: CurrentUser, alert: dict, target_seq: int | None, note: str
         mes = factories.mes_codes()
         now = util.now()
         pushes: set[tuple[str, str]] = set()
+        # 已交付给 MES 的号 rev + 1，其中 MES 持有组织即本组织（且对接 MES）的改为待推送改挂；其余只改挂
+        extra = {
+            "REASSIGN": ", rev = rev + 1, status = 'TO_PUSH', push_type = 'REASSIGN', delivery_batch_no = NULL",
+            "DELIVERED": ", rev = rev + 1",
+            "": "",
+        }
+        groups: dict[str, list[int]] = {k: [] for k in extra}
         for x in items:
-            delivered = x["mes_holder"] is not None
-            status, push_type, batch = x["status"], x["push_type"], x["delivery_batch_no"]
-            rev = int(x["rev"]) + (1 if delivered else 0)
-            if delivered and x["mes_holder"] == x["factory_code"] and x["factory_code"] in mes:
-                status, push_type, batch = util.TO_PUSH, util.PUSH_REASSIGN, None
+            if x["mes_holder"] is None:
+                groups[""].append(x["id"])
+            elif x["mes_holder"] == x["factory_code"] and x["factory_code"] in mes:
+                groups["REASSIGN"].append(x["id"])
                 pushes.add((x["factory_code"], x["pi_no"]))
-            db.exec(
-                "UPDATE sn_item SET bill_seq = %s, material_code = %s, rev = %s, status = %s, push_type = %s, "
-                "delivery_batch_no = %s, updated_at = %s WHERE id = %s",
-                target_seq,
-                line["material_code"],
-                rev,
-                status,
-                push_type,
-                batch,
-                now,
-                x["id"],
-            )
+            else:
+                groups["DELIVERED"].append(x["id"])
+        for k, ids in groups.items():
+            for i in range(0, len(ids), 1000):
+                part = ids[i : i + 1000]
+                db.exec(
+                    f"UPDATE sn_item SET bill_seq = %s, material_code = %s{extra[k]}, updated_at = %s "
+                    f"WHERE id IN ({marks(len(part))})",
+                    target_seq,
+                    line["material_code"],
+                    now,
+                    *part,
+                )
         oc = db.one("SELECT * FROM sn_line_count WHERE bill_no = %s AND seq = %s FOR UPDATE", bill, old)
         if oc is not None:
             db.exec(
@@ -1018,7 +1016,7 @@ def map_material(cu: CurrentUser, alert: dict, target_seq: int | None, note: str
 # ================================================================== 查询（F-17）
 
 
-def _direction(cu: CurrentUser, from_f: str | None, to_f: str | None) -> str:
+def _direction(cu: CurrentUser, from_f: str | None) -> str:
     if not cu.bound:
         return ""
     return "OUT" if from_f in cu.factories else "IN"
@@ -1052,7 +1050,7 @@ def list_org(
         [
             {
                 "transfer": util.jrow(t, ORG_FIELDS),
-                "direction": _direction(cu, t["from_factory"], t["to_factory"]),
+                "direction": _direction(cu, t["from_factory"]),
                 "to_factory_disabled": t["status"] == PENDING and t["to_factory"] in disabled,
             }
             for t in rows
@@ -1128,7 +1126,7 @@ def org_view(cu: CurrentUser, tid: int) -> dict:
         raise biz(ErrorCode.TR_NOT_FOUND)
     cu.check_read(t["from_factory"], t["to_factory"])
     out = util.jrow(t, ORG_FIELDS)
-    out["direction"] = _direction(cu, t["from_factory"], t["to_factory"])
+    out["direction"] = _direction(cu, t["from_factory"])
     if t["status"] == APPROVED:
         out.update(_push_info(KIND_ORG, tid, t["transfer_no"]))
     return out

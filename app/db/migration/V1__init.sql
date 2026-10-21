@@ -131,16 +131,14 @@ CREATE TABLE sn_line_rule (
   set_by      VARCHAR(32)  NOT NULL,
   set_at      DATETIME     NOT NULL,
   PRIMARY KEY (bill_no, seq),
-  KEY ix_line_rule_pi (pi_no),
   KEY ix_line_rule_rule (rule_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='物料行规则';
 
--- 金蝶生产订单快照：已审核单据的每条物料行一行；表头字段写在每一行上；不存单据内码、分录内码
+-- 金蝶生产订单快照：已审核单据的每条物料行一行（不存单据状态，均为 C）；表头字段写在每一行上；不存单据内码、分录内码
 CREATE TABLE sn_prd_mo (
   id            BIGINT        NOT NULL AUTO_INCREMENT,
   bill_no       VARCHAR(64)   NOT NULL COMMENT '单据编号',
   seq           INT           NOT NULL COMMENT '序号 = 金蝶明细行号；物料行 = 单据编号 + 序号',
-  doc_status    VARCHAR(8)    NOT NULL COMMENT '单据状态（快照中均为 C 已审核）',
   customer_code VARCHAR(64)   NOT NULL DEFAULT '',
   pi            VARCHAR(64)   NOT NULL DEFAULT '',
   po            VARCHAR(128)  NOT NULL DEFAULT '',
@@ -167,7 +165,6 @@ CREATE TABLE sn_sync_state (
   last_ok       TINYINT(1)   NULL,
   last_message  VARCHAR(500) NOT NULL DEFAULT '',
   last_bills    INT          NULL COMMENT '最近一次变动的单据数',
-  last_rows     INT          NULL,
   last_full_at  DATETIME     NULL COMMENT '最近一次全量重建',
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='订单同步状态';
@@ -244,14 +241,13 @@ CREATE TABLE sn_pi_counter (
   PRIMARY KEY (pi_no)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='PI 流水';
 
--- 已出号单据台账：单据第一次生成号时建立；记最近一次在快照中时的表头与各物料行
+-- 已出号单据台账：单据第一次生成号时建立；记最近一次在快照中时的表头与各物料行数量（是否在快照直接看 sn_prd_mo）
 CREATE TABLE sn_bill_ledger (
   bill_no        VARCHAR(64)  NOT NULL,
   pi             VARCHAR(64)  NOT NULL DEFAULT '',
   customer_code  VARCHAR(64)  NOT NULL DEFAULT '',
   org_code       VARCHAR(64)  NOT NULL DEFAULT '',
   org_name       VARCHAR(128) NOT NULL DEFAULT '',
-  in_snapshot    TINYINT(1)   NOT NULL DEFAULT 1,
   leave_state    VARCHAR(16)  NULL COMMENT '离开快照：REVERSAL 反审核中 / VOID_CONFIRMED 已确认作废 / DELETED 已删除',
   left_at        DATETIME     NULL,
   suspend        VARCHAR(8)   NULL COMMENT '暂停交付：REVERSAL / CHANGE',
@@ -262,10 +258,10 @@ CREATE TABLE sn_bill_ledger (
   KEY ix_ledger_leave (leave_state)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='已出号单据台账';
 
+-- 只用于发现数量下调（物料对应按 sn_line_count.material_code 判断）
 CREATE TABLE sn_bill_ledger_line (
   bill_no        VARCHAR(64)   NOT NULL,
   seq            INT           NOT NULL,
-  material_code  VARCHAR(64)   NOT NULL DEFAULT '',
   qty            DECIMAL(18,4) NOT NULL DEFAULT 0,
   PRIMARY KEY (bill_no, seq)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='已出号单据台账 · 物料行';
@@ -353,7 +349,6 @@ CREATE TABLE sn_item (
   gen_org_code      VARCHAR(64) NOT NULL DEFAULT '' COMMENT '生成时订单生产组织',
   gen_bill_no       VARCHAR(64) NOT NULL,
   gen_bill_seq      INT         NOT NULL,
-  gen_material_code VARCHAR(64) NOT NULL DEFAULT '',
   seq_pi_no         VARCHAR(64) NOT NULL COMMENT '流水归属 PI',
   seq_dec           BIGINT      NOT NULL COMMENT '十进制流水',
   length_text       VARCHAR(32) NULL COMMENT '长度（规则不带长度时为空）',
@@ -382,7 +377,6 @@ CREATE TABLE sn_item (
   KEY ix_item_claim (pi_no, factory_code, status, suspend, delivery_batch_no, seq_pi_no, seq_dec) COMMENT '取号：过滤和排序都在索引内',
   KEY ix_item_status (status, factory_code, pi_no),
   KEY ix_item_bill (bill_no, bill_seq, status),
-  KEY ix_item_gen_bill (gen_bill_no, gen_bill_seq),
   KEY ix_item_delivery (delivery_batch_no),
   KEY ix_item_acquire (acquire_batch_no),
   KEY ix_item_holder (mes_holder, pi_no)
@@ -424,7 +418,6 @@ CREATE TABLE sn_delivery_batch (
   manual_basis     VARCHAR(500)  NULL,
   manual_by        VARCHAR(32)   NULL,
   manual_at        DATETIME      NULL,
-  alerted_unconfirmed TINYINT(1) NOT NULL DEFAULT 0,
   created_by       VARCHAR(32)   NOT NULL,
   created_at       DATETIME      NOT NULL,
   updated_at       DATETIME      NOT NULL,
@@ -500,7 +493,7 @@ CREATE TABLE sn_delivery_alert (
   KEY ix_dalert_item (item_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='交付告警';
 
--- 推送任务：同组织 + 同一 PI（转出批次用 #XO）一个任务
+-- 推送任务：同组织 + 同一 PI（转出批次用 #XO）一个任务；推送进度按批次与号池实时统计，不在任务上累计
 CREATE TABLE sn_push_task (
   factory_code  VARCHAR(64)   NOT NULL,
   task_key      VARCHAR(64)   NOT NULL COMMENT 'PI；转出批次为 #XO',
@@ -511,8 +504,6 @@ CREATE TABLE sn_push_task (
   current_batch VARCHAR(40)   NULL,
   resend        TINYINT(1)    NOT NULL DEFAULT 0 COMMENT '续推：未确认、失败的批次（含拉取建立的）也重推',
   requeue       TINYINT(1)    NOT NULL DEFAULT 0 COMMENT '运行中又有新号可推：结束后再排队一次',
-  pushed_batches INT          NOT NULL DEFAULT 0,
-  pushed_qty    BIGINT        NOT NULL DEFAULT 0,
   message       VARCHAR(500)  NOT NULL DEFAULT '',
   started_by    VARCHAR(32)   NOT NULL DEFAULT '',
   started_at    DATETIME      NULL,
@@ -619,8 +610,7 @@ CREATE TABLE sn_transfer_item (
   to_material    VARCHAR(64) NULL,
   to_rev         INT         NULL,
   out_batch_no   VARCHAR(40) NULL COMMENT '向来源 MES 推送的转出批次',
-  PRIMARY KEY (kind, transfer_id, item_id),
-  KEY ix_transfer_item_sn (sn)
+  PRIMARY KEY (kind, transfer_id, item_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='转移明细';
 
 -- 审计：按月分区；过期分区整体移入归档表

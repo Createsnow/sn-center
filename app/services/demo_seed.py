@@ -70,9 +70,9 @@ def seed_if_empty() -> None:
         _rule("R-HX", "带长度 10 进制 6 位", "HX", 10, 6, True, ts)
         _rule("R-DK", "不带长度 32 进制 5 位", "DK", 32, 5, False, ts)
         db.exec_many(
-            "INSERT INTO sn_prd_mo(bill_no, seq, doc_status, customer_code, po, pi, org_code, org_name, attach_no, "
+            "INSERT INTO sn_prd_mo(bill_no, seq, customer_code, po, pi, org_code, org_name, attach_no, "
             "material_code, material_name, length_raw, qty, modify_time, synced_at) "
-            "VALUES (%s,%s,'C',%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
             [
                 (b, s, c, po, pi, org, dict((o[0], o[1]) for o in _ORGS)[org], att, m, n, ln, q, ts, ts)
                 for b, s, c, po, pi, org, att, m, n, ln, q in _ORDERS

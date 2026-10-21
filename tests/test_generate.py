@@ -29,6 +29,34 @@ def test_only_identical_prefix_conflicts(w, api):
         assert r.status == 200, f"{p}：只是开头相同（如 SD 与 SDD）不算同号"
 
 
+def test_rule_list_and_options_show_versions_pis_and_bindings(w, api):
+    """规则库列表与生成页选项：各版本（新的在前）、用过的 PI、PI 与客户绑定；本 PI 用哪一版。"""
+    _, pi1, _ = mk(w, ("M1", 2))
+    _, pi2, _ = mk(w, ("M1", 2))
+    pi3, cust = uid("PI"), uid("CU")
+    rid = w.rule(P())
+    ok(w.bind_pi(pi1, rid))
+    w.generate(pi1)
+    assert w.bind_pi(pi2, rid).code == "RULE_PREFIX_CHANGE_REQUIRED"
+    ok(w.bind_pi(pi2, rid, new_prefix=P()))
+    ok(api.post("/api/rules/customer-binding", m(customer_code=cust, rule_id=rid), w.admin))
+    listed = [x for x in ok(api.get("/api/rules", w.admin)).body if x["rule"]["id"] == rid]
+    assert len(listed) == 1
+    v = listed[0]
+    code = v["rule"]["rule_code"]
+    assert [x["version"] for x in v["versions"]] == [2, 1] and v["current"]["version"] == 1
+    assert v["used"] and v["pis"] == sorted([pi1, pi2])
+    assert v["bindings"] == {"pi": sorted([pi1, pi2]), "customer": [cust]}
+    assert [x["rule"]["id"] for x in ok(api.get(f"/api/rules?q={cust}", w.admin)).body] == [rid]
+
+    def option(pi: str) -> dict:
+        return next(x for x in ok(api.get(f"/api/rules/options?pi={pi}", w.admin)).body if x["rule_code"] == code)
+
+    assert (option(pi1)["plan"], option(pi1)["used_pis"]) == ("USE", 2)
+    assert option(pi2)["plan"] == "USE", "已为本 PI 换前缀另出的版本"
+    assert (option(pi3)["plan"], option(pi3)["other_pi"]) == ("PREFIX", pi1)
+
+
 def test_used_version_needs_new_prefix_for_format_change(w, api, sql):
     org, pi, bill = mk(w, ("M1", 10))
     rid = w.rule(P(), seq_len=5)

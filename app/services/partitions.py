@@ -99,12 +99,6 @@ def _reorganize(c, table: str, defs: list[str], max_def: str) -> None:
     log.info("partition_added", table=table, count=len(defs))
 
 
-def archive(days: int) -> int:
-    """按给定保存天数归档（运维 / 测试用）；返回归档的分区数。"""
-    with db.connection() as conn, conn.cursor() as c:
-        return _archive(c, days)
-
-
 def _archive(c, days: int) -> int:
     """上界不晚于（今天 − 保存天数）的整月分区归档后删除。"""
     if days <= 0:

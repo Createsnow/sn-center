@@ -47,6 +47,29 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
     assert h["x-sn-batch-no"] == batches[-1]["batch_no"] and h["content-encoding"] == "gzip"
 
 
+def test_batch_detail_segments_split_at_gaps(w, sql):
+    """批次号段：不连续的流水分成多段，每段给出首尾号。"""
+    org = w.org(uid("O")[:10])
+    w.enable_mes(org, batch_size=50)
+    pi, bill = uid("PI"), uid("MO")
+    w.order(bill, org, "C1", pi, ("M1", 3, "0100"), ("M2", 4, "0100"), ("M3", 2, "0100"))
+    ok(w.bind_pi(pi, w.rule("P" + uid("").replace("-", ""), seq_len=6)))
+    w.generate(pi)
+    w.allocate(pi, lines=[(bill, 1), (bill, 3)])
+    w.push()
+    b = sql.one("SELECT batch_no FROM sn_delivery_batch WHERE pi_no = %s", pi)
+    d = ok(w.api.get(f"/api/delivery/batches/{b['batch_no']}", w.admin))
+
+    def ends(seq: int) -> tuple[str, str]:
+        r = sql.one("SELECT MIN(sn) a, MAX(sn) z FROM sn_item WHERE bill_no = %s AND bill_seq = %s", bill, seq)
+        return r["a"], r["z"]
+
+    assert [(s["start_seq"], s["end_seq"], s["qty"]) for s in d["segments"]] == [(1, 3, 3), (8, 9, 2)]
+    assert [(s["start_sn"], s["end_sn"]) for s in d["segments"]] == [ends(1), ends(3)]
+    assert {s["seq_pi_no"] for s in d["segments"]} == {pi}
+    assert d["bills"] == [bill] and d["materials"] == ["M1", "M3"]
+
+
 def test_retry_then_exhaust_then_resume_with_same_batch(w, sql):
     org, pi, bill = setup_pi(w, qty=12, batch_size=5)
     calls = {"n": 0}

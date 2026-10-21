@@ -22,7 +22,3 @@ def _empty_none(v: Any) -> Any:
 OptInt = Annotated[int | None, BeforeValidator(_empty_none)]
 OptDate = Annotated[date | None, BeforeValidator(_empty_none)]
 Flag = Annotated[bool | None, BeforeValidator(_empty_none)]
-
-
-def blank_to_none(s: str | None) -> str | None:
-    return None if s is None or not s.strip() else s.strip()
