@@ -1,9 +1,0 @@
-flowchart LR
-  U["浏览器<br/>系统管理员 · 生产组织操作员 · 查询员"]
-  M["各生产组织 MES<br/>（每个组织各一套）"]
-  S(["SN 管控中心<br/>sn-center"])
-  K["金蝶 K3 Cloud<br/>生产订单 · 组织机构"]
-  U -->|"HTTPS · 页面接口 /api/**"| S
-  S -->|"① 推送批次（HTTPS + gzip，Bearer 或 HMAC）<br/>应答中逐枚回执"| M
-  M -->|"②–⑥ /api/mes/v1/**：换令牌 · 取下一批<br/>提交回执 · 只读核对"| S
-  S -->|"HTTPS WebAPI（只读）<br/>LoginByAppSecret · ExecuteBillQuery · View"| K
