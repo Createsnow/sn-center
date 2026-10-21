@@ -20,6 +20,35 @@ def P() -> str:
 # ---------------------------------------------------------------- 规则库
 
 
+def test_prefix_allows_ascii_special_chars_end_to_end(w, api, sql):
+    """前缀可用英文特殊字符：生成、推送 MES、按 SN 查询、导出都原样；空格、emoji、中文不行。"""
+    from urllib.parse import quote
+
+    from conftest import MES
+
+    base = m(rule_code=uid("R"), rule_name="x", base=10, seq_len=4, with_length=False)
+    for bad in ("A B", "SN😀", "前缀"):
+        assert api.post("/api/rules", {**base, "prefix": bad}, w.admin).code == "RULE_AFFIX_INVALID", bad
+    prefix = "S" + uid("").replace("-", "")[-6:] + "-/#.&+"
+    org, pi, bill = mk(w, ("M1", 3))
+    w.enable_mes(org)
+    rid = ok(api.post("/api/rules", {**base, "prefix": prefix}, w.admin))["rule"]["id"]
+    ok(w.bind_pi(pi, rid))
+    w.generate(pi)
+    w.allocate(pi)
+    w.push()
+    sns = [r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
+    assert sns == [f"{prefix}0001", f"{prefix}0002", f"{prefix}0003"]
+    assert set(MES.store[org]) >= set(sns), "MES 收到的 SN 原样"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 3
+    got = ok(api.get(f"/api/sn?sn={quote(sns[0], safe='')}", w.admin))["items"]
+    assert [x["sn"] for x in got] == [sns[0]]
+    r = api.client.get(
+        f"/api/export/file?pi={pi}&bill_no={bill}&format=csv", headers={"Authorization": f"Bearer {w.admin}"}
+    )
+    assert r.content.decode("utf-8-sig").splitlines()[1].endswith("," + sns[0])
+
+
 def test_only_identical_prefix_conflicts(w, api):
     w.rule("AX")
     r = api.post("/api/rules", m(rule_code=uid("R"), rule_name="x", prefix="AX", base=10, seq_len=5), w.admin)

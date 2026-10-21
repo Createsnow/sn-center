@@ -69,7 +69,7 @@ E = {
 "RULE_IN_USE": ("Rule {rule_code} has generated SNs and cannot be deleted", "Quy tắc {rule_code} đã tạo SN, không thể xóa"),
 "RULE_ASSIGNED": ("Rule {rule_code} is assigned to PI {pi} and cannot be deleted", "Quy tắc {rule_code} đã gán cho PI {pi}, không thể xóa"),
 "RULE_PREFIX_REQUIRED": ("Prefix is required", "Bắt buộc nhập tiền tố"),
-"RULE_AFFIX_INVALID": ("Prefix may only use letters or digits; suffix may only use letters, digits and _", "Tiền tố chỉ dùng chữ hoặc số; hậu tố chỉ dùng chữ, số và _"),
+"RULE_AFFIX_INVALID": ("Prefix may only use letters, digits and ASCII special characters (no spaces, emoji, Chinese or full-width characters); suffix may only use letters, digits and _", "Tiền tố chỉ dùng chữ, số và ký tự đặc biệt ASCII (không có khoảng trắng, emoji, chữ Trung hoặc ký tự toàn độ rộng); hậu tố chỉ dùng chữ, số và _"),
 "RULE_PREFIX_CONFLICT": ("Prefix {prefix} is already used by rule {rule_name} version {version}; SNs would collide", "Tiền tố {prefix} đã được dùng bởi quy tắc {rule_name} phiên bản {version}, sẽ trùng số"),
 "RULE_BASE_INVALID": ("Base must be 10 / 16 / 32 / 36", "Cơ số chỉ hỗ trợ 10 / 16 / 32 / 36"),
 "RULE_SEQ_LEN_INVALID": ("Serial digits must be 1–12", "Số chữ số tuần tự phải từ 1–12"),

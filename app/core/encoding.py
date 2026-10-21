@@ -23,9 +23,9 @@ DEFAULT_CHARSETS: dict[int, str] = {
 MAX_SEQ_LEN = 12
 SN_MAX = 64
 LONG_MAX = 2**63 - 1
-#: 前缀：字母或数字；后缀：字母、数字、_
-PREFIX_RE = re.compile(r"^[A-Za-z0-9]+$")
-SUFFIX_RE = re.compile(r"^[A-Za-z0-9_]*$")
+#: 前缀：字母、数字和英文特殊字符（可打印 ASCII，不含空格；emoji、中文、全角字符都不行）；后缀：字母、数字、_
+PREFIX_RE = re.compile(r"[\x21-\x7E]+")
+SUFFIX_RE = re.compile(r"[A-Za-z0-9_]*")
 _CHARSET_RE = re.compile(r"^[A-Za-z0-9]+$")
 #: 物料行长度为空（金蝶为空且页面未填写）时写入 SN 的默认长度
 DEFAULT_LENGTH = "000"
@@ -59,7 +59,7 @@ def validate(s: Spec) -> ErrorCode | None:
         return ErrorCode.RULE_SEQ_LEN_INVALID
     if not s.prefix:
         return ErrorCode.RULE_PREFIX_REQUIRED
-    if not PREFIX_RE.match(s.prefix) or not SUFFIX_RE.match(s.suffix):
+    if not PREFIX_RE.fullmatch(s.prefix) or not SUFFIX_RE.fullmatch(s.suffix):
         return ErrorCode.RULE_AFFIX_INVALID
     if s.charset is None or len(s.charset) != s.base:
         return ErrorCode.RULE_CHARSET_LENGTH

@@ -906,7 +906,7 @@
     "notUsed": "Chưa tạo số",
     "copies": "Đổi tiền tố cho PI khác",
     "prefix": "Tiền tố",
-    "prefixHint": "Bắt buộc, chữ hoặc số, phân biệt hoa thường; không được trùng tiền tố của bất kỳ quy tắc nào (kể cả phiên bản cũ). Chỉ trùng phần đầu, ví dụ SD và SDD, thì được",
+    "prefixHint": "Bắt buộc; chữ, số hoặc ký tự đặc biệt ASCII (ví dụ - . / # _), không có khoảng trắng, emoji hay chữ Trung; phân biệt hoa thường; không được trùng tiền tố của bất kỳ quy tắc nào (kể cả phiên bản cũ). Chỉ trùng phần đầu, ví dụ SD và SDD, thì được",
     "suffix": "Hậu tố cố định",
     "suffixHint": "Chữ, số hoặc _",
     "base": "Cơ số",

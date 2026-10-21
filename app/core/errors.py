@@ -91,7 +91,10 @@ class ErrorCode(Enum):
     RULE_IN_USE = (409, "规则 {rule_code} 已生成过号，不能删除")
     RULE_ASSIGNED = (409, "规则 {rule_code} 已指定给 PI {pi}，不能删除")
     RULE_PREFIX_REQUIRED = (400, "前缀必填")
-    RULE_AFFIX_INVALID = (400, "前缀只能用字母或数字，后缀只能用字母、数字和 _")
+    RULE_AFFIX_INVALID = (
+        400,
+        "前缀只能用字母、数字和英文特殊字符（不能有空格、emoji、中文或全角字符），后缀只能用字母、数字和 _",
+    )
     RULE_PREFIX_CONFLICT = (
         409,
         "前缀 {prefix} 已被规则 {rule_name} 版本 {version} 使用，会撞号",

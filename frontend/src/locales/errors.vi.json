@@ -64,7 +64,7 @@
   "RULE_IN_USE": "Quy tắc {rule_code} đã tạo SN, không thể xóa",
   "RULE_ASSIGNED": "Quy tắc {rule_code} đã gán cho PI {pi}, không thể xóa",
   "RULE_PREFIX_REQUIRED": "Bắt buộc nhập tiền tố",
-  "RULE_AFFIX_INVALID": "Tiền tố chỉ dùng chữ hoặc số; hậu tố chỉ dùng chữ, số và _",
+  "RULE_AFFIX_INVALID": "Tiền tố chỉ dùng chữ, số và ký tự đặc biệt ASCII (không có khoảng trắng, emoji, chữ Trung hoặc ký tự toàn độ rộng); hậu tố chỉ dùng chữ, số và _",
   "RULE_PREFIX_CONFLICT": "Tiền tố {prefix} đã được dùng bởi quy tắc {rule_name} phiên bản {version}, sẽ trùng số",
   "RULE_BASE_INVALID": "Cơ số chỉ hỗ trợ 10 / 16 / 32 / 36",
   "RULE_SEQ_LEN_INVALID": "Số chữ số tuần tự phải từ 1–12",
