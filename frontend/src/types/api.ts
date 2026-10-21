@@ -25,14 +25,13 @@ export interface UserView {
   factory_codes: string[];
   factory_names: string[];
   status: string;
-  /** 内置 admin 账户（唯一能管理账户） */
+  /** 系统管理员账户（唯一能管理账户） */
   super_admin: boolean;
   /** MES 接口账户的来源地址白名单 */
   ip_whitelist: string | null;
   locked_until: string | null;
   /** 显示时区（分钟，东八区 = 480） */
   tz_offset_min: number;
-  must_change_pwd: boolean;
   lang: string | null;
   last_login_at: string | null;
   created_at: string;

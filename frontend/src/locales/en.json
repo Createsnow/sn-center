@@ -11,7 +11,7 @@
     "language": "Language",
     "allFactories": "All production orgs",
     "readonly": "Read-only",
-    "superAdmin": "Built-in admin",
+    "superAdmin": "System admin",
     "scope": "Data scope",
     "roleShort": {
       "admin": "Administrator",
@@ -101,7 +101,11 @@
     "mes": "MES integration",
     "dateFrom": "From",
     "dateTo": "To",
-    "capped": "Many results; counted up to {n}"
+    "capped": "Many results; counted up to {n}",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "expandAll": "Expand all",
+    "collapseAll": "Collapse all"
   },
   "status": {
     "PENDING_ALLOC": "To allocate",
@@ -184,7 +188,7 @@
     "DELETED": "Deleted"
   },
   "roles": {
-    "admin": "Administrator (HQ)",
+    "admin": "Administrator",
     "factory_operator": "Production org operator",
     "query": "Viewer",
     "mes": "MES interface account"
@@ -269,15 +273,15 @@
     "empNo": "Employee No.",
     "password": "Password",
     "submit": "Sign in",
-    "hint": "Accounts are created by the built-in administrator with the company employee No.; ask the administrator for your password."
+    "hint": "Accounts are created by the system administrator with the company employee No.; ask the system administrator for your password."
   },
   "password": {
     "title": "Change password",
-    "forced": "Your password was reset by the administrator: please change it first.",
+    "relogin": "After the change every page signed in with this account signs out; sign in again with the new password.",
     "old": "Current password",
     "new": "New password",
     "confirm": "Confirm new password",
-    "policy": "8–64 characters with both letters and digits; only letters, digits and ! @ # $ & *",
+    "policy": "8–64 characters with both letters and digits; only letters, digits and ! {'@'} # $ & *",
     "mismatch": "Passwords do not match",
     "done": "Password changed"
   },
@@ -323,8 +327,7 @@
     "piAll": "View this PI in every org (read-only)",
     "piAllNote": "Read-only: segments of this PI in every production org; SNs of other orgs cannot be acquired.",
     "segment": "Segment (full SN / decimal serial)",
-    "seqOf": "serial of {pi}",
-    "itemsOf": "Acquire batch {b}"
+    "seqOf": "serial of {pi}"
   },
   "allocate": {
     "title": "SN allocation",
@@ -348,6 +351,8 @@
     "linesTitle": "SNs to allocate",
     "linesHint": "Tick lines as the scope, nothing ticked = whole PI; a line's SNs go together to the order's production org",
     "nothingPending": "No SNs to allocate",
+    "billCounts": "{n} lines · to allocate {qty}",
+    "billPicked": "{n} lines ticked",
     "toOrg": "To org",
     "way": "Delivery",
     "wayPush": "MES · push",
@@ -376,13 +381,7 @@
     "batchResult": "Result",
     "confirmMethod": "Confirmed by",
     "manualConfirm": "Confirm manually",
-    "void": "Void",
-    "manualTitle": "Confirm batch manually",
-    "voidTitle": "Void batch",
-    "manualNote": "Use only when MES confirms batch {batch} is fully stored but cannot send a receipt; its SNs become pushed and are not retried.",
-    "voidNote": "Only for batch {batch} that MES has not processed; its SNs go back to unbatched and are re-batched.",
-    "basis": "Basis",
-    "basisPlaceholder": "e.g. written confirmation from MES, at most 500 characters"
+    "void": "Void"
   },
   "audit": {
     "title": "Audit trail",
@@ -412,6 +411,14 @@
     "detail": "Detail",
     "archived": "Archived",
     "exportXlsx": "Export Excel"
+  },
+  "batch": {
+    "confirmTitle": "Confirm batch {no} manually",
+    "voidTitle": "Void batch {no}",
+    "confirmTip": "Use only when MES confirms in writing that everything was processed but cannot send a receipt: the batch becomes succeeded (confirmed manually) and is not retried; SNs of a delivery batch become pushed.",
+    "voidTip": "Only for batches MES has not processed: SNs of a delivery batch go back to to-push (unbatched) and are re-batched; a transfer-out batch is rebuilt from its items and pushed automatically.",
+    "basis": "Basis",
+    "basisPlaceholder": "e.g. written confirmation from MES, at most 500 characters"
   },
   "dashboard": {
     "title": "Hello, {name}",
@@ -868,12 +875,6 @@
     "rebuiltTo": "Rebuilt as",
     "confirmBatch": "Confirm manually",
     "voidBatch": "Void",
-    "confirmTitle": "Confirm batch {no} manually",
-    "voidTitle": "Void batch {no}",
-    "confirmTip": "Use only when MES has confirmed in writing that everything was stored: the batch becomes succeeded (confirmed manually) and its SNs become pushed.",
-    "voidTip": "Only for batches MES never processed: their SNs go back to to-push and are delivered in a new batch; a voided transfer-out batch is rebuilt automatically.",
-    "basis": "Basis",
-    "basisPlaceholder": "e.g. written confirmation from MES, at most 500 characters",
     "requestNo": "Request No.",
     "mesOrg": "MES org",
     "acqStatus": {
@@ -929,10 +930,10 @@
     "used": "Used",
     "pis": "PIs of versions",
     "bindings": "Bindings",
-    "versionsOf": "Version history of {code}",
+    "history": "Version history · {n} in total (newest first)",
     "claimedPi": "Owner PI",
-    "derivedFrom": "Derived from",
-    "createdBy": "Created",
+    "notUsed": "Not used",
+    "copies": "Re-prefixed for other PIs",
     "prefix": "Prefix",
     "prefixHint": "Required, letters or digits, case-sensitive; must not equal any rule's prefix (old versions included). Sharing a leading part, e.g. SD and SDD, is allowed",
     "suffix": "Fixed suffix",
@@ -1059,10 +1060,6 @@
     "failReason": "Failure reason",
     "manualConfirm": "Confirm manually",
     "void": "Void",
-    "confirmTip": "Use only when MES confirms in writing that everything was processed; the batch is then recorded as delivered.",
-    "voidTip": "Only batches MES never processed can be voided; SNs return to unbatched and can be pushed again.",
-    "basis": "Basis",
-    "basisPlaceholder": "e.g. written confirmation from MES, at most 500 characters",
     "itemsTitle": "SNs",
     "before": "Before",
     "after": "After",
@@ -1071,7 +1068,7 @@
   },
   "users": {
     "title": "Accounts",
-    "desc": "Only the built-in administrator can create, edit, disable and enable accounts and reset passwords; accounts are disabled, never deleted. MES interface accounts cannot sign in to pages; they exchange employee No. + secret for a token to call the MES API.",
+    "desc": "Only the system administrator can create, edit, disable and enable accounts and reset passwords; accounts are disabled, never deleted. MES interface accounts cannot sign in to pages; they exchange employee No. + secret for a token to call the MES API.",
     "tabAll": "Accounts",
     "tabMes": "MES interface accounts",
     "create": "New account",
@@ -1083,7 +1080,7 @@
     "name": "Name",
     "role": "Role",
     "roleHint": {
-      "admin": "HQ: all business permissions, no production org; cannot manage accounts",
+      "admin": "HQ staff: all business permissions, no production org; cannot manage accounts (only the system administrator can)",
       "factory_operator": "Acts only for one bound production org: acquires its SNs and submits / withdraws its org transfer requests",
       "query": "Read-only; unbound sees everything, bound sees only the bound orgs",
       "mes": "Can only call the MES pull, receipt and read-only APIs of its org"
@@ -1095,7 +1092,6 @@
     "initPwd": "Initial password",
     "active": "Active",
     "disabled": "Disabled",
-    "mustChange": "Must change password",
     "locked": "Locked",
     "lockedUntil": "Too many failed token requests; locked until {time}",
     "lastLogin": "Last sign-in",
@@ -1105,7 +1101,7 @@
     "enable": "Enable",
     "disableConfirm": "Disable account {emp} ({name})? It can no longer sign in or call the API, and can be re-enabled.",
     "resetPwd": "Reset password",
-    "resetPrompt": "New password for {emp} (must be changed at next sign-in; old tokens are revoked)",
+    "resetPrompt": "New password for {emp} (pages signed in with it sign out; sign in again with the new password)",
     "resetDone": "Password reset",
     "ipWhitelist": "Source address whitelist",
     "ipAny": "Any",

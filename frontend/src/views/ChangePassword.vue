@@ -2,7 +2,7 @@
   <div class="wrap">
     <div class="panel">
       <h2>{{ t("password.title") }}</h2>
-      <el-alert v-if="store.mustChangePwd" type="warning" :closable="false" show-icon :title="t('password.forced')" />
+      <el-alert type="info" :closable="false" show-icon :title="t('password.relogin')" />
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="form" @submit.prevent="submit">
         <el-form-item :label="t('password.old')" prop="old">
           <el-input v-model="form.old" type="password" show-password autocomplete="current-password" />
@@ -15,8 +15,7 @@
           <el-input v-model="form.confirm" type="password" show-password autocomplete="new-password" />
         </el-form-item>
         <div class="actions">
-          <el-button v-if="!store.mustChangePwd" @click="router.back()">{{ t("common.cancel") }}</el-button>
-          <el-button v-else @click="logout">{{ t("app.logout") }}</el-button>
+          <el-button @click="router.back()">{{ t("common.cancel") }}</el-button>
           <el-button type="primary" :loading="loading" native-type="submit">{{ t("common.save") }}</el-button>
         </div>
       </el-form>
@@ -58,15 +57,10 @@ async function submit() {
   try {
     await store.changePassword(form.old, form.next);
     ElMessage.success(t("password.done"));
-    router.push("/");
+    router.push({ path: "/login", query: { reason: "PASSWORD_CHANGED" } });
   } finally {
     loading.value = false;
   }
-}
-
-function logout() {
-  store.clear();
-  router.push("/login");
 }
 </script>
 

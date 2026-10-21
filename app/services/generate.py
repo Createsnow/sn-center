@@ -1,4 +1,4 @@
-"""SN 生成（F-09）与分配（F-11 分配部分）。
+"""SN 生成与撤销（F-09）。分配见 allocation。
 
 生成：在一张 PI 下整单（勾选单据，单据内按序号）或按物料行（按点选顺序）生成；最小单位是物料行——范围内每个
 还有额度的物料行一次生成它的全部额度，不拆成两次。号都排在该 PI 的一套流水上，各物料行按自己的规则写出
@@ -11,16 +11,12 @@
 撤销：最小单位也是物料行——只能从这张 PI 流水最末的物料行号段往前撤（撤完一行，前一行成为最后，可接着撤）；
 可一次撤一次生成中剩下的全部物料行，或撤到所选物料行为止（流水在其后的行一并撤，在一个事务里完成）；
 号须全部仍待分配、都没转过单；号删除，最大号和计数一并退回，流水仍连续。
-
-分配：号只能分到订单的生产组织（快照中订单的生产组织；订单已不在快照时取号上的生成时订单生产组织；
-反审核中、PI 变更待确认、暂停交付的单据跳过）。对接 MES 的改为待推送（未入批）并自动开始推送；未对接的改为待领取。
-生成（含取消）、撤销、分配共用 PI 操作锁。
+生成（含取消）、撤销与分配共用 PI 操作锁。
 """
 
 from __future__ import annotations
 
 import json
-import math
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import timedelta
@@ -35,7 +31,7 @@ from app.core.errors import ErrorCode, biz
 from app.core.exceptions import BizError
 from app.core.security import CurrentUser
 from app.db.session import ER_LOCK_NOWAIT, db, error_no, is_duplicate, marks
-from app.services import audit, changes, factories, locks, orders, rules
+from app.services import audit, changes, locks, orders, rules
 
 log = structlog.get_logger()
 
@@ -513,7 +509,7 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
             continue
         same = [(y["bill_no"], y["seq"]) for y in plan["items"] if y["rule_key"] == x["rule_key"]]
         res = _resolved_of(pi, x)
-        versions[x["rule_key"]] = rules.realize(cu, pi, res, x["material_code"], same)
+        versions[x["rule_key"]] = rules.realize(cu, pi, res, same)
     for no in {x["bill_no"] for x in plan["items"]}:
         changes.ensure_ledger(no)
     done = 0
@@ -985,180 +981,3 @@ def jobs_with(pi: str, limit: int, rb: dict | None) -> list[dict]:
         )
         out.append(v)
     return out
-
-
-# ================================================================== 分配
-
-
-def _target_org(bill_no: str) -> tuple[str | None, str | None]:
-    """分配到哪个生产组织：快照中订单的生产组织；订单已不在快照时为 None（取号上的生成时订单生产组织）。
-    返回（组织，不能分配的原因）。"""
-    block = changes.allocation_block(bill_no)
-    if block:
-        return None, block
-    so = orders.snapshot_org(bill_no)
-    return (so[0] if so else None), None
-
-
-def _alloc_scope(pi: str, bills_in: list[str] | None, lines_in: list[dict] | None) -> tuple[str, list]:
-    """分配范围（整张 PI / 单据 / 物料行）的 SQL 条件。"""
-    if lines_in:
-        keys = [(util.trim(x.get("bill_no")), int(x.get("seq") or 0)) for x in lines_in]
-        cond = " OR ".join(["(bill_no = %s AND bill_seq = %s)"] * len(keys))
-        return f" AND ({cond})", [v for k in keys for v in k]
-    nos = [util.trim(b) for b in bills_in or [] if util.trim(b)]
-    if nos:
-        return f" AND bill_no IN ({marks(len(nos))})", nos
-    return "", []
-
-
-def _alloc_groups(pi: str, bills_in, lines_in) -> tuple[list[dict], list[dict]]:
-    """待分配号按（单据、目标组织）分组；返回（可分配组，跳过的单据及原因）。"""
-    cond, args = _alloc_scope(pi, bills_in, lines_in)
-    rows = db.all(
-        "SELECT bill_no, gen_org_code, COUNT(*) n, MIN(seq_dec) s, MAX(seq_dec) e FROM sn_item "
-        "WHERE pi_no = %s AND status = 'PENDING_ALLOC'" + cond + " GROUP BY bill_no, gen_org_code ORDER BY bill_no",
-        pi,
-        *args,
-    )
-    groups, skipped = [], []
-    for r in rows:
-        org, block = _target_org(r["bill_no"])
-        if block:
-            skipped.append({"bill_no": r["bill_no"], "qty": int(r["n"]), "reason": block})
-            continue
-        groups.append(
-            {
-                "bill_no": r["bill_no"],
-                "org": org or r["gen_org_code"],
-                "gen_org": r["gen_org_code"],
-                "qty": int(r["n"]),
-                "snapshot": org is not None,
-            }
-        )
-    return groups, skipped
-
-
-def alloc_preview(pi_in: str | None, bills: list[str] | None, lines: list[dict] | None) -> dict:
-    """分配面板：按生产组织汇总枚数、单据和物料，标出是否对接 MES；按钮写「分配 N 枚（推送 M 次）」。"""
-    pi = util.trim(pi_in)
-    if not pi:
-        raise biz(ErrorCode.PI_REQUIRED)
-    groups, skipped = _alloc_groups(pi, bills, lines)
-    by_org: dict[str, dict] = {}
-    orgs_of_bill: dict[str, set[str]] = {}
-    for g in groups:
-        o = by_org.setdefault(g["org"], {"org_code": g["org"], "qty": 0, "bills": [], "materials": set()})
-        o["qty"] += g["qty"]
-        o["bills"].append(g["bill_no"])
-        orgs_of_bill.setdefault(g["bill_no"], set()).add(g["org"])
-    cond, args = _alloc_scope(pi, bills, lines)
-    for r in db.all(
-        "SELECT bill_no, GROUP_CONCAT(DISTINCT material_code) m FROM sn_item WHERE pi_no = %s AND status = "
-        "'PENDING_ALLOC'" + cond + " GROUP BY bill_no",
-        pi,
-        *args,
-    ):
-        for org in orgs_of_bill.get(r["bill_no"], ()):
-            by_org[org]["materials"].update((r["m"] or "").split(","))
-    names = factories.names()
-    out_orgs, pushes = [], 0
-    for o in by_org.values():
-        f = factories.get(o["org_code"])
-        mes = bool(f and f["mes_enabled"])
-        n_push = math.ceil(o["qty"] / max(1, int(f["batch_size"]))) if mes else 0
-        pushes += n_push
-        out_orgs.append(
-            {
-                "org_code": o["org_code"],
-                "org_name": names.get(o["org_code"], ""),
-                "mes_enabled": mes,
-                "qty": o["qty"],
-                "pushes": n_push,
-                "bills": sorted(set(o["bills"])),
-                "materials": sorted(o["materials"]),
-            }
-        )
-    return {
-        "pi_no": pi,
-        "qty": sum(o["qty"] for o in out_orgs),
-        "pushes": pushes,
-        "orgs": sorted(out_orgs, key=lambda x: x["org_code"]),
-        "skipped": skipped,
-    }
-
-
-def allocate(
-    cu: CurrentUser, pi_in: str | None, bills: list[str] | None = None, lines: list[dict] | None = None
-) -> dict:
-    """分配：范围内待分配的号一次全部挂到生产组织；对接 MES 的改为待推送（未入批）并自动推送，未对接的改为待领取。"""
-    from app.services import delivery
-
-    pi = util.trim(pi_in)
-    if not pi:
-        raise biz(ErrorCode.PI_REQUIRED)
-    with locks.with_pi_lock(pi):
-        with db.tx():
-            groups, skipped = _alloc_groups(pi, bills, lines)
-            if not groups:
-                raise biz(ErrorCode.ALLOC_NOTHING)
-            cond, args = _alloc_scope(pi, bills, lines)
-            now = util.now()
-            total = 0
-            started: set[str] = set()
-            for g in groups:
-                mes = factories.is_mes(g["org"])
-                status = util.TO_PUSH if mes else util.TO_ACQUIRE
-                gen_cond = "" if g["snapshot"] else " AND gen_org_code = %s"
-                gen_args = [] if g["snapshot"] else [g["gen_org"]]
-                # 在 PI 操作锁与事务内，这里统计到的就是下面要改的号
-                per_line = db.all(
-                    "SELECT bill_seq, COUNT(*) n, MIN(sn) a, MAX(sn) b FROM sn_item WHERE pi_no = %s AND bill_no = %s "
-                    "AND status = 'PENDING_ALLOC'" + gen_cond + cond + " GROUP BY bill_seq",
-                    pi,
-                    g["bill_no"],
-                    *gen_args,
-                    *args,
-                )
-                if not per_line:
-                    # 同一单据有多个生成时组织、按快照组织分配时，前一组已一并分配
-                    continue
-                n = db.exec(
-                    "UPDATE sn_item SET status = %s, factory_code = %s, push_type = 'NEW', allocated_at = %s, "
-                    "updated_at = %s WHERE pi_no = %s AND bill_no = %s AND status = 'PENDING_ALLOC'" + gen_cond + cond,
-                    status,
-                    g["org"],
-                    now,
-                    now,
-                    pi,
-                    g["bill_no"],
-                    *gen_args,
-                    *args,
-                )
-                for pl in per_line:
-                    db.exec(
-                        "UPDATE sn_line_count SET alloc_count = alloc_count + %s, updated_at = %s WHERE bill_no = %s "
-                        "AND seq = %s",
-                        int(pl["n"]),
-                        now,
-                        g["bill_no"],
-                        pl["bill_seq"],
-                    )
-                audit.record(
-                    cu,
-                    audit.entry(audit.SN_ALLOCATE)
-                    .factory(g["org"])
-                    .pi(pi)
-                    .bill(g["bill_no"])
-                    .range(min(pl["a"] for pl in per_line), max(pl["b"] for pl in per_line))
-                    .count(n)
-                    .status(util.PENDING_ALLOC, status)
-                    .info(f"mes={int(mes)}"),
-                )
-                total += n
-                if mes:
-                    started.add(g["org"])
-            changes.refresh_items({g["bill_no"] for g in groups})
-        for org in sorted(started):
-            delivery.start_task(cu, org, pi)
-    return {"pi_no": pi, "qty": total, "skipped": skipped, "orgs": sorted({g["org"] for g in groups})}

@@ -317,3 +317,31 @@ def test_bill_list_and_items(w, api):
     items = ok(api.get(f"/api/transfers/bill/{t['id']}/items", w.admin))["items"]
     assert items[0]["from_bill"] == src and items[0]["to_bill"] == tgt and items[0]["to_rev"] == 2
     assert BILLS[tgt]["BillNo"] == tgt
+
+
+def test_void_transfer_out_rebuilds_and_delivers(w, sql):
+    """9.2-15：转出批次作废后按原明细重建新的转出批次并送达；作废的转出批次不能再取回。"""
+    a, pi, bill = setup(w, qty=2)
+    b = w.org(uid("O")[:10])
+    w.enable_mes(b)
+    w.allocate(pi)
+    w.push()
+    MES.behavior[a] = lambda batch, h: (503, {"code": "X"})
+    ok(org_direct(w, a, pi, b))
+    w.push()
+    xo = sql.one("SELECT * FROM sn_delivery_batch WHERE batch_type = 'TRANSFER_OUT'")
+    assert xo["result"] == "UNCONFIRMED"
+    ok(
+        w.api.post(
+            f"/api/delivery/batches/{xo['batch_no']}/void", m(reason="MES 停机", basis="书面确认未处理"), w.admin
+        )
+    )
+    MES.behavior.pop(a)
+    w.push()
+    rows = sql.all("SELECT * FROM sn_delivery_batch WHERE batch_type = 'TRANSFER_OUT' ORDER BY id")
+    assert [(r["result"], r["qty"]) for r in rows] == [("VOIDED", 2), ("SUCCESS", 2)]
+    assert rows[1]["rebuilt_from"] == xo["batch_no"]
+    sns = [r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s", pi)]
+    assert all(MES.store[a][s]["transferredOut"] and MES.store[a][s]["toOrgCode"] == b for s in sns)
+    ta, _ = w.mes_account(a)
+    assert w.mes_next(ta, batchNo=xo["batch_no"]).code == "BATCH_VOIDED"

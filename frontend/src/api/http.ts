@@ -114,11 +114,7 @@ http.interceptors.response.use(
     if (status === 401 && !isLogin) {
       const { useAuthStore } = await import("@/stores/auth");
       useAuthStore().clear();
-      goLogin(code === "SESSION_REPLACED" ? code : undefined);
-    } else if (code === "PASSWORD_CHANGE_REQUIRED") {
-      if (!window.location.pathname.endsWith("/password")) {
-        window.location.href = "/password";
-      }
+      goLogin(code === "SESSION_REPLACED" || code === "PASSWORD_CHANGED" ? code : undefined);
     } else if (!err.config?.silent) {
       ElMessage.error({ message, duration: 5000, showClose: true });
     }

@@ -64,11 +64,7 @@ async function onLogin() {
   loading.value = true;
   try {
     await store.login(empNo.value.trim(), password.value);
-    if (store.mustChangePwd) {
-      router.push("/password");
-    } else {
-      router.push((route.query.redirect as string) || "/");
-    }
+    router.push((route.query.redirect as string) || "/");
   } catch {
     // 错误提示已由 http 拦截器弹出
   } finally {

@@ -6,9 +6,6 @@
 
 from __future__ import annotations
 
-import gzip
-import hashlib
-import hmac
 import itertools
 import json
 import os
@@ -24,6 +21,8 @@ from urllib.parse import urlencode
 import pymysql
 import pytest
 from pymysql.cursors import DictCursor
+
+from devtools.mes_mock import MockMes
 
 HOST = os.environ.get("SN_TEST_DB_HOST", "127.0.0.1:3306")
 DB = os.environ.get("SN_TEST_DB_NAME", "sndb_test_py")
@@ -210,174 +209,10 @@ ORGS: list[tuple[str, str, str]] = []
 # ---------------------------------------------------------------------- 假 MES
 
 
-class FakeMes:
-    """各组织一套 MES（路径 /mes/<组织>）：按 MES 对接说明第 3 节的 process(batch) 处理推送来的批次，
-    也可在测试里对拉取到的批次调用 process 生成回执。behavior[org] 可覆盖应答（模拟故障）。"""
-
-    def __init__(self) -> None:
-        self.received: list[dict] = []
-        #: org -> callable(batch, headers) -> (status, body | None) ；None = 正常处理
-        self.behavior: dict[str, Callable[[dict, dict], tuple[int, Any]] | None] = {}
-        #: org -> sn -> {"rev", "lastBatchNo", "transferredOut", "toOrgCode", "pi", "billNo", "billSeq", "suspended"}
-        self.store: dict[str, dict[str, dict]] = {}
-        #: org -> batchNo -> (itemsDigest, receipt)
-        self.batches: dict[str, dict[str, tuple[str, dict]]] = {}
-        self.tokens: dict[str, str] = {}
-        self.lock = threading.Lock()
-        fake = self
-
-        class H(BaseHTTPRequestHandler):
-            def do_POST(self):  # noqa: N802
-                org = self.path.rstrip("/").split("/")[-1]
-                n = int(self.headers.get("Content-Length") or 0)
-                raw = self.rfile.read(n)
-                if self.headers.get("Content-Encoding") == "gzip":
-                    raw = gzip.decompress(raw)
-                batch = json.loads(raw or b"{}")
-                headers = {k.lower(): v for k, v in self.headers.items()}
-                fake.received.append({"org": org, "batch": batch, "headers": headers, "raw": raw})
-                if not fake.authorized(org, batch, headers, raw):
-                    status, body = 401, {"schemaVersion": "1.0", "code": "UNAUTHORIZED", "message": "bad token"}
-                else:
-                    beh = fake.behavior.get(org)
-                    status, body = (None, None) if beh is None else beh(batch, headers)
-                    if status is None:
-                        status, body = fake.handle(org, batch)
-                if status == "drop":
-                    self.connection.close()
-                    return
-                out = json.dumps(body, ensure_ascii=False).encode("utf-8")
-                self.send_response(status)
-                self.send_header("Content-Type", "application/json")
-                self.send_header("Content-Length", str(len(out)))
-                self.end_headers()
-                self.wfile.write(out)
-
-            def log_message(self, *args):  # noqa: D401
-                pass
-
-        self.server = ThreadingHTTPServer(("127.0.0.1", 0), H)
-        threading.Thread(target=self.server.serve_forever, daemon=True).start()
-
-    def authorized(self, org: str, batch: dict, headers: dict, raw: bytes) -> bool:
-        """A：固定 Bearer 令牌；B：HMAC-SHA256 签名（timestamp \\n batchNo \\n hex(sha256(解压后的请求体))）。"""
-        secret = self.tokens.get(org)
-        if "x-sn-signature" in headers:
-            msg = f"{headers.get('x-sn-timestamp')}\n{batch.get('batchNo')}\n{hashlib.sha256(raw).hexdigest()}"
-            good = hmac.new((secret or "").encode(), msg.encode(), hashlib.sha256).hexdigest()
-            return hmac.compare_digest(good, headers["x-sn-signature"])
-        return headers.get("authorization") == f"Bearer {secret}"
-
-    def url(self, org: str) -> str:
-        return f"http://127.0.0.1:{self.server.server_address[1]}/mes/{org}"
-
-    def handle(self, org: str, batch: dict) -> tuple[int, dict]:
-        if batch.get("batchType") == "PING":
-            if batch.get("orgCode") != org:
-                return 200, {
-                    "schemaVersion": "1.0",
-                    "batchNo": batch.get("batchNo"),
-                    "outcome": "REJECTED",
-                    "rejectCode": "ORG_MISMATCH",
-                    "rejectMessage": "orgCode",
-                }
-            return 200, {
-                "schemaVersion": "1.0",
-                "batchNo": batch["batchNo"],
-                "outcome": "PROCESSED",
-                "summary": {"total": 0, "accepted": 0, "duplicate": 0, "conflict": 0, "stale": 0},
-                "results": [],
-            }
-        r = self.process(org, batch)
-        if "__status" in r:
-            status = r.pop("__status")
-            return status, {"schemaVersion": "1.0", **r, "message": "batch content mismatch"}
-        return 200, r
-
-    def process(self, org: str, batch: dict) -> dict:
-        """MES 处理逻辑（MES 对接说明第 3 节）。"""
-        with self.lock:
-            no = batch["batchNo"]
-            items = batch.get("items") or []
-            # 第 1 步：校验（不通过整批拒收，且不登记批次号）
-            problem = None
-            if batch.get("orgCode") != org:
-                problem = ("ORG_MISMATCH", "orgCode 不是本组织")
-            elif batch.get("count") != len(items):
-                problem = ("COUNT_MISMATCH", "count")
-            elif len({x["sn"] for x in items}) != len(items):
-                problem = ("DUPLICATE_SN", "dup")
-            elif batch["batchType"] == "DELIVERY" and any(
-                x["pi"] != batch["pi"] or x["pushType"] == "TRANSFER_OUT" for x in items
-            ):
-                problem = ("PI_MISMATCH", "pi")
-            elif batch["batchType"] == "TRANSFER_OUT" and any(x["pushType"] != "TRANSFER_OUT" for x in items):
-                problem = ("TYPE_MISMATCH", "type")
-            if problem:
-                return {
-                    "schemaVersion": "1.0",
-                    "batchNo": no,
-                    "outcome": "REJECTED",
-                    "rejectCode": problem[0],
-                    "rejectMessage": problem[1],
-                }
-            # 第 2 步：查重
-            seen = self.batches.setdefault(org, {})
-            if no in seen:
-                digest, receipt = seen[no]
-                if digest != batch["itemsDigest"]:
-                    return {"__status": 409, "code": "BATCH_CONTENT_MISMATCH"}
-                return {**receipt, "replayed": True}
-            # 第 3 步：逐枚比对 rev
-            store = self.store.setdefault(org, {})
-            results = []
-            summary = {"total": len(items), "accepted": 0, "duplicate": 0, "conflict": 0, "stale": 0}
-            for x in items:
-                cur = store.get(x["sn"])
-                out = {"sn": x["sn"], "rev": x["rev"]}
-                if cur is None or x["rev"] > cur["rev"]:
-                    rec = {"rev": x["rev"], "lastBatchNo": no, "suspended": False}
-                    if x["pushType"] == "TRANSFER_OUT":
-                        rec.update(
-                            transferredOut=True,
-                            toOrgCode=x["toOrgCode"],
-                            pi=x["from"]["pi"],
-                            billNo=x["from"]["billNo"],
-                            billSeq=x["from"]["billSeq"],
-                        )
-                    else:
-                        rec.update(
-                            transferredOut=False,
-                            toOrgCode=None,
-                            pi=x["pi"],
-                            billNo=x["billNo"],
-                            billSeq=x["billSeq"],
-                            materialCode=x["materialCode"],
-                        )
-                    store[x["sn"]] = rec
-                    out["result"] = "ACCEPTED"
-                elif x["rev"] == cur["rev"] and cur["lastBatchNo"] == no:
-                    out["result"] = "DUPLICATE"
-                elif x["rev"] == cur["rev"]:
-                    cur["suspended"] = True
-                    out.update(result="CONFLICT", existingRev=cur["rev"], existingBatchNo=cur["lastBatchNo"])
-                else:
-                    out.update(result="STALE", existingRev=cur["rev"], existingBatchNo=cur["lastBatchNo"])
-                summary[out["result"].lower()] += 1
-                results.append(out)
-            receipt = {
-                "schemaVersion": "1.0",
-                "batchNo": no,
-                "outcome": "PROCESSED",
-                "receivedAt": "2026-10-19T02:37:03Z",
-                "summary": summary,
-                "results": results,
-            }
-            seen[no] = (batch["itemsDigest"], receipt)
-            return receipt
-
-
-MES = FakeMes()
+#: 各组织一套 MES（路径 /mes/<组织>），与联调用的模拟 MES 同一份实现（devtools/mes_mock.py）：
+#: 按 MES 对接说明第 3 节的 process(batch) 处理推送来的批次，也可在测试里对拉取到的批次调用 process 生成回执；
+#: behavior[org] 可覆盖应答（模拟故障）。
+MES = MockMes().start()
 
 
 # ---------------------------------------------------------------------- HTTP 客户端
@@ -521,7 +356,6 @@ def admin(app_client) -> str:
     api = Api(app_client)
     r = api.page_login("admin", ADMIN_PASSWORD)
     assert r.status == 200, str(r)
-    assert r["user"]["must_change_pwd"] is False, "built-in admin from .env works without a password change"
     return r.text("token")
 
 
@@ -606,7 +440,7 @@ class World:
 
     def enable_mes(self, code: str, batch_size: int = 5000, auth: str = "TOKEN") -> None:
         token = f"tok-{code}"
-        MES.tokens[code] = token
+        MES.secrets[code] = token
         cfg = m(
             mes_url=MES.url(code), mes_auth_type=auth, mes_credential=token, batch_size=batch_size, push_timeout_sec=10
         )
@@ -747,7 +581,7 @@ class World:
 
     def allocate(self, pi: str, bills: list[str] | None = None, lines: list[tuple[str, int]] | None = None) -> dict:
         body = m(pi_no=pi, bills=bills, lines=[m(bill_no=b, seq=s) for b, s in lines] if lines else None)
-        return ok(self.api.post("/api/generate/allocate", body, self.admin)).body
+        return ok(self.api.post("/api/allocation/allocate", body, self.admin)).body
 
     def revoke(self, batch: str, reason: str | None = "x", line: tuple[str, int] | None = None) -> Res:
         body = m(reason=reason) if line is None else m(reason=reason, bill_no=line[0], seq=line[1])
@@ -813,10 +647,7 @@ def _fresh_sn(request):
             for t in _SN_TABLES:
                 cur.execute(f"DELETE FROM {t}")
         BILLS.clear()
-        MES.behavior.clear()
-        MES.store.clear()
-        MES.batches.clear()
-        MES.received.clear()
+        MES.reset()
         K3_FAIL.update(query=False, view=False)
     yield
 

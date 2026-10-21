@@ -11,10 +11,10 @@
     "language": "界面语言",
     "allFactories": "全部生产组织",
     "readonly": "只读",
-    "superAdmin": "内置管理员",
+    "superAdmin": "系统管理员",
     "scope": "数据范围",
     "roleShort": {
-      "admin": "系统管理员",
+      "admin": "管理员",
       "factory_operator": "生产组织操作员",
       "query": "查询员"
     },
@@ -101,7 +101,11 @@
     "mes": "对接 MES",
     "dateFrom": "开始日期",
     "dateTo": "结束日期",
-    "capped": "结果较多，只统计到 {n} 条"
+    "capped": "结果较多，只统计到 {n} 条",
+    "expand": "展开",
+    "collapse": "收起",
+    "expandAll": "全部展开",
+    "collapseAll": "全部收起"
   },
   "status": {
     "PENDING_ALLOC": "待分配",
@@ -184,7 +188,7 @@
     "DELETED": "已删除"
   },
   "roles": {
-    "admin": "系统管理员（总部）",
+    "admin": "管理员",
     "factory_operator": "生产组织操作员",
     "query": "查询员",
     "mes": "MES 接口账户"
@@ -269,15 +273,15 @@
     "empNo": "工号",
     "password": "密码",
     "submit": "登录",
-    "hint": "账户由内置管理员用公司工号创建，密码向管理员索取。"
+    "hint": "账户由系统管理员用公司工号创建，密码向系统管理员索取。"
   },
   "password": {
     "title": "修改密码",
-    "forced": "密码已被管理员重置，请先修改密码。",
+    "relogin": "修改成功后本账户所有页面都会退出，须用新密码重新登录。",
     "old": "当前密码",
     "new": "新密码",
     "confirm": "确认新密码",
-    "policy": "8–64 位，同时含字母和数字，只能用字母、数字和 ! @ # $ & *",
+    "policy": "8–64 位，同时含字母和数字，只能用字母、数字和 ! {'@'} # $ & *",
     "mismatch": "两次输入不一致",
     "done": "密码已修改"
   },
@@ -323,8 +327,7 @@
     "piAll": "查看本 PI 各生产组织的号（只读）",
     "piAllNote": "只读查看：同一 PI 在各生产组织的号段，不能领取其他组织的号。",
     "segment": "号段（完整 SN / 十进制流水）",
-    "seqOf": "流水归属 {pi}",
-    "itemsOf": "领取批次 {b} 明细"
+    "seqOf": "流水归属 {pi}"
   },
   "allocate": {
     "title": "SN 分配",
@@ -348,6 +351,8 @@
     "linesTitle": "待分配的号",
     "linesHint": "勾选物料行作为分配范围，不勾选 = 整张 PI；同一物料行的号一起分到订单的生产组织",
     "nothingPending": "没有待分配的号",
+    "billCounts": "{n} 行 · 待分配 {qty}",
+    "billPicked": "已选 {n} 行",
     "toOrg": "分到",
     "way": "交付方式",
     "wayPush": "对接 MES · 推送",
@@ -376,13 +381,7 @@
     "batchResult": "结果",
     "confirmMethod": "确认方式",
     "manualConfirm": "人工确认",
-    "void": "作废",
-    "manualTitle": "人工确认批次",
-    "voidTitle": "作废批次",
-    "manualNote": "仅在 MES 方确认批次 {batch} 已全部入库、但无法回执时使用；确认后号改为已推送，不再重试。",
-    "voidNote": "仅用于 MES 没有处理的批次 {batch}；作废后号回到未入批，重新组批推送。",
-    "basis": "依据",
-    "basisPlaceholder": "如 MES 方书面确认，不超过 500 字"
+    "void": "作废"
   },
   "audit": {
     "title": "操作痕迹",
@@ -412,6 +411,14 @@
     "detail": "说明",
     "archived": "已归档",
     "exportXlsx": "导出 Excel"
+  },
+  "batch": {
+    "confirmTitle": "人工确认批次 {no}",
+    "voidTitle": "作废批次 {no}",
+    "confirmTip": "仅在 MES 方书面确认已全部处理、但回执交不上来时使用：批次记为成功（确认方式「人工」），不再重试；交付批次的号记为已推送。",
+    "voidTip": "仅用于 MES 没有处理的批次：交付批次的号回到待推送（未入批），重新组批推送；转出批次按原明细重建新的转出批次并自动推送。",
+    "basis": "依据",
+    "basisPlaceholder": "如 MES 方书面确认，不超过 500 字"
   },
   "dashboard": {
     "title": "你好，{name}",
@@ -868,12 +875,6 @@
     "rebuiltTo": "已重建为",
     "confirmBatch": "人工确认",
     "voidBatch": "作废",
-    "confirmTitle": "人工确认批次 {no}",
-    "voidTitle": "作废批次 {no}",
-    "confirmTip": "仅在 MES 方书面确认已全部入库时使用：批次记为成功（确认方式「人工」），批内的号记为已推送。",
-    "voidTip": "仅用于 MES 没有处理的批次：批内的号回到待推送，之后另建新批次推送；转出批次作废后自动重建。",
-    "basis": "依据",
-    "basisPlaceholder": "如 MES 方书面确认，不超过 500 字",
     "requestNo": "请求号",
     "mesOrg": "对接 MES 的组织",
     "acqStatus": {
@@ -929,10 +930,10 @@
     "used": "生成过号",
     "pis": "各版本归属 PI",
     "bindings": "生效绑定",
-    "versionsOf": "{code} 的版本历史",
+    "history": "版本历史 · 共 {n} 版（新 → 旧）",
     "claimedPi": "归属 PI",
-    "derivedFrom": "由哪一版换前缀",
-    "createdBy": "创建",
+    "notUsed": "未生成过号",
+    "copies": "为其他 PI 换前缀",
     "prefix": "前缀",
     "prefixHint": "必填，字母或数字，区分大小写；不能与任何规则（含旧版本）的前缀相同（只是开头相同，如 SD 与 SDD，可以）",
     "suffix": "固定后缀",
@@ -1059,10 +1060,6 @@
     "failReason": "失败原因",
     "manualConfirm": "人工确认",
     "void": "作废",
-    "confirmTip": "仅在 MES 方书面确认已全部处理时使用；确认后按批次内容记为已交付。",
-    "voidTip": "只能作废 MES 没有处理过的批次；作废后号回到未入批，可重新推送。",
-    "basis": "依据",
-    "basisPlaceholder": "如 MES 方书面确认，不超过 500 字",
     "itemsTitle": "所含的号",
     "before": "转移前",
     "after": "转移后",
@@ -1071,7 +1068,7 @@
   },
   "users": {
     "title": "账户",
-    "desc": "只有内置管理员能创建、修改、停用、启用账户和重置密码；账户只停用、不删除。MES 接口账户不能登录页面，用工号 + 密钥换取令牌后调用 MES 接口。",
+    "desc": "只有系统管理员能创建、修改、停用、启用账户和重置密码；账户只停用、不删除。MES 接口账户不能登录页面，用工号 + 密钥换取令牌后调用 MES 接口。",
     "tabAll": "账户",
     "tabMes": "MES 接口账户",
     "create": "新建账户",
@@ -1083,7 +1080,7 @@
     "name": "姓名",
     "role": "角色",
     "roleHint": {
-      "admin": "总部：具备全部业务权限，不绑生产组织；不能管理账户",
+      "admin": "总部人员：具备全部业务权限，不绑生产组织；不能管理账户（只有系统管理员能）",
       "factory_operator": "只操作所绑的一个生产组织：领取本组织的号，提交、撤回本组织的转组织申请",
       "query": "只读；不绑看全部，绑了只看所绑的生产组织",
       "mes": "只能调用本生产组织的 MES 拉取、回执与只读接口"
@@ -1095,7 +1092,6 @@
     "initPwd": "初始密码",
     "active": "启用",
     "disabled": "停用",
-    "mustChange": "须改密",
     "locked": "已锁定",
     "lockedUntil": "换取令牌连续失败，锁定到 {time}",
     "lastLogin": "最近登录",
@@ -1105,7 +1101,7 @@
     "enable": "启用",
     "disableConfirm": "停用账户 {emp}（{name}）？停用后不能登录或调用接口，可重新启用。",
     "resetPwd": "重置密码",
-    "resetPrompt": "为 {emp} 设置新密码（下次登录须先改密，旧令牌失效）",
+    "resetPrompt": "为 {emp} 设置新密码（该账户已登录的页面随即退出，须用新密码重新登录）",
     "resetDone": "密码已重置",
     "ipWhitelist": "来源地址白名单",
     "ipAny": "不限",

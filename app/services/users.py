@@ -1,6 +1,7 @@
-"""登录、改密与账户管理（F-01）。账户只停用不删除；只有内置管理员能维护账户。
+"""登录、改密与账户管理（F-01）。账户只停用不删除；只有系统管理员能维护账户。
 
-页面账户（系统管理员 / 生产组织操作员 / 查询员）用初始密码直接登录，不强制改密；管理员重置他人密码后下次登录须改密。
+页面账户（系统管理员 / 管理员 / 生产组织操作员 / 查询员）用工号和密码直接登录，任何时候都不强制改密；
+本人改密、系统管理员重置密码后，该账户所有页面的令牌失效，须用新密码重新登录。
 MES 接口账户不能登录页面：创建或重置时系统生成密钥（只显示一次），MES 用工号 + 密钥换取令牌；
 连续失败 SN_MES_AUTH_MAX_FAILURES 次锁定 SN_MES_AUTH_LOCK_MINUTES 分钟（锁定期间密钥正确也拒绝），锁定和解锁留痕；
 可配置来源地址白名单。重置密钥后旧密钥和旧令牌立即失效。
@@ -55,7 +56,6 @@ def _view(u: dict, names: dict[str, str], bound: list[str]) -> dict:
         "ip_whitelist": u["ip_whitelist"] if u["role"] == util.MES else None,
         "locked_until": util.fmt(u["locked_until"]) if u["role"] == util.MES else None,
         "tz_offset_min": factories.tz_offset(tuple(codes)),
-        "must_change_pwd": bool(u["must_change_pwd"]),
         "lang": u["lang"],
         "last_login_at": util.fmt(u["last_login_at"]),
         "created_at": util.fmt(u["created_at"]),
@@ -172,8 +172,8 @@ def me(cu: CurrentUser) -> dict:
     return view(_must_get(cu.id))
 
 
-def change_password(cu: CurrentUser, old_password: str | None, new_password: str | None, page: bool = False) -> dict:
-    """改自己的密码；返回新令牌（旧令牌随口令版本失效；页面令牌沿用当前登录版本）。"""
+def change_password(cu: CurrentUser, old_password: str | None, new_password: str | None) -> dict:
+    """改自己的密码。不发新令牌：旧令牌随口令版本全部失效（包括当前页面），须用新密码重新登录。"""
     with db.tx():
         u = _must_get(cu.id)
         if not verify_password(old_password, u["password_hash"]):
@@ -191,8 +191,7 @@ def change_password(cu: CurrentUser, old_password: str | None, new_password: str
             u["id"],
         )
         audit.record(cu, audit.entry(audit.PASSWORD_CHANGE).info(u["emp_no"]))
-        fresh = _must_get(u["id"])
-        return {"token": _token(fresh, page), "user": view(fresh)}
+        return {"relogin": True}
 
 
 def set_lang(cu: CurrentUser, lang: str | None) -> dict:
@@ -253,7 +252,7 @@ def _check_role_factory(
 ) -> Binding:
     """角色与绑定生产组织；新绑定（不在 current 里）的须在列表中且金蝶启用，保留原来已禁用的绑定不报错。
 
-    操作员绑一个；查询员可多选，不选为全部；系统管理员不绑；MES 接口账户绑一个「对接 MES = 是」的生产组织。
+    操作员绑一个；查询员可多选，不选为全部；管理员不绑；MES 接口账户绑一个「对接 MES = 是」的生产组织。
     """
     if role not in util.ROLES:
         raise biz(ErrorCode.USER_ROLE_INVALID)
@@ -502,7 +501,7 @@ def enable(cu: CurrentUser, uid: int) -> dict:
 
 
 def reset_password(cu: CurrentUser, uid: int, password: str | None) -> dict:
-    """重置为管理员给定的初始密码；下次登录必须改密，旧令牌失效。"""
+    """重置为系统管理员给定的密码：旧令牌全部失效，该账户用新密码重新登录（不强制改密）。"""
     with db.tx():
         u = _must_get(uid)
         if u["role"] == util.MES:
@@ -510,7 +509,7 @@ def reset_password(cu: CurrentUser, uid: int, password: str | None) -> dict:
         check_policy(password)
         now = util.now()
         db.exec(
-            "UPDATE sn_user SET password_hash = %s, must_change_pwd = 1, pwd_changed_at = %s, updated_at = %s "
+            "UPDATE sn_user SET password_hash = %s, must_change_pwd = 0, pwd_changed_at = %s, updated_at = %s "
             "WHERE id = %s",
             hash_password(password),
             _next_pv(u, now),
@@ -542,7 +541,7 @@ def _insert_admin(emp: str, password: str, now: datetime) -> None:
 
 
 def reset_admin(password: str) -> None:
-    """运维恢复：把内置管理员（SN_INIT_ADMIN_EMP_NO）重置为 .env 里的密码并启用、角色改回管理员；不存在就新建。
+    """运维恢复：把系统管理员（SN_INIT_ADMIN_EMP_NO）重置为 .env 里的密码并启用、角色改回管理员；不存在就新建。
 
     只在服务器上设置 SN_RESET_ADMIN=true 启动时执行一次（需要服务器权限），并留痕。
     """
@@ -647,8 +646,9 @@ def mes_token(emp_no: str | None, secret: str | None, client: str | None, trace_
                     .factory(u["factory_code"])
                     .info(f"{where} until={util.fmt(until)}"),
                 )
-        elif failures:
-            db.exec("UPDATE sn_user SET auth_failures = 0 WHERE id = %s", u["id"])
+        else:
+            # 账户页「最近换取令牌」；MES 令牌不带登录版本，改它不影响已发的令牌
+            db.exec("UPDATE sn_user SET auth_failures = 0, last_login_at = %s WHERE id = %s", now, u["id"])
     if not matched:
         raise fail(401, "INVALID_CREDENTIALS", "工号或密钥错误")
     ttl = settings.access_token_ttl_seconds

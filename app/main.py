@@ -100,7 +100,7 @@ def check_secret() -> None:
 
 
 def init_admin() -> None:
-    """按 .env 建内置管理员（空库）或重置它（SN_RESET_ADMIN=true）。不强制改密，所以生产环境不允许默认密码。"""
+    """按 .env 建系统管理员（空库）或重置它（SN_RESET_ADMIN=true）。不强制改密，所以生产环境不允许默认密码。"""
     reset = settings.get_bool("SN_RESET_ADMIN", False)
     if not reset and not users.needs_bootstrap():
         return

@@ -20,7 +20,7 @@ export const useAuthStore = defineStore("auth", () => {
 
   const role = computed(() => profile.value?.role || "");
   const isAdmin = computed(() => role.value === "admin");
-  /** 内置 admin 账户：唯一能管理账户的人。 */
+  /** 系统管理员账户：唯一能管理账户的人。 */
   const isSuperAdmin = computed(() => !!profile.value?.super_admin);
   const isFactory = computed(() => role.value === "factory_operator");
   const isQuery = computed(() => role.value === "query");
@@ -30,7 +30,6 @@ export const useAuthStore = defineStore("auth", () => {
   const scopeFactories = computed<string[]>(() => profile.value?.factory_codes ?? (boundFactory.value ? [boundFactory.value] : []));
   const scopeNames = computed(() => (profile.value?.factory_names ?? [profile.value?.factory_name || boundFactory.value]).join("、"));
   const bound = computed(() => scopeFactories.value.length > 0);
-  const mustChangePwd = computed(() => !!profile.value?.must_change_pwd);
   /** 能做页面领取（总部代任一组织、本组织操作员）。 */
   const canAct = computed(() => isAdmin.value || isFactory.value);
 
@@ -61,9 +60,10 @@ export const useAuthStore = defineStore("auth", () => {
     if (pref) setLocale(pref);
   }
 
+  /** 改密成功后不发新令牌：本账户所有页面（含本页）退出，用新密码重新登录。 */
   async function changePassword(oldPwd: string, newPwd: string) {
-    const res = await api.changePassword(oldPwd, newPwd);
-    persist(res.token, res.user);
+    await api.changePassword(oldPwd, newPwd);
+    clear();
   }
 
   async function refresh() {
@@ -75,7 +75,7 @@ export const useAuthStore = defineStore("auth", () => {
 
   async function changeLocale(locale: Locale) {
     setLocale(locale);
-    if (!token.value || mustChangePwd.value) return;
+    if (!token.value) return;
     try {
       const me = await api.setLang(locale);
       profile.value = me;
@@ -93,7 +93,7 @@ export const useAuthStore = defineStore("auth", () => {
 
   return {
     token, profile, role, isAdmin, isSuperAdmin, isFactory, isQuery, boundFactory, scopeFactories, scopeNames, bound,
-    mustChangePwd, canAct,
+    canAct,
     login, changePassword, refresh, changeLocale, clear,
   };
 });

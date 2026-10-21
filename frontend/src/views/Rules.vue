@@ -20,30 +20,28 @@
       <el-table v-loading="loading" :data="shown" size="small" row-key="rule.id" :empty-text="t('common.empty')">
         <el-table-column type="expand">
           <template #default="{ row }">
+            <!-- 版本历史：改格式出的版本一行一版（新→旧）；为别的 PI 换前缀另出的版本挂在来源版本下 -->
             <div class="versions">
-              <div class="surface__title">{{ t("rules.versionsOf", { code: row.rule.rule_code }) }}</div>
-              <el-table :data="row.versions" size="small" :empty-text="t('common.empty')">
-                <el-table-column :label="t('rules.version')" width="70">
-                  <template #default="{ row: v }">
-                    <b>v{{ v.version }}</b>
-                    <el-tag v-if="v.version === row.rule.current_version" size="small" type="primary" class="ml">{{ t("rules.current") }}</el-tag>
-                  </template>
-                </el-table-column>
-                <el-table-column :label="t('rules.format')" min-width="220"><template #default="{ row: v }"><span class="sn-mono">{{ v.format }}</span></template></el-table-column>
-                <el-table-column :label="t('rules.charset')" min-width="200" show-overflow-tooltip>
-                  <template #default="{ row: v }"><span class="sn-mono">{{ v.charset }}</span></template>
-                </el-table-column>
-                <el-table-column :label="t('rules.claimedPi')" min-width="120"><template #default="{ row: v }">{{ v.claimed_pi || "—" }}</template></el-table-column>
-                <el-table-column :label="t('rules.derivedFrom')" width="110">
-                  <template #default="{ row: v }">{{ v.derived_from ? `v${versionNo(row, v.derived_from)}` : "—" }}</template>
-                </el-table-column>
-                <el-table-column :label="t('rules.used')" width="80">
-                  <template #default="{ row: v }"><el-tag size="small" :type="v.used ? 'success' : 'info'">{{ v.used ? t("common.yes") : t("common.no") }}</el-tag></template>
-                </el-table-column>
-                <el-table-column :label="t('rules.createdBy')" min-width="150">
-                  <template #default="{ row: v }">{{ v.created_by }} · {{ fmt(v.created_at, false) }}</template>
-                </el-table-column>
-              </el-table>
+              <div class="muted small">{{ t("rules.history", { n: row.versions.length }) }}</div>
+              <div v-for="v in historyOf(row)" :key="v.id" class="ver">
+                <span class="ver-no">
+                  <b>v{{ v.version }}</b>
+                  <el-tag v-if="v.version === row.rule.current_version" size="small" type="primary" disable-transitions>{{ t("rules.current") }}</el-tag>
+                </span>
+                <div class="ver-line">
+                  <span class="sn-mono">{{ v.format }}</span>
+                  <span v-if="v.charset !== CHARSETS[v.base]" class="muted">{{ t("rules.charset") }} <span class="sn-mono">{{ v.charset }}</span></span>
+                  <el-tag size="small" :type="v.used ? 'success' : 'info'" disable-transitions>{{ v.used ? t("rules.used") : t("rules.notUsed") }}</el-tag>
+                  <span v-if="v.claimed_pi" class="muted">{{ t("rules.claimedPi") }} {{ v.claimed_pi }}</span>
+                  <span class="muted">{{ v.created_by }} · {{ fmt(v.created_at, false) }}</span>
+                </div>
+                <div v-if="v.copies.length" class="ver-line copies">
+                  <span class="muted">{{ t("rules.copies") }}</span>
+                  <el-tooltip v-for="c in v.copies" :key="c.id" :content="`${c.used ? t('rules.used') : t('rules.notUsed')} · ${c.created_by} · ${fmt(c.created_at, false)}`">
+                    <span class="chip" :class="{ unused: !c.used }">v{{ c.version }} · {{ c.claimed_pi }} · <span class="sn-mono">{{ c.prefix }}</span></span>
+                  </el-tooltip>
+                </div>
+              </div>
             </div>
           </template>
         </el-table-column>
@@ -187,7 +185,13 @@ const catValues = computed(() => [...new Set(inCat(cat.value).map((r) => r.rule.
 const shown = computed(() => (catVal.value ? inCat(cat.value).filter((r) => r.rule.category_value === catVal.value) : inCat(cat.value)));
 const countOf = (s: string) => inCat(s).length;
 watch(cat, () => (catVal.value = ""));
-const versionNo = (row: any, id: number) => row.versions.find((v: any) => v.id === id)?.version ?? "?";
+/** 版本历史：改格式出的版本（新→旧），各带为别的 PI 换前缀另出的版本（derived_from 指向它）。 */
+function historyOf(row: any) {
+  const ids = new Set(row.versions.map((v: any) => v.id));
+  return row.versions
+    .filter((v: any) => !v.derived_from || !ids.has(v.derived_from))
+    .map((v: any) => ({ ...v, copies: row.versions.filter((c: any) => c.derived_from === v.id) }));
+}
 
 /** 编辑时提示：格式不变 / 就地修改（当前版本没生成过号）/ 另出一版（生成过号，须换新前缀）。 */
 const editHint = computed(() => {
@@ -290,7 +294,15 @@ onMounted(load);
 .cnt { margin-left: 6px; font-size: 12px; opacity: 0.75; }
 .w100 { width: 100%; }
 .w160 { width: 160px; }
-.versions { padding: 4px 16px 12px 48px; }
+.versions { padding: 4px 16px 12px 48px; display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
+.ver { display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: center; column-gap: 12px; row-gap: 4px;
+  padding: 6px 0; border-bottom: 1px dashed var(--el-border-color-lighter); }
+.ver:last-child { border-bottom: none; }
+.ver-no { display: inline-flex; align-items: center; gap: 6px; }
+.ver-line { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
+.copies { grid-column: 2; gap: 4px 6px; font-size: 12px; }
+.chip { padding: 0 8px; line-height: 20px; border-radius: 10px; color: var(--app-text); background: var(--el-fill-color-light); border: 1px solid var(--el-border-color-lighter); }
+.chip.unused { color: var(--app-muted); border-style: dashed; }
 .samples { display: flex; flex-direction: column; gap: 4px; }
 .sample-list { display: flex; flex-wrap: wrap; gap: 4px 12px; }
 .sample-list .max { color: var(--el-color-warning); }

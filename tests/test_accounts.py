@@ -32,6 +32,24 @@ def test_single_page_session(w, api):
     assert api.get("/api/auth/me", t2).status == 200
 
 
+def test_password_change_and_reset_require_relogin_without_forced_change(w, api):
+    e = emp()
+    t1 = w.user(e, "query", None)
+    assert api.get("/api/dashboard", t1).status == 200, "新账户直接可用，不强制改密"
+    r = ok(api.post("/api/auth/password", m(old_password="Pass1234", new_password="Pass5678"), t1))
+    assert r["relogin"] is True, "本人改密不发新令牌，须重新登录"
+    assert api.get("/api/auth/me", t1).code == "PASSWORD_CHANGED", "改密后当前页面也须重新登录"
+    assert api.page_login(e, "Pass1234").code == "LOGIN_FAILED"
+    t2 = ok(api.page_login(e, "Pass5678")).text("token")
+    assert api.get("/api/dashboard", t2).status == 200
+
+    me = ok(api.get("/api/auth/me", t2))
+    ok(api.post(f"/api/users/{me['id']}/reset-password", m(password="Reset123"), w.admin))
+    assert api.get("/api/auth/me", t2).code == "PASSWORD_CHANGED", "重置后已登录的页面须重新登录"
+    t3 = ok(api.page_login(e, "Reset123")).text("token")
+    assert api.get("/api/dashboard", t3).status == 200, "重置后用新密码登录即可使用，不强制改密"
+
+
 def test_mes_account_cannot_login_page_and_secret_once(w, api, sql):
     org = w.org(uid("O")[:10])
     r = api.post("/api/users", m(emp_no=emp("M"), name="M", role="mes", factory_code=org), w.admin)
@@ -52,6 +70,7 @@ def test_mes_account_cannot_login_page_and_secret_once(w, api, sql):
     t = ok(api.call("POST", "/api/mes/v1/auth/token", m(empNo=e, secret=r["secret"]), None, {"X-Real-IP": "10.1.2.3"}))
     assert t["code"] == "OK" and t["expiresIn"] == 43200
     assert api.get("/api/dashboard", t["accessToken"]).code == "FORBIDDEN", "MES 接口账户只能调 MES 接口"
+    assert ok(api.get(f"/api/users?q={e}", w.admin))["items"][0]["last_login_at"], "账户页显示最近换取令牌时间"
 
 
 def test_mes_ip_whitelist(w, api):
@@ -97,7 +116,7 @@ def test_org_sync_keeps_code_and_marks_disabled(w, api, sql):
 def test_mes_enable_requires_test_and_disable_blocked(w, api, sql):
     org = w.org(uid("O")[:10])
     assert api.post(f"/api/factories/{org}/mes-toggle", m(enabled=True), w.admin).code == "MES_TEST_REQUIRED"
-    MES.tokens[org] = "t"
+    MES.secrets[org] = "t"
     bad = api.post(f"/api/factories/{org}/mes-test", m(mes_url=MES.url(org), mes_credential="wrong"), w.admin)
     assert ok(bad)["ok"] is False
     w.enable_mes(org, batch_size=5)

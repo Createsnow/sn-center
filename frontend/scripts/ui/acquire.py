@@ -48,5 +48,4 @@ M = {
 "acquire.piAllNote": ("只读查看：同一 PI 在各生产组织的号段，不能领取其他组织的号。", "Read-only: segments of this PI in every production org; SNs of other orgs cannot be acquired.", "Chỉ xem: các đoạn số của PI này ở mọi tổ chức sản xuất; không thể nhận SN của tổ chức khác."),
 "acquire.segment": ("号段（完整 SN / 十进制流水）", "Segment (full SN / decimal serial)", "Đoạn số (SN đầy đủ / tuần tự thập phân)"),
 "acquire.seqOf": ("流水归属 {pi}", "serial of {pi}", "tuần tự thuộc {pi}"),
-"acquire.itemsOf": ("领取批次 {b} 明细", "Acquire batch {b}", "Chi tiết lô nhận {b}"),
 }

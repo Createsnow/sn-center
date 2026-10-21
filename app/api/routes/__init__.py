@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.api.routes import (
     acquire,
+    allocation,
     audits,
     auth,
     dashboard,
@@ -24,6 +25,7 @@ api_router.include_router(factories.router)
 api_router.include_router(orders.router)
 api_router.include_router(rules.router)
 api_router.include_router(generate.router)
+api_router.include_router(allocation.router)
 api_router.include_router(delivery.router)
 api_router.include_router(acquire.router)
 api_router.include_router(transfers.router)

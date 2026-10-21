@@ -39,6 +39,24 @@ test("every static t('key') used in source exists", () => {
   assert.deepEqual(missing, []);
 });
 
+test("every message compiles in vue-i18n", async () => {
+  // @ | 等是 vue-i18n 语法字符，原样出现会让 t() 抛错（如密码规则里的 @ 让表单项渲染失败），须由 gen_locales 转义
+  const { createI18n } = await import("vue-i18n");
+  const broken = [];
+  for (const f of langs.flatMap((l) => [`${l}.json`, `errors.${l}.json`])) {
+    const msgs = load(f);
+    const { t } = createI18n({ legacy: false, locale: "x", messages: { x: msgs }, missingWarn: false }).global;
+    for (const k of Object.keys(flat(msgs))) {
+      try {
+        t(k, {});
+      } catch (e) {
+        broken.push(`${f} ${k}: ${e.message.split("\n")[0]}`);
+      }
+    }
+  }
+  assert.deepEqual(broken, []);
+});
+
 test("error dictionaries share keys", () => {
   const zh = Object.keys(load("errors.zh-CN.json")).sort();
   for (const l of ["en", "vi"]) assert.deepEqual(Object.keys(load(`errors.${l}.json`)).sort(), zh);

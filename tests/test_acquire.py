@@ -113,3 +113,45 @@ def test_csv_neutralizes_formula_bill_numbers(w, api):
         f"/api/acquire/batches/{a['batch_no']}/file?format=csv", headers={"Authorization": f"Bearer {w.admin}"}
     )
     assert ",'=" in r.content.decode("utf-8-sig")
+
+
+def test_push_pull_and_acquire_concurrently_never_overlap(w, api, sql, app_client):
+    """9.2-2：推送建批、MES 拉取建批、页面领取三通道并发取号，同一枚号不会进入两个批次或领取批次。"""
+    from devtools.mes_mock import Puller
+
+    org, pi, bill = ready(w, 3000, mes=True, batch_size=300)
+    op = w.user(emp("F"), "factory_operator", org)
+    e = emp("M")
+    key = ok(api.post("/api/users", {"emp_no": e, "name": "MES", "role": "mes", "factory_code": org}, w.admin))
+    puller = Puller(MES, org, app_client, e, key["secret"], log=lambda _: None)
+    out = {}
+
+    def take():
+        out["r"] = w.acquire(op, None, pi)
+
+    def pull():
+        out["pulled"] = puller.run_once()
+
+    ts = [threading.Thread(target=take), threading.Thread(target=pull)]
+    for t in ts:
+        t.start()
+    w.push()
+    for t in ts:
+        t.join()
+    w.push()
+    puller.run_once()
+    dup = sql.count(
+        "SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND acquire_batch_no IS NOT NULL "
+        "AND delivery_batch_no IS NOT NULL",
+        pi,
+    )
+    assert dup == 0, "同一枚号不会既进交付批次又进领取文件"
+    twice = sql.count(
+        "SELECT COUNT(*) FROM (SELECT d.sn FROM sn_delivery_item d JOIN sn_delivery_batch b ON b.id = d.batch_id "
+        "WHERE b.pi_no = %s GROUP BY d.sn HAVING COUNT(*) > 1) t",
+        pi,
+    )
+    assert twice == 0, "同一枚号不会进入两个交付批次"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status IN ('PUSHED','ACQUIRED')", pi) == 3000
+    sources = {r["source"] for r in sql.all("SELECT DISTINCT source FROM sn_delivery_batch WHERE pi_no = %s", pi)}
+    assert sources <= {"PUSH", "PULL"} and sources

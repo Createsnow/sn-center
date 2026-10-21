@@ -1,4 +1,4 @@
-"""/api 鉴权依赖：Bearer 令牌 → 账户（停用即拒绝；页面令牌在别的页面重新登录即拒绝）→ 强制改密 → 角色。
+"""/api 鉴权依赖：Bearer 令牌 → 账户（改密或被重置即拒绝、停用即拒绝；页面令牌在别的页面重新登录即拒绝）→ 角色。
 
 当前账户挂到 request.state.user，全局 BizError 处理据此记失败痕迹。
 """
@@ -26,10 +26,6 @@ async def run_sync(fn: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
     return await asyncio.to_thread(fn, *args, **kwargs)
 
 
-#: 强制改密期间仍可调用的接口
-PWD_CHANGE_ALLOWED = frozenset(("/api/auth/me", "/api/auth/password", "/api/auth/lang"))
-
-
 def authenticate(request: Request) -> CurrentUser:
     header = request.headers.get("Authorization")
     token = None
@@ -39,12 +35,15 @@ def authenticate(request: Request) -> CurrentUser:
         raise biz(ErrorCode.UNAUTHENTICATED)
     claims = parse_token(token)
     user = db.one(
-        "SELECT id, emp_no, name, role, factory_code, status, must_change_pwd, pwd_changed_at, last_login_at "
+        "SELECT id, emp_no, name, role, factory_code, status, pwd_changed_at, last_login_at "
         "FROM sn_user WHERE id = %s",
         claims.user_id,
     )
-    if user is None or pwd_version(user["pwd_changed_at"]) != claims.pwd_version:
+    if user is None:
         raise biz(ErrorCode.TOKEN_INVALID)
+    if pwd_version(user["pwd_changed_at"]) != claims.pwd_version:
+        # 本人改密或被重置密码：所有页面都要用新密码重新登录
+        raise biz(ErrorCode.PASSWORD_CHANGED)
     if user["status"] != "ACTIVE":
         raise biz(ErrorCode.ACCOUNT_DISABLED)
     if claims.session_version is not None and session_version(user["last_login_at"]) != claims.session_version:
@@ -52,7 +51,6 @@ def authenticate(request: Request) -> CurrentUser:
     if user["role"] == util.MES:
         # MES 接口账户只能调 /api/mes/v1
         raise biz(ErrorCode.FORBIDDEN)
-    request.state.page_session = claims.session_version is not None
     path = request.url.path
     source = API if path.startswith("/api/mes/") or claims.session_version is None else PAGE
     cu = CurrentUser(
@@ -66,8 +64,6 @@ def authenticate(request: Request) -> CurrentUser:
         users.read_scope(user["id"], user["role"], user["factory_code"]),
     )
     request.state.user = cu
-    if user["must_change_pwd"] and path not in PWD_CHANGE_ALLOWED:
-        raise biz(ErrorCode.PASSWORD_CHANGE_REQUIRED)
     return cu
 
 
@@ -90,7 +86,7 @@ def require_role(*roles: str) -> Callable[[Request], CurrentUser]:
 
 
 def require_super_admin(request: Request) -> CurrentUser:
-    """账户管理：只有内置 admin 账户；其他系统管理员也不行。"""
+    """账户管理：只有系统管理员账户；其他管理员也不行。"""
     cu = authenticate(request)
     if not cu.is_super_admin:
         raise biz(ErrorCode.USER_MANAGE_FORBIDDEN)

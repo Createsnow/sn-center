@@ -114,9 +114,19 @@ def test_custom_rule_saved_only_after_success(w, sql):
     assert sql.count("SELECT COUNT(*) FROM sn_rule") == 0, "生成前不留规则"
     w.generate(pi)
     r = sql.one("SELECT * FROM sn_rule")
-    assert r["rule_name"] == f"{pi}_9148363" and r["rule_code"] == f"PI-{pi}-1"
+    assert r["rule_name"] == f"{pi}_v1" and r["rule_code"] == f"PI-{pi}-1"
     assert sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec LIMIT 1", pi) == f"{p}10.50000001"
     assert sql.scalar("SELECT rule_id FROM sn_line_rule WHERE bill_no = %s", bill) == r["id"]
+
+
+def test_custom_rule_names_follow_code_number(w, sql):
+    """同一 PI 的第 n 条自定义规则：编码 PI-PI号-n，名称 PI号_vn。"""
+    org, pi, bill = mk(w, ("M1", 3), ("M2", 3))
+    ok(w.select(pi, [(bill, 1)], custom=m(prefix=P(), base=10, seq_len=6, with_length=True)))
+    ok(w.select(pi, [(bill, 2)], custom=m(prefix=P(), base=10, seq_len=6, with_length=True)))
+    w.generate(pi)
+    rows = sql.all("SELECT rule_code, rule_name FROM sn_rule ORDER BY rule_code")
+    assert [(r["rule_code"], r["rule_name"]) for r in rows] == [(f"PI-{pi}-1", f"{pi}_v1"), (f"PI-{pi}-2", f"{pi}_v2")]
 
 
 def test_customer_template_requires_prefix(w, api):
@@ -414,7 +424,7 @@ def test_alloc_context_lists_pending_lines(w, api):
     w.generate(pi)
     w.touch(b2, status="D")
     w.compare()
-    ctx = ok(api.get(f"/api/generate/alloc-context?pi={pi}", w.admin))
+    ctx = ok(api.get(f"/api/allocation/context?pi={pi}", w.admin))
     rows = [(x["bill_no"], x["seq"], x["qty"], x["org_code"], x["skip"]) for x in ctx["lines"]]
     assert rows == [(b1, 1, 2, org, None), (b1, 2, 3, org, None), (b2, 1, 1, None, "REVERSAL")]
     assert ctx["lines"][0]["start_sn"] <= ctx["lines"][0]["end_sn"]
@@ -448,9 +458,14 @@ def test_workbench_lists_status_and_buttons(w, api):
     assert ok(api.get(f"/api/generate/pis?q={pi}", w.admin))["items"][0]["status"] == "TO_GENERATE"
 
     def tabs() -> tuple[list[str], ...]:
-        names = ("TO_GENERATE", "GENERATED", "TO_ALLOCATE", "ALLOCATED")
+        pages = (
+            ("generate", "TO_GENERATE"),
+            ("generate", "GENERATED"),
+            ("allocation", "TO_ALLOCATE"),
+            ("allocation", "ALLOCATED"),
+        )
         return tuple(
-            [x["pi_no"] for x in ok(api.get(f"/api/generate/pis?q={pi}&tab={t}", w.admin))["items"]] for t in names
+            [x["pi_no"] for x in ok(api.get(f"/api/{p}/pis?q={pi}&tab={t}", w.admin))["items"]] for p, t in pages
         )
 
     assert tabs() == ([pi], [], [], [])
@@ -459,7 +474,7 @@ def test_workbench_lists_status_and_buttons(w, api):
     assert (x["status"], x["pending_alloc"], x["generated_qty"]) == ("TO_ALLOCATE", 10, 10)
     ctx = ok(api.get(f"/api/generate/context?bill_no={bill}", w.admin))
     assert ctx["pi_no"] == pi and ctx["bills"][0]["lines"][0]["rule"]["format"].startswith("P")
-    actx = ok(api.get(f"/api/generate/alloc-context?pi={pi}", w.admin))
+    actx = ok(api.get(f"/api/allocation/context?pi={pi}", w.admin))
     assert actx["summary"]["pending_alloc"] == 10 and actx["summary"]["quota"] == 0
     assert tabs() == ([], [pi], [pi], [])
     w.allocate(pi)

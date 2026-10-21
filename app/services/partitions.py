@@ -69,14 +69,14 @@ def maintain() -> None:
 
 def _daily_jobs() -> None:
     """每天 2:10 维护任务的其余部分：同步生产组织（F-03）、每日交付自检（5.2.5 第 5 条）。各自失败互不影响。"""
-    from app.services import dashboard, factories
+    from app.services import delivery, factories
 
     try:
         factories.sync_from_k3(CurrentUser.system())
     except Exception as e:  # noqa: BLE001
         log.warning("daily_factory_sync_failed", err=str(e))
     try:
-        dashboard.self_check()
+        delivery.self_check()
     except Exception:  # noqa: BLE001
         log.exception("daily_self_check_failed")
 

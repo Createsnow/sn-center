@@ -20,6 +20,12 @@ PY = ROOT.parent / "app/core/errors.py"
 OUT = ROOT / "src/locales"
 PH = re.compile(r"\{(\w+)\}")
 LANGS = ["zh-CN", "en", "vi"]
+#: vue-i18n 消息语法里的特殊字符（@ 链接、| 复数）：原样写进 JSON 会编译失败或被截断，改成字面量插值 {'@'}
+SPECIAL = re.compile(r"[@|]")
+
+
+def escape(text):
+    return SPECIAL.sub(lambda m: "{'" + m.group(0) + "'}", text)
 
 
 def nest(flat):
@@ -55,7 +61,7 @@ def main():
         if any(p != phs[0] for p in phs):
             problems.append(f"ui {key}: placeholders differ {phs}")
         for lang, v in zip(LANGS, vals):
-            ui[lang][key] = v
+            ui[lang][key] = escape(v)
     if JAVA.exists():
         zh_errors = dict(re.findall(r'^\s+([A-Z0-9_]+)\(\d+, "([^"]*)"\)', JAVA.read_text("utf-8"), re.M))
     else:  # 仓库里只有 Python 后端时取 app/core/errors.py
@@ -72,7 +78,7 @@ def main():
         for lang, v in zip(LANGS, (zh, en, vi)):
             if sorted(PH.findall(v)) != sorted(PH.findall(zh)):
                 problems.append(f"error {code} [{lang}]: placeholders differ from zh")
-            errs[lang][code] = v
+            errs[lang][code] = escape(v)
     for code in E:
         if code not in zh_errors:
             problems.append(f"error {code}: not in ErrorCode.java")

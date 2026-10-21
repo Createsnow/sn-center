@@ -1,4 +1,4 @@
-"""账户管理（F-01）：只有内置管理员。账户只停用、不删除。MES 接口账户的密钥只在创建 / 重置时显示一次。"""
+"""账户管理（F-01）：只有系统管理员。账户只停用、不删除。MES 接口账户的密钥只在创建 / 重置时显示一次。"""
 
 from fastapi import APIRouter
 
@@ -45,7 +45,7 @@ def user_enable(id: int, cu: SuperAdminDep) -> dict:
     return users.enable(cu, id)
 
 
-@router.post("/{id}/reset-password", summary="重置页面账户密码：下次登录须改密，旧令牌失效")
+@router.post("/{id}/reset-password", summary="重置页面账户密码：旧令牌失效，该账户须用新密码重新登录（不强制改密）")
 def user_reset(id: int, body: UserPasswordIn, cu: SuperAdminDep) -> dict:
     return users.reset_password(cu, id, body.password)
 
