@@ -209,7 +209,7 @@ import { api } from "@/api";
 import { useFactories } from "@/composables/useFactories";
 import { useTime } from "@/composables/useTime";
 import {
-  BATCH_RESULT_TYPE, batchResultLabel, batchSourceLabel, confirmMethodLabel, pushStateLabel, taskStateLabel,
+  BATCH_RESULT_TYPE, BILL_FOLD_OVER, batchResultLabel, batchSourceLabel, confirmMethodLabel, pushStateLabel, taskStateLabel,
 } from "@/constants";
 import { canConfirm, canVoid } from "@/utils/batch";
 import PageHead from "@/components/PageHead.vue";
@@ -286,7 +286,10 @@ async function loadCtx(silent = false) {
   try {
     const c = await api.allocContext(pi.value);
     c.lines.forEach((l: any) => (l.key = `${l.bill_no}/${l.seq}/${l.org_code || ""}`));
+    const fresh = c.pi_no !== ctx.value?.pi_no;
     ctx.value = c;
+    // 换了 PI：单据多时默认收起；同一 PI 刷新保持原样
+    if (fresh) foldAll(bills.value.length > BILL_FOLD_OVER);
   } finally {
     ctxLoading.value = false;
   }
@@ -322,7 +325,7 @@ const bills = computed(() => {
   return [...m.values()];
 });
 
-/** 收起的单据（只影响显示，不影响勾选）；换 PI 时全部展开。 */
+/** 收起的单据（只影响显示，不影响勾选）；换 PI 时单据超过 BILL_FOLD_OVER 张默认全部收起，否则全部展开。 */
 const folded = ref(new Set<string>());
 const isFolded = (no: string) => folded.value.has(no);
 function toggleFold(no: string) {
@@ -398,7 +401,6 @@ const batchNo = ref("");
 
 watch(pi, () => {
   dtab.value = "push";
-  foldAll(false);
   loadCtx();
 });
 

@@ -2,6 +2,9 @@ import { t } from "@/i18n";
 
 type TagType = "" | "info" | "primary" | "success" | "warning" | "danger";
 
+/** 生成、分配详情中单据超过这么多张时，打开 PI 默认全部收起。 */
+export const BILL_FOLD_OVER = 5;
+
 /** SN 状态 → Element Plus 标签类型。 */
 export const STATUS_TYPE: Record<string, TagType> = {
   PENDING_ALLOC: "info",

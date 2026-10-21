@@ -317,7 +317,7 @@ import { ApiError } from "@/api/http";
 import { billMark, emptySel, genLimit, lineOrder, revokeRange, scopeBody, selectedLines, toggleBill, toggleLine } from "@/genScope.js";
 import { useFactories } from "@/composables/useFactories";
 import { useTime } from "@/composables/useTime";
-import { leaveStateLabel, suspendLabel } from "@/constants";
+import { BILL_FOLD_OVER, leaveStateLabel, suspendLabel } from "@/constants";
 import type { OrderLine } from "@/types/api";
 import PageHead from "@/components/PageHead.vue";
 import RuleDialog from "@/views/generate/RuleDialog.vue";
@@ -438,6 +438,9 @@ async function openDetail(key: { pi?: string; bill_no?: string }, filter: Filter
   await loadCtx(key);
   if (!ctx.value) return;
   detailPi.value = ctx.value.pi_no;
+  // 单据多时默认收起；从单据进来的展开该单
+  if (shownBills.value.length > BILL_FOLD_OVER) foldAll(true);
+  if (key.bill_no && isFolded(key.bill_no)) toggleFold(key.bill_no);
   if (route.query.pi !== ctx.value.pi_no) router.replace({ query: { pi: ctx.value.pi_no } });
   schedulePreview();
 }
@@ -552,7 +555,7 @@ function showTodo() {
   foldAll(false);
 }
 
-/** 收起的单据（只影响显示，不影响勾选）；换 PI 时全部展开。 */
+/** 收起的单据（只影响显示，不影响勾选）；打开 PI 时单据超过 BILL_FOLD_OVER 张默认全部收起，否则全部展开。 */
 const folded = ref(new Set<string>());
 const isFolded = (no: string) => folded.value.has(no);
 function toggleFold(no: string) {
