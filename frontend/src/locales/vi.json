@@ -196,7 +196,8 @@
   "scope": {
     "PI": "Toàn bộ PI",
     "MATERIAL": "PI + vật tư",
-    "SINGLE": "Một SN"
+    "SINGLE": "Một SN",
+    "RANGE": "Khoảng SN"
   },
   "transferStatus": {
     "PENDING": "Chờ xử lý",
@@ -1012,6 +1013,9 @@
     "toMaterial": "Vật tư đích",
     "keepOriginal": "Để trống = giữ nguyên",
     "pickMaterial": "Chọn vật tư (kể cả trống)",
+    "orgStartSn": "SN đầu",
+    "orgEndSn": "SN cuối",
+    "orgRangeHint": "SN đầu và cuối phải là SN của tổ chức nguồn thuộc PI này và cùng PI tuần tự; lấy mọi SN ở giữa (gồm hai đầu, theo số tuần tự thập phân) vẫn thuộc tổ chức nguồn và PI này, có thể khác vật tư, chứng từ",
     "applyNote": "Sau khi gửi, SN chuyển sang đang xin chuyển, không thể đẩy hoặc kéo cho tới khi trụ sở xử lý; có thể rút lại trước đó. MES không được thông báo trong lúc này.",
     "directNote": "Trụ sở chuyển trực tiếp: SN được gắn lại ngay, tự đẩy điều chuyển và chuyển đi khi cần.",
     "submitApply": "Gửi yêu cầu",

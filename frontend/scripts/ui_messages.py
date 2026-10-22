@@ -167,6 +167,7 @@ M = {
 "scope.PI": ("整张 PI", "Whole PI", "Toàn bộ PI"),
 "scope.MATERIAL": ("PI + 物料", "PI + material", "PI + vật tư"),
 "scope.SINGLE": ("单枚 SN", "Single SN", "Một SN"),
+"scope.RANGE": ("号段", "SN range", "Khoảng SN"),
 "transferStatus.PENDING": ("待处理", "Pending", "Chờ xử lý"),
 "transferStatus.APPROVED": ("已确认", "Approved", "Đã duyệt"),
 "transferStatus.REJECTED": ("已驳回", "Rejected", "Đã từ chối"),

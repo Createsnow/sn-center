@@ -23,9 +23,12 @@ class BillTransferIn(In):
 class OrgTransferIn(In):
     factory_code: str | None = None
     pi_no: str | None = None
+    #: PI 整张 / MATERIAL PI + 物料 / SINGLE 单枚 / RANGE 号段
     scope: str | None = None
     material_code: str | None = None
     sn: str | None = None
+    start_sn: str | None = None
+    end_sn: str | None = None
     to_factory: str | None = None
     to_pi: str | None = None
     to_customer: str | None = None

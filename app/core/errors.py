@@ -144,9 +144,10 @@ class ErrorCode(Enum):
     ACQ_BATCH_INCOMPLETE = (409, "领取批次 {batch_no} 未完成，不能下载")
     EXPORT_NOTHING = (404, "PI {pi} 的单据 {bill_no} 没有已分配的号")
     # ---------- 转单 / 转组织 ----------
-    TR_SCOPE_INVALID = (400, "转移范围只能是整张 PI、PI + 物料、单枚 SN")
+    TR_SCOPE_INVALID = (400, "转移范围只能是整张 PI、PI + 物料、单枚 SN、号段")
     TR_MATERIAL_REQUIRED = (400, "按物料转移时物料编码必填")
     TR_SN_REQUIRED = (400, "单枚转移时 SN 必填")
+    TR_RANGE_REQUIRED = (400, "按号段转移时起号、止号都必填")
     TR_TO_PI_REQUIRED = (400, "转入 PI 必填")
     TR_NOTHING = (400, "所选范围内没有可转移的号")
     TR_SN_NOT_TRANSFERABLE = (400, "SN {sn} 当前不能转移：{reason}")
@@ -164,6 +165,7 @@ class ErrorCode(Enum):
     )
     TR_TARGET_LINE_INVALID = (400, "目标物料行 {seq} 不在目标单据中")
     TR_RANGE_INVALID = (400, "起止号 {start_sn} ~ {end_sn} 不在所选物料行中")
+    TR_ORG_RANGE_INVALID = (400, "起止号 {start_sn} ~ {end_sn} 须都是来源组织 PI {pi} 下的号，且流水归属 PI 相同")
     TR_FROZEN = (409, "有 {count} 枚号不能转移：{detail}")
     # ---------- 查询 / 审计 ----------
     QUERY_PI_REQUIRED = (400, "查看同一 PI 各生产组织的号时必须指定 PI")

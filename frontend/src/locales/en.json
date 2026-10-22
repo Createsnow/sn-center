@@ -196,7 +196,8 @@
   "scope": {
     "PI": "Whole PI",
     "MATERIAL": "PI + material",
-    "SINGLE": "Single SN"
+    "SINGLE": "Single SN",
+    "RANGE": "SN range"
   },
   "transferStatus": {
     "PENDING": "Pending",
@@ -1012,6 +1013,9 @@
     "toMaterial": "Target material",
     "keepOriginal": "Empty = keep original",
     "pickMaterial": "Pick a material (incl. empty)",
+    "orgStartSn": "Start full SN",
+    "orgEndSn": "End full SN",
+    "orgRangeHint": "Start and end must be SNs of the source org under this PI with the same serial PI; all SNs in between (inclusive, by decimal serial) still under the source org and PI are taken, across materials and bills",
     "applyNote": "After submitting, SNs become transfer-pending and cannot be pushed or pulled until HQ decides; you may withdraw before that. MES is not notified meanwhile.",
     "directNote": "HQ direct transfer: SNs are re-attached at once, with reassign and transfer-out pushes as needed.",
     "submitApply": "Submit request",

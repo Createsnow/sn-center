@@ -18,7 +18,7 @@
         </template>
         <template v-else>
           <el-descriptions-item :label="t('transfer.mode')">{{ t(`transfer.orgMode.${det.doc.mode}`) }}</el-descriptions-item>
-          <el-descriptions-item :label="t('transfer.scope')">{{ scopeLabel(det.doc.scope) }} {{ det.doc.from_material || det.doc.from_sn }}</el-descriptions-item>
+          <el-descriptions-item :label="t('transfer.scope')">{{ scopeLabel(det.doc.scope) }} {{ det.doc.scope === "RANGE" ? `${det.doc.from_sn} ~ ${det.doc.from_end_sn}` : det.doc.from_material || det.doc.from_sn }}</el-descriptions-item>
           <el-descriptions-item :label="t('transfer.source')">{{ nameOf(det.doc.from_factory) }} · {{ det.doc.from_pi }}</el-descriptions-item>
           <el-descriptions-item :label="t('transfer.target')">
             {{ nameOf(det.doc.to_factory) }} · {{ det.doc.to_pi }} {{ det.doc.to_customer }} {{ det.doc.to_material }}

@@ -7,6 +7,7 @@
 - 号的 MES 持有组织为来源组织、且转入组织与来源不同时，在同一事务内向来源 MES 建立「转出」批次并推送。
 不可转：申请中；所在批次未确认或失败；所在转出批次未确认或失败（先在原转组织单上继续推送转出）；领取未完成。
 转单另可转待分配的号（仍为待分配，之后按目标单据的生产组织分配）；转组织不能转待分配的号。
+转组织的范围：整张 PI、PI + 物料、单枚、号段（同一流水归属 PI 内按十进制流水取闭区间，只取来源组织该 PI 下的号）。
 转单移动已生成数、已分配数，额度不变；转组织不改来源单据和序号，计数和额度都不变。
 """
 
@@ -35,7 +36,8 @@ WITHDRAWN = "WITHDRAWN"
 SCOPE_PI = "PI"
 SCOPE_MATERIAL = "MATERIAL"
 SCOPE_SINGLE = "SINGLE"
-SCOPES = frozenset((SCOPE_PI, SCOPE_MATERIAL, SCOPE_SINGLE))
+SCOPE_RANGE = "RANGE"
+SCOPES = frozenset((SCOPE_PI, SCOPE_MATERIAL, SCOPE_SINGLE, SCOPE_RANGE))
 
 ITEM_COLS = (
     "id, sn, factory_code, pi_no, customer_code, bill_no, bill_seq, material_code, rev, seq_pi_no, seq_dec, "
@@ -52,6 +54,7 @@ ORG_FIELDS = (
     "from_pi",
     "from_material",
     "from_sn",
+    "from_end_sn",
     "qty",
     "to_factory",
     "to_pi",
@@ -554,6 +557,9 @@ class OrgRequest:
     scope: str | None = None
     material_code: str | None = None
     sn: str | None = None
+    #: 号段：起号、止号（完整 SN，须同一流水归属 PI）
+    start_sn: str | None = None
+    end_sn: str | None = None
     to_factory: str | None = None
     to_pi: str | None = None
     to_customer: str | None = None
@@ -579,6 +585,8 @@ def _org_items(factory: str, r: OrgRequest, lock: bool = False) -> tuple[list[di
         if util.blank(r.sn):
             raise biz(ErrorCode.TR_SN_REQUIRED)
         cond, args = " AND sn = %s", [r.sn.strip()]
+    elif scope == SCOPE_RANGE:
+        cond, args = _range_cond(factory, pi, util.trim(r.start_sn), util.trim(r.end_sn))
     items = db.all(
         f"SELECT {ITEM_COLS} FROM sn_item WHERE factory_code = %s AND pi_no = %s{cond} ORDER BY seq_pi_no, seq_dec"
         + (" FOR UPDATE" if lock else ""),
@@ -587,6 +595,27 @@ def _org_items(factory: str, r: OrgRequest, lock: bool = False) -> tuple[list[di
         *args,
     )
     return items, pi, scope
+
+
+def _range_cond(factory: str, pi: str, start: str, end: str) -> tuple[str, list]:
+    """号段：起止号都须是本组织该 PI 下的号且流水归属 PI 相同；取其间（含两端）仍在本组织该 PI 下的号。"""
+    if not start or not end:
+        raise biz(ErrorCode.TR_RANGE_REQUIRED)
+    ends = {
+        x["sn"]: x
+        for x in db.all(
+            "SELECT sn, seq_pi_no, seq_dec FROM sn_item WHERE factory_code = %s AND pi_no = %s AND sn IN (%s, %s)",
+            factory,
+            pi,
+            start,
+            end,
+        )
+    }
+    s, e = ends.get(start), ends.get(end)
+    if s is None or e is None or s["seq_pi_no"] != e["seq_pi_no"]:
+        raise biz(ErrorCode.TR_ORG_RANGE_INVALID, start_sn=start, end_sn=end, pi=pi)
+    lo, hi = sorted((s["seq_dec"], e["seq_dec"]))
+    return " AND seq_pi_no = %s AND seq_dec BETWEEN %s AND %s", [s["seq_pi_no"], lo, hi]
 
 
 def _org_targets(t: dict, items: list[dict]) -> dict[int, Target]:
@@ -723,9 +752,9 @@ def apply(cu: CurrentUser, r: OrgRequest) -> dict:
 def _insert_org(cu, mode, status, factory, pi, scope, r: OrgRequest, t: dict, qty: int, reason: str) -> tuple[int, str]:
     no = util.next_id("TO")
     tid = db.insert(
-        "INSERT INTO sn_transfer(transfer_no, mode, status, scope, from_factory, from_pi, from_material, from_sn, qty, "
-        "to_factory, to_pi, to_customer, to_material, manual_fields, reason, applied_by, applied_at) "
-        "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+        "INSERT INTO sn_transfer(transfer_no, mode, status, scope, from_factory, from_pi, from_material, from_sn, "
+        "from_end_sn, qty, to_factory, to_pi, to_customer, to_material, manual_fields, reason, applied_by, applied_at) "
+        "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
         no,
         mode,
         status,
@@ -733,7 +762,8 @@ def _insert_org(cu, mode, status, factory, pi, scope, r: OrgRequest, t: dict, qt
         factory,
         pi,
         util.trim(r.material_code) if scope == SCOPE_MATERIAL else "",
-        util.trim(r.sn) if scope == SCOPE_SINGLE else "",
+        util.trim(r.sn) if scope == SCOPE_SINGLE else util.trim(r.start_sn) if scope == SCOPE_RANGE else "",
+        util.trim(r.end_sn) if scope == SCOPE_RANGE else "",
         qty,
         t["to_factory"],
         t["to_pi"],

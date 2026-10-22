@@ -70,7 +70,7 @@
             <el-table-column :label="t('transfer.source')" min-width="200">
               <template #default="{ row }">
                 <div>{{ nameOf(row.from_factory) }} · {{ row.from_pi }}</div>
-                <div class="muted">{{ scopeLabel(row.scope) }}<template v-if="row.scope === 'MATERIAL'"> · {{ row.from_material || t("transfer.emptyMaterial") }}</template><template v-if="row.scope === 'SINGLE'"> · <span class="sn-mono">{{ row.from_sn }}</span></template></div>
+                <div class="muted">{{ scopeLabel(row.scope) }}<template v-if="row.scope === 'MATERIAL'"> · {{ row.from_material || t("transfer.emptyMaterial") }}</template><template v-if="row.scope === 'SINGLE'"> · <span class="sn-mono">{{ row.from_sn }}</span></template><template v-if="row.scope === 'RANGE'"> · <span class="sn-mono">{{ row.from_sn }} ~ {{ row.from_end_sn }}</span></template></div>
               </template>
             </el-table-column>
             <el-table-column :label="t('transfer.target')" min-width="200">

@@ -9,7 +9,7 @@
       </el-form-item>
       <el-form-item :label="t('transfer.scope')">
         <el-radio-group v-model="of.scope" @change="resetCandidates">
-          <el-radio-button v-for="s in ['PI', 'MATERIAL', 'SINGLE']" :key="s" :value="s">{{ scopeLabel(s) }}</el-radio-button>
+          <el-radio-button v-for="s in SCOPES" :key="s" :value="s">{{ scopeLabel(s) }}</el-radio-button>
         </el-radio-group>
       </el-form-item>
       <el-form-item v-if="of.scope === 'MATERIAL'" :label="t('common.material')" required>
@@ -19,6 +19,12 @@
       </el-form-item>
       <el-form-item v-if="of.scope === 'SINGLE'" :label="t('common.sn')" required>
         <el-input v-model="of.sn" class="w260 sn-mono" clearable @change="resetCandidates" />
+      </el-form-item>
+      <el-form-item v-if="of.scope === 'RANGE'" :label="t('transfer.range')" required>
+        <el-input v-model="of.start_sn" class="w220 sn-mono" :placeholder="t('transfer.orgStartSn')" clearable @change="resetCandidates" />
+        <span class="ml">~</span>
+        <el-input v-model="of.end_sn" class="w220 sn-mono ml" :placeholder="t('transfer.orgEndSn')" clearable @change="resetCandidates" />
+        <div class="muted hint">{{ t("transfer.orgRangeHint") }}</div>
       </el-form-item>
       <el-divider />
       <el-form-item :label="t('transfer.toOrg')" required>
@@ -60,7 +66,7 @@
     </div>
     <template #footer>
       <el-button @click="of.open = false">{{ t("common.cancel") }}</el-button>
-      <el-button :loading="busy === 'cand'" :disabled="!of.factory_code || !of.pi_no" @click="loadCandidates">{{ t("transfer.preview") }}</el-button>
+      <el-button :loading="busy === 'cand'" :disabled="!of.factory_code || !of.pi_no || !scopeFilled()" @click="loadCandidates">{{ t("transfer.preview") }}</el-button>
       <el-button type="primary" :loading="busy === 'submit'" :disabled="!cand || !cand.transferable || !of.to_factory || !of.to_pi || !of.reason.trim()"
         @click="submitOrg">{{ store.isAdmin ? t("transfer.submitDirect") : t("transfer.submitApply") }}</el-button>
     </template>
@@ -68,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-/** 新建转组织（F-16）：生产组织操作员提交申请，总部直接转。范围为整张 PI / 按物料 / 单枚；
+/** 新建转组织（F-16）：生产组织操作员提交申请，总部直接转。范围为整张 PI / 按物料 / 单枚 / 号段（起止完整 SN）；
  *  目标 PI、客户、物料可从快照候选里选，也可手工填写（标出）。完成后发出 done（转组织单）。 */
 import { reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
@@ -92,8 +98,11 @@ const { factories, nameOf } = useFactories();
 const { suggest, isKnown } = useTargets();
 const busy = ref("");
 
+type Scope = "PI" | "MATERIAL" | "SINGLE" | "RANGE";
+const SCOPES: Scope[] = ["PI", "MATERIAL", "SINGLE", "RANGE"];
+
 const of = reactive({
-  open: false, factory_code: "", pi_no: "", scope: "PI" as "PI" | "MATERIAL" | "SINGLE", material_code: "", sn: "",
+  open: false, factory_code: "", pi_no: "", scope: "PI" as Scope, material_code: "", sn: "", start_sn: "", end_sn: "",
   to_factory: "", to_pi: "", to_customer: "", to_material: "", reason: "",
 });
 const cand = ref<Candidates | null>(null);
@@ -101,6 +110,12 @@ const materials = ref<string[]>([]);
 
 function resetCandidates() {
   cand.value = null;
+}
+/** 所选范围需要的输入是否已填：单枚填 SN，号段填起止号 */
+function scopeFilled() {
+  if (of.scope === "SINGLE") return !!of.sn.trim();
+  if (of.scope === "RANGE") return !!of.start_sn.trim() && !!of.end_sn.trim();
+  return true;
 }
 function isManual(field: TargetField) {
   const v = (field === "pi" ? of.to_pi : field === "customer" ? of.to_customer : of.to_material).trim();
@@ -110,7 +125,7 @@ function isManual(field: TargetField) {
 function open(prefill: { factory_code?: string; pi?: string; material?: string } = {}) {
   Object.assign(of, {
     open: true, factory_code: store.isFactory ? store.boundFactory : prefill.factory_code || "", pi_no: prefill.pi || "",
-    scope: prefill.material !== undefined ? "MATERIAL" : "PI", material_code: prefill.material ?? "", sn: "",
+    scope: prefill.material !== undefined ? "MATERIAL" : "PI", material_code: prefill.material ?? "", sn: "", start_sn: "", end_sn: "",
     to_factory: "", to_pi: prefill.pi || "", to_customer: "", to_material: "", reason: "",
   });
   materials.value = [];
@@ -122,6 +137,7 @@ function body() {
   return {
     factory_code: of.factory_code, pi_no: of.pi_no.trim(), scope: of.scope,
     material_code: of.scope === "MATERIAL" ? of.material_code : null, sn: of.scope === "SINGLE" ? of.sn.trim() : null,
+    start_sn: of.scope === "RANGE" ? of.start_sn.trim() : null, end_sn: of.scope === "RANGE" ? of.end_sn.trim() : null,
     to_factory: of.to_factory, to_pi: of.to_pi.trim(), to_customer: of.to_customer.trim() || null,
     to_material: of.to_material.trim() || null, manual_fields: manual, reason: of.reason,
   };
@@ -158,6 +174,8 @@ defineExpose({ open });
 
 <style scoped>
 .w260 { width: 260px; }
+.w220 { width: 220px; }
+.hint { width: 100%; margin-top: 4px; }
 .ml { margin-left: 8px; }
 .form :deep(.el-form-item) { margin-bottom: 14px; }
 .preview { border: 1px solid var(--app-line); border-radius: 8px; padding: 12px 16px; background: var(--app-canvas); }

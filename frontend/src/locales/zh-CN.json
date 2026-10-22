@@ -196,7 +196,8 @@
   "scope": {
     "PI": "整张 PI",
     "MATERIAL": "PI + 物料",
-    "SINGLE": "单枚 SN"
+    "SINGLE": "单枚 SN",
+    "RANGE": "号段"
   },
   "transferStatus": {
     "PENDING": "待处理",
@@ -1012,6 +1013,9 @@
     "toMaterial": "转入物料编码",
     "keepOriginal": "留空沿用原值",
     "pickMaterial": "选择物料（含空物料）",
+    "orgStartSn": "起始完整 SN",
+    "orgEndSn": "截止完整 SN",
+    "orgRangeHint": "起止号须是来源组织该 PI 下的号、流水归属 PI 相同；按十进制流水取其间（含两端）仍在来源组织该 PI 下的号，可跨物料、单据",
     "applyNote": "提交后号变为申请中，不能推送、拉取，等待总部确认；处理前可以撤回。申请期间不通知 MES。",
     "directNote": "总部直接转移：确认后立即改挂，需要时自动推送改挂和转出。",
     "submitApply": "提交申请",

@@ -116,9 +116,10 @@ E = {
 "ACQ_BATCH_INCOMPLETE": ("Acquire batch {batch_no} is incomplete and cannot be downloaded", "Lô nhận {batch_no} chưa hoàn tất, không thể tải về"),
 "EXPORT_NOTHING": ("Bill {bill_no} of PI {pi} has no allocated SNs", "Chứng từ {bill_no} của PI {pi} không có SN đã phân bổ"),
 # ---------- 转单 / 转组织 ----------
-"TR_SCOPE_INVALID": ("Transfer scope must be whole PI, PI + material, or a single SN", "Phạm vi chuyển chỉ có thể là toàn PI, PI + vật tư hoặc một SN"),
+"TR_SCOPE_INVALID": ("Transfer scope must be whole PI, PI + material, a single SN, or an SN range", "Phạm vi chuyển chỉ có thể là toàn PI, PI + vật tư, một SN hoặc một khoảng SN"),
 "TR_MATERIAL_REQUIRED": ("Material code is required when transferring by material", "Bắt buộc nhập mã vật tư khi chuyển theo vật tư"),
 "TR_SN_REQUIRED": ("SN is required for a single-SN transfer", "Bắt buộc nhập SN khi chuyển một SN"),
+"TR_RANGE_REQUIRED": ("Both start and end SN are required for a range transfer", "Bắt buộc nhập cả SN đầu và SN cuối khi chuyển theo khoảng"),
 "TR_TO_PI_REQUIRED": ("Target PI is required", "Bắt buộc nhập PI đích"),
 "TR_NOTHING": ("No transferable SNs in the selected scope", "Phạm vi đã chọn không có SN có thể chuyển"),
 "TR_SN_NOT_TRANSFERABLE": ("SN {sn} cannot be transferred now: {reason}", "SN {sn} hiện không thể chuyển: {reason}"),
@@ -133,6 +134,7 @@ E = {
 "TR_TARGET_LINE_REQUIRED": ("Source material line {seq} (material {material}) has no or several matching lines in the target bill; choose the target line manually", "Dòng vật tư nguồn {seq} (vật tư {material}) không có hoặc có nhiều dòng tương ứng trong chứng từ đích, hãy chọn dòng đích thủ công"),
 "TR_TARGET_LINE_INVALID": ("Target material line {seq} is not in the target bill", "Dòng vật tư đích {seq} không thuộc chứng từ đích"),
 "TR_RANGE_INVALID": ("Range {start_sn} ~ {end_sn} is not within the selected material line", "Khoảng {start_sn} ~ {end_sn} không thuộc dòng vật tư đã chọn"),
+"TR_ORG_RANGE_INVALID": ("Start and end {start_sn} ~ {end_sn} must both be SNs of the source org under PI {pi} and share the same serial PI", "SN đầu và cuối {start_sn} ~ {end_sn} phải đều là SN của tổ chức nguồn thuộc PI {pi} và cùng PI tuần tự"),
 "TR_FROZEN": ("{count} SNs cannot be transferred: {detail}", "{count} SN không thể chuyển: {detail}"),
 # ---------- 查询 / 审计 ----------
 "QUERY_PI_REQUIRED": ("A PI is required to view SNs of the same PI across production orgs", "Phải chỉ định PI khi xem SN của cùng PI ở các tổ chức sản xuất"),

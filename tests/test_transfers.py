@@ -195,6 +195,51 @@ def test_org_transfer_rejects_disabled_target_and_same_target(w, api):
     assert org_direct(w, a, pi, a).code == "TR_SAME_TARGET"
 
 
+def test_org_range_transfer_takes_inclusive_serials_still_in_source(w, sql):
+    a, pi, bill = setup(w, qty=10)
+    b = w.org(uid("O")[:10])
+    w.enable_mes(b)
+    w.allocate(pi)
+    w.push()
+    sns = [x["sn"] for x in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
+    # 先单枚转走号段中间的一枚：之后号段只取仍在来源组织该 PI 下的号
+    ok(org_direct(w, a, pi, b, scope="SINGLE", sn=sns[4]))
+    w.push()
+    rng = {"scope": "RANGE", "start_sn": sns[6], "end_sn": sns[2]}
+    c = ok(w.api.post("/api/transfers/org/candidates", m(factory_code=a, pi_no=pi, to_factory=b, **rng), w.admin))
+    assert c["total"] == 4 and c["transferable"] == 4 and c["xo_qty"] == 4
+    t = ok(org_direct(w, a, pi, b, **rng))
+    assert (t["scope"], t["from_sn"], t["from_end_sn"], t["qty"]) == ("RANGE", sns[6], sns[2], 4)
+    moved = {
+        x["sn"] for x in sql.all("SELECT sn FROM sn_transfer_item WHERE kind = 'ORG' AND transfer_id = %s", t["id"])
+    }
+    assert moved == {sns[2], sns[3], sns[5], sns[6]}, "起止号可倒序；含两端；已转走的不在其中"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND factory_code = %s", pi, a) == 5
+    w.push()
+    assert all(MES.store[a][s]["transferredOut"] for s in moved)
+    assert all(MES.store[b][s]["rev"] == 2 for s in moved)
+
+
+def test_org_range_transfer_validation(w, api, sql):
+    a, pi, bill = setup(w, qty=3, mes=False)
+    b = w.org(uid("O")[:10])
+    w.allocate(pi)
+    sns = [x["sn"] for x in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
+    assert org_direct(w, a, pi, b, scope="RANGE", start_sn=sns[0]).code == "TR_RANGE_REQUIRED"
+    assert org_direct(w, a, pi, b, scope="RANGE", start_sn=sns[0], end_sn="NOPE").code == "TR_ORG_RANGE_INVALID"
+    # 起止号须在来源组织该 PI 下
+    _, pi2, _ = setup(w, qty=1, mes=False, org=a)
+    w.allocate(pi2)
+    other = sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s", pi2)
+    assert org_direct(w, a, pi, b, scope="RANGE", start_sn=sns[0], end_sn=other).code == "TR_ORG_RANGE_INVALID"
+    # 起止号相同 = 一枚；生产组织操作员也可按号段申请
+    op = w.user(emp("F"), "factory_operator", a)
+    body = m(pi_no=pi, scope="RANGE", start_sn=sns[1], end_sn=sns[1], to_factory=b, to_pi=pi, reason="调拨")
+    t = ok(api.post("/api/transfers/org", body, op))
+    assert t["qty"] == 1 and t["status"] == "PENDING"
+    assert sql.scalar("SELECT status FROM sn_item WHERE sn = %s", sns[1]) == "APPLYING"
+
+
 def test_org_transfer_material_length_check(w, api):
     a, pi, bill = setup(w, qty=1, mes=False)
     w.allocate(pi)
