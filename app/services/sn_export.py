@@ -80,7 +80,7 @@ def _bill_where(cu: CurrentUser, factory: str | None, pi: str | None, bill: str 
 
 
 def lines(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None) -> list[dict]:
-    """明细顶部：每个单据序号 + 物料一行，枚数、长度、各状态枚数、暂停枚数。"""
+    """明细顶部：每个单据序号 + 物料一行，枚数、米标、各状态枚数、暂停枚数。"""
     _p, _b, where, args = _bill_where(cu, factory, pi, bill)
     rows = db.all(
         "SELECT i.bill_seq, i.material_code, MAX(i.length_text) length_text, COUNT(*) qty, "

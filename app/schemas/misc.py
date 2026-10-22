@@ -13,7 +13,7 @@ class AttachIn(In):
 
 
 class LengthBatchIn(In):
-    """统一设置长度的范围：物料行 / 单据 / 都不填 = 整张 PI。"""
+    """统一设置米标的范围：物料行 / 单据 / 都不填 = 整张 PI。"""
 
     pi_no: str | None = None
     bills: list[str] | None = None

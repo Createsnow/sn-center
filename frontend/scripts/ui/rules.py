@@ -1,7 +1,7 @@
 # 规则库页词条：key -> (简体中文, English, Tiếng Việt)
 M = {
 "rules.title": ("规则库", "Rule library", "Thư viện quy tắc"),
-"rules.desc": ("维护 SN 编码规则：SN = 前缀 + 长度（可选）+ PI 内流水 + 后缀。这里只维护规则，物料行选规则、绑定 PI 在生成页进行；按客户绑定只能通过接口设置，在「生效绑定」列只读显示。",
+"rules.desc": ("维护 SN 编码规则：SN = 前缀 + 米标（可选）+ PI 内流水 + 后缀。这里只维护规则，物料行选规则、绑定 PI 在生成页进行；按客户绑定只能通过接口设置，在「生效绑定」列只读显示。",
   "Maintain SN rules: SN = prefix + length (optional) + serial within the PI + suffix. Rules are only maintained here; choosing rules for material lines and binding a PI happen on the generation page; customer bindings can only be set via the API and are shown read-only under “Bindings”.",
   "Duy trì quy tắc SN: SN = tiền tố + chiều dài (tùy chọn) + số thứ tự trong PI + hậu tố. Ở đây chỉ duy trì quy tắc; chọn quy tắc cho dòng vật tư và gắn PI thực hiện ở trang tạo; gắn theo khách hàng chỉ qua giao diện API, hiển thị chỉ đọc ở cột “Gắn hiệu lực”."),
 "rules.create": ("新建规则", "New rule", "Tạo quy tắc"),
@@ -21,8 +21,8 @@ M = {
 "rules.version": ("版本", "Version", "Phiên bản"),
 "rules.current": ("当前", "Current", "Hiện tại"),
 "rules.format": ("格式", "Format", "Định dạng"),
-"rules.withLength": ("带长度", "With length", "Có chiều dài"),
-"rules.withLengthHint": ("SN 中带物料行的长度（字符串原样写入，为空时用 000）", "SN contains the material line's length as text (000 when empty)", "SN chứa chiều dài của dòng vật tư dạng chuỗi (trống thì dùng 000)"),
+"rules.withLength": ("带米标", "With length", "Có chiều dài"),
+"rules.withLengthHint": ("SN 中带物料行的米标（字符串原样写入，为空时用 000）", "SN contains the material line's length as text (000 when empty)", "SN chứa chiều dài của dòng vật tư dạng chuỗi (trống thì dùng 000)"),
 "rules.used": ("生成过号", "Used", "Đã tạo số"),
 "rules.pis": ("各版本归属 PI", "PIs of versions", "PI của các phiên bản"),
 "rules.bindings": ("生效绑定", "Bindings", "Gắn hiệu lực"),
@@ -42,7 +42,7 @@ M = {
 "rules.charsetHint": ("留空用该进制的默认字符表；自定义时只用字母和数字，字符数等于进制且不重复",
   "Leave empty for the default charset; a custom one may only use letters and digits, with as many unique characters as the base",
   "Để trống dùng bảng mặc định; bảng tự chọn chỉ gồm chữ và số, số ký tự bằng cơ số và không trùng"),
-"rules.sampleLength": ("示例长度", "Sample length", "Chiều dài mẫu"),
+"rules.sampleLength": ("示例米标", "Sample length", "Chiều dài mẫu"),
 "rules.sample": ("示例号", "Samples", "Số mẫu"),
 "rules.maxSeq": ("最大流水 {n}", "Max serial {n}", "Tuần tự tối đa {n}"),
 "rules.hintIN_PLACE": ("当前版本从没生成过号：保存后就地修改", "The current version has never generated SNs: saving edits it in place", "Phiên bản hiện tại chưa tạo số: lưu sẽ sửa tại chỗ"),

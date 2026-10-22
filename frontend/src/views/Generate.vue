@@ -249,7 +249,7 @@
         </el-tabs>
       </div>
 
-      <!-- 底部操作栏：范围 → 批量（改规则、撤销、统一设置长度）→ 生成 -->
+      <!-- 底部操作栏：范围 → 批量（改规则、撤销、统一设置米标）→ 生成 -->
       <template #footer>
         <div v-if="ctx" class="bar">
           <div class="bar-scope">
@@ -483,7 +483,7 @@ function openRuleDialog(lines: OrderLine[]) {
   ruleDlg.open = true;
 }
 
-// ---------------- 范围：勾选单据（整单，按勾选顺序）或物料行（按点选顺序）；生成、批量改规则、批量撤销、统一设置长度共用
+// ---------------- 范围：勾选单据（整单，按勾选顺序）或物料行（按点选顺序）；生成、批量改规则、批量撤销、统一设置米标共用
 
 const sel = ref(emptySel());
 const linesOf = (no: string): LineRef[] => (ctx.value?.bills.find((b: any) => b.bill_no === no)?.lines ?? []);
@@ -520,13 +520,13 @@ const defaultBills = computed<string[]>(() => (ctx.value ? ctx.value.bills.filte
 const genScope = computed(() => scopeBody(sel.value) ?? { scope: "BILLS", bills: defaultBills.value });
 /** 未勾选且整张 PI 已没有额度：不用预演。 */
 const piDone = computed(() => !!ctx.value && !hasSel.value && !defaultBills.value.length);
-/** 统一设置长度的范围：所选单据 / 物料行；都没选 = 整张 PI。 */
+/** 统一设置米标的范围：所选单据 / 物料行；都没选 = 整张 PI。 */
 const rangeBody = computed(() => {
   const b = scopeBody(sel.value);
   return b ? (b.scope === "LINES" ? { lines: b.lines } : { bills: b.bills }) : {};
 });
 
-// ---------------- 物料行：状态、筛选、号段；附件项次、长度的填写
+// ---------------- 物料行：状态、筛选、号段；附件项次、米标的填写
 
 function lineState(l: OrderLine): LineState {
   if (l.quota > 0) return (l.issues || []).length ? "TODO" : "GEN";
@@ -574,7 +574,7 @@ const segsOf = (l: LineRef) => segments.value.filter((s) => sameLine(s, l)).reve
 const planOf = (l: LineRef) => (gen.preview?.generatable ? gen.preview.items.find((x: any) => sameLine(x, l)) : null);
 
 const { DEFAULT_LENGTH, draftOf, setDraft, lockText, saveAttach, saveLength } = useLineDrafts(reloadCtx);
-/** 统一设置长度：所选物料行 / 勾选的单据 / 都没选 = 整张 PI 内长度还是默认 000、还没有号的物料行一次设为同一个值。 */
+/** 统一设置米标：所选物料行 / 勾选的单据 / 都没选 = 整张 PI 内米标还是默认 000、还没有号的物料行一次设为同一个值。 */
 async function fillLengths() {
   if (!ctx.value) return;
   const range = hasSel.value ? scopeText.value : t("generate.scopeWholePiLines", { pi: ctx.value.pi_no });

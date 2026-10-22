@@ -8,7 +8,7 @@
 - 一个前缀只对应一种格式：生成过号的版本改格式须另出一版并换新前缀；只改名称或分类不另出版本。
 
 规则选取按物料行：物料行已选规则 ＞ PI 绑定规则 ＞ 客户绑定规则（作模板，每张 PI 首次使用须换前缀）。
-选法：规则库（选一条规则，本 PI 用哪一版见 resolve）或自定义（前缀、进制、位数、是否带长度、后缀）；
+选法：规则库（选一条规则，本 PI 用哪一版见 resolve）或自定义（前缀、进制、位数、是否带米标、后缀）；
 自定义规则生成成功后存入规则库并归属本 PI（编码 PI-PI号-n，名称 PI号_vn，n 为本 PI 第几条自定义规则），
 生成失败或取消不留规则。
 物料行生成过号后可改选，已生成的号不变，流水接续。
@@ -100,10 +100,10 @@ def spec_of(v: dict) -> codec.Spec:
 
 
 def format_text(s: codec.Spec) -> str:
-    """格式说明：HX + 长度 + 6 位 10 进制流水 + A。"""
+    """格式说明：HX + 米标 + 6 位 10 进制流水 + A。"""
     parts = [s.prefix]
     if s.with_length:
-        parts.append("长度")
+        parts.append("米标")
     parts.append(f"{s.seq_len} 位 {s.base} 进制流水")
     if s.suffix:
         parts.append(s.suffix)
@@ -166,7 +166,7 @@ def check_prefix(prefix: str, exclude_version: int | None = None) -> None:
 
 
 def preview(s: SpecIn, length: str | None = None) -> dict:
-    """编辑时的示例号：前 5 个和最大号（长度用示例值）、最大流水。规则库里已有的前缀沿用旧字符规则。"""
+    """编辑时的示例号：前 5 个和最大号（米标用示例值）、最大流水。规则库里已有的前缀沿用旧字符规则。"""
     spec = normalize(s, _prefix_exists)
     sample_len = codec.clean_length(length) or "100"
     mx = codec.max_seq(spec)
@@ -656,7 +656,7 @@ def selections(keys: list[tuple[str, int]]) -> dict[tuple[str, int], dict]:
 
 
 def info(res: Resolved | None, length: str | None = None, start_seq: int = 1) -> dict | None:
-    """规则说明：来源、选法、规则、本 PI 用的版本、格式、第一个号（按本行长度）。"""
+    """规则说明：来源、选法、规则、本 PI 用的版本、格式、第一个号（按本行米标）。"""
     if res is None:
         return None
     out = {

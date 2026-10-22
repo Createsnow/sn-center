@@ -113,7 +113,7 @@ export interface OrderLine {
   material_code: string;
   material_name: string;
   length_raw: string;
-  /** 生效长度（字符串，原样写入 SN） */
+  /** 生效米标（字符串，原样写入 SN） */
   length: string;
   /** K3 金蝶值 / MANUAL 页面填写 / DEFAULT 金蝶为空且未填写，取默认 000 */
   length_source: "K3" | "MANUAL" | "DEFAULT";
@@ -122,7 +122,7 @@ export interface OrderLine {
   generated_qty: number;
   own_generated_qty: number;
   allocated_qty: number;
-  /** 附件项次、长度能否修改：null 可改 / GENERATED 已生成未分配（撤销生成后可改）/ ALLOCATED 已分配 */
+  /** 附件项次、米标能否修改：null 可改 / GENERATED 已生成未分配（撤销生成后可改）/ ALLOCATED 已分配 */
   edit_lock: "GENERATED" | "ALLOCATED" | null;
   quota: number;
   rule: LineRule | null;

@@ -1,4 +1,4 @@
-"""单元测试：编码（含长度写法）、金蝶解析、MES 报文、多语言契约、迁移校验和、cron、导出防注入、配置。"""
+"""单元测试：编码（含米标写法）、金蝶解析、MES 报文、多语言契约、迁移校验和、cron、导出防注入、配置。"""
 
 import gzip
 import json
@@ -28,7 +28,7 @@ B32 = Spec("Q", "", 32, 4, DEFAULT_CHARSETS[32], False)
 def test_sn_is_prefix_length_serial_suffix():
     assert codec.format_sn(1, HX, "100") == "HX100000001A"
     assert codec.format_sn(1, HX, "10.5") == "HX10.5000001A"
-    assert codec.format_sn(1, NOLEN, "100") == "AVM00001X", "规则不带长度时不写长度"
+    assert codec.format_sn(1, NOLEN, "100") == "AVM00001X", "规则不带米标时不写米标"
     assert codec.encode_seq(31, B32) == "000Z"
     assert codec.encode_seq(32, B32) == "0010"
 
@@ -49,12 +49,12 @@ def test_parse_recovers_length_and_serial():
     assert codec.parse("HX100000001A", HX) == ("100", 1)
     assert codec.parse("HX10.5000042A", HX) == ("10.5", 42)
     assert codec.parse("HX0000042A", HX) == ("0", 42)
-    assert codec.parse("HX0100000001A", HX) == ("0100", 1), "长度是字符串，原样反解"
-    assert codec.parse("HX000000042A", HX) == ("000", 42), "默认长度 000 原样写入"
+    assert codec.parse("HX0100000001A", HX) == ("0100", 1), "米标是字符串，原样反解"
+    assert codec.parse("HX000000042A", HX) == ("000", 42), "默认米标 000 原样写入"
     assert codec.parse("AVM00042X", NOLEN) == ("", 42)
     assert codec.parse("AVM0042X", NOLEN) is None, "wrong length"
     assert codec.parse("BVM00042X", NOLEN) is None, "wrong prefix"
-    assert codec.parse("HX000001A", HX) is None, "带长度的规则长度不能为空"
+    assert codec.parse("HX000001A", HX) is None, "带米标的规则米标不能为空"
     for s in (0, 1, 31, 32, 1023, 1_048_575):
         assert codec.parse(codec.format_sn(s, B32), B32) == ("", s)
 

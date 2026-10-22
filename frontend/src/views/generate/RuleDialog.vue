@@ -92,7 +92,7 @@ const mode = ref<"LIBRARY" | "CUSTOM">("LIBRARY");
 const kw = ref("");
 const picked = ref<any>(null);
 const newPrefix = ref("");
-/** 自定义规则默认：前缀取单据号后 7 位（转大写、去掉前缀不允许的字符），流水 4 位，不带长度。 */
+/** 自定义规则默认：前缀取单据号后 7 位（转大写、去掉前缀不允许的字符），流水 4 位，不带米标。 */
 const defaultPrefix = (bill = "") => bill.toUpperCase().replace(/[^A-Z0-9_-]/g, "").slice(-7);
 const customDefault = () => ({ prefix: defaultPrefix(props.lines[0]?.bill_no), base: 10, seq_len: 4, with_length: false, suffix: "" });
 const custom = reactive(customDefault());

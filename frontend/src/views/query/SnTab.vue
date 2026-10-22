@@ -103,7 +103,7 @@
 </template>
 
 <script setup lang="ts">
-/** SN 明细（F-18）：按组织 / 客户 / PI / 单据 / 物料 / 长度 / 状态 / 交付方式 / 批次 / 流水范围筛选，导出。 */
+/** SN 明细（F-18）：按组织 / 客户 / PI / 单据 / 物料 / 米标 / 状态 / 交付方式 / 批次 / 流水范围筛选，导出。 */
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";

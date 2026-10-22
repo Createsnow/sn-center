@@ -47,7 +47,7 @@ def rule_delete(id: int, cu: AdminDep) -> dict:
     return rules.delete(cu, id)
 
 
-@router.post("/preview", summary="示例号：前 5 个和最大号（长度用示例值）、最大流水")
+@router.post("/preview", summary="示例号：前 5 个和最大号（米标用示例值）、最大流水")
 def rule_preview(body: RulePreviewIn, cu: AdminDep) -> dict:
     return rules.preview(_spec(body), body.length)
 

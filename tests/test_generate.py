@@ -236,14 +236,14 @@ def test_preview_lists_reasons(w, api):
     p = ok(w.preview(pi))
     assert p["generatable"] is False
     got = {x["seq"]: x["issues"] for x in p["issues"]}
-    assert got == {3: ["ATTACH_EMPTY"]}, "长度选填（为空取默认 000、字符串原样用），只有附件项次必填"
+    assert got == {3: ["ATTACH_EMPTY"]}, "米标选填（为空取默认 000、字符串原样用），只有附件项次必填"
     ok(api.put("/api/orders/attach", m(bill_no=bill, seq=3, value="A9"), w.admin))
     assert ok(w.preview(pi, lines=[(bill, 3)]))["generatable"] is True, "填写附件项次后可以生成；可缩小范围"
     assert api.put("/api/orders/attach", m(bill_no=bill, seq=1, value="A9"), w.admin).code == "ATTACH_FILL_K3"
     assert api.put("/api/orders/length", m(bill_no=bill, seq=2, value="7"), w.admin).code == "LENGTH_FILL_K3"
     assert api.put("/api/orders/length", m(bill_no=bill, seq=1, value="x" * 65), w.admin).code == "LENGTH_FILL_INVALID"
     r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=1, value=" 020.50 "), w.admin))
-    assert (r["length"], r["length_source"]) == ("020.50", "MANUAL"), "长度是字符串，原样保存"
+    assert (r["length"], r["length_source"]) == ("020.50", "MANUAL"), "米标是字符串，原样保存"
     r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=1, value=""), w.admin))
     assert (r["length"], r["length_source"]) == ("000", "DEFAULT"), "留空改回默认 000"
     assert ok(w.preview(pi))["generatable"] is True
@@ -254,7 +254,7 @@ def test_batch_length_sets_default_lines_only(w, api, sql):
     ok(api.put("/api/orders/length", m(bill_no=bill, seq=4, value="7"), w.admin))
     assert api.put("/api/orders/length/batch", m(pi_no=pi, value=" "), w.admin).code == "LENGTH_FILL_INVALID"
     r = ok(api.put("/api/orders/length/batch", m(pi_no=pi, value="001"), w.admin))
-    assert r["filled"] == 1, "只设长度为默认 000 的（金蝶为空、未填写），金蝶已有和已填写的不改"
+    assert r["filled"] == 1, "只设米标为默认 000 的（金蝶为空、未填写），金蝶已有和已填写的不改"
     got = {
         x["seq"]: (x["length"], x["length_source"]) for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"]
     }
@@ -290,11 +290,11 @@ def test_attach_and_length_locked_once_line_has_sns(w, api, sql):
         f"{p}000000004",
         f"{p}000000005",
         f"{p}000000006",
-    ], "同一物料行接着生成仍用锁定的长度"
+    ], "同一物料行接着生成仍用锁定的米标"
     # 撤销该行的全部生成后可修改，再生成用新值（从流水末尾往前逐段撤）
     for x in ok(api.get(f"/api/generate/jobs?pi={pi}", w.admin)).body:
         if x["status"] == "SUCCESS":
-            ok(w.revoke(x["gen_batch"], "改长度", (bill, 1)))
+            ok(w.revoke(x["gen_batch"], "改米标", (bill, 1)))
     assert j["status"] == "SUCCESS"
     r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=1, value="5"), w.admin))
     assert (r["length"], r["edit_lock"]) == ("5", None)
@@ -325,7 +325,7 @@ def test_length_is_written_as_string(w, sql):
         f"{p}10.50000001",
         f"{p}001000002",
         f"{p}L2000003",
-    ], "长度不按数值规范化，000 / 001 / 其他原样写入"
+    ], "米标不按数值规范化，000 / 001 / 其他原样写入"
 
 
 def test_click_order_and_repeated_material_lines(w, sql):
@@ -403,7 +403,7 @@ def test_revoke_by_line_from_the_end(w, api, sql):
     rb = ctx()["revocable"]
     assert (rb["gen_batch"], rb["bill_no"], rb["seq"], rb["qty"]) == (batch, bill, 3, 2), "可撤销的是流水最末的物料行"
     assert w.revoke(batch, line=(bill, 1)).code == "GEN_REVOKE_NOT_LAST", "中间的物料行不能先撤"
-    ok(w.revoke(batch, "长度填错", (bill, 3)))
+    ok(w.revoke(batch, "米标填错", (bill, 3)))
     assert sql.scalar("SELECT last_seq_dec FROM sn_pi_counter WHERE pi_no = %s", pi) == 7
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 7
     assert w.revoke(batch, line=(bill, 3)).code == "GEN_REVOKE_LINE_INVALID", "已撤销的行不能再撤"

@@ -507,7 +507,7 @@ def _dest(kind: str, r: TransferRequest, source_bill: str) -> Dest:
 
 
 def _targets(kind: str, items: list[dict], d: Dest) -> dict[int, Target]:
-    """号改挂到目标物料行；目标长度与号上长度不同则拒绝（SN 已含长度）。
+    """号改挂到目标物料行；目标米标与号上米标不同则拒绝（SN 已含米标）。
     转单时待分配的号仍待分配（之后按目标单据的生产组织分配）。"""
     out: dict[int, Target] = {}
     for r in items:

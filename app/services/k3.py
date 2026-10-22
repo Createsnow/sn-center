@@ -6,7 +6,7 @@
 - 按单据编号同步、离开快照检测用 View，不带单据状态条件，只看单据状态。
 - 不读业务状态、作废状态、需求单据号，不读写金蝶序列号字段；不返回单据内码、分录内码。
 - 文本未填写时金蝶常返回一个空格：一律去首尾空格；基础资料未填写时为 null，视为空。
-- 字段位置按《生产订单查询接口》：PO 为表头 F_HX_PO，附件项次为明细 FTERM，长度为明细 Flength。
+- 字段位置按《生产订单查询接口》：PO 为表头 F_HX_PO，附件项次为明细 FTERM，米标为明细 Flength。
   字段名是接口约定，写在代码里，不放 .env。
 """
 
@@ -157,7 +157,7 @@ def text(v: Any) -> str:
 
 
 def number_text(v: Any) -> str:
-    """长度文本：金蝶返回数值时整数型浮点按整数写；文本原样（去首尾空格），生成时作为字符串写入 SN。"""
+    """米标文本：金蝶返回数值时整数型浮点按整数写；文本原样（去首尾空格），生成时作为字符串写入 SN。"""
     if isinstance(v, float) and v == int(v):
         return str(int(v))
     return text(v)
@@ -245,7 +245,7 @@ def _row_of_query(o: list) -> Row | None:
 
 def rows_from_view(doc: dict | None) -> list[Row]:
     """View 单据：表头客户在 F_ora_Base.Number，生产组织在 PrdOrgId，PI / PO 在 F_HX_PI / F_HX_PO；
-    明细在 TreeEntity，附件项次 FTERM、长度 Flength、数量 Qty。"""
+    明细在 TreeEntity，附件项次 FTERM、米标 Flength、数量 Qty。"""
     out: list[Row] = []
     if not doc:
         return out

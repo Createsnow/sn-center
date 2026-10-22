@@ -4,7 +4,7 @@ import { ElMessage } from "element-plus";
 import { api } from "@/api";
 import type { OrderLine } from "@/types/api";
 
-/** 金蝶缺失的附件项次（必填）、长度（选填，留空用默认 000）在表格里直接填写；物料行有号后置灰：
+/** 金蝶缺失的附件项次（必填）、米标（选填，留空用默认 000）在表格里直接填写；物料行有号后置灰：
  *  已生成未分配的撤销生成后可改，已分配的不能再改。失焦或回车保存，保存后刷新详情。 */
 export function useLineDrafts(reload: () => Promise<unknown>) {
   const { t } = useI18n();

@@ -69,13 +69,13 @@ class ErrorCode(Enum):
     ORDER_SYNC_BUSY = (409, "订单同步正在进行，请稍后再试")
     ATTACH_INVALID = (400, "附件项次不能为空，不超过 64 字")
     ATTACH_FILL_K3 = (409, "金蝶已有附件项次，不能在页面修改")
-    LENGTH_FILL_INVALID = (400, "长度不超过 64 字；统一设置时不能为空")
-    LENGTH_FILL_K3 = (409, "金蝶已有长度，不能在页面修改")
+    LENGTH_FILL_INVALID = (400, "米标不超过 64 字；统一设置时不能为空")
+    LENGTH_FILL_K3 = (409, "金蝶已有米标，不能在页面修改")
     LINE_EDIT_GENERATED = (
         409,
-        "物料行 {bill_no} / {seq} 已生成过号，附件项次和长度不能修改；号还未分配时可先撤销生成再修改",
+        "物料行 {bill_no} / {seq} 已生成过号，附件项次和米标不能修改；号还未分配时可先撤销生成再修改",
     )
-    LINE_EDIT_ALLOCATED = (409, "物料行 {bill_no} / {seq} 的号已分配，附件项次和长度不能再修改")
+    LINE_EDIT_ALLOCATED = (409, "物料行 {bill_no} / {seq} 的号已分配，附件项次和米标不能再修改")
     ALERT_NOT_FOUND = (404, "订单变更提醒不存在或已处理")
     ALERT_ACTION_INVALID = (400, "该提醒不能这样处理")
     ALERT_MAP_TARGET_INVALID = (400, "确认对应的目标物料行须是该单据快照中的另一行：{seq}")
@@ -101,7 +101,7 @@ class ErrorCode(Enum):
     RULE_CHARSET_LENGTH = (400, "字符表的字符数必须等于进制")
     RULE_CHARSET_INVALID = (400, "字符表只能用字母和数字")
     RULE_CHARSET_DUPLICATE = (400, "字符表不能有重复字符")
-    RULE_SN_TOO_LONG = (400, "前缀 + 长度 + 流水 + 后缀总长不能超过 64")
+    RULE_SN_TOO_LONG = (400, "前缀 + 米标 + 流水 + 后缀总长不能超过 64")
     RULE_USED_FORMAT = (409, "版本 {version} 已生成过号，改格式须另出一版并换新前缀")
     RULE_PREFIX_CHANGE_REQUIRED = (409, "规则 {rule_code} 版本 {version} 已用于 PI {other_pi}，须为本 PI 填新前缀")
     RULE_CUSTOMER_BOUND = (409, "客户 {customer} 已绑定规则 {rule_code}")
@@ -162,7 +162,7 @@ class ErrorCode(Enum):
     TR_TARGET_DISABLED = (409, "转入生产组织 {factory} 在金蝶已禁用，不能确认")
     TR_WITHDRAW_FORBIDDEN = (403, "只能撤回本组织提交的申请")
     TR_CONCURRENT = (409, "部分号的状态刚刚变化，请刷新后重试")
-    TR_LENGTH_MISMATCH = (400, "目标物料长度 {target} 与号上的长度 {current} 不同，不能转移")
+    TR_LENGTH_MISMATCH = (400, "目标物料米标 {target} 与号上的米标 {current} 不同，不能转移")
     TR_TARGET_BILL_INVALID = (400, "目标单据 {bill_no} 须在快照中且有 PI；转单时不能是来源单据")
     TR_TARGET_LINE_REQUIRED = (
         400,

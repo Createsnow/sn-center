@@ -39,7 +39,7 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
         )
         == 12
     )
-    # 报文：逐枚带单据编号、序号、当前 PI、流水归属 PI；十进制流水、长度按字符串
+    # 报文：逐枚带单据编号、序号、当前 PI、流水归属 PI；十进制流水、米标按字符串
     item = MES.received[-1]["batch"]["items"][0]
     assert item["billNo"] == bill and item["billSeq"] == 1 and item["pi"] == pi and item["serialPi"] == pi
     assert isinstance(item["serialDec"], str) and item["length"] == "0100" and item["pushType"] == "NEW"

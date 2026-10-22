@@ -118,7 +118,7 @@ def str_or_none(v: str | None) -> str | None:
 
 
 def _delivery_payload(r: dict) -> dict:
-    """交付项（6.3）。十进制流水、长度按字符串；物料为空、规则不带长度时为 null；转移追溯字段选填。"""
+    """交付项（6.3）。十进制流水、米标按字符串；物料为空、规则不带米标时为 null；转移追溯字段选填。"""
     return {
         "pushType": r["push_type"],
         "sn": r["sn"],

@@ -458,7 +458,7 @@ class World:
 
     # ---------------- 订单
     def order(self, bill_no: str, org: str, customer: str, pi: str, *lines: tuple, status: str = "C") -> Res:
-        """在假金蝶登记一张生产订单并按单据编号同步进快照。lines = (物料, 数量[, 长度[, 附件项次]])。"""
+        """在假金蝶登记一张生产订单并按单据编号同步进快照。lines = (物料, 数量[, 米标[, 附件项次]])。"""
         BILLS[bill_no] = self.doc(bill_no, org, customer, pi, *lines, status=status)
         return ok(self.api.post("/api/orders/sync", m(bill_no=bill_no), self.admin))
 
