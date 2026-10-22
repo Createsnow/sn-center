@@ -465,6 +465,19 @@ def test_bill_list_and_items(w, api):
     assert BILLS[tgt]["BillNo"] == tgt
 
 
+def test_bill_transfer_view_respects_read_scope(w, api):
+    org, pi, src = setup(w, qty=1, mes=False)
+    w.allocate(pi)
+    tgt = uid("MO")
+    w.order(tgt, org, "C1", pi, ("M1", 1))
+    t = ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, org), w.admin))
+    own = w.user(emp("F"), "factory_operator", org)
+    other = w.user(emp("F"), "factory_operator", w.org(uid("O")[:10]))
+    assert ok(api.get(f"/api/transfers/bill/{t['id']}/items", own))["total"] == 1
+    assert api.get(f"/api/transfers/bill/{t['id']}", other).code == "FACTORY_FORBIDDEN"
+    assert api.get(f"/api/transfers/bill/{t['id']}/items", other).code == "FACTORY_FORBIDDEN"
+
+
 def test_all_list_merges_bill_and_org(w, api):
     """记录页：转单与转组织合在一张表，新的在前；按类型、状态筛选；转单记已完成。"""
     org, pi, src = setup(w, qty=2, mes=False)

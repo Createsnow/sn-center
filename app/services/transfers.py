@@ -1281,6 +1281,15 @@ def bill_transfer_view(cu: CurrentUser, tid: int) -> dict:
     t = db.one("SELECT * FROM sn_bill_transfer WHERE id = %s", tid)
     if t is None:
         raise biz(ErrorCode.TR_NOT_FOUND)
+    if cu.bound:
+        # 与列表同一口径：转单涉及的来源或去向生产组织在可看范围内
+        r = db.one(
+            "SELECT GROUP_CONCAT(DISTINCT from_factory) f, GROUP_CONCAT(DISTINCT to_factory) t FROM sn_transfer_item "
+            "WHERE kind = %s AND transfer_id = %s",
+            KIND_BILL,
+            tid,
+        )
+        cu.check_read(*{x for v in (r["f"], r["t"]) for x in (v or "").split(",") if x})
     out = util.jrow(t, BILL_FIELDS)
     out.update(_push_info(KIND_BILL, tid, t["transfer_no"]))
     return out

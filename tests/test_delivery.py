@@ -159,6 +159,12 @@ def test_conflict_receipt_alerts_and_resend(w, sql):
     assert (b["result"], b["conflict_qty"], b["accepted_qty"]) == ("SUCCESS_CONFLICT", 1, 1)
     a = sql.one("SELECT * FROM sn_delivery_alert WHERE sn = %s", sn)
     assert (a["alert_type"], a["existing_rev"], a["existing_batch_no"]) == ("CONFLICT", 1, "PS-OTHER")
+    other = sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s AND sn <> %s", pi, sn)
+    got = sql.all("SELECT sn, receipt_result, existing_rev FROM sn_delivery_item WHERE batch_id = %s", b["id"])
+    assert {r["sn"]: (r["receipt_result"], r["existing_rev"]) for r in got} == {
+        sn: ("CONFLICT", 1),
+        other: ("ACCEPTED", None),
+    }
     dash = ok(w.api.get("/api/dashboard", w.admin))
     assert dash["delivery_alerts"]["CONFLICT"] == 1
     ok(w.api.post(f"/api/delivery/alerts/{a['id']}/handle", m(action="RESEND", note="以本系统为准"), w.admin))

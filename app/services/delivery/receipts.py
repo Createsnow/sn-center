@@ -198,16 +198,28 @@ def confirm(cu: CurrentUser, b: dict, method: str, results: list[dict] | None, n
     """批次确认：交付批次的号改为已推送并记 MES 持有组织；转出批次只在持有组织仍是来源组织时清除。"""
     counts = dict.fromkeys(RESULTS, 0)
     if results is not None:
-        rows = []
+        by_result: dict[str, list[str]] = {}
         for x in results:
             counts[x["result"]] += 1
-            rows.append((x["result"], x.get("existingRev"), x.get("existingBatchNo"), b["id"], x["sn"]))
+            by_result.setdefault(x["result"], []).append(x["sn"])
+        # 接收、重复按结果成组写（一批几千枚不逐枚往返）；冲突、过期另带 MES 已存的 rev 与批次，逐枚写
+        for res in ("ACCEPTED", "DUPLICATE"):
+            sns = by_result.get(res, [])
+            for i in range(0, len(sns), 1000):
+                part = sns[i : i + 1000]
+                db.exec(
+                    "UPDATE sn_delivery_item SET receipt_result = %s WHERE batch_id = %s "
+                    f"AND sn IN ({marks(len(part))})",
+                    res,
+                    b["id"],
+                    *part,
+                )
+        flagged = [x for x in results if x["result"] in ("CONFLICT", "STALE")]
         db.exec_many(
             "UPDATE sn_delivery_item SET receipt_result = %s, existing_rev = %s, existing_batch_no = %s "
             "WHERE batch_id = %s AND sn = %s",
-            rows,
+            [(x["result"], x.get("existingRev"), x.get("existingBatchNo"), b["id"], x["sn"]) for x in flagged],
         )
-        flagged = [x for x in results if x["result"] in ("CONFLICT", "STALE")]
         if flagged:
             item_of = {
                 r["sn"]: r["item_id"]

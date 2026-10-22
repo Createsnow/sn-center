@@ -102,6 +102,8 @@ class Db:
             autocommit=True,
             cursorclass=DictCursor,
             connect_timeout=30,
+            # GROUP_CONCAT 默认只拼 1024 字节，超出静默截断（物料清单、批次号清单会少）
+            init_command="SET SESSION group_concat_max_len = 1048576",
         )
 
     def _checkout(self) -> pymysql.connections.Connection:
