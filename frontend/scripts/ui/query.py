@@ -1,6 +1,6 @@
-# SN 与批次查询页（F-18）
+# SN 查询页（F-18）
 M = {
-"query.title": ("SN 与批次查询", "SN & batch query", "Tra cứu SN & lô"),
+"query.title": ("SN 查询", "SN query", "Tra cứu SN"),
 "query.desc": ("只读查询 SN 明细、交付批次（推送、拉取、转出）、领取批次与交付告警，按账户可看的生产组织范围过滤；本页不能转走号。",
   "Read-only lookup of SN details, delivery batches (push, pull, transfer-out), acquire batches and delivery alerts, filtered by the production orgs your account can see; SNs cannot be moved from this page.",
   "Tra cứu chỉ đọc chi tiết SN, lô giao (đẩy, kéo, chuyển đi), lô nhận và cảnh báo giao, lọc theo các tổ chức sản xuất mà tài khoản được xem; không thể chuyển SN tại trang này."),

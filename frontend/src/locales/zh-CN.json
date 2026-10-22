@@ -38,8 +38,8 @@
     "allocate": "SN 分配",
     "rules": "规则库",
     "export": "SN 导出",
-    "transfer": "转单与转组织",
-    "query": "SN 与批次查询",
+    "transfer": "SN 转移",
+    "query": "SN 查询",
     "audit": "操作痕迹",
     "users": "账户",
     "factories": "生产组织"
@@ -796,7 +796,7 @@
     "mapTarget": "目标物料行"
   },
   "query": {
-    "title": "SN 与批次查询",
+    "title": "SN 查询",
     "desc": "只读查询 SN 明细、交付批次（推送、拉取、转出）、领取批次与交付告警，按账户可看的生产组织范围过滤；本页不能转走号。",
     "tabSn": "SN 明细",
     "tabDelivery": "交付批次",
@@ -942,7 +942,7 @@
     "deleted": "规则 {code} 已删除"
   },
   "transfer": {
-    "title": "转单与转组织",
+    "title": "SN 转移",
     "tabBill": "转单",
     "tabOrg": "转组织",
     "newBill": "新建转单",

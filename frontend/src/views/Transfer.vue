@@ -111,7 +111,7 @@
 </template>
 
 <script setup lang="ts">
-/** 转单与转组织（F-15、F-16）：转单记录、转组织记录（申请、审批、撤回）；新建与详情见 views/transfer。 */
+/** SN 转移（F-15、F-16）：转单记录、转组织记录（申请、审批、撤回）；新建与详情见 views/transfer。 */
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";

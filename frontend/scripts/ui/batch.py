@@ -1,4 +1,4 @@
-# 交付批次共用组件（人工确认 / 作废，5.2.5 第 7 条）：分配页、转单与转组织页、SN 与批次查询页共用。
+# 交付批次共用组件（人工确认 / 作废，5.2.5 第 7 条）：分配页、SN 转移页、SN 查询页共用。
 M = {
 "batch.confirmTitle": ("人工确认批次 {no}", "Confirm batch {no} manually", "Xác nhận thủ công lô {no}"),
 "batch.voidTitle": ("作废批次 {no}", "Void batch {no}", "Hủy lô {no}"),

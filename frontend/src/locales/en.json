@@ -38,8 +38,8 @@
     "allocate": "SN allocation",
     "rules": "Rule library",
     "export": "SN export",
-    "transfer": "Bill & org transfer",
-    "query": "SN & batch query",
+    "transfer": "SN transfer",
+    "query": "SN query",
     "audit": "Audit trail",
     "users": "Accounts",
     "factories": "Production orgs"
@@ -796,7 +796,7 @@
     "mapTarget": "Target line"
   },
   "query": {
-    "title": "SN & batch query",
+    "title": "SN query",
     "desc": "Read-only lookup of SN details, delivery batches (push, pull, transfer-out), acquire batches and delivery alerts, filtered by the production orgs your account can see; SNs cannot be moved from this page.",
     "tabSn": "SN details",
     "tabDelivery": "Delivery batches",
@@ -942,7 +942,7 @@
     "deleted": "Rule {code} deleted"
   },
   "transfer": {
-    "title": "Bill & org transfer",
+    "title": "SN transfer",
     "tabBill": "Bill transfer",
     "tabOrg": "Org transfer",
     "newBill": "New bill transfer",

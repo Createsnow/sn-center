@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-/** SN 与批次查询（F-18）：SN 明细、交付批次、领取批次、交付告警四个页签；批次详情两种抽屉各页签共用。 */
+/** SN 查询（F-18）：SN 明细、交付批次、领取批次、交付告警四个页签；批次详情两种抽屉各页签共用。 */
 import { ref } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";

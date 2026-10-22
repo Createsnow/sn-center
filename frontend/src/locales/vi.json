@@ -38,8 +38,8 @@
     "allocate": "Phân bổ SN",
     "rules": "Thư viện quy tắc",
     "export": "Xuất SN",
-    "transfer": "Chuyển chứng từ & tổ chức",
-    "query": "Tra cứu SN & lô",
+    "transfer": "Chuyển SN",
+    "query": "Tra cứu SN",
     "audit": "Nhật ký thao tác",
     "users": "Tài khoản",
     "factories": "Tổ chức sản xuất"
@@ -796,7 +796,7 @@
     "mapTarget": "Dòng đích"
   },
   "query": {
-    "title": "Tra cứu SN & lô",
+    "title": "Tra cứu SN",
     "desc": "Tra cứu chỉ đọc chi tiết SN, lô giao (đẩy, kéo, chuyển đi), lô nhận và cảnh báo giao, lọc theo các tổ chức sản xuất mà tài khoản được xem; không thể chuyển SN tại trang này.",
     "tabSn": "Chi tiết SN",
     "tabDelivery": "Lô giao",
@@ -942,7 +942,7 @@
     "deleted": "Đã xóa quy tắc {code}"
   },
   "transfer": {
-    "title": "Chuyển chứng từ & tổ chức",
+    "title": "Chuyển SN",
     "tabBill": "Chuyển chứng từ",
     "tabOrg": "Chuyển tổ chức",
     "newBill": "Tạo chuyển chứng từ",

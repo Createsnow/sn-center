@@ -1,6 +1,6 @@
 # 转单（F-15）、转组织（F-16）与记录页（F-17）
 M = {
-"transfer.title": ("转单与转组织", "Bill & org transfer", "Chuyển chứng từ & tổ chức"),
+"transfer.title": ("SN 转移", "SN transfer", "Chuyển SN"),
 "transfer.tabBill": ("转单", "Bill transfer", "Chuyển chứng từ"),
 "transfer.tabOrg": ("转组织", "Org transfer", "Chuyển tổ chức"),
 "transfer.newBill": ("新建转单", "New bill transfer", "Tạo chuyển chứng từ"),
