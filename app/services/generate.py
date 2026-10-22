@@ -598,7 +598,7 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
 def _resolved_of(pi: str, x: dict) -> rules.Resolved:
     """生成事务内重新解析该行规则，须与预演时一致。"""
     if x["rule_plan"] == rules.PLAN_NEW:
-        return rules._custom_resolved(rules.SRC_LINE, x["custom"])
+        return rules._custom_resolved(rules.SRC_LINE, x["custom"], saved=True)
     rule = db.one("SELECT * FROM sn_rule WHERE id = %s FOR UPDATE", x["rule_id"])
     if rule is None:
         raise biz(ErrorCode.GEN_PREVIEW_CHANGED)

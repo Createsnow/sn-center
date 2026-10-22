@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 import re
 import threading
+from collections.abc import Callable
 from dataclasses import dataclass, replace
 
 from app.core import encoding as codec
@@ -119,8 +120,9 @@ class SpecIn:
     with_length: bool | None = True
 
 
-def normalize(s: SpecIn) -> codec.Spec:
-    """规范化并校验编码参数；字符表留空用该进制默认字符表。"""
+def normalize(s: SpecIn, keep_prefix: Callable[[str], bool] | None = None) -> codec.Spec:
+    """规范化并校验编码参数；字符表留空用该进制默认字符表。
+    keep_prefix：前缀不合现行字符规则时，判断是否为可沿用的已有前缀（按旧规则建的规则、已存的自定义规则）。"""
     if s.base is None or s.base not in codec.DEFAULT_CHARSETS:
         raise biz(ErrorCode.RULE_BASE_INVALID)
     if s.seq_len is None:
@@ -134,10 +136,15 @@ def normalize(s: SpecIn) -> codec.Spec:
         cs,
         True if s.with_length is None else s.with_length,
     )
-    err = codec.validate(spec)
+    legacy = keep_prefix is not None and not codec.PREFIX_RE.fullmatch(spec.prefix) and keep_prefix(spec.prefix)
+    err = codec.validate(spec, legacy_prefix=legacy)
     if err is not None:
         raise biz(err)
     return spec
+
+
+def _prefix_exists(prefix: str) -> bool:
+    return db.exists("SELECT EXISTS(SELECT 1 FROM sn_rule_version WHERE prefix = %s)", prefix)
 
 
 def check_prefix(prefix: str, exclude_version: int | None = None) -> None:
@@ -159,8 +166,8 @@ def check_prefix(prefix: str, exclude_version: int | None = None) -> None:
 
 
 def preview(s: SpecIn, length: str | None = None) -> dict:
-    """编辑时的示例号：前 5 个和最大号（长度用示例值）、最大流水。"""
-    spec = normalize(s)
+    """编辑时的示例号：前 5 个和最大号（长度用示例值）、最大流水。规则库里已有的前缀沿用旧字符规则。"""
+    spec = normalize(s, _prefix_exists)
     sample_len = codec.clean_length(length) or "100"
     mx = codec.max_seq(spec)
     samples = []
@@ -387,12 +394,13 @@ def update(cu: CurrentUser, rule_id: int, name: str | None, s: SpecIn, category=
         n = util.trim(name)
         if not n or len(n) > 128:
             raise biz(ErrorCode.RULE_NAME_REQUIRED)
-        spec = normalize(s)
         cur = db.one(
             "SELECT * FROM sn_rule_version WHERE rule_id = %s AND version = %s FOR UPDATE",
             r["id"],
             r["current_version"],
         )
+        # 不改前缀时，按旧规则建的前缀（如含小写）照常可改名、改分类等
+        spec = normalize(s, lambda p: p == cur["prefix"])
         cs, cv = (
             (r["category_scope"], r["category_value"])
             if category is None
@@ -548,7 +556,8 @@ def _resolve_in(rule: dict, vs: list[dict], pi: str, source: str) -> Resolved:
     return Resolved(source, MODE_LIBRARY, PLAN_PREFIX, rule, None, other_pi=t["claimed_pi"])
 
 
-def _custom_spec(c: dict) -> codec.Spec:
+def _custom_spec(c: dict, saved: bool = False) -> codec.Spec:
+    """saved：物料行上已存的自定义规则，前缀沿用旧字符规则（生成落库时再按现行规则校验，见 realize）。"""
     return normalize(
         SpecIn(
             c.get("prefix"),
@@ -557,12 +566,13 @@ def _custom_spec(c: dict) -> codec.Spec:
             c.get("seq_len") or CUSTOM_SEQ_LEN,
             None,
             c.get("with_length", False),
-        )
+        ),
+        (lambda _: True) if saved else None,
     )
 
 
-def _custom_resolved(source: str, c: dict) -> Resolved:
-    spec = _custom_spec(c)
+def _custom_resolved(source: str, c: dict, saved: bool = False) -> Resolved:
+    spec = _custom_spec(c, saved)
     draft = {
         "id": None,
         "rule_id": None,
@@ -618,7 +628,7 @@ def effective(
     memo：同一 PI 的多个物料行选了同一条规则时只解析一次（规则 id → 解析结果）。"""
     if sel is not None:
         if sel.get("custom_json"):
-            return _custom_resolved(SRC_LINE, json.loads(sel["custom_json"]))
+            return _custom_resolved(SRC_LINE, json.loads(sel["custom_json"]), saved=True)
         rid = sel.get("rule_id")
         if rid is not None:
             if memo is not None and rid in memo:
@@ -960,6 +970,9 @@ def realize(cu: CurrentUser, pi: str, res: Resolved, lines: list[tuple[str, int]
     与预演时的判断不一致（期间被别的 PI 先用、前缀被占用）时报预演已失效。"""
     if res.plan == PLAN_NEW:
         spec = res.spec()
+        err = codec.validate(spec)
+        if err is not None:
+            raise biz(err)
         check_prefix(spec.prefix)
         code, name = _custom_names(pi)
         rid = _insert_rule(cu, code, name, spec, (PI, pi), " (自定义规则，生成成功后存入规则库)", claimed_pi=pi)

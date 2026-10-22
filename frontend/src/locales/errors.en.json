@@ -64,7 +64,7 @@
   "RULE_IN_USE": "Rule {rule_code} has generated SNs and cannot be deleted",
   "RULE_ASSIGNED": "Rule {rule_code} is assigned to PI {pi} and cannot be deleted",
   "RULE_PREFIX_REQUIRED": "Prefix is required",
-  "RULE_AFFIX_INVALID": "Prefix may only use letters, digits and ASCII special characters (no spaces, emoji, Chinese or full-width characters); suffix may only use letters, digits and _",
+  "RULE_AFFIX_INVALID": "Prefix may only use uppercase letters A-Z, digits 0-9, - and _; suffix may only use letters, digits and _",
   "RULE_PREFIX_CONFLICT": "Prefix {prefix} is already used by rule {rule_name} version {version}; SNs would collide",
   "RULE_BASE_INVALID": "Base must be 10 / 16 / 32 / 36",
   "RULE_SEQ_LEN_INVALID": "Serial digits must be 1–12",

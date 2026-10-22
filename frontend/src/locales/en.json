@@ -906,7 +906,7 @@
     "notUsed": "Not used",
     "copies": "Re-prefixed for other PIs",
     "prefix": "Prefix",
-    "prefixHint": "Required; letters, digits or ASCII special characters (e.g. - . / # _), no spaces, emoji or Chinese; case-sensitive; must not equal any rule's prefix (old versions included). Sharing a leading part, e.g. SD and SDD, is allowed",
+    "prefixHint": "Required; only uppercase letters A-Z, digits 0-9, - and _; must not equal any rule's prefix (old versions included). Sharing a leading part, e.g. SD and SDD, is allowed",
     "suffix": "Fixed suffix",
     "suffixHint": "Letters, digits or _",
     "base": "Base",

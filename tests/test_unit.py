@@ -83,10 +83,11 @@ def test_validation():
     assert codec.validate(Spec("A", "", 10, 4, "012345678")) is ErrorCode.RULE_CHARSET_LENGTH
     assert codec.validate(Spec("A", "", 10, 4, "0123456788")) is ErrorCode.RULE_CHARSET_DUPLICATE
     assert codec.validate(Spec("", "", 10, 4, "0123456789")) is ErrorCode.RULE_PREFIX_REQUIRED
-    for ok_prefix in ("A_B", "SN-2026/A.1#", "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"):
+    for ok_prefix in ("A_B", "SN-2026_A1", "-_", "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"):
         assert codec.validate(Spec(ok_prefix, "", 10, 4, "0123456789")) is None, ok_prefix
-    for bad_prefix in ("A B", "A\tB", "AB\n", "SN😀", "前缀", "ＳＮ", "A（1）"):
+    for bad_prefix in ("ab", "Ab", "A B", "A.B", "A/B", "A#", "AB\n", "SN😀", "前缀", "ＳＮ"):
         assert codec.validate(Spec(bad_prefix, "", 10, 4, "0123456789")) is ErrorCode.RULE_AFFIX_INVALID, bad_prefix
+    assert codec.validate(Spec("ab.1", "", 10, 4, "0123456789"), legacy_prefix=True) is None, "沿用已有前缀"
     assert codec.validate(Spec("AB", "x-1", 10, 4, "0123456789")) is ErrorCode.RULE_AFFIX_INVALID, "后缀不变"
     assert codec.validate(Spec("AB", "x_1", 10, 4, "0123456789")) is None
     assert codec.validate(HX) is None

@@ -23,8 +23,9 @@ DEFAULT_CHARSETS: dict[int, str] = {
 MAX_SEQ_LEN = 12
 SN_MAX = 64
 LONG_MAX = 2**63 - 1
-#: 前缀：字母、数字和英文特殊字符（可打印 ASCII，不含空格；emoji、中文、全角字符都不行）；后缀：字母、数字、_
-PREFIX_RE = re.compile(r"[\x21-\x7E]+")
+#: 前缀：大写字母、数字、-、_（此前的规则可能用过小写等字符，沿用已有前缀时见 validate 的 legacy_prefix）；
+#: 后缀：字母、数字、_
+PREFIX_RE = re.compile(r"[A-Z0-9_-]+")
 SUFFIX_RE = re.compile(r"[A-Za-z0-9_]*")
 _CHARSET_RE = re.compile(r"^[A-Za-z0-9]+$")
 #: 物料行长度为空（金蝶为空且页面未填写）时写入 SN 的默认长度
@@ -51,15 +52,16 @@ class Spec:
         object.__setattr__(self, "suffix", self.suffix or "")
 
 
-def validate(s: Spec) -> ErrorCode | None:
-    """校验参数；返回 None 表示合法，否则返回错误码。长度部分在生成时按实际长度再校验总长。"""
+def validate(s: Spec, legacy_prefix: bool = False) -> ErrorCode | None:
+    """校验参数；返回 None 表示合法，否则返回错误码。长度部分在生成时按实际长度再校验总长。
+    legacy_prefix：沿用已有前缀（按旧规则建的），不按 PREFIX_RE 校验前缀字符。"""
     if s.base not in DEFAULT_CHARSETS:
         return ErrorCode.RULE_BASE_INVALID
     if s.seq_len < 1 or s.seq_len > MAX_SEQ_LEN:
         return ErrorCode.RULE_SEQ_LEN_INVALID
     if not s.prefix:
         return ErrorCode.RULE_PREFIX_REQUIRED
-    if not PREFIX_RE.fullmatch(s.prefix) or not SUFFIX_RE.fullmatch(s.suffix):
+    if not (legacy_prefix or PREFIX_RE.fullmatch(s.prefix)) or not SUFFIX_RE.fullmatch(s.suffix):
         return ErrorCode.RULE_AFFIX_INVALID
     if s.charset is None or len(s.charset) != s.base:
         return ErrorCode.RULE_CHARSET_LENGTH
