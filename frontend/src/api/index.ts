@@ -47,7 +47,7 @@ export const api = {
   orderMeta: () => get("/orders/meta"),
   orderLines: (billNo: string) => get(`/orders/${enc(billNo)}/lines`),
   orderCustomers: (q?: string) => get("/orders/customers", { q }),
-  orderTargets: (q?: string, limit?: number) => get("/orders/targets", { q, limit }),
+  orderTargets: (q?: string, limit?: number, pi?: string) => get("/orders/targets", { q, limit, pi }),
   syncOrder: (bill_no: string) => http.post<any, any>("/orders/sync", { bill_no }, { timeout: 0 }),
   compareOrders: () => http.post<any, any>("/orders/compare", {}, { timeout: 0 }),
   pageSyncOrders: () => post("/orders/page-sync", {}, true),
@@ -110,6 +110,7 @@ export const api = {
   acquireBatchItems: (batchNo: string, params?: Q) => get(`/acquire/batches/${enc(batchNo)}/items`, params),
 
   // ---------------- 转单 / 转组织
+  transferSources: (params: Q) => get("/transfers/sources", params),
   billTransferPreview: (data: Q) => post("/transfers/bill/preview", data),
   billTransfer: (data: Q) => post("/transfers/bill", data),
   billTransfers: (params?: Q) => get("/transfers/bill", params),

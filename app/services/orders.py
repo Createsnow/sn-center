@@ -720,11 +720,15 @@ def customer_of_pi(pi: str) -> str | None:
     return v[0] if v else None
 
 
-def targets(q: str | None, limit: int) -> list[dict]:
-    """转单、转组织目标候选：快照中的物料行（生产组织 + 客户 + PI + 单据 + 序号 + 物料 + 生效长度）。"""
+def targets(q: str | None, limit: int, pi: str | None = None) -> list[dict]:
+    """转单、转组织目标候选：快照中的物料行（生产组织 + 客户 + PI + 单据 + 序号 + 物料 + 生效长度）；
+    pi 精确匹配（选定目标 PI 后列出它的单据与物料行）。"""
     text = util.trim(q)
     args: list = []
     where = " WHERE m.pi <> ''"
+    if util.trim(pi):
+        where += " AND m.pi = %s"
+        args.append(util.trim(pi))
     if text:
         where += " AND (m.pi LIKE %s OR m.bill_no LIKE %s OR m.material_code LIKE %s OR m.customer_code LIKE %s)"
         like = util.like_any(text)

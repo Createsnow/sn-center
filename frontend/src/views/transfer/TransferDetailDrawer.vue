@@ -10,19 +10,24 @@
     <template v-if="det">
       <el-descriptions :column="2" size="small" border>
         <template v-if="det.kind === 'BILL'">
-          <el-descriptions-item :label="t('transfer.mode')">{{ t(`transfer.billMode.${det.doc.mode}`) }}</el-descriptions-item>
+          <el-descriptions-item :label="t('transfer.mode')">{{ det.doc.scope ? scopeLabel(det.doc.scope) : t(`transfer.billMode.${det.doc.mode}`) }}</el-descriptions-item>
           <el-descriptions-item :label="t('transfer.scope')">{{ det.doc.scope_text }}</el-descriptions-item>
           <el-descriptions-item :label="t('transfer.fromBill')">{{ det.doc.from_bill }} · {{ det.doc.from_pi }}</el-descriptions-item>
-          <el-descriptions-item :label="t('transfer.toBill')">{{ det.doc.to_bill }} · {{ det.doc.to_pi }}</el-descriptions-item>
+          <el-descriptions-item :label="t('transfer.toBill')">
+            {{ det.doc.to_bill }} · {{ det.doc.to_pi }}<template v-if="det.doc.to_seq"> · {{ det.doc.to_seq }} · {{ det.doc.to_material || t("transfer.emptyMaterial") }}</template>
+            <template v-if="det.doc.to_factory"> · {{ nameOf(det.doc.to_factory) }}</template>
+          </el-descriptions-item>
           <el-descriptions-item :label="t('common.operator')">{{ det.doc.created_by }} · {{ fmt(det.doc.created_at) }}</el-descriptions-item>
         </template>
         <template v-else>
           <el-descriptions-item :label="t('transfer.mode')">{{ t(`transfer.orgMode.${det.doc.mode}`) }}</el-descriptions-item>
-          <el-descriptions-item :label="t('transfer.scope')">{{ scopeLabel(det.doc.scope) }} {{ det.doc.scope === "RANGE" ? `${det.doc.from_sn} ~ ${det.doc.from_end_sn}` : det.doc.from_material || det.doc.from_sn }}</el-descriptions-item>
-          <el-descriptions-item :label="t('transfer.source')">{{ nameOf(det.doc.from_factory) }} · {{ det.doc.from_pi }}</el-descriptions-item>
+          <el-descriptions-item :label="t('transfer.scope')">
+            {{ scopeLabel(det.doc.scope) }}<template v-if="det.doc.from_material && (det.doc.scope === 'MATERIAL' || det.doc.scope === 'RANGE')"> · {{ det.doc.from_material }}</template>
+            <template v-if="det.doc.from_sn"> · <span class="sn-mono">{{ snRange(det.doc) }}</span></template>
+          </el-descriptions-item>
+          <el-descriptions-item :label="t('transfer.source')">{{ nameOf(det.doc.from_factory) }} · {{ det.doc.from_pi }}<template v-if="det.doc.from_bill"> · {{ det.doc.from_bill }}</template></el-descriptions-item>
           <el-descriptions-item :label="t('transfer.target')">
-            {{ nameOf(det.doc.to_factory) }} · {{ det.doc.to_pi }} {{ det.doc.to_customer }} {{ det.doc.to_material }}
-            <el-tag v-if="det.doc.manual_fields" size="small" type="info" class="ml">{{ t("transfer.manual") }}：{{ det.doc.manual_fields }}</el-tag>
+            {{ nameOf(det.doc.to_factory) }} · {{ det.doc.to_pi }}<template v-if="det.doc.to_bill"> · {{ det.doc.to_bill }} / {{ det.doc.to_seq }}</template><template v-if="det.doc.to_material"> · {{ det.doc.to_material }}</template><template v-if="det.doc.to_customer"> · {{ det.doc.to_customer }}</template>
           </el-descriptions-item>
           <el-descriptions-item :label="t('transfer.applied')">{{ det.doc.applied_by }} · {{ fmt(det.doc.applied_at) }}</el-descriptions-item>
           <el-descriptions-item :label="t('transfer.decided')">
@@ -139,6 +144,7 @@ import { BATCH_RESULT_TYPE, TRANSFER_STATUS_TYPE, batchResultLabel, scopeLabel, 
 import { useAuthStore } from "@/stores/auth";
 import { canConfirm, canVoid } from "@/utils/batch";
 import { downloadWithToken } from "@/utils/download";
+import { snRange } from "./types";
 
 type Kind = "BILL" | "ORG";
 

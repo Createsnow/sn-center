@@ -1,8 +1,8 @@
 <template>
   <div class="page">
     <PageHead :title="t('transfer.title')" :desc="t('transfer.desc')">
-      <el-button v-if="tab === 'bill' && store.isAdmin" type="primary" @click="billDlg?.open()"><el-icon><Plus /></el-icon><span>{{ t("transfer.newBill") }}</span></el-button>
-      <el-button v-if="tab === 'org' && store.canAct" type="primary" @click="orgDlg?.open()"><el-icon><Plus /></el-icon><span>{{ store.isAdmin ? t("transfer.newDirect") : t("transfer.newApply") }}</span></el-button>
+      <el-button v-if="tab === 'bill' && store.isAdmin" type="primary" @click="dlg?.open('BILL')"><el-icon><Plus /></el-icon><span>{{ t("transfer.newBill") }}</span></el-button>
+      <el-button v-if="tab === 'org' && store.canAct" type="primary" @click="dlg?.open('ORG')"><el-icon><Plus /></el-icon><span>{{ store.isAdmin ? t("transfer.newDirect") : t("transfer.newApply") }}</span></el-button>
     </PageHead>
 
     <el-tabs v-model="tab" @tab-change="onTab">
@@ -17,11 +17,11 @@
           </div>
           <el-table v-loading="bills.state.loading" :data="bills.items.value" size="small" :empty-text="t('common.empty')">
             <el-table-column prop="transfer_no" :label="t('transfer.no')" min-width="180"><template #default="{ row }"><span class="sn-mono">{{ row.transfer_no }}</span></template></el-table-column>
-            <el-table-column :label="t('transfer.mode')" width="100"><template #default="{ row }">{{ t(`transfer.billMode.${row.mode}`) }}</template></el-table-column>
-            <el-table-column :label="t('transfer.fromTo')" min-width="220">
+            <el-table-column :label="t('transfer.scope')" width="110"><template #default="{ row }">{{ row.scope ? scopeLabel(row.scope) : t(`transfer.billMode.${row.mode}`) }}</template></el-table-column>
+            <el-table-column :label="t('transfer.fromTo')" min-width="240">
               <template #default="{ row }">
-                <div>{{ row.from_bill }} → <b>{{ row.to_bill }}</b></div>
-                <div class="muted">{{ row.from_pi }} → {{ row.to_pi }}</div>
+                <div>{{ row.from_bill }} → <b>{{ row.to_bill }}</b><span v-if="row.to_seq" class="muted"> / {{ row.to_seq }} · {{ row.to_material || t("transfer.emptyMaterial") }}</span></div>
+                <div class="muted">{{ row.from_pi }} → {{ row.to_pi }}<template v-if="row.to_factory"> · {{ nameOf(row.to_factory) }}</template></div>
               </template>
             </el-table-column>
             <el-table-column prop="scope_text" :label="t('transfer.scope')" min-width="160" show-overflow-tooltip />
@@ -70,7 +70,7 @@
             <el-table-column :label="t('transfer.source')" min-width="200">
               <template #default="{ row }">
                 <div>{{ nameOf(row.from_factory) }} · {{ row.from_pi }}</div>
-                <div class="muted">{{ scopeLabel(row.scope) }}<template v-if="row.scope === 'MATERIAL'"> · {{ row.from_material || t("transfer.emptyMaterial") }}</template><template v-if="row.scope === 'SINGLE'"> · <span class="sn-mono">{{ row.from_sn }}</span></template><template v-if="row.scope === 'RANGE'"> · <span class="sn-mono">{{ row.from_sn }} ~ {{ row.from_end_sn }}</span></template></div>
+                <div class="muted">{{ scopeLabel(row.scope) }}<template v-if="row.from_bill"> · {{ row.from_bill }}</template><template v-if="row.from_material && (row.scope === 'MATERIAL' || row.scope === 'RANGE')"> · {{ row.from_material }}</template><template v-if="row.from_sn"> · <span class="sn-mono">{{ snRange(row) }}</span></template></div>
               </template>
             </el-table-column>
             <el-table-column :label="t('transfer.target')" min-width="200">
@@ -79,11 +79,7 @@
                   {{ nameOf(row.to_factory) }} · {{ row.to_pi }}
                   <el-tag v-if="row.to_factory_disabled" size="small" type="danger" class="ml">{{ t("transfer.targetDisabled") }}</el-tag>
                 </div>
-                <div class="muted">
-                  <template v-if="row.to_customer">{{ t("common.customer") }} {{ row.to_customer }} </template>
-                  <template v-if="row.to_material">{{ t("common.material") }} {{ row.to_material }}</template>
-                  <el-tag v-if="row.manual_fields" size="small" type="info" class="ml">{{ t("transfer.manual") }}</el-tag>
-                </div>
+                <div class="muted">{{ targetText(row) }}</div>
               </template>
             </el-table-column>
             <el-table-column :label="t('common.qty')" align="right" width="70"><template #default="{ row }"><span class="num">{{ row.qty }}</span></template></el-table-column>
@@ -109,8 +105,7 @@
       </el-tab-pane>
     </el-tabs>
 
-    <BillTransferDialog ref="billDlg" @done="onBillDone" />
-    <OrgTransferDialog ref="orgDlg" @done="onOrgDone" />
+    <TransferDialog ref="dlg" @done="onDone" />
     <TransferDetailDrawer ref="detail" />
   </div>
 </template>
@@ -129,9 +124,9 @@ import { usePaged } from "@/composables/usePaged";
 import { useTime } from "@/composables/useTime";
 import { TRANSFER_STATUS_TYPE, scopeLabel, transferStatusLabel } from "@/constants";
 import { useAuthStore } from "@/stores/auth";
-import BillTransferDialog from "@/views/transfer/BillTransferDialog.vue";
-import OrgTransferDialog from "@/views/transfer/OrgTransferDialog.vue";
+import TransferDialog from "@/views/transfer/TransferDialog.vue";
 import TransferDetailDrawer from "@/views/transfer/TransferDetailDrawer.vue";
+import { snRange } from "@/views/transfer/types";
 
 const ORG_STATUSES = ["", "PENDING", "APPROVED", "REJECTED", "WITHDRAWN"];
 
@@ -140,8 +135,7 @@ const store = useAuthStore();
 const route = useRoute();
 const { nameOf } = useFactories();
 const { fmt } = useTime();
-const billDlg = ref<InstanceType<typeof BillTransferDialog> | null>(null);
-const orgDlg = ref<InstanceType<typeof OrgTransferDialog> | null>(null);
+const dlg = ref<InstanceType<typeof TransferDialog> | null>(null);
 const detail = ref<InstanceType<typeof TransferDetailDrawer> | null>(null);
 
 const tab = ref<"bill" | "org">(route.query.tab === "org" || !store.isAdmin ? "org" : "bill");
@@ -186,16 +180,25 @@ async function withdraw(row: any) {
   orgs.load();
 }
 
-function onBillDone(doc: any) {
-  tab.value = "bill";
-  bills.load(1);
-  detail.value?.show("BILL", doc);
-}
-
-function onOrgDone(doc: any) {
+function onDone(kind: "BILL" | "ORG", doc: any) {
+  if (kind === "BILL") {
+    tab.value = "bill";
+    bills.load(1);
+    detail.value?.show("BILL", doc);
+    return;
+  }
   tab.value = "org";
   orgs.load(1);
   if (doc.status === "APPROVED") detail.value?.open("ORG", doc.id);
+}
+
+/** 转组织单的目标：单据 / 序号 · 物料 · 客户（早期单子没有目标单据）。 */
+function targetText(d: { to_bill?: string; to_seq?: number; to_material?: string; to_customer?: string }) {
+  return [
+    d.to_bill && `${d.to_bill} / ${d.to_seq}`,
+    d.to_material && `${t("common.material")} ${d.to_material}`,
+    d.to_customer && `${t("common.customer")} ${d.to_customer}`,
+  ].filter(Boolean).join(" · ");
 }
 
 onMounted(() => {
@@ -203,7 +206,7 @@ onMounted(() => {
   orgs.load(1);
   if (route.query.new === "1" && store.canAct) {
     tab.value = "org";
-    orgDlg.value?.open({
+    dlg.value?.open("ORG", {
       factory_code: route.query.factory_code ? String(route.query.factory_code) : undefined,
       pi: route.query.pi ? String(route.query.pi) : undefined,
       material: route.query.material !== undefined ? String(route.query.material) : undefined,

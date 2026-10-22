@@ -29,7 +29,19 @@ def test_range_query_counts_missing_for_bound_operator(w, api):
         ok(
             w.api.post(
                 "/api/transfers/org/direct",
-                m(factory_code=a, pi_no=pi, scope="SINGLE", sn=sn, to_factory=b, to_pi=pi, reason="x"),
+                m(
+                    factory_code=a,
+                    pi_no=pi,
+                    bill_no=bill,
+                    scope="RANGE",
+                    material_code="M1",
+                    start_sn=sn,
+                    to_factory=b,
+                    to_pi=pi,
+                    to_bill=bill,
+                    to_material="M1",
+                    reason="x",
+                ),
                 w.admin,
             )
         )

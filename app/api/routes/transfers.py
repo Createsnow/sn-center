@@ -4,19 +4,28 @@ from fastapi import APIRouter
 
 from app.api.deps import AdminDep, AdminOrFactoryDep, FactoryDep, UserDep, download, page_of
 from app.schemas.common import OptInt
-from app.schemas.transfer import BillTransferIn, NoteIn, OrgTransferIn
+from app.schemas.transfer import NoteIn, TransferIn
 from app.services import files, transfers
 
 router = APIRouter(prefix="/transfers", tags=["transfers"])
 
 
+@router.get(
+    "/sources", summary="来源候选：PI 下各单据、各物料的号数（kind = BILL 转单 / ORG 转组织，转组织限来源生产组织）"
+)
+def sources(
+    cu: UserDep, kind: str = transfers.KIND_ORG, pi: str | None = None, factory_code: str | None = None
+) -> dict:
+    return transfers.sources(cu, kind, factory_code, pi)
+
+
 @router.post("/bill/preview", summary="转单确认框：枚数、各状态、不可转及原因、来源和目标已生成数的变化")
-def bill_preview(body: BillTransferIn, cu: AdminDep) -> dict:
-    return transfers.bill_preview(body.req())
+def bill_preview(body: TransferIn, cu: AdminDep) -> dict:
+    return transfers.preview(cu, transfers.KIND_BILL, body.req())
 
 
-@router.post("/bill", summary="转单：整单作废（VOID）或拆单（SPLIT），原因必填")
-def bill_transfer(body: BillTransferIn, cu: AdminDep) -> dict:
+@router.post("/bill", summary="转单：范围为整张单据、单据 + 物料或单枚 / 连续号段，改挂到目标单据的物料行，原因必填")
+def bill_transfer(body: TransferIn, cu: AdminDep) -> dict:
     return transfers.transfer_bill(cu, body.req())
 
 
@@ -42,18 +51,18 @@ def bill_items(id: int, cu: UserDep, page: OptInt = None, page_size: OptInt = No
     return transfers.items(cu, transfers.KIND_BILL, id, page_of(page, page_size))
 
 
-@router.post("/org/candidates", summary="转组织确认框：各状态枚数、可转枚数、不可转原因、物料清单")
-def org_candidates(body: OrgTransferIn, cu: UserDep) -> dict:
-    return transfers.org_candidates(cu, body.req())
+@router.post("/org/candidates", summary="转组织确认框：各状态枚数、可转枚数、不可转原因、已生成数的变化、转出枚数")
+def org_candidates(body: TransferIn, cu: UserDep) -> dict:
+    return transfers.preview(cu, transfers.KIND_ORG, body.req())
 
 
 @router.post("/org", summary="生产组织操作员提交转组织申请")
-def org_apply(body: OrgTransferIn, cu: FactoryDep) -> dict:
+def org_apply(body: TransferIn, cu: FactoryDep) -> dict:
     return transfers.apply(cu, body.req())
 
 
 @router.post("/org/direct", summary="总部直接转组织（不经申请），原因必填")
-def org_direct(body: OrgTransferIn, cu: AdminDep) -> dict:
+def org_direct(body: TransferIn, cu: AdminDep) -> dict:
     return transfers.direct(cu, body.req())
 
 

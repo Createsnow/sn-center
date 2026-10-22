@@ -87,7 +87,10 @@ def test_empty_customer_flows_like_normal_bills(w, api, sql):
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND customer_code = ''", a) == 5
     # 客户编码为空的单据也能作转单目标
     w.order(tgt, org, "", pi, ("M1", 5))
-    ok(api.post("/api/transfers/bill", m(from_bill=a, to_bill=tgt, mode="VOID", reason="整单作废"), w.admin))
+    body = m(
+        pi_no=pi, bill_no=a, scope="BILL", to_pi=pi, to_bill=tgt, to_factory=org, to_material="M1", reason="整单作废"
+    )
+    ok(api.post("/api/transfers/bill", body, w.admin))
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s", tgt) == 5
 
 

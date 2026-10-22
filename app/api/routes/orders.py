@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from app.api.deps import AdminDep, AdminOrQueryDep, page_of
+from app.api.deps import AdminDep, AdminOrQueryDep, UserDep, page_of
 from app.schemas.common import OptInt
 from app.schemas.misc import AlertHandleIn, AttachIn, LengthBatchIn, SyncIn
 from app.services import changes, orders
@@ -35,9 +35,9 @@ def order_customers(cu: AdminOrQueryDep, q: str | None = None) -> list:
     return orders.customers(cu, q)
 
 
-@router.get("/targets", summary="转单、转组织目标候选：快照中的物料行")
-def order_targets(cu: AdminOrQueryDep, q: str | None = None, limit: OptInt = None) -> list:
-    return orders.targets(q, 50 if limit is None else limit)
+@router.get("/targets", summary="转单、转组织目标候选：快照中的物料行（pi 精确匹配；生产组织操作员申请转组织也要用）")
+def order_targets(cu: UserDep, q: str | None = None, pi: str | None = None, limit: OptInt = None) -> list:
+    return orders.targets(q, 50 if limit is None else limit, pi)
 
 
 @router.get("/{bill_no}/lines", summary="右表：该单表头与各物料行")

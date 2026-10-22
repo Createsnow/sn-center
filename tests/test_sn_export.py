@@ -136,7 +136,19 @@ def test_lines_summarize_each_bill_line(w, api):
     ok(
         w.api.post(
             "/api/transfers/org/direct",
-            m(factory_code=org, pi_no=pi, scope="SINGLE", sn=moved, to_factory=other, to_pi=pi, reason="调拨"),
+            m(
+                factory_code=org,
+                pi_no=pi,
+                bill_no=bill,
+                scope="RANGE",
+                material_code="M1",
+                start_sn=moved,
+                to_factory=other,
+                to_pi=pi,
+                to_bill=bill,
+                to_material="M1",
+                reason="调拨",
+            ),
             w.admin,
         )
     )

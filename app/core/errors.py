@@ -144,11 +144,16 @@ class ErrorCode(Enum):
     ACQ_BATCH_INCOMPLETE = (409, "领取批次 {batch_no} 未完成，不能下载")
     EXPORT_NOTHING = (404, "PI {pi} 的单据 {bill_no} 没有已分配的号")
     # ---------- 转单 / 转组织 ----------
-    TR_SCOPE_INVALID = (400, "转移范围只能是整张 PI、PI + 物料、单枚 SN、号段")
-    TR_MATERIAL_REQUIRED = (400, "按物料转移时物料编码必填")
-    TR_SN_REQUIRED = (400, "单枚转移时 SN 必填")
-    TR_RANGE_REQUIRED = (400, "按号段转移时起号、止号都必填")
-    TR_TO_PI_REQUIRED = (400, "转入 PI 必填")
+    TR_SCOPE_INVALID = (400, "转移范围只能是整张单据、单据 + 物料、单枚或连续号段")
+    TR_MATERIAL_REQUIRED = (400, "按物料或号段转移时物料编码必填")
+    TR_SN_REQUIRED = (400, "按号段转移时起始 SN 必填（只填起始 = 单枚）")
+    TR_TO_PI_REQUIRED = (400, "目标 PI 必填")
+    TR_TO_BILL_REQUIRED = (400, "目标单据必填")
+    TR_TO_FACTORY_REQUIRED = (400, "目标生产组织必填")
+    TR_TO_MATERIAL_REQUIRED = (400, "目标物料编码必填")
+    TR_TARGET_PI_MISMATCH = (400, "目标单据 {bill_no} 的 PI 是 {pi}，与所填目标 PI 不同")
+    TR_TARGET_ORG_MISMATCH = (400, "转单的目标生产组织须为目标单据 {bill_no} 的生产组织 {factory}")
+    TR_TARGET_MATERIAL_INVALID = (400, "目标单据 {bill_no} 中没有物料 {material}")
     TR_NOTHING = (400, "所选范围内没有可转移的号")
     TR_SN_NOT_TRANSFERABLE = (400, "SN {sn} 当前不能转移：{reason}")
     TR_SAME_TARGET = (400, "转入目标与来源完全相同")
@@ -158,14 +163,13 @@ class ErrorCode(Enum):
     TR_WITHDRAW_FORBIDDEN = (403, "只能撤回本组织提交的申请")
     TR_CONCURRENT = (409, "部分号的状态刚刚变化，请刷新后重试")
     TR_LENGTH_MISMATCH = (400, "目标物料长度 {target} 与号上的长度 {current} 不同，不能转移")
-    TR_TARGET_BILL_INVALID = (400, "目标单据 {bill_no} 须在快照中、有客户编码和 PI，且不能是来源单据")
+    TR_TARGET_BILL_INVALID = (400, "目标单据 {bill_no} 须在快照中且有 PI；转单时不能是来源单据")
     TR_TARGET_LINE_REQUIRED = (
         400,
-        "来源物料行 {seq}（物料 {material}）在目标单据中没有或有多行对应，须手工选目标物料行",
+        "目标单据 {bill_no} 中物料 {material} 有多行，须选定目标物料行",
     )
     TR_TARGET_LINE_INVALID = (400, "目标物料行 {seq} 不在目标单据中")
-    TR_RANGE_INVALID = (400, "起止号 {start_sn} ~ {end_sn} 不在所选物料行中")
-    TR_ORG_RANGE_INVALID = (400, "起止号 {start_sn} ~ {end_sn} 须都是来源组织 PI {pi} 下的号，且流水归属 PI 相同")
+    TR_RANGE_INVALID = (400, "起止号 {start_sn} ~ {end_sn} 不在所选单据和物料下，或不在同一流水归属 PI 内")
     TR_FROZEN = (409, "有 {count} 枚号不能转移：{detail}")
     # ---------- 查询 / 审计 ----------
     QUERY_PI_REQUIRED = (400, "查看同一 PI 各生产组织的号时必须指定 PI")

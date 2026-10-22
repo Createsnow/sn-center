@@ -20,11 +20,38 @@ def setup(w, qty=10, mes=True, org=None, length="100"):
     return org, pi, bill
 
 
-def org_direct(w, factory, pi, to_factory, to_pi=None, scope="PI", **kw):
-    return w.api.post(
-        "/api/transfers/org/direct",
-        m(factory_code=factory, pi_no=pi, scope=scope, to_factory=to_factory, to_pi=to_pi or pi, reason="调拨", **kw),
-        w.admin,
+def org_body(factory, pi, bill, to_factory, to_pi=None, to_bill=None, scope="BILL", to_material="M1", **kw):
+    """转组织：来源 生产组织 + PI + 单据（+ 物料 / 号段）；目标 PI、单据、生产组织、物料都必填（默认同 PI、同单据）。"""
+    return m(
+        factory_code=factory,
+        pi_no=pi,
+        bill_no=bill,
+        scope=scope,
+        to_factory=to_factory,
+        to_pi=to_pi or pi,
+        to_bill=to_bill or bill,
+        to_material=to_material,
+        reason="调拨",
+        **kw,
+    )
+
+
+def org_direct(w, factory, pi, bill, to_factory, **kw):
+    return w.api.post("/api/transfers/org/direct", org_body(factory, pi, bill, to_factory, **kw), w.admin)
+
+
+def bill_body(pi, bill, to_bill, to_factory, scope="BILL", to_pi=None, to_material="M1", reason="转单", **kw):
+    """转单：来源 PI + 单据（+ 物料 / 号段）；目标 PI、单据、生产组织（= 目标单据的）、物料都必填。"""
+    return m(
+        pi_no=pi,
+        bill_no=bill,
+        scope=scope,
+        to_pi=to_pi or pi,
+        to_bill=to_bill,
+        to_factory=to_factory,
+        to_material=to_material,
+        reason=reason,
+        **kw,
     )
 
 
@@ -38,7 +65,7 @@ def test_org_transfer_pushes_reassign_to_target_and_transfer_out_to_source(w, sq
     w.allocate(pi)
     w.push()
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND mes_holder = %s", pi, a) == 5
-    t = ok(org_direct(w, a, pi, b))
+    t = ok(org_direct(w, a, pi, bill, b))
     assert len(t["out_batches"]) == 1
     items = sql.all("SELECT * FROM sn_item WHERE pi_no = %s", pi)
     assert {(x["factory_code"], x["status"], x["push_type"], x["rev"]) for x in items} == {
@@ -60,7 +87,7 @@ def test_org_transfer_pushes_reassign_to_target_and_transfer_out_to_source(w, sq
     xo = t["out_batches"][0]["batch_no"]
     assert ok(w.api.get(f"/api/mes/v1/batches/{xo}/items", ta))["items"] == []
     # 转回 A：MES-A 收到更大的 rev，清除「已转出」
-    ok(org_direct(w, b, pi, a))
+    ok(org_direct(w, b, pi, bill, a))
     w.push()
     assert MES.store[a][sn]["rev"] == 3 and not MES.store[a][sn]["transferredOut"]
     assert MES.store[b][sn]["transferredOut"]
@@ -73,11 +100,11 @@ def test_transfer_out_pending_blocks_retransfer(w, sql):
     w.allocate(pi)
     w.push()
     MES.behavior[a] = lambda batch, h: (503, {"code": "X"})
-    ok(org_direct(w, a, pi, b))
+    ok(org_direct(w, a, pi, bill, b))
     w.push()
     xo = sql.one("SELECT * FROM sn_delivery_batch WHERE batch_type = 'TRANSFER_OUT'")
     assert (xo["result"], xo["push_state"]) == ("UNCONFIRMED", "EXHAUSTED")
-    r = org_direct(w, b, pi, a)
+    r = org_direct(w, b, pi, bill, a)
     assert r.code == "TR_FROZEN" and "转出" in r["message"]
     # 来源 MES 按转出前的 PI 取批能取到转出批次（号已全部转走也不拒绝）
     ta, _ = w.mes_account(a)
@@ -85,7 +112,7 @@ def test_transfer_out_pending_blocks_retransfer(w, sql):
     assert got["batch"]["batchNo"] == xo["batch_no"] and got["batch"]["batchType"] == "TRANSFER_OUT"
     ok(w.mes_receipt(ta, xo["batch_no"], MES.process(a, got["batch"])))
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND mes_holder = %s", pi, a) == 0
-    ok(org_direct(w, b, pi, a))
+    ok(org_direct(w, b, pi, bill, a))
 
 
 def test_holder_correct_when_target_confirms_first(w, sql):
@@ -96,7 +123,7 @@ def test_holder_correct_when_target_confirms_first(w, sql):
     w.allocate(pi)
     w.push()
     MES.behavior[a] = lambda batch, h: (503, {"code": "X"})
-    ok(org_direct(w, a, pi, b))
+    ok(org_direct(w, a, pi, bill, b))
     w.push()  # B 的交付批次先确认，A 的转出未确认
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND mes_holder = %s", pi, b) == 2
     MES.behavior.pop(a)
@@ -107,7 +134,7 @@ def test_holder_correct_when_target_confirms_first(w, sql):
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND mes_holder = %s", pi, b) == 2, (
         "A 的转出后确认不清 B"
     )
-    ok(org_direct(w, b, pi, c))
+    ok(org_direct(w, b, pi, bill, c))
     xo2 = sql.one("SELECT * FROM sn_delivery_batch WHERE batch_type = 'TRANSFER_OUT' AND factory_code = %s", b)
     assert xo2 is not None and xo2["qty"] == 2, "再从 B 转到 C，转出推给 B"
 
@@ -116,13 +143,14 @@ def test_acquired_same_org_change_pi_stays_acquired(w, sql):
     a, pi, bill = setup(w, qty=4)
     w.allocate(pi)
     w.legacy_acquire(a, pi)
-    to_pi = uid("PI")
-    ok(org_direct(w, a, pi, a, to_pi=to_pi))
+    to_pi, to_bill = uid("PI"), uid("MO")
+    w.order(to_bill, a, "C1", to_pi, ("M1", 4, "100"))
+    ok(org_direct(w, a, pi, bill, a, to_pi=to_pi, to_bill=to_bill))
     rows = sql.all("SELECT status, pi_no, seq_pi_no FROM sn_item WHERE seq_pi_no = %s", pi)
     assert {(r["status"], r["pi_no"]) for r in rows} == {("ACQUIRED", to_pi)}
     assert sql.count("SELECT COUNT(*) FROM sn_delivery_batch") == 0, "页面领取的号不在 MES 中，不推送"
     q = ok(w.api.get(f"/api/sn?pi={to_pi}", w.admin))["items"]
-    assert all(x["pi_changed"] and x["transferred_in"] for x in q)
+    assert all(x["transferred_in"] and not x["pi_changed"] for x in q), "号随目标单据改挂，单据 PI 与号 PI 一致"
 
 
 def test_same_org_reassign_then_other_org_still_sends_transfer_out(w, sql):
@@ -130,10 +158,11 @@ def test_same_org_reassign_then_other_org_still_sends_transfer_out(w, sql):
     b = w.org(uid("O")[:10])
     w.allocate(pi)
     w.push()
-    ok(org_direct(w, a, pi, a, to_pi=uid("PI")))
+    pi2, bill2 = uid("PI"), uid("MO")
+    w.order(bill2, a, "C1", pi2, ("M1", 2, "100"))
+    ok(org_direct(w, a, pi, bill, a, to_pi=pi2, to_bill=bill2))
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE status = 'TO_PUSH' AND push_type = 'REASSIGN'") == 2
-    pi2 = sql.scalar("SELECT pi_no FROM sn_item LIMIT 1")
-    ok(org_direct(w, a, pi2, b))
+    ok(org_direct(w, a, pi2, bill2, b))
     assert (
         sql.count("SELECT COUNT(*) FROM sn_delivery_batch WHERE batch_type = 'TRANSFER_OUT' AND factory_code = %s", a)
         == 1
@@ -147,7 +176,7 @@ def test_transfer_out_after_source_disabled_mes(w, sql):
     w.allocate(pi)
     w.push()
     ok(w.api.post(f"/api/factories/{a}/mes-toggle", m(enabled=False), w.admin))
-    ok(org_direct(w, a, pi, b))
+    ok(org_direct(w, a, pi, bill, b))
     w.push()
     xo = sql.one("SELECT * FROM sn_delivery_batch WHERE batch_type = 'TRANSFER_OUT'")
     assert xo["result"] == "SUCCESS", "关闭对接后转出照常推送到原接口地址"
@@ -158,7 +187,7 @@ def test_apply_withdraw_reject_approve(w, api, sql):
     b = w.org(uid("O")[:10])
     w.allocate(pi)
     op = w.user(emp("F"), "factory_operator", a)
-    body = m(pi_no=pi, scope="PI", to_factory=b, to_pi=pi, reason="调拨")
+    body = org_body(None, pi, bill, b)
     t = ok(api.post("/api/transfers/org", body, op))
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'APPLYING'", pi) == 3
     ok(api.post(f"/api/transfers/org/{t['id']}/withdraw", {}, op))
@@ -191,8 +220,8 @@ def test_org_transfer_rejects_disabled_target_and_same_target(w, api):
     w.allocate(pi)
     d = w.org(uid("O")[:10])
     w.org(d, enabled=False)
-    assert org_direct(w, a, pi, d).code == "FACTORY_DISABLED"
-    assert org_direct(w, a, pi, a).code == "TR_SAME_TARGET"
+    assert org_direct(w, a, pi, bill, d).code == "FACTORY_DISABLED"
+    assert org_direct(w, a, pi, bill, a).code == "TR_SAME_TARGET"
 
 
 def test_org_range_transfer_takes_inclusive_serials_still_in_source(w, sql):
@@ -202,13 +231,13 @@ def test_org_range_transfer_takes_inclusive_serials_still_in_source(w, sql):
     w.allocate(pi)
     w.push()
     sns = [x["sn"] for x in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
-    # 先单枚转走号段中间的一枚：之后号段只取仍在来源组织该 PI 下的号
-    ok(org_direct(w, a, pi, b, scope="SINGLE", sn=sns[4]))
+    # 先单枚转走号段中间的一枚（只填起始 = 单枚）：之后号段只取仍在来源组织该单据、物料下的号
+    ok(org_direct(w, a, pi, bill, b, scope="RANGE", material_code="M1", start_sn=sns[4]))
     w.push()
-    rng = {"scope": "RANGE", "start_sn": sns[6], "end_sn": sns[2]}
-    c = ok(w.api.post("/api/transfers/org/candidates", m(factory_code=a, pi_no=pi, to_factory=b, **rng), w.admin))
+    rng = {"scope": "RANGE", "material_code": "M1", "start_sn": sns[6], "end_sn": sns[2]}
+    c = ok(w.api.post("/api/transfers/org/candidates", org_body(a, pi, bill, b, **rng), w.admin))
     assert c["total"] == 4 and c["transferable"] == 4 and c["xo_qty"] == 4
-    t = ok(org_direct(w, a, pi, b, **rng))
+    t = ok(org_direct(w, a, pi, bill, b, **rng))
     assert (t["scope"], t["from_sn"], t["from_end_sn"], t["qty"]) == ("RANGE", sns[6], sns[2], 4)
     moved = {
         x["sn"] for x in sql.all("SELECT sn FROM sn_transfer_item WHERE kind = 'ORG' AND transfer_id = %s", t["id"])
@@ -225,16 +254,17 @@ def test_org_range_transfer_validation(w, api, sql):
     b = w.org(uid("O")[:10])
     w.allocate(pi)
     sns = [x["sn"] for x in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
-    assert org_direct(w, a, pi, b, scope="RANGE", start_sn=sns[0]).code == "TR_RANGE_REQUIRED"
-    assert org_direct(w, a, pi, b, scope="RANGE", start_sn=sns[0], end_sn="NOPE").code == "TR_ORG_RANGE_INVALID"
-    # 起止号须在来源组织该 PI 下
+    rng = {"scope": "RANGE", "material_code": "M1"}
+    assert org_direct(w, a, pi, bill, b, **rng).code == "TR_SN_REQUIRED"
+    assert org_direct(w, a, pi, bill, b, start_sn=sns[0], end_sn="NOPE", **rng).code == "TR_RANGE_INVALID"
+    # 起止号须在来源组织该 PI、单据、物料下
     _, pi2, _ = setup(w, qty=1, mes=False, org=a)
     w.allocate(pi2)
     other = sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s", pi2)
-    assert org_direct(w, a, pi, b, scope="RANGE", start_sn=sns[0], end_sn=other).code == "TR_ORG_RANGE_INVALID"
+    assert org_direct(w, a, pi, bill, b, start_sn=sns[0], end_sn=other, **rng).code == "TR_RANGE_INVALID"
     # 起止号相同 = 一枚；生产组织操作员也可按号段申请
     op = w.user(emp("F"), "factory_operator", a)
-    body = m(pi_no=pi, scope="RANGE", start_sn=sns[1], end_sn=sns[1], to_factory=b, to_pi=pi, reason="调拨")
+    body = org_body(None, pi, bill, b, start_sn=sns[1], end_sn=sns[1], **rng)
     t = ok(api.post("/api/transfers/org", body, op))
     assert t["qty"] == 1 and t["status"] == "PENDING"
     assert sql.scalar("SELECT status FROM sn_item WHERE sn = %s", sns[1]) == "APPLYING"
@@ -245,8 +275,8 @@ def test_org_transfer_material_length_check(w, api):
     w.allocate(pi)
     other = uid("MO")
     w.order(other, a, "C1", pi, ("M2", 1, "200"))
-    assert org_direct(w, a, pi, a, to_material="M2").code == "TR_LENGTH_MISMATCH"
-    ok(org_direct(w, a, pi, a, to_material="MX", manual_fields=["material"]))
+    assert org_direct(w, a, pi, bill, a, to_bill=other, to_material="M2").code == "TR_LENGTH_MISMATCH"
+    assert org_direct(w, a, pi, bill, a, to_bill=other, to_material="MX").code == "TR_TARGET_MATERIAL_INVALID"
 
 
 # ---------------------------------------------------------------- 转单
@@ -262,30 +292,23 @@ def test_split_moves_counts_not_quota(w, api, sql):
     w.order(a, org, "C1", pi, ("M1", 60))
     w.order(b, org, "C1", pi, ("M1", 40))
     first = sql.all("SELECT sn FROM sn_item WHERE bill_no = %s ORDER BY seq_dec", src)
-    pre = ok(
-        api.post(
-            "/api/transfers/bill/preview",
-            m(from_bill=src, to_bill=a, mode="SPLIT", from_seq=1, start_sn=first[0]["sn"], end_sn=first[59]["sn"]),
-            w.admin,
-        )
+    seg = bill_body(
+        pi,
+        src,
+        a,
+        org,
+        scope="RANGE",
+        material_code="M1",
+        start_sn=first[0]["sn"],
+        end_sn=first[59]["sn"],
+        reason="拆单",
     )
+    pre = ok(api.post("/api/transfers/bill/preview", seg, w.admin))
     assert pre["transferable"] == 60
-    ok(
-        api.post(
-            "/api/transfers/bill",
-            m(
-                from_bill=src,
-                to_bill=a,
-                mode="SPLIT",
-                from_seq=1,
-                start_sn=first[0]["sn"],
-                end_sn=first[59]["sn"],
-                reason="拆单",
-            ),
-            w.admin,
-        )
-    )
-    ok(api.post("/api/transfers/bill", m(from_bill=src, to_bill=b, mode="SPLIT", from_seq=1, reason="拆单"), w.admin))
+    assert {x["bill_no"]: (x["before"], x["after"]) for x in pre["generated_changes"]} == {a: (0, 60), src: (100, 40)}
+    ok(api.post("/api/transfers/bill", seg, w.admin))
+    # 按物料编码转移该物料下剩余全部号
+    ok(api.post("/api/transfers/bill", bill_body(pi, src, b, org, scope="MATERIAL", material_code="M1"), w.admin))
     gc = {r["bill_no"]: r for r in sql.all("SELECT * FROM sn_line_count")}
     assert (gc[src]["gen_count"], gc[a]["gen_count"], gc[b]["gen_count"]) == (0, 60, 40)
     assert gc[src]["own_generated"] == 100 and gc[a]["own_generated"] == 0
@@ -296,13 +319,98 @@ def test_split_moves_counts_not_quota(w, api, sql):
     )
 
 
+def test_material_scope_and_single_sn(w, api, sql):
+    """来源 PI → 单据 → 物料：只转该物料编码下的号（同物料的多行一起）；号段只填起始 = 单枚。"""
+    org = w.org(uid("O")[:10])
+    pi, src, tgt = uid("PI"), uid("MO"), uid("MO")
+    w.order(src, org, "C1", pi, ("M1", 3), ("M2", 2), ("M1", 4))
+    ok(w.bind_pi(pi, w.rule(P())))
+    w.generate(pi)
+    w.order(tgt, org, "C1", pi, ("M1", 10), ("M2", 10))
+    pre = ok(
+        api.post(
+            "/api/transfers/bill/preview", bill_body(pi, src, tgt, org, scope="MATERIAL", material_code="M1"), w.admin
+        )
+    )
+    assert pre["total"] == 7 and pre["to_seq"] == 1
+    one = sql.scalar("SELECT sn FROM sn_item WHERE bill_no = %s AND material_code = 'M2' ORDER BY seq_dec LIMIT 1", src)
+    t = ok(
+        api.post(
+            "/api/transfers/bill",
+            bill_body(pi, src, tgt, org, scope="RANGE", material_code="M2", start_sn=one, to_material="M2"),
+            w.admin,
+        )
+    )
+    assert t["qty"] == 1 and t["scope"] == "RANGE" and t["to_seq"] == 2
+    assert sql.scalar("SELECT bill_no FROM sn_item WHERE sn = %s", one) == tgt
+    # 号段不在所选物料下
+    m1 = sql.scalar("SELECT sn FROM sn_item WHERE bill_no = %s AND material_code = 'M1' LIMIT 1", src)
+    r = api.post(
+        "/api/transfers/bill/preview",
+        bill_body(pi, src, tgt, org, scope="RANGE", material_code="M2", start_sn=m1, to_material="M2"),
+        w.admin,
+    )
+    assert r.code == "TR_RANGE_INVALID"
+    # 整张单据
+    ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, org, scope="BILL", to_material="M1"), w.admin))
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s", src) == 0
+
+
+def test_target_fields_required_and_checked(w, api):
+    org, pi, src = setup(w, qty=2, mes=False)
+    other = w.org(uid("O")[:10])
+    tgt, dup = uid("MO"), uid("MO")
+    w.order(tgt, org, "C1", pi, ("M1", 2, "100"))
+    w.order(dup, org, "C1", pi, ("M1", 1, "100"), ("M1", 1, "100"))
+
+    def post(**kw):
+        return api.post("/api/transfers/bill/preview", {**bill_body(pi, src, tgt, org), **kw}, w.admin)
+
+    assert post(to_bill=None).code == "TR_TO_BILL_REQUIRED"
+    assert post(to_factory=None).code == "TR_TO_FACTORY_REQUIRED"
+    assert post(to_material=None).code == "TR_TO_MATERIAL_REQUIRED"
+    assert post(to_pi=uid("PI")).code == "TR_TARGET_PI_MISMATCH"
+    assert post(to_factory=other).code == "TR_TARGET_ORG_MISMATCH", "转单的生产组织 = 目标单据的生产组织"
+    assert post(to_bill=src).code == "TR_TARGET_BILL_INVALID", "转单的目标不能是来源单据"
+    assert post(bill_no=None).code == "ORDER_BILL_REQUIRED"
+    assert post(scope="PI").code == "TR_SCOPE_INVALID"
+    assert post(scope="MATERIAL").code == "TR_MATERIAL_REQUIRED"
+    assert post(scope="RANGE", material_code="M1").code == "TR_SN_REQUIRED"
+    assert post(to_bill=dup).code == "TR_TARGET_LINE_REQUIRED"
+    ok(post(to_bill=dup, to_seq=2))
+
+
+def test_org_transfer_to_other_bill_moves_counts(w, api, sql):
+    a, pi, bill = setup(w, qty=3, mes=False)
+    b = w.org(uid("O")[:10])
+    w.allocate(pi)
+    tgt = uid("MO")
+    w.order(tgt, b, "C9", pi, ("M1", 3, "100"))
+    ok(org_direct(w, a, pi, bill, b, to_bill=tgt))
+    rows = sql.all("SELECT factory_code, bill_no, customer_code, status FROM sn_item WHERE pi_no = %s", pi)
+    assert {tuple(r.values()) for r in rows} == {(b, tgt, "C9", "TO_ACQUIRE")}
+    gc = {r["bill_no"]: r for r in sql.all("SELECT * FROM sn_line_count WHERE bill_no IN (%s, %s)", bill, tgt)}
+    assert (gc[bill]["gen_count"], gc[tgt]["gen_count"], gc[tgt]["alloc_count"]) == (0, 3, 3)
+
+
+def test_sources_lists_bills_and_materials(w, api):
+    a, pi, bill = setup(w, qty=3, mes=False)
+    w.allocate(pi)
+    r = ok(api.get(f"/api/transfers/sources?kind=ORG&pi={pi}&factory_code={a}", w.admin))
+    assert r["bills"] == [{"bill_no": bill, "qty": 3, "materials": [{"material_code": "M1", "qty": 3}]}]
+    op = w.user(emp("F"), "factory_operator", w.org(uid("O")[:10]))
+    assert ok(api.get(f"/api/transfers/sources?kind=ORG&pi={pi}", op))["bills"] == [], "操作员只看本组织"
+    assert api.get(f"/api/transfers/sources?kind=BILL&pi={pi}", op).code == "FORBIDDEN"
+    assert ok(api.get(f"/api/orders/targets?pi={pi}", op))[0]["bill_no"] == bill, "操作员申请转组织也能选目标"
+
+
 def test_same_org_bill_transfer_reassigns_pushed(w, api, sql):
     org, pi, src = setup(w, qty=3)
     w.allocate(pi)
     w.push()
     tgt = uid("MO")
     w.order(tgt, org, "C1", pi, ("M1", 3))
-    ok(api.post("/api/transfers/bill", m(from_bill=src, to_bill=tgt, mode="VOID", reason="整单作废"), w.admin))
+    ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, org, reason="整单作废"), w.admin))
     rows = sql.all("SELECT status, push_type, rev, bill_no FROM sn_item WHERE pi_no = %s", pi)
     assert {(r["status"], r["push_type"], r["rev"], r["bill_no"]) for r in rows} == {("TO_PUSH", "REASSIGN", 2, tgt)}
     w.push()
@@ -316,11 +424,9 @@ def test_bill_transfer_length_mismatch_and_pending_alloc_to_other_org(w, api, sq
     other = w.org(uid("O")[:10])
     t1, t2 = uid("MO"), uid("MO")
     w.order(t1, org, "C1", pi, ("M1", 2, "200"))
-    assert api.post("/api/transfers/bill", m(from_bill=src, to_bill=t1, mode="VOID", reason="x"), w.admin).code == (
-        "TR_LENGTH_MISMATCH"
-    )
+    assert api.post("/api/transfers/bill", bill_body(pi, src, t1, org), w.admin).code == "TR_LENGTH_MISMATCH"
     w.order(t2, other, "C1", pi, ("M1", 2, "100"))
-    ok(api.post("/api/transfers/bill", m(from_bill=src, to_bill=t2, mode="VOID", reason="x"), w.admin))
+    ok(api.post("/api/transfers/bill", bill_body(pi, src, t2, other), w.admin))
     assert (
         sql.count(
             "SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND status = 'PENDING_ALLOC' AND factory_code IS NULL", t2
@@ -339,7 +445,7 @@ def test_bill_transfer_from_reversed_bill_releases(w, api, sql):
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND suspend = 'REVERSAL'", src) == 2
     tgt = uid("MO")
     w.order(tgt, org, "C1", pi, ("M1", 2))
-    ok(api.post("/api/transfers/bill", m(from_bill=src, to_bill=tgt, mode="VOID", reason="作废转单"), w.admin))
+    ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, org, reason="作废转单"), w.admin))
     assert (
         sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND suspend IS NULL AND status = 'TO_ACQUIRE'", tgt)
         == 2
@@ -353,9 +459,9 @@ def test_bill_list_and_items(w, api):
     org, pi, src = setup(w, qty=1, mes=False)
     tgt = uid("MO")
     w.order(tgt, org, "C1", pi, ("M1", 1))
-    t = ok(api.post("/api/transfers/bill", m(from_bill=src, to_bill=tgt, mode="VOID", reason="x"), w.admin))
+    t = ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, org), w.admin))
     lst = ok(api.get(f"/api/transfers/bill?bill_no={src}", w.admin))["items"]
-    assert lst[0]["transfer_no"] == t["transfer_no"]
+    assert lst[0]["transfer_no"] == t["transfer_no"] and lst[0]["mode"] == "VOID"
     items = ok(api.get(f"/api/transfers/bill/{t['id']}/items", w.admin))["items"]
     assert items[0]["from_bill"] == src and items[0]["to_bill"] == tgt and items[0]["to_rev"] == 2
     assert BILLS[tgt]["BillNo"] == tgt
@@ -369,7 +475,7 @@ def test_void_transfer_out_rebuilds_and_delivers(w, sql):
     w.allocate(pi)
     w.push()
     MES.behavior[a] = lambda batch, h: (503, {"code": "X"})
-    ok(org_direct(w, a, pi, b))
+    ok(org_direct(w, a, pi, bill, b))
     w.push()
     xo = sql.one("SELECT * FROM sn_delivery_batch WHERE batch_type = 'TRANSFER_OUT'")
     assert xo["result"] == "UNCONFIRMED"

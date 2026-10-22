@@ -7,8 +7,13 @@
 - 号的 MES 持有组织为来源组织、且转入组织与来源不同时，在同一事务内向来源 MES 建立「转出」批次并推送。
 不可转：申请中；所在批次未确认或失败；所在转出批次未确认或失败（先在原转组织单上继续推送转出）；领取未完成。
 转单另可转待分配的号（仍为待分配，之后按目标单据的生产组织分配）；转组织不能转待分配的号。
-转组织的范围：整张 PI、PI + 物料、单枚、号段（同一流水归属 PI 内按十进制流水取闭区间，只取来源组织该 PI 下的号）。
-转单移动已生成数、已分配数，额度不变；转组织不改来源单据和序号，计数和额度都不变。
+
+转单、转组织的来源与目标规则相同：来源按 PI → 单据筛选，范围三选一（整张单据 / 单据 + 物料编码下全部号 /
+单据 + 物料编码下单枚或连续号段）；转组织另限来源生产组织。
+目标 PI、单据、生产组织、物料编码都必填，号改挂到目标单据的该物料行（客户取目标单据的）。
+转单的目标生产组织就是目标单据的生产组织、目标单据不能是来源单据；
+转组织的目标生产组织可任选启用的（可与来源相同）。
+号换了物料行时已生成数、已分配数随号移动，额度不变。
 """
 
 from __future__ import annotations
@@ -33,11 +38,10 @@ PENDING = "PENDING"
 APPROVED = "APPROVED"
 REJECTED = "REJECTED"
 WITHDRAWN = "WITHDRAWN"
-SCOPE_PI = "PI"
+SCOPE_BILL = "BILL"
 SCOPE_MATERIAL = "MATERIAL"
-SCOPE_SINGLE = "SINGLE"
 SCOPE_RANGE = "RANGE"
-SCOPES = frozenset((SCOPE_PI, SCOPE_MATERIAL, SCOPE_SINGLE, SCOPE_RANGE))
+SCOPES = frozenset((SCOPE_BILL, SCOPE_MATERIAL, SCOPE_RANGE))
 
 ITEM_COLS = (
     "id, sn, factory_code, pi_no, customer_code, bill_no, bill_seq, material_code, rev, seq_pi_no, seq_dec, "
@@ -52,6 +56,7 @@ ORG_FIELDS = (
     "scope",
     "from_factory",
     "from_pi",
+    "from_bill",
     "from_material",
     "from_sn",
     "from_end_sn",
@@ -59,8 +64,9 @@ ORG_FIELDS = (
     "to_factory",
     "to_pi",
     "to_customer",
+    "to_bill",
+    "to_seq",
     "to_material",
-    "manual_fields",
     "reason",
     "applied_by",
     "applied_at",
@@ -72,10 +78,14 @@ BILL_FIELDS = (
     "id",
     "transfer_no",
     "mode",
+    "scope",
     "from_bill",
     "to_bill",
     "from_pi",
     "to_pi",
+    "to_factory",
+    "to_seq",
+    "to_material",
     "scope_text",
     "qty",
     "reason",
@@ -136,11 +146,11 @@ def _summary(items: list[dict], bad: dict[int, str]) -> dict:
     }
 
 
-def _check_any(items: list[dict], ok: list[dict], bad: dict[int, str], scope: str | None = None) -> None:
+def _check_any(items: list[dict], ok: list[dict], bad: dict[int, str], src: Source) -> None:
     """范围内一枚可转的都没有：单枚时说明原因；有不可转的列出原因；否则没有号。"""
     if ok:
         return
-    if scope == SCOPE_SINGLE and items:
+    if src.scope == SCOPE_RANGE and len(items) == 1:
         raise biz(ErrorCode.TR_SN_NOT_TRANSFERABLE, sn=items[0]["sn"], reason=_REASON_TEXT.get(bad[items[0]["id"]], ""))
     _raise_if_blocked(bad)
     raise biz(ErrorCode.TR_NOTHING)
@@ -344,202 +354,316 @@ def _after_move(cu: CurrentUser, moved: dict) -> None:
         delivery.start_task(cu, org, delivery.XO_KEY)
 
 
-# ================================================================== 转单
+# ================================================================== 来源与目标（转单、转组织共用）
 
 
 @dataclass(frozen=True)
-class BillRequest:
-    from_bill: str | None = None
-    to_bill: str | None = None
-    mode: str | None = None
-    #: 整单作废：来源序号 → 目标序号（自动对应不了的行须给）
-    mapping: dict | None = None
-    #: 拆单：生产组织 + PI + 来源物料行，可填起止号只转一段
+class TransferRequest:
+    """来源：PI → 单据 →（物料 →（单枚或连续号段））；目标：PI + 单据 + 生产组织 + 物料，都必填。"""
+
+    #: 来源生产组织（只用于转组织）
     factory_code: str | None = None
     pi_no: str | None = None
-    from_seq: int | None = None
+    bill_no: str | None = None
+    #: BILL 整张单据 / MATERIAL 单据 + 物料 / RANGE 单据 + 物料 + 单枚或连续号段
+    scope: str | None = None
+    material_code: str | None = None
     start_sn: str | None = None
+    #: 留空 = 单枚
     end_sn: str | None = None
+    to_pi: str | None = None
+    to_bill: str | None = None
+    to_factory: str | None = None
+    to_material: str | None = None
+    #: 目标单据中同一物料有多行时指定序号
     to_seq: int | None = None
     reason: str | None = None
 
 
-def _target_bill(no: str | None, source: str) -> orders.Bill:
-    b = orders.bill(no)
-    if b is None or not b.pi or b.bill_no == source:
-        raise biz(ErrorCode.TR_TARGET_BILL_INVALID, bill_no=util.trim(no))
-    return b
+@dataclass(frozen=True)
+class Source:
+    pi: str
+    bill: str
+    scope: str
+    material: str
+    start_sn: str
+    end_sn: str
+
+    def text(self, factory: str | None = None) -> str:
+        parts = [x for x in (factory, self.pi, self.bill) if x]
+        if self.scope != SCOPE_BILL:
+            parts.append(self.material or "(空物料)")
+        if self.scope == SCOPE_RANGE:
+            parts.append(self.start_sn if self.start_sn == self.end_sn else f"{self.start_sn} ~ {self.end_sn}")
+        return " / ".join(parts)
 
 
-def _auto_line(tb: orders.Bill, material: str) -> dict | None:
-    hit = [x for x in tb.lines if x["material_code"] == material]
-    return hit[0] if len(hit) == 1 else None
+@dataclass(frozen=True)
+class Dest:
+    """目标物料行（快照中）与转入生产组织。"""
+
+    factory: str
+    pi: str
+    customer: str
+    bill: str
+    seq: int
+    material: str
+    length: str
 
 
-def _bill_plan(req: BillRequest) -> tuple[list[dict], dict[int, Target], orders.Bill, str]:
-    src = util.trim(req.from_bill)
-    if not src:
+def _source(r: TransferRequest) -> Source:
+    pi = util.trim(r.pi_no)
+    if not pi:
+        raise biz(ErrorCode.PI_REQUIRED)
+    bill = util.trim(r.bill_no)
+    if not bill:
         raise biz(ErrorCode.ORDER_BILL_REQUIRED)
-    mode = util.trim(req.mode) or MODE_SPLIT
-    tb = _target_bill(req.to_bill, src)
-    lines = {x["seq"]: x for x in tb.lines}
-    if mode == MODE_VOID:
-        items = db.all(f"SELECT {ITEM_COLS} FROM sn_item WHERE bill_no = %s ORDER BY seq_pi_no, seq_dec", src)
-        scope = "整单"
-        mapping = {int(k): int(v) for k, v in (req.mapping or {}).items()}
-        line_of: dict[int, dict] = {}
-        for seq in sorted({r["bill_seq"] for r in items}):
-            mat = next(r["material_code"] for r in items if r["bill_seq"] == seq)
-            if seq in mapping:
-                if mapping[seq] not in lines:
-                    raise biz(ErrorCode.TR_TARGET_LINE_INVALID, seq=mapping[seq])
-                line_of[seq] = lines[mapping[seq]]
-            else:
-                hit = _auto_line(tb, mat)
-                if hit is None:
-                    raise biz(ErrorCode.TR_TARGET_LINE_REQUIRED, seq=seq, material=mat or "(空)")
-                line_of[seq] = hit
-    elif mode == MODE_SPLIT:
-        org = util.trim(req.factory_code) or None
-        pi = util.trim(req.pi_no)
-        if req.from_seq is None:
-            raise biz(ErrorCode.RULE_LINE_REQUIRED)
-        cond = " AND pi_no = %s" if pi else ""
-        args: list = [pi] if pi else []
-        if org:
-            cond += " AND factory_code = %s"
-            args.append(org)
-        items = db.all(
-            f"SELECT {ITEM_COLS} FROM sn_item WHERE bill_no = %s AND bill_seq = %s{cond} ORDER BY seq_pi_no, seq_dec",
-            src,
-            req.from_seq,
-            *args,
-        )
-        if items and (req.start_sn or req.end_sn):
-            items = _slice(items, util.trim(req.start_sn), util.trim(req.end_sn))
-        if not items:
-            raise biz(ErrorCode.TR_NOTHING)
-        mat = items[0]["material_code"]
-        if req.to_seq is not None:
-            if req.to_seq not in lines:
-                raise biz(ErrorCode.TR_TARGET_LINE_INVALID, seq=req.to_seq)
-            target = lines[req.to_seq]
-        else:
-            target = _auto_line(tb, mat)
-            if target is None:
-                raise biz(ErrorCode.TR_TARGET_LINE_REQUIRED, seq=req.from_seq, material=mat or "(空)")
-        line_of = {req.from_seq: target}
-        scope = f"{org or '-'} / {pi or '-'} / 序号 {req.from_seq}" + (
-            f" / {req.start_sn or '…'} ~ {req.end_sn or '…'}" if req.start_sn or req.end_sn else ""
-        )
-    else:
-        raise biz(ErrorCode.VALIDATION, detail="mode")
-    if not items:
-        raise biz(ErrorCode.TR_NOTHING)
-    targets: dict[int, Target] = {}
-    tlens = {seq: orders.length_of(line) for seq, line in line_of.items()}
-    for r in items:
-        line = line_of[r["bill_seq"]]
-        tlen = tlens[r["bill_seq"]]
-        if r["length_text"] is not None and tlen != r["length_text"]:
-            raise biz(ErrorCode.TR_LENGTH_MISMATCH, target=tlen or "(空)", current=r["length_text"])
-        # 已分配的号按目标单据的生产组织（相同时同组织改挂，不同时等同转组织）；待分配的仍待分配
-        targets[r["id"]] = Target(
-            None if r["factory_code"] is None else tb.org_code,
-            tb.pi,
-            tb.customer_code,
-            tb.bill_no,
-            line["seq"],
-            line["material_code"],
-        )
-    return items, targets, tb, scope
+    scope = util.trim(r.scope)
+    if scope not in SCOPES:
+        raise biz(ErrorCode.TR_SCOPE_INVALID)
+    material = start = end = ""
+    if scope != SCOPE_BILL:
+        if r.material_code is None:
+            raise biz(ErrorCode.TR_MATERIAL_REQUIRED)
+        material = r.material_code.strip()
+    if scope == SCOPE_RANGE:
+        start = util.trim(r.start_sn)
+        if not start:
+            raise biz(ErrorCode.TR_SN_REQUIRED)
+        end = util.trim(r.end_sn) or start
+    return Source(pi, bill, scope, material, start, end)
+
+
+def _source_items(src: Source, factory: str | None, lock: bool = False) -> list[dict]:
+    cond, args = "pi_no = %s AND bill_no = %s", [src.pi, src.bill]
+    if factory is not None:
+        cond += " AND factory_code = %s"
+        args.append(factory)
+    if src.scope != SCOPE_BILL:
+        cond += " AND material_code = %s"
+        args.append(src.material)
+    items = db.all(
+        f"SELECT {ITEM_COLS} FROM sn_item WHERE {cond} ORDER BY seq_pi_no, seq_dec" + (" FOR UPDATE" if lock else ""),
+        *args,
+    )
+    if src.scope == SCOPE_RANGE:
+        items = _slice(items, src.start_sn, src.end_sn)
+    return items
 
 
 def _slice(items: list[dict], start: str, end: str) -> list[dict]:
+    """单枚或连续号段：起止号须都在范围内、属于同一流水归属 PI。"""
     by_sn = {r["sn"]: r for r in items}
-    s = by_sn.get(start) if start else items[0]
-    e = by_sn.get(end) if end else items[-1]
+    s, e = by_sn.get(start), by_sn.get(end)
     if s is None or e is None or s["seq_pi_no"] != e["seq_pi_no"]:
-        raise biz(ErrorCode.TR_RANGE_INVALID, start_sn=start or "", end_sn=end or "")
+        raise biz(ErrorCode.TR_RANGE_INVALID, start_sn=start, end_sn=end)
     lo, hi = min(s["seq_dec"], e["seq_dec"]), max(s["seq_dec"], e["seq_dec"])
     return [r for r in items if r["seq_pi_no"] == s["seq_pi_no"] and lo <= r["seq_dec"] <= hi]
 
 
-def bill_preview(req: BillRequest) -> dict:
-    """转单确认框：枚数、各状态枚数、不可转枚数及原因、来源和目标已生成数的变化（未生成额度不变）。"""
-    items, targets, tb, scope = _bill_plan(req)
-    bad = blocked(items, True)
-    out = _summary(items, bad)
-    moves: dict[tuple[str, int], int] = {}
+def _dest_line(tb: orders.Bill, r: TransferRequest) -> dict:
+    mat = None if r.to_material is None else r.to_material.strip()
+    if r.to_seq is not None:
+        line = next((x for x in tb.lines if x["seq"] == r.to_seq), None)
+        if line is None or (mat is not None and line["material_code"] != mat):
+            raise biz(ErrorCode.TR_TARGET_LINE_INVALID, seq=r.to_seq)
+        return line
+    if mat is None:
+        raise biz(ErrorCode.TR_TO_MATERIAL_REQUIRED)
+    hit = [x for x in tb.lines if x["material_code"] == mat]
+    if not hit:
+        raise biz(ErrorCode.TR_TARGET_MATERIAL_INVALID, bill_no=tb.bill_no, material=mat or "(空)")
+    if len(hit) > 1:
+        raise biz(ErrorCode.TR_TARGET_LINE_REQUIRED, bill_no=tb.bill_no, material=mat or "(空)")
+    return hit[0]
+
+
+def _dest(kind: str, r: TransferRequest, source_bill: str) -> Dest:
+    """目标 PI、单据、生产组织、物料都必填；单据须在快照中且属于该 PI。
+    转单的生产组织就是目标单据的生产组织；转组织可选任一启用的生产组织。"""
+    to_pi = util.trim(r.to_pi)
+    if not to_pi:
+        raise biz(ErrorCode.TR_TO_PI_REQUIRED)
+    to_bill = util.trim(r.to_bill)
+    if not to_bill:
+        raise biz(ErrorCode.TR_TO_BILL_REQUIRED)
+    tb = orders.bill(to_bill)
+    if tb is None or not tb.pi or (kind == KIND_BILL and tb.bill_no == source_bill):
+        raise biz(ErrorCode.TR_TARGET_BILL_INVALID, bill_no=to_bill)
+    if tb.pi != to_pi:
+        raise biz(ErrorCode.TR_TARGET_PI_MISMATCH, bill_no=to_bill, pi=tb.pi)
+    to_factory = util.trim(r.to_factory)
+    if not to_factory:
+        raise biz(ErrorCode.TR_TO_FACTORY_REQUIRED)
+    if kind == KIND_BILL:
+        if to_factory != tb.org_code:
+            raise biz(ErrorCode.TR_TARGET_ORG_MISMATCH, bill_no=to_bill, factory=tb.org_code)
+    else:
+        to_factory = factories.must_be_enabled(to_factory)["factory_code"]
+    line = _dest_line(tb, r)
+    return Dest(
+        to_factory, tb.pi, tb.customer_code, tb.bill_no, line["seq"], line["material_code"], orders.length_of(line)
+    )
+
+
+def _targets(kind: str, items: list[dict], d: Dest) -> dict[int, Target]:
+    """号改挂到目标物料行；目标长度与号上长度不同则拒绝（SN 已含长度）。
+    转单时待分配的号仍待分配（之后按目标单据的生产组织分配）。"""
+    out: dict[int, Target] = {}
     for r in items:
-        if r["id"] in bad:
-            continue
-        t = targets[r["id"]]
-        moves[(r["bill_no"], r["bill_seq"])] = moves.get((r["bill_no"], r["bill_seq"]), 0) - 1
-        moves[(t.bill, t.seq)] = moves.get((t.bill, t.seq), 0) + 1
+        if r["length_text"] is not None and r["length_text"] != d.length:
+            raise biz(ErrorCode.TR_LENGTH_MISMATCH, target=d.length or "(空)", current=r["length_text"])
+        org = None if kind == KIND_BILL and r["factory_code"] is None else d.factory
+        out[r["id"]] = Target(org, d.pi, d.customer, d.bill, d.seq, d.material)
+    return out
+
+
+def _from_factory(cu: CurrentUser, code: str | None) -> str:
+    """转组织的来源生产组织：总部指定；操作员只能是本组织；查询员须落到一个可读组织。"""
+    if cu.is_admin:
+        return factories.must_get(code)["factory_code"]
+    if cu.is_factory:
+        return cu.write_factory(code)
+    facs = cu.read_factories(code)
+    if not facs or len(facs) != 1:
+        raise biz(ErrorCode.FACTORY_NOT_FOUND, factory="")
+    return facs[0]
+
+
+@dataclass
+class Plan:
+    factory: str | None
+    src: Source
+    dest: Dest
+    items: list[dict]
+    targets: dict[int, Target]
+
+
+def _plan(cu: CurrentUser, kind: str, r: TransferRequest, lock: bool = False) -> Plan:
+    factory = _from_factory(cu, r.factory_code) if kind == KIND_ORG else None
+    src = _source(r)
+    d = _dest(kind, r, src.bill)
+    items = _source_items(src, factory, lock)
+    if not items:
+        raise biz(ErrorCode.TR_NOTHING)
+    targets = _targets(kind, items, d)
+    if all(
+        (r["factory_code"] or d.factory, r["pi_no"], r["bill_no"], r["bill_seq"]) == (d.factory, d.pi, d.bill, d.seq)
+        for r in items
+    ):
+        raise biz(ErrorCode.TR_SAME_TARGET)
+    return Plan(factory, src, d, items, targets)
+
+
+def sources(cu: CurrentUser, kind: str, factory: str | None, pi: str | None) -> dict:
+    """来源候选：PI 下各单据、各物料的号数（转组织限来源生产组织），供逐级筛选。"""
+    p = util.trim(pi)
+    if not p:
+        raise biz(ErrorCode.PI_REQUIRED)
+    cond, args = "pi_no = %s", [p]
+    if kind == KIND_ORG:
+        cond += " AND factory_code = %s"
+        args.append(_from_factory(cu, factory))
+    elif not cu.is_admin:
+        raise biz(ErrorCode.FORBIDDEN)
+    bills: dict[str, dict] = {}
+    for x in db.all(
+        f"SELECT bill_no, material_code, COUNT(*) n FROM sn_item WHERE {cond} GROUP BY bill_no, material_code "
+        "ORDER BY bill_no, material_code",
+        *args,
+    ):
+        b = bills.setdefault(x["bill_no"], {"bill_no": x["bill_no"], "qty": 0, "materials": []})
+        b["qty"] += int(x["n"])
+        b["materials"].append({"material_code": x["material_code"], "qty": int(x["n"])})
+    return {"bills": list(bills.values())}
+
+
+def preview(cu: CurrentUser, kind: str, r: TransferRequest) -> dict:
+    """确认框：枚数、各状态枚数、不可转枚数及原因、来源和目标已生成数的变化（未生成额度不变）、
+    跨生产组织枚数、将向来源 MES 推送转出的枚数。"""
+    p = _plan(cu, kind, r)
+    bad = blocked(p.items, kind == KIND_BILL)
+    out = _summary(p.items, bad)
+    moves: dict[tuple[str, int], int] = {}
+    ok = [x for x in p.items if x["id"] not in bad]
+    for x in ok:
+        t = p.targets[x["id"]]
+        if (t.bill, t.seq) != (x["bill_no"], x["bill_seq"]):
+            moves[(x["bill_no"], x["bill_seq"])] = moves.get((x["bill_no"], x["bill_seq"]), 0) - 1
+            moves[(t.bill, t.seq)] = moves.get((t.bill, t.seq), 0) + 1
     counts = orders.line_counts(list(moves))
     out["generated_changes"] = [
         {
             "bill_no": k[0],
             "seq": k[1],
             "before": 0 if counts.get(k) is None else int(counts[k]["gen_count"]),
-            "after": (0 if counts.get(k) is None else int(counts[k]["gen_count"])) + d,
+            "after": (0 if counts.get(k) is None else int(counts[k]["gen_count"])) + v,
         }
-        for k, d in sorted(moves.items())
+        for k, v in sorted(moves.items())
     ]
-    out["to_pi"] = tb.pi
-    out["to_org"] = tb.org_code
-    out["scope"] = scope
-    out["other_org"] = sum(1 for r in items if r["factory_code"] is not None and r["factory_code"] != tb.org_code)
+    d = p.dest
+    out.update(
+        to_pi=d.pi,
+        to_org=d.factory,
+        to_bill=d.bill,
+        to_seq=d.seq,
+        to_material=d.material,
+        to_customer=d.customer,
+        scope=p.src.text(p.factory),
+        other_org=sum(1 for x in p.items if x["factory_code"] is not None and x["factory_code"] != d.factory),
+        xo_qty=sum(1 for x in ok if x["mes_holder"] is not None and x["mes_holder"] == x["factory_code"] != d.factory),
+    )
     return out
 
 
-def transfer_bill(cu: CurrentUser, req: BillRequest) -> dict:
+# ================================================================== 转单
+
+
+def transfer_bill(cu: CurrentUser, req: TransferRequest) -> dict:
     """转单（总部直接执行）：生成转单单；需要时自动改挂推送、转出推送。"""
     reason = _reason(req.reason)
-    items, _t, tb, _s = _bill_plan(req)
-    pis = {r["pi_no"] for r in items} | {tb.pi}
-    with locks.with_pi_lock(*pis), db.tx():
-        items, targets, tb, scope = _bill_plan(req)
-        ids = [r["id"] for r in items]
-        items = db.all(
-            f"SELECT {ITEM_COLS} FROM sn_item WHERE id IN ({marks(len(ids))}) ORDER BY seq_pi_no, seq_dec FOR UPDATE",
-            *ids,
-        )
-        bad = blocked(items, True)
-        ok = [x for x in items if x["id"] not in bad]
-        _check_any(items, ok, bad)
-        items = ok
-        src = util.trim(req.from_bill)
+    p0 = _plan(cu, KIND_BILL, req)
+    with locks.with_pi_lock(p0.src.pi, p0.dest.pi), db.tx():
+        p = _plan(cu, KIND_BILL, req, lock=True)
+        bad = blocked(p.items, True)
+        ok = [x for x in p.items if x["id"] not in bad]
+        _check_any(p.items, ok, bad, p.src)
+        src, d = p.src, p.dest
+        scope = src.text()
         no = util.next_id("TB")
         tid = db.insert(
-            "INSERT INTO sn_bill_transfer(transfer_no, mode, from_bill, to_bill, from_pi, to_pi, scope_text, qty, "
-            "reason, created_by, created_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            "INSERT INTO sn_bill_transfer(transfer_no, mode, scope, from_bill, to_bill, from_pi, to_pi, to_factory, "
+            "to_seq, to_material, scope_text, qty, reason, created_by, created_at) "
+            "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
             no,
-            util.trim(req.mode) or MODE_SPLIT,
-            src,
-            tb.bill_no,
-            items[0]["pi_no"],
-            tb.pi,
+            MODE_VOID if src.scope == SCOPE_BILL else MODE_SPLIT,
+            src.scope,
+            src.bill,
+            d.bill,
+            src.pi,
+            d.pi,
+            d.factory,
+            d.seq,
+            d.material,
             util.cut(scope, 500),
-            len(items),
+            len(ok),
             reason,
             cu.emp_no,
             util.now(),
         )
-        moved = _move(cu, KIND_BILL, tid, no, items, targets)
+        moved = _move(cu, KIND_BILL, tid, no, ok, p.targets)
         audit.record(
             cu,
             audit.entry(audit.TRANSFER_BILL)
-            .factory(items[0]["factory_code"])
-            .pi(items[0]["pi_no"])
-            .bill(src)
-            .count(len(items))
-            .range(items[0]["sn"], items[-1]["sn"])
+            .factory(ok[0]["factory_code"])
+            .pi(src.pi)
+            .bill(src.bill)
+            .count(len(ok))
+            .range(ok[0]["sn"], ok[-1]["sn"])
             .transfer(no)
             .why(reason)
             .info(
-                f"to={tb.bill_no}/{tb.pi}/{tb.org_code} scope={scope} out_batches="
+                f"to={d.bill}/{d.seq}/{d.material}/{d.pi}/{d.factory} scope={scope} out_batches="
                 + ",".join(b["batch_no"] for b in moved["out"])
             ),
         )
@@ -550,160 +674,17 @@ def transfer_bill(cu: CurrentUser, req: BillRequest) -> dict:
 # ================================================================== 转组织
 
 
-@dataclass(frozen=True)
-class OrgRequest:
-    factory_code: str | None = None
-    pi_no: str | None = None
-    scope: str | None = None
-    material_code: str | None = None
-    sn: str | None = None
-    #: 号段：起号、止号（完整 SN，须同一流水归属 PI）
-    start_sn: str | None = None
-    end_sn: str | None = None
-    to_factory: str | None = None
-    to_pi: str | None = None
-    to_customer: str | None = None
-    to_material: str | None = None
-    #: 手工填写或改过的目标字段（pi / customer / material），不与金蝶核对
-    manual_fields: list[str] | None = None
-    reason: str | None = None
-
-
-def _org_items(factory: str, r: OrgRequest, lock: bool = False) -> tuple[list[dict], str, str]:
-    pi = util.trim(r.pi_no)
-    if not pi:
-        raise biz(ErrorCode.PI_REQUIRED)
-    scope = util.trim(r.scope)
-    if scope not in SCOPES:
-        raise biz(ErrorCode.TR_SCOPE_INVALID)
-    cond, args = "", []
-    if scope == SCOPE_MATERIAL:
-        if r.material_code is None:
-            raise biz(ErrorCode.TR_MATERIAL_REQUIRED)
-        cond, args = " AND material_code = %s", [r.material_code.strip()]
-    elif scope == SCOPE_SINGLE:
-        if util.blank(r.sn):
-            raise biz(ErrorCode.TR_SN_REQUIRED)
-        cond, args = " AND sn = %s", [r.sn.strip()]
-    elif scope == SCOPE_RANGE:
-        cond, args = _range_cond(factory, pi, util.trim(r.start_sn), util.trim(r.end_sn))
-    items = db.all(
-        f"SELECT {ITEM_COLS} FROM sn_item WHERE factory_code = %s AND pi_no = %s{cond} ORDER BY seq_pi_no, seq_dec"
-        + (" FOR UPDATE" if lock else ""),
-        factory,
-        pi,
-        *args,
-    )
-    return items, pi, scope
-
-
-def _range_cond(factory: str, pi: str, start: str, end: str) -> tuple[str, list]:
-    """号段：起止号都须是本组织该 PI 下的号且流水归属 PI 相同；取其间（含两端）仍在本组织该 PI 下的号。"""
-    if not start or not end:
-        raise biz(ErrorCode.TR_RANGE_REQUIRED)
-    ends = {
-        x["sn"]: x
-        for x in db.all(
-            "SELECT sn, seq_pi_no, seq_dec FROM sn_item WHERE factory_code = %s AND pi_no = %s AND sn IN (%s, %s)",
-            factory,
-            pi,
-            start,
-            end,
-        )
-    }
-    s, e = ends.get(start), ends.get(end)
-    if s is None or e is None or s["seq_pi_no"] != e["seq_pi_no"]:
-        raise biz(ErrorCode.TR_ORG_RANGE_INVALID, start_sn=start, end_sn=end, pi=pi)
-    lo, hi = sorted((s["seq_dec"], e["seq_dec"]))
-    return " AND seq_pi_no = %s AND seq_dec BETWEEN %s AND %s", [s["seq_pi_no"], lo, hi]
-
-
-def _org_targets(t: dict, items: list[dict]) -> dict[int, Target]:
-    return {
-        r["id"]: Target(
-            t["to_factory"],
-            t["to_pi"],
-            t["to_customer"] or r["customer_code"],
-            r["bill_no"],
-            r["bill_seq"],
-            t["to_material"] or r["material_code"],
-        )
-        for r in items
-    }
-
-
-def _check_org_target(r: OrgRequest, items: list[dict], from_factory: str, from_pi: str) -> dict:
-    to_pi = util.trim(r.to_pi)
-    if not to_pi:
-        raise biz(ErrorCode.TR_TO_PI_REQUIRED)
-    to_factory = factories.must_be_enabled(r.to_factory)["factory_code"]
-    to_customer = util.trim(r.to_customer)
-    to_material = util.trim(r.to_material)
-    manual = sorted({x for x in (r.manual_fields or []) if x in ("pi", "customer", "material")})
-    t = {"to_factory": to_factory, "to_pi": to_pi, "to_customer": to_customer, "to_material": to_material}
-    # 目标与来源完全相同时拒绝
-    if (
-        to_factory == from_factory
-        and to_pi == from_pi
-        and all(
-            (not to_customer or x["customer_code"] == to_customer)
-            and (not to_material or x["material_code"] == to_material)
-            for x in items
-        )
-    ):
-        raise biz(ErrorCode.TR_SAME_TARGET)
-    # 改了物料且能从快照取到目标长度时，与号上长度不同则拒绝；手工填写的物料不校验
-    if to_material and "material" not in manual:
-        rows = db.all("SELECT * FROM sn_prd_mo WHERE pi = %s AND material_code = %s", to_pi, to_material)
-        fills = orders.line_lengths([(r["bill_no"], r["seq"]) for r in rows])
-        lens = {orders.effective_length(r, fills.get((r["bill_no"], r["seq"])))[0] for r in rows}
-        if len(lens) == 1:
-            tl = lens.pop()
-            for x in items:
-                if x["length_text"] is not None and x["length_text"] != tl:
-                    raise biz(ErrorCode.TR_LENGTH_MISMATCH, target=tl or "(空)", current=x["length_text"])
-    t["manual_fields"] = ",".join(manual)
-    return t
-
-
-def org_candidates(cu: CurrentUser, r: OrgRequest) -> dict:
-    """转组织确认框：所选范围各状态枚数、可转枚数、不可转原因；物料清单。"""
-    if cu.is_admin:
-        factory = factories.must_get(r.factory_code)["factory_code"]
-    elif cu.is_factory:
-        factory = cu.write_factory(r.factory_code)
-    else:
-        facs = cu.read_factories(r.factory_code)
-        if not facs or len(facs) != 1:
-            raise biz(ErrorCode.FACTORY_NOT_FOUND, factory="")
-        factory = facs[0]
-    items, pi, _scope = _org_items(factory, r)
-    bad = blocked(items, False)
-    out = _summary(items, bad)
-    out["materials"] = db.column(
-        "SELECT DISTINCT material_code FROM sn_item WHERE factory_code = %s AND pi_no = %s ORDER BY material_code",
-        factory,
-        pi,
-    )
-    out["xo_qty"] = sum(
-        1 for x in items if x["id"] not in bad and x["mes_holder"] == factory and util.trim(r.to_factory) != factory
-    )
-    return out
-
-
-def apply(cu: CurrentUser, r: OrgRequest) -> dict:
-    """生产组织操作员提交转组织申请：号变为申请中（不能推送、拉取）；申请期间不通知 MES。"""
+def apply(cu: CurrentUser, r: TransferRequest) -> dict:
+    """生产组织操作员提交转组织申请：号变为申请中（不能领取、推送、拉取）；申请期间不通知 MES。"""
     if not cu.is_factory:
         raise biz(ErrorCode.FORBIDDEN)
-    factory = cu.write_factory(r.factory_code)
     reason = _reason(r.reason)
     with db.tx():
-        items, pi, scope = _org_items(factory, r, lock=True)
-        t = _check_org_target(r, items, factory, pi)
-        bad = blocked(items, False)
-        ok = [x for x in items if x["id"] not in bad]
-        _check_any(items, ok, bad, scope)
-        tid, no = _insert_org(cu, MODE_APPLY, PENDING, factory, pi, scope, r, t, len(ok), reason)
+        p = _plan(cu, KIND_ORG, r, lock=True)
+        bad = blocked(p.items, False)
+        ok = [x for x in p.items if x["id"] not in bad]
+        _check_any(p.items, ok, bad, p.src)
+        tid, no = _insert_org(cu, MODE_APPLY, PENDING, p, len(ok), reason)
         now = util.now()
         rows = []
         for x in ok:
@@ -716,7 +697,7 @@ def apply(cu: CurrentUser, r: OrgRequest) -> dict:
                     x["seq_pi_no"],
                     x["seq_dec"],
                     x["status"],
-                    factory,
+                    p.factory,
                     x["pi_no"],
                     x["customer_code"],
                     x["bill_no"],
@@ -745,36 +726,73 @@ def apply(cu: CurrentUser, r: OrgRequest) -> dict:
                 *part,
             )
         changes.refresh_items({x["bill_no"] for x in ok})
-        audit.record(cu, _org_entry(audit.TRANSFER_APPLY, no, factory, pi, scope, t, len(ok), reason, ok))
+        audit.record(
+            cu,
+            _org_entry(
+                audit.TRANSFER_APPLY, no, p.factory, p.src.pi, p.src.text(), _dest_row(p.dest), len(ok), reason, ok
+            ),
+        )
     return org_view(cu, tid)
 
 
-def _insert_org(cu, mode, status, factory, pi, scope, r: OrgRequest, t: dict, qty: int, reason: str) -> tuple[int, str]:
+def _dest_row(d: Dest) -> dict:
+    return {
+        "to_factory": d.factory,
+        "to_pi": d.pi,
+        "to_bill": d.bill,
+        "to_seq": d.seq,
+        "to_material": d.material,
+        "to_customer": d.customer,
+    }
+
+
+def _insert_org(cu, mode, status, p: Plan, qty: int, reason: str) -> tuple[int, str]:
     no = util.next_id("TO")
+    src, d = p.src, p.dest
     tid = db.insert(
-        "INSERT INTO sn_transfer(transfer_no, mode, status, scope, from_factory, from_pi, from_material, from_sn, "
-        "from_end_sn, qty, to_factory, to_pi, to_customer, to_material, manual_fields, reason, applied_by, applied_at) "
-        "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+        "INSERT INTO sn_transfer(transfer_no, mode, status, scope, from_factory, from_pi, from_bill, from_material, "
+        "from_sn, from_end_sn, qty, to_factory, to_pi, to_customer, to_bill, to_seq, to_material, reason, "
+        "applied_by, applied_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
         no,
         mode,
         status,
-        scope,
-        factory,
-        pi,
-        util.trim(r.material_code) if scope == SCOPE_MATERIAL else "",
-        util.trim(r.sn) if scope == SCOPE_SINGLE else util.trim(r.start_sn) if scope == SCOPE_RANGE else "",
-        util.trim(r.end_sn) if scope == SCOPE_RANGE else "",
+        src.scope,
+        p.factory,
+        src.pi,
+        src.bill,
+        src.material,
+        src.start_sn,
+        src.end_sn,
         qty,
-        t["to_factory"],
-        t["to_pi"],
-        t["to_customer"],
-        t["to_material"],
-        t["manual_fields"],
+        d.factory,
+        d.pi,
+        d.customer,
+        d.bill,
+        d.seq,
+        d.material,
         reason,
         cu.emp_no,
         util.now(),
     )
     return tid, no
+
+
+def _org_targets(t: dict, items: list[dict]) -> dict[int, Target]:
+    """转组织单上的目标物料行；早期没有目标单据的单子沿用号上的单据、序号、客户、物料。"""
+    if t["to_bill"]:
+        tg = Target(t["to_factory"], t["to_pi"], t["to_customer"], t["to_bill"], t["to_seq"], t["to_material"])
+        return {r["id"]: tg for r in items}
+    return {
+        r["id"]: Target(
+            t["to_factory"],
+            t["to_pi"],
+            t["to_customer"] or r["customer_code"],
+            r["bill_no"],
+            r["bill_seq"],
+            t["to_material"] or r["material_code"],
+        )
+        for r in items
+    }
 
 
 def _org_entry(
@@ -789,29 +807,29 @@ def _org_entry(
         .why(reason)
         .range(items[0]["sn"] if items else None, items[-1]["sn"] if items else None)
         .info(
-            f"scope={scope} to={t['to_factory']}/{t['to_pi']}/{t['to_customer'] or '(原客户)'}/"
-            f"{t['to_material'] or '(原物料)'} manual={t.get('manual_fields') or '-'}"
+            f"scope={scope} to={t['to_factory']}/{t['to_pi']}/{t.get('to_bill') or '-'}/"
+            f"{t.get('to_seq') or '-'}/{t['to_material'] or '-'}"
         )
     )
 
 
-def direct(cu: CurrentUser, r: OrgRequest) -> dict:
+def direct(cu: CurrentUser, r: TransferRequest) -> dict:
     """总部不经申请直接转移（须填原因）。"""
     if not cu.is_admin:
         raise biz(ErrorCode.FORBIDDEN)
-    factory = factories.must_get(r.factory_code)["factory_code"]
     reason = _reason(r.reason)
-    to_pi = util.trim(r.to_pi)
-    with locks.with_pi_lock(util.trim(r.pi_no), to_pi), db.tx():
-        items, pi, scope = _org_items(factory, r, lock=True)
-        t = _check_org_target(r, items, factory, pi)
-        bad = blocked(items, False)
-        ok = [x for x in items if x["id"] not in bad]
-        _check_any(items, ok, bad, scope)
-        tid, no = _insert_org(cu, MODE_DIRECT, APPROVED, factory, pi, scope, r, t, len(ok), reason)
+    p0 = _plan(cu, KIND_ORG, r)
+    with locks.with_pi_lock(p0.src.pi, p0.dest.pi), db.tx():
+        p = _plan(cu, KIND_ORG, r, lock=True)
+        bad = blocked(p.items, False)
+        ok = [x for x in p.items if x["id"] not in bad]
+        _check_any(p.items, ok, bad, p.src)
+        tid, no = _insert_org(cu, MODE_DIRECT, APPROVED, p, len(ok), reason)
         db.exec("UPDATE sn_transfer SET decided_by = %s, decided_at = %s WHERE id = %s", cu.emp_no, util.now(), tid)
-        moved = _move(cu, KIND_ORG, tid, no, ok, _org_targets(t, ok))
-        e = _org_entry(audit.TRANSFER_DIRECT, no, factory, pi, scope, t, len(ok), reason, ok)
+        moved = _move(cu, KIND_ORG, tid, no, ok, p.targets)
+        e = _org_entry(
+            audit.TRANSFER_DIRECT, no, p.factory, p.src.pi, p.src.text(), _dest_row(p.dest), len(ok), reason, ok
+        )
         audit.record(cu, e.info(f"{e.detail} out_batches={','.join(b['batch_no'] for b in moved['out'])}"))
     _after_move(cu, moved)
     return org_view(cu, tid)
@@ -1061,8 +1079,11 @@ def list_org(
         where += " AND (from_pi = %s OR to_pi = %s)"
         args += [pi.strip(), pi.strip()]
     if not util.blank(bill):
-        where += " AND id IN (SELECT transfer_id FROM sn_transfer_item WHERE kind = 'ORG' AND from_bill = %s)"
-        args.append(bill.strip())
+        where += (
+            " AND (from_bill = %s OR to_bill = %s OR id IN "
+            "(SELECT transfer_id FROM sn_transfer_item WHERE kind = 'ORG' AND from_bill = %s))"
+        )
+        args += [bill.strip()] * 3
     facs = cu.read_factories(factory)
     if facs is not None:
         fr, fa = factories.scope_sql(facs, "from_factory")
