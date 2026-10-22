@@ -1,65 +1,87 @@
 <template>
-  <el-dialog v-model="tf.open" :title="formTitle" width="860px" top="5vh">
-    <el-form label-width="120px" class="form">
-      <h4 class="sec">{{ t("transfer.source") }}</h4>
-      <el-form-item v-if="tf.kind === 'ORG'" :label="t('transfer.fromOrg')" required>
-        <FactorySelect v-model="tf.factory_code" :disabled="store.isFactory" @update:model-value="loadSources" />
-      </el-form-item>
-      <el-form-item label="PI" required>
-        <el-input v-model="tf.pi_no" class="w260" clearable @change="loadSources" />
-        <span v-if="tf.pi_no && sourcesLoaded && !srcBills.length" class="muted ml">{{ t("transfer.noSnInPi") }}</span>
-      </el-form-item>
-      <el-form-item :label="t('transfer.fromBill')" required>
-        <el-select v-model="tf.bill_no" class="w260" filterable :disabled="!srcBills.length" :placeholder="t('transfer.pickBill')" @change="onSourceBill">
-          <el-option v-for="b in srcBills" :key="b.bill_no" :value="b.bill_no" :label="`${b.bill_no} · ${t('transfer.snCount', { n: b.qty })}`" />
-        </el-select>
-      </el-form-item>
-      <el-form-item :label="t('transfer.scope')">
-        <el-radio-group v-model="tf.scope" @change="resetPreview">
-          <el-radio-button v-for="sc in SCOPES" :key="sc" :value="sc">{{ scopeLabel(sc) }}</el-radio-button>
-        </el-radio-group>
-        <div class="muted hint">{{ t(`transfer.scopeTip.${tf.scope}`) }}</div>
-      </el-form-item>
-      <el-form-item v-if="tf.scope !== 'BILL'" :label="t('common.material')" required>
-        <el-select v-model="tf.material_code" class="w260" filterable :disabled="!srcMaterials.length" :placeholder="t('transfer.pickMaterial')" @change="onSourceMaterial">
-          <el-option v-for="mm in srcMaterials" :key="matKey(mm.material_code)" :value="matKey(mm.material_code)"
-            :label="`${mm.material_code || t('transfer.emptyMaterial')} · ${t('transfer.snCount', { n: mm.qty })}`" />
-        </el-select>
-      </el-form-item>
-      <el-form-item v-if="tf.scope === 'RANGE'" :label="t('transfer.range')" required>
-        <el-input v-model="tf.start_sn" class="w220 sn-mono" :placeholder="t('transfer.startSn')" clearable @change="resetPreview" />
-        <span class="ml">~</span>
-        <el-input v-model="tf.end_sn" class="w220 ml sn-mono" :placeholder="t('transfer.endSn')" clearable @change="resetPreview" />
-        <div class="muted hint">{{ t("transfer.rangeHint") }}</div>
-      </el-form-item>
+  <el-dialog v-model="tf.open" :title="t('transfer.new')" width="1000px" top="4vh">
+    <!-- 类型：总部可选转单或转组织；生产组织操作员只能申请转组织 -->
+    <div v-if="store.isAdmin" class="kinds">
+      <div v-for="k in KINDS" :key="k" class="kind" :class="{ on: tf.kind === k }" @click="setKind(k)">
+        <div class="kind__t"><el-icon><component :is="k === 'BILL' ? 'Document' : 'OfficeBuilding'" /></el-icon>{{ t(`transfer.kindTitle.${k}`) }}</div>
+        <div class="muted">{{ t(`transfer.kindTip.${k}`) }}</div>
+      </div>
+    </div>
+    <p v-else class="muted lead">{{ t("transfer.kindTip.ORG") }}</p>
 
-      <el-divider />
-      <h4 class="sec">{{ t("transfer.target") }}</h4>
-      <el-form-item :label="t('transfer.toPi')" required>
-        <el-autocomplete v-model="tf.to_pi" style="width: 260px" :fetch-suggestions="suggestPi" :trigger-on-focus="false" clearable
-          @select="loadTargets" @change="loadTargets" />
-      </el-form-item>
-      <el-form-item :label="t('transfer.toBill')" required>
-        <el-select v-model="tf.to_bill" class="w260" filterable :disabled="!toBills.length" :placeholder="t('transfer.pickBill')" @change="onTargetBill">
-          <el-option v-for="b in toBills" :key="b.bill_no" :value="b.bill_no" :disabled="tf.kind === 'BILL' && b.bill_no === tf.bill_no"
-            :label="`${b.bill_no} · ${nameOf(b.org_code)}`" />
-        </el-select>
-        <span v-if="toHead" class="muted ml">{{ t("common.customer") }} {{ toHead.customer_code || "—" }}</span>
-        <span v-else-if="tf.to_pi && targetsLoaded && !toBills.length" class="muted ml">{{ t("transfer.noBillInPi") }}</span>
-      </el-form-item>
-      <el-form-item :label="t('transfer.toOrg')" required>
-        <el-select v-model="tf.to_factory" filterable class="w260" :disabled="tf.kind === 'BILL'" @change="resetPreview">
-          <el-option v-for="x in factories" :key="x.factory_code" :value="x.factory_code" :disabled="tf.kind === 'ORG' && !x.enabled"
-            :label="`${x.factory_name}（${x.factory_code}）${x.mes_enabled ? ' · MES' : ''}${x.enabled ? '' : t('common.disabledSuffix')}`" />
-          <el-option v-if="tf.kind === 'BILL' && tf.to_factory && !factories.some((x) => x.factory_code === tf.to_factory)" :value="tf.to_factory" :label="tf.to_factory" />
-        </el-select>
-        <span class="muted ml">{{ tf.kind === "BILL" ? t("transfer.orgOfBill") : t("transfer.orgFree") }}</span>
-      </el-form-item>
-      <el-form-item :label="t('transfer.toMaterial')" required>
-        <el-select v-model="tf.to_seq" class="w260" :disabled="!toLines.length" :placeholder="t('transfer.pickTargetLine')" @change="resetPreview">
-          <el-option v-for="l in toLines" :key="l.seq" :value="l.seq" :label="lineLabel(l)" />
-        </el-select>
-      </el-form-item>
+    <div class="sides">
+      <section class="side">
+        <h5 class="side__t">{{ t("transfer.source") }}</h5>
+        <el-form label-position="top" class="form">
+          <el-form-item v-if="tf.kind === 'ORG'" :label="t('transfer.fromOrg')" required>
+            <FactorySelect v-model="tf.factory_code" class="full" :disabled="store.isFactory" @update:model-value="loadSources" />
+          </el-form-item>
+          <el-form-item label="PI" required>
+            <el-input v-model="tf.pi_no" clearable @change="loadSources" />
+            <div v-if="tf.pi_no && sourcesLoaded && !srcBills.length" class="muted hint">{{ t("transfer.noSnInPi") }}</div>
+          </el-form-item>
+          <el-form-item :label="t('transfer.fromBill')" required>
+            <el-select v-model="tf.bill_no" class="full" filterable :disabled="!srcBills.length" :placeholder="t('transfer.pickBill')" @change="onSourceBill">
+              <el-option v-for="b in srcBills" :key="b.bill_no" :value="b.bill_no" :label="`${b.bill_no} · ${t('transfer.snCount', { n: b.qty })}`" />
+            </el-select>
+          </el-form-item>
+          <el-form-item :label="t('transfer.scope')">
+            <el-radio-group v-model="tf.scope" @change="resetPreview">
+              <el-radio-button v-for="sc in SCOPES" :key="sc" :value="sc">{{ scopeLabel(sc) }}</el-radio-button>
+            </el-radio-group>
+            <div class="muted hint">{{ t(`transfer.scopeTip.${tf.scope}`) }}</div>
+          </el-form-item>
+          <el-form-item v-if="tf.scope !== 'BILL'" :label="t('common.material')" required>
+            <el-select v-model="tf.material_code" class="full" filterable :disabled="!srcMaterials.length" :placeholder="t('transfer.pickMaterial')" @change="onSourceMaterial">
+              <el-option v-for="mm in srcMaterials" :key="matKey(mm.material_code)" :value="matKey(mm.material_code)"
+                :label="`${mm.material_code || t('transfer.emptyMaterial')} · ${t('transfer.snCount', { n: mm.qty })}`" />
+            </el-select>
+          </el-form-item>
+          <el-form-item v-if="tf.scope === 'RANGE'" :label="t('transfer.range')" required>
+            <div class="pair">
+              <el-input v-model="tf.start_sn" class="sn-mono" :placeholder="t('transfer.startSn')" clearable @change="resetPreview" />
+              <el-input v-model="tf.end_sn" class="sn-mono" :placeholder="t('transfer.endSn')" clearable @change="resetPreview" />
+            </div>
+            <div class="muted hint">{{ t("transfer.rangeHint") }}</div>
+          </el-form-item>
+        </el-form>
+      </section>
+
+      <div class="sides__arrow"><el-icon><Right /></el-icon></div>
+
+      <section class="side">
+        <h5 class="side__t">{{ t("transfer.target") }}</h5>
+        <el-form label-position="top" class="form">
+          <el-form-item :label="t('transfer.toPi')" required>
+            <el-autocomplete v-model="tf.to_pi" class="full" :fetch-suggestions="suggestPi" :trigger-on-focus="false" clearable
+              @select="loadTargets" @change="loadTargets" />
+          </el-form-item>
+          <el-form-item :label="t('transfer.toBill')" required>
+            <el-select v-model="tf.to_bill" class="full" filterable :disabled="!toBills.length" :placeholder="t('transfer.pickBill')" @change="onTargetBill">
+              <el-option v-for="b in toBills" :key="b.bill_no" :value="b.bill_no" :disabled="tf.kind === 'BILL' && b.bill_no === tf.bill_no"
+                :label="`${b.bill_no} · ${nameOf(b.org_code)}`" />
+            </el-select>
+            <div v-if="toHead" class="muted hint">{{ t("common.customer") }} {{ toHead.customer_code || "—" }}</div>
+            <div v-else-if="tf.to_pi && targetsLoaded && !toBills.length" class="muted hint">{{ t("transfer.noBillInPi") }}</div>
+          </el-form-item>
+          <el-form-item :label="t('transfer.toOrg')" required>
+            <el-select v-model="tf.to_factory" filterable class="full" :disabled="tf.kind === 'BILL'" @change="resetPreview">
+              <el-option v-for="x in factories" :key="x.factory_code" :value="x.factory_code" :disabled="tf.kind === 'ORG' && !x.enabled"
+                :label="`${x.factory_name}（${x.factory_code}）${x.mes_enabled ? ' · MES' : ''}${x.enabled ? '' : t('common.disabledSuffix')}`" />
+              <el-option v-if="tf.kind === 'BILL' && tf.to_factory && !factories.some((x) => x.factory_code === tf.to_factory)" :value="tf.to_factory" :label="tf.to_factory" />
+            </el-select>
+            <div class="muted hint">{{ tf.kind === "BILL" ? t("transfer.orgOfBill") : t("transfer.orgFree") }}</div>
+          </el-form-item>
+          <el-form-item :label="t('transfer.toMaterial')" required>
+            <el-select v-model="tf.to_seq" class="full" :disabled="!toLines.length" :placeholder="t('transfer.pickTargetLine')" @change="resetPreview">
+              <el-option v-for="l in toLines" :key="l.seq" :value="l.seq" :label="lineLabel(l)" />
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </section>
+    </div>
+
+    <el-form label-position="top" class="form mt">
       <el-form-item :label="t('common.reason')" required>
         <el-input v-model="tf.reason" type="textarea" :rows="2" maxlength="500" show-word-limit :placeholder="t('common.reasonPlaceholder')" />
       </el-form-item>
@@ -87,15 +109,19 @@
       <p v-if="tf.kind === 'ORG'" class="muted">{{ store.isAdmin ? t("transfer.directNote") : t("transfer.applyNote") }}</p>
     </div>
     <template #footer>
-      <el-button @click="tf.open = false">{{ t("common.cancel") }}</el-button>
-      <el-button :loading="busy === 'pv'" :disabled="!ready" @click="preview">{{ t("transfer.preview") }}</el-button>
-      <el-button type="primary" :loading="busy === 'submit'" :disabled="!pv || !pv.transferable || !tf.reason.trim()" @click="submit">{{ submitLabel }}</el-button>
+      <div class="foot">
+        <span v-if="!pv" class="muted">{{ t("transfer.previewFirst") }}</span>
+        <span class="grow" />
+        <el-button @click="tf.open = false">{{ t("common.cancel") }}</el-button>
+        <el-button :loading="busy === 'pv'" :disabled="!ready" @click="preview">{{ t("transfer.preview") }}</el-button>
+        <el-button type="primary" :loading="busy === 'submit'" :disabled="!pv || !pv.transferable || !tf.reason.trim()" @click="submit">{{ submitLabel }}</el-button>
+      </div>
     </template>
   </el-dialog>
 </template>
 
 <script setup lang="ts">
-/** 新建转单（F-15，总部）/ 转组织（F-16，生产组织申请、总部直接转）共用一个表单：
+/** 新建转移：转单（F-15，总部）/ 转组织（F-16，生产组织申请、总部直接转）共用一个表单，总部在顶部切换类型；
  *  来源 PI → 单据 → 范围（整张单据 / 物料编码下全部号 / 物料编码下单枚或连续号段），转组织另选来源生产组织；
  *  目标 PI、单据、生产组织、物料行都必填（转单的生产组织取目标单据的）。完成后发出 done（种类、单据）。 */
 import { computed, reactive, ref } from "vue";
@@ -106,9 +132,7 @@ import FactorySelect from "@/components/FactorySelect.vue";
 import { useFactories } from "@/composables/useFactories";
 import { scopeLabel, statusLabel } from "@/constants";
 import { useAuthStore } from "@/stores/auth";
-import type { Preview, SourceBill, Target } from "./types";
-
-type Kind = "BILL" | "ORG";
+import { type Kind, KINDS, type Preview, type SourceBill, type Target } from "./types";
 type Scope = "BILL" | "MATERIAL" | "RANGE";
 const SCOPES: Scope[] = ["BILL", "MATERIAL", "RANGE"];
 /** el-select 把空串当作未选：空物料用占位值表示。 */
@@ -156,9 +180,17 @@ function resetPreview() {
 function lineLabel(l: Target) {
   return `${l.seq} · ${l.material_code || t("transfer.emptyMaterial")} · ${t("common.length")} ${l.length || "—"}`;
 }
+/** 切换类型：转单不限来源生产组织、目标生产组织取目标单据的，来源与目标候选都重新加载。 */
+function setKind(k: Kind) {
+  if (tf.kind === k) return;
+  tf.kind = k;
+  if (k === "BILL" && tf.to_bill === tf.bill_no) tf.to_bill = "";
+  loadSources();
+  loadTargets();
+}
 function open(kind: Kind, prefill: { factory_code?: string; pi?: string; material?: string } = {}) {
   Object.assign(tf, {
-    open: true, kind, factory_code: store.isFactory ? store.boundFactory : prefill.factory_code || "", pi_no: prefill.pi || "",
+    open: true, kind: store.isAdmin ? kind : "ORG", factory_code: store.isFactory ? store.boundFactory : prefill.factory_code || "", pi_no: prefill.pi || "",
     bill_no: "", scope: "BILL", material_code: "", start_sn: "", end_sn: "", to_pi: prefill.pi || "", to_bill: "", to_factory: "",
     to_seq: undefined, reason: "",
   });
@@ -285,17 +317,32 @@ defineExpose({ open });
 </script>
 
 <style scoped>
-.w220 { width: 220px; }
-.w260 { width: 260px; }
-.ml { margin-left: 8px; }
+.full { width: 100%; }
 .mt { margin-top: 12px; }
 .mt-s { margin-top: 6px; }
-.hint { width: 100%; margin-top: 4px; }
-.sec { margin: 0 0 10px; font-size: 14px; color: var(--app-text); }
+.grow { flex: 1; }
+.hint { width: 100%; margin-top: 4px; line-height: 1.5; }
+.lead { margin: 0 0 14px; }
 .form :deep(.el-form-item) { margin-bottom: 14px; }
+.form :deep(.el-form-item__label) { padding-bottom: 4px; line-height: 20px; }
+.kinds { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.kind { border: 1px solid var(--app-line); border-radius: 8px; padding: 10px 14px; cursor: pointer; transition: border-color .15s, background .15s; }
+.kind:hover { border-color: var(--el-color-primary-light-5); }
+.kind.on { border-color: var(--el-color-primary); background: var(--el-color-primary-light-9); }
+.kind__t { display: flex; align-items: center; gap: 6px; font-weight: 600; color: var(--app-text); margin-bottom: 4px; }
+.sides { display: grid; grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr); gap: 8px; align-items: stretch; }
+.side { border: 1px solid var(--app-line); border-radius: 8px; padding: 12px 16px 0; background: var(--app-surface); }
+.side__t { margin: 0 0 10px; font-size: 13px; font-weight: 600; color: var(--app-text); }
+.sides__arrow { display: flex; align-items: center; justify-content: center; color: var(--app-muted); font-size: 18px; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
 .preview { border: 1px solid var(--app-line); border-radius: 8px; padding: 12px 16px; background: var(--app-canvas); }
 .kpis { display: flex; flex-wrap: wrap; gap: 18px; align-items: baseline; }
 .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .ok { color: var(--el-color-success); }
 .warn { color: var(--el-color-danger); }
+.foot { display: flex; align-items: center; gap: 8px; }
+@media (max-width: 900px) {
+  .kinds, .sides, .pair { grid-template-columns: 1fr; }
+  .sides__arrow { transform: rotate(90deg); }
+}
 </style>

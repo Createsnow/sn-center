@@ -170,7 +170,7 @@ M = {
 "scope.PI": ("整张 PI", "Whole PI", "Toàn bộ PI"),
 "scope.SINGLE": ("单枚 SN", "Single SN", "Một SN"),
 "transferStatus.PENDING": ("待处理", "Pending", "Chờ xử lý"),
-"transferStatus.APPROVED": ("已确认", "Approved", "Đã duyệt"),
+"transferStatus.APPROVED": ("已完成", "Completed", "Đã hoàn tất"),
 "transferStatus.REJECTED": ("已驳回", "Rejected", "Đã từ chối"),
 "transferStatus.WITHDRAWN": ("已撤回", "Withdrawn", "Đã rút lại"),
 # ---------------- audit actions ----------------

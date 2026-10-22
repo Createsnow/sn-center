@@ -202,7 +202,7 @@
   },
   "transferStatus": {
     "PENDING": "Pending",
-    "APPROVED": "Approved",
+    "APPROVED": "Completed",
     "REJECTED": "Rejected",
     "WITHDRAWN": "Withdrawn"
   },
@@ -943,9 +943,23 @@
   },
   "transfer": {
     "title": "SN transfer",
-    "tabBill": "Bill transfer",
-    "tabOrg": "Org transfer",
-    "newBill": "New bill transfer",
+    "new": "New transfer",
+    "kind": "Type",
+    "allKinds": "All types",
+    "kindName": {
+      "BILL": "Bill transfer",
+      "ORG": "Org transfer"
+    },
+    "kindTitle": {
+      "BILL": "Bill transfer · new production order",
+      "ORG": "Org transfer · new production org"
+    },
+    "kindTip": {
+      "BILL": "For orders voided or split in Kingdee: SNs move to another production order and follow its org; SNs still to allocate may move too; effective at once.",
+      "ORG": "SNs move to another production org (may differ from the target bill's), limited to allocated SNs of the source org; effective at once when HQ transfers, otherwise the org applies and HQ approves."
+    },
+    "previewFirst": "Preview first, then submit once the transferable count looks right",
+    "newBill": "Bill transfer",
     "newApply": "Request org transfer",
     "newDirect": "Direct org transfer",
     "no": "Doc No.",
@@ -1023,7 +1037,7 @@
     "after": "After",
     "current": "Now",
     "transferredOut": "Transferred out",
-    "desc": "Bill transfer: when an order is voided or split in Kingdee, re-attach its SNs to another production order (HQ only). Org transfer: move SNs to another production org (org applies, HQ approves; HQ may also transfer directly). Both pick the source by PI → bill → material → single SN or range, and require target PI, bill, production org and material. SN strings never change; MES is informed by automatic reassign / transfer-out pushes.",
+    "desc": "Re-attach SNs to another production order or org; SN strings never change. Two kinds: bill transfer (for orders voided or split in Kingdee; SNs follow the target bill; HQ only, effective at once) and org transfer (SNs move to another production org; org applies and HQ approves, or HQ transfers directly). Both pick the source by PI → bill → material → single SN or range, and require target PI, bill, production org and material. MES is informed by automatic reassign / transfer-out pushes.",
     "scopeTip": {
       "BILL": "All SNs of this bill under the PI",
       "MATERIAL": "All SNs of this material code in the bill (all lines of the material)",

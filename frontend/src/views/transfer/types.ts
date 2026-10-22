@@ -1,3 +1,7 @@
+/** 转移类型：BILL 转单 / ORG 转组织。 */
+export type Kind = "BILL" | "ORG";
+export const KINDS: Kind[] = ["BILL", "ORG"];
+
 /** 转单、转组织目标候选：快照中的物料行。 */
 export interface Target {
   org_code: string;

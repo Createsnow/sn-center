@@ -3,7 +3,8 @@
     <template #header>
       <div v-if="det" class="dh">
         <b class="sn-mono">{{ det.doc.transfer_no }}</b>
-        <el-tag v-if="det.kind === 'ORG'" size="small" :type="TRANSFER_STATUS_TYPE[det.doc.status] || 'info'">{{ transferStatusLabel(det.doc.status) }}</el-tag>
+        <el-tag size="small" effect="plain" :type="det.kind === 'BILL' ? 'primary' : 'warning'">{{ t(`transfer.kindName.${det.kind}`) }}</el-tag>
+        <el-tag size="small" :type="TRANSFER_STATUS_TYPE[det.doc.status ?? 'APPROVED'] || 'info'">{{ transferStatusLabel(det.doc.status ?? "APPROVED") }}</el-tag>
         <el-tag v-if="det.doc.direction" size="small" effect="plain">{{ t(`transfer.direction.${det.doc.direction}`) }}</el-tag>
       </div>
     </template>
@@ -43,6 +44,15 @@
         <el-button v-if="det.kind === 'ORG' && det.doc.status === 'APPROVED'" size="small" @click="downloadOutList(det.doc)">
           <el-icon><Download /></el-icon><span>{{ t("transfer.outList") }}</span>
         </el-button>
+        <template v-if="det.kind === 'ORG' && det.doc.status === 'PENDING'">
+          <template v-if="store.isAdmin">
+            <el-button size="small" type="success" @click="emit('decide', det.doc, 'approve')">{{ t("transfer.approve") }}</el-button>
+            <el-button size="small" type="danger" plain @click="emit('decide', det.doc, 'reject')">{{ t("transfer.reject") }}</el-button>
+          </template>
+          <el-button v-else-if="store.isFactory && det.doc.direction === 'OUT'" size="small" type="warning" plain @click="emit('withdraw', det.doc)">
+            {{ t("transfer.withdraw") }}
+          </el-button>
+        </template>
       </div>
 
       <template v-if="det.doc.deliveries?.length || det.doc.out_batches?.length">
@@ -128,8 +138,8 @@
 </template>
 
 <script setup lang="ts">
-/** 转单 / 转组织单详情：单据信息、转出号清单下载、转移后的推送（续推、转出批次人工确认 / 作废）与逐枚明细。
- *  父组件用 ref 调 show(类型, 单据) 或 open(类型, id)。 */
+/** 转单 / 转组织单详情：单据信息、待处理单的确认 / 驳回 / 撤回（交给父组件）、转出号清单下载、
+ *  转移后的推送（续推、转出批次人工确认 / 作废）与逐枚明细。父组件用 ref 调 show(类型, 单据)、open(类型, id)、refresh()。 */
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { ElMessage } from "element-plus";
@@ -144,9 +154,9 @@ import { BATCH_RESULT_TYPE, TRANSFER_STATUS_TYPE, batchResultLabel, scopeLabel, 
 import { useAuthStore } from "@/stores/auth";
 import { canConfirm, canVoid } from "@/utils/batch";
 import { downloadWithToken } from "@/utils/download";
-import { snRange } from "./types";
+import { type Kind, snRange } from "./types";
 
-type Kind = "BILL" | "ORG";
+const emit = defineEmits<{ decide: [doc: any, kind: "approve" | "reject"]; withdraw: [doc: any] }>();
 
 const { t } = useI18n();
 const store = useAuthStore();
@@ -189,7 +199,7 @@ async function downloadOutList(doc: any) {
   }
 }
 
-defineExpose({ show, open });
+defineExpose({ show, open, refresh });
 </script>
 
 <style scoped>

@@ -1,118 +1,87 @@
 <template>
   <div class="page">
     <PageHead :title="t('transfer.title')" :desc="t('transfer.desc')">
-      <el-button v-if="tab === 'bill' && store.isAdmin" type="primary" @click="dlg?.open('BILL')"><el-icon><Plus /></el-icon><span>{{ t("transfer.newBill") }}</span></el-button>
-      <el-button v-if="tab === 'org' && store.canAct" type="primary" @click="dlg?.open('ORG')"><el-icon><Plus /></el-icon><span>{{ store.isAdmin ? t("transfer.newDirect") : t("transfer.newApply") }}</span></el-button>
+      <el-button v-if="store.canAct" type="primary" @click="openNew()"><el-icon><Plus /></el-icon><span>{{ t("transfer.new") }}</span></el-button>
     </PageHead>
 
-    <el-tabs v-model="tab" @tab-change="onTab">
-      <!-- ================= 转单记录 ================= -->
-      <el-tab-pane :label="t('transfer.tabBill')" name="bill">
-        <div class="surface">
-          <div class="toolbar">
-            <FactorySelect v-if="!store.bound" v-model="bq.factory_code" clearable :placeholder="t('app.allFactories')" @update:model-value="bills.load(1)" />
-            <el-input v-model="bq.pi" placeholder="PI" clearable @keyup.enter="bills.load(1)" @clear="bills.load(1)" />
-            <el-input v-model="bq.bill_no" :placeholder="t('common.billNo')" clearable @keyup.enter="bills.load(1)" @clear="bills.load(1)" />
-            <el-button type="primary" @click="bills.load(1)">{{ t("common.search") }}</el-button>
-          </div>
-          <el-table v-loading="bills.state.loading" :data="bills.items.value" size="small" :empty-text="t('common.empty')">
-            <el-table-column prop="transfer_no" :label="t('transfer.no')" min-width="180"><template #default="{ row }"><span class="sn-mono">{{ row.transfer_no }}</span></template></el-table-column>
-            <el-table-column :label="t('transfer.scope')" width="110"><template #default="{ row }">{{ row.scope ? scopeLabel(row.scope) : t(`transfer.billMode.${row.mode}`) }}</template></el-table-column>
-            <el-table-column :label="t('transfer.fromTo')" min-width="240">
-              <template #default="{ row }">
-                <div>{{ row.from_bill }} → <b>{{ row.to_bill }}</b><span v-if="row.to_seq" class="muted"> / {{ row.to_seq }} · {{ row.to_material || t("transfer.emptyMaterial") }}</span></div>
-                <div class="muted">{{ row.from_pi }} → {{ row.to_pi }}<template v-if="row.to_factory"> · {{ nameOf(row.to_factory) }}</template></div>
-              </template>
-            </el-table-column>
-            <el-table-column prop="scope_text" :label="t('transfer.scope')" min-width="160" show-overflow-tooltip />
-            <el-table-column :label="t('common.qty')" align="right" width="70"><template #default="{ row }"><span class="num">{{ row.qty }}</span></template></el-table-column>
-            <el-table-column prop="reason" :label="t('common.reason')" min-width="140" show-overflow-tooltip />
-            <el-table-column prop="created_by" :label="t('common.operator')" width="100" />
-            <el-table-column :label="t('common.time')" width="160"><template #default="{ row }">{{ fmt(row.created_at) }}</template></el-table-column>
-            <el-table-column :label="t('common.actions')" width="80" align="right">
-              <template #default="{ row }"><el-button link type="primary" @click="detail?.open('BILL', row.id)">{{ t("common.detail") }}</el-button></template>
-            </el-table-column>
-          </el-table>
-          <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="bills.state.total" :page-size="bills.state.pageSize"
-            :current-page="bills.state.page" :page-sizes="[20, 50, 100]" @current-change="bills.load" @size-change="bills.onSize" />
-        </div>
-      </el-tab-pane>
-
-      <!-- ================= 转组织记录 ================= -->
-      <el-tab-pane name="org">
-        <template #label>
-          <span>{{ t("transfer.tabOrg") }}</span>
-          <el-badge v-if="pending" :value="pending" class="badge" />
-        </template>
-        <div class="surface">
-          <div class="toolbar">
-            <el-radio-group v-model="oq.status" @change="orgs.load(1)">
-              <el-radio-button v-for="s in ORG_STATUSES" :key="s" :value="s">
-                {{ s ? transferStatusLabel(s) : t("common.all") }}<span v-if="s === 'PENDING' && pending" class="cnt num">{{ pending }}</span>
-              </el-radio-button>
-            </el-radio-group>
-            <FactorySelect v-if="!store.bound" v-model="oq.factory_code" clearable :placeholder="t('app.allFactories')" @update:model-value="orgs.load(1)" />
-            <el-input v-model="oq.pi" :placeholder="t('transfer.piInOut')" clearable @keyup.enter="orgs.load(1)" @clear="orgs.load(1)" />
-            <el-input v-model="oq.bill_no" :placeholder="t('common.billNo')" clearable @keyup.enter="orgs.load(1)" @clear="orgs.load(1)" />
-            <el-button type="primary" @click="orgs.load(1)">{{ t("common.search") }}</el-button>
-          </div>
-          <el-table v-loading="orgs.state.loading" :data="orgRows" size="small" :empty-text="t('common.empty')">
-            <el-table-column prop="transfer_no" :label="t('transfer.no')" min-width="180">
-              <template #default="{ row }">
-                <span class="sn-mono">{{ row.transfer_no }}</span>
-                <el-tag v-if="row.direction" size="small" :type="row.direction === 'OUT' ? 'warning' : 'success'" class="ml">{{ t(`transfer.direction.${row.direction}`) }}</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column :label="t('common.status')" width="100">
-              <template #default="{ row }"><el-tag size="small" :type="TRANSFER_STATUS_TYPE[row.status] || 'info'">{{ transferStatusLabel(row.status) }}</el-tag></template>
-            </el-table-column>
-            <el-table-column :label="t('transfer.mode')" width="100"><template #default="{ row }">{{ t(`transfer.orgMode.${row.mode}`) }}</template></el-table-column>
-            <el-table-column :label="t('transfer.source')" min-width="200">
-              <template #default="{ row }">
-                <div>{{ nameOf(row.from_factory) }} · {{ row.from_pi }}</div>
-                <div class="muted">{{ scopeLabel(row.scope) }}<template v-if="row.from_bill"> · {{ row.from_bill }}</template><template v-if="row.from_material && (row.scope === 'MATERIAL' || row.scope === 'RANGE')"> · {{ row.from_material }}</template><template v-if="row.from_sn"> · <span class="sn-mono">{{ snRange(row) }}</span></template></div>
-              </template>
-            </el-table-column>
-            <el-table-column :label="t('transfer.target')" min-width="200">
-              <template #default="{ row }">
-                <div>
-                  {{ nameOf(row.to_factory) }} · {{ row.to_pi }}
+    <!-- ================= 转移记录（转单 + 转组织） ================= -->
+    <div class="surface">
+      <div class="toolbar">
+        <el-radio-group v-model="lq.status" @change="list.load(1)">
+          <el-radio-button v-for="s in STATUSES" :key="s" :value="s">
+            {{ s ? transferStatusLabel(s) : t("common.all") }}<span v-if="s === 'PENDING' && pending" class="cnt num">{{ pending }}</span>
+          </el-radio-button>
+        </el-radio-group>
+        <el-select v-model="lq.kind" class="w140" clearable :placeholder="t('transfer.allKinds')" @change="list.load(1)">
+          <el-option v-for="k in KINDS" :key="k" :value="k" :label="t(`transfer.kindName.${k}`)" />
+        </el-select>
+        <FactorySelect v-if="!store.bound" v-model="lq.factory_code" clearable :placeholder="t('app.allFactories')" @update:model-value="list.load(1)" />
+        <el-input v-model="lq.pi" :placeholder="t('transfer.piInOut')" clearable @keyup.enter="list.load(1)" @clear="list.load(1)" />
+        <el-input v-model="lq.bill_no" :placeholder="t('common.billNo')" clearable @keyup.enter="list.load(1)" @clear="list.load(1)" />
+        <el-button type="primary" @click="list.load(1)">{{ t("common.search") }}</el-button>
+      </div>
+      <el-table v-loading="list.state.loading" :data="list.items.value" size="small" :empty-text="t('common.empty')" :row-class-name="rowClass">
+        <el-table-column :label="t('transfer.no')" min-width="180">
+          <template #default="{ row }">
+            <el-button link type="primary" class="sn-mono" @click="detail?.open(row.kind, row.id)">{{ row.transfer_no }}</el-button>
+            <div class="muted">
+              <el-tag size="small" effect="plain" :type="row.kind === 'BILL' ? 'primary' : 'warning'">{{ t(`transfer.kindName.${row.kind}`) }}</el-tag>
+              <span class="ml">{{ modeLabel(row) }}</span>
+              <el-tag v-if="row.direction" size="small" :type="row.direction === 'OUT' ? 'warning' : 'success'" class="ml">{{ t(`transfer.direction.${row.direction}`) }}</el-tag>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column :label="t('common.status')" width="90">
+          <template #default="{ row }"><el-tag size="small" :type="TRANSFER_STATUS_TYPE[row.status] || 'info'">{{ transferStatusLabel(row.status) }}</el-tag></template>
+        </el-table-column>
+        <el-table-column :label="t('transfer.fromTo')" min-width="360">
+          <template #default="{ row }">
+            <div class="flow">
+              <div class="end">
+                <div class="one" :title="row.from_bill">{{ row.from_factory ? `${nameOf(row.from_factory)} · ` : "" }}{{ row.from_pi }}<template v-if="row.from_bill"> · {{ row.from_bill }}</template></div>
+                <div class="muted one" :title="sourceText(row)">{{ sourceText(row) }}</div>
+              </div>
+              <el-icon class="arrow"><Right /></el-icon>
+              <div class="end">
+                <div class="one" :title="row.to_factory ? nameOf(row.to_factory) : undefined">
+                  <b>{{ row.to_factory ? `${nameOf(row.to_factory)} · ` : "" }}{{ row.to_pi }}</b>
                   <el-tag v-if="row.to_factory_disabled" size="small" type="danger" class="ml">{{ t("transfer.targetDisabled") }}</el-tag>
                 </div>
-                <div class="muted">{{ targetText(row) }}</div>
+                <div class="muted one" :title="targetText(row)">{{ targetText(row) }}</div>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column :label="t('common.qty')" align="right" width="70"><template #default="{ row }"><span class="num">{{ row.qty }}</span></template></el-table-column>
+        <el-table-column prop="reason" :label="t('common.reason')" min-width="110" show-overflow-tooltip />
+        <el-table-column :label="t('common.operator')" width="150">
+          <template #default="{ row }"><div>{{ row.created_by }}</div><div class="muted">{{ fmt(row.created_at) }}</div></template>
+        </el-table-column>
+        <el-table-column :label="t('common.actions')" width="170" align="right">
+          <template #default="{ row }">
+            <el-button link type="primary" @click="detail?.open(row.kind, row.id)">{{ t("common.detail") }}</el-button>
+            <template v-if="row.status === 'PENDING'">
+              <template v-if="store.isAdmin">
+                <el-button link type="success" :disabled="row.to_factory_disabled" @click="decide(row, 'approve')">{{ t("transfer.approve") }}</el-button>
+                <el-button link type="danger" @click="decide(row, 'reject')">{{ t("transfer.reject") }}</el-button>
               </template>
-            </el-table-column>
-            <el-table-column :label="t('common.qty')" align="right" width="70"><template #default="{ row }"><span class="num">{{ row.qty }}</span></template></el-table-column>
-            <el-table-column :label="t('transfer.applied')" width="160">
-              <template #default="{ row }"><div>{{ row.applied_by }}</div><div class="muted">{{ fmt(row.applied_at) }}</div></template>
-            </el-table-column>
-            <el-table-column :label="t('common.actions')" width="200" align="right">
-              <template #default="{ row }">
-                <el-button link type="primary" @click="detail?.open('ORG', row.id)">{{ t("common.detail") }}</el-button>
-                <template v-if="row.status === 'PENDING'">
-                  <template v-if="store.isAdmin">
-                    <el-button link type="success" :disabled="row.to_factory_disabled" @click="decide(row, 'approve')">{{ t("transfer.approve") }}</el-button>
-                    <el-button link type="danger" @click="decide(row, 'reject')">{{ t("transfer.reject") }}</el-button>
-                  </template>
-                  <el-button v-else-if="store.isFactory && row.direction === 'OUT'" link type="warning" @click="withdraw(row)">{{ t("transfer.withdraw") }}</el-button>
-                </template>
-              </template>
-            </el-table-column>
-          </el-table>
-          <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="orgs.state.total" :page-size="orgs.state.pageSize"
-            :current-page="orgs.state.page" :page-sizes="[20, 50, 100]" @current-change="orgs.load" @size-change="orgs.onSize" />
-        </div>
-      </el-tab-pane>
-    </el-tabs>
+              <el-button v-else-if="store.isFactory && row.direction === 'OUT'" link type="warning" @click="withdraw(row)">{{ t("transfer.withdraw") }}</el-button>
+            </template>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="list.state.total" :page-size="list.state.pageSize"
+        :current-page="list.state.page" :page-sizes="[20, 50, 100]" @current-change="list.load" @size-change="list.onSize" />
+    </div>
 
     <TransferDialog ref="dlg" @done="onDone" />
-    <TransferDetailDrawer ref="detail" />
+    <TransferDetailDrawer ref="detail" @decide="decide" @withdraw="withdraw" />
   </div>
 </template>
 
 <script setup lang="ts">
-/** SN 转移（F-15、F-16）：转单记录、转组织记录（申请、审批、撤回）；新建与详情见 views/transfer。 */
-import { computed, onMounted, reactive, ref } from "vue";
+/** SN 转移（F-15、F-16、F-17）：转单与转组织合在一张记录表（申请、审批、撤回）；新建与详情见 views/transfer。 */
+import { onMounted, reactive, ref } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -126,9 +95,9 @@ import { TRANSFER_STATUS_TYPE, scopeLabel, transferStatusLabel } from "@/constan
 import { useAuthStore } from "@/stores/auth";
 import TransferDialog from "@/views/transfer/TransferDialog.vue";
 import TransferDetailDrawer from "@/views/transfer/TransferDetailDrawer.vue";
-import { snRange } from "@/views/transfer/types";
+import { type Kind, KINDS, snRange } from "@/views/transfer/types";
 
-const ORG_STATUSES = ["", "PENDING", "APPROVED", "REJECTED", "WITHDRAWN"];
+const STATUSES = ["", "PENDING", "APPROVED", "REJECTED", "WITHDRAWN"];
 
 const { t } = useI18n();
 const store = useAuthStore();
@@ -138,27 +107,37 @@ const { fmt } = useTime();
 const dlg = ref<InstanceType<typeof TransferDialog> | null>(null);
 const detail = ref<InstanceType<typeof TransferDetailDrawer> | null>(null);
 
-const tab = ref<"bill" | "org">(route.query.tab === "org" || !store.isAdmin ? "org" : "bill");
-
-// ---------------- 转单列表
-const bq = reactive({ factory_code: "", pi: "", bill_no: "" });
-const bills = usePaged<any>((q) => api.billTransfers({ ...q, ...bq, pi: bq.pi.trim(), bill_no: bq.bill_no.trim() }));
-
-// ---------------- 转组织列表（总部默认看待处理）
-const oq = reactive({ status: store.isAdmin ? "PENDING" : "", factory_code: "", pi: "", bill_no: "" });
+// ---------------- 转移记录：转单与转组织合在一张表（新的在前）；首页「待处理」带 status=PENDING 进来
+const lq = reactive({
+  status: typeof route.query.status === "string" ? route.query.status : "", kind: "", factory_code: "", pi: "", bill_no: "",
+});
 const pending = ref(0);
-const orgs = usePaged<any>(async (q) => {
-  const r = await api.orgTransfers({ ...q, ...oq, pi: oq.pi.trim(), bill_no: oq.bill_no.trim() });
+const list = usePaged<any>(async (q) => {
+  const r = await api.transfers({ ...q, ...lq, pi: lq.pi.trim(), bill_no: lq.bill_no.trim() });
   pending.value = r.pending ?? 0;
   return r;
 });
-const orgRows = computed(() =>
-  orgs.items.value.map((x: any) => ({ ...x.transfer, direction: x.direction, to_factory_disabled: x.to_factory_disabled })),
-);
 
-function onTab(name: string | number) {
-  if (name === "bill") bills.load(1);
-  else orgs.load(1);
+function modeLabel(row: any) {
+  return row.kind === "BILL" ? t(`transfer.billMode.${row.mode}`) : t(`transfer.orgMode.${row.mode}`);
+}
+function rowClass({ row }: { row: any }) {
+  return row.status === "PENDING" ? "is-pending" : "";
+}
+/** 来源范围：整张单据 / 物料 / 号段。转单没有物料、号段列，取范围说明「PI / 单据 / 物料 / 起止号」去掉 PI、单据；
+ *  早期转单没有范围，只显示范围说明。 */
+function sourceText(d: any) {
+  if (!d.scope) return d.scope_text;
+  const rest = d.kind === "BILL" ? (d.scope_text || "").split(" / ").slice(2) : [d.scope !== "BILL" && d.from_material, d.from_sn && snRange(d)];
+  return [scopeLabel(d.scope), ...rest].filter(Boolean).join(" · ");
+}
+/** 目标：单据 / 序号 · 物料 · 客户（早期单子没有目标单据）。 */
+function targetText(d: { to_bill?: string; to_seq?: number; to_material?: string; to_customer?: string }) {
+  return [
+    d.to_bill && (d.to_seq ? `${d.to_bill} / ${d.to_seq}` : d.to_bill),
+    d.to_material && `${t("common.material")} ${d.to_material}`,
+    d.to_customer && `${t("common.customer")} ${d.to_customer}`,
+  ].filter(Boolean).join(" · ");
 }
 
 async function decide(row: any, kind: "approve" | "reject") {
@@ -169,44 +148,34 @@ async function decide(row: any, kind: "approve" | "reject") {
   );
   const r = kind === "approve" ? await api.approveOrg(row.id, value || undefined) : await api.rejectOrg(row.id, value || undefined);
   ElMessage.success(t("common.done"));
-  orgs.load();
+  list.load();
   if (kind === "approve") detail.value?.open("ORG", r.id);
+  else detail.value?.refresh();
 }
 
 async function withdraw(row: any) {
   await ElMessageBox.confirm(t("transfer.withdrawConfirm", { no: row.transfer_no }), t("transfer.withdraw"), { type: "warning" });
   await api.withdrawOrg(row.id);
   ElMessage.success(t("common.done"));
-  orgs.load();
+  list.load();
+  detail.value?.refresh();
 }
 
-function onDone(kind: "BILL" | "ORG", doc: any) {
-  if (kind === "BILL") {
-    tab.value = "bill";
-    bills.load(1);
-    detail.value?.show("BILL", doc);
-    return;
-  }
-  tab.value = "org";
-  orgs.load(1);
-  if (doc.status === "APPROVED") detail.value?.open("ORG", doc.id);
+/** 总部默认转单，生产组织操作员只能申请转组织（对话框里总部可切换类型）。 */
+function openNew(kind?: Kind, prefill: { factory_code?: string; pi?: string; material?: string } = {}) {
+  dlg.value?.open(kind ?? (store.isAdmin ? "BILL" : "ORG"), prefill);
 }
 
-/** 转组织单的目标：单据 / 序号 · 物料 · 客户（早期单子没有目标单据）。 */
-function targetText(d: { to_bill?: string; to_seq?: number; to_material?: string; to_customer?: string }) {
-  return [
-    d.to_bill && `${d.to_bill} / ${d.to_seq}`,
-    d.to_material && `${t("common.material")} ${d.to_material}`,
-    d.to_customer && `${t("common.customer")} ${d.to_customer}`,
-  ].filter(Boolean).join(" · ");
+function onDone(kind: Kind, doc: any) {
+  list.load(1);
+  if (kind === "BILL") detail.value?.show("BILL", doc);
+  else if (doc.status === "APPROVED") detail.value?.open("ORG", doc.id);
 }
 
 onMounted(() => {
-  if (tab.value === "bill") bills.load(1);
-  orgs.load(1);
+  list.load(1);
   if (route.query.new === "1" && store.canAct) {
-    tab.value = "org";
-    dlg.value?.open("ORG", {
+    openNew(route.query.kind === "BILL" ? "BILL" : "ORG", {
       factory_code: route.query.factory_code ? String(route.query.factory_code) : undefined,
       pi: route.query.pi ? String(route.query.pi) : undefined,
       material: route.query.material !== undefined ? String(route.query.material) : undefined,
@@ -218,5 +187,11 @@ onMounted(() => {
 <style scoped>
 .ml { margin-left: 8px; }
 .cnt { margin-left: 6px; font-size: 12px; }
-.badge { margin-left: 4px; vertical-align: top; }
+.one { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.toolbar .w140 { width: 140px; }
+.toolbar :deep(.el-input), .toolbar :deep(.factory-select) { width: 170px; }
+:deep(.el-table .is-pending td.el-table__cell:first-child) { box-shadow: inset 3px 0 0 var(--el-color-warning); }
+.flow { display: grid; grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1fr); align-items: center; gap: 8px; }
+.flow .end { min-width: 0; }
+.flow .arrow { color: var(--app-muted); }
 </style>

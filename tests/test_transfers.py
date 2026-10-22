@@ -467,6 +467,30 @@ def test_bill_list_and_items(w, api):
     assert BILLS[tgt]["BillNo"] == tgt
 
 
+def test_all_list_merges_bill_and_org(w, api):
+    """记录页：转单与转组织合在一张表，新的在前；按类型、状态筛选；转单记已完成。"""
+    org, pi, src = setup(w, qty=2, mes=False)
+    tgt = uid("MO")
+    w.order(tgt, org, "C1", pi, ("M1", 2))
+    w.allocate(pi)
+    bt = ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, org), w.admin))
+    op = w.user(emp("F"), "factory_operator", org)
+    ot = ok(api.post("/api/transfers/org", org_body(None, pi, tgt, w.org(uid("O")[:10])), op))
+
+    lst = ok(api.get(f"/api/transfers?pi={pi}", w.admin))
+    assert [(x["kind"], x["transfer_no"]) for x in lst["items"]] == [
+        ("ORG", ot["transfer_no"]),
+        ("BILL", bt["transfer_no"]),
+    ]
+    assert lst["total"] == 2 and lst["pending"] >= 1
+    assert lst["items"][1]["status"] == "APPROVED" and lst["items"][1]["to_bill"] == tgt
+    assert [x["kind"] for x in ok(api.get(f"/api/transfers?pi={pi}&status=PENDING", w.admin))["items"]] == ["ORG"]
+    assert [x["kind"] for x in ok(api.get(f"/api/transfers?pi={pi}&kind=BILL", w.admin))["items"]] == ["BILL"]
+    assert ok(api.get(f"/api/transfers?pi={pi}&kind=BILL&status=PENDING", w.admin))["items"] == []
+    mine = ok(api.get(f"/api/transfers?pi={pi}", op))["items"]
+    assert {x["kind"]: x["direction"] for x in mine} == {"ORG": "OUT", "BILL": ""}
+
+
 def test_void_transfer_out_rebuilds_and_delivers(w, sql):
     """9.2-15：转出批次作废后按原明细重建新的转出批次并送达；作废的转出批次不能再取回。"""
     a, pi, bill = setup(w, qty=2)

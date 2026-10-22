@@ -119,6 +119,7 @@ export const api = {
   orgCandidates: (data: Q) => post("/transfers/org/candidates", data),
   orgApply: (data: Q) => post("/transfers/org", data),
   orgDirect: (data: Q) => post("/transfers/org/direct", data),
+  transfers: (params?: Q) => get("/transfers", params),
   orgTransfers: (params?: Q) => get("/transfers/org", params),
   orgTransfer: (id: number) => get(`/transfers/org/${id}`),
   orgTransferItems: (id: number, params?: Q) => get(`/transfers/org/${id}/items`, params),

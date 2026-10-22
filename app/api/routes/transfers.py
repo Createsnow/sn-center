@@ -10,6 +10,20 @@ from app.services import files, transfers
 router = APIRouter(prefix="/transfers", tags=["transfers"])
 
 
+@router.get("", summary="转移记录：转单与转组织合并，kind = BILL / ORG；status 同转组织（转单记 APPROVED）")
+def all_list(
+    cu: UserDep,
+    kind: str | None = None,
+    status: str | None = None,
+    factory_code: str | None = None,
+    pi: str | None = None,
+    bill_no: str | None = None,
+    page: OptInt = None,
+    page_size: OptInt = None,
+) -> dict:
+    return transfers.list_all(cu, kind, status, factory_code, pi, bill_no, page_of(page, page_size))
+
+
 @router.get(
     "/sources", summary="来源候选：PI 下各单据、各物料的号数（kind = BILL 转单 / ORG 转组织，转组织限来源生产组织）"
 )

@@ -169,7 +169,7 @@ const kpis = computed<Kpi[]>(() => {
     { key: "suspended", label: t("dashboard.suspended"), value: d.suspended, alarm: true },
     { key: "interrupted", label: t("dashboard.pushInterrupted"), value: d.push_interrupted, alarm: true, to: "/query?tab=delivery" },
     { key: "pull", label: t("dashboard.pullUnconfirmed"), value: d.pull_unconfirmed, alarm: true, to: "/query?tab=delivery" },
-    { key: "transfers", label: t("dashboard.pendingTransferKpi"), value: d.pending_transfers, to: "/transfer" },
+    { key: "transfers", label: t("dashboard.pendingTransferKpi"), value: d.pending_transfers, to: "/transfer?status=PENDING" },
     { key: "dalerts", label: t("dashboard.deliveryAlertKpi"), value: alerts, alarm: true, to: "/query?tab=alerts" },
   );
   if (store.isAdmin || store.isQuery) rows.push({ key: "oalerts", label: t("dashboard.orderAlertKpi"), value: d.order_alerts, alarm: true, to: "/orders?tab=alerts" });

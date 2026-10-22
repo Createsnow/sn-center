@@ -202,7 +202,7 @@
   },
   "transferStatus": {
     "PENDING": "Chờ xử lý",
-    "APPROVED": "Đã duyệt",
+    "APPROVED": "Đã hoàn tất",
     "REJECTED": "Đã từ chối",
     "WITHDRAWN": "Đã rút lại"
   },
@@ -943,9 +943,23 @@
   },
   "transfer": {
     "title": "Chuyển SN",
-    "tabBill": "Chuyển chứng từ",
-    "tabOrg": "Chuyển tổ chức",
-    "newBill": "Tạo chuyển chứng từ",
+    "new": "Tạo phiếu chuyển",
+    "kind": "Loại",
+    "allKinds": "Mọi loại",
+    "kindName": {
+      "BILL": "Chuyển chứng từ",
+      "ORG": "Chuyển tổ chức"
+    },
+    "kindTitle": {
+      "BILL": "Chuyển chứng từ · đổi lệnh sản xuất",
+      "ORG": "Chuyển tổ chức · đổi tổ chức sản xuất"
+    },
+    "kindTip": {
+      "BILL": "Dùng khi lệnh bị hủy hoặc tách trong Kingdee: SN chuyển sang lệnh sản xuất khác, theo tổ chức của lệnh đó; SN chờ phân bổ cũng chuyển được; có hiệu lực ngay.",
+      "ORG": "SN chuyển sang tổ chức sản xuất khác (có thể khác tổ chức của chứng từ đích), chỉ SN đã phân bổ của tổ chức nguồn; trụ sở chuyển trực tiếp có hiệu lực ngay, tổ chức thì phải xin và trụ sở duyệt."
+    },
+    "previewFirst": "Hãy xem trước, kiểm tra số có thể chuyển rồi mới gửi",
+    "newBill": "Chuyển chứng từ",
     "newApply": "Xin chuyển tổ chức",
     "newDirect": "Chuyển tổ chức trực tiếp",
     "no": "Số phiếu",
@@ -1023,7 +1037,7 @@
     "after": "Sau khi chuyển",
     "current": "Hiện tại",
     "transferredOut": "Đã chuyển đi",
-    "desc": "Chuyển chứng từ: khi lệnh bị hủy hoặc tách trong Kingdee, gắn SN sang lệnh sản xuất khác (trụ sở thực hiện). Chuyển tổ chức: chuyển SN sang tổ chức sản xuất khác (tổ chức xin, trụ sở duyệt; trụ sở cũng có thể chuyển trực tiếp). Cả hai chọn nguồn theo PI → chứng từ → vật tư → một SN hoặc dải số, và bắt buộc nhập PI, chứng từ, tổ chức sản xuất, vật tư đích. Chuỗi SN không đổi; MES được báo bằng lần đẩy điều chuyển / chuyển đi tự động.",
+    "desc": "Gắn SN sang lệnh sản xuất hoặc tổ chức khác; chuỗi SN không đổi. Hai loại: chuyển chứng từ (khi lệnh bị hủy hoặc tách trong Kingdee; SN theo chứng từ đích; trụ sở thực hiện, có hiệu lực ngay) và chuyển tổ chức (SN sang tổ chức sản xuất khác; tổ chức xin, trụ sở duyệt, hoặc trụ sở chuyển trực tiếp). Cả hai chọn nguồn theo PI → chứng từ → vật tư → một SN hoặc dải số, và bắt buộc nhập PI, chứng từ, tổ chức sản xuất, vật tư đích. MES được báo bằng lần đẩy điều chuyển / chuyển đi tự động.",
     "scopeTip": {
       "BILL": "Mọi SN của chứng từ này trong PI",
       "MATERIAL": "Mọi SN của mã vật tư này trong chứng từ (mọi dòng cùng vật tư)",

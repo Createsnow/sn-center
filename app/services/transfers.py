@@ -1070,9 +1070,7 @@ def _direction(cu: CurrentUser, from_f: str | None) -> str:
     return "OUT" if from_f in cu.factories else "IN"
 
 
-def list_org(
-    cu: CurrentUser, status: str | None, factory: str | None, pi: str | None, bill: str | None, page: util.Page
-) -> dict:
+def _org_where(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None) -> tuple[str, list]:
     where = " WHERE 1=1"
     args: list = []
     if not util.blank(pi):
@@ -1090,6 +1088,34 @@ def list_org(
         to, ta = factories.scope_sql(facs, "to_factory")
         where += f" AND ((1=1{fr}) OR (1=1{to}))"
         args += [*fa, *ta]
+    return where, args
+
+
+def _bill_where(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None) -> tuple[str, list]:
+    where = " WHERE 1=1"
+    args: list = []
+    if not util.blank(pi):
+        where += " AND (from_pi = %s OR to_pi = %s)"
+        args += [pi.strip(), pi.strip()]
+    if not util.blank(bill):
+        where += " AND (from_bill = %s OR to_bill = %s)"
+        args += [bill.strip(), bill.strip()]
+    facs = cu.read_factories(factory)
+    if facs is not None:
+        fsql, fa = factories.scope_sql(facs, "x.from_factory")
+        tsql, ta = factories.scope_sql(facs, "x.to_factory")
+        where += (
+            " AND id IN (SELECT x.transfer_id FROM sn_transfer_item x WHERE x.kind = 'BILL' AND "
+            f"((1=1{fsql}) OR (1=1{tsql})))"
+        )
+        args += [*fa, *ta]
+    return where, args
+
+
+def list_org(
+    cu: CurrentUser, status: str | None, factory: str | None, pi: str | None, bill: str | None, page: util.Page
+) -> dict:
+    where, args = _org_where(cu, factory, pi, bill)
     pending = db.count("SELECT COUNT(*) FROM sn_transfer" + where + " AND status = 'PENDING'", *args)
     if not util.blank(status):
         where += " AND status = %s"
@@ -1114,26 +1140,94 @@ def list_org(
 
 
 def list_bill(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None, page: util.Page) -> dict:
-    where = " WHERE 1=1"
-    args: list = []
-    if not util.blank(pi):
-        where += " AND (from_pi = %s OR to_pi = %s)"
-        args += [pi.strip(), pi.strip()]
-    if not util.blank(bill):
-        where += " AND (from_bill = %s OR to_bill = %s)"
-        args += [bill.strip(), bill.strip()]
-    facs = cu.read_factories(factory)
-    if facs is not None:
-        fsql, fa = factories.scope_sql(facs, "x.from_factory")
-        tsql, ta = factories.scope_sql(facs, "x.to_factory")
-        where += (
-            " AND id IN (SELECT x.transfer_id FROM sn_transfer_item x WHERE x.kind = 'BILL' AND "
-            f"((1=1{fsql}) OR (1=1{tsql})))"
-        )
-        args += [*fa, *ta]
+    where, args = _bill_where(cu, factory, pi, bill)
     total = db.count("SELECT COUNT(*) FROM sn_bill_transfer" + where, *args)
     rows = db.all(f"SELECT * FROM sn_bill_transfer{where} ORDER BY id DESC LIMIT %s,%s", *args, page.offset, page.size)
     return util.page_result([util.jrow(t, BILL_FIELDS) for t in rows], total, page)
+
+
+# 合并列表的统一列：转单不限来源生产组织、没有号段和目标客户；转单生成即生效，状态记 APPROVED
+_ALL_ORG = (
+    "SELECT 'ORG' kind, id, transfer_no, mode, status, scope, '' scope_text, from_factory, from_pi, from_bill, "
+    "from_material, from_sn, from_end_sn, to_factory, to_pi, to_bill, to_seq, to_material, to_customer, qty, reason, "
+    "applied_by created_by, applied_at created_at FROM sn_transfer"
+)
+_ALL_BILL = (
+    "SELECT 'BILL' kind, id, transfer_no, mode, 'APPROVED' status, scope, scope_text, NULL from_factory, from_pi, "
+    "from_bill, '' from_material, '' from_sn, '' from_end_sn, to_factory, to_pi, to_bill, to_seq, to_material, "
+    "'' to_customer, qty, reason, created_by, created_at FROM sn_bill_transfer"
+)
+ALL_FIELDS = (
+    "kind",
+    "id",
+    "transfer_no",
+    "mode",
+    "status",
+    "scope",
+    "scope_text",
+    "from_factory",
+    "from_pi",
+    "from_bill",
+    "from_material",
+    "from_sn",
+    "from_end_sn",
+    "to_factory",
+    "to_pi",
+    "to_bill",
+    "to_seq",
+    "to_material",
+    "to_customer",
+    "qty",
+    "reason",
+    "created_by",
+    "created_at",
+)
+
+
+def list_all(
+    cu: CurrentUser,
+    kind: str | None,
+    status: str | None,
+    factory: str | None,
+    pi: str | None,
+    bill: str | None,
+    page: util.Page,
+) -> dict:
+    """转单与转组织合在一张表里（新的在前）；kind = BILL / ORG 只看一种。转单只在「全部」「已完成」里出现。"""
+    kind, status = util.trim(kind).upper(), util.trim(status).upper()
+    ow, oa = _org_where(cu, factory, pi, bill)
+    pending = db.count("SELECT COUNT(*) FROM sn_transfer" + ow + " AND status = 'PENDING'", *oa)
+    parts: list[str] = []
+    args: list = []
+    if kind in ("", KIND_ORG):
+        if status:
+            ow += " AND status = %s"
+            oa = [*oa, status]
+        parts.append(_ALL_ORG + ow)
+        args += oa
+    if kind in ("", KIND_BILL) and status in ("", APPROVED):
+        bw, ba = _bill_where(cu, factory, pi, bill)
+        parts.append(_ALL_BILL + bw)
+        args += ba
+    if not parts:
+        out = util.page_result([], 0, page)
+        out["pending"] = pending
+        return out
+    union = " UNION ALL ".join(f"({x})" for x in parts)
+    total = db.count(f"SELECT COUNT(*) FROM ({union}) u", *args)
+    rows = db.all(
+        f"SELECT * FROM ({union}) u ORDER BY created_at DESC, id DESC LIMIT %s,%s", *args, page.offset, page.size
+    )
+    disabled = factories.disabled_codes()
+    items = []
+    for t in rows:
+        x = util.jrow(t, ALL_FIELDS)
+        x["direction"] = _direction(cu, t["from_factory"]) if t["kind"] == KIND_ORG else ""
+        x["to_factory_disabled"] = t["status"] == PENDING and t["to_factory"] in disabled
+        items.append(x)
+    out = util.page_result(items, total, page)
+    out["pending"] = pending
+    return out
 
 
 def _push_info(kind: str, tid: int, doc_no: str) -> dict:
