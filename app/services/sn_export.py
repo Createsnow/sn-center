@@ -1,8 +1,9 @@
 """SN 导出（F-14）。
 
-已分配的号（已分到生产组织：待推送、已推送、待领取、已领取、申请中）按「生产组织 + PI + 单据」一行列出，
-不论该组织是否对接 MES；可看明细号段，也可直接下载 xlsx / csv（列：PI、单据、物料编码、SN）。
-只读：导出不改号的状态、不建批次，可反复导出；对接 MES 的号照常推送、拉取。历史领取批次在 SN 查询中查看。
+与分配后的推送、拉取是两套独立的机制：号一经分配到生产组织（不再是待分配）就按「生产组织 + PI + 单据」一行列出，
+不论该组织是否对接 MES，也不看推送、拉取的进度和结果（推送失败、批次未确认都照常导出）；
+可看明细号段，也可直接下载 xlsx / csv（列：PI、单据、物料编码、SN）。
+只读：导出不改号的状态、不建批次，可反复导出；导出也不影响推送、拉取。历史领取批次在 SN 查询中查看。
 """
 
 from __future__ import annotations
@@ -15,19 +16,23 @@ from app.core.security import CurrentUser
 from app.db.session import db
 from app.services import factories, files
 
-#: 已分配（待分配的号还没有生产组织）
-ALLOCATED = (util.TO_PUSH, util.PUSHED, util.TO_ACQUIRE, util.ACQUIRED, util.APPLYING)
 FILE_HEADERS = ["PI", "单据", "物料编码", "SN"]
-_IN = "(" + ",".join(f"'{s}'" for s in ALLOCATED) + ")"
+#: 各汇总都带的枚数：暂停（单据暂停交付）、申请中（转组织待审批，批准后会转走）
+_NOTES = "SUM(i.suspend IS NOT NULL) suspended, SUM(i.status = 'APPLYING') applying"
 
 
 def _where(cu: CurrentUser, factory: str | None) -> tuple[str, list]:
+    """已分配 = 已分到生产组织（待分配的号还没有生产组织）；不看推送、拉取状态。"""
     fsql, args = factories.scope_sql(cu.read_factories(factory), "i.factory_code")
-    return f" WHERE i.factory_code IS NOT NULL AND i.status IN {_IN}" + fsql, args
+    return f" WHERE i.factory_code IS NOT NULL AND i.status <> '{util.PENDING_ALLOC}'" + fsql, args
+
+
+def _notes(r: dict) -> dict:
+    return {"suspended": int(r["suspended"] or 0), "applying": int(r["applying"] or 0)}
 
 
 def bills(cu: CurrentUser, factory: str | None, q: str | None, mes: bool | None, page: util.Page) -> dict:
-    """每个「生产组织 + PI + 单据」一行：枚数、各状态枚数、暂停枚数；q 按 PI 或单据编号前缀匹配。"""
+    """每个「生产组织 + PI + 单据」一行：枚数、暂停枚数、申请中枚数；q 按 PI 或单据编号前缀匹配。"""
     where, args = _where(cu, factory)
     if not util.blank(q):
         where += " AND (i.pi_no LIKE %s OR i.bill_no LIKE %s)"
@@ -37,9 +42,8 @@ def bills(cu: CurrentUser, factory: str | None, q: str | None, mes: bool | None,
         args.append(1 if mes else 0)
     grouped = (
         "SELECT i.pi_no, i.factory_code, i.bill_no, MAX(i.customer_code) customer_code, "
-        "MAX(COALESCE(f.mes_enabled, 0)) mes, COUNT(*) qty, SUM(i.suspend IS NOT NULL) suspended, "
-        + ", ".join(f"SUM(i.status = '{s}') `{s}`" for s in ALLOCATED)
-        + " FROM sn_item i LEFT JOIN sn_factory f ON f.factory_code = i.factory_code"
+        "MAX(COALESCE(f.mes_enabled, 0)) mes, COUNT(*) qty, " + _NOTES + " "
+        "FROM sn_item i LEFT JOIN sn_factory f ON f.factory_code = i.factory_code"
         + where
         + " GROUP BY i.pi_no, i.factory_code, i.bill_no"
     )
@@ -55,8 +59,7 @@ def bills(cu: CurrentUser, factory: str | None, q: str | None, mes: bool | None,
             "customer_code": r["customer_code"],
             "mes_enabled": bool(r["mes"]),
             "qty": int(r["qty"]),
-            "suspended": int(r["suspended"] or 0),
-            "statuses": {s: int(r[s]) for s in ALLOCATED if r[s]},
+            **_notes(r),
         }
         for r in rows
     ]
@@ -80,12 +83,11 @@ def _bill_where(cu: CurrentUser, factory: str | None, pi: str | None, bill: str 
 
 
 def lines(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None) -> list[dict]:
-    """明细顶部：每个单据序号 + 物料一行，枚数、米标、各状态枚数、暂停枚数。"""
+    """明细顶部：每个单据序号 + 物料一行，枚数、米标、暂停枚数、申请中枚数。"""
     _p, _b, where, args = _bill_where(cu, factory, pi, bill)
     rows = db.all(
         "SELECT i.bill_seq, i.material_code, MAX(i.length_text) length_text, COUNT(*) qty, "
-        "SUM(i.suspend IS NOT NULL) suspended, "
-        + ", ".join(f"SUM(i.status = '{s}') `{s}`" for s in ALLOCATED)
+        + _NOTES
         + " FROM sn_item i"
         + where
         + " GROUP BY i.bill_seq, i.material_code ORDER BY i.bill_seq, i.material_code",
@@ -97,30 +99,25 @@ def lines(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None
             "material_code": r["material_code"],
             "length": r["length_text"] or "",
             "qty": int(r["qty"]),
-            "suspended": int(r["suspended"] or 0),
-            "statuses": {s: int(r[s]) for s in ALLOCATED if r[s]},
+            **_notes(r),
         }
         for r in rows
     ]
 
 
-def segments(
-    cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None, status: str | None, page: util.Page
-) -> dict:
-    """明细：一行 = 单据序号 + 物料 + 连续号段 + 状态（转入号注明流水归属 PI）。"""
+def segments(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None, page: util.Page) -> dict:
+    """明细：一行 = 单据序号 + 物料 + 连续号段（转入号注明流水归属 PI）；不按推送状态拆段。"""
     p, b, where, args = _bill_where(cu, factory, pi, bill)
-    if not util.blank(status) and status.strip() in ALLOCATED:
-        where += " AND i.status = %s"
-        args.append(status.strip())
     grouped = (
-        "SELECT factory_code, bill_seq, material_code, status, seq_pi_no, MIN(seq_dec) s, MAX(seq_dec) e, "
+        "SELECT factory_code, bill_seq, material_code, seq_pi_no, MIN(seq_dec) s, MAX(seq_dec) e, "
         "SUBSTRING(MIN(CONCAT(LPAD(seq_dec, 20, '0'), sn)), 21) start_sn, "
-        "SUBSTRING(MAX(CONCAT(LPAD(seq_dec, 20, '0'), sn)), 21) end_sn, COUNT(*) qty, MAX(suspend) suspend "
+        "SUBSTRING(MAX(CONCAT(LPAD(seq_dec, 20, '0'), sn)), 21) end_sn, COUNT(*) qty, MAX(suspend) suspend, "
+        "SUM(status = 'APPLYING') applying "
         "FROM (SELECT i.factory_code, i.bill_seq, i.material_code, i.status, i.seq_pi_no, i.seq_dec, i.sn, i.suspend, "
-        "i.seq_dec - ROW_NUMBER() OVER (PARTITION BY i.factory_code, i.bill_seq, i.material_code, i.status, "
+        "i.seq_dec - ROW_NUMBER() OVER (PARTITION BY i.factory_code, i.bill_seq, i.material_code, "
         "i.seq_pi_no ORDER BY i.seq_dec) grp FROM sn_item i"
         + where
-        + ") t GROUP BY factory_code, bill_seq, material_code, status, seq_pi_no, grp"
+        + ") t GROUP BY factory_code, bill_seq, material_code, seq_pi_no, grp"
     )
     total = db.count("SELECT COUNT(*) FROM (" + grouped + ") g", *args)
     rows = db.all(
@@ -133,7 +130,6 @@ def segments(
             "bill_no": b,
             "bill_seq": r["bill_seq"],
             "material_code": r["material_code"],
-            "status": r["status"],
             "seq_pi_no": r["seq_pi_no"],
             "transferred_in": r["seq_pi_no"] != p,
             "start_seq": int(r["s"]),
@@ -142,6 +138,7 @@ def segments(
             "end_sn": _text(r["end_sn"]),
             "qty": int(r["qty"]),
             "suspend": _text(r["suspend"]),
+            "applying": int(r["applying"] or 0),
         }
         for r in rows
     ]

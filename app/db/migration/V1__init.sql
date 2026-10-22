@@ -355,8 +355,8 @@ CREATE TABLE sn_item (
   rule_version_id   BIGINT      NOT NULL,
   gen_batch         VARCHAR(40) NOT NULL,
   -- 交付信息
-  status            VARCHAR(16) NOT NULL COMMENT 'PENDING_ALLOC / TO_PUSH / PUSHED / TO_ACQUIRE / ACQUIRED / APPLYING',
-  delivery_mode     VARCHAR(8)  NULL COMMENT 'PUSH 推送 / PULL 拉取 / PAGE 页面领取',
+  status            VARCHAR(16) NOT NULL COMMENT 'PENDING_ALLOC / TO_PUSH / PUSHED / ALLOCATED / ACQUIRED / APPLYING',
+  delivery_mode     VARCHAR(8)  NULL COMMENT 'PUSH 推送 / PULL 拉取 / PAGE 未对接 MES（SN 导出页下载）',
   push_type         VARCHAR(16) NOT NULL DEFAULT 'NEW' COMMENT '下次推送类型 NEW / REASSIGN',
   delivery_batch_no VARCHAR(40) NULL COMMENT '交付批次（推送或拉取建立）',
   acquire_batch_no  VARCHAR(40) NULL COMMENT '领取批次',

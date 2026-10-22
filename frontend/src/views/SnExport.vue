@@ -29,9 +29,8 @@
         <el-table-column :label="t('export.qty')" min-width="200">
           <template #default="{ row }">
             <span class="num">{{ num(row.qty) }}</span>
-            <!-- 只提示需要留意的号：MES 已有（已推送）、申请中、暂停；各状态明细在明细抽屉里看 -->
-            <el-tag v-if="row.statuses.PUSHED" size="small" type="warning" effect="plain" class="ml">{{ t("export.inMes", { n: num(row.statuses.PUSHED) }) }}</el-tag>
-            <el-tag v-if="row.statuses.APPLYING" size="small" type="warning" effect="plain" class="ml">{{ t("export.applying", { n: num(row.statuses.APPLYING) }) }}</el-tag>
+            <!-- 导出与推送相互独立：不显示推送进度，只提示申请中（可能转走）、暂停 -->
+            <el-tag v-if="row.applying" size="small" type="warning" effect="plain" class="ml">{{ t("export.applying", { n: num(row.applying) }) }}</el-tag>
             <el-tag v-if="row.suspended" size="small" type="danger" effect="plain" class="ml">{{ t("export.suspended", { n: num(row.suspended) }) }}</el-tag>
           </template>
         </el-table-column>
@@ -76,20 +75,17 @@
           <el-table-column prop="material_code" :label="t('common.material')" min-width="110" />
           <el-table-column :label="t('common.length')" width="80"><template #default="{ row }">{{ row.length || "—" }}</template></el-table-column>
           <el-table-column :label="t('common.qty')" align="right" width="80"><template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template></el-table-column>
-          <el-table-column :label="t('common.status')" min-width="260">
+          <el-table-column :label="t('export.attention')" min-width="200">
             <template #default="{ row }">
-              <el-tag v-for="(n, s) in row.statuses" :key="s" size="small" :type="STATUS_TYPE[s] || 'info'" class="mr">{{ statusLabel(String(s)) }} {{ num(n) }}</el-tag>
+              <el-tag v-if="row.applying" size="small" type="warning" effect="plain" class="mr">{{ t("export.applying", { n: num(row.applying) }) }}</el-tag>
               <el-tag v-if="row.suspended" size="small" type="danger" effect="plain">{{ t("export.suspended", { n: num(row.suspended) }) }}</el-tag>
+              <span v-if="!row.applying && !row.suspended" class="muted">—</span>
             </template>
           </el-table-column>
         </el-table>
 
         <div class="seg-head">
           <span class="surface__title">{{ t("export.segments") }}</span>
-          <el-radio-group v-model="sf.status" size="small" @change="segs.load(1)">
-            <el-radio-button value="">{{ t("export.allStatus", { n: num(detail.qty) }) }}</el-radio-button>
-            <el-radio-button v-for="(n, s) in detail.statuses" :key="s" :value="s">{{ statusLabel(String(s)) }} {{ num(n) }}</el-radio-button>
-          </el-radio-group>
         </div>
         <el-table v-loading="segs.state.loading" :data="segRows" size="small" :span-method="spanLine" :empty-text="t('common.empty')">
           <el-table-column prop="bill_seq" :label="t('export.seq')" width="90" />
@@ -105,10 +101,11 @@
             <template #default="{ row }"><span class="num">{{ row.start_seq === row.end_seq ? row.start_seq : `${row.start_seq} ~ ${row.end_seq}` }}</span></template>
           </el-table-column>
           <el-table-column :label="t('common.qty')" align="right" width="70"><template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template></el-table-column>
-          <el-table-column :label="t('common.status')" width="150">
+          <el-table-column :label="t('export.attention')" width="170">
             <template #default="{ row }">
-              <StatusTag :status="row.status" />
-              <el-tag v-if="row.suspend" size="small" type="danger" class="ml">{{ suspendLabel(row.suspend) }}</el-tag>
+              <el-tag v-if="row.applying" size="small" type="warning" effect="plain" class="mr">{{ t("export.applying", { n: num(row.applying) }) }}</el-tag>
+              <el-tag v-if="row.suspend" size="small" type="danger">{{ suspendLabel(row.suspend) }}</el-tag>
+              <span v-if="!row.applying && !row.suspend" class="muted">—</span>
             </template>
           </el-table-column>
         </el-table>
@@ -123,7 +120,8 @@
 </template>
 
 <script setup lang="ts">
-/** SN 导出：已分配的号（不论是否对接 MES）按「生产组织 + PI + 单据」列出；看明细或直接下载，只读、可反复下载。 */
+/** SN 导出：已分配的号（不论是否对接 MES）按「生产组织 + PI + 单据」列出；看明细或直接下载，只读、可反复下载。
+ *  与分配后的推送、拉取相互独立：不显示推送进度，推送成败都不影响列出和下载。 */
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
@@ -131,10 +129,9 @@ import { ElMessage } from "element-plus";
 import { api, urls } from "@/api";
 import PageHead from "@/components/PageHead.vue";
 import FactorySelect from "@/components/FactorySelect.vue";
-import StatusTag from "@/components/StatusTag.vue";
 import { useFactories } from "@/composables/useFactories";
 import { usePaged } from "@/composables/usePaged";
-import { STATUS_TYPE, statusLabel, suspendLabel } from "@/constants";
+import { suspendLabel } from "@/constants";
 import { useAuthStore } from "@/stores/auth";
 import { downloadWithToken } from "@/utils/download";
 
@@ -146,7 +143,7 @@ interface BillRow {
   mes_enabled: boolean;
   qty: number;
   suspended: number;
-  statuses: Record<string, number>;
+  applying: number;
 }
 
 const { t } = useI18n();
@@ -178,7 +175,7 @@ interface LineRow {
   length: string;
   qty: number;
   suspended: number;
-  statuses: Record<string, number>;
+  applying: number;
 }
 interface SegRow {
   bill_seq: number;
@@ -189,22 +186,20 @@ interface SegRow {
   start_sn: string;
   end_sn: string;
   qty: number;
-  status: string;
+  applying: number;
   suspend: string | null;
   transferred_in: boolean;
 }
 
 const detail = ref<BillRow | null>(null);
-const sf = reactive({ status: "" });
 const lines = ref<LineRow[]>([]);
 const linesLoading = ref(false);
 const segs = usePaged<SegRow>((q) =>
-  api.exportSegments({ ...q, factory_code: detail.value!.factory_code, pi: detail.value!.pi_no, bill_no: detail.value!.bill_no, status: sf.status }),
+  api.exportSegments({ ...q, factory_code: detail.value!.factory_code, pi: detail.value!.pi_no, bill_no: detail.value!.bill_no }),
 );
 
 async function openDetail(row: BillRow) {
   detail.value = row;
-  sf.status = "";
   lines.value = [];
   segs.load(1);
   linesLoading.value = true;
@@ -216,13 +211,12 @@ async function openDetail(row: BillRow) {
   }
 }
 
-/** 需要留意的号：MES 已有（防重复打标）、申请中（可能转走）、暂停交付。 */
+/** 需要留意的号：申请中（可能转走）、暂停交付。 */
 const notes = computed(() => {
   const d = detail.value;
   if (!d) return [];
   const out: string[] = [];
-  if (d.statuses.PUSHED) out.push(t("export.inMesNote", { n: num(d.statuses.PUSHED) }));
-  if (d.statuses.APPLYING) out.push(t("export.applyingNote", { n: num(d.statuses.APPLYING) }));
+  if (d.applying) out.push(t("export.applyingNote", { n: num(d.applying) }));
   if (d.suspended) out.push(t("export.suspendedNote", { n: num(d.suspended) }));
   return out;
 });
@@ -230,13 +224,12 @@ const notes = computed(() => {
 const sameLine = (a: SegRow, b: SegRow) => a.bill_seq === b.bill_seq && a.material_code === b.material_code;
 /**
  * 号段加上「与上一段之间缺的流水」：同一物料行、同一流水归属内不连续时标出，说明一行为什么拆成几段。
- * 按状态筛选时其他状态的号不在列表里，不标。
  */
 const segRows = computed(() =>
   segs.items.value.map((r, i, all) => {
     const prev = all[i - 1];
     let gap: { range: string; n: number } | null = null;
-    if (!sf.status && prev && sameLine(prev, r) && prev.seq_pi_no === r.seq_pi_no && r.start_seq > prev.end_seq + 1) {
+    if (prev && sameLine(prev, r) && prev.seq_pi_no === r.seq_pi_no && r.start_seq > prev.end_seq + 1) {
       const from = prev.end_seq + 1;
       const to = r.start_seq - 1;
       gap = { range: from === to ? String(from) : `${from} ~ ${to}`, n: to - from + 1 };

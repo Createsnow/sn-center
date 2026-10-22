@@ -1,4 +1,5 @@
-"""SN 导出（F-14）：已分配的号按「生产组织 + PI + 单据」查看与下载；只读，全部账户可用（按可看的生产组织）。"""
+"""SN 导出（F-14）：已分配的号按「生产组织 + PI + 单据」查看与下载，不看推送、拉取状态；
+只读，全部账户可用（按可看的生产组织）。"""
 
 from fastapi import APIRouter
 
@@ -21,24 +22,23 @@ def export_bills(
     return sn_export.bills(cu, factory_code, q, mes, page_of(page, page_size))
 
 
-@router.get("/lines", summary="明细顶部：每个单据序号 + 物料一行，枚数、米标、各状态枚数、暂停枚数")
+@router.get("/lines", summary="明细顶部：每个单据序号 + 物料一行，枚数、米标、暂停枚数、申请中枚数")
 def export_lines(
     cu: UserDep, pi: str | None = None, bill_no: str | None = None, factory_code: str | None = None
 ) -> list:
     return sn_export.lines(cu, factory_code, pi, bill_no)
 
 
-@router.get("/segments", summary="明细：单据序号 + 物料 + 连续号段 + 状态")
+@router.get("/segments", summary="明细：单据序号 + 物料 + 连续号段（不按推送状态拆段）")
 def export_segments(
     cu: UserDep,
     pi: str | None = None,
     bill_no: str | None = None,
     factory_code: str | None = None,
-    status: str | None = None,
     page: OptInt = None,
     page_size: OptInt = None,
 ) -> dict:
-    return sn_export.segments(cu, factory_code, pi, bill_no, status, page_of(page, page_size))
+    return sn_export.segments(cu, factory_code, pi, bill_no, page_of(page, page_size))
 
 
 @router.get("/file", summary="下载一张单据的已分配号（列：PI、单据、物料编码、SN）；format=csv|xlsx；不改状态")

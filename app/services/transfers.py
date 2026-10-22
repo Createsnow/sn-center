@@ -3,7 +3,7 @@
 转移时每枚号：清掉原推送、拉取、领取批次，rev + 1；
 - 仍在同一生产组织：MES 持有组织为本组织的号改为待推送（未入批）、推送类型改挂，随即自动推送；其余状态不变。
 - 转到别的生产组织：转入方对接 MES 时改为待推送（未入批），MES 持有组织为来源组织的记改挂、其余记新增；
-  转入方未对接时改为待领取。
+  转入方未对接时改为已分配。
 - 号的 MES 持有组织为来源组织、且转入组织与来源不同时，在同一事务内向来源 MES 建立「转出」批次并推送。
 不可转：申请中；所在批次未确认或失败；所在转出批次未确认或失败（先在原转组织单上继续推送转出）；领取未完成。
 转单另可转待分配的号（仍为待分配，之后按目标单据的生产组织分配）；转组织不能转待分配的号。
@@ -114,7 +114,7 @@ def blocked(items: list[dict], allow_pending_alloc: bool) -> dict[int, str]:
             out[r["id"]] = "PENDING_ALLOC"
         elif r["status"] == util.TO_PUSH and r["delivery_batch_no"] is not None:
             out[r["id"]] = "BATCH_PENDING"
-        elif r["status"] in (util.TO_PUSH, util.TO_ACQUIRE) and r["acquire_batch_no"] is not None:
+        elif r["status"] in (util.TO_PUSH, util.ALLOCATED) and r["acquire_batch_no"] is not None:
             out[r["id"]] = "ACQUIRE_INCOMPLETE"
     for i in delivery.frozen_by_transfer_out([r["id"] for r in items if r["id"] not in out]):
         out[i] = "TRANSFER_OUT_PENDING"
@@ -211,7 +211,7 @@ def _move(
                 status, mode = util.TO_PUSH, None
                 push_type = util.PUSH_REASSIGN if r["mes_holder"] == old_org and old_org else util.PUSH_NEW
             else:
-                status, push_type, mode = util.TO_ACQUIRE, util.PUSH_NEW, None
+                status, push_type, mode = util.ALLOCATED, util.PUSH_NEW, None
             if status == util.TO_PUSH:
                 to_push.add((new_org, t.pi))
         if r["mes_holder"] is not None and r["mes_holder"] == old_org and new_org != old_org:

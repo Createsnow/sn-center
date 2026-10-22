@@ -24,6 +24,6 @@ def alloc_preview(body: AllocateIn, cu: AdminDep) -> dict:
     return allocation.preview(body.pi_no, body.bills, [x.model_dump() for x in body.lines or []] or None)
 
 
-@router.post("/allocate", summary="分配到订单的生产组织：对接 MES 的改为待推送并自动推送，未对接的改为待领取")
+@router.post("/allocate", summary="分配到订单的生产组织：对接 MES 的改为待推送并自动推送，未对接的改为已分配")
 def alloc_run(body: AllocateIn, cu: AdminDep) -> dict:
     return allocation.allocate(cu, body.pi_no, body.bills, [x.model_dump() for x in body.lines or []] or None)

@@ -167,7 +167,7 @@ def test_same_org_reassign_then_other_org_still_sends_transfer_out(w, sql):
         sql.count("SELECT COUNT(*) FROM sn_delivery_batch WHERE batch_type = 'TRANSFER_OUT' AND factory_code = %s", a)
         == 1
     )
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE status = 'TO_ACQUIRE' AND factory_code = %s", b) == 2
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE status = 'ALLOCATED' AND factory_code = %s", b) == 2
 
 
 def test_transfer_out_after_source_disabled_mes(w, sql):
@@ -191,7 +191,7 @@ def test_apply_withdraw_reject_approve(w, api, sql):
     t = ok(api.post("/api/transfers/org", body, op))
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'APPLYING'", pi) == 3
     ok(api.post(f"/api/transfers/org/{t['id']}/withdraw", {}, op))
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'TO_ACQUIRE'", pi) == 3
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'ALLOCATED'", pi) == 3
     t2 = ok(api.post("/api/transfers/org", body, op))
     ok(api.post(f"/api/transfers/org/{t2['id']}/reject", m(note="不同意"), w.admin))
     t3 = ok(api.post("/api/transfers/org", body, op))
@@ -199,9 +199,7 @@ def test_apply_withdraw_reject_approve(w, api, sql):
     assert lst["pending"] == 1 and lst["items"][0]["direction"] == "OUT"
     ok(api.post(f"/api/transfers/org/{t3['id']}/approve", m(), w.admin))
     assert (
-        sql.count(
-            "SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND factory_code = %s AND status = 'TO_ACQUIRE'", pi, b
-        )
+        sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND factory_code = %s AND status = 'ALLOCATED'", pi, b)
         == 3
     )
     assert sql.count("SELECT COUNT(*) FROM sn_line_count WHERE bill_no = %s AND gen_count = 3", bill) == 1, (
@@ -388,7 +386,7 @@ def test_org_transfer_to_other_bill_moves_counts(w, api, sql):
     w.order(tgt, b, "C9", pi, ("M1", 3, "100"))
     ok(org_direct(w, a, pi, bill, b, to_bill=tgt))
     rows = sql.all("SELECT factory_code, bill_no, customer_code, status FROM sn_item WHERE pi_no = %s", pi)
-    assert {tuple(r.values()) for r in rows} == {(b, tgt, "C9", "TO_ACQUIRE")}
+    assert {tuple(r.values()) for r in rows} == {(b, tgt, "C9", "ALLOCATED")}
     gc = {r["bill_no"]: r for r in sql.all("SELECT * FROM sn_line_count WHERE bill_no IN (%s, %s)", bill, tgt)}
     assert (gc[bill]["gen_count"], gc[tgt]["gen_count"], gc[tgt]["alloc_count"]) == (0, 3, 3)
 
@@ -447,7 +445,7 @@ def test_bill_transfer_from_reversed_bill_releases(w, api, sql):
     w.order(tgt, org, "C1", pi, ("M1", 2))
     ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, org, reason="作废转单"), w.admin))
     assert (
-        sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND suspend IS NULL AND status = 'TO_ACQUIRE'", tgt)
+        sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND suspend IS NULL AND status = 'ALLOCATED'", tgt)
         == 2
     )
     op = w.user(emp("F"), "factory_operator", org)

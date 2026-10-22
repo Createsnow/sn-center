@@ -604,7 +604,7 @@ class World:
             n = db.exec(
                 "UPDATE sn_item SET status = 'ACQUIRED', delivery_mode = 'PAGE', acquire_batch_no = %s, "
                 "delivered_at = %s, updated_at = %s WHERE factory_code = %s AND pi_no = %s "
-                "AND status IN ('TO_PUSH','TO_ACQUIRE') AND delivery_batch_no IS NULL AND suspend IS NULL",
+                "AND status IN ('TO_PUSH','ALLOCATED') AND delivery_batch_no IS NULL AND suspend IS NULL",
                 no,
                 now,
                 now,

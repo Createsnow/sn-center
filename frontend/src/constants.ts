@@ -10,11 +10,11 @@ export const STATUS_TYPE: Record<string, TagType> = {
   PENDING_ALLOC: "info",
   TO_PUSH: "warning",
   PUSHED: "success",
-  TO_ACQUIRE: "primary",
+  ALLOCATED: "primary",
   ACQUIRED: "success",
   APPLYING: "danger",
 };
-export const STATUS_CODES = ["PENDING_ALLOC", "TO_PUSH", "PUSHED", "TO_ACQUIRE", "ACQUIRED", "APPLYING"];
+export const STATUS_CODES = ["PENDING_ALLOC", "TO_PUSH", "PUSHED", "ALLOCATED", "ACQUIRED", "APPLYING"];
 /** 交付批次结果：UNCONFIRMED 未确认 / SUCCESS / SUCCESS_CONFLICT 成功（有冲突）/ FAILED / VOIDED 已作废。 */
 export const BATCH_RESULT_TYPE: Record<string, TagType> = {
   UNCONFIRMED: "warning",

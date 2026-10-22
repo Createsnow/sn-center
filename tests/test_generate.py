@@ -567,4 +567,4 @@ def test_allocation_skips_reversed_bill(w, api, sql):
     w.compare()
     r = w.allocate(pi)
     assert r["qty"] == 2 and r["skipped"][0]["bill_no"] == b2 and r["skipped"][0]["reason"] == "REVERSAL"
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND status = 'TO_ACQUIRE'", b1) == 2
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND status = 'ALLOCATED'", b1) == 2

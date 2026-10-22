@@ -4,8 +4,8 @@
 本系统只维护 MES 对接配置。号的归属一律按订单上的生产组织编码，不与列表校验。
 
 金蝶禁用的生产组织：不能再绑定账户、不能作转组织转入方；已分到它的号照常领取、推送、拉取、转出。
-「对接 MES」开启须接口地址、凭证已填且连接测试通过；开启时待领取 → 待推送（未入批），不自动推送；
-关闭须没有进行中的推送任务、未确认或失败的批次（含拉取、转出批次）、等待改挂重推的号，关闭时待推送（未入批）→ 待领取。
+「对接 MES」开启须接口地址、凭证已填且连接测试通过；开启时已分配 → 待推送（未入批），不自动推送；
+关闭须没有进行中的推送任务、未确认或失败的批次（含拉取、转出批次）、等待改挂重推的号，关闭时待推送（未入批）→ 已分配。
 """
 
 from __future__ import annotations
@@ -345,11 +345,11 @@ def mes_toggle_preview(code: str | None) -> dict:
     """切换前的提示：受影响枚数与（关闭时）阻塞项。"""
     f = must_get(code)
     fc = f["factory_code"]
-    to_acquire = db.count("SELECT COUNT(*) FROM sn_item WHERE status = 'TO_ACQUIRE' AND factory_code = %s", fc)
+    allocated = db.count("SELECT COUNT(*) FROM sn_item WHERE status = 'ALLOCATED' AND factory_code = %s", fc)
     unbatched = db.count(
         "SELECT COUNT(*) FROM sn_item WHERE status = 'TO_PUSH' AND factory_code = %s AND delivery_batch_no IS NULL", fc
     )
-    out = {"factory_code": fc, "mes_enabled": bool(f["mes_enabled"]), "to_acquire": to_acquire, "unbatched": unbatched}
+    out = {"factory_code": fc, "mes_enabled": bool(f["mes_enabled"]), "allocated": allocated, "unbatched": unbatched}
     if f["mes_enabled"]:
         out["blockers"] = mes_blockers(fc)
     else:
@@ -369,14 +369,14 @@ def set_mes_enabled(cu: CurrentUser, code: str | None, enabled: bool) -> dict:
         if enabled:
             if not (f["mes_url"] and f["mes_credential"] and f["cfg_tested"] == stored_digest(f)):
                 raise biz(ErrorCode.MES_TEST_REQUIRED)
-            # 待领取 → 待推送（未入批）；不自动推送，由总部「继续推送」或等 MES 拉取
+            # 已分配 → 待推送（未入批）；不自动推送，由总部「继续推送」或等 MES 拉取
             n = db.exec(
                 "UPDATE sn_item SET status = 'TO_PUSH', push_type = 'NEW', updated_at = %s "
-                "WHERE status = 'TO_ACQUIRE' AND factory_code = %s",
+                "WHERE status = 'ALLOCATED' AND factory_code = %s",
                 now,
                 fc,
             )
-            before, after = util.TO_ACQUIRE, util.TO_PUSH
+            before, after = util.ALLOCATED, util.TO_PUSH
         else:
             b = mes_blockers(fc)
             if b["tasks"] or b["batch_total"] or b["reassign_qty"]:
@@ -389,14 +389,14 @@ def set_mes_enabled(cu: CurrentUser, code: str | None, enabled: bool) -> dict:
                 if b["reassign_qty"]:
                     parts.append(f"等待改挂重推的号 {b['reassign_qty']} 枚")
                 raise biz(ErrorCode.MES_DISABLE_BLOCKED, factory=fc, detail="；".join(parts))
-            # 待推送（未入批）→ 待领取；已推送、已领取的号不变；接口地址和凭证保留（转出照常推送）
+            # 待推送（未入批）→ 已分配；已推送、已领取的号不变；接口地址和凭证保留（转出照常推送）
             n = db.exec(
-                "UPDATE sn_item SET status = 'TO_ACQUIRE', updated_at = %s "
+                "UPDATE sn_item SET status = 'ALLOCATED', updated_at = %s "
                 "WHERE status = 'TO_PUSH' AND factory_code = %s AND delivery_batch_no IS NULL",
                 now,
                 fc,
             )
-            before, after = util.TO_PUSH, util.TO_ACQUIRE
+            before, after = util.TO_PUSH, util.ALLOCATED
             db.exec("DELETE FROM sn_push_task WHERE factory_code = %s AND state IN ('STOPPED','DONE')", fc)
         db.exec(
             "UPDATE sn_factory SET mes_enabled = %s, updated_at = %s WHERE factory_code = %s",

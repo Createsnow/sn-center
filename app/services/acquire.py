@@ -71,7 +71,7 @@ def release_incomplete() -> int:
         with db.tx():
             n += db.exec(
                 "UPDATE sn_item SET acquire_batch_no = NULL, updated_at = %s "
-                "WHERE acquire_batch_no = %s AND status IN ('TO_PUSH','TO_ACQUIRE')",
+                "WHERE acquire_batch_no = %s AND status IN ('TO_PUSH','ALLOCATED')",
                 util.now(),
                 no,
             )

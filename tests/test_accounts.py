@@ -139,19 +139,19 @@ def test_mes_enable_requires_test_and_disable_blocked(w, api, sql):
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 8
 
 
-def test_mes_toggle_moves_unbatched_and_to_acquire(w, api, sql):
+def test_mes_toggle_moves_unbatched_and_allocated(w, api, sql):
     org = w.org(uid("O")[:10])
     pi, bill = uid("PI"), uid("MO")
     w.order(bill, org, "C1", pi, ("M1", 5))
     ok(w.bind_pi(pi, w.rule("P" + uid("").replace("-", ""))))
     w.generate(pi)
     w.allocate(pi)
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'TO_ACQUIRE'", pi) == 5
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'ALLOCATED'", pi) == 5
     w.enable_mes(org)
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'TO_PUSH'", pi) == 5
     assert sql.count("SELECT COUNT(*) FROM sn_delivery_batch") == 0, "开启时不自动推送"
     ok(api.post(f"/api/factories/{org}/mes-toggle", m(enabled=False), w.admin))
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'TO_ACQUIRE'", pi) == 5
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'ALLOCATED'", pi) == 5
 
 
 def test_hmac_push(w, api, sql):

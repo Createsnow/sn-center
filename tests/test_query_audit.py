@@ -47,7 +47,7 @@ def test_range_query_counts_missing_for_bound_operator(w, api):
         )
     op = w.user(emp("F"), "factory_operator", a)
     r = ok(api.get(f"/api/sn?pi={pi}&seq_from=1&seq_to=10", op))
-    assert r["range"] == {"found": 7, "expected": 10, "missing": 3, "by_status": {"TO_ACQUIRE": 7}}
+    assert r["range"] == {"found": 7, "expected": 10, "missing": 3, "by_status": {"ALLOCATED": 7}}
     full = ok(api.get(f"/api/sn?pi={pi}&seq_from={sns[0]}&seq_to=000010", w.admin))
     assert full["range"]["found"] == 10
     assert api.get("/api/sn?seq_from=1", w.admin).code == "QUERY_RANGE_PI_REQUIRED"

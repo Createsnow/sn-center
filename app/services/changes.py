@@ -12,7 +12,7 @@
   重新审核回来：没有变化或只有数量变化时自动解除；有其他变化继续暂停（CHANGE）至总部确认。
   单据实际已作废：总部「确认已作废」解除。
 
-暂停标记记在号上（sn_item.suspend），只作用于未交付的号（待分配、待推送未入批、待领取）；
+暂停标记记在号上（sn_item.suspend），只作用于未交付的号（待分配、待推送未入批、已分配）；
 已入批（批次未确认或失败）、已推送、已领取的号不暂停。号的单据或状态变化后用 refresh_items 按单据重算。
 """
 
@@ -64,7 +64,7 @@ _ALLOWED = {
 EMPTY_STATE = {"suspend": None, "leave_state": None, "pi_frozen": False, "open_alerts": 0, "issued": False}
 
 #: 未交付且未入批（暂停交付作用的范围）
-_UNDELIVERED = "(status IN ('PENDING_ALLOC','TO_ACQUIRE') OR (status = 'TO_PUSH' AND delivery_batch_no IS NULL))"
+_UNDELIVERED = "(status IN ('PENDING_ALLOC','ALLOCATED') OR (status = 'TO_PUSH' AND delivery_batch_no IS NULL))"
 
 
 # ================================================================== 计数 / 状态

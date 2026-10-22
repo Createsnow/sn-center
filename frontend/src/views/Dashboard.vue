@@ -164,7 +164,7 @@ const kpis = computed<Kpi[]>(() => {
   if ("PENDING_ALLOC" in c) rows.push({ key: "PENDING_ALLOC", label: statusLabel("PENDING_ALLOC"), value: c.PENDING_ALLOC, to: "/allocate" });
   rows.push(
     { key: "TO_PUSH", label: statusLabel("TO_PUSH"), value: c.TO_PUSH },
-    { key: "TO_ACQUIRE", label: statusLabel("TO_ACQUIRE"), value: c.TO_ACQUIRE, to: "/export" },
+    { key: "ALLOCATED", label: statusLabel("ALLOCATED"), value: c.ALLOCATED, to: "/export" },
     { key: "APPLYING", label: statusLabel("APPLYING"), value: c.APPLYING, to: "/transfer" },
     { key: "suspended", label: t("dashboard.suspended"), value: d.suspended, alarm: true },
     { key: "interrupted", label: t("dashboard.pushInterrupted"), value: d.push_interrupted, alarm: true, to: "/query?tab=delivery" },

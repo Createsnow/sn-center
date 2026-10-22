@@ -92,7 +92,7 @@
       <template v-if="toggle">
         <template v-if="!toggle.mes_enabled">
           <el-alert v-if="!toggle.can_enable" type="error" :closable="false" show-icon :title="t('factories.enableBlocked')" />
-          <p v-else>{{ t("factories.enableEffect", { n: toggle.to_acquire }) }}</p>
+          <p v-else>{{ t("factories.enableEffect", { n: toggle.allocated }) }}</p>
         </template>
         <template v-else>
           <template v-if="blocked">

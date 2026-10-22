@@ -1,6 +1,6 @@
 """首页看板（F-20）。只读；每日交付自检在 delivery.self_check。
 
-在途：待推送、待领取、申请中、暂停交付各多少枚（待分配只给总部看）；推送中断的批次（含改挂、转出、整批拒绝）；
+在途：待推送、已分配、申请中、暂停交付各多少枚（待分配只给总部看）；推送中断的批次（含改挂、转出、整批拒绝）；
 拉取后超过告警时长仍未回执的批次；待处理的转组织申请；交付告警（疑似重复交付、版本过期、自检问题）；订单变更提醒。
 今日（按账户显示时区）：生成、分配、推送与拉取（按确认方式）、MES 取批、转单。
 """
@@ -30,9 +30,9 @@ def _interrupted_sql(fsql: str) -> str:
 def load(cu: CurrentUser) -> dict:
     facs = cu.factories or None
     fsql, fargs = factories.scope_sql(facs)
-    counts = dict.fromkeys(("PENDING_ALLOC", "TO_PUSH", "TO_ACQUIRE", "APPLYING"), 0)
+    counts = dict.fromkeys(("PENDING_ALLOC", "TO_PUSH", "ALLOCATED", "APPLYING"), 0)
     for r in db.all(
-        "SELECT status, COUNT(*) c FROM sn_item WHERE status IN ('PENDING_ALLOC','TO_PUSH','TO_ACQUIRE','APPLYING')"
+        "SELECT status, COUNT(*) c FROM sn_item WHERE status IN ('PENDING_ALLOC','TO_PUSH','ALLOCATED','APPLYING')"
         + fsql
         + " GROUP BY status",
         *fargs,

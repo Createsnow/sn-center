@@ -1,7 +1,9 @@
 """SN 分配（F-11 分配部分）与分配页详情。
 
 号只能分到订单的生产组织（快照中订单的生产组织；订单已不在快照时取号上的生成时订单生产组织；
-反审核中、PI 变更待确认、暂停交付的单据跳过）。对接 MES 的改为待推送（未入批）并自动开始推送；未对接的改为待领取。
+反审核中、PI 变更待确认、暂停交付的单据跳过）。对接 MES 的改为待推送（未入批）并自动开始推送；
+未对接的改为已分配。分配与 SN 导出相互独立：号一经分配即可在 SN 导出页下载，不再有领取这一步，
+也不看推送结果。
 分配与生成、撤销共用 PI 操作锁。
 分配页详情：待分配的物料行（号段、目标生产组织）、推送进度、分配记录（最近 100 条，推送与拉取批次）。
 PI 列表与生成页共用（workbench.pis）。
@@ -119,7 +121,7 @@ def preview(pi_in: str | None, bills: list[str] | None, lines: list[dict] | None
 def allocate(
     cu: CurrentUser, pi_in: str | None, bills: list[str] | None = None, lines: list[dict] | None = None
 ) -> dict:
-    """分配：范围内待分配的号一次全部挂到生产组织；对接 MES 的改为待推送（未入批）并自动推送，未对接的改为待领取。"""
+    """分配：范围内待分配的号一次全部挂到生产组织；对接 MES 的改为待推送（未入批）并自动推送，未对接的改为已分配。"""
     pi = util.trim(pi_in)
     if not pi:
         raise biz(ErrorCode.PI_REQUIRED)
@@ -134,7 +136,7 @@ def allocate(
             started: set[str] = set()
             for g in groups:
                 mes = factories.is_mes(g["org"])
-                status = util.TO_PUSH if mes else util.TO_ACQUIRE
+                status = util.TO_PUSH if mes else util.ALLOCATED
                 gen_cond = "" if g["snapshot"] else " AND gen_org_code = %s"
                 gen_args = [] if g["snapshot"] else [g["gen_org"]]
                 # 在 PI 操作锁与事务内，这里统计到的就是下面要改的号

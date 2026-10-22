@@ -1,4 +1,4 @@
-"""SN 导出（F-14）：已分配的号按「生产组织 + PI + 单据」查看与下载；只读，不改状态。"""
+"""SN 导出（F-14）：已分配的号按「生产组织 + PI + 单据」查看与下载；只读，不改状态；与推送、拉取相互独立。"""
 
 from __future__ import annotations
 
@@ -31,9 +31,10 @@ def test_export_is_read_only_and_repeatable(w, api, sql):
     org, pi, bill = ready(w, 5)
     op = w.user(emp("F"), "factory_operator", org)
     rows = ok(api.get(f"/api/export/bills?q={pi}", op))["items"]
-    assert [(r["pi_no"], r["bill_no"], r["qty"], r["statuses"], r["mes_enabled"]) for r in rows] == [
-        (pi, bill, 5, {"TO_ACQUIRE": 5}, False)
+    assert [(r["pi_no"], r["bill_no"], r["qty"], r["suspended"], r["applying"], r["mes_enabled"]) for r in rows] == [
+        (pi, bill, 5, 0, 0, False)
     ]
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'ALLOCATED'", pi) == 5, "分配即已分配"
     for _ in range(2):
         r = get_file(api, op, pi=pi, bill_no=bill, factory_code=org, format="csv")
         lines = r.content.decode("utf-8-sig").splitlines()
@@ -43,7 +44,7 @@ def test_export_is_read_only_and_repeatable(w, api, sql):
     assert sns == [
         r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY bill_seq, seq_pi_no, seq_dec", pi)
     ]
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'TO_ACQUIRE'", pi) == 5, "不改状态"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'ALLOCATED'", pi) == 5, "不改状态"
     assert sql.count("SELECT COUNT(*) FROM sn_acquire_batch WHERE factory_code = %s", org) == 0, "不建领取批次"
     x = get_file(api, op, pi=pi, bill_no=bill, format="xlsx")
     assert x.status_code == 200 and x.content[:2] == b"PK"
@@ -52,25 +53,29 @@ def test_export_is_read_only_and_repeatable(w, api, sql):
 def test_mes_org_lists_every_allocated_sn_and_push_unaffected(w, api, sql):
     org, pi, bill = ready(w, 13, mes=True, batch_size=5)
     row = ok(api.get(f"/api/export/bills?q={bill}", w.admin))["items"][0]
-    assert (row["qty"], row["statuses"], row["mes_enabled"]) == (13, {"TO_PUSH": 13}, True)
+    assert (row["qty"], row["mes_enabled"]) == (13, True)
     r = get_file(api, w.admin, pi=pi, bill_no=bill, format="csv")
     assert len(r.content.decode("utf-8-sig").splitlines()) == 14
     w.push()  # 导出后照常推送
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 13
     assert len(MES.store[org]) >= 13
     row = ok(api.get(f"/api/export/bills?q={bill}&mes=true", w.admin))["items"][0]
-    assert row["statuses"] == {"PUSHED": 13}, "已推送的号照样展示"
+    assert row["qty"] == 13, "已推送的号照样展示"
     r = get_file(api, w.admin, pi=pi, bill_no=bill, format="csv")
     assert len(r.content.decode("utf-8-sig").splitlines()) == 14
-    seg = ok(api.get(f"/api/export/segments?pi={pi}&bill_no={bill}&status=PUSHED", w.admin))
+    seg = ok(api.get(f"/api/export/segments?pi={pi}&bill_no={bill}", w.admin))
     assert seg["total"] == 1 and seg["items"][0]["qty"] == 13 and seg["items"][0]["start_seq"] == 1
-    assert ok(api.get(f"/api/export/segments?pi={pi}&bill_no={bill}&status=TO_PUSH", w.admin))["items"] == []
 
 
-def test_frozen_batch_sns_are_listed(w, api):
+def test_push_failure_does_not_affect_export(w, api):
+    """导出与推送相互独立：推送失败、批次未确认时照常列出、下载，号段也不按推送状态拆开。"""
     org, pi, bill = ready(w, 13, mes=True, batch_size=5)
     MES.behavior[org] = lambda b, h: (503, {"code": "X"})
     w.push()  # 第 1 批 5 枚未确认，另 8 枚未入批
+    row = ok(api.get(f"/api/export/bills?q={bill}", w.admin))["items"][0]
+    assert row["qty"] == 13
+    seg = ok(api.get(f"/api/export/segments?pi={pi}&bill_no={bill}", w.admin))
+    assert [(x["start_seq"], x["end_seq"], x["qty"]) for x in seg["items"]] == [(1, 13, 13)]
     r = get_file(api, w.admin, pi=pi, bill_no=bill, format="csv")
     assert len(r.content.decode("utf-8-sig").splitlines()) == 14, "未确认批次里的号也导出"
 
@@ -109,7 +114,7 @@ def test_legacy_batch_still_downloadable_and_incomplete_released(w, api, sql):
     no = w.legacy_acquire(org, pi)
     r = api.client.get(f"/api/acquire/batches/{no}/file?format=csv", headers={"Authorization": f"Bearer {w.admin}"})
     assert r.status_code == 200 and len(r.content.decode("utf-8-sig").splitlines()) == 5
-    assert ok(api.get(f"/api/export/bills?q={pi}", w.admin))["items"][0]["statuses"] == {"ACQUIRED": 4}
+    assert ok(api.get(f"/api/export/bills?q={pi}", w.admin))["items"][0]["qty"] == 4, "历史已领取的号照常导出"
 
     org2, pi2, _ = ready(w, 3)
     sql.exec(
@@ -153,9 +158,9 @@ def test_lines_summarize_each_bill_line(w, api):
         )
     )
     got = ok(api.get(f"/api/export/lines?pi={pi}&bill_no={bill}&factory_code={org}", w.admin)).body
-    assert [(x["bill_seq"], x["material_code"], x["length"], x["qty"], x["statuses"]) for x in got] == [
-        (1, "M1", "120", 3, {"TO_ACQUIRE": 3}),
-        (2, "M2", "080", 3, {"TO_ACQUIRE": 3}),
+    assert [(x["bill_seq"], x["material_code"], x["length"], x["qty"], x["suspended"]) for x in got] == [
+        (1, "M1", "120", 3, 0),
+        (2, "M2", "080", 3, 0),
     ]
     q = w.user(emp("Q"), "query", None)
     assert len(ok(api.get(f"/api/export/lines?pi={pi}&bill_no={bill}", q)).body) == 2
