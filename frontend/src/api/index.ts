@@ -104,6 +104,7 @@ export const api = {
 
   // ---------------- SN 导出（只读）；历史领取批次
   exportBills: (params?: Q) => get("/export/bills", params),
+  exportLines: (params: Q) => get("/export/lines", params),
   exportSegments: (params?: Q) => get("/export/segments", params),
   acquireBatches: (params?: Q) => get("/acquire/batches", params),
   acquireBatchItems: (batchNo: string, params?: Q) => get(`/acquire/batches/${enc(batchNo)}/items`, params),

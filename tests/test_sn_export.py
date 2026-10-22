@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from conftest import MES, emp, ok, uid
+from conftest import MES, emp, m, ok, uid
 
 
 def P() -> str:
@@ -122,3 +122,30 @@ def test_legacy_batch_still_downloadable_and_incomplete_released(w, api, sql):
     assert acquire.release_incomplete() == 3
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND acquire_batch_no IS NULL", pi2) == 3
     assert sql.count("SELECT COUNT(*) FROM sn_acquire_batch WHERE batch_no = 'AQ-INC'") == 0
+
+
+def test_lines_summarize_each_bill_line(w, api):
+    org, other = w.org(uid("O")[:10]), w.org(uid("O")[:10])
+    pi, bill = uid("PI"), uid("MO")
+    w.order(bill, org, "C1", pi, ("M1", 4, "120"), ("M2", 3, "080"))
+    ok(w.bind_pi(pi, w.rule(P())))
+    w.generate(pi)
+    w.allocate(pi)
+    segs = ok(api.get(f"/api/export/segments?pi={pi}&bill_no={bill}&factory_code={org}", w.admin))["items"]
+    moved = segs[0]["start_sn"]
+    ok(
+        w.api.post(
+            "/api/transfers/org/direct",
+            m(factory_code=org, pi_no=pi, scope="SINGLE", sn=moved, to_factory=other, to_pi=pi, reason="调拨"),
+            w.admin,
+        )
+    )
+    got = ok(api.get(f"/api/export/lines?pi={pi}&bill_no={bill}&factory_code={org}", w.admin)).body
+    assert [(x["bill_seq"], x["material_code"], x["length"], x["qty"], x["statuses"]) for x in got] == [
+        (1, "M1", "120", 3, {"TO_ACQUIRE": 3}),
+        (2, "M2", "080", 3, {"TO_ACQUIRE": 3}),
+    ]
+    q = w.user(emp("Q"), "query", None)
+    assert len(ok(api.get(f"/api/export/lines?pi={pi}&bill_no={bill}", q)).body) == 2
+    op = w.user(emp("F"), "factory_operator", other)
+    assert api.get(f"/api/export/lines?pi={pi}&bill_no={bill}&factory_code={org}", op).code == "FACTORY_FORBIDDEN"

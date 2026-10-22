@@ -72,14 +72,43 @@ def _key(pi: str | None, bill: str | None) -> tuple[str, str]:
     return p, b
 
 
+def _bill_where(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None) -> tuple[str, str, str, list]:
+    """一张单据（生产组织 + PI + 单据）的已分配号。"""
+    p, b = _key(pi, bill)
+    where, args = _where(cu, factory)
+    return p, b, where + " AND i.pi_no = %s AND i.bill_no = %s", [*args, p, b]
+
+
+def lines(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None) -> list[dict]:
+    """明细顶部：每个单据序号 + 物料一行，枚数、长度、各状态枚数、暂停枚数。"""
+    _p, _b, where, args = _bill_where(cu, factory, pi, bill)
+    rows = db.all(
+        "SELECT i.bill_seq, i.material_code, MAX(i.length_text) length_text, COUNT(*) qty, "
+        "SUM(i.suspend IS NOT NULL) suspended, "
+        + ", ".join(f"SUM(i.status = '{s}') `{s}`" for s in ALLOCATED)
+        + " FROM sn_item i"
+        + where
+        + " GROUP BY i.bill_seq, i.material_code ORDER BY i.bill_seq, i.material_code",
+        *args,
+    )
+    return [
+        {
+            "bill_seq": r["bill_seq"],
+            "material_code": r["material_code"],
+            "length": r["length_text"] or "",
+            "qty": int(r["qty"]),
+            "suspended": int(r["suspended"] or 0),
+            "statuses": {s: int(r[s]) for s in ALLOCATED if r[s]},
+        }
+        for r in rows
+    ]
+
+
 def segments(
     cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None, status: str | None, page: util.Page
 ) -> dict:
     """明细：一行 = 单据序号 + 物料 + 连续号段 + 状态（转入号注明流水归属 PI）。"""
-    p, b = _key(pi, bill)
-    where, args = _where(cu, factory)
-    where += " AND i.pi_no = %s AND i.bill_no = %s"
-    args += [p, b]
+    p, b, where, args = _bill_where(cu, factory, pi, bill)
     if not util.blank(status) and status.strip() in ALLOCATED:
         where += " AND i.status = %s"
         args.append(status.strip())
@@ -154,10 +183,7 @@ def file(
     cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None, fmt: str
 ) -> tuple[str, Iterator[bytes]]:
     """下载一行（生产组织 + PI + 单据）的全部已分配号；不改状态，可反复下载。"""
-    p, b = _key(pi, bill)
-    where, args = _where(cu, factory)
-    where += " AND i.pi_no = %s AND i.bill_no = %s"
-    args += [p, b]
+    p, b, where, args = _bill_where(cu, factory, pi, bill)
     if not db.exists("SELECT EXISTS(SELECT 1 FROM sn_item i" + where + ")", *args):
         raise biz(ErrorCode.EXPORT_NOTHING, pi=p, bill_no=b)
     return f"SN_{p}_{b}", files.stream(fmt, "SN", FILE_HEADERS, _file_rows(where, args))
