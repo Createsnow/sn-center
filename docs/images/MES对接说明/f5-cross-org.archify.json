@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "跨组织转移",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "legend": {
+      "mode": "hidden"
+    },
+    "output": "f5-cross-org.html"
+  },
+  "participants": [
+    {
+      "id": "hq",
+      "type": "external",
+      "label": "总部"
+    },
+    {
+      "id": "sn",
+      "type": "backend",
+      "label": "SN 系统"
+    },
+    {
+      "id": "newm",
+      "type": "frontend",
+      "label": "新组织 MES"
+    },
+    {
+      "id": "oldm",
+      "type": "frontend",
+      "label": "原组织 MES"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "hq",
+      "to": "sn",
+      "y": 175,
+      "label": "转到新组织订单",
+      "variant": "emphasis",
+      "note": "改挂，rev+1"
+    },
+    {
+      "id": "m2",
+      "from": "sn",
+      "to": "newm",
+      "y": 240,
+      "label": "DELIVERY",
+      "variant": "emphasis",
+      "note": "fromOrgCode = 原组织；本地没有 → 按新挂靠存下"
+    },
+    {
+      "id": "m3",
+      "from": "newm",
+      "to": "sn",
+      "y": 300,
+      "label": "回执 ACCEPTED",
+      "variant": "return"
+    },
+    {
+      "id": "m4",
+      "from": "sn",
+      "to": "oldm",
+      "y": 340,
+      "label": "TRANSFER_OUT",
+      "variant": "dashed",
+      "note": "仅原组织 MES 收过该号时；标已转出、停止打标，原数据不动"
+    },
+    {
+      "id": "m5",
+      "from": "oldm",
+      "to": "sn",
+      "y": 405,
+      "label": "回执 ACCEPTED",
+      "variant": "return"
+    }
+  ]
+}

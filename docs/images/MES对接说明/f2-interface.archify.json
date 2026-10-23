@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "接口调用",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "output": "f2-interface.html",
+    "legend": {
+      "mode": "hidden"
+    }
+  },
+  "participants": [
+    {
+      "id": "sn",
+      "type": "backend",
+      "label": "SN 系统"
+    },
+    {
+      "id": "mes",
+      "type": "frontend",
+      "label": "MES"
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 230,
+      "label": "主通道：推送"
+    },
+    {
+      "from": 240,
+      "to": 385,
+      "label": "备用通道：取批"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "sn",
+      "to": "mes",
+      "y": 175,
+      "label": "① 推送批次",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m2",
+      "from": "mes",
+      "to": "sn",
+      "y": 205,
+      "label": "200 + 回执",
+      "variant": "return"
+    },
+    {
+      "id": "m4",
+      "from": "mes",
+      "to": "sn",
+      "y": 270,
+      "label": "③ 取批",
+      "variant": "default",
+      "note": "推送失败 / 号不够 / 每 5 分钟；带 工号:密钥"
+    },
+    {
+      "id": "m5",
+      "from": "sn",
+      "to": "mes",
+      "y": 330,
+      "label": "批次",
+      "variant": "return"
+    },
+    {
+      "id": "m6",
+      "from": "mes",
+      "to": "sn",
+      "y": 362,
+      "label": "④ 交回执",
+      "variant": "default"
+    }
+  ]
+}

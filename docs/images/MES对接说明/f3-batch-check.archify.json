@@ -1,0 +1,139 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "MES 收到批次的判断",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "legend": {
+      "mode": "hidden"
+    },
+    "output": "f3-batch-check.html"
+  },
+  "lanes": [
+    {
+      "id": "main",
+      "label": "处理"
+    },
+    {
+      "id": "out",
+      "label": "提前结束",
+      "variant": "exception"
+    }
+  ],
+  "mainPath": [
+    "recv",
+    "check",
+    "dedup",
+    "rev",
+    "save"
+  ],
+  "nodes": [
+    {
+      "id": "recv",
+      "lane": "main",
+      "col": 0,
+      "type": "external",
+      "label": "收到批次"
+    },
+    {
+      "id": "check",
+      "lane": "main",
+      "col": 1,
+      "type": "security",
+      "label": "校验批次",
+      "sublabel": "orgCode、count、明细"
+    },
+    {
+      "id": "dedup",
+      "lane": "main",
+      "col": 2,
+      "type": "database",
+      "label": "batchNo 收过?"
+    },
+    {
+      "id": "rev",
+      "lane": "main",
+      "col": 3,
+      "type": "backend",
+      "label": "逐枚比 rev"
+    },
+    {
+      "id": "save",
+      "lane": "main",
+      "col": 4,
+      "type": "database",
+      "label": "落库后回执"
+    },
+    {
+      "id": "reject",
+      "lane": "out",
+      "col": 1,
+      "type": "security",
+      "label": "整批退回",
+      "sublabel": "REJECTED，不记 batchNo"
+    },
+    {
+      "id": "replay",
+      "lane": "out",
+      "col": 2,
+      "type": "backend",
+      "label": "交回上次回执",
+      "sublabel": "itemsDigest 相同"
+    },
+    {
+      "id": "mismatch",
+      "lane": "out",
+      "col": 3,
+      "type": "security",
+      "label": "409 内容不符",
+      "sublabel": "itemsDigest 不同"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "recv",
+      "to": "check"
+    },
+    {
+      "id": "e2",
+      "from": "check",
+      "to": "dedup",
+      "label": "通过"
+    },
+    {
+      "id": "e3",
+      "from": "dedup",
+      "to": "rev",
+      "label": "没收过"
+    },
+    {
+      "id": "e4",
+      "from": "rev",
+      "to": "save"
+    },
+    {
+      "id": "e5",
+      "from": "check",
+      "to": "reject",
+      "label": "不通过",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "e6",
+      "from": "dedup",
+      "to": "replay",
+      "label": "收过",
+      "role": "branch"
+    },
+    {
+      "id": "e7",
+      "from": "dedup",
+      "to": "mismatch",
+      "variant": "security",
+      "role": "error"
+    }
+  ]
+}

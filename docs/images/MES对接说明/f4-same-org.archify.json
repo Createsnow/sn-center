@@ -1,0 +1,138 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "同组织转移",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "legend": {
+      "mode": "hidden"
+    },
+    "output": "f4-same-org.html"
+  },
+  "lanes": [
+    {
+      "id": "pre",
+      "label": "转移前：现场在 MES 确认"
+    },
+    {
+      "id": "sn",
+      "label": "SN 系统"
+    },
+    {
+      "id": "mes",
+      "label": "MES 收到后"
+    }
+  ],
+  "mainPath": [
+    "way",
+    "link",
+    "transfer",
+    "push",
+    "acc",
+    "chain"
+  ],
+  "nodes": [
+    {
+      "id": "way",
+      "lane": "pre",
+      "col": 0,
+      "type": "database",
+      "label": "过站方式?"
+    },
+    {
+      "id": "link",
+      "lane": "pre",
+      "col": 1,
+      "type": "database",
+      "label": "已 LINK?",
+      "sublabel": "内部 SN 过站"
+    },
+    {
+      "id": "stop",
+      "lane": "pre",
+      "col": 2,
+      "type": "security",
+      "label": "不发起转移"
+    },
+    {
+      "id": "transfer",
+      "lane": "sn",
+      "col": 1,
+      "type": "backend",
+      "label": "改挂新订单",
+      "sublabel": "rev+1"
+    },
+    {
+      "id": "push",
+      "lane": "sn",
+      "col": 2,
+      "type": "messagebus",
+      "label": "推送 REASSIGN",
+      "sublabel": "号已交给本组织 MES 时"
+    },
+    {
+      "id": "acc",
+      "lane": "mes",
+      "col": 2,
+      "type": "frontend",
+      "label": "按 rev 收下",
+      "sublabel": "ACCEPTED"
+    },
+    {
+      "id": "chain",
+      "lane": "mes",
+      "col": 3,
+      "type": "security",
+      "label": "换绑数据链",
+      "sublabel": "有混乱风险，MES 自控"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "way",
+      "to": "link",
+      "label": "内部 SN"
+    },
+    {
+      "id": "e2",
+      "from": "way",
+      "to": "transfer",
+      "label": "客户 SN"
+    },
+    {
+      "id": "e3",
+      "from": "link",
+      "to": "transfer",
+      "label": "未 LINK",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e4",
+      "from": "link",
+      "to": "stop",
+      "label": "已 LINK",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "e5",
+      "from": "transfer",
+      "to": "push"
+    },
+    {
+      "id": "e6",
+      "from": "push",
+      "to": "acc",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e7",
+      "from": "acc",
+      "to": "chain",
+      "label": "客户 SN 过站",
+      "variant": "security"
+    }
+  ]
+}
