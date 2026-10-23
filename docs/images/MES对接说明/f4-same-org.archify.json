@@ -2,7 +2,7 @@
   "schema_version": 2,
   "diagram_type": "workflow",
   "meta": {
-    "title": "同组织转移",
+    "title": "同组织转移：MES 自行判断",
     "locale": "zh-CN",
     "quality_profile": "showcase",
     "legend": {
@@ -12,127 +12,122 @@
   },
   "lanes": [
     {
-      "id": "pre",
-      "label": "转移前：现场在 MES 确认"
-    },
-    {
       "id": "sn",
       "label": "SN 系统"
     },
     {
       "id": "mes",
-      "label": "MES 收到后"
+      "label": "MES 自行判断"
+    },
+    {
+      "id": "inner",
+      "label": "内部 SN 过站"
+    },
+    {
+      "id": "ex",
+      "label": "不允许转移",
+      "variant": "exception"
     }
   ],
   "mainPath": [
-    "way",
-    "link",
-    "transfer",
     "push",
     "acc",
+    "way",
     "chain"
   ],
   "nodes": [
     {
-      "id": "way",
-      "lane": "pre",
-      "col": 0,
-      "type": "database",
-      "label": "过站方式?"
-    },
-    {
-      "id": "link",
-      "lane": "pre",
-      "col": 1,
-      "type": "database",
-      "label": "已 LINK?",
-      "sublabel": "内部 SN 过站"
-    },
-    {
-      "id": "stop",
-      "lane": "pre",
-      "col": 2,
-      "type": "security",
-      "label": "不发起转移"
-    },
-    {
-      "id": "transfer",
-      "lane": "sn",
-      "col": 1,
-      "type": "backend",
-      "label": "改挂新订单",
-      "sublabel": "rev+1"
-    },
-    {
       "id": "push",
       "lane": "sn",
-      "col": 2,
-      "type": "messagebus",
+      "col": 0,
+      "type": "backend",
       "label": "推送 REASSIGN",
-      "sublabel": "SN 已交给本组织 MES 时"
+      "sublabel": "rev + 1"
     },
     {
       "id": "acc",
       "lane": "mes",
+      "col": 1,
+      "type": "database",
+      "label": "版本比对接收",
+      "sublabel": "ACCEPTED"
+    },
+    {
+      "id": "way",
+      "lane": "mes",
       "col": 2,
       "type": "frontend",
-      "label": "按 rev 收下",
-      "sublabel": "ACCEPTED"
+      "label": "过站方式?"
     },
     {
       "id": "chain",
       "lane": "mes",
       "col": 3,
-      "type": "security",
-      "label": "换绑数据链",
+      "type": "frontend",
+      "label": "切换数据链",
       "sublabel": "有混乱风险，MES 自控"
+    },
+    {
+      "id": "link",
+      "lane": "inner",
+      "col": 3,
+      "type": "frontend",
+      "label": "客户 SN 已 LINK?"
+    },
+    {
+      "id": "direct",
+      "lane": "inner",
+      "col": 4,
+      "type": "frontend",
+      "label": "直接转移"
+    },
+    {
+      "id": "block",
+      "lane": "ex",
+      "col": 4,
+      "type": "security",
+      "label": "MES 自行处理",
+      "sublabel": "已 LINK 不允许转移"
     }
   ],
   "edges": [
     {
       "id": "e1",
-      "from": "way",
-      "to": "link",
-      "label": "内部 SN"
-    },
-    {
-      "id": "e2",
-      "from": "way",
-      "to": "transfer",
-      "label": "客户 SN"
-    },
-    {
-      "id": "e3",
-      "from": "link",
-      "to": "transfer",
-      "label": "未 LINK",
-      "variant": "emphasis"
-    },
-    {
-      "id": "e4",
-      "from": "link",
-      "to": "stop",
-      "label": "已 LINK",
-      "variant": "security",
-      "role": "error"
-    },
-    {
-      "id": "e5",
-      "from": "transfer",
-      "to": "push"
-    },
-    {
-      "id": "e6",
       "from": "push",
       "to": "acc",
       "variant": "emphasis"
     },
     {
-      "id": "e7",
+      "id": "e2",
       "from": "acc",
+      "to": "way"
+    },
+    {
+      "id": "e3",
+      "from": "way",
       "to": "chain",
-      "label": "客户 SN 过站",
-      "variant": "security"
+      "label": "客户 SN 过站"
+    },
+    {
+      "id": "e4",
+      "from": "way",
+      "to": "link",
+      "label": "内部 SN 过站"
+    },
+    {
+      "id": "e5",
+      "from": "link",
+      "to": "direct",
+      "label": "未 LINK",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e6",
+      "from": "link",
+      "to": "block",
+      "label": "已 LINK",
+      "variant": "security",
+      "role": "error"
     }
   ]
 }

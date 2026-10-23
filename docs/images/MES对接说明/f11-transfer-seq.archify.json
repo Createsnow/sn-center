@@ -38,30 +38,21 @@
   "segments": [
     {
       "from": 160,
-      "to": 390,
+      "to": 345,
       "label": "同组织转移"
     },
     {
-      "from": 405,
-      "to": 640,
+      "from": 350,
+      "to": 585,
       "label": "跨组织转移"
     }
   ],
   "messages": [
     {
-      "id": "a1",
-      "from": "op",
-      "to": "mes",
-      "y": 185,
-      "label": "转移前确认",
-      "variant": "dashed",
-      "note": "过站方式、LINK 状态；已 LINK 不转"
-    },
-    {
       "id": "a2",
       "from": "op",
       "to": "sn",
-      "y": 245,
+      "y": 185,
       "label": "发起转单 / 转组织",
       "variant": "default",
       "note": "可转校验，改挂，rev + 1"
@@ -70,7 +61,7 @@
       "id": "a3",
       "from": "sn",
       "to": "mes",
-      "y": 305,
+      "y": 245,
       "label": "① DELIVERY · REASSIGN",
       "variant": "emphasis",
       "note": "fromOrgCode = orgCode"
@@ -79,16 +70,16 @@
       "id": "a4",
       "from": "mes",
       "to": "sn",
-      "y": 365,
+      "y": 305,
       "label": "回执 ACCEPTED",
       "variant": "return",
-      "note": "客户 SN 过站：换数据链订单关联"
+      "note": "过站方式、LINK 由 MES 自行判断"
     },
     {
       "id": "b1",
       "from": "op",
       "to": "sn",
-      "y": 430,
+      "y": 370,
       "label": "发起转组织",
       "variant": "default",
       "note": "可转校验，改挂，rev + 1"
@@ -97,7 +88,7 @@
       "id": "b2",
       "from": "sn",
       "to": "mes",
-      "y": 490,
+      "y": 430,
       "label": "① DELIVERY · NEW / REASSIGN",
       "variant": "emphasis",
       "note": "fromOrgCode ≠ orgCode，转入建档"
@@ -106,7 +97,7 @@
       "id": "b3",
       "from": "mes",
       "to": "sn",
-      "y": 545,
+      "y": 485,
       "label": "回执",
       "variant": "return"
     },
@@ -114,7 +105,7 @@
       "id": "b4",
       "from": "sn",
       "to": "old",
-      "y": 575,
+      "y": 515,
       "label": "① 转移批次 TRANSFER_OUT",
       "variant": "dashed",
       "note": "与转入并行，互不等待"
@@ -123,7 +114,7 @@
       "id": "b5",
       "from": "old",
       "to": "sn",
-      "y": 625,
+      "y": 565,
       "label": "回执",
       "variant": "return",
       "note": "原组织停用，不清理数据链"
