@@ -6,31 +6,151 @@
     "locale": "zh-CN",
     "quality_profile": "showcase",
     "output": "f2-interface.html",
-    "legend": { "mode": "hidden" }
+    "legend": {
+      "mode": "hidden"
+    }
   },
   "participants": [
-    { "id": "sn", "type": "backend", "label": "SN 系统" },
-    { "id": "mes", "type": "frontend", "label": "本组织 MES", "sublabel": "转入组织" },
-    { "id": "old", "type": "frontend", "label": "原组织 MES", "sublabel": "仅跨组织转移" }
+    {
+      "id": "sn",
+      "type": "backend",
+      "label": "SN 系统"
+    },
+    {
+      "id": "mes",
+      "type": "frontend",
+      "label": "本组织 MES",
+      "sublabel": "转入组织"
+    },
+    {
+      "id": "old",
+      "type": "frontend",
+      "label": "原组织 MES",
+      "sublabel": "仅跨组织转移"
+    }
   ],
   "segments": [
-    { "from": 160, "to": 270, "label": "分配后：推送（主通道）" },
-    { "from": 285, "to": 460, "label": "转移后：改挂与转出" },
-    { "from": 475, "to": 640, "label": "推送失败 / 号不够 / 每 5 分钟：拉取（补偿）" },
-    { "from": 655, "to": 740, "label": "对账（可选）" }
+    {
+      "from": 160,
+      "to": 270,
+      "label": "分配后：推送（主通道）"
+    },
+    {
+      "from": 285,
+      "to": 460,
+      "label": "转移后：推送批次与转移批次"
+    },
+    {
+      "from": 475,
+      "to": 640,
+      "label": "推送失败 / SN 不足 / 每 5 分钟：拉取（补偿）"
+    },
+    {
+      "from": 655,
+      "to": 740,
+      "label": "对账（可选）"
+    }
   ],
   "messages": [
-    { "id": "a1", "from": "sn", "to": "mes", "y": 185, "label": "① DELIVERY · NEW", "variant": "emphasis", "note": "号：待推送 → 已推送" },
-    { "id": "a2", "from": "mes", "to": "sn", "y": 245, "label": "200 + 回执", "variant": "return" },
-    { "id": "b1", "from": "sn", "to": "mes", "y": 310, "label": "① DELIVERY · REASSIGN", "variant": "emphasis", "note": "rev + 1，带 fromOrgCode" },
-    { "id": "b2", "from": "mes", "to": "sn", "y": 370, "label": "200 + 回执", "variant": "return" },
-    { "id": "b3", "from": "sn", "to": "old", "y": 400, "label": "① TRANSFER_OUT", "variant": "dashed", "note": "与上一条并行，互不等待" },
-    { "id": "b4", "from": "old", "to": "sn", "y": 445, "label": "200 + 回执", "variant": "return" },
-    { "id": "c1", "from": "mes", "to": "sn", "y": 500, "label": "③ 拉取", "variant": "default", "note": "Bearer 工号:密钥" },
-    { "id": "c2", "from": "sn", "to": "mes", "y": 555, "label": "批次（格式同 ①）", "variant": "return" },
-    { "id": "c3", "from": "mes", "to": "sn", "y": 590, "label": "④ 提交回执", "variant": "default" },
-    { "id": "c4", "from": "sn", "to": "mes", "y": 625, "label": "batchResult", "variant": "return" },
-    { "id": "d1", "from": "mes", "to": "sn", "y": 680, "label": "⑤⑥ 对账查询", "variant": "dashed" },
-    { "id": "d2", "from": "sn", "to": "mes", "y": 720, "label": "号列表（只读）", "variant": "return" }
+    {
+      "id": "a1",
+      "from": "sn",
+      "to": "mes",
+      "y": 185,
+      "label": "① DELIVERY · NEW",
+      "variant": "emphasis",
+      "note": "SN：待推送 → 已推送"
+    },
+    {
+      "id": "a2",
+      "from": "mes",
+      "to": "sn",
+      "y": 245,
+      "label": "200 + 回执",
+      "variant": "return"
+    },
+    {
+      "id": "b1",
+      "from": "sn",
+      "to": "mes",
+      "y": 310,
+      "label": "① DELIVERY · REASSIGN",
+      "variant": "emphasis",
+      "note": "rev + 1，带 fromOrgCode"
+    },
+    {
+      "id": "b2",
+      "from": "mes",
+      "to": "sn",
+      "y": 370,
+      "label": "200 + 回执",
+      "variant": "return"
+    },
+    {
+      "id": "b3",
+      "from": "sn",
+      "to": "old",
+      "y": 400,
+      "label": "① 转移批次 TRANSFER_OUT",
+      "variant": "dashed",
+      "note": "与上一条并行，互不等待"
+    },
+    {
+      "id": "b4",
+      "from": "old",
+      "to": "sn",
+      "y": 445,
+      "label": "200 + 回执",
+      "variant": "return"
+    },
+    {
+      "id": "c1",
+      "from": "mes",
+      "to": "sn",
+      "y": 500,
+      "label": "③ 拉取",
+      "variant": "default",
+      "note": "Bearer 工号:密钥"
+    },
+    {
+      "id": "c2",
+      "from": "sn",
+      "to": "mes",
+      "y": 555,
+      "label": "批次（格式同 ①）",
+      "variant": "return"
+    },
+    {
+      "id": "c3",
+      "from": "mes",
+      "to": "sn",
+      "y": 590,
+      "label": "④ 提交回执",
+      "variant": "default"
+    },
+    {
+      "id": "c4",
+      "from": "sn",
+      "to": "mes",
+      "y": 625,
+      "label": "batchResult",
+      "variant": "return"
+    },
+    {
+      "id": "d1",
+      "from": "mes",
+      "to": "sn",
+      "y": 680,
+      "label": "⑤⑥ 对账查询",
+      "variant": "dashed"
+    },
+    {
+      "id": "d2",
+      "from": "sn",
+      "to": "mes",
+      "y": 720,
+      "label": "SN 列表（只读）",
+      "variant": "return"
+    }
   ]
 }

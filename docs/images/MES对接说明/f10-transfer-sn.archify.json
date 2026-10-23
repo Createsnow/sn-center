@@ -50,7 +50,7 @@
       "lane": "sn",
       "col": 1,
       "type": "security",
-      "label": "号可转?",
+      "label": "SN 可转?",
       "sublabel": "PI 锁 + 逐行锁"
     },
     {
@@ -90,7 +90,7 @@
       "col": 4,
       "type": "frontend",
       "label": "推原组织 MES",
-      "sublabel": "TRANSFER_OUT，收过才发"
+      "sublabel": "转移批次，曾持有才发"
     },
     {
       "id": "x1",
@@ -98,7 +98,7 @@
       "col": 1,
       "type": "security",
       "label": "提示先续推",
-      "sublabel": "原转出批次未确认"
+      "sublabel": "原转移批次未确认"
     }
   ],
   "edges": [

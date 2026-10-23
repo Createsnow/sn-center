@@ -69,7 +69,7 @@
       "col": 2,
       "type": "messagebus",
       "label": "推送 REASSIGN",
-      "sublabel": "号已交给本组织 MES 时"
+      "sublabel": "SN 已交给本组织 MES 时"
     },
     {
       "id": "acc",
