@@ -62,7 +62,7 @@
       "from": "sn",
       "to": "mes",
       "y": 245,
-      "label": "① 推送批次（改挂）",
+      "label": "① 推送批次 · SAME_ORG_TRANSFER",
       "variant": "emphasis",
       "note": "rev 更大，覆盖挂靠"
     },
@@ -89,7 +89,7 @@
       "from": "sn",
       "to": "mes",
       "y": 430,
-      "label": "① 推送批次",
+      "label": "① 推送批次 · CROSS_ORG_TRANSFER",
       "variant": "emphasis",
       "note": "本地没有，新增"
     },

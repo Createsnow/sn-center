@@ -535,3 +535,37 @@ def test_void_transfer_out_rebuilds_and_delivers(w, sql):
     assert all(MES.store[a][s]["transferredOut"] and MES.store[a][s]["toOrgCode"] == b for s in sns)
     ta, _ = w.mes_account(a)
     assert w.mes_next(ta, batchNo=xo["batch_no"]).code == "BATCH_VOIDED"
+
+
+def test_biz_type_first_when_mes_never_held_before_transfer(w, api, sql):
+    """号已分配、还在号池排队（MES 没收到）时转移：对 MES 仍是首次下发（bizType = FIRST），原组织也不收转出。"""
+    a, pi, src = setup(w, qty=2)
+    w.allocate(pi)
+    # 同组织转单：MES 还没收到
+    tgt = uid("MO")
+    w.order(tgt, a, "C1", pi, ("M1", 2))
+    ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, a), w.admin))
+    w.push()
+    got = [x["batch"] for x in MES.received if x["org"] == a and x["batch"]["batchType"] == "DELIVERY"]
+    assert {i["bizType"] for b in got for i in b["items"]} == {"FIRST"}
+    # 推送后再转组织到 B：A 的 MES 已持有 → 跨组织转入
+    b = w.org(uid("O")[:10])
+    w.enable_mes(b)
+    ok(org_direct(w, a, pi, tgt, b))
+    w.push()
+    got = [x["batch"] for x in MES.received if x["org"] == b and x["batch"]["batchType"] == "DELIVERY"]
+    assert {i["bizType"] for x in got for i in x["items"]} == {"CROSS_ORG_TRANSFER"}
+
+
+def test_biz_type_first_for_cross_org_transfer_before_delivery(w, api, sql):
+    a, pi, bill = setup(w, qty=2)
+    w.allocate(pi)
+    b = w.org(uid("O")[:10])
+    w.enable_mes(b)
+    ok(org_direct(w, a, pi, bill, b))
+    w.push()
+    assert not [x for x in MES.received if x["org"] == a and x["batch"]["batchType"] != "PING"], (
+        "原组织 MES 没收到过，不发转出"
+    )
+    got = [x["batch"] for x in MES.received if x["org"] == b and x["batch"]["batchType"] == "DELIVERY"]
+    assert {i["bizType"] for x in got for i in x["items"]} == {"FIRST"}

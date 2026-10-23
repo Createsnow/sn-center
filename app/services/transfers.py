@@ -233,7 +233,9 @@ def _move(
                     "transfer_doc_no": doc_no,
                 }
             )
-        key = (new_org, t.pi, t.customer, t.bill, t.seq, t.material, status, push_type, mode, old_org)
+        # 业务来源（交付项 bizType）只在原组织 MES 已持有时记为转移；MES 还没收到的号保留原标记（没有即首次下发）
+        from_org = old_org if old_org and r["mes_holder"] == old_org else None
+        key = (new_org, t.pi, t.customer, t.bill, t.seq, t.material, status, push_type, mode, from_org)
         groups.setdefault(key, []).append(r["id"])
         if (t.bill, t.seq) != (r["bill_no"], r["bill_seq"]):
             line_moves[(r["bill_no"], r["bill_seq"])] = line_moves.get((r["bill_no"], r["bill_seq"]), 0) - 1
@@ -270,14 +272,15 @@ def _move(
             )
         )
     # 号已在本事务内 FOR UPDATE 锁住，rev + 1 与上面按读出值算的 rev 一致
-    for (new_org, pi, customer, bill, seq, material, status, push_type, mode, old_org), ids in groups.items():
+    for (new_org, pi, customer, bill, seq, material, status, push_type, mode, from_org), ids in groups.items():
         for i in range(0, len(ids), 1000):
             part = ids[i : i + 1000]
             db.exec(
                 "UPDATE sn_item SET factory_code = %s, pi_no = %s, customer_code = %s, bill_no = %s, bill_seq = %s, "
                 "material_code = %s, rev = rev + 1, status = %s, push_type = %s, delivery_mode = %s, "
                 "delivery_batch_no = NULL, acquire_batch_no = NULL, transfer_id = NULL, applying_from = NULL, "
-                "transfer_kind = %s, transfer_doc_no = %s, transfer_from_org = %s, updated_at = %s "
+                "transfer_kind = %s, transfer_doc_no = %s, transfer_from_org = COALESCE(%s, transfer_from_org), "
+                "updated_at = %s "
                 f"WHERE id IN ({marks(len(part))})",
                 new_org,
                 pi,
@@ -290,7 +293,7 @@ def _move(
                 mode,
                 tkind,
                 doc_no,
-                old_org,
+                from_org,
                 now,
                 *part,
             )

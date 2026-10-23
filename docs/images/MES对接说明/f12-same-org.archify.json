@@ -54,8 +54,8 @@
       "lane": "sn",
       "col": 2,
       "type": "backend",
-      "label": "推送批次（改挂）",
-      "sublabel": "或由 MES 拉取"
+      "label": "推送批次",
+      "sublabel": "SAME_ORG_TRANSFER"
     },
     {
       "id": "acc",

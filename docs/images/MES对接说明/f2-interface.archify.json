@@ -74,9 +74,9 @@
       "from": "sn",
       "to": "mes",
       "y": 310,
-      "label": "① 推送批次（改挂）",
+      "label": "① 推送批次（转入）",
       "variant": "emphasis",
-      "note": "rev + 1，MES 按 rev 覆盖"
+      "note": "bizType = CROSS_ORG_TRANSFER"
     },
     {
       "id": "b2",

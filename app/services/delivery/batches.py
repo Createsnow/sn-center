@@ -126,8 +126,9 @@ def str_or_none(v: str | None) -> str | None:
 
 
 def biz_type(r: dict, org: str) -> str:
-    """交付项的业务来源：最近一次转移（转单、转组织）按前后组织分同组织 / 跨组织；未经转移的改挂（确认物料对应、
-    告警重推）为 REMAP；其余为首次下发。"""
+    """交付项的业务来源，按 MES 已有的数据算：转移时原组织 MES 已持有的（transfer_from_org 只在这时记录）按前后
+    组织分同组织 / 跨组织；未经转移的改挂（确认物料对应、告警重推）为 REMAP；
+    其余（含 MES 还没收到就转移的）为首次下发。"""
     if r["transfer_from_org"]:
         return BIZ_SAME_ORG if r["transfer_from_org"] == org else BIZ_CROSS_ORG
     return BIZ_REMAP if r["push_type"] == util.PUSH_REASSIGN else BIZ_FIRST
