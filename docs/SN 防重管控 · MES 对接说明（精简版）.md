@@ -278,7 +278,7 @@ MES 收到的批次按 `batchType` 分为三类；推送批次和拉取批次的
 3. **改挂**：清除 SN 原有批次，`rev` 加 1，记录 `fromOrgCode`（转移前组织）
 4. **推送**：
    - **同组织**：MES 已持有的 SN 推 `REASSIGN`；尚未下发的照常推 `NEW`
-   - **跨组织**：向转入组织 MES 发推送批次（原组织 MES 曾持有 → `REASSIGN`，否则 → `NEW`）；同时向曾持有该 SN的原组织 MES 发转移批次（`TRANSFER_OUT`），两者互不等待
+   - **跨组织**：向转入组织 MES 发推送批次（原组织 MES 曾持有 → `REASSIGN`，否则 → `NEW`）；同时向曾持有该 SN 的原组织 MES 发转移批次（`TRANSFER_OUT`），两者互不等待
 5. **不等待 MES**：SN 系统不发撤回指令、不等待 MES 同意；推送失败按普通批次重试、续推，MES 也可拉取
 
 ### 5.3 MES 侧处理规则
@@ -292,7 +292,7 @@ MES 收到的批次按 `batchType` 分为三类；推送批次和拉取批次的
 | 无 `fromOrgCode` | 非转移（普通下发） | `DELIVERY` / `NEW` |
 | `fromOrgCode` = `orgCode` | 同组织转移 | 已持有：`REASSIGN`；未持有：`NEW` |
 | `fromOrgCode` ≠ `orgCode` | 跨组织转入 | 原组织 MES 曾持有：`REASSIGN`，否则 `NEW`；本地均不存在，按新号建档 |
-| `batchType = TRANSFER_OUT` | 跨组织转移（原组织） | 转移批次，仅发给曾持有该 SN的原组织 MES |
+| `batchType = TRANSFER_OUT` | 跨组织转移（原组织） | 转移批次，仅发给曾持有该 SN 的原组织 MES |
 
 **同组织转移**
 
