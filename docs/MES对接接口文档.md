@@ -476,18 +476,18 @@ MES 因过站方式、LINK 状态等原因无法在本侧完成转移时，**由
   "pi": "000001",                      // 必填，String，推送 / 拉取批次只含这一张 PI 的 SN ★ 每枚 SN 的 pi 必须等于它
   "count": 1,                          // 必填，Number，枚数，≤ 5000 ★ 必须等于 items 条数
   "createdAt": "2026-10-19T02:37:00Z", // 必填，String，建批时间（UTC）
-  "itemsDigest": "sha256:9f2c4e…",     // 必填，String，内容指纹，MES 存储后直接比对字符串，无需自行计算 ★ 幂等校验
+  "itemsDigest": "sha256:9f2c4e…",     // 必填，String，内容指纹，MES 存储后直接比对字符串，无需自行计算；相同即两次送达的数据相同，不同返回 409 BATCH_CONTENT_MISMATCH ★ 幂等校验
   "items": [                           // 必填，Array，SN 明细
     {
       "pushType": "REASSIGN",          // 必填，String，NEW 新 SN / REASSIGN 挂靠变更；仅说明原因，接收与否看 rev
       "sn": "HX100000001A",            // 必填，String，完整 SN
       "rev": 2,                        // 必填，Number，挂靠版本，越大越新 ★ 版本比对（4.2）
-      "serial": "000001",              // 必填，String，流水号（可能为 36 进制写法）
+      "serial": "000001",              // 必填，String，流水号（可能为 36 进制流水号写法）
       "serialDec": "1",                // 必填，String，十进制流水，按字符串保存
       "serialPi": "000001",            // 必填，String，流水最初所属 PI；转入 SN 可能 ≠ pi，不要互相校验
       "pi": "000001",                  // 必填，String，当前所属 PI
-      "billNo": "VT2026090001",        // 必填，String，单据号
-      "billSeq": 1,                    // 必填，Number，单据行号（同一单据可能有相同物料，以行号区分）
+      "billNo": "VT2026090001",        // 必填，String，单据号（EEP 生产订单号）
+      "billSeq": 1,                    // 必填，Number，单据行号（EEP 单据明细项次；同一单据可能有相同物料，以项次区分）
       "materialCode": "9148363",       // 选填，String | null，物料编码
       "length": "0100",                // 选填，String | null，米标，原样保存（不得变为 100）
       "customerCode": "0001",          // 必填，String，客户编码
