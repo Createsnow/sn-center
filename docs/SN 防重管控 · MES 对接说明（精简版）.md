@@ -353,8 +353,10 @@ MES 因过站方式、LINK 状态等原因无法在本侧完成转移时，**由
 | 项目 | 约定 |
 | --- | --- |
 | 协议 | HTTPS，不跟随 3xx 跳转 |
-| 报文 | JSON，UTF-8 |
-| 压缩 | 可 gzip，请求头 `Content-Encoding: gzip`；① 的请求体固定 gzip |
+| 传输格式 | 默认 JSON（UTF-8），支持 gzip 压缩 |
+| 请求 | 带 `Content-Encoding: gzip` 时请求体为 gzip，先解压再按 JSON 解析；不带时为原始 JSON |
+| 应答 | 请求带 `Accept-Encoding: gzip` 时可返回 gzip 应答（应答头 `Content-Encoding: gzip`）；SN 系统（③～⑥）对 1 KB 以上的应答压缩 |
+| ① 推送 | SN 系统目前推送时启用 gzip（带 `Content-Encoding: gzip`），MES 须支持解压 |
 | 协议版本 | 每个报文带 `schemaVersion`，现为 `1.0` |
 
 ### 7.2 字段与数据格式
@@ -466,8 +468,8 @@ MES 因过站方式、LINK 状态等原因无法在本侧完成转移时，**由
 | 参数名 | 类型 | 必填 | 示例值 | 描述 |
 | --- | --- | --- | --- | --- |
 | `Content-Type` | String | 是 | `application/json; charset=utf-8` | 固定 |
-| `Content-Encoding` | String | 是 | `gzip` | 请求体已 gzip 压缩，先解压 |
-| `Accept-Encoding` | String | 是 | `gzip` | 应答可压缩 |
+| `Content-Encoding` | String | 否 | `gzip` | 带此头时请求体为 gzip，先解压；不带时为原始 JSON（SN 系统目前推送时均带此头） |
+| `Accept-Encoding` | String | 是 | `gzip` | MES 应答可用 gzip 压缩，也可返回原始 JSON |
 | `Authorization` | String | 方式 A 必填 | `Bearer 7f3c…` | 固定令牌（7.3，**待定**） |
 | `X-Sn-Timestamp` | String | 方式 B 必填 | `2026-10-19T02:37:00Z` | 签名时间（UTC）（7.3，**待定**） |
 | `X-Sn-Signature` | String | 方式 B 必填 | `a3f9…`（64 位小写十六进制） | HMAC 签名（7.3，**待定**） |
@@ -656,7 +658,7 @@ MES 因过站方式、LINK 状态等原因无法在本侧完成转移时，**由
 | --- | --- | --- | --- | --- |
 | `Authorization` | String | 是 | `Bearer M110001:xxxxxxxx` | MES 接口账户的工号与密钥，以冒号连接 |
 | `Content-Type` | String | 否 | `application/json` | — |
-| `Content-Encoding` | String | 否 | `gzip` | 请求体压缩时填写 |
+| `Content-Encoding` | String | 否 | `gzip` | 默认原始 JSON；请求体 gzip 压缩时填写 |
 
 **Body**
 
