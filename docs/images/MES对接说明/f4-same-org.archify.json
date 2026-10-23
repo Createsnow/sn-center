@@ -2,7 +2,7 @@
   "schema_version": 2,
   "diagram_type": "workflow",
   "meta": {
-    "title": "同组织转移：MES 自行判断",
+    "title": "同组织转移：SN 系统自由转移，MES 自行处理",
     "locale": "zh-CN",
     "quality_profile": "showcase",
     "legend": {
@@ -17,7 +17,7 @@
     },
     {
       "id": "mes",
-      "label": "MES 自行判断"
+      "label": "MES 自行处理"
     },
     {
       "id": "inner",
@@ -25,7 +25,7 @@
     },
     {
       "id": "ex",
-      "label": "不允许转移",
+      "label": "MES 侧无法转移",
       "variant": "exception"
     }
   ],
@@ -41,8 +41,8 @@
       "lane": "sn",
       "col": 0,
       "type": "backend",
-      "label": "推送 REASSIGN",
-      "sublabel": "rev + 1"
+      "label": "转移生效",
+      "sublabel": "推送 REASSIGN，rev + 1"
     },
     {
       "id": "acc",
@@ -87,7 +87,7 @@
       "col": 4,
       "type": "security",
       "label": "MES 自行处理",
-      "sublabel": "已 LINK 不允许转移"
+      "sublabel": "不影响 SN 系统"
     }
   ],
   "edges": [
