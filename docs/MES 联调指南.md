@@ -114,7 +114,7 @@ curl -s "$BASE/batches/<batchNo>/items" -H "Authorization: Bearer $TOKEN"       
 
 ## 3. 契约测试：验证 MES 方的接收接口
 
-MES 方的接收推送接口（①）在测试环境上线后就能测，不需要本系统。脚本自己造批次，按对接说明的方式发送（gzip、Bearer 或 HMAC 签名、`X-Sn-Batch-No` 等请求头），逐项核对应答：
+MES 方的接收推送接口（①）在测试环境上线后就能测，不需要本系统。脚本自己造批次，按对接说明的方式发送（默认原始 JSON，加 `--gzip` 时压缩，与「生产组织」页的「gzip 压缩」一致；Bearer 或 HMAC 签名、`X-Sn-Batch-No` 等请求头），逐项核对应答：
 
 ```bash
 uv run python -m devtools.mes_conformance --url https://mes-test.example.com/sn/receive --org 110 \

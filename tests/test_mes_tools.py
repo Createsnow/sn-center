@@ -21,9 +21,9 @@ def _quiet(_: str) -> None:
     pass
 
 
-def _runner(mock: MockMes, auth: str = "TOKEN") -> Runner:
+def _runner(mock: MockMes, auth: str = "TOKEN", gz: bool = False) -> Runner:
     mock.secrets["110"] = "s3cret"
-    return Runner(mock.url("110"), "110", auth, "s3cret", timeout=10, log=_quiet)
+    return Runner(mock.url("110"), "110", auth, "s3cret", timeout=10, log=_quiet, gzip=gz)
 
 
 @pytest.fixture
@@ -33,9 +33,9 @@ def mock():
     x.stop()
 
 
-@pytest.mark.parametrize("auth", ["TOKEN", "HMAC"])
-def test_conformance_all_pass_against_mock(mock, auth):
-    r = _runner(mock, auth)
+@pytest.mark.parametrize(("auth", "gz"), [("TOKEN", False), ("HMAC", False), ("HMAC", True)])
+def test_conformance_all_pass_against_mock(mock, auth, gz):
+    r = _runner(mock, auth, gz)
     checks = r.run_all(perf=500)
     bad = [(c.id, c.status, c.detail) for c in checks if c.status not in (PASS, SKIP)]
     assert bad == []
@@ -211,3 +211,17 @@ def test_push_and_pull_concurrently_never_overlap(w, sql, app_client):
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 3000
     sources = {r["source"] for r in sql.all("SELECT DISTINCT source FROM sn_delivery_batch WHERE pi_no = %s", pi)}
     assert sources <= {"PUSH", "PULL"} and sources
+
+
+@pytest.mark.parametrize("gz", [False, True])
+def test_push_body_plain_json_by_default_gzip_when_enabled(mock, gz):
+    """① 推送：默认发原始 JSON、不带 Content-Encoding；组织开启 gzip 压缩时发 gzip 并带 Content-Encoding: gzip。"""
+    from app.services import mes_client
+
+    mock.secrets["110"] = "s3cret"
+    t = mes_client.Target(mock.url("110"), mes_client.TOKEN, "s3cret", 10, gz)
+    out = mes_client.send(t, "PING-GZ", mes_client.ping_body("110", "PING-GZ"), 1)
+    assert out.kind == mes_client.RECEIPT and out.receipt["outcome"] == "PROCESSED"
+    h = mock.received[-1]["headers"]
+    assert h.get("content-encoding") == ("gzip" if gz else None)
+    assert mock.received[-1]["batch"]["batchNo"] == "PING-GZ"

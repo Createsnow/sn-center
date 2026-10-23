@@ -1,8 +1,9 @@
 """本系统调 MES（接口 ①）：推送一个批次，按应答归类。
 
-- HTTPS / JSON（UTF-8），请求体 gzip；不跟随 3xx 跳转。同一批次每次送达请求体逐字节相同（建批时写定的 body_gz）。
+- HTTPS；默认发原始 JSON（UTF-8），组织开启「gzip 压缩」时发 gzip 并带 Content-Encoding: gzip；不跟随 3xx 跳转。
+  同一批次每次送达请求体逐字节相同（建批时写定 body_gz，原始 JSON 由它解压得到）。
 - 请求头：认证（A 固定 Bearer 令牌 + 来源 IP 白名单；B HMAC-SHA256 签名）、X-Sn-Batch-No、X-Sn-Attempt、
-  X-Request-Id、Content-Encoding: gzip。
+  X-Request-Id；开启压缩时另带 Content-Encoding: gzip。
 - HMAC 签名串 = timestamp + "\\n" + batchNo + "\\n" + hex(SHA256(解压后的原始请求体字节))，
   放在 X-Sn-Timestamp（ISO 8601 UTC）与 X-Sn-Signature（小写十六进制）。
 - 应答：HTTP 200 + 回执（含整批拒收）；超时、5xx、断连、409 BATCH_IN_PROGRESS、429、503 可重试；
@@ -43,11 +44,19 @@ class Target:
     auth_type: str
     credential: str
     timeout: int
+    #: 请求体 gzip 压缩；默认发原始 JSON
+    gzip: bool = False
 
     @staticmethod
     def of(factory: dict) -> Target:
         cred = secretbox.open_(factory["mes_credential"]) or ""
-        return Target(factory["mes_url"], factory["mes_auth_type"], cred, max(1, int(factory["push_timeout_sec"])))
+        return Target(
+            factory["mes_url"],
+            factory["mes_auth_type"],
+            cred,
+            max(1, int(factory["push_timeout_sec"])),
+            bool(factory.get("mes_gzip")),
+        )
 
 
 @dataclass(frozen=True)
@@ -92,13 +101,14 @@ def sign(secret: str, timestamp: str, batch_no: str, raw: bytes) -> str:
 def _headers(t: Target, batch_no: str, attempt: int, raw: bytes) -> dict[str, str]:
     h = {
         "Content-Type": "application/json; charset=utf-8",
-        "Content-Encoding": "gzip",
         "Accept": "application/json",
         "Accept-Encoding": "gzip",
         "X-Sn-Batch-No": batch_no,
         "X-Sn-Attempt": str(attempt),
         "X-Request-Id": str(uuid.uuid4()),
     }
+    if t.gzip:
+        h["Content-Encoding"] = "gzip"
     if t.auth_type == HMAC:
         ts = utc_iso()
         h["X-Sn-Timestamp"] = ts
@@ -130,7 +140,8 @@ def send(t: Target, batch_no: str, body_gz: bytes, attempt: int) -> Outcome:
     raw = gzip.decompress(body_gz)
     try:
         with httpx.Client(trust_env=False, follow_redirects=False, timeout=t.timeout) as http:
-            resp = http.post(t.url, content=body_gz, headers=_headers(t, batch_no, attempt, raw))
+            content = body_gz if t.gzip else raw
+            resp = http.post(t.url, content=content, headers=_headers(t, batch_no, attempt, raw))
     except httpx.TimeoutException:
         return Outcome(RETRY, code="TIMEOUT", message=f"等待 MES 应答超时（{t.timeout} 秒）")
     except httpx.HTTPError as e:

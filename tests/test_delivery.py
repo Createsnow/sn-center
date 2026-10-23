@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 from conftest import MES, emp, m, ok, uid
 
 
@@ -44,7 +46,9 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
     assert item["billNo"] == bill and item["billSeq"] == 1 and item["pi"] == pi and item["serialPi"] == pi
     assert isinstance(item["serialDec"], str) and item["length"] == "0100" and item["pushType"] == "NEW"
     h = MES.received[-1]["headers"]
-    assert h["x-sn-batch-no"] == batches[-1]["batch_no"] and h["content-encoding"] == "gzip"
+    # 默认发原始 JSON，不带 Content-Encoding
+    assert h["x-sn-batch-no"] == batches[-1]["batch_no"] and "content-encoding" not in h
+    assert json.loads(MES.received[-1]["raw"])["batchNo"] == batches[-1]["batch_no"]
 
 
 def test_batch_detail_segments_split_at_gaps(w, sql):

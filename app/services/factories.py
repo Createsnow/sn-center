@@ -24,6 +24,7 @@ BASIC = ("factory_code", "factory_name", "enabled", "mes_enabled", "tz_offset_mi
 CONFIG = (
     "mes_url",
     "mes_auth_type",
+    "mes_gzip",
     "batch_size",
     "push_timeout_sec",
     "push_concurrency",
@@ -41,7 +42,7 @@ _URL = re.compile(r"^https?://\S+$")
 def factory_json(f: dict | None, full: bool = False) -> dict | None:
     if f is None:
         return None
-    out = util.jrow(f, BASIC + (CONFIG if full else ()), ("enabled", "mes_enabled"))
+    out = util.jrow(f, BASIC + (CONFIG if full else ()), ("enabled", "mes_enabled", "mes_gzip"))
     if full:
         out["credential_set"] = bool(f["mes_credential"])
         out["tested"] = bool(f["cfg_tested"]) and f["cfg_tested"] == stored_digest(f)
@@ -180,20 +181,26 @@ def sync_from_k3(cu: CurrentUser) -> dict:
 # ================================================================== MES 对接配置
 
 
-def config_digest(code: str, url: str, auth: str, credential: str) -> str:
-    """连接测试通过时记下的配置摘要：生产组织编码、地址、认证方式、凭证。"""
-    raw = "\n".join((code, url, auth, credential))
+def config_digest(code: str, url: str, auth: str, credential: str, gz: bool = False) -> str:
+    """连接测试通过时记下的配置摘要：生产组织编码、地址、认证方式、凭证、gzip 压缩（关闭时不计入）。"""
+    raw = "\n".join((code, url, auth, credential)) + ("\ngzip" if gz else "")
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
 def stored_digest(f: dict) -> str:
     return config_digest(
-        f["factory_code"], f["mes_url"], f["mes_auth_type"], secretbox.open_(f["mes_credential"]) or ""
+        f["factory_code"],
+        f["mes_url"],
+        f["mes_auth_type"],
+        secretbox.open_(f["mes_credential"]) or "",
+        bool(f.get("mes_gzip")),
     )
 
 
 def _digest(c: dict) -> str:
-    return config_digest(c["factory_code"], c["mes_url"], c["mes_auth_type"], c["mes_credential_plain"])
+    return config_digest(
+        c["factory_code"], c["mes_url"], c["mes_auth_type"], c["mes_credential_plain"], bool(c["mes_gzip"])
+    )
 
 
 def _candidate(f: dict, body: dict) -> dict:
@@ -214,7 +221,16 @@ def _candidate(f: dict, body: dict) -> dict:
         raise biz(ErrorCode.MES_CONFIG_INVALID, detail="认证方式只能是 TOKEN 或 HMAC")
     if len(cred) > 500:
         raise biz(ErrorCode.MES_CONFIG_INVALID, detail="凭证过长")
-    out = {**f, "mes_url": url, "mes_auth_type": auth, "mes_credential_plain": cred}
+    gz = body.get("mes_gzip")
+    if gz is not None and not isinstance(gz, bool):
+        raise biz(ErrorCode.MES_CONFIG_INVALID, detail="gzip 压缩只能是开或关")
+    out = {
+        **f,
+        "mes_url": url,
+        "mes_auth_type": auth,
+        "mes_credential_plain": cred,
+        "mes_gzip": bool(f.get("mes_gzip")) if gz is None else gz,
+    }
     for k, (lo, hi) in LIMITS.items():
         v = body.get(k)
         if v is None:
@@ -236,7 +252,9 @@ def test_connection(cu: CurrentUser, code: str | None, body: dict) -> dict:
     c = _candidate(f, body)
     if not c["mes_url"] or not c["mes_credential_plain"]:
         raise biz(ErrorCode.MES_CONFIG_INVALID, detail="接口地址和凭证必填")
-    t = mes_client.Target(c["mes_url"], c["mes_auth_type"], c["mes_credential_plain"], int(c["push_timeout_sec"]))
+    t = mes_client.Target(
+        c["mes_url"], c["mes_auth_type"], c["mes_credential_plain"], int(c["push_timeout_sec"]), bool(c["mes_gzip"])
+    )
     batch_no = "PING-" + util.next_id("")
     out = mes_client.send(t, batch_no, mes_client.ping_body(f["factory_code"], batch_no), 1)
     ok = out.kind == mes_client.RECEIPT and isinstance(out.receipt, dict) and out.receipt.get("outcome") == "PROCESSED"
@@ -259,13 +277,13 @@ def test_connection(cu: CurrentUser, code: str | None, body: dict) -> dict:
             cu,
             (audit.entry(audit.FACTORY_MES_TEST) if ok else audit.entry(audit.FACTORY_MES_TEST).fail(message))
             .factory(f["factory_code"])
-            .info(f"url={c['mes_url']} auth={c['mes_auth_type']} batch={batch_no}"),
+            .info(f"url={c['mes_url']} auth={c['mes_auth_type']} gzip={int(c['mes_gzip'])} batch={batch_no}"),
         )
     return {"ok": ok, "message": message, "batch_no": batch_no, "checked_at": util.fmt(now)}
 
 
 def save_config(cu: CurrentUser, code: str | None, body: dict) -> dict:
-    """保存 MES 对接配置；已开启对接时，改了地址、认证方式或凭证须先用新配置连接测试通过。"""
+    """保存 MES 对接配置；已开启对接时，改了地址、认证方式、凭证或 gzip 压缩须先用新配置连接测试通过。"""
     with db.tx():
         f = get(util.trim(code), lock=True)
         if f is None:
@@ -280,12 +298,14 @@ def save_config(cu: CurrentUser, code: str | None, body: dict) -> dict:
             # 刚用这份配置测试通过：保存后为正常；否则未配置（缺地址或凭证）/ 待测试（仍记未配置）
             status = "OK" if f["cfg_tested"] == digest else "UNCONFIGURED"
         db.exec(
-            "UPDATE sn_factory SET mes_url = %s, mes_auth_type = %s, mes_credential = %s, batch_size = %s, "
-            "push_timeout_sec = %s, push_concurrency = %s, tz_offset_min = %s, cfg_status = %s, updated_at = %s "
+            "UPDATE sn_factory SET mes_url = %s, mes_auth_type = %s, mes_credential = %s, mes_gzip = %s, "
+            "batch_size = %s, push_timeout_sec = %s, push_concurrency = %s, tz_offset_min = %s, cfg_status = %s, "
+            "updated_at = %s "
             "WHERE factory_code = %s",
             c["mes_url"],
             c["mes_auth_type"],
             secretbox.seal(c["mes_credential_plain"]),
+            int(c["mes_gzip"]),
             c["batch_size"],
             c["push_timeout_sec"],
             c["push_concurrency"],
@@ -299,7 +319,8 @@ def save_config(cu: CurrentUser, code: str | None, body: dict) -> dict:
             audit.entry(audit.FACTORY_MES_CONFIG)
             .factory(f["factory_code"])
             .info(
-                f"url={c['mes_url']} auth={c['mes_auth_type']} credential={'changed' if conn_changed else 'kept'} "
+                f"url={c['mes_url']} auth={c['mes_auth_type']} gzip={int(c['mes_gzip'])} "
+                f"credential={'changed' if conn_changed else 'kept'} "
                 f"batch={c['batch_size']} timeout={c['push_timeout_sec']} concurrency={c['push_concurrency']} "
                 f"tz={c['tz_offset_min']}"
             ),

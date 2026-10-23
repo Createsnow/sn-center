@@ -15,6 +15,7 @@ CREATE TABLE sn_factory (
   mes_url          VARCHAR(500)  NOT NULL DEFAULT '' COMMENT 'MES 接收推送的地址',
   mes_auth_type    VARCHAR(8)    NOT NULL DEFAULT 'TOKEN' COMMENT 'TOKEN 固定令牌 + 白名单 / HMAC 签名',
   mes_credential   VARCHAR(1024) NOT NULL DEFAULT '' COMMENT '凭证（加密保存，不回显）',
+  mes_gzip         TINYINT(1)    NOT NULL DEFAULT 0 COMMENT '推送请求体 gzip 压缩（默认 0 = 原始 JSON）',
   batch_size       INT           NOT NULL DEFAULT 5000 COMMENT '单批推送枚数（也是 MES 拉取建批上限）',
   push_timeout_sec INT           NOT NULL DEFAULT 60 COMMENT '推送超时（秒）',
   push_concurrency INT           NOT NULL DEFAULT 2 COMMENT '同组织同时运行的推送任务数',

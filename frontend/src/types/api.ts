@@ -51,6 +51,8 @@ export interface Factory {
   tz_offset_min: number;
   mes_url?: string;
   mes_auth_type?: "TOKEN" | "HMAC";
+  /** 推送请求体 gzip 压缩（默认关，发原始 JSON） */
+  mes_gzip?: boolean;
   batch_size?: number;
   push_timeout_sec?: number;
   push_concurrency?: number;

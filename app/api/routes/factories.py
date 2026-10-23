@@ -19,7 +19,7 @@ def factory_sync(cu: AdminDep) -> dict:
     return factories.sync_from_k3(cu)
 
 
-@router.put("/{code}/mes-config", summary="保存 MES 对接配置；已开启对接时改了地址、认证或凭证须先连接测试通过")
+@router.put("/{code}/mes-config", summary="保存 MES 对接配置；已开启对接时改了连接配置须先连接测试通过")
 def factory_config(code: str, body: MesConfigIn, cu: AdminDep) -> dict:
     return factories.save_config(cu, code, body.model_dump(exclude_unset=True))
 

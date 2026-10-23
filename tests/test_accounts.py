@@ -195,3 +195,25 @@ def test_hmac_push(w, api, sql):
 def test_builtin_admin_reset_via_env(w, api):
     # 不带页面头登录（不挤掉会话里共用的总部页面令牌）
     assert api.post("/api/auth/login", m(emp_no="admin", password=ADMIN_PASSWORD), None).status == 200
+
+
+def test_mes_gzip_switch_needs_retest_and_compresses_push(w, api, sql):
+    """「gzip 压缩」默认关（推送发原始 JSON）；已开启对接时改它须先连接测试，开启后推送带 Content-Encoding: gzip。"""
+    org = w.org(uid("O")[:10])
+    w.enable_mes(org, batch_size=5)
+    f = [x for x in ok(api.get("/api/factories", w.admin)) if x["factory_code"] == org][0]
+    assert f["mes_gzip"] is False and f["tested"]
+    cfg = m(mes_url=MES.url(org), mes_auth_type="TOKEN", mes_gzip=True)
+    assert api.put(f"/api/factories/{org}/mes-config", cfg, w.admin).code == "MES_TEST_REQUIRED"
+    t = ok(api.post(f"/api/factories/{org}/mes-test", cfg, w.admin))
+    assert t["ok"] and MES.received[-1]["headers"].get("content-encoding") == "gzip"
+    saved = ok(api.put(f"/api/factories/{org}/mes-config", cfg, w.admin))
+    assert saved["mes_gzip"] is True and saved["tested"] and saved["cfg_status"] == "OK"
+    pi, bill = uid("PI"), uid("MO")
+    w.order(bill, org, "C1", pi, ("M1", 3))
+    ok(w.bind_pi(pi, w.rule("P" + uid("").replace("-", ""))))
+    w.generate(pi)
+    w.allocate(pi)
+    w.push()
+    assert MES.received[-1]["headers"].get("content-encoding") == "gzip"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 3

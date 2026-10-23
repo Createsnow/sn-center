@@ -35,6 +35,8 @@ class MesConfigIn(In):
     mes_url: str | None = None
     mes_auth_type: str | None = None
     mes_credential: str | None = None
+    #: 推送请求体 gzip 压缩；None = 沿用已存的（默认关，发原始 JSON）
+    mes_gzip: bool | None = None
     batch_size: int | None = None
     push_timeout_sec: int | None = None
     push_concurrency: int | None = None

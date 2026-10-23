@@ -1,8 +1,8 @@
 """MES 接口契约测试：按《MES 对接说明》逐项检查 MES 方「接收推送」接口（①）的实现，输出通过 / 失败报告。
 
-MES 方接口一提供就能测，不需要本系统：脚本自己造批次（PING、交付、转出），按对接说明的方式发送（gzip、Bearer 或
-HMAC 签名、X-Sn-Batch-No 等请求头），逐项核对应答——校验与整批拒收、按批次号去重、rev 比对四种结果、转出、并发送达、
-连接测试。只依赖 Python 3.11+ 和 httpx，可以直接交给 MES 方自测。
+MES 方接口一提供就能测，不需要本系统：脚本自己造批次（PING、交付、转出），按对接说明的方式发送（默认原始 JSON，
+加 --gzip 时压缩；Bearer 或 HMAC 签名、X-Sn-Batch-No 等请求头），逐项核对应答——校验与整批拒收、按批次号去重、
+rev 比对四种结果、转出、并发送达、连接测试。只依赖 Python 3.11+ 和 httpx，可以直接交给 MES 方自测。
 
     uv run python -m devtools.mes_conformance --url https://mes-test.example.com/sn/receive --org 110 \\
         --auth TOKEN --secret <令牌> --report mes-110-report.md
@@ -87,9 +87,12 @@ class Runner:
         timeout: float = 60,
         insecure: bool = False,
         run_id: str | None = None,
+        gzip: bool = False,
         log: Callable[[str], None] = print,
     ) -> None:
         self.url, self.org, self.auth, self.secret, self.timeout = url, org, auth.upper(), secret, timeout
+        #: 与「生产组织」页的「gzip 压缩」一致：默认发原始 JSON
+        self.gzip = gzip
         self.http = httpx.Client(trust_env=False, follow_redirects=False, timeout=timeout, verify=not insecure)
         self.run = run_id or "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
         self.prefix = f"CT{self.run}"
@@ -174,18 +177,19 @@ class Runner:
         secret: str | None = None,
         ts: str | None = None,
     ) -> Reply:
-        """按对接说明 ① 发送：请求体 gzip，认证按组织配置（Bearer 或 HMAC）。"""
+        """按对接说明 ① 发送：默认原始 JSON（开启 gzip 时压缩），认证按组织配置（Bearer 或 HMAC）。"""
         raw = canonical(obj) if raw is None else raw
         no = (obj or {}).get("batchNo") or "CT-RAW"
         h = {
             "Content-Type": "application/json; charset=utf-8",
-            "Content-Encoding": "gzip",
             "Accept": "application/json",
             "Accept-Encoding": "gzip",
             "X-Sn-Batch-No": no,
             "X-Sn-Attempt": str(attempt),
             "X-Request-Id": str(uuid.uuid4()),
         }
+        if self.gzip:
+            h["Content-Encoding"] = "gzip"
         key = self.secret if secret is None else secret
         if self.auth == "HMAC":
             t = ts or utc_iso()
@@ -196,7 +200,7 @@ class Runner:
             h["Authorization"] = f"Bearer {key}"
         start = time.monotonic()
         try:
-            r = self.http.post(self.url, content=gzip.compress(raw, mtime=0), headers=h)
+            r = self.http.post(self.url, content=gzip.compress(raw, mtime=0) if self.gzip else raw, headers=h)
         except httpx.TimeoutException:
             return Reply(None, None, f"等待应答超过 {self.timeout:g} 秒", time.monotonic() - start)
         except httpx.HTTPError as e:
@@ -591,8 +595,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--perf", type=int, nargs="?", const=5000, default=0, help="测一批的处理时间，默认 5000 枚")
     p.add_argument("--report", help="把报告写成 Markdown 文件")
     p.add_argument("--insecure", action="store_true", help="不校验 HTTPS 证书（测试环境自签证书）")
+    p.add_argument("--gzip", action="store_true", help="请求体 gzip 压缩（与「生产组织」页开启「gzip 压缩」时相同）")
     a = p.parse_args(argv)
-    r = Runner(a.url, a.org, a.auth, a.secret, a.timeout, a.insecure)
+    r = Runner(a.url, a.org, a.auth, a.secret, a.timeout, a.insecure, gzip=a.gzip)
     print(f"运行号 {r.run}，测试 SN 前缀 {r.prefix}；只能对 MES 测试环境运行\n")
     r.run_all(a.perf)
     text = r.report()

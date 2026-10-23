@@ -58,6 +58,10 @@
             :placeholder="editing?.credential_set ? t('factories.credentialKeep') : ''" />
           <div class="muted hint">{{ t("factories.credentialHint") }}</div>
         </el-form-item>
+        <el-form-item :label="t('factories.gzip')">
+          <el-switch v-model="form.mes_gzip" />
+          <div class="muted hint">{{ t("factories.gzipHint") }}</div>
+        </el-form-item>
         <el-form-item :label="t('factories.batchSize')">
           <el-input-number v-model="form.batch_size" :min="1" :max="50000" :step="500" />
           <span class="muted ml">{{ t("factories.batchSizeHint") }}</span>
@@ -158,13 +162,13 @@ const editing = ref<Factory | null>(null);
 const testing = ref(false);
 const saving = ref(false);
 const testResult = ref<any>(null);
-const form = reactive({ mes_url: "", mes_auth_type: "TOKEN", mes_credential: "", batch_size: 5000, push_timeout_sec: 60, push_concurrency: 2, tz_offset_min: 480 });
+const form = reactive({ mes_url: "", mes_auth_type: "TOKEN", mes_credential: "", mes_gzip: false, batch_size: 5000, push_timeout_sec: 60, push_concurrency: 2, tz_offset_min: 480 });
 
 function openConfig(row: Factory) {
   editing.value = row;
   testResult.value = null;
   Object.assign(form, {
-    mes_url: row.mes_url || "", mes_auth_type: row.mes_auth_type || "TOKEN", mes_credential: "",
+    mes_url: row.mes_url || "", mes_auth_type: row.mes_auth_type || "TOKEN", mes_credential: "", mes_gzip: row.mes_gzip ?? false,
     batch_size: row.batch_size ?? 5000, push_timeout_sec: row.push_timeout_sec ?? 60, push_concurrency: row.push_concurrency ?? 2,
     tz_offset_min: row.tz_offset_min ?? 480,
   });
