@@ -163,7 +163,7 @@ MES 收到的批次按 `batchType` 分为三类；推送批次和拉取批次的
   "itemsDigest": "sha256:9f2c4e…",     // 幂等校验：同一 batchNo 再来时比对字符串
   "items": [
     {
-      "pushType": "REASSIGN",          // 仅说明原因（NEW 新号 / REASSIGN 挂靠变更），接收与否看 rev
+      "pushType": "REASSIGN",          // 仅说明原因（NEW 新 SN / REASSIGN 挂靠变更），接收与否看 rev
       "sn": "HX100000001A",            // 唯一标识（多组织共用 MES 时为「组织 + SN」）
       "rev": 2,                        // 版本比对：与本地 rev 比较
       "pi": "000001",                  // 须等于批次 pi
@@ -233,7 +233,7 @@ MES 收到的批次按 `batchType` 分为三类；推送批次和拉取批次的
 
 | `batchType` | 含义 | MES 动作 |
 | --- | --- | --- |
-| `DELIVERY` | 推送批次、拉取批次：新号（`NEW`）或挂靠变更（`REASSIGN`） | 新增或覆盖；本地不存在的 `REASSIGN` 按新号建档 |
+| `DELIVERY` | 推送批次、拉取批次：新 SN（`NEW`）或挂靠变更（`REASSIGN`） | 新增或覆盖；本地不存在的 `REASSIGN` 按新 SN建档 |
 | `TRANSFER_OUT` | 转移批次：SN 已转至其他组织 | 标记「已转走」，停止打标，不删除 |
 | `PING` | 测试批次：连接测试，不含 SN | 只校验身份和 `orgCode`，回 `PROCESSED`；不存储、不记录批次号 |
 
@@ -291,7 +291,7 @@ MES 收到的批次按 `batchType` 分为三类；推送批次和拉取批次的
 | --- | --- | --- |
 | 无 `fromOrgCode` | 非转移（普通下发） | `DELIVERY` / `NEW` |
 | `fromOrgCode` = `orgCode` | 同组织转移 | 已持有：`REASSIGN`；未持有：`NEW` |
-| `fromOrgCode` ≠ `orgCode` | 跨组织转入 | 原组织 MES 曾持有：`REASSIGN`，否则 `NEW`；本地均不存在，按新号建档 |
+| `fromOrgCode` ≠ `orgCode` | 跨组织转入 | 原组织 MES 曾持有：`REASSIGN`，否则 `NEW`；本地均不存在，按新 SN建档 |
 | `batchType = TRANSFER_OUT` | 跨组织转移（原组织） | 转移批次，仅发给曾持有该 SN 的原组织 MES |
 
 **同组织转移**
@@ -473,7 +473,7 @@ MES 收到的批次按 `batchType` 分为三类；推送批次和拉取批次的
 | `X-Sn-Attempt` | String | 是 | `1` | 第几次送达，仅记日志 |
 | `X-Request-Id` | String | 是 | UUID | 请求编号，仅用于查日志；**不得用于去重** |
 
-**Body A：推送批次（`DELIVERY`）**　新号、挂靠变更均使用此结构；拉取批次结构相同
+**Body A：推送批次（`DELIVERY`）**　新 SN、挂靠变更均使用此结构；拉取批次结构相同
 
 ```jsonc
 {
@@ -487,7 +487,7 @@ MES 收到的批次按 `batchType` 分为三类；推送批次和拉取批次的
   "itemsDigest": "sha256:9f2c4e…",     // 必填，String，内容指纹，MES 存储后直接比对字符串，无需自行计算 ★ 幂等校验
   "items": [                           // 必填，Array，SN 明细
     {
-      "pushType": "REASSIGN",          // 必填，String，NEW 新号 / REASSIGN 挂靠变更；仅说明原因，接收与否看 rev
+      "pushType": "REASSIGN",          // 必填，String，NEW 新 SN / REASSIGN 挂靠变更；仅说明原因，接收与否看 rev
       "sn": "HX100000001A",            // 必填，String，完整 SN
       "rev": 2,                        // 必填，Number，挂靠版本，越大越新 ★ 版本比对（4.2）
       "serial": "000001",              // 必填，String，流水号（可能为 36 进制写法）
