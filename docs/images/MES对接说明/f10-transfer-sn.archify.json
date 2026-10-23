@@ -1,0 +1,151 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "SN 系统侧转移流程",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "legend": {
+      "mode": "hidden"
+    },
+    "output": "f10-transfer-sn.html"
+  },
+  "lanes": [
+    {
+      "id": "sn",
+      "label": "SN 系统"
+    },
+    {
+      "id": "same",
+      "label": "同组织"
+    },
+    {
+      "id": "cross",
+      "label": "跨组织"
+    },
+    {
+      "id": "no",
+      "label": "不可转",
+      "variant": "exception"
+    }
+  ],
+  "mainPath": [
+    "start",
+    "check",
+    "rev",
+    "kind",
+    "s1"
+  ],
+  "nodes": [
+    {
+      "id": "start",
+      "lane": "sn",
+      "col": 0,
+      "type": "external",
+      "label": "发起转移",
+      "sublabel": "转单 / 转组织"
+    },
+    {
+      "id": "check",
+      "lane": "sn",
+      "col": 1,
+      "type": "security",
+      "label": "号可转?",
+      "sublabel": "PI 锁 + 逐行锁"
+    },
+    {
+      "id": "rev",
+      "lane": "sn",
+      "col": 2,
+      "type": "database",
+      "label": "改挂",
+      "sublabel": "清原批次，rev + 1"
+    },
+    {
+      "id": "kind",
+      "lane": "sn",
+      "col": 3,
+      "type": "backend",
+      "label": "转到别的组织?"
+    },
+    {
+      "id": "s1",
+      "lane": "same",
+      "col": 4,
+      "type": "frontend",
+      "label": "推本组织 MES",
+      "sublabel": "已交过 REASSIGN / 未交 NEW"
+    },
+    {
+      "id": "c1",
+      "lane": "cross",
+      "col": 3,
+      "type": "frontend",
+      "label": "推转入组织 MES",
+      "sublabel": "NEW 或 REASSIGN"
+    },
+    {
+      "id": "c2",
+      "lane": "cross",
+      "col": 4,
+      "type": "frontend",
+      "label": "推原组织 MES",
+      "sublabel": "TRANSFER_OUT，收过才发"
+    },
+    {
+      "id": "x1",
+      "lane": "no",
+      "col": 1,
+      "type": "security",
+      "label": "提示先续推",
+      "sublabel": "原转出批次未确认"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "start",
+      "to": "check"
+    },
+    {
+      "id": "e2",
+      "from": "check",
+      "to": "rev",
+      "label": "是"
+    },
+    {
+      "id": "e3",
+      "from": "rev",
+      "to": "kind"
+    },
+    {
+      "id": "e4",
+      "from": "kind",
+      "to": "s1",
+      "label": "否",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e5",
+      "from": "kind",
+      "to": "c1",
+      "label": "是",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e6",
+      "from": "c1",
+      "to": "c2",
+      "label": "并行",
+      "variant": "dashed"
+    },
+    {
+      "id": "e7",
+      "from": "check",
+      "to": "x1",
+      "label": "否",
+      "variant": "security",
+      "role": "error"
+    }
+  ]
+}

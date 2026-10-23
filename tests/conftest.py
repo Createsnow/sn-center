@@ -210,7 +210,7 @@ ORGS: list[tuple[str, str, str]] = []
 
 
 #: 各组织一套 MES（路径 /mes/<组织>），与联调用的模拟 MES 同一份实现（devtools/mes_mock.py）：
-#: 按 MES 对接说明 1.2 节的 process(batch) 处理推送来的批次，也可在测试里对拉取到的批次调用 process 生成回执；
+#: 按 MES 对接说明 3.2 节的 process(batch) 处理推送来的批次，也可在测试里对拉取到的批次调用 process 生成回执；
 #: behavior[org] 可覆盖应答（模拟故障）。
 MES = MockMes().start()
 

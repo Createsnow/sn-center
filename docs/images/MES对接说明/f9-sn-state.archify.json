@@ -1,0 +1,105 @@
+{
+  "schema_version": 3,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "SN 状态与 MES 收到的批次",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "legend": {
+      "mode": "hidden"
+    },
+    "output": "f9-sn-state.html"
+  },
+  "mainPath": [
+    "unalloc",
+    "topush",
+    "inbatch",
+    "pushed"
+  ],
+  "states": [
+    {
+      "id": "unalloc",
+      "type": "start",
+      "label": "待分配",
+      "sublabel": "已生成，未分组织"
+    },
+    {
+      "id": "topush",
+      "type": "waiting",
+      "label": "待推送",
+      "sublabel": "未入批"
+    },
+    {
+      "id": "inbatch",
+      "type": "active",
+      "label": "待推送",
+      "sublabel": "批次未确认"
+    },
+    {
+      "id": "pushed",
+      "type": "success",
+      "label": "已推送",
+      "sublabel": "MES 已确认"
+    },
+    {
+      "id": "failed",
+      "type": "failure",
+      "label": "待推送",
+      "sublabel": "批次失败"
+    },
+    {
+      "id": "allocated",
+      "type": "neutral",
+      "label": "已分配",
+      "sublabel": "未对接 MES"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "t1",
+      "from": "unalloc",
+      "to": "topush",
+      "label": "分配"
+    },
+    {
+      "id": "t2",
+      "from": "topush",
+      "to": "inbatch",
+      "label": "建批 · MES 收 NEW",
+      "variant": "emphasis"
+    },
+    {
+      "id": "t3",
+      "from": "inbatch",
+      "to": "pushed",
+      "label": "回执确认",
+      "variant": "emphasis"
+    },
+    {
+      "id": "t4",
+      "from": "inbatch",
+      "to": "failed",
+      "label": "REJECTED / 回执不符",
+      "variant": "security"
+    },
+    {
+      "id": "t5",
+      "from": "failed",
+      "to": "pushed",
+      "label": "续推确认"
+    },
+    {
+      "id": "t7",
+      "from": "pushed",
+      "to": "topush",
+      "label": "转移 · rev+1 · 下次收 REASSIGN",
+      "variant": "dashed"
+    },
+    {
+      "id": "t8",
+      "from": "unalloc",
+      "to": "allocated",
+      "label": "分配（未对接 MES）"
+    }
+  ]
+}
