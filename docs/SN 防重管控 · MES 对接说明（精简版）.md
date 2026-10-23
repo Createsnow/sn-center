@@ -1,257 +1,383 @@
 # SN 防重管控 · MES 对接说明（精简版）
 
-> **分工**：SN 系统负责 **推送、取批、转移通知**；过站、LINK、MES 内部数据链由 **MES 自行处理**。
+> **职责划分**：SN 系统负责 SN 的生成、分配，以及向 MES **推送批次、提供拉取、通知转移**；过站、LINK 及 MES 内部数据链由 **MES 自行处理**。
+
+**文档结构**
+
+| 部分 | 章节 | 适合谁读 |
+| --- | --- | --- |
+| 第一部分　业务概述 | 1 业务全景、2 SN 生命周期与版本控制 | 业务方、MES 负责人 |
+| 第二部分　对接规范 | 3 接口总览、4 批次处理规范、5 转移业务规范、6 异常处理机制 | MES 开发，建议从头读到尾 |
+| 第三部分　接口参考 | 7 通用约定、8 接口定义、附录 A 错误码汇总 | 开发、联调时按需查阅 |
 
 ---
 
-## 1. 接口概览
+# 第一部分　业务概述
 
-| 类别 | # | 接口名称 | 方向 | 请求方式与路径 | 调用时机 | 详情 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 推送 | ① | 接收批次 | SN → MES（**MES 提供**） | `POST {MES 地址}` | 分配后、转移后、续推时；连接测试 | 7.1 |
-| 拉取 | ③ | 取下一批 | MES → SN | `POST /api/mes/v1/batches/next` | 本地号不够用、推送失败后、每 5 分钟兜底 | 7.2 |
-| 回执 | ④ | 提交回执 | MES → SN | `POST /api/mes/v1/batches/{batchNo}/receipt` | ③ 取到的批次落库后 | 7.3 |
-| 其他（对账，可选） | ⑤ | 查询已交付的号 | MES → SN | `GET /api/mes/v1/sn/delivered` | 对账 | 7.4 |
-| 其他（对账，可选） | ⑥ | 查询批次明细 | MES → SN | `GET /api/mes/v1/batches/{batchNo}/items` | 对账 | 7.5 |
+## 1. 业务全景
 
-- **认证**：① 由 MES 校验 SN 系统（固定令牌 + IP 白名单，或 HMAC 签名）；③～⑥ 由 SN 系统校验 MES（`Authorization: Bearer <工号>:<密钥>`）。详见第 6.2 节
-- 推送 ① 的回执放在**同一个应答**里，不用再调 ④；④ 只给 ③ 取到的批次用
+### 1.1 端到端业务时序
+
+![图 1-1 端到端业务时序](images/MES对接说明/f0-business.png)
+
+| 阶段 | 参与方 | 说明 |
+| --- | --- | --- |
+| 订单与生成 | 金蝶 → SN 系统；总部 → SN 系统 | SN 系统定时同步金蝶已审核的生产订单；总部按 PI 预演后生成 SN，号池全局不重复 |
+| 分配与交付 | 总部 → SN 系统 → MES | 总部把 SN 分配到订单的生产组织；SN 系统分批推送给该组织的 MES，MES 回执确认；推送失败时 MES 主动拉取 |
+| 生产打标 | MES → 现场 | MES 下发 SN，现场打标、过站、LINK（MES 内部流程，不涉及本接口） |
+| 转移 | 总部 / 生产组织 → SN 系统 → MES | 订单作废、拆单时总部转单；组织间调拨时生产组织申请、总部确认转组织；SN 系统改挂并推送改挂或转出批次，原组织 MES 停止打标转出号，旧标签按转出号清单作废 |
+
+## 2. SN 生命周期与版本控制
+
+### 2.1 SN 状态模型
+
+![图 2-1 SN 状态与 MES 收到的批次](images/MES对接说明/f9-sn-state.png)
+
+| SN 状态 | 含义 | 与 MES 的关系 |
+| --- | --- | --- |
+| 待分配 | 已生成，尚未分到生产组织 | MES 不可见 |
+| 待推送（未入批） | 已分到对接 MES 的组织，尚未组批 | 等待推送或拉取 |
+| 待推送（批次未确认） | 已组批，MES 尚未回执 | MES 已收到或正在接收 `DELIVERY` |
+| 待推送（批次失败） | MES 整批退回，或回执与批次不符 | MES 修正后拉取重处理，或总部续推 |
+| 已推送 | MES 已确认（推送应答、拉取回执或总部人工确认） | MES 已持有该 SN |
+| 已分配 | 分到未对接 MES 的组织 | 不经过 MES |
+| 申请中 | 已提交转组织申请，等待总部处理 | 仅在对账接口中作提醒（`APPLYING`） |
+
+- 总部作废未确认的批次后，SN 回到「待推送（未入批）」，重新组批送达
+- 单据反审核或订单变更待确认时，未交付的 SN **暂停交付**：状态不变，不组批；拉取应答中的 `paused` 为暂停枚数
+
+### 2.2 挂靠版本（rev）变更规则与对应批次类型
+
+- **SN 字符串永不改变**，改变的只是挂靠关系（生产组织、PI、单据行、物料、客户）
+- 生成时 `rev = 1`；每次转单、转组织 `rev` 加 1，**越大越新**；MES 原样保存，不得自行加减
+
+| 触发事件 | `rev` | MES 收到的批次 |
+| --- | --- | --- |
+| 首次分配后交付 | 不变 | `DELIVERY`，`pushType = NEW` |
+| 同组织转移（MES 已持有） | +1 | `DELIVERY`，`pushType = REASSIGN` |
+| 同组织转移（MES 未持有） | +1 | `DELIVERY`，`pushType = NEW` |
+| 跨组织转移 · 转入组织 | +1 | `DELIVERY`，`NEW` 或 `REASSIGN`（见 5.3） |
+| 跨组织转移 · 原组织（曾持有） | +1 | `TRANSFER_OUT` |
+| 批次重送、重新拉取 | 不变 | 同一批次，内容逐字节相同 |
+
+---
+
+# 第二部分　对接规范
+
+## 3. 接口总览
+
+### 3.1 接口清单
+
+| 类别 | # | 接口名称 | 方向 | 提供方 | 请求方式与路径 | 认证方式 | 调用时机 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 推送 | ① | 接收批次 | SN → MES | **MES** | `POST {MES 地址}` | 固定令牌 + IP 白名单，或 HMAC 签名 | 分配后、转移后、续推时；连接测试 |
+| 拉取 | ③ | 拉取批次 | MES → SN | SN 系统 | `POST /api/mes/v1/batches/next` | `Bearer <工号>:<密钥>` | 推送失败后、本地号不足、每 5 分钟兜底 |
+| 回执 | ④ | 提交回执 | MES → SN | SN 系统 | `POST /api/mes/v1/batches/{batchNo}/receipt` | 同上 | ③ 拉取的批次落库后 |
+| 对账 | ⑤ | 查询已交付 SN | MES → SN | SN 系统 | `GET /api/mes/v1/sn/delivered` | 同上 | 可选，按需对账 |
+| 对账 | ⑥ | 查询批次明细 | MES → SN | SN 系统 | `GET /api/mes/v1/batches/{batchNo}/items` | 同上 | 可选，按需对账 |
+
+- 推送 ① 的回执随**同一应答**返回，无需再调 ④；④ 仅用于 ③ 拉取的批次
 - 编号沿用历史编号，② 换令牌接口已移除
 
----
+### 3.2 接口交互时序
 
-## 2. 整体业务接口调用时序图
+![图 3-1 接口交互时序](images/MES对接说明/f2-interface.png)
 
-![图 2-1 SN 业务流程](images/MES对接说明/f1-business-flow.png)
+| 通道 | 说明 |
+| --- | --- |
+| 推送主通道 | 分配、转移后 SN 系统主动推送 ①，MES 处理后在同一应答中回执；失败按 1、5、15 分钟重送 |
+| 转出通知 | 跨组织转移时，给转入组织推交付批次的同时，给原组织推 `TRANSFER_OUT`，两者互不等待 |
+| 拉取补偿通道 | 推送失败后、本地号不足、每 5 分钟兜底：MES 调 ③ 拉取，落库后调 ④ 提交回执；可收回未送达的推送批次和 `TRANSFER_OUT` |
+| 对账 | ⑤⑥ 只读，仅用于核对，不得据此入库、打标或删除 |
 
-![图 2-2 整体接口调用](images/MES对接说明/f2-interface.png)
+推送与拉取的**批次格式完全相同**，MES 只需实现一套处理逻辑（第 4 章）；同一批次可能经两条通道到达，按 `batchNo` 只处理一次。
 
-- **主通道是推送 ①**：分配、转移后 SN 系统主动推，MES 处理完在同一应答里回执
-- **转移时**：同组织转移只给本组织 MES 推 `REASSIGN`；跨组织转移给转入组织推交付批次，同时给原组织推 `TRANSFER_OUT`，两边互不等待
-- **备用通道是取批 ③ + 回执 ④**：推送失败后、本地号不够用、每 5 分钟兜底一次（收回推送没送到的批次和 `TRANSFER_OUT`）
-- 推送和取批的**批次格式完全相同**，MES 只写一套处理逻辑（第 3 章）；同一个批次可能两条路都到，按 `batchNo` 只处理一次
-- ⑤⑥ 只用来对账，不能据此存号、打标或删号
+## 4. 批次处理规范（MES 侧）
 
----
+### 4.1 关键判定字段
 
-## 3. 接口重要字段与 MES 收批处理逻辑
+> 以下为**报文节选**，只保留 MES 做判断要用的字段；完整报文见第 8 章，未列出的字段原样保存即可。
 
-### 3.1 重要字段
+**交付批次（`DELIVERY`）**
 
-MES 做判断只用到下面这些字段，其余字段原样保存即可。完整报文见第 7 章。
+```jsonc
+{
+  "batchNo": "PS-110-20261019-000123", // 幂等键：收过则不再处理
+  "batchType": "DELIVERY",             // 分流：DELIVERY / TRANSFER_OUT / PING
+  "orgCode": "110",                    // 整批校验：必须是本组织
+  "pi": "000001",                      // 整批校验：每枚 SN 的 pi 必须等于它
+  "count": 1,                          // 整批校验：必须等于 items 条数
+  "itemsDigest": "sha256:9f2c4e…",     // 幂等校验：同一 batchNo 再来时比对字符串
+  "items": [
+    {
+      "pushType": "REASSIGN",          // 仅说明原因（NEW / REASSIGN），接收与否看 rev
+      "sn": "HX100000001A",            // 唯一标识（多组织共用 MES 时为「组织 + SN」）
+      "rev": 2,                        // 版本比对：与本地 rev 比较
+      "pi": "000001",                  // 须等于批次 pi
+      "fromOrgCode": "110"             // 转移识别：= orgCode 同组织转移；≠ orgCode 跨组织转入；无则非转移
+    }
+  ]
+}
+```
 
-| 字段 | 所在位置 | 取值 | MES 拿它做什么 |
-| --- | --- | --- | --- |
-| `batchNo` | 批次头、回执 | 如 `PS-110-20261019-000123`，全局唯一 | 去重：收过的批次不再处理，原样交回上次回执 |
-| `itemsDigest` | 批次头 | 如 `sha256:9f2c…` | 同一 `batchNo` 再来时比字符串：相同 → 重放回执；不同 → 409 |
-| `batchType` | 批次头 | `DELIVERY` / `TRANSFER_OUT` / `PING` | 分流，决定走哪种处理 |
-| `orgCode` | 批次头 | 组织编码 | 不是本组织 → 整批退回 |
-| `count` | 批次头 | 0～5000 | 必须等于 `items` 条数，否则整批退回 |
-| `pi` | 批次头、号 | PI 号 | 交付批次每枚号的 `pi` 必须等于批次 `pi` |
-| `sn` | 号 | ≤ 64 位，大小写敏感 | 号的唯一标识（多组织共用一套 MES 时用「组织 + SN」） |
-| `rev` | 号 | 整数，挂靠每变一次加 1 | **与本地比大小**，决定收不收（3.2 节） |
-| `pushType` | 号 | `NEW` / `REASSIGN` / `TRANSFER_OUT` | 只说明原因，收不收看 `rev` |
-| `fromOrgCode` | 交付项 | 组织编码，转移来的号才有 | 与 `orgCode` 比：相等是同组织转移，不等是跨组织转入（5.2 节） |
-| `from` | 转出项 | 转走前的挂靠 | 本地没有这个号时按它入库 |
-| `outcome` | 回执 | `PROCESSED` / `REJECTED` | 整批处理结果 |
-| `result` | 回执逐枚 | `ACCEPTED` / `DUPLICATE` / `CONFLICT` / `STALE` | 每枚号的处理结果（3.2 节） |
+**转出批次（`TRANSFER_OUT`）**
 
-### 3.2 MES 收到批次怎么处理
+```jsonc
+{
+  "batchNo": "XO-110-20261019-000007", // 幂等键
+  "batchType": "TRANSFER_OUT",         // 分流：只能装转出项
+  "orgCode": "110",                    // 整批校验：原组织（本组织）
+  "count": 1,                          // 整批校验
+  "itemsDigest": "sha256:51ab07…",     // 幂等校验
+  "items": [
+    {
+      "pushType": "TRANSFER_OUT",      // 固定值
+      "sn": "HX100000003A",
+      "rev": 3,                        // 版本比对
+      "from": {"pi": "000001", "billNo": "VT2026090001", "billSeq": 1} // 本地无此 SN 时按转出前挂靠建档
+    }
+  ]
+}
+```
 
-![图 3-1 MES 收到批次的判断](images/MES对接说明/f3-batch-check.png)
+**回执**
 
-**① 按 `batchType` 分流**
+```jsonc
+{
+  "batchNo": "PS-110-20261019-000123", // 照抄批次号
+  "outcome": "PROCESSED",              // PROCESSED 已处理 / REJECTED 整批退回
+  "results": [                         // 每枚一条，条数 = count
+    {"sn": "HX100000005A", "rev": 1, "result": "ACCEPTED"},
+    {"sn": "HX100000001A", "rev": 2, "result": "CONFLICT",
+     "existingRev": 2, "existingBatchNo": "PS-110-20261019-000100"} // CONFLICT / STALE 须带本地 rev 与来源批次
+  ]
+}
+```
+
+### 4.2 处理流程
+
+![图 4-1 MES 批次处理流程](images/MES对接说明/f3-batch-check.png)
+
+**步骤 1：分流**
 
 | `batchType` | 含义 | MES 动作 |
 | --- | --- | --- |
-| `DELIVERY` | 新号（`NEW`）或挂靠变了（`REASSIGN`） | 存入或覆盖；本地没有的 `REASSIGN` 当新号存 |
-| `TRANSFER_OUT` | 号已转到别的组织 | 标「已转出」，停止打标，不删 |
-| `PING` | 连接测试，没有号 | 只校验身份和 `orgCode`，回 `PROCESSED`，不存、不记批次号 |
+| `DELIVERY` | 新号（`NEW`）或挂靠变更（`REASSIGN`） | 新增或覆盖；本地不存在的 `REASSIGN` 按新号建档 |
+| `TRANSFER_OUT` | SN 已转至其他组织 | 标记「已转出」，停止打标，不删除 |
+| `PING` | 连接测试，不含 SN | 只校验身份和 `orgCode`，回 `PROCESSED`；不存储、不记录批次号 |
 
-**② 整批校验**（不通过 → 回执 `REJECTED`，不记这个 `batchNo`）：`orgCode` 是本组织；`count` = `items` 条数；批内 SN 不重复；交付批次每枚 `pi` = 批次 `pi`；交付批次不含转出项、转出批次不含交付项；必填字段齐全。
+**步骤 2：整批校验**　任一项不通过即回执 `REJECTED`（HTTP 200），且不记录该 `batchNo`：
 
-**③ 去重**：`batchNo` 收过 → `itemsDigest` 相同则原样交回上次回执（`replayed = true`），不同则 409 `BATCH_CONTENT_MISMATCH`。
+- `orgCode` 为本组织；`count` 等于 `items` 条数；批内 SN 不重复
+- 交付批次每枚 `pi` 等于批次 `pi`；交付批次不含转出项，转出批次不含交付项
+- 必填字段齐全、长度在本侧允许范围内
 
-**④ 逐枚比 `rev`**（依据：批次里的 `rev` 与本地 `rev`、本地 `lastBatchNo`）
+**步骤 3：幂等去重**　`batchNo` 已处理过时：`itemsDigest` 相同 → 原样返回上次回执（`replayed = true`）；不同 → 409 `BATCH_CONTENT_MISMATCH`。
 
-| 比较结果 | 回执 `result` | `DELIVERY` 的号 | `TRANSFER_OUT` 的号 |
+**步骤 4：版本比对**（依据：批次 `rev`、本地 `rev`、本地 `lastBatchNo`）
+
+| 比对结果 | 回执 `result` | `DELIVERY` 的 SN | `TRANSFER_OUT` 的 SN |
 | --- | --- | --- | --- |
-| 本地没有 | `ACCEPTED` | 按批次信息存 | 按 `from` 存，标「已转出」 |
-| 批次更大 | `ACCEPTED` | 新信息覆盖，去掉「已转出」 | 标「已转出」 |
-| 相等，`lastBatchNo` 是本批次 | `DUPLICATE` | 不动 | 不动 |
-| 相等，`lastBatchNo` 是别的批次 | `CONFLICT` | 锁号不许打标，等总部处理 | 同左 |
-| 批次更小 | `STALE` | 不动 | 不动 |
+| 本地不存在 | `ACCEPTED` | 按批次信息建档 | 按 `from` 建档，标记「已转出」 |
+| 批次 `rev` 更大 | `ACCEPTED` | 覆盖挂靠，清除「已转出」 | 标记「已转出」 |
+| 相等，`lastBatchNo` 为本批次 | `DUPLICATE` | 不变 | 不变 |
+| 相等，`lastBatchNo` 为其他批次 | `CONFLICT` | 锁定，禁止打标，等待总部处理 | 同左 |
+| 批次 `rev` 更小 | `STALE` | 不变 | 不变 |
 
-`CONFLICT`、`STALE` 回执要带本地的 `existingRev`、`existingBatchNo`。
+`CONFLICT`、`STALE` 回执须带本地的 `existingRev`、`existingBatchNo`。
 
-**⑤ 落库后回执**
+**步骤 5：落库与回执**
 
-- 按 `batchNo` 加锁，同一批次不会被两个线程同时处理
-- 批次号、`itemsDigest`、整张回执和号的数据**在一个事务里落库**，存成功后再回执；5000 枚建议 10 秒内处理完（推送最多等 60 秒）
-- `rev` 原样保存，MES 不要自己加减
+- 按 `batchNo` 加锁，同一批次不得并发处理
+- 批次号、`itemsDigest`、完整回执与 SN 数据**在同一事务中落库**，成功后再回执
+- 5000 枚建议 10 秒内处理完（推送应答超时为 60 秒）
 
----
+## 5. 转移业务规范
 
-## 4. SN 状态变更
+### 5.1 转移交互时序
 
-![图 4-1 SN 状态与 MES 收到的批次](images/MES对接说明/f9-sn-state.png)
+![图 5-1 转移交互时序](images/MES对接说明/f11-transfer-seq.png)
 
-| SN 状态 | 含义 | 和 MES 的关系 |
-| --- | --- | --- |
-| 待分配 | 已生成，还没分到组织 | MES 收不到 |
-| 待推送（未入批） | 已分到对接 MES 的组织，还没组批 | 等推送或取批 |
-| 待推送（批次未确认） | 已组批，MES 还没回执 | MES 已收到或正在收 `DELIVERY` |
-| 待推送（批次失败） | MES 整批退回，或回执与批次不符 | MES 修正后用 ③ 取回重做，或总部续推 |
-| 已推送 | MES 已确认（推送应答、取批回执或总部人工确认） | MES 已有这个号 |
-| 已分配 | 分到不对接 MES 的组织 | 不经过 MES |
-| 申请中 | 已提交转组织申请，等总部处理 | 只在 ⑤⑥ 对账结果里作提醒（`APPLYING`） |
+### 5.2 SN 系统侧处理规则
 
-- **SN 号永不变**，变的只是挂靠（组织、PI、单据行、物料、客户）；挂靠每变一次 `rev` 加 1，**越大越新**
-- 已推送的号转移后回到「待推送（未入批）」，再推给 MES 的是 `REASSIGN`
-- 总部作废未确认的批次后，号回到「待推送（未入批）」，会重新组批送来；MES 收到 409 `BATCH_VOIDED` 时丢弃旧批
-- 单据反审核或订单变更待确认时，未交付的号**暂停交付**（状态不变，不组批）；③ 应答的 `paused` 是暂停的枚数
+![图 5-2 SN 系统侧转移流程](images/MES对接说明/f10-transfer-sn.png)
 
----
-
-## 5. SN 转移业务逻辑
-
-### 5.1 SN 系统侧业务流程
-
-![图 5-1 SN 系统侧转移流程](images/MES对接说明/f10-transfer-sn.png)
-
-1. **发起**：转单、转组织由总部或生产组织在 SN 系统发起；一次最大转一整张单据，不能整张 PI 转
-2. **校验**：号所在的转出批次还没确认的，不能再转，提示先在原转组织单上继续推送转出。这样原组织 MES 一定先收到转出，后收到转回来的号
-3. **改挂**：清掉号原来的批次，`rev` 加 1，记下 `fromOrgCode`（转移前的组织）
+1. **发起**：转单由总部发起；转组织由生产组织申请、总部确认，或由总部直接转移；单次转移范围最大为一整张单据，不支持整张 PI 转移
+2. **可转校验**：SN 所在的转出批次尚未确认时不可再转，提示先在原转组织单上继续推送转出，确保原组织 MES 先收到转出、后收到转回的 SN
+3. **改挂**：清除 SN 原有批次，`rev` 加 1，记录 `fromOrgCode`（转移前组织）
 4. **推送**：
-   - **同组织**：已交给本组织 MES 的号推 `REASSIGN`；还没交的照常推 `NEW`
-   - **跨组织**：给转入组织 MES 推交付批次（原组织 MES 收过这个号 → `REASSIGN`，没收过 → `NEW`）；同时给原组织 MES 推 `TRANSFER_OUT`（只发给收过这个号的原组织），两边互不等待
-5. **不等 MES**：SN 系统不向 MES 发撤回、不等 MES 同意，MES 只接收结果；推送失败按普通批次重试、续推，MES 也可用 ③ 取回
+   - **同组织**：MES 已持有的 SN 推 `REASSIGN`；尚未交付的照常推 `NEW`
+   - **跨组织**：向转入组织 MES 推交付批次（原组织 MES 曾持有 → `REASSIGN`，否则 → `NEW`）；同时向曾持有该 SN 的原组织 MES 推 `TRANSFER_OUT`，两者互不等待
+5. **不等待 MES**：SN 系统不发撤回指令、不等待 MES 同意；推送失败按普通批次重试、续推，MES 也可拉取
 
-### 5.2 MES 侧业务流程
+### 5.3 MES 侧处理规则
 
-**怎么分辨收到的是哪种转移**
+**转移类型识别**
 
-依据：号上的 `fromOrgCode`（最近一次转移前的组织）与批次 `orgCode`（本组织）；`pushType` 说明本 MES 之前有没有这个号。**不要用 `transferKind` 判断**：转单也可能转到别的组织的订单。
+依据号上的 `fromOrgCode` 与批次 `orgCode`；`pushType` 只说明本 MES 此前是否持有该 SN。**不要用 `transferKind` 判断**：转单也可能转到其他组织的订单。
 
-| 判断 | 含义 | MES 会收到 |
+| 判定条件 | 转移类型 | MES 收到的批次 |
 | --- | --- | --- |
-| 没有 `fromOrgCode` | 普通交付，不是转移 | `DELIVERY` / `NEW` |
-| `fromOrgCode` = `orgCode` | 同组织转移 | 号已交给本 MES：`REASSIGN`；还没交：照常 `NEW` |
-| `fromOrgCode` ≠ `orgCode` | 跨组织转入 | 原组织 MES 收过这个号：`REASSIGN`；没收过：`NEW`。本地都没有，按新号存 |
-| 批次类型 `TRANSFER_OUT` | 跨组织转出 | 只发给收过这个号的原组织 MES |
+| 无 `fromOrgCode` | 非转移（普通交付） | `DELIVERY` / `NEW` |
+| `fromOrgCode` = `orgCode` | 同组织转移 | 已持有：`REASSIGN`；未持有：`NEW` |
+| `fromOrgCode` ≠ `orgCode` | 跨组织转入 | 原组织 MES 曾持有：`REASSIGN`，否则 `NEW`；本地均不存在，按新号建档 |
+| `batchType = TRANSFER_OUT` | 跨组织转出 | 仅发给曾持有该 SN 的原组织 MES |
 
-**同组织转移**（会议决策）
+**同组织转移**（10 月 MES 对接会议决策）
 
-![图 5-2 同组织转移](images/MES对接说明/f4-same-org.png)
+![图 5-3 同组织转移前确认](images/MES对接说明/f4-same-org.png)
 
-1. **客户 SN 过站**：可以转。MES 收下 `REASSIGN` 后，要把这个号整条数据链的订单关联换到新订单；有数据混乱风险，由 MES 自行控制
+1. **客户 SN 过站**：允许转移。MES 接收 `REASSIGN` 后须将该 SN 整条数据链的订单关联切换到新订单；存在数据混乱风险，由 MES 自行控制
 2. **内部 SN 过站**：客户 SN **已 LINK 的不允许转移**，未 LINK 的直接转移
 
-SN 系统不知道过站方式和 LINK 状态，所以「已 LINK 不转」由**现场发起转移前在 MES 确认**。号一旦转了，MES 收到的 `REASSIGN` 按 `rev` 照常收下（`ACCEPTED`），回执里没有「拒绝转移」这一项。
+SN 系统不掌握过站方式与 LINK 状态，「已 LINK 不转」由**现场在发起转移前于 MES 确认**。转移一经发生，MES 收到的 `REASSIGN` 按版本比对正常接收（`ACCEPTED`），回执中没有「拒绝转移」选项。
 
 **跨组织转移**（会议决策：直接同步到新组织订单，**不考虑原组织 MES 的 SN 数据**）
 
-![图 5-3 跨组织转移](images/MES对接说明/f5-cross-org.png)
-
-- 新组织 MES：本地没有这个号，按收到的挂靠存下，不用和原组织核对
-- 原组织 MES：不用同步、回滚或清理原有数据链；只按 `TRANSFER_OUT` 把号标「已转出」、停止打标，防止两个工厂用同一个号
+- **转入建档**：新组织 MES 本地无此 SN，按收到的挂靠建档，无需与原组织核对
+- **转出停用**：原组织 MES 无需同步、回滚或清理原数据链，只按 `TRANSFER_OUT` 标记「已转出」并停止打标，防止两个工厂使用同一 SN
 - 已打出的旧标签由原组织现场按「转出号清单」作废
+
+## 6. 异常处理机制
+
+### 6.1 推送失败与重试
+
+- 推送超时、MES 宕机、5xx、429、503：SN 系统按 1、5、15 分钟重送同一批次，**内容逐字节相同**
+- 重试用尽仍未确认时停止推送，在页面显示「继续推送」；MES 恢复后也可直接拉取该批次
+- MES 无需特殊处理，按幂等去重（4.2 步骤 3）即可
+
+### 6.2 整批退回与重处理
+
+- MES 无法处理时回执 `REJECTED`，写明 `rejectCode`、`rejectMessage`；同一 PI 的后续推送随即暂停
+- MES 修正后：调 ③ 带 `batchNo` 拉取该批次 → 重新处理 → 调 ④ 提交回执 → 请总部「继续推送」
+
+### 6.3 批次作废
+
+- 总部作废批次后，③ ④ 对该批次返回 409 `BATCH_VOIDED`
+- MES 丢弃该批次，**不得**用本地缓存继续处理；其中的 SN 会重新组批送达
+
+### 6.4 版本冲突（CONFLICT / STALE）
+
+- 回执中为 `CONFLICT` 或 `STALE` 的 SN 先锁定，禁止打标
+- 总部以更大的 `rev` 重新推送后自动解锁，或由现场人工放行
+
+### 6.5 回执长期缺失
+
+- 批次长期无法回执时，MES 书面告知总部是否已入库
+- 已入库：总部「人工确认」，SN 变为已推送；未处理：总部「作废」，SN 重新组批
+- 回执与批次不符（422 `RECEIPT_MISMATCH`）时按 `details` 改正后重交
 
 ---
 
-## 6. 接口通用规则与通用错误
+# 第三部分　接口参考
 
-### 6.1 通用规则
+## 7. 通用约定
 
-| 项目 | 规则 |
+### 7.1 传输与编码
+
+| 项目 | 约定 |
 | --- | --- |
-| 传输 | HTTPS + JSON（UTF-8），可 gzip（请求头 `Content-Encoding: gzip`）；不跟随 3xx 跳转 |
-| 字段 | 英文小驼峰；每个报文带 `schemaVersion`（现为 `1.0`）；以后只加字段不改字段，**看不懂的字段直接忽略** |
-| 时间 | 一律 UTC，ISO 8601 格式，如 `2026-10-19T02:37:00Z` |
-| SN | ≤ 64 位，只有字母、数字、`-`、`.`、`_`；**大小写算不同的号** |
-| 字符串型数字 | `serialDec`、`length` 按字符串存，不要转数字（会丢前导 0 或溢出） |
-| 多组织 | 一套 MES 服务多个组织时，以「组织 + SN」作唯一标识，数据按组织分开存 |
-| 成功判定 | ③～⑥：HTTP 200 且 `code = OK`；出错一定不是 200，程序按 `code` 判断，`message` 给人看 |
-| 限流 | ③～⑥ 每个组织每分钟 60 次，超出 429 `RATE_LIMITED`，按应答头 `Retry-After` 秒数等待 |
+| 协议 | HTTPS，不跟随 3xx 跳转 |
+| 报文 | JSON，UTF-8 |
+| 压缩 | 可 gzip，请求头 `Content-Encoding: gzip`；① 的请求体固定 gzip |
+| 协议版本 | 每个报文带 `schemaVersion`，现为 `1.0` |
 
-### 6.2 认证与签名
+### 7.2 字段与数据格式
 
-**① SN 系统 → MES**（每个组织二选一，总部在「MES 配置」里设定）
+| 项目 | 约定 |
+| --- | --- |
+| 命名 | 英文小驼峰 |
+| 兼容性 | 后续只增加字段、不修改已有字段；**不认识的字段直接忽略** |
+| 时间 | UTC，ISO 8601，如 `2026-10-19T02:37:00Z` |
+| SN | ≤ 64 位，仅字母、数字、`-`、`.`、`_`；**区分大小写** |
+| 字符串型数字 | `serialDec`、`length` 按字符串保存，不得转数字（防止丢失前导 0 或溢出） |
+| 多组织 | 一套 MES 服务多个组织时，以「组织 + SN」为唯一标识，数据按组织隔离 |
 
-| 方式 | 适用 | 请求头 | MES 怎么校验 |
+### 7.3 认证与签名
+
+**① SN 系统 → MES**（每个组织二选一，总部在「MES 配置」中设定）
+
+| 方式 | 适用场景 | 请求头 | MES 校验 |
 | --- | --- | --- | --- |
-| A 固定令牌 | 内网 | `Authorization: Bearer <令牌>` | 核对令牌，并只允许 SN 系统服务器 IP |
-| B HMAC 签名 | 走公网（推荐） | `X-Sn-Timestamp`、`X-Sn-Signature` | 按下图重算签名比对，并校验时间差 |
+| A 固定令牌 | 内网 | `Authorization: Bearer <令牌>` | 核对令牌，并限制来源为 SN 系统服务器 IP |
+| B HMAC 签名 | 公网（推荐） | `X-Sn-Timestamp`、`X-Sn-Signature` | 按下图重算签名比对，并校验时间差 |
 
-![图 6-1 HMAC 签名与校验](images/MES对接说明/f8-hmac.png)
+![图 7-1 HMAC 签名与校验](images/MES对接说明/f8-hmac.png)
 
 ```text
 签名串  = X-Sn-Timestamp + "\n" + batchNo + "\n" + hex(SHA256(解压后的请求体字节))
 签名    = hex(HMAC-SHA256(密钥, 签名串))          // 均为小写十六进制，UTF-8 编码
 ```
 
-- 摘要按**解压后的原始字节**算，不要先解析 JSON 再序列化（字段顺序、空格会变）
-- 时间差 > 5 分钟拒绝；比较签名用常量时间比较
-- 密钥由总部在「MES 配置」里设定，线下交给 MES 方
+- 摘要按**解压后的原始字节**计算，不得先解析 JSON 再序列化（字段顺序、空白会变化）
+- 时间差超过 5 分钟拒绝；签名比较使用常量时间比较
+- 密钥由总部在「MES 配置」中设定，线下交付 MES 方
 
 **③～⑥ MES → SN 系统**
 
-- 每次请求带 `Authorization: Bearer <工号>:<密钥>`，不换令牌；工号、密钥由总部在「账户 → MES 接口账户」创建后交给 MES 方
-- 账户只能访问所绑的生产组织；可设来源 IP 白名单
+- 每次请求带 `Authorization: Bearer <工号>:<密钥>`，无需换取令牌；工号、密钥由总部在「账户 → MES 接口账户」创建后交付 MES 方
+- 账户仅能访问所绑定的生产组织；可设置来源 IP 白名单
 - 连续认证失败 10 次锁定 15 分钟
 
-### 6.3 通用错误（③～⑥）
+### 7.4 响应判定与限流
 
-**出错报文**
+| 项目 | 约定 |
+| --- | --- |
+| 成功判定（③～⑥） | HTTP 200 且 `code = OK`；出错时 HTTP 状态码一定不是 200，程序按 `code` 处理，`message` 仅供阅读 |
+| 成功判定（①） | MES 能拆包处理即返回 HTTP 200 + 回执（含整批退回），见 8.1 |
+| 限流 | ③～⑥ 每个组织每分钟 60 次；超出返回 429 `RATE_LIMITED`，按应答头 `Retry-After` 秒数等待 |
+
+### 7.5 错误响应格式与通用错误码
+
+**错误响应格式**（③～⑥）
 
 ```jsonc
 {
-  "schemaVersion": "1.0",              // 协议版本
-  "code": "RECEIPT_MISMATCH",          // ★ 错误码，程序按它处理
-  "message": "回执枚数与批次不符",       // 中文说明，给人看
-  "batchNo": "PL-110-20261019-000045", // 出问题的批次号，没有时为 null
-  "details": [                         // 具体哪里不对，可能为空数组
+  "schemaVersion": "1.0",              // String，协议版本
+  "code": "RECEIPT_MISMATCH",          // String ★ 错误码，程序按它处理
+  "message": "回执枚数与批次不符",       // String，中文说明，仅供阅读
+  "batchNo": "PL-110-20261019-000045", // String | null，相关批次号
+  "details": [                         // Array，错误明细，可能为空数组
     {
-      "field": "results",              // 出问题的字段
-      "reason": "期望 5000 枚，收到 4999 枚" // 原因
+      "field": "results",              // String，出错字段
+      "reason": "期望 5000 枚，收到 4999 枚" // String，原因
     }
   ]
 }
 ```
 
-**通用错误码**
+**通用错误码**（③～⑥）
 
-| HTTP | `code` | 含义 | MES 怎么做 |
+| HTTP | `code` | 含义 | 处理建议 |
 | --- | --- | --- | --- |
 | 400 | `INVALID_REQUEST` | 请求体不是合法 gzip / JSON，或参数不合法 | 修正请求 |
-| 401 | `INVALID_CREDENTIALS` | 缺少认证头，或工号、密钥不对（含密钥已被重置） | 核对后重试 |
-| 423 | `ACCOUNT_LOCKED` | 连续错 10 次锁 15 分钟，期间密钥正确也拒绝 | 等解锁 |
-| 403 | `IP_NOT_ALLOWED` | 来源 IP 不在白名单 | 联系总部改白名单 |
-| 403 | `ACCOUNT_DISABLED` | 账号已停用 | 联系总部 |
-| 403 | `FORBIDDEN` | 不是 MES 接口账户却调了 ③④ | 换用 MES 接口账户 |
-| 429 | `RATE_LIMITED` | 调得太频繁 | 按 `Retry-After` 等待 |
+| 401 | `INVALID_CREDENTIALS` | 缺少认证头，或工号、密钥错误（含密钥已重置） | 核对后重试 |
+| 423 | `ACCOUNT_LOCKED` | 连续认证失败已锁定，锁定期间密钥正确也拒绝 | 等待解锁 |
+| 403 | `IP_NOT_ALLOWED` | 来源 IP 不在白名单 | 联系总部调整白名单 |
+| 403 | `ACCOUNT_DISABLED` | 账户已停用 | 联系总部 |
+| 403 | `FORBIDDEN` | 非 MES 接口账户调用 ③④ | 改用 MES 接口账户 |
+| 429 | `RATE_LIMITED` | 调用过于频繁 | 按 `Retry-After` 等待 |
 
----
+## 8. 接口定义
 
-## 7. 接口详情
+> 报文以带注释的 JSON 展示，**注释仅为说明，实际报文不含注释**。
+> 注释格式：`必填 / 选填，类型，含义`；**★** 标出 MES 用于判断的字段。
 
-> 报文用带注释的 JSON，**注释只用于说明，实际报文里没有注释**。
-> 注释格式：`必填 / 选填，类型，含义`；**★** 标出 MES 要拿它做判断的字段。
-
-### 7.1 ① 接收批次（MES 提供，SN → MES）
+### 8.1 ① 接收批次
 
 #### 1. 基本信息
 
 | 项目 | 内容 |
 | --- | --- |
 | 接口名称 | 接收批次 |
-| 接口描述 | SN 系统把批次（交付、转出、连接测试）推给 MES；MES 按第 3.2 节处理、落库后，在**同一个应答**里返回回执 |
+| 接口描述 | SN 系统向 MES 推送批次（交付、转出、连接测试）；MES 按第 4 章处理并落库后，在**同一应答**中返回回执 |
+| 方向 / 提供方 | SN → MES；**由 MES 提供** |
 | 请求方式 | `POST` |
-| 请求 URL | `{MES 地址}`，由 MES 方提供，总部在「生产组织 → MES 配置」里填写 |
-| 调用时机 | 分配后、转移后、续推时；总部点「连接测试」时发 `PING` |
+| 请求 URL | `{MES 地址}`，由 MES 方提供，总部在「生产组织 → MES 配置」中填写 |
+| 调用时机 | 分配后、转移后、续推时；总部点「连接测试」时发送 `PING` |
 | 负责人 | 接口实现：MES 方（待填写）；调用方：SN 系统 @magic |
 
-![图 7-1 推送与回执](images/MES对接说明/f6-push.png)
+![图 8-1 推送与回执](images/MES对接说明/f6-push.png)
 
 #### 2. 请求参数
 
@@ -262,140 +388,140 @@ SN 系统不知道过站方式和 LINK 状态，所以「已 LINK 不转」由**
 | `Content-Type` | String | 是 | `application/json; charset=utf-8` | 固定 |
 | `Content-Encoding` | String | 是 | `gzip` | 请求体已 gzip 压缩，先解压 |
 | `Accept-Encoding` | String | 是 | `gzip` | 应答可压缩 |
-| `Authorization` | String | 方式 A 必填 | `Bearer 7f3c…` | 固定令牌（6.2 节） |
+| `Authorization` | String | 方式 A 必填 | `Bearer 7f3c…` | 固定令牌（7.3） |
 | `X-Sn-Timestamp` | String | 方式 B 必填 | `2026-10-19T02:37:00Z` | 签名时间（UTC） |
-| `X-Sn-Signature` | String | 方式 B 必填 | `a3f9…`（64 位小写十六进制） | HMAC 签名（6.2 节） |
-| `X-Sn-Batch-No` | String | 是 | `PS-110-20261019-000123` | ★ 批次号，与报文 `batchNo` 相同；可不解析报文先按它加锁 |
-| `X-Sn-Attempt` | String | 是 | `1` | 第几次送，只记日志 |
-| `X-Request-Id` | String | 是 | UUID | 请求编号，只查日志；**不能用它去重** |
+| `X-Sn-Signature` | String | 方式 B 必填 | `a3f9…`（64 位小写十六进制） | HMAC 签名（7.3） |
+| `X-Sn-Batch-No` | String | 是 | `PS-110-20261019-000123` | ★ 批次号，与报文 `batchNo` 相同；可在解析报文前按它加锁 |
+| `X-Sn-Attempt` | String | 是 | `1` | 第几次送达，仅记日志 |
+| `X-Request-Id` | String | 是 | UUID | 请求编号，仅用于查日志；**不得用于去重** |
 
-**Body A：交付批次（`DELIVERY`）** —— 新号、挂靠变了都用它，③ 取批拿到的也是同一结构
+**Body A：交付批次（`DELIVERY`）**　新号、挂靠变更均使用此结构，③ 拉取得到的批次结构相同
 
 ```jsonc
 {
   "schemaVersion": "1.0",              // 必填，String，协议版本
-  "batchNo": "PS-110-20261019-000123", // 必填，String，批次号，全局唯一（PS 推送时建批 / PL 取批时建批）★ 判断是否收过
-  "batchType": "DELIVERY",             // 必填，String，DELIVERY / TRANSFER_OUT / PING ★ 决定走哪种处理
-  "orgCode": "110",                    // 必填，String，收件组织 ★ 不是本组织 → 整批退回
-  "pi": "000001",                      // 必填，String，交付批次只装这一张 PI 的号 ★ 每枚号的 pi 必须等于它
-  "count": 1,                          // 必填，Number，枚数 ≤ 5000 ★ 必须等于 items 条数
+  "batchNo": "PS-110-20261019-000123", // 必填，String，批次号，全局唯一（PS 推送建批 / PL 拉取建批）★ 幂等键
+  "batchType": "DELIVERY",             // 必填，String，DELIVERY / TRANSFER_OUT / PING ★ 分流
+  "orgCode": "110",                    // 必填，String，收件组织 ★ 非本组织 → 整批退回
+  "pi": "000001",                      // 必填，String，交付批次只含这一张 PI 的 SN ★ 每枚 SN 的 pi 必须等于它
+  "count": 1,                          // 必填，Number，枚数，≤ 5000 ★ 必须等于 items 条数
   "createdAt": "2026-10-19T02:37:00Z", // 必填，String，建批时间（UTC）
-  "itemsDigest": "sha256:9f2c4e…",     // 必填，String，内容指纹，MES 存下直接比字符串，不用自己算 ★ 同一 batchNo 再来时比它
+  "itemsDigest": "sha256:9f2c4e…",     // 必填，String，内容指纹，MES 存储后直接比对字符串，无需自行计算 ★ 幂等校验
   "items": [                           // 必填，Array，交付项
     {
-      "pushType": "REASSIGN",          // 必填，String，NEW 新号 / REASSIGN 挂靠变了；只说明原因，收不收看 rev
+      "pushType": "REASSIGN",          // 必填，String，NEW 新号 / REASSIGN 挂靠变更；仅说明原因，接收与否看 rev
       "sn": "HX100000001A",            // 必填，String，完整 SN
-      "rev": 2,                        // 必填，Number，挂靠版本，越大越新 ★ 与本地比（3.2 节）
-      "serial": "000001",              // 必填，String，流水号（可能是 36 进制写法）
-      "serialDec": "1",                // 必填，String，十进制流水，按字符串存
-      "serialPi": "000001",            // 必填，String，流水最初所属 PI；转入号可能 ≠ pi，不要互相校验
+      "rev": 2,                        // 必填，Number，挂靠版本，越大越新 ★ 版本比对（4.2）
+      "serial": "000001",              // 必填，String，流水号（可能为 36 进制写法）
+      "serialDec": "1",                // 必填，String，十进制流水，按字符串保存
+      "serialPi": "000001",            // 必填，String，流水最初所属 PI；转入 SN 可能 ≠ pi，不要互相校验
       "pi": "000001",                  // 必填，String，当前所属 PI
       "billNo": "VT2026090001",        // 必填，String，单据号
-      "billSeq": 1,                    // 必填，Number，单据行号（同一单据可能有相同物料，靠行号区分）
+      "billSeq": 1,                    // 必填，Number，单据行号（同一单据可能有相同物料，以行号区分）
       "materialCode": "9148363",       // 选填，String | null，物料编码
-      "length": "0100",                // 选填，String | null，米标，原样保存（不要变成 100）
+      "length": "0100",                // 选填，String | null，米标，原样保存（不得变为 100）
       "customerCode": "0001",          // 必填，String，客户编码
-      "transferKind": "BILL_TRANSFER", // 选填，String，转移来的号才有：BILL_TRANSFER 转单 / ORG_TRANSFER 转组织；只供核对
-      "transferDocNo": "TB202610190236001234", // 选填，String，转移单号（TB 转单 / TO 转组织）；只供核对
+      "transferKind": "BILL_TRANSFER", // 选填，String，转移而来的 SN 才有：BILL_TRANSFER 转单 / ORG_TRANSFER 转组织；仅供核对
+      "transferDocNo": "TB202610190236001234", // 选填，String，转移单号（TB 转单 / TO 转组织）；仅供核对
       "fromOrgCode": "110"             // 选填，String，最近一次转移前的组织 ★ = orgCode 同组织转移；≠ orgCode 跨组织转入
     }
   ]
 }
 ```
 
-**Body B：转出批次（`TRANSFER_OUT`）** —— 告诉原组织「这些号不归你了」
+**Body B：转出批次（`TRANSFER_OUT`）**　通知原组织「这些 SN 已转走」
 
 ```jsonc
 {
   "schemaVersion": "1.0",              // 必填，String，协议版本
-  "batchNo": "XO-110-20261019-000007", // 必填，String，XO 开头 ★ 判断是否收过
-  "batchType": "TRANSFER_OUT",         // 必填，String ★ 只能装转出项
-  "orgCode": "110",                    // 必填，String，原组织（收件方）★ 不是本组织 → 整批退回
-  "pi": "000001",                      // 必填，String | null，号来自多张 PI 时为 null，按每枚的 from.pi 归档
+  "batchNo": "XO-110-20261019-000007", // 必填，String，XO 开头 ★ 幂等键
+  "batchType": "TRANSFER_OUT",         // 必填，String ★ 只能包含转出项
+  "orgCode": "110",                    // 必填，String，原组织（收件方）★ 非本组织 → 整批退回
+  "pi": "000001",                      // 必填，String | null，SN 来自多张 PI 时为 null，按每枚的 from.pi 归档
   "count": 1,                          // 必填，Number ★ 等于 items 条数
   "createdAt": "2026-10-19T02:50:00Z", // 必填，String，建批时间（UTC）
-  "itemsDigest": "sha256:51ab07…",     // 必填，String ★ 同上
+  "itemsDigest": "sha256:51ab07…",     // 必填，String ★ 幂等校验
   "items": [                           // 必填，Array，转出项
     {
       "pushType": "TRANSFER_OUT",      // 必填，String，固定值
       "sn": "HX100000003A",            // 必填，String，完整 SN
-      "rev": 3,                        // 必填，Number ★ 与本地比（3.2 节）
+      "rev": 3,                        // 必填，Number ★ 版本比对（4.2）
       "serial": "000003",              // 必填，String，流水号
       "serialDec": "3",                // 必填，String，十进制流水
       "serialPi": "000001",            // 必填，String，流水最初所属 PI
-      "from": {                        // 必填，Object，转走之前的挂靠 ★ 本地没有这个号时按它入库；不要猜转走后的信息
+      "from": {                        // 必填，Object，转出前的挂靠 ★ 本地无此 SN 时按它建档；不要推测转出后的信息
         "pi": "000001",                // 必填，String，原 PI
         "billNo": "VT2026090001",      // 必填，String，原单据号
         "billSeq": 1,                  // 必填，Number，原单据行号
         "materialCode": "9148363",     // 选填，String | null，原物料编码
         "customerCode": "0001"         // 必填，String，原客户编码
       },
-      "toOrgCode": "120",              // 必填，String，转去哪个组织，记下来
+      "toOrgCode": "120",              // 必填，String，转入组织，记录备查
       "transferKind": "ORG_TRANSFER",  // 必填，String，BILL_TRANSFER 转单 / ORG_TRANSFER 转组织
-      "transferDocNo": "TO202610190250004321" // 必填，String，转移单号，现场按它查找
+      "transferDocNo": "TO202610190250004321" // 必填，String，转移单号，现场据此查找
     }
   ]
 }
 ```
 
-**Body C：连接测试（`PING`）** —— 总部点「连接测试」时发
+**Body C：连接测试（`PING`）**　总部点「连接测试」时发送
 
 ```jsonc
 {
   "schemaVersion": "1.0",                // 必填，String，协议版本
-  "batchNo": "PING-202610190237001234",  // 必填，String，不用记下，也不用去重
-  "batchType": "PING",                   // 必填，String ★ 只校验身份和 orgCode，什么都不存
-  "orgCode": "110",                      // 必填，String ★ 不是本组织 → 退回
+  "batchNo": "PING-202610190237001234",  // 必填，String，无需记录，无需去重
+  "batchType": "PING",                   // 必填，String ★ 只校验身份和 orgCode，不存储任何数据
+  "orgCode": "110",                      // 必填，String ★ 非本组织 → 退回
   "pi": null,                            // 必填，固定 null
   "count": 0,                            // 必填，Number，固定 0
   "createdAt": "2026-10-19T02:37:00Z",   // 必填，String，建批时间（UTC）
   "itemsDigest": "sha256:…",             // 必填，String
-  "items": []                            // 必填，空数组
+  "items": []                            // 必填，固定空数组
 }
 ```
 
-#### 3. 响应结果（回执）
+#### 3. 响应参数（回执）
 
-推送时放在 ① 的应答里；取批时用 ④ 提交，格式相同。
+推送时随 ① 的应答返回；拉取时通过 ④ 提交，格式相同。
 
 ```jsonc
-// 正常处理（含部分号冲突、过期）—— HTTP 200
+// 正常处理（可含部分冲突、过期）—— HTTP 200
 {
   "schemaVersion": "1.0",              // 必填，String，协议版本
   "batchNo": "PS-110-20261019-000123", // 必填，String，照抄批次号
   "outcome": "PROCESSED",              // 必填，String，PROCESSED 已处理 / REJECTED 整批退回
-  "replayed": false,                   // 选填，Boolean，true = 收过的批次，原样交回上次的回执
-  "receivedAt": "2026-10-19T02:37:03Z",// 必填，String，第一次处理的时间（UTC）
-  "summary": {                         // 必填，Object，各结果枚数，必须与 results 对得上
+  "replayed": false,                   // 选填，Boolean，true = 已处理过的批次，原样返回上次回执
+  "receivedAt": "2026-10-19T02:37:03Z",// 必填，String，首次处理时间（UTC）
+  "summary": {                         // 必填，Object，各结果枚数，须与 results 一致
     "total": 3,                        // 必填，Number，总枚数 = 批次 count
     "accepted": 1,                     // 必填，Number，ACCEPTED 枚数
     "duplicate": 0,                    // 必填，Number，DUPLICATE 枚数
     "conflict": 1,                     // 必填，Number，CONFLICT 枚数
     "stale": 1                         // 必填，Number，STALE 枚数
   },
-  "results": [                         // 必填，Array，每枚号一条，条数 = 批次 count
+  "results": [                         // 必填，Array，每枚 SN 一条，条数 = 批次 count
     {
       "sn": "HX100000005A",            // 必填，String，照抄批次
       "rev": 1,                        // 必填，Number，照抄批次
-      "result": "ACCEPTED"             // 必填，String，ACCEPTED / DUPLICATE / CONFLICT / STALE（3.2 节）
+      "result": "ACCEPTED"             // 必填，String，ACCEPTED / DUPLICATE / CONFLICT / STALE（4.2）
     },
     {
       "sn": "HX100000001A",
       "rev": 2,
       "result": "CONFLICT",
-      "existingRev": 2,                // CONFLICT / STALE 必填，Number，本地的 rev
-      "existingBatchNo": "PS-110-20261019-000100" // CONFLICT / STALE 必填，String，本地 rev 的来源批次
+      "existingRev": 2,                // CONFLICT / STALE 时必填，Number，本地 rev
+      "existingBatchNo": "PS-110-20261019-000100" // CONFLICT / STALE 时必填，String，本地 rev 的来源批次
     },
     {"sn": "HX100000002A", "rev": 1, "result": "STALE", "existingRev": 2, "existingBatchNo": "PS-110-20261019-000100"}
   ]
 }
 
-// 整批退回 —— 也是 HTTP 200；退回时不要记下这个 batchNo
+// 整批退回 —— 同样 HTTP 200；退回时不得记录该 batchNo
 {
   "schemaVersion": "1.0",              // 必填，String
   "batchNo": "PL-110-20261019-000046", // 必填，String，照抄批次号
   "outcome": "REJECTED",               // 必填，String
-  "rejectCode": "FIELD_TOO_LONG",      // 必填，String，退回原因代码，MES 自定
+  "rejectCode": "FIELD_TOO_LONG",      // 必填，String，退回原因代码，由 MES 自定
   "rejectMessage": "materialCode 超过本侧字段长度 20" // 必填，String，退回原因说明
 }
 
@@ -404,43 +530,43 @@ SN 系统不知道过站方式和 LINK 状态，所以「已 LINK 不转」由**
  "summary": {"total": 0, "accepted": 0, "duplicate": 0, "conflict": 0, "stale": 0}, "results": []}
 ```
 
-#### 4. 错误码（MES 返回的 HTTP 码）
+#### 4. 错误码（MES 返回的 HTTP 状态码）
 
-| 情况 | MES 返回 | SN 系统怎么做 |
+| 场景 | MES 返回 | SN 系统处理 |
 | --- | --- | --- |
-| 处理完，或整批退回 | **200** + 回执 | 按回执确认或冻结该批 |
-| 同一批正在处理中 | 等处理完返回同一张回执，或 409 `BATCH_IN_PROGRESS` | 409 时稍后重送 |
-| 批次号相同但内容不同（`itemsDigest` 不同） | 409 `BATCH_CONTENT_MISMATCH` | 不重送，告警 |
-| 认证失败（令牌错、签名错、时间超差） | 401 或 403 | 不重送 |
-| 地址不对 | 404 | 不重送 |
-| 报文太大 | 413 | 不重送，请总部作废后拆小重发 |
-| 报文看不懂（解不开 gzip / JSON） | 400 | 不重送 |
-| 超时、5xx、断网、429、503 | — | 1、5、15 分钟后重送 |
+| 处理完成，或整批退回 | **200** + 回执 | 按回执确认或冻结该批次 |
+| 同一批次正在处理 | 处理完后返回同一回执，或 409 `BATCH_IN_PROGRESS` | 409 时稍后重送 |
+| 批次号相同、内容不同（`itemsDigest` 不同） | 409 `BATCH_CONTENT_MISMATCH` | 不重送，告警 |
+| 认证失败（令牌错误、签名错误、时间超差） | 401 / 403 | 不重送 |
+| 地址错误 | 404 | 不重送 |
+| 报文过大 | 413 | 不重送；总部作废后拆小重发 |
+| 报文无法解析（gzip / JSON） | 400 | 不重送 |
+| 超时、5xx、网络中断、429、503 | — | 1、5、15 分钟后重送 |
 
-记住：**只要能拆包处理，就返回 200 + 回执**；4xx 只用于「根本没法处理」。缺字段、`orgCode` 不对这类问题回 200 + `REJECTED`，不是 4xx。
+**原则**：只要能拆包处理，就返回 200 + 回执；4xx 仅用于「完全无法处理」。缺字段、`orgCode` 不符等业务问题返回 200 + `REJECTED`，不返回 4xx。
 
 #### 5. 补充说明
 
-- 失败按 1、5、15 分钟各重送一次，**重送内容一个字节都不变**（`batchNo`、`itemsDigest` 都相同）
-- 同一 `batchNo` 再来：`itemsDigest` 相同 → 原样交回上次回执（`replayed = true`）；不同 → 409 `BATCH_CONTENT_MISMATCH`
-- 认证与签名见 6.2 节
+- 重送内容逐字节相同（`batchNo`、`itemsDigest` 不变），MES 按幂等去重处理（4.2 步骤 3）
+- 认证与签名见 7.3
 
 ---
 
-### 7.2 ③ 取下一批（MES → SN）
+### 8.2 ③ 拉取批次
 
 #### 1. 基本信息
 
 | 项目 | 内容 |
 | --- | --- |
-| 接口名称 | 取下一批 |
-| 接口描述 | MES 主动来拿批次。先给范围内**最早的、还没回执的批次**（推送没送到的、上次取走没回执的、转出批次），都没有才新建；被退回、已作废的批次不会自动再给 |
+| 接口名称 | 拉取批次 |
+| 接口描述 | MES 主动拉取批次。优先返回范围内**最早的未回执批次**（推送未送达的、上次拉取后未回执的、转出批次），没有时才新建；已退回、已作废的批次不会自动返回 |
+| 方向 / 提供方 | MES → SN；SN 系统提供 |
 | 请求方式 | `POST` |
 | 请求 URL | `/api/mes/v1/batches/next` |
-| 调用时机 | 本地号不够用、推送失败后、每 5 分钟不带条件兜底一次 |
+| 调用时机 | 推送失败后、本地号不足、每 5 分钟不带条件兜底一次 |
 | 负责人 | SN 系统 @magic |
 
-![图 7-2 取批与交回执](images/MES对接说明/f7-pull.png)
+![图 8-2 拉取与提交回执](images/MES对接说明/f7-pull.png)
 
 #### 2. 请求参数
 
@@ -448,126 +574,129 @@ SN 系统不知道过站方式和 LINK 状态，所以「已 LINK 不转」由**
 
 | 参数名 | 类型 | 必填 | 示例值 | 描述 |
 | --- | --- | --- | --- | --- |
-| `Authorization` | String | 是 | `Bearer M110001:xxxxxxxx` | MES 接口账户的工号和密钥，用冒号连接 |
+| `Authorization` | String | 是 | `Bearer M110001:xxxxxxxx` | MES 接口账户的工号与密钥，以冒号连接 |
 | `Content-Type` | String | 否 | `application/json` | — |
-| `Content-Encoding` | String | 否 | `gzip` | 请求体压缩时填 |
+| `Content-Encoding` | String | 否 | `gzip` | 请求体压缩时填写 |
 
 **Body**
 
 ```jsonc
 {
   "schemaVersion": "1.0", // 必填，String，协议版本
-  "pi": "000001",         // 选填，String | null，只要这张 PI 的号；null = 不限
-  "billNo": null,         // 选填，String | null，只要这张单据的号；可与 pi 一起填
-  "batchNo": null         // 选填，String | null，只取回某个旧批次（如修好后重做退回的那批）；填了它 pi、billNo 不生效，也不会新建批次
+  "pi": "000001",         // 选填，String | null，限定 PI；null = 不限
+  "billNo": null,         // 选填，String | null，限定单据；可与 pi 同时使用
+  "batchNo": null         // 选填，String | null，取回指定的旧批次（如修正后重处理被退回的批次）；填写后 pi、billNo 不生效，且不会新建批次
 }
 ```
 
-转出批次按每枚号的 `from.pi`、`from.billNo` 判断在不在范围内。
+转出批次按每枚 SN 的 `from.pi`、`from.billNo` 判断是否在范围内。
 
-#### 3. 响应结果
+#### 3. 响应参数
 
 ```jsonc
 {
   "schemaVersion": "1.0",      // String，协议版本
-  "code": "OK",                // String，成功固定 OK
-  "batch": { /* 批次，结构同 7.1 Body A / B */ }, // Object | null ★ null = 现在没有可给的，1 分钟以上再来
-  "batchSource": "PULL",       // String，PUSH 推送时建的 / PULL 取批时建的；处理方法一样
-  "newlyCreated": true,        // Boolean，是不是这次新建的
-  "batchResult": "UNCONFIRMED",// String，UNCONFIRMED 还没回执；用 batchNo 取回退回的批次时为 FAILED
-  "remaining": 1200,           // Number ★ 范围内还剩多少枚可取，> 0 就接着取
-  "paused": 0                  // Number，被总部暂停交付的枚数，等总部处理，不用一直来取
+  "code": "OK",                // String，成功固定为 OK
+  "batch": { /* 批次，结构同 8.1 Body A / B */ }, // Object | null ★ null = 暂无可拉取批次，1 分钟以上再试
+  "batchSource": "PULL",       // String，PUSH 推送时建批 / PULL 拉取时建批；处理方式相同
+  "newlyCreated": true,        // Boolean，是否本次新建
+  "batchResult": "UNCONFIRMED",// String，UNCONFIRMED 未回执；按 batchNo 取回被退回的批次时为 FAILED
+  "remaining": 1200,           // Number ★ 范围内剩余可拉取枚数，> 0 时继续拉取
+  "paused": 0                  // Number，被暂停交付的枚数，等待总部处理，无需反复拉取
 }
 ```
 
-拿到批次后处理完**马上用 ④ 交回执**，不交的话下次来取还是这一批。
+拉取到批次后，处理完成须**立即调 ④ 提交回执**；未提交时下次拉取仍返回同一批次。
 
 #### 4. 错误码
 
-除 6.3 通用错误外：
+除 7.5 通用错误码外：
 
-| HTTP | `code` | 含义 | MES 怎么做 |
+| HTTP | `code` | 含义 | 处理建议 |
 | --- | --- | --- | --- |
-| 403 | `ORG_NOT_ALLOWED` | 这张 PI 下没有号分到本组织，也没有本组织的转出批次 | 检查 `pi` |
-| 404 | `BATCH_NOT_FOUND` | 没有这个批次号，或不是本组织的 | 检查 `batchNo` |
-| 409 | `BATCH_CONFIRMED` | 这批已经回执过 | 不用再处理 |
-| 409 | `BATCH_VOIDED` | 这批已作废 | 丢弃，不能用本地缓存处理 |
-| 5xx / 超时 | — | — | 直接再取，拿到的还是同一批 |
+| 403 | `ORG_NOT_ALLOWED` | 该 PI 下没有分到本组织的 SN，也没有本组织的转出批次 | 检查 `pi` |
+| 404 | `BATCH_NOT_FOUND` | 批次号不存在，或不属于本组织 | 检查 `batchNo` |
+| 409 | `BATCH_CONFIRMED` | 该批次已回执 | 无需再处理 |
+| 409 | `BATCH_VOIDED` | 该批次已作废 | 丢弃，不得用本地缓存处理 |
+| 5xx / 超时 | — | — | 直接重试，返回的仍是同一批次 |
 
 #### 5. 补充说明
 
-- 没回执前反复取，拿到的是同一批（同一 `batchNo`、同一 `itemsDigest`）
-- 取到的批次与推送来的同一批，MES 按 `batchNo` 只处理一次
+- 回执前重复拉取，返回同一批次（`batchNo`、`itemsDigest` 相同）
+- 同一批次经推送和拉取都到达时，按 `batchNo` 只处理一次
 
 ---
 
-### 7.3 ④ 提交回执（MES → SN）
+### 8.3 ④ 提交回执
 
 #### 1. 基本信息
 
 | 项目 | 内容 |
 | --- | --- |
 | 接口名称 | 提交回执 |
-| 接口描述 | 通过 ③ 拿到的批次，处理完用它交回执（含整批退回）。推送来的批次已在 ① 应答里回执，不用再交。按批次号幂等 |
+| 接口描述 | 对 ③ 拉取的批次提交回执（含整批退回）；推送的批次已随 ① 应答回执，无需再提交。按批次号幂等 |
+| 方向 / 提供方 | MES → SN；SN 系统提供 |
 | 请求方式 | `POST` |
 | 请求 URL | `/api/mes/v1/batches/{batchNo}/receipt` |
-| 调用时机 | ③ 取到的批次落库后马上交 |
+| 调用时机 | ③ 拉取的批次落库后立即提交 |
 | 负责人 | SN 系统 @magic |
 
 #### 2. 请求参数
 
-**Header**：同 7.2。
+**Header**：同 8.2。
 
 **Path**
 
 | 参数名 | 类型 | 必填 | 示例值 | 描述 |
 | --- | --- | --- | --- | --- |
-| `batchNo` | String | 是 | `PL-110-20261019-000046` | 批次号，必须与请求体 `batchNo` 一致 |
+| `batchNo` | String | 是 | `PL-110-20261019-000046` | 批次号，须与请求体 `batchNo` 一致 |
 
-**Body**：就是 7.1「3. 响应结果」里的回执，字段注释见那里。
+**Body**：即 8.1「3. 响应参数」中的回执，字段注释见该节。
 
-SN 系统会核对：批次号一致；`results` 条数 = 批次枚数；每枚号恰好出现一次且都属于这一批；`rev` 一致；`summary` 与明细一致。
+SN 系统校验：批次号一致；`results` 条数等于批次枚数；每枚 SN 恰好出现一次且属于该批次；`rev` 一致；`summary` 与明细一致。
 
-#### 3. 响应结果
+#### 3. 响应参数
 
 ```jsonc
 {
   "schemaVersion": "1.0",              // String，协议版本
-  "code": "OK",                        // String，成功固定 OK
+  "code": "OK",                        // String，成功固定为 OK
   "batchNo": "PL-110-20261019-000046", // String，批次号
-  "batchResult": "SUCCESS",            // String，SUCCESS 成功 / SUCCESS_CONFLICT 成功但有冲突的号 / FAILED 整批退回已登记
-  "firstConfirmation": true            // Boolean，true 这次确认成功；false 之前已确认过，这次只存档
+  "batchResult": "SUCCESS",            // String，SUCCESS 成功 / SUCCESS_CONFLICT 成功但含冲突 SN / FAILED 整批退回已登记
+  "firstConfirmation": true            // Boolean，true 本次首次确认；false 此前已确认，本次仅存档
 }
 ```
 
 #### 4. 错误码
 
-除 6.3 通用错误外：
+除 7.5 通用错误码外：
 
-| HTTP | `code` | 含义 | MES 怎么做 |
+| HTTP | `code` | 含义 | 处理建议 |
 | --- | --- | --- | --- |
-| 422 | `RECEIPT_MISMATCH` | 回执和批次对不上 | 按 `details` 改正后重交 |
-| 409 | `BATCH_VOIDED` | 这批已作废 | 丢弃 |
-| 404 | `BATCH_NOT_FOUND` | 没有这个批次号，或不是本组织的 | 检查 `batchNo` |
-| 5xx / 超时 | — | — | 拿同一张回执再交 |
+| 422 | `RECEIPT_MISMATCH` | 回执与批次不符 | 按 `details` 改正后重新提交 |
+| 409 | `BATCH_VOIDED` | 该批次已作废 | 丢弃 |
+| 404 | `BATCH_NOT_FOUND` | 批次号不存在，或不属于本组织 | 检查 `batchNo` |
+| 5xx / 超时 | — | — | 以同一回执重试 |
 
 #### 5. 补充说明
 
-- 同一张回执重复交不会出错，第二次起 `firstConfirmation = false`
-- 回执 `REJECTED` 后同一张 PI 的后续推送暂停；修好后用 ③ 带 `batchNo` 取回重做、④ 交回执，再请总部「继续推送」
+- 重复提交同一回执不会报错，第二次起 `firstConfirmation = false`
+- 整批退回后的重处理流程见 6.2
 
 ---
 
-### 7.4 ⑤ 查询已交付的号（MES → SN，对账，可选）
+### 8.4 ⑤ 查询已交付 SN
 
 #### 1. 基本信息
 
 | 项目 | 内容 |
 | --- | --- |
-| 接口名称 | 查询已交付的号 |
-| 接口描述 | 返回 SN 系统认为已经交给本组织 MES 的号（含推送和取批）；已转到别的组织的不返回。**只用来对账**，不能据此存号、打标或删号 |
+| 接口名称 | 查询已交付 SN |
+| 接口描述 | 返回 SN 系统认定已交付给本组织 MES 的 SN（含推送和拉取）；已转至其他组织的不返回。**仅用于对账**，不得据此入库、打标或删除 |
+| 方向 / 提供方 | MES → SN；SN 系统提供 |
 | 请求方式 | `GET` |
 | 请求 URL | `/api/mes/v1/sn/delivered` |
+| 调用时机 | 可选，按需对账 |
 | 负责人 | SN 系统 @magic |
 
 #### 2. 请求参数
@@ -578,17 +707,17 @@ SN 系统会核对：批次号一致；`results` 条数 = 批次枚数；每枚�
 
 | 参数名 | 类型 | 必填 | 默认值 | 示例值 | 描述 |
 | --- | --- | --- | --- | --- | --- |
-| `pi` | String | 否 | 不限 | `000001` | 只查这张 PI |
-| `cursor` | String | 否 | 空 | `10086` | 翻页游标：第一页留空，之后填上一页的 `nextCursor` |
-| `pageSize` | Number | 否 | `1000` | `2000` | 每页条数，最多 5000 |
+| `pi` | String | 否 | 不限 | `000001` | 限定 PI |
+| `cursor` | String | 否 | 空 | `10086` | 分页游标：首页留空，之后填上一页的 `nextCursor` |
+| `pageSize` | Number | 否 | `1000` | `2000` | 每页条数，最大 5000 |
 
-#### 3. 响应结果
+#### 3. 响应参数
 
 ```jsonc
 {
   "schemaVersion": "1.0",              // String，协议版本
-  "code": "OK",                        // String，成功固定 OK
-  "items": [                           // Array，号的列表
+  "code": "OK",                        // String，成功固定为 OK
+  "items": [                           // Array，SN 列表
     {
       "sn": "HX100000001A",            // String，完整 SN
       "rev": 2,                        // Number，挂靠版本
@@ -602,7 +731,7 @@ SN 系统会核对：批次号一致；`results` 条数 = 批次枚数；每枚�
       "length": "0100",                // String | null，米标
       "customerCode": "0001",          // String，客户编码
       "orgCode": "110",                // String，当前所属组织
-      "status": "PUSHED",              // String，SN 系统里的状态，如 PUSHED 已推送 / TO_PUSH 改挂待推送 / APPLYING 正在申请转走（只作提醒）
+      "status": "PUSHED",              // String，SN 系统中的状态：PUSHED 已推送 / TO_PUSH 改挂待推送 / APPLYING 转组织申请中（仅提醒）
       "batchNo": "PS-110-20261019-000123" // String | null，当前所在批次
     }
   ],
@@ -612,20 +741,22 @@ SN 系统会核对：批次号一致；`results` 条数 = 批次枚数；每枚�
 
 #### 4. 错误码
 
-只有 6.3 通用错误。
+仅 7.5 通用错误码。
 
 ---
 
-### 7.5 ⑥ 查询批次明细（MES → SN，对账，可选）
+### 8.5 ⑥ 查询批次明细
 
 #### 1. 基本信息
 
 | 项目 | 内容 |
 | --- | --- |
 | 接口名称 | 查询批次明细 |
-| 接口描述 | 某个批次里**仍在这一批**的号（已转到别的组织的不返回，整批移出时为 0 枚）。只用来对账 |
+| 接口描述 | 返回指定批次中**仍属于该批次**的 SN（已转至其他组织的不返回，整批移出时为 0 枚）。仅用于对账 |
+| 方向 / 提供方 | MES → SN；SN 系统提供 |
 | 请求方式 | `GET` |
 | 请求 URL | `/api/mes/v1/batches/{batchNo}/items` |
+| 调用时机 | 可选，按需对账 |
 | 负责人 | SN 系统 @magic |
 
 #### 2. 请求参数
@@ -637,55 +768,42 @@ SN 系统会核对：批次号一致；`results` 条数 = 批次枚数；每枚�
 | 参数名 | 位置 | 类型 | 必填 | 默认值 | 描述 |
 | --- | --- | --- | --- | --- | --- |
 | `batchNo` | Path | String | 是 | — | 批次号 |
-| `cursor` | Query | String | 否 | 空 | 同 ⑤ |
-| `pageSize` | Query | Number | 否 | `1000` | 同 ⑤，最多 5000 |
+| `cursor` | Query | String | 否 | 空 | 同 8.4 |
+| `pageSize` | Query | Number | 否 | `1000` | 同 8.4，最大 5000 |
 
-#### 3. 响应结果
+#### 3. 响应参数
 
 ```jsonc
 {
   "schemaVersion": "1.0",              // String，协议版本
-  "code": "OK",                        // String，成功固定 OK
+  "code": "OK",                        // String，成功固定为 OK
   "batchNo": "PS-110-20261019-000123", // String，查询的批次号
-  "items": [ /* 结构同 7.4 items */ ],  // Array，仍在这一批的号
+  "items": [ /* 结构同 8.4 items */ ],  // Array，仍属于该批次的 SN
   "nextCursor": null                   // String | null，下一页游标；null = 最后一页
 }
 ```
 
 #### 4. 错误码
 
-除 6.3 通用错误外：404 `BATCH_NOT_FOUND`（没有这个批次号，或不是本组织的）。
+除 7.5 通用错误码外：404 `BATCH_NOT_FOUND`（批次号不存在，或不属于本组织）。
 
 ---
 
-## 8. 异常处理
+## 附录 A　错误码汇总
 
-| 情况 | MES 动作 |
-| --- | --- |
-| 推送超时、MES 宕机 | 不用特别处理：SN 系统 1、5、15 分钟后重送同一批；或 MES 恢复后取批 |
-| 批次处理不了 | 回执 `REJECTED` 写明原因（同一张 PI 后续推送暂停）；修好后用 ③ 带 `batchNo` 取回重做、④ 交回执，再请总部「继续推送」 |
-| 409 `BATCH_VOIDED` | 丢弃该批次，不用本地缓存处理；号会重新组批送来 |
-| 422 `RECEIPT_MISMATCH` | 按 `details` 改正后重交回执 |
-| 回执里有 `CONFLICT` / `STALE` | 这些号先锁住；总部用更大的 `rev` 重送后自动解锁，或由现场人工放行 |
-| 长期交不上回执 | 书面告知总部是否已入库：已入库由总部「人工确认」，没处理由总部「作废」 |
-
----
-
-## 附录 A 错误码总表
-
-| `code` | HTTP | 出现在 | 含义 |
+| `code` | HTTP | 适用接口 | 含义 |
 | --- | --- | --- | --- |
 | `INVALID_REQUEST` | 400 | ③～⑥ | 请求体不是合法 gzip / JSON，或参数不合法 |
-| `INVALID_CREDENTIALS` | 401 | ③～⑥ | 缺少认证头，或工号、密钥不对 |
+| `INVALID_CREDENTIALS` | 401 | ③～⑥ | 缺少认证头，或工号、密钥错误 |
 | `ACCOUNT_LOCKED` | 423 | ③～⑥ | 连续认证失败已锁定 |
 | `IP_NOT_ALLOWED` | 403 | ③～⑥ | 来源 IP 不在白名单 |
-| `ACCOUNT_DISABLED` | 403 | ③～⑥ | 账号已停用 |
-| `FORBIDDEN` | 403 | ③④ | 不是 MES 接口账户 |
-| `RATE_LIMITED` | 429 | ③～⑥ | 调用太频繁 |
+| `ACCOUNT_DISABLED` | 403 | ③～⑥ | 账户已停用 |
+| `FORBIDDEN` | 403 | ③④ | 非 MES 接口账户 |
+| `RATE_LIMITED` | 429 | ③～⑥ | 调用过于频繁 |
 | `ORG_NOT_ALLOWED` | 403 | ③ | PI 与本组织无关 |
 | `BATCH_NOT_FOUND` | 404 | ③④⑥ | 批次号不存在，或不属于本组织 |
 | `BATCH_CONFIRMED` | 409 | ③ | 批次已回执 |
 | `BATCH_VOIDED` | 409 | ③④ | 批次已作废 |
 | `RECEIPT_MISMATCH` | 422 | ④ | 回执与批次不符 |
-| `BATCH_IN_PROGRESS` | 409 | ①（MES 返回） | 同一批正在处理中 |
+| `BATCH_IN_PROGRESS` | 409 | ①（MES 返回） | 同一批次正在处理 |
 | `BATCH_CONTENT_MISMATCH` | 409 | ①（MES 返回） | 批次号相同但内容不同 |

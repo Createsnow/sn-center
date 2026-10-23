@@ -2,7 +2,7 @@
   "schema_version": 1,
   "diagram_type": "sequence",
   "meta": {
-    "title": "③ 取批与 ④ 交回执",
+    "title": "③ 拉取与 ④ 提交回执",
     "locale": "zh-CN",
     "quality_profile": "showcase",
     "output": "f7-pull.html",
@@ -13,14 +13,14 @@
     { "id": "sn", "type": "backend", "label": "SN 系统" }
   ],
   "segments": [
-    { "from": 160, "to": 275, "label": "取批" },
-    { "from": 290, "to": 395, "label": "处理并交回执" },
+    { "from": 160, "to": 275, "label": "拉取" },
+    { "from": 290, "to": 395, "label": "处理并提交回执" },
     { "from": 410, "to": 520, "label": "remaining > 0 接着取" }
   ],
   "messages": [
     { "id": "q1", "from": "mes", "to": "sn", "y": 185, "label": "③ POST /batches/next", "variant": "emphasis", "note": "Bearer 工号:密钥；可带 pi / billNo" },
     { "id": "q2", "from": "sn", "to": "mes", "y": 250, "label": "batch + remaining", "variant": "return", "note": "先给最早未回执的批次，没有才新建" },
-    { "id": "q3", "from": "mes", "to": "sn", "y": 315, "label": "④ POST /batches/{batchNo}/receipt", "variant": "emphasis", "note": "落库后交回执，格式同 ① 应答" },
+    { "id": "q3", "from": "mes", "to": "sn", "y": 315, "label": "④ POST /batches/{batchNo}/receipt", "variant": "emphasis", "note": "落库后提交回执，格式同 ① 应答" },
     { "id": "q4", "from": "sn", "to": "mes", "y": 375, "label": "200 + batchResult", "variant": "return" },
     { "id": "q5", "from": "mes", "to": "sn", "y": 435, "label": "③ 再取", "variant": "default" },
     { "id": "q6", "from": "sn", "to": "mes", "y": 495, "label": "batch = null", "variant": "return", "note": "暂时没有，1 分钟以上再来" }

@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "转移交互时序",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "output": "f11-transfer-seq.html",
+    "legend": { "mode": "hidden" }
+  },
+  "participants": [
+    { "id": "op", "type": "external", "label": "发起方", "sublabel": "总部 / 生产组织" },
+    { "id": "sn", "type": "backend", "label": "SN 系统" },
+    { "id": "mes", "type": "frontend", "label": "本组织 MES", "sublabel": "跨组织时为转入方" },
+    { "id": "old", "type": "frontend", "label": "原组织 MES", "sublabel": "仅跨组织" }
+  ],
+  "segments": [
+    { "from": 160, "to": 390, "label": "同组织转移" },
+    { "from": 405, "to": 640, "label": "跨组织转移" }
+  ],
+  "messages": [
+    { "id": "a1", "from": "op", "to": "mes", "y": 185, "label": "转移前确认", "variant": "dashed", "note": "过站方式、LINK 状态；已 LINK 不转" },
+    { "id": "a2", "from": "op", "to": "sn", "y": 245, "label": "发起转单 / 转组织", "variant": "default", "note": "可转校验，改挂，rev + 1" },
+    { "id": "a3", "from": "sn", "to": "mes", "y": 305, "label": "① DELIVERY · REASSIGN", "variant": "emphasis", "note": "fromOrgCode = orgCode" },
+    { "id": "a4", "from": "mes", "to": "sn", "y": 365, "label": "回执 ACCEPTED", "variant": "return", "note": "客户 SN 过站：换数据链订单关联" },
+    { "id": "b1", "from": "op", "to": "sn", "y": 430, "label": "发起转组织", "variant": "default", "note": "可转校验，改挂，rev + 1" },
+    { "id": "b2", "from": "sn", "to": "mes", "y": 490, "label": "① DELIVERY · NEW / REASSIGN", "variant": "emphasis", "note": "fromOrgCode ≠ orgCode，转入建档" },
+    { "id": "b3", "from": "mes", "to": "sn", "y": 545, "label": "回执", "variant": "return" },
+    { "id": "b4", "from": "sn", "to": "old", "y": 575, "label": "① TRANSFER_OUT", "variant": "dashed", "note": "与转入并行，互不等待" },
+    { "id": "b5", "from": "old", "to": "sn", "y": 625, "label": "回执", "variant": "return", "note": "转出停用，不清理数据链" }
+  ]
+}

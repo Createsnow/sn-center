@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "端到端业务时序",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "output": "f0-business.html",
+    "legend": { "mode": "hidden" }
+  },
+  "participants": [
+    { "id": "k3", "type": "external", "label": "金蝶" },
+    { "id": "hq", "type": "external", "label": "总部", "sublabel": "生产组织" },
+    { "id": "sn", "type": "backend", "label": "SN 系统" },
+    { "id": "mes", "type": "frontend", "label": "MES" },
+    { "id": "site", "type": "external", "label": "现场" }
+  ],
+  "segments": [
+    { "from": 160, "to": 280, "label": "订单与生成" },
+    { "from": 295, "to": 470, "label": "分配与交付" },
+    { "from": 485, "to": 560, "label": "生产打标" },
+    { "from": 575, "to": 780, "label": "转移" }
+  ],
+  "messages": [
+    { "id": "s1", "from": "k3", "to": "sn", "y": 185, "label": "同步已审核生产订单", "variant": "default", "note": "定时同步" },
+    { "id": "s2", "from": "hq", "to": "sn", "y": 245, "label": "生成 SN（按 PI）", "variant": "emphasis", "note": "预演后生成，全局不重复" },
+    { "id": "s3", "from": "hq", "to": "sn", "y": 320, "label": "分配到生产组织", "variant": "default" },
+    { "id": "s4", "from": "sn", "to": "mes", "y": 360, "label": "① 推送交付批次", "variant": "emphasis", "note": "失败时 MES 用 ③ 拉取" },
+    { "id": "s5", "from": "mes", "to": "sn", "y": 425, "label": "回执", "variant": "return", "note": "号变为已推送" },
+    { "id": "s6", "from": "mes", "to": "site", "y": 515, "label": "下发 SN", "variant": "default", "note": "打标、过站、LINK" },
+    { "id": "s7", "from": "hq", "to": "sn", "y": 600, "label": "发起转单 / 转组织", "variant": "default", "note": "改挂，rev + 1" },
+    { "id": "s8", "from": "sn", "to": "mes", "y": 660, "label": "① 改挂 / 转出批次", "variant": "emphasis", "note": "转入方改挂，原组织转出" },
+    { "id": "s9", "from": "mes", "to": "sn", "y": 715, "label": "回执", "variant": "return" },
+    { "id": "s10", "from": "mes", "to": "site", "y": 745, "label": "转出号停止打标", "variant": "dashed", "note": "旧标签按转出号清单作废" }
+  ]
+}
