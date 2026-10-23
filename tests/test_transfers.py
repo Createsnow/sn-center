@@ -81,6 +81,7 @@ def test_org_transfer_pushes_reassign_to_target_and_transfer_out_to_source(w, sq
     assert out["items"][0] == {"sn": out["items"][0]["sn"], "rev": 2, "toOrgCode": b} and out["itemsDigest"]
     got = next(x["batch"] for x in MES.received if x["org"] == b and x["batch"]["batchType"] == "DELIVERY")
     assert not {"pushType", "fromOrgCode", "transferKind", "transferDocNo"} & set(got["items"][0])
+    assert got["items"][0]["bizType"] == "CROSS_ORG_TRANSFER"
     assert (
         sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND mes_holder = %s AND status = 'PUSHED'", pi, b) == 5
     )
@@ -420,6 +421,7 @@ def test_same_org_bill_transfer_reassigns_pushed(w, api, sql):
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 3
     sn = rows and sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s LIMIT 1", pi)
     assert MES.store[org][sn]["billNo"] == tgt and MES.store[org][sn]["rev"] == 2
+    assert MES.store[org][sn]["bizType"] == "SAME_ORG_TRANSFER"
 
 
 def test_bill_transfer_length_mismatch_and_pending_alloc_to_other_org(w, api, sql):

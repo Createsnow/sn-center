@@ -67,9 +67,10 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
         "materialCode",
         "length",
         "customerCode",
+        "bizType",
     }
     assert item["billNo"] == bill and item["billSeq"] == 1 and item["pi"] == pi and item["serialPi"] == pi
-    assert isinstance(item["serialDec"], str) and item["length"] == "0100"
+    assert isinstance(item["serialDec"], str) and item["length"] == "0100" and item["bizType"] == "FIRST"
     h = MES.received[-1]["headers"]
     # 默认发原始 JSON，不带 Content-Encoding
     assert h["x-sn-batch-no"] == batches[-1]["batch_no"] and "content-encoding" not in h
@@ -380,5 +381,5 @@ def test_legacy_conflict_alert_resend_bumps_rev(w, sql):
     ok(w.api.post(f"/api/delivery/alerts/{a['id']}/handle", m(action="RESEND", note="以本系统为准"), w.admin))
     assert sql.one("SELECT rev, status FROM sn_item WHERE id = %s", it["id"]) == {"rev": 2, "status": "TO_PUSH"}
     w.push()
-    assert MES.store[org][it["sn"]]["rev"] == 2
+    assert MES.store[org][it["sn"]]["rev"] == 2 and MES.store[org][it["sn"]]["bizType"] == "REMAP"
     assert sql.scalar("SELECT status FROM sn_item WHERE id = %s", it["id"]) == "PUSHED"

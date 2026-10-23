@@ -290,7 +290,7 @@ def test_material_map_reassigns_delivered_items(w, api, sql):
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND bill_seq = 2 AND rev = 1", bill) == 3
     w.push()
     item = MES.received[-1]["batch"]["items"][0]
-    assert (item["rev"], item["billSeq"], item["materialCode"]) == (2, 3, "M9")
+    assert (item["rev"], item["billSeq"], item["materialCode"], item["bizType"]) == (2, 3, "M9", "REMAP")
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND status = 'PUSHED' AND rev = 2", bill) == 4
 
 

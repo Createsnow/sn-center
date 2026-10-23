@@ -993,9 +993,11 @@ def map_material(cu: CurrentUser, alert: dict, target_seq: int | None, note: str
         mes = factories.mes_codes()
         now = util.now()
         pushes: set[tuple[str, str]] = set()
-        # 已交付给 MES 的号 rev + 1，其中 MES 持有组织即本组织（且对接 MES）的改为待推送改挂；其余只改挂
+        # 已交付给 MES 的号 rev + 1，其中 MES 持有组织即本组织（且对接 MES）的改为待推送改挂
+        # （业务来源 REMAP，清除转移标记）；其余只改挂
         extra = {
-            "REASSIGN": ", rev = rev + 1, status = 'TO_PUSH', push_type = 'REASSIGN', delivery_batch_no = NULL",
+            "REASSIGN": ", rev = rev + 1, status = 'TO_PUSH', push_type = 'REASSIGN', delivery_batch_no = NULL, "
+            "transfer_kind = NULL, transfer_doc_no = NULL, transfer_from_org = NULL",
             "DELIVERED": ", rev = rev + 1",
             "": "",
         }

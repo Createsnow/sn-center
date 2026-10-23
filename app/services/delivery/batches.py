@@ -36,6 +36,11 @@ M_PUSH = "PUSH_RESPONSE"
 M_PULL = "PULL_RECEIPT"
 M_MANUAL = "MANUAL"
 XO_KEY = "#XO"
+#: 交付项的业务来源（选填，仅供 MES 参考，处理以 rev 为准）
+BIZ_FIRST = "FIRST"
+BIZ_SAME_ORG = "SAME_ORG_TRANSFER"
+BIZ_CROSS_ORG = "CROSS_ORG_TRANSFER"
+BIZ_REMAP = "REMAP"
 #: MES 回执 code：OK 整批已处理 / NG 整批退回
 RECEIPT_OK = "OK"
 RECEIPT_NG = "NG"
@@ -120,8 +125,17 @@ def str_or_none(v: str | None) -> str | None:
     return v if v else None
 
 
-def _delivery_payload(r: dict) -> dict:
-    """交付项（6.3）。十进制流水、米标按字符串；物料为空、规则不带米标时为 null。MES 逐枚按 rev 新增或覆盖。"""
+def biz_type(r: dict, org: str) -> str:
+    """交付项的业务来源：最近一次转移（转单、转组织）按前后组织分同组织 / 跨组织；未经转移的改挂（确认物料对应、
+    告警重推）为 REMAP；其余为首次下发。"""
+    if r["transfer_from_org"]:
+        return BIZ_SAME_ORG if r["transfer_from_org"] == org else BIZ_CROSS_ORG
+    return BIZ_REMAP if r["push_type"] == util.PUSH_REASSIGN else BIZ_FIRST
+
+
+def _delivery_payload(r: dict, org: str) -> dict:
+    """交付项（6.3）。十进制流水、米标按字符串；物料为空、规则不带米标时为 null。MES 逐枚按 rev 新增或覆盖；
+    bizType 只说明业务来源。"""
     return {
         "sn": r["sn"],
         "rev": int(r["rev"]),
@@ -134,6 +148,7 @@ def _delivery_payload(r: dict) -> dict:
         "materialCode": str_or_none(r["material_code"]),
         "length": r["length_text"],
         "customerCode": r["customer_code"],
+        "bizType": biz_type(r, org),
     }
 
 
@@ -202,7 +217,7 @@ def _insert_batch(
 
 _CLAIM_COLS = (
     "id, sn, rev, push_type, pi_no, bill_no, bill_seq, material_code, customer_code, seq_pi_no, seq_dec, "
-    "length_text, rule_version_id"
+    "length_text, rule_version_id, transfer_from_org"
 )
 
 
@@ -227,7 +242,7 @@ def build_delivery(cu: CurrentUser, org: str, pi: str, source: str, bill: str | 
         items = claim(org, pi, max(1, int(f["batch_size"])), bill)
         if not items:
             return None
-        payload = [_delivery_payload(r) for r in items]
+        payload = [_delivery_payload(r, org) for r in items]
         rows = [
             (
                 r["id"],

@@ -224,6 +224,8 @@ class MesSim:
                         "materialCode": x.get("materialCode"),
                         "customerCode": x["customerCode"],
                         "length": x.get("length"),
+                        # 选填，仅记录备查；处理只看 rev
+                        "bizType": x.get("bizType"),
                     }
                 store[x["sn"]] = rec
             receipt = _receipt(no)
