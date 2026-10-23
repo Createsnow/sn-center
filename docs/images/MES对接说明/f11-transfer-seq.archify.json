@@ -62,7 +62,7 @@
       "from": "sn",
       "to": "mes",
       "y": 245,
-      "label": "① DELIVERY · REASSIGN",
+      "label": "① 推送批次 · REASSIGN",
       "variant": "emphasis",
       "note": "fromOrgCode = orgCode"
     },
@@ -89,7 +89,7 @@
       "from": "sn",
       "to": "mes",
       "y": 430,
-      "label": "① DELIVERY · NEW / REASSIGN",
+      "label": "① 推送批次 · NEW / REASSIGN",
       "variant": "emphasis",
       "note": "fromOrgCode ≠ orgCode，转入建档"
     },

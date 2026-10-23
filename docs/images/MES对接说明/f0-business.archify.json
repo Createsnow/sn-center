@@ -110,7 +110,7 @@
       "from": "mes",
       "to": "site",
       "y": 515,
-      "label": "下发 SN",
+      "label": "交现场打标",
       "variant": "default",
       "note": "打标、过站、LINK"
     },

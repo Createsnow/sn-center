@@ -2,7 +2,7 @@
   "schema_version": 2,
   "diagram_type": "workflow",
   "meta": {
-    "title": "MES 收到批次的判断",
+    "title": "MES 批次处理流程",
     "locale": "zh-CN",
     "quality_profile": "showcase",
     "legend": {
@@ -23,6 +23,7 @@
   ],
   "mainPath": [
     "recv",
+    "route",
     "check",
     "dedup",
     "rev",
@@ -37,38 +38,56 @@
       "label": "收到批次"
     },
     {
-      "id": "check",
+      "id": "route",
       "lane": "main",
       "col": 1,
+      "type": "backend",
+      "label": "分流",
+      "sublabel": "按 batchType"
+    },
+    {
+      "id": "check",
+      "lane": "main",
+      "col": 2,
       "type": "security",
-      "label": "校验批次",
+      "label": "整批校验",
       "sublabel": "orgCode、count、明细"
     },
     {
       "id": "dedup",
       "lane": "main",
-      "col": 2,
+      "col": 3,
       "type": "database",
-      "label": "batchNo 收过?"
+      "label": "幂等去重",
+      "sublabel": "batchNo 已处理?"
     },
     {
       "id": "rev",
       "lane": "main",
-      "col": 3,
+      "col": 4,
       "type": "backend",
-      "label": "逐枚比 rev"
+      "label": "版本比对",
+      "sublabel": "逐枚比 rev"
     },
     {
       "id": "save",
       "lane": "main",
-      "col": 4,
+      "col": 5,
       "type": "database",
-      "label": "落库后回执"
+      "label": "落库与回执"
+    },
+    {
+      "id": "ping",
+      "lane": "out",
+      "col": 1,
+      "type": "backend",
+      "label": "测试批次",
+      "sublabel": "回 PROCESSED，不存储"
     },
     {
       "id": "reject",
       "lane": "out",
-      "col": 1,
+      "col": 2,
       "type": "security",
       "label": "整批退回",
       "sublabel": "REJECTED，不记 batchNo"
@@ -76,15 +95,15 @@
     {
       "id": "replay",
       "lane": "out",
-      "col": 2,
+      "col": 3,
       "type": "backend",
-      "label": "交回上次回执",
+      "label": "返回上次回执",
       "sublabel": "itemsDigest 相同"
     },
     {
       "id": "mismatch",
       "lane": "out",
-      "col": 3,
+      "col": 4,
       "type": "security",
       "label": "409 内容不符",
       "sublabel": "itemsDigest 不同"
@@ -94,27 +113,40 @@
     {
       "id": "e1",
       "from": "recv",
-      "to": "check"
+      "to": "route"
     },
     {
       "id": "e2",
+      "from": "route",
+      "to": "check",
+      "label": "推送 / 拉取 / 转移批次"
+    },
+    {
+      "id": "e3",
       "from": "check",
       "to": "dedup",
       "label": "通过"
     },
     {
-      "id": "e3",
+      "id": "e4",
       "from": "dedup",
       "to": "rev",
-      "label": "没收过"
+      "label": "未处理"
     },
     {
-      "id": "e4",
+      "id": "e5",
       "from": "rev",
       "to": "save"
     },
     {
-      "id": "e5",
+      "id": "e6",
+      "from": "route",
+      "to": "ping",
+      "label": "PING",
+      "role": "branch"
+    },
+    {
+      "id": "e7",
       "from": "check",
       "to": "reject",
       "label": "不通过",
@@ -122,14 +154,14 @@
       "role": "error"
     },
     {
-      "id": "e6",
+      "id": "e8",
       "from": "dedup",
       "to": "replay",
-      "label": "收过",
+      "label": "已处理",
       "role": "branch"
     },
     {
-      "id": "e7",
+      "id": "e9",
       "from": "dedup",
       "to": "mismatch",
       "variant": "security",

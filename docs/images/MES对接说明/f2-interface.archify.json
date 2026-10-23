@@ -2,7 +2,7 @@
   "schema_version": 1,
   "diagram_type": "sequence",
   "meta": {
-    "title": "整体接口调用",
+    "title": "接口交互时序",
     "locale": "zh-CN",
     "quality_profile": "showcase",
     "output": "f2-interface.html",
@@ -33,17 +33,17 @@
     {
       "from": 160,
       "to": 270,
-      "label": "分配后：推送（主通道）"
+      "label": "推送主通道"
     },
     {
       "from": 285,
       "to": 460,
-      "label": "转移后：推送批次与转移批次"
+      "label": "转移通知"
     },
     {
       "from": 475,
       "to": 640,
-      "label": "推送失败 / SN 不足 / 每 5 分钟：拉取（补偿）"
+      "label": "拉取补偿通道"
     },
     {
       "from": 655,
@@ -57,7 +57,7 @@
       "from": "sn",
       "to": "mes",
       "y": 185,
-      "label": "① DELIVERY · NEW",
+      "label": "① 推送批次 · NEW",
       "variant": "emphasis",
       "note": "SN：待推送 → 已推送"
     },
@@ -74,7 +74,7 @@
       "from": "sn",
       "to": "mes",
       "y": 310,
-      "label": "① DELIVERY · REASSIGN",
+      "label": "① 推送批次 · REASSIGN",
       "variant": "emphasis",
       "note": "rev + 1，带 fromOrgCode"
     },
@@ -110,14 +110,14 @@
       "y": 500,
       "label": "③ 拉取",
       "variant": "default",
-      "note": "Bearer 工号:密钥"
+      "note": "推送失败 / SN 不足 / 每 5 分钟"
     },
     {
       "id": "c2",
       "from": "sn",
       "to": "mes",
       "y": 555,
-      "label": "批次（格式同 ①）",
+      "label": "拉取批次（格式同推送批次）",
       "variant": "return"
     },
     {

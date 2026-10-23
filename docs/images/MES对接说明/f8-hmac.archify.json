@@ -2,7 +2,7 @@
   "schema_version": 2,
   "diagram_type": "workflow",
   "meta": {
-    "title": "① HMAC 签名与校验",
+    "title": "① HMAC 签名与校验（建议方案）",
     "locale": "zh-CN",
     "quality_profile": "showcase",
     "legend": {

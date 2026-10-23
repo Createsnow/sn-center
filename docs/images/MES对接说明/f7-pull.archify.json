@@ -6,23 +6,91 @@
     "locale": "zh-CN",
     "quality_profile": "showcase",
     "output": "f7-pull.html",
-    "legend": { "mode": "hidden" }
+    "legend": {
+      "mode": "hidden"
+    }
   },
   "participants": [
-    { "id": "mes", "type": "frontend", "label": "MES" },
-    { "id": "sn", "type": "backend", "label": "SN 系统" }
+    {
+      "id": "mes",
+      "type": "frontend",
+      "label": "MES"
+    },
+    {
+      "id": "sn",
+      "type": "backend",
+      "label": "SN 系统"
+    }
   ],
   "segments": [
-    { "from": 160, "to": 275, "label": "拉取" },
-    { "from": 290, "to": 395, "label": "处理并提交回执" },
-    { "from": 410, "to": 520, "label": "remaining > 0 接着取" }
+    {
+      "from": 160,
+      "to": 275,
+      "label": "拉取"
+    },
+    {
+      "from": 290,
+      "to": 395,
+      "label": "处理并提交回执"
+    },
+    {
+      "from": 410,
+      "to": 520,
+      "label": "remaining > 0 继续拉取"
+    }
   ],
   "messages": [
-    { "id": "q1", "from": "mes", "to": "sn", "y": 185, "label": "③ POST /batches/next", "variant": "emphasis", "note": "Bearer 工号:密钥；可带 pi / billNo" },
-    { "id": "q2", "from": "sn", "to": "mes", "y": 250, "label": "batch + remaining", "variant": "return", "note": "先给最早未回执的批次，没有才新建" },
-    { "id": "q3", "from": "mes", "to": "sn", "y": 315, "label": "④ POST /batches/{batchNo}/receipt", "variant": "emphasis", "note": "落库后提交回执，格式同 ① 应答" },
-    { "id": "q4", "from": "sn", "to": "mes", "y": 375, "label": "200 + batchResult", "variant": "return" },
-    { "id": "q5", "from": "mes", "to": "sn", "y": 435, "label": "③ 再取", "variant": "default" },
-    { "id": "q6", "from": "sn", "to": "mes", "y": 495, "label": "batch = null", "variant": "return", "note": "暂时没有，1 分钟以上再来" }
+    {
+      "id": "q1",
+      "from": "mes",
+      "to": "sn",
+      "y": 185,
+      "label": "③ POST /batches/next",
+      "variant": "emphasis",
+      "note": "Bearer 工号:密钥；可带 pi / billNo"
+    },
+    {
+      "id": "q2",
+      "from": "sn",
+      "to": "mes",
+      "y": 250,
+      "label": "batch + remaining",
+      "variant": "return",
+      "note": "先给最早未回执的批次，没有才新建"
+    },
+    {
+      "id": "q3",
+      "from": "mes",
+      "to": "sn",
+      "y": 315,
+      "label": "④ POST /batches/{batchNo}/receipt",
+      "variant": "emphasis",
+      "note": "落库后提交回执，格式同 ① 应答"
+    },
+    {
+      "id": "q4",
+      "from": "sn",
+      "to": "mes",
+      "y": 375,
+      "label": "200 + batchResult",
+      "variant": "return"
+    },
+    {
+      "id": "q5",
+      "from": "mes",
+      "to": "sn",
+      "y": 435,
+      "label": "③ 继续拉取",
+      "variant": "default"
+    },
+    {
+      "id": "q6",
+      "from": "sn",
+      "to": "mes",
+      "y": 495,
+      "label": "batch = null",
+      "variant": "return",
+      "note": "暂时没有，1 分钟以上再来"
+    }
   ]
 }

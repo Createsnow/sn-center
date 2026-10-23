@@ -74,7 +74,7 @@
       "col": 4,
       "type": "frontend",
       "label": "推本组织 MES",
-      "sublabel": "已交过 REASSIGN / 未交 NEW"
+      "sublabel": "已持有 REASSIGN / 未持有 NEW"
     },
     {
       "id": "c1",
@@ -82,7 +82,7 @@
       "col": 3,
       "type": "frontend",
       "label": "推转入组织 MES",
-      "sublabel": "NEW 或 REASSIGN"
+      "sublabel": "推送批次：NEW 或 REASSIGN"
     },
     {
       "id": "c2",
