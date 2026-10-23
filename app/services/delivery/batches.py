@@ -23,6 +23,7 @@ log = structlog.get_logger()
 
 UNCONFIRMED = "UNCONFIRMED"
 SUCCESS = "SUCCESS"
+#: 旧协议逐枚回执含冲突时的结果，只留给历史批次
 SUCCESS_CONFLICT = "SUCCESS_CONFLICT"
 FAILED = "FAILED"
 VOIDED = "VOIDED"
@@ -35,7 +36,9 @@ M_PUSH = "PUSH_RESPONSE"
 M_PULL = "PULL_RECEIPT"
 M_MANUAL = "MANUAL"
 XO_KEY = "#XO"
-RESULTS = ("ACCEPTED", "DUPLICATE", "CONFLICT", "STALE")
+#: MES 回执 code：OK 整批已处理 / NG 整批退回
+RECEIPT_OK = "OK"
+RECEIPT_NG = "NG"
 #: 推送任务租约（秒）；执行中每批续租
 LEASE_SECONDS = 300
 RUNNER = f"{socket.gethostname()}:{os.getpid()}"
@@ -118,9 +121,8 @@ def str_or_none(v: str | None) -> str | None:
 
 
 def _delivery_payload(r: dict) -> dict:
-    """交付项（6.3）。十进制流水、米标按字符串；物料为空、规则不带米标时为 null；转移追溯字段选填。"""
+    """交付项（6.3）。十进制流水、米标按字符串；物料为空、规则不带米标时为 null。MES 逐枚按 rev 新增或覆盖。"""
     return {
-        "pushType": r["push_type"],
         "sn": r["sn"],
         "rev": int(r["rev"]),
         "serial": rules.seq_text(r["rule_version_id"], r["seq_dec"]),
@@ -132,32 +134,12 @@ def _delivery_payload(r: dict) -> dict:
         "materialCode": str_or_none(r["material_code"]),
         "length": r["length_text"],
         "customerCode": r["customer_code"],
-        "transferKind": r["transfer_kind"],
-        "transferDocNo": r["transfer_doc_no"],
-        "fromOrgCode": r["transfer_from_org"],
     }
 
 
 def _transfer_out_payload(e: dict) -> dict:
-    """转出项（6.4）：转出前的挂靠 from、转入组织 toOrgCode、转移类型与单号。"""
-    return {
-        "pushType": util.PUSH_TRANSFER_OUT,
-        "sn": e["sn"],
-        "rev": int(e["rev"]),
-        "serial": rules.seq_text(e["rule_version_id"], e["seq_dec"]),
-        "serialDec": str(e["seq_dec"]),
-        "serialPi": e["seq_pi_no"],
-        "from": {
-            "pi": e["pi_no"],
-            "billNo": e["bill_no"],
-            "billSeq": int(e["bill_seq"]),
-            "materialCode": str_or_none(e["material_code"]),
-            "customerCode": e["customer_code"],
-        },
-        "toOrgCode": e["to_factory"],
-        "transferKind": e["transfer_kind"],
-        "transferDocNo": e["transfer_doc_no"],
-    }
+    """转出项（6.4）：只有 SN、rev 与转入组织；MES 据此标记已转走（本地没有时按 SN、rev 建一条已转走记录）。"""
+    return {"sn": e["sn"], "rev": int(e["rev"]), "toOrgCode": e["to_factory"]}
 
 
 def _insert_batch(
@@ -220,7 +202,7 @@ def _insert_batch(
 
 _CLAIM_COLS = (
     "id, sn, rev, push_type, pi_no, bill_no, bill_seq, material_code, customer_code, seq_pi_no, seq_dec, "
-    "length_text, rule_version_id, transfer_kind, transfer_doc_no, transfer_from_org"
+    "length_text, rule_version_id"
 )
 
 

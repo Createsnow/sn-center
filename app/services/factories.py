@@ -257,8 +257,8 @@ def test_connection(cu: CurrentUser, code: str | None, body: dict) -> dict:
     )
     batch_no = "PING-" + util.next_id("")
     out = mes_client.send(t, batch_no, mes_client.ping_body(f["factory_code"], batch_no), 1)
-    ok = out.kind == mes_client.RECEIPT and isinstance(out.receipt, dict) and out.receipt.get("outcome") == "PROCESSED"
-    message = "" if ok else (out.message or (out.receipt or {}).get("rejectMessage") or out.code or "未返回 PROCESSED")
+    ok = out.kind == mes_client.RECEIPT and isinstance(out.receipt, dict) and out.receipt.get("code") == "OK"
+    message = "" if ok else (out.message or (out.receipt or {}).get("message") or out.code or "未返回 OK")
     now = util.now()
     with db.tx():
         same = _digest(c) == stored_digest(f)

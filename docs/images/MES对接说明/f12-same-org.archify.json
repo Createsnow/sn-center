@@ -54,7 +54,7 @@
       "lane": "sn",
       "col": 2,
       "type": "backend",
-      "label": "推送 REASSIGN",
+      "label": "推送批次（改挂）",
       "sublabel": "或由 MES 拉取"
     },
     {
@@ -62,8 +62,8 @@
       "lane": "mes",
       "col": 3,
       "type": "database",
-      "label": "版本比对接收",
-      "sublabel": "回执 ACCEPTED"
+      "label": "按 rev 覆盖",
+      "sublabel": "回执 OK"
     },
     {
       "id": "handle",

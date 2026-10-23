@@ -65,7 +65,7 @@
       "y": 315,
       "label": "④ POST /batches/{batchNo}/receipt",
       "variant": "emphasis",
-      "note": "落库后提交回执，格式同 ① 应答"
+      "note": "落库后提交 OK / NG，格式同 ① 应答"
     },
     {
       "id": "q4",

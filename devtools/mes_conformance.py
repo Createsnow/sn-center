@@ -1,14 +1,15 @@
 """MES 接口契约测试：按《MES 对接说明》逐项检查 MES 方「接收推送」接口（①）的实现，输出通过 / 失败报告。
 
 MES 方接口一提供就能测，不需要本系统：脚本自己造批次（PING、交付、转出），按对接说明的方式发送（默认原始 JSON，
-加 --gzip 时压缩；Bearer 或 HMAC 签名、X-Sn-Batch-No 等请求头），逐项核对应答——校验与整批拒收、按批次号去重、
-rev 比对四种结果、转出、并发送达、连接测试。只依赖 Python 3.11+ 和 httpx，可以直接交给 MES 方自测。
+加 --gzip 时压缩；Bearer 或 HMAC 签名、X-Sn-Batch-No 等请求头），逐项核对应答——整批校验与退回（NG）、按批次号去重、
+逐枚按 rev 覆盖或跳过、转出、并发送达、连接测试。只依赖 Python 3.11+ 和 httpx，可以直接交给 MES 方自测。
+回执只有整批结果（code = OK / NG），逐枚的处理结果须在 MES 侧按报告末尾的清单人工核对。
 
     uv run python -m devtools.mes_conformance --url https://mes-test.example.com/sn/receive --org 110 \\
         --auth TOKEN --secret <令牌> --report mes-110-report.md
     # 加 --perf 测 5000 枚一批的处理时间（建议 10 秒内，超过 60 秒本系统会超时）
 
-**只能对 MES 测试环境运行**：会写入一批测试 SN（前缀 CT + 本次运行号），其中一枚会因「冲突」被挂起。
+**只能对 MES 测试环境运行**：会写入一批测试 SN（前缀 CT + 本次运行号），其中几枚会被标为「已转走」。
 每次运行用新的运行号，SN、PI、单据、批次号都不会与真实数据或上次运行重复。
 """
 
@@ -33,7 +34,6 @@ from typing import Any
 import httpx
 
 SCHEMA = "1.0"
-RESULTS = ("ACCEPTED", "DUPLICATE", "CONFLICT", "STALE")
 PASS, FAIL, SKIP, WARN = "PASS", "FAIL", "SKIP", "WARN"
 
 
@@ -111,9 +111,9 @@ class Runner:
     def sn(self, i: int) -> str:
         return f"{self.prefix}{i:06d}"
 
-    def delivery(self, i: int, rev: int, push_type: str = "NEW", pi: str | None = None, **extra: Any) -> dict:
+    def delivery(self, i: int, rev: int, pi: str | None = None, **extra: Any) -> dict:
+        """交付项；单据行号随 rev 变（rev < 3 为 1，否则为 2），便于在 MES 侧核对是否覆盖。"""
         return {
-            "pushType": push_type,
             "sn": self.sn(i),
             "rev": rev,
             "serial": f"{i:06d}",
@@ -123,33 +123,13 @@ class Runner:
             "billNo": self.bill,
             "billSeq": 1 if rev < 3 else 2,
             "materialCode": "CT-M1",
-            "length": "100",
+            "length": "0100",
             "customerCode": "CT-C1",
-            "transferKind": None,
-            "transferDocNo": None,
-            "fromOrgCode": None,
             **extra,
         }
 
     def transfer_out(self, i: int, rev: int, to_org: str = "CT-TO") -> dict:
-        return {
-            "pushType": "TRANSFER_OUT",
-            "sn": self.sn(i),
-            "rev": rev,
-            "serial": f"{i:06d}",
-            "serialDec": str(i),
-            "serialPi": self.pi,
-            "from": {
-                "pi": self.pi,
-                "billNo": self.bill,
-                "billSeq": 1,
-                "materialCode": "CT-M1",
-                "customerCode": "CT-C1",
-            },
-            "toOrgCode": to_org,
-            "transferKind": "ORG_TRANSFER",
-            "transferDocNo": f"CT-TO-{self.run}",
-        }
+        return {"sn": self.sn(i), "rev": rev, "toOrgCode": to_org}
 
     def batch(self, items: list[dict], kind: str = "DELIVERY", no: str | None = None, **head: Any) -> dict:
         pi = head.pop("pi", self.pi)
@@ -218,54 +198,29 @@ class Runner:
         if not cond:
             raise Failed(why)
 
-    def processed(self, r: Reply, b: dict, expect: dict[str, str] | None = None) -> dict:
-        """HTTP 200 + PROCESSED，回执与批次逐项一致（与本系统核对回执的规则相同）。expect：sn -> 期望结果。"""
-        self.need(r.status == 200, f"期望 HTTP 200 + 回执，实际 {r}")
-        body = r.body
-        self.need(isinstance(body, dict), f"应答不是 JSON 对象：{r}")
-        self.need(body.get("outcome") == "PROCESSED", f"期望 outcome = PROCESSED，实际 {r}")
-        self.need(body.get("schemaVersion") == SCHEMA, f"回执缺 schemaVersion 或不是 {SCHEMA}")
-        self.need(body.get("batchNo") == b["batchNo"], f"回执 batchNo = {body.get('batchNo')}，应为 {b['batchNo']}")
-        res = body.get("results")
-        self.need(isinstance(res, list), "回执缺 results")
-        self.need(len(res) == b["count"], f"results 有 {len(res)} 条，应等于 count = {b['count']}")
-        revs = {x["sn"]: x["rev"] for x in b["items"]}
-        seen: set[str] = set()
-        counts = dict.fromkeys(RESULTS, 0)
-        for x in res:
-            sn = x.get("sn")
-            self.need(sn in revs, f"回执含不属于本批的 SN {sn}")
-            self.need(sn not in seen, f"回执中 SN {sn} 出现不止一次")
-            seen.add(sn)
-            self.need(x.get("rev") == revs[sn], f"{sn} 回执 rev = {x.get('rev')}，应原样带回 {revs[sn]}")
-            self.need(x.get("result") in RESULTS, f"{sn} 的 result = {x.get('result')}，应为 {'/'.join(RESULTS)}")
-            counts[x["result"]] += 1
-            if x["result"] in ("CONFLICT", "STALE"):
-                self.need(
-                    isinstance(x.get("existingRev"), int) and bool(x.get("existingBatchNo")),
-                    f"{sn} 为 {x['result']}，须带回 existingRev、existingBatchNo",
-                )
-            if expect and sn in expect:
-                self.need(x["result"] == expect[sn], f"{sn} 期望 {expect[sn]}，实际 {x['result']}（{x}）")
-        s = body.get("summary") or {}
-        want = {"total": b["count"], **{k.lower(): v for k, v in counts.items()}}
-        self.need(all(s.get(k) == v for k, v in want.items()), f"summary = {s}，与明细不符（应为 {want}）")
-        return body
-
-    def rejected(self, r: Reply, b: dict, why: str) -> dict:
+    def receipt(self, r: Reply, b: dict, code: str, why: str = "") -> dict:
+        """HTTP 200 + 回执 {schemaVersion, batchNo, code, message}，code 为期望值。"""
+        pre = f"{why}：" if why else ""
+        hint = code == "NG" and r.status is not None and 400 <= r.status < 500
         self.need(
             r.status == 200,
-            f"{why}：期望 HTTP 200 + 整批拒收回执（outcome = REJECTED），实际 {r}"
-            + ("（4xx 只用于认证、地址、报文过大、无法解析）" if r.status and 400 <= r.status < 500 else ""),
+            f"{pre}期望 HTTP 200 + 回执（code = {code}），实际 {r}"
+            + ("（4xx 只用于认证、地址、报文过大、无法解析）" if hint else ""),
         )
-        body = r.body if isinstance(r.body, dict) else {}
-        self.need(body.get("outcome") == "REJECTED", f"{why}：期望 outcome = REJECTED，实际 {r}")
-        self.need(bool(body.get("rejectCode")), "拒收回执须带 rejectCode")
-        self.need(body.get("batchNo") == b["batchNo"], f"拒收回执 batchNo = {body.get('batchNo')}，应为 {b['batchNo']}")
+        body = r.body
+        self.need(isinstance(body, dict), f"{pre}应答不是 JSON 对象：{r}")
+        self.need(body.get("code") == code, f"{pre}期望 code = {code}，实际 {r}")
+        self.need(body.get("schemaVersion") == SCHEMA, f"回执缺 schemaVersion 或不是 {SCHEMA}")
+        self.need(body.get("batchNo") == b["batchNo"], f"回执 batchNo = {body.get('batchNo')}，应为 {b['batchNo']}")
+        if code == "NG":
+            self.need(isinstance(body.get("message"), str) and body["message"].strip(), "NG 回执须带 message（原因）")
         return body
 
-    def result_of(self, body: dict, i: int) -> dict:
-        return next(x for x in body["results"] if x["sn"] == self.sn(i))
+    def ok(self, r: Reply, b: dict) -> dict:
+        return self.receipt(r, b, "OK")
+
+    def ng(self, r: Reply, b: dict, why: str) -> dict:
+        return self.receipt(r, b, "NG", why)
 
     def case(self, cid: str, title: str, ref: str, fn: Callable[[Check], None]) -> Check:
         c = Check(cid, title, ref)
@@ -284,38 +239,28 @@ class Runner:
     def run_all(self, perf: int = 0) -> list[Check]:
         st: dict[str, Any] = {}
 
-        def ping_ok(c: Check) -> None:
-            no = "PING-" + self.batch_no()
-            b = {
+        def ping(org: str) -> dict:
+            return {
                 "schemaVersion": SCHEMA,
-                "batchNo": no,
+                "batchNo": "PING-" + self.batch_no(),
                 "batchType": "PING",
-                "orgCode": self.org,
+                "orgCode": org,
                 "pi": None,
                 "count": 0,
                 "createdAt": utc_iso(),
                 "itemsDigest": digest([]),
                 "items": [],
             }
+
+        def ping_ok(c: Check) -> None:
+            b = ping(self.org)
             r = self.send(b)
-            body = self.processed(r, b)
-            self.need(body["results"] == [], "PING 的 results 应为空")
+            self.ok(r, b)
             c.detail = f"耗时 {r.elapsed:.2f} 秒"
 
         def ping_org(c: Check) -> None:
-            no = "PING-" + self.batch_no()
-            b = {
-                "schemaVersion": SCHEMA,
-                "batchNo": no,
-                "batchType": "PING",
-                "orgCode": self.org + "X",
-                "pi": None,
-                "count": 0,
-                "createdAt": utc_iso(),
-                "itemsDigest": digest([]),
-                "items": [],
-            }
-            self.rejected(self.send(b), b, "PING 的 orgCode 不是本组织")
+            b = ping(self.org + "X")
+            self.ng(self.send(b), b, "PING 的 orgCode 不是本组织")
 
         def auth_bad(c: Check) -> None:
             b = self.batch([self.delivery(90, 1)])
@@ -333,19 +278,15 @@ class Runner:
         def first(c: Check) -> None:
             b = self.batch([self.delivery(1, 1), self.delivery(2, 1), self.delivery(3, 1)])
             r = self.send(b)
-            self.processed(r, b, {self.sn(1): "ACCEPTED", self.sn(2): "ACCEPTED", self.sn(3): "ACCEPTED"})
-            st["b1"], st["b1_body"] = b, r.body
+            self.ok(r, b)
+            st["b1"] = b
             c.detail = f"{b['batchNo']}，耗时 {r.elapsed:.2f} 秒"
+            c.notes.append(f"请在 MES 侧确认 {self.sn(1)}～{self.sn(3)} 已新增，rev = 1")
 
         def replay(c: Check) -> None:
             self.need("b1" in st, "依赖 C05 未通过")
             b = st["b1"]
-            r = self.send(b, attempt=2)
-            body = self.processed(r, b)
-            self.need(body.get("replayed") is True, "再次送达同一批应返回存下的回执，且 replayed = true")
-            self.need(body["results"] == st["b1_body"]["results"], "再次送达返回的 results 与首次不同")
-            if body.get("receivedAt") != st["b1_body"].get("receivedAt"):
-                c.status, c.detail = WARN, "receivedAt 与首次不同（应为首次处理的时间）"
+            self.ok(self.send(b, attempt=2), b)
 
         def mismatch(c: Check) -> None:
             self.need("b1" in st, "依赖 C05 未通过")
@@ -356,83 +297,58 @@ class Runner:
             code = r.body.get("code") if isinstance(r.body, dict) else None
             self.need(code == "BATCH_CONTENT_MISMATCH", f"code 应为 BATCH_CONTENT_MISMATCH，实际 {code}")
 
-        def reassign(c: Check) -> None:
-            b = self.batch([self.delivery(1, 2, "REASSIGN")])
-            self.processed(self.send(b), b, {self.sn(1): "ACCEPTED"})
-            st["b_rev2"] = b["batchNo"]
+        def overwrite(c: Check) -> None:
+            self.need("b1" in st, "依赖 C05 未通过")
+            b = self.batch([self.delivery(1, 3)])
+            self.ok(self.send(b), b)
+            st["rev3"] = True
+            c.notes.append(f"请在 MES 侧确认 {self.sn(1)} 已覆盖为 rev = 3、单据行号 2")
 
-        def conflict(c: Check) -> None:
-            self.need("b_rev2" in st, "依赖 C08 未通过")
-            b = self.batch([self.delivery(1, 2, "REASSIGN")])
-            body = self.processed(self.send(b), b, {self.sn(1): "CONFLICT"})
-            x = self.result_of(body, 1)
-            self.need(
-                x["existingRev"] == 2 and x["existingBatchNo"] == st["b_rev2"],
-                f"应带回 existingRev = 2、existingBatchNo = {st['b_rev2']}，实际 {x}",
-            )
-            c.notes.append(f"请在 MES 侧确认 {self.sn(1)} 已挂起、禁止打标")
+        def same_rev(c: Check) -> None:
+            self.need("rev3" in st, "依赖 C08 未通过")
+            b = self.batch([self.delivery(1, 3)])
+            self.ok(self.send(b), b)
+            c.notes.append(f"请在 MES 侧确认 {self.sn(1)} 仍为 rev = 3、单据行号 2（同 rev 重复覆盖，内容不变）")
 
-        def stale(c: Check) -> None:
-            self.need("b_rev2" in st, "依赖 C08 未通过")
-            b = self.batch([self.delivery(1, 1, "REASSIGN")])
-            body = self.processed(self.send(b), b, {self.sn(1): "STALE"})
-            x = self.result_of(body, 1)
-            self.need(
-                x["existingRev"] == 2 and x["existingBatchNo"] == st["b_rev2"],
-                f"应带回 existingRev = 2、existingBatchNo = {st['b_rev2']}，实际 {x}",
-            )
-
-        def resolve(c: Check) -> None:
-            b = self.batch([self.delivery(1, 3, "REASSIGN")])
-            self.processed(self.send(b), b, {self.sn(1): "ACCEPTED"})
-            c.notes.append(f"请在 MES 侧确认 {self.sn(1)} 已解除挂起，挂靠为单据序号 2")
-
-        def mixed(c: Check) -> None:
-            self.need("b_rev2" in st, "依赖 C08 未通过")
-            b = self.batch([self.delivery(4, 1), self.delivery(2, 1, "REASSIGN"), self.delivery(3, 2, "REASSIGN")])
-            self.processed(self.send(b), b, {self.sn(4): "ACCEPTED", self.sn(2): "CONFLICT", self.sn(3): "ACCEPTED"})
-            c.notes.append(f"{self.sn(2)} 因此挂起，属预期")
+        def older(c: Check) -> None:
+            self.need("rev3" in st, "依赖 C08 未通过")
+            b = self.batch([self.delivery(1, 2), self.delivery(4, 1)])
+            self.ok(self.send(b), b)
+            c.notes.append(f"请在 MES 侧确认 {self.sn(1)} 未被覆盖（仍为 rev = 3），{self.sn(4)} 已新增")
 
         def transfer_out(c: Check) -> None:
-            b = self.batch([self.transfer_out(5, 2)], "TRANSFER_OUT")
-            # 先按交付入库 rev 1，再转出 rev 2
-            pre = self.batch([self.delivery(5, 1)])
-            self.processed(self.send(pre), pre, {self.sn(5): "ACCEPTED"})
-            self.processed(self.send(b), b, {self.sn(5): "ACCEPTED"})
-            c.notes.append(f"请在 MES 侧确认 {self.sn(5)} 已标「已转出」、toOrgCode = CT-TO，挂靠按 from 写入")
+            self.need("b1" in st, "依赖 C05 未通过")
+            b = self.batch([self.transfer_out(2, 2)], "TRANSFER_OUT")
+            self.ok(self.send(b), b)
+            c.notes.append(f"请在 MES 侧确认 {self.sn(2)} 已标「已转走」、停止打标，rev = 2，toOrgCode = CT-TO")
 
-        def transfer_multi(c: Check) -> None:
-            b = self.batch([self.transfer_out(6, 1)], "TRANSFER_OUT", pi=None)
-            self.processed(self.send(b), b, {self.sn(6): "ACCEPTED"})
+        def transfer_missing(c: Check) -> None:
+            b = self.batch([self.transfer_out(5, 2)], "TRANSFER_OUT", pi=None)
+            self.ok(self.send(b), b)
+            late = self.batch([self.delivery(5, 1)])
+            self.ok(self.send(late), late)
+            c.notes.append(
+                f"请在 MES 侧确认 {self.sn(5)} 为「已转走」、rev = 2（随后迟到的 rev 1 交付已跳过，不可打标）"
+            )
 
         def transfer_back(c: Check) -> None:
-            b = self.batch(
-                [
-                    self.delivery(
-                        5,
-                        3,
-                        "REASSIGN",
-                        transferKind="ORG_TRANSFER",
-                        transferDocNo=f"CT-BACK-{self.run}",
-                        fromOrgCode="CT-TO",
-                    )
-                ]
-            )
-            self.processed(self.send(b), b, {self.sn(5): "ACCEPTED"})
-            c.notes.append(f"请在 MES 侧确认 {self.sn(5)} 已清除「已转出」")
+            self.need("b1" in st, "依赖 C05 未通过")
+            b = self.batch([self.delivery(2, 3)])
+            self.ok(self.send(b), b)
+            c.notes.append(f"请在 MES 侧确认 {self.sn(2)} 已清除「已转走」，rev = 3、单据行号 2")
 
         def unknown_fields(c: Check) -> None:
             b = self.batch([self.delivery(7, 1, futureField="x")], futureHead={"a": 1})
-            self.processed(self.send(b), b, {self.sn(7): "ACCEPTED"})
+            self.ok(self.send(b), b)
 
         def reject_then_fix(c: Check, why: str, bad: dict, good: dict) -> None:
-            self.rejected(self.send(bad), bad, why)
+            self.ng(self.send(bad), bad, why)
             r = self.send(good)
             self.need(
-                not (isinstance(r.body, dict) and r.body.get("outcome") == "REJECTED"),
-                "修正后用同一批次号重送仍返回拒收：整批拒收时不能登记批次号",
+                not (isinstance(r.body, dict) and r.body.get("code") == "NG"),
+                "修正后用同一批次号重送仍返回 NG：整批退回时不能登记批次号",
             )
-            self.processed(r, good)
+            self.ok(r, good)
 
         def count_bad(c: Check) -> None:
             items = [self.delivery(10, 1)]
@@ -447,25 +363,24 @@ class Runner:
 
         def dup_sn(c: Check) -> None:
             b = self.batch([self.delivery(12, 1), self.delivery(12, 1)])
-            self.rejected(self.send(b), b, "批内 SN 重复")
+            self.ng(self.send(b), b, "批内 SN 重复")
 
         def pi_bad(c: Check) -> None:
             b = self.batch([self.delivery(13, 1), self.delivery(14, 1, pi=self.pi + "X")])
-            self.rejected(self.send(b), b, "交付项 pi 不等于批次头 pi")
+            self.ng(self.send(b), b, "交付项 pi 不等于批次头 pi")
 
-        def delivery_has_out(c: Check) -> None:
-            b = self.batch([self.delivery(15, 1), self.transfer_out(16, 1)])
-            self.rejected(self.send(b), b, "交付批次含转出项")
-
-        def out_has_delivery(c: Check) -> None:
-            b = self.batch([self.transfer_out(17, 1), self.delivery(18, 1)], "TRANSFER_OUT")
-            self.rejected(self.send(b), b, "转出批次含交付项")
+        def out_missing(c: Check) -> None:
+            item = self.transfer_out(17, 1)
+            del item["toOrgCode"]
+            b = self.batch([item], "TRANSFER_OUT")
+            self.ng(self.send(b), b, "转出项缺必填字段 toOrgCode")
 
         def missing(c: Check) -> None:
             item = self.delivery(19, 1)
             del item["billNo"]
             b = self.batch([item])
-            self.rejected(self.send(b), b, "交付项缺必填字段 billNo")
+            self.ng(self.send(b), b, "交付项缺必填字段 billNo")
+            c.notes.append(f"请在 MES 侧确认 {self.sn(19)} 未写入（整批退回不落任何数据）")
 
         def bad_body(c: Check) -> None:
             r = self.send(raw=b"{not json")
@@ -490,13 +405,9 @@ class Runner:
             if busy:
                 time.sleep(2)
                 out = [r for r in out if r.status != 409] + [self.send(b, attempt=3)]
-            bodies = [self.processed(r, b) for r in out]
-            self.need(bodies[0]["results"] == bodies[1]["results"], "两次送达的回执 results 不同：同一批只能处理一次")
-            self.need(
-                all(x["result"] == "ACCEPTED" for x in bodies[0]["results"]),
-                "首次处理应全部 ACCEPTED（同一批被处理了两次？）",
-            )
-            c.detail = "其中一次返回 409 BATCH_IN_PROGRESS" if busy else "两次都返回同一份回执"
+            for r in out:
+                self.ok(r, b)
+            c.detail = "其中一次返回 409 BATCH_IN_PROGRESS" if busy else "两次都返回 OK"
 
         def performance(c: Check) -> None:
             if not perf:
@@ -504,48 +415,40 @@ class Runner:
                 return
             b = self.batch([self.delivery(100000 + k, 1) for k in range(perf)])
             r = self.send(b)
-            self.processed(r, b)
+            self.ok(r, b)
             c.detail = f"{perf} 枚耗时 {r.elapsed:.1f} 秒"
             if r.elapsed > 10:
                 c.status, c.detail = WARN, c.detail + "（建议 10 秒内）"
 
         cases = [
-            ("C01", "连接测试：PING 返回 PROCESSED、summary 全为 0", "8.1 Body C；9.2-13", ping_ok),
-            ("C02", "连接测试：PING 的 orgCode 不符时整批拒收", "8.1 Body C；4.2 整批校验", ping_org),
+            ("C01", "连接测试：PING 返回 OK", "8.1 Body C", ping_ok),
+            ("C02", "连接测试：PING 的 orgCode 不符时 NG", "8.1 Body C；4.2 整批校验", ping_org),
             ("C03", "认证：凭证错误返回 401 / 403", "7.3 认证与签名", auth_bad),
             ("C04", "认证（HMAC）：时间戳偏差超过 5 分钟拒绝", "7.3 认证与签名", hmac_skew),
-            (
-                "C05",
-                "交付批次首次送达：逐枚 ACCEPTED，回执条数、rev、summary 一致",
-                "4.2 版本比对；8.1 响应参数",
-                first,
-            ),
-            ("C06", "同一批原样再次送达：返回存下的回执，replayed = true", "4.2 幂等去重；9.2-3、10", replay),
+            ("C05", "交付批次首次送达：OK，逐枚新增", "4.2 逐枚处理；8.1 响应参数", first),
+            ("C06", "同一批原样再次送达：OK", "4.2 幂等去重", replay),
             ("C07", "同一批次号内容不同：409 BATCH_CONTENT_MISMATCH", "4.2 幂等去重", mismatch),
-            ("C08", "改挂 REASSIGN：rev 更大时覆盖，ACCEPTED", "4.2 版本比对；9.2-6", reassign),
+            ("C08", "rev 更大：覆盖挂靠，OK", "4.2 逐枚处理；5.3", overwrite),
+            ("C09", "rev 相同、来自别的批次：覆盖（内容相同），OK", "4.2 逐枚处理", same_rev),
+            ("C10", "rev 更小：跳过该枚，整批仍 OK", "4.2 逐枚处理", older),
+            ("C11", "转出批次 TRANSFER_OUT：标记已转走，OK", "4.2 逐枚处理；8.1 Body B", transfer_out),
             (
-                "C09",
-                "rev 相同、来自别的批次：CONFLICT，带回 existingRev / existingBatchNo",
-                "4.2 版本比对；9.2-12",
-                conflict,
+                "C12",
+                "转出时本地没有该 SN（批次头 pi = null）：建已转走记录；迟到的旧交付跳过",
+                "4.2 逐枚处理",
+                transfer_missing,
             ),
-            ("C10", "rev 更小：STALE，带回 existingRev / existingBatchNo", "4.2 版本比对；9.2-12", stale),
-            ("C11", "以本系统为准重推（rev 更大）：ACCEPTED，解除冲突挂起", "6 异常处理机制；9.2-16", resolve),
-            ("C12", "同一批里收下、冲突混合：逐枚各自回执", "4.2 版本比对", mixed),
-            ("C13", "转出批次 TRANSFER_OUT：rev 更大时 ACCEPTED", "4.2 版本比对；8.1 Body B；9.2-6", transfer_out),
-            ("C14", "转出批次头 pi = null（涉及多张 PI）照常处理", "8.1 Body B", transfer_multi),
-            ("C15", "转回来源组织：改挂 rev 更大，ACCEPTED（清除已转出）", "4.2 版本比对；9.2-6", transfer_back),
-            ("C16", "不认识的字段忽略", "7.2 字段与数据格式", unknown_fields),
-            ("C17", "count 与 items 不符：整批拒收；修正后同一批次号重送能处理", "4.2 整批校验；9.2-5", count_bad),
-            ("C18", "orgCode 不是本组织：整批拒收；修正后同一批次号重送能处理", "4.2 整批校验", org_bad),
-            ("C19", "批内 SN 重复：整批拒收", "4.2 整批校验", dup_sn),
-            ("C20", "交付项 pi 与批次头不同：整批拒收", "4.2 整批校验", pi_bad),
-            ("C21", "交付批次含转出项：整批拒收", "4.2 整批校验", delivery_has_out),
-            ("C22", "转出批次含交付项：整批拒收", "4.2 整批校验", out_has_delivery),
-            ("C23", "缺必填字段：整批拒收（HTTP 200 + REJECTED，不是 4xx）", "4.2 整批校验；8.1 响应参数", missing),
-            ("C24", "请求体无法解析：400", "8.1", bad_body),
-            ("C25", "同一批同时送达两次：只处理一次，两边回执相同", "3.2 接口交互时序；9.2-3", concurrent),
-            ("C26", "5000 枚一批的处理时间", "4.2 落库与回执", performance),
+            ("C13", "转回原组织：rev 更大，覆盖并清除已转走", "4.2 逐枚处理；5.3", transfer_back),
+            ("C14", "不认识的字段忽略", "7.2 字段与数据格式", unknown_fields),
+            ("C15", "count 与 items 不符：NG；修正后同一批次号重送能处理", "4.2 整批校验；6.2", count_bad),
+            ("C16", "orgCode 不是本组织：NG；修正后同一批次号重送能处理", "4.2 整批校验", org_bad),
+            ("C17", "批内 SN 重复：NG", "4.2 整批校验", dup_sn),
+            ("C18", "交付项 pi 与批次头不同：NG", "4.2 整批校验", pi_bad),
+            ("C19", "转出项缺 toOrgCode：NG", "4.2 整批校验", out_missing),
+            ("C20", "缺必填字段：NG（HTTP 200，不是 4xx），不落任何数据", "4.2 整批校验；8.1 响应参数", missing),
+            ("C21", "请求体无法解析：400", "8.1", bad_body),
+            ("C22", "同一批同时送达两次：只处理一次，两边都 OK", "3.2 接口交互时序", concurrent),
+            ("C23", "5000 枚一批的处理时间", "4.2 落库与回执", performance),
         ]
         for cid, title, ref, fn in cases:
             self.case(cid, title, ref, fn)
@@ -564,7 +467,7 @@ class Runner:
             f"- 运行号：{self.run}（测试 SN 前缀 `{self.prefix}`，PI `{self.pi}`，单据 `{self.bill}`）",
             f"- 结果：通过 {n[PASS]}，失败 {n[FAIL]}，提醒 {n[WARN]}，跳过 {n[SKIP]}",
             "",
-            "依据《SN 防重管控 · MES 对接说明（精简版）》：「依据」列为该文档的章节号，9.2-x 为 PRD 9.2 场景。",
+            "依据《SN 防重管控 · MES 对接说明》：「依据」列为该文档的章节号。",
             "",
             "| # | 检查项 | 依据 | 结果 | 说明 |",
             "| --- | --- | --- | --- | --- |",
@@ -578,7 +481,7 @@ class Runner:
                 "",
                 "## 需在 MES 侧人工核对",
                 "",
-                "接口应答看不到 MES 的本侧数据，以下几项请在 MES 库或页面上核对：",
+                "回执只有整批结果，看不到 MES 的本侧数据，以下几项请在 MES 库或页面上核对：",
                 "",
             ]
             lines += notes

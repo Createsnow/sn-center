@@ -62,16 +62,16 @@
       "from": "sn",
       "to": "mes",
       "y": 245,
-      "label": "① 推送批次 · REASSIGN",
+      "label": "① 推送批次（改挂）",
       "variant": "emphasis",
-      "note": "fromOrgCode = orgCode"
+      "note": "rev 更大，覆盖挂靠"
     },
     {
       "id": "a4",
       "from": "mes",
       "to": "sn",
       "y": 305,
-      "label": "回执 ACCEPTED",
+      "label": "回执 OK",
       "variant": "return",
       "note": "过站方式、LINK 由 MES 自行判断"
     },
@@ -80,7 +80,7 @@
       "from": "op",
       "to": "sn",
       "y": 370,
-      "label": "发起转组织",
+      "label": "发起转单 / 转组织",
       "variant": "default",
       "note": "可转校验，改挂，rev + 1"
     },
@@ -89,16 +89,16 @@
       "from": "sn",
       "to": "mes",
       "y": 430,
-      "label": "① 推送批次 · NEW / REASSIGN",
+      "label": "① 推送批次",
       "variant": "emphasis",
-      "note": "fromOrgCode ≠ orgCode，转入建档"
+      "note": "本地没有，新增"
     },
     {
       "id": "b3",
       "from": "mes",
       "to": "sn",
       "y": 485,
-      "label": "回执",
+      "label": "回执 OK",
       "variant": "return"
     },
     {
@@ -115,9 +115,9 @@
       "from": "old",
       "to": "sn",
       "y": 565,
-      "label": "回执",
+      "label": "回执 OK",
       "variant": "return",
-      "note": "原组织停用，不清理数据链"
+      "note": "标记已转走，停止打标"
     }
   ]
 }

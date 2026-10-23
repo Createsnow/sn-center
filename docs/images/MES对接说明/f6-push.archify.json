@@ -54,7 +54,7 @@
       "from": "mes",
       "to": "sn",
       "y": 245,
-      "label": "200 + 回执",
+      "label": "200 + 回执 OK / NG",
       "variant": "return",
       "note": "落库后在同一应答返回"
     },
@@ -72,7 +72,7 @@
       "from": "mes",
       "to": "sn",
       "y": 370,
-      "label": "200 + 回执",
+      "label": "200 + 回执 OK / NG",
       "variant": "return"
     },
     {
@@ -89,7 +89,7 @@
       "from": "mes",
       "to": "sn",
       "y": 485,
-      "label": "200 + 上次回执（replayed）",
+      "label": "200 + 回执 OK",
       "variant": "return"
     }
   ]

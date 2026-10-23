@@ -41,10 +41,35 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
         )
         == 12
     )
+    # 回执 OK 即整批已处理：逐枚记为接收
+    assert {b["accepted_qty"] for b in batches} == {5, 2}
+    assert (
+        sql.count(
+            "SELECT COUNT(*) FROM sn_delivery_item d JOIN sn_delivery_batch b ON b.id = d.batch_id "
+            "WHERE b.pi_no = %s AND d.receipt_result = 'ACCEPTED'",
+            pi,
+        )
+        == 12
+    )
     # 报文：逐枚带单据编号、序号、当前 PI、流水归属 PI；十进制流水、米标按字符串
-    item = MES.received[-1]["batch"]["items"][0]
+    body = MES.received[-1]["batch"]
+    assert body["itemsDigest"].startswith("sha256:")
+    item = body["items"][0]
+    assert set(item) == {
+        "sn",
+        "rev",
+        "serial",
+        "serialDec",
+        "serialPi",
+        "pi",
+        "billNo",
+        "billSeq",
+        "materialCode",
+        "length",
+        "customerCode",
+    }
     assert item["billNo"] == bill and item["billSeq"] == 1 and item["pi"] == pi and item["serialPi"] == pi
-    assert isinstance(item["serialDec"], str) and item["length"] == "0100" and item["pushType"] == "NEW"
+    assert isinstance(item["serialDec"], str) and item["length"] == "0100"
     h = MES.received[-1]["headers"]
     # 默认发原始 JSON，不带 Content-Encoding
     assert h["x-sn-batch-no"] == batches[-1]["batch_no"] and "content-encoding" not in h
@@ -116,34 +141,22 @@ def test_reject_marks_failed_and_resume_after_fix(w, sql):
     org, pi, bill = setup_pi(w, qty=4, batch_size=5)
     MES.behavior[org] = lambda batch, h: (
         200,
-        {
-            "schemaVersion": "1.0",
-            "batchNo": batch["batchNo"],
-            "outcome": "REJECTED",
-            "rejectCode": "FIELD_TOO_LONG",
-            "rejectMessage": "materialCode 超长",
-        },
+        {"schemaVersion": "1.0", "batchNo": batch["batchNo"], "code": "NG", "message": "materialCode 超长"},
     )
     w.allocate(pi)
     w.push()
     b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
     assert (b["result"], b["voidable"], b["push_count"]) == ("FAILED", 1, 1), "整批拒收不自动重试"
-    assert "FIELD_TOO_LONG" in b["fail_reason"]
+    assert b["fail_code"] == "REJECTED" and b["fail_reason"] == "materialCode 超长"
     MES.behavior.pop(org)
     ok(w.api.post("/api/delivery/resume", m(factory_code=org, key=pi), w.admin))
     w.push()
     assert sql.scalar("SELECT result FROM sn_delivery_batch WHERE id = %s", b["id"]) == "SUCCESS"
 
 
-def test_receipt_missing_one_fails_batch(w, sql):
+def test_receipt_batch_no_mismatch_fails_batch(w, sql):
     org, pi, bill = setup_pi(w, qty=3, batch_size=5)
-
-    def drop_one(batch, h):
-        r = MES.process(org, batch)
-        r["results"] = r["results"][:-1]
-        return 200, r
-
-    MES.behavior[org] = drop_one
+    MES.set_fault(org, {"mode": "bad_receipt"})
     w.allocate(pi)
     w.push()
     b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
@@ -152,34 +165,27 @@ def test_receipt_missing_one_fails_batch(w, sql):
     assert r.code == "BATCH_NOT_VOIDABLE", "回执不符说明 MES 已处理过，不能作废"
 
 
-def test_conflict_receipt_alerts_and_resend(w, sql):
+def test_unknown_receipt_code_is_invalid_response(w, sql):
+    """HTTP 200 但 code 不是 OK / NG：不当回执，记为应答无效、不重试。"""
+    org, pi, bill = setup_pi(w, qty=2, batch_size=5)
+    MES.behavior[org] = lambda batch, h: (200, {"schemaVersion": "1.0", "batchNo": batch["batchNo"], "code": "DONE"})
+    w.allocate(pi)
+    w.push()
+    b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
+    assert (b["result"], b["fail_code"], b["push_count"]) == ("FAILED", "RESPONSE_INVALID", 1)
+
+
+def test_same_rev_from_other_batch_overwrites_without_alert(w, sql):
+    """MES 已有同 rev、来自别的批次的号（如作废后重新组批）：同 rev 挂靠相同，逐枚覆盖，不再告警。"""
     org, pi, bill = setup_pi(w, qty=2, batch_size=5)
     w.allocate(pi)
     sn = sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec LIMIT 1", pi)
-    # MES 里已有同 rev、来自别的批次的这枚号
     MES.store.setdefault(org, {})[sn] = {"rev": 1, "lastBatchNo": "PS-OTHER", "transferredOut": False}
     w.push()
     b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
-    assert (b["result"], b["conflict_qty"], b["accepted_qty"]) == ("SUCCESS_CONFLICT", 1, 1)
-    a = sql.one("SELECT * FROM sn_delivery_alert WHERE sn = %s", sn)
-    assert (a["alert_type"], a["existing_rev"], a["existing_batch_no"]) == ("CONFLICT", 1, "PS-OTHER")
-    other = sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s AND sn <> %s", pi, sn)
-    got = sql.all("SELECT sn, receipt_result, existing_rev FROM sn_delivery_item WHERE batch_id = %s", b["id"])
-    assert {r["sn"]: (r["receipt_result"], r["existing_rev"]) for r in got} == {
-        sn: ("CONFLICT", 1),
-        other: ("ACCEPTED", None),
-    }
-    dash = ok(w.api.get("/api/dashboard", w.admin))
-    assert dash["delivery_alerts"]["CONFLICT"] == 1
-    ok(w.api.post(f"/api/delivery/alerts/{a['id']}/handle", m(action="RESEND", note="以本系统为准"), w.admin))
-    assert sql.one("SELECT rev, status, push_type FROM sn_item WHERE sn = %s", sn) == {
-        "rev": 2,
-        "status": "TO_PUSH",
-        "push_type": "REASSIGN",
-    }
-    w.push()
-    assert MES.store[org][sn]["rev"] == 2 and not MES.store[org][sn]["suspended"]
-    assert sql.scalar("SELECT status FROM sn_item WHERE sn = %s", sn) == "PUSHED"
+    assert (b["result"], b["accepted_qty"], b["conflict_qty"]) == ("SUCCESS", 2, 0)
+    assert MES.store[org][sn]["lastBatchNo"] == b["batch_no"]
+    assert sql.count("SELECT COUNT(*) FROM sn_delivery_alert WHERE sn = %s", sn) == 0
 
 
 def test_pull_returns_same_unconfirmed_batch_until_receipt(w, sql):
@@ -224,7 +230,7 @@ def test_pull_receipt_mismatch_rejected_then_fixed(w, sql):
     r = ok(w.mes_next(token, pi=pi))
     batch = r["batch"]
     good = MES.process(org, batch)
-    bad = {**good, "results": good["results"][:-1], "summary": {**good["summary"], "total": 2}}
+    bad = {**good, "code": "PARTIAL"}
     x = w.mes_receipt(token, batch["batchNo"], bad)
     assert x.status == 422 and x.code == "RECEIPT_MISMATCH" and x["details"]
     assert sql.scalar("SELECT result FROM sn_delivery_batch WHERE batch_no = %s", batch["batchNo"]) == "FAILED"
@@ -317,22 +323,21 @@ def test_pull_scope_checks(w, sql):
     assert w.mes_next(t2, pi=pi).code == "ORG_NOT_ALLOWED", "不能拉别的组织的 PI"
 
 
-def test_stale_receipt_alerts_version_expired(w, sql):
-    """9.2-12：MES 已有更大的 rev（本系统数据曾回退）→ 回执 STALE，批次成功并告警「版本过期」。"""
+def test_older_rev_skipped_by_mes_without_alert(w, sql):
+    """MES 已有更大的 rev：该枚跳过、不覆盖，整批仍 OK；本系统不再逐枚告警。"""
     org, pi, bill = setup_pi(w, qty=2, batch_size=5)
     w.allocate(pi)
     sn = sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec LIMIT 1", pi)
     MES.store.setdefault(org, {})[sn] = {"rev": 5, "lastBatchNo": "PS-OLD", "transferredOut": False}
     w.push()
     b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
-    assert (b["result"], b["stale_qty"], b["accepted_qty"]) == ("SUCCESS", 1, 1)
-    a = sql.one("SELECT * FROM sn_delivery_alert WHERE sn = %s", sn)
-    assert (a["alert_type"], a["existing_rev"], a["existing_batch_no"]) == ("STALE", 5, "PS-OLD")
-    assert MES.store[org][sn]["rev"] == 5, "MES 不用更小的 rev 覆盖"
+    assert (b["result"], b["accepted_qty"], b["stale_qty"]) == ("SUCCESS", 2, 0)
+    assert MES.store[org][sn]["rev"] == 5 and MES.store[org][sn]["lastBatchNo"] == "PS-OLD", "不用更小的 rev 覆盖"
+    assert sql.count("SELECT COUNT(*) FROM sn_delivery_alert WHERE sn = %s", sn) == 0
 
 
 def test_rejected_batch_voided_rebatches_and_refuses_voided(w, sql):
-    """9.2-5、9、15：整批拒收 → 取批跳过、可按批次号取回 → 作废后号重新组批送达；作废的批次取回、回执都被拒绝。"""
+    """9.2-5、9、15：整批退回（NG）→ 取批跳过、可按批次号取回 → 作废后号重新组批送达；作废的批次取回、回执都被拒绝。"""
     org, pi, bill = setup_pi(w, qty=3, batch_size=5)
     MES.set_fault(org, {"mode": "reject"})
     w.allocate(pi)
@@ -346,14 +351,7 @@ def test_rejected_batch_voided_rebatches_and_refuses_voided(w, sql):
     assert back["batch"]["batchNo"] == b["batch_no"] and back["batchResult"] == "FAILED"
     ok(w.api.post(f"/api/delivery/batches/{b['batch_no']}/void", m(reason="整批拒收", basis="MES 确认未处理"), w.admin))
     assert w.mes_next(token, batchNo=b["batch_no"]).code == "BATCH_VOIDED"
-    items = back["batch"]["items"]
-    late = {
-        "schemaVersion": "1.0",
-        "batchNo": b["batch_no"],
-        "outcome": "PROCESSED",
-        "summary": {"total": len(items), "accepted": len(items), "duplicate": 0, "conflict": 0, "stale": 0},
-        "results": [{"sn": x["sn"], "rev": x["rev"], "result": "ACCEPTED"} for x in items],
-    }
+    late = {"schemaVersion": "1.0", "batchNo": b["batch_no"], "code": "OK", "message": None}
     assert w.mes_receipt(token, b["batch_no"], late).code == "BATCH_VOIDED"
     MES.clear_fault(org)
     ok(w.api.post("/api/delivery/resume", m(factory_code=org, key=pi), w.admin))
@@ -361,3 +359,26 @@ def test_rejected_batch_voided_rebatches_and_refuses_voided(w, sql):
     rows = sql.all("SELECT batch_no, qty, result FROM sn_delivery_batch WHERE pi_no = %s ORDER BY id", pi)
     assert [(r["qty"], r["result"]) for r in rows] == [(3, "VOIDED"), (3, "SUCCESS")]
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED' AND rev = 1", pi) == 3
+
+
+def test_legacy_conflict_alert_resend_bumps_rev(w, sql):
+    """旧协议留下的逐枚冲突告警仍可「以本系统为准重推」：rev 取较大者 + 1，改挂重推。"""
+    org, pi, bill = setup_pi(w, qty=2, batch_size=5)
+    w.allocate(pi)
+    w.push()
+    it = sql.one("SELECT id, sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec LIMIT 1", pi)
+    b = sql.one("SELECT batch_no FROM sn_delivery_batch WHERE pi_no = %s", pi)
+    sql.exec(
+        "INSERT INTO sn_delivery_alert(alert_type, factory_code, batch_no, item_id, sn, rev, existing_rev, "
+        "existing_batch_no, detail, created_at) VALUES ('CONFLICT',%s,%s,%s,%s,1,1,'PS-OTHER','疑似重复交付',NOW())",
+        org,
+        b["batch_no"],
+        it["id"],
+        it["sn"],
+    )
+    a = sql.one("SELECT id FROM sn_delivery_alert WHERE sn = %s", it["sn"])
+    ok(w.api.post(f"/api/delivery/alerts/{a['id']}/handle", m(action="RESEND", note="以本系统为准"), w.admin))
+    assert sql.one("SELECT rev, status FROM sn_item WHERE id = %s", it["id"]) == {"rev": 2, "status": "TO_PUSH"}
+    w.push()
+    assert MES.store[org][it["sn"]]["rev"] == 2
+    assert sql.scalar("SELECT status FROM sn_item WHERE id = %s", it["id"]) == "PUSHED"

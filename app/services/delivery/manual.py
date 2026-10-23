@@ -39,7 +39,7 @@ def manual_confirm(cu: CurrentUser, batch_no: str | None, reason: str | None, ba
         if b["result"] not in (UNCONFIRMED, FAILED):
             raise biz(ErrorCode.BATCH_NOT_PENDING, batch_no=b["batch_no"], result=b["result"])
         now = util.now()
-        confirm(cu, b, M_MANUAL, None, now)
+        confirm(cu, b, M_MANUAL, False, now)
         db.exec(
             "UPDATE sn_delivery_batch SET manual_reason = %s, manual_basis = %s, manual_by = %s, manual_at = %s "
             "WHERE id = %s",

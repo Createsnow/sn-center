@@ -66,15 +66,15 @@
       "lane": "main",
       "col": 4,
       "type": "backend",
-      "label": "版本比对",
-      "sublabel": "逐枚比 rev"
+      "label": "逐枚处理",
+      "sublabel": "按 rev 新增 / 覆盖 / 跳过"
     },
     {
       "id": "save",
       "lane": "main",
       "col": 5,
       "type": "database",
-      "label": "落库与回执"
+      "label": "落库，回 OK"
     },
     {
       "id": "ping",
@@ -82,7 +82,7 @@
       "col": 1,
       "type": "backend",
       "label": "测试批次",
-      "sublabel": "回 PROCESSED，不存储"
+      "sublabel": "回 OK，不存储"
     },
     {
       "id": "reject",
@@ -90,14 +90,14 @@
       "col": 2,
       "type": "security",
       "label": "整批退回",
-      "sublabel": "REJECTED，不记 batchNo"
+      "sublabel": "回 NG，不记 batchNo"
     },
     {
       "id": "replay",
       "lane": "out",
       "col": 3,
       "type": "backend",
-      "label": "返回上次回执",
+      "label": "回 OK",
       "sublabel": "itemsDigest 相同"
     },
     {

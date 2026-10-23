@@ -6,7 +6,8 @@
   X-Request-Id；开启压缩时另带 Content-Encoding: gzip。
 - HMAC 签名串 = timestamp + "\\n" + batchNo + "\\n" + hex(SHA256(解压后的原始请求体字节))，
   放在 X-Sn-Timestamp（ISO 8601 UTC）与 X-Sn-Signature（小写十六进制）。
-- 应答：HTTP 200 + 回执（含整批拒收）；超时、5xx、断连、409 BATCH_IN_PROGRESS、429、503 可重试；
+- 应答：HTTP 200 + 回执 {schemaVersion, batchNo, code = OK / NG, message}（NG 为整批退回）；
+  超时、5xx、断连、409 BATCH_IN_PROGRESS、429、503 可重试；
   409 BATCH_CONTENT_MISMATCH、401 / 403 / 404 / 413 / 400 等不重试。
 """
 
@@ -151,7 +152,7 @@ def send(t: Target, batch_no: str, body_gz: bytes, attempt: int) -> Outcome:
     msg = body.get("message") if isinstance(body, dict) and isinstance(body.get("message"), str) else ""
     st = resp.status_code
     if st == 200:
-        if isinstance(body, dict) and "outcome" in body and (code is None or code == "OK"):
+        if isinstance(body, dict) and code in ("OK", "NG"):
             return Outcome(RECEIPT, receipt=body, http_status=st)
         return Outcome(FAIL, code="RESPONSE_INVALID", message="HTTP 200 但应答不是回执", http_status=st)
     if st == 409 and code == "BATCH_IN_PROGRESS":

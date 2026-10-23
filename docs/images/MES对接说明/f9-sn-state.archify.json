@@ -65,7 +65,7 @@
       "id": "t2",
       "from": "topush",
       "to": "inbatch",
-      "label": "建批 · MES 收 NEW",
+      "label": "建批 · 推送 / 拉取",
       "variant": "emphasis"
     },
     {
@@ -79,7 +79,7 @@
       "id": "t4",
       "from": "inbatch",
       "to": "failed",
-      "label": "REJECTED / 回执不符",
+      "label": "回执 NG / 回执不符",
       "variant": "security"
     },
     {
@@ -92,7 +92,7 @@
       "id": "t7",
       "from": "pushed",
       "to": "topush",
-      "label": "转移 · rev+1 · 下次收 REASSIGN",
+      "label": "转移 · rev+1 · 重新推送",
       "variant": "dashed"
     },
     {

@@ -16,7 +16,7 @@
     GET    /_mock/received?limit=20     最近收到的推送（不含号明细）
     POST   /_mock/fault                 设置故障，见 FAULT_MODES
     DELETE /_mock/fault?org=110         清除故障（不带 org 清除全部）
-    POST   /_mock/seed                  {"org", "sn", "rev", "lastBatchNo"} 预置一枚已有的号（造冲突、过期）
+    POST   /_mock/seed                  {"org", "sn", "rev", "lastBatchNo"} 预置一枚已有的号（造本地更新的版本）
     POST   /_mock/reset                 清空本侧数据、批次表与收到的记录（保留认证配置）
 
 只用于测试环境：数据只在内存里，重启即清空。
@@ -43,7 +43,6 @@ import httpx
 
 SCHEMA = "1.0"
 DELIVERY_FIELDS = (
-    "pushType",
     "sn",
     "rev",
     "serial",
@@ -54,19 +53,7 @@ DELIVERY_FIELDS = (
     "billSeq",
     "customerCode",
 )
-TRANSFER_OUT_FIELDS = (
-    "pushType",
-    "sn",
-    "rev",
-    "serial",
-    "serialDec",
-    "serialPi",
-    "from",
-    "toOrgCode",
-    "transferKind",
-    "transferDocNo",
-)
-FROM_FIELDS = ("pi", "billNo", "billSeq", "customerCode")
+TRANSFER_OUT_FIELDS = ("sn", "rev", "toOrgCode")
 
 #: 故障模式（POST /_mock/fault 的 mode）
 FAULT_MODES = {
@@ -75,8 +62,8 @@ FAULT_MODES = {
     "drop_after": "先处理并落库，再断开连接（MES 已收下但应答丢失，重试时应拿到同一份回执）",
     "slow": "先处理并落库，延迟 delay 秒（默认 70）再应答（超过推送超时，本系统重试或取批时应拿到同一份回执）",
     "in_progress": "返回 409 BATCH_IN_PROGRESS（同一批正在处理）",
-    "reject": "整批拒收：HTTP 200 + outcome = REJECTED（rejectCode 默认 FIELD_TOO_LONG），不登记批次号",
-    "drop_result": "正常处理，但回执少一枚（回执不符，本系统应记为 RECEIPT_MISMATCH）",
+    "reject": "整批退回：HTTP 200 + code = NG（message 默认「模拟整批退回」），不登记批次号",
+    "bad_receipt": "正常处理，但回执的 batchNo 写错（回执不符，本系统应记为 RECEIPT_MISMATCH）",
 }
 
 #: behavior(batch, headers) -> (status, body)；(None, None) = 正常处理；("drop", None) = 断开连接
@@ -91,14 +78,13 @@ def _err(code: str, message: str, batch_no: str | None = None) -> dict:
     return {"schemaVersion": SCHEMA, "code": code, "message": message, "batchNo": batch_no}
 
 
-def _reject(batch_no: str | None, code: str, message: str) -> dict:
-    return {
-        "schemaVersion": SCHEMA,
-        "batchNo": batch_no,
-        "outcome": "REJECTED",
-        "rejectCode": code,
-        "rejectMessage": message,
-    }
+def _receipt(batch_no: str | None, code: str = "OK", message: str | None = None) -> dict:
+    """回执：code = OK 整批已处理 / NG 整批退回（message 为原因）。"""
+    return {"schemaVersion": SCHEMA, "batchNo": batch_no, "code": code, "message": message}
+
+
+def _reject(batch_no: str | None, message: str) -> dict:
+    return _receipt(batch_no, "NG", message)
 
 
 class MesSim:
@@ -114,7 +100,7 @@ class MesSim:
         #: org -> behavior（覆盖应答，模拟故障）
         self.behavior: dict[str, Behavior | None] = {}
         self.faults: dict[str, dict] = {}
-        #: org -> sn -> {"rev", "lastBatchNo", "transferredOut", "toOrgCode", "pi", "billNo", "suspended", ...}
+        #: org -> sn -> {"rev", "lastBatchNo", "transferredOut", "toOrgCode", "pi", "billNo", ...}
         self.store: dict[str, dict[str, dict]] = {}
         #: org -> batchNo -> {"digest", "receipt", "source", "at"}
         self.batches: dict[str, dict[str, dict]] = {}
@@ -152,73 +138,58 @@ class MesSim:
         """一次送达的应答：PING 只校验 orgCode；其余走 process。"""
         if batch.get("batchType") == "PING":
             if batch.get("orgCode") != org:
-                return 200, _reject(batch.get("batchNo"), "ORG_MISMATCH", f"orgCode 不是本组织 {org}")
-            return 200, {
-                "schemaVersion": SCHEMA,
-                "batchNo": batch.get("batchNo"),
-                "outcome": "PROCESSED",
-                "summary": {"total": 0, "accepted": 0, "duplicate": 0, "conflict": 0, "stale": 0},
-                "results": [],
-            }
+                return 200, _reject(batch.get("batchNo"), f"orgCode 不是本组织 {org}")
+            return 200, _receipt(batch.get("batchNo"))
         r = self.process(org, batch, source)
         if "__status" in r:
             status = r.pop("__status")
             return status, {"schemaVersion": SCHEMA, **r}
         return 200, r
 
-    def _problem(self, org: str, batch: dict) -> tuple[str, str] | None:
-        """第 1 步：校验，不通过整批拒收。"""
+    def _problem(self, org: str, batch: dict) -> str | None:
+        """第 2 步：整批校验，不通过整批退回（NG）。"""
         items = batch.get("items")
         kind = batch.get("batchType")
         if not isinstance(items, list) or not batch.get("batchNo"):
-            return "MISSING_FIELD", "batchNo、items 必填"
+            return "batchNo、items 必填"
         if batch.get("orgCode") != org:
-            return "ORG_MISMATCH", f"orgCode {batch.get('orgCode')} 不是本组织 {org}"
+            return f"orgCode {batch.get('orgCode')} 不是本组织 {org}"
         if kind not in ("DELIVERY", "TRANSFER_OUT"):
-            return "TYPE_MISMATCH", f"不认识的 batchType {kind}"
+            return f"不认识的 batchType {kind}"
         if batch.get("count") != len(items):
-            return "COUNT_MISMATCH", f"count = {batch.get('count')}，items 有 {len(items)} 条"
+            return f"count = {batch.get('count')}，items 有 {len(items)} 条"
         if len(items) > self.max_batch:
-            return "COUNT_EXCEEDED", f"超过单批上限 {self.max_batch}"
+            return f"超过单批上限 {self.max_batch}"
         if not isinstance(batch.get("itemsDigest"), str) or not batch["itemsDigest"]:
-            return "MISSING_FIELD", "itemsDigest 必填"
+            return "itemsDigest 必填"
         if kind == "DELIVERY" and not batch.get("pi"):
-            return "MISSING_FIELD", "交付批次 pi 必填"
+            return "交付批次 pi 必填"
+        need = DELIVERY_FIELDS if kind == "DELIVERY" else TRANSFER_OUT_FIELDS
         for x in items:
-            need = DELIVERY_FIELDS if x.get("pushType") != "TRANSFER_OUT" else TRANSFER_OUT_FIELDS
+            if not isinstance(x, dict):
+                return "items 每条须为对象"
             lack = [k for k in need if x.get(k) in (None, "")]
-            if not lack and x.get("pushType") == "TRANSFER_OUT":
-                lack = [
-                    f"from.{k}"
-                    for k in FROM_FIELDS
-                    if not isinstance(x["from"], dict) or x["from"].get(k) in (None, "")
-                ]
             if lack:
-                return "MISSING_FIELD", f"{x.get('sn')} 缺 {', '.join(lack)}"
+                return f"{x.get('sn')} 缺 {', '.join(lack)}"
             if not isinstance(x["rev"], int) or isinstance(x["rev"], bool) or x["rev"] < 1:
-                return "INVALID_FIELD", f"{x['sn']} 的 rev 须为正整数"
+                return f"{x['sn']} 的 rev 须为正整数"
         if len({x["sn"] for x in items}) != len(items):
-            return "DUPLICATE_SN", "批内 SN 重复"
+            return "批内 SN 重复"
         if kind == "DELIVERY":
-            bad = [x["sn"] for x in items if x["pushType"] == "TRANSFER_OUT"]
-            if bad:
-                return "TYPE_MISMATCH", f"交付批次含转出项 {bad[0]}"
             bad = [x["sn"] for x in items if x["pi"] != batch["pi"]]
             if bad:
-                return "PI_MISMATCH", f"{bad[0]} 的 pi 不等于批次头 pi"
-        elif any(x["pushType"] != "TRANSFER_OUT" for x in items):
-            return "TYPE_MISMATCH", "转出批次只能含转出项"
+                return f"{bad[0]} 的 pi 不等于批次头 pi"
         return None
 
     def process(self, org: str, batch: dict, source: str = "PULL") -> dict:
-        """推送和取批共用；整批在一把锁里处理（对接说明 4.2 节）。"""
+        """推送和取批共用；整批在一把锁里处理（对接说明 4.2 节），逐枚按 rev 新增或覆盖。"""
         with self.lock:
             no = batch.get("batchNo")
             problem = self._problem(org, batch)
             if problem:
-                # 整批拒收不登记批次号：修好后再送达同一批会重新处理
-                return _reject(no, *problem)
-            # 第 2 步：查重
+                # 整批退回不登记批次号：修好后再送达同一批会重新处理
+                return _reject(no, problem)
+            # 第 3 步：幂等
             seen = self.batches.setdefault(org, {})
             if no in seen:
                 if seen[no]["digest"] != batch["itemsDigest"]:
@@ -228,58 +199,35 @@ class MesSim:
                         "batchNo": no,
                         "message": "同一批次号内容不同",
                     }
-                return {**seen[no]["receipt"], "replayed": True}
-            # 第 3 步：逐枚比对 rev
+                return seen[no]["receipt"]
+            # 第 4 步：逐枚处理；rev 小于本地的跳过
             store = self.store.setdefault(org, {})
-            results = []
-            summary = {"total": len(batch["items"]), "accepted": 0, "duplicate": 0, "conflict": 0, "stale": 0}
+            out = batch["batchType"] == "TRANSFER_OUT"
             for x in batch["items"]:
                 cur = store.get(x["sn"])
-                out = {"sn": x["sn"], "rev": x["rev"]}
-                if cur is None or x["rev"] > cur["rev"]:
-                    rec = {"rev": x["rev"], "lastBatchNo": no, "suspended": False, "serialPi": x["serialPi"]}
-                    if x["pushType"] == "TRANSFER_OUT":
-                        f = x["from"]
-                        rec.update(
-                            transferredOut=True,
-                            toOrgCode=x["toOrgCode"],
-                            pi=f["pi"],
-                            billNo=f["billNo"],
-                            billSeq=f["billSeq"],
-                            materialCode=f.get("materialCode"),
-                            customerCode=f["customerCode"],
-                        )
-                    else:
-                        rec.update(
-                            transferredOut=False,
-                            toOrgCode=None,
-                            pi=x["pi"],
-                            billNo=x["billNo"],
-                            billSeq=x["billSeq"],
-                            materialCode=x.get("materialCode"),
-                            customerCode=x["customerCode"],
-                            length=x.get("length"),
-                        )
-                    store[x["sn"]] = rec
-                    out["result"] = "ACCEPTED"
-                elif x["rev"] == cur["rev"] and cur["lastBatchNo"] == no:
-                    out["result"] = "DUPLICATE"
-                elif x["rev"] == cur["rev"]:
-                    cur["suspended"] = True
-                    out.update(result="CONFLICT", existingRev=cur["rev"], existingBatchNo=cur["lastBatchNo"])
+                if cur is not None and x["rev"] < cur["rev"]:
+                    continue
+                if out:
+                    # 本地没有时也建一条只有 SN、rev 的已转走记录，挡住迟到的旧交付
+                    rec = dict(cur or {})
+                    rec.update(rev=x["rev"], lastBatchNo=no, transferredOut=True, toOrgCode=x["toOrgCode"])
                 else:
-                    out.update(result="STALE", existingRev=cur["rev"], existingBatchNo=cur["lastBatchNo"])
-                summary[out["result"].lower()] += 1
-                results.append(out)
-            receipt = {
-                "schemaVersion": SCHEMA,
-                "batchNo": no,
-                "outcome": "PROCESSED",
-                "receivedAt": utc_now(),
-                "summary": summary,
-                "results": results,
-            }
-            # 第 4 步：先落库，再回执
+                    rec = {
+                        "rev": x["rev"],
+                        "lastBatchNo": no,
+                        "transferredOut": False,
+                        "toOrgCode": None,
+                        "serialPi": x["serialPi"],
+                        "pi": x["pi"],
+                        "billNo": x["billNo"],
+                        "billSeq": x["billSeq"],
+                        "materialCode": x.get("materialCode"),
+                        "customerCode": x["customerCode"],
+                        "length": x.get("length"),
+                    }
+                store[x["sn"]] = rec
+            receipt = _receipt(no)
+            # 第 5 步：先落库，再回执
             seen[no] = {"digest": batch["itemsDigest"], "receipt": receipt, "source": source, "at": utc_now()}
             return receipt
 
@@ -313,14 +261,14 @@ class MesSim:
             if mode == "in_progress":
                 return 409, {**_err("BATCH_IN_PROGRESS", "同一批正在处理", no), "__retry_after": 1}
             if mode == "reject":
-                return 200, _reject(no, spec.get("code") or "FIELD_TOO_LONG", spec.get("message") or "模拟整批拒收")
+                return 200, _reject(no, spec.get("message") or "模拟整批退回")
             st, body = sim.handle(org, batch)
             if mode == "drop_after":
                 return "drop", None
             if mode == "slow":
                 time.sleep(float(spec.get("delay") or 70))
-            if mode == "drop_result" and isinstance(body.get("results"), list) and body["results"]:
-                body = {**body, "results": body["results"][:-1]}
+            if mode == "bad_receipt" and isinstance(body, dict) and "batchNo" in body:
+                body = {**body, "batchNo": f"{no}-X"}
             return st, body
 
         self.behavior[org] = fault
@@ -333,9 +281,9 @@ class MesSim:
             self.faults.pop(o, None)
 
     def seed(self, org: str, sn: str, rev: int, last_batch_no: str) -> dict:
-        """预置 MES 本侧已有的一枚号，用来造冲突（同 rev、别的批次）或过期（更大的 rev）。"""
+        """预置 MES 本侧已有的一枚号，用来造本地版本更新（更大的 rev，送达的旧版本应被跳过）。"""
         with self.lock:
-            rec = {"rev": rev, "lastBatchNo": last_batch_no, "transferredOut": False, "suspended": False}
+            rec = {"rev": rev, "lastBatchNo": last_batch_no, "transferredOut": False}
             self.store.setdefault(org, {})[sn] = rec
             return {"org": org, "sn": sn, **rec}
 
@@ -503,12 +451,8 @@ def _line(org: str, batch: dict, headers: dict, status: Any, body: Any) -> str:
     )
     if status == "drop":
         return head + " → 断开连接"
-    if isinstance(body, dict) and body.get("outcome") == "PROCESSED":
-        s = body.get("summary") or {}
-        tag = " replayed" if body.get("replayed") else ""
-        return head + f" → {status} PROCESSED{tag} " + " ".join(f"{k}={v}" for k, v in s.items())
-    if isinstance(body, dict) and body.get("outcome") == "REJECTED":
-        return head + f" → {status} REJECTED {body.get('rejectCode')} {body.get('rejectMessage')}"
+    if status == 200 and isinstance(body, dict) and body.get("code") == "NG":
+        return head + f" → {status} NG {body.get('message')}"
     return head + f" → {status} {body.get('code') if isinstance(body, dict) else ''}"
 
 
@@ -568,8 +512,7 @@ class Puller:
                 "batchNo": b["batchNo"],
                 "status": rs,
                 "body": rd,
-                "outcome": receipt.get("outcome"),
-                "summary": receipt.get("summary"),
+                "code": receipt.get("code"),
             }
             done.append(rec)
             if rs == 200:

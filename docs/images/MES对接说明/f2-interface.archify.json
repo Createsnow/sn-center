@@ -57,7 +57,7 @@
       "from": "sn",
       "to": "mes",
       "y": 185,
-      "label": "① 推送批次 · NEW",
+      "label": "① 推送批次",
       "variant": "emphasis",
       "note": "SN：待推送 → 已推送"
     },
@@ -66,7 +66,7 @@
       "from": "mes",
       "to": "sn",
       "y": 245,
-      "label": "200 + 回执",
+      "label": "200 + 回执 OK / NG",
       "variant": "return"
     },
     {
@@ -74,16 +74,16 @@
       "from": "sn",
       "to": "mes",
       "y": 310,
-      "label": "① 推送批次 · REASSIGN",
+      "label": "① 推送批次（改挂）",
       "variant": "emphasis",
-      "note": "rev + 1，带 fromOrgCode"
+      "note": "rev + 1，MES 按 rev 覆盖"
     },
     {
       "id": "b2",
       "from": "mes",
       "to": "sn",
       "y": 370,
-      "label": "200 + 回执",
+      "label": "200 + 回执 OK / NG",
       "variant": "return"
     },
     {
@@ -100,7 +100,7 @@
       "from": "old",
       "to": "sn",
       "y": 445,
-      "label": "200 + 回执",
+      "label": "200 + 回执 OK / NG",
       "variant": "return"
     },
     {
@@ -133,7 +133,7 @@
       "from": "sn",
       "to": "mes",
       "y": 625,
-      "label": "batchResult",
+      "label": "SUCCESS / FAILED",
       "variant": "return"
     },
     {
