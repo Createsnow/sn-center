@@ -1,4 +1,4 @@
-"""模拟 MES：MES 方还没接入时扮演 MES 与本系统联调，也是《MES 对接说明》第 3 章 process(batch) 的参考实现。
+"""模拟 MES：MES 方还没接入时扮演 MES 与本系统联调，也是《MES 对接说明》1.2 节 process(batch) 的参考实现。
 
 推送和取批共用同一套本侧数据（按组织分开的 SN 表、批次表）和同一个 process，与对接说明对真实 MES 的要求一致。
 
@@ -102,7 +102,7 @@ def _reject(batch_no: str | None, code: str, message: str) -> dict:
 
 
 class MesSim:
-    """各组织一套 MES 本侧数据与处理逻辑（对接说明第 3 章）。"""
+    """各组织一套 MES 本侧数据与处理逻辑（对接说明 1.2 节）。"""
 
     def __init__(self, max_batch: int = 5000, max_skew: int = 300) -> None:
         #: 每批最多枚数（第 1 步校验）；HMAC 时间戳允许偏差秒数（0 = 不校验）
@@ -211,7 +211,7 @@ class MesSim:
         return None
 
     def process(self, org: str, batch: dict, source: str = "PULL") -> dict:
-        """推送和取批共用；整批在一把锁里处理（对接说明第 3 章）。"""
+        """推送和取批共用；整批在一把锁里处理（对接说明 1.2 节）。"""
         with self.lock:
             no = batch.get("batchNo")
             problem = self._problem(org, batch)
@@ -516,7 +516,7 @@ def _line(org: str, batch: dict, headers: dict, status: Any, body: Any) -> str:
 
 
 class Puller:
-    """扮演 MES 取批：③ 取批 → process → ④ 提交回执，remaining > 0 时继续取（对接说明第 2 章）。
+    """扮演 MES 取批：③ 取批 → process → ④ 提交回执，remaining > 0 时继续取（对接说明 0.2、2.2 节）。
     每次请求带 Authorization: Bearer <工号>:<密钥>，不换令牌。"""
 
     PREFIX = "/api/mes/v1"

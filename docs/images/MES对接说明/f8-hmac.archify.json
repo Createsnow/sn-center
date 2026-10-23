@@ -1,0 +1,147 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "① HMAC 签名与校验",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "legend": {
+      "mode": "hidden"
+    },
+    "output": "f8-hmac.html"
+  },
+  "lanes": [
+    {
+      "id": "sn",
+      "label": "SN 系统：签名"
+    },
+    {
+      "id": "mes",
+      "label": "MES：校验"
+    },
+    {
+      "id": "out",
+      "label": "拒绝",
+      "variant": "exception"
+    }
+  ],
+  "mainPath": [
+    "body",
+    "msg",
+    "sig",
+    "ts",
+    "cmp",
+    "ok"
+  ],
+  "nodes": [
+    {
+      "id": "body",
+      "lane": "sn",
+      "col": 0,
+      "type": "backend",
+      "label": "原始请求体",
+      "sublabel": "gzip 前的 JSON 字节"
+    },
+    {
+      "id": "msg",
+      "lane": "sn",
+      "col": 1,
+      "type": "backend",
+      "label": "拼签名串",
+      "sublabel": "时间 \\n 批次号 \\n SHA256(请求体)"
+    },
+    {
+      "id": "sig",
+      "lane": "sn",
+      "col": 2,
+      "type": "security",
+      "label": "HMAC-SHA256",
+      "sublabel": "密钥 = 该组织凭据"
+    },
+    {
+      "id": "ts",
+      "lane": "mes",
+      "col": 3,
+      "type": "security",
+      "label": "时间差 ≤ 5 分钟?",
+      "sublabel": "先解压请求体"
+    },
+    {
+      "id": "cmp",
+      "lane": "mes",
+      "col": 4,
+      "type": "security",
+      "label": "重算并比对",
+      "sublabel": "常量时间比较"
+    },
+    {
+      "id": "ok",
+      "lane": "mes",
+      "col": 5,
+      "type": "database",
+      "label": "处理批次"
+    },
+    {
+      "id": "r1",
+      "lane": "out",
+      "col": 3,
+      "type": "security",
+      "label": "401 时间超差"
+    },
+    {
+      "id": "r2",
+      "lane": "out",
+      "col": 4,
+      "type": "security",
+      "label": "401 签名不符"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "body",
+      "to": "msg"
+    },
+    {
+      "id": "e2",
+      "from": "msg",
+      "to": "sig"
+    },
+    {
+      "id": "e3",
+      "from": "sig",
+      "to": "ts",
+      "label": "签名放请求头",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e4",
+      "from": "ts",
+      "to": "cmp",
+      "label": "是"
+    },
+    {
+      "id": "e5",
+      "from": "cmp",
+      "to": "ok",
+      "label": "一致",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e6",
+      "from": "ts",
+      "to": "r1",
+      "label": "否",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "e7",
+      "from": "cmp",
+      "to": "r2",
+      "label": "不一致",
+      "variant": "security",
+      "role": "error"
+    }
+  ]
+}
