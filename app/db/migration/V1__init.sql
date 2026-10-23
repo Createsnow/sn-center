@@ -37,6 +37,7 @@ CREATE TABLE sn_user (
   factory_code    VARCHAR(64)   NULL COMMENT '操作员、MES 接口账户的生产组织；查询员的见 sn_user_factory',
   status          VARCHAR(16)   NOT NULL DEFAULT 'ACTIVE' COMMENT 'ACTIVE / DISABLED',
   password_hash   VARCHAR(128)  NOT NULL COMMENT '密码；MES 接口账户为密钥',
+  secret_sealed   VARCHAR(255)  NOT NULL DEFAULT '' COMMENT 'MES 接口账户密钥（加密保存，系统管理员可查看）',
   must_change_pwd TINYINT(1)    NOT NULL DEFAULT 0 COMMENT '管理员重置后下次登录须改密',
   lang            VARCHAR(8)    NULL,
   last_login_at   DATETIME      NULL,

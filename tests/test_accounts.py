@@ -75,6 +75,28 @@ def test_mes_account_cannot_login_page_and_secret_once(w, api, sql):
     assert ok(api.get(f"/api/users?q={e}", w.admin))["items"][0]["last_login_at"], "账户页显示最近认证时间"
 
 
+def test_mes_secret_viewable_and_resettable(w, api, sql):
+    org = w.org(uid("O")[:10])
+    w.enable_mes(org)
+    e = emp("M")
+    r = ok(api.post("/api/users", m(emp_no=e, name="M", role="mes", factory_code=org), w.admin))
+    u_id, first = r["id"], r["secret"]
+    assert sql.scalar("SELECT secret_sealed FROM sn_user WHERE id = %s", u_id) not in ("", first), "密钥加密保存"
+    v = ok(api.get(f"/api/users/{u_id}/secret", w.admin))
+    assert (v["emp_no"], v["secret"]) == (e, first), "关闭后仍可查看"
+    assert (
+        sql.count("SELECT COUNT(*) FROM sn_audit WHERE action = 'USER_VIEW_SECRET' AND detail LIKE %s", f"%{e}%") >= 1
+    )
+    second = ok(api.post(f"/api/users/{u_id}/reset-secret", {}, w.admin))["secret"]
+    assert second != first and ok(api.get(f"/api/users/{u_id}/secret", w.admin))["secret"] == second
+    ok(w.mes_next(f"{e}:{second}"))
+    assert w.mes_next(f"{e}:{first}").code == "INVALID_CREDENTIALS"
+    sql.exec("UPDATE sn_user SET secret_sealed = '' WHERE id = %s", u_id)
+    assert api.get(f"/api/users/{u_id}/secret", w.admin).code == "USER_SECRET_UNAVAILABLE", "解不开时须重置"
+    admin_id = sql.scalar("SELECT id FROM sn_user WHERE emp_no = 'admin'")
+    assert api.get(f"/api/users/{admin_id}/secret", w.admin).code == "USER_NOT_MES"
+
+
 def test_mes_ip_whitelist(w, api):
     org = w.org(uid("O")[:10])
     w.enable_mes(org)

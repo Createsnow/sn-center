@@ -29,6 +29,7 @@
   "USER_MANAGE_FORBIDDEN": "Chỉ quản trị viên hệ thống mới được quản lý tài khoản",
   "USER_SUPER_ADMIN_FIXED": "Quản trị viên hệ thống phải luôn hoạt động, không được đổi vai trò hay vô hiệu",
   "USER_NOT_MES": "Tài khoản này không phải tài khoản giao diện MES",
+  "USER_SECRET_UNAVAILABLE": "Không xem được khóa của tài khoản này (đã đổi SN_SECRET hoặc tài khoản tạo trước khi có tính năng xem khóa); vui lòng đặt lại khóa",
   "USER_IP_LIST_INVALID": "Danh sách địa chỉ nguồn không hợp lệ: {value}",
   "FACTORY_NOT_FOUND": "Không tìm thấy tổ chức sản xuất: {factory}",
   "FACTORY_DISABLED": "Tổ chức sản xuất {factory} đã bị vô hiệu trong Kingdee",

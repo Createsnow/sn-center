@@ -9,7 +9,7 @@ class UserCreateIn(In):
     factory_code: str | None = None
     #: 查询员绑定的生产组织（可多个，空 = 全部）
     factory_codes: list[str | None] | None = None
-    #: 页面账户的初始密码；MES 接口账户不填（系统生成密钥，只显示一次）
+    #: 页面账户的初始密码；MES 接口账户不填（系统生成密钥，加密保存，可查看、可重置）
     password: str | None = None
     #: MES 接口账户的来源地址白名单（IP / CIDR，逗号分隔；空 = 不限）
     ip_whitelist: str | None = None

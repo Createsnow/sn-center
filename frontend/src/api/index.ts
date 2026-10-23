@@ -33,6 +33,7 @@ export const api = {
   enableUser: (id: number) => post(`/users/${id}/enable`),
   resetPassword: (id: number, password: string) => post(`/users/${id}/reset-password`, { password }),
   resetSecret: (id: number) => post(`/users/${id}/reset-secret`),
+  viewSecret: (id: number) => get(`/users/${id}/secret`),
 
   // ---------------- 生产组织与 MES 对接配置
   factories: () => get("/factories"),

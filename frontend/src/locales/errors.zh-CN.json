@@ -29,6 +29,7 @@
   "USER_MANAGE_FORBIDDEN": "只有系统管理员可以管理账户",
   "USER_SUPER_ADMIN_FIXED": "系统管理员必须保持启用，不能改角色或停用",
   "USER_NOT_MES": "该账户不是 MES 接口账户",
+  "USER_SECRET_UNAVAILABLE": "该账户的密钥无法查看（更换过 SN_SECRET 或早于密钥可查看功能创建），请重置密钥",
   "USER_IP_LIST_INVALID": "来源地址白名单格式不正确：{value}",
   "FACTORY_NOT_FOUND": "生产组织不存在：{factory}",
   "FACTORY_DISABLED": "生产组织 {factory} 在金蝶已禁用",

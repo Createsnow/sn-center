@@ -32,6 +32,7 @@ E = {
 "USER_MANAGE_FORBIDDEN": ("Only the system administrator can manage accounts", "Chỉ quản trị viên hệ thống mới được quản lý tài khoản"),
 "USER_SUPER_ADMIN_FIXED": ("The system administrator must stay enabled; its role cannot change and it cannot be disabled", "Quản trị viên hệ thống phải luôn hoạt động, không được đổi vai trò hay vô hiệu"),
 "USER_NOT_MES": ("This account is not an MES interface account", "Tài khoản này không phải tài khoản giao diện MES"),
+"USER_SECRET_UNAVAILABLE": ("The secret of this account cannot be viewed (SN_SECRET was changed, or the account predates viewable secrets); please reset the secret", "Không xem được khóa của tài khoản này (đã đổi SN_SECRET hoặc tài khoản tạo trước khi có tính năng xem khóa); vui lòng đặt lại khóa"),
 "USER_IP_LIST_INVALID": ("Invalid source address whitelist: {value}", "Danh sách địa chỉ nguồn không hợp lệ: {value}"),
 # ---------- 生产组织 / MES 配置 / 金蝶 ----------
 "FACTORY_NOT_FOUND": ("Production org not found: {factory}", "Không tìm thấy tổ chức sản xuất: {factory}"),

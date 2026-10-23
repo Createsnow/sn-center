@@ -48,6 +48,7 @@ class ErrorCode(Enum):
     USER_MANAGE_FORBIDDEN = (403, "只有系统管理员可以管理账户")
     USER_SUPER_ADMIN_FIXED = (400, "系统管理员必须保持启用，不能改角色或停用")
     USER_NOT_MES = (400, "该账户不是 MES 接口账户")
+    USER_SECRET_UNAVAILABLE = (400, "该账户的密钥无法查看（更换过 SN_SECRET 或早于密钥可查看功能创建），请重置密钥")
     USER_IP_LIST_INVALID = (400, "来源地址白名单格式不正确：{value}")
     # ---------- 生产组织 / MES 配置 / 金蝶 ----------
     FACTORY_NOT_FOUND = (400, "生产组织不存在：{factory}")

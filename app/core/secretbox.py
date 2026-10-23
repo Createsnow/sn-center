@@ -1,6 +1,6 @@
-"""对称加密：SN 调用 MES 的凭证加密保存（AES-GCM，密钥由 SN_SECRET 派生）。
+"""对称加密：SN 调用 MES 的凭证、MES 接口账户的密钥加密保存（AES-GCM，密钥由 SN_SECRET 派生）。
 
-更换 SN_SECRET 后旧凭证无法解密，须在 MES 对接配置中重新填写。
+更换 SN_SECRET 后旧凭证无法解密，须在 MES 对接配置中重新填写；MES 接口账户的密钥须重置后才能再查看。
 """
 
 from __future__ import annotations

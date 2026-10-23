@@ -2,7 +2,8 @@
 
 页面账户（系统管理员 / 管理员 / 生产组织操作员 / 查询员）用工号和密码直接登录，任何时候都不强制改密；
 本人改密、系统管理员重置密码后，该账户所有页面的令牌失效，须用新密码重新登录。
-MES 接口账户不能登录页面：创建或重置时系统生成密钥（只显示一次），MES 每次请求带 Authorization: Bearer <工号>:<密钥>；
+MES 接口账户不能登录页面：创建或重置时系统生成密钥（加密保存，系统管理员随时可查看），
+MES 每次请求带 Authorization: Bearer <工号>:<密钥>；
 连续失败 SN_MES_AUTH_MAX_FAILURES 次锁定 SN_MES_AUTH_LOCK_MINUTES 分钟（锁定期间密钥正确也拒绝），锁定和解锁留痕；
 可配置来源地址白名单。重置密钥后旧密钥立即失效。
 """
@@ -17,6 +18,7 @@ import secrets
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
+from app.core import secretbox
 from app.core import utils as util
 from app.core.config import settings
 from app.core.errors import ErrorCode, biz
@@ -345,7 +347,7 @@ def create(
     factory_codes: list[str | None] | None = None,
     ip_whitelist: str | None = None,
 ) -> dict:
-    """新建账户。MES 接口账户不填密码：系统生成密钥，只在本次返回（secret），之后不回显。"""
+    """新建账户。MES 接口账户不填密码：系统生成密钥，本次返回（secret），之后可查看、可重置。"""
     with db.tx():
         emp = util.trim(emp_no)
         if not _EMP_NO.match(emp):
@@ -367,15 +369,16 @@ def create(
             raise biz(ErrorCode.USER_EMP_NO_EXISTS, emp_no=emp)
         now = util.now()
         uid = db.insert(
-            "INSERT INTO sn_user(emp_no, name, role, factory_code, status, password_hash, must_change_pwd, "
-            "pwd_changed_at, ip_whitelist, created_by, created_at, updated_at) "
-            "VALUES (%s,%s,%s,%s,%s,%s,0,%s,%s,%s,%s,%s)",
+            "INSERT INTO sn_user(emp_no, name, role, factory_code, status, password_hash, secret_sealed, "
+            "must_change_pwd, pwd_changed_at, ip_whitelist, created_by, created_at, updated_at) "
+            "VALUES (%s,%s,%s,%s,%s,%s,%s,0,%s,%s,%s,%s,%s)",
             emp,
             n,
             r,
             b.factory,
             ACTIVE,
             hash_password(password),
+            secretbox.seal(secret) if secret else "",
             now,
             ips,
             cu.emp_no,
@@ -443,7 +446,7 @@ def update(
 
 
 def reset_secret(cu: CurrentUser, uid: int) -> dict:
-    """重置 MES 接口账户密钥：新密钥只显示一次；旧密钥和旧令牌立即失效，解除锁定。"""
+    """重置 MES 接口账户密钥：生成新密钥（之后仍可查看）；旧密钥立即失效，解除锁定。"""
     with db.tx():
         u = _must_get(uid)
         if u["role"] != util.MES:
@@ -451,9 +454,10 @@ def reset_secret(cu: CurrentUser, uid: int) -> dict:
         secret = new_secret()
         now = util.now()
         db.exec(
-            "UPDATE sn_user SET password_hash = %s, pwd_changed_at = %s, auth_failures = 0, locked_until = NULL, "
-            "updated_at = %s WHERE id = %s",
+            "UPDATE sn_user SET password_hash = %s, secret_sealed = %s, pwd_changed_at = %s, auth_failures = 0, "
+            "locked_until = NULL, updated_at = %s WHERE id = %s",
             hash_password(secret),
+            secretbox.seal(secret),
             _next_pv(u, now),
             now,
             uid,
@@ -462,6 +466,20 @@ def reset_secret(cu: CurrentUser, uid: int) -> dict:
         out = view(_must_get(uid))
         out["secret"] = secret
         return out
+
+
+def view_secret(cu: CurrentUser, uid: int) -> dict:
+    """查看 MES 接口账户当前密钥（留痕）。解不开（更换过 SN_SECRET 或早于加密保存）时须重置。"""
+    u = _must_get(uid)
+    if u["role"] != util.MES:
+        raise biz(ErrorCode.USER_NOT_MES)
+    secret = secretbox.open_(u["secret_sealed"])
+    if not secret:
+        raise biz(ErrorCode.USER_SECRET_UNAVAILABLE)
+    audit.record_isolated(
+        cu, audit.entry(audit.USER_VIEW_SECRET).factory(u["factory_code"]).info(f"emp_no={u['emp_no']}")
+    )
+    return {"id": u["id"], "emp_no": u["emp_no"], "secret": secret}
 
 
 def disable(cu: CurrentUser, uid: int) -> dict:

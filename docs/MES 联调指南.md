@@ -76,7 +76,7 @@ curl -X POST http://127.0.0.1:9001/_mock/seed -H 'Content-Type: application/json
 
 ### 2.3 扮演 MES 取批（接口 ③④）
 
-先在「账户」页给组织 110 建 MES 接口账户，记下只显示一次的密钥。
+先在「账户」页给组织 110 建 MES 接口账户，记下密钥（之后也可在列表里「查看密钥」）。
 
 ```bash
 # 取一轮：③ 取批 → process → ④ 提交回执，remaining > 0 时继续取，没有可给的批次就停（每次请求带 工号:密钥）

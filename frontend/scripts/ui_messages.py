@@ -185,6 +185,7 @@ M = {
 "actions.USER_ENABLE": ("启用账户", "Account enabled", "Kích hoạt tài khoản"),
 "actions.USER_RESET_PWD": ("重置密码", "Password reset", "Đặt lại mật khẩu"),
 "actions.USER_RESET_SECRET": ("重置 MES 密钥", "MES secret reset", "Đặt lại khóa MES"),
+"actions.USER_VIEW_SECRET": ("查看 MES 密钥", "MES secret viewed", "Xem khóa MES"),
 "actions.FACTORY_SYNC": ("同步生产组织", "Org sync", "Đồng bộ tổ chức"),
 "actions.FACTORY_MES_CONFIG": ("修改 MES 对接配置", "MES settings changed", "Sửa cấu hình MES"),
 "actions.FACTORY_MES_TOGGLE": ("切换对接 MES", "MES integration toggled", "Bật / tắt kết nối MES"),

@@ -1,4 +1,4 @@
-"""账户管理（F-01）：只有系统管理员。账户只停用、不删除。MES 接口账户的密钥只在创建 / 重置时显示一次。"""
+"""账户管理（F-01）：只有系统管理员。账户只停用、不删除。MES 接口账户的密钥加密保存，可随时查看、重置。"""
 
 from fastapi import APIRouter
 
@@ -23,7 +23,7 @@ def user_list(
     return users.list_users(q, role, status, factory_code, page_of(page, page_size))
 
 
-@router.post("", summary="新建账户；MES 接口账户返回 secret（只显示这一次）")
+@router.post("", summary="新建账户；MES 接口账户返回 secret（之后可在查看密钥接口再取）")
 def user_create(body: UserCreateIn, cu: SuperAdminDep) -> dict:
     return users.create(
         cu, body.emp_no, body.name, body.role, body.factory_code, body.password, body.factory_codes, body.ip_whitelist
@@ -50,6 +50,11 @@ def user_reset(id: int, body: UserPasswordIn, cu: SuperAdminDep) -> dict:
     return users.reset_password(cu, id, body.password)
 
 
-@router.post("/{id}/reset-secret", summary="重置 MES 接口账户密钥：返回新 secret（只显示一次），旧密钥和旧令牌立即失效")
+@router.post("/{id}/reset-secret", summary="重置 MES 接口账户密钥：返回新 secret，旧密钥立即失效")
 def user_reset_secret(id: int, cu: SuperAdminDep) -> dict:
     return users.reset_secret(cu, id)
+
+
+@router.get("/{id}/secret", summary="查看 MES 接口账户当前密钥（留痕）；解不开时须重置")
+def user_view_secret(id: int, cu: SuperAdminDep) -> dict:
+    return users.view_secret(cu, id)

@@ -47,10 +47,13 @@
           <template #default="{ row }">{{ fmt(row.last_login_at) }}</template>
         </el-table-column>
         <el-table-column :label="t('users.created')" width="200"><template #default="{ row }">{{ row.created_by }} · {{ fmt(row.created_at) }}</template></el-table-column>
-        <el-table-column :label="t('common.actions')" width="230" fixed="right">
+        <el-table-column :label="t('common.actions')" :width="tab === 'mes' ? 300 : 230" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openEdit(row)">{{ t("common.edit") }}</el-button>
-            <el-button v-if="row.role === 'mes'" link @click="resetSecret(row)">{{ t("users.resetSecret") }}</el-button>
+            <template v-if="row.role === 'mes'">
+              <el-button link type="primary" @click="viewSecret(row)">{{ t("users.viewSecret") }}</el-button>
+              <el-button link @click="resetSecret(row)">{{ t("users.resetSecret") }}</el-button>
+            </template>
             <el-button v-else link @click="reset(row)">{{ t("users.resetPwd") }}</el-button>
             <el-button v-if="row.status === 'ACTIVE'" link type="danger" :disabled="row.id === store.profile?.id || row.super_admin" @click="disable(row)">{{ t("users.disable") }}</el-button>
             <el-button v-else link type="success" @click="enable(row)">{{ t("users.enable") }}</el-button>
@@ -116,7 +119,7 @@
     </el-dialog>
 
     <el-dialog v-model="secretOpen" :title="t('users.secretTitle')" width="520px" :close-on-click-modal="false">
-      <el-alert type="warning" :closable="false" show-icon :title="t('users.secretOnce')" class="mb" />
+      <el-alert type="info" :closable="false" show-icon :title="t('users.secretKeep')" class="mb" />
       <el-descriptions :column="1" border size="small">
         <el-descriptions-item :label="t('users.empNo')"><span class="sn-mono">{{ secret.emp_no }}</span></el-descriptions-item>
         <el-descriptions-item :label="t('users.secret')">
@@ -126,7 +129,7 @@
       </el-descriptions>
       <p class="muted">{{ t("users.secretUsage") }}</p>
       <template #footer>
-        <el-button type="primary" @click="secretOpen = false">{{ t("users.secretSaved") }}</el-button>
+        <el-button type="primary" @click="secretOpen = false">{{ t("users.secretClose") }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -249,13 +252,18 @@ async function reset(row: any) {
   ElMessage.success(t("users.resetDone"));
 }
 
-// ---------------- MES 接口账户密钥：创建或重置时只显示一次
+// ---------------- MES 接口账户密钥：创建、重置后弹出；之后可随时查看（留痕）或重置
 const secretOpen = ref(false);
 const secret = reactive({ emp_no: "", value: "" });
 
 function showSecret(emp: string, value: string) {
   Object.assign(secret, { emp_no: emp, value });
   secretOpen.value = true;
+}
+
+async function viewSecret(row: any) {
+  const r: any = await api.viewSecret(row.id);
+  showSecret(r.emp_no, r.secret);
 }
 
 async function resetSecret(row: any) {
