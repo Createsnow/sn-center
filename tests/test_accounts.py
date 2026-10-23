@@ -67,10 +67,12 @@ def test_mes_account_cannot_login_page_and_secret_once(w, api, sql):
     lst = ok(api.get(f"/api/users?q={e}", w.admin))["items"][0]
     assert "secret" not in lst and lst["ip_whitelist"] == "127.0.0.1,10.0.0.0/8"
     assert api.page_login(e, r["secret"]).code == "MES_NO_PAGE_LOGIN"
-    t = ok(api.call("POST", "/api/mes/v1/auth/token", m(empNo=e, secret=r["secret"]), None, {"X-Real-IP": "10.1.2.3"}))
-    assert t["code"] == "OK" and t["expiresIn"] == 43200
-    assert api.get("/api/dashboard", t["accessToken"]).code == "FORBIDDEN", "MES 接口账户只能调 MES 接口"
-    assert ok(api.get(f"/api/users?q={e}", w.admin))["items"][0]["last_login_at"], "账户页显示最近换取令牌时间"
+    cred = f"{e}:{r['secret']}"
+    assert api.post("/api/mes/v1/auth/token", m(empNo=e, secret=r["secret"]), None).status == 404, "不再换令牌"
+    t = ok(api.call("POST", "/api/mes/v1/batches/next", m(), cred, {"X-Real-IP": "10.1.2.3"}))
+    assert t["code"] == "OK", "每次请求直接带工号:密钥"
+    assert api.get("/api/dashboard", cred).status == 401, "MES 接口账户只能调 MES 接口"
+    assert ok(api.get(f"/api/users?q={e}", w.admin))["items"][0]["last_login_at"], "账户页显示最近认证时间"
 
 
 def test_mes_ip_whitelist(w, api):
@@ -80,7 +82,7 @@ def test_mes_ip_whitelist(w, api):
     r = ok(
         api.post("/api/users", m(emp_no=e, name="M", role="mes", factory_code=org, ip_whitelist="10.9.9.9"), w.admin)
     )
-    x = api.post("/api/mes/v1/auth/token", m(empNo=e, secret=r["secret"]), None)
+    x = api.post("/api/mes/v1/batches/next", m(), f"{e}:{r['secret']}")
     assert (x.status, x.code) == (403, "IP_NOT_ALLOWED")
 
 

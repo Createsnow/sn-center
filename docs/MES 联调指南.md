@@ -9,7 +9,7 @@ MES 方还没接入时，用仓库里的三样工具分头验证。**真实 MES 
 | 本系统按契约推送、取批、回执，异常时的重试、续推、告警、人工处理 | 自动化测试 `uv run pytest`（内置模拟 MES） | 不需要 |
 | 在测试环境用页面和接口走一遍真实流程，注入 MES 故障看本系统怎么处理 | **模拟 MES** `devtools/mes_mock.py` | 不需要 |
 | MES 方实现的接收推送接口（①）是否符合契约 | **契约测试** `devtools/mes_conformance.py` | 只要 MES 测试环境的接口地址 |
-| MES 方的取批客户端（② → ③ → ④）、MES 本侧数据 | 本系统测试环境 + MES 测试环境 | 需要 |
+| MES 方的取批客户端（③ → ④）、MES 本侧数据 | 本系统测试环境 + MES 测试环境 | 需要 |
 
 三样工具共用同一份 `process(batch)` 参考实现（`devtools/mes_mock.py` 的 `MesSim`）：自动化测试里的「假 MES」就是它，契约测试先对它跑一遍全部通过，再对 MES 方的实现跑。
 
@@ -74,12 +74,12 @@ curl -X POST http://127.0.0.1:9001/_mock/seed -H 'Content-Type: application/json
   -d '{"org": "110", "sn": "HX100000001A", "rev": 1, "lastBatchNo": "PS-OTHER"}'   # rev 填 5 即造过期
 ```
 
-### 2.3 扮演 MES 取批（接口 ②～④）
+### 2.3 扮演 MES 取批（接口 ③④）
 
 先在「账户」页给组织 110 建 MES 接口账户，记下只显示一次的密钥。
 
 ```bash
-# 取一轮：② 换令牌 → ③ 取批 → process → ④ 提交回执，remaining > 0 时继续取，没有可给的批次就停
+# 取一轮：③ 取批 → process → ④ 提交回执，remaining > 0 时继续取，没有可给的批次就停（每次请求带 工号:密钥）
 uv run python -m devtools.mes_mock pull --base http://127.0.0.1:8000 --org 110 --emp MES110 --key <密钥>
 uv run python -m devtools.mes_mock pull ... --pi 000001 --bill VT2026090001      # 按 PI / 单据 / 两者组合取
 uv run python -m devtools.mes_mock pull ... --batch-no PS-110-20261019-000123    # 按批次号取回
@@ -89,15 +89,14 @@ uv run python -m devtools.mes_mock serve --port 9001 --secret 110=tok-110 \
   --pull-base http://127.0.0.1:8000 --pull-org 110 --pull-emp MES110 --pull-key <密钥>
 ```
 
-令牌失效（401 `TOKEN_EXPIRED` / `TOKEN_INVALID`）时自动重新换令牌，429 按 `Retry-After` 等待，409 `BATCH_VOIDED` 丢弃该批。
+每次请求带 `Authorization: Bearer <工号>:<密钥>`，不换令牌；429 按 `Retry-After` 等待，409 `BATCH_VOIDED` 丢弃该批。
 
 要逐个接口手工试（例如构造不符的回执看 422），用 curl 或服务的 `/docs`（`open` 分组）：
 
 ```bash
 BASE=http://127.0.0.1:8000/api/mes/v1
-TOKEN=$(curl -s $BASE/auth/token -H 'Content-Type: application/json' \
-  -d '{"empNo":"MES110","secret":"<密钥>"}' | jq -r .accessToken)
-curl -s $BASE/batches/next -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+AUTH="Authorization: Bearer MES110:<密钥>"
+curl -s $BASE/batches/next -H "$AUTH" -H 'Content-Type: application/json' \
   -d '{"schemaVersion":"1.0","pi":null,"billNo":null,"batchNo":null}' > next.json
 # 按全部收下生成回执；删掉一条 results 或改一枚 rev 就能看到 422 RECEIPT_MISMATCH
 jq '{schemaVersion:"1.0", batchNo:.batch.batchNo, outcome:"PROCESSED", receivedAt:"2026-10-21T00:00:00Z",
@@ -129,7 +128,7 @@ uv run python -m devtools.mes_conformance --url https://mes-test.example.com/sn/
 - 检查项（共 26 项）：连接测试与 `orgCode` 校验；凭证错误、HMAC 时间戳偏差；首次送达逐枚回执、条数 / rev / summary 一致；同一批再次送达返回存下的回执；同批次号内容不同报 409；rev 更大覆盖、相同不同批冲突、更小过期、以本系统为准重推解除挂起；转出、转出头 `pi = null`、转回；不认识的字段忽略；七种整批拒收（并确认拒收后不登记批次号）；无法解析报 400；同一批同时送达两次只处理一次；5000 枚的处理时间。
 - 接口应答看不到 MES 的本侧数据，报告末尾列出要在 MES 库或页面上**人工核对**的几项（挂起、已转出、清除已转出）。
 
-契约测试只覆盖接口 ①。MES 的取批客户端（自动换令牌、`remaining` 续取、`BATCH_VOIDED` 丢弃、回执被拒 422 后修正重交）要让 MES 测试环境连本系统测试环境来验证，见第 4 节。
+契约测试只覆盖接口 ①。MES 的取批客户端（每次带工号:密钥、`remaining` 续取、`BATCH_VOIDED` 丢弃、回执被拒 422 后修正重交）要让 MES 测试环境连本系统测试环境来验证，见第 4 节。
 
 ---
 
@@ -168,4 +167,4 @@ uv run python -m devtools.mes_conformance --url https://mes-test.example.com/sn/
 | 18 | 跨组织转移后，转入方交付与来源转出不论谁先确认，MES 持有组织都正确；再次转移时转出推给正确的组织 | `test_transfers::test_holder_correct_when_target_confirms_first` | — | 两个组织的 MES 同时在线时的顺序 |
 | 19 | 转出批次推送中断后，来源 MES 按转出前的 PI 或单据取批能取到；号已全部转走的 PI 照常可取 | `test_transfers::test_transfer_out_pending_blocks_retransfer` | — | 按单据取转出批次（`mes_mock pull --bill`） |
 
-另有 `test_delivery::test_mes_token_lock_after_failures`、`test_delivery::test_mes_token_invalid_after_secret_reset`、`test_query_audit::test_rate_limited_pull_leaves_failure_audit` 覆盖换令牌锁定、重置密钥后令牌失效、取批限流，联调时确认 MES 客户端能自动重新换令牌、按 `Retry-After` 等待。
+另有 `test_delivery::test_mes_secret_lock_after_failures`、`test_delivery::test_mes_secret_invalid_after_reset`、`test_query_audit::test_rate_limited_pull_leaves_failure_audit` 覆盖密钥认证失败锁定、重置后旧密钥失效、取批限流，联调时确认 MES 客户端按 `Retry-After` 等待、密钥重置后及时换用新密钥。

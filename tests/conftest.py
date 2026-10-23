@@ -450,11 +450,10 @@ class World:
         ok(self.api.post(f"/api/factories/{code}/mes-toggle", m(enabled=True), self.admin))
 
     def mes_account(self, code: str) -> tuple[str, str]:
-        """建 MES 接口账户并换令牌，返回（令牌，工号）。"""
+        """建 MES 接口账户，返回（认证串「工号:密钥」，工号）；认证串直接放在 Authorization: Bearer 后。"""
         e = emp("M")
         r = ok(self.api.post("/api/users", m(emp_no=e, name="MES", role="mes", factory_code=code), self.admin))
-        t = ok(self.api.post("/api/mes/v1/auth/token", m(empNo=e, secret=r["secret"]), None))
-        return t.text("accessToken"), e
+        return f"{e}:{r['secret']}", e
 
     # ---------------- 订单
     def order(self, bill_no: str, org: str, customer: str, pi: str, *lines: tuple, status: str = "C") -> Res:

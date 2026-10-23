@@ -161,7 +161,7 @@ def create_app() -> FastAPI:
         description=(
             "总部统一生成并分配 SN，推送到各生产组织 MES（或由 MES 拉取），各组织可在 SN 导出页下载已分配的号。"
             "对外接口在 open 分组："
-            "MES 用 POST /api/mes/v1/auth/token 换令牌，再放在 Authorization: Bearer <token>。"
+            "MES 每次请求带 Authorization: Bearer <工号>:<密钥>。"
         ),
         version="1.0.0",
         lifespan=lifespan,
@@ -171,7 +171,7 @@ def create_app() -> FastAPI:
         openapi_tags=[
             {
                 "name": "open",
-                "description": "对外接口：MES 换令牌、取下一批、提交回执、只读核对；按客户绑定规则。",
+                "description": "对外接口：MES 取下一批、提交回执、只读核对；按客户绑定规则。",
             },
         ],
         swagger_ui_parameters={"persistAuthorization": True},

@@ -209,7 +209,7 @@
   "actions": {
     "LOGIN": "登录",
     "PASSWORD_CHANGE": "修改密码",
-    "MES_AUTH": "MES 换取令牌",
+    "MES_AUTH": "MES 密钥认证",
     "MES_AUTH_LOCK": "MES 账户锁定",
     "MES_AUTH_UNLOCK": "MES 账户解锁",
     "USER_CREATE": "创建账户",
@@ -1060,7 +1060,7 @@
   },
   "users": {
     "title": "账户",
-    "desc": "只有系统管理员能创建、修改、停用、启用账户和重置密码；账户只停用、不删除。MES 接口账户不能登录页面，用工号 + 密钥换取令牌后调用 MES 接口。",
+    "desc": "只有系统管理员能创建、修改、停用、启用账户和重置密码；账户只停用、不删除。MES 接口账户不能登录页面，每次调用 MES 接口时直接带工号 + 密钥。",
     "tabAll": "账户",
     "tabMes": "MES 接口账户",
     "create": "新建账户",
@@ -1085,9 +1085,9 @@
     "active": "启用",
     "disabled": "停用",
     "locked": "已锁定",
-    "lockedUntil": "换取令牌连续失败，锁定到 {time}",
+    "lockedUntil": "密钥认证连续失败，锁定到 {time}",
     "lastLogin": "最近登录",
-    "lastToken": "最近换取令牌",
+    "lastToken": "最近认证",
     "created": "创建",
     "disable": "停用",
     "enable": "启用",
@@ -1103,7 +1103,7 @@
     "secretTitle": "MES 接口账户密钥",
     "secretOnce": "密钥只显示这一次，关闭后无法再查看；请立即交给 MES 方妥善保存",
     "secret": "密钥",
-    "secretUsage": "MES 用工号 + 密钥调用 POST /api/mes/v1/auth/token 换取令牌，令牌默认 12 小时有效。",
+    "secretUsage": "MES 每次调用接口时带请求头 Authorization: Bearer <工号>:<密钥>，不需要换令牌。",
     "secretSaved": "我已保存",
     "resetSecret": "重置密钥",
     "resetSecretConfirm": "重置 {emp} 的密钥？旧密钥和旧令牌立即失效，MES 须改用新密钥。"

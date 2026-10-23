@@ -49,7 +49,7 @@ python start.py          # Windows 可双击 start.bat；需要 Python 3.12+、N
 | 操作痕迹 | 全部（按范围） | 登录、账户、生产组织与 MES 配置、订单同步与变更、规则、生成、分配、推送、拉取、回执、领取、转单、转组织全流程留痕（含失败）；筛选、导出；保存期与归档 |
 | 账户 / 生产组织 | 总部（账户仅系统管理员） | 页面账户（系统管理员 / 管理员 / 生产组织操作员 / 查询员）与 MES 接口账户（绑一个对接 MES 的组织，密钥只显示一次，可设来源地址白名单，连续认证失败锁定）；生产组织从金蝶同步，总部为每个组织配置 MES 对接（地址、认证方式、凭证加密保存、批次大小、超时、并发、时区），连接测试通过后才能开启 |
 
-MES 接口（`/api/mes/v1`）：`POST /auth/token`、`POST /batches/next`、`POST /batches/{batchNo}/receipt`、`GET /sn/delivered`、`GET /batches/{batchNo}/items`；本系统推送到 MES 提供的地址。契约见 [MES 对接说明（精简版）](<docs/SN 防重管控 · MES 对接说明（精简版）.md>)。
+MES 接口（`/api/mes/v1`，每次请求带 `Authorization: Bearer <工号>:<密钥>`）：`POST /batches/next`、`POST /batches/{batchNo}/receipt`、`GET /sn/delivered`、`GET /batches/{batchNo}/items`；本系统推送到 MES 提供的地址。契约见 [MES 对接说明（精简版）](<docs/SN 防重管控 · MES 对接说明（精简版）.md>)。
 
 ## 开发与测试
 

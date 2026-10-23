@@ -2,13 +2,15 @@
 
 页面账户（系统管理员 / 管理员 / 生产组织操作员 / 查询员）用工号和密码直接登录，任何时候都不强制改密；
 本人改密、系统管理员重置密码后，该账户所有页面的令牌失效，须用新密码重新登录。
-MES 接口账户不能登录页面：创建或重置时系统生成密钥（只显示一次），MES 用工号 + 密钥换取令牌；
+MES 接口账户不能登录页面：创建或重置时系统生成密钥（只显示一次），MES 每次请求带 Authorization: Bearer <工号>:<密钥>；
 连续失败 SN_MES_AUTH_MAX_FAILURES 次锁定 SN_MES_AUTH_LOCK_MINUTES 分钟（锁定期间密钥正确也拒绝），锁定和解锁留痕；
-可配置来源地址白名单。重置密钥后旧密钥和旧令牌立即失效。
+可配置来源地址白名单。重置密钥后旧密钥立即失效。
 """
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import ipaddress
 import re
 import secrets
@@ -582,11 +584,17 @@ def bootstrap_admin(password: str) -> bool:
         return True
 
 
-# ================================================================== MES 接口账户换取令牌
+# ================================================================== MES 接口账户认证
+
+#: 已验过的密钥：账户 id -> (口令版本, 密钥摘要)。PBKDF2 每次要上百毫秒，验过一次后按摘要比对；
+#: 重置密钥会改口令版本，缓存随之失效。
+_verified: dict[int, tuple[int, bytes]] = {}
+#: 「最近认证」时间最多每分钟写一次
+_SEEN_INTERVAL = timedelta(minutes=1)
 
 
-def mes_token(emp_no: str | None, secret: str | None, client: str | None, trace_id: str | None) -> dict:
-    """接口 ②：工号 + 密钥换令牌（有效期同登录令牌）。换新令牌不会使旧令牌失效；重置密钥后旧令牌全部失效。
+def mes_authenticate(emp_no: str | None, secret: str | None, client: str | None, trace_id: str | None) -> dict:
+    """MES 接口 ③～⑥ 的认证：工号 + 密钥（请求头 Authorization: Bearer <工号>:<密钥>），每次请求都验，返回账户行。
 
     错误：401 INVALID_CREDENTIALS；连续错 N 次锁定 M 分钟，锁定期间返回 423 ACCOUNT_LOCKED（密钥正确也拒绝）；
     403 IP_NOT_ALLOWED / ACCOUNT_DISABLED。失败、锁定、解锁都留痕。
@@ -610,7 +618,13 @@ def mes_token(emp_no: str | None, secret: str | None, client: str | None, trace_
         audit.record_isolated(actor, audit.entry(audit.MES_AUTH).factory(actor.factory_code).fail(message).info(where))
         return MesError(status, code, message)
 
-    matched = verify_password(secret, _dummy() if u is None else u["password_hash"])
+    pv = None if u is None else pwd_version(u["pwd_changed_at"])
+    digest = hashlib.sha256((secret or "").encode("utf-8")).digest()
+    cached = None if u is None else _verified.get(u["id"])
+    if cached is not None and cached[0] == pv and hmac.compare_digest(cached[1], digest):
+        matched = True
+    else:
+        matched = verify_password(secret, _dummy() if u is None else u["password_hash"])
     if u is None:
         raise fail(401, "INVALID_CREDENTIALS", "工号或密钥错误")
     if u["status"] != ACTIVE:
@@ -618,11 +632,18 @@ def mes_token(emp_no: str | None, secret: str | None, client: str | None, trace_
     if not ip_allowed(u["ip_whitelist"], client):
         raise fail(403, "IP_NOT_ALLOWED", f"来源地址 {client or '-'} 不在白名单内")
     now = util.now()
+    locked = u["locked_until"]
+    if matched and not u["auth_failures"] and locked is None:
+        # 常规路径：不加锁；「最近认证」每分钟最多写一次
+        _verified[u["id"]] = (pv, digest)
+        if u["last_login_at"] is None or now - u["last_login_at"] >= _SEEN_INTERVAL:
+            db.exec("UPDATE sn_user SET last_login_at = %s WHERE id = %s", now, u["id"])
+        return u
     with db.tx():
         row = db.one("SELECT auth_failures, locked_until FROM sn_user WHERE id = %s FOR UPDATE", u["id"])
         locked = row["locked_until"]
         if locked is not None and locked > now:
-            raise fail(423, "ACCOUNT_LOCKED", f"连续换取令牌失败已锁定，{util.fmt(locked)} 后解锁")
+            raise fail(423, "ACCOUNT_LOCKED", f"连续认证失败已锁定，{util.fmt(locked)} 后解锁")
         failures = row["auth_failures"]
         if locked is not None:
             # 锁定期已过：解锁（留痕），重新计数
@@ -647,16 +668,8 @@ def mes_token(emp_no: str | None, secret: str | None, client: str | None, trace_
                     .info(f"{where} until={util.fmt(until)}"),
                 )
         else:
-            # 账户页「最近换取令牌」；MES 令牌不带登录版本，改它不影响已发的令牌
             db.exec("UPDATE sn_user SET auth_failures = 0, last_login_at = %s WHERE id = %s", now, u["id"])
     if not matched:
         raise fail(401, "INVALID_CREDENTIALS", "工号或密钥错误")
-    ttl = settings.access_token_ttl_seconds
-    return {
-        "schemaVersion": "1.0",
-        "code": "OK",
-        "accessToken": issue_token(u["id"], pwd_version(u["pwd_changed_at"])),
-        "tokenType": "Bearer",
-        "expiresIn": ttl,
-        "expiresAt": util.fmt(now + timedelta(seconds=ttl)),
-    }
+    _verified[u["id"]] = (pv, digest)
+    return u

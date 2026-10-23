@@ -176,7 +176,7 @@ M = {
 # ---------------- audit actions ----------------
 "actions.LOGIN": ("登录", "Login", "Đăng nhập"),
 "actions.PASSWORD_CHANGE": ("修改密码", "Password changed", "Đổi mật khẩu"),
-"actions.MES_AUTH": ("MES 换取令牌", "MES token", "MES lấy mã thông báo"),
+"actions.MES_AUTH": ("MES 密钥认证", "MES secret check", "MES xác thực khóa"),
 "actions.MES_AUTH_LOCK": ("MES 账户锁定", "MES account locked", "Khóa tài khoản MES"),
 "actions.MES_AUTH_UNLOCK": ("MES 账户解锁", "MES account unlocked", "Mở khóa tài khoản MES"),
 "actions.USER_CREATE": ("创建账户", "Account created", "Tạo tài khoản"),

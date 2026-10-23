@@ -272,28 +272,31 @@ def test_manual_confirm_stops_retry(w, sql):
     )
 
 
-def test_mes_token_lock_after_failures(w, api, sql, monkeypatch):
+def test_mes_secret_lock_after_failures(w, api, sql, monkeypatch):
     monkeypatch.setenv("SN_MES_AUTH_MAX_FAILURES", "3")
     org = w.org(uid("O")[:10])
     w.enable_mes(org)
     e = emp("M")
     secret = ok(api.post("/api/users", m(emp_no=e, name="MES", role="mes", factory_code=org), w.admin))["secret"]
+    assert w.mes_next(f"{e}:{secret}").status == 200
     for _ in range(3):
-        assert api.post("/api/mes/v1/auth/token", m(empNo=e, secret="wrong"), None).code == "INVALID_CREDENTIALS"
-    r = api.post("/api/mes/v1/auth/token", m(empNo=e, secret=secret), None)
-    assert (r.status, r.code) == (423, "ACCOUNT_LOCKED"), "锁定期间密钥正确也拒绝"
+        assert w.mes_next(f"{e}:wrong").code == "INVALID_CREDENTIALS"
+    r = w.mes_next(f"{e}:{secret}")
+    assert (r.status, r.code) == (423, "ACCOUNT_LOCKED"), "锁定期间密钥正确也拒绝（含已验过的密钥）"
     assert sql.count("SELECT COUNT(*) FROM sn_audit WHERE operator = %s AND action = 'MES_AUTH_LOCK'", e) == 1
 
 
-def test_mes_token_invalid_after_secret_reset(w, api, sql):
+def test_mes_secret_invalid_after_reset(w, api, sql):
     org = w.org(uid("O")[:10])
     w.enable_mes(org)
-    token, e = w.mes_account(org)
-    assert ok(w.mes_next(token))["batch"] is None
+    cred, e = w.mes_account(org)
+    assert ok(w.mes_next(cred))["batch"] is None
     uid_ = sql.scalar("SELECT id FROM sn_user WHERE emp_no = %s", e)
-    ok(api.post(f"/api/users/{uid_}/reset-secret", {}, w.admin))
-    r = w.mes_next(token)
-    assert (r.status, r.code) == (401, "TOKEN_INVALID")
+    new = ok(api.post(f"/api/users/{uid_}/reset-secret", {}, w.admin))["secret"]
+    r = w.mes_next(cred)
+    assert (r.status, r.code) == (401, "INVALID_CREDENTIALS"), "重置后旧密钥立即失效（含已验过的缓存）"
+    assert ok(w.mes_next(f"{e}:{new}"))["batch"] is None
+    assert w.mes_next("").code == "INVALID_CREDENTIALS"
     assert api.post("/api/auth/login", m(emp_no=e, password="whatever1"), None).status == 401
 
 

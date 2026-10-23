@@ -4,10 +4,10 @@
 
     # 接收推送（接口 ①）：地址 http://<host>:<port>/mes/<组织>，填到「生产组织」页的 MES 接口地址
     uv run python -m devtools.mes_mock serve --port 9001 --secret 110=tok-110
-    # 同时每 5 分钟取一次批（② → ③ → process → ④），与推送共用本侧数据
+    # 同时每 5 分钟取一次批（③ → process → ④），与推送共用本侧数据
     uv run python -m devtools.mes_mock serve --port 9001 --secret 110=tok-110 \\
         --pull-base http://127.0.0.1:8000 --pull-org 110 --pull-emp MES110 --pull-key <密钥>
-    # 只取一轮批（取到 batch = null 或 remaining = 0 为止），用于手工验证 ②～④
+    # 只取一轮批（取到 batch = null 或 remaining = 0 为止），用于手工验证 ③④
     uv run python -m devtools.mes_mock pull --base http://127.0.0.1:8000 --org 110 --emp MES110 --key <密钥>
 
 控制接口（注入故障、查看收到的报文和本侧数据）：
@@ -512,11 +512,12 @@ def _line(org: str, batch: dict, headers: dict, status: Any, body: Any) -> str:
     return head + f" → {status} {body.get('code') if isinstance(body, dict) else ''}"
 
 
-# ---------------------------------------------------------------------- 取批（接口 ②③④）
+# ---------------------------------------------------------------------- 取批（接口 ③④）
 
 
 class Puller:
-    """扮演 MES 取批：② 换令牌 → ③ 取批 → process → ④ 提交回执，remaining > 0 时继续取（对接说明 2.B）。"""
+    """扮演 MES 取批：③ 取批 → process → ④ 提交回执，remaining > 0 时继续取（对接说明 2.B）。
+    每次请求带 Authorization: Bearer <工号>:<密钥>，不换令牌。"""
 
     PREFIX = "/api/mes/v1"
 
@@ -524,35 +525,11 @@ class Puller:
         self, sim: MesSim, org: str, http: httpx.Client, emp_no: str, key: str, log: Callable[[str], None] = print
     ) -> None:
         self.sim, self.org, self.http, self.emp_no, self.key, self.log = sim, org, http, emp_no, key, log
-        self.token: str | None = None
-        self.expires_at = 0.0
-
-    def login(self) -> None:
-        r = self.http.post(f"{self.PREFIX}/auth/token", json={"empNo": self.emp_no, "secret": self.key})
-        body = _json(r)
-        if r.status_code != 200:
-            raise RuntimeError(f"② 换令牌失败：{r.status_code} {body}")
-        self.token = body["accessToken"]
-        # 令牌用掉 80% 时长后换新
-        self.expires_at = time.monotonic() + 0.8 * int(body.get("expiresIn") or 43200)
-        self.log(f"② 换令牌成功，有效 {body.get('expiresIn')} 秒")
 
     def call(self, path: str, body: dict) -> tuple[int, Any, httpx.Response]:
-        if self.token is None or time.monotonic() > self.expires_at:
-            self.login()
-        for _ in range(2):
-            r = self.http.post(self.PREFIX + path, json=body, headers={"Authorization": f"Bearer {self.token}"})
-            data = _json(r)
-            if (
-                r.status_code == 401
-                and isinstance(data, dict)
-                and data.get("code") in ("TOKEN_EXPIRED", "TOKEN_INVALID")
-            ):
-                self.log(f"令牌失效（{data.get('code')}），重新换令牌")
-                self.login()
-                continue
-            return r.status_code, data, r
-        return r.status_code, data, r
+        auth = {"Authorization": f"Bearer {self.emp_no}:{self.key}"}
+        r = self.http.post(self.PREFIX + path, json=body, headers=auth)
+        return r.status_code, _json(r), r
 
     def run_once(
         self, pi: str | None = None, bill: str | None = None, batch_no: str | None = None, max_batches: int = 1000
@@ -657,7 +634,7 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--pull-every", type=int, default=300, help="取批间隔秒数（对接说明：每 5 分钟不带范围取一次）")
     s.add_argument("--insecure", action="store_true", help="取批时不校验本系统的 HTTPS 证书（自签证书）")
 
-    q = sub.add_parser("pull", help="取一轮批：② → ③ → process → ④，直到没有可给的批次")
+    q = sub.add_parser("pull", help="取一轮批：③ → process → ④，直到没有可给的批次")
     q.add_argument("--base", required=True, help="本系统地址，如 http://127.0.0.1:8000")
     q.add_argument("--org", required=True)
     q.add_argument("--emp", required=True, help="MES 接口账户工号")

@@ -1,4 +1,6 @@
-"""MES 接口（/api/mes/v1）：② 换令牌、③ 取下一批、④ 提交回执、⑤⑥ 只读核对。
+"""MES 接口（/api/mes/v1）：③ 取下一批、④ 提交回执、⑤⑥ 只读核对。
+
+- 认证：MES 接口账户每次请求带 Authorization: Bearer <工号>:<密钥>，不换令牌（见 deps.mes_user）。
 
 - 请求和应答都支持 gzip；字段名英文小驼峰；请求和应答都带 schemaVersion（首版 1.0），不认识的字段忽略。
 - 成功为 HTTP 200 且 code = OK；出错不返回 200：{"schemaVersion", "code", "message", "batchNo", "details"}。
@@ -16,7 +18,7 @@ from fastapi import APIRouter, Depends, Request
 from app.api.deps import mes_user, run_sync
 from app.core.exceptions import MesError
 from app.core.security import CurrentUser
-from app.services import delivery, users
+from app.services import delivery
 
 router = APIRouter(prefix="/mes/v1", tags=["open"])
 
@@ -35,25 +37,6 @@ async def _json(request: Request) -> dict:
     if not isinstance(body, dict):
         raise MesError(400, "INVALID_REQUEST", "请求体须为 JSON 对象")
     return body
-
-
-def _client(request: Request) -> str | None:
-    real = request.headers.get("X-Real-IP")
-    return real.strip() if real and real.strip() else (request.client.host if request.client else None)
-
-
-@router.post(
-    "/auth/token", summary="② 用工号和密钥换令牌（有效 12 小时）；换新不会使旧令牌失效，重置密钥后旧令牌全部失效"
-)
-async def token(request: Request) -> dict:
-    body = await _json(request)
-    return await run_sync(
-        users.mes_token,
-        body.get("empNo"),
-        body.get("secret"),
-        _client(request),
-        getattr(request.state, "request_id", None),
-    )
 
 
 def _only_mes(cu: CurrentUser) -> None:
