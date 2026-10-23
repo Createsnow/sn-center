@@ -296,7 +296,7 @@ MES 收到的批次按 `batchType` 分为三类；推送批次和拉取批次的
 
 **同组织转移**
 
-![图 5-3 同组织转移：SN 系统自由转移，MES 自行处理](images/MES对接说明/f4-same-org.png)
+![图 5-3 同组织转移](images/MES对接说明/f12-same-org.png)
 
 SN 系统可以自由发起同组织转移，**无需现场或 MES 事先确认能否转移**；转移在 SN 系统中立即生效，SN 改挂到新订单。MES 收到 `REASSIGN` 后按版本比对正常接收（`ACCEPTED`），回执中没有「拒绝转移」选项。
 

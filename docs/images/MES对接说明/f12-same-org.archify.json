@@ -1,0 +1,116 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "同组织转移",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "legend": {
+      "mode": "hidden"
+    },
+    "output": "f12-same-org.html"
+  },
+  "lanes": [
+    {
+      "id": "sn",
+      "label": "SN 系统：自由转移"
+    },
+    {
+      "id": "mes",
+      "label": "MES 自行处理"
+    },
+    {
+      "id": "ex",
+      "label": "MES 侧无法转移",
+      "variant": "exception"
+    }
+  ],
+  "mainPath": [
+    "start",
+    "eff",
+    "push",
+    "acc",
+    "handle"
+  ],
+  "nodes": [
+    {
+      "id": "start",
+      "lane": "sn",
+      "col": 0,
+      "type": "external",
+      "label": "发起同组织转移",
+      "sublabel": "无需现场或 MES 确认"
+    },
+    {
+      "id": "eff",
+      "lane": "sn",
+      "col": 1,
+      "type": "database",
+      "label": "转移立即生效",
+      "sublabel": "改挂新订单，rev + 1"
+    },
+    {
+      "id": "push",
+      "lane": "sn",
+      "col": 2,
+      "type": "backend",
+      "label": "推送 REASSIGN",
+      "sublabel": "或由 MES 拉取"
+    },
+    {
+      "id": "acc",
+      "lane": "mes",
+      "col": 3,
+      "type": "database",
+      "label": "版本比对接收",
+      "sublabel": "回执 ACCEPTED"
+    },
+    {
+      "id": "handle",
+      "lane": "mes",
+      "col": 4,
+      "type": "frontend",
+      "label": "MES 内部处理",
+      "sublabel": "如切换数据链订单关联"
+    },
+    {
+      "id": "self",
+      "lane": "ex",
+      "col": 4,
+      "type": "security",
+      "label": "MES 自行处理",
+      "sublabel": "不影响 SN 系统"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "start",
+      "to": "eff"
+    },
+    {
+      "id": "e2",
+      "from": "eff",
+      "to": "push"
+    },
+    {
+      "id": "e3",
+      "from": "push",
+      "to": "acc",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e4",
+      "from": "acc",
+      "to": "handle"
+    },
+    {
+      "id": "e5",
+      "from": "acc",
+      "to": "self",
+      "label": "过站、LINK 等原因",
+      "variant": "security",
+      "role": "error"
+    }
+  ]
+}
