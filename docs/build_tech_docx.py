@@ -1,4 +1,4 @@
-"""把 docs/系统技术方案.md 转成 docs/系统技术方案.docx。
+"""把 docs 下的 Markdown 文档转成同名 .docx（默认 docs/系统技术方案.md）。
 
 1. 用 pandoc 转 docx（中文字体模板），md 中引用的图片按页宽缩放、居中，图题居中；
 2. 生成带超链接和页码的目录（Word 目录域，打开后右键「更新域」可刷新），目录后分页；
@@ -6,13 +6,14 @@
 4. 装有 LibreOffice 时先转 PDF 算出各标题所在页，写进目录；没有则目录只有标题、没有页码。
 
 依赖：pip install pypandoc_binary python-docx pillow pymupdf；可选 LibreOffice（soffice）
-用法（仓库根目录）：python docs/build_tech_docx.py
+用法（仓库根目录）：python docs/build_tech_docx.py [docs/xxx.md]
 """
 import copy
 import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 
 import pypandoc
@@ -23,18 +24,22 @@ from docx.oxml.ns import qn
 from docx.shared import Cm, Pt, RGBColor
 from PIL import Image
 
-SRC = 'docs/系统技术方案.md'
-OUT = 'docs/系统技术方案.docx'
+SRC = sys.argv[1] if len(sys.argv) > 1 else 'docs/系统技术方案.md'
+OUT = os.path.splitext(SRC)[0] + '.docx'
+SHIFT = 0  # 正文最高一级标题为 ## 时整体上移一级，由 prepare_markdown 判定
 TMP = tempfile.mkdtemp()
 MAXW, MAXH = 16.0, 21.0  # 图片最大宽 / 高（cm）
 
 
 def prepare_markdown():
+    global SHIFT
     s = open(SRC, encoding='utf-8').read()
-    s = re.sub(r'## 目录\n.*?(?=\n## 第一章)', '', s, flags=re.S)  # 手写目录由 Word 目录代替
+    s = re.sub(r'## 目录\n.*?(?=\n## 第一章|\n# )', '', s, flags=re.S)  # 手写目录由 Word 目录代替
     s = re.sub(r'^> Word 版见.*\n', '', s, flags=re.M)  # 指向本文件自身的说明不进入 Word
     title = s.split('\n', 1)[0].lstrip('# ').strip()
     s = s.split('\n', 1)[1]
+    SHIFT = 0 if re.search(r'^# ', s, flags=re.M) else -1
+    bold_captions = re.search(r'^\*\*图 \d', s, flags=re.M)
 
     def img(m):
         alt, path = m.group(1), 'docs/' + m.group(2)
@@ -42,7 +47,8 @@ def prepare_markdown():
         cw = MAXW
         if cw * h / w > MAXH:
             cw = MAXH * w / h
-        return f'![]({path}){{width={cw:.1f}cm}}'
+        cap = '' if bold_captions or not alt.startswith('图') else f'\n\n::: {{custom-style="Figure Caption"}}\n{alt}\n:::'
+        return f'![]({path}){{width={cw:.1f}cm}}' + cap  # 图题写在图片说明里的文档，图题取自说明文字
     s = re.sub(r'!\[([^\]]*)\]\((images/[^)]+)\)', img, s)
     s = re.sub(r'^\*\*(图 \d-\d[^*]*)\*\*$', r'::: {custom-style="Figure Caption"}\n\1\n:::', s, flags=re.M)
     md = f'{TMP}/doc.md'
@@ -270,7 +276,7 @@ def page_footer(d):
 def build(pages):
     ref = reference_doc()
     pypandoc.convert_file(prepare_markdown(), 'docx', outputfile=OUT,
-                          extra_args=[f'--reference-doc={ref}', '--shift-heading-level-by=-1', '--resource-path=.'])
+                          extra_args=[f'--reference-doc={ref}', f'--shift-heading-level-by={SHIFT}', '--resource-path=.'])
     d = Document(OUT)
     sec = d.sections[0]
     sec.page_width, sec.page_height = Cm(21), Cm(29.7)
