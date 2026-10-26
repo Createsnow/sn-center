@@ -8,7 +8,8 @@
 | --- | --- | --- |
 | [需求文档（PRD）](<SN 防重管控产品需求文档PRD.md>) | 业务规则的唯一来源（V30）：角色、SN 组成与编号、交付防重、状态迁移、计数口径、暂停交付、F-01 ～ F-23、待确认事项（8.4）、配置项（附录 C）与实现要点（附录 D） | 业务方、项目负责人、开发、测试 |
 | [业务流程说明](<SN 防重管控业务说明.md>) | 给业务方的流程说明：获取订单 → 选规则 → 生成 → 分配 → 交付到现场，订单变化、暂停交付、转单与转组织、怎样保证不重复；附录为生产订单同步规则 | 业务方、现场实施、新成员 |
-| [MES 对接说明](MES对接接口文档.md) | **对外接口契约**：业务概述（流程、SN 状态、rev 与批次类型）→ 接口总览 → MES 批次处理规范（批次报文、处理步骤、回执）→ 转移 → 异常处理 → 通用约定（含错误码）→ 接口定义；批次报文只在 3.1 定义一次，① ③ 引用。自成一体，可单独交给 MES 方 | MES 对接方 |
+| [MES 对接接口文档](MES对接接口文档.md) | **对外接口契约**（纯接口）：调用时序图 → 公共约定 → 各接口请求 / 应答数据结构与逐字段注释（含成功、退回、出错应答）→ 错误码。字段定义以本文为准 | MES 对接方、开发 |
+| [MES 对接说明](MES对接说明.md) | MES 对接的业务处理规则：SN 状态、rev 与批次类型、MES 批次处理步骤、转移、异常处理；与接口文档一起交给 MES 方 | MES 对接方、开发、测试 |
 | [MES 联调指南](<MES 联调指南.md>) | MES 方未接入时怎样验证：模拟 MES（接收推送、注入故障、扮演 MES 取批）、MES 接口契约测试、PRD 9.2 场景与自动化测试对照表、联调顺序 | 测试、开发、实施、MES 对接方 |
 | [系统技术方案](系统技术方案.md) | 正式评审稿：总体 / 数据 / 功能 / 非功能设计、风险；附录为配置项与错误码。Word 版用 `build_tech_docx.py` 生成（见第 5 节） | 评审、项目负责人、开发、运维 |
 | [运维手册](运维手册.md) | MySQL 准备、`.env`、启动方式、上线步骤（含 MES 联调）、清库重建、常见问题 | 运维、实施 |
@@ -66,7 +67,7 @@
 uv run --with pypandoc_binary --with python-docx --with pillow --with pymupdf python docs/build_tech_docx.py
 ```
 
-装有 LibreOffice 时目录带页码，否则只有标题。MES 对接说明只维护 Markdown 版，需要 Word 版交给 MES 方时同样生成（命令末尾加 `docs/MES对接接口文档.md`），不入库。图的源文件是 `images/系统技术方案/*.mmd`（Mermaid），改完后用 mermaid-cli 导出同名 PNG、SVG（白底，与现有图同样的宽度和倍率；无界面服务器上 mermaid-cli 用无头 Chromium）：
+装有 LibreOffice 时目录带页码，否则只有标题。MES 对接接口文档、MES 对接说明只维护 Markdown 版，需要 Word 版交给 MES 方时同样生成（命令末尾加文档路径，如 `docs/MES对接接口文档.md`），不入库。图的源文件是 `images/系统技术方案/*.mmd`（Mermaid），改完后用 mermaid-cli 导出同名 PNG、SVG（白底，与现有图同样的宽度和倍率；无界面服务器上 mermaid-cli 用无头 Chromium）：
 
 ```bash
 cd docs/images/系统技术方案
@@ -82,4 +83,4 @@ npx -y @mermaid-js/mermaid-cli@11.4.2 -i fig2-1-function.mmd -o fig2-1-function.
 | 预演、生成流程或接口 | 图 3-1 预演与生成时序 |
 | 推送、拉取、回执流程 | 图 3-2 交付时序 |
 
-MES 对接说明的 10 张图在 `images/MES对接说明/`：`*.archify.json` 是源文件（Archify 绘制），改完用 Archify `finalize` 生成 HTML，再用无头 Chromium 截取图中最大的 SVG（2 倍像素）导出同名 PNG；HTML 不入库。
+MES 对接说明与接口文档的图在 `images/MES对接说明/`：`*.archify.json` 是源文件（Archify 绘制），改完用 Archify `finalize` 生成 HTML，再用无头 Chromium 截取图中最大的 SVG（2 倍像素）导出同名 PNG；HTML 不入库。

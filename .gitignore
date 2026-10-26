@@ -40,3 +40,4 @@ __pycache__/
 .ruff_cache/
 *.egg-info/
 docs/MES对接接口文档.docx
+docs/MES对接说明.docx

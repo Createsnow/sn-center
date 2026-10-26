@@ -456,7 +456,7 @@ def _line(org: str, batch: dict, headers: dict, status: Any, body: Any) -> str:
 
 
 class Puller:
-    """扮演 MES 取批：③ 取批 → process → ④ 提交回执，remaining > 0 时继续取（对接说明 2.2、7.2 节）。
+    """扮演 MES 取批：③ 取批 → process → ④ 提交回执，remaining > 0 时继续取（对接说明第 2 章、接口文档 3.2）。
     每次请求带 Authorization: Bearer <工号>:<密钥>，不换令牌。"""
 
     PREFIX = "/api/mes/v1"

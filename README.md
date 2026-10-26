@@ -15,7 +15,8 @@
 | --- | --- |
 | [需求文档（PRD）](<docs/SN 防重管控产品需求文档PRD.md>) | 业务规则的唯一来源（V30）：功能 F-01 ～ F-23、通用规则 5.2、待确认事项、配置项与实现要点 |
 | [业务流程说明](<docs/SN 防重管控业务说明.md>) | 给业务方的流程说明：订单 → 选规则 → 生成 → 分配 → 交付到现场，订单变化、暂停交付、转单与转组织；附录为生产订单同步规则 |
-| [MES 对接说明](docs/MES对接接口文档.md) | 给 MES 方的接口契约：业务流程、接口调用、收批判断、转移规则、带注释的接口报文 |
+| [MES 对接接口文档](docs/MES对接接口文档.md) | 给 MES 方的纯接口文档：调用时序、各接口请求 / 应答数据结构与注释、错误码 |
+| [MES 对接说明](docs/MES对接说明.md) | MES 对接的业务处理规则：rev 与批次类型、收批判断、转移、异常处理 |
 | [系统技术方案](docs/系统技术方案.md) | 正式评审稿（Word 版用 `docs/build_tech_docx.py` 生成）：总体、数据、功能、非功能设计 |
 | [运维手册](docs/运维手册.md) | MySQL 准备、`.env`、启动方式、上线步骤、清库重建、排障 |
 | [MES 联调指南](<docs/MES 联调指南.md>) | MES 方未接入时的验证方法：模拟 MES、MES 接口契约测试、PRD 9.2 场景对照表 |
@@ -49,7 +50,7 @@ python start.py          # Windows 可双击 start.bat；需要 Python 3.12+、N
 | 操作痕迹 | 全部（按范围） | 登录、账户、生产组织与 MES 配置、订单同步与变更、规则、生成、分配、推送、拉取、回执、领取、转单、转组织全流程留痕（含失败）；筛选、导出；保存期与归档 |
 | 账户 / 生产组织 | 总部（账户仅系统管理员） | 页面账户（系统管理员 / 管理员 / 生产组织操作员 / 查询员）与 MES 接口账户（绑一个对接 MES 的组织，密钥加密保存、可随时查看或重置，可设来源地址白名单，连续认证失败锁定）；生产组织从金蝶同步，总部为每个组织配置 MES 对接（地址、认证方式、凭证加密保存、批次大小、超时、并发、时区），连接测试通过后才能开启 |
 
-MES 接口（`/api/mes/v1`，每次请求带 `Authorization: Bearer <工号>:<密钥>`）：`POST /batches/next`、`POST /batches/{batchNo}/receipt`、`GET /sn/delivered`、`GET /batches/{batchNo}/items`；本系统推送到 MES 提供的地址。契约见 [MES 对接说明](docs/MES对接接口文档.md)。
+MES 接口（`/api/mes/v1`，每次请求带 `Authorization: Bearer <工号>:<密钥>`）：`POST /batches/next`、`POST /batches/{batchNo}/receipt`、`GET /sn/delivered`、`GET /batches/{batchNo}/items`；本系统推送到 MES 提供的地址。接口见 [MES 对接接口文档](docs/MES对接接口文档.md)，处理规则见 [MES 对接说明](docs/MES对接说明.md)。
 
 ## 开发与测试
 
