@@ -111,7 +111,7 @@
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `batchNo` | String(40) | 是 | 照抄批次号 |
-| `code` | String | 是 | `OK` 已处理 / `NG` 整批退回；① 出错时填错误码（3.1.7） |
+| `code` | String | 是 | `OK` 已处理 / `NG` 整批退回；① 出错时填错误码（3.1.6） |
 | `message` | String | 是 | 处理说明；`NG` 时为退回原因，显示在总部页面 |
 | `processedAt` | String | 是 | MES 处理完成时间 |
 
@@ -151,7 +151,7 @@ Retry-After: 18
 
 ## 3. 接口说明
 
-每个接口按同一顺序说明：基本信息 → 请求参数 → 响应参数 → 请求示例 → 成功示例 → 失败示例 → 错误码。
+每个接口按同一顺序说明：基本信息（含请求头、请求体）→ 响应参数 → 请求示例 → 成功示例 → 失败示例 → 错误码。
 
 - 请求体、响应体用「数据结构 + 注释」说明，注释格式 `// 类型  出现  说明`；请求的「出现」为 必填 / 选填，响应的为 总是 / 仅成功 / 仅出错，嵌套对象内为 必有
 - 示例为完整 HTTP 报文，已排版；实际报文为紧凑 JSON
@@ -184,10 +184,6 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
    - `orgCode` 须为本组织；必填字段齐全
    - 交付批次须带 `pi`，`orgCode` 对应的生产组织在 MES 中须有这张 PI（如有该 PI 的生产订单），每条明细的 `pi` 须与批次头相同；不符时 `message` 写明原因，如「本组织 110 没有 PI 000001」
 5. 按批次类型处理并落库（规则见《MES 对接说明》），返回 200 + `OK`
-
-![图 3-1 推送与回执](images/MES对接说明/f6-push.png)
-
-#### 3.1.2 请求参数
 
 **请求头**
 
@@ -246,7 +242,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
 
 测试批次（`batchType = PING`，总部点「连接测试」时发送）：批次头同上但不带 `pi`，`items` 为 `[]`。MES 只校验身份和 `orgCode`，返回 `OK` / `NG`，不存储、不记批次号。
 
-#### 3.1.3 响应参数
+#### 3.1.2 响应参数
 
 **响应头**
 
@@ -257,7 +253,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
 
 **响应体**：回执（2.3.2）。重复送达时返回首次回执（含首次的 `processedAt`）；非 200 的响应体也按回执结构，`code` 填错误码。
 
-#### 3.1.4 请求示例
+#### 3.1.3 请求示例
 
 **交付批次**
 
@@ -303,7 +299,7 @@ X-Request-Id: 1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed
 {"schemaVersion": "1.0", "batchNo": "PING-20261026114705303", "batchType": "PING", "orgCode": "110", "createdAt": "2026-10-26 11:47:05.303", "itemsDigest": "sha256:4f53cda1…", "items": []}
 ```
 
-#### 3.1.5 成功示例
+#### 3.1.4 成功示例
 
 ```http
 HTTP/1.1 200 OK
@@ -312,7 +308,7 @@ Content-Type: application/json; charset=utf-8
 {"batchNo": "PS-110-20261026-000123", "code": "OK", "message": "已处理", "processedAt": "2026-10-26 11:47:07.215"}
 ```
 
-#### 3.1.6 失败示例
+#### 3.1.5 失败示例
 
 **整批退回**（HTTP 200，`code = NG`）
 
@@ -333,7 +329,7 @@ Retry-After: 60
 {"batchNo": "PS-110-20261026-000123", "code": "BATCH_IN_PROGRESS", "message": "批次正在处理", "processedAt": "2026-10-26 11:47:05.900"}
 ```
 
-#### 3.1.7 错误码
+#### 3.1.6 错误码
 
 | HTTP | `code` | 场景 | SN 系统处理 |
 | --- | --- | --- | --- |
@@ -373,10 +369,6 @@ MES 主动拉取一个批次：优先返回范围内最早的未回执批次（�
 3. 调 ③ 提交回执（`OK` / `NG`）
 4. `remaining > 0` 时回到第 1 步继续拉取
 
-![图 3-2 拉取与提交回执](images/MES对接说明/f7-pull.png)
-
-#### 3.2.2 请求参数
-
 **请求头**
 
 | 参数 | 必填 | 示例 | 说明 |
@@ -399,7 +391,7 @@ MES 主动拉取一个批次：优先返回范围内最早的未回执批次（�
 }
 ```
 
-#### 3.2.3 响应参数
+#### 3.2.2 响应参数
 
 **响应头**：`Content-Type`、`X-Request-ID`（总是）；`Content-Encoding: gzip`（请求带 `Accept-Encoding: gzip` 且响应超过 1 KB 时）。②～⑤ 相同。
 
@@ -412,7 +404,7 @@ MES 主动拉取一个批次：优先返回范围内最早的未回执批次（�
   "message": "成功",                          // String           总是    说明；无批次时为「暂无可拉取批次」，有暂停时注明枚数
   "batchNo": "PL-110-20261026-000046",       // String|null      总是    本次返回的批次号；无批次时为 null
   "timestamp": "2026-10-26 11:48:15.442",    // String           总是    响应时间
-  "batch": {                                 // Object|null      仅成功  批次，结构与 ① 请求体相同（3.1.2）；null 表示暂无可拉取批次
+  "batch": {                                 // Object|null      仅成功  批次，结构与 ① 请求体相同（3.1.1）；null 表示暂无可拉取批次
     "schemaVersion": "1.0",
     "batchNo": "PL-110-20261026-000046",
     "batchType": "NEW",
@@ -428,7 +420,7 @@ MES 主动拉取一个批次：优先返回范围内最早的未回执批次（�
 }
 ```
 
-#### 3.2.4 请求示例
+#### 3.2.3 请求示例
 
 ```http
 POST /api/mes/v1/batches/next HTTP/1.1
@@ -441,7 +433,7 @@ X-Request-ID: 7d3e9a10-5c2b-4f8e-b1a4-0c6d2e8f9b57
 {"pi": "000001", "billNo": null, "batchNo": null}
 ```
 
-#### 3.2.5 成功示例
+#### 3.2.4 成功示例
 
 **有批次**
 
@@ -487,7 +479,7 @@ X-Request-ID: 0c4f6a2e-8b1d-4e3a-9f57-6d2c1b0a9e84
 {"schemaVersion": "1.0", "code": "OK", "message": "暂无可拉取批次，30 枚暂停下发", "batchNo": null, "timestamp": "2026-10-26 11:53:00.118", "batch": null, "remaining": 0, "paused": 30}
 ```
 
-#### 3.2.6 失败示例
+#### 3.2.5 失败示例
 
 **指定的批次不存在**（HTTP 404）
 
@@ -509,7 +501,7 @@ X-Request-ID: 5b2d9c7e-1a4f-4e8b-b3c6-0f9a8d7e6c51
 {"schemaVersion": "1.0", "code": "BATCH_CONFIRMED", "message": "该批已确认，不用再处理", "batchNo": "PL-110-20261026-000046", "timestamp": "2026-10-26 11:48:16.020", "details": []}
 ```
 
-#### 3.2.7 错误码
+#### 3.2.6 错误码
 
 | HTTP | `code` | 场景 | 处理 |
 | --- | --- | --- | --- |
@@ -542,9 +534,7 @@ X-Request-ID: 5b2d9c7e-1a4f-4e8b-b3c6-0f9a8d7e6c51
 2. SN 系统校验回执：不符返回 422 `RECEIPT_MISMATCH`（原因见 `details`）；批次已作废返回 409 `BATCH_VOIDED`
 3. 受理成功返回 200：`OK` 回执批次成功；`NG` 回执批次失败，退回原因显示在总部页面
 
-#### 3.3.2 请求参数
-
-**请求头**：同 ②（3.2.2），`Content-Type: application/json` 必填。
+**请求头**：同 ②（3.2.1），`Content-Type: application/json` 必填。
 
 **Path 参数**
 
@@ -554,7 +544,7 @@ X-Request-ID: 5b2d9c7e-1a4f-4e8b-b3c6-0f9a8d7e6c51
 
 **请求体**：回执（2.3.2），`code` 只能为 `OK` / `NG`。
 
-#### 3.3.3 响应参数
+#### 3.3.2 响应参数
 
 **响应体结构**
 
@@ -577,7 +567,7 @@ X-Request-ID: 5b2d9c7e-1a4f-4e8b-b3c6-0f9a8d7e6c51
 | 首次提交 `NG` | 整批退回已登记，批次失败 | `FAILED` | `true` |
 | 已确认后再次提交 | 批次此前已确认，本次回执只存档 | 首次确认的结果 | `false` |
 
-#### 3.3.4 请求示例
+#### 3.3.3 请求示例
 
 ```http
 POST /api/mes/v1/batches/PL-110-20261026-000046/receipt HTTP/1.1
@@ -588,7 +578,7 @@ Content-Type: application/json
 {"batchNo": "PL-110-20261026-000046", "code": "OK", "message": "已处理", "processedAt": "2026-10-26 11:48:20.117"}
 ```
 
-#### 3.3.5 成功示例
+#### 3.3.4 成功示例
 
 **首次确认**
 
@@ -610,7 +600,7 @@ X-Request-ID: 8b5f2c9d-3e1a-4d76-a4c8-1e0f9d8c7b52
 {"schemaVersion": "1.0", "code": "OK", "message": "批次此前已确认，本次回执只存档", "batchNo": "PL-110-20261026-000046", "timestamp": "2026-10-26 11:49:02.771", "batchResult": "SUCCESS", "firstConfirmation": false}
 ```
 
-#### 3.3.6 失败示例
+#### 3.3.5 失败示例
 
 **回执与批次不符**（HTTP 422）
 
@@ -632,7 +622,7 @@ X-Request-ID: 1c7e4a9b-5d2f-4b68-9e03-7a6b5c4d3e21
 {"schemaVersion": "1.0", "code": "BATCH_VOIDED", "message": "批次已作废，不得再处理这批内容", "batchNo": "PL-110-20261026-000046", "timestamp": "2026-10-26 11:48:20.305", "details": []}
 ```
 
-#### 3.3.7 错误码
+#### 3.3.6 错误码
 
 | HTTP | `code` | 场景 | 处理 |
 | --- | --- | --- | --- |
@@ -658,9 +648,7 @@ X-Request-ID: 1c7e4a9b-5d2f-4b68-9e03-7a6b5c4d3e21
 | 格式 | 响应为 `application/json`，一页 SN；只读 |
 | 分页 | 游标分页：首页不带 `cursor`，之后带上一页的 `nextCursor`，直到 `nextCursor = null` |
 
-#### 3.4.2 请求参数
-
-**请求头**：同 ②（3.2.2），建议带 `Accept-Encoding: gzip`。
+**请求头**：同 ②（3.2.1），建议带 `Accept-Encoding: gzip`。
 
 **Query 参数**
 
@@ -670,7 +658,7 @@ X-Request-ID: 1c7e4a9b-5d2f-4b68-9e03-7a6b5c4d3e21
 | `cursor` | String | 否 | 空 | 分页游标：首页留空，之后填上一页的 `nextCursor` |
 | `pageSize` | Number | 否 | 1000 | 每页条数，最大 5000 |
 
-#### 3.4.3 响应参数
+#### 3.4.2 响应参数
 
 **响应体结构**
 
@@ -683,7 +671,7 @@ X-Request-ID: 1c7e4a9b-5d2f-4b68-9e03-7a6b5c4d3e21
   "timestamp": "2026-10-26 12:00:00.512",    // String           总是    响应时间
   "items": [                                 // Array            仅成功  本页 SN；无数据时为 []
     {
-      "sn": "HX100000001A",                  // …                必有    交付明细 11 个字段（3.1.2），此处从略
+      "sn": "HX100000001A",                  // …                必有    交付明细 11 个字段（3.1.1），此处从略
       "status": "PUSHED",                    // String           必有    SN 状态（附录 A）
       "batchNo": "PS-110-20261026-000123",   // String|null      必有    当前所在批次
       "deliveredAt": "2026-10-26 11:47:07.000" // String|null    必有    确认已下发的时间
@@ -694,7 +682,7 @@ X-Request-ID: 1c7e4a9b-5d2f-4b68-9e03-7a6b5c4d3e21
 }
 ```
 
-#### 3.4.4 请求示例
+#### 3.4.3 请求示例
 
 ```http
 GET /api/mes/v1/sn/delivered?pi=000001&pageSize=1000 HTTP/1.1
@@ -705,7 +693,7 @@ Accept-Encoding: gzip
 
 下一页在 Query 中加上一页的 `nextCursor`，如 `?pi=000001&pageSize=1000&cursor=10086`。
 
-#### 3.4.5 成功示例
+#### 3.4.4 成功示例
 
 **有下一页**
 
@@ -742,7 +730,7 @@ X-Request-ID: 7a4c1e8b-2d6f-4b93-a5e7-0c9b8a7d6e45
 {"schemaVersion": "1.0", "code": "OK", "message": "成功", "batchNo": null, "timestamp": "2026-10-26 12:00:01.204", "items": [], "nextCursor": null}
 ```
 
-#### 3.4.6 失败示例
+#### 3.4.5 失败示例
 
 **参数不合法**（HTTP 400）
 
@@ -754,7 +742,7 @@ X-Request-ID: 5e2a9c6d-1b8f-4d37-9a40-3f2e1d0c9b86
 {"schemaVersion": "1.0", "code": "INVALID_REQUEST", "message": "参数不合法：pageSize", "batchNo": null, "timestamp": "2026-10-26 12:00:00.512", "details": []}
 ```
 
-#### 3.4.7 错误码
+#### 3.4.6 错误码
 
 | HTTP | `code` | 场景 | 处理 |
 | --- | --- | --- | --- |
@@ -776,9 +764,7 @@ X-Request-ID: 5e2a9c6d-1b8f-4d37-9a40-3f2e1d0c9b86
 | 格式 | 响应为 `application/json`，一页 SN；只读 |
 | 分页 | 同 ④ |
 
-#### 3.5.2 请求参数
-
-**请求头**：同 ②（3.2.2），建议带 `Accept-Encoding: gzip`。
+**请求头**：同 ②（3.2.1），建议带 `Accept-Encoding: gzip`。
 
 **Path / Query 参数**
 
@@ -788,11 +774,11 @@ X-Request-ID: 5e2a9c6d-1b8f-4d37-9a40-3f2e1d0c9b86
 | `cursor` | Query | String | 否 | 空 | 分页游标：首页留空，之后填上一页的 `nextCursor` |
 | `pageSize` | Query | Number | 否 | 1000 | 每页条数，最大 5000 |
 
-#### 3.5.3 响应参数
+#### 3.5.2 响应参数
 
-与 ④（3.4.3）相同，区别仅在 `batchNo` 为所查批次号。
+与 ④（3.4.2）相同，区别仅在 `batchNo` 为所查批次号。
 
-#### 3.5.4 请求示例
+#### 3.5.3 请求示例
 
 ```http
 GET /api/mes/v1/batches/PS-110-20261026-000123/items?pageSize=1000 HTTP/1.1
@@ -801,7 +787,7 @@ Authorization: Bearer M110001:Xk9pQ2vL7sRtY3wZ8aBcD4eF
 Accept-Encoding: gzip
 ```
 
-#### 3.5.5 成功示例
+#### 3.5.4 成功示例
 
 ```http
 HTTP/1.1 200 OK
@@ -826,7 +812,7 @@ X-Request-ID: 3b8e5a2c-9d1f-4c64-a7b3-6e5d4c3b2a19
 }
 ```
 
-#### 3.5.6 失败示例
+#### 3.5.5 失败示例
 
 **批次不存在**（HTTP 404）
 
@@ -838,7 +824,7 @@ X-Request-ID: 6d3a0f8c-2e5b-4a71-9c46-1b0a9f8e7d52
 {"schemaVersion": "1.0", "code": "BATCH_NOT_FOUND", "message": "批次号不存在，或不属于本组织", "batchNo": "PS-110-20261026-000999", "timestamp": "2026-10-26 12:01:10.031", "details": []}
 ```
 
-#### 3.5.7 错误码
+#### 3.5.6 错误码
 
 | HTTP | `code` | 场景 | 处理 |
 | --- | --- | --- | --- |
@@ -886,7 +872,7 @@ X-Request-ID: 6d3a0f8c-2e5b-4a71-9c46-1b0a9f8e7d52
 
 ## 附录 B 错误码
 
-SN 系统返回（②～⑤）的全部错误码如下；MES 在 ① 中的响应码见 3.1.7。
+SN 系统返回（②～⑤）的全部错误码如下；MES 在 ① 中的响应码见 3.1.6。
 
 | HTTP | `code` | 接口 | 说明 | 处理 |
 | --- | --- | --- | --- | --- |
