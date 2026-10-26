@@ -146,9 +146,6 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
 
 各类批次共用一个结构，`items[]` 按 `batchType` 带不同字段。注释中「必填」一栏的取值：
 
-- `必填`：各类批次都带
-- `交付`：只有交付批次带，且必填。交付批次指 `NEW` / `SAME_ORG_TRANSFER` / `TRANSFER_IN` / `REMAP`，其明细称**交付明细**，②④⑤ 沿用
-- `转移`：只有转移批次带，且必填。转移批次指 `TRANSFER_OUT`，发给原组织，其明细称**转移明细**
 - 测试批次（`PING`，连接测试时发送）：不带 `pi`，`items` 为 `[]`
 
 ```jsonc
@@ -164,17 +161,17 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
     {
       "sn": "HX100000001A",                  // String(64)       必填  完整 SN
       "rev": 1,                              // Number           必填  挂靠版本，正整数，越大越新
-      "serial": "000001",                    // String(12)       交付  流水号（可能为 36 进制写法）
-      "serialDec": "1",                      // String(20)       交付  十进制流水，按字符串保存
-      "serialPi": "000001",                  // String(64)       交付  流水所属 PI；转入的 SN 可能与 pi 不同
-      "pi": "000001",                        // String(64)       交付  当前所属 PI，与批次头 pi 相同
-      "billNo": "VT2026090001",              // String(64)       交付  单据号（EEP 生产订单号）
-      "billSeq": 1,                          // Number           交付  单据行号
+      "serial": "000001",                    // String(12)       必填  流水号（可能为 36 进制写法）
+      "serialDec": "1",                      // String(20)       必填  十进制流水，按字符串保存
+      "serialPi": "000001",                  // String(64)       必填  流水所属 PI；转入的 SN 可能与 pi 不同
+      "pi": "000001",                        // String(64)       必填  当前所属 PI，与批次头 pi 相同
+      "billNo": "VT2026090001",              // String(64)       必填  单据号（EEP 生产订单号）
+      "billSeq": 1,                          // Number           必填  单据行号
       "attachNo": "A01",                     // String(64)|null  必填  附件项次，生成时写定，转单、转组织不变
-      "materialCode": "9148363",             // String(64)|null  交付  物料编码
-      "length": "0100",                      // String(32)|null  交付  米标，原样保存
-      "customerCode": "0001",                // String(64)       交付  客户编码
-      "toOrgCode": "120"                     // String(64)       转移  转入生产组织编码
+      "materialCode": "9148363",             // String(64)|null  必填  物料编码
+      "length": "0100",                      // String(32)|null  必填  米标，原样保存
+      "customerCode": "0001",                // String(64)       必填  客户编码
+      "toOrgCode": "120"                     // String(64)       选填  转入生产组织编码
     }
   ]
 }
