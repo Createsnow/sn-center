@@ -54,6 +54,8 @@ DELIVERY_FIELDS = (
     "customerCode",
 )
 TRANSFER_OUT_FIELDS = ("sn", "rev", "toOrgCode")
+#: 交付类批次类型：MES 处理都一样（逐枚按 rev 新增或覆盖），类型只说明这批号从哪来
+DELIVERY_TYPES = ("NEW", "SAME_ORG_TRANSFER", "TRANSFER_IN", "REMAP")
 
 #: 故障模式（POST /_mock/fault 的 mode）
 FAULT_MODES = {
@@ -154,17 +156,18 @@ class MesSim:
             return "batchNo、items 必填"
         if batch.get("orgCode") != org:
             return f"orgCode {batch.get('orgCode')} 不是本组织 {org}"
-        if kind not in ("DELIVERY", "TRANSFER_OUT"):
+        if kind not in (*DELIVERY_TYPES, "TRANSFER_OUT"):
             return f"不认识的 batchType {kind}"
+        delivery = kind in DELIVERY_TYPES
         if batch.get("count") != len(items):
             return f"count = {batch.get('count')}，items 有 {len(items)} 条"
         if len(items) > self.max_batch:
             return f"超过单批上限 {self.max_batch}"
         if not isinstance(batch.get("itemsDigest"), str) or not batch["itemsDigest"]:
             return "itemsDigest 必填"
-        if kind == "DELIVERY" and not batch.get("pi"):
+        if delivery and not batch.get("pi"):
             return "交付批次 pi 必填"
-        need = DELIVERY_FIELDS if kind == "DELIVERY" else TRANSFER_OUT_FIELDS
+        need = DELIVERY_FIELDS if delivery else TRANSFER_OUT_FIELDS
         for x in items:
             if not isinstance(x, dict):
                 return "items 每条须为对象"
@@ -175,7 +178,7 @@ class MesSim:
                 return f"{x['sn']} 的 rev 须为正整数"
         if len({x["sn"] for x in items}) != len(items):
             return "批内 SN 重复"
-        if kind == "DELIVERY":
+        if delivery:
             bad = [x["sn"] for x in items if x["pi"] != batch["pi"]]
             if bad:
                 return f"{bad[0]} 的 pi 不等于批次头 pi"
@@ -224,8 +227,8 @@ class MesSim:
                         "materialCode": x.get("materialCode"),
                         "customerCode": x["customerCode"],
                         "length": x.get("length"),
-                        # 选填，仅记录备查；处理只看 rev
-                        "bizType": x.get("bizType"),
+                        # 记下最近一次的批次类型备查；处理只看 rev
+                        "batchType": batch["batchType"],
                     }
                 store[x["sn"]] = rec
             receipt = _receipt(no)

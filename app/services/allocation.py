@@ -261,7 +261,7 @@ def push_status(pi: str) -> list[dict]:
     """按生产组织：推送任务状态、「第 i / N 次」、已推送枚数、剩余次数、失败原因。"""
     orgs = db.column(
         "SELECT DISTINCT factory_code FROM sn_item WHERE pi_no = %s AND factory_code IS NOT NULL "
-        "UNION SELECT DISTINCT factory_code FROM sn_delivery_batch WHERE pi_no = %s AND batch_type = 'DELIVERY'",
+        "UNION SELECT DISTINCT factory_code FROM sn_delivery_batch WHERE pi_no = %s AND batch_type <> 'TRANSFER_OUT'",
         pi,
         pi,
     )
@@ -278,15 +278,15 @@ def push_status(pi: str) -> list[dict]:
             "SELECT COUNT(*) FROM sn_item WHERE factory_code = %s AND pi_no = %s AND status = 'PUSHED'", org, pi
         )
         done_batches = db.count(
-            "SELECT COUNT(*) FROM sn_delivery_batch WHERE factory_code = %s AND pi_no = %s AND batch_type = 'DELIVERY' "
-            "AND result IN ('SUCCESS','SUCCESS_CONFLICT')",
+            "SELECT COUNT(*) FROM sn_delivery_batch WHERE factory_code = %s AND pi_no = %s "
+            "AND batch_type <> 'TRANSFER_OUT' AND result IN ('SUCCESS','SUCCESS_CONFLICT')",
             org,
             pi,
         )
         last_fail = db.one(
             "SELECT batch_no, fail_reason, result, push_state FROM sn_delivery_batch WHERE factory_code = %s AND "
             "pi_no = %s "
-            "AND batch_type = 'DELIVERY' AND (result = 'FAILED' OR push_state IN ('WAIT_RETRY','EXHAUSTED')) "
+            "AND batch_type <> 'TRANSFER_OUT' AND (result = 'FAILED' OR push_state IN ('WAIT_RETRY','EXHAUSTED')) "
             "ORDER BY id DESC LIMIT 1",
             org,
             pi,

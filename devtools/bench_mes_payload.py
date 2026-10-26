@@ -73,7 +73,7 @@ def batch(items: list[dict]) -> dict:
     return {
         "schemaVersion": "1.0",
         "batchNo": "PS-110-20261019-000123",
-        "batchType": "DELIVERY",
+        "batchType": "NEW",
         "orgCode": "110",
         "pi": "000001",
         "count": len(items),

@@ -67,10 +67,10 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
         "materialCode",
         "length",
         "customerCode",
-        "bizType",
     }
+    assert body["batchType"] == "NEW"
     assert item["billNo"] == bill and item["billSeq"] == 1 and item["pi"] == pi and item["serialPi"] == pi
-    assert isinstance(item["serialDec"], str) and item["length"] == "0100" and item["bizType"] == "FIRST"
+    assert isinstance(item["serialDec"], str) and item["length"] == "0100"
     h = MES.received[-1]["headers"]
     # 默认发原始 JSON，不带 Content-Encoding
     assert h["x-sn-batch-no"] == batches[-1]["batch_no"] and "content-encoding" not in h
@@ -380,6 +380,32 @@ def test_legacy_conflict_alert_resend_bumps_rev(w, sql):
     a = sql.one("SELECT id FROM sn_delivery_alert WHERE sn = %s", it["sn"])
     ok(w.api.post(f"/api/delivery/alerts/{a['id']}/handle", m(action="RESEND", note="以本系统为准"), w.admin))
     assert sql.one("SELECT rev, status FROM sn_item WHERE id = %s", it["id"]) == {"rev": 2, "status": "TO_PUSH"}
+    # 当场建改挂批次，不回号池
+    rb = sql.one(
+        "SELECT b.batch_type, b.qty FROM sn_item i JOIN sn_delivery_batch b ON b.batch_no = i.delivery_batch_no "
+        "WHERE i.id = %s",
+        it["id"],
+    )
+    assert rb == {"batch_type": "REMAP", "qty": 1}
     w.push()
-    assert MES.store[org][it["sn"]]["rev"] == 2 and MES.store[org][it["sn"]]["bizType"] == "REMAP"
+    assert MES.store[org][it["sn"]]["rev"] == 2 and MES.store[org][it["sn"]]["batchType"] == "REMAP"
     assert sql.scalar("SELECT status FROM sn_item WHERE id = %s", it["id"]) == "PUSHED"
+
+
+def test_pool_claims_one_batch_type_per_batch(w, sql):
+    """号池里混有不同类型的号（如暂停期间留在号池的改挂）：认领时按类型分批，一批只有一种 batchType。"""
+    from app.services import delivery
+
+    org, pi, bill = setup_pi(w, qty=6, batch_size=10)
+    w.allocate(pi)
+    ids = [r["id"] for r in sql.all("SELECT id FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
+    sql.exec("UPDATE sn_item SET push_type = 'REASSIGN' WHERE id IN (%s, %s)", *ids[4:])
+    assert delivery.remaining_pushes(org, pi)["pushes"] == 2, "按类型分批折算次数"
+    w.push()
+    rows = sql.all("SELECT batch_type, qty FROM sn_delivery_batch WHERE pi_no = %s ORDER BY id", pi)
+    assert [(r["batch_type"], r["qty"]) for r in rows] == [("NEW", 4), ("REMAP", 2)]
+    got = [x["batch"]["batchType"] for x in MES.received if x["org"] == org and x["batch"]["batchType"] != "PING"]
+    assert got == ["NEW", "REMAP"]
+    # 批次查询「交付」= 全部交付类
+    assert ok(w.api.get(f"/api/delivery/batches?pi={pi}&batch_type=DELIVERY", w.admin))["total"] == 2
+    assert ok(w.api.get(f"/api/delivery/batches?pi={pi}&batch_type=REMAP", w.admin))["total"] == 1

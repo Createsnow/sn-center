@@ -76,7 +76,7 @@
       "y": 310,
       "label": "① 推送批次（转入）",
       "variant": "emphasis",
-      "note": "bizType = CROSS_ORG_TRANSFER"
+      "note": "batchType = TRANSFER_IN"
     },
     {
       "id": "b2",

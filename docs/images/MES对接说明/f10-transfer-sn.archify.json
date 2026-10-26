@@ -74,7 +74,7 @@
       "col": 4,
       "type": "frontend",
       "label": "推本组织 MES",
-      "sublabel": "已持有 SAME_ORG_TRANSFER / 未持有 FIRST"
+      "sublabel": "已持有 SAME_ORG_TRANSFER 当场建批 / 未持有 NEW"
     },
     {
       "id": "c1",
@@ -82,7 +82,7 @@
       "col": 3,
       "type": "frontend",
       "label": "推转入组织 MES",
-      "sublabel": "曾持有 CROSS_ORG_TRANSFER / 否则 FIRST"
+      "sublabel": "曾持有 TRANSFER_IN 当场建批 / 否则 NEW"
     },
     {
       "id": "c2",

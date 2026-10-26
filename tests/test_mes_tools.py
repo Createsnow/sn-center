@@ -95,7 +95,7 @@ class _RejectsWith400(MockMes):
     [
         (_RegistersRejects, {"C15", "C16"}),
         (_IgnoresDigest, {"C07"}),
-        (_RejectsWith400, {"C02", "C15", "C16", "C17", "C18", "C19", "C20"}),
+        (_RejectsWith400, {"C02", "C14", "C15", "C16", "C17", "C18", "C19", "C20"}),
     ],
 )
 def test_conformance_catches_broken_mes(cls, failed):

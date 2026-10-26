@@ -7,7 +7,7 @@
       <el-option v-for="s in ['PUSH', 'PULL']" :key="s" :value="s" :label="batchSourceLabel(s)" />
     </el-select>
     <el-select v-model="f.batch_type" clearable :placeholder="t('query.batchType')">
-      <el-option v-for="s in ['DELIVERY', 'TRANSFER_OUT']" :key="s" :value="s" :label="batchTypeLabel(s)" />
+      <el-option v-for="s in BATCH_TYPES" :key="s" :value="s" :label="batchTypeLabel(s)" />
     </el-select>
     <el-select v-model="f.result" clearable :placeholder="t('query.result')">
       <el-option v-for="s in BATCH_RESULTS" :key="s" :value="s" :label="batchResultLabel(s)" />
@@ -60,7 +60,8 @@ import { usePaged } from "@/composables/usePaged";
 import { useFactories } from "@/composables/useFactories";
 import { useTime } from "@/composables/useTime";
 import {
-  BATCH_RESULTS, BATCH_RESULT_TYPE, batchResultLabel, batchSourceLabel, batchTypeLabel, confirmMethodLabel, pushStateLabel,
+  BATCH_RESULTS, BATCH_RESULT_TYPE, BATCH_TYPES, batchResultLabel, batchSourceLabel, batchTypeLabel, confirmMethodLabel,
+  pushStateLabel,
 } from "@/constants";
 import FactorySelect from "@/components/FactorySelect.vue";
 import { trimmed } from "./filters";

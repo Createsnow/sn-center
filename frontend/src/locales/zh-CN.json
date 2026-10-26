@@ -157,7 +157,11 @@
     "PULL": "拉取"
   },
   "batchType": {
-    "DELIVERY": "交付",
+    "DELIVERY": "交付（全部）",
+    "NEW": "首次下发",
+    "SAME_ORG_TRANSFER": "同组织转移",
+    "TRANSFER_IN": "转入",
+    "REMAP": "改挂",
     "TRANSFER_OUT": "转出"
   },
   "confirmMethod": {

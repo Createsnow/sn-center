@@ -8,14 +8,15 @@ from app.core.security import CurrentUser
 from app.db.session import db, marks
 from app.services import audit, changes, factories
 from app.services.delivery.batches import (
-    DELIVERY,
     FAILED,
     M_MANUAL,
+    NEW,
+    TRANSFER_OUT,
     UNCONFIRMED,
     VOIDED,
     XO_KEY,
     batch_json,
-    build_transfer_delivery,
+    build_delivery_now,
     build_transfer_out,
     must_batch,
 )
@@ -66,8 +67,8 @@ def manual_confirm(cu: CurrentUser, batch_no: str | None, reason: str | None, ba
 
 def void(cu: CurrentUser, batch_no: str | None, reason: str | None, basis: str | None) -> dict:
     """作废：MES 没有处理的批次（整批拒绝、报文过大、认证或地址错误，或书面确认未处理的未确认批次）。
-    交付批次的号清除批次号、回到待推送（未入批），rev 不变；转移建立的交付批次（带转移单号）按原号重建新的
-    转移交付批次（暂停交付的号留在号池）；转出批次按原明细重建新的转出批次。重建的都自动推送。"""
+    交付类批次的号清除批次号、rev 不变：首次下发（NEW）的回到待推送（未入批）；其余类型（转移、改挂）按原号当场重建
+    同类型的新批次（暂停交付的号留在号池）；转出批次按原明细重建新的转出批次。重建的都自动推送。"""
     r, bs = _check_manual(reason, basis)
     rebuilt: list[dict] = []
     with db.tx():
@@ -89,7 +90,7 @@ def void(cu: CurrentUser, batch_no: str | None, reason: str | None, basis: str |
             b["id"],
         )
         bills: set[str] = set()
-        if b["batch_type"] == DELIVERY:
+        if b["batch_type"] != TRANSFER_OUT:
             bills = set(db.column("SELECT DISTINCT bill_no FROM sn_item WHERE delivery_batch_no = %s", b["batch_no"]))
             ids = db.column(
                 "SELECT id FROM sn_item WHERE delivery_batch_no = %s AND status = 'TO_PUSH' FOR UPDATE", b["batch_no"]
@@ -102,8 +103,8 @@ def void(cu: CurrentUser, batch_no: str | None, reason: str | None, basis: str |
             )
             # 先重算暂停标记（入批期间不暂停），暂停交付的号不进重建的批次
             changes.refresh_items(bills)
-            if b["transfer_doc_no"] and ids and factories.is_mes(b["factory_code"]):
-                rebuilt = build_transfer_delivery(
+            if b["batch_type"] != NEW and ids and factories.is_mes(b["factory_code"]):
+                rebuilt = build_delivery_now(
                     cu,
                     b["factory_code"],
                     b["pi_no"],
@@ -151,7 +152,7 @@ def void(cu: CurrentUser, batch_no: str | None, reason: str | None, basis: str |
                 + (f" rebuilt={','.join(x['batch_no'] for x in rebuilt)}" if rebuilt else "")
             ),
         )
-    if b["batch_type"] == DELIVERY:
+    if b["batch_type"] != TRANSFER_OUT:
         for no in bills:
             kick_bill(no)
         if b["pi_no"] and factories.is_mes(b["factory_code"]):
@@ -204,6 +205,12 @@ def handle_alert(cu: CurrentUser, alert_id: int, action: str | None, note: str |
             )
             org, pi = it["factory_code"], it["pi_no"]
             detail = f"rev {it['rev']} -> {rev}"
+            # MES 已持有：当场建改挂（REMAP）批次；先重算暂停标记，暂停交付的号留在号池
+            changes.refresh_items([it["bill_no"]])
+            if factories.is_mes(org):
+                built = build_delivery_now(cu, org, pi, [it["id"]])
+                if built:
+                    detail += f" batch={built[0]['batch_no']}"
         elif act == "CLOSE":
             detail = "closed"
         else:

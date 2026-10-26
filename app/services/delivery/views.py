@@ -8,7 +8,7 @@ from app.core import utils as util
 from app.core.security import CurrentUser
 from app.db.session import db
 from app.services import factories
-from app.services.delivery.batches import BATCH_FIELDS, batch_json, must_batch
+from app.services.delivery.batches import BATCH_FIELDS, IS_DELIVERY, batch_json, must_batch
 
 
 def list_batches(
@@ -25,6 +25,10 @@ def list_batches(
     fsql, fargs = factories.scope_sql(cu.read_factories(factory))
     where = " WHERE 1=1" + fsql
     args = list(fargs)
+    if util.trim(batch_type) == "DELIVERY":
+        # 「交付」= 全部交付类批次（NEW / SAME_ORG_TRANSFER / TRANSFER_IN / REMAP）
+        where += f" AND {IS_DELIVERY}"
+        batch_type = None
     for col, v in (
         ("pi_no", pi),
         ("batch_no", batch_no),

@@ -68,7 +68,7 @@ def item_stats(pis: list[str]) -> dict[str, dict]:
             k: int(r[k] or 0) for k in ("pending", "allocated", "transferred_in", "unbatched", "suspended")
         }
     for r in db.all(
-        "SELECT pi_no, COUNT(*) n FROM sn_delivery_batch WHERE batch_type = 'DELIVERY' AND pi_no IN (" + ph + ") "
+        "SELECT pi_no, COUNT(*) n FROM sn_delivery_batch WHERE batch_type <> 'TRANSFER_OUT' AND pi_no IN (" + ph + ") "
         "AND (result = 'FAILED' OR (result = 'UNCONFIRMED' AND push_state = 'EXHAUSTED')) GROUP BY pi_no",
         *pis,
     ):

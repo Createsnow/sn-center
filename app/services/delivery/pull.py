@@ -63,7 +63,7 @@ def _earliest_unconfirmed(org: str, mes: bool, pi: str | None, bill: str | None,
     parts, args = [], []
     if mes:
         parts.append(
-            "SELECT b.* FROM sn_delivery_batch b WHERE b.factory_code = %s AND b.batch_type = 'DELIVERY' "
+            "SELECT b.* FROM sn_delivery_batch b WHERE b.factory_code = %s AND b.batch_type <> 'TRANSFER_OUT' "
             "AND b.result = 'UNCONFIRMED'" + dc + ex
         )
         args += [org, *da, *exa]

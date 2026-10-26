@@ -89,7 +89,7 @@
       "from": "sn",
       "to": "mes",
       "y": 430,
-      "label": "① 推送批次 · CROSS_ORG_TRANSFER",
+      "label": "① 推送批次 · TRANSFER_IN",
       "variant": "emphasis",
       "note": "本地没有，新增"
     },

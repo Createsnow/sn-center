@@ -157,7 +157,11 @@
     "PULL": "Kéo"
   },
   "batchType": {
-    "DELIVERY": "Giao",
+    "DELIVERY": "Giao (tất cả)",
+    "NEW": "Giao lần đầu",
+    "SAME_ORG_TRANSFER": "Chuyển cùng tổ chức",
+    "TRANSFER_IN": "Chuyển đến",
+    "REMAP": "Gán lại",
     "TRANSFER_OUT": "Chuyển đi"
   },
   "confirmMethod": {

@@ -111,7 +111,7 @@ class Runner:
     def sn(self, i: int) -> str:
         return f"{self.prefix}{i:06d}"
 
-    def delivery(self, i: int, rev: int, pi: str | None = None, biz: str = "FIRST", **extra: Any) -> dict:
+    def delivery(self, i: int, rev: int, pi: str | None = None, **extra: Any) -> dict:
         """交付项；单据行号随 rev 变（rev < 3 为 1，否则为 2），便于在 MES 侧核对是否覆盖。"""
         return {
             "sn": self.sn(i),
@@ -125,14 +125,13 @@ class Runner:
             "materialCode": "CT-M1",
             "length": "0100",
             "customerCode": "CT-C1",
-            "bizType": biz,
             **extra,
         }
 
     def transfer_out(self, i: int, rev: int, to_org: str = "CT-TO") -> dict:
         return {"sn": self.sn(i), "rev": rev, "toOrgCode": to_org}
 
-    def batch(self, items: list[dict], kind: str = "DELIVERY", no: str | None = None, **head: Any) -> dict:
+    def batch(self, items: list[dict], kind: str = "NEW", no: str | None = None, **head: Any) -> dict:
         pi = head.pop("pi", self.pi)
         obj = {
             "schemaVersion": SCHEMA,
@@ -300,7 +299,7 @@ class Runner:
 
         def overwrite(c: Check) -> None:
             self.need("b1" in st, "依赖 C05 未通过")
-            b = self.batch([self.delivery(1, 3, biz="SAME_ORG_TRANSFER")])
+            b = self.batch([self.delivery(1, 3)], "SAME_ORG_TRANSFER")
             self.ok(self.send(b), b)
             st["rev3"] = True
             c.notes.append(f"请在 MES 侧确认 {self.sn(1)} 已覆盖为 rev = 3、单据行号 2")
@@ -334,18 +333,18 @@ class Runner:
 
         def transfer_back(c: Check) -> None:
             self.need("b1" in st, "依赖 C05 未通过")
-            b = self.batch([self.delivery(2, 3, biz="CROSS_ORG_TRANSFER")])
+            b = self.batch([self.delivery(2, 3)], "TRANSFER_IN")
             self.ok(self.send(b), b)
             c.notes.append(f"请在 MES 侧确认 {self.sn(2)} 已清除「已转走」，rev = 3、单据行号 2")
 
         def unknown_fields(c: Check) -> None:
-            items = [self.delivery(7, 1, futureField="x"), self.delivery(8, 1, biz="FUTURE_VALUE")]
+            items = [self.delivery(7, 1, futureField="x"), self.delivery(8, 1)]
             b = self.batch(items, futureHead={"a": 1})
             self.ok(self.send(b), b)
-            no_biz = self.delivery(9, 1)
-            del no_biz["bizType"]
-            b2 = self.batch([no_biz])
+            b2 = self.batch([self.delivery(9, 1)], "REMAP")
             self.ok(self.send(b2), b2)
+            b3 = self.batch([self.delivery(9, 1)], "FUTURE_TYPE")
+            self.ng(self.send(b3), b3, "不认识的 batchType 应整批退回")
 
         def reject_then_fix(c: Check, why: str, bad: dict, good: dict) -> None:
             self.ng(self.send(bad), bad, why)
@@ -445,7 +444,12 @@ class Runner:
                 transfer_missing,
             ),
             ("C13", "转回原组织：rev 更大，覆盖并清除已转走", "4.2 逐枚处理；5.3", transfer_back),
-            ("C14", "不认识的字段、bizType 未知取值或缺失：照常处理", "7.2 字段与数据格式；8.1 Body A", unknown_fields),
+            (
+                "C14",
+                "不认识的字段照常处理；四种交付类 batchType 都按交付处理；不认识的 batchType 整批 NG",
+                "4.2 分流；7.2 字段与数据格式；8.1 Body A",
+                unknown_fields,
+            ),
             ("C15", "count 与 items 不符：NG；修正后同一批次号重送能处理", "4.2 整批校验；6.2", count_bad),
             ("C16", "orgCode 不是本组织：NG；修正后同一批次号重送能处理", "4.2 整批校验", org_bad),
             ("C17", "批内 SN 重复：NG", "4.2 整批校验", dup_sn),

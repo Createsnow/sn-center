@@ -1,6 +1,7 @@
 """交付批次（5.2.5 第 2–8 条、F-11 推送、F-12 拉取、F-19 只读）。
 
-统一批次：交付批次（含转出批次）只由本系统建立——推送任务建批，或 MES 取批时范围内没有未确认批次而建批；
+统一批次：交付批次（含转出批次）只由本系统建立——推送任务建批，或 MES 取批时范围内没有未确认批次而建批，
+或转移、确认物料对应、告警重推、作废重建时当场建批；一批只有一种批次类型（batchType）；
 批次号、所含 SN 及其挂靠和 rev 建立后都不再改变（请求体 body_gz 写定，推送与拉取送达的内容相同）。
 批次以 MES 回执确认（推送时在应答中，拉取时另行提交）；回执须与批次逐枚对应，不符时批次记为失败；
 先到的回执生效，后到的只存档。
@@ -29,7 +30,7 @@ from app.services.delivery.batches import (
     XO_KEY,
     batch_json,
     build_delivery,
-    build_transfer_delivery,
+    build_delivery_now,
     build_transfer_out,
     claim,
     must_batch,
@@ -58,7 +59,7 @@ __all__ = [
     "batch_items_page",
     "batch_json",
     "build_delivery",
-    "build_transfer_delivery",
+    "build_delivery_now",
     "build_transfer_out",
     "claim",
     "export_rows",

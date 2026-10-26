@@ -284,13 +284,16 @@ def test_material_map_reassigns_delivered_items(w, api, sql):
         "SELECT status, push_type, rev, delivery_batch_no FROM sn_item WHERE bill_no = %s AND bill_seq = 3", bill
     )
     assert len(rows) == 4
-    assert {(r["status"], r["push_type"], r["rev"], r["delivery_batch_no"]) for r in rows} == {
-        ("TO_PUSH", "REASSIGN", 2, None)
-    }
+    assert {(r["status"], r["push_type"], r["rev"]) for r in rows} == {("TO_PUSH", "REASSIGN", 2)}
+    # 确认对应时当场建改挂（REMAP）批次，不回号池
+    nos = {r["delivery_batch_no"] for r in rows}
+    assert len(nos) == 1 and None not in nos
+    assert sql.scalar("SELECT batch_type FROM sn_delivery_batch WHERE batch_no = %s", nos.pop()) == "REMAP"
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND bill_seq = 2 AND rev = 1", bill) == 3
     w.push()
-    item = MES.received[-1]["batch"]["items"][0]
-    assert (item["rev"], item["billSeq"], item["materialCode"], item["bizType"]) == (2, 3, "M9", "REMAP")
+    got = MES.received[-1]["batch"]
+    item = got["items"][0]
+    assert (got["batchType"], item["rev"], item["billSeq"], item["materialCode"]) == ("REMAP", 2, 3, "M9")
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND status = 'PUSHED' AND rev = 2", bill) == 4
 
 

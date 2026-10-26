@@ -78,9 +78,8 @@ def load(cu: CurrentUser) -> dict:
         )
     }
     for r in db.all(
-        "SELECT confirm_method, SUM(qty) q FROM sn_delivery_batch WHERE batch_type = 'DELIVERY' AND confirmed_at >= %s"
-        + fsql
-        + " GROUP BY confirm_method",
+        "SELECT confirm_method, SUM(qty) q FROM sn_delivery_batch WHERE batch_type <> 'TRANSFER_OUT' "
+        "AND confirmed_at >= %s" + fsql + " GROUP BY confirm_method",
         start,
         *fargs,
     ):

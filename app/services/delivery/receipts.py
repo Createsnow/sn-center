@@ -11,7 +11,6 @@ from app.services import audit, mes_client
 from app.services.delivery import push
 from app.services.delivery.batches import (
     CONFIRMED,
-    DELIVERY,
     FAILED,
     M_PULL,
     M_PUSH,
@@ -115,7 +114,7 @@ def apply_receipt(cu: CurrentUser, batch_no: str, r: dict, method: str) -> Appli
             .pi(b["pi_no"])
             .count(b["qty"])
             .batch(b["batch_no"])
-            .status(util.TO_PUSH, util.PUSHED if b["batch_type"] == DELIVERY else None)
+            .status(util.TO_PUSH, util.PUSHED if b["batch_type"] != TRANSFER_OUT else None)
             .info(f"method={method} result={b2['result']} accepted={b2['accepted_qty']}"),
         )
     after_confirm(b)
@@ -154,7 +153,7 @@ def confirm(cu: CurrentUser, b: dict, method: str, by_mes: bool, now) -> None:
         now,
         b["id"],
     )
-    if b["batch_type"] == DELIVERY:
+    if b["batch_type"] != TRANSFER_OUT:
         mode = {M_PUSH: util.MODE_PUSH, M_PULL: util.MODE_PULL}.get(method) or (
             util.MODE_PULL if b["source"] == SRC_PULL else util.MODE_PUSH
         )

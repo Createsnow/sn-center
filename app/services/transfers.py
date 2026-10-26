@@ -5,8 +5,9 @@
 - 转到别的生产组织：转入方对接 MES 时改为待推送，MES 持有组织为来源组织的记改挂、其余记新增；
   转入方未对接时改为已分配。
 - 号的 MES 持有组织为来源组织、且转入组织与来源不同时，在同一事务内向来源 MES 建立「转出」批次并推送。
-- 转移前 MES 已持有、改挂后待推送的号不回号池：同一事务内给转入方建立转移交付批次（记转移单号，每批一种
-  bizType，按单批枚数拆分，暂停交付的号除外）并推送；MES 还没收到的号回号池按流水认领（对 MES 仍是首次下发）。
+- 转移前 MES 已持有、改挂后待推送的号不回号池：同一事务内给转入方当场建批（记转移单号，批次类型为
+  SAME_ORG_TRANSFER / TRANSFER_IN，按单批枚数拆分，暂停交付的号除外）并推送；MES 还没收到的号回号池按流水认领
+  （批次类型 NEW）。
 不可转：申请中；所在批次未确认或失败；所在转出批次未确认或失败（先在原转组织单上继续推送转出）；领取未完成。
 转单另可转待分配的号（仍为待分配，之后按目标单据的生产组织分配）；转组织不能转待分配的号。
 
@@ -235,7 +236,7 @@ def _move(
                     "transfer_doc_no": doc_no,
                 }
             )
-        # 业务来源（交付项 bizType）只在原组织 MES 已持有时记为转移；MES 还没收到的号保留原标记（没有即首次下发）
+        # 批次类型只在原组织 MES 已持有时记为转移（transfer_from_org）；MES 还没收到的号保留原标记（没有即首次下发）
         from_org = old_org if old_org and r["mes_holder"] == old_org else None
         key = (new_org, t.pi, t.customer, t.bill, t.seq, t.material, status, push_type, mode, from_org)
         groups.setdefault(key, []).append(r["id"])
@@ -357,7 +358,7 @@ def _move(
             held.setdefault((new_org, pi), []).extend(ids)
     in_batches = []
     for (org, pi), ids in sorted(held.items()):
-        in_batches += delivery.build_transfer_delivery(cu, org, pi, ids, (tkind, doc_no))
+        in_batches += delivery.build_delivery_now(cu, org, pi, ids, (tkind, doc_no))
     return {"to_push": to_push, "out": out_batches, "in": in_batches, "xo_orgs": sorted(xo)}
 
 
@@ -987,8 +988,8 @@ def _bills_of(tid: int) -> list[str]:
 
 
 def map_material(cu: CurrentUser, alert: dict, target_seq: int | None, note: str | None) -> None:
-    """把失去对应行的已生成数、本单生成数并入指定新行，号改挂到新行；已交付给 MES 的号 rev + 1 以改挂重推。
-    涉及的号在未确认或失败的批次中时须等批次确认后再做。"""
+    """把失去对应行的已生成数、本单生成数并入指定新行，号改挂到新行；已交付给 MES 的号 rev + 1 以改挂重推
+    （同一事务内当场建 REMAP 批次）。涉及的号在未确认或失败的批次中时须等批次确认后再做。"""
     bill = alert["bill_no"]
     old = alert["seq"]
     line = (
@@ -1011,7 +1012,7 @@ def map_material(cu: CurrentUser, alert: dict, target_seq: int | None, note: str
         now = util.now()
         pushes: set[tuple[str, str]] = set()
         # 已交付给 MES 的号 rev + 1，其中 MES 持有组织即本组织（且对接 MES）的改为待推送改挂
-        # （业务来源 REMAP，清除转移标记）；其余只改挂
+        # （批次类型 REMAP，清除转移标记）；其余只改挂
         extra = {
             "REASSIGN": ", rev = rev + 1, status = 'TO_PUSH', push_type = 'REASSIGN', delivery_batch_no = NULL, "
             "transfer_kind = NULL, transfer_doc_no = NULL, transfer_from_org = NULL",
@@ -1027,6 +1028,7 @@ def map_material(cu: CurrentUser, alert: dict, target_seq: int | None, note: str
                 pushes.add((x["factory_code"], x["pi_no"]))
             else:
                 groups["DELIVERED"].append(x["id"])
+        reassign = set(groups["REASSIGN"])
         for k, ids in groups.items():
             for i in range(0, len(ids), 1000):
                 part = ids[i : i + 1000]
@@ -1075,6 +1077,13 @@ def map_material(cu: CurrentUser, alert: dict, target_seq: int | None, note: str
         )
         changes.close_material_alert(cu, alert["id"], note)
         changes.refresh_items([bill])
+        # 关闭提醒、重算暂停后，MES 已持有的号当场建改挂（REMAP）批次；仍暂停交付的号留在号池
+        held: dict[tuple[str, str], list[int]] = {}
+        for x in items:
+            if x["id"] in reassign:
+                held.setdefault((x["factory_code"], x["pi_no"]), []).append(x["id"])
+        for (org, pi), ids in sorted(held.items()):
+            delivery.build_delivery_now(cu, org, pi, ids)
     changes.kick_resumed()
     for org, pi in sorted(pushes):
         delivery.start_task(cu, org, pi)

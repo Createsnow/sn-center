@@ -79,9 +79,9 @@ def test_org_transfer_pushes_reassign_to_target_and_transfer_out_to_source(w, sq
     # 转出报文只有 SN、rev、转入组织；交付报文不带推送类型与转移追溯字段
     out = next(x["batch"] for x in MES.received if x["batch"]["batchType"] == "TRANSFER_OUT")
     assert out["items"][0] == {"sn": out["items"][0]["sn"], "rev": 2, "toOrgCode": b} and out["itemsDigest"]
-    got = next(x["batch"] for x in MES.received if x["org"] == b and x["batch"]["batchType"] == "DELIVERY")
-    assert not {"pushType", "fromOrgCode", "transferKind", "transferDocNo"} & set(got["items"][0])
-    assert got["items"][0]["bizType"] == "CROSS_ORG_TRANSFER"
+    got = next(x["batch"] for x in MES.received if x["org"] == b and x["batch"]["batchType"] != "PING")
+    assert not {"pushType", "fromOrgCode", "transferKind", "transferDocNo", "bizType"} & set(got["items"][0])
+    assert got["batchType"] == "TRANSFER_IN"
     assert (
         sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND mes_holder = %s AND status = 'PUSHED'", pi, b) == 5
     )
@@ -425,7 +425,7 @@ def test_same_org_bill_transfer_reassigns_pushed(w, api, sql):
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 3
     sn = rows and sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s LIMIT 1", pi)
     assert MES.store[org][sn]["billNo"] == tgt and MES.store[org][sn]["rev"] == 2
-    assert MES.store[org][sn]["bizType"] == "SAME_ORG_TRANSFER"
+    assert MES.store[org][sn]["batchType"] == "SAME_ORG_TRANSFER"
 
 
 def test_bill_transfer_length_mismatch_and_pending_alloc_to_other_org(w, api, sql):
@@ -541,8 +541,8 @@ def test_void_transfer_out_rebuilds_and_delivers(w, sql):
     assert w.mes_next(ta, batchNo=xo["batch_no"]).code == "BATCH_VOIDED"
 
 
-def test_biz_type_first_when_mes_never_held_before_transfer(w, api, sql):
-    """号已分配、还在号池排队（MES 没收到）时转移：对 MES 仍是首次下发（bizType = FIRST），原组织也不收转出。"""
+def test_batch_type_new_when_mes_never_held_before_transfer(w, api, sql):
+    """号已分配、还在号池排队（MES 没收到）时转移：对 MES 仍是首次下发（batchType = NEW），原组织也不收转出。"""
     a, pi, src = setup(w, qty=2)
     w.allocate(pi)
     # 同组织转单：MES 还没收到
@@ -550,18 +550,16 @@ def test_biz_type_first_when_mes_never_held_before_transfer(w, api, sql):
     w.order(tgt, a, "C1", pi, ("M1", 2))
     ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, a), w.admin))
     w.push()
-    got = [x["batch"] for x in MES.received if x["org"] == a and x["batch"]["batchType"] == "DELIVERY"]
-    assert {i["bizType"] for b in got for i in b["items"]} == {"FIRST"}
+    assert {x["batch"]["batchType"] for x in MES.received if x["org"] == a} - {"PING"} == {"NEW"}
     # 推送后再转组织到 B：A 的 MES 已持有 → 跨组织转入
     b = w.org(uid("O")[:10])
     w.enable_mes(b)
     ok(org_direct(w, a, pi, tgt, b))
     w.push()
-    got = [x["batch"] for x in MES.received if x["org"] == b and x["batch"]["batchType"] == "DELIVERY"]
-    assert {i["bizType"] for x in got for i in x["items"]} == {"CROSS_ORG_TRANSFER"}
+    assert {x["batch"]["batchType"] for x in MES.received if x["org"] == b} - {"PING"} == {"TRANSFER_IN"}
 
 
-def test_biz_type_first_for_cross_org_transfer_before_delivery(w, api, sql):
+def test_batch_type_new_for_cross_org_transfer_before_delivery(w, api, sql):
     a, pi, bill = setup(w, qty=2)
     w.allocate(pi)
     b = w.org(uid("O")[:10])
@@ -571,17 +569,16 @@ def test_biz_type_first_for_cross_org_transfer_before_delivery(w, api, sql):
     assert not [x for x in MES.received if x["org"] == a and x["batch"]["batchType"] != "PING"], (
         "原组织 MES 没收到过，不发转出"
     )
-    got = [x["batch"] for x in MES.received if x["org"] == b and x["batch"]["batchType"] == "DELIVERY"]
-    assert {i["bizType"] for x in got for i in x["items"]} == {"FIRST"}
+    assert {x["batch"]["batchType"] for x in MES.received if x["org"] == b} - {"PING"} == {"NEW"}
 
 
 # ---------------------------------------------------------------- 转移交付批次（转移时当场建批）
 
 
-def _doc_batches(sql, doc_no, btype="DELIVERY"):
-    return sql.all(
-        "SELECT * FROM sn_delivery_batch WHERE transfer_doc_no = %s AND batch_type = %s ORDER BY id", doc_no, btype
-    )
+def _doc_batches(sql, doc_no, out=False):
+    """转移单当场建立的批次：交付类（默认）或转出。"""
+    cond = "batch_type = 'TRANSFER_OUT'" if out else "batch_type <> 'TRANSFER_OUT'"
+    return sql.all(f"SELECT * FROM sn_delivery_batch WHERE transfer_doc_no = %s AND {cond} ORDER BY id", doc_no)
 
 
 def test_transfer_builds_dedicated_delivery_batches_split_by_batch_size(w, sql):
@@ -603,16 +600,16 @@ def test_transfer_builds_dedicated_delivery_batches_split_by_batch_size(w, sql):
     dv = t["deliveries"]
     assert [(x["factory_code"], sorted(x["batches"])) for x in dv] == [(b, sorted(r["batch_no"] for r in rows))]
     w.push()
-    got = [x["batch"] for x in MES.received if x["org"] == b and x["batch"]["batchType"] == "DELIVERY"]
+    got = [x["batch"] for x in MES.received if x["org"] == b and x["batch"]["batchType"] != "PING"]
     assert sorted(x["batchNo"] for x in got) == sorted(r["batch_no"] for r in rows)
-    assert all({i["bizType"] for i in x["items"]} == {"CROSS_ORG_TRANSFER"} for x in got)
+    assert {x["batchType"] for x in got} == {"TRANSFER_IN"} and {r["batch_type"] for r in rows} == {"TRANSFER_IN"}
     assert (
         sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED' AND mes_holder = %s", pi, b) == 5
     )
 
 
-def test_transfer_batch_holds_only_mes_held_sns_one_biz_type_each(w, api, sql):
-    """一张转单里有 MES 已持有和未持有的号：已持有的进转移交付批次，未持有的回号池；每批只有一种 bizType。"""
+def test_transfer_batch_holds_only_mes_held_sns_one_type_each(w, api, sql):
+    """一张转单里有 MES 已持有和未持有的号：已持有的当场建 SAME_ORG_TRANSFER 批次，未持有的回号池建 NEW 批次。"""
     a, pi, src = setup(w, qty=4)
     w.allocate(pi)
     held = [r["id"] for r in sql.all("SELECT id FROM sn_item WHERE pi_no = %s ORDER BY seq_dec LIMIT 2", pi)]
@@ -631,9 +628,9 @@ def test_transfer_batch_holds_only_mes_held_sns_one_biz_type_each(w, api, sql):
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND delivery_batch_no IS NULL", tgt) == 2
     w.push()
     got = {x["batch"]["batchNo"]: x["batch"] for x in MES.received if x["org"] == a}
-    assert {i["bizType"] for i in got[rows[0]["batch_no"]]["items"]} == {"SAME_ORG_TRANSFER"}
-    pool = [x for no, x in got.items() if no != rows[0]["batch_no"] and x["batchType"] == "DELIVERY"]
-    assert [{i["bizType"] for i in x["items"]} for x in pool] == [{"FIRST"}]
+    assert got[rows[0]["batch_no"]]["batchType"] == "SAME_ORG_TRANSFER"
+    pool = [x for no, x in got.items() if no != rows[0]["batch_no"] and x["batchType"] != "PING"]
+    assert [(x["batchType"], x["count"]) for x in pool] == [("NEW", 2)]
 
 
 def test_transfer_into_suspended_bill_keeps_held_sns_in_pool(w, api, sql):
@@ -696,7 +693,7 @@ def test_transfer_to_non_mes_or_never_held_builds_no_delivery_batch(w, api, sql)
     w.allocate(pi)
     w.push()
     t = ok(org_direct(w, a, pi, bill, b))
-    assert _doc_batches(sql, t["transfer_no"]) == [] and len(_doc_batches(sql, t["transfer_no"], "TRANSFER_OUT")) == 1
+    assert _doc_batches(sql, t["transfer_no"]) == [] and len(_doc_batches(sql, t["transfer_no"], out=True)) == 1
     a2, pi2, bill2 = setup(w, qty=2)
     c = w.org(uid("O")[:10])
     w.enable_mes(c)

@@ -24,6 +24,8 @@ export const BATCH_RESULT_TYPE: Record<string, TagType> = {
   VOIDED: "info",
 };
 export const BATCH_RESULTS = ["UNCONFIRMED", "SUCCESS", "SUCCESS_CONFLICT", "FAILED", "VOIDED"];
+/** 批次类型筛选：DELIVERY = 全部交付类（后端按非转出筛选） */
+export const BATCH_TYPES = ["DELIVERY", "NEW", "SAME_ORG_TRANSFER", "TRANSFER_IN", "REMAP", "TRANSFER_OUT"];
 /** 逐枚回执结果 */
 export const RECEIPT_RESULT_TYPE: Record<string, TagType> = {
   ACCEPTED: "success",

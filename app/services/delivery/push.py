@@ -24,8 +24,8 @@ from app.services import audit, factories, mes_client
 from app.services.delivery import receipts
 from app.services.delivery.batches import (
     CONFIRMED,
-    DELIVERY,
     FAILED,
+    IS_DELIVERY,
     LEASE_SECONDS,
     M_PUSH,
     RUNNER,
@@ -36,6 +36,7 @@ from app.services.delivery.batches import (
     XO_KEY,
     build_delivery,
     must_batch,
+    pool_types,
 )
 
 log = structlog.get_logger()
@@ -97,10 +98,8 @@ def resume(cu: CurrentUser, org_in: str | None, key_in: str | None) -> dict:
     key = util.trim(key_in)
     if not key:
         raise biz(ErrorCode.PI_REQUIRED)
-    btype = TRANSFER_OUT if key == XO_KEY else DELIVERY
     with db.tx():
-        cond = "batch_type = %s" + ("" if key == XO_KEY else " AND pi_no = %s")
-        args = [btype] + ([] if key == XO_KEY else [key])
+        cond, args = _batch_cond(key)
         n = db.exec(
             "UPDATE sn_delivery_batch SET retry_count = 0, push_state = 'IDLE', next_retry_at = NULL, "
             f"repush_count = repush_count + 1, updated_at = %s WHERE factory_code = %s AND {cond} "
@@ -124,33 +123,27 @@ def resume(cu: CurrentUser, org_in: str | None, key_in: str | None) -> dict:
     return {"factory_code": org, "key": key, **remaining}
 
 
+def _batch_cond(key: str) -> tuple[str, list]:
+    """任务键对应的批次：#XO 为本组织的转出批次，否则为该 PI 的交付类批次。"""
+    if key == XO_KEY:
+        return "batch_type = %s", [TRANSFER_OUT]
+    return f"{IS_DELIVERY} AND pi_no = %s", [key]
+
+
 def remaining_pushes(org: str, key: str) -> dict:
-    """「剩余 N 次」：未入批且未暂停的号按单批枚数折算的次数 + 未确认或失败的批次数。"""
+    """「剩余 N 次」：未入批且未暂停的号按类型分批、按单批枚数折算的次数 + 未确认或失败的批次数。"""
     f = factories.get(org)
     size = max(1, int(f["batch_size"])) if f else 5000
-    if key == XO_KEY:
-        unbatched = 0
-        batches = db.count(
-            "SELECT COUNT(*) FROM sn_delivery_batch WHERE factory_code = %s AND batch_type = %s "
-            "AND result IN ('UNCONFIRMED','FAILED')",
-            org,
-            TRANSFER_OUT,
-        )
-    else:
-        unbatched = db.count(
-            "SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND factory_code = %s AND status = 'TO_PUSH' "
-            "AND suspend IS NULL AND delivery_batch_no IS NULL AND acquire_batch_no IS NULL",
-            key,
-            org,
-        )
-        batches = db.count(
-            "SELECT COUNT(*) FROM sn_delivery_batch WHERE factory_code = %s AND pi_no = %s AND batch_type = %s "
-            "AND result IN ('UNCONFIRMED','FAILED')",
-            org,
-            key,
-            DELIVERY,
-        )
-    return {"unbatched": unbatched, "batches": batches, "pushes": math.ceil(unbatched / size) + batches}
+    by_type = {} if key == XO_KEY else pool_types(org, key)
+    cond, args = _batch_cond(key)
+    batches = db.count(
+        f"SELECT COUNT(*) FROM sn_delivery_batch WHERE factory_code = %s AND {cond} "
+        "AND result IN ('UNCONFIRMED','FAILED')",
+        org,
+        *args,
+    )
+    pushes = sum(math.ceil(n / size) for n in by_type.values()) + batches
+    return {"unbatched": sum(by_type.values()), "batches": batches, "pushes": pushes}
 
 
 def task_state(org: str, key: str) -> dict | None:
@@ -265,11 +258,11 @@ def _next_batch(t: dict, resend: bool) -> dict | str | None:
     """下一个要发的批次：先未确认 / 失败的（续推时含拉取建立的、失败的），再认领新号建批。
     返回批次，或 'WAIT:<批次号>'（等重试）/ 'STOP:<原因>'。"""
     org, key = t["factory_code"], t["task_key"]
-    btype = TRANSFER_OUT if key == XO_KEY else DELIVERY
-    cond = "factory_code = %s AND batch_type = %s" + ("" if key == XO_KEY else " AND pi_no = %s")
-    args = [org, btype] + ([] if key == XO_KEY else [key])
+    cond, args = _batch_cond(key)
     pending = db.all(
-        f"SELECT * FROM sn_delivery_batch WHERE {cond} AND result IN ('UNCONFIRMED','FAILED') ORDER BY created_at, id",
+        f"SELECT * FROM sn_delivery_batch WHERE factory_code = %s AND {cond} AND result IN ('UNCONFIRMED','FAILED') "
+        "ORDER BY created_at, id",
+        org,
         *args,
     )
     for b in pending:

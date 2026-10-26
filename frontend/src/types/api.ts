@@ -208,7 +208,7 @@ export interface DeliveryBatch {
   id: number;
   batch_no: string;
   source: "PUSH" | "PULL";
-  batch_type: "DELIVERY" | "TRANSFER_OUT";
+  batch_type: "NEW" | "SAME_ORG_TRANSFER" | "TRANSFER_IN" | "REMAP" | "TRANSFER_OUT";
   factory_code: string;
   pi_no: string;
   qty: number;

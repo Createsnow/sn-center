@@ -157,7 +157,11 @@
     "PULL": "Pull"
   },
   "batchType": {
-    "DELIVERY": "Delivery",
+    "DELIVERY": "Delivery (all)",
+    "NEW": "First delivery",
+    "SAME_ORG_TRANSFER": "Same-org transfer",
+    "TRANSFER_IN": "Transfer in",
+    "REMAP": "Remap",
     "TRANSFER_OUT": "Transfer out"
   },
   "confirmMethod": {
