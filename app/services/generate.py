@@ -70,8 +70,8 @@ JOB_FIELDS = (
 
 _INSERT_ITEM = (
     "INSERT INTO sn_item(sn, pi_no, customer_code, bill_no, bill_seq, material_code, gen_org_code, gen_bill_no, "
-    "gen_bill_seq, seq_pi_no, seq_dec, length_text, rule_version_id, gen_batch, status, created_at, updated_at) "
-    "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'PENDING_ALLOC',%s,%s)"
+    "gen_bill_seq, seq_pi_no, seq_dec, length_text, attach_no, rule_version_id, gen_batch, status, created_at, "
+    "updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'PENDING_ALLOC',%s,%s)"
 )
 
 #: 大批量生成走后台线程
@@ -251,6 +251,7 @@ def _plan(pi: str, scope: str, keys: list[tuple[str, int]], base: int) -> dict:
                 "customer_code": x.customer_code,
                 "org_code": x.org_code,
                 "length": length,
+                "attach": x.attach,
                 "line_qty": x.qty,
                 "own_before": x.own,
                 "qty": n,
@@ -534,6 +535,7 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
                     pi,
                     s + i,
                     x["length"],
+                    x["attach"],
                     v["id"],
                     j["gen_batch"],
                     now,

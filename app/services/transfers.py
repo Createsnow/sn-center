@@ -48,7 +48,8 @@ SCOPES = frozenset((SCOPE_BILL, SCOPE_MATERIAL, SCOPE_RANGE))
 
 ITEM_COLS = (
     "id, sn, factory_code, pi_no, customer_code, bill_no, bill_seq, material_code, rev, seq_pi_no, seq_dec, "
-    "length_text, rule_version_id, status, delivery_batch_no, acquire_batch_no, mes_holder, push_type, delivery_mode"
+    "length_text, attach_no, rule_version_id, status, delivery_batch_no, acquire_batch_no, mes_holder, push_type, "
+    "delivery_mode"
 )
 
 ORG_FIELDS = (
@@ -230,6 +231,7 @@ def _move(
                     "customer_code": r["customer_code"],
                     "seq_pi_no": r["seq_pi_no"],
                     "seq_dec": r["seq_dec"],
+                    "attach_no": r["attach_no"],
                     "rule_version_id": r["rule_version_id"],
                     "to_factory": new_org,
                     "transfer_kind": tkind,

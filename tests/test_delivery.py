@@ -87,7 +87,8 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
 
 
 def test_manual_attach_goes_to_mes(w, sql):
-    """金蝶附件项次为空、生成前页面填写的值随交付明细发给 MES，④ 查询同样返回。"""
+    """金蝶附件项次为空、生成前页面填写的值写到号上并随交付明细发给 MES，④ 查询同样返回；
+    金蝶之后有值不影响已生成的号。"""
     org = w.org(uid("O")[:10])
     w.enable_mes(org)
     pi, bill = uid("PI"), uid("MO")
@@ -95,6 +96,8 @@ def test_manual_attach_goes_to_mes(w, sql):
     ok(w.api.put("/api/orders/attach", m(bill_no=bill, seq=1, value="A-07"), w.admin))
     ok(w.bind_pi(pi, w.rule("P" + uid("").replace("-", ""), seq_len=6)))
     w.generate(pi)
+    w.order(bill, org, "C1", pi, ("M1", 2, "0100", "K-01"))
+    assert sql.scalar("SELECT attach_no FROM sn_prd_mo WHERE bill_no = %s AND seq = 1", bill) == "K-01"
     w.allocate(pi)
     w.push()
     body = MES.received[-1]["batch"]

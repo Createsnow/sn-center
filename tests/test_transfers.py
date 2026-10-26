@@ -417,7 +417,7 @@ def test_same_org_bill_transfer_reassigns_pushed(w, api, sql):
     w.allocate(pi)
     w.push()
     tgt = uid("MO")
-    w.order(tgt, org, "C1", pi, ("M1", 3))
+    w.order(tgt, org, "C1", pi, ("M1", 3, "100", "T9"))
     ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, org, reason="整单作废"), w.admin))
     rows = sql.all("SELECT status, push_type, rev, bill_no FROM sn_item WHERE pi_no = %s", pi)
     assert {(r["status"], r["push_type"], r["rev"], r["bill_no"]) for r in rows} == {("TO_PUSH", "REASSIGN", 2, tgt)}
@@ -426,6 +426,9 @@ def test_same_org_bill_transfer_reassigns_pushed(w, api, sql):
     sn = rows and sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s LIMIT 1", pi)
     assert MES.store[org][sn]["billNo"] == tgt and MES.store[org][sn]["rev"] == 2
     assert MES.store[org][sn]["batchType"] == "SAME_ORG_TRANSFER"
+    # 附件项次跟着号走：换到目标单据的行（附件项次 T9）后仍是生成时的 1
+    assert MES.store[org][sn]["attachNo"] == "1"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND attach_no = '1'", pi) == 3
 
 
 def test_bill_transfer_length_mismatch_and_pending_alloc_to_other_org(w, api, sql):

@@ -354,6 +354,7 @@ CREATE TABLE sn_item (
   seq_pi_no         VARCHAR(64) NOT NULL COMMENT '流水归属 PI',
   seq_dec           BIGINT      NOT NULL COMMENT '十进制流水',
   length_text       VARCHAR(32) NULL COMMENT '长度（规则不带长度时为空）',
+  attach_no         VARCHAR(64) NOT NULL DEFAULT '' COMMENT '附件项次（生成时写定，转单、转组织不变）',
   rule_version_id   BIGINT      NOT NULL,
   gen_batch         VARCHAR(40) NOT NULL,
   -- 交付信息

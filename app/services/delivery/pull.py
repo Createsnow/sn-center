@@ -7,7 +7,7 @@ from app.core.config import settings
 from app.core.exceptions import MesError, mes_body
 from app.core.security import CurrentUser
 from app.db.session import db
-from app.services import audit, changes, factories, locks, orders, rules
+from app.services import audit, changes, factories, locks, rules
 from app.services.delivery.batches import (
     CONFIRMED,
     M_PULL,
@@ -224,16 +224,11 @@ def _page_size(v: int | None) -> int:
 
 _READ_COLS = (
     "id, sn, rev, status, factory_code, pi_no, bill_no, bill_seq, material_code, customer_code, seq_pi_no, seq_dec, "
-    "length_text, rule_version_id, delivery_batch_no, delivered_at"
+    "length_text, attach_no, rule_version_id, delivery_batch_no, delivered_at"
 )
 
 
-def _read_items(rows: list[dict]) -> list[dict]:
-    attach = orders.attach_values((r["bill_no"], r["bill_seq"]) for r in rows)
-    return [_read_item(r, attach[(r["bill_no"], r["bill_seq"])]) for r in rows]
-
-
-def _read_item(r: dict, attach: str) -> dict:
+def _read_item(r: dict) -> dict:
     return {
         "sn": r["sn"],
         "rev": int(r["rev"]),
@@ -243,7 +238,7 @@ def _read_item(r: dict, attach: str) -> dict:
         "pi": r["pi_no"],
         "billNo": r["bill_no"],
         "billSeq": int(r["bill_seq"]),
-        "attachNo": str_or_none(attach),
+        "attachNo": str_or_none(r["attach_no"]),
         "materialCode": str_or_none(r["material_code"]),
         "length": r["length_text"],
         "customerCode": r["customer_code"],
@@ -283,7 +278,7 @@ def read_delivered(
     )
     more = len(rows) > n
     rows = rows[:n]
-    return mes_body("OK", "成功", items=_read_items(rows), nextCursor=str(rows[-1]["id"]) if more else None)
+    return mes_body("OK", "成功", items=[_read_item(r) for r in rows], nextCursor=str(rows[-1]["id"]) if more else None)
 
 
 def read_batch_items(cu: CurrentUser, batch_no: str, cursor: str | None, size: int | None) -> dict:
@@ -308,6 +303,6 @@ def read_batch_items(cu: CurrentUser, batch_no: str, cursor: str | None, size: i
         "OK",
         "成功",
         b["batch_no"],
-        items=_read_items(rows),
+        items=[_read_item(r) for r in rows],
         nextCursor=str(rows[-1]["id"]) if more else None,
     )

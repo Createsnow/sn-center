@@ -198,7 +198,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
       "pi": "000001",                        // String(64)       必填  当前所属 PI，与批次头 pi 相同
       "billNo": "VT2026090001",              // String(64)       必填  单据号（EEP 生产订单号）
       "billSeq": 1,                          // Number           必填  单据行号
-      "attachNo": "A01",                     // String(64)|null  必填  附件项次（金蝶值；金蝶为空时为生成前页面填写的值）
+      "attachNo": "A01",                     // String(64)|null  必填  附件项次，生成时写定，转单、转组织不变
       "materialCode": "9148363",             // String(64)|null  必填  物料编码
       "length": "0100",                      // String(32)|null  必填  米标，原样保存
       "customerCode": "0001"                 // String(64)       必填  客户编码
@@ -222,7 +222,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
     {
       "sn": "HX100000003A",                  // String(64)       必填  完整 SN
       "rev": 3,                              // Number           必填  挂靠版本
-      "attachNo": "A01",                     // String(64)|null  必填  附件项次（转出前物料行的）
+      "attachNo": "A01",                     // String(64)|null  必填  附件项次，同交付明细
       "toOrgCode": "120"                     // String(64)       必填  转入生产组织编码
     }
   ]
