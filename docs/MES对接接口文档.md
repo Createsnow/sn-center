@@ -37,20 +37,6 @@ SN 系统把分配给生产组织的 SN 分批下发给该组织的 MES：主通
 
 ![图 1-1 业务接口调用时序](images/MES对接说明/f14-business-calls.png)
 
-| 阶段 | 触发 | 调用的接口 |
-| --- | --- | --- |
-| 1 上线前 | 总部填写 MES 配置，点「连接测试」 | ①（`PING`） |
-| 2 分配后推送 | 总部分配 SN | ①（`NEW`），MES 在应答中回执 |
-| 3 拉取补偿 | 推送失败、本地 SN 不足、每 5 分钟兜底 | ③ 取批 → ④ 回执，`remaining > 0` 时继续 |
-| 4 转移 | 总部转单 / 转组织 | 转入方 ①（`SAME_ORG_TRANSFER` / `TRANSFER_IN`）；原组织 ①（`TRANSFER_OUT`） |
-| 5 对账 | MES 按需 | ⑤ / ⑥ |
-
-整批退回（`NG`）后的重处理流程见 [MES 对接说明](MES对接说明.md) 图 5-1。
-
-- ① 的回执在同一应答中返回；④ 只用于 ③ 拉取的批次
-- 推送与拉取的批次结构完全相同；同一批次可能经两条通道到达，MES 按 `batchNo` 只处理一次
-- 编号沿用历史编号（② 已移除）
-
 ---
 
 ## 2. 公共约定
@@ -74,33 +60,35 @@ SN 系统把分配给生产组织的 SN 分批下发给该组织的 MES：主通
 | 字符串型数字 | `serialDec`、`length` 按字符串保存，不得转数字（防止丢失前导 0 或溢出） |
 | 兼容性 | 后续只增加字段、不修改已有字段；**不认识的字段直接忽略** |
 | 协议版本 | SN 系统发出的批次和应答带 `schemaVersion`；MES 发出的请求、回执无需携带 |
+| 类型标注 | 本文 `String(n)` 表示最长 n 个字符；`Number` 为 JSON 数字（整数）；`\| null` 表示可为 `null` |
 
 ### 2.3 认证与签名
 
-**① SN 系统 → MES（待 MES 方填写）**
+两个方向各自认证：① 由 MES 提供、SN 系统调用，认证规则由 MES 方定；③～⑥ 由 SN 系统提供、MES 调用，认证规则已确定。
 
-① 由 MES 方提供，目前尚未给出地址与认证方式。请 MES 方填写下表并书面回复，确认后更新本节和 3.1 的请求头。
+**SN 系统 → MES（①，由 MES 方提供）**
 
-| # | 项目 | MES 方填写 | 说明 / SN 系统已支持的选项 |
-| --- | --- | --- | --- |
-| 1 | 接口地址（测试环境） | | 完整 URL，HTTPS |
-| 2 | 接口地址（正式环境） | | 同上 |
-| 3 | 多个生产组织是否共用一个地址 | | 共用时按报文 `orgCode` 区分 |
-| 4 | 认证方式 | | A 固定令牌 / B HMAC 签名（推荐），见下方参考；其他方式请写明 |
-| 5 | 认证请求头名称 | | A：`Authorization: Bearer <令牌>`；B：`X-Sn-Timestamp`、`X-Sn-Signature` |
-| 6 | 签名算法与签名串 | | B 默认见下方参考 |
-| 7 | 时间戳格式与允许偏差 | | 默认 `yyyy-MM-dd HH:mm:ss.SSS`（UTC+8），偏差 ≤ 5 分钟 |
-| 8 | 凭证交付方式 | | 令牌 / 密钥线下交付，不写入文档 |
-| 9 | 是否限制来源 IP | | 需要时由 SN 系统提供服务器出口 IP |
-| 10 | HTTPS 证书 | | 公网 CA 签发 / 自签（自签须提供 CA 证书） |
-| 11 | 是否支持 gzip 请求体 | | 默认发原始 JSON |
-| 12 | 单批枚数、报文大小上限 | | 默认单批 ≤ 5000 枚 |
-| 13 | 处理时长 | | SN 系统默认等待 60 秒；建议 5000 枚 10 秒内处理完 |
-| 14 | 接口负责人及联系方式 | | |
+标 **〔待 MES 方填写〕** 的项目 MES 方尚未给出，请书面回复；确认后更新本节和 3.1 的请求头。括号内为 SN 系统的默认值或已支持的选项。
 
-**SN 系统已支持的认证方式（参考）**
+- **接口地址（测试环境）**：〔待 MES 方填写〕（完整 URL，须 HTTPS）
+- **接口地址（正式环境）**：〔待 MES 方填写〕
+- **多个生产组织是否共用一个地址**：〔待 MES 方填写〕（共用时按请求体 `orgCode` 区分；不共用时每个组织单独配置地址）
+- **认证方式**：〔待 MES 方填写〕（SN 系统已支持 A 固定令牌、B HMAC 签名（推荐），见下方参考；其他方式请写明规则）
+- **认证请求头名称**：〔待 MES 方填写〕（A：`Authorization: Bearer <令牌>`；B：`X-Sn-Timestamp`、`X-Sn-Signature`）
+- **签名算法与签名串**：〔待 MES 方填写〕（B 默认 HMAC-SHA256，签名串见下方参考）
+- **时间戳格式与允许偏差**：〔待 MES 方填写〕（默认 `yyyy-MM-dd HH:mm:ss.SSS`，UTC+8，偏差 ≤ 5 分钟）
+- **凭证（令牌 / 密钥）及交付方式**：〔待 MES 方填写〕（由 MES 方生成，线下交付，不写入文档；SN 系统加密保存，填入「生产组织 → MES 对接配置」）
+- **是否限制来源 IP**：〔待 MES 方填写〕（需要时由 SN 系统方提供服务器出口 IP）
+- **HTTPS 证书**：〔待 MES 方填写〕（公网 CA 签发 / 自签；自签须提供 CA 证书）
+- **是否支持 gzip 请求体**：〔待 MES 方填写〕（默认发原始 JSON）
+- **单批枚数、报文大小上限**：〔待 MES 方填写〕（默认单批 ≤ 5000 枚）
+- **处理时长**：〔待 MES 方填写〕（SN 系统默认等待 60 秒；建议 5000 枚 10 秒内处理完并应答）
+- **认证失败的应答**：返回 401 / 403（应答体按回执结构写明 `code`、`message`）；SN 系统不重送，该组织的对接配置标为异常
+- **接口负责人及联系方式**：〔待 MES 方填写〕
 
-| 方式 | 请求头 | MES 校验 |
+SN 系统已支持的认证方式（参考）：
+
+| 方式 | SN 系统发送的请求头 | MES 校验 |
 | --- | --- | --- |
 | A 固定令牌（内网） | `Authorization: Bearer <令牌>` | 核对令牌，限制来源为 SN 系统服务器 IP |
 | B HMAC 签名（公网，推荐） | `X-Sn-Timestamp`、`X-Sn-Signature` | 时间差 ≤ 5 分钟；重算签名，常量时间比对 |
@@ -112,10 +100,17 @@ SN 系统把分配给生产组织的 SN 分批下发给该组织的 MES：主通
 
 ![图 2-1 HMAC 签名与校验](images/MES对接说明/f8-hmac.png)
 
-**③～⑥ MES → SN 系统**
+**MES → SN 系统（③～⑥，由 SN 系统提供）**
 
-- 每次请求带 `Authorization: Bearer <工号>:<密钥>`，无需换取令牌；账户由总部在「账户 → MES 接口账户」创建后提供
-- 账户只能访问所绑定的生产组织；可设来源 IP 白名单；连续认证失败 10 次锁定 15 分钟
+- **接口地址**：`{SN 系统地址}/api/mes/v1/...`，测试、正式环境的 `{SN 系统地址}` 由总部随账户一并提供
+- **认证方式**：工号 + 密钥，每次请求带 `Authorization: Bearer <工号>:<密钥>`；无需登录换取令牌，无需签名
+- **凭证**：总部在「账户 → MES 接口账户」创建后线下交付工号和密钥；密钥被重置后旧密钥立即失效
+- **权限范围**：一个账户只绑定一个生产组织，只能访问该组织的批次和 SN；③④ 只允许 MES 接口账户调用
+- **来源 IP**：账户可设白名单（IP 或 CIDR）；来源不在白名单返回 403 `IP_NOT_ALLOWED`
+- **失败锁定**：连续认证失败 10 次锁定 15 分钟，锁定期间返回 423 `ACCOUNT_LOCKED`（密钥正确也拒绝）
+- **认证失败的应答**：401 `INVALID_CREDENTIALS`、403 `ACCOUNT_DISABLED` / `IP_NOT_ALLOWED` / `FORBIDDEN`，结构同 2.4
+- **请求号**：可带 `X-Request-ID`（≤ 64 位字母、数字、`.`、`_`、`:`、`-`），SN 系统沿用并在应答头返回；不带时由 SN 系统生成。联调排查时提供此编号
+- **限流**：见 2.5
 
 ### 2.4 应答格式
 
@@ -123,29 +118,50 @@ SN 系统把分配给生产组织的 SN 分批下发给该组织的 MES：主通
 
 **SN 系统的应答（③～⑥）**
 
-```jsonc
-{
-  "schemaVersion": "1.0",                 // 必填，String，协议版本
-  "code": "OK",                           // 必填，String，结果码：成功为 OK，出错为错误码（第 5 章）；程序按它判断
-  "message": "成功",                       // 必填，String，中文说明，仅供阅读
-  "batchNo": "PL-110-20261026-000046",    // 必填，String | null，相关批次号；不涉及批次时为 null
-  "timestamp": "2026-10-26 11:47:05.512", // 必填，String，应答时间
-  "details": []                           // 仅出错时有，Array，错误明细 [{field, reason}]，无明细时为空数组
-  // 成功时另带各接口的数据字段，见第 3 章
-}
-```
+| 字段 | 类型 | 出现 | 说明 |
+| --- | --- | --- | --- |
+| `schemaVersion` | String | 总是 | 协议版本，`1.0` |
+| `code` | String | 总是 | 结果码：成功为 `OK`，出错为错误码（第 5 章）；**程序只按它判断** |
+| `message` | String | 总是 | 中文说明，仅供阅读 |
+| `batchNo` | String \| null | 总是 | 相关批次号；不涉及批次时为 `null` |
+| `timestamp` | String | 总是 | 应答时间 |
+| `details` | Array | 仅出错 | 错误明细，无明细时为 `[]` |
+| `details[].field` | String | 仅出错 | 出错字段 |
+| `details[].reason` | String | 仅出错 | 出错原因 |
+| （各接口数据字段） | — | 仅成功 | 见第 3 章各接口「应答字段」 |
 
 - 成功：HTTP 200 且 `code = OK`；出错：HTTP 状态码一定不是 200
 
-**MES 的应答（① 应答、④ 请求体，统称「回执」）**
+出错应答示例：
 
-```jsonc
+```http
+HTTP/1.1 422 Unprocessable Entity
+Content-Type: application/json
+X-Request-ID: 6f1c2a9e-3b7d-4c55-9a0e-2d4f8b1e7c33
+
 {
-  "batchNo": "PS-110-20261026-000123",       // 必填，String，照抄批次号
-  "code": "OK",                              // 必填，String，OK 已处理 / NG 整批退回 / 出错时为错误码（第 5 章）
-  "message": "已处理",                        // 必填，String，处理说明；NG 时为退回原因，显示在总部页面
-  "processedAt": "2026-10-26 11:47:05.303"   // 必填，String，MES 处理完成时间；重复送达时返回首次处理的回执
+  "schemaVersion": "1.0",
+  "code": "RECEIPT_MISMATCH",
+  "message": "回执与批次不符",
+  "batchNo": "PL-110-20261026-000046",
+  "timestamp": "2026-10-26 11:48:20.305",
+  "details": [
+    {"field": "batchNo", "reason": "期望 PL-110-20261026-000046，收到 PL-110-20261026-000045"}
+  ]
 }
+```
+
+**MES 的回执（① 应答体、④ 请求体）**
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `batchNo` | String(40) | 是 | 照抄批次号 |
+| `code` | String | 是 | `OK` 已处理 / `NG` 整批退回；① 出错时为错误码（第 5 章） |
+| `message` | String | 是 | 处理说明；`NG` 时为退回原因，显示在总部页面 |
+| `processedAt` | String | 是 | MES 处理完成时间；同一批次重复送达时返回首次处理的回执 |
+
+```json
+{"batchNo": "PS-110-20261026-000123", "code": "OK", "message": "已处理", "processedAt": "2026-10-26 11:47:05.303"}
 ```
 
 ### 2.5 限流
@@ -156,92 +172,179 @@ SN 系统把分配给生产组织的 SN 分批下发给该组织的 MES：主通
 
 ## 3. 接口定义
 
+每个接口按同一顺序说明：**接口信息 → 交互流程 → 请求（示例报文 + 字段表）→ 应答（示例报文 + 字段表）→ 状态码与错误码**。示例报文为完整的 HTTP 请求 / 应答，为便于阅读已排版。
+
 ### 3.1 ① 接收批次
 
-SN 系统向 MES 推送一个批次，MES 处理并落库后在同一应答中返回回执。**由 MES 方提供，地址与认证方式待书面确认。**
+SN 系统向 MES 推送一个批次，MES 处理并落库后在**同一应答**中返回回执。
 
-`POST {MES 地址}`
+**接口信息**
+
+| 项目 | 内容 |
+| --- | --- |
+| 调用方向 | SN 系统 → MES（MES 提供，SN 系统调用） |
+| 方法与地址 | `POST {MES 地址}`（〔待 MES 方填写〕，见 2.3） |
+| 认证 | 〔待 MES 方确认〕，见 2.3 |
+| 请求体 | 批次 JSON；开启「gzip 压缩」时为 gzip |
+| 应答体 | 回执 JSON（2.4），同步返回 |
+| 超时 | SN 系统等待 60 秒（可按生产组织配置） |
+| 幂等 | 按 `batchNo`：同一批次可能重复送达，也可能再经 ③ 到达；MES 只处理一次，重复到达直接返回首次回执 |
+| 重送 | 超时、5xx、网络中断、409 `BATCH_IN_PROGRESS`、429、503：1、5、15 分钟后以**相同内容**重送 |
 
 ![图 3-1 推送与回执](images/MES对接说明/f6-push.png)
+
+**交互流程**
+
+1. SN 系统发出请求（请求头 + 批次 JSON）
+2. MES 校验认证（2.3）；失败返回 401 / 403
+3. MES 按 `Content-Encoding` 解压、解析 JSON；无法解析返回 400
+4. MES 按 `batchNo` 查重：已处理过且 `itemsDigest` 相同 → 返回首次回执；`itemsDigest` 不同 → 409 `BATCH_CONTENT_MISMATCH`；正在处理 → 409 `BATCH_IN_PROGRESS`
+5. MES 按批次类型处理并落库（规则见 MES 对接说明），返回 200 + 回执：`OK` 已处理，`NG` 整批退回（未写入任何数据）
+
+**请求示例**（认证方式 B；方式 A 时以 `Authorization` 代替两个 `X-Sn-*` 签名头）
+
+```http
+POST /sn/receive HTTP/1.1
+Host: mes-test.example.com
+Content-Type: application/json; charset=utf-8
+Accept: application/json
+Accept-Encoding: gzip
+X-Sn-Timestamp: 2026-10-26 11:47:05.303
+X-Sn-Signature: 3c9e0f6b5a1d…（64 位小写十六进制）
+X-Sn-Attempt: 1
+X-Request-Id: 1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed
+
+{
+  "schemaVersion": "1.0",
+  "batchNo": "PS-110-20261026-000123",
+  "batchType": "NEW",
+  "orgCode": "110",
+  "createdAt": "2026-10-26 11:47:05.000",
+  "itemsDigest": "sha256:9f2c4e…（64 位十六进制）",
+  "items": [
+    {
+      "sn": "HX100000001A",
+      "rev": 1,
+      "serial": "000001",
+      "serialDec": "1",
+      "serialPi": "000001",
+      "pi": "000001",
+      "billNo": "VT2026090001",
+      "billSeq": 1,
+      "materialCode": "9148363",
+      "length": "0100",
+      "customerCode": "0001"
+    }
+  ]
+}
+```
+
+- 实际请求体为紧凑 JSON（无空格换行）；签名按**解压后收到的原始字节**计算，不得重新序列化后再算
+- 同一批次每次送达的请求体逐字节相同，只有 `X-Sn-Timestamp`、`X-Sn-Signature`、`X-Sn-Attempt`、`X-Request-Id` 会变
 
 **请求头**
 
 | 参数 | 必填 | 示例 | 说明 |
 | --- | --- | --- | --- |
 | `Content-Type` | 是 | `application/json; charset=utf-8` | 固定 |
-| `Content-Encoding` | 否 | `gzip` | 开启「gzip 压缩」时才带 |
+| `Accept` | 是 | `application/json` | 固定 |
 | `Accept-Encoding` | 是 | `gzip` | 应答可 gzip |
-| `Authorization` | 方式 A | `Bearer 7f3c…` | 见 2.3（待 MES 方确认） |
-| `X-Sn-Timestamp` | 方式 B | `2026-10-26 11:47:05.303` | 签名时间，见 2.3（待 MES 方确认） |
-| `X-Sn-Signature` | 方式 B | `a3f9…`（64 位小写十六进制） | HMAC 签名，见 2.3（待 MES 方确认） |
+| `Content-Encoding` | 否 | `gzip` | 开启「gzip 压缩」时才带 |
+| `Authorization` | 方式 A | `Bearer 7f3c…` | 固定令牌，见 2.3（〔待 MES 方确认〕） |
+| `X-Sn-Timestamp` | 方式 B | `2026-10-26 11:47:05.303` | 签名时间，见 2.3（〔待 MES 方确认〕） |
+| `X-Sn-Signature` | 方式 B | `3c9e…`（64 位小写十六进制） | HMAC 签名，见 2.3（〔待 MES 方确认〕） |
 | `X-Sn-Attempt` | 是 | `1` | 第几次送达，仅供日志 |
-| `X-Request-Id` | 是 | UUID | 请求编号，仅供日志，不得用于去重 |
+| `X-Request-Id` | 是 | UUID | 请求编号，每次送达都不同，仅供日志，**不得用于去重** |
 
-**请求体：交付批次**（`batchType` 为 `NEW` / `SAME_ORG_TRANSFER` / `TRANSFER_IN` / `REMAP`）
+**请求体字段（批次头）**
 
-```jsonc
-{
-  "schemaVersion": "1.0",                    // 必填，String，协议版本
-  "batchNo": "PS-110-20261026-000123",       // 必填，String(40)，批次号，全局唯一；MES 幂等键
-  "batchType": "NEW",                        // 必填，String，批次类型，见数据字典
-  "orgCode": "110",                          // 必填，String(64)，收件生产组织编码
-  "createdAt": "2026-10-26 11:47:05.000",    // 必填，String，建批时间
-  "itemsDigest": "sha256:9f2c4e…",           // 必填，String(71)，明细内容指纹；同一 batchNo 再次到达时按字符串比对
-  "items": [                                 // 必填，Array，SN 明细，≤ 5000 条
-    {
-      "sn": "HX100000001A",                  // 必填，String(64)，完整 SN
-      "rev": 1,                              // 必填，Number，挂靠版本，正整数，越大越新
-      "serial": "000001",                    // 必填，String(12)，流水号（可能为 36 进制写法）
-      "serialDec": "1",                      // 必填，String(20)，十进制流水
-      "serialPi": "000001",                  // 必填，String(64)，流水所属 PI；转入的 SN 可能与 pi 不同
-      "pi": "000001",                        // 必填，String(64)，当前所属 PI；一个交付批次只含一张 PI
-      "billNo": "VT2026090001",              // 必填，String(64)，单据号（EEP 生产订单号）
-      "billSeq": 1,                          // 必填，Number，单据行号
-      "materialCode": "9148363",             // 必填，String(64) | null，物料编码
-      "length": "0100",                      // 必填，String(32) | null，米标，原样保存
-      "customerCode": "0001"                 // 必填，String(64)，客户编码
-    }
-  ]
-}
-```
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `schemaVersion` | String | 是 | 协议版本，`1.0` |
+| `batchNo` | String(40) | 是 | 批次号，全局唯一；**MES 幂等键** |
+| `batchType` | String | 是 | 批次类型（第 4 章），决定 `items` 的结构 |
+| `orgCode` | String(64) | 是 | 收件生产组织编码 |
+| `createdAt` | String | 是 | 建批时间 |
+| `itemsDigest` | String(71) | 是 | 明细内容指纹，`sha256:` + 64 位十六进制；同一 `batchNo` 再次到达时**按字符串比对**，不必重算 |
+| `items` | Array | 是 | SN 明细，≤ 5000 条；`PING` 为空数组 |
 
-**请求体：转移批次**（`batchType = TRANSFER_OUT`，跨组织转移后发给原组织）
+**`items[]` 交付明细**（`batchType` = `NEW` / `SAME_ORG_TRANSFER` / `TRANSFER_IN` / `REMAP`）
 
-```jsonc
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `sn` | String(64) | 是 | 完整 SN |
+| `rev` | Number | 是 | 挂靠版本，正整数，越大越新 |
+| `serial` | String(12) | 是 | 流水号（可能为 36 进制写法） |
+| `serialDec` | String(20) | 是 | 十进制流水，按字符串保存 |
+| `serialPi` | String(64) | 是 | 流水所属 PI；转入的 SN 可能与 `pi` 不同 |
+| `pi` | String(64) | 是 | 当前所属 PI；一个交付批次只含一张 PI |
+| `billNo` | String(64) | 是 | 单据号（EEP 生产订单号） |
+| `billSeq` | Number | 是 | 单据行号 |
+| `materialCode` | String(64) \| null | 是 | 物料编码 |
+| `length` | String(32) \| null | 是 | 米标，原样保存 |
+| `customerCode` | String(64) | 是 | 客户编码 |
+
+**`items[]` 转移明细**（`batchType = TRANSFER_OUT`，跨组织转移后发给原组织）
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `sn` | String(64) | 是 | 完整 SN |
+| `rev` | Number | 是 | 挂靠版本 |
+| `toOrgCode` | String(64) | 是 | 转入生产组织编码 |
+
+```json
 {
   "schemaVersion": "1.0",
   "batchNo": "XO-110-20261026-000007",
   "batchType": "TRANSFER_OUT",
-  "orgCode": "110",                          // 原组织（收件方）
+  "orgCode": "110",
   "createdAt": "2026-10-26 11:50:00.000",
   "itemsDigest": "sha256:51ab07…",
   "items": [
-    {
-      "sn": "HX100000003A",                  // 必填，String(64)，完整 SN
-      "rev": 3,                              // 必填，Number，挂靠版本
-      "toOrgCode": "120"                     // 必填，String(64)，转入生产组织编码
-    }
+    {"sn": "HX100000003A", "rev": 3, "toOrgCode": "120"}
   ]
 }
 ```
 
-**请求体：测试批次**（`batchType = PING`，总部点「连接测试」时发送）
+**测试批次**（`batchType = PING`，总部点「连接测试」时发送；MES 只校验身份和 `orgCode`，返回 `OK` / `NG` 回执，不存储、不记批次号）
 
 ```json
 {"schemaVersion": "1.0", "batchNo": "PING-20261026114705303", "batchType": "PING", "orgCode": "110", "createdAt": "2026-10-26 11:47:05.303", "itemsDigest": "sha256:…", "items": []}
 ```
 
-**应答**：回执（2.4）
+**应答示例**
 
-```json
+已处理：
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+
 {"batchNo": "PS-110-20261026-000123", "code": "OK", "message": "已处理", "processedAt": "2026-10-26 11:47:07.215"}
 ```
 
-```json
+整批退回：
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+
 {"batchNo": "PS-110-20261026-000123", "code": "NG", "message": "materialCode 超过本侧字段长度 20", "processedAt": "2026-10-26 11:47:06.008"}
 ```
 
-**HTTP 状态码**
+同一批次正在处理（SN 系统稍后重送）：
+
+```http
+HTTP/1.1 409 Conflict
+Content-Type: application/json; charset=utf-8
+Retry-After: 60
+
+{"batchNo": "PS-110-20261026-000123", "code": "BATCH_IN_PROGRESS", "message": "批次正在处理", "processedAt": "2026-10-26 11:47:05.900"}
+```
+
+**应答字段**：回执，见 2.4。
+
+**HTTP 状态码与 SN 系统处理**
 
 | 场景 | MES 返回 | SN 系统处理 |
 | --- | --- | --- |
@@ -255,7 +358,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后在同一应答中�
 | 超时、5xx、网络中断、429、503 | — | 1、5、15 分钟后用相同内容重送 |
 
 - 能拆包处理就返回 200 + 回执；缺字段、`orgCode` 不符等业务问题返回 200 + `NG`，4xx 只用于完全无法处理
-- 非 200 应答体也按回执结构写明 `code`、`message`
+- 非 200 应答体也按回执结构写明 `code`、`message`；需要 SN 系统延后重送时可带 `Retry-After`（秒）
 - HTTP 200 但 `code` 不是 `OK` / `NG` 时，SN 系统记为应答无效，不重送
 
 ---
@@ -264,9 +367,41 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后在同一应答中�
 
 MES 主动拉取一个批次：优先返回范围内最早的未回执批次（推送未送达的、拉取后未回执的、转移批次），没有时才新建。
 
-`POST /api/mes/v1/batches/next`
+**接口信息**
+
+| 项目 | 内容 |
+| --- | --- |
+| 调用方向 | MES → SN 系统 |
+| 方法与地址 | `POST /api/mes/v1/batches/next` |
+| 认证 | `Authorization: Bearer <工号>:<密钥>`，见 2.3 |
+| 请求体 | JSON，筛选条件均为选填；不限范围时可发 `{}` 或空请求体 |
+| 应答体 | SN 系统应答（2.4）+ 批次 |
+| 幂等 | 回执（④）前重复拉取返回**同一批次**；超时后直接重试即可 |
+| 限流 | 见 2.5 |
+| 后续调用 | 批次处理完成后调 ④ 提交回执 |
 
 ![图 3-2 拉取与提交回执](images/MES对接说明/f7-pull.png)
+
+**交互流程**
+
+1. MES 调 ③
+2. `batch = null`：暂无可拉取批次，1 分钟以上再试
+3. `batch` 有值：按 `batch.batchNo` 查重后处理并落库（与 ① 收到的批次处理方式完全相同）
+4. 调 ④ 提交回执（`OK` / `NG`）
+5. `remaining > 0` 时回到第 1 步继续拉取
+
+**请求示例**
+
+```http
+POST /api/mes/v1/batches/next HTTP/1.1
+Host: sn.example.com
+Authorization: Bearer M110001:xxxxxxxx
+Content-Type: application/json
+Accept-Encoding: gzip
+X-Request-ID: 7d3e9a10-5c2b-4f8e-b1a4-0c6d2e8f9b57
+
+{"pi": "000001", "billNo": null, "batchNo": null}
+```
 
 **请求头**
 
@@ -275,42 +410,116 @@ MES 主动拉取一个批次：优先返回范围内最早的未回执批次（�
 | `Authorization` | 是 | `Bearer M110001:xxxxxxxx` | 见 2.3 |
 | `Content-Type` | 否 | `application/json` | — |
 | `Content-Encoding` | 否 | `gzip` | 请求体 gzip 时填写 |
+| `Accept-Encoding` | 否 | `gzip` | 应答可 gzip |
+| `X-Request-ID` | 否 | UUID | 请求号，见 2.3 |
 
-**请求体**
+**请求体字段**
 
-```jsonc
-{
-  "pi": "000001",    // 选填，String(64)，限定 PI
-  "billNo": null,    // 选填，String(64)，限定单据；可与 pi 同时使用
-  "batchNo": null    // 选填，String(40)，取回指定批次（如被退回后修正重处理）；填写后 pi、billNo 不生效，不新建批次
-}
-```
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `pi` | String(64) | 否 | 限定 PI |
+| `billNo` | String(64) | 否 | 限定单据；可与 `pi` 同时使用 |
+| `batchNo` | String(40) | 否 | 取回指定批次（如被退回后修正重处理）；填写后 `pi`、`billNo` 不生效，不新建批次 |
 
-**应答**
+**应答示例**
 
-```jsonc
+有批次：
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+X-Request-ID: 7d3e9a10-5c2b-4f8e-b1a4-0c6d2e8f9b57
+
 {
   "schemaVersion": "1.0",
   "code": "OK",
-  "message": "成功",                          // 无批次时为「暂无可拉取批次」（有暂停时注明枚数）
-  "batchNo": "PL-110-20261026-000046",        // 本次返回的批次号；无批次时为 null
+  "message": "成功",
+  "batchNo": "PL-110-20261026-000046",
   "timestamp": "2026-10-26 11:48:15.442",
-  "batch": { /* 批次，结构同 3.1 请求体 */ },   // Object | null，null 表示暂无可拉取批次，1 分钟以上再试
-  "remaining": 1200,                         // Number，范围内剩余可拉取枚数；> 0 时继续拉取
-  "paused": 0                                // Number，暂停下发的枚数
+  "batch": {
+    "schemaVersion": "1.0",
+    "batchNo": "PL-110-20261026-000046",
+    "batchType": "NEW",
+    "orgCode": "110",
+    "createdAt": "2026-10-26 11:48:15.400",
+    "itemsDigest": "sha256:c07e3a…",
+    "items": [
+      {
+        "sn": "HX100005001A", "rev": 1, "serial": "005001", "serialDec": "5001", "serialPi": "000001",
+        "pi": "000001", "billNo": "VT2026090001", "billSeq": 1, "materialCode": "9148363",
+        "length": "0100", "customerCode": "0001"
+      }
+    ]
+  },
+  "remaining": 1200,
+  "paused": 0
 }
 ```
 
-- 处理完成后立即调 ④ 提交回执；回执前重复拉取返回同一批次
-- 错误码：`ORG_NOT_ALLOWED`、`BATCH_NOT_FOUND`、`BATCH_CONFIRMED`、`BATCH_VOIDED` 及公共错误码
+暂无可拉取批次：
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"schemaVersion": "1.0", "code": "OK", "message": "暂无可拉取批次，30 枚暂停下发", "batchNo": null, "timestamp": "2026-10-26 11:53:00.118", "batch": null, "remaining": 0, "paused": 30}
+```
+
+出错（指定的批次不存在）：
+
+```http
+HTTP/1.1 404 Not Found
+Content-Type: application/json
+
+{"schemaVersion": "1.0", "code": "BATCH_NOT_FOUND", "message": "批次号不存在，或不属于本组织", "batchNo": "PL-110-20261026-000099", "timestamp": "2026-10-26 11:48:15.442", "details": []}
+```
+
+**应答字段**（公共字段见 2.4）
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `batchNo` | String \| null | 本次返回的批次号；无批次时为 `null` |
+| `message` | String | 无批次时为「暂无可拉取批次」，有暂停时注明枚数 |
+| `batch` | Object \| null | 批次，字段同 3.1 请求体（批次头 + `items[]`）；`null` 表示暂无可拉取批次 |
+| `remaining` | Number | 范围内剩余可拉取枚数；`> 0` 时继续拉取 |
+| `paused` | Number | 范围内暂停下发的枚数 |
+
+**错误码**：`ORG_NOT_ALLOWED`、`BATCH_NOT_FOUND`、`BATCH_CONFIRMED`、`BATCH_VOIDED` 及公共错误码（第 5 章）。
 
 ---
 
 ### 3.3 ④ 提交回执
 
-对 ③ 拉取的批次提交处理结果（含整批退回）。推送的批次已随 ① 应答回执，无需再提交。按批次号幂等。
+对 ③ 拉取的批次提交处理结果（含整批退回）。推送的批次已随 ① 应答回执，无需再提交。
 
-`POST /api/mes/v1/batches/{batchNo}/receipt`
+**接口信息**
+
+| 项目 | 内容 |
+| --- | --- |
+| 调用方向 | MES → SN 系统 |
+| 方法与地址 | `POST /api/mes/v1/batches/{batchNo}/receipt` |
+| 认证 | `Authorization: Bearer <工号>:<密钥>`，见 2.3 |
+| 请求体 | 回执 JSON（2.4） |
+| 应答体 | SN 系统应答（2.4）+ 受理结果 |
+| 幂等 | 按 `batchNo`：已确认的批次再次提交只存档，返回 `firstConfirmation = false`；超时后以同一回执重交 |
+| 限流 | 见 2.5 |
+
+**交互流程**
+
+1. MES 处理完 ③ 拉取的批次后调 ④，路径与请求体带同一个 `batchNo`
+2. SN 系统校验回执：不符返回 422 `RECEIPT_MISMATCH`（见 `details`），批次已作废返回 409 `BATCH_VOIDED`
+3. 受理成功返回 200：`OK` 回执 → 批次成功；`NG` 回执 → 批次失败（退回原因显示在总部页面）
+
+**请求示例**
+
+```http
+POST /api/mes/v1/batches/PL-110-20261026-000046/receipt HTTP/1.1
+Host: sn.example.com
+Authorization: Bearer M110001:xxxxxxxx
+Content-Type: application/json
+
+{"batchNo": "PL-110-20261026-000046", "code": "OK", "message": "已处理", "processedAt": "2026-10-26 11:48:20.117"}
+```
 
 **请求头**：同 3.2。
 
@@ -320,38 +529,68 @@ MES 主动拉取一个批次：优先返回范围内最早的未回执批次（�
 | --- | --- | --- | --- |
 | `batchNo` | String(40) | 是 | 批次号，须与请求体 `batchNo` 一致 |
 
-**请求体**：回执（2.4）
+**请求体字段**：回执，见 2.4（`code` 只能为 `OK` / `NG`）。
 
-```json
-{"batchNo": "PL-110-20261026-000046", "code": "OK", "message": "已处理", "processedAt": "2026-10-26 11:48:20.117"}
-```
+**应答示例**
 
-**应答**
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
 
-```jsonc
 {
   "schemaVersion": "1.0",
   "code": "OK",
   "message": "回执已确认，批次成功",
   "batchNo": "PL-110-20261026-000046",
   "timestamp": "2026-10-26 11:48:20.305",
-  "batchResult": "SUCCESS",                  // String，SN 系统中该批次的结果，见数据字典
-  "firstConfirmation": true                  // Boolean，true 本次首次确认；false 此前已确认，本次只存档
+  "batchResult": "SUCCESS",
+  "firstConfirmation": true
 }
 ```
 
-- 请求体 `batchNo` 与路径不一致、`code` 不是 `OK` / `NG` 时返回 422 `RECEIPT_MISMATCH`
-- 错误码：`RECEIPT_MISMATCH`、`BATCH_VOIDED`、`BATCH_NOT_FOUND` 及公共错误码
+出错示例见 2.4（422 `RECEIPT_MISMATCH`）。
+
+**应答字段**（公共字段见 2.4）
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `message` | String | 「回执已确认，批次成功」/「整批退回已登记，批次失败」/「批次此前已确认，本次回执只存档」 |
+| `batchResult` | String | SN 系统中该批次的结果：`SUCCESS` / `FAILED`（第 4 章） |
+| `firstConfirmation` | Boolean | `true` 本次首次确认；`false` 此前已确认，本次只存档 |
+
+**错误码**：`RECEIPT_MISMATCH`（请求体 `batchNo` 与路径不一致、`code` 不是 `OK` / `NG`）、`BATCH_VOIDED`、`BATCH_NOT_FOUND` 及公共错误码（第 5 章）。
 
 ---
 
 ### 3.4 ⑤ 查询已下发 SN
 
-返回 SN 系统认定已下发给本组织 MES 的 SN（含推送和拉取），已转至其他组织的不返回。仅用于对账，不得据此入库、打标或删除。
+返回 SN 系统认定已下发给本组织 MES 的 SN（含推送和拉取），已转至其他组织的不返回。仅用于对账，**不得据此入库、打标或删除**。
 
-`GET /api/mes/v1/sn/delivered`
+**接口信息**
 
-**请求头**：`Authorization: Bearer <工号>:<密钥>`
+| 项目 | 内容 |
+| --- | --- |
+| 调用方向 | MES → SN 系统 |
+| 方法与地址 | `GET /api/mes/v1/sn/delivered` |
+| 认证 | `Authorization: Bearer <工号>:<密钥>`，见 2.3 |
+| 参数 | Query 参数，无请求体 |
+| 应答体 | SN 系统应答（2.4）+ 一页 SN |
+| 分页 | 游标分页：首页不带 `cursor`，之后带上一页的 `nextCursor`，直到 `nextCursor = null` |
+| 应答压缩 | 请求带 `Accept-Encoding: gzip` 时，1 KB 以上的应答为 gzip（应答头 `Content-Encoding: gzip`） |
+| 限流 | 见 2.5（每页算一次调用） |
+
+**请求示例**
+
+```http
+GET /api/mes/v1/sn/delivered?pi=000001&pageSize=1000 HTTP/1.1
+Host: sn.example.com
+Authorization: Bearer M110001:xxxxxxxx
+Accept-Encoding: gzip
+```
+
+下一页：`GET /api/mes/v1/sn/delivered?pi=000001&pageSize=1000&cursor=10086`
+
+**请求头**：`Authorization`（必填）、`Accept-Encoding`、`X-Request-ID`（选填），同 3.2。
 
 **Query 参数**
 
@@ -361,9 +600,12 @@ MES 主动拉取一个批次：优先返回范围内最早的未回执批次（�
 | `cursor` | String | 否 | 空 | 分页游标：首页留空，之后填上一页的 `nextCursor` |
 | `pageSize` | Number | 否 | 1000 | 每页条数，最大 5000 |
 
-**应答**
+**应答示例**
 
-```jsonc
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+
 {
   "schemaVersion": "1.0",
   "code": "OK",
@@ -372,27 +614,30 @@ MES 主动拉取一个批次：优先返回范围内最早的未回执批次（�
   "timestamp": "2026-10-26 12:00:00.512",
   "items": [
     {
-      "sn": "HX100000001A",                  // 以下 11 个字段同 3.1 交付批次明细
-      "rev": 2,
-      "serial": "000001",
-      "serialDec": "1",
-      "serialPi": "000001",
-      "pi": "000001",
-      "billNo": "VT2026090001",
-      "billSeq": 1,
-      "materialCode": "9148363",
-      "length": "0100",
-      "customerCode": "0001",
-      "status": "PUSHED",                    // String，SN 状态，见数据字典
-      "batchNo": "PS-110-20261026-000123",   // String | null，当前所在批次
-      "deliveredAt": "2026-10-26 11:47:07.000" // String | null，确认已下发的时间
+      "sn": "HX100000001A", "rev": 2, "serial": "000001", "serialDec": "1", "serialPi": "000001",
+      "pi": "000001", "billNo": "VT2026090001", "billSeq": 1, "materialCode": "9148363",
+      "length": "0100", "customerCode": "0001",
+      "status": "PUSHED",
+      "batchNo": "PS-110-20261026-000123",
+      "deliveredAt": "2026-10-26 11:47:07.000"
     }
   ],
-  "nextCursor": "10086"                      // String | null，下一页游标；null 表示最后一页
+  "nextCursor": "10086"
 }
 ```
 
-- 错误码：公共错误码
+**应答字段**（公共字段见 2.4）
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `items` | Array | 本页 SN；无数据时为 `[]` |
+| `items[].sn` ～ `items[].customerCode` | — | 11 个字段同 3.1 交付明细 |
+| `items[].status` | String | SN 状态（第 4 章） |
+| `items[].batchNo` | String \| null | 当前所在批次 |
+| `items[].deliveredAt` | String \| null | 确认已下发的时间 |
+| `nextCursor` | String \| null | 下一页游标；`null` 表示最后一页 |
+
+**错误码**：公共错误码（第 5 章）。
 
 ---
 
@@ -400,7 +645,25 @@ MES 主动拉取一个批次：优先返回范围内最早的未回执批次（�
 
 返回指定批次中仍属于该批次的 SN（已转至其他组织的不返回）。仅用于对账。
 
-`GET /api/mes/v1/batches/{batchNo}/items`
+**接口信息**
+
+| 项目 | 内容 |
+| --- | --- |
+| 调用方向 | MES → SN 系统 |
+| 方法与地址 | `GET /api/mes/v1/batches/{batchNo}/items` |
+| 认证 | `Authorization: Bearer <工号>:<密钥>`，见 2.3 |
+| 参数 | Path + Query 参数，无请求体 |
+| 应答体 | 同 3.4，`batchNo` 为所查批次 |
+| 分页 | 同 3.4 |
+
+**请求示例**
+
+```http
+GET /api/mes/v1/batches/PS-110-20261026-000123/items?pageSize=1000 HTTP/1.1
+Host: sn.example.com
+Authorization: Bearer M110001:xxxxxxxx
+Accept-Encoding: gzip
+```
 
 **请求头**：同 3.4。
 
@@ -412,9 +675,18 @@ MES 主动拉取一个批次：优先返回范围内最早的未回执批次（�
 | `cursor` | Query | String | 否 | 同 3.4 |
 | `pageSize` | Query | Number | 否 | 同 3.4 |
 
-**应答**：同 3.4，`batchNo` 为所查批次。
+**应答示例**
 
-- 错误码：`BATCH_NOT_FOUND` 及公共错误码
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"schemaVersion": "1.0", "code": "OK", "message": "成功", "batchNo": "PS-110-20261026-000123", "timestamp": "2026-10-26 12:01:10.031", "items": [{"sn": "HX100000001A", "rev": 2, "serial": "000001", "serialDec": "1", "serialPi": "000001", "pi": "000001", "billNo": "VT2026090001", "billSeq": 1, "materialCode": "9148363", "length": "0100", "customerCode": "0001", "status": "PUSHED", "batchNo": "PS-110-20261026-000123", "deliveredAt": "2026-10-26 11:47:07.000"}], "nextCursor": null}
+```
+
+**应答字段**：同 3.4。
+
+**错误码**：`BATCH_NOT_FOUND` 及公共错误码（第 5 章）。
 
 ---
 
@@ -490,3 +762,4 @@ MES 主动拉取一个批次：优先返回范围内最早的未回执批次（�
 | --- | --- |
 | 2026-10-26 | 从《MES 对接说明》拆出，只保留接口定义；业务处理规则留在《MES 对接说明》。字段与上一版一致：应答统一带 `code`、`message`、`batchNo`、`timestamp`，回执带 `processedAt`，时间统一 UTC+8 |
 | 2026-10-26 | 第 1 章换为完整业务接口调用时序图（图 1-1）并列出各阶段调用的接口；2.3 中 ① 的认证改为待 MES 方填写的清单，SN 系统已支持的方式作为参考 |
+| 2026-10-26 | 第 1 章只保留接口一览和图 1-1，移除图后的阶段表与说明；2.3 两个方向的认证要点改为列表补全，MES 方未给出的项标〔待 MES 方填写〕；2.4 与第 3 章各接口改为「接口信息 → 交互流程 → 请求示例报文 + 字段表 → 应答示例报文 + 字段表 → 状态码 / 错误码」，示例为完整 HTTP 报文。字段与接口行为不变 |
