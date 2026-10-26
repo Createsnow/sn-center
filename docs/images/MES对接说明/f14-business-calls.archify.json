@@ -76,7 +76,7 @@
       "from": "sn",
       "to": "mes",
       "y": 245,
-      "label": "① 接收批次 · PING",
+      "label": "① 推送批次 · PING",
       "variant": "emphasis",
       "note": "只校验身份和 orgCode，不存储"
     },
@@ -101,7 +101,7 @@
       "from": "sn",
       "to": "mes",
       "y": 435,
-      "label": "① 接收批次 · NEW",
+      "label": "① 推送批次 · NEW",
       "variant": "emphasis",
       "note": "按单批枚数分批，一批成功再发下一批"
     },
@@ -119,7 +119,7 @@
       "from": "sn",
       "to": "mes",
       "y": 565,
-      "label": "① 接收批次（超时 / 5xx）",
+      "label": "① 推送批次（超时 / 5xx）",
       "variant": "dashed",
       "note": "1、5、15 分钟重送，用尽后停止"
     },
@@ -172,7 +172,7 @@
       "from": "sn",
       "to": "mes",
       "y": 940,
-      "label": "① 接收批次 · 转移交付",
+      "label": "① 推送批次 · 转移交付",
       "variant": "emphasis",
       "note": "SAME_ORG_TRANSFER / TRANSFER_IN"
     },
@@ -189,7 +189,7 @@
       "from": "sn",
       "to": "old",
       "y": 1060,
-      "label": "① 接收批次 · TRANSFER_OUT",
+      "label": "① 推送批次 · TRANSFER_OUT",
       "variant": "emphasis",
       "note": "仅跨组织且原组织曾持有；与上一条互不等待"
     },
