@@ -66,7 +66,7 @@
 uv run --with pypandoc_binary --with python-docx --with pillow --with pymupdf python docs/build_tech_docx.py
 ```
 
-装有 LibreOffice 时目录带页码，否则只有标题。图的源文件是 `images/系统技术方案/*.mmd`（Mermaid），改完后用 mermaid-cli 导出同名 PNG、SVG（白底，与现有图同样的宽度和倍率；无界面服务器上 mermaid-cli 用无头 Chromium）：
+装有 LibreOffice 时目录带页码，否则只有标题。MES 对接说明只维护 Markdown 版，需要 Word 版交给 MES 方时同样生成（命令末尾加 `docs/MES对接接口文档.md`），不入库。图的源文件是 `images/系统技术方案/*.mmd`（Mermaid），改完后用 mermaid-cli 导出同名 PNG、SVG（白底，与现有图同样的宽度和倍率；无界面服务器上 mermaid-cli 用无头 Chromium）：
 
 ```bash
 cd docs/images/系统技术方案
