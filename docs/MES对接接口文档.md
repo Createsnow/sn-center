@@ -144,7 +144,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
 
 **请求体结构**
 
-各类批次共用一个结构，`items[]` 按 `batchType` 带不同字段。注释中「必填」一栏的取值：
+各类批次（`batchType`，附录 A）共用同一个请求体，`items[]` 每条都带下列 13 个字段：
 
 - 测试批次（`PING`，连接测试时发送）：不带 `pi`，`items` 为 `[]`
 
@@ -152,7 +152,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
 {
   "schemaVersion": "1.0",                    // String           必填  协议版本，固定 1.0
   "batchNo": "PS-110-20261026-000123",       // String(40)       必填  批次号，全局唯一；MES 幂等键
-  "batchType": "NEW",                        // String           必填  批次类型（附录 A），决定 items 带哪些字段
+  "batchType": "NEW",                        // String           必填  批次类型（附录 A），决定 MES 怎样处理
   "orgCode": "110",                          // String(64)       必填  收件生产组织编码；转移批次为原组织
   "pi": "000001",                            // String(64)       必填  本批的 PI，一批只含一张 PI；转移批次为转出前的 PI
   "createdAt": "2026-10-26 11:47:05.000",    // String           必填  建批时间
@@ -214,7 +214,7 @@ X-Request-Id: 1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed
     {
       "sn": "HX100000001A", "rev": 1, "serial": "000001", "serialDec": "1", "serialPi": "000001",
       "pi": "000001", "billNo": "VT2026090001", "billSeq": 1, "attachNo": "A01", "materialCode": "9148363",
-      "length": "0100", "customerCode": "0001"
+      "length": "0100", "customerCode": "0001", "toOrgCode": null
     }
   ]
 }
@@ -315,7 +315,7 @@ MES 主动拉取一个批次：优先返回范围内最早的未回执批次（�
     "pi": "000001",                          //                          交付批次校验同 ①；转移批次为转出前的 PI
     "createdAt": "2026-10-26 11:48:15.400",
     "itemsDigest": "sha256:c07e3a…",
-    "items": [ … ]                           //                          交付明细或转移明细，≤ 5000 条
+    "items": [ … ]                           //                          批次明细，同 ①，≤ 5000 条
   },
   "remaining": 1200,                         // Number           仅成功  范围内剩余可拉取枚数；> 0 时继续拉取
   "paused": 0,                               // Number           仅成功  范围内暂停下发的枚数
@@ -363,7 +363,7 @@ X-Request-ID: 7d3e9a10-5c2b-4f8e-b1a4-0c6d2e8f9b57
       {
         "sn": "HX100005001A", "rev": 1, "serial": "005001", "serialDec": "5001", "serialPi": "000001",
         "pi": "000001", "billNo": "VT2026090001", "billSeq": 1, "attachNo": "A01", "materialCode": "9148363",
-        "length": "0100", "customerCode": "0001"
+        "length": "0100", "customerCode": "0001", "toOrgCode": null
       }
     ]
   },
@@ -576,7 +576,7 @@ X-Request-ID: 1c7e4a9b-5d2f-4b68-9e03-7a6b5c4d3e21
   "timestamp": "2026-10-26 12:00:00.512",    // String           总是    响应时间
   "items": [                                 // Array            仅成功  本页 SN；无数据时为 []
     {
-      "sn": "HX100000001A",                  // …                必有    交付明细 12 个字段（3.1.1），此处从略
+      "sn": "HX100000001A",                  // …                必有    批次明细中除 toOrgCode 外的 12 个字段（3.1.1），此处从略
       "status": "PUSHED",                    // String           必有    SN 状态（附录 A）
       "batchNo": "PS-110-20261026-000123",   // String|null      必有    当前所在批次
       "deliveredAt": "2026-10-26 11:47:07.000" // String|null    必有    确认已下发的时间
@@ -739,14 +739,14 @@ X-Request-ID: 6d3a0f8c-2e5b-4a71-9c46-1b0a9f8e7d52
 
 **batchType 批次类型**（一批只有一种；业务含义见《MES 对接说明》1.3、3.3）
 
-| 取值 | 说明 | 批次号前缀 | 明细结构 |
+| 取值 | 说明 | 批次号前缀 | 明细的 `toOrgCode` |
 | --- | --- | --- | --- |
-| `NEW` | 首次下发 | `PS`（推送时建）/ `PL`（拉取时建） | 交付明细 |
-| `SAME_ORG_TRANSFER` | 同组织转移 | 同上 | 交付明细 |
-| `TRANSFER_IN` | 跨组织转入 | 同上 | 交付明细 |
-| `REMAP` | 订单变更改挂、告警重推 | 同上 | 交付明细 |
-| `TRANSFER_OUT` | 跨组织转出（发给原组织） | `XO` | 转移明细 |
-| `PING` | 连接测试 | `PING` | 空 |
+| `NEW` | 首次下发 | `PS`（推送时建）/ `PL`（拉取时建） | `null` |
+| `SAME_ORG_TRANSFER` | 同组织转移 | 同上 | `null` |
+| `TRANSFER_IN` | 跨组织转入 | 同上 | `null` |
+| `REMAP` | 订单变更改挂、告警重推 | 同上 | `null` |
+| `TRANSFER_OUT` | 跨组织转出（发给原组织） | `XO` | 转入组织 |
+| `PING` | 连接测试 | `PING` | —（`items` 为 `[]`） |
 
 **回执 code**（① 响应体、③ 请求体）
 

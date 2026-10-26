@@ -75,8 +75,9 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
         "materialCode",
         "length",
         "customerCode",
+        "toOrgCode",
     }
-    assert body["batchType"] == "NEW"
+    assert body["batchType"] == "NEW" and item["toOrgCode"] is None, "交付明细与转移明细同一结构，交付批次不带转入组织"
     assert item["billNo"] == bill and item["billSeq"] == 1 and item["pi"] == pi and item["serialPi"] == pi
     assert isinstance(item["serialDec"], str) and item["length"] == "0100"
     assert item["attachNo"] == "1", "附件项次随交付明细下发"

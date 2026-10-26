@@ -1,4 +1,4 @@
-"""交付批次的建立：批次号、报文（交付项 6.3、转出项 6.4）、写定请求体与明细；从「待推送、未入批、未暂停」号池认领。
+"""交付批次的建立：批次号、报文（各类批次明细同一结构）、写定请求体与明细；从「待推送、未入批、未暂停」号池认领。
 
 批次类型（报文 batchType）按 MES 已有的数据说明这批号从哪来，一批只有一种：首次下发 NEW、同组织转移
 SAME_ORG_TRANSFER、跨组织转入 TRANSFER_IN、订单变更改挂 REMAP（以上为交付类，MES 都逐枚按 rev 新增或覆盖），
@@ -148,9 +148,10 @@ TYPE_SQL = (
 )
 
 
-def _delivery_payload(r: dict) -> dict:
-    """交付项（6.3）。十进制流水、米标按字符串；物料、附件项次为空，规则不带米标时为 null。
-    MES 逐枚按 rev 新增或覆盖。"""
+def _item_payload(r: dict, to_org: str | None = None) -> dict:
+    """批次明细，交付批次与转出批次同一结构。十进制流水、米标按字符串；物料、附件项次为空，规则不带米标时为 null。
+    交付批次 toOrgCode 为 null，MES 逐枚按 rev 新增或覆盖；转出批次带转出前的挂靠与转入组织 toOrgCode，MES 据此
+    标记已转走（本地没有时按 SN、rev 建一条已转走记录）。"""
     return {
         "sn": r["sn"],
         "rev": int(r["rev"]),
@@ -164,13 +165,8 @@ def _delivery_payload(r: dict) -> dict:
         "materialCode": str_or_none(r["material_code"]),
         "length": r["length_text"],
         "customerCode": r["customer_code"],
+        "toOrgCode": to_org,
     }
-
-
-def _transfer_out_payload(e: dict) -> dict:
-    """转出项（6.4）：SN、rev、附件项次（号上写定的）与转入组织；MES 据此标记已转走（本地没有时按 SN、rev 建一条
-    已转走记录）。"""
-    return {"sn": e["sn"], "rev": int(e["rev"]), "attachNo": str_or_none(e["attach_no"]), "toOrgCode": e["to_factory"]}
 
 
 def _insert_batch(
@@ -273,7 +269,7 @@ def _deliver(
     rebuilt_from: str | None = None,
 ) -> dict:
     """把已加锁的同一类型的号写成一个交付批次，号记上批次号。"""
-    payload = [_delivery_payload(r) for r in items]
+    payload = [_item_payload(r) for r in items]
     rows = [
         (
             r["id"],
@@ -368,7 +364,7 @@ def build_delivery_now(
 
 def build_transfer_out(cu: CurrentUser, org: str, entries: list[dict], rebuilt_from: str | None = None) -> list[dict]:
     """转出批次（在转移事务内调用）：按转出前 PI 分批（一张转移单只有一张来源 PI），再按来源组织当前单批枚数拆分。
-    entries 每枚含转出前挂靠、转入组织、转移类型与单号。"""
+    entries 每枚含转出前挂靠（含米标、规则版本）、转入组织、转移类型与单号。"""
     f = factories.get(org)
     size = max(1, int(f["batch_size"])) if f else 5000
     by_pi: dict[str, list[dict]] = {}
@@ -378,7 +374,7 @@ def build_transfer_out(cu: CurrentUser, org: str, entries: list[dict], rebuilt_f
     out = []
     for part in parts:
         pi = part[0]["pi_no"]
-        payload = [_transfer_out_payload(e) for e in part]
+        payload = [_item_payload(e, e["to_factory"]) for e in part]
         rows = [
             (
                 e["item_id"],

@@ -122,7 +122,7 @@ class Runner:
         return f"{self.prefix}{i:06d}"
 
     def delivery(self, i: int, rev: int, **extra: Any) -> dict:
-        """交付项；单据行号随 rev 变（rev < 3 为 1，否则为 2），便于在 MES 侧核对是否覆盖。"""
+        """交付明细（toOrgCode 为 null）；单据行号随 rev 变（rev < 3 为 1，否则为 2），便于在 MES 侧核对是否覆盖。"""
         return {
             "sn": self.sn(i),
             "rev": rev,
@@ -136,11 +136,13 @@ class Runner:
             "materialCode": "CT-M1",
             "length": "0100",
             "customerCode": "CT-C1",
+            "toOrgCode": None,
             **extra,
         }
 
     def transfer_out(self, i: int, rev: int, to_org: str = "CT-TO") -> dict:
-        return {"sn": self.sn(i), "rev": rev, "attachNo": "CT-A1", "toOrgCode": to_org}
+        """转移明细：与交付明细同一结构，带转出前的挂靠与转入组织。"""
+        return self.delivery(i, rev, toOrgCode=to_org)
 
     def batch(self, items: list[dict], kind: str = "NEW", no: str | None = None, **head: Any) -> dict:
         """批次头；交付批次的 pi 取明细的 pi，转移批次取测试 PI（转出前的 PI）。"""
@@ -370,9 +372,9 @@ class Runner:
 
         def out_missing(c: Check) -> None:
             item = self.transfer_out(17, 1)
-            del item["toOrgCode"]
+            item["toOrgCode"] = None
             b = self.batch([item], "TRANSFER_OUT")
-            self.ng(self.send(b), b, "转出项缺必填字段 toOrgCode")
+            self.ng(self.send(b), b, "转出项 toOrgCode 为空")
 
         def missing(c: Check) -> None:
             item = self.delivery(19, 1)
@@ -438,7 +440,7 @@ class Runner:
             ("C02", "连接测试：PING 的 orgCode 不符时 NG", "接口 3.1；说明 3.2 步骤 1", ping_org),
             ("C03", "认证：凭证错误返回 401 / 403", "接口 2.1", auth_bad),
             ("C04", "认证（HMAC）：时间戳偏差超过 5 分钟拒绝", "接口 2.1", hmac_skew),
-            ("C05", "交付批次首次送达：OK，逐枚新增", "说明 3.2 逐枚处理；接口 2.3", first),
+            ("C05", "交付批次首次送达：OK，逐枚新增", "说明 3.2 逐枚处理；接口 3.1", first),
             ("C06", "同一批原样再次送达：OK", "说明 3.2 步骤 3", replay),
             ("C07", "同一批次号内容不同：409 BATCH_CONTENT_MISMATCH", "说明 3.2 步骤 3", mismatch),
             ("C08", "rev 更大：覆盖挂靠，OK", "说明 3.2 逐枚处理、1.3", overwrite),
@@ -460,8 +462,8 @@ class Runner:
             ),
             ("C15", "orgCode 不是本组织：NG；修正后同一批次号重送能处理", "说明 3.2 步骤 2、5", org_bad),
             ("C16", "批内 SN 重复：NG", "说明 3.2 步骤 2", dup_sn),
-            ("C17", "转出项缺 toOrgCode：NG", "说明 3.2 步骤 2", out_missing),
-            ("C18", "缺必填字段：NG（HTTP 200，不是 4xx），不落任何数据", "说明 3.2 步骤 2；接口 2.3", missing),
+            ("C17", "转出项 toOrgCode 为空：NG", "说明 3.2 步骤 2", out_missing),
+            ("C18", "缺必填字段：NG（HTTP 200，不是 4xx），不落任何数据", "说明 3.2 步骤 2；接口 3.1", missing),
             ("C19", "请求体无法解析：400", "接口 3.1", bad_body),
             ("C20", "同一批同时送达两次：只处理一次，两边都 OK", "说明 2、3.2 步骤 5", concurrent),
             ("C21", "5000 枚一批的处理时间", "说明 3.2 步骤 5", performance),
