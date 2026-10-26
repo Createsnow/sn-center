@@ -177,7 +177,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
 
 **请求体结构**
 
-交付批次（`batchType` = `NEW` / `SAME_ORG_TRANSFER` / `TRANSFER_IN` / `REMAP`）：
+交付批次（`batchType` = `NEW` / `SAME_ORG_TRANSFER` / `TRANSFER_IN` / `REMAP`），`items[]` 为**交付明细**（②④⑤ 沿用）：
 
 ```jsonc
 {
@@ -206,11 +206,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
 }
 ```
 
-以上 `items[]` 的 11 个字段称为**交付明细**，②④⑤ 沿用。
-
-`SAME_ORG_TRANSFER` / `TRANSFER_IN` 批次在转单、转组织时当场新建：一批的 SN 都来自同一张转移单（来源为同一 PI、同一单据），`pi` 为转入后的 PI；超过单批枚数时拆成多个批次号。转移前 MES 还没收到的 SN 不随转移建批，之后以 `NEW` 按流水认领。
-
-转移批次（`batchType = TRANSFER_OUT`，跨组织转移后发给原组织）：批次头同上但**不带 `pi`**（MES 按 `sn` 处理，不校验 PI；一批的 SN 来自同一张转移单、同一来源 PI，超过单批枚数时拆成多个批次号），`items[]` 为：
+转移批次（`batchType = TRANSFER_OUT`，发给原组织）：批次头不带 `pi`，`items[]` 为**转移明细**：
 
 ```jsonc
 {
@@ -220,7 +216,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
 }
 ```
 
-测试批次（`batchType = PING`，总部点「连接测试」时发送）：批次头同上但不带 `pi`，`items` 为 `[]`。MES 只校验身份和 `orgCode`，返回 `OK` / `NG`，不存储、不记批次号。
+测试批次（`batchType = PING`，连接测试时发送）：批次头不带 `pi`，`items` 为 `[]`。
 
 #### 3.1.2 响应参数
 
