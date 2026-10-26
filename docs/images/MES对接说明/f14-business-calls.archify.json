@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "业务接口调用时序",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "output": "f14-business-calls.html",
+    "legend": {
+      "mode": "hidden"
+    }
+  },
+  "participants": [
+    {
+      "id": "hq",
+      "type": "external",
+      "label": "总部",
+      "sublabel": "SN 系统页面"
+    },
+    {
+      "id": "sn",
+      "type": "backend",
+      "label": "SN 系统"
+    },
+    {
+      "id": "mes",
+      "type": "frontend",
+      "label": "本组织 MES",
+      "sublabel": "跨组织时为转入方"
+    },
+    {
+      "id": "old",
+      "type": "frontend",
+      "label": "原组织 MES",
+      "sublabel": "仅跨组织转移"
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 335,
+      "label": "1 上线前：连接测试"
+    },
+    {
+      "from": 350,
+      "to": 525,
+      "label": "2 分配后推送（主通道）"
+    },
+    {
+      "from": 540,
+      "to": 840,
+      "label": "3 推送失败：MES 拉取补偿"
+    },
+    {
+      "from": 855,
+      "to": 1150,
+      "label": "4 转移：转入方新挂靠，原组织转出"
+    },
+    {
+      "from": 1165,
+      "to": 1275,
+      "label": "5 对账（可选）"
+    }
+  ],
+  "messages": [
+    {
+      "id": "t1",
+      "from": "hq",
+      "to": "sn",
+      "y": 185,
+      "label": "填写 MES 配置，点连接测试",
+      "variant": "default"
+    },
+    {
+      "id": "t2",
+      "from": "sn",
+      "to": "mes",
+      "y": 245,
+      "label": "① 接收批次 · PING",
+      "variant": "emphasis",
+      "note": "只校验身份和 orgCode，不存储"
+    },
+    {
+      "id": "t3",
+      "from": "mes",
+      "to": "sn",
+      "y": 305,
+      "label": "200 + 回执 OK",
+      "variant": "return"
+    },
+    {
+      "id": "p1",
+      "from": "hq",
+      "to": "sn",
+      "y": 375,
+      "label": "分配 SN 到生产组织",
+      "variant": "default"
+    },
+    {
+      "id": "p2",
+      "from": "sn",
+      "to": "mes",
+      "y": 435,
+      "label": "① 接收批次 · NEW",
+      "variant": "emphasis",
+      "note": "按单批枚数分批，一批成功再发下一批"
+    },
+    {
+      "id": "p3",
+      "from": "mes",
+      "to": "sn",
+      "y": 495,
+      "label": "200 + 回执 OK / NG",
+      "variant": "return",
+      "note": "NG 的处理见对接说明图 5-1"
+    },
+    {
+      "id": "q1",
+      "from": "sn",
+      "to": "mes",
+      "y": 565,
+      "label": "① 接收批次（超时 / 5xx）",
+      "variant": "dashed",
+      "note": "1、5、15 分钟重送，用尽后停止"
+    },
+    {
+      "id": "q2",
+      "from": "mes",
+      "to": "sn",
+      "y": 625,
+      "label": "③ 拉取批次",
+      "variant": "emphasis",
+      "note": "推送失败后、本地 SN 不足、每 5 分钟兜底"
+    },
+    {
+      "id": "q3",
+      "from": "sn",
+      "to": "mes",
+      "y": 685,
+      "label": "batch + remaining",
+      "variant": "return",
+      "note": "先给最早未回执的批次，没有才新建"
+    },
+    {
+      "id": "q4",
+      "from": "mes",
+      "to": "sn",
+      "y": 745,
+      "label": "④ 提交回执 OK / NG",
+      "variant": "emphasis",
+      "note": "落库后立即提交；remaining > 0 继续拉取"
+    },
+    {
+      "id": "q5",
+      "from": "sn",
+      "to": "mes",
+      "y": 805,
+      "label": "200 + batchResult",
+      "variant": "return"
+    },
+    {
+      "id": "x1",
+      "from": "hq",
+      "to": "sn",
+      "y": 880,
+      "label": "转单 / 转组织",
+      "variant": "default",
+      "note": "改挂，rev + 1"
+    },
+    {
+      "id": "x2",
+      "from": "sn",
+      "to": "mes",
+      "y": 940,
+      "label": "① 接收批次 · 转移交付",
+      "variant": "emphasis",
+      "note": "SAME_ORG_TRANSFER / TRANSFER_IN"
+    },
+    {
+      "id": "x3",
+      "from": "mes",
+      "to": "sn",
+      "y": 1000,
+      "label": "200 + 回执 OK",
+      "variant": "return"
+    },
+    {
+      "id": "x4",
+      "from": "sn",
+      "to": "old",
+      "y": 1060,
+      "label": "① 接收批次 · TRANSFER_OUT",
+      "variant": "emphasis",
+      "note": "仅跨组织且原组织曾持有；与上一条互不等待"
+    },
+    {
+      "id": "x5",
+      "from": "old",
+      "to": "sn",
+      "y": 1120,
+      "label": "200 + 回执 OK",
+      "variant": "return",
+      "note": "标记已转走，停止打标"
+    },
+    {
+      "id": "r1",
+      "from": "mes",
+      "to": "sn",
+      "y": 1190,
+      "label": "⑤ 查询已下发 SN / ⑥ 查询批次明细",
+      "variant": "default",
+      "note": "只读，不得据此入库、打标或删除"
+    },
+    {
+      "id": "r2",
+      "from": "sn",
+      "to": "mes",
+      "y": 1250,
+      "label": "SN 明细 + nextCursor",
+      "variant": "return"
+    }
+  ]
+}

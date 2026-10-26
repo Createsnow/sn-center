@@ -83,4 +83,4 @@ npx -y @mermaid-js/mermaid-cli@11.4.2 -i fig2-1-function.mmd -o fig2-1-function.
 | 预演、生成流程或接口 | 图 3-1 预演与生成时序 |
 | 推送、拉取、回执流程 | 图 3-2 交付时序 |
 
-MES 对接说明与接口文档的 11 张图在 `images/MES对接说明/`：`*.archify.json` 是源文件（Archify 绘制），改完用 Archify `finalize` 生成 HTML，再用无头 Chromium 截取图中最大的 SVG（2 倍像素）导出同名 PNG；HTML 不入库。
+MES 对接说明与接口文档的 12 张图在 `images/MES对接说明/`：`*.archify.json` 是源文件（Archify 绘制），改完用 Archify `finalize` 生成 HTML，再用无头 Chromium 截取图中最大的 SVG（2 倍像素）导出同名 PNG；HTML 不入库。
