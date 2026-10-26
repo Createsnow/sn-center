@@ -48,7 +48,7 @@
       "col": 1,
       "type": "backend",
       "label": "拼签名串",
-      "sublabel": "时间 \\n 批次号 \\n SHA256(请求体)"
+      "sublabel": "时间 \\n SHA256(请求体)"
     },
     {
       "id": "sig",

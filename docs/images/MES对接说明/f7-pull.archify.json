@@ -72,7 +72,7 @@
       "from": "sn",
       "to": "mes",
       "y": 375,
-      "label": "200 + batchResult",
+      "label": "200 + code = OK",
       "variant": "return"
     },
     {

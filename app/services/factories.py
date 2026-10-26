@@ -256,7 +256,7 @@ def test_connection(cu: CurrentUser, code: str | None, body: dict) -> dict:
         c["mes_url"], c["mes_auth_type"], c["mes_credential_plain"], int(c["push_timeout_sec"]), bool(c["mes_gzip"])
     )
     batch_no = "PING-" + util.next_id("")
-    out = mes_client.send(t, batch_no, mes_client.ping_body(f["factory_code"], batch_no), 1)
+    out = mes_client.send(t, mes_client.ping_body(f["factory_code"], batch_no), 1)
     ok = out.kind == mes_client.RECEIPT and isinstance(out.receipt, dict) and out.receipt.get("code") == "OK"
     message = "" if ok else (out.message or (out.receipt or {}).get("message") or out.code or "未返回 OK")
     now = util.now()

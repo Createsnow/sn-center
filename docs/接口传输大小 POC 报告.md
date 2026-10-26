@@ -32,7 +32,7 @@
 
 ## 测试方法
 
-组包方式与 `app/services/mes_client.py` 一致：紧凑 JSON（UTF-8，无空格）+ gzip（mtime=0），批次头和交付项字段按《MES 对接说明》8.1。
+组包方式与 `app/services/mes_client.py` 一致：紧凑 JSON（UTF-8，无空格）+ gzip（mtime=0），批次头和交付项字段按当时的《MES 对接说明》（旧协议，含逐枚回执）。
 
 | 项目 | 设置 |
 | --- | --- |

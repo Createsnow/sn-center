@@ -119,7 +119,7 @@ def next_batch(cu: CurrentUser, pi_in: str | None, bill_in: str | None, batch_no
             raise MesError(409, "BATCH_VOIDED", "该批已作废，丢弃这批内容", batch_no)
         if b["result"] in CONFIRMED:
             raise MesError(409, "BATCH_CONFIRMED", "该批已确认，不用再处理", batch_no)
-        return _next_out(b, False, *_remaining(org, mes, None, None, b["id"]))
+        return _next_out(b, *_remaining(org, mes, None, None, b["id"]))
     if pi and not (
         db.exists("SELECT EXISTS(SELECT 1 FROM sn_item WHERE pi_no = %s AND factory_code = %s)", pi, org)
         or db.exists(
@@ -154,7 +154,7 @@ def next_batch(cu: CurrentUser, pi_in: str | None, bill_in: str | None, batch_no
     remaining, paused = _remaining(org, mes, pi, bill, None if b is None else b["id"])
     if b is None:
         changes.count_daily("MES_PULL_EMPTY", org)
-        return _next_out(None, False, remaining, paused)
+        return _next_out(None, remaining, paused)
     audit.record_isolated(
         cu,
         audit.entry(audit.SN_PULL)
@@ -165,24 +165,23 @@ def next_batch(cu: CurrentUser, pi_in: str | None, bill_in: str | None, batch_no
         .batch(b["batch_no"])
         .info(f"scope=pi:{pi or '-'} bill:{bill or '-'} new={int(created)} type={b['batch_type']}"),
     )
-    return _next_out(must_batch(b["batch_no"]), created, remaining, paused)
+    return _next_out(must_batch(b["batch_no"]), remaining, paused)
 
 
-def _next_out(b: dict | None, created: bool, remaining: int, paused: int) -> dict:
+def _next_out(b: dict | None, remaining: int, paused: int) -> dict:
+    """③ 应答只给 MES 要用的：批次（推送、拉取建立的结构相同，处理相同）、剩余枚数、暂停枚数。"""
     return {
         "schemaVersion": "1.0",
         "code": "OK",
         "batch": None if b is None else body_obj(b),
-        "batchSource": None if b is None else b["source"],
-        "newlyCreated": created,
-        "batchResult": None if b is None else b["result"],
         "remaining": remaining,
         "paused": paused,
     }
 
 
 def submit_receipt(cu: CurrentUser, batch_no: str, body: dict) -> dict:
-    """接口 ④ 提交回执（或整批拒收）。按批次号幂等：已确认的只存档；已作废的拒绝；不符时拒收并记批次失败。"""
+    """接口 ④ 提交回执（或整批拒收）。按批次号幂等：已确认的只存档；已作废的拒绝；不符时拒收并记批次失败。
+    受理即返回 code = OK，不回批次结果。"""
     org = cu.factory_code
     _rate_limit(org)
     b = find_batch(batch_no)
@@ -195,13 +194,7 @@ def submit_receipt(cu: CurrentUser, batch_no: str, body: dict) -> dict:
         raise MesError(409, "BATCH_VOIDED", "批次已作废，不得再处理这批内容", batch_no)
     if applied.verdict == "MISMATCH":
         raise MesError(422, "RECEIPT_MISMATCH", "回执与批次不符", batch_no, applied.details)
-    return {
-        "schemaVersion": "1.0",
-        "code": "OK",
-        "batchNo": b["batch_no"],
-        "batchResult": applied.batch["result"],
-        "firstConfirmation": applied.verdict == "CONFIRMED",
-    }
+    return {"schemaVersion": "1.0", "code": "OK"}
 
 
 # ================================================================== 只读接口（F-19）
@@ -237,7 +230,6 @@ def _read_item(r: dict) -> dict:
         "materialCode": str_or_none(r["material_code"]),
         "length": r["length_text"],
         "customerCode": r["customer_code"],
-        "orgCode": r["factory_code"],
         "status": r["status"],
         "batchNo": r["delivery_batch_no"],
     }
@@ -302,7 +294,6 @@ def read_batch_items(cu: CurrentUser, batch_no: str, cursor: str | None, size: i
     return {
         "schemaVersion": "1.0",
         "code": "OK",
-        "batchNo": b["batch_no"],
         "items": [_read_item(r) for r in rows],
         "nextCursor": str(rows[-1]["id"]) if more else None,
     }

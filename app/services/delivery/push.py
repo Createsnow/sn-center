@@ -361,7 +361,7 @@ def push_once(b: dict) -> str:
     f = factories.must_get(b["factory_code"])
     target = mes_client.Target.of(f)
     attempt = b["push_count"] + 1
-    out = mes_client.send(target, b["batch_no"], b["body_gz"], attempt)
+    out = mes_client.send(target, b["body_gz"], attempt)
     now = util.now()
     sys = CurrentUser.system()
     db.exec(

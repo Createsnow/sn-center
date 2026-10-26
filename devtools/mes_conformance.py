@@ -1,7 +1,7 @@
 """MES 接口契约测试：按《MES 对接说明》逐项检查 MES 方「接收推送」接口（①）的实现，输出通过 / 失败报告。
 
 MES 方接口一提供就能测，不需要本系统：脚本自己造批次（PING、交付、转出），按对接说明的方式发送（默认原始 JSON，
-加 --gzip 时压缩；Bearer 或 HMAC 签名、X-Sn-Batch-No 等请求头），逐项核对应答——整批校验与退回（NG）、按批次号去重、
+加 --gzip 时压缩；Bearer 或 HMAC 签名），逐项核对应答——整批校验与退回（NG）、按批次号去重、
 逐枚按 rev 覆盖或跳过、转出、并发送达、连接测试。只依赖 Python 3.11+ 和 httpx，可以直接交给 MES 方自测。
 回执只有整批结果（code = OK / NG），逐枚的处理结果须在 MES 侧按报告末尾的清单人工核对。
 
@@ -111,7 +111,7 @@ class Runner:
     def sn(self, i: int) -> str:
         return f"{self.prefix}{i:06d}"
 
-    def delivery(self, i: int, rev: int, pi: str | None = None, **extra: Any) -> dict:
+    def delivery(self, i: int, rev: int, **extra: Any) -> dict:
         """交付项；单据行号随 rev 变（rev < 3 为 1，否则为 2），便于在 MES 侧核对是否覆盖。"""
         return {
             "sn": self.sn(i),
@@ -119,7 +119,7 @@ class Runner:
             "serial": f"{i:06d}",
             "serialDec": str(i),
             "serialPi": self.pi,
-            "pi": pi or self.pi,
+            "pi": self.pi,
             "billNo": self.bill,
             "billSeq": 1 if rev < 3 else 2,
             "materialCode": "CT-M1",
@@ -132,15 +132,11 @@ class Runner:
         return {"sn": self.sn(i), "rev": rev, "toOrgCode": to_org}
 
     def batch(self, items: list[dict], kind: str = "NEW", no: str | None = None, **head: Any) -> dict:
-        pi = head.pop("pi", self.pi)
         obj = {
             "schemaVersion": SCHEMA,
             "batchNo": no or self.batch_no(),
             "batchType": kind,
             "orgCode": self.org,
-            "pi": pi,
-            "count": len(items),
-            "createdAt": utc_iso(),
             "itemsDigest": digest(items),
             "items": items,
         }
@@ -159,12 +155,10 @@ class Runner:
     ) -> Reply:
         """按对接说明 ① 发送：默认原始 JSON（开启 gzip 时压缩），认证按组织配置（Bearer 或 HMAC）。"""
         raw = canonical(obj) if raw is None else raw
-        no = (obj or {}).get("batchNo") or "CT-RAW"
         h = {
             "Content-Type": "application/json; charset=utf-8",
             "Accept": "application/json",
             "Accept-Encoding": "gzip",
-            "X-Sn-Batch-No": no,
             "X-Sn-Attempt": str(attempt),
             "X-Request-Id": str(uuid.uuid4()),
         }
@@ -173,7 +167,7 @@ class Runner:
         key = self.secret if secret is None else secret
         if self.auth == "HMAC":
             t = ts or utc_iso()
-            msg = f"{t}\n{no}\n{hashlib.sha256(raw).hexdigest()}"
+            msg = f"{t}\n{hashlib.sha256(raw).hexdigest()}"
             h["X-Sn-Timestamp"] = t
             h["X-Sn-Signature"] = hmac.new(key.encode(), msg.encode(), hashlib.sha256).hexdigest()
         else:
@@ -199,7 +193,7 @@ class Runner:
             raise Failed(why)
 
     def receipt(self, r: Reply, b: dict, code: str, why: str = "") -> dict:
-        """HTTP 200 + 回执 {schemaVersion, batchNo, code, message}，code 为期望值。"""
+        """HTTP 200 + 回执 {batchNo, code, message}，code 为期望值。"""
         pre = f"{why}：" if why else ""
         hint = code == "NG" and r.status is not None and 400 <= r.status < 500
         self.need(
@@ -210,7 +204,6 @@ class Runner:
         body = r.body
         self.need(isinstance(body, dict), f"{pre}应答不是 JSON 对象：{r}")
         self.need(body.get("code") == code, f"{pre}期望 code = {code}，实际 {r}")
-        self.need(body.get("schemaVersion") == SCHEMA, f"回执缺 schemaVersion 或不是 {SCHEMA}")
         self.need(body.get("batchNo") == b["batchNo"], f"回执 batchNo = {body.get('batchNo')}，应为 {b['batchNo']}")
         if code == "NG":
             self.need(isinstance(body.get("message"), str) and body["message"].strip(), "NG 回执须带 message（原因）")
@@ -245,9 +238,6 @@ class Runner:
                 "batchNo": "PING-" + self.batch_no(),
                 "batchType": "PING",
                 "orgCode": org,
-                "pi": None,
-                "count": 0,
-                "createdAt": utc_iso(),
                 "itemsDigest": digest([]),
                 "items": [],
             }
@@ -323,7 +313,7 @@ class Runner:
             c.notes.append(f"请在 MES 侧确认 {self.sn(2)} 已标「已转走」、停止打标，rev = 2，toOrgCode = CT-TO")
 
         def transfer_missing(c: Check) -> None:
-            b = self.batch([self.transfer_out(5, 2)], "TRANSFER_OUT", pi=None)
+            b = self.batch([self.transfer_out(5, 2)], "TRANSFER_OUT")
             self.ok(self.send(b), b)
             late = self.batch([self.delivery(5, 1)])
             self.ok(self.send(late), late)
@@ -355,11 +345,6 @@ class Runner:
             )
             self.ok(r, good)
 
-        def count_bad(c: Check) -> None:
-            items = [self.delivery(10, 1)]
-            no = self.batch_no()
-            reject_then_fix(c, "count 与 items 条数不符", self.batch(items, no=no, count=2), self.batch(items, no=no))
-
         def org_bad(c: Check) -> None:
             items = [self.delivery(11, 1)]
             no = self.batch_no()
@@ -369,10 +354,6 @@ class Runner:
         def dup_sn(c: Check) -> None:
             b = self.batch([self.delivery(12, 1), self.delivery(12, 1)])
             self.ng(self.send(b), b, "批内 SN 重复")
-
-        def pi_bad(c: Check) -> None:
-            b = self.batch([self.delivery(13, 1), self.delivery(14, 1, pi=self.pi + "X")])
-            self.ng(self.send(b), b, "交付项 pi 不等于批次头 pi")
 
         def out_missing(c: Check) -> None:
             item = self.transfer_out(17, 1)
@@ -426,39 +407,37 @@ class Runner:
                 c.status, c.detail = WARN, c.detail + "（建议 10 秒内）"
 
         cases = [
-            ("C01", "连接测试：PING 返回 OK", "8.1 Body C", ping_ok),
-            ("C02", "连接测试：PING 的 orgCode 不符时 NG", "8.1 Body C；4.2 整批校验", ping_org),
-            ("C03", "认证：凭证错误返回 401 / 403", "7.3 认证与签名", auth_bad),
-            ("C04", "认证（HMAC）：时间戳偏差超过 5 分钟拒绝", "7.3 认证与签名", hmac_skew),
-            ("C05", "交付批次首次送达：OK，逐枚新增", "4.2 逐枚处理；8.1 响应参数", first),
-            ("C06", "同一批原样再次送达：OK", "4.2 幂等去重", replay),
-            ("C07", "同一批次号内容不同：409 BATCH_CONTENT_MISMATCH", "4.2 幂等去重", mismatch),
-            ("C08", "rev 更大：覆盖挂靠，OK", "4.2 逐枚处理；5.3", overwrite),
-            ("C09", "rev 相同、来自别的批次：覆盖（内容相同），OK", "4.2 逐枚处理", same_rev),
-            ("C10", "rev 更小：跳过该枚，整批仍 OK", "4.2 逐枚处理", older),
-            ("C11", "转出批次 TRANSFER_OUT：标记已转走，OK", "4.2 逐枚处理；8.1 Body B", transfer_out),
+            ("C01", "连接测试：PING 返回 OK", "3.1 测试批次", ping_ok),
+            ("C02", "连接测试：PING 的 orgCode 不符时 NG", "3.1 测试批次；3.2 步骤 1", ping_org),
+            ("C03", "认证：凭证错误返回 401 / 403", "6.3 认证与签名", auth_bad),
+            ("C04", "认证（HMAC）：时间戳偏差超过 5 分钟拒绝", "6.3 认证与签名", hmac_skew),
+            ("C05", "交付批次首次送达：OK，逐枚新增", "3.2 逐枚处理；3.4 回执", first),
+            ("C06", "同一批原样再次送达：OK", "3.2 步骤 3", replay),
+            ("C07", "同一批次号内容不同：409 BATCH_CONTENT_MISMATCH", "3.2 步骤 3", mismatch),
+            ("C08", "rev 更大：覆盖挂靠，OK", "3.2 逐枚处理；1.3", overwrite),
+            ("C09", "rev 相同、来自别的批次：覆盖（内容相同），OK", "3.2 逐枚处理", same_rev),
+            ("C10", "rev 更小：跳过该枚，整批仍 OK", "3.2 逐枚处理", older),
+            ("C11", "转出批次 TRANSFER_OUT：标记已转走，OK", "3.2 逐枚处理；3.1 转移批次", transfer_out),
             (
                 "C12",
-                "转出时本地没有该 SN（批次头 pi = null）：建已转走记录；迟到的旧交付跳过",
-                "4.2 逐枚处理",
+                "转出时本地没有该 SN：建已转走记录；迟到的旧交付跳过",
+                "3.2 逐枚处理",
                 transfer_missing,
             ),
-            ("C13", "转回原组织：rev 更大，覆盖并清除已转走", "4.2 逐枚处理；5.3", transfer_back),
+            ("C13", "转回原组织：rev 更大，覆盖并清除已转走", "3.2 逐枚处理；1.3", transfer_back),
             (
                 "C14",
                 "不认识的字段照常处理；四种交付类 batchType 都按交付处理；不认识的 batchType 整批 NG",
-                "4.2 分流；7.2 字段与数据格式；8.1 Body A",
+                "3.2 步骤 1；3.3；6.2",
                 unknown_fields,
             ),
-            ("C15", "count 与 items 不符：NG；修正后同一批次号重送能处理", "4.2 整批校验；6.2", count_bad),
-            ("C16", "orgCode 不是本组织：NG；修正后同一批次号重送能处理", "4.2 整批校验", org_bad),
-            ("C17", "批内 SN 重复：NG", "4.2 整批校验", dup_sn),
-            ("C18", "交付项 pi 与批次头不同：NG", "4.2 整批校验", pi_bad),
-            ("C19", "转出项缺 toOrgCode：NG", "4.2 整批校验", out_missing),
-            ("C20", "缺必填字段：NG（HTTP 200，不是 4xx），不落任何数据", "4.2 整批校验；8.1 响应参数", missing),
-            ("C21", "请求体无法解析：400", "8.1", bad_body),
-            ("C22", "同一批同时送达两次：只处理一次，两边都 OK", "3.2 接口交互时序", concurrent),
-            ("C23", "5000 枚一批的处理时间", "4.2 落库与回执", performance),
+            ("C15", "orgCode 不是本组织：NG；修正后同一批次号重送能处理", "3.2 步骤 2；5", org_bad),
+            ("C16", "批内 SN 重复：NG", "3.2 步骤 2", dup_sn),
+            ("C17", "转出项缺 toOrgCode：NG", "3.2 步骤 2", out_missing),
+            ("C18", "缺必填字段：NG（HTTP 200，不是 4xx），不落任何数据", "3.2 步骤 2；3.4 回执", missing),
+            ("C19", "请求体无法解析：400", "7.1", bad_body),
+            ("C20", "同一批同时送达两次：只处理一次，两边都 OK", "2.2；3.2 步骤 5", concurrent),
+            ("C21", "5000 枚一批的处理时间", "3.2 步骤 5", performance),
         ]
         for cid, title, ref, fn in cases:
             self.case(cid, title, ref, fn)

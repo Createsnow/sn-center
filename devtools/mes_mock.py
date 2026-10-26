@@ -1,4 +1,4 @@
-"""模拟 MES：MES 方还没接入时扮演 MES 与本系统联调，也是《MES 对接说明》4.2 节 process(batch) 的参考实现。
+"""模拟 MES：MES 方还没接入时扮演 MES 与本系统联调，也是《MES 对接说明》3.2 节 process(batch) 的参考实现。
 
 推送和取批共用同一套本侧数据（按组织分开的 SN 表、批次表）和同一个 process，与对接说明对真实 MES 的要求一致。
 
@@ -82,7 +82,7 @@ def _err(code: str, message: str, batch_no: str | None = None) -> dict:
 
 def _receipt(batch_no: str | None, code: str = "OK", message: str | None = None) -> dict:
     """回执：code = OK 整批已处理 / NG 整批退回（message 为原因）。"""
-    return {"schemaVersion": SCHEMA, "batchNo": batch_no, "code": code, "message": message}
+    return {"batchNo": batch_no, "code": code, "message": message}
 
 
 def _reject(batch_no: str | None, message: str) -> dict:
@@ -90,7 +90,7 @@ def _reject(batch_no: str | None, message: str) -> dict:
 
 
 class MesSim:
-    """各组织一套 MES 本侧数据与处理逻辑（对接说明 4.2 节）。"""
+    """各组织一套 MES 本侧数据与处理逻辑（对接说明 3.2 节）。"""
 
     def __init__(self, max_batch: int = 5000, max_skew: int = 300) -> None:
         #: 每批最多枚数（第 1 步校验）；HMAC 时间戳允许偏差秒数（0 = 不校验）
@@ -114,8 +114,8 @@ class MesSim:
     def secret(self, org: str) -> str | None:
         return self.secrets.get(org, self.default_secret)
 
-    def authorized(self, org: str, batch_no: str | None, headers: dict, raw: bytes) -> str | None:
-        """A：固定 Bearer 令牌；B：HMAC-SHA256（timestamp \\n batchNo \\n hex(sha256(解压后的请求体))）。
+    def authorized(self, org: str, headers: dict, raw: bytes) -> str | None:
+        """A：固定 Bearer 令牌；B：HMAC-SHA256（timestamp \\n hex(sha256(解压后的请求体))）。
         通过返回 None，否则返回原因。"""
         secret = self.secret(org)
         if secret is None:
@@ -129,7 +129,7 @@ class MesSim:
                     return "X-Sn-Timestamp 不是 ISO 8601 UTC"
                 if abs((datetime.now(UTC) - t).total_seconds()) > self.max_skew:
                     return f"时间戳与本地相差超过 {self.max_skew} 秒"
-            msg = f"{ts}\n{batch_no}\n{hashlib.sha256(raw).hexdigest()}"
+            msg = f"{ts}\n{hashlib.sha256(raw).hexdigest()}"
             good = hmac.new(secret.encode(), msg.encode(), hashlib.sha256).hexdigest()
             return None if hmac.compare_digest(good, headers["x-sn-signature"]) else "签名不符"
         return None if headers.get("authorization") == f"Bearer {secret}" else "令牌不符"
@@ -159,14 +159,10 @@ class MesSim:
         if kind not in (*DELIVERY_TYPES, "TRANSFER_OUT"):
             return f"不认识的 batchType {kind}"
         delivery = kind in DELIVERY_TYPES
-        if batch.get("count") != len(items):
-            return f"count = {batch.get('count')}，items 有 {len(items)} 条"
         if len(items) > self.max_batch:
             return f"超过单批上限 {self.max_batch}"
         if not isinstance(batch.get("itemsDigest"), str) or not batch["itemsDigest"]:
             return "itemsDigest 必填"
-        if delivery and not batch.get("pi"):
-            return "交付批次 pi 必填"
         need = DELIVERY_FIELDS if delivery else TRANSFER_OUT_FIELDS
         for x in items:
             if not isinstance(x, dict):
@@ -178,14 +174,10 @@ class MesSim:
                 return f"{x['sn']} 的 rev 须为正整数"
         if len({x["sn"] for x in items}) != len(items):
             return "批内 SN 重复"
-        if delivery:
-            bad = [x["sn"] for x in items if x["pi"] != batch["pi"]]
-            if bad:
-                return f"{bad[0]} 的 pi 不等于批次头 pi"
         return None
 
     def process(self, org: str, batch: dict, source: str = "PULL") -> dict:
-        """推送和取批共用；整批在一把锁里处理（对接说明 4.2 节），逐枚按 rev 新增或覆盖。"""
+        """推送和取批共用；整批在一把锁里处理（对接说明 3.2 节），逐枚按 rev 新增或覆盖。"""
         with self.lock:
             no = batch.get("batchNo")
             problem = self._problem(org, batch)
@@ -394,11 +386,9 @@ class MockMes(MesSim):
                     return self._send(400, _err("BAD_REQUEST", "请求体无法解析"))
                 no = batch.get("batchNo")
                 mock.received.append({"org": org, "batch": batch, "headers": headers, "raw": raw, "at": utc_now()})
-                why = mock.authorized(org, no, headers, raw)
+                why = mock.authorized(org, headers, raw)
                 if why:
                     status, body = 401, _err("UNAUTHORIZED", why, no)
-                elif headers.get("x-sn-batch-no") != no:
-                    status, body = 400, _err("BAD_REQUEST", "请求头 X-Sn-Batch-No 与 batchNo 不同", no)
                 else:
                     beh = mock.behavior.get(org)
                     status, body = (None, None) if beh is None else beh(batch, headers)
@@ -440,8 +430,7 @@ def _brief(x: dict) -> dict:
         "batchNo": b.get("batchNo"),
         "batchType": b.get("batchType"),
         "orgCode": b.get("orgCode"),
-        "pi": b.get("pi"),
-        "count": b.get("count"),
+        "count": len(b.get("items") or []),
         "attempt": x["headers"].get("x-sn-attempt"),
         "requestId": x["headers"].get("x-request-id"),
         "auth": "HMAC" if "x-sn-signature" in x["headers"] else "TOKEN",
@@ -450,8 +439,9 @@ def _brief(x: dict) -> dict:
 
 
 def _line(org: str, batch: dict, headers: dict, status: Any, body: Any) -> str:
+    n = len(batch.get("items") or [])
     head = (
-        f"{utc_now()} 推送 org={org} {batch.get('batchType')} {batch.get('batchNo')} count={batch.get('count')} "
+        f"{utc_now()} 推送 org={org} {batch.get('batchType')} {batch.get('batchNo')} count={n} "
         f"attempt={headers.get('x-sn-attempt')}"
     )
     if status == "drop":
@@ -465,7 +455,7 @@ def _line(org: str, batch: dict, headers: dict, status: Any, body: Any) -> str:
 
 
 class Puller:
-    """扮演 MES 取批：③ 取批 → process → ④ 提交回执，remaining > 0 时继续取（对接说明 3.2、8.2 节）。
+    """扮演 MES 取批：③ 取批 → process → ④ 提交回执，remaining > 0 时继续取（对接说明 2.2、7.2 节）。
     每次请求带 Authorization: Bearer <工号>:<密钥>，不换令牌。"""
 
     PREFIX = "/api/mes/v1"
@@ -486,9 +476,7 @@ class Puller:
         """取到没有可给的批次（或 remaining = 0）为止；返回每批的处理记录。带 batchNo 时只取回这一批。"""
         done: list[dict] = []
         for _ in range(max_batches):
-            st, data, resp = self.call(
-                "/batches/next", {"schemaVersion": SCHEMA, "pi": pi, "billNo": bill, "batchNo": batch_no}
-            )
+            st, data, resp = self.call("/batches/next", {"pi": pi, "billNo": bill, "batchNo": batch_no})
             if st == 429:
                 wait = int(resp.headers.get("Retry-After") or 1)
                 self.log(f"③ 限流 429，{wait} 秒后再取")
@@ -503,8 +491,7 @@ class Puller:
                 self.log(f"③ 没有可给的批次：remaining={data.get('remaining')} paused={data.get('paused')}")
                 break
             self.log(
-                f"③ 取到 {b['batchType']} {b['batchNo']} count={b['count']} source={data.get('batchSource')} "
-                f"newlyCreated={data.get('newlyCreated')} remaining={data.get('remaining')}"
+                f"③ 取到 {b['batchType']} {b['batchNo']} count={len(b['items'])} remaining={data.get('remaining')}"
             )
             st, receipt = self.sim.handle(self.org, b, "PULL")
             if st != 200:
@@ -521,10 +508,7 @@ class Puller:
             }
             done.append(rec)
             if rs == 200:
-                self.log(
-                    f"④ 回执 {b['batchNo']} → batchResult={rd.get('batchResult')} "
-                    f"firstConfirmation={rd.get('firstConfirmation')}"
-                )
+                self.log(f"④ 回执 {b['batchNo']} {receipt.get('code')} → 已受理")
             elif rs == 409 and isinstance(rd, dict) and rd.get("code") == "BATCH_VOIDED":
                 self.log(f"④ {b['batchNo']} 已作废，丢弃")
             else:

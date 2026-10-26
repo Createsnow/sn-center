@@ -93,9 +93,9 @@ class _RejectsWith400(MockMes):
 @pytest.mark.parametrize(
     "cls, failed",
     [
-        (_RegistersRejects, {"C15", "C16"}),
+        (_RegistersRejects, {"C15"}),
         (_IgnoresDigest, {"C07"}),
-        (_RejectsWith400, {"C02", "C14", "C15", "C16", "C17", "C18", "C19", "C20"}),
+        (_RejectsWith400, {"C02", "C14", "C15", "C16", "C17", "C18"}),
     ],
 )
 def test_conformance_catches_broken_mes(cls, failed):
@@ -148,7 +148,7 @@ def test_mock_checks_batch_header_and_auth(mock):
     assert r.send(b).status == 401, "未配置凭证的组织一律 401"
     mock.default_secret = "s3cret"
     assert r.send(b).status == 200, "default_secret 适用于所有组织"
-    dup = MesSim().process("110", {**b, "items": b["items"] * 2, "count": 2})
+    dup = MesSim().process("110", {**b, "items": b["items"] * 2})
     assert dup["code"] == "NG" and "重复" in dup["message"]
 
 
@@ -166,7 +166,7 @@ def test_puller_pulls_until_empty(w, sql, app_client):
     w.allocate(pi)
     e, key = _account(w, org)
     done = Puller(MES, org, app_client, e, key, log=_quiet).run_once()
-    assert [(d["status"], d["body"]["batchResult"]) for d in done] == [(200, "SUCCESS")] * 3
+    assert [d["status"] for d in done] == [200] * 3
     assert [d["code"] for d in done] == ["OK"] * 3
     assert sql.count("SELECT COUNT(*) FROM sn_delivery_batch WHERE pi_no = %s AND accepted_qty = qty", pi) == 3
     assert (
@@ -190,7 +190,7 @@ def test_push_response_lost_then_pull_gets_same_receipt(w, sql, app_client):
     e, key = _account(w, org)
     done = Puller(MES, org, app_client, e, key, log=_quiet).run_once()
     assert [d["batchNo"] for d in done] == [b["batch_no"]]
-    assert done[0]["body"]["batchResult"] == "SUCCESS"
+    assert sql.scalar("SELECT result FROM sn_delivery_batch WHERE id = %s", b["id"]) == "SUCCESS"
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 3
 
 
@@ -224,13 +224,8 @@ def test_push_body_plain_json_by_default_gzip_when_enabled(mock, gz):
 
     mock.secrets["110"] = "s3cret"
     t = mes_client.Target(mock.url("110"), mes_client.TOKEN, "s3cret", 10, gz)
-    out = mes_client.send(t, "PING-GZ", mes_client.ping_body("110", "PING-GZ"), 1)
-    assert out.kind == mes_client.RECEIPT and out.receipt == {
-        "schemaVersion": "1.0",
-        "batchNo": "PING-GZ",
-        "code": "OK",
-        "message": None,
-    }
+    out = mes_client.send(t, mes_client.ping_body("110", "PING-GZ"), 1)
+    assert out.kind == mes_client.RECEIPT and out.receipt == {"batchNo": "PING-GZ", "code": "OK", "message": None}
     h = mock.received[-1]["headers"]
     assert h.get("content-encoding") == ("gzip" if gz else None)
     assert mock.received[-1]["batch"]["batchNo"] == "PING-GZ"

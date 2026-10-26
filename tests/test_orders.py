@@ -186,7 +186,7 @@ def test_reversal_suspends_undelivered_and_resumes(w, api, sql):
     # 拉取：已入批的未确认批次照常可取；暂停的号不建新批
     token, _ = w.mes_account(org)
     r = ok(w.mes_next(token))
-    assert r["batch"]["count"] == 4 and r["paused"] == 2
+    assert len(r["batch"]["items"]) == 4 and r["paused"] == 2
     ok(w.mes_receipt(token, r["batch"]["batchNo"], MES.process(org, r["batch"])))
     r = ok(w.mes_next(token, billNo=bill))
     assert r["batch"] is None and r["paused"] == 2

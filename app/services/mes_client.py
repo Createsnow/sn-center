@@ -2,11 +2,11 @@
 
 - HTTPS；默认发原始 JSON（UTF-8），组织开启「gzip 压缩」时发 gzip 并带 Content-Encoding: gzip；不跟随 3xx 跳转。
   同一批次每次送达请求体逐字节相同（建批时写定 body_gz，原始 JSON 由它解压得到）。
-- 请求头：认证（A 固定 Bearer 令牌 + 来源 IP 白名单；B HMAC-SHA256 签名）、X-Sn-Batch-No、X-Sn-Attempt、
-  X-Request-Id；开启压缩时另带 Content-Encoding: gzip。
-- HMAC 签名串 = timestamp + "\\n" + batchNo + "\\n" + hex(SHA256(解压后的原始请求体字节))，
+- 请求头：认证（A 固定 Bearer 令牌 + 来源 IP 白名单；B HMAC-SHA256 签名）；X-Sn-Attempt、X-Request-Id 只供日志；
+  开启压缩时另带 Content-Encoding: gzip。
+- HMAC 签名串 = timestamp + "\\n" + hex(SHA256(解压后的原始请求体字节))（请求体已含 batchNo），
   放在 X-Sn-Timestamp（ISO 8601 UTC）与 X-Sn-Signature（小写十六进制）。
-- 应答：HTTP 200 + 回执 {schemaVersion, batchNo, code = OK / NG, message}（NG 为整批退回）；
+- 应答：HTTP 200 + 回执 {batchNo, code = OK / NG, message}（NG 为整批退回）；
   超时、5xx、断连、409 BATCH_IN_PROGRESS、429、503 可重试；
   409 BATCH_CONTENT_MISMATCH、401 / 403 / 404 / 413 / 400 等不重试。
 """
@@ -94,17 +94,16 @@ def utc_iso(t: datetime | None = None) -> str:
     return (t or datetime.now(UTC).replace(tzinfo=None)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def sign(secret: str, timestamp: str, batch_no: str, raw: bytes) -> str:
-    msg = f"{timestamp}\n{batch_no}\n{hashlib.sha256(raw).hexdigest()}"
+def sign(secret: str, timestamp: str, raw: bytes) -> str:
+    msg = f"{timestamp}\n{hashlib.sha256(raw).hexdigest()}"
     return hmac.new(secret.encode("utf-8"), msg.encode("utf-8"), hashlib.sha256).hexdigest()
 
 
-def _headers(t: Target, batch_no: str, attempt: int, raw: bytes) -> dict[str, str]:
+def _headers(t: Target, attempt: int, raw: bytes) -> dict[str, str]:
     h = {
         "Content-Type": "application/json; charset=utf-8",
         "Accept": "application/json",
         "Accept-Encoding": "gzip",
-        "X-Sn-Batch-No": batch_no,
         "X-Sn-Attempt": str(attempt),
         "X-Request-Id": str(uuid.uuid4()),
     }
@@ -113,7 +112,7 @@ def _headers(t: Target, batch_no: str, attempt: int, raw: bytes) -> dict[str, st
     if t.auth_type == HMAC:
         ts = utc_iso()
         h["X-Sn-Timestamp"] = ts
-        h["X-Sn-Signature"] = sign(t.credential, ts, batch_no, raw)
+        h["X-Sn-Signature"] = sign(t.credential, ts, raw)
     else:
         h["Authorization"] = f"Bearer {t.credential}"
     return h
@@ -134,7 +133,7 @@ def _json(resp: httpx.Response) -> Any:
         return None
 
 
-def send(t: Target, batch_no: str, body_gz: bytes, attempt: int) -> Outcome:
+def send(t: Target, body_gz: bytes, attempt: int) -> Outcome:
     """推送一次；不抛异常，结果按应答归类。"""
     if not t.url:
         return Outcome(FAIL, code="ADDRESS", message="未配置 MES 接口地址")
@@ -142,7 +141,7 @@ def send(t: Target, batch_no: str, body_gz: bytes, attempt: int) -> Outcome:
     try:
         with httpx.Client(trust_env=False, follow_redirects=False, timeout=t.timeout) as http:
             content = body_gz if t.gzip else raw
-            resp = http.post(t.url, content=content, headers=_headers(t, batch_no, attempt, raw))
+            resp = http.post(t.url, content=content, headers=_headers(t, attempt, raw))
     except httpx.TimeoutException:
         return Outcome(RETRY, code="TIMEOUT", message=f"等待 MES 应答超时（{t.timeout} 秒）")
     except httpx.HTTPError as e:
@@ -181,16 +180,13 @@ def send(t: Target, batch_no: str, body_gz: bytes, attempt: int) -> Outcome:
 
 
 def ping_body(org: str, batch_no: str) -> bytes:
-    """连接测试批次：批次类型 PING、枚数 0、不含号。"""
+    """连接测试批次：批次类型 PING、不含号。"""
     items: list = []
     obj = {
         "schemaVersion": "1.0",
         "batchNo": batch_no,
         "batchType": "PING",
         "orgCode": org,
-        "pi": None,
-        "count": 0,
-        "createdAt": utc_iso(),
         "itemsDigest": "sha256:" + hashlib.sha256(canonical(items)).hexdigest(),
         "items": items,
     }

@@ -1,6 +1,6 @@
 # MES 联调指南
 
-> **相关**：接口契约见 [MES 对接说明（精简版）](<SN 防重管控 · MES 对接说明（精简版）.md>)　上线准入场景见 [需求文档（PRD）9.2](<SN 防重管控产品需求文档PRD.md>)　上线步骤见 [运维手册第 7 节](运维手册.md#7-上线步骤建议)　[文档导航](README.md)
+> **相关**：接口契约见 [MES 对接说明](MES对接接口文档.md)　上线准入场景见 [需求文档（PRD）9.2](<SN 防重管控产品需求文档PRD.md>)　上线步骤见 [运维手册第 7 节](运维手册.md#7-上线步骤建议)　[文档导航](README.md)
 
 MES 方还没接入时，用仓库里的三样工具分头验证。**真实 MES 接入后，仍要按 PRD 9.2 和 MES 方一起联调，19 个场景全部通过才能上线**；这里的工具让联调前就把能验证的都验证掉。
 
@@ -67,7 +67,7 @@ curl -X POST http://127.0.0.1:9001/_mock/reset                   # 清空 MES �
 
 测试环境要让重试快一点，可以设 `SN_PUSH_RETRY_INTERVALS_MINUTES=0,0,0`（见运维手册第 2 节，正式环境不要改）。
 
-**本侧版本更新**：先预置 MES 本侧「已有」的一枚号，再让本系统推送它。预置的 rev 更大时，MES 跳过该枚、整批仍回 `OK`（对接说明 4.2 步骤 4），本系统批次成功、不告警；可在 `/_mock/state` 看到该号仍是预置的 rev。预置同 rev、别的批次时，MES 按同 rev 覆盖（内容相同）。
+**本侧版本更新**：先预置 MES 本侧「已有」的一枚号，再让本系统推送它。预置的 rev 更大时，MES 跳过该枚、整批仍回 `OK`（对接说明 3.2 逐枚处理），本系统批次成功、不告警；可在 `/_mock/state` 看到该号仍是预置的 rev。预置同 rev、别的批次时，MES 按同 rev 覆盖（内容相同）。
 
 ```bash
 curl -X POST http://127.0.0.1:9001/_mock/seed -H 'Content-Type: application/json' \
@@ -112,7 +112,7 @@ curl -s "$BASE/batches/<batchNo>/items" -H "Authorization: Bearer $TOKEN"       
 
 ## 3. 契约测试：验证 MES 方的接收接口
 
-MES 方的接收推送接口（①）在测试环境上线后就能测，不需要本系统。脚本自己造批次，按对接说明的方式发送（默认原始 JSON，加 `--gzip` 时压缩，与「生产组织」页的「gzip 压缩」一致；Bearer 或 HMAC 签名、`X-Sn-Batch-No` 等请求头），逐项核对应答：
+MES 方的接收推送接口（①）在测试环境上线后就能测，不需要本系统。脚本自己造批次，按对接说明的方式发送（默认原始 JSON，加 `--gzip` 时压缩，与「生产组织」页的「gzip 压缩」一致；Bearer 或 HMAC 签名），逐项核对应答：
 
 ```bash
 uv run python -m devtools.mes_conformance --url https://mes-test.example.com/sn/receive --org 110 \
@@ -123,7 +123,7 @@ uv run python -m devtools.mes_conformance --url https://mes-test.example.com/sn/
 脚本只依赖 Python 3.11+ 和 httpx，可以把 `devtools/mes_conformance.py` 单独交给 MES 方自测，失败项和原因写在报告里。
 
 - **只能对 MES 测试环境运行**：会写入一批测试 SN（前缀 `CT` + 本次运行号），其中几枚会被标为「已转走」。每次运行用新的运行号，不会与真实数据或上次运行重复。
-- 检查项（共 23 项）：连接测试与 `orgCode` 校验；凭证错误、HMAC 时间戳偏差；首次送达回 `OK`；同一批再次送达回 `OK`；同批次号内容不同报 409；rev 更大覆盖、相同覆盖、更小跳过（整批仍 `OK`）；转出、本地没有时转出（头 `pi = null`）并跳过迟到的旧交付、转回；不认识的字段照常处理、四种交付类 `batchType` 都按交付处理、不认识的 `batchType` 整批 `NG`；六种整批退回 `NG`（并确认退回后不登记批次号）；无法解析报 400；同一批同时送达两次只处理一次；5000 枚的处理时间。
+- 检查项（共 21 项）：连接测试与 `orgCode` 校验；凭证错误、HMAC 时间戳偏差；首次送达回 `OK`；同一批再次送达回 `OK`；同批次号内容不同报 409；rev 更大覆盖、相同覆盖、更小跳过（整批仍 `OK`）；转出、本地没有时转出并跳过迟到的旧交付、转回；不认识的字段照常处理、四种交付类 `batchType` 都按交付处理、不认识的 `batchType` 整批 `NG`；四种整批退回 `NG`（`orgCode` 不符、批内 SN 重复、缺必填字段，并确认退回后不登记批次号）；无法解析报 400；同一批同时送达两次只处理一次；5000 枚的处理时间。
 - 回执只有整批结果，看不到 MES 的本侧数据，报告末尾列出要在 MES 库或页面上**人工核对**的几项（新增、覆盖、跳过、已转走、清除已转走、退回不落数据）。
 
 契约测试只覆盖接口 ①。MES 的取批客户端（每次带工号:密钥、`remaining` 续取、`BATCH_VOIDED` 丢弃、回执被拒 422 后修正重交）要让 MES 测试环境连本系统测试环境来验证，见第 4 节。
@@ -147,9 +147,9 @@ uv run python -m devtools.mes_conformance --url https://mes-test.example.com/sn/
 | --- | --- | --- | --- | --- |
 | 1 | 推送超时后自动重试并续推；期间 MES 取到同一批并回执，系统停止重试 | `test_delivery::test_retry_then_exhaust_then_resume_with_same_batch`、`test_mes_tools::test_push_response_lost_then_pull_gets_same_receipt` | C06 | MES 实际处理时间接近超时（60 秒）时的表现 |
 | 2 | 推送建批、MES 拉取建批并发，同一枚号不进两个批次 | `test_mes_tools::test_push_and_pull_concurrently_never_overlap` | — | MES 按真实频率取批时同时推送 |
-| 3 | 推送与拉取同时送达同一批次，MES 只处理一次，两边回执相同 | `test_mes_tools::test_push_response_lost_then_pull_gets_same_receipt` | C06、C22 | MES 的批次号锁在多台服务器上是否生效 |
+| 3 | 推送与拉取同时送达同一批次，MES 只处理一次，两边回执相同 | `test_mes_tools::test_push_response_lost_then_pull_gets_same_receipt` | C06、C20 | MES 的批次号锁在多台服务器上是否生效 |
 | 4 | MES 取批后宕机未回执，再取仍是同一批；按 PI、单据、PI + 单据取；无批次时返回空并给出剩余、暂停枚数 | `test_delivery::test_pull_returns_same_unconfirmed_batch_until_receipt`、`test_orders::test_reversal_suspends_undelivered_and_resumes`、`test_delivery::test_pull_scope_checks` | — | PI + 单据组合取批（用 `mes_mock pull --pi --bill` 或 MES 客户端）；MES 重启后续取 |
-| 5 | MES 整批拒绝（含组织编码不符）：不登记批次号、取批跳过、修正后续推或取回补交 | `test_delivery::test_reject_marks_failed_and_resume_after_fix`、`test_delivery::test_rejected_batch_voided_rebatches_and_refuses_voided` | C02、C15～C20 | MES 修好后按批次号取回补交回执 |
+| 5 | MES 整批拒绝（含组织编码不符）：不登记批次号、取批跳过、修正后续推或取回补交 | `test_delivery::test_reject_marks_failed_and_resume_after_fix`、`test_delivery::test_rejected_batch_voided_rebatches_and_refuses_voided` | C02、C15～C18 | MES 修好后按批次号取回补交回执 |
 | 6 | 转单、转组织后改挂重推、转出推送；转回来源组织后清除「已转走」 | `test_transfers::test_org_transfer_pushes_reassign_to_target_and_transfer_out_to_source`、`test_transfers::test_same_org_bill_transfer_reassigns_pushed` | C08、C11～C13 | MES 本侧挂靠、「已转走」标记、`toOrgCode`；本地没有时转出建档 |
 | 7 | 转出后来源 MES 按批次号、按 PI 只读查不到已转出的号；转出批次推送中断时可取回并回执 | `test_transfers::test_org_transfer_pushes_reassign_to_target_and_transfer_out_to_source`、`test_transfers::test_transfer_out_pending_blocks_retransfer` | — | MES 用 ⑤⑥ 核对 |
 | 8 | 转出批次未确认或失败时，这些号不能再转单、转组织 | `test_transfers::test_transfer_out_pending_blocks_retransfer` | — | 只涉及本系统，页面确认提示 |

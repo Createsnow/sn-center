@@ -34,7 +34,7 @@ MAXW, MAXH = 16.0, 21.0  # 图片最大宽 / 高（cm）
 def prepare_markdown():
     global SHIFT
     s = open(SRC, encoding='utf-8').read()
-    s = re.sub(r'## 目录\n.*?(?=\n## 第一章|\n# )', '', s, flags=re.S)  # 手写目录由 Word 目录代替
+    s = re.sub(r'## 目录\n.*?(?=\n## 第一章|\n## 1\. |\n# )', '', s, flags=re.S)  # 手写目录由 Word 目录代替
     s = re.sub(r'^> Word 版见.*\n', '', s, flags=re.M)  # 指向本文件自身的说明不进入 Word
     title = s.split('\n', 1)[0].lstrip('# ').strip()
     s = s.split('\n', 1)[1]
@@ -337,7 +337,7 @@ def pdf_pages(hs):
     subprocess.run([soffice, '--headless', '--norestore', f'-env:UserInstallation=file://{TMP}/lo',
                     '--convert-to', 'pdf', '--outdir', TMP, src], check=True, capture_output=True, timeout=300)
     doc = pymupdf.open(f'{TMP}/doc.pdf')
-    texts = [pg.get_text().replace(' ', '') for pg in doc]
+    texts = [re.sub(r'\s+', '', pg.get_text()) for pg in doc]  # 标题中的符号（如 ①）可能被拆到下一行
     pages, start = {}, 0
     # 目录可能跨页：从「目录」所在页起，到列出最后一个标题的那一页为止都属于目录
     toc_start = next((i for i, t in enumerate(texts) if '目录' in t.replace('　', '')), 0)

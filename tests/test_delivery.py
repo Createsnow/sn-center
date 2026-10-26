@@ -53,6 +53,7 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
     )
     # 报文：逐枚带单据编号、序号、当前 PI、流水归属 PI；十进制流水、米标按字符串
     body = MES.received[-1]["batch"]
+    assert set(body) == {"schemaVersion", "batchNo", "batchType", "orgCode", "itemsDigest", "items"}
     assert body["itemsDigest"].startswith("sha256:")
     item = body["items"][0]
     assert set(item) == {
@@ -73,7 +74,7 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
     assert isinstance(item["serialDec"], str) and item["length"] == "0100"
     h = MES.received[-1]["headers"]
     # 默认发原始 JSON，不带 Content-Encoding
-    assert h["x-sn-batch-no"] == batches[-1]["batch_no"] and "content-encoding" not in h
+    assert "content-encoding" not in h
     assert json.loads(MES.received[-1]["raw"])["batchNo"] == batches[-1]["batch_no"]
 
 
@@ -199,15 +200,18 @@ def test_pull_returns_same_unconfirmed_batch_until_receipt(w, sql):
     pushed = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
     assert pushed["push_state"] == "EXHAUSTED"
     r1 = ok(w.mes_next(token))
-    assert r1["batch"]["batchNo"] == pushed["batch_no"] and r1["newlyCreated"] is False
-    assert r1["batchSource"] == "PUSH" and r1["remaining"] == 2
+    assert set(r1.body) == {"schemaVersion", "code", "batch", "remaining", "paused"}
+    assert r1["batch"]["batchNo"] == pushed["batch_no"] and r1["remaining"] == 2
     r2 = ok(w.mes_next(token))
     assert r2["batch"]["batchNo"] == pushed["batch_no"], "没回执前再取仍是同一批"
     receipt = MES.process(org, r1["batch"])
-    rc = ok(w.mes_receipt(token, pushed["batch_no"], receipt))
-    assert (rc["batchResult"], rc["firstConfirmation"]) == ("SUCCESS", True)
-    again = ok(w.mes_receipt(token, pushed["batch_no"], receipt))
-    assert again["firstConfirmation"] is False, "已确认的只存档"
+    assert ok(w.mes_receipt(token, pushed["batch_no"], receipt)).body == {"schemaVersion": "1.0", "code": "OK"}
+    assert sql.scalar("SELECT result FROM sn_delivery_batch WHERE id = %s", pushed["id"]) == "SUCCESS"
+    ok(w.mes_receipt(token, pushed["batch_no"], receipt))
+    assert sql.all("SELECT verdict FROM sn_delivery_receipt WHERE batch_id = %s ORDER BY id", pushed["id"]) == [
+        {"verdict": "CONFIRMED"},
+        {"verdict": "ARCHIVED"},
+    ], "已确认的只存档"
     assert (
         sql.count(
             "SELECT COUNT(*) FROM sn_item WHERE delivery_batch_no = %s AND delivery_mode = 'PULL'", pushed["batch_no"]
@@ -216,7 +220,7 @@ def test_pull_returns_same_unconfirmed_batch_until_receipt(w, sql):
     )
     # 再取：建一个拉取批次
     r3 = ok(w.mes_next(token))
-    assert r3["newlyCreated"] is True and r3["batchSource"] == "PULL" and r3["batch"]["count"] == 2
+    assert r3["batch"]["batchNo"].startswith("PL-") and len(r3["batch"]["items"]) == 2
     assert r3["remaining"] == 0
     ok(w.mes_receipt(token, r3["batch"]["batchNo"], MES.process(org, r3["batch"])))
     r4 = ok(w.mes_next(token))
@@ -349,10 +353,10 @@ def test_rejected_batch_voided_rebatches_and_refuses_voided(w, sql):
     token, _ = w.mes_account(org)
     assert ok(w.mes_next(token))["batch"] is None, "失败的批次不再给"
     back = ok(w.mes_next(token, batchNo=b["batch_no"]))
-    assert back["batch"]["batchNo"] == b["batch_no"] and back["batchResult"] == "FAILED"
+    assert back["batch"]["batchNo"] == b["batch_no"]
     ok(w.api.post(f"/api/delivery/batches/{b['batch_no']}/void", m(reason="整批拒收", basis="MES 确认未处理"), w.admin))
     assert w.mes_next(token, batchNo=b["batch_no"]).code == "BATCH_VOIDED"
-    late = {"schemaVersion": "1.0", "batchNo": b["batch_no"], "code": "OK", "message": None}
+    late = {"batchNo": b["batch_no"], "code": "OK", "message": None}
     assert w.mes_receipt(token, b["batch_no"], late).code == "BATCH_VOIDED"
     MES.clear_fault(org)
     ok(w.api.post("/api/delivery/resume", m(factory_code=org, key=pi), w.admin))

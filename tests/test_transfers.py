@@ -628,7 +628,7 @@ def test_transfer_batch_holds_only_mes_held_sns_one_type_each(w, api, sql):
     got = {x["batch"]["batchNo"]: x["batch"] for x in MES.received if x["org"] == a}
     assert got[rows[0]["batch_no"]]["batchType"] == "SAME_ORG_TRANSFER"
     pool = [x for no, x in got.items() if no != rows[0]["batch_no"] and x["batchType"] != "PING"]
-    assert [(x["batchType"], x["count"]) for x in pool] == [("NEW", 2)]
+    assert [(x["batchType"], len(x["items"])) for x in pool] == [("NEW", 2)]
 
 
 def test_transfer_into_suspended_bill_keeps_held_sns_in_pool(w, api, sql):

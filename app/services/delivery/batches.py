@@ -192,9 +192,6 @@ def _insert_batch(
         "batchNo": batch_no,
         "batchType": batch_type,
         "orgCode": org,
-        "pi": pi,
-        "count": len(payload),
-        "createdAt": util.fmt(now),
         "itemsDigest": digest,
         "items": payload,
     }

@@ -51,7 +51,7 @@
       "col": 2,
       "type": "security",
       "label": "整批校验",
-      "sublabel": "orgCode、count、明细"
+      "sublabel": "orgCode、SN 不重复、必填"
     },
     {
       "id": "dedup",
