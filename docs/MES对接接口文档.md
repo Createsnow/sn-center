@@ -14,7 +14,7 @@
 | --- | --- | --- |
 | V1.0 | 2026-10-26 | 从《MES 对接说明》拆出，只保留接口定义；业务处理规则留在《MES 对接说明》。响应统一带 `code`、`message`、`batchNo`、`timestamp`，回执带 `processedAt`，时间统一 UTC+8 |
 | V1.0 | 2026-10-26 | 第 1 章换为完整业务接口调用时序图（图 1-1）；① 的认证改为待 MES 方确认 |
-| V1.0 | 2026-10-26 | 按接口规范重排：文档信息与修订记录前置；第 2 章改为接入规范，认证方式改为列表并附示例，新增「幂等与重试」；「应答」统一改称「响应」。字段与接口行为不变 |
+| V1.0 | 2026-10-26 | 按接口规范重排：文档信息与修订记录前置；第 2 章改为接入规范，认证方式改为表格并附示例，① 只保留固定令牌、其他方式待 MES 方确认，新增「幂等与重试」；「应答」统一改称「响应」。字段与接口行为不变 |
 
 ## 目录
 
@@ -91,18 +91,26 @@
 
 #### 2.3.1 MES 调用 SN 系统（③～⑥）
 
-- **方式**：工号 + 密钥，每次请求都带请求头，无需登录、无需签名
-  - 格式：`Authorization: Bearer <工号>:<密钥>`
-  - 示例：`Authorization: Bearer M110001:Xk9pQ2vL7sRtY3wZ8aBcD4eF`
-- **凭证**：总部在「账户 → MES 接口账户」创建后线下提供；密钥重置后旧密钥立即失效
-- **权限**：一个账户只能访问所绑定生产组织的批次和 SN
-- **安全限制**
-  - 可设来源 IP 白名单（IP 或 CIDR）
-  - 连续认证失败 10 次，锁定 15 分钟
-- **认证失败**：
-  - 401 `INVALID_CREDENTIALS`：缺少请求头，或工号、密钥错误
-  - 403 `IP_NOT_ALLOWED` / `ACCOUNT_DISABLED`：来源 IP 不在白名单 / 账户已停用
-  - 423 `ACCOUNT_LOCKED`：已锁定，期间密钥正确也拒绝
+| 项目 | 规定 | 示例 |
+| --- | --- | --- |
+| 认证方式 | 工号 + 密钥；每次请求都带，无需登录 | — |
+| 请求头 | `Authorization: Bearer <工号>:<密钥>` | `Authorization: Bearer M110001:Xk9pQ2vL7sRtY3wZ8aBcD4eF` |
+| 凭证获取 | 总部在「账户 → MES 接口账户」创建后线下提供 | 工号 `M110001`，密钥 `Xk9pQ2vL7sRtY3wZ8aBcD4eF` |
+| 凭证更换 | 密钥重置后旧密钥立即失效 | — |
+| 权限范围 | 一个账户只能访问所绑定生产组织的批次和 SN | 账户绑定组织 `110` |
+| 来源 IP | 可设白名单（IP 或 CIDR），不在白名单内拒绝 | `10.0.8.21, 10.0.9.0/24` |
+| 失败锁定 | 连续认证失败 10 次，锁定 15 分钟；锁定期间密钥正确也拒绝 | — |
+
+**认证失败的响应**
+
+| HTTP | `code` | 原因 | 处理 |
+| --- | --- | --- | --- |
+| 401 | `INVALID_CREDENTIALS` | 缺少请求头，或工号、密钥错误 | 核对后重试 |
+| 403 | `IP_NOT_ALLOWED` | 来源 IP 不在白名单 | 联系总部 |
+| 403 | `ACCOUNT_DISABLED` | 账户已停用 | 联系总部 |
+| 423 | `ACCOUNT_LOCKED` | 连续认证失败已锁定 | 15 分钟后再试 |
+
+**请求示例**
 
 ```http
 POST /api/mes/v1/batches/next HTTP/1.1
@@ -115,45 +123,27 @@ Content-Type: application/json
 
 #### 2.3.2 SN 系统调用 MES（①）
 
-认证方式由 MES 方确认（见附录 C），SN 系统已支持下面两种，任选其一：
+认证方式由 MES 方确认（附录 C）：可采用 SN 系统已支持的方式 A，或由 MES 方提出其他方式。
 
-- **方式 A：固定令牌**（适合内网）
-  - 请求头：`Authorization: Bearer <令牌>`
-  - MES 校验：核对令牌；建议同时限制来源为 SN 系统服务器 IP
-  - 示例：`Authorization: Bearer 7f3c9a1e5b2d4f60`
-- **方式 B：HMAC-SHA256 签名**（适合公网，推荐）
-  - 请求头：`X-Sn-Timestamp`（签名时间）、`X-Sn-Signature`（签名，64 位小写十六进制）
-  - 计算步骤
-    1. `bodyHash = hex(SHA256(请求体原始字节))`；请求体为 gzip 时先解压
-    2. `签名串 = X-Sn-Timestamp + "\n" + bodyHash`；时间戳按请求头原文参与
-    3. `X-Sn-Signature = hex(HMAC-SHA256(密钥, 签名串))`；全部按 UTF-8，十六进制小写
-  - MES 校验
-    1. `X-Sn-Timestamp` 与本地时间相差 ≤ 5 分钟
-    2. 按收到的原始字节重算签名，常量时间比对；不得把请求体重新序列化后再算
+| 项目 | 方式 A：固定令牌 | 方式 B：其他 |
+| --- | --- | --- |
+| 适用场景 | 内网 | 待 MES 方确认 |
+| 请求头 | `Authorization: Bearer <令牌>` | 待 MES 方确认 |
+| 示例 | `Authorization: Bearer 7f3c9a1e5b2d4f60` | 待 MES 方确认 |
+| MES 校验 | 核对令牌；建议同时限制来源为 SN 系统服务器 IP | 待 MES 方确认 |
+| 凭证 | 令牌由 MES 方生成，线下提供 | 待 MES 方确认 |
+| 认证失败 | MES 返回 401 / 403；SN 系统不重送，对接配置标为异常 | 同左 |
 
-**签名计算示例**（可用来核对实现）
-
-| 项目 | 值 |
-| --- | --- |
-| 密钥 | `demo-secret-123` |
-| `X-Sn-Timestamp` | `2026-10-26 11:47:05.303` |
-| 请求体 | `{"schemaVersion":"1.0","batchNo":"PING-20261026114705303","batchType":"PING","orgCode":"110","createdAt":"2026-10-26 11:47:05.303","itemsDigest":"sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","items":[]}` |
-| `bodyHash` | `092eeeb3d8bb7030c2eb2566df8c8fb0101d87b26cbfc6f39d394ce9697de370` |
-| 签名串 | `2026-10-26 11:47:05.303\n092eeeb3d8bb7030c2eb2566df8c8fb0101d87b26cbfc6f39d394ce9697de370` |
-| `X-Sn-Signature` | `16cf88d3c2327fd394fe0c49378478c03c0e977467e729e29fc4c1e1f2f59c4a` |
+**请求示例**（方式 A）
 
 ```http
 POST /sn/receive HTTP/1.1
 Host: mes-test.example.com
 Content-Type: application/json; charset=utf-8
-X-Sn-Timestamp: 2026-10-26 11:47:05.303
-X-Sn-Signature: 16cf88d3c2327fd394fe0c49378478c03c0e977467e729e29fc4c1e1f2f59c4a
+Authorization: Bearer 7f3c9a1e5b2d4f60
 
 {"schemaVersion":"1.0","batchNo":"PING-20261026114705303","batchType":"PING","orgCode":"110","createdAt":"2026-10-26 11:47:05.303","itemsDigest":"sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","items":[]}
 ```
-
-- **凭证**：令牌 / 密钥由 MES 方生成，线下提供，不写入文档
-- **认证失败**：MES 返回 401 / 403，SN 系统不重送，该组织的对接配置标为异常
 
 ### 2.4 通用响应
 
