@@ -71,6 +71,7 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
         "pi",
         "billNo",
         "billSeq",
+        "attachNo",
         "materialCode",
         "length",
         "customerCode",
@@ -78,10 +79,29 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
     assert body["batchType"] == "NEW"
     assert item["billNo"] == bill and item["billSeq"] == 1 and item["pi"] == pi and item["serialPi"] == pi
     assert isinstance(item["serialDec"], str) and item["length"] == "0100"
+    assert item["attachNo"] == "1", "附件项次随交付明细下发"
     h = MES.received[-1]["headers"]
     # 默认发原始 JSON，不带 Content-Encoding
     assert "content-encoding" not in h
     assert json.loads(MES.received[-1]["raw"])["batchNo"] == batches[-1]["batch_no"]
+
+
+def test_manual_attach_goes_to_mes(w, sql):
+    """金蝶附件项次为空、生成前页面填写的值随交付明细发给 MES，④ 查询同样返回。"""
+    org = w.org(uid("O")[:10])
+    w.enable_mes(org)
+    pi, bill = uid("PI"), uid("MO")
+    w.order(bill, org, "C1", pi, ("M1", 2, "0100", ""))
+    ok(w.api.put("/api/orders/attach", m(bill_no=bill, seq=1, value="A-07"), w.admin))
+    ok(w.bind_pi(pi, w.rule("P" + uid("").replace("-", ""), seq_len=6)))
+    w.generate(pi)
+    w.allocate(pi)
+    w.push()
+    body = MES.received[-1]["batch"]
+    assert body["pi"] == pi and {x["attachNo"] for x in body["items"]} == {"A-07"}
+    ta, _ = w.mes_account(org)
+    got = ok(w.api.get(f"/api/mes/v1/sn/delivered?pi={pi}", ta))["items"]
+    assert [x["attachNo"] for x in got] == ["A-07", "A-07"]
 
 
 def test_batch_detail_segments_split_at_gaps(w, sql):

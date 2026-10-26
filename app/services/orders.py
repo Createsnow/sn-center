@@ -322,8 +322,25 @@ def effective_attach(line: dict, fill: dict | None) -> tuple[str, str]:
     return "", "EMPTY"
 
 
+def attach_values(keys) -> dict[tuple[str, int], str]:
+    """这些物料行生效的附件项次（金蝶值，金蝶为空时取页面填写值）：(bill, seq) → 值；行不在快照或未填写时为空串。"""
+    keys = set(keys)
+    if not keys:
+        return {}
+    bills = sorted({k[0] for k in keys})
+    snap = {
+        (r["bill_no"], r["seq"]): r
+        for r in db.all(
+            f"SELECT bill_no, seq, attach_no, material_code FROM sn_prd_mo WHERE bill_no IN ({marks(len(bills))})",
+            *bills,
+        )
+    }
+    fills = _by_line("sn_line_attach", list(keys))
+    return {k: effective_attach(snap[k], fills.get(k))[0] if k in snap else "" for k in keys}
+
+
 def fill_attach(cu: CurrentUser, bill_no: str | None, seq: int | None, value: str | None) -> dict:
-    """填写附件项次（金蝶为空时，必填）；物料行有号后不能改。值不写回金蝶，也不进推送报文和领取文件。"""
+    """填写附件项次（金蝶为空时，必填）；物料行有号后不能改。值不写回金蝶，随交付批次发给 MES，不进领取文件。"""
     no = util.trim(bill_no)
     v = util.trim(value)
     if not v or len(v) > 64:

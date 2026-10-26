@@ -132,6 +132,7 @@ class Runner:
             "pi": self.pi,
             "billNo": self.bill,
             "billSeq": 1 if rev < 3 else 2,
+            "attachNo": "CT-A1",
             "materialCode": "CT-M1",
             "length": "0100",
             "customerCode": "CT-C1",
@@ -139,7 +140,7 @@ class Runner:
         }
 
     def transfer_out(self, i: int, rev: int, to_org: str = "CT-TO") -> dict:
-        return {"sn": self.sn(i), "rev": rev, "toOrgCode": to_org}
+        return {"sn": self.sn(i), "rev": rev, "attachNo": "CT-A1", "toOrgCode": to_org}
 
     def batch(self, items: list[dict], kind: str = "NEW", no: str | None = None, **head: Any) -> dict:
         """批次头；交付批次的 pi 取明细的 pi，转移批次取测试 PI（转出前的 PI）。"""

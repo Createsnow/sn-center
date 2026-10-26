@@ -22,7 +22,7 @@ from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db, marks
-from app.services import audit, factories, mes_client, rules
+from app.services import audit, factories, mes_client, orders, rules
 
 log = structlog.get_logger()
 
@@ -148,8 +148,9 @@ TYPE_SQL = (
 )
 
 
-def _delivery_payload(r: dict) -> dict:
-    """交付项（6.3）。十进制流水、米标按字符串；物料为空、规则不带米标时为 null。MES 逐枚按 rev 新增或覆盖。"""
+def _delivery_payload(r: dict, attach: str) -> dict:
+    """交付项（6.3）。十进制流水、米标按字符串；物料、附件项次为空，规则不带米标时为 null。
+    MES 逐枚按 rev 新增或覆盖。"""
     return {
         "sn": r["sn"],
         "rev": int(r["rev"]),
@@ -159,15 +160,17 @@ def _delivery_payload(r: dict) -> dict:
         "pi": r["pi_no"],
         "billNo": r["bill_no"],
         "billSeq": int(r["bill_seq"]),
+        "attachNo": str_or_none(attach),
         "materialCode": str_or_none(r["material_code"]),
         "length": r["length_text"],
         "customerCode": r["customer_code"],
     }
 
 
-def _transfer_out_payload(e: dict) -> dict:
-    """转出项（6.4）：只有 SN、rev 与转入组织；MES 据此标记已转走（本地没有时按 SN、rev 建一条已转走记录）。"""
-    return {"sn": e["sn"], "rev": int(e["rev"]), "toOrgCode": e["to_factory"]}
+def _transfer_out_payload(e: dict, attach: str) -> dict:
+    """转出项（6.4）：SN、rev、转出前物料行的附件项次与转入组织；MES 据此标记已转走（本地没有时按 SN、rev 建一条
+    已转走记录）。"""
+    return {"sn": e["sn"], "rev": int(e["rev"]), "attachNo": str_or_none(attach), "toOrgCode": e["to_factory"]}
 
 
 def _insert_batch(
@@ -270,7 +273,8 @@ def _deliver(
     rebuilt_from: str | None = None,
 ) -> dict:
     """把已加锁的同一类型的号写成一个交付批次，号记上批次号。"""
-    payload = [_delivery_payload(r) for r in items]
+    attach = orders.attach_values((r["bill_no"], r["bill_seq"]) for r in items)
+    payload = [_delivery_payload(r, attach[(r["bill_no"], r["bill_seq"])]) for r in items]
     rows = [
         (
             r["id"],
@@ -375,7 +379,8 @@ def build_transfer_out(cu: CurrentUser, org: str, entries: list[dict], rebuilt_f
     out = []
     for part in parts:
         pi = part[0]["pi_no"]
-        payload = [_transfer_out_payload(e) for e in part]
+        attach = orders.attach_values((e["bill_no"], e["bill_seq"]) for e in part)
+        payload = [_transfer_out_payload(e, attach[(e["bill_no"], e["bill_seq"])]) for e in part]
         rows = [
             (
                 e["item_id"],

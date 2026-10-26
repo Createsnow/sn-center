@@ -228,6 +228,7 @@ class MesSim:
                         "pi": x["pi"],
                         "billNo": x["billNo"],
                         "billSeq": x["billSeq"],
+                        "attachNo": x.get("attachNo"),
                         "materialCode": x.get("materialCode"),
                         "customerCode": x["customerCode"],
                         "length": x.get("length"),

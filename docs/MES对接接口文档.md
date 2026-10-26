@@ -198,6 +198,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
       "pi": "000001",                        // String(64)       必填  当前所属 PI，与批次头 pi 相同
       "billNo": "VT2026090001",              // String(64)       必填  单据号（EEP 生产订单号）
       "billSeq": 1,                          // Number           必填  单据行号
+      "attachNo": "A01",                     // String(64)|null  必填  附件项次（金蝶值；金蝶为空时为生成前页面填写的值）
       "materialCode": "9148363",             // String(64)|null  必填  物料编码
       "length": "0100",                      // String(32)|null  必填  米标，原样保存
       "customerCode": "0001"                 // String(64)       必填  客户编码
@@ -221,6 +222,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
     {
       "sn": "HX100000003A",                  // String(64)       必填  完整 SN
       "rev": 3,                              // Number           必填  挂靠版本
+      "attachNo": "A01",                     // String(64)|null  必填  附件项次（转出前物料行的）
       "toOrgCode": "120"                     // String(64)       必填  转入生产组织编码
     }
   ]
@@ -265,7 +267,7 @@ X-Request-Id: 1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed
   "items": [
     {
       "sn": "HX100000001A", "rev": 1, "serial": "000001", "serialDec": "1", "serialPi": "000001",
-      "pi": "000001", "billNo": "VT2026090001", "billSeq": 1, "materialCode": "9148363",
+      "pi": "000001", "billNo": "VT2026090001", "billSeq": 1, "attachNo": "A01", "materialCode": "9148363",
       "length": "0100", "customerCode": "0001"
     }
   ]
@@ -277,7 +279,7 @@ X-Request-Id: 1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed
 **转移批次**（请求头同上，只列请求体）
 
 ```json
-{"schemaVersion": "1.0", "batchNo": "XO-110-20261026-000007", "batchType": "TRANSFER_OUT", "orgCode": "110", "pi": "000001", "createdAt": "2026-10-26 11:50:00.000", "itemsDigest": "sha256:51ab07…", "items": [{"sn": "HX100000003A", "rev": 3, "toOrgCode": "120"}]}
+{"schemaVersion": "1.0", "batchNo": "XO-110-20261026-000007", "batchType": "TRANSFER_OUT", "orgCode": "110", "pi": "000001", "createdAt": "2026-10-26 11:50:00.000", "itemsDigest": "sha256:51ab07…", "items": [{"sn": "HX100000003A", "rev": 3, "attachNo": "A01", "toOrgCode": "120"}]}
 ```
 
 **测试批次**
@@ -439,7 +441,7 @@ X-Request-ID: 7d3e9a10-5c2b-4f8e-b1a4-0c6d2e8f9b57
     "items": [
       {
         "sn": "HX100005001A", "rev": 1, "serial": "005001", "serialDec": "5001", "serialPi": "000001",
-        "pi": "000001", "billNo": "VT2026090001", "billSeq": 1, "materialCode": "9148363",
+        "pi": "000001", "billNo": "VT2026090001", "billSeq": 1, "attachNo": "A01", "materialCode": "9148363",
         "length": "0100", "customerCode": "0001"
       }
     ]
@@ -645,7 +647,7 @@ X-Request-ID: 1c7e4a9b-5d2f-4b68-9e03-7a6b5c4d3e21
   "timestamp": "2026-10-26 12:00:00.512",    // String           总是    响应时间
   "items": [                                 // Array            仅成功  本页 SN；无数据时为 []
     {
-      "sn": "HX100000001A",                  // …                必有    交付明细 11 个字段（3.1.1），此处从略
+      "sn": "HX100000001A",                  // …                必有    交付明细 12 个字段（3.1.1），此处从略
       "status": "PUSHED",                    // String           必有    SN 状态（附录 A）
       "batchNo": "PS-110-20261026-000123",   // String|null      必有    当前所在批次
       "deliveredAt": "2026-10-26 11:47:07.000" // String|null    必有    确认已下发的时间
@@ -685,7 +687,7 @@ X-Request-ID: 2e9b6d3a-8c1f-4a75-b0e6-4d3c2b1a0f98
   "items": [
     {
       "sn": "HX100000001A", "rev": 2, "serial": "000001", "serialDec": "1", "serialPi": "000001",
-      "pi": "000001", "billNo": "VT2026090001", "billSeq": 1, "materialCode": "9148363",
+      "pi": "000001", "billNo": "VT2026090001", "billSeq": 1, "attachNo": "A01", "materialCode": "9148363",
       "length": "0100", "customerCode": "0001",
       "status": "PUSHED", "batchNo": "PS-110-20261026-000123", "deliveredAt": "2026-10-26 11:47:07.000"
     }
@@ -777,7 +779,7 @@ X-Request-ID: 3b8e5a2c-9d1f-4c64-a7b3-6e5d4c3b2a19
   "items": [
     {
       "sn": "HX100000001A", "rev": 2, "serial": "000001", "serialDec": "1", "serialPi": "000001",
-      "pi": "000001", "billNo": "VT2026090001", "billSeq": 1, "materialCode": "9148363",
+      "pi": "000001", "billNo": "VT2026090001", "billSeq": 1, "attachNo": "A01", "materialCode": "9148363",
       "length": "0100", "customerCode": "0001",
       "status": "PUSHED", "batchNo": "PS-110-20261026-000123", "deliveredAt": "2026-10-26 11:47:07.000"
     }
