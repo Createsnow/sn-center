@@ -64,7 +64,7 @@ node --test frontend/src/*.test.js             # 前端测试
 python3 frontend/scripts/gen_locales.py        # 改了词条 / 错误码后重新生成三种语言文件
 
 uv run python -m devtools.mes_mock serve --port 9001 --secret 110=tok-110   # 模拟 MES（接收推送、注入故障、取批）
-uv run python -m devtools.mes_conformance --url <MES 地址> --org 110 --secret <令牌>   # MES 接收接口契约测试
+uv run python -m devtools.mes_conformance --url <MES 地址> --org 110 --pi <PI> --secret <令牌>   # MES 接收接口契约测试
 ```
 
 MES 方未接入时的联调方法见 [MES 联调指南](<docs/MES 联调指南.md>)。

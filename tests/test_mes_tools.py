@@ -23,7 +23,8 @@ def _quiet(_: str) -> None:
 
 def _runner(mock: MockMes, auth: str = "TOKEN", gz: bool = False) -> Runner:
     mock.secrets["110"] = "s3cret"
-    return Runner(mock.url("110"), "110", auth, "s3cret", timeout=10, log=_quiet, gzip=gz)
+    mock.pis["110"] = {"CTPI-110"}
+    return Runner(mock.url("110"), "110", auth, "s3cret", timeout=10, log=_quiet, gzip=gz, pi="CTPI-110")
 
 
 @pytest.fixture
@@ -52,6 +53,7 @@ def test_conformance_all_pass_against_mock(mock, auth, gz):
         "toOrgCode": "CT-TO",
     }, "本地没有时建已转走记录，迟到的旧交付跳过"
     assert r.sn(12) not in store and r.sn(19) not in store, "整批退回不写数据"
+    assert store[r.sn(71)]["pi"] == "CTPI-110" and not {r.sn(72), r.sn(73), r.sn(74)} & set(store), "PI 不符整批退回"
     report = r.report()
     assert "失败 0" in report and "需在 MES 侧人工核对" in report
 
@@ -93,9 +95,9 @@ class _RejectsWith400(MockMes):
 @pytest.mark.parametrize(
     "cls, failed",
     [
-        (_RegistersRejects, {"C15"}),
+        (_RegistersRejects, {"C15", "C22"}),
         (_IgnoresDigest, {"C07"}),
-        (_RejectsWith400, {"C02", "C14", "C15", "C16", "C17", "C18"}),
+        (_RejectsWith400, {"C02", "C14", "C15", "C16", "C17", "C18", "C22", "C23"}),
     ],
 )
 def test_conformance_catches_broken_mes(cls, failed):

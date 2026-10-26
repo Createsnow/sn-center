@@ -6,11 +6,12 @@ MES 方接口一提供就能测，不需要本系统：脚本自己造批次（P
 回执只有整批结果（code = OK / NG），逐枚的处理结果须在 MES 侧按报告末尾的清单人工核对。
 
     uv run python -m devtools.mes_conformance --url https://mes-test.example.com/sn/receive --org 110 \\
-        --auth TOKEN --secret <令牌> --report mes-110-report.md
+        --pi 000001 --auth TOKEN --secret <令牌> --report mes-110-report.md
     # 加 --perf 测 5000 枚一批的处理时间（建议 10 秒内，超过 60 秒本系统会超时）
 
 **只能对 MES 测试环境运行**：会写入一批测试 SN（前缀 CT + 本次运行号），其中几枚会被标为「已转走」。
-每次运行用新的运行号，SN、PI、单据、批次号都不会与真实数据或上次运行重复。
+每次运行用新的运行号，SN、单据、批次号都不会与真实数据或上次运行重复。MES 要校验交付批次头的 PI 是本组织已有的，
+所以 --pi 须给 MES 测试环境里该组织已有的一张 PI。
 """
 
 from __future__ import annotations
@@ -95,6 +96,7 @@ class Runner:
         run_id: str | None = None,
         gzip: bool = False,
         log: Callable[[str], None] = print,
+        pi: str | None = None,
     ) -> None:
         self.url, self.org, self.auth, self.secret, self.timeout = url, org, auth.upper(), secret, timeout
         #: 与「生产组织」页的「gzip 压缩」一致：默认发原始 JSON
@@ -102,7 +104,9 @@ class Runner:
         self.http = httpx.Client(trust_env=False, follow_redirects=False, timeout=timeout, verify=not insecure)
         self.run = run_id or "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
         self.prefix = f"CT{self.run}"
-        self.pi = f"CTPI{self.run}"
+        #: 交付批次的 PI：须是 MES 侧本组织已有的；no_pi 为本组织没有的 PI（每次运行新造）
+        self.pi = pi or f"CTPI{self.run}"
+        self.no_pi = f"CTNOPI{self.run}"
         self.bill = f"CTMO{self.run}"
         self.seq = 0
         self.log = log
@@ -138,15 +142,11 @@ class Runner:
         return {"sn": self.sn(i), "rev": rev, "toOrgCode": to_org}
 
     def batch(self, items: list[dict], kind: str = "NEW", no: str | None = None, **head: Any) -> dict:
-        obj = {
-            "schemaVersion": SCHEMA,
-            "batchNo": no or self.batch_no(),
-            "batchType": kind,
-            "orgCode": self.org,
-            "createdAt": now_cst(),
-            "itemsDigest": digest(items),
-            "items": items,
-        }
+        """批次头；交付批次带 pi（取明细的 pi），转移批次不带。"""
+        obj: dict = {"schemaVersion": SCHEMA, "batchNo": no or self.batch_no(), "batchType": kind, "orgCode": self.org}
+        if kind != "TRANSFER_OUT":
+            obj["pi"] = items[0]["pi"] if items else self.pi
+        obj |= {"createdAt": now_cst(), "itemsDigest": digest(items), "items": items}
         obj.update(head)
         return obj
 
@@ -381,6 +381,20 @@ class Runner:
             self.ng(self.send(b), b, "交付项缺必填字段 billNo")
             c.notes.append(f"请在 MES 侧确认 {self.sn(19)} 未写入（整批退回不落任何数据）")
 
+        def pi_bad(c: Check) -> None:
+            no = self.batch_no()
+            bad = self.batch([self.delivery(71, 1, pi=self.no_pi, serialPi=self.no_pi)], no=no)
+            good = self.batch([self.delivery(71, 1)], no=no)
+            reject_then_fix(c, f"本组织没有 PI {self.no_pi}", bad, good)
+
+        def pi_head(c: Check) -> None:
+            b = self.batch([self.delivery(72, 1)])
+            del b["pi"]
+            self.ng(self.send(b), b, "交付批次缺批次头 pi")
+            b = self.batch([self.delivery(73, 1), self.delivery(74, 1, pi=self.no_pi)])
+            self.ng(self.send(b), b, "明细 pi 与批次头 pi 不一致")
+            c.notes.append(f"请在 MES 侧确认 {self.sn(72)}～{self.sn(74)} 未写入（整批退回不落任何数据）")
+
         def bad_body(c: Check) -> None:
             r = self.send(raw=b"{not json")
             self.need(r.status == 400, f"请求体无法解析应返回 400，实际 {r}")
@@ -451,6 +465,8 @@ class Runner:
             ("C19", "请求体无法解析：400", "接口 3.1", bad_body),
             ("C20", "同一批同时送达两次：只处理一次，两边都 OK", "说明 2、3.2 步骤 5", concurrent),
             ("C21", "5000 枚一批的处理时间", "说明 3.2 步骤 5", performance),
+            ("C22", "批次头 pi 不是本组织已有的 PI：NG；修正后同一批次号重送能处理", "说明 3.2 步骤 2、5", pi_bad),
+            ("C23", "交付批次缺批次头 pi、明细 pi 与批次头不一致：NG", "说明 3.2 步骤 2", pi_head),
         ]
         for cid, title, ref, fn in cases:
             self.case(cid, title, ref, fn)
@@ -494,6 +510,7 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="python -m devtools.mes_conformance", description="MES 接收推送接口（①）契约测试")
     p.add_argument("--url", required=True, help="MES 接收推送的地址（与「生产组织」页填写的相同）")
     p.add_argument("--org", required=True, help="生产组织编码（批次的 orgCode）")
+    p.add_argument("--pi", required=True, help="MES 测试环境中该组织已有的一张 PI（交付批次头的 pi）")
     p.add_argument("--auth", choices=("TOKEN", "HMAC"), default="TOKEN")
     p.add_argument("--secret", required=True, help="TOKEN 为 Bearer 令牌，HMAC 为签名密钥")
     p.add_argument("--timeout", type=float, default=60, help="等待应答秒数（与本系统推送超时一致，默认 60）")
@@ -502,7 +519,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--insecure", action="store_true", help="不校验 HTTPS 证书（测试环境自签证书）")
     p.add_argument("--gzip", action="store_true", help="请求体 gzip 压缩（与「生产组织」页开启「gzip 压缩」时相同）")
     a = p.parse_args(argv)
-    r = Runner(a.url, a.org, a.auth, a.secret, a.timeout, a.insecure, gzip=a.gzip)
+    r = Runner(a.url, a.org, a.auth, a.secret, a.timeout, a.insecure, gzip=a.gzip, pi=a.pi)
     print(f"运行号 {r.run}，测试 SN 前缀 {r.prefix}；只能对 MES 测试环境运行\n")
     r.run_all(a.perf)
     text = r.report()

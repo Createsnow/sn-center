@@ -79,9 +79,10 @@ def test_org_transfer_pushes_reassign_to_target_and_transfer_out_to_source(w, sq
     # 转出报文只有 SN、rev、转入组织；交付报文不带推送类型与转移追溯字段
     out = next(x["batch"] for x in MES.received if x["batch"]["batchType"] == "TRANSFER_OUT")
     assert out["items"][0] == {"sn": out["items"][0]["sn"], "rev": 2, "toOrgCode": b} and out["itemsDigest"]
+    assert "pi" not in out, "转移批次头不带 PI"
     got = next(x["batch"] for x in MES.received if x["org"] == b and x["batch"]["batchType"] != "PING")
     assert not {"pushType", "fromOrgCode", "transferKind", "transferDocNo", "bizType"} & set(got["items"][0])
-    assert got["batchType"] == "TRANSFER_IN"
+    assert got["batchType"] == "TRANSFER_IN" and got["pi"] == pi
     assert (
         sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND mes_holder = %s AND status = 'PUSHED'", pi, b) == 5
     )

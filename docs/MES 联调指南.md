@@ -34,6 +34,7 @@ uv run pytest -q tests/test_delivery.py tests/test_transfers.py tests/test_mes_t
 # 组织 110 用 Bearer 令牌 tok-110；可重复 --secret 配多个组织
 uv run python -m devtools.mes_mock serve --port 9001 --secret 110=tok-110
 # 本系统在别的机器上：--host 0.0.0.0；要 HTTPS：--tls-cert cert.pem --tls-key key.pem
+# 要验证 PI 归属校验：--pi 110=000001,000002，交付批次头的 pi 不在其中时整批退回（不给时不校验归属）
 ```
 
 1. 「生产组织」页，组织 110 的 MES 对接配置：接口地址填 `http://<模拟 MES 所在机器>:9001/mes/110`，认证方式 TOKEN，凭证填 `tok-110`。
@@ -116,14 +117,15 @@ MES 方的接收推送接口（①）在测试环境上线后就能测，不需�
 
 ```bash
 uv run python -m devtools.mes_conformance --url https://mes-test.example.com/sn/receive --org 110 \
-  --auth TOKEN --secret <令牌> --report mes-110-report.md
+  --pi 000001 --auth TOKEN --secret <令牌> --report mes-110-report.md
 # 再加 --perf 测 5000 枚一批的处理时间
 ```
 
 脚本只依赖 Python 3.11+ 和 httpx，可以把 `devtools/mes_conformance.py` 单独交给 MES 方自测，失败项和原因写在报告里。
 
 - **只能对 MES 测试环境运行**：会写入一批测试 SN（前缀 `CT` + 本次运行号），其中几枚会被标为「已转走」。每次运行用新的运行号，不会与真实数据或上次运行重复。
-- 检查项（共 21 项，TOKEN 方式下其中 1 项跳过）：连接测试与 `orgCode` 校验；凭证错误；首次送达回 `OK`；同一批再次送达回 `OK`；同批次号内容不同报 409；rev 更大覆盖、相同覆盖、更小跳过（整批仍 `OK`）；转出、本地没有时转出并跳过迟到的旧交付、转回；不认识的字段照常处理、四种交付类 `batchType` 都按交付处理、不认识的 `batchType` 整批 `NG`；四种整批退回 `NG`（`orgCode` 不符、批内 SN 重复、缺必填字段，并确认退回后不登记批次号）；无法解析报 400；同一批同时送达两次只处理一次；5000 枚的处理时间。
+- `--pi` 须填 MES 测试环境中该组织**已有的**一张 PI：MES 要校验交付批次头的 `pi` 是本组织的，测试 SN 都挂在这张 PI 下。
+- 检查项（共 23 项，TOKEN 方式下其中 1 项跳过）：连接测试与 `orgCode` 校验；凭证错误；首次送达回 `OK`；同一批再次送达回 `OK`；同批次号内容不同报 409；rev 更大覆盖、相同覆盖、更小跳过（整批仍 `OK`）；转出、本地没有时转出并跳过迟到的旧交付、转回；不认识的字段照常处理、四种交付类 `batchType` 都按交付处理、不认识的 `batchType` 整批 `NG`；四种整批退回 `NG`（`orgCode` 不符、批内 SN 重复、缺必填字段，并确认退回后不登记批次号）；无法解析报 400；同一批同时送达两次只处理一次；5000 枚的处理时间；批次头 `pi` 不是本组织已有的 PI 整批 `NG`（修正后同一批次号重送能处理）；缺批次头 `pi`、明细 `pi` 与批次头不一致整批 `NG`。
 - 回执只有整批结果，看不到 MES 的本侧数据，报告末尾列出要在 MES 库或页面上**人工核对**的几项（新增、覆盖、跳过、已转走、清除已转走、退回不落数据）。
 
 契约测试只覆盖接口 ①。MES 的取批客户端（每次带工号:密钥、`remaining` 续取、`BATCH_VOIDED` 丢弃、回执被拒 422 后修正重交）要让 MES 测试环境连本系统测试环境来验证，见第 4 节。

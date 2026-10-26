@@ -278,7 +278,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
    - 正在处理：返回 409 `BATCH_IN_PROGRESS`
 5. MES 按批次类型处理并落库（规则见《MES 对接说明》），返回 200 + 回执
    - `OK`：已处理
-   - `NG`：整批退回，未写入任何数据
+   - `NG`：整批退回，未写入任何数据（如 `orgCode` 不是本组织、交付批次的 `pi` 不是本组织已有的 PI、缺必填字段）
 
 ![图 3-1 推送与回执](images/MES对接说明/f6-push.png)
 
@@ -306,6 +306,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
   "batchNo": "PS-110-20261026-000123",       // String(40)       必填  批次号，全局唯一；MES 幂等键
   "batchType": "NEW",                        // String           必填  批次类型（附录 A），决定 items 的结构
   "orgCode": "110",                          // String(64)       必填  收件生产组织编码
+  "pi": "000001",                            // String(64)       必填  本批的 PI；一个交付批次只含一张 PI。MES 须校验 orgCode 对应的生产组织有这张 PI，没有则整批 NG
   "createdAt": "2026-10-26 11:47:05.000",    // String           必填  建批时间
   "itemsDigest": "sha256:9f2c4e…",           // String(71)       必填  明细内容指纹（sha256: + 64 位十六进制）；同一 batchNo 再次到达时按字符串比对，不必重算
   "items": [                                 // Array            必填  SN 明细，≤ 5000 条
@@ -315,7 +316,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
       "serial": "000001",                    // String(12)       必填  流水号（可能为 36 进制写法）
       "serialDec": "1",                      // String(20)       必填  十进制流水，按字符串保存
       "serialPi": "000001",                  // String(64)       必填  流水所属 PI；转入的 SN 可能与 pi 不同
-      "pi": "000001",                        // String(64)       必填  当前所属 PI；一个交付批次只含一张 PI
+      "pi": "000001",                        // String(64)       必填  当前所属 PI，与批次头 pi 相同
       "billNo": "VT2026090001",              // String(64)       必填  单据号（EEP 生产订单号）
       "billSeq": 1,                          // Number           必填  单据行号
       "materialCode": "9148363",             // String(64)|null  必填  物料编码
@@ -326,7 +327,13 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
 }
 ```
 
-转移批次（`batchType = TRANSFER_OUT`，跨组织转移后发给原组织）：批次头同上，`items[]` 结构如下：
+**批次头 `pi` 的校验**（MES 在整批校验时做，不通过整批返回 `NG`，不写任何数据、不记 `batchNo`）：
+
+- 交付批次必须带 `pi`
+- `orgCode` 对应的生产组织在 MES 中须有这张 PI（如有该 PI 的生产订单）；没有时 `message` 写明原因，如「本组织 110 没有 PI 000001」
+- 每条明细的 `pi` 须与批次头 `pi` 相同
+
+转移批次（`batchType = TRANSFER_OUT`，跨组织转移后发给原组织）：批次头同上，但**不带 `pi`**（一批转出的 SN 可能属于多张 PI），`items[]` 结构如下：
 
 ```jsonc
 "items": [
@@ -338,7 +345,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
 ]
 ```
 
-测试批次（`batchType = PING`）：批次头同上，`items` 为空数组 `[]`。
+测试批次（`batchType = PING`）：批次头同上，但不带 `pi`，`items` 为空数组 `[]`。
 
 #### 3.1.3 响应参数
 
@@ -379,6 +386,7 @@ X-Request-Id: 1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed
   "batchNo": "PS-110-20261026-000123",
   "batchType": "NEW",
   "orgCode": "110",
+  "pi": "000001",
   "createdAt": "2026-10-26 11:47:05.000",
   "itemsDigest": "sha256:9f2c4e…（64 位十六进制）",
   "items": [
@@ -446,6 +454,15 @@ Content-Type: application/json; charset=utf-8
 {"batchNo": "PS-110-20261026-000123", "code": "NG", "message": "materialCode 超过本侧字段长度 20", "processedAt": "2026-10-26 11:47:06.008"}
 ```
 
+**业务失败：本组织没有该 PI**（HTTP 200，`code = NG`）
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+
+{"batchNo": "PS-110-20261026-000123", "code": "NG", "message": "本组织 110 没有 PI 000001", "processedAt": "2026-10-26 11:47:06.008"}
+```
+
 **处理冲突：同一批次正在处理**（HTTP 409，SN 系统稍后重送）
 
 ```http
@@ -479,7 +496,7 @@ Content-Type: application/json; charset=utf-8
 | 429 / 503 / 5xx | — | MES 繁忙或故障 | 1、5、15 分钟后用相同内容重送 |
 | — | — | 超时、网络中断 | 同上 |
 
-- 能拆包处理就返回 200 + 回执；缺字段、`orgCode` 不符等业务问题返回 200 + `NG`，4xx 只用于完全无法处理
+- 能拆包处理就返回 200 + 回执；缺字段、`orgCode` 不符、本组织没有批次头的 `pi` 等业务问题返回 200 + `NG`，4xx 只用于完全无法处理
 - 非 200 的响应体也按回执结构写明 `code`、`message`
 - HTTP 200 但 `code` 不是 `OK` / `NG`：SN 系统记为响应无效，不重送
 
@@ -562,6 +579,7 @@ MES 主动拉取一个批次：优先返回范围内最早的未回执批次（�
     "batchNo": "PL-110-20261026-000046",     // String(40)       必有  批次号，全局唯一；MES 幂等键
     "batchType": "NEW",                      // String           必有  批次类型（附录 A），决定 items 的结构
     "orgCode": "110",                        // String(64)       必有  收件生产组织编码
+    "pi": "000001",                          // String(64)       必有  本批的 PI；仅交付批次有，转移批次不带。校验同 ①（3.1.2）
     "createdAt": "2026-10-26 11:48:15.400",  // String           必有  建批时间
     "itemsDigest": "sha256:c07e3a…",         // String(71)       必有  明细内容指纹，同一 batchNo 按字符串比对
     "items": [                               // Array            必有  SN 明细，≤ 5000 条；字段与 ① 请求体相同（交付明细 11 个字段，或转移明细 3 个字段）
@@ -571,7 +589,7 @@ MES 主动拉取一个批次：优先返回范围内最早的未回执批次（�
         "serial": "005001",                  // String(12)       必有  流水号
         "serialDec": "5001",                 // String(20)       必有  十进制流水
         "serialPi": "000001",                // String(64)       必有  流水所属 PI
-        "pi": "000001",                      // String(64)       必有  当前所属 PI
+        "pi": "000001",                      // String(64)       必有  当前所属 PI，与批次头 pi 相同
         "billNo": "VT2026090001",            // String(64)       必有  单据号
         "billSeq": 1,                        // Number           必有  单据行号
         "materialCode": "9148363",           // String(64)|null  必有  物料编码
@@ -619,6 +637,7 @@ X-Request-ID: 7d3e9a10-5c2b-4f8e-b1a4-0c6d2e8f9b57
     "batchNo": "PL-110-20261026-000046",
     "batchType": "NEW",
     "orgCode": "110",
+    "pi": "000001",
     "createdAt": "2026-10-26 11:48:15.400",
     "itemsDigest": "sha256:c07e3a…",
     "items": [

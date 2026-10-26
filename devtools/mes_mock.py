@@ -4,6 +4,8 @@
 
     # 接收推送（接口 ①）：地址 http://<host>:<port>/mes/<组织>，填到「生产组织」页的 MES 接口地址
     uv run python -m devtools.mes_mock serve --port 9001 --secret 110=tok-110
+    # 限定组织 110 已有的 PI：交付批次头的 pi 不在其中时整批退回（不给时不校验 PI 归属）
+    uv run python -m devtools.mes_mock serve --port 9001 --secret 110=tok-110 --pi 110=000001,000002
     # 同时每 5 分钟取一次批（② → process → ③），与推送共用本侧数据
     uv run python -m devtools.mes_mock serve --port 9001 --secret 110=tok-110 \\
         --pull-base http://127.0.0.1:8000 --pull-org 110 --pull-emp MES110 --pull-key <密钥>
@@ -12,7 +14,7 @@
 
 控制接口（注入故障、查看收到的报文和本侧数据）：
 
-    GET    /_mock/state                 各组织的 SN 表、批次表、当前故障
+    GET    /_mock/state                 各组织的 SN 表、批次表、当前故障、已有的 PI
     GET    /_mock/received?limit=20     最近收到的推送（不含号明细）
     POST   /_mock/fault                 设置故障，见 FAULT_MODES
     DELETE /_mock/fault?org=110         清除故障（不带 org 清除全部）
@@ -105,6 +107,8 @@ class MesSim:
         #: org -> 凭证（TOKEN 为 Bearer 令牌，HMAC 为签名密钥）；default_secret 用于未单独配置的组织
         self.secrets: dict[str, str] = {}
         self.default_secret: str | None = None
+        #: org -> 本组织已有的 PI；配置了的组织校验交付批次头的 pi 在其中，未配置的不校验归属
+        self.pis: dict[str, set[str]] = {}
         #: org -> behavior（覆盖应答，模拟故障）
         self.behavior: dict[str, Behavior | None] = {}
         self.faults: dict[str, dict] = {}
@@ -169,6 +173,12 @@ class MesSim:
             return f"超过单批上限 {self.max_batch}"
         if not isinstance(batch.get("itemsDigest"), str) or not batch["itemsDigest"]:
             return "itemsDigest 必填"
+        if delivery:
+            pi = batch.get("pi")
+            if not isinstance(pi, str) or not pi:
+                return "交付批次 pi 必填"
+            if org in self.pis and pi not in self.pis[org]:
+                return f"本组织 {org} 没有 PI {pi}"
         need = DELIVERY_FIELDS if delivery else TRANSFER_OUT_FIELDS
         for x in items:
             if not isinstance(x, dict):
@@ -178,6 +188,8 @@ class MesSim:
                 return f"{x.get('sn')} 缺 {', '.join(lack)}"
             if not isinstance(x["rev"], int) or isinstance(x["rev"], bool) or x["rev"] < 1:
                 return f"{x['sn']} 的 rev 须为正整数"
+            if delivery and x["pi"] != batch["pi"]:
+                return f"{x['sn']} 的 pi {x['pi']} 与批次头 {batch['pi']} 不一致"
         if len({x["sn"] for x in items}) != len(items):
             return "批内 SN 重复"
         return None
@@ -333,7 +345,12 @@ class MockMes(MesSim):
                 qs = {k: v[-1] for k, v in parse_qs(u.query).items()}
                 if u.path == "/_mock/state":
                     with mock.lock:
-                        body = {"store": mock.store, "batches": mock.batches, "faults": mock.faults}
+                        body = {
+                            "store": mock.store,
+                            "batches": mock.batches,
+                            "faults": mock.faults,
+                            "pis": {k: sorted(v) for k, v in mock.pis.items()},
+                        }
                         body = json.loads(json.dumps(body, ensure_ascii=False))
                     return self._send(200, body)
                 if u.path == "/_mock/received":
@@ -529,12 +546,12 @@ def _json(r: httpx.Response) -> Any:
 # ---------------------------------------------------------------------- 命令行
 
 
-def _pairs(values: list[str] | None) -> dict[str, str]:
+def _pairs(values: list[str] | None, usage: str = "--secret 须为 组织=凭证") -> dict[str, str]:
     out = {}
     for v in values or []:
         org, sep, secret = v.partition("=")
         if not sep or not org:
-            raise SystemExit(f"--secret 须为 组织=凭证：{v}")
+            raise SystemExit(f"{usage}：{v}")
         out[org] = secret
     return out
 
@@ -556,6 +573,9 @@ def main(argv: list[str] | None = None) -> int:
         "--secret", action="append", metavar="组织=凭证", help="各组织的令牌（TOKEN）或签名密钥（HMAC），可重复"
     )
     s.add_argument("--default-secret", help="未单独配置的组织都用这个凭证")
+    s.add_argument(
+        "--pi", action="append", metavar="组织=PI,PI", help="组织已有的 PI，交付批次头的 pi 不在其中时整批退回；可重复"
+    )
     s.add_argument("--max-batch", type=int, default=5000, help="单批上限，超过整批拒收")
     s.add_argument("--max-skew", type=int, default=300, help="HMAC 时间戳允许偏差秒数，0 不校验")
     s.add_argument("--tls-cert", help="HTTPS 证书（PEM）；与 --tls-key 一起给出时以 HTTPS 监听")
@@ -593,6 +613,8 @@ def main(argv: list[str] | None = None) -> int:
     mock = MockMes(max_batch=a.max_batch, max_skew=a.max_skew)
     mock.secrets.update(_pairs(a.secret))
     mock.default_secret = a.default_secret
+    for org, pis in _pairs(a.pi, "--pi 须为 组织=PI,PI").items():
+        mock.pis.setdefault(org, set()).update(x for x in pis.split(",") if x)
     if not mock.secrets and mock.default_secret is None:
         print("提示：未配置 --secret / --default-secret，所有推送都会 401", file=sys.stderr)
     tls = None

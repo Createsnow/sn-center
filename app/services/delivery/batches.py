@@ -187,15 +187,11 @@ def _insert_batch(
     batch_no = _batch_no(prefix, org)
     now = util.now()
     digest = _digest(payload)
-    obj = {
-        "schemaVersion": "1.0",
-        "batchNo": batch_no,
-        "batchType": batch_type,
-        "orgCode": org,
-        "createdAt": util.mes_fmt(now),
-        "itemsDigest": digest,
-        "items": payload,
-    }
+    obj: dict = {"schemaVersion": "1.0", "batchNo": batch_no, "batchType": batch_type, "orgCode": org}
+    if batch_type != TRANSFER_OUT:
+        # 交付批次只含一张 PI，批次头带上，MES 据此校验本组织有没有这张 PI（对接说明 3.2 步骤 2）
+        obj["pi"] = pi
+    obj |= {"createdAt": util.mes_fmt(now), "itemsDigest": digest, "items": payload}
     body = mes_client.gzip_bytes(mes_client.canonical(obj))
     bid = db.insert(
         "INSERT INTO sn_delivery_batch(batch_no, source, batch_type, factory_code, pi_no, qty, items_digest, body_gz, "

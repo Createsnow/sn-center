@@ -55,7 +55,8 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
     )
     # 报文：逐枚带单据编号、序号、当前 PI、流水归属 PI；十进制流水、米标按字符串
     body = MES.received[-1]["batch"]
-    assert set(body) == {"schemaVersion", "batchNo", "batchType", "orgCode", "createdAt", "itemsDigest", "items"}
+    assert set(body) == {"schemaVersion", "batchNo", "batchType", "orgCode", "pi", "createdAt", "itemsDigest", "items"}
+    assert body["pi"] == pi, "交付批次头带 PI"
     assert re.fullmatch(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}", body["createdAt"]), "UTC+8，精确到毫秒"
     day = (datetime.now(UTC) + timedelta(hours=8)).strftime("%Y%m%d")
     assert body["batchNo"].split("-")[-2] == day and body["createdAt"][:10].replace("-", "") == day
