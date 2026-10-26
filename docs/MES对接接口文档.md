@@ -144,59 +144,41 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
 
 **请求体结构**
 
-交付批次（`batchType` = `NEW` / `SAME_ORG_TRANSFER` / `TRANSFER_IN` / `REMAP`），`items[]` 为**交付明细**（②④⑤ 沿用）：
+各类批次共用一个结构，`items[]` 按 `batchType` 带不同字段。注释中「必填」一栏的取值：
+
+- `必填`：各类批次都带
+- `交付`：只有交付批次带，且必填。交付批次指 `NEW` / `SAME_ORG_TRANSFER` / `TRANSFER_IN` / `REMAP`，其明细称**交付明细**，②④⑤ 沿用
+- `转移`：只有转移批次带，且必填。转移批次指 `TRANSFER_OUT`，发给原组织，其明细称**转移明细**
+- 测试批次（`PING`，连接测试时发送）：不带 `pi`，`items` 为 `[]`
 
 ```jsonc
 {
   "schemaVersion": "1.0",                    // String           必填  协议版本，固定 1.0
   "batchNo": "PS-110-20261026-000123",       // String(40)       必填  批次号，全局唯一；MES 幂等键
-  "batchType": "NEW",                        // String           必填  批次类型（附录 A），决定 items 的结构
-  "orgCode": "110",                          // String(64)       必填  收件生产组织编码
-  "pi": "000001",                            // String(64)       必填  本批的 PI，一个交付批次只含一张 PI
+  "batchType": "NEW",                        // String           必填  批次类型（附录 A），决定 items 带哪些字段
+  "orgCode": "110",                          // String(64)       必填  收件生产组织编码；转移批次为原组织
+  "pi": "000001",                            // String(64)       必填  本批的 PI，一批只含一张 PI；转移批次为转出前的 PI
   "createdAt": "2026-10-26 11:47:05.000",    // String           必填  建批时间
   "itemsDigest": "sha256:9f2c4e…",           // String(71)       必填  明细指纹（sha256: + 64 位十六进制）；同一 batchNo 再次到达时按字符串比对，不必重算
   "items": [                                 // Array            必填  SN 明细，≤ 5000 条
     {
       "sn": "HX100000001A",                  // String(64)       必填  完整 SN
       "rev": 1,                              // Number           必填  挂靠版本，正整数，越大越新
-      "serial": "000001",                    // String(12)       必填  流水号（可能为 36 进制写法）
-      "serialDec": "1",                      // String(20)       必填  十进制流水，按字符串保存
-      "serialPi": "000001",                  // String(64)       必填  流水所属 PI；转入的 SN 可能与 pi 不同
-      "pi": "000001",                        // String(64)       必填  当前所属 PI，与批次头 pi 相同
-      "billNo": "VT2026090001",              // String(64)       必填  单据号（EEP 生产订单号）
-      "billSeq": 1,                          // Number           必填  单据行号
+      "serial": "000001",                    // String(12)       交付  流水号（可能为 36 进制写法）
+      "serialDec": "1",                      // String(20)       交付  十进制流水，按字符串保存
+      "serialPi": "000001",                  // String(64)       交付  流水所属 PI；转入的 SN 可能与 pi 不同
+      "pi": "000001",                        // String(64)       交付  当前所属 PI，与批次头 pi 相同
+      "billNo": "VT2026090001",              // String(64)       交付  单据号（EEP 生产订单号）
+      "billSeq": 1,                          // Number           交付  单据行号
       "attachNo": "A01",                     // String(64)|null  必填  附件项次，生成时写定，转单、转组织不变
-      "materialCode": "9148363",             // String(64)|null  必填  物料编码
-      "length": "0100",                      // String(32)|null  必填  米标，原样保存
-      "customerCode": "0001"                 // String(64)       必填  客户编码
+      "materialCode": "9148363",             // String(64)|null  交付  物料编码
+      "length": "0100",                      // String(32)|null  交付  米标，原样保存
+      "customerCode": "0001",                // String(64)       交付  客户编码
+      "toOrgCode": "120"                     // String(64)       转移  转入生产组织编码
     }
   ]
 }
 ```
-
-转移批次（`batchType = TRANSFER_OUT`，发给原组织），`items[]` 为**转移明细**：
-
-```jsonc
-{
-  "schemaVersion": "1.0",                    // String           必填  协议版本，固定 1.0
-  "batchNo": "XO-110-20261026-000007",       // String(40)       必填  批次号，全局唯一；MES 幂等键
-  "batchType": "TRANSFER_OUT",               // String           必填  批次类型，固定 TRANSFER_OUT
-  "orgCode": "110",                          // String(64)       必填  收件生产组织编码（原组织）
-  "pi": "000001",                            // String(64)       必填  转出前的 PI，一个转移批次只含一张 PI
-  "createdAt": "2026-10-26 11:50:00.000",    // String           必填  建批时间
-  "itemsDigest": "sha256:51ab07…",           // String(71)       必填  明细指纹，同交付批次
-  "items": [                                 // Array            必填  SN 明细，≤ 5000 条
-    {
-      "sn": "HX100000003A",                  // String(64)       必填  完整 SN
-      "rev": 3,                              // Number           必填  挂靠版本
-      "attachNo": "A01",                     // String(64)|null  必填  附件项次，同交付明细
-      "toOrgCode": "120"                     // String(64)       必填  转入生产组织编码
-    }
-  ]
-}
-```
-
-测试批次（`batchType = PING`，连接测试时发送）：批次头不带 `pi`，`items` 为 `[]`。
 
 **响应体结构**
 
