@@ -386,6 +386,10 @@ def test_rejected_batch_voided_rebatches_and_refuses_voided(w, sql):
     assert ok(w.mes_next(token))["batch"] is None, "失败的批次不再给"
     back = ok(w.mes_next(token, batchNo=b["batch_no"]))
     assert back["batch"]["batchNo"] == b["batch_no"]
+    ng = {"batchNo": b["batch_no"], "code": "NG", "message": "仍不能处理"}
+    rc = ok(w.mes_receipt(token, b["batch_no"], ng))
+    # 整批退回已登记，本次回执生效（接口文档 3.3）
+    assert (rc["batchResult"], rc["firstConfirmation"]) == ("FAILED", True)
     ok(w.api.post(f"/api/delivery/batches/{b['batch_no']}/void", m(reason="整批拒收", basis="MES 确认未处理"), w.admin))
     assert w.mes_next(token, batchNo=b["batch_no"]).code == "BATCH_VOIDED"
     late = {"batchNo": b["batch_no"], "code": "OK", "message": None}

@@ -1,6 +1,6 @@
 # 文档导航
 
-本目录共 7 份文档，另有 `k3/` 下 2 份金蝶接口参考资料。每个主题只有一份是**权威来源**，其他文档只写摘要并链接过去；冲突时以权威来源和代码为准。业务规则一律以《需求文档（PRD）》为准。
+本目录共 8 份文档，另有 `k3/` 下 2 份金蝶接口参考资料。每个主题只有一份是**权威来源**，其他文档只写摘要并链接过去；冲突时以权威来源和代码为准。业务规则一律以《需求文档（PRD）》为准。
 
 ## 1. 文档一览
 
@@ -25,11 +25,12 @@
 | 业务规则、待确认项 | 需求文档（PRD） | 业务流程说明、系统技术方案 |
 | 表结构、索引、痕迹动作 | `app/db/migration/V1__init.sql` | 系统技术方案、PRD 附录 D.3 |
 | 页面接口清单与权限 | 代码 `app/api/routes`（在线文档 `/docs`） | 系统技术方案第三章 |
-| MES 接口字段、错误码、处理逻辑 | MES 对接说明（在线版：`/docs` 的 `open` 分组） | PRD F-11 / F-12、附录 D.4 |
+| MES 接口字段、错误码 | MES 对接接口文档（在线版：`/docs` 的 `open` 分组） | PRD F-11 / F-12、附录 D.4、系统技术方案 3.6 |
+| MES 处理规则（rev、批次类型、转移、异常） | MES 对接说明 | PRD 5.2.5、5.2.8 |
 | 金蝶调用与字段 | [生产订单查询接口](k3/k3cloud_query.md)、[生产订单完整数据结构](k3/prd_mo_structure.md) → PRD F-05、附录 D.1 → 代码 `app/services/k3.py` | 业务流程说明附录、系统技术方案、运维手册 |
 | 状态机 | PRD 5.2.6 | 系统技术方案、业务流程说明 §五 |
 | 配置项 | `.env.example`（PRD 附录 C 为业务口径） | 运维手册 §2、系统技术方案附录 A |
-| 错误码 | `app/core/errors.py`；MES 接口错误码见 MES 对接说明 | 系统技术方案附录 B |
+| 错误码 | `app/core/errors.py`；MES 接口错误码见 MES 对接接口文档附录 B | 系统技术方案附录 B |
 | 启动、部署、排障 | 运维手册 | README |
 | MES 联调方法、9.2 场景覆盖 | MES 联调指南 | 运维手册第 7 节 |
 
@@ -37,10 +38,10 @@
 
 - **业务方 / 新成员**：业务流程说明 → 需求文档（PRD）。
 - **评审**：需求文档（PRD）→ 系统技术方案。
-- **开发**：README → 需求文档（PRD）→ 系统技术方案 → 建表脚本 `V1__init.sql` → MES 对接说明。
+- **开发**：README → 需求文档（PRD）→ 系统技术方案 → 建表脚本 `V1__init.sql` → MES 对接接口文档 → MES 对接说明。
 - **运维 / 实施**：运维手册 → 系统技术方案附录。
-- **测试 / MES 联调**：MES 对接说明 → MES 联调指南 → PRD 9.2。
-- **MES 对接方**：MES 对接说明；自测接收接口用 MES 联调指南第 3 节的契约测试。
+- **测试 / MES 联调**：MES 对接接口文档 → MES 对接说明 → MES 联调指南 → PRD 9.2。
+- **MES 对接方**：MES 对接接口文档 → MES 对接说明；自测接收接口用 MES 联调指南第 3 节的契约测试。
 
 ## 4. 写作约定
 
@@ -54,7 +55,7 @@
 | --- | --- |
 | 建表脚本 / 新增迁移 | 运维手册 8.1–8.3 里的表数量（现为 34 张 `sn_` 表）；涉及 ER 时更新系统技术方案的图 |
 | 新增 / 修改页面接口 | 路由的 `summary`（在线文档 `/docs` 随之更新）；涉及权限或流程时同步系统技术方案第三章 |
-| 修改 MES 接口 | MES 对接说明（须与 MES 方书面确认）；模拟 MES `devtools/mes_mock.py`、契约测试 `devtools/mes_conformance.py` 与 MES 联调指南 |
+| 修改 MES 接口 | MES 对接接口文档、MES 对接说明（须与 MES 方书面确认）；模拟 MES `devtools/mes_mock.py`、契约测试 `devtools/mes_conformance.py` 与 MES 联调指南 |
 | 新增配置项 | `.env.example`；部署时必须填写的再加到运维手册 §2 |
 | 新增错误码 | `frontend/scripts/error_messages.py` 后运行 `gen_locales.py`；MES 接口会返回的另见 MES 对接说明 |
 | 新增页面词条 | `frontend/scripts/ui_messages.py`（公共）或 `frontend/scripts/ui/<页面>.py`，再运行 `gen_locales.py` |
@@ -83,4 +84,4 @@ npx -y @mermaid-js/mermaid-cli@11.4.2 -i fig2-1-function.mmd -o fig2-1-function.
 | 预演、生成流程或接口 | 图 3-1 预演与生成时序 |
 | 推送、拉取、回执流程 | 图 3-2 交付时序 |
 
-MES 对接说明与接口文档的 11 张图在 `images/MES对接说明/`：`*.archify.json` 是源文件（Archify 绘制），改完用 Archify `finalize` 生成 HTML，再用无头 Chromium 截取图中最大的 SVG（2 倍像素）导出同名 PNG；HTML 不入库。
+MES 对接说明与接口文档的 9 张图在 `images/MES对接说明/`：`*.archify.json` 是源文件（Archify 绘制），改完用 Archify `finalize` 生成 HTML，再用无头 Chromium 截取图中最大的 SVG（2 倍像素）导出同名 PNG；HTML 不入库。

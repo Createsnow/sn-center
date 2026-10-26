@@ -462,7 +462,7 @@ MES 的回执，结构同 ① 的响应体（3.1.1）：
   "batchNo": "PL-110-20261026-000046",       // String           总是    所回执的批次号
   "timestamp": "2026-10-26 11:48:20.305",    // String           总是    响应时间
   "batchResult": "SUCCESS",                  // String           仅成功  SN 系统中该批次的结果：SUCCESS / FAILED
-  "firstConfirmation": true,                 // Boolean          仅成功  true 本次首次确认；false 此前已确认，本次只存档
+  "firstConfirmation": true,                 // Boolean          仅成功  true 本次回执已生效（首次确认，或整批退回已登记）；false 此前已确认，本次只存档
   "details": []                              // Array            仅出错  错误明细 [{field, reason}]
 }
 ```

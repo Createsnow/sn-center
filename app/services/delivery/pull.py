@@ -186,7 +186,8 @@ _RECEIPT_MSG = {
 
 def submit_receipt(cu: CurrentUser, batch_no: str, body: dict) -> dict:
     """接口 ③ 提交回执（或整批拒收）。按批次号幂等：已确认的只存档；已作废的拒绝；不符时拒收并记批次失败。
-    应答回传本系统的处理结果：批次结果、是否本次首次确认。"""
+    应答回传本系统的处理结果：批次结果、本次回执是否生效（首次确认或整批退回已登记为 true，此前已确认、只存档为
+    false）。"""
     org = cu.factory_code
     _rate_limit(org)
     b = find_batch(batch_no)
@@ -204,7 +205,7 @@ def submit_receipt(cu: CurrentUser, batch_no: str, body: dict) -> dict:
         _RECEIPT_MSG[applied.verdict],
         b["batch_no"],
         batchResult=applied.batch["result"],
-        firstConfirmation=applied.verdict == "CONFIRMED",
+        firstConfirmation=applied.verdict != "ARCHIVED",
     )
 
 
