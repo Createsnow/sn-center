@@ -123,8 +123,9 @@ def void(cu: CurrentUser, batch_no: str | None, reason: str | None, basis: str |
                 {**e, "transfer_kind": b["transfer_kind"], "transfer_doc_no": b["transfer_doc_no"]}
                 for e in db.all(
                     "SELECT d.item_id, d.sn, d.rev, d.pi_no, d.bill_no, d.bill_seq, d.material_code, d.customer_code, "
-                    "d.seq_pi_no, d.seq_dec, d.to_factory, i.attach_no, i.rule_version_id FROM sn_delivery_item d "
-                    "JOIN sn_item i ON i.id = d.item_id WHERE d.batch_id = %s ORDER BY d.line_no",
+                    "d.seq_pi_no, d.seq_dec, d.to_factory, i.length_text, i.attach_no, i.rule_version_id "
+                    "FROM sn_delivery_item d JOIN sn_item i ON i.id = d.item_id "
+                    "WHERE d.batch_id = %s ORDER BY d.line_no",
                     b["id"],
                 )
             ]

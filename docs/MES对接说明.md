@@ -93,17 +93,17 @@ MES 已持有的 SN 在转移、改挂当时单独建批（`SAME_ORG_TRANSFER` /
 
 ### 3.1 批次类别
 
-所有批次结构相同（字段见接口文档 3.1.1），按 `batchType` 区分明细内容：
+所有批次用同一个请求体（字段见接口文档 3.1.1），明细字段也相同，按 `batchType` 区分怎样处理：
 
 | 批次 | `batchType` | `batchNo` 前缀 | 送达 | 明细 |
 | --- | --- | --- | --- | --- |
-| 交付批次 | `NEW` / `SAME_ORG_TRANSFER` / `TRANSFER_IN` / `REMAP` | `PS`（推送时建）/ `PL`（拉取时建） | ① 或 ② | 交付项，≤ 5000 枚 |
-| 转移批次 | `TRANSFER_OUT` | `XO` | ① 或 ② | 转出项，≤ 5000 枚 |
+| 交付批次 | `NEW` / `SAME_ORG_TRANSFER` / `TRANSFER_IN` / `REMAP` | `PS`（推送时建）/ `PL`（拉取时建） | ① 或 ② | ≤ 5000 枚，`toOrgCode` 为 `null` |
+| 转移批次 | `TRANSFER_OUT` | `XO` | ① 或 ② | ≤ 5000 枚，挂靠为转出前的值，`toOrgCode` 为转入组织 |
 | 测试批次 | `PING` | `PING` | ① | 空数组 |
 
 批次号中的日期为国内日期（UTC+8）。
 
-MES 判断要用的字段：`batchNo`（幂等键）、`batchType`（分流）、`orgCode`（收件组织）、`pi`（本批的 PI；交付批次校验本组织有这张 PI，转移批次为转出前的 PI）、`itemsDigest`（同一批次号再次到达时比对），明细的 `sn`、`rev`；转移批次明细另有 `toOrgCode`（转入组织）。测试批次的批次头不带 `pi`。
+MES 判断要用的字段：`batchNo`（幂等键）、`batchType`（分流）、`orgCode`（收件组织）、`pi`（本批的 PI；交付批次校验本组织有这张 PI，转移批次为转出前的 PI）、`itemsDigest`（同一批次号再次到达时比对），明细的 `sn`、`rev`，转移批次另看 `toOrgCode`（转入组织）。测试批次的批次头不带 `pi`。
 
 ### 3.2 处理步骤
 

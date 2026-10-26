@@ -231,6 +231,7 @@ def _move(
                     "customer_code": r["customer_code"],
                     "seq_pi_no": r["seq_pi_no"],
                     "seq_dec": r["seq_dec"],
+                    "length_text": r["length_text"],
                     "attach_no": r["attach_no"],
                     "rule_version_id": r["rule_version_id"],
                     "to_factory": new_org,
