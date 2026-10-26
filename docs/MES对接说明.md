@@ -18,7 +18,6 @@
   - [4.1 SN 系统侧规则](#41-sn-系统侧规则)
   - [4.2 MES 侧规则](#42-mes-侧规则)
 - [5. 异常处理](#5-异常处理)
-- [修订记录](#修订记录)
 
 ---
 
@@ -210,14 +209,3 @@ MES 判断要用的字段：`batchNo`（幂等键）、`batchType`（分流）�
 2. 修正后用 ② 带 `batchNo` 取回原批次（内容不变，不会新建批次），重新处理后用 ③ 提交 `OK`
 3. 批次成功后，由 MES 书面告知总部，总部点「继续推送」恢复该 PI 的后续批次
 4. 修正不了时，经 MES 书面确认未处理，总部作废该批次；其中的 SN 以新批次号重新送达，`rev` 不变，原批次号此后在 ②③ 返回 409 `BATCH_VOIDED`
-
----
-
-## 修订记录
-
-| 日期 | 变更 |
-| --- | --- |
-| 2026-10-26 | 上线前精简接口参数（`schemaVersion` 仍为 `1.0`）：批次头去掉 `pi`、`count`、`createdAt`，MES 不再校验枚数与批次头 PI；① 去掉请求头 `X-Sn-Batch-No`，HMAC 签名串改为「时间戳 + 请求体摘要」；回执与 MES 发出的请求无需带 `schemaVersion`；③ 应答去掉 `batchSource`、`newlyCreated`、`batchResult`；④ 应答只回 `code`；⑤⑥ 去掉 `orgCode`，⑥ 应答去掉 `batchNo`；文档合并重复章节 |
-| 2026-10-26 | 双向反馈补全：SN 系统应答统一带 `code`、`message`、`batchNo`、`timestamp`（出错另带 `details`，字段固定齐全）；④ 应答回传 `batchResult`、`firstConfirmation`；MES 回执与出错应答统一为 `{batchNo, code, message, processedAt}`；批次头恢复 `createdAt`；⑤⑥ 明细增加 `deliveredAt`，⑥ 应答带所查 `batchNo`。时间统一为 UTC+8、`yyyy-MM-dd HH:mm:ss.SSS`（含 `X-Sn-Timestamp`、批次号日期） |
-| 2026-10-26 | 拆分：接口定义（通用约定、各接口请求 / 应答、数据字典、错误码）移到《MES 对接接口文档》，本文只保留业务处理规则；原第 2 章接口清单、3.1 报文样例、3.4 回执结构改为引用接口文档 |
-| 2026-10-26 | 第 5 章新增「整批退回后重处理」时序图（图 5-1） |
