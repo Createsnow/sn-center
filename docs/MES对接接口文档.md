@@ -271,7 +271,7 @@ X-Request-Id: 1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed
 {"schemaVersion": "1.0", "batchNo": "XO-110-20261026-000007", "batchType": "TRANSFER_OUT", "orgCode": "110", "pi": "000001", "createdAt": "2026-10-26 11:50:00.000", "itemsDigest": "sha256:51ab07…", "items": [{"sn": "HX100000003A", "rev": 3, "attachNo": "A01", "toOrgCode": "120"}]}
 ```
 
-**测试批次**
+**测试批次**（用于连接测试）
 
 ```json
 {"schemaVersion": "1.0", "batchNo": "PING-20261026114705303", "batchType": "PING", "orgCode": "110", "createdAt": "2026-10-26 11:47:05.303", "itemsDigest": "sha256:4f53cda1…", "items": []}
