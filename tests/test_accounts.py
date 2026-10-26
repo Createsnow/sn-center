@@ -217,3 +217,17 @@ def test_mes_gzip_switch_needs_retest_and_compresses_push(w, api, sql):
     w.push()
     assert MES.received[-1]["headers"].get("content-encoding") == "gzip"
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 3
+
+
+def test_overlong_request_id_is_replaced_not_rejected(api, sql):
+    """调用方的 X-Request-ID 超过痕迹 trace_id 长度（64）：另生成请求号，登录照常成功并留痕。"""
+    r = api.client.post(
+        "/api/auth/login",
+        json={"emp_no": "admin", "password": ADMIN_PASSWORD},
+        # 不带 X-SN-Client：对接方登录，不挤掉会话级管理员页面令牌
+        headers={"X-Request-ID": "x" * 100},
+    )
+    assert r.status_code == 200, r.text
+    rid = r.headers["x-request-id"]
+    assert rid != "x" * 100 and len(rid) == 36
+    assert sql.count("SELECT COUNT(*) FROM sn_audit WHERE action = 'LOGIN' AND trace_id = %s", rid) == 1

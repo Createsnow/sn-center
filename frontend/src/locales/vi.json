@@ -88,7 +88,6 @@
     "batchNo": "Số lô",
     "export": "Xuất",
     "download": "Tải về",
-    "downloadCsv": "Tải CSV",
     "downloadXlsx": "Tải Excel",
     "loading": "Đang tải…",
     "requestFailed": "Yêu cầu thất bại",
@@ -438,7 +437,7 @@
   },
   "export": {
     "title": "Xuất SN",
-    "desc": "SN xuất hiện ở đây theo “tổ chức sản xuất + PI + chứng từ” ngay khi được phân bổ cho tổ chức sản xuất, dù có kết nối MES hay không. Xuất và đẩy / kéo MES là hai cơ chế độc lập: không hiển thị tiến độ đẩy, đẩy thất bại vẫn xuất được. Mở chi tiết để xem các đoạn số, hoặc tải trực tiếp xlsx / csv (cột: PI, chứng từ, mã vật tư, SN); xuất chỉ để đọc, có thể tải nhiều lần, không đổi trạng thái SN.",
+    "desc": "SN xuất hiện ở đây theo “tổ chức sản xuất + PI + chứng từ” ngay khi được phân bổ cho tổ chức sản xuất, dù có kết nối MES hay không. Xuất và đẩy / kéo MES là hai cơ chế độc lập: không hiển thị tiến độ đẩy, đẩy thất bại vẫn xuất được. Mở chi tiết để xem các đoạn số, hoặc tải trực tiếp xlsx (cột: PI, chứng từ, mã vật tư, SN); xuất chỉ để đọc, có thể tải nhiều lần, không đổi trạng thái SN.",
     "mesYes": "Có MES",
     "mesNo": "Không MES",
     "search": "Tìm PI hoặc số chứng từ",

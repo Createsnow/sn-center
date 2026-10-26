@@ -25,8 +25,7 @@
     <el-button type="primary" @click="load(1)">{{ t("common.search") }}</el-button>
     <el-button @click="reset">{{ t("common.reset") }}</el-button>
     <span class="push" />
-    <el-button :loading="exporting" @click="exportSn('xlsx')"><el-icon><Download /></el-icon><span>{{ t("common.downloadXlsx") }}</span></el-button>
-    <el-button :loading="exporting" @click="exportSn('csv')">{{ t("common.downloadCsv") }}</el-button>
+    <el-button :loading="exporting" @click="exportSn"><el-icon><Download /></el-icon><span>{{ t("common.downloadXlsx") }}</span></el-button>
   </div>
   <el-alert v-if="f.pi_all" type="info" :closable="false" show-icon :title="t('query.piAllTip')" class="mb" />
   <el-alert v-if="hasRange" type="info" :closable="false" show-icon :title="t('query.seqRangeTip')" class="mb" />
@@ -156,7 +155,7 @@ function reset() {
 }
 
 /** 超过导出上限只导出前 N 行，先提示。 */
-async function exportSn(format: string) {
+async function exportSn() {
   exporting.value = true;
   try {
     const p = params();
@@ -168,7 +167,7 @@ async function exportSn(format: string) {
         return;
       }
     }
-    await downloadWithToken(urls.snExport({ ...p, format }), `sn_export.${format}`);
+    await downloadWithToken(urls.snExport(p), "sn_export.xlsx");
   } catch (e: any) {
     if (e?.message) ElMessage.error(e.message);
   } finally {

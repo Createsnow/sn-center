@@ -147,9 +147,9 @@ function withQuery(path: string, params: Q) {
 const base = import.meta.env.VITE_API_BASE_URL || "/api";
 export const urls = {
   exportFile: (params: Q) => withQuery(`${base}/export/file`, params),
-  acquireFile: (batchNo: string, format = "xlsx") => withQuery(`${base}/acquire/batches/${enc(batchNo)}/file`, { format }),
-  deliveryExport: (batchNo: string, format = "xlsx") => withQuery(`${base}/delivery/batches/${enc(batchNo)}/export`, { format }),
-  outList: (id: number, format = "xlsx") => withQuery(`${base}/transfers/org/${id}/out-list`, { format }),
+  acquireFile: (batchNo: string) => `${base}/acquire/batches/${enc(batchNo)}/file`,
+  deliveryExport: (batchNo: string) => `${base}/delivery/batches/${enc(batchNo)}/export`,
+  outList: (id: number) => `${base}/transfers/org/${id}/out-list`,
   snExport: (params: Q) => withQuery(`${base}/sn/export`, params),
   auditExport: (params: Q) => withQuery(`${base}/audits/export`, params),
 };

@@ -5,7 +5,7 @@ from fastapi import APIRouter
 from app.api.deps import AdminDep, AdminOrFactoryDep, FactoryDep, UserDep, download, page_of
 from app.schemas.common import OptInt
 from app.schemas.transfer import NoteIn, TransferIn
-from app.services import files, transfers
+from app.services import transfers
 
 router = APIRouter(prefix="/transfers", tags=["transfers"])
 
@@ -119,7 +119,6 @@ def org_withdraw(id: int, cu: AdminOrFactoryDep) -> dict:
 
 
 @router.get("/org/{id}/out-list", summary="转出号清单（完整 SN、流水、原批次）：来源现场据此作废旧标签")
-def org_out_list(id: int, cu: UserDep, format: str = "xlsx"):
-    fmt = files.fmt_of(format)
-    t, body = transfers.out_list(cu, id, fmt)
-    return download("out_" + t["transfer_no"], fmt, files.content_type(fmt), body)
+def org_out_list(id: int, cu: UserDep):
+    t, body = transfers.out_list(cu, id)
+    return download("out_" + t["transfer_no"], body)

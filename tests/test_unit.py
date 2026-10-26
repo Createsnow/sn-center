@@ -14,6 +14,7 @@ from app.core.encoding import DEFAULT_CHARSETS, Spec
 from app.core.errors import ErrorCode
 from app.core.scheduler import Cron
 from app.db.migrate import migrations
+from app.middleware.request_id import request_id_of
 from app.services import files, k3, mes_client
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -258,32 +259,34 @@ def test_spring_cron_next_fire():
 # ---------------------------------------------------------------------- 导出防公式注入
 
 
-@pytest.mark.parametrize(
-    "value",
-    ["=1+1", "+1", "-A1", "@SUM(A1)", "\t=1+1", "\r=1+1", '=HYPERLINK("http://x","y")', "=A1,B1", "=a\nb"],
-)
-def test_csv_neutralizes_formula_even_when_quoted(value):
-    cell = files.csv_line([value]).rstrip("\r\n")
-    body = cell[1:-1].replace('""', '"') if cell.startswith('"') else cell
-    assert body == "'" + value
-
-
-def test_csv_keeps_numbers_and_plain_text():
-    assert files.csv_line([-5, 1.5, "SN-001", "a,b", None, True]) == '-5,1.5,SN-001,"a,b",,true\r\n'
-
-
 def test_xlsx_writes_formula_like_text_as_plain_string():
     import io
 
     import openpyxl
 
-    rows = [["=1+1", '=HYPERLINK("http://x","y")', "@x", 7]]
+    rows = [["=1+1", '=HYPERLINK("http://x","y")', "@x", "-AB0001", 7]]
     raw = files.to_bytes(files.xlsx_bytes("t", ["=h"], rows))
     ws = openpyxl.load_workbook(io.BytesIO(raw)).active
     cells = [c for row in ws.iter_rows() for c in row if c.value is not None]
-    assert [c.value for c in cells] == ["=h", "=1+1", '=HYPERLINK("http://x","y")', "@x", 7]
+    assert [c.value for c in cells] == ["=h", "=1+1", '=HYPERLINK("http://x","y")', "@x", "-AB0001", 7], (
+        "原样，不加前缀"
+    )
     assert all(c.data_type == "s" for c in cells[:-1])
     assert cells[-1].data_type == "n"
+
+
+# ---------------------------------------------------------------------- 请求号
+
+
+@pytest.mark.parametrize("raw", ["abc-123", "0f1e2d3c4b5a69788796a5b4c3d2e1f0", "a.b:c_d", "x" * 64])
+def test_request_id_kept_when_valid(raw):
+    assert request_id_of(raw) == raw
+
+
+@pytest.mark.parametrize("raw", [None, "", "x" * 65, "a b", "id\r\nX: y", "中文"])
+def test_request_id_regenerated_when_invalid(raw):
+    rid = request_id_of(raw)
+    assert rid != raw and len(rid) == 36
 
 
 # ---------------------------------------------------------------------- 令牌签名密钥

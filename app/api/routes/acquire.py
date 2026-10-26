@@ -4,7 +4,7 @@ from fastapi import APIRouter
 
 from app.api.deps import UserDep, download, page_of
 from app.schemas.common import OptInt
-from app.services import acquire, files
+from app.services import acquire
 
 router = APIRouter(prefix="/acquire", tags=["acquire"])
 
@@ -27,8 +27,7 @@ def acq_batch_items(batch_no: str, cu: UserDep, page: OptInt = None, page_size: 
     return acquire.batch_items(cu, batch_no, page_of(page, page_size))
 
 
-@router.get("/batches/{batch_no}/file", summary="领取文件（可反复下载，只读）；format=csv|xlsx")
-def acq_batch_file(batch_no: str, cu: UserDep, format: str = "xlsx"):
-    fmt = files.fmt_of(format)
-    b, body = acquire.batch_file(cu, batch_no, fmt)
-    return download("acquire_" + b["batch_no"], fmt, files.content_type(fmt), body)
+@router.get("/batches/{batch_no}/file", summary="领取文件 xlsx（可反复下载，只读）")
+def acq_batch_file(batch_no: str, cu: UserDep):
+    b, body = acquire.batch_file(cu, batch_no)
+    return download("acquire_" + b["batch_no"], body)

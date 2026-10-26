@@ -18,7 +18,7 @@ from app.core.errors import ErrorCode, biz
 from app.core.exceptions import BizError, MesError
 from app.core.security import API, PAGE, CurrentUser, is_expired, parse_token, pwd_version, session_version
 from app.db.session import db
-from app.services import users
+from app.services import files, users
 
 
 async def run_sync(fn: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
@@ -158,11 +158,11 @@ def page_of(page: int | None, size: int | None, default_size: int | None = None)
     return util.Page.of(page, default_size if size is None and default_size is not None else size)
 
 
-def download(base_name: str, fmt: str, content_type: str, body: Iterator[bytes]) -> StreamingResponse:
-    """文件下载：流式写出，文件名按 RFC 5987 编码（中文不乱码）。"""
-    name = f"{base_name}.{fmt}"
+def download(base_name: str, body: Iterator[bytes]) -> StreamingResponse:
+    """文件下载（xlsx）：流式写出，文件名按 RFC 5987 编码（中文不乱码）。"""
+    name = f"{base_name}.xlsx"
     return StreamingResponse(
         body,
-        media_type=content_type,
+        media_type=files.XLSX_TYPE,
         headers={"Content-Disposition": f"attachment; filename*=UTF-8''{quote(name, safe='')}"},
     )

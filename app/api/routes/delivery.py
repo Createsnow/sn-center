@@ -38,16 +38,12 @@ def batch_items(batch_no: str, cu: UserDep, page: OptInt = None, page_size: OptI
     return delivery.batch_items_page(cu, batch_no, page_of(page, page_size))
 
 
-@router.get("/batches/{batch_no}/export", summary="导出批次明细与逐枚回执；format=csv|xlsx")
-def batch_export(batch_no: str, cu: UserDep, format: str = "xlsx"):
+@router.get("/batches/{batch_no}/export", summary="导出批次明细与逐枚回执 xlsx")
+def batch_export(batch_no: str, cu: UserDep):
     b = delivery.must_batch(batch_no)
     cu.check_read(b["factory_code"])
-    fmt = files.fmt_of(format)
     return download(
-        "batch_" + b["batch_no"],
-        fmt,
-        files.content_type(fmt),
-        files.stream(fmt, b["batch_no"], delivery.EXPORT_HEADERS, delivery.export_rows(b)),
+        "batch_" + b["batch_no"], files.xlsx_bytes(b["batch_no"], delivery.EXPORT_HEADERS, delivery.export_rows(b))
     )
 
 

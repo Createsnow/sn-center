@@ -2,7 +2,7 @@
 
 与分配后的推送、拉取是两套独立的机制：号一经分配到生产组织（不再是待分配）就按「生产组织 + PI + 单据」一行列出，
 不论该组织是否对接 MES，也不看推送、拉取的进度和结果（推送失败、批次未确认都照常导出）；
-可看明细号段，也可直接下载 xlsx / csv（列：PI、单据、物料编码、SN）。
+可看明细号段，也可直接下载 xlsx（列：PI、单据、物料编码、SN）。
 只读：导出不改号的状态、不建批次，可反复导出；导出也不影响推送、拉取。历史领取批次在 SN 查询中查看。
 """
 
@@ -176,11 +176,9 @@ def _file_rows(where: str, args: list) -> Iterator[list]:
         after = (last["bill_seq"], last["seq_pi_no"], last["seq_dec"])
 
 
-def file(
-    cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None, fmt: str
-) -> tuple[str, Iterator[bytes]]:
+def file(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None) -> tuple[str, Iterator[bytes]]:
     """下载一行（生产组织 + PI + 单据）的全部已分配号；不改状态，可反复下载。"""
     p, b, where, args = _bill_where(cu, factory, pi, bill)
     if not db.exists("SELECT EXISTS(SELECT 1 FROM sn_item i" + where + ")", *args):
         raise biz(ErrorCode.EXPORT_NOTHING, pi=p, bill_no=b)
-    return f"SN_{p}_{b}", files.stream(fmt, "SN", FILE_HEADERS, _file_rows(where, args))
+    return f"SN_{p}_{b}", files.xlsx_bytes("SN", FILE_HEADERS, _file_rows(where, args))

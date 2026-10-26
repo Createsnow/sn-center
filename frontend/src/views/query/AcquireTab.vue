@@ -24,8 +24,7 @@
       <el-table-column :label="t('query.finishedAt')" width="160"><template #default="{ row }">{{ fmt(row.finished_at) }}</template></el-table-column>
       <el-table-column :label="t('common.download')" width="120">
         <template #default="{ row }">
-          <el-button link type="primary" :disabled="row.status !== 'DONE'" @click="download(row.batch_no, 'xlsx')">xlsx</el-button>
-          <el-button link type="primary" :disabled="row.status !== 'DONE'" @click="download(row.batch_no, 'csv')">csv</el-button>
+          <el-button link type="primary" :disabled="row.status !== 'DONE'" @click="download(row.batch_no)">xlsx</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -59,9 +58,9 @@ const { fmt } = useTime();
 const f = reactive({ request_no: "", ...props.init });
 const { items, state, load, onSize } = usePaged<any>((q) => api.acquireBatches({ ...trimmed(f), ...q }));
 
-async function download(no: string, format: string) {
+async function download(no: string) {
   try {
-    await downloadWithToken(urls.acquireFile(no, format), `${no}.${format}`);
+    await downloadWithToken(urls.acquireFile(no), `${no}.xlsx`);
   } catch (e: any) {
     ElMessage.error(e.message);
   }

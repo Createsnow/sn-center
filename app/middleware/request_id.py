@@ -8,6 +8,12 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 # 失败审计需要读请求体：只缓存 /api 写请求且不超过 64KB
 MAX_BODY = 64 * 1024
 WRITE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
+#: 沿用调用方请求号的条件：痕迹 trace_id 为 VARCHAR(64)，超长或含其他字符的另生成
+_REQUEST_ID = re.compile(r"^[A-Za-z0-9._:-]{1,64}$")
+
+
+def request_id_of(raw: str | None) -> str:
+    return raw if raw and _REQUEST_ID.fullmatch(raw) else str(uuid.uuid4())
 
 
 def camel_to_snake(name: str) -> str:
@@ -15,7 +21,7 @@ def camel_to_snake(name: str) -> str:
 
 
 class RequestIdMiddleware:
-    """请求号：沿用 X-Request-ID，没有就生成；写入日志上下文与响应头。
+    """请求号：沿用 X-Request-ID（不超过 64 位的字母、数字、._:-），没有或不合格就生成；写入日志上下文与响应头。
 
     查询参数也接受驼峰写法（billNo = bill_no）。
     """
@@ -28,7 +34,7 @@ class RequestIdMiddleware:
             await self.app(scope, receive, send)
             return
         headers = {k.decode("latin-1").lower(): v.decode("latin-1") for k, v in scope.get("headers", [])}
-        request_id = headers.get("x-request-id") or str(uuid.uuid4())
+        request_id = request_id_of(headers.get("x-request-id"))
         structlog.contextvars.bind_contextvars(request_id=request_id)
         state = scope.setdefault("state", {})
         state["request_id"] = request_id

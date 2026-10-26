@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import io
 import itertools
 import json
 import os
@@ -295,6 +296,15 @@ def emp(prefix: str = "U") -> str:
 def ok(r: Res) -> Res:
     assert r.status == 200, str(r)
     return r
+
+
+def xlsx_rows(content: bytes) -> list[list]:
+    """下载的 xlsx 第一张表：每行一个列表（含表头）。"""
+    import openpyxl
+
+    assert content[:2] == b"PK", content[:200]
+    ws = openpyxl.load_workbook(io.BytesIO(content), read_only=True).worksheets[0]
+    return [list(r) for r in ws.iter_rows(values_only=True)]
 
 
 # ---------------------------------------------------------------------- 会话级应用

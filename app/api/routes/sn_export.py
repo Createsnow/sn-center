@@ -5,7 +5,7 @@ from fastapi import APIRouter
 
 from app.api.deps import UserDep, download, page_of
 from app.schemas.common import Flag, OptInt
-from app.services import files, sn_export
+from app.services import sn_export
 
 router = APIRouter(prefix="/export", tags=["export"])
 
@@ -41,14 +41,12 @@ def export_segments(
     return sn_export.segments(cu, factory_code, pi, bill_no, page_of(page, page_size))
 
 
-@router.get("/file", summary="下载一张单据的已分配号（列：PI、单据、物料编码、SN）；format=csv|xlsx；不改状态")
+@router.get("/file", summary="下载一张单据的已分配号 xlsx（列：PI、单据、物料编码、SN）；不改状态")
 def export_file(
     cu: UserDep,
     pi: str | None = None,
     bill_no: str | None = None,
     factory_code: str | None = None,
-    format: str = "xlsx",
 ):
-    fmt = files.fmt_of(format)
-    name, body = sn_export.file(cu, factory_code, pi, bill_no, fmt)
-    return download(name, fmt, files.content_type(fmt), body)
+    name, body = sn_export.file(cu, factory_code, pi, bill_no)
+    return download(name, body)

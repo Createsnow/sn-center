@@ -239,5 +239,5 @@ def _export_rows(cu: CurrentUser, f: Filter) -> Iterator[list]:
             yield [*acquire.file_row(no, r), r["delivery_mode"] or ""]
 
 
-def export(cu: CurrentUser, f: Filter, fmt: str) -> Iterator[bytes]:
-    return files.stream(fmt, "SN", EXPORT_HEADERS, _export_rows(cu, f))
+def export(cu: CurrentUser, f: Filter) -> Iterator[bytes]:
+    return files.xlsx_bytes("SN", EXPORT_HEADERS, _export_rows(cu, f))

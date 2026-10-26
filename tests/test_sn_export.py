@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from conftest import MES, emp, m, ok, uid
+from conftest import MES, emp, m, ok, uid, xlsx_rows
 
 
 def P() -> str:
@@ -36,33 +36,33 @@ def test_export_is_read_only_and_repeatable(w, api, sql):
     ]
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'ALLOCATED'", pi) == 5, "分配即已分配"
     for _ in range(2):
-        r = get_file(api, op, pi=pi, bill_no=bill, factory_code=org, format="csv")
-        lines = r.content.decode("utf-8-sig").splitlines()
-        assert r.status_code == 200 and lines[0] == "PI,单据,物料编码,SN" and len(lines) == 6
-        assert lines[1].startswith(f"{pi},{bill},M1,")
-    sns = [x.split(",")[3] for x in lines[1:]]
+        r = get_file(api, op, pi=pi, bill_no=bill, factory_code=org)
+        rows = xlsx_rows(r.content)
+        assert r.status_code == 200 and rows[0] == ["PI", "单据", "物料编码", "SN"] and len(rows) == 6
+        assert rows[1][:3] == [pi, bill, "M1"]
+    sns = [x[3] for x in rows[1:]]
     assert sns == [
         r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY bill_seq, seq_pi_no, seq_dec", pi)
     ]
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'ALLOCATED'", pi) == 5, "不改状态"
     assert sql.count("SELECT COUNT(*) FROM sn_acquire_batch WHERE factory_code = %s", org) == 0, "不建领取批次"
-    x = get_file(api, op, pi=pi, bill_no=bill, format="xlsx")
-    assert x.status_code == 200 and x.content[:2] == b"PK"
+    x = get_file(api, op, pi=pi, bill_no=bill, format="csv")
+    assert x.status_code == 200 and len(xlsx_rows(x.content)) == 6, "不再提供 csv：format 参数忽略，一律 xlsx"
 
 
 def test_mes_org_lists_every_allocated_sn_and_push_unaffected(w, api, sql):
     org, pi, bill = ready(w, 13, mes=True, batch_size=5)
     row = ok(api.get(f"/api/export/bills?q={bill}", w.admin))["items"][0]
     assert (row["qty"], row["mes_enabled"]) == (13, True)
-    r = get_file(api, w.admin, pi=pi, bill_no=bill, format="csv")
-    assert len(r.content.decode("utf-8-sig").splitlines()) == 14
+    r = get_file(api, w.admin, pi=pi, bill_no=bill)
+    assert len(xlsx_rows(r.content)) == 14
     w.push()  # 导出后照常推送
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 13
     assert len(MES.store[org]) >= 13
     row = ok(api.get(f"/api/export/bills?q={bill}&mes=true", w.admin))["items"][0]
     assert row["qty"] == 13, "已推送的号照样展示"
-    r = get_file(api, w.admin, pi=pi, bill_no=bill, format="csv")
-    assert len(r.content.decode("utf-8-sig").splitlines()) == 14
+    r = get_file(api, w.admin, pi=pi, bill_no=bill)
+    assert len(xlsx_rows(r.content)) == 14
     seg = ok(api.get(f"/api/export/segments?pi={pi}&bill_no={bill}", w.admin))
     assert seg["total"] == 1 and seg["items"][0]["qty"] == 13 and seg["items"][0]["start_seq"] == 1
 
@@ -76,8 +76,8 @@ def test_push_failure_does_not_affect_export(w, api):
     assert row["qty"] == 13
     seg = ok(api.get(f"/api/export/segments?pi={pi}&bill_no={bill}", w.admin))
     assert [(x["start_seq"], x["end_seq"], x["qty"]) for x in seg["items"]] == [(1, 13, 13)]
-    r = get_file(api, w.admin, pi=pi, bill_no=bill, format="csv")
-    assert len(r.content.decode("utf-8-sig").splitlines()) == 14, "未确认批次里的号也导出"
+    r = get_file(api, w.admin, pi=pi, bill_no=bill)
+    assert len(xlsx_rows(r.content)) == 14, "未确认批次里的号也导出"
 
 
 def test_unallocated_not_listed_and_scope(w, api):
@@ -96,15 +96,18 @@ def test_unallocated_not_listed_and_scope(w, api):
     assert ok(api.get(f"/api/export/bills?q={pi}&mes=true", w.admin))["items"] == []
 
 
-def test_csv_neutralizes_formula_bill_numbers(w, api):
+def test_xlsx_keeps_formula_like_text_and_leading_dash_sn(w, api):
+    """以 = 开头的单据编号按文本写出；前缀以 - 开头的 SN 原样导出，不加防公式前缀。"""
     org = w.org(uid("O")[:10])
     pi, bill = uid("PI"), "=" + uid("MO")
     w.order(bill, org, "C1", pi, ("M1", 1))
-    ok(w.bind_pi(pi, w.rule(P())))
+    prefix = "-" + P()
+    ok(w.bind_pi(pi, w.rule(prefix)))
     w.generate(pi)
     w.allocate(pi)
-    r = get_file(api, w.admin, pi=pi, bill_no=bill.replace("=", "%3D"), format="csv")
-    assert ",'=" in r.content.decode("utf-8-sig")
+    r = get_file(api, w.admin, pi=pi, bill_no=bill.replace("=", "%3D"))
+    row = xlsx_rows(r.content)[1]
+    assert row[1] == bill and row[3].startswith(prefix)
 
 
 def test_legacy_batch_still_downloadable_and_incomplete_released(w, api, sql):
@@ -112,8 +115,8 @@ def test_legacy_batch_still_downloadable_and_incomplete_released(w, api, sql):
 
     org, pi, bill = ready(w, 4)
     no = w.legacy_acquire(org, pi)
-    r = api.client.get(f"/api/acquire/batches/{no}/file?format=csv", headers={"Authorization": f"Bearer {w.admin}"})
-    assert r.status_code == 200 and len(r.content.decode("utf-8-sig").splitlines()) == 5
+    r = api.client.get(f"/api/acquire/batches/{no}/file", headers={"Authorization": f"Bearer {w.admin}"})
+    assert r.status_code == 200 and len(xlsx_rows(r.content)) == 5
     assert ok(api.get(f"/api/export/bills?q={pi}", w.admin))["items"][0]["qty"] == 4, "历史已领取的号照常导出"
 
     org2, pi2, _ = ready(w, 3)

@@ -1,9 +1,9 @@
 # SN 导出（F-14）
 M = {
 "export.title": ("SN 导出", "SN export", "Xuất SN"),
-"export.desc": ("号一经分配到生产组织就在这里按「生产组织 + PI + 单据」列出，不论是否对接 MES。导出与推送、拉取是两套独立的机制：不看推送进度，推送失败也照常导出。可点明细查看号段，或直接下载 xlsx / csv（列：PI、单据、物料编码、SN）；导出只读、可反复下载，不改变号的状态。",
-  "SNs appear here, per “production org + PI + bill”, as soon as they are allocated to a production org, with or without MES. Export and MES push / pull are independent: push progress is not shown, and a failed push does not block export. Open the detail to see segments, or download xlsx / csv directly (columns: PI, bill, material, SN); exporting is read-only and repeatable and does not change SN status.",
-  "SN xuất hiện ở đây theo “tổ chức sản xuất + PI + chứng từ” ngay khi được phân bổ cho tổ chức sản xuất, dù có kết nối MES hay không. Xuất và đẩy / kéo MES là hai cơ chế độc lập: không hiển thị tiến độ đẩy, đẩy thất bại vẫn xuất được. Mở chi tiết để xem các đoạn số, hoặc tải trực tiếp xlsx / csv (cột: PI, chứng từ, mã vật tư, SN); xuất chỉ để đọc, có thể tải nhiều lần, không đổi trạng thái SN."),
+"export.desc": ("号一经分配到生产组织就在这里按「生产组织 + PI + 单据」列出，不论是否对接 MES。导出与推送、拉取是两套独立的机制：不看推送进度，推送失败也照常导出。可点明细查看号段，或直接下载 xlsx（列：PI、单据、物料编码、SN）；导出只读、可反复下载，不改变号的状态。",
+  "SNs appear here, per “production org + PI + bill”, as soon as they are allocated to a production org, with or without MES. Export and MES push / pull are independent: push progress is not shown, and a failed push does not block export. Open the detail to see segments, or download xlsx directly (columns: PI, bill, material, SN); exporting is read-only and repeatable and does not change SN status.",
+  "SN xuất hiện ở đây theo “tổ chức sản xuất + PI + chứng từ” ngay khi được phân bổ cho tổ chức sản xuất, dù có kết nối MES hay không. Xuất và đẩy / kéo MES là hai cơ chế độc lập: không hiển thị tiến độ đẩy, đẩy thất bại vẫn xuất được. Mở chi tiết để xem các đoạn số, hoặc tải trực tiếp xlsx (cột: PI, chứng từ, mã vật tư, SN); xuất chỉ để đọc, có thể tải nhiều lần, không đổi trạng thái SN."),
 "export.mesYes": ("对接 MES", "With MES", "Có MES"),
 "export.mesNo": ("未对接 MES", "Without MES", "Không MES"),
 "export.search": ("按 PI 或单据编号搜索", "Search PI or bill No.", "Tìm PI hoặc số chứng từ"),

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from conftest import BILLS, MES, emp, m, ok, uid
+from conftest import BILLS, MES, emp, m, ok, uid, xlsx_rows
 
 
 def P() -> str:
@@ -217,10 +217,8 @@ def test_apply_withdraw_reject_approve(w, api, sql):
     )
     items = ok(api.get(f"/api/transfers/org/{t3['id']}/items", op))["items"]
     assert {x["current_status"] for x in items} == {"TRANSFERRED_OUT"}
-    r = w.api.client.get(
-        f"/api/transfers/org/{t3['id']}/out-list?format=csv", headers={"Authorization": f"Bearer {op}"}
-    )
-    assert r.status_code == 200 and r.content.decode("utf-8-sig").count("\n") == 4
+    r = w.api.client.get(f"/api/transfers/org/{t3['id']}/out-list", headers={"Authorization": f"Bearer {op}"})
+    assert r.status_code == 200 and len(xlsx_rows(r.content)) == 4
 
 
 def test_org_transfer_rejects_disabled_target_and_same_target(w, api):

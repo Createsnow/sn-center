@@ -144,7 +144,7 @@ async function exportFile() {
         return;
       }
     }
-    await downloadWithToken(urls.auditExport({ ...p, format: "xlsx" }), "audit_export.xlsx");
+    await downloadWithToken(urls.auditExport(p), "audit_export.xlsx");
   } catch (e: any) {
     if (e?.message) ElMessage.error(e.message);
   } finally {

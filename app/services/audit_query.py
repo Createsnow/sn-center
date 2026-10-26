@@ -205,5 +205,5 @@ def _rows(cu: CurrentUser, f: Filter) -> Iterator[list]:
             last_id = r["id"]
 
 
-def export(cu: CurrentUser, f: Filter, fmt: str) -> Iterator[bytes]:
-    return files.stream(fmt, "audit", HEADERS, _rows(cu, f))
+def export(cu: CurrentUser, f: Filter) -> Iterator[bytes]:
+    return files.xlsx_bytes("audit", HEADERS, _rows(cu, f))

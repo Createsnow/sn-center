@@ -193,7 +193,7 @@ async function resume(factory: string, key: string) {
 
 async function downloadOutList(doc: any) {
   try {
-    await downloadWithToken(urls.outList(doc.id, "xlsx"), `out_${doc.transfer_no}.xlsx`);
+    await downloadWithToken(urls.outList(doc.id), `out_${doc.transfer_no}.xlsx`);
   } catch (e) {
     ElMessage.error((e as Error).message);
   }

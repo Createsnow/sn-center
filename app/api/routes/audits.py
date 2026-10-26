@@ -4,7 +4,7 @@ from fastapi import APIRouter, Query
 
 from app.api.deps import UserDep, download, page_of
 from app.schemas.common import OptDate, OptInt
-from app.services import audit_query, files
+from app.services import audit_query
 
 router = APIRouter(prefix="/audits", tags=["audit"])
 
@@ -69,11 +69,9 @@ def audit_export(
     batch_no: str | None = None,
     keyword: str | None = None,
     bill_no: str | None = None,
-    format: str = "xlsx",
 ):
     f = _f(date_from, date_to, action, operator, factory_code, pi, source, result, batch_no, keyword, bill_no)
-    fmt = files.fmt_of(format)
-    return download("audit_export", fmt, files.content_type(fmt), audit_query.export(cu, f, fmt))
+    return download("audit_export", audit_query.export(cu, f))
 
 
 @router.get("/meta")

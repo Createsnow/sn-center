@@ -4,7 +4,7 @@ from fastapi import APIRouter
 
 from app.api.deps import UserDep, download, page_of
 from app.schemas.common import Flag, OptInt
-from app.services import files, query
+from app.services import query
 
 router = APIRouter(prefix="/sn", tags=["query"])
 
@@ -93,7 +93,7 @@ def sn_export_check(
     return query.export_check(cu, f)
 
 
-@router.get("/export", summary="导出 SN 明细（列同领取文件，另加交付方式）；format=csv|xlsx")
+@router.get("/export", summary="导出 SN 明细 xlsx（列同领取文件，另加交付方式）")
 def sn_export(
     cu: UserDep,
     factory_code: str | None = None,
@@ -109,7 +109,6 @@ def sn_export(
     pi_all: Flag = None,
     seq_from: str | None = None,
     seq_to: str | None = None,
-    format: str = "xlsx",
 ):
     f = _filter(
         factory_code=factory_code,
@@ -126,5 +125,4 @@ def sn_export(
         seq_from=seq_from,
         seq_to=seq_to,
     )
-    fmt = files.fmt_of(format)
-    return download("sn_export", fmt, files.content_type(fmt), query.export(cu, f, fmt))
+    return download("sn_export", query.export(cu, f))

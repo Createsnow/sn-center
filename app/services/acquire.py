@@ -169,12 +169,12 @@ def _file_rows(batch_no: str) -> Iterator[list]:
             yield file_row(no, r)
 
 
-def batch_file(cu: CurrentUser, batch_no: str | None, fmt: str) -> tuple[dict, Iterator[bytes]]:
+def batch_file(cu: CurrentUser, batch_no: str | None) -> tuple[dict, Iterator[bytes]]:
     """领取文件（可反复下载，只读）；转走的号不再出现在原批次文件中。未完成的批次不能下载。"""
     b = batch(cu, batch_no)
     if b["status"] != DONE:
         raise biz(ErrorCode.ACQ_BATCH_INCOMPLETE, batch_no=b["batch_no"])
-    return b, files.stream(fmt, b["batch_no"], FILE_HEADERS, _file_rows(b["batch_no"]))
+    return b, files.xlsx_bytes(b["batch_no"], FILE_HEADERS, _file_rows(b["batch_no"]))
 
 
 def batch_items(cu: CurrentUser, batch_no: str | None, page: util.Page) -> dict:

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from conftest import MES, emp, m, ok, uid
+from conftest import MES, emp, m, ok, uid, xlsx_rows
 
 
 def P() -> str:
@@ -58,9 +58,9 @@ def test_export_truncates_with_notice(w, api, monkeypatch):
     monkeypatch.setenv("SN_EXPORT_LIMIT", "3")
     c = ok(api.get(f"/api/sn/export-check?pi={pi}", w.admin))
     assert c.body == {"limit": 3, "truncated": True, "rows": 3}
-    r = api.client.get(f"/api/sn/export?pi={pi}&format=csv", headers={"Authorization": f"Bearer {w.admin}"})
-    lines = r.content.decode("utf-8-sig").splitlines()
-    assert lines[0].endswith("交付方式") and len(lines) == 4
+    r = api.client.get(f"/api/sn/export?pi={pi}", headers={"Authorization": f"Bearer {w.admin}"})
+    rows = xlsx_rows(r.content)
+    assert rows[0][-1] == "交付方式" and len(rows) == 4
 
 
 def test_delivered_read_only_for_mes(w, api, sql):

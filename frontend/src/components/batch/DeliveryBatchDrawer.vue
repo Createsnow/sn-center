@@ -2,8 +2,7 @@
   <el-drawer :model-value="!!batchNo" :title="t('query.batchDetail', { no: batchNo })" size="880px" append-to-body @close="emit('update:batchNo', '')">
     <template v-if="batch">
       <div class="drawer-actions">
-        <el-button size="small" @click="exportBatch('xlsx')"><el-icon><Download /></el-icon><span>{{ t("common.downloadXlsx") }}</span></el-button>
-        <el-button size="small" @click="exportBatch('csv')">{{ t("common.downloadCsv") }}</el-button>
+        <el-button size="small" @click="exportBatch"><el-icon><Download /></el-icon><span>{{ t("common.downloadXlsx") }}</span></el-button>
         <template v-if="store.isAdmin">
           <el-button v-if="canConfirm(batch)" size="small" type="primary" @click="manual?.open(batch.batch_no, 'confirm')">{{ t("query.confirmBatch") }}</el-button>
           <el-button v-if="canVoid(batch)" size="small" type="danger" plain @click="manual?.open(batch.batch_no, 'void')">{{ t("query.voidBatch") }}</el-button>
@@ -120,9 +119,9 @@ async function load() {
   batch.value = await api.deliveryBatch(props.batchNo);
 }
 
-async function exportBatch(format: string) {
+async function exportBatch() {
   try {
-    await downloadWithToken(urls.deliveryExport(props.batchNo, format), `${props.batchNo}.${format}`);
+    await downloadWithToken(urls.deliveryExport(props.batchNo), `${props.batchNo}.xlsx`);
   } catch (e: any) {
     ElMessage.error(e.message);
   }

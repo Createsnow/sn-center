@@ -37,8 +37,7 @@
         <el-table-column :label="t('common.actions')" width="150" align="right">
           <template #default="{ row }">
             <el-button link type="primary" @click.stop="openDetail(row)">{{ t("common.detail") }}</el-button>
-            <el-button link type="primary" :loading="busy === keyOf(row, 'xlsx')" @click.stop="download(row, 'xlsx')">xlsx</el-button>
-            <el-button link type="primary" :loading="busy === keyOf(row, 'csv')" @click.stop="download(row, 'csv')">csv</el-button>
+            <el-button link type="primary" :loading="busy === keyOf(row)" @click.stop="download(row)">xlsx</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -62,8 +61,7 @@
           <span class="total">{{ t("export.total", { n: num(detail.qty), l: lines.length || "…" }) }}</span>
           <span class="sp" />
           <span class="muted">{{ t("export.fileCols") }}</span>
-          <el-button size="small" type="primary" :loading="busy === keyOf(detail, 'xlsx')" @click="download(detail, 'xlsx')">{{ t("export.download", { f: "xlsx" }) }}</el-button>
-          <el-button size="small" :loading="busy === keyOf(detail, 'csv')" @click="download(detail, 'csv')">{{ t("export.download", { f: "csv" }) }}</el-button>
+          <el-button size="small" type="primary" :loading="busy === keyOf(detail)" @click="download(detail)">{{ t("export.download", { f: "xlsx" }) }}</el-button>
         </div>
         <el-alert v-if="notes.length" type="warning" show-icon :closable="false" class="mb">
           <template #title><div v-for="n in notes" :key="n">{{ n }}</div></template>
@@ -156,12 +154,12 @@ const f = reactive({ factory_code: "", mes: "", q: String(route.query.pi || rout
 const list = usePaged<BillRow>((q) => api.exportBills({ ...q, factory_code: f.factory_code, mes: f.mes, q: f.q.trim() }));
 
 const busy = ref("");
-const keyOf = (r: BillRow, fmt: string) => `${r.factory_code}|${r.pi_no}|${r.bill_no}|${fmt}`;
-async function download(r: BillRow, fmt: "xlsx" | "csv") {
-  busy.value = keyOf(r, fmt);
+const keyOf = (r: BillRow) => `${r.factory_code}|${r.pi_no}|${r.bill_no}`;
+async function download(r: BillRow) {
+  busy.value = keyOf(r);
   try {
-    const url = urls.exportFile({ factory_code: r.factory_code, pi: r.pi_no, bill_no: r.bill_no, format: fmt });
-    await downloadWithToken(url, `SN_${r.pi_no}_${r.bill_no}.${fmt}`);
+    const url = urls.exportFile({ factory_code: r.factory_code, pi: r.pi_no, bill_no: r.bill_no });
+    await downloadWithToken(url, `SN_${r.pi_no}_${r.bill_no}.xlsx`);
   } catch (e) {
     ElMessage.error((e as Error).message);
   } finally {

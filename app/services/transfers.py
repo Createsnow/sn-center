@@ -1368,7 +1368,7 @@ OUT_LIST_HEADERS = [
 ]
 
 
-def out_list(cu: CurrentUser, tid: int, fmt: str):
+def out_list(cu: CurrentUser, tid: int):
     """转出号清单：完整 SN、流水、原批次，来源现场据此作废已打出的旧标签（页面领取的号也列入）。"""
     t = org_view(cu, tid)
 
@@ -1404,4 +1404,4 @@ def out_list(cu: CurrentUser, tid: int, fmt: str):
                     r["to_factory"],
                 ]
 
-    return t, files.stream(fmt, t["transfer_no"], OUT_LIST_HEADERS, rows())
+    return t, files.xlsx_bytes(t["transfer_no"], OUT_LIST_HEADERS, rows())

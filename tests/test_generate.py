@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from conftest import BILLS, m, ok, uid
+from conftest import BILLS, m, ok, uid, xlsx_rows
 
 
 def mk(w, *lines, pi=None, org=None, bill=None, customer="C1"):
@@ -41,10 +41,8 @@ def test_prefix_uppercase_digits_dash_underscore_end_to_end(w, api, sql):
     assert sns == [f"{prefix}0001", f"{prefix}0002", f"{prefix}0003"]
     assert set(MES.store[org]) >= set(sns), "MES 收到的 SN 原样"
     assert [x["sn"] for x in ok(api.get(f"/api/sn?sn={sns[0]}", w.admin))["items"]] == [sns[0]]
-    r = api.client.get(
-        f"/api/export/file?pi={pi}&bill_no={bill}&format=csv", headers={"Authorization": f"Bearer {w.admin}"}
-    )
-    assert r.content.decode("utf-8-sig").splitlines()[1].endswith("," + sns[0])
+    r = api.client.get(f"/api/export/file?pi={pi}&bill_no={bill}", headers={"Authorization": f"Bearer {w.admin}"})
+    assert xlsx_rows(r.content)[1][-1] == sns[0]
 
 
 def test_existing_prefix_by_old_rules_kept_new_ones_checked(w, api, sql):

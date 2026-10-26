@@ -1,8 +1,7 @@
 <template>
   <el-drawer :model-value="!!batchNo" :title="t('query.acquireDetail', { no: batchNo })" size="820px" append-to-body @close="emit('update:batchNo', '')">
     <div v-if="downloadable" class="drawer-actions">
-      <el-button size="small" @click="download('xlsx')"><el-icon><Download /></el-icon><span>{{ t("common.downloadXlsx") }}</span></el-button>
-      <el-button size="small" @click="download('csv')">{{ t("common.downloadCsv") }}</el-button>
+      <el-button size="small" @click="download"><el-icon><Download /></el-icon><span>{{ t("common.downloadXlsx") }}</span></el-button>
     </div>
     <el-table v-loading="state.loading" :data="items" size="small" :empty-text="t('common.empty')">
       <el-table-column prop="line_no" :label="t('query.lineNo')" width="60" />
@@ -35,9 +34,9 @@ const emit = defineEmits<{ "update:batchNo": [no: string] }>();
 const { t } = useI18n();
 const { items, state, load } = usePaged<any>((q) => api.acquireBatchItems(props.batchNo, q), 50);
 
-async function download(format: string) {
+async function download() {
   try {
-    await downloadWithToken(urls.acquireFile(props.batchNo, format), `${props.batchNo}.${format}`);
+    await downloadWithToken(urls.acquireFile(props.batchNo), `${props.batchNo}.xlsx`);
   } catch (e: any) {
     ElMessage.error(e.message);
   }

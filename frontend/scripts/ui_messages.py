@@ -86,7 +86,6 @@ M = {
 "common.batchNo": ("批次号", "Batch No.", "Số lô"),
 "common.export": ("导出", "Export", "Xuất"),
 "common.download": ("下载", "Download", "Tải về"),
-"common.downloadCsv": ("下载 CSV", "Download CSV", "Tải CSV"),
 "common.downloadXlsx": ("下载 Excel", "Download Excel", "Tải Excel"),
 "common.loading": ("加载中…", "Loading…", "Đang tải…"),
 "common.requestFailed": ("请求失败", "Request failed", "Yêu cầu thất bại"),

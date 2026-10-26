@@ -88,7 +88,6 @@
     "batchNo": "Batch No.",
     "export": "Export",
     "download": "Download",
-    "downloadCsv": "Download CSV",
     "downloadXlsx": "Download Excel",
     "loading": "Loading…",
     "requestFailed": "Request failed",
@@ -438,7 +437,7 @@
   },
   "export": {
     "title": "SN export",
-    "desc": "SNs appear here, per “production org + PI + bill”, as soon as they are allocated to a production org, with or without MES. Export and MES push / pull are independent: push progress is not shown, and a failed push does not block export. Open the detail to see segments, or download xlsx / csv directly (columns: PI, bill, material, SN); exporting is read-only and repeatable and does not change SN status.",
+    "desc": "SNs appear here, per “production org + PI + bill”, as soon as they are allocated to a production org, with or without MES. Export and MES push / pull are independent: push progress is not shown, and a failed push does not block export. Open the detail to see segments, or download xlsx directly (columns: PI, bill, material, SN); exporting is read-only and repeatable and does not change SN status.",
     "mesYes": "With MES",
     "mesNo": "Without MES",
     "search": "Search PI or bill No.",
