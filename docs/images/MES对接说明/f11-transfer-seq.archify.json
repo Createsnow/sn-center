@@ -106,7 +106,7 @@
       "from": "sn",
       "to": "old",
       "y": 515,
-      "label": "① 转移批次 TRANSFER_OUT",
+      "label": "① 推送批次 · TRANSFER_OUT",
       "variant": "dashed",
       "note": "与转入并行，互不等待"
     },

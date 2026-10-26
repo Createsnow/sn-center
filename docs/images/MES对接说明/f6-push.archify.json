@@ -47,7 +47,7 @@
       "y": 185,
       "label": "① POST 推送批次",
       "variant": "emphasis",
-      "note": "默认 JSON，可选 gzip；固定令牌（或其他方式）"
+      "note": "默认 JSON，可选 gzip；Bearer 工号:密钥"
     },
     {
       "id": "p2",
