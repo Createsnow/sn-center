@@ -1,10 +1,12 @@
 """转单（F-15）、转组织（F-16）与转移后的 MES 处理（5.2.8）。都不改 SN 字符串，都只在本系统改挂。
 
 转移时每枚号：清掉原推送、拉取、领取批次，rev + 1；
-- 仍在同一生产组织：MES 持有组织为本组织的号改为待推送（未入批）、推送类型改挂，随即自动推送；其余状态不变。
-- 转到别的生产组织：转入方对接 MES 时改为待推送（未入批），MES 持有组织为来源组织的记改挂、其余记新增；
+- 仍在同一生产组织：MES 持有组织为本组织的号改为待推送、推送类型改挂，随即自动推送；其余状态不变。
+- 转到别的生产组织：转入方对接 MES 时改为待推送，MES 持有组织为来源组织的记改挂、其余记新增；
   转入方未对接时改为已分配。
 - 号的 MES 持有组织为来源组织、且转入组织与来源不同时，在同一事务内向来源 MES 建立「转出」批次并推送。
+- 转移前 MES 已持有、改挂后待推送的号不回号池：同一事务内给转入方建立转移交付批次（记转移单号，每批一种
+  bizType，按单批枚数拆分，暂停交付的号除外）并推送；MES 还没收到的号回号池按流水认领（对 MES 仍是首次下发）。
 不可转：申请中；所在批次未确认或失败；所在转出批次未确认或失败（先在原转组织单上继续推送转出）；领取未完成。
 转单另可转待分配的号（仍为待分配，之后按目标单据的生产组织分配）；转组织不能转待分配的号。
 
@@ -346,8 +348,17 @@ def _move(
                 kind,
                 transfer_id,
             )
+    # 先按目标单据重算暂停标记再建批：已入批的号不再暂停，目标单据暂停交付时号须留在号池
     changes.refresh_items({r["bill_no"] for r in items} | {t.bill for t in targets.values()})
-    return {"to_push": to_push, "out": out_batches, "xo_orgs": sorted(xo)}
+    # 转移前 MES 已持有的号当场给转入方建交付批次；MES 还没收到的号回号池按流水认领（对 MES 仍是首次下发）
+    held: dict[tuple[str, str], list[int]] = {}
+    for (new_org, pi, *_, status, _push, _mode, from_org), ids in groups.items():
+        if status == util.TO_PUSH and from_org is not None and new_org in mes:
+            held.setdefault((new_org, pi), []).extend(ids)
+    in_batches = []
+    for (org, pi), ids in sorted(held.items()):
+        in_batches += delivery.build_transfer_delivery(cu, org, pi, ids, (tkind, doc_no))
+    return {"to_push": to_push, "out": out_batches, "in": in_batches, "xo_orgs": sorted(xo)}
 
 
 def _after_move(cu: CurrentUser, moved: dict) -> None:
@@ -668,6 +679,8 @@ def transfer_bill(cu: CurrentUser, req: TransferRequest) -> dict:
             .info(
                 f"to={d.bill}/{d.seq}/{d.material}/{d.pi}/{d.factory} scope={scope} out_batches="
                 + ",".join(b["batch_no"] for b in moved["out"])
+                + " in_batches="
+                + ",".join(b["batch_no"] for b in moved["in"])
             ),
         )
     _after_move(cu, moved)
@@ -833,7 +846,8 @@ def direct(cu: CurrentUser, r: TransferRequest) -> dict:
         e = _org_entry(
             audit.TRANSFER_DIRECT, no, p.factory, p.src.pi, p.src.text(), _dest_row(p.dest), len(ok), reason, ok
         )
-        audit.record(cu, e.info(f"{e.detail} out_batches={','.join(b['batch_no'] for b in moved['out'])}"))
+        out_nos, in_nos = (",".join(b["batch_no"] for b in moved[k]) for k in ("out", "in"))
+        audit.record(cu, e.info(f"{e.detail} out_batches={out_nos} in_batches={in_nos}"))
     _after_move(cu, moved)
     return org_view(cu, tid)
 

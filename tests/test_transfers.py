@@ -166,8 +166,12 @@ def test_same_org_reassign_then_other_org_still_sends_transfer_out(w, sql):
     w.push()
     pi2, bill2 = uid("PI"), uid("MO")
     w.order(bill2, a, "C1", pi2, ("M1", 2, "100"))
-    ok(org_direct(w, a, pi, bill, a, to_pi=pi2, to_bill=bill2))
+    t = ok(org_direct(w, a, pi, bill, a, to_pi=pi2, to_bill=bill2))
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE status = 'TO_PUSH' AND push_type = 'REASSIGN'") == 2
+    # MES 已持有的号当场进转移交付批次；批次未确认前不能再转
+    assert sql.count("SELECT COUNT(*) FROM sn_delivery_batch WHERE transfer_doc_no = %s", t["transfer_no"]) == 1
+    assert org_direct(w, a, pi2, bill2, b).code == "TR_FROZEN"
+    w.push()
     ok(org_direct(w, a, pi2, bill2, b))
     assert (
         sql.count("SELECT COUNT(*) FROM sn_delivery_batch WHERE batch_type = 'TRANSFER_OUT' AND factory_code = %s", a)
@@ -569,3 +573,152 @@ def test_biz_type_first_for_cross_org_transfer_before_delivery(w, api, sql):
     )
     got = [x["batch"] for x in MES.received if x["org"] == b and x["batch"]["batchType"] == "DELIVERY"]
     assert {i["bizType"] for x in got for i in x["items"]} == {"FIRST"}
+
+
+# ---------------------------------------------------------------- 转移交付批次（转移时当场建批）
+
+
+def _doc_batches(sql, doc_no, btype="DELIVERY"):
+    return sql.all(
+        "SELECT * FROM sn_delivery_batch WHERE transfer_doc_no = %s AND batch_type = %s ORDER BY id", doc_no, btype
+    )
+
+
+def test_transfer_builds_dedicated_delivery_batches_split_by_batch_size(w, sql):
+    """MES 已持有的号转组织：同一事务内给转入方建转移交付批次（记转移单号、按单批枚数拆分），不回号池。"""
+    a, pi, bill = setup(w, qty=5)
+    b = w.org(uid("O")[:10])
+    w.enable_mes(b, batch_size=2)
+    w.allocate(pi)
+    w.push()
+    t = ok(org_direct(w, a, pi, bill, b))
+    rows = _doc_batches(sql, t["transfer_no"])
+    assert [(r["factory_code"], r["pi_no"], r["qty"], r["source"], r["transfer_kind"]) for r in rows] == [
+        (b, pi, 2, "PUSH", "ORG_TRANSFER"),
+        (b, pi, 2, "PUSH", "ORG_TRANSFER"),
+        (b, pi, 1, "PUSH", "ORG_TRANSFER"),
+    ]
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND delivery_batch_no IS NULL", pi) == 0
+    # 转移单详情列出转入方的批次
+    dv = t["deliveries"]
+    assert [(x["factory_code"], sorted(x["batches"])) for x in dv] == [(b, sorted(r["batch_no"] for r in rows))]
+    w.push()
+    got = [x["batch"] for x in MES.received if x["org"] == b and x["batch"]["batchType"] == "DELIVERY"]
+    assert sorted(x["batchNo"] for x in got) == sorted(r["batch_no"] for r in rows)
+    assert all({i["bizType"] for i in x["items"]} == {"CROSS_ORG_TRANSFER"} for x in got)
+    assert (
+        sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED' AND mes_holder = %s", pi, b) == 5
+    )
+
+
+def test_transfer_batch_holds_only_mes_held_sns_one_biz_type_each(w, api, sql):
+    """一张转单里有 MES 已持有和未持有的号：已持有的进转移交付批次，未持有的回号池；每批只有一种 bizType。"""
+    a, pi, src = setup(w, qty=4)
+    w.allocate(pi)
+    held = [r["id"] for r in sql.all("SELECT id FROM sn_item WHERE pi_no = %s ORDER BY seq_dec LIMIT 2", pi)]
+    sql.exec(
+        f"UPDATE sn_item SET status = 'PUSHED', mes_holder = %s WHERE id IN ({','.join(['%s'] * len(held))})",
+        a,
+        *held,
+    )
+    tgt = uid("MO")
+    w.order(tgt, a, "C1", pi, ("M1", 4))
+    t = ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, a), w.admin))
+    rows = _doc_batches(sql, t["transfer_no"])
+    assert [(r["qty"], r["transfer_kind"]) for r in rows] == [(2, "BILL_TRANSFER")]
+    in_batch = sql.all("SELECT id FROM sn_item WHERE delivery_batch_no = %s ORDER BY id", rows[0]["batch_no"])
+    assert [r["id"] for r in in_batch] == sorted(held)
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND delivery_batch_no IS NULL", tgt) == 2
+    w.push()
+    got = {x["batch"]["batchNo"]: x["batch"] for x in MES.received if x["org"] == a}
+    assert {i["bizType"] for i in got[rows[0]["batch_no"]]["items"]} == {"SAME_ORG_TRANSFER"}
+    pool = [x for no, x in got.items() if no != rows[0]["batch_no"] and x["batchType"] == "DELIVERY"]
+    assert [{i["bizType"] for i in x["items"]} for x in pool] == [{"FIRST"}]
+
+
+def test_transfer_into_suspended_bill_keeps_held_sns_in_pool(w, api, sql):
+    """目标单据暂停交付：先按目标单据重算暂停标记，MES 已持有的号不建转移交付批次，留在号池等解除暂停。"""
+    a, pi, src = setup(w, qty=2)
+    w.allocate(pi)
+    w.push()
+    tgt = uid("MO")
+    w.order(tgt, a, "C1", pi, ("M1", 2))
+    # 目标单据已有台账且订单变更待确认（暂停交付）
+    sql.exec(
+        "INSERT INTO sn_bill_ledger(bill_no, pi, customer_code, org_code, org_name, suspend, created_at, updated_at) "
+        "VALUES (%s, %s, 'C1', %s, %s, 'CHANGE', NOW(), NOW())",
+        tgt,
+        pi,
+        a,
+        a,
+    )
+    t = ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, a), w.admin))
+    assert _doc_batches(sql, t["transfer_no"]) == []
+    rows = sql.all("SELECT status, suspend, delivery_batch_no FROM sn_item WHERE bill_no = %s", tgt)
+    assert {(r["status"], r["suspend"], r["delivery_batch_no"]) for r in rows} == {("TO_PUSH", "CHANGE", None)}
+
+
+def test_void_transfer_delivery_batch_rebuilds_instead_of_returning_to_pool(w, sql):
+    """转移交付批次作废：按原号重建新的转移交付批次（同 rev、同内容指纹），不回号池。"""
+    a, pi, bill = setup(w, qty=3)
+    b = w.org(uid("O")[:10])
+    w.enable_mes(b)
+    w.allocate(pi)
+    w.push()
+    MES.behavior[b] = lambda batch, h: (
+        200,
+        {"schemaVersion": "1.0", "batchNo": batch["batchNo"], "code": "NG", "message": "停线"},
+    )
+    t = ok(org_direct(w, a, pi, bill, b))
+    w.push()
+    old = _doc_batches(sql, t["transfer_no"])[0]
+    assert (old["result"], old["voidable"]) == ("FAILED", 1)
+    MES.behavior.pop(b)
+    r = ok(w.api.post(f"/api/delivery/batches/{old['batch_no']}/void", m(reason="整批退回", basis="MES 确认"), w.admin))
+    rows = _doc_batches(sql, t["transfer_no"])
+    assert [x["result"] for x in rows] == ["VOIDED", "UNCONFIRMED"]
+    new = rows[1]
+    assert r["rebuilt"] == [new["batch_no"]] and new["rebuilt_from"] == old["batch_no"]
+    assert rows[0]["rebuilt_to"] == new["batch_no"]
+    assert new["items_digest"] == old["items_digest"] and new["qty"] == 3
+    assert (
+        sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND delivery_batch_no = %s", pi, new["batch_no"]) == 3
+    )
+    w.push()
+    assert sql.one("SELECT result FROM sn_delivery_batch WHERE id = %s", new["id"])["result"] == "SUCCESS"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND mes_holder = %s AND rev = 2", pi, b) == 3
+
+
+def test_transfer_to_non_mes_or_never_held_builds_no_delivery_batch(w, api, sql):
+    """转入方未对接 MES、或 MES 从未持有：不建转移交付批次。"""
+    a, pi, bill = setup(w, qty=2)
+    b = w.org(uid("O")[:10])
+    w.allocate(pi)
+    w.push()
+    t = ok(org_direct(w, a, pi, bill, b))
+    assert _doc_batches(sql, t["transfer_no"]) == [] and len(_doc_batches(sql, t["transfer_no"], "TRANSFER_OUT")) == 1
+    a2, pi2, bill2 = setup(w, qty=2)
+    c = w.org(uid("O")[:10])
+    w.enable_mes(c)
+    w.allocate(pi2)
+    t2 = ok(org_direct(w, a2, pi2, bill2, c))
+    assert _doc_batches(sql, t2["transfer_no"]) == []
+
+
+def test_void_transfer_delivery_batch_keeps_suspended_sns_in_pool(w, sql):
+    """转移交付批次未确认期间目标单据暂停交付，作废后不重建：号回号池并暂停，解除后照常交付。"""
+    a, pi, bill = setup(w, qty=2)
+    b = w.org(uid("O")[:10])
+    w.enable_mes(b)
+    w.allocate(pi)
+    w.push()
+    MES.behavior[b] = lambda batch, h: (200, {"schemaVersion": "1.0", "batchNo": batch["batchNo"], "code": "NG"})
+    t = ok(org_direct(w, a, pi, bill, b))
+    w.push()
+    old = _doc_batches(sql, t["transfer_no"])[0]
+    MES.behavior.pop(b)
+    assert sql.exec("UPDATE sn_bill_ledger SET suspend = 'CHANGE' WHERE bill_no = %s", bill) == 1
+    r = ok(w.api.post(f"/api/delivery/batches/{old['batch_no']}/void", m(reason="整批退回", basis="MES 确认"), w.admin))
+    assert r["rebuilt"] == [] and [x["result"] for x in _doc_batches(sql, t["transfer_no"])] == ["VOIDED"]
+    rows = sql.all("SELECT suspend, delivery_batch_no FROM sn_item WHERE pi_no = %s", pi)
+    assert {(x["suspend"], x["delivery_batch_no"]) for x in rows} == {("CHANGE", None)}

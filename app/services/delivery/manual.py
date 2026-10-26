@@ -15,6 +15,7 @@ from app.services.delivery.batches import (
     VOIDED,
     XO_KEY,
     batch_json,
+    build_transfer_delivery,
     build_transfer_out,
     must_batch,
 )
@@ -65,7 +66,8 @@ def manual_confirm(cu: CurrentUser, batch_no: str | None, reason: str | None, ba
 
 def void(cu: CurrentUser, batch_no: str | None, reason: str | None, basis: str | None) -> dict:
     """作废：MES 没有处理的批次（整批拒绝、报文过大、认证或地址错误，或书面确认未处理的未确认批次）。
-    交付批次的号清除批次号、回到待推送（未入批），rev 不变；转出批次按原明细重建新的转出批次并自动推送。"""
+    交付批次的号清除批次号、回到待推送（未入批），rev 不变；转移建立的交付批次（带转移单号）按原号重建新的
+    转移交付批次（暂停交付的号留在号池）；转出批次按原明细重建新的转出批次。重建的都自动推送。"""
     r, bs = _check_manual(reason, basis)
     rebuilt: list[dict] = []
     with db.tx():
@@ -89,13 +91,32 @@ def void(cu: CurrentUser, batch_no: str | None, reason: str | None, basis: str |
         bills: set[str] = set()
         if b["batch_type"] == DELIVERY:
             bills = set(db.column("SELECT DISTINCT bill_no FROM sn_item WHERE delivery_batch_no = %s", b["batch_no"]))
+            ids = db.column(
+                "SELECT id FROM sn_item WHERE delivery_batch_no = %s AND status = 'TO_PUSH' FOR UPDATE", b["batch_no"]
+            )
             db.exec(
                 "UPDATE sn_item SET delivery_batch_no = NULL, updated_at = %s WHERE delivery_batch_no = %s "
                 "AND status = 'TO_PUSH'",
                 now,
                 b["batch_no"],
             )
+            # 先重算暂停标记（入批期间不暂停），暂停交付的号不进重建的批次
             changes.refresh_items(bills)
+            if b["transfer_doc_no"] and ids and factories.is_mes(b["factory_code"]):
+                rebuilt = build_transfer_delivery(
+                    cu,
+                    b["factory_code"],
+                    b["pi_no"],
+                    ids,
+                    (b["transfer_kind"], b["transfer_doc_no"]),
+                    rebuilt_from=b["batch_no"],
+                )
+                if rebuilt:
+                    db.exec(
+                        "UPDATE sn_delivery_batch SET rebuilt_to = %s WHERE id = %s",
+                        ",".join(x["batch_no"] for x in rebuilt)[:40],
+                        b["id"],
+                    )
         else:
             entries = [
                 {**e, "transfer_kind": b["transfer_kind"], "transfer_doc_no": b["transfer_doc_no"]}

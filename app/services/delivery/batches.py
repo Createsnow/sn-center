@@ -1,4 +1,5 @@
 """交付批次的建立：批次号、报文（交付项 6.3、转出项 6.4）、写定请求体与明细；从「待推送、未入批、未暂停」号池认领。
+转移时 MES 已持有的号不回号池：转入方的交付批次与来源的转出批次都在转移事务内当场建立（批次上记转移单号）。
 
 批次号、所含 SN 及其挂靠和 rev 建立后都不再改变（请求体 body_gz 写定，推送与拉取送达的内容相同）。
 """
@@ -236,6 +237,70 @@ def claim(org: str, pi: str, limit: int, bill: str | None = None) -> list[dict]:
     return db.all(sql, *args, limit)
 
 
+def _deliver(
+    cu: CurrentUser,
+    org: str,
+    pi: str,
+    source: str,
+    items: list[dict],
+    bill: str | None = None,
+    transfer: tuple[str | None, str | None] = (None, None),
+    rebuilt_from: str | None = None,
+) -> dict:
+    """把已加锁的号写成一个交付批次，号记上批次号。"""
+    payload = [_delivery_payload(r, org) for r in items]
+    rows = [
+        (
+            r["id"],
+            r["sn"],
+            r["rev"],
+            r["push_type"],
+            r["pi_no"],
+            r["bill_no"],
+            r["bill_seq"],
+            r["material_code"],
+            r["customer_code"],
+            r["seq_pi_no"],
+            r["seq_dec"],
+            None,
+        )
+        for r in items
+    ]
+    b = _insert_batch(
+        cu, "PS" if source == SRC_PUSH else "PL", source, DELIVERY, org, pi, payload, rows, transfer, rebuilt_from
+    )
+    ids = [r["id"] for r in items]
+    for i in range(0, len(ids), 1000):
+        part = ids[i : i + 1000]
+        n = db.exec(
+            f"UPDATE sn_item SET delivery_batch_no = %s, updated_at = %s WHERE id IN ({marks(len(part))}) "
+            "AND status = 'TO_PUSH' AND delivery_batch_no IS NULL",
+            b["batch_no"],
+            util.now(),
+            *part,
+        )
+        if n != len(part):
+            raise biz(ErrorCode.CONFLICT_RETRY)
+    audit.record(
+        cu,
+        audit.entry(audit.SN_BATCH_CREATE)
+        .factory(org)
+        .pi(pi)
+        .bill(bill)
+        .count(len(items))
+        .range(items[0]["sn"], items[-1]["sn"])
+        .batch(b["batch_no"])
+        .transfer(transfer[1])
+        .status(util.TO_PUSH, util.TO_PUSH)
+        .info(
+            f"source={source} type={DELIVERY}"
+            + (f" biz={payload[0]['bizType']}" if transfer[1] else "")
+            + (f" rebuilt_from={rebuilt_from}" if rebuilt_from else "")
+        ),
+    )
+    return b
+
+
 def build_delivery(cu: CurrentUser, org: str, pi: str, source: str, bill: str | None = None) -> dict | None:
     """认领并建立一个交付批次（短事务）；没有可认领的号返回 None。"""
     f = factories.must_get(org)
@@ -243,50 +308,41 @@ def build_delivery(cu: CurrentUser, org: str, pi: str, source: str, bill: str | 
         items = claim(org, pi, max(1, int(f["batch_size"])), bill)
         if not items:
             return None
-        payload = [_delivery_payload(r, org) for r in items]
-        rows = [
-            (
-                r["id"],
-                r["sn"],
-                r["rev"],
-                r["push_type"],
-                r["pi_no"],
-                r["bill_no"],
-                r["bill_seq"],
-                r["material_code"],
-                r["customer_code"],
-                r["seq_pi_no"],
-                r["seq_dec"],
-                None,
-            )
-            for r in items
-        ]
-        b = _insert_batch(cu, "PS" if source == SRC_PUSH else "PL", source, DELIVERY, org, pi, payload, rows)
-        ids = [r["id"] for r in items]
-        for i in range(0, len(ids), 1000):
-            part = ids[i : i + 1000]
-            n = db.exec(
-                f"UPDATE sn_item SET delivery_batch_no = %s, updated_at = %s WHERE id IN ({marks(len(part))}) "
-                "AND status = 'TO_PUSH' AND delivery_batch_no IS NULL",
-                b["batch_no"],
-                util.now(),
-                *part,
-            )
-            if n != len(part):
-                raise biz(ErrorCode.CONFLICT_RETRY)
-        audit.record(
-            cu,
-            audit.entry(audit.SN_BATCH_CREATE)
-            .factory(org)
-            .pi(pi)
-            .bill(bill)
-            .count(len(items))
-            .range(items[0]["sn"], items[-1]["sn"])
-            .batch(b["batch_no"])
-            .status(util.TO_PUSH, util.TO_PUSH)
-            .info(f"source={source} type={DELIVERY}"),
+        return _deliver(cu, org, pi, source, items, bill)
+
+
+def build_transfer_delivery(
+    cu: CurrentUser,
+    org: str,
+    pi: str,
+    ids: list[int],
+    transfer: tuple[str, str],
+    rebuilt_from: str | None = None,
+) -> list[dict]:
+    """转入方的转移交付批次（在转移事务内调用）：转移前 MES 已持有、改挂后待推送的号当场建批，不回号池等认领。
+    按业务来源分批，每批只有一种 bizType；按转入组织当前单批枚数拆分；暂停交付的号留在号池，解除后照常认领。"""
+    items: list[dict] = []
+    for i in range(0, len(ids), 1000):
+        part = ids[i : i + 1000]
+        items += db.all(
+            f"SELECT {_CLAIM_COLS} FROM sn_item WHERE id IN ({marks(len(part))}) AND factory_code = %s "
+            "AND pi_no = %s AND status = 'TO_PUSH' AND suspend IS NULL AND delivery_batch_no IS NULL "
+            "AND acquire_batch_no IS NULL FOR UPDATE",
+            *part,
+            org,
+            pi,
         )
-        return b
+    items.sort(key=lambda r: (r["seq_pi_no"], r["seq_dec"]))
+    f = factories.get(org)
+    size = max(1, int(f["batch_size"])) if f else 5000
+    by_biz: dict[str, list[dict]] = {}
+    for r in items:
+        by_biz.setdefault(biz_type(r, org), []).append(r)
+    out = []
+    for group in by_biz.values():
+        for i in range(0, len(group), size):
+            out.append(_deliver(cu, org, pi, SRC_PUSH, group[i : i + size], None, transfer, rebuilt_from))
+    return out
 
 
 def build_transfer_out(cu: CurrentUser, org: str, entries: list[dict], rebuilt_from: str | None = None) -> list[dict]:
