@@ -195,8 +195,6 @@ MES 处理完批次后，在同一响应中返回回执：
 
 #### 3.1.2 请求示例
 
-**交付批次**
-
 ```http
 POST /sn/receive HTTP/1.1
 Host: mes-test.example.com
@@ -226,18 +224,6 @@ X-Request-Id: 1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed
 ```
 
 同一批次每次送达，请求体逐字节相同，只有 `X-Sn-Attempt`、`X-Request-Id` 会变。
-
-**转移批次**（请求头同上，只列请求体）
-
-```json
-{"schemaVersion": "1.0", "batchNo": "XO-110-20261026-000007", "batchType": "TRANSFER_OUT", "orgCode": "110", "pi": "000001", "createdAt": "2026-10-26 11:50:00.000", "itemsDigest": "sha256:51ab07…", "items": [{"sn": "HX100000003A", "rev": 3, "attachNo": "A01", "toOrgCode": "120"}]}
-```
-
-**测试批次**（用于连接测试）
-
-```json
-{"schemaVersion": "1.0", "batchNo": "PING-20261026114705303", "batchType": "PING", "orgCode": "110", "createdAt": "2026-10-26 11:47:05.303", "itemsDigest": "sha256:4f53cda1…", "items": []}
-```
 
 #### 3.1.3 成功示例
 
