@@ -191,16 +191,16 @@ def test_hmac_signature_string():
     import hmac
 
     raw = b'{"x":1}'
-    sig = mes_client.sign("k", "2026-10-19T02:37:00Z", raw)
+    sig = mes_client.sign("k", "2026-10-19 10:37:00.123", raw)
     want = hmac.new(
-        b"k", f"2026-10-19T02:37:00Z\n{hashlib.sha256(raw).hexdigest()}".encode(), hashlib.sha256
+        b"k", f"2026-10-19 10:37:00.123\n{hashlib.sha256(raw).hexdigest()}".encode(), hashlib.sha256
     ).hexdigest()
     assert sig == want
 
 
 def test_ping_batch_has_no_items():
     body = json.loads(gzip.decompress(mes_client.ping_body("110", "PING-1")))
-    assert set(body) == {"schemaVersion", "batchNo", "batchType", "orgCode", "itemsDigest", "items"}
+    assert set(body) == {"schemaVersion", "batchNo", "batchType", "orgCode", "createdAt", "itemsDigest", "items"}
     assert body["batchType"] == "PING" and body["items"] == []
     assert body["itemsDigest"].startswith("sha256:") and len(body["itemsDigest"]) == 71
 

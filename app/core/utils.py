@@ -75,7 +75,8 @@ def cut(s: str | None, n: int) -> str | None:
 
 
 # ---------------------------------------------------------------- 时间
-# 库内一律存 UTC（DATETIME 不带时区）；接口输出 ISO 8601（带 Z），页面按账户时区显示。
+# 库内一律存 UTC（DATETIME 不带时区）；页面接口输出 ISO 8601（带 Z），页面按账户时区显示；
+# MES 接口（报文、请求头、批次号日期）统一用国内时间 UTC+8，格式 2026-10-26 11:47:05.303。
 
 TS = "%Y-%m-%dT%H:%M:%SZ"
 #: 账户不绑或绑多个生产组织时的显示时区（UTC+8）
@@ -105,6 +106,25 @@ def today() -> date:
 
 def fmt(t: datetime | None) -> str | None:
     return None if t is None else t.strftime(TS)
+
+
+#: MES 接口时间：UTC+8，精确到毫秒
+MES_OFFSET = timedelta(hours=8)
+MES_TS = "%Y-%m-%d %H:%M:%S.%f"
+
+
+def mes_local(t: datetime | None = None) -> datetime:
+    """UTC（不带时区）换成 UTC+8；不传为当前时间（毫秒）。"""
+    return (t or now_millis()) + MES_OFFSET
+
+
+def mes_fmt(t: datetime | None) -> str | None:
+    """MES 接口的时间文本：UTC+8，yyyy-MM-dd HH:mm:ss.SSS。"""
+    return None if t is None else mes_local(t).strftime(MES_TS)[:-3]
+
+
+def mes_now() -> str:
+    return mes_local().strftime(MES_TS)[:-3]
 
 
 # ---------------------------------------------------------------- 单号

@@ -190,6 +190,7 @@ def test_hmac_push(w, api, sql):
     assert sql.scalar("SELECT result FROM sn_delivery_batch WHERE pi_no = %s", pi) == "SUCCESS"
     h = MES.received[-1]["headers"]
     assert "x-sn-signature" in h and "x-sn-timestamp" in h and "authorization" not in h
+    assert len(h["x-sn-timestamp"]) == 23 and h["x-sn-timestamp"][10] == " ", "UTC+8，yyyy-MM-dd HH:mm:ss.SSS"
 
 
 def test_builtin_admin_reset_via_env(w, api):

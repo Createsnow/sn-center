@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from app.core import utils as util
 from app.core.config import settings
-from app.core.exceptions import MesError
+from app.core.exceptions import MesError, mes_body
 from app.core.security import CurrentUser
 from app.db.session import db
 from app.services import audit, changes, factories, locks, rules
@@ -169,19 +169,24 @@ def next_batch(cu: CurrentUser, pi_in: str | None, bill_in: str | None, batch_no
 
 
 def _next_out(b: dict | None, remaining: int, paused: int) -> dict:
-    """③ 应答只给 MES 要用的：批次（推送、拉取建立的结构相同，处理相同）、剩余枚数、暂停枚数。"""
-    return {
-        "schemaVersion": "1.0",
-        "code": "OK",
-        "batch": None if b is None else body_obj(b),
-        "remaining": remaining,
-        "paused": paused,
-    }
+    """③ 应答：批次（推送、拉取建立的结构相同，处理相同）、剩余枚数、暂停枚数。"""
+    if b is None:
+        msg = f"暂无可拉取批次，{paused} 枚暂停下发" if paused else "暂无可拉取批次"
+        return mes_body("OK", msg, batch=None, remaining=remaining, paused=paused)
+    return mes_body("OK", "成功", b["batch_no"], batch=body_obj(b), remaining=remaining, paused=paused)
+
+
+#: ④ 受理结果的说明
+_RECEIPT_MSG = {
+    "CONFIRMED": "回执已确认，批次成功",
+    "REJECTED": "整批退回已登记，批次失败",
+    "ARCHIVED": "批次此前已确认，本次回执只存档",
+}
 
 
 def submit_receipt(cu: CurrentUser, batch_no: str, body: dict) -> dict:
     """接口 ④ 提交回执（或整批拒收）。按批次号幂等：已确认的只存档；已作废的拒绝；不符时拒收并记批次失败。
-    受理即返回 code = OK，不回批次结果。"""
+    应答回传本系统的处理结果：批次结果、是否本次首次确认。"""
     org = cu.factory_code
     _rate_limit(org)
     b = find_batch(batch_no)
@@ -194,7 +199,13 @@ def submit_receipt(cu: CurrentUser, batch_no: str, body: dict) -> dict:
         raise MesError(409, "BATCH_VOIDED", "批次已作废，不得再处理这批内容", batch_no)
     if applied.verdict == "MISMATCH":
         raise MesError(422, "RECEIPT_MISMATCH", "回执与批次不符", batch_no, applied.details)
-    return {"schemaVersion": "1.0", "code": "OK"}
+    return mes_body(
+        "OK",
+        _RECEIPT_MSG[applied.verdict],
+        b["batch_no"],
+        batchResult=applied.batch["result"],
+        firstConfirmation=applied.verdict == "CONFIRMED",
+    )
 
 
 # ================================================================== 只读接口（F-19）
@@ -232,6 +243,7 @@ def _read_item(r: dict) -> dict:
         "customerCode": r["customer_code"],
         "status": r["status"],
         "batchNo": r["delivery_batch_no"],
+        "deliveredAt": util.mes_fmt(r["delivered_at"]),
     }
 
 
@@ -265,12 +277,7 @@ def read_delivered(
     )
     more = len(rows) > n
     rows = rows[:n]
-    return {
-        "schemaVersion": "1.0",
-        "code": "OK",
-        "items": [_read_item(r) for r in rows],
-        "nextCursor": str(rows[-1]["id"]) if more else None,
-    }
+    return mes_body("OK", "成功", items=[_read_item(r) for r in rows], nextCursor=str(rows[-1]["id"]) if more else None)
 
 
 def read_batch_items(cu: CurrentUser, batch_no: str, cursor: str | None, size: int | None) -> dict:
@@ -291,9 +298,10 @@ def read_batch_items(cu: CurrentUser, batch_no: str, cursor: str | None, size: i
     )
     more = len(rows) > n
     rows = rows[:n]
-    return {
-        "schemaVersion": "1.0",
-        "code": "OK",
-        "items": [_read_item(r) for r in rows],
-        "nextCursor": str(rows[-1]["id"]) if more else None,
-    }
+    return mes_body(
+        "OK",
+        "成功",
+        b["batch_no"],
+        items=[_read_item(r) for r in rows],
+        nextCursor=str(rows[-1]["id"]) if more else None,
+    )

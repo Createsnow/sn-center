@@ -34,7 +34,7 @@ import sys
 import threading
 import time
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 from urllib.parse import parse_qs, urlsplit
@@ -72,17 +72,23 @@ FAULT_MODES = {
 Behavior = Callable[[dict, dict], tuple[Any, Any]]
 
 
-def utc_now() -> str:
-    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+#: MES 接口时间：UTC+8，格式 2026-10-26 11:47:05.303
+CST = timezone(timedelta(hours=8))
+TS = "%Y-%m-%d %H:%M:%S.%f"
+
+
+def now_cst() -> str:
+    return datetime.now(CST).strftime(TS)[:-3]
+
+
+def _receipt(batch_no: str | None, code: str = "OK", message: str = "已处理") -> dict:
+    """MES 应答（回执与出错同一结构）：code = OK 整批已处理 / NG 整批退回（message 为原因）/ 错误码；
+    processedAt 为 MES 处理时间。"""
+    return {"batchNo": batch_no, "code": code, "message": message, "processedAt": now_cst()}
 
 
 def _err(code: str, message: str, batch_no: str | None = None) -> dict:
-    return {"schemaVersion": SCHEMA, "code": code, "message": message, "batchNo": batch_no}
-
-
-def _receipt(batch_no: str | None, code: str = "OK", message: str | None = None) -> dict:
-    """回执：code = OK 整批已处理 / NG 整批退回（message 为原因）。"""
-    return {"batchNo": batch_no, "code": code, "message": message}
+    return _receipt(batch_no, code, message)
 
 
 def _reject(batch_no: str | None, message: str) -> dict:
@@ -124,9 +130,9 @@ class MesSim:
             ts = headers.get("x-sn-timestamp") or ""
             if self.max_skew:
                 try:
-                    t = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=UTC)
+                    t = datetime.strptime(ts, TS).replace(tzinfo=CST)
                 except ValueError:
-                    return "X-Sn-Timestamp 不是 ISO 8601 UTC"
+                    return "X-Sn-Timestamp 须为 UTC+8 的 yyyy-MM-dd HH:mm:ss.SSS"
                 if abs((datetime.now(UTC) - t).total_seconds()) > self.max_skew:
                     return f"时间戳与本地相差超过 {self.max_skew} 秒"
             msg = f"{ts}\n{hashlib.sha256(raw).hexdigest()}"
@@ -145,7 +151,7 @@ class MesSim:
         r = self.process(org, batch, source)
         if "__status" in r:
             status = r.pop("__status")
-            return status, {"schemaVersion": SCHEMA, **r}
+            return status, r
         return 200, r
 
     def _problem(self, org: str, batch: dict) -> str | None:
@@ -188,12 +194,7 @@ class MesSim:
             seen = self.batches.setdefault(org, {})
             if no in seen:
                 if seen[no]["digest"] != batch["itemsDigest"]:
-                    return {
-                        "__status": 409,
-                        "code": "BATCH_CONTENT_MISMATCH",
-                        "batchNo": no,
-                        "message": "同一批次号内容不同",
-                    }
+                    return {"__status": 409, **_err("BATCH_CONTENT_MISMATCH", "同一批次号内容不同", no)}
                 return seen[no]["receipt"]
             # 第 4 步：逐枚处理；rev 小于本地的跳过
             store = self.store.setdefault(org, {})
@@ -225,7 +226,7 @@ class MesSim:
                 store[x["sn"]] = rec
             receipt = _receipt(no)
             # 第 5 步：先落库，再回执
-            seen[no] = {"digest": batch["itemsDigest"], "receipt": receipt, "source": source, "at": utc_now()}
+            seen[no] = {"digest": batch["itemsDigest"], "receipt": receipt, "source": source, "at": now_cst()}
             return receipt
 
     # ------------------------------------------------------------------ 故障
@@ -385,7 +386,7 @@ class MockMes(MesSim):
                 except (OSError, ValueError, UnicodeDecodeError):
                     return self._send(400, _err("BAD_REQUEST", "请求体无法解析"))
                 no = batch.get("batchNo")
-                mock.received.append({"org": org, "batch": batch, "headers": headers, "raw": raw, "at": utc_now()})
+                mock.received.append({"org": org, "batch": batch, "headers": headers, "raw": raw, "at": now_cst()})
                 why = mock.authorized(org, headers, raw)
                 if why:
                     status, body = 401, _err("UNAUTHORIZED", why, no)
@@ -441,7 +442,7 @@ def _brief(x: dict) -> dict:
 def _line(org: str, batch: dict, headers: dict, status: Any, body: Any) -> str:
     n = len(batch.get("items") or [])
     head = (
-        f"{utc_now()} 推送 org={org} {batch.get('batchType')} {batch.get('batchNo')} count={n} "
+        f"{now_cst()} 推送 org={org} {batch.get('batchType')} {batch.get('batchNo')} count={n} "
         f"attempt={headers.get('x-sn-attempt')}"
     )
     if status == "drop":

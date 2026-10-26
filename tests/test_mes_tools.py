@@ -225,7 +225,13 @@ def test_push_body_plain_json_by_default_gzip_when_enabled(mock, gz):
     mock.secrets["110"] = "s3cret"
     t = mes_client.Target(mock.url("110"), mes_client.TOKEN, "s3cret", 10, gz)
     out = mes_client.send(t, mes_client.ping_body("110", "PING-GZ"), 1)
-    assert out.kind == mes_client.RECEIPT and out.receipt == {"batchNo": "PING-GZ", "code": "OK", "message": None}
+    assert out.kind == mes_client.RECEIPT
+    assert {k: out.receipt[k] for k in ("batchNo", "code", "message")} == {
+        "batchNo": "PING-GZ",
+        "code": "OK",
+        "message": "已处理",
+    }
+    assert out.receipt["processedAt"][10] == " "
     h = mock.received[-1]["headers"]
     assert h.get("content-encoding") == ("gzip" if gz else None)
     assert mock.received[-1]["batch"]["batchNo"] == "PING-GZ"

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import re
+from datetime import UTC, datetime, timedelta
 
 from conftest import MES, emp, m, ok, uid
 
@@ -53,7 +55,10 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
     )
     # 报文：逐枚带单据编号、序号、当前 PI、流水归属 PI；十进制流水、米标按字符串
     body = MES.received[-1]["batch"]
-    assert set(body) == {"schemaVersion", "batchNo", "batchType", "orgCode", "itemsDigest", "items"}
+    assert set(body) == {"schemaVersion", "batchNo", "batchType", "orgCode", "createdAt", "itemsDigest", "items"}
+    assert re.fullmatch(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}", body["createdAt"]), "UTC+8，精确到毫秒"
+    day = (datetime.now(UTC) + timedelta(hours=8)).strftime("%Y%m%d")
+    assert body["batchNo"].split("-")[-2] == day and body["createdAt"][:10].replace("-", "") == day
     assert body["itemsDigest"].startswith("sha256:")
     item = body["items"][0]
     assert set(item) == {
@@ -200,14 +205,16 @@ def test_pull_returns_same_unconfirmed_batch_until_receipt(w, sql):
     pushed = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
     assert pushed["push_state"] == "EXHAUSTED"
     r1 = ok(w.mes_next(token))
-    assert set(r1.body) == {"schemaVersion", "code", "batch", "remaining", "paused"}
+    assert set(r1.body) == {"schemaVersion", "code", "message", "batchNo", "timestamp", "batch", "remaining", "paused"}
+    assert r1["batchNo"] == pushed["batch_no"] and r1["timestamp"][10] == " "
     assert r1["batch"]["batchNo"] == pushed["batch_no"] and r1["remaining"] == 2
     r2 = ok(w.mes_next(token))
     assert r2["batch"]["batchNo"] == pushed["batch_no"], "没回执前再取仍是同一批"
     receipt = MES.process(org, r1["batch"])
-    assert ok(w.mes_receipt(token, pushed["batch_no"], receipt)).body == {"schemaVersion": "1.0", "code": "OK"}
-    assert sql.scalar("SELECT result FROM sn_delivery_batch WHERE id = %s", pushed["id"]) == "SUCCESS"
-    ok(w.mes_receipt(token, pushed["batch_no"], receipt))
+    rc = ok(w.mes_receipt(token, pushed["batch_no"], receipt))
+    assert (rc["batchNo"], rc["batchResult"], rc["firstConfirmation"]) == (pushed["batch_no"], "SUCCESS", True)
+    assert rc["message"] and rc["timestamp"]
+    assert ok(w.mes_receipt(token, pushed["batch_no"], receipt))["firstConfirmation"] is False
     assert sql.all("SELECT verdict FROM sn_delivery_receipt WHERE batch_id = %s ORDER BY id", pushed["id"]) == [
         {"verdict": "CONFIRMED"},
         {"verdict": "ARCHIVED"},

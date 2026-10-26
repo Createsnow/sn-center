@@ -5,8 +5,8 @@
 - 请求头：认证（A 固定 Bearer 令牌 + 来源 IP 白名单；B HMAC-SHA256 签名）；X-Sn-Attempt、X-Request-Id 只供日志；
   开启压缩时另带 Content-Encoding: gzip。
 - HMAC 签名串 = timestamp + "\\n" + hex(SHA256(解压后的原始请求体字节))（请求体已含 batchNo），
-  放在 X-Sn-Timestamp（ISO 8601 UTC）与 X-Sn-Signature（小写十六进制）。
-- 应答：HTTP 200 + 回执 {batchNo, code = OK / NG, message}（NG 为整批退回）；
+  放在 X-Sn-Timestamp（UTC+8，2026-10-26 11:47:05.303）与 X-Sn-Signature（小写十六进制）。
+- 应答：HTTP 200 + 回执 {batchNo, code = OK / NG, message, processedAt}（NG 为整批退回）；
   超时、5xx、断连、409 BATCH_IN_PROGRESS、429、503 可重试；
   409 BATCH_CONTENT_MISMATCH、401 / 403 / 404 / 413 / 400 等不重试。
 """
@@ -19,12 +19,12 @@ import hmac
 import json
 import uuid
 from dataclasses import dataclass
-from datetime import UTC, datetime
 from typing import Any
 
 import httpx
 
 from app.core import secretbox
+from app.core import utils as util
 
 TOKEN = "TOKEN"
 HMAC = "HMAC"
@@ -90,10 +90,6 @@ def canonical(obj: Any) -> bytes:
     return json.dumps(obj, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
 
 
-def utc_iso(t: datetime | None = None) -> str:
-    return (t or datetime.now(UTC).replace(tzinfo=None)).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-
 def sign(secret: str, timestamp: str, raw: bytes) -> str:
     msg = f"{timestamp}\n{hashlib.sha256(raw).hexdigest()}"
     return hmac.new(secret.encode("utf-8"), msg.encode("utf-8"), hashlib.sha256).hexdigest()
@@ -110,7 +106,7 @@ def _headers(t: Target, attempt: int, raw: bytes) -> dict[str, str]:
     if t.gzip:
         h["Content-Encoding"] = "gzip"
     if t.auth_type == HMAC:
-        ts = utc_iso()
+        ts = util.mes_now()
         h["X-Sn-Timestamp"] = ts
         h["X-Sn-Signature"] = sign(t.credential, ts, raw)
     else:
@@ -187,6 +183,7 @@ def ping_body(org: str, batch_no: str) -> bytes:
         "batchNo": batch_no,
         "batchType": "PING",
         "orgCode": org,
+        "createdAt": util.mes_now(),
         "itemsDigest": "sha256:" + hashlib.sha256(canonical(items)).hexdigest(),
         "items": items,
     }

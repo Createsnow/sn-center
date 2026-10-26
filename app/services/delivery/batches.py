@@ -114,8 +114,8 @@ def must_batch(batch_no: str | None, lock: bool = False) -> dict:
 
 
 def _batch_no(prefix: str, org: str) -> str:
-    """PS- / PL- / XO- + 组织 + yyyymmdd + 当天序号（≤ 40 位，全局唯一）。"""
-    day = util.now().strftime("%Y%m%d")
+    """PS- / PL- / XO- + 组织 + yyyymmdd（UTC+8）+ 当天序号（≤ 40 位，全局唯一）。"""
+    day = util.mes_local().strftime("%Y%m%d")
     name = f"{prefix}-{org}-{day}"
     with db.new_tx():
         db.exec("INSERT INTO sn_seq(name, val) VALUES (%s, 0) ON DUPLICATE KEY UPDATE name = name", name)
@@ -192,6 +192,7 @@ def _insert_batch(
         "batchNo": batch_no,
         "batchType": batch_type,
         "orgCode": org,
+        "createdAt": util.mes_fmt(now),
         "itemsDigest": digest,
         "items": payload,
     }

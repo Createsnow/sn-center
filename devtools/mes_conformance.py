@@ -21,6 +21,7 @@ import hashlib
 import hmac
 import json
 import random
+import re
 import string
 import sys
 import threading
@@ -28,7 +29,7 @@ import time
 import uuid
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import httpx
@@ -45,8 +46,13 @@ def digest(items: list[dict]) -> str:
     return "sha256:" + hashlib.sha256(canonical(items)).hexdigest()
 
 
-def utc_iso(t: datetime | None = None) -> str:
-    return (t or datetime.now(UTC)).strftime("%Y-%m-%dT%H:%M:%SZ")
+#: MES 接口时间：UTC+8，格式 2026-10-26 11:47:05.303
+CST = timezone(timedelta(hours=8))
+TS_RE = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}$")
+
+
+def now_cst(t: datetime | None = None) -> str:
+    return (t or datetime.now(CST)).astimezone(CST).strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
 
 @dataclass
@@ -137,6 +143,7 @@ class Runner:
             "batchNo": no or self.batch_no(),
             "batchType": kind,
             "orgCode": self.org,
+            "createdAt": now_cst(),
             "itemsDigest": digest(items),
             "items": items,
         }
@@ -166,7 +173,7 @@ class Runner:
             h["Content-Encoding"] = "gzip"
         key = self.secret if secret is None else secret
         if self.auth == "HMAC":
-            t = ts or utc_iso()
+            t = ts or now_cst()
             msg = f"{t}\n{hashlib.sha256(raw).hexdigest()}"
             h["X-Sn-Timestamp"] = t
             h["X-Sn-Signature"] = hmac.new(key.encode(), msg.encode(), hashlib.sha256).hexdigest()
@@ -193,7 +200,7 @@ class Runner:
             raise Failed(why)
 
     def receipt(self, r: Reply, b: dict, code: str, why: str = "") -> dict:
-        """HTTP 200 + 回执 {batchNo, code, message}，code 为期望值。"""
+        """HTTP 200 + 回执 {batchNo, code, message, processedAt}，code 为期望值。"""
         pre = f"{why}：" if why else ""
         hint = code == "NG" and r.status is not None and 400 <= r.status < 500
         self.need(
@@ -205,6 +212,11 @@ class Runner:
         self.need(isinstance(body, dict), f"{pre}应答不是 JSON 对象：{r}")
         self.need(body.get("code") == code, f"{pre}期望 code = {code}，实际 {r}")
         self.need(body.get("batchNo") == b["batchNo"], f"回执 batchNo = {body.get('batchNo')}，应为 {b['batchNo']}")
+        at = body.get("processedAt")
+        self.need(
+            isinstance(at, str) and bool(TS_RE.match(at)),
+            f"回执 processedAt 须为 UTC+8 的 yyyy-MM-dd HH:mm:ss.SSS，实际 {at!r}",
+        )
         if code == "NG":
             self.need(isinstance(body.get("message"), str) and body["message"].strip(), "NG 回执须带 message（原因）")
         return body
@@ -238,6 +250,7 @@ class Runner:
                 "batchNo": "PING-" + self.batch_no(),
                 "batchType": "PING",
                 "orgCode": org,
+                "createdAt": now_cst(),
                 "itemsDigest": digest([]),
                 "items": [],
             }
@@ -262,7 +275,7 @@ class Runner:
                 c.status, c.detail = SKIP, "认证方式为 TOKEN，不适用"
                 return
             b = self.batch([self.delivery(91, 1)])
-            r = self.send(b, ts=utc_iso(datetime.now(UTC) - timedelta(minutes=10)))
+            r = self.send(b, ts=now_cst(datetime.now(CST) - timedelta(minutes=10)))
             self.need(r.status in (401, 403), f"时间戳偏差 10 分钟应拒绝（401 或 403），实际 {r}")
 
         def first(c: Check) -> None:
@@ -450,7 +463,7 @@ class Runner:
         lines = [
             "# MES 接口契约测试报告",
             "",
-            f"- 时间：{utc_iso()}（UTC）",
+            f"- 时间：{now_cst()}（UTC+8）",
             f"- 接口地址：{self.url}",
             f"- 生产组织：{self.org}　认证方式：{self.auth}",
             f"- 运行号：{self.run}（测试 SN 前缀 `{self.prefix}`，PI `{self.pi}`，单据 `{self.bill}`）",

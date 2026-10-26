@@ -3,7 +3,8 @@
 - 认证：MES 接口账户每次请求带 Authorization: Bearer <工号>:<密钥>，不换令牌（见 deps.mes_user）。
 
 - 请求和应答都支持 gzip；字段名英文小驼峰；请求和应答都带 schemaVersion（首版 1.0），不认识的字段忽略。
-- 成功为 HTTP 200 且 code = OK；出错不返回 200：{"schemaVersion", "code", "message", "batchNo", "details"}。
+- 应答信封统一为 {"schemaVersion", "code", "message", "batchNo", "timestamp", ...}：成功为 HTTP 200 且 code = OK；
+  出错不返回 200，另带 details。时间一律 UTC+8，格式 2026-10-26 11:47:05.303。
 - ③④ 只有 MES 接口账户能调（只限所绑生产组织）；⑤⑥ 另可由有可看范围的账户（查询员等）调用。
 - 限流：同一生产组织每分钟 SN_MES_PULL_RATE_PER_MINUTE 次（默认 60），超出 429 RATE_LIMITED + Retry-After。
 """
