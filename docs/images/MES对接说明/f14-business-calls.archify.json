@@ -128,7 +128,7 @@
       "from": "mes",
       "to": "sn",
       "y": 625,
-      "label": "③ 拉取批次",
+      "label": "② 拉取批次",
       "variant": "emphasis",
       "note": "推送失败后、本地 SN 不足、每 5 分钟兜底"
     },
@@ -146,7 +146,7 @@
       "from": "mes",
       "to": "sn",
       "y": 745,
-      "label": "④ 提交回执 OK / NG",
+      "label": "③ 提交回执 OK / NG",
       "variant": "emphasis",
       "note": "落库后立即提交；remaining > 0 继续拉取"
     },
@@ -207,7 +207,7 @@
       "from": "mes",
       "to": "sn",
       "y": 1190,
-      "label": "⑤ 查询已下发 SN / ⑥ 查询批次明细",
+      "label": "④ 查询已下发 SN / ⑤ 查询批次明细",
       "variant": "default",
       "note": "只读，不得据此入库、打标或删除"
     },

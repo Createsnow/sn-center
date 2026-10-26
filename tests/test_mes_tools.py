@@ -1,7 +1,7 @@
 """联调工具：模拟 MES（devtools/mes_mock.py）、MES 接口契约测试（devtools/mes_conformance.py）。
 
 契约测试先对模拟 MES 跑一遍（应全部通过），再对故意写错的 MES 跑（应报出失败），证明两边都按对接说明实现；
-取批模拟器对真实应用跑通 ③ → process → ④。
+取批模拟器对真实应用跑通 ② → process → ③。
 """
 
 from __future__ import annotations

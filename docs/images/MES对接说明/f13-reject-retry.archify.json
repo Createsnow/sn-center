@@ -83,7 +83,7 @@
       "from": "mes",
       "to": "sn",
       "y": 375,
-      "label": "③ 拉取，带 batchNo",
+      "label": "② 拉取，带 batchNo",
       "variant": "emphasis",
       "note": "按批次号取回，不新建批次"
     },
@@ -100,7 +100,7 @@
       "from": "mes",
       "to": "sn",
       "y": 495,
-      "label": "④ 提交回执 OK",
+      "label": "③ 提交回执 OK",
       "variant": "emphasis",
       "note": "重新处理并落库后提交"
     },
@@ -153,7 +153,7 @@
       "y": 875,
       "label": "① 新批次号重新送达",
       "variant": "emphasis",
-      "note": "rev 不变；原批次 ③④ 返回 409 BATCH_VOIDED"
+      "note": "rev 不变；原批次 ②③ 返回 409 BATCH_VOIDED"
     }
   ]
 }

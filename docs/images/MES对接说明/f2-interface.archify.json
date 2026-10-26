@@ -108,7 +108,7 @@
       "from": "mes",
       "to": "sn",
       "y": 500,
-      "label": "③ 拉取",
+      "label": "② 拉取",
       "variant": "default",
       "note": "推送失败 / SN 不足 / 每 5 分钟"
     },
@@ -125,7 +125,7 @@
       "from": "mes",
       "to": "sn",
       "y": 590,
-      "label": "④ 提交回执",
+      "label": "③ 提交回执",
       "variant": "default"
     },
     {
@@ -141,7 +141,7 @@
       "from": "mes",
       "to": "sn",
       "y": 680,
-      "label": "⑤⑥ 对账查询",
+      "label": "④⑤ 对账查询",
       "variant": "dashed"
     },
     {

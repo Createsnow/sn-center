@@ -4,10 +4,10 @@
 
     # 接收推送（接口 ①）：地址 http://<host>:<port>/mes/<组织>，填到「生产组织」页的 MES 接口地址
     uv run python -m devtools.mes_mock serve --port 9001 --secret 110=tok-110
-    # 同时每 5 分钟取一次批（③ → process → ④），与推送共用本侧数据
+    # 同时每 5 分钟取一次批（② → process → ③），与推送共用本侧数据
     uv run python -m devtools.mes_mock serve --port 9001 --secret 110=tok-110 \\
         --pull-base http://127.0.0.1:8000 --pull-org 110 --pull-emp MES110 --pull-key <密钥>
-    # 只取一轮批（取到 batch = null 或 remaining = 0 为止），用于手工验证 ③④
+    # 只取一轮批（取到 batch = null 或 remaining = 0 为止），用于手工验证 ②③
     uv run python -m devtools.mes_mock pull --base http://127.0.0.1:8000 --org 110 --emp MES110 --key <密钥>
 
 控制接口（注入故障、查看收到的报文和本侧数据）：
@@ -452,11 +452,11 @@ def _line(org: str, batch: dict, headers: dict, status: Any, body: Any) -> str:
     return head + f" → {status} {body.get('code') if isinstance(body, dict) else ''}"
 
 
-# ---------------------------------------------------------------------- 取批（接口 ③④）
+# ---------------------------------------------------------------------- 取批（接口 ②③）
 
 
 class Puller:
-    """扮演 MES 取批：③ 取批 → process → ④ 提交回执，remaining > 0 时继续取（对接说明第 2 章、接口文档 3.2）。
+    """扮演 MES 取批：② 取批 → process → ③ 提交回执，remaining > 0 时继续取（对接说明第 2 章、接口文档 3.2）。
     每次请求带 Authorization: Bearer <工号>:<密钥>，不换令牌。"""
 
     PREFIX = "/api/mes/v1"
@@ -480,19 +480,19 @@ class Puller:
             st, data, resp = self.call("/batches/next", {"pi": pi, "billNo": bill, "batchNo": batch_no})
             if st == 429:
                 wait = int(resp.headers.get("Retry-After") or 1)
-                self.log(f"③ 限流 429，{wait} 秒后再取")
+                self.log(f"② 限流 429，{wait} 秒后再取")
                 time.sleep(min(wait, 60))
                 continue
             if st != 200:
-                self.log(f"③ 取批失败：{st} {data}")
+                self.log(f"② 取批失败：{st} {data}")
                 done.append({"step": "next", "status": st, "body": data})
                 break
             b = data.get("batch")
             if b is None:
-                self.log(f"③ 没有可给的批次：remaining={data.get('remaining')} paused={data.get('paused')}")
+                self.log(f"② 没有可给的批次：remaining={data.get('remaining')} paused={data.get('paused')}")
                 break
             self.log(
-                f"③ 取到 {b['batchType']} {b['batchNo']} count={len(b['items'])} remaining={data.get('remaining')}"
+                f"② 取到 {b['batchType']} {b['batchNo']} count={len(b['items'])} remaining={data.get('remaining')}"
             )
             st, receipt = self.sim.handle(self.org, b, "PULL")
             if st != 200:
@@ -509,11 +509,11 @@ class Puller:
             }
             done.append(rec)
             if rs == 200:
-                self.log(f"④ 回执 {b['batchNo']} {receipt.get('code')} → 已受理")
+                self.log(f"③ 回执 {b['batchNo']} {receipt.get('code')} → 已受理")
             elif rs == 409 and isinstance(rd, dict) and rd.get("code") == "BATCH_VOIDED":
-                self.log(f"④ {b['batchNo']} 已作废，丢弃")
+                self.log(f"③ {b['batchNo']} 已作废，丢弃")
             else:
-                self.log(f"④ 回执被拒 {b['batchNo']} → {rs} {rd}")
+                self.log(f"③ 回执被拒 {b['batchNo']} → {rs} {rd}")
             if batch_no or not data.get("remaining"):
                 break
         return done
@@ -567,7 +567,7 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--pull-every", type=int, default=300, help="取批间隔秒数（对接说明：每 5 分钟不带范围取一次）")
     s.add_argument("--insecure", action="store_true", help="取批时不校验本系统的 HTTPS 证书（自签证书）")
 
-    q = sub.add_parser("pull", help="取一轮批：③ → process → ④，直到没有可给的批次")
+    q = sub.add_parser("pull", help="取一轮批：② → process → ③，直到没有可给的批次")
     q.add_argument("--base", required=True, help="本系统地址，如 http://127.0.0.1:8000")
     q.add_argument("--org", required=True)
     q.add_argument("--emp", required=True, help="MES 接口账户工号")

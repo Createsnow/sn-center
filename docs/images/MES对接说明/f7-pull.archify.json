@@ -2,7 +2,7 @@
   "schema_version": 1,
   "diagram_type": "sequence",
   "meta": {
-    "title": "③ 拉取与 ④ 提交回执",
+    "title": "② 拉取与 ③ 提交回执",
     "locale": "zh-CN",
     "quality_profile": "showcase",
     "output": "f7-pull.html",
@@ -45,7 +45,7 @@
       "from": "mes",
       "to": "sn",
       "y": 185,
-      "label": "③ POST /batches/next",
+      "label": "② POST /batches/next",
       "variant": "emphasis",
       "note": "Bearer 工号:密钥；可带 pi / billNo"
     },
@@ -63,9 +63,9 @@
       "from": "mes",
       "to": "sn",
       "y": 315,
-      "label": "④ POST /batches/{batchNo}/receipt",
+      "label": "③ POST /batches/{batchNo}/receipt",
       "variant": "emphasis",
-      "note": "落库后提交 OK / NG，格式同 ① 应答"
+      "note": "落库后提交 OK / NG，格式同 ① 响应"
     },
     {
       "id": "q4",
@@ -80,7 +80,7 @@
       "from": "mes",
       "to": "sn",
       "y": 435,
-      "label": "③ 继续拉取",
+      "label": "② 继续拉取",
       "variant": "default"
     },
     {

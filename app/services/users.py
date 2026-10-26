@@ -612,7 +612,7 @@ _SEEN_INTERVAL = timedelta(minutes=1)
 
 
 def mes_authenticate(emp_no: str | None, secret: str | None, client: str | None, trace_id: str | None) -> dict:
-    """MES 接口 ③～⑥ 的认证：工号 + 密钥（请求头 Authorization: Bearer <工号>:<密钥>），每次请求都验，返回账户行。
+    """MES 接口 ②～⑤ 的认证：工号 + 密钥（请求头 Authorization: Bearer <工号>:<密钥>），每次请求都验，返回账户行。
 
     错误：401 INVALID_CREDENTIALS；连续错 N 次锁定 M 分钟，锁定期间返回 423 ACCOUNT_LOCKED（密钥正确也拒绝）；
     403 IP_NOT_ALLOWED / ACCOUNT_DISABLED。失败、锁定、解锁都留痕。

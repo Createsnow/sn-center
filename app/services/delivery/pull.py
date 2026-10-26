@@ -1,4 +1,4 @@
-"""MES 拉取（F-12）与只读核对（F-19）：MES 接口 ③ 取批、④ 回执、⑤ 已交付查询、⑥ 批次明细。"""
+"""MES 拉取（F-12）与只读核对（F-19）：MES 接口 ② 取批、③ 回执、④ 已交付查询、⑤ 批次明细。"""
 
 from __future__ import annotations
 
@@ -104,7 +104,7 @@ def _remaining(org: str, mes: bool, pi: str | None, bill: str | None, exclude: i
 
 
 def next_batch(cu: CurrentUser, pi_in: str | None, bill_in: str | None, batch_no_in: str | None) -> dict:
-    """接口 ③ 取下一批。带 batchNo 时只读取回本组织该未确认或失败批次；否则先给范围内最早的未确认批次，没有才建批。"""
+    """接口 ② 取下一批。带 batchNo 时只读取回本组织该未确认或失败批次；否则先给范围内最早的未确认批次，没有才建批。"""
     org = cu.factory_code
     _rate_limit(org)
     f = factories.must_get(org)
@@ -169,14 +169,14 @@ def next_batch(cu: CurrentUser, pi_in: str | None, bill_in: str | None, batch_no
 
 
 def _next_out(b: dict | None, remaining: int, paused: int) -> dict:
-    """③ 应答：批次（推送、拉取建立的结构相同，处理相同）、剩余枚数、暂停枚数。"""
+    """② 应答：批次（推送、拉取建立的结构相同，处理相同）、剩余枚数、暂停枚数。"""
     if b is None:
         msg = f"暂无可拉取批次，{paused} 枚暂停下发" if paused else "暂无可拉取批次"
         return mes_body("OK", msg, batch=None, remaining=remaining, paused=paused)
     return mes_body("OK", "成功", b["batch_no"], batch=body_obj(b), remaining=remaining, paused=paused)
 
 
-#: ④ 受理结果的说明
+#: ③ 受理结果的说明
 _RECEIPT_MSG = {
     "CONFIRMED": "回执已确认，批次成功",
     "REJECTED": "整批退回已登记，批次失败",
@@ -185,7 +185,7 @@ _RECEIPT_MSG = {
 
 
 def submit_receipt(cu: CurrentUser, batch_no: str, body: dict) -> dict:
-    """接口 ④ 提交回执（或整批拒收）。按批次号幂等：已确认的只存档；已作废的拒绝；不符时拒收并记批次失败。
+    """接口 ③ 提交回执（或整批拒收）。按批次号幂等：已确认的只存档；已作废的拒绝；不符时拒收并记批次失败。
     应答回传本系统的处理结果：批次结果、是否本次首次确认。"""
     org = cu.factory_code
     _rate_limit(org)
@@ -250,7 +250,7 @@ def _read_item(r: dict) -> dict:
 def read_delivered(
     cu: CurrentUser, org_in: str | None, pi_in: str | None, cursor: str | None, size: int | None
 ) -> dict:
-    """接口 ⑤：MES 接口账户只得到已交付给本组织 MES 的号（已推送，含拉取）；其他账户按可看范围、按生产组织和 PI。
+    """接口 ④：MES 接口账户只得到已交付给本组织 MES 的号（已推送，含拉取）；其他账户按可看范围、按生产组织和 PI。
     已转到别的组织的号不再返回。只读，不得据此入库、打标或删除。"""
     if cu.is_mes:
         _rate_limit(cu.factory_code)
@@ -281,7 +281,7 @@ def read_delivered(
 
 
 def read_batch_items(cu: CurrentUser, batch_no: str, cursor: str | None, size: int | None) -> dict:
-    """接口 ⑥：按批次号查询仍在该批次中的号（已转到别的组织的不返回，整批移出时为 0 枚）。只读。"""
+    """接口 ⑤：按批次号查询仍在该批次中的号（已转到别的组织的不返回，整批移出时为 0 枚）。只读。"""
     if cu.is_mes:
         _rate_limit(cu.factory_code)
     b = find_batch(batch_no)

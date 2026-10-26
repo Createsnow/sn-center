@@ -94,7 +94,7 @@
       "y": 360,
       "label": "① 推送批次",
       "variant": "emphasis",
-      "note": "失败时 MES 用 ③ 拉取"
+      "note": "失败时 MES 用 ② 拉取"
     },
     {
       "id": "s5",
