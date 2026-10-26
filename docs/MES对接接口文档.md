@@ -206,13 +206,24 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
 }
 ```
 
-转移批次（`batchType = TRANSFER_OUT`，发给原组织）：批次头 `pi` 为转出前的 PI，`items[]` 为**转移明细**：
+转移批次（`batchType = TRANSFER_OUT`，发给原组织），`items[]` 为**转移明细**：
 
 ```jsonc
 {
-  "sn": "HX100000003A",                      // String(64)       必填  完整 SN
-  "rev": 3,                                  // Number           必填  挂靠版本
-  "toOrgCode": "120"                         // String(64)       必填  转入生产组织编码
+  "schemaVersion": "1.0",                    // String           必填  协议版本，固定 1.0
+  "batchNo": "XO-110-20261026-000007",       // String(40)       必填  批次号，全局唯一；MES 幂等键
+  "batchType": "TRANSFER_OUT",               // String           必填  批次类型，固定 TRANSFER_OUT
+  "orgCode": "110",                          // String(64)       必填  收件生产组织编码（原组织）
+  "pi": "000001",                            // String(64)       必填  转出前的 PI，一个转移批次只含一张 PI
+  "createdAt": "2026-10-26 11:50:00.000",    // String           必填  建批时间
+  "itemsDigest": "sha256:51ab07…",           // String(71)       必填  明细指纹，同交付批次
+  "items": [                                 // Array            必填  SN 明细，≤ 5000 条
+    {
+      "sn": "HX100000003A",                  // String(64)       必填  完整 SN
+      "rev": 3,                              // Number           必填  挂靠版本
+      "toOrgCode": "120"                     // String(64)       必填  转入生产组织编码
+    }
+  ]
 }
 ```
 
