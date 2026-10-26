@@ -63,7 +63,7 @@ uv run ruff check app tests devtools           # 代码检查
 node --test frontend/src/*.test.js             # 前端测试
 python3 frontend/scripts/gen_locales.py        # 改了词条 / 错误码后重新生成三种语言文件
 
-uv run python -m devtools.mes_mock serve --port 9001 --secret 110=tok-110   # 模拟 MES（接收推送、注入故障、取批）
+uv run python -m devtools.mes_mock serve --port 9001 --secret 110=SN110:key-110   # 模拟 MES（接收推送、注入故障、取批）
 uv run python -m devtools.mes_conformance --url <MES 地址> --org 110 --pi <PI> --secret <令牌>   # MES 接收接口契约测试
 ```
 

@@ -3,11 +3,11 @@
 推送和取批共用同一套本侧数据（按组织分开的 SN 表、批次表）和同一个 process，与对接说明对真实 MES 的要求一致。
 
     # 接收推送（接口 ①）：地址 http://<host>:<port>/mes/<组织>，填到「生产组织」页的 MES 接口地址
-    uv run python -m devtools.mes_mock serve --port 9001 --secret 110=tok-110
+    uv run python -m devtools.mes_mock serve --port 9001 --secret 110=SN110:key-110
     # 限定组织 110 已有的 PI：交付批次头的 pi 不在其中时整批退回（不给时不校验 PI 归属）
-    uv run python -m devtools.mes_mock serve --port 9001 --secret 110=tok-110 --pi 110=000001,000002
+    uv run python -m devtools.mes_mock serve --port 9001 --secret 110=SN110:key-110 --pi 110=000001,000002
     # 同时每 5 分钟取一次批（② → process → ③），与推送共用本侧数据
-    uv run python -m devtools.mes_mock serve --port 9001 --secret 110=tok-110 \\
+    uv run python -m devtools.mes_mock serve --port 9001 --secret 110=SN110:key-110 \\
         --pull-base http://127.0.0.1:8000 --pull-org 110 --pull-emp MES110 --pull-key <密钥>
     # 只取一轮批（取到 batch = null 或 remaining = 0 为止），用于手工验证 ②③
     uv run python -m devtools.mes_mock pull --base http://127.0.0.1:8000 --org 110 --emp MES110 --key <密钥>

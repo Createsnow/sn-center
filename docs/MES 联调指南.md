@@ -31,13 +31,13 @@ uv run pytest -q tests/test_delivery.py tests/test_transfers.py tests/test_mes_t
 ### 2.1 启动并接入
 
 ```bash
-# 组织 110 用 Bearer 令牌 tok-110；可重复 --secret 配多个组织
-uv run python -m devtools.mes_mock serve --port 9001 --secret 110=tok-110
+# 组织 110 的凭证为 工号:密钥（SN110:key-110）；可重复 --secret 配多个组织
+uv run python -m devtools.mes_mock serve --port 9001 --secret 110=SN110:key-110
 # 本系统在别的机器上：--host 0.0.0.0；要 HTTPS：--tls-cert cert.pem --tls-key key.pem
 # 要验证 PI 归属校验：--pi 110=000001,000002，交付批次头的 pi 不在其中时整批退回（不给时不校验归属）
 ```
 
-1. 「生产组织」页，组织 110 的 MES 对接配置：接口地址填 `http://<模拟 MES 所在机器>:9001/mes/110`，认证方式 TOKEN，凭证填 `tok-110`。
+1. 「生产组织」页，组织 110 的 MES 对接配置：接口地址填 `http://<模拟 MES 所在机器>:9001/mes/110`，认证方式 TOKEN，凭证填 `SN110:key-110`（工号:密钥）。
 2. 点 **连接测试**，模拟 MES 的窗口打印 `PING … → 200 PROCESSED` 即通过；再开启「对接 MES」。
 3. 正常走 生成 → 分配：每次推送在模拟 MES 窗口打印一行（批次号、第几次发送、结果汇总），在「SN 查询 → 交付批次」核对本系统一侧。
 
@@ -86,7 +86,7 @@ uv run python -m devtools.mes_mock pull ... --pi 000001 --bill VT2026090001     
 uv run python -m devtools.mes_mock pull ... --batch-no PS-110-20261019-000123    # 按批次号取回
 
 # 推送和取批同时开（与真实 MES 一样共用一套本侧数据，每 5 分钟不带范围取一次）
-uv run python -m devtools.mes_mock serve --port 9001 --secret 110=tok-110 \
+uv run python -m devtools.mes_mock serve --port 9001 --secret 110=SN110:key-110 \
   --pull-base http://127.0.0.1:8000 --pull-org 110 --pull-emp MES110 --pull-key <密钥>
 ```
 
@@ -113,11 +113,11 @@ curl -s "$BASE/batches/<batchNo>/items" -H "Authorization: Bearer $TOKEN"       
 
 ## 3. 契约测试：验证 MES 方的接收接口
 
-MES 方的接收推送接口（①）在测试环境上线后就能测，不需要本系统。脚本自己造批次，按接口文档的方式发送（默认原始 JSON，加 `--gzip` 时压缩，与「生产组织」页的「gzip 压缩」一致；认证用 Bearer 令牌），逐项核对响应：
+MES 方的接收推送接口（①）在测试环境上线后就能测，不需要本系统。脚本自己造批次，按接口文档的方式发送（默认原始 JSON，加 `--gzip` 时压缩，与「生产组织」页的「gzip 压缩」一致；认证用工号 + 密钥），逐项核对响应：
 
 ```bash
 uv run python -m devtools.mes_conformance --url https://mes-test.example.com/sn/receive --org 110 \
-  --pi 000001 --auth TOKEN --secret <令牌> --report mes-110-report.md
+  --pi 000001 --auth TOKEN --secret <工号>:<密钥> --report mes-110-report.md
 # 再加 --perf 测 5000 枚一批的处理时间
 ```
 

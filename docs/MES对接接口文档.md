@@ -108,7 +108,7 @@
 
 | 序号 | 事项 | SN 系统 | MES 侧 |
 | --- | --- | --- | --- |
-| 1 | 方式 | 工号 + 密钥，由 MES 方分配 | 采用其他方式时写明规则 |
+| 1 | 方式 | 工号 + 密钥，由 MES 方分配 | — |
 | 2 | 请求头 | `Authorization: Bearer <工号>:<密钥>`，如 `Bearer SN110:7f3c9a1e5b2d4f60` | — |
 | 3 | MES 校验 | 核对工号、密钥 | — |
 | 4 | 来源 IP | 建议限制为 SN 系统服务器 IP，出口 IP 由 SN 系统方提供 | ☐ 限制 ☐ 不限制 |
@@ -195,7 +195,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
 | --- | --- |
 | 调用方向 | SN 系统 → MES（MES 提供，SN 系统调用） |
 | 请求 | `POST {MES 地址}`（2.1） |
-| 认证 | `Authorization: Bearer <工号>:<密钥>`，或 MES 方确认的其他方式（2.3.2） |
+| 认证 | `Authorization: Bearer <工号>:<密钥>`（2.3.2） |
 | 格式 | 请求、响应均为 `application/json`；开启「gzip 压缩」时请求体为 gzip；响应体为回执（2.4.2） |
 | 调用模式 | 同步：MES 处理完再响应，SN 系统等待 60 秒 |
 | 幂等与重送 | 按 `batchNo` 幂等，重复到达返回首次回执；重送规则见 2.5 |
@@ -225,7 +225,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
 | `Accept` | 是 | `application/json` | 固定 |
 | `Accept-Encoding` | 是 | `gzip` | 响应可为 gzip |
 | `Content-Encoding` | 否 | `gzip` | 开启「gzip 压缩」时才带 |
-| `Authorization` | 是 | `Bearer SN110:7f3c9a1e5b2d4f60` | 2.3.2；采用其他方式时按 MES 方确认的请求头 |
+| `Authorization` | 是 | `Bearer SN110:7f3c9a1e5b2d4f60` | 工号 + 密钥（2.3.2） |
 | `X-Sn-Attempt` | 是 | `1` | 第几次送达，仅供日志 |
 | `X-Request-Id` | 是 | UUID | 每次送达都不同，仅供日志，**不得用于去重** |
 
