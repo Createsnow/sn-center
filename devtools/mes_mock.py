@@ -173,12 +173,11 @@ class MesSim:
             return f"超过单批上限 {self.max_batch}"
         if not isinstance(batch.get("itemsDigest"), str) or not batch["itemsDigest"]:
             return "itemsDigest 必填"
-        if delivery:
-            pi = batch.get("pi")
-            if not isinstance(pi, str) or not pi:
-                return "交付批次 pi 必填"
-            if org in self.pis and pi not in self.pis[org]:
-                return f"本组织 {org} 没有 PI {pi}"
+        pi = batch.get("pi")
+        if not isinstance(pi, str) or not pi:
+            return "pi 必填"
+        if delivery and org in self.pis and pi not in self.pis[org]:
+            return f"本组织 {org} 没有 PI {pi}"
         need = DELIVERY_FIELDS if delivery else TRANSFER_OUT_FIELDS
         for x in items:
             if not isinstance(x, dict):

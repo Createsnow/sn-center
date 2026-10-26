@@ -187,10 +187,9 @@ def _insert_batch(
     batch_no = _batch_no(prefix, org)
     now = util.now()
     digest = _digest(payload)
-    obj: dict = {"schemaVersion": "1.0", "batchNo": batch_no, "batchType": batch_type, "orgCode": org}
-    if batch_type != TRANSFER_OUT:
-        # 交付批次只含一张 PI，批次头带上，MES 据此校验本组织有没有这张 PI（对接说明 3.2 步骤 2）
-        obj["pi"] = pi
+    # 一批只含一张 PI，批次头带上：交付批次为当前 PI，MES 据此校验本组织有没有这张 PI（对接说明 3.2 步骤 2）；
+    # 转出批次为转出前的 PI
+    obj: dict = {"schemaVersion": "1.0", "batchNo": batch_no, "batchType": batch_type, "orgCode": org, "pi": pi}
     obj |= {"createdAt": util.mes_fmt(now), "itemsDigest": digest, "items": payload}
     body = mes_client.gzip_bytes(mes_client.canonical(obj))
     bid = db.insert(
@@ -365,13 +364,17 @@ def build_delivery_now(
 
 
 def build_transfer_out(cu: CurrentUser, org: str, entries: list[dict], rebuilt_from: str | None = None) -> list[dict]:
-    """转出批次（在转移事务内调用）：按来源组织当前单批枚数拆分。entries 每枚含转出前挂靠、转入组织、转移类型与单号。"""
+    """转出批次（在转移事务内调用）：按转出前 PI 分批（一张转移单只有一张来源 PI），再按来源组织当前单批枚数拆分。
+    entries 每枚含转出前挂靠、转入组织、转移类型与单号。"""
     f = factories.get(org)
     size = max(1, int(f["batch_size"])) if f else 5000
+    by_pi: dict[str, list[dict]] = {}
+    for e in entries:
+        by_pi.setdefault(e["pi_no"], []).append(e)
+    parts = [g[i : i + size] for _, g in sorted(by_pi.items()) for i in range(0, len(g), size)]
     out = []
-    for i in range(0, len(entries), size):
-        part = entries[i : i + size]
-        pis = {e["pi_no"] for e in part}
+    for part in parts:
+        pi = part[0]["pi_no"]
         payload = [_transfer_out_payload(e) for e in part]
         rows = [
             (
@@ -396,7 +399,7 @@ def build_transfer_out(cu: CurrentUser, org: str, entries: list[dict], rebuilt_f
             SRC_PUSH,
             TRANSFER_OUT,
             org,
-            pis.pop() if len(pis) == 1 else None,
+            pi,
             payload,
             rows,
             (part[0]["transfer_kind"], part[0]["transfer_doc_no"]),

@@ -142,10 +142,9 @@ class Runner:
         return {"sn": self.sn(i), "rev": rev, "toOrgCode": to_org}
 
     def batch(self, items: list[dict], kind: str = "NEW", no: str | None = None, **head: Any) -> dict:
-        """批次头；交付批次带 pi（取明细的 pi），转移批次不带。"""
+        """批次头；交付批次的 pi 取明细的 pi，转移批次取测试 PI（转出前的 PI）。"""
         obj: dict = {"schemaVersion": SCHEMA, "batchNo": no or self.batch_no(), "batchType": kind, "orgCode": self.org}
-        if kind != "TRANSFER_OUT":
-            obj["pi"] = items[0]["pi"] if items else self.pi
+        obj["pi"] = items[0]["pi"] if items and kind != "TRANSFER_OUT" else self.pi
         obj |= {"createdAt": now_cst(), "itemsDigest": digest(items), "items": items}
         obj.update(head)
         return obj

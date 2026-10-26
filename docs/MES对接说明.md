@@ -103,7 +103,7 @@ MES 已持有的 SN 在转移、改挂当时单独建批（`SAME_ORG_TRANSFER` /
 
 批次号中的日期为国内日期（UTC+8）。
 
-MES 判断要用的字段：`batchNo`（幂等键）、`batchType`（分流）、`orgCode`（收件组织）、`pi`（交付批次的 PI，校验本组织有这张 PI）、`itemsDigest`（同一批次号再次到达时比对），明细的 `sn`、`rev`；转移批次明细另有 `toOrgCode`（转入组织）。转移批次、测试批次的批次头不带 `pi`。
+MES 判断要用的字段：`batchNo`（幂等键）、`batchType`（分流）、`orgCode`（收件组织）、`pi`（本批的 PI；交付批次校验本组织有这张 PI，转移批次为转出前的 PI）、`itemsDigest`（同一批次号再次到达时比对），明细的 `sn`、`rev`；转移批次明细另有 `toOrgCode`（转入组织）。测试批次的批次头不带 `pi`。
 
 ### 3.2 处理步骤
 

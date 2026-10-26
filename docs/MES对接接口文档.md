@@ -206,7 +206,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
 }
 ```
 
-转移批次（`batchType = TRANSFER_OUT`，发给原组织）：批次头不带 `pi`，`items[]` 为**转移明细**：
+转移批次（`batchType = TRANSFER_OUT`，发给原组织）：批次头 `pi` 为转出前的 PI，`items[]` 为**转移明细**：
 
 ```jsonc
 {
@@ -266,7 +266,7 @@ X-Request-Id: 1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed
 **转移批次**（请求头同上，只列请求体）
 
 ```json
-{"schemaVersion": "1.0", "batchNo": "XO-110-20261026-000007", "batchType": "TRANSFER_OUT", "orgCode": "110", "createdAt": "2026-10-26 11:50:00.000", "itemsDigest": "sha256:51ab07…", "items": [{"sn": "HX100000003A", "rev": 3, "toOrgCode": "120"}]}
+{"schemaVersion": "1.0", "batchNo": "XO-110-20261026-000007", "batchType": "TRANSFER_OUT", "orgCode": "110", "pi": "000001", "createdAt": "2026-10-26 11:50:00.000", "itemsDigest": "sha256:51ab07…", "items": [{"sn": "HX100000003A", "rev": 3, "toOrgCode": "120"}]}
 ```
 
 **测试批次**
@@ -378,7 +378,7 @@ MES 主动拉取一个批次：优先返回范围内最早的未回执批次（�
     "batchNo": "PL-110-20261026-000046",
     "batchType": "NEW",
     "orgCode": "110",
-    "pi": "000001",                          //                          仅交付批次有，校验同 ①
+    "pi": "000001",                          //                          交付批次校验同 ①；转移批次为转出前的 PI
     "createdAt": "2026-10-26 11:48:15.400",
     "itemsDigest": "sha256:c07e3a…",
     "items": [ … ]                           //                          交付明细或转移明细，≤ 5000 条
