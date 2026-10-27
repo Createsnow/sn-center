@@ -134,7 +134,13 @@
                   </template>
                 </el-table-column>
                 <el-table-column :label="t('common.unit')" width="70" show-overflow-tooltip>
-                  <template #default="{ row }">{{ row.unit || "—" }}</template>
+                  <template #default="{ row }">
+                    <!-- 金蝶产品单位含中文（条、个等）且未填写：规则带单位时须在生成页填写不含中文的单位 -->
+                    <el-tooltip v-if="row.unit_source === 'K3_CHINESE'" :content="t('orders.unitChineseTip')">
+                      <span class="err">{{ row.unit }}</span>
+                    </el-tooltip>
+                    <span v-else>{{ row.unit || "—" }}</span>
+                  </template>
                 </el-table-column>
                 <el-table-column :label="t('common.qty')" align="right" width="60">
                   <template #default="{ row }"><span class="num">{{ row.qty }}</span></template>

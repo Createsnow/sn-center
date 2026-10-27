@@ -79,6 +79,14 @@ def order_length(body: AttachIn, cu: AdminDep) -> dict:
     return orders.fill_length(cu, body.bill_no, body.seq, body.value)
 
 
+@router.put(
+    "/unit",
+    summary="填写产品单位（金蝶为空或含中文时；规则带单位时必填，不能含中文，如 M、m、L；留空清除；有号后不能改）",
+)
+def order_unit(body: AttachIn, cu: AdminDep) -> dict:
+    return orders.fill_unit(cu, body.bill_no, body.seq, body.value)
+
+
 @router.get("/alerts", summary="订单变更提醒；status = OPEN（默认）/ CLOSED / ALL")
 def order_alerts(
     cu: AdminOrQueryDep,

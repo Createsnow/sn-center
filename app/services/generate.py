@@ -135,6 +135,7 @@ class Line:
     length: str
     length_source: str
     unit: str
+    unit_source: str
     attach: str
     res: rules.Resolved | None
     block: str | None = None
@@ -154,7 +155,7 @@ def _load_lines(pi: str, keys: list[tuple[str, int]]) -> list[Line]:
         (r["bill_no"], r["seq"]): r
         for r in db.all(f"SELECT * FROM sn_prd_mo WHERE bill_no IN ({marks(len(bills))})", *bills)
     }
-    counts, fills, lens = orders.line_extras(keys)
+    counts, fills, lens, units = orders.line_extras(keys)
     sels = rules.selections(keys)
     defaults: dict[str, rules.Resolved | None] = {}
     memo: dict[int, rules.Resolved | None] = {}
@@ -171,6 +172,7 @@ def _load_lines(pi: str, keys: list[tuple[str, int]]) -> list[Line]:
         c = counts.get(k)
         attach, _src = orders.effective_attach(r, fills.get(k))
         length, length_src = orders.effective_length(r, lens.get(k))
+        unit, unit_src = orders.effective_unit(r, units.get(k))
         line = Line(
             r["bill_no"],
             r["seq"],
@@ -182,7 +184,8 @@ def _load_lines(pi: str, keys: list[tuple[str, int]]) -> list[Line]:
             0 if c is None else int(c["own_generated"]),
             length,
             length_src,
-            util.trim(r.get("unit")),
+            unit,
+            unit_src,
             attach,
             rules.effective(pi, r["customer_code"], sels.get(k), defaults[r["customer_code"]], memo=memo),
             blocks[r["bill_no"]],
@@ -206,9 +209,12 @@ def _check(line: Line) -> None:
     # 米数选填（为空取默认 000），不挡生成；但金蝶米数含中文时须先在页面手动改过（规则不带米数时不影响）
     if line.length_source == orders.LENGTH_CHINESE and (spec is None or spec.with_length):
         line.issues.append("LENGTH_CHINESE")
-    # 规则带单位时物料行须有产品单位（在金蝶补填后同步）
-    if spec is not None and spec.with_unit and not line.unit:
-        line.issues.append("UNIT_EMPTY")
+    # 规则带单位时产品单位须是不含中文的字符：金蝶为空或含中文（条、个等）时须先在页面手动填写（如 M、m、L）
+    if spec is not None and spec.with_unit:
+        if line.unit_source == orders.UNIT_EMPTY:
+            line.issues.append("UNIT_EMPTY")
+        elif line.unit_source == orders.UNIT_CHINESE:
+            line.issues.append("UNIT_CHINESE")
     # 附件项次必填
     if not line.attach:
         line.issues.append("ATTACH_EMPTY")

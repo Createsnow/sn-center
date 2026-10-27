@@ -228,6 +228,18 @@ CREATE TABLE sn_line_length (
   PRIMARY KEY (bill_no, seq)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='米数补填';
 
+-- 产品单位补填（快照之外；金蝶为空或含中文（条、个等）时由总部填写，规则带单位时须填写才能生成）
+CREATE TABLE sn_line_unit (
+  bill_no        VARCHAR(64) NOT NULL,
+  seq            INT         NOT NULL,
+  manual_value   VARCHAR(64) NOT NULL COMMENT '手工值（产品单位，不含中文，字符串原样）',
+  material_code  VARCHAR(64) NOT NULL DEFAULT '' COMMENT '填写时的物料编码；之后同序号物料变了视为对不上',
+  filled_by      VARCHAR(32) NOT NULL,
+  filled_at      DATETIME    NOT NULL,
+  updated_at     DATETIME    NOT NULL,
+  PRIMARY KEY (bill_no, seq)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='产品单位补填';
+
 -- 物料行计数（快照之外，快照覆盖或单据离开快照都不丢）
 CREATE TABLE sn_line_count (
   bill_no        VARCHAR(64) NOT NULL,

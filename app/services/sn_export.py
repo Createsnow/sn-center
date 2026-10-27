@@ -2,7 +2,8 @@
 
 与分配后的推送、拉取是两套独立的机制：号一经分配到生产组织（不再是待分配）就按「生产组织 + PI + 单据」一行列出，
 不论该组织是否对接 MES，也不看推送、拉取的进度和结果（推送失败、批次未确认都照常导出）；
-可看明细号段，也可直接下载 xlsx（列与 SN 查询导出、历史领取文件统一，含组织编号与中文生产组织名称，见 sn_sheet）。
+明细逐枚列出全部号（不按号段合并），也可直接下载 xlsx（列与 SN 查询导出、历史领取文件统一，含组织编号与
+中文生产组织名称，见 sn_sheet）。
 只读：导出不改号的状态、不建批次，可反复导出；导出也不影响推送、拉取。历史领取批次在 SN 查询中查看。
 """
 
@@ -148,6 +149,37 @@ def segments(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | N
         for r in rows
     ]
     return util.page_result(items, total, page)
+
+
+def items(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None, page: util.Page) -> dict:
+    """明细：逐枚列出该单据的全部已分配号（不按号段合并），按单据序号、流水排序，与下载文件的行顺序一致；
+    每枚带十进制流水、流水归属（转入号注明）、暂停、申请中。"""
+    p, _b, where, args = _bill_where(cu, factory, pi, bill)
+    total = db.count("SELECT COUNT(*) FROM sn_item i" + where, *args)
+    rows = db.all(
+        "SELECT i.sn, i.bill_seq, i.material_code, i.attach_no, i.length_text, i.seq_pi_no, i.seq_dec, i.status, "
+        "i.suspend FROM sn_item i" + where + " ORDER BY i.bill_seq, i.seq_pi_no, i.seq_dec LIMIT %s, %s",
+        *args,
+        page.offset,
+        page.size,
+    )
+    out = [
+        {
+            "line_no": page.offset + n + 1,
+            "sn": _text(r["sn"]),
+            "bill_seq": r["bill_seq"],
+            "material_code": r["material_code"],
+            "attach_no": _text(r["attach_no"]) or "",
+            "length": _text(r["length_text"]) or "",
+            "seq_pi_no": r["seq_pi_no"],
+            "transferred_in": r["seq_pi_no"] != p,
+            "seq_dec": int(r["seq_dec"]),
+            "applying": r["status"] == "APPLYING",
+            "suspend": _text(r["suspend"]),
+        }
+        for n, r in enumerate(rows)
+    ]
+    return util.page_result(out, total, page)
 
 
 def _text(v):

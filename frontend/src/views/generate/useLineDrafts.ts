@@ -8,18 +8,21 @@ import type { OrderLine } from "@/types/api";
 const CHINESE = /[\u3000-\u303f\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff00-\uffef]/;
 export const hasChinese = (v: string | null | undefined) => !!v && CHINESE.test(v);
 
-/** 金蝶缺失的附件项次（必填）、米数（选填，留空用默认 000；金蝶米数含中文时必须改成不含中文的米数）在表格里直接填写；
+/** 金蝶缺失的附件项次（必填）、米数（选填，留空用默认 000；金蝶米数含中文时必须改成不含中文的米数）、
+ *  产品单位（金蝶为空或含中文（条、个等）时，规则带单位须手动填写不含中文的单位，如 M、m、L）在表格里直接填写；
  *  物料行有号后置灰：已生成未分配的撤销生成后可改，已分配的不能再改。失焦或回车保存，保存后刷新详情。 */
 export function useLineDrafts(reload: () => Promise<unknown>) {
   const { t } = useI18n();
   const DEFAULT_LENGTH = "000";
-  type DraftField = "attach" | "length";
+  type DraftField = "attach" | "length" | "unit";
   const drafts = reactive<Record<string, string>>({});
   const draftKey = (row: OrderLine, f: DraftField) => `${f}:${row.bill_no}/${row.seq}`;
   function draftOf(row: OrderLine, f: DraftField): string {
     const k = draftKey(row, f);
     if (k in drafts) return drafts[k];
-    return f === "attach" ? row.attach_no : row.length_source === "MANUAL" ? row.length : "";
+    if (f === "attach") return row.attach_no;
+    if (f === "unit") return row.unit_source === "MANUAL" ? row.unit : "";
+    return row.length_source === "MANUAL" ? row.length : "";
   }
   function setDraft(row: OrderLine, f: DraftField, v: string) {
     drafts[draftKey(row, f)] = v;
@@ -31,6 +34,12 @@ export function useLineDrafts(reload: () => Promise<unknown>) {
       ? t("generate.lengthChineseTip", { k3: row.length_raw || row.length })
       : t("generate.lengthDefaultTip");
   const lengthPlaceholder = (row: OrderLine) => (row.length_source === "K3_CHINESE" ? row.length : DEFAULT_LENGTH);
+  /** 规则带单位、产品单位金蝶为空或含中文、页面还没填 */
+  const unitMissing = (row: OrderLine) =>
+    !!row.rule?.with_unit && (row.unit_source === "EMPTY" || row.unit_source === "K3_CHINESE") && !draftOf(row, "unit");
+  const unitTip = (row: OrderLine) =>
+    row.unit_raw ? t("generate.unitChineseTip", { k3: row.unit_raw }) : t("generate.unitEmptyTip");
+  const unitPlaceholder = (row: OrderLine) => row.unit_raw || (row.rule?.with_unit ? t("generate.attachRequired") : "");
   function lockText(row: OrderLine) {
     return row.edit_lock === "ALLOCATED" ? t("generate.lockAllocated") : t("generate.lockGenerated");
   }
@@ -66,5 +75,21 @@ export function useLineDrafts(reload: () => Promise<unknown>) {
     return saveDraft(row, "length", (v) => api.fillLength(row.bill_no, row.seq, v));
   }
 
-  return { draftOf, setDraft, lockText, saveAttach, saveLength, lengthTip, lengthMissing, lengthPlaceholder };
+  function saveUnit(row: OrderLine) {
+    const value = (drafts[draftKey(row, "unit")] ?? "").trim();
+    if (value === (row.unit_source === "MANUAL" ? row.unit : "")) {
+      delete drafts[draftKey(row, "unit")];
+      return;
+    }
+    if (hasChinese(value)) {
+      ElMessage.warning(t("generate.unitChinese"));
+      return;
+    }
+    return saveDraft(row, "unit", (v) => api.fillUnit(row.bill_no, row.seq, v));
+  }
+
+  return {
+    draftOf, setDraft, lockText, saveAttach, saveLength, saveUnit,
+    lengthTip, lengthMissing, lengthPlaceholder, unitTip, unitMissing, unitPlaceholder,
+  };
 }

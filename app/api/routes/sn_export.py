@@ -41,6 +41,18 @@ def export_segments(
     return sn_export.segments(cu, factory_code, pi, bill_no, page_of(page, page_size))
 
 
+@router.get("/items", summary="明细：逐枚列出该单据的全部已分配号（不按号段合并），顺序同下载文件")
+def export_items(
+    cu: UserDep,
+    pi: str | None = None,
+    bill_no: str | None = None,
+    factory_code: str | None = None,
+    page: OptInt = None,
+    page_size: OptInt = None,
+) -> dict:
+    return sn_export.items(cu, factory_code, pi, bill_no, page_of(page, page_size))
+
+
 @router.get("/file", summary="下载一张单据的已分配号 xlsx（列：PI、单据、物料编码、SN）；不改状态")
 def export_file(
     cu: UserDep,

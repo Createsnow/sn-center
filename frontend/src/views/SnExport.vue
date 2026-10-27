@@ -46,7 +46,7 @@
       <p class="muted">{{ t("export.rule") }}</p>
     </div>
 
-    <!-- 明细：概况 + 物料行 + 号段 -->
+    <!-- 明细：概况 + 物料行 + 逐枚列出全部 SN -->
     <el-drawer :model-value="!!detail" size="900px" @close="detail = null">
       <template #header>
         <div v-if="detail" class="dh">
@@ -84,37 +84,31 @@
         </el-table>
 
         <div class="seg-head">
-          <span class="surface__title">{{ t("export.segments") }}</span>
+          <span class="surface__title">{{ t("export.sns") }}</span>
         </div>
-        <el-table v-loading="segs.state.loading" :data="segRows" size="small" :span-method="spanLine" :empty-text="t('common.empty')">
-          <el-table-column prop="bill_seq" :label="t('export.seq')" width="90" />
-          <el-table-column prop="material_code" :label="t('common.material')" min-width="100" />
-          <el-table-column :label="t('common.attachNo')" width="90"><template #default="{ row }">{{ row.attach_no || "—" }}</template></el-table-column>
-          <el-table-column :label="t('common.length')" width="80"><template #default="{ row }">{{ row.length || "—" }}</template></el-table-column>
-          <el-table-column :label="t('export.segment')" min-width="280">
+        <el-table v-loading="sns.state.loading" :data="sns.items.value" size="small" :empty-text="t('common.empty')">
+          <el-table-column prop="line_no" :label="t('export.lineNo')" width="70" />
+          <el-table-column :label="t('common.sn')" min-width="220">
             <template #default="{ row }">
-              <div class="sn-mono">{{ row.start_sn }}<template v-if="row.end_sn !== row.start_sn"> ~ {{ row.end_sn }}</template></div>
-              <div v-if="row.gap" class="muted small">{{ row.gap.n === 1 ? t("export.gap1", { r: row.gap.range }) : t("export.gap", { r: row.gap.range, n: num(row.gap.n) }) }}</div>
-              <el-tag v-if="row.transferred_in" size="small" type="info" effect="plain" class="mt4">{{ t("export.seqOf", { pi: row.seq_pi_no }) }}</el-tag>
+              <span class="sn-mono">{{ row.sn }}</span>
+              <el-tag v-if="row.transferred_in" size="small" type="info" effect="plain" class="ml">{{ t("export.seqOf", { pi: row.seq_pi_no }) }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column :label="t('common.seqDec')" width="120">
-            <template #default="{ row }"><span class="num">{{ row.start_seq === row.end_seq ? row.start_seq : `${row.start_seq} ~ ${row.end_seq}` }}</span></template>
-          </el-table-column>
-          <el-table-column :label="t('common.qty')" align="right" width="70"><template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template></el-table-column>
-          <el-table-column :label="t('export.attention')" width="170">
+          <el-table-column prop="seq_dec" :label="t('common.seqDec')" width="100" align="right" />
+          <el-table-column prop="bill_seq" :label="t('export.seq')" width="90" />
+          <el-table-column prop="material_code" :label="t('common.material')" min-width="100" show-overflow-tooltip />
+          <el-table-column :label="t('common.attachNo')" width="90"><template #default="{ row }">{{ row.attach_no || "—" }}</template></el-table-column>
+          <el-table-column :label="t('common.length')" width="80"><template #default="{ row }">{{ row.length || "—" }}</template></el-table-column>
+          <el-table-column :label="t('export.attention')" width="150">
             <template #default="{ row }">
-              <el-tag v-if="row.applying" size="small" type="warning" effect="plain" class="mr">{{ t("export.applying", { n: num(row.applying) }) }}</el-tag>
+              <el-tag v-if="row.applying" size="small" type="warning" effect="plain" class="mr">{{ t("export.applyingOne") }}</el-tag>
               <el-tag v-if="row.suspend" size="small" type="danger">{{ suspendLabel(row.suspend) }}</el-tag>
               <span v-if="!row.applying && !row.suspend" class="muted">—</span>
             </template>
           </el-table-column>
         </el-table>
-        <el-pagination class="pager" layout="slot, prev, pager, next" :total="segs.state.total" :page-size="segs.state.pageSize"
-          :current-page="segs.state.page" @current-change="segs.load">
-          <span class="muted seg-total">{{ t("export.segTotal", { n: num(segs.state.total) }) }}</span>
-        </el-pagination>
-        <p class="muted">{{ t("export.segNote") }}</p>
+        <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="sns.state.total" :page-size="sns.state.pageSize"
+          :current-page="sns.state.page" :page-sizes="[50, 100, 200, 500]" @current-change="sns.load" @size-change="sns.onSize" />
       </template>
     </el-drawer>
   </div>
@@ -179,33 +173,33 @@ interface LineRow {
   suspended: number;
   applying: number;
 }
-interface SegRow {
+interface SnRow {
+  line_no: number;
+  sn: string;
   bill_seq: number;
   material_code: string;
   attach_no: string;
   length: string;
   seq_pi_no: string;
-  start_seq: number;
-  end_seq: number;
-  start_sn: string;
-  end_sn: string;
-  qty: number;
-  applying: number;
-  suspend: string | null;
   transferred_in: boolean;
+  seq_dec: number;
+  applying: boolean;
+  suspend: string | null;
 }
 
 const detail = ref<BillRow | null>(null);
 const lines = ref<LineRow[]>([]);
 const linesLoading = ref(false);
-const segs = usePaged<SegRow>((q) =>
-  api.exportSegments({ ...q, factory_code: detail.value!.factory_code, pi: detail.value!.pi_no, bill_no: detail.value!.bill_no }),
+/** 明细逐枚列出该单据的全部 SN（不按号段合并），顺序同下载文件。 */
+const sns = usePaged<SnRow>(
+  (q) => api.exportItems({ ...q, factory_code: detail.value!.factory_code, pi: detail.value!.pi_no, bill_no: detail.value!.bill_no }),
+  100,
 );
 
 async function openDetail(row: BillRow) {
   detail.value = row;
   lines.value = [];
-  segs.load(1);
+  sns.load(1);
   linesLoading.value = true;
   try {
     const got: LineRow[] = await api.exportLines({ factory_code: row.factory_code, pi: row.pi_no, bill_no: row.bill_no });
@@ -225,33 +219,6 @@ const notes = computed(() => {
   return out;
 });
 
-const sameLine = (a: SegRow, b: SegRow) => a.bill_seq === b.bill_seq && a.material_code === b.material_code;
-/**
- * 号段加上「与上一段之间缺的流水」：同一物料行、同一流水归属内不连续时标出，说明一行为什么拆成几段。
- */
-const segRows = computed(() =>
-  segs.items.value.map((r, i, all) => {
-    const prev = all[i - 1];
-    let gap: { range: string; n: number } | null = null;
-    if (prev && sameLine(prev, r) && prev.seq_pi_no === r.seq_pi_no && r.start_seq > prev.end_seq + 1) {
-      const from = prev.end_seq + 1;
-      const to = r.start_seq - 1;
-      gap = { range: from === to ? String(from) : `${from} ~ ${to}`, n: to - from + 1 };
-    }
-    return { ...r, gap };
-  }),
-);
-
-/** 同一物料行连续的号段合并「单据序号」「物料编码」「附件项次」「米数」四格。 */
-function spanLine({ row, rowIndex, columnIndex }: { row: SegRow; rowIndex: number; columnIndex: number }) {
-  if (columnIndex > 3) return [1, 1];
-  const rows = segRows.value;
-  if (rowIndex > 0 && sameLine(rows[rowIndex - 1], row)) return [0, 0];
-  let n = 1;
-  while (rowIndex + n < rows.length && sameLine(rows[rowIndex + n], row)) n++;
-  return [n, 1];
-}
-
 onMounted(() => list.load(1));
 </script>
 
@@ -261,12 +228,9 @@ onMounted(() => list.load(1));
 .ml { margin-left: 6px; }
 .mr { margin-right: 6px; }
 .mb { margin-bottom: 12px; }
-.mt4 { margin-top: 4px; }
-.small { font-size: 12px; }
 .total { font-size: 14px; font-weight: 600; color: var(--app-text); }
 .seg-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
 .seg-head .surface__title { margin: 0; }
-.seg-total { margin-right: 12px; font-size: 13px; }
 .sp { flex: 1; }
 .clickable :deep(.el-table__row) { cursor: pointer; }
 .dh { display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--app-text); }

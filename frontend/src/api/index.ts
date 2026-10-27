@@ -55,6 +55,7 @@ export const api = {
   rebuildOrders: () => http.post<any, any>("/orders/rebuild", {}, { timeout: 0 }),
   fillAttach: (bill_no: string, seq: number, value: string) => put("/orders/attach", { bill_no, seq, value }),
   fillLength: (bill_no: string, seq: number, value: string) => put("/orders/length", { bill_no, seq, value }),
+  fillUnit: (bill_no: string, seq: number, value: string) => put("/orders/unit", { bill_no, seq, value }),
   orderAlerts: (params?: Q) => get("/orders/alerts", params),
   handleOrderAlert: (id: number, data: Q) => post(`/orders/alerts/${id}/handle`, data),
 
@@ -108,6 +109,7 @@ export const api = {
   exportBills: (params?: Q) => get("/export/bills", params),
   exportLines: (params: Q) => get("/export/lines", params),
   exportSegments: (params?: Q) => get("/export/segments", params),
+  exportItems: (params?: Q) => get("/export/items", params),
   acquireBatches: (params?: Q) => get("/acquire/batches", params),
   acquireBatchItems: (batchNo: string, params?: Q) => get(`/acquire/batches/${enc(batchNo)}/items`, params),
 

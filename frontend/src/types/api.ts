@@ -137,13 +137,19 @@ export interface OrderLine {
   /** K3 金蝶值 / MANUAL 页面填写 / K3_CHINESE 金蝶值含中文且未改（不能生成）/ DEFAULT 金蝶为空且未填写，取默认 000 */
   length_source: "K3" | "MANUAL" | "K3_CHINESE" | "DEFAULT";
   length_manual: string | null;
-  /** 产品单位（金蝶 FProductUnit；规则带单位时写入 SN） */
+  /** 金蝶产品单位原值（FProductUnit） */
+  unit_raw: string;
+  /** 生效产品单位（规则带单位时写入 SN）；K3_CHINESE 时为金蝶原值 */
   unit: string;
+  /** K3 金蝶值 / MANUAL 页面填写 / K3_CHINESE 金蝶值含中文（条、个等）且未填写 / EMPTY 金蝶为空且未填写；
+   *  后两种在规则带单位时不能生成，须手动填写不含中文的单位（如 M、m、L） */
+  unit_source: "K3" | "MANUAL" | "K3_CHINESE" | "EMPTY";
+  unit_manual: string | null;
   qty: number;
   generated_qty: number;
   own_generated_qty: number;
   allocated_qty: number;
-  /** 附件项次、米数能否修改：null 可改 / GENERATED 已生成未分配（撤销生成后可改）/ ALLOCATED 已分配 */
+  /** 附件项次、米数、产品单位能否修改：null 可改 / GENERATED 已生成未分配（撤销生成后可改）/ ALLOCATED 已分配 */
   edit_lock: "GENERATED" | "ALLOCATED" | null;
   quota: number;
   rule: LineRule | null;

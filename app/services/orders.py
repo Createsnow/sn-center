@@ -360,8 +360,7 @@ def fill_attach(cu: CurrentUser, bill_no: str | None, seq: int | None, value: st
             .material(line["material_code"])
             .info(f"seq={seq} {'' if prev is None else prev['manual_value']} -> {v}"),
         )
-    counts, fills, lens = line_extras([(no, seq)])
-    return line_view(line, counts.get((no, seq)), fills.get((no, seq)), lfill=lens.get((no, seq)))
+    return _line_view_of(line)
 
 
 #: 米数来源：金蝶值含中文、页面还没改过——须手动改成不含中文的米数才能生成
@@ -432,17 +431,93 @@ def fill_length(cu: CurrentUser, bill_no: str | None, seq: int | None, value: st
                 .material(line["material_code"])
                 .info(f"seq={seq} {'' if prev is None else prev['manual_value']} -> {v or codec.DEFAULT_LENGTH}"),
             )
-    counts, fills, lens = line_extras([(no, seq)])
-    return line_view(line, counts.get((no, seq)), fills.get((no, seq)), lfill=lens.get((no, seq)))
+    return _line_view_of(line)
 
 
-#: 物料行在本系统做的配置：物料行选定的规则、手填的附件项次、手填的米数
-_LINE_CONFIG = (("sn_line_rule", "rule"), ("sn_line_attach", "attach"), ("sn_line_length", "length"))
+#: 产品单位来源：金蝶为空 / 金蝶值含中文（条、个等）、页面还没填过——规则带单位时须手动填写不含中文的单位才能生成
+UNIT_EMPTY = "EMPTY"
+UNIT_CHINESE = "K3_CHINESE"
+
+
+def effective_unit(line: dict, fill: dict | None) -> tuple[str, str]:
+    """产品单位（字符串，原样使用）的生效值与来源：K3 金蝶值 / MANUAL 页面填写（金蝶为空或含中文时）/
+    K3_CHINESE 金蝶值含中文且未填写（返回金蝶原值）/ EMPTY 金蝶为空且未填写；后两种在规则带单位时不能生成。"""
+    k3v = util.trim(line.get("unit"))
+    if k3v and not codec.has_chinese(k3v):
+        return k3v, "K3"
+    if fill is not None and fill["material_code"] == (line.get("material_code") or ""):
+        return fill["manual_value"], "MANUAL"
+    if k3v:
+        return k3v, UNIT_CHINESE
+    return "", UNIT_EMPTY
+
+
+def _unit_value(value: str | None) -> str | None:
+    """填写的产品单位：字符串原样保存（去首尾空格），不超过 64 字、不能含中文（如 M、m、L、PCS）；
+    留空返回 None（清除填写）。"""
+    v = util.trim(value)
+    if not v:
+        return None
+    if len(v) > 64:
+        raise biz(ErrorCode.UNIT_FILL_INVALID)
+    if codec.has_chinese(v):
+        raise biz(ErrorCode.UNIT_FILL_CHINESE, value=v)
+    return v
+
+
+_UNIT_UPSERT = _LENGTH_UPSERT.replace("sn_line_length", "sn_line_unit")
+
+
+def fill_unit(cu: CurrentUser, bill_no: str | None, seq: int | None, value: str | None) -> dict:
+    """填写产品单位（金蝶为空或含中文时；规则带单位时必填，须是不含中文的字符，如 M、m、L）；留空清除填写；
+    物料行有号后不能改。值不写回金蝶。"""
+    no = util.trim(bill_no)
+    v = _unit_value(value)
+    line = _must_line(no, seq)
+    with locks.with_pi_lock(line["pi"]), db.tx():
+        line = _must_line(no, seq)
+        k3v = util.trim(line["unit"])
+        if k3v and not codec.has_chinese(k3v):
+            raise biz(ErrorCode.UNIT_FILL_K3)
+        _check_editable(no, line["seq"])
+        prev = db.one("SELECT * FROM sn_line_unit WHERE bill_no = %s AND seq = %s FOR UPDATE", no, seq)
+        now = util.now()
+        if v is None:
+            db.exec("DELETE FROM sn_line_unit WHERE bill_no = %s AND seq = %s", no, seq)
+        else:
+            db.exec(_UNIT_UPSERT, no, seq, v, line["material_code"], cu.emp_no, now, now)
+        if (None if prev is None else prev["manual_value"]) != v:
+            audit.record(
+                cu,
+                audit.entry(audit.ORDER_UNIT_FILL)
+                .bill(no)
+                .pi(line["pi"])
+                .factory(line["org_code"])
+                .material(line["material_code"])
+                .info(f"seq={seq} {'' if prev is None else prev['manual_value']} -> {v or ''}"),
+            )
+    return _line_view_of(line)
+
+
+def _line_view_of(line: dict) -> dict:
+    k = (line["bill_no"], line["seq"])
+    counts, fills, lens, units = line_extras([k])
+    return line_view(line, counts.get(k), fills.get(k), lfill=lens.get(k), ufill=units.get(k))
+
+
+#: 物料行在本系统做的配置：物料行选定的规则、手填的附件项次、手填的米数、手填的产品单位
+_LINE_CONFIG = (
+    ("sn_line_rule", "rule"),
+    ("sn_line_attach", "attach"),
+    ("sn_line_length", "length"),
+    ("sn_line_unit", "unit"),
+)
 
 
 def revoke_config(cu: CurrentUser, pi_in: str | None, lines_in: list[dict] | None) -> dict:
     """撤销物料行配置（生成页待处理页签，可单行、可多行）：所选物料行中还没有号的，物料行选定的规则、手填的附件项次、
-    手填的米数一并删除，恢复为未配置（规则改回按 PI / 客户默认，附件项次金蝶为空时待填写，米数取金蝶值或默认 000）。
+    手填的米数、手填的产品单位一并删除，恢复为未配置（规则改回按 PI / 客户默认，附件项次金蝶为空时待填写，
+    米数取金蝶值或默认 000，产品单位取金蝶值）。
     有号的行不动（有号的行撤销生成后才能改）。一个事务内完成。返回撤销了配置的行数与因有号跳过的行数。"""
     pi = util.trim(pi_in)
     if not pi:
@@ -556,12 +631,18 @@ def list_bills(
 
 
 def line_view(
-    r: dict, count: dict | None = None, fill: dict | None = None, rule: dict | None = None, lfill: dict | None = None
+    r: dict,
+    count: dict | None = None,
+    fill: dict | None = None,
+    rule: dict | None = None,
+    lfill: dict | None = None,
+    ufill: dict | None = None,
 ) -> dict:
     qty = sn_qty(r)
     own = 0 if count is None else int(count["own_generated"])
     attach, attach_src = effective_attach(r, fill)
     length, length_src = effective_length(r, lfill)
+    unit, unit_src = effective_unit(r, ufill)
     return {
         "bill_no": r["bill_no"],
         "seq": r["seq"],
@@ -581,7 +662,10 @@ def line_view(
         "length": length,
         "length_source": length_src,
         "length_manual": None if lfill is None else lfill["manual_value"],
-        "unit": r.get("unit") or "",
+        "unit_raw": r.get("unit") or "",
+        "unit": unit,
+        "unit_source": unit_src,
+        "unit_manual": None if ufill is None else ufill["manual_value"],
         "qty": qty,
         "generated_qty": 0 if count is None else int(count["gen_count"]),
         "own_generated_qty": own,
@@ -606,7 +690,7 @@ def sn_qty(line: dict) -> int:
 
 
 def _by_line(table: str, keys: list[tuple[str, int]]) -> dict:
-    """按物料行存的附表（计数、附件项次、米数）中这些单据的行：(bill, seq) → 行。"""
+    """按物料行存的附表（计数、附件项次、米数、产品单位）中这些单据的行：(bill, seq) → 行。"""
     if not keys:
         return {}
     bills = sorted({k[0] for k in keys})
@@ -624,9 +708,9 @@ def line_lengths(keys: list[tuple[str, int]]) -> dict:
     return _by_line("sn_line_length", keys)
 
 
-def line_extras(keys: list[tuple[str, int]]) -> tuple[dict, dict, dict]:
-    """物料行计数、页面填写的附件项次与米数：(bill, seq) → 行。"""
-    return line_counts(keys), _by_line("sn_line_attach", keys), line_lengths(keys)
+def line_extras(keys: list[tuple[str, int]]) -> tuple[dict, dict, dict, dict]:
+    """物料行计数、页面填写的附件项次、米数与产品单位：(bill, seq) → 行。"""
+    return line_counts(keys), _by_line("sn_line_attach", keys), line_lengths(keys), _by_line("sn_line_unit", keys)
 
 
 def lines(bill_no: str | None) -> list[dict]:
@@ -642,7 +726,7 @@ def lines_of(cu: CurrentUser, bill_no: str | None) -> dict:
         raise biz(ErrorCode.ORDER_NOT_FOUND, bill_no=util.trim(bill_no))
     cu.check_read(ls[0]["org_code"])
     keys = [(r["bill_no"], r["seq"]) for r in ls]
-    counts, fills, lens = line_extras(keys)
+    counts, fills, lens, units = line_extras(keys)
     rmap = rules.line_rules_brief(ls[0]["pi"], keys)
     h = ls[0]
     return {
@@ -656,7 +740,8 @@ def lines_of(cu: CurrentUser, bill_no: str | None) -> dict:
         "modify_time": k3_time(h["modify_time"]),
         "state": changes.bill_states([h["bill_no"]]).get(h["bill_no"], changes.EMPTY_STATE),
         "lines": [
-            line_view(r, counts.get(k), fills.get(k), rmap.get(k), lens.get(k)) for r, k in zip(ls, keys, strict=True)
+            line_view(r, counts.get(k), fills.get(k), rmap.get(k), lens.get(k), units.get(k))
+            for r, k in zip(ls, keys, strict=True)
         ],
     }
 

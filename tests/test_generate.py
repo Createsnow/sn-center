@@ -43,7 +43,8 @@ def test_prefix_any_characters_end_to_end(w, api, sql):
 
 
 def test_sn_layout_serial_separators_padded_length_unit(w, api, sql):
-    """SN = 前缀 + 流水（补 0）+ 米数前分隔符 + 米数（补 0）+ 米数后分隔符 + 单位 + 后缀；单位取物料行的产品单位。"""
+    """SN = 前缀 + 流水（补 0）+ 米数前分隔符 + 米数（补 0）+ 米数后分隔符 + 单位 + 后缀；单位取物料行的产品单位
+    （金蝶单位是中文时取页面填写的不含中文的单位）。"""
     org, pi, bill = mk(w, ("M1", 2, "51.5", "1", "条"), ("M2", 1, "1200", "2", "PCS"))
     p = P()
     rid = w.rule(p, seq_len=5, suffix="Z", length_pad=5, sep_before="-", sep_after="M", with_unit=True)
@@ -70,9 +71,10 @@ def test_sn_layout_serial_separators_padded_length_unit(w, api, sql):
     )
     assert sample["samples"][0]["sn"] == f"{p}00001-00007MKGZ"
     ok(w.bind_pi(pi, rid))
+    ok(api.put("/api/orders/unit", m(bill_no=bill, seq=1, value="m"), w.admin))
     w.generate(pi)
     sns = [x["sn"] for x in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
-    assert sns == [f"{p}00001-051.5M条Z", f"{p}00002-051.5M条Z", f"{p}00003-01200MPCSZ"]
+    assert sns == [f"{p}00001-051.5MmZ", f"{p}00002-051.5MmZ", f"{p}00003-01200MPCSZ"]
     assert [
         r["length_text"] for r in sql.all("SELECT length_text FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)
     ] == [
@@ -84,11 +86,38 @@ def test_sn_layout_serial_separators_padded_length_unit(w, api, sql):
     assert got["total"] == 3, "完整 SN 可反解出流水"
 
 
-def test_rule_with_unit_needs_line_unit(w, api):
-    org, pi, bill = mk(w, ("M1", 2, "100", "1", " "))
-    ok(w.bind_pi(pi, w.rule(P(), with_unit=True)))
-    p = ok(w.preview(pi))
-    assert not p["generatable"] and p["issues"][0]["issues"] == ["UNIT_EMPTY"]
+def test_rule_with_unit_needs_non_chinese_unit(w, api, sql):
+    """规则带单位：产品单位为空或是中文（条、个等）时须在页面手动填写不含中文的单位（M、m、L 等）才能生成；
+    填的值不能含中文；金蝶已是非中文单位时不能改；规则不带单位时不挡。"""
+    org, pi, bill = mk(w, ("M1", 2, "100", "1", " "), ("M2", 1, "100", "2", "条"), ("M3", 1, "100", "3", "个"))
+    p = P()
+    ok(w.bind_pi(pi, w.rule(p, with_unit=True)))
+    pv = ok(w.preview(pi))
+    assert not pv["generatable"]
+    got = {x["seq"]: x["issues"] for x in pv["issues"]}
+    assert got == {1: ["UNIT_EMPTY"], 2: ["UNIT_CHINESE"], 3: ["UNIT_CHINESE"]}
+    line = next(x for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"] if x["seq"] == 2)
+    assert (line["unit"], line["unit_source"], line["unit_raw"]) == ("条", "K3_CHINESE", "条")
+    assert line["unit_manual"] is None
+    assert api.put("/api/orders/unit", m(bill_no=bill, seq=2, value="米"), w.admin).code == "UNIT_FILL_CHINESE"
+    assert api.put("/api/orders/unit", m(bill_no=bill, seq=2, value="x" * 65), w.admin).code == "UNIT_FILL_INVALID"
+    r = ok(api.put("/api/orders/unit", m(bill_no=bill, seq=2, value=" L "), w.admin))
+    assert (r["unit"], r["unit_source"], r["unit_manual"]) == ("L", "MANUAL", "L")
+    r = ok(api.put("/api/orders/unit", m(bill_no=bill, seq=2, value=""), w.admin))
+    assert (r["unit"], r["unit_source"]) == ("条", "K3_CHINESE"), "留空清除填写，又须填写"
+    for seq, v in ((1, "M"), (2, "m"), (3, "L")):
+        ok(api.put("/api/orders/unit", m(bill_no=bill, seq=seq, value=v), w.admin))
+    audited = "SELECT COUNT(*) FROM sn_audit WHERE action = 'ORDER_UNIT_FILL' AND result = 'OK' AND bill_no = %s"
+    assert sql.count(audited, bill) == 5
+    w.generate(pi)
+    sns = [x["sn"] for x in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
+    assert [s[len(p) :] for s in sns] == ["000001100M", "000002100M", "000003100m", "000004100L"]
+    assert api.put("/api/orders/unit", m(bill_no=bill, seq=3, value="K"), w.admin).code == "LINE_EDIT_GENERATED"
+
+    org2, pi2, bill2 = mk(w, ("M1", 1, "100", "1", "PCS"), ("M2", 1, "100", "2", "条"))
+    assert api.put("/api/orders/unit", m(bill_no=bill2, seq=1, value="M"), w.admin).code == "UNIT_FILL_K3"
+    ok(w.bind_pi(pi2, w.rule(P())))
+    assert ok(w.preview(pi2))["generatable"] is True, "规则不带单位时，中文单位不挡生成"
 
 
 def test_chinese_length_must_be_changed_before_generation(w, api, sql):
@@ -336,13 +365,14 @@ def test_attach_and_length_locked_once_line_has_sns(w, api, sql):
 
 
 def test_revoke_config_resets_lines_without_sns(w, api, sql):
-    """待处理页签撤销配置：没有号的物料行，物料行规则、手填的附件项次和米数恢复为未配置；有号的行跳过。"""
-    org, pi, bill = mk(w, ("M1", 2, "", ""), ("M2", 2, "", ""), ("M3", 2, "", ""))
+    """待处理页签撤销配置：没有号的物料行，物料行规则、手填的附件项次、米数和产品单位恢复为未配置；有号的行跳过。"""
+    org, pi, bill = mk(w, ("M1", 2, "", ""), ("M2", 2, "", "", "条"), ("M3", 2, "", ""))
     ok(w.bind_pi(pi, w.rule(P())))
     ok(w.select(pi, [(bill, 2), (bill, 3)], w.rule(P())))
     for seq in (1, 2, 3):
         ok(api.put("/api/orders/attach", m(bill_no=bill, seq=seq, value="A1"), w.admin))
     ok(api.put("/api/orders/length", m(bill_no=bill, seq=2, value="7"), w.admin))
+    ok(api.put("/api/orders/unit", m(bill_no=bill, seq=2, value="M"), w.admin))
     w.generate(pi, lines=[(bill, 3)])
     lines = lambda: {x["seq"]: x for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"]}  # noqa: E731
     before = lines()
@@ -353,13 +383,14 @@ def test_revoke_config_resets_lines_without_sns(w, api, sql):
     assert (r["revoked"], r["skipped"]) == (2, 1)
     after = lines()
     assert [(after[s]["attach_source"], after[s]["length_source"]) for s in (1, 2)] == [("EMPTY", "DEFAULT")] * 2
+    assert (after[2]["unit"], after[2]["unit_source"], after[2]["unit_manual"]) == ("条", "K3_CHINESE", None)
     assert sql.count("SELECT COUNT(*) FROM sn_line_rule WHERE bill_no = %s", bill) == 1, "有号的行规则不动"
     assert (after[3]["attach_no"], after[3]["edit_lock"]) == (before[3]["attach_no"], "GENERATED")
     ctx = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))
     issues = {x["seq"]: x["issues"] for x in ctx["bills"][0]["lines"]}
     assert issues[1] == issues[2] == ["ATTACH_EMPTY"], "规则改回按 PI 绑定，附件项次待填写"
     a = sql.one("SELECT * FROM sn_audit WHERE action = 'LINE_CONFIG_REVOKE' AND result = 'OK' AND pi_no = %s", pi)
-    assert a["qty"] == 2 and a["bill_no"] == bill and f"{bill}/2:rule+attach+length" in a["detail"]
+    assert a["qty"] == 2 and a["bill_no"] == bill and f"{bill}/2:rule+attach+length+unit" in a["detail"]
     r = ok(api.post(url, m(pi_no=pi, lines=[m(bill_no=bill, seq=1)]), w.admin))
     assert r["revoked"] == 0, "没有可撤的配置"
 

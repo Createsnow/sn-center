@@ -282,7 +282,7 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
         raise biz(ErrorCode.PI_REQUIRED)
     snap = db.all("SELECT * FROM sn_prd_mo WHERE pi = %s ORDER BY bill_no, seq", pi)
     keys = [(r["bill_no"], r["seq"]) for r in snap]
-    counts, fills, lens = orders.line_extras(keys)
+    counts, fills, lens, units = orders.line_extras(keys)
     # 表头客户取本 PI 第一个非空的客户编码（客户编码为空的单据照常列出）
     customer = next((r["customer_code"] for r in snap if r["customer_code"]), None) or orders.customer_of_pi(pi) or ""
     last = generate.last_seq(pi)
@@ -305,7 +305,9 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
         if r["modify_time"] is not None and (b.get("_mt") is None or r["modify_time"] > b["_mt"]):
             b["_mt"] = r["modify_time"]
         x = ls[k]
-        v = orders.line_view(r, counts.get(k), fills.get(k), rules.info(x.res, x.length, last + 1, x.unit), lens.get(k))
+        v = orders.line_view(
+            r, counts.get(k), fills.get(k), rules.info(x.res, x.length, last + 1, x.unit), lens.get(k), units.get(k)
+        )
         v["issues"] = x.issues
         b["lines"].append(v)
     # 已出号但不在快照（或号挂在本 PI 下）的单据

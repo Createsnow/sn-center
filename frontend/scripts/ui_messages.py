@@ -197,6 +197,7 @@ M = {
 "actions.ORDER_SYNC": ("同步生产订单", "Order sync", "Đồng bộ lệnh"),
 "actions.ORDER_ATTACH_FILL": ("填写附件项次", "Attachment item filled", "Điền hạng mục đính kèm"),
 "actions.ORDER_LENGTH_FILL": ("填写米数", "Length filled", "Điền chiều dài"),
+"actions.ORDER_UNIT_FILL": ("填写产品单位", "Unit filled", "Điền đơn vị"),
 "actions.ORDER_ALERT": ("订单变更提醒", "Order change alert", "Cảnh báo thay đổi lệnh"),
 "actions.ORDER_ALERT_HANDLE": ("处理变更提醒", "Change alert handled", "Xử lý cảnh báo thay đổi"),
 "actions.ORDER_SUSPEND": ("暂停交付", "Delivery suspended", "Tạm dừng giao"),

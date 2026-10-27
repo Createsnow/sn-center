@@ -38,6 +38,7 @@ FACTORY_MES_TEST = "FACTORY_MES_TEST"
 ORDER_SYNC = "ORDER_SYNC"
 ORDER_ATTACH_FILL = "ORDER_ATTACH_FILL"
 ORDER_LENGTH_FILL = "ORDER_LENGTH_FILL"
+ORDER_UNIT_FILL = "ORDER_UNIT_FILL"
 ORDER_ALERT = "ORDER_ALERT"
 ORDER_ALERT_HANDLE = "ORDER_ALERT_HANDLE"
 ORDER_SUSPEND = "ORDER_SUSPEND"
@@ -232,6 +233,7 @@ _PATH_ACTIONS = (
     (r"/api/factories/[^/]+/mes-toggle", FACTORY_MES_TOGGLE),
     (r"/api/orders/attach", ORDER_ATTACH_FILL),
     (r"/api/orders/length", ORDER_LENGTH_FILL),
+    (r"/api/orders/unit", ORDER_UNIT_FILL),
     (r"/api/orders/alerts/\d+/handle", ORDER_ALERT_HANDLE),
     (r"/api/orders/.*", ORDER_SYNC),
     (r"/api/rules/line-(select|clear)", RULE_LINE_SELECT),

@@ -192,8 +192,18 @@
                     </el-tooltip>
                   </template>
                 </el-table-column>
-                <el-table-column :label="t('common.unit')" width="52" show-overflow-tooltip>
-                  <template #default="{ row }">{{ row.unit || "—" }}</template>
+                <el-table-column :label="t('common.unit')" width="64">
+                  <template #default="{ row }">
+                    <span v-if="row.unit_source === 'K3'">{{ row.unit }}</span>
+                    <!-- 金蝶产品单位为空或含中文（条、个等）：规则带单位时须手动填写不含中文的单位（如 M、m、L）才能生成 -->
+                    <el-tooltip v-else :content="row.edit_lock ? lockText(row) : unitTip(row)">
+                      <span class="cell-input" @click.stop>
+                        <el-input :model-value="draftOf(row, 'unit')" size="small" maxlength="64" :disabled="!!row.edit_lock"
+                          :class="{ missing: !row.edit_lock && unitMissing(row) }" :placeholder="unitPlaceholder(row)"
+                          @update:model-value="(v: string) => setDraft(row, 'unit', v)" @change="saveUnit(row)" />
+                      </span>
+                    </el-tooltip>
+                  </template>
                 </el-table-column>
                 <el-table-column :label="t('common.qty')" align="right" width="58">
                   <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
@@ -261,45 +271,15 @@
         </el-tabs>
       </div>
 
-      <!-- 底部操作栏：范围 → 批量（改规则、撤销）→ 生成；三个页签按钮相同，「撤销（所选）」在待处理页签撤销配置、其他页签撤销生成 -->
+      <!-- 底部操作栏：三个页签相同，只有四个按钮：规则配置（所选物料行）、撤销（待处理页签撤销配置，其他页签撤销生成）、
+           清空（勾选）、生成 N 枚；不显示任何说明文字 -->
       <template #footer>
         <div v-if="ctx" class="bar">
-          <div class="bar-scope">
-            <span class="muted small">{{ t("generate.scope") }}</span>
-            <span><b>{{ scopeText }}</b><el-button v-if="hasSel" link type="primary" class="ml" @click="clearSelection">{{ t("generate.clearSel") }}</el-button></span>
-          </div>
-          <el-button size="small" :disabled="!pickedRows.length" @click="openRuleDialog(pickedRows)">{{ t("generate.ruleForSelected") }}</el-button>
-          <el-tooltip :content="selRevoke.tip">
-            <span>
-              <el-button size="small" type="danger" plain :disabled="!selRevoke.ok" :loading="busy === 'config'" @click="revokeSelected">{{ t("generate.revokeSelected") }}</el-button>
-            </span>
-          </el-tooltip>
+          <el-button :disabled="!pickedRows.length" @click="openRuleDialog(pickedRows)">{{ t("generate.ruleConfig") }}</el-button>
+          <el-button type="danger" plain :disabled="!selRevokeOk" :loading="busy === 'config'" @click="revokeSelected">{{ t("generate.revoke") }}</el-button>
+          <el-button :disabled="!hasSel" @click="clearSelection">{{ t("generate.clearSel") }}</el-button>
           <span class="push" />
-          <div v-loading="gen.loading" class="bar-gen">
-            <span v-if="running" class="muted">{{ t("generate.runningHint") }}</span>
-            <span v-else-if="gen.error" class="err">{{ gen.error }}</span>
-            <span v-else-if="piDone" class="muted">{{ t("generate.nothingLeftPi") }}</span>
-            <span v-else-if="nothingLeft" class="muted">{{ t("generate.nothingLeft") }}</span>
-            <template v-else-if="gen.preview && !gen.preview.generatable">
-              <el-tooltip placement="top">
-                <template #content>
-                  <div v-for="g in issueGroups" :key="g.code">
-                    <b>{{ issueText(g.code) }}</b>
-                    <template v-if="g.total">（{{ t("generate.issueLines", { n: num(g.total) }) }}）：{{ g.bills.map((b) => `${b.bill_no} #${b.seqs.join("、")}`).join("；") }}<span v-if="g.more"> …</span></template>
-                  </div>
-                </template>
-                <span class="err">{{ t("generate.cannotGen", { n: badCount }) }}</span>
-              </el-tooltip>
-            </template>
-            <template v-else-if="gen.preview">
-              <span class="sn-mono">{{ gen.preview.start_sn }} ~ {{ gen.preview.end_sn }}</span>
-              <span class="muted">{{ t("generate.wholeLines", { n: gen.preview.items.length }) }}</span>
-              <el-checkbox v-if="quota > limits.default && quota <= limits.max" v-model="gen.unlocked" class="unlock">
-                {{ t("generate.unlock", { limit: num(limits.default) }) }}
-              </el-checkbox>
-            </template>
-          </div>
-          <el-button type="primary" :disabled="!gen.preview?.generatable || gen.loading || !!limitState || !!running" @click="genDlg = true">
+          <el-button type="primary" :loading="gen.loading" :disabled="!canGen" @click="genDlg = true">
             {{ t("generate.genBtn", { n: num(gen.preview?.generatable ? gen.preview.qty : 0) }) }}
           </el-button>
         </div>
@@ -308,7 +288,8 @@
 
     <RuleDialog v-if="ctx" v-model="ruleDlg.open" :pi="ctx.pi_no" :lines="ruleDlg.lines" :options="ctx.rule_options" @saved="reloadCtx" />
 
-    <GenConfirmDialog v-model="genDlg" :preview="gen.preview" :sync-threshold="limits.sync_threshold" :loading="busy === 'run'" @confirm="runGen" />
+    <GenConfirmDialog v-model="genDlg" :preview="gen.preview" :sync-threshold="limits.sync_threshold" :unlock-limit="unlockLimit"
+      :loading="busy === 'run'" @confirm="runGen" />
 
     <RevokeDialog v-if="ctx" ref="revokeDlg" :pi="ctx.pi_no" @done="afterRevoke" />
 
@@ -535,7 +516,7 @@ function openRuleDialog(lines: OrderLine[]) {
   ruleDlg.open = true;
 }
 
-// ---------------- 范围：勾选单据（整单，按勾选顺序）或物料行（按点选顺序）；生成、批量改规则、批量撤销、统一设置米数共用
+// ---------------- 范围：勾选单据（整单，按勾选顺序）或物料行（按点选顺序）；生成、规则配置、撤销共用
 
 const sel = ref(emptySel());
 const linesOf = (no: string): LineRef[] => (ctx.value?.bills.find((b: any) => b.bill_no === no)?.lines ?? []);
@@ -561,12 +542,6 @@ function onLineClick(row: OrderLine) {
 function lineClass({ row }: { row: OrderLine }) {
   return isPicked(row) ? "picked" : "";
 }
-const scopeText = computed(() => {
-  if (!hasSel.value) return t("generate.scopeWholePi");
-  return sel.value.lines.length
-    ? t("generate.scopeLinesN", { n: sel.value.lines.length })
-    : t("generate.scopeBillsN", { n: sel.value.bills.length, bills: sel.value.bills.join("、") });
-});
 /** 未勾选时：生成取快照中还有额度的全部单据，排号仍按单据编号从小到大（页面显示按修改日期排，不影响排号）。 */
 const defaultBills = computed<string[]>(() =>
   ctx.value ? ctx.value.bills.filter((b: any) => b.in_snapshot && b.quota > 0).map((b: any) => b.bill_no as string).sort() : [],
@@ -623,38 +598,20 @@ const segsOf = (l: LineRef) => segments.value.filter((s) => sameLine(s, l)).reve
 /** 本次预演给该物料行排的号段。 */
 const planOf = (l: LineRef) => (gen.preview?.generatable ? gen.preview.items.find((x: any) => sameLine(x, l)) : null);
 
-const { draftOf, setDraft, lockText, saveAttach, saveLength, lengthTip, lengthMissing, lengthPlaceholder } =
-  useLineDrafts(reloadCtx);
+const {
+  draftOf, setDraft, lockText, saveAttach, saveLength, saveUnit,
+  lengthTip, lengthMissing, lengthPlaceholder, unitTip, unitMissing, unitPlaceholder,
+} = useLineDrafts(reloadCtx);
 // ---------------- 生成：勾选变化后自动预演（所选物料行整行生成）→ 确认 → 当场完成或后台进度 / 取消
 
-const gen = reactive({ unlocked: false, loading: false, preview: null as any, error: "" });
+const gen = reactive({ loading: false, preview: null as any });
 const genDlg = ref(false);
-const quota = computed(() => Number(gen.preview?.quota ?? 0));
-/** 预演不能生成的原因按原因归并：每种原因一行，列出涉及的单据与序号（最多 ISSUE_SHOWN 个序号）。 */
-const ISSUE_SHOWN = 20;
-const issueGroups = computed(() => {
-  const groups = new Map<string, { code: string; total: number; more: boolean; bills: { bill_no: string; seqs: number[] }[] }>();
-  for (const x of gen.preview?.issues ?? []) {
-    for (const code of x.issues as string[]) {
-      let g = groups.get(code);
-      if (!g) groups.set(code, (g = { code, total: 0, more: false, bills: [] }));
-      if (!x.bill_no) continue;
-      g.total += 1;
-      if (g.total > ISSUE_SHOWN) {
-        g.more = true;
-        continue;
-      }
-      let b = g.bills.find((y) => y.bill_no === x.bill_no);
-      if (!b) g.bills.push((b = { bill_no: x.bill_no, seqs: [] }));
-      b.seqs.push(x.seq);
-    }
-  }
-  return [...groups.values()];
-});
-const badCount = computed(() => (gen.preview?.issues ?? []).filter((x: any) => x.bill_no).length);
-/** 所选范围都已生成完（只剩「没有可生成额度」）：不算错误。 */
-const nothingLeft = computed(() => !!gen.preview && !gen.preview.generatable && issueGroups.value.every((g) => g.code === "QUOTA_EMPTY"));
-const limitState = computed(() => (gen.preview?.generatable ? genLimit(gen.preview.qty, limits.value, gen.unlocked) : null));
+/** 可生成：预演可生成、不在生成中、未超过单次最大上限（超过默认上限时在确认框里解除限制）。 */
+const canGen = computed(() => !!gen.preview?.generatable && !running.value && genLimit(gen.preview.qty, limits.value, true) === null);
+/** 超过单次默认上限时，确认框里须勾选解除限制；未超过为 0。 */
+const unlockLimit = computed(() =>
+  gen.preview?.generatable && genLimit(gen.preview.qty, limits.value, false) === "UNLOCK" ? Number(limits.value.default) : 0,
+);
 let previewTimer: ReturnType<typeof setTimeout> | undefined;
 
 function schedulePreview() {
@@ -666,19 +623,19 @@ async function runPreview() {
   if (!ctx.value || running.value) return;
   if (piDone.value) return resetGen();
   gen.loading = true;
-  gen.error = "";
   try {
     gen.preview = await api.genPreview({ pi_no: ctx.value.pi_no, ...genScope.value }, true);
   } catch (e) {
+    // 预演失败（超过单次最大上限、规则流水用尽等）：底部栏不放说明文字，弹出提示
     gen.preview = null;
-    gen.error = e instanceof ApiError ? e.message : String(e);
+    ElMessage.error(e instanceof ApiError ? e.message : String(e));
   } finally {
     gen.loading = false;
   }
 }
 
 function resetGen() {
-  Object.assign(gen, { unlocked: false, preview: null, error: "" });
+  Object.assign(gen, { preview: null });
 }
 
 /** 生成完成：清空勾选、刷新详情；号到「SN 分配」页分配。 */
@@ -771,22 +728,16 @@ async function afterRevoke() {
   await reloadCtx();
 }
 
-// ---------------- 撤销配置（待处理页签）：还没有号的物料行，物料行选定的规则、手填的附件项次和米数恢复为未配置
+// ---------------- 撤销配置（待处理页签）：还没有号的物料行，物料行选定的规则、手填的附件项次、米数和产品单位恢复为未配置
 
-/** 物料行在本系统做过配置：物料行选定了规则，或手填了附件项次 / 米数。 */
-const hasConfig = (l: OrderLine) => l.rule?.source === "LINE" || l.attach_manual != null || l.length_manual != null;
+/** 物料行在本系统做过配置：物料行选定了规则，或手填了附件项次 / 米数 / 产品单位。 */
+const hasConfig = (l: OrderLine) =>
+  l.rule?.source === "LINE" || l.attach_manual != null || l.length_manual != null || l.unit_manual != null;
 /** 底部批量撤销配置的对象：所选物料行中在待处理页签、还没有号、做过配置的。 */
 const configRows = computed(() => pickedRows.value.filter((l) => FILTER_OK.TODO(l) && !l.edit_lock && hasConfig(l)));
 
-/** 底部「撤销（所选）」：按钮名称各页签相同；待处理页签撤销所选行的配置，可生成 / 已生成页签撤销生成。 */
-const selRevoke = computed(() => {
-  if (lineFilter.value === "TODO") {
-    const n = configRows.value.length;
-    return { ok: n > 0, tip: n ? t("generate.revokeConfigSelN", { n }) : t("generate.revokeConfigSelHint") };
-  }
-  const r = batchRevoke.value;
-  return { ok: !!r?.ok, tip: r ? revokeTip(r) : t("generate.revokeSelHint") };
-});
+/** 底部「撤销」：按钮名称各页签相同；待处理页签撤销所选行的配置，可生成 / 已生成页签撤销生成。 */
+const selRevokeOk = computed(() => (lineFilter.value === "TODO" ? configRows.value.length > 0 : !!batchRevoke.value?.ok));
 function revokeSelected() {
   if (lineFilter.value === "TODO") revokeConfig(configRows.value);
   else openRevoke(pickedRows.value);
@@ -892,10 +843,7 @@ onUnmounted(() => {
 .lines :deep(.el-table__row) { cursor: pointer; }
 .no-lines { padding: 8px 12px; margin: 0; }
 .bar { display: flex; align-items: center; gap: 10px; text-align: left; }
-.bar-scope { display: flex; flex-direction: column; gap: 2px; min-width: 160px; margin-right: 6px; font-size: 13px; }
-.bar-gen { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-size: 12px; max-width: 420px; min-height: 32px; justify-content: center; }
-.unlock { height: 18px; }
-.unlock :deep(.el-checkbox__label) { font-size: 12px; color: var(--el-color-warning-dark-2); }
+.bar :deep(.el-button + .el-button) { margin-left: 0; }
 </style>
 
 <style>

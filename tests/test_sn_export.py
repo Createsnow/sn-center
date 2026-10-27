@@ -71,6 +71,28 @@ def test_mes_org_lists_every_allocated_sn_and_push_unaffected(w, api, sql):
     assert seg["total"] == 1 and seg["items"][0]["qty"] == 13 and seg["items"][0]["start_seq"] == 1
 
 
+def test_detail_lists_every_sn_not_ranges(w, api, sql):
+    """明细逐枚列出该单据的全部 SN（不按号段合并），分页，顺序与下载文件一致；带十进制流水、暂停、申请中。"""
+    org, pi, bill = ready(w, 7)
+    want = [
+        r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY bill_seq, seq_pi_no, seq_dec", pi)
+    ]
+    url = f"/api/export/items?pi={pi}&bill_no={bill}&factory_code={org}"
+    got = ok(api.get(url + "&page_size=5", w.admin))
+    assert got["total"] == 7 and [x["sn"] for x in got["items"]] == want[:5]
+    x = got["items"][0]
+    assert (x["line_no"], x["seq_dec"], x["bill_seq"], x["material_code"], x["length"]) == (1, 1, 1, "M1", "100")
+    assert (x["applying"], x["suspend"], x["transferred_in"]) == (False, None, False)
+    page2 = ok(api.get(url + "&page_size=5&page=2", w.admin))
+    assert [x["sn"] for x in page2["items"]] == want[5:] and [x["line_no"] for x in page2["items"]] == [6, 7]
+    file_sns = [r[1] for r in xlsx_rows(get_file(api, w.admin, pi=pi, bill_no=bill, factory_code=org).content)[1:]]
+    assert file_sns == want, "顺序同下载文件"
+    other = w.org(uid("O")[:10])
+    op = w.user(emp("F"), "factory_operator", other)
+    assert api.get(url, op).code == "FACTORY_FORBIDDEN"
+    assert api.get(f"/api/export/items?bill_no={bill}", w.admin).code == "PI_REQUIRED"
+
+
 def test_push_failure_does_not_affect_export(w, api):
     """导出与推送相互独立：推送失败、批次未确认时照常列出、下载，号段也不按推送状态拆开。"""
     org, pi, bill = ready(w, 13, mes=True, batch_size=5)
