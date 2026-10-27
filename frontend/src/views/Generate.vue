@@ -65,6 +65,10 @@
               <span v-else class="num zero">0</span>
             </template>
           </el-table-column>
+          <!-- PI 下单据的最新修改日期；列表与订单页同一排序（新的在前） -->
+          <el-table-column :label="t('orders.modifyDate')" width="160">
+            <template #default="{ row }"><span class="num">{{ row.modify_time || "—" }}</span></template>
+          </el-table-column>
           <el-table-column :label="t('common.actions')" width="110" align="right">
             <template #default="{ row }">
               <el-button size="small" :type="ACTION_TYPE[actionOf(row)]" :plain="actionOf(row) !== 'gen'"
@@ -139,7 +143,7 @@
                 <span @click.stop><el-checkbox v-bind="billCheck(b.bill_no)" :disabled="!b.in_snapshot || !b.lines.length" @change="(v: any) => onBill(b.bill_no, !!v)" /></span>
                 <span v-if="billCheck(b.bill_no).order >= 0" class="order">{{ billCheck(b.bill_no).order + 1 }}</span>
                 <b>{{ b.bill_no }}</b>
-                <span class="muted">PO {{ b.po || "—" }} · {{ b.org_name || nameOf(b.org_code) }}</span>
+                <span class="muted">PO {{ b.po || "—" }} · {{ b.org_name || nameOf(b.org_code) }}<template v-if="b.modify_time"> · {{ t("orders.modifyDate") }} {{ b.modify_time }}</template></span>
                 <el-tag v-if="!b.in_snapshot" size="small" type="info">{{ t("generate.notInSnapshot") }}</el-tag>
                 <el-tag v-if="b.state.suspend" size="small" type="warning">{{ suspendLabel(b.state.suspend) }}</el-tag>
                 <el-tag v-if="b.state.leave_state" size="small" type="danger">{{ leaveStateLabel(b.state.leave_state) }}</el-tag>
@@ -520,8 +524,10 @@ const scopeText = computed(() => {
     ? t("generate.scopeLinesN", { n: sel.value.lines.length })
     : t("generate.scopeBillsN", { n: sel.value.bills.length, bills: sel.value.bills.join("、") });
 });
-/** 未勾选时：生成取快照中还有额度的全部单据（按单据编号）。 */
-const defaultBills = computed<string[]>(() => (ctx.value ? ctx.value.bills.filter((b: any) => b.in_snapshot && b.quota > 0).map((b: any) => b.bill_no) : []));
+/** 未勾选时：生成取快照中还有额度的全部单据，排号仍按单据编号从小到大（页面显示按修改日期排，不影响排号）。 */
+const defaultBills = computed<string[]>(() =>
+  ctx.value ? ctx.value.bills.filter((b: any) => b.in_snapshot && b.quota > 0).map((b: any) => b.bill_no as string).sort() : [],
+);
 const genScope = computed(() => scopeBody(sel.value) ?? { scope: "BILLS", bills: defaultBills.value });
 /** 未勾选且整张 PI 已没有额度：不用预演。 */
 const piDone = computed(() => !!ctx.value && !hasSel.value && !defaultBills.value.length);

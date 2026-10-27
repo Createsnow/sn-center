@@ -12,10 +12,11 @@ router = APIRouter(prefix="/generate", tags=["generate"])
 
 @router.get(
     "/pis",
-    summary="生成页 PI 列表：状态、行上按钮依据、上方汇总；tab = TO_GENERATE（含生成中）/ GENERATED",
+    summary="生成页 PI 列表：状态、行上按钮依据、上方汇总；tab = TO_GENERATE（含生成中）/ GENERATED；"
+    "与订单页同一排序（单据修改日期新的在前）",
 )
 def gen_pis(cu: AdminDep, q: str | None = None, tab: str | None = None) -> dict:
-    return workbench.pis(cu, q, tab)
+    return workbench.pis(cu, q, tab, by_modify=True)
 
 
 @router.get("/context", summary="生成详情（只给单据时取其 PI）：单据与物料行、规则、生成任务、可撤销的号段")

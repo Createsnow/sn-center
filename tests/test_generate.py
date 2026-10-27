@@ -611,3 +611,26 @@ def test_allocation_skips_reversed_bill(w, api, sql):
     r = w.allocate(pi)
     assert r["qty"] == 2 and r["skipped"][0]["bill_no"] == b2 and r["skipped"][0]["reason"] == "REVERSAL"
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND status = 'ALLOCATED'", b1) == 2
+
+
+def test_generate_page_sorts_like_orders_page(w, api):
+    """生成页 PI 列表与详情里的单据都按修改日期新的在前（与订单页同一排序）；整张 PI 生成仍按单据编号排号。"""
+    org = w.org(uid("O")[:10])
+    pi_old, pi_new = uid("PI"), uid("PI")
+    a, b = "A" + uid("MO"), "B" + uid("MO")
+    for no, pi, when in ((a, pi_new, "2026-09-02T00:00:00"), (b, pi_new, "2026-09-01T00:00:00")):
+        BILLS[no] = w.doc(no, org, "C1", pi, ("M1", 1))
+        BILLS[no]["ModifyDate"] = when
+    c = uid("MO")
+    BILLS[c] = w.doc(c, org, "C1", pi_old, ("M1", 1))
+    BILLS[c]["ModifyDate"] = "2026-08-01T00:00:00"
+    w.compare()
+    ctx = ok(api.get(f"/api/generate/context?pi={pi_new}", w.admin))
+    assert [x["bill_no"] for x in ctx["bills"]] == [a, b], "单据按修改日期新的在前"
+    assert ctx["bills"][0]["modify_time"] == "2026-09-02 00:00:00"
+    items = ok(api.get("/api/generate/pis?tab=TO_GENERATE", w.admin))["items"]
+    order = [x["pi_no"] for x in items if x["pi_no"] in (pi_old, pi_new)]
+    assert order == [pi_new, pi_old], "PI 按其单据的最新修改日期排"
+    ok(w.bind_pi(pi_new, w.rule(P(), with_length=False)))
+    p = ok(w.preview(pi_new, [a, b]))
+    assert [x["bill_no"] for x in p["items"]] == [a, b], "排号按所给单据顺序（页面默认传单据编号从小到大）"

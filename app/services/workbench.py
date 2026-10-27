@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from app.core import utils as util
 from app.core.security import CurrentUser
 from app.db.session import db, marks
@@ -29,7 +31,12 @@ PUSH_INTERRUPTED = "PUSH_INTERRUPTED"
 DONE = "DONE"
 
 
-def _pi_rows(q: str | None) -> list[dict]:
+#: 生成页与订单页同一排序：金蝶修改日期新的在前（取不到的排后），同一时间单据编号大的在前
+_BY_MODIFY = "MAX(m.modify_time) IS NULL, MAX(m.modify_time) DESC, last_bill DESC"
+
+
+def _pi_rows(q: str | None, by_modify: bool = False) -> list[dict]:
+    """by_modify：按 PI 下单据的最新修改日期排（生成页）；否则按最大单据编号排（分配页）。"""
     where = " WHERE m.pi <> ''"
     args: list = []
     text = util.trim(q)
@@ -44,9 +51,12 @@ def _pi_rows(q: str | None) -> list[dict]:
         "SELECT m.pi, MAX(m.customer_code) customer_code, COUNT(DISTINCT m.bill_no) bills, "
         "GROUP_CONCAT(DISTINCT m.org_code ORDER BY m.org_code) orgs, SUM(FLOOR(m.qty)) total_qty, "
         "SUM(COALESCE(c.gen_count, 0)) gen_sum, SUM(GREATEST(FLOOR(m.qty) - COALESCE(c.own_generated, 0), 0)) quota, "
-        "MAX(m.bill_no) last_bill FROM sn_prd_mo m LEFT JOIN sn_line_count c ON c.bill_no = m.bill_no AND c.seq = m.seq"
+        "MAX(m.bill_no) last_bill, MAX(m.modify_time) modify_time "
+        "FROM sn_prd_mo m LEFT JOIN sn_line_count c ON c.bill_no = m.bill_no AND c.seq = m.seq"
         + where
-        + " GROUP BY m.pi ORDER BY last_bill DESC LIMIT %s",
+        + " GROUP BY m.pi ORDER BY "
+        + (_BY_MODIFY if by_modify else "last_bill DESC")
+        + " LIMIT %s",
         *args,
         LIST_LIMIT,
     )
@@ -121,10 +131,11 @@ def _line_issue_summary(pi: str) -> tuple[bool, bool, dict]:
     return need_rule, cannot, reasons
 
 
-def pis(cu: CurrentUser, q: str | None, tab: str | None) -> dict:
+def pis(cu: CurrentUser, q: str | None, tab: str | None, by_modify: bool = False) -> dict:
     """PI 列表与上方汇总（还可生成、待分配、待推送）。tab：生成页 TO_GENERATE（含生成中）/ GENERATED（已生成完），
-    分配页 TO_ALLOCATE（有号待分配或推送中断）/ ALLOCATED（已分配完）；不传为全部。"""
-    rows = _pi_rows(q)
+    分配页 TO_ALLOCATE（有号待分配或推送中断）/ ALLOCATED（已分配完）；不传为全部。
+    by_modify：生成页按单据修改日期排（与订单页同一排序），分配页不变。"""
+    rows = _pi_rows(q, by_modify)
     names = [r["pi"] for r in rows]
     stats = item_stats(names)
     own = gen_own(names)
@@ -162,6 +173,7 @@ def pis(cu: CurrentUser, q: str | None, tab: str | None) -> dict:
                 "pi_no": r["pi"],
                 "customer_code": r["customer_code"],
                 "bills": int(r["bills"]),
+                "modify_time": orders.k3_time(r["modify_time"]),
                 "orgs": [o for o in (r["orgs"] or "").split(",") if o],
                 "total_qty": int(r["total_qty"] or 0),
                 "generated_qty": own.get(r["pi"], 0),
@@ -238,6 +250,8 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
                 "lines": [],
             },
         )
+        if r["modify_time"] is not None and (b.get("_mt") is None or r["modify_time"] > b["_mt"]):
+            b["_mt"] = r["modify_time"]
         x = ls[k]
         v = orders.line_view(r, counts.get(k), fills.get(k), rules.info(x.res, x.length, last + 1, x.unit), lens.get(k))
         v["issues"] = x.issues
@@ -268,6 +282,7 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
         )
     }
     for no, b in bills.items():
+        b["modify_time"] = orders.k3_time(b.get("_mt"))
         b["state"] = states.get(no, changes.EMPTY_STATE)
         b["pending_alloc"] = pending.get(no, 0)
         b["total_qty"] = sum(x["qty"] for x in b["lines"])
@@ -279,7 +294,15 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
     return {
         "pi_no": pi,
         "customer_code": customer,
-        "bills": sorted(bills.values(), key=lambda x: x["bill_no"]),
+        # 与订单页同一排序：修改日期新的在前（已不在快照、没有修改日期的排后），同一时间单据编号大的在前
+        "bills": [
+            {k: v for k, v in b.items() if k != "_mt"}
+            for b in sorted(
+                bills.values(),
+                key=lambda x: (x.get("_mt") is not None, x.get("_mt") or datetime.min, x["bill_no"]),
+                reverse=True,
+            )
+        ],
         "counter": {"last_seq_dec": last, "next_seq": last + 1},
         "summary": {
             "total_qty": sum(b["total_qty"] for b in bills.values()),
