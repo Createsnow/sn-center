@@ -459,6 +459,59 @@ def test_bill_transfer_length_mismatch_and_pending_alloc_to_other_org(w, api, sq
     assert r["orgs"] == [other], "分配时分到目标单据的生产组织"
 
 
+def test_split_bill_across_orgs_transfer_out_header_per_source_org(w, api, sql):
+    """拆单：原单拆成本组织新单和别的组织新单，分两次转单（每次一个目标单据、一个转入组织）。
+    同组织那次不发转出；跨组织那次按 MES 持有组织分别给各来源 MES 发转出，每批批次头 toOrgCode 都是转入组织。"""
+    a, pi, src = setup(w, qty=6)
+    b, c = w.org(uid("O")[:10]), w.org(uid("O")[:10])
+    w.enable_mes(b)
+    w.enable_mes(c)
+    w.allocate(pi)
+    w.push()
+    sns = [x["sn"] for x in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
+    # 原单的号已分在两个组织：后 2 枚先转组织到 c（单据不变），由 MES-C 持有
+    ok(org_direct(w, a, pi, src, c, scope="RANGE", material_code="M1", start_sn=sns[4], end_sn=sns[5]))
+    w.push()
+
+    def outs() -> list[dict]:
+        rows = sql.all(
+            "SELECT * FROM sn_delivery_batch WHERE pi_no = %s AND batch_type = 'TRANSFER_OUT' ORDER BY id", pi
+        )
+        return [{**r, "body": gzip_json(r["body_gz"])} for r in rows]
+
+    assert [(x["factory_code"], x["body"]["toOrgCode"]) for x in outs()] == [(a, c)]
+    # 拆单 1：前 2 枚转到本组织新单 V2，不发转出；改挂批次头 toOrgCode 为 null
+    v2, v3 = uid("MO"), uid("MO")
+    w.order(v2, a, "C1", pi, ("M1", 2, "100"))
+    w.order(v3, b, "C1", pi, ("M1", 4, "100"))
+    rng = {"scope": "RANGE", "material_code": "M1", "start_sn": sns[0], "end_sn": sns[1]}
+    t1 = ok(api.post("/api/transfers/bill", bill_body(pi, src, v2, a, **rng), w.admin))
+    assert t1["mode"] == "SPLIT" and t1["qty"] == 2
+    w.push()
+    assert len(outs()) == 1
+    assert MES.store[a][sns[0]]["billNo"] == v2 and MES.store[a][sns[0]]["batchType"] == "SAME_ORG_TRANSFER"
+    same = next(x["batch"] for x in MES.received if x["batch"]["batchType"] == "SAME_ORG_TRANSFER")
+    assert same["toOrgCode"] is None
+    # 拆单 2：原单剩下的号（a 持有 2 枚、c 持有 2 枚）转到组织 b 的新单 V3：给 a、c 各发一批转出
+    t2 = ok(api.post("/api/transfers/bill", bill_body(pi, src, v3, b, scope="MATERIAL", material_code="M1"), w.admin))
+    assert t2["mode"] == "SPLIT" and t2["qty"] == 4
+    w.push()
+    new = outs()[1:]
+    assert sorted((x["factory_code"], x["body"]["toOrgCode"], x["transfer_doc_no"]) for x in new) == sorted(
+        [(a, b, t2["transfer_no"]), (c, b, t2["transfer_no"])]
+    )
+    assert {x["factory_code"]: {i["sn"] for i in x["body"]["items"]} for x in new} == {
+        a: {sns[2], sns[3]},
+        c: {sns[4], sns[5]},
+    }
+    assert all("toOrgCode" not in i for x in new for i in x["body"]["items"]), "转入组织只在批次头"
+    assert all(MES.store[a][s]["transferredOut"] and MES.store[a][s]["toOrgCode"] == b for s in sns[2:4])
+    assert all(MES.store[c][s]["transferredOut"] and MES.store[c][s]["toOrgCode"] == b for s in sns[4:6])
+    assert all(MES.store[b][s]["billNo"] == v3 and not MES.store[b][s]["transferredOut"] for s in sns[2:6])
+    got = [x["batch"] for x in MES.received if x["org"] == b and x["batch"]["batchType"] != "PING"]
+    assert got and all(x["toOrgCode"] is None for x in got), "转入方的交付批次 toOrgCode 为 null"
+
+
 def test_bill_transfer_from_reversed_bill_releases(w, api, sql):
     org, pi, src = setup(w, qty=2, mes=False)
     w.allocate(pi)
