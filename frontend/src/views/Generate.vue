@@ -86,7 +86,7 @@
     </div>
 
     <!-- 详情：只管生成与撤销。头部（数字、去分配）→ 提示条 → 物料行 / 生成记录 → 底部操作栏（范围、批量、生成） -->
-    <el-drawer :model-value="!!detailPi" size="min(1240px, 94vw)" class="gen-drawer" @close="closeDetail">
+    <el-drawer :model-value="!!detailPi" size="min(1240px, 96vw)" class="gen-drawer" @close="closeDetail">
       <template #header>
         <div v-if="ctx" class="dh">
           <div class="dh-title">
@@ -151,8 +151,9 @@
                 <el-tag v-if="b.state.open_alerts" size="small" type="warning">{{ t("generate.openAlerts", { n: b.state.open_alerts }) }}</el-tag>
                 <span class="push muted num">{{ t("generate.billCounts", { total: num(b.total_qty), gen: num(b.generated_qty), quota: num(b.quota) }) }}</span>
               </div>
+              <!-- 列宽按抽屉宽度排满、不出横向滚动条：数字列收窄，号段起止分两行 -->
               <el-table v-if="b.shown.length" v-show="!isFolded(b.bill_no)" :data="b.shown" size="small" class="lines" :row-class-name="lineClass" @row-click="onLineClick">
-                <el-table-column width="52">
+                <el-table-column width="44">
                   <template #default="{ row }">
                     <span class="sel" @click.stop>
                       <el-checkbox :model-value="isPicked(row)" @change="(v: any) => onLine(row, !!v)" />
@@ -160,8 +161,8 @@
                     </span>
                   </template>
                 </el-table-column>
-                <el-table-column :label="t('common.billSeq')" prop="seq" width="72" />
-                <el-table-column :label="t('common.attachNo')" width="120">
+                <el-table-column :label="t('common.billSeq')" prop="seq" width="48" />
+                <el-table-column :label="t('common.attachNo')" width="88">
                   <template #default="{ row }">
                     <span v-if="row.attach_source === 'K3'">{{ row.attach_no }}</span>
                     <el-tooltip v-else :disabled="!row.edit_lock" :content="lockText(row)">
@@ -173,13 +174,13 @@
                     </el-tooltip>
                   </template>
                 </el-table-column>
-                <el-table-column :label="t('common.material')" min-width="110" show-overflow-tooltip>
+                <el-table-column :label="t('common.material')" min-width="88" show-overflow-tooltip>
                   <template #default="{ row }">
                     <div>{{ row.material_code || t("generate.noMaterial") }}</div>
                     <div class="muted">{{ row.material_name }}</div>
                   </template>
                 </el-table-column>
-                <el-table-column :label="t('common.length')" width="96">
+                <el-table-column :label="t('common.length')" width="76">
                   <template #default="{ row }">
                     <span v-if="row.length_source === 'K3'">{{ row.length }}</span>
                     <!-- 金蝶米数含中文：须手动改成不含中文的米数才能生成（标红，占位显示金蝶原值） -->
@@ -192,26 +193,26 @@
                     </el-tooltip>
                   </template>
                 </el-table-column>
-                <el-table-column :label="t('common.unit')" width="70" show-overflow-tooltip>
+                <el-table-column :label="t('common.unit')" width="52" show-overflow-tooltip>
                   <template #default="{ row }">{{ row.unit || "—" }}</template>
                 </el-table-column>
-                <el-table-column :label="t('common.qty')" align="right" width="64">
+                <el-table-column :label="t('common.qty')" align="right" width="58">
                   <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
                 </el-table-column>
-                <el-table-column :label="t('generate.generated')" align="right" width="74">
+                <el-table-column :label="t('generate.generated')" align="right" width="58">
                   <template #default="{ row }">
                     <el-tooltip :content="t('generate.ownTip', { own: num(row.own_generated_qty), gen: num(row.generated_qty) })">
                       <span class="num">{{ num(row.generated_qty) }}</span>
                     </el-tooltip>
                   </template>
                 </el-table-column>
-                <el-table-column :label="t('generate.allocated')" align="right" width="74">
+                <el-table-column :label="t('generate.allocated')" align="right" width="58">
                   <template #default="{ row }"><span class="num">{{ num(row.allocated_qty) }}</span></template>
                 </el-table-column>
-                <el-table-column :label="t('generate.quota')" align="right" width="70">
+                <el-table-column :label="t('generate.quota')" align="right" width="58">
                   <template #default="{ row }"><span class="num" :class="{ zero: !row.quota }">{{ num(row.quota) }}</span></template>
                 </el-table-column>
-                <el-table-column :label="t('common.status')" min-width="112">
+                <el-table-column :label="t('common.status')" min-width="88">
                   <template #default="{ row }">
                     <div v-if="row.quota && row.issues?.length" class="issue-tags">
                       <el-tag v-for="i in row.issues" :key="i" size="small" type="danger" effect="plain">{{ issueText(i) }}</el-tag>
@@ -219,17 +220,17 @@
                     <el-tag v-else size="small" :type="LINE_STATE_TAG[lineState(row)]" disable-transitions>{{ t(`generate.lineState.${lineState(row)}`) }}</el-tag>
                   </template>
                 </el-table-column>
-                <el-table-column :label="t('generate.snRange')" min-width="230">
+                <el-table-column :label="t('generate.snRange')" min-width="140">
                   <template #default="{ row }">
-                    <div v-for="s in segsOf(row)" :key="s.gen_batch" class="sn-mono">{{ s.start_sn }} ~ {{ s.end_sn }}</div>
+                    <div v-for="s in segsOf(row)" :key="s.gen_batch" class="sn-mono seg">{{ s.start_sn }}<br />~ {{ s.end_sn }}</div>
                     <div v-if="planOf(row)" class="plan">
-                      <span class="sn-mono">{{ planOf(row).start_sn }} ~ {{ planOf(row).end_sn }}</span>
+                      <span class="sn-mono seg">{{ planOf(row).start_sn }}<br />~ {{ planOf(row).end_sn }}</span>
                       <el-tag size="small" disable-transitions>{{ t("generate.thisRun") }}</el-tag>
                     </div>
                     <span v-if="!segsOf(row).length && !planOf(row)" class="zero">—</span>
                   </template>
                 </el-table-column>
-                <el-table-column :label="t('common.actions')" width="112" align="right">
+                <el-table-column :label="t('common.actions')" width="80" align="right">
                   <template #default="{ row }">
                     <span class="ops" @click.stop>
                       <el-tooltip :content="row.rule ? t('generate.ruleNow', { rule: ruleTitle(row.rule), format: row.rule.format }) : t('generate.needRule')">
@@ -836,7 +837,10 @@ onUnmounted(() => {
 .dtabs :deep(.el-tabs__header) { margin-bottom: 8px; }
 .toolbar { margin-bottom: 8px; }
 .issue-tags, .plan, .ops { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.ops { justify-content: flex-end; flex-wrap: nowrap; }
+.ops { justify-content: flex-end; gap: 2px 6px; }
+.ops :deep(.el-button + .el-button) { margin-left: 0; }
+/* 号段起止分两行，SN 很长时也在格内折行，不撑出横向滚动条 */
+.seg { word-break: break-all; line-height: 1.4; }
 .plan .sn-mono { color: var(--el-color-primary); }
 .cell-input { display: block; }
 .cell-input .missing :deep(.el-input__wrapper) { box-shadow: 0 0 0 1px var(--el-color-danger) inset; }
