@@ -4,8 +4,8 @@ from fastapi import APIRouter
 
 from app.api.deps import AdminDep
 from app.schemas.common import OptInt
-from app.schemas.gen import PreviewIn, RevokeIn, RevokeLinesIn, RunIn
-from app.services import generate, workbench
+from app.schemas.gen import PreviewIn, RevokeConfigIn, RevokeIn, RevokeLinesIn, RunIn
+from app.services import generate, orders, workbench
 
 router = APIRouter(prefix="/generate", tags=["generate"])
 
@@ -66,3 +66,12 @@ def gen_revoke(batch: str, body: RevokeIn, cu: AdminDep) -> dict:
 )
 def gen_revoke_lines(body: RevokeLinesIn, cu: AdminDep) -> dict:
     return generate.revoke_lines(cu, body.pi_no, [x.model_dump() for x in body.lines or []], body.reason)
+
+
+@router.post(
+    "/revoke-config",
+    summary="撤销物料行配置（待处理页签）：所选物料行中还没有号的，物料行选定的规则、手填的附件项次、手填的米数恢复为未配置；"
+    "有号的行跳过（有号的行撤销生成）",
+)
+def gen_revoke_config(body: RevokeConfigIn, cu: AdminDep) -> dict:
+    return orders.revoke_config(cu, body.pi_no, [x.model_dump() for x in body.lines or []])

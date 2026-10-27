@@ -351,6 +351,35 @@ def test_attach_and_length_locked_once_line_has_sns(w, api, sql):
     assert api.put("/api/orders/length", m(bill_no=bill, seq=1, value="6"), w.admin).code == "LINE_EDIT_ALLOCATED"
 
 
+def test_revoke_config_resets_lines_without_sns(w, api, sql):
+    """待处理页签撤销配置：没有号的物料行，物料行规则、手填的附件项次和米数恢复为未配置；有号的行跳过。"""
+    org, pi, bill = mk(w, ("M1", 2, "", ""), ("M2", 2, "", ""), ("M3", 2, "", ""))
+    ok(w.bind_pi(pi, w.rule(P())))
+    ok(w.select(pi, [(bill, 2), (bill, 3)], w.rule(P())))
+    for seq in (1, 2, 3):
+        ok(api.put("/api/orders/attach", m(bill_no=bill, seq=seq, value="A1"), w.admin))
+    ok(api.put("/api/orders/length", m(bill_no=bill, seq=2, value="7"), w.admin))
+    w.generate(pi, lines=[(bill, 3)])
+    lines = lambda: {x["seq"]: x for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"]}  # noqa: E731
+    before = lines()
+    url = "/api/generate/revoke-config"
+    assert api.post(url, m(pi_no=pi, lines=[]), w.admin).code == "RULE_LINE_REQUIRED"
+    assert api.post(url, m(pi_no=uid("PI"), lines=[m(bill_no=bill, seq=1)]), w.admin).code == "GEN_SCOPE_INVALID"
+    r = ok(api.post(url, m(pi_no=pi, lines=[m(bill_no=bill, seq=s) for s in (1, 2, 3)]), w.admin))
+    assert (r["revoked"], r["skipped"]) == (2, 1)
+    after = lines()
+    assert [(after[s]["attach_source"], after[s]["length_source"]) for s in (1, 2)] == [("EMPTY", "DEFAULT")] * 2
+    assert sql.count("SELECT COUNT(*) FROM sn_line_rule WHERE bill_no = %s", bill) == 1, "有号的行规则不动"
+    assert (after[3]["attach_no"], after[3]["edit_lock"]) == (before[3]["attach_no"], "GENERATED")
+    ctx = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))
+    issues = {x["seq"]: x["issues"] for x in ctx["bills"][0]["lines"]}
+    assert issues[1] == issues[2] == ["ATTACH_EMPTY"], "规则改回按 PI 绑定，附件项次待填写"
+    a = sql.one("SELECT * FROM sn_audit WHERE action = 'LINE_CONFIG_REVOKE' AND result = 'OK' AND pi_no = %s", pi)
+    assert a["qty"] == 2 and a["bill_no"] == bill and f"{bill}/2:rule+attach+length" in a["detail"]
+    r = ok(api.post(url, m(pi_no=pi, lines=[m(bill_no=bill, seq=1)]), w.admin))
+    assert r["revoked"] == 0, "没有可撤的配置"
+
+
 def test_empty_length_defaults_to_000(w, sql):
     org, pi, bill = mk(w, ("M1", 1, " "))
     p = P()
@@ -634,3 +663,33 @@ def test_generate_page_sorts_like_orders_page(w, api):
     ok(w.bind_pi(pi_new, w.rule(P(), with_length=False)))
     p = ok(w.preview(pi_new, [a, b]))
     assert [x["bill_no"] for x in p["items"]] == [a, b], "排号按所给单据顺序（页面默认传单据编号从小到大）"
+
+
+def test_allocation_list_driven_by_sns_not_snapshot_window(w, api, monkeypatch):
+    """分配页 PI 列表按号取：快照里 PI 再多（超出列表上限）、或单据已移出快照，有待分配号的 PI 都在「待分配」页签。"""
+    from app.services import workbench
+
+    org = w.org(uid("O")[:10])
+    _, pi_old, _ = mk(w, ("M1", 3), org=org, bill="A" + uid("MO"))
+    ok(w.bind_pi(pi_old, w.rule(P())))
+    w.generate(pi_old)
+    _, pi_gone, bill_gone = mk(w, ("M1", 2), org=org, bill="A" + uid("MO"))
+    ok(w.bind_pi(pi_gone, w.rule(P())))
+    w.generate(pi_gone)
+    BILLS.pop(bill_gone)
+    w.compare()
+    # 之后又同步进来更多单据编号更大、还没生成的 PI
+    for _ in range(3):
+        mk(w, ("M1", 1), org=org, bill="Z" + uid("MO"))
+    monkeypatch.setattr(workbench, "LIST_LIMIT", 2)
+
+    def names(tab: str, q: str = "") -> list[str]:
+        return [x["pi_no"] for x in ok(api.get(f"/api/allocation/pis?tab={tab}&q={q}", w.admin))["items"]]
+
+    shown = names("TO_ALLOCATE")
+    assert pi_old in shown and pi_gone in shown
+    assert names("TO_ALLOCATE", pi_gone) == [pi_gone]
+    gone = next(x for x in ok(api.get(f"/api/allocation/pis?q={pi_gone}", w.admin))["items"])
+    assert (gone["pending_alloc"], gone["generated_qty"], gone["bills"]) == (2, 2, 1)
+    w.allocate(pi_old)
+    assert pi_old not in names("TO_ALLOCATE") and pi_old in names("ALLOCATED", pi_old)

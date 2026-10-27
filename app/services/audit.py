@@ -50,6 +50,7 @@ RULE_CATEGORY = "RULE_CATEGORY"
 RULE_PI_BIND = "RULE_PI_BIND"
 RULE_PI_UNBIND = "RULE_PI_UNBIND"
 RULE_LINE_SELECT = "RULE_LINE_SELECT"
+LINE_CONFIG_REVOKE = "LINE_CONFIG_REVOKE"
 RULE_PREFIX_VERSION = "RULE_PREFIX_VERSION"
 RULE_CUSTOMER_BIND = "RULE_CUSTOMER_BIND"
 RULE_CUSTOMER_UNBIND = "RULE_CUSTOMER_UNBIND"
@@ -242,6 +243,7 @@ _PATH_ACTIONS = (
     (r"/api/generate/batches/[^/]+/cancel", SN_GEN_CANCEL),
     (r"/api/generate/batches/[^/]+/revoke", SN_REVOKE),
     (r"/api/generate/revoke", SN_REVOKE),
+    (r"/api/generate/revoke-config", LINE_CONFIG_REVOKE),
     (r"/api/generate/.*", SN_GENERATE),
     (r"/api/allocation/.*", SN_ALLOCATE),
     (r"/api/delivery/batches/[^/]+/confirm", SN_BATCH_MANUAL),

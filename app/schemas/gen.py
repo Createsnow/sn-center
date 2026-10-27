@@ -24,6 +24,13 @@ class RevokeIn(In):
     seq: int | None = None
 
 
+class RevokeConfigIn(In):
+    """撤销所选物料行的配置（还没有号的行）。"""
+
+    pi_no: str | None = None
+    lines: list[LineRef] | None = None
+
+
 class RevokeLinesIn(In):
     """撤到所选物料行为止：从 PI 流水末尾往前撤，流水排在所选行之后的物料行一并撤销。"""
 

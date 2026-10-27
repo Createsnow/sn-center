@@ -478,6 +478,53 @@ def fill_lengths(
     return {"pi_no": pi, "value": v, "filled": len(todo)}
 
 
+#: 物料行在本系统做的配置：物料行选定的规则、手填的附件项次、手填的米数
+_LINE_CONFIG = (("sn_line_rule", "rule"), ("sn_line_attach", "attach"), ("sn_line_length", "length"))
+
+
+def revoke_config(cu: CurrentUser, pi_in: str | None, lines_in: list[dict] | None) -> dict:
+    """撤销物料行配置（生成页待处理页签，可单行、可多行）：所选物料行中还没有号的，物料行选定的规则、手填的附件项次、
+    手填的米数一并删除，恢复为未配置（规则改回按 PI / 客户默认，附件项次金蝶为空时待填写，米数取金蝶值或默认 000）。
+    有号的行不动（有号的行撤销生成后才能改）。一个事务内完成。返回撤销了配置的行数与因有号跳过的行数。"""
+    pi = util.trim(pi_in)
+    if not pi:
+        raise biz(ErrorCode.PI_REQUIRED)
+    keys = {(util.trim(x.get("bill_no")), int(x.get("seq") or 0)) for x in lines_in or []}
+    if not keys:
+        raise biz(ErrorCode.RULE_LINE_REQUIRED)
+    with locks.with_pi_lock(pi), db.tx():
+        rows = [
+            r
+            for r in db.all("SELECT * FROM sn_prd_mo WHERE pi = %s ORDER BY bill_no, seq", pi)
+            if (r["bill_no"], r["seq"]) in keys
+        ]
+        if len(rows) != len(keys):
+            raise biz(ErrorCode.GEN_SCOPE_INVALID)
+        counts = line_counts([(r["bill_no"], r["seq"]) for r in rows])
+        free = [r for r in rows if edit_lock(counts.get((r["bill_no"], r["seq"]))) is None]
+        done: list[tuple[dict, list[str]]] = []
+        for r in free:
+            gone = [
+                kind
+                for table, kind in _LINE_CONFIG
+                if db.exec(f"DELETE FROM {table} WHERE bill_no = %s AND seq = %s", r["bill_no"], r["seq"])
+            ]
+            if gone:
+                done.append((r, gone))
+        if done:
+            one = lambda k: done[0][0][k] if len({r[k] for r, _ in done}) == 1 else None  # noqa: E731
+            audit.record(
+                cu,
+                audit.entry(audit.LINE_CONFIG_REVOKE)
+                .pi(pi)
+                .bill(one("bill_no"))
+                .factory(one("org_code"))
+                .count(len(done))
+                .info(" ".join(f"{r['bill_no']}/{r['seq']}:{'+'.join(g)}" for r, g in done)),
+            )
+    return {"pi_no": pi, "revoked": len(done), "skipped": len(rows) - len(free)}
+
+
 # ================================================================== 查询
 
 

@@ -85,6 +85,8 @@ export const api = {
   /** 撤到所选物料行为止：从流水最末往前撤，流水排在所选行之后的物料行一并撤销。 */
   revokeLines: (pi_no: string, lines: { bill_no: string; seq: number }[], reason: string) =>
     post("/generate/revoke", { pi_no, lines, reason }),
+  /** 撤销物料行配置（待处理页签）：还没有号的行，物料行规则、手填的附件项次和米数恢复为未配置；有号的行跳过。 */
+  revokeConfig: (pi_no: string, lines: { bill_no: string; seq: number }[]) => post("/generate/revoke-config", { pi_no, lines }),
 
   // ---------------- SN 分配
   allocPis: (params?: Q) => get("/allocation/pis", params),

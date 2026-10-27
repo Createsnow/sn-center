@@ -209,6 +209,7 @@ M = {
 "actions.RULE_PI_BIND": ("PI 绑定规则", "Rule bound to PI", "Gắn quy tắc cho PI"),
 "actions.RULE_PI_UNBIND": ("解除 PI 绑定", "PI rule unbound", "Bỏ gắn quy tắc PI"),
 "actions.RULE_LINE_SELECT": ("物料行选规则", "Line rule selected", "Chọn quy tắc cho dòng"),
+"actions.LINE_CONFIG_REVOKE": ("物料行撤销配置", "Line config revoked", "Thu hồi cấu hình dòng"),
 "actions.RULE_PREFIX_VERSION": ("换前缀另出版本", "New prefix version", "Phiên bản tiền tố mới"),
 "actions.RULE_CUSTOMER_BIND": ("客户绑定规则", "Rule bound to customer", "Gắn quy tắc cho khách hàng"),
 "actions.RULE_CUSTOMER_UNBIND": ("解除客户绑定", "Customer rule unbound", "Bỏ gắn quy tắc khách hàng"),

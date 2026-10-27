@@ -176,8 +176,7 @@
                 </el-table-column>
                 <el-table-column :label="t('common.material')" min-width="88" show-overflow-tooltip>
                   <template #default="{ row }">
-                    <div>{{ row.material_code || t("generate.noMaterial") }}</div>
-                    <div class="muted">{{ row.material_name }}</div>
+                    {{ row.material_code || t("generate.noMaterial") }}
                   </template>
                 </el-table-column>
                 <el-table-column :label="t('common.length')" width="76">
@@ -223,10 +222,7 @@
                 <el-table-column :label="t('generate.snRange')" min-width="140">
                   <template #default="{ row }">
                     <div v-for="s in segsOf(row)" :key="s.gen_batch" class="sn-mono seg">{{ s.start_sn }}<br />~ {{ s.end_sn }}</div>
-                    <div v-if="planOf(row)" class="plan">
-                      <span class="sn-mono seg">{{ planOf(row).start_sn }}<br />~ {{ planOf(row).end_sn }}</span>
-                      <el-tag size="small" disable-transitions>{{ t("generate.thisRun") }}</el-tag>
-                    </div>
+                    <div v-if="planOf(row)" class="sn-mono seg plan">{{ planOf(row).start_sn }}<br />~ {{ planOf(row).end_sn }}</div>
                     <span v-if="!segsOf(row).length && !planOf(row)" class="zero">—</span>
                   </template>
                 </el-table-column>
@@ -241,6 +237,12 @@
                       <el-tooltip v-if="revokeOf([row])" :content="revokeTip(revokeOf([row])!)">
                         <span>
                           <el-button link type="danger" size="small" :disabled="!revokeOf([row])!.ok" @click="openRevoke([row])">{{ t("generate.revoke") }}</el-button>
+                        </span>
+                      </el-tooltip>
+                      <!-- 待处理页签中还没有号的行：撤销配置 -->
+                      <el-tooltip v-else-if="lineFilter === 'TODO' && !row.edit_lock" :content="hasConfig(row) ? t('generate.revokeConfigTip') : t('generate.revokeConfigNone')">
+                        <span>
+                          <el-button link type="danger" size="small" :disabled="!hasConfig(row)" @click="revokeConfig([row])">{{ t("generate.revoke") }}</el-button>
                         </span>
                       </el-tooltip>
                     </span>
@@ -267,7 +269,16 @@
             <span><b>{{ scopeText }}</b><el-button v-if="hasSel" link type="primary" class="ml" @click="clearSelection">{{ t("generate.clearSel") }}</el-button></span>
           </div>
           <el-button size="small" :disabled="!pickedRows.length" @click="openRuleDialog(pickedRows)">{{ t("generate.ruleForSelected") }}</el-button>
-          <el-tooltip :content="batchRevoke ? revokeTip(batchRevoke) : t('generate.revokeSelHint')">
+          <!-- 待处理页签：撤销所选行的配置；其他页签：撤销生成 -->
+          <el-tooltip v-if="lineFilter === 'TODO'"
+            :content="configRows.length ? t('generate.revokeConfigSelN', { n: configRows.length }) : t('generate.revokeConfigSelHint')">
+            <span>
+              <el-button size="small" type="danger" plain :disabled="!configRows.length" :loading="busy === 'config'" @click="revokeConfig(configRows)">
+                {{ t("generate.revokeConfigSelected") }}
+              </el-button>
+            </span>
+          </el-tooltip>
+          <el-tooltip v-else :content="batchRevoke ? revokeTip(batchRevoke) : t('generate.revokeSelHint')">
             <span>
               <el-button size="small" type="danger" plain :disabled="!batchRevoke?.ok" @click="openRevoke(pickedRows)">{{ t("generate.revokeSelected") }}</el-button>
             </span>
@@ -327,7 +338,7 @@ import { ApiError } from "@/api/http";
 import { billMark, emptySel, genLimit, lineOrder, revokeRange, scopeBody, selectedLines, toggleBill, toggleLine } from "@/genScope.js";
 import { useFactories } from "@/composables/useFactories";
 import { useTime } from "@/composables/useTime";
-import { BILL_FOLD_OVER, leaveStateLabel, suspendLabel } from "@/constants";
+import { leaveStateLabel, suspendLabel } from "@/constants";
 import type { OrderLine } from "@/types/api";
 import PageHead from "@/components/PageHead.vue";
 import RuleDialog from "@/views/generate/RuleDialog.vue";
@@ -450,8 +461,8 @@ async function openDetail(key: { pi?: string; bill_no?: string }) {
   // 打开时停在第一个还有物料行的步骤
   lineFilter.value = FILTERS.find((f) => filterCount.value[f] > 0) ?? "TODO";
   detailPi.value = ctx.value.pi_no;
-  // 单据多时默认收起；从单据进来的展开该单
-  if (shownBills.value.length > BILL_FOLD_OVER) foldAll(true);
+  // 单据默认全部收起；从单据进来的展开该单
+  foldAll(true);
   if (key.bill_no && isFolded(key.bill_no)) toggleFold(key.bill_no);
   if (route.query.pi !== ctx.value.pi_no) router.replace({ query: { pi: ctx.value.pi_no } });
   schedulePreview();
@@ -610,7 +621,7 @@ function showTodo() {
   foldAll(false);
 }
 
-/** 收起的单据（只影响显示，不影响勾选）；打开 PI 时单据超过 BILL_FOLD_OVER 张默认全部收起，否则全部展开。 */
+/** 收起的单据（只影响显示，不影响勾选）；每次打开 PI 时默认全部收起（各页签的单据都收起）。 */
 const folded = ref(new Set<string>());
 const isFolded = (no: string) => folded.value.has(no);
 function toggleFold(no: string) {
@@ -619,7 +630,7 @@ function toggleFold(no: string) {
   folded.value = s;
 }
 function foldAll(on: boolean) {
-  folded.value = new Set(on ? shownBills.value.map((b: any) => b.bill_no as string) : []);
+  folded.value = new Set(on ? (ctx.value?.bills ?? []).map((b: any) => b.bill_no as string) : []);
 }
 
 const segments = computed<Segment[]>(() => ctx.value?.segments ?? []);
@@ -801,6 +812,31 @@ async function afterRevoke() {
   await reloadCtx();
 }
 
+// ---------------- 撤销配置（待处理页签）：还没有号的物料行，物料行选定的规则、手填的附件项次和米数恢复为未配置
+
+/** 物料行在本系统做过配置：物料行选定了规则，或手填了附件项次 / 米数。 */
+const hasConfig = (l: OrderLine) => l.rule?.source === "LINE" || l.attach_manual != null || l.length_manual != null;
+/** 底部批量撤销配置的对象：所选物料行中在待处理页签、还没有号、做过配置的。 */
+const configRows = computed(() => pickedRows.value.filter((l) => FILTER_OK.TODO(l) && !l.edit_lock && hasConfig(l)));
+
+async function revokeConfig(rows: OrderLine[]) {
+  if (!ctx.value || !rows.length) return;
+  try {
+    await ElMessageBox.confirm(t("generate.revokeConfigConfirm", { n: rows.length }), t("generate.revokeConfigTitle"), { type: "warning" });
+  } catch {
+    return;
+  }
+  busy.value = "config";
+  try {
+    const r: any = await api.revokeConfig(ctx.value.pi_no, rows.map((l) => ({ bill_no: l.bill_no, seq: l.seq })));
+    ElMessage.success(t("generate.revokeConfigDone", { n: r.revoked }));
+    clearSelection();
+    await reloadCtx();
+  } finally {
+    busy.value = "";
+  }
+}
+
 function pickJob(lines: LineRef[]) {
   sel.value = { bills: [], lines };
   lineFilter.value = "GENERATED";
@@ -864,12 +900,12 @@ onUnmounted(() => {
 .todo + .todo::before { content: "·"; color: var(--app-muted); margin-right: 4px; }
 .dtabs :deep(.el-tabs__header) { margin-bottom: 8px; }
 .toolbar { margin-bottom: 8px; }
-.issue-tags, .plan, .ops { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.issue-tags, .ops { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .ops { justify-content: flex-end; gap: 2px 6px; }
 .ops :deep(.el-button + .el-button) { margin-left: 0; }
 /* 号段起止分两行，SN 很长时也在格内折行，不撑出横向滚动条 */
 .seg { word-break: break-all; line-height: 1.4; }
-.plan .sn-mono { color: var(--el-color-primary); }
+.plan { color: var(--el-color-primary); }
 .cell-input { display: block; }
 .cell-input .missing :deep(.el-input__wrapper) { box-shadow: 0 0 0 1px var(--el-color-danger) inset; }
 .bill { border: 1px solid var(--el-border-color-lighter); border-radius: 8px; margin-bottom: 10px; overflow: hidden; }

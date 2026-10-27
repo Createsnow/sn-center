@@ -9,9 +9,9 @@ from app.services import allocation, workbench
 router = APIRouter(prefix="/allocation", tags=["allocation"])
 
 
-@router.get("/pis", summary="分配页 PI 列表：tab = TO_ALLOCATE（有号待分配或推送中断）/ ALLOCATED（已分配完）")
+@router.get("/pis", summary="分配页 PI 列表（按号取）：tab = TO_ALLOCATE（待分配或推送中断）/ ALLOCATED（已分配完）")
 def alloc_pis(cu: AdminDep, q: str | None = None, tab: str | None = None) -> dict:
-    return workbench.pis(cu, q, tab)
+    return workbench.pis(cu, q, tab, by_items=True)
 
 
 @router.get("/context", summary="分配详情：待分配的物料行（号段、目标生产组织）、推送进度、分配记录")
