@@ -682,6 +682,7 @@
     "piRuleBtn": "PI / customer rule",
     "onlyThese": "Show only these lines",
     "selHint": "Tick bills (whole bill, SNs follow the tick order) or material lines (SNs follow the click order) as the scope for generating; the same ticks drive bulk rule changes, revoking and setting lengths. Nothing ticked = the whole PI",
+    "autoFollow": "{n} lines done; moved on to “{to}”",
     "autoNext": "“{from}” is done; moved on to “{to}”",
     "billCounts": "Qty {total} · generated {gen} · quota {quota}",
     "snRange": "SN range",

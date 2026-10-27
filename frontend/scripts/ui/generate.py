@@ -145,6 +145,7 @@ M = {
 "generate.onlyThese": ("只看这些行", "Show only these lines", "Chỉ xem các dòng này"),
 "generate.selHint": ("勾选单据（整单，按勾选顺序排号）或物料行（按点选顺序排号）即为生成范围，也用于批量改规则、撤销、统一设置米数；不勾选 = 整张 PI", "Tick bills (whole bill, SNs follow the tick order) or material lines (SNs follow the click order) as the scope for generating; the same ticks drive bulk rule changes, revoking and setting lengths. Nothing ticked = the whole PI", "Chọn chứng từ (cả chứng từ, SN theo thứ tự chọn) hoặc dòng vật tư (SN theo thứ tự bấm) làm phạm vi tạo; cũng dùng để đổi quy tắc, thu hồi, đặt chiều dài hàng loạt. Không chọn = cả PI"),
 "generate.filter.GENERATED": ("已生成 {n}", "Generated {n}", "Đã tạo {n}"),
+"generate.autoFollow": ("{n} 行已处理，已转到「{to}」继续", "{n} lines done; moved on to “{to}”", "Đã xử lý {n} dòng; đã chuyển sang “{to}”"),
 "generate.autoNext": ("「{from}」已处理完，已转到「{to}」", "“{from}” is done; moved on to “{to}”", "“{from}” đã xong; đã chuyển sang “{to}”"),
 "generate.lineState.GENERATED": ("已生成", "Generated", "Đã tạo"),
 "generate.billCounts": ("数量 {total} · 已生成 {gen} · 可生成 {quota}", "Qty {total} · generated {gen} · quota {quota}", "SL {total} · đã tạo {gen} · hạn mức {quota}"),

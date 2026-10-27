@@ -682,6 +682,7 @@
     "piRuleBtn": "Quy tắc PI / khách hàng",
     "onlyThese": "Chỉ xem các dòng này",
     "selHint": "Chọn chứng từ (cả chứng từ, SN theo thứ tự chọn) hoặc dòng vật tư (SN theo thứ tự bấm) làm phạm vi tạo; cũng dùng để đổi quy tắc, thu hồi, đặt chiều dài hàng loạt. Không chọn = cả PI",
+    "autoFollow": "Đã xử lý {n} dòng; đã chuyển sang “{to}”",
     "autoNext": "“{from}” đã xong; đã chuyển sang “{to}”",
     "billCounts": "SL {total} · đã tạo {gen} · hạn mức {quota}",
     "snRange": "Dải SN",

@@ -472,21 +472,49 @@ async function loadCtx(key: { pi?: string; bill_no?: string }) {
 
 async function reloadCtx() {
   if (!detailPi.value) return;
+  const before = lineTabs();
   await loadCtx({ pi: detailPi.value });
-  nextStep();
+  nextStep(before);
   schedulePreview();
   loadList(true);
 }
 
-/** 每处理完一步（当前页签已没有物料行）自动转到下一个还有物料行的页签：待处理 → 可生成 → 已生成；
- *  后面都空时（如撤销后已生成为空）回到前面第一个还有物料行的页签。 */
-function nextStep() {
-  if (!ctx.value || dtab.value !== "lines" || filterCount.value[lineFilter.value] > 0) return;
-  const i = FILTERS.indexOf(lineFilter.value);
-  const to = [...FILTERS.slice(i + 1), ...FILTERS.slice(0, i)].find((f) => filterCount.value[f] > 0);
+const lineKey = (l: LineRef) => `${l.bill_no}#${l.seq}`;
+/** 各物料行当前落在哪些页签（刷新前记下，刷新后比较哪些行离开了当前页签）。 */
+function lineTabs(): Map<string, Filter[]> {
+  return new Map(allLines.value.map((l) => [lineKey(l), FILTERS.filter((f) => FILTER_OK[f](l))]));
+}
+
+/** 页签跟着数据走：每次操作刷新后，
+ *  1. 有物料行离开了当前页签（如补齐规则 / 附件项次 / 米数后变为可生成、生成后变为已生成、撤销后回到可生成），
+ *     转到这些行现在所在的、排在当前页签之后的第一个页签（待处理 → 可生成 → 已生成，到头再从前面找）；
+ *  2. 没有行移动但当前页签已空，转到下一个还有物料行的页签。
+ *  转过去时提示，并展开这些行所在的单据、回到顶部。 */
+function nextStep(before: Map<string, Filter[]>) {
+  if (!ctx.value || dtab.value !== "lines") return;
+  const cur = lineFilter.value;
+  const i = FILTERS.indexOf(cur);
+  const order = [...FILTERS.slice(i + 1), ...FILTERS.slice(0, i)];
+  const moved = allLines.value.filter((l) => before.get(lineKey(l))?.includes(cur) && !FILTER_OK[cur](l));
+  const to = moved.length
+    ? order.find((f) => moved.some((l) => FILTER_OK[f](l)))
+    : filterCount.value[cur] > 0
+      ? undefined
+      : order.find((f) => filterCount.value[f] > 0);
   if (!to) return;
-  ElMessage.info(t("generate.autoNext", { from: t(`generate.lineState.${lineFilter.value}`), to: t(`generate.lineState.${to}`) }));
+  const toName = t(`generate.lineState.${to}`);
+  ElMessage.info(
+    moved.length
+      ? t("generate.autoFollow", { n: moved.length, to: toName })
+      : t("generate.autoNext", { from: t(`generate.lineState.${cur}`), to: toName }),
+  );
   lineFilter.value = to;
+  if (moved.length) {
+    const s = new Set(folded.value);
+    for (const l of moved) s.delete(l.bill_no);
+    folded.value = s;
+  }
+  document.querySelector(".gen-drawer .el-drawer__body")?.scrollTo({ top: 0 });
 }
 
 function closeDetail() {
