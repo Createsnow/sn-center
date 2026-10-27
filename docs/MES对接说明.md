@@ -103,7 +103,7 @@ MES 已持有的 SN 在转移、改挂当时单独建批（`SAME_ORG_TRANSFER` /
 
 批次号中的日期为国内日期（UTC+8）。
 
-MES 判断要用的字段：`batchNo`（幂等键）、`batchType`（分流）、`orgCode`（收件组织）、`pi`（本批的 PI；交付批次校验本组织有这张 PI，转移批次为转出前的 PI）、`itemsDigest`（同一批次号再次到达时比对），明细的 `sn`、`rev`，转移批次另看批次头的 `toOrgCode`（转入组织，一批只有一个）。测试批次的批次头不带 `pi`。
+MES 判断要用的字段：`batchNo`（幂等键）、`batchType`（分流）、`orgCode`（收件组织）、`pi`（本批的 PI；交付批次校验本组织有这张 PI，转移批次为转出前的 PI）、`count`（明细条数）、`itemsDigest`（同一批次号再次到达时比对），明细的 `sn`、`rev`，转移批次另看批次头的 `toOrgCode`（转入组织，一批只有一个）。测试批次的批次头不带 `pi`。
 
 ### 3.2 处理步骤
 
@@ -112,7 +112,7 @@ MES 判断要用的字段：`batchNo`（幂等键）、`batchType`（分流）�
 | 步骤 | 规则 | 结果 |
 | --- | --- | --- |
 | 1 分流 | 交付类 4 种、`TRANSFER_OUT` 继续；`PING` 只校验身份和 `orgCode`，不存储、不记批次号；其他取值整批退回 | `PING`：`OK` / `NG` |
-| 2 整批校验 | `orgCode` 为本组织；交付批次带 `pi`，本组织有这张 PI，且每条明细的 `pi` 与批次头相同；转移批次带 `toOrgCode`；批内 SN 不重复；必填字段齐全、长度在本侧允许范围内 | 不通过：`NG` + 原因，**不写任何数据、不记 `batchNo`** |
+| 2 整批校验 | `orgCode` 为本组织；交付批次带 `pi`，本组织有这张 PI，且每条明细的 `pi` 与批次头相同；转移批次带 `toOrgCode`；`count` 等于 `items` 条数；批内 SN 不重复；必填字段齐全、长度在本侧允许范围内 | 不通过：`NG` + 原因，**不写任何数据、不记 `batchNo`** |
 | 3 幂等 | `batchNo` 已处理过：`itemsDigest` 相同直接回 `OK`；不同返回 409 `BATCH_CONTENT_MISMATCH` | — |
 | 4 逐枚处理 | 见下表 | — |
 | 5 落库 | 按 `batchNo` 加锁，同一批次不得并发处理；批次号、`itemsDigest`、SN 数据同一事务落库；5000 枚建议 10 秒内（推送超时 60 秒） | 成功 `OK`；出错整批回滚 `NG` |

@@ -169,6 +169,9 @@ class MesSim:
         if kind not in (*DELIVERY_TYPES, "TRANSFER_OUT"):
             return f"不认识的 batchType {kind}"
         delivery = kind in DELIVERY_TYPES
+        count = batch.get("count")
+        if not isinstance(count, int) or isinstance(count, bool) or count != len(items):
+            return f"count = {count}，items 有 {len(items)} 条"
         if len(items) > self.max_batch:
             return f"超过单批上限 {self.max_batch}"
         if not isinstance(batch.get("itemsDigest"), str) or not batch["itemsDigest"]:

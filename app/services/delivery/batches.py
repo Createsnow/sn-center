@@ -187,9 +187,10 @@ def _insert_batch(
     now = util.now()
     digest = _digest(payload)
     # 一批只含一张 PI，批次头带上：交付批次为当前 PI，MES 据此校验本组织有没有这张 PI（对接说明 3.2 步骤 2）；
-    # 转出批次为转出前的 PI。转入组织 toOrgCode 只有转出批次有值（一批只转到一个组织），其他为 null
+    # 转出批次为转出前的 PI。转入组织 toOrgCode 只有转出批次有值（一批只转到一个组织），其他为 null；
+    # count 为明细条数，MES 据此核对报文完整
     obj: dict = {"schemaVersion": "1.0", "batchNo": batch_no, "batchType": batch_type, "orgCode": org}
-    obj |= {"toOrgCode": to_org, "pi": pi}
+    obj |= {"toOrgCode": to_org, "pi": pi, "count": len(payload)}
     obj |= {"createdAt": util.mes_fmt(now), "itemsDigest": digest, "items": payload}
     body = mes_client.gzip_bytes(mes_client.canonical(obj))
     bid = db.insert(

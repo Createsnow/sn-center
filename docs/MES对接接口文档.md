@@ -144,7 +144,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
 
 **请求体结构**
 
-各类批次（`batchType`，附录 A）共用同一个请求体，`items[]` 每条都带下列 12 个字段。批次头的 `toOrgCode` 只有跨组织转出批次（`TRANSFER_OUT`）有值（一批只转到一个组织），其他批次为 `null`；测试批次（`PING`，连接测试时发送）不带 `pi`，`items` 为 `[]`。
+各类批次（`batchType`，附录 A）共用同一个请求体，`items[]` 每条都带下列 12 个字段。批次头的 `toOrgCode` 只有跨组织转出批次（`TRANSFER_OUT`）有值（一批只转到一个组织），其他批次为 `null`；`count` 为 `items` 条数，MES 核对不符时整批退回；测试批次（`PING`，连接测试时发送）不带 `pi`，`count` 为 0，`items` 为 `[]`。
 
 ```jsonc
 {
@@ -154,6 +154,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
   "orgCode": "110",                          // String(64)       必填  收件生产组织编码；转移批次为原组织
   "toOrgCode": null,                         // String(64)|null  必填  转入生产组织编码；仅 TRANSFER_OUT 有值，其他为 null
   "pi": "000001",                            // String(64)       必填  本批的 PI，一批只含一张 PI；转移批次为转出前的 PI
+  "count": 1,                                // Number           必填  明细条数，等于 items 条数；不符时整批退回
   "createdAt": "2026-10-26 11:47:05.000",    // String           必填  建批时间
   "itemsDigest": "sha256:9f2c4e…",           // String(71)       必填  明细指纹（sha256: + 64 位十六进制）；同一 batchNo 再次到达时按字符串比对，不必重算
   "items": [                                 // Array            必填  SN 明细，≤ 5000 条
@@ -207,6 +208,7 @@ X-Request-Id: 1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed
   "orgCode": "110",
   "toOrgCode": null,
   "pi": "000001",
+  "count": 1,
   "createdAt": "2026-10-26 11:47:05.000",
   "itemsDigest": "sha256:9f2c4e…（64 位十六进制）",
   "items": [
@@ -313,6 +315,7 @@ MES 主动拉取一个批次：优先返回范围内最早的未回执批次（�
     "orgCode": "110",
     "toOrgCode": null,                       //                          同 ①；仅 TRANSFER_OUT 为转入组织
     "pi": "000001",                          //                          同 ①；转移批次为转出前的 PI
+    "count": 1,                              //                          同 ①，明细条数
     "createdAt": "2026-10-26 11:48:15.400",
     "itemsDigest": "sha256:c07e3a…",
     "items": [ … ]                           //                          批次明细，同 ①，≤ 5000 条
@@ -358,6 +361,7 @@ X-Request-ID: 7d3e9a10-5c2b-4f8e-b1a4-0c6d2e8f9b57
     "orgCode": "110",
     "toOrgCode": null,
     "pi": "000001",
+    "count": 1,
     "createdAt": "2026-10-26 11:48:15.400",
     "itemsDigest": "sha256:c07e3a…",
     "items": [

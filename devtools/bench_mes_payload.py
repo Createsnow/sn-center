@@ -1,7 +1,7 @@
 """接口传输大小 POC：按 mes_client.canonical + gzip_bytes 的同一做法组包，测体积、压缩耗时、本机 HTTP 往返。
 
 只用标准库：python devtools/bench_mes_payload.py
-- 报文按《MES 对接接口文档》① 现协议：批次头含 toOrgCode，明细 12 个字段，MES 在响应中回执整批结果。
+- 报文按《MES 对接接口文档》① 现协议：批次头含 toOrgCode、count，明细 12 个字段，MES 在响应中回执整批结果。
 - 数据 A（典型）：同一 PI、连续流水、同物料，对应「按流水顺序认领」的真实组包。
 - 数据 B（最坏）：跨组织转出批次，随机 36 进制流水、单据、附件项次、物料、客户，几乎无重复。
 - 原始 JSON（默认）与 gzip 6（组织开启「gzip 压缩」）两种请求体都测。
@@ -76,6 +76,7 @@ def batch(items: list[dict], to_org: str | None = None) -> dict:
         "orgCode": "110",
         "toOrgCode": to_org,
         "pi": "000001",
+        "count": len(items),
         "createdAt": "2026-10-26 11:47:05.000",
         "itemsDigest": "sha256:" + hashlib.sha256(canonical(items)).hexdigest(),
         "items": items,

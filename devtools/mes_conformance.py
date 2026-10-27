@@ -148,6 +148,7 @@ class Runner:
         obj: dict = {"schemaVersion": SCHEMA, "batchNo": no or self.batch_no(), "batchType": kind, "orgCode": self.org}
         obj["toOrgCode"] = "CT-TO" if kind == "TRANSFER_OUT" else None
         obj["pi"] = items[0]["pi"] if items and kind != "TRANSFER_OUT" else self.pi
+        obj["count"] = len(items)
         obj |= {"createdAt": now_cst(), "itemsDigest": digest(items), "items": items}
         obj.update(head)
         return obj
@@ -253,6 +254,7 @@ class Runner:
                 "batchType": "PING",
                 "orgCode": org,
                 "toOrgCode": None,
+                "count": 0,
                 "createdAt": now_cst(),
                 "itemsDigest": digest([]),
                 "items": [],
@@ -361,6 +363,11 @@ class Runner:
             )
             self.ok(r, good)
 
+        def count_bad(c: Check) -> None:
+            items = [self.delivery(10, 1)]
+            no = self.batch_no()
+            reject_then_fix(c, "count 与 items 条数不符", self.batch(items, no=no, count=2), self.batch(items, no=no))
+
         def org_bad(c: Check) -> None:
             items = [self.delivery(11, 1)]
             no = self.batch_no()
@@ -468,6 +475,7 @@ class Runner:
             ("C21", "5000 枚一批的处理时间", "说明 3.2 步骤 5", performance),
             ("C22", "批次头 pi 不是本组织已有的 PI：NG；修正后同一批次号重送能处理", "说明 3.2 步骤 2、5", pi_bad),
             ("C23", "交付批次缺批次头 pi、明细 pi 与批次头不一致：NG", "说明 3.2 步骤 2", pi_head),
+            ("C24", "count 与 items 条数不符：NG；修正后同一批次号重送能处理", "说明 3.2 步骤 2、5", count_bad),
         ]
         for cid, title, ref, fn in cases:
             self.case(cid, title, ref, fn)

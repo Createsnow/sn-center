@@ -62,11 +62,13 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
         "orgCode",
         "toOrgCode",
         "pi",
+        "count",
         "createdAt",
         "itemsDigest",
         "items",
     }
     assert body["pi"] == pi, "交付批次头带 PI"
+    assert body["count"] == len(body["items"]) == batches[-1]["qty"], "count 为明细条数"
     assert re.fullmatch(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}", body["createdAt"]), "UTC+8，精确到毫秒"
     day = (datetime.now(UTC) + timedelta(hours=8)).strftime("%Y%m%d")
     assert body["batchNo"].split("-")[-2] == day and body["createdAt"][:10].replace("-", "") == day

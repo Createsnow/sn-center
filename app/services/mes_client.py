@@ -184,6 +184,7 @@ def ping_body(org: str, batch_no: str) -> bytes:
         "batchType": "PING",
         "orgCode": org,
         "toOrgCode": None,
+        "count": 0,
         "createdAt": util.mes_now(),
         "itemsDigest": "sha256:" + hashlib.sha256(canonical(items)).hexdigest(),
         "items": items,

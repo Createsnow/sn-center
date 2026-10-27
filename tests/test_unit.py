@@ -206,11 +206,12 @@ def test_ping_batch_has_no_items():
         "batchType",
         "orgCode",
         "toOrgCode",
+        "count",
         "createdAt",
         "itemsDigest",
         "items",
     }
-    assert body["batchType"] == "PING" and body["items"] == [] and body["toOrgCode"] is None
+    assert body["batchType"] == "PING" and body["items"] == [] and body["toOrgCode"] is None and body["count"] == 0
     assert body["itemsDigest"].startswith("sha256:") and len(body["itemsDigest"]) == 71
 
 

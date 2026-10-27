@@ -33,7 +33,7 @@
 
 ## 测试方法
 
-组包方式与 `app/services/mes_client.py` 一致：紧凑 JSON（UTF-8，无空格）+ gzip（mtime=0）。报文按《MES 对接接口文档》① 的现协议：批次头含 `toOrgCode`，明细每枚 12 个字段（交付与转出同一结构）。
+组包方式与 `app/services/mes_client.py` 一致：紧凑 JSON（UTF-8，无空格）+ gzip（mtime=0）。报文按《MES 对接接口文档》① 的现协议：批次头含 `toOrgCode`、`count`，明细每枚 12 个字段（交付与转出同一结构）。
 
 | 项目 | 设置 |
 | --- | --- |

@@ -95,9 +95,9 @@ class _RejectsWith400(MockMes):
 @pytest.mark.parametrize(
     "cls, failed",
     [
-        (_RegistersRejects, {"C15", "C22"}),
+        (_RegistersRejects, {"C15", "C22", "C24"}),
         (_IgnoresDigest, {"C07"}),
-        (_RejectsWith400, {"C02", "C14", "C15", "C16", "C17", "C18", "C22", "C23"}),
+        (_RejectsWith400, {"C02", "C14", "C15", "C16", "C17", "C18", "C22", "C23", "C24"}),
     ],
 )
 def test_conformance_catches_broken_mes(cls, failed):
@@ -150,7 +150,7 @@ def test_mock_checks_batch_header_and_auth(mock):
     assert r.send(b).status == 401, "未配置凭证的组织一律 401"
     mock.default_secret = "s3cret"
     assert r.send(b).status == 200, "default_secret 适用于所有组织"
-    dup = MesSim().process("110", {**b, "items": b["items"] * 2})
+    dup = MesSim().process("110", {**b, "items": b["items"] * 2, "count": 2})
     assert dup["code"] == "NG" and "重复" in dup["message"]
 
 
