@@ -35,7 +35,7 @@ M = {
 "orders.generated": ("已生成", "Generated", "Đã tạo"),
 "orders.quota": ("可生成", "Quota", "Hạn mức"),
 "orders.state": ("单据状态", "Bill state", "Trạng thái chứng từ"),
-"orders.stateNormal": ("正常", "Normal", "Bình thường"),
+"orders.docStatus.C": ("已审核", "Approved", "Đã duyệt"),
 "orders.piFrozen": ("PI 已改，冻结", "PI changed, frozen", "PI đã đổi, bị khóa"),
 "orders.alertsN": ("{n} 条提醒", "{n} alerts", "{n} cảnh báo"),
 "orders.lines": ("物料明细", "Material lines", "Dòng vật tư"),

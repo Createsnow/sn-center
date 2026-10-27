@@ -59,12 +59,8 @@
               :empty-text="t('common.empty')" @current-change="select">
               <el-table-column prop="bill_no" :label="t('common.billNo')" min-width="130" show-overflow-tooltip />
               <el-table-column prop="pi" label="PI" min-width="130" show-overflow-tooltip />
-              <!-- 金蝶修改日期（金蝶时间原样显示）；列表按它从新到旧排 -->
-              <el-table-column :label="t('orders.modifyDate')" width="160">
-                <template #default="{ row }"><span class="num">{{ row.modify_time || "—" }}</span></template>
-              </el-table-column>
-              <el-table-column :label="t('orders.state')" min-width="120">
-                <template #default="{ row }"><BillTags :s="row" /></template>
+              <el-table-column :label="t('orders.state')" min-width="140">
+                <template #default="{ row }"><BillTags :s="row" :doc-status="row.doc_status" /></template>
               </el-table-column>
               <el-table-column :label="t('orders.totalQty')" align="right" width="80">
                 <template #default="{ row }"><span class="num">{{ row.total_qty }}</span></template>
@@ -80,6 +76,10 @@
               </el-table-column>
               <el-table-column prop="po" label="PO" min-width="110" show-overflow-tooltip />
               <el-table-column prop="customer_code" :label="t('common.customer')" width="90" show-overflow-tooltip />
+              <!-- 金蝶修改日期（金蝶时间原样显示，放最后一列）；列表按它从新到旧排 -->
+              <el-table-column :label="t('orders.modifyDate')" width="160">
+                <template #default="{ row }"><span class="num">{{ row.modify_time || "—" }}</span></template>
+              </el-table-column>
             </el-table>
           </div>
           <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="state.total" :page-size="state.pageSize"
@@ -101,8 +101,8 @@
               <el-descriptions-item label="PO">{{ detail.po }}</el-descriptions-item>
               <el-descriptions-item :label="t('common.customer')">{{ detail.customer_code }}</el-descriptions-item>
               <el-descriptions-item :label="t('common.factory')">{{ detail.org_name }}（{{ detail.org_code }}）</el-descriptions-item>
+              <el-descriptions-item :label="t('orders.state')"><BillTags :s="detail.state" :doc-status="detail.doc_status" /></el-descriptions-item>
               <el-descriptions-item :label="t('orders.modifyDate')">{{ detail.modify_time || "—" }}</el-descriptions-item>
-              <el-descriptions-item :label="t('orders.state')"><BillTags :s="detail.state" show-none /></el-descriptions-item>
             </el-descriptions>
             <div class="fill-body">
               <el-table v-loading="linesLoading" :data="detail.lines" size="small" height="100%" :empty-text="t('common.empty')">
@@ -277,18 +277,18 @@ const ALERT_TAG: Record<string, "" | "info" | "warning" | "danger" | "success" |
   PI: "danger", ORG: "danger", CUSTOMER: "danger", MATERIAL: "danger", REVERSAL: "danger", QTY: "warning", ATTACH: "warning", DELETED: "info",
 };
 
-/** 单据状态标签：暂停交付、离开快照、PI 冻结、未处理提醒。 */
+/** 单据状态标签：金蝶单据状态（快照只含已审核，订单页每张单据都显示「已审核」）、暂停交付、离开快照、PI 冻结、未处理提醒。 */
 const BillTags = defineComponent({
-  props: { s: { type: Object as () => Partial<BillState> | null, default: null }, showNone: Boolean },
+  props: { s: { type: Object as () => Partial<BillState> | null, default: null }, docStatus: { type: String, default: "" } },
   setup(props) {
     return () => {
       const s = props.s || {};
       const tags = [];
+      if (props.docStatus) tags.push(h(ElTag, { size: "small", type: "success", effect: "plain" }, () => t(`orders.docStatus.${props.docStatus}`)));
       if (s.suspend) tags.push(h(ElTag, { size: "small", type: "danger" }, () => suspendLabel(s.suspend)));
       if (s.leave_state) tags.push(h(ElTag, { size: "small", type: "warning" }, () => leaveStateLabel(s.leave_state)));
       if (s.pi_frozen) tags.push(h(ElTag, { size: "small", type: "danger" }, () => t("orders.piFrozen")));
       if (s.open_alerts) tags.push(h(ElTag, { size: "small", type: "warning", effect: "plain" }, () => t("orders.alertsN", { n: s.open_alerts })));
-      if (!tags.length && props.showNone) tags.push(h("span", { class: "muted" }, t("orders.stateNormal")));
       return h("div", { class: "tags" }, tags);
     };
   },

@@ -161,6 +161,8 @@ export interface OrderBill extends BillState {
   pi: string;
   org_code: string;
   org_name: string;
+  /** 金蝶单据状态：快照只含已审核，固定为 C */
+  doc_status: "C";
   /** 金蝶修改日期：列表按它从新到旧 */
   modify_time: string | null;
   total_qty: number;

@@ -65,6 +65,7 @@ def test_bills_sorted_by_modify_date_newest_first_with_unit(w, api):
     got = ok(api.get(f"/api/orders?pi={pi}", w.admin))["items"]
     assert [x["bill_no"] for x in got] == [new, old], "未审核的不进快照；修改日期新的在前"
     assert got[0]["modify_time"] == "2026-09-01 10:00:00", "金蝶时间原样显示"
+    assert {x["doc_status"] for x in got} == {"C"}, "单据状态都给值：已审核"
     lines = ok(api.get(f"/api/orders/{old}/lines", w.admin))
     assert lines["modify_time"].startswith("2026-08-01") and lines["lines"][0]["unit"] == "条"
     BILLS[old]["ModifyDate"] = "2026-10-01T10:00:00"

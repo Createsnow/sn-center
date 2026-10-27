@@ -753,7 +753,9 @@
     "generated": "已生成",
     "quota": "可生成",
     "state": "单据状态",
-    "stateNormal": "正常",
+    "docStatus": {
+      "C": "已审核"
+    },
     "piFrozen": "PI 已改，冻结",
     "alertsN": "{n} 条提醒",
     "lines": "物料明细",

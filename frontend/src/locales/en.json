@@ -753,7 +753,9 @@
     "generated": "Generated",
     "quota": "Quota",
     "state": "Bill state",
-    "stateNormal": "Normal",
+    "docStatus": {
+      "C": "Approved"
+    },
     "piFrozen": "PI changed, frozen",
     "alertsN": "{n} alerts",
     "lines": "Material lines",

@@ -536,6 +536,8 @@ def list_bills(
             "pi": r["pi"],
             "org_code": r["org_code"],
             "org_name": r["org_name"],
+            # 快照只含已审核单据：单据状态一律为 C（已审核）
+            "doc_status": k3.APPROVED,
             "modify_time": k3_time(r["modify_time"]),
             "total_qty": int(r["total_qty"] or 0),
             "line_count": int(r["line_count"]),
@@ -645,6 +647,7 @@ def lines_of(cu: CurrentUser, bill_no: str | None) -> dict:
         "customer_code": h["customer_code"],
         "org_code": h["org_code"],
         "org_name": h["org_name"],
+        "doc_status": k3.APPROVED,
         "modify_time": k3_time(h["modify_time"]),
         "state": changes.bill_states([h["bill_no"]]).get(h["bill_no"], changes.EMPTY_STATE),
         "lines": [
