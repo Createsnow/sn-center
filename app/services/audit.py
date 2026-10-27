@@ -231,7 +231,7 @@ _PATH_ACTIONS = (
     (r"/api/factories/[^/]+/mes-test", FACTORY_MES_TEST),
     (r"/api/factories/[^/]+/mes-toggle", FACTORY_MES_TOGGLE),
     (r"/api/orders/attach", ORDER_ATTACH_FILL),
-    (r"/api/orders/length(/batch)?", ORDER_LENGTH_FILL),
+    (r"/api/orders/length", ORDER_LENGTH_FILL),
     (r"/api/orders/alerts/\d+/handle", ORDER_ALERT_HANDLE),
     (r"/api/orders/.*", ORDER_SYNC),
     (r"/api/rules/line-(select|clear)", RULE_LINE_SELECT),

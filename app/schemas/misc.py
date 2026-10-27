@@ -1,5 +1,4 @@
 from app.schemas.common import In
-from app.schemas.rule import LineRef
 
 
 class SyncIn(In):
@@ -9,15 +8,6 @@ class SyncIn(In):
 class AttachIn(In):
     bill_no: str | None = None
     seq: int | None = None
-    value: str | None = None
-
-
-class LengthBatchIn(In):
-    """统一设置米数的范围：物料行 / 单据 / 都不填 = 整张 PI。"""
-
-    pi_no: str | None = None
-    bills: list[str] | None = None
-    lines: list[LineRef] | None = None
     value: str | None = None
 
 

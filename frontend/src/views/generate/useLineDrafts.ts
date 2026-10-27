@@ -66,5 +66,5 @@ export function useLineDrafts(reload: () => Promise<unknown>) {
     return saveDraft(row, "length", (v) => api.fillLength(row.bill_no, row.seq, v));
   }
 
-  return { DEFAULT_LENGTH, draftOf, setDraft, lockText, saveAttach, saveLength, lengthTip, lengthMissing, lengthPlaceholder };
+  return { draftOf, setDraft, lockText, saveAttach, saveLength, lengthTip, lengthMissing, lengthPlaceholder };
 }

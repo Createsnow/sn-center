@@ -104,7 +104,7 @@ def test_chinese_length_must_be_changed_before_generation(w, api, sql):
     assert api.put("/api/orders/length", m(bill_no=bill, seq=3, value="61"), w.admin).code == "LENGTH_FILL_K3"
     r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=1, value="50"), w.admin))
     assert (r["length"], r["length_source"]) == ("50", "MANUAL")
-    ok(api.put("/api/orders/length/batch", m(pi_no=pi, value="50"), w.admin))
+    ok(api.put("/api/orders/length", m(bill_no=bill, seq=2, value="50"), w.admin))
     w.generate(pi)
     assert [
         r["length_text"] for r in sql.all("SELECT length_text FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)
@@ -292,20 +292,6 @@ def test_preview_lists_reasons(w, api):
     assert ok(w.preview(pi))["generatable"] is True
 
 
-def test_batch_length_sets_default_lines_only(w, api, sql):
-    org, pi, bill = mk(w, ("M1", 1, " "), ("M2", 1, "x1"), ("M3", 1, "100"), ("M4", 1, ""))
-    ok(api.put("/api/orders/length", m(bill_no=bill, seq=4, value="7"), w.admin))
-    assert api.put("/api/orders/length/batch", m(pi_no=pi, value=" "), w.admin).code == "LENGTH_FILL_INVALID"
-    r = ok(api.put("/api/orders/length/batch", m(pi_no=pi, value="001"), w.admin))
-    assert r["filled"] == 1, "只设米数为默认 000 的（金蝶为空、未填写），金蝶已有和已填写的不改"
-    got = {
-        x["seq"]: (x["length"], x["length_source"]) for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"]
-    }
-    assert got == {1: ("001", "MANUAL"), 2: ("x1", "K3"), 3: ("100", "K3"), 4: ("7", "MANUAL")}
-    r = ok(api.put("/api/orders/length/batch", m(pi_no=pi, lines=[m(bill_no=bill, seq=1)], value="5"), w.admin))
-    assert r["filled"] == 0, "按物料行范围；已填写的不改"
-
-
 def test_attach_and_length_locked_once_line_has_sns(w, api, sql):
     org, pi, bill = mk(w, ("M1", 4, "", ""), ("M2", 2, "", ""))
     p = P()
@@ -317,8 +303,6 @@ def test_attach_and_length_locked_once_line_has_sns(w, api, sql):
     assert (line[1]["edit_lock"], line[2]["edit_lock"]) == ("GENERATED", None)
     assert api.put("/api/orders/attach", m(bill_no=bill, seq=1, value="A2"), w.admin).code == "LINE_EDIT_GENERATED"
     assert api.put("/api/orders/length", m(bill_no=bill, seq=1, value="5"), w.admin).code == "LINE_EDIT_GENERATED"
-    r = ok(api.put("/api/orders/length/batch", m(pi_no=pi, value="9"), w.admin))
-    assert r["filled"] == 1, "统一设置跳过已有号的物料行"
     # 订单数量增加后，同一物料行接着生成新增的额度
     BILLS[bill]["TreeEntity"][0]["Qty"] = 6.0
     w.touch(bill)

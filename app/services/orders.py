@@ -436,48 +436,6 @@ def fill_length(cu: CurrentUser, bill_no: str | None, seq: int | None, value: st
     return line_view(line, counts.get((no, seq)), fills.get((no, seq)), lfill=lens.get((no, seq)))
 
 
-def fill_lengths(
-    cu: CurrentUser, pi_in: str | None, bills_in: list[str] | None, lines_in: list[dict] | None, value: str | None
-) -> dict:
-    """统一设置米数：范围（点选的物料行 / 勾选的单据 / 都不填 = 整张 PI）内米数还是默认 000（金蝶为空、未填写）
-    或金蝶值含中文、未改过，且还没有号的物料行一次设为同一个值；已填写的、有号的不改。返回设置的行数。"""
-    pi = util.trim(pi_in)
-    if not pi:
-        raise biz(ErrorCode.PI_REQUIRED)
-    v = _length_value(value)
-    if v is None:
-        raise biz(ErrorCode.LENGTH_FILL_INVALID)
-    keys = {(util.trim(x.get("bill_no")), int(x.get("seq") or 0)) for x in lines_in or []}
-    bills = {util.trim(b) for b in bills_in or [] if util.trim(b)}
-    with locks.with_pi_lock(pi), db.tx():
-        rows = [
-            r
-            for r in db.all("SELECT * FROM sn_prd_mo WHERE pi = %s ORDER BY bill_no, seq", pi)
-            if ((r["bill_no"], r["seq"]) in keys if keys else r["bill_no"] in bills if bills else True)
-        ]
-        keys = [(r["bill_no"], r["seq"]) for r in rows]
-        counts, lens = line_counts(keys), line_lengths(keys)
-        todo = [
-            r
-            for r in rows
-            if effective_length(r, lens.get((r["bill_no"], r["seq"])))[1] in ("DEFAULT", LENGTH_CHINESE)
-            and edit_lock(counts.get((r["bill_no"], r["seq"]))) is None
-        ]
-        if todo:
-            now = util.now()
-            db.exec_many(
-                _LENGTH_UPSERT, [(r["bill_no"], r["seq"], v, r["material_code"], cu.emp_no, now, now) for r in todo]
-            )
-            audit.record(
-                cu,
-                audit.entry(audit.ORDER_LENGTH_FILL)
-                .pi(pi)
-                .count(len(todo))
-                .info(f"batch value={v} " + ",".join(f"{r['bill_no']}/{r['seq']}" for r in todo)),
-            )
-    return {"pi_no": pi, "value": v, "filled": len(todo)}
-
-
 #: 物料行在本系统做的配置：物料行选定的规则、手填的附件项次、手填的米数
 _LINE_CONFIG = (("sn_line_rule", "rule"), ("sn_line_attach", "attach"), ("sn_line_length", "length"))
 

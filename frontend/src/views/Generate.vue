@@ -261,7 +261,7 @@
         </el-tabs>
       </div>
 
-      <!-- 底部操作栏：范围 → 批量（改规则、撤销、统一设置米数）→ 生成 -->
+      <!-- 底部操作栏：范围 → 批量（改规则、撤销）→ 生成；三个页签按钮相同，「撤销（所选）」在待处理页签撤销配置、其他页签撤销生成 -->
       <template #footer>
         <div v-if="ctx" class="bar">
           <div class="bar-scope">
@@ -269,21 +269,11 @@
             <span><b>{{ scopeText }}</b><el-button v-if="hasSel" link type="primary" class="ml" @click="clearSelection">{{ t("generate.clearSel") }}</el-button></span>
           </div>
           <el-button size="small" :disabled="!pickedRows.length" @click="openRuleDialog(pickedRows)">{{ t("generate.ruleForSelected") }}</el-button>
-          <!-- 待处理页签：撤销所选行的配置；其他页签：撤销生成 -->
-          <el-tooltip v-if="lineFilter === 'TODO'"
-            :content="configRows.length ? t('generate.revokeConfigSelN', { n: configRows.length }) : t('generate.revokeConfigSelHint')">
+          <el-tooltip :content="selRevoke.tip">
             <span>
-              <el-button size="small" type="danger" plain :disabled="!configRows.length" :loading="busy === 'config'" @click="revokeConfig(configRows)">
-                {{ t("generate.revokeConfigSelected") }}
-              </el-button>
+              <el-button size="small" type="danger" plain :disabled="!selRevoke.ok" :loading="busy === 'config'" @click="revokeSelected">{{ t("generate.revokeSelected") }}</el-button>
             </span>
           </el-tooltip>
-          <el-tooltip v-else :content="batchRevoke ? revokeTip(batchRevoke) : t('generate.revokeSelHint')">
-            <span>
-              <el-button size="small" type="danger" plain :disabled="!batchRevoke?.ok" @click="openRevoke(pickedRows)">{{ t("generate.revokeSelected") }}</el-button>
-            </span>
-          </el-tooltip>
-          <el-button size="small" :loading="busy === 'lengths'" @click="fillLengths">{{ t("generate.lengthBatch") }}</el-button>
           <span class="push" />
           <div v-loading="gen.loading" class="bar-gen">
             <span v-if="running" class="muted">{{ t("generate.runningHint") }}</span>
@@ -298,9 +288,8 @@
                     <template v-if="g.total">（{{ t("generate.issueLines", { n: num(g.total) }) }}）：{{ g.bills.map((b) => `${b.bill_no} #${b.seqs.join("、")}`).join("；") }}<span v-if="g.more"> …</span></template>
                   </div>
                 </template>
-                <span class="err">{{ t("generate.cannotGen", { n: badCount, why: issueGroups.map((g) => issueText(g.code)).join("、") }) }}</span>
+                <span class="err">{{ t("generate.cannotGen", { n: badCount }) }}</span>
               </el-tooltip>
-              <el-button link type="primary" @click="showTodo">{{ t("generate.onlyThese") }}</el-button>
             </template>
             <template v-else-if="gen.preview">
               <span class="sn-mono">{{ gen.preview.start_sn }} ~ {{ gen.preview.end_sn }}</span>
@@ -348,7 +337,7 @@ import GenConfirmDialog from "@/views/generate/GenConfirmDialog.vue";
 import GenProgress from "@/views/generate/GenProgress.vue";
 import JobsTable from "@/views/generate/JobsTable.vue";
 import { num, pct, ruleTitle as ruleTitleOf } from "@/views/generate/format";
-import { hasChinese, useLineDrafts } from "@/views/generate/useLineDrafts";
+import { useLineDrafts } from "@/views/generate/useLineDrafts";
 
 type Tab = "TO_GENERATE" | "GENERATED";
 type Action = "running" | "view" | "gen" | "pick";
@@ -585,11 +574,6 @@ const defaultBills = computed<string[]>(() =>
 const genScope = computed(() => scopeBody(sel.value) ?? { scope: "BILLS", bills: defaultBills.value });
 /** 未勾选且整张 PI 已没有额度：不用预演。 */
 const piDone = computed(() => !!ctx.value && !hasSel.value && !defaultBills.value.length);
-/** 统一设置米数的范围：所选单据 / 物料行；都没选 = 整张 PI。 */
-const rangeBody = computed(() => {
-  const b = scopeBody(sel.value);
-  return b ? (b.scope === "LINES" ? { lines: b.lines } : { bills: b.bills }) : {};
-});
 
 // ---------------- 物料行：状态、筛选、号段；附件项次、米数的填写
 
@@ -639,33 +623,8 @@ const segsOf = (l: LineRef) => segments.value.filter((s) => sameLine(s, l)).reve
 /** 本次预演给该物料行排的号段。 */
 const planOf = (l: LineRef) => (gen.preview?.generatable ? gen.preview.items.find((x: any) => sameLine(x, l)) : null);
 
-const { DEFAULT_LENGTH, draftOf, setDraft, lockText, saveAttach, saveLength, lengthTip, lengthMissing, lengthPlaceholder } =
+const { draftOf, setDraft, lockText, saveAttach, saveLength, lengthTip, lengthMissing, lengthPlaceholder } =
   useLineDrafts(reloadCtx);
-/** 统一设置米数：所选物料行 / 勾选的单据 / 都没选 = 整张 PI 内米数还是默认 000、还没有号的物料行一次设为同一个值。 */
-async function fillLengths() {
-  if (!ctx.value) return;
-  const range = hasSel.value ? scopeText.value : t("generate.scopeWholePiLines", { pi: ctx.value.pi_no });
-  let value: string;
-  try {
-    const r = await ElMessageBox.prompt(t("generate.lengthBatchHint", { range }), t("generate.lengthBatch"), {
-      inputValue: DEFAULT_LENGTH,
-      inputValidator: (v: string) =>
-        (!!(v || "").trim() && v.trim().length <= 64 && !hasChinese(v)) || t(hasChinese(v) ? "generate.lengthChinese" : "generate.lengthInvalid"),
-    });
-    value = (r as { value: string }).value.trim();
-  } catch {
-    return;
-  }
-  busy.value = "lengths";
-  try {
-    const r: any = await api.fillLengths({ pi_no: ctx.value.pi_no, value, ...rangeBody.value });
-    ElMessage.success(t("generate.lengthBatchDone", { n: r.filled, v: r.value }));
-    await reloadCtx();
-  } finally {
-    busy.value = "";
-  }
-}
-
 // ---------------- 生成：勾选变化后自动预演（所选物料行整行生成）→ 确认 → 当场完成或后台进度 / 取消
 
 const gen = reactive({ unlocked: false, loading: false, preview: null as any, error: "" });
@@ -818,6 +777,20 @@ async function afterRevoke() {
 const hasConfig = (l: OrderLine) => l.rule?.source === "LINE" || l.attach_manual != null || l.length_manual != null;
 /** 底部批量撤销配置的对象：所选物料行中在待处理页签、还没有号、做过配置的。 */
 const configRows = computed(() => pickedRows.value.filter((l) => FILTER_OK.TODO(l) && !l.edit_lock && hasConfig(l)));
+
+/** 底部「撤销（所选）」：按钮名称各页签相同；待处理页签撤销所选行的配置，可生成 / 已生成页签撤销生成。 */
+const selRevoke = computed(() => {
+  if (lineFilter.value === "TODO") {
+    const n = configRows.value.length;
+    return { ok: n > 0, tip: n ? t("generate.revokeConfigSelN", { n }) : t("generate.revokeConfigSelHint") };
+  }
+  const r = batchRevoke.value;
+  return { ok: !!r?.ok, tip: r ? revokeTip(r) : t("generate.revokeSelHint") };
+});
+function revokeSelected() {
+  if (lineFilter.value === "TODO") revokeConfig(configRows.value);
+  else openRevoke(pickedRows.value);
+}
 
 async function revokeConfig(rows: OrderLine[]) {
   if (!ctx.value || !rows.length) return;
