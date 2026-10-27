@@ -154,6 +154,7 @@ def _detail_rows(doc: dict) -> list[list]:
             line["Qty"],
             line["Seq"],
             doc["ModifyDate"],
+            line.get("FProductUnit", " "),
         ]
         for line in doc["TreeEntity"]
     ]
@@ -467,7 +468,7 @@ class World:
 
     # ---------------- 订单
     def order(self, bill_no: str, org: str, customer: str, pi: str, *lines: tuple, status: str = "C") -> Res:
-        """在假金蝶登记一张生产订单并按单据编号同步进快照。lines = (物料, 数量[, 米标[, 附件项次]])。"""
+        """在假金蝶登记一张生产订单并按单据编号同步进快照。lines = (物料, 数量[, 米数[, 附件项次[, 产品单位]]])。"""
         BILLS[bill_no] = self.doc(bill_no, org, customer, pi, *lines, status=status)
         return ok(self.api.post("/api/orders/sync", m(bill_no=bill_no), self.admin))
 
@@ -478,6 +479,7 @@ class World:
             material, qty = line[0], line[1]
             length = line[2] if len(line) > 2 else "100"
             attach = line[3] if len(line) > 3 else "1"
+            unit = line[4] if len(line) > 4 else " "
             entries.append(
                 {
                     "Seq": i,
@@ -485,6 +487,7 @@ class World:
                     "Qty": float(qty),
                     "Flength": length,
                     "FTERM": attach,
+                    "FProductUnit": unit,
                 }
             )
         return {
@@ -518,7 +521,10 @@ class World:
         return ok(self.api.post("/api/orders/compare", {}, self.admin)).body
 
     # ---------------- 规则
-    def rule(self, prefix: str, base: int = 10, seq_len: int = 6, with_length: bool = True, suffix: str = "") -> int:
+    def rule(
+        self, prefix: str, base: int = 10, seq_len: int = 6, with_length: bool = True, suffix: str = "", **more: Any
+    ) -> int:
+        """more：米数补 0 位数 length_pad、分隔符 sep_before / sep_after、带单位 with_unit。"""
         r = ok(
             self.api.post(
                 "/api/rules",
@@ -530,6 +536,7 @@ class World:
                     base=base,
                     seq_len=seq_len,
                     with_length=with_length,
+                    **more,
                 ),
                 self.admin,
             )

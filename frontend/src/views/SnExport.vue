@@ -71,6 +71,7 @@
         <el-table v-loading="linesLoading" :data="lines" size="small" class="mb" :empty-text="t('common.empty')">
           <el-table-column prop="bill_seq" :label="t('export.seq')" width="90" />
           <el-table-column prop="material_code" :label="t('common.material')" min-width="110" />
+          <el-table-column :label="t('common.attachNo')" width="90"><template #default="{ row }">{{ row.attach_no || "—" }}</template></el-table-column>
           <el-table-column :label="t('common.length')" width="80"><template #default="{ row }">{{ row.length || "—" }}</template></el-table-column>
           <el-table-column :label="t('common.qty')" align="right" width="80"><template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template></el-table-column>
           <el-table-column :label="t('export.attention')" min-width="200">
@@ -88,6 +89,8 @@
         <el-table v-loading="segs.state.loading" :data="segRows" size="small" :span-method="spanLine" :empty-text="t('common.empty')">
           <el-table-column prop="bill_seq" :label="t('export.seq')" width="90" />
           <el-table-column prop="material_code" :label="t('common.material')" min-width="100" />
+          <el-table-column :label="t('common.attachNo')" width="90"><template #default="{ row }">{{ row.attach_no || "—" }}</template></el-table-column>
+          <el-table-column :label="t('common.length')" width="80"><template #default="{ row }">{{ row.length || "—" }}</template></el-table-column>
           <el-table-column :label="t('export.segment')" min-width="280">
             <template #default="{ row }">
               <div class="sn-mono">{{ row.start_sn }}<template v-if="row.end_sn !== row.start_sn"> ~ {{ row.end_sn }}</template></div>
@@ -170,6 +173,7 @@ async function download(r: BillRow) {
 interface LineRow {
   bill_seq: number;
   material_code: string;
+  attach_no: string;
   length: string;
   qty: number;
   suspended: number;
@@ -178,6 +182,8 @@ interface LineRow {
 interface SegRow {
   bill_seq: number;
   material_code: string;
+  attach_no: string;
+  length: string;
   seq_pi_no: string;
   start_seq: number;
   end_seq: number;
@@ -236,9 +242,9 @@ const segRows = computed(() =>
   }),
 );
 
-/** 同一物料行连续的号段合并「单据序号」「物料编码」两格。 */
+/** 同一物料行连续的号段合并「单据序号」「物料编码」「附件项次」「米数」四格。 */
 function spanLine({ row, rowIndex, columnIndex }: { row: SegRow; rowIndex: number; columnIndex: number }) {
-  if (columnIndex > 1) return [1, 1];
+  if (columnIndex > 3) return [1, 1];
   const rows = segRows.value;
   if (rowIndex > 0 && sameLine(rows[rowIndex - 1], row)) return [0, 0];
   let n = 1;

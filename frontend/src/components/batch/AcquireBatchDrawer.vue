@@ -10,6 +10,7 @@
       <el-table-column prop="seq_dec" :label="t('common.seqDec')" width="90" />
       <el-table-column :label="t('query.billSeq')" min-width="140"><template #default="{ row }">{{ row.bill_no }} / {{ row.bill_seq }}</template></el-table-column>
       <el-table-column prop="material_code" :label="t('common.material')" width="100" />
+      <el-table-column :label="t('common.attachNo')" width="90"><template #default="{ row }">{{ row.attach_no || "—" }}</template></el-table-column>
       <el-table-column prop="length" :label="t('common.length')" width="70" />
       <el-table-column :label="t('common.status')" width="100"><template #default="{ row }"><StatusTag :status="row.status" /></template></el-table-column>
     </el-table>

@@ -178,7 +178,7 @@ function resetPreview() {
   pv.value = null;
 }
 function lineLabel(l: Target) {
-  return `${l.seq} · ${l.material_code || t("transfer.emptyMaterial")} · ${t("common.length")} ${l.length || "—"}`;
+  return `${l.seq} · ${l.material_code || t("transfer.emptyMaterial")} · ${t("common.attachNo")} ${l.attach_no || "—"} · ${t("common.length")} ${l.length || "—"}`;
 }
 /** 切换类型：转单不限来源生产组织、目标生产组织取目标单据的，来源与目标候选都重新加载。 */
 function setKind(k: Kind) {

@@ -1,9 +1,13 @@
-"""SN 编码：完整 SN = 前缀 + 米标 + 定长进制流水 + 后缀（PRD 5.2.2）。
+"""SN 编码：完整 SN = 前缀 + 流水 + 米数前分隔符 + 米数 + 米数后分隔符 + 单位 + 后缀（PRD 5.2.2）。
 
-- 流水左侧用字符表首字符补齐；10 / 16 / 32 / 36 进制。
-- 米标是字符串，取所属物料行的米标原样写入（只去首尾空格，000 / 001 / 0.5 / 其他都可以，不按数值规范化）；
-  物料行米标为空时写默认米标 000；规则不带米标时不写。
-- 同一版本的前缀、流水位数、后缀固定，SN 总长减去这几部分就是米标位数，所以按版本可以把 SN 反解成（米标，流水）。
+- 流水定长：左侧用字符表首字符（默认字符表即 0）补到流水位数；10 / 16 / 32 / 36 进制。
+- 米数是字符串，取所属物料行的米数原样写入（只去首尾空格，000 / 001 / 0.5 / 其他都可以，不按数值规范化），
+  不足米数补 0 位数时左侧补 0（超过不截断）；物料行米数为空时写默认米数 000。
+  规则不带米数时米数和前后分隔符都不写。
+- 单位取物料行的产品单位原样写入；规则不带单位时不写。
+- 前缀、后缀、分隔符不限制字符（只去首尾空格）。前缀必填：一个前缀只归属一张 PI，同一 PI 内流水不重复，
+  SN 就不重复（号池唯一约束兜底）。
+- 流水紧跟前缀、定长，所以按版本可以把 SN 反解出十进制流水。
 """
 
 from __future__ import annotations
@@ -21,14 +25,17 @@ DEFAULT_CHARSETS: dict[int, str] = {
     36: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ",
 }
 MAX_SEQ_LEN = 12
+#: 米数补 0 位数上限（0 = 不补）
+MAX_LENGTH_PAD = 32
+#: 分隔符最多字符数
+MAX_SEP = 16
 SN_MAX = 64
 LONG_MAX = 2**63 - 1
-#: 前缀：大写字母、数字、-、_（此前的规则可能用过小写等字符，沿用已有前缀时见 validate 的 legacy_prefix）；
-#: 后缀：字母、数字、_
-PREFIX_RE = re.compile(r"[A-Z0-9_-]+")
-SUFFIX_RE = re.compile(r"[A-Za-z0-9_]*")
-_CHARSET_RE = re.compile(r"^[A-Za-z0-9]+$")
-#: 物料行米标为空（金蝶为空且页面未填写）时写入 SN 的默认米标
+#: 字符表不能含空白
+_CHARSET_RE = re.compile(r"^\S+$")
+#: 中文（含中文标点、全角字符）：米数含这些字符时须手动改过才能生成
+_CHINESE_RE = re.compile(r"[　-〿㐀-䶿一-鿿豈-﫿＀-￯]")
+#: 物料行米数为空（金蝶为空且页面未填写）时写入 SN 的默认米数
 DEFAULT_LENGTH = "000"
 
 
@@ -46,22 +53,30 @@ class Spec:
     seq_len: int
     charset: str
     with_length: bool = True
+    length_pad: int = 0
+    sep_before: str = ""
+    sep_after: str = ""
+    with_unit: bool = False
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "prefix", self.prefix or "")
         object.__setattr__(self, "suffix", self.suffix or "")
+        object.__setattr__(self, "sep_before", self.sep_before or "")
+        object.__setattr__(self, "sep_after", self.sep_after or "")
+        object.__setattr__(self, "length_pad", self.length_pad or 0)
 
 
-def validate(s: Spec, legacy_prefix: bool = False) -> ErrorCode | None:
-    """校验参数；返回 None 表示合法，否则返回错误码。米标部分在生成时按实际米标再校验总长。
-    legacy_prefix：沿用已有前缀（按旧规则建的），不按 PREFIX_RE 校验前缀字符。"""
+def validate(s: Spec) -> ErrorCode | None:
+    """校验参数；返回 None 表示合法，否则返回错误码。米数、单位部分在生成时按实际值再校验总长。"""
     if s.base not in DEFAULT_CHARSETS:
         return ErrorCode.RULE_BASE_INVALID
     if s.seq_len < 1 or s.seq_len > MAX_SEQ_LEN:
         return ErrorCode.RULE_SEQ_LEN_INVALID
     if not s.prefix:
         return ErrorCode.RULE_PREFIX_REQUIRED
-    if not (legacy_prefix or PREFIX_RE.fullmatch(s.prefix)) or not SUFFIX_RE.fullmatch(s.suffix):
+    if s.length_pad < 0 or s.length_pad > MAX_LENGTH_PAD:
+        return ErrorCode.RULE_LENGTH_PAD_INVALID
+    if len(s.sep_before) > MAX_SEP or len(s.sep_after) > MAX_SEP:
         return ErrorCode.RULE_AFFIX_INVALID
     if s.charset is None or len(s.charset) != s.base:
         return ErrorCode.RULE_CHARSET_LENGTH
@@ -69,9 +84,14 @@ def validate(s: Spec, legacy_prefix: bool = False) -> ErrorCode | None:
         return ErrorCode.RULE_CHARSET_INVALID
     if len(set(s.charset)) != len(s.charset):
         return ErrorCode.RULE_CHARSET_DUPLICATE
-    if len(s.prefix) + len(s.suffix) + s.seq_len > SN_MAX:
+    if len(s.prefix) + len(s.suffix) + s.seq_len + _fixed_length_part(s) > SN_MAX:
         return ErrorCode.RULE_SN_TOO_LONG
     return None
+
+
+def _fixed_length_part(s: Spec) -> int:
+    """米数部分至少占的字符数（分隔符 + 补 0 位数）。"""
+    return len(s.sep_before) + s.length_pad + len(s.sep_after) if s.with_length else 0
 
 
 def max_seq(s: Spec) -> int:
@@ -105,29 +125,41 @@ def decode_seq(text: str, s: Spec) -> int | None:
     return n
 
 
-def format_sn(seq: int, s: Spec, length: str | None = None) -> str:
-    """完整 SN；规则带米标时原样写入米标字符串，不带米标时忽略。"""
-    mid = (length or "") if s.with_length else ""
-    return s.prefix + mid + encode_seq(seq, s) + s.suffix
+def pad_length(length: str | None, s: Spec) -> str:
+    """米数按规则左侧补 0 到补 0 位数（超过不截断）。"""
+    v = length or ""
+    return v.rjust(s.length_pad, "0") if s.length_pad else v
 
 
-def parse(sn: str | None, s: Spec) -> tuple[str, int] | None:
-    """按规则反解完整 SN →（米标，十进制流水）；前后缀、位数或字符不符返回 None。带米标的规则米标不能为空。"""
+def format_sn(seq: int, s: Spec, length: str | None = None, unit: str | None = None) -> str:
+    """完整 SN；规则带米数时写入（补 0）米数及前后分隔符，带单位时写入单位，不带时忽略。"""
+    mid = s.sep_before + pad_length(length, s) + s.sep_after if s.with_length else ""
+    tail = (unit or "") if s.with_unit else ""
+    return s.prefix + encode_seq(seq, s) + mid + tail + s.suffix
+
+
+def parse(sn: str | None, s: Spec) -> int | None:
+    """按规则反解完整 SN → 十进制流水；前缀、后缀、流水位数或字符、米数分隔符不符返回 None。"""
     if sn is None or not sn.startswith(s.prefix) or not sn.endswith(s.suffix):
         return None
     body = sn[len(s.prefix) : len(sn) - len(s.suffix)]
     if len(body) < s.seq_len:
         return None
-    length, seq_text = body[: len(body) - s.seq_len], body[len(body) - s.seq_len :]
-    if not s.with_length and length:
+    seq_text, rest = body[: s.seq_len], body[s.seq_len :]
+    if s.with_length:
+        if len(rest) < _fixed_length_part(s) or not rest.startswith(s.sep_before):
+            return None
+    elif not s.with_unit and rest:
         return None
-    if s.with_length and not length:
-        return None
-    n = decode_seq(seq_text, s)
-    return None if n is None else (length, n)
+    return decode_seq(seq_text, s)
 
 
 def clean_length(raw: str | None) -> str | None:
-    """米标字符串：去首尾空格后原样使用；为空返回 None（生成时取默认米标 000）。"""
+    """米数字符串：去首尾空格后原样使用；为空返回 None（生成时取默认米数 000）。"""
     v = (raw or "").strip()
     return v or None
+
+
+def has_chinese(text: str | None) -> bool:
+    """是否含中文（含中文标点、全角字符）。"""
+    return bool(text) and _CHINESE_RE.search(text) is not None

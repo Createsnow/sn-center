@@ -169,7 +169,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
       "billSeq": 1,                          // Number           必填  单据行号
       "attachNo": "A01",                     // String(64)|null  必填  附件项次，生成时写定，转单、转组织不变
       "materialCode": "9148363",             // String(64)|null  必填  物料编码
-      "length": "0100",                      // String(32)|null  必填  米标，原样保存
+      "length": "0100",                      // String(64)|null  必填  米数，原样保存（未补 0）
       "customerCode": "0001"                 // String(64)       必填  客户编码
     }
   ]

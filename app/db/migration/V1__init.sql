@@ -90,7 +90,11 @@ CREATE TABLE sn_rule_version (
   base         INT         NOT NULL COMMENT '10 / 16 / 32 / 36',
   seq_len      INT         NOT NULL COMMENT '流水位数',
   charset      VARCHAR(64) NOT NULL COMMENT '字符表，长度 = 进制',
-  with_length  TINYINT(1)  NOT NULL DEFAULT 1 COMMENT '带长度',
+  with_length  TINYINT(1)  NOT NULL DEFAULT 1 COMMENT '带米数',
+  length_pad   INT         NOT NULL DEFAULT 0 COMMENT '米数补 0 位数（左侧补 0 到该位数；0 = 不补）',
+  length_sep_before VARCHAR(16) NOT NULL DEFAULT '' COMMENT '米数前分隔符',
+  length_sep_after  VARCHAR(16) NOT NULL DEFAULT '' COMMENT '米数后分隔符',
+  with_unit    TINYINT(1)  NOT NULL DEFAULT 0 COMMENT '带单位（物料行的产品单位）',
   used         TINYINT(1)  NOT NULL DEFAULT 0 COMMENT '生成过号（含之后撤销的）：再改格式必须另出一版',
   claimed_pi   VARCHAR(64) NULL COMMENT '归属 PI：首次用它生成的 PI，或换前缀另出时的 PI',
   derived_from BIGINT      NULL COMMENT '由哪一版换前缀而来',
@@ -149,15 +153,17 @@ CREATE TABLE sn_prd_mo (
   attach_no     VARCHAR(64)   NOT NULL DEFAULT '' COMMENT '附件项次（金蝶值；空时须补填）',
   material_code VARCHAR(64)   NOT NULL DEFAULT '',
   material_name VARCHAR(255)  NOT NULL DEFAULT '',
-  length_raw    VARCHAR(64)   NOT NULL DEFAULT '' COMMENT '长度（金蝶原值，去首尾空格）',
+  length_raw    VARCHAR(64)   NOT NULL DEFAULT '' COMMENT '米数（金蝶原值，去首尾空格）',
+  unit          VARCHAR(64)   NOT NULL DEFAULT '' COMMENT '产品单位（金蝶 FProductUnit，去首尾空格）',
   qty           DECIMAL(18,4) NOT NULL DEFAULT 0,
-  modify_time   DATETIME      NULL COMMENT '金蝶修改时间（比对同步用）',
+  modify_time   DATETIME      NULL COMMENT '金蝶修改日期 ModifyDate（比对同步、订单页排序用）',
   synced_at     DATETIME      NOT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY ux_prd_mo_line (bill_no, seq),
   KEY ix_prd_mo_pi (pi),
   KEY ix_prd_mo_customer (customer_code),
-  KEY ix_prd_mo_org (org_code, pi)
+  KEY ix_prd_mo_org (org_code, pi),
+  KEY ix_prd_mo_modify (modify_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='生产订单快照';
 
 -- 订单同步状态（一行）
@@ -210,17 +216,17 @@ CREATE TABLE sn_line_attach (
   PRIMARY KEY (bill_no, seq)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='附件项次补填';
 
--- 长度补填（快照之外；金蝶为空或不是数字时由总部补填）
+-- 米数补填（快照之外；金蝶为空或含中文时由总部填写）
 CREATE TABLE sn_line_length (
   bill_no        VARCHAR(64) NOT NULL,
   seq            INT         NOT NULL,
-  manual_value   VARCHAR(64) NOT NULL COMMENT '手工值（规范化后的长度写法）',
+  manual_value   VARCHAR(64) NOT NULL COMMENT '手工值（米数，字符串原样）',
   material_code  VARCHAR(64) NOT NULL DEFAULT '' COMMENT '填写时的物料编码；之后同序号物料变了视为对不上',
   filled_by      VARCHAR(32) NOT NULL,
   filled_at      DATETIME    NOT NULL,
   updated_at     DATETIME    NOT NULL,
   PRIMARY KEY (bill_no, seq)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='长度补填';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='米数补填';
 
 -- 物料行计数（快照之外，快照覆盖或单据离开快照都不丢）
 CREATE TABLE sn_line_count (
@@ -353,7 +359,7 @@ CREATE TABLE sn_item (
   gen_bill_seq      INT         NOT NULL,
   seq_pi_no         VARCHAR(64) NOT NULL COMMENT '流水归属 PI',
   seq_dec           BIGINT      NOT NULL COMMENT '十进制流水',
-  length_text       VARCHAR(32) NULL COMMENT '长度（规则不带长度时为空）',
+  length_text       VARCHAR(64) NULL COMMENT '米数（未补 0 的原值；规则不带米数时为空）',
   attach_no         VARCHAR(64) NOT NULL DEFAULT '' COMMENT '附件项次（生成时写定，转单、转组织不变）',
   rule_version_id   BIGINT      NOT NULL,
   gen_batch         VARCHAR(40) NOT NULL,

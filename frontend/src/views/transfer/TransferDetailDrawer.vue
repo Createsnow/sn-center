@@ -109,7 +109,10 @@
         <el-table-column :label="t('transfer.before')" min-width="200">
           <template #default="{ row }">
             <div>{{ statusLabel(row.from_status) }} · {{ row.from_factory || "—" }} · {{ row.from_pi }}</div>
-            <div class="muted">{{ row.from_bill }}/{{ row.from_seq }} · {{ row.from_material || "—" }} · rev {{ row.from_rev }}</div>
+            <div class="muted">
+              {{ row.from_bill }}/{{ row.from_seq }} · {{ row.from_material || "—" }} · {{ t("common.attachNo") }} {{ row.attach_no || "—" }}
+              · {{ t("common.length") }} {{ row.length || "—" }} · rev {{ row.from_rev }}
+            </div>
             <div v-if="row.from_delivery_batch || row.from_acquire_batch" class="muted sn-mono small">{{ row.from_delivery_batch || row.from_acquire_batch }}</div>
           </template>
         </el-table-column>

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from conftest import MES, emp, m, ok, uid, xlsx_rows
 
+from app.services import sn_sheet
+
 
 def P() -> str:
     return "P" + uid("").replace("-", "")
@@ -55,12 +57,15 @@ def test_range_query_counts_missing_for_bound_operator(w, api):
 
 def test_export_truncates_with_notice(w, api, monkeypatch):
     org, pi, bill = make(w, 5)
+    w.allocate(pi)
     monkeypatch.setenv("SN_EXPORT_LIMIT", "3")
     c = ok(api.get(f"/api/sn/export-check?pi={pi}", w.admin))
     assert c.body == {"limit": 3, "truncated": True, "rows": 3}
     r = api.client.get(f"/api/sn/export?pi={pi}", headers={"Authorization": f"Bearer {w.admin}"})
     rows = xlsx_rows(r.content)
-    assert rows[0][-1] == "交付方式" and len(rows) == 4
+    assert rows[0] == sn_sheet.HEADERS and len(rows) == 4, "列与 SN 导出、领取文件统一"
+    got = dict(zip(rows[0], rows[1], strict=True))
+    assert (got["组织编号"], got["生产组织名称"]) == (org, f"组织{org}")
 
 
 def test_delivered_read_only_for_mes(w, api, sql):

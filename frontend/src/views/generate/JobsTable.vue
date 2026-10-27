@@ -6,6 +6,7 @@
           <el-table-column :label="t('common.billNo')" prop="bill_no" min-width="110" />
           <el-table-column :label="t('common.billSeq')" prop="seq" width="72" />
           <el-table-column :label="t('common.material')" prop="material_code" min-width="90" />
+          <el-table-column :label="t('common.attachNo')" width="90"><template #default="{ row: l }">{{ l.attach || "—" }}</template></el-table-column>
           <el-table-column :label="t('common.length')" prop="length" width="64" />
           <el-table-column :label="t('common.qty')" prop="qty" align="right" width="70" />
           <el-table-column :label="t('generate.segment')" min-width="220">

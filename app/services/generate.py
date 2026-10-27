@@ -2,7 +2,7 @@
 
 生成：在一张 PI 下整单（勾选单据，单据内按序号）或按物料行（按点选顺序）生成；最小单位是物料行——范围内每个
 还有额度的物料行一次生成它的全部额度，不拆成两次。号都排在该 PI 的一套流水上，各物料行按自己的规则写出
-（前缀 + 米标 + 流水 + 后缀）。
+（前缀 + 流水 + 分隔符 + 米数 + 分隔符 + 单位 + 后缀）。
 必须先预演（只给出起止号、各物料行数量和号段，不落库），
 预演只对发起人有效、默认 30 分钟、只能生成一次；范围或条件改变、所选规则版本被别的 PI 先用、PI 最大号变化、
 同步改了范围内物料行数量时预演失效。
@@ -78,14 +78,28 @@ _INSERT_ITEM = (
 executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="sn-gen")
 
 
-_LINE_FIELDS = ("bill_no", "seq", "material_code", "length", "qty", "start_sn", "end_sn", "rule_label")
+_LINE_FIELDS = (
+    "bill_no",
+    "seq",
+    "material_code",
+    "attach",
+    "length",
+    "unit",
+    "qty",
+    "start_sn",
+    "end_sn",
+    "rule_label",
+)
 
 
 def job_json(j: dict | None) -> dict | None:
     out = util.jrow(j, JOB_FIELDS)
     if out is not None and j is not None:
         plan = json.loads(j["plan_json"])
-        out["lines"] = [{k: x[k] for k in _LINE_FIELDS} | {"revoked": bool(x.get("revoked"))} for x in plan["items"]]
+        # 早先的计划里没有附件项次、单位
+        out["lines"] = [
+            {k: x.get(k) for k in _LINE_FIELDS} | {"revoked": bool(x.get("revoked"))} for x in plan["items"]
+        ]
         out["bills"] = sorted({x["bill_no"] for x in plan["items"]})
         out["revoked_qty"] = sum(x["qty"] for x in plan["items"] if x.get("revoked"))
     return out
@@ -119,6 +133,8 @@ class Line:
     qty: int
     own: int
     length: str
+    length_source: str
+    unit: str
     attach: str
     res: rules.Resolved | None
     block: str | None = None
@@ -154,6 +170,7 @@ def _load_lines(pi: str, keys: list[tuple[str, int]]) -> list[Line]:
             defaults[r["customer_code"]] = rules.pi_default(pi, r["customer_code"])
         c = counts.get(k)
         attach, _src = orders.effective_attach(r, fills.get(k))
+        length, length_src = orders.effective_length(r, lens.get(k))
         line = Line(
             r["bill_no"],
             r["seq"],
@@ -163,7 +180,9 @@ def _load_lines(pi: str, keys: list[tuple[str, int]]) -> list[Line]:
             r["pi"],
             orders.sn_qty(r),
             0 if c is None else int(c["own_generated"]),
-            orders.effective_length(r, lens.get(k))[0],
+            length,
+            length_src,
+            util.trim(r.get("unit")),
             attach,
             rules.effective(pi, r["customer_code"], sels.get(k), defaults[r["customer_code"]], memo=memo),
             blocks[r["bill_no"]],
@@ -183,7 +202,14 @@ def _check(line: Line) -> None:
         line.issues.append("NO_RULE")
     elif not line.res.ready:
         line.issues.append("RULE_PREFIX")
-    # 米标选填（为空取默认 000），不挡生成；附件项次必填
+    spec = line.res.spec() if line.res is not None and line.res.ready else None
+    # 米数选填（为空取默认 000），不挡生成；但金蝶米数含中文时须先在页面手动改过（规则不带米数时不影响）
+    if line.length_source == orders.LENGTH_CHINESE and (spec is None or spec.with_length):
+        line.issues.append("LENGTH_CHINESE")
+    # 规则带单位时物料行须有产品单位（在金蝶补填后同步）
+    if spec is not None and spec.with_unit and not line.unit:
+        line.issues.append("UNIT_EMPTY")
+    # 附件项次必填
     if not line.attach:
         line.issues.append("ATTACH_EMPTY")
 
@@ -239,7 +265,8 @@ def _plan(pi: str, scope: str, keys: list[tuple[str, int]], base: int) -> dict:
         if end > mx:
             raise biz(ErrorCode.GEN_RULE_EXHAUSTED, max=mx, end=end)
         length = x.length if spec.with_length else None
-        start_sn = codec.format_sn(cur, spec, length)
+        unit = x.unit if spec.with_unit else None
+        start_sn = codec.format_sn(cur, spec, length, unit)
         if len(start_sn) > codec.SN_MAX:
             raise biz(ErrorCode.RULE_SN_TOO_LONG)
         res = x.res
@@ -251,6 +278,7 @@ def _plan(pi: str, scope: str, keys: list[tuple[str, int]], base: int) -> dict:
                 "customer_code": x.customer_code,
                 "org_code": x.org_code,
                 "length": length,
+                "unit": unit,
                 "attach": x.attach,
                 "line_qty": x.qty,
                 "own_before": x.own,
@@ -258,7 +286,7 @@ def _plan(pi: str, scope: str, keys: list[tuple[str, int]], base: int) -> dict:
                 "start_seq": cur,
                 "end_seq": end,
                 "start_sn": start_sn,
-                "end_sn": codec.format_sn(end, spec, length),
+                "end_sn": codec.format_sn(end, spec, length, unit),
                 "rule_key": res.key(),
                 "rule_plan": res.plan,
                 "rule_id": None if res.rule is None else res.rule["id"],
@@ -520,7 +548,7 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
         s = x["start_seq"]
         while s <= x["end_seq"]:
             e = min(x["end_seq"], s + CHUNK - 1)
-            sns = [codec.format_sn(q, spec, x["length"]) for q in range(s, e + 1)]
+            sns = [codec.format_sn(q, spec, x["length"], x.get("unit")) for q in range(s, e + 1)]
             rows = [
                 (
                     sn,
@@ -600,7 +628,7 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
 def _resolved_of(pi: str, x: dict) -> rules.Resolved:
     """生成事务内重新解析该行规则，须与预演时一致。"""
     if x["rule_plan"] == rules.PLAN_NEW:
-        return rules._custom_resolved(rules.SRC_LINE, x["custom"], saved=True)
+        return rules._custom_resolved(rules.SRC_LINE, x["custom"])
     rule = db.one("SELECT * FROM sn_rule WHERE id = %s FOR UPDATE", x["rule_id"])
     if rule is None:
         raise biz(ErrorCode.GEN_PREVIEW_CHANGED)

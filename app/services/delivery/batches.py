@@ -149,7 +149,7 @@ TYPE_SQL = (
 
 
 def _item_payload(r: dict) -> dict:
-    """批次明细，交付批次与转出批次同一结构。十进制流水、米标按字符串；物料、附件项次为空，规则不带米标时为 null。
+    """批次明细，交付批次与转出批次同一结构。十进制流水、米数按字符串；物料、附件项次为空，规则不带米数时为 null。
     交付批次为号的当前挂靠，MES 逐枚按 rev 新增或覆盖；转出批次为转出前的挂靠，转入组织在批次头 toOrgCode，MES 据此
     标记已转走（本地没有时按 SN、rev 建一条已转走记录）。"""
     return {
@@ -367,7 +367,7 @@ def build_delivery_now(
 def build_transfer_out(cu: CurrentUser, org: str, entries: list[dict], rebuilt_from: str | None = None) -> list[dict]:
     """转出批次（在转移事务内调用）：按转出前 PI、转入组织分批（一张转移单只有一张来源 PI、一个转入组织，批次头的
     pi、toOrgCode 都只有一个值），再按来源组织当前单批枚数拆分。
-    entries 每枚含转出前挂靠（含米标、规则版本）、转入组织、转移类型与单号。"""
+    entries 每枚含转出前挂靠（含米数、规则版本）、转入组织、转移类型与单号。"""
     f = factories.get(org)
     size = max(1, int(f["batch_size"])) if f else 5000
     by_key: dict[tuple[str, str], list[dict]] = {}

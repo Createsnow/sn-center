@@ -12,21 +12,19 @@
 
     <template v-if="mode === 'LIBRARY'">
       <el-input v-model="kw" :placeholder="t('generate.rule.searchLib')" clearable prefix-icon="Search" class="mb" />
+      <!-- 精简：每条只列「规则编码 v版本」（本 PI 用的版本）；格式悬停可看，须换前缀时下方提示 -->
       <div class="rule-list">
         <div v-for="o in filtered" :key="o.rule_id" class="it" :class="{ on: picked?.rule_id === o.rule_id }" tabindex="0"
-          @click="pick(o)" @keyup.enter="pick(o)">
+          :title="o.format || ''" @click="pick(o)" @keyup.enter="pick(o)">
           <span class="radio" />
           <span class="nm">
-            <el-tag v-if="o.recommended" size="small" type="success" effect="dark">{{ t("generate.rule.recommended") }}</el-tag>
-            <b>{{ o.rule_code }}</b><span class="muted">{{ o.rule_name }}</span>
-          </span>
-          <span class="meta">
-            <span class="sn-mono">{{ o.format || "—" }}</span>
-            <el-tag v-if="o.plan" size="small" :type="o.plan === 'PREFIX' ? 'warning' : 'info'" class="ml">{{ planText(o.plan) }}</el-tag>
+            <b>{{ optionTitle(o) }}</b>
+            <el-tag v-if="o.recommended" size="small" type="success">{{ t("generate.rule.recommended") }}</el-tag>
           </span>
         </div>
         <div v-if="!filtered.length" class="empty">{{ t("common.empty") }}</div>
       </div>
+      <div v-if="picked" class="muted picked-format">{{ picked.format }}</div>
       <el-form v-if="picked?.plan === 'PREFIX'" label-width="120px" class="mt" @submit.prevent>
         <el-alert type="warning" :closable="false" show-icon class="mb" :title="t('generate.rule.prefixNeeded', { pi: picked.other_pi || '—' })" />
         <el-form-item :label="t('generate.rule.newPrefix')" required>
@@ -49,6 +47,20 @@
       </el-form-item>
       <el-form-item :label="t('generate.rule.withLength')">
         <el-switch v-model="custom.with_length" @change="schedule" />
+      </el-form-item>
+      <template v-if="custom.with_length">
+        <el-form-item :label="t('generate.rule.sepBefore')">
+          <el-input v-model="custom.sep_before" maxlength="16" class="w120" :placeholder="t('common.optional')" @input="schedule" />
+        </el-form-item>
+        <el-form-item :label="t('generate.rule.lengthPad')">
+          <el-input-number v-model="custom.length_pad" :min="0" :max="32" controls-position="right" @change="schedule" />
+        </el-form-item>
+        <el-form-item :label="t('generate.rule.sepAfter')">
+          <el-input v-model="custom.sep_after" maxlength="16" class="w120" :placeholder="t('common.optional')" @input="schedule" />
+        </el-form-item>
+      </template>
+      <el-form-item :label="t('generate.rule.withUnit')">
+        <el-switch v-model="custom.with_unit" @change="schedule" />
       </el-form-item>
       <el-form-item :label="t('generate.rule.suffix')">
         <el-input v-model="custom.suffix" maxlength="32" class="w200" :placeholder="t('common.optional')" @input="schedule" />
@@ -82,7 +94,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { api } from "@/api";
 import { ApiError } from "@/api/http";
 import { BASES } from "@/constants";
-import type { OrderLine } from "@/types/api";
+import type { CustomRule, OrderLine } from "@/types/api";
 
 const props = defineProps<{ modelValue: boolean; pi: string; lines: OrderLine[]; options: any[] }>();
 const emit = defineEmits<{ (e: "update:modelValue", v: boolean): void; (e: "saved"): void }>();
@@ -92,14 +104,18 @@ const mode = ref<"LIBRARY" | "CUSTOM">("LIBRARY");
 const kw = ref("");
 const picked = ref<any>(null);
 const newPrefix = ref("");
-/** 自定义规则默认：前缀取单据号后 7 位（转大写、去掉前缀不允许的字符），流水 4 位，不带米标。 */
-const defaultPrefix = (bill = "") => bill.toUpperCase().replace(/[^A-Z0-9_-]/g, "").slice(-7);
-const customDefault = () => ({ prefix: defaultPrefix(props.lines[0]?.bill_no), base: 10, seq_len: 4, with_length: false, suffix: "" });
-const custom = reactive(customDefault());
+/** 自定义规则默认：前缀取单据号后 7 位，流水 4 位，不带米数、不带单位。 */
+const defaultPrefix = (bill = "") => bill.slice(-7);
+const customDefault = (): CustomRule => ({
+  prefix: defaultPrefix(props.lines[0]?.bill_no), base: 10, seq_len: 4, with_length: false, length_pad: 0, sep_before: "", sep_after: "",
+  with_unit: false, suffix: "",
+});
+const custom = reactive<CustomRule>(customDefault());
 const sample = reactive({ sn: "", format: "", max: 0, error: "" });
 const busy = ref("");
 
-const planText = (p: string) => t(`generate.plan.${p}`);
+/** 规则选择只列「规则编码 v版本」 */
+const optionTitle = (o: any) => (o.version ? `${o.rule_code} v${o.version}` : o.rule_code);
 const filtered = computed(() => {
   const k = kw.value.trim().toLowerCase();
   if (!k) return props.options;
@@ -121,7 +137,7 @@ function onOpen() {
   const cur = props.lines.length === 1 ? props.lines[0].rule : null;
   if (cur?.mode === "CUSTOM" && cur.custom) {
     mode.value = "CUSTOM";
-    Object.assign(custom, cur.custom);
+    Object.assign(custom, customDefault(), cur.custom);
   } else {
     mode.value = props.options.length ? "LIBRARY" : "CUSTOM";
     Object.assign(custom, customDefault());
@@ -145,7 +161,8 @@ async function previewCustom() {
   sample.error = "";
   if (!custom.prefix.trim()) return;
   try {
-    const r = await api.previewRule({ ...custom, prefix: custom.prefix.trim(), length: props.lines[0]?.length || undefined });
+    const l = props.lines[0];
+    const r = await api.previewRule({ ...custom, prefix: custom.prefix.trim(), length: l?.length || undefined, unit: l?.unit || undefined });
     sample.sn = r.samples?.[0]?.sn || "";
     sample.format = r.format;
     sample.max = r.max_seq;
@@ -175,7 +192,9 @@ async function save() {
       body.rule_id = picked.value.rule_id;
       if (picked.value.plan === "PREFIX") body.new_prefix = newPrefix.value.trim();
     } else {
-      body.custom = { ...custom, prefix: custom.prefix.trim(), suffix: custom.suffix.trim() };
+      body.custom = {
+        ...custom, prefix: custom.prefix.trim(), suffix: custom.suffix.trim(), sep_before: custom.sep_before.trim(), sep_after: custom.sep_after.trim(),
+      };
     }
     await api.selectLineRule(body);
     ElMessage.success(t("common.saved"));
@@ -205,11 +224,10 @@ async function clear() {
 .tg { background: var(--el-fill-color); border-radius: 4px; padding: 0 6px; }
 .mb { margin-bottom: 12px; }
 .mt { margin-top: 12px; }
-.ml { margin-left: 6px; }
 .w120 { width: 120px; }
 .w200 { width: 200px; }
 .rule-list { border: 1px solid var(--el-border-color-lighter); border-radius: 8px; max-height: 280px; overflow: auto; }
-.rule-list .it { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--el-border-color-lighter); outline: none; }
+.rule-list .it { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 10px; align-items: center; padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--el-border-color-lighter); outline: none; }
 .rule-list .it:last-child { border-bottom: none; }
 .rule-list .it:hover, .rule-list .it:focus-visible { background: var(--el-fill-color-light); }
 .rule-list .it.on { background: var(--el-color-primary-light-9); }
@@ -217,7 +235,7 @@ async function clear() {
 .rule-list .it.on .radio { border: 4px solid var(--el-color-primary); }
 .rule-list .nm { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .rule-list .nm b { font-weight: 500; white-space: nowrap; }
-.rule-list .meta { font-size: 12px; color: var(--app-muted); white-space: nowrap; }
+.picked-format { margin-top: 6px; font-size: 12px; }
 .rule-list .empty { padding: 20px; text-align: center; color: var(--app-muted); }
 .sample { display: flex; flex-direction: column; gap: 2px; }
 .err { color: var(--el-color-danger); font-size: 12px; }

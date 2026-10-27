@@ -93,7 +93,7 @@ def sn_export_check(
     return query.export_check(cu, f)
 
 
-@router.get("/export", summary="导出 SN 明细 xlsx（列同领取文件，另加交付方式）")
+@router.get("/export", summary="导出 SN 明细 xlsx（列与 SN 导出、领取文件统一，含组织编号与中文生产组织名称）")
 def sn_export(
     cu: UserDep,
     factory_code: str | None = None,

@@ -2,7 +2,7 @@
 
 与分配后的推送、拉取是两套独立的机制：号一经分配到生产组织（不再是待分配）就按「生产组织 + PI + 单据」一行列出，
 不论该组织是否对接 MES，也不看推送、拉取的进度和结果（推送失败、批次未确认都照常导出）；
-可看明细号段，也可直接下载 xlsx（列：PI、单据、物料编码、SN）。
+可看明细号段，也可直接下载 xlsx（列与 SN 查询导出、历史领取文件统一，含组织编号与中文生产组织名称，见 sn_sheet）。
 只读：导出不改号的状态、不建批次，可反复导出；导出也不影响推送、拉取。历史领取批次在 SN 查询中查看。
 """
 
@@ -14,9 +14,8 @@ from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db
-from app.services import factories, files
+from app.services import factories, files, sn_sheet
 
-FILE_HEADERS = ["PI", "单据", "物料编码", "SN"]
 #: 各汇总都带的枚数：暂停（单据暂停交付）、申请中（转组织待审批，批准后会转走）
 _NOTES = "SUM(i.suspend IS NOT NULL) suspended, SUM(i.status = 'APPLYING') applying"
 
@@ -83,10 +82,11 @@ def _bill_where(cu: CurrentUser, factory: str | None, pi: str | None, bill: str 
 
 
 def lines(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None) -> list[dict]:
-    """明细顶部：每个单据序号 + 物料一行，枚数、米标、暂停枚数、申请中枚数。"""
+    """明细顶部：每个单据序号 + 物料一行，附件项次、米数、枚数、暂停枚数、申请中枚数。"""
     _p, _b, where, args = _bill_where(cu, factory, pi, bill)
     rows = db.all(
-        "SELECT i.bill_seq, i.material_code, MAX(i.length_text) length_text, COUNT(*) qty, "
+        "SELECT i.bill_seq, i.material_code, MAX(i.attach_no) attach_no, MAX(i.length_text) length_text, "
+        "COUNT(*) qty, "
         + _NOTES
         + " FROM sn_item i"
         + where
@@ -97,6 +97,7 @@ def lines(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None
         {
             "bill_seq": r["bill_seq"],
             "material_code": r["material_code"],
+            "attach_no": r["attach_no"] or "",
             "length": r["length_text"] or "",
             "qty": int(r["qty"]),
             **_notes(r),
@@ -109,11 +110,13 @@ def segments(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | N
     """明细：一行 = 单据序号 + 物料 + 连续号段（转入号注明流水归属 PI）；不按推送状态拆段。"""
     p, b, where, args = _bill_where(cu, factory, pi, bill)
     grouped = (
-        "SELECT factory_code, bill_seq, material_code, seq_pi_no, MIN(seq_dec) s, MAX(seq_dec) e, "
+        "SELECT factory_code, bill_seq, material_code, MAX(attach_no) attach_no, MAX(length_text) length_text, "
+        "seq_pi_no, MIN(seq_dec) s, MAX(seq_dec) e, "
         "SUBSTRING(MIN(CONCAT(LPAD(seq_dec, 20, '0'), sn)), 21) start_sn, "
         "SUBSTRING(MAX(CONCAT(LPAD(seq_dec, 20, '0'), sn)), 21) end_sn, COUNT(*) qty, MAX(suspend) suspend, "
         "SUM(status = 'APPLYING') applying "
-        "FROM (SELECT i.factory_code, i.bill_seq, i.material_code, i.status, i.seq_pi_no, i.seq_dec, i.sn, i.suspend, "
+        "FROM (SELECT i.factory_code, i.bill_seq, i.material_code, i.attach_no, i.length_text, i.status, i.seq_pi_no, "
+        "i.seq_dec, i.sn, i.suspend, "
         "i.seq_dec - ROW_NUMBER() OVER (PARTITION BY i.factory_code, i.bill_seq, i.material_code, "
         "i.seq_pi_no ORDER BY i.seq_dec) grp FROM sn_item i"
         + where
@@ -130,6 +133,8 @@ def segments(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | N
             "bill_no": b,
             "bill_seq": r["bill_seq"],
             "material_code": r["material_code"],
+            "attach_no": _text(r["attach_no"]) or "",
+            "length": _text(r["length_text"]) or "",
             "seq_pi_no": r["seq_pi_no"],
             "transferred_in": r["seq_pi_no"] != p,
             "start_seq": int(r["s"]),
@@ -152,6 +157,7 @@ def _text(v):
 def _file_rows(where: str, args: list) -> Iterator[list]:
     """按单据序号、流水分页读出（键集翻页，不用 OFFSET）。"""
     after: tuple | None = None
+    no = 0
     while True:
         cond, extra = "", []
         if after is not None:
@@ -161,7 +167,7 @@ def _file_rows(where: str, args: list) -> Iterator[list]:
             )
             extra = [after[0], after[0], after[1], after[1], after[2]]
         page = db.all(
-            "SELECT i.pi_no, i.bill_no, i.material_code, i.sn, i.bill_seq, i.seq_pi_no, i.seq_dec FROM sn_item i"
+            f"SELECT {sn_sheet.COLS} FROM {sn_sheet.FROM}"
             + where
             + cond
             + " ORDER BY i.bill_seq, i.seq_pi_no, i.seq_dec LIMIT 5000",
@@ -171,7 +177,8 @@ def _file_rows(where: str, args: list) -> Iterator[list]:
         if not page:
             return
         for r in page:
-            yield [r["pi_no"], r["bill_no"], r["material_code"], r["sn"]]
+            no += 1
+            yield sn_sheet.row(no, r)
         last = page[-1]
         after = (last["bill_seq"], last["seq_pi_no"], last["seq_dec"])
 
@@ -181,4 +188,4 @@ def file(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None)
     p, b, where, args = _bill_where(cu, factory, pi, bill)
     if not db.exists("SELECT EXISTS(SELECT 1 FROM sn_item i" + where + ")", *args):
         raise biz(ErrorCode.EXPORT_NOTHING, pi=p, bill_no=b)
-    return f"SN_{p}_{b}", files.xlsx_bytes("SN", FILE_HEADERS, _file_rows(where, args))
+    return f"SN_{p}_{b}", files.xlsx_bytes("SN", sn_sheet.HEADERS, _file_rows(where, args))

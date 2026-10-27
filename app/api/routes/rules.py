@@ -20,7 +20,18 @@ router = APIRouter(prefix="/rules", tags=["rules"])
 
 
 def _spec(b: RuleSpecIn) -> rules.SpecIn:
-    return rules.SpecIn(b.prefix, b.suffix, b.base, b.seq_len, b.charset, b.with_length)
+    return rules.SpecIn(
+        b.prefix,
+        b.suffix,
+        b.base,
+        b.seq_len,
+        b.charset,
+        b.with_length,
+        b.length_pad,
+        b.sep_before,
+        b.sep_after,
+        b.with_unit,
+    )
 
 
 @router.get("", summary="规则库：按全部 / 未分类 / 客户 / PI 筛选，可按编码、名称、客户、PI 搜索")
@@ -47,9 +58,9 @@ def rule_delete(id: int, cu: AdminDep) -> dict:
     return rules.delete(cu, id)
 
 
-@router.post("/preview", summary="示例号：前 5 个和最大号（米标用示例值）、最大流水")
+@router.post("/preview", summary="示例号：前 5 个和最大号（米数、单位用示例值）、最大流水")
 def rule_preview(body: RulePreviewIn, cu: AdminDep) -> dict:
-    return rules.preview(_spec(body), body.length)
+    return rules.preview(_spec(body), body.length, body.unit)
 
 
 @router.get("/options", summary="生成页规则库选项：推荐的排前面；给出本 PI 用这条规则时的版本与是否须换前缀")

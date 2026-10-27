@@ -14,7 +14,7 @@ from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db
-from app.services import factories, files, rules
+from app.services import factories, files, sn_sheet
 
 INCOMPLETE = "INCOMPLETE"
 DONE = "DONE"
@@ -109,47 +109,7 @@ def batches(
     return util.page_result([batch_json(r) for r in rows], total, page)
 
 
-# ================================================================== 领取文件
-
-FILE_HEADERS = [
-    "行号",
-    "完整SN",
-    "进制流水",
-    "十进制流水",
-    "PI",
-    "单据编号",
-    "单据序号",
-    "物料编码",
-    "米标",
-    "客户编码",
-    "生产组织",
-    "状态",
-    "领取批次",
-]
-
-_FILE_COLS = (
-    "id, sn, rule_version_id, seq_dec, pi_no, bill_no, bill_seq, material_code, length_text, customer_code, "
-    "factory_code, status, acquire_batch_no, delivery_mode"
-)
-
-
-def file_row(no: int, r: dict) -> list:
-    """领取文件的一行：导出时刻的当前值。"""
-    return [
-        no,
-        r["sn"],
-        rules.seq_text(r["rule_version_id"], r["seq_dec"]),
-        str(r["seq_dec"]),
-        r["pi_no"],
-        r["bill_no"],
-        r["bill_seq"],
-        r["material_code"],
-        r["length_text"] or "",
-        r["customer_code"],
-        r["factory_code"],
-        r["status"],
-        r["acquire_batch_no"],
-    ]
+# ================================================================== 领取文件（列同 SN 导出、SN 查询导出，见 sn_sheet）
 
 
 def _file_rows(batch_no: str) -> Iterator[list]:
@@ -157,7 +117,8 @@ def _file_rows(batch_no: str) -> Iterator[list]:
     no = 0
     while True:
         page = db.all(
-            f"SELECT {_FILE_COLS} FROM sn_item WHERE acquire_batch_no = %s AND id > %s ORDER BY id LIMIT 5000",
+            f"SELECT {sn_sheet.COLS} FROM {sn_sheet.FROM} WHERE i.acquire_batch_no = %s AND i.id > %s "
+            "ORDER BY i.id LIMIT 5000",
             batch_no,
             last_id,
         )
@@ -166,7 +127,7 @@ def _file_rows(batch_no: str) -> Iterator[list]:
         for r in page:
             no += 1
             last_id = r["id"]
-            yield file_row(no, r)
+            yield sn_sheet.row(no, r)
 
 
 def batch_file(cu: CurrentUser, batch_no: str | None) -> tuple[dict, Iterator[bytes]]:
@@ -174,39 +135,17 @@ def batch_file(cu: CurrentUser, batch_no: str | None) -> tuple[dict, Iterator[by
     b = batch(cu, batch_no)
     if b["status"] != DONE:
         raise biz(ErrorCode.ACQ_BATCH_INCOMPLETE, batch_no=b["batch_no"])
-    return b, files.xlsx_bytes(b["batch_no"], FILE_HEADERS, _file_rows(b["batch_no"]))
+    return b, files.xlsx_bytes(b["batch_no"], sn_sheet.HEADERS, _file_rows(b["batch_no"]))
 
 
 def batch_items(cu: CurrentUser, batch_no: str | None, page: util.Page) -> dict:
     b = batch(cu, batch_no)
     total = db.count("SELECT COUNT(*) FROM sn_item WHERE acquire_batch_no = %s", b["batch_no"])
     rows = db.all(
-        f"SELECT {_FILE_COLS} FROM sn_item WHERE acquire_batch_no = %s ORDER BY seq_pi_no, seq_dec LIMIT %s, %s",
+        f"SELECT {sn_sheet.COLS} FROM {sn_sheet.FROM} WHERE i.acquire_batch_no = %s "
+        "ORDER BY i.seq_pi_no, i.seq_dec LIMIT %s, %s",
         b["batch_no"],
         page.offset,
         page.size,
     )
-    return util.page_result(
-        [
-            dict(zip(["line_no", *[h for h in _KEYS]], file_row(i + 1 + page.offset, r), strict=True))
-            for i, r in enumerate(rows)
-        ],
-        total,
-        page,
-    )
-
-
-_KEYS = (
-    "sn",
-    "seq_text",
-    "seq_dec",
-    "pi_no",
-    "bill_no",
-    "bill_seq",
-    "material_code",
-    "length",
-    "customer_code",
-    "factory_code",
-    "status",
-    "acquire_batch_no",
-)
+    return util.page_result([sn_sheet.view(i + 1 + page.offset, r) for i, r in enumerate(rows)], total, page)

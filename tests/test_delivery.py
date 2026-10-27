@@ -6,7 +6,7 @@ import json
 import re
 from datetime import UTC, datetime, timedelta
 
-from conftest import MES, emp, m, ok, uid
+from conftest import MES, emp, m, ok, uid, xlsx_rows
 
 
 def setup_pi(w, qty: int = 12, batch_size: int = 5, mes: bool = True, prefix: str | None = None):
@@ -34,6 +34,13 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
     assert len({b["batch_no"] for b in batches}) == 3
     assert {b["result"] for b in batches} == {"SUCCESS"}
     assert {b["confirm_method"] for b in batches} == {"PUSH_RESPONSE"}
+    r = w.api.client.get(
+        f"/api/delivery/batches/{batches[0]['batch_no']}/export", headers={"Authorization": f"Bearer {w.admin}"}
+    )
+    rows = xlsx_rows(r.content)
+    got = dict(zip(rows[0], rows[1], strict=False))  # 行尾的空单元格不写出
+    assert (got["组织编号"], got["生产组织名称"]) == (org, f"组织{org}"), "导出带组织编号与中文名称"
+    assert (got["物料编码"], got["附件项次"], got["米数"]) == ("M1", "1", "0100"), "物料编码后带附件项次、米数"
     assert (
         sql.count(
             "SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED' AND mes_holder = %s "
@@ -53,7 +60,7 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
         )
         == 12
     )
-    # 报文：逐枚带单据编号、序号、当前 PI、流水归属 PI；十进制流水、米标按字符串
+    # 报文：逐枚带单据编号、序号、当前 PI、流水归属 PI；十进制流水、米数按字符串
     body = MES.received[-1]["batch"]
     assert set(body) == {
         "schemaVersion",

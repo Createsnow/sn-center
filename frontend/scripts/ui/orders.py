@@ -46,6 +46,8 @@ M = {
 "orders.attachConflict": ("金蝶已有值 {k3}（页面填写 {manual}），生成用金蝶值", "Kingdee now has {k3} (entered {manual}); generation uses the Kingdee value", "Kingdee đã có {k3} (đã nhập {manual}); khi tạo dùng giá trị Kingdee"),
 "orders.attachInvalid": ("附件项次不能为空，不超过 64 字", "Attachment item cannot be empty, at most 64 characters", "Hạng mục đính kèm không được trống, tối đa 64 ký tự"),
 "orders.lengthEmpty": ("缺失", "Missing", "Thiếu"),
+"orders.lengthChineseTip": ("米数含中文，须在 SN 生成页手动改成不含中文的米数后才能生成", "The length contains Chinese characters; change it to one without Chinese on the SN generation page before generating", "Chiều dài chứa chữ Trung Quốc; hãy sửa thành chiều dài không có chữ Trung Quốc ở trang tạo SN trước khi tạo"),
+"orders.modifyDate": ("修改日期", "Modified", "Ngày sửa"),
 "orders.rule": ("SN 规则", "SN rule", "Quy tắc SN"),
 "orders.noRule": ("未选规则", "No rule", "Chưa chọn quy tắc"),
 "orders.ruleSource.LINE": ("物料行", "Line", "Dòng"),

@@ -202,7 +202,8 @@ def context(cu: CurrentUser, pi_in: str | None) -> dict:
     if not pi:
         raise biz(ErrorCode.PI_REQUIRED)
     rows = db.all(
-        "SELECT bill_no, bill_seq, gen_org_code, MAX(material_code) material_code, MAX(length_text) length, "
+        "SELECT bill_no, bill_seq, gen_org_code, MAX(material_code) material_code, MAX(attach_no) attach_no, "
+        "MAX(length_text) length, "
         "COUNT(*) n, MIN(sn) a, MAX(sn) b FROM sn_item WHERE pi_no = %s AND status = 'PENDING_ALLOC' "
         "GROUP BY bill_no, bill_seq, gen_org_code ORDER BY bill_no, bill_seq",
         pi,
@@ -221,6 +222,7 @@ def context(cu: CurrentUser, pi_in: str | None) -> dict:
                 "bill_no": r["bill_no"],
                 "seq": r["bill_seq"],
                 "material_code": r["material_code"],
+                "attach_no": r["attach_no"],
                 "length": r["length"],
                 "qty": int(r["n"]),
                 "start_sn": r["a"],

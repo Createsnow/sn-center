@@ -53,6 +53,7 @@
         <template #default="{ row }">{{ row.bill_no }} / {{ row.bill_seq }}</template>
       </el-table-column>
       <el-table-column prop="material_code" :label="t('common.material')" width="110" show-overflow-tooltip />
+      <el-table-column :label="t('common.attachNo')" width="90" show-overflow-tooltip><template #default="{ row }">{{ row.attach_no || "—" }}</template></el-table-column>
       <el-table-column prop="length" :label="t('common.length')" width="70" />
       <el-table-column prop="customer_code" :label="t('common.customer')" width="90" show-overflow-tooltip />
       <el-table-column :label="t('common.factory')" width="120" show-overflow-tooltip>
@@ -102,7 +103,7 @@
 </template>
 
 <script setup lang="ts">
-/** SN 明细（F-18）：按组织 / 客户 / PI / 单据 / 物料 / 米标 / 状态 / 交付方式 / 批次 / 流水范围筛选，导出。 */
+/** SN 明细（F-18）：按组织 / 客户 / PI / 单据 / 物料 / 米数 / 状态 / 交付方式 / 批次 / 流水范围筛选，导出。 */
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";

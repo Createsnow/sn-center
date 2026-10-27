@@ -6,7 +6,8 @@
 - 按单据编号同步、离开快照检测用 View，不带单据状态条件，只看单据状态。
 - 不读业务状态、作废状态、需求单据号，不读写金蝶序列号字段；不返回单据内码、分录内码。
 - 文本未填写时金蝶常返回一个空格：一律去首尾空格；基础资料未填写时为 null，视为空。
-- 字段位置按《生产订单查询接口》：PO 为表头 F_HX_PO，附件项次为明细 FTERM，米标为明细 Flength。
+- 字段位置按《生产订单查询接口》：PO 为表头 F_HX_PO，修改日期为表头 FModifyDate（ModifyDate），
+  附件项次为明细 FTERM，米数为明细 Flength，产品单位为明细 FProductUnit。
   字段名是接口约定，写在代码里，不放 .env。
 """
 
@@ -34,7 +35,7 @@ APPROVED_FILTER = "FDocumentStatus='C'"
 #: 分录内码只用于稳定翻页，不返回
 ORDER_BY = "FBillNo ASC, FTreeEntity_FEntryId ASC"
 #: 明细查询列（顺序即 _row_of_query 的取值顺序）。前 12 列与《生产订单查询接口》的 FieldKeys 一致；
-#: 末两列行号、修改时间是物料行标识与比对同步要用的，接在后面
+#: 之后是行号、修改日期（物料行标识、比对同步与订单页排序要用）和产品单位（SN 规则带单位时写入）
 DETAIL_KEYS = (
     "FBillNo",
     "FDocumentStatus",
@@ -50,6 +51,7 @@ DETAIL_KEYS = (
     "FQty",
     "FTreeEntity_FSeq",
     "FModifyDate",
+    "FProductUnit",
 )
 ORG_FIELDS = "FNumber,FName,FForbidStatus"
 PAGE_SIZE = 2000
@@ -80,6 +82,7 @@ class Row:
     length_raw: str
     qty: Decimal
     modify_time: datetime | None
+    unit: str = ""
 
 
 @dataclass(frozen=True)
@@ -157,7 +160,7 @@ def text(v: Any) -> str:
 
 
 def number_text(v: Any) -> str:
-    """米标文本：金蝶返回数值时整数型浮点按整数写；文本原样（去首尾空格），生成时作为字符串写入 SN。"""
+    """米数文本：金蝶返回数值时整数型浮点按整数写；文本原样（去首尾空格），生成时作为字符串写入 SN。"""
     if isinstance(v, float) and v == int(v):
         return str(int(v))
     return text(v)
@@ -240,12 +243,13 @@ def _row_of_query(o: list) -> Row | None:
         number_text(p[10]),
         qty(p[11]),
         modify_time(p[13]),
+        text(p[14]),
     )
 
 
 def rows_from_view(doc: dict | None) -> list[Row]:
     """View 单据：表头客户在 F_ora_Base.Number，生产组织在 PrdOrgId，PI / PO 在 F_HX_PI / F_HX_PO；
-    明细在 TreeEntity，附件项次 FTERM、米标 Flength、数量 Qty。"""
+    修改日期在 ModifyDate；明细在 TreeEntity，附件项次 FTERM、米数 Flength、产品单位 FProductUnit、数量 Qty。"""
     out: list[Row] = []
     if not doc:
         return out
@@ -283,6 +287,7 @@ def rows_from_view(doc: dict | None) -> list[Row]:
                     number_text(lm.get("Flength")),
                     qty(lm.get("Qty")),
                     head["modify_time"],
+                    text(lm.get("FProductUnit")),
                 )
             )
     return out

@@ -22,7 +22,7 @@ def export_bills(
     return sn_export.bills(cu, factory_code, q, mes, page_of(page, page_size))
 
 
-@router.get("/lines", summary="明细顶部：每个单据序号 + 物料一行，枚数、米标、暂停枚数、申请中枚数")
+@router.get("/lines", summary="明细顶部：每个单据序号 + 物料一行，枚数、米数、暂停枚数、申请中枚数")
 def export_lines(
     cu: UserDep, pi: str | None = None, bill_no: str | None = None, factory_code: str | None = None
 ) -> list:

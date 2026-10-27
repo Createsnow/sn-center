@@ -1,4 +1,4 @@
-"""生产订单快照（F-05、F-07）与订单变更提醒（F-06）：总部与查询员可看；同步、填写附件项次与米标、处理只有总部。"""
+"""生产订单快照（F-05、F-07）与订单变更提醒（F-06）：总部与查询员可看；同步、填写附件项次与米数、处理只有总部。"""
 
 from fastapi import APIRouter
 
@@ -10,7 +10,7 @@ from app.services import changes, orders
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 
-@router.get("", summary="左表：每张单据一行（含客户编码为空的单据），单据编号大的在前")
+@router.get("", summary="左表：每张单据一行（含客户编码为空的单据），金蝶修改日期新的在前")
 def order_list(
     cu: AdminOrQueryDep,
     q: str | None = None,
@@ -71,12 +71,15 @@ def order_attach(body: AttachIn, cu: AdminDep) -> dict:
     return orders.fill_attach(cu, body.bill_no, body.seq, body.value)
 
 
-@router.put("/length", summary="填写米标（金蝶为空时选填，字符串原样写入 SN；留空用默认 000；物料行有号后不能改）")
+@router.put(
+    "/length",
+    summary="填写米数（金蝶为空时选填，留空用默认 000；金蝶值含中文时须改成不含中文的米数；物料行有号后不能改）",
+)
 def order_length(body: AttachIn, cu: AdminDep) -> dict:
     return orders.fill_length(cu, body.bill_no, body.seq, body.value)
 
 
-@router.put("/length/batch", summary="统一设置米标：范围内米标为默认 000、还没有号的物料行设为同一个值（已填写的不改）")
+@router.put("/length/batch", summary="统一设置米数：范围内米数为默认 000、还没有号的物料行设为同一个值（已填写的不改）")
 def order_length_batch(body: LengthBatchIn, cu: AdminDep) -> dict:
     return orders.fill_lengths(
         cu, body.pi_no, body.bills, [x.model_dump() for x in body.lines or []] or None, body.value

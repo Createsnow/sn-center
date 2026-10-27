@@ -7,7 +7,13 @@ class RuleSpecIn(In):
     base: int | None = None
     seq_len: int | None = None
     charset: str | None = None
+    #: 带米数；米数补 0 位数（0 = 不补）与前后分隔符只在带米数时起作用
     with_length: bool | None = True
+    length_pad: int | None = 0
+    sep_before: str | None = ""
+    sep_after: str | None = ""
+    #: 带单位（物料行的产品单位）
+    with_unit: bool | None = False
 
 
 class RuleIn(RuleSpecIn):
@@ -26,8 +32,9 @@ class RuleUpdateIn(RuleSpecIn):
 
 
 class RulePreviewIn(RuleSpecIn):
-    #: 示例米标（不填用 100）
+    #: 示例米数（不填用 100）、示例单位（不填用 M）
     length: str | None = None
+    unit: str | None = None
 
 
 class LineRef(In):
@@ -36,12 +43,17 @@ class LineRef(In):
 
 
 class CustomRuleIn(In):
-    """自定义规则：前缀必填（生成页默认取单据号后 7 位）；进制默认 10，流水位数默认 4，默认不带米标，后缀选填。"""
+    """自定义规则：前缀必填（生成页默认取单据号后 7 位）；进制默认 10，流水位数默认 4，
+    默认不带米数、不带单位，后缀选填。"""
 
     prefix: str | None = None
     base: int | None = None
     seq_len: int | None = None
     with_length: bool | None = False
+    length_pad: int | None = 0
+    sep_before: str | None = ""
+    sep_after: str | None = ""
+    with_unit: bool | None = False
     suffix: str | None = None
 
 

@@ -103,7 +103,8 @@ def batch_items_page(cu: CurrentUser, batch_no: str | None, page: util.Page) -> 
     cu.check_read(b["factory_code"])
     total = b["qty"]
     rows = db.all(
-        "SELECT d.*, i.status, i.factory_code current_factory, i.rev current_rev FROM sn_delivery_item d "
+        "SELECT d.*, i.status, i.factory_code current_factory, i.rev current_rev, i.attach_no, i.length_text length "
+        "FROM sn_delivery_item d "
         "LEFT JOIN sn_item i ON i.id = d.item_id WHERE d.batch_id = %s ORDER BY d.line_no LIMIT %s, %s",
         b["id"],
         page.offset,
@@ -113,10 +114,14 @@ def batch_items_page(cu: CurrentUser, batch_no: str | None, page: util.Page) -> 
 
 
 def export_rows(b: dict) -> Iterator[list]:
+    """批次明细导出：接收方组织编号与中文名称；物料编码后带附件项次、米数（号上生成时写定的值）。"""
+    names = factories.names()
+    org_name = names.get(b["factory_code"], "")
     last = 0
     while True:
         rows = db.all(
-            "SELECT * FROM sn_delivery_item WHERE batch_id = %s AND line_no > %s ORDER BY line_no LIMIT 5000",
+            "SELECT d.*, i.attach_no, i.length_text FROM sn_delivery_item d LEFT JOIN sn_item i ON i.id = d.item_id "
+            "WHERE d.batch_id = %s AND d.line_no > %s ORDER BY d.line_no LIMIT 5000",
             b["id"],
             last,
         )
@@ -129,14 +134,19 @@ def export_rows(b: dict) -> Iterator[list]:
                 r["sn"],
                 r["rev"],
                 r["push_type"],
+                b["factory_code"],
+                org_name,
                 r["seq_pi_no"],
                 r["seq_dec"],
                 r["pi_no"],
                 r["bill_no"],
                 r["bill_seq"],
                 r["material_code"],
+                r["attach_no"] or "",
+                r["length_text"] or "",
                 r["customer_code"],
-                r["to_factory"],
+                r["to_factory"] or "",
+                names.get(r["to_factory"], "") if r["to_factory"] else "",
                 r["receipt_result"],
                 r["existing_rev"],
                 r["existing_batch_no"],
@@ -148,14 +158,19 @@ EXPORT_HEADERS = [
     "完整SN",
     "rev",
     "推送类型",
+    "组织编号",
+    "生产组织名称",
     "流水归属PI",
     "十进制流水",
     "PI（转出为转出前）",
     "单据编号",
     "单据序号",
     "物料编码",
+    "附件项次",
+    "米数",
     "客户编码",
     "转入生产组织",
+    "转入生产组织名称",
     "回执结果",
     "MES已存rev",
     "MES已存批次",

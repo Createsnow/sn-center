@@ -30,9 +30,9 @@ log = structlog.get_logger()
 
 PRD_MO_COLS = (
     "bill_no, seq, customer_code, pi, po, org_code, org_name, attach_no, material_code, material_name, "
-    "length_raw, qty, modify_time, synced_at"
+    "length_raw, unit, qty, modify_time, synced_at"
 )
-_INSERT = f"INSERT INTO {{table}}({PRD_MO_COLS}) VALUES ({marks(14)})"
+_INSERT = f"INSERT INTO {{table}}({PRD_MO_COLS}) VALUES ({marks(15)})"
 
 
 # ================================================================== 写快照
@@ -59,6 +59,7 @@ def _args(rows: list[k3.Row], ts) -> list[tuple]:
                 util.cut(r.material_code, 64),
                 util.cut(r.material_name, 255),
                 util.cut(r.length_raw, 64),
+                util.cut(r.unit, 64),
                 r.qty,
                 r.modify_time,
                 ts,
@@ -282,11 +283,11 @@ def rebuild(cu: CurrentUser) -> dict:
     return {"mode": "rebuild", "bills": bills, "rows": len(rows), "synced_at": util.fmt(ts)}
 
 
-# ================================================================== 附件项次、米标（金蝶缺失时在生成页填写）
+# ================================================================== 附件项次、米数（金蝶缺失时在生成页填写）
 
 
 def edit_lock(count: dict | None) -> str | None:
-    """附件项次、米标能否在页面修改：物料行还没有号时可改；已生成、未分配（GENERATED）不能改，撤销生成后可改；
+    """附件项次、米数能否在页面修改：物料行还没有号时可改；已生成、未分配（GENERATED）不能改，撤销生成后可改；
     已分配（ALLOCATED）不能再改。不影响转单、拆单、转组织。"""
     if count is None:
         return None
@@ -363,28 +364,36 @@ def fill_attach(cu: CurrentUser, bill_no: str | None, seq: int | None, value: st
     return line_view(line, counts.get((no, seq)), fills.get((no, seq)), lfill=lens.get((no, seq)))
 
 
+#: 米数来源：金蝶值含中文、页面还没改过——须手动改成不含中文的米数才能生成
+LENGTH_CHINESE = "K3_CHINESE"
+
+
 def effective_length(line: dict, fill: dict | None) -> tuple[str, str]:
-    """米标（字符串，原样使用）的生效值与来源：K3 金蝶值 / MANUAL 页面填写（金蝶为空时）/
-    DEFAULT 金蝶为空且未填写时取默认米标 000。"""
+    """米数（字符串，原样使用）的生效值与来源：K3 金蝶值 / MANUAL 页面填写（金蝶为空或含中文时）/
+    K3_CHINESE 金蝶值含中文且未改（不能生成）/ DEFAULT 金蝶为空且未填写时取默认米数 000。"""
     k3v = codec.clean_length(line.get("length_raw"))
-    if k3v is not None:
+    if k3v is not None and not codec.has_chinese(k3v):
         return k3v, "K3"
     if fill is not None and fill["material_code"] == (line.get("material_code") or ""):
         return fill["manual_value"], "MANUAL"
+    if k3v is not None:
+        return k3v, LENGTH_CHINESE
     return codec.DEFAULT_LENGTH, "DEFAULT"
 
 
 def length_of(line: dict) -> str:
-    """单条物料行的生效米标（含页面填写）。"""
+    """单条物料行的生效米数（含页面填写）。"""
     fill = db.one("SELECT * FROM sn_line_length WHERE bill_no = %s AND seq = %s", line["bill_no"], line["seq"])
     return effective_length(line, fill)[0]
 
 
 def _length_value(value: str | None) -> str | None:
-    """填写的米标：字符串原样保存（去首尾空格），不超过 64 字；留空返回 None（改回默认米标 000）。"""
+    """填写的米数：字符串原样保存（去首尾空格），不超过 64 字、不能含中文；留空返回 None（改回金蝶值或默认 000）。"""
     v = codec.clean_length(value)
     if v is not None and len(v) > 64:
         raise biz(ErrorCode.LENGTH_FILL_INVALID)
+    if v is not None and codec.has_chinese(v):
+        raise biz(ErrorCode.LENGTH_FILL_CHINESE, value=v)
     return v
 
 
@@ -397,13 +406,14 @@ _LENGTH_UPSERT = (
 
 
 def fill_length(cu: CurrentUser, bill_no: str | None, seq: int | None, value: str | None) -> dict:
-    """填写米标（金蝶为空时，选填）：留空即用默认米标 000；物料行有号后不能改。"""
+    """填写米数（金蝶为空时选填，留空即用默认米数 000；金蝶值含中文时须改成不含中文的米数）；物料行有号后不能改。"""
     no = util.trim(bill_no)
     v = _length_value(value)
     line = _must_line(no, seq)
     with locks.with_pi_lock(line["pi"]), db.tx():
         line = _must_line(no, seq)
-        if codec.clean_length(line["length_raw"]) is not None:
+        k3v = codec.clean_length(line["length_raw"])
+        if k3v is not None and not codec.has_chinese(k3v):
             raise biz(ErrorCode.LENGTH_FILL_K3)
         _check_editable(no, line["seq"])
         prev = db.one("SELECT * FROM sn_line_length WHERE bill_no = %s AND seq = %s FOR UPDATE", no, seq)
@@ -429,8 +439,8 @@ def fill_length(cu: CurrentUser, bill_no: str | None, seq: int | None, value: st
 def fill_lengths(
     cu: CurrentUser, pi_in: str | None, bills_in: list[str] | None, lines_in: list[dict] | None, value: str | None
 ) -> dict:
-    """统一设置米标：范围（点选的物料行 / 勾选的单据 / 都不填 = 整张 PI）内米标还是默认 000（金蝶为空、未填写）
-    且还没有号的物料行一次设为同一个值；已填写的、有号的不改。返回设置的行数。"""
+    """统一设置米数：范围（点选的物料行 / 勾选的单据 / 都不填 = 整张 PI）内米数还是默认 000（金蝶为空、未填写）
+    或金蝶值含中文、未改过，且还没有号的物料行一次设为同一个值；已填写的、有号的不改。返回设置的行数。"""
     pi = util.trim(pi_in)
     if not pi:
         raise biz(ErrorCode.PI_REQUIRED)
@@ -450,7 +460,7 @@ def fill_lengths(
         todo = [
             r
             for r in rows
-            if effective_length(r, lens.get((r["bill_no"], r["seq"])))[1] == "DEFAULT"
+            if effective_length(r, lens.get((r["bill_no"], r["seq"])))[1] in ("DEFAULT", LENGTH_CHINESE)
             and edit_lock(counts.get((r["bill_no"], r["seq"]))) is None
         ]
         if todo:
@@ -501,17 +511,18 @@ def _bill_filter(cu: CurrentUser, q: str | None, customer: str | None, pi: str |
 def list_bills(
     cu: CurrentUser, q: str | None, customer: str | None, pi: str | None, factory: str | None, page: util.Page
 ) -> dict:
-    """左表：每张单据一行，单据编号大的在前；订单数量、已生成、可生成（额度）按物料行汇总。"""
+    """左表：每张单据一行，金蝶修改日期新的在前（同一时间按单据编号大的在前）；订单数量、已生成、可生成（额度）按物料行汇总。"""
     where, args = _bill_filter(cu, q, customer, pi, factory)
     total = db.count("SELECT COUNT(DISTINCT m.bill_no) FROM sn_prd_mo m" + where, *args)
     rows = db.all(
         "SELECT m.bill_no, MAX(m.customer_code) customer_code, MAX(m.po) po, MAX(m.pi) pi, MAX(m.org_code) org_code, "
-        "MAX(m.org_name) org_name, SUM(FLOOR(m.qty)) total_qty, COUNT(*) line_count, "
+        "MAX(m.org_name) org_name, MAX(m.modify_time) modify_time, SUM(FLOOR(m.qty)) total_qty, COUNT(*) line_count, "
         "SUM(COALESCE(c.gen_count, 0)) gen_sum, "
         "SUM(GREATEST(FLOOR(m.qty) - COALESCE(c.own_generated, 0), 0)) quota "
         "FROM sn_prd_mo m LEFT JOIN sn_line_count c ON c.bill_no = m.bill_no AND c.seq = m.seq"
         + where
-        + " GROUP BY m.bill_no ORDER BY m.bill_no DESC LIMIT %s, %s",
+        + " GROUP BY m.bill_no ORDER BY MAX(m.modify_time) IS NULL, MAX(m.modify_time) DESC, m.bill_no DESC"
+        " LIMIT %s, %s",
         *args,
         page.offset,
         page.size,
@@ -525,6 +536,7 @@ def list_bills(
             "pi": r["pi"],
             "org_code": r["org_code"],
             "org_name": r["org_name"],
+            "modify_time": k3_time(r["modify_time"]),
             "total_qty": int(r["total_qty"] or 0),
             "line_count": int(r["line_count"]),
             "generated_qty": int(r["gen_sum"] or 0),
@@ -562,6 +574,7 @@ def line_view(
         "length": length,
         "length_source": length_src,
         "length_manual": None if lfill is None else lfill["manual_value"],
+        "unit": r.get("unit") or "",
         "qty": qty,
         "generated_qty": 0 if count is None else int(count["gen_count"]),
         "own_generated_qty": own,
@@ -569,8 +582,14 @@ def line_view(
         "edit_lock": edit_lock(count),
         "quota": max(0, qty - own),
         "rule": rule,
+        "modify_time": k3_time(r.get("modify_time")),
         "synced_at": util.fmt(r["synced_at"]),
     }
+
+
+def k3_time(v) -> str | None:
+    """金蝶修改日期按金蝶返回的时间原样显示（不是本系统的 UTC 时间，不做时区换算）。"""
+    return None if v is None else v.strftime("%Y-%m-%d %H:%M:%S")
 
 
 def sn_qty(line: dict) -> int:
@@ -580,7 +599,7 @@ def sn_qty(line: dict) -> int:
 
 
 def _by_line(table: str, keys: list[tuple[str, int]]) -> dict:
-    """按物料行存的附表（计数、附件项次、米标）中这些单据的行：(bill, seq) → 行。"""
+    """按物料行存的附表（计数、附件项次、米数）中这些单据的行：(bill, seq) → 行。"""
     if not keys:
         return {}
     bills = sorted({k[0] for k in keys})
@@ -599,7 +618,7 @@ def line_lengths(keys: list[tuple[str, int]]) -> dict:
 
 
 def line_extras(keys: list[tuple[str, int]]) -> tuple[dict, dict, dict]:
-    """物料行计数、页面填写的附件项次与米标：(bill, seq) → 行。"""
+    """物料行计数、页面填写的附件项次与米数：(bill, seq) → 行。"""
     return line_counts(keys), _by_line("sn_line_attach", keys), line_lengths(keys)
 
 
@@ -608,7 +627,7 @@ def lines(bill_no: str | None) -> list[dict]:
 
 
 def lines_of(cu: CurrentUser, bill_no: str | None) -> dict:
-    """右表：该单表头与各物料行（序号、附件项次、物料、米标、数量、已生成、可生成、SN 规则）。"""
+    """右表：该单表头与各物料行（序号、附件项次、物料、米数、产品单位、数量、已生成、可生成、SN 规则）。"""
     from app.services import rules
 
     ls = lines(bill_no)
@@ -626,6 +645,7 @@ def lines_of(cu: CurrentUser, bill_no: str | None) -> dict:
         "customer_code": h["customer_code"],
         "org_code": h["org_code"],
         "org_name": h["org_name"],
+        "modify_time": k3_time(h["modify_time"]),
         "state": changes.bill_states([h["bill_no"]]).get(h["bill_no"], changes.EMPTY_STATE),
         "lines": [
             line_view(r, counts.get(k), fills.get(k), rmap.get(k), lens.get(k)) for r, k in zip(ls, keys, strict=True)
@@ -722,7 +742,7 @@ def customer_of_pi(pi: str) -> str | None:
 
 
 def targets(q: str | None, limit: int, pi: str | None = None) -> list[dict]:
-    """转单、转组织目标候选：快照中的物料行（生产组织 + 客户 + PI + 单据 + 序号 + 物料 + 生效米标）；
+    """转单、转组织目标候选：快照中的物料行（生产组织 + 客户 + PI + 单据 + 序号 + 物料 + 附件项次 + 生效米数）；
     pi 精确匹配（选定目标 PI 后列出它的单据与物料行）。"""
     text = util.trim(q)
     args: list = []
@@ -739,7 +759,8 @@ def targets(q: str | None, limit: int, pi: str | None = None) -> list[dict]:
         *args,
         min(max(limit, 1), 200),
     )
-    lens = line_lengths([(r["bill_no"], r["seq"]) for r in rows])
+    keys = [(r["bill_no"], r["seq"]) for r in rows]
+    lens, fills = line_lengths(keys), _by_line("sn_line_attach", keys)
     return [
         {
             "org_code": r["org_code"],
@@ -750,6 +771,7 @@ def targets(q: str | None, limit: int, pi: str | None = None) -> list[dict]:
             "seq": r["seq"],
             "material_code": r["material_code"],
             "material_name": r["material_name"],
+            "attach_no": effective_attach(r, fills.get((r["bill_no"], r["seq"])))[0],
             "length": effective_length(r, lens.get((r["bill_no"], r["seq"])))[0],
         }
         for r in rows

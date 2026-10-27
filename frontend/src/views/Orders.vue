@@ -59,6 +59,10 @@
               :empty-text="t('common.empty')" @current-change="select">
               <el-table-column prop="bill_no" :label="t('common.billNo')" min-width="130" show-overflow-tooltip />
               <el-table-column prop="pi" label="PI" min-width="130" show-overflow-tooltip />
+              <!-- 金蝶修改日期（金蝶时间原样显示）；列表按它从新到旧排 -->
+              <el-table-column :label="t('orders.modifyDate')" width="160">
+                <template #default="{ row }"><span class="num">{{ row.modify_time || "—" }}</span></template>
+              </el-table-column>
               <el-table-column :label="t('orders.state')" min-width="120">
                 <template #default="{ row }"><BillTags :s="row" /></template>
               </el-table-column>
@@ -97,7 +101,8 @@
               <el-descriptions-item label="PO">{{ detail.po }}</el-descriptions-item>
               <el-descriptions-item :label="t('common.customer')">{{ detail.customer_code }}</el-descriptions-item>
               <el-descriptions-item :label="t('common.factory')">{{ detail.org_name }}（{{ detail.org_code }}）</el-descriptions-item>
-              <el-descriptions-item :label="t('orders.state')" :span="2"><BillTags :s="detail.state" show-none /></el-descriptions-item>
+              <el-descriptions-item :label="t('orders.modifyDate')">{{ detail.modify_time || "—" }}</el-descriptions-item>
+              <el-descriptions-item :label="t('orders.state')"><BillTags :s="detail.state" show-none /></el-descriptions-item>
             </el-descriptions>
             <div class="fill-body">
               <el-table v-loading="linesLoading" :data="detail.lines" size="small" height="100%" :empty-text="t('common.empty')">
@@ -122,8 +127,14 @@
                 <el-table-column :label="t('common.length')" width="90" show-overflow-tooltip>
                   <template #default="{ row }">
                     <span v-if="row.length_source === 'DEFAULT'" class="err">{{ t("orders.lengthEmpty") }}</span>
+                    <el-tooltip v-else-if="row.length_source === 'K3_CHINESE'" :content="t('orders.lengthChineseTip')">
+                      <span class="err">{{ row.length }}</span>
+                    </el-tooltip>
                     <span v-else>{{ row.length }}</span>
                   </template>
+                </el-table-column>
+                <el-table-column :label="t('common.unit')" width="70" show-overflow-tooltip>
+                  <template #default="{ row }">{{ row.unit || "—" }}</template>
                 </el-table-column>
                 <el-table-column :label="t('common.qty')" align="right" width="60">
                   <template #default="{ row }"><span class="num">{{ row.qty }}</span></template>

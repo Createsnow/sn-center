@@ -525,7 +525,7 @@ def _dest(kind: str, r: TransferRequest, source_bill: str) -> Dest:
 
 
 def _targets(kind: str, items: list[dict], d: Dest) -> dict[int, Target]:
-    """号改挂到目标物料行；目标米标与号上米标不同则拒绝（SN 已含米标）。
+    """号改挂到目标物料行；目标米数与号上米数不同则拒绝（SN 已含米数）。
     转单时待分配的号仍待分配（之后按目标单据的生产组织分配）。"""
     out: dict[int, Target] = {}
     for r in items:
@@ -1335,7 +1335,8 @@ def items(cu: CurrentUser, kind: str, tid: int, page: util.Page) -> dict:
     total = db.count("SELECT COUNT(*) FROM sn_transfer_item WHERE kind = %s AND transfer_id = %s", kind, tid)
     rows = db.all(
         "SELECT t.*, i.status cur_status, i.factory_code cur_factory, i.pi_no cur_pi, i.rule_version_id, "
-        "i.delivery_batch_no cur_batch FROM sn_transfer_item t LEFT JOIN sn_item i ON i.id = t.item_id "
+        "i.delivery_batch_no cur_batch, i.attach_no, i.length_text length "
+        "FROM sn_transfer_item t LEFT JOIN sn_item i ON i.id = t.item_id "
         "WHERE t.kind = %s AND t.transfer_id = %s ORDER BY t.seq_pi_no, t.seq_dec LIMIT %s, %s",
         kind,
         tid,
@@ -1360,27 +1361,35 @@ OUT_LIST_HEADERS = [
     "进制流水",
     "十进制流水",
     "流水归属PI",
+    "组织编号",
+    "生产组织名称",
     "转出前PI",
     "转出前单据",
     "转出前序号",
     "转出前物料",
+    "附件项次",
+    "米数",
     "原交付批次",
     "原领取批次",
     "转出批次",
     "转入生产组织",
+    "转入生产组织名称",
 ]
 
 
 def out_list(cu: CurrentUser, tid: int):
-    """转出号清单：完整 SN、流水、原批次，来源现场据此作废已打出的旧标签（页面领取的号也列入）。"""
+    """转出号清单：完整 SN、流水、来源组织（编号与中文名称）、转出前挂靠（物料编码带附件项次、米数）、原批次，
+    来源现场据此作废已打出的旧标签（页面领取的号也列入）。"""
     t = org_view(cu, tid)
+    names = factories.names()
 
     def rows():
         last = 0
         no = 0
         while True:
             page = db.all(
-                "SELECT t.*, i.rule_version_id FROM sn_transfer_item t LEFT JOIN sn_item i ON i.id = t.item_id "
+                "SELECT t.*, i.rule_version_id, i.attach_no, i.length_text FROM sn_transfer_item t "
+                "LEFT JOIN sn_item i ON i.id = t.item_id "
                 "WHERE t.kind = 'ORG' AND t.transfer_id = %s AND t.item_id > %s AND t.to_factory IS NOT NULL "
                 "AND t.to_factory <> t.from_factory ORDER BY t.item_id LIMIT 5000",
                 tid,
@@ -1397,14 +1406,19 @@ def out_list(cu: CurrentUser, tid: int):
                     rules.seq_text(r["rule_version_id"], r["seq_dec"]),
                     str(r["seq_dec"]),
                     r["seq_pi_no"],
+                    r["from_factory"] or "",
+                    names.get(r["from_factory"], "") if r["from_factory"] else "",
                     r["from_pi"],
                     r["from_bill"],
                     r["from_seq"],
                     r["from_material"],
+                    r["attach_no"] or "",
+                    r["length_text"] or "",
                     r["from_delivery_batch"],
                     r["from_acquire_batch"],
                     r["out_batch_no"],
                     r["to_factory"],
+                    names.get(r["to_factory"], "") if r["to_factory"] else "",
                 ]
 
     return t, files.xlsx_bytes(t["transfer_no"], OUT_LIST_HEADERS, rows())

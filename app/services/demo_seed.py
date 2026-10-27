@@ -67,8 +67,8 @@ def seed_if_empty() -> None:
                 ts,
                 ts,
             )
-        _rule("R-HX", "带米标 10 进制 6 位", "HX", 10, 6, True, ts)
-        _rule("R-DK", "不带米标 32 进制 5 位", "DK", 32, 5, False, ts)
+        _rule("R-HX", "带米数 10 进制 6 位", "HX", 10, 6, True, ts)
+        _rule("R-DK", "不带米数 32 进制 5 位", "DK", 32, 5, False, ts)
         db.exec_many(
             "INSERT INTO sn_prd_mo(bill_no, seq, customer_code, po, pi, org_code, org_name, attach_no, "
             "material_code, material_name, length_raw, qty, modify_time, synced_at) "

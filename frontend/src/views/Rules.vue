@@ -62,6 +62,9 @@
         <el-table-column :label="t('rules.withLength')" width="80">
           <template #default="{ row }">{{ row.current?.with_length ? t("common.yes") : t("common.no") }}</template>
         </el-table-column>
+        <el-table-column :label="t('rules.withUnit')" width="80">
+          <template #default="{ row }">{{ row.current?.with_unit ? t("common.yes") : t("common.no") }}</template>
+        </el-table-column>
         <el-table-column :label="t('rules.used')" width="80">
           <template #default="{ row }"><el-tag size="small" :type="row.used ? 'success' : 'info'">{{ row.used ? t("common.yes") : t("common.no") }}</el-tag></template>
         </el-table-column>
@@ -110,10 +113,7 @@
           <el-input v-model.trim="form.prefix" class="sn-mono" />
           <div class="muted hint">{{ t("rules.prefixHint") }}</div>
         </el-form-item>
-        <el-form-item :label="t('rules.withLength')">
-          <el-switch v-model="form.with_length" />
-          <span class="muted ml">{{ t("rules.withLengthHint") }}</span>
-        </el-form-item>
+        <!-- 按 SN 的组成顺序：前缀 → 流水 → 米数前分隔符 + 米数 + 米数后分隔符 → 单位 → 后缀 -->
         <el-form-item :label="t('rules.base')">
           <el-radio-group v-model="form.base" @change="form.charset = ''">
             <el-radio-button v-for="b in BASES" :key="b" :value="b">{{ b }}</el-radio-button>
@@ -124,12 +124,36 @@
           <el-input v-model.trim="form.charset" :placeholder="defaultCharset" class="sn-mono" />
           <div class="muted hint">{{ t("rules.charsetHint") }}</div>
         </el-form-item>
+        <el-form-item :label="t('rules.withLength')">
+          <el-switch v-model="form.with_length" />
+          <span class="muted ml">{{ t("rules.withLengthHint") }}</span>
+        </el-form-item>
+        <template v-if="form.with_length">
+          <el-form-item :label="t('rules.sepBefore')">
+            <el-input v-model.trim="form.sep_before" class="w160 sn-mono" maxlength="16" :placeholder="t('common.optional')" />
+            <span class="muted ml">{{ t("rules.sepHint") }}</span>
+          </el-form-item>
+          <el-form-item :label="t('rules.lengthPad')">
+            <el-input-number v-model="form.length_pad" :min="0" :max="32" />
+            <div class="muted hint">{{ t("rules.lengthPadHint") }}</div>
+          </el-form-item>
+          <el-form-item :label="t('rules.sepAfter')">
+            <el-input v-model.trim="form.sep_after" class="w160 sn-mono" maxlength="16" :placeholder="t('common.optional')" />
+          </el-form-item>
+        </template>
+        <el-form-item :label="t('rules.withUnit')">
+          <el-switch v-model="form.with_unit" />
+          <span class="muted ml">{{ t("rules.withUnitHint") }}</span>
+        </el-form-item>
         <el-form-item :label="t('rules.suffix')">
           <el-input v-model.trim="form.suffix" class="sn-mono" :placeholder="t('common.optional')" />
           <div class="muted hint">{{ t("rules.suffixHint") }}</div>
         </el-form-item>
-        <el-form-item :label="t('rules.sampleLength')">
+        <el-form-item v-if="form.with_length" :label="t('rules.sampleLength')">
           <el-input v-model.trim="sampleLength" class="w160" placeholder="100" />
+        </el-form-item>
+        <el-form-item v-if="form.with_unit" :label="t('rules.sampleUnit')">
+          <el-input v-model.trim="sampleUnit" class="w160" placeholder="M" />
         </el-form-item>
         <el-form-item :label="t('rules.sample')">
           <div v-if="sample" class="samples">
@@ -176,8 +200,12 @@ const customers = ref<string[]>([]);
 const sample = ref<any>(null);
 const sampleError = ref("");
 const sampleLength = ref("");
+const sampleUnit = ref("");
 /** 规则库流水位数默认 5（自定义规则默认 4，在生成页）。 */
-const EMPTY = { rule_code: "", rule_name: "", category_scope: "NONE", category_value: "", prefix: "", suffix: "", base: 10, seq_len: 5, charset: "", with_length: true };
+const EMPTY = {
+  rule_code: "", rule_name: "", category_scope: "NONE", category_value: "", prefix: "", suffix: "", base: 10, seq_len: 5, charset: "",
+  with_length: true, length_pad: 0, sep_before: "", sep_after: "", with_unit: false,
+};
 const form = reactive({ ...EMPTY });
 const defaultCharset = computed(() => CHARSETS[form.base]);
 const inCat = (s: string) => (s === "ALL" ? rows.value : rows.value.filter((r) => r.rule.category_scope === s));
@@ -198,8 +226,12 @@ const editHint = computed(() => {
   const c = editing.value?.current;
   if (!c) return "";
   const charset = form.charset || CHARSETS[form.base];
+  // 不带米数时补 0 位数、分隔符不起作用（后端统一存空）
+  const len = form.with_length;
   const changed = c.prefix !== form.prefix || c.suffix !== form.suffix || c.base !== form.base || c.seq_len !== form.seq_len
-    || c.charset !== charset || !!c.with_length !== form.with_length;
+    || c.charset !== charset || !!c.with_length !== len || !!c.with_unit !== form.with_unit
+    || (c.length_pad || 0) !== (len ? form.length_pad || 0 : 0)
+    || (c.length_sep_before || "") !== (len ? form.sep_before : "") || (c.length_sep_after || "") !== (len ? form.sep_after : "");
   if (!changed) return c.used ? "USED" : "";
   return c.used ? "NEW_VERSION" : "IN_PLACE";
 });
@@ -229,20 +261,25 @@ function openEdit(row: any) {
   Object.assign(form, {
     rule_name: row.rule.rule_name, category_scope: row.rule.category_scope, category_value: row.rule.category_value,
     prefix: c.prefix, suffix: c.suffix, base: c.base, seq_len: c.seq_len, with_length: !!c.with_length,
+    length_pad: c.length_pad || 0, sep_before: c.length_sep_before || "", sep_after: c.length_sep_after || "", with_unit: !!c.with_unit,
     charset: c.charset === CHARSETS[c.base] ? "" : c.charset,
   });
   dialog.value = true;
 }
 
-const spec = () => ({ prefix: form.prefix, suffix: form.suffix, base: form.base, seq_len: form.seq_len, charset: form.charset, with_length: form.with_length });
+const spec = () => ({
+  prefix: form.prefix, suffix: form.suffix, base: form.base, seq_len: form.seq_len, charset: form.charset, with_length: form.with_length,
+  length_pad: form.length_pad || 0, sep_before: form.sep_before, sep_after: form.sep_after, with_unit: form.with_unit,
+});
 
 let sampleTimer: number | undefined;
-watch(() => [form.prefix, form.suffix, form.base, form.seq_len, form.charset, form.with_length, sampleLength.value, dialog.value], () => {
+watch(() => [form.prefix, form.suffix, form.base, form.seq_len, form.charset, form.with_length, form.length_pad, form.sep_before,
+  form.sep_after, form.with_unit, sampleLength.value, sampleUnit.value, dialog.value], () => {
   window.clearTimeout(sampleTimer);
   if (!dialog.value) return;
   sampleTimer = window.setTimeout(async () => {
     try {
-      sample.value = await api.previewRule({ ...spec(), length: sampleLength.value });
+      sample.value = await api.previewRule({ ...spec(), length: sampleLength.value, unit: sampleUnit.value });
       sampleError.value = "";
     } catch (e: any) {
       sample.value = null;

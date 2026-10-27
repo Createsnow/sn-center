@@ -12,6 +12,7 @@ export interface Target {
   seq: number;
   material_code: string;
   material_name: string;
+  attach_no: string;
   length: string;
 }
 

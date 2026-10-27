@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from conftest import MES, emp, m, ok, uid, xlsx_rows
 
+from app.services import sn_sheet
+
 
 def P() -> str:
     return "P" + uid("").replace("-", "")
@@ -38,9 +40,11 @@ def test_export_is_read_only_and_repeatable(w, api, sql):
     for _ in range(2):
         r = get_file(api, op, pi=pi, bill_no=bill, factory_code=org)
         rows = xlsx_rows(r.content)
-        assert r.status_code == 200 and rows[0] == ["PI", "单据", "物料编码", "SN"] and len(rows) == 6
-        assert rows[1][:3] == [pi, bill, "M1"]
-    sns = [x[3] for x in rows[1:]]
+        assert r.status_code == 200 and rows[0] == sn_sheet.HEADERS and len(rows) == 6
+        got = dict(zip(rows[0], rows[1], strict=True))
+        assert (got["组织编号"], got["生产组织名称"], got["PI"], got["单据编号"]) == (org, f"组织{org}", pi, bill)
+        assert (got["物料编码"], got["附件项次"], got["米数"], got["状态"]) == ("M1", "1", "100", "ALLOCATED")
+    sns = [x[1] for x in rows[1:]]
     assert sns == [
         r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY bill_seq, seq_pi_no, seq_dec", pi)
     ]
@@ -106,8 +110,8 @@ def test_xlsx_keeps_formula_like_text_and_leading_dash_sn(w, api):
     w.generate(pi)
     w.allocate(pi)
     r = get_file(api, w.admin, pi=pi, bill_no=bill.replace("=", "%3D"))
-    row = xlsx_rows(r.content)[1]
-    assert row[1] == bill and row[3].startswith(prefix)
+    row = dict(zip(*xlsx_rows(r.content)[:2], strict=True))
+    assert row["单据编号"] == bill and row["完整SN"].startswith(prefix)
 
 
 def test_legacy_batch_still_downloadable_and_incomplete_released(w, api, sql):

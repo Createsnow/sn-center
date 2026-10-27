@@ -8,7 +8,8 @@
 - 一个前缀只对应一种格式：生成过号的版本改格式须另出一版并换新前缀；只改名称或分类不另出版本。
 
 规则选取按物料行：物料行已选规则 ＞ PI 绑定规则 ＞ 客户绑定规则（作模板，每张 PI 首次使用须换前缀）。
-选法：规则库（选一条规则，本 PI 用哪一版见 resolve）或自定义（前缀、进制、位数、是否带米标、后缀）；
+选法：规则库（选一条规则，本 PI 用哪一版见 resolve）或自定义（前缀、进制、位数、米数及其补 0 位数与前后分隔符、
+是否带单位、后缀）；
 自定义规则生成成功后存入规则库并归属本 PI（编码 PI-PI号-n，名称 PI号_vn，n 为本 PI 第几条自定义规则），
 生成失败或取消不留规则。
 物料行生成过号后可改选，已生成的号不变，流水接续。
@@ -19,7 +20,6 @@ from __future__ import annotations
 import json
 import re
 import threading
-from collections.abc import Callable
 from dataclasses import dataclass, replace
 
 from app.core import encoding as codec
@@ -74,6 +74,10 @@ VERSION_FIELDS = (
     "seq_len",
     "charset",
     "with_length",
+    "length_pad",
+    "length_sep_before",
+    "length_sep_after",
+    "with_unit",
     "used",
     "claimed_pi",
     "derived_from",
@@ -90,21 +94,37 @@ def rule_json(r: dict | None) -> dict | None:
 def version_json(v: dict | None) -> dict | None:
     if v is None:
         return None
-    out = util.jrow(v, VERSION_FIELDS, ("used", "with_length"))
+    out = util.jrow(v, VERSION_FIELDS, ("used", "with_length", "with_unit"))
     out["format"] = format_text(spec_of(v))
     return out
 
 
 def spec_of(v: dict) -> codec.Spec:
-    return codec.Spec(v["prefix"], v["suffix"], v["base"], v["seq_len"], v["charset"], bool(v["with_length"]))
+    return codec.Spec(
+        v["prefix"],
+        v["suffix"],
+        v["base"],
+        v["seq_len"],
+        v["charset"],
+        bool(v["with_length"]),
+        int(v.get("length_pad") or 0),
+        v.get("length_sep_before") or "",
+        v.get("length_sep_after") or "",
+        bool(v.get("with_unit")),
+    )
 
 
 def format_text(s: codec.Spec) -> str:
-    """格式说明：HX + 米标 + 6 位 10 进制流水 + A。"""
-    parts = [s.prefix]
+    """格式说明：HX + 6 位 10 进制流水 + - + 米数（补足 5 位）+ M + 单位 + A。"""
+    parts = [s.prefix, f"{s.seq_len} 位 {s.base} 进制流水"]
     if s.with_length:
-        parts.append("米标")
-    parts.append(f"{s.seq_len} 位 {s.base} 进制流水")
+        if s.sep_before:
+            parts.append(s.sep_before)
+        parts.append(f"米数（补足 {s.length_pad} 位）" if s.length_pad else "米数")
+        if s.sep_after:
+            parts.append(s.sep_after)
+    if s.with_unit:
+        parts.append("单位")
     if s.suffix:
         parts.append(s.suffix)
     return " + ".join(parts)
@@ -118,33 +138,37 @@ class SpecIn:
     seq_len: int | None
     charset: str | None
     with_length: bool | None = True
+    length_pad: int | None = 0
+    sep_before: str | None = ""
+    sep_after: str | None = ""
+    with_unit: bool | None = False
 
 
-def normalize(s: SpecIn, keep_prefix: Callable[[str], bool] | None = None) -> codec.Spec:
-    """规范化并校验编码参数；字符表留空用该进制默认字符表。
-    keep_prefix：前缀不合现行字符规则时，判断是否为可沿用的已有前缀（按旧规则建的规则、已存的自定义规则）。"""
+def normalize(s: SpecIn) -> codec.Spec:
+    """规范化并校验编码参数；字符表留空用该进制默认字符表。前缀、后缀、分隔符不限制字符，只去首尾空格。"""
     if s.base is None or s.base not in codec.DEFAULT_CHARSETS:
         raise biz(ErrorCode.RULE_BASE_INVALID)
     if s.seq_len is None:
         raise biz(ErrorCode.RULE_SEQ_LEN_INVALID)
     cs = util.trim(s.charset) or codec.DEFAULT_CHARSETS[s.base]
+    with_length = True if s.with_length is None else s.with_length
     spec = codec.Spec(
         util.trim(s.prefix),
         util.trim(s.suffix),
         s.base,
         s.seq_len,
         cs,
-        True if s.with_length is None else s.with_length,
+        with_length,
+        # 不带米数时补 0 位数、分隔符都不起作用，统一存空，免得同一格式存成两样
+        (s.length_pad or 0) if with_length else 0,
+        util.trim(s.sep_before) if with_length else "",
+        util.trim(s.sep_after) if with_length else "",
+        bool(s.with_unit),
     )
-    legacy = keep_prefix is not None and not codec.PREFIX_RE.fullmatch(spec.prefix) and keep_prefix(spec.prefix)
-    err = codec.validate(spec, legacy_prefix=legacy)
+    err = codec.validate(spec)
     if err is not None:
         raise biz(err)
     return spec
-
-
-def _prefix_exists(prefix: str) -> bool:
-    return db.exists("SELECT EXISTS(SELECT 1 FROM sn_rule_version WHERE prefix = %s)", prefix)
 
 
 def check_prefix(prefix: str, exclude_version: int | None = None) -> None:
@@ -165,29 +189,36 @@ def check_prefix(prefix: str, exclude_version: int | None = None) -> None:
         )
 
 
-def preview(s: SpecIn, length: str | None = None) -> dict:
-    """编辑时的示例号：前 5 个和最大号（米标用示例值）、最大流水。规则库里已有的前缀沿用旧字符规则。"""
-    spec = normalize(s, _prefix_exists)
-    sample_len = codec.clean_length(length) or "100"
+#: 示例号用的米数、单位（页面不填时）
+SAMPLE_LENGTH = "100"
+SAMPLE_UNIT = "M"
+
+
+def preview(s: SpecIn, length: str | None = None, unit: str | None = None) -> dict:
+    """编辑时的示例号：前 5 个和最大号（米数、单位用示例值）、最大流水。"""
+    spec = normalize(s)
+    sample_len = codec.clean_length(length) or SAMPLE_LENGTH
+    sample_unit = util.trim(unit) or SAMPLE_UNIT
     mx = codec.max_seq(spec)
-    samples = []
-    i = 1
-    while i <= 5 and i <= mx:
-        samples.append(
-            {"seq_dec": i, "seq_text": codec.encode_seq(i, spec), "sn": codec.format_sn(i, spec, sample_len)}
-        )
-        i += 1
-    if mx > 5:
-        samples.append(
-            {"seq_dec": mx, "seq_text": codec.encode_seq(mx, spec), "sn": codec.format_sn(mx, spec, sample_len)}
-        )
-    return {"max_seq": mx, "format": format_text(spec), "sample_length": sample_len, "samples": samples}
+    seqs = list(range(1, min(5, mx) + 1)) + ([mx] if mx > 5 else [])
+    samples = [
+        {"seq_dec": i, "seq_text": codec.encode_seq(i, spec), "sn": codec.format_sn(i, spec, sample_len, sample_unit)}
+        for i in seqs
+    ]
+    return {
+        "max_seq": mx,
+        "format": format_text(spec),
+        "sample_length": sample_len,
+        "sample_unit": sample_unit,
+        "samples": samples,
+    }
 
 
 def describe(s: codec.Spec) -> str:
     return (
         f"prefix={s.prefix} suffix={s.suffix} base={s.base} len={s.seq_len} with_length={int(s.with_length)} "
-        f"charset={s.charset}"
+        f"length_pad={s.length_pad} sep_before={s.sep_before} sep_after={s.sep_after} "
+        f"with_unit={int(s.with_unit)} charset={s.charset}"
     )
 
 
@@ -312,9 +343,9 @@ def _insert_version(
     derived_from=None,
 ) -> int:
     return db.insert(
-        "INSERT INTO sn_rule_version(rule_id, version, prefix, suffix, base, seq_len, charset, with_length, used, "
-        "claimed_pi, derived_from, created_by, created_at, updated_at) VALUES "
-        "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+        "INSERT INTO sn_rule_version(rule_id, version, prefix, suffix, base, seq_len, charset, with_length, "
+        "length_pad, length_sep_before, length_sep_after, with_unit, used, claimed_pi, derived_from, created_by, "
+        "created_at, updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
         rule_id,
         version,
         spec.prefix,
@@ -323,6 +354,10 @@ def _insert_version(
         spec.seq_len,
         spec.charset,
         1 if spec.with_length else 0,
+        spec.length_pad,
+        spec.sep_before,
+        spec.sep_after,
+        1 if spec.with_unit else 0,
         1 if used else 0,
         claimed_pi,
         derived_from,
@@ -399,8 +434,7 @@ def update(cu: CurrentUser, rule_id: int, name: str | None, s: SpecIn, category=
             r["id"],
             r["current_version"],
         )
-        # 不改前缀时，按旧规则建的前缀（如含小写）照常可改名、改分类等
-        spec = normalize(s, lambda p: p == cur["prefix"])
+        spec = normalize(s)
         cs, cv = (
             (r["category_scope"], r["category_value"])
             if category is None
@@ -429,13 +463,18 @@ def update(cu: CurrentUser, rule_id: int, name: str | None, s: SpecIn, category=
                     check_prefix(spec.prefix, cur["id"])
                 db.exec(
                     "UPDATE sn_rule_version SET prefix = %s, suffix = %s, base = %s, seq_len = %s, charset = %s, "
-                    "with_length = %s, updated_at = %s WHERE id = %s",
+                    "with_length = %s, length_pad = %s, length_sep_before = %s, length_sep_after = %s, "
+                    "with_unit = %s, updated_at = %s WHERE id = %s",
                     spec.prefix,
                     spec.suffix,
                     spec.base,
                     spec.seq_len,
                     spec.charset,
                     1 if spec.with_length else 0,
+                    spec.length_pad,
+                    spec.sep_before,
+                    spec.sep_after,
+                    1 if spec.with_unit else 0,
                     now,
                     cur["id"],
                 )
@@ -556,8 +595,7 @@ def _resolve_in(rule: dict, vs: list[dict], pi: str, source: str) -> Resolved:
     return Resolved(source, MODE_LIBRARY, PLAN_PREFIX, rule, None, other_pi=t["claimed_pi"])
 
 
-def _custom_spec(c: dict, saved: bool = False) -> codec.Spec:
-    """saved：物料行上已存的自定义规则，前缀沿用旧字符规则（生成落库时再按现行规则校验，见 realize）。"""
+def _custom_spec(c: dict) -> codec.Spec:
     return normalize(
         SpecIn(
             c.get("prefix"),
@@ -566,13 +604,16 @@ def _custom_spec(c: dict, saved: bool = False) -> codec.Spec:
             c.get("seq_len") or CUSTOM_SEQ_LEN,
             None,
             c.get("with_length", False),
-        ),
-        (lambda _: True) if saved else None,
+            c.get("length_pad") or 0,
+            c.get("sep_before") or "",
+            c.get("sep_after") or "",
+            c.get("with_unit", False),
+        )
     )
 
 
-def _custom_resolved(source: str, c: dict, saved: bool = False) -> Resolved:
-    spec = _custom_spec(c, saved)
+def _custom_resolved(source: str, c: dict) -> Resolved:
+    spec = _custom_spec(c)
     draft = {
         "id": None,
         "rule_id": None,
@@ -583,6 +624,10 @@ def _custom_resolved(source: str, c: dict, saved: bool = False) -> Resolved:
         "seq_len": spec.seq_len,
         "charset": spec.charset,
         "with_length": 1 if spec.with_length else 0,
+        "length_pad": spec.length_pad,
+        "length_sep_before": spec.sep_before,
+        "length_sep_after": spec.sep_after,
+        "with_unit": 1 if spec.with_unit else 0,
         "used": 0,
         "claimed_pi": None,
         "derived_from": None,
@@ -596,6 +641,10 @@ def _custom_dict(spec: codec.Spec) -> dict:
         "base": spec.base,
         "seq_len": spec.seq_len,
         "with_length": spec.with_length,
+        "length_pad": spec.length_pad,
+        "sep_before": spec.sep_before,
+        "sep_after": spec.sep_after,
+        "with_unit": spec.with_unit,
         "suffix": spec.suffix,
     }
 
@@ -628,7 +677,7 @@ def effective(
     memo：同一 PI 的多个物料行选了同一条规则时只解析一次（规则 id → 解析结果）。"""
     if sel is not None:
         if sel.get("custom_json"):
-            return _custom_resolved(SRC_LINE, json.loads(sel["custom_json"]), saved=True)
+            return _custom_resolved(SRC_LINE, json.loads(sel["custom_json"]))
         rid = sel.get("rule_id")
         if rid is not None:
             if memo is not None and rid in memo:
@@ -655,8 +704,8 @@ def selections(keys: list[tuple[str, int]]) -> dict[tuple[str, int], dict]:
     }
 
 
-def info(res: Resolved | None, length: str | None = None, start_seq: int = 1) -> dict | None:
-    """规则说明：来源、选法、规则、本 PI 用的版本、格式、第一个号（按本行米标）。"""
+def info(res: Resolved | None, length: str | None = None, start_seq: int = 1, unit: str | None = None) -> dict | None:
+    """规则说明：来源、选法、规则、本 PI 用的版本、格式、第一个号（按本行米数、单位）。"""
     if res is None:
         return None
     out = {
@@ -681,10 +730,14 @@ def info(res: Resolved | None, length: str | None = None, start_seq: int = 1) ->
         out["base"] = s.base
         out["seq_len"] = s.seq_len
         out["with_length"] = s.with_length
+        out["length_pad"] = s.length_pad
+        out["sep_before"] = s.sep_before
+        out["sep_after"] = s.sep_after
+        out["with_unit"] = s.with_unit
         out["suffix"] = s.suffix
         out["max_seq"] = codec.max_seq(s)
         if (length is not None or not s.with_length) and 0 < start_seq <= out["max_seq"]:
-            out["first_sn"] = codec.format_sn(start_seq, s, length)
+            out["first_sn"] = codec.format_sn(start_seq, s, length, unit)
     elif res.rule is not None:
         t = current_version(res.rule)
         if t is not None:
@@ -939,6 +992,9 @@ def options(pi: str | None, customer: str | None) -> list[dict]:
             "category_value": r["category_value"],
             "recommended": bool(recommended),
             "format": None if t is None else format_text(spec_of(t)),
+            # 本 PI 用这条规则时的版本号（须换前缀时为另出前的当前版本）
+            "version": (res.version["version"] if res is not None and res.version is not None else None)
+            or (None if t is None else t["version"]),
             "current_prefix": None if t is None else t["prefix"],
             "used_pis": len({v["claimed_pi"] for v in vs if v["claimed_pi"] is not None}),
             "plan": None if res is None else res.plan,

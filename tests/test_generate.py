@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import json
-
-from conftest import BILLS, m, ok, uid, xlsx_rows
+from conftest import BILLS, m, ok, q, uid, xlsx_rows
 
 
 def mk(w, *lines, pi=None, org=None, bill=None, customer="C1"):
@@ -22,57 +20,104 @@ def P() -> str:
 # ---------------------------------------------------------------- 规则库
 
 
-def test_prefix_uppercase_digits_dash_underscore_end_to_end(w, api, sql):
-    """前缀只能用大写字母、数字、- 和 _：生成、推送 MES、按 SN 查询、导出都原样。"""
+def test_prefix_any_characters_end_to_end(w, api, sql):
+    """规则不限制字符：中文、小写、符号的前缀与后缀在生成、推送 MES、按 SN 查询、导出都原样。"""
     from conftest import MES
 
     base = m(rule_code=uid("R"), rule_name="x", base=10, seq_len=4, with_length=False)
-    for bad in ("ab", "A.B", "A/B", "A B", "SN😀", "前缀"):
-        assert api.post("/api/rules", {**base, "prefix": bad}, w.admin).code == "RULE_AFFIX_INVALID", bad
-    prefix = "S" + uid("").replace("-", "")[-6:] + "-_A"
+    prefix = "光缆s." + uid("").replace("-", "")[-6:] + "/#"
     org, pi, bill = mk(w, ("M1", 3))
     w.enable_mes(org)
-    rid = ok(api.post("/api/rules", {**base, "prefix": prefix}, w.admin))["rule"]["id"]
+    rid = ok(api.post("/api/rules", {**base, "prefix": prefix, "suffix": "尾-x"}, w.admin))["rule"]["id"]
     ok(w.bind_pi(pi, rid))
     w.generate(pi)
     w.allocate(pi)
     w.push()
     sns = [r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
-    assert sns == [f"{prefix}0001", f"{prefix}0002", f"{prefix}0003"]
+    assert sns == [f"{prefix}0001尾-x", f"{prefix}0002尾-x", f"{prefix}0003尾-x"]
     assert set(MES.store[org]) >= set(sns), "MES 收到的 SN 原样"
-    assert [x["sn"] for x in ok(api.get(f"/api/sn?sn={sns[0]}", w.admin))["items"]] == [sns[0]]
+    assert [x["sn"] for x in ok(api.get("/api/sn" + q(sn=sns[0]), w.admin))["items"]] == [sns[0]]
     r = api.client.get(f"/api/export/file?pi={pi}&bill_no={bill}", headers={"Authorization": f"Bearer {w.admin}"})
-    assert xlsx_rows(r.content)[1][-1] == sns[0]
+    rows = xlsx_rows(r.content)
+    assert rows[1][rows[0].index("完整SN")] == sns[0]
 
 
-def test_existing_prefix_by_old_rules_kept_new_ones_checked(w, api, sql):
-    """按旧规则建的前缀（如含小写）：不改前缀可照常编辑、预览；改前缀、物料行上已存的自定义规则落库时按现行规则。"""
-    rid = w.rule(P())
-    lc = "lc" + uid("").replace("-", "")[-6:]
-    sql.exec("UPDATE sn_rule_version SET prefix = %s WHERE rule_id = %s", lc, rid)
-    spec = m(base=10, seq_len=6, with_length=True)
-    ok(api.put(f"/api/rules/{rid}", {**spec, "rule_name": "改名", "prefix": lc}, w.admin))
-    ok(api.post("/api/rules/preview", {**spec, "prefix": lc}, w.admin))
-    assert api.put(f"/api/rules/{rid}", {**spec, "rule_name": "y", "prefix": lc + "x"}, w.admin).code == (
-        "RULE_AFFIX_INVALID"
+def test_sn_layout_serial_separators_padded_length_unit(w, api, sql):
+    """SN = 前缀 + 流水（补 0）+ 米数前分隔符 + 米数（补 0）+ 米数后分隔符 + 单位 + 后缀；单位取物料行的产品单位。"""
+    org, pi, bill = mk(w, ("M1", 2, "51.5", "1", "条"), ("M2", 1, "1200", "2", "PCS"))
+    p = P()
+    rid = w.rule(p, seq_len=5, suffix="Z", length_pad=5, sep_before="-", sep_after="M", with_unit=True)
+    r = ok(api.get(f"/api/rules?q={p}", w.admin)).body[0]["current"]
+    assert r["format"] == f"{p} + 5 位 10 进制流水 + - + 米数（补足 5 位） + M + 单位 + Z"
+    assert (r["length_pad"], r["length_sep_before"], r["length_sep_after"], r["with_unit"]) == (5, "-", "M", True)
+    sample = ok(
+        api.post(
+            "/api/rules/preview",
+            m(
+                prefix=p,
+                base=10,
+                seq_len=5,
+                length_pad=5,
+                sep_before="-",
+                sep_after="M",
+                with_unit=True,
+                suffix="Z",
+                length="7",
+                unit="KG",
+            ),
+            w.admin,
+        )
     )
-    assert api.post("/api/rules/preview", {**spec, "prefix": "zz"}, w.admin).code == "RULE_AFFIX_INVALID"
+    assert sample["samples"][0]["sn"] == f"{p}00001-00007MKGZ"
+    ok(w.bind_pi(pi, rid))
+    w.generate(pi)
+    sns = [x["sn"] for x in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
+    assert sns == [f"{p}00001-051.5M条Z", f"{p}00002-051.5M条Z", f"{p}00003-01200MPCSZ"]
+    assert [
+        r["length_text"] for r in sql.all("SELECT length_text FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)
+    ] == [
+        "51.5",
+        "51.5",
+        "1200",
+    ], "号上记米数原值（未补 0）"
+    got = ok(api.get("/api/sn" + q(pi=pi, seq_from=sns[0], seq_to=sns[-1]), w.admin))
+    assert got["total"] == 3, "完整 SN 可反解出流水"
 
-    org, pi, bill = mk(w, ("M1", 2))
-    old = {"prefix": "c" + uid("").replace("-", "")[-6:], "base": 10, "seq_len": 4, "with_length": False, "suffix": ""}
-    sql.exec(
-        "INSERT INTO sn_line_rule(bill_no, seq, pi_no, rule_id, custom_json, set_by, set_at) "
-        "VALUES (%s, 1, %s, NULL, %s, 'x', NOW())",
-        bill,
-        pi,
-        json.dumps(old),
-    )
+
+def test_rule_with_unit_needs_line_unit(w, api):
+    org, pi, bill = mk(w, ("M1", 2, "100", "1", " "))
+    ok(w.bind_pi(pi, w.rule(P(), with_unit=True)))
     p = ok(w.preview(pi))
-    assert p["generatable"], "已存的旧前缀不影响打开、预演"
-    r = api.post("/api/generate/run", m(token=p["token"]), w.admin)
-    assert r.code == "RULE_AFFIX_INVALID" or (r.body.get("status") == "FAILED" and "RULE_AFFIX_INVALID" in str(r.body))
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 0
-    assert sql.count("SELECT COUNT(*) FROM sn_rule_version WHERE prefix = %s", old["prefix"]) == 0
+    assert not p["generatable"] and p["issues"][0]["issues"] == ["UNIT_EMPTY"]
+
+
+def test_chinese_length_must_be_changed_before_generation(w, api, sql):
+    """金蝶米数含中文：须在页面手动改成不含中文的米数才能生成；改的值也不能含中文；规则不带米数时不挡。"""
+    org, pi, bill = mk(w, ("M1", 2, "五十米"), ("M2", 1, "50米"), ("M3", 1, "60"))
+    ok(w.bind_pi(pi, w.rule(P())))
+    p = ok(w.preview(pi))
+    assert not p["generatable"]
+    assert {x["seq"]: x["issues"] for x in p["issues"]} == {1: ["LENGTH_CHINESE"], 2: ["LENGTH_CHINESE"]}
+    line = next(x for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"] if x["seq"] == 1)
+    assert (line["length"], line["length_source"]) == ("五十米", "K3_CHINESE")
+    assert api.put("/api/orders/length", m(bill_no=bill, seq=1, value="五十"), w.admin).code == "LENGTH_FILL_CHINESE"
+    assert api.put("/api/orders/length", m(bill_no=bill, seq=3, value="61"), w.admin).code == "LENGTH_FILL_K3"
+    r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=1, value="50"), w.admin))
+    assert (r["length"], r["length_source"]) == ("50", "MANUAL")
+    ok(api.put("/api/orders/length/batch", m(pi_no=pi, value="50"), w.admin))
+    w.generate(pi)
+    assert [
+        r["length_text"] for r in sql.all("SELECT length_text FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)
+    ] == [
+        "50",
+        "50",
+        "50",
+        "60",
+    ]
+
+    _, pi2, _ = mk(w, ("M1", 1, "五十米"))
+    ok(w.bind_pi(pi2, w.rule(P(), with_length=False)))
+    assert ok(w.preview(pi2))["generatable"], "规则不带米数时米数含中文不影响生成"
 
 
 def test_only_identical_prefix_conflicts(w, api):
@@ -83,7 +128,7 @@ def test_only_identical_prefix_conflicts(w, api):
         r = api.post("/api/rules", m(rule_code=uid("R"), rule_name="x", prefix=p, base=10, seq_len=5), w.admin)
         assert r.status == 200, f"{p}：只是开头相同（如 SD 与 SDD）不算同号"
     r = api.post("/api/rules", m(rule_code=uid("R"), rule_name="x", prefix="ax", base=10, seq_len=5), w.admin)
-    assert r.code == "RULE_AFFIX_INVALID", "前缀只能用大写字母"
+    assert r.status == 200, "前缀区分大小写，ax 与 AX 不同"
 
 
 def test_rule_list_and_options_show_versions_pis_and_bindings(w, api):
@@ -172,7 +217,7 @@ def test_custom_rule_saved_only_after_success(w, sql):
     w.generate(pi)
     r = sql.one("SELECT * FROM sn_rule")
     assert r["rule_name"] == f"{pi}_v1" and r["rule_code"] == f"PI-{pi}-1"
-    assert sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec LIMIT 1", pi) == f"{p}10.50000001"
+    assert sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec LIMIT 1", pi) == f"{p}00000110.50"
     assert sql.scalar("SELECT rule_id FROM sn_line_rule WHERE bill_no = %s", bill) == r["id"]
 
 
@@ -234,14 +279,14 @@ def test_preview_lists_reasons(w, api):
     p = ok(w.preview(pi))
     assert p["generatable"] is False
     got = {x["seq"]: x["issues"] for x in p["issues"]}
-    assert got == {3: ["ATTACH_EMPTY"]}, "米标选填（为空取默认 000、字符串原样用），只有附件项次必填"
+    assert got == {3: ["ATTACH_EMPTY"]}, "米数选填（为空取默认 000、字符串原样用），只有附件项次必填"
     ok(api.put("/api/orders/attach", m(bill_no=bill, seq=3, value="A9"), w.admin))
     assert ok(w.preview(pi, lines=[(bill, 3)]))["generatable"] is True, "填写附件项次后可以生成；可缩小范围"
     assert api.put("/api/orders/attach", m(bill_no=bill, seq=1, value="A9"), w.admin).code == "ATTACH_FILL_K3"
     assert api.put("/api/orders/length", m(bill_no=bill, seq=2, value="7"), w.admin).code == "LENGTH_FILL_K3"
     assert api.put("/api/orders/length", m(bill_no=bill, seq=1, value="x" * 65), w.admin).code == "LENGTH_FILL_INVALID"
     r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=1, value=" 020.50 "), w.admin))
-    assert (r["length"], r["length_source"]) == ("020.50", "MANUAL"), "米标是字符串，原样保存"
+    assert (r["length"], r["length_source"]) == ("020.50", "MANUAL"), "米数是字符串，原样保存"
     r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=1, value=""), w.admin))
     assert (r["length"], r["length_source"]) == ("000", "DEFAULT"), "留空改回默认 000"
     assert ok(w.preview(pi))["generatable"] is True
@@ -252,7 +297,7 @@ def test_batch_length_sets_default_lines_only(w, api, sql):
     ok(api.put("/api/orders/length", m(bill_no=bill, seq=4, value="7"), w.admin))
     assert api.put("/api/orders/length/batch", m(pi_no=pi, value=" "), w.admin).code == "LENGTH_FILL_INVALID"
     r = ok(api.put("/api/orders/length/batch", m(pi_no=pi, value="001"), w.admin))
-    assert r["filled"] == 1, "只设米标为默认 000 的（金蝶为空、未填写），金蝶已有和已填写的不改"
+    assert r["filled"] == 1, "只设米数为默认 000 的（金蝶为空、未填写），金蝶已有和已填写的不改"
     got = {
         x["seq"]: (x["length"], x["length_source"]) for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"]
     }
@@ -282,23 +327,23 @@ def test_attach_and_length_locked_once_line_has_sns(w, api, sql):
     assert [
         r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE bill_seq = 1 AND pi_no = %s ORDER BY seq_dec", pi)
     ] == [
-        f"{p}000000001",
-        f"{p}000000002",
-        f"{p}000000003",
-        f"{p}000000004",
-        f"{p}000000005",
-        f"{p}000000006",
-    ], "同一物料行接着生成仍用锁定的米标"
+        f"{p}000001000",
+        f"{p}000002000",
+        f"{p}000003000",
+        f"{p}000004000",
+        f"{p}000005000",
+        f"{p}000006000",
+    ], "同一物料行接着生成仍用锁定的米数"
     # 撤销该行的全部生成后可修改，再生成用新值（从流水末尾往前逐段撤）
     for x in ok(api.get(f"/api/generate/jobs?pi={pi}", w.admin)).body:
         if x["status"] == "SUCCESS":
-            ok(w.revoke(x["gen_batch"], "改米标", (bill, 1)))
+            ok(w.revoke(x["gen_batch"], "改米数", (bill, 1)))
     assert j["status"] == "SUCCESS"
     r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=1, value="5"), w.admin))
     assert (r["length"], r["edit_lock"]) == ("5", None)
     w.generate(pi, lines=[(bill, 1)])
     assert sql.scalar("SELECT sn FROM sn_item WHERE bill_seq = 1 AND pi_no = %s ORDER BY seq_dec LIMIT 1", pi) == (
-        f"{p}5000001"
+        f"{p}0000015"
     )
     w.allocate(pi)
     line = {x["seq"]: x for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"]}
@@ -311,7 +356,7 @@ def test_empty_length_defaults_to_000(w, sql):
     p = P()
     ok(w.bind_pi(pi, w.rule(p)))
     w.generate(pi)
-    assert sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s", pi) == f"{p}000000001"
+    assert sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s", pi) == f"{p}000001000"
 
 
 def test_length_is_written_as_string(w, sql):
@@ -320,10 +365,10 @@ def test_length_is_written_as_string(w, sql):
     ok(w.bind_pi(pi, w.rule(p)))
     w.generate(pi)
     assert [r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)] == [
-        f"{p}10.50000001",
-        f"{p}001000002",
-        f"{p}L2000003",
-    ], "米标不按数值规范化，000 / 001 / 其他原样写入"
+        f"{p}00000110.50",
+        f"{p}000002001",
+        f"{p}000003L2",
+    ], "米数不按数值规范化，000 / 001 / 其他原样写入"
 
 
 def test_click_order_and_repeated_material_lines(w, sql):
@@ -401,7 +446,7 @@ def test_revoke_by_line_from_the_end(w, api, sql):
     rb = ctx()["revocable"]
     assert (rb["gen_batch"], rb["bill_no"], rb["seq"], rb["qty"]) == (batch, bill, 3, 2), "可撤销的是流水最末的物料行"
     assert w.revoke(batch, line=(bill, 1)).code == "GEN_REVOKE_NOT_LAST", "中间的物料行不能先撤"
-    ok(w.revoke(batch, "米标填错", (bill, 3)))
+    ok(w.revoke(batch, "米数填错", (bill, 3)))
     assert sql.scalar("SELECT last_seq_dec FROM sn_pi_counter WHERE pi_no = %s", pi) == 7
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 7
     assert w.revoke(batch, line=(bill, 3)).code == "GEN_REVOKE_LINE_INVALID", "已撤销的行不能再撤"

@@ -97,6 +97,7 @@
                   <el-table-column type="selection" width="40" :selectable="(row: any) => !row.skip" />
                   <el-table-column :label="t('common.billSeq')" prop="seq" width="72" />
                   <el-table-column :label="t('common.material')" prop="material_code" min-width="100" show-overflow-tooltip />
+                  <el-table-column :label="t('common.attachNo')" width="90"><template #default="{ row }">{{ row.attach_no || "—" }}</template></el-table-column>
                   <el-table-column :label="t('common.length')" width="70">
                     <template #default="{ row }">{{ row.length || "—" }}</template>
                   </el-table-column>

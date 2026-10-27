@@ -13,10 +13,10 @@
       <span v-else class="muted">{{ t("generate.noPiRule") }}</span>
       <div class="rule-now">
         <el-select v-model="bind.rule_id" filterable clearable :placeholder="t('generate.pickLibRule')" class="w320" @change="bind.new_prefix = ''">
-          <el-option v-for="o in ctx.rule_options" :key="o.rule_id" :value="o.rule_id" :label="`${o.rule_code} · ${o.rule_name}`">
-            <span>{{ o.rule_code }} · {{ o.rule_name }}</span>
+          <!-- 精简：只列「规则编码 v版本」 -->
+          <el-option v-for="o in ctx.rule_options" :key="o.rule_id" :value="o.rule_id" :label="optionTitle(o)" :title="o.format || ''">
+            <span>{{ optionTitle(o) }}</span>
             <el-tag v-if="o.recommended" size="small" type="success" class="ml">{{ t("generate.rule.recommended") }}</el-tag>
-            <span class="muted ml">{{ o.format }}</span>
           </el-option>
         </el-select>
         <el-input v-if="bindOption?.plan === 'PREFIX'" v-model="bind.new_prefix" class="w160" maxlength="32" :placeholder="t('generate.rule.newPrefix')" />
@@ -61,6 +61,7 @@ const { t } = useI18n();
 const busy = ref("");
 const bind = reactive({ rule_id: undefined as number | undefined, new_prefix: "" });
 const tpl = reactive({ new_prefix: "" });
+const optionTitle = (o: any) => (o.version ? `${o.rule_code} v${o.version}` : o.rule_code);
 const bindOption = computed(() => props.ctx.rule_options.find((o: any) => o.rule_id === bind.rule_id));
 
 async function run(key: string, action: () => Promise<unknown>, message: string) {

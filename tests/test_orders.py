@@ -52,6 +52,26 @@ def test_compare_sync_adds_replaces_removes(w, api, sql):
     assert sql.count("SELECT COUNT(*) FROM sn_prd_mo WHERE bill_no = %s", c) == 1
 
 
+def test_bills_sorted_by_modify_date_newest_first_with_unit(w, api):
+    """只同步已审核单据；左表按金蝶修改日期越新越前；修改日期、产品单位随同步进快照并在订单页显示。"""
+    org = w.org(uid("O")[:10])
+    pi = uid("PI")
+    old, new, draft = uid("MO"), uid("MO"), uid("MO")
+    for no, when in ((old, "2026-08-01T10:00:00"), (new, "2026-09-01T10:00:00")):
+        BILLS[no] = w.doc(no, org, "C1", pi, ("M1", 1, "100", "1", " 条 "))
+        BILLS[no]["ModifyDate"] = when
+    BILLS[draft] = w.doc(draft, org, "C1", pi, ("M1", 1), status="A")
+    w.compare()
+    got = ok(api.get(f"/api/orders?pi={pi}", w.admin))["items"]
+    assert [x["bill_no"] for x in got] == [new, old], "未审核的不进快照；修改日期新的在前"
+    assert got[0]["modify_time"] == "2026-09-01 10:00:00", "金蝶时间原样显示"
+    lines = ok(api.get(f"/api/orders/{old}/lines", w.admin))
+    assert lines["modify_time"].startswith("2026-08-01") and lines["lines"][0]["unit"] == "条"
+    BILLS[old]["ModifyDate"] = "2026-10-01T10:00:00"
+    w.compare()
+    assert [x["bill_no"] for x in ok(api.get(f"/api/orders?pi={pi}", w.admin))["items"]] == [old, new]
+
+
 def test_compare_failure_keeps_snapshot(w, api, sql):
     org = w.org(uid("O")[:10])
     a = uid("MO")

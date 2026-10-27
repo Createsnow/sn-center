@@ -231,6 +231,15 @@ def test_apply_withdraw_reject_approve(w, api, sql):
     assert {x["current_status"] for x in items} == {"TRANSFERRED_OUT"}
     r = w.api.client.get(f"/api/transfers/org/{t3['id']}/out-list", headers={"Authorization": f"Bearer {op}"})
     assert r.status_code == 200 and len(xlsx_rows(r.content)) == 4
+    rows = xlsx_rows(r.content)
+    got = dict(zip(rows[0], rows[1], strict=True))
+    assert (got["组织编号"], got["生产组织名称"], got["转入生产组织"], got["转入生产组织名称"]) == (
+        a,
+        f"组织{a}",
+        b,
+        f"组织{b}",
+    )
+    assert (got["转出前物料"], got["附件项次"], got["米数"]) == ("M1", "1", "100")
 
 
 def test_org_transfer_rejects_disabled_target_and_same_target(w, api):

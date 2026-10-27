@@ -1,6 +1,6 @@
 """SN 查询与导出（F-18）。只读；按账户可看范围过滤；按条件分页读取，不把全部号装入内存。
 
-SN 明细：按客户、PI、单据编号、物料、米标、状态、交付方式、完整 SN、推送 / 拉取 / 领取批次精确筛选，另可按流水范围查
+SN 明细：按客户、PI、单据编号、物料、米数、状态、交付方式、完整 SN、推送 / 拉取 / 领取批次精确筛选，另可按流水范围查
 （须填 PI；起止可填流水号或完整 SN，两端都含；只查本 PI 自己生成的流水；附小计）。
 列表总数超过 10 万时只统计到 10 万并注明；导出默认最多 100 万行，超过只导出前 100 万行并提示。
 """
@@ -16,14 +16,15 @@ from app.core.config import settings
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db, marks
-from app.services import acquire, files, rules
+from app.services import acquire, files, rules, sn_sheet
 
 COUNT_CAP = 100_000
 
 COLS = (
     "i.id, i.sn, i.rule_version_id, i.seq_dec, i.seq_pi_no, i.pi_no, i.bill_no, i.bill_seq, i.material_code, "
     "i.length_text, i.customer_code, i.factory_code, i.status, i.delivery_mode, i.delivery_batch_no, "
-    "i.acquire_batch_no, i.suspend, i.rev, i.created_at, i.allocated_at, i.delivered_at, i.mes_holder, i.push_type"
+    "i.acquire_batch_no, i.suspend, i.rev, i.created_at, i.allocated_at, i.delivered_at, i.mes_holder, i.push_type, "
+    "i.attach_no"
 )
 
 
@@ -57,7 +58,7 @@ def _seq_of(text: str, specs: list[codec.Spec]) -> int | None:
                 return n
         hit = codec.parse(text, s)
         if hit is not None:
-            return hit[1]
+            return hit
     return None
 
 
@@ -159,6 +160,7 @@ def view(r: dict, bill_pi: dict[str, str]) -> dict:
         "bill_no": r["bill_no"],
         "bill_seq": r["bill_seq"],
         "material_code": r["material_code"],
+        "attach_no": r["attach_no"],
         "length": r["length_text"],
         "customer_code": r["customer_code"],
         "factory_code": r["factory_code"],
@@ -216,7 +218,8 @@ def export_check(cu: CurrentUser, f: Filter) -> dict:
     return {"limit": limit, "truncated": total > limit, "rows": min(total, limit)}
 
 
-EXPORT_HEADERS = [*acquire.FILE_HEADERS, "交付方式"]
+#: 列同 SN 导出、历史领取文件（见 sn_sheet）
+EXPORT_HEADERS = sn_sheet.HEADERS
 
 
 def _export_rows(cu: CurrentUser, f: Filter) -> Iterator[list]:
@@ -226,7 +229,7 @@ def _export_rows(cu: CurrentUser, f: Filter) -> Iterator[list]:
     no = 0
     while no < limit:
         page = db.all(
-            f"SELECT {COLS} FROM sn_item i{sql} AND i.id > %s ORDER BY i.id LIMIT %s",
+            f"SELECT {sn_sheet.COLS} FROM {sn_sheet.FROM}{sql} AND i.id > %s ORDER BY i.id LIMIT %s",
             *args,
             last_id,
             min(5000, limit - no),
@@ -236,7 +239,7 @@ def _export_rows(cu: CurrentUser, f: Filter) -> Iterator[list]:
         for r in page:
             no += 1
             last_id = r["id"]
-            yield [*acquire.file_row(no, r), r["delivery_mode"] or ""]
+            yield sn_sheet.row(no, r)
 
 
 def export(cu: CurrentUser, f: Filter) -> Iterator[bytes]:
