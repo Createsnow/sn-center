@@ -603,7 +603,6 @@
     },
     "linesTitle": "物料行",
     "filter": {
-      "ALL": "全部 {n}",
       "TODO": "待处理 {n}",
       "GEN": "可生成 {n}",
       "ALLOC": "待分配 {n}",
@@ -683,6 +682,7 @@
     "piRuleBtn": "PI / 客户规则",
     "onlyThese": "只看这些行",
     "selHint": "勾选单据（整单，按勾选顺序排号）或物料行（按点选顺序排号）即为生成范围，也用于批量改规则、撤销、统一设置米数；不勾选 = 整张 PI",
+    "autoNext": "「{from}」已处理完，已转到「{to}」",
     "billCounts": "数量 {total} · 已生成 {gen} · 可生成 {quota}",
     "snRange": "SN 范围",
     "thisRun": "本次",

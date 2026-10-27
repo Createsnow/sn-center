@@ -342,14 +342,15 @@ type Tab = "TO_GENERATE" | "GENERATED";
 type Action = "running" | "view" | "gen" | "pick";
 type TagType = "" | "info" | "primary" | "success" | "warning" | "danger";
 type LineRef = { bill_no: string; seq: number };
-type Filter = "ALL" | "TODO" | "GEN" | "GENERATED";
+/** 物料行页签按处理步骤：待处理 → 可生成 → 已生成 */
+type Filter = "TODO" | "GEN" | "GENERATED";
 type LineState = "TODO" | "GEN" | "GENERATED" | "DONE" | "NONE";
 /** PI 流水上未撤销的物料行号段（ctx.segments，从流水最末往前）。 */
 type Segment = LineRef & { gen_batch: string; qty: number; start_sn: string; end_sn: string; bad: number; ok: boolean };
 type RevokeRange = { segs: Segment[]; ok: boolean; own: boolean };
 
 const TABS: Tab[] = ["TO_GENERATE", "GENERATED"];
-const FILTERS: Filter[] = ["ALL", "TODO", "GEN", "GENERATED"];
+const FILTERS: Filter[] = ["TODO", "GEN", "GENERATED"];
 const PAGE = 20;
 /** 各页签只列最近 3 页，更早的用搜索；生成中的 PI 排在「待生成」最前，不受此限（F-10 第 2 条）。 */
 const RECENT_PAGES = 3;
@@ -415,7 +416,7 @@ function actionOf(row: any): Action {
 }
 
 function openRow(row: any) {
-  openDetail({ pi: row.pi_no }, actionOf(row) === "pick" ? "TODO" : "ALL");
+  openDetail({ pi: row.pi_no });
 }
 
 // ================================================================ 详情
@@ -437,15 +438,16 @@ const todoGroups = computed(() => {
 });
 const limits = computed(() => ctx.value?.limits || { default: 10000, max: 500000, sync_threshold: 5000 });
 
-async function openDetail(key: { pi?: string; bill_no?: string }, filter: Filter = "ALL") {
+async function openDetail(key: { pi?: string; bill_no?: string }) {
   detailPi.value = key.pi || key.bill_no || "";
   ctx.value = null;
   clearSelection();
   dtab.value = "lines";
-  lineFilter.value = filter;
   foldAll(false);
   await loadCtx(key);
   if (!ctx.value) return;
+  // 打开时停在第一个还有物料行的步骤
+  lineFilter.value = FILTERS.find((f) => filterCount.value[f] > 0) ?? "TODO";
   detailPi.value = ctx.value.pi_no;
   // 单据多时默认收起；从单据进来的展开该单
   if (shownBills.value.length > BILL_FOLD_OVER) foldAll(true);
@@ -470,8 +472,20 @@ async function loadCtx(key: { pi?: string; bill_no?: string }) {
 async function reloadCtx() {
   if (!detailPi.value) return;
   await loadCtx({ pi: detailPi.value });
+  nextStep();
   schedulePreview();
   loadList(true);
+}
+
+/** 每处理完一步（当前页签已没有物料行）自动转到下一个还有物料行的页签：待处理 → 可生成 → 已生成；
+ *  后面都空时（如撤销后已生成为空）回到前面第一个还有物料行的页签。 */
+function nextStep() {
+  if (!ctx.value || dtab.value !== "lines" || filterCount.value[lineFilter.value] > 0) return;
+  const i = FILTERS.indexOf(lineFilter.value);
+  const to = [...FILTERS.slice(i + 1), ...FILTERS.slice(0, i)].find((f) => filterCount.value[f] > 0);
+  if (!to) return;
+  ElMessage.info(t("generate.autoNext", { from: t(`generate.lineState.${lineFilter.value}`), to: t(`generate.lineState.${to}`) }));
+  lineFilter.value = to;
 }
 
 function closeDetail() {
@@ -544,12 +558,12 @@ function lineState(l: OrderLine): LineState {
   if (l.generated_qty > l.allocated_qty) return "GENERATED";
   return l.generated_qty > 0 ? "DONE" : "NONE";
 }
-const lineFilter = ref<Filter>("ALL");
+const lineFilter = ref<Filter>("TODO");
+/** 每条物料行至少落在一个页签：还有额度的按能否生成分到待处理 / 可生成；有号或已没有额度的在已生成（部分生成的行两边都有）。 */
 const FILTER_OK: Record<Filter, (l: OrderLine) => boolean> = {
-  ALL: () => true,
   TODO: (l) => lineState(l) === "TODO",
-  GEN: (l) => l.quota > 0,
-  GENERATED: (l) => l.generated_qty > 0,
+  GEN: (l) => lineState(l) === "GEN",
+  GENERATED: (l) => l.generated_qty > 0 || l.quota <= 0,
 };
 const filterCount = computed(() =>
   Object.fromEntries(FILTERS.map((f) => [f, allLines.value.filter(FILTER_OK[f]).length])) as Record<Filter, number>,
@@ -558,7 +572,8 @@ const shownBills = computed(() => {
   const ok = FILTER_OK[lineFilter.value];
   return (ctx.value?.bills ?? [])
     .map((b: any) => ({ ...b, shown: b.lines.filter(ok) }))
-    .filter((b: any) => lineFilter.value === "ALL" || b.shown.length);
+    // 已不在快照的单据（没有物料行、只有号）列在「已生成」
+    .filter((b: any) => b.shown.length || (!b.lines.length && lineFilter.value === "GENERATED"));
 });
 function showTodo() {
   lineFilter.value = "TODO";
@@ -759,7 +774,7 @@ async function afterRevoke() {
 
 function pickJob(lines: LineRef[]) {
   sel.value = { bills: [], lines };
-  lineFilter.value = "ALL";
+  lineFilter.value = "GENERATED";
   dtab.value = "lines";
   // 选中的物料行所在单据展开，免得勾上了看不见
   const s = new Set(folded.value);
