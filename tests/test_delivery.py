@@ -55,7 +55,17 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
     )
     # 报文：逐枚带单据编号、序号、当前 PI、流水归属 PI；十进制流水、米标按字符串
     body = MES.received[-1]["batch"]
-    assert set(body) == {"schemaVersion", "batchNo", "batchType", "orgCode", "pi", "createdAt", "itemsDigest", "items"}
+    assert set(body) == {
+        "schemaVersion",
+        "batchNo",
+        "batchType",
+        "orgCode",
+        "toOrgCode",
+        "pi",
+        "createdAt",
+        "itemsDigest",
+        "items",
+    }
     assert body["pi"] == pi, "交付批次头带 PI"
     assert re.fullmatch(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}", body["createdAt"]), "UTC+8，精确到毫秒"
     day = (datetime.now(UTC) + timedelta(hours=8)).strftime("%Y%m%d")
@@ -75,9 +85,8 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
         "materialCode",
         "length",
         "customerCode",
-        "toOrgCode",
     }
-    assert body["batchType"] == "NEW" and item["toOrgCode"] is None, "交付明细与转移明细同一结构，交付批次不带转入组织"
+    assert body["batchType"] == "NEW" and body["toOrgCode"] is None, "明细与转移明细同一结构，交付批次头不带转入组织"
     assert item["billNo"] == bill and item["billSeq"] == 1 and item["pi"] == pi and item["serialPi"] == pi
     assert isinstance(item["serialDec"], str) and item["length"] == "0100"
     assert item["attachNo"] == "1", "附件项次随交付明细下发"

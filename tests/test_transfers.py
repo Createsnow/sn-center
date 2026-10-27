@@ -83,11 +83,12 @@ def test_org_transfer_pushes_reassign_to_target_and_transfer_out_to_source(w, sq
     sn = items[0]["sn"]
     assert MES.store[b][sn]["rev"] == 2 and not MES.store[b][sn]["transferredOut"]
     assert MES.store[a][sn]["transferredOut"] and MES.store[a][sn]["toOrgCode"] == b
-    # 转出报文与交付报文明细同一结构：带转出前的挂靠与转入组织；都不带推送类型与转移追溯字段
+    # 转出报文与交付报文明细同一结构：带转出前的挂靠，转入组织在批次头；都不带推送类型与转移追溯字段
     out = next(x["batch"] for x in MES.received if x["batch"]["batchType"] == "TRANSFER_OUT")
     first = next(x["batch"] for x in MES.received if x["org"] == a and x["batch"]["batchType"] == "NEW")
     held = next(x for x in first["items"] if x["sn"] == out["items"][0]["sn"])
-    assert out["items"][0] == {**held, "rev": 2, "toOrgCode": b}
+    assert out["items"][0] == {**held, "rev": 2}
+    assert out["toOrgCode"] == b and first["toOrgCode"] is None, "转入组织在批次头，交付批次为 null"
     assert out["itemsDigest"]
     assert out["pi"] == pi, "转移批次头带转出前的 PI"
     got = next(x["batch"] for x in MES.received if x["org"] == b and x["batch"]["batchType"] != "PING")
@@ -547,10 +548,11 @@ def test_void_transfer_out_rebuilds_and_delivers(w, sql):
     rows = sql.all("SELECT * FROM sn_delivery_batch WHERE batch_type = 'TRANSFER_OUT' ORDER BY id")
     assert [(r["result"], r["qty"]) for r in rows] == [("VOIDED", 2), ("SUCCESS", 2)]
     assert rows[1]["rebuilt_from"] == xo["batch_no"]
-    # 重建的转出批次明细与原批次相同（同一结构，带转出前的挂靠与转入组织）
-    old, new = (gzip_json(r["body_gz"])["items"] for r in rows)
+    # 重建的转出批次明细与原批次相同（同一结构，带转出前的挂靠），批次头转入组织不变
+    old, new = (gzip_json(r["body_gz"]) for r in rows)
     lengths = {r["sn"]: r["length_text"] for r in sql.all("SELECT sn, length_text FROM sn_item WHERE pi_no = %s", pi)}
-    assert new == old and all(x["toOrgCode"] == b and x["length"] == lengths[x["sn"]] for x in new)
+    assert new["items"] == old["items"] and all(x["length"] == lengths[x["sn"]] for x in new["items"])
+    assert new["toOrgCode"] == old["toOrgCode"] == b
     sns = [r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s", pi)]
     assert all(MES.store[a][s]["transferredOut"] and MES.store[a][s]["toOrgCode"] == b for s in sns)
     ta, _ = w.mes_account(a)

@@ -55,7 +55,7 @@ DELIVERY_FIELDS = (
     "billSeq",
     "customerCode",
 )
-TRANSFER_OUT_FIELDS = ("sn", "rev", "toOrgCode")
+TRANSFER_OUT_FIELDS = ("sn", "rev")
 #: 交付类批次类型：MES 处理都一样（逐枚按 rev 新增或覆盖），类型只说明这批号从哪来
 DELIVERY_TYPES = ("NEW", "SAME_ORG_TRANSFER", "TRANSFER_IN", "REMAP")
 
@@ -178,6 +178,8 @@ class MesSim:
             return "pi 必填"
         if delivery and org in self.pis and pi not in self.pis[org]:
             return f"本组织 {org} 没有 PI {pi}"
+        if not delivery and not batch.get("toOrgCode"):
+            return "转出批次 toOrgCode 必填"
         need = DELIVERY_FIELDS if delivery else TRANSFER_OUT_FIELDS
         for x in items:
             if not isinstance(x, dict):
@@ -217,7 +219,7 @@ class MesSim:
                 if out:
                     # 本地没有时也建一条只有 SN、rev 的已转走记录，挡住迟到的旧交付
                     rec = dict(cur or {})
-                    rec.update(rev=x["rev"], lastBatchNo=no, transferredOut=True, toOrgCode=x["toOrgCode"])
+                    rec.update(rev=x["rev"], lastBatchNo=no, transferredOut=True, toOrgCode=batch["toOrgCode"])
                 else:
                     rec = {
                         "rev": x["rev"],

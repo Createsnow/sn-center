@@ -148,9 +148,9 @@ TYPE_SQL = (
 )
 
 
-def _item_payload(r: dict, to_org: str | None = None) -> dict:
+def _item_payload(r: dict) -> dict:
     """批次明细，交付批次与转出批次同一结构。十进制流水、米标按字符串；物料、附件项次为空，规则不带米标时为 null。
-    交付批次 toOrgCode 为 null，MES 逐枚按 rev 新增或覆盖；转出批次带转出前的挂靠与转入组织 toOrgCode，MES 据此
+    交付批次为号的当前挂靠，MES 逐枚按 rev 新增或覆盖；转出批次为转出前的挂靠，转入组织在批次头 toOrgCode，MES 据此
     标记已转走（本地没有时按 SN、rev 建一条已转走记录）。"""
     return {
         "sn": r["sn"],
@@ -165,7 +165,6 @@ def _item_payload(r: dict, to_org: str | None = None) -> dict:
         "materialCode": str_or_none(r["material_code"]),
         "length": r["length_text"],
         "customerCode": r["customer_code"],
-        "toOrgCode": to_org,
     }
 
 
@@ -180,6 +179,7 @@ def _insert_batch(
     rows: list[tuple],
     transfer: tuple[str | None, str | None] = (None, None),
     rebuilt_from: str | None = None,
+    to_org: str | None = None,
 ) -> dict:
     """写定批次（请求体、摘要）与明细。rows = sn_delivery_item 的 (item_id, sn, rev, push_type, pi, bill, seq, material,
     customer, seq_pi, seq_dec, to_factory)。"""
@@ -187,8 +187,9 @@ def _insert_batch(
     now = util.now()
     digest = _digest(payload)
     # 一批只含一张 PI，批次头带上：交付批次为当前 PI，MES 据此校验本组织有没有这张 PI（对接说明 3.2 步骤 2）；
-    # 转出批次为转出前的 PI
-    obj: dict = {"schemaVersion": "1.0", "batchNo": batch_no, "batchType": batch_type, "orgCode": org, "pi": pi}
+    # 转出批次为转出前的 PI。转入组织 toOrgCode 只有转出批次有值（一批只转到一个组织），其他为 null
+    obj: dict = {"schemaVersion": "1.0", "batchNo": batch_no, "batchType": batch_type, "orgCode": org}
+    obj |= {"toOrgCode": to_org, "pi": pi}
     obj |= {"createdAt": util.mes_fmt(now), "itemsDigest": digest, "items": payload}
     body = mes_client.gzip_bytes(mes_client.canonical(obj))
     bid = db.insert(
@@ -363,18 +364,19 @@ def build_delivery_now(
 
 
 def build_transfer_out(cu: CurrentUser, org: str, entries: list[dict], rebuilt_from: str | None = None) -> list[dict]:
-    """转出批次（在转移事务内调用）：按转出前 PI 分批（一张转移单只有一张来源 PI），再按来源组织当前单批枚数拆分。
+    """转出批次（在转移事务内调用）：按转出前 PI、转入组织分批（一张转移单只有一张来源 PI、一个转入组织，批次头的
+    pi、toOrgCode 都只有一个值），再按来源组织当前单批枚数拆分。
     entries 每枚含转出前挂靠（含米标、规则版本）、转入组织、转移类型与单号。"""
     f = factories.get(org)
     size = max(1, int(f["batch_size"])) if f else 5000
-    by_pi: dict[str, list[dict]] = {}
+    by_key: dict[tuple[str, str], list[dict]] = {}
     for e in entries:
-        by_pi.setdefault(e["pi_no"], []).append(e)
-    parts = [g[i : i + size] for _, g in sorted(by_pi.items()) for i in range(0, len(g), size)]
+        by_key.setdefault((e["pi_no"], e["to_factory"]), []).append(e)
+    parts = [g[i : i + size] for _, g in sorted(by_key.items()) for i in range(0, len(g), size)]
     out = []
     for part in parts:
         pi = part[0]["pi_no"]
-        payload = [_item_payload(e, e["to_factory"]) for e in part]
+        payload = [_item_payload(e) for e in part]
         rows = [
             (
                 e["item_id"],
@@ -403,6 +405,7 @@ def build_transfer_out(cu: CurrentUser, org: str, entries: list[dict], rebuilt_f
             rows,
             (part[0]["transfer_kind"], part[0]["transfer_doc_no"]),
             rebuilt_from,
+            part[0]["to_factory"],
         )
         audit.record(
             cu,

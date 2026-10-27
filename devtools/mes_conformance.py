@@ -122,7 +122,7 @@ class Runner:
         return f"{self.prefix}{i:06d}"
 
     def delivery(self, i: int, rev: int, **extra: Any) -> dict:
-        """交付明细（toOrgCode 为 null）；单据行号随 rev 变（rev < 3 为 1，否则为 2），便于在 MES 侧核对是否覆盖。"""
+        """交付明细；单据行号随 rev 变（rev < 3 为 1，否则为 2），便于在 MES 侧核对是否覆盖。"""
         return {
             "sn": self.sn(i),
             "rev": rev,
@@ -136,17 +136,17 @@ class Runner:
             "materialCode": "CT-M1",
             "length": "0100",
             "customerCode": "CT-C1",
-            "toOrgCode": None,
             **extra,
         }
 
-    def transfer_out(self, i: int, rev: int, to_org: str = "CT-TO") -> dict:
-        """转移明细：与交付明细同一结构，带转出前的挂靠与转入组织。"""
-        return self.delivery(i, rev, toOrgCode=to_org)
+    def transfer_out(self, i: int, rev: int) -> dict:
+        """转移明细：与交付明细同一结构，带转出前的挂靠；转入组织在批次头。"""
+        return self.delivery(i, rev)
 
     def batch(self, items: list[dict], kind: str = "NEW", no: str | None = None, **head: Any) -> dict:
-        """批次头；交付批次的 pi 取明细的 pi，转移批次取测试 PI（转出前的 PI）。"""
+        """批次头；交付批次的 pi 取明细的 pi，转移批次取测试 PI（转出前的 PI）、toOrgCode 为 CT-TO（其他为 null）。"""
         obj: dict = {"schemaVersion": SCHEMA, "batchNo": no or self.batch_no(), "batchType": kind, "orgCode": self.org}
+        obj["toOrgCode"] = "CT-TO" if kind == "TRANSFER_OUT" else None
         obj["pi"] = items[0]["pi"] if items and kind != "TRANSFER_OUT" else self.pi
         obj |= {"createdAt": now_cst(), "itemsDigest": digest(items), "items": items}
         obj.update(head)
@@ -252,6 +252,7 @@ class Runner:
                 "batchNo": "PING-" + self.batch_no(),
                 "batchType": "PING",
                 "orgCode": org,
+                "toOrgCode": None,
                 "createdAt": now_cst(),
                 "itemsDigest": digest([]),
                 "items": [],
@@ -371,10 +372,8 @@ class Runner:
             self.ng(self.send(b), b, "批内 SN 重复")
 
         def out_missing(c: Check) -> None:
-            item = self.transfer_out(17, 1)
-            item["toOrgCode"] = None
-            b = self.batch([item], "TRANSFER_OUT")
-            self.ng(self.send(b), b, "转出项 toOrgCode 为空")
+            b = self.batch([self.transfer_out(17, 1)], "TRANSFER_OUT", toOrgCode=None)
+            self.ng(self.send(b), b, "转出批次 toOrgCode 为空")
 
         def missing(c: Check) -> None:
             item = self.delivery(19, 1)
@@ -462,7 +461,7 @@ class Runner:
             ),
             ("C15", "orgCode 不是本组织：NG；修正后同一批次号重送能处理", "说明 3.2 步骤 2、5", org_bad),
             ("C16", "批内 SN 重复：NG", "说明 3.2 步骤 2", dup_sn),
-            ("C17", "转出项 toOrgCode 为空：NG", "说明 3.2 步骤 2", out_missing),
+            ("C17", "转出批次 toOrgCode 为空：NG", "说明 3.2 步骤 2", out_missing),
             ("C18", "缺必填字段：NG（HTTP 200，不是 4xx），不落任何数据", "说明 3.2 步骤 2；接口 3.1", missing),
             ("C19", "请求体无法解析：400", "接口 3.1", bad_body),
             ("C20", "同一批同时送达两次：只处理一次，两边都 OK", "说明 2、3.2 步骤 5", concurrent),

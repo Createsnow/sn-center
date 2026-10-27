@@ -200,8 +200,17 @@ def test_hmac_signature_string():
 
 def test_ping_batch_has_no_items():
     body = json.loads(gzip.decompress(mes_client.ping_body("110", "PING-1")))
-    assert set(body) == {"schemaVersion", "batchNo", "batchType", "orgCode", "createdAt", "itemsDigest", "items"}
-    assert body["batchType"] == "PING" and body["items"] == []
+    assert set(body) == {
+        "schemaVersion",
+        "batchNo",
+        "batchType",
+        "orgCode",
+        "toOrgCode",
+        "createdAt",
+        "itemsDigest",
+        "items",
+    }
+    assert body["batchType"] == "PING" and body["items"] == [] and body["toOrgCode"] is None
     assert body["itemsDigest"].startswith("sha256:") and len(body["itemsDigest"]) == 71
 
 
