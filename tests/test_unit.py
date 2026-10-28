@@ -463,7 +463,6 @@ def test_db_target_env_overrides_dotenv(monkeypatch):
         ("PUT", "/api/users/5", "USER_UPDATE"),
         ("POST", "/api/users/5/disable", "USER_DISABLE"),
         ("POST", "/api/users/5/enable", "USER_ENABLE"),
-        ("DELETE", "/api/users/5", "USER_DELETE"),
         ("POST", "/api/users/5/reset-password", "USER_RESET_PWD"),
         ("POST", "/api/users/5/reset-secret", "USER_RESET_SECRET"),
         ("PUT", "/api/factories/110/mes-config", "FACTORY_MES_CONFIG"),

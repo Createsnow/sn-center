@@ -1,4 +1,4 @@
-"""登录、改密与账户管理（F-01）。账户可停用、启用或删除（系统管理员和自己不能删）；只有系统管理员能维护账户。
+"""登录、改密与账户管理（F-01）。账户只停用不删除；只有系统管理员能维护账户。
 
 页面账户（系统管理员 / 普通操作员 / 审计员）用工号和密码直接登录，任何时候都不强制改密；
 系统管理员只有一个（工号 SN_INIT_ADMIN_EMP_NO）；普通操作员、审计员必须至少授权一个生产组织；
@@ -540,31 +540,6 @@ def enable(cu: CurrentUser, uid: int) -> dict:
         )
         audit.record(cu, audit.entry(audit.USER_ENABLE).factory(u["factory_code"]).info(f"emp_no={u['emp_no']}"))
         return view(_must_get(uid))
-
-
-def delete(cu: CurrentUser, uid: int) -> dict:
-    """删除账户（页面账户或 MES 接口账户）：自己、系统管理员不能删。
-
-    删除后该账户的令牌、MES 密钥立即失效；痕迹与业务记录按工号保存，不随账户删除。
-    """
-    with db.tx():
-        u = _must_get(uid)
-        if u["id"] == cu.id:
-            raise biz(ErrorCode.USER_SELF_DELETE)
-        if u["emp_no"] == settings.init_admin_emp_no:
-            raise biz(ErrorCode.USER_SUPER_ADMIN_FIXED)
-        _check_not_last_admin(u)
-        out = view(u)
-        db.exec("DELETE FROM sn_user_factory WHERE user_id = %s", uid)
-        db.exec("DELETE FROM sn_user WHERE id = %s", uid)
-        audit.record(
-            cu,
-            audit.entry(audit.USER_DELETE)
-            .factory(u["factory_code"])
-            .info(f"emp_no={u['emp_no']} role={u['role']} factory={','.join(out['factory_codes']) or '-'}"),
-        )
-    _verified.pop(uid, None)
-    return out
 
 
 def reset_password(cu: CurrentUser, uid: int, password: str | None) -> dict:

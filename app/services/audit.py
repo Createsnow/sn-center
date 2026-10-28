@@ -28,7 +28,6 @@ USER_CREATE = "USER_CREATE"
 USER_UPDATE = "USER_UPDATE"
 USER_DISABLE = "USER_DISABLE"
 USER_ENABLE = "USER_ENABLE"
-USER_DELETE = "USER_DELETE"
 USER_RESET_PWD = "USER_RESET_PWD"
 USER_RESET_SECRET = "USER_RESET_SECRET"
 USER_VIEW_SECRET = "USER_VIEW_SECRET"
@@ -268,8 +267,6 @@ _PATH_ACTIONS = (
 def action_for(method: str, path: str) -> str:
     if method == "DELETE" and re.fullmatch(r"/api/rules/\d+", path):
         return RULE_DELETE
-    if method == "DELETE" and re.fullmatch(r"/api/users/\d+", path):
-        return USER_DELETE
     if path == "/api/rules/pi-binding" and method == "DELETE":
         return RULE_PI_UNBIND
     if path == "/api/rules/customer-binding" and method == "DELETE":

@@ -31,7 +31,6 @@ export const api = {
   updateUser: (id: number, data: Q) => put(`/users/${id}`, data),
   disableUser: (id: number) => post(`/users/${id}/disable`),
   enableUser: (id: number) => post(`/users/${id}/enable`),
-  deleteUser: (id: number) => del(`/users/${id}`),
   resetPassword: (id: number, password: string) => post(`/users/${id}/reset-password`, { password }),
   resetSecret: (id: number) => post(`/users/${id}/reset-secret`),
   viewSecret: (id: number) => get(`/users/${id}/secret`),

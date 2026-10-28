@@ -47,7 +47,7 @@
           <template #default="{ row }">{{ fmt(row.last_login_at) }}</template>
         </el-table-column>
         <el-table-column :label="t('users.created')" width="200"><template #default="{ row }">{{ row.created_by }} · {{ fmt(row.created_at) }}</template></el-table-column>
-        <el-table-column :label="t('common.actions')" :width="tab === 'mes' ? 340 : 270" fixed="right">
+        <el-table-column :label="t('common.actions')" :width="tab === 'mes' ? 300 : 230" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openEdit(row)">{{ t("common.edit") }}</el-button>
             <template v-if="row.role === 'mes'">
@@ -57,7 +57,6 @@
             <el-button v-else link @click="reset(row)">{{ t("users.resetPwd") }}</el-button>
             <el-button v-if="row.status === 'ACTIVE'" link type="danger" :disabled="row.id === store.profile?.id || row.super_admin" @click="disable(row)">{{ t("users.disable") }}</el-button>
             <el-button v-else link type="success" @click="enable(row)">{{ t("users.enable") }}</el-button>
-            <el-button link type="danger" :disabled="row.id === store.profile?.id || row.super_admin" @click="remove(row)">{{ t("users.delete") }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -245,16 +244,6 @@ async function enable(row: any) {
   await api.enableUser(row.id);
   ElMessage.success(t("common.done"));
   await load();
-}
-
-async function remove(row: any) {
-  await ElMessageBox.confirm(t("users.deleteConfirm", { emp: row.emp_no, name: row.name }), t("users.delete"), {
-    type: "warning", confirmButtonText: t("common.delete"), cancelButtonText: t("common.cancel"), confirmButtonClass: "el-button--danger",
-  });
-  await api.deleteUser(row.id);
-  ElMessage.success(t("common.done"));
-  // 删掉本页最后一条时回到上一页
-  await load(items.value.length === 1 && state.page > 1 ? state.page - 1 : state.page);
 }
 
 async function reset(row: any) {

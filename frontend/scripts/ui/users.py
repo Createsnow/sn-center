@@ -1,9 +1,9 @@
 # 账户页词条：key -> (简体中文, English, Tiếng Việt)
 M = {
 "users.title": ("账户", "Accounts", "Tài khoản"),
-"users.desc": ("只有系统管理员能创建、修改、停用、启用、删除账户和重置密码；删除后不能恢复，操作痕迹保留。MES 接口账户不能登录页面，每次调用 MES 接口时直接带工号 + 密钥。",
-  "Only the system administrator can create, edit, disable, enable and delete accounts and reset passwords; a deleted account cannot be restored, its audit trail is kept. MES interface accounts cannot sign in to pages; they send employee No. + secret directly on every MES API call.",
-  "Chỉ quản trị viên hệ thống mới được tạo, sửa, vô hiệu, kích hoạt, xóa tài khoản và đặt lại mật khẩu; tài khoản đã xóa không khôi phục được, nhật ký thao tác vẫn giữ. Tài khoản giao diện MES không đăng nhập trang, mỗi lần gọi API MES gửi trực tiếp mã NV + khóa bí mật."),
+"users.desc": ("只有系统管理员能创建、修改、停用、启用账户和重置密码；账户只停用、不删除。MES 接口账户不能登录页面，每次调用 MES 接口时直接带工号 + 密钥。",
+  "Only the system administrator can create, edit, disable and enable accounts and reset passwords; accounts are disabled, never deleted. MES interface accounts cannot sign in to pages; they send employee No. + secret directly on every MES API call.",
+  "Chỉ quản trị viên hệ thống mới được tạo, sửa, vô hiệu, kích hoạt tài khoản và đặt lại mật khẩu; tài khoản chỉ bị vô hiệu, không bị xóa. Tài khoản giao diện MES không đăng nhập trang, mỗi lần gọi API MES gửi trực tiếp mã NV + khóa bí mật."),
 "users.tabAll": ("账户", "Accounts", "Tài khoản"),
 "users.tabMes": ("MES 接口账户", "MES interface accounts", "Tài khoản giao diện MES"),
 "users.create": ("新建账户", "New account", "Tạo tài khoản"),
@@ -33,8 +33,6 @@ M = {
 "users.disable": ("停用", "Disable", "Vô hiệu"),
 "users.enable": ("启用", "Enable", "Kích hoạt"),
 "users.disableConfirm": ("停用账户 {emp}（{name}）？停用后不能登录或调用接口，可重新启用。", "Disable account {emp} ({name})? It can no longer sign in or call the API, and can be re-enabled.", "Vô hiệu tài khoản {emp} ({name})? Sau đó không đăng nhập hay gọi API được, có thể kích hoạt lại."),
-"users.delete": ("删除", "Delete", "Xóa"),
-"users.deleteConfirm": ("删除账户 {emp}（{name}）？删除后不能恢复，不能再登录或调用接口；操作痕迹保留。", "Delete account {emp} ({name})? This cannot be undone; it can no longer sign in or call the API. Its audit trail is kept.", "Xóa tài khoản {emp} ({name})? Không thể khôi phục; không đăng nhập hay gọi API được nữa. Nhật ký thao tác vẫn giữ."),
 "users.resetPwd": ("重置密码", "Reset password", "Đặt lại mật khẩu"),
 "users.resetPrompt": ("为 {emp} 设置新密码（该账户已登录的页面随即退出，须用新密码重新登录）", "New password for {emp} (pages signed in with it sign out; sign in again with the new password)", "Mật khẩu mới cho {emp} (các trang đang đăng nhập sẽ thoát; đăng nhập lại bằng mật khẩu mới)"),
 "users.resetDone": ("密码已重置", "Password reset", "Đã đặt lại mật khẩu"),
