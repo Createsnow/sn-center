@@ -281,10 +281,13 @@ def test_every_error_code_translated(lang):
 
 
 def test_migration_flyway_checksum():
-    """测试阶段只保留一个 V1__init.sql；校验和按 Flyway 算法固定，改了建表脚本须同步更新这里（并重建测试库）。"""
+    """V1__init.sql 建表，V2__role_scope.sql 权限调整（已有数据的库原地升级）；校验和按 Flyway 算法固定，
+    改了脚本须同步更新这里（并重建测试库）。"""
     ours = {m.script: m for m in migrations()}
-    assert list(ours) == ["V1__init.sql"]
+    assert list(ours) == ["V1__init.sql", "V2__role_scope.sql"]
     assert ours["V1__init.sql"].checksum() == 1826695537
+    assert ours["V2__role_scope.sql"].checksum() == 2096931330
+    assert "ADD COLUMN factory_code" in "\n".join(ours["V2__role_scope.sql"].statements())
     statements = ours["V1__init.sql"].statements()
     assert len(statements) == 36
     text = "\n".join(statements)

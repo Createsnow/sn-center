@@ -22,6 +22,8 @@ class RuleIn(RuleSpecIn):
     #: 分类：NONE 未分类 / CUSTOMER / PI（只用于筛选和推荐）
     category_scope: str | None = None
     category_value: str | None = None
+    #: 所属生产组织：系统管理员不填 = 全局规则；普通操作员须是授权组织（只授权一个时可不填）
+    factory_code: str | None = None
 
 
 class RuleUpdateIn(RuleSpecIn):

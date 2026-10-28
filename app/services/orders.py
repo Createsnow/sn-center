@@ -331,6 +331,7 @@ def fill_attach(cu: CurrentUser, bill_no: str | None, seq: int | None, value: st
     if not v or len(v) > 64:
         raise biz(ErrorCode.ATTACH_INVALID)
     line = _must_line(no, seq)
+    cu.check_write(line["org_code"])
     with locks.with_pi_lock(line["pi"]), db.tx():
         line = _must_line(no, seq)
         if util.trim(line["attach_no"]):
@@ -409,6 +410,7 @@ def fill_length(cu: CurrentUser, bill_no: str | None, seq: int | None, value: st
     no = util.trim(bill_no)
     v = _length_value(value)
     line = _must_line(no, seq)
+    cu.check_write(line["org_code"])
     with locks.with_pi_lock(line["pi"]), db.tx():
         line = _must_line(no, seq)
         k3v = codec.clean_length(line["length_raw"])
@@ -474,6 +476,7 @@ def fill_unit(cu: CurrentUser, bill_no: str | None, seq: int | None, value: str 
     no = util.trim(bill_no)
     v = _unit_value(value)
     line = _must_line(no, seq)
+    cu.check_write(line["org_code"])
     with locks.with_pi_lock(line["pi"]), db.tx():
         line = _must_line(no, seq)
         k3v = util.trim(line["unit"])
@@ -533,6 +536,7 @@ def revoke_config(cu: CurrentUser, pi_in: str | None, lines_in: list[dict] | Non
         ]
         if len(rows) != len(keys):
             raise biz(ErrorCode.GEN_SCOPE_INVALID)
+        cu.check_write(*{r["org_code"] for r in rows})
         counts = line_counts([(r["bill_no"], r["seq"]) for r in rows])
         free = [r for r in rows if edit_lock(counts.get((r["bill_no"], r["seq"]))) is None]
         done: list[tuple[dict, list[str]]] = []
@@ -825,6 +829,27 @@ def must_bill(bill_no: str | None) -> Bill:
 def snapshot_org(bill_no: str) -> tuple[str, str] | None:
     r = db.one("SELECT org_code, org_name FROM sn_prd_mo WHERE bill_no = %s LIMIT 1", bill_no)
     return None if r is None else (r["org_code"], r["org_name"])
+
+
+def bill_orgs(bill_nos) -> set[str]:
+    """单据的生产组织（每张单据只有一个）：快照中的；已离开快照的取已出号单据台账。"""
+    nos = sorted({b for b in bill_nos if b})
+    if not nos:
+        return set()
+    ph = marks(len(nos))
+    found = {
+        r["bill_no"]: r["org_code"]
+        for r in db.all(f"SELECT DISTINCT bill_no, org_code FROM sn_prd_mo WHERE bill_no IN ({ph})", *nos)
+    }
+    gone = [n for n in nos if n not in found]
+    if gone:
+        found.update(
+            (r["bill_no"], r["org_code"])
+            for r in db.all(
+                f"SELECT bill_no, org_code FROM sn_bill_ledger WHERE bill_no IN ({marks(len(gone))})", *gone
+            )
+        )
+    return {found.get(n) or "-" for n in nos}
 
 
 def customer_of_pi(pi: str) -> str | None:

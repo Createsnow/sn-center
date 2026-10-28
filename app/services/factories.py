@@ -50,12 +50,28 @@ def factory_json(f: dict | None, full: bool = False) -> dict | None:
 
 
 def scope_sql(facs: tuple[str, ...] | None, col: str = "factory_code") -> tuple[str, list]:
-    """读范围的生产组织条件（" AND ..."）与参数；None = 全部，条件为空。"""
+    """读范围的生产组织条件（" AND ..."）与参数；None = 全部，条件为空；空元组 = 一个也没有。"""
     if facs is None:
         return "", []
+    if not facs:
+        return " AND 1=0", []
     if len(facs) == 1:
         return f" AND {col} = %s", [facs[0]]
     return f" AND {col} IN ({marks(len(facs))})", list(facs)
+
+
+def item_scope_sql(facs: tuple[str, ...] | None, alias: str = "") -> tuple[str, list]:
+    """号的生产组织条件（" AND ..."）：已分配的按号上的组织，待分配的按所在单据的组织（已出号单据台账）。
+    None = 全部。"""
+    if facs is None:
+        return "", []
+    own, a1 = scope_sql(facs, f"{alias}factory_code")
+    led, a2 = scope_sql(facs, "l.org_code")
+    return (
+        f" AND ((1=1{own}) OR ({alias}factory_code IS NULL AND {alias}bill_no IN "
+        f"(SELECT l.bill_no FROM sn_bill_ledger l WHERE 1=1{led})))",
+        [*a1, *a2],
+    )
 
 
 def get(code: str | None, lock: bool = False) -> dict | None:
@@ -107,7 +123,7 @@ def tz_offset(codes: tuple[str, ...]) -> int:
 
 
 def list_factories(cu: CurrentUser) -> list[dict]:
-    """生产组织列表；总部另看 MES 配置与绑定的启用账户数。"""
+    """生产组织列表；系统管理员另看 MES 配置与绑定的启用账户数。"""
     full = cu.is_admin
     users = {}
     if full:

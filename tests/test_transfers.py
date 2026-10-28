@@ -208,7 +208,7 @@ def test_apply_withdraw_reject_approve(w, api, sql):
     a, pi, bill = setup(w, qty=3, mes=False)
     b = w.org(uid("O")[:10])
     w.allocate(pi)
-    op = w.user(emp("F"), "factory_operator", a)
+    op = w.user(emp("F"), "operator", a)
     body = org_body(None, pi, bill, b)
     t = ok(api.post("/api/transfers/org", body, op))
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'APPLYING'", pi) == 3
@@ -290,7 +290,7 @@ def test_org_range_transfer_validation(w, api, sql):
     other = sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s", pi2)
     assert org_direct(w, a, pi, bill, b, start_sn=sns[0], end_sn=other, **rng).code == "TR_RANGE_INVALID"
     # 起止号相同 = 一枚；生产组织操作员也可按号段申请
-    op = w.user(emp("F"), "factory_operator", a)
+    op = w.user(emp("F"), "operator", a)
     body = org_body(None, pi, bill, b, start_sn=sns[1], end_sn=sns[1], **rng)
     t = ok(api.post("/api/transfers/org", body, op))
     assert t["qty"] == 1 and t["status"] == "PENDING"
@@ -425,10 +425,12 @@ def test_sources_lists_bills_and_materials(w, api):
     w.allocate(pi)
     r = ok(api.get(f"/api/transfers/sources?kind=ORG&pi={pi}&factory_code={a}", w.admin))
     assert r["bills"] == [{"bill_no": bill, "qty": 3, "materials": [{"material_code": "M1", "qty": 3}]}]
-    op = w.user(emp("F"), "factory_operator", w.org(uid("O")[:10]))
-    assert ok(api.get(f"/api/transfers/sources?kind=ORG&pi={pi}", op))["bills"] == [], "操作员只看本组织"
-    assert api.get(f"/api/transfers/sources?kind=BILL&pi={pi}", op).code == "FORBIDDEN"
+    op = w.user(emp("F"), "operator", w.org(uid("O")[:10]))
+    assert ok(api.get(f"/api/transfers/sources?kind=ORG&pi={pi}", op))["bills"] == [], "操作员只看授权组织"
+    assert ok(api.get(f"/api/transfers/sources?kind=BILL&pi={pi}", op))["bills"] == [], "转单来源也只看授权组织"
     assert ok(api.get(f"/api/orders/targets?pi={pi}", op))[0]["bill_no"] == bill, "操作员申请转组织也能选目标"
+    own = w.user(emp("F"), "operator", a)
+    assert ok(api.get(f"/api/transfers/sources?kind=BILL&pi={pi}", own))["bills"][0]["qty"] == 3
 
 
 def test_same_org_bill_transfer_reassigns_pushed(w, api, sql):
@@ -534,7 +536,7 @@ def test_bill_transfer_from_reversed_bill_releases(w, api, sql):
         sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND suspend IS NULL AND status = 'ALLOCATED'", tgt)
         == 2
     )
-    op = w.user(emp("F"), "factory_operator", org)
+    op = w.user(emp("F"), "operator", org)
     rows = ok(api.get(f"/api/export/bills?q={tgt}", op))["items"]
     assert [(r["bill_no"], r["qty"], r["suspended"]) for r in rows] == [(tgt, 2, 0)]
 
@@ -557,8 +559,8 @@ def test_bill_transfer_view_respects_read_scope(w, api):
     tgt = uid("MO")
     w.order(tgt, org, "C1", pi, ("M1", 1))
     t = ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, org), w.admin))
-    own = w.user(emp("F"), "factory_operator", org)
-    other = w.user(emp("F"), "factory_operator", w.org(uid("O")[:10]))
+    own = w.user(emp("F"), "operator", org)
+    other = w.user(emp("F"), "operator", w.org(uid("O")[:10]))
     assert ok(api.get(f"/api/transfers/bill/{t['id']}/items", own))["total"] == 1
     assert api.get(f"/api/transfers/bill/{t['id']}", other).code == "FACTORY_FORBIDDEN"
     assert api.get(f"/api/transfers/bill/{t['id']}/items", other).code == "FACTORY_FORBIDDEN"
@@ -571,7 +573,7 @@ def test_all_list_merges_bill_and_org(w, api):
     w.order(tgt, org, "C1", pi, ("M1", 2))
     w.allocate(pi)
     bt = ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, org), w.admin))
-    op = w.user(emp("F"), "factory_operator", org)
+    op = w.user(emp("F"), "operator", org)
     ot = ok(api.post("/api/transfers/org", org_body(None, pi, tgt, w.org(uid("O")[:10])), op))
 
     lst = ok(api.get(f"/api/transfers?pi={pi}", w.admin))

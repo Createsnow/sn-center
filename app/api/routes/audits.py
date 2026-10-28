@@ -1,8 +1,8 @@
-"""操作痕迹（F-21）：所有角色可开，按账户的生产组织范围查看。"""
+"""操作痕迹（F-21，审计报表）：系统管理员、审计员（授权组织）。"""
 
 from fastapi import APIRouter, Query
 
-from app.api.deps import UserDep, download, page_of
+from app.api.deps import AuditDep, download, page_of
 from app.schemas.common import OptDate, OptInt
 from app.services import audit_query
 
@@ -17,7 +17,7 @@ def _f(date_from, date_to, action, operator, factory_code, pi, source, result, b
 
 @router.get("")
 def audit_list(
-    cu: UserDep,
+    cu: AuditDep,
     date_from: OptDate = Query(None, alias="from"),
     date_to: OptDate = Query(None, alias="to"),
     action: str | None = None,
@@ -38,7 +38,7 @@ def audit_list(
 
 @router.get("/export-check")
 def audit_export_check(
-    cu: UserDep,
+    cu: AuditDep,
     date_from: OptDate = Query(None, alias="from"),
     date_to: OptDate = Query(None, alias="to"),
     action: str | None = None,
@@ -57,7 +57,7 @@ def audit_export_check(
 
 @router.get("/export", summary="导出 xlsx（默认最多 20 万条，超过只导出前 20 万条）")
 def audit_export(
-    cu: UserDep,
+    cu: AuditDep,
     date_from: OptDate = Query(None, alias="from"),
     date_to: OptDate = Query(None, alias="to"),
     action: str | None = None,
@@ -75,5 +75,5 @@ def audit_export(
 
 
 @router.get("/meta")
-def audit_meta(cu: UserDep) -> dict:
+def audit_meta(cu: AuditDep) -> dict:
     return audit_query.meta()

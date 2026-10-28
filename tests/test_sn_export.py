@@ -31,7 +31,7 @@ def get_file(api, token, **params):
 
 def test_export_is_read_only_and_repeatable(w, api, sql):
     org, pi, bill = ready(w, 5)
-    op = w.user(emp("F"), "factory_operator", org)
+    op = w.user(emp("F"), "operator", org)
     rows = ok(api.get(f"/api/export/bills?q={pi}", op))["items"]
     assert [(r["pi_no"], r["bill_no"], r["qty"], r["suspended"], r["applying"], r["mes_enabled"]) for r in rows] == [
         (pi, bill, 5, 0, 0, False)
@@ -101,7 +101,7 @@ def test_detail_lists_every_sn_not_ranges(w, api, sql):
     file_sns = [r[1] for r in xlsx_rows(get_file(api, w.admin, pi=pi, bill_no=bill, factory_code=org).content)[1:]]
     assert file_sns == want, "顺序同下载文件"
     other = w.org(uid("O")[:10])
-    op = w.user(emp("F"), "factory_operator", other)
+    op = w.user(emp("F"), "operator", other)
     assert api.get(url, op).code == "FACTORY_FORBIDDEN"
     assert api.get(f"/api/export/items?bill_no={bill}", w.admin).code == "PI_REQUIRED"
     hit = ok(api.get(url + f"&q={want[3][-8:]}", w.admin))
@@ -144,12 +144,12 @@ def test_unallocated_not_listed_and_scope(w, api):
     assert get_file(api, w.admin, pi=pi, bill_no=bill).json()["code"] == "EXPORT_NOTHING"
     w.allocate(pi)
     other = w.org(uid("O")[:10])
-    op = w.user(emp("F"), "factory_operator", other)
-    assert ok(api.get(f"/api/export/bills?q={pi}", op))["items"] == [], "操作员只看本组织"
+    op = w.user(emp("F"), "operator", other)
+    assert ok(api.get(f"/api/export/bills?q={pi}", op))["items"] == [], "操作员只看授权组织"
     assert get_file(api, op, pi=pi, bill_no=bill, factory_code=org).json()["code"] == "FACTORY_FORBIDDEN"
     assert get_file(api, op, pi=pi, bill_no=bill).json()["code"] == "EXPORT_NOTHING"
-    q = w.user(emp("Q"), "query", None)
-    assert ok(api.get(f"/api/export/bills?q={pi}", q))["items"][0]["qty"] == 2, "查询员可查看、下载"
+    q = w.user(emp("Q"), "auditor", None, [org, other])
+    assert ok(api.get(f"/api/export/bills?q={pi}", q))["items"][0]["qty"] == 2, "审计员可查看、下载"
     assert get_file(api, q, pi=pi, bill_no=bill).status_code == 200
     assert ok(api.get(f"/api/export/bills?q={pi}&mes=true", w.admin))["items"] == []
 
@@ -223,7 +223,7 @@ def test_lines_summarize_each_bill_line(w, api):
         (1, "M1", "120", 3, 0),
         (2, "M2", "080", 3, 0),
     ]
-    q = w.user(emp("Q"), "query", None)
+    q = w.user(emp("Q"), "auditor", org)
     assert len(ok(api.get(f"/api/export/lines?pi={pi}&bill_no={bill}", q)).body) == 2
-    op = w.user(emp("F"), "factory_operator", other)
+    op = w.user(emp("F"), "operator", other)
     assert api.get(f"/api/export/lines?pi={pi}&bill_no={bill}&factory_code={org}", op).code == "FACTORY_FORBIDDEN"

@@ -47,7 +47,7 @@ def test_range_query_counts_missing_for_bound_operator(w, api):
                 w.admin,
             )
         )
-    op = w.user(emp("F"), "factory_operator", a)
+    op = w.user(emp("F"), "operator", a)
     r = ok(api.get(f"/api/sn?pi={pi}&seq_from=1&seq_to=10", op))
     assert r["range"] == {"found": 7, "expected": 10, "missing": 3, "by_status": {"ALLOCATED": 7}}
     full = ok(api.get(f"/api/sn?pi={pi}&seq_from={sns[0]}&seq_to=000010", w.admin))
@@ -79,9 +79,11 @@ def test_delivered_read_only_for_mes(w, api, sql):
     r2 = ok(api.get(f"/api/mes/v1/sn/delivered?pi={pi}&pageSize=2&cursor={r['nextCursor']}", token))
     assert len(r2["items"]) == 1 and r2["nextCursor"] is None
     assert {x["status"] for x in r["items"] + r2["items"]} == {"PUSHED"}
-    q = w.user(emp("Q"), "query", None)
+    q = w.user(emp("Q"), "auditor", org)
     assert len(ok(api.get(f"/api/mes/v1/sn/delivered?pi={pi}&orgCode={org}", q))["items"]) == 3
     assert api.post("/api/mes/v1/batches/next", m(), q).code == "FORBIDDEN"
+    other = w.user(emp("Q"), "auditor", w.org(uid("O")[:10]))
+    assert api.get(f"/api/mes/v1/sn/delivered?pi={pi}&orgCode={org}", other).code == "ORG_NOT_ALLOWED"
 
 
 def test_rate_limited_pull_leaves_failure_audit(w, api, sql, monkeypatch):
@@ -101,11 +103,13 @@ def test_audit_scope_and_filters(w, api):
     a, pi, bill = make(w, 2)
     w.allocate(pi)
     other = w.org(uid("O")[:10])
-    op_a = w.user(emp("F"), "factory_operator", a)
-    op_b = w.user(emp("F"), "factory_operator", other)
-    rows_a = ok(api.get(f"/api/audits?action=SN_ALLOCATE&pi={pi}", op_a))["items"]
+    au_a = w.user(emp("Q"), "auditor", a)
+    au_b = w.user(emp("Q"), "auditor", other)
+    rows_a = ok(api.get(f"/api/audits?action=SN_ALLOCATE&pi={pi}", au_a))["items"]
     assert len(rows_a) == 1 and rows_a[0]["factory_code"] == a
-    assert ok(api.get(f"/api/audits?action=SN_ALLOCATE&pi={pi}", op_b))["items"] == []
+    assert ok(api.get(f"/api/audits?action=SN_ALLOCATE&pi={pi}", au_b))["items"] == []
+    op = w.user(emp("F"), "operator", a)
+    assert api.get("/api/audits", op).code == "FORBIDDEN", "操作痕迹只给系统管理员和审计员"
     gen = ok(api.get(f"/api/audits?action=SN_GENERATE&bill_no={bill}", w.admin))["items"]
     assert gen and gen[0]["bill_no"] == bill
     c = ok(api.get("/api/audits/export-check", w.admin))
@@ -130,10 +134,14 @@ def test_dashboard_counts_and_today(w, api):
     assert d["push_interrupted"] >= 1 and d["status_counts"]["TO_PUSH"] >= 4
     assert any(x["factory_code"] == a for x in d["recent_failures"])
     assert d["today"]["SN_GENERATE"] >= 4 and d["today"]["SN_ALLOCATE"] >= 4
-    op = w.user(emp("F"), "factory_operator", a)
+    op = w.user(emp("F"), "operator", a)
     d2 = ok(api.get("/api/dashboard", op))
-    assert "PENDING_ALLOC" not in d2["status_counts"], "待分配只给总部看"
+    assert d2["status_counts"]["TO_PUSH"] == 4 and "PENDING_ALLOC" in d2["status_counts"], "普通操作员也分配"
+    assert d2["running_jobs"] == 0 and any(j["pi_no"] == pi for j in d2["recent_jobs"])
     assert d2["tz_offset_min"] == 480
+    au = w.user(emp("Q"), "auditor", a)
+    d3 = ok(api.get("/api/dashboard", au))
+    assert "PENDING_ALLOC" not in d3["status_counts"] and "recent_jobs" not in d3.body, "审计员不看待分配和生成任务"
 
 
 def test_self_check_flags_unconfirmed(w, api, sql, monkeypatch):

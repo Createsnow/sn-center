@@ -124,6 +124,9 @@ def startup() -> None:
     generate.recover_interrupted()
     acquire.release_incomplete()
     init_admin()
+    upgraded = users.upgrade_roles()
+    if upgraded:
+        log.warning("roles_upgraded", accounts=upgraded)
     partitions.maintain()
     if settings.demo_seed:
         demo_seed.seed_if_empty()

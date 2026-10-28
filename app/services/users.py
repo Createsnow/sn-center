@@ -1,6 +1,7 @@
 """登录、改密与账户管理（F-01）。账户只停用不删除；只有系统管理员能维护账户。
 
-页面账户（系统管理员 / 管理员 / 生产组织操作员 / 查询员）用工号和密码直接登录，任何时候都不强制改密；
+页面账户（系统管理员 / 普通操作员 / 审计员）用工号和密码直接登录，任何时候都不强制改密；
+系统管理员只有一个（工号 SN_INIT_ADMIN_EMP_NO）；普通操作员、审计员必须至少授权一个生产组织；
 本人改密、系统管理员重置密码后，该账户所有页面的令牌失效，须用新密码重新登录。
 MES 接口账户不能登录页面：创建或重置时系统生成密钥（加密保存，系统管理员随时可查看），
 MES 每次请求带 Authorization: Bearer <工号>:<密钥>；
@@ -52,7 +53,7 @@ def _view(u: dict, names: dict[str, str], bound: list[str]) -> dict:
         "role": u["role"],
         "factory_code": u["factory_code"],
         "factory_name": names.get(u["factory_code"]) if u["factory_code"] is not None else None,
-        # 可看的生产组织：操作员 = 本组织，查询员 = 绑定的组织；空 = 全部
+        # 授权的生产组织：普通操作员、审计员 = 绑定的组织，MES 接口账户 = 本组织；系统管理员为空 = 全部
         "factory_codes": codes,
         "factory_names": [names.get(c, c) for c in codes],
         "status": u["status"],
@@ -74,21 +75,21 @@ def _factory_names() -> dict[str, str]:
 
 
 def bound_factories(uid: int) -> list[str]:
-    """查询员绑定的生产组织（没有 = 全部）。"""
+    """普通操作员、审计员授权的生产组织。"""
     return db.column("SELECT factory_code FROM sn_user_factory WHERE user_id = %s ORDER BY factory_code", uid)
 
 
 def read_scope(uid: int, role: str, factory_code: str | None) -> tuple[str, ...]:
-    """账户可读的生产组织；空 = 全部。"""
-    if role in (util.FACTORY, util.MES):
+    """账户授权的生产组织；系统管理员为空 = 全部（其他角色为空 = 一个也没有，鉴权时拒绝）。"""
+    if role == util.MES:
         return (factory_code,) if factory_code else ()
-    if role == util.QUERY:
+    if role in util.SCOPED_ROLES:
         return tuple(bound_factories(uid))
     return ()
 
 
 def view(u: dict) -> dict:
-    return _view(u, _factory_names(), bound_factories(u["id"]) if u["role"] == util.QUERY else [])
+    return _view(u, _factory_names(), bound_factories(u["id"]) if u["role"] in util.SCOPED_ROLES else [])
 
 
 def _by_emp_no(emp_no: str) -> dict | None:
@@ -157,6 +158,8 @@ def login(
         raise _login_failed(_login_actor(emp, u, trace_id), biz(ErrorCode.ACCOUNT_DISABLED), where) from None
     if u["role"] == util.MES:
         raise _login_failed(_login_actor(emp, u, trace_id), biz(ErrorCode.MES_NO_PAGE_LOGIN), where) from None
+    if u["role"] in util.SCOPED_ROLES and not bound_factories(u["id"]):
+        raise _login_failed(_login_actor(emp, u, trace_id), biz(ErrorCode.USER_NO_FACTORY), where) from None
     with db.tx():
         if page:
             # 页面最近登录时间即登录版本
@@ -237,45 +240,54 @@ def list_users(q: str | None, role: str | None, status: str | None, factory: str
 
 @dataclass(frozen=True)
 class Binding:
-    """factory = 操作员（或 MES 接口账户）的生产组织；query_factories = 查询员绑定的生产组织（空 = 全部）。"""
+    """factory = MES 接口账户的生产组织；scope = 普通操作员、审计员授权的生产组织（至少一个）。"""
 
     factory: str | None
-    query_factories: tuple[str, ...]
+    scope: tuple[str, ...]
 
     def codes(self) -> tuple[str, ...]:
-        return (self.factory,) if self.factory is not None else self.query_factories
+        return (self.factory,) if self.factory is not None else self.scope
 
     def text(self) -> str:
         if self.factory is not None:
             return self.factory
-        return ",".join(self.query_factories) or "*"
+        return ",".join(self.scope) or "*"
 
 
 def _check_role_factory(
-    role: str, factory_code: str | None, factory_codes: list[str | None] | None, current: tuple[str, ...] = ()
+    role: str,
+    factory_code: str | None,
+    factory_codes: list[str | None] | None,
+    current: tuple[str, ...] = (),
+    admin_ok: bool = False,
 ) -> Binding:
-    """角色与绑定生产组织；新绑定（不在 current 里）的须在列表中且金蝶启用，保留原来已禁用的绑定不报错。
+    """角色与授权生产组织；新授权（不在 current 里）的须在列表中且金蝶启用，保留原来已禁用的授权不报错。
 
-    操作员绑一个；查询员可多选，不选为全部；管理员不绑；MES 接口账户绑一个「对接 MES = 是」的生产组织。
+    系统管理员只有一个、不绑组织（admin_ok = 修改的正是它）；普通操作员、审计员可多选、至少一个；
+    MES 接口账户绑一个「对接 MES = 是」的生产组织。
     """
     if role not in util.ROLES:
         raise biz(ErrorCode.USER_ROLE_INVALID)
     f = util.trim_or_none(factory_code)
     many = list(dict.fromkeys(c for c in (util.trim(x) for x in factory_codes or []) if c))
     if role == util.ADMIN:
+        if not admin_ok:
+            raise biz(ErrorCode.USER_ADMIN_UNIQUE)
         if f is not None or many:
             raise biz(ErrorCode.USER_ADMIN_NO_FACTORY)
         return Binding(None, ())
-    if role in (util.FACTORY, util.MES):
+    if role == util.MES:
         f = f or (many[0] if len(many) == 1 else None)
         if f is None or len(many) > 1:
-            raise biz(ErrorCode.USER_FACTORY_REQUIRED if role == util.FACTORY else ErrorCode.USER_MES_FACTORY_REQUIRED)
+            raise biz(ErrorCode.USER_MES_FACTORY_REQUIRED)
         if f not in current:
             fac = factories.must_be_enabled(f)
-            if role == util.MES and not fac["mes_enabled"]:
+            if not fac["mes_enabled"]:
                 raise biz(ErrorCode.USER_MES_FACTORY_REQUIRED)
         return Binding(f, ())
     codes = many if factory_codes is not None else ([f] if f is not None else [])
+    if not codes:
+        raise biz(ErrorCode.USER_FACTORY_REQUIRED)
     for c in codes:
         if c not in current:
             factories.must_be_enabled(c)
@@ -325,7 +337,7 @@ def new_secret() -> str:
 
 def _save_binding(uid: int, b: Binding) -> None:
     db.exec("DELETE FROM sn_user_factory WHERE user_id = %s", uid)
-    for c in b.query_factories:
+    for c in b.scope:
         db.exec("INSERT INTO sn_user_factory(user_id, factory_code) VALUES (%s,%s)", uid, c)
 
 
@@ -416,9 +428,10 @@ def update(
         r = util.trim(role) or u["role"]
         if (r == util.MES) != (u["role"] == util.MES):
             raise biz(ErrorCode.USER_ROLE_FIXED)
-        b = _check_role_factory(r, factory_code, factory_codes, old.codes())
-        if u["emp_no"] == settings.init_admin_emp_no and r != util.ADMIN:
+        super_admin = u["emp_no"] == settings.init_admin_emp_no
+        if super_admin and r != util.ADMIN:
             raise biz(ErrorCode.USER_SUPER_ADMIN_FIXED)
+        b = _check_role_factory(r, factory_code, factory_codes, old.codes(), admin_ok=super_admin)
         if u["role"] == util.ADMIN and r != util.ADMIN:
             _check_not_last_admin(u)
         ips = _ip_list(ip_whitelist) if r == util.MES and ip_whitelist is not None else u["ip_whitelist"]
@@ -600,6 +613,55 @@ def bootstrap_admin(password: str) -> bool:
         _insert_admin(emp, password, util.now())
         audit.record(CurrentUser.system(), audit.entry(audit.USER_CREATE).info(f"emp_no={emp} bootstrap"))
         return True
+
+
+_LEGACY_FACTORY = "factory_operator"
+_LEGACY_QUERY = "query"
+
+
+def upgrade_roles() -> int:
+    """存量账户迁移到新角色（启动时执行，幂等；没有要迁的账户时什么也不做）。返回迁移的账户数。
+
+    - 生产组织操作员 → 普通操作员：原来的本组织作为授权组织；
+    - 查询员 → 审计员：原来绑定的组织不变，没绑（= 看全部）的授权全部生产组织；
+    - 系统管理员以外的管理员 → 普通操作员：授权全部生产组织（业务权限不变，不再能看之后新增的组织，须系统管理员授权）。
+    """
+    emp = settings.init_admin_emp_no
+    with db.tx():
+        rows = db.all(
+            "SELECT id, emp_no, role, factory_code FROM sn_user WHERE role IN (%s,%s) OR (role = %s AND emp_no <> %s) "
+            "FOR UPDATE",
+            _LEGACY_FACTORY,
+            _LEGACY_QUERY,
+            util.ADMIN,
+            emp,
+        )
+        if not rows:
+            return 0
+        every = db.column("SELECT factory_code FROM sn_factory ORDER BY factory_code")
+        now = util.now()
+        for u in rows:
+            have = bound_factories(u["id"])
+            if u["role"] == _LEGACY_FACTORY:
+                role, add = util.OPERATOR, [u["factory_code"]] if u["factory_code"] else []
+            elif u["role"] == _LEGACY_QUERY:
+                role, add = util.AUDITOR, [] if have else every
+            else:
+                role, add = util.OPERATOR, every
+            for c in add:
+                if c not in have:
+                    db.exec("INSERT INTO sn_user_factory(user_id, factory_code) VALUES (%s,%s)", u["id"], c)
+            db.exec(
+                "UPDATE sn_user SET role = %s, factory_code = NULL, updated_at = %s WHERE id = %s", role, now, u["id"]
+            )
+            scope = sorted(set(have) | set(add))
+            audit.record(
+                CurrentUser.system(),
+                audit.entry(audit.USER_UPDATE).info(
+                    f"emp_no={u['emp_no']} role={u['role']}->{role} factory={','.join(scope) or '-'} upgrade_roles"
+                ),
+            )
+        return len(rows)
 
 
 # ================================================================== MES 接口账户认证

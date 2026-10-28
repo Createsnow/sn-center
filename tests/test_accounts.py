@@ -6,27 +6,41 @@ from conftest import ADMIN_PASSWORD, MES, emp, m, ok, uid
 
 
 def test_rules_for_emp_no_password_and_roles(w, api):
-    assert api.post("/api/users", m(emp_no="ab", name="x", role="query", password="Pass1234"), w.admin).code == (
-        "USER_EMP_NO_INVALID"
-    )
-    assert api.post("/api/users", m(emp_no="ab_cd", name="x", role="query", password="Pass1234"), w.admin).code == (
-        "USER_EMP_NO_INVALID"
-    )
+    org = w.org(uid("O")[:10])
+
+    def new(emp_no: str, password: str = "Pass1234", **kw):
+        body = m(emp_no=emp_no, name="x", role="auditor", factory_codes=[org], password=password) | kw
+        return api.post("/api/users", body, w.admin)
+
+    assert new("ab").code == "USER_EMP_NO_INVALID"
+    assert new("ab_cd").code == "USER_EMP_NO_INVALID"
     for bad in ("short1", "onlyletters", "12345678", "Pass 1234", "密码Pass1234", "Pass1234%"):
-        r = api.post("/api/users", m(emp_no=emp(), name="x", role="query", password=bad), w.admin)
-        assert r.code == "USER_PASSWORD_WEAK", bad
-    ok(api.post("/api/users", m(emp_no=emp(), name="x", role="query", password="Pa$s1234&*"), w.admin))
+        assert new(emp(), bad).code == "USER_PASSWORD_WEAK", bad
+    ok(new(emp(), "Pa$s1234&*"))
+    for old in ("query", "factory_operator"):
+        assert new(emp(), role=old).code == "USER_ROLE_INVALID", "旧角色已取消"
+    for role in ("operator", "auditor"):
+        assert new(emp(), role=role, factory_codes=[]).code == "USER_FACTORY_REQUIRED", "必须至少授权一个组织"
+    two = w.org(uid("O")[:10])
+    r = ok(new(emp(), role="operator", factory_codes=[org, two]))
+    assert r["factory_codes"] == sorted([org, two]) and r["factory_code"] is None, "普通操作员可授权多个组织"
 
 
-def test_admin_created_admin_cannot_manage_accounts(w, api):
-    tok = w.user(emp("A"), "admin", None)
-    assert api.get("/api/users", tok).code == "USER_MANAGE_FORBIDDEN"
-    assert api.get("/api/generate/pis", tok).status == 200
+def test_only_one_system_admin(w, api, sql):
+    org = w.org(uid("O")[:10])
+    r = api.post("/api/users", m(emp_no=emp("A"), name="x", role="admin", password="Pass1234"), w.admin)
+    assert r.code == "USER_ADMIN_UNIQUE", "不能再建系统管理员"
+    e = emp("F")
+    op = w.user(e, "operator", org)
+    uid_ = sql.scalar("SELECT id FROM sn_user WHERE emp_no = %s", e)
+    assert api.put(f"/api/users/{uid_}", m(name="x", role="admin"), w.admin).code == "USER_ADMIN_UNIQUE"
+    assert api.get("/api/users", op).code == "USER_MANAGE_FORBIDDEN", "普通操作员不能管理账户"
+    assert api.get("/api/generate/pis", op).status == 200
 
 
 def test_single_page_session(w, api):
     e = emp()
-    t1 = w.user(e, "query", None)
+    t1 = w.user(e, "auditor", w.org(uid("O")[:10]))
     t2 = ok(api.page_login(e, "Pass1234")).text("token")
     assert api.get("/api/auth/me", t1).code == "SESSION_REPLACED"
     assert api.get("/api/auth/me", t2).status == 200
@@ -34,7 +48,7 @@ def test_single_page_session(w, api):
 
 def test_password_change_and_reset_require_relogin_without_forced_change(w, api):
     e = emp()
-    t1 = w.user(e, "query", None)
+    t1 = w.user(e, "auditor", w.org(uid("O")[:10]))
     assert api.get("/api/dashboard", t1).status == 200, "新账户直接可用，不强制改密"
     r = ok(api.post("/api/auth/password", m(old_password="Pass1234", new_password="Pass5678"), t1))
     assert r["relogin"] is True, "本人改密不发新令牌，须重新登录"
@@ -110,13 +124,30 @@ def test_mes_ip_whitelist(w, api):
 
 def test_role_pages(w, api):
     org = w.org(uid("O")[:10])
-    op = w.user(emp("F"), "factory_operator", org)
-    q = w.user(emp("Q"), "query", None)
-    assert api.get("/api/orders", op).code == "FORBIDDEN"
-    assert api.get("/api/generate/pis", q).code == "FORBIDDEN"
-    assert api.get("/api/rules", op).code == "FORBIDDEN"
-    assert api.get("/api/orders", q).status == 200
-    assert api.post("/api/transfers/bill", m(), op).code == "FORBIDDEN", "操作员不能转单"
+    op = w.user(emp("F"), "operator", org)
+    q = w.user(emp("Q"), "auditor", org)
+    # 普通操作员：订单、生成、分配、规则、转移、交付、导出、查询；不看操作痕迹，不能做全局配置
+    for path in (
+        "/api/orders",
+        "/api/generate/pis",
+        "/api/allocation/pis",
+        "/api/rules",
+        "/api/transfers",
+        "/api/delivery/batches",
+        "/api/export/bills",
+        "/api/sn",
+        "/api/dashboard",
+    ):
+        assert api.get(path, op).status == 200, path
+    assert api.get("/api/audits", op).code == "FORBIDDEN"
+    assert api.post("/api/factories/sync", {}, op).code == "FORBIDDEN", "生产组织配置只给系统管理员"
+    assert api.post("/api/orders/rebuild", {}, op).code == "FORBIDDEN", "全量重建快照只给系统管理员"
+    assert api.post("/api/rules/customer-binding", m(customer_code="C1", rule_id=1), op).code == "FORBIDDEN"
+    # 审计员：SN 查询与导出、操作痕迹
+    for path in ("/api/sn", "/api/export/bills", "/api/audits", "/api/dashboard"):
+        assert api.get(path, q).status == 200, path
+    for path in ("/api/orders", "/api/generate/pis", "/api/rules", "/api/transfers", "/api/delivery/batches"):
+        assert api.get(path, q).code == "FORBIDDEN", path
 
 
 def test_org_sync_keeps_code_and_marks_disabled(w, api, sql):
@@ -130,7 +161,7 @@ def test_org_sync_keeps_code_and_marks_disabled(w, api, sql):
     assert (
         api.post(
             "/api/users",
-            m(emp_no=q, name="x", role="factory_operator", factory_code=code, password="Pass1234"),
+            m(emp_no=q, name="x", role="operator", factory_code=code, password="Pass1234"),
             w.admin,
         ).code
         == "FACTORY_DISABLED"

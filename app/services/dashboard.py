@@ -1,12 +1,13 @@
 """首页看板（F-20）。只读；每日交付自检在 delivery.self_check。
 
-在途：待推送、已分配、申请中、暂停交付各多少枚（待分配只给总部看）；推送中断的批次（含改挂、转出、整批拒绝）；
+在途：待推送、已分配、申请中、暂停交付各多少枚（待分配不给审计员看）；推送中断的批次（含改挂、转出、整批拒绝）；
 拉取后超过告警时长仍未回执的批次；待处理的转组织申请；交付告警（疑似重复交付、版本过期、自检问题）；订单变更提醒。
 今日（按账户显示时区）：生成、分配、推送与拉取（按确认方式）、MES 取批、转单。
 """
 
 from __future__ import annotations
 
+import json
 from datetime import timedelta
 
 import structlog
@@ -15,7 +16,7 @@ from app.core import utils as util
 from app.core.config import settings
 from app.core.security import CurrentUser
 from app.db.session import db
-from app.services import changes, delivery, factories
+from app.services import changes, delivery, factories, generate
 
 log = structlog.get_logger()
 
@@ -28,19 +29,21 @@ def _interrupted_sql(fsql: str) -> str:
 
 
 def load(cu: CurrentUser) -> dict:
-    facs = cu.factories or None
+    facs = cu.read_factories(None)
     fsql, fargs = factories.scope_sql(facs)
+    # 号按所在组织：待分配的号还没有组织，按所在单据的组织算
+    isql, iargs = factories.item_scope_sql(facs)
     counts = dict.fromkeys(("PENDING_ALLOC", "TO_PUSH", "ALLOCATED", "APPLYING"), 0)
     for r in db.all(
         "SELECT status, COUNT(*) c FROM sn_item WHERE status IN ('PENDING_ALLOC','TO_PUSH','ALLOCATED','APPLYING')"
-        + fsql
+        + isql
         + " GROUP BY status",
-        *fargs,
+        *iargs,
     ):
         counts[r["status"]] = int(r["c"])
-    if not cu.is_admin:
+    if cu.is_auditor:
         counts.pop("PENDING_ALLOC")
-    suspended = db.count("SELECT COUNT(*) FROM sn_item WHERE suspend IS NOT NULL" + fsql, *fargs)
+    suspended = db.count("SELECT COUNT(*) FROM sn_item WHERE suspend IS NOT NULL" + isql, *iargs)
     interrupted = db.count("SELECT COUNT(*) " + _interrupted_sql(fsql), *fargs)
     cutoff = util.now() - timedelta(minutes=settings.batch_unconfirmed_alert_minutes)
     stale_pull = db.count(
@@ -108,18 +111,43 @@ def load(cu: CurrentUser) -> dict:
                 "ORDER BY id DESC LIMIT 8"
             )
         ]
+    elif cu.is_operator:
+        # 只看含授权组织物料行的生成任务
+        def mine(j: dict) -> bool:
+            return any(generate.in_scope(facs, x) for x in json.loads(j["plan_json"])["items"])
+
+        out["running_jobs"] = sum(
+            1 for j in db.all("SELECT plan_json FROM sn_gen_job WHERE status = 'RUNNING'") if mine(j)
+        )
+        out["recent_jobs"] = [
+            {k: util.jv(v) for k, v in r.items() if k != "plan_json"}
+            for r in [
+                j
+                for j in db.all(
+                    "SELECT gen_batch, pi_no, qty, done_qty, status, error_msg, created_by, created_at, plan_json "
+                    "FROM sn_gen_job ORDER BY id DESC LIMIT 200"
+                )
+                if mine(j)
+            ][:8]
+        ]
+    if not cu.is_auditor:
+        # 最近失败的批次、未处理的交付告警（普通操作员只看授权组织的）
         out["recent_failures"] = [
             delivery.batch_json(b)
             for b in db.all(
                 "SELECT * "
-                + _interrupted_sql("")
+                + _interrupted_sql(fsql)
                 + " UNION ALL SELECT * FROM sn_delivery_batch WHERE result = 'UNCONFIRMED' "
-                "AND source = 'PULL' AND created_at < %s ORDER BY updated_at DESC LIMIT 20",
+                "AND source = 'PULL' AND created_at < %s" + fsql + " ORDER BY updated_at DESC LIMIT 20",
+                *fargs,
                 cutoff,
+                *fargs,
             )
         ]
         out["open_delivery_alerts"] = [
             {k: util.jv(v) for k, v in r.items()}
-            for r in db.all("SELECT * FROM sn_delivery_alert WHERE status = 'OPEN' ORDER BY id DESC LIMIT 20")
+            for r in db.all(
+                "SELECT * FROM sn_delivery_alert WHERE status = 'OPEN'" + fsql + " ORDER BY id DESC LIMIT 20", *fargs
+            )
         ]
     return out

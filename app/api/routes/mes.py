@@ -5,7 +5,7 @@
 - 请求和应答都支持 gzip；字段名英文小驼峰；请求和应答都带 schemaVersion（首版 1.0），不认识的字段忽略。
 - 应答信封统一为 {"schemaVersion", "code", "message", "batchNo", "timestamp", ...}：成功为 HTTP 200 且 code = OK；
   出错不返回 200，另带 details。时间一律 UTC+8，格式 2026-10-26 11:47:05.303。
-- ②③ 只有 MES 接口账户能调（只限所绑生产组织）；④⑤ 另可由有可看范围的账户（查询员等）调用。
+- ②③ 只有 MES 接口账户能调（只限所绑生产组织）；④⑤ 另可由页面账户用登录令牌按授权范围调用。
 - 限流：同一生产组织每分钟 SN_MES_PULL_RATE_PER_MINUTE 次（默认 60），超出 429 RATE_LIMITED + Retry-After。
 """
 

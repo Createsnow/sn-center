@@ -5,11 +5,11 @@
 
 每次同步后对变动的已出号单据比对：
 - PI / 生产组织 / 客户变了、记录过已生成数的物料行失去对应（序号不在或物料变了）：提醒，该单未交付的号暂停
-  （CHANGE）；PI 变了另冻结该单生成和分配；总部处理后解除。
+  （CHANGE）；PI 变了另冻结该单生成和分配；处理提醒后解除。
 - 物料行数量下调到本单生成数以下：只提示。页面填写过附件项次的物料行金蝶后来有值：只提示（不限已出号单据）。
 - 单据离开快照：按单号查一次。查到、单据状态不是已审核 → 反审核中（REVERSAL），未交付的号暂停，
   之后每个比对周期复查；查无此单（已删除）→ 不暂停、已暂停的解除；查询失败按反审核中处理。
-  重新审核回来：没有变化或只有数量变化时自动解除；有其他变化继续暂停（CHANGE）至总部确认。
+  重新审核回来：没有变化或只有数量变化时自动解除；有其他变化继续暂停（CHANGE）至处理提醒。
   单据实际已作废：总部「确认已作废」解除。
 
 暂停标记记在号上（sn_item.suspend），只作用于未交付的号（待分配、待推送未入批、已分配）；
@@ -139,7 +139,7 @@ def allocation_block(bill_no: str) -> str | None:
 
 
 def open_alert_count(cu: CurrentUser) -> int:
-    fsql, fargs = factories.scope_sql(cu.factories or None, "l.org_code")
+    fsql, fargs = factories.scope_sql(cu.read_factories(None), "l.org_code")
     return db.count(
         "SELECT COUNT(*) FROM sn_order_alert a LEFT JOIN sn_bill_ledger l ON l.bill_no = a.bill_no "
         "WHERE a.status = 'OPEN'" + fsql,
@@ -542,7 +542,7 @@ def list_alerts(cu: CurrentUser, status: str | None, bill_no: str | None, typ: s
     if not util.blank(typ):
         where += " AND a.alert_type = %s"
         args.append(util.trim(typ))
-    fsql, fargs = factories.scope_sql(cu.factories or None, "l.org_code")
+    fsql, fargs = factories.scope_sql(cu.read_factories(None), "l.org_code")
     where += fsql
     args += fargs
     src = " FROM sn_order_alert a LEFT JOIN sn_bill_ledger l ON l.bill_no = a.bill_no" + where
@@ -604,14 +604,28 @@ def _bill_counts(bills: list[str]) -> dict[str, dict]:
     return out
 
 
+def _check_handle_scope(cu: CurrentUser, a: dict) -> None:
+    """处理提醒会改动该单据的号：单据的生产组织、号现在所在的组织（生产组织变更时还有变更前后的组织）
+    须全部在普通操作员的授权范围内。"""
+    if cu.is_admin:
+        return
+    led = ledger(a["bill_no"]) or {}
+    orgs = {led.get("org_code") or "-"}
+    orgs.update(db.column("SELECT DISTINCT factory_code FROM sn_item WHERE bill_no = %s", a["bill_no"]))
+    if a["alert_type"] == ORG:
+        orgs.update((a["before_value"], a["after_value"]))
+    cu.check_write(*orgs)
+
+
 def handle(cu: CurrentUser, alert_id: int, action: str | None, note: str | None, target_seq: int | None) -> dict:
-    """总部处理提醒：确认变更 / 确认对应 / 确认无关 / 确认已作废（须填原因）/ 知道了。"""
+    """处理提醒：确认变更 / 确认对应 / 确认无关 / 确认已作废（须填原因）/ 知道了。"""
     act = util.trim(action)
     a = db.one("SELECT * FROM sn_order_alert WHERE id = %s", alert_id)
     if a is None or a["status"] != "OPEN":
         raise biz(ErrorCode.ALERT_NOT_FOUND)
     if act not in _ALLOWED.get(a["alert_type"], ()):
         raise biz(ErrorCode.ALERT_ACTION_INVALID)
+    _check_handle_scope(cu, a)
     why = util.trim(note)
     if act == VOID and (not why or len(why) > 500):
         raise biz(ErrorCode.REASON_REQUIRED)
