@@ -186,6 +186,7 @@ M = {
 "actions.USER_UPDATE": ("修改账户", "Account updated", "Sửa tài khoản"),
 "actions.USER_DISABLE": ("停用账户", "Account disabled", "Vô hiệu tài khoản"),
 "actions.USER_ENABLE": ("启用账户", "Account enabled", "Kích hoạt tài khoản"),
+"actions.USER_DELETE": ("删除账户", "Account deleted", "Xóa tài khoản"),
 "actions.USER_RESET_PWD": ("重置密码", "Password reset", "Đặt lại mật khẩu"),
 "actions.USER_RESET_SECRET": ("重置 MES 密钥", "MES secret reset", "Đặt lại khóa MES"),
 "actions.USER_VIEW_SECRET": ("查看 MES 密钥", "MES secret viewed", "Xem khóa MES"),

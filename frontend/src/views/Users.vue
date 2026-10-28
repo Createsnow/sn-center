@@ -13,7 +13,7 @@
       <div class="toolbar">
         <el-input v-model="f.q" :placeholder="t('users.search')" clearable prefix-icon="Search" @keyup.enter="load(1)" @clear="load(1)" />
         <el-select v-if="tab === 'page'" v-model="f.role" clearable :placeholder="t('users.role')" @change="load(1)">
-          <el-option v-for="r in FILTER_ROLES" :key="r" :value="r" :label="roleLabel(r)" />
+          <el-option v-for="r in ROLE_CODES" :key="r" :value="r" :label="roleLabel(r)" />
         </el-select>
         <el-select v-model="f.status" clearable :placeholder="t('common.status')" @change="load(1)">
           <el-option value="ACTIVE" :label="t('users.active')" /><el-option value="DISABLED" :label="t('users.disabled')" />
@@ -47,7 +47,7 @@
           <template #default="{ row }">{{ fmt(row.last_login_at) }}</template>
         </el-table-column>
         <el-table-column :label="t('users.created')" width="200"><template #default="{ row }">{{ row.created_by }} · {{ fmt(row.created_at) }}</template></el-table-column>
-        <el-table-column :label="t('common.actions')" :width="tab === 'mes' ? 300 : 230" fixed="right">
+        <el-table-column :label="t('common.actions')" :width="tab === 'mes' ? 340 : 270" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openEdit(row)">{{ t("common.edit") }}</el-button>
             <template v-if="row.role === 'mes'">
@@ -57,6 +57,7 @@
             <el-button v-else link @click="reset(row)">{{ t("users.resetPwd") }}</el-button>
             <el-button v-if="row.status === 'ACTIVE'" link type="danger" :disabled="row.id === store.profile?.id || row.super_admin" @click="disable(row)">{{ t("users.disable") }}</el-button>
             <el-button v-else link type="success" @click="enable(row)">{{ t("users.enable") }}</el-button>
+            <el-button link type="danger" :disabled="row.id === store.profile?.id || row.super_admin" @click="remove(row)">{{ t("users.delete") }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -149,8 +150,6 @@ const { t } = useI18n();
 const { fmt } = useTime();
 const store = useAuthStore();
 const { factories } = useFactories();
-/** 账户页签按角色筛选时含 MES 接口账户；MES 接口账户页签只列 mes。 */
-const FILTER_ROLES = [...ROLE_CODES, "mes"];
 const PWD = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9!@#$&*]{8,64}$/;
 const tab = ref<"page" | "mes">("page");
 const f = reactive({ q: "", role: "", status: "", factory_code: "" });
@@ -159,7 +158,8 @@ const editing = ref<any>(null);
 const saving = ref(false);
 const EMPTY = { emp_no: "", name: "", role: "operator", factory_code: "", factory_codes: [] as string[], password: "", ip_whitelist: "" };
 const form = reactive({ ...EMPTY, factory_codes: [] as string[] });
-const { items, state, load } = usePaged<any>((q) => api.users({ ...f, role: tab.value === "mes" ? "mes" : f.role, ...q }));
+/** 账户页签只列页面账户，MES 接口账户页签只列 MES 接口账户（kind 由后端按角色区分）。 */
+const { items, state, load } = usePaged<any>((q) => api.users({ ...f, kind: tab.value, role: tab.value === "mes" ? "" : f.role, ...q }));
 
 const isMes = computed(() => form.role === "mes");
 /** 普通操作员、审计员：授权一个或多个生产组织（至少一个）。 */
@@ -245,6 +245,16 @@ async function enable(row: any) {
   await api.enableUser(row.id);
   ElMessage.success(t("common.done"));
   await load();
+}
+
+async function remove(row: any) {
+  await ElMessageBox.confirm(t("users.deleteConfirm", { emp: row.emp_no, name: row.name }), t("users.delete"), {
+    type: "warning", confirmButtonText: t("common.delete"), cancelButtonText: t("common.cancel"), confirmButtonClass: "el-button--danger",
+  });
+  await api.deleteUser(row.id);
+  ElMessage.success(t("common.done"));
+  // 删掉本页最后一条时回到上一页
+  await load(items.value.length === 1 && state.page > 1 ? state.page - 1 : state.page);
 }
 
 async function reset(row: any) {

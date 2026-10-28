@@ -134,6 +134,36 @@ def test_mes_secret_viewable_and_resettable(w, api, sql):
     assert api.get(f"/api/users/{admin_id}/secret", w.admin).code == "USER_NOT_MES"
 
 
+def test_tabs_list_own_accounts_and_delete(w, api, sql):
+    """账户页签只列页面账户，MES 接口账户页签只列 MES 接口账户；两种账户都能删除，自己和系统管理员不能删。"""
+    org = w.org(uid("O")[:10])
+    page_emp = emp("P")
+    t = w.user(page_emp, "operator", org)
+    mes_emp = emp("M")
+    mes = ok(api.post("/api/users", m(emp_no=mes_emp, name="M", role="mes", factory_code=org), w.admin))
+    page_items = ok(api.get(f"/api/users?kind=page&factory_code={org}", w.admin))["items"]
+    mes_items = ok(api.get(f"/api/users?kind=mes&factory_code={org}", w.admin))["items"]
+    assert [x["emp_no"] for x in page_items] == [page_emp], "账户页签不含 MES 接口账户"
+    assert [x["emp_no"] for x in mes_items] == [mes_emp], "MES 接口账户页签只列 MES 接口账户"
+    assert ok(api.get(f"/api/users?kind=page&role=mes&factory_code={org}", w.admin))["items"] == []
+
+    page_id = page_items[0]["id"]
+    ok(api.delete(f"/api/users/{page_id}", w.admin))
+    assert sql.count("SELECT COUNT(*) FROM sn_user WHERE id = %s", page_id) == 0
+    assert sql.count("SELECT COUNT(*) FROM sn_user_factory WHERE user_id = %s", page_id) == 0
+    assert api.get("/api/auth/me", t).code == "TOKEN_INVALID", "删除后令牌失效"
+    assert api.page_login(page_emp, "Pass1234").code == "LOGIN_FAILED"
+    cred = f"{mes_emp}:{mes['secret']}"
+    ok(w.mes_next(cred))
+    ok(api.delete(f"/api/users/{mes['id']}", w.admin))
+    assert w.mes_next(cred).code == "INVALID_CREDENTIALS", "删除后密钥失效"
+    assert sql.count("SELECT COUNT(*) FROM sn_audit WHERE action = 'USER_DELETE' AND detail LIKE %s", f"%{mes_emp}%")
+    assert api.delete(f"/api/users/{mes['id']}", w.admin).code == "USER_NOT_FOUND"
+
+    admin_id = sql.scalar("SELECT id FROM sn_user WHERE emp_no = 'admin'")
+    assert api.delete(f"/api/users/{admin_id}", w.admin).code == "USER_SELF_DELETE"
+
+
 def test_mes_ip_whitelist(w, api):
     org = w.org(uid("O")[:10])
     w.enable_mes(org)
