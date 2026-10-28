@@ -21,7 +21,7 @@ from app.services.delivery.batches import (
     must_batch,
 )
 from app.services.delivery.push import kick_bill, start_task
-from app.services.delivery.receipts import after_confirm, confirm
+from app.services.delivery.receipts import confirm, wake_task
 
 
 def _check_manual(reason: str | None, basis: str | None) -> tuple[str, str]:
@@ -62,7 +62,7 @@ def manual_confirm(cu: CurrentUser, batch_no: str | None, reason: str | None, ba
             .why(r)
             .info(f"basis={bs} was={b['result']}"),
         )
-    after_confirm(b)
+    wake_task(b)
     return batch_json(must_batch(b["batch_no"]))
 
 
@@ -155,6 +155,8 @@ def void(cu: CurrentUser, batch_no: str | None, reason: str | None, basis: str |
                 + (f" rebuilt={','.join(x['batch_no'] for x in rebuilt)}" if rebuilt else "")
             ),
         )
+    # 推送任务正在等这一批（等回执、等重试）的，不用等到截止时间，马上接着推
+    wake_task(b)
     if b["batch_type"] != TRANSFER_OUT:
         for no in bills:
             kick_bill(no)

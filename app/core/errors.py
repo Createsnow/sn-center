@@ -142,7 +142,7 @@ class ErrorCode(Enum):
     BATCH_NOT_PENDING = (409, "批次 {batch_no} 已是 {result}，不能再处理")
     BATCH_NOT_VOIDABLE = (
         409,
-        "批次 {batch_no} MES 已处理过（回执不符或内容不符），不能作废，只能由 MES 修正回执或人工确认",
+        "批次 {batch_no} MES 可能已处理（应答无效或不符、回执或内容不符），不能作废，只能由 MES 补交回执或人工确认",
     )
     BATCH_BASIS_REQUIRED = (400, "须填写依据（如 MES 方书面确认，不超过 500 字）")
     DALERT_NOT_FOUND = (404, "交付告警不存在或已处理")

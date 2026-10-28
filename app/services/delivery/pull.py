@@ -1,4 +1,6 @@
-"""MES 拉取（F-12）与只读核对（F-19）：MES 接口 ② 取批、③ 回执、④ 已交付查询、⑤ 批次明细。"""
+"""MES 拉取（F-12）与只读核对（F-19）：MES 接口 ② 取批、③ 回执、④ 已交付查询、⑤ 批次明细。
+
+③ 回执对推送（① 应答「已收到」后）与拉取（② 取走后）的批次都适用，是批次确认的唯一途径（人工确认除外）。"""
 
 from __future__ import annotations
 
@@ -9,7 +11,6 @@ from app.core.security import CurrentUser
 from app.db.session import db
 from app.services import audit, changes, factories, locks, rules
 from app.services.delivery.batches import (
-    M_PULL,
     RECEIPT_NG,
     RECEIPT_OK,
     SRC_PULL,
@@ -199,7 +200,7 @@ def submit_receipt(cu: CurrentUser, batch_no: str, body: dict) -> dict:
         raise MesError(404, "BATCH_NOT_FOUND", "批次号不存在，或不属于本组织", batch_no)
     if b["result"] == VOIDED:
         raise MesError(409, "BATCH_VOIDED", "批次已作废，不得再处理这批内容", batch_no)
-    applied = apply_receipt(cu, b["batch_no"], body, M_PULL)
+    applied = apply_receipt(cu, b["batch_no"], body)
     if applied.verdict == "VOIDED":
         raise MesError(409, "BATCH_VOIDED", "批次已作废，不得再处理这批内容", batch_no)
     return mes_body(

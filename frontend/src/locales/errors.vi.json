@@ -108,7 +108,7 @@
   "PUSH_NOTHING": "Tổ chức sản xuất {factory} không có SN hoặc lô nào của PI {pi} cần đẩy",
   "BATCH_NOT_FOUND": "Không tìm thấy lô {batch_no}",
   "BATCH_NOT_PENDING": "Lô {batch_no} đã là {result}, không thể xử lý lại",
-  "BATCH_NOT_VOIDABLE": "Lô {batch_no} đã được MES xử lý (biên nhận hoặc nội dung không khớp), không thể hủy, chỉ có thể để MES sửa biên nhận hoặc xác nhận thủ công",
+  "BATCH_NOT_VOIDABLE": "Lô {batch_no} có thể đã được MES xử lý (phản hồi không hợp lệ hoặc không khớp, biên nhận hoặc nội dung không khớp), không thể hủy, chỉ có thể để MES gửi biên nhận hoặc xác nhận thủ công",
   "BATCH_BASIS_REQUIRED": "Bắt buộc nhập căn cứ (ví dụ xác nhận bằng văn bản của MES, tối đa 500 ký tự)",
   "DALERT_NOT_FOUND": "Không tìm thấy cảnh báo giao hoặc đã xử lý",
   "EXPORT_NOTHING": "Chứng từ {bill_no} của PI {pi} không có SN đã phân bổ",

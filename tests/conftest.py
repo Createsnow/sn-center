@@ -215,6 +215,9 @@ ORGS: list[tuple[str, str, str]] = []
 #: 按 MES 对接说明 4.2 节的 process(batch) 处理推送来的批次，也可在测试里对拉取到的批次调用 process 生成回执；
 #: behavior[org] 可覆盖应答（模拟故障）。
 MES = MockMes().start()
+#: 模拟 MES 提交 ③ 回执用的 MES 接口账户（组织 → 「工号:密钥」）；与本系统对每份回执的应答（每个用例前清空）
+RECEIPT_TOKENS: dict[str, str] = {}
+RECEIPT_REPLIES: list[tuple[str, dict, Res]] = []
 
 
 # ---------------------------------------------------------------------- HTTP 客户端
@@ -603,11 +606,26 @@ class World:
         body = m(reason=reason) if line is None else m(reason=reason, bill_no=line[0], seq=line[1])
         return self.api.post(f"/api/generate/batches/{batch}/revoke", body, self.admin)
 
-    @staticmethod
-    def push() -> int:
+    def push(self, receipts: bool = True) -> int:
+        """跑推送任务；receipts 时模拟 MES 把处理完的批次逐个用 ③ 提交回执（与 MES 落库后回执一致），
+        回执唤醒的任务接着推，直到没有新的回执。返回执行的任务数。"""
         from app.services import delivery
 
-        return delivery.run_pending()
+        n = delivery.run_pending()
+        while receipts:
+            pending = MES.take_outbox()
+            if not pending:
+                break
+            for org, receipt in pending:
+                RECEIPT_REPLIES.append((org, receipt, self.mes_receipt(self.receipt_token(org), receipt)))
+            n += delivery.run_pending()
+        return n
+
+    def receipt_token(self, org: str) -> str:
+        """模拟 MES 提交 ③ 回执用的 MES 接口账户（每个组织建一次）。"""
+        if org not in RECEIPT_TOKENS:
+            RECEIPT_TOKENS[org] = self.mes_account(org)[0]
+        return RECEIPT_TOKENS[org]
 
     # ---------------- MES 调用
     def mes_next(self, token: str, **kw: Any) -> Res:
@@ -666,6 +684,7 @@ def _fresh_sn(request):
                 cur.execute(f"DELETE FROM {t}")
         BILLS.clear()
         MES.reset()
+        RECEIPT_REPLIES.clear()
         K3_FAIL.update(query=False, view=False)
     yield
 

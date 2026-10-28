@@ -1,7 +1,7 @@
 # SN 分配页（F-10 工作台、F-11 分配与分批推送、5.2.5 第 7 条批次人工处理）。
 M = {
 "allocate.title": ("SN 分配", "SN allocation", "Phân bổ SN"),
-"allocate.desc": ("把已生成的号分到订单的生产组织：对接 MES 的改为待推送并自动分批推送，MES 逐批回执确认，中断后可续推；分配后的号都可在「SN 导出」页下载。可按整张 PI 或勾选物料行分配。", "Allocate generated SNs to the order's production org: MES orgs get them pushed in batches automatically and confirm each batch, and an interrupted push can be resumed; every allocated SN can be downloaded on the “SN export” page. Allocate a whole PI or the ticked lines.", "Phân bổ SN đã tạo cho tổ chức sản xuất của lệnh: tổ chức kết nối MES được đẩy tự động theo lô, MES xác nhận từng lô, bị gián đoạn thì đẩy tiếp; mọi SN đã phân bổ đều tải được tại trang “Xuất SN”. Có thể phân bổ cả PI hoặc các dòng đã chọn."),
+"allocate.desc": ("把已生成的号分到订单的生产组织：对接 MES 的改为待推送并自动逐批推送，每批 MES 写入后回执确认才推下一批，中断后可续推；分配后的号都可在「SN 导出」页下载。可按整张 PI 或勾选物料行分配。", "Allocate generated SNs to the order's production org: MES orgs get them pushed batch by batch automatically, and the next batch goes only after MES has saved the previous one and sent its receipt; an interrupted push can be resumed; every allocated SN can be downloaded on the “SN export” page. Allocate a whole PI or the ticked lines.", "Phân bổ SN đã tạo cho tổ chức sản xuất của lệnh: tổ chức kết nối MES được đẩy tự động từng lô, lô sau chỉ đẩy khi MES đã ghi lô trước và gửi biên nhận; bị gián đoạn thì đẩy tiếp; mọi SN đã phân bổ đều tải được tại trang “Xuất SN”. Có thể phân bổ cả PI hoặc các dòng đã chọn."),
 "allocate.summary": ("待分配 {pending} · 待推送 {unbatched}", "To allocate {pending} · to push {unbatched}", "Chờ phân bổ {pending} · chờ đẩy {unbatched}"),
 "allocate.tab.TO_ALLOCATE": ("待处理", "To do", "Cần xử lý"),
 "allocate.tab.ALLOCATED": ("已分配完", "Allocated", "Đã phân bổ xong"),
@@ -31,7 +31,7 @@ M = {
 "allocate.skippedN": ("{n} 张单据将跳过（冻结、反审核或暂停交付）", "{n} bills will be skipped (frozen, unapproved or suspended)", "{n} chứng từ sẽ bị bỏ qua (đóng băng, bỏ duyệt hoặc tạm dừng)"),
 "allocate.allocTitle": ("分配", "Allocate", "Phân bổ"),
 "allocate.allocBtn": ("分配 {n} 枚", "Allocate {n}", "Phân bổ {n}"),
-"allocate.allocBtnPush": ("分配 {n} 枚（推送 {m} 次）", "Allocate {n} ({m} pushes)", "Phân bổ {n} ({m} lần đẩy)"),
+"allocate.allocBtnPush": ("分配（推送 {m} 次）", "Allocate ({m} pushes)", "Phân bổ ({m} lần đẩy)"),
 "allocate.allocConfirm": ("确认分配 {n} 枚？", "Allocate {n} SNs?", "Phân bổ {n} SN?"),
 "allocate.allocConfirmPush": ("确认分配 {n} 枚？对接 MES 的部分将自动推送 {m} 次。", "Allocate {n} SNs? The MES part will be pushed in {m} batches automatically.", "Phân bổ {n} SN? Phần kết nối MES sẽ tự đẩy {m} lần."),
 "allocate.allocDone": ("已分配 {n} 枚", "{n} SNs allocated", "Đã phân bổ {n} SN"),
@@ -40,6 +40,7 @@ M = {
 "allocate.tabBatches": ("分配记录 {n}", "Allocation records {n}", "Bản ghi phân bổ {n}"),
 "allocate.noPush": ("还没有向 MES 推送", "Nothing pushed to MES yet", "Chưa đẩy gì cho MES"),
 "allocate.pushProgress": ("第 {i} / {n} 次 · 已推送 {qty} 枚", "Push {i} / {n} · {qty} pushed", "Lần {i} / {n} · đã đẩy {qty}"),
+"allocate.waitingReceipt": ("已送达，等待 MES 回执", "Delivered, awaiting MES receipt", "Đã gửi, chờ biên nhận MES"),
 "allocate.exportNote": ("未对接 MES 的组织分配后在 SN 导出页下载号：", "Orgs without MES download their SNs on the SN export page:", "Tổ chức không kết nối MES tải SN tại trang xuất SN:"),
 "allocate.batchSource": ("建立方式", "Created by", "Cách tạo"),
 "allocate.batchResult": ("结果", "Result", "Kết quả"),

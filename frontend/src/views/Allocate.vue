@@ -130,7 +130,7 @@
                 <span v-if="alloc.data?.skipped.length" class="warn">{{ t("allocate.skippedN", { n: alloc.data.skipped.length }) }}</span>
               </span>
               <el-button type="success" :disabled="!alloc.data?.qty" :loading="busy === 'alloc'" @click="doAllocate">
-                {{ alloc.data?.pushes ? t("allocate.allocBtnPush", { n: num(alloc.data?.qty || 0), m: alloc.data.pushes }) : t("allocate.allocBtn", { n: num(alloc.data?.qty || 0) }) }}
+                {{ alloc.data?.pushes ? t("allocate.allocBtnPush", { m: alloc.data.pushes }) : t("allocate.allocBtn", { n: num(alloc.data?.qty || 0) }) }}
               </el-button>
             </div>
           </section>
@@ -141,9 +141,10 @@
               <p v-if="!ctx.push.length" class="muted">{{ t("allocate.noPush") }}</p>
               <div v-for="p in ctx.push" :key="p.factory_code" class="push-row">
                 <b>{{ nameOf(p.factory_code) }}</b>
-                <el-tag v-if="p.task" size="small" :type="TASK_TAG[p.task.state] || 'info'">{{ taskStateLabel(p.task.state) }}</el-tag>
-                <span class="muted num">{{ t("allocate.pushProgress", { i: p.done_batches, n: p.total_batches, qty: num(p.pushed_qty) }) }}</span>
-                <span v-if="p.task?.message" class="muted">{{ p.task.message }}</span>
+                <el-tag v-if="p.task" size="small" :type="p.waiting_receipt ? 'primary' : TASK_TAG[p.task.state] || 'info'">{{ p.waiting_receipt ? taskStateLabel("WAITING_RECEIPT") : taskStateLabel(p.task.state) }}</el-tag>
+                <span class="muted num">{{ t("allocate.pushProgress", { i: p.current_push, n: p.total_batches, qty: num(p.pushed_qty) }) }}</span>
+                <span v-if="p.waiting_receipt" class="muted">{{ t("allocate.waitingReceipt") }}</span>
+                <span v-else-if="p.task?.message" class="muted">{{ p.task.message }}</span>
                 <span v-if="p.last_problem" class="err">{{ p.last_problem.batch_no }}：{{ p.last_problem.fail_reason || pushStateLabel(p.last_problem.push_state) }}</span>
                 <span class="push" />
                 <el-button v-if="canResume(p)" size="small" type="warning" plain :loading="busy === `resume:${p.factory_code}`" @click="resume(p.factory_code)">
@@ -312,7 +313,7 @@ const canResume = (p: any) => p.mes_enabled && p.remaining?.pushes > 0 && !(p.ta
 /** 推送中断（有失败或未确认的批次、或有未入批的号且没有运行中的推送任务）且可续推的组织。 */
 const brokenPush = computed(() => (ctx.value?.push ?? []).filter((p: any) => canResume(p)));
 
-// ---------------- 分配：勾选物料行为范围，不勾选 = 整张 PI；按钮写「分配 N 枚（推送 M 次）」
+// ---------------- 分配：勾选物料行为范围，不勾选 = 整张 PI；按钮写「分配（推送 M 次）」，未对接 MES 时写「分配 N 枚」
 
 /** 待分配的物料行按单据分组（保持接口给的顺序）。 */
 const bills = computed(() => {

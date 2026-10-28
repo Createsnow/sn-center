@@ -159,19 +159,20 @@
     "TRANSFER_OUT": "Transfer out"
   },
   "confirmMethod": {
-    "PUSH_RESPONSE": "Push response",
-    "PULL_RECEIPT": "Pull receipt",
+    "RECEIPT": "MES receipt",
     "MANUAL": "Manual"
   },
   "pushState": {
     "IDLE": "Idle",
     "WAIT_RETRY": "Waiting to retry",
+    "WAIT_RECEIPT": "Awaiting MES receipt",
     "EXHAUSTED": "Retries exhausted"
   },
   "taskState": {
     "QUEUED": "Queued",
     "RUNNING": "Pushing",
     "WAITING": "Waiting to retry",
+    "WAITING_RECEIPT": "Awaiting receipt",
     "STOPPED": "Interrupted",
     "DONE": "Done"
   },
@@ -287,7 +288,7 @@
   },
   "allocate": {
     "title": "SN allocation",
-    "desc": "Allocate generated SNs to the order's production org: MES orgs get them pushed in batches automatically and confirm each batch, and an interrupted push can be resumed; every allocated SN can be downloaded on the “SN export” page. Allocate a whole PI or the ticked lines.",
+    "desc": "Allocate generated SNs to the order's production org: MES orgs get them pushed batch by batch automatically, and the next batch goes only after MES has saved the previous one and sent its receipt; an interrupted push can be resumed; every allocated SN can be downloaded on the “SN export” page. Allocate a whole PI or the ticked lines.",
     "summary": "To allocate {pending} · to push {unbatched}",
     "tab": {
       "TO_ALLOCATE": "To do",
@@ -323,7 +324,7 @@
     "skippedN": "{n} bills will be skipped (frozen, unapproved or suspended)",
     "allocTitle": "Allocate",
     "allocBtn": "Allocate {n}",
-    "allocBtnPush": "Allocate {n} ({m} pushes)",
+    "allocBtnPush": "Allocate ({m} pushes)",
     "allocConfirm": "Allocate {n} SNs?",
     "allocConfirmPush": "Allocate {n} SNs? The MES part will be pushed in {m} batches automatically.",
     "allocDone": "{n} SNs allocated",
@@ -332,6 +333,7 @@
     "tabBatches": "Allocation records {n}",
     "noPush": "Nothing pushed to MES yet",
     "pushProgress": "Push {i} / {n} · {qty} pushed",
+    "waitingReceipt": "Delivered, awaiting MES receipt",
     "exportNote": "Orgs without MES download their SNs on the SN export page:",
     "batchSource": "Created by",
     "batchResult": "Result",
@@ -397,7 +399,6 @@
     "todayItem": {
       "SN_GENERATE": "Generated",
       "SN_ALLOCATE": "Allocated",
-      "CONFIRM_PUSH_RESPONSE": "Pushed (confirmed by push response)",
       "CONFIRM_RECEIPT": "Confirmed by MES receipt",
       "CONFIRM_MANUAL": "Confirmed manually",
       "SN_PULL": "Pulled by MES",

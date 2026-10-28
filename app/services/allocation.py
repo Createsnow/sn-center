@@ -278,7 +278,8 @@ def context(cu: CurrentUser, pi_in: str | None) -> dict:
 
 
 def push_status(pi: str, facs: tuple[str, ...] | None = None) -> list[dict]:
-    """按生产组织：推送任务状态、「第 i / N 次」、已推送枚数、剩余次数、失败原因；只列授权范围 facs 内的组织。"""
+    """按生产组织：推送任务状态、「第 i / N 次」（i 为已确认的批次数，有一批正在推送或等回执时再加 1）、
+    是否在等 MES 回执、已推送枚数、剩余次数、失败原因；只列授权范围 facs 内的组织。"""
     orgs = db.column(
         "SELECT DISTINCT factory_code FROM sn_item WHERE pi_no = %s AND factory_code IS NOT NULL "
         "UNION SELECT DISTINCT factory_code FROM sn_delivery_batch WHERE pi_no = %s AND batch_type <> 'TRANSFER_OUT'",
@@ -306,11 +307,22 @@ def push_status(pi: str, facs: tuple[str, ...] | None = None) -> list[dict]:
         last_fail = db.one(
             "SELECT batch_no, fail_reason, result, push_state FROM sn_delivery_batch WHERE factory_code = %s AND "
             "pi_no = %s "
-            "AND batch_type <> 'TRANSFER_OUT' AND (result = 'FAILED' OR push_state IN ('WAIT_RETRY','EXHAUSTED')) "
+            "AND batch_type <> 'TRANSFER_OUT' AND (result = 'FAILED' OR push_state IN ('WAIT_RETRY','EXHAUSTED') "
+            "OR (push_state = 'WAIT_RECEIPT' AND receipt_timeouts > 0)) "
             "ORDER BY id DESC LIMIT 1",
             org,
             pi,
         )
+        # 正在推送或等回执、等重试的那一批算作当前这一次
+        current = (
+            db.one(
+                "SELECT push_state FROM sn_delivery_batch WHERE batch_no = %s AND result = 'UNCONFIRMED'",
+                t["current_batch"],
+            )
+            if t and t["state"] in ("RUNNING", "WAITING") and t["current_batch"]
+            else None
+        )
+        total = done_batches + rem["pushes"]
         out.append(
             {
                 "factory_code": org,
@@ -318,7 +330,9 @@ def push_status(pi: str, facs: tuple[str, ...] | None = None) -> list[dict]:
                 "task": t,
                 "remaining": rem,
                 "done_batches": done_batches,
-                "total_batches": done_batches + rem["pushes"],
+                "current_push": min(total, done_batches + (1 if current else 0)),
+                "waiting_receipt": bool(current and current["push_state"] == "WAIT_RECEIPT"),
+                "total_batches": total,
                 "pushed_qty": pushed,
                 "last_problem": None if last_fail is None else {k: util.jv(v) for k, v in last_fail.items()},
             }

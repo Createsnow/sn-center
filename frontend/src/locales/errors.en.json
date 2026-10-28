@@ -108,7 +108,7 @@
   "PUSH_NOTHING": "Production org {factory} has no SNs or batches of PI {pi} to push",
   "BATCH_NOT_FOUND": "Batch {batch_no} not found",
   "BATCH_NOT_PENDING": "Batch {batch_no} is already {result} and cannot be handled again",
-  "BATCH_NOT_VOIDABLE": "Batch {batch_no} was already processed by MES (receipt or content mismatch); it cannot be voided, only fixed by an MES receipt correction or confirmed manually",
+  "BATCH_NOT_VOIDABLE": "Batch {batch_no} may already have been processed by MES (invalid or mismatched response, receipt or content mismatch); it cannot be voided, only settled by an MES receipt or confirmed manually",
   "BATCH_BASIS_REQUIRED": "A basis is required (e.g. written confirmation from MES, at most 500 characters)",
   "DALERT_NOT_FOUND": "Delivery alert not found or already handled",
   "EXPORT_NOTHING": "Bill {bill_no} of PI {pi} has no allocated SNs",

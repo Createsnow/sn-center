@@ -101,9 +101,9 @@
       "from": "mes",
       "to": "sn",
       "y": 425,
-      "label": "回执",
+      "label": "已收到 + ③ 回执",
       "variant": "return",
-      "note": "SN 变为已推送"
+      "note": "回执 OK 后 SN 变为已推送"
     },
     {
       "id": "s6",
@@ -137,7 +137,7 @@
       "from": "mes",
       "to": "sn",
       "y": 715,
-      "label": "回执",
+      "label": "已收到 + ③ 回执",
       "variant": "return"
     },
     {

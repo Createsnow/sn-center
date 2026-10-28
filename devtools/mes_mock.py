@@ -1,9 +1,13 @@
 """模拟 MES：MES 方还没接入时扮演 MES 与本系统联调，也是《MES 对接说明》3.2 节 process(batch) 的参考实现。
 
 推送和取批共用同一套本侧数据（按组织分开的 SN 表、批次表）和同一个 process，与对接说明对真实 MES 的要求一致。
+接收推送（①）时先应答「已收到」（code = RECEIVED），处理落库后再调本系统接口 ③ 提交回执（OK / NG）；
+同一批次再次送达时同样应答已收到，并重新提交首次的回执。
 
-    # 接收推送（接口 ①）：地址 http://<host>:<port>/mes/<组织>，填到「生产组织」页的 MES 接口地址
-    uv run python -m devtools.mes_mock serve --port 9001 --secret 110=SN110:key-110
+    # 接收推送（接口 ①）：地址 http://<host>:<port>/mes/<组织>，填到「生产组织」页的 MES 接口地址；
+    # 回执（接口 ③）用该组织的 MES 接口账户提交到 --receipt-base（本系统地址）
+    uv run python -m devtools.mes_mock serve --port 9001 --secret 110=SN110:key-110 \\
+        --receipt-base http://127.0.0.1:8000 --receipt-account 110=MES110:<密钥>
     # 限定组织 110 已有的 PI：交付批次头的 pi 不在其中时整批退回（不给时不校验 PI 归属）
     uv run python -m devtools.mes_mock serve --port 9001 --secret 110=SN110:key-110 --pi 110=000001,000002
     # 同时每 5 分钟取一次批（② → process → ③），与推送共用本侧数据
@@ -14,12 +18,12 @@
 
 控制接口（注入故障、查看收到的报文和本侧数据）：
 
-    GET    /_mock/state                 各组织的 SN 表、批次表、当前故障、已有的 PI
+    GET    /_mock/state                 各组织的 SN 表、批次表、当前故障、已有的 PI、待提交与已提交的 ③ 回执
     GET    /_mock/received?limit=20     最近收到的推送（不含号明细）
     POST   /_mock/fault                 设置故障，见 FAULT_MODES
     DELETE /_mock/fault?org=110         清除故障（不带 org 清除全部）
     POST   /_mock/seed                  {"org", "sn", "rev", "lastBatchNo"} 预置一枚已有的号（造本地更新的版本）
-    POST   /_mock/reset                 清空本侧数据、批次表与收到的记录（保留认证配置）
+    POST   /_mock/reset                 清空本侧数据、批次表、收到的记录与待提交的回执（保留认证配置）
 
 只用于测试环境：数据只在内存里，重启即清空。
 """
@@ -63,11 +67,13 @@ DELIVERY_TYPES = ("NEW", "SAME_ORG_TRANSFER", "TRANSFER_IN", "REMAP")
 FAULT_MODES = {
     "http": "直接返回 status（默认 503）+ 错误结构 {code, message}，不处理；429 / 503 带 Retry-After",
     "drop": "不处理，直接断开连接（本系统记为断连，按间隔重试）",
-    "drop_after": "先处理并落库，再断开连接（MES 已收下但应答丢失，重试时应拿到同一份回执）",
-    "slow": "先处理并落库，延迟 delay 秒（默认 70）再应答（超过推送超时，本系统重试或取批时应拿到同一份回执）",
+    "drop_after": "先处理并落库、提交 ③ 回执，再断开连接（MES 已收下但应答丢失，本系统收到回执即确认）",
+    "slow": "先处理并落库、提交 ③ 回执，延迟 delay 秒（默认 70）再应答（超过推送超时）",
     "in_progress": "返回 409 BATCH_IN_PROGRESS（同一批正在处理）",
-    "reject": "整批退回：HTTP 200 + code = NG（message 默认「模拟整批退回」），不登记批次号",
-    "bad_receipt": "正常处理，但回执的 batchNo 写错（回执不符，本系统应记为 RECEIPT_MISMATCH）",
+    "reject": "整批退回：应答已收到，③ 回执 code = NG（message 默认「模拟整批退回」），不登记批次号",
+    "no_receipt": "正常处理、应答已收到，但不调 ③ 回执（本系统等回执超时后按原批次重推）",
+    "bad_receipt": "正常处理，但 ③ 回执的 batchNo 写错（本系统拒收 404，批次仍等回执）",
+    "bad_response": "不处理，应答已收到但 batchNo 写错（本系统应记为应答不符 RESPONSE_MISMATCH）",
 }
 
 #: behavior(batch, headers) -> (status, body)；(None, None) = 正常处理；("drop", None) = 断开连接
@@ -84,13 +90,17 @@ def now_cst() -> str:
 
 
 def _receipt(batch_no: str | None, code: str = "OK", message: str = "已处理") -> dict:
-    """MES 应答（回执与出错同一结构）：code = OK 整批已处理 / NG 整批退回（message 为原因）/ 错误码；
-    processedAt 为 MES 处理时间。"""
+    """③ 回执：code = OK 整批已处理 / NG 整批退回（message 为原因）；processedAt 为 MES 处理时间。"""
     return {"batchNo": batch_no, "code": code, "message": message, "processedAt": now_cst()}
 
 
+def _received(batch_no: str | None) -> dict:
+    """① 应答：已收到（处理结果另由 ③ 回执）；receivedAt 为 MES 收到时间。"""
+    return {"batchNo": batch_no, "code": "RECEIVED", "message": "已收到", "receivedAt": now_cst()}
+
+
 def _err(code: str, message: str, batch_no: str | None = None) -> dict:
-    return _receipt(batch_no, code, message)
+    return {"batchNo": batch_no, "code": code, "message": message, "processedAt": now_cst()}
 
 
 def _reject(batch_no: str | None, message: str) -> dict:
@@ -117,6 +127,11 @@ class MesSim:
         #: org -> batchNo -> {"digest", "receipt", "source", "at"}
         self.batches: dict[str, dict[str, dict]] = {}
         self.received: list[dict] = []
+        #: 待提交的 ③ 回执 (org, receipt)：serve 时由 ReceiptSender 提交；测试里由用例取走提交
+        self.outbox: list[tuple[str, dict]] = []
+        #: 已提交的 ③ 回执及本系统的应答（最近 200 条）
+        self.sent: list[dict] = []
+        self.outbox_ready = threading.Condition()
         self.lock = threading.Lock()
 
     # ------------------------------------------------------------------ 认证
@@ -148,17 +163,32 @@ class MesSim:
 
     # ------------------------------------------------------------------ 处理
 
-    def handle(self, org: str, batch: dict, source: str = "PUSH") -> tuple[int, dict]:
-        """一次送达的应答：PING 只校验 orgCode；其余走 process。"""
+    def emit(self, org: str, receipt: dict) -> None:
+        """处理完一批：待提交 ③ 回执。"""
+        with self.outbox_ready:
+            self.outbox.append((org, receipt))
+            self.outbox_ready.notify_all()
+
+    def take_outbox(self) -> list[tuple[str, dict]]:
+        with self.outbox_ready:
+            out, self.outbox = self.outbox, []
+            return out
+
+    def handle(self, org: str, batch: dict, source: str = "PUSH", emit: bool = True) -> tuple[int, dict]:
+        """一次推送（①）的应答：PING 只校验 orgCode，应答已收到（没有 ③ 回执）；其余走 process，处理完先待提交
+        ③ 回执（emit = False 时不提交），再应答已收到。同一批内容不同（409）等直接应答。"""
+        no = batch.get("batchNo")
         if batch.get("batchType") == "PING":
             if batch.get("orgCode") != org:
-                return 200, _reject(batch.get("batchNo"), f"orgCode 不是本组织 {org}")
-            return 200, _receipt(batch.get("batchNo"))
+                return 200, _reject(no, f"orgCode 不是本组织 {org}")
+            return 200, _received(no)
         r = self.process(org, batch, source)
         if "__status" in r:
             status = r.pop("__status")
             return status, r
-        return 200, r
+        if emit:
+            self.emit(org, r)
+        return 200, _received(no)
 
     def _problem(self, org: str, batch: dict) -> str | None:
         """第 2 步：整批校验，不通过整批退回（NG）。"""
@@ -278,14 +308,19 @@ class MesSim:
             if mode == "in_progress":
                 return 409, {**_err("BATCH_IN_PROGRESS", "同一批正在处理", no), "__retry_after": 1}
             if mode == "reject":
-                return 200, _reject(no, spec.get("message") or "模拟整批退回")
-            st, body = sim.handle(org, batch)
+                sim.emit(org, _reject(no, spec.get("message") or "模拟整批退回"))
+                return 200, _received(no)
+            if mode == "bad_response":
+                return 200, {**_received(no), "batchNo": f"{no}-X"}
+            st, body = sim.handle(org, batch, emit=mode not in ("no_receipt", "bad_receipt"))
+            if mode == "bad_receipt" and st == 200:
+                with sim.lock:
+                    first = sim.batches.get(org, {}).get(no, {}).get("receipt") or _receipt(no)
+                sim.emit(org, {**first, "batchNo": f"{no}-X"})
             if mode == "drop_after":
                 return "drop", None
             if mode == "slow":
                 time.sleep(float(spec.get("delay") or 70))
-            if mode == "bad_receipt" and isinstance(body, dict) and "batchNo" in body:
-                body = {**body, "batchNo": f"{no}-X"}
             return st, body
 
         self.behavior[org] = fault
@@ -309,6 +344,8 @@ class MesSim:
             self.store.clear()
             self.batches.clear()
             self.received.clear()
+            self.sent.clear()
+        self.take_outbox()
         self.clear_fault()
         self.behavior.clear()
 
@@ -357,6 +394,8 @@ class MockMes(MesSim):
                             "batches": mock.batches,
                             "faults": mock.faults,
                             "pis": {k: sorted(v) for k, v in mock.pis.items()},
+                            "outbox": [{"org": o, **r} for o, r in mock.outbox],
+                            "receiptsSent": mock.sent[-50:],
                         }
                         body = json.loads(json.dumps(body, ensure_ascii=False))
                     return self._send(200, body)
@@ -518,8 +557,9 @@ class Puller:
             self.log(
                 f"② 取到 {b['batchType']} {b['batchNo']} count={len(b['items'])} remaining={data.get('remaining')}"
             )
-            st, receipt = self.sim.handle(self.org, b, "PULL")
-            if st != 200:
+            receipt = self.sim.process(self.org, b, "PULL")
+            if "__status" in receipt:
+                st = receipt.pop("__status")
                 self.log(f"   process 返回 {st} {receipt}，停止")
                 done.append({"step": "process", "batchNo": b["batchNo"], "status": st, "body": receipt})
                 break
@@ -541,6 +581,62 @@ class Puller:
             if batch_no or not data.get("remaining"):
                 break
         return done
+
+
+class ReceiptSender:
+    """扮演 MES 提交 ③ 回执：从 outbox 取出，用该组织的 MES 接口账户（Authorization: Bearer <工号>:<密钥>）提交到
+    本系统 /api/mes/v1/receipts（不压缩）。断连、429、5xx 隔几秒重交（最多 5 次），其余应答记下不重交。"""
+
+    PATH = "/api/mes/v1/receipts"
+
+    def __init__(
+        self, sim: MesSim, http: httpx.Client, accounts: dict[str, str], log: Callable[[str], None] = print
+    ) -> None:
+        self.sim, self.http, self.accounts, self.log = sim, http, accounts, log
+        self._stop = threading.Event()
+
+    def start(self) -> ReceiptSender:
+        threading.Thread(target=self._loop, name="mes-mock-receipts", daemon=True).start()
+        return self
+
+    def stop(self) -> None:
+        self._stop.set()
+        with self.sim.outbox_ready:
+            self.sim.outbox_ready.notify_all()
+
+    def _loop(self) -> None:
+        while not self._stop.is_set():
+            with self.sim.outbox_ready:
+                if not self.sim.outbox:
+                    self.sim.outbox_ready.wait(1)
+            for org, receipt in self.sim.take_outbox():
+                self.submit(org, receipt)
+
+    def submit(self, org: str, receipt: dict) -> int | None:
+        """提交一份回执，返回本系统应答的 HTTP 状态（没送达为 None）。"""
+        account = self.accounts.get(org)
+        if account is None:
+            self.log(f"③ 组织 {org} 没有配置 MES 接口账户（--receipt-account），回执 {receipt.get('batchNo')} 未提交")
+            return None
+        st: int | None = None
+        body: Any = None
+        for attempt in range(5):
+            try:
+                r = self.http.post(self.PATH, json=receipt, headers={"Authorization": f"Bearer {account}"})
+                st, body = r.status_code, _json(r)
+            except httpx.HTTPError as e:
+                st, body = None, f"{type(e).__name__} {e}"
+            if st is not None and st != 429 and st < 500:
+                break
+            if self._stop.wait(min(2 * (attempt + 1), 10)):
+                break
+        rec = {"at": now_cst(), "org": org, "batchNo": receipt.get("batchNo"), "code": receipt.get("code")}
+        rec |= {"status": st, "body": body}
+        with self.sim.lock:
+            self.sim.sent.append(rec)
+            del self.sim.sent[:-200]
+        self.log(f"{rec['at']} ③ 回执 org={org} {rec['batchNo']} {rec['code']} → {st} {body if st != 200 else ''}")
+        return st
 
 
 def _json(r: httpx.Response) -> Any:
@@ -590,6 +686,13 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--max-skew", type=int, default=300, help="HMAC 时间戳允许偏差秒数，0 不校验")
     s.add_argument("--tls-cert", help="HTTPS 证书（PEM）；与 --tls-key 一起给出时以 HTTPS 监听")
     s.add_argument("--tls-key")
+    s.add_argument("--receipt-base", help="本系统地址，如 http://127.0.0.1:8000：处理完推送来的批次后向这里提交 ③ 回执")
+    s.add_argument(
+        "--receipt-account",
+        action="append",
+        metavar="组织=工号:密钥",
+        help="提交 ③ 回执用的 MES 接口账户（「账户管理」建的 MES 接口账户）；可重复",
+    )
     s.add_argument("--pull-base", help="本系统地址，如 http://127.0.0.1:8000；给出时周期取批")
     s.add_argument("--pull-org")
     s.add_argument("--pull-emp")
@@ -638,6 +741,15 @@ def main(argv: list[str] | None = None) -> int:
     for org in orgs:
         print(f"  组织 {org} 接收推送地址：{mock.url(org)}", flush=True)
     stop = threading.Event()
+    accounts = _pairs(a.receipt_account, "--receipt-account 须为 组织=工号:密钥")
+    if a.pull_base and a.pull_org and a.pull_emp and a.pull_key:
+        accounts.setdefault(a.pull_org, f"{a.pull_emp}:{a.pull_key}")
+    receipt_base = a.receipt_base or a.pull_base
+    if receipt_base:
+        ReceiptSender(mock, _client(receipt_base, a.insecure), accounts, log=lambda s: print(s, flush=True)).start()
+        print(f"  ③ 回执提交到：{receipt_base.rstrip('/')}{ReceiptSender.PATH}（组织：{', '.join(accounts) or '无'}）")
+    else:
+        print("提示：未配置 --receipt-base，推送来的批次不会提交 ③ 回执，本系统会等回执超时", file=sys.stderr)
     if a.pull_base:
         if not (a.pull_org and a.pull_emp and a.pull_key):
             raise SystemExit("周期取批须同时给出 --pull-org、--pull-emp、--pull-key")

@@ -59,14 +59,14 @@
       "y": 185,
       "label": "① 推送批次",
       "variant": "emphasis",
-      "note": "SN：待推送 → 已推送"
+      "note": "③ 回执 OK 后 SN 改已推送"
     },
     {
       "id": "a2",
       "from": "mes",
       "to": "sn",
       "y": 245,
-      "label": "200 + 回执 OK / NG",
+      "label": "200 已收到；③ 回执 OK / NG",
       "variant": "return"
     },
     {
@@ -83,7 +83,7 @@
       "from": "mes",
       "to": "sn",
       "y": 370,
-      "label": "200 + 回执 OK / NG",
+      "label": "200 已收到；③ 回执 OK / NG",
       "variant": "return"
     },
     {
@@ -100,7 +100,7 @@
       "from": "old",
       "to": "sn",
       "y": 445,
-      "label": "200 + 回执 OK / NG",
+      "label": "200 已收到；③ 回执 OK / NG",
       "variant": "return"
     },
     {

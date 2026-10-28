@@ -1,4 +1,4 @@
-"""本系统调 MES（接口 ①）：推送一个批次，按应答归类。
+"""本系统调 MES（接口 ①）：推送一个批次，按应答归类。MES 应答只表示「已收到」，处理结果由 MES 落库后调接口 ③ 回执。
 
 - HTTPS；默认发原始 JSON（UTF-8），组织开启「gzip 压缩」时发 gzip 并带 Content-Encoding: gzip；不跟随 3xx 跳转。
   同一批次每次送达请求体逐字节相同（建批时写定 body_gz，原始 JSON 由它解压得到）。
@@ -7,7 +7,9 @@
   开启压缩时另带 Content-Encoding: gzip。
 - HMAC 签名串 = timestamp + "\\n" + hex(SHA256(解压后的原始请求体字节))（请求体已含 batchNo），
   放在 X-Sn-Timestamp（UTC+8，2026-10-26 11:47:05.303）与 X-Sn-Signature（小写十六进制）。
-- 应答：HTTP 200 + 回执 {batchNo, code = OK / NG, message, processedAt}（NG 为整批退回）；
+- 应答：HTTP 200 + {batchNo, code = RECEIVED, message, receivedAt}：MES 已收到，批次等 MES 调 ③ 回执
+  （OK 整批已处理 / NG 整批退回）后才确认，推送任务这时才发下一批；HTTP 200 但 code 不是 RECEIVED 或 batchNo 不符为
+  应答无效，不重试。连接测试（PING）不入库、没有 ③ 回执，应答 RECEIVED（兼容 OK）即通过。
   超时、5xx、断连、409 BATCH_IN_PROGRESS、429、503 可重试；
   409 BATCH_CONTENT_MISMATCH、401 / 403 / 404 / 413 / 400 等不重试。
 """
@@ -38,10 +40,12 @@ def needs_credential(auth_type: str) -> bool:
     return auth_type != NONE
 
 
-#: 应答分类
-RECEIPT = "RECEIPT"
+#: 应答分类：RECEIVED 已收到（等 ③ 回执）/ RETRY 可重试 / FAIL 不重试
+RECEIVED = "RECEIVED"
 RETRY = "RETRY"
 FAIL = "FAIL"
+#: ① 应答的 code：MES 已收到
+CODE_RECEIVED = "RECEIVED"
 
 #: 不重试的失败中，MES 确实没有处理的（可作废）
 VOIDABLE_CODES = frozenset(("AUTH", "ADDRESS", "TOO_LARGE", "BAD_REQUEST", "REJECTED"))
@@ -71,8 +75,8 @@ class Target:
 @dataclass(frozen=True)
 class Outcome:
     kind: str
-    #: RECEIPT：MES 返回的回执（dict）
-    receipt: dict | None = None
+    #: RECEIVED：MES 的应答体（dict）
+    body: dict | None = None
     #: FAIL / RETRY：错误码与说明
     code: str = ""
     message: str = ""
@@ -137,8 +141,9 @@ def _json(resp: httpx.Response) -> Any:
         return None
 
 
-def send(t: Target, body_gz: bytes, attempt: int) -> Outcome:
-    """推送一次；不抛异常，结果按应答归类。"""
+def send(t: Target, batch_no: str, body_gz: bytes, attempt: int, ping: bool = False) -> Outcome:
+    """推送一次（batch_no 为请求体里的批次号）；不抛异常，结果按应答归类。
+    ping：连接测试，应答 RECEIVED 或 OK 都算收到，不核对 batchNo（与原连接测试一致）。"""
     if not t.url:
         return Outcome(FAIL, code="ADDRESS", message="未配置 MES 接口地址")
     raw = gzip.decompress(body_gz)
@@ -155,9 +160,14 @@ def send(t: Target, body_gz: bytes, attempt: int) -> Outcome:
     msg = body.get("message") if isinstance(body, dict) and isinstance(body.get("message"), str) else ""
     st = resp.status_code
     if st == 200:
-        if isinstance(body, dict) and code in ("OK", "NG"):
-            return Outcome(RECEIPT, receipt=body, http_status=st)
-        return Outcome(FAIL, code="RESPONSE_INVALID", message="HTTP 200 但应答不是回执", http_status=st)
+        if not isinstance(body, dict) or code not in ((CODE_RECEIVED, "OK") if ping else (CODE_RECEIVED,)):
+            shown = code if isinstance(code, str) and code else "(空)"
+            why = f"HTTP 200 但应答 code 不是 {CODE_RECEIVED}（收到 {shown}）" + (f"：{msg}" if msg else "")
+            return Outcome(FAIL, code="RESPONSE_INVALID", message=why[:500], http_status=st)
+        if not ping and body.get("batchNo") != batch_no:
+            why = f"应答的 batchNo 与批次不符：期望 {batch_no}，收到 {body.get('batchNo')}"
+            return Outcome(FAIL, code="RESPONSE_MISMATCH", message=why, http_status=st)
+        return Outcome(RECEIVED, body=body, http_status=st)
     if st == 409 and code == "BATCH_IN_PROGRESS":
         return Outcome(
             RETRY,

@@ -159,19 +159,20 @@
     "TRANSFER_OUT": "转出"
   },
   "confirmMethod": {
-    "PUSH_RESPONSE": "推送应答",
-    "PULL_RECEIPT": "拉取回执",
+    "RECEIPT": "MES 回执",
     "MANUAL": "人工确认"
   },
   "pushState": {
     "IDLE": "空闲",
     "WAIT_RETRY": "等待自动重试",
+    "WAIT_RECEIPT": "等待 MES 回执",
     "EXHAUSTED": "自动重试用尽"
   },
   "taskState": {
     "QUEUED": "排队中",
     "RUNNING": "推送中",
     "WAITING": "等待重试",
+    "WAITING_RECEIPT": "等待回执",
     "STOPPED": "推送中断",
     "DONE": "已完成"
   },
@@ -287,7 +288,7 @@
   },
   "allocate": {
     "title": "SN 分配",
-    "desc": "把已生成的号分到订单的生产组织：对接 MES 的改为待推送并自动分批推送，MES 逐批回执确认，中断后可续推；分配后的号都可在「SN 导出」页下载。可按整张 PI 或勾选物料行分配。",
+    "desc": "把已生成的号分到订单的生产组织：对接 MES 的改为待推送并自动逐批推送，每批 MES 写入后回执确认才推下一批，中断后可续推；分配后的号都可在「SN 导出」页下载。可按整张 PI 或勾选物料行分配。",
     "summary": "待分配 {pending} · 待推送 {unbatched}",
     "tab": {
       "TO_ALLOCATE": "待处理",
@@ -323,7 +324,7 @@
     "skippedN": "{n} 张单据将跳过（冻结、反审核或暂停交付）",
     "allocTitle": "分配",
     "allocBtn": "分配 {n} 枚",
-    "allocBtnPush": "分配 {n} 枚（推送 {m} 次）",
+    "allocBtnPush": "分配（推送 {m} 次）",
     "allocConfirm": "确认分配 {n} 枚？",
     "allocConfirmPush": "确认分配 {n} 枚？对接 MES 的部分将自动推送 {m} 次。",
     "allocDone": "已分配 {n} 枚",
@@ -332,6 +333,7 @@
     "tabBatches": "分配记录 {n}",
     "noPush": "还没有向 MES 推送",
     "pushProgress": "第 {i} / {n} 次 · 已推送 {qty} 枚",
+    "waitingReceipt": "已送达，等待 MES 回执",
     "exportNote": "未对接 MES 的组织分配后在 SN 导出页下载号：",
     "batchSource": "建立方式",
     "batchResult": "结果",
@@ -397,7 +399,6 @@
     "todayItem": {
       "SN_GENERATE": "生成",
       "SN_ALLOCATE": "分配",
-      "CONFIRM_PUSH_RESPONSE": "推送（推送应答确认）",
       "CONFIRM_RECEIPT": "MES 回执确认",
       "CONFIRM_MANUAL": "人工确认",
       "SN_PULL": "MES 拉取",

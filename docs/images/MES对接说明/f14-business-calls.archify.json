@@ -85,8 +85,9 @@
       "from": "mes",
       "to": "sn",
       "y": 305,
-      "label": "200 + 回执 OK",
-      "variant": "return"
+      "label": "200 已收到（RECEIVED）",
+      "variant": "return",
+      "note": "PING 不落库、不调 ③"
     },
     {
       "id": "p1",
@@ -103,16 +104,16 @@
       "y": 435,
       "label": "① 推送批次 · NEW",
       "variant": "emphasis",
-      "note": "按单批枚数分批，一批成功再发下一批"
+      "note": "按单批枚数分批，③ 回执 OK 后才发下一批"
     },
     {
       "id": "p3",
       "from": "mes",
       "to": "sn",
       "y": 495,
-      "label": "200 + 回执 OK / NG",
+      "label": "200 已收到；落库后 ③ 回执 OK / NG",
       "variant": "return",
-      "note": "NG 的处理见对接说明图 5-1"
+      "note": "无回执 1、5、10 分钟重送；NG 见图 5-1"
     },
     {
       "id": "q1",
@@ -181,7 +182,7 @@
       "from": "mes",
       "to": "sn",
       "y": 1000,
-      "label": "200 + 回执 OK",
+      "label": "200 已收到；③ 回执 OK",
       "variant": "return"
     },
     {
@@ -198,7 +199,7 @@
       "from": "old",
       "to": "sn",
       "y": 1120,
-      "label": "200 + 回执 OK",
+      "label": "200 已收到；③ 回执 OK",
       "variant": "return",
       "note": "标记已转走，停止打标"
     },

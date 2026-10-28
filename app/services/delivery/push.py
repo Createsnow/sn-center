@@ -1,8 +1,13 @@
 """推送任务（F-11 推送）。
 
-同组织 + 同一 PI 一个任务（转出批次用 #XO）；批次顺序执行，一批成功再发下一批；
-没有可用回执时用原批次号、原内容自动重试（默认 1、5、15 分钟），期间后续批次等待；重试用尽或被拒绝即停，
-「继续推送」先重推未确认或失败的批次（含拉取建立的），再认领后续的号。同组织同时运行的任务数不超过推送并发上限，
+同组织 + 同一 PI 一个任务（转出批次用 #XO）；批次串行执行，一批确认成功再发下一批：
+- MES 应答「已收到」（RECEIVED）后批次进入等回执（WAIT_RECEIPT），任务等 MES 落库后调接口 ③ 回执：OK 确认成功，
+  马上推下一批；NG 整批退回，停止并提示原因。
+- 等回执超时（默认 1、5、10 分钟，SN_PUSH_RECEIPT_WAIT_MINUTES）按原批次号、原内容重推（MES 按批次号去重，
+  重推时重新回执），个数即重推次数，最后一次重推后仍超时即停止（EXHAUSTED）。
+- 没送达（超时、5xx、断连等）用原批次号、原内容自动重试（默认 1、5、15 分钟），重试用尽即停止。
+- 等回执、等重试期间后续批次等待，这一批的号保持冻结；「继续推送」先重推未确认或失败的批次（含拉取建立的），
+  再认领后续的号。同组织同时运行的任务数不超过推送并发上限，
 同一 PI 同一时刻只运行一个任务；租约过期（实例宕机）的任务由其他实例接手。
 """
 
@@ -26,13 +31,13 @@ from app.services.delivery.batches import (
     FAILED,
     IS_DELIVERY,
     LEASE_SECONDS,
-    M_PUSH,
     RUNNER,
     SRC_PULL,
     SRC_PUSH,
     SUCCESS,
     TRANSFER_OUT,
     UNCONFIRMED,
+    VOIDED,
     XO_KEY,
     build_delivery,
     must_batch,
@@ -93,7 +98,7 @@ def start_task(cu: CurrentUser, org: str, key: str, resend: bool = False) -> Non
 
 
 def resume(cu: CurrentUser, org_in: str | None, key_in: str | None) -> dict:
-    """继续推送：重置未确认、失败批次的自动重试，按原批次号、原内容先重推，再认领后续的号。"""
+    """继续推送：重置未确认、失败批次的自动重试与等回执次数，按原批次号、原内容先重推，再认领后续的号。"""
     org = factories.must_get(org_in)["factory_code"]
     cu.check_write(org)
     key = util.trim(key_in)
@@ -102,7 +107,8 @@ def resume(cu: CurrentUser, org_in: str | None, key_in: str | None) -> dict:
     with db.tx():
         cond, args = _batch_cond(key)
         n = db.exec(
-            "UPDATE sn_delivery_batch SET retry_count = 0, push_state = 'IDLE', next_retry_at = NULL, "
+            "UPDATE sn_delivery_batch SET retry_count = 0, receipt_timeouts = 0, push_state = 'IDLE', "
+            "next_retry_at = NULL, "
             f"repush_count = repush_count + 1, updated_at = %s WHERE factory_code = %s AND {cond} "
             "AND result IN ('UNCONFIRMED','FAILED')",
             util.now(),
@@ -257,7 +263,7 @@ def _end_task(t: dict, state: str, message: str = "", run_after=None, batch_no: 
 
 def _next_batch(t: dict, resend: bool) -> dict | str | None:
     """下一个要发的批次：先未确认 / 失败的（续推时含拉取建立的、失败的），再认领新号建批。
-    返回批次，或 'WAIT:<批次号>'（等重试）/ 'STOP:<原因>'。"""
+    返回批次，或 'WAIT:<批次号>'（等重试、等回执）/ 'STOP:<原因>'。等回执超时的按原批次重推（返回该批次）。"""
     org, key = t["factory_code"], t["task_key"]
     cond, args = _batch_cond(key)
     pending = db.all(
@@ -275,6 +281,11 @@ def _next_batch(t: dict, resend: bool) -> dict | str | None:
             if b["next_retry_at"] is not None and b["next_retry_at"] > util.now():
                 return f"WAIT:{b['batch_no']}"
             return b
+        if b["push_state"] == "WAIT_RECEIPT":
+            if b["next_retry_at"] is not None and b["next_retry_at"] > util.now():
+                return f"WAIT:{b['batch_no']}"
+            why = _receipt_timeout(b)
+            return f"STOP:{why}" if why else b
         if b["push_state"] == "EXHAUSTED":
             if resend:
                 return b
@@ -286,6 +297,56 @@ def _next_batch(t: dict, resend: bool) -> dict | str | None:
     if key == XO_KEY or not factories.is_mes(org):
         return None
     return build_delivery(CurrentUser.system(), org, key, SRC_PUSH)
+
+
+def _receipt_timeout(b: dict) -> str | None:
+    """等 ③ 回执超时：重推次数未用尽的改为待重推（返回 None，按原批次号、原内容重推）；用尽的记为重试用尽，返回原因。
+    回执恰在此时到达（批次已不在等回执）的不处理，返回 None。"""
+    waits = settings.push_receipt_waits
+    sys = CurrentUser.system()
+    with db.tx():
+        cur = must_batch(b["batch_no"], lock=True)
+        if cur["result"] != UNCONFIRMED or cur["push_state"] != "WAIT_RECEIPT":
+            return None
+        n = int(cur["receipt_timeouts"])
+        wait = waits[min(n, len(waits) - 1)]
+        if n < len(waits):
+            reason = f"等待 MES 回执超时（{wait} 分钟），第 {n + 1} 次按原批次重推"
+            db.exec(
+                "UPDATE sn_delivery_batch SET receipt_timeouts = receipt_timeouts + 1, push_state = 'IDLE', "
+                "next_retry_at = NULL, fail_code = 'RECEIPT_TIMEOUT', fail_reason = %s, updated_at = %s WHERE id = %s",
+                reason,
+                util.now(),
+                cur["id"],
+            )
+            out = None
+        else:
+            reason = f"已重推 {n} 次，等待 MES 回执超时（{wait} 分钟）仍未收到"
+            db.exec(
+                "UPDATE sn_delivery_batch SET push_state = 'EXHAUSTED', next_retry_at = NULL, "
+                "fail_code = 'RECEIPT_TIMEOUT', fail_reason = %s, updated_at = %s WHERE id = %s",
+                reason,
+                util.now(),
+                cur["id"],
+            )
+            out = f"批次 {cur['batch_no']}：{reason}"
+        audit.record(
+            sys,
+            audit.entry(audit.SN_PUSH)
+            .fail(reason)
+            .factory(cur["factory_code"])
+            .pi(cur["pi_no"])
+            .count(cur["qty"])
+            .batch(cur["batch_no"])
+            .info(f"code=RECEIPT_TIMEOUT timeouts={n} next={'RESEND' if out is None else 'EXHAUSTED'}"),
+        )
+    return out
+
+
+def _wait_message(b: dict) -> str:
+    if b["push_state"] == "WAIT_RECEIPT":
+        return f"批次 {b['batch_no']} 已送达，等待 MES 回执"
+    return f"批次 {b['batch_no']} 等待自动重试"
 
 
 def _run_task(t: dict) -> None:
@@ -305,7 +366,6 @@ def _run_task(t: dict) -> None:
 
 
 def _drive(t: dict) -> None:
-    sent = 0
     resend = bool(t["resend"])
     seen_resend: set[int] = set()
     while True:
@@ -321,13 +381,19 @@ def _drive(t: dict) -> None:
                 if t["task_key"] != XO_KEY
                 else 0
             )
+            cond, args = _batch_cond(t["task_key"])
+            sent = db.count(
+                f"SELECT COUNT(*) FROM sn_delivery_batch WHERE factory_code = %s AND {cond} AND result = 'SUCCESS' "
+                "AND source = 'PUSH'",
+                t["factory_code"],
+                *args,
+            )
             _end_task(t, "DONE", f"已推送 {sent} 批" + (f"；其余 {other} 枚已由 MES 拉取" if other else ""))
             return
         if isinstance(nxt, str):
             kind, _, info = nxt.partition(":")
             if kind == "WAIT":
-                b = must_batch(info)
-                _end_task(t, "WAITING", f"批次 {info} 等待自动重试", b["next_retry_at"], info)
+                _wait(t, must_batch(info))
             else:
                 _end_task(t, "STOPPED", info)
             return
@@ -337,15 +403,14 @@ def _drive(t: dict) -> None:
         if resend and nxt["result"] == FAILED:
             seen_resend.add(nxt["id"])
         _renew(t, nxt["batch_no"])
-        ok = push_once(nxt)
-        if ok == "CONFIRMED":
-            sent += 1
+        if push_once(nxt) == "CONFIRMED":
             continue
         b = must_batch(nxt["batch_no"])
-        if b["result"] == SUCCESS:
+        if b["result"] in (SUCCESS, VOIDED):
+            # 已确认，或发送期间被作废（号已回号池或已重建）：接着推后续批次
             continue
-        if b["push_state"] == "WAIT_RETRY":
-            _end_task(t, "WAITING", f"批次 {b['batch_no']} 等待自动重试", b["next_retry_at"], b["batch_no"])
+        if b["push_state"] in ("WAIT_RETRY", "WAIT_RECEIPT"):
+            _wait(t, b)
             return
         _end_task(
             t, "STOPPED", f"批次 {b['batch_no']}：{b['fail_reason'] or '自动重试用尽仍未确认'}", None, b["batch_no"]
@@ -353,15 +418,23 @@ def _drive(t: dict) -> None:
         return
 
 
+def _wait(t: dict, b: dict) -> None:
+    """任务等这一批（等回执或等重试）到截止时间；③ 回执在设为等待之前已到的，马上再跑。"""
+    _end_task(t, "WAITING", _wait_message(b), b["next_retry_at"], b["batch_no"])
+    cur = must_batch(b["batch_no"])
+    if (cur["result"], cur["push_state"]) != (b["result"], b["push_state"]):
+        receipts.wake_task(cur)
+
+
 def push_once(b: dict) -> str:
-    """发送一次。返回 CONFIRMED / FAILED / RETRY / EXHAUSTED / SKIPPED。"""
+    """发送一次。返回 CONFIRMED / WAIT_RECEIPT / FAILED / RETRY / EXHAUSTED / SKIPPED。"""
     b = must_batch(b["batch_no"])
     if b["result"] not in (UNCONFIRMED, FAILED):
         return "CONFIRMED" if b["result"] == SUCCESS else "SKIPPED"
     f = factories.must_get(b["factory_code"])
     target = mes_client.Target.of(f)
     attempt = b["push_count"] + 1
-    out = mes_client.send(target, b["body_gz"], attempt)
+    out = mes_client.send(target, b["batch_no"], b["body_gz"], attempt)
     now = util.now()
     sys = CurrentUser.system()
     db.exec(
@@ -370,8 +443,29 @@ def push_once(b: dict) -> str:
         now,
         b["id"],
     )
-    if out.kind == mes_client.RECEIPT:
-        applied = receipts.apply_receipt(sys, b["batch_no"], out.receipt or {}, M_PUSH)
+    if out.kind == mes_client.RECEIVED:
+        # MES 已收到：等 MES 落库后调 ③ 回执，回执到了才确认、推下一批
+        waits = settings.push_receipt_waits
+        with db.tx():
+            cur = must_batch(b["batch_no"], lock=True)
+            if cur["result"] == SUCCESS:
+                state = "CONFIRMED"
+            elif (cur["result"] == FAILED and b["result"] == UNCONFIRMED) or cur["result"] not in (UNCONFIRMED, FAILED):
+                # 发送期间 ③ 已整批退回，或批次已作废
+                state = "FAILED"
+            else:
+                # 续推失败的批次时，MES 收下即回到未确认，等这一次的回执
+                wait = waits[min(int(cur["receipt_timeouts"]), len(waits) - 1)]
+                db.exec(
+                    "UPDATE sn_delivery_batch SET result = %s, voidable = 0, push_state = 'WAIT_RECEIPT', "
+                    "next_retry_at = %s, received_at = %s, updated_at = %s WHERE id = %s",
+                    UNCONFIRMED,
+                    now + timedelta(minutes=wait),
+                    now,
+                    now,
+                    b["id"],
+                )
+                state = "WAIT_RECEIPT"
         audit.record_isolated(
             sys,
             audit.entry(audit.SN_PUSH)
@@ -379,21 +473,13 @@ def push_once(b: dict) -> str:
             .pi(b["pi_no"])
             .count(b["qty"])
             .batch(b["batch_no"])
-            .info(f"attempt={attempt} verdict={applied.verdict}")
-            if applied.verdict in ("CONFIRMED", "ARCHIVED")
-            else audit.entry(audit.SN_PUSH)
-            .fail(f"MES 应答：{applied.verdict}")
-            .factory(b["factory_code"])
-            .pi(b["pi_no"])
-            .count(b["qty"])
-            .batch(b["batch_no"])
-            .info(f"attempt={attempt}"),
+            .info(f"attempt={attempt} received next={state}"),
         )
         if f["cfg_status"] != "OK":
             db.exec(
                 "UPDATE sn_factory SET cfg_status = 'OK', cfg_message = '' WHERE factory_code = %s", f["factory_code"]
             )
-        return "CONFIRMED" if applied.verdict in ("CONFIRMED", "ARCHIVED") else "FAILED"
+        return state
     if out.kind == mes_client.RETRY:
         intervals = settings.push_retry_intervals
         with db.tx():

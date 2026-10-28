@@ -1,13 +1,15 @@
-"""MES 接口契约测试：按《MES 对接接口文档》《MES 对接说明》逐项检查 MES 方接收推送接口（①），输出报告。
+"""MES 接口契约测试：按《MES 对接接口文档》《MES 对接说明》逐项检查 MES 方接收推送接口（①）与回执（③），输出报告。
 
 MES 方接口一提供就能测，不需要本系统：脚本自己造批次（PING、交付、转出），按接口文档的方式发送（默认原始 JSON，
-加 --gzip 时压缩；Bearer、HMAC 签名或无认证），逐项核对应答——整批校验与退回（NG）、按批次号去重、
-逐枚按 rev 覆盖或跳过、转出、并发送达、连接测试。只依赖 Python 3.11+ 和 httpx，可以直接交给 MES 方自测。
-回执只有整批结果（code = OK / NG），逐枚的处理结果须在 MES 侧按报告末尾的清单人工核对。
+加 --gzip 时压缩；Bearer、HMAC 签名或无认证），逐项核对——① 应答已收到（code = RECEIVED），MES 落库后调 ③ 提交
+回执（整批校验与退回 NG、按批次号去重、逐枚按 rev 覆盖或跳过、转出、并发送达），以及连接测试。
+脚本自带一个 ③ 回执接收地址（--listen，默认 0.0.0.0:9100），测试时把 MES 的回执地址（本系统地址）临时指向
+http://<运行脚本的机器>:9100，MES 照常提交 /api/mes/v1/receipts 即可。只依赖 Python 3.11+ 和 httpx，可以直接交给
+MES 方自测。回执只有整批结果（code = OK / NG），逐枚的处理结果须在 MES 侧按报告末尾的清单人工核对。
 
     uv run python -m devtools.mes_conformance --url https://mes-test.example.com/sn/receive --org 110 \\
-        --pi 000001 --auth TOKEN --secret <令牌> --report mes-110-report.md
-    # 加 --perf 测 5000 枚一批的处理时间（建议 10 秒内，超过 60 秒本系统会超时）
+        --pi 000001 --auth TOKEN --secret <令牌> --listen 0.0.0.0:9100 --report mes-110-report.md
+    # 加 --perf 测 5000 枚一批的处理时间（建议 10 秒内）
 
 **只能对 MES 测试环境运行**：会写入一批测试 SN（前缀 CT + 本次运行号），其中几枚会被标为「已转走」。
 每次运行用新的运行号，SN、单据、批次号都不会与真实数据或上次运行重复。MES 要校验交付批次头的 PI 是本组织已有的，
@@ -31,6 +33,7 @@ import uuid
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 
 import httpx
@@ -84,6 +87,91 @@ class Failed(Exception):
     pass
 
 
+class ReceiptInbox:
+    """③ 回执接收地址：扮演本系统的 POST /api/mes/v1/receipts，按批次号记下 MES 提交的每一份回执。
+    应答与本系统相同的信封（code = OK 已受理）；gzip 请求体、code 不是 OK / NG 时 400，同样记下供核对。"""
+
+    PATH = "/api/mes/v1/receipts"
+
+    def __init__(self) -> None:
+        self.received: dict[str, list[dict]] = {}
+        self.cond = threading.Condition()
+        self.server: ThreadingHTTPServer | None = None
+
+    def start(self, host: str = "127.0.0.1", port: int = 0) -> ReceiptInbox:
+        inbox = self
+
+        class H(BaseHTTPRequestHandler):
+            def _send(self, status: int, body: dict) -> None:
+                out = json.dumps(body, ensure_ascii=False).encode("utf-8")
+                self.send_response(status)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(out)))
+                self.end_headers()
+                self.wfile.write(out)
+
+            def do_POST(self):  # noqa: N802
+                raw = self.rfile.read(int(self.headers.get("Content-Length") or 0))
+                headers = {k.lower(): v for k, v in self.headers.items()}
+                if not self.path.rstrip("/").endswith("/receipts"):
+                    return self._send(404, {"schemaVersion": SCHEMA, "code": "NOT_FOUND", "message": "地址错误"})
+                if headers.get("content-encoding", "").lower() == "gzip":
+                    body: Any = {"__gzip": True}
+                else:
+                    try:
+                        body = json.loads(raw.decode("utf-8")) if raw else None
+                    except (ValueError, UnicodeDecodeError):
+                        body = None
+                no = body.get("batchNo") if isinstance(body, dict) else None
+                with inbox.cond:
+                    first = not inbox.received.get(str(no))
+                    inbox.received.setdefault(str(no), []).append({"body": body, "headers": headers, "at": now_cst()})
+                    inbox.cond.notify_all()
+                code = body.get("code") if isinstance(body, dict) else None
+                if not isinstance(no, str) or code not in ("OK", "NG") or "__gzip" in body:
+                    return self._send(
+                        400,
+                        {"schemaVersion": SCHEMA, "code": "INVALID_REQUEST", "message": "参数不合法", "batchNo": no},
+                    )
+                env = {"schemaVersion": SCHEMA, "code": "OK", "message": "回执已受理", "batchNo": no}
+                env |= {"timestamp": now_cst(), "batchResult": "SUCCESS" if code == "OK" else "FAILED"}
+                self._send(200, env | {"firstConfirmation": first})
+
+            def log_message(self, *args):  # noqa: D401
+                pass
+
+        self.server = ThreadingHTTPServer((host, port), H)
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        return self
+
+    @property
+    def base_url(self) -> str:
+        """本机访问用的地址（MES 的回执地址填运行脚本机器的地址 + 端口）。"""
+        assert self.server is not None
+        host, port = self.server.server_address[:2]
+        return f"http://{'127.0.0.1' if host in ('0.0.0.0', '') else host}:{port}"
+
+    def count(self, batch_no: str) -> int:
+        with self.cond:
+            return len(self.received.get(batch_no, []))
+
+    def wait(self, batch_no: str, after: int, timeout: float) -> dict | None:
+        """等这个批次的第 after + 1 份回执，超时返回 None。"""
+        end = time.monotonic() + timeout
+        with self.cond:
+            while len(self.received.get(batch_no, [])) <= after:
+                left = end - time.monotonic()
+                if left <= 0:
+                    return None
+                self.cond.wait(left)
+            return self.received[batch_no][after]
+
+    def stop(self) -> None:
+        if self.server is not None:
+            self.server.shutdown()
+            self.server.server_close()
+
+
 class Runner:
     def __init__(
         self,
@@ -97,6 +185,8 @@ class Runner:
         gzip: bool = False,
         log: Callable[[str], None] = print,
         pi: str | None = None,
+        inbox: ReceiptInbox | None = None,
+        receipt_wait: float = 30,
     ) -> None:
         self.url, self.org, self.auth, self.secret, self.timeout = url, org, auth.upper(), secret, timeout
         #: 与「生产组织」页的「gzip 压缩」一致：默认发原始 JSON
@@ -111,6 +201,10 @@ class Runner:
         self.seq = 0
         self.log = log
         self.checks: list[Check] = []
+        #: ③ 回执接收地址；每次送达前记下该批次已收到几份回执，送达后等下一份
+        self.inbox = inbox or ReceiptInbox().start()
+        self.receipt_wait = receipt_wait
+        self.mark: dict[str, int] = {}
 
     # ------------------------------------------------------------------ 报文
 
@@ -165,6 +259,8 @@ class Runner:
     ) -> Reply:
         """按对接说明 ① 发送：默认原始 JSON（开启 gzip 时压缩），认证按组织配置（Bearer、HMAC 或无认证）。"""
         raw = canonical(obj) if raw is None else raw
+        if obj is not None and isinstance(obj.get("batchNo"), str):
+            self.mark[obj["batchNo"]] = self.inbox.count(obj["batchNo"])
         h = {
             "Content-Type": "application/json; charset=utf-8",
             "Accept": "application/json",
@@ -202,23 +298,59 @@ class Runner:
         if not cond:
             raise Failed(why)
 
-    def receipt(self, r: Reply, b: dict, code: str, why: str = "") -> dict:
-        """HTTP 200 + 回执 {batchNo, code, message, processedAt}，code 为期望值。"""
+    def received(self, r: Reply, b: dict, why: str = "") -> dict:
+        """① 应答：HTTP 200 + {batchNo, code = RECEIVED, message, receivedAt}。"""
         pre = f"{why}：" if why else ""
-        hint = code == "NG" and r.status is not None and 400 <= r.status < 500
+        hint = r.status is not None and 400 <= r.status < 500
         self.need(
             r.status == 200,
-            f"{pre}期望 HTTP 200 + 回执（code = {code}），实际 {r}"
-            + ("（4xx 只用于认证、地址、报文过大、无法解析）" if hint else ""),
+            f"{pre}期望 HTTP 200 + 已收到（code = RECEIVED），实际 {r}"
+            + ("（4xx 只用于认证、地址、报文过大、无法解析；整批退回用 ③ 回执 NG）" if hint else ""),
         )
         body = r.body
         self.need(isinstance(body, dict), f"{pre}应答不是 JSON 对象：{r}")
-        self.need(body.get("code") == code, f"{pre}期望 code = {code}，实际 {r}")
-        self.need(body.get("batchNo") == b["batchNo"], f"回执 batchNo = {body.get('batchNo')}，应为 {b['batchNo']}")
+        hint = "（处理结果改由 ③ 回执，① 只应答已收到）" if body.get("code") in ("OK", "NG") else ""
+        self.need(body.get("code") == "RECEIVED", f"{pre}期望 code = RECEIVED，实际 {r}{hint}")
+        self.need(body.get("batchNo") == b["batchNo"], f"应答 batchNo = {body.get('batchNo')}，应为 {b['batchNo']}")
+        at = body.get("receivedAt")
+        self.need(
+            isinstance(at, str) and bool(TS_RE.match(at)),
+            f"应答 receivedAt 须为 UTC+8 的 yyyy-MM-dd HH:mm:ss.SSS，实际 {at!r}",
+        )
+        return body
+
+    def callback(self, b: dict, why: str = "", after: int | None = None) -> dict:
+        """等 MES 提交这一批的 ③ 回执（本次送达之后的下一份），核对结构，返回回执。"""
+        pre = f"{why}：" if why else ""
+        no = b["batchNo"]
+        got = self.inbox.wait(no, self.mark.get(no, 0) if after is None else after, self.receipt_wait)
+        self.need(
+            got is not None,
+            f"{pre}应答已收到后 {self.receipt_wait:g} 秒内没有收到 ③ 回执（MES 落库后须调 /api/mes/v1/receipts；"
+            "同一批再次送达也须重新提交回执）",
+        )
+        self.need(
+            str(got["headers"].get("authorization", "")).startswith("Bearer "),
+            "③ 回执须带 Authorization: Bearer <工号>:<密钥>（MES 接口账户）",
+        )
+        self.need("content-encoding" not in got["headers"], "③ 回执不支持 gzip，须发原始 JSON")
+        body = got["body"]
+        self.need(isinstance(body, dict), f"③ 回执不是 JSON 对象：{body!r}")
+        self.need(body.get("batchNo") == no, f"③ 回执 batchNo = {body.get('batchNo')}，应为 {no}")
         at = body.get("processedAt")
         self.need(
             isinstance(at, str) and bool(TS_RE.match(at)),
-            f"回执 processedAt 须为 UTC+8 的 yyyy-MM-dd HH:mm:ss.SSS，实际 {at!r}",
+            f"③ 回执 processedAt 须为 UTC+8 的 yyyy-MM-dd HH:mm:ss.SSS，实际 {at!r}",
+        )
+        return body
+
+    def receipt(self, r: Reply, b: dict, code: str, why: str = "") -> dict:
+        """① 应答已收到，随后 ③ 回执的 code 为期望值。"""
+        pre = f"{why}：" if why else ""
+        self.received(r, b, why)
+        body = self.callback(b, why)
+        self.need(
+            body.get("code") == code, f"{pre}期望 ③ 回执 code = {code}，实际 {json.dumps(body, ensure_ascii=False)}"
         )
         if code == "NG":
             self.need(isinstance(body.get("message"), str) and body["message"].strip(), "NG 回执须带 message（原因）")
@@ -263,12 +395,24 @@ class Runner:
         def ping_ok(c: Check) -> None:
             b = ping(self.org)
             r = self.send(b)
-            self.ok(r, b)
+            self.need(r.status == 200 and isinstance(r.body, dict), f"PING 期望 HTTP 200 + 已收到，实际 {r}")
+            code = r.body.get("code")
+            self.need(code in ("RECEIVED", "OK"), f"PING 期望 code = RECEIVED，实际 {r}")
             c.detail = f"耗时 {r.elapsed:.2f} 秒"
+            if code == "OK":
+                c.status, c.detail = WARN, c.detail + "；PING 应答 OK 本系统兼容，建议与其他批次一样应答 RECEIVED"
 
         def ping_org(c: Check) -> None:
             b = ping(self.org + "X")
-            self.ng(self.send(b), b, "PING 的 orgCode 不是本组织")
+            r = self.send(b)
+            self.need(
+                r.status == 200 and isinstance(r.body, dict),
+                f"PING 的 orgCode 不是本组织：期望 HTTP 200 + NG，实际 {r}",
+            )
+            self.need(
+                r.body.get("code") == "NG",
+                f"PING 的 orgCode 不是本组织：期望应答 code = NG（PING 没有 ③ 回执），实际 {r}",
+            )
 
         def auth_bad(c: Check) -> None:
             if self.auth == "NONE":
@@ -360,11 +504,10 @@ class Runner:
         def reject_then_fix(c: Check, why: str, bad: dict, good: dict) -> None:
             self.ng(self.send(bad), bad, why)
             r = self.send(good)
-            self.need(
-                not (isinstance(r.body, dict) and r.body.get("code") == "NG"),
-                "修正后用同一批次号重送仍返回 NG：整批退回时不能登记批次号",
-            )
-            self.ok(r, good)
+            self.received(r, good, "修正后用同一批次号重送")
+            rb = self.callback(good, "修正后用同一批次号重送")
+            self.need(rb.get("code") != "NG", "修正后用同一批次号重送，③ 回执仍为 NG：整批退回时不能登记批次号")
+            self.need(rb.get("code") == "OK", f"修正后用同一批次号重送：期望 ③ 回执 code = OK，实际 {rb}")
 
         def count_bad(c: Check) -> None:
             items = [self.delivery(10, 1)]
@@ -412,6 +555,7 @@ class Runner:
 
         def concurrent(c: Check) -> None:
             b = self.batch([self.delivery(20 + k, 1) for k in range(50)])
+            before = self.inbox.count(b["batchNo"])
             out: list[Reply] = [Reply(None, None), Reply(None, None)]
 
             def go(k: int) -> None:
@@ -430,27 +574,38 @@ class Runner:
                 time.sleep(2)
                 out = [r for r in out if r.status != 409] + [self.send(b, attempt=3)]
             for r in out:
-                self.ok(r, b)
-            c.detail = "其中一次返回 409 BATCH_IN_PROGRESS" if busy else "两次都返回 OK"
+                self.received(r, b)
+            rb = self.callback(b, after=before)
+            self.need(rb.get("code") == "OK", f"期望 ③ 回执 code = OK，实际 {rb}")
+            time.sleep(0.5)
+            codes = {
+                x["body"].get("code") for x in self.inbox.received[b["batchNo"]][before:] if isinstance(x["body"], dict)
+            }
+            self.need(
+                codes == {"OK"}, f"同一批的几份 ③ 回执须相同（都为首次的结果），实际 code {sorted(map(str, codes))}"
+            )
+            c.detail = "其中一次返回 409 BATCH_IN_PROGRESS" if busy else "两次都应答已收到"
 
         def performance(c: Check) -> None:
             if not perf:
                 c.status, c.detail = SKIP, "未加 --perf"
                 return
             b = self.batch([self.delivery(100000 + k, 1) for k in range(perf)])
+            start = time.monotonic()
             r = self.send(b)
             self.ok(r, b)
-            c.detail = f"{perf} 枚耗时 {r.elapsed:.1f} 秒"
-            if r.elapsed > 10:
+            took = time.monotonic() - start
+            c.detail = f"{perf} 枚：应答已收到 {r.elapsed:.1f} 秒，送达到 ③ 回执共 {took:.1f} 秒"
+            if took > 10:
                 c.status, c.detail = WARN, c.detail + "（建议 10 秒内）"
 
         cases = [
-            ("C01", "连接测试：PING 返回 OK", "接口 3.1", ping_ok),
-            ("C02", "连接测试：PING 的 orgCode 不符时 NG", "接口 3.1；说明 3.2 步骤 1", ping_org),
+            ("C01", "连接测试：PING 应答已收到（RECEIVED），不调 ③", "接口 3.1", ping_ok),
+            ("C02", "连接测试：PING 的 orgCode 不符时应答 NG", "接口 3.1；说明 3.2 步骤 1", ping_org),
             ("C03", "认证：凭证错误返回 401 / 403", "接口 2.1", auth_bad),
             ("C04", "认证（HMAC）：时间戳偏差超过 5 分钟拒绝", "接口 2.1", hmac_skew),
-            ("C05", "交付批次首次送达：OK，逐枚新增", "说明 3.2 逐枚处理；接口 3.1", first),
-            ("C06", "同一批原样再次送达：OK", "说明 3.2 步骤 3", replay),
+            ("C05", "交付批次首次送达：应答已收到，③ 回执 OK，逐枚新增", "说明 3.2 逐枚处理；接口 3.1、3.3", first),
+            ("C06", "同一批原样再次送达：应答已收到，重新提交 ③ 回执 OK", "说明 3.2 步骤 3", replay),
             ("C07", "同一批次号内容不同：409 BATCH_CONTENT_MISMATCH", "说明 3.2 步骤 3", mismatch),
             ("C08", "rev 更大：覆盖挂靠，OK", "说明 3.2 逐枚处理、1.3", overwrite),
             ("C09", "rev 相同、来自别的批次：覆盖（内容相同），OK", "说明 3.2 逐枚处理", same_rev),
@@ -472,9 +627,14 @@ class Runner:
             ("C15", "orgCode 不是本组织：NG；修正后同一批次号重送能处理", "说明 3.2 步骤 2、5", org_bad),
             ("C16", "批内 SN 重复：NG", "说明 3.2 步骤 2", dup_sn),
             ("C17", "转出批次 toOrgCode 为空：NG", "说明 3.2 步骤 2", out_missing),
-            ("C18", "缺必填字段：NG（HTTP 200，不是 4xx），不落任何数据", "说明 3.2 步骤 2；接口 3.1", missing),
+            (
+                "C18",
+                "缺必填字段：应答已收到（不是 4xx），③ 回执 NG，不落任何数据",
+                "说明 3.2 步骤 2；接口 3.1",
+                missing,
+            ),
             ("C19", "请求体无法解析：400", "接口 3.1", bad_body),
-            ("C20", "同一批同时送达两次：只处理一次，两边都 OK", "说明 2、3.2 步骤 5", concurrent),
+            ("C20", "同一批同时送达两次：只处理一次，③ 回执都为 OK", "说明 2、3.2 步骤 5", concurrent),
             ("C21", "5000 枚一批的处理时间", "说明 3.2 步骤 5", performance),
             ("C22", "批次头 pi 不是本组织已有的 PI：NG；修正后同一批次号重送能处理", "说明 3.2 步骤 2、5", pi_bad),
             ("C23", "交付批次缺批次头 pi、明细 pi 与批次头不一致：NG", "说明 3.2 步骤 2", pi_head),
@@ -493,6 +653,7 @@ class Runner:
             "",
             f"- 时间：{now_cst()}（UTC+8）",
             f"- 接口地址：{self.url}",
+            f"- ③ 回执接收地址：{self.inbox.base_url}{ReceiptInbox.PATH}（等回执 {self.receipt_wait:g} 秒）",
             f"- 生产组织：{self.org}　认证方式：{self.auth}",
             f"- 运行号：{self.run}（测试 SN 前缀 `{self.prefix}`，PI `{self.pi}`，单据 `{self.bill}`）",
             f"- 结果：通过 {n[PASS]}，失败 {n[FAIL]}，提醒 {n[WARN]}，跳过 {n[SKIP]}",
@@ -526,6 +687,12 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--auth", choices=("TOKEN", "HMAC", "NONE"), default="TOKEN", help="NONE 为无认证（不带认证头）")
     p.add_argument("--secret", default="", help="TOKEN 为 Bearer 令牌，HMAC 为签名密钥；NONE 时不需要")
     p.add_argument("--timeout", type=float, default=60, help="等待应答秒数（与本系统推送超时一致，默认 60）")
+    p.add_argument(
+        "--listen",
+        default="0.0.0.0:9100",
+        help="③ 回执接收地址（主机:端口）；MES 的回执地址临时指向 http://<本机>:<端口>，默认 0.0.0.0:9100",
+    )
+    p.add_argument("--receipt-wait", type=float, default=30, help="应答已收到后等 ③ 回执的秒数，默认 30")
     p.add_argument("--perf", type=int, nargs="?", const=5000, default=0, help="测一批的处理时间，默认 5000 枚")
     p.add_argument("--report", help="把报告写成 Markdown 文件")
     p.add_argument("--insecure", action="store_true", help="不校验 HTTPS 证书（测试环境自签证书）")
@@ -533,8 +700,22 @@ def main(argv: list[str] | None = None) -> int:
     a = p.parse_args(argv)
     if a.auth != "NONE" and not a.secret:
         p.error("--auth 为 TOKEN 或 HMAC 时须给出 --secret")
-    r = Runner(a.url, a.org, a.auth, a.secret, a.timeout, a.insecure, gzip=a.gzip, pi=a.pi)
-    print(f"运行号 {r.run}，测试 SN 前缀 {r.prefix}；只能对 MES 测试环境运行\n")
+    host, _, port = a.listen.rpartition(":")
+    inbox = ReceiptInbox().start(host or "0.0.0.0", int(port or 9100))
+    r = Runner(
+        a.url,
+        a.org,
+        a.auth,
+        a.secret,
+        a.timeout,
+        a.insecure,
+        gzip=a.gzip,
+        pi=a.pi,
+        inbox=inbox,
+        receipt_wait=a.receipt_wait,
+    )
+    print(f"运行号 {r.run}，测试 SN 前缀 {r.prefix}；只能对 MES 测试环境运行")
+    print(f"③ 回执接收地址：http://{a.listen}{ReceiptInbox.PATH}（MES 的回执地址须指向这里）\n")
     r.run_all(a.perf)
     text = r.report()
     if a.report:

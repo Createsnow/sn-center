@@ -7,7 +7,8 @@ import json
 import re
 from datetime import UTC, datetime, timedelta
 
-from conftest import MES, Res, emp, m, ok, uid, xlsx_rows
+import pytest
+from conftest import MES, RECEIPT_REPLIES, Res, emp, m, ok, uid, xlsx_rows
 
 
 def setup_pi(w, qty: int = 12, batch_size: int = 5, mes: bool = True, prefix: str | None = None):
@@ -29,12 +30,34 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
     assert (pre["qty"], pre["pushes"]) == (12, 3), "分配 12 枚（推送 3 次）"
     w.allocate(pi)
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'TO_PUSH'", pi) == 12
+    # MES 应答已收到：第 1 批等 ③ 回执，第 2 批不建、不推
+    w.push(receipts=False)
+    first = sql.all("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
+    assert [(b["result"], b["push_state"], b["push_count"]) for b in first] == [("UNCONFIRMED", "WAIT_RECEIPT", 1)]
+    assert first[0]["received_at"] is not None and first[0]["next_retry_at"] > first[0]["received_at"]
+    task = sql.one("SELECT * FROM sn_push_task WHERE factory_code = %s AND task_key = %s", org, pi)
+    assert (task["state"], task["current_batch"]) == ("WAITING", first[0]["batch_no"])
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 0
+    st = ok(w.api.get(f"/api/allocation/context?pi={pi}", w.admin))["push"][0]
+    assert (st["current_push"], st["total_batches"], st["waiting_receipt"]) == (1, 3, True), "第 1 / 3 次，等回执"
+    assert MES.received[-1]["batch"]["batchNo"] == first[0]["batch_no"]
+    # MES 落库后逐批调 ③ 回执：回执到了才推下一批
     w.push()
     batches = sql.all("SELECT * FROM sn_delivery_batch WHERE pi_no = %s ORDER BY id", pi)
     assert [b["qty"] for b in batches] == [5, 5, 2]
     assert len({b["batch_no"] for b in batches}) == 3
     assert {b["result"] for b in batches} == {"SUCCESS"}
-    assert {b["confirm_method"] for b in batches} == {"PUSH_RESPONSE"}
+    assert {b["confirm_method"] for b in batches} == {"RECEIPT"}
+    pushed = [x["batch"]["batchNo"] for x in MES.received if x["batch"]["batchType"] != "PING"]
+    assert pushed == [b["batch_no"] for b in batches], "串行：一批回执确认后才发下一批"
+    assert [r[2].status for r in RECEIPT_REPLIES] == [200] * 3
+    st = ok(w.api.get(f"/api/allocation/context?pi={pi}", w.admin))["push"][0]
+    assert (st["current_push"], st["total_batches"], st["waiting_receipt"], st["task"]["state"]) == (
+        3,
+        3,
+        False,
+        "DONE",
+    )
     r = w.api.client.get(
         f"/api/delivery/batches/{batches[0]['batch_no']}/export", headers={"Authorization": f"Bearer {w.admin}"}
     )
@@ -189,41 +212,142 @@ def test_retry_then_exhaust_then_resume_with_same_batch(w, sql):
 
 
 def test_reject_marks_failed_and_resume_after_fix(w, sql):
+    """MES 应答已收到，处理后 ③ 回执整批退回（NG）：批次失败、可作废，推送任务马上停止并提示原因，不自动重试。"""
     org, pi, bill = setup_pi(w, qty=4, batch_size=5)
-    MES.behavior[org] = lambda batch, h: (
-        200,
-        {"schemaVersion": "1.0", "batchNo": batch["batchNo"], "code": "NG", "message": "materialCode 超长"},
-    )
+    MES.set_fault(org, {"mode": "reject", "message": "materialCode 超长"})
     w.allocate(pi)
     w.push()
     b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
     assert (b["result"], b["voidable"], b["push_count"]) == ("FAILED", 1, 1), "整批拒收不自动重试"
     assert b["fail_code"] == "REJECTED" and b["fail_reason"] == "materialCode 超长"
-    MES.behavior.pop(org)
+    task = sql.one("SELECT * FROM sn_push_task WHERE factory_code = %s AND task_key = %s", org, pi)
+    assert task["state"] == "STOPPED" and "materialCode 超长" in task["message"], "回执 NG 唤醒任务，停止并提示"
+    MES.clear_fault(org)
     ok(w.api.post("/api/delivery/resume", m(factory_code=org, key=pi), w.admin))
     w.push()
-    assert sql.scalar("SELECT result FROM sn_delivery_batch WHERE id = %s", b["id"]) == "SUCCESS"
+    b = sql.one("SELECT * FROM sn_delivery_batch WHERE id = %s", b["id"])
+    assert (b["result"], b["confirm_method"], b["voidable"]) == ("SUCCESS", "RECEIPT", 0)
 
 
-def test_receipt_batch_no_mismatch_fails_batch(w, sql):
+def test_response_batch_no_mismatch_fails_batch(w, sql):
+    """应答已收到但 batchNo 不是这一批：记为应答不符、不重试；不能确定 MES 有没有处理，不能作废。"""
+    org, pi, bill = setup_pi(w, qty=3, batch_size=5)
+    MES.set_fault(org, {"mode": "bad_response"})
+    w.allocate(pi)
+    w.push()
+    b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
+    assert (b["result"], b["fail_code"], b["voidable"], b["push_count"]) == ("FAILED", "RESPONSE_MISMATCH", 0, 1)
+    r = w.api.post(f"/api/delivery/batches/{b['batch_no']}/void", m(reason="x", basis="y"), w.admin)
+    assert r.code == "BATCH_NOT_VOIDABLE"
+
+
+def test_receipt_with_wrong_batch_no_refused_batch_keeps_waiting(w, sql):
+    """③ 回执的 batchNo 写错：本系统拒收（404），原批次仍等回执。"""
     org, pi, bill = setup_pi(w, qty=3, batch_size=5)
     MES.set_fault(org, {"mode": "bad_receipt"})
     w.allocate(pi)
     w.push()
     b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
-    assert (b["result"], b["fail_code"], b["voidable"]) == ("FAILED", "RECEIPT_MISMATCH", 0)
-    r = w.api.post(f"/api/delivery/batches/{b['batch_no']}/void", m(reason="x", basis="y"), w.admin)
-    assert r.code == "BATCH_NOT_VOIDABLE", "回执不符说明 MES 已处理过，不能作废"
+    assert (b["result"], b["push_state"]) == ("UNCONFIRMED", "WAIT_RECEIPT")
+    assert [(r[1]["batchNo"], r[2].status, r[2].code) for r in RECEIPT_REPLIES] == [
+        (b["batch_no"] + "-X", 404, "BATCH_NOT_FOUND")
+    ]
 
 
-def test_unknown_receipt_code_is_invalid_response(w, sql):
-    """HTTP 200 但 code 不是 OK / NG：不当回执，记为应答无效、不重试。"""
+@pytest.mark.parametrize("code", ["OK", "NG", "DONE"])
+def test_response_not_received_is_invalid(w, sql, code):
+    """HTTP 200 但 code 不是 RECEIVED（含旧约定在应答里直接回 OK / NG）：不当已收到，记为应答无效、不重试，任务停止。"""
     org, pi, bill = setup_pi(w, qty=2, batch_size=5)
-    MES.behavior[org] = lambda batch, h: (200, {"schemaVersion": "1.0", "batchNo": batch["batchNo"], "code": "DONE"})
+    MES.behavior[org] = lambda batch, h: (200, {"batchNo": batch["batchNo"], "code": code, "message": "已处理"})
     w.allocate(pi)
     w.push()
     b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
     assert (b["result"], b["fail_code"], b["push_count"]) == ("FAILED", "RESPONSE_INVALID", 1)
+    assert f"收到 {code}" in b["fail_reason"]
+    assert sql.scalar("SELECT state FROM sn_push_task WHERE factory_code = %s AND task_key = %s", org, pi) == "STOPPED"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 0
+
+
+def _expire_wait(sql, batch_no: str) -> None:
+    """把等回执截止时间拨到过去（模拟等了这么久）。"""
+    sql.exec("UPDATE sn_delivery_batch SET next_retry_at = NOW() - INTERVAL 1 SECOND WHERE batch_no = %s", batch_no)
+    sql.exec("UPDATE sn_push_task SET run_after = NOW() - INTERVAL 1 SECOND WHERE current_batch = %s", batch_no)
+
+
+def test_no_receipt_resends_same_batch_then_exhausts(w, sql):
+    """MES 应答已收到但一直不调 ③：等 1、5、10 分钟，每次超时按原批次号、原内容重推（最多 3 次），
+    最后一次重推后再等 10 分钟仍没有即停止；后续批次一直不推。MES 修好后继续推送即成功。"""
+    org, pi, bill = setup_pi(w, qty=7, batch_size=5)
+    MES.set_fault(org, {"mode": "no_receipt"})
+    w.allocate(pi)
+    w.push()
+    waits = []
+    for _ in range(4):
+        b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
+        assert (b["result"], b["push_state"]) == ("UNCONFIRMED", "WAIT_RECEIPT")
+        waits.append(round((b["next_retry_at"] - b["received_at"]).total_seconds() / 60))
+        assert sql.scalar("SELECT state FROM sn_push_task WHERE factory_code = %s AND task_key = %s", org, pi) == (
+            "WAITING"
+        )
+        _expire_wait(sql, b["batch_no"])
+        w.push()
+    assert waits == [1, 5, 10, 10]
+    b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
+    assert (b["result"], b["push_state"], b["receipt_timeouts"], b["push_count"]) == (
+        "UNCONFIRMED",
+        "EXHAUSTED",
+        3,
+        4,
+    ), "首次 + 超时重推 3 次"
+    assert b["fail_code"] == "RECEIPT_TIMEOUT" and "仍未收到" in b["fail_reason"]
+    sent = [x for x in MES.received if x["batch"].get("batchNo") == b["batch_no"]]
+    assert [x["headers"]["x-sn-attempt"] for x in sent] == ["1", "2", "3", "4"] and len({x["raw"] for x in sent}) == 1
+    assert sql.count("SELECT COUNT(*) FROM sn_delivery_batch WHERE pi_no = %s", pi) == 1, "后续批次不建、不推"
+    task = sql.one("SELECT * FROM sn_push_task WHERE factory_code = %s AND task_key = %s", org, pi)
+    assert task["state"] == "STOPPED" and "仍未收到" in task["message"]
+    assert ok(w.api.get("/api/dashboard", w.admin))["push_interrupted"] >= 1, "首页列为推送中断"
+    # MES 修好：续推用原批次号重推，MES 按批次号去重并重新回执；再推第 2 批
+    MES.clear_fault(org)
+    ok(w.api.post("/api/delivery/resume", m(factory_code=org, key=pi), w.admin))
+    w.push()
+    rows = sql.all("SELECT * FROM sn_delivery_batch WHERE pi_no = %s ORDER BY id", pi)
+    assert [(x["result"], x["confirm_method"]) for x in rows] == [("SUCCESS", "RECEIPT")] * 2
+    assert len(MES.batches[org]) == 2, "重推同一批 MES 只处理一次"
+
+
+def test_late_receipt_after_resend_confirms_and_continues(w, sql):
+    """等回执超时重推后，MES 的回执才到：照常确认，任务接着推下一批；之后再到的同一回执只存档。"""
+    org, pi, bill = setup_pi(w, qty=7, batch_size=5)
+    w.allocate(pi)
+    w.push(receipts=False)
+    b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
+    _expire_wait(sql, b["batch_no"])
+    w.push(receipts=False)
+    b = sql.one("SELECT * FROM sn_delivery_batch WHERE id = %s", b["id"])
+    assert (b["push_state"], b["receipt_timeouts"], b["push_count"]) == ("WAIT_RECEIPT", 1, 2)
+    assert len(MES.outbox) == 2, "重推时 MES 重新提交首次的回执"
+    w.push()
+    rows = sql.all("SELECT * FROM sn_delivery_batch WHERE pi_no = %s ORDER BY id", pi)
+    assert [x["result"] for x in rows] == ["SUCCESS", "SUCCESS"]
+    verdicts = sql.all("SELECT verdict FROM sn_delivery_receipt WHERE batch_id = %s ORDER BY id", b["id"])
+    assert [v["verdict"] for v in verdicts] == ["CONFIRMED", "ARCHIVED"]
+
+
+def test_manual_confirm_while_waiting_receipt_continues(w, sql):
+    """等回执期间人工确认：批次成功，任务不等到截止时间，马上推下一批。"""
+    org, pi, bill = setup_pi(w, qty=7, batch_size=5)
+    MES.set_fault(org, {"mode": "no_receipt", "times": 1})
+    w.allocate(pi)
+    w.push()
+    b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
+    assert b["push_state"] == "WAIT_RECEIPT"
+    ok(w.api.post(f"/api/delivery/batches/{b['batch_no']}/confirm", m(reason="MES 已入库", basis="邮件"), w.admin))
+    w.push()
+    rows = sql.all("SELECT result, confirm_method FROM sn_delivery_batch WHERE pi_no = %s ORDER BY id", pi)
+    assert rows == [
+        {"result": "SUCCESS", "confirm_method": "MANUAL"},
+        {"result": "SUCCESS", "confirm_method": "RECEIPT"},
+    ]
 
 
 def test_same_rev_from_other_batch_overwrites_without_alert(w, sql):

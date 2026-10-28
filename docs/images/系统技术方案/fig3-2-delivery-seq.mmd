@@ -6,17 +6,20 @@ sequenceDiagram
   participant API as MES 接口 /api/mes/v1
   T->>D: 认领推送任务（生产组织 + PI，租约）
   T->>D: SKIP LOCKED 认领「待推送、未入批、未暂停」的号<br/>建交付批次 PS-…，写定 body_gz 与内容摘要
-  T->>M: ① POST 批次（gzip，X-Sn-Batch-No、X-Sn-Attempt）
-  alt 200 + 回执且逐枚核对通过
-    T->>D: 批次成功，号改已推送、记 MES 持有组织
+  T->>M: ① POST 批次（X-Sn-Attempt；开启压缩时 gzip）
+  alt 200 + 已收到（RECEIVED）
+    T->>D: 批次等回执（WAIT_RECEIPT），任务等待，后续批次不推
+    M->>API: ③ POST receipts（MES 落库后）
+    API->>D: OK：批次成功，号改已推送、记 MES 持有组织，唤醒任务推下一批<br/>NG：批次失败，任务停止并提示原因
+    Note over T,D: 1、5、10 分钟没有回执：用原内容重推（最多 3 次），用尽即停
   else 超时 / 5xx / 429 / 503 / 409 BATCH_IN_PROGRESS
     T->>D: 批次仍未确认，按 1、5、15 分钟用原内容重试；用尽即停，等「继续推送」
-  else 整批拒绝 / 4xx / 回执不符
+  else 4xx / 应答无效或不符
     T->>D: 批次失败，号保持冻结，首页告警
   end
   Note over M,API: 推送中断时 MES 可自行取批
-  M->>API: ③ POST batches/next（PI / 单据 / PI + 单据）
+  M->>API: ② POST batches/next（PI / 单据 / PI + 单据）
   API->>D: 组织锁内：先给最早的未确认批次，没有才建拉取批次 PL-…
   API-->>M: 同一份批次内容 + remaining / paused
-  M->>API: ④ POST receipts（批次号在请求体）
+  M->>API: ③ POST receipts（批次号在请求体）
   API->>D: 核对回执；先到的回执生效，后到的只存档

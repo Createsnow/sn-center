@@ -1,6 +1,8 @@
-"""回执：核对、存档、确认或记失败。推送应答、拉取回执、人工确认都在这里落到批次和号上；先到的回执生效，后到的只存档。
+"""回执：核对、存档、确认或记失败。MES 回执（接口 ③）、人工确认都在这里落到批次和号上；先到的回执生效，后到的只存档。
 
-MES 回执只有整批结果：code = OK 整批已处理（逐枚按 rev 新增或覆盖），NG 整批退回（message 为原因）。"""
+推送与拉取的批次都由 MES 落库后调 ③ 回执确认（推送应答只表示已收到）。回执只有整批结果：code = OK 整批已处理
+（逐枚按 rev 新增或覆盖），NG 整批退回（message 为原因）。回执生效后唤醒正在等这一批的推送任务：OK 接着推下一批，
+NG 停止并提示。"""
 
 from __future__ import annotations
 
@@ -11,8 +13,8 @@ from app.services import audit, mes_client
 from app.services.delivery import push
 from app.services.delivery.batches import (
     FAILED,
-    M_PULL,
-    M_PUSH,
+    M_MANUAL,
+    M_RECEIPT,
     RECEIPT_NG,
     RECEIPT_OK,
     SRC_PULL,
@@ -59,8 +61,10 @@ def _archive(b: dict, method: str, outcome: str, verdict: str, detail: str | Non
     )
 
 
-def apply_receipt(cu: CurrentUser, batch_no: str, r: dict, method: str) -> Applied:
-    """处理一份回执（推送应答或拉取回执）。在独立事务里提交，返回结果；调用方据此应答。"""
+def apply_receipt(cu: CurrentUser, batch_no: str, r: dict) -> Applied:
+    """处理一份 MES 回执（接口 ③）。在独立事务里提交，返回结果；调用方据此应答。
+    回执生效（确认或整批退回）后唤醒正在等这一批的推送任务。"""
+    method = M_RECEIPT
     with db.tx():
         b = must_batch(batch_no, lock=True)
         code = r.get("code") if isinstance(r.get("code"), str) else ""
@@ -102,22 +106,24 @@ def apply_receipt(cu: CurrentUser, batch_no: str, r: dict, method: str) -> Appli
                 .why(reason)
                 .info(f"method={method} code=NG"),
             )
-            return Applied("REJECTED", must_batch(batch_no))
-        confirm(cu, b, method, True, now)
-        _archive(b, method, code, "CONFIRMED", None, r, cu.emp_no)
-        b2 = must_batch(batch_no)
-        audit.record(
-            cu,
-            audit.entry(audit.SN_RECEIPT)
-            .factory(b["factory_code"])
-            .pi(b["pi_no"])
-            .count(b["qty"])
-            .batch(b["batch_no"])
-            .status(util.TO_PUSH, util.PUSHED if b["batch_type"] != TRANSFER_OUT else None)
-            .info(f"method={method} result={b2['result']} accepted={b2['accepted_qty']}"),
-        )
-    after_confirm(b)
-    return Applied("CONFIRMED", b2)
+            applied = Applied("REJECTED", must_batch(batch_no))
+        else:
+            confirm(cu, b, method, True, now)
+            _archive(b, method, code, "CONFIRMED", None, r, cu.emp_no)
+            b2 = must_batch(batch_no)
+            audit.record(
+                cu,
+                audit.entry(audit.SN_RECEIPT)
+                .factory(b["factory_code"])
+                .pi(b["pi_no"])
+                .count(b["qty"])
+                .batch(b["batch_no"])
+                .status(util.TO_PUSH, util.PUSHED if b["batch_type"] != TRANSFER_OUT else None)
+                .info(f"method={method} result={b2['result']} accepted={b2['accepted_qty']}"),
+            )
+            applied = Applied("CONFIRMED", b2)
+    wake_task(b)
+    return applied
 
 
 def mark_failed(b: dict, code: str, reason: str, voidable: bool, now) -> None:
@@ -152,9 +158,13 @@ def confirm(cu: CurrentUser, b: dict, method: str, by_mes: bool, now) -> None:
         b["id"],
     )
     if b["batch_type"] != TRANSFER_OUT:
-        mode = {M_PUSH: util.MODE_PUSH, M_PULL: util.MODE_PULL}.get(method) or (
-            util.MODE_PULL if b["source"] == SRC_PULL else util.MODE_PUSH
-        )
+        # 交付方式按 MES 怎么拿到这一批（回执都经 ③）：推送应答过已收到的为推送；没有、且是 MES 取走的为拉取；
+        # 人工确认按批次怎么建立的
+        if method == M_MANUAL:
+            pulled = b["source"] == SRC_PULL
+        else:
+            pulled = b["received_at"] is None and (b["source"] == SRC_PULL or b["pulled_at"] is not None)
+        mode = util.MODE_PULL if pulled else util.MODE_PUSH
         db.exec(
             "UPDATE sn_item SET status = 'PUSHED', mes_holder = %s, delivery_mode = %s, push_type = 'NEW', "
             "delivered_at = %s, updated_at = %s WHERE delivery_batch_no = %s AND status = 'TO_PUSH'",
@@ -175,8 +185,9 @@ def confirm(cu: CurrentUser, b: dict, method: str, by_mes: bool, now) -> None:
         )
 
 
-def after_confirm(b: dict) -> None:
-    """批次确认后：正在等这一批重试的推送任务接着推后续批次。"""
+def wake_task(b: dict) -> None:
+    """批次确认、整批退回或作废后：正在等这一批（等回执、等重试）的推送任务马上再跑一次——确认的接着推后续批次，
+    退回的停止并提示原因。"""
     key = XO_KEY if b["batch_type"] == TRANSFER_OUT else b["pi_no"]
     db.exec(
         "UPDATE sn_push_task SET state = 'QUEUED', run_after = NULL, updated_at = %s WHERE factory_code = %s "

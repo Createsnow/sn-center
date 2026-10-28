@@ -19,7 +19,6 @@ M = {
 "dashboard.item": ("项目", "Item", "Hạng mục"),
 "dashboard.todayItem.SN_GENERATE": ("生成", "Generated", "Đã tạo"),
 "dashboard.todayItem.SN_ALLOCATE": ("分配", "Allocated", "Đã phân bổ"),
-"dashboard.todayItem.CONFIRM_PUSH_RESPONSE": ("推送（推送应答确认）", "Pushed (confirmed by push response)", "Đã đẩy (xác nhận bằng phản hồi đẩy)"),
 "dashboard.todayItem.CONFIRM_RECEIPT": ("MES 回执确认", "Confirmed by MES receipt", "Xác nhận bằng biên nhận MES"),
 "dashboard.todayItem.CONFIRM_MANUAL": ("人工确认", "Confirmed manually", "Xác nhận thủ công"),
 "dashboard.todayItem.SN_PULL": ("MES 拉取", "Pulled by MES", "MES đã kéo"),

@@ -115,7 +115,7 @@ E = {
 "PUSH_NOTHING": ("Production org {factory} has no SNs or batches of PI {pi} to push", "Tổ chức sản xuất {factory} không có SN hoặc lô nào của PI {pi} cần đẩy"),
 "BATCH_NOT_FOUND": ("Batch {batch_no} not found", "Không tìm thấy lô {batch_no}"),
 "BATCH_NOT_PENDING": ("Batch {batch_no} is already {result} and cannot be handled again", "Lô {batch_no} đã là {result}, không thể xử lý lại"),
-"BATCH_NOT_VOIDABLE": ("Batch {batch_no} was already processed by MES (receipt or content mismatch); it cannot be voided, only fixed by an MES receipt correction or confirmed manually", "Lô {batch_no} đã được MES xử lý (biên nhận hoặc nội dung không khớp), không thể hủy, chỉ có thể để MES sửa biên nhận hoặc xác nhận thủ công"),
+"BATCH_NOT_VOIDABLE": ("Batch {batch_no} may already have been processed by MES (invalid or mismatched response, receipt or content mismatch); it cannot be voided, only settled by an MES receipt or confirmed manually", "Lô {batch_no} có thể đã được MES xử lý (phản hồi không hợp lệ hoặc không khớp, biên nhận hoặc nội dung không khớp), không thể hủy, chỉ có thể để MES gửi biên nhận hoặc xác nhận thủ công"),
 "BATCH_BASIS_REQUIRED": ("A basis is required (e.g. written confirmation from MES, at most 500 characters)", "Bắt buộc nhập căn cứ (ví dụ xác nhận bằng văn bản của MES, tối đa 500 ký tự)"),
 "DALERT_NOT_FOUND": ("Delivery alert not found or already handled", "Không tìm thấy cảnh báo giao hoặc đã xử lý"),
 # ---------- SN 导出 ----------

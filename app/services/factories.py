@@ -276,7 +276,8 @@ def _candidate(f: dict, body: dict) -> dict:
 
 
 def test_connection(cu: CurrentUser, code: str | None, body: dict) -> dict:
-    """连接测试：向接口地址发一个不含号的 PING 批次（认证、压缩与正式推送相同），只提示结果；通过时记下配置摘要。"""
+    """连接测试：向接口地址发一个不含号的 PING 批次（认证、压缩与正式推送相同），只提示结果；通过时记下配置摘要。
+    PING 不入库、没有 ③ 回执：应答 HTTP 200 + code = RECEIVED（兼容 OK）即通过，与原连接测试一致。"""
     f = must_get(code)
     c = _candidate(f, body)
     if not complete(c["mes_url"], c["mes_auth_type"], bool(c["mes_credential_plain"])):
@@ -286,9 +287,9 @@ def test_connection(cu: CurrentUser, code: str | None, body: dict) -> dict:
         c["mes_url"], c["mes_auth_type"], c["mes_credential_plain"], int(c["push_timeout_sec"]), bool(c["mes_gzip"])
     )
     batch_no = "PING-" + util.mes_local().strftime("%Y%m%d%H%M%S%f")[:17]
-    out = mes_client.send(t, mes_client.ping_body(f["factory_code"], batch_no), 1)
-    ok = out.kind == mes_client.RECEIPT and isinstance(out.receipt, dict) and out.receipt.get("code") == "OK"
-    message = "" if ok else (out.message or (out.receipt or {}).get("message") or out.code or "未返回 OK")
+    out = mes_client.send(t, batch_no, mes_client.ping_body(f["factory_code"], batch_no), 1, ping=True)
+    ok = out.kind == mes_client.RECEIVED
+    message = "" if ok else (out.message or out.code or "未返回 RECEIVED")
     now = util.now()
     with db.tx():
         same = _digest(c) == stored_digest(f)

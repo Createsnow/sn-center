@@ -740,15 +740,12 @@ def test_void_transfer_delivery_batch_rebuilds_instead_of_returning_to_pool(w, s
     w.enable_mes(b)
     w.allocate(pi)
     w.push()
-    MES.behavior[b] = lambda batch, h: (
-        200,
-        {"schemaVersion": "1.0", "batchNo": batch["batchNo"], "code": "NG", "message": "停线"},
-    )
+    MES.set_fault(b, {"mode": "reject", "message": "停线"})
     t = ok(org_direct(w, a, pi, bill, b))
     w.push()
     old = _doc_batches(sql, t["transfer_no"])[0]
     assert (old["result"], old["voidable"]) == ("FAILED", 1)
-    MES.behavior.pop(b)
+    MES.clear_fault(b)
     r = ok(w.api.post(f"/api/delivery/batches/{old['batch_no']}/void", m(reason="整批退回", basis="MES 确认"), w.admin))
     rows = _doc_batches(sql, t["transfer_no"])
     assert [x["result"] for x in rows] == ["VOIDED", "UNCONFIRMED"]
@@ -787,11 +784,11 @@ def test_void_transfer_delivery_batch_keeps_suspended_sns_in_pool(w, sql):
     w.enable_mes(b)
     w.allocate(pi)
     w.push()
-    MES.behavior[b] = lambda batch, h: (200, {"schemaVersion": "1.0", "batchNo": batch["batchNo"], "code": "NG"})
+    MES.set_fault(b, {"mode": "reject"})
     t = ok(org_direct(w, a, pi, bill, b))
     w.push()
     old = _doc_batches(sql, t["transfer_no"])[0]
-    MES.behavior.pop(b)
+    MES.clear_fault(b)
     assert sql.exec("UPDATE sn_bill_ledger SET suspend = 'CHANGE' WHERE bill_no = %s", bill) == 1
     r = ok(w.api.post(f"/api/delivery/batches/{old['batch_no']}/void", m(reason="整批退回", basis="MES 确认"), w.admin))
     assert r["rebuilt"] == [] and [x["result"] for x in _doc_batches(sql, t["transfer_no"])] == ["VOIDED"]

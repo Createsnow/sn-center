@@ -180,7 +180,7 @@ const kpis = computed<Kpi[]>(() => {
 });
 
 /** 今日：生成、分配、推送（按确认方式分列）、MES 拉取、转单。 */
-const TODAY_KEYS = ["SN_GENERATE", "SN_ALLOCATE", "CONFIRM_PUSH_RESPONSE", "CONFIRM_RECEIPT", "CONFIRM_MANUAL", "SN_PULL", "TRANSFER_BILL"];
+const TODAY_KEYS = ["SN_GENERATE", "SN_ALLOCATE", "CONFIRM_RECEIPT", "CONFIRM_MANUAL", "SN_PULL", "TRANSFER_BILL"];
 const todayRows = computed(() => {
   const today: Record<string, number> = data.value?.today || {};
   const keys = [...TODAY_KEYS, ...Object.keys(today).filter((k) => !TODAY_KEYS.includes(k))];

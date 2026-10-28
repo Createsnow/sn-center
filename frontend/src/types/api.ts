@@ -253,7 +253,9 @@ export interface DeliveryBatch {
   accepted_qty: number;
   push_state: string;
   retry_count: number;
+  receipt_timeouts: number;
   next_retry_at: string | null;
+  received_at: string | null;
   push_count: number;
   repush_count: number;
   last_push_at: string | null;

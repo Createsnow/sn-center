@@ -180,8 +180,17 @@ class Settings:
 
     @property
     def push_retry_intervals(self) -> list[int]:
-        """推送未确认时自动重试的间隔（分钟）；个数即次数。"""
-        raw = self.get("SN_PUSH_RETRY_INTERVALS_MINUTES", "1,5,15")
+        """推送没送达（超时、5xx、断连等）时自动重试的间隔（分钟）；个数即次数。"""
+        return self._minutes("SN_PUSH_RETRY_INTERVALS_MINUTES", "1,5,15")
+
+    @property
+    def push_receipt_waits(self) -> list[int]:
+        """MES 应答「已收到」后等 ③ 回执的时长（分钟）：送达后等第 1 个时长，超时按原批次重推、再等第 2 个，依次类推
+        （个数即超时重推的次数，最后一次重推后按最后一个时长等）；仍没有回执即停止，批次推送状态记为重试用尽。"""
+        return self._minutes("SN_PUSH_RECEIPT_WAIT_MINUTES", "1,5,10") or [1, 5, 10]
+
+    def _minutes(self, key: str, default: str) -> list[int]:
+        raw = self.get(key, default)
         out = []
         for part in raw.split(","):
             try:

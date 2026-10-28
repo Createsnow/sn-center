@@ -8,7 +8,7 @@ MES 方还没接入时，用仓库里的三样工具分头验证。**真实 MES 
 | --- | --- | --- |
 | 本系统按契约推送、取批、回执，异常时的重试、续推、告警、人工处理 | 自动化测试 `uv run pytest`（内置模拟 MES） | 不需要 |
 | 在测试环境用页面和接口走一遍真实流程，注入 MES 故障看本系统怎么处理 | **模拟 MES** `devtools/mes_mock.py` | 不需要 |
-| MES 方实现的接收推送接口（①）是否符合契约 | **契约测试** `devtools/mes_conformance.py` | 只要 MES 测试环境的接口地址 |
+| MES 方实现的接收推送接口（①）与推送批次的回执（③）是否符合契约 | **契约测试** `devtools/mes_conformance.py`（自带 ③ 接收地址） | 只要 MES 测试环境的接口地址，并把 MES 的回执地址临时指向脚本 |
 | MES 方的取批客户端（② → ③）、MES 本侧数据 | 本系统测试环境 + MES 测试环境 | 需要 |
 
 三样工具共用同一份 `process(batch)` 参考实现（`devtools/mes_mock.py` 的 `MesSim`）：自动化测试里的「假 MES」就是它，契约测试先对它跑一遍全部通过，再对 MES 方的实现跑。
@@ -22,7 +22,7 @@ uv run pytest -q                                  # 全部（集成测试需要 
 uv run pytest -q tests/test_delivery.py tests/test_transfers.py tests/test_mes_tools.py
 ```
 
-测试启动完整应用，连接真实 MySQL、假金蝶和模拟 MES，按组织注入 MES 故障（503、断连、处理后响应丢失、整批退回、回执批次号写错、413 等）。覆盖到哪些 9.2 场景见[第 5 节](#5-prd-92-场景对照表)。
+测试启动完整应用，连接真实 MySQL、假金蝶和模拟 MES，按组织注入 MES 故障（503、断连、处理后响应丢失、整批退回、不回执、回执或应答的批次号写错、413 等）。用例里模拟 MES 处理完推送来的批次后，由测试用 MES 接口账户逐批调 ③ 回执（`World.push`），与真实 MES 一样回执到了才推下一批。覆盖到哪些 9.2 场景见[第 5 节](#5-prd-92-场景对照表)。
 
 ---
 
@@ -32,16 +32,19 @@ uv run pytest -q tests/test_delivery.py tests/test_transfers.py tests/test_mes_t
 
 ```bash
 # 组织 110 的凭证为 工号:密钥（SN110:key-110）；可重复 --secret 配多个组织
-uv run python -m devtools.mes_mock serve --port 9001 --secret 110=SN110:key-110
+# 处理完推送来的批次后，用组织 110 的 MES 接口账户（「账户」页建，记下密钥）向本系统提交 ③ 回执
+uv run python -m devtools.mes_mock serve --port 9001 --secret 110=SN110:key-110 \
+  --receipt-base http://127.0.0.1:8000 --receipt-account 110=MES110:<密钥>
 # 本系统在别的机器上：--host 0.0.0.0；要 HTTPS：--tls-cert cert.pem --tls-key key.pem
 # 要验证 PI 归属校验：--pi 110=000001,000002，交付批次头的 pi 不在其中时整批退回（不给时不校验归属）
 ```
 
 1. 「生产组织」页，组织 110 的 MES 对接配置：接口地址填 `http://<模拟 MES 所在机器>:9001/mes/110`，认证方式 TOKEN，凭证填 `SN110:key-110`（工号:密钥）。
-2. 点 **连接测试**，模拟 MES 的窗口打印 `PING … → 200 PROCESSED` 即通过；再开启「对接 MES」。
-3. 正常走 生成 → 分配：每次推送在模拟 MES 窗口打印一行（批次号、第几次发送、结果汇总），在「SN 查询 → 交付批次」核对本系统一侧。
+2. 点 **连接测试**，模拟 MES 的窗口打印 `PING … → 200 RECEIVED` 即通过；再开启「对接 MES」。
+3. 正常走 生成 → 分配：每次推送在模拟 MES 窗口打印一行（批次号、第几次发送、`200 RECEIVED`），随后一行 `③ 回执 … OK → 200`；本系统收到回执才推下一批。「SN 分配」页的推送进度显示「第 i / N 次」，等回执时标「等待回执」；在「SN 查询 → 交付批次」核对本系统一侧（确认方式「MES 回执」）。
+4. 不给 `--receipt-base` 时模拟 MES 只应答已收到、不回执（与联调中「MES 没调回执接口」相同）：本系统停在第 1 批等回执，1、5、10、10 分钟各重推一次后停止，页面显示推送中断。
 
-模拟 MES 的数据只在内存里，重启即清空。各组织的 SN 表、批次表随时可查：`curl http://127.0.0.1:9001/_mock/state`。
+模拟 MES 的数据只在内存里，重启即清空。各组织的 SN 表、批次表、待提交和已提交的 ③ 回执随时可查：`curl http://127.0.0.1:9001/_mock/state`。
 
 ### 2.2 注入故障
 
@@ -58,17 +61,19 @@ curl -X POST http://127.0.0.1:9001/_mock/reset                   # 清空 MES �
 | --- | --- | --- |
 | `http` | 返回 `status`（默认 503）+ 错误结构，不处理；可带 `code`、`message` | 503 / 429 / 5xx：按 1、5、15 分钟重试，用尽后列入首页「推送中断」；401 / 403 / 404：不重试，配置状态标为异常；413：不重试，可作废后按调小的枚数重新组批 |
 | `drop` | 不处理，直接断开连接 | 按断连重试 |
-| `drop_after` | **先处理并落库**，再断开连接 | 重试或 MES 取批时拿到同一份回执（`OK`），批次成功 |
-| `slow` | 先处理并落库，延迟 `delay` 秒（默认 70）再响应 | 超过推送超时按超时重试，结果同上 |
+| `drop_after` | **先处理并落库、提交 ③ 回执**，再断开连接 | 按断连重试，收到回执即确认，停止重试 |
+| `slow` | 先处理并落库、提交 ③ 回执，延迟 `delay` 秒（默认 70）再应答 | 超过推送超时按超时重试，结果同上 |
 | `in_progress` | 返回 409 `BATCH_IN_PROGRESS` | 重试 |
-| `reject` | HTTP 200 + 整批退回（`code = NG`，`message` 默认「模拟整批退回」，可改），不登记批次号 | 批次失败、号冻结、首页告警（原因取 `message`）；清除故障后「继续推送」原批次成功，或作废后重新组批 |
-| `bad_receipt` | 正常处理，但回执的 `batchNo` 写错 | 批次失败（`RECEIPT_MISMATCH`），不能作废 |
+| `reject` | 应答已收到，③ 回执整批退回（`code = NG`，`message` 默认「模拟整批退回」，可改），不登记批次号 | 批次失败、号冻结、推送停止、首页告警（原因取 `message`）；清除故障后「继续推送」原批次成功，或作废后重新组批 |
+| `no_receipt` | 正常处理、应答已收到，但不调 ③ | 等回执 1、5、10、10 分钟，每次超时按原批次重推（模拟 MES 不重复处理），共 3 次后停止，首页「推送中断」；清除故障后「继续推送」即成功 |
+| `bad_receipt` | 正常处理，但 ③ 回执的 `batchNo` 写错 | 回执被拒（404 `BATCH_NOT_FOUND`），原批次仍等回执，超时按上一行处理 |
+| `bad_response` | 不处理，应答已收到但 `batchNo` 写错 | 批次失败（`RESPONSE_MISMATCH`），不重试、不能作废 |
 
 连接测试（`PING`）默认不受故障影响；要连 PING 一起故障，加 `"ping": true`。
 
-测试环境要让重试快一点，可以设 `SN_PUSH_RETRY_INTERVALS_MINUTES=0,0,0`（见运维手册第 2 节，正式环境不要改）。
+测试环境要让重试快一点，可以设 `SN_PUSH_RETRY_INTERVALS_MINUTES=0,0,0`、`SN_PUSH_RECEIPT_WAIT_MINUTES=1,1,1`（见运维手册第 2 节，正式环境不要改）。
 
-**本侧版本更新**：先预置 MES 本侧「已有」的一枚号，再让本系统推送它。预置的 rev 更大时，MES 跳过该枚、整批仍回 `OK`（对接说明 3.2 逐枚处理），本系统批次成功、不告警；可在 `/_mock/state` 看到该号仍是预置的 rev。预置同 rev、别的批次时，MES 按同 rev 覆盖（内容相同）。
+**本侧版本更新**：先预置 MES 本侧「已有」的一枚号，再让本系统推送它。预置的 rev 更大时，MES 跳过该枚、整批仍回执 `OK`（对接说明 3.2 逐枚处理），本系统批次成功、不告警；可在 `/_mock/state` 看到该号仍是预置的 rev。预置同 rev、别的批次时，MES 按同 rev 覆盖（内容相同）。
 
 ```bash
 curl -X POST http://127.0.0.1:9001/_mock/seed -H 'Content-Type: application/json' \
@@ -136,7 +141,7 @@ MES 接口账户不要求所绑组织已开启「对接 MES」，可以先建好
 
 注意：
 
-- 开启对接**之后**再分配，或在「SN 分配」页点「继续推送」，系统会推送给模拟 MES，号就不会留给 MES 方来取。要让 MES 方取到已推送的批次，可给模拟 MES 注入 `drop` 故障（2.2），让推送重试用尽，批次停在未确认，MES 再来取，拿到的是同一批（PRD 9.2 场景 4）。
+- 开启对接**之后**再分配，或在「SN 分配」页点「继续推送」，系统会推送给模拟 MES，号就不会留给 MES 方来取。要让 MES 方取到已推送的批次，可给模拟 MES 注入 `drop` 故障（2.2），让推送重试用尽，批次停在未确认，MES 再来取，拿到的是同一批（PRD 9.2 场景 4）；或不给模拟 MES 配 `--receipt-base`，批次停在等回执，MES 来取同样拿到这一批，用 ③ 回执即确认。
 - 等 MES 测试环境的接收接口上线并通过契约测试（第 3 节），再把接口地址改成 MES 测试环境的地址，重新连接测试。
 - 正式环境不要接模拟 MES：按运维手册第 7 节，联调全部通过后再开启对接。
 
@@ -144,22 +149,23 @@ MES 接口账户不要求所绑组织已开启「对接 MES」，可以先建好
 
 ## 3. 契约测试：验证 MES 方的接收接口
 
-MES 方的接收推送接口（①）在测试环境上线后就能测，不需要本系统。脚本自己造批次，按接口文档的方式发送（默认原始 JSON，加 `--gzip` 时压缩，与「生产组织」页的「gzip 压缩」一致；认证用工号 + 密钥），逐项核对响应：
+MES 方的接收推送接口（①）在测试环境上线后就能测，不需要本系统。脚本自己造批次，按接口文档的方式发送（默认原始 JSON，加 `--gzip` 时压缩，与「生产组织」页的「gzip 压缩」一致；认证用工号 + 密钥），逐项核对 ① 应答（已收到 `RECEIVED`）和随后 MES 提交的 ③ 回执。脚本自带 ③ 接收地址（`--listen`，默认 `0.0.0.0:9100`）：测试期间把 MES 测试环境的「SN 系统地址」临时指向 `http://<运行脚本的机器>:9100`，MES 照常调 `/api/mes/v1/receipts`：
 
 ```bash
 uv run python -m devtools.mes_conformance --url https://mes-test.example.com/sn/receive --org 110 \
-  --pi 000001 --auth TOKEN --secret <工号>:<密钥> --report mes-110-report.md
-# 再加 --perf 测 5000 枚一批的处理时间
+  --pi 000001 --auth TOKEN --secret <工号>:<密钥> --listen 0.0.0.0:9100 --report mes-110-report.md
+# 再加 --perf 测 5000 枚一批的处理时间；--receipt-wait 改等回执的秒数（默认 30）
 ```
 
 脚本只依赖 Python 3.11+ 和 httpx，可以把 `devtools/mes_conformance.py` 单独交给 MES 方自测，失败项和原因写在报告里。
 
 - **只能对 MES 测试环境运行**：会写入一批测试 SN（前缀 `CT` + 本次运行号），其中几枚会被标为「已转走」。每次运行用新的运行号，不会与真实数据或上次运行重复。
 - `--pi` 须填 MES 测试环境中该组织**已有的**一张 PI：MES 要校验交付批次头的 `pi` 是本组织的，测试 SN 都挂在这张 PI 下。
-- 检查项（共 24 项，TOKEN 方式下其中 1 项跳过）：连接测试与 `orgCode` 校验；凭证错误；首次送达回 `OK`；同一批再次送达回 `OK`；同批次号内容不同报 409；rev 更大覆盖、相同覆盖、更小跳过（整批仍 `OK`）；转出、本地没有时转出并跳过迟到的旧交付、转回；不认识的字段照常处理、四种交付类 `batchType` 都按交付处理、不认识的 `batchType` 整批 `NG`；四种整批退回 `NG`（`orgCode` 不符、批内 SN 重复、缺必填字段，并确认退回后不登记批次号）；无法解析报 400；同一批同时送达两次只处理一次；5000 枚的处理时间；批次头 `pi` 不是本组织已有的 PI 整批 `NG`（修正后同一批次号重送能处理）；缺批次头 `pi`、明细 `pi` 与批次头不一致整批 `NG`；`count` 与 `items` 条数不符整批 `NG`（修正后同一批次号重送能处理）。
+- 检查项（共 24 项，TOKEN 方式下其中 1 项跳过）：连接测试（`PING` 应答已收到、不调 ③）与 `orgCode` 校验；凭证错误；首次送达应答已收到、③ 回执 `OK`；同一批再次送达应答已收到、重新提交回执 `OK`；同批次号内容不同报 409；rev 更大覆盖、相同覆盖、更小跳过（整批仍 `OK`）；转出、本地没有时转出并跳过迟到的旧交付、转回；不认识的字段照常处理、四种交付类 `batchType` 都按交付处理、不认识的 `batchType` 整批 `NG`；四种整批退回 `NG`（`orgCode` 不符、批内 SN 重复、缺必填字段，并确认退回后不登记批次号）；无法解析报 400；同一批同时送达两次只处理一次、回执都为 `OK`；5000 枚从送达到回执的时间；批次头 `pi` 不是本组织已有的 PI 整批 `NG`（修正后同一批次号重送能处理）；缺批次头 `pi`、明细 `pi` 与批次头不一致整批 `NG`；`count` 与 `items` 条数不符整批 `NG`（修正后同一批次号重送能处理）。
+- 除 C01～C04、C07、C19 只看 ① 应答外，每项都要等到 ③ 回执：MES 只应答已收到、不回执（联调时遇到的情况），或仍在 ① 应答里直接回 `OK` / `NG`（旧约定），这些项全部失败。
 - 回执只有整批结果，看不到 MES 的本侧数据，报告末尾列出要在 MES 库或页面上**人工核对**的几项（新增、覆盖、跳过、已转走、清除已转走、退回不落数据）。
 
-契约测试只覆盖接口 ①。MES 的取批客户端（每次带工号:密钥、`remaining` 续取、`BATCH_VOIDED` 丢弃、回执被拒 422 后修正重交）要让 MES 测试环境连本系统测试环境来验证，见第 4 节。
+契约测试覆盖接口 ① 和推送批次的 ③ 回执。MES 的取批客户端（每次带工号:密钥、`remaining` 续取、`BATCH_VOIDED` 丢弃、回执被拒 422 后修正重交）要让 MES 测试环境连本系统测试环境来验证，见第 4 节。
 
 ---
 
@@ -178,7 +184,7 @@ uv run python -m devtools.mes_conformance --url https://mes-test.example.com/sn/
 
 | # | 场景（PRD 9.2） | 自动化测试 | 契约测试 | 联调时重点 |
 | --- | --- | --- | --- | --- |
-| 1 | 推送超时后自动重试并续推；期间 MES 取到同一批并回执，系统停止重试 | `test_delivery::test_retry_then_exhaust_then_resume_with_same_batch`、`test_mes_tools::test_push_response_lost_then_pull_gets_same_receipt` | C06 | MES 实际处理时间接近超时（60 秒）时的表现 |
+| 1 | 推送超时后自动重试并续推；期间 MES 取到同一批并回执，系统停止重试；应答已收到但没有回执时按原批次重推，回执迟到照常确认 | `test_delivery::test_retry_then_exhaust_then_resume_with_same_batch`、`test_delivery::test_no_receipt_resends_same_batch_then_exhausts`、`test_delivery::test_late_receipt_after_resend_confirms_and_continues`、`test_mes_tools::test_push_response_lost_but_receipt_confirms`、`test_mes_tools::test_push_response_lost_then_pull_gets_same_receipt` | C06 | MES 落库到回执的时间；重推到达时是否重新回执 |
 | 2 | 推送建批、MES 拉取建批并发，同一枚号不进两个批次 | `test_mes_tools::test_push_and_pull_concurrently_never_overlap` | — | MES 按真实频率取批时同时推送 |
 | 3 | 推送与拉取同时送达同一批次，MES 只处理一次，两边回执相同 | `test_mes_tools::test_push_response_lost_then_pull_gets_same_receipt` | C06、C20 | MES 的批次号锁在多台服务器上是否生效 |
 | 4 | MES 取批后宕机未回执，再取仍是同一批；按 PI、单据、PI + 单据取；无批次时返回空并给出剩余、暂停枚数 | `test_delivery::test_pull_returns_same_unconfirmed_batch_until_receipt`、`test_orders::test_reversal_suspends_undelivered_and_resumes`、`test_delivery::test_pull_scope_checks` | — | PI + 单据组合取批（用 `mes_mock pull --pi --bill` 或 MES 客户端）；MES 重启后续取 |
@@ -189,10 +195,10 @@ uv run python -m devtools.mes_conformance --url https://mes-test.example.com/sn/
 | 9 | 按批次号取回：未确认、失败的可取回，不建批不改状态；已确认、已作废的被拒绝 | `test_delivery::test_pull_receipt_invalid_rejected_batch_unchanged_then_fixed`、`test_delivery::test_void_returns_items_to_pool_and_rebatches`、`test_delivery::test_rejected_batch_voided_rebatches_and_refuses_voided` | — | MES 收到 409 `BATCH_CONFIRMED` / `BATCH_VOIDED` 后的处理 |
 | 10 | 同一 SN 再次推送、拉取后，MES 中只保留一条 | `test_delivery::test_pull_returns_same_unconfirmed_batch_until_receipt` | C06 | MES 库里按 SN 查只有一条 |
 | 11 | 单据暂停交付期间推送、拉取都取不到未交付的号，已入批的可续推、可拉取；解除后自动继续推送 | `test_orders::test_reversal_suspends_undelivered_and_resumes`、`test_orders::test_pi_change_freezes_until_confirmed` | — | MES 取批时 `paused` 的显示与处理 |
-| 12 | 按 rev 逐枚处理、整批回执：更大或相同覆盖、更小跳过，整批仍 `OK`；回执不符批次失败 | `test_delivery::test_same_rev_from_other_batch_overwrites_without_alert`、`test_delivery::test_older_rev_skipped_by_mes_without_alert`、`test_delivery::test_receipt_batch_no_mismatch_fails_batch`、`test_delivery::test_unknown_receipt_code_is_invalid_response` | C05、C08～C10 | MES 本侧 rev 与挂靠 |
+| 12 | 按 rev 逐枚处理、整批回执：更大或相同覆盖、更小跳过，整批仍 `OK`；应答不是已收到或批次号不符时批次失败 | `test_delivery::test_same_rev_from_other_batch_overwrites_without_alert`、`test_delivery::test_older_rev_skipped_by_mes_without_alert`、`test_delivery::test_response_batch_no_mismatch_fails_batch`、`test_delivery::test_response_not_received_is_invalid` | C05、C08～C10 | MES 本侧 rev 与挂靠 |
 | 13 | 连接测试批次：认证、组织编码校验通过即成功，MES 不写数据 | `test_accounts::test_mes_enable_requires_test_and_disable_blocked` | C01～C04 | MES 库里没有 PING 记录 |
-| 14 | 回执与批次不符：推送响应不符记失败，取批跳过；拉取回执不合法只拒收、批次不变；修正后提交正确回执成功 | `test_delivery::test_receipt_batch_no_mismatch_fails_batch`、`test_delivery::test_pull_receipt_invalid_rejected_batch_unchanged_then_fixed`、`test_delivery::test_receipt_batch_no_in_body_and_no_gzip` | C05（校验规则相同） | MES 收到 400 后按 `details` 修正重交 |
-| 15 | 人工处理：拒收批次作废后重新组批；报文过大作废后按调小的枚数组批；转出批次作废后重建送达；作废批次取回、回执被拒；人工确认后停止重试 | `test_delivery::test_rejected_batch_voided_rebatches_and_refuses_voided`、`test_delivery::test_void_returns_items_to_pool_and_rebatches`、`test_transfers::test_void_transfer_out_rebuilds_and_delivers`、`test_delivery::test_manual_confirm_stops_retry` | — | MES 丢弃作废批次、不用本地缓存处理；书面确认流程 |
+| 14 | 应答或回执与批次不符：推送应答不符记失败，取批跳过；③ 回执批次号写错被拒、原批次仍等回执；回执不合法只拒收、批次不变；修正后提交正确回执成功 | `test_delivery::test_response_batch_no_mismatch_fails_batch`、`test_delivery::test_receipt_with_wrong_batch_no_refused_batch_keeps_waiting`、`test_delivery::test_pull_receipt_invalid_rejected_batch_unchanged_then_fixed`、`test_delivery::test_receipt_batch_no_in_body_and_no_gzip` | C05（校验规则相同） | MES 收到 400 后按 `details` 修正重交 |
+| 15 | 人工处理：拒收批次作废后重新组批；报文过大作废后按调小的枚数组批；转出批次作废后重建送达；作废批次取回、回执被拒；人工确认后停止重试、等回执中人工确认即推下一批 | `test_delivery::test_manual_confirm_while_waiting_receipt_continues`、`test_delivery::test_rejected_batch_voided_rebatches_and_refuses_voided`、`test_delivery::test_void_returns_items_to_pool_and_rebatches`、`test_transfers::test_void_transfer_out_rebuilds_and_delivers`、`test_delivery::test_manual_confirm_stops_retry` | — | MES 丢弃作废批次、不用本地缓存处理；书面确认流程 |
 | 16 | 交付告警（每日自检问题）核查后填写结论关闭；结论必填，已关闭的不能再处理 | `test_delivery::test_check_alert_closed_with_note` | — | 只涉及本系统 |
 | 17 | 同组织改挂待推送的号再转走，来源 MES 收到转出；关闭对接后转走曾推送的号，转出照常送达 | `test_transfers::test_same_org_reassign_then_other_org_still_sends_transfer_out`、`test_transfers::test_transfer_out_after_source_disabled_mes` | — | 关闭对接后 MES 仍保留接收接口 |
 | 18 | 跨组织转移后，转入方交付与来源转出不论谁先确认，MES 持有组织都正确；再次转移时转出推给正确的组织 | `test_transfers::test_holder_correct_when_target_confirms_first` | — | 两个组织的 MES 同时在线时的顺序 |

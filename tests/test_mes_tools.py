@@ -1,6 +1,7 @@
 """联调工具：模拟 MES（devtools/mes_mock.py）、MES 接口契约测试（devtools/mes_conformance.py）。
 
-契约测试先对模拟 MES 跑一遍（应全部通过），再对故意写错的 MES 跑（应报出失败），证明两边都按对接说明实现；
+契约测试先对模拟 MES 跑一遍（应全部通过），再对故意写错的 MES 跑（应报出失败），证明两边都按对接说明实现：
+① 应答已收到（RECEIVED），处理落库后调 ③ 回执（契约测试自带 ③ 接收地址，模拟 MES 的回执提交器指向它）；
 取批模拟器对真实应用跑通 ② → process → ③。
 """
 
@@ -13,26 +14,59 @@ import pytest
 from conftest import MES, emp, m, ok
 from test_delivery import setup_pi
 
-from devtools.mes_conformance import FAIL, PASS, SKIP, Runner
-from devtools.mes_mock import MesSim, MockMes, Puller
+from devtools.mes_conformance import FAIL, PASS, SKIP, ReceiptInbox, Runner
+from devtools.mes_mock import MesSim, MockMes, Puller, ReceiptSender
 
 
 def _quiet(_: str) -> None:
     pass
 
 
-def _runner(mock: MockMes, auth: str = "TOKEN", gz: bool = False) -> Runner:
+_INBOXES: list[ReceiptInbox] = []
+
+
+def _runner(mock: MockMes, auth: str = "TOKEN", gz: bool = False, wait: float = 5) -> Runner:
+    """契约测试对模拟 MES：模拟 MES 处理完推送来的批次后，用 MES 接口账户把 ③ 回执提交到契约测试的接收地址。"""
     secret = "" if auth == "NONE" else "s3cret"
     mock.secrets["110"] = secret
     mock.pis["110"] = {"CTPI-110"}
-    return Runner(mock.url("110"), "110", auth, secret, timeout=10, log=_quiet, gzip=gz, pi="CTPI-110")
+    inbox = ReceiptInbox().start()
+    _INBOXES.append(inbox)
+    http = httpx.Client(base_url=inbox.base_url, trust_env=False, timeout=10)
+    mock.sender = ReceiptSender(mock, http, {"110": "MES110:key"}, log=_quiet).start()
+    return Runner(
+        mock.url("110"),
+        "110",
+        auth,
+        secret,
+        timeout=10,
+        log=_quiet,
+        gzip=gz,
+        pi="CTPI-110",
+        inbox=inbox,
+        receipt_wait=wait,
+    )
+
+
+def _start(cls: type[MockMes]) -> MockMes:
+    x = cls().start()
+    x.sender = None
+    return x
+
+
+def _stop(x: MockMes) -> None:
+    if x.sender is not None:
+        x.sender.stop()
+    x.stop()
+    while _INBOXES:
+        _INBOXES.pop().stop()
 
 
 @pytest.fixture
 def mock():
-    x = MockMes().start()
+    x = _start(MockMes)
     yield x
-    x.stop()
+    _stop(x)
 
 
 @pytest.mark.parametrize(("auth", "gz"), [("TOKEN", False), ("HMAC", False), ("HMAC", True), ("NONE", False)])
@@ -84,13 +118,35 @@ class _IgnoresDigest(MockMes):
 
 
 class _RejectsWith400(MockMes):
-    """错误实现：校验不通过返回 400，而不是 HTTP 200 + NG 回执。"""
+    """错误实现：校验不通过直接返回 400，而不是应答已收到、再用 ③ 回执 NG。"""
 
-    def handle(self, org, batch, source="PUSH"):
-        st, body = super().handle(org, batch, source)
+    def handle(self, org, batch, source="PUSH", emit=True):
+        why = self._problem(org, batch) if batch.get("batchType") != "PING" else None
+        st, body = (None, {"code": "NG", "message": why}) if why else super().handle(org, batch, source, emit)
         if body.get("code") == "NG":
             return 400, {"schemaVersion": "1.0", "code": "BAD_REQUEST", "message": body.get("message")}
         return st, body
+
+
+class _NoReceipt(MockMes):
+    """错误实现：处理落库、应答已收到，但从不调 ③ 回执（联调时的现象）。"""
+
+    def emit(self, org, receipt):
+        pass
+
+
+class _ReceiptInResponse(MockMes):
+    """错误实现（旧约定）：在 ① 应答里直接回 OK / NG，不调 ③。"""
+
+    def handle(self, org, batch, source="PUSH", emit=True):
+        if batch.get("batchType") == "PING":
+            return super().handle(org, batch, source, emit)
+        r = self.process(org, batch, source)
+        return (r.pop("__status"), r) if "__status" in r else (200, r)
+
+
+#: 需要 ③ 回执的检查项（C01～C04、C19 只看 ① 应答，C07 依赖 C05；C21 未加 --perf 跳过）
+_NEED_RECEIPT = {f"C{i:02d}" for i in range(5, 25)} - {"C19", "C21"}
 
 
 @pytest.mark.parametrize(
@@ -99,14 +155,16 @@ class _RejectsWith400(MockMes):
         (_RegistersRejects, {"C15", "C22", "C24"}),
         (_IgnoresDigest, {"C07"}),
         (_RejectsWith400, {"C02", "C14", "C15", "C16", "C17", "C18", "C22", "C23", "C24"}),
+        (_NoReceipt, _NEED_RECEIPT),
+        (_ReceiptInResponse, _NEED_RECEIPT),
     ],
 )
 def test_conformance_catches_broken_mes(cls, failed):
-    broken = cls().start()
+    broken = _start(cls)
     try:
-        checks = _runner(broken).run_all()
+        checks = _runner(broken, wait=0.5).run_all()
     finally:
-        broken.stop()
+        _stop(broken)
     assert {c.id for c in checks if c.status == FAIL} == failed
 
 
@@ -122,14 +180,18 @@ def test_fault_injection_via_control_api(mock):
         assert first.status == 503 and first.body["code"] == "HTTP_503"
         assert r.ok(r.send(b, attempt=2), b)["code"] == "OK", "times = 1：只生效一次"
         assert http.get(ctl + "/state").json()["faults"] == {}
-        # 先处理再断开：应答丢失，重试拿到存下的回执
+        # 先处理、提交 ③ 回执再断开：应答丢失，回执照样到；重送应答已收到，并重新提交同一份回执
         ok_fault = http.post(ctl + "/fault", json={"org": "110", "mode": "drop_after"})
         assert ok_fault.status_code == 200
         b2 = r.batch([r.delivery(2, 1)])
         assert r.send(b2).status is None
+        first = r.callback(b2)
+        assert first["code"] == "OK", "MES 已处理并回执"
         assert http.delete(ctl + "/fault", params={"org": "110"}).json()["faults"] == {}
-        r.ok(r.send(b2, attempt=2), b2)
-        assert len(mock.batches["110"]) == 2, "重试拿到存下的回执，不重复处理"
+        assert r.ok(r.send(b2, attempt=2), b2) == first, "重送拿到首次的回执"
+        assert len(mock.batches["110"]) == 2, "不重复处理"
+        sent = http.get(ctl + "/state").json()["receiptsSent"]
+        assert [(x["batchNo"], x["status"]) for x in sent][-2:] == [(b2["batchNo"], 200)] * 2
         got = http.get(ctl + "/received", params={"limit": 10}).json()
         assert [x["attempt"] for x in got] == ["1", "2", "1", "2"] and got[0]["firstItem"]["sn"] == r.sn(1)
         assert http.post(ctl + "/fault", json={"org": "110", "mode": "nope"}).status_code == 400
@@ -180,12 +242,26 @@ def test_puller_pulls_until_empty(w, sql, app_client):
     assert Puller(MES, org, app_client, e, key, log=_quiet).run_once() == [], "没有可给的批次"
 
 
+def test_push_response_lost_but_receipt_confirms(w, sql):
+    """9.2-1：MES 收下并处理了、推送应答丢失（本系统按断连重试），MES 的 ③ 回执照样确认批次，重试停止。"""
+    org, pi, bill = setup_pi(w, qty=3, batch_size=5)
+    MES.set_fault(org, {"mode": "drop_after", "times": 1})
+    w.allocate(pi)
+    w.push()
+    b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
+    assert (b["result"], b["confirm_method"]) == ("SUCCESS", "RECEIPT")
+    assert len(MES.batches[org]) == 1, "重试送达同一批，MES 只处理一次"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 3
+
+
 def test_push_response_lost_then_pull_gets_same_receipt(w, sql, app_client):
-    """9.2-1、3：MES 收下了但推送应答丢失，本系统重试用尽；MES 取到同一批，返回存下的回执，批次成功。"""
+    """9.2-1、3：MES 收下了但推送应答丢失、③ 回执也没交上来，本系统重试用尽；
+    MES 取到同一批，返回存下的回执，批次成功。"""
     org, pi, bill = setup_pi(w, qty=3, batch_size=5)
     MES.set_fault(org, {"mode": "drop_after"})
     w.allocate(pi)
-    w.push()
+    w.push(receipts=False)
+    MES.take_outbox()
     b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
     assert (b["result"], b["push_state"]) == ("UNCONFIRMED", "EXHAUSTED")
     assert MES.batches[org][b["batch_no"]]["source"] == "PUSH", "MES 首次送达时已处理"
@@ -227,14 +303,14 @@ def test_push_body_plain_json_by_default_gzip_when_enabled(mock, gz):
 
     mock.secrets["110"] = "s3cret"
     t = mes_client.Target(mock.url("110"), mes_client.TOKEN, "s3cret", 10, gz)
-    out = mes_client.send(t, mes_client.ping_body("110", "PING-GZ"), 1)
-    assert out.kind == mes_client.RECEIPT
-    assert {k: out.receipt[k] for k in ("batchNo", "code", "message")} == {
+    out = mes_client.send(t, "PING-GZ", mes_client.ping_body("110", "PING-GZ"), 1, ping=True)
+    assert out.kind == mes_client.RECEIVED
+    assert {k: out.body[k] for k in ("batchNo", "code", "message")} == {
         "batchNo": "PING-GZ",
-        "code": "OK",
-        "message": "已处理",
+        "code": "RECEIVED",
+        "message": "已收到",
     }
-    assert out.receipt["processedAt"][10] == " "
+    assert out.body["receivedAt"][10] == " "
     h = mock.received[-1]["headers"]
     assert h.get("content-encoding") == ("gzip" if gz else None)
     assert mock.received[-1]["batch"]["batchNo"] == "PING-GZ"

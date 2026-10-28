@@ -65,7 +65,7 @@
       "from": "mes",
       "to": "sn",
       "y": 245,
-      "label": "200 + 回执 NG",
+      "label": "200 已收到；③ 回执 NG",
       "variant": "return",
       "note": "message 写原因；不写数据、不记 batchNo"
     },

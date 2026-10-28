@@ -41,8 +41,8 @@ TRANSFER_OUT = "TRANSFER_OUT"
 DELIVERY_TYPES = (NEW, SAME_ORG_TRANSFER, TRANSFER_IN, REMAP)
 #: SQL 条件：交付类批次（批次表里除交付类只有转出批次；连接测试批次不入库）
 IS_DELIVERY = "batch_type <> 'TRANSFER_OUT'"
-M_PUSH = "PUSH_RESPONSE"
-M_PULL = "PULL_RECEIPT"
+#: 确认方式：MES 回执（接口 ③，推送与拉取的批次都由此确认）/ 人工确认
+M_RECEIPT = "RECEIPT"
 M_MANUAL = "MANUAL"
 XO_KEY = "#XO"
 #: MES 回执 code：OK 整批已处理 / NG 整批退回
@@ -70,7 +70,9 @@ BATCH_FIELDS = (
     "accepted_qty",
     "push_state",
     "retry_count",
+    "receipt_timeouts",
     "next_retry_at",
+    "received_at",
     "push_count",
     "repush_count",
     "last_push_at",
