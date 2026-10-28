@@ -254,7 +254,7 @@
 
     <RuleDialog v-if="ctx" v-model="ruleDlg.open" :pi="ctx.pi_no" :lines="ruleDlg.lines" :options="ctx.rule_options" @saved="reloadCtx" />
 
-    <GenConfirmDialog v-model="genDlg" :preview="gen.preview" :sync-threshold="limits.sync_threshold" :unlock-limit="unlockLimit"
+    <GenConfirmDialog v-model="genDlg" :preview="gen.preview" :unlock-limit="unlockLimit"
       :loading="busy === 'run'" @confirm="runGen" />
 
     <RevokeDialog v-if="ctx" ref="revokeDlg" :pi="ctx.pi_no" @done="afterRevoke" />
