@@ -62,7 +62,7 @@ def gen_revoke(batch: str, body: RevokeIn, cu: OperatorDep) -> dict:
 @router.post(
     "/revoke",
     summary="撤到所选物料行为止：从 PI 流水末尾往前撤，流水排在所选行之后的物料行一并撤销，一个事务内完成；"
-    "号须全部仍待分配且没转过单；原因必填",
+    "号须全部仍待分配且没转过单；原因选填（不填记「生成页撤销生成」）",
 )
 def gen_revoke_lines(body: RevokeLinesIn, cu: OperatorDep) -> dict:
     return generate.revoke_lines(cu, body.pi_no, [x.model_dump() for x in body.lines or []], body.reason)
@@ -70,7 +70,8 @@ def gen_revoke_lines(body: RevokeLinesIn, cu: OperatorDep) -> dict:
 
 @router.post(
     "/revoke-config",
-    summary="撤销物料行配置（待处理页签）：所选物料行中还没有号的，物料行选定的规则、手填的附件项次、手填的米数恢复为未配置；"
+    summary="撤销物料行配置（待处理、可生成页签）：所选物料行中还没有号的，物料行选定的规则、手填的附件项次、米数、产品单位"
+    "恢复为未配置；"
     "有号的行跳过（有号的行撤销生成）",
 )
 def gen_revoke_config(body: RevokeConfigIn, cu: OperatorDep) -> dict:

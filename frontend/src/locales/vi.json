@@ -594,7 +594,6 @@
       "changeConfirm": "Một số dòng đã có SN. Đổi quy tắc?",
       "clear": "Về mặc định PI / khách hàng"
     },
-    "linesTitle": "Dòng vật tư",
     "filter": {
       "TODO": "Cần xử lý {n}",
       "GEN": "Tạo được {n}",
@@ -615,7 +614,6 @@
     "lockAllocated": "Đã phân bổ, không thể sửa nữa",
     "noMaterial": "(không có vật tư)",
     "ownTip": "Do chứng từ này tạo {own}; đã tạo (gồm chuyển) {gen}",
-    "ruleCol": "Quy tắc SN",
     "needRule": "Cần chọn quy tắc",
     "noLines": "Chứng từ không còn trong ảnh chụp; chỉ xem được SN đã tạo",
     "issue": {
@@ -632,11 +630,6 @@
     "unitChinese": "Đơn vị không được có chữ Trung Quốc; hãy nhập ví dụ M, m, L",
     "lengthChinese": "Chiều dài không được có chữ Trung Quốc",
     "scope": "Phạm vi",
-    "scopeShort": {
-      "BILLS": "Chứng từ",
-      "LINES": "Dòng"
-    },
-    "segment": "Đoạn số",
     "genBtn": "Tạo {n}",
     "genConfirm": "Tạo {n} SN cho {m} dòng vật tư: {a} ~ {b}?",
     "genDone": "Đã tạo {n} SN",
@@ -650,7 +643,6 @@
     "canceling": "Đang hủy…",
     "cancelGen": "Hủy tạo",
     "cancelConfirm": "Hủy sẽ xóa mọi SN đã ghi và khôi phục số lớn nhất, số đã tạo của PI. Hủy?",
-    "genBatch": "Lô tạo",
     "job": {
       "RUNNING": "Đang tạo",
       "SUCCESS": "Thành công",
@@ -660,7 +652,6 @@
     },
     "revoke": "Thu hồi",
     "revokedN": "Đã thu hồi {n} SN",
-    "revokedQty": "Đã thu hồi {n}",
     "summary": "Còn tạo được {quota}",
     "summaryPending": "Chờ phân bổ {n} →",
     "toAllocate": "{n} SN chờ phân bổ · đến Phân bổ SN",
@@ -673,9 +664,6 @@
     "ruleNow": "Quy tắc hiện tại {rule}: {format}",
     "changeRule": "Đổi quy tắc",
     "pickRule": "Chọn quy tắc",
-    "tabJobs": "Bản ghi tạo {n}",
-    "pickJobLines": "Chọn các dòng của lần này",
-    "jobsNote": "Bản ghi chỉ để xem; muốn thu hồi cả lần tạo, bấm “Chọn các dòng của lần này” rồi bấm “Thu hồi (đã chọn)” ở dưới.",
     "scopeWholePi": "Chưa chọn = cả PI",
     "scopeLinesN": "Đã chọn {n} dòng vật tư",
     "clearSel": "Bỏ chọn",
@@ -687,11 +675,7 @@
     "genNote": "Mỗi dòng tạo toàn bộ hạn mức một lần; tối đa {n} SN được tạo ngay, nhiều hơn chạy nền và hiển thị tiến độ. Bản xem trước chỉ của bạn, hết hạn lúc {time}, chỉ dùng một lần.",
     "lockGenerated": "Đã tạo, không thể sửa; khi SN chưa phân bổ, hãy thu hồi dòng này, sửa rồi tạo lại",
     "revokeTitle": "Thu hồi lần tạo",
-    "revokeConfirm": "Thu hồi {m} dòng vật tư sau, tổng {n} SN, từ cuối dãy trở về trước: SN bị xóa, số lớn nhất và số đã tạo của PI được hoàn lại, hạng mục đính kèm và chiều dài của các dòng này sửa lại được.",
-    "revokeExtra": "Trong đó {n} dòng nằm sau các dòng đã chọn trên dãy nên phải thu hồi cùng.",
-    "revokePicked": "Đã chọn",
-    "revokeWith": "Kèm theo",
-    "revokeBtn": "Thu hồi {n}",
+    "revokeExtra": "{n} dòng vật tư có số thứ tự sau các dòng đã chọn sẽ bị thu hồi cùng.",
     "revokeBusy": "Không thể thu hồi khi đang tạo",
     "revokeOwnBad": "SN đã phân bổ hoặc đã chuyển; không thể thu hồi",
     "revokeLaterBad": "Dòng nằm sau trên dãy đã phân bổ hoặc đã chuyển; không thể thu hồi",
@@ -700,7 +684,10 @@
     "lengthK3Tip": "Chiều dài Kingdee “{k3}” được ghi nguyên vào SN; có thể sửa, để trống thì trở về giá trị Kingdee; giá trị không ghi ngược về Kingdee",
     "lengthEmptyTip": "Chiều dài Kingdee trống; khi quy tắc có chiều dài, hãy điền trước khi tạo. Được ghi vào SN dạng chuỗi (000, 001, 0.5… đều được); giá trị không ghi ngược về Kingdee",
     "unitK3Tip": "Đơn vị Kingdee “{k3}” được ghi nguyên vào SN; có thể sửa, để trống thì trở về giá trị Kingdee; giá trị không ghi ngược về Kingdee",
-    "attachAutoSaved": "Đã điền số hạng mục đính kèm cho {n} dòng theo thứ tự chọn; có thể sửa trong bảng"
+    "attachAutoSaved": "Đã điền số hạng mục đính kèm cho {n} dòng theo thứ tự chọn; có thể sửa trong bảng",
+    "startSn": "SN bắt đầu",
+    "endSn": "SN kết thúc",
+    "revokeRemind": "Sau khi thu hồi, SN của các dòng vật tư đã chọn bị xóa khỏi kho số, số lớn nhất của PI và số đã tạo được hoàn lại; hạng mục đính kèm, chiều dài, đơn vị của các dòng này có thể sửa lại và tạo lại. Không thể khôi phục sau khi thu hồi."
   },
   "orders": {
     "title": "Ảnh chụp lệnh sản xuất",

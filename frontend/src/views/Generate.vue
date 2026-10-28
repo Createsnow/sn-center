@@ -113,136 +113,128 @@
         <!-- 生成中：进度、取消 -->
         <GenProgress v-if="running" :running="running" :canceling="busy === 'cancel'" @cancel="cancelGen" />
 
-        <el-tabs v-model="dtab" class="dtabs">
-          <el-tab-pane :label="t('generate.linesTitle')" name="lines">
-            <div class="toolbar">
-              <el-radio-group v-model="lineFilter" size="small">
-                <el-radio-button v-for="f in FILTERS" :key="f" :value="f">{{ t(`generate.filter.${f}`, { n: filterCount[f] }) }}</el-radio-button>
-              </el-radio-group>
-              <span class="muted small">{{ t("generate.selHint") }}</span>
-              <span class="push" />
-              <el-button link type="primary" size="small" @click="foldAll(false)">{{ t("common.expandAll") }}</el-button>
-              <el-button link type="primary" size="small" @click="foldAll(true)">{{ t("common.collapseAll") }}</el-button>
-            </div>
-            <div v-for="b in shownBills" :key="b.bill_no" class="bill">
-              <!-- 点单据头展开 / 收起物料行；勾选框只管勾选 -->
-              <div class="bill-h" :title="isFolded(b.bill_no) ? t('common.expand') : t('common.collapse')" @click="toggleFold(b.bill_no)">
-                <el-icon class="fold" :class="{ open: !isFolded(b.bill_no) }"><ArrowRight /></el-icon>
-                <span @click.stop><el-checkbox v-bind="billCheck(b.bill_no)" :disabled="!b.in_snapshot || !b.lines.length" @change="(v: any) => onBill(b.bill_no, !!v)" /></span>
-                <span v-if="billCheck(b.bill_no).order >= 0" class="order">{{ billCheck(b.bill_no).order + 1 }}</span>
-                <b>{{ b.bill_no }}</b>
-                <span class="muted">PO {{ b.po || "—" }} · {{ b.org_name || nameOf(b.org_code) }}<template v-if="b.modify_time"> · {{ t("orders.modifyDate") }} {{ b.modify_time }}</template></span>
-                <el-tag v-if="!b.in_snapshot" size="small" type="info">{{ t("generate.notInSnapshot") }}</el-tag>
-                <el-tag v-if="b.state.suspend" size="small" type="warning">{{ suspendLabel(b.state.suspend) }}</el-tag>
-                <el-tag v-if="b.state.leave_state" size="small" type="danger">{{ leaveStateLabel(b.state.leave_state) }}</el-tag>
-                <el-tag v-if="b.state.pi_frozen" size="small" type="danger">{{ t("generate.piFrozen") }}</el-tag>
-                <el-tag v-if="b.state.open_alerts" size="small" type="warning">{{ t("generate.openAlerts", { n: b.state.open_alerts }) }}</el-tag>
-                <span class="push muted num">{{ t("generate.billCounts", { total: num(b.total_qty), gen: num(b.generated_qty), quota: num(b.quota) }) }}</span>
-              </div>
-              <!-- 列宽按抽屉宽度排满、不出横向滚动条：数字列收窄；不显示 SN 范围列（号段看生成记录） -->
-              <el-table v-if="b.shown.length" v-show="!isFolded(b.bill_no)" :data="b.shown" size="small" class="lines" :row-class-name="lineClass" @row-click="onLineClick">
-                <el-table-column width="44">
-                  <template #default="{ row }">
-                    <span class="sel" @click.stop>
-                      <el-checkbox :model-value="isPicked(row)" @change="(v: any) => pickLine(row, !!v)" />
-                      <span v-if="lineIdx(row) >= 0" class="order">{{ lineIdx(row) + 1 }}</span>
-                    </span>
-                  </template>
-                </el-table-column>
-                <el-table-column :label="t('common.billSeq')" prop="seq" width="48" />
-                <el-table-column :label="t('common.attachNo')" width="88">
-                  <template #default="{ row }">
-                    <span v-if="row.attach_source === 'K3'">{{ row.attach_no }}</span>
-                    <el-tooltip v-else :disabled="!row.edit_lock" :content="lockText(row)">
-                      <span class="cell-input" @click.stop>
-                        <el-input :model-value="draftOf(row, 'attach')" size="small" maxlength="64" :disabled="!!row.edit_lock"
-                          :class="{ missing: !row.edit_lock && !draftOf(row, 'attach') }" :placeholder="t('generate.attachRequired')"
-                          @update:model-value="(v: string) => setDraft(row, 'attach', v)" @change="saveAttach(row)" />
-                      </span>
-                    </el-tooltip>
-                  </template>
-                </el-table-column>
-                <el-table-column :label="t('common.material')" min-width="88" show-overflow-tooltip>
-                  <template #default="{ row }">
-                    {{ row.material_code || t("generate.noMaterial") }}
-                  </template>
-                </el-table-column>
-                <el-table-column :label="t('common.length')" width="76">
-                  <template #default="{ row }">
-                    <!-- 金蝶米数原样显示、原样使用，可改（留空即改回金蝶值）；金蝶为空时规则带米数须填写（标红） -->
-                    <el-tooltip :content="row.edit_lock ? lockText(row) : lengthTip(row)">
-                      <span class="cell-input" @click.stop>
-                        <el-input :model-value="draftOf(row, 'length')" size="small" maxlength="64" :disabled="!!row.edit_lock"
-                          :class="{ missing: !row.edit_lock && lengthMissing(row) }" :placeholder="lengthPlaceholder(row)"
-                          @update:model-value="(v: string) => setDraft(row, 'length', v)" @change="saveLength(row)" />
-                      </span>
-                    </el-tooltip>
-                  </template>
-                </el-table-column>
-                <el-table-column :label="t('common.unit')" width="64">
-                  <template #default="{ row }">
-                    <!-- 金蝶产品单位原样显示、原样使用（含中文也照用），可改（留空即改回金蝶值）；金蝶为空时规则带单位须填写（标红） -->
-                    <el-tooltip :content="row.edit_lock ? lockText(row) : unitTip(row)">
-                      <span class="cell-input" @click.stop>
-                        <el-input :model-value="draftOf(row, 'unit')" size="small" maxlength="64" :disabled="!!row.edit_lock"
-                          :class="{ missing: !row.edit_lock && unitMissing(row) }" :placeholder="unitPlaceholder(row)"
-                          @update:model-value="(v: string) => setDraft(row, 'unit', v)" @change="saveUnit(row)" />
-                      </span>
-                    </el-tooltip>
-                  </template>
-                </el-table-column>
-                <el-table-column :label="t('common.qty')" align="right" width="58">
-                  <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
-                </el-table-column>
-                <el-table-column :label="t('generate.generated')" align="right" width="58">
-                  <template #default="{ row }">
-                    <el-tooltip :content="t('generate.ownTip', { own: num(row.own_generated_qty), gen: num(row.generated_qty) })">
-                      <span class="num">{{ num(row.generated_qty) }}</span>
-                    </el-tooltip>
-                  </template>
-                </el-table-column>
-                <el-table-column :label="t('generate.allocated')" align="right" width="58">
-                  <template #default="{ row }"><span class="num">{{ num(row.allocated_qty) }}</span></template>
-                </el-table-column>
-                <el-table-column :label="t('generate.quota')" align="right" width="58">
-                  <template #default="{ row }"><span class="num" :class="{ zero: !row.quota }">{{ num(row.quota) }}</span></template>
-                </el-table-column>
-                <el-table-column :label="t('common.status')" min-width="88">
-                  <template #default="{ row }">
-                    <div v-if="row.quota && row.issues?.length" class="issue-tags">
-                      <el-tag v-for="i in row.issues" :key="i" size="small" type="danger" effect="plain">{{ issueText(i) }}</el-tag>
-                    </div>
-                    <el-tag v-else size="small" :type="LINE_STATE_TAG[lineState(row)]" disable-transitions>{{ t(`generate.lineState.${lineState(row)}`) }}</el-tag>
-                  </template>
-                </el-table-column>
-                <!-- 操作列按页签：待处理只有选规则；可生成有选规则和（有号时）撤销生成；已生成只有撤销生成 -->
-                <el-table-column :label="t('common.actions')" width="80" align="right">
-                  <template #default="{ row }">
-                    <span class="ops" @click.stop>
-                      <el-tooltip v-if="lineFilter !== 'GENERATED'" :content="row.rule ? t('generate.ruleNow', { rule: ruleTitle(row.rule), format: row.rule.format }) : t('generate.needRule')">
-                        <el-button link :type="row.rule ? 'primary' : 'danger'" size="small" @click="openRuleDialog([row])">
-                          {{ row.rule ? t("generate.changeRule") : t("generate.pickRule") }}
-                        </el-button>
-                      </el-tooltip>
-                      <el-tooltip v-if="lineFilter !== 'TODO' && revokeOf([row])" :content="revokeTip(revokeOf([row])!)">
-                        <span>
-                          <el-button link type="danger" size="small" :disabled="!revokeOf([row])!.ok" @click="openRevoke([row])">{{ t("generate.revoke") }}</el-button>
-                        </span>
-                      </el-tooltip>
-                    </span>
-                  </template>
-                </el-table-column>
-              </el-table>
-              <p v-else-if="!b.lines.length" v-show="!isFolded(b.bill_no)" class="muted no-lines">{{ t("generate.noLines") }}</p>
-            </div>
-            <p v-if="!shownBills.length" class="muted no-lines">{{ t("common.empty") }}</p>
-          </el-tab-pane>
-
-          <!-- 生成记录：只看；整次撤销 = 勾选这次的物料行后在底部撤销 -->
-          <el-tab-pane :label="t('generate.tabJobs', { n: ctx.jobs.length })" name="jobs">
-            <JobsTable :jobs="ctx.jobs" :segments="segments" @pick="pickJob" />
-          </el-tab-pane>
+        <!-- 只有三个页签：待处理 / 可生成 / 已生成（按处理步骤筛物料行） -->
+        <el-tabs v-model="lineFilter" class="dtabs">
+          <el-tab-pane v-for="f in FILTERS" :key="f" :label="t(`generate.filter.${f}`, { n: filterCount[f] })" :name="f" />
         </el-tabs>
+        <div class="toolbar">
+          <span class="muted small">{{ t("generate.selHint") }}</span>
+          <span class="push" />
+          <el-button link type="primary" size="small" @click="foldAll(false)">{{ t("common.expandAll") }}</el-button>
+          <el-button link type="primary" size="small" @click="foldAll(true)">{{ t("common.collapseAll") }}</el-button>
+        </div>
+        <div v-for="b in shownBills" :key="b.bill_no" class="bill">
+          <!-- 点单据头展开 / 收起物料行；勾选框只管勾选 -->
+          <div class="bill-h" :title="isFolded(b.bill_no) ? t('common.expand') : t('common.collapse')" @click="toggleFold(b.bill_no)">
+            <el-icon class="fold" :class="{ open: !isFolded(b.bill_no) }"><ArrowRight /></el-icon>
+            <span @click.stop><el-checkbox v-bind="billCheck(b.bill_no)" :disabled="!b.in_snapshot || !b.lines.length" @change="(v: any) => onBill(b.bill_no, !!v)" /></span>
+            <span v-if="billCheck(b.bill_no).order >= 0" class="order">{{ billCheck(b.bill_no).order + 1 }}</span>
+            <b>{{ b.bill_no }}</b>
+            <span class="muted">PO {{ b.po || "—" }} · {{ b.org_name || nameOf(b.org_code) }}<template v-if="b.modify_time"> · {{ t("orders.modifyDate") }} {{ b.modify_time }}</template></span>
+            <el-tag v-if="!b.in_snapshot" size="small" type="info">{{ t("generate.notInSnapshot") }}</el-tag>
+            <el-tag v-if="b.state.suspend" size="small" type="warning">{{ suspendLabel(b.state.suspend) }}</el-tag>
+            <el-tag v-if="b.state.leave_state" size="small" type="danger">{{ leaveStateLabel(b.state.leave_state) }}</el-tag>
+            <el-tag v-if="b.state.pi_frozen" size="small" type="danger">{{ t("generate.piFrozen") }}</el-tag>
+            <el-tag v-if="b.state.open_alerts" size="small" type="warning">{{ t("generate.openAlerts", { n: b.state.open_alerts }) }}</el-tag>
+            <span class="push muted num">{{ t("generate.billCounts", { total: num(b.total_qty), gen: num(b.generated_qty), quota: num(b.quota) }) }}</span>
+          </div>
+          <!-- 列宽按抽屉宽度排满、不出横向滚动条：数字列收窄；不显示 SN 范围列（号段看生成记录） -->
+          <el-table v-if="b.shown.length" v-show="!isFolded(b.bill_no)" :data="b.shown" size="small" class="lines" :row-class-name="lineClass" @row-click="onLineClick">
+            <el-table-column width="44">
+              <template #default="{ row }">
+                <span class="sel" @click.stop>
+                  <el-checkbox :model-value="isPicked(row)" @change="(v: any) => pickLine(row, !!v)" />
+                  <span v-if="lineIdx(row) >= 0" class="order">{{ lineIdx(row) + 1 }}</span>
+                </span>
+              </template>
+            </el-table-column>
+            <el-table-column :label="t('common.billSeq')" prop="seq" width="48" />
+            <el-table-column :label="t('common.attachNo')" width="88">
+              <template #default="{ row }">
+                <span v-if="row.attach_source === 'K3'">{{ row.attach_no }}</span>
+                <el-tooltip v-else :disabled="!row.edit_lock" :content="lockText(row)">
+                  <span class="cell-input" @click.stop>
+                    <el-input :model-value="draftOf(row, 'attach')" size="small" maxlength="64" :disabled="!!row.edit_lock"
+                      :class="{ missing: !row.edit_lock && !draftOf(row, 'attach') }" :placeholder="t('generate.attachRequired')"
+                      @update:model-value="(v: string) => setDraft(row, 'attach', v)" @change="saveAttach(row)" />
+                  </span>
+                </el-tooltip>
+              </template>
+            </el-table-column>
+            <el-table-column :label="t('common.material')" min-width="88" show-overflow-tooltip>
+              <template #default="{ row }">
+                {{ row.material_code || t("generate.noMaterial") }}
+              </template>
+            </el-table-column>
+            <el-table-column :label="t('common.length')" width="76">
+              <template #default="{ row }">
+                <!-- 金蝶米数原样显示、原样使用，可改（留空即改回金蝶值）；金蝶为空时规则带米数须填写（标红） -->
+                <el-tooltip :content="row.edit_lock ? lockText(row) : lengthTip(row)">
+                  <span class="cell-input" @click.stop>
+                    <el-input :model-value="draftOf(row, 'length')" size="small" maxlength="64" :disabled="!!row.edit_lock"
+                      :class="{ missing: !row.edit_lock && lengthMissing(row) }" :placeholder="lengthPlaceholder(row)"
+                      @update:model-value="(v: string) => setDraft(row, 'length', v)" @change="saveLength(row)" />
+                  </span>
+                </el-tooltip>
+              </template>
+            </el-table-column>
+            <el-table-column :label="t('common.unit')" width="64">
+              <template #default="{ row }">
+                <!-- 金蝶产品单位原样显示、原样使用（含中文也照用），可改（留空即改回金蝶值）；金蝶为空时规则带单位须填写（标红） -->
+                <el-tooltip :content="row.edit_lock ? lockText(row) : unitTip(row)">
+                  <span class="cell-input" @click.stop>
+                    <el-input :model-value="draftOf(row, 'unit')" size="small" maxlength="64" :disabled="!!row.edit_lock"
+                      :class="{ missing: !row.edit_lock && unitMissing(row) }" :placeholder="unitPlaceholder(row)"
+                      @update:model-value="(v: string) => setDraft(row, 'unit', v)" @change="saveUnit(row)" />
+                  </span>
+                </el-tooltip>
+              </template>
+            </el-table-column>
+            <el-table-column :label="t('common.qty')" align="right" width="58">
+              <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
+            </el-table-column>
+            <el-table-column :label="t('generate.generated')" align="right" width="58">
+              <template #default="{ row }">
+                <el-tooltip :content="t('generate.ownTip', { own: num(row.own_generated_qty), gen: num(row.generated_qty) })">
+                  <span class="num">{{ num(row.generated_qty) }}</span>
+                </el-tooltip>
+              </template>
+            </el-table-column>
+            <el-table-column :label="t('generate.allocated')" align="right" width="58">
+              <template #default="{ row }"><span class="num">{{ num(row.allocated_qty) }}</span></template>
+            </el-table-column>
+            <el-table-column :label="t('generate.quota')" align="right" width="58">
+              <template #default="{ row }"><span class="num" :class="{ zero: !row.quota }">{{ num(row.quota) }}</span></template>
+            </el-table-column>
+            <el-table-column :label="t('common.status')" min-width="88">
+              <template #default="{ row }">
+                <div v-if="row.quota && row.issues?.length" class="issue-tags">
+                  <el-tag v-for="i in row.issues" :key="i" size="small" type="danger" effect="plain">{{ issueText(i) }}</el-tag>
+                </div>
+                <el-tag v-else size="small" :type="LINE_STATE_TAG[lineState(row)]" disable-transitions>{{ t(`generate.lineState.${lineState(row)}`) }}</el-tag>
+              </template>
+            </el-table-column>
+            <!-- 操作列按页签：待处理只有选规则；可生成有选规则和（有号时）撤销生成；已生成只有撤销生成 -->
+            <el-table-column :label="t('common.actions')" width="80" align="right">
+              <template #default="{ row }">
+                <span class="ops" @click.stop>
+                  <el-tooltip v-if="lineFilter !== 'GENERATED'" :content="row.rule ? t('generate.ruleNow', { rule: ruleTitle(row.rule), format: row.rule.format }) : t('generate.needRule')">
+                    <el-button link :type="row.rule ? 'primary' : 'danger'" size="small" @click="openRuleDialog([row])">
+                      {{ row.rule ? t("generate.changeRule") : t("generate.pickRule") }}
+                    </el-button>
+                  </el-tooltip>
+                  <el-tooltip v-if="lineFilter !== 'TODO' && revokeOf([row])" :content="revokeTip(revokeOf([row])!)">
+                    <span>
+                      <el-button link type="danger" size="small" :disabled="!revokeOf([row])!.ok" @click="openRevoke([row])">{{ t("generate.revoke") }}</el-button>
+                    </span>
+                  </el-tooltip>
+                </span>
+              </template>
+            </el-table-column>
+          </el-table>
+          <p v-else-if="!b.lines.length" v-show="!isFolded(b.bill_no)" class="muted no-lines">{{ t("generate.noLines") }}</p>
+        </div>
+        <p v-if="!shownBills.length" class="muted no-lines">{{ t("common.empty") }}</p>
       </div>
 
       <!-- 底部操作栏：三个页签相同，只有四个按钮：选规则（所选物料行）、撤销（待处理、可生成页签撤销配置，已生成页签撤销生成）、
@@ -290,7 +282,6 @@ import PiRuleDialog from "@/views/generate/PiRuleDialog.vue";
 import RevokeDialog from "@/views/generate/RevokeDialog.vue";
 import GenConfirmDialog from "@/views/generate/GenConfirmDialog.vue";
 import GenProgress from "@/views/generate/GenProgress.vue";
-import JobsTable from "@/views/generate/JobsTable.vue";
 import { num, pct, ruleTitle as ruleTitleOf } from "@/views/generate/format";
 import { useLineDrafts } from "@/views/generate/useLineDrafts";
 
@@ -380,7 +371,6 @@ function openRow(row: any) {
 const detailPi = ref("");
 const ctx = ref<any>(null);
 const ctxLoading = ref(false);
-const dtab = ref("lines");
 const piRuleOpen = ref(false);
 
 const allLines = computed<OrderLine[]>(() => (ctx.value ? ctx.value.bills.flatMap((b: any) => b.lines) : []));
@@ -390,7 +380,6 @@ async function openDetail(key: { pi?: string; bill_no?: string }) {
   detailPi.value = key.pi || key.bill_no || "";
   ctx.value = null;
   clearSelection();
-  dtab.value = "lines";
   foldAll(false);
   await loadCtx(key);
   if (!ctx.value) return;
@@ -438,7 +427,7 @@ function lineTabs(): Map<string, Filter[]> {
  *  2. 没有行移动但当前页签已空，转到下一个还有物料行的页签。
  *  转过去时提示，并展开这些行所在的单据、回到顶部。 */
 function nextStep(before: Map<string, Filter[]>) {
-  if (!ctx.value || dtab.value !== "lines") return;
+  if (!ctx.value) return;
   const cur = lineFilter.value;
   const i = FILTERS.indexOf(cur);
   const order = [...FILTERS.slice(i + 1), ...FILTERS.slice(0, i)];
@@ -734,16 +723,6 @@ async function revokeConfig(rows: OrderLine[]) {
   } finally {
     busy.value = "";
   }
-}
-
-function pickJob(lines: LineRef[]) {
-  sel.value = { bills: [], lines };
-  lineFilter.value = "GENERATED";
-  dtab.value = "lines";
-  // 选中的物料行所在单据展开，免得勾上了看不见
-  const s = new Set(folded.value);
-  for (const l of lines) s.delete(l.bill_no);
-  folded.value = s;
 }
 
 // ================================================================ 联动

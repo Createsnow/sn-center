@@ -548,9 +548,9 @@ def test_revoke_up_to_selected_lines_in_one_go(w, api, sql):
         body = m(pi_no=pi, lines=[m(bill_no=bill, seq=s) for s in lines], reason=reason)
         return api.post("/api/generate/revoke", body, w.admin)
 
-    assert revoke([2], None).code == "REASON_REQUIRED"
-    # 撤序号 2：流水在它之后的序号 3、4（另一次生成）一并撤销，一个事务内完成
-    r = ok(revoke([2]))
+    assert revoke([2], "x" * 501).code == "REASON_REQUIRED"
+    # 撤序号 2：流水在它之后的序号 3、4（另一次生成）一并撤销，一个事务内完成；原因选填，不填记默认原因
+    r = ok(revoke([2], None))
     assert (r["qty"], r["last_seq_dec"]) == (7, 3)
     assert [(x["seq"], x["gen_batch"]) for x in r["lines"]] == [
         (2, j1["gen_batch"]),
@@ -558,6 +558,7 @@ def test_revoke_up_to_selected_lines_in_one_go(w, api, sql):
         (4, j2["gen_batch"]),
     ]
     assert sql.scalar("SELECT status FROM sn_gen_job WHERE gen_batch = %s", j2["gen_batch"]) == "REVOKED"
+    assert sql.scalar("SELECT revoke_reason FROM sn_gen_job WHERE gen_batch = %s", j2["gen_batch"]) == "生成页撤销生成"
     assert sql.scalar("SELECT status FROM sn_gen_job WHERE gen_batch = %s", j1["gen_batch"]) == "SUCCESS"
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 3
     assert chain() == [(1, 3, True)]

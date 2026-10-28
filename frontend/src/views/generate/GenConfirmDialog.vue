@@ -1,15 +1,22 @@
 <template>
-  <el-dialog :model-value="modelValue" :title="t('generate.genTitle')" width="680px" @update:model-value="(v: boolean) => emit('update:modelValue', v)">
+  <el-dialog :model-value="modelValue" :title="t('generate.genTitle')" width="860px" @update:model-value="(v: boolean) => emit('update:modelValue', v)">
     <template v-if="preview?.generatable">
       <p>{{ t("generate.genConfirm", { m: preview.items.length, n: num(preview.qty), a: preview.start_sn, b: preview.end_sn }) }}</p>
+      <!-- 米数、产品单位为写进 SN 的值；规则不带时为「—」 -->
       <el-table :data="preview.items" size="small" max-height="320">
-        <el-table-column :label="t('common.billNo')" prop="bill_no" min-width="120" />
-        <el-table-column :label="t('common.billSeq')" prop="seq" width="72" />
-        <el-table-column :label="t('common.qty')" align="right" width="80">
-          <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
+        <el-table-column :label="t('common.material')" prop="material_code" min-width="100" show-overflow-tooltip />
+        <el-table-column :label="t('common.attachNo')" prop="attach" min-width="80" show-overflow-tooltip />
+        <el-table-column :label="t('common.length')" min-width="70" show-overflow-tooltip>
+          <template #default="{ row }">{{ row.length ?? "—" }}</template>
         </el-table-column>
-        <el-table-column :label="t('generate.segment')" min-width="250">
-          <template #default="{ row }"><span class="sn-mono">{{ row.start_sn }} ~ {{ row.end_sn }}</span></template>
+        <el-table-column :label="t('common.unit')" min-width="70" show-overflow-tooltip>
+          <template #default="{ row }">{{ row.unit ?? "—" }}</template>
+        </el-table-column>
+        <el-table-column :label="t('generate.startSn')" min-width="170">
+          <template #default="{ row }"><span class="sn-mono">{{ row.start_sn }}</span></template>
+        </el-table-column>
+        <el-table-column :label="t('generate.endSn')" min-width="170">
+          <template #default="{ row }"><span class="sn-mono">{{ row.end_sn }}</span></template>
         </el-table-column>
       </el-table>
       <p class="muted small">{{ t("generate.genNote", { n: num(syncThreshold), time: fmt(preview.expires_at) }) }}</p>
@@ -23,7 +30,8 @@
 </template>
 
 <script setup lang="ts">
-/** 确认生成：本次各物料行的号段；超过单次默认上限（unlockLimit > 0）时须先勾选解除限制。确认后由父组件凭预演令牌生成。 */
+/** 确认生成：本次各物料行的物料编码、附件项次、米数、产品单位与开始 / 结束 SN；超过单次默认上限（unlockLimit > 0）时须先勾选解除限制。
+ *  确认后由父组件凭预演令牌生成。 */
 import { ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useTime } from "@/composables/useTime";
@@ -41,4 +49,5 @@ watch(() => props.modelValue, (open) => { if (open) unlocked.value = false; });
 <style scoped>
 .small { font-size: 12px; }
 .unlock :deep(.el-checkbox__label) { color: var(--el-color-warning-dark-2); }
+.sn-mono { word-break: break-all; }
 </style>

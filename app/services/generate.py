@@ -977,10 +977,15 @@ def revoke(
     }
 
 
+#: 生成页按物料行撤销生成不填原因（弹窗只给提醒），留痕记这个默认原因
+REVOKE_LINES_REASON = "生成页撤销生成"
+
+
 def revoke_lines(cu: CurrentUser, pi_in: str | None, lines: list[dict] | None, reason_in: str | None) -> dict:
     """按物料行撤销（可多行，跨多次生成）：从 PI 流水末尾往前，一直撤到所选物料行中流水最靠前的那一段为止，
-    流水排在其后的物料行一并撤销；在一个事务里完成，号须全部仍待分配且没转过单，否则整次不撤。"""
-    reason = _reason(reason_in)
+    流水排在其后的物料行一并撤销；在一个事务里完成，号须全部仍待分配且没转过单，否则整次不撤。
+    原因选填，不填记默认原因 REVOKE_LINES_REASON。"""
+    reason = _reason(util.trim(reason_in) or REVOKE_LINES_REASON)
     pi = util.trim(pi_in)
     if not pi:
         raise biz(ErrorCode.PI_REQUIRED)

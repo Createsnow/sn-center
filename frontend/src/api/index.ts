@@ -82,10 +82,10 @@ export const api = {
   genJobs: (pi: string, limit?: number) => get("/generate/jobs", { pi, limit }),
   genProgress: (batch: string) => get(`/generate/batches/${enc(batch)}`),
   cancelGen: (batch: string) => post(`/generate/batches/${enc(batch)}/cancel`, {}),
-  /** 撤到所选物料行为止：从流水最末往前撤，流水排在所选行之后的物料行一并撤销。 */
-  revokeLines: (pi_no: string, lines: { bill_no: string; seq: number }[], reason: string) =>
+  /** 撤到所选物料行为止：从流水最末往前撤，流水排在所选行之后的物料行一并撤销；原因选填（不填后端记默认原因）。 */
+  revokeLines: (pi_no: string, lines: { bill_no: string; seq: number }[], reason?: string) =>
     post("/generate/revoke", { pi_no, lines, reason }),
-  /** 撤销物料行配置（待处理页签）：还没有号的行，物料行规则、手填的附件项次和米数恢复为未配置；有号的行跳过。 */
+  /** 撤销物料行配置（待处理、可生成页签）：还没有号的行，物料行规则、手填的附件项次、米数、产品单位恢复为未配置；有号的行跳过。 */
   revokeConfig: (pi_no: string, lines: { bill_no: string; seq: number }[]) => post("/generate/revoke-config", { pi_no, lines }),
 
   // ---------------- SN 分配

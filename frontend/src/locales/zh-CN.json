@@ -594,7 +594,6 @@
       "changeConfirm": "所选物料行已生成过号，确认改选规则？",
       "clear": "改回按 PI / 客户默认"
     },
-    "linesTitle": "物料行",
     "filter": {
       "TODO": "待处理 {n}",
       "GEN": "可生成 {n}",
@@ -615,7 +614,6 @@
     "lockAllocated": "已分配，不能再修改",
     "noMaterial": "（无物料）",
     "ownTip": "本单生成 {own}，已生成（含转入、扣除转出）{gen}",
-    "ruleCol": "SN 规则",
     "needRule": "需先选规则",
     "noLines": "该单据已不在快照中，只能查看已生成的号",
     "issue": {
@@ -632,11 +630,6 @@
     "unitChinese": "产品单位不能含中文，请填写如 M、m、L",
     "lengthChinese": "米数不能含中文",
     "scope": "范围",
-    "scopeShort": {
-      "BILLS": "整单",
-      "LINES": "物料行"
-    },
-    "segment": "号段",
     "genBtn": "生成 {n} 枚",
     "genConfirm": "确认为 {m} 个物料行生成 {n} 枚：{a} ~ {b}？",
     "genDone": "已生成 {n} 枚",
@@ -650,7 +643,6 @@
     "canceling": "正在取消…",
     "cancelGen": "取消生成",
     "cancelConfirm": "取消后已写入的号全部删除，PI 最大号、已生成数都恢复到生成前。确认取消？",
-    "genBatch": "生成批次",
     "job": {
       "RUNNING": "生成中",
       "SUCCESS": "成功",
@@ -660,7 +652,6 @@
     },
     "revoke": "撤销",
     "revokedN": "已撤销 {n} 枚",
-    "revokedQty": "已撤 {n}",
     "summary": "还可生成 {quota}",
     "summaryPending": "待分配 {n} →",
     "toAllocate": "已生成待分配 {n} 枚 · 去 SN 分配",
@@ -673,9 +664,6 @@
     "ruleNow": "当前规则 {rule}：{format}",
     "changeRule": "改规则",
     "pickRule": "选规则",
-    "tabJobs": "生成记录 {n}",
-    "pickJobLines": "勾选这次的物料行",
-    "jobsNote": "生成记录只做查看；要整次撤销，点「勾选这次的物料行」，再点底部「撤销（所选）」。",
     "scopeWholePi": "未勾选 = 整张 PI",
     "scopeLinesN": "已选 {n} 个物料行",
     "clearSel": "清空",
@@ -687,11 +675,7 @@
     "genNote": "每行一次生成全部额度；不超过 {n} 枚当场生成，更多转后台并显示进度。预演只对你本人有效，{time} 过期，只能生成一次。",
     "lockGenerated": "已生成，不能修改；号还未分配时，撤销该行的生成后可改，再重新生成",
     "revokeTitle": "撤销生成",
-    "revokeConfirm": "按流水从后往前，依次撤销以下 {m} 个物料行、共 {n} 枚号：号从号池删除，PI 最大号和已生成数一并退回，这些行的附件项次、米数恢复可改。",
-    "revokeExtra": "其中 {n} 行流水排在所选之后，须一并撤销。",
-    "revokePicked": "所选",
-    "revokeWith": "连带",
-    "revokeBtn": "撤销 {n} 枚",
+    "revokeExtra": "流水排在所选物料行之后的 {n} 个物料行会一并撤销。",
     "revokeBusy": "生成中不能撤销",
     "revokeOwnBad": "号已分配或转过单，不能撤销",
     "revokeLaterBad": "流水在它之后的物料行已分配或转过单，不能撤销",
@@ -700,7 +684,10 @@
     "lengthK3Tip": "金蝶米数「{k3}」，原样写入 SN；可改，留空即改回金蝶值；改的值不写回金蝶",
     "lengthEmptyTip": "金蝶米数为空，规则带米数时须填写后才能生成；按字符串原样写入 SN（000、001、0.5 等都可以）；填的值不写回金蝶",
     "unitK3Tip": "金蝶产品单位「{k3}」，原样写入 SN；可改，留空即改回金蝶值；改的值不写回金蝶",
-    "attachAutoSaved": "已按点选顺序填写 {n} 行附件项次，可在表格里修改"
+    "attachAutoSaved": "已按点选顺序填写 {n} 行附件项次，可在表格里修改",
+    "startSn": "开始 SN 号",
+    "endSn": "结束 SN 号",
+    "revokeRemind": "撤销后，所选物料行的号从号池删除，PI 最大号和已生成数一并退回，这些行的附件项次、米数、产品单位恢复可改，可重新生成。撤销后不能恢复。"
   },
   "orders": {
     "title": "生产订单快照",
