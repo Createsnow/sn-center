@@ -95,6 +95,7 @@ def start_task(cu: CurrentUser, org: str, key: str, resend: bool = False) -> Non
 def resume(cu: CurrentUser, org_in: str | None, key_in: str | None) -> dict:
     """继续推送：重置未确认、失败批次的自动重试，按原批次号、原内容先重推，再认领后续的号。"""
     org = factories.must_get(org_in)["factory_code"]
+    cu.check_write(org)
     key = util.trim(key_in)
     if not key:
         raise biz(ErrorCode.PI_REQUIRED)

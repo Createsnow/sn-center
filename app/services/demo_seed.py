@@ -79,23 +79,25 @@ def seed_if_empty() -> None:
             ],
         )
         pw = hash_password(settings.get("SN_DEMO_PASSWORD", "Demo@1234"))
-        for emp, name, role, fac in (
-            ("vn01", "越南操作员", util.FACTORY, "110"),
-            ("dk01", "大磡操作员", util.FACTORY, "120"),
-            ("sh01", "泗洪操作员", util.FACTORY, "130"),
-            ("query01", "总部查询员", util.QUERY, None),
+        every = tuple(o[0] for o in _ORGS)
+        for emp, name, role, facs in (
+            ("vn01", "越南操作员", util.OPERATOR, ("110",)),
+            ("dk01", "大磡操作员", util.OPERATOR, ("120",)),
+            ("sh01", "泗洪操作员", util.OPERATOR, ("130",)),
+            ("query01", "总部审计员", util.AUDITOR, every),
         ):
-            db.exec(
+            uid = db.insert(
                 "INSERT IGNORE INTO sn_user(emp_no, name, role, factory_code, status, password_hash, must_change_pwd, "
                 "pwd_changed_at, created_by, created_at, updated_at) VALUES "
-                "(%s,%s,%s,%s,'ACTIVE',%s,0,%s,'demo',%s,%s)",
+                "(%s,%s,%s,NULL,'ACTIVE',%s,0,%s,'demo',%s,%s)",
                 emp,
                 name,
                 role,
-                fac,
                 pw,
                 ts,
                 ts,
                 ts,
             )
+            for fac in facs if uid else ():
+                db.exec("INSERT IGNORE INTO sn_user_factory(user_id, factory_code) VALUES (%s,%s)", uid, fac)
     log.warning("demo_seed_applied", factories=len(_ORGS), bills=len({o[0] for o in _ORDERS}), users=4)

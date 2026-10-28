@@ -18,5 +18,5 @@ sequenceDiagram
   M->>API: ③ POST batches/next（PI / 单据 / PI + 单据）
   API->>D: 组织锁内：先给最早的未确认批次，没有才建拉取批次 PL-…
   API-->>M: 同一份批次内容 + remaining / paused
-  M->>API: ④ POST batches/{batchNo}/receipt
+  M->>API: ④ POST receipts（批次号在请求体）
   API->>D: 核对回执；先到的回执生效，后到的只存档

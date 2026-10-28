@@ -1,4 +1,4 @@
-"""生产组织（F-03，只读同步）与 MES 对接配置（F-04，仅总部）。"""
+"""生产组织（F-03，只读同步）与 MES 对接配置（F-04，只有系统管理员）。"""
 
 from fastapi import APIRouter
 
@@ -9,7 +9,7 @@ from app.services import factories
 router = APIRouter(prefix="/factories", tags=["factories"])
 
 
-@router.get("", summary="生产组织列表；总部另看 MES 对接配置（凭证不回显）与绑定的启用账户数")
+@router.get("", summary="生产组织列表；系统管理员另看 MES 对接配置（凭证不回显）与绑定的启用账户数")
 def factory_list(cu: UserDep) -> list:
     return factories.list_factories(cu)
 

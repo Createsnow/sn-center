@@ -1,6 +1,6 @@
 <template>
   <div class="toolbar">
-    <FactorySelect v-if="store.isAdmin" v-model="f.factory_code" clearable />
+    <FactorySelect v-if="store.multiScope" v-model="f.factory_code" scoped clearable />
     <el-input v-model="f.pi" placeholder="PI" clearable @keyup.enter="load(1)" />
     <el-input v-model="f.customer_code" :placeholder="t('common.customer')" clearable @keyup.enter="load(1)" />
     <el-input v-model="f.bill_no" :placeholder="t('common.billNo')" clearable @keyup.enter="load(1)" />
@@ -21,7 +21,7 @@
       <span>–</span>
       <el-input v-model="f.seq_to" :placeholder="t('query.seqTo')" clearable class="sn-mono" @keyup.enter="load(1)" />
     </div>
-    <el-switch v-if="!store.isAdmin && store.bound" v-model="f.pi_all" :active-text="t('query.piAll')" :disabled="!f.pi.trim()" />
+    <el-switch v-if="store.isOperator" v-model="f.pi_all" :active-text="t('query.piAll')" :disabled="!f.pi.trim()" />
     <el-button type="primary" @click="load(1)">{{ t("common.search") }}</el-button>
     <el-button @click="reset">{{ t("common.reset") }}</el-button>
     <span class="push" />

@@ -521,7 +521,7 @@ class Puller:
                 self.log(f"   process 返回 {st} {receipt}，停止")
                 done.append({"step": "process", "batchNo": b["batchNo"], "status": st, "body": receipt})
                 break
-            rs, rd, _ = self.call(f"/batches/{b['batchNo']}/receipt", receipt)
+            rs, rd, _ = self.call("/receipts", receipt)
             rec = {
                 "step": "receipt",
                 "batchNo": b["batchNo"],

@@ -3,7 +3,6 @@
     "title": "Multi-org SN Control",
     "short": "SN Center",
     "subtitle": "HQ generates, allocates & delivers",
-    "hq": "HQ",
     "empNo": "Employee No.",
     "changePassword": "Change password",
     "logout": "Sign out",
@@ -14,22 +13,21 @@
     "superAdmin": "System admin",
     "scope": "Data scope",
     "roleShort": {
-      "admin": "Administrator",
-      "factory_operator": "Org operator",
-      "query": "Viewer"
+      "admin": "System admin",
+      "operator": "Operator",
+      "auditor": "Auditor"
     },
     "scopeTip": {
-      "hq": "HQ view: sees and exports SNs of every production org",
-      "factory": "Can only view and act on this production org's data",
-      "queryAll": "Can look up data of every production org, but cannot take any action",
-      "queryFactory": "Can only look up data of the bound production orgs, and cannot take any action"
+      "hq": "System admin: sees and acts on data of every production org",
+      "factory": "Can only view and act on data of the authorized production orgs",
+      "queryFactory": "Can only look up data of the authorized production orgs, and cannot take any action"
     },
     "tz": "Times shown in {tz}"
   },
   "nav": {
     "groupWork": "Workspace",
-    "groupHq": "HQ operations",
-    "groupFactory": "Org operations",
+    "groupHq": "SN issuing",
+    "groupFactory": "Delivery & transfer",
     "groupQuery": "Query & audit",
     "groupSystem": "System",
     "dashboard": "Dashboard",
@@ -97,6 +95,7 @@
     "reasonPlaceholder": "Reason required, at most 500 characters",
     "copy": "Copy",
     "copied": "Copied",
+    "copyFailed": "Copy failed; select the text and copy it manually",
     "disabledSuffix": " (disabled in Kingdee)",
     "mes": "MES integration",
     "dateFrom": "From",
@@ -192,9 +191,9 @@
     "DELETED": "Deleted"
   },
   "roles": {
-    "admin": "Administrator",
-    "factory_operator": "Production org operator",
-    "query": "Viewer",
+    "admin": "System administrator",
+    "operator": "Operator",
+    "auditor": "Auditor",
     "mes": "MES interface account"
   },
   "scope": {
@@ -499,13 +498,13 @@
     "enableMes": "Turn on MES integration",
     "disableMes": "Turn off MES integration",
     "enableBlocked": "Fill in the endpoint and credential and pass the connection test first (under MES settings)",
-    "enableEffect": "After turning on, {n} allocated SNs of this org become to-push (not batched) and are not pushed automatically; HQ resumes pushing or MES pulls them.",
+    "enableEffect": "After turning on, {n} allocated SNs of this org become to-push (not batched) and are not pushed automatically; resume pushing on the allocation page or let MES pull them.",
     "disableEffect": "After turning off, {n} to-push (not batched) SNs of this org become allocated (still downloadable on SN export); pushed and acquired SNs stay as they are, and the endpoint and credential are kept (transfer-outs still get pushed).",
     "disableBlocked": "Unfinished pushes remain; cannot turn off",
     "blockTasks": "{n} running push tasks",
     "blockBatches": "{n} unconfirmed or failed batches, {qty} SNs",
     "blockReassign": "{n} SNs waiting for reassign push",
-    "disableBlockedHint": "Resume pushing or wait for MES receipts first; if MES is out of service, HQ confirms or voids the remaining batches manually under delivery batches.",
+    "disableBlockedHint": "Resume pushing or wait for MES receipts first; if MES is out of service, confirm or void the remaining batches manually under delivery batches.",
     "mesOn": "MES integration turned on",
     "mesOff": "MES integration turned off",
     "disableHint": "Production orgs disabled in Kingdee cannot be bound to accounts or chosen as transfer targets; SNs already allocated to them can still be exported, pushed, pulled and transferred out."
@@ -905,6 +904,11 @@
     "title": "Rule library",
     "desc": "Maintain SN rules: SN = prefix + serial within the PI (zero-padded) + separator + length (zero-padded, optional) + separator + unit (optional) + suffix, any characters allowed. Rules are only maintained here; choosing rules for material lines and binding a PI happen on the generation page; customer bindings can only be set via the API and are shown read-only under “Bindings”.",
     "create": "New rule",
+    "owner": "Owner org",
+    "ownerGlobal": "Global",
+    "ownerHint": "Empty = global rule: every org may use it, only the system administrator can modify or delete it",
+    "ownerOperatorHint": "The rule belongs to the chosen authorized org; only that org's accounts and the system administrator can see and modify it",
+    "globalReadonly": "Only the system administrator can modify or delete global rules; operators can only use them",
     "editTitle": "Edit rule {code}",
     "catALL": "All",
     "catNONE": "Uncategorized",
@@ -976,7 +980,7 @@
     },
     "kindTip": {
       "BILL": "For orders voided or split in Kingdee: SNs move to another production order and follow its org; SNs still to allocate may move too; effective at once.",
-      "ORG": "SNs move to another production org (may differ from the target bill's), limited to allocated SNs of the source org; effective at once when HQ transfers, otherwise the org applies and HQ approves."
+      "ORG": "SNs move to another production org (may differ from the target bill's), limited to allocated SNs of the source org; transfer directly (effective at once) when both orgs are authorized, otherwise submit a request for an account authorized for both orgs to approve."
     },
     "previewFirst": "Preview first, then submit once the transferable count looks right",
     "newBill": "Bill transfer",
@@ -990,7 +994,7 @@
     },
     "orgMode": {
       "APPLY": "Request",
-      "DIRECT": "HQ direct"
+      "DIRECT": "Direct"
     },
     "direction": {
       "OUT": "Out",
@@ -1035,8 +1039,8 @@
     "fromOrg": "Source org",
     "toOrg": "Target org",
     "toPi": "Target PI",
-    "applyNote": "After submitting, SNs become transfer-pending and cannot be pushed or pulled until HQ decides; you may withdraw before that. MES is not notified meanwhile.",
-    "directNote": "HQ direct transfer: SNs are re-attached at once, with reassign and transfer-out pushes as needed.",
+    "applyNote": "After submitting, SNs become transfer-pending and cannot be pushed or pulled until approved (by the system admin or an operator authorized for both orgs); you may withdraw before that. MES is not notified meanwhile.",
+    "directNote": "Direct transfer: both orgs must be authorized; SNs are re-attached at once, with reassign and transfer-out pushes as needed.",
     "submitApply": "Submit request",
     "submitDirect": "Transfer",
     "orgDone": "Org transfer {no} submitted, {n} SNs",
@@ -1057,7 +1061,7 @@
     "after": "After",
     "current": "Now",
     "transferredOut": "Transferred out",
-    "desc": "Re-attach SNs to another production order or org; SN strings never change. Two kinds: bill transfer (for orders voided or split in Kingdee; SNs follow the target bill; HQ only, effective at once) and org transfer (SNs move to another production org; org applies and HQ approves, or HQ transfers directly). Both pick the source by PI → bill → material → single SN or range, and require target PI, bill, production org and material. MES is informed by automatic reassign / transfer-out pushes.",
+    "desc": "Re-attach SNs to another production order or org; SN strings never change. Two kinds: bill transfer (for orders voided or split in Kingdee; SNs follow the target bill; effective at once) and org transfer (SNs move to another production org: direct when both orgs are authorized, otherwise a request approved by an account authorized for both). Both pick the source by PI → bill → material → single SN or range, and require target PI, bill, production org and material. MES is informed by automatic reassign / transfer-out pushes. Operators only act on SNs of their authorized orgs.",
     "scopeTip": {
       "BILL": "All SNs of this bill under the PI",
       "MATERIAL": "All SNs of this material code in the bill (all lines of the material)",
@@ -1082,7 +1086,7 @@
   },
   "users": {
     "title": "Accounts",
-    "desc": "Only the system administrator can create, edit, disable and enable accounts and reset passwords; accounts are disabled, never deleted. MES interface accounts cannot sign in to pages; they exchange employee No. + secret for a token to call the MES API.",
+    "desc": "Only the system administrator can create, edit, disable and enable accounts and reset passwords; accounts are disabled, never deleted. MES interface accounts cannot sign in to pages; they send employee No. + secret directly on every MES API call.",
     "tabAll": "Accounts",
     "tabMes": "MES interface accounts",
     "create": "New account",
@@ -1094,13 +1098,13 @@
     "name": "Name",
     "role": "Role",
     "roleHint": {
-      "admin": "HQ staff: all business permissions, no production org; cannot manage accounts (only the system administrator can)",
-      "factory_operator": "Acts only for one bound production org: views and exports its SNs and submits / withdraws its org transfer requests",
-      "query": "Read-only; unbound sees everything, bound sees only the bound orgs",
+      "admin": "The only system administrator: every production org, every function (including configuration and account management)",
+      "operator": "Authorized for one or more production orgs: production orders, SN generation, allocation, rule library (global rules are use-only), transfers, delivery handling, SN export and query",
+      "auditor": "Read-only; authorized for one or more production orgs: SN query and export, audit trail",
       "mes": "Can only call the MES pull, receipt and read-only APIs of its org"
     },
-    "queryFactories": "Visible production orgs",
-    "allFactoriesOption": "None selected = all production orgs",
+    "queryFactories": "Authorized production orgs",
+    "allFactoriesOption": "Select at least one",
     "selectAll": "Select all enabled",
     "noFactory": "—",
     "initPwd": "Initial password",
@@ -1120,7 +1124,9 @@
     "ipWhitelist": "Source address whitelist",
     "ipAny": "Any",
     "ipHint": "IPs or CIDRs separated by commas; empty = any. When set, only requests from the list are accepted",
-    "mesFactoryHint": "Only production orgs with MES integration on",
+    "mesFactoryPlaceholder": "Select a production org",
+    "mesFactoryHint": "You can create the account and hand it to MES for joint testing before turning MES integration on; until then it can only pull transfer-out batches, submit receipts and run read-only queries",
+    "mesOff": " (MES integration off)",
     "secretWillShow": "A secret is generated on save; you can view or reset it any time",
     "secretTitle": "MES interface account secret",
     "secretKeep": "After closing, use “View secret” in the list to see it again, or “Reset secret” to generate a new one; hand it to the MES side and keep it safe",
@@ -1129,6 +1135,6 @@
     "secretClose": "Close",
     "viewSecret": "View secret",
     "resetSecret": "Reset secret",
-    "resetSecretConfirm": "Reset the secret of {emp}? The old secret and tokens stop working at once; MES must switch to the new secret."
+    "resetSecretConfirm": "Reset the secret of {emp}? The old secret stops working at once; MES must switch to the new secret."
   }
 }

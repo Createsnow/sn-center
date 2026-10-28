@@ -1,26 +1,29 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 
+/** 系统管理员（唯一）、普通操作员、审计员。 */
 const ADMIN = ["admin"];
-const ALL = ["admin", "factory_operator", "query"];
+const OPS = ["admin", "operator"];
+const AUDIT = ["admin", "auditor"];
+const ALL = ["admin", "operator", "auditor"];
 
 export const MENU = [
   { group: "nav.groupWork", items: [
     { path: "/", title: "nav.dashboard", icon: "Odometer", roles: ALL },
   ] },
   { group: "nav.groupHq", items: [
-    { path: "/orders", title: "nav.orders", icon: "Tickets", roles: ["admin", "query"] },
-    { path: "/generate", title: "nav.generate", icon: "Finished", roles: ADMIN },
-    { path: "/allocate", title: "nav.allocate", icon: "Promotion", roles: ADMIN },
-    { path: "/rules", title: "nav.rules", icon: "SetUp", roles: ADMIN },
+    { path: "/orders", title: "nav.orders", icon: "Tickets", roles: OPS },
+    { path: "/generate", title: "nav.generate", icon: "Finished", roles: OPS },
+    { path: "/allocate", title: "nav.allocate", icon: "Promotion", roles: OPS },
+    { path: "/rules", title: "nav.rules", icon: "SetUp", roles: OPS },
   ] },
   { group: "nav.groupFactory", items: [
     { path: "/export", title: "nav.export", icon: "Download", roles: ALL },
-    { path: "/transfer", title: "nav.transfer", icon: "Switch", roles: ALL },
+    { path: "/transfer", title: "nav.transfer", icon: "Switch", roles: OPS },
   ] },
   { group: "nav.groupQuery", items: [
     { path: "/query", title: "nav.query", icon: "Search", roles: ALL },
-    { path: "/audit", title: "nav.audit", icon: "Notebook", roles: ALL },
+    { path: "/audit", title: "nav.audit", icon: "Notebook", roles: AUDIT },
   ] },
   { group: "nav.groupSystem", items: [
     { path: "/users", title: "nav.users", icon: "User", roles: ADMIN, superAdmin: true },

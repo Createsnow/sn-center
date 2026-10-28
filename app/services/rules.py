@@ -27,7 +27,7 @@ from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db, marks
-from app.services import audit
+from app.services import audit, factories
 
 #: 分类
 NONE = "NONE"
@@ -58,6 +58,7 @@ RULE_FIELDS = (
     "rule_name",
     "category_scope",
     "category_value",
+    "factory_code",
     "current_version",
     "created_by",
     "created_at",
@@ -287,9 +288,52 @@ def view(r: dict) -> dict:
     return _views([r])[0]
 
 
-def list_rules(q: str | None, category: str | None = None, category_value: str | None = None) -> list[dict]:
+def _visible_sql(facs: tuple[str, ...] | None) -> tuple[str, list]:
+    """授权范围内能看到、能选用的规则：全局规则 + 范围内组织的规则（None = 全部）。"""
+    if facs is None:
+        return "", []
+    fsql, fargs = factories.scope_sql(facs)
+    return f" AND (factory_code IS NULL OR (1=1{fsql}))", fargs
+
+
+def check_visible(cu: CurrentUser, r: dict) -> None:
+    """选用规则：全局规则或授权组织的规则。"""
+    if r["factory_code"] is not None and not cu.can_read(r["factory_code"]):
+        raise biz(ErrorCode.FACTORY_FORBIDDEN, factory=cu.scope_text())
+
+
+def check_editable(cu: CurrentUser, r: dict) -> None:
+    """修改、删除规则：系统管理员不限；普通操作员只能改授权组织的规则，全局规则只能选用。"""
+    if cu.is_admin:
+        return
+    if r["factory_code"] is None:
+        raise biz(ErrorCode.RULE_GLOBAL_READONLY, rule_code=r["rule_code"])
+    cu.check_write(r["factory_code"])
+
+
+def _owner(cu: CurrentUser, factory_code: str | None) -> str | None:
+    """新建规则的所属组织：系统管理员可不填（全局规则）；普通操作员须是授权组织，只授权一个时可不填。"""
+    f = util.trim_or_none(factory_code)
+    if f is not None:
+        cu.check_write(f)
+        return factories.must_get(f)["factory_code"]
+    if cu.is_admin:
+        return None
+    if len(cu.factories) == 1:
+        return cu.factories[0]
+    raise biz(ErrorCode.RULE_FACTORY_REQUIRED)
+
+
+def list_rules(
+    q: str | None,
+    category: str | None = None,
+    category_value: str | None = None,
+    facs: tuple[str, ...] | None = None,
+) -> list[dict]:
+    """规则库；facs = 授权范围（None = 全部）：只列全局规则和范围内组织的规则。"""
     sql = "SELECT * FROM sn_rule WHERE 1=1"
-    args: list = []
+    vsql, args = _visible_sql(facs)
+    sql += vsql
     if not util.blank(category):
         sql += " AND category_scope = %s"
         args.append(util.trim(category))
@@ -375,15 +419,17 @@ def _insert_rule(
     cat: tuple[str, str],
     note: str = "",
     claimed_pi: str | None = None,
+    factory: str | None = None,
 ) -> int:
     now = util.now()
     rid = db.insert(
-        "INSERT INTO sn_rule(rule_code, rule_name, category_scope, category_value, current_version, created_by, "
-        "created_at, updated_by, updated_at) VALUES (%s,%s,%s,%s,1,%s,%s,%s,%s)",
+        "INSERT INTO sn_rule(rule_code, rule_name, category_scope, category_value, factory_code, current_version, "
+        "created_by, created_at, updated_by, updated_at) VALUES (%s,%s,%s,%s,%s,1,%s,%s,%s,%s)",
         code,
         name,
         cat[0],
         cat[1],
+        factory,
         cu.emp_no,
         now,
         cu.emp_no,
@@ -395,13 +441,24 @@ def _insert_rule(
         audit.entry(audit.RULE_CREATE)
         .pi(cat[1] if cat[0] == PI else claimed_pi)
         .customer(cat[1] if cat[0] == CUSTOMER else None)
+        .factory(factory)
         .info(f"{code} v1 {describe(spec)}{note}"),
     )
     return rid
 
 
-def create(cu: CurrentUser, code: str | None, name: str | None, s: SpecIn, category=None, category_value=None) -> dict:
+def create(
+    cu: CurrentUser,
+    code: str | None,
+    name: str | None,
+    s: SpecIn,
+    category=None,
+    category_value=None,
+    factory_code: str | None = None,
+) -> dict:
+    """新建规则；factory_code = 所属生产组织（系统管理员可不填 = 全局规则，普通操作员须是授权组织）。"""
     with db.tx():
+        owner = _owner(cu, factory_code)
         c = util.trim(code)
         if not _CODE.match(c):
             raise biz(ErrorCode.RULE_CODE_INVALID)
@@ -413,7 +470,7 @@ def create(cu: CurrentUser, code: str | None, name: str | None, s: SpecIn, categ
         check_prefix(spec.prefix)
         if db.exists("SELECT EXISTS(SELECT 1 FROM sn_rule WHERE rule_code = %s)", c):
             raise biz(ErrorCode.RULE_CODE_EXISTS, rule_code=c)
-        rid = _insert_rule(cu, c, n, spec, cat)
+        rid = _insert_rule(cu, c, n, spec, cat, factory=owner)
         return view(get_rule(rid))
 
 
@@ -426,6 +483,7 @@ def update(cu: CurrentUser, rule_id: int, name: str | None, s: SpecIn, category=
     UNCHANGED。"""
     with db.tx():
         r = get_rule(rule_id, lock=True)
+        check_editable(cu, r)
         n = util.trim(name)
         if not n or len(n) > 128:
             raise biz(ErrorCode.RULE_NAME_REQUIRED)
@@ -516,6 +574,7 @@ def delete(cu: CurrentUser, rule_id: int) -> dict:
     """只能删从没生成过号、也没指定给任何 PI（PI 绑定、物料行选定、版本归属）的规则（连同全部版本）。"""
     with db.tx():
         r = get_rule(rule_id, lock=True)
+        check_editable(cu, r)
         vs = db.all("SELECT * FROM sn_rule_version WHERE rule_id = %s FOR UPDATE", r["id"])
         if any(v["used"] for v in vs):
             raise biz(ErrorCode.RULE_IN_USE, rule_code=r["rule_code"])
@@ -826,6 +885,7 @@ def select_for_lines(
         raise biz(ErrorCode.PI_REQUIRED)
     with db.tx():
         keys = _line_keys(pi, lines)
+        cu.check_write(*{line["org_code"] for _, _, line in keys})
         if custom is not None:
             res = _custom_resolved(SRC_LINE, custom)
             check_prefix(res.version["prefix"])
@@ -833,6 +893,7 @@ def select_for_lines(
             label = f"custom {format_text(res.spec())}"
         else:
             rule = get_rule(rule_id)
+            check_visible(cu, rule)
             res = _resolve_for_select(cu, rule, pi, SRC_LINE, new_prefix)
             rid, cj = rule["id"], None
             label = f"{rule['rule_code']} v{res.version['version']}"
@@ -871,6 +932,7 @@ def clear_lines(cu: CurrentUser, pi_in: str | None, lines: list[dict] | None) ->
     pi = util.trim(pi_in)
     with db.tx():
         keys = _line_keys(pi, lines)
+        cu.check_write(*{line["org_code"] for _, _, line in keys})
         for no, seq, line in keys:
             if db.exec("DELETE FROM sn_line_rule WHERE bill_no = %s AND seq = %s", no, seq):
                 audit.record(
@@ -884,13 +946,23 @@ def clear_lines(cu: CurrentUser, pi_in: str | None, lines: list[dict] | None) ->
     return {"pi_no": pi}
 
 
+def _check_pi_scope(cu: CurrentUser, pi: str) -> None:
+    """PI 级的默认规则影响这张 PI 的全部单据：普通操作员须对这张 PI 的全部单据的生产组织都有授权。"""
+    if cu.is_admin:
+        return
+    orgs = set(db.column("SELECT DISTINCT org_code FROM sn_prd_mo WHERE pi = %s", pi))
+    cu.check_write(*(orgs or {"-"}))
+
+
 def bind_pi(cu: CurrentUser, pi_in: str | None, rule_id: int | None, new_prefix: str | None = None) -> dict:
     """给 PI 绑定规则作各物料行的默认（单行另选优先）；版本已归属别的 PI 时须填新前缀。"""
     pi = util.trim(pi_in)
     if not pi:
         raise biz(ErrorCode.PI_REQUIRED)
+    _check_pi_scope(cu, pi)
     with db.tx():
         rule = get_rule(rule_id)
+        check_visible(cu, rule)
         res = _resolve_for_select(cu, rule, pi, SRC_PI, new_prefix)
         now = util.now()
         db.exec(
@@ -921,6 +993,7 @@ def adopt_customer_template(cu: CurrentUser, pi_in: str | None, new_prefix: str 
 def unbind_pi(cu: CurrentUser, pi_in: str | None) -> dict:
     """解除 PI 绑定：规则转为通用模板，已选过规则的物料行不受影响。"""
     pi = util.trim(pi_in)
+    _check_pi_scope(cu, pi)
     with db.tx():
         b = db.one("SELECT * FROM sn_pi_rule WHERE pi_no = %s FOR UPDATE", pi)
         if b is not None:
@@ -973,11 +1046,13 @@ def unbind_customer(cu: CurrentUser, customer_in: str | None) -> dict:
     return {"customer_code": customer}
 
 
-def options(pi: str | None, customer: str | None) -> list[dict]:
-    """生成页规则库选项：分类与本 PI 或本 PI 客户相同的标「推荐」排前面；给出本 PI 用这条规则时的版本与是否须换前缀。"""
+def options(pi: str | None, customer: str | None, facs: tuple[str, ...] | None = None) -> list[dict]:
+    """生成页规则库选项：分类与本 PI 或本 PI 客户相同的标「推荐」排前面；给出本 PI 用这条规则时的版本与是否须换前缀。
+    facs = 授权范围（None = 全部）：只列全局规则和范围内组织的规则。"""
     out = []
     versions = _versions_by_rule()
-    for r in db.all("SELECT * FROM sn_rule ORDER BY rule_code"):
+    vsql, vargs = _visible_sql(facs)
+    for r in db.all("SELECT * FROM sn_rule WHERE 1=1" + vsql + " ORDER BY rule_code", *vargs):
         vs = versions.get(r["id"], [])
         res = _resolve_in(r, vs, pi, SRC_LINE) if pi else None
         recommended = (r["category_scope"] == PI and r["category_value"] == pi) or (
@@ -990,6 +1065,7 @@ def options(pi: str | None, customer: str | None) -> list[dict]:
             "rule_name": r["rule_name"],
             "category_scope": r["category_scope"],
             "category_value": r["category_value"],
+            "factory_code": r["factory_code"],
             "recommended": bool(recommended),
             "format": None if t is None else format_text(spec_of(t)),
             # 本 PI 用这条规则时的版本号（须换前缀时为另出前的当前版本）
@@ -1031,7 +1107,14 @@ def realize(cu: CurrentUser, pi: str, res: Resolved, lines: list[tuple[str, int]
             raise biz(err)
         check_prefix(spec.prefix)
         code, name = _custom_names(pi)
-        rid = _insert_rule(cu, code, name, spec, (PI, pi), " (自定义规则，生成成功后存入规则库)", claimed_pi=pi)
+        from app.services import orders
+
+        # 自定义规则归属本次物料行所在的生产组织（都在同一个组织时；否则为全局规则）
+        orgs = orders.bill_orgs(no for no, _ in lines) - {"-"}
+        owner = next(iter(orgs)) if len(orgs) == 1 else None
+        rid = _insert_rule(
+            cu, code, name, spec, (PI, pi), " (自定义规则，生成成功后存入规则库)", claimed_pi=pi, factory=owner
+        )
         # 物料行改记为这条规则
         for no, seq in lines:
             db.exec(

@@ -148,7 +148,7 @@ class CurrentUser:
     factory_code: str | None
     source: str
     trace_id: str | None
-    #: 可读的生产组织：操作员、MES 接口账户 = 本组织；查询员 = 绑定的一个或多个；空 = 全部（总部、未绑的查询员）
+    #: 授权的生产组织：普通操作员、审计员 = 绑定的一个或多个；MES 接口账户 = 本组织；系统管理员为空 = 全部
     factories: tuple[str, ...] = ()
 
     @staticmethod
@@ -157,20 +157,21 @@ class CurrentUser:
 
     @property
     def is_admin(self) -> bool:
+        """系统管理员（含定时任务）：全部组织、全部功能。"""
         return self.role == util.ADMIN
 
     @property
     def is_super_admin(self) -> bool:
-        """系统管理员账户：唯一可以管理账户的人；其他管理员不能建账户。"""
+        """系统管理员账户：唯一可以管理账户的人。"""
         return self.source != SYSTEM and util.is_super_admin(self.emp_no, self.role)
 
     @property
-    def is_factory(self) -> bool:
-        return self.role == util.FACTORY
+    def is_operator(self) -> bool:
+        return self.role == util.OPERATOR
 
     @property
-    def is_query(self) -> bool:
-        return self.role == util.QUERY
+    def is_auditor(self) -> bool:
+        return self.role == util.AUDITOR
 
     @property
     def is_mes(self) -> bool:
@@ -178,36 +179,49 @@ class CurrentUser:
 
     @property
     def bound(self) -> bool:
-        return bool(self.factories)
+        """数据范围受限（系统管理员以外的账户）。"""
+        return not self.is_admin
 
     def scope_text(self) -> str:
         return "、".join(self.factories)
 
     def can_read(self, factory: str | None) -> bool:
-        return not self.factories or factory in self.factories
+        return self.is_admin or factory in self.factories
 
     def check_read(self, *factories: str | None) -> None:
-        """记录涉及的生产组织里至少有一个在可读范围内，否则拒绝。"""
+        """记录涉及的生产组织里至少有一个在授权范围内，否则拒绝。"""
         if not any(self.can_read(f) for f in factories):
             raise biz(ErrorCode.FACTORY_FORBIDDEN, factory=self.scope_text())
 
+    def check_write(self, *factories: str | None) -> None:
+        """写操作：系统管理员不限；普通操作员涉及的生产组织须全部在授权范围内（空值不计）；其他角色不能写。"""
+        if self.is_admin:
+            return
+        if not self.is_operator:
+            raise biz(ErrorCode.FORBIDDEN)
+        if any(f and f not in self.factories for f in factories):
+            raise biz(ErrorCode.FACTORY_FORBIDDEN, factory=self.scope_text())
+
     def write_factory(self, requested: str | None) -> str:
-        """写操作（转组织申请）的生产组织：总部必须指定；操作员只能是本组织；查询员不能写。"""
+        """写操作（转组织）的来源生产组织：系统管理员必须指定；普通操作员只能是授权组织，只授权一个时可不填。"""
         req = util.trim(requested)
         if self.is_admin:
             if not req:
                 raise biz(ErrorCode.FACTORY_NOT_FOUND, factory="")
             return req
-        if self.is_factory:
-            if req and req != self.factory_code:
-                raise biz(ErrorCode.FACTORY_FORBIDDEN, factory=self.factory_code)
-            return self.factory_code  # type: ignore[return-value]
+        if self.is_operator:
+            if req:
+                self.check_write(req)
+                return req
+            if len(self.factories) == 1:
+                return self.factories[0]
+            raise biz(ErrorCode.FACTORY_NOT_FOUND, factory="")
         raise biz(ErrorCode.FORBIDDEN)
 
     def read_factories(self, requested: str | None) -> tuple[str, ...] | None:
-        """读范围的生产组织：None = 全部；指定了组织须在可读范围内，没指定 = 全部可读的组织。"""
+        """读范围的生产组织：None = 全部（只有系统管理员）；指定了组织须在授权范围内，没指定 = 全部授权的组织。"""
         req = util.trim(requested)
         if req:
             self.check_read(req)
             return (req,)
-        return self.factories or None
+        return None if self.is_admin else self.factories

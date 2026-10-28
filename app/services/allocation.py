@@ -7,6 +7,7 @@
 分配与生成、撤销共用 PI 操作锁。
 分配页详情：待分配的物料行（号段、目标生产组织）、推送进度、分配记录（最近 100 条，推送与拉取批次）。
 PI 列表与生成页共用（workbench.pis）。
+普通操作员只能分配到授权组织：指定的单据、物料行须属于授权组织；整张 PI 分配时只分授权组织的号。
 """
 
 from __future__ import annotations
@@ -42,8 +43,16 @@ def _scope(pi: str, bills_in: list[str] | None, lines_in: list[dict] | None) -> 
     return "", []
 
 
-def _groups(pi: str, bills_in, lines_in) -> tuple[list[dict], list[dict]]:
-    """待分配号按（单据、目标组织）分组；返回（可分配组，跳过的单据及原因）。"""
+def _check_picked(cu: CurrentUser, bills_in: list[str] | None, lines_in: list[dict] | None) -> None:
+    """指定的单据、物料行须属于授权组织。"""
+    picked = [util.trim(x.get("bill_no")) for x in lines_in or []] or [util.trim(b) for b in bills_in or []]
+    if picked:
+        cu.check_write(*orders.bill_orgs(picked))
+
+
+def _groups(pi: str, bills_in, lines_in, facs: tuple[str, ...] | None = None) -> tuple[list[dict], list[dict]]:
+    """待分配号按（单据、目标组织）分组；返回（可分配组，跳过的单据及原因）。
+    facs = 授权范围（None = 全部）：目标组织不在范围内的不列出。"""
     cond, args = _scope(pi, bills_in, lines_in)
     rows = db.all(
         "SELECT bill_no, gen_org_code, COUNT(*) n, MIN(seq_dec) s, MAX(seq_dec) e FROM sn_item "
@@ -54,6 +63,8 @@ def _groups(pi: str, bills_in, lines_in) -> tuple[list[dict], list[dict]]:
     groups, skipped = [], []
     for r in rows:
         org, block = target_org(r["bill_no"])
+        if facs is not None and (org or r["gen_org_code"]) not in facs:
+            continue
         if block:
             skipped.append({"bill_no": r["bill_no"], "qty": int(r["n"]), "reason": block})
             continue
@@ -69,12 +80,13 @@ def _groups(pi: str, bills_in, lines_in) -> tuple[list[dict], list[dict]]:
     return groups, skipped
 
 
-def preview(pi_in: str | None, bills: list[str] | None, lines: list[dict] | None) -> dict:
+def preview(cu: CurrentUser, pi_in: str | None, bills: list[str] | None, lines: list[dict] | None) -> dict:
     """分配面板：按生产组织汇总枚数、单据和物料，标出是否对接 MES；按钮写「分配 N 枚（推送 M 次）」。"""
     pi = util.trim(pi_in)
     if not pi:
         raise biz(ErrorCode.PI_REQUIRED)
-    groups, skipped = _groups(pi, bills, lines)
+    _check_picked(cu, bills, lines)
+    groups, skipped = _groups(pi, bills, lines, cu.read_factories(None))
     by_org: dict[str, dict] = {}
     orgs_of_bill: dict[str, set[str]] = {}
     for g in groups:
@@ -125,9 +137,10 @@ def allocate(
     pi = util.trim(pi_in)
     if not pi:
         raise biz(ErrorCode.PI_REQUIRED)
+    _check_picked(cu, bills, lines)
     with locks.with_pi_lock(pi):
         with db.tx():
-            groups, skipped = _groups(pi, bills, lines)
+            groups, skipped = _groups(pi, bills, lines, cu.read_factories(None))
             if not groups:
                 raise biz(ErrorCode.ALLOC_NOTHING)
             cond, args = _scope(pi, bills, lines)
@@ -201,12 +214,16 @@ def context(cu: CurrentUser, pi_in: str | None) -> dict:
     pi = util.trim(pi_in)
     if not pi:
         raise biz(ErrorCode.PI_REQUIRED)
+    facs = cu.read_factories(None)
+    isql, iargs = factories.item_scope_sql(facs)
     rows = db.all(
         "SELECT bill_no, bill_seq, gen_org_code, MAX(material_code) material_code, MAX(attach_no) attach_no, "
         "MAX(length_text) length, "
-        "COUNT(*) n, MIN(sn) a, MAX(sn) b FROM sn_item WHERE pi_no = %s AND status = 'PENDING_ALLOC' "
-        "GROUP BY bill_no, bill_seq, gen_org_code ORDER BY bill_no, bill_seq",
+        "COUNT(*) n, MIN(sn) a, MAX(sn) b FROM sn_item WHERE pi_no = %s AND status = 'PENDING_ALLOC'"
+        + isql
+        + " GROUP BY bill_no, bill_seq, gen_org_code ORDER BY bill_no, bill_seq",
         pi,
+        *iargs,
     )
     names = factories.names()
     targets: dict[str, tuple[str | None, str | None]] = {}
@@ -233,17 +250,19 @@ def context(cu: CurrentUser, pi_in: str | None) -> dict:
                 "skip": block,
             }
         )
-    stats = workbench.item_stats([pi]).get(pi, {})
+    stats = workbench.item_stats([pi], facs).get(pi, {})
+    msql, margs = factories.scope_sql(facs, "m.org_code")
     quota = db.scalar(
         "SELECT SUM(GREATEST(FLOOR(m.qty) - COALESCE(c.own_generated, 0), 0)) FROM sn_prd_mo m "
-        "LEFT JOIN sn_line_count c ON c.bill_no = m.bill_no AND c.seq = m.seq WHERE m.pi = %s",
+        "LEFT JOIN sn_line_count c ON c.bill_no = m.bill_no AND c.seq = m.seq WHERE m.pi = %s" + msql,
         pi,
+        *margs,
     )
     return {
         "pi_no": pi,
         "customer_code": orders.customer_of_pi(pi) or "",
         "summary": {
-            "generated_qty": workbench.gen_own([pi]).get(pi, 0),
+            "generated_qty": workbench.gen_own([pi], facs).get(pi, 0),
             "transferred_in": stats.get("transferred_in", 0),
             "pending_alloc": stats.get("pending", 0),
             "allocated_qty": stats.get("allocated", 0),
@@ -252,15 +271,15 @@ def context(cu: CurrentUser, pi_in: str | None) -> dict:
             "quota": int(quota or 0),
         },
         "lines": lines,
-        "push": push_status(pi),
+        "push": push_status(pi, facs),
         "batches": delivery.list_batches(cu, None, pi, None, None, "DELIVERY", None, None, util.Page.of(1, 100))[
             "items"
         ],
     }
 
 
-def push_status(pi: str) -> list[dict]:
-    """按生产组织：推送任务状态、「第 i / N 次」、已推送枚数、剩余次数、失败原因。"""
+def push_status(pi: str, facs: tuple[str, ...] | None = None) -> list[dict]:
+    """按生产组织：推送任务状态、「第 i / N 次」、已推送枚数、剩余次数、失败原因；只列授权范围 facs 内的组织。"""
     orgs = db.column(
         "SELECT DISTINCT factory_code FROM sn_item WHERE pi_no = %s AND factory_code IS NOT NULL "
         "UNION SELECT DISTINCT factory_code FROM sn_delivery_batch WHERE pi_no = %s AND batch_type <> 'TRANSFER_OUT'",
@@ -268,7 +287,7 @@ def push_status(pi: str) -> list[dict]:
         pi,
     )
     out = []
-    for org in sorted(o for o in orgs if o):
+    for org in sorted(o for o in orgs if o and (facs is None or o in facs)):
         f = factories.get(org)
         if not (f and f["mes_enabled"]) and not db.exists(
             "SELECT EXISTS(SELECT 1 FROM sn_delivery_batch WHERE factory_code = %s AND pi_no = %s)", org, pi

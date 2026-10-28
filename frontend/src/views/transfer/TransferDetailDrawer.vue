@@ -45,11 +45,11 @@
           <el-icon><Download /></el-icon><span>{{ t("transfer.outList") }}</span>
         </el-button>
         <template v-if="det.kind === 'ORG' && det.doc.status === 'PENDING'">
-          <template v-if="store.isAdmin">
+          <template v-if="store.canWrite(det.doc.from_factory, det.doc.to_factory)">
             <el-button size="small" type="success" @click="emit('decide', det.doc, 'approve')">{{ t("transfer.approve") }}</el-button>
             <el-button size="small" type="danger" plain @click="emit('decide', det.doc, 'reject')">{{ t("transfer.reject") }}</el-button>
           </template>
-          <el-button v-else-if="store.isFactory && det.doc.direction === 'OUT'" size="small" type="warning" plain @click="emit('withdraw', det.doc)">
+          <el-button v-if="store.isOperator && det.doc.direction === 'OUT'" size="small" type="warning" plain @click="emit('withdraw', det.doc)">
             {{ t("transfer.withdraw") }}
           </el-button>
         </template>
@@ -71,7 +71,7 @@
           </el-table-column>
           <el-table-column :label="t('common.actions')" width="170" align="right">
             <template #default="{ row }">
-              <el-button v-if="store.isAdmin && row.remaining && (row.remaining.batches || row.remaining.unbatched)" size="small"
+              <el-button v-if="store.canWrite(row.factory_code) && row.remaining && (row.remaining.batches || row.remaining.unbatched)" size="small"
                 :loading="busy === `resume:${row.factory_code}:${row.pi_no}`" @click="resume(row.factory_code, row.pi_no)">
                 {{ t("transfer.resume", { n: row.remaining.pushes }) }}
               </el-button>
@@ -91,7 +91,7 @@
           <el-table-column :label="t('transfer.failReason')" min-width="160" show-overflow-tooltip><template #default="{ row }">{{ row.fail_reason || "—" }}</template></el-table-column>
           <el-table-column :label="t('common.actions')" width="230" align="right">
             <template #default="{ row }">
-              <template v-if="store.isAdmin && canConfirm(row)">
+              <template v-if="store.canWrite(row.factory_code) && canConfirm(row)">
                 <el-button link type="primary" :loading="busy === `resume:${row.factory_code}:#XO`" @click="resume(row.factory_code, '#XO')">{{ t("transfer.resumeShort") }}</el-button>
                 <el-button link type="success" @click="manual?.open(row.batch_no, 'confirm')">{{ t("transfer.manualConfirm") }}</el-button>
                 <el-button v-if="canVoid(row)" link type="danger" @click="manual?.open(row.batch_no, 'void')">{{ t("transfer.void") }}</el-button>

@@ -38,6 +38,7 @@ def manual_confirm(cu: CurrentUser, batch_no: str | None, reason: str | None, ba
     r, bs = _check_manual(reason, basis)
     with db.tx():
         b = must_batch(batch_no, lock=True)
+        cu.check_write(b["factory_code"])
         if b["result"] not in (UNCONFIRMED, FAILED):
             raise biz(ErrorCode.BATCH_NOT_PENDING, batch_no=b["batch_no"], result=b["result"])
         now = util.now()
@@ -73,6 +74,7 @@ def void(cu: CurrentUser, batch_no: str | None, reason: str | None, basis: str |
     rebuilt: list[dict] = []
     with db.tx():
         b = must_batch(batch_no, lock=True)
+        cu.check_write(b["factory_code"])
         if b["result"] not in (UNCONFIRMED, FAILED):
             raise biz(ErrorCode.BATCH_NOT_PENDING, batch_no=b["batch_no"], result=b["result"])
         if b["result"] == FAILED and not b["voidable"]:
@@ -180,6 +182,8 @@ def handle_alert(cu: CurrentUser, alert_id: int, action: str | None, note: str |
         a = db.one("SELECT * FROM sn_delivery_alert WHERE id = %s FOR UPDATE", alert_id)
         if a is None or a["status"] != "OPEN":
             raise biz(ErrorCode.DALERT_NOT_FOUND)
+        # 不属于任何生产组织的告警（factory_code 为空）只有系统管理员能处理
+        cu.check_write(a["factory_code"] or "-")
         if act == "RESEND":
             if a["item_id"] is None:
                 raise biz(ErrorCode.DALERT_RESEND_BLOCKED, sn=a["sn"] or "", detail="不是逐枚告警")
@@ -266,7 +270,7 @@ def list_alerts(cu: CurrentUser, status: str | None, page: util.Page) -> dict:
     if st != "ALL":
         where += " AND status = %s"
         args.append(st)
-    fsql, fargs = factories.scope_sql(cu.factories or None)
+    fsql, fargs = factories.scope_sql(cu.read_factories(None))
     where += fsql
     args += fargs
     total = db.count("SELECT COUNT(*) FROM sn_delivery_alert" + where, *args)

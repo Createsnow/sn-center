@@ -73,8 +73,9 @@
         <el-form-item :label="t('users.name')" required><el-input v-model="form.name" maxlength="64" /></el-form-item>
         <template v-if="isMes">
           <el-form-item :label="t('common.factory')" required>
-            <el-select v-model="form.factory_code" filterable class="w100" :placeholder="t('users.mesFactoryHint')">
-              <el-option v-for="x in mesFactories" :key="x.factory_code" :value="x.factory_code" :label="`${x.factory_name}（${x.factory_code}）`" />
+            <el-select v-model="form.factory_code" filterable class="w100" :placeholder="t('users.mesFactoryPlaceholder')">
+              <el-option v-for="x in mesFactories" :key="x.factory_code" :value="x.factory_code"
+                :label="`${x.factory_name}（${x.factory_code}）${x.mes_enabled ? ' · MES' : t('users.mesOff')}${x.enabled ? '' : t('common.disabledSuffix')}`" />
             </el-select>
             <div class="muted hint">{{ t("users.mesFactoryHint") }}</div>
           </el-form-item>
@@ -87,16 +88,11 @@
         <template v-else>
           <el-form-item :label="t('users.role')" required>
             <el-radio-group v-model="form.role" :disabled="!!editing?.super_admin">
-              <el-radio-button v-for="r in ROLE_CODES" :key="r" :value="r">{{ roleLabel(r) }}</el-radio-button>
+              <el-radio-button v-for="r in editing?.super_admin ? ['admin'] : ROLE_CODES" :key="r" :value="r">{{ roleLabel(r) }}</el-radio-button>
             </el-radio-group>
             <div class="muted hint">{{ t(`users.roleHint.${form.role}`) }}</div>
           </el-form-item>
-          <el-form-item v-if="form.role === 'factory_operator'" :label="t('common.factory')" required>
-            <el-select v-model="form.factory_code" filterable class="w100">
-              <el-option v-for="x in enabledFactories" :key="x.factory_code" :value="x.factory_code" :label="`${x.factory_name}（${x.factory_code}）`" />
-            </el-select>
-          </el-form-item>
-          <el-form-item v-if="form.role === 'query'" :label="t('users.queryFactories')">
+          <el-form-item v-if="isScoped" :label="t('users.queryFactories')" required>
             <div class="query-factories">
               <el-select v-model="form.factory_codes" multiple filterable clearable collapse-tags collapse-tags-tooltip
                 :max-collapse-tags="3" :placeholder="t('users.allFactoriesOption')">
@@ -124,7 +120,7 @@
         <el-descriptions-item :label="t('users.empNo')"><span class="sn-mono">{{ secret.emp_no }}</span></el-descriptions-item>
         <el-descriptions-item :label="t('users.secret')">
           <span class="sn-mono secret">{{ secret.value }}</span>
-          <el-button link type="primary" class="ml" @click="copy(secret.value)">{{ t("common.copy") }}</el-button>
+          <el-button link type="primary" class="ml" @click="copy(secret.value, $event)">{{ t("common.copy") }}</el-button>
         </el-descriptions-item>
       </el-descriptions>
       <p class="muted">{{ t("users.secretUsage") }}</p>
@@ -147,6 +143,7 @@ import { ROLE_CODES, roleLabel } from "@/constants";
 import PageHead from "@/components/PageHead.vue";
 import FactorySelect from "@/components/FactorySelect.vue";
 import { useFactories } from "@/composables/useFactories";
+import { copyText } from "@/utils/clipboard";
 
 const { t } = useI18n();
 const { fmt } = useTime();
@@ -160,14 +157,16 @@ const f = reactive({ q: "", role: "", status: "", factory_code: "" });
 const dialog = ref(false);
 const editing = ref<any>(null);
 const saving = ref(false);
-const EMPTY = { emp_no: "", name: "", role: "factory_operator", factory_code: "", factory_codes: [] as string[], password: "", ip_whitelist: "" };
+const EMPTY = { emp_no: "", name: "", role: "operator", factory_code: "", factory_codes: [] as string[], password: "", ip_whitelist: "" };
 const form = reactive({ ...EMPTY, factory_codes: [] as string[] });
 const { items, state, load } = usePaged<any>((q) => api.users({ ...f, role: tab.value === "mes" ? "mes" : f.role, ...q }));
 
 const isMes = computed(() => form.role === "mes");
+/** 普通操作员、审计员：授权一个或多个生产组织（至少一个）。 */
+const isScoped = computed(() => form.role === "operator" || form.role === "auditor");
 const enabledFactories = computed(() => factories.value.filter((x) => x.enabled));
-/** MES 接口账户只能绑「对接 MES = 是」的生产组织。 */
-const mesFactories = computed(() => factories.value.filter((x) => x.mes_enabled && (x.enabled || x.factory_code === form.factory_code)));
+/** MES 接口账户绑一个金蝶启用的生产组织（不要求已开启「对接 MES」，可先建账户联调）；已绑的被禁用后仍保留。 */
+const mesFactories = computed(() => factories.value.filter((x) => x.enabled || x.factory_code === form.factory_code));
 const dialogTitle = computed(() => {
   if (editing.value) return t("users.editTitle", { emp: editing.value.emp_no });
   return isMes.value ? t("users.createMes") : t("users.create");
@@ -181,7 +180,7 @@ function onTab() {
 
 function openCreate() {
   editing.value = null;
-  Object.assign(form, { ...EMPTY, factory_codes: [], role: tab.value === "mes" ? "mes" : "factory_operator" });
+  Object.assign(form, { ...EMPTY, factory_codes: [], role: tab.value === "mes" ? "mes" : "operator" });
   dialog.value = true;
 }
 
@@ -189,7 +188,8 @@ function openEdit(row: any) {
   editing.value = row;
   Object.assign(form, {
     emp_no: row.emp_no, name: row.name, role: row.role, factory_code: row.factory_code || "",
-    factory_codes: row.role === "query" ? [...(row.factory_codes || [])] : [], password: "", ip_whitelist: row.ip_whitelist || "",
+    factory_codes: row.role === "operator" || row.role === "auditor" ? [...(row.factory_codes || [])] : [],
+    password: "", ip_whitelist: row.ip_whitelist || "",
   });
   dialog.value = true;
 }
@@ -199,11 +199,15 @@ async function save() {
     ElMessage.error(t("password.policy"));
     return;
   }
+  if (isScoped.value && !form.factory_codes.length) {
+    ElMessage.error(t("users.allFactoriesOption"));
+    return;
+  }
   saving.value = true;
-  // 操作员、MES 接口账户绑一个组织；查询员绑一个或多个（不选 = 全部）；管理员不绑
+  // MES 接口账户绑一个组织；普通操作员、审计员授权一个或多个（至少一个）；系统管理员不绑
   const binding = {
-    factory_code: form.role === "factory_operator" || form.role === "mes" ? form.factory_code || null : null,
-    factory_codes: form.role === "query" ? form.factory_codes : [],
+    factory_code: isMes.value ? form.factory_code || null : null,
+    factory_codes: isScoped.value ? form.factory_codes : [],
   };
   const extra = isMes.value ? { ip_whitelist: form.ip_whitelist } : {};
   try {
@@ -226,7 +230,7 @@ async function save() {
 
 function factoryText(row: any) {
   const codes: string[] = row.factory_codes || [];
-  if (!codes.length) return row.role === "query" ? t("app.allFactories") : t("users.noFactory");
+  if (!codes.length) return row.role === "admin" ? t("app.allFactories") : t("users.noFactory");
   return codes.map((c, i) => `${row.factory_names?.[i] || ""}（${c}）`).join("、");
 }
 
@@ -273,13 +277,11 @@ async function resetSecret(row: any) {
   await load();
 }
 
-async function copy(text: string) {
-  try {
-    await navigator.clipboard.writeText(text);
-    ElMessage.success(t("common.copied"));
-  } catch {
-    /* 剪贴板不可用时手工选中复制 */
-  }
+async function copy(text: string, e: MouseEvent) {
+  // 临时文本框放在按钮旁（弹窗内），避开 el-dialog 的焦点陷阱
+  const host = (e.currentTarget as HTMLElement | null)?.parentElement ?? undefined;
+  if (await copyText(text, host)) ElMessage.success(t("common.copied"));
+  else ElMessage.warning(t("common.copyFailed"));
 }
 
 onMounted(() => load(1));
@@ -290,7 +292,7 @@ onMounted(() => load(1));
 .mb { margin-bottom: 12px; }
 .w100 { width: 100%; }
 .hint { width: 100%; line-height: 1.5; margin-top: 2px; }
-.secret { word-break: break-all; }
+.secret { word-break: break-all; user-select: all; }
 .query-factories { display: flex; align-items: center; gap: 8px; width: 100%; }
 .query-factories .el-select { flex: 1; }
 </style>

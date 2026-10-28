@@ -11,6 +11,8 @@ from app.services import audit, changes, factories, locks, rules
 from app.services.delivery.batches import (
     CONFIRMED,
     M_PULL,
+    RECEIPT_NG,
+    RECEIPT_OK,
     SRC_PULL,
     VOIDED,
     body_obj,
@@ -185,21 +187,23 @@ _RECEIPT_MSG = {
 
 
 def submit_receipt(cu: CurrentUser, batch_no: str, body: dict) -> dict:
-    """接口 ③ 提交回执（或整批拒收）。按批次号幂等：已确认的只存档；已作废的拒绝；不符时拒收并记批次失败。
-    应答回传本系统的处理结果：批次结果、本次回执是否生效（首次确认或整批退回已登记为 true，此前已确认、只存档为
-    false）。"""
+    """接口 ③ 提交回执（或整批拒收）。批次号取自请求体，按批次号幂等：已确认的只存档；已作废的拒绝。
+    code 不是 OK / NG 时 400 拒收、批次不变，MES 改正后重交。应答回传本系统的处理结果：批次结果、本次回执是否生效
+    （首次确认或整批退回已登记为 true，此前已确认、只存档为 false）。"""
     org = cu.factory_code
     _rate_limit(org)
+    if body.get("code") not in (RECEIPT_OK, RECEIPT_NG):
+        raise MesError(
+            400, "INVALID_REQUEST", "参数不合法：code", batch_no, [{"field": "code", "reason": "只能是 OK / NG"}]
+        )
     b = find_batch(batch_no)
-    if b is None or b["factory_code"] != org:
+    if b is None or b["batch_no"] != batch_no or b["factory_code"] != org:
         raise MesError(404, "BATCH_NOT_FOUND", "批次号不存在，或不属于本组织", batch_no)
     if b["result"] == VOIDED:
         raise MesError(409, "BATCH_VOIDED", "批次已作废，不得再处理这批内容", batch_no)
     applied = apply_receipt(cu, b["batch_no"], body, M_PULL)
     if applied.verdict == "VOIDED":
         raise MesError(409, "BATCH_VOIDED", "批次已作废，不得再处理这批内容", batch_no)
-    if applied.verdict == "MISMATCH":
-        raise MesError(422, "RECEIPT_MISMATCH", "回执与批次不符", batch_no, applied.details)
     return mes_body(
         "OK",
         _RECEIPT_MSG[applied.verdict],

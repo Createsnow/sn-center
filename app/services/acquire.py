@@ -48,13 +48,12 @@ class Scope:
 
 
 def read_scope(cu: CurrentUser, factory: str | None, pi: str | None, pi_all: bool) -> Scope:
-    """操作员切换为只读查看同一 PI 各组织的号：只限本组织也有号的 PI（Q2）。"""
-    if pi_all and cu.is_factory:
+    """普通操作员切换为只读查看同一 PI 各组织的号：只限授权组织也有号的 PI（Q2）。"""
+    if pi_all and cu.is_operator:
         if util.blank(pi):
             raise biz(ErrorCode.QUERY_PI_REQUIRED)
-        if not db.exists(
-            "SELECT EXISTS(SELECT 1 FROM sn_item WHERE factory_code = %s AND pi_no = %s)", cu.factory_code, pi.strip()
-        ):
+        fsql, fargs = factories.scope_sql(cu.factories)
+        if not db.exists("SELECT EXISTS(SELECT 1 FROM sn_item WHERE pi_no = %s" + fsql + ")", pi.strip(), *fargs):
             raise biz(ErrorCode.QUERY_PI_NOT_OWNED, pi=pi.strip())
         return Scope(None, True)
     return Scope(cu.read_factories(factory), False)

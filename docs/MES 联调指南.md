@@ -99,15 +99,46 @@ BASE=http://127.0.0.1:8000/api/mes/v1
 AUTH="Authorization: Bearer MES110:<密钥>"
 curl -s $BASE/batches/next -H "$AUTH" -H 'Content-Type: application/json' \
   -d '{"pi":null,"billNo":null,"batchNo":null}' > next.json
-# 整批已处理的回执；code 改成 OK / NG 以外的值或改 batchNo 就能看到 422 RECEIPT_MISMATCH，改成 NG 即整批退回
+# 整批已处理的回执（批次号在请求体）；code 改成 OK / NG 以外的值就能看到 400 INVALID_REQUEST（批次不变），
+# 改 batchNo 看到 404 BATCH_NOT_FOUND，改成 NG 即整批退回
 jq '{batchNo:.batch.batchNo, code:"OK", message:"已处理", processedAt:"2026-10-26 11:48:20.117"}' next.json > receipt.json
-curl -s $BASE/batches/$(jq -r .batch.batchNo next.json)/receipt -H "$AUTH" \
-  -H 'Content-Type: application/json' --data @receipt.json
-curl -s "$BASE/sn/delivered?pi=000001&pageSize=1000" -H "$AUTH"     # ④
-curl -s "$BASE/batches/<batchNo>/items" -H "$AUTH"                   # ⑤
+curl -s $BASE/receipts -H "$AUTH" -H 'Content-Type: application/json' --data @receipt.json
+curl -s $BASE/sn/delivered -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"pi":"000001","pageSize":1000}'                                # ④
+curl -s $BASE/batches/items -H "$AUTH" -H 'Content-Type: application/json' \
+  -d '{"batchNo":"<batchNo>"}'                                        # ⑤
 ```
 
-开启「对接 MES」要先通过连接测试，所以只测取批也得先起模拟 MES（或 MES 方的接收接口）。
+开启「对接 MES」要先通过连接测试，所以只测取批也得先起模拟 MES（或 MES 方的接收接口），做法见 2.4。
+
+### 2.4 MES 对接配置之前：MES 方能做什么
+
+MES 接口账户不要求所绑组织已开启「对接 MES」，可以先建好交给 MES 方开发。账户建好、启用、来源地址在白名单内（未设白名单则不限），②～⑤ 都能调通认证；但该组织还没开启对接、也从没对接过时，没有任何批次和已交付的号：
+
+| 接口 | 返回 |
+| --- | --- |
+| ② 拉取批次 | `OK`「暂无可拉取批次」，`batch` 为 `null`、`remaining` 为 0（未开启对接只给转出批次，从没对接过的组织没有转出批次） |
+| ③ 提交回执 | 没有下发过的批次号可回执：批次号不存在时 404 `BATCH_NOT_FOUND`；`code` 不是 `OK` / `NG` 等格式错误 400 `INVALID_REQUEST` |
+| ④ 查询已下发 SN | `OK`，`items` 为空 |
+| ⑤ 查询批次明细 | 404 `BATCH_NOT_FOUND` |
+
+这一阶段 MES 方可以先完成：
+
+- 认证：每次请求带 `Authorization: Bearer <工号>:<密钥>`；验证密钥错误 401、连续失败锁定 423、白名单拒绝 403、取批过频 429（按 `Retry-After` 等待）；
+- 报文：请求体格式、②④⑤ 的 gzip、③ 不支持 gzip，以及 400 / 404 / 409 的处理分支；
+- 「取批 → 按批次号去重落库 → 提交回执 → 按 `remaining` 续取」的流程代码（可先用接口文档里的示例报文自测）。
+
+**要拿到真实批次，在测试环境按下面做**（MES 的接收推送接口 ① 还没好也可以）：
+
+1. 本系统测试环境：先在「SN 生成」「SN 分配」给该组织生成并分配一些号。组织未开启对接时，这些号是「已分配」。
+2. 起模拟 MES（2.1），在「生产组织」页把该组织的接口地址填成模拟 MES 的地址，**连接测试**通过后开启「对接 MES」。开启时第 1 步的号改为「待推送（未入批）」，**不会自动推送**。
+3. MES 方用自己的 MES 接口账户调 ② 取批：系统从这些号建拉取批次（批次号 `PL-` 开头）返回；MES 落库后调 ③ 回执，批次成功，号改为「已推送（拉取）」；再用 ④⑤ 核对。
+
+注意：
+
+- 开启对接**之后**再分配，或在「SN 分配」页点「继续推送」，系统会推送给模拟 MES，号就不会留给 MES 方来取。要让 MES 方取到已推送的批次，可给模拟 MES 注入 `drop` 故障（2.2），让推送重试用尽，批次停在未确认，MES 再来取，拿到的是同一批（PRD 9.2 场景 4）。
+- 等 MES 测试环境的接收接口上线并通过契约测试（第 3 节），再把接口地址改成 MES 测试环境的地址，重新连接测试。
+- 正式环境不要接模拟 MES：按运维手册第 7 节，联调全部通过后再开启对接。
 
 ---
 
@@ -134,9 +165,9 @@ uv run python -m devtools.mes_conformance --url https://mes-test.example.com/sn/
 
 ## 4. 联调顺序建议
 
-1. **MES 开发期间**：本系统侧跑通自动化测试；在测试环境用模拟 MES 走通页面流程和第 2.2 节的故障（运维、实施熟悉首页告警和人工处理）。
+1. **MES 开发期间**：本系统侧跑通自动化测试；在测试环境用模拟 MES 走通页面流程和第 2.2 节的故障（运维、实施熟悉首页告警和人工处理）。可以先给 MES 方建 MES 接口账户，按 2.4 开发、自测取批与回执。
 2. **MES 接收接口上线到测试环境**：跑契约测试，失败项交 MES 方修正，直到全部通过；MES 方书面确认已按接口文档和对接说明实现。
-3. **端到端联调**：本系统测试环境的组织配上 MES 测试环境地址，连接测试通过后开启对接；给 MES 方建 MES 接口账户。按第 5 节逐项走 PRD 9.2 的 19 个场景，每项在本系统（交付批次、告警、操作痕迹）和 MES 本侧数据两边核对。
+3. **端到端联调**：本系统测试环境的组织配上 MES 测试环境地址，连接测试通过后开启对接（MES 接口账户第 1 步已建的照常用，没建的这时建）。按第 5 节逐项走 PRD 9.2 的 19 个场景，每项在本系统（交付批次、告警、操作痕迹）和 MES 本侧数据两边核对。
 4. **出联调报告**（PRD 9.2、Q57）：19 个场景逐项记录结果和依据（批次号、截图），连同契约测试报告存档，全部通过后在正式环境开启对接。
 
 ---
@@ -155,12 +186,12 @@ uv run python -m devtools.mes_conformance --url https://mes-test.example.com/sn/
 | 6 | 转单、转组织后改挂重推、转出推送；转回来源组织后清除「已转走」 | `test_transfers::test_org_transfer_pushes_reassign_to_target_and_transfer_out_to_source`、`test_transfers::test_same_org_bill_transfer_reassigns_pushed` | C08、C11～C13 | MES 本侧挂靠、「已转走」标记、`toOrgCode`；本地没有时转出建档 |
 | 7 | 转出后来源 MES 按批次号、按 PI 只读查不到已转出的号；转出批次推送中断时可取回并回执 | `test_transfers::test_org_transfer_pushes_reassign_to_target_and_transfer_out_to_source`、`test_transfers::test_transfer_out_pending_blocks_retransfer` | — | MES 用 ④⑤ 核对 |
 | 8 | 转出批次未确认或失败时，这些号不能再转单、转组织 | `test_transfers::test_transfer_out_pending_blocks_retransfer` | — | 只涉及本系统，页面确认提示 |
-| 9 | 按批次号取回：未确认、失败的可取回，不建批不改状态；已确认、已作废的被拒绝 | `test_delivery::test_pull_receipt_mismatch_rejected_then_fixed`、`test_delivery::test_void_returns_items_to_pool_and_rebatches`、`test_delivery::test_rejected_batch_voided_rebatches_and_refuses_voided` | — | MES 收到 409 `BATCH_CONFIRMED` / `BATCH_VOIDED` 后的处理 |
+| 9 | 按批次号取回：未确认、失败的可取回，不建批不改状态；已确认、已作废的被拒绝 | `test_delivery::test_pull_receipt_invalid_rejected_batch_unchanged_then_fixed`、`test_delivery::test_void_returns_items_to_pool_and_rebatches`、`test_delivery::test_rejected_batch_voided_rebatches_and_refuses_voided` | — | MES 收到 409 `BATCH_CONFIRMED` / `BATCH_VOIDED` 后的处理 |
 | 10 | 同一 SN 再次推送、拉取后，MES 中只保留一条 | `test_delivery::test_pull_returns_same_unconfirmed_batch_until_receipt` | C06 | MES 库里按 SN 查只有一条 |
 | 11 | 单据暂停交付期间推送、拉取都取不到未交付的号，已入批的可续推、可拉取；解除后自动继续推送 | `test_orders::test_reversal_suspends_undelivered_and_resumes`、`test_orders::test_pi_change_freezes_until_confirmed` | — | MES 取批时 `paused` 的显示与处理 |
 | 12 | 按 rev 逐枚处理、整批回执：更大或相同覆盖、更小跳过，整批仍 `OK`；回执不符批次失败 | `test_delivery::test_same_rev_from_other_batch_overwrites_without_alert`、`test_delivery::test_older_rev_skipped_by_mes_without_alert`、`test_delivery::test_receipt_batch_no_mismatch_fails_batch`、`test_delivery::test_unknown_receipt_code_is_invalid_response` | C05、C08～C10 | MES 本侧 rev 与挂靠 |
 | 13 | 连接测试批次：认证、组织编码校验通过即成功，MES 不写数据 | `test_accounts::test_mes_enable_requires_test_and_disable_blocked` | C01～C04 | MES 库里没有 PING 记录 |
-| 14 | 回执与批次不符：推送响应、拉取回执不符都记失败，取批跳过；修正后提交正确回执成功 | `test_delivery::test_receipt_batch_no_mismatch_fails_batch`、`test_delivery::test_pull_receipt_mismatch_rejected_then_fixed` | C05（校验规则相同） | MES 收到 422 后修正重交 |
+| 14 | 回执与批次不符：推送响应不符记失败，取批跳过；拉取回执不合法只拒收、批次不变；修正后提交正确回执成功 | `test_delivery::test_receipt_batch_no_mismatch_fails_batch`、`test_delivery::test_pull_receipt_invalid_rejected_batch_unchanged_then_fixed`、`test_delivery::test_receipt_batch_no_in_body_and_no_gzip` | C05（校验规则相同） | MES 收到 400 后按 `details` 修正重交 |
 | 15 | 人工处理：拒收批次作废后重新组批；报文过大作废后按调小的枚数组批；转出批次作废后重建送达；作废批次取回、回执被拒；人工确认后停止重试 | `test_delivery::test_rejected_batch_voided_rebatches_and_refuses_voided`、`test_delivery::test_void_returns_items_to_pool_and_rebatches`、`test_transfers::test_void_transfer_out_rebuilds_and_delivers`、`test_delivery::test_manual_confirm_stops_retry` | — | MES 丢弃作废批次、不用本地缓存处理；书面确认流程 |
 | 16 | 旧协议遗留的冲突、过期告警「以本系统为准重推」后，MES 按更大的 rev 覆盖（新协议不再产生此类告警） | `test_delivery::test_legacy_conflict_alert_resend_bumps_rev` | C08 | — |
 | 17 | 同组织改挂待推送的号再转走，来源 MES 收到转出；关闭对接后转走曾推送的号，转出照常送达 | `test_transfers::test_same_org_reassign_then_other_org_still_sends_transfer_out`、`test_transfers::test_transfer_out_after_source_disabled_mes` | — | 关闭对接后 MES 仍保留接收接口 |

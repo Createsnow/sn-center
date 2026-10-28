@@ -35,8 +35,7 @@ def authenticate(request: Request) -> CurrentUser:
         raise biz(ErrorCode.UNAUTHENTICATED)
     claims = parse_token(token)
     user = db.one(
-        "SELECT id, emp_no, name, role, factory_code, status, pwd_changed_at, last_login_at "
-        "FROM sn_user WHERE id = %s",
+        "SELECT id, emp_no, name, role, factory_code, status, pwd_changed_at, last_login_at FROM sn_user WHERE id = %s",
         claims.user_id,
     )
     if user is None:
@@ -64,6 +63,9 @@ def authenticate(request: Request) -> CurrentUser:
         users.read_scope(user["id"], user["role"], user["factory_code"]),
     )
     request.state.user = cu
+    if user["role"] in util.SCOPED_ROLES and not cu.factories:
+        # 普通操作员、审计员必须至少授权一个生产组织；没有授权就什么都不能看
+        raise biz(ErrorCode.USER_NO_FACTORY)
     return cu
 
 
@@ -86,7 +88,7 @@ def require_role(*roles: str) -> Callable[[Request], CurrentUser]:
 
 
 def require_super_admin(request: Request) -> CurrentUser:
-    """账户管理：只有系统管理员账户；其他管理员也不行。"""
+    """账户管理：只有系统管理员账户。"""
     cu = authenticate(request)
     if not cu.is_super_admin:
         raise biz(ErrorCode.USER_MANAGE_FORBIDDEN)
@@ -103,7 +105,7 @@ def mes_user(request: Request) -> CurrentUser:
 
     - MES 接口账户：每次请求带 Authorization: Bearer <工号>:<密钥>（不换令牌），只限所绑生产组织；
       错误 401 INVALID_CREDENTIALS、423 ACCOUNT_LOCKED、403 IP_NOT_ALLOWED / ACCOUNT_DISABLED。
-    - 其他账户（查询员等）：用登录令牌，按可看范围，只能调只读接口；错误 401 TOKEN_EXPIRED / TOKEN_INVALID。
+    - 页面账户：用登录令牌，按授权范围（系统管理员不限），只能调只读接口；错误 401 TOKEN_EXPIRED / TOKEN_INVALID。
     """
     header = request.headers.get("Authorization")
     token = header[7:].strip() if header is not None and header[:7].lower() == "bearer " else ""
@@ -132,6 +134,8 @@ def mes_user(request: Request) -> CurrentUser:
             raise MesError(403, "ACCOUNT_DISABLED", "账户已停用")
         if claims.session_version is not None and session_version(user["last_login_at"]) != claims.session_version:
             raise MesError(401, "TOKEN_INVALID", "该账户已在其他页面登录")
+        if user["role"] in util.SCOPED_ROLES and not users.read_scope(user["id"], user["role"], None):
+            raise MesError(403, "ORG_NOT_ALLOWED", "账户未授权任何生产组织")
     cu = CurrentUser(
         user["id"],
         user["emp_no"],
@@ -146,12 +150,16 @@ def mes_user(request: Request) -> CurrentUser:
     return cu
 
 
+#: 任何页面账户（系统管理员、普通操作员、审计员）
 UserDep = Annotated[CurrentUser, Depends(current_user)]
+#: 只有系统管理员：生产组织与 MES 配置、全量重建快照等全局配置
 AdminDep = Annotated[CurrentUser, Depends(require_role(util.ADMIN))]
-FactoryDep = Annotated[CurrentUser, Depends(require_role(util.FACTORY))]
+#: 系统管理员 + 普通操作员：业务操作（普通操作员限授权组织，由业务层 check_write 校验）
+OperatorDep = Annotated[CurrentUser, Depends(require_role(util.ADMIN, util.OPERATOR))]
+#: 系统管理员 + 审计员：操作痕迹（审计报表）
+AuditDep = Annotated[CurrentUser, Depends(require_role(util.ADMIN, util.AUDITOR))]
+#: 账户管理：只有系统管理员账户
 SuperAdminDep = Annotated[CurrentUser, Depends(require_super_admin)]
-AdminOrFactoryDep = Annotated[CurrentUser, Depends(require_role(util.ADMIN, util.FACTORY))]
-AdminOrQueryDep = Annotated[CurrentUser, Depends(require_role(util.ADMIN, util.QUERY))]
 
 
 def page_of(page: int | None, size: int | None, default_size: int | None = None) -> util.Page:

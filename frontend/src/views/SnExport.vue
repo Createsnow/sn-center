@@ -4,7 +4,7 @@
 
     <div class="surface">
       <div class="toolbar">
-        <FactorySelect v-if="!store.bound" v-model="f.factory_code" clearable :placeholder="t('app.allFactories')" @update:model-value="list.load(1)" />
+        <FactorySelect v-if="store.multiScope" v-model="f.factory_code" scoped clearable :placeholder="t('app.allFactories')" @update:model-value="list.load(1)" />
         <el-select v-model="f.mes" clearable class="w140" :placeholder="t('common.mes')" @change="list.load(1)">
           <el-option :label="t('export.mesYes')" value="true" />
           <el-option :label="t('export.mesNo')" value="false" />

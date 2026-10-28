@@ -30,7 +30,8 @@
       <template v-if="ctx.customer_rule">
         <div class="rule-now">
           <b>{{ ctx.customer_rule.rule_code }}</b><span class="muted">{{ ctx.customer_rule.rule_name }}</span>
-          <el-button link type="danger" :loading="busy === 'unbindCustomer'" @click="unbindCustomer">{{ t("generate.unbindCustomer") }}</el-button>
+          <!-- 按客户绑定跨组织生效：只有系统管理员能解除 -->
+          <el-button v-if="store.isAdmin" link type="danger" :loading="busy === 'unbindCustomer'" @click="unbindCustomer">{{ t("generate.unbindCustomer") }}</el-button>
         </div>
         <div v-if="ctx.pi_rule?.source === 'CUSTOMER'" class="rule-now">
           <el-input v-model="tpl.new_prefix" class="w160" maxlength="32" :placeholder="t('generate.rule.newPrefix')" />
@@ -52,9 +53,11 @@ import { computed, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { api } from "@/api";
+import { useAuthStore } from "@/stores/auth";
 import { ruleTitle } from "./format";
 
 const props = defineProps<{ modelValue: boolean; ctx: any }>();
+const store = useAuthStore();
 const emit = defineEmits<{ "update:modelValue": [open: boolean]; saved: [] }>();
 
 const { t } = useI18n();

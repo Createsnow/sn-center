@@ -327,6 +327,7 @@ def preview(
         raise biz(ErrorCode.PI_REQUIRED)
     sc = util.trim(scope) or SCOPE_BILLS
     keys = _scope_keys(pi, sc, bills, lines)
+    cu.check_write(*orders.bill_orgs(k[0] for k in keys))
     plan = _plan(pi, sc, keys, last_seq(pi))
     if plan["issues"]:
         return {**plan, "generatable": False, "limits": limits()}
@@ -390,6 +391,7 @@ def generate(cu: CurrentUser, token: str | None) -> dict:
         if actual != p["base_last_seq"]:
             raise biz(ErrorCode.GEN_PREVIEW_STALE, pi=pi, expected=p["base_last_seq"], actual=actual)
         keys = [tuple(k) for k in stored["keys"]]
+        cu.check_write(*orders.bill_orgs(k[0] for k in keys))
         fresh = _plan(pi, stored["scope"], keys, actual)
         if fresh["issues"] or not _same_plan(stored, fresh):
             raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
@@ -710,9 +712,23 @@ def _job_by_batch(batch: str | None, lock: bool = False) -> dict:
     return j
 
 
-def progress(batch: str | None) -> dict:
+def _orgs_of(items: list[dict]) -> set[str]:
+    """生成计划中物料行的生产组织（早先的计划没有时按单据取）。"""
+    out = {x["org_code"] for x in items if x.get("org_code")}
+    out |= orders.bill_orgs(x["bill_no"] for x in items if not x.get("org_code"))
+    return out
+
+
+def in_scope(facs: tuple[str, ...] | None, x: dict) -> bool:
+    """计划中的一个物料行号段是否在授权范围内（None = 全部）。"""
+    return facs is None or (x.get("org_code") or "-") in facs
+
+
+def progress(batch: str | None, cu: CurrentUser | None = None) -> dict:
     """进度：百分比、已生成 / 总数、已写到的号、速度、预计剩余时间。"""
     j = _job_by_batch(batch)
+    if cu is not None:
+        cu.check_read(*_orgs_of(json.loads(j["plan_json"])["items"]))
     out = job_json(j)
     elapsed = None
     if j["started_at"] is not None:
@@ -731,6 +747,7 @@ def cancel(cu: CurrentUser, batch: str | None) -> dict:
     """取消生成中的任务：生成线程看到请求后整批回滚，任务记为已取消；取消留痕。"""
     with db.tx():
         j = _job_by_batch(batch, lock=True)
+        cu.check_write(*_orgs_of(json.loads(j["plan_json"])["items"]))
         if j["status"] != RUNNING:
             raise biz(ErrorCode.GEN_CANCEL_NOT_RUNNING)
         if j["cancel_at"] is None:
@@ -783,21 +800,22 @@ def _not_revocable_count(j: dict, x: dict) -> int:
     return x["qty"] - ok
 
 
-def revocable(pi: str) -> dict | None:
-    """当前可撤销的物料行（流水排在最后、号全部仍待分配且没转过单）；生成中或没有时 None。"""
+def revocable(pi: str, facs: tuple[str, ...] | None = None) -> dict | None:
+    """当前可撤销的物料行（流水排在最后、号全部仍待分配且没转过单）；生成中、没有或不在授权范围 facs 内时 None。"""
     if db.exists("SELECT EXISTS(SELECT 1 FROM sn_gen_job WHERE running_pi = %s)", pi):
         return None
     t = _tail(pi)
-    if t is None or _not_revocable_count(*t):
+    if t is None or not in_scope(facs, t[1]) or _not_revocable_count(*t):
         return None
     j, x = t
     return {k: x[k] for k in ("bill_no", "seq", "qty", "start_sn", "end_sn")} | {"gen_batch": j["gen_batch"]}
 
 
-def revoke_chain(pi_in: str | None) -> list[dict]:
+def revoke_chain(pi_in: str | None, facs: tuple[str, ...] | None = None) -> list[dict]:
     """PI 流水上还没撤销的物料行号段，从流水最末往前排。撤某一段须连同流水在它之后的段一起撤（从后往前），
     ok 标出撤到这一段是否可行：这一段及之后的号全部仍待分配、没转过单，且没有生成中的任务；
-    bad 为这一段自己不可撤的枚数。"""
+    bad 为这一段自己不可撤的枚数。facs = 授权范围（None = 全部）：只列范围内的号段，
+    流水在其后有范围外的号段时不能撤（ok = false）。"""
     pi = util.trim(pi_in)
     segs = sorted(
         (
@@ -825,8 +843,10 @@ def revoke_chain(pi_in: str | None) -> list[dict]:
     out = []
     for j, x in segs:
         bad = x["qty"] - ok_n.get((j["gen_batch"], x["bill_no"], x["seq"]), 0)
-        good = good and bad == 0 and x["end_seq"] == last
+        good = good and bad == 0 and x["end_seq"] == last and in_scope(facs, x)
         last = x["start_seq"] - 1
+        if not in_scope(facs, x):
+            continue
         out.append(
             {k: x[k] for k in ("bill_no", "seq", "qty", "start_sn", "end_sn")}
             | {"gen_batch": j["gen_batch"], "bad": bad, "ok": good}
@@ -947,6 +967,7 @@ def revoke(
             if not left:
                 raise biz(ErrorCode.GEN_REVOKE_LINE_INVALID)
         targets = [(j, plan, x) for x in sorted(left, key=lambda x: x["end_seq"], reverse=True)]
+        cu.check_write(*_orgs_of([x for _, _, x in targets]))
         _check_chain(pi, c, targets)
         qty, last = _revoke_in_tx(cu, pi, targets, reason)
         whole = all(x.get("revoked") for x in plan["items"])
@@ -983,6 +1004,8 @@ def revoke_lines(cu: CurrentUser, pi_in: str | None, lines: list[dict] | None, r
             raise biz(ErrorCode.GEN_REVOKE_LINE_INVALID)
         start = min(x["start_seq"] for x in picked)
         targets = sorted((t for t in segs if t[2]["start_seq"] >= start), key=lambda t: t[2]["end_seq"], reverse=True)
+        # 流水在所选行之后、要一并撤的行也须在授权范围内
+        cu.check_write(*_orgs_of([x for _, _, x in targets]))
         _check_chain(pi, c, targets)
         qty, last = _revoke_in_tx(cu, pi, targets, reason)
     return {
@@ -996,24 +1019,32 @@ def revoke_lines(cu: CurrentUser, pi_in: str | None, lines: list[dict] | None, r
     }
 
 
-def jobs(pi: str | None, limit: int = 20) -> list[dict]:
+def jobs(pi: str | None, limit: int = 20, facs: tuple[str, ...] | None = None) -> list[dict]:
     """最近的生成任务；revocable 标出可整次撤销（剩下的物料行都能从流水末尾依次撤掉）的那一次，
-    各物料行的 revocable 标出当前可单独撤销的那一行。"""
+    各物料行的 revocable 标出当前可单独撤销的那一行。facs 同 jobs_with。"""
     pi = util.trim(pi)
-    return jobs_with(pi, limit, revocable(pi))
+    return jobs_with(pi, limit, revocable(pi, facs), facs)
 
 
-def jobs_with(pi: str, limit: int, rb: dict | None) -> list[dict]:
-    """同 jobs，可撤销的物料行由调用方算好传入（生成详情里另要单独返回它）。"""
+def jobs_with(pi: str, limit: int, rb: dict | None, facs: tuple[str, ...] | None = None) -> list[dict]:
+    """同 jobs，可撤销的物料行由调用方算好传入（生成详情里另要单独返回它）。
+    facs = 授权范围（None = 全部）：只列含范围内物料行的任务，任务里只列范围内的物料行；
+    任务还剩范围外的物料行时不能整次撤销。"""
     rows = db.all("SELECT * FROM sn_gen_job WHERE pi_no = %s ORDER BY id DESC LIMIT %s", pi, min(max(limit, 1), 200))
     out = []
     for j in rows:
+        items = json.loads(j["plan_json"])["items"]
+        if not any(in_scope(facs, x) for x in items):
+            continue
         v = job_json(j)
+        keep = {(x["bill_no"], x["seq"]) for x in items if in_scope(facs, x)}
+        v["lines"] = [line for line in v["lines"] if (line["bill_no"], line["seq"]) in keep]
         mine = rb is not None and rb["gen_batch"] == j["gen_batch"]
         for line in v["lines"]:
             line["revocable"] = mine and (line["bill_no"], line["seq"]) == (rb["bill_no"], rb["seq"])
-        v["revocable"] = mine and not any(
-            _not_revocable_count(j, x) for x in json.loads(j["plan_json"])["items"] if not x.get("revoked")
+        left = [x for x in items if not x.get("revoked")]
+        v["revocable"] = (
+            mine and all(in_scope(facs, x) for x in left) and not any(_not_revocable_count(j, x) for x in left)
         )
         out.append(v)
     return out

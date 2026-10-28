@@ -537,15 +537,10 @@ def _targets(kind: str, items: list[dict], d: Dest) -> dict[int, Target]:
 
 
 def _from_factory(cu: CurrentUser, code: str | None) -> str:
-    """转组织的来源生产组织：总部指定；操作员只能是本组织；查询员须落到一个可读组织。"""
+    """转组织的来源生产组织：系统管理员指定；普通操作员只能是授权组织（只授权一个时可不填）。"""
     if cu.is_admin:
         return factories.must_get(code)["factory_code"]
-    if cu.is_factory:
-        return cu.write_factory(code)
-    facs = cu.read_factories(code)
-    if not facs or len(facs) != 1:
-        raise biz(ErrorCode.FACTORY_NOT_FOUND, factory="")
-    return facs[0]
+    return cu.write_factory(code)
 
 
 @dataclass
@@ -565,6 +560,9 @@ def _plan(cu: CurrentUser, kind: str, r: TransferRequest, lock: bool = False) ->
     if not items:
         raise biz(ErrorCode.TR_NOTHING)
     targets = _targets(kind, items, d)
+    if kind == KIND_BILL:
+        # 转单：来源单据、号现在所在的组织、目标单据的组织都须在授权范围内
+        cu.check_write(*orders.bill_orgs([src.bill]), *{x["factory_code"] for x in items}, d.factory)
     if all(
         (r["factory_code"] or d.factory, r["pi_no"], r["bill_no"], r["bill_seq"]) == (d.factory, d.pi, d.bill, d.seq)
         for r in items
@@ -582,8 +580,10 @@ def sources(cu: CurrentUser, kind: str, factory: str | None, pi: str | None) -> 
     if kind == KIND_ORG:
         cond += " AND factory_code = %s"
         args.append(_from_factory(cu, factory))
-    elif not cu.is_admin:
-        raise biz(ErrorCode.FORBIDDEN)
+    else:
+        isql, iargs = factories.item_scope_sql(cu.read_factories(None))
+        cond += isql
+        args += iargs
     bills: dict[str, dict] = {}
     for x in db.all(
         f"SELECT bill_no, material_code, COUNT(*) n FROM sn_item WHERE {cond} GROUP BY bill_no, material_code "
@@ -638,7 +638,7 @@ def preview(cu: CurrentUser, kind: str, r: TransferRequest) -> dict:
 
 
 def transfer_bill(cu: CurrentUser, req: TransferRequest) -> dict:
-    """转单（总部直接执行）：生成转单单；需要时自动改挂推送、转出推送。"""
+    """转单（直接执行；普通操作员的来源、目标组织须在授权范围内）：生成转单单；需要时自动改挂推送、转出推送。"""
     reason = _reason(req.reason)
     p0 = _plan(cu, KIND_BILL, req)
     with locks.with_pi_lock(p0.src.pi, p0.dest.pi), db.tx():
@@ -695,8 +695,9 @@ def transfer_bill(cu: CurrentUser, req: TransferRequest) -> dict:
 
 
 def apply(cu: CurrentUser, r: TransferRequest) -> dict:
-    """生产组织操作员提交转组织申请：号变为申请中（不能领取、推送、拉取）；申请期间不通知 MES。"""
-    if not cu.is_factory:
+    """普通操作员提交转组织申请（来源组织须在授权范围内，目标组织不限）：号变为申请中（不能领取、推送、拉取）；
+    申请期间不通知 MES。由系统管理员或对来源、目标组织都有授权的普通操作员确认。"""
+    if not cu.is_operator:
         raise biz(ErrorCode.FORBIDDEN)
     reason = _reason(r.reason)
     with db.tx():
@@ -834,11 +835,10 @@ def _org_entry(
 
 
 def direct(cu: CurrentUser, r: TransferRequest) -> dict:
-    """总部不经申请直接转移（须填原因）。"""
-    if not cu.is_admin:
-        raise biz(ErrorCode.FORBIDDEN)
+    """不经申请直接转移（须填原因）：普通操作员的来源、目标组织都须在授权范围内（目标不在范围内的走申请）。"""
     reason = _reason(r.reason)
     p0 = _plan(cu, KIND_ORG, r)
+    cu.check_write(p0.factory, p0.dest.factory)
     with locks.with_pi_lock(p0.src.pi, p0.dest.pi), db.tx():
         p = _plan(cu, KIND_ORG, r, lock=True)
         bad = blocked(p.items, False)
@@ -869,6 +869,7 @@ def approve(cu: CurrentUser, tid: int, note: str | None) -> dict:
     t0 = db.one("SELECT * FROM sn_transfer WHERE id = %s", tid)
     if t0 is None:
         raise biz(ErrorCode.TR_NOT_FOUND)
+    cu.check_write(t0["from_factory"], t0["to_factory"])
     with locks.with_pi_lock(t0["from_pi"], t0["to_pi"]), db.tx():
         t = _lock_pending(tid)
         f = factories.must_get(t["to_factory"])
@@ -930,6 +931,7 @@ def _restore(t: dict) -> None:
 def reject(cu: CurrentUser, tid: int, note: str | None) -> dict:
     with db.tx():
         t = _lock_pending(tid)
+        cu.check_write(t["from_factory"], t["to_factory"])
         _restore(t)
         db.exec(
             "UPDATE sn_transfer SET status = %s, decided_by = %s, decided_at = %s, decide_note = %s WHERE id = %s",
@@ -957,7 +959,7 @@ def reject(cu: CurrentUser, tid: int, note: str | None) -> dict:
 def withdraw(cu: CurrentUser, tid: int) -> dict:
     with db.tx():
         t = _lock_pending(tid)
-        if not cu.is_factory or cu.factory_code != t["from_factory"]:
+        if not cu.is_operator or not cu.can_read(t["from_factory"]):
             raise biz(ErrorCode.TR_WITHDRAW_FORBIDDEN)
         _restore(t)
         db.exec(

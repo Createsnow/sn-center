@@ -41,7 +41,8 @@ export const CHARSETS: Record<number, string> = {
   36: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ",
 };
 export const BASES = Object.keys(CHARSETS).map(Number);
-export const ROLE_CODES = ["admin", "factory_operator", "query"];
+/** 可新建的页面账户角色（系统管理员只有一个，不能新建）。 */
+export const ROLE_CODES = ["operator", "auditor"];
 export const TRANSFER_STATUS_TYPE: Record<string, TagType> = {
   PENDING: "warning",
   APPROVED: "success",

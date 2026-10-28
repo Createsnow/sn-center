@@ -90,8 +90,8 @@ def seq_range(f: Filter) -> tuple[str, int | None, int | None] | None:
 def _where(cu: CurrentUser, f: Filter) -> tuple[str, list, tuple | None]:
     sql = " WHERE 1=1"
     args: list = []
-    # 生产组织筛选只有总部有；其他账户按可看范围自动过滤
-    sc = acquire.read_scope(cu, f.factory_code if cu.is_admin else None, f.pi_no, f.pi_all)
+    # 生产组织筛选须在授权范围内（不选 = 全部授权的组织）
+    sc = acquire.read_scope(cu, f.factory_code, f.pi_no, f.pi_all)
     if sc.all_factories_of_pi:
         sql += " AND i.factory_code IS NOT NULL"
     else:

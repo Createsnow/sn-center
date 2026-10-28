@@ -3,7 +3,7 @@
     <template v-if="batch">
       <div class="drawer-actions">
         <el-button size="small" @click="exportBatch"><el-icon><Download /></el-icon><span>{{ t("common.downloadXlsx") }}</span></el-button>
-        <template v-if="store.isAdmin">
+        <template v-if="store.canAct">
           <el-button v-if="canConfirm(batch)" size="small" type="primary" @click="manual?.open(batch.batch_no, 'confirm')">{{ t("query.confirmBatch") }}</el-button>
           <el-button v-if="canVoid(batch)" size="small" type="danger" plain @click="manual?.open(batch.batch_no, 'void')">{{ t("query.voidBatch") }}</el-button>
         </template>

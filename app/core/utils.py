@@ -31,15 +31,21 @@ PUSH_TRANSFER_OUT = "TRANSFER_OUT"
 SUSPEND_REVERSAL = "REVERSAL"
 SUSPEND_CHANGE = "CHANGE"
 
+#: 系统管理员（唯一，工号 SN_INIT_ADMIN_EMP_NO）：全部组织、全部功能（含配置与账户管理）
 ADMIN = "admin"
-FACTORY = "factory_operator"
-QUERY = "query"
+#: 普通操作员：授权组织内的订单、生成、分配、规则、转移、交付处理、导出、查询
+OPERATOR = "operator"
+#: 审计员：授权组织内只读——SN 查询与导出、操作痕迹
+AUDITOR = "auditor"
+#: MES 接口账户：只调 /api/mes/v1
 MES = "mes"
-ROLES = frozenset((ADMIN, FACTORY, QUERY, MES))
+ROLES = frozenset((ADMIN, OPERATOR, AUDITOR, MES))
+#: 页面上绑定授权组织（一个或多个，必须至少一个）的角色
+SCOPED_ROLES = frozenset((OPERATOR, AUDITOR))
 
 
 def is_super_admin(emp_no: str | None, role: str | None) -> bool:
-    """系统管理员（工号 = SN_INIT_ADMIN_EMP_NO，默认 admin）：只有它能管理账户（建、改、停用、启用、重置密码）。"""
+    """系统管理员（工号 = SN_INIT_ADMIN_EMP_NO，默认 admin）：唯一的管理员账户，也只有它能管理账户。"""
     return role == ADMIN and emp_no == settings.init_admin_emp_no
 
 

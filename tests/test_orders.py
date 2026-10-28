@@ -208,7 +208,7 @@ def test_reversal_suspends_undelivered_and_resumes(w, api, sql):
     token, _ = w.mes_account(org)
     r = ok(w.mes_next(token))
     assert len(r["batch"]["items"]) == 4 and r["paused"] == 2
-    ok(w.mes_receipt(token, r["batch"]["batchNo"], MES.process(org, r["batch"])))
+    ok(w.mes_receipt(token, MES.process(org, r["batch"])))
     r = ok(w.mes_next(token, billNo=bill))
     assert r["batch"] is None and r["paused"] == 2
     # 重新审核、没有变化 → 自动解除，并自动推送
@@ -330,12 +330,12 @@ def test_qty_below_generated_only_reminds(w, api, sql):
     assert lines[0]["quota"] == 0
 
 
-def test_query_user_sees_only_bound_org(w, api):
+def test_operator_sees_only_authorized_org(w, api):
     org_a, org_b = w.org(uid("O")[:10]), w.org(uid("O")[:10])
     a, b = uid("MO"), uid("MO")
     w.order(a, org_a, "C1", "PI-QA", ("M1", 1))
     w.order(b, org_b, "C1", "PI-QB", ("M1", 1))
-    tok = w.user(conftest.emp("Q"), "query", None, [org_a])
+    tok = w.user(conftest.emp("F"), "operator", None, [org_a])
     got = {x["bill_no"] for x in ok(api.get("/api/orders?page_size=500", tok))["items"]}
     assert a in got and b not in got
     assert api.get(f"/api/orders/{b}/lines", tok).code == "FACTORY_FORBIDDEN"

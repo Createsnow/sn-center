@@ -2,10 +2,11 @@
 
 - 认证：MES 接口账户每次请求带 Authorization: Bearer <工号>:<密钥>，不换令牌（见 deps.mes_user）。
 
-- 请求和应答都支持 gzip；字段名英文小驼峰；请求和应答都带 schemaVersion（首版 1.0），不认识的字段忽略。
+- 一律 POST + JSON 请求体，地址里不带参数。请求体和应答都支持 gzip，只有 ③ 回执不支持（报文很小）。
+- 字段名英文小驼峰；请求和应答都带 schemaVersion（首版 1.0），不认识的字段忽略。
 - 应答信封统一为 {"schemaVersion", "code", "message", "batchNo", "timestamp", ...}：成功为 HTTP 200 且 code = OK；
   出错不返回 200，另带 details。时间一律 UTC+8，格式 2026-10-26 11:47:05.303。
-- ②③ 只有 MES 接口账户能调（只限所绑生产组织）；④⑤ 另可由有可看范围的账户（查询员等）调用。
+- ②③ 只有 MES 接口账户能调（只限所绑生产组织）；④⑤ 另可由页面账户用登录令牌按授权范围调用。
 - 限流：同一生产组织每分钟 SN_MES_PULL_RATE_PER_MINUTE 次（默认 60），超出 429 RATE_LIMITED + Retry-After。
 """
 
@@ -24,9 +25,11 @@ from app.services import delivery
 router = APIRouter(prefix="/mes/v1", tags=["open"])
 
 
-async def _json(request: Request) -> dict:
+async def _json(request: Request, gzip_ok: bool = True) -> dict:
     raw = await request.body()
     if request.headers.get("content-encoding", "").lower() == "gzip":
+        if not gzip_ok:
+            raise MesError(400, "INVALID_REQUEST", "本接口不支持 gzip，请发原始 JSON")
         try:
             raw = gzip.decompress(raw)
         except OSError:
@@ -38,6 +41,30 @@ async def _json(request: Request) -> dict:
     if not isinstance(body, dict):
         raise MesError(400, "INVALID_REQUEST", "请求体须为 JSON 对象")
     return body
+
+
+def _bad(field: str, reason: str) -> MesError:
+    return MesError(400, "INVALID_REQUEST", f"参数不合法：{field}", details=[{"field": field, "reason": reason}])
+
+
+def _str(body: dict, field: str, required: bool = False) -> str | None:
+    v = body.get(field)
+    if v is None or (required and isinstance(v, str) and not v.strip()):
+        if required:
+            raise _bad(field, "必填")
+        return None
+    if not isinstance(v, str):
+        raise _bad(field, "须为字符串")
+    return v
+
+
+def _int(body: dict, field: str) -> int | None:
+    v = body.get(field)
+    if v is None:
+        return None
+    if not isinstance(v, int) or isinstance(v, bool):
+        raise _bad(field, "须为整数")
+    return v
 
 
 def _only_mes(cu: CurrentUser) -> None:
@@ -56,29 +83,22 @@ async def next_batch(request: Request, cu: CurrentUser = Depends(mes_user)) -> d
     return await run_sync(delivery.next_batch, cu, body.get("pi"), body.get("billNo"), body.get("batchNo"))
 
 
-@router.post("/batches/{batch_no}/receipt", summary="③ 提交回执（或整批拒收）；按批次号幂等")
-async def receipt(batch_no: str, request: Request, cu: CurrentUser = Depends(mes_user)) -> dict:
+@router.post("/receipts", summary="③ 提交回执（或整批拒收）：批次号在请求体；按批次号幂等；不支持 gzip")
+async def receipt(request: Request, cu: CurrentUser = Depends(mes_user)) -> dict:
     _only_mes(cu)
+    body = await _json(request, gzip_ok=False)
+    return await run_sync(delivery.submit_receipt, cu, _str(body, "batchNo", True), body)
+
+
+@router.post("/sn/delivered", summary="④ 查询已交付给本组织的号（只读，只用于核对，不得据此入库、打标或删除）")
+async def delivered(request: Request, cu: CurrentUser = Depends(mes_user)) -> dict:
     body = await _json(request)
-    return await run_sync(delivery.submit_receipt, cu, batch_no, body)
+    args = (_str(body, "orgCode"), _str(body, "pi"), _str(body, "cursor"), _int(body, "pageSize"))
+    return await run_sync(delivery.read_delivered, cu, *args)
 
 
-@router.get("/sn/delivered", summary="④ 查询已交付给本组织的号（只读，只用于核对，不得据此入库、打标或删除）")
-def delivered(
-    cu: CurrentUser = Depends(mes_user),
-    pi: str | None = None,
-    orgCode: str | None = None,  # noqa: N803
-    cursor: str | None = None,
-    pageSize: int | None = None,  # noqa: N803
-) -> dict:
-    return delivery.read_delivered(cu, orgCode, pi, cursor, pageSize)
-
-
-@router.get("/batches/{batch_no}/items", summary="⑤ 查询某个批次里仍在该批次中的号（只读）")
-def batch_items(
-    batch_no: str,
-    cu: CurrentUser = Depends(mes_user),
-    cursor: str | None = None,
-    pageSize: int | None = None,  # noqa: N803
-) -> dict:
-    return delivery.read_batch_items(cu, batch_no, cursor, pageSize)
+@router.post("/batches/items", summary="⑤ 查询某个批次里仍在该批次中的号（只读）")
+async def batch_items(request: Request, cu: CurrentUser = Depends(mes_user)) -> dict:
+    body = await _json(request)
+    args = (_str(body, "batchNo", True), _str(body, "cursor"), _int(body, "pageSize"))
+    return await run_sync(delivery.read_batch_items, cu, *args)
