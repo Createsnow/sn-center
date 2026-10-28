@@ -31,7 +31,7 @@ python start.py          # Windows 可双击 start.bat；需要 Python 3.12+、N
 浏览器打开 `http://127.0.0.1:8000`，用 `.env` 里的 `SN_INIT_ADMIN_EMP_NO` + `SN_INIT_ADMIN_PASSWORD`（默认 `admin` / `Admin@123`）登录。系统管理员只有这一个，只有它能建、改账户和授权生产组织（角色与权限见运维手册第 6 节）；同一账户只在最后登录的那个页面有效。
 本机没有金蝶时可设 `SN_DEMO_SEED=true` 灌入演示数据（**连公司库务必关闭**）。
 
-> 建表脚本 `V1__init.sql` 已按 PRD V30 重写，旧的演示 / 测试库不能原地升级，须清空本系统的表后重建（见运维手册 8.1）。
+> 开发阶段只保留一个完整的建表脚本 `V1__init.sql`（已按 PRD V31 重写），不用 ALTER 补丁；旧的演示 / 测试库不能原地升级，须清空本系统的表后重建（见运维手册 8.1），重建后只有系统管理员账户。
 
 服务器：`docker compose up -d --build`（详见运维手册）。接口文档：`/docs`（MES 接口在 `open` 分组）。
 

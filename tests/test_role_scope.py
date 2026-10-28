@@ -125,41 +125,6 @@ def test_org_transfer_scope(w, api, sql):
     assert api.post("/api/transfers/org", body | m(reason="x"), au).code == "FORBIDDEN"
 
 
-def test_upgrade_roles_migrates_legacy_accounts(w, api, sql):
-    from app.services import users
-
-    a, b = w.org(uid("O")[:10]), w.org(uid("O")[:10])
-    every = {r["factory_code"] for r in sql.all("SELECT factory_code FROM sn_factory")}
-    legacy = {}
-    for role, fac in (("factory_operator", a), ("query", None), ("query", None), ("admin", None)):
-        e = emp("L")
-        sql.exec(
-            "INSERT INTO sn_user(emp_no, name, role, factory_code, status, password_hash, created_at, updated_at) "
-            "VALUES (%s,'x',%s,%s,'ACTIVE','x',NOW(),NOW())",
-            e,
-            role,
-            fac,
-        )
-        legacy[e] = sql.scalar("SELECT id FROM sn_user WHERE emp_no = %s", e)
-    bound_query = list(legacy)[2]
-    sql.exec("INSERT INTO sn_user_factory(user_id, factory_code) VALUES (%s,%s)", legacy[bound_query], b)
-    assert users.upgrade_roles() == 4
-    assert users.upgrade_roles() == 0, "幂等"
-
-    def state(e):
-        u = sql.one("SELECT role, factory_code FROM sn_user WHERE emp_no = %s", e)
-        rows = sql.all("SELECT factory_code FROM sn_user_factory WHERE user_id = %s", legacy[e])
-        facs = {r["factory_code"] for r in rows}
-        return u["role"], u["factory_code"], facs
-
-    op, unbound, bound, old_admin = legacy
-    assert state(op) == ("operator", None, {a}), "生产组织操作员 → 普通操作员，本组织为授权组织"
-    assert state(unbound) == ("auditor", None, every), "未绑的查询员 → 审计员，授权全部组织"
-    assert state(bound) == ("auditor", None, {b}), "已绑的查询员 → 审计员，绑定不变"
-    assert state(old_admin) == ("operator", None, every), "其他管理员 → 普通操作员，授权全部组织"
-    assert sql.scalar("SELECT role FROM sn_user WHERE emp_no = 'admin'") == "admin", "系统管理员不变"
-
-
 def test_account_without_org_cannot_login(w, api, sql):
     a = w.org(uid("O")[:10])
     e = emp("F")

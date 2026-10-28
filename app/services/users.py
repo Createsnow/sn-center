@@ -615,55 +615,6 @@ def bootstrap_admin(password: str) -> bool:
         return True
 
 
-_LEGACY_FACTORY = "factory_operator"
-_LEGACY_QUERY = "query"
-
-
-def upgrade_roles() -> int:
-    """存量账户迁移到新角色（启动时执行，幂等；没有要迁的账户时什么也不做）。返回迁移的账户数。
-
-    - 生产组织操作员 → 普通操作员：原来的本组织作为授权组织；
-    - 查询员 → 审计员：原来绑定的组织不变，没绑（= 看全部）的授权全部生产组织；
-    - 系统管理员以外的管理员 → 普通操作员：授权全部生产组织（业务权限不变，不再能看之后新增的组织，须系统管理员授权）。
-    """
-    emp = settings.init_admin_emp_no
-    with db.tx():
-        rows = db.all(
-            "SELECT id, emp_no, role, factory_code FROM sn_user WHERE role IN (%s,%s) OR (role = %s AND emp_no <> %s) "
-            "FOR UPDATE",
-            _LEGACY_FACTORY,
-            _LEGACY_QUERY,
-            util.ADMIN,
-            emp,
-        )
-        if not rows:
-            return 0
-        every = db.column("SELECT factory_code FROM sn_factory ORDER BY factory_code")
-        now = util.now()
-        for u in rows:
-            have = bound_factories(u["id"])
-            if u["role"] == _LEGACY_FACTORY:
-                role, add = util.OPERATOR, [u["factory_code"]] if u["factory_code"] else []
-            elif u["role"] == _LEGACY_QUERY:
-                role, add = util.AUDITOR, [] if have else every
-            else:
-                role, add = util.OPERATOR, every
-            for c in add:
-                if c not in have:
-                    db.exec("INSERT INTO sn_user_factory(user_id, factory_code) VALUES (%s,%s)", u["id"], c)
-            db.exec(
-                "UPDATE sn_user SET role = %s, factory_code = NULL, updated_at = %s WHERE id = %s", role, now, u["id"]
-            )
-            scope = sorted(set(have) | set(add))
-            audit.record(
-                CurrentUser.system(),
-                audit.entry(audit.USER_UPDATE).info(
-                    f"emp_no={u['emp_no']} role={u['role']}->{role} factory={','.join(scope) or '-'} upgrade_roles"
-                ),
-            )
-        return len(rows)
-
-
 # ================================================================== MES 接口账户认证
 
 #: 已验过的密钥：账户 id -> (口令版本, 密钥摘要)。PBKDF2 每次要上百毫秒，验过一次后按摘要比对；
