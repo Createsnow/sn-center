@@ -29,13 +29,13 @@ CREATE TABLE sn_factory (
   PRIMARY KEY (factory_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='生产组织与 MES 对接配置';
 
--- 账户：页面账户（admin / factory_operator / query）与 MES 接口账户（mes）；只停用不删除
+-- 账户：页面账户（admin 系统管理员（唯一）/ operator 普通操作员 / auditor 审计员）与 MES 接口账户（mes）；只停用不删除
 CREATE TABLE sn_user (
   id              BIGINT        NOT NULL AUTO_INCREMENT,
   emp_no          VARCHAR(32)   NOT NULL COMMENT '工号，唯一，创建后不能改',
   name            VARCHAR(64)   NOT NULL,
-  role            VARCHAR(32)   NOT NULL COMMENT 'admin / factory_operator / query / mes',
-  factory_code    VARCHAR(64)   NULL COMMENT '操作员、MES 接口账户的生产组织；查询员的见 sn_user_factory',
+  role            VARCHAR(32)   NOT NULL COMMENT 'admin 系统管理员（唯一）/ operator 普通操作员 / auditor 审计员 / mes MES 接口账户',
+  factory_code    VARCHAR(64)   NULL COMMENT 'MES 接口账户的生产组织；普通操作员、审计员的授权组织见 sn_user_factory',
   status          VARCHAR(16)   NOT NULL DEFAULT 'ACTIVE' COMMENT 'ACTIVE / DISABLED',
   password_hash   VARCHAR(128)  NOT NULL COMMENT '密码；MES 接口账户为密钥',
   secret_sealed   VARCHAR(255)  NOT NULL DEFAULT '' COMMENT 'MES 接口账户密钥（加密保存，系统管理员可查看）',
@@ -56,13 +56,13 @@ CREATE TABLE sn_user (
   KEY ix_user_factory (factory_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='账户';
 
--- 查询员绑定的生产组织：可绑一个或多个；没有记录 = 全部
+-- 普通操作员、审计员授权的生产组织：一个或多个，至少一个（没有授权的账户不能登录）
 CREATE TABLE sn_user_factory (
   user_id       BIGINT      NOT NULL,
   factory_code  VARCHAR(64) NOT NULL,
   PRIMARY KEY (user_id, factory_code),
   KEY ix_user_factory_code (factory_code)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='查询员绑定的生产组织';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='普通操作员、审计员的授权生产组织（至少一个）';
 
 -- 规则 + 规则版本（编码参数；每个版本归属一张 PI）
 CREATE TABLE sn_rule (
@@ -71,6 +71,7 @@ CREATE TABLE sn_rule (
   rule_name       VARCHAR(128) NOT NULL,
   category_scope  VARCHAR(16)  NOT NULL DEFAULT 'NONE' COMMENT 'NONE 未分类 / CUSTOMER 客户 / PI；只用于筛选和推荐',
   category_value  VARCHAR(64)  NOT NULL DEFAULT '',
+  factory_code    VARCHAR(64)  NULL COMMENT '所属生产组织；NULL = 全局规则（只有系统管理员能改、删，普通操作员只能选用）',
   current_version INT          NOT NULL DEFAULT 1,
   created_by      VARCHAR(32)  NULL,
   created_at      DATETIME     NOT NULL,
@@ -78,7 +79,8 @@ CREATE TABLE sn_rule (
   updated_at      DATETIME     NOT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY ux_rule_code (rule_code),
-  KEY ix_rule_category (category_scope, category_value)
+  KEY ix_rule_category (category_scope, category_value),
+  KEY ix_rule_factory (factory_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='SN 规则';
 
 CREATE TABLE sn_rule_version (
