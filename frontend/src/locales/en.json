@@ -718,8 +718,6 @@
     "tabAlerts": "Order change alerts",
     "search": "Bill / PI / PO / material / customer",
     "totalQty": "Order qty",
-    "generated": "Generated",
-    "quota": "Quota",
     "state": "Bill state",
     "docStatus": {
       "C": "Approved"
@@ -736,13 +734,6 @@
     "lengthEmpty": "Missing",
     "unitEmpty": "Missing",
     "modifyDate": "Modified",
-    "rule": "SN rule",
-    "noRule": "No rule",
-    "ruleSource": {
-      "LINE": "Line",
-      "PI": "PI",
-      "CUSTOMER": "Customer"
-    },
     "alertOpen": "Open",
     "alertClosed": "Closed",
     "alertType": "Change type",

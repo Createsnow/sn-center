@@ -65,12 +65,6 @@
               <el-table-column :label="t('orders.totalQty')" align="right" width="80">
                 <template #default="{ row }"><span class="num">{{ row.total_qty }}</span></template>
               </el-table-column>
-              <el-table-column :label="t('orders.generated')" align="right" width="72">
-                <template #default="{ row }"><span class="num">{{ row.generated_qty }}</span></template>
-              </el-table-column>
-              <el-table-column :label="t('orders.quota')" align="right" width="72">
-                <template #default="{ row }"><span class="num" :class="{ zero: !row.quota }">{{ row.quota }}</span></template>
-              </el-table-column>
               <el-table-column :label="t('common.factory')" min-width="120" show-overflow-tooltip>
                 <template #default="{ row }">{{ row.org_name }}<span class="muted">（{{ row.org_code }}）</span></template>
               </el-table-column>
@@ -118,12 +112,8 @@
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column :label="t('common.material')" min-width="110" show-overflow-tooltip>
-                  <template #default="{ row }">
-                    <div>{{ row.material_code }}</div>
-                    <div class="muted">{{ row.material_name }}</div>
-                  </template>
-                </el-table-column>
+                <el-table-column prop="material_code" :label="t('common.material')" min-width="110" show-overflow-tooltip />
+                <el-table-column prop="material_name" :label="t('common.materialName')" min-width="160" show-overflow-tooltip />
                 <el-table-column :label="t('common.length')" width="90" show-overflow-tooltip>
                   <template #default="{ row }">
                     <!-- 金蝶米数为空且未填写：标红「缺失」（规则带米数时须在生成页填写）；其他照金蝶值 / 页面填写的值显示 -->
@@ -140,21 +130,6 @@
                 </el-table-column>
                 <el-table-column :label="t('common.qty')" align="right" width="60">
                   <template #default="{ row }"><span class="num">{{ row.qty }}</span></template>
-                </el-table-column>
-                <el-table-column :label="t('orders.generated')" align="right" width="64">
-                  <template #default="{ row }"><span class="num">{{ row.generated_qty }}</span></template>
-                </el-table-column>
-                <el-table-column :label="t('orders.quota')" align="right" width="64">
-                  <template #default="{ row }"><span class="num" :class="{ zero: !row.quota }">{{ row.quota }}</span></template>
-                </el-table-column>
-                <el-table-column :label="t('orders.rule')" min-width="160" show-overflow-tooltip>
-                  <template #default="{ row }">
-                    <template v-if="row.rule">
-                      <el-tag size="small" effect="plain">{{ t(`orders.ruleSource.${row.rule.source}`) }}</el-tag>
-                      <span class="ml">{{ row.rule.format }}</span>
-                    </template>
-                    <span v-else class="muted">{{ t("orders.noRule") }}</span>
-                  </template>
                 </el-table-column>
               </el-table>
             </div>
@@ -450,7 +425,6 @@ onMounted(async () => {
 .badge { margin-left: 6px; vertical-align: top; }
 .ml { margin-left: 6px; }
 .mb { margin-bottom: 12px; }
-.zero { color: var(--app-muted); }
 .warn { color: var(--el-color-warning); }
 .err { color: var(--el-color-danger); }
 .arrow { margin: 0 6px; color: var(--app-muted); }

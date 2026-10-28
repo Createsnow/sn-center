@@ -718,8 +718,6 @@
     "tabAlerts": "订单变更提醒",
     "search": "单据 / PI / PO / 物料 / 客户",
     "totalQty": "订单数量",
-    "generated": "已生成",
-    "quota": "可生成",
     "state": "单据状态",
     "docStatus": {
       "C": "已审核"
@@ -736,13 +734,6 @@
     "lengthEmpty": "缺失",
     "unitEmpty": "缺失",
     "modifyDate": "修改日期",
-    "rule": "SN 规则",
-    "noRule": "未选规则",
-    "ruleSource": {
-      "LINE": "物料行",
-      "PI": "PI",
-      "CUSTOMER": "客户"
-    },
     "alertOpen": "未处理",
     "alertClosed": "已处理",
     "alertType": "变化类型",

@@ -718,8 +718,6 @@
     "tabAlerts": "Cảnh báo thay đổi lệnh",
     "search": "Chứng từ / PI / PO / vật tư / khách hàng",
     "totalQty": "SL lệnh",
-    "generated": "Đã tạo",
-    "quota": "Hạn mức",
     "state": "Trạng thái chứng từ",
     "docStatus": {
       "C": "Đã duyệt"
@@ -736,13 +734,6 @@
     "lengthEmpty": "Thiếu",
     "unitEmpty": "Thiếu",
     "modifyDate": "Ngày sửa",
-    "rule": "Quy tắc SN",
-    "noRule": "Chưa chọn quy tắc",
-    "ruleSource": {
-      "LINE": "Dòng",
-      "PI": "PI",
-      "CUSTOMER": "Khách hàng"
-    },
     "alertOpen": "Chưa xử lý",
     "alertClosed": "Đã xử lý",
     "alertType": "Loại thay đổi",
