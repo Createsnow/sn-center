@@ -1,9 +1,11 @@
 -- =====================================================================
--- 多生产组织 SN 防重管控 · MySQL 8 初始表结构（需求 PRD V30）
+-- 多生产组织 SN 防重管控 · MySQL 8 初始表结构（需求 PRD V31）
 -- 约定：utf8mb4；编码类字段（SN、PI、物料、组织、单据）用 utf8mb4_bin，区分大小写、精确比较。
 -- 时间一律按 UTC 存储（DATETIME 不带时区），页面按账户时区显示。
 -- sn_audit 按月 RANGE 分区（过期整月归档后 DROP PARTITION）；分区由应用启动与每日任务维护（PartitionService），
 -- 初始只有兜底分区 pmax。sn_item 不分区、不归档、不删除：查重唯一键直接建在它上面。
+-- 本脚本独立完整：每张表的全部字段、索引都写在各自的 CREATE TABLE 里，不用 ALTER 补加字段或索引；
+-- 表结构有变时直接改本脚本并清库重建（正式上线后才新增 V2__…）。
 -- =====================================================================
 
 -- 生产组织（金蝶组织机构同步，只读）+ 本系统唯一可维护的 MES 对接配置
@@ -558,7 +560,7 @@ CREATE TABLE sn_bill_transfer (
   id            BIGINT       NOT NULL AUTO_INCREMENT,
   transfer_no   VARCHAR(40)  NOT NULL,
   mode          VARCHAR(8)   NOT NULL COMMENT 'VOID 整单作废（范围为整张单据）/ SPLIT 拆单（按物料、单枚或号段）',
-  scope         VARCHAR(16)  NOT NULL DEFAULT '' COMMENT 'BILL 整张单据 / MATERIAL 单据 + 物料 / RANGE 单据 + 物料 + 单枚或连续号段',
+  scope         VARCHAR(16)  NOT NULL COMMENT 'BILL 整张单据 / MATERIAL 单据 + 物料 / RANGE 单据 + 物料 + 单枚或连续号段',
   from_bill     VARCHAR(64)  NOT NULL,
   to_bill       VARCHAR(64)  NOT NULL,
   from_pi       VARCHAR(64)  NOT NULL DEFAULT '',
@@ -584,7 +586,7 @@ CREATE TABLE sn_transfer (
   transfer_no   VARCHAR(40)  NOT NULL,
   mode          VARCHAR(8)   NOT NULL COMMENT 'APPLY 申请 / DIRECT 总部直接',
   status        VARCHAR(16)  NOT NULL COMMENT 'PENDING / APPROVED / REJECTED / WITHDRAWN',
-  scope         VARCHAR(16)  NOT NULL COMMENT 'BILL 整张单据 / MATERIAL 单据 + 物料 / RANGE 单据 + 物料 + 单枚或连续号段（早期单子有 PI / SINGLE）',
+  scope         VARCHAR(16)  NOT NULL COMMENT 'BILL 整张单据 / MATERIAL 单据 + 物料 / RANGE 单据 + 物料 + 单枚或连续号段',
   from_factory  VARCHAR(64)  NOT NULL,
   from_pi       VARCHAR(64)  NOT NULL,
   from_bill     VARCHAR(64)  NOT NULL DEFAULT '',
@@ -598,7 +600,6 @@ CREATE TABLE sn_transfer (
   to_bill       VARCHAR(64)  NOT NULL DEFAULT '',
   to_seq        INT          NULL COMMENT '目标物料行序号',
   to_material   VARCHAR(64)  NOT NULL DEFAULT '',
-  manual_fields VARCHAR(64)  NOT NULL DEFAULT '' COMMENT '早期单子：手工填写的目标字段（现已不用）',
   reason        VARCHAR(500) NOT NULL,
   applied_by    VARCHAR(32)  NOT NULL,
   applied_at    DATETIME     NOT NULL,
