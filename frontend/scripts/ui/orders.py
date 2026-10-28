@@ -45,8 +45,6 @@ M = {
 "orders.attachInvalid": ("附件项次不能为空，不超过 64 字", "Attachment item cannot be empty, at most 64 characters", "Hạng mục đính kèm không được trống, tối đa 64 ký tự"),
 "orders.lengthEmpty": ("缺失", "Missing", "Thiếu"),
 "orders.unitEmpty": ("缺失", "Missing", "Thiếu"),
-"orders.unitChineseTip": ("产品单位是中文，规则带单位时须在 SN 生成页手动填写不含中文的单位（如 M、m、L）后才能生成", "The unit is Chinese; when the rule includes the unit, enter a unit without Chinese (e.g. M, m, L) on the SN generation page before generating", "Đơn vị là chữ Trung Quốc; khi quy tắc có đơn vị, hãy nhập đơn vị không có chữ Trung Quốc (ví dụ M, m, L) ở trang tạo SN trước khi tạo"),
-"orders.lengthChineseTip": ("米数含中文，须在 SN 生成页手动改成不含中文的米数后才能生成", "The length contains Chinese characters; change it to one without Chinese on the SN generation page before generating", "Chiều dài chứa chữ Trung Quốc; hãy sửa thành chiều dài không có chữ Trung Quốc ở trang tạo SN trước khi tạo"),
 "orders.modifyDate": ("修改日期", "Modified", "Ngày sửa"),
 "orders.alertOpen": ("未处理", "Open", "Chưa xử lý"),
 "orders.alertClosed": ("已处理", "Closed", "Đã xử lý"),
