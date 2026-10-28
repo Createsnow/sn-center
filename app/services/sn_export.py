@@ -15,7 +15,7 @@ from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db
-from app.services import factories, files, sn_sheet
+from app.services import factories, files, rules, sn_sheet
 
 #: 各汇总都带的枚数：暂停（单据暂停交付）、申请中（转组织待审批，批准后会转走）
 _NOTES = "SUM(i.suspend IS NOT NULL) suspended, SUM(i.status = 'APPLYING') applying"
@@ -151,14 +151,33 @@ def segments(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | N
     return util.page_result(items, total, page)
 
 
-def items(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None, page: util.Page) -> dict:
-    """明细：逐枚列出该单据的全部已分配号（不按号段合并），按单据序号、流水排序，与下载文件的行顺序一致；
-    每枚带十进制流水、流水归属（转入号注明）、暂停、申请中。"""
+def items(
+    cu: CurrentUser,
+    factory: str | None,
+    pi: str | None,
+    bill: str | None,
+    page: util.Page,
+    bill_seq: int | None = None,
+    material: str | None = None,
+    q: str | None = None,
+) -> dict:
+    """明细：逐枚列出该单据的全部已分配号（不按号段合并），按单据序号、流水排序，与下载文件的行顺序一致。
+    可只看一个物料行（bill_seq + material），q 按完整 SN 模糊匹配。单据级的字段（组织、客户、PI、单据）
+    明细顶部显示一次，每枚只带各不相同的：物料行、进制 / 十进制流水、流水归属（转入号注明）、状态、
+    交付方式、交付批次、领取批次、暂停。"""
     p, _b, where, args = _bill_where(cu, factory, pi, bill)
+    if bill_seq is not None:
+        where += " AND i.bill_seq = %s AND i.material_code = %s"
+        args += [bill_seq, util.trim(material)]
+    if not util.blank(q):
+        where += " AND i.sn LIKE %s"
+        args.append(util.like_any(q.strip()))
     total = db.count("SELECT COUNT(*) FROM sn_item i" + where, *args)
     rows = db.all(
-        "SELECT i.sn, i.bill_seq, i.material_code, i.attach_no, i.length_text, i.seq_pi_no, i.seq_dec, i.status, "
-        "i.suspend FROM sn_item i" + where + " ORDER BY i.bill_seq, i.seq_pi_no, i.seq_dec LIMIT %s, %s",
+        "SELECT i.sn, i.rule_version_id, i.bill_seq, i.material_code, i.attach_no, i.length_text, i.seq_pi_no, "
+        "i.seq_dec, i.status, i.delivery_mode, i.delivery_batch_no, i.acquire_batch_no, i.suspend FROM sn_item i"
+        + where
+        + " ORDER BY i.bill_seq, i.seq_pi_no, i.seq_dec LIMIT %s, %s",
         *args,
         page.offset,
         page.size,
@@ -173,8 +192,12 @@ def items(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None
             "length": _text(r["length_text"]) or "",
             "seq_pi_no": r["seq_pi_no"],
             "transferred_in": r["seq_pi_no"] != p,
+            "seq_text": rules.seq_text(r["rule_version_id"], r["seq_dec"]),
             "seq_dec": int(r["seq_dec"]),
-            "applying": r["status"] == "APPLYING",
+            "status": r["status"],
+            "delivery_mode": r["delivery_mode"] or "",
+            "delivery_batch_no": r["delivery_batch_no"] or "",
+            "acquire_batch_no": r["acquire_batch_no"] or "",
             "suspend": _text(r["suspend"]),
         }
         for n, r in enumerate(rows)

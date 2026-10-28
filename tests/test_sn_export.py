@@ -81,8 +81,21 @@ def test_detail_lists_every_sn_not_ranges(w, api, sql):
     got = ok(api.get(url + "&page_size=5", w.admin))
     assert got["total"] == 7 and [x["sn"] for x in got["items"]] == want[:5]
     x = got["items"][0]
-    assert (x["line_no"], x["seq_dec"], x["bill_seq"], x["material_code"], x["length"]) == (1, 1, 1, "M1", "100")
-    assert (x["applying"], x["suspend"], x["transferred_in"]) == (False, None, False)
+    assert (x["line_no"], x["seq_dec"], x["seq_text"], x["bill_seq"], x["material_code"], x["length"]) == (
+        1,
+        1,
+        "000001",
+        1,
+        "M1",
+        "100",
+    )
+    assert (x["status"], x["delivery_mode"], x["delivery_batch_no"], x["acquire_batch_no"]) == (
+        "ALLOCATED",
+        "",
+        "",
+        "",
+    )
+    assert (x["suspend"], x["transferred_in"]) == (None, False)
     page2 = ok(api.get(url + "&page_size=5&page=2", w.admin))
     assert [x["sn"] for x in page2["items"]] == want[5:] and [x["line_no"] for x in page2["items"]] == [6, 7]
     file_sns = [r[1] for r in xlsx_rows(get_file(api, w.admin, pi=pi, bill_no=bill, factory_code=org).content)[1:]]
@@ -91,6 +104,25 @@ def test_detail_lists_every_sn_not_ranges(w, api, sql):
     op = w.user(emp("F"), "factory_operator", other)
     assert api.get(url, op).code == "FACTORY_FORBIDDEN"
     assert api.get(f"/api/export/items?bill_no={bill}", w.admin).code == "PI_REQUIRED"
+    hit = ok(api.get(url + f"&q={want[3][-8:]}", w.admin))
+    assert [x["sn"] for x in hit["items"]] == [want[3]], "按完整 SN 模糊搜索"
+
+
+def test_detail_filters_one_bill_line(w, api):
+    org = w.org(uid("O")[:10])
+    pi, bill = uid("PI"), uid("MO")
+    w.order(bill, org, "C1", pi, ("M1", 3, "120"), ("M2", 2, "080"))
+    ok(w.bind_pi(pi, w.rule(P())))
+    w.generate(pi)
+    w.allocate(pi)
+    url = f"/api/export/items?pi={pi}&bill_no={bill}&factory_code={org}"
+    assert ok(api.get(url, w.admin))["total"] == 5
+    got = ok(api.get(url + "&bill_seq=2&material=M2", w.admin))
+    assert got["total"] == 2 and {(x["bill_seq"], x["material_code"], x["length"]) for x in got["items"]} == {
+        (2, "M2", "080")
+    }
+    assert [x["line_no"] for x in got["items"]] == [1, 2]
+    assert ok(api.get(url + "&bill_seq=2&material=M1", w.admin))["total"] == 0
 
 
 def test_push_failure_does_not_affect_export(w, api):
