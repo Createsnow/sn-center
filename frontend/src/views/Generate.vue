@@ -139,7 +139,7 @@
                 <el-tag v-if="b.state.open_alerts" size="small" type="warning">{{ t("generate.openAlerts", { n: b.state.open_alerts }) }}</el-tag>
                 <span class="push muted num">{{ t("generate.billCounts", { total: num(b.total_qty), gen: num(b.generated_qty), quota: num(b.quota) }) }}</span>
               </div>
-              <!-- 列宽按抽屉宽度排满、不出横向滚动条：数字列收窄，号段起止分两行 -->
+              <!-- 列宽按抽屉宽度排满、不出横向滚动条：数字列收窄；不显示 SN 范围列（号段看生成记录） -->
               <el-table v-if="b.shown.length" v-show="!isFolded(b.bill_no)" :data="b.shown" size="small" class="lines" :row-class-name="lineClass" @row-click="onLineClick">
                 <el-table-column width="44">
                   <template #default="{ row }">
@@ -215,30 +215,18 @@
                     <el-tag v-else size="small" :type="LINE_STATE_TAG[lineState(row)]" disable-transitions>{{ t(`generate.lineState.${lineState(row)}`) }}</el-tag>
                   </template>
                 </el-table-column>
-                <el-table-column :label="t('generate.snRange')" min-width="140">
-                  <template #default="{ row }">
-                    <div v-for="s in segsOf(row)" :key="s.gen_batch" class="sn-mono seg">{{ s.start_sn }}<br />~ {{ s.end_sn }}</div>
-                    <div v-if="planOf(row)" class="sn-mono seg plan">{{ planOf(row).start_sn }}<br />~ {{ planOf(row).end_sn }}</div>
-                    <span v-if="!segsOf(row).length && !planOf(row)" class="zero">—</span>
-                  </template>
-                </el-table-column>
+                <!-- 操作列按页签：待处理只有选规则；可生成有选规则和（有号时）撤销生成；已生成只有撤销生成 -->
                 <el-table-column :label="t('common.actions')" width="80" align="right">
                   <template #default="{ row }">
                     <span class="ops" @click.stop>
-                      <el-tooltip :content="row.rule ? t('generate.ruleNow', { rule: ruleTitle(row.rule), format: row.rule.format }) : t('generate.needRule')">
+                      <el-tooltip v-if="lineFilter !== 'GENERATED'" :content="row.rule ? t('generate.ruleNow', { rule: ruleTitle(row.rule), format: row.rule.format }) : t('generate.needRule')">
                         <el-button link :type="row.rule ? 'primary' : 'danger'" size="small" @click="openRuleDialog([row])">
                           {{ row.rule ? t("generate.changeRule") : t("generate.pickRule") }}
                         </el-button>
                       </el-tooltip>
-                      <el-tooltip v-if="revokeOf([row])" :content="revokeTip(revokeOf([row])!)">
+                      <el-tooltip v-if="lineFilter !== 'TODO' && revokeOf([row])" :content="revokeTip(revokeOf([row])!)">
                         <span>
                           <el-button link type="danger" size="small" :disabled="!revokeOf([row])!.ok" @click="openRevoke([row])">{{ t("generate.revoke") }}</el-button>
-                        </span>
-                      </el-tooltip>
-                      <!-- 待处理页签中还没有号的行：撤销配置 -->
-                      <el-tooltip v-else-if="lineFilter === 'TODO' && !row.edit_lock" :content="hasConfig(row) ? t('generate.revokeConfigTip') : t('generate.revokeConfigNone')">
-                        <span>
-                          <el-button link type="danger" size="small" :disabled="!hasConfig(row)" @click="revokeConfig([row])">{{ t("generate.revoke") }}</el-button>
                         </span>
                       </el-tooltip>
                     </span>
@@ -257,12 +245,12 @@
         </el-tabs>
       </div>
 
-      <!-- 底部操作栏：三个页签相同，只有四个按钮：规则配置（所选物料行）、撤销（待处理页签撤销配置，其他页签撤销生成）、
+      <!-- 底部操作栏：三个页签相同，只有四个按钮：选规则（所选物料行）、撤销（待处理、可生成页签撤销配置，已生成页签撤销生成）、
            清空（勾选）、生成 N 枚；不显示任何说明文字 -->
       <template #footer>
         <div v-if="ctx" class="bar">
-          <el-button :disabled="!pickedRows.length" @click="openRuleDialog(pickedRows)">{{ t("generate.ruleConfig") }}</el-button>
-          <el-button type="danger" plain :disabled="!selRevokeOk" :loading="busy === 'config'" @click="revokeSelected">{{ t("generate.revoke") }}</el-button>
+          <el-button :disabled="!pickedRows.length" @click="openRuleDialog(pickedRows)">{{ t("generate.pickRule") }}</el-button>
+          <el-button type="danger" plain :disabled="!revokeMode" :loading="busy === 'config'" @click="revokeSelected">{{ t("generate.revoke") }}</el-button>
           <el-button :disabled="!hasSel" @click="clearSelection">{{ t("generate.clearSel") }}</el-button>
           <span class="push" />
           <el-button type="primary" :loading="gen.loading" :disabled="!canGen" @click="genDlg = true">
@@ -575,10 +563,6 @@ function foldAll(on: boolean) {
 }
 
 const segments = computed<Segment[]>(() => ctx.value?.segments ?? []);
-/** 物料行已生成的号段（按流水先后）。 */
-const segsOf = (l: LineRef) => segments.value.filter((s) => sameLine(s, l)).reverse();
-/** 本次预演给该物料行排的号段。 */
-const planOf = (l: LineRef) => (gen.preview?.generatable ? gen.preview.items.find((x: any) => sameLine(x, l)) : null);
 
 const {
   draftOf, setDraft, lockText, saveAttach, saveLength, saveUnit,
@@ -711,19 +695,27 @@ async function afterRevoke() {
   await reloadCtx();
 }
 
-// ---------------- 撤销配置（待处理页签）：还没有号的物料行，物料行选定的规则、手填的附件项次、米数和产品单位恢复为未配置
+// ---------------- 撤销配置（待处理、可生成页签）：还没有号的物料行，物料行选定的规则、手填的附件项次、米数和产品单位恢复为未配置
 
 /** 物料行在本系统做过配置：物料行选定了规则，或手填了附件项次 / 米数 / 产品单位。 */
 const hasConfig = (l: OrderLine) =>
   l.rule?.source === "LINE" || l.attach_manual != null || l.length_manual != null || l.unit_manual != null;
-/** 底部批量撤销配置的对象：所选物料行中在待处理页签、还没有号、做过配置的。 */
-const configRows = computed(() => pickedRows.value.filter((l) => FILTER_OK.TODO(l) && !l.edit_lock && hasConfig(l)));
+/** 底部批量撤销配置的对象：待处理 / 可生成页签中所选、还没有号、做过配置的物料行。 */
+const configRows = computed(() => {
+  const f = lineFilter.value;
+  return f === "GENERATED" ? [] : pickedRows.value.filter((l) => FILTER_OK[f](l) && !l.edit_lock && hasConfig(l));
+});
 
-/** 底部「撤销」：按钮名称各页签相同；待处理页签撤销所选行的配置，可生成 / 已生成页签撤销生成。 */
-const selRevokeOk = computed(() => (lineFilter.value === "TODO" ? configRows.value.length > 0 : !!batchRevoke.value?.ok));
+/** 底部「撤销」：按钮名称各页签相同。待处理页签撤销所选行的配置；可生成页签撤销所选行的配置
+ *  （所选行都已有号、没有可撤的配置时撤销生成）；已生成页签撤销生成。 */
+const revokeMode = computed<"config" | "gen" | null>(() => {
+  if (configRows.value.length) return "config";
+  if (lineFilter.value !== "TODO" && batchRevoke.value?.ok) return "gen";
+  return null;
+});
 function revokeSelected() {
-  if (lineFilter.value === "TODO") revokeConfig(configRows.value);
-  else openRevoke(pickedRows.value);
+  if (revokeMode.value === "config") revokeConfig(configRows.value);
+  else if (revokeMode.value === "gen") openRevoke(pickedRows.value);
 }
 
 async function revokeConfig(rows: OrderLine[]) {
@@ -806,9 +798,6 @@ onUnmounted(() => {
 .issue-tags, .ops { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .ops { justify-content: flex-end; gap: 2px 6px; }
 .ops :deep(.el-button + .el-button) { margin-left: 0; }
-/* 号段起止分两行，SN 很长时也在格内折行，不撑出横向滚动条 */
-.seg { word-break: break-all; line-height: 1.4; }
-.plan { color: var(--el-color-primary); }
 .cell-input { display: block; }
 .cell-input .missing :deep(.el-input__wrapper) { box-shadow: 0 0 0 1px var(--el-color-danger) inset; }
 .bill { border: 1px solid var(--el-border-color-lighter); border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
