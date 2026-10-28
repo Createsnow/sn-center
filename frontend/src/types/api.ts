@@ -50,7 +50,8 @@ export interface Factory {
   mes_enabled: boolean;
   tz_offset_min: number;
   mes_url?: string;
-  mes_auth_type?: "TOKEN" | "HMAC";
+  /** NONE = 无认证（推送不带认证头、不需凭证） */
+  mes_auth_type?: "TOKEN" | "HMAC" | "NONE";
   /** 推送请求体 gzip 压缩（默认关，发原始 JSON） */
   mes_gzip?: boolean;
   batch_size?: number;

@@ -1,7 +1,7 @@
 """MES 接口契约测试：按《MES 对接接口文档》《MES 对接说明》逐项检查 MES 方接收推送接口（①），输出报告。
 
 MES 方接口一提供就能测，不需要本系统：脚本自己造批次（PING、交付、转出），按接口文档的方式发送（默认原始 JSON，
-加 --gzip 时压缩；Bearer 或 HMAC 签名），逐项核对应答——整批校验与退回（NG）、按批次号去重、
+加 --gzip 时压缩；Bearer、HMAC 签名或无认证），逐项核对应答——整批校验与退回（NG）、按批次号去重、
 逐枚按 rev 覆盖或跳过、转出、并发送达、连接测试。只依赖 Python 3.11+ 和 httpx，可以直接交给 MES 方自测。
 回执只有整批结果（code = OK / NG），逐枚的处理结果须在 MES 侧按报告末尾的清单人工核对。
 
@@ -163,7 +163,7 @@ class Runner:
         secret: str | None = None,
         ts: str | None = None,
     ) -> Reply:
-        """按对接说明 ① 发送：默认原始 JSON（开启 gzip 时压缩），认证按组织配置（Bearer 或 HMAC）。"""
+        """按对接说明 ① 发送：默认原始 JSON（开启 gzip 时压缩），认证按组织配置（Bearer、HMAC 或无认证）。"""
         raw = canonical(obj) if raw is None else raw
         h = {
             "Content-Type": "application/json; charset=utf-8",
@@ -180,7 +180,7 @@ class Runner:
             msg = f"{t}\n{hashlib.sha256(raw).hexdigest()}"
             h["X-Sn-Timestamp"] = t
             h["X-Sn-Signature"] = hmac.new(key.encode(), msg.encode(), hashlib.sha256).hexdigest()
-        else:
+        elif self.auth == "TOKEN":
             h["Authorization"] = f"Bearer {key}"
         start = time.monotonic()
         try:
@@ -271,13 +271,16 @@ class Runner:
             self.ng(self.send(b), b, "PING 的 orgCode 不是本组织")
 
         def auth_bad(c: Check) -> None:
+            if self.auth == "NONE":
+                c.status, c.detail = SKIP, "认证方式为无认证，不适用"
+                return
             b = self.batch([self.delivery(90, 1)])
             r = self.send(b, secret=self.secret + "-wrong")
             self.need(r.status in (401, 403), f"凭证错误应返回 401 或 403，实际 {r}")
 
         def hmac_skew(c: Check) -> None:
             if self.auth != "HMAC":
-                c.status, c.detail = SKIP, "认证方式为 TOKEN，不适用"
+                c.status, c.detail = SKIP, f"认证方式为 {self.auth}，不适用"
                 return
             b = self.batch([self.delivery(91, 1)])
             r = self.send(b, ts=now_cst(datetime.now(CST) - timedelta(minutes=10)))
@@ -520,14 +523,16 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--url", required=True, help="MES 接收推送的地址（与「生产组织」页填写的相同）")
     p.add_argument("--org", required=True, help="生产组织编码（批次的 orgCode）")
     p.add_argument("--pi", required=True, help="MES 测试环境中该组织已有的一张 PI（交付批次头的 pi）")
-    p.add_argument("--auth", choices=("TOKEN", "HMAC"), default="TOKEN")
-    p.add_argument("--secret", required=True, help="TOKEN 为 Bearer 令牌，HMAC 为签名密钥")
+    p.add_argument("--auth", choices=("TOKEN", "HMAC", "NONE"), default="TOKEN", help="NONE 为无认证（不带认证头）")
+    p.add_argument("--secret", default="", help="TOKEN 为 Bearer 令牌，HMAC 为签名密钥；NONE 时不需要")
     p.add_argument("--timeout", type=float, default=60, help="等待应答秒数（与本系统推送超时一致，默认 60）")
     p.add_argument("--perf", type=int, nargs="?", const=5000, default=0, help="测一批的处理时间，默认 5000 枚")
     p.add_argument("--report", help="把报告写成 Markdown 文件")
     p.add_argument("--insecure", action="store_true", help="不校验 HTTPS 证书（测试环境自签证书）")
     p.add_argument("--gzip", action="store_true", help="请求体 gzip 压缩（与「生产组织」页开启「gzip 压缩」时相同）")
     a = p.parse_args(argv)
+    if a.auth != "NONE" and not a.secret:
+        p.error("--auth 为 TOKEN 或 HMAC 时须给出 --secret")
     r = Runner(a.url, a.org, a.auth, a.secret, a.timeout, a.insecure, gzip=a.gzip, pi=a.pi)
     print(f"运行号 {r.run}，测试 SN 前缀 {r.prefix}；只能对 MES 测试环境运行\n")
     r.run_all(a.perf)

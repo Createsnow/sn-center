@@ -51,9 +51,11 @@
           <el-radio-group v-model="form.mes_auth_type">
             <el-radio-button value="TOKEN">{{ t("factories.authTOKEN") }}</el-radio-button>
             <el-radio-button value="HMAC">{{ t("factories.authHMAC") }}</el-radio-button>
+            <el-radio-button value="NONE">{{ t("factories.authNONE") }}</el-radio-button>
           </el-radio-group>
+          <div v-if="form.mes_auth_type === 'NONE'" class="muted hint">{{ t("factories.authNoneHint") }}</div>
         </el-form-item>
-        <el-form-item :label="t('factories.credential')" :required="!editing?.credential_set">
+        <el-form-item v-if="form.mes_auth_type !== 'NONE'" :label="t('factories.credential')" :required="!editing?.credential_set">
           <el-input v-model="form.mes_credential" type="password" show-password autocomplete="new-password"
             :placeholder="editing?.credential_set ? t('factories.credentialKeep') : ''" />
           <div class="muted hint">{{ t("factories.credentialHint") }}</div>
@@ -175,8 +177,8 @@ function openConfig(row: Factory) {
   cfgOpen.value = true;
 }
 
-/** 凭证留空 = 沿用已存的（不回显）。 */
-const payload = () => ({ ...form, mes_credential: form.mes_credential || undefined });
+/** 凭证留空 = 沿用已存的（不回显）；无认证不发凭证（后端清空已存的）。 */
+const payload = () => ({ ...form, mes_credential: (form.mes_auth_type !== "NONE" && form.mes_credential) || undefined });
 
 async function test() {
   if (!editing.value) return;

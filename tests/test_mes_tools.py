@@ -22,9 +22,10 @@ def _quiet(_: str) -> None:
 
 
 def _runner(mock: MockMes, auth: str = "TOKEN", gz: bool = False) -> Runner:
-    mock.secrets["110"] = "s3cret"
+    secret = "" if auth == "NONE" else "s3cret"
+    mock.secrets["110"] = secret
     mock.pis["110"] = {"CTPI-110"}
-    return Runner(mock.url("110"), "110", auth, "s3cret", timeout=10, log=_quiet, gzip=gz, pi="CTPI-110")
+    return Runner(mock.url("110"), "110", auth, secret, timeout=10, log=_quiet, gzip=gz, pi="CTPI-110")
 
 
 @pytest.fixture
@@ -34,13 +35,13 @@ def mock():
     x.stop()
 
 
-@pytest.mark.parametrize(("auth", "gz"), [("TOKEN", False), ("HMAC", False), ("HMAC", True)])
+@pytest.mark.parametrize(("auth", "gz"), [("TOKEN", False), ("HMAC", False), ("HMAC", True), ("NONE", False)])
 def test_conformance_all_pass_against_mock(mock, auth, gz):
     r = _runner(mock, auth, gz)
     checks = r.run_all(perf=500)
     bad = [(c.id, c.status, c.detail) for c in checks if c.status not in (PASS, SKIP)]
     assert bad == []
-    assert {c.id for c in checks if c.status == SKIP} == ({"C04"} if auth == "TOKEN" else set())
+    assert {c.id for c in checks if c.status == SKIP} == {"TOKEN": {"C04"}, "HMAC": set(), "NONE": {"C03", "C04"}}[auth]
     # 用例对 MES 本侧数据的效果
     store = mock.store["110"]
     assert (store[r.sn(1)]["rev"], store[r.sn(1)]["billSeq"]) == (3, 2), "rev 更大覆盖；同 rev 覆盖不变；更小跳过"

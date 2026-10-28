@@ -4,7 +4,8 @@
 本系统只维护 MES 对接配置。号的归属一律按订单上的生产组织编码，不与列表校验。
 
 金蝶禁用的生产组织：不能再绑定账户、不能作转组织转入方；已分到它的号照常导出、推送、拉取、转出。
-「对接 MES」开启须接口地址、凭证已填且连接测试通过；开启时已分配 → 待推送（未入批），不自动推送；
+「对接 MES」开启须接口地址、凭证（认证方式为无认证时不需要）已填且连接测试通过；
+开启时已分配 → 待推送（未入批），不自动推送；
 关闭须没有进行中的推送任务、未确认或失败的批次（含拉取、转出批次）、等待改挂重推的号，关闭时待推送（未入批）→ 已分配。
 """
 
@@ -213,6 +214,16 @@ def stored_digest(f: dict) -> str:
     )
 
 
+def complete(url: str | None, auth: str, credential_set: bool) -> bool:
+    """接口地址已填；认证方式需要凭证时凭证也已填。"""
+    return bool(url) and (credential_set or not mes_client.needs_credential(auth))
+
+
+def ready(f: dict) -> bool:
+    """可开启「对接 MES」：配置已填全且当前配置就是最近一次连接测试通过的。"""
+    return complete(f["mes_url"], f["mes_auth_type"], bool(f["mes_credential"])) and f["cfg_tested"] == stored_digest(f)
+
+
 def _digest(c: dict) -> str:
     return config_digest(
         c["factory_code"], c["mes_url"], c["mes_auth_type"], c["mes_credential_plain"], bool(c["mes_gzip"])
@@ -220,7 +231,7 @@ def _digest(c: dict) -> str:
 
 
 def _candidate(f: dict, body: dict) -> dict:
-    """页面提交的配置（凭证留空 = 沿用已存的）合成为一份待测试 / 待保存的配置。"""
+    """页面提交的配置（凭证留空 = 沿用已存的；无认证时清空凭证）合成为一份待测试 / 待保存的配置。"""
     url = util.trim(body.get("mes_url")) if body.get("mes_url") is not None else f["mes_url"]
     auth = util.trim(body.get("mes_auth_type")) or f["mes_auth_type"]
     cred_in = body.get("mes_credential")
@@ -234,7 +245,9 @@ def _candidate(f: dict, body: dict) -> dict:
     if len(url) > 500:
         raise biz(ErrorCode.MES_CONFIG_INVALID, detail="接口地址过长")
     if auth not in mes_client.AUTH_TYPES:
-        raise biz(ErrorCode.MES_CONFIG_INVALID, detail="认证方式只能是 TOKEN 或 HMAC")
+        raise biz(ErrorCode.MES_CONFIG_INVALID, detail="认证方式只能是 TOKEN、HMAC 或 NONE")
+    if not mes_client.needs_credential(auth):
+        cred = ""
     if len(cred) > 500:
         raise biz(ErrorCode.MES_CONFIG_INVALID, detail="凭证过长")
     gz = body.get("mes_gzip")
@@ -266,8 +279,9 @@ def test_connection(cu: CurrentUser, code: str | None, body: dict) -> dict:
     """连接测试：向接口地址发一个不含号的 PING 批次（认证、压缩与正式推送相同），只提示结果；通过时记下配置摘要。"""
     f = must_get(code)
     c = _candidate(f, body)
-    if not c["mes_url"] or not c["mes_credential_plain"]:
-        raise biz(ErrorCode.MES_CONFIG_INVALID, detail="接口地址和凭证必填")
+    if not complete(c["mes_url"], c["mes_auth_type"], bool(c["mes_credential_plain"])):
+        need_cred = mes_client.needs_credential(c["mes_auth_type"])
+        raise biz(ErrorCode.MES_CONFIG_INVALID, detail="接口地址和凭证必填" if need_cred else "接口地址必填")
     t = mes_client.Target(
         c["mes_url"], c["mes_auth_type"], c["mes_credential_plain"], int(c["push_timeout_sec"]), bool(c["mes_gzip"])
     )
@@ -390,7 +404,7 @@ def mes_toggle_preview(code: str | None) -> dict:
     if f["mes_enabled"]:
         out["blockers"] = mes_blockers(fc)
     else:
-        out["can_enable"] = bool(f["mes_url"] and f["mes_credential"] and f["cfg_tested"] == stored_digest(f))
+        out["can_enable"] = ready(f)
     return out
 
 
@@ -404,7 +418,7 @@ def set_mes_enabled(cu: CurrentUser, code: str | None, enabled: bool) -> dict:
             return factory_json(f, True)
         now = util.now()
         if enabled:
-            if not (f["mes_url"] and f["mes_credential"] and f["cfg_tested"] == stored_digest(f)):
+            if not ready(f):
                 raise biz(ErrorCode.MES_TEST_REQUIRED)
             # 已分配 → 待推送（未入批）；不自动推送，由总部「继续推送」或等 MES 拉取
             n = db.exec(

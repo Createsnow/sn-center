@@ -104,7 +104,7 @@ class MesSim:
         #: 每批最多枚数（第 1 步校验）；HMAC 时间戳允许偏差秒数（0 = 不校验）
         self.max_batch = max_batch
         self.max_skew = max_skew
-        #: org -> 凭证（TOKEN 为 Bearer 令牌，HMAC 为签名密钥）；default_secret 用于未单独配置的组织
+        #: org -> 凭证（TOKEN 为 Bearer 令牌，HMAC 为签名密钥，空串为无认证）；default_secret 用于未单独配置的组织
         self.secrets: dict[str, str] = {}
         self.default_secret: str | None = None
         #: org -> 本组织已有的 PI；配置了的组织校验交付批次头的 pi 在其中，未配置的不校验归属
@@ -125,11 +125,13 @@ class MesSim:
         return self.secrets.get(org, self.default_secret)
 
     def authorized(self, org: str, headers: dict, raw: bytes) -> str | None:
-        """A：固定 Bearer 令牌；B：HMAC-SHA256（timestamp \\n hex(sha256(解压后的请求体))）。
+        """A：固定 Bearer 令牌；B：HMAC-SHA256（timestamp \\n hex(sha256(解压后的请求体))）；C：凭证为空串时无认证。
         通过返回 None，否则返回原因。"""
         secret = self.secret(org)
         if secret is None:
             return f"组织 {org} 未配置凭证"
+        if secret == "":
+            return None
         if "x-sn-signature" in headers:
             ts = headers.get("x-sn-timestamp") or ""
             if self.max_skew:
@@ -456,7 +458,7 @@ def _brief(x: dict) -> dict:
         "count": len(b.get("items") or []),
         "attempt": x["headers"].get("x-sn-attempt"),
         "requestId": x["headers"].get("x-request-id"),
-        "auth": "HMAC" if "x-sn-signature" in x["headers"] else "TOKEN",
+        "auth": "HMAC" if "x-sn-signature" in x["headers"] else "TOKEN" if "authorization" in x["headers"] else "NONE",
         "firstItem": (b.get("items") or [None])[0],
     }
 
@@ -575,7 +577,10 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--host", default="127.0.0.1", help="监听地址；本系统在别的机器上时用 0.0.0.0")
     s.add_argument("--port", type=int, default=9001)
     s.add_argument(
-        "--secret", action="append", metavar="组织=凭证", help="各组织的令牌（TOKEN）或签名密钥（HMAC），可重复"
+        "--secret",
+        action="append",
+        metavar="组织=凭证",
+        help="各组织的令牌（TOKEN）或签名密钥（HMAC），凭证留空（组织=）为无认证；可重复",
     )
     s.add_argument("--default-secret", help="未单独配置的组织都用这个凭证")
     s.add_argument(

@@ -261,6 +261,46 @@ def test_hmac_push(w, api, sql):
     assert len(h["x-sn-timestamp"]) == 23 and h["x-sn-timestamp"][10] == " ", "UTC+8，yyyy-MM-dd HH:mm:ss.SSS"
 
 
+def test_mes_no_auth_connects_without_credential_and_pushes(w, api, sql):
+    """认证方式为无认证：不填凭证也能连接测试、保存、开启对接并推送，推送不带认证头；需要凭证的方式仍须填凭证。"""
+    org = w.org(uid("O")[:10])
+    MES.secrets[org] = ""
+    tok = m(mes_url=MES.url(org), mes_auth_type="TOKEN")
+    assert api.post(f"/api/factories/{org}/mes-test", tok, w.admin).code == "MES_CONFIG_INVALID", "TOKEN 仍须凭证"
+    cfg = m(mes_url=MES.url(org), mes_auth_type="NONE", push_timeout_sec=10)
+    t = ok(api.post(f"/api/factories/{org}/mes-test", cfg, w.admin))
+    assert t["ok"], str(t)
+    h = MES.received[-1]["headers"]
+    assert not {"authorization", "x-sn-signature", "x-sn-timestamp"} & set(h)
+    saved = ok(api.put(f"/api/factories/{org}/mes-config", cfg, w.admin))
+    assert saved["mes_auth_type"] == "NONE" and not saved["credential_set"] and saved["tested"]
+    assert saved["cfg_status"] == "OK"
+    assert ok(api.get(f"/api/factories/{org}/mes-toggle", w.admin))["can_enable"] is True
+    ok(api.post(f"/api/factories/{org}/mes-toggle", m(enabled=True), w.admin))
+    pi, bill = uid("PI"), uid("MO")
+    w.order(bill, org, "C1", pi, ("M1", 2))
+    ok(w.bind_pi(pi, w.rule("P" + uid("").replace("-", ""))))
+    w.generate(pi)
+    w.allocate(pi)
+    w.push()
+    assert sql.scalar("SELECT result FROM sn_delivery_batch WHERE pi_no = %s", pi) == "SUCCESS"
+    assert "authorization" not in MES.received[-1]["headers"]
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 2
+
+
+def test_mes_switch_to_no_auth_clears_credential(w, api, sql):
+    """已存凭证的组织改为无认证：凭证清空；已开启对接时须先用新配置测试通过才能保存。"""
+    org = w.org(uid("O")[:10])
+    w.enable_mes(org)
+    MES.secrets[org] = ""
+    cfg = m(mes_url=MES.url(org), mes_auth_type="NONE", mes_credential="ignored")
+    assert api.put(f"/api/factories/{org}/mes-config", cfg, w.admin).code == "MES_TEST_REQUIRED"
+    assert ok(api.post(f"/api/factories/{org}/mes-test", cfg, w.admin))["ok"]
+    saved = ok(api.put(f"/api/factories/{org}/mes-config", cfg, w.admin))
+    assert saved["mes_auth_type"] == "NONE" and not saved["credential_set"] and saved["cfg_status"] == "OK"
+    assert sql.scalar("SELECT mes_credential FROM sn_factory WHERE factory_code = %s", org) == ""
+
+
 def test_builtin_admin_reset_via_env(w, api):
     # 不带页面头登录（不挤掉会话里共用的总部页面令牌）
     assert api.post("/api/auth/login", m(emp_no="admin", password=ADMIN_PASSWORD), None).status == 200

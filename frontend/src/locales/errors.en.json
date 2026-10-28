@@ -36,7 +36,7 @@
   "FACTORY_NOT_FOUND": "Production org not found: {factory}",
   "FACTORY_DISABLED": "Production org {factory} is disabled in Kingdee",
   "MES_CONFIG_INVALID": "Invalid MES integration settings: {detail}",
-  "MES_TEST_REQUIRED": "“MES integration” can be enabled only after the URL and credential are filled in and the connection test passes",
+  "MES_TEST_REQUIRED": "“MES integration” can be enabled only after the URL and credential (not needed with no auth) are filled in and the connection test passes",
   "MES_TEST_FAILED": "Connection test failed: {message}",
   "MES_DISABLE_BLOCKED": "Production org {factory} still has unfinished pushes: {detail}; resume them, wait for MES receipts, or have HQ confirm / void manually",
   "MES_NOT_ENABLED": "Production org {factory} does not have “MES integration” enabled",

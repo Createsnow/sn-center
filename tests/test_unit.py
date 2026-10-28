@@ -243,6 +243,18 @@ def test_hmac_signature_string():
     assert sig == want
 
 
+@pytest.mark.parametrize(
+    ("auth", "want"),
+    [("TOKEN", {"authorization"}), ("HMAC", {"x-sn-timestamp", "x-sn-signature"}), ("NONE", set())],
+)
+def test_auth_headers_by_type(auth, want):
+    """无认证不带任何认证头；需要凭证的只有 TOKEN、HMAC。"""
+    t = mes_client.Target("https://mes", auth, "k" if auth != "NONE" else "", 10)
+    h = {k.lower() for k in mes_client._headers(t, 1, b"{}")}
+    assert h & {"authorization", "x-sn-timestamp", "x-sn-signature"} == want
+    assert mes_client.needs_credential(auth) is (auth != "NONE")
+
+
 def test_ping_batch_has_no_items():
     body = json.loads(gzip.decompress(mes_client.ping_body("110", "PING-1")))
     assert set(body) == {
@@ -284,7 +296,7 @@ def test_migration_flyway_checksum():
     """测试阶段只保留一个 V1__init.sql；校验和按 Flyway 算法固定，改了建表脚本须同步更新这里（并重建测试库）。"""
     ours = {m.script: m for m in migrations()}
     assert list(ours) == ["V1__init.sql"]
-    assert ours["V1__init.sql"].checksum() == 408346278
+    assert ours["V1__init.sql"].checksum() == -1639573966
     statements = ours["V1__init.sql"].statements()
     assert len(statements) == 35
     text = "\n".join(statements)

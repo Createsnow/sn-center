@@ -36,7 +36,7 @@
   "FACTORY_NOT_FOUND": "生产组织不存在：{factory}",
   "FACTORY_DISABLED": "生产组织 {factory} 在金蝶已禁用",
   "MES_CONFIG_INVALID": "MES 对接配置不合法：{detail}",
-  "MES_TEST_REQUIRED": "接口地址、凭证已填且连接测试通过后才能开启「对接 MES」",
+  "MES_TEST_REQUIRED": "接口地址、凭证（无认证时不需要）已填且连接测试通过后才能开启「对接 MES」",
   "MES_TEST_FAILED": "连接测试未通过：{message}",
   "MES_DISABLE_BLOCKED": "生产组织 {factory} 还有未完成的推送：{detail}；请先续推、等待 MES 回执，或由总部人工确认 / 作废",
   "MES_NOT_ENABLED": "生产组织 {factory} 未开启「对接 MES」",

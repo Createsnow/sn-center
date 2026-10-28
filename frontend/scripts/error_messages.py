@@ -40,7 +40,7 @@ E = {
 "FACTORY_NOT_FOUND": ("Production org not found: {factory}", "Không tìm thấy tổ chức sản xuất: {factory}"),
 "FACTORY_DISABLED": ("Production org {factory} is disabled in Kingdee", "Tổ chức sản xuất {factory} đã bị vô hiệu trong Kingdee"),
 "MES_CONFIG_INVALID": ("Invalid MES integration settings: {detail}", "Cấu hình kết nối MES không hợp lệ: {detail}"),
-"MES_TEST_REQUIRED": ("“MES integration” can be enabled only after the URL and credential are filled in and the connection test passes", "Chỉ bật “Kết nối MES” sau khi đã nhập địa chỉ, thông tin xác thực và kiểm tra kết nối thành công"),
+"MES_TEST_REQUIRED": ("“MES integration” can be enabled only after the URL and credential (not needed with no auth) are filled in and the connection test passes", "Chỉ bật “Kết nối MES” sau khi đã nhập địa chỉ, thông tin xác thực (không cần khi không xác thực) và kiểm tra kết nối thành công"),
 "MES_TEST_FAILED": ("Connection test failed: {message}", "Kiểm tra kết nối thất bại: {message}"),
 "MES_DISABLE_BLOCKED": ("Production org {factory} still has unfinished pushes: {detail}; resume them, wait for MES receipts, or have HQ confirm / void manually", "Tổ chức sản xuất {factory} còn lần đẩy chưa hoàn tất: {detail}; hãy đẩy tiếp, chờ biên nhận MES hoặc để trụ sở xác nhận / hủy thủ công"),
 "MES_NOT_ENABLED": ("Production org {factory} does not have “MES integration” enabled", "Tổ chức sản xuất {factory} chưa bật “Kết nối MES”"),

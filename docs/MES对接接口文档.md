@@ -140,7 +140,7 @@ SN 系统向 MES 推送一个批次，MES 处理并落库后，在**同一响应
 | `Accept` | 是 | `application/json` | 固定 |
 | `Accept-Encoding` | 是 | `gzip` | 响应可为 gzip |
 | `Content-Encoding` | 否 | `gzip` | 开启「gzip 压缩」时才带 |
-| `Authorization` | 是 | `Bearer SN110:7f3c9a1e5b2d4f60` | 工号 + 密钥（2.1） |
+| `Authorization` | 是 | `Bearer SN110:7f3c9a1e5b2d4f60` | 工号 + 密钥（2.1）；生产组织认证方式为「无认证」时不带 |
 | `X-Sn-Attempt` | 是 | `1` | 第几次送达，仅供日志 |
 | `X-Request-Id` | 是 | UUID | 每次送达都不同，仅供日志，**不得用于去重** |
 

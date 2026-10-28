@@ -56,7 +56,7 @@ class ErrorCode(Enum):
     FACTORY_NOT_FOUND = (400, "生产组织不存在：{factory}")
     FACTORY_DISABLED = (400, "生产组织 {factory} 在金蝶已禁用")
     MES_CONFIG_INVALID = (400, "MES 对接配置不合法：{detail}")
-    MES_TEST_REQUIRED = (400, "接口地址、凭证已填且连接测试通过后才能开启「对接 MES」")
+    MES_TEST_REQUIRED = (400, "接口地址、凭证（无认证时不需要）已填且连接测试通过后才能开启「对接 MES」")
     MES_TEST_FAILED = (502, "连接测试未通过：{message}")
     MES_DISABLE_BLOCKED = (
         409,

@@ -2,7 +2,8 @@
 
 - HTTPS；默认发原始 JSON（UTF-8），组织开启「gzip 压缩」时发 gzip 并带 Content-Encoding: gzip；不跟随 3xx 跳转。
   同一批次每次送达请求体逐字节相同（建批时写定 body_gz，原始 JSON 由它解压得到）。
-- 请求头：认证（A 固定 Bearer 令牌 + 来源 IP 白名单；B HMAC-SHA256 签名）；X-Sn-Attempt、X-Request-Id 只供日志；
+- 请求头：认证（A 固定 Bearer 令牌 + 来源 IP 白名单；B HMAC-SHA256 签名；C 无认证，不带认证头、不需凭证，
+  只用于 MES 在内网按来源 IP 等自行限制访问的场合）；X-Sn-Attempt、X-Request-Id 只供日志；
   开启压缩时另带 Content-Encoding: gzip。
 - HMAC 签名串 = timestamp + "\\n" + hex(SHA256(解压后的原始请求体字节))（请求体已含 batchNo），
   放在 X-Sn-Timestamp（UTC+8，2026-10-26 11:47:05.303）与 X-Sn-Signature（小写十六进制）。
@@ -28,7 +29,14 @@ from app.core import utils as util
 
 TOKEN = "TOKEN"
 HMAC = "HMAC"
-AUTH_TYPES = frozenset((TOKEN, HMAC))
+#: 无认证：不带认证头，不需凭证
+NONE = "NONE"
+AUTH_TYPES = frozenset((TOKEN, HMAC, NONE))
+
+
+def needs_credential(auth_type: str) -> bool:
+    return auth_type != NONE
+
 
 #: 应答分类
 RECEIPT = "RECEIPT"
@@ -109,7 +117,7 @@ def _headers(t: Target, attempt: int, raw: bytes) -> dict[str, str]:
         ts = util.mes_now()
         h["X-Sn-Timestamp"] = ts
         h["X-Sn-Signature"] = sign(t.credential, ts, raw)
-    else:
+    elif t.auth_type == TOKEN:
         h["Authorization"] = f"Bearer {t.credential}"
     return h
 

@@ -15,7 +15,7 @@ CREATE TABLE sn_factory (
   enabled          TINYINT(1)    NOT NULL DEFAULT 1 COMMENT '金蝶启用状态',
   mes_enabled      TINYINT(1)    NOT NULL DEFAULT 0 COMMENT '对接 MES',
   mes_url          VARCHAR(500)  NOT NULL DEFAULT '' COMMENT 'MES 接收推送的地址',
-  mes_auth_type    VARCHAR(8)    NOT NULL DEFAULT 'TOKEN' COMMENT 'TOKEN 固定令牌 + 白名单 / HMAC 签名',
+  mes_auth_type    VARCHAR(8)    NOT NULL DEFAULT 'TOKEN' COMMENT 'TOKEN 固定令牌 + 白名单 / HMAC 签名 / NONE 无认证（不需凭证）',
   mes_credential   VARCHAR(1024) NOT NULL DEFAULT '' COMMENT '凭证（加密保存，不回显）',
   mes_gzip         TINYINT(1)    NOT NULL DEFAULT 0 COMMENT '推送请求体 gzip 压缩（默认 0 = 原始 JSON）',
   batch_size       INT           NOT NULL DEFAULT 5000 COMMENT '单批推送枚数（也是 MES 拉取建批上限）',

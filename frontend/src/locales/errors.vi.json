@@ -36,7 +36,7 @@
   "FACTORY_NOT_FOUND": "Không tìm thấy tổ chức sản xuất: {factory}",
   "FACTORY_DISABLED": "Tổ chức sản xuất {factory} đã bị vô hiệu trong Kingdee",
   "MES_CONFIG_INVALID": "Cấu hình kết nối MES không hợp lệ: {detail}",
-  "MES_TEST_REQUIRED": "Chỉ bật “Kết nối MES” sau khi đã nhập địa chỉ, thông tin xác thực và kiểm tra kết nối thành công",
+  "MES_TEST_REQUIRED": "Chỉ bật “Kết nối MES” sau khi đã nhập địa chỉ, thông tin xác thực (không cần khi không xác thực) và kiểm tra kết nối thành công",
   "MES_TEST_FAILED": "Kiểm tra kết nối thất bại: {message}",
   "MES_DISABLE_BLOCKED": "Tổ chức sản xuất {factory} còn lần đẩy chưa hoàn tất: {detail}; hãy đẩy tiếp, chờ biên nhận MES hoặc để trụ sở xác nhận / hủy thủ công",
   "MES_NOT_ENABLED": "Tổ chức sản xuất {factory} chưa bật “Kết nối MES”",
