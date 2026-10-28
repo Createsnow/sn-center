@@ -95,6 +95,7 @@
     "reasonPlaceholder": "原因必填，不超过 500 字",
     "copy": "复制",
     "copied": "已复制",
+    "copyFailed": "复制失败，请手动选中后复制",
     "disabledSuffix": "（金蝶已禁用）",
     "mes": "对接 MES",
     "dateFrom": "开始日期",

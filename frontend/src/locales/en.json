@@ -95,6 +95,7 @@
     "reasonPlaceholder": "Reason required, at most 500 characters",
     "copy": "Copy",
     "copied": "Copied",
+    "copyFailed": "Copy failed; select the text and copy it manually",
     "disabledSuffix": " (disabled in Kingdee)",
     "mes": "MES integration",
     "dateFrom": "From",

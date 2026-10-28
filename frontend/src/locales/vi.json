@@ -95,6 +95,7 @@
     "reasonPlaceholder": "Bắt buộc nhập lý do, tối đa 500 ký tự",
     "copy": "Sao chép",
     "copied": "Đã sao chép",
+    "copyFailed": "Sao chép thất bại; hãy chọn văn bản và sao chép thủ công",
     "disabledSuffix": " (đã vô hiệu trong Kingdee)",
     "mes": "Kết nối MES",
     "dateFrom": "Từ ngày",

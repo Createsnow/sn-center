@@ -120,7 +120,7 @@
         <el-descriptions-item :label="t('users.empNo')"><span class="sn-mono">{{ secret.emp_no }}</span></el-descriptions-item>
         <el-descriptions-item :label="t('users.secret')">
           <span class="sn-mono secret">{{ secret.value }}</span>
-          <el-button link type="primary" class="ml" @click="copy(secret.value)">{{ t("common.copy") }}</el-button>
+          <el-button link type="primary" class="ml" @click="copy(secret.value, $event)">{{ t("common.copy") }}</el-button>
         </el-descriptions-item>
       </el-descriptions>
       <p class="muted">{{ t("users.secretUsage") }}</p>
@@ -143,6 +143,7 @@ import { ROLE_CODES, roleLabel } from "@/constants";
 import PageHead from "@/components/PageHead.vue";
 import FactorySelect from "@/components/FactorySelect.vue";
 import { useFactories } from "@/composables/useFactories";
+import { copyText } from "@/utils/clipboard";
 
 const { t } = useI18n();
 const { fmt } = useTime();
@@ -276,13 +277,11 @@ async function resetSecret(row: any) {
   await load();
 }
 
-async function copy(text: string) {
-  try {
-    await navigator.clipboard.writeText(text);
-    ElMessage.success(t("common.copied"));
-  } catch {
-    /* 剪贴板不可用时手工选中复制 */
-  }
+async function copy(text: string, e: MouseEvent) {
+  // 临时文本框放在按钮旁（弹窗内），避开 el-dialog 的焦点陷阱
+  const host = (e.currentTarget as HTMLElement | null)?.parentElement ?? undefined;
+  if (await copyText(text, host)) ElMessage.success(t("common.copied"));
+  else ElMessage.warning(t("common.copyFailed"));
 }
 
 onMounted(() => load(1));
@@ -293,7 +292,7 @@ onMounted(() => load(1));
 .mb { margin-bottom: 12px; }
 .w100 { width: 100%; }
 .hint { width: 100%; line-height: 1.5; margin-top: 2px; }
-.secret { word-break: break-all; }
+.secret { word-break: break-all; user-select: all; }
 .query-factories { display: flex; align-items: center; gap: 8px; width: 100%; }
 .query-factories .el-select { flex: 1; }
 </style>

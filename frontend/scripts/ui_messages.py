@@ -95,6 +95,7 @@ M = {
 "common.reasonPlaceholder": ("原因必填，不超过 500 字", "Reason required, at most 500 characters", "Bắt buộc nhập lý do, tối đa 500 ký tự"),
 "common.copy": ("复制", "Copy", "Sao chép"),
 "common.copied": ("已复制", "Copied", "Đã sao chép"),
+"common.copyFailed": ("复制失败，请手动选中后复制", "Copy failed; select the text and copy it manually", "Sao chép thất bại; hãy chọn văn bản và sao chép thủ công"),
 "common.disabledSuffix": ("（金蝶已禁用）", " (disabled in Kingdee)", " (đã vô hiệu trong Kingdee)"),
 "common.mes": ("对接 MES", "MES integration", "Kết nối MES"),
 "common.dateFrom": ("开始日期", "From", "Từ ngày"),
