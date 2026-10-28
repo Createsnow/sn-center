@@ -213,9 +213,9 @@ def create_app() -> FastAPI:
 
     @app.exception_handler(MesError)
     async def mes_error_handler(request: Request, exc: MesError) -> JSONResponse:
-        # 被拒绝的 MES 请求（越权、限流、批次不存在等）留失败痕迹；回执不符已在处理时留痕
+        # 被拒绝的 MES 请求（越权、限流、参数不合法、批次不存在等）留失败痕迹
         user = getattr(request.state, "user", None)
-        if isinstance(user, CurrentUser) and exc.code != "RECEIPT_MISMATCH":
+        if isinstance(user, CurrentUser):
             try:
                 await run_sync(
                     audit_svc.record_failure,

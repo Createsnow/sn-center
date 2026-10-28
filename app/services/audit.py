@@ -259,7 +259,7 @@ _PATH_ACTIONS = (
     (r"/api/transfers/org/\d+/withdraw", TRANSFER_WITHDRAW),
     (r"/api/transfers/org.*", TRANSFER_APPLY),
     (r"/api/mes/v1/batches/next", SN_PULL),
-    (r"/api/mes/v1/batches/[^/]+/receipt", SN_RECEIPT),
+    (r"/api/mes/v1/receipts", SN_RECEIPT),
     (r"/api/mes/v1/.*", SN_READ),
 )
 

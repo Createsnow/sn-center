@@ -50,7 +50,7 @@ python start.py          # Windows 可双击 start.bat；需要 Python 3.12+、N
 | 操作痕迹 | 系统管理员、审计员（授权组织） | 登录、账户、生产组织与 MES 配置、订单同步与变更、规则、生成、分配、推送、拉取、回执、转单、转组织全流程留痕（另有历史领取记录）（含失败）；筛选、导出；保存期与归档 |
 | 账户 / 生产组织 | 系统管理员 | 页面账户（系统管理员（唯一）/ 普通操作员 / 审计员，后两者授权一个或多个生产组织）与 MES 接口账户（绑一个对接 MES 的组织，密钥加密保存、可随时查看或重置，可设来源地址白名单，连续认证失败锁定）；生产组织从金蝶同步，总部为每个组织配置 MES 对接（地址、认证方式、凭证加密保存、批次大小、超时、并发、时区），连接测试通过后才能开启 |
 
-MES 接口（`/api/mes/v1`，每次请求带 `Authorization: Bearer <工号>:<密钥>`）：`POST /batches/next`、`POST /batches/{batchNo}/receipt`、`GET /sn/delivered`、`GET /batches/{batchNo}/items`；本系统推送到 MES 提供的地址。接口见 [MES 对接接口文档](docs/MES对接接口文档.md)，处理规则见 [MES 对接说明](docs/MES对接说明.md)。
+MES 接口（`/api/mes/v1`，每次请求带 `Authorization: Bearer <工号>:<密钥>`）：`POST /batches/next`、`POST /receipts`、`POST /sn/delivered`、`POST /batches/items`（一律 POST + JSON 请求体，地址中不带参数）；本系统推送到 MES 提供的地址。接口见 [MES 对接接口文档](docs/MES对接接口文档.md)，处理规则见 [MES 对接说明](docs/MES对接说明.md)。
 
 ## 开发与测试
 

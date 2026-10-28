@@ -477,7 +477,7 @@ def test_db_target_env_overrides_dotenv(monkeypatch):
         ("POST", "/api/generate/revoke", "SN_REVOKE"),
         ("POST", "/api/orders/alerts/3/handle", "ORDER_ALERT_HANDLE"),
         ("POST", "/api/mes/v1/batches/next", "SN_PULL"),
-        ("POST", "/api/mes/v1/batches/PS-1/receipt", "SN_RECEIPT"),
+        ("POST", "/api/mes/v1/receipts", "SN_RECEIPT"),
         ("PUT", "/api/auth/lang", "OTHER"),
     ],
 )

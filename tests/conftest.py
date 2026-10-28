@@ -644,8 +644,14 @@ class World:
     def mes_next(self, token: str, **kw: Any) -> Res:
         return self.api.post("/api/mes/v1/batches/next", m(schemaVersion="1.0", **kw), token)
 
-    def mes_receipt(self, token: str, batch_no: str, receipt: dict) -> Res:
-        return self.api.post(f"/api/mes/v1/batches/{batch_no}/receipt", receipt, token)
+    def mes_receipt(self, token: str, receipt: dict) -> Res:
+        return self.api.post("/api/mes/v1/receipts", receipt, token)
+
+    def mes_delivered(self, token: str, **kw: Any) -> Res:
+        return self.api.post("/api/mes/v1/sn/delivered", m(**kw), token)
+
+    def mes_items(self, token: str, batch_no: str, **kw: Any) -> Res:
+        return self.api.post("/api/mes/v1/batches/items", m(batchNo=batch_no, **kw), token)
 
 
 @pytest.fixture

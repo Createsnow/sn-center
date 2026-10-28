@@ -100,10 +100,10 @@ def test_org_transfer_pushes_reassign_to_target_and_transfer_out_to_source(w, sq
     # 转出后来源 MES 按批次号、按 PI 只读查询都查不到
     ta, _ = w.mes_account(a)
     first = sql.scalar("SELECT from_delivery_batch FROM sn_transfer_item WHERE kind = 'ORG' LIMIT 1")
-    assert ok(w.api.get(f"/api/mes/v1/batches/{first}/items", ta))["items"] == []
-    assert ok(w.api.get(f"/api/mes/v1/sn/delivered?pi={pi}", ta))["items"] == []
+    assert ok(w.mes_items(ta, first))["items"] == []
+    assert ok(w.mes_delivered(ta, pi=pi))["items"] == []
     xo = t["out_batches"][0]["batch_no"]
-    assert ok(w.api.get(f"/api/mes/v1/batches/{xo}/items", ta))["items"] == []
+    assert ok(w.mes_items(ta, xo))["items"] == []
     # 转回 A：MES-A 收到更大的 rev，清除「已转出」
     ok(org_direct(w, b, pi, bill, a))
     w.push()
@@ -128,7 +128,7 @@ def test_transfer_out_pending_blocks_retransfer(w, sql):
     ta, _ = w.mes_account(a)
     got = ok(w.mes_next(ta, pi=pi))
     assert got["batch"]["batchNo"] == xo["batch_no"] and got["batch"]["batchType"] == "TRANSFER_OUT"
-    ok(w.mes_receipt(ta, xo["batch_no"], MES.process(a, got["batch"])))
+    ok(w.mes_receipt(ta, MES.process(a, got["batch"])))
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND mes_holder = %s", pi, a) == 0
     ok(org_direct(w, b, pi, bill, a))
 

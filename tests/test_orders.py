@@ -208,7 +208,7 @@ def test_reversal_suspends_undelivered_and_resumes(w, api, sql):
     token, _ = w.mes_account(org)
     r = ok(w.mes_next(token))
     assert len(r["batch"]["items"]) == 4 and r["paused"] == 2
-    ok(w.mes_receipt(token, r["batch"]["batchNo"], MES.process(org, r["batch"])))
+    ok(w.mes_receipt(token, MES.process(org, r["batch"])))
     r = ok(w.mes_next(token, billNo=bill))
     assert r["batch"] is None and r["paused"] == 2
     # 重新审核、没有变化 → 自动解除，并自动推送

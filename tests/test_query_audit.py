@@ -72,18 +72,18 @@ def test_delivered_read_only_for_mes(w, api, sql):
     org, pi, bill = make(w, 3, mes=True)
     w.allocate(pi)
     token, _ = w.mes_account(org)
-    assert ok(api.get(f"/api/mes/v1/sn/delivered?pi={pi}", token))["items"] == [], "未推送的不返回"
+    assert ok(api.post("/api/mes/v1/sn/delivered", m(pi=pi), token))["items"] == [], "未推送的不返回"
     w.push()
-    r = ok(api.get(f"/api/mes/v1/sn/delivered?pi={pi}&pageSize=2", token))
+    r = ok(api.post("/api/mes/v1/sn/delivered", m(pi=pi, pageSize=2), token))
     assert len(r["items"]) == 2 and r["nextCursor"]
-    r2 = ok(api.get(f"/api/mes/v1/sn/delivered?pi={pi}&pageSize=2&cursor={r['nextCursor']}", token))
+    r2 = ok(api.post("/api/mes/v1/sn/delivered", m(pi=pi, pageSize=2, cursor=r["nextCursor"]), token))
     assert len(r2["items"]) == 1 and r2["nextCursor"] is None
     assert {x["status"] for x in r["items"] + r2["items"]} == {"PUSHED"}
     q = w.user(emp("Q"), "auditor", org)
-    assert len(ok(api.get(f"/api/mes/v1/sn/delivered?pi={pi}&orgCode={org}", q))["items"]) == 3
+    assert len(ok(api.post("/api/mes/v1/sn/delivered", m(pi=pi, orgCode=org), q))["items"]) == 3
     assert api.post("/api/mes/v1/batches/next", m(), q).code == "FORBIDDEN"
     other = w.user(emp("Q"), "auditor", w.org(uid("O")[:10]))
-    assert api.get(f"/api/mes/v1/sn/delivered?pi={pi}&orgCode={org}", other).code == "ORG_NOT_ALLOWED"
+    assert api.post("/api/mes/v1/sn/delivered", m(pi=pi, orgCode=org), other).code == "ORG_NOT_ALLOWED"
 
 
 def test_rate_limited_pull_leaves_failure_audit(w, api, sql, monkeypatch):
