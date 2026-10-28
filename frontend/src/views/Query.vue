@@ -8,14 +8,15 @@
           <SnTab :init="{ factory_code: initFactory, pi: initPi, bill_no: str(route.query.bill_no), batch_no: initTab === 'sn' ? initBatch : '' }"
             @open-delivery="(no) => (deliveryNo = no)" @open-acquire="(no) => (acquireNo = no)" />
         </el-tab-pane>
-        <el-tab-pane :label="t('query.tabDelivery')" name="delivery" lazy>
+        <!-- 交付批次、领取批次、交付告警：系统管理员、普通操作员；审计员只有 SN 明细 -->
+        <el-tab-pane v-if="store.canAct" :label="t('query.tabDelivery')" name="delivery" lazy>
           <DeliveryTab ref="deliveryTab" :init="{ factory_code: initFactory, pi: initPi, batch_no: initTab === 'delivery' ? initBatch : '', transfer_no: str(route.query.transfer_no) }"
             @open-delivery="(no) => (deliveryNo = no)" />
         </el-tab-pane>
-        <el-tab-pane :label="t('query.tabAcquire')" name="acquire" lazy>
+        <el-tab-pane v-if="store.canAct" :label="t('query.tabAcquire')" name="acquire" lazy>
           <AcquireTab :init="{ factory_code: initFactory, pi: initPi, batch_no: initTab === 'acquire' ? initBatch : '' }" @open-acquire="(no) => (acquireNo = no)" />
         </el-tab-pane>
-        <el-tab-pane :label="t('query.tabAlerts')" name="alerts" lazy>
+        <el-tab-pane v-if="store.canAct" :label="t('query.tabAlerts')" name="alerts" lazy>
           <AlertsTab @open-delivery="(no) => (deliveryNo = no)" />
         </el-tab-pane>
       </el-tabs>
@@ -47,9 +48,9 @@ const route = useRoute();
 const store = useAuthStore();
 const str = (v: unknown) => (typeof v === "string" ? v : "");
 
-/** 从其他页跳来时可带 ?tab=&pi=&batch_no=&bill_no=&factory=&transfer_no=；只有总部有生产组织筛选。 */
-const initTab = TABS.includes(str(route.query.tab)) ? str(route.query.tab) : "sn";
-const initFactory = store.isAdmin ? str(route.query.factory) : "";
+/** 从其他页跳来时可带 ?tab=&pi=&batch_no=&bill_no=&factory=&transfer_no=；系统管理员、授权多个组织的账户有生产组织筛选。 */
+const initTab = store.canAct && TABS.includes(str(route.query.tab)) ? str(route.query.tab) : "sn";
+const initFactory = store.multiScope ? str(route.query.factory) : "";
 const initPi = str(route.query.pi);
 const initBatch = str(route.query.batch_no);
 const tab = ref(initTab);

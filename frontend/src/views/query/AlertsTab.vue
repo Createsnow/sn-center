@@ -34,7 +34,7 @@
           </template>
         </template>
       </el-table-column>
-      <el-table-column v-if="store.isAdmin" :label="t('common.actions')" width="200" fixed="right">
+      <el-table-column v-if="store.canAct" :label="t('common.actions')" width="200" fixed="right">
         <template #default="{ row }">
           <template v-if="row.status === 'OPEN'">
             <el-button v-if="row.item_id" link type="primary" @click="openHandle(row, 'RESEND')">{{ t("query.resend") }}</el-button>

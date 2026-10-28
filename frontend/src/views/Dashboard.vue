@@ -45,7 +45,7 @@
       </el-col>
     </el-row>
 
-    <div v-if="store.isAdmin" class="surface">
+    <div v-if="store.canAct" class="surface">
       <div class="surface__title">
         <span>{{ t("dashboard.recentFailures") }}</span>
         <el-button link type="primary" @click="router.push({ path: '/query', query: { tab: 'delivery' } })">{{ t("dashboard.toBatches") }}</el-button>
@@ -78,7 +78,7 @@
       </el-table>
     </div>
 
-    <div v-if="store.isAdmin" class="surface">
+    <div v-if="store.canAct" class="surface">
       <div class="surface__title">
         <span>{{ t("dashboard.deliveryAlerts") }}</span>
         <el-button link type="primary" @click="router.push({ path: '/query', query: { tab: 'alerts' } })">{{ t("dashboard.toAlerts") }}</el-button>
@@ -103,7 +103,7 @@
       </el-table>
     </div>
 
-    <div v-if="store.isAdmin" class="surface">
+    <div v-if="store.canAct" class="surface">
       <div class="surface__title">{{ t("dashboard.recentJobs") }}</div>
       <el-table :data="data?.recent_jobs || []" size="small" :empty-text="t('common.empty')">
         <el-table-column prop="gen_batch" :label="t('dashboard.genBatch')" min-width="200" show-overflow-tooltip />
@@ -172,11 +172,11 @@ const kpis = computed<Kpi[]>(() => {
     { key: "transfers", label: t("dashboard.pendingTransferKpi"), value: d.pending_transfers, to: "/transfer?status=PENDING" },
     { key: "dalerts", label: t("dashboard.deliveryAlertKpi"), value: alerts, alarm: true, to: "/query?tab=alerts" },
   );
-  if (store.isAdmin || store.isQuery) rows.push({ key: "oalerts", label: t("dashboard.orderAlertKpi"), value: d.order_alerts, alarm: true, to: "/orders?tab=alerts" });
-  if (store.isAdmin) rows.push({ key: "running", label: t("dashboard.runningJobs"), value: d.running_jobs, to: "/generate" });
+  if (store.canAct) rows.push({ key: "oalerts", label: t("dashboard.orderAlertKpi"), value: d.order_alerts, alarm: true, to: "/orders?tab=alerts" });
+  if (store.canAct) rows.push({ key: "running", label: t("dashboard.runningJobs"), value: d.running_jobs, to: "/generate" });
   if (d.total_generated !== null && d.total_generated !== undefined) rows.push({ key: "total", label: t("dashboard.totalGenerated"), value: d.total_generated });
-  // 只有总部能处理的告警，其他角色不给跳转
-  return store.isAdmin ? rows : rows.map((r) => (r.to?.startsWith("/query") || r.to === "/generate" || r.to === "/allocate" ? { ...r, to: r.to?.startsWith("/query") ? "/query" : undefined } : r));
+  // 审计员只有 SN 查询（明细页签）和 SN 导出：其他跳转不给
+  return store.canAct ? rows : rows.map((r) => (r.to?.startsWith("/query") ? { ...r, to: "/query" } : r.to === "/export" ? r : { ...r, to: undefined }));
 });
 
 /** 今日：生成、分配、推送（按确认方式分列）、MES 拉取、转单。 */

@@ -20,7 +20,7 @@
           <el-option value="SYSTEM" :label="t('audit.srcSYSTEM')" />
         </el-select>
         <el-input v-model="f.operator" :placeholder="t('audit.operator')" clearable @keyup.enter="load(1)" />
-        <FactorySelect v-if="!store.bound" v-model="f.factory_code" clearable />
+        <FactorySelect v-if="store.multiScope" v-model="f.factory_code" scoped clearable />
         <el-input v-model="f.pi" placeholder="PI" clearable @keyup.enter="load(1)" />
         <el-input v-model="f.bill_no" :placeholder="t('common.billNo')" clearable @keyup.enter="load(1)" />
         <el-input v-model="f.batch_no" :placeholder="t('common.batchNo')" clearable @keyup.enter="load(1)" />

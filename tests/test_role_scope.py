@@ -167,3 +167,15 @@ def test_account_without_org_cannot_login(w, api, sql):
     sql.exec("DELETE FROM sn_user_factory WHERE user_id = (SELECT id FROM sn_user WHERE emp_no = %s)", e)
     assert api.get("/api/dashboard", tok).code == "USER_NO_FACTORY"
     assert api.page_login(e, "Pass1234").code == "USER_NO_FACTORY"
+
+
+def test_sn_query_factory_filter_within_scope(w, api):
+    a, b, pi, bill_a, bill_b = two_org_pi(w)
+    w.generate(pi)
+    w.allocate(pi)
+    both = w.user(emp("Q"), "auditor", None, [a, b])
+    assert ok(api.get(f"/api/sn?pi={pi}", both))["total"] == 5
+    assert ok(api.get(f"/api/sn?pi={pi}&factory_code={a}", both))["total"] == 3, "授权多个组织时可按组织筛选"
+    only_a = w.user(emp("Q"), "auditor", a)
+    assert ok(api.get(f"/api/sn?pi={pi}", only_a))["total"] == 3
+    assert api.get(f"/api/sn?pi={pi}&factory_code={b}", only_a).code == "FACTORY_FORBIDDEN"

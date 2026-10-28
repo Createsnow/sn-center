@@ -1,6 +1,6 @@
 <template>
   <div class="toolbar">
-    <FactorySelect v-if="store.isAdmin" v-model="f.factory_code" clearable />
+    <FactorySelect v-if="store.multiScope" v-model="f.factory_code" scoped clearable />
     <el-input v-model="f.pi" placeholder="PI" clearable @keyup.enter="load(1)" />
     <el-input v-model="f.batch_no" :placeholder="t('common.batchNo')" clearable @keyup.enter="load(1)" />
     <el-select v-model="f.source" clearable :placeholder="t('query.batchSource')">

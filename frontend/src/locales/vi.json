@@ -3,7 +3,6 @@
     "title": "Quản lý SN chống trùng đa tổ chức",
     "short": "Trung tâm SN",
     "subtitle": "Trụ sở tạo, phân bổ & giao",
-    "hq": "Trụ sở",
     "empNo": "Mã NV",
     "changePassword": "Đổi mật khẩu",
     "logout": "Đăng xuất",
@@ -14,22 +13,21 @@
     "superAdmin": "Quản trị hệ thống",
     "scope": "Phạm vi dữ liệu",
     "roleShort": {
-      "admin": "Quản trị viên",
-      "factory_operator": "Nhân viên tổ chức SX",
-      "query": "Người tra cứu"
+      "admin": "Quản trị hệ thống",
+      "operator": "Nhân viên vận hành",
+      "auditor": "Kiểm toán viên"
     },
     "scopeTip": {
-      "hq": "Góc nhìn trụ sở: xem và xuất SN của mọi tổ chức sản xuất",
-      "factory": "Chỉ xem và thao tác dữ liệu của tổ chức sản xuất này",
-      "queryAll": "Tra cứu dữ liệu của mọi tổ chức sản xuất, không thể thao tác",
-      "queryFactory": "Chỉ tra cứu dữ liệu của các tổ chức sản xuất được gắn, không thể thao tác"
+      "hq": "Quản trị hệ thống: xem và thao tác dữ liệu của mọi tổ chức sản xuất",
+      "factory": "Chỉ xem và thao tác dữ liệu của các tổ chức sản xuất được ủy quyền",
+      "queryFactory": "Chỉ tra cứu dữ liệu của các tổ chức sản xuất được ủy quyền, không thể thao tác"
     },
     "tz": "Thời gian hiển thị theo {tz}"
   },
   "nav": {
     "groupWork": "Bàn làm việc",
-    "groupHq": "Nghiệp vụ trụ sở",
-    "groupFactory": "Nghiệp vụ tổ chức SX",
+    "groupHq": "Cấp phát SN",
+    "groupFactory": "Giao & chuyển",
     "groupQuery": "Tra cứu & nhật ký",
     "groupSystem": "Hệ thống",
     "dashboard": "Tổng quan",
@@ -192,9 +190,9 @@
     "DELETED": "Đã xóa"
   },
   "roles": {
-    "admin": "Quản trị viên",
-    "factory_operator": "Nhân viên tổ chức sản xuất",
-    "query": "Người tra cứu",
+    "admin": "Quản trị hệ thống",
+    "operator": "Nhân viên vận hành",
+    "auditor": "Kiểm toán viên",
     "mes": "Tài khoản giao diện MES"
   },
   "scope": {
@@ -267,7 +265,7 @@
     "TRANSFER_WITHDRAW": "Rút yêu cầu chuyển tổ chức",
     "TRANSFER_APPROVE": "Duyệt chuyển tổ chức",
     "TRANSFER_REJECT": "Từ chối chuyển tổ chức",
-    "TRANSFER_DIRECT": "Trụ sở chuyển tổ chức trực tiếp",
+    "TRANSFER_DIRECT": "Chuyển tổ chức trực tiếp",
     "AUDIT_ARCHIVE": "Lưu trữ nhật ký",
     "AUDIT_ARCHIVE_PURGE": "Xóa nhật ký lưu trữ",
     "SELF_CHECK": "Tự kiểm tra giao hằng ngày",
@@ -499,13 +497,13 @@
     "enableMes": "Bật kết nối MES",
     "disableMes": "Tắt kết nối MES",
     "enableBlocked": "Hãy nhập địa chỉ, thông tin xác thực và kiểm tra kết nối đạt trước (trong Cấu hình MES)",
-    "enableEffect": "Sau khi bật, {n} SN đã phân bổ của tổ chức chuyển thành chờ đẩy (chưa vào lô), không tự đẩy; trụ sở bấm “Đẩy tiếp” hoặc chờ MES kéo.",
+    "enableEffect": "Sau khi bật, {n} SN đã phân bổ của tổ chức chuyển thành chờ đẩy (chưa vào lô), không tự đẩy; bấm “Đẩy tiếp” ở trang phân bổ hoặc chờ MES kéo.",
     "disableEffect": "Sau khi tắt, {n} SN chờ đẩy (chưa vào lô) của tổ chức chuyển thành đã phân bổ (vẫn tải được ở Xuất SN); SN đã đẩy, đã nhận giữ nguyên, địa chỉ và thông tin xác thực được giữ (chuyển đi vẫn được đẩy).",
     "disableBlocked": "Còn lần đẩy chưa hoàn tất, không thể tắt",
     "blockTasks": "{n} tác vụ đẩy đang chạy",
     "blockBatches": "{n} lô chưa xác nhận hoặc thất bại, {qty} SN",
     "blockReassign": "{n} SN chờ đẩy lại điều chuyển",
-    "disableBlockedHint": "Hãy đẩy tiếp hoặc chờ biên nhận MES; nếu MES đã ngừng, trụ sở xác nhận hoặc hủy thủ công các lô còn lại trong mục lô giao.",
+    "disableBlockedHint": "Hãy đẩy tiếp hoặc chờ biên nhận MES; nếu MES đã ngừng, xác nhận hoặc hủy thủ công các lô còn lại trong mục lô giao.",
     "mesOn": "Đã bật kết nối MES",
     "mesOff": "Đã tắt kết nối MES",
     "disableHint": "Tổ chức sản xuất bị vô hiệu trong Kingdee không thể gắn tài khoản hay làm đích chuyển; SN đã phân bổ cho nó vẫn xuất, đẩy, kéo và chuyển đi bình thường."
@@ -905,6 +903,11 @@
     "title": "Thư viện quy tắc",
     "desc": "Duy trì quy tắc SN: SN = tiền tố + số thứ tự trong PI (bù 0) + dấu phân cách + chiều dài (bù 0, tùy chọn) + dấu phân cách + đơn vị (tùy chọn) + hậu tố, không giới hạn ký tự. Ở đây chỉ duy trì quy tắc; chọn quy tắc cho dòng vật tư và gắn PI thực hiện ở trang tạo; gắn theo khách hàng chỉ qua giao diện API, hiển thị chỉ đọc ở cột “Gắn hiệu lực”.",
     "create": "Tạo quy tắc",
+    "owner": "Tổ chức sở hữu",
+    "ownerGlobal": "Dùng chung",
+    "ownerHint": "Để trống = quy tắc dùng chung: mọi tổ chức đều chọn dùng được, chỉ quản trị hệ thống được sửa, xóa",
+    "ownerOperatorHint": "Quy tắc thuộc tổ chức được ủy quyền đã chọn; chỉ tài khoản của tổ chức đó và quản trị hệ thống mới thấy và sửa được",
+    "globalReadonly": "Chỉ quản trị hệ thống mới được sửa, xóa quy tắc dùng chung; nhân viên vận hành chỉ được chọn dùng",
     "editTitle": "Sửa quy tắc {code}",
     "catALL": "Tất cả",
     "catNONE": "Chưa phân loại",
@@ -976,7 +979,7 @@
     },
     "kindTip": {
       "BILL": "Dùng khi lệnh bị hủy hoặc tách trong Kingdee: SN chuyển sang lệnh sản xuất khác, theo tổ chức của lệnh đó; SN chờ phân bổ cũng chuyển được; có hiệu lực ngay.",
-      "ORG": "SN chuyển sang tổ chức sản xuất khác (có thể khác tổ chức của chứng từ đích), chỉ SN đã phân bổ của tổ chức nguồn; trụ sở chuyển trực tiếp có hiệu lực ngay, tổ chức thì phải xin và trụ sở duyệt."
+      "ORG": "SN chuyển sang tổ chức sản xuất khác (có thể khác tổ chức của chứng từ đích), chỉ SN đã phân bổ của tổ chức nguồn; khi cả hai tổ chức đều được ủy quyền thì chuyển trực tiếp (hiệu lực ngay), nếu không thì gửi yêu cầu để tài khoản được ủy quyền cả hai bên duyệt."
     },
     "previewFirst": "Hãy xem trước, kiểm tra số có thể chuyển rồi mới gửi",
     "newBill": "Chuyển chứng từ",
@@ -990,7 +993,7 @@
     },
     "orgMode": {
       "APPLY": "Yêu cầu",
-      "DIRECT": "Trụ sở chuyển trực tiếp"
+      "DIRECT": "Chuyển trực tiếp"
     },
     "direction": {
       "OUT": "Chuyển đi",
@@ -1035,8 +1038,8 @@
     "fromOrg": "Tổ chức nguồn",
     "toOrg": "Tổ chức đích",
     "toPi": "PI đích",
-    "applyNote": "Sau khi gửi, SN chuyển sang đang xin chuyển, không thể đẩy hoặc kéo cho tới khi trụ sở xử lý; có thể rút lại trước đó. MES không được thông báo trong lúc này.",
-    "directNote": "Trụ sở chuyển trực tiếp: SN được gắn lại ngay, tự đẩy điều chuyển và chuyển đi khi cần.",
+    "applyNote": "Sau khi gửi, SN chuyển sang đang xin chuyển, không thể đẩy hoặc kéo cho tới khi được duyệt (quản trị hệ thống hoặc nhân viên vận hành được ủy quyền cả hai tổ chức); có thể rút lại trước đó. MES không được thông báo trong lúc này.",
+    "directNote": "Chuyển trực tiếp: cả hai tổ chức phải được ủy quyền; SN được gắn lại ngay, tự đẩy điều chuyển và chuyển đi khi cần.",
     "submitApply": "Gửi yêu cầu",
     "submitDirect": "Chuyển",
     "orgDone": "Đã gửi phiếu chuyển tổ chức {no}, {n} SN",
@@ -1057,7 +1060,7 @@
     "after": "Sau khi chuyển",
     "current": "Hiện tại",
     "transferredOut": "Đã chuyển đi",
-    "desc": "Gắn SN sang lệnh sản xuất hoặc tổ chức khác; chuỗi SN không đổi. Hai loại: chuyển chứng từ (khi lệnh bị hủy hoặc tách trong Kingdee; SN theo chứng từ đích; trụ sở thực hiện, có hiệu lực ngay) và chuyển tổ chức (SN sang tổ chức sản xuất khác; tổ chức xin, trụ sở duyệt, hoặc trụ sở chuyển trực tiếp). Cả hai chọn nguồn theo PI → chứng từ → vật tư → một SN hoặc dải số, và bắt buộc nhập PI, chứng từ, tổ chức sản xuất, vật tư đích. MES được báo bằng lần đẩy điều chuyển / chuyển đi tự động.",
+    "desc": "Gắn SN sang lệnh sản xuất hoặc tổ chức khác; chuỗi SN không đổi. Hai loại: chuyển chứng từ (khi lệnh bị hủy hoặc tách trong Kingdee; SN theo chứng từ đích; có hiệu lực ngay) và chuyển tổ chức (SN sang tổ chức sản xuất khác: chuyển trực tiếp khi cả hai tổ chức được ủy quyền, nếu không thì gửi yêu cầu để tài khoản được ủy quyền cả hai bên duyệt). Cả hai chọn nguồn theo PI → chứng từ → vật tư → một SN hoặc dải số, và bắt buộc nhập PI, chứng từ, tổ chức sản xuất, vật tư đích. MES được báo bằng lần đẩy điều chuyển / chuyển đi tự động. Nhân viên vận hành chỉ thao tác SN của tổ chức được ủy quyền.",
     "scopeTip": {
       "BILL": "Mọi SN của chứng từ này trong PI",
       "MATERIAL": "Mọi SN của mã vật tư này trong chứng từ (mọi dòng cùng vật tư)",
@@ -1094,13 +1097,13 @@
     "name": "Họ tên",
     "role": "Vai trò",
     "roleHint": {
-      "admin": "Nhân viên trụ sở: mọi quyền nghiệp vụ, không gắn tổ chức; không quản lý tài khoản (chỉ quản trị viên hệ thống được)",
-      "factory_operator": "Chỉ thao tác cho một tổ chức được gắn: xem, xuất SN và gửi / rút yêu cầu chuyển tổ chức",
-      "query": "Chỉ xem; không gắn thì xem tất cả, gắn thì chỉ xem tổ chức được gắn",
+      "admin": "Quản trị hệ thống duy nhất: mọi tổ chức sản xuất, mọi chức năng (gồm cấu hình và quản lý tài khoản)",
+      "operator": "Được ủy quyền một hoặc nhiều tổ chức: lệnh sản xuất, tạo SN, phân bổ, thư viện quy tắc (quy tắc dùng chung chỉ được chọn dùng), chuyển, xử lý giao, xuất và tra cứu SN",
+      "auditor": "Chỉ xem; được ủy quyền một hoặc nhiều tổ chức: tra cứu và xuất SN, nhật ký thao tác",
       "mes": "Chỉ gọi được API kéo, biên nhận và chỉ đọc của tổ chức mình"
     },
-    "queryFactories": "Tổ chức được xem",
-    "allFactoriesOption": "Không chọn = tất cả tổ chức",
+    "queryFactories": "Tổ chức được ủy quyền",
+    "allFactoriesOption": "Chọn ít nhất một",
     "selectAll": "Chọn mọi tổ chức đang dùng",
     "noFactory": "—",
     "initPwd": "Mật khẩu ban đầu",

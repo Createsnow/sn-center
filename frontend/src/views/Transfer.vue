@@ -15,7 +15,7 @@
         <el-select v-model="lq.kind" class="w140" clearable :placeholder="t('transfer.allKinds')" @change="list.load(1)">
           <el-option v-for="k in KINDS" :key="k" :value="k" :label="t(`transfer.kindName.${k}`)" />
         </el-select>
-        <FactorySelect v-if="!store.bound" v-model="lq.factory_code" clearable :placeholder="t('app.allFactories')" @update:model-value="list.load(1)" />
+        <FactorySelect v-if="store.multiScope" v-model="lq.factory_code" scoped clearable :placeholder="t('app.allFactories')" @update:model-value="list.load(1)" />
         <el-input v-model="lq.pi" :placeholder="t('transfer.piInOut')" clearable @keyup.enter="list.load(1)" @clear="list.load(1)" />
         <el-input v-model="lq.bill_no" :placeholder="t('common.billNo')" clearable @keyup.enter="list.load(1)" @clear="list.load(1)" />
         <el-button type="primary" @click="list.load(1)">{{ t("common.search") }}</el-button>
@@ -61,11 +61,12 @@
           <template #default="{ row }">
             <el-button link type="primary" @click="detail?.open(row.kind, row.id)">{{ t("common.detail") }}</el-button>
             <template v-if="row.status === 'PENDING'">
-              <template v-if="store.isAdmin">
+              <!-- 确认 / 驳回：系统管理员，或对来源、目标组织都有授权的普通操作员；撤回：来源组织在授权范围内的普通操作员 -->
+              <template v-if="store.canWrite(row.from_factory, row.to_factory)">
                 <el-button link type="success" :disabled="row.to_factory_disabled" @click="decide(row, 'approve')">{{ t("transfer.approve") }}</el-button>
                 <el-button link type="danger" @click="decide(row, 'reject')">{{ t("transfer.reject") }}</el-button>
               </template>
-              <el-button v-else-if="store.isFactory && row.direction === 'OUT'" link type="warning" @click="withdraw(row)">{{ t("transfer.withdraw") }}</el-button>
+              <el-button v-if="store.isOperator && row.direction === 'OUT'" link type="warning" @click="withdraw(row)">{{ t("transfer.withdraw") }}</el-button>
             </template>
           </template>
         </el-table-column>
@@ -161,9 +162,9 @@ async function withdraw(row: any) {
   detail.value?.refresh();
 }
 
-/** 总部默认转单，生产组织操作员只能申请转组织（对话框里总部可切换类型）。 */
+/** 默认转单，对话框里可切换为转组织。 */
 function openNew(kind?: Kind, prefill: { factory_code?: string; pi?: string; material?: string } = {}) {
-  dlg.value?.open(kind ?? (store.isAdmin ? "BILL" : "ORG"), prefill);
+  dlg.value?.open(kind ?? "BILL", prefill);
 }
 
 function onDone(kind: Kind, doc: any) {

@@ -1,7 +1,7 @@
 <template>
   <el-dialog v-model="tf.open" :title="t('transfer.new')" width="1000px" top="4vh">
-    <!-- 类型：总部可选转单或转组织；生产组织操作员只能申请转组织 -->
-    <div v-if="store.isAdmin" class="kinds">
+    <!-- 类型：转单或转组织（系统管理员、普通操作员都可选） -->
+    <div v-if="store.canAct" class="kinds">
       <div v-for="k in KINDS" :key="k" class="kind" :class="{ on: tf.kind === k }" @click="setKind(k)">
         <div class="kind__t"><el-icon><component :is="k === 'BILL' ? 'Document' : 'OfficeBuilding'" /></el-icon>{{ t(`transfer.kindTitle.${k}`) }}</div>
         <div class="muted">{{ t(`transfer.kindTip.${k}`) }}</div>
@@ -14,7 +14,7 @@
         <h5 class="side__t">{{ t("transfer.source") }}</h5>
         <el-form label-position="top" class="form">
           <el-form-item v-if="tf.kind === 'ORG'" :label="t('transfer.fromOrg')" required>
-            <FactorySelect v-model="tf.factory_code" class="full" :disabled="store.isFactory" @update:model-value="loadSources" />
+            <FactorySelect v-model="tf.factory_code" class="full" scoped :disabled="!!store.boundFactory" @update:model-value="loadSources" />
           </el-form-item>
           <el-form-item label="PI" required>
             <el-input v-model="tf.pi_no" clearable @change="loadSources" />
@@ -106,7 +106,7 @@
         <el-table-column :label="t('transfer.genAfter')" align="right" width="110"><template #default="{ row }"><span class="num">{{ row.after }}</span></template></el-table-column>
       </el-table>
       <p class="muted">{{ t("transfer.quotaUnchanged") }}</p>
-      <p v-if="tf.kind === 'ORG'" class="muted">{{ store.isAdmin ? t("transfer.directNote") : t("transfer.applyNote") }}</p>
+      <p v-if="tf.kind === 'ORG'" class="muted">{{ orgDirect ? t("transfer.directNote") : t("transfer.applyNote") }}</p>
     </div>
     <template #footer>
       <div class="foot">
@@ -165,8 +165,10 @@ const toBills = computed(() => {
 });
 const toHead = computed(() => toBills.value.find((b) => b.bill_no === tf.to_bill) ?? null);
 const toLines = computed(() => toRows.value.filter((r) => r.bill_no === tf.to_bill));
-const formTitle = computed(() => (tf.kind === "BILL" ? t("transfer.newBill") : store.isAdmin ? t("transfer.newDirect") : t("transfer.newApply")));
-const submitLabel = computed(() => (tf.kind === "BILL" ? t("transfer.submitBill") : store.isAdmin ? t("transfer.submitDirect") : t("transfer.submitApply")));
+/** 转组织：来源、目标组织都在授权范围内时直接转，否则提交申请（系统管理员总是直接转）。 */
+const orgDirect = computed(() => store.canWrite(tf.factory_code, tf.to_factory));
+const formTitle = computed(() => (tf.kind === "BILL" ? t("transfer.newBill") : orgDirect.value ? t("transfer.newDirect") : t("transfer.newApply")));
+const submitLabel = computed(() => (tf.kind === "BILL" ? t("transfer.submitBill") : orgDirect.value ? t("transfer.submitDirect") : t("transfer.submitApply")));
 const ready = computed(
   () =>
     (tf.kind === "BILL" || !!tf.factory_code) && !!tf.pi_no.trim() && !!tf.bill_no &&
@@ -190,7 +192,7 @@ function setKind(k: Kind) {
 }
 function open(kind: Kind, prefill: { factory_code?: string; pi?: string; material?: string } = {}) {
   Object.assign(tf, {
-    open: true, kind: store.isAdmin ? kind : "ORG", factory_code: store.isFactory ? store.boundFactory : prefill.factory_code || "", pi_no: prefill.pi || "",
+    open: true, kind, factory_code: store.boundFactory || prefill.factory_code || "", pi_no: prefill.pi || "",
     bill_no: "", scope: "BILL", material_code: "", start_sn: "", end_sn: "", to_pi: prefill.pi || "", to_bill: "", to_factory: "",
     to_seq: undefined, reason: "",
   });
@@ -300,11 +302,11 @@ async function preview() {
 async function submit() {
   const p = pv.value!;
   const args = { n: p.transferable, to: nameOf(p.to_org), pi: p.to_pi, bill: p.to_bill };
-  const key = tf.kind === "BILL" ? "transfer.billConfirm" : store.isAdmin ? "transfer.directConfirm" : "transfer.applyConfirm";
+  const key = tf.kind === "BILL" ? "transfer.billConfirm" : orgDirect.value ? "transfer.directConfirm" : "transfer.applyConfirm";
   await ElMessageBox.confirm(t(key, args), formTitle.value, { type: "warning" });
   busy.value = "submit";
   try {
-    const r = tf.kind === "BILL" ? await api.billTransfer(body()) : store.isAdmin ? await api.orgDirect(body()) : await api.orgApply(body());
+    const r = tf.kind === "BILL" ? await api.billTransfer(body()) : orgDirect.value ? await api.orgDirect(body()) : await api.orgApply(body());
     ElMessage.success(t(tf.kind === "BILL" ? "transfer.billDone" : "transfer.orgDone", { no: r.transfer_no, n: r.qty }));
     tf.open = false;
     emit("done", tf.kind, r);

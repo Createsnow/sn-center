@@ -1,13 +1,13 @@
 <template>
   <div class="page page--fill">
     <PageHead :title="t('orders.title')" :desc="t('orders.desc')">
-      <template v-if="store.isAdmin">
+      <template v-if="store.canAct">
         <el-input v-model="syncBillNo" :placeholder="t('common.billNo')" clearable class="w200" @keyup.enter="syncOne()" />
         <el-button :loading="syncing === 'one'" :disabled="!syncBillNo.trim()" @click="syncOne()">{{ t("orders.syncOne") }}</el-button>
         <el-button type="primary" :loading="syncing === 'compare'" @click="compareNow">
           <el-icon><Refresh /></el-icon><span>{{ t("orders.compareNow") }}</span>
         </el-button>
-        <el-button :loading="syncing === 'rebuild'" @click="rebuild">{{ t("orders.rebuild") }}</el-button>
+        <el-button v-if="store.isAdmin" :loading="syncing === 'rebuild'" @click="rebuild">{{ t("orders.rebuild") }}</el-button>
       </template>
     </PageHead>
 
@@ -51,7 +51,7 @@
           <div class="toolbar">
             <el-input v-model="f.q" :placeholder="t('orders.search')" clearable prefix-icon="Search" class="w-search" @keyup.enter="load(1)" @clear="load(1)" />
             <el-input v-model="f.customer" :placeholder="t('common.customer')" clearable @keyup.enter="load(1)" @clear="load(1)" />
-            <FactorySelect v-if="!store.bound" v-model="f.factory_code" clearable @update:model-value="load(1)" />
+            <FactorySelect v-if="store.multiScope" v-model="f.factory_code" scoped clearable @update:model-value="load(1)" />
             <el-button type="primary" @click="load(1)">{{ t("common.search") }}</el-button>
           </div>
           <div class="fill-body">
@@ -90,7 +90,7 @@
         <div class="surface fill">
           <div class="surface__title">
             <span>{{ detail ? t("orders.linesOf", { bill: detail.bill_no }) : t("orders.lines") }}</span>
-            <el-button v-if="detail && store.isAdmin" type="primary" size="small"
+            <el-button v-if="detail && store.canAct" type="primary" size="small"
               @click="router.push({ path: '/generate', query: { bill_no: detail.bill_no } })">
               {{ t("orders.toGenerate") }}
             </el-button>
@@ -223,7 +223,7 @@
               </template>
             </template>
           </el-table-column>
-          <el-table-column v-if="store.isAdmin" :label="t('common.actions')" min-width="170" fixed="right">
+          <el-table-column v-if="store.canAct" :label="t('common.actions')" min-width="170" fixed="right">
             <template #default="{ row }">
               <el-button v-for="a in row.actions" :key="a" link type="primary" @click="handle(row, a)">{{ t(`orders.alertActions.${a}`) }}</el-button>
               <el-button v-if="row.status === 'OPEN' && row.alert_type === 'REVERSAL'" link @click="syncOne(row.bill_no)">

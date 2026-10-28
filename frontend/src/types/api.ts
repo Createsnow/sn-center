@@ -17,11 +17,11 @@ export interface UserView {
   id: number;
   emp_no: string;
   name: string;
-  /** admin / factory_operator / query / mes */
+  /** admin 系统管理员 / operator 普通操作员 / auditor 审计员 / mes */
   role: string;
   factory_code: string | null;
   factory_name: string | null;
-  /** 可看的生产组织：操作员 = 本组织，查询员 = 绑定的组织；空 = 全部 */
+  /** 授权的生产组织：普通操作员、审计员 = 授权的组织，MES 接口账户 = 本组织；系统管理员为空 = 全部 */
   factory_codes: string[];
   factory_names: string[];
   status: string;

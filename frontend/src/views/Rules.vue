@@ -55,6 +55,12 @@
             <span class="ml">{{ row.rule.category_value }}</span>
           </template>
         </el-table-column>
+        <el-table-column :label="t('rules.owner')" min-width="120" show-overflow-tooltip>
+          <template #default="{ row }">
+            <el-tag v-if="!row.rule.factory_code" size="small" type="info" effect="plain">{{ t("rules.ownerGlobal") }}</el-tag>
+            <span v-else>{{ factoryName(row.rule.factory_code) }}</span>
+          </template>
+        </el-table-column>
         <el-table-column :label="t('rules.version')" width="64"><template #default="{ row }">v{{ row.rule.current_version }}</template></el-table-column>
         <el-table-column :label="t('rules.format')" min-width="230">
           <template #default="{ row }"><span class="sn-mono">{{ row.current?.format }}</span></template>
@@ -80,9 +86,11 @@
         </el-table-column>
         <el-table-column :label="t('common.actions')" width="130" fixed="right">
           <template #default="{ row }">
-            <el-button link type="primary" @click="openEdit(row)">{{ t("common.edit") }}</el-button>
-            <el-tooltip :disabled="deletable(row)" :content="t('rules.deleteBlocked')">
-              <span class="ml"><el-button link type="danger" :disabled="!deletable(row)" @click="remove(row)">{{ t("common.delete") }}</el-button></span>
+            <el-tooltip :disabled="editable(row)" :content="t('rules.globalReadonly')">
+              <span><el-button link type="primary" :disabled="!editable(row)" @click="openEdit(row)">{{ t("common.edit") }}</el-button></span>
+            </el-tooltip>
+            <el-tooltip :disabled="editable(row) && deletable(row)" :content="editable(row) ? t('rules.deleteBlocked') : t('rules.globalReadonly')">
+              <span class="ml"><el-button link type="danger" :disabled="!editable(row) || !deletable(row)" @click="remove(row)">{{ t("common.delete") }}</el-button></span>
             </el-tooltip>
           </template>
         </el-table-column>
@@ -97,6 +105,12 @@
           <el-input v-model.trim="form.rule_code" :placeholder="t('rules.codeHint')" />
         </el-form-item>
         <el-form-item :label="t('rules.name')" required><el-input v-model="form.rule_name" maxlength="128" /></el-form-item>
+        <!-- 所属组织：系统管理员可不选（全局规则）；普通操作员须选授权组织（只授权一个时固定为它）；建好后不能改 -->
+        <el-form-item v-if="!editing" :label="t('rules.owner')" :required="!store.isAdmin">
+          <FactorySelect v-model="form.factory_code" scoped :clearable="store.isAdmin" :disabled="!!store.boundFactory"
+            :placeholder="store.isAdmin ? t('rules.ownerGlobal') : t('rules.owner')" />
+          <div class="muted hint">{{ store.isAdmin ? t("rules.ownerHint") : t("rules.ownerOperatorHint") }}</div>
+        </el-form-item>
         <el-form-item :label="t('rules.category')">
           <el-radio-group v-model="form.category_scope">
             <el-radio-button v-for="s in CATEGORIES" :key="s" :value="s">{{ t(`rules.cat${s}`) }}</el-radio-button>
@@ -180,11 +194,20 @@ import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { api } from "@/api";
 import PageHead from "@/components/PageHead.vue";
+import FactorySelect from "@/components/FactorySelect.vue";
 import { BASES, CHARSETS } from "@/constants";
 import { useTime } from "@/composables/useTime";
+import { useFactories } from "@/composables/useFactories";
+import { useAuthStore } from "@/stores/auth";
 
 const { t } = useI18n();
 const { fmt } = useTime();
+const store = useAuthStore();
+const { factories } = useFactories();
+const factoryName = (code: string) => {
+  const f = factories.value.find((x) => x.factory_code === code);
+  return f ? `${f.factory_name}（${code}）` : code;
+};
 /** 分类：只用于筛选和推荐，不影响生效（绑定在生成页做，按客户绑定只能走接口）。 */
 const CATEGORIES = ["NONE", "CUSTOMER", "PI"];
 const FILTERS = ["ALL", ...CATEGORIES];
@@ -203,7 +226,7 @@ const sampleLength = ref("");
 const sampleUnit = ref("");
 /** 规则库流水位数默认 5（自定义规则默认 4，在生成页）。 */
 const EMPTY = {
-  rule_code: "", rule_name: "", category_scope: "NONE", category_value: "", prefix: "", suffix: "", base: 10, seq_len: 5, charset: "",
+  rule_code: "", rule_name: "", factory_code: "", category_scope: "NONE", category_value: "", prefix: "", suffix: "", base: 10, seq_len: 5, charset: "",
   with_length: true, length_pad: 0, sep_before: "", sep_after: "", with_unit: false,
 };
 const form = reactive({ ...EMPTY });
@@ -251,7 +274,7 @@ async function searchCustomers(text: string) {
 
 function openCreate() {
   editing.value = null;
-  Object.assign(form, EMPTY);
+  Object.assign(form, EMPTY, { factory_code: store.boundFactory });
   dialog.value = true;
 }
 
@@ -297,7 +320,9 @@ async function save() {
       const r: any = await api.updateRule(editing.value.rule.id, { rule_name: form.rule_name, ...spec(), ...category() });
       ElMessage.success(t(`rules.result${r.action}`, { v: r.rule?.rule?.current_version }));
     } else {
-      await api.createRule({ rule_code: form.rule_code, rule_name: form.rule_name, ...spec(), ...category() });
+      await api.createRule({
+        rule_code: form.rule_code, rule_name: form.rule_name, factory_code: form.factory_code || null, ...spec(), ...category(),
+      });
       ElMessage.success(t("common.saved"));
     }
     dialog.value = false;
@@ -307,6 +332,8 @@ async function save() {
   }
 }
 
+/** 修改、删除：系统管理员不限；普通操作员只能改授权组织的规则，全局规则只能选用（后端同样校验）。 */
+const editable = (row: any) => store.isAdmin || (!!row.rule.factory_code && store.canWrite(row.rule.factory_code));
 /** 只能删从没生成过号、也没指定给任何 PI 的规则（后端同样校验）。 */
 const deletable = (row: any) => !row.used && !row.pis.length && !row.bindings.pi.length;
 
