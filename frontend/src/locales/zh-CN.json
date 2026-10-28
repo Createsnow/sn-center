@@ -761,6 +761,7 @@
     "attachConflict": "金蝶已有值 {k3}（页面填写 {manual}），生成用金蝶值",
     "attachInvalid": "附件项次不能为空，不超过 64 字",
     "lengthEmpty": "缺失",
+    "unitEmpty": "缺失",
     "unitChineseTip": "产品单位是中文，规则带单位时须在 SN 生成页手动填写不含中文的单位（如 M、m、L）后才能生成",
     "lengthChineseTip": "米数含中文，须在 SN 生成页手动改成不含中文的米数后才能生成",
     "modifyDate": "修改日期",

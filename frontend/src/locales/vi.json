@@ -761,6 +761,7 @@
     "attachConflict": "Kingdee đã có {k3} (đã nhập {manual}); khi tạo dùng giá trị Kingdee",
     "attachInvalid": "Hạng mục đính kèm không được trống, tối đa 64 ký tự",
     "lengthEmpty": "Thiếu",
+    "unitEmpty": "Thiếu",
     "unitChineseTip": "Đơn vị là chữ Trung Quốc; khi quy tắc có đơn vị, hãy nhập đơn vị không có chữ Trung Quốc (ví dụ M, m, L) ở trang tạo SN trước khi tạo",
     "lengthChineseTip": "Chiều dài chứa chữ Trung Quốc; hãy sửa thành chiều dài không có chữ Trung Quốc ở trang tạo SN trước khi tạo",
     "modifyDate": "Ngày sửa",

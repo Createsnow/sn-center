@@ -761,6 +761,7 @@
     "attachConflict": "Kingdee now has {k3} (entered {manual}); generation uses the Kingdee value",
     "attachInvalid": "Attachment item cannot be empty, at most 64 characters",
     "lengthEmpty": "Missing",
+    "unitEmpty": "Missing",
     "unitChineseTip": "The unit is Chinese; when the rule includes the unit, enter a unit without Chinese (e.g. M, m, L) on the SN generation page before generating",
     "lengthChineseTip": "The length contains Chinese characters; change it to one without Chinese on the SN generation page before generating",
     "modifyDate": "Modified",
