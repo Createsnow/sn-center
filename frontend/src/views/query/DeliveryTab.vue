@@ -34,8 +34,8 @@
           <div v-if="row.confirmed_at" class="muted">{{ fmt(row.confirmed_at) }}</div>
         </template>
       </el-table-column>
-      <el-table-column :label="t('query.receiptCounts')" width="150">
-        <template #default="{ row }"><span class="num">{{ row.accepted_qty }} / {{ row.duplicate_qty }} / {{ row.conflict_qty }} / {{ row.stale_qty }}</span></template>
+      <el-table-column :label="t('query.acceptedQty')" width="90" align="right">
+        <template #default="{ row }"><span class="num">{{ row.accepted_qty }}</span></template>
       </el-table-column>
       <el-table-column :label="t('query.pushState')" width="110"><template #default="{ row }">{{ row.source === "PUSH" ? pushStateLabel(row.push_state) : "" }}</template></el-table-column>
       <el-table-column :label="t('query.retry')" width="80" align="right"><template #default="{ row }">{{ row.retry_count }}</template></el-table-column>

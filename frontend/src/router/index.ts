@@ -57,8 +57,6 @@ const router = createRouter({
     { path: "/login", name: "login", component: () => import("@/views/Login.vue"), meta: { public: true } },
     { path: "/password", name: "password", component: () => import("@/views/ChangePassword.vue") },
     { path: "/", component: () => import("@/layouts/AppLayout.vue"), children },
-    // 原「页面领取」页已改为「SN 导出」，旧书签跳到新页
-    { path: "/acquire", redirect: (to) => ({ path: "/export", query: to.query }) },
     { path: "/:pathMatch(.*)*", redirect: "/" },
   ],
 });

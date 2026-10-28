@@ -193,7 +193,7 @@ uv run python -m devtools.mes_conformance --url https://mes-test.example.com/sn/
 | 13 | 连接测试批次：认证、组织编码校验通过即成功，MES 不写数据 | `test_accounts::test_mes_enable_requires_test_and_disable_blocked` | C01～C04 | MES 库里没有 PING 记录 |
 | 14 | 回执与批次不符：推送响应不符记失败，取批跳过；拉取回执不合法只拒收、批次不变；修正后提交正确回执成功 | `test_delivery::test_receipt_batch_no_mismatch_fails_batch`、`test_delivery::test_pull_receipt_invalid_rejected_batch_unchanged_then_fixed`、`test_delivery::test_receipt_batch_no_in_body_and_no_gzip` | C05（校验规则相同） | MES 收到 400 后按 `details` 修正重交 |
 | 15 | 人工处理：拒收批次作废后重新组批；报文过大作废后按调小的枚数组批；转出批次作废后重建送达；作废批次取回、回执被拒；人工确认后停止重试 | `test_delivery::test_rejected_batch_voided_rebatches_and_refuses_voided`、`test_delivery::test_void_returns_items_to_pool_and_rebatches`、`test_transfers::test_void_transfer_out_rebuilds_and_delivers`、`test_delivery::test_manual_confirm_stops_retry` | — | MES 丢弃作废批次、不用本地缓存处理；书面确认流程 |
-| 16 | 旧协议遗留的冲突、过期告警「以本系统为准重推」后，MES 按更大的 rev 覆盖（新协议不再产生此类告警） | `test_delivery::test_legacy_conflict_alert_resend_bumps_rev` | C08 | — |
+| 16 | 交付告警（每日自检问题）核查后填写结论关闭；结论必填，已关闭的不能再处理 | `test_delivery::test_check_alert_closed_with_note` | — | 只涉及本系统 |
 | 17 | 同组织改挂待推送的号再转走，来源 MES 收到转出；关闭对接后转走曾推送的号，转出照常送达 | `test_transfers::test_same_org_reassign_then_other_org_still_sends_transfer_out`、`test_transfers::test_transfer_out_after_source_disabled_mes` | — | 关闭对接后 MES 仍保留接收接口 |
 | 18 | 跨组织转移后，转入方交付与来源转出不论谁先确认，MES 持有组织都正确；再次转移时转出推给正确的组织 | `test_transfers::test_holder_correct_when_target_confirms_first` | — | 两个组织的 MES 同时在线时的顺序 |
 | 19 | 转出批次推送中断后，来源 MES 按转出前的 PI 或单据取批能取到；号已全部转走的 PI 照常可取 | `test_transfers::test_transfer_out_pending_blocks_retransfer` | — | 按单据取转出批次（`mes_mock pull --bill`） |

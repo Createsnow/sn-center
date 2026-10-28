@@ -13,14 +13,6 @@ export const USER_KEY = "sn_user";
  * 同一台机器可在不同标签页同时登录不同账户。同一账户只在一个页面有效，后登录的覆盖先登录的
  * （后端令牌校验 + 本浏览器内 stores/auth 的页面广播）。
  */
-try {
-  // 旧版本把「最近一次登录」记在 localStorage 供新标签页沿用，现已不用
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(USER_KEY);
-} catch {
-  /* ignore */
-}
-
 function read(key: string): string | null {
   try {
     return sessionStorage.getItem(key);

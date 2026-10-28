@@ -609,37 +609,6 @@ class World:
 
         return delivery.run_pending()
 
-    @staticmethod
-    def legacy_acquire(factory: str, pi: str) -> str:
-        """历史数据：页面领取已下线，按原领取结果直接把号记为已领取并建领取批次（测已领取号的转移、查询）。"""
-        from app.core import utils as util
-        from app.db.session import db
-
-        no, now = util.next_id("AQ"), util.now()
-        with db.tx():
-            n = db.exec(
-                "UPDATE sn_item SET status = 'ACQUIRED', delivery_mode = 'PAGE', acquire_batch_no = %s, "
-                "delivered_at = %s, updated_at = %s WHERE factory_code = %s AND pi_no = %s "
-                "AND status IN ('TO_PUSH','ALLOCATED') AND delivery_batch_no IS NULL AND suspend IS NULL",
-                no,
-                now,
-                now,
-                factory,
-                pi,
-            )
-            db.exec(
-                "INSERT INTO sn_acquire_batch(batch_no, factory_code, pi_no, request_no, mes_org, status, qty, "
-                "created_by, created_at, finished_at) VALUES (%s,%s,%s,%s,0,'DONE',%s,'test',%s,%s)",
-                no,
-                factory,
-                pi,
-                uid("Q"),
-                n,
-                now,
-                now,
-            )
-        return no
-
     # ---------------- MES 调用
     def mes_next(self, token: str, **kw: Any) -> Res:
         return self.api.post("/api/mes/v1/batches/next", m(schemaVersion="1.0", **kw), token)
@@ -665,7 +634,6 @@ _SN_TABLES = (
     "sn_transfer_item",
     "sn_transfer",
     "sn_bill_transfer",
-    "sn_acquire_batch",
     "sn_delivery_alert",
     "sn_delivery_receipt",
     "sn_delivery_item",

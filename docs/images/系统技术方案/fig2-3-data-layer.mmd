@@ -16,7 +16,6 @@ flowchart LR
     Z3["sn_bill_ledger(+_line) 台账<br/>sn_order_alert 变更提醒"]
     Z4["sn_gen_preview · sn_gen_job 预演与生成"]
     Z5["sn_delivery_batch · _item · _receipt<br/>sn_delivery_alert · sn_push_task"]
-    Z6["sn_acquire_batch 领取批次"]
     Z7["sn_bill_transfer · sn_transfer · sn_transfer_item"]
   end
   subgraph AUD[审计数据层]
@@ -28,8 +27,7 @@ flowchart LR
   B1 -->|额度 · 米标 · 附件项次| Z4
   B4 -->|物料行规则| Z4
   Z4 -->|生成| Z1
-  Z1 -->|分配 · 建批 · 领取 · 转移| Z5
-  Z1 --> Z6
+  Z1 -->|分配 · 建批 · 转移| Z5
   Z1 --> Z7
   B1 -->|同步后比对| Z3
   BIZ -->|写操作痕迹| A1

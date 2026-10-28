@@ -49,7 +49,6 @@ def test_export_is_read_only_and_repeatable(w, api, sql):
         r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY bill_seq, seq_pi_no, seq_dec", pi)
     ]
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'ALLOCATED'", pi) == 5, "不改状态"
-    assert sql.count("SELECT COUNT(*) FROM sn_acquire_batch WHERE factory_code = %s", org) == 0, "不建领取批次"
     x = get_file(api, op, pi=pi, bill_no=bill, format="csv")
     assert x.status_code == 200 and len(xlsx_rows(x.content)) == 6, "不再提供 csv：format 参数忽略，一律 xlsx"
 
@@ -89,12 +88,7 @@ def test_detail_lists_every_sn_not_ranges(w, api, sql):
         "M1",
         "100",
     )
-    assert (x["status"], x["delivery_mode"], x["delivery_batch_no"], x["acquire_batch_no"]) == (
-        "ALLOCATED",
-        "",
-        "",
-        "",
-    )
+    assert (x["status"], x["delivery_mode"], x["delivery_batch_no"]) == ("ALLOCATED", "", "")
     assert (x["suspend"], x["transferred_in"]) == (None, False)
     page2 = ok(api.get(url + "&page_size=5&page=2", w.admin))
     assert [x["sn"] for x in page2["items"]] == want[5:] and [x["line_no"] for x in page2["items"]] == [6, 7]
@@ -166,28 +160,6 @@ def test_xlsx_keeps_formula_like_text_and_leading_dash_sn(w, api):
     r = get_file(api, w.admin, pi=pi, bill_no=bill.replace("=", "%3D"))
     row = dict(zip(*xlsx_rows(r.content)[:2], strict=True))
     assert row["单据编号"] == bill and row["完整SN"].startswith(prefix)
-
-
-def test_legacy_batch_still_downloadable_and_incomplete_released(w, api, sql):
-    from app.services import acquire
-
-    org, pi, bill = ready(w, 4)
-    no = w.legacy_acquire(org, pi)
-    r = api.client.get(f"/api/acquire/batches/{no}/file", headers={"Authorization": f"Bearer {w.admin}"})
-    assert r.status_code == 200 and len(xlsx_rows(r.content)) == 5
-    assert ok(api.get(f"/api/export/bills?q={pi}", w.admin))["items"][0]["qty"] == 4, "历史已领取的号照常导出"
-
-    org2, pi2, _ = ready(w, 3)
-    sql.exec(
-        "INSERT INTO sn_acquire_batch(batch_no, factory_code, pi_no, request_no, mes_org, status, qty, created_by, "
-        "created_at) VALUES ('AQ-INC', %s, %s, 'R-INC', 0, 'INCOMPLETE', 0, 'x', NOW())",
-        org2,
-        pi2,
-    )
-    sql.exec("UPDATE sn_item SET acquire_batch_no = 'AQ-INC' WHERE pi_no = %s", pi2)
-    assert acquire.release_incomplete() == 3
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND acquire_batch_no IS NULL", pi2) == 3
-    assert sql.count("SELECT COUNT(*) FROM sn_acquire_batch WHERE batch_no = 'AQ-INC'") == 0
 
 
 def test_lines_summarize_each_bill_line(w, api):

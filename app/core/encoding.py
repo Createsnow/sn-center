@@ -35,8 +35,6 @@ LONG_MAX = 2**63 - 1
 _CHARSET_RE = re.compile(r"^\S+$")
 #: 中文（含中文标点、全角字符）：页面填写的米数、产品单位不能含这些字符
 _CHINESE_RE = re.compile(r"[　-〿㐀-䶿一-鿿豈-﫿＀-￯]")
-#: 以前物料行米数为空时写入 SN 的默认米数；现在米数为空须先填写，只用于转单 / 转组织比对旧号的米数
-DEFAULT_LENGTH = "000"
 
 
 class SeqOverflow(ArithmeticError):

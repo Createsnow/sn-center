@@ -2,9 +2,9 @@
 
 与分配后的推送、拉取是两套独立的机制：号一经分配到生产组织（不再是待分配）就按「生产组织 + PI + 单据」一行列出，
 不论该组织是否对接 MES，也不看推送、拉取的进度和结果（推送失败、批次未确认都照常导出）；
-明细逐枚列出全部号（不按号段合并），也可直接下载 xlsx（列与 SN 查询导出、历史领取文件统一，含组织编号与
+明细逐枚列出全部号（不按号段合并），也可直接下载 xlsx（列与 SN 查询导出统一，含组织编号与
 中文生产组织名称，见 sn_sheet）。
-只读：导出不改号的状态、不建批次，可反复导出；导出也不影响推送、拉取。历史领取批次在 SN 查询中查看。
+只读：导出不改号的状态、不建批次，可反复导出；导出也不影响推送、拉取。
 """
 
 from __future__ import annotations
@@ -164,7 +164,7 @@ def items(
     """明细：逐枚列出该单据的全部已分配号（不按号段合并），按单据序号、流水排序，与下载文件的行顺序一致。
     可只看一个物料行（bill_seq + material），q 按完整 SN 模糊匹配。单据级的字段（组织、客户、PI、单据）
     明细顶部显示一次，每枚只带各不相同的：物料行、进制 / 十进制流水、流水归属（转入号注明）、状态、
-    交付方式、交付批次、领取批次、暂停。"""
+    交付方式、交付批次、暂停。"""
     p, _b, where, args = _bill_where(cu, factory, pi, bill)
     if bill_seq is not None:
         where += " AND i.bill_seq = %s AND i.material_code = %s"
@@ -175,7 +175,7 @@ def items(
     total = db.count("SELECT COUNT(*) FROM sn_item i" + where, *args)
     rows = db.all(
         "SELECT i.sn, i.rule_version_id, i.bill_seq, i.material_code, i.attach_no, i.length_text, i.seq_pi_no, "
-        "i.seq_dec, i.status, i.delivery_mode, i.delivery_batch_no, i.acquire_batch_no, i.suspend FROM sn_item i"
+        "i.seq_dec, i.status, i.delivery_mode, i.delivery_batch_no, i.suspend FROM sn_item i"
         + where
         + " ORDER BY i.bill_seq, i.seq_pi_no, i.seq_dec LIMIT %s, %s",
         *args,
@@ -197,7 +197,6 @@ def items(
             "status": r["status"],
             "delivery_mode": r["delivery_mode"] or "",
             "delivery_batch_no": r["delivery_batch_no"] or "",
-            "acquire_batch_no": r["acquire_batch_no"] or "",
             "suspend": _text(r["suspend"]),
         }
         for n, r in enumerate(rows)

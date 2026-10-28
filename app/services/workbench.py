@@ -74,7 +74,7 @@ def _to_alloc_pis(facs: tuple[str, ...] | None) -> tuple[str, list]:
     return (
         "SELECT DISTINCT pi_no FROM sn_item WHERE status = 'PENDING_ALLOC'" + isql + " "
         "UNION SELECT DISTINCT pi_no FROM sn_item WHERE status = 'TO_PUSH' AND delivery_batch_no IS NULL "
-        "AND suspend IS NULL AND acquire_batch_no IS NULL" + isql + " "
+        "AND suspend IS NULL" + isql + " "
         "UNION SELECT DISTINCT pi_no FROM sn_delivery_batch WHERE batch_type <> 'TRANSFER_OUT' "
         "AND (result = 'FAILED' OR (result = 'UNCONFIRMED' AND push_state = 'EXHAUSTED'))" + bsql,
         [*iargs, *iargs, *bargs],
@@ -138,7 +138,7 @@ def item_stats(pis: list[str], facs: tuple[str, ...] | None = None) -> dict[str,
     for r in db.all(
         "SELECT pi_no, SUM(status = 'PENDING_ALLOC') pending, SUM(status <> 'PENDING_ALLOC') allocated, "
         "SUM(seq_pi_no <> pi_no) transferred_in, SUM(status = 'TO_PUSH' AND delivery_batch_no IS NULL "
-        "AND suspend IS NULL AND acquire_batch_no IS NULL) unbatched, SUM(suspend IS NOT NULL) suspended "
+        "AND suspend IS NULL) unbatched, SUM(suspend IS NOT NULL) suspended "
         f"FROM sn_item WHERE pi_no IN ({ph}){isql} GROUP BY pi_no",
         *pis,
         *iargs,

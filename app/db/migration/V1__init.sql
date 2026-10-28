@@ -380,11 +380,10 @@ CREATE TABLE sn_item (
   rule_version_id   BIGINT      NOT NULL,
   gen_batch         VARCHAR(40) NOT NULL,
   -- 交付信息
-  status            VARCHAR(16) NOT NULL COMMENT 'PENDING_ALLOC / TO_PUSH / PUSHED / ALLOCATED / ACQUIRED / APPLYING',
+  status            VARCHAR(16) NOT NULL COMMENT 'PENDING_ALLOC / TO_PUSH / PUSHED / ALLOCATED / APPLYING',
   delivery_mode     VARCHAR(8)  NULL COMMENT 'PUSH 推送 / PULL 拉取 / PAGE 未对接 MES（SN 导出页下载）',
   push_type         VARCHAR(16) NOT NULL DEFAULT 'NEW' COMMENT '下次推送类型 NEW / REASSIGN',
   delivery_batch_no VARCHAR(40) NULL COMMENT '交付批次（推送或拉取建立）',
-  acquire_batch_no  VARCHAR(40) NULL COMMENT '领取批次',
   suspend           VARCHAR(8)  NULL COMMENT '暂停交付：REVERSAL 单据反审核中 / CHANGE 订单变更待确认',
   mes_holder        VARCHAR(64) NULL COMMENT 'MES 持有组织',
   transfer_id       BIGINT      NULL COMMENT '未完成的转组织申请',
@@ -403,7 +402,6 @@ CREATE TABLE sn_item (
   KEY ix_item_status (status, factory_code, pi_no),
   KEY ix_item_bill (bill_no, bill_seq, status),
   KEY ix_item_delivery (delivery_batch_no),
-  KEY ix_item_acquire (acquire_batch_no),
   KEY ix_item_holder (mes_holder, pi_no)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='SN 号池';
 
@@ -418,16 +416,13 @@ CREATE TABLE sn_delivery_batch (
   qty              INT           NOT NULL,
   items_digest     VARCHAR(80)   NOT NULL COMMENT 'sha256:64 位小写十六进制',
   body_gz          MEDIUMBLOB    NOT NULL COMMENT '推送请求体（gzip，逐字节固定）',
-  result           VARCHAR(20)   NOT NULL DEFAULT 'UNCONFIRMED' COMMENT 'UNCONFIRMED / SUCCESS / SUCCESS_CONFLICT / FAILED / VOIDED',
+  result           VARCHAR(20)   NOT NULL DEFAULT 'UNCONFIRMED' COMMENT 'UNCONFIRMED / SUCCESS / FAILED / VOIDED',
   confirm_method   VARCHAR(16)   NULL COMMENT 'PUSH_RESPONSE / PULL_RECEIPT / MANUAL',
   confirmed_at     DATETIME      NULL,
   fail_code        VARCHAR(40)   NULL,
   fail_reason      VARCHAR(1000) NULL,
   voidable         TINYINT(1)    NOT NULL DEFAULT 0 COMMENT '失败原因允许作废（整批拒绝、报文过大、认证或地址错误）',
-  accepted_qty     INT           NOT NULL DEFAULT 0,
-  duplicate_qty    INT           NOT NULL DEFAULT 0,
-  conflict_qty     INT           NOT NULL DEFAULT 0,
-  stale_qty        INT           NOT NULL DEFAULT 0,
+  accepted_qty     INT           NOT NULL DEFAULT 0 COMMENT '回执确认接收的枚数',
   push_state       VARCHAR(12)   NOT NULL DEFAULT 'IDLE' COMMENT 'IDLE / WAIT_RETRY / EXHAUSTED',
   retry_count      INT           NOT NULL DEFAULT 0 COMMENT '本轮自动重试次数',
   next_retry_at    DATETIME      NULL,
@@ -455,7 +450,7 @@ CREATE TABLE sn_delivery_batch (
   KEY ix_delivery_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='交付批次';
 
--- 交付批次明细（建批时写定）与逐枚回执；转出批次另记转出前挂靠与去向（号上不记）
+-- 交付批次明细（建批时写定）与接收情况；转出批次另记转出前挂靠与去向（号上不记）
 CREATE TABLE sn_delivery_item (
   batch_id         BIGINT      NOT NULL,
   line_no          INT         NOT NULL,
@@ -471,14 +466,12 @@ CREATE TABLE sn_delivery_item (
   seq_pi_no        VARCHAR(64) NOT NULL,
   seq_dec          BIGINT      NOT NULL,
   to_factory       VARCHAR(64) NULL COMMENT '转出：转入组织',
-  receipt_result   VARCHAR(12) NULL COMMENT 'ACCEPTED / DUPLICATE / CONFLICT / STALE',
-  existing_rev     INT         NULL,
-  existing_batch_no VARCHAR(40) NULL,
+  receipt_result   VARCHAR(12) NULL COMMENT 'ACCEPTED 回执已处理（整批记为接收）',
   PRIMARY KEY (batch_id, line_no),
   KEY ix_delivery_item_sn (sn),
   KEY ix_delivery_item_item (item_id),
   KEY ix_delivery_item_bill (batch_id, bill_no)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='交付批次明细与逐枚回执';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='交付批次明细与接收情况';
 
 -- 收到的回执（推送应答、拉取回执，含被拒收和确认后再交的，全部存档）
 CREATE TABLE sn_delivery_receipt (
@@ -495,27 +488,21 @@ CREATE TABLE sn_delivery_receipt (
   KEY ix_receipt_batch (batch_id, id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='交付回执存档';
 
--- 交付告警：疑似重复交付（冲突）、版本过期、每日自检问题
+-- 交付告警：每日自检发现的问题
 CREATE TABLE sn_delivery_alert (
   id                BIGINT        NOT NULL AUTO_INCREMENT,
-  alert_type        VARCHAR(16)   NOT NULL COMMENT 'CONFLICT / STALE / CHECK',
+  alert_type        VARCHAR(16)   NOT NULL COMMENT 'CHECK 每日自检',
   factory_code      VARCHAR(64)   NOT NULL DEFAULT '',
   batch_no          VARCHAR(40)   NOT NULL DEFAULT '',
-  item_id           BIGINT        NULL,
   sn                VARCHAR(64)   NULL,
-  rev               INT           NULL,
-  existing_rev      INT           NULL,
-  existing_batch_no VARCHAR(40)   NULL,
   detail            VARCHAR(1000) NULL,
   status            VARCHAR(8)    NOT NULL DEFAULT 'OPEN' COMMENT 'OPEN / CLOSED',
-  close_action      VARCHAR(16)   NULL COMMENT 'RESEND 以本系统为准重推 / CLOSE 关闭',
   closed_by         VARCHAR(32)   NULL,
   closed_at         DATETIME      NULL,
-  note              VARCHAR(500)  NULL,
+  note              VARCHAR(500)  NULL COMMENT '核查结论',
   created_at        DATETIME      NOT NULL,
   PRIMARY KEY (id),
-  KEY ix_dalert_status (status, created_at),
-  KEY ix_dalert_item (item_id)
+  KEY ix_dalert_status (status, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='交付告警';
 
 -- 推送任务：同组织 + 同一 PI（转出批次用 #XO）一个任务；推送进度按批次与号池实时统计，不在任务上累计
@@ -536,24 +523,6 @@ CREATE TABLE sn_push_task (
   PRIMARY KEY (factory_code, task_key),
   KEY ix_push_task_state (state, run_after)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='推送任务';
-
--- 领取批次：同组织同请求号幂等
-CREATE TABLE sn_acquire_batch (
-  batch_no     VARCHAR(40) NOT NULL,
-  factory_code VARCHAR(64) NOT NULL,
-  pi_no        VARCHAR(64) NOT NULL,
-  request_no   VARCHAR(64) NOT NULL,
-  mes_org      TINYINT(1)  NOT NULL DEFAULT 0 COMMENT '领取时该组织对接 MES',
-  status       VARCHAR(12) NOT NULL COMMENT 'INCOMPLETE 未完成 / DONE 已完成',
-  qty          BIGINT      NOT NULL DEFAULT 0,
-  created_by   VARCHAR(32) NOT NULL,
-  created_at   DATETIME    NOT NULL,
-  finished_at  DATETIME    NULL,
-  PRIMARY KEY (batch_no),
-  UNIQUE KEY ux_acquire_request (factory_code, request_no),
-  KEY ix_acquire_fac_pi (factory_code, pi_no, created_at),
-  KEY ix_acquire_created (created_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='领取批次';
 
 -- 转单单
 CREATE TABLE sn_bill_transfer (
@@ -633,7 +602,6 @@ CREATE TABLE sn_transfer_item (
   from_seq       INT         NOT NULL,
   from_material  VARCHAR(64) NOT NULL DEFAULT '',
   from_delivery_batch VARCHAR(40) NULL COMMENT '原交付批次',
-  from_acquire_batch  VARCHAR(40) NULL COMMENT '原领取批次',
   from_rev       INT         NOT NULL,
   to_status      VARCHAR(16) NULL,
   to_factory     VARCHAR(64) NULL,

@@ -10,7 +10,6 @@ from app.db.session import db
 from app.services import audit, mes_client
 from app.services.delivery import push
 from app.services.delivery.batches import (
-    CONFIRMED,
     FAILED,
     M_PULL,
     M_PUSH,
@@ -68,7 +67,7 @@ def apply_receipt(cu: CurrentUser, batch_no: str, r: dict, method: str) -> Appli
         if b["result"] == VOIDED:
             _archive(b, method, code, "VOIDED", "批次已作废", r, cu.emp_no)
             return Applied("VOIDED", b)
-        if b["result"] in CONFIRMED:
+        if b["result"] == SUCCESS:
             _archive(b, method, code, "ARCHIVED", "批次早已确认，只存档", r, cu.emp_no)
             return Applied("ARCHIVED", b)
         now = util.now()
@@ -144,8 +143,7 @@ def confirm(cu: CurrentUser, b: dict, method: str, by_mes: bool, now) -> None:
         accepted = b["qty"]
     db.exec(
         "UPDATE sn_delivery_batch SET result = %s, confirm_method = %s, confirmed_at = %s, accepted_qty = %s, "
-        "duplicate_qty = 0, conflict_qty = 0, stale_qty = 0, push_state = 'IDLE', next_retry_at = NULL, "
-        "updated_at = %s WHERE id = %s",
+        "push_state = 'IDLE', next_retry_at = NULL, updated_at = %s WHERE id = %s",
         SUCCESS,
         method,
         now,

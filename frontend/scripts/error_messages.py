@@ -118,10 +118,7 @@ E = {
 "BATCH_NOT_VOIDABLE": ("Batch {batch_no} was already processed by MES (receipt or content mismatch); it cannot be voided, only fixed by an MES receipt correction or confirmed manually", "Lô {batch_no} đã được MES xử lý (biên nhận hoặc nội dung không khớp), không thể hủy, chỉ có thể để MES sửa biên nhận hoặc xác nhận thủ công"),
 "BATCH_BASIS_REQUIRED": ("A basis is required (e.g. written confirmation from MES, at most 500 characters)", "Bắt buộc nhập căn cứ (ví dụ xác nhận bằng văn bản của MES, tối đa 500 ký tự)"),
 "DALERT_NOT_FOUND": ("Delivery alert not found or already handled", "Không tìm thấy cảnh báo giao hoặc đã xử lý"),
-"DALERT_RESEND_BLOCKED": ("SN {sn} cannot be re-pushed based on this system: {detail}", "SN {sn} không thể đẩy lại theo hệ thống này: {detail}"),
-# ---------- 领取 ----------
-"ACQ_BATCH_NOT_FOUND": ("Acquire batch {batch_no} not found", "Không tìm thấy lô nhận {batch_no}"),
-"ACQ_BATCH_INCOMPLETE": ("Acquire batch {batch_no} is incomplete and cannot be downloaded", "Lô nhận {batch_no} chưa hoàn tất, không thể tải về"),
+# ---------- SN 导出 ----------
 "EXPORT_NOTHING": ("Bill {bill_no} of PI {pi} has no allocated SNs", "Chứng từ {bill_no} của PI {pi} không có SN đã phân bổ"),
 # ---------- 转单 / 转组织 ----------
 "TR_SCOPE_INVALID": ("Transfer scope must be a whole bill, bill + material, or a single SN / contiguous range", "Phạm vi chuyển chỉ có thể là cả chứng từ, chứng từ + vật tư, hoặc một SN / một dải liên tục"),

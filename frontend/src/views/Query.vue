@@ -6,15 +6,12 @@
       <el-tabs v-model="tab" class="tabs-fill">
         <el-tab-pane :label="t('query.tabSn')" name="sn" lazy>
           <SnTab :init="{ factory_code: initFactory, pi: initPi, bill_no: str(route.query.bill_no), batch_no: initTab === 'sn' ? initBatch : '' }"
-            @open-delivery="(no) => (deliveryNo = no)" @open-acquire="(no) => (acquireNo = no)" />
+            @open-delivery="(no) => (deliveryNo = no)" />
         </el-tab-pane>
-        <!-- 交付批次、领取批次、交付告警：系统管理员、普通操作员；审计员只有 SN 明细 -->
+        <!-- 交付批次、交付告警：系统管理员、普通操作员；审计员只有 SN 明细 -->
         <el-tab-pane v-if="store.canAct" :label="t('query.tabDelivery')" name="delivery" lazy>
           <DeliveryTab ref="deliveryTab" :init="{ factory_code: initFactory, pi: initPi, batch_no: initTab === 'delivery' ? initBatch : '', transfer_no: str(route.query.transfer_no) }"
             @open-delivery="(no) => (deliveryNo = no)" />
-        </el-tab-pane>
-        <el-tab-pane v-if="store.canAct" :label="t('query.tabAcquire')" name="acquire" lazy>
-          <AcquireTab :init="{ factory_code: initFactory, pi: initPi, batch_no: initTab === 'acquire' ? initBatch : '' }" @open-acquire="(no) => (acquireNo = no)" />
         </el-tab-pane>
         <el-tab-pane v-if="store.canAct" :label="t('query.tabAlerts')" name="alerts" lazy>
           <AlertsTab @open-delivery="(no) => (deliveryNo = no)" />
@@ -23,25 +20,22 @@
     </div>
 
     <DeliveryBatchDrawer v-model:batch-no="deliveryNo" @changed="deliveryTab?.reload()" />
-    <AcquireBatchDrawer v-model:batch-no="acquireNo" />
   </div>
 </template>
 
 <script setup lang="ts">
-/** SN 查询（F-18）：SN 明细、交付批次、领取批次、交付告警四个页签；批次详情两种抽屉各页签共用。 */
+/** SN 查询（F-18）：SN 明细、交付批次、交付告警三个页签；交付批次详情抽屉各页签共用。 */
 import { ref } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/auth";
 import PageHead from "@/components/PageHead.vue";
 import DeliveryBatchDrawer from "@/components/batch/DeliveryBatchDrawer.vue";
-import AcquireBatchDrawer from "@/components/batch/AcquireBatchDrawer.vue";
 import SnTab from "@/views/query/SnTab.vue";
 import DeliveryTab from "@/views/query/DeliveryTab.vue";
-import AcquireTab from "@/views/query/AcquireTab.vue";
 import AlertsTab from "@/views/query/AlertsTab.vue";
 
-const TABS = ["sn", "delivery", "acquire", "alerts"];
+const TABS = ["sn", "delivery", "alerts"];
 
 const { t } = useI18n();
 const route = useRoute();
@@ -57,7 +51,6 @@ const tab = ref(initTab);
 
 const deliveryTab = ref<InstanceType<typeof DeliveryTab> | null>(null);
 const deliveryNo = ref(initTab === "delivery" ? initBatch : "");
-const acquireNo = ref("");
 </script>
 
 <style scoped>

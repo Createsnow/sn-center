@@ -11,7 +11,7 @@
     <template v-if="det">
       <el-descriptions :column="2" size="small" border>
         <template v-if="det.kind === 'BILL'">
-          <el-descriptions-item :label="t('transfer.mode')">{{ det.doc.scope ? scopeLabel(det.doc.scope) : t(`transfer.billMode.${det.doc.mode}`) }}</el-descriptions-item>
+          <el-descriptions-item :label="t('transfer.mode')">{{ scopeLabel(det.doc.scope) }}</el-descriptions-item>
           <el-descriptions-item :label="t('transfer.scope')">{{ det.doc.scope_text }}</el-descriptions-item>
           <el-descriptions-item :label="t('transfer.fromBill')">{{ det.doc.from_bill }} · {{ det.doc.from_pi }}</el-descriptions-item>
           <el-descriptions-item :label="t('transfer.toBill')">
@@ -113,7 +113,7 @@
               {{ row.from_bill }}/{{ row.from_seq }} · {{ row.from_material || "—" }} · {{ t("common.attachNo") }} {{ row.attach_no || "—" }}
               · {{ t("common.length") }} {{ row.length || "—" }} · rev {{ row.from_rev }}
             </div>
-            <div v-if="row.from_delivery_batch || row.from_acquire_batch" class="muted sn-mono small">{{ row.from_delivery_batch || row.from_acquire_batch }}</div>
+            <div v-if="row.from_delivery_batch" class="muted sn-mono small">{{ row.from_delivery_batch }}</div>
           </template>
         </el-table-column>
         <el-table-column :label="t('transfer.after')" min-width="200">

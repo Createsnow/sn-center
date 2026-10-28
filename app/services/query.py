@@ -1,6 +1,6 @@
 """SN 查询与导出（F-18）。只读；按账户可看范围过滤；按条件分页读取，不把全部号装入内存。
 
-SN 明细：按客户、PI、单据编号、物料、米数、状态、交付方式、完整 SN、推送 / 拉取 / 领取批次精确筛选，另可按流水范围查
+SN 明细：按客户、PI、单据编号、物料、米数、状态、交付方式、完整 SN、推送 / 拉取批次精确筛选，另可按流水范围查
 （须填 PI；起止可填流水号或完整 SN，两端都含；只查本 PI 自己生成的流水；附小计）。
 列表总数超过 10 万时只统计到 10 万并注明；导出默认最多 100 万行，超过只导出前 100 万行并提示。
 """
@@ -16,14 +16,14 @@ from app.core.config import settings
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db, marks
-from app.services import acquire, files, rules, sn_sheet
+from app.services import factories, files, rules, sn_sheet
 
 COUNT_CAP = 100_000
 
 COLS = (
     "i.id, i.sn, i.rule_version_id, i.seq_dec, i.seq_pi_no, i.pi_no, i.bill_no, i.bill_seq, i.material_code, "
     "i.length_text, i.customer_code, i.factory_code, i.status, i.delivery_mode, i.delivery_batch_no, "
-    "i.acquire_batch_no, i.suspend, i.rev, i.created_at, i.allocated_at, i.delivered_at, i.mes_holder, i.push_type, "
+    "i.suspend, i.rev, i.created_at, i.allocated_at, i.delivered_at, i.mes_holder, i.push_type, "
     "i.attach_no"
 )
 
@@ -47,6 +47,29 @@ class Filter:
     @property
     def has_range(self) -> bool:
         return not (util.blank(self.seq_from) and util.blank(self.seq_to))
+
+
+@dataclass(frozen=True)
+class Scope:
+    """可读范围：factories = None 为全部；all_factories_of_pi = 只读查看同一 PI 在各组织的号。"""
+
+    factories: tuple[str, ...] | None
+    all_factories_of_pi: bool
+
+    def sql(self, col: str = "i.factory_code") -> tuple[str, list]:
+        return factories.scope_sql(self.factories, col)
+
+
+def read_scope(cu: CurrentUser, factory: str | None, pi: str | None, pi_all: bool) -> Scope:
+    """普通操作员切换为只读查看同一 PI 各组织的号：只限授权组织也有号的 PI（Q2）。"""
+    if pi_all and cu.is_operator:
+        if util.blank(pi):
+            raise biz(ErrorCode.QUERY_PI_REQUIRED)
+        fsql, fargs = factories.scope_sql(cu.factories)
+        if not db.exists("SELECT EXISTS(SELECT 1 FROM sn_item WHERE pi_no = %s" + fsql + ")", pi.strip(), *fargs):
+            raise biz(ErrorCode.QUERY_PI_NOT_OWNED, pi=pi.strip())
+        return Scope(None, True)
+    return Scope(cu.read_factories(factory), False)
 
 
 def _seq_of(text: str, specs: list[codec.Spec]) -> int | None:
@@ -91,7 +114,7 @@ def _where(cu: CurrentUser, f: Filter) -> tuple[str, list, tuple | None]:
     sql = " WHERE 1=1"
     args: list = []
     # 生产组织筛选须在授权范围内（不选 = 全部授权的组织）
-    sc = acquire.read_scope(cu, f.factory_code, f.pi_no, f.pi_all)
+    sc = read_scope(cu, f.factory_code, f.pi_no, f.pi_all)
     if sc.all_factories_of_pi:
         sql += " AND i.factory_code IS NOT NULL"
     else:
@@ -122,8 +145,8 @@ def _where(cu: CurrentUser, f: Filter) -> tuple[str, list, tuple | None]:
             args.append(st)
     if not util.blank(f.batch_no):
         b = f.batch_no.strip()
-        sql += " AND (i.delivery_batch_no = %s OR i.acquire_batch_no = %s)"
-        args += [b, b]
+        sql += " AND i.delivery_batch_no = %s"
+        args.append(b)
     rg = seq_range(f)
     if rg is not None:
         sql += " AND i.seq_pi_no = %s"
@@ -167,7 +190,6 @@ def view(r: dict, bill_pi: dict[str, str]) -> dict:
         "status": r["status"],
         "delivery_mode": r["delivery_mode"],
         "delivery_batch_no": r["delivery_batch_no"],
-        "acquire_batch_no": r["acquire_batch_no"],
         "suspend": r["suspend"],
         "rev": r["rev"],
         "mes_holder": r["mes_holder"],
@@ -218,7 +240,7 @@ def export_check(cu: CurrentUser, f: Filter) -> dict:
     return {"limit": limit, "truncated": total > limit, "rows": min(total, limit)}
 
 
-#: 列同 SN 导出、历史领取文件（见 sn_sheet）
+#: 列同 SN 导出（见 sn_sheet）
 EXPORT_HEADERS = sn_sheet.HEADERS
 
 

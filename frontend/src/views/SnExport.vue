@@ -106,7 +106,6 @@
           </el-table-column>
           <el-table-column :label="t('query.deliveryMode')" width="100"><template #default="{ row }">{{ row.group ? "" : deliveryModeLabel(row.delivery_mode) || "—" }}</template></el-table-column>
           <el-table-column :label="t('query.deliveryBatch')" min-width="150"><template #default="{ row }"><span class="sn-mono">{{ row.group ? "" : row.delivery_batch_no || "—" }}</span></template></el-table-column>
-          <el-table-column :label="t('query.acquireBatch')" min-width="130"><template #default="{ row }"><span class="sn-mono">{{ row.group ? "" : row.acquire_batch_no || "—" }}</span></template></el-table-column>
         </el-table>
         <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="sns.state.total" :page-size="sns.state.pageSize"
           :current-page="sns.state.page" :page-sizes="[100, 200, 500]" @current-change="sns.load" @size-change="sns.onSize" />
@@ -189,7 +188,6 @@ interface SnRow {
   status: string;
   delivery_mode: string;
   delivery_batch_no: string;
-  acquire_batch_no: string;
   suspend: string | null;
 }
 /** 表格里物料行的分组标题行（整行合并）。 */

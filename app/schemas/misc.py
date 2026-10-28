@@ -49,7 +49,6 @@ class ResumeIn(In):
 
 
 class DeliveryAlertIn(In):
-    """RESEND 以本系统为准重推 / CLOSE 关闭；note 为核查结论（必填）。"""
+    """note 为核查结论（必填）。"""
 
-    action: str | None = None
     note: str | None = None

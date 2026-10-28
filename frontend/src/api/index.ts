@@ -103,15 +103,13 @@ export const api = {
   resumePush: (factory_code: string, key: string) => post("/delivery/resume", { factory_code, key }),
   remainingPush: (factory_code: string, key: string) => get("/delivery/remaining", { factory_code, key }),
   deliveryAlerts: (params?: Q) => get("/delivery/alerts", params),
-  handleDeliveryAlert: (id: number, action: string, note: string) => post(`/delivery/alerts/${id}/handle`, { action, note }),
+  handleDeliveryAlert: (id: number, note: string) => post(`/delivery/alerts/${id}/handle`, { note }),
 
-  // ---------------- SN 导出（只读）；历史领取批次
+  // ---------------- SN 导出（只读）
   exportBills: (params?: Q) => get("/export/bills", params),
   exportLines: (params: Q) => get("/export/lines", params),
   exportSegments: (params?: Q) => get("/export/segments", params),
   exportItems: (params?: Q) => get("/export/items", params),
-  acquireBatches: (params?: Q) => get("/acquire/batches", params),
-  acquireBatchItems: (batchNo: string, params?: Q) => get(`/acquire/batches/${enc(batchNo)}/items`, params),
 
   // ---------------- 转单 / 转组织
   transferSources: (params: Q) => get("/transfers/sources", params),
@@ -150,7 +148,6 @@ function withQuery(path: string, params: Q) {
 const base = import.meta.env.VITE_API_BASE_URL || "/api";
 export const urls = {
   exportFile: (params: Q) => withQuery(`${base}/export/file`, params),
-  acquireFile: (batchNo: string) => `${base}/acquire/batches/${enc(batchNo)}/file`,
   deliveryExport: (batchNo: string) => `${base}/delivery/batches/${enc(batchNo)}/export`,
   outList: (id: number) => `${base}/transfers/org/${id}/out-list`,
   snExport: (params: Q) => withQuery(`${base}/sn/export`, params),

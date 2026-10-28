@@ -9,11 +9,11 @@ from app.core.security import CurrentUser
 from app.db.session import db
 from app.services import audit, changes, factories, locks, rules
 from app.services.delivery.batches import (
-    CONFIRMED,
     M_PULL,
     RECEIPT_NG,
     RECEIPT_OK,
     SRC_PULL,
+    SUCCESS,
     VOIDED,
     body_obj,
     build_delivery,
@@ -92,7 +92,7 @@ def _remaining(org: str, mes: bool, pi: str | None, bill: str | None, exclude: i
     if mes:
         unb = db.count(
             "SELECT COUNT(*) FROM sn_item WHERE factory_code = %s AND status = 'TO_PUSH' AND suspend IS NULL "
-            "AND delivery_batch_no IS NULL AND acquire_batch_no IS NULL" + cond,
+            "AND delivery_batch_no IS NULL" + cond,
             org,
             *cargs,
         )
@@ -119,7 +119,7 @@ def next_batch(cu: CurrentUser, pi_in: str | None, bill_in: str | None, batch_no
             raise MesError(404, "BATCH_NOT_FOUND", "批次号不存在，或不属于本组织", batch_no)
         if b["result"] == VOIDED:
             raise MesError(409, "BATCH_VOIDED", "该批已作废，丢弃这批内容", batch_no)
-        if b["result"] in CONFIRMED:
+        if b["result"] == SUCCESS:
             raise MesError(409, "BATCH_CONFIRMED", "该批已确认，不用再处理", batch_no)
         return _next_out(b, *_remaining(org, mes, None, None, b["id"]))
     if pi and not (
@@ -142,9 +142,7 @@ def next_batch(cu: CurrentUser, pi_in: str | None, bill_in: str | None, batch_no
                 cond, cargs = ("", []) if not bill else (" AND bill_no = %s", [bill])
                 target_pi = db.scalar(
                     "SELECT pi_no FROM sn_item WHERE factory_code = %s AND status = 'TO_PUSH' AND suspend IS NULL "
-                    "AND delivery_batch_no IS NULL AND acquire_batch_no IS NULL"
-                    + cond
-                    + " ORDER BY seq_pi_no, seq_dec LIMIT 1",
+                    "AND delivery_batch_no IS NULL" + cond + " ORDER BY seq_pi_no, seq_dec LIMIT 1",
                     org,
                     *cargs,
                 )

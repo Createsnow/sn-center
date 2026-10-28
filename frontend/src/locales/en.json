@@ -111,7 +111,6 @@
     "TO_PUSH": "To push",
     "PUSHED": "Pushed",
     "ALLOCATED": "Allocated",
-    "ACQUIRED": "Acquired",
     "APPLYING": "Org transfer pending"
   },
   "deliveryMode": {
@@ -125,10 +124,7 @@
     "TRANSFER_OUT": "Transfer out"
   },
   "receiptResult": {
-    "ACCEPTED": "Accepted",
-    "DUPLICATE": "Duplicate",
-    "CONFLICT": "Conflict",
-    "STALE": "Stale"
+    "ACCEPTED": "Accepted"
   },
   "receiptOutcome": {
     "PROCESSED": "Processed",
@@ -147,7 +143,6 @@
   "batchResult": {
     "UNCONFIRMED": "Unconfirmed",
     "SUCCESS": "Succeeded",
-    "SUCCESS_CONFLICT": "Succeeded with conflicts",
     "FAILED": "Failed",
     "VOIDED": "Voided"
   },
@@ -199,9 +194,7 @@
   "scope": {
     "BILL": "Whole bill",
     "MATERIAL": "By material",
-    "RANGE": "Single SN / range",
-    "PI": "Whole PI",
-    "SINGLE": "Single SN"
+    "RANGE": "Single SN / range"
   },
   "transferStatus": {
     "PENDING": "Pending",
@@ -259,7 +252,6 @@
     "SN_BATCH_MANUAL": "Batch confirmed manually",
     "SN_BATCH_VOID": "Batch voided",
     "SN_ALERT_HANDLE": "Delivery alert handled",
-    "SN_ACQUIRE": "Page acquire",
     "SN_READ": "MES read-only query",
     "TRANSFER_BILL": "Bill transfer",
     "TRANSFER_APPLY": "Org transfer request",
@@ -320,14 +312,14 @@
     "toOrg": "To org",
     "way": "Delivery",
     "wayPush": "MES · push",
-    "wayAcquire": "SN export",
+    "wayExport": "SN export",
     "skip": {
       "PI_FROZEN": "PI change frozen",
       "REVERSAL": "Unapproved",
       "SUSPENDED": "Delivery suspended"
     },
     "orgPush": "{org} {n} ({m} pushes)",
-    "orgAcquire": "{org} {n} (download on SN export)",
+    "orgExport": "{org} {n} (download on SN export)",
     "skippedN": "{n} bills will be skipped (frozen, unapproved or suspended)",
     "allocTitle": "Allocate",
     "allocBtn": "Allocate {n}",
@@ -340,7 +332,7 @@
     "tabBatches": "Allocation records {n}",
     "noPush": "Nothing pushed to MES yet",
     "pushProgress": "Push {i} / {n} · {qty} pushed",
-    "acquireNote": "Orgs without MES download their SNs on the SN export page:",
+    "exportNote": "Orgs without MES download their SNs on the SN export page:",
     "batchSource": "Created by",
     "batchResult": "Result",
     "confirmMethod": "Confirmed by",
@@ -422,8 +414,6 @@
     "alertType": "Alert type",
     "alertDetail": "Detail",
     "dalert": {
-      "CONFLICT": "Suspected duplicate delivery",
-      "STALE": "Stale version",
       "CHECK": "Self-check issue"
     },
     "recentJobs": "Recent generation jobs",
@@ -499,7 +489,7 @@
     "disableMes": "Turn off MES integration",
     "enableBlocked": "Fill in the endpoint and credential and pass the connection test first (under MES settings)",
     "enableEffect": "After turning on, {n} allocated SNs of this org become to-push (not batched) and are not pushed automatically; resume pushing on the allocation page or let MES pull them.",
-    "disableEffect": "After turning off, {n} to-push (not batched) SNs of this org become allocated (still downloadable on SN export); pushed and acquired SNs stay as they are, and the endpoint and credential are kept (transfer-outs still get pushed).",
+    "disableEffect": "After turning off, {n} to-push (not batched) SNs of this org become allocated (still downloadable on SN export); pushed SNs stay as they are, and the endpoint and credential are kept (transfer-outs still get pushed).",
     "disableBlocked": "Unfinished pushes remain; cannot turn off",
     "blockTasks": "{n} running push tasks",
     "blockBatches": "{n} unconfirmed or failed batches, {qty} SNs",
@@ -773,14 +763,12 @@
   },
   "query": {
     "title": "SN query",
-    "desc": "Read-only lookup of SN details, delivery batches (push, pull, transfer-out), acquire batches and delivery alerts, filtered by the production orgs your account can see; SNs cannot be moved from this page.",
+    "desc": "Read-only lookup of SN details, delivery batches (push, pull, transfer-out) and delivery alerts, filtered by the production orgs your account can see; SNs cannot be moved from this page.",
     "tabSn": "SN details",
     "tabDelivery": "Delivery batches",
-    "tabAcquire": "Past acquire batches",
     "tabAlerts": "Delivery alerts",
     "suspended": "Delivery suspended",
     "deliveryMode": "Delivery mode",
-    "batchFilter": "Push / pull / acquire batch No.",
     "piAll": "All orgs of this PI",
     "piAllTip": "Read-only view of this PI's SNs across production orgs",
     "seqRange": "Serial range",
@@ -795,11 +783,10 @@
     "piChanged": "PI changed",
     "transferredIn": "Transferred in",
     "deliveryBatch": "Delivery batch",
-    "acquireBatch": "Acquire batch",
     "pushType": "Push type",
     "generatedAt": "Generated at",
     "allocatedAt": "Allocated at",
-    "deliveredAt": "Delivered / acquired at",
+    "deliveredAt": "Delivered at",
     "mesHolder": "MES holder org",
     "batchSource": "Created by",
     "batchType": "Batch type",
@@ -807,14 +794,13 @@
     "confirmMethod": "Confirmed by",
     "confirmedAt": "Confirmed at",
     "transferNo": "Transfer No.",
-    "receiptCounts": "Accepted / duplicate / conflict / stale",
+    "acceptedQty": "Accepted",
     "pushState": "Push state",
     "retry": "Retries",
     "nextRetry": "Next retry",
     "pushCount": "Pushes / re-pushes",
     "failReason": "Failure reason",
     "batchDetail": "Delivery batch {no}",
-    "acquireDetail": "Acquire batch {no}",
     "digest": "Items digest",
     "bills": "Bills",
     "materials": "Materials",
@@ -824,10 +810,9 @@
     "receiptMethod": "Method",
     "receiptOutcome": "MES outcome",
     "receiptVerdict": "Verdict",
-    "items": "Items and per-SN receipts",
+    "items": "Items and receipt",
     "lineNo": "Line",
-    "receiptResult": "Per-SN receipt",
-    "existing": "Existing in MES",
+    "receiptResult": "Receipt",
     "currentState": "Current",
     "manual": "Manual handling",
     "manualBy": "{by} at {at}",
@@ -835,34 +820,18 @@
     "rebuiltTo": "Rebuilt as",
     "confirmBatch": "Confirm manually",
     "voidBatch": "Void",
-    "requestNo": "Request No.",
-    "mesOrg": "MES org",
-    "acqStatus": {
-      "DONE": "Done",
-      "INCOMPLETE": "Incomplete"
-    },
-    "finishedAt": "Finished at",
     "alertTypeCol": "Alert type",
     "alertType": {
-      "CONFLICT": "Suspected duplicate delivery",
-      "STALE": "Stale version",
       "CHECK": "Self-check issue"
     },
     "alertStatus": {
       "OPEN": "Open",
       "CLOSED": "Closed"
     },
-    "alertRev": "Our rev / MES rev",
     "alertDetail": "Detail",
-    "closeAction": {
-      "RESEND": "Re-pushed per this system",
-      "CLOSE": "Closed"
-    },
     "handledBy": "Handled",
-    "resend": "Re-push per this system",
     "closeAlert": "Close alert",
     "handleTitle": "Handle alert: {sn}",
-    "resendTip": "The SN revision becomes max(ours, MES) + 1 and is pushed to the MES holder org as a reassignment.",
     "notePlaceholder": "Findings required, at most 500 characters"
   },
   "rules": {
@@ -994,8 +963,7 @@
       "APPLYING": "Transfer pending",
       "PENDING_ALLOC": "To allocate (not for org transfer)",
       "BATCH_PENDING": "In unconfirmed or failed batch",
-      "TRANSFER_OUT_PENDING": "Transfer-out unfinished; resume it on the original org transfer first",
-      "ACQUIRE_INCOMPLETE": "Acquire batch incomplete"
+      "TRANSFER_OUT_PENDING": "Transfer-out unfinished; resume it on the original org transfer first"
     },
     "genBefore": "Generated (before)",
     "genAfter": "Generated (after)",

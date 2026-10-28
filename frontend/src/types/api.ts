@@ -193,7 +193,6 @@ export interface SnItem {
   status: string;
   delivery_mode: string | null;
   delivery_batch_no: string | null;
-  acquire_batch_no: string | null;
   suspend: string | null;
   rev: number;
   mes_holder: string | null;
@@ -244,16 +243,13 @@ export interface DeliveryBatch {
   pi_no: string;
   qty: number;
   items_digest: string;
-  result: "UNCONFIRMED" | "SUCCESS" | "SUCCESS_CONFLICT" | "FAILED" | "VOIDED";
+  result: "UNCONFIRMED" | "SUCCESS" | "FAILED" | "VOIDED";
   confirm_method: string | null;
   confirmed_at: string | null;
   fail_code: string | null;
   fail_reason: string | null;
   voidable: boolean;
   accepted_qty: number;
-  duplicate_qty: number;
-  conflict_qty: number;
-  stale_qty: number;
   push_state: string;
   retry_count: number;
   next_retry_at: string | null;

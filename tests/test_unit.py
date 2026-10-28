@@ -284,26 +284,29 @@ def test_migration_flyway_checksum():
     """测试阶段只保留一个 V1__init.sql；校验和按 Flyway 算法固定，改了建表脚本须同步更新这里（并重建测试库）。"""
     ours = {m.script: m for m in migrations()}
     assert list(ours) == ["V1__init.sql"]
-    assert ours["V1__init.sql"].checksum() == 423192002
+    assert ours["V1__init.sql"].checksum() == 408346278
     statements = ours["V1__init.sql"].statements()
-    assert len(statements) == 36
+    assert len(statements) == 35
     text = "\n".join(statements)
-    # 脚本独立完整：35 张表各一条 CREATE TABLE 加 sn_sync_state 初始行，不用 ALTER 等语句事后补字段、补索引
+    # 脚本独立完整：34 张表各一条 CREATE TABLE 加 sn_sync_state 初始行，不用 ALTER 等语句事后补字段、补索引
     kinds = [" ".join(s.split()[:2]).upper() for s in statements]
-    assert kinds.count("CREATE TABLE") == 35 and kinds.count("INSERT INTO") == 1, kinds
+    assert kinds.count("CREATE TABLE") == 34 and kinds.count("INSERT INTO") == 1, kinds
     for table in (
         "sn_line_count",
         "sn_line_length",
         "sn_line_unit",
         "sn_delivery_batch",
         "sn_push_task",
-        "sn_acquire_batch",
         "sn_transfer_item",
     ):
         assert f"CREATE TABLE {table}" in text, table
     assert "ix_rule_factory (factory_code)" in text, "规则所属组织（V31 权限调整）"
-    for gone in ("sn_print", "sn_pi_import", "print_no", "sn_allocation", "manual_fields"):
+    for gone in ("sn_print", "sn_pi_import", "print_no", "sn_allocation"):
         assert gone not in text, f"{gone} 已随 PRD V30 移除（不再打印、不再按 PI 导入）"
+    # 开发阶段清库重建，没有旧数据：不留页面领取、旧协议逐枚回执、早期转组织单的字段
+    for gone in ("sn_acquire_batch", "acquire_batch", "ACQUIRED", "SUCCESS_CONFLICT", "conflict_qty", "existing_rev"):
+        assert gone not in text, gone
+    assert "manual_fields" not in text
 
 
 # ---------------------------------------------------------------------- 定时任务

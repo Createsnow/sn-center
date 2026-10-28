@@ -125,14 +125,12 @@ function modeLabel(row: any) {
 function rowClass({ row }: { row: any }) {
   return row.status === "PENDING" ? "is-pending" : "";
 }
-/** 来源范围：整张单据 / 物料 / 号段。转单没有物料、号段列，取范围说明「PI / 单据 / 物料 / 起止号」去掉 PI、单据；
- *  早期转单没有范围，只显示范围说明。 */
+/** 来源范围：整张单据 / 物料 / 号段。转单没有物料、号段列，取范围说明「PI / 单据 / 物料 / 起止号」去掉 PI、单据。 */
 function sourceText(d: any) {
-  if (!d.scope) return d.scope_text;
   const rest = d.kind === "BILL" ? (d.scope_text || "").split(" / ").slice(2) : [d.scope !== "BILL" && d.from_material, d.from_sn && snRange(d)];
   return [scopeLabel(d.scope), ...rest].filter(Boolean).join(" · ");
 }
-/** 目标：单据 / 序号 · 物料 · 客户（早期单子没有目标单据）。 */
+/** 目标：单据 / 序号 · 物料 · 客户。 */
 function targetText(d: { to_bill?: string; to_seq?: number; to_material?: string; to_customer?: string }) {
   return [
     d.to_bill && (d.to_seq ? `${d.to_bill} / ${d.to_seq}` : d.to_bill),
@@ -163,8 +161,8 @@ async function withdraw(row: any) {
 }
 
 /** 默认转单，对话框里可切换为转组织。 */
-function openNew(kind?: Kind, prefill: { factory_code?: string; pi?: string; material?: string } = {}) {
-  dlg.value?.open(kind ?? "BILL", prefill);
+function openNew() {
+  dlg.value?.open("BILL");
 }
 
 function onDone(kind: Kind, doc: any) {
@@ -173,16 +171,7 @@ function onDone(kind: Kind, doc: any) {
   else if (doc.status === "APPROVED") detail.value?.open("ORG", doc.id);
 }
 
-onMounted(() => {
-  list.load(1);
-  if (route.query.new === "1" && store.canAct) {
-    openNew(route.query.kind === "BILL" ? "BILL" : "ORG", {
-      factory_code: route.query.factory_code ? String(route.query.factory_code) : undefined,
-      pi: route.query.pi ? String(route.query.pi) : undefined,
-      material: route.query.material !== undefined ? String(route.query.material) : undefined,
-    });
-  }
-});
+onMounted(() => list.load(1));
 </script>
 
 <style scoped>

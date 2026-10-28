@@ -11,27 +11,22 @@ export const STATUS_TYPE: Record<string, TagType> = {
   TO_PUSH: "warning",
   PUSHED: "success",
   ALLOCATED: "primary",
-  ACQUIRED: "success",
   APPLYING: "danger",
 };
-export const STATUS_CODES = ["PENDING_ALLOC", "TO_PUSH", "PUSHED", "ALLOCATED", "ACQUIRED", "APPLYING"];
-/** 交付批次结果：UNCONFIRMED 未确认 / SUCCESS / SUCCESS_CONFLICT 成功（有冲突）/ FAILED / VOIDED 已作废。 */
+export const STATUS_CODES = ["PENDING_ALLOC", "TO_PUSH", "PUSHED", "ALLOCATED", "APPLYING"];
+/** 交付批次结果：UNCONFIRMED 未确认 / SUCCESS 成功 / FAILED 失败 / VOIDED 已作废。 */
 export const BATCH_RESULT_TYPE: Record<string, TagType> = {
   UNCONFIRMED: "warning",
   SUCCESS: "success",
-  SUCCESS_CONFLICT: "warning",
   FAILED: "danger",
   VOIDED: "info",
 };
-export const BATCH_RESULTS = ["UNCONFIRMED", "SUCCESS", "SUCCESS_CONFLICT", "FAILED", "VOIDED"];
+export const BATCH_RESULTS = ["UNCONFIRMED", "SUCCESS", "FAILED", "VOIDED"];
 /** 批次类型筛选：DELIVERY = 全部交付类（后端按非转出筛选） */
 export const BATCH_TYPES = ["DELIVERY", "NEW", "SAME_ORG_TRANSFER", "TRANSFER_IN", "REMAP", "TRANSFER_OUT"];
-/** 逐枚回执结果 */
+/** 明细接收情况：ACCEPTED 回执已处理（整批记为接收） */
 export const RECEIPT_RESULT_TYPE: Record<string, TagType> = {
   ACCEPTED: "success",
-  DUPLICATE: "info",
-  CONFLICT: "danger",
-  STALE: "warning",
 };
 /** 规则进制 → 系统默认字符表（与后端 encoding.DEFAULT_CHARSETS 一致；32 进制去掉 I L O U）。 */
 export const CHARSETS: Record<number, string> = {

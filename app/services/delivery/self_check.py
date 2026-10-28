@@ -16,14 +16,14 @@ log = structlog.get_logger()
 
 
 def run() -> dict:
-    """成功批次回执枚数与批次枚数是否一致；未经转移，同一 SN 是否在两个成功交付批次（推送、拉取）或交付批次与领取中；
-    当天的冲突、过期回执；未确认超过告警时长的批次。人工确认的批次没有逐枚回执，单列。问题列入首页告警并留痕。"""
+    """成功批次记为接收的枚数与批次枚数是否一致；未经转移，同一 SN 是否在两个成功交付批次（推送、拉取）中；
+    未确认超过告警时长的批次。人工确认的批次没有回执，单列。问题列入首页告警并留痕。"""
     now = util.now()
     since = now - timedelta(days=2)
     found: list[tuple[str, str, str | None, str | None]] = []
     for b in db.all(
         "SELECT b.factory_code, b.batch_no, b.qty, (SELECT COUNT(*) FROM sn_delivery_item d WHERE d.batch_id = b.id "
-        "AND d.receipt_result IS NOT NULL) n FROM sn_delivery_batch b WHERE b.result IN ('SUCCESS','SUCCESS_CONFLICT') "
+        "AND d.receipt_result IS NOT NULL) n FROM sn_delivery_batch b WHERE b.result = 'SUCCESS' "
         "AND b.confirm_method <> 'MANUAL' AND b.confirmed_at >= %s",
         since,
     ):
@@ -33,24 +33,13 @@ def run() -> dict:
         "SELECT d.sn, d.rev, COUNT(DISTINCT d.batch_id) n, GROUP_CONCAT(DISTINCT b.batch_no) nos, "
         "MIN(b.factory_code) f "
         "FROM sn_delivery_item d JOIN sn_delivery_batch b ON b.id = d.batch_id WHERE b.batch_type <> 'TRANSFER_OUT' "
-        "AND b.result IN ('SUCCESS','SUCCESS_CONFLICT') AND d.sn IN (SELECT d2.sn FROM sn_delivery_item d2 "
+        "AND b.result = 'SUCCESS' AND d.sn IN (SELECT d2.sn FROM sn_delivery_item d2 "
         "JOIN sn_delivery_batch b2 ON b2.id = d2.batch_id WHERE b2.confirmed_at >= %s) GROUP BY d.sn, d.rev HAVING n "
         "> 1 "
         "LIMIT 500",
         since,
     ):
         found.append((r["f"], r["nos"][:40], r["sn"], f"同一 SN（rev {r['rev']}）出现在多个成功交付批次：{r['nos']}"))
-    for r in db.all(
-        "SELECT i.sn, i.factory_code, i.acquire_batch_no, b.batch_no FROM sn_item i JOIN sn_delivery_item d ON "
-        "d.item_id = i.id "
-        "AND d.rev = i.rev JOIN sn_delivery_batch b ON b.id = d.batch_id WHERE i.status = 'ACQUIRED' "
-        "AND b.batch_type <> 'TRANSFER_OUT' AND b.result IN ('SUCCESS','SUCCESS_CONFLICT') AND i.delivered_at >= %s "
-        "LIMIT 500",
-        since,
-    ):
-        found.append(
-            (r["factory_code"], r["batch_no"], r["sn"], f"同一 SN 既在成功交付批次又在领取批次 {r['acquire_batch_no']}")
-        )
     cutoff = now - timedelta(minutes=settings.batch_unconfirmed_alert_minutes)
     unconfirmed = db.all(
         "SELECT factory_code, batch_no, created_at FROM sn_delivery_batch WHERE result = 'UNCONFIRMED' AND "
@@ -61,10 +50,6 @@ def run() -> dict:
         found.append(
             (b["factory_code"], b["batch_no"], None, f"批次建立于 {util.fmt(b['created_at'])}，超过告警时长仍未确认")
         )
-    day = util.local_day_start(util.DEFAULT_TZ_OFFSET_MIN)
-    conflicts = db.count(
-        "SELECT COUNT(*) FROM sn_delivery_alert WHERE alert_type IN ('CONFLICT','STALE') AND created_at >= %s", day
-    )
     manual = db.count(
         "SELECT COUNT(*) FROM sn_delivery_batch WHERE confirm_method = 'MANUAL' AND confirmed_at >= %s", since
     )
@@ -90,7 +75,6 @@ def run() -> dict:
     result = {
         "problems": len(found),
         "new_alerts": created,
-        "conflict_stale_today": conflicts,
         "manual_confirmed": manual,
     }
     audit.record_isolated(

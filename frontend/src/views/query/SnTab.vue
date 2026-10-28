@@ -74,11 +74,6 @@
           <el-button v-if="row.delivery_batch_no" link type="primary" @click="emit('openDelivery', row.delivery_batch_no)">{{ row.delivery_batch_no }}</el-button>
         </template>
       </el-table-column>
-      <el-table-column :label="t('query.acquireBatch')" min-width="180">
-        <template #default="{ row }">
-          <el-button v-if="row.acquire_batch_no" link type="primary" @click="emit('openAcquire', row.acquire_batch_no)">{{ row.acquire_batch_no }}</el-button>
-        </template>
-      </el-table-column>
       <el-table-column prop="rev" label="rev" width="56" align="right" />
       <el-table-column :label="t('query.pushType')" width="90">
         <template #default="{ row }">
@@ -121,7 +116,7 @@ import { trimmed } from "./filters";
 const MODES = ["PUSH", "PULL", "PAGE"];
 
 const props = defineProps<{ init: { factory_code: string; pi: string; bill_no: string; batch_no: string } }>();
-const emit = defineEmits<{ openDelivery: [no: string]; openAcquire: [no: string] }>();
+const emit = defineEmits<{ openDelivery: [no: string] }>();
 
 const { t } = useI18n();
 const store = useAuthStore();

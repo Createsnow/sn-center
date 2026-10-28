@@ -3,16 +3,15 @@ erDiagram
   sn_pi_counter ||--o{ sn_item : "流水归属 PI"
   sn_rule_version ||--o{ sn_item : "编码版本"
   sn_gen_job ||--o{ sn_item : "生成批次"
-  sn_delivery_batch ||--|{ sn_delivery_item : "批次明细与逐枚回执"
+  sn_delivery_batch ||--|{ sn_delivery_item : "批次明细与接收情况"
   sn_delivery_batch ||--o{ sn_delivery_receipt : "回执存档"
   sn_item ||--o{ sn_delivery_item : "历次交付"
   sn_delivery_batch o|--o{ sn_item : "当前交付批次"
-  sn_acquire_batch o|--o{ sn_item : "领取批次"
   sn_push_task ||--o{ sn_delivery_batch : "生产组织 + PI 顺序推送"
   sn_transfer ||--|{ sn_transfer_item : "转组织明细 ORG"
   sn_bill_transfer ||--|{ sn_transfer_item : "转单明细 BILL"
   sn_item ||--o{ sn_transfer_item : "历次转移"
-  sn_item ||--o{ sn_delivery_alert : "冲突 / 过期告警"
+  sn_delivery_batch o|--o{ sn_delivery_alert : "自检告警"
   sn_item {
     bigint id PK
     varchar sn UK "全局唯一"
@@ -26,7 +25,6 @@ erDiagram
     varchar length_text
     varchar status
     varchar delivery_batch_no FK
-    varchar acquire_batch_no FK
     varchar suspend
     varchar mes_holder
   }
@@ -58,7 +56,7 @@ erDiagram
   }
   sn_delivery_alert {
     bigint id PK
-    varchar alert_type "CONFLICT / STALE / CHECK"
+    varchar alert_type "CHECK"
     varchar status
   }
   sn_push_task {
@@ -66,12 +64,6 @@ erDiagram
     varchar task_key PK "PI 或 #XO"
     varchar state
     datetime lease_until
-  }
-  sn_acquire_batch {
-    varchar batch_no PK
-    varchar factory_code UK
-    varchar request_no UK
-    varchar status "INCOMPLETE / DONE"
   }
   sn_bill_transfer {
     bigint id PK

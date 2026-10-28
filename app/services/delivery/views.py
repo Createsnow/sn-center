@@ -74,7 +74,7 @@ def batch_detail(cu: CurrentUser, batch_no: str | None) -> dict:
 
 
 def segments_of(b: dict) -> list[dict]:
-    """号段清单：连续的号合并为一段（被拉取、领取打散后可有多段）。"""
+    """号段清单：连续的号合并为一段（被拉取、转移打散后可有多段）。"""
     # 段内首尾号用窗口函数一并取出（一个批次内同一流水归属 PI 的十进制流水不重复）
     rows = db.all(
         "SELECT seq_pi_no, MIN(seq_dec) s, MAX(seq_dec) e, COUNT(*) n, MAX(first_sn) first_sn, MAX(last_sn) last_sn "
@@ -148,8 +148,6 @@ def export_rows(b: dict) -> Iterator[list]:
                 r["to_factory"] or "",
                 names.get(r["to_factory"], "") if r["to_factory"] else "",
                 r["receipt_result"],
-                r["existing_rev"],
-                r["existing_batch_no"],
             ]
 
 
@@ -172,6 +170,4 @@ EXPORT_HEADERS = [
     "转入生产组织",
     "转入生产组织名称",
     "回执结果",
-    "MES已存rev",
-    "MES已存批次",
 ]

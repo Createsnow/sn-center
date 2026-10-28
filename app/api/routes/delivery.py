@@ -33,12 +33,12 @@ def batch_get(batch_no: str, cu: OperatorDep) -> dict:
     return delivery.batch_detail(cu, batch_no)
 
 
-@router.get("/batches/{batch_no}/items", summary="批次明细与逐枚回执")
+@router.get("/batches/{batch_no}/items", summary="批次明细与接收情况")
 def batch_items(batch_no: str, cu: OperatorDep, page: OptInt = None, page_size: OptInt = None) -> dict:
     return delivery.batch_items_page(cu, batch_no, page_of(page, page_size))
 
 
-@router.get("/batches/{batch_no}/export", summary="导出批次明细与逐枚回执 xlsx")
+@router.get("/batches/{batch_no}/export", summary="导出批次明细与接收情况 xlsx")
 def batch_export(batch_no: str, cu: OperatorDep):
     b = delivery.must_batch(batch_no)
     cu.check_read(b["factory_code"])
@@ -68,11 +68,11 @@ def push_remaining(cu: OperatorDep, factory_code: str, key: str) -> dict:
     return {**delivery.remaining_pushes(factory_code, key), "task": delivery.task_state(factory_code, key)}
 
 
-@router.get("/alerts", summary="交付告警：疑似重复交付（冲突）、版本过期、自检问题")
+@router.get("/alerts", summary="交付告警：每日自检发现的问题")
 def alert_list(cu: OperatorDep, status: str | None = None, page: OptInt = None, page_size: OptInt = None) -> dict:
     return delivery.list_alerts(cu, status, page_of(page, page_size))
 
 
-@router.post("/alerts/{id}/handle", summary="处理交付告警：RESEND 以本系统为准重推 / CLOSE 关闭；note 必填")
+@router.post("/alerts/{id}/handle", summary="处理交付告警：填写核查结论（note 必填）后关闭")
 def alert_handle(id: int, body: DeliveryAlertIn, cu: OperatorDep) -> dict:
-    return delivery.handle_alert(cu, id, body.action, body.note)
+    return delivery.handle_alert(cu, id, body.note)

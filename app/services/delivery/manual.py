@@ -170,61 +170,19 @@ def void(cu: CurrentUser, batch_no: str | None, reason: str | None, basis: str |
 # ================================================================== 交付告警处理（5.2.5 第 8 条）
 
 
-def handle_alert(cu: CurrentUser, alert_id: int, action: str | None, note: str | None) -> dict:
-    """以本系统为准重推（rev 调为 max(本系统, MES 已存) + 1，以改挂推给 MES 持有组织）/ 关闭告警。"""
-    act = util.trim(action)
+def handle_alert(cu: CurrentUser, alert_id: int, note: str | None) -> dict:
+    """处理交付告警：填写核查结论后关闭。"""
     why = util.trim(note)
     if not why or len(why) > 500:
         raise biz(ErrorCode.REASON_REQUIRED)
-    org = None
-    pi = None
     with db.tx():
         a = db.one("SELECT * FROM sn_delivery_alert WHERE id = %s FOR UPDATE", alert_id)
         if a is None or a["status"] != "OPEN":
             raise biz(ErrorCode.DALERT_NOT_FOUND)
         # 不属于任何生产组织的告警（factory_code 为空）只有系统管理员能处理
         cu.check_write(a["factory_code"] or "-")
-        if act == "RESEND":
-            if a["item_id"] is None:
-                raise biz(ErrorCode.DALERT_RESEND_BLOCKED, sn=a["sn"] or "", detail="不是逐枚告警")
-            it = db.one("SELECT * FROM sn_item WHERE id = %s FOR UPDATE", a["item_id"])
-            if it is None or it["mes_holder"] is None or it["mes_holder"] != it["factory_code"]:
-                raise biz(
-                    ErrorCode.DALERT_RESEND_BLOCKED,
-                    sn=a["sn"] or "",
-                    detail="号已转走或 MES 持有组织不是号当前所属组织",
-                )
-            if it["status"] == util.TO_PUSH and it["delivery_batch_no"] is not None:
-                raise biz(ErrorCode.DALERT_RESEND_BLOCKED, sn=a["sn"] or "", detail="号在未确认或失败的批次中")
-            if it["status"] not in (util.PUSHED, util.TO_PUSH):
-                raise biz(ErrorCode.DALERT_RESEND_BLOCKED, sn=a["sn"] or "", detail=f"号当前状态为 {it['status']}")
-            if frozen_by_transfer_out([it["id"]]):
-                raise biz(ErrorCode.DALERT_RESEND_BLOCKED, sn=a["sn"] or "", detail="号在未确认或失败的转出批次中")
-            rev = max(int(it["rev"]), int(a["existing_rev"] or 0)) + 1
-            db.exec(
-                "UPDATE sn_item SET rev = %s, status = 'TO_PUSH', push_type = 'REASSIGN', delivery_batch_no = NULL, "
-                "transfer_kind = NULL, transfer_doc_no = NULL, transfer_from_org = NULL, updated_at = %s WHERE id = %s",
-                rev,
-                util.now(),
-                it["id"],
-            )
-            org, pi = it["factory_code"], it["pi_no"]
-            detail = f"rev {it['rev']} -> {rev}"
-            # MES 已持有：当场建改挂（REMAP）批次；先重算暂停标记，暂停交付的号留在号池
-            changes.refresh_items([it["bill_no"]])
-            if factories.is_mes(org):
-                built = build_delivery_now(cu, org, pi, [it["id"]])
-                if built:
-                    detail += f" batch={built[0]['batch_no']}"
-        elif act == "CLOSE":
-            detail = "closed"
-        else:
-            raise biz(ErrorCode.ALERT_ACTION_INVALID)
         db.exec(
-            "UPDATE sn_delivery_alert SET status = 'CLOSED', close_action = %s, closed_by = %s, closed_at = %s, note "
-            "= %s "
-            "WHERE id = %s",
-            act,
+            "UPDATE sn_delivery_alert SET status = 'CLOSED', closed_by = %s, closed_at = %s, note = %s WHERE id = %s",
             cu.emp_no,
             util.now(),
             why,
@@ -234,15 +192,12 @@ def handle_alert(cu: CurrentUser, alert_id: int, action: str | None, note: str |
             cu,
             audit.entry(audit.SN_ALERT_HANDLE)
             .factory(a["factory_code"])
-            .pi(pi)
             .batch(a["batch_no"])
             .range(a["sn"], a["sn"])
             .why(why)
-            .info(f"alert={alert_id} type={a['alert_type']} action={act} {detail}"),
+            .info(f"alert={alert_id} type={a['alert_type']}"),
         )
-    if org is not None and factories.is_mes(org):
-        start_task(cu, org, pi)
-    return {"id": alert_id, "action": act}
+    return {"id": alert_id}
 
 
 def frozen_by_transfer_out(item_ids: list[int]) -> set[int]:

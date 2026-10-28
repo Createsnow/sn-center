@@ -111,7 +111,6 @@
     "TO_PUSH": "待推送",
     "PUSHED": "已推送",
     "ALLOCATED": "已分配",
-    "ACQUIRED": "已领取",
     "APPLYING": "转组织申请中"
   },
   "deliveryMode": {
@@ -125,10 +124,7 @@
     "TRANSFER_OUT": "转出"
   },
   "receiptResult": {
-    "ACCEPTED": "已接收",
-    "DUPLICATE": "重复（已有）",
-    "CONFLICT": "冲突",
-    "STALE": "版本过期"
+    "ACCEPTED": "已接收"
   },
   "receiptOutcome": {
     "PROCESSED": "已处理",
@@ -147,7 +143,6 @@
   "batchResult": {
     "UNCONFIRMED": "未确认",
     "SUCCESS": "成功",
-    "SUCCESS_CONFLICT": "成功（有冲突）",
     "FAILED": "失败",
     "VOIDED": "已作废"
   },
@@ -199,9 +194,7 @@
   "scope": {
     "BILL": "整张单据",
     "MATERIAL": "按物料编码",
-    "RANGE": "单枚或号段",
-    "PI": "整张 PI",
-    "SINGLE": "单枚 SN"
+    "RANGE": "单枚或号段"
   },
   "transferStatus": {
     "PENDING": "待处理",
@@ -259,7 +252,6 @@
     "SN_BATCH_MANUAL": "批次人工确认",
     "SN_BATCH_VOID": "批次作废",
     "SN_ALERT_HANDLE": "处理交付告警",
-    "SN_ACQUIRE": "页面领取",
     "SN_READ": "MES 只读查询",
     "TRANSFER_BILL": "转单",
     "TRANSFER_APPLY": "转组织申请",
@@ -320,14 +312,14 @@
     "toOrg": "分到",
     "way": "交付方式",
     "wayPush": "对接 MES · 推送",
-    "wayAcquire": "SN 导出",
+    "wayExport": "SN 导出",
     "skip": {
       "PI_FROZEN": "PI 变更冻结",
       "REVERSAL": "反审核中",
       "SUSPENDED": "暂停交付"
     },
     "orgPush": "{org} {n} 枚（推送 {m} 次）",
-    "orgAcquire": "{org} {n} 枚（SN 导出页下载）",
+    "orgExport": "{org} {n} 枚（SN 导出页下载）",
     "skippedN": "{n} 张单据将跳过（冻结、反审核或暂停交付）",
     "allocTitle": "分配",
     "allocBtn": "分配 {n} 枚",
@@ -340,7 +332,7 @@
     "tabBatches": "分配记录 {n}",
     "noPush": "还没有向 MES 推送",
     "pushProgress": "第 {i} / {n} 次 · 已推送 {qty} 枚",
-    "acquireNote": "未对接 MES 的组织分配后在 SN 导出页下载号：",
+    "exportNote": "未对接 MES 的组织分配后在 SN 导出页下载号：",
     "batchSource": "建立方式",
     "batchResult": "结果",
     "confirmMethod": "确认方式",
@@ -422,8 +414,6 @@
     "alertType": "告警类型",
     "alertDetail": "说明",
     "dalert": {
-      "CONFLICT": "疑似重复交付",
-      "STALE": "版本过期",
       "CHECK": "自检问题"
     },
     "recentJobs": "最近生成任务",
@@ -499,7 +489,7 @@
     "disableMes": "关闭「对接 MES」",
     "enableBlocked": "接口地址、凭证已填且连接测试通过后才能开启；请先在「MES 配置」中测试并保存",
     "enableEffect": "开启后，该组织 {n} 枚已分配的号改为待推送（未入批），不会自动推送；在分配页「继续推送」或等 MES 拉取。",
-    "disableEffect": "关闭后，该组织 {n} 枚待推送（未入批）的号改为已分配（照常可在 SN 导出页下载）；已推送、已领取的号不变，接口地址和凭证保留（转出照常推送）。",
+    "disableEffect": "关闭后，该组织 {n} 枚待推送（未入批）的号改为已分配（照常可在 SN 导出页下载）；已推送的号不变，接口地址和凭证保留（转出照常推送）。",
     "disableBlocked": "还有未完成的推送，不能关闭",
     "blockTasks": "进行中的推送任务 {n} 个",
     "blockBatches": "未确认或失败的批次 {n} 个，共 {qty} 枚",
@@ -773,14 +763,12 @@
   },
   "query": {
     "title": "SN 查询",
-    "desc": "只读查询 SN 明细、交付批次（推送、拉取、转出）、领取批次与交付告警，按账户可看的生产组织范围过滤；本页不能转走号。",
+    "desc": "只读查询 SN 明细、交付批次（推送、拉取、转出）与交付告警，按账户可看的生产组织范围过滤；本页不能转走号。",
     "tabSn": "SN 明细",
     "tabDelivery": "交付批次",
-    "tabAcquire": "历史领取批次",
     "tabAlerts": "交付告警",
     "suspended": "暂停交付",
     "deliveryMode": "交付方式",
-    "batchFilter": "推送 / 拉取 / 领取批次号",
     "piAll": "查看本 PI 各生产组织",
     "piAllTip": "正在只读查看同一 PI 在各生产组织的号",
     "seqRange": "流水范围",
@@ -795,11 +783,10 @@
     "piChanged": "已改 PI",
     "transferredIn": "转入",
     "deliveryBatch": "交付批次",
-    "acquireBatch": "领取批次",
     "pushType": "推送类型",
     "generatedAt": "生成时间",
     "allocatedAt": "分配时间",
-    "deliveredAt": "交付 / 领取时间",
+    "deliveredAt": "交付时间",
     "mesHolder": "MES 持有组织",
     "batchSource": "建立方式",
     "batchType": "批次类型",
@@ -807,14 +794,13 @@
     "confirmMethod": "确认方式",
     "confirmedAt": "确认时间",
     "transferNo": "转单 / 转组织单号",
-    "receiptCounts": "接收 / 重复 / 冲突 / 过期",
+    "acceptedQty": "接收枚数",
     "pushState": "推送状态",
     "retry": "自动重试",
     "nextRetry": "下次重试",
     "pushCount": "推送 / 重推次数",
     "failReason": "失败原因",
     "batchDetail": "交付批次 {no}",
-    "acquireDetail": "领取批次 {no}",
     "digest": "内容摘要",
     "bills": "单据",
     "materials": "物料",
@@ -824,10 +810,9 @@
     "receiptMethod": "方式",
     "receiptOutcome": "MES 结果",
     "receiptVerdict": "判定",
-    "items": "批次明细与逐枚回执",
+    "items": "批次明细与接收情况",
     "lineNo": "行号",
-    "receiptResult": "逐枚回执",
-    "existing": "MES 已有",
+    "receiptResult": "接收情况",
     "currentState": "当前",
     "manual": "人工处理",
     "manualBy": "{by} 于 {at}",
@@ -835,34 +820,18 @@
     "rebuiltTo": "已重建为",
     "confirmBatch": "人工确认",
     "voidBatch": "作废",
-    "requestNo": "请求号",
-    "mesOrg": "对接 MES 的组织",
-    "acqStatus": {
-      "DONE": "已完成",
-      "INCOMPLETE": "未完成"
-    },
-    "finishedAt": "完成时间",
     "alertTypeCol": "告警类型",
     "alertType": {
-      "CONFLICT": "疑似重复交付",
-      "STALE": "版本过期",
       "CHECK": "自检问题"
     },
     "alertStatus": {
       "OPEN": "待处理",
       "CLOSED": "已处理"
     },
-    "alertRev": "本系统 / MES 版本",
     "alertDetail": "说明",
-    "closeAction": {
-      "RESEND": "以本系统为准重推",
-      "CLOSE": "关闭"
-    },
     "handledBy": "处理",
-    "resend": "以本系统为准重推",
     "closeAlert": "关闭告警",
     "handleTitle": "处理告警：{sn}",
-    "resendTip": "号的版本调为本系统与 MES 已存版本中较大者 + 1，以改派推给 MES 持有组织。",
     "notePlaceholder": "核查结论必填，不超过 500 字"
   },
   "rules": {
@@ -994,8 +963,7 @@
       "APPLYING": "申请中",
       "PENDING_ALLOC": "待分配（转组织不能转）",
       "BATCH_PENDING": "所在批次未确认或失败",
-      "TRANSFER_OUT_PENDING": "转出未完成，先在原转组织单上继续推送转出",
-      "ACQUIRE_INCOMPLETE": "领取批次未完成"
+      "TRANSFER_OUT_PENDING": "转出未完成，先在原转组织单上继续推送转出"
     },
     "genBefore": "已生成（前）",
     "genAfter": "已生成（后）",

@@ -155,7 +155,6 @@ const sourcesLoaded = ref(false);
 const toRows = ref<Target[]>([]);
 const targetsLoaded = ref(false);
 const pv = ref<Preview | null>(null);
-let wantMaterial: string | undefined;
 
 const srcMaterials = computed(() => srcBills.value.find((b) => b.bill_no === tf.bill_no)?.materials ?? []);
 const toBills = computed(() => {
@@ -190,13 +189,12 @@ function setKind(k: Kind) {
   loadSources();
   loadTargets();
 }
-function open(kind: Kind, prefill: { factory_code?: string; pi?: string; material?: string } = {}) {
+function open(kind: Kind) {
   Object.assign(tf, {
-    open: true, kind, factory_code: store.boundFactory || prefill.factory_code || "", pi_no: prefill.pi || "",
-    bill_no: "", scope: "BILL", material_code: "", start_sn: "", end_sn: "", to_pi: prefill.pi || "", to_bill: "", to_factory: "",
+    open: true, kind, factory_code: store.boundFactory || "", pi_no: "",
+    bill_no: "", scope: "BILL", material_code: "", start_sn: "", end_sn: "", to_pi: "", to_bill: "", to_factory: "",
     to_seq: undefined, reason: "",
   });
-  wantMaterial = prefill.material;
   srcBills.value = [];
   toRows.value = [];
   sourcesLoaded.value = targetsLoaded.value = false;
@@ -224,12 +222,6 @@ async function loadSources() {
     loadTargets();
   }
   if (!srcBills.value.some((b) => b.bill_no === tf.bill_no)) tf.bill_no = srcBills.value.length === 1 ? srcBills.value[0].bill_no : "";
-  // 从领取页带物料过来：该物料只在一张单据下时直接选上
-  if (wantMaterial !== undefined) {
-    const hit = srcBills.value.filter((b) => b.materials.some((x) => x.material_code === wantMaterial));
-    if (hit.length === 1) Object.assign(tf, { bill_no: hit[0].bill_no, scope: "MATERIAL", material_code: matKey(wantMaterial) });
-    wantMaterial = undefined;
-  }
   onSourceBill();
 }
 function onSourceBill() {

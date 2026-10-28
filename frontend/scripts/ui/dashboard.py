@@ -34,8 +34,6 @@ M = {
 "dashboard.toAlerts": ("去处理", "Handle", "Xử lý"),
 "dashboard.alertType": ("告警类型", "Alert type", "Loại cảnh báo"),
 "dashboard.alertDetail": ("说明", "Detail", "Chi tiết"),
-"dashboard.dalert.CONFLICT": ("疑似重复交付", "Suspected duplicate delivery", "Nghi giao trùng"),
-"dashboard.dalert.STALE": ("版本过期", "Stale version", "Phiên bản cũ"),
 "dashboard.dalert.CHECK": ("自检问题", "Self-check issue", "Vấn đề tự kiểm tra"),
 "dashboard.recentJobs": ("最近生成任务", "Recent generation jobs", "Tác vụ tạo gần đây"),
 "dashboard.genBatch": ("生成批次", "Generation batch", "Lô tạo"),

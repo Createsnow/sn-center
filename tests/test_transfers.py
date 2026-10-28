@@ -157,20 +157,6 @@ def test_holder_correct_when_target_confirms_first(w, sql):
     assert xo2 is not None and xo2["qty"] == 2, "再从 B 转到 C，转出推给 B"
 
 
-def test_acquired_same_org_change_pi_stays_acquired(w, sql):
-    a, pi, bill = setup(w, qty=4)
-    w.allocate(pi)
-    w.legacy_acquire(a, pi)
-    to_pi, to_bill = uid("PI"), uid("MO")
-    w.order(to_bill, a, "C1", to_pi, ("M1", 4, "100"))
-    ok(org_direct(w, a, pi, bill, a, to_pi=to_pi, to_bill=to_bill))
-    rows = sql.all("SELECT status, pi_no, seq_pi_no FROM sn_item WHERE seq_pi_no = %s", pi)
-    assert {(r["status"], r["pi_no"]) for r in rows} == {("ACQUIRED", to_pi)}
-    assert sql.count("SELECT COUNT(*) FROM sn_delivery_batch") == 0, "页面领取的号不在 MES 中，不推送"
-    q = ok(w.api.get(f"/api/sn?pi={to_pi}", w.admin))["items"]
-    assert all(x["transferred_in"] and not x["pi_changed"] for x in q), "号随目标单据改挂，单据 PI 与号 PI 一致"
-
-
 def test_same_org_reassign_then_other_org_still_sends_transfer_out(w, sql):
     a, pi, bill = setup(w, qty=2)
     b = w.org(uid("O")[:10])
@@ -306,14 +292,14 @@ def test_org_transfer_material_length_check(w, api):
     assert org_direct(w, a, pi, bill, a, to_bill=other, to_material="MX").code == "TR_TARGET_MATERIAL_INVALID"
 
 
-def test_transfer_to_empty_length_line_matches_default_000(w, api):
-    """目标物料行米数为空时按默认米数 000 比对：以前米数为空生成的号（米数 000）仍可转到米数为空的物料行。"""
+def test_transfer_to_empty_length_line_rejected(w, api):
+    """目标物料行米数为空：带米数的号（即使米数为 000）不能转入，米数须与号上一致。"""
     a, pi, bill = setup(w, qty=1, mes=False, length="000")
     w.allocate(pi)
     other = uid("MO")
-    w.order(other, a, "C1", pi, ("M2", 1, " "), ("M3", 1, "100"))
-    assert org_direct(w, a, pi, bill, a, to_bill=other, to_material="M3").code == "TR_LENGTH_MISMATCH"
-    ok(org_direct(w, a, pi, bill, a, to_bill=other, to_material="M2"))
+    w.order(other, a, "C1", pi, ("M2", 1, " "), ("M3", 1, "000"))
+    assert org_direct(w, a, pi, bill, a, to_bill=other, to_material="M2").code == "TR_LENGTH_MISMATCH"
+    ok(org_direct(w, a, pi, bill, a, to_bill=other, to_material="M3"))
 
 
 # ---------------------------------------------------------------- 转单

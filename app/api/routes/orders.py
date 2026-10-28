@@ -67,7 +67,7 @@ def order_rebuild(cu: AdminDep) -> dict:
     return orders.rebuild(cu)
 
 
-@router.put("/attach", summary="填写附件项次（金蝶为空时必填；物料行有号后不能改）；不写回金蝶，不进推送和领取文件")
+@router.put("/attach", summary="填写附件项次（金蝶为空时必填；物料行有号后不能改）；不写回金蝶")
 def order_attach(body: AttachIn, cu: OperatorDep) -> dict:
     return orders.fill_attach(cu, body.bill_no, body.seq, body.value)
 

@@ -3,7 +3,7 @@
 生产组织主数据只来自金蝶组织机构：本地没有的编码新增（金蝶已禁用的不新增），名称、启用状态随金蝶更新；
 本系统只维护 MES 对接配置。号的归属一律按订单上的生产组织编码，不与列表校验。
 
-金蝶禁用的生产组织：不能再绑定账户、不能作转组织转入方；已分到它的号照常领取、推送、拉取、转出。
+金蝶禁用的生产组织：不能再绑定账户、不能作转组织转入方；已分到它的号照常导出、推送、拉取、转出。
 「对接 MES」开启须接口地址、凭证已填且连接测试通过；开启时已分配 → 待推送（未入批），不自动推送；
 关闭须没有进行中的推送任务、未确认或失败的批次（含拉取、转出批次）、等待改挂重推的号，关闭时待推送（未入批）→ 已分配。
 """
@@ -426,7 +426,7 @@ def set_mes_enabled(cu: CurrentUser, code: str | None, enabled: bool) -> dict:
                 if b["reassign_qty"]:
                     parts.append(f"等待改挂重推的号 {b['reassign_qty']} 枚")
                 raise biz(ErrorCode.MES_DISABLE_BLOCKED, factory=fc, detail="；".join(parts))
-            # 待推送（未入批）→ 已分配；已推送、已领取的号不变；接口地址和凭证保留（转出照常推送）
+            # 待推送（未入批）→ 已分配；已推送的号不变；接口地址和凭证保留（转出照常推送）
             n = db.exec(
                 "UPDATE sn_item SET status = 'ALLOCATED', updated_at = %s "
                 "WHERE status = 'TO_PUSH' AND factory_code = %s AND delivery_batch_no IS NULL",

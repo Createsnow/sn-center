@@ -1,7 +1,6 @@
 from fastapi import APIRouter
 
 from app.api.routes import (
-    acquire,
     allocation,
     audits,
     auth,
@@ -29,7 +28,6 @@ api_router.include_router(generate.router)
 api_router.include_router(allocation.router)
 api_router.include_router(delivery.router)
 api_router.include_router(sn_export.router)
-api_router.include_router(acquire.router)
 api_router.include_router(transfers.router)
 api_router.include_router(sn.router)
 api_router.include_router(audits.router)

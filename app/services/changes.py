@@ -13,7 +13,7 @@
   单据实际已作废：总部「确认已作废」解除。
 
 暂停标记记在号上（sn_item.suspend），只作用于未交付的号（待分配、待推送未入批、已分配）；
-已入批（批次未确认或失败）、已推送、已领取的号不暂停。号的单据或状态变化后用 refresh_items 按单据重算。
+已入批（批次未确认或失败）、已推送的号不暂停。号的单据或状态变化后用 refresh_items 按单据重算。
 """
 
 from __future__ import annotations
@@ -586,13 +586,13 @@ def list_alerts(cu: CurrentUser, status: str | None, bill_no: str | None, typ: s
 
 
 def _bill_counts(bills: list[str]) -> dict[str, dict]:
-    """涉及枚数：暂停、已交付（已推送、已领取）、已分配仍在原生产组织（按号当前组织）。"""
+    """涉及枚数：暂停、已交付（已推送）、已分配仍在原生产组织（按号当前组织）。"""
     if not bills:
         return {}
     ub = sorted(set(bills))
     out: dict[str, dict] = {}
     for r in db.all(
-        "SELECT bill_no, SUM(suspend IS NOT NULL) s, SUM(status IN ('PUSHED','ACQUIRED')) d, "
+        "SELECT bill_no, SUM(suspend IS NOT NULL) s, SUM(status = 'PUSHED') d, "
         f"SUM(factory_code IS NOT NULL) a FROM sn_item WHERE bill_no IN ({marks(len(ub))}) GROUP BY bill_no",
         *ub,
     ):

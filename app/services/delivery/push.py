@@ -23,7 +23,6 @@ from app.db.session import db
 from app.services import audit, factories, mes_client
 from app.services.delivery import receipts
 from app.services.delivery.batches import (
-    CONFIRMED,
     FAILED,
     IS_DELIVERY,
     LEASE_SECONDS,
@@ -31,6 +30,7 @@ from app.services.delivery.batches import (
     RUNNER,
     SRC_PULL,
     SRC_PUSH,
+    SUCCESS,
     TRANSFER_OUT,
     UNCONFIRMED,
     XO_KEY,
@@ -156,7 +156,7 @@ def kick_bill(bill_no: str) -> None:
     """单据解除暂停 / 号回到未入批后：涉及的（组织，PI）有可推送的号时启动推送。"""
     for r in db.all(
         "SELECT DISTINCT factory_code, pi_no FROM sn_item WHERE bill_no = %s AND status = 'TO_PUSH' "
-        "AND delivery_batch_no IS NULL AND acquire_batch_no IS NULL AND suspend IS NULL",
+        "AND delivery_batch_no IS NULL AND suspend IS NULL",
         bill_no,
     ):
         if factories.is_mes(r["factory_code"]):
@@ -314,8 +314,7 @@ def _drive(t: dict) -> None:
             other = (
                 db.count(
                     "SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND factory_code = %s AND status IN "
-                    "('TO_PUSH','PUSHED','ACQUIRED') "
-                    "AND delivery_mode IN ('PULL','PAGE')",
+                    "('TO_PUSH','PUSHED') AND delivery_mode IN ('PULL','PAGE')",
                     t["task_key"],
                     t["factory_code"],
                 )
@@ -343,7 +342,7 @@ def _drive(t: dict) -> None:
             sent += 1
             continue
         b = must_batch(nxt["batch_no"])
-        if b["result"] in CONFIRMED:
+        if b["result"] == SUCCESS:
             continue
         if b["push_state"] == "WAIT_RETRY":
             _end_task(t, "WAITING", f"批次 {b['batch_no']} 等待自动重试", b["next_retry_at"], b["batch_no"])
@@ -358,7 +357,7 @@ def push_once(b: dict) -> str:
     """发送一次。返回 CONFIRMED / FAILED / RETRY / EXHAUSTED / SKIPPED。"""
     b = must_batch(b["batch_no"])
     if b["result"] not in (UNCONFIRMED, FAILED):
-        return "CONFIRMED" if b["result"] in CONFIRMED else "SKIPPED"
+        return "CONFIRMED" if b["result"] == SUCCESS else "SKIPPED"
     f = factories.must_get(b["factory_code"])
     target = mes_client.Target.of(f)
     attempt = b["push_count"] + 1
@@ -399,7 +398,7 @@ def push_once(b: dict) -> str:
         intervals = settings.push_retry_intervals
         with db.tx():
             cur = must_batch(b["batch_no"], lock=True)
-            if cur["result"] in CONFIRMED:
+            if cur["result"] == SUCCESS:
                 return "CONFIRMED"
             if cur["retry_count"] < len(intervals):
                 wait = intervals[cur["retry_count"]] * 60
@@ -438,7 +437,7 @@ def push_once(b: dict) -> str:
         return state
     with db.tx():
         cur = must_batch(b["batch_no"], lock=True)
-        if cur["result"] in CONFIRMED:
+        if cur["result"] == SUCCESS:
             return "CONFIRMED"
         receipts.mark_failed(cur, out.code, out.message, out.voidable, now)
         if out.config_problem:

@@ -14,7 +14,7 @@
         <el-descriptions-item :label="t('common.factory')">{{ nameOf(batch.factory_code) }}（{{ batch.factory_code }}）</el-descriptions-item>
         <el-descriptions-item label="PI">{{ batch.pi_no }}</el-descriptions-item>
         <el-descriptions-item :label="t('common.qty')">{{ batch.qty }}</el-descriptions-item>
-        <el-descriptions-item :label="t('query.receiptCounts')">{{ batch.accepted_qty }} / {{ batch.duplicate_qty }} / {{ batch.conflict_qty }} / {{ batch.stale_qty }}</el-descriptions-item>
+        <el-descriptions-item :label="t('query.acceptedQty')">{{ batch.accepted_qty }}</el-descriptions-item>
         <el-descriptions-item :label="t('query.confirmMethod')">{{ confirmMethodLabel(batch.confirm_method) || "—" }}</el-descriptions-item>
         <el-descriptions-item :label="t('query.confirmedAt')">{{ fmt(batch.confirmed_at) }}</el-descriptions-item>
         <el-descriptions-item v-if="batch.source === 'PUSH'" :label="t('query.pushState')">{{ pushStateLabel(batch.push_state) }} · {{ t("query.retry") }} {{ batch.retry_count }}</el-descriptions-item>
@@ -69,9 +69,6 @@
       <el-table-column :label="t('query.receiptResult')" width="100">
         <template #default="{ row }"><el-tag v-if="row.receipt_result" size="small" :type="RECEIPT_RESULT_TYPE[row.receipt_result] || 'info'">{{ receiptResultLabel(row.receipt_result) }}</el-tag></template>
       </el-table-column>
-      <el-table-column :label="t('query.existing')" min-width="150">
-        <template #default="{ row }"><span v-if="row.existing_rev != null || row.existing_batch_no">rev {{ row.existing_rev ?? "—" }} · {{ row.existing_batch_no || "—" }}</span></template>
-      </el-table-column>
       <el-table-column :label="t('query.currentState')" width="140">
         <template #default="{ row }"><StatusTag v-if="row.status" :status="row.status" /> <span class="muted">{{ row.current_factory }}</span></template>
       </el-table-column>
@@ -84,7 +81,7 @@
 </template>
 
 <script setup lang="ts">
-/** 交付批次（推送、拉取、转出）详情：结果、确认方式、人工处理、号段、回执存档、明细与逐枚回执；总部可人工确认、作废。
+/** 交付批次（推送、拉取、转出）详情：结果、确认方式、人工处理、号段、回执存档、明细与接收情况；总部可人工确认、作废。
  *  v-model:batch-no 打开 / 关闭（空串为关闭）；人工处理后发出 changed。 */
 import { ref, watch } from "vue";
 import { useI18n } from "vue-i18n";

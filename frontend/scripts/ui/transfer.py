@@ -55,7 +55,6 @@ M = {
 "transfer.blocked.PENDING_ALLOC": ("待分配（转组织不能转）", "To allocate (not for org transfer)", "Chờ phân bổ (không chuyển tổ chức)"),
 "transfer.blocked.BATCH_PENDING": ("所在批次未确认或失败", "In unconfirmed or failed batch", "Trong lô chưa xác nhận hoặc thất bại"),
 "transfer.blocked.TRANSFER_OUT_PENDING": ("转出未完成，先在原转组织单上继续推送转出", "Transfer-out unfinished; resume it on the original org transfer first", "Chuyển đi chưa xong; hãy đẩy tiếp trên phiếu chuyển tổ chức gốc trước"),
-"transfer.blocked.ACQUIRE_INCOMPLETE": ("领取批次未完成", "Acquire batch incomplete", "Lô nhận chưa hoàn tất"),
 "transfer.genBefore": ("已生成（前）", "Generated (before)", "Đã tạo (trước)"),
 "transfer.genAfter": ("已生成（后）", "Generated (after)", "Đã tạo (sau)"),
 "transfer.submitBill": ("确认转单", "Transfer", "Chuyển"),

@@ -173,7 +173,7 @@ def test_retry_then_exhaust_then_resume_with_same_batch(w, sql):
     assert len(set(bodies)) == 1, "同一批次每次送达请求体逐字节相同"
     attempts = [x["headers"]["x-sn-attempt"] for x in MES.received if x["batch"].get("batchNo") == b[1]["batch_no"]]
     assert attempts == ["1", "2", "3", "4"]
-    # 号保持冻结：不能页面领取
+    # 号保持冻结：仍在该批次中，不回号池
     assert (
         sql.count("SELECT COUNT(*) FROM sn_item WHERE delivery_batch_no = %s AND status = 'TO_PUSH'", b[1]["batch_no"])
         == 5
@@ -234,7 +234,7 @@ def test_same_rev_from_other_batch_overwrites_without_alert(w, sql):
     MES.store.setdefault(org, {})[sn] = {"rev": 1, "lastBatchNo": "PS-OTHER", "transferredOut": False}
     w.push()
     b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
-    assert (b["result"], b["accepted_qty"], b["conflict_qty"]) == ("SUCCESS", 2, 0)
+    assert (b["result"], b["accepted_qty"]) == ("SUCCESS", 2)
     assert MES.store[org][sn]["lastBatchNo"] == b["batch_no"]
     assert sql.count("SELECT COUNT(*) FROM sn_delivery_alert WHERE sn = %s", sn) == 0
 
@@ -433,7 +433,7 @@ def test_older_rev_skipped_by_mes_without_alert(w, sql):
     MES.store.setdefault(org, {})[sn] = {"rev": 5, "lastBatchNo": "PS-OLD", "transferredOut": False}
     w.push()
     b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
-    assert (b["result"], b["accepted_qty"], b["stale_qty"]) == ("SUCCESS", 2, 0)
+    assert (b["result"], b["accepted_qty"]) == ("SUCCESS", 2)
     assert MES.store[org][sn]["rev"] == 5 and MES.store[org][sn]["lastBatchNo"] == "PS-OLD", "不用更小的 rev 覆盖"
     assert sql.count("SELECT COUNT(*) FROM sn_delivery_alert WHERE sn = %s", sn) == 0
 
@@ -467,34 +467,25 @@ def test_rejected_batch_voided_rebatches_and_refuses_voided(w, sql):
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED' AND rev = 1", pi) == 3
 
 
-def test_legacy_conflict_alert_resend_bumps_rev(w, sql):
-    """旧协议留下的逐枚冲突告警仍可「以本系统为准重推」：rev 取较大者 + 1，改挂重推。"""
+def test_check_alert_closed_with_note(w, sql):
+    """交付告警（每日自检）：填写核查结论后关闭；结论必填，已关闭的不能再处理。"""
     org, pi, bill = setup_pi(w, qty=2, batch_size=5)
     w.allocate(pi)
     w.push()
-    it = sql.one("SELECT id, sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec LIMIT 1", pi)
     b = sql.one("SELECT batch_no FROM sn_delivery_batch WHERE pi_no = %s", pi)
     sql.exec(
-        "INSERT INTO sn_delivery_alert(alert_type, factory_code, batch_no, item_id, sn, rev, existing_rev, "
-        "existing_batch_no, detail, created_at) VALUES ('CONFLICT',%s,%s,%s,%s,1,1,'PS-OTHER','疑似重复交付',NOW())",
+        "INSERT INTO sn_delivery_alert(alert_type, factory_code, batch_no, detail, created_at) "
+        "VALUES ('CHECK',%s,%s,'自检问题',NOW())",
         org,
         b["batch_no"],
-        it["id"],
-        it["sn"],
     )
-    a = sql.one("SELECT id FROM sn_delivery_alert WHERE sn = %s", it["sn"])
-    ok(w.api.post(f"/api/delivery/alerts/{a['id']}/handle", m(action="RESEND", note="以本系统为准"), w.admin))
-    assert sql.one("SELECT rev, status FROM sn_item WHERE id = %s", it["id"]) == {"rev": 2, "status": "TO_PUSH"}
-    # 当场建改挂批次，不回号池
-    rb = sql.one(
-        "SELECT b.batch_type, b.qty FROM sn_item i JOIN sn_delivery_batch b ON b.batch_no = i.delivery_batch_no "
-        "WHERE i.id = %s",
-        it["id"],
-    )
-    assert rb == {"batch_type": "REMAP", "qty": 1}
-    w.push()
-    assert MES.store[org][it["sn"]]["rev"] == 2 and MES.store[org][it["sn"]]["batchType"] == "REMAP"
-    assert sql.scalar("SELECT status FROM sn_item WHERE id = %s", it["id"]) == "PUSHED"
+    a = sql.one("SELECT id FROM sn_delivery_alert WHERE batch_no = %s", b["batch_no"])
+    url = f"/api/delivery/alerts/{a['id']}/handle"
+    assert w.api.post(url, m(note=" "), w.admin).code == "REASON_REQUIRED"
+    ok(w.api.post(url, m(note="已核实"), w.admin))
+    closed = sql.one("SELECT status, closed_by, note FROM sn_delivery_alert WHERE id = %s", a["id"])
+    assert (closed["status"], closed["note"]) == ("CLOSED", "已核实") and closed["closed_by"]
+    assert w.api.post(url, m(note="再处理"), w.admin).code == "DALERT_NOT_FOUND"
 
 
 def test_pool_claims_one_batch_type_per_batch(w, sql):

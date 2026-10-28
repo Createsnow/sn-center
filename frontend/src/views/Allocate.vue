@@ -113,7 +113,7 @@
                   <el-table-column :label="t('allocate.way')" width="120">
                     <template #default="{ row }">
                       <el-tag v-if="row.skip" size="small" type="danger" effect="plain">{{ t(`allocate.skip.${row.skip}`) }}</el-tag>
-                      <el-tag v-else size="small" :type="row.mes_enabled ? 'success' : 'info'">{{ row.mes_enabled ? t("allocate.wayPush") : t("allocate.wayAcquire") }}</el-tag>
+                      <el-tag v-else size="small" :type="row.mes_enabled ? 'success' : 'info'">{{ row.mes_enabled ? t("allocate.wayPush") : t("allocate.wayExport") }}</el-tag>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -125,7 +125,7 @@
               <span class="push" />
               <span v-loading="alloc.loading" class="orgs">
                 <span v-for="o in alloc.data?.orgs || []" :key="o.org_code" class="muted">
-                  {{ o.mes_enabled ? t("allocate.orgPush", { org: o.org_name || nameOf(o.org_code), n: num(o.qty), m: o.pushes }) : t("allocate.orgAcquire", { org: o.org_name || nameOf(o.org_code), n: num(o.qty) }) }}
+                  {{ o.mes_enabled ? t("allocate.orgPush", { org: o.org_name || nameOf(o.org_code), n: num(o.qty), m: o.pushes }) : t("allocate.orgExport", { org: o.org_name || nameOf(o.org_code), n: num(o.qty) }) }}
                 </span>
                 <span v-if="alloc.data?.skipped.length" class="warn">{{ t("allocate.skippedN", { n: alloc.data.skipped.length }) }}</span>
               </span>
@@ -150,7 +150,7 @@
                   {{ t("allocate.resumeBtn", { n: p.remaining.pushes }) }}
                 </el-button>
               </div>
-              <p class="muted">{{ t("allocate.acquireNote") }} <router-link to="/export">{{ t("nav.export") }}</router-link></p>
+              <p class="muted">{{ t("allocate.exportNote") }} <router-link to="/export">{{ t("nav.export") }}</router-link></p>
             </el-tab-pane>
             <el-tab-pane :label="t('allocate.tabBatches', { n: ctx.batches.length })" name="batches">
               <el-table :data="ctx.batches" size="small" max-height="360" :empty-text="t('common.empty')">

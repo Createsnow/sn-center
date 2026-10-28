@@ -1,6 +1,6 @@
 """转单（F-15）、转组织（F-16）与转移后的 MES 处理（5.2.8）。都不改 SN 字符串，都只在本系统改挂。
 
-转移时每枚号：清掉原推送、拉取、领取批次，rev + 1；
+转移时每枚号：清掉原推送、拉取批次，rev + 1；
 - 仍在同一生产组织：MES 持有组织为本组织的号改为待推送、推送类型改挂，随即自动推送；其余状态不变。
 - 转到别的生产组织：转入方对接 MES 时改为待推送，MES 持有组织为来源组织的记改挂、其余记新增；
   转入方未对接时改为已分配。
@@ -8,7 +8,7 @@
 - 转移前 MES 已持有、改挂后待推送的号不回号池：同一事务内给转入方当场建批（记转移单号，批次类型为
   SAME_ORG_TRANSFER / TRANSFER_IN，按单批枚数拆分，暂停交付的号除外）并推送；MES 还没收到的号回号池按流水认领
   （批次类型 NEW）。
-不可转：申请中；所在批次未确认或失败；所在转出批次未确认或失败（先在原转组织单上继续推送转出）；领取未完成。
+不可转：申请中；所在批次未确认或失败；所在转出批次未确认或失败（先在原转组织单上继续推送转出）。
 转单另可转待分配的号（仍为待分配，之后按目标单据的生产组织分配）；转组织不能转待分配的号。
 
 转单、转组织的来源与目标规则相同：来源按 PI → 单据筛选，范围三选一（整张单据 / 单据 + 物料编码下全部号 /
@@ -23,7 +23,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from app.core import encoding as codec
 from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
@@ -49,8 +48,7 @@ SCOPES = frozenset((SCOPE_BILL, SCOPE_MATERIAL, SCOPE_RANGE))
 
 ITEM_COLS = (
     "id, sn, factory_code, pi_no, customer_code, bill_no, bill_seq, material_code, rev, seq_pi_no, seq_dec, "
-    "length_text, attach_no, rule_version_id, status, delivery_batch_no, acquire_batch_no, mes_holder, push_type, "
-    "delivery_mode"
+    "length_text, attach_no, rule_version_id, status, delivery_batch_no, mes_holder, push_type, delivery_mode"
 )
 
 ORG_FIELDS = (
@@ -110,7 +108,7 @@ def _reason(raw: str | None) -> str:
 
 
 def blocked(items: list[dict], allow_pending_alloc: bool) -> dict[int, str]:
-    """不能转的号及原因：APPLYING / BATCH_PENDING / TRANSFER_OUT_PENDING / ACQUIRE_INCOMPLETE / PENDING_ALLOC。"""
+    """不能转的号及原因：APPLYING / BATCH_PENDING / TRANSFER_OUT_PENDING / PENDING_ALLOC。"""
     out: dict[int, str] = {}
     for r in items:
         if r["status"] == util.APPLYING:
@@ -119,8 +117,6 @@ def blocked(items: list[dict], allow_pending_alloc: bool) -> dict[int, str]:
             out[r["id"]] = "PENDING_ALLOC"
         elif r["status"] == util.TO_PUSH and r["delivery_batch_no"] is not None:
             out[r["id"]] = "BATCH_PENDING"
-        elif r["status"] in (util.TO_PUSH, util.ALLOCATED) and r["acquire_batch_no"] is not None:
-            out[r["id"]] = "ACQUIRE_INCOMPLETE"
     for i in delivery.frozen_by_transfer_out([r["id"] for r in items if r["id"] not in out]):
         out[i] = "TRANSFER_OUT_PENDING"
     return out
@@ -131,7 +127,6 @@ _REASON_TEXT = {
     "PENDING_ALLOC": "待分配（转组织不能转）",
     "BATCH_PENDING": "所在批次未确认或失败",
     "TRANSFER_OUT_PENDING": "所在转出批次未确认或失败，先在原转组织单上继续推送转出",
-    "ACQUIRE_INCOMPLETE": "领取批次未完成",
 }
 
 
@@ -147,7 +142,7 @@ def _summary(items: list[dict], bad: dict[int, str]) -> dict:
         "transferable": len(items) - len(bad),
         "by_status": by_status,
         "blocked": by_reason,
-        "delivered": sum(1 for r in items if r["mes_holder"] or r["status"] == util.ACQUIRED),
+        "delivered": sum(1 for r in items if r["mes_holder"]),
     }
 
 
@@ -266,7 +261,6 @@ def _move(
                 r["bill_seq"],
                 r["material_code"],
                 r["delivery_batch_no"],
-                r["acquire_batch_no"],
                 r["rev"],
                 status,
                 new_org,
@@ -285,7 +279,7 @@ def _move(
             db.exec(
                 "UPDATE sn_item SET factory_code = %s, pi_no = %s, customer_code = %s, bill_no = %s, bill_seq = %s, "
                 "material_code = %s, rev = rev + 1, status = %s, push_type = %s, delivery_mode = %s, "
-                "delivery_batch_no = NULL, acquire_batch_no = NULL, transfer_id = NULL, applying_from = NULL, "
+                "delivery_batch_no = NULL, transfer_id = NULL, applying_from = NULL, "
                 "transfer_kind = %s, transfer_doc_no = %s, transfer_from_org = COALESCE(%s, transfer_from_org), "
                 "updated_at = %s "
                 f"WHERE id IN ({marks(len(part))})",
@@ -306,15 +300,14 @@ def _move(
             )
     db.exec_many(
         "INSERT INTO sn_transfer_item(kind, transfer_id, item_id, sn, seq_pi_no, seq_dec, from_status, from_factory, "
-        "from_pi, from_customer, from_bill, from_seq, from_material, from_delivery_batch, from_acquire_batch, "
-        "from_rev, "
+        "from_pi, from_customer, from_bill, from_seq, from_material, from_delivery_batch, from_rev, "
         "to_status, to_factory, to_pi, to_customer, to_bill, to_seq, to_material, to_rev) VALUES "
-        "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) "
+        "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) "
         "ON DUPLICATE KEY UPDATE to_status = VALUES(to_status), to_factory = VALUES(to_factory), to_pi = "
         "VALUES(to_pi), "
         "to_customer = VALUES(to_customer), to_bill = VALUES(to_bill), to_seq = VALUES(to_seq), "
         "to_material = VALUES(to_material), to_rev = VALUES(to_rev), from_rev = VALUES(from_rev), "
-        "from_delivery_batch = VALUES(from_delivery_batch), from_acquire_batch = VALUES(from_acquire_batch)",
+        "from_delivery_batch = VALUES(from_delivery_batch)",
         rows,
     )
     for (no, seq), d in line_moves.items():
@@ -520,9 +513,9 @@ def _dest(kind: str, r: TransferRequest, source_bill: str) -> Dest:
     else:
         to_factory = factories.must_be_enabled(to_factory)["factory_code"]
     line = _dest_line(tb, r)
-    # 目标物料行米数为空时按默认米数 000 比对：以前米数为空的物料行生成时写的是 000（现在须先填写才能生成）
-    length = orders.length_of(line) or codec.DEFAULT_LENGTH
-    return Dest(to_factory, tb.pi, tb.customer_code, tb.bill_no, line["seq"], line["material_code"], length)
+    return Dest(
+        to_factory, tb.pi, tb.customer_code, tb.bill_no, line["seq"], line["material_code"], orders.length_of(line)
+    )
 
 
 def _targets(kind: str, items: list[dict], d: Dest) -> dict[int, Target]:
@@ -696,7 +689,7 @@ def transfer_bill(cu: CurrentUser, req: TransferRequest) -> dict:
 
 
 def apply(cu: CurrentUser, r: TransferRequest) -> dict:
-    """普通操作员提交转组织申请（来源组织须在授权范围内，目标组织不限）：号变为申请中（不能领取、推送、拉取）；
+    """普通操作员提交转组织申请（来源组织须在授权范围内，目标组织不限）：号变为申请中（不能推送、拉取）；
     申请期间不通知 MES。由系统管理员或对来源、目标组织都有授权的普通操作员确认。"""
     if not cu.is_operator:
         raise biz(ErrorCode.FORBIDDEN)
@@ -726,15 +719,14 @@ def apply(cu: CurrentUser, r: TransferRequest) -> dict:
                     x["bill_seq"],
                     x["material_code"],
                     x["delivery_batch_no"],
-                    x["acquire_batch_no"],
                     x["rev"],
                 )
             )
         db.exec_many(
             "INSERT INTO sn_transfer_item(kind, transfer_id, item_id, sn, seq_pi_no, seq_dec, from_status, "
             "from_factory, "
-            "from_pi, from_customer, from_bill, from_seq, from_material, from_delivery_batch, from_acquire_batch, "
-            "from_rev) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            "from_pi, from_customer, from_bill, from_seq, from_material, from_delivery_batch, from_rev) "
+            "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
             rows,
         )
         ids = [x["id"] for x in ok]
@@ -800,21 +792,9 @@ def _insert_org(cu, mode, status, p: Plan, qty: int, reason: str) -> tuple[int, 
 
 
 def _org_targets(t: dict, items: list[dict]) -> dict[int, Target]:
-    """转组织单上的目标物料行；早期没有目标单据的单子沿用号上的单据、序号、客户、物料。"""
-    if t["to_bill"]:
-        tg = Target(t["to_factory"], t["to_pi"], t["to_customer"], t["to_bill"], t["to_seq"], t["to_material"])
-        return {r["id"]: tg for r in items}
-    return {
-        r["id"]: Target(
-            t["to_factory"],
-            t["to_pi"],
-            t["to_customer"] or r["customer_code"],
-            r["bill_no"],
-            r["bill_seq"],
-            t["to_material"] or r["material_code"],
-        )
-        for r in items
-    }
+    """转组织单上的目标物料行（申请时已校验，见 _dest）。"""
+    tg = Target(t["to_factory"], t["to_pi"], t["to_customer"], t["to_bill"], t["to_seq"], t["to_material"])
+    return {r["id"]: tg for r in items}
 
 
 def _org_entry(
@@ -1373,7 +1353,6 @@ OUT_LIST_HEADERS = [
     "附件项次",
     "米数",
     "原交付批次",
-    "原领取批次",
     "转出批次",
     "转入生产组织",
     "转入生产组织名称",
@@ -1382,7 +1361,7 @@ OUT_LIST_HEADERS = [
 
 def out_list(cu: CurrentUser, tid: int):
     """转出号清单：完整 SN、流水、来源组织（编号与中文名称）、转出前挂靠（物料编码带附件项次、米数）、原批次，
-    来源现场据此作废已打出的旧标签（页面领取的号也列入）。"""
+    来源现场据此作废已打出的旧标签。"""
     t = org_view(cu, tid)
     names = factories.names()
 
@@ -1418,7 +1397,6 @@ def out_list(cu: CurrentUser, tid: int):
                     r["attach_no"] or "",
                     r["length_text"] or "",
                     r["from_delivery_batch"],
-                    r["from_acquire_batch"],
                     r["out_batch_no"],
                     r["to_factory"],
                     names.get(r["to_factory"], "") if r["to_factory"] else "",

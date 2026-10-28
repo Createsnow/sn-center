@@ -325,7 +325,7 @@ def effective_attach(line: dict, fill: dict | None) -> tuple[str, str]:
 
 def fill_attach(cu: CurrentUser, bill_no: str | None, seq: int | None, value: str | None) -> dict:
     """填写附件项次（金蝶为空时，必填）；物料行有号后不能改。值不写回金蝶。
-    生成时附件项次写到号上（之后转单、转组织不变），随 MES 报文下发，不进领取文件。"""
+    生成时附件项次写到号上（之后转单、转组织不变），随 MES 报文下发，也列在 SN 导出文件中。"""
     no = util.trim(bill_no)
     v = util.trim(value)
     if not v or len(v) > 64:

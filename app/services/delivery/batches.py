@@ -28,11 +28,8 @@ log = structlog.get_logger()
 
 UNCONFIRMED = "UNCONFIRMED"
 SUCCESS = "SUCCESS"
-#: 旧协议逐枚回执含冲突时的结果，只留给历史批次
-SUCCESS_CONFLICT = "SUCCESS_CONFLICT"
 FAILED = "FAILED"
 VOIDED = "VOIDED"
-CONFIRMED = (SUCCESS, SUCCESS_CONFLICT)
 SRC_PUSH = "PUSH"
 SRC_PULL = "PULL"
 #: 批次类型（报文 batchType）
@@ -71,9 +68,6 @@ BATCH_FIELDS = (
     "fail_reason",
     "voidable",
     "accepted_qty",
-    "duplicate_qty",
-    "conflict_qty",
-    "stale_qty",
     "push_state",
     "retry_count",
     "next_retry_at",
@@ -229,10 +223,7 @@ _CLAIM_COLS = (
 
 
 #: 号池：待推送、未入批、未暂停（按组织 + PI）
-_POOL = (
-    "pi_no = %s AND factory_code = %s AND status = 'TO_PUSH' AND suspend IS NULL AND delivery_batch_no IS NULL "
-    "AND acquire_batch_no IS NULL"
-)
+_POOL = "pi_no = %s AND factory_code = %s AND status = 'TO_PUSH' AND suspend IS NULL AND delivery_batch_no IS NULL"
 
 
 def claim(org: str, pi: str, limit: int, bill: str | None = None, btype: str | None = None) -> list[dict]:

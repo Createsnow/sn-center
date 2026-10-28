@@ -2,8 +2,7 @@
 
 号只能分到订单的生产组织（快照中订单的生产组织；订单已不在快照时取号上的生成时订单生产组织；
 反审核中、PI 变更待确认、暂停交付的单据跳过）。对接 MES 的改为待推送（未入批）并自动开始推送；
-未对接的改为已分配。分配与 SN 导出相互独立：号一经分配即可在 SN 导出页下载，不再有领取这一步，
-也不看推送结果。
+未对接的改为已分配。分配与 SN 导出相互独立：号一经分配即可在 SN 导出页下载，不看推送结果。
 分配与生成、撤销共用 PI 操作锁。
 分配页详情：待分配的物料行（号段、目标生产组织）、推送进度、分配记录（最近 100 条，推送与拉取批次）。
 PI 列表与生成页共用（workbench.pis）。
@@ -300,7 +299,7 @@ def push_status(pi: str, facs: tuple[str, ...] | None = None) -> list[dict]:
         )
         done_batches = db.count(
             "SELECT COUNT(*) FROM sn_delivery_batch WHERE factory_code = %s AND pi_no = %s "
-            "AND batch_type <> 'TRANSFER_OUT' AND result IN ('SUCCESS','SUCCESS_CONFLICT')",
+            "AND batch_type <> 'TRANSFER_OUT' AND result = 'SUCCESS'",
             org,
             pi,
         )

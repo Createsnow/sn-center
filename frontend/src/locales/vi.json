@@ -111,7 +111,6 @@
     "TO_PUSH": "Chờ đẩy",
     "PUSHED": "Đã đẩy",
     "ALLOCATED": "Đã phân bổ",
-    "ACQUIRED": "Đã nhận",
     "APPLYING": "Đang xin chuyển tổ chức"
   },
   "deliveryMode": {
@@ -125,10 +124,7 @@
     "TRANSFER_OUT": "Chuyển đi"
   },
   "receiptResult": {
-    "ACCEPTED": "Đã nhận",
-    "DUPLICATE": "Trùng (đã có)",
-    "CONFLICT": "Xung đột",
-    "STALE": "Phiên bản cũ"
+    "ACCEPTED": "Đã nhận"
   },
   "receiptOutcome": {
     "PROCESSED": "Đã xử lý",
@@ -147,7 +143,6 @@
   "batchResult": {
     "UNCONFIRMED": "Chưa xác nhận",
     "SUCCESS": "Thành công",
-    "SUCCESS_CONFLICT": "Thành công (có xung đột)",
     "FAILED": "Thất bại",
     "VOIDED": "Đã hủy"
   },
@@ -199,9 +194,7 @@
   "scope": {
     "BILL": "Cả chứng từ",
     "MATERIAL": "Theo vật tư",
-    "RANGE": "Một SN / dải số",
-    "PI": "Toàn bộ PI",
-    "SINGLE": "Một SN"
+    "RANGE": "Một SN / dải số"
   },
   "transferStatus": {
     "PENDING": "Chờ xử lý",
@@ -259,7 +252,6 @@
     "SN_BATCH_MANUAL": "Xác nhận lô thủ công",
     "SN_BATCH_VOID": "Hủy lô",
     "SN_ALERT_HANDLE": "Xử lý cảnh báo giao",
-    "SN_ACQUIRE": "Nhận trên trang",
     "SN_READ": "MES tra cứu chỉ đọc",
     "TRANSFER_BILL": "Chuyển chứng từ",
     "TRANSFER_APPLY": "Xin chuyển tổ chức",
@@ -320,14 +312,14 @@
     "toOrg": "Phân bổ cho",
     "way": "Cách giao",
     "wayPush": "MES · đẩy",
-    "wayAcquire": "Xuất SN",
+    "wayExport": "Xuất SN",
     "skip": {
       "PI_FROZEN": "Đóng băng do đổi PI",
       "REVERSAL": "Đang bỏ duyệt",
       "SUSPENDED": "Tạm dừng giao"
     },
     "orgPush": "{org} {n} ({m} lần đẩy)",
-    "orgAcquire": "{org} {n} (tải tại trang xuất SN)",
+    "orgExport": "{org} {n} (tải tại trang xuất SN)",
     "skippedN": "{n} chứng từ sẽ bị bỏ qua (đóng băng, bỏ duyệt hoặc tạm dừng)",
     "allocTitle": "Phân bổ",
     "allocBtn": "Phân bổ {n}",
@@ -340,7 +332,7 @@
     "tabBatches": "Bản ghi phân bổ {n}",
     "noPush": "Chưa đẩy gì cho MES",
     "pushProgress": "Lần {i} / {n} · đã đẩy {qty}",
-    "acquireNote": "Tổ chức không kết nối MES tải SN tại trang xuất SN:",
+    "exportNote": "Tổ chức không kết nối MES tải SN tại trang xuất SN:",
     "batchSource": "Cách tạo",
     "batchResult": "Kết quả",
     "confirmMethod": "Cách xác nhận",
@@ -422,8 +414,6 @@
     "alertType": "Loại cảnh báo",
     "alertDetail": "Chi tiết",
     "dalert": {
-      "CONFLICT": "Nghi giao trùng",
-      "STALE": "Phiên bản cũ",
       "CHECK": "Vấn đề tự kiểm tra"
     },
     "recentJobs": "Tác vụ tạo gần đây",
@@ -499,7 +489,7 @@
     "disableMes": "Tắt kết nối MES",
     "enableBlocked": "Hãy nhập địa chỉ, thông tin xác thực và kiểm tra kết nối đạt trước (trong Cấu hình MES)",
     "enableEffect": "Sau khi bật, {n} SN đã phân bổ của tổ chức chuyển thành chờ đẩy (chưa vào lô), không tự đẩy; bấm “Đẩy tiếp” ở trang phân bổ hoặc chờ MES kéo.",
-    "disableEffect": "Sau khi tắt, {n} SN chờ đẩy (chưa vào lô) của tổ chức chuyển thành đã phân bổ (vẫn tải được ở Xuất SN); SN đã đẩy, đã nhận giữ nguyên, địa chỉ và thông tin xác thực được giữ (chuyển đi vẫn được đẩy).",
+    "disableEffect": "Sau khi tắt, {n} SN chờ đẩy (chưa vào lô) của tổ chức chuyển thành đã phân bổ (vẫn tải được ở Xuất SN); SN đã đẩy giữ nguyên, địa chỉ và thông tin xác thực được giữ (chuyển đi vẫn được đẩy).",
     "disableBlocked": "Còn lần đẩy chưa hoàn tất, không thể tắt",
     "blockTasks": "{n} tác vụ đẩy đang chạy",
     "blockBatches": "{n} lô chưa xác nhận hoặc thất bại, {qty} SN",
@@ -773,14 +763,12 @@
   },
   "query": {
     "title": "Tra cứu SN",
-    "desc": "Tra cứu chỉ đọc chi tiết SN, lô giao (đẩy, kéo, chuyển đi), lô nhận và cảnh báo giao, lọc theo các tổ chức sản xuất mà tài khoản được xem; không thể chuyển SN tại trang này.",
+    "desc": "Tra cứu chỉ đọc chi tiết SN, lô giao (đẩy, kéo, chuyển đi) và cảnh báo giao, lọc theo các tổ chức sản xuất mà tài khoản được xem; không thể chuyển SN tại trang này.",
     "tabSn": "Chi tiết SN",
     "tabDelivery": "Lô giao",
-    "tabAcquire": "Lô nhận trước đây",
     "tabAlerts": "Cảnh báo giao",
     "suspended": "Tạm dừng giao",
     "deliveryMode": "Cách giao",
-    "batchFilter": "Số lô đẩy / kéo / nhận",
     "piAll": "Mọi tổ chức của PI này",
     "piAllTip": "Đang xem chỉ đọc SN của PI này ở các tổ chức sản xuất",
     "seqRange": "Khoảng tuần tự",
@@ -795,11 +783,10 @@
     "piChanged": "Đã đổi PI",
     "transferredIn": "Chuyển đến",
     "deliveryBatch": "Lô giao",
-    "acquireBatch": "Lô nhận",
     "pushType": "Loại đẩy",
     "generatedAt": "Thời gian tạo",
     "allocatedAt": "Thời gian phân bổ",
-    "deliveredAt": "Thời gian giao / nhận",
+    "deliveredAt": "Thời gian giao",
     "mesHolder": "Tổ chức MES đang giữ",
     "batchSource": "Cách tạo",
     "batchType": "Loại lô",
@@ -807,14 +794,13 @@
     "confirmMethod": "Cách xác nhận",
     "confirmedAt": "Thời gian xác nhận",
     "transferNo": "Số phiếu chuyển",
-    "receiptCounts": "Nhận / trùng / xung đột / hết hạn",
+    "acceptedQty": "Số đã nhận",
     "pushState": "Trạng thái đẩy",
     "retry": "Lần thử lại",
     "nextRetry": "Lần thử tới",
     "pushCount": "Lần đẩy / đẩy lại",
     "failReason": "Lý do thất bại",
     "batchDetail": "Lô giao {no}",
-    "acquireDetail": "Lô nhận {no}",
     "digest": "Mã tóm tắt nội dung",
     "bills": "Chứng từ",
     "materials": "Vật tư",
@@ -824,10 +810,9 @@
     "receiptMethod": "Cách",
     "receiptOutcome": "Kết quả MES",
     "receiptVerdict": "Đánh giá",
-    "items": "Chi tiết và biên nhận từng SN",
+    "items": "Chi tiết và tình trạng nhận",
     "lineNo": "Dòng",
-    "receiptResult": "Biên nhận từng SN",
-    "existing": "Đã có trong MES",
+    "receiptResult": "Tình trạng nhận",
     "currentState": "Hiện tại",
     "manual": "Xử lý thủ công",
     "manualBy": "{by} lúc {at}",
@@ -835,34 +820,18 @@
     "rebuiltTo": "Đã tạo lại thành",
     "confirmBatch": "Xác nhận thủ công",
     "voidBatch": "Hủy lô",
-    "requestNo": "Số yêu cầu",
-    "mesOrg": "Tổ chức MES",
-    "acqStatus": {
-      "DONE": "Hoàn tất",
-      "INCOMPLETE": "Chưa hoàn tất"
-    },
-    "finishedAt": "Thời gian xong",
     "alertTypeCol": "Loại cảnh báo",
     "alertType": {
-      "CONFLICT": "Nghi giao trùng",
-      "STALE": "Phiên bản cũ",
       "CHECK": "Vấn đề tự kiểm tra"
     },
     "alertStatus": {
       "OPEN": "Chờ xử lý",
       "CLOSED": "Đã xử lý"
     },
-    "alertRev": "Phiên bản hệ thống / MES",
     "alertDetail": "Mô tả",
-    "closeAction": {
-      "RESEND": "Đẩy lại theo hệ thống",
-      "CLOSE": "Đóng"
-    },
     "handledBy": "Xử lý",
-    "resend": "Đẩy lại theo hệ thống",
     "closeAlert": "Đóng cảnh báo",
     "handleTitle": "Xử lý cảnh báo: {sn}",
-    "resendTip": "Phiên bản SN thành max(hệ thống, MES) + 1 và được đẩy cho tổ chức MES đang giữ dưới dạng điều chuyển.",
     "notePlaceholder": "Bắt buộc nhập kết luận kiểm tra, tối đa 500 ký tự"
   },
   "rules": {
@@ -994,8 +963,7 @@
       "APPLYING": "Đang xin chuyển",
       "PENDING_ALLOC": "Chờ phân bổ (không chuyển tổ chức)",
       "BATCH_PENDING": "Trong lô chưa xác nhận hoặc thất bại",
-      "TRANSFER_OUT_PENDING": "Chuyển đi chưa xong; hãy đẩy tiếp trên phiếu chuyển tổ chức gốc trước",
-      "ACQUIRE_INCOMPLETE": "Lô nhận chưa hoàn tất"
+      "TRANSFER_OUT_PENDING": "Chuyển đi chưa xong; hãy đẩy tiếp trên phiếu chuyển tổ chức gốc trước"
     },
     "genBefore": "Đã tạo (trước)",
     "genAfter": "Đã tạo (sau)",

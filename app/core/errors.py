@@ -146,10 +146,7 @@ class ErrorCode(Enum):
     )
     BATCH_BASIS_REQUIRED = (400, "须填写依据（如 MES 方书面确认，不超过 500 字）")
     DALERT_NOT_FOUND = (404, "交付告警不存在或已处理")
-    DALERT_RESEND_BLOCKED = (409, "SN {sn} 不能以本系统为准重推：{detail}")
-    # ---------- 领取 ----------
-    ACQ_BATCH_NOT_FOUND = (404, "领取批次 {batch_no} 不存在")
-    ACQ_BATCH_INCOMPLETE = (409, "领取批次 {batch_no} 未完成，不能下载")
+    # ---------- SN 导出 ----------
     EXPORT_NOTHING = (404, "PI {pi} 的单据 {bill_no} 没有已分配的号")
     # ---------- 转单 / 转组织 ----------
     TR_SCOPE_INVALID = (400, "转移范围只能是整张单据、单据 + 物料、单枚或连续号段")
