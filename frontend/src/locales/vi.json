@@ -1085,7 +1085,7 @@
   },
   "users": {
     "title": "Tài khoản",
-    "desc": "Chỉ quản trị viên hệ thống mới được tạo, sửa, vô hiệu, kích hoạt tài khoản và đặt lại mật khẩu; tài khoản chỉ bị vô hiệu, không bị xóa. Tài khoản giao diện MES không đăng nhập trang, dùng mã NV + khóa bí mật để lấy mã thông báo gọi API MES.",
+    "desc": "Chỉ quản trị viên hệ thống mới được tạo, sửa, vô hiệu, kích hoạt tài khoản và đặt lại mật khẩu; tài khoản chỉ bị vô hiệu, không bị xóa. Tài khoản giao diện MES không đăng nhập trang, mỗi lần gọi API MES gửi trực tiếp mã NV + khóa bí mật.",
     "tabAll": "Tài khoản",
     "tabMes": "Tài khoản giao diện MES",
     "create": "Tạo tài khoản",
@@ -1123,7 +1123,9 @@
     "ipWhitelist": "Danh sách địa chỉ nguồn",
     "ipAny": "Không giới hạn",
     "ipHint": "IP hoặc CIDR, cách nhau bằng dấu phẩy; trống = không giới hạn. Khi đặt, chỉ nhận yêu cầu trong danh sách",
-    "mesFactoryHint": "Chỉ tổ chức đang bật kết nối MES",
+    "mesFactoryPlaceholder": "Chọn một tổ chức sản xuất",
+    "mesFactoryHint": "Có thể tạo tài khoản giao cho MES kiểm thử trước khi bật kết nối MES; khi chưa bật chỉ kéo được lô chuyển ra, gửi biên nhận và tra cứu chỉ đọc",
+    "mesOff": " (chưa kết nối MES)",
     "secretWillShow": "Khóa bí mật được tạo khi lưu; có thể xem hoặc đặt lại bất cứ lúc nào",
     "secretTitle": "Khóa bí mật tài khoản MES",
     "secretKeep": "Sau khi đóng, dùng “Xem khóa” trong danh sách để xem lại, hoặc “Đặt lại khóa” để tạo khóa mới; hãy giao cho phía MES và giữ an toàn",
@@ -1132,6 +1134,6 @@
     "secretClose": "Đóng",
     "viewSecret": "Xem khóa",
     "resetSecret": "Đặt lại khóa",
-    "resetSecretConfirm": "Đặt lại khóa của {emp}? Khóa và mã cũ mất hiệu lực ngay; MES phải dùng khóa mới."
+    "resetSecretConfirm": "Đặt lại khóa của {emp}? Khóa cũ mất hiệu lực ngay; MES phải dùng khóa mới."
   }
 }

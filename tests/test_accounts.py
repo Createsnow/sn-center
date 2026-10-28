@@ -66,8 +66,8 @@ def test_password_change_and_reset_require_relogin_without_forced_change(w, api)
 
 def test_mes_account_cannot_login_page_and_secret_once(w, api, sql):
     org = w.org(uid("O")[:10])
-    r = api.post("/api/users", m(emp_no=emp("M"), name="M", role="mes", factory_code=org), w.admin)
-    assert r.code == "USER_MES_FACTORY_REQUIRED", "MES 接口账户须绑「对接 MES = 是」的组织"
+    r = api.post("/api/users", m(emp_no=emp("M"), name="M", role="mes"), w.admin)
+    assert r.code == "USER_MES_FACTORY_REQUIRED", "MES 接口账户须绑一个生产组织"
     w.enable_mes(org)
     e = emp("M")
     r = ok(
@@ -87,6 +87,29 @@ def test_mes_account_cannot_login_page_and_secret_once(w, api, sql):
     assert t["code"] == "OK", "每次请求直接带工号:密钥"
     assert api.get("/api/dashboard", cred).status == 401, "MES 接口账户只能调 MES 接口"
     assert ok(api.get(f"/api/users?q={e}", w.admin))["items"][0]["last_login_at"], "账户页显示最近认证时间"
+
+
+def test_mes_account_before_mes_enabled(w, api, sql):
+    """可先建 MES 接口账户交给 MES 方联调，再开启「对接 MES」；未开启时取批不建交付批次。"""
+    org = w.org(uid("O")[:10])
+    off = w.org(uid("O")[:10])
+    w.org(off, enabled=False)
+    r = api.post("/api/users", m(emp_no=emp("M"), name="M", role="mes", factory_code=off), w.admin)
+    assert r.code == "FACTORY_DISABLED", "仍须金蝶启用"
+    pi, bill = uid("PI"), uid("MO")
+    w.order(bill, org, "C1", pi, ("M1", 3, "0100"))
+    ok(w.bind_pi(pi, w.rule("P" + uid("").replace("-", ""), seq_len=6)))
+    w.generate(pi)
+    w.allocate(pi)
+    token, e = w.mes_account(org)
+    first = ok(w.mes_next(token))
+    assert first["batch"] is None and first["remaining"] == 0, "未开启对接：不建交付批次"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'ALLOCATED'", pi) == 3
+    assert ok(w.mes_delivered(token, orgCode=org, pi=pi))["items"] == [], "只读查询可用"
+    w.enable_mes(org)
+    got = ok(w.mes_next(token))
+    assert len(got["batch"]["items"]) == 3, "开启后同一账户即可取批"
+    ok(w.mes_receipt(token, MES.process(org, got["batch"])))
 
 
 def test_mes_secret_viewable_and_resettable(w, api, sql):

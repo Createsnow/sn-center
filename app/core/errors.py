@@ -39,7 +39,7 @@ class ErrorCode(Enum):
     USER_ROLE_INVALID = (400, "角色无效")
     USER_ROLE_FIXED = (400, "MES 接口账户与页面账户不能互相改角色")
     USER_FACTORY_REQUIRED = (400, "普通操作员、审计员必须至少授权一个生产组织")
-    USER_MES_FACTORY_REQUIRED = (400, "MES 接口账户必须绑定一个「对接 MES = 是」的生产组织")
+    USER_MES_FACTORY_REQUIRED = (400, "MES 接口账户必须绑定一个生产组织")
     USER_ADMIN_NO_FACTORY = (400, "系统管理员不绑定生产组织")
     USER_ADMIN_UNIQUE = (400, "系统管理员只有一个，不能新建系统管理员或把账户改为系统管理员")
     USER_PASSWORD_WEAK = (400, "密码须为 8–64 位，同时含字母和数字，只能用字母、数字和 ! @ # $ & *")

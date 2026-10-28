@@ -1085,7 +1085,7 @@
   },
   "users": {
     "title": "Accounts",
-    "desc": "Only the system administrator can create, edit, disable and enable accounts and reset passwords; accounts are disabled, never deleted. MES interface accounts cannot sign in to pages; they exchange employee No. + secret for a token to call the MES API.",
+    "desc": "Only the system administrator can create, edit, disable and enable accounts and reset passwords; accounts are disabled, never deleted. MES interface accounts cannot sign in to pages; they send employee No. + secret directly on every MES API call.",
     "tabAll": "Accounts",
     "tabMes": "MES interface accounts",
     "create": "New account",
@@ -1123,7 +1123,9 @@
     "ipWhitelist": "Source address whitelist",
     "ipAny": "Any",
     "ipHint": "IPs or CIDRs separated by commas; empty = any. When set, only requests from the list are accepted",
-    "mesFactoryHint": "Only production orgs with MES integration on",
+    "mesFactoryPlaceholder": "Select a production org",
+    "mesFactoryHint": "You can create the account and hand it to MES for joint testing before turning MES integration on; until then it can only pull transfer-out batches, submit receipts and run read-only queries",
+    "mesOff": " (MES integration off)",
     "secretWillShow": "A secret is generated on save; you can view or reset it any time",
     "secretTitle": "MES interface account secret",
     "secretKeep": "After closing, use “View secret” in the list to see it again, or “Reset secret” to generate a new one; hand it to the MES side and keep it safe",
@@ -1132,6 +1134,6 @@
     "secretClose": "Close",
     "viewSecret": "View secret",
     "resetSecret": "Reset secret",
-    "resetSecretConfirm": "Reset the secret of {emp}? The old secret and tokens stop working at once; MES must switch to the new secret."
+    "resetSecretConfirm": "Reset the secret of {emp}? The old secret stops working at once; MES must switch to the new secret."
   }
 }

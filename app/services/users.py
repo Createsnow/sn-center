@@ -264,7 +264,8 @@ def _check_role_factory(
     """角色与授权生产组织；新授权（不在 current 里）的须在列表中且金蝶启用，保留原来已禁用的授权不报错。
 
     系统管理员只有一个、不绑组织（admin_ok = 修改的正是它）；普通操作员、审计员可多选、至少一个；
-    MES 接口账户绑一个「对接 MES = 是」的生产组织。
+    MES 接口账户绑一个生产组织，不要求已开启「对接 MES」（先建账户交给 MES 方联调，联调通过后再开启；
+    未开启时取批只返回本组织的转出批次，回执和只读查询照常）。
     """
     if role not in util.ROLES:
         raise biz(ErrorCode.USER_ROLE_INVALID)
@@ -281,9 +282,7 @@ def _check_role_factory(
         if f is None or len(many) > 1:
             raise biz(ErrorCode.USER_MES_FACTORY_REQUIRED)
         if f not in current:
-            fac = factories.must_be_enabled(f)
-            if not fac["mes_enabled"]:
-                raise biz(ErrorCode.USER_MES_FACTORY_REQUIRED)
+            factories.must_be_enabled(f)
         return Binding(f, ())
     codes = many if factory_codes is not None else ([f] if f is not None else [])
     if not codes:

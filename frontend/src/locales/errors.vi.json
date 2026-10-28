@@ -20,7 +20,7 @@
   "USER_ROLE_INVALID": "Vai trò không hợp lệ",
   "USER_ROLE_FIXED": "Tài khoản giao diện MES và tài khoản trang không thể đổi vai trò lẫn nhau",
   "USER_FACTORY_REQUIRED": "Nhân viên vận hành và kiểm toán viên phải được ủy quyền ít nhất một tổ chức sản xuất",
-  "USER_MES_FACTORY_REQUIRED": "Tài khoản giao diện MES phải gắn tổ chức sản xuất có “Kết nối MES = Có”",
+  "USER_MES_FACTORY_REQUIRED": "Tài khoản giao diện MES phải gắn một tổ chức sản xuất",
   "USER_ADMIN_NO_FACTORY": "Quản trị hệ thống không gắn tổ chức sản xuất",
   "USER_ADMIN_UNIQUE": "Chỉ có một quản trị hệ thống: không thể tạo mới hoặc đổi tài khoản thành quản trị hệ thống",
   "USER_PASSWORD_WEAK": "Mật khẩu 8–64 ký tự, gồm cả chữ và số; chỉ dùng chữ, số và ! {'@'} # $ & *",

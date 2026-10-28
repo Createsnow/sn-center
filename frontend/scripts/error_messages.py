@@ -23,7 +23,7 @@ E = {
 "USER_ROLE_INVALID": ("Invalid role", "Vai trò không hợp lệ"),
 "USER_ROLE_FIXED": ("MES interface accounts and page accounts cannot switch roles with each other", "Tài khoản giao diện MES và tài khoản trang không thể đổi vai trò lẫn nhau"),
 "USER_FACTORY_REQUIRED": ("Operators and auditors must be authorized for at least one production org", "Nhân viên vận hành và kiểm toán viên phải được ủy quyền ít nhất một tổ chức sản xuất"),
-"USER_MES_FACTORY_REQUIRED": ("MES interface accounts must be bound to a production org with “MES integration = Yes”", "Tài khoản giao diện MES phải gắn tổ chức sản xuất có “Kết nối MES = Có”"),
+"USER_MES_FACTORY_REQUIRED": ("MES interface accounts must be bound to one production org", "Tài khoản giao diện MES phải gắn một tổ chức sản xuất"),
 "USER_ADMIN_NO_FACTORY": ("The system administrator is not bound to a production org", "Quản trị hệ thống không gắn tổ chức sản xuất"),
 "USER_ADMIN_UNIQUE": ("There is only one system administrator: you cannot create one or change an account into one", "Chỉ có một quản trị hệ thống: không thể tạo mới hoặc đổi tài khoản thành quản trị hệ thống"),
 "USER_PASSWORD_WEAK": ("Password must be 8–64 characters containing both letters and digits; only letters, digits and ! @ # $ & * are allowed", "Mật khẩu 8–64 ký tự, gồm cả chữ và số; chỉ dùng chữ, số và ! @ # $ & *"),

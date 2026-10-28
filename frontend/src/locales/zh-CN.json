@@ -1123,7 +1123,9 @@
     "ipWhitelist": "来源地址白名单",
     "ipAny": "不限",
     "ipHint": "IP 或 CIDR，逗号分隔；留空 = 不限。配置后只接受白名单内的请求",
-    "mesFactoryHint": "只能绑「对接 MES = 是」的生产组织",
+    "mesFactoryPlaceholder": "选择一个生产组织",
+    "mesFactoryHint": "可先建账户交给 MES 方联调，再开启「对接 MES」；未开启时只能取本组织的转出批次、提交回执和只读查询",
+    "mesOff": "（未对接 MES）",
     "secretWillShow": "保存后系统生成密钥，之后可随时查看或重置",
     "secretTitle": "MES 接口账户密钥",
     "secretKeep": "关闭后可在列表中「查看密钥」再次查看，也可「重置密钥」重新生成；请交给 MES 方妥善保存，勿外传",
@@ -1132,6 +1134,6 @@
     "secretClose": "关闭",
     "viewSecret": "查看密钥",
     "resetSecret": "重置密钥",
-    "resetSecretConfirm": "重置 {emp} 的密钥？旧密钥和旧令牌立即失效，MES 须改用新密钥。"
+    "resetSecretConfirm": "重置 {emp} 的密钥？旧密钥立即失效，MES 须改用新密钥。"
   }
 }

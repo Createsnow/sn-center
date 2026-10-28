@@ -73,8 +73,9 @@
         <el-form-item :label="t('users.name')" required><el-input v-model="form.name" maxlength="64" /></el-form-item>
         <template v-if="isMes">
           <el-form-item :label="t('common.factory')" required>
-            <el-select v-model="form.factory_code" filterable class="w100" :placeholder="t('users.mesFactoryHint')">
-              <el-option v-for="x in mesFactories" :key="x.factory_code" :value="x.factory_code" :label="`${x.factory_name}（${x.factory_code}）`" />
+            <el-select v-model="form.factory_code" filterable class="w100" :placeholder="t('users.mesFactoryPlaceholder')">
+              <el-option v-for="x in mesFactories" :key="x.factory_code" :value="x.factory_code"
+                :label="`${x.factory_name}（${x.factory_code}）${x.mes_enabled ? ' · MES' : t('users.mesOff')}${x.enabled ? '' : t('common.disabledSuffix')}`" />
             </el-select>
             <div class="muted hint">{{ t("users.mesFactoryHint") }}</div>
           </el-form-item>
@@ -163,8 +164,8 @@ const isMes = computed(() => form.role === "mes");
 /** 普通操作员、审计员：授权一个或多个生产组织（至少一个）。 */
 const isScoped = computed(() => form.role === "operator" || form.role === "auditor");
 const enabledFactories = computed(() => factories.value.filter((x) => x.enabled));
-/** MES 接口账户只能绑「对接 MES = 是」的生产组织。 */
-const mesFactories = computed(() => factories.value.filter((x) => x.mes_enabled && (x.enabled || x.factory_code === form.factory_code)));
+/** MES 接口账户绑一个金蝶启用的生产组织（不要求已开启「对接 MES」，可先建账户联调）；已绑的被禁用后仍保留。 */
+const mesFactories = computed(() => factories.value.filter((x) => x.enabled || x.factory_code === form.factory_code));
 const dialogTitle = computed(() => {
   if (editing.value) return t("users.editTitle", { emp: editing.value.emp_no });
   return isMes.value ? t("users.createMes") : t("users.create");
