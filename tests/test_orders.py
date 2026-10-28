@@ -52,6 +52,59 @@ def test_compare_sync_adds_replaces_removes(w, api, sql):
     assert sql.count("SELECT COUNT(*) FROM sn_prd_mo WHERE bill_no = %s", c) == 1
 
 
+def _display(doc: dict) -> dict:
+    """给假金蝶单据的第一条物料行填只显示的字段。"""
+    line = doc["TreeEntity"][0]
+    line.update(
+        FPN="CPN-1",
+        FCD="客户描述 1",
+        FAdtek="规格描述 1",
+        WorkShopID={"Number": "D01", "Name": [{"Key": 2052, "Value": "一车间"}]},
+    )
+    line["MaterialId"]["Specification"] = [{"Key": 2052, "Value": "规格型号 1"}]
+    return doc
+
+
+def test_display_fields_synced_by_query_and_view(w, api):
+    """客户 P/N、客户描述、规格描述、物料规格型号、生产部门只显示：
+    比对同步（批量查询）与按单据同步（View）都写进快照。"""
+    org = w.org(uid("O")[:10])
+    a, b = uid("MO"), uid("MO")
+    BILLS[a] = _display(w.doc(a, org, "C1", uid("PI"), ("M1", 5)))
+    w.compare()
+    BILLS[b] = _display(w.doc(b, org, "C1", uid("PI"), ("M1", 5), ("M2", 3)))
+    ok(api.post("/api/orders/sync", m(bill_no=b), w.admin))
+    for no in (a, b):
+        r = ok(api.get(f"/api/orders/{no}/lines", w.admin)).body
+        line = r["lines"][0]
+        assert (line["customer_pn"], line["customer_desc"], line["spec_desc"], line["material_spec"]) == (
+            "CPN-1",
+            "客户描述 1",
+            "规格描述 1",
+            "规格型号 1",
+        ), line
+        assert (line["dept_code"], line["dept_name"], r["dept_name"]) == ("D01", "一车间", "一车间")
+    assert ok(api.get(f"/api/orders/{b}/lines", w.admin)).body["lines"][1]["dept_name"] == ""
+    bills = {x["bill_no"]: x for x in ok(api.get(f"/api/orders?factory_code={org}", w.admin))["items"]}
+    assert bills[a]["dept_name"] == "一车间"
+    deps = ok(api.get(f"/api/orders/departments?factory_code={org}", w.admin)).body
+    assert [(d["dept_code"], d["dept_name"], d["bills"], d["line_count"]) for d in deps] == [("D01", "一车间", 2, 2)]
+
+
+def test_display_fields_rejected_by_k3_sync_still_works(w, api, sql):
+    """金蝶不认只显示列：改用基本列同步，这几列留空，快照照常更新。"""
+    org = w.org(uid("O")[:10])
+    a = uid("MO")
+    BILLS[a] = _display(w.doc(a, org, "C1", uid("PI"), ("M1", 5), ("M2", 6)))
+    K3_FAIL["display"] = True
+    r = w.compare()
+    assert r["replaced"] >= 1
+    assert sql.count("SELECT COUNT(*) FROM sn_prd_mo WHERE bill_no = %s", a) == 2
+    line = ok(api.get(f"/api/orders/{a}/lines", w.admin)).body["lines"][0]
+    assert line["customer_pn"] == "" and line["dept_name"] == ""
+    assert line["material_code"] == "M1" and line["qty"] == 5
+
+
 def test_bills_sorted_by_modify_date_newest_first_with_unit(w, api):
     """只同步已审核单据；左表按金蝶修改日期越新越前；修改日期、产品单位随同步进快照并在订单页显示。"""
     org = w.org(uid("O")[:10])

@@ -36,6 +36,11 @@ def order_customers(cu: OperatorDep, q: str | None = None) -> list:
     return orders.customers(cu, q)
 
 
+@router.get("/departments", summary="生产部门（只读）：快照中出现过的生产车间，按生产组织列出单据数、物料行数")
+def order_departments(cu: OperatorDep, factory_code: str | None = None) -> list:
+    return orders.departments(cu, factory_code)
+
+
 @router.get("/targets", summary="转单、转组织目标候选：快照中的物料行（pi 精确匹配；转组织申请也要用，目标组织不限）")
 def order_targets(cu: OperatorDep, q: str | None = None, pi: str | None = None, limit: OptInt = None) -> list:
     return orders.targets(q, 50 if limit is None else limit, pi)

@@ -9,13 +9,25 @@
         </div>
       </div>
       <el-scrollbar class="nav">
-        <el-menu :default-active="activePath" :collapse="collapsed" router class="menu">
+        <!-- 按业务模块分组（工单 / SN / 箱号 / 托号 / 日志 / 账户 / 组织），每组可展开收起；首页单独一项 -->
+        <el-menu :default-active="activePath" :default-openeds="openeds" :collapse="collapsed" :collapse-transition="false" router class="menu">
           <template v-for="g in menus" :key="g.group">
-            <div v-if="!collapsed" class="menu-group">{{ t(g.group) }}</div>
-            <el-menu-item v-for="m in g.items" :key="m.path" :index="m.path">
-              <el-icon><component :is="m.icon" /></el-icon>
-              <template #title>{{ t(m.title) }}</template>
-            </el-menu-item>
+            <template v-if="!g.icon">
+              <el-menu-item v-for="m in g.items" :key="m.path" :index="m.path">
+                <el-icon><component :is="m.icon" /></el-icon>
+                <template #title>{{ t(m.title) }}</template>
+              </el-menu-item>
+            </template>
+            <el-sub-menu v-else :index="g.group" popper-class="nav-popper">
+              <template #title>
+                <el-icon><component :is="g.icon" /></el-icon>
+                <span>{{ t(g.group) }}</span>
+              </template>
+              <el-menu-item v-for="m in g.items" :key="m.path" :index="m.path">
+                <span class="item-title">{{ t(m.title) }}</span>
+                <span v-if="m.soon" class="soon">{{ t("nav.soon") }}</span>
+              </el-menu-item>
+            </el-sub-menu>
           </template>
         </el-menu>
       </el-scrollbar>
@@ -58,6 +70,7 @@
           </el-button>
           <el-breadcrumb separator="/">
             <el-breadcrumb-item>{{ t("app.short") }}</el-breadcrumb-item>
+            <el-breadcrumb-item v-if="groupTitle">{{ groupTitle }}</el-breadcrumb-item>
             <el-breadcrumb-item>{{ pageTitle }}</el-breadcrumb-item>
           </el-breadcrumb>
         </div>
@@ -115,9 +128,15 @@ const collapsed = ref(false);
 const { tz } = useTime();
 
 const menus = computed(() =>
-  MENU.map((g) => ({ ...g, items: g.items.filter((m) => m.roles.includes(store.role) && (!("superAdmin" in m) || store.isSuperAdmin)) })).filter((g) => g.items.length),
+  MENU.map((g) => ({ ...g, items: g.items.filter((m) => m.roles.includes(store.role) && (!m.superAdmin || store.isSuperAdmin)) })).filter((g) => g.items.length),
 );
 const activePath = computed(() => route.path);
+/** 初始展开：当前页所在的组和 SN 管理（日常作业都在这组）。 */
+const openeds = [...new Set([route.meta.group as string | undefined, "nav.groupSn"].filter((g): g is string => !!g))];
+const groupTitle = computed(() => {
+  const g = route.meta.group as string | undefined;
+  return g && g !== "nav.groupWork" ? t(g) : "";
+});
 const pageTitle = computed(() => {
   const title = route.meta.title as string | undefined;
   return title ? t(title) : "";
@@ -174,7 +193,12 @@ onUnmounted(() => window.removeEventListener("resize", onResize));
 .menu { border-right: none; background: transparent; --el-menu-bg-color: transparent; --el-menu-text-color: #cbd5e1;
   --el-menu-hover-bg-color: #1e293b; --el-menu-active-color: #fff; --el-menu-item-height: 44px; }
 .menu :deep(.el-menu-item.is-active) { background: #1e4a8a; }
-.menu-group { color: #64748b; font-size: 11px; letter-spacing: 0.08em; padding: 14px 20px 6px; text-transform: uppercase; }
+.menu :deep(.el-sub-menu__title) { --el-menu-sub-item-height: 44px; height: 44px; line-height: 44px; }
+.menu :deep(.el-sub-menu .el-menu-item) { height: 40px; line-height: 40px; padding-left: 52px !important; }
+.menu :deep(.el-sub-menu.is-active > .el-sub-menu__title) { color: #fff; }
+.item-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.soon { flex: none; margin-left: 6px; font-size: 10px; line-height: 16px; padding: 0 6px; border-radius: 8px; color: #94a3b8;
+  border: 1px solid #334155; }
 .body { min-width: 0; }
 .header { height: var(--app-header); background: var(--app-surface); border-bottom: 1px solid var(--app-line);
   display: flex; align-items: center; justify-content: space-between; padding: 0 16px; }
@@ -211,4 +235,12 @@ onUnmounted(() => window.removeEventListener("resize", onResize));
 .main { padding: 20px; background: var(--app-canvas); overflow: auto; }
 .tz { white-space: nowrap; margin-right: 4px; }
 @media (max-width: 760px) { .tz, .scope-text, .lang-code { display: none; } .scope { padding: 0 8px; } }
+</style>
+
+<style>
+/* 侧栏收起时子菜单弹出层：与侧栏同色 */
+.nav-popper .el-menu { background: var(--app-ink); --el-menu-bg-color: var(--app-ink); --el-menu-text-color: #cbd5e1;
+  --el-menu-hover-bg-color: #1e293b; --el-menu-active-color: #fff; }
+.nav-popper .el-menu-item.is-active { background: #1e4a8a; }
+.nav-popper .soon { margin-left: 8px; font-size: 10px; line-height: 16px; padding: 0 6px; border-radius: 8px; color: #94a3b8; border: 1px solid #334155; }
 </style>

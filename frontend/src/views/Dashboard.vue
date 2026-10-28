@@ -4,6 +4,15 @@
       <el-button :loading="loading" @click="load"><el-icon><Refresh /></el-icon><span>{{ t("common.refresh") }}</span></el-button>
     </PageHead>
 
+    <!-- 平台名称与定位 -->
+    <div class="surface hero">
+      <el-icon :size="28" class="hero-icon"><Stamp /></el-icon>
+      <div class="hero-text">
+        <div class="hero-name">{{ t("app.title") }}</div>
+        <p class="hero-desc">{{ t("app.desc") }}</p>
+      </div>
+    </div>
+
     <div class="kpi-grid">
       <div v-for="k in kpis" :key="k.key" class="kpi" :class="{ link: !!k.to, alarm: k.alarm && (k.value || 0) > 0 }" @click="k.to && router.push(k.to)">
         <div class="v">{{ num(k.value) }}</div>
@@ -224,4 +233,9 @@ onMounted(load);
 .kpi.link:hover { border-color: var(--el-color-primary); }
 .kpi.alarm .v { color: var(--el-color-danger); }
 .el-col { margin-bottom: 16px; }
+.hero { display: flex; gap: 14px; align-items: flex-start; background: linear-gradient(120deg, #0f172a, #1e4a8a); border: none; color: #fff; }
+.hero-icon { flex: none; margin-top: 2px; color: #93c5fd; }
+.hero-text { min-width: 0; }
+.hero-name { font-size: 17px; font-weight: 700; letter-spacing: 0.02em; }
+.hero-desc { margin: 6px 0 0; font-size: 12px; line-height: 1.8; color: #cbd5e1; }
 </style>

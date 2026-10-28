@@ -1,8 +1,9 @@
 {
   "app": {
-    "title": "多生产组织 SN 防重管控",
-    "short": "SN 管控中心",
-    "subtitle": "总部统一生成、分配与交付",
+    "title": "爱德泰·溯码中台",
+    "desc": "溯码中台作为集团级中心化序列号（SN）可信管控底座，面向多生产组织分布式制造场景，构建统一的 SN 全生命周期治理体系，统筹集团内各工厂、产线订单的序列号资源分配、规则下发、生成分发、校验拦截与追溯闭环，从源头规避 SN 重码、错码、漏码风险，实现跨厂区 SN 资源标准化、集中化、可信化管控，赋能集团制造质量合规与供应链数字化协同。",
+    "short": "溯码中台",
+    "subtitle": "爱德泰 · 集团 SN 可信管控",
     "empNo": "工号",
     "changePassword": "修改密码",
     "logout": "退出登录",
@@ -26,21 +27,34 @@
   },
   "nav": {
     "groupWork": "工作台",
-    "groupHq": "发号作业",
-    "groupFactory": "交付与转移",
-    "groupQuery": "查询与留痕",
-    "groupSystem": "系统管理",
+    "groupOrder": "工单管理",
+    "groupSn": "SN 管理",
+    "groupBox": "箱号管理",
+    "groupPallet": "托号管理",
+    "groupLog": "日志管理",
+    "groupAccount": "账户管理",
+    "groupOrg": "组织管理",
+    "soon": "建设中",
     "dashboard": "首页",
     "orders": "生产订单",
     "generate": "SN 生成",
     "allocate": "SN 分配",
-    "rules": "规则库",
+    "rules": "SN 规则库",
     "export": "SN 导出",
     "transfer": "SN 转移",
     "query": "SN 查询",
-    "audit": "操作痕迹",
-    "users": "账户",
-    "factories": "生产组织"
+    "boxGenerate": "箱号生成",
+    "boxTransfer": "箱号转移",
+    "boxQuery": "箱号查询",
+    "boxRules": "箱号规则库",
+    "palletGenerate": "托号生成",
+    "palletTransfer": "托号转移",
+    "palletQuery": "托号查询",
+    "audit": "操作日志",
+    "users": "用户",
+    "userGroups": "用户组",
+    "factories": "生产组织",
+    "departments": "生产部门"
   },
   "common": {
     "search": "查询",
@@ -267,7 +281,7 @@
   },
   "login": {
     "title": "登录",
-    "lead": "总部按生产订单物料行统一生成 SN，分配到订单的生产组织；对接 MES 的自动推送，各组织都可在 SN 导出页下载。同一张 PI 下的 SN 不得重复。",
+    "lead": "集团级中心化序列号（SN）可信管控底座：统筹各工厂、产线订单的 SN 规则下发、生成分发、校验拦截与追溯闭环，从源头规避 SN 重码、错码、漏码。",
     "point1": "生成前预演，最大号变化即失效",
     "point2": "交付批次带回执，按批次号幂等",
     "point3": "转单、转组织全程留痕",
@@ -291,8 +305,8 @@
     "desc": "把已生成的号分到订单的生产组织：对接 MES 的改为待推送并自动逐批推送，每批 MES 写入后回执确认才推下一批，中断后可续推；分配后的号都可在「SN 导出」页下载。可按整张 PI 或勾选物料行分配。",
     "summary": "待分配 {pending} · 待推送 {unbatched}",
     "tab": {
-      "TO_ALLOCATE": "待处理",
-      "ALLOCATED": "已分配完"
+      "TO_ALLOCATE": "待分配",
+      "ALLOCATED": "已分配 / 已推送"
     },
     "state": {
       "INTERRUPTED": "推送中断",
@@ -342,7 +356,7 @@
     "void": "作废"
   },
   "audit": {
-    "title": "操作痕迹",
+    "title": "操作日志",
     "retention": "痕迹在线保存 {days} 天，之后整月移入归档；",
     "retentionForever": "痕迹永久在线保存。",
     "archiveKeep": "总保存 {days} 天。",
@@ -623,7 +637,7 @@
     "unitChinese": "产品单位不能含中文，请填写如 M、m、L",
     "lengthChinese": "米数不能含中文",
     "scope": "范围",
-    "genBtn": "生成 {n} 枚",
+    "genBtn": "批量生成 {n} 枚",
     "genDone": "已生成 {n} 枚",
     "genCanceled": "生成已取消，已写入的号全部删除",
     "runCount": "{done} / {qty}",
@@ -656,6 +670,15 @@
     "ruleNow": "当前规则 {rule}：{format}",
     "changeRule": "改规则",
     "pickRule": "选规则",
+    "customRuleBtn": "自定义规则",
+    "libraryRuleBtn": "选定规则库",
+    "viewLines": "主信息",
+    "viewSns": "SN 明细 {n}",
+    "customerSn": "客户 SN 号",
+    "billNo": "生产订单",
+    "snEach": "逐枚查看",
+    "snEmpty": "还没有生成 SN",
+    "snNote": "按号段列出本 PI 已生成、未撤销的 SN（流水最末的在前）；逐枚查看在「SN 查询」。",
     "scopeWholePi": "未勾选 = 整张 PI",
     "scopeLinesN": "已选 {n} 个物料行",
     "clearSel": "清空",
@@ -680,9 +703,47 @@
     "endSn": "结束 SN 号",
     "revokeRemind": "撤销后，所选物料行的号从号池删除，PI 最大号和已生成数一并退回，这些行的附件项次、米数、产品单位恢复可改，可重新生成。撤销后不能恢复。"
   },
+  "soon": {
+    "desc": "该模块建设中，规划功能如下；接入后与 SN 管理共用账户、生产组织和操作日志。",
+    "note": "箱号、托号作为独立模块接入，不改动现有 SN 生成、分配、交付与转移的业务规则。",
+    "toSn": "前往 SN 生成",
+    "plan": {
+      "boxGenerate": "按箱号规则库为生产订单生成箱号，并把 SN 装入箱号（一箱多枚 SN）。",
+      "boxTransfer": "箱号在生产订单、生产组织之间转移，箱内 SN 随箱转移。",
+      "boxQuery": "按箱号、PI、生产订单、SN 查询箱号及箱内 SN。",
+      "boxRules": "维护箱号编码规则（前缀、流水、后缀等），供箱号生成选用。",
+      "palletGenerate": "为生产订单生成托号，并把箱号装入托号（一托多箱）。",
+      "palletTransfer": "托号在生产订单、生产组织之间转移，托上箱号随托转移。",
+      "palletQuery": "按托号、箱号、PI、生产订单查询托号及托上箱号。"
+    }
+  },
+  "groups": {
+    "title": "用户组",
+    "desc": "按功能模块分权：每个用户属于一个用户组（即账户的角色），用户组决定能用的功能模块；普通操作员、审计员另按授权的生产组织限定数据范围。在「用户」页为账户设置角色和生产组织。",
+    "toUsers": "去用户页",
+    "accounts": "启用账户 {n} 个",
+    "matrix": "功能模块权限",
+    "module": "模块",
+    "function": "功能",
+    "note": "MES 接口账户不登录页面，只调用本生产组织的 MES 接口；用户组与侧栏菜单、接口权限是同一套规则。"
+  },
+  "departments": {
+    "title": "生产部门",
+    "desc": "来自金蝶生产订单明细的生产车间，按生产组织列出（只读，部门主数据在金蝶维护）；随订单同步更新。",
+    "search": "部门编码 / 名称",
+    "code": "部门编码",
+    "name": "部门名称",
+    "empty": "订单快照里还没有生产部门（金蝶订单明细的生产车间为空，或尚未同步）"
+  },
   "orders": {
     "title": "生产订单快照",
-    "desc": "来自金蝶已审核的生产订单，按物料行（单据 + 序号）落地。左表按单据汇总，右表为各物料行。客户编码为空的单据照常显示、照常生成与流转。",
+    "desc": "来自金蝶已审核的生产订单，按物料行（单据 + 序号）落地，可随时手动同步金蝶。上表按单据汇总，下表为所选单据的物料明细。客户编码为空的单据照常显示、照常生成与流转。",
+    "dept": "生产部门",
+    "productName": "产品名称",
+    "materialSpec": "规格型号",
+    "specDesc": "规格描述",
+    "customerPn": "客户 P/N",
+    "customerDesc": "客户产品描述",
     "syncOne": "按单据同步",
     "syncNow": "立即同步",
     "compareNow": "立即比对同步",
@@ -719,7 +780,7 @@
     "alertsN": "{n} 条提醒",
     "lines": "物料明细",
     "linesOf": "{bill} 的物料明细",
-    "pick": "在左表选择一张生产订单",
+    "pick": "在上表选择一张生产订单",
     "toGenerate": "去生成",
     "attachEmpty": "缺失",
     "attachConflict": "金蝶已有值 {k3}（页面填写 {manual}），生成用金蝶值",
@@ -838,7 +899,7 @@
     "notePlaceholder": "核查结论必填，不超过 500 字"
   },
   "rules": {
-    "title": "规则库",
+    "title": "SN 规则库",
     "desc": "维护 SN 编码规则：SN = 前缀 + PI 内流水（补 0）+ 米数前分隔符 + 米数（补 0，可选）+ 米数后分隔符 + 单位（可选）+ 后缀，各部分不限制字符。这里只维护规则，物料行选规则、绑定 PI 在生成页进行；按客户绑定只能通过接口设置，在「生效绑定」列只读显示。",
     "create": "新建规则",
     "owner": "所属组织",
@@ -1021,7 +1082,7 @@
     "quotaUnchanged": "号换了物料行时已生成数、已分配数随号移动，未生成额度不变。"
   },
   "users": {
-    "title": "账户",
+    "title": "用户",
     "desc": "只有系统管理员能创建、修改、停用、启用账户和重置密码；账户只停用、不删除。MES 接口账户不能登录页面，每次调用 MES 接口时直接带工号 + 密钥。",
     "tabAll": "账户",
     "tabMes": "MES 接口账户",
@@ -1036,7 +1097,7 @@
     "roleHint": {
       "admin": "唯一的系统管理员：全部生产组织、全部功能（含配置与账户管理）",
       "operator": "授权一个或多个生产组织：生产订单、SN 生成、分配、规则库（全局规则只能选用）、转移、交付处理、SN 导出与查询",
-      "auditor": "只读；授权一个或多个生产组织：SN 查询与导出、操作痕迹",
+      "auditor": "只读；授权一个或多个生产组织：SN 查询与导出、操作日志",
       "mes": "只能调用本生产组织的 MES 拉取、回执与只读接口"
     },
     "queryFactories": "授权生产组织",

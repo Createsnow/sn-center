@@ -46,6 +46,7 @@ export const api = {
   // ---------------- 生产订单快照
   orders: (params?: Q) => get("/orders", params),
   orderMeta: () => get("/orders/meta"),
+  orderDepartments: (params?: Q) => get("/orders/departments", params),
   orderLines: (billNo: string) => get(`/orders/${enc(billNo)}/lines`),
   orderCustomers: (q?: string) => get("/orders/customers", { q }),
   orderTargets: (q?: string, limit?: number, pi?: string) => get("/orders/targets", { q, limit, pi }),

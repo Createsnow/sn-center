@@ -7,29 +7,53 @@ const OPS = ["admin", "operator"];
 const AUDIT = ["admin", "auditor"];
 const ALL = ["admin", "operator", "auditor"];
 
-export const MENU = [
+/**
+ * 菜单按业务模块分组（工单、SN、箱号、托号、日志、账户、组织）；soon = 建设中的占位页（菜单标「建设中」）。
+ * 新模块在这里加一组，页面放 views/<模块>/；已有页面的路径不变（页面间链接、书签照常可用）。
+ */
+export type MenuItem = { path: string; title: string; icon: string; roles: string[]; superAdmin?: boolean; soon?: boolean };
+export type MenuGroup = { group: string; icon?: string; items: MenuItem[] };
+
+export const MENU: MenuGroup[] = [
   { group: "nav.groupWork", items: [
     { path: "/", title: "nav.dashboard", icon: "Odometer", roles: ALL },
   ] },
-  { group: "nav.groupHq", items: [
+  { group: "nav.groupOrder", icon: "Tickets", items: [
     { path: "/orders", title: "nav.orders", icon: "Tickets", roles: OPS },
+  ] },
+  { group: "nav.groupSn", icon: "Stamp", items: [
     { path: "/generate", title: "nav.generate", icon: "Finished", roles: OPS },
     { path: "/allocate", title: "nav.allocate", icon: "Promotion", roles: OPS },
-    { path: "/rules", title: "nav.rules", icon: "SetUp", roles: OPS },
-  ] },
-  { group: "nav.groupFactory", items: [
     { path: "/export", title: "nav.export", icon: "Download", roles: ALL },
     { path: "/transfer", title: "nav.transfer", icon: "Switch", roles: OPS },
-  ] },
-  { group: "nav.groupQuery", items: [
     { path: "/query", title: "nav.query", icon: "Search", roles: ALL },
+    { path: "/rules", title: "nav.rules", icon: "SetUp", roles: OPS },
+  ] },
+  { group: "nav.groupBox", icon: "Box", items: [
+    { path: "/box/generate", title: "nav.boxGenerate", icon: "Finished", roles: OPS, soon: true },
+    { path: "/box/transfer", title: "nav.boxTransfer", icon: "Switch", roles: OPS, soon: true },
+    { path: "/box/query", title: "nav.boxQuery", icon: "Search", roles: ALL, soon: true },
+    { path: "/box/rules", title: "nav.boxRules", icon: "SetUp", roles: OPS, soon: true },
+  ] },
+  { group: "nav.groupPallet", icon: "Van", items: [
+    { path: "/pallet/generate", title: "nav.palletGenerate", icon: "Finished", roles: OPS, soon: true },
+    { path: "/pallet/transfer", title: "nav.palletTransfer", icon: "Switch", roles: OPS, soon: true },
+    { path: "/pallet/query", title: "nav.palletQuery", icon: "Search", roles: ALL, soon: true },
+  ] },
+  { group: "nav.groupLog", icon: "Notebook", items: [
     { path: "/audit", title: "nav.audit", icon: "Notebook", roles: AUDIT },
   ] },
-  { group: "nav.groupSystem", items: [
+  { group: "nav.groupAccount", icon: "User", items: [
     { path: "/users", title: "nav.users", icon: "User", roles: ADMIN, superAdmin: true },
+    { path: "/user-groups", title: "nav.userGroups", icon: "UserFilled", roles: ADMIN, superAdmin: true },
+  ] },
+  { group: "nav.groupOrg", icon: "OfficeBuilding", items: [
     { path: "/factories", title: "nav.factories", icon: "OfficeBuilding", roles: ADMIN },
+    { path: "/departments", title: "nav.departments", icon: "School", roles: OPS },
   ] },
 ];
+
+const placeholder = () => import("@/views/Placeholder.vue");
 
 const views: Record<string, () => Promise<unknown>> = {
   "/": () => import("@/views/Dashboard.vue"),
@@ -42,13 +66,15 @@ const views: Record<string, () => Promise<unknown>> = {
   "/query": () => import("@/views/Query.vue"),
   "/audit": () => import("@/views/Audit.vue"),
   "/users": () => import("@/views/Users.vue"),
+  "/user-groups": () => import("@/views/UserGroups.vue"),
   "/factories": () => import("@/views/Factories.vue"),
+  "/departments": () => import("@/views/Departments.vue"),
 };
 
-const children = MENU.flatMap((g) => g.items).map((m) => ({
+const children = MENU.flatMap((g) => g.items.map((m) => ({ ...m, group: g.group }))).map((m) => ({
   path: m.path === "/" ? "" : m.path.slice(1),
-  component: views[m.path],
-  meta: { roles: m.roles, title: m.title, superAdmin: "superAdmin" in m && m.superAdmin },
+  component: views[m.path] ?? placeholder,
+  meta: { roles: m.roles, title: m.title, group: m.group, superAdmin: !!m.superAdmin, soon: !!m.soon },
 }));
 
 const router = createRouter({

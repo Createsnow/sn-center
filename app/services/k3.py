@@ -9,6 +9,8 @@
 - 字段位置按《生产订单查询接口》：PO 为表头 F_HX_PO，修改日期为表头 FModifyDate（ModifyDate），
   附件项次为明细 FTERM，米数为明细 Flength，产品单位为明细 FProductUnit。
   字段名是接口约定，写在代码里，不放 .env。
+- 另取几列只显示的明细字段（客户 P/N、客户描述、规格描述、物料规格型号、生产车间 = 生产部门），不参与比对、生成、
+  变更提醒；金蝶不认这些列时本进程改用基本列（这几列留空），同步照常。
 """
 
 from __future__ import annotations
@@ -23,6 +25,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Any
 
 import httpx
+import structlog
 
 from app.core.config import settings
 from app.core.errors import ErrorCode, biz
@@ -53,6 +56,18 @@ DETAIL_KEYS = (
     "FModifyDate",
     "FProductUnit",
 )
+#: 只显示的明细列（接在 DETAIL_KEYS 之后，顺序即 Row 的 customer_pn … dept_name）；
+#: 字段标识见 docs/k3/prd_mo_structure.md
+DISPLAY_KEYS = (
+    "FPN",
+    "FCD",
+    "FAdtek",
+    "FMaterialId.FSpecification",
+    "FWorkShopID.FNumber",
+    "FWorkShopID.FName",
+)
+#: 带只显示列查询失败、改用基本列后，隔多久再试带只显示列（秒）
+DISPLAY_RETRY_SECONDS = 3600
 ORG_FIELDS = "FNumber,FName,FForbidStatus"
 PAGE_SIZE = 2000
 #: 按单据编号批量拉明细时每次的单据数
@@ -83,6 +98,12 @@ class Row:
     qty: Decimal
     modify_time: datetime | None
     unit: str = ""
+    customer_pn: str = ""
+    customer_desc: str = ""
+    spec_desc: str = ""
+    material_spec: str = ""
+    dept_code: str = ""
+    dept_name: str = ""
 
 
 @dataclass(frozen=True)
@@ -223,8 +244,8 @@ def modify_time(v: Any) -> datetime | None:
 
 
 def _row_of_query(o: list) -> Row | None:
-    """一行明细，列顺序见 DETAIL_KEYS。"""
-    p = [o[i] if i < len(o) else None for i in range(len(DETAIL_KEYS))]
+    """一行明细，列顺序见 DETAIL_KEYS + DISPLAY_KEYS（只取基本列时只显示的几列为空）。"""
+    p = [o[i] if i < len(o) else None for i in range(len(DETAIL_KEYS) + len(DISPLAY_KEYS))]
     bill = text(p[0])
     if not bill:
         return None
@@ -244,12 +265,19 @@ def _row_of_query(o: list) -> Row | None:
         qty(p[11]),
         modify_time(p[13]),
         text(p[14]),
+        text(p[15]),
+        text(p[16]),
+        text(p[17]),
+        locale_name(p[18]),
+        text(p[19]),
+        locale_name(p[20]),
     )
 
 
 def rows_from_view(doc: dict | None) -> list[Row]:
     """View 单据：表头客户在 F_ora_Base.Number，生产组织在 PrdOrgId，PI / PO 在 F_HX_PI / F_HX_PO；
-    修改日期在 ModifyDate；明细在 TreeEntity，附件项次 FTERM、米数 Flength、产品单位 FProductUnit、数量 Qty。"""
+    修改日期在 ModifyDate；明细在 TreeEntity，附件项次 FTERM、米数 Flength、产品单位 FProductUnit、数量 Qty；
+    只显示的客户 P/N FPN、客户描述 FCD、规格描述 FAdtek、物料规格型号 MaterialId.Specification、生产车间 WorkShopID。"""
     out: list[Row] = []
     if not doc:
         return out
@@ -271,6 +299,7 @@ def rows_from_view(doc: dict | None) -> list[Row]:
             if not isinstance(lm, dict):
                 continue
             material = lm.get("MaterialId") if isinstance(lm.get("MaterialId"), dict) else {}
+            shop = lm.get("WorkShopID") if isinstance(lm.get("WorkShopID"), dict) else {}
             out.append(
                 Row(
                     head["bill_no"],
@@ -288,6 +317,12 @@ def rows_from_view(doc: dict | None) -> list[Row]:
                     qty(lm.get("Qty")),
                     head["modify_time"],
                     text(lm.get("FProductUnit")),
+                    text(lm.get("FPN")),
+                    text(lm.get("FCD")),
+                    text(lm.get("FAdtek")),
+                    locale_name(material.get("Specification")),
+                    text(shop.get("Number")),
+                    locale_name(shop.get("Name")),
                 )
             )
     return out
@@ -400,12 +435,12 @@ def _query_retry(http: httpx.Client, c: _Config, data: dict) -> list:
             time.sleep(c.page_retry_seconds)
 
 
-def _paged(http: httpx.Client, c: _Config, field_keys: str, filter_string: str, order: str) -> list:
-    """分页直到本页不足一页。任何一页（重试后）失败即整体失败。"""
+def _paged(http: httpx.Client, c: _Config, field_keys: str, filter_string: str, order: str, retry: bool = True) -> list:
+    """分页直到本页不足一页。任何一页（重试后）失败即整体失败；retry = False 时不重试。"""
     merged: list = []
     start = 0
     while True:
-        page = _query_retry(
+        page = (_query_retry if retry else _query)(
             http,
             c,
             {
@@ -422,6 +457,28 @@ def _paged(http: httpx.Client, c: _Config, field_keys: str, filter_string: str, 
         if len(page) < PAGE_SIZE:
             return merged
         start += PAGE_SIZE
+
+
+#: 金蝶不认只显示列时记下时间：此后 DISPLAY_RETRY_SECONDS 内只取基本列
+_display_failed_at: float | None = None
+
+
+def _detail_paged(http: httpx.Client, c: _Config, filter_string: str) -> list:
+    """明细查询：先带只显示列；失败（不重试）再按基本列查询（照常重试，仍失败抛出）。
+    基本列成功说明金蝶不认只显示列：记下时间，一段时间内只取基本列，快照里只显示的几列留空。"""
+    global _display_failed_at
+    base = ",".join(DETAIL_KEYS)
+    if _display_failed_at is None or time.monotonic() - _display_failed_at >= DISPLAY_RETRY_SECONDS:
+        try:
+            raw = _paged(http, c, ",".join(DETAIL_KEYS + DISPLAY_KEYS), filter_string, ORDER_BY, retry=False)
+            _display_failed_at = None
+            return raw
+        except BizError as e:
+            raw = _paged(http, c, base, filter_string, ORDER_BY)
+            _display_failed_at = time.monotonic()
+            structlog.get_logger().warning("k3_display_fields_skipped", reason=e.message)
+            return raw
+    return _paged(http, c, base, filter_string, ORDER_BY)
 
 
 def fetch_approved_heads() -> list[Head]:
@@ -448,14 +505,13 @@ def fetch_bills(bill_nos: list[str]) -> list[Row]:
     if not bill_nos:
         return []
     c = _config()
-    keys = ",".join(DETAIL_KEYS)
     rows: list[Row] = []
     with _client() as http:
         _login(http, c)
         for i in range(0, len(bill_nos), BILLS_PER_QUERY):
             part = bill_nos[i : i + BILLS_PER_QUERY]
             flt = f"{APPROVED_FILTER} AND FBillNo IN ({','.join(_quote(b) for b in part)})"
-            for o in _paged(http, c, keys, flt, ORDER_BY):
+            for o in _detail_paged(http, c, flt):
                 r = _row_of_query(o) if isinstance(o, list) else None
                 if r is not None:
                     rows.append(r)
@@ -467,7 +523,7 @@ def fetch_all() -> list[Row]:
     c = _config()
     with _client() as http:
         _login(http, c)
-        raw = _paged(http, c, ",".join(DETAIL_KEYS), APPROVED_FILTER, ORDER_BY)
+        raw = _detail_paged(http, c, APPROVED_FILTER)
     return [r for r in (_row_of_query(o) for o in raw if isinstance(o, list)) if r is not None]
 
 

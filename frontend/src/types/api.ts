@@ -147,6 +147,13 @@ export interface OrderLine {
   unit_source: "K3" | "MANUAL" | "EMPTY";
   unit_manual: string | null;
   qty: number;
+  /** 只显示的金蝶字段：客户 P/N、客户产品描述、规格描述、物料规格型号、生产部门（生产车间） */
+  customer_pn: string;
+  customer_desc: string;
+  spec_desc: string;
+  material_spec: string;
+  dept_code: string;
+  dept_name: string;
   generated_qty: number;
   own_generated_qty: number;
   allocated_qty: number;
@@ -168,6 +175,8 @@ export interface OrderBill extends BillState {
   pi: string;
   org_code: string;
   org_name: string;
+  /** 生产部门（单据下各物料行的生产车间，多个用「、」连接） */
+  dept_name: string;
   /** 金蝶单据状态：快照只含已审核，固定为 C */
   doc_status: "C";
   /** 金蝶修改日期：列表按它从新到旧 */

@@ -122,7 +122,7 @@ K3 = FakeK3()
 #: 假金蝶里的单据：单据编号 → View 返回的单据（含 DocumentStatus）
 BILLS: dict[str, dict] = {}
 #: 置为 True 时 ExecuteBillQuery 返回失败（模拟金蝶故障）
-K3_FAIL = {"query": False, "view": False}
+K3_FAIL = {"query": False, "view": False, "display": False}
 
 
 def _zh(v: Any) -> str:
@@ -134,8 +134,21 @@ def _zh(v: Any) -> str:
     return "" if v is None else str(v)
 
 
-def _detail_rows(doc: dict) -> list[list]:
-    """与 k3.DETAIL_KEYS 的列顺序一致。"""
+def _display_cols(line: dict) -> list:
+    """与 k3.DISPLAY_KEYS 的列顺序一致。"""
+    shop = line.get("WorkShopID") or {}
+    return [
+        line.get("FPN", " "),
+        line.get("FCD", " "),
+        line.get("FAdtek", " "),
+        _zh(line["MaterialId"].get("Specification")),
+        shop.get("Number", ""),
+        _zh(shop.get("Name")),
+    ]
+
+
+def _detail_rows(doc: dict, display: bool = False) -> list[list]:
+    """与 k3.DETAIL_KEYS（display = True 时再接 k3.DISPLAY_KEYS）的列顺序一致。"""
     base = doc.get("F_ora_Base") or {}
     org = doc["PrdOrgId"]
     return [
@@ -156,6 +169,7 @@ def _detail_rows(doc: dict) -> list[list]:
             doc["ModifyDate"],
             line.get("FProductUnit", " "),
         ]
+        + (_display_cols(line) if display else [])
         for line in doc["TreeEntity"]
     ]
 
@@ -189,13 +203,17 @@ def install_k3() -> None:
             docs = [d for d in list(BILLS.values()) if d["DocumentStatus"] == "C"]
             if data["FieldKeys"] == "FBillNo,FModifyDate":
                 return [[d["BillNo"], d["ModifyDate"]] for d in docs]
+            display = "FPN" in data["FieldKeys"].split(",")
+            if display and K3_FAIL["display"]:
+                # 金蝶不认只显示列
+                return [[fail]]
             m = _IN.search(data.get("FilterString", ""))
             if m:
                 wanted = {x.strip().strip("'") for x in m.group(1).split(",")}
                 docs = [d for d in docs if d["BillNo"] in wanted]
             rows: list = []
             for d in docs:
-                rows += _detail_rows(d)
+                rows += _detail_rows(d, display)
             return rows
         return {}
 
@@ -685,7 +703,10 @@ def _fresh_sn(request):
         BILLS.clear()
         MES.reset()
         RECEIPT_REPLIES.clear()
-        K3_FAIL.update(query=False, view=False)
+        K3_FAIL.update(query=False, view=False, display=False)
+        from app.services import k3
+
+        k3._display_failed_at = None
     yield
 
 

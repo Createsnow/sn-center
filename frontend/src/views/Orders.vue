@@ -45,99 +45,116 @@
       </el-tab-pane>
     </el-tabs>
 
-    <el-row v-show="tab === 'bills'" :gutter="16" class="cols">
-      <el-col :lg="14" :xs="24">
-        <div class="surface fill">
-          <div class="toolbar">
-            <el-input v-model="f.q" :placeholder="t('orders.search')" clearable prefix-icon="Search" class="w-search" @keyup.enter="load(1)" @clear="load(1)" />
-            <el-input v-model="f.customer" :placeholder="t('common.customer')" clearable @keyup.enter="load(1)" @clear="load(1)" />
-            <FactorySelect v-if="store.multiScope" v-model="f.factory_code" scoped clearable @update:model-value="load(1)" />
-            <el-button type="primary" @click="load(1)">{{ t("common.search") }}</el-button>
-          </div>
+    <!-- 上：生产订单（每张单据一行）；下：所选单据的物料明细（字段按 PI、生产订单、项次、物料、米数、单位、数量、PO、客户 P/N、
+         客户产品描述、产品名称、规格、生产部门、生产组织） -->
+    <div v-show="tab === 'bills'" class="stack">
+      <div class="surface fill bills-pane">
+        <div class="toolbar">
+          <el-input v-model="f.q" :placeholder="t('orders.search')" clearable prefix-icon="Search" class="w-search" @keyup.enter="load(1)" @clear="load(1)" />
+          <el-input v-model="f.customer" :placeholder="t('common.customer')" clearable @keyup.enter="load(1)" @clear="load(1)" />
+          <FactorySelect v-if="store.multiScope" v-model="f.factory_code" scoped clearable @update:model-value="load(1)" />
+          <el-button type="primary" @click="load(1)">{{ t("common.search") }}</el-button>
+        </div>
+        <div class="fill-body">
+          <el-table v-loading="state.loading" :data="items" highlight-current-row size="small" height="100%"
+            :empty-text="t('common.empty')" @current-change="select">
+            <el-table-column prop="bill_no" :label="t('common.billNo')" min-width="130" show-overflow-tooltip />
+            <el-table-column prop="pi" label="PI" min-width="130" show-overflow-tooltip />
+            <el-table-column :label="t('orders.state')" min-width="140">
+              <template #default="{ row }"><BillTags :s="row" :doc-status="row.doc_status" /></template>
+            </el-table-column>
+            <el-table-column :label="t('orders.totalQty')" align="right" width="80">
+              <template #default="{ row }"><span class="num">{{ row.total_qty }}</span></template>
+            </el-table-column>
+            <el-table-column :label="t('common.factory')" min-width="120" show-overflow-tooltip>
+              <template #default="{ row }">{{ row.org_name }}<span class="muted">（{{ row.org_code }}）</span></template>
+            </el-table-column>
+            <el-table-column :label="t('orders.dept')" min-width="110" show-overflow-tooltip>
+              <template #default="{ row }">{{ row.dept_name || "—" }}</template>
+            </el-table-column>
+            <el-table-column prop="po" label="PO" min-width="110" show-overflow-tooltip />
+            <el-table-column prop="customer_code" :label="t('common.customer')" width="90" show-overflow-tooltip />
+            <!-- 金蝶修改日期（金蝶时间原样显示，放最后一列）；列表按它从新到旧排 -->
+            <el-table-column :label="t('orders.modifyDate')" width="160">
+              <template #default="{ row }"><span class="num">{{ row.modify_time || "—" }}</span></template>
+            </el-table-column>
+          </el-table>
+        </div>
+        <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="state.total" :page-size="state.pageSize"
+          :current-page="state.page" :page-sizes="[20, 50, 100]" @current-change="load" @size-change="onSize" />
+      </div>
+      <div class="surface fill lines-pane">
+        <div class="surface__title">
+          <span>{{ detail ? t("orders.linesOf", { bill: detail.bill_no }) : t("orders.lines") }}</span>
+          <el-button v-if="detail && store.canAct" type="primary" size="small"
+            @click="router.push({ path: '/generate', query: { bill_no: detail.bill_no } })">
+            {{ t("orders.toGenerate") }}
+          </el-button>
+        </div>
+        <template v-if="detail">
+          <el-descriptions :column="4" size="small" border class="mb">
+            <el-descriptions-item label="PI">{{ detail.pi }}</el-descriptions-item>
+            <el-descriptions-item label="PO">{{ detail.po || "—" }}</el-descriptions-item>
+            <el-descriptions-item :label="t('common.customer')">{{ detail.customer_code || "—" }}</el-descriptions-item>
+            <el-descriptions-item :label="t('orders.modifyDate')">{{ detail.modify_time || "—" }}</el-descriptions-item>
+            <el-descriptions-item :label="t('common.factory')">{{ detail.org_name }}（{{ detail.org_code }}）</el-descriptions-item>
+            <el-descriptions-item :label="t('orders.dept')">{{ detail.dept_name || "—" }}</el-descriptions-item>
+            <el-descriptions-item :label="t('orders.state')" :span="2"><BillTags :s="detail.state" :doc-status="detail.doc_status" /></el-descriptions-item>
+          </el-descriptions>
           <div class="fill-body">
-            <el-table v-loading="state.loading" :data="items" highlight-current-row size="small" height="100%"
-              :empty-text="t('common.empty')" @current-change="select">
-              <el-table-column prop="bill_no" :label="t('common.billNo')" min-width="130" show-overflow-tooltip />
-              <el-table-column prop="pi" label="PI" min-width="130" show-overflow-tooltip />
-              <el-table-column :label="t('orders.state')" min-width="140">
-                <template #default="{ row }"><BillTags :s="row" :doc-status="row.doc_status" /></template>
+            <el-table v-loading="linesLoading" :data="detail.lines" size="small" height="100%" :empty-text="t('common.empty')">
+              <el-table-column prop="seq" label="#" width="44" />
+              <el-table-column :label="t('common.attachNo')" min-width="120">
+                <template #default="{ row }">
+                  <div class="attach">
+                    <span v-if="row.attach_source === 'EMPTY'" class="err">{{ t("orders.attachEmpty") }}</span>
+                    <span v-else>{{ row.attach_no }}</span>
+                  </div>
+                  <div v-if="row.attach_k3_conflict" class="muted warn">
+                    {{ t("orders.attachConflict", { k3: row.attach_k3, manual: row.attach_manual }) }}
+                  </div>
+                </template>
               </el-table-column>
-              <el-table-column :label="t('orders.totalQty')" align="right" width="80">
-                <template #default="{ row }"><span class="num">{{ row.total_qty }}</span></template>
+              <el-table-column prop="material_code" :label="t('common.material')" min-width="110" show-overflow-tooltip />
+              <el-table-column prop="material_name" :label="t('orders.productName')" min-width="150" show-overflow-tooltip />
+              <el-table-column :label="t('orders.materialSpec')" min-width="160" show-overflow-tooltip>
+                <template #default="{ row }">{{ row.material_spec || "—" }}</template>
               </el-table-column>
-              <el-table-column :label="t('common.factory')" min-width="120" show-overflow-tooltip>
-                <template #default="{ row }">{{ row.org_name }}<span class="muted">（{{ row.org_code }}）</span></template>
+              <el-table-column :label="t('orders.specDesc')" min-width="140" show-overflow-tooltip>
+                <template #default="{ row }">{{ row.spec_desc || "—" }}</template>
               </el-table-column>
-              <el-table-column prop="po" label="PO" min-width="110" show-overflow-tooltip />
-              <el-table-column prop="customer_code" :label="t('common.customer')" width="90" show-overflow-tooltip />
-              <!-- 金蝶修改日期（金蝶时间原样显示，放最后一列）；列表按它从新到旧排 -->
-              <el-table-column :label="t('orders.modifyDate')" width="160">
-                <template #default="{ row }"><span class="num">{{ row.modify_time || "—" }}</span></template>
+              <el-table-column :label="t('common.length')" width="90" show-overflow-tooltip>
+                <template #default="{ row }">
+                  <!-- 金蝶米数为空且未填写：标红「缺失」（规则带米数时须在生成页填写）；其他照金蝶值 / 页面填写的值显示 -->
+                  <span v-if="row.length_source === 'EMPTY'" class="err">{{ t("orders.lengthEmpty") }}</span>
+                  <span v-else>{{ row.length }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column :label="t('common.unit')" width="70" show-overflow-tooltip>
+                <template #default="{ row }">
+                  <!-- 金蝶产品单位为空且未填写：标红「缺失」（规则带单位时须在生成页填写）；其他照金蝶值（含中文也照用）/ 页面填写的值显示 -->
+                  <span v-if="row.unit_source === 'EMPTY'" class="err">{{ t("orders.unitEmpty") }}</span>
+                  <span v-else>{{ row.unit }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column :label="t('common.qty')" align="right" width="70">
+                <template #default="{ row }"><span class="num">{{ row.qty }}</span></template>
+              </el-table-column>
+              <el-table-column :label="t('orders.customerPn')" min-width="120" show-overflow-tooltip>
+                <template #default="{ row }">{{ row.customer_pn || "—" }}</template>
+              </el-table-column>
+              <el-table-column :label="t('orders.customerDesc')" min-width="160" show-overflow-tooltip>
+                <template #default="{ row }">{{ row.customer_desc || "—" }}</template>
+              </el-table-column>
+              <el-table-column :label="t('orders.dept')" min-width="110" show-overflow-tooltip>
+                <template #default="{ row }">{{ row.dept_name || "—" }}</template>
               </el-table-column>
             </el-table>
           </div>
-          <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="state.total" :page-size="state.pageSize"
-            :current-page="state.page" :page-sizes="[20, 50, 100]" @current-change="load" @size-change="onSize" />
-        </div>
-      </el-col>
-      <el-col :lg="10" :xs="24">
-        <div class="surface fill">
-          <div class="surface__title">
-            <span>{{ detail ? t("orders.linesOf", { bill: detail.bill_no }) : t("orders.lines") }}</span>
-            <el-button v-if="detail && store.canAct" type="primary" size="small"
-              @click="router.push({ path: '/generate', query: { bill_no: detail.bill_no } })">
-              {{ t("orders.toGenerate") }}
-            </el-button>
-          </div>
-          <template v-if="detail">
-            <el-descriptions :column="2" size="small" border class="mb">
-              <el-descriptions-item label="PI">{{ detail.pi }}</el-descriptions-item>
-              <el-descriptions-item label="PO">{{ detail.po }}</el-descriptions-item>
-              <el-descriptions-item :label="t('common.customer')">{{ detail.customer_code }}</el-descriptions-item>
-              <el-descriptions-item :label="t('common.factory')">{{ detail.org_name }}（{{ detail.org_code }}）</el-descriptions-item>
-              <el-descriptions-item :label="t('orders.state')"><BillTags :s="detail.state" :doc-status="detail.doc_status" /></el-descriptions-item>
-              <el-descriptions-item :label="t('orders.modifyDate')">{{ detail.modify_time || "—" }}</el-descriptions-item>
-            </el-descriptions>
-            <div class="fill-body">
-              <el-table v-loading="linesLoading" :data="detail.lines" size="small" height="100%" :empty-text="t('common.empty')">
-                <el-table-column prop="seq" label="#" width="44" />
-                <el-table-column :label="t('common.attachNo')" min-width="120">
-                  <template #default="{ row }">
-                    <div class="attach">
-                      <span v-if="row.attach_source === 'EMPTY'" class="err">{{ t("orders.attachEmpty") }}</span>
-                      <span v-else>{{ row.attach_no }}</span>
-                    </div>
-                    <div v-if="row.attach_k3_conflict" class="muted warn">
-                      {{ t("orders.attachConflict", { k3: row.attach_k3, manual: row.attach_manual }) }}
-                    </div>
-                  </template>
-                </el-table-column>
-                <el-table-column prop="material_code" :label="t('common.material')" min-width="110" show-overflow-tooltip />
-                <el-table-column prop="material_name" :label="t('common.materialName')" min-width="160" show-overflow-tooltip />
-                <el-table-column :label="t('common.length')" width="90" show-overflow-tooltip>
-                  <template #default="{ row }">
-                    <!-- 金蝶米数为空且未填写：标红「缺失」（规则带米数时须在生成页填写）；其他照金蝶值 / 页面填写的值显示 -->
-                    <span v-if="row.length_source === 'EMPTY'" class="err">{{ t("orders.lengthEmpty") }}</span>
-                    <span v-else>{{ row.length }}</span>
-                  </template>
-                </el-table-column>
-                <el-table-column :label="t('common.unit')" width="70" show-overflow-tooltip>
-                  <template #default="{ row }">
-                    <!-- 金蝶产品单位为空且未填写：标红「缺失」（规则带单位时须在生成页填写）；其他照金蝶值（含中文也照用）/ 页面填写的值显示 -->
-                    <span v-if="row.unit_source === 'EMPTY'" class="err">{{ t("orders.unitEmpty") }}</span>
-                    <span v-else>{{ row.unit }}</span>
-                  </template>
-                </el-table-column>
-                <el-table-column :label="t('common.qty')" align="right" width="60">
-                  <template #default="{ row }"><span class="num">{{ row.qty }}</span></template>
-                </el-table-column>
-              </el-table>
-            </div>
-          </template>
-          <el-empty v-else :description="t('orders.pick')" />
-        </div>
-      </el-col>
-    </el-row>
+        </template>
+        <el-empty v-else :description="t('orders.pick')" :image-size="64" />
+      </div>
+    </div>
 
     <div v-show="tab === 'alerts'" class="surface fill">
       <div class="toolbar">
@@ -430,11 +447,10 @@ onMounted(async () => {
 .arrow { margin: 0 6px; color: var(--app-muted); }
 .attach { display: flex; align-items: center; gap: 6px; }
 :deep(.tags) { display: flex; flex-wrap: wrap; gap: 4px; }
-.el-col { margin-bottom: 16px; }
-/* 宽屏左右两栏铺满剩余高度，各自在卡片内滚动 */
+.stack { display: flex; flex-direction: column; gap: 16px; }
+/* 宽屏上下两栏平分剩余高度，各自在卡片内滚动；屏幕矮时每栏不低于 420px，整页滚动 */
 @media (min-width: 1200px) {
-  .cols { flex: 1; min-height: 0; flex-wrap: nowrap; }
-  .cols > .el-col { margin-bottom: 0; display: flex; flex-direction: column; }
-  .cols > .el-col > .surface { flex: 1; }
+  .stack { flex: 1; min-height: 0; }
+  .stack > .surface { flex: 1 1 0; min-height: 420px; }
 }
 </style>

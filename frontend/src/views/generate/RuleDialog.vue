@@ -96,7 +96,8 @@ import { ApiError } from "@/api/http";
 import { BASES } from "@/constants";
 import type { CustomRule, OrderLine } from "@/types/api";
 
-const props = defineProps<{ modelValue: boolean; pi: string; lines: OrderLine[]; options: any[] }>();
+/** prefer：打开时优先的方式（底部「自定义规则」「选定规则库」按钮）；不传时按物料行现有规则。 */
+const props = defineProps<{ modelValue: boolean; pi: string; lines: OrderLine[]; options: any[]; prefer?: "LIBRARY" | "CUSTOM" }>();
 const emit = defineEmits<{ (e: "update:modelValue", v: boolean): void; (e: "saved"): void }>();
 const { t } = useI18n();
 
@@ -142,6 +143,7 @@ function onOpen() {
     mode.value = props.options.length ? "LIBRARY" : "CUSTOM";
     Object.assign(custom, customDefault());
   }
+  if (props.prefer) mode.value = props.prefer === "LIBRARY" && !props.options.length ? "CUSTOM" : props.prefer;
   picked.value = cur?.rule_id ? props.options.find((o) => o.rule_id === cur.rule_id) ?? null : null;
   if (mode.value === "CUSTOM") schedule();
 }

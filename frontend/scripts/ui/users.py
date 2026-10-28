@@ -1,6 +1,6 @@
 # 账户页词条：key -> (简体中文, English, Tiếng Việt)
 M = {
-"users.title": ("账户", "Accounts", "Tài khoản"),
+"users.title": ("用户", "Users", "Người dùng"),
 "users.desc": ("只有系统管理员能创建、修改、停用、启用账户和重置密码；账户只停用、不删除。MES 接口账户不能登录页面，每次调用 MES 接口时直接带工号 + 密钥。",
   "Only the system administrator can create, edit, disable and enable accounts and reset passwords; accounts are disabled, never deleted. MES interface accounts cannot sign in to pages; they send employee No. + secret directly on every MES API call.",
   "Chỉ quản trị viên hệ thống mới được tạo, sửa, vô hiệu, kích hoạt tài khoản và đặt lại mật khẩu; tài khoản chỉ bị vô hiệu, không bị xóa. Tài khoản giao diện MES không đăng nhập trang, mỗi lần gọi API MES gửi trực tiếp mã NV + khóa bí mật."),
@@ -16,7 +16,7 @@ M = {
 "users.role": ("角色", "Role", "Vai trò"),
 "users.roleHint.admin": ("唯一的系统管理员：全部生产组织、全部功能（含配置与账户管理）", "The only system administrator: every production org, every function (including configuration and account management)", "Quản trị hệ thống duy nhất: mọi tổ chức sản xuất, mọi chức năng (gồm cấu hình và quản lý tài khoản)"),
 "users.roleHint.operator": ("授权一个或多个生产组织：生产订单、SN 生成、分配、规则库（全局规则只能选用）、转移、交付处理、SN 导出与查询", "Authorized for one or more production orgs: production orders, SN generation, allocation, rule library (global rules are use-only), transfers, delivery handling, SN export and query", "Được ủy quyền một hoặc nhiều tổ chức: lệnh sản xuất, tạo SN, phân bổ, thư viện quy tắc (quy tắc dùng chung chỉ được chọn dùng), chuyển, xử lý giao, xuất và tra cứu SN"),
-"users.roleHint.auditor": ("只读；授权一个或多个生产组织：SN 查询与导出、操作痕迹", "Read-only; authorized for one or more production orgs: SN query and export, audit trail", "Chỉ xem; được ủy quyền một hoặc nhiều tổ chức: tra cứu và xuất SN, nhật ký thao tác"),
+"users.roleHint.auditor": ("只读；授权一个或多个生产组织：SN 查询与导出、操作日志", "Read-only; authorized for one or more production orgs: SN query and export, operation log", "Chỉ xem; được ủy quyền một hoặc nhiều tổ chức: tra cứu và xuất SN, nhật ký thao tác"),
 "users.roleHint.mes": ("只能调用本生产组织的 MES 拉取、回执与只读接口", "Can only call the MES pull, receipt and read-only APIs of its org", "Chỉ gọi được API kéo, biên nhận và chỉ đọc của tổ chức mình"),
 "users.queryFactories": ("授权生产组织", "Authorized production orgs", "Tổ chức được ủy quyền"),
 "users.allFactoriesOption": ("至少选一个", "Select at least one", "Chọn ít nhất một"),

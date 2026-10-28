@@ -1,8 +1,9 @@
 {
   "app": {
-    "title": "Multi-org SN Control",
-    "short": "SN Center",
-    "subtitle": "HQ generates, allocates & delivers",
+    "title": "Adtek Traceability Hub",
+    "desc": "As the group-level, centralized and trusted serial number (SN) control foundation, the Traceability Hub serves distributed manufacturing across production orgs. It builds one SN lifecycle governance system that coordinates SN resource allocation, rule distribution, generation and delivery, validation and interception, and closed-loop traceability for every factory and line order in the group, preventing duplicate, wrong and missing SNs at the source. SN resources across plants are standardized, centralized and trusted, supporting manufacturing quality compliance and digital supply-chain collaboration.",
+    "short": "Traceability Hub",
+    "subtitle": "Adtek · group SN control",
     "empNo": "Employee No.",
     "changePassword": "Change password",
     "logout": "Sign out",
@@ -26,21 +27,34 @@
   },
   "nav": {
     "groupWork": "Workspace",
-    "groupHq": "SN issuing",
-    "groupFactory": "Delivery & transfer",
-    "groupQuery": "Query & audit",
-    "groupSystem": "System",
+    "groupOrder": "Work orders",
+    "groupSn": "SN management",
+    "groupBox": "Carton numbers",
+    "groupPallet": "Pallet numbers",
+    "groupLog": "Logs",
+    "groupAccount": "Accounts",
+    "groupOrg": "Organizations",
+    "soon": "Coming soon",
     "dashboard": "Dashboard",
     "orders": "Production orders",
     "generate": "SN generation",
     "allocate": "SN allocation",
-    "rules": "Rule library",
+    "rules": "SN rule library",
     "export": "SN export",
     "transfer": "SN transfer",
     "query": "SN query",
-    "audit": "Audit trail",
-    "users": "Accounts",
-    "factories": "Production orgs"
+    "boxGenerate": "Carton No. generation",
+    "boxTransfer": "Carton No. transfer",
+    "boxQuery": "Carton No. query",
+    "boxRules": "Carton No. rules",
+    "palletGenerate": "Pallet No. generation",
+    "palletTransfer": "Pallet No. transfer",
+    "palletQuery": "Pallet No. query",
+    "audit": "Operation log",
+    "users": "Users",
+    "userGroups": "User groups",
+    "factories": "Production orgs",
+    "departments": "Production departments"
   },
   "common": {
     "search": "Search",
@@ -267,7 +281,7 @@
   },
   "login": {
     "title": "Sign in",
-    "lead": "HQ generates SNs per production order material line and allocates them to the order's production org; MES orgs get them pushed, and every org can download them on the SN export page. SNs never repeat within a PI.",
+    "lead": "The group-level, centralized and trusted SN control foundation: SN rule distribution, generation and delivery, validation and closed-loop traceability for every factory and line order, preventing duplicate, wrong and missing SNs at the source.",
     "point1": "Preview before generating; stale when the max changes",
     "point2": "Delivery batches with receipts, idempotent by batch No.",
     "point3": "Every bill and org transfer is audited",
@@ -291,8 +305,8 @@
     "desc": "Allocate generated SNs to the order's production org: MES orgs get them pushed batch by batch automatically, and the next batch goes only after MES has saved the previous one and sent its receipt; an interrupted push can be resumed; every allocated SN can be downloaded on the “SN export” page. Allocate a whole PI or the ticked lines.",
     "summary": "To allocate {pending} · to push {unbatched}",
     "tab": {
-      "TO_ALLOCATE": "To do",
-      "ALLOCATED": "Allocated"
+      "TO_ALLOCATE": "To allocate",
+      "ALLOCATED": "Allocated / pushed"
     },
     "state": {
       "INTERRUPTED": "Push interrupted",
@@ -342,7 +356,7 @@
     "void": "Void"
   },
   "audit": {
-    "title": "Audit trail",
+    "title": "Operation log",
     "retention": "Records stay online for {days} days, then move to the archive month by month; ",
     "retentionForever": "Records are kept online permanently.",
     "archiveKeep": "kept {days} days in total.",
@@ -656,6 +670,15 @@
     "ruleNow": "Current rule {rule}: {format}",
     "changeRule": "Change rule",
     "pickRule": "Pick rule",
+    "customRuleBtn": "Custom rule",
+    "libraryRuleBtn": "Pick from library",
+    "viewLines": "Main info",
+    "viewSns": "SN details {n}",
+    "customerSn": "Customer SN",
+    "billNo": "Production order",
+    "snEach": "View each",
+    "snEmpty": "No SNs generated yet",
+    "snNote": "Generated, unrevoked SNs of this PI by range (latest serial first); view each SN on the “SN query” page.",
     "scopeWholePi": "Nothing ticked = whole PI",
     "scopeLinesN": "{n} material lines selected",
     "clearSel": "Clear",
@@ -680,9 +703,47 @@
     "endSn": "End SN",
     "revokeRemind": "After revoking, the SNs of the selected material lines are deleted from the pool, the PI's last serial and generated counts are rolled back, and the lines' attachment item, length and unit become editable again so they can be regenerated. This cannot be undone."
   },
+  "soon": {
+    "desc": "This module is under construction; planned features are below. Once live it shares accounts, production orgs and the operation log with SN management.",
+    "note": "Carton and pallet numbers join as separate modules and do not change the existing SN generation, allocation, delivery and transfer rules.",
+    "toSn": "Go to SN generation",
+    "plan": {
+      "boxGenerate": "Generate carton numbers for production orders from the carton rule library and pack SNs into cartons (many SNs per carton).",
+      "boxTransfer": "Transfer cartons between production orders and orgs; SNs in a carton move with it.",
+      "boxQuery": "Look up cartons and their SNs by carton No., PI, production order or SN.",
+      "boxRules": "Maintain carton numbering rules (prefix, serial, suffix, …) for carton generation.",
+      "palletGenerate": "Generate pallet numbers for production orders and load cartons onto pallets (many cartons per pallet).",
+      "palletTransfer": "Transfer pallets between production orders and orgs; cartons on a pallet move with it.",
+      "palletQuery": "Look up pallets and their cartons by pallet No., carton No., PI or production order."
+    }
+  },
+  "groups": {
+    "title": "User groups",
+    "desc": "Permissions by functional module: each user belongs to one user group (the account's role), which decides the modules it can use; operators and auditors are further limited to their authorized production orgs. Set roles and orgs on the “Users” page.",
+    "toUsers": "Go to users",
+    "accounts": "{n} active accounts",
+    "matrix": "Module permissions",
+    "module": "Module",
+    "function": "Function",
+    "note": "MES interface accounts never sign in to pages and only call the MES APIs of their org; user groups follow the same rules as the menu and API permissions."
+  },
+  "departments": {
+    "title": "Production departments",
+    "desc": "Production workshops from Kingdee production order lines, listed by production org (read-only; department master data is maintained in Kingdee); updated with order sync.",
+    "search": "Dept code / name",
+    "code": "Dept code",
+    "name": "Dept name",
+    "empty": "No departments in the order snapshot yet (the Kingdee lines have no workshop, or not synced yet)"
+  },
   "orders": {
     "title": "Production order snapshot",
-    "desc": "Approved Kingdee production orders, stored per material line (bill + line No.). Left: totals per bill; right: material lines. Bills without a customer are shown and processed as usual.",
+    "desc": "Approved Kingdee production orders, stored per material line (bill + line No.); sync with Kingdee manually at any time. Top: totals per bill; bottom: material lines of the selected bill. Bills without a customer are shown and processed as usual.",
+    "dept": "Production dept",
+    "productName": "Product name",
+    "materialSpec": "Specification",
+    "specDesc": "Spec description",
+    "customerPn": "Customer P/N",
+    "customerDesc": "Customer product description",
     "syncOne": "Sync bill",
     "syncNow": "Sync now",
     "compareNow": "Compare sync now",
@@ -719,7 +780,7 @@
     "alertsN": "{n} alerts",
     "lines": "Material lines",
     "linesOf": "Lines of {bill}",
-    "pick": "Pick a bill on the left",
+    "pick": "Pick a bill above",
     "toGenerate": "Generate",
     "attachEmpty": "Missing",
     "attachConflict": "Kingdee now has {k3} (entered {manual}); generation uses the Kingdee value",
@@ -838,7 +899,7 @@
     "notePlaceholder": "Findings required, at most 500 characters"
   },
   "rules": {
-    "title": "Rule library",
+    "title": "SN rule library",
     "desc": "Maintain SN rules: SN = prefix + serial within the PI (zero-padded) + separator + length (zero-padded, optional) + separator + unit (optional) + suffix, any characters allowed. Rules are only maintained here; choosing rules for material lines and binding a PI happen on the generation page; customer bindings can only be set via the API and are shown read-only under “Bindings”.",
     "create": "New rule",
     "owner": "Owner org",
@@ -1021,7 +1082,7 @@
     "quotaUnchanged": "When SNs change material line, generated and allocated counts move with them; the remaining quota does not change."
   },
   "users": {
-    "title": "Accounts",
+    "title": "Users",
     "desc": "Only the system administrator can create, edit, disable and enable accounts and reset passwords; accounts are disabled, never deleted. MES interface accounts cannot sign in to pages; they send employee No. + secret directly on every MES API call.",
     "tabAll": "Accounts",
     "tabMes": "MES interface accounts",
@@ -1036,7 +1097,7 @@
     "roleHint": {
       "admin": "The only system administrator: every production org, every function (including configuration and account management)",
       "operator": "Authorized for one or more production orgs: production orders, SN generation, allocation, rule library (global rules are use-only), transfers, delivery handling, SN export and query",
-      "auditor": "Read-only; authorized for one or more production orgs: SN query and export, audit trail",
+      "auditor": "Read-only; authorized for one or more production orgs: SN query and export, operation log",
       "mes": "Can only call the MES pull, receipt and read-only APIs of its org"
     },
     "queryFactories": "Authorized production orgs",

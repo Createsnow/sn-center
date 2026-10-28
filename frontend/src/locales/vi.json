@@ -1,8 +1,9 @@
 {
   "app": {
-    "title": "Quản lý SN chống trùng đa tổ chức",
-    "short": "Trung tâm SN",
-    "subtitle": "Trụ sở tạo, phân bổ & giao",
+    "title": "Adtek · Nền tảng truy xuất mã",
+    "desc": "Là nền tảng quản lý số sê-ri (SN) tập trung, tin cậy cấp tập đoàn, Nền tảng truy xuất mã phục vụ sản xuất phân tán giữa các tổ chức sản xuất. Hệ thống quản trị vòng đời SN thống nhất điều phối phân bổ tài nguyên SN, ban hành quy tắc, tạo và phân phối, kiểm tra chặn lỗi và truy xuất khép kín cho mọi nhà máy, đơn hàng dây chuyền trong tập đoàn, ngăn trùng mã, sai mã, thiếu mã ngay từ nguồn; tài nguyên SN liên nhà máy được chuẩn hóa, tập trung và tin cậy, hỗ trợ tuân thủ chất lượng sản xuất và cộng tác số hóa chuỗi cung ứng.",
+    "short": "Truy xuất mã",
+    "subtitle": "Adtek · quản lý SN tập đoàn",
     "empNo": "Mã NV",
     "changePassword": "Đổi mật khẩu",
     "logout": "Đăng xuất",
@@ -26,21 +27,34 @@
   },
   "nav": {
     "groupWork": "Bàn làm việc",
-    "groupHq": "Cấp phát SN",
-    "groupFactory": "Giao & chuyển",
-    "groupQuery": "Tra cứu & nhật ký",
-    "groupSystem": "Hệ thống",
+    "groupOrder": "Quản lý lệnh sản xuất",
+    "groupSn": "Quản lý SN",
+    "groupBox": "Quản lý số thùng",
+    "groupPallet": "Quản lý số pallet",
+    "groupLog": "Quản lý nhật ký",
+    "groupAccount": "Quản lý tài khoản",
+    "groupOrg": "Quản lý tổ chức",
+    "soon": "Đang xây dựng",
     "dashboard": "Tổng quan",
     "orders": "Lệnh sản xuất",
     "generate": "Tạo SN",
     "allocate": "Phân bổ SN",
-    "rules": "Thư viện quy tắc",
+    "rules": "Thư viện quy tắc SN",
     "export": "Xuất SN",
     "transfer": "Chuyển SN",
     "query": "Tra cứu SN",
+    "boxGenerate": "Tạo số thùng",
+    "boxTransfer": "Chuyển số thùng",
+    "boxQuery": "Tra cứu số thùng",
+    "boxRules": "Quy tắc số thùng",
+    "palletGenerate": "Tạo số pallet",
+    "palletTransfer": "Chuyển số pallet",
+    "palletQuery": "Tra cứu số pallet",
     "audit": "Nhật ký thao tác",
-    "users": "Tài khoản",
-    "factories": "Tổ chức sản xuất"
+    "users": "Người dùng",
+    "userGroups": "Nhóm người dùng",
+    "factories": "Tổ chức sản xuất",
+    "departments": "Bộ phận sản xuất"
   },
   "common": {
     "search": "Tìm",
@@ -267,7 +281,7 @@
   },
   "login": {
     "title": "Đăng nhập",
-    "lead": "Trụ sở tạo SN theo dòng vật tư của lệnh sản xuất và phân bổ cho tổ chức sản xuất của lệnh; tổ chức kết nối MES được đẩy tự động, mọi tổ chức đều có thể tải tại trang xuất SN. SN không trùng trong cùng một PI.",
+    "lead": "Nền tảng quản lý SN tập trung, tin cậy cấp tập đoàn: ban hành quy tắc, tạo và phân phối, kiểm tra chặn lỗi và truy xuất khép kín SN cho mọi nhà máy, đơn hàng dây chuyền, ngăn trùng mã, sai mã, thiếu mã ngay từ nguồn.",
     "point1": "Xem trước khi tạo; hết hiệu lực khi số lớn nhất thay đổi",
     "point2": "Lô giao có biên nhận, bất biến theo số lô",
     "point3": "Mọi lần chuyển chứng từ và tổ chức đều được ghi nhật ký",
@@ -291,8 +305,8 @@
     "desc": "Phân bổ SN đã tạo cho tổ chức sản xuất của lệnh: tổ chức kết nối MES được đẩy tự động từng lô, lô sau chỉ đẩy khi MES đã ghi lô trước và gửi biên nhận; bị gián đoạn thì đẩy tiếp; mọi SN đã phân bổ đều tải được tại trang “Xuất SN”. Có thể phân bổ cả PI hoặc các dòng đã chọn.",
     "summary": "Chờ phân bổ {pending} · chờ đẩy {unbatched}",
     "tab": {
-      "TO_ALLOCATE": "Cần xử lý",
-      "ALLOCATED": "Đã phân bổ xong"
+      "TO_ALLOCATE": "Chờ phân bổ",
+      "ALLOCATED": "Đã phân bổ / đã đẩy"
     },
     "state": {
       "INTERRUPTED": "Đẩy bị gián đoạn",
@@ -623,7 +637,7 @@
     "unitChinese": "Đơn vị không được có chữ Trung Quốc; hãy nhập ví dụ M, m, L",
     "lengthChinese": "Chiều dài không được có chữ Trung Quốc",
     "scope": "Phạm vi",
-    "genBtn": "Tạo {n}",
+    "genBtn": "Tạo hàng loạt {n}",
     "genDone": "Đã tạo {n} SN",
     "genCanceled": "Đã hủy tạo; toàn bộ SN đã ghi bị xóa",
     "runCount": "{done} / {qty}",
@@ -656,6 +670,15 @@
     "ruleNow": "Quy tắc hiện tại {rule}: {format}",
     "changeRule": "Đổi quy tắc",
     "pickRule": "Chọn quy tắc",
+    "customRuleBtn": "Quy tắc tùy chỉnh",
+    "libraryRuleBtn": "Chọn từ thư viện",
+    "viewLines": "Thông tin chính",
+    "viewSns": "Chi tiết SN {n}",
+    "customerSn": "SN khách hàng",
+    "billNo": "Lệnh sản xuất",
+    "snEach": "Xem từng số",
+    "snEmpty": "Chưa tạo SN",
+    "snNote": "SN đã tạo, chưa thu hồi của PI này theo dải (số mới nhất trước); xem từng SN tại trang “Tra cứu SN”.",
     "scopeWholePi": "Chưa chọn = cả PI",
     "scopeLinesN": "Đã chọn {n} dòng vật tư",
     "clearSel": "Bỏ chọn",
@@ -680,9 +703,47 @@
     "endSn": "SN kết thúc",
     "revokeRemind": "Sau khi thu hồi, SN của các dòng vật tư đã chọn bị xóa khỏi kho số, số lớn nhất của PI và số đã tạo được hoàn lại; hạng mục đính kèm, chiều dài, đơn vị của các dòng này có thể sửa lại và tạo lại. Không thể khôi phục sau khi thu hồi."
   },
+  "soon": {
+    "desc": "Mô-đun đang xây dựng; các chức năng dự kiến như dưới đây. Khi hoạt động sẽ dùng chung tài khoản, tổ chức sản xuất và nhật ký thao tác với quản lý SN.",
+    "note": "Số thùng và số pallet được thêm dưới dạng mô-đun riêng, không thay đổi quy tắc tạo, phân bổ, giao và chuyển SN hiện có.",
+    "toSn": "Đến trang tạo SN",
+    "plan": {
+      "boxGenerate": "Tạo số thùng cho lệnh sản xuất theo thư viện quy tắc số thùng và đóng SN vào thùng (nhiều SN mỗi thùng).",
+      "boxTransfer": "Chuyển thùng giữa các lệnh sản xuất và tổ chức; SN trong thùng chuyển theo.",
+      "boxQuery": "Tra cứu thùng và SN trong thùng theo số thùng, PI, lệnh sản xuất hoặc SN.",
+      "boxRules": "Duy trì quy tắc mã số thùng (tiền tố, số tuần tự, hậu tố…) để dùng khi tạo số thùng.",
+      "palletGenerate": "Tạo số pallet cho lệnh sản xuất và xếp thùng lên pallet (nhiều thùng mỗi pallet).",
+      "palletTransfer": "Chuyển pallet giữa các lệnh sản xuất và tổ chức; thùng trên pallet chuyển theo.",
+      "palletQuery": "Tra cứu pallet và thùng trên pallet theo số pallet, số thùng, PI hoặc lệnh sản xuất."
+    }
+  },
+  "groups": {
+    "title": "Nhóm người dùng",
+    "desc": "Phân quyền theo mô-đun chức năng: mỗi người dùng thuộc một nhóm (vai trò của tài khoản), nhóm quyết định mô-đun được dùng; nhân viên vận hành và kiểm toán viên còn bị giới hạn theo tổ chức sản xuất được ủy quyền. Đặt vai trò và tổ chức tại trang “Người dùng”.",
+    "toUsers": "Đến trang người dùng",
+    "accounts": "{n} tài khoản đang dùng",
+    "matrix": "Quyền theo mô-đun",
+    "module": "Mô-đun",
+    "function": "Chức năng",
+    "note": "Tài khoản giao diện MES không đăng nhập trang, chỉ gọi API MES của tổ chức mình; nhóm người dùng theo cùng quy tắc với menu và quyền API."
+  },
+  "departments": {
+    "title": "Bộ phận sản xuất",
+    "desc": "Xưởng sản xuất lấy từ dòng lệnh sản xuất Kingdee, liệt kê theo tổ chức (chỉ xem; dữ liệu gốc bộ phận được duy trì trong Kingdee); cập nhật theo đồng bộ lệnh.",
+    "search": "Mã / tên bộ phận",
+    "code": "Mã bộ phận",
+    "name": "Tên bộ phận",
+    "empty": "Chưa có bộ phận trong ảnh chụp lệnh (dòng Kingdee chưa có xưởng hoặc chưa đồng bộ)"
+  },
   "orders": {
     "title": "Ảnh chụp lệnh sản xuất",
-    "desc": "Lệnh sản xuất đã duyệt từ Kingdee, lưu theo dòng vật tư (chứng từ + số dòng). Trái: tổng theo chứng từ; phải: các dòng vật tư. Chứng từ không có khách hàng vẫn hiển thị và xử lý như bình thường.",
+    "desc": "Lệnh sản xuất đã duyệt từ Kingdee, lưu theo dòng vật tư (chứng từ + số dòng); có thể đồng bộ Kingdee thủ công bất kỳ lúc nào. Trên: tổng theo chứng từ; dưới: các dòng vật tư của chứng từ đã chọn. Chứng từ không có khách hàng vẫn hiển thị và xử lý như bình thường.",
+    "dept": "Bộ phận sản xuất",
+    "productName": "Tên sản phẩm",
+    "materialSpec": "Quy cách",
+    "specDesc": "Mô tả quy cách",
+    "customerPn": "P/N khách hàng",
+    "customerDesc": "Mô tả sản phẩm của khách hàng",
     "syncOne": "Đồng bộ chứng từ",
     "syncNow": "Đồng bộ ngay",
     "compareNow": "Đồng bộ so sánh ngay",
@@ -719,7 +780,7 @@
     "alertsN": "{n} cảnh báo",
     "lines": "Dòng vật tư",
     "linesOf": "Dòng vật tư của {bill}",
-    "pick": "Chọn một chứng từ ở bên trái",
+    "pick": "Chọn một chứng từ ở bảng trên",
     "toGenerate": "Tạo SN",
     "attachEmpty": "Thiếu",
     "attachConflict": "Kingdee đã có {k3} (đã nhập {manual}); khi tạo dùng giá trị Kingdee",
@@ -838,7 +899,7 @@
     "notePlaceholder": "Bắt buộc nhập kết luận kiểm tra, tối đa 500 ký tự"
   },
   "rules": {
-    "title": "Thư viện quy tắc",
+    "title": "Thư viện quy tắc SN",
     "desc": "Duy trì quy tắc SN: SN = tiền tố + số thứ tự trong PI (bù 0) + dấu phân cách + chiều dài (bù 0, tùy chọn) + dấu phân cách + đơn vị (tùy chọn) + hậu tố, không giới hạn ký tự. Ở đây chỉ duy trì quy tắc; chọn quy tắc cho dòng vật tư và gắn PI thực hiện ở trang tạo; gắn theo khách hàng chỉ qua giao diện API, hiển thị chỉ đọc ở cột “Gắn hiệu lực”.",
     "create": "Tạo quy tắc",
     "owner": "Tổ chức sở hữu",
@@ -1021,7 +1082,7 @@
     "quotaUnchanged": "Khi SN đổi dòng vật tư, số đã tạo và đã phân bổ di chuyển theo SN; hạn mức còn lại không đổi."
   },
   "users": {
-    "title": "Tài khoản",
+    "title": "Người dùng",
     "desc": "Chỉ quản trị viên hệ thống mới được tạo, sửa, vô hiệu, kích hoạt tài khoản và đặt lại mật khẩu; tài khoản chỉ bị vô hiệu, không bị xóa. Tài khoản giao diện MES không đăng nhập trang, mỗi lần gọi API MES gửi trực tiếp mã NV + khóa bí mật.",
     "tabAll": "Tài khoản",
     "tabMes": "Tài khoản giao diện MES",

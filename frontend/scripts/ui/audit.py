@@ -1,6 +1,6 @@
 # 操作痕迹页（F-21）
 M = {
-"audit.title": ("操作痕迹", "Audit trail", "Nhật ký thao tác"),
+"audit.title": ("操作日志", "Operation log", "Nhật ký thao tác"),
 "audit.retention": ("痕迹在线保存 {days} 天，之后整月移入归档；", "Records stay online for {days} days, then move to the archive month by month; ", "Nhật ký lưu trực tuyến {days} ngày, sau đó chuyển vào lưu trữ theo tháng; "),
 "audit.retentionForever": ("痕迹永久在线保存。", "Records are kept online permanently.", "Nhật ký được lưu trực tuyến vĩnh viễn."),
 "audit.archiveKeep": ("总保存 {days} 天。", "kept {days} days in total.", "tổng thời gian lưu {days} ngày."),

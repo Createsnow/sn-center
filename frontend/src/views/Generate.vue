@@ -113,6 +113,44 @@
         <!-- 生成中：进度、取消 -->
         <GenProgress v-if="running" :running="running" :canceling="busy === 'cancel'" @cancel="cancelGen" />
 
+        <!-- 主信息（按单据 → 物料行，生成与撤销在这里）/ SN 明细（已生成的客户 SN 号段，只读） -->
+        <el-radio-group v-model="view" size="small" class="view-switch">
+          <el-radio-button value="LINES">{{ t("generate.viewLines") }}</el-radio-button>
+          <el-radio-button value="SNS">{{ t("generate.viewSns", { n: num(snRows.length) }) }}</el-radio-button>
+        </el-radio-group>
+
+        <template v-if="view === 'SNS'">
+          <el-table :data="snRows" size="small" class="sn-table" :empty-text="t('generate.snEmpty')">
+            <el-table-column :label="t('generate.customerSn')" min-width="260">
+              <template #default="{ row }">
+                <span class="sn-mono">{{ row.start_sn }}</span>
+                <template v-if="row.qty > 1"><span class="muted"> ~ </span><span class="sn-mono">{{ row.end_sn }}</span></template>
+              </template>
+            </el-table-column>
+            <el-table-column :label="t('common.qty')" align="right" width="80">
+              <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
+            </el-table-column>
+            <el-table-column prop="bill_no" :label="t('generate.billNo')" min-width="130" show-overflow-tooltip />
+            <el-table-column prop="seq" :label="t('common.billSeq')" width="70" />
+            <el-table-column :label="t('common.attachNo')" width="96" show-overflow-tooltip>
+              <template #default="{ row }">{{ row.line?.attach_no || "—" }}</template>
+            </el-table-column>
+            <el-table-column :label="t('common.material')" min-width="110" show-overflow-tooltip>
+              <template #default="{ row }">{{ row.line?.material_code || "—" }}</template>
+            </el-table-column>
+            <el-table-column :label="t('common.length')" width="90" show-overflow-tooltip>
+              <template #default="{ row }">{{ row.line?.length || "—" }}</template>
+            </el-table-column>
+            <el-table-column :label="t('common.actions')" width="110" align="right">
+              <template #default="{ row }">
+                <router-link :to="{ path: '/query', query: { pi: ctx.pi_no, bill_no: row.bill_no } }">{{ t("generate.snEach") }}</router-link>
+              </template>
+            </el-table-column>
+          </el-table>
+          <p class="muted small">{{ t("generate.snNote") }}</p>
+        </template>
+
+        <template v-else>
         <!-- 只有三个页签：待处理 / 可生成 / 已生成（按处理步骤筛物料行） -->
         <el-tabs v-model="lineFilter" class="dtabs">
           <el-tab-pane v-for="f in FILTERS" :key="f" :label="t(`generate.filter.${f}`, { n: filterCount[f] })" :name="f" />
@@ -130,7 +168,7 @@
             <span @click.stop><el-checkbox v-bind="billCheck(b.bill_no)" :disabled="!b.in_snapshot || !b.lines.length" @change="(v: any) => onBill(b.bill_no, !!v)" /></span>
             <span v-if="billCheck(b.bill_no).order >= 0" class="order">{{ billCheck(b.bill_no).order + 1 }}</span>
             <b>{{ b.bill_no }}</b>
-            <span class="muted">PO {{ b.po || "—" }} · {{ b.org_name || nameOf(b.org_code) }}<template v-if="b.modify_time"> · {{ t("orders.modifyDate") }} {{ b.modify_time }}</template></span>
+            <span class="muted">PO {{ b.po || "—" }} · {{ b.org_name || nameOf(b.org_code) }}<template v-if="deptOf(b)"> · {{ deptOf(b) }}</template><template v-if="b.modify_time"> · {{ t("orders.modifyDate") }} {{ b.modify_time }}</template></span>
             <el-tag v-if="!b.in_snapshot" size="small" type="info">{{ t("generate.notInSnapshot") }}</el-tag>
             <el-tag v-if="b.state.suspend" size="small" type="warning">{{ suspendLabel(b.state.suspend) }}</el-tag>
             <el-tag v-if="b.state.leave_state" size="small" type="danger">{{ leaveStateLabel(b.state.leave_state) }}</el-tag>
@@ -235,13 +273,15 @@
           <p v-else-if="!b.lines.length" v-show="!isFolded(b.bill_no)" class="muted no-lines">{{ t("generate.noLines") }}</p>
         </div>
         <p v-if="!shownBills.length" class="muted no-lines">{{ t("common.empty") }}</p>
+        </template>
       </div>
 
-      <!-- 底部操作栏：三个页签相同，只有四个按钮：选规则（所选物料行）、撤销（待处理、可生成页签撤销配置，已生成页签撤销生成）、
-           清空（勾选）、生成 N 枚；不显示任何说明文字 -->
+      <!-- 底部操作栏：三个页签相同：自定义规则 / 选定规则库（所选物料行，打开同一个规则对话框的对应方式）、
+           撤销（待处理、可生成页签撤销配置，已生成页签撤销生成）、清空（勾选）、批量生成 N 枚（勾选的单据或物料行）；不显示说明文字 -->
       <template #footer>
         <div v-if="ctx" class="bar">
-          <el-button :disabled="!pickedRows.length" @click="openRuleDialog(pickedRows)">{{ t("generate.pickRule") }}</el-button>
+          <el-button :disabled="!pickedRows.length" @click="openRuleDialog(pickedRows, 'CUSTOM')">{{ t("generate.customRuleBtn") }}</el-button>
+          <el-button :disabled="!pickedRows.length || !ctx.rule_options.length" @click="openRuleDialog(pickedRows, 'LIBRARY')">{{ t("generate.libraryRuleBtn") }}</el-button>
           <el-button type="danger" plain :disabled="!revokeMode" :loading="busy === 'config'" @click="revokeSelected">{{ t("generate.revoke") }}</el-button>
           <el-button :disabled="!hasSel" @click="clearSelection">{{ t("generate.clearSel") }}</el-button>
           <span class="push" />
@@ -252,7 +292,7 @@
       </template>
     </el-drawer>
 
-    <RuleDialog v-if="ctx" v-model="ruleDlg.open" :pi="ctx.pi_no" :lines="ruleDlg.lines" :options="ctx.rule_options" @saved="reloadCtx" />
+    <RuleDialog v-if="ctx" v-model="ruleDlg.open" :pi="ctx.pi_no" :lines="ruleDlg.lines" :options="ctx.rule_options" :prefer="ruleDlg.prefer" @saved="reloadCtx" />
 
     <GenConfirmDialog v-model="genDlg" :preview="gen.preview" :unlock-limit="unlockLimit"
       :loading="busy === 'run'" @confirm="runGen" />
@@ -295,6 +335,7 @@ type LineState = "TODO" | "GEN" | "GENERATED" | "DONE" | "NONE";
 /** PI 流水上未撤销的物料行号段（ctx.segments，从流水最末往前）。 */
 type Segment = LineRef & { gen_batch: string; qty: number; start_sn: string; end_sn: string; bad: number; ok: boolean };
 type RevokeRange = { segs: Segment[]; ok: boolean; own: boolean };
+type RuleMode = "LIBRARY" | "CUSTOM";
 
 const TABS: Tab[] = ["TO_GENERATE", "GENERATED"];
 const FILTERS: Filter[] = ["TODO", "GEN", "GENERATED"];
@@ -379,6 +420,7 @@ const limits = computed(() => ctx.value?.limits || { default: 10000, max: 500000
 async function openDetail(key: { pi?: string; bill_no?: string }) {
   detailPi.value = key.pi || key.bill_no || "";
   ctx.value = null;
+  view.value = "LINES";
   clearSelection();
   foldAll(false);
   await loadCtx(key);
@@ -466,12 +508,24 @@ const ruleTitle = (r: any) => ruleTitleOf(t, r);
 
 // ---------------- 规则：物料行（PI 绑定 / 客户模板在 PiRuleDialog）
 
-const ruleDlg = reactive({ open: false, lines: [] as OrderLine[] });
+const ruleDlg = reactive({ open: false, lines: [] as OrderLine[], prefer: undefined as RuleMode | undefined });
 
-function openRuleDialog(lines: OrderLine[]) {
+/** prefer：底部「自定义规则」「选定规则库」打开对应方式；行内「选规则 / 改规则」不指定（按物料行现有规则）。 */
+function openRuleDialog(lines: OrderLine[], prefer?: RuleMode) {
   ruleDlg.lines = lines;
+  ruleDlg.prefer = prefer;
   ruleDlg.open = true;
 }
+
+// ---------------- 主信息 / SN 明细
+
+const view = ref<"LINES" | "SNS">("LINES");
+/** 单据的生产部门：各物料行的生产车间（去重）。 */
+const deptOf = (b: any) => [...new Set<string>((b.lines as OrderLine[]).map((l) => l.dept_name).filter(Boolean))].join("、");
+/** SN 明细：未撤销的号段（ctx.segments，从流水最末往前），附物料行的附件项次、物料、米数。 */
+const snRows = computed(() =>
+  (ctx.value?.segments ?? []).map((s: Segment) => ({ ...s, line: allLines.value.find((l) => sameLine(l, s)) })),
+);
 
 // ---------------- 范围：勾选单据（整单，按勾选顺序）或物料行（按点选顺序）；生成、规则配置、撤销共用
 
@@ -773,6 +827,8 @@ onUnmounted(() => {
 .kv b { color: var(--app-text); font-weight: 600; }
 .drawer { display: flex; flex-direction: column; gap: 10px; }
 .dtabs :deep(.el-tabs__header) { margin-bottom: 8px; }
+.view-switch { margin-bottom: 8px; }
+.sn-table { margin-bottom: 8px; }
 .toolbar { margin-bottom: 8px; }
 .issue-tags, .ops { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .ops { justify-content: flex-end; gap: 2px 6px; }

@@ -30,9 +30,10 @@ log = structlog.get_logger()
 
 PRD_MO_COLS = (
     "bill_no, seq, customer_code, pi, po, org_code, org_name, attach_no, material_code, material_name, "
-    "length_raw, unit, qty, modify_time, synced_at"
+    "length_raw, unit, qty, customer_pn, customer_desc, spec_desc, material_spec, dept_code, dept_name, "
+    "modify_time, synced_at"
 )
-_INSERT = f"INSERT INTO {{table}}({PRD_MO_COLS}) VALUES ({marks(15)})"
+_INSERT = f"INSERT INTO {{table}}({PRD_MO_COLS}) VALUES ({marks(21)})"
 
 
 # ================================================================== 写快照
@@ -61,6 +62,12 @@ def _args(rows: list[k3.Row], ts) -> list[tuple]:
                 util.cut(r.length_raw, 64),
                 util.cut(r.unit, 64),
                 r.qty,
+                util.cut(r.customer_pn, 128),
+                util.cut(r.customer_desc, 500),
+                util.cut(r.spec_desc, 500),
+                util.cut(r.material_spec, 500),
+                util.cut(r.dept_code, 64),
+                util.cut(r.dept_name, 128),
                 r.modify_time,
                 ts,
             )
@@ -593,6 +600,7 @@ def list_bills(
     rows = db.all(
         "SELECT m.bill_no, MAX(m.customer_code) customer_code, MAX(m.po) po, MAX(m.pi) pi, MAX(m.org_code) org_code, "
         "MAX(m.org_name) org_name, MAX(m.modify_time) modify_time, SUM(FLOOR(m.qty)) total_qty, COUNT(*) line_count, "
+        "GROUP_CONCAT(DISTINCT NULLIF(m.dept_name, '') ORDER BY m.dept_name SEPARATOR '、') dept_name, "
         "SUM(COALESCE(c.gen_count, 0)) gen_sum, "
         "SUM(GREATEST(FLOOR(m.qty) - COALESCE(c.own_generated, 0), 0)) quota "
         "FROM sn_prd_mo m LEFT JOIN sn_line_count c ON c.bill_no = m.bill_no AND c.seq = m.seq"
@@ -612,6 +620,7 @@ def list_bills(
             "pi": r["pi"],
             "org_code": r["org_code"],
             "org_name": r["org_name"],
+            "dept_name": r["dept_name"] or "",
             # 快照只含已审核单据：单据状态一律为 C（已审核）
             "doc_status": k3.APPROVED,
             "modify_time": k3_time(r["modify_time"]),
@@ -663,6 +672,13 @@ def line_view(
         "unit_source": unit_src,
         "unit_manual": None if ufill is None else ufill["manual_value"],
         "qty": qty,
+        # 只显示的金蝶字段（不参与生成、比对）
+        "customer_pn": r.get("customer_pn") or "",
+        "customer_desc": r.get("customer_desc") or "",
+        "spec_desc": r.get("spec_desc") or "",
+        "material_spec": r.get("material_spec") or "",
+        "dept_code": r.get("dept_code") or "",
+        "dept_name": r.get("dept_name") or "",
         "generated_qty": 0 if count is None else int(count["gen_count"]),
         "own_generated_qty": own,
         "allocated_qty": 0 if count is None else int(count["alloc_count"]),
@@ -732,6 +748,7 @@ def lines_of(cu: CurrentUser, bill_no: str | None) -> dict:
         "customer_code": h["customer_code"],
         "org_code": h["org_code"],
         "org_name": h["org_name"],
+        "dept_name": "、".join(sorted({r["dept_name"] for r in ls if r.get("dept_name")})),
         "doc_status": k3.APPROVED,
         "modify_time": k3_time(h["modify_time"]),
         "state": changes.bill_states([h["bill_no"]]).get(h["bill_no"], changes.EMPTY_STATE),
@@ -740,6 +757,31 @@ def lines_of(cu: CurrentUser, bill_no: str | None) -> dict:
             for r, k in zip(ls, keys, strict=True)
         ],
     }
+
+
+def departments(cu: CurrentUser, factory: str | None) -> list[dict]:
+    """生产部门（组织管理页，只读）：订单快照里出现过的生产车间（金蝶明细 FWorkShopID），
+    按生产组织列出单据数、物料行数。"""
+    fsql, fargs = _scope(cu, factory)
+    rows = db.all(
+        "SELECT m.org_code, MAX(m.org_name) org_name, m.dept_code, MAX(m.dept_name) dept_name, "
+        "COUNT(DISTINCT m.bill_no) bills, COUNT(*) line_count, MAX(m.modify_time) modify_time "
+        "FROM sn_prd_mo m WHERE m.dept_code <> ''" + fsql + " GROUP BY m.org_code, m.dept_code "
+        "ORDER BY m.org_code, m.dept_code",
+        *fargs,
+    )
+    return [
+        {
+            "org_code": r["org_code"],
+            "org_name": r["org_name"],
+            "dept_code": r["dept_code"],
+            "dept_name": r["dept_name"],
+            "bills": int(r["bills"]),
+            "line_count": int(r["line_count"]),
+            "modify_time": k3_time(r["modify_time"]),
+        }
+        for r in rows
+    ]
 
 
 def meta(cu: CurrentUser) -> dict:
