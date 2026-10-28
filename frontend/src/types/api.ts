@@ -134,16 +134,16 @@ export interface OrderLine {
   length_raw: string;
   /** 生效米数（字符串，原样写入 SN） */
   length: string;
-  /** K3 金蝶值 / MANUAL 页面填写 / K3_CHINESE 金蝶值含中文且未改（不能生成）/ DEFAULT 金蝶为空且未填写，取默认 000 */
-  length_source: "K3" | "MANUAL" | "K3_CHINESE" | "DEFAULT";
+  /** MANUAL 页面填写（可选改，优先）/ K3 金蝶值（原样使用）/ EMPTY 金蝶为空且未填写（规则带米数时须填写才能生成） */
+  length_source: "K3" | "MANUAL" | "EMPTY";
   length_manual: string | null;
   /** 金蝶产品单位原值（FProductUnit） */
   unit_raw: string;
-  /** 生效产品单位（规则带单位时写入 SN）；K3_CHINESE 时为金蝶原值 */
+  /** 生效产品单位（规则带单位时写入 SN） */
   unit: string;
-  /** K3 金蝶值 / MANUAL 页面填写 / K3_CHINESE 金蝶值含中文（条、个等）且未填写 / EMPTY 金蝶为空且未填写；
-   *  后两种在规则带单位时不能生成，须手动填写不含中文的单位（如 M、m、L） */
-  unit_source: "K3" | "MANUAL" | "K3_CHINESE" | "EMPTY";
+  /** MANUAL 页面填写（可选改，优先）/ K3 金蝶值（原样使用，含中文（条、个等）也照用）/
+   *  EMPTY 金蝶为空且未填写（规则带单位时须填写才能生成） */
+  unit_source: "K3" | "MANUAL" | "EMPTY";
   unit_manual: string | null;
   qty: number;
   generated_qty: number;

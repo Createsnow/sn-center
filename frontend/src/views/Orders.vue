@@ -126,21 +126,16 @@
                 </el-table-column>
                 <el-table-column :label="t('common.length')" width="90" show-overflow-tooltip>
                   <template #default="{ row }">
-                    <span v-if="row.length_source === 'DEFAULT'" class="err">{{ t("orders.lengthEmpty") }}</span>
-                    <el-tooltip v-else-if="row.length_source === 'K3_CHINESE'" :content="t('orders.lengthChineseTip')">
-                      <span class="err">{{ row.length }}</span>
-                    </el-tooltip>
+                    <!-- 金蝶米数为空且未填写：标红「缺失」（规则带米数时须在生成页填写）；其他照金蝶值 / 页面填写的值显示 -->
+                    <span v-if="row.length_source === 'EMPTY'" class="err">{{ t("orders.lengthEmpty") }}</span>
                     <span v-else>{{ row.length }}</span>
                   </template>
                 </el-table-column>
                 <el-table-column :label="t('common.unit')" width="70" show-overflow-tooltip>
                   <template #default="{ row }">
-                    <!-- 金蝶产品单位为空且未填写：标红「缺失」；含中文（条、个等）且未填写：规则带单位时须在生成页填写不含中文的单位 -->
+                    <!-- 金蝶产品单位为空且未填写：标红「缺失」（规则带单位时须在生成页填写）；其他照金蝶值（含中文也照用）/ 页面填写的值显示 -->
                     <span v-if="row.unit_source === 'EMPTY'" class="err">{{ t("orders.unitEmpty") }}</span>
-                    <el-tooltip v-else-if="row.unit_source === 'K3_CHINESE'" :content="t('orders.unitChineseTip')">
-                      <span class="err">{{ row.unit }}</span>
-                    </el-tooltip>
-                    <span v-else>{{ row.unit || "—" }}</span>
+                    <span v-else>{{ row.unit }}</span>
                   </template>
                 </el-table-column>
                 <el-table-column :label="t('common.qty')" align="right" width="60">

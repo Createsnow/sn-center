@@ -364,21 +364,19 @@ def fill_attach(cu: CurrentUser, bill_no: str | None, seq: int | None, value: st
     return _line_view_of(line)
 
 
-#: 米数来源：金蝶值含中文、页面还没改过——须手动改成不含中文的米数才能生成
-LENGTH_CHINESE = "K3_CHINESE"
+#: 米数来源：金蝶为空、页面也没填过——规则带米数时须在页面填写才能生成
+LENGTH_EMPTY = "EMPTY"
 
 
 def effective_length(line: dict, fill: dict | None) -> tuple[str, str]:
-    """米数（字符串，原样使用）的生效值与来源：K3 金蝶值 / MANUAL 页面填写（金蝶为空或含中文时）/
-    K3_CHINESE 金蝶值含中文且未改（不能生成）/ DEFAULT 金蝶为空且未填写时取默认米数 000。"""
-    k3v = codec.clean_length(line.get("length_raw"))
-    if k3v is not None and not codec.has_chinese(k3v):
-        return k3v, "K3"
+    """米数（字符串，原样使用）的生效值与来源：MANUAL 页面填写（任何情况下都可选改，优先）/
+    K3 金蝶值（原样使用，含中文也照用）/ EMPTY 金蝶为空且未填写（规则带米数时不能生成，须在页面填写）。"""
     if fill is not None and fill["material_code"] == (line.get("material_code") or ""):
         return fill["manual_value"], "MANUAL"
+    k3v = codec.clean_length(line.get("length_raw"))
     if k3v is not None:
-        return k3v, LENGTH_CHINESE
-    return codec.DEFAULT_LENGTH, "DEFAULT"
+        return k3v, "K3"
+    return "", LENGTH_EMPTY
 
 
 def length_of(line: dict) -> str:
@@ -388,7 +386,7 @@ def length_of(line: dict) -> str:
 
 
 def _length_value(value: str | None) -> str | None:
-    """填写的米数：字符串原样保存（去首尾空格），不超过 64 字、不能含中文；留空返回 None（改回金蝶值或默认 000）。"""
+    """填写的米数：字符串原样保存（去首尾空格），不超过 64 字、不能含中文；留空返回 None（清除填写，改回金蝶值）。"""
     v = codec.clean_length(value)
     if v is not None and len(v) > 64:
         raise biz(ErrorCode.LENGTH_FILL_INVALID)
@@ -406,20 +404,19 @@ _LENGTH_UPSERT = (
 
 
 def fill_length(cu: CurrentUser, bill_no: str | None, seq: int | None, value: str | None) -> dict:
-    """填写米数（金蝶为空时选填，留空即用默认米数 000；金蝶值含中文时须改成不含中文的米数）；物料行有号后不能改。"""
+    """填写米数（金蝶为空时规则带米数则必填；金蝶有值时可选改，留空或填回金蝶值即改回金蝶值）；
+    物料行有号后不能改。值不写回金蝶。"""
     no = util.trim(bill_no)
     v = _length_value(value)
     line = _must_line(no, seq)
     cu.check_write(line["org_code"])
     with locks.with_pi_lock(line["pi"]), db.tx():
         line = _must_line(no, seq)
-        k3v = codec.clean_length(line["length_raw"])
-        if k3v is not None and not codec.has_chinese(k3v):
-            raise biz(ErrorCode.LENGTH_FILL_K3)
         _check_editable(no, line["seq"])
         prev = db.one("SELECT * FROM sn_line_length WHERE bill_no = %s AND seq = %s FOR UPDATE", no, seq)
         now = util.now()
-        if v is None:
+        if v is None or v == codec.clean_length(line["length_raw"]):
+            v = None
             db.exec("DELETE FROM sn_line_length WHERE bill_no = %s AND seq = %s", no, seq)
         else:
             db.exec(_LENGTH_UPSERT, no, seq, v, line["material_code"], cu.emp_no, now, now)
@@ -431,32 +428,29 @@ def fill_length(cu: CurrentUser, bill_no: str | None, seq: int | None, value: st
                 .pi(line["pi"])
                 .factory(line["org_code"])
                 .material(line["material_code"])
-                .info(f"seq={seq} {'' if prev is None else prev['manual_value']} -> {v or codec.DEFAULT_LENGTH}"),
+                .info(f"seq={seq} {'' if prev is None else prev['manual_value']} -> {v or ''}"),
             )
     return _line_view_of(line)
 
 
-#: 产品单位来源：金蝶为空 / 金蝶值含中文（条、个等）、页面还没填过——规则带单位时须手动填写不含中文的单位才能生成
+#: 产品单位来源：金蝶为空、页面也没填过——规则带单位时须在页面填写才能生成
 UNIT_EMPTY = "EMPTY"
-UNIT_CHINESE = "K3_CHINESE"
 
 
 def effective_unit(line: dict, fill: dict | None) -> tuple[str, str]:
-    """产品单位（字符串，原样使用）的生效值与来源：K3 金蝶值 / MANUAL 页面填写（金蝶为空或含中文时）/
-    K3_CHINESE 金蝶值含中文且未填写（返回金蝶原值）/ EMPTY 金蝶为空且未填写；后两种在规则带单位时不能生成。"""
-    k3v = util.trim(line.get("unit"))
-    if k3v and not codec.has_chinese(k3v):
-        return k3v, "K3"
+    """产品单位（字符串，原样使用）的生效值与来源：MANUAL 页面填写（任何情况下都可选改，优先）/
+    K3 金蝶值（原样使用，含中文（条、个等）也照用）/ EMPTY 金蝶为空且未填写（规则带单位时不能生成，须在页面填写）。"""
     if fill is not None and fill["material_code"] == (line.get("material_code") or ""):
         return fill["manual_value"], "MANUAL"
+    k3v = util.trim(line.get("unit"))
     if k3v:
-        return k3v, UNIT_CHINESE
+        return k3v, "K3"
     return "", UNIT_EMPTY
 
 
 def _unit_value(value: str | None) -> str | None:
     """填写的产品单位：字符串原样保存（去首尾空格），不超过 64 字、不能含中文（如 M、m、L、PCS）；
-    留空返回 None（清除填写）。"""
+    留空返回 None（清除填写，改回金蝶值）。"""
     v = util.trim(value)
     if not v:
         return None
@@ -471,21 +465,19 @@ _UNIT_UPSERT = _LENGTH_UPSERT.replace("sn_line_length", "sn_line_unit")
 
 
 def fill_unit(cu: CurrentUser, bill_no: str | None, seq: int | None, value: str | None) -> dict:
-    """填写产品单位（金蝶为空或含中文时；规则带单位时必填，须是不含中文的字符，如 M、m、L）；留空清除填写；
-    物料行有号后不能改。值不写回金蝶。"""
+    """填写产品单位（金蝶为空时规则带单位则必填；金蝶有值时可选改，留空或填回金蝶值即改回金蝶值）；
+    填写的值不能含中文（如 M、m、L）；物料行有号后不能改。值不写回金蝶。"""
     no = util.trim(bill_no)
     v = _unit_value(value)
     line = _must_line(no, seq)
     cu.check_write(line["org_code"])
     with locks.with_pi_lock(line["pi"]), db.tx():
         line = _must_line(no, seq)
-        k3v = util.trim(line["unit"])
-        if k3v and not codec.has_chinese(k3v):
-            raise biz(ErrorCode.UNIT_FILL_K3)
         _check_editable(no, line["seq"])
         prev = db.one("SELECT * FROM sn_line_unit WHERE bill_no = %s AND seq = %s FOR UPDATE", no, seq)
         now = util.now()
-        if v is None:
+        if v is None or v == util.trim(line["unit"]):
+            v = None
             db.exec("DELETE FROM sn_line_unit WHERE bill_no = %s AND seq = %s", no, seq)
         else:
             db.exec(_UNIT_UPSERT, no, seq, v, line["material_code"], cu.emp_no, now, now)

@@ -86,67 +86,67 @@ def test_sn_layout_serial_separators_padded_length_unit(w, api, sql):
     assert got["total"] == 3, "完整 SN 可反解出流水"
 
 
-def test_rule_with_unit_needs_non_chinese_unit(w, api, sql):
-    """规则带单位：产品单位为空或是中文（条、个等）时须在页面手动填写不含中文的单位（M、m、L 等）才能生成；
-    填的值不能含中文；金蝶已是非中文单位时不能改；规则不带单位时不挡。"""
-    org, pi, bill = mk(w, ("M1", 2, "100", "1", " "), ("M2", 1, "100", "2", "条"), ("M3", 1, "100", "3", "个"))
+def test_unit_uses_k3_value_and_must_be_filled_only_when_empty(w, api, sql):
+    """规则带单位：产品单位用金蝶原值（含中文（条、个等）也照用）；金蝶为空时须在页面填写才能生成；
+    金蝶有值时也可选改（填的值不能含中文），留空或填回金蝶值即改回金蝶值；规则不带单位时为空也不挡。"""
+    org, pi, bill = mk(w, ("M1", 2, "100", "1", " "), ("M2", 1, "100", "2", "条"), ("M3", 1, "100", "3", "PCS"))
     p = P()
     ok(w.bind_pi(pi, w.rule(p, with_unit=True)))
     pv = ok(w.preview(pi))
     assert not pv["generatable"]
-    got = {x["seq"]: x["issues"] for x in pv["issues"]}
-    assert got == {1: ["UNIT_EMPTY"], 2: ["UNIT_CHINESE"], 3: ["UNIT_CHINESE"]}
+    assert {x["seq"]: x["issues"] for x in pv["issues"]} == {1: ["UNIT_EMPTY"]}, "只有金蝶为空的须填写"
     line = next(x for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"] if x["seq"] == 2)
-    assert (line["unit"], line["unit_source"], line["unit_raw"]) == ("条", "K3_CHINESE", "条")
-    assert line["unit_manual"] is None
-    assert api.put("/api/orders/unit", m(bill_no=bill, seq=2, value="米"), w.admin).code == "UNIT_FILL_CHINESE"
-    assert api.put("/api/orders/unit", m(bill_no=bill, seq=2, value="x" * 65), w.admin).code == "UNIT_FILL_INVALID"
-    r = ok(api.put("/api/orders/unit", m(bill_no=bill, seq=2, value=" L "), w.admin))
-    assert (r["unit"], r["unit_source"], r["unit_manual"]) == ("L", "MANUAL", "L")
-    r = ok(api.put("/api/orders/unit", m(bill_no=bill, seq=2, value=""), w.admin))
-    assert (r["unit"], r["unit_source"]) == ("条", "K3_CHINESE"), "留空清除填写，又须填写"
-    for seq, v in ((1, "M"), (2, "m"), (3, "L")):
-        ok(api.put("/api/orders/unit", m(bill_no=bill, seq=seq, value=v), w.admin))
+    assert (line["unit"], line["unit_source"], line["unit_raw"], line["unit_manual"]) == ("条", "K3", "条", None)
+    assert api.put("/api/orders/unit", m(bill_no=bill, seq=1, value="米"), w.admin).code == "UNIT_FILL_CHINESE"
+    assert api.put("/api/orders/unit", m(bill_no=bill, seq=1, value="x" * 65), w.admin).code == "UNIT_FILL_INVALID"
+    r = ok(api.put("/api/orders/unit", m(bill_no=bill, seq=1, value=" M "), w.admin))
+    assert (r["unit"], r["unit_source"], r["unit_manual"]) == ("M", "MANUAL", "M")
+    r = ok(api.put("/api/orders/unit", m(bill_no=bill, seq=1, value=""), w.admin))
+    assert (r["unit"], r["unit_source"]) == ("", "EMPTY"), "留空清除填写，又须填写"
+    ok(api.put("/api/orders/unit", m(bill_no=bill, seq=1, value="M"), w.admin))
+    r = ok(api.put("/api/orders/unit", m(bill_no=bill, seq=3, value="L"), w.admin))
+    assert (r["unit"], r["unit_source"], r["unit_manual"]) == ("L", "MANUAL", "L"), "金蝶有值也可改"
+    r = ok(api.put("/api/orders/unit", m(bill_no=bill, seq=3, value="PCS"), w.admin))
+    assert (r["unit"], r["unit_source"], r["unit_manual"]) == ("PCS", "K3", None), "填回金蝶值即改回金蝶值"
+    ok(api.put("/api/orders/unit", m(bill_no=bill, seq=3, value="L"), w.admin))
     audited = "SELECT COUNT(*) FROM sn_audit WHERE action = 'ORDER_UNIT_FILL' AND result = 'OK' AND bill_no = %s"
-    assert sql.count(audited, bill) == 5
+    assert sql.count(audited, bill) == 6
     w.generate(pi)
     sns = [x["sn"] for x in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
-    assert [s[len(p) :] for s in sns] == ["000001100M", "000002100M", "000003100m", "000004100L"]
+    assert [s[len(p) :] for s in sns] == ["000001100M", "000002100M", "000003100条", "000004100L"]
     assert api.put("/api/orders/unit", m(bill_no=bill, seq=3, value="K"), w.admin).code == "LINE_EDIT_GENERATED"
 
-    org2, pi2, bill2 = mk(w, ("M1", 1, "100", "1", "PCS"), ("M2", 1, "100", "2", "条"))
-    assert api.put("/api/orders/unit", m(bill_no=bill2, seq=1, value="M"), w.admin).code == "UNIT_FILL_K3"
+    _, pi2, _ = mk(w, ("M1", 1, "100", "1", " "))
     ok(w.bind_pi(pi2, w.rule(P())))
-    assert ok(w.preview(pi2))["generatable"] is True, "规则不带单位时，中文单位不挡生成"
+    assert ok(w.preview(pi2))["generatable"] is True, "规则不带单位时，单位为空不挡生成"
 
 
-def test_chinese_length_must_be_changed_before_generation(w, api, sql):
-    """金蝶米数含中文：须在页面手动改成不含中文的米数才能生成；改的值也不能含中文；规则不带米数时不挡。"""
-    org, pi, bill = mk(w, ("M1", 2, "五十米"), ("M2", 1, "50米"), ("M3", 1, "60"))
+def test_length_uses_k3_value_and_must_be_filled_only_when_empty(w, api, sql):
+    """米数用金蝶原值（含中文也照用）；金蝶为空时规则带米数须在页面填写才能生成；金蝶有值时也可选改
+    （填的值不能含中文），留空或填回金蝶值即改回金蝶值；规则不带米数时为空也不挡。"""
+    org, pi, bill = mk(w, ("M1", 2, "五十米"), ("M2", 1, " "), ("M3", 1, "60"))
     ok(w.bind_pi(pi, w.rule(P())))
     p = ok(w.preview(pi))
     assert not p["generatable"]
-    assert {x["seq"]: x["issues"] for x in p["issues"]} == {1: ["LENGTH_CHINESE"], 2: ["LENGTH_CHINESE"]}
-    line = next(x for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"] if x["seq"] == 1)
-    assert (line["length"], line["length_source"]) == ("五十米", "K3_CHINESE")
-    assert api.put("/api/orders/length", m(bill_no=bill, seq=1, value="五十"), w.admin).code == "LENGTH_FILL_CHINESE"
-    assert api.put("/api/orders/length", m(bill_no=bill, seq=3, value="61"), w.admin).code == "LENGTH_FILL_K3"
-    r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=1, value="50"), w.admin))
+    assert {x["seq"]: x["issues"] for x in p["issues"]} == {2: ["LENGTH_EMPTY"]}, "只有金蝶为空的须填写"
+    line = {x["seq"]: x for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"]}
+    assert (line[1]["length"], line[1]["length_source"]) == ("五十米", "K3")
+    assert (line[2]["length"], line[2]["length_source"]) == ("", "EMPTY")
+    assert api.put("/api/orders/length", m(bill_no=bill, seq=2, value="五十"), w.admin).code == "LENGTH_FILL_CHINESE"
+    r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=3, value="61"), w.admin))
+    assert (r["length"], r["length_source"]) == ("61", "MANUAL"), "金蝶有值也可改"
+    r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=3, value=" 60 "), w.admin))
+    assert (r["length"], r["length_source"], r["length_manual"]) == ("60", "K3", None), "填回金蝶值即改回金蝶值"
+    r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=2, value="50"), w.admin))
     assert (r["length"], r["length_source"]) == ("50", "MANUAL")
-    ok(api.put("/api/orders/length", m(bill_no=bill, seq=2, value="50"), w.admin))
     w.generate(pi)
     assert [
         r["length_text"] for r in sql.all("SELECT length_text FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)
-    ] == [
-        "50",
-        "50",
-        "50",
-        "60",
-    ]
+    ] == ["五十米", "五十米", "50", "60"], "金蝶米数原样写入"
 
-    _, pi2, _ = mk(w, ("M1", 1, "五十米"))
+    _, pi2, _ = mk(w, ("M1", 1, " "))
     ok(w.bind_pi(pi2, w.rule(P(), with_length=False)))
-    assert ok(w.preview(pi2))["generatable"], "规则不带米数时米数含中文不影响生成"
+    assert ok(w.preview(pi2))["generatable"], "规则不带米数时米数为空不影响生成"
 
 
 def test_only_identical_prefix_conflicts(w, api):
@@ -308,16 +308,20 @@ def test_preview_lists_reasons(w, api):
     p = ok(w.preview(pi))
     assert p["generatable"] is False
     got = {x["seq"]: x["issues"] for x in p["issues"]}
-    assert got == {3: ["ATTACH_EMPTY"]}, "米数选填（为空取默认 000、字符串原样用），只有附件项次必填"
+    assert got == {1: ["LENGTH_EMPTY"], 3: ["ATTACH_EMPTY"]}, "金蝶米数为空须填写（有值的原样用），附件项次必填"
     ok(api.put("/api/orders/attach", m(bill_no=bill, seq=3, value="A9"), w.admin))
     assert ok(w.preview(pi, lines=[(bill, 3)]))["generatable"] is True, "填写附件项次后可以生成；可缩小范围"
+    assert ok(w.preview(pi))["generatable"] is False
     assert api.put("/api/orders/attach", m(bill_no=bill, seq=1, value="A9"), w.admin).code == "ATTACH_FILL_K3"
-    assert api.put("/api/orders/length", m(bill_no=bill, seq=2, value="7"), w.admin).code == "LENGTH_FILL_K3"
+    r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=2, value="7"), w.admin))
+    assert (r["length"], r["length_source"]) == ("7", "MANUAL"), "金蝶有米数也可改"
     assert api.put("/api/orders/length", m(bill_no=bill, seq=1, value="x" * 65), w.admin).code == "LENGTH_FILL_INVALID"
     r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=1, value=" 020.50 "), w.admin))
     assert (r["length"], r["length_source"]) == ("020.50", "MANUAL"), "米数是字符串，原样保存"
     r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=1, value=""), w.admin))
-    assert (r["length"], r["length_source"]) == ("000", "DEFAULT"), "留空改回默认 000"
+    assert (r["length"], r["length_source"]) == ("", "EMPTY"), "留空清除填写，又须填写"
+    assert ok(w.preview(pi))["generatable"] is False
+    ok(api.put("/api/orders/length", m(bill_no=bill, seq=1, value="000"), w.admin))
     assert ok(w.preview(pi))["generatable"] is True
 
 
@@ -327,6 +331,7 @@ def test_attach_and_length_locked_once_line_has_sns(w, api, sql):
     ok(w.bind_pi(pi, w.rule(p)))
     for seq in (1, 2):
         ok(api.put("/api/orders/attach", m(bill_no=bill, seq=seq, value="A1"), w.admin))
+        ok(api.put("/api/orders/length", m(bill_no=bill, seq=seq, value="000"), w.admin))
     j = w.generate(pi, lines=[(bill, 1)])
     line = {x["seq"]: x for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"]}
     assert (line[1]["edit_lock"], line[2]["edit_lock"]) == ("GENERATED", None)
@@ -373,6 +378,7 @@ def test_revoke_config_resets_lines_without_sns(w, api, sql):
         ok(api.put("/api/orders/attach", m(bill_no=bill, seq=seq, value="A1"), w.admin))
     ok(api.put("/api/orders/length", m(bill_no=bill, seq=2, value="7"), w.admin))
     ok(api.put("/api/orders/unit", m(bill_no=bill, seq=2, value="M"), w.admin))
+    ok(api.put("/api/orders/length", m(bill_no=bill, seq=3, value="8"), w.admin))
     w.generate(pi, lines=[(bill, 3)])
     lines = lambda: {x["seq"]: x for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"]}  # noqa: E731
     before = lines()
@@ -382,23 +388,26 @@ def test_revoke_config_resets_lines_without_sns(w, api, sql):
     r = ok(api.post(url, m(pi_no=pi, lines=[m(bill_no=bill, seq=s) for s in (1, 2, 3)]), w.admin))
     assert (r["revoked"], r["skipped"]) == (2, 1)
     after = lines()
-    assert [(after[s]["attach_source"], after[s]["length_source"]) for s in (1, 2)] == [("EMPTY", "DEFAULT")] * 2
-    assert (after[2]["unit"], after[2]["unit_source"], after[2]["unit_manual"]) == ("条", "K3_CHINESE", None)
+    assert [(after[s]["attach_source"], after[s]["length_source"]) for s in (1, 2)] == [("EMPTY", "EMPTY")] * 2
+    assert (after[2]["unit"], after[2]["unit_source"], after[2]["unit_manual"]) == ("条", "K3", None)
     assert sql.count("SELECT COUNT(*) FROM sn_line_rule WHERE bill_no = %s", bill) == 1, "有号的行规则不动"
     assert (after[3]["attach_no"], after[3]["edit_lock"]) == (before[3]["attach_no"], "GENERATED")
     ctx = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))
     issues = {x["seq"]: x["issues"] for x in ctx["bills"][0]["lines"]}
-    assert issues[1] == issues[2] == ["ATTACH_EMPTY"], "规则改回按 PI 绑定，附件项次待填写"
+    assert issues[1] == issues[2] == ["LENGTH_EMPTY", "ATTACH_EMPTY"], "规则改回按 PI 绑定，米数、附件项次待填写"
     a = sql.one("SELECT * FROM sn_audit WHERE action = 'LINE_CONFIG_REVOKE' AND result = 'OK' AND pi_no = %s", pi)
     assert a["qty"] == 2 and a["bill_no"] == bill and f"{bill}/2:rule+attach+length+unit" in a["detail"]
     r = ok(api.post(url, m(pi_no=pi, lines=[m(bill_no=bill, seq=1)]), w.admin))
     assert r["revoked"] == 0, "没有可撤的配置"
 
 
-def test_empty_length_defaults_to_000(w, sql):
+def test_empty_length_must_be_filled(w, api, sql):
+    """金蝶米数为空：规则带米数时须填写才能生成（不再默认 000）；填 000 也原样写入。"""
     org, pi, bill = mk(w, ("M1", 1, " "))
     p = P()
     ok(w.bind_pi(pi, w.rule(p)))
+    assert [x["issues"] for x in ok(w.preview(pi))["issues"]] == [["LENGTH_EMPTY"]]
+    ok(api.put("/api/orders/length", m(bill_no=bill, seq=1, value="000"), w.admin))
     w.generate(pi)
     assert sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s", pi) == f"{p}000001000"
 

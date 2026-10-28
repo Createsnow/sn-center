@@ -73,10 +73,8 @@ class ErrorCode(Enum):
     ATTACH_INVALID = (400, "附件项次不能为空，不超过 64 字")
     ATTACH_FILL_K3 = (409, "金蝶已有附件项次，不能在页面修改")
     LENGTH_FILL_INVALID = (400, "米数不超过 64 字；统一设置时不能为空")
-    LENGTH_FILL_K3 = (409, "金蝶已有米数，不能在页面修改")
     LENGTH_FILL_CHINESE = (400, "米数 {value} 含中文，请改成不含中文的米数")
     UNIT_FILL_INVALID = (400, "产品单位不超过 64 字")
-    UNIT_FILL_K3 = (409, "金蝶已有产品单位，不能在页面修改")
     UNIT_FILL_CHINESE = (400, "产品单位 {value} 含中文，请填写不含中文的单位（如 M、m、L）")
     LINE_EDIT_GENERATED = (
         409,

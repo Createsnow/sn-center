@@ -206,15 +206,11 @@ def _check(line: Line) -> None:
     elif not line.res.ready:
         line.issues.append("RULE_PREFIX")
     spec = line.res.spec() if line.res is not None and line.res.ready else None
-    # 米数选填（为空取默认 000），不挡生成；但金蝶米数含中文时须先在页面手动改过（规则不带米数时不影响）
-    if line.length_source == orders.LENGTH_CHINESE and (spec is None or spec.with_length):
-        line.issues.append("LENGTH_CHINESE")
-    # 规则带单位时产品单位须是不含中文的字符：金蝶为空或含中文（条、个等）时须先在页面手动填写（如 M、m、L）
-    if spec is not None and spec.with_unit:
-        if line.unit_source == orders.UNIT_EMPTY:
-            line.issues.append("UNIT_EMPTY")
-        elif line.unit_source == orders.UNIT_CHINESE:
-            line.issues.append("UNIT_CHINESE")
+    # 米数、产品单位用金蝶原值（含中文也照用）；金蝶为空且页面未填写时须先填写（规则不带米数 / 单位时不影响）
+    if line.length_source == orders.LENGTH_EMPTY and (spec is None or spec.with_length):
+        line.issues.append("LENGTH_EMPTY")
+    if spec is not None and spec.with_unit and line.unit_source == orders.UNIT_EMPTY:
+        line.issues.append("UNIT_EMPTY")
     # 附件项次必填
     if not line.attach:
         line.issues.append("ATTACH_EMPTY")

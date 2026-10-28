@@ -85,7 +85,7 @@
       <p v-if="list.capped" class="muted">{{ t("generate.capped", { n: LIST_LIMIT }) }}</p>
     </div>
 
-    <!-- 详情：只管生成与撤销。头部（数字、去分配）→ 提示条 → 物料行 / 生成记录 → 底部操作栏（范围、批量、生成） -->
+    <!-- 详情：只管生成与撤销。头部（数字、去分配）→ 物料行 / 生成记录 → 底部操作栏（范围、批量、生成）；不能生成的原因看物料行状态列 -->
     <el-drawer :model-value="!!detailPi" size="min(1240px, 96vw)" class="gen-drawer" @close="closeDetail">
       <template #header>
         <div v-if="ctx" class="dh">
@@ -110,18 +110,6 @@
       </template>
 
       <div v-if="ctx" v-loading="ctxLoading" class="drawer">
-        <!-- 提示条：还有额度但不能生成的物料行，按原因给处理入口 -->
-        <div v-if="todoGroups.length" class="banner danger">
-          <b>{{ t("generate.todo") }}</b>
-          <span v-for="g in todoGroups" :key="g.code" class="todo">
-            <span>{{ issueText(g.code) }} {{ t("generate.issueLines", { n: g.lines.length }) }}</span>
-            <el-button v-if="g.code === 'NO_RULE' || g.code === 'RULE_PREFIX'" link type="primary" @click="openRuleDialog(g.lines)">{{ t("generate.pickForNeeded") }}</el-button>
-            <router-link v-else-if="g.code === 'PI_FROZEN' || g.code === 'MATERIAL_LOST'" :to="{ path: '/orders', query: { bill_no: g.lines[0].bill_no } }">{{ t("generate.toOrders") }}</router-link>
-            <el-button v-else link type="primary" @click="showTodo">{{ t("generate.onlyThese") }}</el-button>
-          </span>
-          <span class="push muted small">{{ t("generate.todoNote") }}</span>
-        </div>
-
         <!-- 生成中：进度、取消 -->
         <GenProgress v-if="running" :running="running" :canceling="busy === 'cancel'" @cancel="cancelGen" />
 
@@ -156,7 +144,7 @@
                 <el-table-column width="44">
                   <template #default="{ row }">
                     <span class="sel" @click.stop>
-                      <el-checkbox :model-value="isPicked(row)" @change="(v: any) => onLine(row, !!v)" />
+                      <el-checkbox :model-value="isPicked(row)" @change="(v: any) => pickLine(row, !!v)" />
                       <span v-if="lineIdx(row) >= 0" class="order">{{ lineIdx(row) + 1 }}</span>
                     </span>
                   </template>
@@ -181,9 +169,8 @@
                 </el-table-column>
                 <el-table-column :label="t('common.length')" width="76">
                   <template #default="{ row }">
-                    <span v-if="row.length_source === 'K3'">{{ row.length }}</span>
-                    <!-- 金蝶米数含中文：须手动改成不含中文的米数才能生成（标红，占位显示金蝶原值） -->
-                    <el-tooltip v-else :content="row.edit_lock ? lockText(row) : lengthTip(row)">
+                    <!-- 金蝶米数原样显示、原样使用，可改（留空即改回金蝶值）；金蝶为空时规则带米数须填写（标红） -->
+                    <el-tooltip :content="row.edit_lock ? lockText(row) : lengthTip(row)">
                       <span class="cell-input" @click.stop>
                         <el-input :model-value="draftOf(row, 'length')" size="small" maxlength="64" :disabled="!!row.edit_lock"
                           :class="{ missing: !row.edit_lock && lengthMissing(row) }" :placeholder="lengthPlaceholder(row)"
@@ -194,9 +181,8 @@
                 </el-table-column>
                 <el-table-column :label="t('common.unit')" width="64">
                   <template #default="{ row }">
-                    <span v-if="row.unit_source === 'K3'">{{ row.unit }}</span>
-                    <!-- 金蝶产品单位为空或含中文（条、个等）：规则带单位时须手动填写不含中文的单位（如 M、m、L）才能生成 -->
-                    <el-tooltip v-else :content="row.edit_lock ? lockText(row) : unitTip(row)">
+                    <!-- 金蝶产品单位原样显示、原样使用（含中文也照用），可改（留空即改回金蝶值）；金蝶为空时规则带单位须填写（标红） -->
+                    <el-tooltip :content="row.edit_lock ? lockText(row) : unitTip(row)">
                       <span class="cell-input" @click.stop>
                         <el-input :model-value="draftOf(row, 'unit')" size="small" maxlength="64" :disabled="!!row.edit_lock"
                           :class="{ missing: !row.edit_lock && unitMissing(row) }" :placeholder="unitPlaceholder(row)"
@@ -410,14 +396,6 @@ const dtab = ref("lines");
 const piRuleOpen = ref(false);
 
 const allLines = computed<OrderLine[]>(() => (ctx.value ? ctx.value.bills.flatMap((b: any) => b.lines) : []));
-/** 还有额度、但还不能生成的物料行（规则、附件项次、冻结等）按原因归并：每种原因列出涉及的物料行（一行可有多个原因）。 */
-const todoGroups = computed(() => {
-  const groups = new Map<string, OrderLine[]>();
-  for (const l of allLines.value) {
-    if (l.quota > 0) for (const code of l.issues || []) groups.set(code, [...(groups.get(code) || []), l]);
-  }
-  return [...groups.entries()].map(([code, lines]) => ({ code, lines }));
-});
 const limits = computed(() => ctx.value?.limits || { default: 10000, max: 500000, sync_threshold: 5000 });
 
 async function openDetail(key: { pi?: string; bill_no?: string }) {
@@ -499,6 +477,8 @@ function nextStep(before: Map<string, Filter[]>) {
 }
 
 function closeDetail() {
+  // 点选时自动填、还没保存的附件项次先保存
+  flushAutoAttach();
   detailPi.value = "";
   ctx.value = null;
   stopPoll();
@@ -524,6 +504,7 @@ const hasSel = computed(() => !!(sel.value.bills.length || sel.value.lines.lengt
 
 function clearSelection() {
   sel.value = emptySel();
+  dropAutoAttach();
 }
 const onBill = (no: string, on: boolean) => (sel.value = toggleBill(sel.value, no, on, linesOf));
 const onLine = (l: LineRef, on: boolean) => (sel.value = toggleLine(sel.value, l, on, linesOf));
@@ -536,8 +517,15 @@ const pickedRows = computed(() =>
     .map((r: LineRef) => allLines.value.find((l) => sameLine(l, r)))
     .filter(Boolean) as OrderLine[],
 );
+/** 点选 / 取消点选物料行（点行或勾选框）：附件项次为空的行自动填上点选顺序（可改），取消点选时撤掉还没保存的自动填值。 */
+function pickLine(row: OrderLine, on: boolean) {
+  onLine(row, on);
+  if (!on) return dropAutoAttach(row);
+  const i = lineIdx(row);
+  if (i >= 0) autoFillAttach(row, i + 1);
+}
 function onLineClick(row: OrderLine) {
-  onLine(row, !isPicked(row));
+  pickLine(row, !isPicked(row));
 }
 function lineClass({ row }: { row: OrderLine }) {
   return isPicked(row) ? "picked" : "";
@@ -550,7 +538,7 @@ const genScope = computed(() => scopeBody(sel.value) ?? { scope: "BILLS", bills:
 /** 未勾选且整张 PI 已没有额度：不用预演。 */
 const piDone = computed(() => !!ctx.value && !hasSel.value && !defaultBills.value.length);
 
-// ---------------- 物料行：状态、筛选、号段；附件项次、米数的填写
+// ---------------- 物料行：状态、筛选、号段；附件项次、米数、产品单位的填写
 
 function lineState(l: OrderLine): LineState {
   if (l.quota > 0) return (l.issues || []).length ? "TODO" : "GEN";
@@ -574,12 +562,6 @@ const shownBills = computed(() => {
     // 已不在快照的单据（没有物料行、只有号）列在「已生成」
     .filter((b: any) => b.shown.length || (!b.lines.length && lineFilter.value === "GENERATED"));
 });
-function showTodo() {
-  lineFilter.value = "TODO";
-  dtab.value = "lines";
-  foldAll(false);
-}
-
 /** 收起的单据（只影响显示，不影响勾选）；每次打开 PI 时默认全部收起（各页签的单据都收起）。 */
 const folded = ref(new Set<string>());
 const isFolded = (no: string) => folded.value.has(no);
@@ -601,6 +583,7 @@ const planOf = (l: LineRef) => (gen.preview?.generatable ? gen.preview.items.fin
 const {
   draftOf, setDraft, lockText, saveAttach, saveLength, saveUnit,
   lengthTip, lengthMissing, lengthPlaceholder, unitTip, unitMissing, unitPlaceholder,
+  autoFillAttach, dropAutoAttach, flushAutoAttach,
 } = useLineDrafts(reloadCtx);
 // ---------------- 生成：勾选变化后自动预演（所选物料行整行生成）→ 确认 → 当场完成或后台进度 / 取消
 
@@ -818,10 +801,6 @@ onUnmounted(() => {
 .kv { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 12px; color: var(--app-muted); }
 .kv b { color: var(--app-text); font-weight: 600; }
 .drawer { display: flex; flex-direction: column; gap: 10px; }
-.banner { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 14px; border-radius: 8px; font-size: 13px; }
-.banner.danger { background: var(--el-color-danger-light-9); color: var(--el-color-danger-dark-2); }
-.todo { display: inline-flex; align-items: center; gap: 6px; }
-.todo + .todo::before { content: "·"; color: var(--app-muted); margin-right: 4px; }
 .dtabs :deep(.el-tabs__header) { margin-bottom: 8px; }
 .toolbar { margin-bottom: 8px; }
 .issue-tags, .ops { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }

@@ -306,6 +306,16 @@ def test_org_transfer_material_length_check(w, api):
     assert org_direct(w, a, pi, bill, a, to_bill=other, to_material="MX").code == "TR_TARGET_MATERIAL_INVALID"
 
 
+def test_transfer_to_empty_length_line_matches_default_000(w, api):
+    """目标物料行米数为空时按默认米数 000 比对：以前米数为空生成的号（米数 000）仍可转到米数为空的物料行。"""
+    a, pi, bill = setup(w, qty=1, mes=False, length="000")
+    w.allocate(pi)
+    other = uid("MO")
+    w.order(other, a, "C1", pi, ("M2", 1, " "), ("M3", 1, "100"))
+    assert org_direct(w, a, pi, bill, a, to_bill=other, to_material="M3").code == "TR_LENGTH_MISMATCH"
+    ok(org_direct(w, a, pi, bill, a, to_bill=other, to_material="M2"))
+
+
 # ---------------------------------------------------------------- 转单
 
 

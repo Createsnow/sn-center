@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from app.core import encoding as codec
 from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
@@ -519,9 +520,9 @@ def _dest(kind: str, r: TransferRequest, source_bill: str) -> Dest:
     else:
         to_factory = factories.must_be_enabled(to_factory)["factory_code"]
     line = _dest_line(tb, r)
-    return Dest(
-        to_factory, tb.pi, tb.customer_code, tb.bill_no, line["seq"], line["material_code"], orders.length_of(line)
-    )
+    # 目标物料行米数为空时按默认米数 000 比对：以前米数为空的物料行生成时写的是 000（现在须先填写才能生成）
+    length = orders.length_of(line) or codec.DEFAULT_LENGTH
+    return Dest(to_factory, tb.pi, tb.customer_code, tb.bill_no, line["seq"], line["material_code"], length)
 
 
 def _targets(kind: str, items: list[dict], d: Dest) -> dict[int, Target]:
