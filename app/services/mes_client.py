@@ -7,9 +7,9 @@
   开启压缩时另带 Content-Encoding: gzip。
 - HMAC 签名串 = timestamp + "\\n" + hex(SHA256(解压后的原始请求体字节))（请求体已含 batchNo），
   放在 X-Sn-Timestamp（UTC+8，2026-10-26 11:47:05.303）与 X-Sn-Signature（小写十六进制）。
-- 应答：HTTP 200 + {batchNo, code = RECEIVED, message, receivedAt}：MES 已收到，批次等 MES 调 ③ 回执
-  （OK 整批已处理 / NG 整批退回）后才确认，推送任务这时才发下一批；HTTP 200 但 code 不是 RECEIVED 或 batchNo 不符为
-  应答无效，不重试。连接测试（PING）不入库、没有 ③ 回执，同样只认 RECEIVED。
+- 应答：HTTP 200 + {batchNo, code = OK, message, receivedAt}：MES 已收到（只表示收到，不表示已处理），批次等 MES 调
+  ③ 回执（OK 整批已处理 / NG 整批退回）后才确认，推送任务这时才发下一批；HTTP 200 但 code 不是 OK 或 batchNo 不符为
+  应答无效，不重试。连接测试（PING）不入库、没有 ③ 回执，同样应答 OK 即通过。
   超时、5xx、断连、409 BATCH_IN_PROGRESS、429、503 可重试；
   409 BATCH_CONTENT_MISMATCH、401 / 403 / 404 / 413 / 400 等不重试。
 """
@@ -44,8 +44,8 @@ def needs_credential(auth_type: str) -> bool:
 RECEIVED = "RECEIVED"
 RETRY = "RETRY"
 FAIL = "FAIL"
-#: ① 应答的 code：MES 已收到
-CODE_RECEIVED = "RECEIVED"
+#: ① 应答的 code：MES 已收到（连接测试与正式推送相同）
+CODE_OK = "OK"
 
 #: 不重试的失败中，MES 确实没有处理的（可作废）
 VOIDABLE_CODES = frozenset(("AUTH", "ADDRESS", "TOO_LARGE", "BAD_REQUEST", "REJECTED"))
@@ -143,7 +143,7 @@ def _json(resp: httpx.Response) -> Any:
 
 def send(t: Target, batch_no: str, body_gz: bytes, attempt: int, ping: bool = False) -> Outcome:
     """推送一次（batch_no 为请求体里的批次号）；不抛异常，结果按应答归类。
-    ping：连接测试，同样只认 RECEIVED，不核对 batchNo。"""
+    ping：连接测试，同样应答 OK 即收到，不核对 batchNo。"""
     if not t.url:
         return Outcome(FAIL, code="ADDRESS", message="未配置 MES 接口地址")
     raw = gzip.decompress(body_gz)
@@ -160,9 +160,9 @@ def send(t: Target, batch_no: str, body_gz: bytes, attempt: int, ping: bool = Fa
     msg = body.get("message") if isinstance(body, dict) and isinstance(body.get("message"), str) else ""
     st = resp.status_code
     if st == 200:
-        if not isinstance(body, dict) or code != CODE_RECEIVED:
+        if not isinstance(body, dict) or code != CODE_OK:
             shown = code if isinstance(code, str) and code else "(空)"
-            why = f"HTTP 200 但应答 code 不是 {CODE_RECEIVED}（收到 {shown}）" + (f"：{msg}" if msg else "")
+            why = f"HTTP 200 但应答 code 不是 {CODE_OK}（收到 {shown}）" + (f"：{msg}" if msg else "")
             return Outcome(FAIL, code="RESPONSE_INVALID", message=why[:500], http_status=st)
         if not ping and body.get("batchNo") != batch_no:
             why = f"应答的 batchNo 与批次不符：期望 {batch_no}，收到 {body.get('batchNo')}"

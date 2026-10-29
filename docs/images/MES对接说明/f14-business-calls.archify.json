@@ -85,7 +85,7 @@
       "from": "mes",
       "to": "sn",
       "y": 305,
-      "label": "200 已收到（RECEIVED）",
+      "label": "200 已收到（OK）",
       "variant": "return",
       "note": "PING 不落库、不调 ③"
     },

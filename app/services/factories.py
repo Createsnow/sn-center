@@ -277,7 +277,7 @@ def _candidate(f: dict, body: dict) -> dict:
 
 def test_connection(cu: CurrentUser, code: str | None, body: dict) -> dict:
     """连接测试：向接口地址发一个不含号的 PING 批次（认证、压缩与正式推送相同），只提示结果；通过时记下配置摘要。
-    PING 不入库、没有 ③ 回执：应答 HTTP 200 + code = RECEIVED 即通过（与正式推送相同，不认 OK）。"""
+    PING 不入库、没有 ③ 回执：应答 HTTP 200 + code = OK 即通过（与正式推送相同）。"""
     f = must_get(code)
     c = _candidate(f, body)
     if not complete(c["mes_url"], c["mes_auth_type"], bool(c["mes_credential_plain"])):
@@ -289,7 +289,7 @@ def test_connection(cu: CurrentUser, code: str | None, body: dict) -> dict:
     batch_no = "PING-" + util.mes_local().strftime("%Y%m%d%H%M%S%f")[:17]
     out = mes_client.send(t, batch_no, mes_client.ping_body(f["factory_code"], batch_no), 1, ping=True)
     ok = out.kind == mes_client.RECEIVED
-    message = "" if ok else (out.message or out.code or "未返回 RECEIVED")
+    message = "" if ok else (out.message or out.code or "未返回 OK")
     now = util.now()
     with db.tx():
         same = _digest(c) == stored_digest(f)

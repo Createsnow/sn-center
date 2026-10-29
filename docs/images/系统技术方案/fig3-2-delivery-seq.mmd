@@ -7,7 +7,7 @@ sequenceDiagram
   T->>D: 认领推送任务（生产组织 + PI，租约）
   T->>D: SKIP LOCKED 认领「待推送、未入批、未暂停」的号<br/>建交付批次 PS-…，写定 body_gz 与内容摘要
   T->>M: ① POST 批次（X-Sn-Attempt；开启压缩时 gzip）
-  alt 200 + 已收到（RECEIVED）
+  alt 200 + 已收到（OK）
     T->>D: 批次等回执（WAIT_RECEIPT），任务等待，后续批次不推
     M->>API: ③ POST receipts（MES 落库后）
     API->>D: OK：批次成功，号改已推送、记 MES 持有组织，唤醒任务推下一批<br/>NG：批次失败，任务停止并提示原因

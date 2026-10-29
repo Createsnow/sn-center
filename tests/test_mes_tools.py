@@ -1,7 +1,7 @@
 """联调工具：模拟 MES（devtools/mes_mock.py）、MES 接口契约测试（devtools/mes_conformance.py）。
 
 契约测试先对模拟 MES 跑一遍（应全部通过），再对故意写错的 MES 跑（应报出失败），证明两边都按对接说明实现：
-① 应答已收到（RECEIVED），处理落库后调 ③ 回执（契约测试自带 ③ 接收地址，模拟 MES 的回执提交器指向它）；
+① 应答已收到（code = OK），处理落库后调 ③ 回执（契约测试自带 ③ 接收地址，模拟 MES 的回执提交器指向它）；
 取批模拟器对真实应用跑通 ② → process → ③。
 """
 
@@ -136,7 +136,7 @@ class _NoReceipt(MockMes):
 
 
 class _ReceiptInResponse(MockMes):
-    """错误实现（旧约定）：在 ① 应答里直接回 OK / NG，不调 ③。"""
+    """错误实现（旧约定）：在 ① 应答里直接给处理结果（OK / NG），不调 ③。"""
 
     def handle(self, org, batch, source="PUSH", emit=True):
         if batch.get("batchType") == "PING":
@@ -146,7 +146,7 @@ class _ReceiptInResponse(MockMes):
 
 
 #: 需要 ③ 回执的检查项（C01～C04、C19 只看 ① 应答，C07 依赖 C05；C21 未加 --perf 跳过）
-_NEED_RECEIPT = {f"C{i:02d}" for i in range(5, 25)} - {"C19", "C21"}
+_NEED_RECEIPT = {f"C{i:02d}" for i in range(5, 26)} - {"C19", "C21"}
 
 
 @pytest.mark.parametrize(
@@ -307,7 +307,7 @@ def test_push_body_plain_json_by_default_gzip_when_enabled(mock, gz):
     assert out.kind == mes_client.RECEIVED
     assert {k: out.body[k] for k in ("batchNo", "code", "message")} == {
         "batchNo": "PING-GZ",
-        "code": "RECEIVED",
+        "code": "OK",
         "message": "已收到",
     }
     assert out.body["receivedAt"][10] == " "

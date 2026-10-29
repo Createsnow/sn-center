@@ -1,7 +1,7 @@
 """模拟 MES：MES 方还没接入时扮演 MES 与本系统联调，也是《MES 对接说明》3.2 节 process(batch) 的参考实现。
 
 推送和取批共用同一套本侧数据（按组织分开的 SN 表、批次表）和同一个 process，与对接说明对真实 MES 的要求一致。
-接收推送（①）时先应答「已收到」（code = RECEIVED），处理落库后再调本系统接口 ③ 提交回执（OK / NG）；
+接收推送（①）时先应答「已收到」（code = OK），处理落库后再调本系统接口 ③ 提交回执（OK / NG）；
 同一批次再次送达时同样应答已收到，并重新提交首次的回执。
 
     # 接收推送（接口 ①）：地址 http://<host>:<port>/mes/<组织>，填到「生产组织」页的 MES 接口地址；
@@ -96,7 +96,7 @@ def _receipt(batch_no: str | None, code: str = "OK", message: str = "已处理")
 
 def _received(batch_no: str | None) -> dict:
     """① 应答：已收到（处理结果另由 ③ 回执）；receivedAt 为 MES 收到时间。"""
-    return {"batchNo": batch_no, "code": "RECEIVED", "message": "已收到", "receivedAt": now_cst()}
+    return {"batchNo": batch_no, "code": "OK", "message": "已收到", "receivedAt": now_cst()}
 
 
 def _err(code: str, message: str, batch_no: str | None = None) -> dict:
@@ -585,7 +585,8 @@ class Puller:
 
 class ReceiptSender:
     """扮演 MES 提交 ③ 回执：从 outbox 取出，用该组织的 MES 接口账户（Authorization: Bearer <工号>:<密钥>）提交到
-    本系统 /api/mes/v1/receipts（不压缩）。断连、429、5xx 隔几秒重交（最多 5 次），其余应答记下不重交。"""
+    本系统 /api/mes/v1/receipts（不压缩）。HTTP 200 + code = OK 为已送达；断连、429、5xx 立即重交一次，
+    之后隔几秒再重交（最多 5 次），其余应答记下不重交。"""
 
     PATH = "/api/mes/v1/receipts"
 
@@ -628,7 +629,7 @@ class ReceiptSender:
                 st, body = None, f"{type(e).__name__} {e}"
             if st is not None and st != 429 and st < 500:
                 break
-            if self._stop.wait(min(2 * (attempt + 1), 10)):
+            if self._stop.wait(min(2 * attempt, 10)):
                 break
         rec = {"at": now_cst(), "org": org, "batchNo": receipt.get("batchNo"), "code": receipt.get("code")}
         rec |= {"status": st, "body": body}

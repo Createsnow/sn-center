@@ -254,9 +254,9 @@ def test_receipt_with_wrong_batch_no_refused_batch_keeps_waiting(w, sql):
     ]
 
 
-@pytest.mark.parametrize("code", ["OK", "NG", "DONE"])
+@pytest.mark.parametrize("code", ["RECEIVED", "NG", "DONE"])
 def test_response_not_received_is_invalid(w, sql, code):
-    """HTTP 200 但 code 不是 RECEIVED（含旧约定在应答里直接回 OK / NG）：不当已收到，记为应答无效、不重试，任务停止。"""
+    """HTTP 200 但 code 不是 OK（如 RECEIVED、在应答里直接回 NG）：不当已收到，记为应答无效、不重试，任务停止。"""
     org, pi, bill = setup_pi(w, qty=2, batch_size=5)
     MES.behavior[org] = lambda batch, h: (200, {"batchNo": batch["batchNo"], "code": code, "message": "已处理"})
     w.allocate(pi)

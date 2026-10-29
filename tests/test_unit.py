@@ -272,9 +272,9 @@ def test_ping_batch_has_no_items():
     assert body["itemsDigest"].startswith("sha256:") and len(body["itemsDigest"]) == 71
 
 
-@pytest.mark.parametrize("code,kind", [("RECEIVED", mes_client.RECEIVED), ("OK", mes_client.FAIL)])
+@pytest.mark.parametrize("code,kind", [("OK", mes_client.RECEIVED), ("RECEIVED", mes_client.FAIL)])
 def test_ping_only_accepts_received(code, kind):
-    """连接测试与正式推送一样只认 RECEIVED；应答 OK 不算通过。"""
+    """连接测试与正式推送一样应答 OK 即收到；其他 code（如 RECEIVED）不算通过。"""
     from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
     from threading import Thread
 
