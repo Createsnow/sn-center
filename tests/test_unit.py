@@ -272,6 +272,36 @@ def test_ping_batch_has_no_items():
     assert body["itemsDigest"].startswith("sha256:") and len(body["itemsDigest"]) == 71
 
 
+@pytest.mark.parametrize("code,kind", [("RECEIVED", mes_client.RECEIVED), ("OK", mes_client.FAIL)])
+def test_ping_only_accepts_received(code, kind):
+    """连接测试与正式推送一样只认 RECEIVED；应答 OK 不算通过。"""
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+    from threading import Thread
+
+    class H(BaseHTTPRequestHandler):
+        def do_POST(self):
+            self.rfile.read(int(self.headers["Content-Length"]))
+            raw = json.dumps({"batchNo": "PING-1", "code": code, "message": ""}).encode()
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(raw)))
+            self.end_headers()
+            self.wfile.write(raw)
+
+        def log_message(self, *a):
+            pass
+
+    srv = ThreadingHTTPServer(("127.0.0.1", 0), H)
+    Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        t = mes_client.Target(f"http://127.0.0.1:{srv.server_port}/", mes_client.NONE, "", 5)
+        out = mes_client.send(t, "PING-1", mes_client.ping_body("110", "PING-1"), 1, ping=True)
+    finally:
+        srv.shutdown()
+    assert out.kind == kind
+    if kind == mes_client.FAIL:
+        assert out.code == "RESPONSE_INVALID"
+
+
 # ---------------------------------------------------------------------- 多语言契约（对应 I18nContractTest）
 
 PH = re.compile(r"\{(\w+)}")

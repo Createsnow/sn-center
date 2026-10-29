@@ -397,10 +397,8 @@ class Runner:
             r = self.send(b)
             self.need(r.status == 200 and isinstance(r.body, dict), f"PING 期望 HTTP 200 + 已收到，实际 {r}")
             code = r.body.get("code")
-            self.need(code in ("RECEIVED", "OK"), f"PING 期望 code = RECEIVED，实际 {r}")
+            self.need(code == "RECEIVED", f"PING 期望 code = RECEIVED，实际 {r}")
             c.detail = f"耗时 {r.elapsed:.2f} 秒"
-            if code == "OK":
-                c.status, c.detail = WARN, c.detail + "；PING 应答 OK 本系统兼容，建议与其他批次一样应答 RECEIVED"
 
         def ping_org(c: Check) -> None:
             b = ping(self.org + "X")

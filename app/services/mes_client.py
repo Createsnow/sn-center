@@ -9,7 +9,7 @@
   放在 X-Sn-Timestamp（UTC+8，2026-10-26 11:47:05.303）与 X-Sn-Signature（小写十六进制）。
 - 应答：HTTP 200 + {batchNo, code = RECEIVED, message, receivedAt}：MES 已收到，批次等 MES 调 ③ 回执
   （OK 整批已处理 / NG 整批退回）后才确认，推送任务这时才发下一批；HTTP 200 但 code 不是 RECEIVED 或 batchNo 不符为
-  应答无效，不重试。连接测试（PING）不入库、没有 ③ 回执，应答 RECEIVED（兼容 OK）即通过。
+  应答无效，不重试。连接测试（PING）不入库、没有 ③ 回执，同样只认 RECEIVED。
   超时、5xx、断连、409 BATCH_IN_PROGRESS、429、503 可重试；
   409 BATCH_CONTENT_MISMATCH、401 / 403 / 404 / 413 / 400 等不重试。
 """
@@ -143,7 +143,7 @@ def _json(resp: httpx.Response) -> Any:
 
 def send(t: Target, batch_no: str, body_gz: bytes, attempt: int, ping: bool = False) -> Outcome:
     """推送一次（batch_no 为请求体里的批次号）；不抛异常，结果按应答归类。
-    ping：连接测试，应答 RECEIVED 或 OK 都算收到，不核对 batchNo（与原连接测试一致）。"""
+    ping：连接测试，同样只认 RECEIVED，不核对 batchNo。"""
     if not t.url:
         return Outcome(FAIL, code="ADDRESS", message="未配置 MES 接口地址")
     raw = gzip.decompress(body_gz)
@@ -160,7 +160,7 @@ def send(t: Target, batch_no: str, body_gz: bytes, attempt: int, ping: bool = Fa
     msg = body.get("message") if isinstance(body, dict) and isinstance(body.get("message"), str) else ""
     st = resp.status_code
     if st == 200:
-        if not isinstance(body, dict) or code not in ((CODE_RECEIVED, "OK") if ping else (CODE_RECEIVED,)):
+        if not isinstance(body, dict) or code != CODE_RECEIVED:
             shown = code if isinstance(code, str) and code else "(空)"
             why = f"HTTP 200 但应答 code 不是 {CODE_RECEIVED}（收到 {shown}）" + (f"：{msg}" if msg else "")
             return Outcome(FAIL, code="RESPONSE_INVALID", message=why[:500], http_status=st)
