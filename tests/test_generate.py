@@ -260,6 +260,35 @@ def test_custom_rule_names_follow_code_number(w, sql):
     assert [(r["rule_code"], r["rule_name"]) for r in rows] == [(f"PI-{pi}-1", f"{pi}_v1"), (f"PI-{pi}-2", f"{pi}_v2")]
 
 
+def test_custom_rule_shared_by_lines_generated_separately(w, sql):
+    """同一 PI 的两行选了同一自定义规则、分两次生成：第一次生成后两行都改记为存入的规则，第二次接着用这一版。"""
+    org, pi, bill = mk(w, ("M1", 3), ("M2", 2))
+    p = P()
+    ok(w.select(pi, [(bill, 1), (bill, 2)], custom=m(prefix=p, base=10, seq_len=6, with_length=False)))
+    w.generate(pi, lines=[(bill, 1)])
+    rid = sql.scalar("SELECT id FROM sn_rule WHERE rule_code = %s", f"PI-{pi}-1")
+    rows = sql.all("SELECT seq, rule_id, custom_json FROM sn_line_rule WHERE bill_no = %s ORDER BY seq", bill)
+    assert [(r["rule_id"], r["custom_json"]) for r in rows] == [(rid, None), (rid, None)]
+    w.generate(pi, lines=[(bill, 2)])
+    assert sql.count("SELECT COUNT(*) FROM sn_rule WHERE rule_code LIKE %s", f"PI-{pi}-%") == 1
+    sns = [r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
+    assert sns == [f"{p}{i:06d}" for i in range(1, 6)]
+
+
+def test_custom_prefix_taken_after_select_flagged_in_preview(w):
+    """两张 PI 选了同一前缀的自定义规则：一张先生成后，另一张预演即标「规则须换前缀」，不等生成时才失败。"""
+    _, pa, ba = mk(w, ("M1", 2))
+    _, pb, bb = mk(w, ("M1", 2))
+    c = m(prefix=P(), base=10, seq_len=6, with_length=False)
+    ok(w.select(pa, [(ba, 1)], custom=c))
+    ok(w.select(pb, [(bb, 1)], custom=c))
+    w.generate(pa)
+    p = ok(w.preview(pb))
+    assert p["generatable"] is False and p["issues"][0]["issues"] == ["RULE_PREFIX"]
+    ok(w.select(pb, [(bb, 1)], custom={**c, "prefix": P()}))
+    w.generate(pb)
+
+
 def test_customer_template_requires_prefix(w, api):
     org, pi, bill = mk(w, ("M1", 5), customer="C900")
     rid = w.rule(P())

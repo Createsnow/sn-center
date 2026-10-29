@@ -11,7 +11,8 @@
 选法：规则库（选一条规则，本 PI 用哪一版见 resolve）或自定义（前缀、进制、位数、米数及其补 0 位数与前后分隔符、
 是否带单位、后缀）；
 自定义规则生成成功后存入规则库并归属本 PI（编码 PI-PI号-n，名称 PI号_vn，n 为本 PI 第几条自定义规则），
-生成失败或取消不留规则。
+本 PI 选了同一自定义规则、这次没生成的物料行一并改记为这条规则；生成失败或取消不留规则。
+自定义规则的前缀在选定后被别的规则先占用时，预演标「规则须换前缀」。
 物料行生成过号后可改选，已生成的号不变，流水接续。
 """
 
@@ -170,6 +171,16 @@ def normalize(s: SpecIn) -> codec.Spec:
     if err is not None:
         raise biz(err)
     return spec
+
+
+def prefix_taken(prefix: str, memo: dict[str, bool] | None = None) -> bool:
+    """前缀是否已被某条规则的某个版本占用；memo：同一次判断里同一前缀只查一次。"""
+    if memo is not None and prefix in memo:
+        return memo[prefix]
+    hit = db.exists("SELECT EXISTS(SELECT 1 FROM sn_rule_version WHERE prefix = %s)", prefix)
+    if memo is not None:
+        memo[prefix] = hit
+    return hit
 
 
 def check_prefix(prefix: str, exclude_version: int | None = None) -> None:
@@ -1115,11 +1126,18 @@ def realize(cu: CurrentUser, pi: str, res: Resolved, lines: list[tuple[str, int]
         rid = _insert_rule(
             cu, code, name, spec, (PI, pi), " (自定义规则，生成成功后存入规则库)", claimed_pi=pi, factory=owner
         )
-        # 物料行改记为这条规则
+        # 物料行改记为这条规则：本次生成的行，以及本 PI 选了同一自定义规则、这次没生成的行（之后接着用这一版，
+        # 不再按自定义新建——前缀已被这一版占用）
         for no, seq in lines:
             db.exec(
                 "UPDATE sn_line_rule SET rule_id = %s, custom_json = NULL WHERE bill_no = %s AND seq = %s", rid, no, seq
             )
+        db.exec(
+            "UPDATE sn_line_rule SET rule_id = %s, custom_json = NULL WHERE pi_no = %s AND custom_json = %s",
+            rid,
+            pi,
+            json.dumps(res.custom, ensure_ascii=False, sort_keys=True),
+        )
         return db.one("SELECT * FROM sn_rule_version WHERE rule_id = %s AND version = 1", rid)
     if res.version is None:
         raise biz(ErrorCode.GEN_PREVIEW_CHANGED)

@@ -159,6 +159,7 @@ def _load_lines(pi: str, keys: list[tuple[str, int]]) -> list[Line]:
     sels = rules.selections(keys)
     defaults: dict[str, rules.Resolved | None] = {}
     memo: dict[int, rules.Resolved | None] = {}
+    taken: dict[str, bool] = {}
     blocks = {b: changes.generation_block(b) for b in bills}
     out = []
     for k in keys:
@@ -190,13 +191,13 @@ def _load_lines(pi: str, keys: list[tuple[str, int]]) -> list[Line]:
             rules.effective(pi, r["customer_code"], sels.get(k), defaults[r["customer_code"]], memo=memo),
             blocks[r["bill_no"]],
         )
-        _check(line)
+        _check(line, taken)
         out.append(line)
     return out
 
 
-def _check(line: Line) -> None:
-    """生成条件（只对还有额度的物料行）。"""
+def _check(line: Line, taken: dict[str, bool] | None = None) -> None:
+    """生成条件（只对还有额度的物料行）。taken：自定义规则前缀是否已被占用（同一次判断里共用）。"""
     if line.quota <= 0:
         return
     if line.block:
@@ -204,6 +205,9 @@ def _check(line: Line) -> None:
     if line.res is None:
         line.issues.append("NO_RULE")
     elif not line.res.ready:
+        line.issues.append("RULE_PREFIX")
+    elif line.res.plan == rules.PLAN_NEW and rules.prefix_taken(line.res.version["prefix"], taken):
+        # 自定义规则选定后前缀被别的规则先占用（如别的 PI 用同一前缀先生成），须改前缀，免得生成时才失败
         line.issues.append("RULE_PREFIX")
     spec = line.res.spec() if line.res is not None and line.res.ready else None
     # 米数、产品单位用金蝶原值（含中文也照用）；金蝶为空且页面未填写时须先填写（规则不带米数 / 单位时不影响）
