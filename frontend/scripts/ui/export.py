@@ -1,21 +1,9 @@
-# SN 导出（F-14）
+# SN 导出（F-14）：SN 分配页「已分配单据」页签的单据列表与 SN 明细
 M = {
-"export.title": ("SN 导出", "SN export", "Xuất SN"),
-"export.desc": ("号一经分配到生产组织就在这里按「生产组织 + PI + 单据」列出，不论是否对接 MES。导出与推送、拉取是两套独立的机制：不看推送进度，推送失败也照常导出。可点明细按物料行逐枚查看全部 SN，或直接下载 xlsx（列：PI、单据、物料编码、SN）；导出只读、可反复下载，不改变号的状态。",
-  "SNs appear here, per “production org + PI + bill”, as soon as they are allocated to a production org, with or without MES. Export and MES push / pull are independent: push progress is not shown, and a failed push does not block export. Open the detail to see every SN one by one, or download xlsx directly (columns: PI, bill, material, SN); exporting is read-only and repeatable and does not change SN status.",
-  "SN xuất hiện ở đây theo “tổ chức sản xuất + PI + chứng từ” ngay khi được phân bổ cho tổ chức sản xuất, dù có kết nối MES hay không. Xuất và đẩy / kéo MES là hai cơ chế độc lập: không hiển thị tiến độ đẩy, đẩy thất bại vẫn xuất được. Mở chi tiết để xem từng SN, hoặc tải trực tiếp xlsx (cột: PI, chứng từ, mã vật tư, SN); xuất chỉ để đọc, có thể tải nhiều lần, không đổi trạng thái SN."),
-"export.mesYes": ("对接 MES", "With MES", "Có MES"),
-"export.mesNo": ("未对接 MES", "Without MES", "Không MES"),
-"export.search": ("按 PI 或单据编号搜索", "Search PI or bill No.", "Tìm PI hoặc số chứng từ"),
 "export.qty": ("SN 枚数", "SNs", "Số SN"),
 "export.suspended": ("暂停 {n}", "{n} suspended", "Tạm dừng {n}"),
 "export.applying": ("申请中 {n}", "{n} transfer pending", "Đang xin chuyển {n}"),
-"export.rule": ("分配后即可导出（待分配的号不展示），不看推送是否成功；下载内容为下载时刻该单据在该生产组织下的全部号。",
-  "SNs can be exported as soon as they are allocated (unallocated ones are not shown), whether or not they were pushed successfully; a download contains every SN of the bill in that org at download time.",
-  "SN xuất được ngay khi đã phân bổ (SN chờ phân bổ không hiển thị), bất kể đã đẩy thành công hay chưa; tệp tải về gồm mọi SN của chứng từ tại tổ chức đó ở thời điểm tải."),
 "export.download": ("下载 {f}", "Download {f}", "Tải {f}"),
-"export.lines": ("物料行", "Bill lines", "Dòng chứng từ"),
-"export.applySus": ("申请中 / 暂停", "Transfer pending / suspended", "Đang xin chuyển / tạm dừng"),
 "export.allTab": ("全部 {n}", "All {n}", "Tất cả {n}"),
 "export.lineTab": ("#{seq} · {m} · 附件 {a} · 米数 {l} · {n} 枚", "#{seq} · {m} · attach {a} · length {l} · {n}", "#{seq} · {m} · đính kèm {a} · chiều dài {l} · {n} SN"),
 "export.groupTitle": ("物料 {m}", "Material {m}", "Vật tư {m}"),

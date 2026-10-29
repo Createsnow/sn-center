@@ -41,7 +41,6 @@ M = {
 "nav.generate": ("SN 生成", "SN generation", "Tạo SN"),
 "nav.allocate": ("SN 分配", "SN allocation", "Phân bổ SN"),
 "nav.rules": ("SN 规则库", "SN rule library", "Thư viện quy tắc SN"),
-"nav.export": ("SN 导出", "SN export", "Xuất SN"),
 "nav.transfer": ("SN 转移", "SN transfer", "Chuyển SN"),
 "nav.query": ("SN 查询", "SN query", "Tra cứu SN"),
 "nav.boxGenerate": ("箱号生成", "Carton No. generation", "Tạo số thùng"),
@@ -130,7 +129,7 @@ M = {
 # ---------------- 交付方式 / 推送类型 / 暂停 ----------------
 "deliveryMode.PUSH": ("推送", "Push", "Đẩy"),
 "deliveryMode.PULL": ("拉取", "Pull", "Kéo"),
-"deliveryMode.PAGE": ("SN 导出", "SN export", "Xuất SN"),
+"deliveryMode.PAGE": ("页面下载", "Page download", "Tải trên trang"),
 "pushType.NEW": ("新号", "New", "Số mới"),
 "pushType.REASSIGN": ("改派", "Reassign", "Điều chuyển"),
 "receiptResult.ACCEPTED": ("已接收", "Accepted", "Đã nhận"),

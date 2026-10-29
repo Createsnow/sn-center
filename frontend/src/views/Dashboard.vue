@@ -173,7 +173,7 @@ const kpis = computed<Kpi[]>(() => {
   if ("PENDING_ALLOC" in c) rows.push({ key: "PENDING_ALLOC", label: statusLabel("PENDING_ALLOC"), value: c.PENDING_ALLOC, to: "/allocate" });
   rows.push(
     { key: "TO_PUSH", label: statusLabel("TO_PUSH"), value: c.TO_PUSH },
-    { key: "ALLOCATED", label: statusLabel("ALLOCATED"), value: c.ALLOCATED, to: "/export" },
+    { key: "ALLOCATED", label: statusLabel("ALLOCATED"), value: c.ALLOCATED, to: "/allocate" },
     { key: "APPLYING", label: statusLabel("APPLYING"), value: c.APPLYING, to: "/transfer" },
     { key: "suspended", label: t("dashboard.suspended"), value: d.suspended, alarm: true },
     { key: "interrupted", label: t("dashboard.pushInterrupted"), value: d.push_interrupted, alarm: true, to: "/query?tab=delivery" },
@@ -184,8 +184,8 @@ const kpis = computed<Kpi[]>(() => {
   if (store.canAct) rows.push({ key: "oalerts", label: t("dashboard.orderAlertKpi"), value: d.order_alerts, alarm: true, to: "/orders?tab=alerts" });
   if (store.canAct) rows.push({ key: "running", label: t("dashboard.runningJobs"), value: d.running_jobs, to: "/generate" });
   if (d.total_generated !== null && d.total_generated !== undefined) rows.push({ key: "total", label: t("dashboard.totalGenerated"), value: d.total_generated });
-  // 审计员只有 SN 查询（明细页签）和 SN 导出：其他跳转不给
-  return store.canAct ? rows : rows.map((r) => (r.to?.startsWith("/query") ? { ...r, to: "/query" } : r.to === "/export" ? r : { ...r, to: undefined }));
+  // 审计员只有 SN 查询（明细页签，可导出）：已分配跳 SN 查询，其他跳转不给
+  return store.canAct ? rows : rows.map((r) => (r.to?.startsWith("/query") || r.key === "ALLOCATED" ? { ...r, to: "/query" } : { ...r, to: undefined }));
 });
 
 /** 今日：生成、分配、推送（按确认方式分列）、MES 拉取、转单。 */

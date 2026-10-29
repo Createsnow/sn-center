@@ -146,6 +146,8 @@ def test_unallocated_not_listed_and_scope(w, api):
     assert ok(api.get(f"/api/export/bills?q={pi}", q))["items"][0]["qty"] == 2, "审计员可查看、下载"
     assert get_file(api, q, pi=pi, bill_no=bill).status_code == 200
     assert ok(api.get(f"/api/export/bills?q={pi}&mes=true", w.admin))["items"] == []
+    assert [r["bill_no"] for r in ok(api.get(f"/api/export/bills?pi={pi}", w.admin))["items"]] == [bill]
+    assert ok(api.get(f"/api/export/bills?pi={pi[:-1]}", w.admin))["items"] == [], "pi 按 PI 精确匹配（SN 分配页）"
 
 
 def test_xlsx_keeps_formula_like_text_and_leading_dash_sn(w, api):

@@ -31,9 +31,15 @@ def _notes(r: dict) -> dict:
     return {"suspended": int(r["suspended"] or 0), "applying": int(r["applying"] or 0)}
 
 
-def bills(cu: CurrentUser, factory: str | None, q: str | None, mes: bool | None, page: util.Page) -> dict:
-    """每个「生产组织 + PI + 单据」一行：枚数、暂停枚数、申请中枚数；q 按 PI 或单据编号前缀匹配。"""
+def bills(
+    cu: CurrentUser, factory: str | None, q: str | None, mes: bool | None, page: util.Page, pi: str | None = None
+) -> dict:
+    """每个「生产组织 + PI + 单据」一行：枚数、暂停枚数、申请中枚数；q 按 PI 或单据编号前缀匹配，pi 按 PI 精确匹配
+    （SN 分配页的「已分配单据」页签）。"""
     where, args = _where(cu, factory)
+    if not util.blank(pi):
+        where += " AND i.pi_no = %s"
+        args.append(pi.strip())
     if not util.blank(q):
         where += " AND (i.pi_no LIKE %s OR i.bill_no LIKE %s)"
         args += [util.like_prefix(q.strip())] * 2

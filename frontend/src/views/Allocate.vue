@@ -72,19 +72,15 @@
           </div>
 
           <!-- 待分配的号：勾选物料行为范围，不勾选 = 整张 PI -->
-          <section class="box">
+          <section v-if="bills.length" class="box">
             <div class="box-h">
               <b>{{ t("allocate.linesTitle") }}</b>
-              <span class="muted">{{ t("allocate.linesHint") }}</span>
               <span class="push" />
-              <template v-if="bills.length">
-                <el-button link type="primary" size="small" @click="foldAll(false)">{{ t("common.expandAll") }}</el-button>
-                <el-button link type="primary" size="small" @click="foldAll(true)">{{ t("common.collapseAll") }}</el-button>
-              </template>
+              <el-button link type="primary" size="small" @click="foldAll(false)">{{ t("common.expandAll") }}</el-button>
+              <el-button link type="primary" size="small" @click="foldAll(true)">{{ t("common.collapseAll") }}</el-button>
             </div>
-            <p v-if="!bills.length" class="muted empty-lines">{{ t("allocate.nothingPending") }}</p>
             <!-- 按单据分组，点单据头展开 / 收起；收起只隐藏，勾选保留 -->
-            <div v-else class="bills">
+            <div class="bills">
               <div v-for="b in bills" :key="`${ctxVer}:${b.bill_no}`" class="bill">
                 <div class="bill-h" :title="isFolded(b.bill_no) ? t('common.expand') : t('common.collapse')" @click="toggleFold(b.bill_no)">
                   <el-icon class="fold" :class="{ open: !isFolded(b.bill_no) }"><ArrowRight /></el-icon>
@@ -135,10 +131,12 @@
             </div>
           </section>
 
-          <!-- 推送进度 / 分配记录 -->
+          <!-- 已分配（逐枚查看、下载 xlsx） / 推送进度（有推送时） / 分配记录 -->
           <el-tabs v-model="dtab" class="box tabs-box">
-            <el-tab-pane :label="t('allocate.tabPush')" name="push">
-              <p v-if="!ctx.push.length" class="muted">{{ t("allocate.noPush") }}</p>
+            <el-tab-pane :label="t('allocate.tabAllocated', { n: allocatedBills })" name="allocated">
+              <AllocatedPane ref="allocated" :pi="ctx.pi_no" @total="(n: number) => (allocatedBills = n)" />
+            </el-tab-pane>
+            <el-tab-pane v-if="ctx.push.length" :label="t('allocate.tabPush')" name="push">
               <div v-for="p in ctx.push" :key="p.factory_code" class="push-row">
                 <b>{{ nameOf(p.factory_code) }}</b>
                 <el-tag v-if="p.task" size="small" :type="p.waiting_receipt ? 'primary' : TASK_TAG[p.task.state] || 'info'">{{ p.waiting_receipt ? taskStateLabel("WAITING_RECEIPT") : taskStateLabel(p.task.state) }}</el-tag>
@@ -146,12 +144,7 @@
                 <span v-if="p.waiting_receipt" class="muted">{{ t("allocate.waitingReceipt") }}</span>
                 <span v-else-if="p.task?.message" class="muted">{{ p.task.message }}</span>
                 <span v-if="p.last_problem" class="err">{{ p.last_problem.batch_no }}：{{ p.last_problem.fail_reason || pushStateLabel(p.last_problem.push_state) }}</span>
-                <span class="push" />
-                <el-button v-if="canResume(p)" size="small" type="warning" plain :loading="busy === `resume:${p.factory_code}`" @click="resume(p.factory_code)">
-                  {{ t("allocate.resumeBtn", { n: p.remaining.pushes }) }}
-                </el-button>
               </div>
-              <p class="muted">{{ t("allocate.exportNote") }} <router-link to="/export">{{ t("nav.export") }}</router-link></p>
             </el-tab-pane>
             <el-tab-pane :label="t('allocate.tabBatches', { n: ctx.batches.length })" name="batches">
               <el-table :data="ctx.batches" size="small" max-height="360" :empty-text="t('common.empty')">
@@ -217,6 +210,7 @@ import { canConfirm, canVoid } from "@/utils/batch";
 import PageHead from "@/components/PageHead.vue";
 import BatchManualDialog from "@/components/batch/BatchManualDialog.vue";
 import DeliveryBatchDrawer from "@/components/batch/DeliveryBatchDrawer.vue";
+import AllocatedPane from "./allocate/AllocatedPane.vue";
 
 type Tab = "TO_ALLOCATE" | "ALLOCATED";
 type RowState = "INTERRUPTED" | "PENDING" | "ALLOCATED";
@@ -271,7 +265,9 @@ const ctx = ref<any>(null);
 const ctxLoading = ref(false);
 /** 非静默加载一次详情加 1：单据表格随之重建，表格内的勾选与 picked 一起清空。 */
 const ctxVer = ref(0);
-const dtab = ref("push");
+const dtab = ref("allocated");
+const allocated = ref<InstanceType<typeof AllocatedPane> | null>(null);
+const allocatedBills = ref(0);
 let ctxTimer: ReturnType<typeof setTimeout> | undefined;
 
 function pick(no: string) {
@@ -306,6 +302,7 @@ async function loadCtx(silent = false) {
 
 async function reload() {
   await loadCtx();
+  allocated.value?.load();
   loadList(true);
 }
 
@@ -377,6 +374,8 @@ async function doAllocate() {
     const r = await api.allocate({ pi_no: ctx.value.pi_no, ...scopeBody.value });
     ElMessage.success(t("allocate.allocDone", { n: num(r.qty) }));
     if (r.skipped?.length) ElMessage.warning(t("allocate.allocSkipped", { n: r.skipped.length }));
+    // 分配后直接看结果：已分配的单据可立即下载
+    dtab.value = "allocated";
     await reload();
   } finally {
     busy.value = "";
@@ -402,7 +401,8 @@ const batchNo = ref("");
 // ================================================================ 联动
 
 watch(pi, () => {
-  dtab.value = "push";
+  dtab.value = "allocated";
+  allocatedBills.value = 0;
   loadCtx();
 });
 
@@ -439,7 +439,6 @@ onUnmounted(() => {
 .warn-bg { background: var(--el-color-warning-light-9); color: var(--el-color-warning-dark-2); }
 .box { border: 1px solid var(--el-border-color-lighter); border-radius: 8px; }
 .box-h { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--el-fill-color-light); border-radius: 8px 8px 0 0; }
-.empty-lines { padding: 12px; margin: 0; text-align: center; }
 .bills { max-height: 420px; overflow-y: auto; padding: 8px 12px; display: flex; flex-direction: column; gap: 8px; }
 .bill { border: 1px solid var(--el-border-color-lighter); border-radius: 6px; overflow: hidden; flex: none; }
 .bill-h { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: var(--el-fill-color-lighter); font-size: 13px; cursor: pointer; user-select: none; }

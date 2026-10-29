@@ -24,7 +24,6 @@ export const MENU: MenuGroup[] = [
   { group: "nav.groupSn", icon: "Stamp", items: [
     { path: "/generate", title: "nav.generate", icon: "Finished", roles: OPS },
     { path: "/allocate", title: "nav.allocate", icon: "Promotion", roles: OPS },
-    { path: "/export", title: "nav.export", icon: "Download", roles: ALL },
     { path: "/transfer", title: "nav.transfer", icon: "Switch", roles: OPS },
     { path: "/query", title: "nav.query", icon: "Search", roles: ALL },
     { path: "/rules", title: "nav.rules", icon: "SetUp", roles: OPS },
@@ -61,7 +60,6 @@ const views: Record<string, () => Promise<unknown>> = {
   "/generate": () => import("@/views/Generate.vue"),
   "/allocate": () => import("@/views/Allocate.vue"),
   "/rules": () => import("@/views/Rules.vue"),
-  "/export": () => import("@/views/SnExport.vue"),
   "/transfer": () => import("@/views/Transfer.vue"),
   "/query": () => import("@/views/Query.vue"),
   "/audit": () => import("@/views/Audit.vue"),
@@ -83,6 +81,8 @@ const router = createRouter({
     { path: "/login", name: "login", component: () => import("@/views/Login.vue"), meta: { public: true } },
     { path: "/password", name: "password", component: () => import("@/views/ChangePassword.vue") },
     { path: "/", component: () => import("@/layouts/AppLayout.vue"), children },
+    // SN 导出已并入 SN 分配（「已分配单据」页签）；旧链接、书签照常可用。审计员没有分配页，在 SN 查询导出
+    { path: "/export", redirect: (to) => ({ path: useAuthStore().canAct ? "/allocate" : "/query", query: to.query.pi ? { pi: to.query.pi } : {} }) },
     { path: "/:pathMatch(.*)*", redirect: "/" },
   ],
 });

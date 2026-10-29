@@ -76,7 +76,7 @@ M = {
 "transfer.resume": ("继续推送（剩余 {n} 次）", "Resume push ({n} left)", "Đẩy tiếp (còn {n} lần)"),
 "transfer.resumeShort": ("继续推送", "Resume push", "Đẩy tiếp"),
 "transfer.resumed": ("已开始继续推送", "Push resumed", "Đã đẩy tiếp"),
-"transfer.noMes": ("未对接 MES，在 SN 导出页下载", "No MES: download on the SN export page", "Không MES: tải tại trang xuất SN"),
+"transfer.noMes": ("未对接 MES，在 SN 分配页下载", "No MES: download on the SN allocation page", "Không MES: tải tại trang phân bổ SN"),
 "transfer.outBatch": ("转出批次", "Transfer-out batch", "Lô chuyển đi"),
 "transfer.failReason": ("失败原因", "Failure reason", "Lý do thất bại"),
 "transfer.manualConfirm": ("人工确认", "Confirm manually", "Xác nhận thủ công"),

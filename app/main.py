@@ -160,7 +160,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title=settings.app_name,
         description=(
-            "总部统一生成并分配 SN，推送到各生产组织 MES（或由 MES 拉取），各组织可在 SN 导出页下载已分配的号。"
+            "总部统一生成并分配 SN，推送到各生产组织 MES（或由 MES 拉取），已分配的号在 SN 分配页下载。"
             "对外接口在 open 分组："
             "MES 每次请求带 Authorization: Bearer <工号>:<密钥>。"
         ),

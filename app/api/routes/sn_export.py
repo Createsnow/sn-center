@@ -1,5 +1,5 @@
-"""SN 导出（F-14）：已分配的号按「生产组织 + PI + 单据」查看与下载，不看推送、拉取状态；
-只读，全部页面账户可用（按授权的生产组织）。"""
+"""SN 导出（F-14，页面在 SN 分配页的「已分配单据」页签）：已分配的号按「生产组织 + PI + 单据」查看与下载，
+不看推送、拉取状态；只读，全部页面账户可用（按授权的生产组织；审计员在 SN 查询导出）。"""
 
 from fastapi import APIRouter
 
@@ -10,16 +10,19 @@ from app.services import sn_export
 router = APIRouter(prefix="/export", tags=["export"])
 
 
-@router.get("/bills", summary="每个「生产组织 + PI + 单据」一行；q 按 PI 或单据编号前缀；mes = 是否对接 MES")
+@router.get(
+    "/bills", summary="每个「生产组织 + PI + 单据」一行；q 按 PI 或单据编号前缀，pi 按 PI 精确；mes = 是否对接 MES"
+)
 def export_bills(
     cu: UserDep,
     factory_code: str | None = None,
     q: str | None = None,
+    pi: str | None = None,
     mes: Flag = None,
     page: OptInt = None,
     page_size: OptInt = None,
 ) -> dict:
-    return sn_export.bills(cu, factory_code, q, mes, page_of(page, page_size))
+    return sn_export.bills(cu, factory_code, q, mes, page_of(page, page_size), pi)
 
 
 @router.get("/lines", summary="明细顶部：每个单据序号 + 物料一行，枚数、米数、暂停枚数、申请中枚数")

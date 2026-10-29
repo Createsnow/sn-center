@@ -1,72 +1,43 @@
 <template>
-  <div class="page">
-    <PageHead :title="t('export.title')" :desc="t('export.desc')" />
+  <div>
+    <el-table v-loading="list.state.loading" :data="list.items.value" size="small" class="clickable" :empty-text="t('allocate.noAllocated')" @row-click="openDetail">
+      <el-table-column prop="bill_no" :label="t('common.billNo')" min-width="140" show-overflow-tooltip><template #default="{ row }"><b>{{ row.bill_no }}</b></template></el-table-column>
+      <el-table-column v-if="store.scopeFactories.length !== 1" :label="t('common.factory')" min-width="130" show-overflow-tooltip>
+        <template #default="{ row }">{{ nameOf(row.factory_code) }}</template>
+      </el-table-column>
+      <el-table-column :label="t('allocate.way')" width="120">
+        <template #default="{ row }"><el-tag size="small" :type="row.mes_enabled ? 'success' : 'info'">{{ row.mes_enabled ? t("allocate.wayPush") : t("allocate.wayExport") }}</el-tag></template>
+      </el-table-column>
+      <el-table-column :label="t('export.qty')" min-width="200">
+        <template #default="{ row }">
+          <span class="num">{{ num(row.qty) }}</span>
+          <!-- 导出与推送相互独立：不显示推送进度，只提示申请中（可能转走）、暂停 -->
+          <el-tag v-if="row.applying" size="small" type="warning" effect="plain" class="ml">{{ t("export.applying", { n: num(row.applying) }) }}</el-tag>
+          <el-tag v-if="row.suspended" size="small" type="danger" effect="plain" class="ml">{{ t("export.suspended", { n: num(row.suspended) }) }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column :label="t('common.actions')" width="150" align="right">
+        <template #default="{ row }">
+          <el-button link type="primary" @click.stop="openDetail(row)">{{ t("common.detail") }}</el-button>
+          <el-button link type="primary" :loading="busy === keyOf(row)" @click.stop="download(row)">xlsx</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-pagination v-if="list.state.total > list.state.pageSize" class="pager" small layout="total, prev, pager, next" :total="list.state.total"
+      :page-size="list.state.pageSize" :current-page="list.state.page" @current-change="list.load" />
 
-    <div class="surface">
-      <div class="toolbar">
-        <FactorySelect v-if="store.multiScope" v-model="f.factory_code" scoped clearable :placeholder="t('app.allFactories')" @update:model-value="list.load(1)" />
-        <el-select v-model="f.mes" clearable class="w140" :placeholder="t('common.mes')" @change="list.load(1)">
-          <el-option :label="t('export.mesYes')" value="true" />
-          <el-option :label="t('export.mesNo')" value="false" />
-        </el-select>
-        <el-input v-model="f.q" class="w220" :placeholder="t('export.search')" clearable prefix-icon="Search" @keyup.enter="list.load(1)" @clear="list.load(1)" />
-        <el-button @click="list.load(1)"><el-icon><Refresh /></el-icon><span>{{ t("common.refresh") }}</span></el-button>
-      </div>
-
-      <el-table v-loading="list.state.loading" :data="list.items.value" size="small" class="clickable" :empty-text="t('common.empty')" @row-click="openDetail">
-        <el-table-column prop="bill_no" :label="t('common.billNo')" min-width="140" show-overflow-tooltip><template #default="{ row }"><b>{{ row.bill_no }}</b></template></el-table-column>
-        <el-table-column prop="pi_no" label="PI" min-width="130" show-overflow-tooltip />
-        <el-table-column v-if="store.scopeFactories.length !== 1" :label="t('common.factory')" min-width="130" show-overflow-tooltip>
-          <template #default="{ row }">{{ nameOf(row.factory_code) }}</template>
-        </el-table-column>
-        <el-table-column prop="customer_code" :label="t('common.customer')" min-width="90" />
-        <el-table-column :label="t('common.mes')" width="80">
-          <template #default="{ row }">
-            <el-tag v-if="row.mes_enabled" size="small" type="success" effect="plain">MES</el-tag>
-            <span v-else class="muted">{{ t("common.no") }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column :label="t('export.qty')" min-width="200">
-          <template #default="{ row }">
-            <span class="num">{{ num(row.qty) }}</span>
-            <!-- 导出与推送相互独立：不显示推送进度，只提示申请中（可能转走）、暂停 -->
-            <el-tag v-if="row.applying" size="small" type="warning" effect="plain" class="ml">{{ t("export.applying", { n: num(row.applying) }) }}</el-tag>
-            <el-tag v-if="row.suspended" size="small" type="danger" effect="plain" class="ml">{{ t("export.suspended", { n: num(row.suspended) }) }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column :label="t('common.actions')" width="150" align="right">
-          <template #default="{ row }">
-            <el-button link type="primary" @click.stop="openDetail(row)">{{ t("common.detail") }}</el-button>
-            <el-button link type="primary" :loading="busy === keyOf(row)" @click.stop="download(row)">xlsx</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="list.state.total" :page-size="list.state.pageSize"
-        :current-page="list.state.page" :page-sizes="[20, 50, 100]" @current-change="list.load" @size-change="list.onSize" />
-      <p class="muted">{{ t("export.rule") }}</p>
-    </div>
-
-    <!-- 明细：概况（单据级字段只显示一次）→ 按物料行页签 + 搜索 → 逐枚列出全部 SN（按物料行分组） -->
+    <!-- 明细：标题带单据、PI、生产组织；按物料行页签 + 搜索，逐枚列出全部 SN -->
     <el-drawer :model-value="!!detail" size="min(1120px, 96vw)" @close="detail = null">
       <template #header>
         <div v-if="detail" class="dh">
           <b>{{ detail.bill_no }}</b>
           <el-tag effect="plain" size="small">PI {{ detail.pi_no }}</el-tag>
-          <el-tag effect="plain" size="small">{{ nameOf(detail.factory_code) }}<template v-if="detail.customer_code"> · {{ detail.customer_code }}</template></el-tag>
-          <el-tag v-if="detail.mes_enabled" size="small" type="success" effect="plain">MES</el-tag>
+          <el-tag effect="plain" size="small">{{ detail.factory_code }} {{ nameOf(detail.factory_code) }}<template v-if="detail.customer_code"> · {{ detail.customer_code }}</template></el-tag>
+          <el-tag v-if="detail.applying" size="small" type="warning" effect="plain">{{ t("export.applying", { n: num(detail.applying) }) }}</el-tag>
+          <el-tag v-if="detail.suspended" size="small" type="danger" effect="plain">{{ t("export.suspended", { n: num(detail.suspended) }) }}</el-tag>
         </div>
       </template>
       <template v-if="detail">
-        <div class="kv">
-          <span>{{ t("common.factory") }}</span><b>{{ detail.factory_code }} {{ nameOf(detail.factory_code) }}</b>
-          <span>{{ t("common.customer") }}</span><b>{{ detail.customer_code || "—" }}</b>
-          <span>PI</span><b>{{ detail.pi_no }}</b>
-          <span>{{ t("common.billNo") }}</span><b>{{ detail.bill_no }}</b>
-          <span>{{ t("export.qty") }}</span><b class="num">{{ num(detail.qty) }}</b>
-          <span>{{ t("export.lines") }}</span><b class="num">{{ lines.length }}</b>
-          <span>{{ t("export.applySus") }}</span><b class="num" :class="{ warn: detail.applying || detail.suspended }">{{ num(detail.applying) }} / {{ num(detail.suspended) }}</b>
-        </div>
-
         <div class="toolbar">
           <el-radio-group v-model="lineKey" v-loading="linesLoading" size="small" class="line-tabs" @change="sns.load(1)">
             <el-radio-button value="">{{ t("export.allTab", { n: num(detail.qty) }) }}</el-radio-button>
@@ -115,15 +86,12 @@
 </template>
 
 <script setup lang="ts">
-/** SN 导出：已分配的号（不论是否对接 MES）按「生产组织 + PI + 单据」列出；看明细或直接下载，只读、可反复下载。
- *  与分配后的推送、拉取相互独立：不显示推送进度，推送成败都不影响列出和下载。 */
-import { computed, onMounted, reactive, ref } from "vue";
-import { useRoute } from "vue-router";
+/** SN 分配页「已分配」页签（F-14 SN 导出）：所选 PI 已分配的号（不论是否对接 MES）按「生产组织 + 单据」列出；
+ *  看明细或直接下载 xlsx，只读、可反复下载。与分配后的推送、拉取相互独立：推送成败都不影响列出和下载。 */
+import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { ElMessage } from "element-plus";
 import { api, urls } from "@/api";
-import PageHead from "@/components/PageHead.vue";
-import FactorySelect from "@/components/FactorySelect.vue";
 import StatusTag from "@/components/StatusTag.vue";
 import { useFactories } from "@/composables/useFactories";
 import { usePaged } from "@/composables/usePaged";
@@ -142,14 +110,20 @@ interface BillRow {
   applying: number;
 }
 
+const props = defineProps<{ pi: string }>();
+const emit = defineEmits<{ (e: "total", n: number): void }>();
+
 const { t } = useI18n();
 const store = useAuthStore();
-const route = useRoute();
 const { nameOf } = useFactories();
 const num = (n: number) => Number(n).toLocaleString();
 
-const f = reactive({ factory_code: "", mes: "", q: String(route.query.pi || route.query.bill_no || "") });
-const list = usePaged<BillRow>((q) => api.exportBills({ ...q, factory_code: f.factory_code, mes: f.mes, q: f.q.trim() }));
+const list = usePaged<BillRow>((q) => api.exportBills({ ...q, pi: props.pi }), 100);
+
+async function load() {
+  await list.load(1);
+  emit("total", list.state.total);
+}
 
 const busy = ref("");
 const keyOf = (r: BillRow) => `${r.factory_code}|${r.pi_no}|${r.bill_no}`;
@@ -213,8 +187,9 @@ const sns = usePaged<SnRow>((q) => {
   });
 }, 100);
 
-/** 每遇到新的物料行插一行分组标题：#序号 物料 附件项次 · 米数 · 枚数。 */
+/** 看「全部」且有多个物料行时，每遇到新的物料行插一行分组标题：#序号 物料 附件项次 · 米数 · 枚数（单个物料行时页签已写明）。 */
 const snRows = computed<(SnRow | GroupRow)[]>(() => {
+  if (lineKey.value || lines.value.length < 2) return sns.items.value;
   const out: (SnRow | GroupRow)[] = [];
   let prev = "";
   for (const r of sns.items.value) {
@@ -229,7 +204,7 @@ const snRows = computed<(SnRow | GroupRow)[]>(() => {
   }
   return out;
 });
-const COLS = 8;
+const COLS = 7;
 function spanGroup({ row, columnIndex }: { row: SnRow | GroupRow; columnIndex: number }) {
   if (!("group" in row)) return [1, 1];
   return columnIndex === 0 ? [1, COLS] : [0, 0];
@@ -251,19 +226,17 @@ async function openDetail(row: BillRow) {
   }
 }
 
-onMounted(() => list.load(1));
+watch(() => props.pi, () => {
+  detail.value = null;
+  load();
+}, { immediate: true });
+
+defineExpose({ load });
 </script>
 
 <style scoped>
-.w140 { width: 140px; }
-.w220 { width: 220px; }
 .ml { margin-left: 6px; }
 .w200 { width: 200px; }
-.kv { display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 4px 18px; padding: 10px 14px; margin-bottom: 12px; font-size: 13px;
-  border: 1px solid var(--el-border-color-lighter); border-radius: 8px; background: var(--el-fill-color-lighter); }
-.kv > span { color: var(--app-muted); }
-.kv b { color: var(--app-text); font-weight: 600; }
-.kv b.warn { color: var(--el-color-warning-dark-2); }
 .toolbar { align-items: flex-start; flex-wrap: nowrap; }
 .tools { display: inline-flex; gap: 8px; flex-shrink: 0; }
 .line-tabs { flex-wrap: wrap; row-gap: 6px; }
@@ -271,5 +244,5 @@ onMounted(() => list.load(1));
 :deep(.grp-row > td) { background: var(--el-fill-color-light) !important; }
 .sp { flex: 1; }
 .clickable :deep(.el-table__row) { cursor: pointer; }
-.dh { display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--app-text); }
+.dh { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 15px; color: var(--app-text); }
 </style>
