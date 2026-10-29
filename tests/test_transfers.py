@@ -798,7 +798,7 @@ def test_void_transfer_delivery_batch_keeps_suspended_sns_in_pool(w, sql):
 
 def test_cross_pi_transfer_first_push_rejected_pull_by_target_pi_or_bill(w, api, sql):
     """跨 PI 转单后首次推送即被 MES 整批退回（MES 还没有目标 PI，不登记批次号）：MES 没有批次号，按目标 PI、单据
-    取批也要取到这一批；不限范围取批仍跳过失败批次，剩余枚数不含失败批次（不会反复拉）。"""
+    或不限范围取批都能取到这一批；MES 再退回后剩余枚数不含它，不会被引着反复拉。"""
     org, pi, src = setup(w, qty=3)
     w.allocate(pi)
     w.push()
@@ -811,30 +811,16 @@ def test_cross_pi_transfer_first_push_rejected_pull_by_target_pi_or_bill(w, api,
     assert (b["batch_type"], b["result"], b["fail_code"]) == ("SAME_ORG_TRANSFER", "FAILED", "REJECTED")
     assert b["batch_no"] not in MES.batches.get(org, {}), "整批退回不登记批次号"
     tok, _ = w.mes_account(org)
-    assert ok(w.mes_next(tok))["batch"] is None, "不限范围仍跳过失败批次"
-    for kw in ({"pi": pi2}, {"billNo": tgt}, {"pi": pi2, "billNo": tgt}):
+    for kw in ({"pi": pi2}, {"billNo": tgt}, {"pi": pi2, "billNo": tgt}, {}):
         r = ok(w.mes_next(tok, **kw))
         assert r["batch"]["batchNo"] == b["batch_no"] and r["remaining"] == 0, kw
+    # MES 仍没有目标 PI，再次退回：仍可取到，剩余 0
+    ok(w.mes_receipt(tok, MES.process(org, r["batch"])))
+    assert sql.scalar("SELECT result FROM sn_delivery_batch WHERE id = %s", b["id"]) == "FAILED"
+    r = ok(w.mes_next(tok, pi=pi2))
+    assert r["batch"]["batchNo"] == b["batch_no"] and r["remaining"] == 0
     MES.pis[org].add(pi2)
     rc = ok(w.mes_receipt(tok, MES.process(org, r["batch"])))
     assert (rc["batchResult"], rc["firstConfirmation"]) == ("SUCCESS", True)
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi2) == 3
     assert ok(w.mes_next(tok, pi=pi2))["batch"] is None
-
-
-def test_scoped_pull_gives_new_batches_before_failed_one(w, sql):
-    """按范围取批：失败批次排在号池之后，不挡住后续的号。"""
-    org, pi, bill = setup(w, qty=4)
-    w.enable_mes(org, batch_size=2)
-    w.allocate(pi)
-    MES.behavior[org] = lambda batch, h: (400, {"code": "BAD", "message": "x"})
-    w.push()
-    failed = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
-    assert failed["result"] == "FAILED"
-    MES.behavior.pop(org)
-    tok, _ = w.mes_account(org)
-    r1 = ok(w.mes_next(tok, pi=pi))
-    assert r1["batch"]["batchNo"].startswith("PL-") and r1["remaining"] == 0
-    ok(w.mes_receipt(tok, MES.process(org, r1["batch"])))
-    r2 = ok(w.mes_next(tok, pi=pi))
-    assert r2["batch"]["batchNo"] == failed["batch_no"]

@@ -11,7 +11,6 @@ from app.core.security import CurrentUser
 from app.db.session import db
 from app.services import audit, changes, factories, locks, rules
 from app.services.delivery.batches import (
-    FAILED,
     RECEIPT_NG,
     RECEIPT_OK,
     SRC_PULL,
@@ -60,10 +59,17 @@ def _scope_conds(pi: str | None, bill: str | None) -> tuple[str, list, str, list
     return dc, da, xc, xa
 
 
-def _earliest_unconfirmed(
-    org: str, mes: bool, pi: str | None, bill: str | None, exclude: int | None = None, result: str = "UNCONFIRMED"
-):
-    """范围内结果为 result（默认未确认）的交付批次与转出批次（UNION ALL 的各段 SQL 与参数）。"""
+#: 批次在拉取中的先后（SQL 条件，表别名 b）：未确认的最先；推送失败、还没被 MES 拉取过的其次（推送没送到，MES 没有
+#: 批次号，要靠拉取拿到）；MES 拉取过后仍失败的（如整批退回）最后，轮流返回，不挡住后续的号
+_UNCONFIRMED = "b.result = 'UNCONFIRMED'"
+_FAILED_UNPULLED = "b.result = 'FAILED' AND b.pulled_at IS NULL"
+_FAILED_PULLED = "b.result = 'FAILED' AND b.pulled_at IS NOT NULL"
+#: 计入剩余枚数的批次：拉取过后仍失败的不计，MES 退回后不会被剩余枚数引着反复拉同一批
+_REMAINING = f"({_UNCONFIRMED} OR ({_FAILED_UNPULLED}))"
+
+
+def _in_scope(org: str, mes: bool, pi: str | None, bill: str | None, where: str, exclude: int | None = None):
+    """范围内符合 where 的交付批次与转出批次（UNION ALL 的各段 SQL 与参数）。"""
     dc, da, xc, xa = _scope_conds(pi, bill)
     ex = "" if exclude is None else " AND b.id <> %s"
     exa = [] if exclude is None else [exclude]
@@ -71,20 +77,26 @@ def _earliest_unconfirmed(
     if mes:
         parts.append(
             "SELECT b.* FROM sn_delivery_batch b WHERE b.factory_code = %s AND b.batch_type <> 'TRANSFER_OUT' "
-            "AND b.result = %s" + dc + ex
+            f"AND {where}" + dc + ex
         )
-        args += [org, result, *da, *exa]
+        args += [org, *da, *exa]
     parts.append(
         "SELECT b.* FROM sn_delivery_batch b WHERE b.factory_code = %s AND b.batch_type = 'TRANSFER_OUT' "
-        "AND b.result = %s" + xc + ex
+        f"AND {where}" + xc + ex
     )
-    args += [org, result, *xa, *exa]
+    args += [org, *xa, *exa]
     return parts, args
 
 
+def _first(org: str, mes: bool, pi: str | None, bill: str | None, where: str, order: str = "created_at, id"):
+    parts, args = _in_scope(org, mes, pi, bill, where)
+    return db.one(f"SELECT * FROM ({' UNION ALL '.join(parts)}) t ORDER BY {order} LIMIT 1", *args)
+
+
 def _remaining(org: str, mes: bool, pi: str | None, bill: str | None, exclude: int | None) -> tuple[int, int]:
-    """（范围内剩余可拉枚数，暂停枚数）：未入批且未暂停的号 + 其余未确认批次（含转出批次）的枚数。"""
-    parts, args = _earliest_unconfirmed(org, mes, pi, bill, exclude)
+    """（范围内剩余可拉枚数，暂停枚数）：未入批且未暂停的号 + 其余未确认批次、推送失败还没拉取过的批次（含转出批次）
+    的枚数。"""
+    parts, args = _in_scope(org, mes, pi, bill, _REMAINING, exclude)
     batched = int(db.scalar(f"SELECT COALESCE(SUM(qty), 0) FROM ({' UNION ALL '.join(parts)}) t", *args) or 0)
     cond, cargs = "", []
     if pi:
@@ -111,9 +123,9 @@ def _remaining(org: str, mes: bool, pi: str | None, bill: str | None, exclude: i
 
 
 def next_batch(cu: CurrentUser, pi_in: str | None, bill_in: str | None, batch_no_in: str | None) -> dict:
-    """接口 ② 取下一批。带 batchNo 时只读取回本组织该未确认或失败批次；否则先给范围内最早的未确认批次，没有才建批。
-    按 PI、单据限定范围时，范围内既没有未确认批次也建不出新批，再给范围内最早的失败批次：首次推送就失败（如跨 PI
-    转移后 MES 还没有目标 PI 而整批退回）的批次 MES 没有批次号，按订单条件也要能取到；放在最后，不挡住后续的号。"""
+    """接口 ② 取下一批。带 batchNo 时只读取回本组织该未确认或失败批次。否则按范围依次给：最早的未确认批次；
+    推送失败、还没被拉取过的批次（推送没送到 MES，MES 没有批次号，如跨 PI 转移后首次推送就失败）；从号池新建一批；
+    拉取过后仍失败的批次（按上次拉取时间轮流，不挡住后续的号）。"""
     org = cu.factory_code
     _rate_limit(org)
     f = factories.must_get(org)
@@ -141,8 +153,7 @@ def next_batch(cu: CurrentUser, pi_in: str | None, bill_in: str | None, batch_no
         raise MesError(403, "ORG_NOT_ALLOWED", f"PI {pi} 下没有号分到本组织，也没有本组织的转出批次")
     created = False
     with locks.with_org_lock(org):
-        parts, args = _earliest_unconfirmed(org, mes, pi, bill)
-        b = db.one(f"SELECT * FROM ({' UNION ALL '.join(parts)}) t ORDER BY created_at, id LIMIT 1", *args)
+        b = _first(org, mes, pi, bill, _UNCONFIRMED) or _first(org, mes, pi, bill, _FAILED_UNPULLED)
         if b is None and mes:
             target_pi = pi
             if target_pi is None:
@@ -156,9 +167,8 @@ def next_batch(cu: CurrentUser, pi_in: str | None, bill_in: str | None, batch_no
             if target_pi is not None:
                 b = build_delivery(cu, org, target_pi, SRC_PULL, bill)
                 created = b is not None
-        if b is None and (pi or bill):
-            parts, args = _earliest_unconfirmed(org, mes, pi, bill, result=FAILED)
-            b = db.one(f"SELECT * FROM ({' UNION ALL '.join(parts)}) t ORDER BY created_at, id LIMIT 1", *args)
+        if b is None:
+            b = _first(org, mes, pi, bill, _FAILED_PULLED, "pulled_at, created_at, id")
         if b is not None:
             db.exec("UPDATE sn_delivery_batch SET pulled_at = %s WHERE id = %s", util.now(), b["id"])
     remaining, paused = _remaining(org, mes, pi, bill, None if b is None else b["id"])

@@ -575,7 +575,8 @@ def test_older_rev_skipped_by_mes_without_alert(w, sql):
 
 
 def test_rejected_batch_voided_rebatches_and_refuses_voided(w, sql):
-    """9.2-5、9、15：整批退回（NG）→ 取批跳过、可按批次号取回 → 作废后号重新组批送达；作废的批次取回、回执都被拒绝。"""
+    """9.2-5、9、15：整批退回（NG）→ 还没拉取过的失败批次取批照样给出、可按批次号取回 → 作废后号重新组批送达；
+    作废的批次取回、回执都被拒绝。"""
     org, pi, bill = setup_pi(w, qty=3, batch_size=5)
     MES.set_fault(org, {"mode": "reject"})
     w.allocate(pi)
@@ -584,7 +585,8 @@ def test_rejected_batch_voided_rebatches_and_refuses_voided(w, sql):
     assert (b["result"], b["voidable"]) == ("FAILED", 1)
     assert b["batch_no"] not in MES.batches.get(org, {}), "整批拒收不登记批次号"
     token, _ = w.mes_account(org)
-    assert ok(w.mes_next(token))["batch"] is None, "失败的批次不再给"
+    first = ok(w.mes_next(token))
+    assert first["batch"]["batchNo"] == b["batch_no"], "推送失败、还没拉取过的批次照样给（MES 没有批次号）"
     back = ok(w.mes_next(token, batchNo=b["batch_no"]))
     assert back["batch"]["batchNo"] == b["batch_no"]
     ng = {"batchNo": b["batch_no"], "code": "NG", "message": "仍不能处理"}
@@ -727,3 +729,47 @@ def test_batch_no_serial_continues_from_old_per_prefix_counters(w, sql):
     sql.exec("INSERT INTO sn_seq(name, val) VALUES (%s, 7), (%s, 3)", f"PS-{org}-{day}", f"PL-{org}-{day}")
     assert _batch_no("PL", org) == f"PL-{org}-{day}-000008"
     assert _batch_no("PS", org) == f"PS-{org}-{day}-000009"
+
+
+def test_failed_push_batch_pulled_first_then_rest(w, sql):
+    """推送失败（MES 没收下，没有批次号）后 MES 不限范围拉取：先拿到推送失败的那一批，再拉号池里的号，
+    全部号都经 MES 回执确认，不会少一批；剩余枚数含推送失败还没拉过的批次。"""
+    org, pi, bill = setup_pi(w, qty=12, batch_size=5)
+    MES.behavior[org] = lambda batch, h: (200, {"code": "ERROR", "message": "MES 内部错误"})
+    w.allocate(pi)
+    w.push()
+    failed = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
+    assert (failed["result"], failed["fail_code"]) == ("FAILED", "RESPONSE_INVALID")
+    MES.behavior.pop(org)
+    token, _ = w.mes_account(org)
+    got = []
+    while True:
+        r = ok(w.mes_next(token))
+        if r["batch"] is None:
+            break
+        got.append((r["batch"]["batchNo"], r["remaining"]))
+        ok(w.mes_receipt(token, MES.process(org, r["batch"])))
+    assert got[0] == (failed["batch_no"], 7), "推送失败的那一批先给，剩余含号池 7 枚"
+    assert [x[0][:3] for x in got] == ["PS-", "PL-", "PL-"]
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 12
+    assert sql.count("SELECT COUNT(*) FROM sn_delivery_batch WHERE pi_no = %s AND result = 'SUCCESS'", pi) == 3
+    assert len(MES.store[org]) == 12, "MES 拿到全部 12 枚"
+
+
+def test_failed_batch_rejected_after_pull_goes_last(w, sql):
+    """MES 拉到推送失败的批次后又整批退回：之后排在号池之后，不挡住后续的号，剩余枚数不含它。"""
+    org, pi, bill = setup_pi(w, qty=4, batch_size=2)
+    MES.behavior[org] = lambda batch, h: (400, {"code": "BAD", "message": "x"})
+    w.allocate(pi)
+    w.push()
+    failed = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
+    MES.behavior.pop(org)
+    token, _ = w.mes_account(org)
+    r = ok(w.mes_next(token, pi=pi))
+    assert (r["batch"]["batchNo"], r["remaining"]) == (failed["batch_no"], 2)
+    ok(w.mes_receipt(token, {"batchNo": failed["batch_no"], "code": "NG", "message": "仍有问题"}))
+    r = ok(w.mes_next(token, pi=pi))
+    assert r["batch"]["batchNo"].startswith("PL-") and r["remaining"] == 0
+    ok(w.mes_receipt(token, MES.process(org, r["batch"])))
+    r = ok(w.mes_next(token))
+    assert (r["batch"]["batchNo"], r["remaining"]) == (failed["batch_no"], 0)
