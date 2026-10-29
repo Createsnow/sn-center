@@ -80,8 +80,7 @@
         <el-table-column :label="t('rules.bindings')" min-width="160">
           <template #default="{ row }">
             <div v-if="row.bindings.pi.length" class="small">PI：{{ row.bindings.pi.join("、") }}</div>
-            <div v-if="row.bindings.customer.length" class="small">{{ t("common.customer") }}：{{ row.bindings.customer.join("、") }}</div>
-            <span v-if="!row.bindings.pi.length && !row.bindings.customer.length" class="muted">—</span>
+            <span v-else class="muted">—</span>
           </template>
         </el-table-column>
         <el-table-column :label="t('common.actions')" width="130" fixed="right">

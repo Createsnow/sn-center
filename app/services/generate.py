@@ -157,7 +157,7 @@ def _load_lines(pi: str, keys: list[tuple[str, int]]) -> list[Line]:
     }
     counts, fills, lens, units = orders.line_extras(keys)
     sels = rules.selections(keys)
-    defaults: dict[str, rules.Resolved | None] = {}
+    default = rules.pi_default(pi)
     memo: dict[int, rules.Resolved | None] = {}
     taken: dict[str, bool] = {}
     blocks = {b: changes.generation_block(b) for b in bills}
@@ -168,8 +168,6 @@ def _load_lines(pi: str, keys: list[tuple[str, int]]) -> list[Line]:
             raise biz(ErrorCode.ORDER_LINE_NOT_FOUND, bill_no=k[0], seq=k[1])
         if r["pi"] != pi:
             raise biz(ErrorCode.GEN_SCOPE_INVALID)
-        if r["customer_code"] not in defaults:
-            defaults[r["customer_code"]] = rules.pi_default(pi, r["customer_code"])
         c = counts.get(k)
         attach, _src = orders.effective_attach(r, fills.get(k))
         length, length_src = orders.effective_length(r, lens.get(k))
@@ -188,7 +186,7 @@ def _load_lines(pi: str, keys: list[tuple[str, int]]) -> list[Line]:
             unit,
             unit_src,
             attach,
-            rules.effective(pi, r["customer_code"], sels.get(k), defaults[r["customer_code"]], memo=memo),
+            rules.effective(pi, sels.get(k), default, memo=memo),
             blocks[r["bill_no"]],
         )
         _check(line, taken)
@@ -642,11 +640,7 @@ def _resolved_of(pi: str, x: dict) -> rules.Resolved:
         raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
     res = rules.resolve(rule, pi, rules.SRC_LINE)
     if res.version is None or res.version["id"] != x["version_id"]:
-        # 客户模板解析时的来源不同，但版本必须一致
-        res2 = rules.resolve(rule, pi, rules.SRC_CUSTOMER)
-        if res2.version is None or res2.version["id"] != x["version_id"]:
-            raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
-        return res2
+        raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
     return res
 
 

@@ -121,16 +121,6 @@ CREATE TABLE sn_pi_rule (
   KEY ix_pi_rule_rule (rule_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='PI 绑定规则';
 
--- 按客户绑定规则（只能经接口设置，F-22）：作为该客户各 PI 的模板，每张 PI 首次使用须换前缀
-CREATE TABLE sn_customer_rule (
-  customer_code VARCHAR(64) NOT NULL,
-  rule_id       BIGINT      NOT NULL,
-  bound_by      VARCHAR(32) NOT NULL,
-  bound_at      DATETIME    NOT NULL,
-  PRIMARY KEY (customer_code),
-  KEY ix_customer_rule_rule (rule_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='按客户绑定规则';
-
 -- 物料行规则：物料行已选的规则库规则或自定义规则；自定义规则生成成功后存入规则库并改记规则
 CREATE TABLE sn_line_rule (
   bill_no     VARCHAR(64)  NOT NULL,

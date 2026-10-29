@@ -80,7 +80,6 @@
   "RULE_SN_TOO_LONG": "Prefix + serial + separators + length + unit + suffix must not exceed 64 characters",
   "RULE_USED_FORMAT": "Version {version} has generated SNs; to change the format, create a new version with a new prefix",
   "RULE_PREFIX_CHANGE_REQUIRED": "Rule {rule_code} version {version} is already used by PI {other_pi}; enter a new prefix for this PI",
-  "RULE_CUSTOMER_BOUND": "Customer {customer} is already bound to rule {rule_code}",
   "RULE_LINE_REQUIRED": "Please select material lines",
   "RULE_GLOBAL_READONLY": "Only the system administrator can modify or delete global rules: {rule_code}",
   "RULE_FACTORY_REQUIRED": "Please choose the production org the rule belongs to",

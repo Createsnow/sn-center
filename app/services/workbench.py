@@ -418,8 +418,7 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
             "quota": sum(b["quota"] for b in bills.values()),
             "suspended": stats.get("suspended", 0),
         },
-        "pi_rule": rules.info(rules.pi_default(pi, customer)),
-        "customer_rule": _customer_rule(customer),
+        "pi_rule": rules.info(rules.pi_default(pi)),
         "rule_options": rules.options(pi, customer, facs),
         "limits": generate.limits(),
         "running_job": None if running is None else generate.progress(running["gen_batch"]),
@@ -429,18 +428,3 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
         # 未撤销的号段，从流水最末往前；物料行上的「撤销」= 撤到该行为止（流水在其后的行一并撤）
         "segments": generate.revoke_chain(pi, facs),
     }
-
-
-def _customer_rule(customer: str) -> dict | None:
-    if not customer:
-        return None
-    r = db.one(
-        "SELECT r.id, r.rule_code, r.rule_name FROM sn_customer_rule c JOIN sn_rule r ON r.id = c.rule_id "
-        "WHERE c.customer_code = %s",
-        customer,
-    )
-    return (
-        None
-        if r is None
-        else {"customer_code": customer, "rule_id": r["id"], "rule_code": r["rule_code"], "rule_name": r["rule_name"]}
-    )

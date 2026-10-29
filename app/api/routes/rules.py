@@ -1,12 +1,10 @@
-"""规则库与规则选取（F-08）、按客户绑定规则接口（F-22）。
-系统管理员、普通操作员（全局规则只能选用，授权组织的规则可增删改）；按客户绑定只有系统管理员。"""
+"""规则库与规则选取（F-08）：规则按 PI 维度绑定。
+系统管理员、普通操作员（全局规则只能选用，授权组织的规则可增删改）。"""
 
 from fastapi import APIRouter
 
-from app.api.deps import AdminDep, OperatorDep
+from app.api.deps import OperatorDep
 from app.schemas.rule import (
-    CustomerBindIn,
-    CustomerTemplateIn,
     LineClearIn,
     LineSelectIn,
     PiBindIn,
@@ -82,7 +80,7 @@ def rule_line_select(body: LineSelectIn, cu: OperatorDep) -> dict:
     return rules.select_for_lines(cu, body.pi_no, lines, body.rule_id, custom, body.new_prefix)
 
 
-@router.post("/line-clear", summary="物料行改回按 PI / 客户默认")
+@router.post("/line-clear", summary="物料行改回按 PI 绑定的默认")
 def rule_line_clear(body: LineClearIn, cu: OperatorDep) -> dict:
     return rules.clear_lines(cu, body.pi_no, [x.model_dump() for x in body.lines or []])
 
@@ -95,22 +93,3 @@ def rule_pi_bind(body: PiBindIn, cu: OperatorDep) -> dict:
 @router.delete("/pi-binding", summary="解除 PI 绑定：规则转为通用模板，已选过规则的物料行不受影响")
 def rule_pi_unbind(cu: OperatorDep, pi: str | None = None) -> dict:
     return rules.unbind_pi(cu, pi)
-
-
-@router.post("/customer-template", summary="用客户绑定的规则作模板：为本 PI 换前缀另出版本并绑定给本 PI")
-def rule_customer_template(body: CustomerTemplateIn, cu: OperatorDep) -> dict:
-    return rules.adopt_customer_template(cu, body.pi_no, body.new_prefix)
-
-
-@router.post(
-    "/customer-binding",
-    tags=["open"],
-    summary="按客户绑定规则（F-22，设置按客户绑定的唯一入口）：每个客户只能绑一条，已绑其他规则时拒绝",
-)
-def rule_customer_bind(body: CustomerBindIn, cu: AdminDep) -> dict:
-    return rules.bind_customer(cu, body.customer_code, body.rule_id, body.rule_code)
-
-
-@router.delete("/customer-binding", summary="在生成页解除客户绑定：规则转为通用模板（客户跨组织，只有系统管理员）")
-def rule_customer_unbind(cu: AdminDep, customer: str | None = None) -> dict:
-    return rules.unbind_customer(cu, customer)

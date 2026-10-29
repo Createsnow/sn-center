@@ -1,9 +1,9 @@
 # 规则库页词条：key -> (简体中文, English, Tiếng Việt)
 M = {
 "rules.title": ("SN 规则库", "SN rule library", "Thư viện quy tắc SN"),
-"rules.desc": ("维护 SN 编码规则：SN = 前缀 + PI 内流水（补 0）+ 米数前分隔符 + 米数（补 0，可选）+ 米数后分隔符 + 单位（可选）+ 后缀，各部分不限制字符。这里只维护规则，物料行选规则、绑定 PI 在生成页进行；按客户绑定只能通过接口设置，在「生效绑定」列只读显示。",
-  "Maintain SN rules: SN = prefix + serial within the PI (zero-padded) + separator + length (zero-padded, optional) + separator + unit (optional) + suffix, any characters allowed. Rules are only maintained here; choosing rules for material lines and binding a PI happen on the generation page; customer bindings can only be set via the API and are shown read-only under “Bindings”.",
-  "Duy trì quy tắc SN: SN = tiền tố + số thứ tự trong PI (bù 0) + dấu phân cách + chiều dài (bù 0, tùy chọn) + dấu phân cách + đơn vị (tùy chọn) + hậu tố, không giới hạn ký tự. Ở đây chỉ duy trì quy tắc; chọn quy tắc cho dòng vật tư và gắn PI thực hiện ở trang tạo; gắn theo khách hàng chỉ qua giao diện API, hiển thị chỉ đọc ở cột “Gắn hiệu lực”."),
+"rules.desc": ("维护 SN 编码规则：SN = 前缀 + PI 内流水（补 0）+ 米数前分隔符 + 米数（补 0，可选）+ 米数后分隔符 + 单位（可选）+ 后缀，各部分不限制字符。这里只维护规则，物料行选规则、绑定 PI 在生成页进行；规则按 PI 维度绑定，PI 绑定在「生效绑定」列只读显示。",
+  "Maintain SN rules: SN = prefix + serial within the PI (zero-padded) + separator + length (zero-padded, optional) + separator + unit (optional) + suffix, any characters allowed. Rules are only maintained here; choosing rules for material lines and binding a PI happen on the generation page; rules are bound per PI, and PI bindings are shown read-only under “Bindings”.",
+  "Duy trì quy tắc SN: SN = tiền tố + số thứ tự trong PI (bù 0) + dấu phân cách + chiều dài (bù 0, tùy chọn) + dấu phân cách + đơn vị (tùy chọn) + hậu tố, không giới hạn ký tự. Ở đây chỉ duy trì quy tắc; chọn quy tắc cho dòng vật tư và gắn PI thực hiện ở trang tạo; quy tắc gắn theo PI, gắn PI hiển thị chỉ đọc ở cột “Gắn hiệu lực”."),
 "rules.create": ("新建规则", "New rule", "Tạo quy tắc"),
 "rules.owner": ("所属组织", "Owner org", "Tổ chức sở hữu"),
 "rules.ownerGlobal": ("全局", "Global", "Dùng chung"),

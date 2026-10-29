@@ -7,7 +7,7 @@
   须为它填新前缀，按原格式另出属于它的版本（derived_from 记由哪一版而来）。同一 PI 的多个物料行可共用一个版本。
 - 一个前缀只对应一种格式：生成过号的版本改格式须另出一版并换新前缀；只改名称或分类不另出版本。
 
-规则选取按物料行：物料行已选规则 ＞ PI 绑定规则 ＞ 客户绑定规则（作模板，每张 PI 首次使用须换前缀）。
+规则按 PI 维度绑定（不按客户绑定）；规则选取按物料行：物料行已选规则 ＞ PI 绑定规则，都没有时须先选规则。
 选法：规则库（选一条规则，本 PI 用哪一版见 resolve）或自定义（前缀、进制、位数、米数及其补 0 位数与前后分隔符、
 是否带单位、后缀）；
 自定义规则生成成功后存入规则库并归属本 PI（编码 PI-PI号-n，名称 PI号_vn，n 为本 PI 第几条自定义规则），
@@ -42,7 +42,6 @@ CUSTOM_SEQ_LEN = 4
 #: 规则来源（生效顺序）
 SRC_LINE = "LINE"
 SRC_PI = "PI"
-SRC_CUSTOMER = "CUSTOMER"
 #: 选法
 MODE_LIBRARY = "LIBRARY"
 MODE_CUSTOM = "CUSTOM"
@@ -272,13 +271,10 @@ def _column_by_rule(sql: str, ids: list[int]) -> dict[int, list[str]]:
 
 
 def _views(rs: list[dict]) -> list[dict]:
-    """规则库列表与详情：每条规则的版本、用过的 PI、PI 与客户绑定（一次取齐，不逐条查）。"""
+    """规则库列表与详情：每条规则的版本、用过的 PI、PI 绑定（一次取齐，不逐条查）。"""
     ids = [r["id"] for r in rs]
     versions = _versions_by_rule(ids)
     pi_bind = _column_by_rule("SELECT rule_id, pi_no v FROM sn_pi_rule WHERE rule_id IN ({}) ORDER BY pi_no", ids)
-    cust_bind = _column_by_rule(
-        "SELECT rule_id, customer_code v FROM sn_customer_rule WHERE rule_id IN ({}) ORDER BY customer_code", ids
-    )
     out = []
     for r in rs:
         vs = versions.get(r["id"], [])
@@ -289,7 +285,7 @@ def _views(rs: list[dict]) -> list[dict]:
                 "versions": [version_json(v) for v in vs],
                 "used": any(v["used"] for v in vs),
                 "pis": sorted({v["claimed_pi"] for v in vs if v["claimed_pi"]}),
-                "bindings": {"pi": pi_bind.get(r["id"], []), "customer": cust_bind.get(r["id"], [])},
+                "bindings": {"pi": pi_bind.get(r["id"], [])},
             }
         )
     return out
@@ -356,10 +352,9 @@ def list_rules(
         like = util.like_any(text)
         sql += (
             " AND (rule_code LIKE %s OR rule_name LIKE %s OR category_value LIKE %s OR id IN "
-            "(SELECT rule_id FROM sn_rule_version WHERE claimed_pi LIKE %s) OR id IN "
-            "(SELECT rule_id FROM sn_customer_rule WHERE customer_code LIKE %s))"
+            "(SELECT rule_id FROM sn_rule_version WHERE claimed_pi LIKE %s))"
         )
-        args += [like] * 5
+        args += [like] * 4
     sql += " ORDER BY category_scope = %s DESC, category_scope ASC, category_value ASC, rule_code ASC"
     args.append(NONE)
     return _views(db.all(sql, *args))
@@ -596,7 +591,6 @@ def delete(cu: CurrentUser, rule_id: int) -> dict:
         )
         if pi is not None:
             raise biz(ErrorCode.RULE_ASSIGNED, rule_code=r["rule_code"], pi=pi)
-        db.exec("DELETE FROM sn_customer_rule WHERE rule_id = %s", r["id"])
         db.exec("DELETE FROM sn_rule_version WHERE rule_id = %s", r["id"])
         db.exec("DELETE FROM sn_rule WHERE id = %s", r["id"])
         for v in vs:
@@ -626,7 +620,7 @@ class Resolved:
     version: dict | None
     #: 自定义规则的参数（plan = NEW）
     custom: dict | None = None
-    #: plan = PREFIX：模板版本已归属的 PI（客户模板时为空）
+    #: plan = PREFIX：当前版本已归属的 PI
     other_pi: str | None = None
 
     @property
@@ -646,7 +640,7 @@ class Resolved:
 
 def resolve(rule: dict, pi: str, source: str) -> Resolved:
     """规则 rule 在 PI 下用哪一版：当前版本尚无 PI 或已归属本 PI → 用它；已归属别的 PI → 用为本 PI 换前缀另出的版本，
-    没有则须换前缀。客户模板：每张 PI 首次使用须换前缀（已为本 PI 另出过版本时直接用）。"""
+    没有则须换前缀。"""
     return _resolve_in(rule, _versions_of(rule["id"]), pi, source)
 
 
@@ -656,11 +650,11 @@ def _resolve_in(rule: dict, vs: list[dict], pi: str, source: str) -> Resolved:
     if t is None:
         raise biz(ErrorCode.RULE_VERSION_NOT_FOUND)
     own = next((v for v in vs if v["derived_from"] == t["id"] and v["claimed_pi"] == pi), None)
-    if source != SRC_CUSTOMER and t["claimed_pi"] == pi:
+    if t["claimed_pi"] == pi:
         return Resolved(source, MODE_LIBRARY, PLAN_USE, rule, t)
     if own is not None:
         return Resolved(source, MODE_LIBRARY, PLAN_USE, rule, own)
-    if source != SRC_CUSTOMER and t["claimed_pi"] is None:
+    if t["claimed_pi"] is None:
         return Resolved(source, MODE_LIBRARY, PLAN_CLAIM, rule, t)
     return Resolved(source, MODE_LIBRARY, PLAN_PREFIX, rule, None, other_pi=t["claimed_pi"])
 
@@ -719,31 +713,24 @@ def _custom_dict(spec: codec.Spec) -> dict:
     }
 
 
-def pi_default(pi: str, customer: str | None) -> Resolved | None:
-    """PI 绑定 ＞ 客户绑定（模板）。"""
+def pi_default(pi: str) -> Resolved | None:
+    """PI 绑定的规则（各物料行的默认）；没绑时 None。"""
     b = db.one("SELECT rule_id FROM sn_pi_rule WHERE pi_no = %s", pi)
     if b is not None:
         r = db.one("SELECT * FROM sn_rule WHERE id = %s", b["rule_id"])
         if r is not None:
             return resolve(r, pi, SRC_PI)
-    if not util.blank(customer):
-        c = db.one("SELECT rule_id FROM sn_customer_rule WHERE customer_code = %s", customer)
-        if c is not None:
-            r = db.one("SELECT * FROM sn_rule WHERE id = %s", c["rule_id"])
-            if r is not None:
-                return resolve(r, pi, SRC_CUSTOMER)
     return None
 
 
 def effective(
     pi: str,
-    customer: str | None,
     sel: dict | None,
     default: Resolved | None = None,
     use_default: bool = True,
     memo: dict[int, Resolved | None] | None = None,
 ) -> Resolved | None:
-    """物料行生效的规则：物料行已选 ＞ PI 绑定 ＞ 客户绑定；都没有返回 None（须先选规则）。
+    """物料行生效的规则：物料行已选 ＞ PI 绑定；都没有返回 None（须先选规则）。
     memo：同一 PI 的多个物料行选了同一条规则时只解析一次（规则 id → 解析结果）。"""
     if sel is not None:
         if sel.get("custom_json"):
@@ -761,7 +748,7 @@ def effective(
                 return res
     if not use_default:
         return None
-    return default if default is not None else pi_default(pi, customer)
+    return default if default is not None else pi_default(pi)
 
 
 def selections(keys: list[tuple[str, int]]) -> dict[tuple[str, int], dict]:
@@ -821,10 +808,9 @@ def line_rules_brief(pi: str, keys: list[tuple[str, int]]) -> dict[tuple[str, in
     if not keys or not pi:
         return {}
     sels = selections(keys)
-    customer = db.scalar("SELECT customer_code FROM sn_prd_mo WHERE bill_no = %s LIMIT 1", keys[0][0])
-    default = pi_default(pi, customer)
+    default = pi_default(pi)
     memo: dict[int, Resolved | None] = {}
-    return {k: info(effective(pi, customer, sels.get(k), default, memo=memo)) for k in keys}
+    return {k: info(effective(pi, sels.get(k), default, memo=memo)) for k in keys}
 
 
 # ================================================================== 选取 / 绑定
@@ -859,7 +845,7 @@ def _resolve_for_select(cu: CurrentUser, rule: dict, pi: str, source: str, new_p
                 ErrorCode.RULE_PREFIX_CHANGE_REQUIRED,
                 rule_code=rule["rule_code"],
                 version=t["version"],
-                other_pi=res.other_pi or "（客户模板）",
+                other_pi=res.other_pi,
             )
         _derive(cu, rule, pi, new_prefix)
         res = resolve(rule, pi, source)
@@ -989,18 +975,6 @@ def bind_pi(cu: CurrentUser, pi_in: str | None, rule_id: int | None, new_prefix:
         return {"pi_no": pi, "rule": info(res)}
 
 
-def adopt_customer_template(cu: CurrentUser, pi_in: str | None, new_prefix: str | None) -> dict:
-    """客户模板：为本 PI 换前缀另出版本，并绑定给本 PI。"""
-    pi = util.trim(pi_in)
-    from app.services import orders
-
-    customer = orders.customer_of_pi(pi)
-    c = None if customer is None else db.one("SELECT rule_id FROM sn_customer_rule WHERE customer_code = %s", customer)
-    if c is None:
-        raise biz(ErrorCode.RULE_NOT_FOUND)
-    return bind_pi(cu, pi, c["rule_id"], new_prefix)
-
-
 def unbind_pi(cu: CurrentUser, pi_in: str | None) -> dict:
     """解除 PI 绑定：规则转为通用模板，已选过规则的物料行不受影响。"""
     pi = util.trim(pi_in)
@@ -1014,51 +988,9 @@ def unbind_pi(cu: CurrentUser, pi_in: str | None) -> dict:
     return {"pi_no": pi}
 
 
-def bind_customer(cu: CurrentUser, customer_in: str | None, rule_id: int | None, rule_code: str | None) -> dict:
-    """按客户绑定规则（F-22，唯一入口是接口）：每个客户只能绑一条；规则不存在或客户已绑其他规则时拒绝。"""
-    customer = util.trim(customer_in)
-    if not customer or len(customer) > 64:
-        raise biz(ErrorCode.VALIDATION, detail="customer_code")
-    with db.tx():
-        if rule_id is not None:
-            r = get_rule(rule_id)
-        else:
-            r = db.one("SELECT * FROM sn_rule WHERE rule_code = %s", util.trim(rule_code))
-            if r is None:
-                raise biz(ErrorCode.RULE_NOT_FOUND)
-        cur = db.one("SELECT * FROM sn_customer_rule WHERE customer_code = %s FOR UPDATE", customer)
-        if cur is not None:
-            if cur["rule_id"] == r["id"]:
-                return {"customer_code": customer, "rule_id": r["id"], "rule_code": r["rule_code"]}
-            other = db.one("SELECT rule_code FROM sn_rule WHERE id = %s", cur["rule_id"])
-            raise biz(ErrorCode.RULE_CUSTOMER_BOUND, customer=customer, rule_code=other["rule_code"] if other else "?")
-        db.exec(
-            "INSERT INTO sn_customer_rule(customer_code, rule_id, bound_by, bound_at) VALUES (%s,%s,%s,%s)",
-            customer,
-            r["id"],
-            cu.emp_no,
-            util.now(),
-        )
-        audit.record(cu, audit.entry(audit.RULE_CUSTOMER_BIND).customer(customer).info(r["rule_code"]))
-        return {"customer_code": customer, "rule_id": r["id"], "rule_code": r["rule_code"]}
-
-
-def unbind_customer(cu: CurrentUser, customer_in: str | None) -> dict:
-    """在生成页解除客户绑定：规则转为通用模板。"""
-    customer = util.trim(customer_in)
-    with db.tx():
-        cur = db.one("SELECT * FROM sn_customer_rule WHERE customer_code = %s FOR UPDATE", customer)
-        if cur is not None:
-            db.exec("DELETE FROM sn_customer_rule WHERE customer_code = %s", customer)
-            r = db.one("SELECT rule_code FROM sn_rule WHERE id = %s", cur["rule_id"])
-            audit.record(
-                cu, audit.entry(audit.RULE_CUSTOMER_UNBIND).customer(customer).info(r["rule_code"] if r else "")
-            )
-    return {"customer_code": customer}
-
-
 def options(pi: str | None, customer: str | None, facs: tuple[str, ...] | None = None) -> list[dict]:
-    """生成页规则库选项：分类与本 PI 或本 PI 客户相同的标「推荐」排前面；给出本 PI 用这条规则时的版本与是否须换前缀。
+    """生成页规则库选项：分类与本 PI 或本 PI 客户相同的标「推荐」排前面（分类只用于筛选和推荐，不是绑定）；
+    给出本 PI 用这条规则时的版本与是否须换前缀。
     facs = 授权范围（None = 全部）：只列全局规则和范围内组织的规则。"""
     out = []
     versions = _versions_by_rule()
@@ -1120,24 +1052,30 @@ def realize(cu: CurrentUser, pi: str, res: Resolved, lines: list[tuple[str, int]
         code, name = _custom_names(pi)
         from app.services import orders
 
-        # 自定义规则归属本次物料行所在的生产组织（都在同一个组织时；否则为全局规则）
-        orgs = orders.bill_orgs(no for no, _ in lines) - {"-"}
+        # 物料行改记为这条规则：本次生成的行，以及本 PI 选了同一自定义规则、这次没生成的行（可能在别的组织；
+        # 之后接着用这一版，不再按自定义新建——前缀已被这一版占用）
+        cj = json.dumps(res.custom, ensure_ascii=False, sort_keys=True)
+        same = list(
+            dict.fromkeys(
+                [*lines]
+                + [
+                    (r["bill_no"], r["seq"])
+                    for r in db.all(
+                        "SELECT bill_no, seq FROM sn_line_rule WHERE pi_no = %s AND custom_json = %s", pi, cj
+                    )
+                ]
+            )
+        )
+        # 自定义规则归属这些物料行所在的生产组织（都在同一个组织时；否则为全局规则，各组织都能看到）
+        orgs = orders.bill_orgs(no for no, _ in same) - {"-"}
         owner = next(iter(orgs)) if len(orgs) == 1 else None
         rid = _insert_rule(
             cu, code, name, spec, (PI, pi), " (自定义规则，生成成功后存入规则库)", claimed_pi=pi, factory=owner
         )
-        # 物料行改记为这条规则：本次生成的行，以及本 PI 选了同一自定义规则、这次没生成的行（之后接着用这一版，
-        # 不再按自定义新建——前缀已被这一版占用）
-        for no, seq in lines:
+        for no, seq in same:
             db.exec(
                 "UPDATE sn_line_rule SET rule_id = %s, custom_json = NULL WHERE bill_no = %s AND seq = %s", rid, no, seq
             )
-        db.exec(
-            "UPDATE sn_line_rule SET rule_id = %s, custom_json = NULL WHERE pi_no = %s AND custom_json = %s",
-            rid,
-            pi,
-            json.dumps(res.custom, ensure_ascii=False, sort_keys=True),
-        )
         return db.one("SELECT * FROM sn_rule_version WHERE rule_id = %s AND version = 1", rid)
     if res.version is None:
         raise biz(ErrorCode.GEN_PREVIEW_CHANGED)

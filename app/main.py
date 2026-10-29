@@ -172,7 +172,7 @@ def create_app() -> FastAPI:
         openapi_tags=[
             {
                 "name": "open",
-                "description": "对外接口：MES 取下一批、提交回执、只读核对；按客户绑定规则。",
+                "description": "对外接口：MES 取下一批、提交回执、只读核对。",
             },
         ],
         swagger_ui_parameters={"persistAuthorization": True},

@@ -53,8 +53,6 @@ RULE_PI_UNBIND = "RULE_PI_UNBIND"
 RULE_LINE_SELECT = "RULE_LINE_SELECT"
 LINE_CONFIG_REVOKE = "LINE_CONFIG_REVOKE"
 RULE_PREFIX_VERSION = "RULE_PREFIX_VERSION"
-RULE_CUSTOMER_BIND = "RULE_CUSTOMER_BIND"
-RULE_CUSTOMER_UNBIND = "RULE_CUSTOMER_UNBIND"
 RULE_DELETE = "RULE_DELETE"
 SN_GENERATE = "SN_GENERATE"
 SN_GEN_CANCEL = "SN_GEN_CANCEL"
@@ -237,8 +235,6 @@ _PATH_ACTIONS = (
     (r"/api/orders/.*", ORDER_SYNC),
     (r"/api/rules/line-(select|clear)", RULE_LINE_SELECT),
     (r"/api/rules/pi-binding", RULE_PI_BIND),
-    (r"/api/rules/customer-template", RULE_PI_BIND),
-    (r"/api/rules/customer-binding", RULE_CUSTOMER_BIND),
     (r"/api/rules/\d+", RULE_UPDATE),
     (r"/api/rules", RULE_CREATE),
     (r"/api/generate/batches/[^/]+/cancel", SN_GEN_CANCEL),
@@ -268,8 +264,6 @@ def action_for(method: str, path: str) -> str:
         return RULE_DELETE
     if path == "/api/rules/pi-binding" and method == "DELETE":
         return RULE_PI_UNBIND
-    if path == "/api/rules/customer-binding" and method == "DELETE":
-        return RULE_CUSTOMER_UNBIND
     for pattern, action in _PATH_ACTIONS:
         if re.fullmatch(pattern, path):
             return action

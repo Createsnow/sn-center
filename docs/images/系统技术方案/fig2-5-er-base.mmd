@@ -7,7 +7,6 @@ erDiagram
   sn_prd_mo ||--o| sn_line_rule : "单据 + 序号"
   sn_rule ||--|{ sn_rule_version : "版本"
   sn_rule ||--o{ sn_pi_rule : "PI 绑定"
-  sn_rule ||--o{ sn_customer_rule : "客户绑定"
   sn_rule ||--o{ sn_line_rule : "物料行选定"
   sn_pi_counter ||--o{ sn_prd_mo : "PI"
   sn_pi_counter ||--o{ sn_gen_job : "PI"
@@ -85,10 +84,6 @@ erDiagram
   }
   sn_pi_rule {
     varchar pi_no PK
-    bigint rule_id FK
-  }
-  sn_customer_rule {
-    varchar customer_code PK
     bigint rule_id FK
   }
   sn_pi_counter {

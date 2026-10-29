@@ -80,7 +80,6 @@
   "RULE_SN_TOO_LONG": "Tiền tố + tuần tự + dấu phân cách + chiều dài + đơn vị + hậu tố không được quá 64 ký tự",
   "RULE_USED_FORMAT": "Phiên bản {version} đã tạo SN; muốn đổi định dạng phải tạo phiên bản mới với tiền tố mới",
   "RULE_PREFIX_CHANGE_REQUIRED": "Quy tắc {rule_code} phiên bản {version} đã dùng cho PI {other_pi}, phải nhập tiền tố mới cho PI này",
-  "RULE_CUSTOMER_BOUND": "Khách hàng {customer} đã gắn quy tắc {rule_code}",
   "RULE_LINE_REQUIRED": "Vui lòng chọn dòng vật tư",
   "RULE_GLOBAL_READONLY": "Chỉ quản trị hệ thống mới được sửa, xóa quy tắc dùng chung: {rule_code}",
   "RULE_FACTORY_REQUIRED": "Vui lòng chọn tổ chức sản xuất sở hữu quy tắc",

@@ -69,8 +69,8 @@ export interface Factory {
 
 /** 物料行实际使用的规则（含来源与本 PI 的使用方式）。 */
 export interface LineRule {
-  /** LINE 物料行选定 / PI 绑定 / CUSTOMER 客户默认 */
-  source: "LINE" | "PI" | "CUSTOMER";
+  /** LINE 物料行选定 / PI 绑定 */
+  source: "LINE" | "PI";
   mode: "LIBRARY" | "CUSTOM";
   /** USE 已归属本 PI / CLAIM 首次归属 / NEW 新建版本 / PREFIX 须换前缀 */
   plan: "USE" | "CLAIM" | "NEW" | "PREFIX";

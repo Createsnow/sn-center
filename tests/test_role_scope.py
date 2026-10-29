@@ -50,6 +50,37 @@ def test_generate_only_authorized_bills(w, api):
     ok(api.post("/api/generate/revoke", m(pi_no=pi, lines=[m(bill_no=bill_a, seq=1)], reason="x"), op))
 
 
+def test_two_orgs_share_one_pi_serial_in_generation_order(w, api, sql):
+    """同一 PI 的两张单据分属两个组织：共用 PI 的一套流水，谁先生成谁的流水在前，号不重复也不跳号。"""
+    a, b, pi, bill_a, bill_b = two_org_pi(w, qty_a=3, qty_b=2)
+    op_a, op_b = w.user(emp("F"), "operator", a), w.user(emp("F"), "operator", b)
+    run(api, op_b, pi, [bill_b])
+    run(api, op_a, pi, [bill_a])
+    rows = sql.all(
+        "SELECT bill_no, MIN(seq_dec) lo, MAX(seq_dec) hi, COUNT(DISTINCT rule_version_id) v FROM sn_item "
+        "WHERE pi_no = %s GROUP BY bill_no",
+        pi,
+    )
+    got = {r["bill_no"]: (r["lo"], r["hi"], r["v"]) for r in rows}
+    assert got == {bill_b: (1, 2, 1), bill_a: (3, 5, 1)}, "B 先生成得 1–2，A 后生成接着 3–5，同一规则版本"
+    assert sql.scalar("SELECT last_seq_dec FROM sn_pi_counter WHERE pi_no = %s", pi) == 5
+
+
+def test_custom_rule_shared_across_orgs_is_global(w, api, sql):
+    """同一 PI 两个组织的物料行选了同一自定义规则：先生成的一方存入规则，另一方接着用；规则为全局（两边都能看到）。"""
+    a, b, pi, bill_a, bill_b = two_org_pi(w, qty_a=2, qty_b=2)
+    custom = m(prefix=P(), base=10, seq_len=6, with_length=False)
+    lines = [m(bill_no=bill_a, seq=1), m(bill_no=bill_b, seq=1)]
+    ok(api.post("/api/rules/line-select", m(pi_no=pi, lines=lines, custom=custom), w.admin))
+    run(api, w.admin, pi, [bill_a])
+    r = sql.one("SELECT * FROM sn_rule WHERE category_value = %s", pi)
+    assert r["factory_code"] is None
+    op_b = w.user(emp("F"), "operator", b)
+    run(api, op_b, pi, [bill_b])
+    assert sql.count("SELECT COUNT(*) FROM sn_rule WHERE category_value = %s", pi) == 1
+    assert r["id"] in {x["rule"]["id"] for x in ok(api.get("/api/rules", op_b)).body}
+
+
 def test_allocate_only_authorized_orgs(w, api, sql):
     a, b, pi, bill_a, bill_b = two_org_pi(w)
     w.generate(pi)

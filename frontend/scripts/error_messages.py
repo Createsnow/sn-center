@@ -85,7 +85,6 @@ E = {
 "RULE_SN_TOO_LONG": ("Prefix + serial + separators + length + unit + suffix must not exceed 64 characters", "Tiền tố + tuần tự + dấu phân cách + chiều dài + đơn vị + hậu tố không được quá 64 ký tự"),
 "RULE_USED_FORMAT": ("Version {version} has generated SNs; to change the format, create a new version with a new prefix", "Phiên bản {version} đã tạo SN; muốn đổi định dạng phải tạo phiên bản mới với tiền tố mới"),
 "RULE_PREFIX_CHANGE_REQUIRED": ("Rule {rule_code} version {version} is already used by PI {other_pi}; enter a new prefix for this PI", "Quy tắc {rule_code} phiên bản {version} đã dùng cho PI {other_pi}, phải nhập tiền tố mới cho PI này"),
-"RULE_CUSTOMER_BOUND": ("Customer {customer} is already bound to rule {rule_code}", "Khách hàng {customer} đã gắn quy tắc {rule_code}"),
 "RULE_LINE_REQUIRED": ("Please select material lines", "Vui lòng chọn dòng vật tư"),
 "RULE_GLOBAL_READONLY": ("Only the system administrator can modify or delete global rules: {rule_code}", "Chỉ quản trị hệ thống mới được sửa, xóa quy tắc dùng chung: {rule_code}"),
 "RULE_FACTORY_REQUIRED": ("Please choose the production org the rule belongs to", "Vui lòng chọn tổ chức sản xuất sở hữu quy tắc"),

@@ -179,7 +179,6 @@ def test_role_pages(w, api):
     assert api.get("/api/audits", op).code == "FORBIDDEN"
     assert api.post("/api/factories/sync", {}, op).code == "FORBIDDEN", "生产组织配置只给系统管理员"
     assert api.post("/api/orders/rebuild", {}, op).code == "FORBIDDEN", "全量重建快照只给系统管理员"
-    assert api.post("/api/rules/customer-binding", m(customer_code="C1", rule_id=1), op).code == "FORBIDDEN"
     # 审计员：SN 查询与导出、操作痕迹
     for path in ("/api/sn", "/api/export/bills", "/api/audits", "/api/dashboard"):
         assert api.get(path, q).status == 200, path

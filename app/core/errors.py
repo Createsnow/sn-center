@@ -110,7 +110,6 @@ class ErrorCode(Enum):
     RULE_SN_TOO_LONG = (400, "前缀 + 流水 + 分隔符 + 米数 + 单位 + 后缀总长不能超过 64")
     RULE_USED_FORMAT = (409, "版本 {version} 已生成过号，改格式须另出一版并换新前缀")
     RULE_PREFIX_CHANGE_REQUIRED = (409, "规则 {rule_code} 版本 {version} 已用于 PI {other_pi}，须为本 PI 填新前缀")
-    RULE_CUSTOMER_BOUND = (409, "客户 {customer} 已绑定规则 {rule_code}")
     RULE_LINE_REQUIRED = (400, "请选择物料行")
     RULE_GLOBAL_READONLY = (403, "全局规则只有系统管理员能修改、删除：{rule_code}")
     RULE_FACTORY_REQUIRED = (400, "请选择规则所属的生产组织")

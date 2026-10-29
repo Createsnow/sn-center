@@ -326,13 +326,13 @@ def test_migration_flyway_checksum():
     """测试阶段只保留一个 V1__init.sql；校验和按 Flyway 算法固定，改了建表脚本须同步更新这里（并重建测试库）。"""
     ours = {m.script: m for m in migrations()}
     assert list(ours) == ["V1__init.sql"]
-    assert ours["V1__init.sql"].checksum() == 941407448
+    assert ours["V1__init.sql"].checksum() == 1557840287
     statements = ours["V1__init.sql"].statements()
-    assert len(statements) == 35
+    assert len(statements) == 34
     text = "\n".join(statements)
-    # 脚本独立完整：34 张表各一条 CREATE TABLE 加 sn_sync_state 初始行，不用 ALTER 等语句事后补字段、补索引
+    # 脚本独立完整：33 张表各一条 CREATE TABLE 加 sn_sync_state 初始行，不用 ALTER 等语句事后补字段、补索引
     kinds = [" ".join(s.split()[:2]).upper() for s in statements]
-    assert kinds.count("CREATE TABLE") == 34 and kinds.count("INSERT INTO") == 1, kinds
+    assert kinds.count("CREATE TABLE") == 33 and kinds.count("INSERT INTO") == 1, kinds
     for table in (
         "sn_line_count",
         "sn_line_length",
@@ -503,7 +503,6 @@ def test_db_target_env_overrides_dotenv(monkeypatch):
         ("POST", "/api/generate/batches/G1/revoke", "SN_REVOKE"),
         ("PUT", "/api/rules/pi-binding", "RULE_PI_BIND"),
         ("DELETE", "/api/rules/pi-binding", "RULE_PI_UNBIND"),
-        ("POST", "/api/rules/customer-binding", "RULE_CUSTOMER_BIND"),
         ("POST", "/api/rules/line-select", "RULE_LINE_SELECT"),
         ("DELETE", "/api/rules/3", "RULE_DELETE"),
         ("PUT", "/api/rules/3", "RULE_UPDATE"),

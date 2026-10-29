@@ -221,8 +221,6 @@ M = {
 "actions.RULE_LINE_SELECT": ("物料行选规则", "Line rule selected", "Chọn quy tắc cho dòng"),
 "actions.LINE_CONFIG_REVOKE": ("物料行撤销配置", "Line config revoked", "Thu hồi cấu hình dòng"),
 "actions.RULE_PREFIX_VERSION": ("换前缀另出版本", "New prefix version", "Phiên bản tiền tố mới"),
-"actions.RULE_CUSTOMER_BIND": ("客户绑定规则", "Rule bound to customer", "Gắn quy tắc cho khách hàng"),
-"actions.RULE_CUSTOMER_UNBIND": ("解除客户绑定", "Customer rule unbound", "Bỏ gắn quy tắc khách hàng"),
 "actions.RULE_DELETE": ("删除规则", "Rule deleted", "Xóa quy tắc"),
 "actions.SN_GENERATE": ("生成", "Generate", "Tạo"),
 "actions.SN_GEN_CANCEL": ("取消生成", "Generation canceled", "Hủy tạo"),

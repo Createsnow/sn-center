@@ -4,11 +4,11 @@
     <div class="rbox">
       <b>{{ t("generate.piRule") }}</b>
       <div v-if="ctx.pi_rule" class="rule-now">
-        <el-tag size="small" :type="ctx.pi_rule.source === 'PI' ? 'primary' : 'warning'">{{ t(`generate.source.${ctx.pi_rule.source}`) }}</el-tag>
+        <el-tag size="small" type="primary">{{ t(`generate.source.${ctx.pi_rule.source}`) }}</el-tag>
         <b>{{ ruleTitle(t, ctx.pi_rule) }}</b>
         <span class="sn-mono">{{ ctx.pi_rule.format }}</span>
         <el-tag size="small" :type="ctx.pi_rule.plan === 'PREFIX' ? 'danger' : 'info'">{{ t(`generate.plan.${ctx.pi_rule.plan}`) }}</el-tag>
-        <el-button v-if="ctx.pi_rule.source === 'PI'" link type="danger" :loading="busy === 'unbindPi'" @click="unbindPi">{{ t("generate.unbindPi") }}</el-button>
+        <el-button link type="danger" :loading="busy === 'unbindPi'" @click="unbindPi">{{ t("generate.unbindPi") }}</el-button>
       </div>
       <span v-else class="muted">{{ t("generate.noPiRule") }}</span>
       <div class="rule-now">
@@ -25,22 +25,6 @@
       </div>
       <span v-if="bindOption?.plan === 'PREFIX'" class="muted warn">{{ t("generate.rule.prefixNeeded", { pi: bindOption.other_pi || "—" }) }}</span>
     </div>
-    <div class="rbox">
-      <b>{{ t("generate.customerRule") }}</b>
-      <template v-if="ctx.customer_rule">
-        <div class="rule-now">
-          <b>{{ ctx.customer_rule.rule_code }}</b><span class="muted">{{ ctx.customer_rule.rule_name }}</span>
-          <!-- 按客户绑定跨组织生效：只有系统管理员能解除 -->
-          <el-button v-if="store.isAdmin" link type="danger" :loading="busy === 'unbindCustomer'" @click="unbindCustomer">{{ t("generate.unbindCustomer") }}</el-button>
-        </div>
-        <div v-if="ctx.pi_rule?.source === 'CUSTOMER'" class="rule-now">
-          <el-input v-model="tpl.new_prefix" class="w160" maxlength="32" :placeholder="t('generate.rule.newPrefix')" />
-          <el-button type="primary" :disabled="!tpl.new_prefix.trim()" :loading="busy === 'template'" @click="adoptTemplate">{{ t("generate.useTemplate") }}</el-button>
-          <span class="muted">{{ t("generate.templateNote") }}</span>
-        </div>
-      </template>
-      <span v-else class="muted">{{ t("generate.noCustomerRule") }}</span>
-    </div>
     <template #footer>
       <el-button @click="emit('update:modelValue', false)">{{ t("common.close") }}</el-button>
     </template>
@@ -48,22 +32,19 @@
 </template>
 
 <script setup lang="ts">
-/** PI / 客户规则（F-08）：整张 PI 的默认规则（绑定、解除）、客户绑定的规则（作模板为本 PI 换前缀另出、解除）。不常用。 */
+/** PI 规则（F-08）：整张 PI 的默认规则（绑定、解除）；规则按 PI 维度绑定。不常用。 */
 import { computed, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { api } from "@/api";
-import { useAuthStore } from "@/stores/auth";
 import { ruleTitle } from "./format";
 
 const props = defineProps<{ modelValue: boolean; ctx: any }>();
-const store = useAuthStore();
 const emit = defineEmits<{ "update:modelValue": [open: boolean]; saved: [] }>();
 
 const { t } = useI18n();
 const busy = ref("");
 const bind = reactive({ rule_id: undefined as number | undefined, new_prefix: "" });
-const tpl = reactive({ new_prefix: "" });
 const optionTitle = (o: any) => (o.version ? `${o.rule_code} v${o.version}` : o.rule_code);
 const bindOption = computed(() => props.ctx.rule_options.find((o: any) => o.rule_id === bind.rule_id));
 
@@ -89,16 +70,6 @@ async function bindPi() {
 async function unbindPi() {
   await ElMessageBox.confirm(t("generate.unbindPiConfirm"), t("generate.piRule"), { type: "warning" });
   await run("unbindPi", () => api.unbindPiRule(props.ctx.pi_no), t("common.done"));
-}
-
-async function adoptTemplate() {
-  await run("template", () => api.customerTemplate({ pi_no: props.ctx.pi_no, new_prefix: tpl.new_prefix.trim() }), t("common.saved"));
-  tpl.new_prefix = "";
-}
-
-async function unbindCustomer() {
-  await ElMessageBox.confirm(t("generate.unbindCustomerConfirm", { customer: props.ctx.customer_code }), t("generate.customerRule"), { type: "warning" });
-  await run("unbindCustomer", () => api.unbindCustomerRule(props.ctx.customer_code), t("common.done"));
 }
 </script>
 

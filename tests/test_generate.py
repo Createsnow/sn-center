@@ -161,24 +161,23 @@ def test_only_identical_prefix_conflicts(w, api):
 
 
 def test_rule_list_and_options_show_versions_pis_and_bindings(w, api):
-    """规则库列表与生成页选项：各版本（新的在前）、用过的 PI、PI 与客户绑定；本 PI 用哪一版。"""
+    """规则库列表与生成页选项：各版本（新的在前）、用过的 PI、PI 绑定；本 PI 用哪一版。"""
     _, pi1, _ = mk(w, ("M1", 2))
     _, pi2, _ = mk(w, ("M1", 2))
-    pi3, cust = uid("PI"), uid("CU")
+    pi3 = uid("PI")
     rid = w.rule(P())
     ok(w.bind_pi(pi1, rid))
     w.generate(pi1)
     assert w.bind_pi(pi2, rid).code == "RULE_PREFIX_CHANGE_REQUIRED"
     ok(w.bind_pi(pi2, rid, new_prefix=P()))
-    ok(api.post("/api/rules/customer-binding", m(customer_code=cust, rule_id=rid), w.admin))
     listed = [x for x in ok(api.get("/api/rules", w.admin)).body if x["rule"]["id"] == rid]
     assert len(listed) == 1
     v = listed[0]
     code = v["rule"]["rule_code"]
     assert [x["version"] for x in v["versions"]] == [2, 1] and v["current"]["version"] == 1
     assert v["used"] and v["pis"] == sorted([pi1, pi2])
-    assert v["bindings"] == {"pi": sorted([pi1, pi2]), "customer": [cust]}
-    assert [x["rule"]["id"] for x in ok(api.get(f"/api/rules?q={cust}", w.admin)).body] == [rid]
+    assert v["bindings"] == {"pi": sorted([pi1, pi2])}
+    assert [x["rule"]["id"] for x in ok(api.get(f"/api/rules?q={pi2}", w.admin)).body] == [rid], "可按归属 PI 搜索"
 
     def option(pi: str) -> dict:
         return next(x for x in ok(api.get(f"/api/rules/options?pi={pi}", w.admin)).body if x["rule_code"] == code)
@@ -289,16 +288,20 @@ def test_custom_prefix_taken_after_select_flagged_in_preview(w):
     w.generate(pb)
 
 
-def test_customer_template_requires_prefix(w, api):
-    org, pi, bill = mk(w, ("M1", 5), customer="C900")
-    rid = w.rule(P())
-    ok(api.post("/api/rules/customer-binding", m(customer_code="C900", rule_id=rid), w.admin))
-    r = api.post("/api/rules/customer-binding", m(customer_code="C900", rule_id=w.rule(P())), w.admin)
-    assert r.code == "RULE_CUSTOMER_BOUND"
-    p = ok(w.preview(pi))
-    assert p["generatable"] is False and p["issues"][0]["issues"] == ["RULE_PREFIX"]
-    ok(api.post("/api/rules/customer-template", m(pi_no=pi, new_prefix=P()), w.admin))
-    w.generate(pi)
+def test_rules_bound_by_pi_only(w, api):
+    """规则只按 PI 维度绑定：没有按客户绑定；物料行没选、PI 也没绑时须先选规则，同一客户的别的 PI 不受影响。"""
+    cust = uid("CU")
+    _, p1, _ = mk(w, ("M1", 2), customer=cust)
+    _, p2, _ = mk(w, ("M1", 2), customer=cust)
+    assert api.post("/api/rules/customer-binding", m(customer_code=cust, rule_id=1), w.admin).status in (404, 405)
+    assert api.delete(f"/api/rules/customer-binding?customer={cust}", w.admin).status in (404, 405)
+    assert api.post("/api/rules/customer-template", m(pi_no=p1, new_prefix=P()), w.admin).status in (404, 405)
+    ok(w.bind_pi(p1, w.rule(P())))
+    w.generate(p1)
+    p = ok(w.preview(p2))
+    assert p["generatable"] is False and p["issues"][0]["issues"] == ["NO_RULE"]
+    ctx = ok(api.get(f"/api/generate/context?pi={p2}", w.admin))
+    assert ctx["pi_rule"] is None and "customer_rule" not in ctx.body
 
 
 # ---------------------------------------------------------------- 生成

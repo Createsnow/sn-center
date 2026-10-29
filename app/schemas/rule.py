@@ -79,14 +79,3 @@ class PiBindIn(In):
     pi_no: str | None = None
     rule_id: int | None = None
     new_prefix: str | None = None
-
-
-class CustomerTemplateIn(In):
-    pi_no: str | None = None
-    new_prefix: str | None = None
-
-
-class CustomerBindIn(In):
-    customer_code: str | None = None
-    rule_id: int | None = None
-    rule_code: str | None = None

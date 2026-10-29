@@ -71,9 +71,6 @@ export const api = {
   clearLineRule: (data: Q) => post("/rules/line-clear", data),
   bindPiRule: (data: Q) => put("/rules/pi-binding", data),
   unbindPiRule: (pi: string) => del("/rules/pi-binding", { pi }),
-  customerTemplate: (data: Q) => post("/rules/customer-template", data),
-  bindCustomerRule: (data: Q) => post("/rules/customer-binding", data),
-  unbindCustomerRule: (customer: string) => del("/rules/customer-binding", { customer }),
 
   // ---------------- SN 生成与撤销
   genPis: (params?: Q) => get("/generate/pis", params),

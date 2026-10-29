@@ -683,7 +683,6 @@ _SN_TABLES = (
     "sn_line_attach",
     "sn_pi_counter",
     "sn_pi_rule",
-    "sn_customer_rule",
     "sn_rule_version",
     "sn_rule",
     "sn_bill_ledger",
