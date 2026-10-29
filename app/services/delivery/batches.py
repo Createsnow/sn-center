@@ -110,19 +110,11 @@ def must_batch(batch_no: str | None, lock: bool = False) -> dict:
 
 
 def _batch_no(prefix: str, org: str) -> str:
-    """PS- / PL- / XO- + 组织 + yyyymmdd（UTC+8）+ 当天序号（≤ 40 位，全局唯一）。
-    同一组织同一天推送、拉取、转出共用一个序号，前缀不同序号也不重复（不会出现 PS-…-000001 与 PL-…-000001）；
-    当天首次使用时从各前缀原有的序号接着编（兼容改为共用之前当天已建的批次）。"""
+    """PS- / PL- / XO- + 组织 + yyyymmdd（UTC+8）+ 当天序号（≤ 40 位，全局唯一）。"""
     day = util.mes_local().strftime("%Y%m%d")
-    name = f"BATCH-{org}-{day}"
-    olds = [f"{p}-{org}-{day}" for p in ("PS", "PL", "XO")]
+    name = f"{prefix}-{org}-{day}"
     with db.new_tx():
-        db.exec(
-            "INSERT INTO sn_seq(name, val) SELECT %s, COALESCE(MAX(val), 0) FROM sn_seq WHERE name IN (%s,%s,%s) "
-            "ON DUPLICATE KEY UPDATE name = name",
-            name,
-            *olds,
-        )
+        db.exec("INSERT INTO sn_seq(name, val) VALUES (%s, 0) ON DUPLICATE KEY UPDATE name = name", name)
         db.exec("UPDATE sn_seq SET val = val + 1 WHERE name = %s", name)
         n = int(db.scalar("SELECT val FROM sn_seq WHERE name = %s", name))
     return f"{prefix}-{org[:16]}-{day}-{n:06d}"

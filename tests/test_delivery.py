@@ -701,36 +701,6 @@ def test_ng_receipt_before_push_reply_keeps_failed(w, sql, monkeypatch, resend):
     assert task["state"] == "STOPPED" and "先到的回执" in task["message"]
 
 
-def test_batch_no_serial_shared_across_push_pull_and_transfer_out(w, sql):
-    """同一组织同一天推送、拉取、转出共用一个序号：PS- 与 PL- 的尾号不重复。"""
-    org, pi, bill = setup_pi(w, qty=4, batch_size=2)
-    MES.behavior[org] = lambda batch, h: ("drop", None)
-    w.allocate(pi)
-    w.push()
-    MES.behavior.pop(org)
-    token, _ = w.mes_account(org)
-    pushed = sql.scalar("SELECT batch_no FROM sn_delivery_batch WHERE pi_no = %s", pi)
-    r = ok(w.mes_next(token, pi=pi))
-    assert r["batch"]["batchNo"] == pushed
-    ok(w.mes_receipt(token, MES.process(org, r["batch"])))
-    pulled = ok(w.mes_next(token, pi=pi))["batch"]["batchNo"]
-    assert pushed.startswith("PS-") and pulled.startswith("PL-")
-    assert pushed.rsplit("-", 1)[1] != pulled.rsplit("-", 1)[1]
-    assert int(pulled.rsplit("-", 1)[1]) == int(pushed.rsplit("-", 1)[1]) + 1
-
-
-def test_batch_no_serial_continues_from_old_per_prefix_counters(w, sql):
-    """改为共用序号当天：从各前缀原有的序号接着编，不与当天已建的批次尾号重复。"""
-    from app.core import utils as util
-    from app.services.delivery.batches import _batch_no
-
-    org = uid("Q")[:10]
-    day = util.mes_local().strftime("%Y%m%d")
-    sql.exec("INSERT INTO sn_seq(name, val) VALUES (%s, 7), (%s, 3)", f"PS-{org}-{day}", f"PL-{org}-{day}")
-    assert _batch_no("PL", org) == f"PL-{org}-{day}-000008"
-    assert _batch_no("PS", org) == f"PS-{org}-{day}-000009"
-
-
 def test_failed_push_batch_pulled_first_then_rest(w, sql):
     """推送失败（MES 没收下，没有批次号）后 MES 不限范围拉取：先拿到推送失败的那一批，再拉号池里的号，
     全部号都经 MES 回执确认，不会少一批；剩余枚数含推送失败还没拉过的批次。"""
