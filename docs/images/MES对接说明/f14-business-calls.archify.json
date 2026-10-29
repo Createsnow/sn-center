@@ -76,7 +76,7 @@
       "from": "sn",
       "to": "mes",
       "y": 245,
-      "label": "① 推送批次 · PING",
+      "label": "推送接口 · PING",
       "variant": "emphasis",
       "note": "只校验身份和 orgCode，不存储"
     },
@@ -87,7 +87,7 @@
       "y": 305,
       "label": "200 已收到（OK）",
       "variant": "return",
-      "note": "PING 不落库、不调 ③"
+      "note": "PING 不落库、不调回执接口"
     },
     {
       "id": "p1",
@@ -102,16 +102,16 @@
       "from": "sn",
       "to": "mes",
       "y": 435,
-      "label": "① 推送批次 · NEW",
+      "label": "推送接口 · NEW",
       "variant": "emphasis",
-      "note": "按单批枚数分批，③ 回执 OK 后才发下一批"
+      "note": "按单批枚数分批，回执 OK 后才发下一批"
     },
     {
       "id": "p3",
       "from": "mes",
       "to": "sn",
       "y": 495,
-      "label": "200 已收到；落库后 ③ 回执 OK / NG",
+      "label": "200 已收到；落库后回执接口 OK / NG",
       "variant": "return",
       "note": "无回执 1、5、10 分钟重送；NG 见图 5-1"
     },
@@ -120,7 +120,7 @@
       "from": "sn",
       "to": "mes",
       "y": 565,
-      "label": "① 推送批次（超时 / 5xx）",
+      "label": "推送接口（超时 / 5xx）",
       "variant": "dashed",
       "note": "1、5、15 分钟重送，用尽后停止"
     },
@@ -129,7 +129,7 @@
       "from": "mes",
       "to": "sn",
       "y": 625,
-      "label": "② 拉取批次",
+      "label": "拉取接口",
       "variant": "emphasis",
       "note": "推送失败后、本地 SN 不足、每 5 分钟兜底"
     },
@@ -147,7 +147,7 @@
       "from": "mes",
       "to": "sn",
       "y": 745,
-      "label": "③ 提交回执 OK / NG",
+      "label": "回执接口 OK / NG",
       "variant": "emphasis",
       "note": "落库后立即提交；remaining > 0 继续拉取"
     },
@@ -173,7 +173,7 @@
       "from": "sn",
       "to": "mes",
       "y": 940,
-      "label": "① 推送批次 · 转移交付",
+      "label": "推送接口 · 转移交付",
       "variant": "emphasis",
       "note": "SAME_ORG_TRANSFER / TRANSFER_IN"
     },
@@ -182,7 +182,7 @@
       "from": "mes",
       "to": "sn",
       "y": 1000,
-      "label": "200 已收到；③ 回执 OK",
+      "label": "200 已收到；回执接口 OK",
       "variant": "return"
     },
     {
@@ -190,7 +190,7 @@
       "from": "sn",
       "to": "old",
       "y": 1060,
-      "label": "① 推送批次 · TRANSFER_OUT",
+      "label": "推送接口 · TRANSFER_OUT",
       "variant": "emphasis",
       "note": "仅跨组织且原组织曾持有；与上一条互不等待"
     },
@@ -199,7 +199,7 @@
       "from": "old",
       "to": "sn",
       "y": 1120,
-      "label": "200 已收到；③ 回执 OK",
+      "label": "200 已收到；回执接口 OK",
       "variant": "return",
       "note": "标记已转走，停止打标"
     },
@@ -208,7 +208,7 @@
       "from": "mes",
       "to": "sn",
       "y": 1190,
-      "label": "④ 查询已下发 SN / ⑤ 查询批次明细",
+      "label": "查询接口：已下发 SN / 批次明细",
       "variant": "default",
       "note": "只读，不得据此入库、打标或删除"
     },
