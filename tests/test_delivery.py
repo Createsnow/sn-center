@@ -726,20 +726,55 @@ def test_failed_push_batch_pulled_first_then_rest(w, sql):
     assert len(MES.store[org]) == 12, "MES 拿到全部 12 枚"
 
 
-def test_failed_batch_rejected_after_pull_goes_last(w, sql):
-    """MES 拉到推送失败的批次后又整批退回：之后排在号池之后，不挡住后续的号，剩余枚数不含它。"""
+def test_failed_batch_blocks_only_its_pi(w, sql):
+    """拉取从失败处开始，只挡失败批次所在的 PI：MES 退回后该 PI 一直先给失败批次、不再建新批，剩余枚数不含该 PI
+    的号（不会反复拉）；别的 PI 照常拉取；失败批次回执 OK 后该 PI 接着拉。"""
+    org, pa, bill = setup_pi(w, qty=4, batch_size=2)
+    pb, bb = uid("PI"), uid("MO")
+    w.order(bb, org, "C1", pb, ("M1", 2, "0100"))
+    ok(w.bind_pi(pb, w.rule("P" + uid("").replace("-", ""), seq_len=6)))
+    w.generate(pb)
+    MES.behavior[org] = lambda batch, h: (400, {"code": "BAD", "message": "x"}) if batch["pi"] == pa else (None, None)
+    w.allocate(pa)
+    w.push()
+    failed = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pa)
+    assert failed["result"] == "FAILED"
+    MES.behavior.pop(org)
+    token, _ = w.mes_account(org)
+    r = ok(w.mes_next(token, pi=pa))
+    assert (r["batch"]["batchNo"], r["remaining"]) == (failed["batch_no"], 2), "首次给出，同 PI 的号照常计入"
+    ok(w.mes_receipt(token, {"batchNo": failed["batch_no"], "code": "NG", "message": "仍有问题"}))
+    for kw in ({"pi": pa}, {"billNo": bill}, {}):
+        r = ok(w.mes_next(token, **kw))
+        assert (r["batch"]["batchNo"], r["remaining"]) == (failed["batch_no"], 0), kw
+    assert sql.count("SELECT COUNT(*) FROM sn_delivery_batch WHERE pi_no = %s", pa) == 1, "该 PI 不再建新批"
+    # 别的 PI 照常拉取（不限范围时先给别的 PI 的新批）
+    w.allocate(pb)
+    r = ok(w.mes_next(token))
+    assert r["batch"]["pi"] == pb and r["remaining"] == 0
+    ok(w.mes_receipt(token, MES.process(org, r["batch"])))
+    # 失败批次修好后回执 OK：该 PI 接着拉
+    r = ok(w.mes_next(token, pi=pa))
+    assert r["batch"]["batchNo"] == failed["batch_no"]
+    ok(w.mes_receipt(token, MES.process(org, r["batch"])))
+    r = ok(w.mes_next(token, pi=pa))
+    assert r["batch"]["batchNo"].startswith("PL-") and r["batch"]["pi"] == pa
+
+
+def test_push_task_resumes_after_failed_batch_confirmed_by_pull(w, sql):
+    """推送从失败处开始：推送失败的批次经 MES 拉取回执 OK 后，停下的推送任务自动接着推后续的号。"""
     org, pi, bill = setup_pi(w, qty=4, batch_size=2)
     MES.behavior[org] = lambda batch, h: (400, {"code": "BAD", "message": "x"})
     w.allocate(pi)
     w.push()
     failed = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
+    assert sql.scalar("SELECT state FROM sn_push_task WHERE factory_code = %s AND task_key = %s", org, pi) == "STOPPED"
     MES.behavior.pop(org)
     token, _ = w.mes_account(org)
     r = ok(w.mes_next(token, pi=pi))
-    assert (r["batch"]["batchNo"], r["remaining"]) == (failed["batch_no"], 2)
-    ok(w.mes_receipt(token, {"batchNo": failed["batch_no"], "code": "NG", "message": "仍有问题"}))
-    r = ok(w.mes_next(token, pi=pi))
-    assert r["batch"]["batchNo"].startswith("PL-") and r["remaining"] == 0
+    assert r["batch"]["batchNo"] == failed["batch_no"]
     ok(w.mes_receipt(token, MES.process(org, r["batch"])))
-    r = ok(w.mes_next(token))
-    assert (r["batch"]["batchNo"], r["remaining"]) == (failed["batch_no"], 0)
+    w.push()
+    rows = sql.all("SELECT source, result FROM sn_delivery_batch WHERE pi_no = %s ORDER BY id", pi)
+    assert rows == [{"source": "PUSH", "result": "SUCCESS"}, {"source": "PUSH", "result": "SUCCESS"}]
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 4

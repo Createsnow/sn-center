@@ -122,7 +122,7 @@ def apply_receipt(cu: CurrentUser, batch_no: str, r: dict) -> Applied:
                 .info(f"method={method} result={b2['result']} accepted={b2['accepted_qty']}"),
             )
             applied = Applied("CONFIRMED", b2)
-    wake_task(b)
+    wake_task(b, resume=applied.verdict == "CONFIRMED")
     return applied
 
 
@@ -185,13 +185,17 @@ def confirm(cu: CurrentUser, b: dict, method: str, by_mes: bool, now) -> None:
         )
 
 
-def wake_task(b: dict) -> None:
+def wake_task(b: dict, resume: bool = False) -> None:
     """批次确认、整批退回或作废后：正在等这一批（等回执、等重试）的推送任务马上再跑一次——确认的接着推后续批次，
-    退回的停止并提示原因。"""
+    退回的停止并提示原因。resume：批次已确认（MES 回执 OK 或人工确认），已停止的推送任务也从这里接着推
+    （推送从失败处开始：失败或重试用尽的批次经拉取回执、人工确认成功后不用再点「继续推送」；仍有失败批次的会再停下）。"""
     key = XO_KEY if b["batch_type"] == TRANSFER_OUT else b["pi_no"]
+    cond = "state = 'WAITING' AND current_batch = %s"
+    if resume:
+        cond = f"({cond} OR state = 'STOPPED')"
     db.exec(
         "UPDATE sn_push_task SET state = 'QUEUED', run_after = NULL, updated_at = %s WHERE factory_code = %s "
-        "AND task_key = %s AND state = 'WAITING' AND current_batch = %s",
+        f"AND task_key = %s AND {cond}",
         util.now(),
         b["factory_code"],
         key,

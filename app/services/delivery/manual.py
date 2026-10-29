@@ -62,7 +62,7 @@ def manual_confirm(cu: CurrentUser, batch_no: str | None, reason: str | None, ba
             .why(r)
             .info(f"basis={bs} was={b['result']}"),
         )
-    wake_task(b)
+    wake_task(b, resume=True)
     return batch_json(must_batch(b["batch_no"]))
 
 

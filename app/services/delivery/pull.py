@@ -11,6 +11,7 @@ from app.core.security import CurrentUser
 from app.db.session import db
 from app.services import audit, changes, factories, locks, rules
 from app.services.delivery.batches import (
+    FAILED,
     RECEIPT_NG,
     RECEIPT_OK,
     SRC_PULL,
@@ -59,13 +60,20 @@ def _scope_conds(pi: str | None, bill: str | None) -> tuple[str, list, str, list
     return dc, da, xc, xa
 
 
-#: 批次在拉取中的先后（SQL 条件，表别名 b）：未确认的最先；推送失败、还没被 MES 拉取过的其次（推送没送到，MES 没有
-#: 批次号，要靠拉取拿到）；MES 拉取过后仍失败的（如整批退回）最后，轮流返回，不挡住后续的号
+#: 拉取从失败处开始（SQL 条件，表别名 b）：失败的批次挡住它所在的 PI——该 PI 先返回失败批次，处理掉（MES 回执 OK、
+#: 总部人工确认或作废）之前不再给该 PI 建新批；别的 PI 照常拉取
 _UNCONFIRMED = "b.result = 'UNCONFIRMED'"
 _FAILED_UNPULLED = "b.result = 'FAILED' AND b.pulled_at IS NULL"
 _FAILED_PULLED = "b.result = 'FAILED' AND b.pulled_at IS NOT NULL"
-#: 计入剩余枚数的批次：拉取过后仍失败的不计，MES 退回后不会被剩余枚数引着反复拉同一批
-_REMAINING = f"({_UNCONFIRMED} OR ({_FAILED_UNPULLED}))"
+#: 不限范围时先给的：未确认的、推送失败还没被 MES 拉取过的（推送没送到，MES 没有批次号），按建立先后；
+#: 也是计入剩余枚数的批次（MES 拉取过后仍失败的不计，退回后不会被剩余枚数引着反复拉同一批）
+_PENDING = f"({_UNCONFIRMED} OR ({_FAILED_UNPULLED}))"
+#: 限定 PI、单据时先给的：范围内未确认或失败的，按建立先后（失败批次挡住范围内的 PI）
+_PENDING_SCOPED = "b.result IN ('UNCONFIRMED','FAILED')"
+#: 有失败批次的 PI（交付类批次）：不再给它建新批
+_BLOCKED_PIS = (
+    "SELECT pi_no FROM sn_delivery_batch WHERE factory_code = %s AND batch_type <> 'TRANSFER_OUT' AND result = 'FAILED'"
+)
 
 
 def _in_scope(org: str, mes: bool, pi: str | None, bill: str | None, where: str, exclude: int | None = None):
@@ -93,10 +101,13 @@ def _first(org: str, mes: bool, pi: str | None, bill: str | None, where: str, or
     return db.one(f"SELECT * FROM ({' UNION ALL '.join(parts)}) t ORDER BY {order} LIMIT 1", *args)
 
 
-def _remaining(org: str, mes: bool, pi: str | None, bill: str | None, exclude: int | None) -> tuple[int, int]:
+def _remaining(
+    org: str, mes: bool, pi: str | None, bill: str | None, exclude: int | None, first_try: int | None = None
+) -> tuple[int, int]:
     """（范围内剩余可拉枚数，暂停枚数）：未入批且未暂停的号 + 其余未确认批次、推送失败还没拉取过的批次（含转出批次）
-    的枚数。"""
-    parts, args = _in_scope(org, mes, pi, bill, _REMAINING, exclude)
+    的枚数。MES 拉取过后仍失败的批次所在 PI 的号不计（MES 退回后不会被剩余枚数引着反复拉）；first_try 为本次首次
+    给出的失败批次，MES 还没处理过，它所在 PI 的号照常计入。"""
+    parts, args = _in_scope(org, mes, pi, bill, _PENDING, exclude)
     batched = int(db.scalar(f"SELECT COALESCE(SUM(qty), 0) FROM ({' UNION ALL '.join(parts)}) t", *args) or 0)
     cond, cargs = "", []
     if pi:
@@ -109,8 +120,11 @@ def _remaining(org: str, mes: bool, pi: str | None, bill: str | None, exclude: i
     if mes:
         unb = db.count(
             "SELECT COUNT(*) FROM sn_item WHERE factory_code = %s AND status = 'TO_PUSH' AND suspend IS NULL "
-            "AND delivery_batch_no IS NULL" + cond,
+            f"AND delivery_batch_no IS NULL AND pi_no NOT IN ({_BLOCKED_PIS} AND pulled_at IS NOT NULL AND id <> %s)"
+            + cond,
             org,
+            org,
+            first_try or 0,
             *cargs,
         )
     paused = db.count(
@@ -123,9 +137,11 @@ def _remaining(org: str, mes: bool, pi: str | None, bill: str | None, exclude: i
 
 
 def next_batch(cu: CurrentUser, pi_in: str | None, bill_in: str | None, batch_no_in: str | None) -> dict:
-    """接口 ② 取下一批。带 batchNo 时只读取回本组织该未确认或失败批次。否则按范围依次给：最早的未确认批次；
-    推送失败、还没被拉取过的批次（推送没送到 MES，MES 没有批次号，如跨 PI 转移后首次推送就失败）；从号池新建一批；
-    拉取过后仍失败的批次（按上次拉取时间轮流，不挡住后续的号）。"""
+    """接口 ② 取下一批。带 batchNo 时只读取回本组织该未确认或失败批次。否则从失败处开始：
+    1. 范围内最早的未确认批次或推送失败的批次（推送没送到，MES 没有批次号）——不限范围时只含 MES 还没拉取过的
+       失败批次，限定 PI、单据时含全部失败批次；
+    2. 从号池新建一批，有失败批次的 PI 不建（限定的 PI 有失败批次时返回该 PI 最早的失败批次）；
+    3. 不限范围时，最后给 MES 拉取过后仍失败的批次（按上次拉取时间轮流），不挡住别的 PI。"""
     org = cu.factory_code
     _rate_limit(org)
     f = factories.must_get(org)
@@ -153,25 +169,40 @@ def next_batch(cu: CurrentUser, pi_in: str | None, bill_in: str | None, batch_no
         raise MesError(403, "ORG_NOT_ALLOWED", f"PI {pi} 下没有号分到本组织，也没有本组织的转出批次")
     created = False
     with locks.with_org_lock(org):
-        b = _first(org, mes, pi, bill, _UNCONFIRMED) or _first(org, mes, pi, bill, _FAILED_UNPULLED)
+        b = _first(org, mes, pi, bill, _PENDING_SCOPED if pi or bill else _PENDING)
         if b is None and mes:
             target_pi = pi
             if target_pi is None:
                 cond, cargs = ("", []) if not bill else (" AND bill_no = %s", [bill])
                 target_pi = db.scalar(
                     "SELECT pi_no FROM sn_item WHERE factory_code = %s AND status = 'TO_PUSH' AND suspend IS NULL "
-                    "AND delivery_batch_no IS NULL" + cond + " ORDER BY seq_pi_no, seq_dec LIMIT 1",
+                    f"AND delivery_batch_no IS NULL AND pi_no NOT IN ({_BLOCKED_PIS})"
+                    + cond
+                    + " ORDER BY seq_pi_no, seq_dec LIMIT 1",
+                    org,
                     org,
                     *cargs,
                 )
             if target_pi is not None:
-                b = build_delivery(cu, org, target_pi, SRC_PULL, bill)
-                created = b is not None
+                blocking = db.one(
+                    "SELECT * FROM sn_delivery_batch WHERE factory_code = %s AND pi_no = %s "
+                    "AND batch_type <> 'TRANSFER_OUT' AND result = 'FAILED' ORDER BY created_at, id LIMIT 1",
+                    org,
+                    target_pi,
+                )
+                if blocking is not None:
+                    b = blocking
+                else:
+                    b = build_delivery(cu, org, target_pi, SRC_PULL, bill)
+                    created = b is not None
         if b is None:
             b = _first(org, mes, pi, bill, _FAILED_PULLED, "pulled_at, created_at, id")
+        first_try = None
         if b is not None:
+            if b["result"] == FAILED and b["pulled_at"] is None:
+                first_try = b["id"]
             db.exec("UPDATE sn_delivery_batch SET pulled_at = %s WHERE id = %s", util.now(), b["id"])
-    remaining, paused = _remaining(org, mes, pi, bill, None if b is None else b["id"])
+    remaining, paused = _remaining(org, mes, pi, bill, None if b is None else b["id"], first_try)
     if b is None:
         changes.count_daily("MES_PULL_EMPTY", org)
         return _next_out(None, remaining, paused)
