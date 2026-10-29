@@ -293,24 +293,10 @@ def test_every_error_code_translated(lang):
 
 
 def test_migration_flyway_checksum():
-    """V1__init.sql 是完整建表脚本，之后的结构变化按 Flyway 增量脚本（V2 起）在已有库上原地执行；
-    校验和按 Flyway 算法固定：已执行过的脚本不能再改（库里只告警、不会重跑，改动不会生效）。"""
+    """测试阶段只保留一个 V1__init.sql；校验和按 Flyway 算法固定，改了建表脚本须同步更新这里（并重建测试库）。"""
     ours = {m.script: m for m in migrations()}
-    assert list(ours) == ["V1__init.sql", "V2__prd_mo_display_fields.sql"]
-    assert ours["V1__init.sql"].checksum() == -1588274300
-    v2 = ours["V2__prd_mo_display_fields.sql"]
-    assert v2.checksum() == 2133644912
-    # V2 只给生产订单快照加只显示的列（列已存在时跳过），不改已有列、不动数据
-    stmts = v2.statements()
-    assert [" ".join(x.split()[:2]) for x in stmts] == [
-        "SET @sn_v2_ddl",
-        "PREPARE sn_v2_stmt",
-        "EXECUTE sn_v2_stmt",
-        "DEALLOCATE PREPARE",
-    ], stmts
-    assert "ALTER TABLE sn_prd_mo" in stmts[0] and stmts[0].count("ADD COLUMN") == 6
-    for word in ("DROP", "MODIFY", "CHANGE", "UPDATE", "DELETE"):
-        assert word not in stmts[0].upper().split(), word
+    assert list(ours) == ["V1__init.sql"]
+    assert ours["V1__init.sql"].checksum() == 941407448
     statements = ours["V1__init.sql"].statements()
     assert len(statements) == 35
     text = "\n".join(statements)
