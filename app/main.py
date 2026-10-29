@@ -72,7 +72,9 @@ def _file(path: Path) -> FileResponse:
     ctype = ctype or "application/octet-stream"
     if ctype.startswith("text/") or "javascript" in ctype:
         ctype += "; charset=utf-8"
-    return FileResponse(path, media_type=ctype)
+    # index.html 每次向服务器确认：更新部署后浏览器立即拿到新页面（assets 文件名带哈希，照常缓存）
+    headers = {"Cache-Control": "no-cache"} if path.name == "index.html" else None
+    return FileResponse(path, media_type=ctype, headers=headers)
 
 
 def _spa_fallback(request: Request) -> Response:
