@@ -162,3 +162,18 @@ def test_times_are_utc_iso(w, api):
     a, pi, bill = make(w, 1)
     item = ok(api.get(f"/api/sn?pi={pi}", w.admin))["items"][0]
     assert item["created_at"].endswith("Z") and "T" in item["created_at"]
+
+
+def test_dashboard_recent_failures_lists_batch_once(w, api, sql):
+    """MES 拉取建立、续推又重试用尽、超时未回执的批次：同时属于推送中断与拉取未回执，最近失败批次里只列一行。"""
+    a, pi, bill = make(w, 2, mes=True)
+    w.allocate(pi)
+    token, _ = w.mes_account(a)
+    no = ok(w.mes_next(token, pi=pi))["batch"]["batchNo"]
+    sql.exec(
+        "UPDATE sn_delivery_batch SET push_state = 'EXHAUSTED', created_at = created_at - INTERVAL 1 DAY "
+        "WHERE batch_no = %s",
+        no,
+    )
+    d = ok(api.get("/api/dashboard", w.admin))
+    assert [x["batch_no"] for x in d["recent_failures"]].count(no) == 1

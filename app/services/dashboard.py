@@ -132,14 +132,14 @@ def load(cu: CurrentUser) -> dict:
         ]
     if not cu.is_auditor:
         # 最近失败的批次、未处理的交付告警（普通操作员只看授权组织的）
+        # 推送中断与拉取后超时未回执用一条查询：MES 拉取建立、续推又重试用尽的批次两者都符合，只列一行
         out["recent_failures"] = [
             delivery.batch_json(b)
             for b in db.all(
-                "SELECT * "
-                + _interrupted_sql(fsql)
-                + " UNION ALL SELECT * FROM sn_delivery_batch WHERE result = 'UNCONFIRMED' "
-                "AND source = 'PULL' AND created_at < %s" + fsql + " ORDER BY updated_at DESC LIMIT 20",
-                *fargs,
+                "SELECT * FROM sn_delivery_batch WHERE (result = 'FAILED' OR (result = 'UNCONFIRMED' "
+                "AND (push_state = 'EXHAUSTED' OR (source = 'PULL' AND created_at < %s))))"
+                + fsql
+                + " ORDER BY updated_at DESC, id DESC LIMIT 20",
                 cutoff,
                 *fargs,
             )
