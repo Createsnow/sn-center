@@ -80,7 +80,8 @@ def _only_mes(cu: CurrentUser) -> None:
 async def next_batch(request: Request, cu: CurrentUser = Depends(mes_user)) -> dict:
     _only_mes(cu)
     body = await _json(request)
-    return await run_sync(delivery.next_batch, cu, body.get("pi"), body.get("billNo"), body.get("batchNo"))
+    args = (_str(body, "pi"), _str(body, "billNo"), _str(body, "batchNo"))
+    return await run_sync(delivery.next_batch, cu, *args)
 
 
 @router.post("/receipts", summary="③ 提交回执（或整批拒收）：批次号在请求体；按批次号幂等；不支持 gzip")

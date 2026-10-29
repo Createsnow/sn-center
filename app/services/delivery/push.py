@@ -434,6 +434,8 @@ def push_once(b: dict) -> str:
     f = factories.must_get(b["factory_code"])
     target = mes_client.Target.of(f)
     attempt = b["push_count"] + 1
+    # 发送前最后一份回执：发送期间 ③ 先到的回执（如重推失败批次时又整批退回）不被随后的应答覆盖
+    seen = db.scalar("SELECT COALESCE(MAX(id), 0) FROM sn_delivery_receipt WHERE batch_id = %s", b["id"])
     out = mes_client.send(target, b["batch_no"], b["body_gz"], attempt)
     now = util.now()
     sys = CurrentUser.system()
@@ -450,8 +452,18 @@ def push_once(b: dict) -> str:
             cur = must_batch(b["batch_no"], lock=True)
             if cur["result"] == SUCCESS:
                 state = "CONFIRMED"
-            elif (cur["result"] == FAILED and b["result"] == UNCONFIRMED) or cur["result"] not in (UNCONFIRMED, FAILED):
-                # 发送期间 ③ 已整批退回，或批次已作废
+            elif cur["result"] not in (UNCONFIRMED, FAILED) or (
+                cur["result"] == FAILED
+                and (
+                    b["result"] == UNCONFIRMED
+                    or db.exists(
+                        "SELECT EXISTS(SELECT 1 FROM sn_delivery_receipt WHERE batch_id = %s AND id > %s)",
+                        b["id"],
+                        seen,
+                    )
+                )
+            ):
+                # 发送期间 ③ 已整批退回（首次推送，或重推失败批次时又退回），或批次已作废
                 state = "FAILED"
             else:
                 # 续推失败的批次时，MES 收下即回到未确认，等这一次的回执

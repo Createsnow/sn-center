@@ -461,6 +461,8 @@ def test_receipt_batch_no_in_body_and_no_gzip(w, sql):
         (w.mes_items(token, batch["batchNo"], pageSize="2"), "pageSize"),
         (w.mes_delivered(token, pageSize=True), "pageSize"),
         (w.mes_delivered(token, cursor=10), "cursor"),
+        (w.mes_delivered(token, cursor="abc"), "cursor"),
+        (w.mes_items(token, batch["batchNo"], cursor="1.5"), "cursor"),
         (w.api.post("/api/mes/v1/batches/items", {}, token), "batchNo"),
     ):
         assert (x.status, x.code, x["details"][0]["field"]) == (400, "INVALID_REQUEST", field), str(x)
@@ -549,6 +551,16 @@ def test_pull_scope_checks(w, sql):
     assert w.mes_next(t2, pi=pi).code == "ORG_NOT_ALLOWED", "不能拉别的组织的 PI"
 
 
+def test_pull_params_must_be_strings(w, sql):
+    """② 的 pi、billNo、batchNo 须为字符串：类型不对返回 400 INVALID_REQUEST 并指出字段。"""
+    org, pi, bill = setup_pi(w, qty=2, batch_size=5)
+    w.allocate(pi)
+    token, _ = w.mes_account(org)
+    for kw, field in (({"pi": 1}, "pi"), ({"billNo": ["x"]}, "billNo"), ({"batchNo": 1}, "batchNo")):
+        x = w.mes_next(token, **kw)
+        assert (x.status, x.code, x["details"][0]["field"]) == (400, "INVALID_REQUEST", field), str(x)
+
+
 def test_older_rev_skipped_by_mes_without_alert(w, sql):
     """MES 已有更大的 rev：该枚跳过、不覆盖，整批仍 OK；本系统不再逐枚告警。"""
     org, pi, bill = setup_pi(w, qty=2, batch_size=5)
@@ -629,3 +641,59 @@ def test_pool_claims_one_batch_type_per_batch(w, sql):
     # 批次查询「交付」= 全部交付类
     assert ok(w.api.get(f"/api/delivery/batches?pi={pi}&batch_type=DELIVERY", w.admin))["total"] == 2
     assert ok(w.api.get(f"/api/delivery/batches?pi={pi}&batch_type=REMAP", w.admin))["total"] == 1
+
+
+def _receipt_first(monkeypatch, w, org: str, code: str) -> None:
+    """模拟 MES 先调 ③ 回执、后回推送应答（应答在网络上晚到）：发送时先提交回执，再应答已收到。"""
+    from app.services import mes_client
+
+    token = w.receipt_token(org)
+
+    def send(t, batch_no, body_gz, attempt, ping=False):
+        r = ok(
+            w.mes_receipt(
+                token, m(batchNo=batch_no, code=code, message="先到的回执", processedAt="2026-10-26 11:47:06.008")
+            )
+        )
+        assert r["firstConfirmation"] is True
+        return mes_client.Outcome(mes_client.RECEIVED, body={"batchNo": batch_no, "code": "OK"}, http_status=200)
+
+    monkeypatch.setattr(mes_client, "send", send)
+
+
+def test_ok_receipt_before_push_reply_confirms_and_continues(w, sql, monkeypatch):
+    """回执 OK 比推送应答先到：批次直接确认，应答到了也按已确认处理，接着推下一批。"""
+    org, pi, bill = setup_pi(w, qty=7, batch_size=5)
+    w.allocate(pi)
+    _receipt_first(monkeypatch, w, org, "OK")
+    w.push(receipts=False)
+    rows = sql.all("SELECT result, push_state FROM sn_delivery_batch WHERE pi_no = %s ORDER BY id", pi)
+    assert rows == [{"result": "SUCCESS", "push_state": "IDLE"}] * 2
+
+
+@pytest.mark.parametrize("resend", [False, True])
+def test_ng_receipt_before_push_reply_keeps_failed(w, sql, monkeypatch, resend):
+    """回执 NG 比推送应答先到（首次推送，或「继续推送」重推失败批次）：批次保持失败、任务停止并提示原因，
+    不被随后到的应答改回等回执。"""
+    org, pi, bill = setup_pi(w, qty=3, batch_size=5)
+    if resend:
+        MES.set_fault(org, {"mode": "reject", "message": "首次退回"})
+        w.allocate(pi)
+        w.push()
+        MES.clear_fault(org)
+        assert sql.scalar("SELECT result FROM sn_delivery_batch WHERE pi_no = %s", pi) == "FAILED"
+        _receipt_first(monkeypatch, w, org, "NG")
+        ok(w.api.post("/api/delivery/resume", m(factory_code=org, key=pi), w.admin))
+    else:
+        _receipt_first(monkeypatch, w, org, "NG")
+        w.allocate(pi)
+    w.push(receipts=False)
+    b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
+    assert (b["result"], b["push_state"], b["fail_code"], b["fail_reason"]) == (
+        "FAILED",
+        "IDLE",
+        "REJECTED",
+        "先到的回执",
+    )
+    task = sql.one("SELECT * FROM sn_push_task WHERE factory_code = %s AND task_key = %s", org, pi)
+    assert task["state"] == "STOPPED" and "先到的回执" in task["message"]

@@ -1,13 +1,13 @@
-# SN 防重管控系统 · MES 对接接口规范 V1.1
+# SN 防重管控系统 · MES 对接接口规范 V1.2
 
 | 项目 | 内容 |
 | --- | --- |
-| 文档版本 | V1.1 |
+| 文档版本 | V1.2 |
 | 协议版本 | `schemaVersion = 1.0` |
 | 更新日期 | 2026-10-29 |
 | 适用对象 | MES 方开发人员、SN 系统对接人员 |
 | 相关文档 | [MES 业务接口逻辑](MES业务接口逻辑.md)：各接口的业务逻辑、异常与重试、人工处理；[MES 对接说明](MES对接说明.md)：MES 收到批次后的处理规则 |
-| 修订记录 | V1.1（2026-10-29）：推送接口应答码统一为 `OK`（连接测试相同）；新增 3.3.6 回执送达确认；回执接口补充失败批次再次提交的返回；全文改用接口名称（推送接口、拉取接口、回执接口、查询接口） |
+| 修订记录 | V1.2（2026-10-29）：按代码校对——拉取接口 `pi`、`billNo`、`batchNo` 不是字符串返回 400 `INVALID_REQUEST`；查询接口 `cursor` 不是上一页的 `nextCursor` 返回 400（不再当作首页）；3.1.4 示例字段更正为 `receivedAt`；3.2 未确认批次补「已收到、等回执的」<br />V1.1（2026-10-29）：推送接口应答码统一为 `OK`（连接测试相同）；新增 3.3.6 回执送达确认；回执接口补充失败批次再次提交的返回；全文改用接口名称（推送接口、拉取接口、回执接口、查询接口） |
 | MES 接口负责人 | MES 侧填写：姓名、联系方式 |
 |                |                                 |
 
@@ -272,7 +272,7 @@ HTTP/1.1 409 Conflict
 Content-Type: application/json; charset=utf-8
 Retry-After: 60
 
-{"batchNo": "PS-110-20261026-000123", "code": "BATCH_IN_PROGRESS", "message": "批次正在处理", "processedAt": "2026-10-26 11:47:05.900"}
+{"batchNo": "PS-110-20261026-000123", "code": "BATCH_IN_PROGRESS", "message": "批次正在处理", "receivedAt": "2026-10-26 11:47:05.900"}
 ```
 
 #### 3.1.5 错误码
@@ -292,7 +292,7 @@ Retry-After: 60
 
 ### 3.2 拉取接口
 
-MES 主动拉取一个批次：优先返回范围内最早的未回执批次（推送未送达的、拉取后未回执的、转移批次），没有时才新建。
+MES 主动拉取一个批次：优先返回范围内最早的未回执批次（推送后未确认的——未送达、等重试或已收到等回执，拉取后未回执的，转出批次），没有时才新建；整批退回（失败）的批次不在其中，须带 `batchNo` 取回。
 
 #### 3.2.1 基本信息
 
@@ -436,6 +436,7 @@ X-Request-ID: 5b2d9c7e-1a4f-4e8b-b3c6-0f9a8d7e6c51
 
 | HTTP | `code` | 场景 | 处理 |
 | --- | --- | --- | --- |
+| 400 | `INVALID_REQUEST` | 请求体不是合法 JSON / gzip，或 `pi`、`billNo`、`batchNo` 不是字符串 | 按 `details` 修正请求 |
 | 403 | `ORG_NOT_ALLOWED` | 该 PI 下没有分到本组织的 SN，也没有本组织的转移批次 | 检查 `pi` |
 | 404 | `BATCH_NOT_FOUND` | 指定的批次号不存在，或不属于本组织 | 检查 `batchNo` |
 | 409 | `BATCH_CONFIRMED` | 指定的批次已回执 | 无需再处理 |
@@ -622,7 +623,7 @@ MES 调回执接口后，**以回执接口的响应判断回执是否送达 SN �
 ```jsonc
 {
   "pi": "000001",                            // String(64)|null  选填  限定 PI；不填不限
-  "cursor": null,                            // String|null      选填  分页游标：首页不填或填 null，之后填上一页的 nextCursor，直到 nextCursor = null
+  "cursor": null,                            // String|null      选填  分页游标：首页不填或填 null，之后原样填上一页的 nextCursor，直到 nextCursor = null；其他值返回 400
   "pageSize": 1000                           // Number|null      选填  每页条数，默认 1000，最大 5000
 }
 ```
@@ -714,7 +715,7 @@ X-Request-ID: 5e2a9c6d-1b8f-4d37-9a40-3f2e1d0c9b86
 
 #### 3.4.5 错误码
 
-无专有错误码，只返回通用错误码（附录 B）。
+无专有错误码，只返回通用错误码（附录 B）；`cursor` 不是上一页返回的 `nextCursor`、`pageSize` 不是整数时返回 400 `INVALID_REQUEST`。
 
 ---
 
@@ -803,7 +804,7 @@ X-Request-ID: 6d3a0f8c-2e5b-4a71-9c46-1b0a9f8e7d52
 
 | HTTP | `code` | 场景 | 处理 |
 | --- | --- | --- | --- |
-| 400 | `INVALID_REQUEST` | 缺少 `batchNo`，或 `cursor`、`pageSize` 类型不对 | 修正请求 |
+| 400 | `INVALID_REQUEST` | 缺少 `batchNo`，`cursor`、`pageSize` 类型不对，或 `cursor` 不是上一页返回的 `nextCursor` | 修正请求 |
 | 404 | `BATCH_NOT_FOUND` | 批次号不存在，或不属于本组织 | 检查 `batchNo` |
 
 ---

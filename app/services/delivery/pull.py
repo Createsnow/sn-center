@@ -216,10 +216,18 @@ def submit_receipt(cu: CurrentUser, batch_no: str, body: dict) -> dict:
 
 
 def _cursor(v: str | None) -> int:
-    try:
-        return max(0, int(util.trim(v) or 0))
-    except ValueError:
+    """分页游标：不填为首页，否则须为上一页返回的 nextCursor；不合法的 400，不当首页（避免从头重查）。"""
+    t = util.trim(v)
+    if not t:
         return 0
+    if not t.isascii() or not t.isdigit():
+        raise MesError(
+            400,
+            "INVALID_REQUEST",
+            "参数不合法：cursor",
+            details=[{"field": "cursor", "reason": "须为上一页返回的 nextCursor"}],
+        )
+    return int(t)
 
 
 def _page_size(v: int | None) -> int:
