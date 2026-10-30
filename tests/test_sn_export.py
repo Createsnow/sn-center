@@ -117,6 +117,14 @@ def test_detail_filters_one_bill_line(w, api):
     }
     assert [x["line_no"] for x in got["items"]] == [1, 2]
     assert ok(api.get(url + "&bill_seq=2&material=M1", w.admin))["total"] == 0
+    # 分配页「已分配」页签：按物料编码、SN 起止号（含两端）筛选
+    every = [x["sn"] for x in ok(api.get(url, w.admin))["items"]]
+    assert [x["sn"] for x in ok(api.get(url + "&material=M1", w.admin))["items"]] == every[:3]
+    got = ok(api.get(url + f"&sn_from={every[1]}&sn_to={every[3]}", w.admin))
+    assert [x["sn"] for x in got["items"]] == every[1:4]
+    assert [x["sn"] for x in ok(api.get(url + f"&sn_from={every[3]}", w.admin))["items"]] == every[3:]
+    assert [x["sn"] for x in ok(api.get(url + f"&material=M2&sn_to={every[3]}", w.admin))["items"]] == [every[3]]
+    assert ok(api.get(url + "&sn_from=NOPE", w.admin))["total"] == 0, "起止号不是本单据的号：没有结果"
 
 
 def test_push_failure_does_not_affect_export(w, api):

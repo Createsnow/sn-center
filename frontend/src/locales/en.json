@@ -442,11 +442,10 @@
     "suspended": "{n} suspended",
     "applying": "{n} transfer pending",
     "download": "Download {f}",
-    "allTab": "All {n}",
-    "lineTab": "#{seq} · {m} · attach {a} · length {l} · {n}",
     "groupTitle": "Material {m}",
     "groupMeta": "Attachment item {a} · length {l} · {n} SNs",
-    "searchSn": "Search full SN",
+    "snFrom": "From SN",
+    "snTo": "To SN",
     "lineNo": "No.",
     "seqOf": "serial of {pi}"
   },

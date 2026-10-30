@@ -442,11 +442,10 @@
     "suspended": "暂停 {n}",
     "applying": "申请中 {n}",
     "download": "下载 {f}",
-    "allTab": "全部 {n}",
-    "lineTab": "#{seq} · {m} · 附件 {a} · 米数 {l} · {n} 枚",
     "groupTitle": "物料 {m}",
     "groupMeta": "附件项次 {a} · 米数 {l} · {n} 枚",
-    "searchSn": "搜索完整 SN",
+    "snFrom": "SN 起始号",
+    "snTo": "SN 截止号",
     "lineNo": "行号",
     "seqOf": "流水归属 {pi}"
   },

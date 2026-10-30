@@ -39,7 +39,7 @@
 
       <!-- 右：所选单据所在 PI 的分配与推送（待分配页签）/ 已分配的号（已分配页签） -->
       <div v-loading="ctxLoading" class="surface pane detail-pane">
-        <p v-if="!ctx" class="muted empty">{{ t("allocate.pickBill") }}</p>
+        <p v-if="!ctx" class="muted empty">{{ list.items.length ? t("allocate.pickBill") : t("common.empty") }}</p>
         <template v-else>
           <div class="dh">
             <div class="dh-title">
@@ -140,8 +140,8 @@
               </div>
             </section>
 
-            <!-- 推送进度：各组织第 i / N 次，下面依次列出推送批次 -->
-            <el-tabs model-value="push" class="box tabs-box">
+            <!-- 推送进度：分配后有号待推送（推送中、失败、重试用尽）时显示，推完即收起；各组织第 i / N 次，下面依次分页列出推送批次 -->
+            <el-tabs v-if="pushOpen" model-value="push" class="box tabs-box">
               <el-tab-pane :label="t('allocate.tabPush')" name="push">
                 <div v-for="p in ctx.push" :key="p.factory_code" class="push-row">
                   <b>{{ nameOf(p.factory_code) }}</b>
@@ -151,7 +151,7 @@
                   <span v-else-if="p.task?.message" class="muted">{{ p.task.message }}</span>
                   <span v-if="p.last_problem" class="err">{{ p.last_problem.batch_no }}：{{ p.last_problem.fail_reason || pushStateLabel(p.last_problem.push_state) }}</span>
                 </div>
-                <el-table :data="batchRows" size="small" max-height="360" :empty-text="t('common.empty')">
+                <el-table v-loading="batches.state.loading" :data="batches.items.value" size="small" :empty-text="t('common.empty')">
                   <el-table-column :label="t('common.batchNo')" min-width="200">
                     <template #default="{ row }">
                       <el-button link type="primary" class="sn-mono" @click="batchNo = row.batch_no">{{ row.batch_no }}</el-button>
@@ -184,6 +184,8 @@
                     </template>
                   </el-table-column>
                 </el-table>
+                <el-pagination v-if="batches.state.total > batches.state.pageSize" class="pager" small layout="total, prev, pager, next"
+                  :total="batches.state.total" :page-size="batches.state.pageSize" :current-page="batches.state.page" @current-change="batches.load" />
               </el-tab-pane>
             </el-tabs>
           </template>
@@ -203,6 +205,7 @@ import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { api } from "@/api";
 import { useFactories } from "@/composables/useFactories";
+import { usePaged } from "@/composables/usePaged";
 import { useTime } from "@/composables/useTime";
 import { BATCH_RESULT_TYPE, BILL_FOLD_OVER, batchResultLabel, batchSourceLabel, pushStateLabel, taskStateLabel } from "@/constants";
 import { canConfirm, canVoid } from "@/utils/batch";
@@ -256,8 +259,12 @@ async function loadList(silent = false) {
   } finally {
     listLoading.value = false;
   }
-  // 没指定单据时打开列表第一张
-  if (!pi.value && list.value.items.length) pick(list.value.items[0]);
+  if (silent) return;
+  // 右侧跟随左侧列表：所选单据不在列表里时改选第一张（只带 PI 进来时先找该 PI 的单据）；列表为空时右侧也为空
+  const items: BillRow[] = list.value.items;
+  const hit = items.find(isCurrent) || (!bill.value && items.find((r) => r.pi_no === pi.value)) || items[0];
+  if (hit) pick(hit);
+  else if (pi.value) router.replace({ query: { tab: tab.value } });
 }
 
 function pick(row: BillRow) {
@@ -303,6 +310,7 @@ async function loadCtx(silent = false) {
     selByBill.value = {};
     loadAlloc();
   }
+  if (pushOpen.value) batches.load(silent ? batches.state.page : 1);
   // 有推送任务在跑时，定时刷新推送进度
   if (ctx.value?.push.some((p: any) => p.task && ACTIVE_TASK.includes(p.task.state))) ctxTimer = setTimeout(() => loadCtx(true), 5000);
 }
@@ -316,8 +324,10 @@ async function reload() {
 const canResume = (p: any) => p.mes_enabled && p.remaining?.pushes > 0 && !(p.task && ACTIVE_TASK.includes(p.task.state));
 /** 推送中断（有失败或未确认的批次、或有未入批的号且没有运行中的推送任务）且可续推的组织。 */
 const brokenPush = computed(() => (ctx.value?.push ?? []).filter((p: any) => canResume(p)));
-/** 推送批次按建立先后依次列出（接口给最近 100 条、新的在前）。 */
-const batchRows = computed(() => [...(ctx.value?.batches ?? [])].reverse());
+/** 推送未完成：本 PI 还有待推送的号（推送中、等回执、推送失败、重试用尽、暂停等）；分配前、推完后都没有。 */
+const pushOpen = computed(() => (ctx.value?.lines ?? []).some((l: any) => l.to_push > 0));
+/** 推送批次（推送与拉取建立的交付批次）按建立先后依次分页列出。 */
+const batches = usePaged((q) => api.deliveryBatches({ ...q, pi: ctx.value.pi_no, batch_type: "DELIVERY", asc: 1 }), 20);
 
 // ---------------- 推送进度：已完成 = 已推送或已分配（未对接 MES）的号；有失败批次时标红
 

@@ -3,14 +3,14 @@
 from fastapi import APIRouter
 
 from app.api.deps import OperatorDep, download, page_of
-from app.schemas.common import OptInt
+from app.schemas.common import Flag, OptInt
 from app.schemas.misc import BatchManualIn, DeliveryAlertIn, ResumeIn
 from app.services import delivery, files
 
 router = APIRouter(prefix="/delivery", tags=["delivery"])
 
 
-@router.get("/batches", summary="交付批次（推送、拉取、转出合并显示），最新的在前")
+@router.get("/batches", summary="交付批次（推送、拉取、转出合并显示），最新的在前；asc = 按建立先后")
 def batch_list(
     cu: OperatorDep,
     factory_code: str | None = None,
@@ -20,11 +20,12 @@ def batch_list(
     batch_type: str | None = None,
     result: str | None = None,
     transfer_no: str | None = None,
+    asc: Flag = None,
     page: OptInt = None,
     page_size: OptInt = None,
 ) -> dict:
     return delivery.list_batches(
-        cu, factory_code, pi, batch_no, source, batch_type, result, transfer_no, page_of(page, page_size)
+        cu, factory_code, pi, batch_no, source, batch_type, result, transfer_no, page_of(page, page_size), bool(asc)
     )
 
 

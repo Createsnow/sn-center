@@ -6,7 +6,7 @@
 分配与生成、撤销共用 PI 操作锁。
 分配页左侧按单据列出（bills）：SN 枚数与状态（待分配 / 待处理 / 已分配），只按 PI、单据编号筛选。
 分配页详情（所选单据所在的 PI）：各物料行的枚数、号段、目标生产组织与推送进度，各组织推送进度，
-推送批次（最近 100 条，推送与拉取批次）。
+推送批次分页另取（/api/delivery/batches?pi=…&batch_type=DELIVERY&asc=1）。
 普通操作员只能分配到授权组织：指定的单据、物料行须属于授权组织；整张 PI 分配时只分授权组织的号。
 """
 
@@ -295,7 +295,7 @@ def bills(cu: CurrentUser, q: str | None, tab: str | None) -> dict:
 
 def context(cu: CurrentUser, pi_in: str | None) -> dict:
     """分配详情：本 PI 各单据的物料行（SN 枚数、待分配 / 待推送 / 推送失败枚数、号段、分到哪个生产组织、
-    是否对接 MES、不能分配的原因）及单据状态，各组织的推送进度与推送批次。
+    是否对接 MES、不能分配的原因）及单据状态，各组织的推送进度（推送批次由页面分页另取）。
     页面按左侧页签只显示相应状态的单据；勾选的物料行只分配其中待分配的号。"""
     pi = util.trim(pi_in)
     if not pi:
@@ -373,9 +373,6 @@ def context(cu: CurrentUser, pi_in: str | None) -> dict:
         },
         "lines": lines,
         "push": push_status(pi, facs),
-        "batches": delivery.list_batches(cu, None, pi, None, None, "DELIVERY", None, None, util.Page.of(1, 100))[
-            "items"
-        ],
     }
 
 

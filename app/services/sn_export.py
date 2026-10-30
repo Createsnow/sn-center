@@ -166,15 +166,30 @@ def items(
     bill_seq: int | None = None,
     material: str | None = None,
     q: str | None = None,
+    sn_from: str | None = None,
+    sn_to: str | None = None,
 ) -> dict:
     """明细：逐枚列出该单据的全部已分配号（不按号段合并），按单据序号、流水排序，与下载文件的行顺序一致。
-    可只看一个物料行（bill_seq + material），q 按完整 SN 模糊匹配。单据级的字段（组织、客户、PI、单据）
+    可只看一个物料行（bill_seq + material）或一个物料编码（只给 material），q 按完整 SN 模糊匹配；
+    sn_from / sn_to 为 SN 起止号（含两端，可只给一端）：按号的流水（流水归属 PI + 十进制流水）取范围，
+    起止号须是该单据已分配的号，否则没有结果。单据级的字段（组织、客户、PI、单据）
     明细顶部显示一次，每枚只带各不相同的：物料行、进制、进制 / 十进制流水、流水归属（转入号注明）、状态、
     交付方式、交付批次、暂停。"""
     p, _b, where, args = _bill_where(cu, factory, pi, bill)
     if bill_seq is not None:
         where += " AND i.bill_seq = %s AND i.material_code = %s"
         args += [bill_seq, util.trim(material)]
+    elif not util.blank(material):
+        where += " AND i.material_code = %s"
+        args.append(util.trim(material))
+    for sn, op in ((sn_from, ">="), (sn_to, "<=")):
+        if util.blank(sn):
+            continue
+        at = db.one("SELECT i.seq_pi_no, i.seq_dec FROM sn_item i" + where + " AND i.sn = %s", *args, sn.strip())
+        if at is None:
+            return util.page_result([], 0, page)
+        where += f" AND (i.seq_pi_no, i.seq_dec) {op} (%s, %s)"
+        args += [at["seq_pi_no"], at["seq_dec"]]
     if not util.blank(q):
         where += " AND i.sn LIKE %s"
         args.append(util.like_any(q.strip()))

@@ -442,11 +442,10 @@
     "suspended": "Tạm dừng {n}",
     "applying": "Đang xin chuyển {n}",
     "download": "Tải {f}",
-    "allTab": "Tất cả {n}",
-    "lineTab": "#{seq} · {m} · đính kèm {a} · chiều dài {l} · {n} SN",
     "groupTitle": "Vật tư {m}",
     "groupMeta": "Hạng mục đính kèm {a} · chiều dài {l} · {n} SN",
-    "searchSn": "Tìm SN đầy đủ",
+    "snFrom": "SN bắt đầu",
+    "snTo": "SN kết thúc",
     "lineNo": "STT",
     "seqOf": "tuần tự thuộc {pi}"
   },

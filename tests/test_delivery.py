@@ -45,6 +45,9 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
     w.push()
     batches = sql.all("SELECT * FROM sn_delivery_batch WHERE pi_no = %s ORDER BY id", pi)
     assert [b["qty"] for b in batches] == [5, 5, 2]
+    asc = ok(w.api.get(f"/api/delivery/batches?pi={pi}&batch_type=DELIVERY&asc=1&page_size=2", w.admin))
+    assert asc["total"] == 3, "依次分页"
+    assert [x["batch_no"] for x in asc["items"]] == [b["batch_no"] for b in batches[:2]]
     assert len({b["batch_no"] for b in batches}) == 3
     assert {b["result"] for b in batches} == {"SUCCESS"}
     assert {b["confirm_method"] for b in batches} == {"RECEIPT"}

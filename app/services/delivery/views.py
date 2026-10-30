@@ -21,7 +21,9 @@ def list_batches(
     result: str | None,
     transfer_no: str | None,
     page: util.Page,
+    oldest_first: bool = False,
 ) -> dict:
+    """oldest_first：按建立先后排（SN 分配页的推送进度依次列出批次）；默认最新的在前。"""
     fsql, fargs = factories.scope_sql(cu.read_factories(factory))
     where = " WHERE 1=1" + fsql
     args = list(fargs)
@@ -41,9 +43,9 @@ def list_batches(
             where += f" AND {col} = %s"
             args.append(util.trim(v))
     total = db.count("SELECT COUNT(*) FROM sn_delivery_batch" + where, *args)
+    order = "created_at, id" if oldest_first else "created_at DESC, id DESC"
     rows = db.all(
-        f"SELECT {', '.join(BATCH_FIELDS)} FROM sn_delivery_batch{where} ORDER BY created_at DESC, id DESC LIMIT %s, "
-        "%s",
+        f"SELECT {', '.join(BATCH_FIELDS)} FROM sn_delivery_batch{where} ORDER BY {order} LIMIT %s, %s",
         *args,
         page.offset,
         page.size,

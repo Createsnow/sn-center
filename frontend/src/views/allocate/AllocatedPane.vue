@@ -23,19 +23,23 @@
     <el-pagination v-if="list.state.total > list.state.pageSize" class="pager" small layout="total, prev, pager, next" :total="list.state.total"
       :page-size="list.state.pageSize" :current-page="list.state.page" @current-change="list.load" />
 
-    <!-- 明细：所选单据逐枚列出全部 SN（进制、进制流水、十进制流水），可按物料行筛选、搜索 SN -->
+    <!-- 明细：所选单据逐枚列出全部 SN（进制、进制流水、十进制流水），可按物料编码、SN 起止号筛选 -->
     <section v-if="cur" class="detail">
       <div class="toolbar">
         <b>{{ cur.bill_no }}</b>
         <el-tag effect="plain" size="small">{{ cur.factory_code }} {{ nameOf(cur.factory_code) }}<template v-if="cur.customer_code"> · {{ cur.customer_code }}</template></el-tag>
-        <el-select v-model="lineKey" v-loading="linesLoading" size="small" class="w-line" @change="sns.load(1)">
-          <el-option :value="ALL" :label="t('export.allTab', { n: num(cur.qty) })" />
-          <el-option v-for="l in lines" :key="keyOfLine(l)" :value="keyOfLine(l)" :label="lineLabel(l)" />
-        </el-select>
         <span class="sp" />
-        <el-input v-model="snQ" size="small" class="w200" :placeholder="t('export.searchSn')" clearable prefix-icon="Search"
-          @keyup.enter="sns.load(1)" @clear="sns.load(1)" />
         <el-button size="small" type="primary" :loading="busy === keyOf(cur)" @click="download(cur)">{{ t("export.download", { f: "xlsx" }) }}</el-button>
+      </div>
+      <div class="toolbar">
+        <el-select v-model="material" v-loading="linesLoading" size="small" class="w-mat" :placeholder="t('common.material')" clearable @change="sns.load(1)">
+          <el-option v-for="mc in materials" :key="mc" :value="mc" :label="mc" />
+        </el-select>
+        <el-input v-model="snFrom" size="small" class="w-sn" :placeholder="t('export.snFrom')" clearable @keyup.enter="sns.load(1)" @clear="sns.load(1)" />
+        <span class="muted">~</span>
+        <el-input v-model="snTo" size="small" class="w-sn" :placeholder="t('export.snTo')" clearable @keyup.enter="sns.load(1)" @clear="sns.load(1)" />
+        <el-button size="small" @click="sns.load(1)">{{ t("common.search") }}</el-button>
+        <el-button size="small" link type="primary" @click="resetFilter">{{ t("common.reset") }}</el-button>
       </div>
 
       <el-table v-loading="sns.state.loading" :data="snRows" size="small" :span-method="spanGroup" :row-class-name="groupClass" :empty-text="t('common.empty')">
@@ -162,27 +166,33 @@ type GroupRow = LineRow & { group: true };
 const cur = ref<BillRow | null>(null);
 const lines = ref<LineRow[]>([]);
 const linesLoading = ref(false);
-/** 物料行筛选：ALL = 全部，否则为「单据序号|物料编码」（下拉框不认空字符串作选项值）。 */
-const ALL = "*";
-const lineKey = ref(ALL);
-const snQ = ref("");
+/** 筛选：物料编码（空 = 全部）、SN 起止号（含两端，可只填一端；须是本单据已分配的号）。 */
+const material = ref("");
+const snFrom = ref("");
+const snTo = ref("");
 const keyOfLine = (l: { bill_seq: number; material_code: string }) => `${l.bill_seq}|${l.material_code}`;
-const lineLabel = (l: LineRow) =>
-  t("export.lineTab", { seq: l.bill_seq, m: l.material_code || "—", a: l.attach_no || "—", l: l.length || "—", n: num(l.qty) });
+/** 本单据的物料编码（下拉选项）。 */
+const materials = computed(() => [...new Set(lines.value.map((l) => l.material_code).filter(Boolean))]);
+function resetFilter() {
+  material.value = "";
+  snFrom.value = "";
+  snTo.value = "";
+  sns.load(1);
+}
 
 /** 明细逐枚列出该单据的全部 SN（不按号段合并），顺序同下载文件；可只看一个物料行、按完整 SN 搜索。 */
 const sns = usePaged<SnRow>((q) => {
   const d = cur.value!;
-  const [seq, ...mat] = lineKey.value !== ALL ? lineKey.value.split("|") : [];
   return api.exportItems({
     ...q, factory_code: d.factory_code, pi: d.pi_no, bill_no: d.bill_no,
-    bill_seq: seq, material: seq === undefined ? undefined : mat.join("|"), q: snQ.value.trim(),
+    material: material.value || undefined, sn_from: snFrom.value.trim(), sn_to: snTo.value.trim(),
   });
 }, 100);
 
 /** 看全部且有多个物料行时，每遇到新的物料行插一行分组标题：#序号 物料 附件项次 · 米数 · 枚数。 */
 const snRows = computed<(SnRow | GroupRow)[]>(() => {
-  if (lineKey.value !== ALL || lines.value.length < 2) return sns.items.value;
+  // 当前筛选下只有一个物料行时不插分组标题
+  if (lines.value.filter((l) => !material.value || l.material_code === material.value).length < 2) return sns.items.value;
   const out: (SnRow | GroupRow)[] = [];
   let prev = "";
   for (const r of sns.items.value) {
@@ -217,8 +227,9 @@ async function open(row: BillRow | null, force = false) {
   }
   cur.value = row;
   lines.value = [];
-  lineKey.value = ALL;
-  snQ.value = "";
+  material.value = "";
+  snFrom.value = "";
+  snTo.value = "";
   if (!row) return;
   sns.load(1);
   linesLoading.value = true;
@@ -248,8 +259,8 @@ defineExpose({ load });
 <style scoped>
 .ap { display: flex; flex-direction: column; gap: 12px; }
 .ml { margin-left: 6px; }
-.w200 { width: 200px; }
-.w-line { width: 300px; }
+.w-mat { width: 180px; }
+.w-sn { width: 200px; }
 .detail { border: 1px solid var(--el-border-color-lighter); border-radius: 8px; padding: 10px 12px; }
 .toolbar { align-items: center; flex-wrap: wrap; }
 .grp { display: inline-flex; align-items: center; gap: 10px; white-space: nowrap; }

@@ -1,4 +1,4 @@
-"""SN 导出（F-14，页面在 SN 分配页的「已分配单据」页签）：已分配的号按「生产组织 + PI + 单据」查看与下载，
+"""SN 导出（F-14，页面在 SN 分配页的「已分配」页签）：已分配的号按「生产组织 + PI + 单据」查看与下载，
 不看推送、拉取状态；只读，全部页面账户可用（按授权的生产组织；审计员在 SN 查询导出）。"""
 
 from fastapi import APIRouter
@@ -47,7 +47,7 @@ def export_segments(
 @router.get(
     "/items",
     summary="明细：逐枚列出该单据的全部已分配号（不按号段合并），顺序同下载文件；bill_seq + material 只看一个物料行，"
-    "q 按完整 SN 模糊匹配",
+    "只给 material 看该物料编码的号；sn_from / sn_to 按 SN 起止号（含两端）；q 按完整 SN 模糊匹配",
 )
 def export_items(
     cu: UserDep,
@@ -57,10 +57,14 @@ def export_items(
     bill_seq: OptInt = None,
     material: str | None = None,
     q: str | None = None,
+    sn_from: str | None = None,
+    sn_to: str | None = None,
     page: OptInt = None,
     page_size: OptInt = None,
 ) -> dict:
-    return sn_export.items(cu, factory_code, pi, bill_no, page_of(page, page_size), bill_seq, material, q)
+    return sn_export.items(
+        cu, factory_code, pi, bill_no, page_of(page, page_size), bill_seq, material, q, sn_from, sn_to
+    )
 
 
 @router.get("/file", summary="下载一张单据的已分配号 xlsx（列：PI、单据、物料编码、SN）；不改状态")
