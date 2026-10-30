@@ -11,7 +11,9 @@
         <el-input v-model="q" clearable :placeholder="t('rules.search')" prefix-icon="Search" @keyup.enter="search" @clear="search" />
         <el-button @click="search">{{ t("common.search") }}</el-button>
       </div>
-      <el-table v-loading="loading" :data="paged" size="small" row-key="rule.id" :empty-text="t('common.empty')">
+      <!-- 点规则行在右侧抽屉看示例号；操作列的按钮不触发 -->
+      <el-table v-loading="loading" :data="paged" size="small" row-key="rule.id" row-class-name="clickable" highlight-current-row
+        :empty-text="t('common.empty')" @row-click="openDetail">
         <el-table-column :label="t('rules.name')" min-width="160" show-overflow-tooltip><template #default="{ row }">{{ row.rule.rule_name }}</template></el-table-column>
         <el-table-column :label="t('rules.version')" width="64"><template #default="{ row }">v{{ row.rule.current_version }}</template></el-table-column>
         <el-table-column label="PI" min-width="120" show-overflow-tooltip>
@@ -36,12 +38,14 @@
         </el-table-column>
         <el-table-column :label="t('common.actions')" width="130" fixed="right">
           <template #default="{ row }">
+            <span @click.stop>
             <el-tooltip :disabled="editable(row)" :content="t('rules.globalReadonly')">
               <span><el-button link type="primary" :disabled="!editable(row)" @click="openEdit(row)">{{ t("common.edit") }}</el-button></span>
             </el-tooltip>
             <el-tooltip :disabled="editable(row) && deletable(row)" :content="editable(row) ? t('rules.deleteBlocked') : t('rules.globalReadonly')">
               <span class="ml"><el-button link type="danger" :disabled="!editable(row) || !deletable(row)" @click="remove(row)">{{ t("common.delete") }}</el-button></span>
             </el-tooltip>
+            </span>
           </template>
         </el-table-column>
       </el-table>
@@ -130,6 +134,37 @@
         <el-button type="primary" :loading="saving" @click="save">{{ t("common.save") }}</el-button>
       </template>
     </el-dialog>
+
+    <!-- 规则示例号：当前版本的前 5 个和最大号，米数、产品单位用示例值 -->
+    <el-drawer :model-value="!!detail.row" size="900px" @close="detail.row = null">
+      <template #header>
+        <div v-if="detail.row" class="dh">
+          <b>{{ detail.row.rule.rule_name }}</b>
+          <el-tag size="small" effect="plain">v{{ detail.row.rule.current_version }}</el-tag>
+          <span v-if="piOf(detail.row)" class="muted">PI {{ piOf(detail.row) }}</span>
+        </div>
+      </template>
+      <template v-if="detail.row">
+        <div v-if="detail.row.current" class="muted small mb">{{ detail.row.current.format }}</div>
+        <el-table v-loading="detail.loading" :data="detail.items" size="small" :empty-text="detail.error || t('common.empty')">
+          <el-table-column :label="t('rules.sampleSn')" min-width="200">
+            <template #default="{ row }"><span class="sn-mono" :class="{ max: row.max }">{{ row.sn }}</span></template>
+          </el-table-column>
+          <el-table-column :label="t('rules.prefix')" min-width="100" show-overflow-tooltip>
+            <template #default="{ row }"><span class="sn-mono">{{ row.prefix }}</span></template>
+          </el-table-column>
+          <el-table-column :label="t('rules.seqNo')" min-width="100"><template #default="{ row }"><span class="sn-mono">{{ row.seq_text }}</span></template></el-table-column>
+          <el-table-column :label="t('rules.seqDigits')" width="80"><template #default="{ row }">{{ row.seq_len }}</template></el-table-column>
+          <el-table-column :label="t('rules.base')" width="64"><template #default="{ row }">{{ row.base }}</template></el-table-column>
+          <el-table-column :label="t('common.length')" width="80"><template #default="{ row }">{{ row.length || "—" }}</template></el-table-column>
+          <el-table-column :label="t('common.unit')" width="80"><template #default="{ row }">{{ row.unit || "—" }}</template></el-table-column>
+          <el-table-column :label="t('rules.suffixCol')" min-width="90" show-overflow-tooltip>
+            <template #default="{ row }"><span v-if="row.suffix" class="sn-mono">{{ row.suffix }}</span><span v-else class="muted">—</span></template>
+          </el-table-column>
+        </el-table>
+        <div class="muted small mt">{{ t("rules.detailNote") }}</div>
+      </template>
+    </el-drawer>
   </div>
 </template>
 
@@ -226,6 +261,34 @@ function openEdit(row: any) {
   dialog.value = true;
 }
 
+/** 版本的编码参数（与编辑表单提交的一致），用于取示例号。 */
+const specOf = (c: any) => ({
+  prefix: c.prefix, suffix: c.suffix, base: c.base, seq_len: c.seq_len, charset: c.charset, with_length: !!c.with_length,
+  length_pad: c.length_pad || 0, sep_before: c.length_sep_before || "", sep_after: c.length_sep_after || "", with_unit: !!c.with_unit,
+});
+
+/** 点规则行：右侧抽屉列出当前版本的示例号（前 5 个和最大号），各行拆出前缀、流水号、米数、产品单位、后缀。 */
+const detail = reactive({ row: null as any, loading: false, items: [] as any[], error: "" });
+async function openDetail(row: any) {
+  Object.assign(detail, { row, items: [], error: "" });
+  const c = row.current;
+  if (!c) return;
+  detail.loading = true;
+  try {
+    const r: any = await api.previewRule(specOf(c));
+    if (detail.row !== row) return; // 等结果时已改看别的规则
+    const last = r.samples.length - 1;
+    detail.items = r.samples.map((s: any, i: number) => ({
+      ...s, prefix: c.prefix, suffix: c.suffix, base: c.base, seq_len: c.seq_len, max: i === last && r.max_seq > 5,
+      length: c.with_length ? r.sample_length : "", unit: c.with_unit ? r.sample_unit : "",
+    }));
+  } catch (e: any) {
+    if (detail.row === row) detail.error = e?.message || "";
+  } finally {
+    if (detail.row === row) detail.loading = false;
+  }
+}
+
 const spec = () => ({
   prefix: form.prefix, suffix: form.suffix, base: form.base, seq_len: form.seq_len, charset: form.charset, with_length: form.with_length,
   length_pad: form.length_pad || 0, sep_before: form.sep_before, sep_after: form.sep_after, with_unit: form.with_unit,
@@ -289,6 +352,11 @@ onMounted(load);
 <style scoped>
 .ml { margin-left: 6px; }
 .mb { margin-bottom: 12px; }
+.mt { margin-top: 10px; }
+.small { font-size: 12px; }
+.dh { display: flex; align-items: center; gap: 8px; }
+.max { color: var(--el-color-warning); }
+:deep(.clickable) { cursor: pointer; }
 .hint { width: 100%; line-height: 1.5; margin-top: 2px; }
 .w160 { width: 160px; }
 .samples { display: flex; flex-direction: column; gap: 4px; }
