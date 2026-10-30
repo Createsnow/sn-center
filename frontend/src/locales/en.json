@@ -311,6 +311,7 @@
       "PROCESSING": "To handle",
       "ALLOCATED": "Allocated"
     },
+    "snDetail": "SN details · {bill}",
     "pickBill": "Pick a bill on the left",
     "toGenerate": "{n} more to generate · go to generation",
     "unbatched": "To push",
@@ -342,7 +343,6 @@
     "allocConfirmPush": "Allocate {n} SNs? The MES part will be pushed in {m} batches automatically.",
     "allocDone": "{n} SNs allocated",
     "allocSkipped": "{n} bills were skipped (frozen, unapproved or suspended)",
-    "noAllocated": "No SNs of this PI are allocated yet",
     "tabPush": "Push progress",
     "pushProgress": "Push {i} / {n} · {qty} pushed",
     "waitingReceipt": "Delivered, awaiting MES receipt",
@@ -439,10 +439,6 @@
   },
   "export": {
     "qty": "SNs",
-    "suspended": "{n} suspended",
-    "applying": "{n} transfer pending",
-    "groupTitle": "Material {m}",
-    "groupMeta": "Attachment item {a} · length {l} · {n} SNs",
     "snFrom": "From SN",
     "snTo": "To SN",
     "lineNo": "No.",

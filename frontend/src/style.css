@@ -27,6 +27,9 @@
 .page--fill { height: 100%; min-height: 0; }
 .page--fill .fill { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .page--fill .fill-body { flex: 1; min-height: 240px; position: relative; }
+/* 定高行表格：配合 useFitRows，每页条数正好放满容器，表格与页面都不出滚动条 */
+.fit-table .el-table__cell { height: 36px; padding: 0 !important; }
+.fit-table .cell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 22px; }
 @media (max-width: 1199px) {
   .page--fill { height: auto; }
   .page--fill .fill-body { flex: none; height: 520px; }

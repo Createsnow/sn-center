@@ -311,6 +311,7 @@
       "PROCESSING": "待处理",
       "ALLOCATED": "已分配"
     },
+    "snDetail": "SN 明细 · {bill}",
     "pickBill": "从左侧选择一张单据",
     "toGenerate": "还可生成 {n} 枚 · 去生成",
     "unbatched": "待推送",
@@ -342,7 +343,6 @@
     "allocConfirmPush": "确认分配 {n} 枚？对接 MES 的部分将自动推送 {m} 次。",
     "allocDone": "已分配 {n} 枚",
     "allocSkipped": "{n} 张单据被跳过（冻结、反审核或暂停交付）",
-    "noAllocated": "这张 PI 还没有已分配的号",
     "tabPush": "推送进度",
     "pushProgress": "第 {i} / {n} 次 · 已推送 {qty} 枚",
     "waitingReceipt": "已送达，等待 MES 回执",
@@ -439,10 +439,6 @@
   },
   "export": {
     "qty": "SN 枚数",
-    "suspended": "暂停 {n}",
-    "applying": "申请中 {n}",
-    "groupTitle": "物料 {m}",
-    "groupMeta": "附件项次 {a} · 米数 {l} · {n} 枚",
     "snFrom": "SN 起始号",
     "snTo": "SN 截止号",
     "lineNo": "行号",

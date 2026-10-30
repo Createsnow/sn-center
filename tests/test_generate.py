@@ -761,7 +761,7 @@ def test_generate_page_sorts_like_orders_page(w, api):
     assert [x["bill_no"] for x in p["items"]] == [a, b], "排号按所给单据顺序（页面默认传单据编号从小到大）"
 
 
-def test_allocation_bill_list_driven_by_sns(w, api):
+def test_allocation_bill_list_driven_by_sns(w, api, sql):
     """分配页左侧按单据列出（按号取）：单据移出快照仍列出；只按 PI、单据编号筛选；SN 枚数与状态（待分配 / 已分配）。"""
     org = w.org(uid("O")[:10])
     _, pi, b1 = mk(w, ("M1", 3), org=org, bill="A" + uid("MO"))
@@ -777,9 +777,13 @@ def test_allocation_bill_list_driven_by_sns(w, api):
 
     assert rows("TO_ALLOCATE") == {b1: (pi, 3, "PENDING"), b2: (pi, 2, "PENDING")}, "移出快照的单据有号仍列出"
     assert rows("TO_ALLOCATE", b2) == {b2: (pi, 2, "PENDING")}, "可按单据编号筛选"
+    # 生成在一分钟前：分配后 b1 的处理时间更近
+    sql.exec("UPDATE sn_item SET updated_at = updated_at - INTERVAL 1 MINUTE WHERE pi_no = %s", pi)
     w.allocate(pi, lines=[(b1, 1)])
     assert rows("TO_ALLOCATE") == {b2: (pi, 2, "PENDING")}
     assert rows("ALLOCATED") == {b1: (pi, 3, "ALLOCATED")}, "未对接 MES：分配即已分配"
+    r = ok(api.get(f"/api/allocation/bills?q={pi}&page_size=1", w.admin))
+    assert (r["total"], [x["bill_no"] for x in r["items"]]) == (2, [b1]), "分页；处理时间近的在前"
     ctx = ok(api.get(f"/api/allocation/context?pi={pi}", w.admin))
     got = {(x["bill_no"], x["qty"], x["pending_alloc"], x["bill_state"]) for x in ctx["lines"]}
     assert got == {(b1, 3, 0, "ALLOCATED"), (b2, 2, 2, "PENDING")}, "详情列出本 PI 全部单据的物料行与状态"

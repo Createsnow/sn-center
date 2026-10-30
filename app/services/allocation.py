@@ -27,8 +27,6 @@ ALLOCATED = "ALLOCATED"
 BILL_PENDING = "PENDING"
 BILL_PROCESSING = "PROCESSING"
 BILL_ALLOCATED = "ALLOCATED"
-#: 左侧列表一次最多取的单据数
-LIST_LIMIT = 500
 #: 推送失败或重试用尽仍未确认的批次（与 workbench.item_stats 的「推送中断」同一口径）
 _BROKEN = "(d.result = 'FAILED' OR (d.result = 'UNCONFIRMED' AND d.push_state = 'EXHAUSTED'))"
 
@@ -228,10 +226,11 @@ def bill_state(pending: int, to_push: int) -> str:
     return BILL_PROCESSING if to_push else BILL_ALLOCATED
 
 
-def bills(cu: CurrentUser, q: str | None, tab: str | None) -> dict:
-    """分配页左侧：按号取单据（号现在挂的 PI + 单据），每行 SN 枚数与状态；q 只按 PI、单据编号匹配。
-    tab：TO_ALLOCATE = 待分配、待处理；ALLOCATED = 已分配；不传为全部。按单据编号新的在前，最多 LIST_LIMIT 张。
-    普通操作员只看授权组织的号。返回（行，是否截断，上方汇总：待分配枚数、待推送（未入批）枚数）。"""
+def bills(cu: CurrentUser, q: str | None, tab: str | None, page: util.Page) -> dict:
+    """分配页左侧：按号取单据（号现在挂的 PI + 单据），每行 SN 枚数与状态，分页列出全部单据；q 只按 PI、单据编号匹配。
+    tab：TO_ALLOCATE = 待分配、待处理；ALLOCATED = 已分配；不传为全部。
+    按处理时间（单据下的号最近一次变动：生成、分配、推送、回执、转移等）越近越前。
+    普通操作员只看授权组织的号。返回分页结果，另带上方汇总：待分配枚数、待推送（未入批）枚数。"""
     facs = cu.read_factories(None)
     isql, iargs = factories.item_scope_sql(facs)
     where, args = " WHERE 1=1" + isql, list(iargs)
@@ -253,18 +252,19 @@ def bills(cu: CurrentUser, q: str | None, tab: str | None) -> dict:
         having = f" HAVING {open_}"
     elif t == ALLOCATED:
         having = f" HAVING NOT ({open_})"
-    rows = db.all(
+    grouped = (
         "SELECT pi_no, bill_no, COUNT(*) qty, SUM(status = 'PENDING_ALLOC') pending, SUM(status = 'TO_PUSH') to_push, "
-        "SUM(suspend IS NOT NULL) suspended FROM sn_item"
+        "SUM(suspend IS NOT NULL) suspended, MAX(updated_at) handled_at FROM sn_item"
         + where
         + " GROUP BY pi_no, bill_no"
         + having
-        + " ORDER BY bill_no DESC, pi_no LIMIT %s",
-        *args,
-        LIST_LIMIT + 1,
+    )
+    total = db.count("SELECT COUNT(*) FROM (" + grouped + ") g", *args)
+    rows = db.all(
+        grouped + " ORDER BY handled_at DESC, bill_no DESC, pi_no LIMIT %s, %s", *args, page.offset, page.size
     )
     items = []
-    for r in rows[:LIST_LIMIT]:
+    for r in rows:
         pending, to_push = int(r["pending"] or 0), int(r["to_push"] or 0)
         items.append(
             {
@@ -275,6 +275,7 @@ def bills(cu: CurrentUser, q: str | None, tab: str | None) -> dict:
                 "to_push": to_push,
                 "suspended": int(r["suspended"] or 0),
                 "state": bill_state(pending, to_push),
+                "handled_at": util.jv(r["handled_at"]),
             }
         )
     s = db.one(
@@ -283,10 +284,8 @@ def bills(cu: CurrentUser, q: str | None, tab: str | None) -> dict:
         "FROM sn_item WHERE status IN ('PENDING_ALLOC', 'TO_PUSH')" + isql,
         *iargs,
     )
-    return {
-        "items": items,
-        "capped": len(rows) > LIST_LIMIT,
-        "summary": {"pending_alloc": int(s["pending"] or 0), "unbatched": int(s["unbatched"] or 0)},
+    return util.page_result(items, total, page) | {
+        "summary": {"pending_alloc": int(s["pending"] or 0), "unbatched": int(s["unbatched"] or 0)}
     }
 
 

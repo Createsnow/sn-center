@@ -311,6 +311,7 @@
       "PROCESSING": "Chờ xử lý",
       "ALLOCATED": "Đã phân bổ"
     },
+    "snDetail": "Chi tiết SN · {bill}",
     "pickBill": "Chọn một chứng từ ở bên trái",
     "toGenerate": "Còn tạo được {n} · đến trang tạo",
     "unbatched": "Chờ đẩy",
@@ -342,7 +343,6 @@
     "allocConfirmPush": "Phân bổ {n} SN? Phần kết nối MES sẽ tự đẩy {m} lần.",
     "allocDone": "Đã phân bổ {n} SN",
     "allocSkipped": "{n} chứng từ bị bỏ qua (đóng băng, bỏ duyệt hoặc tạm dừng giao)",
-    "noAllocated": "PI này chưa có SN đã phân bổ",
     "tabPush": "Tiến độ đẩy",
     "pushProgress": "Lần {i} / {n} · đã đẩy {qty}",
     "waitingReceipt": "Đã gửi, chờ biên nhận MES",
@@ -439,10 +439,6 @@
   },
   "export": {
     "qty": "Số SN",
-    "suspended": "Tạm dừng {n}",
-    "applying": "Đang xin chuyển {n}",
-    "groupTitle": "Vật tư {m}",
-    "groupMeta": "Hạng mục đính kèm {a} · chiều dài {l} · {n} SN",
     "snFrom": "SN bắt đầu",
     "snTo": "SN kết thúc",
     "lineNo": "STT",
