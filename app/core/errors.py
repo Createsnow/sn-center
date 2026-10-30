@@ -159,10 +159,6 @@ class ErrorCode(Enum):
     TR_SN_NOT_TRANSFERABLE = (400, "SN {sn} 当前不能转移：{reason}")
     TR_SAME_TARGET = (400, "转入目标与来源完全相同")
     TR_NOT_FOUND = (404, "转移单不存在")
-    TR_NOT_PENDING = (409, "转组织申请 {transfer_no} 已处理，不能重复操作")
-    TR_TARGET_DISABLED = (409, "转入生产组织 {factory} 在金蝶已禁用，不能确认")
-    TR_WITHDRAW_FORBIDDEN = (403, "只能撤回授权组织提交的申请")
-    TR_CONCURRENT = (409, "部分号的状态刚刚变化，请刷新后重试")
     TR_LENGTH_MISMATCH = (400, "目标物料米数 {target} 与号上的米数 {current} 不同，不能转移")
     TR_TARGET_BILL_INVALID = (400, "目标单据 {bill_no} 须在快照中且有 PI；转单时不能是来源单据")
     TR_TARGET_LINE_REQUIRED = (

@@ -1,27 +1,27 @@
-"""转单（F-15）、转组织（F-16）与记录页（F-17）：系统管理员、普通操作员（涉及的组织须在授权范围内）。"""
+"""转单（F-15）、转组织（F-16）与记录页（F-17）：系统管理员、普通操作员直接转移，原因必填
+（普通操作员的来源须在授权范围内，目标不限）。"""
 
 from fastapi import APIRouter
 
 from app.api.deps import OperatorDep, download, page_of
 from app.schemas.common import OptInt
-from app.schemas.transfer import NoteIn, TransferIn
+from app.schemas.transfer import TransferIn
 from app.services import transfers
 
 router = APIRouter(prefix="/transfers", tags=["transfers"])
 
 
-@router.get("", summary="转移记录：转单与转组织合并，kind = BILL / ORG；status 同转组织（转单记 APPROVED）")
+@router.get("", summary="转移记录：转单与转组织合并，kind = BILL / ORG")
 def all_list(
     cu: OperatorDep,
     kind: str | None = None,
-    status: str | None = None,
     factory_code: str | None = None,
     pi: str | None = None,
     bill_no: str | None = None,
     page: OptInt = None,
     page_size: OptInt = None,
 ) -> dict:
-    return transfers.list_all(cu, kind, status, factory_code, pi, bill_no, page_of(page, page_size))
+    return transfers.list_all(cu, kind, factory_code, pi, bill_no, page_of(page, page_size))
 
 
 @router.get(
@@ -38,7 +38,7 @@ def bill_preview(body: TransferIn, cu: OperatorDep) -> dict:
     return transfers.preview(cu, transfers.KIND_BILL, body.req())
 
 
-@router.post("/bill", summary="转单：范围为整张单据、单据 + 物料或单枚 / 连续号段，改挂到目标单据的物料行，原因必填")
+@router.post("/bill", summary="转单：整张单据、单据 + 物料或单枚 / 号段改挂到目标物料行，原因必填；操作员限来源组织")
 def bill_transfer(body: TransferIn, cu: OperatorDep) -> dict:
     return transfers.transfer_bill(cu, body.req())
 
@@ -70,30 +70,21 @@ def org_candidates(body: TransferIn, cu: OperatorDep) -> dict:
     return transfers.preview(cu, transfers.KIND_ORG, body.req())
 
 
-@router.post(
-    "/org",
-    summary="普通操作员提交转组织申请（来源组织须在授权范围内，目标组织不限），由系统管理员或对来源、目标组织都有授权的普通操作员确认",
-)
-def org_apply(body: TransferIn, cu: OperatorDep) -> dict:
-    return transfers.apply(cu, body.req())
-
-
-@router.post("/org/direct", summary="直接转组织（不经申请），原因必填；普通操作员的来源、目标组织都须在授权范围内")
+@router.post("/org/direct", summary="转组织（直接执行），原因必填；普通操作员的来源组织须在授权范围内，目标组织不限")
 def org_direct(body: TransferIn, cu: OperatorDep) -> dict:
     return transfers.direct(cu, body.req())
 
 
-@router.get("/org", summary="转组织单：status = PENDING / APPROVED / REJECTED / WITHDRAWN；返回待处理数")
+@router.get("/org", summary="转组织单列表")
 def org_list(
     cu: OperatorDep,
-    status: str | None = None,
     factory_code: str | None = None,
     pi: str | None = None,
     bill_no: str | None = None,
     page: OptInt = None,
     page_size: OptInt = None,
 ) -> dict:
-    return transfers.list_org(cu, status, factory_code, pi, bill_no, page_of(page, page_size))
+    return transfers.list_org(cu, factory_code, pi, bill_no, page_of(page, page_size))
 
 
 @router.get("/org/{id:int}")
@@ -104,21 +95,6 @@ def org_get(id: int, cu: OperatorDep) -> dict:
 @router.get("/org/{id}/items")
 def org_items(id: int, cu: OperatorDep, page: OptInt = None, page_size: OptInt = None) -> dict:
     return transfers.items(cu, transfers.KIND_ORG, id, page_of(page, page_size))
-
-
-@router.post("/org/{id}/approve")
-def org_approve(id: int, body: NoteIn, cu: OperatorDep) -> dict:
-    return transfers.approve(cu, id, body.note)
-
-
-@router.post("/org/{id}/reject")
-def org_reject(id: int, body: NoteIn, cu: OperatorDep) -> dict:
-    return transfers.reject(cu, id, body.note)
-
-
-@router.post("/org/{id}/withdraw")
-def org_withdraw(id: int, cu: OperatorDep) -> dict:
-    return transfers.withdraw(cu, id)
 
 
 @router.get("/org/{id}/out-list", summary="转出号清单（完整 SN、流水、原批次）：来源现场据此作废旧标签")

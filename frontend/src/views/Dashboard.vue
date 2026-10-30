@@ -46,8 +46,6 @@
               <el-icon><component :is="s.icon" /></el-icon><span>{{ t(s.title) }}</span>
             </el-button>
           </div>
-          <el-alert v-if="(data?.pending_transfers || 0) > 0" type="warning" :closable="false" show-icon class="mt"
-            :title="t('dashboard.pendingTransfers', { n: data?.pending_transfers })" />
           <el-alert v-if="(data?.order_alerts || 0) > 0" type="warning" :closable="false" show-icon class="mt"
             :title="t('dashboard.orderAlerts', { n: data?.order_alerts })" />
         </div>
@@ -174,11 +172,9 @@ const kpis = computed<Kpi[]>(() => {
   rows.push(
     { key: "TO_PUSH", label: statusLabel("TO_PUSH"), value: c.TO_PUSH },
     { key: "ALLOCATED", label: statusLabel("ALLOCATED"), value: c.ALLOCATED, to: "/allocate" },
-    { key: "APPLYING", label: statusLabel("APPLYING"), value: c.APPLYING, to: "/transfer" },
     { key: "suspended", label: t("dashboard.suspended"), value: d.suspended, alarm: true },
     { key: "interrupted", label: t("dashboard.pushInterrupted"), value: d.push_interrupted, alarm: true, to: "/query?tab=delivery" },
     { key: "pull", label: t("dashboard.pullUnconfirmed"), value: d.pull_unconfirmed, alarm: true, to: "/query?tab=delivery" },
-    { key: "transfers", label: t("dashboard.pendingTransferKpi"), value: d.pending_transfers, to: "/transfer?status=PENDING" },
     { key: "dalerts", label: t("dashboard.deliveryAlertKpi"), value: alerts, alarm: true, to: "/query?tab=alerts" },
   );
   if (store.canAct) rows.push({ key: "oalerts", label: t("dashboard.orderAlertKpi"), value: d.order_alerts, alarm: true, to: "/orders?tab=alerts" });

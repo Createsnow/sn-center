@@ -33,9 +33,9 @@ def load(cu: CurrentUser) -> dict:
     fsql, fargs = factories.scope_sql(facs)
     # 号按所在组织：待分配的号还没有组织，按所在单据的组织算
     isql, iargs = factories.item_scope_sql(facs)
-    counts = dict.fromkeys(("PENDING_ALLOC", "TO_PUSH", "ALLOCATED", "APPLYING"), 0)
+    counts = dict.fromkeys(("PENDING_ALLOC", "TO_PUSH", "ALLOCATED"), 0)
     for r in db.all(
-        "SELECT status, COUNT(*) c FROM sn_item WHERE status IN ('PENDING_ALLOC','TO_PUSH','ALLOCATED','APPLYING')"
+        "SELECT status, COUNT(*) c FROM sn_item WHERE status IN ('PENDING_ALLOC','TO_PUSH','ALLOCATED')"
         + isql
         + " GROUP BY status",
         *iargs,
@@ -52,14 +52,6 @@ def load(cu: CurrentUser) -> dict:
         cutoff,
         *fargs,
     )
-    if facs is None:
-        pending_tr = db.count("SELECT COUNT(*) FROM sn_transfer WHERE status = 'PENDING'")
-    else:
-        fr, fa = factories.scope_sql(facs, "from_factory")
-        to, ta = factories.scope_sql(facs, "to_factory")
-        pending_tr = db.count(
-            f"SELECT COUNT(*) FROM sn_transfer WHERE status = 'PENDING' AND ((1=1{fr}) OR (1=1{to}))", *fa, *ta
-        )
     alerts = {
         r["alert_type"]: int(r["n"])
         for r in db.all(
@@ -92,7 +84,6 @@ def load(cu: CurrentUser) -> dict:
         "suspended": suspended,
         "push_interrupted": interrupted,
         "pull_unconfirmed": stale_pull,
-        "pending_transfers": pending_tr,
         "delivery_alerts": alerts,
         "order_alerts": changes.open_alert_count(cu),
         "today": today,

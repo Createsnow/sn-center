@@ -11,9 +11,8 @@ export const STATUS_TYPE: Record<string, TagType> = {
   TO_PUSH: "warning",
   PUSHED: "success",
   ALLOCATED: "primary",
-  APPLYING: "danger",
 };
-export const STATUS_CODES = ["PENDING_ALLOC", "TO_PUSH", "PUSHED", "ALLOCATED", "APPLYING"];
+export const STATUS_CODES = ["PENDING_ALLOC", "TO_PUSH", "PUSHED", "ALLOCATED"];
 /** 交付批次结果：UNCONFIRMED 未确认 / SUCCESS 成功 / FAILED 失败 / VOIDED 已作废。 */
 export const BATCH_RESULT_TYPE: Record<string, TagType> = {
   UNCONFIRMED: "warning",
@@ -38,16 +37,10 @@ export const CHARSETS: Record<number, string> = {
 export const BASES = Object.keys(CHARSETS).map(Number);
 /** 可新建的页面账户角色（系统管理员只有一个，不能新建）。 */
 export const ROLE_CODES = ["operator", "auditor"];
-export const TRANSFER_STATUS_TYPE: Record<string, TagType> = {
-  PENDING: "warning",
-  APPROVED: "success",
-  REJECTED: "danger",
-  WITHDRAWN: "info",
-};
 export const AUDIT_ACTIONS = [
   "SN_GENERATE", "SN_GEN_CANCEL", "SN_REVOKE", "SN_ALLOCATE", "SN_BATCH_CREATE", "SN_PUSH", "SN_PUSH_RESUME", "SN_PULL",
   "SN_RECEIPT", "SN_BATCH_MANUAL", "SN_BATCH_VOID", "SN_ALERT_HANDLE", "SN_ACQUIRE", "SN_READ",
-  "TRANSFER_BILL", "TRANSFER_APPLY", "TRANSFER_WITHDRAW", "TRANSFER_APPROVE", "TRANSFER_REJECT", "TRANSFER_DIRECT",
+  "TRANSFER_BILL", "TRANSFER_DIRECT",
   "ORDER_SYNC", "ORDER_ATTACH_FILL", "ORDER_LENGTH_FILL", "ORDER_UNIT_FILL", "ORDER_ALERT", "ORDER_ALERT_HANDLE", "ORDER_SUSPEND", "ORDER_RESUME",
   "RULE_CREATE", "RULE_UPDATE", "RULE_VERSION", "RULE_RENAME", "RULE_CATEGORY", "RULE_PI_BIND", "RULE_PI_UNBIND",
   "RULE_LINE_SELECT", "LINE_CONFIG_REVOKE", "RULE_PREFIX_VERSION", "RULE_DELETE",
@@ -67,7 +60,6 @@ function label(prefix: string, code: string | null | undefined): string {
 export const statusLabel = (c?: string | null) => label("status", c);
 export const roleLabel = (c?: string | null) => label("roles", c);
 export const actionLabel = (c?: string | null) => label("actions", c);
-export const transferStatusLabel = (c?: string | null) => label("transferStatus", c);
 export const scopeLabel = (c?: string | null) => label("scope", c);
 export const deliveryModeLabel = (c?: string | null) => label("deliveryMode", c);
 export const receiptResultLabel = (c?: string | null) => label("receiptResult", c);

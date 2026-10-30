@@ -33,8 +33,8 @@ def test_export_is_read_only_and_repeatable(w, api, sql):
     org, pi, bill = ready(w, 5)
     op = w.user(emp("F"), "operator", org)
     rows = ok(api.get(f"/api/export/bills?q={pi}", op))["items"]
-    assert [(r["pi_no"], r["bill_no"], r["qty"], r["suspended"], r["applying"], r["mes_enabled"]) for r in rows] == [
-        (pi, bill, 5, 0, 0, False)
+    assert [(r["pi_no"], r["bill_no"], r["qty"], r["suspended"], r["mes_enabled"]) for r in rows] == [
+        (pi, bill, 5, 0, False)
     ]
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'ALLOCATED'", pi) == 5, "分配即已分配"
     for _ in range(2):

@@ -123,8 +123,7 @@
     "PENDING_ALLOC": "To allocate",
     "TO_PUSH": "To push",
     "PUSHED": "Pushed",
-    "ALLOCATED": "Allocated",
-    "APPLYING": "Org transfer pending"
+    "ALLOCATED": "Allocated"
   },
   "deliveryMode": {
     "PUSH": "Push",
@@ -210,12 +209,6 @@
     "MATERIAL": "By material",
     "RANGE": "Single SN / range"
   },
-  "transferStatus": {
-    "PENDING": "Pending",
-    "APPROVED": "Completed",
-    "REJECTED": "Rejected",
-    "WITHDRAWN": "Withdrawn"
-  },
   "actions": {
     "LOGIN": "Login",
     "PASSWORD_CHANGE": "Password changed",
@@ -266,10 +259,6 @@
     "SN_ALERT_HANDLE": "Delivery alert handled",
     "SN_READ": "MES read-only query",
     "TRANSFER_BILL": "Bill transfer",
-    "TRANSFER_APPLY": "Org transfer request",
-    "TRANSFER_WITHDRAW": "Org transfer withdrawn",
-    "TRANSFER_APPROVE": "Org transfer approved",
-    "TRANSFER_REJECT": "Org transfer rejected",
     "TRANSFER_DIRECT": "Direct org transfer",
     "AUDIT_ARCHIVE": "Audit archived",
     "AUDIT_ARCHIVE_PURGE": "Archived audit purged",
@@ -395,12 +384,10 @@
     "suspended": "Delivery suspended",
     "pushInterrupted": "Interrupted push batches",
     "pullUnconfirmed": "Pulled, no receipt in time",
-    "pendingTransferKpi": "Pending org transfers",
     "deliveryAlertKpi": "Delivery alerts",
     "orderAlertKpi": "Order change alerts",
     "runningJobs": "Running generation jobs",
     "totalGenerated": "Total generated",
-    "pendingTransfers": "{n} org transfer request(s) waiting",
     "orderAlerts": "{n} order change alert(s) open",
     "today": "Today",
     "todaySince": "Since {time} ({tz})",
@@ -914,13 +901,10 @@
       "ORG": "Org transfer · new production org"
     },
     "kindTip": {
-      "BILL": "For orders voided or split in Kingdee: SNs move to another production order and follow its org; SNs still to allocate may move too; effective at once.",
-      "ORG": "SNs move to another production org (may differ from the target bill's), limited to allocated SNs of the source org; transfer directly (effective at once) when both orgs are authorized, otherwise submit a request for an account authorized for both orgs to approve."
+      "BILL": "For orders voided or split in Kingdee: SNs move to another production order and follow its org; SNs still to allocate may move too. Executed directly and effective at once; a transfer reason is required.",
+      "ORG": "SNs move to another production org (may differ from the target bill's), limited to allocated SNs of the source org. Executed directly and effective at once; a transfer reason is required. Operators need the source org authorized; any target org is allowed."
     },
     "previewFirst": "Preview first, then submit once the transferable count looks right",
-    "newBill": "Bill transfer",
-    "newApply": "Request org transfer",
-    "newDirect": "Direct org transfer",
     "no": "Doc No.",
     "mode": "Mode",
     "billMode": {
@@ -928,7 +912,6 @@
       "SPLIT": "Split"
     },
     "orgMode": {
-      "APPLY": "Request",
       "DIRECT": "Direct"
     },
     "direction": {
@@ -941,16 +924,6 @@
     "target": "Target",
     "piInOut": "PI (out or in)",
     "emptyMaterial": "(no material)",
-    "targetDisabled": "Target org disabled",
-    "applied": "Requested",
-    "decided": "Decision",
-    "approve": "Approve",
-    "reject": "Reject",
-    "withdraw": "Withdraw",
-    "approveConfirm": "Approve org transfer {no} ({n} SNs)? SNs are re-attached and pushed automatically.",
-    "rejectConfirm": "Reject org transfer {no} ({n} SNs)? SNs go back to their previous status.",
-    "withdrawConfirm": "Withdraw request {no}? SNs go back to their previous status.",
-    "notePlaceholder": "Note (optional, at most 500 characters)",
     "fromBill": "Source bill",
     "toBill": "Target bill",
     "range": "Range",
@@ -961,23 +934,18 @@
     "pvOtherOrg": "Cross-org",
     "pvXo": "Transfer-out to source MES",
     "blocked": {
-      "APPLYING": "Transfer pending",
       "PENDING_ALLOC": "To allocate (not for org transfer)",
       "BATCH_PENDING": "In unconfirmed or failed batch",
       "TRANSFER_OUT_PENDING": "Transfer-out unfinished; resume it on the original org transfer first"
     },
     "genBefore": "Generated (before)",
     "genAfter": "Generated (after)",
-    "submitBill": "Transfer",
     "billDone": "Bill transfer {no} done, {n} SNs",
     "fromOrg": "Source org",
     "toOrg": "Target org",
     "toPi": "Target PI",
-    "applyNote": "After submitting, SNs become transfer-pending and cannot be pushed or pulled until approved (by the system admin or an operator authorized for both orgs); you may withdraw before that. MES is not notified meanwhile.",
-    "directNote": "Direct transfer: both orgs must be authorized; SNs are re-attached at once, with reassign and transfer-out pushes as needed.",
-    "submitApply": "Submit request",
-    "submitDirect": "Transfer",
-    "orgDone": "Org transfer {no} submitted, {n} SNs",
+    "directNote": "SNs are re-attached at once on confirmation, with reassign and transfer-out pushes as needed; no request or approval.",
+    "orgDone": "Org transfer {no} done, {n} SNs",
     "outList": "Export transferred-out list",
     "pushTitle": "Reassign & transfer-out pushes",
     "pushTo": "Pushed to",
@@ -995,7 +963,7 @@
     "after": "After",
     "current": "Now",
     "transferredOut": "Transferred out",
-    "desc": "Re-attach SNs to another production order or org; SN strings never change. Two kinds: bill transfer (for orders voided or split in Kingdee; SNs follow the target bill; effective at once) and org transfer (SNs move to another production org: direct when both orgs are authorized, otherwise a request approved by an account authorized for both). Both pick the source by PI → bill → material → single SN or range, and require target PI, bill, production org and material. MES is informed by automatic reassign / transfer-out pushes. Operators only act on SNs of their authorized orgs.",
+    "desc": "Re-attach SNs to another production order or org; SN strings never change. Two kinds: bill transfer (for orders voided or split in Kingdee; SNs follow the target bill) and org transfer (SNs move to another production org). System admins and operators both transfer directly, effective at once, with a required transfer reason; operators need the source authorized, while the target is unrestricted. Both pick the source by PI → bill → material → single SN or range, and require target PI, bill, production org and material. MES is informed by automatic reassign / transfer-out pushes.",
     "scopeTip": {
       "BILL": "All SNs of this bill under the PI",
       "MATERIAL": "All SNs of this material code in the bill (all lines of the material)",
@@ -1006,17 +974,22 @@
     "noSnInPi": "No SNs under this PI",
     "noBillInPi": "No bills of this PI in the snapshot",
     "orgOfBill": "Bill transfer: the target bill's org",
-    "orgFree": "Defaults to the target bill's org; may be changed",
+    "orgFree": "Defaults to the target bill's org; any enabled org may be chosen",
     "pickTargetLine": "Pick the target line",
     "pickMaterial": "Pick a material code (incl. empty)",
     "startSn": "Start full SN",
     "endSn": "End full SN (optional)",
     "rangeHint": "Start only = single SN; start and end must be within the selected bill and material and share the same serial PI",
     "toMaterial": "Target material",
-    "billConfirm": "Re-attach {n} SNs to bill {bill} ({to} · PI {pi})?",
-    "applyConfirm": "Request moving {n} SNs to {to} · PI {pi} · bill {bill}?",
-    "directConfirm": "Move {n} SNs directly to {to} · PI {pi} · bill {bill}?",
-    "quotaUnchanged": "When SNs change material line, generated and allocated counts move with them; the remaining quota does not change."
+    "billConfirm": "Re-attach {n} SNs to bill {bill} ({to} · PI {pi})? This takes effect at once. Reason: {reason}",
+    "quotaUnchanged": "When SNs change material line, generated and allocated counts move with them; the remaining quota does not change.",
+    "orgConfirm": "Move {n} SNs to {to} · PI {pi} · bill {bill}? This takes effect at once. Reason: {reason}",
+    "targetOutOfScope": "The target org is outside your authorization: the transfer is allowed, but you cannot act on these SNs afterwards.",
+    "reason": "Transfer reason",
+    "reasonPlaceholder": "Required: why are these SNs moved (at most 500 characters)",
+    "reasonTip": "Direct transfer, effective at once; the reason is kept on the transfer document and in the audit trail",
+    "reasonRequired": "Please enter the transfer reason",
+    "submit": "Transfer"
   },
   "users": {
     "title": "Users",

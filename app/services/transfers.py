@@ -8,8 +8,11 @@
 - 转移前 MES 已持有、改挂后待推送的号不回号池：同一事务内给转入方当场建批（记转移单号，批次类型为
   SAME_ORG_TRANSFER / TRANSFER_IN，按单批枚数拆分，暂停交付的号除外）并推送；MES 还没收到的号回号池按流水认领
   （批次类型 NEW）。
-不可转：申请中；所在批次未确认或失败；所在转出批次未确认或失败（先在原转组织单上继续推送转出）。
+不可转：所在批次未确认或失败；所在转出批次未确认或失败（先在原转组织单上继续推送转出）。
 转单另可转待分配的号（仍为待分配，之后按目标单据的生产组织分配）；转组织不能转待分配的号。
+
+转单、转组织都直接执行（没有申请、审批），原因必填：系统管理员不限组织；普通操作员的来源须在授权范围内
+（转单：来源单据的组织、号现在所在的组织；转组织：来源生产组织），目标生产组织不限。
 
 转单、转组织的来源与目标规则相同：来源按 PI → 单据筛选，范围三选一（整张单据 / 单据 + 物料编码下全部号 /
 单据 + 物料编码下单枚或连续号段）；转组织另限来源生产组织。
@@ -35,12 +38,9 @@ BILL_TRANSFER = "BILL_TRANSFER"
 ORG_TRANSFER = "ORG_TRANSFER"
 MODE_VOID = "VOID"
 MODE_SPLIT = "SPLIT"
-MODE_APPLY = "APPLY"
 MODE_DIRECT = "DIRECT"
-PENDING = "PENDING"
+#: 转移单生成即生效（转组织单的 status 只有 APPROVED）
 APPROVED = "APPROVED"
-REJECTED = "REJECTED"
-WITHDRAWN = "WITHDRAWN"
 SCOPE_BILL = "BILL"
 SCOPE_MATERIAL = "MATERIAL"
 SCOPE_RANGE = "RANGE"
@@ -73,9 +73,6 @@ ORG_FIELDS = (
     "reason",
     "applied_by",
     "applied_at",
-    "decided_by",
-    "decided_at",
-    "decide_note",
 )
 BILL_FIELDS = (
     "id",
@@ -108,12 +105,10 @@ def _reason(raw: str | None) -> str:
 
 
 def blocked(items: list[dict], allow_pending_alloc: bool) -> dict[int, str]:
-    """不能转的号及原因：APPLYING / BATCH_PENDING / TRANSFER_OUT_PENDING / PENDING_ALLOC。"""
+    """不能转的号及原因：BATCH_PENDING / TRANSFER_OUT_PENDING / PENDING_ALLOC。"""
     out: dict[int, str] = {}
     for r in items:
-        if r["status"] == util.APPLYING:
-            out[r["id"]] = "APPLYING"
-        elif r["status"] == util.PENDING_ALLOC and not allow_pending_alloc:
+        if r["status"] == util.PENDING_ALLOC and not allow_pending_alloc:
             out[r["id"]] = "PENDING_ALLOC"
         elif r["status"] == util.TO_PUSH and r["delivery_batch_no"] is not None:
             out[r["id"]] = "BATCH_PENDING"
@@ -123,7 +118,6 @@ def blocked(items: list[dict], allow_pending_alloc: bool) -> dict[int, str]:
 
 
 _REASON_TEXT = {
-    "APPLYING": "申请中",
     "PENDING_ALLOC": "待分配（转组织不能转）",
     "BATCH_PENDING": "所在批次未确认或失败",
     "TRANSFER_OUT_PENDING": "所在转出批次未确认或失败，先在原转组织单上继续推送转出",
@@ -279,7 +273,7 @@ def _move(
             db.exec(
                 "UPDATE sn_item SET factory_code = %s, pi_no = %s, customer_code = %s, bill_no = %s, bill_seq = %s, "
                 "material_code = %s, rev = rev + 1, status = %s, push_type = %s, delivery_mode = %s, "
-                "delivery_batch_no = NULL, transfer_id = NULL, applying_from = NULL, "
+                "delivery_batch_no = NULL, "
                 "transfer_kind = %s, transfer_doc_no = %s, transfer_from_org = COALESCE(%s, transfer_from_org), "
                 "updated_at = %s "
                 f"WHERE id IN ({marks(len(part))})",
@@ -555,8 +549,8 @@ def _plan(cu: CurrentUser, kind: str, r: TransferRequest, lock: bool = False) ->
         raise biz(ErrorCode.TR_NOTHING)
     targets = _targets(kind, items, d)
     if kind == KIND_BILL:
-        # 转单：来源单据、号现在所在的组织、目标单据的组织都须在授权范围内
-        cu.check_write(*orders.bill_orgs([src.bill]), *{x["factory_code"] for x in items}, d.factory)
+        # 转单：来源单据、号现在所在的组织须在授权范围内；目标单据的组织不限（转组织的来源组织在 _from_factory 校验）
+        cu.check_write(*orders.bill_orgs([src.bill]), *{x["factory_code"] for x in items})
     if all(
         (r["factory_code"] or d.factory, r["pi_no"], r["bill_no"], r["bill_seq"]) == (d.factory, d.pi, d.bill, d.seq)
         for r in items
@@ -632,7 +626,7 @@ def preview(cu: CurrentUser, kind: str, r: TransferRequest) -> dict:
 
 
 def transfer_bill(cu: CurrentUser, req: TransferRequest) -> dict:
-    """转单（直接执行；普通操作员的来源、目标组织须在授权范围内）：生成转单单；需要时自动改挂推送、转出推送。"""
+    """转单（直接执行，原因必填；普通操作员的来源须在授权范围内，目标不限）：生成转单单；需要时自动改挂推送、转出推送。"""
     reason = _reason(req.reason)
     p0 = _plan(cu, KIND_BILL, req)
     with locks.with_pi_lock(p0.src.pi, p0.dest.pi), db.tx():
@@ -688,67 +682,6 @@ def transfer_bill(cu: CurrentUser, req: TransferRequest) -> dict:
 # ================================================================== 转组织
 
 
-def apply(cu: CurrentUser, r: TransferRequest) -> dict:
-    """普通操作员提交转组织申请（来源组织须在授权范围内，目标组织不限）：号变为申请中（不能推送、拉取）；
-    申请期间不通知 MES。由系统管理员或对来源、目标组织都有授权的普通操作员确认。"""
-    if not cu.is_operator:
-        raise biz(ErrorCode.FORBIDDEN)
-    reason = _reason(r.reason)
-    with db.tx():
-        p = _plan(cu, KIND_ORG, r, lock=True)
-        bad = blocked(p.items, False)
-        ok = [x for x in p.items if x["id"] not in bad]
-        _check_any(p.items, ok, bad, p.src)
-        tid, no = _insert_org(cu, MODE_APPLY, PENDING, p, len(ok), reason)
-        now = util.now()
-        rows = []
-        for x in ok:
-            rows.append(
-                (
-                    KIND_ORG,
-                    tid,
-                    x["id"],
-                    x["sn"],
-                    x["seq_pi_no"],
-                    x["seq_dec"],
-                    x["status"],
-                    p.factory,
-                    x["pi_no"],
-                    x["customer_code"],
-                    x["bill_no"],
-                    x["bill_seq"],
-                    x["material_code"],
-                    x["delivery_batch_no"],
-                    x["rev"],
-                )
-            )
-        db.exec_many(
-            "INSERT INTO sn_transfer_item(kind, transfer_id, item_id, sn, seq_pi_no, seq_dec, from_status, "
-            "from_factory, "
-            "from_pi, from_customer, from_bill, from_seq, from_material, from_delivery_batch, from_rev) "
-            "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-            rows,
-        )
-        ids = [x["id"] for x in ok]
-        for i in range(0, len(ids), 1000):
-            part = ids[i : i + 1000]
-            db.exec(
-                f"UPDATE sn_item SET applying_from = status, status = 'APPLYING', transfer_id = %s, updated_at = %s "
-                f"WHERE id IN ({marks(len(part))})",
-                tid,
-                now,
-                *part,
-            )
-        changes.refresh_items({x["bill_no"] for x in ok})
-        audit.record(
-            cu,
-            _org_entry(
-                audit.TRANSFER_APPLY, no, p.factory, p.src.pi, p.src.text(), _dest_row(p.dest), len(ok), reason, ok
-            ),
-        )
-    return org_view(cu, tid)
-
-
 def _dest_row(d: Dest) -> dict:
     return {
         "to_factory": d.factory,
@@ -760,7 +693,8 @@ def _dest_row(d: Dest) -> dict:
     }
 
 
-def _insert_org(cu, mode, status, p: Plan, qty: int, reason: str) -> tuple[int, str]:
+def _insert_org(cu, p: Plan, qty: int, reason: str) -> tuple[int, str]:
+    """转组织单：直接执行，生成即生效（DIRECT / APPROVED）。"""
     no = util.next_id("TO")
     src, d = p.src, p.dest
     tid = db.insert(
@@ -768,8 +702,8 @@ def _insert_org(cu, mode, status, p: Plan, qty: int, reason: str) -> tuple[int, 
         "from_sn, from_end_sn, qty, to_factory, to_pi, to_customer, to_bill, to_seq, to_material, reason, "
         "applied_by, applied_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
         no,
-        mode,
-        status,
+        MODE_DIRECT,
+        APPROVED,
         src.scope,
         p.factory,
         src.pi,
@@ -791,12 +725,6 @@ def _insert_org(cu, mode, status, p: Plan, qty: int, reason: str) -> tuple[int, 
     return tid, no
 
 
-def _org_targets(t: dict, items: list[dict]) -> dict[int, Target]:
-    """转组织单上的目标物料行（申请时已校验，见 _dest）。"""
-    tg = Target(t["to_factory"], t["to_pi"], t["to_customer"], t["to_bill"], t["to_seq"], t["to_material"])
-    return {r["id"]: tg for r in items}
-
-
 def _org_entry(
     action: str, no: str, factory: str, pi: str, scope: str, t: dict, qty: int, reason: str | None, items: list[dict]
 ) -> audit.Entry:
@@ -816,17 +744,15 @@ def _org_entry(
 
 
 def direct(cu: CurrentUser, r: TransferRequest) -> dict:
-    """不经申请直接转移（须填原因）：普通操作员的来源、目标组织都须在授权范围内（目标不在范围内的走申请）。"""
+    """转组织（直接执行，原因必填）：普通操作员的来源生产组织须在授权范围内，目标生产组织不限（任一启用的）。"""
     reason = _reason(r.reason)
     p0 = _plan(cu, KIND_ORG, r)
-    cu.check_write(p0.factory, p0.dest.factory)
     with locks.with_pi_lock(p0.src.pi, p0.dest.pi), db.tx():
         p = _plan(cu, KIND_ORG, r, lock=True)
         bad = blocked(p.items, False)
         ok = [x for x in p.items if x["id"] not in bad]
         _check_any(p.items, ok, bad, p.src)
-        tid, no = _insert_org(cu, MODE_DIRECT, APPROVED, p, len(ok), reason)
-        db.exec("UPDATE sn_transfer SET decided_by = %s, decided_at = %s WHERE id = %s", cu.emp_no, util.now(), tid)
+        tid, no = _insert_org(cu, p, len(ok), reason)
         moved = _move(cu, KIND_ORG, tid, no, ok, p.targets)
         e = _org_entry(
             audit.TRANSFER_DIRECT, no, p.factory, p.src.pi, p.src.text(), _dest_row(p.dest), len(ok), reason, ok
@@ -835,139 +761,6 @@ def direct(cu: CurrentUser, r: TransferRequest) -> dict:
         audit.record(cu, e.info(f"{e.detail} out_batches={out_nos} in_batches={in_nos}"))
     _after_move(cu, moved)
     return org_view(cu, tid)
-
-
-def _lock_pending(tid: int) -> dict:
-    t = db.one("SELECT * FROM sn_transfer WHERE id = %s FOR UPDATE", tid)
-    if t is None:
-        raise biz(ErrorCode.TR_NOT_FOUND)
-    if t["status"] != PENDING:
-        raise biz(ErrorCode.TR_NOT_PENDING, transfer_no=t["transfer_no"])
-    return t
-
-
-def approve(cu: CurrentUser, tid: int, note: str | None) -> dict:
-    t0 = db.one("SELECT * FROM sn_transfer WHERE id = %s", tid)
-    if t0 is None:
-        raise biz(ErrorCode.TR_NOT_FOUND)
-    cu.check_write(t0["from_factory"], t0["to_factory"])
-    with locks.with_pi_lock(t0["from_pi"], t0["to_pi"]), db.tx():
-        t = _lock_pending(tid)
-        f = factories.must_get(t["to_factory"])
-        if not f["enabled"]:
-            raise biz(ErrorCode.TR_TARGET_DISABLED, factory=f"{f['factory_name']}（{f['factory_code']}）")
-        ids = db.column("SELECT item_id FROM sn_transfer_item WHERE kind = %s AND transfer_id = %s", KIND_ORG, tid)
-        items = db.all(
-            f"SELECT {ITEM_COLS}, applying_from FROM sn_item WHERE id IN ({marks(len(ids))}) AND status = 'APPLYING' "
-            "AND transfer_id = %s ORDER BY seq_pi_no, seq_dec FOR UPDATE",
-            *ids,
-            tid,
-        )
-        if len(items) != len(ids):
-            raise biz(ErrorCode.TR_CONCURRENT)
-        # 申请前状态参与 5.2.8 判断
-        for x in items:
-            x["status"] = x["applying_from"]
-        moved = _move(cu, KIND_ORG, tid, t["transfer_no"], items, _org_targets(t, items))
-        db.exec(
-            "UPDATE sn_transfer SET status = %s, decided_by = %s, decided_at = %s, decide_note = %s WHERE id = %s",
-            APPROVED,
-            cu.emp_no,
-            util.now(),
-            util.cut(util.trim_or_none(note), 500),
-            tid,
-        )
-        audit.record(
-            cu,
-            _org_entry(
-                audit.TRANSFER_APPROVE,
-                t["transfer_no"],
-                t["from_factory"],
-                t["from_pi"],
-                t["scope"],
-                t,
-                len(items),
-                util.trim_or_none(note),
-                items,
-            ),
-        )
-    _after_move(cu, moved)
-    return org_view(cu, tid)
-
-
-def _restore(t: dict) -> None:
-    """驳回 / 撤回：恢复为申请前状态。"""
-    bills = set(
-        db.column("SELECT DISTINCT bill_no FROM sn_item WHERE transfer_id = %s AND status = 'APPLYING'", t["id"])
-    )
-    db.exec(
-        "UPDATE sn_item SET status = applying_from, applying_from = NULL, transfer_id = NULL, updated_at = %s "
-        "WHERE transfer_id = %s AND status = 'APPLYING'",
-        util.now(),
-        t["id"],
-    )
-    changes.refresh_items(bills)
-
-
-def reject(cu: CurrentUser, tid: int, note: str | None) -> dict:
-    with db.tx():
-        t = _lock_pending(tid)
-        cu.check_write(t["from_factory"], t["to_factory"])
-        _restore(t)
-        db.exec(
-            "UPDATE sn_transfer SET status = %s, decided_by = %s, decided_at = %s, decide_note = %s WHERE id = %s",
-            REJECTED,
-            cu.emp_no,
-            util.now(),
-            util.cut(util.trim_or_none(note), 500),
-            tid,
-        )
-        audit.record(
-            cu,
-            audit.entry(audit.TRANSFER_REJECT)
-            .factory(t["from_factory"])
-            .pi(t["from_pi"])
-            .count(t["qty"])
-            .transfer(t["transfer_no"])
-            .why(util.trim_or_none(note))
-            .status(util.APPLYING, "PREVIOUS"),
-        )
-    for no in _bills_of(tid):
-        delivery.kick_bill(no)
-    return org_view(cu, tid)
-
-
-def withdraw(cu: CurrentUser, tid: int) -> dict:
-    with db.tx():
-        t = _lock_pending(tid)
-        if not cu.is_operator or not cu.can_read(t["from_factory"]):
-            raise biz(ErrorCode.TR_WITHDRAW_FORBIDDEN)
-        _restore(t)
-        db.exec(
-            "UPDATE sn_transfer SET status = %s, decided_by = %s, decided_at = %s WHERE id = %s",
-            WITHDRAWN,
-            cu.emp_no,
-            util.now(),
-            tid,
-        )
-        audit.record(
-            cu,
-            audit.entry(audit.TRANSFER_WITHDRAW)
-            .factory(t["from_factory"])
-            .pi(t["from_pi"])
-            .count(t["qty"])
-            .transfer(t["transfer_no"])
-            .status(util.APPLYING, "PREVIOUS"),
-        )
-    for no in _bills_of(tid):
-        delivery.kick_bill(no)
-    return org_view(cu, tid)
-
-
-def _bills_of(tid: int) -> list[str]:
-    return db.column(
-        "SELECT DISTINCT from_bill FROM sn_transfer_item WHERE kind = %s AND transfer_id = %s", KIND_ORG, tid
-    )
 
 
 # ================================================================== 物料确认对应（F-06，订单变更修正，不是转单）
@@ -1116,41 +909,29 @@ def _bill_where(cu: CurrentUser, factory: str | None, pi: str | None, bill: str 
         args += [bill.strip(), bill.strip()]
     facs = cu.read_factories(factory)
     if facs is not None:
+        # 号的来源或去向组织在范围内；只转了待分配号的单（号上没有组织）按来源单据、目标单据的组织
         fsql, fa = factories.scope_sql(facs, "x.from_factory")
         tsql, ta = factories.scope_sql(facs, "x.to_factory")
+        bsql, ba = factories.scope_sql(facs, "to_factory")
+        lsql, la = factories.scope_sql(facs, "l.org_code")
         where += (
-            " AND id IN (SELECT x.transfer_id FROM sn_transfer_item x WHERE x.kind = 'BILL' AND "
-            f"((1=1{fsql}) OR (1=1{tsql})))"
+            " AND (id IN (SELECT x.transfer_id FROM sn_transfer_item x WHERE x.kind = 'BILL' AND "
+            f"((1=1{fsql}) OR (1=1{tsql}))) OR (1=1{bsql}) OR from_bill IN "
+            f"(SELECT l.bill_no FROM sn_bill_ledger l WHERE 1=1{lsql}))"
         )
-        args += [*fa, *ta]
+        args += [*fa, *ta, *ba, *la]
     return where, args
 
 
-def list_org(
-    cu: CurrentUser, status: str | None, factory: str | None, pi: str | None, bill: str | None, page: util.Page
-) -> dict:
+def list_org(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None, page: util.Page) -> dict:
     where, args = _org_where(cu, factory, pi, bill)
-    pending = db.count("SELECT COUNT(*) FROM sn_transfer" + where + " AND status = 'PENDING'", *args)
-    if not util.blank(status):
-        where += " AND status = %s"
-        args.append(util.trim(status))
     total = db.count("SELECT COUNT(*) FROM sn_transfer" + where, *args)
     rows = db.all(f"SELECT * FROM sn_transfer{where} ORDER BY id DESC LIMIT %s,%s", *args, page.offset, page.size)
-    disabled = factories.disabled_codes()
-    out = util.page_result(
-        [
-            {
-                "transfer": util.jrow(t, ORG_FIELDS),
-                "direction": _direction(cu, t["from_factory"]),
-                "to_factory_disabled": t["status"] == PENDING and t["to_factory"] in disabled,
-            }
-            for t in rows
-        ],
+    return util.page_result(
+        [{"transfer": util.jrow(t, ORG_FIELDS), "direction": _direction(cu, t["from_factory"])} for t in rows],
         total,
         page,
     )
-    out["pending"] = pending
-    return out
 
 
 def list_bill(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | None, page: util.Page) -> dict:
@@ -1160,7 +941,7 @@ def list_bill(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | 
     return util.page_result([util.jrow(t, BILL_FIELDS) for t in rows], total, page)
 
 
-# 合并列表的统一列：转单不限来源生产组织、没有号段和目标客户；转单生成即生效，状态记 APPROVED
+# 合并列表的统一列：转单不限来源生产组织、没有号段和目标客户；转移单生成即生效，转单状态记 APPROVED
 _ALL_ORG = (
     "SELECT 'ORG' kind, id, transfer_no, mode, status, scope, '' scope_text, from_factory, from_pi, from_bill, "
     "from_material, from_sn, from_end_sn, to_factory, to_pi, to_bill, to_seq, to_material, to_customer, qty, reason, "
@@ -1199,49 +980,33 @@ ALL_FIELDS = (
 
 
 def list_all(
-    cu: CurrentUser,
-    kind: str | None,
-    status: str | None,
-    factory: str | None,
-    pi: str | None,
-    bill: str | None,
-    page: util.Page,
+    cu: CurrentUser, kind: str | None, factory: str | None, pi: str | None, bill: str | None, page: util.Page
 ) -> dict:
-    """转单与转组织合在一张表里（新的在前）；kind = BILL / ORG 只看一种。转单只在「全部」「已完成」里出现。"""
-    kind, status = util.trim(kind).upper(), util.trim(status).upper()
-    ow, oa = _org_where(cu, factory, pi, bill)
-    pending = db.count("SELECT COUNT(*) FROM sn_transfer" + ow + " AND status = 'PENDING'", *oa)
+    """转单与转组织合在一张表里（新的在前）；kind = BILL / ORG 只看一种。"""
+    kind = util.trim(kind).upper()
     parts: list[str] = []
     args: list = []
     if kind in ("", KIND_ORG):
-        if status:
-            ow += " AND status = %s"
-            oa = [*oa, status]
+        ow, oa = _org_where(cu, factory, pi, bill)
         parts.append(_ALL_ORG + ow)
         args += oa
-    if kind in ("", KIND_BILL) and status in ("", APPROVED):
+    if kind in ("", KIND_BILL):
         bw, ba = _bill_where(cu, factory, pi, bill)
         parts.append(_ALL_BILL + bw)
         args += ba
     if not parts:
-        out = util.page_result([], 0, page)
-        out["pending"] = pending
-        return out
+        return util.page_result([], 0, page)
     union = " UNION ALL ".join(f"({x})" for x in parts)
     total = db.count(f"SELECT COUNT(*) FROM ({union}) u", *args)
     rows = db.all(
         f"SELECT * FROM ({union}) u ORDER BY created_at DESC, id DESC LIMIT %s,%s", *args, page.offset, page.size
     )
-    disabled = factories.disabled_codes()
     items = []
     for t in rows:
         x = util.jrow(t, ALL_FIELDS)
         x["direction"] = _direction(cu, t["from_factory"]) if t["kind"] == KIND_ORG else ""
-        x["to_factory_disabled"] = t["status"] == PENDING and t["to_factory"] in disabled
         items.append(x)
-    out = util.page_result(items, total, page)
-    out["pending"] = pending
-    return out
+    return util.page_result(items, total, page)
 
 
 def _push_info(kind: str, tid: int, doc_no: str) -> dict:
@@ -1296,14 +1061,15 @@ def bill_transfer_view(cu: CurrentUser, tid: int) -> dict:
     if t is None:
         raise biz(ErrorCode.TR_NOT_FOUND)
     if cu.bound:
-        # 与列表同一口径：转单涉及的来源或去向生产组织在可看范围内
+        # 与列表同一口径：号的来源或去向生产组织、来源单据或目标单据的生产组织在可看范围内
         r = db.one(
             "SELECT GROUP_CONCAT(DISTINCT from_factory) f, GROUP_CONCAT(DISTINCT to_factory) t FROM sn_transfer_item "
             "WHERE kind = %s AND transfer_id = %s",
             KIND_BILL,
             tid,
         )
-        cu.check_read(*{x for v in (r["f"], r["t"]) for x in (v or "").split(",") if x})
+        orgs = {x for v in (r["f"], r["t"]) for x in (v or "").split(",") if x}
+        cu.check_read(*orgs, t["to_factory"], *orders.bill_orgs([t["from_bill"]]))
     out = util.jrow(t, BILL_FIELDS)
     out.update(_push_info(KIND_BILL, tid, t["transfer_no"]))
     return out

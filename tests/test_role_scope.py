@@ -144,16 +144,15 @@ def test_org_transfer_scope(w, api, sql):
     body = m(
         factory_code=a, pi_no=pi, bill_no=bill, scope="BILL", to_factory=b, to_pi=pi, to_bill=bill, to_material="M1"
     )
-    assert api.post("/api/transfers/org/direct", body | m(reason="x"), op).code == "FACTORY_FORBIDDEN", (
-        "目标组织不在授权范围内只能申请"
-    )
-    t = ok(api.post("/api/transfers/org", body | m(reason="x"), op))
-    assert api.post(f"/api/transfers/org/{t['id']}/approve", m(note="ok"), op).code == "FACTORY_FORBIDDEN"
-    both = w.user(emp("F"), "operator", None, [a, b])
-    ok(api.post(f"/api/transfers/org/{t['id']}/approve", m(note="ok"), both))
+    assert api.post("/api/transfers/org/direct", body, op).code == "REASON_REQUIRED", "直接转移须填原因"
+    outsider = w.user(emp("F"), "operator", b)
+    src_a = body | m(reason="x")
+    assert api.post("/api/transfers/org/direct", src_a, outsider).code == "FACTORY_FORBIDDEN", "来源组织须授权"
+    # 目标组织不在授权范围内也可直接转
+    ok(api.post("/api/transfers/org/direct", src_a, op))
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND factory_code = %s", pi, b) == 2
     au = w.user(emp("Q"), "auditor", a)
-    assert api.post("/api/transfers/org", body | m(reason="x"), au).code == "FORBIDDEN"
+    assert api.post("/api/transfers/org/direct", src_a, au).code == "FORBIDDEN"
 
 
 def test_account_without_org_cannot_login(w, api, sql):

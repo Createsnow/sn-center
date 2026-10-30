@@ -849,7 +849,6 @@ X-Request-ID: 6d3a0f8c-2e5b-4a71-9c46-1b0a9f8e7d52
 | --- | --- |
 | `PUSHED` | 已推送（MES 已确认） |
 | `TO_PUSH` | 改挂后待推送 |
-| `APPLYING` | 转组织申请中，仅提醒 |
 
 ---
 

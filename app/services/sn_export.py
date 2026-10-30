@@ -17,8 +17,8 @@ from app.core.security import CurrentUser
 from app.db.session import db
 from app.services import factories, files, rules, sn_sheet
 
-#: 各汇总都带的枚数：暂停（单据暂停交付）、申请中（转组织待审批，批准后会转走）
-_NOTES = "SUM(i.suspend IS NOT NULL) suspended, SUM(i.status = 'APPLYING') applying"
+#: 各汇总都带的枚数：暂停（单据暂停交付）
+_NOTES = "SUM(i.suspend IS NOT NULL) suspended"
 
 
 def _where(cu: CurrentUser, factory: str | None) -> tuple[str, list]:
@@ -28,7 +28,7 @@ def _where(cu: CurrentUser, factory: str | None) -> tuple[str, list]:
 
 
 def _notes(r: dict) -> dict:
-    return {"suspended": int(r["suspended"] or 0), "applying": int(r["applying"] or 0)}
+    return {"suspended": int(r["suspended"] or 0)}
 
 
 def bills(
@@ -120,8 +120,7 @@ def segments(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | N
         "SELECT factory_code, bill_seq, material_code, MAX(attach_no) attach_no, MAX(length_text) length_text, "
         "seq_pi_no, MIN(seq_dec) s, MAX(seq_dec) e, "
         "SUBSTRING(MIN(CONCAT(LPAD(seq_dec, 20, '0'), sn)), 21) start_sn, "
-        "SUBSTRING(MAX(CONCAT(LPAD(seq_dec, 20, '0'), sn)), 21) end_sn, COUNT(*) qty, MAX(suspend) suspend, "
-        "SUM(status = 'APPLYING') applying "
+        "SUBSTRING(MAX(CONCAT(LPAD(seq_dec, 20, '0'), sn)), 21) end_sn, COUNT(*) qty, MAX(suspend) suspend "
         "FROM (SELECT i.factory_code, i.bill_seq, i.material_code, i.attach_no, i.length_text, i.status, i.seq_pi_no, "
         "i.seq_dec, i.sn, i.suspend, "
         "i.seq_dec - ROW_NUMBER() OVER (PARTITION BY i.factory_code, i.bill_seq, i.material_code, "
@@ -150,7 +149,6 @@ def segments(cu: CurrentUser, factory: str | None, pi: str | None, bill: str | N
             "end_sn": _text(r["end_sn"]),
             "qty": int(r["qty"]),
             "suspend": _text(r["suspend"]),
-            "applying": int(r["applying"] or 0),
         }
         for r in rows
     ]

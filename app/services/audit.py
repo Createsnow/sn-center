@@ -68,10 +68,6 @@ SN_BATCH_VOID = "SN_BATCH_VOID"
 SN_ALERT_HANDLE = "SN_ALERT_HANDLE"
 SN_READ = "SN_READ"
 TRANSFER_BILL = "TRANSFER_BILL"
-TRANSFER_APPLY = "TRANSFER_APPLY"
-TRANSFER_WITHDRAW = "TRANSFER_WITHDRAW"
-TRANSFER_APPROVE = "TRANSFER_APPROVE"
-TRANSFER_REJECT = "TRANSFER_REJECT"
 TRANSFER_DIRECT = "TRANSFER_DIRECT"
 AUDIT_ARCHIVE = "AUDIT_ARCHIVE"
 AUDIT_ARCHIVE_PURGE = "AUDIT_ARCHIVE_PURGE"
@@ -249,10 +245,6 @@ _PATH_ACTIONS = (
     (r"/api/delivery/alerts/\d+/handle", SN_ALERT_HANDLE),
     (r"/api/transfers/bill.*", TRANSFER_BILL),
     (r"/api/transfers/org/direct", TRANSFER_DIRECT),
-    (r"/api/transfers/org/\d+/approve", TRANSFER_APPROVE),
-    (r"/api/transfers/org/\d+/reject", TRANSFER_REJECT),
-    (r"/api/transfers/org/\d+/withdraw", TRANSFER_WITHDRAW),
-    (r"/api/transfers/org.*", TRANSFER_APPLY),
     (r"/api/mes/v1/batches/next", SN_PULL),
     (r"/api/mes/v1/receipts", SN_RECEIPT),
     (r"/api/mes/v1/.*", SN_READ),

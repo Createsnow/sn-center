@@ -326,7 +326,7 @@ def test_migration_flyway_checksum():
     """测试阶段只保留一个 V1__init.sql；校验和按 Flyway 算法固定，改了建表脚本须同步更新这里（并重建测试库）。"""
     ours = {m.script: m for m in migrations()}
     assert list(ours) == ["V1__init.sql"]
-    assert ours["V1__init.sql"].checksum() == 1557840287
+    assert ours["V1__init.sql"].checksum() == -874897514
     statements = ours["V1__init.sql"].statements()
     assert len(statements) == 34
     text = "\n".join(statements)
@@ -491,11 +491,7 @@ def test_db_target_env_overrides_dotenv(monkeypatch):
 @pytest.mark.parametrize(
     ("method", "path", "action"),
     [
-        ("POST", "/api/transfers/org", "TRANSFER_APPLY"),
         ("POST", "/api/transfers/org/direct", "TRANSFER_DIRECT"),
-        ("POST", "/api/transfers/org/12/approve", "TRANSFER_APPROVE"),
-        ("POST", "/api/transfers/org/12/reject", "TRANSFER_REJECT"),
-        ("POST", "/api/transfers/org/12/withdraw", "TRANSFER_WITHDRAW"),
         ("POST", "/api/transfers/bill", "TRANSFER_BILL"),
         ("POST", "/api/allocation/allocate", "SN_ALLOCATE"),
         ("POST", "/api/generate/run", "SN_GENERATE"),

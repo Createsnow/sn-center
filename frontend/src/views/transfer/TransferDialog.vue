@@ -1,14 +1,14 @@
 <template>
   <el-dialog v-model="tf.open" :title="t('transfer.new')" width="1000px" top="4vh">
-    <!-- 类型：转单或转组织（系统管理员、普通操作员都可选） -->
-    <div v-if="store.canAct" class="kinds">
+    <!-- ① 类型：转单或转组织（系统管理员、普通操作员都直接转移，立即生效） -->
+    <div class="kinds">
       <div v-for="k in KINDS" :key="k" class="kind" :class="{ on: tf.kind === k }" @click="setKind(k)">
         <div class="kind__t"><el-icon><component :is="k === 'BILL' ? 'Document' : 'OfficeBuilding'" /></el-icon>{{ t(`transfer.kindTitle.${k}`) }}</div>
         <div class="muted">{{ t(`transfer.kindTip.${k}`) }}</div>
       </div>
     </div>
-    <p v-else class="muted lead">{{ t("transfer.kindTip.ORG") }}</p>
 
+    <!-- ② 来源 → 转入目标 -->
     <div class="sides">
       <section class="side">
         <h5 class="side__t">{{ t("transfer.source") }}</h5>
@@ -71,6 +71,7 @@
               <el-option v-if="tf.kind === 'BILL' && tf.to_factory && !factories.some((x) => x.factory_code === tf.to_factory)" :value="tf.to_factory" :label="tf.to_factory" />
             </el-select>
             <div class="muted hint">{{ tf.kind === "BILL" ? t("transfer.orgOfBill") : t("transfer.orgFree") }}</div>
+            <div v-if="outOfScope" class="hint warn-text">{{ t("transfer.targetOutOfScope") }}</div>
           </el-form-item>
           <el-form-item :label="t('transfer.toMaterial')" required>
             <el-select v-model="tf.to_seq" class="full" :disabled="!toLines.length" :placeholder="t('transfer.pickTargetLine')" @change="resetPreview">
@@ -81,11 +82,13 @@
       </section>
     </div>
 
-    <el-form label-position="top" class="form mt">
-      <el-form-item :label="t('common.reason')" required>
-        <el-input v-model="tf.reason" type="textarea" :rows="2" maxlength="500" show-word-limit :placeholder="t('common.reasonPlaceholder')" />
-      </el-form-item>
-    </el-form>
+    <!-- ③ 转移原因：直接转移、立即生效，原因必填，记入转移单与操作痕迹 -->
+    <section class="reason" :class="{ bad: reasonMissing }">
+      <div class="reason__t"><span class="req">*</span>{{ t("transfer.reason") }}</div>
+      <el-input v-model="tf.reason" type="textarea" :rows="2" maxlength="500" show-word-limit :placeholder="t('transfer.reasonPlaceholder')"
+        @blur="reasonTouched = true" />
+      <div class="muted hint">{{ reasonMissing ? t("transfer.reasonRequired") : t("transfer.reasonTip") }}</div>
+    </section>
 
     <div v-if="pv" class="preview">
       <div class="kpis">
@@ -106,24 +109,26 @@
         <el-table-column :label="t('transfer.genAfter')" align="right" width="110"><template #default="{ row }"><span class="num">{{ row.after }}</span></template></el-table-column>
       </el-table>
       <p class="muted">{{ t("transfer.quotaUnchanged") }}</p>
-      <p v-if="tf.kind === 'ORG'" class="muted">{{ orgDirect ? t("transfer.directNote") : t("transfer.applyNote") }}</p>
+      <p class="muted">{{ t("transfer.directNote") }}</p>
     </div>
     <template #footer>
       <div class="foot">
         <span v-if="!pv" class="muted">{{ t("transfer.previewFirst") }}</span>
+        <span v-else-if="!tf.reason.trim()" class="warn-text">{{ t("transfer.reasonRequired") }}</span>
         <span class="grow" />
         <el-button @click="tf.open = false">{{ t("common.cancel") }}</el-button>
         <el-button :loading="busy === 'pv'" :disabled="!ready" @click="preview">{{ t("transfer.preview") }}</el-button>
-        <el-button type="primary" :loading="busy === 'submit'" :disabled="!pv || !pv.transferable || !tf.reason.trim()" @click="submit">{{ submitLabel }}</el-button>
+        <el-button type="primary" :loading="busy === 'submit'" :disabled="!pv || !pv.transferable || !tf.reason.trim()" @click="submit">{{ t("transfer.submit") }}</el-button>
       </div>
     </template>
   </el-dialog>
 </template>
 
 <script setup lang="ts">
-/** 新建转移：转单（F-15，总部）/ 转组织（F-16，生产组织申请、总部直接转）共用一个表单，总部在顶部切换类型；
- *  来源 PI → 单据 → 范围（整张单据 / 物料编码下全部号 / 物料编码下单枚或连续号段），转组织另选来源生产组织；
- *  目标 PI、单据、生产组织、物料行都必填（转单的生产组织取目标单据的）。完成后发出 done（种类、单据）。 */
+/** 新建转移：转单（F-15）/ 转组织（F-16）共用一个表单，顶部切换类型；系统管理员、普通操作员都直接转移、立即生效，
+ *  原因必填（没有申请、审批）。来源 PI → 单据 → 范围（整张单据 / 物料编码下全部号 / 物料编码下单枚或连续号段），
+ *  转组织另选来源生产组织（普通操作员限授权组织）；目标 PI、单据、生产组织、物料行都必填（转单的生产组织取目标单据的，
+ *  目标组织不限授权范围）。完成后发出 done（种类、单据）。 */
 import { computed, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -155,6 +160,7 @@ const sourcesLoaded = ref(false);
 const toRows = ref<Target[]>([]);
 const targetsLoaded = ref(false);
 const pv = ref<Preview | null>(null);
+const reasonTouched = ref(false);
 
 const srcMaterials = computed(() => srcBills.value.find((b) => b.bill_no === tf.bill_no)?.materials ?? []);
 const toBills = computed(() => {
@@ -164,10 +170,10 @@ const toBills = computed(() => {
 });
 const toHead = computed(() => toBills.value.find((b) => b.bill_no === tf.to_bill) ?? null);
 const toLines = computed(() => toRows.value.filter((r) => r.bill_no === tf.to_bill));
-/** 转组织：来源、目标组织都在授权范围内时直接转，否则提交申请（系统管理员总是直接转）。 */
-const orgDirect = computed(() => store.canWrite(tf.factory_code, tf.to_factory));
-const formTitle = computed(() => (tf.kind === "BILL" ? t("transfer.newBill") : orgDirect.value ? t("transfer.newDirect") : t("transfer.newApply")));
-const submitLabel = computed(() => (tf.kind === "BILL" ? t("transfer.submitBill") : orgDirect.value ? t("transfer.submitDirect") : t("transfer.submitApply")));
+const formTitle = computed(() => t(`transfer.kindName.${tf.kind}`));
+const reasonMissing = computed(() => reasonTouched.value && !tf.reason.trim());
+/** 目标组织不在本账户授权范围内：照常可转，提示转后本组织不能再操作这些号。 */
+const outOfScope = computed(() => !!tf.to_factory && !store.canWrite(tf.to_factory));
 const ready = computed(
   () =>
     (tf.kind === "BILL" || !!tf.factory_code) && !!tf.pi_no.trim() && !!tf.bill_no &&
@@ -198,6 +204,7 @@ function open(kind: Kind) {
   srcBills.value = [];
   toRows.value = [];
   sourcesLoaded.value = targetsLoaded.value = false;
+  reasonTouched.value = false;
   resetPreview();
   loadSources();
   loadTargets();
@@ -293,12 +300,13 @@ async function preview() {
 
 async function submit() {
   const p = pv.value!;
-  const args = { n: p.transferable, to: nameOf(p.to_org), pi: p.to_pi, bill: p.to_bill };
-  const key = tf.kind === "BILL" ? "transfer.billConfirm" : orgDirect.value ? "transfer.directConfirm" : "transfer.applyConfirm";
-  await ElMessageBox.confirm(t(key, args), formTitle.value, { type: "warning" });
+  reasonTouched.value = true;
+  if (!tf.reason.trim()) return;
+  const args = { n: p.transferable, to: nameOf(p.to_org), pi: p.to_pi, bill: p.to_bill, reason: tf.reason.trim() };
+  await ElMessageBox.confirm(t(tf.kind === "BILL" ? "transfer.billConfirm" : "transfer.orgConfirm", args), formTitle.value, { type: "warning" });
   busy.value = "submit";
   try {
-    const r = tf.kind === "BILL" ? await api.billTransfer(body()) : orgDirect.value ? await api.orgDirect(body()) : await api.orgApply(body());
+    const r = tf.kind === "BILL" ? await api.billTransfer(body()) : await api.orgDirect(body());
     ElMessage.success(t(tf.kind === "BILL" ? "transfer.billDone" : "transfer.orgDone", { no: r.transfer_no, n: r.qty }));
     tf.open = false;
     emit("done", tf.kind, r);
@@ -316,7 +324,12 @@ defineExpose({ open });
 .mt-s { margin-top: 6px; }
 .grow { flex: 1; }
 .hint { width: 100%; margin-top: 4px; line-height: 1.5; }
-.lead { margin: 0 0 14px; }
+.warn-text { color: var(--el-color-danger); font-size: 12px; }
+.reason { margin-top: 12px; border: 1px solid var(--app-line); border-left: 3px solid var(--el-color-warning); border-radius: 8px;
+  padding: 10px 16px 12px; background: var(--app-surface); }
+.reason.bad { border-left-color: var(--el-color-danger); }
+.reason__t { font-size: 13px; font-weight: 600; color: var(--app-text); margin-bottom: 6px; }
+.reason .req { color: var(--el-color-danger); margin-right: 4px; }
 .form :deep(.el-form-item) { margin-bottom: 14px; }
 .form :deep(.el-form-item__label) { padding-bottom: 4px; line-height: 20px; }
 .kinds { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
@@ -329,7 +342,7 @@ defineExpose({ open });
 .side__t { margin: 0 0 10px; font-size: 13px; font-weight: 600; color: var(--app-text); }
 .sides__arrow { display: flex; align-items: center; justify-content: center; color: var(--app-muted); font-size: 18px; }
 .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
-.preview { border: 1px solid var(--app-line); border-radius: 8px; padding: 12px 16px; background: var(--app-canvas); }
+.preview { margin-top: 12px; border: 1px solid var(--app-line); border-radius: 8px; padding: 12px 16px; background: var(--app-canvas); }
 .kpis { display: flex; flex-wrap: wrap; gap: 18px; align-items: baseline; }
 .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .ok { color: var(--el-color-success); }

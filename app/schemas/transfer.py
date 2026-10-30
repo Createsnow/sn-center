@@ -25,7 +25,3 @@ class TransferIn(In):
 
     def req(self) -> TransferRequest:
         return TransferRequest(**self.model_dump())
-
-
-class NoteIn(In):
-    note: str | None = None

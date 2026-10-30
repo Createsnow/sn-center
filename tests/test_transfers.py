@@ -190,22 +190,21 @@ def test_transfer_out_after_source_disabled_mes(w, sql):
     assert xo["result"] == "SUCCESS", "关闭对接后转出照常推送到原接口地址"
 
 
-def test_apply_withdraw_reject_approve(w, api, sql):
+def test_operator_direct_org_transfer_to_unauthorized_target(w, api, sql):
+    """普通操作员直接转组织（没有申请、审批）：原因必填；来源须授权，转入组织不限，立即生效。"""
     a, pi, bill = setup(w, qty=3, mes=False)
     b = w.org(uid("O")[:10])
     w.allocate(pi)
     op = w.user(emp("F"), "operator", a)
     body = org_body(None, pi, bill, b)
-    t = ok(api.post("/api/transfers/org", body, op))
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'APPLYING'", pi) == 3
-    ok(api.post(f"/api/transfers/org/{t['id']}/withdraw", {}, op))
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'ALLOCATED'", pi) == 3
-    t2 = ok(api.post("/api/transfers/org", body, op))
-    ok(api.post(f"/api/transfers/org/{t2['id']}/reject", m(note="不同意"), w.admin))
-    t3 = ok(api.post("/api/transfers/org", body, op))
-    lst = ok(api.get("/api/transfers/org?status=PENDING", op))
-    assert lst["pending"] == 1 and lst["items"][0]["direction"] == "OUT"
-    ok(api.post(f"/api/transfers/org/{t3['id']}/approve", m(), w.admin))
+    for reason in ("", "   ", "x" * 501):
+        assert api.post("/api/transfers/org/direct", body | m(reason=reason), op).code == "REASON_REQUIRED"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND factory_code = %s", pi, a) == 3
+    assert api.post("/api/transfers/org", body, op).code == "METHOD_NOT_ALLOWED", "申请接口已删除"
+    t3 = ok(api.post("/api/transfers/org/direct", body, op))
+    assert (t3["mode"], t3["status"], t3["reason"]) == ("DIRECT", "APPROVED", "调拨") and t3["applied_by"]
+    lst = ok(api.get("/api/transfers/org", op))
+    assert lst["items"][0]["direction"] == "OUT" and "pending" not in lst.body
     assert (
         sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND factory_code = %s AND status = 'ALLOCATED'", pi, b)
         == 3
@@ -275,12 +274,12 @@ def test_org_range_transfer_validation(w, api, sql):
     w.allocate(pi2)
     other = sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s", pi2)
     assert org_direct(w, a, pi, bill, b, start_sn=sns[0], end_sn=other, **rng).code == "TR_RANGE_INVALID"
-    # 起止号相同 = 一枚；生产组织操作员也可按号段申请
+    # 起止号相同 = 一枚；生产组织操作员也可按号段直接转
     op = w.user(emp("F"), "operator", a)
     body = org_body(None, pi, bill, b, start_sn=sns[1], end_sn=sns[1], **rng)
-    t = ok(api.post("/api/transfers/org", body, op))
-    assert t["qty"] == 1 and t["status"] == "PENDING"
-    assert sql.scalar("SELECT status FROM sn_item WHERE sn = %s", sns[1]) == "APPLYING"
+    t = ok(api.post("/api/transfers/org/direct", body, op))
+    assert t["qty"] == 1 and t["status"] == "APPROVED"
+    assert sql.scalar("SELECT factory_code FROM sn_item WHERE sn = %s", sns[1]) == b
 
 
 def test_org_transfer_material_length_check(w, api):
@@ -549,6 +548,30 @@ def test_bill_list_and_items(w, api):
     assert BILLS[tgt]["BillNo"] == tgt
 
 
+def test_operator_bill_transfer_target_unrestricted_reason_required(w, api, sql):
+    """普通操作员转单：来源单据、号所在组织须授权，目标单据的组织不限；原因必填。只转待分配号的转单单，
+    来源或目标单据组织的操作员都能在列表和详情里看到。"""
+    a, pi, src = setup(w, qty=2, mes=False)
+    b = w.org(uid("O")[:10])
+    tgt = uid("MO")
+    w.order(tgt, b, "C1", pi, ("M1", 2))
+    op = w.user(emp("F"), "operator", a)
+    assert api.post("/api/transfers/bill", bill_body(pi, src, tgt, b, reason=" "), op).code == "REASON_REQUIRED"
+    t = ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, b), op))
+    assert t["qty"] == 2 and t["reason"] == "转单"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND status = 'PENDING_ALLOC'", tgt) == 2
+    mine = ok(api.get(f"/api/transfers?kind=BILL&pi={pi}", op))["items"]
+    assert [x["transfer_no"] for x in mine] == [t["transfer_no"]]
+    op_b = w.user(emp("F"), "operator", b)
+    assert ok(api.get(f"/api/transfers/bill/{t['id']}", op_b))["transfer_no"] == t["transfer_no"]
+    assert [x["transfer_no"] for x in ok(api.get(f"/api/transfers/bill?pi={pi}", op_b))["items"]] == [t["transfer_no"]]
+    outsider = w.user(emp("F"), "operator", w.org(uid("O")[:10]))
+    assert api.get(f"/api/transfers/bill/{t['id']}", outsider).code == "FACTORY_FORBIDDEN"
+    assert ok(api.get(f"/api/transfers/bill?pi={pi}", outsider))["items"] == []
+    # 来源不在授权范围内仍被拒绝
+    assert api.post("/api/transfers/bill", bill_body(pi, tgt, src, a), outsider).code == "FACTORY_FORBIDDEN"
+
+
 def test_bill_transfer_view_respects_read_scope(w, api):
     org, pi, src = setup(w, qty=1, mes=False)
     w.allocate(pi)
@@ -563,25 +586,24 @@ def test_bill_transfer_view_respects_read_scope(w, api):
 
 
 def test_all_list_merges_bill_and_org(w, api):
-    """记录页：转单与转组织合在一张表，新的在前；按类型、状态筛选；转单记已完成。"""
+    """记录页：转单与转组织合在一张表，新的在前；按类型筛选；都直接生效。"""
     org, pi, src = setup(w, qty=2, mes=False)
     tgt = uid("MO")
     w.order(tgt, org, "C1", pi, ("M1", 2))
     w.allocate(pi)
     bt = ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, org), w.admin))
     op = w.user(emp("F"), "operator", org)
-    ot = ok(api.post("/api/transfers/org", org_body(None, pi, tgt, w.org(uid("O")[:10])), op))
+    ot = ok(api.post("/api/transfers/org/direct", org_body(None, pi, tgt, w.org(uid("O")[:10])), op))
 
     lst = ok(api.get(f"/api/transfers?pi={pi}", w.admin))
     assert [(x["kind"], x["transfer_no"]) for x in lst["items"]] == [
         ("ORG", ot["transfer_no"]),
         ("BILL", bt["transfer_no"]),
     ]
-    assert lst["total"] == 2 and lst["pending"] >= 1
-    assert lst["items"][1]["status"] == "APPROVED" and lst["items"][1]["to_bill"] == tgt
-    assert [x["kind"] for x in ok(api.get(f"/api/transfers?pi={pi}&status=PENDING", w.admin))["items"]] == ["ORG"]
+    assert lst["total"] == 2 and "pending" not in lst.body
+    assert {x["status"] for x in lst["items"]} == {"APPROVED"} and lst["items"][1]["to_bill"] == tgt
+    assert [x["kind"] for x in ok(api.get(f"/api/transfers?pi={pi}&kind=ORG", w.admin))["items"]] == ["ORG"]
     assert [x["kind"] for x in ok(api.get(f"/api/transfers?pi={pi}&kind=BILL", w.admin))["items"]] == ["BILL"]
-    assert ok(api.get(f"/api/transfers?pi={pi}&kind=BILL&status=PENDING", w.admin))["items"] == []
     mine = ok(api.get(f"/api/transfers?pi={pi}", op))["items"]
     assert {x["kind"]: x["direction"] for x in mine} == {"ORG": "OUT", "BILL": ""}
 

@@ -123,8 +123,7 @@
     "PENDING_ALLOC": "Chờ phân bổ",
     "TO_PUSH": "Chờ đẩy",
     "PUSHED": "Đã đẩy",
-    "ALLOCATED": "Đã phân bổ",
-    "APPLYING": "Đang xin chuyển tổ chức"
+    "ALLOCATED": "Đã phân bổ"
   },
   "deliveryMode": {
     "PUSH": "Đẩy",
@@ -210,12 +209,6 @@
     "MATERIAL": "Theo vật tư",
     "RANGE": "Một SN / dải số"
   },
-  "transferStatus": {
-    "PENDING": "Chờ xử lý",
-    "APPROVED": "Đã hoàn tất",
-    "REJECTED": "Đã từ chối",
-    "WITHDRAWN": "Đã rút lại"
-  },
   "actions": {
     "LOGIN": "Đăng nhập",
     "PASSWORD_CHANGE": "Đổi mật khẩu",
@@ -266,10 +259,6 @@
     "SN_ALERT_HANDLE": "Xử lý cảnh báo giao",
     "SN_READ": "MES tra cứu chỉ đọc",
     "TRANSFER_BILL": "Chuyển chứng từ",
-    "TRANSFER_APPLY": "Xin chuyển tổ chức",
-    "TRANSFER_WITHDRAW": "Rút yêu cầu chuyển tổ chức",
-    "TRANSFER_APPROVE": "Duyệt chuyển tổ chức",
-    "TRANSFER_REJECT": "Từ chối chuyển tổ chức",
     "TRANSFER_DIRECT": "Chuyển tổ chức trực tiếp",
     "AUDIT_ARCHIVE": "Lưu trữ nhật ký",
     "AUDIT_ARCHIVE_PURGE": "Xóa nhật ký lưu trữ",
@@ -395,12 +384,10 @@
     "suspended": "Tạm dừng giao",
     "pushInterrupted": "Lô đẩy bị gián đoạn",
     "pullUnconfirmed": "Đã kéo, quá hạn chưa biên nhận",
-    "pendingTransferKpi": "Yêu cầu chuyển tổ chức chờ xử lý",
     "deliveryAlertKpi": "Cảnh báo giao",
     "orderAlertKpi": "Cảnh báo thay đổi lệnh",
     "runningJobs": "Tác vụ đang tạo",
     "totalGenerated": "Tổng đã tạo",
-    "pendingTransfers": "Có {n} yêu cầu chuyển tổ chức đang chờ",
     "orderAlerts": "Có {n} cảnh báo thay đổi lệnh chưa xử lý",
     "today": "Hôm nay",
     "todaySince": "Từ {time} ({tz})",
@@ -914,13 +901,10 @@
       "ORG": "Chuyển tổ chức · đổi tổ chức sản xuất"
     },
     "kindTip": {
-      "BILL": "Dùng khi lệnh bị hủy hoặc tách trong Kingdee: SN chuyển sang lệnh sản xuất khác, theo tổ chức của lệnh đó; SN chờ phân bổ cũng chuyển được; có hiệu lực ngay.",
-      "ORG": "SN chuyển sang tổ chức sản xuất khác (có thể khác tổ chức của chứng từ đích), chỉ SN đã phân bổ của tổ chức nguồn; khi cả hai tổ chức đều được ủy quyền thì chuyển trực tiếp (hiệu lực ngay), nếu không thì gửi yêu cầu để tài khoản được ủy quyền cả hai bên duyệt."
+      "BILL": "Dùng khi lệnh bị hủy hoặc tách trong Kingdee: SN chuyển sang lệnh sản xuất khác, theo tổ chức của lệnh đó; SN chờ phân bổ cũng chuyển được. Thực hiện trực tiếp, có hiệu lực ngay; bắt buộc nhập lý do chuyển.",
+      "ORG": "SN chuyển sang tổ chức sản xuất khác (có thể khác tổ chức của chứng từ đích), chỉ SN đã phân bổ của tổ chức nguồn. Thực hiện trực tiếp, có hiệu lực ngay; bắt buộc nhập lý do chuyển. Nhân viên vận hành cần được ủy quyền tổ chức nguồn; tổ chức đích không giới hạn."
     },
     "previewFirst": "Hãy xem trước, kiểm tra số có thể chuyển rồi mới gửi",
-    "newBill": "Chuyển chứng từ",
-    "newApply": "Xin chuyển tổ chức",
-    "newDirect": "Chuyển tổ chức trực tiếp",
     "no": "Số phiếu",
     "mode": "Cách thức",
     "billMode": {
@@ -928,7 +912,6 @@
       "SPLIT": "Tách chứng từ"
     },
     "orgMode": {
-      "APPLY": "Yêu cầu",
       "DIRECT": "Chuyển trực tiếp"
     },
     "direction": {
@@ -941,16 +924,6 @@
     "target": "Đích",
     "piInOut": "PI (đi hoặc đến)",
     "emptyMaterial": "(không vật tư)",
-    "targetDisabled": "Tổ chức đích đã vô hiệu",
-    "applied": "Yêu cầu",
-    "decided": "Xử lý",
-    "approve": "Duyệt",
-    "reject": "Từ chối",
-    "withdraw": "Rút lại",
-    "approveConfirm": "Duyệt yêu cầu chuyển tổ chức {no} ({n} SN)? SN sẽ được gắn lại và đẩy tự động.",
-    "rejectConfirm": "Từ chối yêu cầu chuyển tổ chức {no} ({n} SN)? SN trở về trạng thái trước.",
-    "withdrawConfirm": "Rút lại yêu cầu {no}? SN trở về trạng thái trước.",
-    "notePlaceholder": "Ý kiến (tùy chọn, tối đa 500 ký tự)",
     "fromBill": "Chứng từ nguồn",
     "toBill": "Chứng từ đích",
     "range": "Khoảng số",
@@ -961,23 +934,18 @@
     "pvOtherOrg": "Khác tổ chức",
     "pvXo": "Đẩy chuyển đi tới MES nguồn",
     "blocked": {
-      "APPLYING": "Đang xin chuyển",
       "PENDING_ALLOC": "Chờ phân bổ (không chuyển tổ chức)",
       "BATCH_PENDING": "Trong lô chưa xác nhận hoặc thất bại",
       "TRANSFER_OUT_PENDING": "Chuyển đi chưa xong; hãy đẩy tiếp trên phiếu chuyển tổ chức gốc trước"
     },
     "genBefore": "Đã tạo (trước)",
     "genAfter": "Đã tạo (sau)",
-    "submitBill": "Chuyển",
     "billDone": "Đã tạo phiếu chuyển chứng từ {no}, {n} SN",
     "fromOrg": "Tổ chức nguồn",
     "toOrg": "Tổ chức đích",
     "toPi": "PI đích",
-    "applyNote": "Sau khi gửi, SN chuyển sang đang xin chuyển, không thể đẩy hoặc kéo cho tới khi được duyệt (quản trị hệ thống hoặc nhân viên vận hành được ủy quyền cả hai tổ chức); có thể rút lại trước đó. MES không được thông báo trong lúc này.",
-    "directNote": "Chuyển trực tiếp: cả hai tổ chức phải được ủy quyền; SN được gắn lại ngay, tự đẩy điều chuyển và chuyển đi khi cần.",
-    "submitApply": "Gửi yêu cầu",
-    "submitDirect": "Chuyển",
-    "orgDone": "Đã gửi phiếu chuyển tổ chức {no}, {n} SN",
+    "directNote": "SN được gắn lại ngay khi xác nhận, tự đẩy điều chuyển và chuyển đi khi cần; không cần yêu cầu hay phê duyệt.",
+    "orgDone": "Đã thực hiện phiếu chuyển tổ chức {no}, {n} SN",
     "outList": "Xuất danh sách SN chuyển đi",
     "pushTitle": "Đẩy điều chuyển & chuyển đi",
     "pushTo": "Đẩy tới",
@@ -995,7 +963,7 @@
     "after": "Sau khi chuyển",
     "current": "Hiện tại",
     "transferredOut": "Đã chuyển đi",
-    "desc": "Gắn SN sang lệnh sản xuất hoặc tổ chức khác; chuỗi SN không đổi. Hai loại: chuyển chứng từ (khi lệnh bị hủy hoặc tách trong Kingdee; SN theo chứng từ đích; có hiệu lực ngay) và chuyển tổ chức (SN sang tổ chức sản xuất khác: chuyển trực tiếp khi cả hai tổ chức được ủy quyền, nếu không thì gửi yêu cầu để tài khoản được ủy quyền cả hai bên duyệt). Cả hai chọn nguồn theo PI → chứng từ → vật tư → một SN hoặc dải số, và bắt buộc nhập PI, chứng từ, tổ chức sản xuất, vật tư đích. MES được báo bằng lần đẩy điều chuyển / chuyển đi tự động. Nhân viên vận hành chỉ thao tác SN của tổ chức được ủy quyền.",
+    "desc": "Gắn SN sang lệnh sản xuất hoặc tổ chức khác; chuỗi SN không đổi. Hai loại: chuyển chứng từ (khi lệnh bị hủy hoặc tách trong Kingdee; SN theo chứng từ đích) và chuyển tổ chức (SN sang tổ chức sản xuất khác). Quản trị hệ thống và nhân viên vận hành đều chuyển trực tiếp, hiệu lực ngay, bắt buộc nhập lý do; nhân viên vận hành cần được ủy quyền nguồn, đích không giới hạn. Cả hai chọn nguồn theo PI → chứng từ → vật tư → một SN hoặc dải số, và bắt buộc nhập PI, chứng từ, tổ chức sản xuất, vật tư đích. MES được báo bằng lần đẩy điều chuyển / chuyển đi tự động.",
     "scopeTip": {
       "BILL": "Mọi SN của chứng từ này trong PI",
       "MATERIAL": "Mọi SN của mã vật tư này trong chứng từ (mọi dòng cùng vật tư)",
@@ -1006,17 +974,22 @@
     "noSnInPi": "PI này không có SN",
     "noBillInPi": "Ảnh chụp không có chứng từ của PI này",
     "orgOfBill": "Chuyển chứng từ: tổ chức của chứng từ đích",
-    "orgFree": "Mặc định tổ chức của chứng từ đích, có thể đổi",
+    "orgFree": "Mặc định tổ chức của chứng từ đích, có thể chọn bất kỳ tổ chức đang dùng",
     "pickTargetLine": "Chọn dòng vật tư đích",
     "pickMaterial": "Chọn mã vật tư (kể cả trống)",
     "startSn": "SN đầu",
     "endSn": "SN cuối (tùy chọn)",
     "rangeHint": "Chỉ nhập SN đầu = một SN; đầu và cuối phải thuộc chứng từ, vật tư đã chọn và cùng PI tuần tự",
     "toMaterial": "Vật tư đích",
-    "billConfirm": "Gắn {n} SN sang chứng từ {bill} ({to} · PI {pi})?",
-    "applyConfirm": "Xin chuyển {n} SN sang {to} · PI {pi} · chứng từ {bill}?",
-    "directConfirm": "Chuyển trực tiếp {n} SN sang {to} · PI {pi} · chứng từ {bill}?",
-    "quotaUnchanged": "Khi SN đổi dòng vật tư, số đã tạo và đã phân bổ di chuyển theo SN; hạn mức còn lại không đổi."
+    "billConfirm": "Gắn {n} SN sang chứng từ {bill} ({to} · PI {pi})? Có hiệu lực ngay. Lý do: {reason}",
+    "quotaUnchanged": "Khi SN đổi dòng vật tư, số đã tạo và đã phân bổ di chuyển theo SN; hạn mức còn lại không đổi.",
+    "orgConfirm": "Chuyển {n} SN sang {to} · PI {pi} · chứng từ {bill}? Có hiệu lực ngay. Lý do: {reason}",
+    "targetOutOfScope": "Tổ chức đích ngoài phạm vi ủy quyền của bạn: vẫn chuyển được, nhưng sau đó bạn không thể thao tác các SN này.",
+    "reason": "Lý do chuyển",
+    "reasonPlaceholder": "Bắt buộc: lý do chuyển (tối đa 500 ký tự)",
+    "reasonTip": "Chuyển trực tiếp, hiệu lực ngay; lý do được lưu trên phiếu chuyển và nhật ký thao tác",
+    "reasonRequired": "Vui lòng nhập lý do chuyển",
+    "submit": "Chuyển"
   },
   "users": {
     "title": "Người dùng",

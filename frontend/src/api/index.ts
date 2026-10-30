@@ -117,15 +117,11 @@ export const api = {
   billTransferOne: (id: number) => get(`/transfers/bill/${id}`),
   billTransferItems: (id: number, params?: Q) => get(`/transfers/bill/${id}/items`, params),
   orgCandidates: (data: Q) => post("/transfers/org/candidates", data),
-  orgApply: (data: Q) => post("/transfers/org", data),
   orgDirect: (data: Q) => post("/transfers/org/direct", data),
   transfers: (params?: Q) => get("/transfers", params),
   orgTransfers: (params?: Q) => get("/transfers/org", params),
   orgTransfer: (id: number) => get(`/transfers/org/${id}`),
   orgTransferItems: (id: number, params?: Q) => get(`/transfers/org/${id}/items`, params),
-  approveOrg: (id: number, note?: string) => post(`/transfers/org/${id}/approve`, { note }),
-  rejectOrg: (id: number, note?: string) => post(`/transfers/org/${id}/reject`, { note }),
-  withdrawOrg: (id: number) => post(`/transfers/org/${id}/withdraw`),
 
   // ---------------- 查询与留痕
   items: (params?: Q) => get("/sn", params),

@@ -123,8 +123,7 @@
     "PENDING_ALLOC": "待分配",
     "TO_PUSH": "待推送",
     "PUSHED": "已推送",
-    "ALLOCATED": "已分配",
-    "APPLYING": "转组织申请中"
+    "ALLOCATED": "已分配"
   },
   "deliveryMode": {
     "PUSH": "推送",
@@ -210,12 +209,6 @@
     "MATERIAL": "按物料编码",
     "RANGE": "单枚或号段"
   },
-  "transferStatus": {
-    "PENDING": "待处理",
-    "APPROVED": "已完成",
-    "REJECTED": "已驳回",
-    "WITHDRAWN": "已撤回"
-  },
   "actions": {
     "LOGIN": "登录",
     "PASSWORD_CHANGE": "修改密码",
@@ -266,10 +259,6 @@
     "SN_ALERT_HANDLE": "处理交付告警",
     "SN_READ": "MES 只读查询",
     "TRANSFER_BILL": "转单",
-    "TRANSFER_APPLY": "转组织申请",
-    "TRANSFER_WITHDRAW": "转组织撤回",
-    "TRANSFER_APPROVE": "转组织确认",
-    "TRANSFER_REJECT": "转组织驳回",
     "TRANSFER_DIRECT": "直接转组织",
     "AUDIT_ARCHIVE": "痕迹归档",
     "AUDIT_ARCHIVE_PURGE": "归档痕迹清理",
@@ -395,12 +384,10 @@
     "suspended": "暂停交付",
     "pushInterrupted": "推送中断的批次",
     "pullUnconfirmed": "拉取后超时未回执",
-    "pendingTransferKpi": "待处理转组织申请",
     "deliveryAlertKpi": "交付告警",
     "orderAlertKpi": "订单变更提醒",
     "runningJobs": "生成中的任务",
     "totalGenerated": "累计生成",
-    "pendingTransfers": "有 {n} 张转组织申请等待处理",
     "orderAlerts": "有 {n} 条订单变更提醒未处理",
     "today": "今日作业量",
     "todaySince": "自 {time}（{tz}）起",
@@ -914,13 +901,10 @@
       "ORG": "转组织 · 换生产组织"
     },
     "kindTip": {
-      "BILL": "订单在金蝶作废或拆单时用：号改挂到别的生产订单，生产组织随目标单据；可转待分配的号，立即生效。",
-      "ORG": "号换到别的生产组织（可与目标单据的不同），限来源生产组织、已分配的号；来源、目标组织都在授权范围内时可直接转、立即生效，否则提交申请，由对两边都有授权的账户确认。"
+      "BILL": "订单在金蝶作废或拆单时用：号改挂到别的生产订单，生产组织随目标单据；可转待分配的号。直接执行、立即生效，须填转移原因。",
+      "ORG": "号换到别的生产组织（可与目标单据的不同），限来源生产组织、已分配的号。直接执行、立即生效，须填转移原因；普通操作员的来源组织须在授权范围内，转入组织不限。"
     },
     "previewFirst": "先预览，确认可转枚数后再提交",
-    "newBill": "转单",
-    "newApply": "申请转组织",
-    "newDirect": "直接转组织",
     "no": "单号",
     "mode": "方式",
     "billMode": {
@@ -928,7 +912,6 @@
       "SPLIT": "拆单"
     },
     "orgMode": {
-      "APPLY": "申请",
       "DIRECT": "直接转"
     },
     "direction": {
@@ -941,16 +924,6 @@
     "target": "转入目标",
     "piInOut": "PI（转出或转入）",
     "emptyMaterial": "（空物料）",
-    "targetDisabled": "转入生产组织已禁用",
-    "applied": "申请",
-    "decided": "处理",
-    "approve": "确认",
-    "reject": "驳回",
-    "withdraw": "撤回",
-    "approveConfirm": "确认转组织申请 {no}（{n} 枚）？确认后按转入方改挂并自动推送。",
-    "rejectConfirm": "驳回转组织申请 {no}（{n} 枚）？号恢复申请前状态。",
-    "withdrawConfirm": "撤回申请 {no}？号恢复申请前状态。",
-    "notePlaceholder": "处理意见（选填，不超过 500 字）",
     "fromBill": "来源单据",
     "toBill": "目标单据",
     "range": "起止号",
@@ -961,23 +934,18 @@
     "pvOtherOrg": "跨生产组织",
     "pvXo": "将向来源 MES 推送转出",
     "blocked": {
-      "APPLYING": "申请中",
       "PENDING_ALLOC": "待分配（转组织不能转）",
       "BATCH_PENDING": "所在批次未确认或失败",
       "TRANSFER_OUT_PENDING": "转出未完成，先在原转组织单上继续推送转出"
     },
     "genBefore": "已生成（前）",
     "genAfter": "已生成（后）",
-    "submitBill": "确认转单",
     "billDone": "转单单 {no} 已生成，{n} 枚",
     "fromOrg": "来源生产组织",
     "toOrg": "转入生产组织",
     "toPi": "转入 PI",
-    "applyNote": "提交后号变为申请中，不能推送、拉取，等待确认（系统管理员或对来源、目标组织都有授权的普通操作员）；处理前可以撤回。申请期间不通知 MES。",
-    "directNote": "直接转移：来源、目标组织须都在授权范围内；确认后立即改挂，需要时自动推送改挂和转出。",
-    "submitApply": "提交申请",
-    "submitDirect": "确认转移",
-    "orgDone": "转组织单 {no} 已提交，{n} 枚",
+    "directNote": "确认后立即改挂，需要时自动推送改挂和转出；不经申请、审批。",
+    "orgDone": "转组织单 {no} 已生效，{n} 枚",
     "outList": "导出转出号清单",
     "pushTitle": "改挂与转出推送",
     "pushTo": "推送到",
@@ -995,7 +963,7 @@
     "after": "转移后",
     "current": "当前",
     "transferredOut": "已转出",
-    "desc": "把号改挂到别的生产订单或生产组织，都不改 SN 字符串。按目标分两种：转单（订单在金蝶作废或拆单时，号随目标单据，立即生效）与转组织（号换到别的生产组织：来源、目标组织都在授权范围内时可直接转，否则提交申请、由对两边都有授权的账户确认）。两者都按 PI → 单据 → 物料编码 → 单枚或号段选来源，目标须填 PI、单据、生产组织、物料编码；需要告知 MES 的按改挂、转出自动推送。普通操作员只能操作授权组织的号。",
+    "desc": "把号改挂到别的生产订单或生产组织，都不改 SN 字符串。按目标分两种：转单（订单在金蝶作废或拆单时，号随目标单据）与转组织（号换到别的生产组织）。系统管理员、普通操作员都直接转移、立即生效，须填转移原因；普通操作员的来源须在授权范围内，转入目标不限。两者都按 PI → 单据 → 物料编码 → 单枚或号段选来源，目标须填 PI、单据、生产组织、物料编码；需要告知 MES 的按改挂、转出自动推送。",
     "scopeTip": {
       "BILL": "该 PI 下这张单据的全部号",
       "MATERIAL": "该单据下这个物料编码的全部号（同物料的多行一起）",
@@ -1006,17 +974,22 @@
     "noSnInPi": "该 PI 下没有号",
     "noBillInPi": "快照中该 PI 没有单据",
     "orgOfBill": "转单：取目标单据的生产组织",
-    "orgFree": "默认目标单据的生产组织，可改",
+    "orgFree": "默认目标单据的生产组织，可改为任一启用的组织",
     "pickTargetLine": "选择目标物料行",
     "pickMaterial": "选择物料编码（含空物料）",
     "startSn": "起始完整 SN",
     "endSn": "截止完整 SN（选填）",
     "rangeHint": "只填起始 = 单枚；起止号须在所选单据和物料下、同一流水归属 PI 内",
     "toMaterial": "转入物料编码",
-    "billConfirm": "把 {n} 枚号改挂到单据 {bill}（{to} · PI {pi}）？",
-    "applyConfirm": "申请把 {n} 枚号转到 {to} · PI {pi} · 单据 {bill}？",
-    "directConfirm": "把 {n} 枚号直接转到 {to} · PI {pi} · 单据 {bill}？",
-    "quotaUnchanged": "号换了物料行时已生成数、已分配数随号移动，未生成额度不变。"
+    "billConfirm": "把 {n} 枚号改挂到单据 {bill}（{to} · PI {pi}）？确认后立即生效。转移原因：{reason}",
+    "quotaUnchanged": "号换了物料行时已生成数、已分配数随号移动，未生成额度不变。",
+    "orgConfirm": "把 {n} 枚号转到 {to} · PI {pi} · 单据 {bill}？确认后立即生效。转移原因：{reason}",
+    "targetOutOfScope": "转入组织不在你的授权范围内：可以照常转移，转移后你不能再操作这些号。",
+    "reason": "转移原因",
+    "reasonPlaceholder": "必填，说明为什么转移（不超过 500 字）",
+    "reasonTip": "直接转移、立即生效，原因记入转移单与操作痕迹",
+    "reasonRequired": "请填写转移原因",
+    "submit": "确认转移"
   },
   "users": {
     "title": "用户",
