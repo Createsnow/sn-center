@@ -823,4 +823,4 @@ def test_cross_pi_transfer_first_push_rejected_pull_by_target_pi_or_bill(w, api,
     rc = ok(w.mes_receipt(tok, MES.process(org, r["batch"])))
     assert (rc["batchResult"], rc["firstConfirmation"]) == ("SUCCESS", True)
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi2) == 3
-    assert ok(w.mes_next(tok, pi=pi2))["batch"] is None
+    assert ok(w.mes_next(tok, pi=pi2)).code == "NO_BATCH"

@@ -327,11 +327,11 @@ MES 主动拉取一个批次：优先返回范围内最早的未回执批次（�
 ```jsonc
 {
   "schemaVersion": "1.0",                    // String           总是    协议版本
-  "code": "OK",                              // String           总是    成功为 OK，出错为错误码
-  "message": "成功",                          // String           总是    说明；无批次时为「暂无可拉取批次」，有暂停时注明枚数
-  "batchNo": "PL-110-20261026-000046",       // String|null      总是    本次返回的批次号；无批次时为 null
+  "code": "OK",                              // String           总是    OK 返回了一个批次；NO_BATCH 暂无可拉取批次（HTTP 200，不是错误，停止拉取）；出错为错误码
+  "message": "成功",                          // String           总是    说明；NO_BATCH 时为「暂无可拉取批次」，有暂停时注明枚数
+  "batchNo": "PL-110-20261026-000046",       // String|null      总是    本次返回的批次号；NO_BATCH 时为 null
   "timestamp": "2026-10-26 11:48:15.442",    // String           总是    响应时间
-  "batch": {                                 // Object|null      仅成功  批次，结构与推送接口请求体相同（3.1.1）；null 表示暂无可拉取批次
+  "batch": {                                 // Object|null      仅成功  批次，结构与推送接口请求体相同（3.1.1）；OK 时一定有值，NO_BATCH 时为 null
     "schemaVersion": "1.0",
     "batchNo": "PL-110-20261026-000046",
     "batchType": "NEW",
@@ -343,7 +343,7 @@ MES 主动拉取一个批次：优先返回范围内最早的未回执批次（�
     "itemsDigest": "sha256:c07e3a…",
     "items": [ … ]                           //                          批次明细，同推送接口，≤ 5000 条
   },
-  "remaining": 1200,                         // Number           仅成功  范围内剩余可拉取枚数；> 0 时继续拉取
+  "remaining": 1200,                         // Number           仅成功  范围内剩余可拉取枚数；OK 且 > 0 时继续拉取（NO_BATCH 时一律停止）
   "paused": 0,                               // Number           仅成功  范围内暂停下发的枚数
   "details": []                              // Array            仅出错  错误明细 [{field, reason}]
 }
@@ -400,14 +400,14 @@ X-Request-ID: 7d3e9a10-5c2b-4f8e-b1a4-0c6d2e8f9b57
 }
 ```
 
-**暂无可拉取批次**
+**暂无可拉取批次**（HTTP 200，`code = NO_BATCH`，不是错误：停止拉取，等下次触发）
 
 ```http
 HTTP/1.1 200 OK
 Content-Type: application/json
 X-Request-ID: 0c4f6a2e-8b1d-4e3a-9f57-6d2c1b0a9e84
 
-{"schemaVersion": "1.0", "code": "OK", "message": "暂无可拉取批次，30 枚暂停下发", "batchNo": null, "timestamp": "2026-10-26 11:53:00.118", "batch": null, "remaining": 0, "paused": 30}
+{"schemaVersion": "1.0", "code": "NO_BATCH", "message": "暂无可拉取批次，30 枚暂停下发", "batchNo": null, "timestamp": "2026-10-26 11:53:00.118", "batch": null, "remaining": 0, "paused": 30}
 ```
 
 #### 3.2.4 失败示例
@@ -436,6 +436,7 @@ X-Request-ID: 5b2d9c7e-1a4f-4e8b-b3c6-0f9a8d7e6c51
 
 | HTTP | `code` | 场景 | 处理 |
 | --- | --- | --- | --- |
+| 200 | `NO_BATCH` | 不是错误：范围内暂无可拉取批次，`batch` 为 `null`（带 `batchNo` 取回指定批次时不会出现） | 停止拉取，等下次触发 |
 | 400 | `INVALID_REQUEST` | 请求体不是合法 JSON / gzip，或 `pi`、`billNo`、`batchNo` 不是字符串 | 按 `details` 修正请求 |
 | 403 | `ORG_NOT_ALLOWED` | 该 PI 下没有分到本组织的 SN，也没有本组织的转移批次 | 检查 `pi` |
 | 404 | `BATCH_NOT_FOUND` | 指定的批次号不存在，或不属于本组织 | 检查 `batchNo` |
@@ -854,7 +855,7 @@ X-Request-ID: 6d3a0f8c-2e5b-4a71-9c46-1b0a9f8e7d52
 
 ## 附录 B 错误码
 
-SN 系统返回（拉取、回执、查询接口）的全部错误码如下；MES 在推送接口中的响应码见 3.1.5。
+SN 系统返回（拉取、回执、查询接口）的全部错误码如下；MES 在推送接口中的响应码见 3.1.5。HTTP 200 时 `code` 为 `OK`，拉取接口暂无可拉取批次时为 `NO_BATCH`（不是错误，见 3.2.5），其余都是错误码。
 
 | HTTP | `code` | 接口 | 说明 | 处理 |
 | --- | --- | --- | --- | --- |

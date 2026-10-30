@@ -84,7 +84,7 @@ def test_mes_account_cannot_login_page_and_secret_once(w, api, sql):
     cred = f"{e}:{r['secret']}"
     assert api.post("/api/mes/v1/auth/token", m(empNo=e, secret=r["secret"]), None).status == 404, "不再换令牌"
     t = ok(api.call("POST", "/api/mes/v1/batches/next", m(), cred, {"X-Real-IP": "10.1.2.3"}))
-    assert t["code"] == "OK", "每次请求直接带工号:密钥"
+    assert t["code"] == "NO_BATCH", "每次请求直接带工号:密钥（认证通过；新账户没有批次）"
     assert api.get("/api/dashboard", cred).status == 401, "MES 接口账户只能调 MES 接口"
     assert ok(api.get(f"/api/users?q={e}", w.admin))["items"][0]["last_login_at"], "账户页显示最近认证时间"
 
@@ -103,7 +103,7 @@ def test_mes_account_before_mes_enabled(w, api, sql):
     w.allocate(pi)
     token, e = w.mes_account(org)
     first = ok(w.mes_next(token))
-    assert first["batch"] is None and first["remaining"] == 0, "未开启对接：不建交付批次"
+    assert first.code == "NO_BATCH" and first["batch"] is None and first["remaining"] == 0, "未开启对接：不建交付批次"
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'ALLOCATED'", pi) == 3
     assert ok(w.mes_delivered(token, orgCode=org, pi=pi))["items"] == [], "只读查询可用"
     w.enable_mes(org)
