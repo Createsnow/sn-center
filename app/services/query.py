@@ -1,7 +1,9 @@
 """SN 查询与导出（F-18）。只读；按账户可看范围过滤；按条件分页读取，不把全部号装入内存。
 
-SN 明细：按客户、PI、单据编号、物料、米数、状态、交付方式、完整 SN、推送 / 拉取批次精确筛选，另可按流水范围查
+SN 明细：按生产组织、客户、PI、单据编号、物料、米数、状态、完整 SN 精确筛选，另可按流水范围查
 （须填 PI；起止可填流水号或完整 SN，两端都含；只查本 PI 自己生成的流水；附小计）。
+页面只列号本身的信息（流水、PI、单据、物料、米数、客户、生产组织、状态、生成 / 分配时间），
+不列交付方式、交付批次、推送类型等交付业务信息（交付批次在「交付批次」页签看；导出列同 SN 导出，不变）。
 列表总数超过 10 万时只统计到 10 万并注明；导出默认最多 100 万行，超过只导出前 100 万行并提示。
 """
 
@@ -22,8 +24,7 @@ COUNT_CAP = 100_000
 
 COLS = (
     "i.id, i.sn, i.rule_version_id, i.seq_dec, i.seq_pi_no, i.pi_no, i.bill_no, i.bill_seq, i.material_code, "
-    "i.length_text, i.customer_code, i.factory_code, i.status, i.delivery_mode, i.delivery_batch_no, "
-    "i.suspend, i.rev, i.created_at, i.allocated_at, i.delivered_at, i.mes_holder, i.push_type, "
+    "i.length_text, i.customer_code, i.factory_code, i.status, i.suspend, i.created_at, i.allocated_at, "
     "i.attach_no"
 )
 
@@ -37,9 +38,7 @@ class Filter:
     material_code: str | None = None
     length: str | None = None
     status: str | None = None
-    delivery_mode: str | None = None
     sn: str | None = None
-    batch_no: str | None = None
     pi_all: bool = False
     seq_from: str | None = None
     seq_to: str | None = None
@@ -128,7 +127,6 @@ def _where(cu: CurrentUser, f: Filter) -> tuple[str, list, tuple | None]:
         ("i.bill_no", f.bill_no),
         ("i.length_text", f.length),
         ("i.sn", f.sn),
-        ("i.delivery_mode", f.delivery_mode),
     ):
         if not util.blank(v):
             sql += f" AND {col} = %s"
@@ -143,10 +141,6 @@ def _where(cu: CurrentUser, f: Filter) -> tuple[str, list, tuple | None]:
         elif st in util.SN_STATUSES:
             sql += " AND i.status = %s"
             args.append(st)
-    if not util.blank(f.batch_no):
-        b = f.batch_no.strip()
-        sql += " AND i.delivery_batch_no = %s"
-        args.append(b)
     rg = seq_range(f)
     if rg is not None:
         sql += " AND i.seq_pi_no = %s"
@@ -188,17 +182,11 @@ def view(r: dict, bill_pi: dict[str, str]) -> dict:
         "customer_code": r["customer_code"],
         "factory_code": r["factory_code"],
         "status": r["status"],
-        "delivery_mode": r["delivery_mode"],
-        "delivery_batch_no": r["delivery_batch_no"],
         "suspend": r["suspend"],
-        "rev": r["rev"],
-        "mes_holder": r["mes_holder"],
-        "push_type": r["push_type"],
         "pi_changed": bill_pi.get(r["bill_no"], r["pi_no"]) != r["pi_no"],
         "transferred_in": r["seq_pi_no"] != r["pi_no"],
         "created_at": util.fmt(r["created_at"]),
         "allocated_at": util.fmt(r["allocated_at"]),
-        "delivered_at": util.fmt(r["delivered_at"]),
     }
 
 

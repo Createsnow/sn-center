@@ -125,11 +125,6 @@
     "PUSHED": "已推送",
     "ALLOCATED": "已分配"
   },
-  "deliveryMode": {
-    "PUSH": "推送",
-    "PULL": "拉取",
-    "PAGE": "页面下载"
-  },
   "pushType": {
     "NEW": "新号",
     "REASSIGN": "改派",
@@ -756,7 +751,6 @@
     "tabDelivery": "交付批次",
     "tabAlerts": "交付告警",
     "suspended": "暂停交付",
-    "deliveryMode": "交付方式",
     "piAll": "查看本 PI 各生产组织",
     "piAllTip": "正在只读查看同一 PI 在各生产组织的号",
     "seqRange": "流水范围",
@@ -770,12 +764,9 @@
     "seqOwner": "流水归属 PI",
     "piChanged": "已改 PI",
     "transferredIn": "转入",
-    "deliveryBatch": "交付批次",
     "pushType": "推送类型",
     "generatedAt": "生成时间",
     "allocatedAt": "分配时间",
-    "deliveredAt": "交付时间",
-    "mesHolder": "MES 持有组织",
     "batchSource": "建立方式",
     "batchType": "批次类型",
     "result": "结果",

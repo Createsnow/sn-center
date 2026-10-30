@@ -125,10 +125,7 @@ M = {
 "status.TO_PUSH": ("待推送", "To push", "Chờ đẩy"),
 "status.PUSHED": ("已推送", "Pushed", "Đã đẩy"),
 "status.ALLOCATED": ("已分配", "Allocated", "Đã phân bổ"),
-# ---------------- 交付方式 / 推送类型 / 暂停 ----------------
-"deliveryMode.PUSH": ("推送", "Push", "Đẩy"),
-"deliveryMode.PULL": ("拉取", "Pull", "Kéo"),
-"deliveryMode.PAGE": ("页面下载", "Page download", "Tải trên trang"),
+# ---------------- 推送类型 / 暂停 ----------------
 "pushType.NEW": ("新号", "New", "Số mới"),
 "pushType.REASSIGN": ("改派", "Reassign", "Điều chuyển"),
 "receiptResult.ACCEPTED": ("已接收", "Accepted", "Đã nhận"),

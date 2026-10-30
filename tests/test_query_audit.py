@@ -158,6 +158,19 @@ def test_self_check_flags_unconfirmed(w, api, sql, monkeypatch):
     assert sql.count("SELECT COUNT(*) FROM sn_audit WHERE action = 'SELF_CHECK'") >= 1
 
 
+def test_sn_list_hides_delivery_info(w, api):
+    """SN 明细只列号本身的信息：不出交付方式、交付批次、推送类型等交付业务字段；条件仍可按状态等查。"""
+    a, pi, bill = make(w, 3, mes=True)
+    w.allocate(pi)
+    r = ok(api.get(f"/api/sn?pi={pi}&bill_no={bill}", w.admin))
+    assert r["total"] == 3
+    hidden = {"delivery_mode", "delivery_batch_no", "push_type", "mes_holder", "delivered_at", "rev"}
+    assert all(hidden.isdisjoint(x) for x in r["items"])
+    assert {"sn", "seq_text", "seq_dec", "pi_no", "bill_no", "bill_seq", "status", "seq_pi_no"} <= set(r["items"][0])
+    st = r["items"][0]["status"]
+    assert ok(api.get(f"/api/sn?pi={pi}&status={st}", w.admin))["total"] == 3
+
+
 def test_times_are_utc_iso(w, api):
     a, pi, bill = make(w, 1)
     item = ok(api.get(f"/api/sn?pi={pi}", w.admin))["items"][0]

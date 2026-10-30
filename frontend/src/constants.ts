@@ -61,7 +61,6 @@ export const statusLabel = (c?: string | null) => label("status", c);
 export const roleLabel = (c?: string | null) => label("roles", c);
 export const actionLabel = (c?: string | null) => label("actions", c);
 export const scopeLabel = (c?: string | null) => label("scope", c);
-export const deliveryModeLabel = (c?: string | null) => label("deliveryMode", c);
 export const receiptResultLabel = (c?: string | null) => label("receiptResult", c);
 export const receiptOutcomeLabel = (c?: string | null) => label("receiptOutcome", c);
 export const receiptVerdictLabel = (c?: string | null) => label("receiptVerdict", c);

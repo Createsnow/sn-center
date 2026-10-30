@@ -125,11 +125,6 @@
     "PUSHED": "Pushed",
     "ALLOCATED": "Allocated"
   },
-  "deliveryMode": {
-    "PUSH": "Push",
-    "PULL": "Pull",
-    "PAGE": "Page download"
-  },
   "pushType": {
     "NEW": "New",
     "REASSIGN": "Reassign",
@@ -756,7 +751,6 @@
     "tabDelivery": "Delivery batches",
     "tabAlerts": "Delivery alerts",
     "suspended": "Delivery suspended",
-    "deliveryMode": "Delivery mode",
     "piAll": "All orgs of this PI",
     "piAllTip": "Read-only view of this PI's SNs across production orgs",
     "seqRange": "Serial range",
@@ -770,12 +764,9 @@
     "seqOwner": "Serial owner PI",
     "piChanged": "PI changed",
     "transferredIn": "Transferred in",
-    "deliveryBatch": "Delivery batch",
     "pushType": "Push type",
     "generatedAt": "Generated at",
     "allocatedAt": "Allocated at",
-    "deliveredAt": "Delivered at",
-    "mesHolder": "MES holder org",
     "batchSource": "Created by",
     "batchType": "Batch type",
     "result": "Result",

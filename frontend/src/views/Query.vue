@@ -5,8 +5,7 @@
       <!-- 每个页签第一次打开时查询一次，之后按各自的「查询」按钮刷新 -->
       <el-tabs v-model="tab" class="tabs-fill">
         <el-tab-pane :label="t('query.tabSn')" name="sn" lazy>
-          <SnTab :init="{ factory_code: initFactory, pi: initPi, bill_no: str(route.query.bill_no), batch_no: initTab === 'sn' ? initBatch : '' }"
-            @open-delivery="(no) => (deliveryNo = no)" />
+          <SnTab :init="{ factory_code: initFactory, pi: initPi, bill_no: str(route.query.bill_no) }" />
         </el-tab-pane>
         <!-- 交付批次、交付告警：系统管理员、普通操作员；审计员只有 SN 明细 -->
         <el-tab-pane v-if="store.canAct" :label="t('query.tabDelivery')" name="delivery" lazy>
@@ -42,7 +41,7 @@ const route = useRoute();
 const store = useAuthStore();
 const str = (v: unknown) => (typeof v === "string" ? v : "");
 
-/** 从其他页跳来时可带 ?tab=&pi=&batch_no=&bill_no=&factory=&transfer_no=；系统管理员、授权多个组织的账户有生产组织筛选。 */
+/** 从其他页跳来时可带 ?tab=&pi=&batch_no=&bill_no=&factory=&transfer_no=（batch_no、transfer_no 只给交付批次页签）；系统管理员、授权多个组织的账户有生产组织筛选。 */
 const initTab = store.canAct && TABS.includes(str(route.query.tab)) ? str(route.query.tab) : "sn";
 const initFactory = store.multiScope ? str(route.query.factory) : "";
 const initPi = str(route.query.pi);

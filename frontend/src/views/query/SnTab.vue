@@ -1,20 +1,23 @@
 <template>
+  <!-- 常用条件：组织、PI、单据、完整 SN、状态；其余条件在第二行 -->
   <div class="toolbar">
     <FactorySelect v-if="store.multiScope" v-model="f.factory_code" scoped clearable />
     <el-input v-model="f.pi" placeholder="PI" clearable @keyup.enter="load(1)" />
-    <el-input v-model="f.customer_code" :placeholder="t('common.customer')" clearable @keyup.enter="load(1)" />
     <el-input v-model="f.bill_no" :placeholder="t('common.billNo')" clearable @keyup.enter="load(1)" />
-    <el-input v-model="f.material_code" :placeholder="t('common.material')" clearable @keyup.enter="load(1)" />
-    <el-input v-model="f.length" :placeholder="t('common.length')" clearable class="w120" @keyup.enter="load(1)" />
+    <el-input v-model="f.sn" :placeholder="t('common.sn')" clearable class="sn-mono w240" @keyup.enter="load(1)" />
     <el-select v-model="f.status" clearable :placeholder="t('common.status')">
       <el-option v-for="s in STATUS_CODES" :key="s" :value="s" :label="statusLabel(s)" />
       <el-option value="SUSPENDED" :label="t('query.suspended')" />
     </el-select>
-    <el-select v-model="f.delivery_mode" clearable :placeholder="t('query.deliveryMode')">
-      <el-option v-for="m in MODES" :key="m" :value="m" :label="deliveryModeLabel(m)" />
-    </el-select>
-    <el-input v-model="f.sn" :placeholder="t('common.sn')" clearable class="sn-mono" @keyup.enter="load(1)" />
-    <el-input v-model="f.batch_no" :placeholder="t('common.batchNo')" clearable @keyup.enter="load(1)" />
+    <el-button type="primary" @click="load(1)">{{ t("common.search") }}</el-button>
+    <el-button @click="reset">{{ t("common.reset") }}</el-button>
+    <span class="push" />
+    <el-button :loading="exporting" @click="exportSn"><el-icon><Download /></el-icon><span>{{ t("common.downloadXlsx") }}</span></el-button>
+  </div>
+  <div class="toolbar">
+    <el-input v-model="f.customer_code" :placeholder="t('common.customer')" clearable @keyup.enter="load(1)" />
+    <el-input v-model="f.material_code" :placeholder="t('common.material')" clearable @keyup.enter="load(1)" />
+    <el-input v-model="f.length" :placeholder="t('common.length')" clearable class="w120" @keyup.enter="load(1)" />
     <div class="seq-range">
       <span class="seq-range__label">{{ t("query.seqRange") }}</span>
       <el-input v-model="f.seq_from" :placeholder="t('query.seqFrom')" clearable class="sn-mono" @keyup.enter="load(1)" />
@@ -22,10 +25,6 @@
       <el-input v-model="f.seq_to" :placeholder="t('query.seqTo')" clearable class="sn-mono" @keyup.enter="load(1)" />
     </div>
     <el-switch v-if="store.isOperator" v-model="f.pi_all" :active-text="t('query.piAll')" :disabled="!f.pi.trim()" />
-    <el-button type="primary" @click="load(1)">{{ t("common.search") }}</el-button>
-    <el-button @click="reset">{{ t("common.reset") }}</el-button>
-    <span class="push" />
-    <el-button :loading="exporting" @click="exportSn"><el-icon><Download /></el-icon><span>{{ t("common.downloadXlsx") }}</span></el-button>
   </div>
   <el-alert v-if="f.pi_all" type="info" :closable="false" show-icon :title="t('query.piAllTip')" class="mb" />
   <el-alert v-if="hasRange" type="info" :closable="false" show-icon :title="t('query.seqRangeTip')" class="mb" />
@@ -65,28 +64,14 @@
           <el-tag v-if="row.suspend" size="small" type="danger" class="ml">{{ suspendLabel(row.suspend) }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column :label="t('query.deliveryMode')" width="90">
-        <template #default="{ row }">{{ deliveryModeLabel(row.delivery_mode) }}</template>
-      </el-table-column>
-      <el-table-column prop="seq_pi_no" :label="t('query.seqOwner')" min-width="140" show-overflow-tooltip />
-      <el-table-column :label="t('query.deliveryBatch')" min-width="200">
+      <el-table-column :label="t('query.seqOwner')" min-width="160" show-overflow-tooltip>
         <template #default="{ row }">
-          <el-button v-if="row.delivery_batch_no" link type="primary" @click="emit('openDelivery', row.delivery_batch_no)">{{ row.delivery_batch_no }}</el-button>
-        </template>
-      </el-table-column>
-      <el-table-column prop="rev" label="rev" width="56" align="right" />
-      <el-table-column :label="t('query.pushType')" width="90">
-        <template #default="{ row }">
-          {{ pushTypeLabel(row.push_type) }}
+          <span>{{ row.seq_pi_no }}</span>
           <el-tag v-if="row.transferred_in" size="small" type="info" class="ml">{{ t("query.transferredIn") }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column :label="t('query.mesHolder')" width="120" show-overflow-tooltip>
-        <template #default="{ row }">{{ row.mes_holder ? nameOf(row.mes_holder) : "" }}</template>
-      </el-table-column>
       <el-table-column :label="t('query.generatedAt')" width="160"><template #default="{ row }">{{ fmt(row.created_at) }}</template></el-table-column>
       <el-table-column :label="t('query.allocatedAt')" width="160"><template #default="{ row }">{{ fmt(row.allocated_at) }}</template></el-table-column>
-      <el-table-column :label="t('query.deliveredAt')" width="160"><template #default="{ row }">{{ fmt(row.delivered_at) }}</template></el-table-column>
     </el-table>
   </div>
   <div class="foot">
@@ -98,7 +83,10 @@
 </template>
 
 <script setup lang="ts">
-/** SN 明细（F-18）：按组织 / 客户 / PI / 单据 / 物料 / 米数 / 状态 / 交付方式 / 批次 / 流水范围筛选，导出。 */
+/**
+ * SN 明细（F-18）：按组织 / PI / 单据 / 完整 SN / 状态，及客户 / 物料 / 米数 / 流水范围筛选，导出。
+ * 只列号本身的信息，不列交付方式、交付批次、推送类型等交付业务信息（交付批次在「交付批次」页签看）。
+ */
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -107,16 +95,13 @@ import { useAuthStore } from "@/stores/auth";
 import { usePaged } from "@/composables/usePaged";
 import { useFactories } from "@/composables/useFactories";
 import { useTime } from "@/composables/useTime";
-import { STATUS_CODES, deliveryModeLabel, pushTypeLabel, statusLabel, suspendLabel } from "@/constants";
+import { STATUS_CODES, statusLabel, suspendLabel } from "@/constants";
 import { downloadWithToken } from "@/utils/download";
 import FactorySelect from "@/components/FactorySelect.vue";
 import StatusTag from "@/components/StatusTag.vue";
 import { trimmed } from "./filters";
 
-const MODES = ["PUSH", "PULL", "PAGE"];
-
-const props = defineProps<{ init: { factory_code: string; pi: string; bill_no: string; batch_no: string } }>();
-const emit = defineEmits<{ openDelivery: [no: string] }>();
+const props = defineProps<{ init: { factory_code: string; pi: string; bill_no: string } }>();
 
 const { t } = useI18n();
 const store = useAuthStore();
@@ -125,7 +110,7 @@ const { fmt } = useTime();
 
 const blank = () => ({
   factory_code: "", pi: "", customer_code: "", bill_no: "", material_code: "", length: "",
-  status: "", delivery_mode: "", sn: "", batch_no: "", seq_from: "", seq_to: "", pi_all: false,
+  status: "", sn: "", seq_from: "", seq_to: "", pi_all: false,
 });
 const f = reactive({ ...blank(), ...props.init });
 const exporting = ref(false);
@@ -178,6 +163,7 @@ onMounted(() => load(1));
 .mb { margin-bottom: 12px; }
 .ml { margin-left: 4px; }
 .w120 { width: 120px !important; }
+.w240 { width: 240px !important; }
 .push { margin-left: auto; }
 .seq-range { display: flex; align-items: center; gap: 6px; }
 .seq-range .el-input { width: 150px; }

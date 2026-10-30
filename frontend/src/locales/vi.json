@@ -125,11 +125,6 @@
     "PUSHED": "Đã đẩy",
     "ALLOCATED": "Đã phân bổ"
   },
-  "deliveryMode": {
-    "PUSH": "Đẩy",
-    "PULL": "Kéo",
-    "PAGE": "Tải trên trang"
-  },
   "pushType": {
     "NEW": "Số mới",
     "REASSIGN": "Điều chuyển",
@@ -756,7 +751,6 @@
     "tabDelivery": "Lô giao",
     "tabAlerts": "Cảnh báo giao",
     "suspended": "Tạm dừng giao",
-    "deliveryMode": "Cách giao",
     "piAll": "Mọi tổ chức của PI này",
     "piAllTip": "Đang xem chỉ đọc SN của PI này ở các tổ chức sản xuất",
     "seqRange": "Khoảng tuần tự",
@@ -770,12 +764,9 @@
     "seqOwner": "PI sở hữu tuần tự",
     "piChanged": "Đã đổi PI",
     "transferredIn": "Chuyển đến",
-    "deliveryBatch": "Lô giao",
     "pushType": "Loại đẩy",
     "generatedAt": "Thời gian tạo",
     "allocatedAt": "Thời gian phân bổ",
-    "deliveredAt": "Thời gian giao",
-    "mesHolder": "Tổ chức MES đang giữ",
     "batchSource": "Cách tạo",
     "batchType": "Loại lô",
     "result": "Kết quả",
