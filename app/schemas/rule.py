@@ -19,7 +19,7 @@ class RuleSpecIn(In):
 class RuleIn(RuleSpecIn):
     rule_code: str | None = None
     rule_name: str | None = None
-    #: 分类：NONE 未分类 / CUSTOMER / PI（只用于筛选和推荐）
+    #: 规则只绑定 PI：category_scope 不填按 PI（填了只能是 PI），category_value = PI 号，必填
     category_scope: str | None = None
     category_value: str | None = None
     #: 所属生产组织：系统管理员不填 = 全局规则；普通操作员须是授权组织（只授权一个时可不填）
@@ -28,7 +28,7 @@ class RuleIn(RuleSpecIn):
 
 class RuleUpdateIn(RuleSpecIn):
     rule_name: str | None = None
-    #: 不传则分类不变
+    #: 都不传则分类与 PI 不变；传了只能是 PI，PI 必填
     category_scope: str | None = None
     category_value: str | None = None
 

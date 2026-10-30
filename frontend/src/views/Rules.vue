@@ -5,19 +5,13 @@
     </PageHead>
     <div class="surface">
       <div class="toolbar">
-        <el-radio-group v-model="cat">
-          <el-radio-button v-for="s in FILTERS" :key="s" :value="s">
-            {{ t(`rules.cat${s}`) }}<span class="cnt">{{ countOf(s) }}</span>
-          </el-radio-button>
-        </el-radio-group>
-        <el-select v-if="cat === 'CUSTOMER' || cat === 'PI'" v-model="catVal" filterable clearable
-          :placeholder="t(cat === 'CUSTOMER' ? 'rules.filterCustomer' : 'rules.filterPi')">
-          <el-option v-for="v in catValues" :key="v" :value="v" :label="v" />
+        <el-select v-model="piFilter" filterable clearable :placeholder="t('rules.filterPi')">
+          <el-option v-for="v in piValues" :key="v" :value="v" :label="v" />
         </el-select>
-        <el-input v-model="q" clearable :placeholder="t('rules.search')" prefix-icon="Search" @keyup.enter="load" @clear="load" />
-        <el-button @click="load">{{ t("common.search") }}</el-button>
+        <el-input v-model="q" clearable :placeholder="t('rules.search')" prefix-icon="Search" @keyup.enter="search" @clear="search" />
+        <el-button @click="search">{{ t("common.search") }}</el-button>
       </div>
-      <el-table v-loading="loading" :data="shown" size="small" row-key="rule.id" :empty-text="t('common.empty')">
+      <el-table v-loading="loading" :data="paged" size="small" row-key="rule.id" :empty-text="t('common.empty')">
         <el-table-column type="expand">
           <template #default="{ row }">
             <!-- 版本历史：改格式出的版本一行一版（新→旧）；为别的 PI 换前缀另出的版本挂在来源版本下 -->
@@ -45,26 +39,13 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column :label="t('rules.code')" min-width="120"><template #default="{ row }"><b>{{ row.rule.rule_code }}</b></template></el-table-column>
-        <el-table-column :label="t('rules.name')" min-width="140" show-overflow-tooltip><template #default="{ row }">{{ row.rule.rule_name }}</template></el-table-column>
-        <el-table-column :label="t('rules.category')" min-width="140">
-          <template #default="{ row }">
-            <el-tag size="small" :type="row.rule.category_scope === 'PI' ? 'danger' : row.rule.category_scope === 'CUSTOMER' ? 'warning' : 'info'">
-              {{ t(`rules.cat${row.rule.category_scope}`) }}
-            </el-tag>
-            <span class="ml">{{ row.rule.category_value }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column :label="t('rules.owner')" min-width="120" show-overflow-tooltip>
-          <template #default="{ row }">
-            <el-tag v-if="!row.rule.factory_code" size="small" type="info" effect="plain">{{ t("rules.ownerGlobal") }}</el-tag>
-            <span v-else>{{ factoryName(row.rule.factory_code) }}</span>
-          </template>
-        </el-table-column>
+        <el-table-column :label="t('rules.name')" min-width="160" show-overflow-tooltip><template #default="{ row }">{{ row.rule.rule_name }}</template></el-table-column>
         <el-table-column :label="t('rules.version')" width="64"><template #default="{ row }">v{{ row.rule.current_version }}</template></el-table-column>
-        <el-table-column :label="t('rules.format')" min-width="230">
-          <template #default="{ row }"><span class="sn-mono">{{ row.current?.format }}</span></template>
+        <el-table-column label="PI" min-width="120" show-overflow-tooltip>
+          <template #default="{ row }"><span v-if="piOf(row)">{{ piOf(row) }}</span><span v-else class="muted">—</span></template>
         </el-table-column>
+        <el-table-column :label="t('rules.base')" width="72"><template #default="{ row }">{{ row.current?.base }}</template></el-table-column>
+        <el-table-column :label="t('rules.seqCol')" width="88"><template #default="{ row }">{{ row.current?.seq_len }}</template></el-table-column>
         <el-table-column :label="t('rules.withLength')" width="80">
           <template #default="{ row }">{{ row.current?.with_length ? t("common.yes") : t("common.no") }}</template>
         </el-table-column>
@@ -74,13 +55,10 @@
         <el-table-column :label="t('rules.used')" width="80">
           <template #default="{ row }"><el-tag size="small" :type="row.used ? 'success' : 'info'">{{ row.used ? t("common.yes") : t("common.no") }}</el-tag></template>
         </el-table-column>
-        <el-table-column :label="t('rules.pis')" min-width="140" show-overflow-tooltip>
-          <template #default="{ row }"><span v-if="row.pis.length">{{ row.pis.join("、") }}</span><span v-else class="muted">—</span></template>
-        </el-table-column>
-        <el-table-column :label="t('rules.bindings')" min-width="160">
+        <el-table-column :label="t('rules.factory')" min-width="140" show-overflow-tooltip>
           <template #default="{ row }">
-            <div v-if="row.bindings.pi.length" class="small">PI：{{ row.bindings.pi.join("、") }}</div>
-            <span v-else class="muted">—</span>
+            <el-tag v-if="!row.rule.factory_code" size="small" type="info" effect="plain">{{ t("rules.ownerGlobal") }}</el-tag>
+            <span v-else>{{ factoryName(row.rule.factory_code) }}</span>
           </template>
         </el-table-column>
         <el-table-column :label="t('common.actions')" width="130" fixed="right">
@@ -94,6 +72,8 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="shown.length" :page-sizes="[20, 50, 100]"
+        v-model:current-page="page" v-model:page-size="pageSize" />
     </div>
 
     <el-dialog v-model="dialog" :title="editing ? t('rules.editTitle', { code: editing.rule.rule_code }) : t('rules.create')" width="660px">
@@ -110,18 +90,11 @@
             :placeholder="store.isAdmin ? t('rules.ownerGlobal') : t('rules.owner')" />
           <div class="muted hint">{{ store.isAdmin ? t("rules.ownerHint") : t("rules.ownerOperatorHint") }}</div>
         </el-form-item>
-        <el-form-item :label="t('rules.category')">
-          <el-radio-group v-model="form.category_scope">
-            <el-radio-button v-for="s in CATEGORIES" :key="s" :value="s">{{ t(`rules.cat${s}`) }}</el-radio-button>
-          </el-radio-group>
-          <div class="muted hint">{{ t("rules.categoryHint") }}</div>
+        <!-- 规则只绑定 PI：新建必填；早先按未分类 / 客户分类的规则修改时须补填 -->
+        <el-form-item label="PI" required>
+          <el-input v-model.trim="form.pi" maxlength="64" />
+          <div class="muted hint">{{ t("rules.piHint") }}</div>
         </el-form-item>
-        <el-form-item v-if="form.category_scope === 'CUSTOMER'" :label="t('common.customer')" required>
-          <el-select v-model="form.category_value" filterable allow-create default-first-option remote :remote-method="searchCustomers" class="w100">
-            <el-option v-for="c in customers" :key="c" :value="c" :label="c" />
-          </el-select>
-        </el-form-item>
-        <el-form-item v-if="form.category_scope === 'PI'" label="PI" required><el-input v-model.trim="form.category_value" /></el-form-item>
         <el-form-item :label="t('rules.prefix')" required>
           <el-input v-model.trim="form.prefix" class="sn-mono" />
           <div class="muted hint">{{ t("rules.prefixHint") }}</div>
@@ -207,34 +180,34 @@ const factoryName = (code: string) => {
   const f = factories.value.find((x) => x.factory_code === code);
   return f ? `${f.factory_name}（${code}）` : code;
 };
-/** 分类：只用于筛选和推荐，不影响生效（绑定在生成页做，按客户绑定只能走接口）。 */
-const CATEGORIES = ["NONE", "CUSTOMER", "PI"];
-const FILTERS = ["ALL", ...CATEGORIES];
 const rows = ref<any[]>([]);
 const loading = ref(false);
-const cat = ref("ALL");
 const q = ref("");
-const catVal = ref("");
+const piFilter = ref("");
+const page = ref(1);
+const pageSize = ref(20);
 const dialog = ref(false);
 const editing = ref<any>(null);
 const saving = ref(false);
-const customers = ref<string[]>([]);
 const sample = ref<any>(null);
 const sampleError = ref("");
 const sampleLength = ref("");
 const sampleUnit = ref("");
 /** 规则库流水位数默认 5（自定义规则默认 4，在生成页）。 */
 const EMPTY = {
-  rule_code: "", rule_name: "", factory_code: "", category_scope: "NONE", category_value: "", prefix: "", suffix: "", base: 10, seq_len: 5, charset: "",
+  rule_code: "", rule_name: "", factory_code: "", pi: "", prefix: "", suffix: "", base: 10, seq_len: 5, charset: "",
   with_length: true, length_pad: 0, sep_before: "", sep_after: "", with_unit: false,
 };
 const form = reactive({ ...EMPTY });
 const defaultCharset = computed(() => CHARSETS[form.base]);
-const inCat = (s: string) => (s === "ALL" ? rows.value : rows.value.filter((r) => r.rule.category_scope === s));
-const catValues = computed(() => [...new Set(inCat(cat.value).map((r) => r.rule.category_value as string))].filter(Boolean).sort());
-const shown = computed(() => (catVal.value ? inCat(cat.value).filter((r) => r.rule.category_value === catVal.value) : inCat(cat.value)));
-const countOf = (s: string) => inCat(s).length;
-watch(cat, () => (catVal.value = ""));
+/** 规则绑定的 PI；早先按未分类 / 客户分类的规则没有 PI。 */
+const piOf = (row: any): string => (row.rule.category_scope === "PI" ? row.rule.category_value : "");
+const piValues = computed(() => [...new Set(rows.value.map(piOf))].filter(Boolean).sort());
+const shown = computed(() => (piFilter.value ? rows.value.filter((r) => piOf(r) === piFilter.value) : rows.value));
+/** 默认分页列出全部规则（前端分页）；改 PI 筛选回第一页，条数变少时页码不越界。 */
+const paged = computed(() => shown.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value));
+watch(piFilter, () => (page.value = 1));
+watch(() => shown.value.length, (n) => (page.value = Math.min(page.value, Math.max(1, Math.ceil(n / pageSize.value)))));
 /** 版本历史：改格式出的版本（新→旧），各带为别的 PI 换前缀另出的版本（derived_from 指向它）。 */
 function historyOf(row: any) {
   const ids = new Set(row.versions.map((v: any) => v.id));
@@ -267,8 +240,9 @@ async function load() {
   }
 }
 
-async function searchCustomers(text: string) {
-  customers.value = await api.orderCustomers(text);
+function search() {
+  page.value = 1;
+  load();
 }
 
 function openCreate() {
@@ -281,7 +255,7 @@ function openEdit(row: any) {
   editing.value = row;
   const c = row.current;
   Object.assign(form, {
-    rule_name: row.rule.rule_name, category_scope: row.rule.category_scope, category_value: row.rule.category_value,
+    rule_name: row.rule.rule_name, pi: piOf(row),
     prefix: c.prefix, suffix: c.suffix, base: c.base, seq_len: c.seq_len, with_length: !!c.with_length,
     length_pad: c.length_pad || 0, sep_before: c.length_sep_before || "", sep_after: c.length_sep_after || "", with_unit: !!c.with_unit,
     charset: c.charset === CHARSETS[c.base] ? "" : c.charset,
@@ -310,7 +284,7 @@ watch(() => [form.prefix, form.suffix, form.base, form.seq_len, form.charset, fo
   }, 250);
 });
 
-const category = () => ({ category_scope: form.category_scope, category_value: form.category_scope === "NONE" ? "" : form.category_value });
+const category = () => ({ category_scope: "PI", category_value: form.pi });
 
 async function save() {
   saving.value = true;
@@ -354,8 +328,6 @@ onMounted(load);
 .mb { margin-bottom: 12px; }
 .small { font-size: 12px; }
 .hint { width: 100%; line-height: 1.5; margin-top: 2px; }
-.cnt { margin-left: 6px; font-size: 12px; opacity: 0.75; }
-.w100 { width: 100%; }
 .w160 { width: 160px; }
 .versions { padding: 4px 16px 12px 48px; display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
 .ver { display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: center; column-gap: 12px; row-gap: 4px;

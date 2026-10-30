@@ -99,7 +99,11 @@ def test_rules_owned_by_org(w, api):
     glob = w.rule(P())
 
     def new(tok, **kw):
-        return api.post("/api/rules", m(rule_code=uid("R"), rule_name="r", prefix=P(), base=10, seq_len=6) | kw, tok)
+        return api.post(
+            "/api/rules",
+            m(rule_code=uid("R"), rule_name="r", category_value=uid("PI"), prefix=P(), base=10, seq_len=6) | kw,
+            tok,
+        )
 
     created = ok(new(op))["rule"]
     mine = created["id"]

@@ -543,15 +543,24 @@ class World:
 
     # ---------------- 规则
     def rule(
-        self, prefix: str, base: int = 10, seq_len: int = 6, with_length: bool = True, suffix: str = "", **more: Any
+        self,
+        prefix: str,
+        base: int = 10,
+        seq_len: int = 6,
+        with_length: bool = True,
+        suffix: str = "",
+        pi: str | None = None,
+        **more: Any,
     ) -> int:
-        """more：米数补 0 位数 length_pad、分隔符 sep_before / sep_after、带单位 with_unit。"""
+        """pi：规则绑定的 PI（必填，不给时取一个不存在的 PI）；
+        more：米数补 0 位数 length_pad、分隔符 sep_before / sep_after、带单位 with_unit。"""
         r = ok(
             self.api.post(
                 "/api/rules",
                 m(
                     rule_code=uid("R"),
                     rule_name="rule " + prefix,
+                    category_value=pi or uid("PI"),
                     prefix=prefix,
                     suffix=suffix,
                     base=base,

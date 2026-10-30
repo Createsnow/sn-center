@@ -29,12 +29,13 @@ _ORDERS = [
 ]
 
 
-def _rule(code: str, name: str, prefix: str, base: int, seq_len: int, with_length: bool, ts) -> None:
+def _rule(code: str, name: str, pi: str, prefix: str, base: int, seq_len: int, with_length: bool, ts) -> None:
     rid = db.insert(
         "INSERT INTO sn_rule(rule_code, rule_name, category_scope, category_value, current_version, created_by, "
-        "created_at, updated_by, updated_at) VALUES (%s,%s,'NONE','',1,'demo',%s,'demo',%s)",
+        "created_at, updated_by, updated_at) VALUES (%s,%s,'PI',%s,1,'demo',%s,'demo',%s)",
         code,
         name,
+        pi,
         ts,
         ts,
     )
@@ -67,8 +68,8 @@ def seed_if_empty() -> None:
                 ts,
                 ts,
             )
-        _rule("R-HX", "带米数 10 进制 6 位", "HX", 10, 6, True, ts)
-        _rule("R-DK", "不带米数 32 进制 5 位", "DK", 32, 5, False, ts)
+        _rule("R-HX", "带米数 10 进制 6 位", "000001", "HX", 10, 6, True, ts)
+        _rule("R-DK", "不带米数 32 进制 5 位", "000002", "DK", 32, 5, False, ts)
         db.exec_many(
             "INSERT INTO sn_prd_mo(bill_no, seq, customer_code, po, pi, org_code, org_name, attach_no, "
             "material_code, material_name, length_raw, qty, modify_time, synced_at) "

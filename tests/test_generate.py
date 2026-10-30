@@ -24,7 +24,7 @@ def test_prefix_any_characters_end_to_end(w, api, sql):
     """规则不限制字符：中文、小写、符号的前缀与后缀在生成、推送 MES、按 SN 查询、导出都原样。"""
     from conftest import MES
 
-    base = m(rule_code=uid("R"), rule_name="x", base=10, seq_len=4, with_length=False)
+    base = m(rule_code=uid("R"), rule_name="x", category_value=uid("PI"), base=10, seq_len=4, with_length=False)
     prefix = "光缆s." + uid("").replace("-", "")[-6:] + "/#"
     org, pi, bill = mk(w, ("M1", 3))
     w.enable_mes(org)
@@ -151,13 +151,40 @@ def test_length_uses_k3_value_and_must_be_filled_only_when_empty(w, api, sql):
 
 def test_only_identical_prefix_conflicts(w, api):
     w.rule("AX")
-    r = api.post("/api/rules", m(rule_code=uid("R"), rule_name="x", prefix="AX", base=10, seq_len=5), w.admin)
-    assert r.code == "RULE_PREFIX_CONFLICT"
+
+    def new(prefix):
+        return api.post(
+            "/api/rules",
+            m(rule_code=uid("R"), rule_name="x", category_value=uid("PI"), prefix=prefix, base=10, seq_len=5),
+            w.admin,
+        )
+
+    assert new("AX").code == "RULE_PREFIX_CONFLICT"
     for p in ("AXB", "A"):
-        r = api.post("/api/rules", m(rule_code=uid("R"), rule_name="x", prefix=p, base=10, seq_len=5), w.admin)
-        assert r.status == 200, f"{p}：只是开头相同（如 SD 与 SDD）不算同号"
-    r = api.post("/api/rules", m(rule_code=uid("R"), rule_name="x", prefix="ax", base=10, seq_len=5), w.admin)
-    assert r.status == 200, "前缀区分大小写，ax 与 AX 不同"
+        assert new(p).status == 200, f"{p}：只是开头相同（如 SD 与 SDD）不算同号"
+    assert new("ax").status == 200, "前缀区分大小写，ax 与 AX 不同"
+
+
+def test_rule_binds_pi_only(w, api):
+    """新建规则须填 PI，规则只绑定 PI；修改时不传分类与 PI 则不变，传了也只能是 PI。"""
+    prefix = P()
+    body = m(rule_code=uid("R"), rule_name="x", prefix=prefix, base=10, seq_len=5)
+    assert api.post("/api/rules", body, w.admin).code == "RULE_CATEGORY_REQUIRED", "PI 必填"
+    assert api.post("/api/rules", body | m(category_value="  "), w.admin).code == "RULE_CATEGORY_REQUIRED"
+    assert api.post("/api/rules", body | m(category_scope="CUSTOMER", category_value="C1"), w.admin).code == (
+        "RULE_CATEGORY_INVALID"
+    ), "不能按客户分类"
+    assert api.post("/api/rules", body | m(category_scope="NONE"), w.admin).code == "RULE_CATEGORY_INVALID"
+    pi = uid("PI")
+    r = ok(api.post("/api/rules", body | m(category_value=pi), w.admin))["rule"]
+    assert (r["category_scope"], r["category_value"]) == ("PI", pi), "分类不填按 PI"
+    spec = m(rule_name="x", prefix=prefix, base=10, seq_len=5)
+    ok(api.put(f"/api/rules/{r['id']}", spec, w.admin))
+    rows = [x["rule"] for x in ok(api.get(f"/api/rules?q={pi}", w.admin)).body]
+    assert [(x["id"], x["category_value"]) for x in rows] == [(r["id"], pi)], "不传分类与 PI 则不变"
+    assert api.put(f"/api/rules/{r['id']}", spec | m(category_value=""), w.admin).code == "RULE_CATEGORY_REQUIRED"
+    pi2 = uid("PI")
+    assert ok(api.put(f"/api/rules/{r['id']}", spec | m(category_value=pi2), w.admin))["action"] == "RECATEGORIZED"
 
 
 def test_rule_list_and_options_show_versions_pis_and_bindings(w, api):

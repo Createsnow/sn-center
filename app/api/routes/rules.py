@@ -33,14 +33,14 @@ def _spec(b: RuleSpecIn) -> rules.SpecIn:
     )
 
 
-@router.get("", summary="规则库：按全部 / 未分类 / 客户 / PI 筛选，可按编码、名称、客户、PI 搜索")
+@router.get("", summary="规则库：可按分类与 PI 筛选，可按编码、名称、客户、PI 搜索")
 def rule_list(
     cu: OperatorDep, q: str | None = None, category: str | None = None, category_value: str | None = None
 ) -> list:
     return rules.list_rules(q, category, category_value, cu.read_factories(None))
 
 
-@router.post("")
+@router.post("", summary="新建规则：须填 PI（规则只绑定 PI）")
 def rule_create(body: RuleIn, cu: OperatorDep) -> dict:
     return rules.create(
         cu, body.rule_code, body.rule_name, _spec(body), body.category_scope, body.category_value, body.factory_code
@@ -49,7 +49,7 @@ def rule_create(body: RuleIn, cu: OperatorDep) -> dict:
 
 @router.put(
     "/{id:int}",
-    summary="修改：从没生成过号的版本就地修改；生成过的改格式须另出一版并换新前缀；只改名称或分类不另出版；"
+    summary="修改：从没生成过号的版本就地修改；生成过的改格式须另出一版并换新前缀；只改名称或 PI 不另出版；"
     "普通操作员只能改授权组织的规则",
 )
 def rule_update(id: int, body: RuleUpdateIn, cu: OperatorDep) -> dict:

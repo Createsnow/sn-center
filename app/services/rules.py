@@ -7,7 +7,8 @@
   须为它填新前缀，按原格式另出属于它的版本（derived_from 记由哪一版而来）。同一 PI 的多个物料行可共用一个版本。
 - 一个前缀只对应一种格式：生成过号的版本改格式须另出一版并换新前缀；只改名称或分类不另出版本。
 
-规则按 PI 维度绑定（不按客户绑定）；规则选取按物料行：物料行已选规则 ＞ PI 绑定规则，都没有时须先选规则。
+规则按 PI 维度绑定（不按客户绑定）：新建规则须填 PI（分类只能是 PI）；早先按未分类 / 客户分类的规则原样保留，
+修改时须补填 PI。规则选取按物料行：物料行已选规则 ＞ PI 绑定规则，都没有时须先选规则。
 选法：规则库（选一条规则，本 PI 用哪一版见 resolve）或自定义（前缀、进制、位数、米数及其补 0 位数与前后分隔符、
 是否带单位、后缀）；
 自定义规则生成成功后存入规则库并归属本 PI（编码 PI-PI号-n，名称 PI号_vn，n 为本 PI 第几条自定义规则），
@@ -32,11 +33,10 @@ from app.core.security import CurrentUser
 from app.db.session import db, marks
 from app.services import audit, factories
 
-#: 分类
+#: 分类：新建、修改只能是 PI；NONE 未分类 / CUSTOMER 客户只出现在早先的规则上
 NONE = "NONE"
 CUSTOMER = "CUSTOMER"
 PI = "PI"
-CATEGORIES = frozenset((NONE, CUSTOMER, PI))
 _CODE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 #: 自定义规则的流水位数默认（规则库的默认值由页面给出）
 CUSTOM_SEQ_LEN = 4
@@ -384,8 +384,8 @@ def list_rules(
             "(SELECT rule_id FROM sn_rule_version WHERE claimed_pi LIKE %s))"
         )
         args += [like] * 4
-    sql += " ORDER BY category_scope = %s DESC, category_scope ASC, category_value ASC, rule_code ASC"
-    args.append(NONE)
+    sql += " ORDER BY category_scope = %s DESC, category_value ASC, rule_code ASC"
+    args.append(PI)
     return _views(db.all(sql, *args))
 
 
@@ -401,11 +401,12 @@ def get_rule(rule_id: int | None, lock: bool = False) -> dict:
 
 
 def _check_category(category: str | None, value: str | None) -> tuple[str, str]:
-    cs = util.trim(category) or NONE
-    if cs not in CATEGORIES:
+    """规则只绑定 PI：分类不填按 PI，填了只能是 PI；PI 必填，不超过 64 位。"""
+    cs = util.trim(category) or PI
+    if cs != PI:
         raise biz(ErrorCode.RULE_CATEGORY_INVALID)
-    cv = "" if cs == NONE else util.trim(value)
-    if cs != NONE and (not cv or len(cv) > 64):
+    cv = util.trim(value)
+    if not cv or len(cv) > 64:
         raise biz(ErrorCode.RULE_CATEGORY_REQUIRED)
     return cs, cv
 
@@ -491,7 +492,8 @@ def create(
     category_value=None,
     factory_code: str | None = None,
 ) -> dict:
-    """新建规则；factory_code = 所属生产组织（系统管理员可不填 = 全局规则，普通操作员须是授权组织）。"""
+    """新建规则：须填 PI（category_value）；factory_code = 所属生产组织（系统管理员可不填 = 全局规则，
+    普通操作员须是授权组织）。"""
     with db.tx():
         owner = _owner(cu, factory_code)
         c = util.trim(code)
@@ -514,8 +516,8 @@ def _next_version(rule_id: int) -> int:
 
 
 def update(cu: CurrentUser, rule_id: int, name: str | None, s: SpecIn, category=None, category_value=None) -> dict:
-    """结果：UPDATED 就地修改（当前版本从没生成过号）/ NEW_VERSION 另出一版（须换新前缀）/ RENAMED / RECATEGORIZED /
-    UNCHANGED。"""
+    """结果：UPDATED 就地修改（当前版本从没生成过号）/ NEW_VERSION 另出一版（须换新前缀）/ RENAMED /
+    RECATEGORIZED（改 PI）/ UNCHANGED。分类与 PI 都不传则不变（早先未分类 / 客户分类的规则原样保留）。"""
     with db.tx():
         r = get_rule(rule_id, lock=True)
         check_editable(cu, r)
@@ -530,7 +532,7 @@ def update(cu: CurrentUser, rule_id: int, name: str | None, s: SpecIn, category=
         spec = normalize(s)
         cs, cv = (
             (r["category_scope"], r["category_value"])
-            if category is None
+            if category is None and category_value is None
             else _check_category(category, category_value)
         )
         before = spec_of(cur)
