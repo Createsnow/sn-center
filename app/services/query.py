@@ -24,8 +24,7 @@ COUNT_CAP = 100_000
 
 COLS = (
     "i.id, i.sn, i.rule_version_id, i.seq_dec, i.seq_pi_no, i.pi_no, i.bill_no, i.bill_seq, i.material_code, "
-    "i.length_text, i.customer_code, i.factory_code, i.status, i.suspend, i.created_at, i.allocated_at, "
-    "i.attach_no"
+    "i.length_text, i.customer_code, i.factory_code, i.status, i.suspend, i.created_at, i.attach_no"
 )
 
 
@@ -186,7 +185,6 @@ def view(r: dict, bill_pi: dict[str, str]) -> dict:
         "pi_changed": bill_pi.get(r["bill_no"], r["pi_no"]) != r["pi_no"],
         "transferred_in": r["seq_pi_no"] != r["pi_no"],
         "created_at": util.fmt(r["created_at"]),
-        "allocated_at": util.fmt(r["allocated_at"]),
     }
 
 

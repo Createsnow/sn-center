@@ -164,7 +164,7 @@ def test_sn_list_hides_delivery_info(w, api):
     w.allocate(pi)
     r = ok(api.get(f"/api/sn?pi={pi}&bill_no={bill}", w.admin))
     assert r["total"] == 3
-    hidden = {"delivery_mode", "delivery_batch_no", "push_type", "mes_holder", "delivered_at", "rev"}
+    hidden = {"delivery_mode", "delivery_batch_no", "push_type", "mes_holder", "delivered_at", "rev", "allocated_at"}
     assert all(hidden.isdisjoint(x) for x in r["items"])
     assert {"sn", "seq_text", "seq_dec", "pi_no", "bill_no", "bill_seq", "status", "seq_pi_no"} <= set(r["items"][0])
     st = r["items"][0]["status"]

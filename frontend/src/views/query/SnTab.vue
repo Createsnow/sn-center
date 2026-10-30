@@ -37,23 +37,23 @@
   </div>
   <div class="fill-body">
     <el-table v-loading="state.loading" height="100%" :data="items" size="small" :empty-text="t('common.empty')">
-      <el-table-column :label="t('common.sn')" min-width="180" fixed>
-        <template #default="{ row }"><span class="sn-mono">{{ row.sn }}</span></template>
-      </el-table-column>
-      <el-table-column :label="t('common.seqText')" width="110"><template #default="{ row }"><span class="sn-mono">{{ row.seq_text }}</span></template></el-table-column>
-      <el-table-column prop="seq_dec" :label="t('common.seqDec')" width="100" align="right" />
-      <el-table-column label="PI" min-width="150" show-overflow-tooltip>
+      <el-table-column label="PI" min-width="150" fixed show-overflow-tooltip>
         <template #default="{ row }">
           <span>{{ row.pi_no }}</span>
           <el-tag v-if="row.pi_changed" size="small" type="warning" class="ml">{{ t("query.piChanged") }}</el-tag>
         </template>
       </el-table-column>
+      <el-table-column :label="t('common.sn')" min-width="180" fixed>
+        <template #default="{ row }"><span class="sn-mono">{{ row.sn }}</span></template>
+      </el-table-column>
+      <el-table-column :label="t('query.seqText')" width="110"><template #default="{ row }"><span class="sn-mono">{{ row.seq_text }}</span></template></el-table-column>
+      <el-table-column prop="seq_dec" :label="t('query.seqDec')" width="100" align="right" />
+      <el-table-column :label="t('common.attachNo')" width="90" show-overflow-tooltip><template #default="{ row }">{{ row.attach_no || "—" }}</template></el-table-column>
+      <el-table-column prop="length" :label="t('common.length')" width="70" />
       <el-table-column :label="t('query.billSeq')" min-width="150" show-overflow-tooltip>
         <template #default="{ row }">{{ row.bill_no }} / {{ row.bill_seq }}</template>
       </el-table-column>
       <el-table-column prop="material_code" :label="t('common.material')" width="110" show-overflow-tooltip />
-      <el-table-column :label="t('common.attachNo')" width="90" show-overflow-tooltip><template #default="{ row }">{{ row.attach_no || "—" }}</template></el-table-column>
-      <el-table-column prop="length" :label="t('common.length')" width="70" />
       <el-table-column prop="customer_code" :label="t('common.customer')" width="90" show-overflow-tooltip />
       <el-table-column :label="t('common.factory')" width="120" show-overflow-tooltip>
         <template #default="{ row }">{{ nameOf(row.factory_code) }}</template>
@@ -71,7 +71,6 @@
         </template>
       </el-table-column>
       <el-table-column :label="t('query.generatedAt')" width="160"><template #default="{ row }">{{ fmt(row.created_at) }}</template></el-table-column>
-      <el-table-column :label="t('query.allocatedAt')" width="160"><template #default="{ row }">{{ fmt(row.allocated_at) }}</template></el-table-column>
     </el-table>
   </div>
   <div class="foot">
@@ -85,6 +84,7 @@
 <script setup lang="ts">
 /**
  * SN 明细（F-18）：按组织 / PI / 单据 / 完整 SN / 状态，及客户 / 物料 / 米数 / 流水范围筛选，导出。
+ * 列依次为 PI、完整 SN、进制、流水、附件项次、米数、单据 / 序号、物料、客户、生产组织、状态、流水归属 PI、生成时间。
  * 只列号本身的信息，不列交付方式、交付批次、推送类型等交付业务信息（交付批次在「交付批次」页签看）。
  */
 import { computed, onMounted, reactive, ref, watch } from "vue";

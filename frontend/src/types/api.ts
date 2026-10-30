@@ -197,21 +197,15 @@ export interface SnItem {
   bill_no: string;
   bill_seq: number;
   material_code: string;
+  attach_no: string | null;
   length: string;
   customer_code: string;
   factory_code: string | null;
   status: string;
-  delivery_mode: string | null;
-  delivery_batch_no: string | null;
   suspend: string | null;
-  rev: number;
-  mes_holder: string | null;
-  push_type: string | null;
   pi_changed: boolean;
   transferred_in: boolean;
   created_at: string;
-  allocated_at: string | null;
-  delivered_at: string | null;
 }
 
 export interface GenJob {
