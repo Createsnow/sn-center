@@ -167,7 +167,7 @@ def test_role_pages(w, api):
     for path in (
         "/api/orders",
         "/api/generate/pis",
-        "/api/allocation/pis",
+        "/api/allocation/bills",
         "/api/rules",
         "/api/transfers",
         "/api/delivery/batches",

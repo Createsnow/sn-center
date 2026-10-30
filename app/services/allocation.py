@@ -2,10 +2,11 @@
 
 号只能分到订单的生产组织（快照中订单的生产组织；订单已不在快照时取号上的生成时订单生产组织；
 反审核中、PI 变更待确认、暂停交付的单据跳过）。对接 MES 的改为待推送（未入批）并自动开始推送；
-未对接的改为已分配。分配与 SN 导出相互独立：号一经分配即可在分配页「已分配单据」页签下载，不看推送结果。
+未对接的改为已分配。分配与 SN 导出相互独立：号一经分配即可在分配页「已分配」页签下载，不看推送结果。
 分配与生成、撤销共用 PI 操作锁。
-分配页详情：待分配的物料行（号段、目标生产组织）、推送进度、分配记录（最近 100 条，推送与拉取批次）。
-PI 列表与生成页共用（workbench.pis）。
+分配页左侧按单据列出（bills）：SN 枚数与状态（待分配 / 待处理 / 已分配），只按 PI、单据编号筛选。
+分配页详情（所选单据所在的 PI）：各物料行的枚数、号段、目标生产组织与推送进度，各组织推送进度，
+推送批次（最近 100 条，推送与拉取批次）。
 普通操作员只能分配到授权组织：指定的单据、物料行须属于授权组织；整张 PI 分配时只分授权组织的号。
 """
 
@@ -18,6 +19,18 @@ from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db, marks
 from app.services import audit, changes, delivery, factories, locks, orders, workbench
+
+#: 分配页左侧页签：待分配（含待处理）/ 已分配
+TO_ALLOCATE = "TO_ALLOCATE"
+ALLOCATED = "ALLOCATED"
+#: 单据状态：待分配（还有待分配的号）、待处理（号都已分配，但还有待推送的：推送中、等回执、推送失败等）、已分配
+BILL_PENDING = "PENDING"
+BILL_PROCESSING = "PROCESSING"
+BILL_ALLOCATED = "ALLOCATED"
+#: 左侧列表一次最多取的单据数
+LIST_LIMIT = 500
+#: 推送失败或重试用尽仍未确认的批次（与 workbench.item_stats 的「推送中断」同一口径）
+_BROKEN = "(d.result = 'FAILED' OR (d.result = 'UNCONFIRMED' AND d.push_state = 'EXHAUSTED'))"
 
 
 def target_org(bill_no: str) -> tuple[str | None, str | None]:
@@ -204,23 +217,98 @@ def allocate(
     return {"pi_no": pi, "qty": total, "skipped": skipped, "orgs": sorted({g["org"] for g in groups})}
 
 
+# ================================================================== 分配页左侧单据列表
+
+
+def bill_state(pending: int, to_push: int) -> str:
+    """单据状态：有待分配的号 = 待分配；号都已分配但还有待推送的（推送中、等回执、推送失败、暂停等）= 待处理；
+    否则已分配。"""
+    if pending:
+        return BILL_PENDING
+    return BILL_PROCESSING if to_push else BILL_ALLOCATED
+
+
+def bills(cu: CurrentUser, q: str | None, tab: str | None) -> dict:
+    """分配页左侧：按号取单据（号现在挂的 PI + 单据），每行 SN 枚数与状态；q 只按 PI、单据编号匹配。
+    tab：TO_ALLOCATE = 待分配、待处理；ALLOCATED = 已分配；不传为全部。按单据编号新的在前，最多 LIST_LIMIT 张。
+    普通操作员只看授权组织的号。返回（行，是否截断，上方汇总：待分配枚数、待推送（未入批）枚数）。"""
+    facs = cu.read_factories(None)
+    isql, iargs = factories.item_scope_sql(facs)
+    where, args = " WHERE 1=1" + isql, list(iargs)
+    text = util.trim(q)
+    if text:
+        where += " AND (pi_no LIKE %s OR bill_no LIKE %s)"
+        args += [util.like_any(text)] * 2
+    open_ = "SUM(status = 'PENDING_ALLOC') > 0 OR SUM(status = 'TO_PUSH') > 0"
+    having = ""
+    t = util.trim(tab)
+    if t == TO_ALLOCATE:
+        # 先按状态索引取出还有待分配、待推送号的单据，免得整表汇总
+        where += (
+            " AND (pi_no, bill_no) IN (SELECT pi_no, bill_no FROM sn_item WHERE status IN ('PENDING_ALLOC', 'TO_PUSH')"
+            + isql
+            + ")"
+        )
+        args += iargs
+        having = f" HAVING {open_}"
+    elif t == ALLOCATED:
+        having = f" HAVING NOT ({open_})"
+    rows = db.all(
+        "SELECT pi_no, bill_no, COUNT(*) qty, SUM(status = 'PENDING_ALLOC') pending, SUM(status = 'TO_PUSH') to_push, "
+        "SUM(suspend IS NOT NULL) suspended FROM sn_item"
+        + where
+        + " GROUP BY pi_no, bill_no"
+        + having
+        + " ORDER BY bill_no DESC, pi_no LIMIT %s",
+        *args,
+        LIST_LIMIT + 1,
+    )
+    items = []
+    for r in rows[:LIST_LIMIT]:
+        pending, to_push = int(r["pending"] or 0), int(r["to_push"] or 0)
+        items.append(
+            {
+                "pi_no": r["pi_no"],
+                "bill_no": r["bill_no"],
+                "qty": int(r["qty"]),
+                "pending_alloc": pending,
+                "to_push": to_push,
+                "suspended": int(r["suspended"] or 0),
+                "state": bill_state(pending, to_push),
+            }
+        )
+    s = db.one(
+        "SELECT SUM(status = 'PENDING_ALLOC') pending, "
+        "SUM(status = 'TO_PUSH' AND delivery_batch_no IS NULL AND suspend IS NULL) unbatched "
+        "FROM sn_item WHERE status IN ('PENDING_ALLOC', 'TO_PUSH')" + isql,
+        *iargs,
+    )
+    return {
+        "items": items,
+        "capped": len(rows) > LIST_LIMIT,
+        "summary": {"pending_alloc": int(s["pending"] or 0), "unbatched": int(s["unbatched"] or 0)},
+    }
+
+
 # ================================================================== 分配页详情
 
 
 def context(cu: CurrentUser, pi_in: str | None) -> dict:
-    """分配详情：待分配的号按物料行列出（枚数、号段、分到哪个生产组织、是否对接 MES、不能分配的原因），
-    以及各组织的推送进度与分配记录。"""
+    """分配详情：本 PI 各单据的物料行（SN 枚数、待分配 / 待推送 / 推送失败枚数、号段、分到哪个生产组织、
+    是否对接 MES、不能分配的原因）及单据状态，各组织的推送进度与推送批次。
+    页面按左侧页签只显示相应状态的单据；勾选的物料行只分配其中待分配的号。"""
     pi = util.trim(pi_in)
     if not pi:
         raise biz(ErrorCode.PI_REQUIRED)
     facs = cu.read_factories(None)
-    isql, iargs = factories.item_scope_sql(facs)
+    isql, iargs = factories.item_scope_sql(facs, "i.")
     rows = db.all(
-        "SELECT bill_no, bill_seq, gen_org_code, MAX(material_code) material_code, MAX(attach_no) attach_no, "
-        "MAX(length_text) length, "
-        "COUNT(*) n, MIN(sn) a, MAX(sn) b FROM sn_item WHERE pi_no = %s AND status = 'PENDING_ALLOC'"
-        + isql
-        + " GROUP BY bill_no, bill_seq, gen_org_code ORDER BY bill_no, bill_seq",
+        "SELECT i.bill_no, i.bill_seq, MAX(i.material_code) material_code, COUNT(*) n, "
+        "SUM(i.status = 'PENDING_ALLOC') pending, SUM(i.status = 'TO_PUSH') to_push, "
+        f"SUM(i.status = 'TO_PUSH' AND d.id IS NOT NULL AND {_BROKEN}) failed, "
+        "MAX(CASE WHEN i.status = 'PENDING_ALLOC' THEN i.gen_org_code END) gen_org, MAX(i.factory_code) org, "
+        "MIN(i.sn) a, MAX(i.sn) b FROM sn_item i LEFT JOIN sn_delivery_batch d ON d.batch_no = i.delivery_batch_no "
+        "WHERE i.pi_no = %s" + isql + " GROUP BY i.bill_no, i.bill_seq ORDER BY i.bill_no, i.bill_seq",
         pi,
         *iargs,
     )
@@ -228,19 +316,25 @@ def context(cu: CurrentUser, pi_in: str | None) -> dict:
     targets: dict[str, tuple[str | None, str | None]] = {}
     lines = []
     for r in rows:
-        if r["bill_no"] not in targets:
-            targets[r["bill_no"]] = target_org(r["bill_no"])
-        org, block = targets[r["bill_no"]]
-        org = None if block else org or r["gen_org_code"]
+        pending = int(r["pending"] or 0)
+        block = None
+        if pending:
+            if r["bill_no"] not in targets:
+                targets[r["bill_no"]] = target_org(r["bill_no"])
+            org, block = targets[r["bill_no"]]
+            org = None if block else org or r["gen_org"]
+        else:
+            org = r["org"]
         f = factories.get(org) if org else None
         lines.append(
             {
                 "bill_no": r["bill_no"],
                 "seq": r["bill_seq"],
                 "material_code": r["material_code"],
-                "attach_no": r["attach_no"],
-                "length": r["length"],
                 "qty": int(r["n"]),
+                "pending_alloc": pending,
+                "to_push": int(r["to_push"] or 0),
+                "failed": int(r["failed"] or 0),
                 "start_sn": r["a"],
                 "end_sn": r["b"],
                 "org_code": org,
@@ -249,6 +343,14 @@ def context(cu: CurrentUser, pi_in: str | None) -> dict:
                 "skip": block,
             }
         )
+    states: dict[str, list[int]] = {}
+    for x in lines:
+        st = states.setdefault(x["bill_no"], [0, 0])
+        st[0] += x["pending_alloc"]
+        st[1] += x["to_push"]
+    bill_states = {no: bill_state(*v) for no, v in states.items()}
+    for x in lines:
+        x["bill_state"] = bill_states[x["bill_no"]]
     stats = workbench.item_stats([pi], facs).get(pi, {})
     msql, margs = factories.scope_sql(facs, "m.org_code")
     quota = db.scalar(

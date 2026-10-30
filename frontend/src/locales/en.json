@@ -303,26 +303,30 @@
     "summary": "To allocate {pending} · to push {unbatched}",
     "tab": {
       "TO_ALLOCATE": "To allocate",
-      "ALLOCATED": "Allocated / pushed"
-    },
-    "state": {
-      "INTERRUPTED": "Push interrupted",
-      "PENDING": "To allocate",
       "ALLOCATED": "Allocated"
     },
-    "pickPi": "Pick a PI on the left",
+    "search": "PI / bill No.",
+    "state": {
+      "PENDING": "To allocate",
+      "PROCESSING": "To handle",
+      "ALLOCATED": "Allocated"
+    },
+    "pickBill": "Pick a bill on the left",
     "toGenerate": "{n} more to generate · go to generation",
     "unbatched": "To push",
     "interrupted": "Push interrupted",
     "resumeBtn": "Resume push ({n} left)",
     "resumed": "Push resumed, {n} left",
-    "linesTitle": "SNs to allocate",
-    "billCounts": "{n} lines · to allocate {qty}",
+    "linesTitle": "Bill lines",
+    "billCounts": "{n} lines · {qty} SNs",
     "billPicked": "{n} lines ticked",
     "toOrg": "To org",
-    "way": "Delivery",
-    "wayPush": "MES · push",
-    "wayExport": "Page download",
+    "prog": {
+      "PENDING": "To allocate",
+      "TO_PUSH": "To push",
+      "FAILED": "{n} push failed",
+      "DONE": "Done"
+    },
     "skip": {
       "PI_FROZEN": "PI change frozen",
       "REVERSAL": "Unapproved",
@@ -338,15 +342,11 @@
     "allocConfirmPush": "Allocate {n} SNs? The MES part will be pushed in {m} batches automatically.",
     "allocDone": "{n} SNs allocated",
     "allocSkipped": "{n} bills were skipped (frozen, unapproved or suspended)",
-    "tabAllocated": "Allocated bills {n}",
     "noAllocated": "No SNs of this PI are allocated yet",
     "tabPush": "Push progress",
-    "tabBatches": "Allocation records {n}",
     "pushProgress": "Push {i} / {n} · {qty} pushed",
     "waitingReceipt": "Delivered, awaiting MES receipt",
     "batchSource": "Created by",
-    "batchResult": "Result",
-    "confirmMethod": "Confirmed by",
     "manualConfirm": "Confirm manually",
     "void": "Void"
   },

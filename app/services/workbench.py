@@ -2,7 +2,7 @@
 
 每张 PI 一行：客户、单据数、生产组织、状态、订单总数、已生成（各订单已生成数之和；转组织改 PI 的号仍计入原 PI）、
 转入号（挂在本 PI 下、由别的 PI 生成的号）、已分配（含已推送、已拉取）；行上按钮按 F-10 第 3 条的顺序判断。
-生成页、分配页各用自己的页签筛选同一份列表；各 PI 的号数统计（item_stats、gen_own）两页共用。
+各 PI 的号数统计（item_stats、gen_own）生成页、分配页共用；分配页左侧按单据列出，见 allocation.bills。
 生成详情：单据 → 物料行（规则、附件项次、米数、号段）、生成任务（最近 20 条）、可撤销的号段。
 分配详情见 allocation.context。
 """
@@ -65,66 +65,6 @@ def _pi_rows(q: str | None, by_modify: bool = False, facs: tuple[str, ...] | Non
         *args,
         LIST_LIMIT,
     )
-
-
-def _to_alloc_pis(facs: tuple[str, ...] | None) -> tuple[str, list]:
-    """分配页「待分配」页签的候选 PI：有待分配的号、有未入批的待推送号，或有推送失败 / 重试用尽的批次。"""
-    isql, iargs = factories.item_scope_sql(facs)
-    bsql, bargs = factories.scope_sql(facs)
-    return (
-        "SELECT DISTINCT pi_no FROM sn_item WHERE status = 'PENDING_ALLOC'" + isql + " "
-        "UNION SELECT DISTINCT pi_no FROM sn_item WHERE status = 'TO_PUSH' AND delivery_batch_no IS NULL "
-        "AND suspend IS NULL" + isql + " "
-        "UNION SELECT DISTINCT pi_no FROM sn_delivery_batch WHERE batch_type <> 'TRANSFER_OUT' "
-        "AND (result = 'FAILED' OR (result = 'UNCONFIRMED' AND push_state = 'EXHAUSTED'))" + bsql,
-        [*iargs, *iargs, *bargs],
-    )
-
-
-def _item_pi_rows(q: str | None, tab: str | None, facs: tuple[str, ...] | None = None) -> tuple[list[dict], bool]:
-    """分配页：按号取 PI（号现在挂的 PI），不受快照「前 LIST_LIMIT 张」的限制——快照里 PI 再多、
-    或单据已移出快照，有号的 PI 都能列出；「待分配」页签只取可能待分配或推送中断的 PI。行的字段同 _pi_rows
-    （已不在快照的 PI 订单数、额度为 0，单据、生产组织取号上的）。按最大单据编号排、新的在前，最多 LIST_LIMIT 张。
-    facs = 授权范围（None = 全部）：只取范围内的号和单据。返回（行，是否截断）。"""
-    isql, iargs = factories.item_scope_sql(facs)
-    if util.trim(tab) == TO_ALLOCATE:
-        sql, sargs = _to_alloc_pis(facs)
-    else:
-        sql, sargs = "SELECT DISTINCT pi_no FROM sn_item WHERE 1=1" + isql, iargs
-    names = {p for p in db.column(sql, *sargs) if p}
-    text = util.trim(q)
-    if text and names:
-        like = util.like_any(text)
-        hit = set(
-            db.column(
-                "SELECT DISTINCT pi FROM sn_prd_mo WHERE pi LIKE %s OR bill_no LIKE %s OR po LIKE %s "
-                "OR customer_code LIKE %s OR material_code LIKE %s "
-                "UNION SELECT DISTINCT pi FROM sn_bill_ledger WHERE pi LIKE %s OR bill_no LIKE %s "
-                "OR customer_code LIKE %s",
-                *[like] * 8,
-            )
-        )
-        names = {p for p in names if p in hit or text in p}
-    if not names:
-        return [], False
-    msql, margs = factories.scope_sql(facs, "m.org_code")
-    rows = {
-        r["pi"]: r for r in db.all(f"{_PI_SUM} WHERE m.pi IN ({marks(len(names))}){msql} GROUP BY m.pi", *names, *margs)
-    }
-    gone = sorted(names - set(rows))
-    if gone:
-        gsql, gargs = factories.item_scope_sql(facs, "i.")
-        for r in db.all(
-            "SELECT i.pi_no pi, MAX(l.customer_code) customer_code, COUNT(DISTINCT i.bill_no) bills, "
-            "GROUP_CONCAT(DISTINCT i.gen_org_code ORDER BY i.gen_org_code) orgs, MAX(i.bill_no) last_bill "
-            "FROM sn_item i LEFT JOIN sn_bill_ledger l ON l.bill_no = i.bill_no "
-            f"WHERE i.pi_no IN ({marks(len(gone))}){gsql} GROUP BY i.pi_no",
-            *gone,
-            *gargs,
-        ):
-            rows[r["pi"]] = r | {"total_qty": 0, "gen_sum": 0, "quota": 0, "modify_time": None}
-    out = sorted(rows.values(), key=lambda r: r["last_bill"] or "", reverse=True)
-    return out[:LIST_LIMIT], len(out) > LIST_LIMIT
 
 
 def item_stats(pis: list[str], facs: tuple[str, ...] | None = None) -> dict[str, dict]:
@@ -209,18 +149,13 @@ def _line_issue_summary(pi: str, facs: tuple[str, ...] | None = None) -> tuple[b
     return need_rule, cannot, reasons
 
 
-def pis(cu: CurrentUser, q: str | None, tab: str | None, by_modify: bool = False, by_items: bool = False) -> dict:
-    """PI 列表与上方汇总（还可生成、待分配、待推送）。tab：生成页 TO_GENERATE（含生成中）/ GENERATED（已生成完），
-    分配页 TO_ALLOCATE（有号待分配或推送中断）/ ALLOCATED（已分配完）；不传为全部。
-    by_modify：生成页按单据修改日期排（与订单页同一排序）。
-    by_items：分配页按号取 PI（见 _item_pi_rows），不逐行判断能否生成。
+def pis(cu: CurrentUser, q: str | None, tab: str | None, by_modify: bool = False) -> dict:
+    """生成页 PI 列表与上方汇总（还可生成、待分配、待推送）。tab：TO_GENERATE（含生成中）/ GENERATED（已生成完）；
+    不传为全部。by_modify：按单据修改日期排（与订单页同一排序）。
     普通操作员只看授权组织的单据和号，汇总也只按这些算。"""
     facs = cu.read_factories(None)
-    if by_items:
-        rows, capped = _item_pi_rows(q, tab, facs)
-    else:
-        rows = _pi_rows(q, by_modify, facs)
-        capped = len(rows) >= LIST_LIMIT
+    rows = _pi_rows(q, by_modify, facs)
+    capped = len(rows) >= LIST_LIMIT
     names = [r["pi"] for r in rows]
     stats = item_stats(names, facs)
     own = gen_own(names, facs)
@@ -244,7 +179,7 @@ def pis(cu: CurrentUser, q: str | None, tab: str | None, by_modify: bool = False
         status, reasons = None, {}
         if r["pi"] in running:
             status = GENERATING
-        elif quota > 0 and i < DETAIL_ROWS and not by_items:
+        elif quota > 0 and i < DETAIL_ROWS:
             need_rule, cannot, reasons = _line_issue_summary(r["pi"], facs)
             status = CANNOT if cannot and not need_rule else (NEED_RULE if need_rule else None)
         if status is None:
@@ -278,12 +213,9 @@ def pis(cu: CurrentUser, q: str | None, tab: str | None, by_modify: bool = False
                 "reasons": reasons,
             }
         )
-    to_alloc = lambda x: x["pending_alloc"] > 0 or x["push_interrupted"]  # noqa: E731
     tabs = {
         "TO_GENERATE": lambda x: x["quota"] > 0 or x["status"] == GENERATING,
         "GENERATED": lambda x: x["quota"] == 0 and x["status"] != GENERATING,
-        "TO_ALLOCATE": to_alloc,
-        "ALLOCATED": lambda x: not to_alloc(x) and x["allocated_qty"] > 0,
     }
     t = util.trim(tab)
     shown = [x for x in out if tabs[t](x)] if t in tabs else out

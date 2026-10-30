@@ -299,30 +299,34 @@
   },
   "allocate": {
     "title": "SN 分配",
-    "desc": "把已生成的号分到订单的生产组织（整张 PI 或勾选物料行）：对接 MES 的自动逐批推送，中断后可续推；分配后的号在「已分配单据」页签逐枚查看、下载 xlsx，不论是否对接 MES。",
+    "desc": "把已生成的号分到订单的生产组织（整张 PI 或勾选物料行）：对接 MES 的自动逐批推送，中断后可续推；分配后的号在「已分配」页签逐枚查看、下载 xlsx，不论是否对接 MES。",
     "summary": "待分配 {pending} · 待推送 {unbatched}",
     "tab": {
       "TO_ALLOCATE": "待分配",
-      "ALLOCATED": "已分配 / 已推送"
-    },
-    "state": {
-      "INTERRUPTED": "推送中断",
-      "PENDING": "待分配",
       "ALLOCATED": "已分配"
     },
-    "pickPi": "从左侧选择一张 PI",
+    "search": "PI / 单据编号",
+    "state": {
+      "PENDING": "待分配",
+      "PROCESSING": "待处理",
+      "ALLOCATED": "已分配"
+    },
+    "pickBill": "从左侧选择一张单据",
     "toGenerate": "还可生成 {n} 枚 · 去生成",
     "unbatched": "待推送",
     "interrupted": "推送中断",
     "resumeBtn": "继续推送（剩余 {n} 次）",
     "resumed": "已继续推送，剩余 {n} 次",
-    "linesTitle": "待分配的号",
-    "billCounts": "{n} 行 · 待分配 {qty}",
+    "linesTitle": "单据物料行",
+    "billCounts": "{n} 行 · SN {qty} 枚",
     "billPicked": "已选 {n} 行",
     "toOrg": "分到",
-    "way": "交付方式",
-    "wayPush": "对接 MES · 推送",
-    "wayExport": "页面下载",
+    "prog": {
+      "PENDING": "待分配",
+      "TO_PUSH": "待推送",
+      "FAILED": "推送失败 {n}",
+      "DONE": "已完成"
+    },
     "skip": {
       "PI_FROZEN": "PI 变更冻结",
       "REVERSAL": "反审核中",
@@ -338,15 +342,11 @@
     "allocConfirmPush": "确认分配 {n} 枚？对接 MES 的部分将自动推送 {m} 次。",
     "allocDone": "已分配 {n} 枚",
     "allocSkipped": "{n} 张单据被跳过（冻结、反审核或暂停交付）",
-    "tabAllocated": "已分配单据 {n}",
     "noAllocated": "这张 PI 还没有已分配的号",
     "tabPush": "推送进度",
-    "tabBatches": "分配记录 {n}",
     "pushProgress": "第 {i} / {n} 次 · 已推送 {qty} 枚",
     "waitingReceipt": "已送达，等待 MES 回执",
     "batchSource": "建立方式",
-    "batchResult": "结果",
-    "confirmMethod": "确认方式",
     "manualConfirm": "人工确认",
     "void": "作废"
   },

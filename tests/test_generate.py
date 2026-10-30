@@ -688,14 +688,12 @@ def test_workbench_lists_status_and_buttons(w, api):
 
     def tabs() -> tuple[list[str], ...]:
         pages = (
-            ("generate", "TO_GENERATE"),
-            ("generate", "GENERATED"),
-            ("allocation", "TO_ALLOCATE"),
-            ("allocation", "ALLOCATED"),
+            ("generate/pis", "TO_GENERATE"),
+            ("generate/pis", "GENERATED"),
+            ("allocation/bills", "TO_ALLOCATE"),
+            ("allocation/bills", "ALLOCATED"),
         )
-        return tuple(
-            [x["pi_no"] for x in ok(api.get(f"/api/{p}/pis?q={pi}&tab={t}", w.admin))["items"]] for p, t in pages
-        )
+        return tuple([x["pi_no"] for x in ok(api.get(f"/api/{p}?q={pi}&tab={t}", w.admin))["items"]] for p, t in pages)
 
     assert tabs() == ([pi], [], [], [])
     w.generate(pi)
@@ -763,31 +761,25 @@ def test_generate_page_sorts_like_orders_page(w, api):
     assert [x["bill_no"] for x in p["items"]] == [a, b], "排号按所给单据顺序（页面默认传单据编号从小到大）"
 
 
-def test_allocation_list_driven_by_sns_not_snapshot_window(w, api, monkeypatch):
-    """分配页 PI 列表按号取：快照里 PI 再多（超出列表上限）、或单据已移出快照，有待分配号的 PI 都在「待分配」页签。"""
-    from app.services import workbench
-
+def test_allocation_bill_list_driven_by_sns(w, api):
+    """分配页左侧按单据列出（按号取）：单据移出快照仍列出；只按 PI、单据编号筛选；SN 枚数与状态（待分配 / 已分配）。"""
     org = w.org(uid("O")[:10])
-    _, pi_old, _ = mk(w, ("M1", 3), org=org, bill="A" + uid("MO"))
-    ok(w.bind_pi(pi_old, w.rule(P())))
-    w.generate(pi_old)
-    _, pi_gone, bill_gone = mk(w, ("M1", 2), org=org, bill="A" + uid("MO"))
-    ok(w.bind_pi(pi_gone, w.rule(P())))
-    w.generate(pi_gone)
-    BILLS.pop(bill_gone)
+    _, pi, b1 = mk(w, ("M1", 3), org=org, bill="A" + uid("MO"))
+    _, _, b2 = mk(w, ("M1", 2), pi=pi, org=org, bill="A" + uid("MO"))
+    ok(w.bind_pi(pi, w.rule(P())))
+    w.generate(pi)
+    BILLS.pop(b2)
     w.compare()
-    # 之后又同步进来更多单据编号更大、还没生成的 PI
-    for _ in range(3):
-        mk(w, ("M1", 1), org=org, bill="Z" + uid("MO"))
-    monkeypatch.setattr(workbench, "LIST_LIMIT", 2)
 
-    def names(tab: str, q: str = "") -> list[str]:
-        return [x["pi_no"] for x in ok(api.get(f"/api/allocation/pis?tab={tab}&q={q}", w.admin))["items"]]
+    def rows(tab: str = "", q: str = pi) -> dict[str, tuple]:
+        r = ok(api.get(f"/api/allocation/bills?tab={tab}&q={q}", w.admin))
+        return {x["bill_no"]: (x["pi_no"], x["qty"], x["state"]) for x in r["items"]}
 
-    shown = names("TO_ALLOCATE")
-    assert pi_old in shown and pi_gone in shown
-    assert names("TO_ALLOCATE", pi_gone) == [pi_gone]
-    gone = next(x for x in ok(api.get(f"/api/allocation/pis?q={pi_gone}", w.admin))["items"])
-    assert (gone["pending_alloc"], gone["generated_qty"], gone["bills"]) == (2, 2, 1)
-    w.allocate(pi_old)
-    assert pi_old not in names("TO_ALLOCATE") and pi_old in names("ALLOCATED", pi_old)
+    assert rows("TO_ALLOCATE") == {b1: (pi, 3, "PENDING"), b2: (pi, 2, "PENDING")}, "移出快照的单据有号仍列出"
+    assert rows("TO_ALLOCATE", b2) == {b2: (pi, 2, "PENDING")}, "可按单据编号筛选"
+    w.allocate(pi, lines=[(b1, 1)])
+    assert rows("TO_ALLOCATE") == {b2: (pi, 2, "PENDING")}
+    assert rows("ALLOCATED") == {b1: (pi, 3, "ALLOCATED")}, "未对接 MES：分配即已分配"
+    ctx = ok(api.get(f"/api/allocation/context?pi={pi}", w.admin))
+    got = {(x["bill_no"], x["qty"], x["pending_alloc"], x["bill_state"]) for x in ctx["lines"]}
+    assert got == {(b1, 3, 0, "ALLOCATED"), (b2, 2, 2, "PENDING")}, "详情列出本 PI 全部单据的物料行与状态"

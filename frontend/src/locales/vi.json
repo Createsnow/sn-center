@@ -303,26 +303,30 @@
     "summary": "Chờ phân bổ {pending} · chờ đẩy {unbatched}",
     "tab": {
       "TO_ALLOCATE": "Chờ phân bổ",
-      "ALLOCATED": "Đã phân bổ / đã đẩy"
-    },
-    "state": {
-      "INTERRUPTED": "Đẩy bị gián đoạn",
-      "PENDING": "Chờ phân bổ",
       "ALLOCATED": "Đã phân bổ"
     },
-    "pickPi": "Chọn một PI ở bên trái",
+    "search": "PI / số chứng từ",
+    "state": {
+      "PENDING": "Chờ phân bổ",
+      "PROCESSING": "Chờ xử lý",
+      "ALLOCATED": "Đã phân bổ"
+    },
+    "pickBill": "Chọn một chứng từ ở bên trái",
     "toGenerate": "Còn tạo được {n} · đến trang tạo",
     "unbatched": "Chờ đẩy",
     "interrupted": "Đẩy bị gián đoạn",
     "resumeBtn": "Đẩy tiếp (còn {n} lần)",
     "resumed": "Đã đẩy tiếp, còn {n} lần",
-    "linesTitle": "SN chờ phân bổ",
-    "billCounts": "{n} dòng · chờ phân bổ {qty}",
+    "linesTitle": "Dòng vật tư của chứng từ",
+    "billCounts": "{n} dòng · {qty} SN",
     "billPicked": "Đã chọn {n} dòng",
     "toOrg": "Phân bổ cho",
-    "way": "Cách giao",
-    "wayPush": "MES · đẩy",
-    "wayExport": "Tải trên trang",
+    "prog": {
+      "PENDING": "Chờ phân bổ",
+      "TO_PUSH": "Chờ đẩy",
+      "FAILED": "Đẩy lỗi {n}",
+      "DONE": "Hoàn tất"
+    },
     "skip": {
       "PI_FROZEN": "Đóng băng do đổi PI",
       "REVERSAL": "Đang bỏ duyệt",
@@ -338,15 +342,11 @@
     "allocConfirmPush": "Phân bổ {n} SN? Phần kết nối MES sẽ tự đẩy {m} lần.",
     "allocDone": "Đã phân bổ {n} SN",
     "allocSkipped": "{n} chứng từ bị bỏ qua (đóng băng, bỏ duyệt hoặc tạm dừng giao)",
-    "tabAllocated": "Chứng từ đã phân bổ {n}",
     "noAllocated": "PI này chưa có SN đã phân bổ",
     "tabPush": "Tiến độ đẩy",
-    "tabBatches": "Bản ghi phân bổ {n}",
     "pushProgress": "Lần {i} / {n} · đã đẩy {qty}",
     "waitingReceipt": "Đã gửi, chờ biên nhận MES",
     "batchSource": "Cách tạo",
-    "batchResult": "Kết quả",
-    "confirmMethod": "Cách xác nhận",
     "manualConfirm": "Xác nhận thủ công",
     "void": "Hủy"
   },

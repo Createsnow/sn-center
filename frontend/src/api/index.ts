@@ -87,7 +87,7 @@ export const api = {
   revokeConfig: (pi_no: string, lines: { bill_no: string; seq: number }[]) => post("/generate/revoke-config", { pi_no, lines }),
 
   // ---------------- SN 分配
-  allocPis: (params?: Q) => get("/allocation/pis", params),
+  allocBills: (params?: Q) => get("/allocation/bills", params),
   allocContext: (pi: string) => get("/allocation/context", { pi }),
   allocPreview: (data: Q) => post("/allocation/preview", data),
   allocate: (data: Q) => post("/allocation/allocate", data),

@@ -222,6 +222,11 @@ def test_reject_marks_failed_and_resume_after_fix(w, sql):
     assert b["fail_code"] == "REJECTED" and b["fail_reason"] == "materialCode 超长"
     task = sql.one("SELECT * FROM sn_push_task WHERE factory_code = %s AND task_key = %s", org, pi)
     assert task["state"] == "STOPPED" and "materialCode 超长" in task["message"], "回执 NG 唤醒任务，停止并提示"
+    # 分配页：推送失败的单据为「待处理」，留在待分配页签；物料行标出失败枚数
+    row = ok(w.api.get(f"/api/allocation/bills?tab=TO_ALLOCATE&q={bill}", w.admin))["items"]
+    assert [(x["bill_no"], x["qty"], x["state"]) for x in row] == [(bill, 4, "PROCESSING")]
+    line = ok(w.api.get(f"/api/allocation/context?pi={pi}", w.admin))["lines"][0]
+    assert (line["qty"], line["pending_alloc"], line["to_push"], line["failed"]) == (4, 0, 4, 4)
     MES.clear_fault(org)
     ok(w.api.post("/api/delivery/resume", m(factory_code=org, key=pi), w.admin))
     w.push()

@@ -169,7 +169,7 @@ def items(
 ) -> dict:
     """明细：逐枚列出该单据的全部已分配号（不按号段合并），按单据序号、流水排序，与下载文件的行顺序一致。
     可只看一个物料行（bill_seq + material），q 按完整 SN 模糊匹配。单据级的字段（组织、客户、PI、单据）
-    明细顶部显示一次，每枚只带各不相同的：物料行、进制 / 十进制流水、流水归属（转入号注明）、状态、
+    明细顶部显示一次，每枚只带各不相同的：物料行、进制、进制 / 十进制流水、流水归属（转入号注明）、状态、
     交付方式、交付批次、暂停。"""
     p, _b, where, args = _bill_where(cu, factory, pi, bill)
     if bill_seq is not None:
@@ -198,6 +198,7 @@ def items(
             "length": _text(r["length_text"]) or "",
             "seq_pi_no": r["seq_pi_no"],
             "transferred_in": r["seq_pi_no"] != p,
+            "base": _base(r["rule_version_id"]),
             "seq_text": rules.seq_text(r["rule_version_id"], r["seq_dec"]),
             "seq_dec": int(r["seq_dec"]),
             "status": r["status"],
@@ -208,6 +209,12 @@ def items(
         for n, r in enumerate(rows)
     ]
     return util.page_result(out, total, page)
+
+
+def _base(version_id: int | None) -> int | None:
+    """号所用规则版本的进制（10 / 16 / 32 / 36）。"""
+    s = rules.cached_spec(version_id)
+    return None if s is None else s.base
 
 
 def _text(v):
