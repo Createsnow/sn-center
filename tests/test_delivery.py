@@ -792,3 +792,45 @@ def test_push_task_resumes_after_failed_batch_confirmed_by_pull(w, sql):
     rows = sql.all("SELECT source, result FROM sn_delivery_batch WHERE pi_no = %s ORDER BY id", pi)
     assert rows == [{"source": "PUSH", "result": "SUCCESS"}, {"source": "PUSH", "result": "SUCCESS"}]
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 4
+
+
+def _task_state(sql, org, key):
+    return sql.scalar("SELECT state FROM sn_push_task WHERE factory_code = %s AND task_key = %s", org, key)
+
+
+def test_push_task_resumes_after_exhausted_batch_confirmed_by_pull(w, sql):
+    """自动重试用尽：MES 取批拿到原批次并回执 OK 后，停下的推送任务自动接着推后续的号，不用点「继续推送」。"""
+    org, pi, bill = setup_pi(w, qty=7, batch_size=5)
+    MES.behavior[org] = lambda batch, h: (503, {"code": "X"})
+    w.allocate(pi)
+    w.push()
+    first = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
+    assert first["push_state"] == "EXHAUSTED" and _task_state(sql, org, pi) == "STOPPED"
+    MES.behavior.pop(org)
+    token, _ = w.mes_account(org)
+    r = ok(w.mes_next(token, pi=pi))
+    assert r["batch"]["batchNo"] == first["batch_no"]
+    ok(w.mes_receipt(token, MES.process(org, r["batch"])))
+    assert _task_state(sql, org, pi) == "QUEUED"
+    w.push()
+    rows = sql.all("SELECT source, qty, result FROM sn_delivery_batch WHERE pi_no = %s ORDER BY id", pi)
+    assert rows == [
+        {"source": "PUSH", "qty": 5, "result": "SUCCESS"},
+        {"source": "PUSH", "qty": 2, "result": "SUCCESS"},
+    ]
+
+
+def test_push_task_resumes_after_manual_confirm(w, sql):
+    """重试用尽后总部人工确认这一批：停下的推送任务自动接着推后续的号。"""
+    org, pi, bill = setup_pi(w, qty=7, batch_size=5)
+    MES.behavior[org] = lambda batch, h: (503, {"code": "X"})
+    w.allocate(pi)
+    w.push()
+    b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
+    assert _task_state(sql, org, pi) == "STOPPED"
+    MES.behavior.pop(org)
+    ok(w.api.post(f"/api/delivery/batches/{b['batch_no']}/confirm", m(reason="MES 已入库", basis="邮件确认"), w.admin))
+    assert _task_state(sql, org, pi) == "QUEUED"
+    w.push()
+    rows = sql.all("SELECT qty, result FROM sn_delivery_batch WHERE pi_no = %s ORDER BY id", pi)
+    assert rows == [{"qty": 5, "result": "SUCCESS"}, {"qty": 2, "result": "SUCCESS"}]

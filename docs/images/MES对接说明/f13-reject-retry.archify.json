@@ -37,16 +37,16 @@
     {
       "from": 350,
       "to": 590,
-      "label": "MES 修正后按批次号取回重处理"
+      "label": "MES 修正后拉取原批次重处理"
     },
     {
       "from": 605,
-      "to": 775,
-      "label": "恢复推送"
+      "to": 715,
+      "label": "自动恢复推送"
     },
     {
-      "from": 790,
-      "to": 900,
+      "from": 730,
+      "to": 840,
       "label": "修正不了：总部作废"
     }
   ],
@@ -76,16 +76,16 @@
       "y": 305,
       "label": "批次失败，显示退回原因",
       "variant": "dashed",
-      "note": "同一 PI 后续推送暂停"
+      "note": "后续推送暂停；拉取先给这一批"
     },
     {
       "id": "f1",
       "from": "mes",
       "to": "sn",
       "y": 375,
-      "label": "② 拉取，带 batchNo",
+      "label": "② 拉取（按 PI / 单据，或带 batchNo）",
       "variant": "emphasis",
-      "note": "按批次号取回，不新建批次"
+      "note": "失败批次先返回，该 PI 不建新批"
     },
     {
       "id": "f2",
@@ -115,25 +115,18 @@
     },
     {
       "id": "c1",
-      "from": "mes",
+      "from": "sn",
       "to": "hq",
       "y": 630,
-      "label": "书面告知已修正",
-      "variant": "dashed"
+      "label": "推送自动恢复",
+      "variant": "dashed",
+      "note": "无需书面告知、无需点「继续推送」"
     },
     {
       "id": "c2",
-      "from": "hq",
-      "to": "sn",
-      "y": 690,
-      "label": "继续推送",
-      "variant": "default"
-    },
-    {
-      "id": "c3",
       "from": "sn",
       "to": "mes",
-      "y": 750,
+      "y": 690,
       "label": "① 推送后续批次",
       "variant": "emphasis"
     },
@@ -141,7 +134,7 @@
       "id": "v1",
       "from": "hq",
       "to": "sn",
-      "y": 815,
+      "y": 755,
       "label": "作废该批次",
       "variant": "security",
       "note": "须 MES 书面确认未处理"
@@ -150,7 +143,7 @@
       "id": "v2",
       "from": "sn",
       "to": "mes",
-      "y": 875,
+      "y": 815,
       "label": "① 新批次号重新送达",
       "variant": "emphasis",
       "note": "rev 不变；原批次 ②③ 返回 409 BATCH_VOIDED"
