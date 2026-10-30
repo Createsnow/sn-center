@@ -85,7 +85,7 @@ curl -X POST http://127.0.0.1:9001/_mock/seed -H 'Content-Type: application/json
 先在「账户」页给组织 110 建 MES 接口账户，记下密钥（之后也可在列表里「查看密钥」）。
 
 ```bash
-# 取一轮：② 取批 → process → ③ 提交回执，remaining > 0 时继续取，没有可给的批次就停（每次请求带 工号:密钥）
+# 取一轮：② 取批 → process → ③ 提交回执，remaining > 0 时继续取，返回 NO_BATCH（没有可给的批次）就停（每次请求带 工号:密钥）
 uv run python -m devtools.mes_mock pull --base http://127.0.0.1:8000 --org 110 --emp MES110 --key <密钥>
 uv run python -m devtools.mes_mock pull ... --pi 000001 --bill VT2026090001      # 按 PI / 单据 / 两者组合取
 uv run python -m devtools.mes_mock pull ... --batch-no PS-110-20261019-000123    # 按批次号取回
@@ -122,7 +122,7 @@ MES 接口账户不要求所绑组织已开启「对接 MES」，可以先建好
 
 | 接口 | 返回 |
 | --- | --- |
-| ② 拉取批次 | `OK`「暂无可拉取批次」，`batch` 为 `null`、`remaining` 为 0（未开启对接只给转出批次，从没对接过的组织没有转出批次） |
+| ② 拉取批次 | `NO_BATCH`「暂无可拉取批次」，`batch` 为 `null`、`remaining` 为 0（未开启对接只给转出批次，从没对接过的组织没有转出批次） |
 | ③ 提交回执 | 没有下发过的批次号可回执：批次号不存在时 404 `BATCH_NOT_FOUND`；`code` 不是 `OK` / `NG` 等格式错误 400 `INVALID_REQUEST` |
 | ④ 查询已下发 SN | `OK`，`items` 为空 |
 | ⑤ 查询批次明细 | 404 `BATCH_NOT_FOUND` |

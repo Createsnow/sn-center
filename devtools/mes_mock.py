@@ -519,8 +519,8 @@ def _line(org: str, batch: dict, headers: dict, status: Any, body: Any) -> str:
 
 
 class Puller:
-    """扮演 MES 取批：② 取批 → process → ③ 提交回执，remaining > 0 时继续取（对接说明第 2 章、接口文档 3.2）。
-    每次请求带 Authorization: Bearer <工号>:<密钥>，不换令牌。"""
+    """扮演 MES 取批：② 取批 → process → ③ 提交回执，remaining > 0 时继续取，NO_BATCH 时停止
+    （对接说明第 2 章、接口文档 3.2）。每次请求带 Authorization: Bearer <工号>:<密钥>，不换令牌。"""
 
     PREFIX = "/api/mes/v1"
 
@@ -551,7 +551,7 @@ class Puller:
                 done.append({"step": "next", "status": st, "body": data})
                 break
             b = data.get("batch")
-            if b is None:
+            if data.get("code") == "NO_BATCH" or b is None:
                 self.log(f"② 没有可给的批次：remaining={data.get('remaining')} paused={data.get('paused')}")
                 break
             self.log(

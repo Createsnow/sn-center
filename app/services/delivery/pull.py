@@ -220,10 +220,11 @@ def next_batch(cu: CurrentUser, pi_in: str | None, bill_in: str | None, batch_no
 
 
 def _next_out(b: dict | None, remaining: int, paused: int) -> dict:
-    """② 应答：批次（推送、拉取建立的结构相同，处理相同）、剩余枚数、暂停枚数。"""
+    """② 应答：批次（推送、拉取建立的结构相同，处理相同）、剩余枚数、暂停枚数。code = OK 时一定带批次；
+    没有可拉的为 NO_BATCH（HTTP 200，不是错误），batch 为 null，MES 据此停止拉取。"""
     if b is None:
         msg = f"暂无可拉取批次，{paused} 枚暂停下发" if paused else "暂无可拉取批次"
-        return mes_body("OK", msg, batch=None, remaining=remaining, paused=paused)
+        return mes_body("NO_BATCH", msg, batch=None, remaining=remaining, paused=paused)
     return mes_body("OK", "成功", b["batch_no"], batch=body_obj(b), remaining=remaining, paused=paused)
 
 

@@ -403,10 +403,11 @@ def test_pull_returns_same_unconfirmed_batch_until_receipt(w, sql):
     )
     # 再取：建一个拉取批次
     r3 = ok(w.mes_next(token))
-    assert r3["batch"]["batchNo"].startswith("PL-") and len(r3["batch"]["items"]) == 2
+    assert r3.code == "OK" and r3["batch"]["batchNo"].startswith("PL-") and len(r3["batch"]["items"]) == 2
     assert r3["remaining"] == 0
     ok(w.mes_receipt(token, MES.process(org, r3["batch"])))
     r4 = ok(w.mes_next(token))
+    assert (r4.code, r4["message"], r4["batchNo"]) == ("NO_BATCH", "暂无可拉取批次", None), "没有可拉的：NO_BATCH"
     assert r4["batch"] is None and r4["remaining"] == 0
 
 
