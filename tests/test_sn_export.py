@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from conftest import MES, emp, m, ok, uid, xlsx_rows
 
-from app.services import sn_sheet
+from app.services import sn_export
 
 
 def P() -> str:
@@ -40,11 +40,12 @@ def test_export_is_read_only_and_repeatable(w, api, sql):
     for _ in range(2):
         r = get_file(api, op, pi=pi, bill_no=bill, factory_code=org)
         rows = xlsx_rows(r.content)
-        assert r.status_code == 200 and rows[0] == sn_sheet.HEADERS and len(rows) == 6
+        assert r.status_code == 200 and rows[0] == sn_export.FILE_HEADERS and len(rows) == 6
         got = dict(zip(rows[0], rows[1], strict=True))
-        assert (got["组织编号"], got["生产组织名称"], got["PI"], got["单据编号"]) == (org, f"组织{org}", pi, bill)
-        assert (got["物料编码"], got["附件项次"], got["米数"], got["状态"]) == ("M1", "1", "100", "ALLOCATED")
-    sns = [x[1] for x in rows[1:]]
+        assert (got["组织编号"], got["生产组织"], got["PI"], got["物料编码"]) == (org, f"组织{org}", pi, "M1")
+        assert (got["附件项次"], got["米数"], got["产品单位"], got["流水位数"]) == ("1", "100", None, 6)
+        assert (got["十进制流水"], got["流水号"]) == ("1", "000001")
+    sns = [x[4] for x in rows[1:]]
     assert sns == [
         r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY bill_seq, seq_pi_no, seq_dec", pi)
     ]
@@ -92,8 +93,9 @@ def test_detail_lists_every_sn_not_ranges(w, api, sql):
     assert (x["suspend"], x["transferred_in"]) == (None, False)
     page2 = ok(api.get(url + "&page_size=5&page=2", w.admin))
     assert [x["sn"] for x in page2["items"]] == want[5:] and [x["line_no"] for x in page2["items"]] == [6, 7]
-    file_sns = [r[1] for r in xlsx_rows(get_file(api, w.admin, pi=pi, bill_no=bill, factory_code=org).content)[1:]]
+    file_sns = [r[4] for r in xlsx_rows(get_file(api, w.admin, pi=pi, bill_no=bill, factory_code=org).content)[1:]]
     assert file_sns == want, "顺序同下载文件"
+    assert (x["pi_no"], x["factory_code"], x["factory_name"], x["seq_len"], x["unit"]) == (pi, org, f"组织{org}", 6, "")
     other = w.org(uid("O")[:10])
     op = w.user(emp("F"), "operator", other)
     assert api.get(url, op).code == "FACTORY_FORBIDDEN"
@@ -125,6 +127,21 @@ def test_detail_filters_one_bill_line(w, api):
     assert [x["sn"] for x in ok(api.get(url + f"&sn_from={every[3]}", w.admin))["items"]] == every[3:]
     assert [x["sn"] for x in ok(api.get(url + f"&material=M2&sn_to={every[3]}", w.admin))["items"]] == [every[3]]
     assert ok(api.get(url + "&sn_from=NOPE", w.admin))["total"] == 0, "起止号不是本单据的号：没有结果"
+    # 下载同一组筛选：只下载范围内的号；列为组织编号、生产组织、PI、物料编码、SN、流水位数、十进制流水、流水号、
+    # 附件项次、米数、产品单位
+    rows = xlsx_rows(get_file(api, w.admin, pi=pi, bill_no=bill, sn_from=every[1], sn_to=every[3]).content)
+    assert rows[0] == sn_export.FILE_HEADERS and [r[4] for r in rows[1:]] == every[1:4]
+    head = dict(zip(rows[0], rows[1], strict=True))
+    assert (head["组织编号"], head["生产组织"], head["PI"], head["物料编码"], head["米数"]) == (
+        org,
+        f"组织{org}",
+        pi,
+        "M1",
+        "120",
+    )
+    rows = xlsx_rows(get_file(api, w.admin, pi=pi, bill_no=bill, material="M2").content)
+    assert [r[4] for r in rows[1:]] == every[3:]
+    assert get_file(api, w.admin, pi=pi, bill_no=bill, sn_from="NOPE").json()["code"] == "EXPORT_NOTHING"
 
 
 def test_push_failure_does_not_affect_export(w, api):
@@ -159,17 +176,17 @@ def test_unallocated_not_listed_and_scope(w, api):
 
 
 def test_xlsx_keeps_formula_like_text_and_leading_dash_sn(w, api):
-    """以 = 开头的单据编号按文本写出；前缀以 - 开头的 SN 原样导出，不加防公式前缀。"""
+    """以 = 开头的物料编码按文本写出；前缀以 - 开头的 SN 原样导出，不加防公式前缀。"""
     org = w.org(uid("O")[:10])
     pi, bill = uid("PI"), "=" + uid("MO")
-    w.order(bill, org, "C1", pi, ("M1", 1))
+    w.order(bill, org, "C1", pi, ("=M1", 1))
     prefix = "-" + P()
     ok(w.bind_pi(pi, w.rule(prefix)))
     w.generate(pi)
     w.allocate(pi)
     r = get_file(api, w.admin, pi=pi, bill_no=bill.replace("=", "%3D"))
     row = dict(zip(*xlsx_rows(r.content)[:2], strict=True))
-    assert row["单据编号"] == bill and row["完整SN"].startswith(prefix)
+    assert row["物料编码"] == "=M1" and row["SN"].startswith(prefix)
 
 
 def test_lines_summarize_each_bill_line(w, api):

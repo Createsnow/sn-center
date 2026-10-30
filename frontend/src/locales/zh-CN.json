@@ -117,7 +117,8 @@
     "expand": "展开",
     "collapse": "收起",
     "expandAll": "全部展开",
-    "collapseAll": "全部收起"
+    "collapseAll": "全部收起",
+    "factoryCode": "生产组织编号"
   },
   "status": {
     "PENDING_ALLOC": "待分配",
@@ -295,7 +296,7 @@
       "PROCESSING": "待处理",
       "ALLOCATED": "已分配"
     },
-    "snDetail": "SN 明细 · {bill}",
+    "snDetail": "本单据记载的存货 SN 信息 · {bill}",
     "pickBill": "从左侧选择一张单据",
     "toGenerate": "还可生成 {n} 枚 · 去生成",
     "unbatched": "待推送",
@@ -424,7 +425,8 @@
     "snFrom": "SN 起始号",
     "snTo": "SN 截止号",
     "lineNo": "行号",
-    "seqOf": "流水归属 {pi}"
+    "seqOf": "流水归属 {pi}",
+    "rangeHint": "按当前物料编码、SN 起止号筛选导出范围内的 SN"
   },
   "factories": {
     "title": "生产组织",

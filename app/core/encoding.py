@@ -152,6 +152,18 @@ def parse(sn: str | None, s: Spec) -> int | None:
     return decode_seq(seq_text, s)
 
 
+def unit_of(sn: str | None, s: Spec, length: str | None = None) -> str | None:
+    """从完整 SN 截出写入的产品单位（米数传号上记的未补 0 原值）；规则不带单位或号与规则对不上时返回 None。"""
+    if not s.with_unit or sn is None or not sn.startswith(s.prefix) or not sn.endswith(s.suffix):
+        return None
+    mid = s.sep_before + pad_length(length, s) + s.sep_after if s.with_length else ""
+    head = len(s.prefix) + s.seq_len + len(mid)
+    end = len(sn) - len(s.suffix)
+    if end < head or sn[len(s.prefix) + s.seq_len : head] != mid:
+        return None
+    return sn[head:end]
+
+
 def clean_length(raw: str | None) -> str | None:
     """米数字符串：去首尾空格后原样使用；为空返回 None。"""
     v = (raw or "").strip()

@@ -39,7 +39,7 @@ def test_prefix_any_characters_end_to_end(w, api, sql):
     assert [x["sn"] for x in ok(api.get("/api/sn" + q(sn=sns[0]), w.admin))["items"]] == [sns[0]]
     r = api.client.get(f"/api/export/file?pi={pi}&bill_no={bill}", headers={"Authorization": f"Bearer {w.admin}"})
     rows = xlsx_rows(r.content)
-    assert rows[1][rows[0].index("完整SN")] == sns[0]
+    assert rows[1][rows[0].index("SN")] == sns[0]
 
 
 def test_sn_layout_serial_separators_padded_length_unit(w, api, sql):
@@ -72,9 +72,22 @@ def test_sn_layout_serial_separators_padded_length_unit(w, api, sql):
     assert sample["samples"][0]["sn"] == f"{p}00001-00007MKGZ"
     ok(w.bind_pi(pi, rid))
     ok(api.put("/api/orders/unit", m(bill_no=bill, seq=1, value="m"), w.admin))
+    pv = ok(w.preview(pi))
+    assert [
+        (x["material_code"], x["prefix"], x["base"], x["seq_len"], x["start_seq_text"], x["end_seq_text"], x["unit"])
+        for x in pv["items"]
+    ] == [("M1", p, 10, 5, "00001", "00002", "m"), ("M2", p, 10, 5, "00003", "00003", "PCS")], "确认生成弹窗的列"
     w.generate(pi)
     sns = [x["sn"] for x in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
     assert sns == [f"{p}00001-051.5MmZ", f"{p}00002-051.5MmZ", f"{p}00003-01200MPCSZ"]
+    # 已分配明细与下载：产品单位按规则从 SN 截出，带流水位数
+    w.allocate(pi)
+    got = ok(api.get(f"/api/export/items?pi={pi}&bill_no={bill}", w.admin))["items"]
+    assert [(x["unit"], x["seq_len"], x["seq_text"], x["length"]) for x in got] == [
+        ("m", 5, "00001", "51.5"),
+        ("m", 5, "00002", "51.5"),
+        ("PCS", 5, "00003", "1200"),
+    ]
     assert [
         r["length_text"] for r in sql.all("SELECT length_text FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)
     ] == [

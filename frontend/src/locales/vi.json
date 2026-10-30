@@ -117,7 +117,8 @@
     "expand": "Mở rộng",
     "collapse": "Thu gọn",
     "expandAll": "Mở rộng tất cả",
-    "collapseAll": "Thu gọn tất cả"
+    "collapseAll": "Thu gọn tất cả",
+    "factoryCode": "Mã tổ chức sản xuất"
   },
   "status": {
     "PENDING_ALLOC": "Chờ phân bổ",
@@ -295,7 +296,7 @@
       "PROCESSING": "Chờ xử lý",
       "ALLOCATED": "Đã phân bổ"
     },
-    "snDetail": "Chi tiết SN · {bill}",
+    "snDetail": "SN được ghi trên chứng từ này · {bill}",
     "pickBill": "Chọn một chứng từ ở bên trái",
     "toGenerate": "Còn tạo được {n} · đến trang tạo",
     "unbatched": "Chờ đẩy",
@@ -424,7 +425,8 @@
     "snFrom": "SN bắt đầu",
     "snTo": "SN kết thúc",
     "lineNo": "STT",
-    "seqOf": "tuần tự thuộc {pi}"
+    "seqOf": "tuần tự thuộc {pi}",
+    "rangeHint": "Xuất các SN trong phạm vi lọc mã vật tư và SN hiện tại"
   },
   "factories": {
     "title": "Tổ chức sản xuất",

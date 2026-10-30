@@ -63,7 +63,7 @@ def test_export_truncates_with_notice(w, api, monkeypatch):
     assert c.body == {"limit": 3, "truncated": True, "rows": 3}
     r = api.client.get(f"/api/sn/export?pi={pi}", headers={"Authorization": f"Bearer {w.admin}"})
     rows = xlsx_rows(r.content)
-    assert rows[0] == sn_sheet.HEADERS and len(rows) == 4, "列与 SN 导出统一"
+    assert rows[0] == sn_sheet.HEADERS and len(rows) == 4, "SN 查询导出的列"
     got = dict(zip(rows[0], rows[1], strict=True))
     assert (got["组织编号"], got["生产组织名称"]) == (org, f"组织{org}")
 

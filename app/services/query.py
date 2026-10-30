@@ -226,7 +226,7 @@ def export_check(cu: CurrentUser, f: Filter) -> dict:
     return {"limit": limit, "truncated": total > limit, "rows": min(total, limit)}
 
 
-#: 列同 SN 导出（见 sn_sheet）
+#: SN 查询导出的列（见 sn_sheet；SN 分配页「已分配」下载另有列，见 sn_export.FILE_HEADERS）
 EXPORT_HEADERS = sn_sheet.HEADERS
 
 

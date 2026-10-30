@@ -67,12 +67,19 @@ def export_items(
     )
 
 
-@router.get("/file", summary="下载一张单据的已分配号 xlsx（列：PI、单据、物料编码、SN）；不改状态")
+@router.get(
+    "/file",
+    summary="下载一张单据的已分配号 xlsx（列：组织编号、生产组织、PI、物料编码、SN、流水位数、十进制流水、流水号、"
+    "附件项次、米数、产品单位）；material、sn_from / sn_to 同明细筛选，只下载范围内的号；不改状态",
+)
 def export_file(
     cu: UserDep,
     pi: str | None = None,
     bill_no: str | None = None,
     factory_code: str | None = None,
+    material: str | None = None,
+    sn_from: str | None = None,
+    sn_to: str | None = None,
 ):
-    name, body = sn_export.file(cu, factory_code, pi, bill_no)
+    name, body = sn_export.file(cu, factory_code, pi, bill_no, material, sn_from, sn_to)
     return download(name, body)

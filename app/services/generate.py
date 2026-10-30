@@ -296,6 +296,12 @@ def _plan(pi: str, scope: str, keys: list[tuple[str, int]], base: int) -> dict:
                 "length": length,
                 "unit": unit,
                 "attach": x.attach,
+                # 确认生成弹窗展示用（不参与预演 / 生成比对）：前缀、进制、流水位数、起止流水号
+                "prefix": spec.prefix,
+                "base": spec.base,
+                "seq_len": spec.seq_len,
+                "start_seq_text": codec.encode_seq(cur, spec),
+                "end_seq_text": codec.encode_seq(end, spec),
                 "line_qty": x.qty,
                 "own_before": x.own,
                 "qty": n,

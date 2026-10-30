@@ -117,7 +117,8 @@
     "expand": "Expand",
     "collapse": "Collapse",
     "expandAll": "Expand all",
-    "collapseAll": "Collapse all"
+    "collapseAll": "Collapse all",
+    "factoryCode": "Production org code"
   },
   "status": {
     "PENDING_ALLOC": "To allocate",
@@ -295,7 +296,7 @@
       "PROCESSING": "To handle",
       "ALLOCATED": "Allocated"
     },
-    "snDetail": "SN details · {bill}",
+    "snDetail": "SNs recorded on this bill · {bill}",
     "pickBill": "Pick a bill on the left",
     "toGenerate": "{n} more to generate · go to generation",
     "unbatched": "To push",
@@ -424,7 +425,8 @@
     "snFrom": "From SN",
     "snTo": "To SN",
     "lineNo": "No.",
-    "seqOf": "serial of {pi}"
+    "seqOf": "serial of {pi}",
+    "rangeHint": "Exports the SNs within the current material and SN range filter"
   },
   "factories": {
     "title": "Production orgs",
