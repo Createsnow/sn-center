@@ -71,7 +71,7 @@
   "RULE_PREFIX_REQUIRED": "Prefix is required",
   "RULE_AFFIX_INVALID": "The separators before and after the length may each have at most 16 characters",
   "RULE_LENGTH_PAD_INVALID": "Length zero-padding must be 0–32 digits (0 = no padding)",
-  "RULE_PREFIX_CONFLICT": "Prefix {prefix} is already used by rule {rule_name} version {version}; SNs would collide",
+  "RULE_PREFIX_CONFLICT": "Prefix {prefix} is already in use. Please use another one.",
   "RULE_BASE_INVALID": "Base must be 10 / 16 / 32 / 36",
   "RULE_SEQ_LEN_INVALID": "Serial digits must be 1–12",
   "RULE_CHARSET_LENGTH": "Charset length must equal the base",

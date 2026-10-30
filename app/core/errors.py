@@ -98,10 +98,7 @@ class ErrorCode(Enum):
     RULE_PREFIX_REQUIRED = (400, "前缀必填")
     RULE_AFFIX_INVALID = (400, "米数前、后分隔符各不超过 16 个字符")
     RULE_LENGTH_PAD_INVALID = (400, "米数补 0 位数须为 0–32（0 = 不补）")
-    RULE_PREFIX_CONFLICT = (
-        409,
-        "前缀 {prefix} 已被规则 {rule_name} 版本 {version} 使用，会撞号",
-    )
+    RULE_PREFIX_CONFLICT = (409, "前缀{prefix}已被使用，请更换其他。")
     RULE_BASE_INVALID = (400, "进制仅支持 10 / 16 / 32 / 36")
     RULE_SEQ_LEN_INVALID = (400, "流水位数须为 1–12")
     RULE_CHARSET_LENGTH = (400, "字符表的字符数必须等于进制")

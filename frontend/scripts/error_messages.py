@@ -76,7 +76,7 @@ E = {
 "RULE_PREFIX_REQUIRED": ("Prefix is required", "Bắt buộc nhập tiền tố"),
 "RULE_AFFIX_INVALID": ("The separators before and after the length may each have at most 16 characters", "Dấu phân cách trước và sau chiều dài mỗi cái tối đa 16 ký tự"),
 "RULE_LENGTH_PAD_INVALID": ("Length zero-padding must be 0–32 digits (0 = no padding)", "Số chữ số bù 0 của chiều dài phải từ 0–32 (0 = không bù)"),
-"RULE_PREFIX_CONFLICT": ("Prefix {prefix} is already used by rule {rule_name} version {version}; SNs would collide", "Tiền tố {prefix} đã được dùng bởi quy tắc {rule_name} phiên bản {version}, sẽ trùng số"),
+"RULE_PREFIX_CONFLICT": ("Prefix {prefix} is already in use. Please use another one.", "Tiền tố {prefix} đã được sử dụng, vui lòng đổi tiền tố khác."),
 "RULE_BASE_INVALID": ("Base must be 10 / 16 / 32 / 36", "Cơ số chỉ hỗ trợ 10 / 16 / 32 / 36"),
 "RULE_SEQ_LEN_INVALID": ("Serial digits must be 1–12", "Số chữ số tuần tự phải từ 1–12"),
 "RULE_CHARSET_LENGTH": ("Charset length must equal the base", "Số ký tự của bảng ký tự phải bằng cơ số"),

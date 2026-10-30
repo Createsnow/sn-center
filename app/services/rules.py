@@ -186,20 +186,13 @@ def prefix_taken(prefix: str, memo: dict[str, bool] | None = None) -> bool:
 
 def check_prefix(prefix: str, exclude_version: int | None = None) -> None:
     """前缀不能与任何规则的任何版本（含本规则旧版本）相同；区分大小写。只是开头相同（如 SD 与 SDD）不算同号。"""
-    row = db.one(
-        "SELECT v.id, v.version, v.prefix, r.rule_name FROM sn_rule_version v JOIN sn_rule r ON r.id = v.rule_id "
-        "WHERE v.prefix = %s AND (%s IS NULL OR v.id <> %s) ORDER BY v.id LIMIT 1",
+    if db.exists(
+        "SELECT EXISTS(SELECT 1 FROM sn_rule_version WHERE prefix = %s AND (%s IS NULL OR id <> %s))",
         prefix,
         exclude_version,
         exclude_version,
-    )
-    if row is not None:
-        raise biz(
-            ErrorCode.RULE_PREFIX_CONFLICT,
-            prefix=prefix,
-            rule_name=row["rule_name"],
-            version=row["version"],
-        )
+    ):
+        raise biz(ErrorCode.RULE_PREFIX_CONFLICT, prefix=prefix)
 
 
 def own_version(pi: str, spec: codec.Spec) -> Resolved | None:
