@@ -62,17 +62,6 @@
             </div>
           </div>
 
-          <!-- 推送中断：可续推的组织 -->
-          <div v-for="p in brokenPush" :key="p.factory_code" class="banner warn-bg">
-            <b>{{ t("allocate.interrupted") }}</b>
-            <span>{{ nameOf(p.factory_code) }}</span>
-            <span v-if="p.last_problem" class="muted">{{ p.last_problem.batch_no }}：{{ p.last_problem.fail_reason || pushStateLabel(p.last_problem.push_state) }}</span>
-            <span class="push" />
-            <el-button size="small" type="warning" :loading="busy === `resume:${p.factory_code}`" @click="resume(p.factory_code)">
-              {{ t("allocate.resumeBtn", { n: p.remaining.pushes }) }}
-            </el-button>
-          </div>
-
           <!-- 单据物料行：勾选有待分配号的物料行为范围，不勾选 = 整张 PI；单据头、物料行都带推送进度条 -->
           <section v-if="bills.length" class="box">
             <div class="box-h">
@@ -138,9 +127,19 @@
             </div>
           </section>
 
-          <!-- 推送进度：分配后有号待推送（推送中、失败、重试用尽）时显示，推完即收起；各组织第 i / N 次，下面依次分页列出推送批次 -->
+          <!-- 推送进度：分配后有号待推送（推送中、失败、重试用尽）或推送中断时显示，推完即收起；
+               推送中断的组织与「继续推送」只在此页签内显示；各组织第 i / N 次，下面依次分页列出推送批次 -->
           <el-tabs v-if="pushOpen" model-value="push" class="box tabs-box">
             <el-tab-pane :label="t('allocate.tabPush')" name="push">
+              <div v-for="p in brokenPush" :key="`broken:${p.factory_code}`" class="banner warn-bg">
+                <b>{{ t("allocate.interrupted") }}</b>
+                <span>{{ nameOf(p.factory_code) }}</span>
+                <span v-if="p.last_problem" class="muted">{{ p.last_problem.batch_no }}：{{ p.last_problem.fail_reason || pushStateLabel(p.last_problem.push_state) }}</span>
+                <span class="push" />
+                <el-button size="small" type="warning" :loading="busy === `resume:${p.factory_code}`" @click="resume(p.factory_code)">
+                  {{ t("allocate.resumeBtn", { n: p.remaining.pushes }) }}
+                </el-button>
+              </div>
               <div v-for="p in ctx.push" :key="p.factory_code" class="push-row">
                 <b>{{ nameOf(p.factory_code) }}</b>
                 <el-tag v-if="p.task" size="small" :type="p.waiting_receipt ? 'primary' : TASK_TAG[p.task.state] || 'info'">{{ p.waiting_receipt ? taskStateLabel("WAITING_RECEIPT") : taskStateLabel(p.task.state) }}</el-tag>
@@ -326,8 +325,9 @@ async function reload() {
 const canResume = (p: any) => p.mes_enabled && p.remaining?.pushes > 0 && !(p.task && ACTIVE_TASK.includes(p.task.state));
 /** 推送中断（有失败或未确认的批次、或有未入批的号且没有运行中的推送任务）且可续推的组织。 */
 const brokenPush = computed(() => (ctx.value?.push ?? []).filter((p: any) => canResume(p)));
-/** 推送未完成：本 PI 还有待推送的号（推送中、等回执、推送失败、重试用尽、暂停等）；分配前、推完后都没有。 */
-const pushOpen = computed(() => (ctx.value?.lines ?? []).some((l: any) => l.to_push > 0));
+/** 推送未完成：本 PI 还有待推送的号（推送中、等回执、推送失败、重试用尽、暂停等），或有可续推的中断组织
+ *  （推送中断只在「推送进度」页签内显示，不能因页签收起而丢掉「继续推送」）；分配前、推完后都没有。 */
+const pushOpen = computed(() => brokenPush.value.length > 0 || (ctx.value?.lines ?? []).some((l: any) => l.to_push > 0));
 /** 推送批次（推送与拉取建立的交付批次）按建立先后依次分页列出。 */
 const batches = usePaged((q) => api.deliveryBatches({ ...q, pi: ctx.value.pi_no, batch_type: "DELIVERY", asc: 1 }), 20);
 
@@ -500,6 +500,7 @@ onUnmounted(() => {
 .bar { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--el-border-color); background: var(--el-fill-color-lighter); border-radius: 0 0 8px 8px; font-size: 13px; }
 .orgs { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; min-height: 28px; justify-content: center; }
 .tabs-box { padding: 0 12px 8px; }
+.tabs-box .banner { margin-bottom: 8px; }
 .push-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px dashed var(--el-border-color-lighter); font-size: 13px; }
 .list-pane :deep(.current-row > td) { background: var(--el-color-primary-light-9) !important; }
 .list-pane :deep(.el-table__row) { cursor: pointer; }
