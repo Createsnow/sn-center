@@ -1,7 +1,7 @@
 <template>
   <div class="ap">
     <el-table v-loading="list.state.loading" :data="list.items.value" size="small" class="clickable" highlight-current-row
-      :row-class-name="({ row }: any) => (cur && keyOf(row) === keyOf(cur) ? 'current-row' : '')" :empty-text="t('allocate.noAllocated')" @row-click="select">
+      :row-class-name="({ row }: any) => (cur ? keyOf(row) === keyOf(cur) : row.bill_no === bill) ? 'current-row' : ''" :empty-text="t('allocate.noAllocated')" @row-click="select">
       <el-table-column prop="bill_no" :label="t('common.billNo')" min-width="140" show-overflow-tooltip><template #default="{ row }"><b>{{ row.bill_no }}</b></template></el-table-column>
       <el-table-column v-if="store.scopeFactories.length !== 1" :label="t('common.factory')" min-width="130" show-overflow-tooltip>
         <template #default="{ row }">{{ nameOf(row.factory_code) }}</template>
@@ -23,14 +23,8 @@
     <el-pagination v-if="list.state.total > list.state.pageSize" class="pager" small layout="total, prev, pager, next" :total="list.state.total"
       :page-size="list.state.pageSize" :current-page="list.state.page" @current-change="list.load" />
 
-    <!-- 明细：所选单据逐枚列出全部 SN（进制、进制流水、十进制流水），可按物料编码、SN 起止号筛选 -->
+    <!-- 明细：点上方单据后才显示，逐枚列出该单据的全部 SN（进制、进制流水、十进制流水），可按物料编码、SN 起止号筛选 -->
     <section v-if="cur" class="detail">
-      <div class="toolbar">
-        <b>{{ cur.bill_no }}</b>
-        <el-tag effect="plain" size="small">{{ cur.factory_code }} {{ nameOf(cur.factory_code) }}<template v-if="cur.customer_code"> · {{ cur.customer_code }}</template></el-tag>
-        <span class="sp" />
-        <el-button size="small" type="primary" :loading="busy === keyOf(cur)" @click="download(cur)">{{ t("export.download", { f: "xlsx" }) }}</el-button>
-      </div>
       <div class="toolbar">
         <el-select v-model="material" v-loading="linesLoading" size="small" class="w-mat" :placeholder="t('common.material')" clearable @change="sns.load(1)">
           <el-option v-for="mc in materials" :key="mc" :value="mc" :label="mc" />
@@ -59,15 +53,6 @@
         <el-table-column :label="t('rules.base')" width="70" align="right"><template #default="{ row }">{{ row.group ? "" : row.base ?? "—" }}</template></el-table-column>
         <el-table-column :label="t('common.seqText')" width="110"><template #default="{ row }"><span class="sn-mono">{{ row.seq_text }}</span></template></el-table-column>
         <el-table-column prop="seq_dec" :label="t('common.seqDec')" width="100" align="right" />
-        <el-table-column :label="t('common.status')" width="160">
-          <template #default="{ row }">
-            <template v-if="!row.group">
-              <StatusTag :status="row.status" />
-              <el-tag v-if="row.suspend" size="small" type="danger" class="ml">{{ suspendLabel(row.suspend) }}</el-tag>
-            </template>
-          </template>
-        </el-table-column>
-        <el-table-column :label="t('query.deliveryBatch')" min-width="150"><template #default="{ row }"><span class="sn-mono">{{ row.group ? "" : row.delivery_batch_no || "—" }}</span></template></el-table-column>
       </el-table>
       <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="sns.state.total" :page-size="sns.state.pageSize"
         :current-page="sns.state.page" :page-sizes="[100, 200, 500]" @current-change="sns.load" @size-change="sns.onSize" />
@@ -77,16 +62,14 @@
 
 <script setup lang="ts">
 /** SN 分配页「已分配」页签的右侧（F-14 SN 导出）：所选 PI 已分配的号（不论是否对接 MES）按「生产组织 + 单据」列出，
- *  下方直接逐枚列出所选单据的 SN（进制、进制流水、十进制流水），可下载 xlsx，只读、可反复下载。
+ *  每行可下载 xlsx；点一行后下方逐枚列出该单据的 SN（进制、进制流水、十进制流水），只读、可反复下载。
  *  与分配后的推送、拉取相互独立：推送成败都不影响列出和下载。 */
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { ElMessage } from "element-plus";
 import { api, urls } from "@/api";
-import StatusTag from "@/components/StatusTag.vue";
 import { useFactories } from "@/composables/useFactories";
 import { usePaged } from "@/composables/usePaged";
-import { suspendLabel } from "@/constants";
 import { useAuthStore } from "@/stores/auth";
 import { downloadWithToken } from "@/utils/download";
 
@@ -112,12 +95,11 @@ const num = (n: number) => Number(n).toLocaleString();
 
 const list = usePaged<BillRow>((q) => api.exportBills({ ...q, pi: props.pi }), 100);
 
-/** 重新列出本 PI 的已分配单据，并选中左侧所选单据（没有时选第一行）。 */
+/** 重新列出本 PI 的已分配单据；已展开明细的单据仍在时刷新其明细，否则收起。 */
 async function load() {
   await list.load(1);
-  const rows = list.items.value;
-  const keep = cur.value && rows.find((r) => keyOf(r) === keyOf(cur.value!));
-  open(keep || rows.find((r) => r.bill_no === props.bill) || rows[0] || null, true);
+  const keep = cur.value && list.items.value.find((r) => keyOf(r) === keyOf(cur.value!));
+  open(keep || null, true);
 }
 
 const busy = ref("");
@@ -155,9 +137,6 @@ interface SnRow {
   base: number | null;
   seq_text: string;
   seq_dec: number;
-  status: string;
-  delivery_batch_no: string;
-  suspend: string | null;
 }
 /** 表格里物料行的分组标题行（整行合并）。 */
 type GroupRow = LineRow & { group: true };
@@ -207,7 +186,7 @@ const snRows = computed<(SnRow | GroupRow)[]>(() => {
   }
   return out;
 });
-const COLS = 7;
+const COLS = 5;
 function spanGroup({ row, columnIndex }: { row: SnRow | GroupRow; columnIndex: number }) {
   if (!("group" in row)) return [1, 1];
   return columnIndex === 0 ? [1, COLS] : [0, 0];
@@ -246,11 +225,9 @@ watch(() => props.pi, () => {
   load();
 }, { immediate: true });
 
-// 左侧换了同一 PI 下的另一张单据
+// 左侧换了同一 PI 下的另一张单据：收起明细，点上方单据再看
 watch(() => props.bill, (no) => {
-  if (cur.value?.bill_no === no) return;
-  const r = list.items.value.find((x) => x.bill_no === no);
-  if (r) open(r);
+  if (cur.value && cur.value.bill_no !== no) open(null);
 });
 
 defineExpose({ load });
@@ -266,6 +243,5 @@ defineExpose({ load });
 .grp { display: inline-flex; align-items: center; gap: 10px; white-space: nowrap; }
 :deep(.grp-row > td) { background: var(--el-fill-color-light) !important; }
 :deep(.current-row > td) { background: var(--el-color-primary-light-9) !important; }
-.sp { flex: 1; }
 .clickable :deep(.el-table__row) { cursor: pointer; }
 </style>

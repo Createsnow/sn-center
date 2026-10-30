@@ -441,7 +441,6 @@
     "qty": "SNs",
     "suspended": "{n} suspended",
     "applying": "{n} transfer pending",
-    "download": "Download {f}",
     "groupTitle": "Material {m}",
     "groupMeta": "Attachment item {a} · length {l} · {n} SNs",
     "snFrom": "From SN",
