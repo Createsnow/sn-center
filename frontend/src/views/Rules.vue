@@ -12,33 +12,6 @@
         <el-button @click="search">{{ t("common.search") }}</el-button>
       </div>
       <el-table v-loading="loading" :data="paged" size="small" row-key="rule.id" :empty-text="t('common.empty')">
-        <el-table-column type="expand">
-          <template #default="{ row }">
-            <!-- 版本历史：改格式出的版本一行一版（新→旧）；为别的 PI 换前缀另出的版本挂在来源版本下 -->
-            <div class="versions">
-              <div class="muted small">{{ t("rules.history", { n: row.versions.length }) }}</div>
-              <div v-for="v in historyOf(row)" :key="v.id" class="ver">
-                <span class="ver-no">
-                  <b>v{{ v.version }}</b>
-                  <el-tag v-if="v.version === row.rule.current_version" size="small" type="primary" disable-transitions>{{ t("rules.current") }}</el-tag>
-                </span>
-                <div class="ver-line">
-                  <span class="sn-mono">{{ v.format }}</span>
-                  <span v-if="v.charset !== CHARSETS[v.base]" class="muted">{{ t("rules.charset") }} <span class="sn-mono">{{ v.charset }}</span></span>
-                  <el-tag size="small" :type="v.used ? 'success' : 'info'" disable-transitions>{{ v.used ? t("rules.used") : t("rules.notUsed") }}</el-tag>
-                  <span v-if="v.claimed_pi" class="muted">{{ t("rules.claimedPi") }} {{ v.claimed_pi }}</span>
-                  <span class="muted">{{ v.created_by }} · {{ fmt(v.created_at, false) }}</span>
-                </div>
-                <div v-if="v.copies.length" class="ver-line copies">
-                  <span class="muted">{{ t("rules.copies") }}</span>
-                  <el-tooltip v-for="c in v.copies" :key="c.id" :content="`${c.used ? t('rules.used') : t('rules.notUsed')} · ${c.created_by} · ${fmt(c.created_at, false)}`">
-                    <span class="chip" :class="{ unused: !c.used }">v{{ c.version }} · {{ c.claimed_pi }} · <span class="sn-mono">{{ c.prefix }}</span></span>
-                  </el-tooltip>
-                </div>
-              </div>
-            </div>
-          </template>
-        </el-table-column>
         <el-table-column :label="t('rules.name')" min-width="160" show-overflow-tooltip><template #default="{ row }">{{ row.rule.rule_name }}</template></el-table-column>
         <el-table-column :label="t('rules.version')" width="64"><template #default="{ row }">v{{ row.rule.current_version }}</template></el-table-column>
         <el-table-column label="PI" min-width="120" show-overflow-tooltip>
@@ -168,12 +141,10 @@ import { api } from "@/api";
 import PageHead from "@/components/PageHead.vue";
 import FactorySelect from "@/components/FactorySelect.vue";
 import { BASES, CHARSETS } from "@/constants";
-import { useTime } from "@/composables/useTime";
 import { useFactories } from "@/composables/useFactories";
 import { useAuthStore } from "@/stores/auth";
 
 const { t } = useI18n();
-const { fmt } = useTime();
 const store = useAuthStore();
 const { factories } = useFactories();
 const factoryName = (code: string) => {
@@ -208,14 +179,6 @@ const shown = computed(() => (piFilter.value ? rows.value.filter((r) => piOf(r) 
 const paged = computed(() => shown.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value));
 watch(piFilter, () => (page.value = 1));
 watch(() => shown.value.length, (n) => (page.value = Math.min(page.value, Math.max(1, Math.ceil(n / pageSize.value)))));
-/** 版本历史：改格式出的版本（新→旧），各带为别的 PI 换前缀另出的版本（derived_from 指向它）。 */
-function historyOf(row: any) {
-  const ids = new Set(row.versions.map((v: any) => v.id));
-  return row.versions
-    .filter((v: any) => !v.derived_from || !ids.has(v.derived_from))
-    .map((v: any) => ({ ...v, copies: row.versions.filter((c: any) => c.derived_from === v.id) }));
-}
-
 /** 编辑时提示：格式不变 / 就地修改（当前版本没生成过号）/ 另出一版（生成过号，须换新前缀）。 */
 const editHint = computed(() => {
   const c = editing.value?.current;
@@ -326,18 +289,8 @@ onMounted(load);
 <style scoped>
 .ml { margin-left: 6px; }
 .mb { margin-bottom: 12px; }
-.small { font-size: 12px; }
 .hint { width: 100%; line-height: 1.5; margin-top: 2px; }
 .w160 { width: 160px; }
-.versions { padding: 4px 16px 12px 48px; display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
-.ver { display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: center; column-gap: 12px; row-gap: 4px;
-  padding: 6px 0; border-bottom: 1px dashed var(--el-border-color-lighter); }
-.ver:last-child { border-bottom: none; }
-.ver-no { display: inline-flex; align-items: center; gap: 6px; }
-.ver-line { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
-.copies { grid-column: 2; gap: 4px 6px; font-size: 12px; }
-.chip { padding: 0 8px; line-height: 20px; border-radius: 10px; color: var(--app-text); background: var(--el-fill-color-light); border: 1px solid var(--el-border-color-lighter); }
-.chip.unused { color: var(--app-muted); border-style: dashed; }
 .samples { display: flex; flex-direction: column; gap: 4px; }
 .sample-list { display: flex; flex-wrap: wrap; gap: 4px 12px; }
 .sample-list .max { color: var(--el-color-warning); }
