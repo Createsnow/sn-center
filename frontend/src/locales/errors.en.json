@@ -131,6 +131,7 @@
   "TR_TARGET_LINE_INVALID": "Target material line {seq} is not in the target bill",
   "TR_RANGE_INVALID": "Range {start_sn} ~ {end_sn} is not within the selected bill and material, or spans different serial PIs",
   "TR_FROZEN": "{count} SNs cannot be transferred: {detail}",
+  "TR_LOCATE_NOT_FOUND": "{q} not found: enter a full SN, bill No. or PI (only allocated SNs of your authorized orgs are searched)",
   "QUERY_PI_REQUIRED": "A PI is required to view SNs of the same PI across production orgs",
   "QUERY_PI_NOT_OWNED": "Your production org has no SNs of PI {pi}; other orgs cannot be viewed",
   "QUERY_RANGE_PI_REQUIRED": "A PI is required when querying by serial range",

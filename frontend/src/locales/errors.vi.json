@@ -131,6 +131,7 @@
   "TR_TARGET_LINE_INVALID": "Dòng vật tư đích {seq} không thuộc chứng từ đích",
   "TR_RANGE_INVALID": "Khoảng {start_sn} ~ {end_sn} không thuộc chứng từ và vật tư đã chọn, hoặc không cùng PI tuần tự",
   "TR_FROZEN": "{count} SN không thể chuyển: {detail}",
+  "TR_LOCATE_NOT_FOUND": "Không tìm thấy {q}: hãy nhập SN đầy đủ, số chứng từ hoặc PI (chỉ tìm SN đã phân bổ của tổ chức được ủy quyền)",
   "QUERY_PI_REQUIRED": "Phải chỉ định PI khi xem SN của cùng PI ở các tổ chức sản xuất",
   "QUERY_PI_NOT_OWNED": "Tổ chức sản xuất của bạn không có SN nào của PI {pi}, không thể xem tổ chức khác",
   "QUERY_RANGE_PI_REQUIRED": "Phải chỉ định PI khi truy vấn theo khoảng tuần tự",

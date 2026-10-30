@@ -168,6 +168,7 @@ class ErrorCode(Enum):
     TR_TARGET_LINE_INVALID = (400, "目标物料行 {seq} 不在目标单据中")
     TR_RANGE_INVALID = (400, "起止号 {start_sn} ~ {end_sn} 不在所选单据和物料下，或不在同一流水归属 PI 内")
     TR_FROZEN = (409, "有 {count} 枚号不能转移：{detail}")
+    TR_LOCATE_NOT_FOUND = (404, "没有找到 {q}：请输入完整 SN、单据编号或 PI（只查授权组织内分配成功的号）")
     # ---------- 查询 / 审计 ----------
     QUERY_PI_REQUIRED = (400, "查看同一 PI 各生产组织的号时必须指定 PI")
     QUERY_PI_NOT_OWNED = (403, "本生产组织没有 PI {pi} 的号，不能查看其他生产组织")

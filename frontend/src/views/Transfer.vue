@@ -64,8 +64,8 @@
 </template>
 
 <script setup lang="ts">
-/** SN 转移（F-15、F-16、F-17）：转单与转组织合在一张记录表；系统管理员、普通操作员都直接转移（原因必填，立即生效），
- *  没有申请、审批。新建与详情见 views/transfer。 */
+/** SN 转移（F-15、F-16、F-17）：转单与转组织合在一张记录表；新建转移不区分类型，系统按目标判断记为转单或转组织。
+ *  系统管理员、普通操作员都直接转移（原因必填，立即生效），没有申请、审批。新建与详情见 views/transfer。 */
 import { onMounted, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { api } from "@/api";
@@ -108,9 +108,9 @@ function targetText(d: { to_bill?: string; to_seq?: number; to_material?: string
   ].filter(Boolean).join(" · ");
 }
 
-/** 默认转单，对话框里可切换为转组织。 */
+/** 新建转移不区分转单、转组织：系统按目标判断。 */
 function openNew() {
-  dlg.value?.open("BILL");
+  dlg.value?.open();
 }
 
 function onDone(kind: Kind, doc: any) {

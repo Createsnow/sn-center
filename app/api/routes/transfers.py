@@ -24,9 +24,22 @@ def all_list(
     return transfers.list_all(cu, kind, factory_code, pi, bill_no, page_of(page, page_size))
 
 
-@router.get(
-    "/sources", summary="来源候选：PI 下各单据、各物料的号数（kind = BILL 转单 / ORG 转组织，转组织限来源生产组织）"
-)
+@router.post("/preview", summary="新建转移确认框：系统判断转单或转组织（kind），其余同转单、转组织确认框")
+def auto_preview(body: TransferIn, cu: OperatorDep) -> dict:
+    return transfers.preview_auto(cu, body.req())
+
+
+@router.post("", summary="新建转移（统一入口）：系统按目标判断转单或转组织并直接执行，原因必填；返回 {kind, doc}")
+def auto_transfer(body: TransferIn, cu: OperatorDep) -> dict:
+    return transfers.transfer(cu, body.req())
+
+
+@router.get("/locate", summary="快速定位：输入完整 SN、单据编号或 PI，带出来源（读范围内、分配成功的号）")
+def locate(cu: OperatorDep, q: str | None = None) -> dict:
+    return transfers.locate(cu, q)
+
+
+@router.get("/sources", summary="来源候选：PI 下各单据、各物料的号数，按组织细分（kind = AUTO 统一入口 / BILL / ORG）")
 def sources(
     cu: OperatorDep, kind: str = transfers.KIND_ORG, pi: str | None = None, factory_code: str | None = None
 ) -> dict:

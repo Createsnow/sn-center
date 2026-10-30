@@ -140,6 +140,7 @@ E = {
 "TR_TARGET_LINE_INVALID": ("Target material line {seq} is not in the target bill", "Dòng vật tư đích {seq} không thuộc chứng từ đích"),
 "TR_RANGE_INVALID": ("Range {start_sn} ~ {end_sn} is not within the selected bill and material, or spans different serial PIs", "Khoảng {start_sn} ~ {end_sn} không thuộc chứng từ và vật tư đã chọn, hoặc không cùng PI tuần tự"),
 "TR_FROZEN": ("{count} SNs cannot be transferred: {detail}", "{count} SN không thể chuyển: {detail}"),
+"TR_LOCATE_NOT_FOUND": ("{q} not found: enter a full SN, bill No. or PI (only allocated SNs of your authorized orgs are searched)", "Không tìm thấy {q}: hãy nhập SN đầy đủ, số chứng từ hoặc PI (chỉ tìm SN đã phân bổ của tổ chức được ủy quyền)"),
 # ---------- 查询 / 审计 ----------
 "QUERY_PI_REQUIRED": ("A PI is required to view SNs of the same PI across production orgs", "Phải chỉ định PI khi xem SN của cùng PI ở các tổ chức sản xuất"),
 "QUERY_PI_NOT_OWNED": ("Your production org has no SNs of PI {pi}; other orgs cannot be viewed", "Tổ chức sản xuất của bạn không có SN nào của PI {pi}, không thể xem tổ chức khác"),

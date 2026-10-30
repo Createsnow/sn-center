@@ -111,6 +111,9 @@ export const api = {
 
   // ---------------- 转单 / 转组织
   transferSources: (params: Q) => get("/transfers/sources", params),
+  transferLocate: (q: string) => get("/transfers/locate", { q }),
+  transferPreview: (data: Q) => post("/transfers/preview", data),
+  transferCreate: (data: Q) => post("/transfers", data),
   billTransferPreview: (data: Q) => post("/transfers/bill/preview", data),
   billTransfer: (data: Q) => post("/transfers/bill", data),
   billTransfers: (params?: Q) => get("/transfers/bill", params),

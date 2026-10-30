@@ -12,10 +12,13 @@
 不可转：待分配；所在批次未确认或失败；所在转出批次未确认或失败（先在原转组织单上继续推送转出）。
 
 转单、转组织都直接执行（没有申请、审批），原因必填：系统管理员不限组织；普通操作员的来源须在授权范围内
-（转单：来源单据的组织、号现在所在的组织；转组织：来源生产组织），目标生产组织不限。
+（号现在所在的组织；指定了来源生产组织时即该组织），目标生产组织不限。
+
+页面不区分转单、转组织（统一入口 preview_auto / transfer）：系统按 decide_kind 判断，目标单据与来源不同、
+且目标生产组织就是目标单据的生产组织 → 转单；其余 → 转组织。
 
 转单、转组织的来源与目标规则相同：来源按 PI → 单据筛选，范围三选一（整张单据 / 单据 + 物料编码下全部号 /
-单据 + 物料编码下单枚或连续号段）；转组织另限来源生产组织。
+单据 + 物料编码下单枚或连续号段）；转组织另限来源生产组织（转单指定了来源生产组织时同样只取该组织的号）。
 目标 PI、单据、生产组织、物料编码都必填，号改挂到目标单据的该物料行（客户取目标单据的）。
 转单的目标生产组织就是目标单据的生产组织、目标单据不能是来源单据；
 转组织的目标生产组织可任选启用的（可与来源相同）。
@@ -34,6 +37,8 @@ from app.services import audit, changes, delivery, factories, files, locks, orde
 
 KIND_BILL = "BILL"
 KIND_ORG = "ORG"
+#: 来源候选不按类型区分（页面统一入口）：同转单，按读范围列出
+KIND_AUTO = "AUTO"
 BILL_TRANSFER = "BILL_TRANSFER"
 ORG_TRANSFER = "ORG_TRANSFER"
 MODE_VOID = "VOID"
@@ -364,7 +369,7 @@ def _after_move(cu: CurrentUser, moved: dict) -> None:
 class TransferRequest:
     """来源：PI → 单据 →（物料 →（单枚或连续号段））；目标：PI + 单据 + 生产组织 + 物料，都必填。"""
 
-    #: 来源生产组织（只用于转组织）
+    #: 来源生产组织（转组织必填；转单可不填，填了只取该组织的号）
     factory_code: str | None = None
     pi_no: str | None = None
     bill_no: str | None = None
@@ -536,7 +541,7 @@ class Plan:
 
 
 def _plan(cu: CurrentUser, kind: str, r: TransferRequest, lock: bool = False) -> Plan:
-    factory = _from_factory(cu, r.factory_code) if kind == KIND_ORG else None
+    factory = _from_factory(cu, r.factory_code) if kind == KIND_ORG or util.trim(r.factory_code) else None
     src = _source(r)
     d = _dest(kind, r, src.bill)
     items = _source_items(src, factory, lock)
@@ -544,8 +549,8 @@ def _plan(cu: CurrentUser, kind: str, r: TransferRequest, lock: bool = False) ->
         raise biz(ErrorCode.TR_NOTHING)
     targets = _targets(items, d)
     if kind == KIND_BILL:
-        # 转单：来源单据、号现在所在的组织须在授权范围内；目标单据的组织不限（转组织的来源组织在 _from_factory 校验）
-        cu.check_write(*orders.bill_orgs([src.bill]), *{x["factory_code"] for x in items})
+        # 转单：号现在所在的组织须在授权范围内；目标单据的组织不限（来源组织在 _from_factory 校验）
+        cu.check_write(*{x["factory_code"] for x in items})
     if all(
         (r["factory_code"] or d.factory, r["pi_no"], r["bill_no"], r["bill_seq"]) == (d.factory, d.pi, d.bill, d.seq)
         for r in items
@@ -554,8 +559,18 @@ def _plan(cu: CurrentUser, kind: str, r: TransferRequest, lock: bool = False) ->
     return Plan(factory, src, d, items, targets)
 
 
+def decide_kind(r: TransferRequest) -> str:
+    """页面不区分转单、转组织，按目标判断：目标单据与来源单据不同、且目标生产组织就是目标单据的生产组织 → 转单；
+    其余（换了生产组织，或同一单据内换组织）→ 转组织。目标单据不在快照时按转组织，由 _dest 报错。"""
+    tb = orders.bill(util.trim(r.to_bill)) if util.trim(r.to_bill) else None
+    if tb is not None and tb.bill_no != util.trim(r.bill_no) and util.trim(r.to_factory) == tb.org_code:
+        return KIND_BILL
+    return KIND_ORG
+
+
 def sources(cu: CurrentUser, kind: str, factory: str | None, pi: str | None) -> dict:
-    """来源候选：PI 下各单据、各物料分配成功的号数（待分配的号不能转；转组织限来源生产组织），供逐级筛选。"""
+    """来源候选：PI 下各单据、各物料分配成功的号数（待分配的号不能转；转组织限来源生产组织），供逐级筛选。
+    rows 按单据 + 物料 + 生产组织细分，带号上的客户、附件项次、米数（页面据此带出来源生产组织与来源信息）。"""
     p = util.trim(pi)
     if not p:
         raise biz(ErrorCode.PI_REQUIRED)
@@ -568,15 +583,72 @@ def sources(cu: CurrentUser, kind: str, factory: str | None, pi: str | None) -> 
         cond += fsql
         args += fargs
     bills: dict[str, dict] = {}
+    mats: dict[tuple[str, str], dict] = {}
+    rows: dict[tuple[str, str, str], dict] = {}
     for x in db.all(
-        f"SELECT bill_no, material_code, COUNT(*) n FROM sn_item WHERE {cond} GROUP BY bill_no, material_code "
-        "ORDER BY bill_no, material_code",
+        "SELECT bill_no, material_code, factory_code, customer_code, attach_no, length_text, COUNT(*) n "
+        f"FROM sn_item WHERE {cond} "
+        "GROUP BY bill_no, material_code, factory_code, customer_code, attach_no, length_text "
+        "ORDER BY bill_no, material_code, factory_code",
         *args,
     ):
-        b = bills.setdefault(x["bill_no"], {"bill_no": x["bill_no"], "qty": 0, "materials": []})
-        b["qty"] += int(x["n"])
-        b["materials"].append({"material_code": x["material_code"], "qty": int(x["n"])})
+        n = int(x["n"])
+        b = bills.setdefault(x["bill_no"], {"bill_no": x["bill_no"], "qty": 0, "materials": [], "rows": []})
+        b["qty"] += n
+        mm = mats.get((x["bill_no"], x["material_code"]))
+        if mm is None:
+            mm = mats[(x["bill_no"], x["material_code"])] = {"material_code": x["material_code"], "qty": 0}
+            b["materials"].append(mm)
+        mm["qty"] += n
+        rk = (x["bill_no"], x["material_code"], x["factory_code"])
+        row = rows.get(rk)
+        if row is None:
+            row = rows[rk] = {
+                "material_code": x["material_code"],
+                "factory_code": x["factory_code"],
+                "qty": 0,
+                "customers": [],
+                "attach_nos": [],
+                "lengths": [],
+            }
+            b["rows"].append(row)
+        row["qty"] += n
+        for k, v in (("customers", x["customer_code"]), ("attach_nos", x["attach_no"]), ("lengths", x["length_text"])):
+            if v is not None and v not in row[k]:
+                row[k].append(v)
     return {"bills": list(bills.values())}
+
+
+def locate(cu: CurrentUser, q: str | None) -> dict:
+    """快速定位：输入完整 SN、单据编号或 PI，带出来源（只在读范围内、分配成功的号中找）。
+    SN → PI、单据、物料编码、生产组织、起号；单据编号 → PI、单据；PI → PI。"""
+    text = util.trim(q)
+    if not text:
+        raise biz(ErrorCode.TR_LOCATE_NOT_FOUND, q="")
+    fsql, fargs = factories.scope_sql(cu.read_factories(None))
+    r = db.one(
+        f"SELECT sn, pi_no, bill_no, material_code, factory_code, status FROM sn_item WHERE sn = %s{fsql}",
+        text,
+        *fargs,
+    )
+    if r is not None:
+        if r["status"] == util.PENDING_ALLOC:
+            raise biz(ErrorCode.TR_SN_NOT_TRANSFERABLE, sn=r["sn"], reason=_REASON_TEXT["PENDING_ALLOC"])
+        return {
+            "by": "SN",
+            "pi": r["pi_no"],
+            "bill_no": r["bill_no"],
+            "material_code": r["material_code"],
+            "factory_code": r["factory_code"],
+            "sn": r["sn"],
+        }
+    alloc = f" AND status <> '{util.PENDING_ALLOC}'"
+    r = db.one(f"SELECT pi_no FROM sn_item WHERE bill_no = %s{alloc}{fsql} LIMIT 1", text, *fargs)
+    if r is not None:
+        return {"by": "BILL", "pi": r["pi_no"], "bill_no": text}
+    if db.one(f"SELECT 1 FROM sn_item WHERE pi_no = %s{alloc}{fsql} LIMIT 1", text, *fargs) is not None:
+        return {"by": "PI", "pi": text}
+    raise biz(ErrorCode.TR_LOCATE_NOT_FOUND, q=text)
 
 
 def preview(cu: CurrentUser, kind: str, r: TransferRequest) -> dict:
@@ -615,6 +687,19 @@ def preview(cu: CurrentUser, kind: str, r: TransferRequest) -> dict:
         xo_qty=sum(1 for x in ok if x["mes_holder"] is not None and x["mes_holder"] == x["factory_code"] != d.factory),
     )
     return out
+
+
+def preview_auto(cu: CurrentUser, r: TransferRequest) -> dict:
+    """统一入口的确认框数据：同 preview，另带系统判断的类型 kind（BILL 转单 / ORG 转组织）。"""
+    kind = decide_kind(r)
+    return {**preview(cu, kind, r), "kind": kind}
+
+
+def transfer(cu: CurrentUser, r: TransferRequest) -> dict:
+    """统一入口：按 decide_kind 执行转单或转组织；返回 {kind, doc}（doc 为转单单或转组织单）。"""
+    kind = decide_kind(r)
+    doc = transfer_bill(cu, r) if kind == KIND_BILL else direct(cu, r)
+    return {"kind": kind, "doc": doc}
 
 
 # ================================================================== 转单

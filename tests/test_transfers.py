@@ -420,13 +420,106 @@ def test_sources_lists_bills_and_materials(w, api):
     a, pi, bill = setup(w, qty=3, mes=False)
     w.allocate(pi)
     r = ok(api.get(f"/api/transfers/sources?kind=ORG&pi={pi}&factory_code={a}", w.admin))
-    assert r["bills"] == [{"bill_no": bill, "qty": 3, "materials": [{"material_code": "M1", "qty": 3}]}]
+    assert r["bills"] == [
+        {
+            "bill_no": bill,
+            "qty": 3,
+            "materials": [{"material_code": "M1", "qty": 3}],
+            "rows": [
+                {
+                    "material_code": "M1",
+                    "factory_code": a,
+                    "qty": 3,
+                    "customers": ["C1"],
+                    "attach_nos": r["bills"][0]["rows"][0]["attach_nos"],
+                    "lengths": ["100"],
+                }
+            ],
+        }
+    ]
+    assert ok(api.get(f"/api/transfers/sources?kind=AUTO&pi={pi}", w.admin))["bills"] == r["bills"]
     op = w.user(emp("F"), "operator", w.org(uid("O")[:10]))
     assert ok(api.get(f"/api/transfers/sources?kind=ORG&pi={pi}", op))["bills"] == [], "操作员只看授权组织"
     assert ok(api.get(f"/api/transfers/sources?kind=BILL&pi={pi}", op))["bills"] == [], "转单来源也只看授权组织"
     assert ok(api.get(f"/api/orders/targets?pi={pi}", op))[0]["bill_no"] == bill, "转入目标不限授权组织"
     own = w.user(emp("F"), "operator", a)
     assert ok(api.get(f"/api/transfers/sources?kind=BILL&pi={pi}", own))["bills"][0]["qty"] == 3
+
+
+def auto_body(factory, pi, bill, to_bill, to_factory, scope="BILL", to_material="M1", reason="转移", **kw):
+    """新建转移统一入口：来源（生产组织 + PI + 单据 + 范围）与目标，不带类型。"""
+    return m(
+        factory_code=factory,
+        pi_no=pi,
+        bill_no=bill,
+        scope=scope,
+        to_pi=pi,
+        to_bill=to_bill,
+        to_factory=to_factory,
+        to_material=to_material,
+        reason=reason,
+        **kw,
+    )
+
+
+def test_auto_kind_decided_by_target(w, api, sql):
+    """页面不区分转单、转组织：换单据且组织取目标单据的 → 转单；换了组织或同一单据 → 转组织。"""
+    a, pi, src = setup(w, qty=4, mes=False)
+    w.allocate(pi)
+    b = w.org(uid("O")[:10])
+    tgt = uid("MO")
+    w.order(tgt, a, "C1", pi, ("M1", 4, "100"))
+    kind = lambda body: ok(api.post("/api/transfers/preview", body, w.admin))["kind"]  # noqa: E731
+    assert kind(auto_body(a, pi, src, tgt, a)) == "BILL"
+    assert kind(auto_body(a, pi, src, tgt, b)) == "ORG", "目标组织与目标单据不同"
+    assert kind(auto_body(a, pi, src, src, b)) == "ORG", "同一单据内换组织"
+    assert api.post("/api/transfers", auto_body(a, pi, src, src, a), w.admin).code == "TR_SAME_TARGET"
+    r = ok(api.post("/api/transfers", auto_body(a, pi, src, tgt, a, reason="拆单"), w.admin))
+    assert r["kind"] == "BILL" and r["doc"]["qty"] == 4 and r["doc"]["reason"] == "拆单"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND factory_code = %s", tgt, a) == 4
+    r = ok(api.post("/api/transfers", auto_body(a, pi, tgt, tgt, b), w.admin))
+    assert r["kind"] == "ORG" and r["doc"]["from_factory"] == a and r["doc"]["to_factory"] == b
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND factory_code = %s", tgt, b) == 4
+    kinds = [x["kind"] for x in ok(api.get(f"/api/transfers?pi={pi}", w.admin))["items"]]
+    assert sorted(kinds) == ["BILL", "ORG"]
+
+
+def test_auto_bill_kind_only_takes_source_org_and_operator_needs_item_org_only(w, api, sql):
+    """转单指定了来源生产组织时只取该组织的号；普通操作员只须号所在组织在授权范围内（不再要求来源单据的组织）。"""
+    a, pi, src = setup(w, qty=4, mes=False)
+    w.allocate(pi)
+    b = w.org(uid("O")[:10])
+    ok(org_direct(w, a, pi, src, b, scope="RANGE", material_code="M1", **_first_two(sql, src)))
+    tgt = uid("MO")
+    w.order(tgt, a, "C1", pi, ("M1", 4, "100"))
+    op_b = w.user(emp("F"), "operator", b)
+    pre = ok(api.post("/api/transfers/preview", auto_body(b, pi, src, tgt, a), op_b))
+    assert (pre["kind"], pre["total"]) == ("BILL", 2), "只取来源组织 B 的 2 枚"
+    r = ok(api.post("/api/transfers", auto_body(b, pi, src, tgt, a), op_b))
+    assert r["kind"] == "BILL" and r["doc"]["qty"] == 2
+    left = sql.all("SELECT factory_code, bill_no FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)
+    assert [tuple(x.values()) for x in left] == [(a, tgt), (a, tgt), (a, src), (a, src)]
+    assert api.post("/api/transfers", auto_body(a, pi, src, tgt, a), op_b).code == "FACTORY_FORBIDDEN"
+
+
+def _first_two(sql, bill):
+    rows = sql.all("SELECT sn FROM sn_item WHERE bill_no = %s ORDER BY seq_dec LIMIT 2", bill)
+    return {"start_sn": rows[0]["sn"], "end_sn": rows[1]["sn"]}
+
+
+def test_locate_by_sn_bill_and_pi(w, api, sql):
+    a, pi, bill = setup(w, qty=2, mes=False)
+    sn = sql.all("SELECT sn FROM sn_item WHERE bill_no = %s ORDER BY seq_dec", bill)[0]["sn"]
+    assert api.get(f"/api/transfers/locate?q={sn}", w.admin).code == "TR_SN_NOT_TRANSFERABLE", "待分配的号不能转"
+    assert api.get(f"/api/transfers/locate?q={bill}", w.admin).code == "TR_LOCATE_NOT_FOUND"
+    w.allocate(pi)
+    r = ok(api.get(f"/api/transfers/locate?q={sn}", w.admin)).body
+    assert r == {"by": "SN", "pi": pi, "bill_no": bill, "material_code": "M1", "factory_code": a, "sn": sn}
+    assert ok(api.get(f"/api/transfers/locate?q={bill}", w.admin)).body == {"by": "BILL", "pi": pi, "bill_no": bill}
+    assert ok(api.get(f"/api/transfers/locate?q={pi}", w.admin)).body == {"by": "PI", "pi": pi}
+    assert api.get("/api/transfers/locate?q=NOPE-404", w.admin).code == "TR_LOCATE_NOT_FOUND"
+    outsider = w.user(emp("F"), "operator", w.org(uid("O")[:10]))
+    assert api.get(f"/api/transfers/locate?q={sn}", outsider).code == "TR_LOCATE_NOT_FOUND", "只查授权组织"
 
 
 def test_same_org_bill_transfer_reassigns_pushed(w, api, sql):
