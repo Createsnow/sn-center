@@ -420,6 +420,8 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
         },
         "pi_rule": rules.info(rules.pi_default(pi)),
         "rule_options": rules.options(pi, customer, facs),
+        # 「选规则」的默认前缀（PI 第一张单据编码后 7 位）及本 PI 已用这个前缀的格式
+        "rule_prefix": rules.pi_prefix(pi),
         "limits": generate.limits(),
         "running_job": None if running is None else generate.progress(running["gen_batch"]),
         "jobs": generate.jobs_with(pi, 20, revocable, facs),

@@ -35,18 +35,11 @@ export function useLineDrafts(reload: () => Promise<unknown>) {
   /** 金蝶米数为空、页面没填，且规则带米数（还没定规则时也标出） */
   const lengthMissing = (row: OrderLine) =>
     row.length_source === "EMPTY" && row.rule?.with_length !== false && !draftOf(row, "length");
-  const lengthTip = (row: OrderLine) =>
-    row.length_raw?.trim() ? t("generate.lengthK3Tip", { k3: row.length_raw.trim() }) : t("generate.lengthEmptyTip");
   const lengthPlaceholder = (row: OrderLine) =>
     row.length_raw?.trim() || (row.rule?.with_length !== false ? t("generate.attachRequired") : "");
   /** 金蝶产品单位为空、页面没填，且规则带单位 */
   const unitMissing = (row: OrderLine) => row.unit_source === "EMPTY" && !!row.rule?.with_unit && !draftOf(row, "unit");
-  const unitTip = (row: OrderLine) =>
-    row.unit_raw ? t("generate.unitK3Tip", { k3: row.unit_raw }) : t("generate.unitEmptyTip");
   const unitPlaceholder = (row: OrderLine) => row.unit_raw || (row.rule?.with_unit ? t("generate.attachRequired") : "");
-  function lockText(row: OrderLine) {
-    return row.edit_lock === "ALLOCATED" ? t("generate.lockAllocated") : t("generate.lockGenerated");
-  }
   async function saveDraft(row: OrderLine, f: DraftField, save: (value: string) => Promise<unknown>) {
     const k = draftKey(row, f);
     try {
@@ -136,8 +129,8 @@ export function useLineDrafts(reload: () => Promise<unknown>) {
   }
 
   return {
-    draftOf, setDraft, lockText, saveAttach, saveLength, saveUnit,
-    lengthTip, lengthMissing, lengthPlaceholder, unitTip, unitMissing, unitPlaceholder,
+    draftOf, setDraft, saveAttach, saveLength, saveUnit,
+    lengthMissing, lengthPlaceholder, unitMissing, unitPlaceholder,
     autoFillAttach, dropAutoAttach, flushAutoAttach,
   };
 }

@@ -6,7 +6,7 @@
       <span class="muted">{{ t("generate.writtenTo") }} <span class="sn-mono">{{ running.current_sn || "—" }}</span></span>
       <span class="muted">{{ t("generate.speed") }} {{ running.speed_per_sec ? t("generate.speedVal", { n: num(running.speed_per_sec) }) : "—" }}</span>
       <span class="muted">{{ t("generate.eta") }} {{ formatDuration(running.eta_seconds) }}</span>
-      <span class="push muted small">{{ running.cancel_at ? t("generate.canceling") : t("generate.runNote") }}</span>
+      <span class="push muted small">{{ running.cancel_at ? t("generate.canceling") : "" }}</span>
       <el-button size="small" type="danger" plain :disabled="!!running.cancel_at" :loading="canceling" @click="emit('cancel')">{{ t("generate.cancelGen") }}</el-button>
     </div>
     <el-progress :percentage="Number(percent)" :stroke-width="8" :show-text="false" striped striped-flow

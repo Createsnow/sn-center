@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import type { ApiErrorBody } from "@/types/api";
 import { currentLocale, t, translateApiError } from "@/i18n";
 import { newRequestId } from "@/requestId";
@@ -87,6 +87,9 @@ export class ApiError extends Error {
   }
 }
 
+/** 用弹窗（须点确定）而不是消息条提示的错误：前缀冲突（防重，F-08）。 */
+const ALERT_CODES = new Set(["RULE_PREFIX_CONFLICT"]);
+
 /** 调用方传 { silent: true } 时自己处理错误提示。 */
 declare module "axios" {
   interface AxiosRequestConfig {
@@ -108,7 +111,8 @@ http.interceptors.response.use(
       useAuthStore().clear();
       goLogin(code === "SESSION_REPLACED" || code === "PASSWORD_CHANGED" ? code : undefined);
     } else if (!err.config?.silent) {
-      ElMessage.error({ message, duration: 5000, showClose: true });
+      if (code && ALERT_CODES.has(code)) ElMessageBox.alert(message, { type: "error" }).catch(() => undefined);
+      else ElMessage.error({ message, duration: 5000, showClose: true });
     }
     return Promise.reject(new ApiError(message, status, code, body?.params));
   },

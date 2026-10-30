@@ -288,6 +288,47 @@ def test_custom_prefix_taken_after_select_flagged_in_preview(w):
     w.generate(pb)
 
 
+def test_pi_bills_share_first_bill_prefix(w, api, sql):
+    """「选规则」前缀默认取 PI 第一张单据编码后 7 位：第一张单据用它生成后，第二张单据用同一前缀、同一格式沿用那一版，
+    流水接续；同一 PI 换格式或别的 PI 用这个前缀都报前缀冲突。"""
+    stem = uid("").replace("-", "")
+    org, pi, first = mk(w, ("M1", 2), bill="MOA" + stem)
+    _, _, second = mk(w, ("M2", 3), pi=pi, org=org, bill="MOB" + stem)
+    prefix = first[-7:]
+    ctx = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))
+    assert ctx["rule_prefix"] == {"prefix": prefix, "custom": None}
+    c = m(prefix=prefix, base=10, seq_len=4, with_length=False)
+    ok(w.select(pi, [(first, 1)], custom=c))
+    w.generate(pi, lines=[(first, 1)])
+    ctx = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))
+    assert ctx["rule_prefix"]["prefix"] == prefix and ctx["rule_prefix"]["custom"]["seq_len"] == 4
+    # 同一 PI 换格式：一个前缀只对应一种格式
+    assert w.select(pi, [(second, 1)], custom={**c, "seq_len": 5}).code == "RULE_PREFIX_CONFLICT"
+    ok(w.select(pi, [(second, 1)], custom=ctx["rule_prefix"]["custom"]))
+    rid = sql.scalar("SELECT id FROM sn_rule WHERE rule_code = %s", f"PI-{pi}-1")
+    assert sql.scalar("SELECT rule_id FROM sn_line_rule WHERE bill_no = %s AND seq = 1", second) == rid
+    w.generate(pi, lines=[(second, 1)])
+    assert sql.count("SELECT COUNT(*) FROM sn_rule WHERE rule_code LIKE %s", f"PI-{pi}-%") == 1
+    sns = [r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
+    assert sns == [f"{prefix}{i:04d}" for i in range(1, 6)]
+    # 别的 PI 用这个前缀：全局唯一，冲突
+    _, other, ob = mk(w, ("M1", 1))
+    assert w.select(other, [(ob, 1)], custom=c).code == "RULE_PREFIX_CONFLICT"
+
+
+def test_custom_prefix_taken_before_run_reports_conflict(w, api):
+    """确认生成时再查前缀是否全局唯一：预演后前缀被别的 PI 先用，生成报前缀冲突（页面弹窗），不只是「预演已改变」。"""
+    _, pa, ba = mk(w, ("M1", 2))
+    _, pb, bb = mk(w, ("M1", 2))
+    c = m(prefix=P(), base=10, seq_len=6, with_length=False)
+    ok(w.select(pa, [(ba, 1)], custom=c))
+    ok(w.select(pb, [(bb, 1)], custom=c))
+    token = ok(w.preview(pb))["token"]
+    w.generate(pa)
+    r = api.post("/api/generate/run", m(token=token), w.admin)
+    assert r.code == "RULE_PREFIX_CONFLICT"
+
+
 def test_rules_bound_by_pi_only(w, api):
     """规则只按 PI 维度绑定：没有按客户绑定；物料行没选、PI 也没绑时须先选规则，同一客户的别的 PI 不受影响。"""
     cust = uid("CU")

@@ -204,8 +204,13 @@ def _check(line: Line, taken: dict[str, bool] | None = None) -> None:
         line.issues.append("NO_RULE")
     elif not line.res.ready:
         line.issues.append("RULE_PREFIX")
-    elif line.res.plan == rules.PLAN_NEW and rules.prefix_taken(line.res.version["prefix"], taken):
-        # 自定义规则选定后前缀被别的规则先占用（如别的 PI 用同一前缀先生成），须改前缀，免得生成时才失败
+    elif (
+        line.res.plan == rules.PLAN_NEW
+        and rules.prefix_taken(line.res.version["prefix"], taken)
+        and rules.own_version(line.pi, line.res.spec()) is None
+    ):
+        # 自定义规则选定后前缀被别的规则先占用（如别的 PI 用同一前缀先生成），须改前缀，免得生成时才失败；
+        # 被本 PI 同格式的版本占用（本 PI 别的单据先生成）不算，生成时沿用那一版
         line.issues.append("RULE_PREFIX")
     spec = line.res.spec() if line.res is not None and line.res.ready else None
     # 米数、产品单位用金蝶原值（含中文也照用）；金蝶为空且页面未填写时须先填写（规则不带米数 / 单位时不影响）
@@ -247,7 +252,14 @@ def _plan(pi: str, scope: str, keys: list[tuple[str, int]], base: int) -> dict:
     todo = [x for x in ls if x.quota > 0]
     quota = sum(x.quota for x in todo)
     issues = [
-        {"bill_no": x.bill_no, "seq": x.seq, "material_code": x.material_code, "issues": x.issues}
+        {
+            "bill_no": x.bill_no,
+            "seq": x.seq,
+            "material_code": x.material_code,
+            "issues": x.issues,
+            # 自定义前缀被占用时给出前缀，确认生成时按前缀冲突提示
+            "prefix": x.res.version["prefix"] if "RULE_PREFIX" in x.issues and x.res.ready else None,
+        }
         for x in todo
         if x.issues
     ]
@@ -391,6 +403,10 @@ def generate(cu: CurrentUser, token: str | None) -> dict:
         keys = [tuple(k) for k in stored["keys"]]
         cu.check_write(*orders.bill_orgs(k[0] for k in keys))
         fresh = _plan(pi, stored["scope"], keys, actual)
+        # 确认生成时再查一次前缀是否全局唯一：自定义前缀在预演后被别的规则占用时报前缀冲突（页面弹窗提示）
+        for i in fresh["issues"]:
+            if i.get("prefix"):
+                rules.check_prefix(i["prefix"])
         if fresh["issues"] or not _same_plan(stored, fresh):
             raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
         batch = util.next_id("G") + util.token_hex()[:4]

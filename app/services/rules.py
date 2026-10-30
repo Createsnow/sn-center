@@ -12,7 +12,9 @@
 是否带单位、后缀）；
 自定义规则生成成功后存入规则库并归属本 PI（编码 PI-PI号-n，名称 PI号_vn，n 为本 PI 第几条自定义规则），
 本 PI 选了同一自定义规则、这次没生成的物料行一并改记为这条规则；生成失败或取消不留规则。
-自定义规则的前缀在选定后被别的规则先占用时，预演标「规则须换前缀」。
+自定义前缀默认取 PI 第一张单据（单据编号最小）编码后 7 位，同一 PI 的各张单据共用：前缀已被本 PI 同格式的版本占用时
+沿用该版本（own_version），被别的 PI、别的规则或别的格式占用时报前缀冲突；
+自定义规则的前缀在选定后被别的规则先占用时，预演标「规则须换前缀」，确认生成时报前缀冲突。
 物料行生成过号后可改选，已生成的号不变，流水接续。
 """
 
@@ -198,6 +200,40 @@ def check_prefix(prefix: str, exclude_version: int | None = None) -> None:
             rule_name=row["rule_name"],
             version=row["version"],
         )
+
+
+def own_version(pi: str, spec: codec.Spec) -> Resolved | None:
+    """自定义规则的前缀已被本 PI 同格式的版本占用（如先生成的单据存入规则库的自定义规则）：同一 PI 的各张单据
+    共用一个前缀，沿用这一版，流水接续不撞号。前缀没人用，或被别的 PI、别的格式占用时 None（后者按前缀冲突处理）。"""
+    v = db.one("SELECT * FROM sn_rule_version WHERE prefix = %s", spec.prefix)
+    if v is None or v["claimed_pi"] != pi or spec_of(v) != spec:
+        return None
+    r = db.one("SELECT * FROM sn_rule WHERE id = %s", v["rule_id"])
+    if r is None:
+        return None
+    res = resolve(r, pi, SRC_LINE)
+    # 规则在本 PI 下用的须正是这一版（规则另出过新版时不沿用，免得之后按新版生成）
+    return res if res.version is not None and res.version["id"] == v["id"] else None
+
+
+def pi_prefix(pi: str) -> dict:
+    """生成页「选规则」的默认前缀：PI 第一张单据（单据编号最小）编码后 7 位；本 PI 已有这个前缀的版本时一并给出其格式，
+    页面按它填其他参数，保存时沿用该版本。"""
+    first = db.scalar("SELECT MIN(bill_no) FROM sn_prd_mo WHERE pi = %s", pi) or ""
+    prefix = first[-7:]
+    v = db.one("SELECT * FROM sn_rule_version WHERE prefix = %s AND claimed_pi = %s", prefix, pi) if prefix else None
+    return {"prefix": prefix, "custom": None if v is None else _custom_dict(spec_of(v))}
+
+
+def _adopt(cu: CurrentUser, rule: dict, pi: str, orgs: set[str]) -> None:
+    """物料行沿用本 PI 已有的规则版本（own_version）：生成时自动存入的本 PI 自定义规则被别的生产组织的物料行共用时
+    改为全局规则（F-08 规则所属组织）；其他规则须能选用。"""
+    if rule["factory_code"] is None or orgs <= {rule["factory_code"]}:
+        return
+    if rule["category_scope"] == PI and rule["category_value"] == pi:
+        db.exec("UPDATE sn_rule SET factory_code = NULL WHERE id = %s", rule["id"])
+    else:
+        check_visible(cu, rule)
 
 
 #: 示例号用的米数、单位（页面不填时）
@@ -883,8 +919,17 @@ def select_for_lines(
     with db.tx():
         keys = _line_keys(pi, lines)
         cu.check_write(*{line["org_code"] for _, _, line in keys})
+        own = None
         if custom is not None:
             res = _custom_resolved(SRC_LINE, custom)
+            own = own_version(pi, res.spec())
+        if own is not None:
+            # 前缀已被本 PI 同格式的版本占用（本 PI 别的单据先生成过）：物料行改记为那条规则，沿用这一版
+            _adopt(cu, own.rule, pi, {line["org_code"] for _, _, line in keys})
+            res = own
+            rid, cj = own.rule["id"], None
+            label = f"{own.rule['rule_code']} v{own.version['version']}"
+        elif custom is not None:
             check_prefix(res.version["prefix"])
             rid, cj = None, json.dumps(res.custom, ensure_ascii=False, sort_keys=True)
             label = f"custom {format_text(res.spec())}"

@@ -1,18 +1,14 @@
 <template>
   <el-dialog :model-value="modelValue" :title="t('generate.rule.dialogTitle')" width="640px" @update:model-value="(v: boolean) => emit('update:modelValue', v)" @open="onOpen">
-    <div class="targets muted">
-      {{ t("generate.rule.targets", { n: lines.length }) }}
-      <span v-for="l in lines.slice(0, 6)" :key="`${l.bill_no}#${l.seq}`" class="tg">{{ l.bill_no }} / {{ l.seq }} · {{ l.material_code || "—" }}</span>
-      <span v-if="lines.length > 6">…</span>
-    </div>
+    <!-- 默认在自定义页签：前缀默认取 PI 第一张单据编码后 7 位，其他参数可选；不放说明文字 -->
     <el-radio-group v-model="mode" class="mb" @change="(v: any) => v === 'CUSTOM' && schedule()">
-      <el-radio-button value="LIBRARY" :disabled="!options.length">{{ t("generate.rule.library") }}</el-radio-button>
       <el-radio-button value="CUSTOM">{{ t("generate.rule.custom") }}</el-radio-button>
+      <el-radio-button value="LIBRARY" :disabled="!options.length">{{ t("generate.rule.library") }}</el-radio-button>
     </el-radio-group>
 
     <template v-if="mode === 'LIBRARY'">
-      <el-input v-model="kw" :placeholder="t('generate.rule.searchLib')" clearable prefix-icon="Search" class="mb" />
-      <!-- 精简：每条只列「规则编码 v版本」（本 PI 用的版本）；格式悬停可看，须换前缀时下方提示 -->
+      <el-input v-model="kw" clearable prefix-icon="Search" class="mb" />
+      <!-- 精简：每条只列「规则编码 v版本」（本 PI 用的版本）；格式悬停可看 -->
       <div class="rule-list">
         <div v-for="o in filtered" :key="o.rule_id" class="it" :class="{ on: picked?.rule_id === o.rule_id }" tabindex="0"
           :title="o.format || ''" @click="pick(o)" @keyup.enter="pick(o)">
@@ -24,11 +20,9 @@
         </div>
         <div v-if="!filtered.length" class="empty">{{ t("common.empty") }}</div>
       </div>
-      <div v-if="picked" class="muted picked-format">{{ picked.format }}</div>
       <el-form v-if="picked?.plan === 'PREFIX'" label-width="120px" class="mt" @submit.prevent>
-        <el-alert type="warning" :closable="false" show-icon class="mb" :title="t('generate.rule.prefixNeeded', { pi: picked.other_pi || '—' })" />
         <el-form-item :label="t('generate.rule.newPrefix')" required>
-          <el-input v-model="newPrefix" maxlength="32" class="w200" :placeholder="picked.current_prefix || ''" />
+          <el-input v-model="newPrefix" maxlength="32" class="w200" />
         </el-form-item>
       </el-form>
     </template>
@@ -50,35 +44,30 @@
       </el-form-item>
       <template v-if="custom.with_length">
         <el-form-item :label="t('generate.rule.sepBefore')">
-          <el-input v-model="custom.sep_before" maxlength="16" class="w120" :placeholder="t('common.optional')" @input="schedule" />
+          <el-input v-model="custom.sep_before" maxlength="16" class="w120" @input="schedule" />
         </el-form-item>
         <el-form-item :label="t('generate.rule.lengthPad')">
           <el-input-number v-model="custom.length_pad" :min="0" :max="32" controls-position="right" @change="schedule" />
         </el-form-item>
         <el-form-item :label="t('generate.rule.sepAfter')">
-          <el-input v-model="custom.sep_after" maxlength="16" class="w120" :placeholder="t('common.optional')" @input="schedule" />
+          <el-input v-model="custom.sep_after" maxlength="16" class="w120" @input="schedule" />
         </el-form-item>
       </template>
       <el-form-item :label="t('generate.rule.withUnit')">
         <el-switch v-model="custom.with_unit" @change="schedule" />
       </el-form-item>
       <el-form-item :label="t('generate.rule.suffix')">
-        <el-input v-model="custom.suffix" maxlength="32" class="w200" :placeholder="t('common.optional')" @input="schedule" />
+        <el-input v-model="custom.suffix" maxlength="32" class="w200" @input="schedule" />
       </el-form-item>
       <el-form-item :label="t('generate.rule.sample')">
         <div class="sample">
           <span v-if="sample.error" class="err">{{ sample.error }}</span>
-          <template v-else-if="sample.sn">
-            <span class="sn-mono">{{ sample.sn }}</span>
-            <span class="muted">{{ sample.format }} · {{ t("generate.rule.maxSeq", { n: sample.max }) }}</span>
-          </template>
+          <span v-else-if="sample.sn" class="sn-mono">{{ sample.sn }}</span>
           <span v-else class="muted">—</span>
         </div>
       </el-form-item>
-      <p class="muted">{{ t("generate.rule.customNote") }}</p>
     </el-form>
 
-    <el-alert v-if="anyGenerated" type="info" :closable="false" show-icon :title="t('generate.rule.changeNote')" />
     <template #footer>
       <el-button v-if="anyLineRule" :loading="busy === 'clear'" @click="clear">{{ t("generate.rule.clear") }}</el-button>
       <el-button @click="emit('update:modelValue', false)">{{ t("common.cancel") }}</el-button>
@@ -96,8 +85,9 @@ import { ApiError } from "@/api/http";
 import { BASES } from "@/constants";
 import type { CustomRule, OrderLine } from "@/types/api";
 
-/** prefer：打开时优先的方式（底部「自定义规则」「选定规则库」按钮）；不传时按物料行现有规则。 */
-const props = defineProps<{ modelValue: boolean; pi: string; lines: OrderLine[]; options: any[]; prefer?: "LIBRARY" | "CUSTOM" }>();
+/** 「选规则」的默认前缀（ctx.rule_prefix）：prefix = PI 第一张单据编码后 7 位；custom = 本 PI 已用这个前缀的格式（没有为 null）。 */
+type RulePrefix = { prefix: string; custom: CustomRule | null };
+const props = defineProps<{ modelValue: boolean; pi: string; lines: OrderLine[]; options: any[]; rulePrefix?: RulePrefix }>();
 const emit = defineEmits<{ (e: "update:modelValue", v: boolean): void; (e: "saved"): void }>();
 const { t } = useI18n();
 
@@ -105,14 +95,15 @@ const mode = ref<"LIBRARY" | "CUSTOM">("LIBRARY");
 const kw = ref("");
 const picked = ref<any>(null);
 const newPrefix = ref("");
-/** 自定义规则默认：前缀取单据号后 7 位，流水 4 位，不带米数、不带单位。 */
-const defaultPrefix = (bill = "") => bill.slice(-7);
+/** 前缀默认取 PI 第一张单据编码后 7 位（同一 PI 的各张单据共用，生成时后台查全局唯一）；取不到时用所选第一行的单据。 */
+const defaultPrefix = () => props.rulePrefix?.prefix || (props.lines[0]?.bill_no ?? "").slice(-7);
+/** 自定义规则默认：流水 4 位，不带米数、不带单位。 */
 const customDefault = (): CustomRule => ({
-  prefix: defaultPrefix(props.lines[0]?.bill_no), base: 10, seq_len: 4, with_length: false, length_pad: 0, sep_before: "", sep_after: "",
+  prefix: defaultPrefix(), base: 10, seq_len: 4, with_length: false, length_pad: 0, sep_before: "", sep_after: "",
   with_unit: false, suffix: "",
 });
 const custom = reactive<CustomRule>(customDefault());
-const sample = reactive({ sn: "", format: "", max: 0, error: "" });
+const sample = reactive({ sn: "", error: "" });
 const busy = ref("");
 
 /** 规则选择只列「规则编码 v版本」 */
@@ -130,27 +121,25 @@ const canSave = computed(() => {
   return !!custom.prefix.trim() && !sample.error;
 });
 
+/** 打开即在自定义页签：前缀为默认前缀；其他参数按本 PI 已用这个前缀的格式（保存时沿用那一版），
+ *  没有时按所选物料行现有的自定义规则，再没有用默认值。 */
 function onOpen() {
   kw.value = "";
   newPrefix.value = "";
   sample.error = "";
   sample.sn = "";
   const cur = props.lines.length === 1 ? props.lines[0].rule : null;
-  if (cur?.mode === "CUSTOM" && cur.custom) {
-    mode.value = "CUSTOM";
-    Object.assign(custom, customDefault(), cur.custom);
-  } else {
-    mode.value = props.options.length ? "LIBRARY" : "CUSTOM";
-    Object.assign(custom, customDefault());
-  }
-  if (props.prefer) mode.value = props.prefer === "LIBRARY" && !props.options.length ? "CUSTOM" : props.prefer;
+  const base = props.rulePrefix?.custom ?? (cur?.mode === "CUSTOM" ? cur.custom : null);
+  Object.assign(custom, customDefault(), base ?? {}, { prefix: defaultPrefix() });
+  mode.value = "CUSTOM";
   picked.value = cur?.rule_id ? props.options.find((o) => o.rule_id === cur.rule_id) ?? null : null;
-  if (mode.value === "CUSTOM") schedule();
+  schedule();
 }
 
 function pick(o: any) {
   picked.value = o;
-  newPrefix.value = "";
+  // 须为本 PI 换前缀时同样默认 PI 第一张单据编码后 7 位
+  newPrefix.value = o.plan === "PREFIX" ? defaultPrefix() : "";
 }
 
 let timer: ReturnType<typeof setTimeout> | undefined;
@@ -166,8 +155,6 @@ async function previewCustom() {
     const l = props.lines[0];
     const r = await api.previewRule({ ...custom, prefix: custom.prefix.trim(), length: l?.length || undefined, unit: l?.unit || undefined });
     sample.sn = r.samples?.[0]?.sn || "";
-    sample.format = r.format;
-    sample.max = r.max_seq;
   } catch (e) {
     sample.error = e instanceof ApiError ? e.message : String(e);
   }
@@ -222,8 +209,6 @@ async function clear() {
 </script>
 
 <style scoped>
-.targets { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 12px; }
-.tg { background: var(--el-fill-color); border-radius: 4px; padding: 0 6px; }
 .mb { margin-bottom: 12px; }
 .mt { margin-top: 12px; }
 .w120 { width: 120px; }
@@ -237,8 +222,7 @@ async function clear() {
 .rule-list .it.on .radio { border: 4px solid var(--el-color-primary); }
 .rule-list .nm { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .rule-list .nm b { font-weight: 500; white-space: nowrap; }
-.picked-format { margin-top: 6px; font-size: 12px; }
 .rule-list .empty { padding: 20px; text-align: center; color: var(--app-muted); }
-.sample { display: flex; flex-direction: column; gap: 2px; }
+.sample { display: flex; flex-direction: column; }
 .err { color: var(--el-color-danger); font-size: 12px; }
 </style>
