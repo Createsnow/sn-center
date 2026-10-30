@@ -160,6 +160,7 @@ def test_empty_customer_flows_like_normal_bills(w, api, sql):
     w.generate(pi)
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND customer_code = ''", a) == 5
     # 客户编码为空的单据也能作转单目标
+    w.allocate(pi)
     w.order(tgt, org, "", pi, ("M1", 5))
     body = m(
         pi_no=pi, bill_no=a, scope="BILL", to_pi=pi, to_bill=tgt, to_factory=org, to_material="M1", reason="整单作废"

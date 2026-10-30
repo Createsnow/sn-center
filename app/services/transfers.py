@@ -8,8 +8,8 @@
 - 转移前 MES 已持有、改挂后待推送的号不回号池：同一事务内给转入方当场建批（记转移单号，批次类型为
   SAME_ORG_TRANSFER / TRANSFER_IN，按单批枚数拆分，暂停交付的号除外）并推送；MES 还没收到的号回号池按流水认领
   （批次类型 NEW）。
-不可转：所在批次未确认或失败；所在转出批次未确认或失败（先在原转组织单上继续推送转出）。
-转单另可转待分配的号（仍为待分配，之后按目标单据的生产组织分配）；转组织不能转待分配的号。
+只有分配成功（已分到生产组织）的号才能转：待分配的号不能转单、转组织。
+不可转：待分配；所在批次未确认或失败；所在转出批次未确认或失败（先在原转组织单上继续推送转出）。
 
 转单、转组织都直接执行（没有申请、审批），原因必填：系统管理员不限组织；普通操作员的来源须在授权范围内
 （转单：来源单据的组织、号现在所在的组织；转组织：来源生产组织），目标生产组织不限。
@@ -104,11 +104,11 @@ def _reason(raw: str | None) -> str:
 # ================================================================== 可转判断
 
 
-def blocked(items: list[dict], allow_pending_alloc: bool) -> dict[int, str]:
-    """不能转的号及原因：BATCH_PENDING / TRANSFER_OUT_PENDING / PENDING_ALLOC。"""
+def blocked(items: list[dict]) -> dict[int, str]:
+    """不能转的号及原因：PENDING_ALLOC（只有分配成功的号才能转）/ BATCH_PENDING / TRANSFER_OUT_PENDING。"""
     out: dict[int, str] = {}
     for r in items:
-        if r["status"] == util.PENDING_ALLOC and not allow_pending_alloc:
+        if r["status"] == util.PENDING_ALLOC:
             out[r["id"]] = "PENDING_ALLOC"
         elif r["status"] == util.TO_PUSH and r["delivery_batch_no"] is not None:
             out[r["id"]] = "BATCH_PENDING"
@@ -118,7 +118,7 @@ def blocked(items: list[dict], allow_pending_alloc: bool) -> dict[int, str]:
 
 
 _REASON_TEXT = {
-    "PENDING_ALLOC": "待分配（转组织不能转）",
+    "PENDING_ALLOC": "待分配（只有分配成功的号才能转移）",
     "BATCH_PENDING": "所在批次未确认或失败",
     "TRANSFER_OUT_PENDING": "所在转出批次未确认或失败，先在原转组织单上继续推送转出",
 }
@@ -187,8 +187,8 @@ def _move(
     rows = []
     #: 改挂后各列相同的号一起更新：(组织, PI, 客户, 单据, 序号, 物料, 状态, 推送类型, 交付方式, 原组织) → 号
     groups: dict[tuple, list[int]] = {}
+    #: 物料行的已生成数、已分配数随号移动（转的都是已分配的号，两者变化相同）
     line_moves: dict[tuple[str, int], int] = {}
-    alloc_moves: dict[tuple[str, int], int] = {}
     for r in items:
         t = targets[r["id"]]
         old_org = r["factory_code"]
@@ -197,17 +197,17 @@ def _move(
         status = r["status"]
         push_type = r["push_type"]
         mode = r["delivery_mode"]
-        if status != util.PENDING_ALLOC:
-            if new_org == old_org:
-                if r["mes_holder"] == old_org and old_org in mes:
-                    status, push_type, mode = util.TO_PUSH, util.PUSH_REASSIGN, None
-            elif new_org in mes:
-                status, mode = util.TO_PUSH, None
-                push_type = util.PUSH_REASSIGN if r["mes_holder"] == old_org and old_org else util.PUSH_NEW
-            else:
-                status, push_type, mode = util.ALLOCATED, util.PUSH_NEW, None
-            if status == util.TO_PUSH:
-                to_push.add((new_org, t.pi))
+        # 只转分配成功的号（blocked 已排除待分配），号上都有生产组织
+        if new_org == old_org:
+            if r["mes_holder"] == old_org and old_org in mes:
+                status, push_type, mode = util.TO_PUSH, util.PUSH_REASSIGN, None
+        elif new_org in mes:
+            status, mode = util.TO_PUSH, None
+            push_type = util.PUSH_REASSIGN if r["mes_holder"] == old_org else util.PUSH_NEW
+        else:
+            status, push_type, mode = util.ALLOCATED, util.PUSH_NEW, None
+        if status == util.TO_PUSH:
+            to_push.add((new_org, t.pi))
         if r["mes_holder"] is not None and r["mes_holder"] == old_org and new_org != old_org:
             xo.setdefault(old_org, []).append(
                 {
@@ -230,15 +230,12 @@ def _move(
                 }
             )
         # 批次类型只在原组织 MES 已持有时记为转移（transfer_from_org）；MES 还没收到的号保留原标记（没有即首次下发）
-        from_org = old_org if old_org and r["mes_holder"] == old_org else None
+        from_org = old_org if r["mes_holder"] == old_org else None
         key = (new_org, t.pi, t.customer, t.bill, t.seq, t.material, status, push_type, mode, from_org)
         groups.setdefault(key, []).append(r["id"])
         if (t.bill, t.seq) != (r["bill_no"], r["bill_seq"]):
             line_moves[(r["bill_no"], r["bill_seq"])] = line_moves.get((r["bill_no"], r["bill_seq"]), 0) - 1
             line_moves[(t.bill, t.seq)] = line_moves.get((t.bill, t.seq), 0) + 1
-            if old_org is not None:
-                alloc_moves[(r["bill_no"], r["bill_seq"])] = alloc_moves.get((r["bill_no"], r["bill_seq"]), 0) - 1
-                alloc_moves[(t.bill, t.seq)] = alloc_moves.get((t.bill, t.seq), 0) + 1
         rows.append(
             (
                 kind,
@@ -322,7 +319,7 @@ def _move(
                 "UPDATE sn_line_count SET gen_count = gen_count + %s, alloc_count = alloc_count + %s, updated_at = %s "
                 "WHERE bill_no = %s AND seq = %s",
                 d,
-                alloc_moves.get((no, seq), 0),
+                d,
                 now,
                 no,
                 seq,
@@ -512,15 +509,13 @@ def _dest(kind: str, r: TransferRequest, source_bill: str) -> Dest:
     )
 
 
-def _targets(kind: str, items: list[dict], d: Dest) -> dict[int, Target]:
-    """号改挂到目标物料行；目标米数与号上米数不同则拒绝（SN 已含米数）。
-    转单时待分配的号仍待分配（之后按目标单据的生产组织分配）。"""
+def _targets(items: list[dict], d: Dest) -> dict[int, Target]:
+    """号改挂到目标物料行与转入生产组织；目标米数与号上米数不同则拒绝（SN 已含米数）。"""
     out: dict[int, Target] = {}
     for r in items:
         if r["length_text"] is not None and r["length_text"] != d.length:
             raise biz(ErrorCode.TR_LENGTH_MISMATCH, target=d.length or "(空)", current=r["length_text"])
-        org = None if kind == KIND_BILL and r["factory_code"] is None else d.factory
-        out[r["id"]] = Target(org, d.pi, d.customer, d.bill, d.seq, d.material)
+        out[r["id"]] = Target(d.factory, d.pi, d.customer, d.bill, d.seq, d.material)
     return out
 
 
@@ -547,7 +542,7 @@ def _plan(cu: CurrentUser, kind: str, r: TransferRequest, lock: bool = False) ->
     items = _source_items(src, factory, lock)
     if not items:
         raise biz(ErrorCode.TR_NOTHING)
-    targets = _targets(kind, items, d)
+    targets = _targets(items, d)
     if kind == KIND_BILL:
         # 转单：来源单据、号现在所在的组织须在授权范围内；目标单据的组织不限（转组织的来源组织在 _from_factory 校验）
         cu.check_write(*orders.bill_orgs([src.bill]), *{x["factory_code"] for x in items})
@@ -560,18 +555,18 @@ def _plan(cu: CurrentUser, kind: str, r: TransferRequest, lock: bool = False) ->
 
 
 def sources(cu: CurrentUser, kind: str, factory: str | None, pi: str | None) -> dict:
-    """来源候选：PI 下各单据、各物料的号数（转组织限来源生产组织），供逐级筛选。"""
+    """来源候选：PI 下各单据、各物料分配成功的号数（待分配的号不能转；转组织限来源生产组织），供逐级筛选。"""
     p = util.trim(pi)
     if not p:
         raise biz(ErrorCode.PI_REQUIRED)
-    cond, args = "pi_no = %s", [p]
+    cond, args = f"pi_no = %s AND status <> '{util.PENDING_ALLOC}'", [p]
     if kind == KIND_ORG:
         cond += " AND factory_code = %s"
         args.append(_from_factory(cu, factory))
     else:
-        isql, iargs = factories.item_scope_sql(cu.read_factories(None))
-        cond += isql
-        args += iargs
+        fsql, fargs = factories.scope_sql(cu.read_factories(None))
+        cond += fsql
+        args += fargs
     bills: dict[str, dict] = {}
     for x in db.all(
         f"SELECT bill_no, material_code, COUNT(*) n FROM sn_item WHERE {cond} GROUP BY bill_no, material_code "
@@ -588,7 +583,7 @@ def preview(cu: CurrentUser, kind: str, r: TransferRequest) -> dict:
     """确认框：枚数、各状态枚数、不可转枚数及原因、来源和目标已生成数的变化（未生成额度不变）、
     跨生产组织枚数、将向来源 MES 推送转出的枚数。"""
     p = _plan(cu, kind, r)
-    bad = blocked(p.items, kind == KIND_BILL)
+    bad = blocked(p.items)
     out = _summary(p.items, bad)
     moves: dict[tuple[str, int], int] = {}
     ok = [x for x in p.items if x["id"] not in bad]
@@ -631,7 +626,7 @@ def transfer_bill(cu: CurrentUser, req: TransferRequest) -> dict:
     p0 = _plan(cu, KIND_BILL, req)
     with locks.with_pi_lock(p0.src.pi, p0.dest.pi), db.tx():
         p = _plan(cu, KIND_BILL, req, lock=True)
-        bad = blocked(p.items, True)
+        bad = blocked(p.items)
         ok = [x for x in p.items if x["id"] not in bad]
         _check_any(p.items, ok, bad, p.src)
         src, d = p.src, p.dest
@@ -749,7 +744,7 @@ def direct(cu: CurrentUser, r: TransferRequest) -> dict:
     p0 = _plan(cu, KIND_ORG, r)
     with locks.with_pi_lock(p0.src.pi, p0.dest.pi), db.tx():
         p = _plan(cu, KIND_ORG, r, lock=True)
-        bad = blocked(p.items, False)
+        bad = blocked(p.items)
         ok = [x for x in p.items if x["id"] not in bad]
         _check_any(p.items, ok, bad, p.src)
         tid, no = _insert_org(cu, p, len(ok), reason)
@@ -909,7 +904,7 @@ def _bill_where(cu: CurrentUser, factory: str | None, pi: str | None, bill: str 
         args += [bill.strip(), bill.strip()]
     facs = cu.read_factories(factory)
     if facs is not None:
-        # 号的来源或去向组织在范围内；只转了待分配号的单（号上没有组织）按来源单据、目标单据的组织
+        # 号的来源或去向组织在范围内，或来源单据、目标单据的组织在范围内（含早期只转了待分配号、号上没有组织的单）
         fsql, fa = factories.scope_sql(facs, "x.from_factory")
         tsql, ta = factories.scope_sql(facs, "x.to_factory")
         bsql, ba = factories.scope_sql(facs, "to_factory")

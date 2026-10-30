@@ -901,7 +901,7 @@
       "ORG": "Org transfer · new production org"
     },
     "kindTip": {
-      "BILL": "For orders voided or split in Kingdee: SNs move to another production order and follow its org; SNs still to allocate may move too. Executed directly and effective at once; a transfer reason is required.",
+      "BILL": "For orders voided or split in Kingdee: SNs move to another production order and follow its org; only allocated SNs can move (allocate pending SNs first). Executed directly and effective at once; a transfer reason is required.",
       "ORG": "SNs move to another production org (may differ from the target bill's), limited to allocated SNs of the source org. Executed directly and effective at once; a transfer reason is required. Operators need the source org authorized; any target org is allowed."
     },
     "previewFirst": "Preview first, then submit once the transferable count looks right",
@@ -934,7 +934,7 @@
     "pvOtherOrg": "Cross-org",
     "pvXo": "Transfer-out to source MES",
     "blocked": {
-      "PENDING_ALLOC": "To allocate (not for org transfer)",
+      "PENDING_ALLOC": "To allocate (only allocated SNs can be transferred)",
       "BATCH_PENDING": "In unconfirmed or failed batch",
       "TRANSFER_OUT_PENDING": "Transfer-out unfinished; resume it on the original org transfer first"
     },
@@ -963,7 +963,7 @@
     "after": "After",
     "current": "Now",
     "transferredOut": "Transferred out",
-    "desc": "Re-attach SNs to another production order or org; SN strings never change. Two kinds: bill transfer (for orders voided or split in Kingdee; SNs follow the target bill) and org transfer (SNs move to another production org). System admins and operators both transfer directly, effective at once, with a required transfer reason; operators need the source authorized, while the target is unrestricted. Both pick the source by PI → bill → material → single SN or range, and require target PI, bill, production org and material. MES is informed by automatic reassign / transfer-out pushes.",
+    "desc": "Re-attach SNs to another production order or org; SN strings never change. Two kinds: bill transfer (for orders voided or split in Kingdee; SNs follow the target bill) and org transfer (SNs move to another production org). System admins and operators both transfer directly, effective at once, with a required transfer reason; only allocated SNs can be transferred; operators need the source authorized, while the target is unrestricted. Both pick the source by PI → bill → material → single SN or range, and require target PI, bill, production org and material. MES is informed by automatic reassign / transfer-out pushes.",
     "scopeTip": {
       "BILL": "All SNs of this bill under the PI",
       "MATERIAL": "All SNs of this material code in the bill (all lines of the material)",

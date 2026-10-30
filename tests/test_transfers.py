@@ -310,6 +310,7 @@ def test_split_moves_counts_not_quota(w, api, sql):
     w.order(src, org, "C1", pi, ("M1", 100))
     ok(w.bind_pi(pi, w.rule(P())))
     w.generate(pi)
+    w.allocate(pi)
     a, b = uid("MO"), uid("MO")
     w.order(a, org, "C1", pi, ("M1", 60))
     w.order(b, org, "C1", pi, ("M1", 40))
@@ -333,12 +334,11 @@ def test_split_moves_counts_not_quota(w, api, sql):
     ok(api.post("/api/transfers/bill", bill_body(pi, src, b, org, scope="MATERIAL", material_code="M1"), w.admin))
     gc = {r["bill_no"]: r for r in sql.all("SELECT * FROM sn_line_count")}
     assert (gc[src]["gen_count"], gc[a]["gen_count"], gc[b]["gen_count"]) == (0, 60, 40)
+    assert (gc[src]["alloc_count"], gc[a]["alloc_count"], gc[b]["alloc_count"]) == (0, 60, 40), "已分配数随号移动"
     assert gc[src]["own_generated"] == 100 and gc[a]["own_generated"] == 0
     lines = {x["bill_no"]: x for x in ok(api.get("/api/orders?page_size=100", w.admin))["items"]}
     assert lines[a]["quota"] == 60, "未生成额度不变（新单仍可按订单数量生成）"
-    assert (
-        sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND status = 'PENDING_ALLOC' AND rev = 2", a) == 60
-    )
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND status = 'ALLOCATED' AND rev = 2", a) == 60
 
 
 def test_material_scope_and_single_sn(w, api, sql):
@@ -348,6 +348,7 @@ def test_material_scope_and_single_sn(w, api, sql):
     w.order(src, org, "C1", pi, ("M1", 3), ("M2", 2), ("M1", 4))
     ok(w.bind_pi(pi, w.rule(P())))
     w.generate(pi)
+    w.allocate(pi)
     w.order(tgt, org, "C1", pi, ("M1", 10), ("M2", 10))
     pre = ok(
         api.post(
@@ -423,7 +424,7 @@ def test_sources_lists_bills_and_materials(w, api):
     op = w.user(emp("F"), "operator", w.org(uid("O")[:10]))
     assert ok(api.get(f"/api/transfers/sources?kind=ORG&pi={pi}", op))["bills"] == [], "操作员只看授权组织"
     assert ok(api.get(f"/api/transfers/sources?kind=BILL&pi={pi}", op))["bills"] == [], "转单来源也只看授权组织"
-    assert ok(api.get(f"/api/orders/targets?pi={pi}", op))[0]["bill_no"] == bill, "操作员申请转组织也能选目标"
+    assert ok(api.get(f"/api/orders/targets?pi={pi}", op))[0]["bill_no"] == bill, "转入目标不限授权组织"
     own = w.user(emp("F"), "operator", a)
     assert ok(api.get(f"/api/transfers/sources?kind=BILL&pi={pi}", own))["bills"][0]["qty"] == 3
 
@@ -447,22 +448,27 @@ def test_same_org_bill_transfer_reassigns_pushed(w, api, sql):
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND attach_no = '1'", pi) == 3
 
 
-def test_bill_transfer_length_mismatch_and_pending_alloc_to_other_org(w, api, sql):
+def test_only_allocated_sns_can_be_transferred(w, api, sql):
+    """只有分配成功的号才能转移：待分配的号转单、转组织都列为不可转；分配后照常转（转单到别的组织的单据随目标组织）。"""
     org, pi, src = setup(w, qty=2, mes=False)
     other = w.org(uid("O")[:10])
     t1, t2 = uid("MO"), uid("MO")
     w.order(t1, org, "C1", pi, ("M1", 2, "200"))
     assert api.post("/api/transfers/bill", bill_body(pi, src, t1, org), w.admin).code == "TR_LENGTH_MISMATCH"
     w.order(t2, other, "C1", pi, ("M1", 2, "100"))
+    pre = ok(api.post("/api/transfers/bill/preview", bill_body(pi, src, t2, other), w.admin))
+    assert (pre["total"], pre["transferable"], pre["blocked"]) == (2, 0, {"PENDING_ALLOC": 2})
+    r = api.post("/api/transfers/bill", bill_body(pi, src, t2, other), w.admin)
+    assert r.code == "TR_FROZEN" and "只有分配成功的号才能转移" in r.body["message"]
+    one = sql.scalar("SELECT sn FROM sn_item WHERE bill_no = %s ORDER BY seq_dec LIMIT 1", src)
+    rng = bill_body(pi, src, t2, other, scope="RANGE", material_code="M1", start_sn=one)
+    assert api.post("/api/transfers/bill", rng, w.admin).code == "TR_SN_NOT_TRANSFERABLE"
+    assert ok(api.get(f"/api/transfers/sources?kind=BILL&pi={pi}", w.admin))["bills"] == [], "来源候选不含待分配的号"
+    assert sql.count("SELECT COUNT(*) FROM sn_bill_transfer WHERE from_bill = %s", src) == 0
+    w.allocate(pi)
     ok(api.post("/api/transfers/bill", bill_body(pi, src, t2, other), w.admin))
-    assert (
-        sql.count(
-            "SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND status = 'PENDING_ALLOC' AND factory_code IS NULL", t2
-        )
-        == 2
-    )
-    r = w.allocate(pi)
-    assert r["orgs"] == [other], "分配时分到目标单据的生产组织"
+    rows = sql.all("SELECT factory_code, status FROM sn_item WHERE bill_no = %s", t2)
+    assert [tuple(x.values()) for x in rows] == [(other, "ALLOCATED")] * 2, "转单到别的组织的单据随目标组织"
 
 
 def test_split_bill_across_orgs_transfer_out_header_per_source_org(w, api, sql):
@@ -538,6 +544,7 @@ def test_bill_transfer_from_reversed_bill_releases(w, api, sql):
 
 def test_bill_list_and_items(w, api):
     org, pi, src = setup(w, qty=1, mes=False)
+    w.allocate(pi)
     tgt = uid("MO")
     w.order(tgt, org, "C1", pi, ("M1", 1))
     t = ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, org), w.admin))
@@ -549,9 +556,10 @@ def test_bill_list_and_items(w, api):
 
 
 def test_operator_bill_transfer_target_unrestricted_reason_required(w, api, sql):
-    """普通操作员转单：来源单据、号所在组织须授权，目标单据的组织不限；原因必填。只转待分配号的转单单，
-    来源或目标单据组织的操作员都能在列表和详情里看到。"""
+    """普通操作员转单：来源单据、号所在组织须授权，目标单据的组织不限；原因必填。
+    来源或目标组织的操作员都能在列表和详情里看到。"""
     a, pi, src = setup(w, qty=2, mes=False)
+    w.allocate(pi)
     b = w.org(uid("O")[:10])
     tgt = uid("MO")
     w.order(tgt, b, "C1", pi, ("M1", 2))
@@ -559,7 +567,7 @@ def test_operator_bill_transfer_target_unrestricted_reason_required(w, api, sql)
     assert api.post("/api/transfers/bill", bill_body(pi, src, tgt, b, reason=" "), op).code == "REASON_REQUIRED"
     t = ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, b), op))
     assert t["qty"] == 2 and t["reason"] == "转单"
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND status = 'PENDING_ALLOC'", tgt) == 2
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND factory_code = %s", tgt, b) == 2
     mine = ok(api.get(f"/api/transfers?kind=BILL&pi={pi}", op))["items"]
     assert [x["transfer_no"] for x in mine] == [t["transfer_no"]]
     op_b = w.user(emp("F"), "operator", b)
