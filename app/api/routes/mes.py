@@ -12,8 +12,8 @@
 
 from __future__ import annotations
 
-import gzip
 import json
+import zlib
 
 from fastapi import APIRouter, Depends, Request
 
@@ -24,16 +24,31 @@ from app.services import delivery
 
 router = APIRouter(prefix="/mes/v1", tags=["open"])
 
+#: gzip 请求体解压后的上限：②④⑤ 的请求体只有几个短字段（不足 1 KB），防止小报文解压出超大内容占满内存
+MAX_INFLATED = 1024 * 1024
+
+
+def _gunzip(raw: bytes) -> bytes:
+    """解压 gzip 请求体，最多解出 MAX_INFLATED 字节；不是合法 gzip 或解压后超限都返回 400。"""
+    d = zlib.decompressobj(16 + zlib.MAX_WBITS)
+    try:
+        out = d.decompress(raw, MAX_INFLATED)
+        if d.unconsumed_tail:
+            raise MesError(400, "INVALID_REQUEST", f"请求体解压后超过 {MAX_INFLATED // 1024} KB")
+        out += d.flush()
+    except zlib.error:
+        raise MesError(400, "INVALID_REQUEST", "请求体不是合法的 gzip") from None
+    if not d.eof:
+        raise MesError(400, "INVALID_REQUEST", "请求体不是合法的 gzip")
+    return out
+
 
 async def _json(request: Request, gzip_ok: bool = True) -> dict:
     raw = await request.body()
     if request.headers.get("content-encoding", "").lower() == "gzip":
         if not gzip_ok:
             raise MesError(400, "INVALID_REQUEST", "本接口不支持 gzip，请发原始 JSON")
-        try:
-            raw = gzip.decompress(raw)
-        except OSError:
-            raise MesError(400, "INVALID_REQUEST", "请求体不是合法的 gzip") from None
+        raw = _gunzip(raw)
     try:
         body = json.loads(raw.decode("utf-8")) if raw else {}
     except (ValueError, UnicodeDecodeError):

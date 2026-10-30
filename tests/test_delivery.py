@@ -462,6 +462,11 @@ def test_receipt_batch_no_in_body_and_no_gzip(w, sql):
     assert sql.scalar("SELECT result FROM sn_delivery_batch WHERE batch_no = %s", batch["batchNo"]) == "UNCONFIRMED"
     assert ok(gz("/api/mes/v1/batches/items", {"batchNo": batch["batchNo"]}))["batchNo"] == batch["batchNo"]
     assert ok(gz("/api/mes/v1/sn/delivered", {"pi": pi}))["items"] == []
+    # 解压后超过上限的请求体（小报文解出几十 MB）直接拒收，不解进内存
+    bomb = gzip.compress(b'{"pi":"' + b" " * (64 << 20) + b'"}')
+    h = {"Content-Type": "application/json", "Content-Encoding": "gzip", "Authorization": f"Bearer {token}"}
+    r = w.api.client.post("/api/mes/v1/batches/next", content=bomb, headers=h)
+    assert (r.status_code, r.json()["code"]) == (400, "INVALID_REQUEST") and "超过" in r.json()["message"]
     ok(w.mes_receipt(token, good))
     assert len(ok(w.mes_items(token, batch["batchNo"]))["items"]) == 3
     assert len(ok(w.mes_delivered(token, pi=pi, pageSize=2))["items"]) == 2

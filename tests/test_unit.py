@@ -231,6 +231,22 @@ def test_gzip_body_is_byte_identical_across_calls():
     assert gzip.decompress(mes_client.gzip_bytes(raw)) == raw
 
 
+def test_mes_request_gunzip_is_capped():
+    """MES 接口的 gzip 请求体：正常报文照常解压；解压后超过上限、不是合法 gzip、被截断的都返回 400，不解进内存。"""
+    from app.api.routes import mes
+    from app.core.exceptions import MesError
+
+    body = json.dumps({"pi": "PI-1", "billNo": "MO-1"}).encode("utf-8")
+    assert mes._gunzip(gzip.compress(body)) == body
+    assert len(mes._gunzip(gzip.compress(b" " * mes.MAX_INFLATED))) == mes.MAX_INFLATED, "恰好到上限仍可解"
+    bomb = gzip.compress(b"0" * (mes.MAX_INFLATED * 64))
+    assert len(bomb) < 100 * 1024, "64 MB 的 0 压缩后不足 100 KB"
+    for raw, text in ((bomb, "超过"), (b"not gzip", "gzip"), (gzip.compress(body)[:-6], "gzip")):
+        with pytest.raises(MesError) as e:
+            mes._gunzip(raw)
+        assert (e.value.status_code, e.value.code) == (400, "INVALID_REQUEST") and text in e.value.message
+
+
 def test_hmac_signature_string():
     import hashlib
     import hmac
