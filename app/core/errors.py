@@ -30,7 +30,7 @@ class ErrorCode(Enum):
     VALIDATION = (422, "参数不合法：{detail}")
     REQUEST_TOO_LARGE = (413, "请求体超过 {max} MB")
     CONFLICT_RETRY = (409, "数据正被其他操作占用，请稍后重试")
-    PI_BUSY = (409, "PI {pi} 正在进行其他操作（生成、撤销、分配或转移），请稍后再试")
+    PI_BUSY = (409, "PI {pi} 正在进行其他操作（生成、删号、分配或转移），请稍后再试")
     REASON_REQUIRED = (400, "原因必填（不超过 500 字）")
     # ---------- 账户 ----------
     USER_NOT_FOUND = (404, "账户不存在")
@@ -79,9 +79,12 @@ class ErrorCode(Enum):
     UNIT_FILL_CHINESE = (400, "产品单位 {value} 含中文，请填写不含中文的单位（如 M、m、L）")
     LINE_EDIT_GENERATED = (
         409,
-        "物料行 {bill_no} / {seq} 已生成过号，附件项次、米数和产品单位不能修改；号还未分配时可先撤销生成再修改",
+        "物料行 {bill_no} / {seq} 有号，附件项次、米数和产品单位不能修改；先删除该行的号再修改",
     )
-    LINE_EDIT_ALLOCATED = (409, "物料行 {bill_no} / {seq} 的号已分配，附件项次、米数和产品单位不能再修改")
+    LINE_EDIT_ALLOCATED = (
+        409,
+        "物料行 {bill_no} / {seq} 有已分配的号，附件项次、米数和产品单位不能修改；先删除该行的号再修改",
+    )
     ALERT_NOT_FOUND = (404, "订单变更提醒不存在或已处理")
     ALERT_ACTION_INVALID = (400, "该提醒不能这样处理")
     ALERT_MAP_TARGET_INVALID = (400, "确认对应的目标物料行须是该单据快照中的另一行：{seq}")
@@ -106,7 +109,11 @@ class ErrorCode(Enum):
     RULE_CHARSET_INVALID = (400, "字符表不能含空格")
     RULE_CHARSET_DUPLICATE = (400, "字符表不能有重复字符")
     RULE_SN_TOO_LONG = (400, "前缀 + 流水 + 分隔符 + 米数 + 单位 + 后缀总长不能超过 64")
-    RULE_USED_FORMAT = (409, "版本 {version} 已生成过号，改格式须另出一版并换新前缀")
+    RULE_PREFIX_FORMAT_LOCKED = (
+        409,
+        "前缀 {prefix} 已按 {base} 进制、{seq_len} 位流水使用；同一前缀下进制、流水位数、字符表不能改，须换新前缀",
+    )
+    RULE_PREFIX_OVERLAP = (409, "前缀 {prefix} 与 PI {pi} 的前缀 {other} 一个是另一个的开头，可能编出相同的号，请更换")
     RULE_PREFIX_CHANGE_REQUIRED = (409, "规则 {rule_code} 版本 {version} 已用于 PI {other_pi}，须为本 PI 填新前缀")
     RULE_LINE_REQUIRED = (400, "请选择物料行")
     RULE_GLOBAL_READONLY = (403, "全局规则只有系统管理员能修改、删除：{rule_code}")
@@ -124,10 +131,12 @@ class ErrorCode(Enum):
     GEN_BUSY = (409, "PI {pi} 正在生成，请稍后再试")
     GEN_DUPLICATE_SN = (409, "完整 SN {sn} 与 PI {pi} 已有的号重复，整次生成已回滚（不自动跳号）")
     GEN_JOB_NOT_FOUND = (404, "生成任务不存在")
-    GEN_REVOKE_NOT_SUCCESS = (409, "只能撤销已成功的生成")
-    GEN_REVOKE_NOT_LAST = (409, "只能撤销 PI {pi} 流水排在最后的物料行，请从后往前逐行撤销")
-    GEN_REVOKE_LINE_INVALID = (409, "这次生成中没有该物料行，或已撤销")
-    GEN_REVOKE_ALLOCATED = (409, "要撤销的号已有 {count} 枚分配或转过单，不能撤销")
+    GEN_SEQ_RANGE_INVALID = (400, "起止流水号须为正整数，止号不能小于起号")
+    # ---------- 删号 ----------
+    DELETE_TARGET_INVALID = (400, "请选择要删除的单据、物料行，或填写 SN（起止号）")
+    DELETE_SN_NOT_FOUND = (404, "PI {pi} 下没有 SN {sn}")
+    DELETE_RANGE_INVALID = (400, "起止 SN 须属于同一套流水（流水归属 PI 相同），止号不能在起号之前")
+    DELETE_NOTHING = (400, "所选范围没有可删除的号")
     GEN_QTY_OVER_MAX = (400, "单次最多生成 {max} 枚，所选物料行共 {qty} 枚；请少选几行分次生成，或联系管理员")
     GEN_CANCELED = (409, "生成已取消，已写入的号全部删除")
     GEN_CANCEL_NOT_RUNNING = (409, "这次生成已经结束，不能取消")

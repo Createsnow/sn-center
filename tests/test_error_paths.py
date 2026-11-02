@@ -61,47 +61,65 @@ def test_preview_expired_changed_and_rule_exhausted(w, sql):
 
 
 def test_duplicate_full_sn_rolls_back_whole_generation(w, sql):
-    """NFR-01：前缀只是开头相同（P1 与 P10）可以建，万一拼出的完整 SN 相同，由号池唯一约束拦下、整次回滚、不跳号。"""
+    """NFR-01：前缀一个是另一个的开头（P1 与 P10）不能建；万一号池里已有拼出的完整 SN（如早先的数据），
+    由号池唯一约束拦下、整次回滚、不跳号。"""
     p = P()
     _, pi1, _ = mk(w, ("M1", 1))
     ok(w.bind_pi(pi1, w.rule(p + "1", seq_len=2, with_length=False)))
     w.generate(pi1)
+    assert (
+        w.api.post(
+            "/api/rules",
+            m(rule_code=uid("R"), rule_name="x", category_value=uid("PI"), prefix=p + "10", base=10, seq_len=1),
+            w.admin,
+        ).code
+        == "RULE_PREFIX_OVERLAP"
+    )
     _, pi2, bill2 = mk(w, ("M1", 2))
-    ok(w.bind_pi(pi2, w.rule(p + "10", seq_len=1, with_length=False)))
+    ok(w.bind_pi(pi2, w.rule(P(), seq_len=1, with_length=False)))
     pv = ok(w.preview(pi2))
-    assert pv["start_sn"] == p + "101", "与 PI1 的第一枚号相同"
+    first = pv["start_sn"]
+    # 号池里已有同样的完整 SN（挂在 PI1 下）
+    sql.exec(
+        "INSERT INTO sn_item(sn, pi_no, bill_no, bill_seq, gen_bill_no, gen_bill_seq, seq_pi_no, seq_dec, "
+        "rule_version_id, gen_batch, status, created_at, updated_at) SELECT %s, pi_no, bill_no, bill_seq, gen_bill_no, "
+        "gen_bill_seq, seq_pi_no, 99, rule_version_id, gen_batch, status, created_at, updated_at FROM sn_item "
+        "WHERE pi_no = %s LIMIT 1",
+        first,
+        pi1,
+    )
     r = w.api.post("/api/generate/run", m(token=pv["token"]), w.admin)
-    assert r.code == "GEN_DUPLICATE_SN" and r.body["params"] == {"sn": p + "101", "pi": pi1}
+    assert r.code == "GEN_DUPLICATE_SN" and r.body["params"] == {"sn": first, "pi": pi1}
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi2) == 0, "整次回滚"
     assert sql.scalar("SELECT COALESCE(MAX(last_seq_dec), 0) FROM sn_pi_counter WHERE pi_no = %s", pi2) == 0
     assert sql.scalar("SELECT status FROM sn_gen_job WHERE pi_no = %s", pi2) == "FAILED"
     assert sql.scalar("SELECT own_generated FROM sn_line_count WHERE bill_no = %s", bill2) in (None, 0)
 
 
-def test_revoke_twice_and_pi_lock_busy(w, sql):
-    """REV-09、NFR-02：已整次撤销的生成不能再撤；PI 操作锁被占用时分配、撤销、生成立即提示稍后再试（不排队）。"""
+def test_delete_errors_and_pi_lock_busy(w, sql):
+    """删号的错误路径；PI 操作锁被占用时分配、删号、生成立即提示稍后再试（不排队）；生成中不能删。"""
     from app.services import locks
 
     _, pi, bill = mk(w, ("M1", 2), ("M2", 1))
     ok(w.bind_pi(pi, w.rule(P())))
     j = w.generate(pi, lines=[(bill, 1)])
-    ok(w.revoke(j["gen_batch"]))
-    assert w.revoke(j["gen_batch"]).code == "GEN_REVOKE_NOT_SUCCESS"
-    j = w.generate(pi, lines=[(bill, 1)])
+    assert w.delete(pi).code == "DELETE_TARGET_INVALID"
+    assert w.delete(pi, lines=[(bill, 2)]).code == "DELETE_NOTHING"
+    assert w.delete(pi, start_sn="NOPE").code == "DELETE_SN_NOT_FOUND"
+    assert w.delete(pi, lines=[(bill, 1)], reason="x" * 501).code == "REASON_REQUIRED"
     p = ok(w.preview(pi, lines=[(bill, 2)]))
     held = locks.pi_lock(pi)
     try:
         assert w.api.post("/api/allocation/allocate", m(pi_no=pi), w.admin).code == "PI_BUSY"
-        assert w.revoke(j["gen_batch"]).code == "PI_BUSY"
+        assert w.delete(pi, lines=[(bill, 1)]).code == "PI_BUSY"
         assert w.api.post("/api/generate/run", m(token=p["token"]), w.admin).code == "PI_BUSY"
     finally:
         held.release()
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PENDING_ALLOC'", pi) == 2
-    # 生成中（有任务占着 running_pi）：撤销到所选物料行提示正在生成
+    # 生成中（有任务占着 running_pi）：删号提示正在生成
     sql.exec("UPDATE sn_gen_job SET running_pi = %s WHERE gen_batch = %s", pi, j["gen_batch"])
     try:
-        r = w.api.post("/api/generate/revoke", m(pi_no=pi, lines=[m(bill_no=bill, seq=1)]), w.admin)
-        assert r.code == "GEN_BUSY"
+        assert w.delete(pi, lines=[(bill, 1)]).code == "GEN_BUSY"
     finally:
         sql.exec("UPDATE sn_gen_job SET running_pi = NULL WHERE gen_batch = %s", j["gen_batch"])
     assert w.allocate(pi)["qty"] == 2, "锁释放后照常分配"

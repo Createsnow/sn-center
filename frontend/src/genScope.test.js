@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { billMark, emptySel, genLimit, lineOrder, revokeRange, scopeBody, selectedLines, toggleBill, toggleLine } from "./genScope.js";
+import { billMark, emptySel, genLimit, lineOrder, scopeBody, selectedLines, seqSource, toggleBill, toggleLine } from "./genScope.js";
 
 const BILLS = { A: [1, 2, 3], B: [1, 2] };
 const linesOf = (no) => (BILLS[no] || []).map((seq) => ({ bill_no: no, seq }));
@@ -47,20 +47,12 @@ test("genLimit: over the default needs unlock, over the hard max is refused", ()
   assert.equal(genLimit(5, {}, false), null);
 });
 
-test("revoking a line takes every segment after it in the serial", () => {
-  // 从流水最末往前：A/3、B/1（另一次生成）、A/1；A/1 自己已分配
-  const segs = [
-    { bill_no: "A", seq: 3, bad: 0, ok: true },
-    { bill_no: "B", seq: 1, bad: 0, ok: true },
-    { bill_no: "A", seq: 1, bad: 2, ok: false },
-  ];
-  assert.equal(revokeRange(segs, [L("A", 2)]), null, "没有号的行不能撤");
-  const r = revokeRange(segs, [L("B", 1)]);
-  assert.deepEqual(r.segs.map((s) => `${s.bill_no}/${s.seq}`), ["A/3", "B/1"]);
-  assert.equal(r.ok, true);
-  const both = revokeRange(segs, [L("A", 3), L("A", 1)]);
-  assert.equal(both.segs.length, 3, "撤到所选行中流水最靠前的一段");
-  assert.deepEqual([both.ok, both.own], [false, true]);
-  const later = revokeRange([{ bill_no: "A", seq: 3, bad: 1, ok: false }, { bill_no: "B", seq: 1, bad: 0, ok: false }], [L("B", 1)]);
-  assert.deepEqual([later.ok, later.own], [false, false], "之后的行已分配");
+test("seqSource: MAX by default, RANGE needs a valid start / end (end defaults to start)", () => {
+  assert.deepEqual(seqSource("MAX"), { body: { seq_mode: "MAX" }, error: null });
+  assert.deepEqual(seqSource(undefined, 3, 4).body, { seq_mode: "MAX" });
+  assert.deepEqual(seqSource("RANGE", 4, 7).body, { seq_mode: "RANGE", seq_start: 4, seq_end: 7 });
+  assert.deepEqual(seqSource("RANGE", "5", "").body, { seq_mode: "RANGE", seq_start: 5, seq_end: 5 }, "只填起号 = 单个号");
+  for (const [a, b] of [[null, 3], [0, 3], [5, 4], [1.5, 3], ["x", 3]]) {
+    assert.deepEqual(seqSource("RANGE", a, b), { body: null, error: "SEQ_RANGE" }, `${a}~${b}`);
+  }
 });

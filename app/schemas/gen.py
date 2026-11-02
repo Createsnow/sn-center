@@ -10,18 +10,15 @@ class PreviewIn(In):
     scope: str | None = None
     bills: list[str] | None = None
     lines: list[LineRef] | None = None
+    #: 流水来源：MAX 从最大号 + 1 起（默认）/ RANGE 手动起止流水号（十进制），用其间的空号段与未使用的号，
+    #: 不够时从最大号之后接着编
+    seq_mode: str | None = None
+    seq_start: int | None = None
+    seq_end: int | None = None
 
 
 class RunIn(In):
     token: str | None = None
-
-
-class RevokeIn(In):
-    """给了单据和序号 = 只撤这一个物料行；都不给 = 撤这次生成中剩下的全部物料行。"""
-
-    reason: str | None = None
-    bill_no: str | None = None
-    seq: int | None = None
 
 
 class RevokeConfigIn(In):
@@ -31,9 +28,13 @@ class RevokeConfigIn(In):
     lines: list[LineRef] | None = None
 
 
-class RevokeLinesIn(In):
-    """撤到所选物料行为止：从 PI 流水末尾往前撤，流水排在所选行之后的物料行一并撤销。"""
+class DeleteIn(In):
+    """删号范围（三选一）：单据 bills / 物料行 lines（两者可同时给）/ SN 起止号 start_sn、end_sn（只填起号 = 单枚；
+    起止号须在同一物料行）。原因选填。"""
 
     pi_no: str | None = None
+    bills: list[str] | None = None
     lines: list[LineRef] | None = None
+    start_sn: str | None = None
+    end_sn: str | None = None
     reason: str | None = None

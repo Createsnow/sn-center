@@ -72,7 +72,7 @@ export const api = {
   bindPiRule: (data: Q) => put("/rules/pi-binding", data),
   unbindPiRule: (pi: string) => del("/rules/pi-binding", { pi }),
 
-  // ---------------- SN 生成与撤销
+  // ---------------- SN 生成与删号
   genPis: (params?: Q) => get("/generate/pis", params),
   genContext: (params: { pi?: string; bill_no?: string }) => get("/generate/context", params),
   genPreview: (data: Q, silent = false) => post("/generate/preview", data, silent),
@@ -80,9 +80,13 @@ export const api = {
   genJobs: (pi: string, limit?: number) => get("/generate/jobs", { pi, limit }),
   genProgress: (batch: string) => get(`/generate/batches/${enc(batch)}`),
   cancelGen: (batch: string) => post(`/generate/batches/${enc(batch)}/cancel`, {}),
-  /** 撤到所选物料行为止：从流水最末往前撤，流水排在所选行之后的物料行一并撤销；原因选填（不填后端记默认原因）。 */
-  revokeLines: (pi_no: string, lines: { bill_no: string; seq: number }[], reason?: string) =>
-    post("/generate/revoke", { pi_no, lines, reason }),
+  /** 空号段：PI 流水 1～最大号之间没有号的连续段（删号腾出），最大号与下一个号。 */
+  genGaps: (pi: string) => get("/generate/gaps", { pi }),
+  /** 删号范围：单据 bills / 物料行 lines，或 SN 起止号 start_sn、end_sn（只填起号 = 单枚）。 */
+  genDeletePreview: (data: Q) => post("/generate/delete/preview", data),
+  /** 删号：状态不限；额度还给号现在挂的物料行，最大流水号不退回（留下空号段）；原因选填。 */
+  genDelete: (data: Q) => post("/generate/delete", data),
+  genDeleted: (pi: string) => get("/generate/deleted", { pi }),
   /** 撤销物料行配置（待处理、可生成页签）：还没有号的行，物料行规则、手填的附件项次、米数、产品单位恢复为未配置；有号的行跳过。 */
   revokeConfig: (pi_no: string, lines: { bill_no: string; seq: number }[]) => post("/generate/revoke-config", { pi_no, lines }),
 

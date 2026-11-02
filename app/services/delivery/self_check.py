@@ -16,7 +16,8 @@ log = structlog.get_logger()
 
 
 def run() -> dict:
-    """成功批次记为接收的枚数与批次枚数是否一致；未经转移，同一 SN 是否在两个成功交付批次（推送、拉取）中；
+    """成功批次记为接收的枚数与批次枚数是否一致；未经转移，同一枚号（号池 id + rev；删号后重新生成的同名 SN
+    是另一枚号，不算）是否在两个成功交付批次（推送、拉取）中；
     未确认超过告警时长的批次。人工确认的批次没有回执，单列。问题列入首页告警并留痕。"""
     now = util.now()
     since = now - timedelta(days=2)
@@ -30,12 +31,12 @@ def run() -> dict:
         if int(b["n"]) != int(b["qty"]):
             found.append((b["factory_code"], b["batch_no"], None, f"回执枚数 {b['n']} 与批次枚数 {b['qty']} 不一致"))
     for r in db.all(
-        "SELECT d.sn, d.rev, COUNT(DISTINCT d.batch_id) n, GROUP_CONCAT(DISTINCT b.batch_no) nos, "
+        "SELECT MIN(d.sn) sn, d.rev, COUNT(DISTINCT d.batch_id) n, GROUP_CONCAT(DISTINCT b.batch_no) nos, "
         "MIN(b.factory_code) f "
         "FROM sn_delivery_item d JOIN sn_delivery_batch b ON b.id = d.batch_id WHERE b.batch_type <> 'TRANSFER_OUT' "
-        "AND b.result = 'SUCCESS' AND d.sn IN (SELECT d2.sn FROM sn_delivery_item d2 "
-        "JOIN sn_delivery_batch b2 ON b2.id = d2.batch_id WHERE b2.confirmed_at >= %s) GROUP BY d.sn, d.rev HAVING n "
-        "> 1 "
+        "AND b.result = 'SUCCESS' AND d.item_id IN (SELECT d2.item_id FROM sn_delivery_item d2 "
+        "JOIN sn_delivery_batch b2 ON b2.id = d2.batch_id WHERE b2.confirmed_at >= %s) GROUP BY d.item_id, d.rev "
+        "HAVING n > 1 "
         "LIMIT 500",
         since,
     ):

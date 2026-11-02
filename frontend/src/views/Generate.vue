@@ -80,7 +80,7 @@
       <p v-if="list.capped" class="muted">{{ t("generate.capped", { n: LIST_LIMIT }) }}</p>
     </div>
 
-    <!-- 详情：只管生成与撤销。头部（数字、去分配）→ 物料行 / 生成记录 → 底部操作栏（范围、批量、生成）；不能生成的原因看物料行状态列 -->
+    <!-- 详情：只管生成与删号。头部（数字、去分配）→ 物料行 / 生成记录 → 底部操作栏（范围、批量、生成）；不能生成的原因看物料行状态列 -->
     <el-drawer :model-value="!!detailPi" size="min(1240px, 96vw)" class="gen-drawer" @close="closeDetail">
       <template #header>
         <div v-if="ctx" class="dh">
@@ -100,6 +100,7 @@
             <span v-if="ctx.summary.transferred_in">{{ t("generate.transferredIn") }} <b class="num">{{ num(ctx.summary.transferred_in) }}</b></span>
             <span v-if="ctx.summary.suspended" class="warn">{{ t("generate.suspendedQty", { n: num(ctx.summary.suspended) }) }}</span>
             <span>{{ t("generate.nextSeq") }} <b class="num">{{ ctx.counter.next_seq }}</b></span>
+            <span v-if="ctx.gaps?.count" class="warn">{{ t("generate.gapsLink", { n: num(ctx.gaps.count), qty: num(ctx.gaps.total) }) }}</span>
           </div>
         </div>
       </template>
@@ -117,16 +118,16 @@
           <el-button link type="primary" size="small" @click="foldAll(false)">{{ t("common.expandAll") }}</el-button>
           <el-button link type="primary" size="small" @click="foldAll(true)">{{ t("common.collapseAll") }}</el-button>
         </div>
-        <!-- 已分配的单据在「可生成」页签整单置灰：单据和物料行都不可勾选 -->
-        <div v-for="b in shownBills" :key="b.bill_no" class="bill" :class="{ locked: isLocked(b.bill_no) }">
+        <!-- 已分配的单据删号后（或数量增加后）还有额度的，照常勾选生成 -->
+        <div v-for="b in shownBills" :key="b.bill_no" class="bill">
           <!-- 点单据头展开 / 收起物料行；勾选框只管勾选 -->
           <div class="bill-h" @click="toggleFold(b.bill_no)">
             <el-icon class="fold" :class="{ open: !isFolded(b.bill_no) }"><ArrowRight /></el-icon>
-            <span @click.stop><el-checkbox v-bind="billCheck(b.bill_no)" :disabled="!b.in_snapshot || !b.lines.length || isLocked(b.bill_no)" @change="(v: any) => onBill(b.bill_no, !!v)" /></span>
+            <span @click.stop><el-checkbox v-bind="billCheck(b.bill_no)" :disabled="!b.in_snapshot || !b.lines.length" @change="(v: any) => onBill(b.bill_no, !!v)" /></span>
             <span v-if="billCheck(b.bill_no).order >= 0" class="order">{{ billCheck(b.bill_no).order + 1 }}</span>
             <b>{{ b.bill_no }}</b>
             <span class="muted">PO {{ b.po || "—" }} · {{ b.org_name || nameOf(b.org_code) }}<template v-if="deptOf(b)"> · {{ deptOf(b) }}</template><template v-if="b.modify_time"> · {{ t("orders.modifyDate") }} {{ b.modify_time }}</template></span>
-            <el-tag v-if="isLocked(b.bill_no)" size="small" type="info">{{ t("allocate.state.ALLOCATED") }}</el-tag>
+            <el-tag v-if="b.alloc_state === 'ALLOCATED'" size="small" type="info">{{ t("allocate.state.ALLOCATED") }}</el-tag>
             <el-tag v-if="!b.in_snapshot" size="small" type="info">{{ t("generate.notInSnapshot") }}</el-tag>
             <el-tag v-if="b.state.suspend" size="small" type="warning">{{ suspendLabel(b.state.suspend) }}</el-tag>
             <el-tag v-if="b.state.leave_state" size="small" type="danger">{{ leaveStateLabel(b.state.leave_state) }}</el-tag>
@@ -139,7 +140,7 @@
             <el-table-column width="44">
               <template #default="{ row }">
                 <span class="sel" @click.stop>
-                  <el-checkbox :model-value="isPicked(row)" :disabled="isLocked(row.bill_no)" @change="(v: any) => pickLine(row, !!v)" />
+                  <el-checkbox :model-value="isPicked(row)" @change="(v: any) => pickLine(row, !!v)" />
                   <span v-if="lineIdx(row) >= 0" class="order">{{ lineIdx(row) + 1 }}</span>
                 </span>
               </template>
@@ -200,15 +201,15 @@
                 <el-tag v-else size="small" :type="LINE_STATE_TAG[lineState(row)]" disable-transitions>{{ t(`generate.lineState.${lineState(row)}`) }}</el-tag>
               </template>
             </el-table-column>
-            <!-- 操作列按页签：待处理只有选规则；可生成有选规则和（有号时）撤销生成；已生成只有撤销生成 -->
+            <!-- 操作列按页签：待处理只有选规则；可生成有选规则和（有号时）删号；已生成只有删号（状态不限，已分配的也可删） -->
             <el-table-column :label="t('common.actions')" width="80" align="right">
               <template #default="{ row }">
                 <span class="ops" @click.stop>
                   <el-button v-if="lineFilter !== 'GENERATED'" link :type="row.rule ? 'primary' : 'danger'" size="small" @click="openRuleDialog([row])">
                     {{ row.rule ? t("generate.changeRule") : t("generate.pickRule") }}
                   </el-button>
-                  <el-button v-if="lineFilter !== 'TODO' && revokeOf([row])" link type="danger" size="small"
-                    :disabled="!revokeOf([row])!.ok || !!running" @click="openRevoke([row])">{{ t("generate.revoke") }}</el-button>
+                  <el-button v-if="lineFilter !== 'TODO' && row.generated_qty > 0" link type="danger" size="small"
+                    :disabled="!!running" @click="openDelete([row])">{{ t("generate.delete") }}</el-button>
                 </span>
               </template>
             </el-table-column>
@@ -219,12 +220,16 @@
       </div>
 
       <!-- 底部操作栏：三个页签相同：选规则（所选物料行；前缀默认 PI 第一张单据编码后 7 位）、
-           撤销（待处理、可生成页签撤销配置，已生成页签撤销生成）、生成 N 枚（勾选的单据或物料行）；不显示说明文字 -->
+           撤销配置（还没有号的所选行）、删号（所选行的号 / 按 SN 起止号）、流水来源（从最大号之后 / 手动起止号，
+           空号段列表）、生成 N 枚（勾选的单据或物料行）；不显示说明文字 -->
       <template #footer>
         <div v-if="ctx" class="bar">
           <el-button :disabled="!pickedRows.length" @click="openRuleDialog(pickedRows)">{{ t("generate.libraryRuleBtn") }}</el-button>
-          <el-button type="danger" plain :disabled="!revokeMode" :loading="busy === 'config'" @click="revokeSelected">{{ t("generate.revoke") }}</el-button>
+          <el-button type="danger" plain :disabled="!configRows.length" :loading="busy === 'config'" @click="revokeConfig(configRows)">{{ t("generate.revoke") }}</el-button>
+          <el-button type="danger" plain :disabled="!deleteRows.length || !!running" @click="openDelete(deleteRows)">{{ t("generate.delete") }}</el-button>
+          <el-button type="danger" link :disabled="!!running" @click="deleteDlg?.open({ sn: true })">{{ t("generate.deleteBySn") }}</el-button>
           <span class="push" />
+          <SeqSource v-model="seq" :gaps="ctx.gaps" />
           <el-button type="primary" :loading="gen.loading" :disabled="!canGen" @click="genDlg = true">
             {{ t("generate.genBtn", { n: num(gen.preview?.generatable ? gen.preview.qty : 0) }) }}
           </el-button>
@@ -237,7 +242,7 @@
     <GenConfirmDialog v-model="genDlg" :preview="gen.preview" :unlock-limit="unlockLimit"
       :loading="busy === 'run'" @confirm="runGen" />
 
-    <RevokeDialog v-if="ctx" ref="revokeDlg" :pi="ctx.pi_no" @done="afterRevoke" />
+    <DeleteDialog v-if="ctx" ref="deleteDlg" :pi="ctx.pi_no" @done="afterDelete" />
 
     <!-- PI / 客户规则：整张 PI 的默认规则，不常用 -->
     <PiRuleDialog v-if="ctx" v-model="piRuleOpen" :ctx="ctx" @saved="reloadCtx" />
@@ -252,7 +257,7 @@ import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { api } from "@/api";
 import { ApiError } from "@/api/http";
-import { billMark, emptySel, genLimit, lineOrder, revokeRange, scopeBody, selectedLines, toggleBill, toggleLine } from "@/genScope.js";
+import { billMark, emptySel, genLimit, lineOrder, scopeBody, selectedLines, seqSource, toggleBill, toggleLine } from "@/genScope.js";
 import { useFactories } from "@/composables/useFactories";
 import { useTime } from "@/composables/useTime";
 import { leaveStateLabel, suspendLabel } from "@/constants";
@@ -260,7 +265,8 @@ import type { OrderLine } from "@/types/api";
 import PageHead from "@/components/PageHead.vue";
 import RuleDialog from "@/views/generate/RuleDialog.vue";
 import PiRuleDialog from "@/views/generate/PiRuleDialog.vue";
-import RevokeDialog from "@/views/generate/RevokeDialog.vue";
+import DeleteDialog from "@/views/generate/DeleteDialog.vue";
+import SeqSource, { type SeqValue } from "@/views/generate/SeqSource.vue";
 import GenConfirmDialog from "@/views/generate/GenConfirmDialog.vue";
 import GenProgress from "@/views/generate/GenProgress.vue";
 import { num, pct } from "@/views/generate/format";
@@ -274,9 +280,6 @@ type LineRef = { bill_no: string; seq: number };
 /** 物料行页签按处理步骤：待处理 → 可生成 → 已生成 */
 type Filter = "TODO" | "GEN" | "GENERATED";
 type LineState = "TODO" | "GEN" | "GENERATED" | "DONE" | "NONE";
-/** PI 流水上未撤销的物料行号段（ctx.segments，从流水最末往前）。 */
-type Segment = LineRef & { gen_batch: string; qty: number; start_sn: string; end_sn: string; bad: number; ok: boolean };
-type RevokeRange = { segs: Segment[]; ok: boolean; own: boolean };
 
 const TABS: Tab[] = ["TO_GENERATE", "GENERATED"];
 const FILTERS: Filter[] = ["TODO", "GEN", "GENERATED"];
@@ -387,6 +390,8 @@ async function openDetail(key: { pi?: string; bill_no?: string }) {
   detailPi.value = key.pi || key.bill_no || "";
   ctx.value = null;
   clearSelection();
+  // 流水来源每张 PI 重新选：默认从最大号之后
+  seq.value = { mode: "MAX", start: null, end: null };
   foldAll(false);
   await loadCtx(key);
   if (!ctx.value) return;
@@ -505,38 +510,28 @@ function pickLine(row: OrderLine, on: boolean) {
   if (i >= 0) autoFillAttach(row, i + 1);
 }
 function onLineClick(row: OrderLine) {
-  if (isLocked(row.bill_no)) return;
   pickLine(row, !isPicked(row));
 }
 function lineClass({ row }: { row: OrderLine }) {
-  if (isLocked(row.bill_no)) return "locked";
   return isPicked(row) ? "picked" : "";
 }
-/** 已分配的单据（与分配页左侧「已分配」同一口径：号都已分配且推送完成，待处理的不算）不再从生成页生成：
- *  「可生成」页签中整单置灰，单据和物料行都不可勾选；不勾选时也不在整张 PI 的生成范围内，
- *  别的页签勾选了它的物料行时也不计入生成范围（选规则、撤销仍按勾选）。 */
-const allocatedBills = computed(
-  () => new Set<string>((ctx.value?.bills ?? []).filter((b: any) => b.alloc_state === "ALLOCATED").map((b: any) => b.bill_no)),
-);
-const isLocked = (no: string) => lineFilter.value === "GEN" && allocatedBills.value.has(no);
-/** 未勾选时：生成取快照中还有额度、未分配完的全部单据，排号仍按单据编号从小到大（页面显示按修改日期排，不影响排号）。 */
+/** 已分配的单据删号后（或数量增加后）还有额度的照常生成，不再置灰。
+ *  未勾选时：生成取快照中还有额度的全部单据，排号仍按单据编号从小到大（页面显示按修改日期排，不影响排号）。 */
 const defaultBills = computed<string[]>(() =>
   ctx.value
     ? ctx.value.bills
-        .filter((b: any) => b.in_snapshot && b.quota > 0 && !allocatedBills.value.has(b.bill_no))
+        .filter((b: any) => b.in_snapshot && b.quota > 0)
         .map((b: any) => b.bill_no as string)
         .sort()
     : [],
 );
-/** 生成范围：勾选中去掉已分配的单据；都不勾选 = 整张 PI（defaultBills）。没有可生成的为 null，不用预演。 */
+/** 生成范围：勾选的单据或物料行；都不勾选 = 整张 PI（defaultBills）。没有可生成的为 null，不用预演。 */
 const genScope = computed(() => {
   if (!hasSel.value) return defaultBills.value.length ? { scope: "BILLS", bills: defaultBills.value } : null;
-  const done = allocatedBills.value;
-  return scopeBody({
-    bills: sel.value.bills.filter((no: string) => !done.has(no)),
-    lines: sel.value.lines.filter((l: LineRef) => !done.has(l.bill_no)),
-  });
+  return scopeBody(sel.value);
 });
+/** 流水来源：MAX 从最大号之后（默认）/ RANGE 手动起止号（空号段与未使用的号，不够时从最大号之后接着编）。 */
+const seq = ref<SeqValue>({ mode: "MAX", start: null, end: null });
 
 // ---------------- 物料行：状态、筛选、号段；附件项次、米数、产品单位的填写
 
@@ -575,8 +570,6 @@ function foldAll(on: boolean) {
   folded.value = new Set(on ? (ctx.value?.bills ?? []).map((b: any) => b.bill_no as string) : []);
 }
 
-const segments = computed<Segment[]>(() => ctx.value?.segments ?? []);
-
 const {
   draftOf, setDraft, saveAttach, saveLength, saveUnit,
   lengthMissing, lengthPlaceholder, unitMissing, unitPlaceholder,
@@ -602,10 +595,12 @@ function schedulePreview() {
 async function runPreview() {
   if (!ctx.value || running.value) return;
   const scope = genScope.value;
-  if (!scope) return resetGen();
+  const src = seqSource(seq.value.mode, seq.value.start, seq.value.end);
+  // 手动起止号还没填好：不预演
+  if (!scope || !src.body) return resetGen();
   gen.loading = true;
   try {
-    gen.preview = await api.genPreview({ pi_no: ctx.value.pi_no, ...scope }, true);
+    gen.preview = await api.genPreview({ pi_no: ctx.value.pi_no, ...scope, ...src.body }, true);
   } catch (e) {
     // 预演失败（超过单次最大上限、规则流水用尽等）：底部栏不放说明文字，弹出提示
     gen.preview = null;
@@ -687,19 +682,17 @@ async function cancelGen() {
   }
 }
 
-// ---------------- 撤销：从流水最末往前撤到所选物料行为止（流水在其后的行一并撤），一个事务内完成
+// ---------------- 删号：所选物料行的号（状态不限），或按 SN 起止号；最大流水号不退回，删掉的号留下空号段
 
-const revokeOf = (rows: LineRef[]): RevokeRange | null => revokeRange(segments.value, rows);
-const batchRevoke = computed(() => revokeOf(pickedRows.value));
+/** 底部「删号」的对象：所选物料行中挂着号的。 */
+const deleteRows = computed(() => pickedRows.value.filter((l) => l.generated_qty > 0));
+const deleteDlg = ref<InstanceType<typeof DeleteDialog> | null>(null);
 
-const revokeDlg = ref<InstanceType<typeof RevokeDialog> | null>(null);
-
-function openRevoke(rows: LineRef[]) {
-  const r = revokeOf(rows);
-  if (r?.ok) revokeDlg.value?.open(r.segs, rows);
+function openDelete(rows: LineRef[]) {
+  if (rows.length) deleteDlg.value?.open({ lines: rows });
 }
 
-async function afterRevoke() {
+async function afterDelete() {
   clearSelection();
   await reloadCtx();
 }
@@ -714,18 +707,6 @@ const configRows = computed(() => {
   const f = lineFilter.value;
   return f === "GENERATED" ? [] : pickedRows.value.filter((l) => FILTER_OK[f](l) && !l.edit_lock && hasConfig(l));
 });
-
-/** 底部「撤销」：按钮名称各页签相同。待处理页签撤销所选行的配置；可生成页签撤销所选行的配置
- *  （所选行都已有号、没有可撤的配置时撤销生成）；已生成页签撤销生成。 */
-const revokeMode = computed<"config" | "gen" | null>(() => {
-  if (configRows.value.length) return "config";
-  if (lineFilter.value !== "TODO" && batchRevoke.value?.ok) return "gen";
-  return null;
-});
-function revokeSelected() {
-  if (revokeMode.value === "config") revokeConfig(configRows.value);
-  else if (revokeMode.value === "gen") openRevoke(pickedRows.value);
-}
 
 async function revokeConfig(rows: OrderLine[]) {
   if (!ctx.value || !rows.length) return;
@@ -747,7 +728,7 @@ async function revokeConfig(rows: OrderLine[]) {
 
 // ================================================================ 联动
 
-watch(sel, () => {
+watch([sel, seq], () => {
   resetGen();
   schedulePreview();
 });
@@ -810,11 +791,8 @@ onUnmounted(() => {
 .sel { display: inline-flex; align-items: center; gap: 4px; }
 .lines :deep(tr.picked > td) { background: var(--el-color-primary-light-9); }
 .lines :deep(.el-table__row) { cursor: pointer; }
-.bill.locked .bill-h { color: var(--el-text-color-disabled); }
-.lines :deep(tr.locked) { cursor: default; }
-.lines :deep(tr.locked > td) { color: var(--el-text-color-disabled); }
 .no-lines { padding: 8px 12px; margin: 0; }
-.bar { display: flex; align-items: center; gap: 10px; text-align: left; }
+.bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; text-align: left; }
 .bar :deep(.el-button + .el-button) { margin-left: 0; }
 </style>
 

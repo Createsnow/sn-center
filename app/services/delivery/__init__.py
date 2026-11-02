@@ -35,7 +35,15 @@ from app.services.delivery.batches import (
     claim,
     must_batch,
 )
-from app.services.delivery.manual import frozen_by_transfer_out, handle_alert, list_alerts, manual_confirm, void
+from app.services.delivery.manual import (
+    after_void,
+    frozen_by_transfer_out,
+    handle_alert,
+    list_alerts,
+    manual_confirm,
+    void,
+    void_in_tx,
+)
 from app.services.delivery.pull import next_batch, read_batch_items, read_delivered, submit_receipt
 from app.services.delivery.push import (
     kick_bill,
@@ -54,6 +62,7 @@ __all__ = [
     "EXPORT_HEADERS",
     "TRANSFER_OUT",
     "XO_KEY",
+    "after_void",
     "apply_receipt",
     "batch_detail",
     "batch_items_page",
@@ -82,4 +91,5 @@ __all__ = [
     "submit_receipt",
     "task_state",
     "void",
+    "void_in_tx",
 ]

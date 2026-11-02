@@ -1,17 +1,21 @@
-"""SN 生成与撤销（F-09）。分配见 allocation。
+"""SN 生成（F-09）。删号见 deletion，分配见 allocation。
 
 生成：在一张 PI 下整单（勾选单据，单据内按序号）或按物料行（按点选顺序）生成；最小单位是物料行——范围内每个
 还有额度的物料行一次生成它的全部额度，不拆成两次。号都排在该 PI 的一套流水上，各物料行按自己的规则写出
 （前缀 + 流水 + 分隔符 + 米数 + 分隔符 + 单位 + 后缀）。
+
+流水来源（预演时选）：
+- MAX 从 PI 最大流水号 + 1 起往后编（默认）；
+- RANGE 用户手动填起止流水号（十进制），在空号段（删号腾出的流水）或未使用的号（最大号之后）中取：范围内空闲的
+  流水按从小到大使用，用够为止；不够时其余从 max(最大号, 止号) + 1 起接着编（溢出）。
+一个物料行可能分到几段不连续的号（plan item 的 segs）。PI 最大流水号只增不减（删号不退回），所以空号段只来自删号。
+
 必须先预演（只给出起止号、各物料行数量和号段，不落库），
-预演只对发起人有效、默认 30 分钟、只能生成一次；范围或条件改变、所选规则版本被别的 PI 先用、PI 最大号变化、
-同步改了范围内物料行数量时预演失效。
-一次生成在一个事务里完成（共用一个生成批次），撞号整次回滚、不跳号；不超过 SN_GEN_SYNC_THRESHOLD 当场完成，
-更多转后台任务（进度、可取消）；服务重启时没跑完的任务视为失败。起点 = 本 PI 自己生成的最大流水 + 1。
-撤销：最小单位也是物料行——只能从这张 PI 流水最末的物料行号段往前撤（撤完一行，前一行成为最后，可接着撤）；
-可一次撤一次生成中剩下的全部物料行，或撤到所选物料行为止（流水在其后的行一并撤，在一个事务里完成）；
-号须全部仍待分配、都没转过单；号删除，最大号和计数一并退回，流水仍连续。
-生成（含取消）、撤销与分配共用 PI 操作锁。
+预演只对发起人有效、默认 30 分钟、只能生成一次；范围、条件或流水来源改变、所选规则版本被别的 PI 先用、
+PI 最大号变化、空号段变化（按 RANGE 生成时）、同步改了范围内物料行数量时预演失效。
+一次生成在一个事务里完成（共用一个生成批次），撞号整次回滚；不超过 SN_GEN_SYNC_THRESHOLD 当场完成，
+更多转后台任务（进度、可取消）；服务重启时没跑完的任务视为失败。
+生成（含取消）、删号与分配共用 PI 操作锁。
 """
 
 from __future__ import annotations
@@ -39,10 +43,16 @@ CHUNK = 2000
 RUNNING = "RUNNING"
 SUCCESS = "SUCCESS"
 FAILED = "FAILED"
+#: 早先按「从流水末尾撤销」撤完的任务（只出现在历史任务上）
 REVOKED = "REVOKED"
 CANCELED = "CANCELED"
 SCOPE_BILLS = "BILLS"
 SCOPE_LINES = "LINES"
+#: 流水来源：MAX 从最大号 + 1 起 / RANGE 手动起止号（空号段或未使用的号，不够时从最大号之后接着编）
+SEQ_MAX = "MAX"
+SEQ_RANGE = "RANGE"
+#: 生成详情、预演里最多列出的空号段数（合计枚数照常给全）
+GAP_LIST_MAX = 500
 
 JOB_FIELDS = (
     "id",
@@ -92,17 +102,36 @@ _LINE_FIELDS = (
 )
 
 
+def item_segs(x: dict) -> list[list[int]]:
+    """计划中一个物料行的号段（十进制流水起止，升序）；早先的计划只有一段。"""
+    return x.get("segs") or [[x["start_seq"], x["end_seq"]]]
+
+
 def job_json(j: dict | None) -> dict | None:
     out = util.jrow(j, JOB_FIELDS)
     if out is not None and j is not None:
         plan = json.loads(j["plan_json"])
         # 早先的计划里没有附件项次、单位
         out["lines"] = [
-            {k: x.get(k) for k in _LINE_FIELDS} | {"revoked": bool(x.get("revoked"))} for x in plan["items"]
+            {k: x.get(k) for k in _LINE_FIELDS}
+            | {"revoked": bool(x.get("revoked")), "seg_list": x.get("seg_list") or _one_seg(x)}
+            for x in plan["items"]
         ]
         out["bills"] = sorted({x["bill_no"] for x in plan["items"]})
         out["revoked_qty"] = sum(x["qty"] for x in plan["items"] if x.get("revoked"))
     return out
+
+
+def _one_seg(x: dict) -> list[dict]:
+    return [
+        {
+            "start_seq": x["start_seq"],
+            "end_seq": x["end_seq"],
+            "qty": x["qty"],
+            "start_sn": x["start_sn"],
+            "end_sn": x["end_sn"],
+        }
+    ]
 
 
 def limits() -> dict:
@@ -114,7 +143,125 @@ def limits() -> dict:
 
 
 def last_seq(pi: str) -> int:
+    """PI 最大流水号（只增不减：删号不退回）。"""
     return int(db.scalar("SELECT COALESCE(MAX(last_seq_dec), 0) FROM sn_pi_counter WHERE pi_no = %s", pi) or 0)
+
+
+# ================================================================== 空号段
+
+
+def gap_segments(pi: str, last: int | None = None) -> list[tuple[int, int]]:
+    """PI 流水 1..最大号之间没有号占用的连续段（升序）。按流水归属 PI 算：转走的号仍占原 PI 的流水，
+    转入的号不占本 PI 的流水。"""
+    top = last_seq(pi) if last is None else last
+    if top <= 0:
+        return []
+    out = [
+        (int(r["s"]), int(r["e"]))
+        for r in db.all(
+            "SELECT prev + 1 s, seq_dec - 1 e FROM (SELECT seq_dec, LAG(seq_dec, 1, 0) OVER (ORDER BY seq_dec) prev "
+            "FROM sn_item WHERE seq_pi_no = %s AND seq_dec <= %s) t WHERE seq_dec - prev > 1 ORDER BY seq_dec",
+            pi,
+            top,
+        )
+    ]
+    used_top = int(
+        db.scalar("SELECT COALESCE(MAX(seq_dec), 0) FROM sn_item WHERE seq_pi_no = %s AND seq_dec <= %s", pi, top)
+    )
+    if used_top < top:
+        out.append((used_top + 1, top))
+    return out
+
+
+def gaps(pi_in: str | None, cu: CurrentUser | None = None) -> dict:
+    """空号段：起止流水号与枚数（最多列 GAP_LIST_MAX 段，合计照常给全）、最大号与下一个号。"""
+    pi = util.trim(pi_in)
+    if not pi:
+        raise biz(ErrorCode.PI_REQUIRED)
+    if cu is not None:
+        cu.check_read(
+            *(orders.bill_orgs(db.column("SELECT DISTINCT bill_no FROM sn_prd_mo WHERE pi = %s", pi)) or {"-"})
+        )
+    return gaps_of(pi)
+
+
+def gaps_of(pi: str) -> dict:
+    last = last_seq(pi)
+    segs = gap_segments(pi, last)
+    return {
+        "pi_no": pi,
+        "last_seq": last,
+        "next_seq": last + 1,
+        "count": len(segs),
+        "total": sum(e - s + 1 for s, e in segs),
+        "segments": [{"start_seq": s, "end_seq": e, "qty": e - s + 1} for s, e in segs[:GAP_LIST_MAX]],
+        "truncated": len(segs) > GAP_LIST_MAX,
+    }
+
+
+def seq_choice(mode: str | None, start: int | None = None, end: int | None = None) -> dict:
+    """规范化流水来源：MAX（默认）/ RANGE（起止流水号为正整数，止号不小于起号；只填起号按单个号）。"""
+    m = util.trim(mode) or SEQ_MAX
+    if m == SEQ_MAX:
+        return {"mode": SEQ_MAX}
+    if m != SEQ_RANGE:
+        raise biz(ErrorCode.GEN_SEQ_RANGE_INVALID)
+    if end is None:
+        end = start
+    if start is None or start < 1 or end < start:
+        raise biz(ErrorCode.GEN_SEQ_RANGE_INVALID)
+    return {"mode": SEQ_RANGE, "start": int(start), "end": int(end)}
+
+
+class _Taker:
+    """按流水来源依次切号：先用 free（升序的空闲段），用完从 overflow 起接着编。"""
+
+    def __init__(self, free: list[tuple[int, int]], overflow: int) -> None:
+        self.free = free
+        self.i = 0
+        self.pos = free[0][0] if free else 0
+        self.overflow = overflow
+        self.in_range = 0
+        self.over = 0
+
+    def take(self, n: int) -> list[list[int]]:
+        out: list[list[int]] = []
+        while n > 0:
+            if self.i < len(self.free):
+                s, e = self.free[self.i]
+                a = max(s, self.pos)
+                b = min(e, a + n - 1)
+                self.in_range += b - a + 1
+                if b == e:
+                    self.i += 1
+                    self.pos = self.free[self.i][0] if self.i < len(self.free) else 0
+                else:
+                    self.pos = b + 1
+            else:
+                a = self.overflow
+                b = a + n - 1
+                self.over += n
+                self.overflow = b + 1
+            n -= b - a + 1
+            if out and out[-1][1] + 1 == a:
+                out[-1][1] = b
+            else:
+                out.append([a, b])
+        return out
+
+
+def _taker(pi: str, base: int, seq: dict) -> _Taker:
+    if seq["mode"] != SEQ_RANGE:
+        return _Taker([], base + 1)
+    start, end = seq["start"], seq["end"]
+    free = []
+    for s, e in gap_segments(pi, base):
+        a, b = max(s, start), min(e, end)
+        if a <= b:
+            free.append((a, b))
+    if end > base:
+        free.append((max(start, base + 1), end))
+    return _Taker(free, max(base, end) + 1)
 
 
 # ================================================================== 物料行与生成条件
@@ -159,7 +306,7 @@ def _load_lines(pi: str, keys: list[tuple[str, int]]) -> list[Line]:
     sels = rules.selections(keys)
     default = rules.pi_default(pi)
     memo: dict[int, rules.Resolved | None] = {}
-    taken: dict[str, bool] = {}
+    taken: dict = {}
     blocks = {b: changes.generation_block(b) for b in bills}
     out = []
     for k in keys:
@@ -194,8 +341,8 @@ def _load_lines(pi: str, keys: list[tuple[str, int]]) -> list[Line]:
     return out
 
 
-def _check(line: Line, taken: dict[str, bool] | None = None) -> None:
-    """生成条件（只对还有额度的物料行）。taken：自定义规则前缀是否已被占用（同一次判断里共用）。"""
+def _check(line: Line, taken: dict | None = None) -> None:
+    """生成条件（只对还有额度的物料行）。taken：前缀能否给本 PI 用的判断结果（同一次判断里共用）。"""
     if line.quota <= 0:
         return
     if line.block:
@@ -204,13 +351,10 @@ def _check(line: Line, taken: dict[str, bool] | None = None) -> None:
         line.issues.append("NO_RULE")
     elif not line.res.ready:
         line.issues.append("RULE_PREFIX")
-    elif (
-        line.res.plan == rules.PLAN_NEW
-        and rules.prefix_taken(line.res.version["prefix"], taken)
-        and rules.own_version(line.pi, line.res.spec()) is None
-    ):
-        # 自定义规则选定后前缀被别的规则先占用（如别的 PI 用同一前缀先生成），须改前缀，免得生成时才失败；
-        # 被本 PI 同格式的版本占用（本 PI 别的单据先生成）不算，生成时沿用那一版
+    elif line.res.plan in (rules.PLAN_NEW, rules.PLAN_CLAIM) and not _prefix_ok(line, taken):
+        # 自定义规则选定后（或规则库版本首次归属本 PI 前）前缀被别的 PI 占用、与别的 PI 的前缀一个是另一个的开头，
+        # 或本 PI 已按别的进制 / 位数用了这个前缀：须改前缀，免得生成时才失败；
+        # 被本 PI 流水部分相同的版本占用（本 PI 别的单据先生成）不算，生成时沿用或另建规则共用这个前缀
         line.issues.append("RULE_PREFIX")
     spec = line.res.spec() if line.res is not None and line.res.ready else None
     # 米数、产品单位用金蝶原值（含中文也照用）；金蝶为空且页面未填写时须先填写（规则不带米数 / 单位时不影响）
@@ -221,6 +365,19 @@ def _check(line: Line, taken: dict[str, bool] | None = None) -> None:
     # 附件项次必填
     if not line.attach:
         line.issues.append("ATTACH_EMPTY")
+
+
+def _prefix_ok(line: Line, memo: dict | None) -> bool:
+    """前缀能否给本 PI 用（同一次判断里同一前缀、格式只查一次）；规则库版本首次归属时不算它自己。"""
+    spec = line.res.spec()
+    own = line.res.version["id"] if line.res.plan == rules.PLAN_CLAIM else None
+    k = (spec.prefix, spec.base, spec.seq_len, spec.charset, line.pi, own)
+    if memo is None or k not in memo:
+        ok = rules.prefix_usable(spec.prefix, spec, line.pi, own)
+        if memo is None:
+            return ok
+        memo[k] = ok
+    return memo[k]
 
 
 def _scope_keys(pi: str, scope: str, bills_in: list[str] | None, lines_in: list[dict] | None) -> list[tuple[str, int]]:
@@ -246,8 +403,10 @@ def _scope_keys(pi: str, scope: str, bills_in: list[str] | None, lines_in: list[
 # ================================================================== 预演
 
 
-def _plan(pi: str, scope: str, keys: list[tuple[str, int]], base: int) -> dict:
-    """按排号顺序给每个还有额度的物料行切出一段号（整行额度，不拆行）。返回计划（不落库）；不能生成时 issues 非空。"""
+def _plan(pi: str, scope: str, keys: list[tuple[str, int]], base: int, seq: dict | None = None) -> dict:
+    """按排号顺序给每个还有额度的物料行切号（整行额度，不拆行）；流水来源见 seq（默认 MAX）。
+    返回计划（不落库）；不能生成时 issues 非空。"""
+    seq = seq or {"mode": SEQ_MAX}
     ls = _load_lines(pi, keys)
     todo = [x for x in ls if x.quota > 0]
     quota = sum(x.quota for x in todo)
@@ -263,7 +422,15 @@ def _plan(pi: str, scope: str, keys: list[tuple[str, int]], base: int) -> dict:
         for x in todo
         if x.issues
     ]
-    out = {"pi_no": pi, "scope": scope, "quota": quota, "issues": issues, "items": [], "base_last_seq": base}
+    out = {
+        "pi_no": pi,
+        "scope": scope,
+        "quota": quota,
+        "issues": issues,
+        "items": [],
+        "base_last_seq": base,
+        "seq": seq,
+    }
     if not todo:
         out["issues"] = [{"bill_no": None, "seq": None, "material_code": None, "issues": ["QUOTA_EMPTY"]}]
         return out
@@ -272,20 +439,33 @@ def _plan(pi: str, scope: str, keys: list[tuple[str, int]], base: int) -> dict:
     qty = quota
     if qty > settings.gen_max_per_run:
         raise biz(ErrorCode.GEN_QTY_OVER_MAX, qty=qty, max=settings.gen_max_per_run)
-    cur = base + 1
+    taker = _taker(pi, base, seq)
     for x in todo:
         n = x.quota
         spec = x.res.spec()
-        end = cur + n - 1
+        segs = taker.take(n)
+        end = segs[-1][1]
         mx = codec.max_seq(spec)
         if end > mx:
             raise biz(ErrorCode.GEN_RULE_EXHAUSTED, max=mx, end=end)
         length = x.length if spec.with_length else None
         unit = x.unit if spec.with_unit else None
-        start_sn = codec.format_sn(cur, spec, length, unit)
+        start_sn = codec.format_sn(segs[0][0], spec, length, unit)
         if len(start_sn) > codec.SN_MAX:
             raise biz(ErrorCode.RULE_SN_TOO_LONG)
         res = x.res
+        seg_list = [
+            {
+                "start_seq": a,
+                "end_seq": b,
+                "qty": b - a + 1,
+                "start_sn": codec.format_sn(a, spec, length, unit),
+                "end_sn": codec.format_sn(b, spec, length, unit),
+                "start_seq_text": codec.encode_seq(a, spec),
+                "end_seq_text": codec.encode_seq(b, spec),
+            }
+            for a, b in segs
+        ]
         out["items"].append(
             {
                 "bill_no": x.bill_no,
@@ -300,15 +480,18 @@ def _plan(pi: str, scope: str, keys: list[tuple[str, int]], base: int) -> dict:
                 "prefix": spec.prefix,
                 "base": spec.base,
                 "seq_len": spec.seq_len,
-                "start_seq_text": codec.encode_seq(cur, spec),
-                "end_seq_text": codec.encode_seq(end, spec),
+                "start_seq_text": seg_list[0]["start_seq_text"],
+                "end_seq_text": seg_list[-1]["end_seq_text"],
                 "line_qty": x.qty,
                 "own_before": x.own,
                 "qty": n,
-                "start_seq": cur,
+                # 号段：一段或几段不连续的号（用空号段时）；start_seq / end_seq 为第一段起号、最后一段止号
+                "segs": segs,
+                "seg_list": seg_list,
+                "start_seq": segs[0][0],
                 "end_seq": end,
                 "start_sn": start_sn,
-                "end_sn": codec.format_sn(end, spec, length, unit),
+                "end_sn": seg_list[-1]["end_sn"],
                 "rule_key": res.key(),
                 "rule_plan": res.plan,
                 "rule_id": None if res.rule is None else res.rule["id"],
@@ -320,10 +503,14 @@ def _plan(pi: str, scope: str, keys: list[tuple[str, int]], base: int) -> dict:
                 + f"（{rules.format_text(spec)}）",
             }
         )
-        cur = end + 1
     out["qty"] = qty
-    out["start_seq"] = base + 1
-    out["end_seq"] = base + qty
+    out["start_seq"] = min(x["start_seq"] for x in out["items"])
+    out["end_seq"] = max(x["end_seq"] for x in out["items"])
+    # 生成后的 PI 最大号（只增不减）
+    out["new_last"] = max(base, out["end_seq"])
+    # 用到的空闲流水（手动起止号内）与溢出（从最大号之后接着编）的枚数
+    out["range_qty"] = taker.in_range
+    out["overflow_qty"] = taker.over if seq["mode"] == SEQ_RANGE else 0
     out["start_sn"] = out["items"][0]["start_sn"]
     out["end_sn"] = out["items"][-1]["end_sn"]
     return out
@@ -335,18 +522,24 @@ def preview(
     scope: str | None,
     bills: list[str] | None,
     lines: list[dict] | None,
+    seq_mode: str | None = None,
+    seq_start: int | None = None,
+    seq_end: int | None = None,
 ) -> dict:
     """预演：范围内每个还有额度的物料行整行生成。可生成时返回令牌与号段；不能生成时 generatable = false 并逐行列出原因
-    （可缩小范围后再预演）。"""
+    （可缩小范围后再预演）。流水来源 seq_mode：MAX 从最大号 + 1 起（默认）/ RANGE 用起止流水号内的空闲流水，
+    不够时从最大号之后接着编。返回里另带本 PI 的空号段（gaps）。"""
     pi = util.trim(pi_in)
     if not pi:
         raise biz(ErrorCode.PI_REQUIRED)
     sc = util.trim(scope) or SCOPE_BILLS
+    seq = seq_choice(seq_mode, seq_start, seq_end)
     keys = _scope_keys(pi, sc, bills, lines)
     cu.check_write(*orders.bill_orgs(k[0] for k in keys))
-    plan = _plan(pi, sc, keys, last_seq(pi))
+    plan = _plan(pi, sc, keys, last_seq(pi), seq)
+    gap = gaps_of(pi)
     if plan["issues"]:
-        return {**plan, "generatable": False, "limits": limits()}
+        return {**plan, "generatable": False, "limits": limits(), "gaps": gap}
     now = util.now()
     token = util.token_hex()
     expires = now + timedelta(minutes=settings.preview_ttl_minutes)
@@ -363,7 +556,14 @@ def preview(
         now,
         expires,
     )
-    return {**plan, "generatable": True, "token": token, "expires_at": util.fmt(expires), "limits": limits()}
+    return {
+        **plan,
+        "generatable": True,
+        "token": token,
+        "expires_at": util.fmt(expires),
+        "limits": limits(),
+        "gaps": gap,
+    }
 
 
 _KEY_FIELDS = (
@@ -378,13 +578,14 @@ _KEY_FIELDS = (
     "rule_plan",
     "line_qty",
     "own_before",
+    "segs",
 )
 
 
 def _same_plan(a: dict, b: dict) -> bool:
     if len(a["items"]) != len(b["items"]):
         return False
-    return all(all(x[k] == y[k] for k in _KEY_FIELDS) for x, y in zip(a["items"], b["items"], strict=True))
+    return all(all(x.get(k) == y.get(k) for k in _KEY_FIELDS) for x, y in zip(a["items"], b["items"], strict=True))
 
 
 # ================================================================== 生成
@@ -408,11 +609,11 @@ def generate(cu: CurrentUser, token: str | None) -> dict:
             raise biz(ErrorCode.GEN_PREVIEW_STALE, pi=pi, expected=p["base_last_seq"], actual=actual)
         keys = [tuple(k) for k in stored["keys"]]
         cu.check_write(*orders.bill_orgs(k[0] for k in keys))
-        fresh = _plan(pi, stored["scope"], keys, actual)
+        fresh = _plan(pi, stored["scope"], keys, actual, stored.get("seq"))
         # 确认生成时再查一次前缀是否全局唯一：自定义前缀在预演后被别的规则占用时报前缀冲突（页面弹窗提示）
         for i in fresh["issues"]:
             if i.get("prefix"):
-                rules.check_prefix(i["prefix"])
+                rules.check_prefix(i["prefix"], pi=pi)
         if fresh["issues"] or not _same_plan(stored, fresh):
             raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
         batch = util.next_id("G") + util.token_hex()[:4]
@@ -573,9 +774,7 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
     for x in plan["items"]:
         v = versions[x["rule_key"]]
         spec = rules.spec_of(v)
-        s = x["start_seq"]
-        while s <= x["end_seq"]:
-            e = min(x["end_seq"], s + CHUNK - 1)
+        for s, e in _chunks(item_segs(x)):
             sns = [codec.format_sn(q, spec, x["length"], x.get("unit")) for q in range(s, e + 1)]
             rows = [
                 (
@@ -611,7 +810,6 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
             done += len(sns)
             if _progress(j["id"], done, sns[-1]):
                 raise biz(ErrorCode.GEN_CANCELED)
-            s = e + 1
         db.exec(
             "UPDATE sn_line_count SET material_code = %s, own_generated = own_generated + %s, "
             "gen_count = gen_count + %s, updated_at = %s WHERE bill_no = %s AND seq = %s",
@@ -622,10 +820,11 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
             x["bill_no"],
             x["seq"],
         )
+    # 最大号只增不减：用空号段生成时可能不变
     db.exec(
-        "UPDATE sn_pi_counter SET last_seq_dec = %s, generated_qty = generated_qty + %s, updated_at = %s WHERE pi_no "
-        "= %s",
-        plan["end_seq"],
+        "UPDATE sn_pi_counter SET last_seq_dec = GREATEST(last_seq_dec, %s), generated_qty = generated_qty + %s, "
+        "updated_at = %s WHERE pi_no = %s",
+        plan.get("new_last", plan["end_seq"]),
         plan["qty"],
         now,
         pi,
@@ -645,12 +844,24 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
             .batch(j["gen_batch"])
             .info(
                 f"job={j['id']} lines="
-                + ",".join(
-                    f"{x['seq']}:{x['qty']}@{x['start_sn']}~{x['end_sn']}[{versions[x['rule_key']]['id']}]"
-                    for x in items
-                )
+                + ",".join(f"{x['seq']}:{x['qty']}@{_segs_text(x)}[{versions[x['rule_key']]['id']}]" for x in items)
             ),
         )
+
+
+def _chunks(segs: list[list[int]]):
+    """号段按 CHUNK 切块写入。"""
+    for a, b in segs:
+        s = a
+        while s <= b:
+            e = min(b, s + CHUNK - 1)
+            yield s, e
+            s = e + 1
+
+
+def _segs_text(x: dict) -> str:
+    """留痕：物料行的号段（多段用 ; 分隔）。"""
+    return ";".join(f"{g['start_sn']}~{g['end_sn']}" for g in (x.get("seg_list") or _one_seg(x)))
 
 
 def _resolved_of(pi: str, x: dict) -> rules.Resolved:
@@ -797,274 +1008,10 @@ def cancel(cu: CurrentUser, batch: str | None) -> dict:
     return progress(j["gen_batch"])
 
 
-def _tail(pi: str) -> tuple[dict, dict] | None:
-    """这张 PI 流水排在最后的物料行号段：（所在的成功生成任务，号段）；没有时 None。"""
-    last = last_seq(pi)
-    if last == 0:
-        return None
-    for j in db.all(
-        "SELECT * FROM sn_gen_job WHERE pi_no = %s AND status = %s AND start_seq_dec <= %s AND end_seq_dec >= %s "
-        "ORDER BY id DESC",
-        pi,
-        SUCCESS,
-        last,
-        last,
-    ):
-        for x in json.loads(j["plan_json"])["items"]:
-            if not x.get("revoked") and x["end_seq"] == last:
-                return j, x
-    return None
-
-
-def _not_revocable_count(j: dict, x: dict) -> int:
-    """一个物料行号段中已分配、或转过单（挂靠变了、版本号加过）的枚数；号已不在号池也算。"""
-    ok = db.count(
-        "SELECT COUNT(*) FROM sn_item WHERE seq_pi_no = %s AND seq_dec BETWEEN %s AND %s AND gen_batch = %s "
-        "AND status = 'PENDING_ALLOC' AND rev = 1 AND bill_no = gen_bill_no AND bill_seq = gen_bill_seq "
-        "AND pi_no = seq_pi_no",
-        j["pi_no"],
-        x["start_seq"],
-        x["end_seq"],
-        j["gen_batch"],
-    )
-    return x["qty"] - ok
-
-
-def revocable(pi: str, facs: tuple[str, ...] | None = None) -> dict | None:
-    """当前可撤销的物料行（流水排在最后、号全部仍待分配且没转过单）；生成中、没有或不在授权范围 facs 内时 None。"""
-    if db.exists("SELECT EXISTS(SELECT 1 FROM sn_gen_job WHERE running_pi = %s)", pi):
-        return None
-    t = _tail(pi)
-    if t is None or not in_scope(facs, t[1]) or _not_revocable_count(*t):
-        return None
-    j, x = t
-    return {k: x[k] for k in ("bill_no", "seq", "qty", "start_sn", "end_sn")} | {"gen_batch": j["gen_batch"]}
-
-
-def revoke_chain(pi_in: str | None, facs: tuple[str, ...] | None = None) -> list[dict]:
-    """PI 流水上还没撤销的物料行号段，从流水最末往前排。撤某一段须连同流水在它之后的段一起撤（从后往前），
-    ok 标出撤到这一段是否可行：这一段及之后的号全部仍待分配、没转过单，且没有生成中的任务；
-    bad 为这一段自己不可撤的枚数。facs = 授权范围（None = 全部）：只列范围内的号段，
-    流水在其后有范围外的号段时不能撤（ok = false）。"""
-    pi = util.trim(pi_in)
-    segs = sorted(
-        (
-            (j, x)
-            for j in db.all("SELECT * FROM sn_gen_job WHERE pi_no = %s AND status = %s", pi, SUCCESS)
-            for x in json.loads(j["plan_json"])["items"]
-            if not x.get("revoked")
-        ),
-        key=lambda t: t[1]["end_seq"],
-        reverse=True,
-    )
-    if not segs:
-        return []
-    ok_n = {
-        (r["gen_batch"], r["gen_bill_no"], r["gen_bill_seq"]): int(r["n"])
-        for r in db.all(
-            "SELECT gen_batch, gen_bill_no, gen_bill_seq, COUNT(*) n FROM sn_item WHERE seq_pi_no = %s "
-            "AND status = 'PENDING_ALLOC' AND rev = 1 AND bill_no = gen_bill_no AND bill_seq = gen_bill_seq "
-            "AND pi_no = seq_pi_no GROUP BY gen_batch, gen_bill_no, gen_bill_seq",
-            pi,
-        )
-    }
-    good = not db.exists("SELECT EXISTS(SELECT 1 FROM sn_gen_job WHERE running_pi = %s)", pi)
-    last = last_seq(pi)
-    out = []
-    for j, x in segs:
-        bad = x["qty"] - ok_n.get((j["gen_batch"], x["bill_no"], x["seq"]), 0)
-        good = good and bad == 0 and x["end_seq"] == last and in_scope(facs, x)
-        last = x["start_seq"] - 1
-        if not in_scope(facs, x):
-            continue
-        out.append(
-            {k: x[k] for k in ("bill_no", "seq", "qty", "start_sn", "end_sn")}
-            | {"gen_batch": j["gen_batch"], "bad": bad, "ok": good}
-        )
-    return out
-
-
-def _check_chain(pi: str, c: dict | None, targets: list[tuple[dict, dict, dict]]) -> None:
-    """要撤的号段（已按流水从后往前排）须从 PI 流水末尾起依次相接，号全部仍待分配且没转过单。"""
-    last = 0 if c is None else c["last_seq_dec"]
-    for _, _, x in targets:
-        if x["end_seq"] != last:
-            raise biz(ErrorCode.GEN_REVOKE_NOT_LAST, pi=pi)
-        last = x["start_seq"] - 1
-    bad = sum(_not_revocable_count(j, x) for j, _, x in targets)
-    if bad:
-        raise biz(ErrorCode.GEN_REVOKE_ALLOCATED, count=bad)
-
-
-def _revoke_in_tx(cu: CurrentUser, pi: str, targets: list[tuple[dict, dict, dict]], reason: str) -> tuple[int, int]:
-    """在事务内撤销号段（任务、该任务的计划、号段；已按流水从后往前排好并核对过）：删号、退回计数和 PI 最大号，
-    在各任务计划上标记已撤，任务的物料行全部撤完记为已撤销；每个任务按单据各留一条痕迹。返回（枚数，撤后的最大流水）。"""
-    now = util.now()
-    mark = {"at": util.fmt(now), "by": cu.emp_no, "reason": util.cut(reason, 500)}
-    for j, _, x in targets:
-        n = db.exec(
-            "DELETE FROM sn_item WHERE seq_pi_no = %s AND seq_dec BETWEEN %s AND %s AND gen_batch = %s "
-            "AND status = 'PENDING_ALLOC'",
-            pi,
-            x["start_seq"],
-            x["end_seq"],
-            j["gen_batch"],
-        )
-        if n != x["qty"]:
-            raise biz(ErrorCode.CONFLICT_RETRY)
-        db.exec(
-            "UPDATE sn_line_count SET own_generated = own_generated - %s, gen_count = gen_count - %s, "
-            "updated_at = %s WHERE bill_no = %s AND seq = %s",
-            x["qty"],
-            x["qty"],
-            now,
-            x["bill_no"],
-            x["seq"],
-        )
-        x["revoked"] = mark
-    qty = sum(x["qty"] for _, _, x in targets)
-    last = targets[-1][2]["start_seq"] - 1
-    db.exec(
-        "UPDATE sn_pi_counter SET last_seq_dec = %s, generated_qty = generated_qty - %s, updated_at = %s "
-        "WHERE pi_no = %s",
-        last,
-        qty,
-        now,
-        pi,
-    )
-    jobs_of: dict[int, tuple[dict, dict, list[dict]]] = {}
-    for j, plan, x in reversed(targets):
-        jobs_of.setdefault(j["id"], (j, plan, []))[2].append(x)
-    for j, plan, items in jobs_of.values():
-        whole = all(x.get("revoked") for x in plan["items"])
-        db.exec(
-            "UPDATE sn_gen_job SET status = %s, plan_json = %s, revoke_reason = %s WHERE id = %s",
-            REVOKED if whole else SUCCESS,
-            json.dumps(plan, ensure_ascii=False, separators=(",", ":")),
-            util.cut(reason, 500),
-            j["id"],
-        )
-        for no, xs in _by_bill(items).items():
-            audit.record(
-                cu,
-                audit.entry(audit.SN_REVOKE)
-                .factory(xs[0]["org_code"])
-                .pi(pi)
-                .bill(no)
-                .range(xs[0]["start_sn"], xs[-1]["end_sn"])
-                .count(sum(x["qty"] for x in xs))
-                .status(util.PENDING_ALLOC, None)
-                .batch(j["gen_batch"])
-                .why(reason)
-                .info(
-                    f"job={j['id']} lines="
-                    + ",".join(f"{x['seq']}:{x['qty']}@{x['start_sn']}~{x['end_sn']}" for x in xs)
-                    + f" last_seq -> {last}"
-                ),
-            )
-    return qty, last
-
-
-def _reason(reason_in: str | None) -> str:
-    reason = util.trim(reason_in)
-    if not reason or len(reason) > 500:
-        raise biz(ErrorCode.REASON_REQUIRED)
-    return reason
-
-
-def revoke(
-    cu: CurrentUser,
-    batch: str | None,
-    reason_in: str | None,
-    bill_no: str | None = None,
-    seq: int | None = None,
-) -> dict:
-    """撤销生成，最小单位物料行：给了单据和序号时只撤这一行，否则撤这次生成中剩下的全部物料行。
-    要撤的号段须从 PI 流水末尾起依次相接（即只能从后往前撤），号全部仍待分配且没转过单。"""
-    reason = _reason(reason_in)
-    j0 = _job_by_batch(batch)
-    pi = j0["pi_no"]
-    with locks.with_pi_lock(pi), db.tx():
-        c = db.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s FOR UPDATE", pi)
-        j = _job_by_batch(batch, lock=True)
-        if j["status"] != SUCCESS:
-            raise biz(ErrorCode.GEN_REVOKE_NOT_SUCCESS)
-        plan = json.loads(j["plan_json"])
-        left = [x for x in plan["items"] if not x.get("revoked")]
-        if bill_no is not None:
-            no = util.trim(bill_no)
-            left = [x for x in left if x["bill_no"] == no and x["seq"] == seq]
-            if not left:
-                raise biz(ErrorCode.GEN_REVOKE_LINE_INVALID)
-        targets = [(j, plan, x) for x in sorted(left, key=lambda x: x["end_seq"], reverse=True)]
-        cu.check_write(*_orgs_of([x for _, _, x in targets]))
-        _check_chain(pi, c, targets)
-        qty, last = _revoke_in_tx(cu, pi, targets, reason)
-        whole = all(x.get("revoked") for x in plan["items"])
-    return {
-        "gen_batch": j["gen_batch"],
-        "pi_no": pi,
-        "qty": qty,
-        "lines": [{"bill_no": x["bill_no"], "seq": x["seq"], "qty": x["qty"]} for _, _, x in reversed(targets)],
-        "last_seq_dec": last,
-        "job_status": REVOKED if whole else SUCCESS,
-    }
-
-
-#: 生成页按物料行撤销生成不填原因（弹窗只给提醒），留痕记这个默认原因
-REVOKE_LINES_REASON = "生成页撤销生成"
-
-
-def revoke_lines(cu: CurrentUser, pi_in: str | None, lines: list[dict] | None, reason_in: str | None) -> dict:
-    """按物料行撤销（可多行，跨多次生成）：从 PI 流水末尾往前，一直撤到所选物料行中流水最靠前的那一段为止，
-    流水排在其后的物料行一并撤销；在一个事务里完成，号须全部仍待分配且没转过单，否则整次不撤。
-    原因选填，不填记默认原因 REVOKE_LINES_REASON。"""
-    reason = _reason(util.trim(reason_in) or REVOKE_LINES_REASON)
-    pi = util.trim(pi_in)
-    if not pi:
-        raise biz(ErrorCode.PI_REQUIRED)
-    keys = {(util.trim(x.get("bill_no")), int(x.get("seq") or 0)) for x in lines or []}
-    if not keys:
-        raise biz(ErrorCode.RULE_LINE_REQUIRED)
-    with locks.with_pi_lock(pi), db.tx():
-        if db.exists("SELECT EXISTS(SELECT 1 FROM sn_gen_job WHERE running_pi = %s)", pi):
-            raise biz(ErrorCode.GEN_BUSY, pi=pi)
-        c = db.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s FOR UPDATE", pi)
-        segs = []
-        for j in db.all("SELECT * FROM sn_gen_job WHERE pi_no = %s AND status = %s FOR UPDATE", pi, SUCCESS):
-            plan = json.loads(j["plan_json"])
-            segs += [(j, plan, x) for x in plan["items"] if not x.get("revoked")]
-        picked = [x for _, _, x in segs if (x["bill_no"], x["seq"]) in keys]
-        if not picked:
-            raise biz(ErrorCode.GEN_REVOKE_LINE_INVALID)
-        start = min(x["start_seq"] for x in picked)
-        targets = sorted((t for t in segs if t[2]["start_seq"] >= start), key=lambda t: t[2]["end_seq"], reverse=True)
-        # 流水在所选行之后、要一并撤的行也须在授权范围内
-        cu.check_write(*_orgs_of([x for _, _, x in targets]))
-        _check_chain(pi, c, targets)
-        qty, last = _revoke_in_tx(cu, pi, targets, reason)
-    return {
-        "pi_no": pi,
-        "qty": qty,
-        "lines": [
-            {"gen_batch": j["gen_batch"], "bill_no": x["bill_no"], "seq": x["seq"], "qty": x["qty"]}
-            for j, _, x in reversed(targets)
-        ],
-        "last_seq_dec": last,
-    }
-
-
 def jobs(pi: str | None, limit: int = 20, facs: tuple[str, ...] | None = None) -> list[dict]:
-    """最近的生成任务；revocable 标出可整次撤销（剩下的物料行都能从流水末尾依次撤掉）的那一次，
-    各物料行的 revocable 标出当前可单独撤销的那一行。facs 同 jobs_with。"""
+    """最近的生成任务。facs = 授权范围（None = 全部）：只列含范围内物料行的任务，任务里只列范围内的物料行。
+    号的删除不改生成任务（任务是生成的历史记录；删号见 deletion）。"""
     pi = util.trim(pi)
-    return jobs_with(pi, limit, revocable(pi, facs), facs)
-
-
-def jobs_with(pi: str, limit: int, rb: dict | None, facs: tuple[str, ...] | None = None) -> list[dict]:
-    """同 jobs，可撤销的物料行由调用方算好传入（生成详情里另要单独返回它）。
-    facs = 授权范围（None = 全部）：只列含范围内物料行的任务，任务里只列范围内的物料行；
-    任务还剩范围外的物料行时不能整次撤销。"""
     rows = db.all("SELECT * FROM sn_gen_job WHERE pi_no = %s ORDER BY id DESC LIMIT %s", pi, min(max(limit, 1), 200))
     out = []
     for j in rows:
@@ -1074,12 +1021,5 @@ def jobs_with(pi: str, limit: int, rb: dict | None, facs: tuple[str, ...] | None
         v = job_json(j)
         keep = {(x["bill_no"], x["seq"]) for x in items if in_scope(facs, x)}
         v["lines"] = [line for line in v["lines"] if (line["bill_no"], line["seq"]) in keep]
-        mine = rb is not None and rb["gen_batch"] == j["gen_batch"]
-        for line in v["lines"]:
-            line["revocable"] = mine and (line["bill_no"], line["seq"]) == (rb["bill_no"], rb["seq"])
-        left = [x for x in items if not x.get("revoked")]
-        v["revocable"] = (
-            mine and all(in_scope(facs, x) for x in left) and not any(_not_revocable_count(j, x) for x in left)
-        )
         out.append(v)
     return out

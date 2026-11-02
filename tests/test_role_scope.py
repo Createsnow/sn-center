@@ -38,16 +38,15 @@ def test_generate_only_authorized_bills(w, api):
     outsider = w.user(emp("F"), "operator", w.org(uid("O")[:10]))
     assert api.get(f"/api/generate/context?pi={pi}", outsider).code == "FACTORY_FORBIDDEN"
 
-    # B 组织的号在流水后面：A 的操作员不能撤 A 的行（会连带撤 B 的行）
+    # 删号只能删授权组织的号：A 的操作员不能删 B 的行，删自己的行不受流水先后影响
     w.generate(pi, [bill_b])
     ctx = ok(api.get(f"/api/generate/context?pi={pi}", op))
-    assert [(s["bill_no"], s["ok"]) for s in ctx["segments"]] == [(bill_a, False)]
-    assert ctx["revocable"] is None and all(not j["revocable"] for j in ctx["jobs"])
     assert all(x["bill_no"] == bill_a for j in ctx["jobs"] for x in j["lines"]), "任务里只列授权组织的物料行"
-    r = api.post("/api/generate/revoke", m(pi_no=pi, lines=[m(bill_no=bill_a, seq=1)], reason="x"), op)
-    assert r.code == "FACTORY_FORBIDDEN"
-    ok(api.post("/api/generate/revoke", m(pi_no=pi, lines=[m(bill_no=bill_b, seq=1)], reason="x"), w.admin))
-    ok(api.post("/api/generate/revoke", m(pi_no=pi, lines=[m(bill_no=bill_a, seq=1)], reason="x"), op))
+    assert w.delete(pi, lines=[(bill_b, 1)], token=op).code == "FACTORY_FORBIDDEN"
+    assert w.delete(pi, bills=[bill_a, bill_b], token=op).code == "FACTORY_FORBIDDEN"
+    assert w.delete(pi, lines=[(bill_b, 1)], token=op, preview=True).code == "FACTORY_FORBIDDEN"
+    ok(w.delete(pi, lines=[(bill_a, 1)], token=op))
+    ok(w.delete(pi, lines=[(bill_b, 1)]))
 
 
 def test_two_orgs_share_one_pi_serial_in_generation_order(w, api, sql):

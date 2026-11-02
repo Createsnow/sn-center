@@ -307,7 +307,8 @@ _seq = itertools.count(1)
 
 
 def uid(prefix: str) -> str:
-    return f"{prefix}{int(time.time() * 1000) % 100000}-{next(_seq)}"
+    """定长（同一前缀下长度相同）：由它拼出的规则前缀不会一个是另一个的开头。"""
+    return f"{prefix}{int(time.time() * 1000) % 100000:05d}-{next(_seq):05d}"
 
 
 def emp(prefix: str = "U") -> str:
@@ -602,24 +603,27 @@ class World:
         pi: str,
         bills: list[str] | None = None,
         lines: list[tuple[str, int]] | None = None,
+        seq: tuple[int, int] | None = None,
     ) -> Res:
-        """预演：范围内每个还有额度的物料行整行生成；不给范围 = 这张 PI 在快照中的全部单据。"""
+        """预演：范围内每个还有额度的物料行整行生成；不给范围 = 这张 PI 在快照中的全部单据。
+        seq = （起, 止）十进制流水：按手动起止号（空号段与未使用的号，不够时从最大号之后接着编）；
+        不给从最大号 + 1 起。"""
         scope = "LINES" if lines else "BILLS"
         if not lines and not bills:
             bills = sorted({d["BillNo"] for d in BILLS.values() if d["F_HX_PI"] == pi and d["DocumentStatus"] == "C"})
-        return self.api.post(
-            "/api/generate/preview",
-            m(pi_no=pi, scope=scope, bills=bills, lines=[m(bill_no=b, seq=s) for b, s in lines or []]),
-            self.admin,
-        )
+        body = m(pi_no=pi, scope=scope, bills=bills, lines=[m(bill_no=b, seq=s) for b, s in lines or []])
+        if seq is not None:
+            body |= m(seq_mode="RANGE", seq_start=seq[0], seq_end=seq[1])
+        return self.api.post("/api/generate/preview", body, self.admin)
 
     def generate(
         self,
         pi: str,
         bills: list[str] | None = None,
         lines: list[tuple[str, int]] | None = None,
+        seq: tuple[int, int] | None = None,
     ) -> dict:
-        p = ok(self.preview(pi, bills, lines))
+        p = ok(self.preview(pi, bills, lines, seq))
         assert p["generatable"], str(p)
         j = ok(self.api.post("/api/generate/run", m(token=p["token"]), self.admin))
         assert j["status"] == "SUCCESS", str(j)
@@ -629,9 +633,28 @@ class World:
         body = m(pi_no=pi, bills=bills, lines=[m(bill_no=b, seq=s) for b, s in lines] if lines else None)
         return ok(self.api.post("/api/allocation/allocate", body, self.admin)).body
 
-    def revoke(self, batch: str, reason: str | None = "x", line: tuple[str, int] | None = None) -> Res:
-        body = m(reason=reason) if line is None else m(reason=reason, bill_no=line[0], seq=line[1])
-        return self.api.post(f"/api/generate/batches/{batch}/revoke", body, self.admin)
+    def delete(
+        self,
+        pi: str,
+        bills: list[str] | None = None,
+        lines: list[tuple[str, int]] | None = None,
+        start_sn: str | None = None,
+        end_sn: str | None = None,
+        reason: str | None = None,
+        token: str | None = None,
+        preview: bool = False,
+    ) -> Res:
+        """删号（preview = 只看确认框数据）：单据、物料行，或 SN 起止号。"""
+        body = m(
+            pi_no=pi,
+            bills=bills,
+            lines=[m(bill_no=b, seq=s) for b, s in lines] if lines else None,
+            start_sn=start_sn,
+            end_sn=end_sn,
+            reason=reason,
+        )
+        path = "/api/generate/delete/preview" if preview else "/api/generate/delete"
+        return self.api.post(path, body, token or self.admin)
 
     def push(self, receipts: bool = True) -> int:
         """跑推送任务；receipts 时模拟 MES 把处理完的批次逐个用 ③ 提交回执（与 MES 落库后回执一致），

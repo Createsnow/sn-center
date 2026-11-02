@@ -57,6 +57,7 @@ RULE_DELETE = "RULE_DELETE"
 SN_GENERATE = "SN_GENERATE"
 SN_GEN_CANCEL = "SN_GEN_CANCEL"
 SN_REVOKE = "SN_REVOKE"
+SN_DELETE = "SN_DELETE"
 SN_ALLOCATE = "SN_ALLOCATE"
 SN_BATCH_CREATE = "SN_BATCH_CREATE"
 SN_PUSH = "SN_PUSH"
@@ -234,8 +235,7 @@ _PATH_ACTIONS = (
     (r"/api/rules/\d+", RULE_UPDATE),
     (r"/api/rules", RULE_CREATE),
     (r"/api/generate/batches/[^/]+/cancel", SN_GEN_CANCEL),
-    (r"/api/generate/batches/[^/]+/revoke", SN_REVOKE),
-    (r"/api/generate/revoke", SN_REVOKE),
+    (r"/api/generate/delete", SN_DELETE),
     (r"/api/generate/revoke-config", LINE_CONFIG_REVOKE),
     (r"/api/generate/.*", SN_GENERATE),
     (r"/api/allocation/.*", SN_ALLOCATE),

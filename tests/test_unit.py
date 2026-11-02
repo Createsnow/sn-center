@@ -360,10 +360,13 @@ def test_locale_json_matches_sources(tmp_path, capsys):
 
 
 def test_migration_flyway_checksum():
-    """测试阶段只保留一个 V1__init.sql；校验和按 Flyway 算法固定，改了建表脚本须同步更新这里（并重建测试库）。"""
+    """V1__init.sql 已在联调环境执行过，不再改动（校验和固定）；之后的结构变化按 V2… 追加，启动时自动升级、不清库。"""
     ours = {m.script: m for m in migrations()}
-    assert list(ours) == ["V1__init.sql"]
+    assert list(ours) == ["V1__init.sql", "V2__sn_delete_gap_prefix.sql"]
     assert ours["V1__init.sql"].checksum() == -874897514
+    v2 = "\n".join(ours["V2__sn_delete_gap_prefix.sql"].statements())
+    assert "DROP INDEX ux_rule_prefix" in v2 and "ADD KEY ix_rule_prefix (prefix)" in v2, "同一前缀可有多个版本"
+    assert "CREATE TABLE sn_item_deleted" in v2, "删号存档"
     statements = ours["V1__init.sql"].statements()
     assert len(statements) == 34
     text = "\n".join(statements)
@@ -590,7 +593,7 @@ def test_db_target_env_overrides_dotenv(monkeypatch):
         ("POST", "/api/allocation/allocate", "SN_ALLOCATE"),
         ("POST", "/api/generate/run", "SN_GENERATE"),
         ("POST", "/api/generate/batches/G1/cancel", "SN_GEN_CANCEL"),
-        ("POST", "/api/generate/batches/G1/revoke", "SN_REVOKE"),
+        ("POST", "/api/generate/delete", "SN_DELETE"),
         ("PUT", "/api/rules/pi-binding", "RULE_PI_BIND"),
         ("DELETE", "/api/rules/pi-binding", "RULE_PI_UNBIND"),
         ("POST", "/api/rules/line-select", "RULE_LINE_SELECT"),
@@ -611,7 +614,7 @@ def test_db_target_env_overrides_dotenv(monkeypatch):
         ("PUT", "/api/orders/length", "ORDER_LENGTH_FILL"),
         ("PUT", "/api/orders/unit", "ORDER_UNIT_FILL"),
         ("POST", "/api/generate/revoke-config", "LINE_CONFIG_REVOKE"),
-        ("POST", "/api/generate/revoke", "SN_REVOKE"),
+        ("POST", "/api/generate/delete/preview", "SN_GENERATE"),
         ("POST", "/api/orders/alerts/3/handle", "ORDER_ALERT_HANDLE"),
         ("POST", "/api/mes/v1/batches/next", "SN_PULL"),
         ("POST", "/api/mes/v1/receipts", "SN_RECEIPT"),

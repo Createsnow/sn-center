@@ -162,8 +162,10 @@ def test_length_uses_k3_value_and_must_be_filled_only_when_empty(w, api, sql):
     assert ok(w.preview(pi2))["generatable"], "规则不带米数时米数为空不影响生成"
 
 
-def test_only_identical_prefix_conflicts(w, api):
-    w.rule("AX")
+def test_prefix_conflicts_identical_or_one_starts_another(w, api):
+    """不同 PI（或尚未归属）的前缀不能相同，也不能一个是另一个的开头（如 SD 与 SDD 可能拼出相同的号）；区分大小写。"""
+    stem = "AX" + uid("").replace("-", "")
+    w.rule(stem)
 
     def new(prefix):
         return api.post(
@@ -172,10 +174,11 @@ def test_only_identical_prefix_conflicts(w, api):
             w.admin,
         )
 
-    assert new("AX").code == "RULE_PREFIX_CONFLICT"
-    for p in ("AXB", "A"):
-        assert new(p).status == 200, f"{p}：只是开头相同（如 SD 与 SDD）不算同号"
-    assert new("ax").status == 200, "前缀区分大小写，ax 与 AX 不同"
+    assert new(stem).code == "RULE_PREFIX_CONFLICT"
+    for p in (stem + "B", stem[:-1]):
+        assert new(p).code == "RULE_PREFIX_OVERLAP", f"{p}：一个是另一个的开头"
+    assert new(stem.lower()).status == 200, "前缀区分大小写"
+    assert new("BX" + stem[2:]).status == 200
 
 
 def test_rule_binds_pi_only(w, api):
@@ -227,20 +230,37 @@ def test_rule_list_and_options_show_versions_pis_and_bindings(w, api):
     assert (option(pi3)["plan"], option(pi3)["other_pi"]) == ("PREFIX", pi1)
 
 
-def test_used_version_needs_new_prefix_for_format_change(w, api, sql):
-    org, pi, bill = mk(w, ("M1", 10))
+def test_used_version_format_change_keeps_prefix_unless_serial_changes(w, api, sql):
+    """生成过号的版本：只改米数、单位、后缀，另出一版沿用同一前缀（仍归属原 PI，流水接续）；
+    改进制、流水位数或字符表须换新前缀。"""
+    org, pi, bill = mk(w, ("M1", 4, "100"))
+    _, _, bill2 = mk(w, ("M1", 2, "200"), pi=pi, org=org)
     rid = w.rule(P(), seq_len=5)
     ok(w.bind_pi(pi, rid))
-    w.generate(pi)
+    w.generate(pi, bills=[bill])
     cur = sql.one("SELECT * FROM sn_rule_version WHERE rule_id = %s", rid)
-    base = m(rule_name="x", prefix=cur["prefix"], base=16, seq_len=5)
-    assert api.put(f"/api/rules/{rid}", base, w.admin).code == "RULE_USED_FORMAT"
-    r = ok(api.put(f"/api/rules/{rid}", {**base, "prefix": P()}, w.admin))
+    base = m(rule_name="x", prefix=cur["prefix"], base=10, seq_len=5)
+    assert api.put(f"/api/rules/{rid}", base | m(base=16), w.admin).code == "RULE_PREFIX_FORMAT_LOCKED"
+    assert api.put(f"/api/rules/{rid}", base | m(seq_len=6), w.admin).code == "RULE_PREFIX_FORMAT_LOCKED"
+    r = ok(api.put(f"/api/rules/{rid}", base | m(with_length=True, sep_before="-", suffix="Z"), w.admin))
     assert r["action"] == "NEW_VERSION" and r["rule"]["rule"]["current_version"] == 2
+    v2 = r["rule"]["current"]
+    assert v2["prefix"] == cur["prefix"] and v2["claimed_pi"] == pi, "同一前缀仍归属原 PI"
+    w.generate(pi, bills=[bill2])
+    sns = [x["sn"] for x in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
+    p = cur["prefix"]
+    assert sns == [f"{p}{i:05d}100" for i in range(1, 5)] + [f"{p}{i:05d}-200Z" for i in (5, 6)], "流水接续"
+    r = ok(api.put(f"/api/rules/{rid}", base | m(prefix=P(), base=16), w.admin))
+    assert r["action"] == "NEW_VERSION" and r["rule"]["rule"]["current_version"] == 3
+    assert r["rule"]["current"]["claimed_pi"] is None, "换新前缀的版本首次生成时归属"
     assert (
-        ok(api.put(f"/api/rules/{rid}", {**base, "prefix": r["rule"]["current"]["prefix"], "rule_name": "y"}, w.admin))[
-            "action"
-        ]
+        ok(
+            api.put(
+                f"/api/rules/{rid}",
+                {**base, "prefix": r["rule"]["current"]["prefix"], "base": 16, "rule_name": "y"},
+                w.admin,
+            )
+        )["action"]
         == "RENAMED"
     )
     assert api.delete(f"/api/rules/{rid}", w.admin).code == "RULE_IN_USE"
@@ -330,7 +350,7 @@ def test_custom_prefix_taken_after_select_flagged_in_preview(w):
 
 def test_pi_bills_share_first_bill_prefix(w, api, sql):
     """「选规则」前缀默认取 PI 第一张单据编码后 7 位：第一张单据用它生成后，第二张单据用同一前缀、同一格式沿用那一版，
-    流水接续；同一 PI 换格式或别的 PI 用这个前缀都报前缀冲突。"""
+    流水接续；同一 PI 换进制或位数报格式锁定，只换米数、单位、后缀可共用前缀；别的 PI 用这个前缀报前缀冲突。"""
     stem = uid("").replace("-", "")
     org, pi, first = mk(w, ("M1", 2), bill="MOA" + stem)
     _, _, second = mk(w, ("M2", 3), pi=pi, org=org, bill="MOB" + stem)
@@ -342,8 +362,8 @@ def test_pi_bills_share_first_bill_prefix(w, api, sql):
     w.generate(pi, lines=[(first, 1)])
     ctx = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))
     assert ctx["rule_prefix"]["prefix"] == prefix and ctx["rule_prefix"]["custom"]["seq_len"] == 4
-    # 同一 PI 换格式：一个前缀只对应一种格式
-    assert w.select(pi, [(second, 1)], custom={**c, "seq_len": 5}).code == "RULE_PREFIX_CONFLICT"
+    # 同一 PI 换流水位数：同一前缀下进制、位数、字符表锁定
+    assert w.select(pi, [(second, 1)], custom={**c, "seq_len": 5}).code == "RULE_PREFIX_FORMAT_LOCKED"
     ok(w.select(pi, [(second, 1)], custom=ctx["rule_prefix"]["custom"]))
     rid = sql.scalar("SELECT id FROM sn_rule WHERE rule_code = %s", f"PI-{pi}-1")
     assert sql.scalar("SELECT rule_id FROM sn_line_rule WHERE bill_no = %s AND seq = 1", second) == rid
@@ -465,21 +485,22 @@ def test_attach_and_length_locked_once_line_has_sns(w, api, sql):
         f"{p}000005000",
         f"{p}000006000",
     ], "同一物料行接着生成仍用锁定的米数"
-    # 撤销该行的全部生成后可修改，再生成用新值（从流水末尾往前逐段撤）
-    for x in ok(api.get(f"/api/generate/jobs?pi={pi}", w.admin)).body:
-        if x["status"] == "SUCCESS":
-            ok(w.revoke(x["gen_batch"], "改米数", (bill, 1)))
+    # 删掉该行的号后可修改，再生成用新值；最大号不退回，新号接在最大号之后
     assert j["status"] == "SUCCESS"
+    ok(w.delete(pi, lines=[(bill, 1)], reason="改米数"))
     r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=1, value="5"), w.admin))
     assert (r["length"], r["edit_lock"]) == ("5", None)
     w.generate(pi, lines=[(bill, 1)])
     assert sql.scalar("SELECT sn FROM sn_item WHERE bill_seq = 1 AND pi_no = %s ORDER BY seq_dec LIMIT 1", pi) == (
-        f"{p}0000015"
+        f"{p}0000075"
     )
     w.allocate(pi)
     line = {x["seq"]: x for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"]}
     assert line[1]["edit_lock"] == "ALLOCATED"
     assert api.put("/api/orders/length", m(bill_no=bill, seq=1, value="6"), w.admin).code == "LINE_EDIT_ALLOCATED"
+    # 已分配的号也能删，删后可改
+    ok(w.delete(pi, lines=[(bill, 1)]))
+    assert ok(api.put("/api/orders/length", m(bill_no=bill, seq=1, value="6"), w.admin))["edit_lock"] is None
 
 
 def test_revoke_config_resets_lines_without_sns(w, api, sql):
@@ -582,108 +603,6 @@ def test_preview_single_use_and_max(w, api, monkeypatch):
     p = ok(w.preview(pi, lines=[(bill, 1)]))
     ok(api.post("/api/generate/run", m(token=p["token"]), w.admin))
     assert api.post("/api/generate/run", m(token=p["token"]), w.admin).code == "GEN_PREVIEW_USED"
-
-
-def test_revoke_last_only_and_not_allocated(w, sql):
-    org, pi, bill = mk(w, ("M1", 3), ("M2", 4), ("M3", 1))
-    ok(w.bind_pi(pi, w.rule(P())))
-    j1 = w.generate(pi, lines=[(bill, 1)])
-    j2 = w.generate(pi, lines=[(bill, 2)])
-    assert w.revoke(j1["gen_batch"]).code == "GEN_REVOKE_NOT_LAST"
-    assert w.revoke(j2["gen_batch"], None).code == "REASON_REQUIRED"
-    ok(w.revoke(j2["gen_batch"], "点错了"))
-    assert sql.scalar("SELECT last_seq_dec FROM sn_pi_counter WHERE pi_no = %s", pi) == 3
-    assert sql.scalar("SELECT own_generated FROM sn_line_count WHERE bill_no = %s AND seq = 2", bill) == 0
-    j3 = w.generate(pi, lines=[(bill, 3)])
-    assert j3["start_seq_dec"] == 4, "撤销后流水退回，号与撤销前相同"
-    w.allocate(pi)
-    assert w.revoke(j3["gen_batch"]).code == "GEN_REVOKE_ALLOCATED"
-
-
-def test_revoke_by_line_from_the_end(w, api, sql):
-    org, pi, bill = mk(w, ("M1", 3), ("M2", 4), ("M3", 2))
-    ok(w.bind_pi(pi, w.rule(P())))
-    j = w.generate(pi)
-    batch = j["gen_batch"]
-
-    def ctx() -> dict:
-        return ok(api.get(f"/api/generate/context?pi={pi}", w.admin)).body
-
-    rb = ctx()["revocable"]
-    assert (rb["gen_batch"], rb["bill_no"], rb["seq"], rb["qty"]) == (batch, bill, 3, 2), "可撤销的是流水最末的物料行"
-    assert w.revoke(batch, line=(bill, 1)).code == "GEN_REVOKE_NOT_LAST", "中间的物料行不能先撤"
-    ok(w.revoke(batch, "米数填错", (bill, 3)))
-    assert sql.scalar("SELECT last_seq_dec FROM sn_pi_counter WHERE pi_no = %s", pi) == 7
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 7
-    assert w.revoke(batch, line=(bill, 3)).code == "GEN_REVOKE_LINE_INVALID", "已撤销的行不能再撤"
-    job = ok(api.get(f"/api/generate/jobs?pi={pi}", w.admin)).body[0]
-    assert job["status"] == "SUCCESS" and job["revoked_qty"] == 2 and job["revocable"] is True
-    assert [(x["seq"], x["revoked"], x["revocable"]) for x in job["lines"]] == [
-        (1, False, False),
-        (2, False, True),
-        (3, True, False),
-    ]
-    # 撤掉的行重新生成：接在流水末尾，号与撤销前相同
-    j2 = w.generate(pi, lines=[(bill, 3)])
-    assert (j2["start_seq_dec"], j2["end_seq_dec"]) == (8, 9)
-    # 末尾那行已分配：不能撤，前面的行也撤不到
-    w.allocate(pi, lines=[(bill, 3)])
-    assert ctx()["revocable"] is None
-    assert w.revoke(j2["gen_batch"], line=(bill, 3)).code == "GEN_REVOKE_ALLOCATED"
-    assert w.revoke(batch, line=(bill, 2)).code == "GEN_REVOKE_NOT_LAST"
-
-
-def test_revoke_rest_of_generation_at_once(w, api, sql):
-    org, pi, bill = mk(w, ("M1", 3), ("M2", 4), ("M3", 2))
-    ok(w.bind_pi(pi, w.rule(P())))
-    j = w.generate(pi)
-    ok(w.revoke(j["gen_batch"], "x", (bill, 3)))
-    r = ok(w.revoke(j["gen_batch"], "整次撤"))
-    assert (r["qty"], r["last_seq_dec"], r["job_status"]) == (7, 0, "REVOKED")
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 0
-    assert sql.scalar("SELECT status FROM sn_gen_job WHERE gen_batch = %s", j["gen_batch"]) == "REVOKED"
-    assert all(x["own_generated"] == 0 for x in sql.all("SELECT * FROM sn_line_count WHERE bill_no = %s", bill))
-
-
-def test_revoke_up_to_selected_lines_in_one_go(w, api, sql):
-    org, pi, bill = mk(w, ("M1", 3), ("M2", 4), ("M3", 2), ("M4", 1))
-    ok(w.bind_pi(pi, w.rule(P())))
-    j1 = w.generate(pi, lines=[(bill, 1), (bill, 2)])
-    j2 = w.generate(pi, lines=[(bill, 3), (bill, 4)])
-
-    def chain() -> list[tuple]:
-        segs = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))["segments"]
-        return [(x["seq"], x["qty"], x["ok"]) for x in segs]
-
-    assert chain() == [(4, 1, True), (3, 2, True), (2, 4, True), (1, 3, True)], "从流水最末往前排"
-
-    def revoke(lines, reason="填错了"):
-        body = m(pi_no=pi, lines=[m(bill_no=bill, seq=s) for s in lines], reason=reason)
-        return api.post("/api/generate/revoke", body, w.admin)
-
-    assert revoke([2], "x" * 501).code == "REASON_REQUIRED"
-    # 撤序号 2：流水在它之后的序号 3、4（另一次生成）一并撤销，一个事务内完成；原因选填，不填记默认原因
-    r = ok(revoke([2], None))
-    assert (r["qty"], r["last_seq_dec"]) == (7, 3)
-    assert [(x["seq"], x["gen_batch"]) for x in r["lines"]] == [
-        (2, j1["gen_batch"]),
-        (3, j2["gen_batch"]),
-        (4, j2["gen_batch"]),
-    ]
-    assert sql.scalar("SELECT status FROM sn_gen_job WHERE gen_batch = %s", j2["gen_batch"]) == "REVOKED"
-    assert sql.scalar("SELECT revoke_reason FROM sn_gen_job WHERE gen_batch = %s", j2["gen_batch"]) == "生成页撤销生成"
-    assert sql.scalar("SELECT status FROM sn_gen_job WHERE gen_batch = %s", j1["gen_batch"]) == "SUCCESS"
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 3
-    assert chain() == [(1, 3, True)]
-    assert revoke([3]).code == "GEN_REVOKE_LINE_INVALID", "已撤销的行不能再撤"
-    # 重新生成后号与撤销前相同
-    j3 = w.generate(pi, lines=[(bill, 2), (bill, 3)])
-    assert j3["start_seq_dec"] == 4
-    # 序号 3 已分配：撤序号 2（连带序号 3）被拒绝，什么都不撤
-    w.allocate(pi, lines=[(bill, 3)])
-    assert chain() == [(3, 2, False), (2, 4, False), (1, 3, False)]
-    assert revoke([2]).code == "GEN_REVOKE_ALLOCATED"
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 9
 
 
 def test_alloc_context_lists_pending_lines(w, api):

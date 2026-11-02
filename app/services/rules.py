@@ -1,11 +1,15 @@
 """SN 规则库与规则选取（F-08）。
 
-全局不撞号（5.2.4）：
-- 任何两条规则（含各版本）的前缀不能相同；区分大小写。只是开头相同（如 SD 与 SDD）不算同号，
-  万一拼出的完整 SN 相同，由号池唯一约束拦下、整次生成回滚。
-- 一个前缀只用于一张 PI：规则版本首次用于生成（或为某张 PI 换前缀另出）时归属该 PI；别的 PI 要用同一条规则，
-  须为它填新前缀，按原格式另出属于它的版本（derived_from 记由哪一版而来）。同一 PI 的多个物料行可共用一个版本。
-- 一个前缀只对应一种格式：生成过号的版本改格式须另出一版并换新前缀；只改名称或分类不另出版本。
+全局不撞号（5.2.4）：前缀归属 PI + PI 流水唯一（同一 PI 内一个十进制流水同一时刻只有一枚号）。
+- 一个前缀只归属一张 PI：规则版本首次用于生成（或为某张 PI 换前缀另出、自定义规则生成）时归属该 PI；
+  别的 PI 要用同一条规则，须为它填新前缀，按原格式另出属于它的版本（derived_from 记由哪一版而来）。
+  同一 PI 的多个物料行可共用一个版本。
+- 同一前缀下进制、流水位数、字符表锁定（流水紧跟前缀、定长，前缀 + 流水才能唯一区分号）；米数（补 0、前后分隔符）、
+  单位、后缀可改：版本生成过号后改这几项，另出一版沿用同一前缀（仍归属原 PI）；改进制、位数或字符表须换新前缀。
+  同一前缀可有多个版本（同一 PI 的不同规则也可共用），都须归属同一张 PI、格式的流水部分相同；
+  尚未归属 PI 的版本独占前缀。
+- 不同 PI（或尚未归属）的前缀不能相同；任何两个不同的前缀都不能一个是另一个的开头（如 SD 与 SDD，同一 PI 内也不行：
+  流水不同也可能拼出相同的号）。万一拼出的完整 SN 相同，仍由号池唯一约束拦下、整次生成回滚。
 
 规则按 PI 维度绑定（不按客户绑定）：新建规则须填 PI（分类只能是 PI）；早先按未分类 / 客户分类的规则原样保留，
 修改时须补填 PI。规则选取按物料行：物料行已选规则 ＞ PI 绑定规则，都没有时须先选规则。
@@ -29,6 +33,7 @@ from dataclasses import dataclass, replace
 from app.core import encoding as codec
 from app.core import utils as util
 from app.core.errors import ErrorCode, biz
+from app.core.exceptions import BizError
 from app.core.security import CurrentUser
 from app.db.session import db, marks
 from app.services import audit, factories
@@ -184,29 +189,76 @@ def prefix_taken(prefix: str, memo: dict[str, bool] | None = None) -> bool:
     return hit
 
 
-def check_prefix(prefix: str, exclude_version: int | None = None) -> None:
-    """前缀不能与任何规则的任何版本（含本规则旧版本）相同；区分大小写。只是开头相同（如 SD 与 SDD）不算同号。"""
-    if db.exists(
-        "SELECT EXISTS(SELECT 1 FROM sn_rule_version WHERE prefix = %s AND (%s IS NULL OR id <> %s))",
+def same_seq_format(a: codec.Spec, b: codec.Spec) -> bool:
+    """流水部分相同：进制、流水位数、字符表（同一前缀下锁定）。"""
+    return (a.base, a.seq_len, a.charset) == (b.base, b.seq_len, b.charset)
+
+
+def check_prefix(
+    prefix: str,
+    exclude_version: int | None = None,
+    spec: codec.Spec | None = None,
+    pi: str | None = None,
+) -> None:
+    """前缀能否给一个（归属 pi 的；pi = None 为尚未归属）版本用；区分大小写。
+    - 已有同前缀的版本（不含 exclude_version）：都须归属同一张 PI（pi 非空），且进制、流水位数、字符表与 spec 相同，
+      否则 RULE_PREFIX_CONFLICT（别的 PI 或尚未归属的版本在用）/ RULE_PREFIX_FORMAT_LOCKED（本 PI 但流水部分不同）。
+    - 与任何别的前缀一个是另一个的开头：RULE_PREFIX_OVERLAP。
+    在事务内调用：同前缀的版本加锁（FOR UPDATE，没有时锁住索引间隙），并发占用同一前缀时后到的等前一个提交。"""
+    _prefix_rules(prefix, spec, pi, exclude_version, lock=True)
+
+
+def _prefix_rules(
+    prefix: str, spec: codec.Spec | None, pi: str | None, exclude_version: int | None, lock: bool
+) -> None:
+    same = db.all(
+        "SELECT * FROM sn_rule_version WHERE prefix = %s AND (%s IS NULL OR id <> %s)"
+        + (" FOR UPDATE" if lock else ""),
         prefix,
         exclude_version,
         exclude_version,
+    )
+    for v in same:
+        if pi is None or v["claimed_pi"] != pi:
+            raise biz(ErrorCode.RULE_PREFIX_CONFLICT, prefix=prefix)
+        if spec is not None and not same_seq_format(spec_of(v), spec):
+            raise biz(ErrorCode.RULE_PREFIX_FORMAT_LOCKED, prefix=prefix, base=v["base"], seq_len=v["seq_len"])
+    for v in db.all(
+        "SELECT prefix, claimed_pi FROM sn_rule_version WHERE prefix <> %s "
+        "AND (LEFT(prefix, CHAR_LENGTH(%s)) = %s OR LEFT(%s, CHAR_LENGTH(prefix)) = prefix)",
+        prefix,
+        prefix,
+        prefix,
+        prefix,
     ):
-        raise biz(ErrorCode.RULE_PREFIX_CONFLICT, prefix=prefix)
+        # 不论是否同一 PI：不同前缀一个是另一个的开头时，流水不同也可能拼出相同的号（如 P1+03+后缀 5 与 P103+5）
+        raise biz(ErrorCode.RULE_PREFIX_OVERLAP, prefix=prefix, other=v["prefix"], pi=v["claimed_pi"] or "-")
+
+
+def prefix_usable(prefix: str, spec: codec.Spec, pi: str, exclude_version: int | None = None) -> bool:
+    """check_prefix 的判断版（不加锁、不抛错）：前缀能否给归属 pi、格式为 spec 的版本用。"""
+    try:
+        _prefix_rules(prefix, spec, pi, exclude_version, lock=False)
+    except BizError:
+        return False
+    return True
 
 
 def own_version(pi: str, spec: codec.Spec) -> Resolved | None:
-    """自定义规则的前缀已被本 PI 同格式的版本占用（如先生成的单据存入规则库的自定义规则）：同一 PI 的各张单据
-    共用一个前缀，沿用这一版，流水接续不撞号。前缀没人用，或被别的 PI、别的格式占用时 None（后者按前缀冲突处理）。"""
-    v = db.one("SELECT * FROM sn_rule_version WHERE prefix = %s", spec.prefix)
-    if v is None or v["claimed_pi"] != pi or spec_of(v) != spec:
-        return None
-    r = db.one("SELECT * FROM sn_rule WHERE id = %s", v["rule_id"])
-    if r is None:
-        return None
-    res = resolve(r, pi, SRC_LINE)
-    # 规则在本 PI 下用的须正是这一版（规则另出过新版时不沿用，免得之后按新版生成）
-    return res if res.version is not None and res.version["id"] == v["id"] else None
+    """自定义规则与本 PI 已有的版本完全同格式（如先生成的单据存入规则库的自定义规则）：同一 PI 的各张单据
+    共用这一版，不再另建规则。没有完全同格式、且规则在本 PI 下正用这一版的版本时 None
+    （前缀能否共用见 check_prefix）。"""
+    for v in db.all("SELECT * FROM sn_rule_version WHERE prefix = %s AND claimed_pi = %s", spec.prefix, pi):
+        if spec_of(v) != spec:
+            continue
+        r = db.one("SELECT * FROM sn_rule WHERE id = %s", v["rule_id"])
+        if r is None:
+            continue
+        res = resolve(r, pi, SRC_LINE)
+        # 规则在本 PI 下用的须正是这一版（规则另出过新版时不沿用，免得之后按新版生成）
+        if res.version is not None and res.version["id"] == v["id"]:
+            return res
+    return None
 
 
 def pi_prefix(pi: str) -> dict:
@@ -214,7 +266,13 @@ def pi_prefix(pi: str) -> dict:
     页面按它填其他参数，保存时沿用该版本。"""
     first = db.scalar("SELECT MIN(bill_no) FROM sn_prd_mo WHERE pi = %s", pi) or ""
     prefix = first[-7:]
-    v = db.one("SELECT * FROM sn_rule_version WHERE prefix = %s AND claimed_pi = %s", prefix, pi) if prefix else None
+    v = (
+        db.one(
+            "SELECT * FROM sn_rule_version WHERE prefix = %s AND claimed_pi = %s ORDER BY id DESC LIMIT 1", prefix, pi
+        )
+        if prefix
+        else None
+    )
     return {"prefix": prefix, "custom": None if v is None else _custom_dict(spec_of(v))}
 
 
@@ -504,7 +562,7 @@ def create(
             raise biz(ErrorCode.RULE_NAME_REQUIRED)
         cat = _check_category(category, category_value)
         spec = normalize(s)
-        check_prefix(spec.prefix)
+        check_prefix(spec.prefix, spec=spec)
         if db.exists("SELECT EXISTS(SELECT 1 FROM sn_rule WHERE rule_code = %s)", c):
             raise biz(ErrorCode.RULE_CODE_EXISTS, rule_code=c)
         rid = _insert_rule(cu, c, n, spec, cat, factory=owner)
@@ -541,11 +599,13 @@ def update(cu: CurrentUser, rule_id: int, name: str | None, s: SpecIn, category=
         now = util.now()
         if spec != before:
             if cur["used"]:
-                if spec.prefix == before.prefix:
-                    raise biz(ErrorCode.RULE_USED_FORMAT, version=cur["version"])
-                check_prefix(spec.prefix)
+                # 生成过号：另出一版。沿用同一前缀（只改米数、单位、后缀）时仍归属原 PI，流水部分须相同；
+                # 换新前缀时新版本尚未归属，首次生成时归属
+                same_prefix = spec.prefix == before.prefix
+                owner = cur["claimed_pi"] if same_prefix else None
+                check_prefix(spec.prefix, spec=spec, pi=owner)
                 version = _next_version(r["id"])
-                _insert_version(cu, r["id"], version, spec, now)
+                _insert_version(cu, r["id"], version, spec, now, claimed_pi=owner)
                 action = "NEW_VERSION"
                 audit.record(
                     cu,
@@ -554,8 +614,8 @@ def update(cu: CurrentUser, rule_id: int, name: str | None, s: SpecIn, category=
                     ),
                 )
             else:
-                if spec.prefix != before.prefix:
-                    check_prefix(spec.prefix, cur["id"])
+                if spec.prefix != before.prefix or not same_seq_format(spec, before):
+                    check_prefix(spec.prefix, cur["id"], spec, cur["claimed_pi"])
                 db.exec(
                     "UPDATE sn_rule_version SET prefix = %s, suffix = %s, base = %s, seq_len = %s, charset = %s, "
                     "with_length = %s, length_pad = %s, length_sep_before = %s, length_sep_after = %s, "
@@ -855,7 +915,7 @@ def _derive(cu: CurrentUser, rule: dict, pi: str, new_prefix: str | None) -> dic
     err = codec.validate(spec)
     if err is not None:
         raise biz(err)
-    check_prefix(p)
+    check_prefix(p, spec=spec, pi=pi)
     n = _next_version(rule["id"])
     vid = _insert_version(cu, rule["id"], n, spec, util.now(), claimed_pi=pi, derived_from=t["id"])
     audit.record(
@@ -925,7 +985,7 @@ def select_for_lines(
             rid, cj = own.rule["id"], None
             label = f"{own.rule['rule_code']} v{own.version['version']}"
         elif custom is not None:
-            check_prefix(res.version["prefix"])
+            check_prefix(res.version["prefix"], spec=res.spec(), pi=pi)
             rid, cj = None, json.dumps(res.custom, ensure_ascii=False, sort_keys=True)
             label = f"custom {format_text(res.spec())}"
         else:
@@ -1088,7 +1148,7 @@ def realize(cu: CurrentUser, pi: str, res: Resolved, lines: list[tuple[str, int]
         err = codec.validate(spec)
         if err is not None:
             raise biz(err)
-        check_prefix(spec.prefix)
+        check_prefix(spec.prefix, spec=spec, pi=pi)
         code, name = _custom_names(pi)
         from app.services import orders
 
@@ -1119,6 +1179,9 @@ def realize(cu: CurrentUser, pi: str, res: Resolved, lines: list[tuple[str, int]
         return db.one("SELECT * FROM sn_rule_version WHERE rule_id = %s AND version = 1", rid)
     if res.version is None:
         raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
+    if res.version["claimed_pi"] is None:
+        # 首次归属本 PI：前缀不能与别的 PI 的前缀相同或一个是另一个的开头
+        check_prefix(res.version["prefix"], res.version["id"], spec_of(res.version), pi)
     n = db.exec(
         "UPDATE sn_rule_version SET used = 1, claimed_pi = %s WHERE id = %s AND (claimed_pi IS NULL OR claimed_pi = "
         "%s)",

@@ -73,17 +73,15 @@ export function genLimit(qty, limits, unlocked) {
 }
 
 /**
- * 撤销范围（F-09 撤销生成）：segments 为 PI 流水上未撤销的物料行号段，从流水最末往前排（后台给出，
- * ok = 撤到这一段为止是否可行，bad = 这一段自己已分配或转过单的枚数）。撤所选物料行 = 从流水最末往前，
- * 一直撤到所选行中流水最靠前的那一段，流水排在其后的段一并撤。
- * 返回 { segs, ok, own }：segs 为要撤的段（从最末往前），own = 所选行自己有不能撤的号；所选行都没有号时为 null。
+ * 生成的流水来源（预演请求体的一部分）：mode = "MAX" 从最大号 + 1 起；"RANGE" 手动起止流水号（十进制），
+ * 在空号段与未使用的号中取，不够时后台从最大号之后接着编。只填起号按单个号。
+ * 返回 { body, error }：body 合并进预演请求；起止号不合法时 body 为 null、error 为 "SEQ_RANGE"。
  */
-export function revokeRange(segments, picked) {
-  let at = -1;
-  (segments || []).forEach((s, i) => {
-    if (picked.some((p) => same(p, s))) at = i;
-  });
-  if (at < 0) return null;
-  const segs = segments.slice(0, at + 1);
-  return { segs, ok: !!segments[at].ok, own: segs.some((s) => s.bad > 0 && picked.some((p) => same(p, s))) };
+export function seqSource(mode, start, end) {
+  if (mode !== "RANGE") return { body: { seq_mode: "MAX" }, error: null };
+  const toInt = (v) => (v === "" || v === null || v === undefined ? null : Number(v));
+  const a = toInt(start);
+  const b = toInt(end) ?? a;
+  if (!Number.isSafeInteger(a) || !Number.isSafeInteger(b) || a < 1 || b < a) return { body: null, error: "SEQ_RANGE" };
+  return { body: { seq_mode: "RANGE", seq_start: a, seq_end: b }, error: null };
 }

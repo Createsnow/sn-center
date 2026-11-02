@@ -4,7 +4,7 @@
 转入号（挂在本 PI 下、由别的 PI 生成的号）、已分配（状态为「已分配」的单据的号：号都已分配且推送完成，
 含已推送、已拉取；待处理单据不计）；行上按钮按 F-10 第 3 条的顺序判断。
 各 PI 的号数统计（item_stats、gen_own）生成页、分配页共用；分配页左侧按单据列出，见 allocation.bills。
-生成详情：单据 → 物料行（规则、附件项次、米数、号段）、生成任务（最近 20 条）、可撤销的号段。
+生成详情：单据 → 物料行（规则、附件项次、米数、号段）、生成任务（最近 20 条）、空号段。
 分配详情见 allocation.context。
 """
 
@@ -241,7 +241,7 @@ def pis(cu: CurrentUser, q: str | None, tab: str | None, by_modify: bool = False
 
 
 def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> dict:
-    """生成详情：PI 头、各单据（含已离开快照的已出号单据）及物料行、规则选项、计数、生成任务、可撤销的号段。
+    """生成详情：PI 头、各单据（含已离开快照的已出号单据）及物料行、规则选项、计数、生成任务、空号段。
     普通操作员只看授权组织的单据（每张单据只属于一个生产组织），计数、任务、号段也只含这些单据的。"""
     from app.core.errors import ErrorCode, biz
 
@@ -333,7 +333,6 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
     if running is not None and not any(generate.in_scope(facs, x) for x in json.loads(running["plan_json"])["items"]):
         # 别的组织正在生成：不显示它的进度，生成、撤销仍会因 PI 操作锁被拒绝
         running = None
-    revocable = generate.revocable(pi, facs)
     return {
         "pi_no": pi,
         "customer_code": customer,
@@ -362,9 +361,7 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
         "rule_prefix": rules.pi_prefix(pi),
         "limits": generate.limits(),
         "running_job": None if running is None else generate.progress(running["gen_batch"]),
-        "jobs": generate.jobs_with(pi, 20, revocable, facs),
-        # 当前可撤销的物料行（流水排在最后的那一段）
-        "revocable": revocable,
-        # 未撤销的号段，从流水最末往前；物料行上的「撤销」= 撤到该行为止（流水在其后的行一并撤）
-        "segments": generate.revoke_chain(pi, facs),
+        "jobs": generate.jobs(pi, 20, facs),
+        # 空号段（删号腾出的流水）：生成时可选用（预演的流水来源 RANGE）
+        "gaps": generate.gaps_of(pi),
     }

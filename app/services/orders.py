@@ -314,15 +314,13 @@ def rebuild(cu: CurrentUser) -> dict:
 
 
 def edit_lock(count: dict | None) -> str | None:
-    """附件项次、米数能否在页面修改：物料行还没有号时可改；已生成、未分配（GENERATED）不能改，撤销生成后可改；
-    已分配（ALLOCATED）不能再改。不影响转单、拆单、转组织。"""
-    if count is None:
+    """附件项次、米数、产品单位能否在页面修改：物料行现在挂着号时不能改（有已分配的号为 ALLOCATED，否则 GENERATED），
+    删掉该行的号后可改（号全部转走了也可改）。不影响转单、拆单、转组织。"""
+    if count is None or int(count["gen_count"]) <= 0:
         return None
     if int(count["alloc_count"]) > 0:
         return "ALLOCATED"
-    if int(count["gen_count"]) > 0 or int(count["own_generated"]) > 0:
-        return "GENERATED"
-    return None
+    return "GENERATED"
 
 
 def _check_editable(no: str, seq: int) -> None:
@@ -540,7 +538,7 @@ def revoke_config(cu: CurrentUser, pi_in: str | None, lines_in: list[dict] | Non
     """撤销物料行配置（生成页待处理、可生成页签底部「撤销」，可多行）：所选物料行中还没有号的，物料行选定的规则、
     手填的附件项次、手填的米数、手填的产品单位一并删除，恢复为未配置（规则改回按 PI / 客户默认，
     附件项次、米数、产品单位取金蝶值，金蝶为空时待填写）。
-    有号的行不动（有号的行撤销生成后才能改）。一个事务内完成。返回撤销了配置的行数与因有号跳过的行数。"""
+    有号的行不动（有号的行先删号）。一个事务内完成。返回撤销了配置的行数与因有号跳过的行数。"""
     pi = util.trim(pi_in)
     if not pi:
         raise biz(ErrorCode.PI_REQUIRED)
