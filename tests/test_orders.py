@@ -420,3 +420,18 @@ def test_operator_sees_only_authorized_org(w, api):
     got = {x["bill_no"] for x in ok(api.get("/api/orders?page_size=500", tok))["items"]}
     assert a in got and b not in got
     assert api.get(f"/api/orders/{b}/lines", tok).code == "FACTORY_FORBIDDEN"
+
+
+def test_scheduled_compare_skips_within_interval(w, sql):
+    """多实例各自按间隔触发定时比对同步：距上次比对同步不到一个间隔的跳过、不调金蝶；超过间隔照常执行。"""
+    from app.core.security import CurrentUser
+    from app.services import orders
+
+    w.compare()
+    calls = len(conftest.K3.calls)
+    assert orders.compare_sync(CurrentUser.system(), "SCHEDULED") is None
+    assert len(conftest.K3.calls) == calls, "刚同步过：不调金蝶"
+    sql.exec("UPDATE sn_sync_state SET last_run_at = DATE_SUB(last_run_at, INTERVAL 11 MINUTE) WHERE id = 1")
+    assert orders.compare_sync(CurrentUser.system(), "SCHEDULED") is not None
+    assert len(conftest.K3.calls) > calls
+    assert w.compare() is not None, "手动触发不去重"

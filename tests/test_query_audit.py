@@ -190,3 +190,19 @@ def test_dashboard_recent_failures_lists_batch_once(w, api, sql):
     )
     d = ok(api.get("/api/dashboard", w.admin))
     assert [x["batch_no"] for x in d["recent_failures"]].count(no) == 1
+
+
+def test_daily_maintain_runs_once_within_gap(app_client, sql, monkeypatch):
+    """多实例各自按 cron 触发、或相继启动：1 小时内已有实例做完每日维护的跳过（只建分区）。"""
+    from app.services import partitions
+
+    runs = []
+    monkeypatch.setattr(partitions, "_daily_jobs", lambda: runs.append(1))
+    sql.exec("DELETE FROM sn_seq WHERE name = %s", partitions.DAILY_MARK)
+    partitions.maintain()
+    partitions.maintain()
+    partitions.maintain(daily=False)
+    assert runs == [1]
+    sql.exec("UPDATE sn_seq SET val = val - 3601 WHERE name = %s", partitions.DAILY_MARK)
+    partitions.maintain()
+    assert runs == [1, 1]

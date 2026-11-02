@@ -1,5 +1,13 @@
 name: sn-center
 
+# 容器日志轮转：两个服务都只写标准输出，Docker 默认的 json-file 不限大小，不配会一直写满宿主机磁盘。
+# 每个容器最多 LOG_MAX_FILE 个文件、每个 LOG_MAX_SIZE（默认 50m × 10），可在 .env 里改
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "${LOG_MAX_SIZE:-50m}"
+    max-file: "${LOG_MAX_FILE:-10}"
+
 # 连接 .env 里 DB_HOST / DB_PORT / DB_NAME 指向的 MySQL（公司库 10.0.200.125:3306：正式 sn_prod、测试 sn_test、开发 sn_dev），不随附数据库。
 services:
   api:
@@ -8,6 +16,7 @@ services:
       dockerfile: Dockerfile
     image: sn-center-api:1.0.0
     restart: unless-stopped
+    logging: *logging
     env_file:
       - path: .env
         required: false
@@ -31,6 +40,7 @@ services:
         NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmjs.org}
     image: sn-center-web:1.0.0
     restart: unless-stopped
+    logging: *logging
     ports:
       - "${WEB_PORT:-80}:80"
     depends_on:

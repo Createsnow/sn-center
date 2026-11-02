@@ -669,10 +669,22 @@ def _resolved_of(pi: str, x: dict) -> rules.Resolved:
 INTERRUPTED = "INTERRUPTED"
 
 
+#: 定期回收中断生成任务的间隔（秒）：多实例下某个实例被杀（滚动发布、缩容、宕机）留下的任务不必等到下次重启
+RECOVER_INTERVAL_SECONDS = 60
+
+
 def recover_interrupted() -> int:
-    """启动时：仍是 RUNNING 的任务（事务已随进程退出回滚）标为失败并释放 running_pi。"""
+    """仍是 RUNNING、但执行它的进程已退出的任务（事务已随连接断开回滚）标为失败并释放 running_pi。
+
+    生成从建任务到写完结果全程持有该 PI 的操作锁（MySQL 命名锁，进程退出、连接断开时服务端自动释放），
+    所以拿得到这把锁就说明没有实例在执行它；拿不到（仍在执行，或该 PI 正有别的操作）留到下次。
+    启动时与每 RECOVER_INTERVAL_SECONDS 秒各执行一次。
+    """
     recovered = 0
     for j in db.all("SELECT id, pi_no FROM sn_gen_job WHERE status = %s", RUNNING):
+        held = locks.try_acquire("pi", [j["pi_no"]])
+        if held is None:
+            continue
         try:
             with db.new_tx():
                 row = db.one("SELECT status FROM sn_gen_job WHERE id = %s FOR UPDATE NOWAIT", j["id"])
@@ -684,7 +696,7 @@ def recover_interrupted() -> int:
                     "running_pi = NULL, finished_at = %s WHERE id = %s",
                     FAILED,
                     INTERRUPTED,
-                    "服务重启时任务未完成，已整批回滚，请重新预演后生成",
+                    "执行任务的服务已退出（重启、下线或宕机），任务未完成，已整批回滚，请重新预演后生成",
                     util.now(),
                     j["id"],
                 )
@@ -693,6 +705,8 @@ def recover_interrupted() -> int:
             if error_no(e) != ER_LOCK_NOWAIT:
                 raise
             log.info("gen_job_still_running", job=j["id"], pi=j["pi_no"])
+        finally:
+            held.release()
     if recovered:
         log.warning("gen_jobs_recovered", count=recovered)
     return recovered

@@ -2,7 +2,8 @@
 
 启动顺序：检查签名密钥 → 建表 / 升级（Flyway 兼容）→ 回收中断的生成任务
           → 建首个管理员 → 维护月分区 → 可选演示数据
-          → 定时任务：每日维护（分区、归档、生产组织同步、交付自检）、比对同步、推送调度。
+          → 定时任务：每日维护（分区、归档、生产组织同步、交付自检）、比对同步、推送调度、回收中断的生成任务。
+多实例：各实例都可启动这些定时任务；命名锁防同时执行，每日维护与比对同步另按上次执行时间去重，推送任务按租约分配。
 请求链路：RequestIdMiddleware（请求号 / 缓存写请求体）→ CORS → 路由（鉴权依赖）→ services → MySQL。
 """
 
@@ -125,7 +126,7 @@ def startup() -> None:
     init_db()
     generate.recover_interrupted()
     init_admin()
-    partitions.maintain()
+    partitions.maintain(daily=settings.maintain_enabled)
     if settings.demo_seed:
         demo_seed.seed_if_empty()
     log.info("sn_center_ready", retention_days=settings.audit_retention_days)
@@ -134,7 +135,11 @@ def startup() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await run_sync(startup)
-    job = scheduler.start_daily(settings.partition_cron, partitions.maintain)
+    daily = scheduler.start_daily(settings.partition_cron, partitions.maintain) if settings.maintain_enabled else None
+    # 别的实例被杀留下的 RUNNING 生成任务：每分钟检查一次（拿得到 PI 操作锁才回收，不会碰正在执行的任务）
+    gen_recover = scheduler.start_every(
+        generate.RECOVER_INTERVAL_SECONDS, generate.recover_interrupted, "sn-gen-recover"
+    )
     order_sync = (
         scheduler.start_every(settings.sync_interval_minutes * 60, orders.run_scheduled, "sn-order-sync")
         if settings.get_bool("SN_SYNC_ENABLED", True)
@@ -145,7 +150,9 @@ async def lifespan(app: FastAPI):
         yield
     finally:
         # 后台生成任务由线程池自行跑完（解释器退出前会等待）
-        job.stop()
+        gen_recover.stop()
+        if daily is not None:
+            daily.stop()
         if order_sync is not None:
             order_sync.stop()
         if push is not None:

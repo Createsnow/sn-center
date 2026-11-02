@@ -7,11 +7,13 @@
 - 归档表设总保存上限（SN_AUDIT_ARCHIVE_RETENTION_DAYS，默认 5 年，0 = 永久，不短于在线保存期）：
   发生时间超过上限的归档痕迹分批删除，删除本身留痕。
 
-多实例部署时用 MySQL 命名锁 sn_partition 保证同一时刻只有一个实例做 DDL。
+多实例部署时用 MySQL 命名锁 sn_partition 保证同一时刻只有一个实例做 DDL；
+命名锁只防同时执行，防不了先后重复执行，所以每日维护另按 sn_seq 里记的上次完成时间去重（DAILY_MIN_GAP）。
 """
 
 from __future__ import annotations
 
+import time
 from datetime import date, datetime, timedelta
 
 import structlog
@@ -23,6 +25,12 @@ from app.db.session import db
 from app.services import audit
 
 log = structlog.get_logger()
+
+#: 两次每日维护（归档、清理、生产组织同步、交付自检）的最短间隔：多实例各自按 cron 触发、相继启动时，
+#: 这段时间内已有实例做完的直接跳过
+DAILY_MIN_GAP = timedelta(hours=1)
+#: sn_seq 里记最近一次每日维护完成时间（Unix 秒）的行；# 开头不会与单号序列重名
+DAILY_MARK = "#daily_maintain"
 
 
 def _partitions(c, table: str) -> list[tuple[str, str | None]]:
@@ -50,7 +58,11 @@ def _ym(y: int, m: int) -> int:
     return y * 100 + m
 
 
-def maintain() -> None:
+def maintain(daily: bool = True) -> None:
+    """建月分区；daily = True 时再做每日维护（DAILY_MIN_GAP 内已有实例做完则跳过）。
+
+    启动时与每天 SN_PARTITION_CRON 各调用一次；SN_MAINTAIN_ENABLED=false 的实例只在启动时建分区。
+    """
     with db.connection() as conn, conn.cursor() as c:
         c.execute("SELECT GET_LOCK('sn_partition', 0) AS ok")
         if c.fetchone()["ok"] != 1:
@@ -58,13 +70,32 @@ def maintain() -> None:
             return
         try:
             _ensure_audit(c)
+            if not daily:
+                return
+            last = _last_daily(c)
+            if last is not None and time.time() - last < DAILY_MIN_GAP.total_seconds():
+                log.info("daily_maintain_skipped", reason="done recently", last_done_ago_s=int(time.time() - last))
+                return
             _archive(c, settings.audit_retention_days)
             purge_archive(settings.audit_archive_retention_days)
             c.execute("DELETE FROM sn_gen_preview WHERE created_at < DATE_SUB(UTC_TIMESTAMP(), INTERVAL 7 DAY)")
             c.execute("DELETE FROM sn_rate_counter WHERE win < DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 DAY)")
             _daily_jobs()
+            # 做完才记：中途失败（含实例被杀）时下一个实例照常补做
+            done = int(time.time())
+            c.execute(
+                "INSERT INTO sn_seq(name, val) VALUES (%s, %s) ON DUPLICATE KEY UPDATE val = %s",
+                (DAILY_MARK, done, done),
+            )
         finally:
             c.execute("SELECT RELEASE_LOCK('sn_partition')")
+
+
+def _last_daily(c) -> int | None:
+    """最近一次每日维护完成时间（Unix 秒）；从未做过为 None。"""
+    c.execute("SELECT val FROM sn_seq WHERE name = %s", (DAILY_MARK,))
+    row = c.fetchone()
+    return None if row is None else int(row["val"])
 
 
 def _daily_jobs() -> None:

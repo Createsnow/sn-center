@@ -827,3 +827,29 @@ def test_allocation_bill_list_driven_by_sns(w, api, sql):
     ctx = ok(api.get(f"/api/allocation/context?pi={pi}", w.admin))
     got = {(x["bill_no"], x["qty"], x["pending_alloc"], x["bill_state"]) for x in ctx["lines"]}
     assert got == {(b1, 3, 0, "ALLOCATED"), (b2, 2, 2, "PENDING")}, "详情列出本 PI 全部单据的物料行与状态"
+
+
+def test_interrupted_job_recovered_only_after_owner_exits(w, sql):
+    """多实例：执行生成的实例退出后（PI 操作锁随连接释放）定期回收把 RUNNING 任务标为中断并释放 PI；
+    锁还被持有（仍在执行）时不动它。"""
+    from app.services import generate, locks
+
+    org, pi, bill = mk(w, ("M1", 3))
+    ok(w.bind_pi(pi, w.rule(P())))
+    batch = w.generate(pi)["gen_batch"]
+
+    def state() -> dict:
+        return sql.one("SELECT status, error_code, running_pi FROM sn_gen_job WHERE gen_batch = %s", batch)
+
+    owner = locks.pi_lock(pi)
+    try:
+        sql.exec(
+            "UPDATE sn_gen_job SET status = 'RUNNING', running_pi = pi_no, error_code = NULL WHERE gen_batch = %s",
+            batch,
+        )
+        generate.recover_interrupted()
+        assert state() == {"status": "RUNNING", "error_code": None, "running_pi": pi}, "仍在执行：不回收"
+    finally:
+        owner.release()
+    generate.recover_interrupted()
+    assert state() == {"status": "FAILED", "error_code": "INTERRUPTED", "running_pi": None}

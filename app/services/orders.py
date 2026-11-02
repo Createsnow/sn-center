@@ -20,6 +20,7 @@ import structlog
 
 from app.core import encoding as codec
 from app.core import utils as util
+from app.core.config import settings
 from app.core.errors import ErrorCode, biz
 from app.core.exceptions import BizError
 from app.core.security import CurrentUser
@@ -114,9 +115,28 @@ def compare_sync(cu: CurrentUser, trigger: str = "SCHEDULED") -> dict | None:
     if held is None:
         return None
     try:
+        if trigger == "SCHEDULED" and _compared_recently():
+            return None
         return _compare(cu, trigger)
     finally:
         held.release()
+
+
+#: 定时比对同步去重的余量（秒）：各实例时钟、触发时刻的细小偏差不至于让本该执行的一次被跳过
+SCHEDULE_SLACK_SECONDS = 30
+
+
+def _compared_recently() -> bool:
+    """距上次比对同步（任一触发方式，成功或失败都算）不到一个同步间隔：定时触发跳过。
+
+    多实例下每个实例都按自己的启动时间每 SN_SYNC_INTERVAL_MINUTES 触发一次；同步锁只防同时执行，
+    靠这一步才不会变成每个间隔同步 N 次（金蝶不可用时也不会 N 倍重试）。须在同步锁内调用。
+    """
+    last = db.scalar("SELECT last_run_at FROM sn_sync_state WHERE id = 1")
+    if last is None:
+        return False
+    gap = max(0, settings.sync_interval_minutes * 60 - SCHEDULE_SLACK_SECONDS)
+    return (util.now() - last).total_seconds() < gap
 
 
 def _compare(cu: CurrentUser, trigger: str) -> dict:
@@ -179,7 +199,7 @@ def _finish(ts, ok: bool, message: str, bills: int | None) -> None:
 
 
 def run_scheduled() -> None:
-    """后台定时：每个周期一次（多实例靠同步锁只跑一份）。"""
+    """后台定时：每个周期一次（多实例：同步锁防同时执行，按上次比对同步时间去重）。"""
     try:
         compare_sync(CurrentUser.system(), "SCHEDULED")
     except BizError as e:

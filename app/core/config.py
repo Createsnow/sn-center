@@ -237,6 +237,11 @@ class Settings:
         return self.get("SN_PARTITION_CRON", "0 10 2 * * *")
 
     @property
+    def maintain_enabled(self) -> bool:
+        """每日维护（归档、清理、生产组织同步、交付自检）开关；关闭后本实例只在启动时建月分区。"""
+        return self.get_bool("SN_MAINTAIN_ENABLED", True)
+
+    @property
     def cors_origins(self) -> list[str]:
         raw = self.raw("CORS_ORIGINS")
         if raw is None or not raw.strip():

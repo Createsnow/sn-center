@@ -650,3 +650,29 @@ def test_mes_gunzip_matches_gzip_decompress_within_limit():
         with pytest.raises(MesError) as e:
             _gunzip(raw)
         assert (e.value.status_code, e.value.code) == (400, "INVALID_REQUEST")
+
+
+def test_logging_one_json_format_for_structlog_and_stdlib(capsys):
+    """production：本系统日志、uvicorn 访问日志同为单行 JSON 写标准输出；成功的健康检查、httpx 的 INFO 不记。"""
+    import logging
+
+    import structlog
+
+    from app.core.logging import setup_logging
+
+    setup_logging(json_output=True)
+    try:
+        structlog.get_logger().info("evt_x", n=1)
+        access = logging.getLogger("uvicorn.access")
+        fmt = '%s - "%s %s HTTP/%s" %d'
+        access.info(fmt, "1.2.3.4:5", "GET", "/api/x", "1.1", 200)
+        access.info(fmt, "1.2.3.4:5", "GET", "/health/ready", "1.1", 200)
+        access.info(fmt, "1.2.3.4:5", "GET", "/health/ready", "1.1", 503)
+        logging.getLogger("httpx").info("HTTP Request: noisy")
+        lines = [json.loads(x) for x in capsys.readouterr().out.splitlines()]
+    finally:
+        setup_logging(json_output=False)
+    assert [(x["logger"], x["event"]) for x in lines][0] == (__name__, "evt_x")
+    assert lines[0]["n"] == 1 and lines[0]["level"] == "info" and lines[0]["timestamp"].endswith("Z")
+    assert [(x["path"], x["status"]) for x in lines[1:]] == [("/api/x", 200), ("/health/ready", 503)]
+    assert all(x["logger"] == "uvicorn.access" and x["method"] == "GET" for x in lines[1:])
