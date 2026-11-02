@@ -115,6 +115,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/auth";
 import { useTabsStore } from "@/stores/tabs";
+import { HOME } from "@/tabList.js";
 import TabBar from "./TabBar.vue";
 import { LOCALES, type Locale } from "@/i18n";
 import { MENU } from "@/router";
@@ -172,11 +173,15 @@ function pageOf(vnode: VNode | undefined, path: string) {
   }
   return w;
 }
-/** keep-alive 只在 include 变化时清理缓存：页签增删、刷新以及每次切换后都重新给一份，关掉的页面切走后立即释放。 */
+/**
+ * keep-alive 只在 include 变化时清理缓存：页签增删、刷新以及每次切换后都重新给一份，关掉的页面切走后立即释放。
+ * 首页不缓存：每次切回首页都重新加载，统计数字是最新的。
+ */
 const cached = ref<string[]>([]);
 watch([() => tabs.tabs.map((x) => pageName(x.path)).join("|"), () => route.path], () => {
-  cached.value = tabs.tabs.map((x) => pageName(x.path));
-  for (const name of wrappers.keys()) if (!cached.value.includes(name)) wrappers.delete(name);
+  const names = tabs.tabs.map((x) => pageName(x.path));
+  cached.value = tabs.tabs.filter((x) => x.path !== HOME).map((x) => pageName(x.path));
+  for (const name of wrappers.keys()) if (!names.includes(name)) wrappers.delete(name);
 }, { immediate: true, flush: "post" });
 
 /** 数据范围：系统管理员 = 全部生产组织；普通操作员 = 授权组织；审计员 = 授权组织（只读）。角色与范围分开展示。 */
