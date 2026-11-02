@@ -25,7 +25,7 @@ M = {
   "Quản trị hệ thống: xem và thao tác dữ liệu của mọi tổ chức sản xuất"),
 "app.scopeTip.factory": ("仅能查看和操作授权生产组织的数据", "Can only view and act on data of the authorized production orgs", "Chỉ xem và thao tác dữ liệu của các tổ chức sản xuất được ủy quyền"),
 "app.scopeTip.queryFactory": ("仅能查询授权生产组织的数据，不能做任何操作", "Can only look up data of the authorized production orgs, and cannot take any action", "Chỉ tra cứu dữ liệu của các tổ chức sản xuất được ủy quyền, không thể thao tác"),
-"app.tz": ("时间按 {tz} 显示", "Times shown in {tz}", "Thời gian hiển thị theo {tz}"),
+"app.tz": ("时区 {tz}（页面时间按此显示）", "Time zone {tz} (times on pages use it)", "Múi giờ {tz} (thời gian trên trang theo múi giờ này)"),
 # ---------------- nav ----------------
 "nav.groupWork": ("工作台", "Workspace", "Bàn làm việc"),
 "nav.groupOrder": ("工单管理", "Work orders", "Quản lý lệnh sản xuất"),

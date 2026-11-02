@@ -49,6 +49,8 @@
             <div class="card-main">
               <div class="card-name">{{ store.profile?.name }}</div>
               <div class="card-line">{{ t("app.empNo") }} {{ store.profile?.emp_no }}</div>
+              <!-- 显示时区：页面时间按账户时区换算（绑定工厂的账户用该工厂时区，总部默认东八区） -->
+              <div class="card-line card-tz">{{ t("app.tz", { tz }) }}</div>
               <div class="card-tags">
                 <el-tag size="small" effect="plain">{{ roleShort }}</el-tag>
                 <el-tag size="small" effect="plain" :type="scope.kind === 'factory' ? 'warning' : 'info'">{{ scope.label }}</el-tag>
@@ -70,7 +72,6 @@
         </el-button>
         <TabBar />
         <div class="right">
-          <span class="tz muted">{{ t("app.tz", { tz }) }}</span>
           <el-tooltip :content="scope.tip" placement="bottom">
             <span class="scope" :class="scope.kind">
               <el-icon><component :is="scope.icon" /></el-icon>
@@ -244,9 +245,9 @@ onUnmounted(() => window.removeEventListener("resize", onResize));
   border: 1px solid #334155; }
 .body { min-width: 0; }
 .header { height: var(--app-header); background: var(--app-surface); border-bottom: 1px solid var(--app-line);
-  display: flex; align-items: flex-end; gap: 8px; padding: 0 16px 0 8px; }
-.fold { flex: none; align-self: center; }
-.right { display: flex; align-items: center; gap: 6px; min-width: 0; flex: none; align-self: center; }
+  display: flex; align-items: center; gap: 8px; padding: 0 16px 0 8px; }
+.fold { flex: none; width: 32px; height: 32px; padding: 0; }
+.right { display: flex; align-items: center; gap: 6px; min-width: 0; flex: none; }
 .scope { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 14px;
   font-size: 12px; font-weight: 500; border: 1px solid; cursor: default; max-width: 240px; }
 .scope-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -275,9 +276,9 @@ onUnmounted(() => window.removeEventListener("resize", onResize));
 .card-name { font-weight: 600; font-size: 14px; color: var(--app-text); }
 .card-line { font-size: 12px; color: var(--app-muted); margin-top: 2px; }
 .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.card-tz { font-variant-numeric: tabular-nums; }
 .main { padding: 20px; background: var(--app-canvas); overflow: auto; }
-.tz { white-space: nowrap; margin-right: 4px; }
-@media (max-width: 760px) { .tz, .scope-text, .lang-code { display: none; } .scope { padding: 0 8px; } }
+@media (max-width: 760px) { .scope-text, .lang-code { display: none; } .scope { padding: 0 8px; } }
 </style>
 
 <style>

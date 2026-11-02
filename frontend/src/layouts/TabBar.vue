@@ -27,7 +27,7 @@
         @drop.prevent
         @dragend="dragPath = ''"
       >
-        <span class="dot" />
+        <el-icon v-if="i === 0" :size="14"><House /></el-icon>
         <span class="tt">{{ title(tab.path) }}</span>
         <button v-if="i > 0" class="x" type="button" :aria-label="t('tabs.close')" @click.stop="close(tab.path)">
           <el-icon :size="12"><Close /></el-icon>
@@ -38,7 +38,7 @@
       <el-icon><ArrowRight /></el-icon>
     </button>
     <el-dropdown trigger="click" placement="bottom-end" @command="(c: Action) => run(c, route.path)">
-      <el-button text class="more" :title="t('tabs.more')" :aria-label="t('tabs.more')"><el-icon><ArrowDown /></el-icon></el-button>
+      <el-button text class="more" :title="t('tabs.more')" :aria-label="t('tabs.more')"><el-icon><MoreFilled /></el-icon></el-button>
       <template #dropdown>
         <el-dropdown-menu>
           <el-dropdown-item v-for="a in actions(route.path)" :key="a.cmd" :command="a.cmd" :disabled="a.disabled" :divided="a.divided">
@@ -239,29 +239,29 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.tabbar { flex: 1; min-width: 0; height: 100%; display: flex; align-items: flex-end; gap: 2px; }
-.arrow { flex: none; width: 24px; height: 28px; margin-bottom: 4px; border: 0; border-radius: 6px; background: none; color: var(--app-muted);
+/* 胶囊页签：与右侧「数据范围」胶囊同高，整行在顶栏中线上；操作按钮紧跟最后一个页签 */
+.tabbar { flex: 1; min-width: 0; height: 100%; display: flex; align-items: center; gap: 2px; }
+.arrow { flex: none; width: 26px; height: 28px; border: 0; border-radius: 6px; background: none; color: var(--app-muted);
   cursor: pointer; display: grid; place-items: center; }
 .arrow:hover:not(:disabled) { background: #eef2f7; color: var(--app-text); }
 .arrow:disabled { opacity: 0.35; cursor: default; }
-.strip { flex: 1; min-width: 0; display: flex; align-items: flex-end; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+.strip { flex: 0 1 auto; min-width: 0; height: 100%; display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; }
 .strip::-webkit-scrollbar { display: none; }
-.tab { flex: none; position: relative; display: flex; align-items: center; gap: 6px; height: 38px; max-width: 180px; padding: 0 8px 0 12px;
-  border: 1px solid transparent; border-bottom: 0; border-radius: 8px 8px 0 0; color: #475569; font-size: 13px; cursor: pointer; user-select: none;
-  transition: background 0.12s; }
-.tab:hover { background: #eef2f7; }
-.tab:focus-visible { outline: 2px solid var(--el-color-primary-light-5); outline-offset: -2px; }
-/* 当前页签与下方内容区同色，压住顶栏底线，像浏览器标签页一样和页面连在一起 */
-.tab.on { background: var(--app-canvas); border-color: var(--app-line); color: var(--el-color-primary); font-weight: 600; }
-.tab.on::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: var(--app-canvas); }
+.tab { flex: none; display: flex; align-items: center; gap: 6px; height: 30px; max-width: 180px; padding: 0 6px 0 10px;
+  border: 1px solid var(--app-line); border-radius: 6px; background: var(--app-surface); color: #475569; font-size: 13px;
+  cursor: pointer; user-select: none; transition: border-color 0.12s, color 0.12s, background 0.12s; }
+.tab:first-child { padding-right: 10px; }
+.tab:hover { border-color: var(--el-color-primary-light-7); color: var(--el-color-primary); }
+.tab:focus-visible { outline: 2px solid var(--el-color-primary-light-5); outline-offset: 1px; }
+/* 当前页签：浅蓝底、蓝字，与左侧菜单高亮同色系 */
+.tab.on { background: var(--el-color-primary-light-9); border-color: var(--el-color-primary-light-7); color: var(--el-color-primary); font-weight: 600; }
 .tab.dragging { opacity: 0.45; }
-.dot { flex: none; width: 6px; height: 6px; border-radius: 50%; background: #94a3b8; }
-.tab.on .dot { background: var(--el-color-primary); }
 .tt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.x { flex: none; width: 18px; height: 18px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--app-muted); cursor: pointer;
+.x { flex: none; width: 18px; height: 18px; padding: 0; border: 0; border-radius: 50%; background: none; color: #94a3b8; cursor: pointer;
   display: grid; place-items: center; }
-.x:hover { background: #d5deea; color: var(--app-text); }
-.more { flex: none; width: 28px; height: 28px; margin-bottom: 4px; padding: 0; color: var(--app-muted); }
+.x:hover { background: rgba(15, 23, 42, 0.08); color: var(--app-text); }
+.tab.on .x { color: var(--el-color-primary); }
+.more { flex: none; width: 30px; height: 30px; padding: 0; color: #475569; }
 </style>
 
 <style>

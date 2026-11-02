@@ -23,7 +23,7 @@
       "factory": "Chỉ xem và thao tác dữ liệu của các tổ chức sản xuất được ủy quyền",
       "queryFactory": "Chỉ tra cứu dữ liệu của các tổ chức sản xuất được ủy quyền, không thể thao tác"
     },
-    "tz": "Thời gian hiển thị theo {tz}"
+    "tz": "Múi giờ {tz} (thời gian trên trang theo múi giờ này)"
   },
   "nav": {
     "groupWork": "Bàn làm việc",

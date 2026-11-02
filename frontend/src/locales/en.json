@@ -23,7 +23,7 @@
       "factory": "Can only view and act on data of the authorized production orgs",
       "queryFactory": "Can only look up data of the authorized production orgs, and cannot take any action"
     },
-    "tz": "Times shown in {tz}"
+    "tz": "Time zone {tz} (times on pages use it)"
   },
   "nav": {
     "groupWork": "Workspace",
