@@ -622,3 +622,31 @@ def test_failed_write_action_follows_the_path(method, path, action):
     from app.services.audit import action_for
 
     assert action_for(method, path) == action
+
+
+def test_mes_gunzip_matches_gzip_decompress_within_limit():
+    """MES 请求体 gzip 解压：限额内与 gzip.decompress 一致（空请求体、多段、段后补 0）；超限、不合法返回 400。"""
+    from app.api.routes.mes import MAX_INFLATED, _gunzip
+    from app.core.exceptions import MesError
+
+    ok = [
+        b"",
+        gzip.compress(b""),
+        gzip.compress(b'{"pi":"P1"}'),
+        gzip.compress(b'{"pi":') + gzip.compress(b'"P1"}'),
+        gzip.compress(b"{}") + b"\x00\x00",
+        gzip.compress(b"a" * MAX_INFLATED),
+    ]
+    for raw in ok:
+        assert _gunzip(raw) == gzip.decompress(raw)
+    bad = [
+        gzip.compress(b"{}")[:-4],
+        gzip.compress(b"{}") + b"xyz",
+        b"not gzip",
+        gzip.compress(b"a" * (MAX_INFLATED + 1)),
+        gzip.compress(b"a" * (MAX_INFLATED // 2 + 1)) * 2,
+    ]
+    for raw in bad:
+        with pytest.raises(MesError) as e:
+            _gunzip(raw)
+        assert (e.value.status_code, e.value.code) == (400, "INVALID_REQUEST")

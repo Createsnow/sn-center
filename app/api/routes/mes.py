@@ -29,17 +29,27 @@ MAX_INFLATED = 1024 * 1024
 
 
 def _gunzip(raw: bytes) -> bytes:
-    """解压 gzip 请求体，最多解出 MAX_INFLATED 字节；不是合法 gzip 或解压后超限都返回 400。"""
-    d = zlib.decompressobj(16 + zlib.MAX_WBITS)
-    try:
-        out = d.decompress(raw, MAX_INFLATED)
-        if d.unconsumed_tail:
-            raise MesError(400, "INVALID_REQUEST", f"请求体解压后超过 {MAX_INFLATED // 1024} KB")
-        out += d.flush()
-    except zlib.error:
-        raise MesError(400, "INVALID_REQUEST", "请求体不是合法的 gzip") from None
-    if not d.eof:
-        raise MesError(400, "INVALID_REQUEST", "请求体不是合法的 gzip")
+    """解压 gzip 请求体，最多解出 MAX_INFLATED 字节；不是合法 gzip 或解压后超限都返回 400。
+    其余与 gzip.decompress 一致（与 MES 联调通过的版本相同）：空请求体按空处理（拉取接口不带条件时可为空），
+    多段 gzip 依次解压拼接，段后补的 0 字节忽略，其他尾随内容按不合法处理。"""
+    too_large = MesError(400, "INVALID_REQUEST", f"请求体解压后超过 {MAX_INFLATED // 1024} KB")
+    out = b""
+    data = raw
+    while data:
+        d = zlib.decompressobj(16 + zlib.MAX_WBITS)
+        try:
+            # 多给 1 字节：解出超过剩余额度即超限
+            out += d.decompress(data, MAX_INFLATED - len(out) + 1)
+            if len(out) > MAX_INFLATED:
+                raise too_large
+            out += d.flush()
+        except zlib.error:
+            raise MesError(400, "INVALID_REQUEST", "请求体不是合法的 gzip") from None
+        if len(out) > MAX_INFLATED:
+            raise too_large
+        if not d.eof:
+            raise MesError(400, "INVALID_REQUEST", "请求体不是合法的 gzip")
+        data = d.unused_data.lstrip(b"\x00")
     return out
 
 
