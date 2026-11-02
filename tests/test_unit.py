@@ -335,6 +335,27 @@ def test_every_error_code_translated(lang):
     assert len(msgs) == len(ErrorCode), f"{lang} has stale codes"
 
 
+def test_locale_json_matches_sources(tmp_path, capsys):
+    """locales/*.json 由词条源表（scripts/ui_messages.py、scripts/ui/*.py、error_messages.py）生成：
+    只改 JSON 不改源表，下次运行 gen_locales.py 就会把改动冲掉。"""
+    import importlib.util
+
+    scripts = ROOT / "frontend" / "scripts"
+    if not (scripts / "gen_locales.py").is_file():
+        pytest.skip("frontend sources not present")
+    spec = importlib.util.spec_from_file_location("gen_locales", scripts / "gen_locales.py")
+    gen = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gen)
+    gen.OUT = tmp_path
+    gen.main()
+    committed = ROOT / "frontend" / "src" / "locales"
+    for f in sorted(tmp_path.glob("*.json")):
+        assert f.read_bytes() == (committed / f.name).read_bytes(), (
+            f"{f.name} 与源表不一致：改词条请改 frontend/scripts 下的源表后运行 gen_locales.py"
+        )
+    assert {f.name for f in tmp_path.glob("*.json")} == {f.name for f in committed.glob("*.json")}
+
+
 # ---------------------------------------------------------------------- 建表脚本
 
 

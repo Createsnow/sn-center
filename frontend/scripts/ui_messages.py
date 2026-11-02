@@ -120,6 +120,7 @@ M = {
 "common.collapse": ("收起", "Collapse", "Thu gọn"),
 "common.expandAll": ("全部展开", "Expand all", "Mở rộng tất cả"),
 "common.collapseAll": ("全部收起", "Collapse all", "Thu gọn tất cả"),
+"common.factoryCode": ("生产组织编号", "Production org code", "Mã tổ chức sản xuất"),
 # ---------------- SN 状态 ----------------
 "status.PENDING_ALLOC": ("待分配", "To allocate", "Chờ phân bổ"),
 "status.TO_PUSH": ("待推送", "To push", "Chờ đẩy"),
