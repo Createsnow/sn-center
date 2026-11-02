@@ -35,7 +35,7 @@
       </div>
 
       <!-- 右：所选单据所在 PI 的分配与推送（待分配页签）/ 已分配的号（已分配页签） -->
-      <div v-loading="ctxLoading" class="surface pane detail-pane" :class="{ fixed: tab === 'ALLOCATED' }">
+      <div v-loading="ctxLoading" class="surface pane detail-pane">
         <!-- 已分配页签：左侧点了单据才显示，只有一个页签，头部为筛选框，下面逐枚列出 SN -->
         <template v-if="tab === 'ALLOCATED'">
           <AllocatedPane v-if="pi && bill" ref="allocated" :pi="pi" :bill="bill" />
@@ -62,8 +62,9 @@
             </div>
           </div>
 
-          <!-- 单据物料行：勾选有待分配号的物料行为范围，不勾选 = 整张 PI；单据头、物料行都带推送进度条 -->
-          <section v-if="bills.length" class="box">
+          <!-- 单据物料行：勾选有待分配号的物料行为范围，不勾选 = 整张 PI；单据头、物料行都带推送进度条；
+               列宽按右侧宽度放下，不出横向滚动条 -->
+          <section v-if="bills.length" class="box lines-box">
             <div class="box-h">
               <b>{{ t("allocate.linesTitle") }}</b>
               <span class="push" />
@@ -88,18 +89,18 @@
                 <el-table v-show="!isFolded(b.bill_no)" ref="lineTables" :data="b.lines" size="small" row-key="key"
                   @selection-change="(rows: any[]) => onSelect(b.bill_no, rows)">
                   <el-table-column type="selection" width="40" :selectable="(row: any) => row.pending_alloc > 0 && !row.skip" />
-                  <el-table-column :label="t('common.billSeq')" prop="seq" width="72" />
-                  <el-table-column :label="t('common.material')" prop="material_code" min-width="100" show-overflow-tooltip />
-                  <el-table-column :label="t('export.qty')" align="right" width="80">
+                  <el-table-column :label="t('common.billSeq')" prop="seq" width="64" />
+                  <el-table-column :label="t('common.material')" prop="material_code" min-width="80" show-overflow-tooltip />
+                  <el-table-column :label="t('export.qty')" align="right" width="56">
                     <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
                   </el-table-column>
-                  <el-table-column :label="t('generate.snRange')" min-width="210">
+                  <el-table-column :label="t('generate.snRange')" min-width="190">
                     <template #default="{ row }"><span class="sn-mono">{{ row.start_sn }} ~ {{ row.end_sn }}</span></template>
                   </el-table-column>
-                  <el-table-column :label="t('allocate.toOrg')" min-width="110" show-overflow-tooltip>
+                  <el-table-column :label="t('allocate.toOrg')" min-width="80" show-overflow-tooltip>
                     <template #default="{ row }">{{ row.org_code ? row.org_name || nameOf(row.org_code) : "—" }}</template>
                   </el-table-column>
-                  <el-table-column :label="t('allocate.tabPush')" width="210">
+                  <el-table-column :label="t('allocate.tabPush')" min-width="170">
                     <template #default="{ row }">
                       <el-tag v-if="row.skip" size="small" type="danger" effect="plain">{{ t(`allocate.skip.${row.skip}`) }}</el-tag>
                       <span v-else class="prog">
@@ -127,9 +128,9 @@
             </div>
           </section>
 
-          <!-- 推送进度：分配后有号待推送（推送中、失败、重试用尽）或推送中断时显示，推完即收起；
+          <!-- 推送进度：始终显示（分配前、推完后也不隐藏，没有推送时为空）；占满右侧剩余高度，内容超出时只在本页签内滚动；
                推送中断的组织与「继续推送」只在此页签内显示；各组织第 i / N 次，下面依次分页列出推送批次 -->
-          <el-tabs v-if="pushOpen" model-value="push" class="box tabs-box">
+          <el-tabs model-value="push" class="box tabs-box">
             <el-tab-pane :label="t('allocate.tabPush')" name="push">
               <div v-for="p in brokenPush" :key="`broken:${p.factory_code}`" class="banner warn-bg">
                 <b>{{ t("allocate.interrupted") }}</b>
@@ -313,7 +314,7 @@ async function loadCtx(silent = false) {
     selByBill.value = {};
     loadAlloc();
   }
-  if (pushOpen.value) batches.load(silent ? batches.state.page : 1);
+  batches.load(silent ? batches.state.page : 1);
   // 有推送任务在跑时，定时刷新推送进度
   if (ctx.value?.push.some((p: any) => p.task && ACTIVE_TASK.includes(p.task.state))) ctxTimer = setTimeout(() => loadCtx(true), 5000);
 }
@@ -327,9 +328,6 @@ async function reload() {
 const canResume = (p: any) => p.mes_enabled && p.remaining?.pushes > 0 && !(p.task && ACTIVE_TASK.includes(p.task.state));
 /** 推送中断（有失败或未确认的批次、或有未入批的号且没有运行中的推送任务）且可续推的组织。 */
 const brokenPush = computed(() => (ctx.value?.push ?? []).filter((p: any) => canResume(p)));
-/** 推送未完成：本 PI 还有待推送的号（推送中、等回执、推送失败、重试用尽、暂停等），或有可续推的中断组织
- *  （推送中断只在「推送进度」页签内显示，不能因页签收起而丢掉「继续推送」）；分配前、推完后都没有。 */
-const pushOpen = computed(() => brokenPush.value.length > 0 || (ctx.value?.lines ?? []).some((l: any) => l.to_push > 0));
 /** 推送批次（推送与拉取建立的交付批次）按建立先后依次分页列出。 */
 const batches = usePaged((q) => api.deliveryBatches({ ...q, pi: ctx.value.pi_no, batch_type: "DELIVERY", asc: 1 }), 20);
 
@@ -470,15 +468,15 @@ onUnmounted(() => {
 .split { display: flex; flex-direction: row !important; gap: 16px; }
 .pane { display: flex; flex-direction: column; min-height: 0; }
 .list-pane { width: 380px; flex: none; }
-.detail-pane { flex: 1; min-width: 0; overflow-y: auto; gap: 12px; }
-.detail-pane.fixed { overflow: hidden; }
+/* 右侧不出滚动条：头部、单据物料行按内容高度，推送进度页签占满剩余高度、只在页签内滚动 */
+.detail-pane { flex: 1; min-width: 0; overflow: hidden; gap: 12px; }
 .list-box { flex: 1; min-height: 240px; overflow: hidden; }
 .kw { width: 180px !important; }
 .warn { color: var(--el-color-warning-dark-2); }
 .err { color: var(--el-color-danger); font-size: 12px; }
 .push { margin-left: auto; }
 .empty { padding: 40px; text-align: center; }
-.dh { display: flex; flex-direction: column; gap: 6px; }
+.dh { display: flex; flex-direction: column; gap: 6px; flex: none; }
 .dh-title { display: flex; gap: 12px; align-items: center; font-size: 16px; color: var(--app-text); }
 .go { display: inline-flex; align-items: center; gap: 4px; padding: 3px 12px; border-radius: 14px; font-size: 13px; text-decoration: none;
   color: var(--el-color-primary); background: var(--el-color-primary-light-9); border: 1px solid var(--el-color-primary-light-7); }
@@ -489,7 +487,10 @@ onUnmounted(() => {
 .warn-bg { background: var(--el-color-warning-light-9); color: var(--el-color-warning-dark-2); }
 .box { border: 1px solid var(--el-border-color-lighter); border-radius: 8px; }
 .box-h { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--el-fill-color-light); border-radius: 8px 8px 0 0; }
-.bills { max-height: 420px; overflow-y: auto; padding: 8px 12px; display: flex; flex-direction: column; gap: 8px; }
+/* 单据物料行按内容高度；只有单据多到放不下（推送进度页签已压到最小高度）时才在此处滚动 */
+.detail-pane > .lines-box { flex: 0 1 auto; min-height: 120px; display: flex; flex-direction: column; }
+.lines-box > .box-h, .lines-box > .bar { flex: none; }
+.bills { flex: 0 1 auto; min-height: 0; overflow-y: auto; padding: 8px 12px; display: flex; flex-direction: column; gap: 8px; }
 .bill { border: 1px solid var(--el-border-color-lighter); border-radius: 6px; overflow: hidden; flex: none; }
 .bill.focus { border-color: var(--el-color-primary-light-5); }
 .bill-h { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: var(--el-fill-color-lighter); font-size: 13px; cursor: pointer; user-select: none; }
@@ -501,7 +502,9 @@ onUnmounted(() => {
 .prog-t { font-size: 12px; color: var(--app-muted); white-space: nowrap; }
 .bar { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--el-border-color); background: var(--el-fill-color-lighter); border-radius: 0 0 8px 8px; font-size: 13px; }
 .orgs { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; min-height: 28px; justify-content: center; }
-.tabs-box { padding: 0 12px 8px; }
+.detail-pane > .tabs-box { flex: 1 1 0; min-height: max(240px, 40%); display: flex; flex-direction: column; padding: 0 12px 8px; }
+.tabs-box :deep(.el-tabs__header) { flex: none; }
+.tabs-box :deep(.el-tabs__content) { flex: 1; min-height: 0; overflow-y: auto; }
 .tabs-box .banner { margin-bottom: 8px; }
 .push-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px dashed var(--el-border-color-lighter); font-size: 13px; }
 .list-pane :deep(.current-row > td) { background: var(--el-color-primary-light-9) !important; }
