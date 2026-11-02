@@ -129,42 +129,37 @@
           </section>
 
           <!-- 推送进度：始终显示（分配前、推完后也不隐藏，没有推送时为空）；占满右侧剩余高度，内容超出时只在本页签内滚动；
-               推送中断的组织与「继续推送」只在此页签内显示；各组织第 i / N 次，下面依次分页列出推送批次 -->
+               每个组织一行：状态、第 i / N 次，可续推时紧跟「继续推送」，失败原因只提示一次；下面依次分页列出推送批次（只读，
+               人工确认、作废在 SN 查询的交付批次中处理） -->
           <el-tabs model-value="push" class="box tabs-box">
             <el-tab-pane :label="t('allocate.tabPush')" name="push">
-              <div v-for="p in brokenPush" :key="`broken:${p.factory_code}`" class="banner warn-bg">
-                <b>{{ t("allocate.interrupted") }}</b>
-                <span>{{ nameOf(p.factory_code) }}</span>
-                <span v-if="p.last_problem" class="muted">{{ p.last_problem.batch_no }}：{{ p.last_problem.fail_reason || pushStateLabel(p.last_problem.push_state) }}</span>
-                <span class="push" />
-                <el-button size="small" type="warning" :loading="busy === `resume:${p.factory_code}`" @click="resume(p.factory_code)">
-                  {{ t("allocate.resumeBtn", { n: p.remaining.pushes }) }}
-                </el-button>
-              </div>
               <div v-for="p in ctx.push" :key="p.factory_code" class="push-row">
                 <b>{{ nameOf(p.factory_code) }}</b>
                 <el-tag v-if="p.task" size="small" :type="p.waiting_receipt ? 'primary' : TASK_TAG[p.task.state] || 'info'">{{ p.waiting_receipt ? taskStateLabel("WAITING_RECEIPT") : taskStateLabel(p.task.state) }}</el-tag>
                 <span class="muted num">{{ t("allocate.pushProgress", { i: p.current_push, n: p.total_batches, qty: num(p.pushed_qty) }) }}</span>
-                <span v-if="p.waiting_receipt" class="muted">{{ t("allocate.waitingReceipt") }}</span>
-                <span v-else-if="p.task?.message" class="muted">{{ p.task.message }}</span>
+                <el-button v-if="canResume(p)" size="small" type="warning" :loading="busy === `resume:${p.factory_code}`" @click="resume(p.factory_code)">
+                  {{ t("allocate.resumeBtn", { n: p.remaining.pushes }) }}
+                </el-button>
                 <span v-if="p.last_problem" class="err">{{ p.last_problem.batch_no }}：{{ p.last_problem.fail_reason || pushStateLabel(p.last_problem.push_state) }}</span>
+                <span v-else-if="p.waiting_receipt" class="muted">{{ t("allocate.waitingReceipt") }}</span>
+                <span v-else-if="p.task?.message" class="muted">{{ p.task.message }}</span>
               </div>
               <el-table v-loading="batches.state.loading" :data="batches.items.value" size="small" :empty-text="t('common.empty')">
-                <el-table-column :label="t('common.batchNo')" min-width="200">
+                <el-table-column :label="t('common.batchNo')" min-width="240">
                   <template #default="{ row }">
                     <el-button link type="primary" class="sn-mono" @click="batchNo = row.batch_no">{{ row.batch_no }}</el-button>
                   </template>
                 </el-table-column>
-                <el-table-column :label="t('common.factory')" min-width="110" show-overflow-tooltip>
+                <el-table-column :label="t('common.factory')" min-width="90" show-overflow-tooltip>
                   <template #default="{ row }">{{ nameOf(row.factory_code) }}</template>
                 </el-table-column>
-                <el-table-column :label="t('common.qty')" align="right" width="70">
+                <el-table-column :label="t('common.qty')" align="right" width="56">
                   <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
                 </el-table-column>
-                <el-table-column :label="t('allocate.batchSource')" width="70">
+                <el-table-column :label="t('allocate.batchSource')" width="76">
                   <template #default="{ row }">{{ batchSourceLabel(row.source) }}</template>
                 </el-table-column>
-                <el-table-column :label="t('common.status')" width="130">
+                <el-table-column :label="t('common.status')" width="96">
                   <template #default="{ row }">
                     <el-tooltip :disabled="!row.fail_reason" :content="row.fail_reason || ''">
                       <el-tag size="small" :type="BATCH_RESULT_TYPE[row.result] || 'info'">{{ batchResultLabel(row.result) }}</el-tag>
@@ -172,14 +167,8 @@
                     <div v-if="row.push_state && row.push_state !== 'IDLE'" class="muted">{{ pushStateLabel(row.push_state) }}</div>
                   </template>
                 </el-table-column>
-                <el-table-column :label="t('common.time')" width="150">
+                <el-table-column :label="t('common.time')" width="146">
                   <template #default="{ row }">{{ fmtTime(row.created_at) }}</template>
-                </el-table-column>
-                <el-table-column :label="t('common.actions')" width="130" align="right">
-                  <template #default="{ row }">
-                    <el-button v-if="canConfirm(row)" link type="primary" @click="manual?.open(row.batch_no, 'confirm')">{{ t("allocate.manualConfirm") }}</el-button>
-                    <el-button v-if="canVoid(row)" link type="danger" @click="manual?.open(row.batch_no, 'void')">{{ t("allocate.void") }}</el-button>
-                  </template>
                 </el-table-column>
               </el-table>
               <el-pagination v-if="batches.state.total > batches.state.pageSize" class="pager" small layout="total, prev, pager, next"
@@ -190,8 +179,8 @@
       </div>
     </div>
 
-    <BatchManualDialog ref="manual" @done="reload" />
-    <DeliveryBatchDrawer v-model:batch-no="batchNo" @changed="reload" />
+    <!-- 批次详情只读：分配页不做人工确认、作废 -->
+    <DeliveryBatchDrawer v-model:batch-no="batchNo" :editable="false" @changed="reload" />
   </div>
 </template>
 
@@ -207,9 +196,7 @@ import { useFitRows } from "@/composables/useFitRows";
 import { usePaged } from "@/composables/usePaged";
 import { useTime } from "@/composables/useTime";
 import { BATCH_RESULT_TYPE, BILL_FOLD_OVER, batchResultLabel, batchSourceLabel, pushStateLabel, taskStateLabel } from "@/constants";
-import { canConfirm, canVoid } from "@/utils/batch";
 import PageHead from "@/components/PageHead.vue";
-import BatchManualDialog from "@/components/batch/BatchManualDialog.vue";
 import DeliveryBatchDrawer from "@/components/batch/DeliveryBatchDrawer.vue";
 import AllocatedPane from "./allocate/AllocatedPane.vue";
 
@@ -325,9 +312,8 @@ async function reload() {
   loadList(true);
 }
 
+/** 可续推（推送中断：有失败或未确认的批次、或有未入批的号，且没有运行中的推送任务）：组织行上紧跟进度给「继续推送」。 */
 const canResume = (p: any) => p.mes_enabled && p.remaining?.pushes > 0 && !(p.task && ACTIVE_TASK.includes(p.task.state));
-/** 推送中断（有失败或未确认的批次、或有未入批的号且没有运行中的推送任务）且可续推的组织。 */
-const brokenPush = computed(() => (ctx.value?.push ?? []).filter((p: any) => canResume(p)));
 /** 推送批次（推送与拉取建立的交付批次）按建立先后依次分页列出。 */
 const batches = usePaged((q) => api.deliveryBatches({ ...q, pi: ctx.value.pi_no, batch_type: "DELIVERY", asc: 1 }), 20);
 
@@ -439,9 +425,8 @@ async function resume(org: string) {
   }
 }
 
-// ---------------- 推送批次：批次详情、人工确认 / 作废（5.2.5 第 7 条）
+// ---------------- 推送批次：批次详情（只读；人工确认、作废在 SN 查询的交付批次中处理，5.2.5 第 7 条）
 
-const manual = ref<InstanceType<typeof BatchManualDialog> | null>(null);
 const batchNo = ref("");
 
 // ================================================================ 联动
@@ -483,8 +468,6 @@ onUnmounted(() => {
 .go:hover { background: var(--el-color-primary-light-8); }
 .kv { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 12px; color: var(--app-muted); }
 .kv b { color: var(--app-text); font-weight: 600; }
-.banner { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 14px; border-radius: 8px; font-size: 13px; }
-.warn-bg { background: var(--el-color-warning-light-9); color: var(--el-color-warning-dark-2); }
 .box { border: 1px solid var(--el-border-color-lighter); border-radius: 8px; }
 .box-h { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--el-fill-color-light); border-radius: 8px 8px 0 0; }
 /* 单据物料行按内容高度；只有单据多到放不下（推送进度页签已压到最小高度）时才在此处滚动 */
@@ -505,7 +488,6 @@ onUnmounted(() => {
 .detail-pane > .tabs-box { flex: 1 1 0; min-height: max(240px, 40%); display: flex; flex-direction: column; padding: 0 12px 8px; }
 .tabs-box :deep(.el-tabs__header) { flex: none; }
 .tabs-box :deep(.el-tabs__content) { flex: 1; min-height: 0; overflow-y: auto; }
-.tabs-box .banner { margin-bottom: 8px; }
 .push-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px dashed var(--el-border-color-lighter); font-size: 13px; }
 .list-pane :deep(.current-row > td) { background: var(--el-color-primary-light-9) !important; }
 .list-pane :deep(.el-table__row) { cursor: pointer; }

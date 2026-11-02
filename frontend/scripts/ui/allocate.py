@@ -13,7 +13,6 @@ M = {
 "allocate.pickBill": ("从左侧选择一张单据", "Pick a bill on the left", "Chọn một chứng từ ở bên trái"),
 "allocate.toGenerate": ("还可生成 {n} 枚 · 去生成", "{n} more to generate · go to generation", "Còn tạo được {n} · đến trang tạo"),
 "allocate.unbatched": ("待推送", "To push", "Chờ đẩy"),
-"allocate.interrupted": ("推送中断", "Push interrupted", "Đẩy bị gián đoạn"),
 "allocate.resumeBtn": ("继续推送（剩余 {n} 次）", "Resume push ({n} left)", "Đẩy tiếp (còn {n} lần)"),
 "allocate.resumed": ("已继续推送，剩余 {n} 次", "Push resumed, {n} left", "Đã đẩy tiếp, còn {n} lần"),
 "allocate.linesTitle": ("单据物料行", "Bill lines", "Dòng vật tư của chứng từ"),
@@ -41,6 +40,4 @@ M = {
 "allocate.pushProgress": ("第 {i} / {n} 次 · 已推送 {qty} 枚", "Push {i} / {n} · {qty} pushed", "Lần {i} / {n} · đã đẩy {qty}"),
 "allocate.waitingReceipt": ("已送达，等待 MES 回执", "Delivered, awaiting MES receipt", "Đã gửi, chờ biên nhận MES"),
 "allocate.batchSource": ("建立方式", "Created by", "Cách tạo"),
-"allocate.manualConfirm": ("人工确认", "Confirm manually", "Xác nhận thủ công"),
-"allocate.void": ("作废", "Void", "Hủy"),
 }

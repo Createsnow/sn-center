@@ -300,7 +300,6 @@
     "pickBill": "Chọn một chứng từ ở bên trái",
     "toGenerate": "Còn tạo được {n} · đến trang tạo",
     "unbatched": "Chờ đẩy",
-    "interrupted": "Đẩy bị gián đoạn",
     "resumeBtn": "Đẩy tiếp (còn {n} lần)",
     "resumed": "Đã đẩy tiếp, còn {n} lần",
     "linesTitle": "Dòng vật tư của chứng từ",
@@ -331,9 +330,7 @@
     "tabPush": "Tiến độ đẩy",
     "pushProgress": "Lần {i} / {n} · đã đẩy {qty}",
     "waitingReceipt": "Đã gửi, chờ biên nhận MES",
-    "batchSource": "Cách tạo",
-    "manualConfirm": "Xác nhận thủ công",
-    "void": "Hủy"
+    "batchSource": "Cách tạo"
   },
   "audit": {
     "title": "Nhật ký thao tác",

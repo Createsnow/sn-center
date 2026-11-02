@@ -300,7 +300,6 @@
     "pickBill": "Pick a bill on the left",
     "toGenerate": "{n} more to generate · go to generation",
     "unbatched": "To push",
-    "interrupted": "Push interrupted",
     "resumeBtn": "Resume push ({n} left)",
     "resumed": "Push resumed, {n} left",
     "linesTitle": "Bill lines",
@@ -331,9 +330,7 @@
     "tabPush": "Push progress",
     "pushProgress": "Push {i} / {n} · {qty} pushed",
     "waitingReceipt": "Delivered, awaiting MES receipt",
-    "batchSource": "Created by",
-    "manualConfirm": "Confirm manually",
-    "void": "Void"
+    "batchSource": "Created by"
   },
   "audit": {
     "title": "Operation log",

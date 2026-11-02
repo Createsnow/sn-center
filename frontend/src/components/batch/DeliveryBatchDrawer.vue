@@ -4,8 +4,8 @@
       <div class="drawer-actions">
         <el-button size="small" @click="exportBatch"><el-icon><Download /></el-icon><span>{{ t("common.downloadXlsx") }}</span></el-button>
         <template v-if="store.canAct">
-          <el-button v-if="canConfirm(batch)" size="small" type="primary" @click="manual?.open(batch.batch_no, 'confirm')">{{ t("query.confirmBatch") }}</el-button>
-          <el-button v-if="canVoid(batch)" size="small" type="danger" plain @click="manual?.open(batch.batch_no, 'void')">{{ t("query.voidBatch") }}</el-button>
+          <el-button v-if="editable && canConfirm(batch)" size="small" type="primary" @click="manual?.open(batch.batch_no, 'confirm')">{{ t("query.confirmBatch") }}</el-button>
+          <el-button v-if="editable && canVoid(batch)" size="small" type="danger" plain @click="manual?.open(batch.batch_no, 'void')">{{ t("query.voidBatch") }}</el-button>
         </template>
       </div>
       <el-descriptions :column="2" size="small" border class="mb">
@@ -100,7 +100,8 @@ import { downloadWithToken } from "@/utils/download";
 import StatusTag from "@/components/StatusTag.vue";
 import BatchManualDialog from "@/components/batch/BatchManualDialog.vue";
 
-const props = defineProps<{ batchNo: string }>();
+/** editable：是否给人工确认、作废按钮（默认给；SN 分配页只读查看，传 false）。 */
+const props = withDefaults(defineProps<{ batchNo: string; editable?: boolean }>(), { editable: true });
 const emit = defineEmits<{ "update:batchNo": [no: string]; changed: [] }>();
 
 const { t } = useI18n();

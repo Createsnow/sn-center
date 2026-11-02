@@ -300,7 +300,6 @@
     "pickBill": "从左侧选择一张单据",
     "toGenerate": "还可生成 {n} 枚 · 去生成",
     "unbatched": "待推送",
-    "interrupted": "推送中断",
     "resumeBtn": "继续推送（剩余 {n} 次）",
     "resumed": "已继续推送，剩余 {n} 次",
     "linesTitle": "单据物料行",
@@ -331,9 +330,7 @@
     "tabPush": "推送进度",
     "pushProgress": "第 {i} / {n} 次 · 已推送 {qty} 枚",
     "waitingReceipt": "已送达，等待 MES 回执",
-    "batchSource": "建立方式",
-    "manualConfirm": "人工确认",
-    "void": "作废"
+    "batchSource": "建立方式"
   },
   "audit": {
     "title": "操作日志",
