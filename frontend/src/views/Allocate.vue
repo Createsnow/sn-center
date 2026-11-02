@@ -112,7 +112,15 @@
                 </el-table>
               </div>
             </div>
-            <div v-if="ctx.summary.pending_alloc" class="bar">
+            <!-- 底部按钮：推送中断（有可续推的组织）时「分配」变为「继续推送（剩余 N 次）」，续推本 PI 全部中断的组织；
+                 推送恢复后变回「分配」 -->
+            <div v-if="resumable.length" class="bar">
+              <span class="push" />
+              <el-button type="warning" :loading="busy === 'resume'" @click="resumeAll">
+                {{ t("allocate.resumeBtn", { n: resumeLeft }) }}
+              </el-button>
+            </div>
+            <div v-else-if="ctx.summary.pending_alloc" class="bar">
               <span><span class="muted">{{ t("generate.scope") }}</span> <b>{{ picked.length ? t("generate.scopeLinesN", { n: picked.length }) : t("generate.scopeWholePi") }}</b></span>
               <el-button v-if="picked.length" link type="primary" @click="clearSel">{{ t("generate.clearSel") }}</el-button>
               <span class="push" />
@@ -129,7 +137,7 @@
           </section>
 
           <!-- 推送进度：始终显示（分配前、推完后也不隐藏，没有推送时为空）；占满右侧剩余高度，内容超出时只在本页签内滚动；
-               每个组织一行：状态、第 i / N 次，可续推时紧跟「继续推送」，失败原因只提示一次；下面依次分页列出推送批次（只读，
+               每个组织一行：状态、第 i / N 次、失败原因（只提示一次；「继续推送」在单据物料行底部，代替「分配」）；下面依次分页列出推送批次（只读，
                人工确认、作废在 SN 查询的交付批次中处理） -->
           <el-tabs model-value="push" class="box tabs-box">
             <el-tab-pane :label="t('allocate.tabPush')" name="push">
@@ -137,15 +145,12 @@
                 <b>{{ nameOf(p.factory_code) }}</b>
                 <el-tag v-if="p.task" size="small" :type="p.waiting_receipt ? 'primary' : TASK_TAG[p.task.state] || 'info'">{{ p.waiting_receipt ? taskStateLabel("WAITING_RECEIPT") : taskStateLabel(p.task.state) }}</el-tag>
                 <span class="muted num">{{ t("allocate.pushProgress", { i: p.current_push, n: p.total_batches, qty: num(p.pushed_qty) }) }}</span>
-                <el-button v-if="canResume(p)" size="small" type="warning" :loading="busy === `resume:${p.factory_code}`" @click="resume(p.factory_code)">
-                  {{ t("allocate.resumeBtn", { n: p.remaining.pushes }) }}
-                </el-button>
                 <span v-if="p.last_problem" class="err">{{ p.last_problem.batch_no }}：{{ p.last_problem.fail_reason || pushStateLabel(p.last_problem.push_state) }}</span>
                 <span v-else-if="p.waiting_receipt" class="muted">{{ t("allocate.waitingReceipt") }}</span>
                 <span v-else-if="p.task?.message" class="muted">{{ p.task.message }}</span>
               </div>
               <el-table v-loading="batches.state.loading" :data="batches.items.value" size="small" :empty-text="t('common.empty')">
-                <el-table-column :label="t('common.batchNo')" min-width="240">
+                <el-table-column :label="t('common.batchNo')" min-width="226">
                   <template #default="{ row }">
                     <el-button link type="primary" class="sn-mono" @click="batchNo = row.batch_no">{{ row.batch_no }}</el-button>
                   </template>
@@ -159,7 +164,7 @@
                 <el-table-column :label="t('allocate.batchSource')" width="76">
                   <template #default="{ row }">{{ batchSourceLabel(row.source) }}</template>
                 </el-table-column>
-                <el-table-column :label="t('common.status')" width="96">
+                <el-table-column :label="t('common.status')" width="110">
                   <template #default="{ row }">
                     <el-tooltip :disabled="!row.fail_reason" :content="row.fail_reason || ''">
                       <el-tag size="small" :type="BATCH_RESULT_TYPE[row.result] || 'info'">{{ batchResultLabel(row.result) }}</el-tag>
@@ -312,8 +317,11 @@ async function reload() {
   loadList(true);
 }
 
-/** 可续推（推送中断：有失败或未确认的批次、或有未入批的号，且没有运行中的推送任务）：组织行上紧跟进度给「继续推送」。 */
+/** 可续推（推送中断：有失败或未确认的批次、或有未入批的号，且没有运行中的推送任务）。 */
 const canResume = (p: any) => p.mes_enabled && p.remaining?.pushes > 0 && !(p.task && ACTIVE_TASK.includes(p.task.state));
+/** 本 PI 推送中断的组织：有时底部「分配」按钮变为「继续推送（剩余 N 次）」，N 为这些组织剩余次数之和。 */
+const resumable = computed<any[]>(() => (ctx.value?.push ?? []).filter(canResume));
+const resumeLeft = computed(() => resumable.value.reduce((n, p) => n + p.remaining.pushes, 0));
 /** 推送批次（推送与拉取建立的交付批次）按建立先后依次分页列出。 */
 const batches = usePaged((q) => api.deliveryBatches({ ...q, pi: ctx.value.pi_no, batch_type: "DELIVERY", asc: 1 }), 20);
 
@@ -414,11 +422,13 @@ async function doAllocate() {
   }
 }
 
-async function resume(org: string) {
-  busy.value = `resume:${org}`;
+/** 继续推送：本 PI 推送中断的组织逐个续推（各组织的推送任务独立）。 */
+async function resumeAll() {
+  busy.value = "resume";
   try {
-    const r = await api.resumePush(org, ctx.value.pi_no);
-    ElMessage.success(t("allocate.resumed", { n: r.pushes }));
+    let n = 0;
+    for (const p of resumable.value) n += (await api.resumePush(p.factory_code, ctx.value.pi_no)).pushes;
+    ElMessage.success(t("allocate.resumed", { n }));
     setTimeout(reload, 800);
   } finally {
     busy.value = "";
