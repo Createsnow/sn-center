@@ -490,14 +490,6 @@
       "TO_GENERATE": "To generate",
       "GENERATED": "Fully generated"
     },
-    "status": {
-      "GENERATING": "Generating",
-      "CANNOT": "Cannot generate",
-      "NEED_RULE": "To generate · pick rules first",
-      "TO_GENERATE": "To generate",
-      "PARTIAL": "More to generate",
-      "GENERATED": "Fully generated"
-    },
     "action": {
       "running": "Generating",
       "view": "View",
@@ -767,6 +759,7 @@
     "transferredIn": "Transferred in",
     "pushType": "Push type",
     "generatedAt": "Generated at",
+    "snInfo": "SN info",
     "batchSource": "Created by",
     "batchType": "Batch type",
     "result": "Result",

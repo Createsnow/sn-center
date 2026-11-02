@@ -36,41 +36,43 @@
     </span>
   </div>
   <div class="fill-body">
-    <el-table v-loading="state.loading" height="100%" :data="items" size="small" :empty-text="t('common.empty')">
-      <el-table-column label="PI" min-width="150" fixed show-overflow-tooltip>
+    <!-- 列宽按本页内容自适应（w），单元格单行完整显示、不截断；超出容器时横向滚动（PI、完整 SN 固定在左侧）；点行弹出该枚 SN 的详情 -->
+    <el-table v-loading="state.loading" height="100%" :data="items" size="small" class="sn-list" :empty-text="t('common.empty')"
+      @row-click="openInfo">
+      <el-table-column label="PI" :min-width="w.pi" fixed>
         <template #default="{ row }">
           <span>{{ row.pi_no }}</span>
           <el-tag v-if="row.pi_changed" size="small" type="warning" class="ml">{{ t("query.piChanged") }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column :label="t('common.sn')" min-width="180" fixed>
+      <el-table-column :label="t('common.sn')" :min-width="w.sn" fixed>
         <template #default="{ row }"><span class="sn-mono">{{ row.sn }}</span></template>
       </el-table-column>
-      <el-table-column :label="t('query.seqText')" width="110"><template #default="{ row }"><span class="sn-mono">{{ row.seq_text }}</span></template></el-table-column>
-      <el-table-column prop="seq_dec" :label="t('query.seqDec')" width="100" align="right" />
-      <el-table-column :label="t('common.attachNo')" width="90" show-overflow-tooltip><template #default="{ row }">{{ row.attach_no || "—" }}</template></el-table-column>
-      <el-table-column prop="length" :label="t('common.length')" width="70" />
-      <el-table-column :label="t('query.billSeq')" min-width="150" show-overflow-tooltip>
-        <template #default="{ row }">{{ row.bill_no }} / {{ row.bill_seq }}</template>
+      <el-table-column :label="t('query.seqText')" :min-width="w.seqText"><template #default="{ row }"><span class="sn-mono">{{ row.seq_text }}</span></template></el-table-column>
+      <el-table-column prop="seq_dec" :label="t('query.seqDec')" :min-width="w.seqDec" align="right" />
+      <el-table-column :label="t('common.attachNo')" :min-width="w.attachNo"><template #default="{ row }">{{ row.attach_no || "—" }}</template></el-table-column>
+      <el-table-column :label="t('common.length')" :min-width="w.length"><template #default="{ row }">{{ row.length ?? "—" }}</template></el-table-column>
+      <el-table-column :label="t('query.billSeq')" :min-width="w.billSeq">
+        <template #default="{ row }">{{ billSeq(row) }}</template>
       </el-table-column>
-      <el-table-column prop="material_code" :label="t('common.material')" width="110" show-overflow-tooltip />
-      <el-table-column prop="customer_code" :label="t('common.customer')" width="90" show-overflow-tooltip />
-      <el-table-column :label="t('common.factory')" width="120" show-overflow-tooltip>
+      <el-table-column :label="t('common.material')" :min-width="w.material"><template #default="{ row }">{{ row.material_code || "—" }}</template></el-table-column>
+      <el-table-column :label="t('common.customer')" :min-width="w.customer"><template #default="{ row }">{{ row.customer_code || "—" }}</template></el-table-column>
+      <el-table-column :label="t('common.factory')" :min-width="w.factory">
         <template #default="{ row }">{{ nameOf(row.factory_code) }}</template>
       </el-table-column>
-      <el-table-column :label="t('common.status')" width="130">
+      <el-table-column :label="t('common.status')" :min-width="w.status">
         <template #default="{ row }">
           <StatusTag :status="row.status" />
           <el-tag v-if="row.suspend" size="small" type="danger" class="ml">{{ suspendLabel(row.suspend) }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column :label="t('query.seqOwner')" min-width="160" show-overflow-tooltip>
+      <el-table-column :label="t('query.seqOwner')" :min-width="w.seqOwner">
         <template #default="{ row }">
           <span>{{ row.seq_pi_no }}</span>
           <el-tag v-if="row.transferred_in" size="small" type="info" class="ml">{{ t("query.transferredIn") }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column :label="t('query.generatedAt')" width="160"><template #default="{ row }">{{ fmt(row.created_at) }}</template></el-table-column>
+      <el-table-column :label="t('query.generatedAt')" :min-width="w.createdAt"><template #default="{ row }">{{ fmt(row.created_at) }}</template></el-table-column>
     </el-table>
   </div>
   <div class="foot">
@@ -79,12 +81,48 @@
     <el-pagination layout="total, sizes, prev, pager, next" :total="state.total" :page-size="state.pageSize"
       :current-page="state.page" :page-sizes="[20, 50, 100, 500]" @current-change="load" @size-change="onSize" />
   </div>
+
+  <!-- 单枚 SN 详情：各列完整列出（长值自动换行），可复制完整 SN -->
+  <el-dialog v-model="infoOpen" :title="t('query.snInfo')" width="min(640px, 96vw)" append-to-body>
+    <div v-if="info" ref="infoBox">
+      <el-descriptions :column="1" border size="small" class="sn-info">
+        <el-descriptions-item label="PI">
+          {{ info.pi_no }}
+          <el-tag v-if="info.pi_changed" size="small" type="warning" class="ml">{{ t("query.piChanged") }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item :label="t('common.sn')">
+          <div class="sn-line">
+            <span class="sn-mono">{{ info.sn }}</span>
+            <el-button size="small" link type="primary" @click="copySn">{{ t("common.copy") }}</el-button>
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item :label="t('query.seqText')"><span class="sn-mono">{{ info.seq_text }}</span></el-descriptions-item>
+        <el-descriptions-item :label="t('query.seqDec')">{{ info.seq_dec }}</el-descriptions-item>
+        <el-descriptions-item :label="t('common.attachNo')">{{ info.attach_no || "—" }}</el-descriptions-item>
+        <el-descriptions-item :label="t('common.length')">{{ info.length ?? "—" }}</el-descriptions-item>
+        <el-descriptions-item :label="t('query.billSeq')">{{ billSeq(info) }}</el-descriptions-item>
+        <el-descriptions-item :label="t('common.material')">{{ info.material_code || "—" }}</el-descriptions-item>
+        <el-descriptions-item :label="t('common.customer')">{{ info.customer_code || "—" }}</el-descriptions-item>
+        <el-descriptions-item :label="t('common.factory')">{{ nameOf(info.factory_code) }}<span v-if="info.factory_code" class="muted code">{{ info.factory_code }}</span></el-descriptions-item>
+        <el-descriptions-item :label="t('common.status')">
+          <StatusTag :status="info.status" />
+          <el-tag v-if="info.suspend" size="small" type="danger" class="ml">{{ suspendLabel(info.suspend) }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item :label="t('query.seqOwner')">
+          {{ info.seq_pi_no }}
+          <el-tag v-if="info.transferred_in" size="small" type="info" class="ml">{{ t("query.transferredIn") }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item :label="t('query.generatedAt')">{{ fmt(info.created_at) }}</el-descriptions-item>
+      </el-descriptions>
+    </div>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
 /**
  * SN 明细（F-18）：按组织 / PI / 单据 / 完整 SN / 状态，及客户 / 物料 / 米数 / 流水范围筛选，导出。
  * 列依次为 PI、完整 SN、进制、流水、附件项次、米数、单据 / 序号、物料、客户、生产组织、状态、流水归属 PI、生成时间。
+ * 各列宽度按本页内容自适应，PI、完整 SN、生产组织等值单行完整显示；点行弹出该枚 SN 的详情（可复制完整 SN）。
  * 只列号本身的信息，不列交付方式、交付批次、推送类型等交付业务信息（交付批次在「交付批次」页签看）。
  */
 import { computed, onMounted, reactive, ref, watch } from "vue";
@@ -97,6 +135,8 @@ import { useFactories } from "@/composables/useFactories";
 import { useTime } from "@/composables/useTime";
 import { STATUS_CODES, statusLabel, suspendLabel } from "@/constants";
 import { downloadWithToken } from "@/utils/download";
+import { copyText } from "@/utils/clipboard";
+import { colWidth, tagWidth, textWidth } from "@/colWidth.js";
 import FactorySelect from "@/components/FactorySelect.vue";
 import StatusTag from "@/components/StatusTag.vue";
 import { trimmed } from "./filters";
@@ -125,6 +165,51 @@ const { items, state, load, onSize } = usePaged<any>(async (q) => {
   range.value = r.range ?? null;
   return r;
 });
+
+const billSeq = (r: any) => `${r.bill_no} / ${r.bill_seq}`;
+/** 行内标签与前面文字的间距（.ml）。 */
+const TAG_GAP = 4;
+const tagAfter = (text: string | false | null | undefined) => (text ? TAG_GAP + tagWidth(text) : 0);
+
+/** 各列宽度：按本页各行内容量出（PI、完整 SN、生产组织不设上限，保证完整显示）。 */
+const w = computed(() => {
+  const rows = items.value;
+  const col = (label: string, f: (r: any) => number, min = 0) => colWidth(label, rows.map(f), { min });
+  const mono = (v: unknown) => textWidth(v as string, { mono: true });
+  return {
+    pi: col("PI", (r) => textWidth(r.pi_no) + tagAfter(r.pi_changed && t("query.piChanged")), 100),
+    sn: col(t("common.sn"), (r) => mono(r.sn), 140),
+    seqText: col(t("query.seqText"), (r) => mono(r.seq_text)),
+    seqDec: col(t("query.seqDec"), (r) => textWidth(r.seq_dec)),
+    attachNo: col(t("common.attachNo"), (r) => textWidth(r.attach_no || "—")),
+    length: col(t("common.length"), (r) => textWidth(r.length ?? "—")),
+    billSeq: col(t("query.billSeq"), (r) => textWidth(billSeq(r))),
+    material: col(t("common.material"), (r) => textWidth(r.material_code || "—")),
+    customer: col(t("common.customer"), (r) => textWidth(r.customer_code || "—")),
+    factory: col(t("common.factory"), (r) => textWidth(nameOf(r.factory_code))),
+    status: col(t("common.status"), (r) => tagWidth(statusLabel(r.status)) + tagAfter(r.suspend && suspendLabel(r.suspend))),
+    seqOwner: col(t("query.seqOwner"), (r) => textWidth(r.seq_pi_no) + tagAfter(r.transferred_in && t("query.transferredIn"))),
+    createdAt: col(t("query.generatedAt"), (r) => textWidth(fmt(r.created_at))),
+  };
+});
+
+const info = ref<any>(null);
+const infoOpen = ref(false);
+const infoBox = ref<HTMLElement | null>(null);
+
+function openInfo(row: any) {
+  // 选中文字（如拖选复制 SN）时不弹窗
+  if (window.getSelection()?.toString()) return;
+  info.value = row;
+  infoOpen.value = true;
+}
+
+async function copySn() {
+  if (!info.value) return;
+  // 弹窗内调用须把临时文本框放进弹窗（见 copyText 说明）
+  if (await copyText(info.value.sn, infoBox.value ?? undefined)) ElMessage.success(t("common.copied"));
+  else ElMessage.error(t("common.copyFailed"));
+}
 
 watch(() => f.pi, (v) => {
   if (!v.trim()) f.pi_all = false;
@@ -171,5 +256,13 @@ onMounted(() => load(1));
 .range-sum { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 8px 12px; border-radius: 4px; background: var(--el-fill-color-light); font-size: 13px; }
 .range-sum b { font-variant-numeric: tabular-nums; }
 .range-sum__note { color: var(--el-text-color-secondary); }
+/* 列宽按内容算好（w），单元格单行完整显示 */
+.sn-list :deep(.cell) { white-space: nowrap; text-overflow: clip; }
+.sn-list :deep(.el-table__row) { cursor: pointer; }
+.sn-info :deep(.el-descriptions__label) { width: 120px; white-space: nowrap; }
+.sn-info :deep(.el-descriptions__content) { word-break: break-all; }
+.code { margin-left: 8px; }
+.sn-line { display: flex; align-items: flex-start; gap: 8px; }
+.sn-line .sn-mono { flex: 1; }
 .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
 </style>

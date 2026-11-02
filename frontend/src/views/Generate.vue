@@ -20,60 +20,55 @@
       </div>
 
       <div class="fill-body">
-        <el-table v-loading="listLoading" :data="paged" size="small" row-key="pi_no" height="100%" :empty-text="t('common.empty')"
+        <!-- 列宽按内容自适应（listW），单元格不截断、不折行；超出容器时横向滚动；点行打开 PI 详情 -->
+        <el-table v-loading="listLoading" :data="paged" size="small" row-key="pi_no" height="100%" class="pi-list" :empty-text="t('common.empty')"
           @row-click="(row: any) => openRow(row)">
-          <el-table-column label="PI" min-width="160">
+          <el-table-column label="PI" :min-width="listW.pi" fixed>
             <template #default="{ row }">
               <b>{{ row.pi_no }}</b>
-              <el-tag v-if="row.frozen_bills" size="small" type="danger" class="ml">{{ t("generate.frozenBills", { n: row.frozen_bills }) }}</el-tag>
+              <el-tag v-if="row.frozen_bills" size="small" type="danger" class="ml">{{ frozenText(row) }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="customer_code" :label="t('common.customer')" min-width="90" show-overflow-tooltip />
-          <el-table-column :label="t('generate.bills')" align="right" width="64">
-            <template #default="{ row }"><span class="num">{{ row.bills }}</span></template>
+          <el-table-column :label="t('common.customer')" :min-width="listW.customer">
+            <template #default="{ row }">{{ row.customer_code || "—" }}</template>
           </el-table-column>
-          <el-table-column :label="t('common.factory')" min-width="140" show-overflow-tooltip>
-            <template #default="{ row }">{{ row.orgs.map((o: string) => nameOf(o)).join("、") }}</template>
+          <el-table-column :label="t('generate.bills')" align="right" :min-width="listW.bills">
+            <template #default="{ row }"><span class="num">{{ num(row.bills) }}</span></template>
           </el-table-column>
-          <el-table-column :label="t('common.status')" min-width="200">
-            <template #default="{ row }">
-              <div class="row-state">
-                <el-tag size="small" :type="STATUS_TAG[genStatus(row)] || 'info'" disable-transitions>{{ t(`generate.status.${genStatus(row)}`) }}</el-tag>
-                <template v-if="row.running">
-                  <span class="mini-bar"><i :style="{ width: pct(row.running) + '%' }" /></span>
-                  <span class="muted num">{{ pct(row.running) }}%</span>
-                </template>
-                <span v-else-if="reasonText(row.reasons)" class="muted">{{ reasonText(row.reasons) }}</span>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column :label="t('generate.orderTotal')" align="right" width="90">
+          <el-table-column :label="t('generate.orderTotal')" align="right" :min-width="listW.total">
             <template #default="{ row }"><span class="num">{{ num(row.total_qty) }}</span></template>
           </el-table-column>
-          <el-table-column :label="t('generate.generated')" align="right" width="86">
+          <el-table-column :label="t('generate.generated')" align="right" :min-width="listW.generated">
             <template #default="{ row }"><span class="num">{{ num(row.generated_qty) }}</span></template>
           </el-table-column>
-          <el-table-column :label="t('generate.transferredIn')" align="right" width="80">
+          <el-table-column :label="t('generate.transferredIn')" align="right" :min-width="listW.transferredIn">
             <template #default="{ row }"><span class="num" :class="{ zero: !row.transferred_in }">{{ num(row.transferred_in) }}</span></template>
           </el-table-column>
-          <el-table-column :label="t('generate.quota')" align="right" width="86">
+          <el-table-column :label="t('generate.quota')" align="right" :min-width="listW.quota">
             <template #default="{ row }"><span class="num" :class="{ zero: !row.quota }">{{ num(row.quota) }}</span></template>
           </el-table-column>
-          <el-table-column :label="t('generate.pendingAlloc')" align="right" width="90">
+          <el-table-column :label="t('generate.pendingAlloc')" align="right" :min-width="listW.pendingAlloc">
             <template #default="{ row }">
               <router-link v-if="row.pending_alloc" class="num" :to="{ path: '/allocate', query: { pi: row.pi_no } }" @click.stop>{{ num(row.pending_alloc) }}</router-link>
               <span v-else class="num zero">0</span>
             </template>
           </el-table-column>
+          <!-- 一张 PI 可有多个生产组织：各组织名称整段不断开，放不下时在组织之间换行 -->
+          <el-table-column :label="t('common.factory')" :min-width="listW.factory" class-name="orgs-cell">
+            <template #default="{ row }">
+              <span v-for="(o, i) in orgNames(row)" :key="i" class="org">{{ o }}<template v-if="i < row.orgs.length - 1">、</template></span>
+            </template>
+          </el-table-column>
           <!-- PI 下单据的最新修改日期；列表与订单页同一排序（新的在前） -->
-          <el-table-column :label="t('orders.modifyDate')" width="160">
+          <el-table-column :label="t('orders.modifyDate')" :min-width="listW.modify">
             <template #default="{ row }"><span class="num">{{ row.modify_time || "—" }}</span></template>
           </el-table-column>
-          <el-table-column :label="t('common.actions')" width="110" align="right">
+          <!-- 不设状态列：生成中在按钮上显示进度（PRD F-10 第 2 条「行上显示进度」） -->
+          <el-table-column :label="t('common.actions')" :min-width="listW.action" align="right" fixed="right">
             <template #default="{ row }">
               <el-button size="small" :type="ACTION_TYPE[actionOf(row)]" :plain="actionOf(row) !== 'gen'"
                 :loading="actionOf(row) === 'running'" @click.stop="openRow(row)">
-                {{ t(`generate.action.${actionOf(row)}`) }}
+                {{ actionText(row) }}
               </el-button>
             </template>
           </el-table-column>
@@ -269,6 +264,7 @@ import RevokeDialog from "@/views/generate/RevokeDialog.vue";
 import GenConfirmDialog from "@/views/generate/GenConfirmDialog.vue";
 import GenProgress from "@/views/generate/GenProgress.vue";
 import { num, pct } from "@/views/generate/format";
+import { buttonWidth, colWidth, tagWidth, textWidth } from "@/colWidth.js";
 import { useLineDrafts } from "@/views/generate/useLineDrafts";
 
 type Tab = "TO_GENERATE" | "GENERATED";
@@ -288,9 +284,6 @@ const PAGE = 20;
 /** 各页签只列最近 3 页，更早的用搜索；生成中的 PI 排在「待生成」最前，不受此限（F-10 第 2 条）。 */
 const RECENT_PAGES = 3;
 const LIST_LIMIT = 500;
-const STATUS_TAG: Record<string, TagType> = {
-  GENERATING: "primary", CANNOT: "danger", NEED_RULE: "warning", TO_GENERATE: "primary", PARTIAL: "primary", GENERATED: "success",
-};
 const ACTION_TYPE: Record<Action, TagType> = { running: "primary", view: "", gen: "primary", pick: "primary" };
 const LINE_STATE_TAG: Record<LineState, TagType> = { TODO: "danger", GEN: "primary", GENERATED: "success", DONE: "info", NONE: "info" };
 
@@ -329,18 +322,6 @@ async function loadList(silent = false) {
   if (list.value.items.some((x: any) => x.running)) listTimer = setTimeout(() => loadList(true), 3000);
 }
 
-function reasonText(reasons: Record<string, number> | undefined) {
-  const e = Object.entries(reasons || {});
-  return e.map(([k, n]) => `${issueText(k)} ${n}`).join("、");
-}
-
-/** 生成页只看生成：没有额度、也不在生成中的 PI 一律为「已生成完」（分配、推送状态在分配页）。 */
-function genStatus(row: any): string {
-  if (row.status === "GENERATING" || row.status === "CANNOT" || row.status === "NEED_RULE") return row.status;
-  if (row.quota > 0) return row.status === "PARTIAL" ? "PARTIAL" : "TO_GENERATE";
-  return "GENERATED";
-}
-
 /** 行上按钮（F-10 第 3 条中与生成有关的部分，按顺序判断）。 */
 function actionOf(row: any): Action {
   if (row.status === "GENERATING") return "running";
@@ -348,6 +329,45 @@ function actionOf(row: any): Action {
   if (row.quota > 0) return row.status === "NEED_RULE" ? "pick" : "gen";
   return "view";
 }
+
+/** 按钮文字；生成中带进度百分比（列表不设状态列，进度显示在按钮上）。 */
+function actionText(row: any): string {
+  const a = actionOf(row);
+  const label = t(`generate.action.${a}`);
+  return a === "running" && row.running ? `${label} ${pct(row.running)}%` : label;
+}
+
+const frozenText = (row: any) => t("generate.frozenBills", { n: row.frozen_bills });
+const orgNames = (row: any): string[] => (row.orgs || []).map((o: string) => nameOf(o));
+
+/** 生产组织列放不下时在组织之间换行，列宽不超过此值（单个组织名称更长时按最长的名称）。 */
+const ORGS_MAX_W = 240;
+/** 按钮加载图标（生成中）占的宽度：图标 14px + 间距 6px。 */
+const LOADING_ICON_W = 20;
+
+/** PI 列表各列宽度：按本页签全部行（shown）的内容量出，翻页时列宽不跳动。 */
+const listW = computed(() => {
+  const rows = shown.value;
+  const nums = (f: (r: any) => unknown) => rows.map((r) => textWidth(num(f(r) as number)));
+  const orgW = rows.map((r) => {
+    const names = orgNames(r);
+    const longest = Math.max(0, ...names.map((n) => textWidth(n + "、")));
+    return Math.max(longest, Math.min(ORGS_MAX_W, textWidth(names.join("、"))));
+  });
+  return {
+    pi: colWidth("PI", rows.map((r) => textWidth(r.pi_no, { bold: true }) + (r.frozen_bills ? 6 + tagWidth(frozenText(r)) : 0)), { min: 120 }),
+    customer: colWidth(t("common.customer"), rows.map((r) => textWidth(r.customer_code || "—"))),
+    bills: colWidth(t("generate.bills"), nums((r) => r.bills)),
+    total: colWidth(t("generate.orderTotal"), nums((r) => r.total_qty)),
+    generated: colWidth(t("generate.generated"), nums((r) => r.generated_qty)),
+    transferredIn: colWidth(t("generate.transferredIn"), nums((r) => r.transferred_in)),
+    quota: colWidth(t("generate.quota"), nums((r) => r.quota)),
+    pendingAlloc: colWidth(t("generate.pendingAlloc"), nums((r) => r.pending_alloc)),
+    factory: colWidth(t("common.factory"), orgW),
+    modify: colWidth(t("orders.modifyDate"), rows.map((r) => textWidth(r.modify_time || "—"))),
+    action: colWidth(t("common.actions"), rows.map((r) => buttonWidth(actionText(r)) + (actionOf(r) === "running" ? LOADING_ICON_W : 0))),
+  };
+});
 
 function openRow(row: any) {
   openDetail({ pi: row.pi_no });
@@ -761,9 +781,11 @@ onUnmounted(() => {
 .warn { color: var(--el-color-warning-dark-2); }
 .err { color: var(--el-color-danger); }
 .push { margin-left: auto; }
-.row-state { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.mini-bar { width: 60px; height: 6px; border-radius: 3px; overflow: hidden; background: var(--el-fill-color-dark); display: inline-block; }
-.mini-bar i { display: block; height: 100%; background: var(--el-color-primary); }
+/* PI 列表：列宽按内容算好（listW），单元格单行完整显示；生产组织列在组织之间换行，组织名称本身不断开 */
+.pi-list :deep(.cell) { white-space: nowrap; text-overflow: clip; }
+.pi-list :deep(.orgs-cell .cell) { white-space: normal; }
+.pi-list .org { white-space: nowrap; }
+.pi-list :deep(.el-table__row) { cursor: pointer; }
 .dh { display: flex; flex-direction: column; gap: 6px; }
 .dh-title { display: flex; gap: 12px; align-items: center; font-size: 16px; color: var(--app-text); }
 .go { display: inline-flex; align-items: center; gap: 4px; padding: 3px 12px; border-radius: 14px; font-size: 13px; text-decoration: none;

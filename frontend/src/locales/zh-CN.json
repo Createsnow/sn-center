@@ -490,14 +490,6 @@
       "TO_GENERATE": "待生成",
       "GENERATED": "已生成完"
     },
-    "status": {
-      "GENERATING": "生成中",
-      "CANNOT": "不能生成",
-      "NEED_RULE": "待生成 · 需先选规则",
-      "TO_GENERATE": "待生成",
-      "PARTIAL": "还可生成",
-      "GENERATED": "已生成完"
-    },
     "action": {
       "running": "生成中",
       "view": "查看",
@@ -767,6 +759,7 @@
     "transferredIn": "转入",
     "pushType": "推送类型",
     "generatedAt": "生成时间",
+    "snInfo": "SN 详情",
     "batchSource": "建立方式",
     "batchType": "批次类型",
     "result": "结果",

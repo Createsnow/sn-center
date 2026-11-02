@@ -490,14 +490,6 @@
       "TO_GENERATE": "Chờ tạo",
       "GENERATED": "Đã tạo xong"
     },
-    "status": {
-      "GENERATING": "Đang tạo",
-      "CANNOT": "Không thể tạo",
-      "NEED_RULE": "Chờ tạo · cần chọn quy tắc",
-      "TO_GENERATE": "Chờ tạo",
-      "PARTIAL": "Còn tạo được",
-      "GENERATED": "Đã tạo xong"
-    },
     "action": {
       "running": "Đang tạo",
       "view": "Xem",
@@ -767,6 +759,7 @@
     "transferredIn": "Chuyển đến",
     "pushType": "Loại đẩy",
     "generatedAt": "Thời gian tạo",
+    "snInfo": "Thông tin SN",
     "batchSource": "Cách tạo",
     "batchType": "Loại lô",
     "result": "Kết quả",

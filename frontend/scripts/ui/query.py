@@ -29,6 +29,7 @@ M = {
 "query.transferredIn": ("转入", "Transferred in", "Chuyển đến"),
 "query.pushType": ("推送类型", "Push type", "Loại đẩy"),
 "query.generatedAt": ("生成时间", "Generated at", "Thời gian tạo"),
+"query.snInfo": ("SN 详情", "SN info", "Thông tin SN"),
 "query.batchSource": ("建立方式", "Created by", "Cách tạo"),
 "query.batchType": ("批次类型", "Batch type", "Loại lô"),
 "query.result": ("结果", "Result", "Kết quả"),
