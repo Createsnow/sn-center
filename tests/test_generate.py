@@ -827,6 +827,7 @@ def test_allocation_bill_list_driven_by_sns(w, api, sql):
     ctx = ok(api.get(f"/api/allocation/context?pi={pi}", w.admin))
     got = {(x["bill_no"], x["qty"], x["pending_alloc"], x["bill_state"]) for x in ctx["lines"]}
     assert got == {(b1, 3, 0, "ALLOCATED"), (b2, 2, 2, "PENDING")}, "详情列出本 PI 全部单据的物料行与状态"
+    assert ctx["summary"]["allocated_qty"] == 3, "已分配按单据：只数已分配单据的号"
 
 
 def test_interrupted_job_recovered_only_after_owner_exits(w, sql):

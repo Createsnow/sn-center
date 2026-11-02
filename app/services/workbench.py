@@ -1,7 +1,8 @@
 """SN 生成页与分配页共用的 PI 工作台（F-10），以及生成页详情。
 
 每张 PI 一行：客户、单据数、生产组织、状态、订单总数、已生成（各订单已生成数之和；转组织改 PI 的号仍计入原 PI）、
-转入号（挂在本 PI 下、由别的 PI 生成的号）、已分配（含已推送、已拉取）；行上按钮按 F-10 第 3 条的顺序判断。
+转入号（挂在本 PI 下、由别的 PI 生成的号）、已分配（状态为「已分配」的单据的号：号都已分配且推送完成，
+含已推送、已拉取；待处理单据不计）；行上按钮按 F-10 第 3 条的顺序判断。
 各 PI 的号数统计（item_stats、gen_own）生成页、分配页共用；分配页左侧按单据列出，见 allocation.bills。
 生成详情：单据 → 物料行（规则、附件项次、米数、号段）、生成任务（最近 20 条）、可撤销的号段。
 分配详情见 allocation.context。
@@ -68,7 +69,10 @@ def _pi_rows(q: str | None, by_modify: bool = False, facs: tuple[str, ...] | Non
 
 
 def item_stats(pis: list[str], facs: tuple[str, ...] | None = None) -> dict[str, dict]:
-    """各 PI 的号数统计；facs = 授权范围（None = 全部），只数范围内的号、批次和推送任务。"""
+    """各 PI 的号数统计；facs = 授权范围（None = 全部），只数范围内的号、批次和推送任务。
+    已分配（allocated）按单据算，与分配页左侧单据状态（allocation.bill_state）同一口径：只数状态为「已分配」的
+    单据（号都已分配且推送完成，未对接 MES 的分配即完成）的号；待分配、待处理（推送中、等回执、推送中断、
+    暂停交付等还有待推送的号）的单据整单不计。"""
     if not pis:
         return {}
     ph = marks(len(pis))
@@ -76,10 +80,12 @@ def item_stats(pis: list[str], facs: tuple[str, ...] | None = None) -> dict[str,
     fsql, fargs = factories.scope_sql(facs)
     out: dict[str, dict] = {}
     for r in db.all(
-        "SELECT pi_no, SUM(status = 'PENDING_ALLOC') pending, SUM(status <> 'PENDING_ALLOC') allocated, "
+        "SELECT pi_no, SUM(pending) pending, SUM(CASE WHEN pending = 0 AND to_push = 0 THEN n ELSE 0 END) allocated, "
+        "SUM(transferred_in) transferred_in, SUM(unbatched) unbatched, SUM(suspended) suspended FROM ("
+        "SELECT pi_no, COUNT(*) n, SUM(status = 'PENDING_ALLOC') pending, SUM(status = 'TO_PUSH') to_push, "
         "SUM(seq_pi_no <> pi_no) transferred_in, SUM(status = 'TO_PUSH' AND delivery_batch_no IS NULL "
         "AND suspend IS NULL) unbatched, SUM(suspend IS NOT NULL) suspended "
-        f"FROM sn_item WHERE pi_no IN ({ph}){isql} GROUP BY pi_no",
+        f"FROM sn_item WHERE pi_no IN ({ph}){isql} GROUP BY pi_no, bill_no) g GROUP BY pi_no",
         *pis,
         *iargs,
     ):

@@ -234,11 +234,25 @@ def test_reject_marks_failed_and_resume_after_fix(w, sql):
     assert [(x["bill_no"], x["qty"], x["state"]) for x in row] == [(bill, 4, "PROCESSING")]
     line = ok(w.api.get(f"/api/allocation/context?pi={pi}", w.admin))["lines"][0]
     assert (line["qty"], line["pending_alloc"], line["to_push"], line["failed"]) == (4, 0, 4, 4)
+    assert rows_allocated(w, pi) == 0, "待处理（推送中断）的单据不算已分配：分配页头部、生成页都不计"
     MES.clear_fault(org)
     ok(w.api.post("/api/delivery/resume", m(factory_code=org, key=pi), w.admin))
     w.push()
     b = sql.one("SELECT * FROM sn_delivery_batch WHERE id = %s", b["id"])
     assert (b["result"], b["confirm_method"], b["voidable"]) == ("SUCCESS", "RECEIPT", 0)
+    row = ok(w.api.get(f"/api/allocation/bills?tab=ALLOCATED&q={bill}", w.admin))["items"]
+    assert [(x["bill_no"], x["state"]) for x in row] == [(bill, "ALLOCATED")]
+    assert rows_allocated(w, pi) == 4, "推送完成后整单计入已分配"
+
+
+def rows_allocated(w, pi: str) -> int:
+    """分配页详情头部与生成页 PI 列表、生成详情的「已分配」，三处须一致。"""
+    a = ok(w.api.get(f"/api/allocation/context?pi={pi}", w.admin))["summary"]["allocated_qty"]
+    g = ok(w.api.get(f"/api/generate/context?pi={pi}", w.admin))["summary"]["allocated_qty"]
+    items = ok(w.api.get(f"/api/generate/pis?q={pi}", w.admin))["items"]
+    p = [x["allocated_qty"] for x in items if x["pi_no"] == pi]
+    assert p == [a] and g == a, (a, g, p)
+    return a
 
 
 def test_response_batch_no_mismatch_fails_batch(w, sql):
