@@ -874,6 +874,16 @@
     "deleteConfirm": "Xóa quy tắc {code} ({name}) cùng mọi phiên bản?",
     "deleted": "Đã xóa quy tắc {code}"
   },
+  "tabs": {
+    "refresh": "Tải lại",
+    "close": "Đóng",
+    "closeOthers": "Đóng các thẻ khác",
+    "closeRight": "Đóng các thẻ bên phải",
+    "closeAll": "Đóng tất cả",
+    "more": "Thao tác thẻ",
+    "scrollLeft": "Cuộn thẻ sang trái",
+    "scrollRight": "Cuộn thẻ sang phải"
+  },
   "transfer": {
     "title": "Chuyển SN",
     "new": "Tạo phiếu chuyển",

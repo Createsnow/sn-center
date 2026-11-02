@@ -874,6 +874,16 @@
     "deleteConfirm": "删除规则 {code}（{name}）及其全部版本？",
     "deleted": "规则 {code} 已删除"
   },
+  "tabs": {
+    "refresh": "刷新",
+    "close": "关闭",
+    "closeOthers": "关闭其他",
+    "closeRight": "关闭右侧",
+    "closeAll": "关闭全部",
+    "more": "页签操作",
+    "scrollLeft": "向左滚动页签",
+    "scrollRight": "向右滚动页签"
+  },
   "transfer": {
     "title": "SN 转移",
     "new": "新建转移",

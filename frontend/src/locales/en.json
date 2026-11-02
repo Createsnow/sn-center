@@ -874,6 +874,16 @@
     "deleteConfirm": "Delete rule {code} ({name}) and all its versions?",
     "deleted": "Rule {code} deleted"
   },
+  "tabs": {
+    "refresh": "Reload",
+    "close": "Close",
+    "closeOthers": "Close others",
+    "closeRight": "Close tabs to the right",
+    "closeAll": "Close all",
+    "more": "Tab actions",
+    "scrollLeft": "Scroll tabs left",
+    "scrollRight": "Scroll tabs right"
+  },
   "transfer": {
     "title": "SN transfer",
     "new": "New transfer",

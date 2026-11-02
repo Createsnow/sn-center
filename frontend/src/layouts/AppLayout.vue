@@ -10,7 +10,8 @@
       </div>
       <el-scrollbar class="nav">
         <!-- 按业务模块分组（工单 / SN / 箱号 / 托号 / 日志 / 账户 / 组织），每组可展开收起；首页单独一项 -->
-        <el-menu :default-active="activePath" :default-openeds="openeds" :collapse="collapsed" :collapse-transition="false" router class="menu">
+        <!-- 已打开的功能切回上次的地址（保留页面内的参数），未打开的新开页签 -->
+        <el-menu :default-active="activePath" :default-openeds="openeds" :collapse="collapsed" :collapse-transition="false" class="menu" @select="onMenu">
           <template v-for="g in menus" :key="g.group">
             <template v-if="!g.icon">
               <el-menu-item v-for="m in g.items" :key="m.path" :index="m.path">
@@ -64,16 +65,10 @@
     </el-aside>
     <el-container direction="vertical" class="body">
       <el-header class="header">
-        <div class="left">
-          <el-button text @click="collapsed = !collapsed">
-            <el-icon :size="18"><component :is="collapsed ? 'Expand' : 'Fold'" /></el-icon>
-          </el-button>
-          <el-breadcrumb separator="/">
-            <el-breadcrumb-item>{{ t("app.short") }}</el-breadcrumb-item>
-            <el-breadcrumb-item v-if="groupTitle">{{ groupTitle }}</el-breadcrumb-item>
-            <el-breadcrumb-item>{{ pageTitle }}</el-breadcrumb-item>
-          </el-breadcrumb>
-        </div>
+        <el-button text class="fold" @click="collapsed = !collapsed">
+          <el-icon :size="18"><component :is="collapsed ? 'Expand' : 'Fold'" /></el-icon>
+        </el-button>
+        <TabBar />
         <div class="right">
           <span class="tz muted">{{ t("app.tz", { tz }) }}</span>
           <el-tooltip :content="scope.tip" placement="bottom">
@@ -101,9 +96,12 @@
         </div>
       </el-header>
       <el-main class="main">
-        <router-view v-slot="{ Component }">
+        <!-- 页签缓存：切换页签不重新加载，页面内容保留；关闭或刷新页签时释放（见 pageOf） -->
+        <router-view v-slot="{ Component, route: r }">
           <transition name="page" mode="out-in">
-            <component :is="Component" />
+            <keep-alive :include="cached">
+              <component :is="pageOf(Component, r.path)" :key="pageName(r.path)" />
+            </keep-alive>
           </transition>
         </router-view>
       </el-main>
@@ -112,10 +110,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, defineComponent, h, markRaw, onMounted, onUnmounted, ref, watch, type Component, type VNode } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/auth";
+import { useTabsStore } from "@/stores/tabs";
+import TabBar from "./TabBar.vue";
 import { LOCALES, type Locale } from "@/i18n";
 import { MENU } from "@/router";
 import { useTime } from "@/composables/useTime";
@@ -133,14 +133,51 @@ const menus = computed(() =>
 const activePath = computed(() => route.path);
 /** 初始展开：当前页所在的组和 SN 管理（日常作业都在这组）。 */
 const openeds = [...new Set([route.meta.group as string | undefined, "nav.groupSn"].filter((g): g is string => !!g))];
-const groupTitle = computed(() => {
-  const g = route.meta.group as string | undefined;
-  return g && g !== "nav.groupWork" ? t(g) : "";
-});
-const pageTitle = computed(() => {
-  const title = route.meta.title as string | undefined;
-  return title ? t(title) : "";
-});
+
+// ================================================================ 顶栏页签
+
+const tabs = useTabsStore();
+
+/** 当前账户能打开的菜单页（F5 恢复页签时过滤；与路由守卫同一规则）。 */
+function allowed(path: string) {
+  const m = router.resolve(path).meta as { title?: string; roles?: string[]; superAdmin?: boolean };
+  return !!m.title && !!m.roles?.includes(store.role) && (!m.superAdmin || store.isSuperAdmin);
+}
+tabs.restore(store.profile?.id, allowed);
+
+let lastPath: string | null = null;
+watch(() => route.fullPath, () => {
+  tabs.visit({ path: route.path, fullPath: route.fullPath, hasQuery: Object.keys(route.query).length > 0 }, lastPath);
+  lastPath = route.path;
+}, { immediate: true });
+
+function onMenu(path: string) {
+  router.push(tabs.find(path)?.fullPath ?? path);
+}
+
+/**
+ * 每个页签一个缓存实例：按「路径#版本」包一层具名组件交给 keep-alive。
+ * 同一页面组件用于多个菜单（建设中的占位页）时各自独立；刷新、按新参数重开时版本变化，旧实例随 include 变化释放。
+ */
+const pageName = (path: string) => `${path}#${tabs.find(path)?.ver ?? 0}`;
+const wrappers = new Map<string, Component>();
+function pageOf(vnode: VNode | undefined, path: string) {
+  if (!vnode) return undefined;
+  const name = pageName(path);
+  let w = wrappers.get(name);
+  if (!w) {
+    const type = vnode.type as Component;
+    w = markRaw(defineComponent({ name, setup: () => () => h(type) }));
+    wrappers.set(name, w);
+  }
+  return w;
+}
+/** keep-alive 只在 include 变化时清理缓存：页签增删、刷新以及每次切换后都重新给一份，关掉的页面切走后立即释放。 */
+const cached = ref<string[]>([]);
+watch([() => tabs.tabs.map((x) => pageName(x.path)).join("|"), () => route.path], () => {
+  cached.value = tabs.tabs.map((x) => pageName(x.path));
+  for (const name of wrappers.keys()) if (!cached.value.includes(name)) wrappers.delete(name);
+}, { immediate: true, flush: "post" });
 
 /** 数据范围：系统管理员 = 全部生产组织；普通操作员 = 授权组织；审计员 = 授权组织（只读）。角色与范围分开展示。 */
 const scope = computed(() => {
@@ -165,6 +202,7 @@ function onLocale(v: Locale) {
 function onCommand(cmd: string) {
   if (cmd === "password") router.push("/password");
   if (cmd === "logout") {
+    tabs.reset();
     store.clear();
     router.push("/login");
   }
@@ -201,9 +239,9 @@ onUnmounted(() => window.removeEventListener("resize", onResize));
   border: 1px solid #334155; }
 .body { min-width: 0; }
 .header { height: var(--app-header); background: var(--app-surface); border-bottom: 1px solid var(--app-line);
-  display: flex; align-items: center; justify-content: space-between; padding: 0 16px; }
-.left, .right { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.right { gap: 6px; }
+  display: flex; align-items: flex-end; gap: 8px; padding: 0 16px 0 8px; }
+.fold { flex: none; align-self: center; }
+.right { display: flex; align-items: center; gap: 6px; min-width: 0; flex: none; align-self: center; }
 .scope { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 14px;
   font-size: 12px; font-weight: 500; border: 1px solid; cursor: default; max-width: 240px; }
 .scope-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

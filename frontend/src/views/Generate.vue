@@ -249,7 +249,8 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
+import { usePageRoute } from "@/composables/usePageRoute";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { api } from "@/api";
@@ -292,7 +293,8 @@ const ACTION_TYPE: Record<Action, TagType> = { running: "primary", view: "", gen
 const LINE_STATE_TAG: Record<LineState, TagType> = { TODO: "danger", GEN: "primary", GENERATED: "success", DONE: "info", NONE: "info" };
 
 const { t } = useI18n();
-const route = useRoute();
+// 页签缓存下本页在后台时不跟随别的页面的地址参数，也不改写地址
+const route = usePageRoute();
 const router = useRouter();
 const { nameOf } = useFactories();
 const { fmt: fmtTime } = useTime();
@@ -372,7 +374,7 @@ async function openDetail(key: { pi?: string; bill_no?: string }) {
   // 单据默认全部收起；从单据进来的展开该单
   foldAll(true);
   if (key.bill_no && isFolded(key.bill_no)) toggleFold(key.bill_no);
-  if (route.query.pi !== ctx.value.pi_no) router.replace({ query: { pi: ctx.value.pi_no } });
+  if (route.active && route.query.pi !== ctx.value.pi_no) router.replace({ query: { pi: ctx.value.pi_no } });
   schedulePreview();
 }
 
@@ -436,7 +438,7 @@ function closeDetail() {
   detailPi.value = "";
   ctx.value = null;
   stopPoll();
-  if (route.query.pi || route.query.bill_no) router.replace({ query: {} });
+  if (route.active && (route.query.pi || route.query.bill_no)) router.replace({ query: {} });
 }
 
 // ---------------- 规则：物料行（PI 绑定在 PiRuleDialog）

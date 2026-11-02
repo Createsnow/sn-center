@@ -196,7 +196,8 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
+import { usePageRoute } from "@/composables/usePageRoute";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { api } from "@/api";
@@ -228,7 +229,8 @@ const TASK_TAG: Record<string, TagType> = { QUEUED: "primary", RUNNING: "primary
 const ACTIVE_TASK = ["QUEUED", "RUNNING", "WAITING"];
 
 const { t } = useI18n();
-const route = useRoute();
+// 页签缓存下本页在后台时不跟随别的页面的地址参数，也不改写地址（列表异步返回时可能已切到别的页签）
+const route = usePageRoute();
 const router = useRouter();
 const { nameOf } = useFactories();
 const { fmt: fmtTime } = useTime();
@@ -264,11 +266,11 @@ async function loadList(silent = false, p = 1) {
   if (items.find(isCurrent)) return;
   const hit = tab.value === "TO_ALLOCATE" ? (!bill.value && items.find((r) => r.pi_no === pi.value)) || items[0] : undefined;
   if (hit) pick(hit);
-  else if (pi.value) router.replace({ query: { tab: tab.value } });
+  else if (pi.value && route.active) router.replace({ query: { tab: tab.value } });
 }
 
 function pick(row: BillRow) {
-  if (row.pi_no !== pi.value || row.bill_no !== bill.value) router.replace({ query: { pi: row.pi_no, bill: row.bill_no, tab: tab.value } });
+  if (route.active && (row.pi_no !== pi.value || row.bill_no !== bill.value)) router.replace({ query: { pi: row.pi_no, bill: row.bill_no, tab: tab.value } });
 }
 
 // ================================================================ 详情（所选单据所在的 PI）
@@ -451,7 +453,7 @@ watch(bill, () => {
   if (tab.value === "TO_ALLOCATE" && ctx.value?.pi_no === pi.value) focusBill();
 });
 watch(tab, () => {
-  if (route.query.tab !== tab.value) router.replace({ query: { ...route.query, tab: tab.value } });
+  if (route.active && route.query.tab !== tab.value) router.replace({ query: { ...route.query, tab: tab.value } });
   loadCtx();
 });
 
