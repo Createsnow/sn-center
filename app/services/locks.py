@@ -3,7 +3,7 @@
 - PI 操作锁（5.2.9 第 1 条）：同一 PI 的生成（含取消）、撤销生成、分配、转单、转组织确认（含直接转移）
   同一时刻只执行一个，后到的立即提示稍后再试（不排队）。后台生成把锁交给后台线程，结束时释放。
 - 组织建批锁（F-12 取批规则第 6 条）：MES 取批时查未确认批次与建批在同一把锁内，并发取批不会各建一批。
-- 订单同步锁（F-05 同步方式第 6 条）：各种同步共用；按单据同步排队等待，比对同步和进页同步直接跳过。
+- 订单同步锁（F-05 同步方式第 6 条）：各种同步共用；按单据同步、全量重建最多排队 30 秒，比对同步和进页同步直接跳过。
 """
 
 from __future__ import annotations
@@ -94,6 +94,11 @@ def with_org_lock(org: str, timeout: int = 10) -> Iterator[None]:
         h.release()
 
 
+#: 按单据同步、全量重建等同步锁的最长秒数：须明显短于页面请求超时（120 秒），否则页面已报超时、后台仍排着队，
+#: 拿到锁后照样执行；排队期间每个请求还占一个工作线程（与 MES 接口共用）和一条数据库连接
+SYNC_WAIT_SECONDS = 30
+
+
 def sync_lock(wait: bool) -> Held | None:
-    """订单同步锁：wait = True 时最多等 10 分钟（按单据同步排队），否则拿不到返回 None。"""
-    return try_acquire("sync", ["orders"], 600 if wait else 0)
+    """订单同步锁：wait = True 时最多等 SYNC_WAIT_SECONDS（按单据同步、全量重建排队），否则拿不到返回 None。"""
+    return try_acquire("sync", ["orders"], SYNC_WAIT_SECONDS if wait else 0)

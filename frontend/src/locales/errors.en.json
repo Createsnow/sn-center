@@ -10,6 +10,7 @@
   "FACTORY_FORBIDDEN": "You can only operate data of your authorized production orgs: {factory}",
   "USER_NO_FACTORY": "This account is not authorized for any production org; please contact the system administrator",
   "VALIDATION": "Invalid parameter: {detail}",
+  "REQUEST_TOO_LARGE": "Request body exceeds {max} MB",
   "CONFLICT_RETRY": "Data is being changed by another operation, please retry",
   "PI_BUSY": "PI {pi} is busy with another operation (generate, revoke, allocate or transfer), please retry later",
   "REASON_REQUIRED": "Reason is required (at most 500 characters)",

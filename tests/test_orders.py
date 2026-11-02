@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import time
+
 import conftest
 from conftest import BILLS, K3_FAIL, MES, m, ok, uid
 
@@ -179,6 +181,30 @@ def test_bill_sync_reports_status(w, api, sql):
     assert sql.count("SELECT COUNT(*) FROM sn_prd_mo WHERE bill_no = %s", a) == 0
     del BILLS[a]
     assert ok(api.post("/api/orders/sync", m(bill_no=a), w.admin))["outcome"] == "NOT_FOUND"
+
+
+def test_bill_sync_waits_briefly_then_reports_busy(w, api, sql, monkeypatch):
+    """同步锁被占用（全量重建、金蝶很慢的比对同步）时，按单据同步只等 SYNC_WAIT_SECONDS，等不到提示正忙、不执行；
+    不会排队到页面已超时（120 秒）后才在后台悄悄执行。锁释放后照常同步。"""
+    from app.services import locks
+
+    org = w.org(uid("O")[:10])
+    a = uid("MO")
+    w.order(a, org, "C1", "PI-S", ("M1", 5))
+    w.touch(a, status="D")
+    monkeypatch.setattr(locks, "SYNC_WAIT_SECONDS", 1)
+    held = locks.sync_lock(wait=False)
+    assert held is not None
+    try:
+        t0 = time.monotonic()
+        r = api.post("/api/orders/sync", m(bill_no=a), w.admin)
+        assert (r.status, r.code) == (409, "ORDER_SYNC_BUSY")
+        assert time.monotonic() - t0 < 5
+        assert sql.count("SELECT COUNT(*) FROM sn_prd_mo WHERE bill_no = %s", a) == 1, "等不到锁不执行"
+        assert api.post("/api/orders/rebuild", {}, w.admin).code == "ORDER_SYNC_BUSY", "全量重建同样"
+    finally:
+        held.release()
+    assert ok(api.post("/api/orders/sync", m(bill_no=a), w.admin))["outcome"] == "NOT_APPROVED"
 
 
 def test_rebuild_failure_keeps_old_snapshot(w, api, sql):

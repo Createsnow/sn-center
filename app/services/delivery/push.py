@@ -15,7 +15,9 @@ from __future__ import annotations
 
 import math
 import threading
+from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from datetime import timedelta
 
 import structlog
@@ -50,6 +52,10 @@ _wake = threading.Event()
 executor = ThreadPoolExecutor(max_workers=8, thread_name_prefix="sn-push")
 _running_here: set[tuple[str, str]] = set()
 _running_lock = threading.Lock()
+#: 运行中任务的续租间隔（远小于租约 LEASE_SECONDS）
+HEARTBEAT_SECONDS = 60
+#: 认领推送任务的跨实例互斥行（sn_seq 中的一行，只用来加行锁，不当序号用）
+CLAIM_MUTEX = "#push_claim"
 
 
 def poke() -> None:
@@ -180,30 +186,35 @@ def _claim_task() -> dict | None:
         now,
     )
     for t in rows:
-        busy_org = db.count(
-            "SELECT COUNT(*) FROM sn_push_task WHERE factory_code = %s AND state = 'RUNNING' AND lease_until >= %s",
-            t["factory_code"],
-            now,
-        )
-        if busy_org >= int(t["push_concurrency"]):
-            continue
-        if t["task_key"] != XO_KEY and db.exists(
-            "SELECT EXISTS(SELECT 1 FROM sn_push_task WHERE task_key = %s AND state = 'RUNNING' AND lease_until >= %s)",
-            t["task_key"],
-            now,
-        ):
-            continue
-        n = db.exec(
-            "UPDATE sn_push_task SET state = 'RUNNING', lease_until = %s, runner = %s, requeue = 0, updated_at = %s "
-            "WHERE factory_code = %s AND task_key = %s AND state = %s AND updated_at = %s",
-            now + timedelta(seconds=LEASE_SECONDS),
-            RUNNER,
-            now,
-            t["factory_code"],
-            t["task_key"],
-            t["state"],
-            t["updated_at"],
-        )
+        with db.tx():
+            # 各实例的「数运行中的任务 → 认领」串行：否则两个实例可能同时数到未满，各认领一个，超出推送并发上限
+            db.exec("INSERT INTO sn_seq(name, val) VALUES (%s, 0) ON DUPLICATE KEY UPDATE name = name", CLAIM_MUTEX)
+            db.one("SELECT val FROM sn_seq WHERE name = %s FOR UPDATE", CLAIM_MUTEX)
+            busy_org = db.count(
+                "SELECT COUNT(*) FROM sn_push_task WHERE factory_code = %s AND state = 'RUNNING' AND lease_until >= %s",
+                t["factory_code"],
+                now,
+            )
+            if busy_org >= int(t["push_concurrency"]):
+                continue
+            if t["task_key"] != XO_KEY and db.exists(
+                "SELECT EXISTS(SELECT 1 FROM sn_push_task WHERE task_key = %s AND state = 'RUNNING' "
+                "AND lease_until >= %s)",
+                t["task_key"],
+                now,
+            ):
+                continue
+            n = db.exec(
+                "UPDATE sn_push_task SET state = 'RUNNING', lease_until = %s, runner = %s, requeue = 0, "
+                "updated_at = %s WHERE factory_code = %s AND task_key = %s AND state = %s AND updated_at = %s",
+                now + timedelta(seconds=LEASE_SECONDS),
+                RUNNER,
+                now,
+                t["factory_code"],
+                t["task_key"],
+                t["state"],
+                t["updated_at"],
+            )
         if n == 1:
             return t
     return None
@@ -233,6 +244,40 @@ def _renew(t: dict, batch_no: str | None) -> None:
         t["factory_code"],
         t["task_key"],
     )
+
+
+def _extend_lease(t: dict) -> None:
+    """只延长租约（不动当前批次）；任务已不在运行（已结束、等待）时不改。"""
+    db.exec(
+        "UPDATE sn_push_task SET lease_until = %s WHERE factory_code = %s AND task_key = %s AND state = 'RUNNING' "
+        "AND runner = %s",
+        util.now() + timedelta(seconds=LEASE_SECONDS),
+        t["factory_code"],
+        t["task_key"],
+        RUNNER,
+    )
+
+
+@contextmanager
+def _lease_heartbeat(t: dict) -> Iterator[None]:
+    """任务运行期间每 HEARTBEAT_SECONDS 续一次租：单次推送再久（超时最长 600 秒，且按连接、写、读分段计时），
+    租约也不会过期，不会被当成执行实例已退出而被别处接手、同一批同时推两次；
+    实例真退出时租约照常在 LEASE_SECONDS 内过期。"""
+    stop = threading.Event()
+
+    def beat() -> None:
+        while not stop.wait(HEARTBEAT_SECONDS):
+            try:
+                _extend_lease(t)
+            except Exception:  # noqa: BLE001
+                log.warning("push_lease_renew_failed", org=t["factory_code"], key=t["task_key"], exc_info=True)
+
+    th = threading.Thread(target=beat, name="sn-push-lease", daemon=True)
+    th.start()
+    try:
+        yield
+    finally:
+        stop.set()
 
 
 def _end_task(t: dict, state: str, message: str = "", run_after=None, batch_no: str | None = None) -> None:
@@ -356,7 +401,8 @@ def _run_task(t: dict) -> None:
             return
         _running_here.add(key)
     try:
-        _drive(t)
+        with _lease_heartbeat(t):
+            _drive(t)
     except Exception as e:  # noqa: BLE001
         log.exception("push_task_failed", org=t["factory_code"], key=t["task_key"])
         _end_task(t, "STOPPED", f"推送任务异常：{type(e).__name__}")

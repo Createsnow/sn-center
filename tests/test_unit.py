@@ -411,6 +411,63 @@ def test_request_id_regenerated_when_invalid(raw):
     assert rid != raw and len(rid) == 36
 
 
+# ---------------------------------------------------------------------- 请求体上限
+
+
+@pytest.fixture
+def echo(monkeypatch):
+    """只套请求号中间件的回显应用（上限调成 1 KB）；返回 (客户端, 进到应用的请求数)。"""
+    from starlette.applications import Starlette
+    from starlette.requests import Request
+    from starlette.responses import JSONResponse
+    from starlette.routing import Route
+    from starlette.testclient import TestClient
+
+    from app.middleware import request_id
+
+    monkeypatch.setattr(request_id, "MAX_REQUEST_BODY", 1024)
+    seen: list[int] = []
+
+    async def handler(request: Request) -> JSONResponse:
+        body = await request.body()
+        seen.append(len(body))
+        return JSONResponse({"n": len(body), "cached": request.state.body is not None})
+
+    app = Starlette(routes=[Route("/api/{p:path}", handler, methods=["POST"])])
+    return TestClient(request_id.RequestIdMiddleware(app)), seen
+
+
+def test_request_body_within_limit_passes_through(echo):
+    cl, seen = echo
+    r = cl.post("/api/x", content=b"a" * 1024)
+    assert r.status_code == 200 and r.json() == {"n": 1024, "cached": True}
+    assert seen == [1024]
+    # 分块上传（不带 Content-Length）按块拼回原样
+    r = cl.post("/api/x", content=iter([b"a" * 300, b"b" * 300, b"c" * 300]))
+    assert r.json()["n"] == 900
+
+
+@pytest.mark.parametrize("chunked", [False, True])
+def test_request_body_over_limit_rejected_before_app(echo, chunked):
+    cl, seen = echo
+    content = iter([b"a" * 600, b"b" * 600]) if chunked else b"a" * 1025
+    r = cl.post("/api/orders/sync", content=content)
+    assert r.status_code == 413
+    assert r.json() == {"code": "REQUEST_TOO_LARGE", "message": "请求体超过 0 MB", "params": {"max": 0}}
+    assert r.headers["x-request-id"]
+    assert seen == [], "超限请求不进业务"
+
+
+def test_mes_request_body_over_limit_uses_mes_envelope(echo):
+    cl, seen = echo
+    r = cl.post("/api/mes/v1/batches/next", content=b"{" * 2048)
+    assert r.status_code == 400, "沿用 MES 接口文档已有的 400 INVALID_REQUEST"
+    body = r.json()
+    assert (body["schemaVersion"], body["code"], body["batchNo"]) == ("1.0", "INVALID_REQUEST", None)
+    assert body["message"].startswith("请求体超过")
+    assert seen == []
+
+
 # ---------------------------------------------------------------------- 令牌签名密钥
 
 

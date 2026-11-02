@@ -28,6 +28,7 @@ class ErrorCode(Enum):
     FACTORY_FORBIDDEN = (403, "只能操作授权生产组织的数据：{factory}")
     USER_NO_FACTORY = (403, "账户未授权任何生产组织，请联系系统管理员")
     VALIDATION = (422, "参数不合法：{detail}")
+    REQUEST_TOO_LARGE = (413, "请求体超过 {max} MB")
     CONFLICT_RETRY = (409, "数据正被其他操作占用，请稍后重试")
     PI_BUSY = (409, "PI {pi} 正在进行其他操作（生成、撤销、分配或转移），请稍后再试")
     REASON_REQUIRED = (400, "原因必填（不超过 500 字）")

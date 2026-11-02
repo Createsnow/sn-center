@@ -10,6 +10,7 @@
   "FACTORY_FORBIDDEN": "Chỉ được thao tác dữ liệu của tổ chức sản xuất được ủy quyền: {factory}",
   "USER_NO_FACTORY": "Tài khoản chưa được ủy quyền tổ chức sản xuất nào, vui lòng liên hệ quản trị hệ thống",
   "VALIDATION": "Tham số không hợp lệ: {detail}",
+  "REQUEST_TOO_LARGE": "Nội dung yêu cầu vượt quá {max} MB",
   "CONFLICT_RETRY": "Dữ liệu đang bị thao tác khác sử dụng, vui lòng thử lại",
   "PI_BUSY": "PI {pi} đang có thao tác khác (tạo, hủy, phân bổ hoặc chuyển), vui lòng thử lại sau",
   "REASON_REQUIRED": "Bắt buộc nhập lý do (tối đa 500 ký tự)",

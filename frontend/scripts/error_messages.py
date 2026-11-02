@@ -12,6 +12,7 @@ E = {
 "FACTORY_FORBIDDEN": ("You can only operate data of your authorized production orgs: {factory}", "Chỉ được thao tác dữ liệu của tổ chức sản xuất được ủy quyền: {factory}"),
 "USER_NO_FACTORY": ("This account is not authorized for any production org; please contact the system administrator", "Tài khoản chưa được ủy quyền tổ chức sản xuất nào, vui lòng liên hệ quản trị hệ thống"),
 "VALIDATION": ("Invalid parameter: {detail}", "Tham số không hợp lệ: {detail}"),
+"REQUEST_TOO_LARGE": ("Request body exceeds {max} MB", "Nội dung yêu cầu vượt quá {max} MB"),
 "CONFLICT_RETRY": ("Data is being changed by another operation, please retry", "Dữ liệu đang bị thao tác khác sử dụng, vui lòng thử lại"),
 "PI_BUSY": ("PI {pi} is busy with another operation (generate, revoke, allocate or transfer), please retry later", "PI {pi} đang có thao tác khác (tạo, hủy, phân bổ hoặc chuyển), vui lòng thử lại sau"),
 "REASON_REQUIRED": ("Reason is required (at most 500 characters)", "Bắt buộc nhập lý do (tối đa 500 ký tự)"),

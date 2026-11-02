@@ -5,10 +5,14 @@ from __future__ import annotations
 import gzip
 import json
 import re
+import threading
+import time
 from datetime import UTC, datetime, timedelta
 
 import pytest
 from conftest import MES, RECEIPT_REPLIES, Res, emp, m, ok, uid, xlsx_rows
+
+from app.core import utils as util
 
 
 def setup_pi(w, qty: int = 12, batch_size: int = 5, mes: bool = True, prefix: str | None = None):
@@ -834,3 +838,83 @@ def test_push_task_resumes_after_manual_confirm(w, sql):
     w.push()
     rows = sql.all("SELECT qty, result FROM sn_delivery_batch WHERE pi_no = %s ORDER BY id", pi)
     assert rows == [{"qty": 5, "result": "SUCCESS"}, {"qty": 2, "result": "SUCCESS"}]
+
+
+def test_lease_renewed_while_push_is_slow(w, sql, monkeypatch):
+    """单次推送比租约还久：运行期间续租，别处（另一实例）认领不到这个任务，不会同一批同时推两次；任务结束后不再续租。"""
+    from app.services import mes_client
+    from app.services.delivery import push
+
+    monkeypatch.setattr(push, "LEASE_SECONDS", 2)
+    monkeypatch.setattr(push, "HEARTBEAT_SECONDS", 0.3)
+    org, pi, bill = setup_pi(w, qty=3, batch_size=5)
+    w.allocate(pi)
+    real, seen = mes_client.send, []
+
+    def slow(t, batch_no, body_gz, attempt, ping=False):
+        time.sleep(3.2)
+        lease = sql.scalar("SELECT lease_until FROM sn_push_task WHERE factory_code = %s AND task_key = %s", org, pi)
+        seen.append((lease, push._claim_task()))
+        return real(t, batch_no, body_gz, attempt, ping)
+
+    monkeypatch.setattr(mes_client, "send", slow)
+    w.push()
+    [(lease, stolen)] = seen
+    assert lease >= util.now(), "发送 3 秒多、租约 2 秒，续租后仍未过期"
+    assert stolen is None, "租约未过期，认领不到"
+    assert sql.one("SELECT result FROM sn_delivery_batch WHERE pi_no = %s", pi)["result"] == "SUCCESS"
+    assert [x["org"] for x in MES.received if x["batch"]["batchType"] != "PING"].count(org) == 1, "只推了一次"
+    time.sleep(0.7)
+    task = sql.one("SELECT state, lease_until FROM sn_push_task WHERE factory_code = %s AND task_key = %s", org, pi)
+    assert (task["state"], task["lease_until"]) == ("DONE", None), "结束后心跳停止，不再改租约"
+
+
+def test_claim_serialized_across_instances_respects_concurrency(w, sql):
+    """两个实例同时认领同组织的任务：另一实例认领到一半（未提交）时本实例等它提交，再按最新运行数判断，
+    不会两边都数到未满、超出推送并发上限。"""
+    from conftest import raw_conn
+
+    from app.services.delivery import push
+
+    org = w.org(uid("O")[:10])
+    w.enable_mes(org, batch_size=5)
+    pis = []
+    for _ in range(2):
+        pi, bill = uid("PI"), uid("MO")
+        w.order(bill, org, "C1", pi, ("M1", 3, "0100"))
+        ok(w.bind_pi(pi, w.rule("P" + uid("").replace("-", ""), seq_len=6)))
+        w.generate(pi)
+        w.allocate(pi)
+        pis.append(pi)
+    x, y = pis
+    sql.exec("UPDATE sn_factory SET push_concurrency = 1 WHERE factory_code = %s", org)
+    # y 更早排队：本实例先看 y
+    sql.exec(
+        "UPDATE sn_push_task SET updated_at = updated_at - INTERVAL 1 MINUTE WHERE factory_code = %s AND task_key = %s",
+        org,
+        y,
+    )
+    other = raw_conn()
+    other.autocommit(False)
+    try:
+        with other.cursor() as c:
+            # 另一实例：拿到认领互斥行，把 x 改成运行中，尚未提交
+            mutex = push.CLAIM_MUTEX
+            c.execute("INSERT INTO sn_seq(name, val) VALUES (%s, 0) ON DUPLICATE KEY UPDATE name = name", (mutex,))
+            c.execute("SELECT val FROM sn_seq WHERE name = %s FOR UPDATE", (mutex,))
+            c.execute(
+                "UPDATE sn_push_task SET state = 'RUNNING', lease_until = UTC_TIMESTAMP() + INTERVAL 5 MINUTE, "
+                "updated_at = UTC_TIMESTAMP() WHERE factory_code = %s AND task_key = %s",
+                (org, x),
+            )
+        got: list = []
+        th = threading.Thread(target=lambda: got.append(push._claim_task()))
+        th.start()
+        th.join(1)
+        assert th.is_alive(), "等另一实例认领完"
+        other.commit()
+        th.join(10)
+    finally:
+        other.close()
+    assert got == [None], "x 已在运行，并发上限 1：y 不认领"
+    assert _task_state(sql, org, y) == "QUEUED"
