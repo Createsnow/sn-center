@@ -467,7 +467,7 @@
     "enableMes": "Turn on MES integration",
     "disableMes": "Turn off MES integration",
     "enableBlocked": "Fill in the endpoint and credential (not needed with no auth) and pass the connection test first (under MES settings)",
-    "enableEffect": "After turning on, {n} allocated SNs of this org become to-push (not batched) and are not pushed automatically; resume pushing on the allocation page or let MES pull them.",
+    "enableEffect": "After turning on, {n} allocated SNs of this org become to-push (not batched) and are not pushed automatically; generated SNs awaiting allocation are allocated and pushed as usual. Click Allocate on the allocation page to re-allocate and push them, or let MES pull them.",
     "disableEffect": "After turning off, {n} to-push (not batched) SNs of this org become allocated (still downloadable on SN allocation); pushed SNs stay as they are, and the endpoint and credential are kept (transfer-outs still get pushed).",
     "disableBlocked": "Unfinished pushes remain; cannot turn off",
     "blockTasks": "{n} running push tasks",

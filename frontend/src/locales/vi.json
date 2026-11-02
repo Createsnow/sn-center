@@ -467,7 +467,7 @@
     "enableMes": "Bật kết nối MES",
     "disableMes": "Tắt kết nối MES",
     "enableBlocked": "Hãy nhập địa chỉ, thông tin xác thực (không cần khi không xác thực) và kiểm tra kết nối đạt trước (trong Cấu hình MES)",
-    "enableEffect": "Sau khi bật, {n} SN đã phân bổ của tổ chức chuyển thành chờ đẩy (chưa vào lô), không tự đẩy; bấm “Đẩy tiếp” ở trang phân bổ hoặc chờ MES kéo.",
+    "enableEffect": "Sau khi bật, {n} SN đã phân bổ của tổ chức chuyển thành chờ đẩy (chưa vào lô), không tự đẩy; SN đã tạo chờ phân bổ vẫn phân bổ và đẩy như thường. Bấm “Phân bổ” ở trang phân bổ để phân bổ lại và đẩy, hoặc chờ MES kéo.",
     "disableEffect": "Sau khi tắt, {n} SN chờ đẩy (chưa vào lô) của tổ chức chuyển thành đã phân bổ (vẫn tải được ở Phân bổ SN); SN đã đẩy giữ nguyên, địa chỉ và thông tin xác thực được giữ (chuyển đi vẫn được đẩy).",
     "disableBlocked": "Còn lần đẩy chưa hoàn tất, không thể tắt",
     "blockTasks": "{n} tác vụ đẩy đang chạy",

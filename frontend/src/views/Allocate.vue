@@ -113,14 +113,14 @@
               </div>
             </div>
             <!-- 底部按钮：推送中断（有可续推的组织）时「分配」变为「继续推送（剩余 N 次）」，续推本 PI 全部中断的组织；
-                 推送恢复后变回「分配」 -->
+                 推送恢复后变回「分配」。组织后开启对接 MES、已分配还没开始推送的号不算中断：用「分配」一并重新分配推送 -->
             <div v-if="resumable.length" class="bar">
               <span class="push" />
               <el-button type="warning" :loading="busy === 'resume'" @click="resumeAll">
                 {{ t("allocate.resumeBtn", { n: resumeLeft }) }}
               </el-button>
             </div>
-            <div v-else-if="ctx.summary.pending_alloc" class="bar">
+            <div v-else-if="ctx.summary.pending_alloc || idleQty" class="bar">
               <span><span class="muted">{{ t("generate.scope") }}</span> <b>{{ picked.length ? t("generate.scopeLinesN", { n: picked.length }) : t("generate.scopeWholePi") }}</b></span>
               <el-button v-if="picked.length" link type="primary" @click="clearSel">{{ t("generate.clearSel") }}</el-button>
               <span class="push" />
@@ -317,8 +317,11 @@ async function reload() {
   loadList(true);
 }
 
-/** 可续推（推送中断：有失败或未确认的批次、或有未入批的号，且没有运行中的推送任务）。 */
-const canResume = (p: any) => p.mes_enabled && p.remaining?.pushes > 0 && !(p.task && ACTIVE_TASK.includes(p.task.state));
+/** 可续推（推送中断：有失败或未确认的批次、或推送任务已停止，且没有运行中的推送任务；后台给出 interrupted）。
+ *  组织后开启对接 MES、已分配还没开始推送的号不算中断（idle），用「分配」一并推送。 */
+const canResume = (p: any) => !!p.interrupted;
+/** 已分配、还没开始推送的号（组织后开启对接 MES）：点「分配」一并重新分配推送。 */
+const idleQty = computed(() => (ctx.value?.push ?? []).reduce((n: number, p: any) => n + (p.idle || 0), 0));
 /** 本 PI 推送中断的组织：有时底部「分配」按钮变为「继续推送（剩余 N 次）」，N 为这些组织剩余次数之和。 */
 const resumable = computed<any[]>(() => (ctx.value?.push ?? []).filter(canResume));
 const resumeLeft = computed(() => resumable.value.reduce((n, p) => n + p.remaining.pushes, 0));

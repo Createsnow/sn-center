@@ -235,6 +235,9 @@ def test_reject_marks_failed_and_resume_after_fix(w, sql):
     line = ok(w.api.get(f"/api/allocation/context?pi={pi}", w.admin))["lines"][0]
     assert (line["qty"], line["pending_alloc"], line["to_push"], line["failed"]) == (4, 0, 4, 4)
     assert rows_allocated(w, pi) == 0, "待处理（推送中断）的单据不算已分配：分配页头部、生成页都不计"
+    st = ok(w.api.get(f"/api/allocation/context?pi={pi}", w.admin))["push"][0]
+    assert (st["interrupted"], st["idle"]) == (True, 0), "有失败批次：推送中断，「分配」变为「继续推送」"
+    assert w.api.post("/api/allocation/allocate", m(pi_no=pi), w.admin).code == "ALLOC_NOTHING", "失败批次只能续推"
     MES.clear_fault(org)
     ok(w.api.post("/api/delivery/resume", m(factory_code=org, key=pi), w.admin))
     w.push()
@@ -243,6 +246,53 @@ def test_reject_marks_failed_and_resume_after_fix(w, sql):
     row = ok(w.api.get(f"/api/allocation/bills?tab=ALLOCATED&q={bill}", w.admin))["items"]
     assert [(x["bill_no"], x["state"]) for x in row] == [(bill, "ALLOCATED")]
     assert rows_allocated(w, pi) == 4, "推送完成后整单计入已分配"
+
+
+def test_late_mes_allocates_generated_and_reallocates_allocated(w, sql):
+    """生产组织后开启「对接 MES」：已分配的号改为待推送（未入批）、还没开始推送，不算推送中断；
+    已生成待分配的号照常分配推送，「分配」时已分配的号一并重新分配推送。"""
+    org = w.org(uid("O")[:10])
+    pi, b1, b2 = uid("PI"), uid("MO"), uid("MO")
+    w.order(b1, org, "C1", pi, ("M1", 3))
+    w.order(b2, org, "C1", pi, ("M2", 2))
+    ok(w.bind_pi(pi, w.rule("P" + uid("").replace("-", ""))))
+    w.generate(pi)
+    w.allocate(pi, bills=[b1])
+    w.enable_mes(org, batch_size=50)
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND status = 'TO_PUSH'", b1) == 3
+    st = ok(w.api.get(f"/api/allocation/context?pi={pi}", w.admin))["push"][0]
+    assert (st["interrupted"], st["idle"], st["task"]) == (False, 3, None), "还没开始推送：不算中断，底部仍为「分配」"
+    pre = ok(w.api.post("/api/allocation/preview", m(pi_no=pi), w.admin))
+    assert (pre["qty"], pre["requeue"], pre["pushes"]) == (5, 3, 1), "待分配 2 枚 + 重新分配 3 枚"
+    assert pre["orgs"][0]["bills"] == sorted([b1, b2]) and pre["orgs"][0]["mes_enabled"]
+    r = w.allocate(pi)
+    assert (r["qty"], r["requeue"], r["orgs"]) == (5, 3, [org])
+    w.push()
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 5
+    assert rows_allocated(w, pi) == 5, "推送完成后两张单据都为已分配"
+    assert sql.count("SELECT COUNT(*) FROM sn_audit WHERE pi_no = %s AND action = 'SN_PUSH_RESUME'", pi) == 1
+
+
+def test_late_mes_reallocates_when_all_allocated(w, sql):
+    """号都已分配（没有待分配的号）后开启「对接 MES」：分配页仍可「分配」，按单据或整张 PI 重新分配推送。"""
+    org = w.org(uid("O")[:10])
+    pi, b1, b2 = uid("PI"), uid("MO"), uid("MO")
+    w.order(b1, org, "C1", pi, ("M1", 3))
+    w.order(b2, org, "C1", pi, ("M1", 2))
+    ok(w.bind_pi(pi, w.rule("P" + uid("").replace("-", ""))))
+    w.generate(pi)
+    w.allocate(pi)
+    w.enable_mes(org, batch_size=50)
+    pre = ok(w.api.post("/api/allocation/preview", m(pi_no=pi, bills=[b2]), w.admin))
+    assert (pre["qty"], pre["requeue"], pre["orgs"][0]["bills"]) == (2, 2, [b2])
+    r = w.allocate(pi, bills=[b2])
+    assert (r["qty"], r["requeue"]) == (2, 2)
+    w.push()
+    # 推送任务按 PI 推：本组织本 PI 未入批的号一并推完
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 5
+    st = ok(w.api.get(f"/api/allocation/context?pi={pi}", w.admin))["push"][0]
+    assert (st["interrupted"], st["idle"]) == (False, 0)
+    assert w.api.post("/api/allocation/allocate", m(pi_no=pi), w.admin).code == "ALLOC_NOTHING"
 
 
 def rows_allocated(w, pi: str) -> int:

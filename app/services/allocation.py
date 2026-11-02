@@ -2,7 +2,9 @@
 
 号只能分到订单的生产组织（快照中订单的生产组织；订单已不在快照时取号上的生成时订单生产组织；
 反审核中、PI 变更待确认、暂停交付的单据跳过）。对接 MES 的改为待推送（未入批）并自动开始推送；
-未对接的改为已分配。分配与 SN 导出相互独立：号一经分配即可在分配页「已分配」页签下载，不看推送结果。
+未对接的改为已分配。生产组织后开启「对接 MES」时，已分配的号改为待推送（未入批）、还没开始推送：
+分配时一并重新分配（启动推送），已生成待分配的号照常分配推送；推送中断的（有未确认或失败的批次、推送任务已停止）
+仍由「继续推送」处理。分配与 SN 导出相互独立：号一经分配即可在分配页「已分配」页签下载，不看推送结果。
 分配与生成、撤销共用 PI 操作锁。
 分配页左侧按单据列出（bills）：SN 枚数与状态（待分配 / 待处理 / 已分配），只按 PI、单据编号筛选。
 分配页详情（所选单据所在的 PI）：各物料行的枚数、号段、目标生产组织与推送进度，各组织推送进度，
@@ -90,13 +92,62 @@ def _groups(pi: str, bills_in, lines_in, facs: tuple[str, ...] | None = None) ->
     return groups, skipped
 
 
+#: 推送任务进行中
+_ACTIVE = ("QUEUED", "RUNNING", "WAITING")
+
+
+def push_idle(org: str, pi: str, task: dict | None, rem: dict) -> bool:
+    """号已分配、待推送（未入批），但本组织本 PI 还没开始推送：没有推送任务（或已推完），也没有未确认或失败的批次。
+    组织后开启「对接 MES」时已分配的号即如此；分配时一并启动推送（重新分配）。"""
+    return (
+        rem["unbatched"] > 0
+        and rem["batches"] == 0
+        and (task is None or task["state"] == "DONE")
+        and factories.is_mes(org)
+    )
+
+
+def push_interrupted(task: dict | None, rem: dict) -> bool:
+    """推送中断（由「继续推送」处理）：还有要推的，没有推送任务在跑，且有未确认或失败的批次、或推送任务已停止。"""
+    state = None if task is None else task["state"]
+    return rem["pushes"] > 0 and state not in _ACTIVE and (rem["batches"] > 0 or state == "STOPPED")
+
+
+def _idle(pi: str, bills_in, lines_in, facs: tuple[str, ...] | None) -> list[dict]:
+    """范围内已分配、还没开始推送的号（见 push_idle），按（组织、单据）列出枚数与物料。"""
+    cond, args = _scope(pi, bills_in, lines_in)
+    rows = db.all(
+        "SELECT factory_code, bill_no, COUNT(*) n, GROUP_CONCAT(DISTINCT material_code) m FROM sn_item "
+        "WHERE pi_no = %s AND status = 'TO_PUSH' AND delivery_batch_no IS NULL AND suspend IS NULL"
+        + cond
+        + " GROUP BY factory_code, bill_no ORDER BY bill_no",
+        pi,
+        *args,
+    )
+    idle: dict[str, bool] = {}
+    out = []
+    for r in rows:
+        org = r["factory_code"]
+        if facs is not None and org not in facs:
+            continue
+        if org not in idle:
+            idle[org] = push_idle(org, pi, delivery.task_state(org, pi), delivery.remaining_pushes(org, pi))
+        if idle[org]:
+            materials = (r["m"] or "").split(",")
+            out.append({"org": org, "bill_no": r["bill_no"], "qty": int(r["n"]), "materials": materials})
+    return out
+
+
 def preview(cu: CurrentUser, pi_in: str | None, bills: list[str] | None, lines: list[dict] | None) -> dict:
-    """分配面板：按生产组织汇总枚数、单据和物料，标出是否对接 MES；按钮写「分配 N 枚（推送 M 次）」。"""
+    """分配面板：按生产组织汇总枚数、单据和物料，标出是否对接 MES；按钮写「分配 N 枚（推送 M 次）」。
+    N 含已分配、还没开始推送的号（重新分配，requeue 为其枚数）。"""
     pi = util.trim(pi_in)
     if not pi:
         raise biz(ErrorCode.PI_REQUIRED)
     _check_picked(cu, bills, lines)
-    groups, skipped = _groups(pi, bills, lines, cu.read_factories(None))
+    facs = cu.read_factories(None)
+    groups, skipped = _groups(pi, bills, lines, facs)
+    idle = _idle(pi, bills, lines, facs)
     by_org: dict[str, dict] = {}
     orgs_of_bill: dict[str, set[str]] = {}
     for g in groups:
@@ -113,6 +164,11 @@ def preview(cu: CurrentUser, pi_in: str | None, bills: list[str] | None, lines: 
     ):
         for org in orgs_of_bill.get(r["bill_no"], ()):
             by_org[org]["materials"].update((r["m"] or "").split(","))
+    for x in idle:
+        o = by_org.setdefault(x["org"], {"org_code": x["org"], "qty": 0, "bills": [], "materials": set()})
+        o["qty"] += x["qty"]
+        o["bills"].append(x["bill_no"])
+        o["materials"].update(x["materials"])
     names = factories.names()
     out_orgs, pushes = [], 0
     for o in by_org.values():
@@ -137,21 +193,25 @@ def preview(cu: CurrentUser, pi_in: str | None, bills: list[str] | None, lines: 
         "pushes": pushes,
         "orgs": sorted(out_orgs, key=lambda x: x["org_code"]),
         "skipped": skipped,
+        "requeue": sum(x["qty"] for x in idle),
     }
 
 
 def allocate(
     cu: CurrentUser, pi_in: str | None, bills: list[str] | None = None, lines: list[dict] | None = None
 ) -> dict:
-    """分配：范围内待分配的号一次全部挂到生产组织；对接 MES 的改为待推送（未入批）并自动推送，未对接的改为已分配。"""
+    """分配：范围内待分配的号一次全部挂到生产组织；对接 MES 的改为待推送（未入批）并自动推送，未对接的改为已分配。
+    范围内已分配、还没开始推送的号（组织后开启「对接 MES」）一并重新分配：启动所在组织本 PI 的推送。"""
     pi = util.trim(pi_in)
     if not pi:
         raise biz(ErrorCode.PI_REQUIRED)
     _check_picked(cu, bills, lines)
     with locks.with_pi_lock(pi):
+        facs = cu.read_factories(None)
         with db.tx():
-            groups, skipped = _groups(pi, bills, lines, cu.read_factories(None))
-            if not groups:
+            groups, skipped = _groups(pi, bills, lines, facs)
+            idle = _idle(pi, bills, lines, facs)
+            if not groups and not idle:
                 raise biz(ErrorCode.ALLOC_NOTHING)
             cond, args = _scope(pi, bills, lines)
             now = util.now()
@@ -209,10 +269,25 @@ def allocate(
                 total += n
                 if mes:
                     started.add(g["org"])
-            changes.refresh_items({g["bill_no"] for g in groups})
-        for org in sorted(started):
+            requeue: dict[str, int] = {}
+            for x in idle:
+                requeue[x["org"]] = requeue.get(x["org"], 0) + x["qty"]
+            for org, n in sorted(requeue.items()):
+                audit.record(
+                    cu,
+                    audit.entry(audit.SN_PUSH_RESUME).factory(org).pi(pi).count(n).info(f"key={pi} from=allocate"),
+                )
+            if groups:
+                changes.refresh_items({g["bill_no"] for g in groups})
+        for org in sorted(started | set(requeue)):
             delivery.start_task(cu, org, pi)
-    return {"pi_no": pi, "qty": total, "skipped": skipped, "orgs": sorted({g["org"] for g in groups})}
+    return {
+        "pi_no": pi,
+        "qty": total + sum(requeue.values()),
+        "requeue": sum(requeue.values()),
+        "skipped": skipped,
+        "orgs": sorted({g["org"] for g in groups} | set(requeue)),
+    }
 
 
 # ================================================================== 分配页左侧单据列表
@@ -433,6 +508,9 @@ def push_status(pi: str, facs: tuple[str, ...] | None = None) -> list[dict]:
                 "total_batches": total,
                 "pushed_qty": pushed,
                 "last_problem": None if last_fail is None else {k: util.jv(v) for k, v in last_fail.items()},
+                # 推送中断：底部「分配」变为「继续推送」；idle：已分配还没开始推送的枚数，点「分配」一并推送
+                "interrupted": bool(f and f["mes_enabled"]) and push_interrupted(t, rem),
+                "idle": rem["unbatched"] if push_idle(org, pi, t, rem) else 0,
             }
         )
     return out
