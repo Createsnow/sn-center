@@ -287,15 +287,20 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
         )
         v["issues"] = x.issues
         b["lines"].append(v)
-    # 已出号但不在快照（或号挂在本 PI 下）的单据
+    # 各单据挂在本 PI 下的号：待分配、待推送枚数（单据分配状态与分配页左侧同一口径），一次取出
     isql, iargs = factories.item_scope_sql(facs)
-    other = db.column(
-        "SELECT DISTINCT bill_no FROM sn_item WHERE pi_no = %s AND bill_no NOT IN "
-        "(SELECT DISTINCT bill_no FROM sn_prd_mo WHERE pi = %s)" + isql,
-        pi,
-        pi,
-        *iargs,
-    )
+    items = {
+        r["bill_no"]: (int(r["pending"] or 0), int(r["to_push"] or 0))
+        for r in db.all(
+            "SELECT bill_no, SUM(status = 'PENDING_ALLOC') pending, SUM(status = 'TO_PUSH') to_push FROM sn_item "
+            "WHERE pi_no = %s" + isql + " GROUP BY bill_no",
+            pi,
+            *iargs,
+        )
+    }
+    # 已出号但不在快照（或号挂在本 PI 下）的单据
+    in_pi = set(db.column("SELECT DISTINCT bill_no FROM sn_prd_mo WHERE pi = %s", pi))
+    other = sorted(no for no in items if no not in in_pi)
     for no in other:
         led = changes.ledger(no) or {}
         bills[no] = {
@@ -310,21 +315,16 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
     if facs is not None and not bills:
         # 这张 PI 没有授权组织的单据
         raise biz(ErrorCode.FACTORY_FORBIDDEN, factory=cu.scope_text())
+    from app.services.allocation import bill_state
+
     states = changes.bill_states(list(bills))
-    pending = {
-        r["bill_no"]: int(r["n"])
-        for r in db.all(
-            "SELECT bill_no, COUNT(*) n FROM sn_item WHERE pi_no = %s AND status = 'PENDING_ALLOC'"
-            + isql
-            + " GROUP BY bill_no",
-            pi,
-            *iargs,
-        )
-    }
     for no, b in bills.items():
         b["modify_time"] = orders.k3_time(b.get("_mt"))
         b["state"] = states.get(no, changes.EMPTY_STATE)
-        b["pending_alloc"] = pending.get(no, 0)
+        b["pending_alloc"] = items[no][0] if no in items else 0
+        # 单据分配状态：PENDING 待分配 / PROCESSING 待处理 / ALLOCATED 已分配；本 PI 下还没有号为 None。
+        # 已分配的单据在生成页「可生成」页签置灰、不可勾选，也不在不勾选时的整张 PI 生成范围内
+        b["alloc_state"] = bill_state(*items[no]) if no in items else None
         b["total_qty"] = sum(x["qty"] for x in b["lines"])
         b["generated_qty"] = sum(x["generated_qty"] for x in b["lines"])
         b["quota"] = sum(x["quota"] for x in b["lines"])

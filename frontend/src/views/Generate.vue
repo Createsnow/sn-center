@@ -122,14 +122,16 @@
           <el-button link type="primary" size="small" @click="foldAll(false)">{{ t("common.expandAll") }}</el-button>
           <el-button link type="primary" size="small" @click="foldAll(true)">{{ t("common.collapseAll") }}</el-button>
         </div>
-        <div v-for="b in shownBills" :key="b.bill_no" class="bill">
+        <!-- 已分配的单据在「可生成」页签整单置灰：单据和物料行都不可勾选 -->
+        <div v-for="b in shownBills" :key="b.bill_no" class="bill" :class="{ locked: isLocked(b.bill_no) }">
           <!-- 点单据头展开 / 收起物料行；勾选框只管勾选 -->
           <div class="bill-h" @click="toggleFold(b.bill_no)">
             <el-icon class="fold" :class="{ open: !isFolded(b.bill_no) }"><ArrowRight /></el-icon>
-            <span @click.stop><el-checkbox v-bind="billCheck(b.bill_no)" :disabled="!b.in_snapshot || !b.lines.length" @change="(v: any) => onBill(b.bill_no, !!v)" /></span>
+            <span @click.stop><el-checkbox v-bind="billCheck(b.bill_no)" :disabled="!b.in_snapshot || !b.lines.length || isLocked(b.bill_no)" @change="(v: any) => onBill(b.bill_no, !!v)" /></span>
             <span v-if="billCheck(b.bill_no).order >= 0" class="order">{{ billCheck(b.bill_no).order + 1 }}</span>
             <b>{{ b.bill_no }}</b>
             <span class="muted">PO {{ b.po || "—" }} · {{ b.org_name || nameOf(b.org_code) }}<template v-if="deptOf(b)"> · {{ deptOf(b) }}</template><template v-if="b.modify_time"> · {{ t("orders.modifyDate") }} {{ b.modify_time }}</template></span>
+            <el-tag v-if="isLocked(b.bill_no)" size="small" type="info">{{ t("allocate.state.ALLOCATED") }}</el-tag>
             <el-tag v-if="!b.in_snapshot" size="small" type="info">{{ t("generate.notInSnapshot") }}</el-tag>
             <el-tag v-if="b.state.suspend" size="small" type="warning">{{ suspendLabel(b.state.suspend) }}</el-tag>
             <el-tag v-if="b.state.leave_state" size="small" type="danger">{{ leaveStateLabel(b.state.leave_state) }}</el-tag>
@@ -142,7 +144,7 @@
             <el-table-column width="44">
               <template #default="{ row }">
                 <span class="sel" @click.stop>
-                  <el-checkbox :model-value="isPicked(row)" @change="(v: any) => pickLine(row, !!v)" />
+                  <el-checkbox :model-value="isPicked(row)" :disabled="isLocked(row.bill_no)" @change="(v: any) => pickLine(row, !!v)" />
                   <span v-if="lineIdx(row) >= 0" class="order">{{ lineIdx(row) + 1 }}</span>
                 </span>
               </template>
@@ -483,18 +485,38 @@ function pickLine(row: OrderLine, on: boolean) {
   if (i >= 0) autoFillAttach(row, i + 1);
 }
 function onLineClick(row: OrderLine) {
+  if (isLocked(row.bill_no)) return;
   pickLine(row, !isPicked(row));
 }
 function lineClass({ row }: { row: OrderLine }) {
+  if (isLocked(row.bill_no)) return "locked";
   return isPicked(row) ? "picked" : "";
 }
-/** 未勾选时：生成取快照中还有额度的全部单据，排号仍按单据编号从小到大（页面显示按修改日期排，不影响排号）。 */
-const defaultBills = computed<string[]>(() =>
-  ctx.value ? ctx.value.bills.filter((b: any) => b.in_snapshot && b.quota > 0).map((b: any) => b.bill_no as string).sort() : [],
+/** 已分配的单据（与分配页左侧「已分配」同一口径：号都已分配且推送完成，待处理的不算）不再从生成页生成：
+ *  「可生成」页签中整单置灰，单据和物料行都不可勾选；不勾选时也不在整张 PI 的生成范围内，
+ *  别的页签勾选了它的物料行时也不计入生成范围（选规则、撤销仍按勾选）。 */
+const allocatedBills = computed(
+  () => new Set<string>((ctx.value?.bills ?? []).filter((b: any) => b.alloc_state === "ALLOCATED").map((b: any) => b.bill_no)),
 );
-const genScope = computed(() => scopeBody(sel.value) ?? { scope: "BILLS", bills: defaultBills.value });
-/** 未勾选且整张 PI 已没有额度：不用预演。 */
-const piDone = computed(() => !!ctx.value && !hasSel.value && !defaultBills.value.length);
+const isLocked = (no: string) => lineFilter.value === "GEN" && allocatedBills.value.has(no);
+/** 未勾选时：生成取快照中还有额度、未分配完的全部单据，排号仍按单据编号从小到大（页面显示按修改日期排，不影响排号）。 */
+const defaultBills = computed<string[]>(() =>
+  ctx.value
+    ? ctx.value.bills
+        .filter((b: any) => b.in_snapshot && b.quota > 0 && !allocatedBills.value.has(b.bill_no))
+        .map((b: any) => b.bill_no as string)
+        .sort()
+    : [],
+);
+/** 生成范围：勾选中去掉已分配的单据；都不勾选 = 整张 PI（defaultBills）。没有可生成的为 null，不用预演。 */
+const genScope = computed(() => {
+  if (!hasSel.value) return defaultBills.value.length ? { scope: "BILLS", bills: defaultBills.value } : null;
+  const done = allocatedBills.value;
+  return scopeBody({
+    bills: sel.value.bills.filter((no: string) => !done.has(no)),
+    lines: sel.value.lines.filter((l: LineRef) => !done.has(l.bill_no)),
+  });
+});
 
 // ---------------- 物料行：状态、筛选、号段；附件项次、米数、产品单位的填写
 
@@ -559,10 +581,11 @@ function schedulePreview() {
 
 async function runPreview() {
   if (!ctx.value || running.value) return;
-  if (piDone.value) return resetGen();
+  const scope = genScope.value;
+  if (!scope) return resetGen();
   gen.loading = true;
   try {
-    gen.preview = await api.genPreview({ pi_no: ctx.value.pi_no, ...genScope.value }, true);
+    gen.preview = await api.genPreview({ pi_no: ctx.value.pi_no, ...scope }, true);
   } catch (e) {
     // 预演失败（超过单次最大上限、规则流水用尽等）：底部栏不放说明文字，弹出提示
     gen.preview = null;
@@ -765,6 +788,9 @@ onUnmounted(() => {
 .sel { display: inline-flex; align-items: center; gap: 4px; }
 .lines :deep(tr.picked > td) { background: var(--el-color-primary-light-9); }
 .lines :deep(.el-table__row) { cursor: pointer; }
+.bill.locked .bill-h { color: var(--el-text-color-disabled); }
+.lines :deep(tr.locked) { cursor: default; }
+.lines :deep(tr.locked > td) { color: var(--el-text-color-disabled); }
 .no-lines { padding: 8px 12px; margin: 0; }
 .bar { display: flex; align-items: center; gap: 10px; text-align: left; }
 .bar :deep(.el-button + .el-button) { margin-left: 0; }

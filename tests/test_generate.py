@@ -830,6 +830,38 @@ def test_allocation_bill_list_driven_by_sns(w, api, sql):
     assert ctx["summary"]["allocated_qty"] == 3, "已分配按单据：只数已分配单据的号"
 
 
+def test_generate_context_bill_alloc_state(w, api):
+    """生成详情各单据带分配状态（与分配页左侧同一口径）：还没有号为 None；待分配；
+    号都已分配但还在推送 = 待处理；号都已分配且推送完成 = 已分配（页面在「可生成」页签置灰、不可勾选）。"""
+    org = w.org(uid("O")[:10])
+    _, pi, b1 = mk(w, ("M1", 3), ("M2", 2), org=org)
+    _, _, b2 = mk(w, ("M1", 2), pi=pi, org=org)
+    _, _, b3 = mk(w, ("M1", 1), pi=pi, org=org)
+    mes = w.org(uid("O")[:10])
+    w.enable_mes(mes)
+    _, _, b4 = mk(w, ("M1", 2), pi=pi, org=mes)
+    ok(w.bind_pi(pi, w.rule(P())))
+    w.generate(pi, lines=[(b1, 1), (b2, 1), (b4, 1)])
+
+    def states() -> dict[str, tuple]:
+        ctx = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))
+        return {b["bill_no"]: (b["alloc_state"], b["pending_alloc"], b["quota"]) for b in ctx["bills"]}
+
+    assert states() == {
+        b1: ("PENDING", 3, 2),
+        b2: ("PENDING", 2, 0),
+        b3: (None, 0, 1),
+        b4: ("PENDING", 2, 0),
+    }
+    w.allocate(pi, bills=[b1, b4])
+    got = states()
+    assert got[b1] == ("ALLOCATED", 0, 2), "号都已分配（未对接 MES 分配即完成），还有额度的行仍列在可生成"
+    assert got[b4] == ("PROCESSING", 0, 0), "推送未完成的单据为待处理，不算已分配"
+    assert got[b2] == ("PENDING", 2, 0) and got[b3] == (None, 0, 1)
+    w.push()
+    assert states()[b4] == ("ALLOCATED", 0, 0), "推送完成后为已分配"
+
+
 def test_interrupted_job_recovered_only_after_owner_exits(w, sql):
     """多实例：执行生成的实例退出后（PI 操作锁随连接释放）定期回收把 RUNNING 任务标为中断并释放 PI；
     锁还被持有（仍在执行）时不动它。"""
