@@ -109,14 +109,16 @@
         <!-- 生成中：进度、取消 -->
         <GenProgress v-if="running" :running="running" :canceling="busy === 'cancel'" @cancel="cancelGen" />
 
-        <!-- 只有三个页签：待处理 / 可生成 / 已生成（按处理步骤筛物料行）；页签名后不带数字 -->
-        <el-tabs v-model="lineFilter" class="dtabs">
-          <el-tab-pane v-for="f in FILTERS" :key="f" :label="t(`generate.filter.${f}`)" :name="f" />
-        </el-tabs>
-        <div class="toolbar">
-          <span class="push" />
-          <el-button link type="primary" size="small" @click="foldAll(false)">{{ t("common.expandAll") }}</el-button>
-          <el-button link type="primary" size="small" @click="foldAll(true)">{{ t("common.collapseAll") }}</el-button>
+        <!-- 只有三个页签：待处理 / 可生成 / 已生成（按处理步骤筛物料行）；页签名后不带数字；
+             全部展开 / 全部收起与页签同一行（叠在页签头右端，页签头底线仍贯通整行） -->
+        <div class="tabs-row">
+          <el-tabs v-model="lineFilter" class="dtabs">
+            <el-tab-pane v-for="f in FILTERS" :key="f" :label="t(`generate.filter.${f}`)" :name="f" />
+          </el-tabs>
+          <span class="fold-ops">
+            <el-button link type="primary" size="small" @click="foldAll(false)">{{ t("common.expandAll") }}</el-button>
+            <el-button link type="primary" size="small" @click="foldAll(true)">{{ t("common.collapseAll") }}</el-button>
+          </span>
         </div>
         <!-- 已分配的单据删号后（或数量增加后）还有额度的，照常勾选生成 -->
         <div v-for="b in shownBills" :key="b.bill_no" class="bill">
@@ -776,6 +778,11 @@ onUnmounted(() => {
 .kv b { color: var(--app-text); font-weight: 600; }
 .drawer { display: flex; flex-direction: column; gap: 10px; }
 .dtabs :deep(.el-tabs__header) { margin-bottom: 8px; }
+.tabs-row { position: relative; }
+/* 高度与页签头（40px）一致，按钮与页签文字垂直居中；左侧留白避免与页签重叠 */
+.dtabs :deep(.el-tabs__nav-wrap) { padding-right: 160px; }
+.fold-ops { position: absolute; top: 0; right: 0; height: 40px; display: inline-flex; align-items: center; gap: 4px; }
+.fold-ops :deep(.el-button + .el-button) { margin-left: 0; }
 .toolbar { margin-bottom: 8px; }
 .issue-tags, .ops { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .ops { justify-content: flex-end; gap: 2px 6px; }
