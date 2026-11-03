@@ -221,6 +221,7 @@ M = {
 "actions.SN_REVOKE": ("撤销生成", "Revoke generation", "Hủy lần tạo"),
 "actions.SN_DELETE": ("删除 SN", "Delete SNs", "Xóa SN"),
 "actions.SN_IMPORT": ("SN 导入", "Import SNs", "Nhập SN"),
+"actions.SN_IMPORT_DELETE": ("SN 导入整单删除", "Delete SN import", "Xóa phiếu nhập SN"),
 "actions.SN_ALLOCATE": ("分配", "Allocate", "Phân bổ"),
 "actions.SN_BATCH_CREATE": ("建交付批次", "Batch created", "Tạo lô giao"),
 "actions.SN_PUSH": ("推送", "Push", "Đẩy"),

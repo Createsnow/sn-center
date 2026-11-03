@@ -12,6 +12,8 @@
 - 导入的号只能分配（分配后照常推送 / 拉取 / 下载、查询）；不出现在生成页（号段、单据分配状态、统计都不计），
   不能删号、转移，也不占订单的可生成数量。
 - 完整 SN 全局唯一由号池的唯一键保证：导入撞上别人刚生成或导入的号整次不导入，生成撞上导入的号整次回滚。
+- 整单删除（导入页）：一个导入单号的号全部还是待分配时，可整单删除——号从号池移除（之后可重新导入同样的号），
+  导入记录保留并标为已删除；有一枚已分配（含待推送、已推送）就不能删。与导入、分配共用 PI 操作锁。
 """
 
 from __future__ import annotations
@@ -237,7 +239,10 @@ def _validate(cu: CurrentUser, rows: list[Row], lock: bool = False) -> None:
     for part in _chunks(sns):
         for x in db.all(f"SELECT sn, pi_no FROM sn_item WHERE sn IN ({marks(len(part))}){share}", *part):
             pool[x["sn"]] = x["pi_no"]
-        for x in db.all(f"SELECT sn, import_no FROM sn_import_item WHERE sn IN ({marks(len(part))}){share}", *part):
+        for x in db.all(
+            f"SELECT sn, import_no FROM sn_import_item WHERE sn IN ({marks(len(part))}) AND deleted_at IS NULL{share}",
+            *part,
+        ):
             done[x["sn"]] = x["import_no"]
     for r in rows:
         # 导入的号也在号池里：导入过的报「已导入」，其余在号池里的报「号池已有」
@@ -332,11 +337,7 @@ def run(cu: CurrentUser, content: bytes, file_name_in: str | None) -> dict:
                 if not is_duplicate(ex):
                     raise
                 # 检查之后别人刚生成或导入了同样的号
-                hit = db.one(f"SELECT sn FROM sn_item WHERE sn IN ({marks(len(sns))}) LIMIT 1", *sns) or db.one(
-                    f"SELECT sn FROM sn_import_item WHERE sn IN ({marks(len(sns))}) AND import_no <> %s LIMIT 1",
-                    *sns,
-                    no,
-                )
+                hit = db.one(f"SELECT sn FROM sn_item WHERE sn IN ({marks(len(sns))}) LIMIT 1", *sns)
                 raise biz(ErrorCode.IMPORT_CONFLICT, sn=hit["sn"] if hit else part[0].sn) from None
         bills = sorted({r.bill for r in rows})
         for b in bills:
@@ -378,13 +379,24 @@ class Filter:
     import_no: str | None = None
 
 
-_FIELDS = ("id", "import_no", "sn", "pi_no", "bill_no", "factory_code", "file_name", "row_no", "created_by")
+_FIELDS = (
+    "id",
+    "import_no",
+    "sn",
+    "pi_no",
+    "bill_no",
+    "factory_code",
+    "file_name",
+    "row_no",
+    "created_by",
+    "deleted_by",
+)
 _COLS = ", ".join(f"s.{k}" for k in _FIELDS)
 
 
 def items(cu: CurrentUser, f: Filter, q: util.Page) -> dict:
     """已导入的号（新的在前）：按 PI、单据编号、SN（前缀）、导入单号筛选；普通操作员只看授权组织的。
-    另带号在号池中的当前状态（待分配 / 待推送 / 已推送 / 已分配）与生产组织。"""
+    另带号在号池中的当前状态（待分配 / 待推送 / 已推送 / 已分配）与生产组织；整单删除过的带删除人与时间。"""
     where = ["1 = 1"]
     args: list[Any] = []
     facs = cu.read_factories(None)
@@ -403,8 +415,9 @@ def items(cu: CurrentUser, f: Filter, q: util.Page) -> dict:
     w = " AND ".join(where)
     total = db.count(f"SELECT COUNT(*) FROM sn_import_item s WHERE {w}", *args)
     rows = db.all(
-        f"SELECT {_COLS}, s.created_at, i.status, i.factory_code cur_factory FROM sn_import_item s "
-        f"LEFT JOIN sn_item i ON i.sn = s.sn AND i.origin = 'IMPORT' WHERE {w} ORDER BY s.id DESC LIMIT %s OFFSET %s",
+        f"SELECT {_COLS}, s.created_at, s.deleted_at, i.status, i.factory_code cur_factory FROM sn_import_item s "
+        "LEFT JOIN sn_item i ON i.sn = s.sn AND i.origin = 'IMPORT' AND i.gen_batch = s.import_no "
+        f"WHERE {w} ORDER BY s.id DESC LIMIT %s OFFSET %s",
         *args,
         q.size,
         q.offset,
@@ -414,6 +427,7 @@ def items(cu: CurrentUser, f: Filter, q: util.Page) -> dict:
             {
                 **{k: r[k] for k in _FIELDS},
                 "created_at": util.fmt(r["created_at"]),
+                "deleted_at": util.fmt(r["deleted_at"]),
                 "status": r["status"],
                 "allocated_to": r["cur_factory"],
             }
@@ -422,3 +436,91 @@ def items(cu: CurrentUser, f: Filter, q: util.Page) -> dict:
         total,
         q,
     )
+
+
+# ================================================================== 整单删除
+
+
+def _records(cu: CurrentUser, no_in: str | None) -> tuple[str, list[dict]]:
+    """导入单的未删除记录；不存在或已删除报 IMPORT_NOT_FOUND；普通操作员须有导入单涉及的全部生产组织的权限。"""
+    no = util.trim(no_in)
+    recs = (
+        db.all("SELECT * FROM sn_import_item WHERE import_no = %s AND deleted_at IS NULL ORDER BY id", no) if no else []
+    )
+    if not recs:
+        raise biz(ErrorCode.IMPORT_NOT_FOUND, import_no=no)
+    cu.check_write(*{r["factory_code"] for r in recs})
+    return no, recs
+
+
+def _pool(no: str, sns: list[str], lock: bool = False) -> list[dict]:
+    """导入单在号池里的号（按 SN 走唯一索引，不扫全表）。"""
+    out: list[dict] = []
+    for part in _chunks(sns):
+        out += db.all(
+            f"SELECT id, sn, status, pi_no, bill_no, factory_code, gen_org_code FROM sn_item WHERE sn IN "
+            f"({marks(len(part))}) AND origin = 'IMPORT' AND gen_batch = %s" + (" FOR UPDATE" if lock else ""),
+            *part,
+            no,
+        )
+    return out
+
+
+def summary(cu: CurrentUser, no_in: str | None) -> dict:
+    """整单删除确认：导入单的枚数、还待分配的枚数、已分配的枚数、涉及的 PI 与单据；deletable = 全部待分配。"""
+    no, recs = _records(cu, no_in)
+    items = _pool(no, [r["sn"] for r in recs])
+    pending = sum(1 for x in items if x["status"] == util.PENDING_ALLOC)
+    return {
+        "import_no": no,
+        "qty": len(recs),
+        "pending": pending,
+        "allocated": len(items) - pending,
+        "pis": sorted({r["pi_no"] for r in recs}),
+        "bills": sorted({r["bill_no"] for r in recs}),
+        "deletable": len(items) - pending == 0,
+    }
+
+
+def delete(cu: CurrentUser, no_in: str | None) -> dict:
+    """整单删除：导入单的号全部待分配时，从号池移除（可重新导入），导入记录标为已删除；按单据留 SN_IMPORT_DELETE 痕迹。
+    有一枚已分配就整单不删（IMPORT_DELETE_ALLOCATED）。"""
+    no, recs = _records(cu, no_in)
+    sns = [r["sn"] for r in recs]
+    pis = sorted({x["pi_no"] for x in _pool(no, sns)} | {r["pi_no"] for r in recs})
+    with locks.with_pi_lock(*pis), db.tx():
+        no, recs = _records(cu, no)
+        items = _pool(no, [r["sn"] for r in recs], lock=True)
+        if not {x["pi_no"] for x in items} <= set(pis):
+            raise biz(ErrorCode.CONFLICT_RETRY)
+        allocated = sum(1 for x in items if x["status"] != util.PENDING_ALLOC)
+        if allocated:
+            raise biz(ErrorCode.IMPORT_DELETE_ALLOCATED, import_no=no, count=allocated)
+        ids = [x["id"] for x in items]
+        for i in range(0, len(ids), CHUNK):
+            part = ids[i : i + CHUNK]
+            db.exec(f"DELETE FROM sn_item WHERE id IN ({marks(len(part))})", *part)
+        now = util.now()
+        db.exec(
+            "UPDATE sn_import_item SET deleted_by = %s, deleted_at = %s WHERE import_no = %s AND deleted_at IS NULL",
+            cu.emp_no,
+            now,
+            no,
+        )
+        by_bill: dict[tuple[str, str], list[dict]] = {}
+        for x in items:
+            by_bill.setdefault((x["pi_no"], x["bill_no"]), []).append(x)
+        for (pi, bill), xs in sorted(by_bill.items()):
+            ss = sorted(x["sn"] for x in xs)
+            audit.record(
+                cu,
+                audit.entry(audit.SN_IMPORT_DELETE)
+                .factory(xs[0]["gen_org_code"] or None)
+                .pi(pi)
+                .bill(bill)
+                .range(ss[0], ss[-1])
+                .count(len(xs))
+                .status(util.PENDING_ALLOC, None)
+                .batch(no),
+            )
+    return {"import_no": no, "qty": len(items), "bills": len(by_bill)}

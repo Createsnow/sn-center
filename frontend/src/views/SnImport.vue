@@ -15,21 +15,24 @@
         <el-button type="primary" @click="list.load(1)">{{ t("common.search") }}</el-button>
       </div>
       <el-table v-loading="list.state.loading" :data="list.items.value" size="small" :empty-text="t('snImport.empty')">
-        <el-table-column prop="pi_no" label="PI" min-width="100" show-overflow-tooltip />
-        <el-table-column prop="bill_no" :label="t('common.billNo')" min-width="120" show-overflow-tooltip />
-        <el-table-column :label="t('common.sn')" min-width="170">
+        <el-table-column prop="pi_no" label="PI" min-width="90" show-overflow-tooltip />
+        <el-table-column prop="bill_no" :label="t('common.billNo')" min-width="110" show-overflow-tooltip />
+        <el-table-column :label="t('common.sn')" min-width="150">
           <template #default="{ row }"><span class="sn-mono">{{ row.sn }}</span></template>
         </el-table-column>
-        <el-table-column :label="t('snImport.status')" width="150">
+        <el-table-column :label="t('snImport.status')" width="130">
           <template #default="{ row }">
-            <template v-if="row.status">
+            <el-tooltip v-if="row.deleted_at" :content="`${row.deleted_by} ${fmt(row.deleted_at)}`" placement="top">
+              <el-tag size="small" type="info" effect="plain" disable-transitions>{{ t("snImport.deleted") }}</el-tag>
+            </el-tooltip>
+            <template v-else-if="row.status">
               <StatusTag :status="row.status" />
               <router-link v-if="row.status === 'PENDING_ALLOC'" class="ml" :to="{ path: '/allocate', query: { pi: row.pi_no, bill: row.bill_no } }">{{ t("snImport.toAllocate") }}</router-link>
             </template>
             <span v-else class="muted">—</span>
           </template>
         </el-table-column>
-        <el-table-column :label="t('common.factory')" min-width="140" show-overflow-tooltip>
+        <el-table-column :label="t('common.factory')" min-width="120" show-overflow-tooltip>
           <template #default="{ row }">{{ nameOf(row.factory_code) || "—" }}<span v-if="nameOf(row.factory_code) !== row.factory_code" class="muted">（{{ row.factory_code }}）</span></template>
         </el-table-column>
         <el-table-column :label="t('snImport.importNo')" min-width="185">
@@ -37,11 +40,16 @@
             <el-button link type="primary" class="sn-mono" @click="byImportNo(row.import_no)">{{ row.import_no }}</el-button>
           </template>
         </el-table-column>
-        <el-table-column :label="t('snImport.fileRow')" min-width="100" show-overflow-tooltip>
+        <el-table-column :label="t('snImport.fileRow')" min-width="80" show-overflow-tooltip>
           <template #default="{ row }">{{ row.file_name || "—" }} / {{ row.row_no }}</template>
         </el-table-column>
         <el-table-column :label="t('snImport.importedBy')" width="140">
           <template #default="{ row }"><div>{{ row.created_by }}</div><div class="muted">{{ fmt(row.created_at) }}</div></template>
+        </el-table-column>
+        <el-table-column :label="t('common.actions')" width="90" align="right">
+          <template #default="{ row }">
+            <el-button v-if="!row.deleted_at" link type="danger" :loading="deleting === row.import_no" @click="deleteImport(row.import_no)">{{ t("snImport.deleteAll") }}</el-button>
+          </template>
         </el-table-column>
       </el-table>
       <el-pagination class="pager" layout="total, sizes, prev, pager, next" :total="list.state.total" :page-size="list.state.pageSize"
@@ -98,7 +106,7 @@
  *  有一行不能导入整个文件都不导入。 */
 import { onMounted, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import { ElMessage, type UploadFile, type UploadInstance } from "element-plus";
+import { ElMessage, ElMessageBox, type UploadFile, type UploadInstance } from "element-plus";
 import { api, urls } from "@/api";
 import PageHead from "@/components/PageHead.vue";
 import StatusTag from "@/components/StatusTag.vue";
@@ -119,6 +127,30 @@ const lq = reactive({ pi: "", bill_no: "", sn: "", import_no: "" });
 const list = usePaged<any>((q) =>
   api.snImportItems({ ...q, pi: lq.pi.trim(), bill_no: lq.bill_no.trim(), sn: lq.sn.trim(), import_no: lq.import_no.trim() }),
 );
+
+/** 整单删除：导入单的号全部待分配时才能删（号从号池移除，之后可重新导入）；有已分配的号时只提示、不删。 */
+const deleting = ref("");
+async function deleteImport(no: string) {
+  deleting.value = no;
+  try {
+    const s = await api.snImportSummary(no);
+    if (!s.deletable) {
+      await ElMessageBox.alert(t("snImport.cannotDelete", { no, n: s.allocated }), { type: "warning" });
+      return;
+    }
+    await ElMessageBox.confirm(t("snImport.deleteConfirm", { no, qty: s.qty, bills: s.bills.length }), {
+      type: "warning",
+      confirmButtonText: t("common.delete"),
+    });
+    const r = await api.snImportDelete(no);
+    ElMessage.success(t("snImport.deletedDone", { no, qty: r.qty }));
+    await list.load();
+  } catch {
+    /* 取消，或错误已提示 */
+  } finally {
+    deleting.value = "";
+  }
+}
 
 function byImportNo(no: string) {
   Object.assign(lq, { pi: "", bill_no: "", sn: "", import_no: no });

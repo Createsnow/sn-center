@@ -46,6 +46,22 @@ async def import_run(request: Request, cu: OperatorDep, file_name: str | None = 
     return await run_sync(sn_import.run, cu, await _content(request), file_name)
 
 
+@router.get(
+    "/imports/{import_no}",
+    summary="整单删除确认：导入单的枚数、待分配 / 已分配枚数、涉及的 PI 与单据；deletable = 全部待分配",
+)
+def import_summary(import_no: str, cu: OperatorDep) -> dict:
+    return sn_import.summary(cu, import_no)
+
+
+@router.post(
+    "/imports/{import_no}/delete",
+    summary="整单删除：导入单的号全部待分配时从号池移除（之后可重新导入），导入记录标为已删除；有已分配的号不能删",
+)
+def import_delete(import_no: str, cu: OperatorDep) -> dict:
+    return sn_import.delete(cu, import_no)
+
+
 @router.get("/items", summary="已导入的号（新的在前）：按 PI、单据编号、SN（前缀）、导入单号筛选，分页")
 def import_items(
     cu: OperatorDep,

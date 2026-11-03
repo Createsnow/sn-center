@@ -273,3 +273,42 @@ def test_bad_files(w, api):
         r = check(api, xlsx(("P", "B", "S", "O"), headers=head), w.admin)
         assert (r.code, r["params"]) == ("IMPORT_HEADER_INVALID", {"columns": "PI、单据编号、SN、生产组织"}), head
     assert check(api, xlsx(headers=HEAD), w.admin).code == "IMPORT_EMPTY"
+
+
+def test_delete_whole_import_only_while_all_pending(w, api, sql):
+    """整单删除：导入单的号全部待分配时才能删，号从号池移除、记录标为已删除，之后可重新导入同样的号；
+    有一枚已分配就不能删；删过的再删报不存在；普通操作员只能删授权组织的导入单。"""
+    org, pi, bill = mk(w, ("M1", 1))
+    _, pi2, bill2 = mk(w, ("M1", 1), org=org)
+    a, b, c = uid("SA"), uid("SB"), uid("SC")
+    first = ok(run(api, xlsx((pi, bill, a, org), (pi2, bill2, b, org)), w.admin))["import_no"]
+    s = ok(api.get(f"/api/sn-import/imports/{first}", w.admin))
+    assert (s["qty"], s["pending"], s["allocated"], s["deletable"], s["bills"]) == (
+        2,
+        2,
+        0,
+        True,
+        sorted([bill, bill2]),
+    )
+    other = w.user(emp("OP"), "operator", None, [w.org(uid("O")[:10])])
+    assert api.post(f"/api/sn-import/imports/{first}/delete", {}, other).code == "FACTORY_FORBIDDEN"
+    d = ok(api.post(f"/api/sn-import/imports/{first}/delete", {}, w.admin))
+    assert (d["qty"], d["bills"]) == (2, 2)
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE sn IN (%s, %s)", a, b) == 0
+    assert sql.count("SELECT COUNT(*) FROM sn_import_item WHERE import_no = %s AND deleted_by = 'admin'", first) == 2
+    assert sql.count("SELECT COUNT(*) FROM sn_audit WHERE action = 'SN_IMPORT_DELETE' AND batch_no = %s", first) == 2
+    assert api.post(f"/api/sn-import/imports/{first}/delete", {}, w.admin).code == "IMPORT_NOT_FOUND"
+    # 删后可重新导入同样的号；列表里旧记录为已删除，新记录待分配
+    again = ok(run(api, xlsx((pi, bill, a, org), (pi, bill, c, org)), w.admin))["import_no"]
+    rows = ok(api.get(f"/api/sn-import/items?sn={a}", w.admin))["items"]
+    assert [(x["import_no"], x["status"], x["deleted_at"] is not None) for x in rows] == [
+        (again, "PENDING_ALLOC", False),
+        (first, None, True),
+    ]
+    # 有一枚已分配：整单不能删，号都还在
+    w.allocate(pi, lines=[(bill, 0)])
+    s = ok(api.get(f"/api/sn-import/imports/{again}", w.admin))
+    assert (s["allocated"], s["deletable"]) == (2, False)
+    r = api.post(f"/api/sn-import/imports/{again}/delete", {}, w.admin)
+    assert (r.status, r.code, r["params"]) == (409, "IMPORT_DELETE_ALLOCATED", {"import_no": again, "count": 2})
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE sn IN (%s, %s)", a, c) == 2

@@ -162,6 +162,8 @@ class ErrorCode(Enum):
     IMPORT_EMPTY = (400, "导入文件没有数据行")
     IMPORT_TOO_MANY = (400, "单次最多导入 {max} 行，文件有 {rows} 行")
     IMPORT_HAS_ISSUES = (400, "有 {count} 行不能导入，整个文件都没有导入；请改好后重新导入")
+    IMPORT_NOT_FOUND = (404, "导入单 {import_no} 不存在或已删除")
+    IMPORT_DELETE_ALLOCATED = (409, "导入单 {import_no} 有 {count} 枚号已分配，不能整单删除（全部待分配时才能删除）")
     IMPORT_CONFLICT = (409, "SN {sn} 刚被生成或导入，整个文件都没有导入；请重新检查后导入")
     # ---------- 转单 / 转组织 ----------
     TR_SCOPE_INVALID = (400, "转移范围只能是整张单据、单据 + 物料、单枚或连续号段")

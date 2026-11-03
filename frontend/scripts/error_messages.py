@@ -130,6 +130,8 @@ E = {
 "IMPORT_EMPTY": ("The import file has no data rows", "Tệp nhập không có dòng dữ liệu"),
 "IMPORT_TOO_MANY": ("At most {max} rows per import; the file has {rows} rows", "Mỗi lần nhập tối đa {max} dòng, tệp có {rows} dòng"),
 "IMPORT_HAS_ISSUES": ("{count} rows cannot be imported, so nothing in the file was imported; fix them and import again", "Có {count} dòng không thể nhập nên toàn bộ tệp chưa được nhập; vui lòng sửa rồi nhập lại"),
+"IMPORT_NOT_FOUND": ("Import {import_no} does not exist or was deleted", "Phiếu nhập {import_no} không tồn tại hoặc đã bị xóa"),
+"IMPORT_DELETE_ALLOCATED": ("{count} SNs of import {import_no} are already allocated, so it cannot be deleted (only when all SNs are waiting for allocation)", "Phiếu nhập {import_no} có {count} SN đã phân bổ nên không thể xóa cả phiếu (chỉ xóa được khi tất cả đang chờ phân bổ)"),
 "IMPORT_CONFLICT": ("SN {sn} was just generated or imported, so nothing in the file was imported; check again and import", "SN {sn} vừa được tạo hoặc nhập nên toàn bộ tệp chưa được nhập; vui lòng kiểm tra lại rồi nhập"),
 # ---------- 转单 / 转组织 ----------
 "TR_SCOPE_INVALID": ("Transfer scope must be a whole bill, bill + material, or a single SN / contiguous range", "Phạm vi chuyển chỉ có thể là cả chứng từ, chứng từ + vật tư, hoặc một SN / một dải liên tục"),

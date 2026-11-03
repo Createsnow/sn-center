@@ -121,6 +121,8 @@
   "IMPORT_EMPTY": "The import file has no data rows",
   "IMPORT_TOO_MANY": "At most {max} rows per import; the file has {rows} rows",
   "IMPORT_HAS_ISSUES": "{count} rows cannot be imported, so nothing in the file was imported; fix them and import again",
+  "IMPORT_NOT_FOUND": "Import {import_no} does not exist or was deleted",
+  "IMPORT_DELETE_ALLOCATED": "{count} SNs of import {import_no} are already allocated, so it cannot be deleted (only when all SNs are waiting for allocation)",
   "IMPORT_CONFLICT": "SN {sn} was just generated or imported, so nothing in the file was imported; check again and import",
   "TR_SCOPE_INVALID": "Transfer scope must be a whole bill, bill + material, or a single SN / contiguous range",
   "TR_MATERIAL_REQUIRED": "Material code is required when transferring by material or by range",

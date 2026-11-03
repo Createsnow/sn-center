@@ -440,7 +440,8 @@ CREATE TABLE sn_item_deleted (
 
 -- SN 导入记录：本系统之外已有的 SN（PI + 单据 + SN + 生产组织）一次导入一个导入单号，逐枚记在这里（导入后不变）；
 -- 号同时写入号池（sn_item.origin = 'IMPORT'，待分配，挂在单据序号 0 上，id 即号池的 seq_dec），只能分配；
--- 完整 SN 全局唯一由号池的 ux_item_sn 保证（导入撞上已有的号整次不导入，生成撞上导入的号整次回滚）
+-- 完整 SN 全局唯一由号池的 ux_item_sn 保证（导入撞上已有的号整次不导入，生成撞上导入的号整次回滚）。
+-- 导入页可整单删除（一个导入单号的号全部待分配时）：号从号池移除，记录留在这里标为已删除，之后可重新导入同样的号
 CREATE TABLE sn_import_item (
   id            BIGINT       NOT NULL AUTO_INCREMENT,
   import_no     VARCHAR(40)  NOT NULL COMMENT '导入单号（一次导入一个）',
@@ -452,8 +453,10 @@ CREATE TABLE sn_import_item (
   row_no        INT          NOT NULL COMMENT '在导入文件中的行号',
   created_by    VARCHAR(32)  NOT NULL,
   created_at    DATETIME     NOT NULL,
+  deleted_by    VARCHAR(32)  NULL COMMENT '整单删除人（未删除为 NULL）',
+  deleted_at    DATETIME     NULL COMMENT '整单删除时间',
   PRIMARY KEY (id),
-  UNIQUE KEY ux_import_sn (sn) COMMENT '完整 SN 唯一（utf8mb4_bin，区分大小写）',
+  KEY ix_import_sn (sn) COMMENT '不唯一：整单删除后可重新导入同样的号（唯一性由号池保证）',
   KEY ix_import_no (import_no),
   KEY ix_import_pi (pi_no, bill_no),
   KEY ix_import_bill (bill_no),

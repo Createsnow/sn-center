@@ -143,6 +143,8 @@ export const api = {
       timeout: 0,
     }),
   snImportItems: (params?: Q) => get("/sn-import/items", params),
+  snImportSummary: (no: string) => get(`/sn-import/imports/${enc(no)}`),
+  snImportDelete: (no: string) => post(`/sn-import/imports/${enc(no)}/delete`),
 
   // ---------------- 查询与留痕
   items: (params?: Q) => get("/sn", params),

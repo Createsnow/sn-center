@@ -363,7 +363,7 @@ def test_migration_flyway_checksum():
     """测试阶段只保留一个 V1__init.sql；校验和按 Flyway 算法固定，改了建表脚本须同步更新这里（并重建测试库）。"""
     ours = {m.script: m for m in migrations()}
     assert list(ours) == ["V1__init.sql"]
-    assert ours["V1__init.sql"].checksum() == -1856840602
+    assert ours["V1__init.sql"].checksum() == -1435201597
     statements = ours["V1__init.sql"].statements()
     assert len(statements) == 36
     text = "\n".join(statements)
@@ -598,6 +598,7 @@ def test_db_target_env_overrides_dotenv(monkeypatch):
         ("POST", "/api/generate/delete", "SN_DELETE"),
         ("POST", "/api/sn-import", "SN_IMPORT"),
         ("POST", "/api/sn-import/check", "SN_IMPORT"),
+        ("POST", "/api/sn-import/imports/IM1/delete", "SN_IMPORT_DELETE"),
         ("PUT", "/api/rules/pi-binding", "RULE_PI_BIND"),
         ("DELETE", "/api/rules/pi-binding", "RULE_PI_UNBIND"),
         ("POST", "/api/rules/line-select", "RULE_LINE_SELECT"),
