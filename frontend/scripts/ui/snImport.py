@@ -1,7 +1,7 @@
-# SN 导入：系统外已有的 SN 按 PI + 单据编号 + SN + 其他登记，之后生成不会再出这些号
+# SN 导入：系统外已有的 SN 按 PI + 单据编号 + SN + 生产组织登记，之后生成不会再出这些号
 M = {
 "snImport.title": ("SN 导入", "SN import", "Nhập SN"),
-"snImport.desc": ("登记本系统之外已有的 SN（PI + 单据编号 + SN + 其他），之后生成不会再出这些号", "Register SNs that already exist outside this system (PI + Bill No. + SN + Other); generation will never issue them again", "Đăng ký các SN đã có ngoài hệ thống (PI + Số chứng từ + SN + Khác); việc tạo SN sẽ không cấp lại các số này"),
+"snImport.desc": ("登记本系统之外已有的 SN（PI + 单据编号 + SN + 生产组织），之后生成不会再出这些号", "Register SNs that already exist outside this system (PI + Bill No. + SN + Production org); generation will never issue them again", "Đăng ký các SN đã có ngoài hệ thống (PI + Số chứng từ + SN + Tổ chức sản xuất); việc tạo SN sẽ không cấp lại các số này"),
 "snImport.template": ("下载模板", "Download template", "Tải mẫu"),
 "snImport.import": ("导入", "Import", "Nhập"),
 "snImport.dialogTitle": ("导入 SN", "Import SNs", "Nhập SN"),
@@ -14,7 +14,6 @@ M = {
 "snImport.done": ("已导入 {qty} 枚（导入单号 {no}）", "Imported {qty} SNs (import No. {no})", "Đã nhập {qty} SN (số phiếu nhập {no})"),
 "snImport.rowNo": ("行号", "Row", "Dòng"),
 "snImport.problem": ("不能导入的原因", "Why it cannot be imported", "Lý do không nhập được"),
-"snImport.other": ("其他", "Other", "Khác"),
 "snImport.importNo": ("导入单号", "Import No.", "Số phiếu nhập"),
 "snImport.fileRow": ("文件 / 行号", "File / row", "Tệp / dòng"),
 "snImport.importedBy": ("导入人", "Imported by", "Người nhập"),
@@ -27,7 +26,9 @@ M = {
 "snImport.issue.BILL_TOO_LONG": ("单据编号超过 {max} 位", "Bill No. is longer than {max} characters", "Số chứng từ dài quá {max} ký tự"),
 "snImport.issue.SN_TOO_LONG": ("SN 超过 {max} 位", "SN is longer than {max} characters", "SN dài quá {max} ký tự"),
 "snImport.issue.SN_SPACE": ("SN 含空格", "SN contains spaces", "SN chứa khoảng trắng"),
-"snImport.issue.OTHER_TOO_LONG": ("其他超过 {max} 字", "Other is longer than {max} characters", "Khác dài quá {max} ký tự"),
+"snImport.issue.ORG_EMPTY": ("生产组织为空", "Production org is empty", "Tổ chức sản xuất trống"),
+"snImport.issue.ORG_TOO_LONG": ("生产组织超过 {max} 位", "Production org is longer than {max} characters", "Tổ chức sản xuất dài quá {max} ký tự"),
+"snImport.issue.ORG_MISMATCH": ("单据 {bill_no} 的生产组织是 {factory}", "The production org of bill {bill_no} is {factory}", "Tổ chức sản xuất của chứng từ {bill_no} là {factory}"),
 "snImport.issue.FILE_DUP": ("与第 {row} 行的 SN 重复", "Same SN as row {row}", "Trùng SN với dòng {row}"),
 "snImport.issue.IN_POOL": ("号池已有这枚号（PI {pi}）", "Already in the SN pool (PI {pi})", "Đã có trong kho SN (PI {pi})"),
 "snImport.issue.IMPORTED": ("已导入过（导入单号 {import_no}）", "Already imported (import No. {import_no})", "Đã nhập trước đó (số phiếu nhập {import_no})"),

@@ -20,9 +20,8 @@
         <el-table-column :label="t('common.sn')" min-width="170">
           <template #default="{ row }"><span class="sn-mono">{{ row.sn }}</span></template>
         </el-table-column>
-        <el-table-column prop="other" :label="t('snImport.other')" min-width="120" show-overflow-tooltip />
-        <el-table-column :label="t('common.factory')" min-width="120" show-overflow-tooltip>
-          <template #default="{ row }">{{ row.factory_code ? nameOf(row.factory_code) : "—" }}</template>
+        <el-table-column :label="t('common.factory')" min-width="160" show-overflow-tooltip>
+          <template #default="{ row }">{{ nameOf(row.factory_code) || "—" }}<span v-if="nameOf(row.factory_code) !== row.factory_code" class="muted">（{{ row.factory_code }}）</span></template>
         </el-table-column>
         <el-table-column :label="t('snImport.importNo')" min-width="190">
           <template #default="{ row }">
@@ -84,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-/** SN 导入：系统之外已有的 SN 按「PI + 单据编号 + SN + 其他」登记；之后生成撞上这些号整次回滚，不会重复出号。
+/** SN 导入：系统之外已有的 SN 按「PI + 单据编号 + SN + 生产组织」登记（表头固定）；之后生成撞上这些号整次回滚，不会重复出号。
  *  选文件后先由后端检查（不落库，逐行列出不能导入的原因），没有问题行才能确定导入；确定时后端再检查一遍，
  *  有一行不能导入整个文件都不导入。导入的号不进号池，不参与分配、交付与转移。 */
 import { onMounted, reactive, ref } from "vue";

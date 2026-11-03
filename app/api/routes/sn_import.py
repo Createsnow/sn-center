@@ -25,7 +25,7 @@ async def _content(request: Request) -> bytes:
     return body
 
 
-@router.get("/template", summary="导入模板 xlsx：PI、单据编号、SN、其他（各列为文本格式）")
+@router.get("/template", summary="导入模板 xlsx：表头固定为 PI、单据编号、SN、生产组织（各列为文本格式）")
 def import_template(cu: OperatorDep):
     return download("SN导入模板", sn_import.template())
 

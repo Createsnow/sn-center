@@ -1,7 +1,8 @@
-"""SN 导入：本系统之外已有的 SN 按「PI + 单据编号 + SN + 其他」登记进来，之后生成不会再出这些号。
+"""SN 导入：本系统之外已有的 SN 按「PI + 单据编号 + SN + 生产组织」登记进来，之后生成不会再出这些号。
 
-- 文件：xlsx，首行为表头（PI、单据编号、SN 必有，其他可选；列顺序不限），之后每行一枚号；空行跳过。
-- 每行的条件：PI、单据编号、SN 必填；SN 不超过 64 位、不含空白；单据须在订单快照中且 PI 与之相同；
+- 文件：xlsx，首个非空行为表头，固定为 A～D 列依次「PI、单据编号、SN、生产组织」（列名、顺序固定，不能多列或少列；
+  去首尾空白、不分大小写比较），之后每行一枚号；空行跳过。
+- 每行的条件：四列都必填；SN 不超过 64 位、不含空白；单据须在订单快照中，PI、生产组织（填编码或名称）与之相同；
   普通操作员只能导入授权生产组织的单据；SN 在文件内不能重复，也不能与号池（已生成的号）、已导入的号重复。
 - 先检查（不落库，逐行列出不能导入的原因），再「确定导入」：有一行不能导入整个文件都不导入；
   确定导入时在一个事务里重新检查一遍，全部写入，一次导入一个导入单号。
@@ -37,34 +38,13 @@ ISSUE_LIST_MAX = 500
 CHUNK = 1000
 SN_MAX = 64
 CODE_MAX = 64
-OTHER_MAX = 500
+#: 生产组织可填编码或名称（名称最长 128）
+ORG_MAX = 128
 #: 导入与生成互斥用的 sn_seq 行（# 开头不会与单号序列重名）
 GUARD = "#sn-import"
 
-#: 模板表头（列顺序）
-HEADERS = ["PI", "单据编号", "SN", "其他"]
-#: 表头别名（去空白、转小写后比较）→ 字段
-_ALIASES = {
-    "pi": "pi",
-    "pi号": "pi",
-    "pino": "pi",
-    "pi_no": "pi",
-    "单据编号": "bill",
-    "单据": "bill",
-    "单据号": "bill",
-    "生产订单": "bill",
-    "生产订单号": "bill",
-    "billno": "bill",
-    "bill_no": "bill",
-    "sn": "sn",
-    "完整sn": "sn",
-    "sn号": "sn",
-    "其他": "other",
-    "其它": "other",
-    "备注": "other",
-    "other": "other",
-}
-_REQUIRED = {"pi": "PI", "bill": "单据编号", "sn": "SN"}
+#: 表头：列名、顺序固定（A～D），不能多列或少列
+HEADERS = ["PI", "单据编号", "SN", "生产组织"]
 
 # 行的问题（页面按代码翻译，params 为占位参数）
 PI_EMPTY = "PI_EMPTY"
@@ -74,7 +54,9 @@ PI_TOO_LONG = "PI_TOO_LONG"
 BILL_TOO_LONG = "BILL_TOO_LONG"
 SN_TOO_LONG = "SN_TOO_LONG"
 SN_SPACE = "SN_SPACE"
-OTHER_TOO_LONG = "OTHER_TOO_LONG"
+ORG_EMPTY = "ORG_EMPTY"
+ORG_TOO_LONG = "ORG_TOO_LONG"
+ORG_MISMATCH = "ORG_MISMATCH"
 FILE_DUP = "FILE_DUP"
 IN_POOL = "IN_POOL"
 IMPORTED = "IMPORTED"
@@ -89,7 +71,9 @@ class Row:
     pi: str
     bill: str
     sn: str
-    other: str
+    #: 文件里填的生产组织（编码或名称）
+    org: str
+    #: 单据在订单快照中的生产组织编码（登记、授权范围按它）
     factory: str = ""
     issues: list[tuple[str, dict]] = field(default_factory=list)
 
@@ -103,7 +87,7 @@ def template() -> Iterator[bytes]:
     ws = wb.active
     ws.title = "SN导入"
     ws.append(HEADERS)
-    for col, width in zip("ABCD", (20, 22, 34, 40), strict=True):
+    for col, width in zip("ABCD", (20, 22, 34, 24), strict=True):
         ws.column_dimensions[col].width = width
         ws.column_dimensions[col].number_format = "@"
     ws.freeze_panes = "A2"
@@ -127,13 +111,24 @@ def _key(v: Any) -> str:
     return "".join(_text(v).split()).lower()
 
 
-def _cell(cells: list, cols: dict[str, int], f: str) -> str:
-    i = cols.get(f)
-    return _text(cells[i]) if i is not None and i < len(cells) else ""
+_HEADER_KEYS = [_key(h) for h in HEADERS]
+
+
+def _check_header(cells: list) -> None:
+    """表头须恰好是 HEADERS（A～D 列依次），D 列之后不能再有列名。"""
+    keys = [_key(v) for v in cells]
+    while keys and not keys[-1]:
+        keys.pop()
+    if keys != _HEADER_KEYS:
+        raise biz(ErrorCode.IMPORT_HEADER_INVALID, columns="、".join(HEADERS))
+
+
+def _cell(cells: list, i: int) -> str:
+    return _text(cells[i]) if i < len(cells) else ""
 
 
 def parse(content: bytes) -> list[Row]:
-    """读 xlsx 第一张表：首个非空行为表头，按表头名找列；返回数据行（空行跳过）。"""
+    """读 xlsx 第一张表：首个非空行为表头（须为 HEADERS），之后 A～D 列为数据；返回数据行（空行跳过）。"""
     if not content:
         raise biz(ErrorCode.IMPORT_EMPTY)
     if len(content) > MAX_BYTES:
@@ -146,27 +141,21 @@ def parse(content: bytes) -> list[Row]:
         ws = wb.worksheets[0] if wb.worksheets else None
         if ws is None:
             raise biz(ErrorCode.IMPORT_EMPTY)
-        cols: dict[str, int] | None = None
+        header = False
         out: list[Row] = []
         for no, values in enumerate(ws.iter_rows(values_only=True), start=1):
             cells = list(values or ())
             if not any(_text(v) for v in cells):
                 continue
-            if cols is None:
-                cols = {}
-                for i, v in enumerate(cells):
-                    f = _ALIASES.get(_key(v))
-                    if f is not None and f not in cols:
-                        cols[f] = i
-                missing = [name for f, name in _REQUIRED.items() if f not in cols]
-                if missing:
-                    raise biz(ErrorCode.IMPORT_HEADER_MISSING, columns="、".join(missing))
+            if not header:
+                _check_header(cells)
+                header = True
                 continue
-            out.append(Row(no, *(_cell(cells, cols, f) for f in ("pi", "bill", "sn", "other"))))
+            out.append(Row(no, *(_cell(cells, i) for i in range(len(HEADERS)))))
             if len(out) > MAX_ROWS:
                 raise biz(ErrorCode.IMPORT_TOO_MANY, max=MAX_ROWS, rows=f"{MAX_ROWS}+")
-        if cols is None:
-            raise biz(ErrorCode.IMPORT_HEADER_MISSING, columns="、".join(_REQUIRED.values()))
+        if not header:
+            raise biz(ErrorCode.IMPORT_HEADER_INVALID, columns="、".join(HEADERS))
         if not out:
             raise biz(ErrorCode.IMPORT_EMPTY)
         return out
@@ -200,20 +189,23 @@ def _validate(cu: CurrentUser, rows: list[Row], lock: bool = False) -> None:
             r.issues.append((SN_TOO_LONG, {"max": SN_MAX}))
         elif any(c.isspace() for c in r.sn):
             r.issues.append((SN_SPACE, {}))
-        if len(r.other) > OTHER_MAX:
-            r.issues.append((OTHER_TOO_LONG, {"max": OTHER_MAX}))
+        if not r.org:
+            r.issues.append((ORG_EMPTY, {}))
+        elif len(r.org) > ORG_MAX:
+            r.issues.append((ORG_TOO_LONG, {"max": ORG_MAX}))
         if r.sn:
             if r.sn in first:
                 r.issues.append((FILE_DUP, {"row": first[r.sn]}))
             else:
                 first[r.sn] = r.row_no
-    # 单据：须在订单快照中，PI 相同；普通操作员只能导入授权组织的单据
+    # 单据：须在订单快照中，PI、生产组织相同；普通操作员只能导入授权组织的单据
     bills = sorted({r.bill for r in rows if r.bill and len(r.bill) <= CODE_MAX})
     snap: dict[str, dict] = {}
     for part in _chunks(bills):
         for b in db.all(
-            f"SELECT bill_no, MIN(pi) pi, MIN(org_code) org_code FROM sn_prd_mo WHERE bill_no IN ({marks(len(part))}) "
-            "GROUP BY bill_no",
+            "SELECT m.bill_no, MIN(m.pi) pi, MIN(m.org_code) org_code, MIN(m.org_name) org_name, "
+            "MIN(f.factory_name) factory_name FROM sn_prd_mo m LEFT JOIN sn_factory f ON f.factory_code = m.org_code "
+            f"WHERE m.bill_no IN ({marks(len(part))}) GROUP BY m.bill_no",
             *part,
         ):
             snap[b["bill_no"]] = b
@@ -227,6 +219,10 @@ def _validate(cu: CurrentUser, rows: list[Row], lock: bool = False) -> None:
         r.factory = b["org_code"] or ""
         if r.pi and b["pi"] != r.pi:
             r.issues.append((PI_MISMATCH, {"bill_no": r.bill, "pi": b["pi"]}))
+        # 生产组织填编码或名称（订单快照里的名称、生产组织列表里的名称）都可以
+        if r.org and len(r.org) <= ORG_MAX and r.org not in {r.factory, b["org_name"], b["factory_name"]} - {None, ""}:
+            name = b["factory_name"] or b["org_name"] or ""
+            r.issues.append((ORG_MISMATCH, {"bill_no": r.bill, "factory": f"{r.factory} {name}".strip()}))
         if not cu.is_admin and r.factory not in cu.factories:
             r.issues.append((FACTORY_FORBIDDEN, {"factory": r.factory}))
     # 与号池、已导入的号重复
@@ -299,8 +295,8 @@ def imported_hit(sns: list[str]) -> dict | None:
 
 
 _INSERT = (
-    "INSERT INTO sn_import_item(import_no, sn, pi_no, bill_no, factory_code, other, file_name, row_no, created_by, "
-    "created_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+    "INSERT INTO sn_import_item(import_no, sn, pi_no, bill_no, factory_code, file_name, row_no, created_by, "
+    "created_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 )
 
 
@@ -323,7 +319,7 @@ def run(cu: CurrentUser, content: bytes, file_name_in: str | None) -> dict:
             try:
                 db.exec_many(
                     _INSERT,
-                    [(no, r.sn, r.pi, r.bill, r.factory, r.other, file_name, r.row_no, cu.emp_no, now) for r in part],
+                    [(no, r.sn, r.pi, r.bill, r.factory, file_name, r.row_no, cu.emp_no, now) for r in part],
                 )
             except pymysql.err.IntegrityError as ex:
                 if not is_duplicate(ex):
@@ -367,7 +363,7 @@ class Filter:
     import_no: str | None = None
 
 
-_FIELDS = ("id", "import_no", "sn", "pi_no", "bill_no", "factory_code", "other", "file_name", "row_no", "created_by")
+_FIELDS = ("id", "import_no", "sn", "pi_no", "bill_no", "factory_code", "file_name", "row_no", "created_by")
 
 
 def items(cu: CurrentUser, f: Filter, q: util.Page) -> dict:

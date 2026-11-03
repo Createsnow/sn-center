@@ -158,7 +158,7 @@ class ErrorCode(Enum):
     # ---------- SN 导入 ----------
     IMPORT_FILE_INVALID = (400, "导入文件须为 xlsx 格式")
     IMPORT_FILE_TOO_LARGE = (400, "导入文件不能超过 {max} MB")
-    IMPORT_HEADER_MISSING = (400, "导入文件首行表头缺少列：{columns}")
+    IMPORT_HEADER_INVALID = (400, "导入文件首行表头须依次为：{columns}（列名、顺序固定，不能多列或少列）")
     IMPORT_EMPTY = (400, "导入文件没有数据行")
     IMPORT_TOO_MANY = (400, "单次最多导入 {max} 行，文件有 {rows} 行")
     IMPORT_HAS_ISSUES = (400, "有 {count} 行不能导入，整个文件都没有导入；请改好后重新导入")

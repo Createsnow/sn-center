@@ -126,7 +126,7 @@ E = {
 # ---------- SN 导入 ----------
 "IMPORT_FILE_INVALID": ("The import file must be an xlsx file", "Tệp nhập phải là định dạng xlsx"),
 "IMPORT_FILE_TOO_LARGE": ("The import file cannot exceed {max} MB", "Tệp nhập không được vượt quá {max} MB"),
-"IMPORT_HEADER_MISSING": ("The header row of the import file is missing columns: {columns}", "Dòng tiêu đề của tệp nhập thiếu cột: {columns}"),
+"IMPORT_HEADER_INVALID": ("The header row of the import file must be, in order: {columns} (fixed names and order, no extra or missing columns)", "Dòng tiêu đề của tệp nhập phải lần lượt là: {columns} (tên và thứ tự cột cố định, không thừa hoặc thiếu cột)"),
 "IMPORT_EMPTY": ("The import file has no data rows", "Tệp nhập không có dòng dữ liệu"),
 "IMPORT_TOO_MANY": ("At most {max} rows per import; the file has {rows} rows", "Mỗi lần nhập tối đa {max} dòng, tệp có {rows} dòng"),
 "IMPORT_HAS_ISSUES": ("{count} rows cannot be imported, so nothing in the file was imported; fix them and import again", "Có {count} dòng không thể nhập nên toàn bộ tệp chưa được nhập; vui lòng sửa rồi nhập lại"),

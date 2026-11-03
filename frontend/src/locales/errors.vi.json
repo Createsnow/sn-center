@@ -117,7 +117,7 @@
   "EXPORT_NOTHING": "Chứng từ {bill_no} của PI {pi} không có SN đã phân bổ",
   "IMPORT_FILE_INVALID": "Tệp nhập phải là định dạng xlsx",
   "IMPORT_FILE_TOO_LARGE": "Tệp nhập không được vượt quá {max} MB",
-  "IMPORT_HEADER_MISSING": "Dòng tiêu đề của tệp nhập thiếu cột: {columns}",
+  "IMPORT_HEADER_INVALID": "Dòng tiêu đề của tệp nhập phải lần lượt là: {columns} (tên và thứ tự cột cố định, không thừa hoặc thiếu cột)",
   "IMPORT_EMPTY": "Tệp nhập không có dòng dữ liệu",
   "IMPORT_TOO_MANY": "Mỗi lần nhập tối đa {max} dòng, tệp có {rows} dòng",
   "IMPORT_HAS_ISSUES": "Có {count} dòng không thể nhập nên toàn bộ tệp chưa được nhập; vui lòng sửa rồi nhập lại",
