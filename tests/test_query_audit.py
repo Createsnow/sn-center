@@ -167,6 +167,9 @@ def test_sn_list_hides_delivery_info(w, api):
     hidden = {"delivery_mode", "delivery_batch_no", "push_type", "mes_holder", "delivered_at", "rev", "allocated_at"}
     assert all(hidden.isdisjoint(x) for x in r["items"])
     assert {"sn", "seq_text", "seq_dec", "pi_no", "bill_no", "bill_seq", "status", "seq_pi_no"} <= set(r["items"][0])
+    # 流水位数、进制位数、产品单位取号所用规则版本（默认 6 位 10 进制、不带单位）；生产组织编号照列
+    x = r["items"][0]
+    assert (x["seq_len"], x["base"], x["unit"], x["factory_code"]) == (6, 10, "", a)
     st = r["items"][0]["status"]
     assert ok(api.get(f"/api/sn?pi={pi}&status={st}", w.admin))["total"] == 3
 

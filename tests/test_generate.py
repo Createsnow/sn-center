@@ -127,6 +127,8 @@ def test_unit_uses_k3_value_and_must_be_filled_only_when_empty(w, api, sql):
     w.generate(pi)
     sns = [x["sn"] for x in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
     assert [s[len(p) :] for s in sns] == ["000001100M", "000002100M", "000003100条", "000004100L"]
+    listed = ok(api.get(f"/api/sn?pi={pi}&bill_no={bill}", w.admin))["items"]
+    assert sorted(x["unit"] for x in listed) == sorted(["M", "M", "条", "L"]), "SN 查询按规则从 SN 截出产品单位"
     assert api.put("/api/orders/unit", m(bill_no=bill, seq=3, value="K"), w.admin).code == "LINE_EDIT_GENERATED"
 
     _, pi2, _ = mk(w, ("M1", 1, "100", "1", " "))

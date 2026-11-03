@@ -166,9 +166,14 @@ def _bill_pis(bills: list[str]) -> dict[str, str]:
 
 
 def view(r: dict, bill_pi: dict[str, str]) -> dict:
+    """列表一行；流水位数、进制、产品单位取号所用规则版本（产品单位从 SN 中截出，规则不带单位时为空）。"""
+    s = rules.cached_spec(r["rule_version_id"])
     return {
         "id": r["id"],
         "sn": r["sn"],
+        "seq_len": None if s is None else s.seq_len,
+        "base": None if s is None else s.base,
+        "unit": (None if s is None else codec.unit_of(r["sn"], s, r["length_text"])) or "",
         "seq_text": rules.seq_text(r["rule_version_id"], r["seq_dec"]),
         "seq_dec": str(r["seq_dec"]),
         "seq_pi_no": r["seq_pi_no"],

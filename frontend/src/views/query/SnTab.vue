@@ -45,26 +45,24 @@
           <el-tag v-if="row.pi_changed" size="small" type="warning" class="ml">{{ t("query.piChanged") }}</el-tag>
         </template>
       </el-table-column>
+      <el-table-column :label="t('common.material')" :min-width="w.material" fixed><template #default="{ row }">{{ row.material_code || "—" }}</template></el-table-column>
       <el-table-column :label="t('common.sn')" :min-width="w.sn" fixed>
         <template #default="{ row }"><span class="sn-mono">{{ row.sn }}</span></template>
       </el-table-column>
-      <el-table-column :label="t('query.seqText')" :min-width="w.seqText"><template #default="{ row }"><span class="sn-mono">{{ row.seq_text }}</span></template></el-table-column>
-      <el-table-column prop="seq_dec" :label="t('query.seqDec')" :min-width="w.seqDec" align="right" />
+      <el-table-column :label="t('rules.seqDigits')" :min-width="w.seqLen" align="right"><template #default="{ row }">{{ row.seq_len ?? "—" }}</template></el-table-column>
+      <el-table-column :label="t('common.seqBase')" :min-width="w.base" align="right"><template #default="{ row }">{{ row.base ?? "—" }}</template></el-table-column>
+      <el-table-column :label="t('rules.seqNo')" :min-width="w.seqText"><template #default="{ row }"><span class="sn-mono">{{ row.seq_text }}</span></template></el-table-column>
       <el-table-column :label="t('common.attachNo')" :min-width="w.attachNo"><template #default="{ row }">{{ row.attach_no || "—" }}</template></el-table-column>
       <el-table-column :label="t('common.length')" :min-width="w.length"><template #default="{ row }">{{ row.length ?? "—" }}</template></el-table-column>
-      <el-table-column :label="t('query.billSeq')" :min-width="w.billSeq">
-        <template #default="{ row }">{{ billSeq(row) }}</template>
-      </el-table-column>
-      <el-table-column :label="t('common.material')" :min-width="w.material"><template #default="{ row }">{{ row.material_code || "—" }}</template></el-table-column>
-      <el-table-column :label="t('common.customer')" :min-width="w.customer"><template #default="{ row }">{{ row.customer_code || "—" }}</template></el-table-column>
-      <el-table-column :label="t('common.factory')" :min-width="w.factory">
-        <template #default="{ row }">{{ nameOf(row.factory_code) }}</template>
-      </el-table-column>
+      <el-table-column :label="t('common.unit')" :min-width="w.unit"><template #default="{ row }">{{ row.unit || "—" }}</template></el-table-column>
       <el-table-column :label="t('common.status')" :min-width="w.status">
         <template #default="{ row }">
           <StatusTag :status="row.status" />
           <el-tag v-if="row.suspend" size="small" type="danger" class="ml">{{ suspendLabel(row.suspend) }}</el-tag>
         </template>
+      </el-table-column>
+      <el-table-column :label="t('query.billSeq')" :min-width="w.billSeq">
+        <template #default="{ row }">{{ billSeq(row) }}</template>
       </el-table-column>
       <el-table-column :label="t('query.seqOwner')" :min-width="w.seqOwner">
         <template #default="{ row }">
@@ -72,6 +70,11 @@
           <el-tag v-if="row.transferred_in" size="small" type="info" class="ml">{{ t("query.transferredIn") }}</el-tag>
         </template>
       </el-table-column>
+      <el-table-column :label="t('common.factoryCode')" :min-width="w.factoryCode"><template #default="{ row }">{{ row.factory_code || "—" }}</template></el-table-column>
+      <el-table-column :label="t('common.factory')" :min-width="w.factory">
+        <template #default="{ row }">{{ nameOf(row.factory_code) }}</template>
+      </el-table-column>
+      <el-table-column :label="t('common.customer')" :min-width="w.customer"><template #default="{ row }">{{ row.customer_code || "—" }}</template></el-table-column>
       <el-table-column :label="t('query.generatedAt')" :min-width="w.createdAt"><template #default="{ row }">{{ fmt(row.created_at) }}</template></el-table-column>
     </el-table>
   </div>
@@ -90,28 +93,31 @@
           {{ info.pi_no }}
           <el-tag v-if="info.pi_changed" size="small" type="warning" class="ml">{{ t("query.piChanged") }}</el-tag>
         </el-descriptions-item>
+        <el-descriptions-item :label="t('common.material')">{{ info.material_code || "—" }}</el-descriptions-item>
         <el-descriptions-item :label="t('common.sn')">
           <div class="sn-line">
             <span class="sn-mono">{{ info.sn }}</span>
             <el-button size="small" link type="primary" @click="copySn">{{ t("common.copy") }}</el-button>
           </div>
         </el-descriptions-item>
-        <el-descriptions-item :label="t('query.seqText')"><span class="sn-mono">{{ info.seq_text }}</span></el-descriptions-item>
-        <el-descriptions-item :label="t('query.seqDec')">{{ info.seq_dec }}</el-descriptions-item>
+        <el-descriptions-item :label="t('rules.seqDigits')">{{ info.seq_len ?? "—" }}</el-descriptions-item>
+        <el-descriptions-item :label="t('common.seqBase')">{{ info.base ?? "—" }}</el-descriptions-item>
+        <el-descriptions-item :label="t('rules.seqNo')"><span class="sn-mono">{{ info.seq_text }}</span></el-descriptions-item>
         <el-descriptions-item :label="t('common.attachNo')">{{ info.attach_no || "—" }}</el-descriptions-item>
         <el-descriptions-item :label="t('common.length')">{{ info.length ?? "—" }}</el-descriptions-item>
-        <el-descriptions-item :label="t('query.billSeq')">{{ billSeq(info) }}</el-descriptions-item>
-        <el-descriptions-item :label="t('common.material')">{{ info.material_code || "—" }}</el-descriptions-item>
-        <el-descriptions-item :label="t('common.customer')">{{ info.customer_code || "—" }}</el-descriptions-item>
-        <el-descriptions-item :label="t('common.factory')">{{ nameOf(info.factory_code) }}<span v-if="info.factory_code" class="muted code">{{ info.factory_code }}</span></el-descriptions-item>
+        <el-descriptions-item :label="t('common.unit')">{{ info.unit || "—" }}</el-descriptions-item>
         <el-descriptions-item :label="t('common.status')">
           <StatusTag :status="info.status" />
           <el-tag v-if="info.suspend" size="small" type="danger" class="ml">{{ suspendLabel(info.suspend) }}</el-tag>
         </el-descriptions-item>
+        <el-descriptions-item :label="t('query.billSeq')">{{ billSeq(info) }}</el-descriptions-item>
         <el-descriptions-item :label="t('query.seqOwner')">
           {{ info.seq_pi_no }}
           <el-tag v-if="info.transferred_in" size="small" type="info" class="ml">{{ t("query.transferredIn") }}</el-tag>
         </el-descriptions-item>
+        <el-descriptions-item :label="t('common.factoryCode')">{{ info.factory_code || "—" }}</el-descriptions-item>
+        <el-descriptions-item :label="t('common.factory')">{{ nameOf(info.factory_code) }}</el-descriptions-item>
+        <el-descriptions-item :label="t('common.customer')">{{ info.customer_code || "—" }}</el-descriptions-item>
         <el-descriptions-item :label="t('query.generatedAt')">{{ fmt(info.created_at) }}</el-descriptions-item>
       </el-descriptions>
     </div>
@@ -121,7 +127,8 @@
 <script setup lang="ts">
 /**
  * SN 明细（F-18）：按组织 / PI / 单据 / 完整 SN / 状态，及客户 / 物料 / 米数 / 流水范围筛选，导出。
- * 列依次为 PI、完整 SN、进制、流水、附件项次、米数、单据 / 序号、物料、客户、生产组织、状态、流水归属 PI、生成时间。
+ * 列依次为 PI、物料编码、完整 SN、流水位数、进制位数、流水号、附件项次、米数、产品单位、状态、单据 / 序号、流水归属 PI、
+ * 生产组织编号、生产组织、客户编码、生成时间（PI、物料编码、完整 SN 固定在左侧）。
  * 各列宽度按本页内容自适应，PI、完整 SN、生产组织等值单行完整显示；点行弹出该枚 SN 的详情（可复制完整 SN）。
  * 只列号本身的信息，不列交付方式、交付批次、推送类型等交付业务信息（交付批次在「交付批次」页签看）。
  */
@@ -178,17 +185,20 @@ const w = computed(() => {
   const mono = (v: unknown) => textWidth(v as string, { mono: true });
   return {
     pi: col("PI", (r) => textWidth(r.pi_no) + tagAfter(r.pi_changed && t("query.piChanged")), 100),
+    material: col(t("common.material"), (r) => textWidth(r.material_code || "—")),
     sn: col(t("common.sn"), (r) => mono(r.sn), 140),
-    seqText: col(t("query.seqText"), (r) => mono(r.seq_text)),
-    seqDec: col(t("query.seqDec"), (r) => textWidth(r.seq_dec)),
+    seqLen: col(t("rules.seqDigits"), (r) => textWidth(String(r.seq_len ?? "—"))),
+    base: col(t("common.seqBase"), (r) => textWidth(String(r.base ?? "—"))),
+    seqText: col(t("rules.seqNo"), (r) => mono(r.seq_text)),
     attachNo: col(t("common.attachNo"), (r) => textWidth(r.attach_no || "—")),
     length: col(t("common.length"), (r) => textWidth(r.length ?? "—")),
-    billSeq: col(t("query.billSeq"), (r) => textWidth(billSeq(r))),
-    material: col(t("common.material"), (r) => textWidth(r.material_code || "—")),
-    customer: col(t("common.customer"), (r) => textWidth(r.customer_code || "—")),
-    factory: col(t("common.factory"), (r) => textWidth(nameOf(r.factory_code))),
+    unit: col(t("common.unit"), (r) => textWidth(r.unit || "—")),
     status: col(t("common.status"), (r) => tagWidth(statusLabel(r.status)) + tagAfter(r.suspend && suspendLabel(r.suspend))),
+    billSeq: col(t("query.billSeq"), (r) => textWidth(billSeq(r))),
     seqOwner: col(t("query.seqOwner"), (r) => textWidth(r.seq_pi_no) + tagAfter(r.transferred_in && t("query.transferredIn"))),
+    factoryCode: col(t("common.factoryCode"), (r) => textWidth(r.factory_code || "—")),
+    factory: col(t("common.factory"), (r) => textWidth(nameOf(r.factory_code))),
+    customer: col(t("common.customer"), (r) => textWidth(r.customer_code || "—")),
     createdAt: col(t("query.generatedAt"), (r) => textWidth(fmt(r.created_at))),
   };
 });
@@ -261,7 +271,6 @@ onMounted(() => load(1));
 .sn-list :deep(.el-table__row) { cursor: pointer; }
 .sn-info :deep(.el-descriptions__label) { width: 120px; white-space: nowrap; }
 .sn-info :deep(.el-descriptions__content) { word-break: break-all; }
-.code { margin-left: 8px; }
 .sn-line { display: flex; align-items: flex-start; gap: 8px; }
 .sn-line .sn-mono { flex: 1; }
 .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
