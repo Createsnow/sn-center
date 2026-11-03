@@ -363,13 +363,14 @@ def test_migration_flyway_checksum():
     """测试阶段只保留一个 V1__init.sql；校验和按 Flyway 算法固定，改了建表脚本须同步更新这里（并重建测试库）。"""
     ours = {m.script: m for m in migrations()}
     assert list(ours) == ["V1__init.sql"]
-    assert ours["V1__init.sql"].checksum() == 15870869
+    assert ours["V1__init.sql"].checksum() == 1186688122
     statements = ours["V1__init.sql"].statements()
-    assert len(statements) == 35
+    assert len(statements) == 37
     text = "\n".join(statements)
-    # 脚本独立完整：34 张表各一条 CREATE TABLE 加 sn_sync_state 初始行，不用 ALTER 等语句事后补字段、补索引
+    # 脚本独立完整：35 张表各一条 CREATE TABLE 加两条初始行（sn_sync_state、SN 导入互斥行），
+    # 不用 ALTER 等语句事后补字段、补索引
     kinds = [" ".join(s.split()[:2]).upper() for s in statements]
-    assert kinds.count("CREATE TABLE") == 34 and kinds.count("INSERT INTO") == 1, kinds
+    assert kinds.count("CREATE TABLE") == 35 and kinds.count("INSERT INTO") == 2, kinds
     for table in (
         "sn_line_count",
         "sn_line_length",
@@ -378,6 +379,7 @@ def test_migration_flyway_checksum():
         "sn_push_task",
         "sn_transfer_item",
         "sn_item_deleted",
+        "sn_import_item",
     ):
         assert f"CREATE TABLE {table}" in text, table
     assert "ux_rule_prefix" not in text and "KEY ix_rule_prefix (prefix)" in text, (
@@ -595,6 +597,8 @@ def test_db_target_env_overrides_dotenv(monkeypatch):
         ("POST", "/api/generate/run", "SN_GENERATE"),
         ("POST", "/api/generate/batches/G1/cancel", "SN_GEN_CANCEL"),
         ("POST", "/api/generate/delete", "SN_DELETE"),
+        ("POST", "/api/sn-import", "SN_IMPORT"),
+        ("POST", "/api/sn-import/check", "SN_IMPORT"),
         ("PUT", "/api/rules/pi-binding", "RULE_PI_BIND"),
         ("DELETE", "/api/rules/pi-binding", "RULE_PI_UNBIND"),
         ("POST", "/api/rules/line-select", "RULE_LINE_SELECT"),

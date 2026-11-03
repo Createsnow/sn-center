@@ -58,6 +58,7 @@ SN_GENERATE = "SN_GENERATE"
 SN_GEN_CANCEL = "SN_GEN_CANCEL"
 SN_REVOKE = "SN_REVOKE"
 SN_DELETE = "SN_DELETE"
+SN_IMPORT = "SN_IMPORT"
 SN_ALLOCATE = "SN_ALLOCATE"
 SN_BATCH_CREATE = "SN_BATCH_CREATE"
 SN_PUSH = "SN_PUSH"
@@ -239,6 +240,7 @@ _PATH_ACTIONS = (
     (r"/api/generate/revoke-config", LINE_CONFIG_REVOKE),
     (r"/api/generate/.*", SN_GENERATE),
     (r"/api/allocation/.*", SN_ALLOCATE),
+    (r"/api/sn-import(/.*)?", SN_IMPORT),
     (r"/api/delivery/batches/[^/]+/confirm", SN_BATCH_MANUAL),
     (r"/api/delivery/batches/[^/]+/void", SN_BATCH_VOID),
     (r"/api/delivery/resume", SN_PUSH_RESUME),

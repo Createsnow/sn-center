@@ -132,6 +132,7 @@ class ErrorCode(Enum):
     GEN_DUPLICATE_SN = (409, "完整 SN {sn} 与 PI {pi} 已有的号重复，整次生成已回滚（不自动跳号）")
     GEN_JOB_NOT_FOUND = (404, "生成任务不存在")
     GEN_SEQ_RANGE_INVALID = (400, "起止流水号须为正整数，止号不能小于起号")
+    GEN_IMPORTED_SN = (409, "完整 SN {sn} 已由 SN 导入登记（PI {pi}），不能再生成，整次生成已回滚（不自动跳号）")
     # ---------- 删号 ----------
     DELETE_TARGET_INVALID = (400, "请选择要删除的单据、物料行，或填写 SN（起止号）")
     DELETE_SN_NOT_FOUND = (404, "PI {pi} 下没有 SN {sn}")
@@ -154,6 +155,14 @@ class ErrorCode(Enum):
     DALERT_NOT_FOUND = (404, "交付告警不存在或已处理")
     # ---------- SN 导出 ----------
     EXPORT_NOTHING = (404, "PI {pi} 的单据 {bill_no} 没有已分配的号")
+    # ---------- SN 导入 ----------
+    IMPORT_FILE_INVALID = (400, "导入文件须为 xlsx 格式")
+    IMPORT_FILE_TOO_LARGE = (400, "导入文件不能超过 {max} MB")
+    IMPORT_HEADER_MISSING = (400, "导入文件首行表头缺少列：{columns}")
+    IMPORT_EMPTY = (400, "导入文件没有数据行")
+    IMPORT_TOO_MANY = (400, "单次最多导入 {max} 行，文件有 {rows} 行")
+    IMPORT_HAS_ISSUES = (400, "有 {count} 行不能导入，整个文件都没有导入；请改好后重新导入")
+    IMPORT_CONFLICT = (409, "SN {sn} 刚被生成或导入，整个文件都没有导入；请重新检查后导入")
     # ---------- 转单 / 转组织 ----------
     TR_SCOPE_INVALID = (400, "转移范围只能是整张单据、单据 + 物料、单枚或连续号段")
     TR_MATERIAL_REQUIRED = (400, "按物料或号段转移时物料编码必填")

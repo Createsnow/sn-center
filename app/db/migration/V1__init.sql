@@ -203,6 +203,9 @@ CREATE TABLE sn_seq (
   PRIMARY KEY (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='单号序列';
 
+-- SN 导入与生成互斥用的行（# 开头不会与单号序列重名；只加行锁，不当序号用，见 sn_import.guard）
+INSERT INTO sn_seq (name, val) VALUES ('#sn-import', 0);
+
 -- 附件项次补填（快照之外）
 CREATE TABLE sn_line_attach (
   bill_no        VARCHAR(64) NOT NULL,
@@ -436,6 +439,29 @@ CREATE TABLE sn_item_deleted (
   KEY ix_item_deleted_pi (pi_no, deleted_at),
   KEY ix_item_deleted_seq (seq_pi_no, seq_dec)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='删号存档';
+
+-- SN 导入：本系统之外已有的 SN（PI + 单据 + SN + 其他）登记在这里，与号池一起保证完整 SN 全局不重复：
+-- 导入时不能与号池、已导入的号重复；生成时撞上已导入的号整次回滚。只登记，不进号池、不参与分配、交付与转移。
+-- 导入与生成的先后由 sn_seq 的 '#sn-import' 行锁排定（导入独占、生成共享，见 sn_import.guard）
+CREATE TABLE sn_import_item (
+  id            BIGINT       NOT NULL AUTO_INCREMENT,
+  import_no     VARCHAR(40)  NOT NULL COMMENT '导入单号（一次导入一个）',
+  sn            VARCHAR(64)  NOT NULL COMMENT '完整 SN',
+  pi_no         VARCHAR(64)  NOT NULL,
+  bill_no       VARCHAR(64)  NOT NULL COMMENT '单据编号（导入时须在订单快照中，且 PI 与之相同）',
+  factory_code  VARCHAR(64)  NOT NULL DEFAULT '' COMMENT '导入时单据的生产组织（取自订单快照；授权范围按它）',
+  other         VARCHAR(500) NOT NULL DEFAULT '' COMMENT '其他（原样保存）',
+  file_name     VARCHAR(255) NOT NULL DEFAULT '' COMMENT '导入文件名',
+  row_no        INT          NOT NULL COMMENT '在导入文件中的行号',
+  created_by    VARCHAR(32)  NOT NULL,
+  created_at    DATETIME     NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY ux_import_sn (sn) COMMENT '完整 SN 唯一（utf8mb4_bin，区分大小写）',
+  KEY ix_import_no (import_no),
+  KEY ix_import_pi (pi_no, bill_no),
+  KEY ix_import_bill (bill_no),
+  KEY ix_import_factory (factory_code, id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='SN 导入';
 
 -- 交付批次（推送批次、拉取批次、转出批次共用）：内容建立后不变
 CREATE TABLE sn_delivery_batch (

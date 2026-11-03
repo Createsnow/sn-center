@@ -14,6 +14,7 @@ from app.api.routes import (
     rules,
     sn,
     sn_export,
+    sn_import,
     transfers,
     users,
 )
@@ -28,6 +29,7 @@ api_router.include_router(generate.router)
 api_router.include_router(allocation.router)
 api_router.include_router(delivery.router)
 api_router.include_router(sn_export.router)
+api_router.include_router(sn_import.router)
 api_router.include_router(transfers.router)
 api_router.include_router(sn.router)
 api_router.include_router(audits.router)

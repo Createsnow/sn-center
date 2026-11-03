@@ -13,8 +13,8 @@
 必须先预演（只给出起止号、各物料行数量和号段，不落库），
 预演只对发起人有效、默认 30 分钟、只能生成一次；范围、条件或流水来源改变、所选规则版本被别的 PI 先用、
 PI 最大号变化、空号段变化（按 RANGE 生成时）、同步改了范围内物料行数量时预演失效。
-一次生成在一个事务里完成（共用一个生成批次），撞号整次回滚；不超过 SN_GEN_SYNC_THRESHOLD 当场完成，
-更多转后台任务（进度、可取消）；服务重启时没跑完的任务视为失败。
+一次生成在一个事务里完成（共用一个生成批次），撞号整次回滚（含与 SN 导入登记的号相同，
+见 sn_import）；不超过 SN_GEN_SYNC_THRESHOLD 当场完成，更多转后台任务（进度、可取消）；服务重启时没跑完的任务视为失败。
 生成（含取消）、删号与分配共用 PI 操作锁。
 """
 
@@ -35,7 +35,7 @@ from app.core.errors import ErrorCode, biz
 from app.core.exceptions import BizError
 from app.core.security import CurrentUser
 from app.db.session import ER_LOCK_NOWAIT, db, error_no, is_duplicate, marks
-from app.services import audit, changes, factories, locks, orders, rules
+from app.services import audit, changes, factories, locks, orders, rules, sn_import
 
 log = structlog.get_logger()
 
@@ -888,6 +888,8 @@ def _by_bill(items: list[dict]) -> dict[str, list[dict]]:
 def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
     now = util.now()
     pi = j["pi_no"]
+    # 与 SN 导入互斥（生成之间共享，不互相等）：写号前查到的已导入号是最新的
+    sn_import.guard(exclusive=False)
     db.exec(
         "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, updated_at) VALUES (%s,0,0,%s) "
         "ON DUPLICATE KEY UPDATE pi_no = pi_no",
@@ -955,6 +957,9 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
                 )
                 for i, sn in enumerate(sns)
             ]
+            hit = sn_import.imported_hit(sns)
+            if hit is not None:
+                raise biz(ErrorCode.GEN_IMPORTED_SN, sn=hit["sn"], pi=hit["pi_no"])
             try:
                 db.exec_many(_INSERT_ITEM, rows)
             except pymysql.err.IntegrityError as ex:

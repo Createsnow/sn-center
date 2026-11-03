@@ -23,6 +23,7 @@ export const MENU: MenuGroup[] = [
   ] },
   { group: "nav.groupSn", icon: "Stamp", items: [
     { path: "/generate", title: "nav.generate", icon: "Finished", roles: OPS },
+    { path: "/sn-import", title: "nav.snImport", icon: "Upload", roles: OPS },
     { path: "/allocate", title: "nav.allocate", icon: "Promotion", roles: OPS },
     { path: "/transfer", title: "nav.transfer", icon: "Switch", roles: OPS },
     { path: "/query", title: "nav.query", icon: "Search", roles: ALL },
@@ -58,6 +59,7 @@ const views: Record<string, () => Promise<unknown>> = {
   "/": () => import("@/views/Dashboard.vue"),
   "/orders": () => import("@/views/Orders.vue"),
   "/generate": () => import("@/views/Generate.vue"),
+  "/sn-import": () => import("@/views/SnImport.vue"),
   "/allocate": () => import("@/views/Allocate.vue"),
   "/rules": () => import("@/views/Rules.vue"),
   "/transfer": () => import("@/views/Transfer.vue"),

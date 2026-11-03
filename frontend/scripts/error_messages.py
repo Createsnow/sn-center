@@ -102,6 +102,7 @@ E = {
 "GEN_PREVIEW_USED": ("This preview was already used for a generation, please preview again", "Bản xem trước này đã được dùng để tạo, vui lòng xem trước lại"),
 "GEN_BUSY": ("PI {pi} is generating, please retry later", "PI {pi} đang tạo, vui lòng thử lại sau"),
 "GEN_DUPLICATE_SN": ("Full SN {sn} duplicates an existing SN of PI {pi}; the whole generation was rolled back (no auto-skip)", "SN đầy đủ {sn} trùng với SN đã có của PI {pi}; toàn bộ lần tạo đã hoàn tác (không tự bỏ qua số)"),
+"GEN_IMPORTED_SN": ("Full SN {sn} is registered by SN import (PI {pi}) and cannot be generated; the whole generation was rolled back (no auto-skip)", "SN đầy đủ {sn} đã được đăng ký qua nhập SN (PI {pi}), không thể tạo; toàn bộ lần tạo đã hoàn tác (không tự bỏ qua số)"),
 "GEN_JOB_NOT_FOUND": ("Generation job not found", "Không tìm thấy tác vụ tạo"),
 "GEN_SEQ_RANGE_INVALID": ("Start and end serial numbers must be positive integers, and the end cannot be less than the start", "Số tuần tự bắt đầu và kết thúc phải là số nguyên dương, số kết thúc không nhỏ hơn số bắt đầu"),
 "DELETE_TARGET_INVALID": ("Select the documents or material lines to delete, or enter SNs (start / end)", "Hãy chọn chứng từ, dòng vật tư cần xóa, hoặc nhập SN (đầu / cuối)"),
@@ -122,6 +123,14 @@ E = {
 "DALERT_NOT_FOUND": ("Delivery alert not found or already handled", "Không tìm thấy cảnh báo giao hoặc đã xử lý"),
 # ---------- SN 导出 ----------
 "EXPORT_NOTHING": ("Bill {bill_no} of PI {pi} has no allocated SNs", "Chứng từ {bill_no} của PI {pi} không có SN đã phân bổ"),
+# ---------- SN 导入 ----------
+"IMPORT_FILE_INVALID": ("The import file must be an xlsx file", "Tệp nhập phải là định dạng xlsx"),
+"IMPORT_FILE_TOO_LARGE": ("The import file cannot exceed {max} MB", "Tệp nhập không được vượt quá {max} MB"),
+"IMPORT_HEADER_MISSING": ("The header row of the import file is missing columns: {columns}", "Dòng tiêu đề của tệp nhập thiếu cột: {columns}"),
+"IMPORT_EMPTY": ("The import file has no data rows", "Tệp nhập không có dòng dữ liệu"),
+"IMPORT_TOO_MANY": ("At most {max} rows per import; the file has {rows} rows", "Mỗi lần nhập tối đa {max} dòng, tệp có {rows} dòng"),
+"IMPORT_HAS_ISSUES": ("{count} rows cannot be imported, so nothing in the file was imported; fix them and import again", "Có {count} dòng không thể nhập nên toàn bộ tệp chưa được nhập; vui lòng sửa rồi nhập lại"),
+"IMPORT_CONFLICT": ("SN {sn} was just generated or imported, so nothing in the file was imported; check again and import", "SN {sn} vừa được tạo hoặc nhập nên toàn bộ tệp chưa được nhập; vui lòng kiểm tra lại rồi nhập"),
 # ---------- 转单 / 转组织 ----------
 "TR_SCOPE_INVALID": ("Transfer scope must be a whole bill, bill + material, or a single SN / contiguous range", "Phạm vi chuyển chỉ có thể là cả chứng từ, chứng từ + vật tư, hoặc một SN / một dải liên tục"),
 "TR_MATERIAL_REQUIRED": ("Material code is required when transferring by material or by range", "Bắt buộc nhập mã vật tư khi chuyển theo vật tư hoặc theo dải"),

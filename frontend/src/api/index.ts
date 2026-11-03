@@ -133,6 +133,17 @@ export const api = {
   orgTransfer: (id: number) => get(`/transfers/org/${id}`),
   orgTransferItems: (id: number, params?: Q) => get(`/transfers/org/${id}/items`, params),
 
+  // ---------------- SN 导入：xlsx 直接作请求体（不经 multipart）；先检查，再确定导入
+  snImportCheck: (file: Blob) =>
+    http.post<any, any>("/sn-import/check", file, { headers: { "Content-Type": "application/octet-stream" }, timeout: 0 }),
+  snImportRun: (file: Blob, file_name: string) =>
+    http.post<any, any>("/sn-import", file, {
+      params: { file_name },
+      headers: { "Content-Type": "application/octet-stream" },
+      timeout: 0,
+    }),
+  snImportItems: (params?: Q) => get("/sn-import/items", params),
+
   // ---------------- 查询与留痕
   items: (params?: Q) => get("/sn", params),
   snExportCheck: (params?: Q) => get("/sn/export-check", params),
@@ -156,6 +167,7 @@ export const urls = {
   outList: (id: number) => `${base}/transfers/org/${id}/out-list`,
   snExport: (params: Q) => withQuery(`${base}/sn/export`, params),
   auditExport: (params: Q) => withQuery(`${base}/audits/export`, params),
+  snImportTemplate: () => `${base}/sn-import/template`,
 };
 
 export default http;
