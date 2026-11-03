@@ -96,6 +96,7 @@ M = {
 "common.note": ("备注", "Note", "Ghi chú"),
 "common.sn": ("完整 SN", "Full SN", "SN đầy đủ"),
 "common.seqText": ("进制流水", "Encoded serial", "Số thứ tự mã hóa"),
+"common.seqBase": ("进制位数", "Radix", "Cơ số"),
 "common.seqDec": ("十进制流水", "Decimal serial", "Số thứ tự thập phân"),
 "common.batchNo": ("批次号", "Batch No.", "Số lô"),
 "common.export": ("导出", "Export", "Xuất"),
