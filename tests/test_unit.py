@@ -363,14 +363,13 @@ def test_migration_flyway_checksum():
     """测试阶段只保留一个 V1__init.sql；校验和按 Flyway 算法固定，改了建表脚本须同步更新这里（并重建测试库）。"""
     ours = {m.script: m for m in migrations()}
     assert list(ours) == ["V1__init.sql"]
-    assert ours["V1__init.sql"].checksum() == 1175644877
+    assert ours["V1__init.sql"].checksum() == -1856840602
     statements = ours["V1__init.sql"].statements()
-    assert len(statements) == 37
+    assert len(statements) == 36
     text = "\n".join(statements)
-    # 脚本独立完整：35 张表各一条 CREATE TABLE 加两条初始行（sn_sync_state、SN 导入互斥行），
-    # 不用 ALTER 等语句事后补字段、补索引
+    # 脚本独立完整：35 张表各一条 CREATE TABLE 加 sn_sync_state 初始行，不用 ALTER 等语句事后补字段、补索引
     kinds = [" ".join(s.split()[:2]).upper() for s in statements]
-    assert kinds.count("CREATE TABLE") == 35 and kinds.count("INSERT INTO") == 2, kinds
+    assert kinds.count("CREATE TABLE") == 35 and kinds.count("INSERT INTO") == 1, kinds
     for table in (
         "sn_line_count",
         "sn_line_length",

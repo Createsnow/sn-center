@@ -9,7 +9,7 @@ from app.core.config import settings
 from app.core.exceptions import MesError, mes_body
 from app.core.security import CurrentUser
 from app.db.session import db
-from app.services import audit, changes, factories, locks, rules
+from app.services import audit, changes, factories, locks
 from app.services.delivery.batches import (
     FAILED,
     RECEIPT_NG,
@@ -21,6 +21,7 @@ from app.services.delivery.batches import (
     build_delivery,
     find_batch,
     must_batch,
+    serial_fields,
     str_or_none,
 )
 from app.services.delivery.receipts import apply_receipt
@@ -295,9 +296,7 @@ def _read_item(r: dict) -> dict:
     return {
         "sn": r["sn"],
         "rev": int(r["rev"]),
-        "serial": rules.seq_text(r["rule_version_id"], r["seq_dec"]),
-        "serialDec": str(r["seq_dec"]),
-        "serialPi": r["seq_pi_no"],
+        **serial_fields(r),
         "pi": r["pi_no"],
         "billNo": r["bill_no"],
         "billSeq": int(r["bill_seq"]),

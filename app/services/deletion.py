@@ -10,6 +10,7 @@
 - 交付批次：号在未确认或失败的交付批次中时，删除后该批次作废，批次里其余的号按作废的规则回号池或当场重建批次
   （与人工作废同一逻辑）；已确认的批次不动。
 - 与生成、分配、转移共用 PI 操作锁（号现在的 PI 与流水归属 PI 都锁）；PI 正在生成时不能删。
+- 只删本系统生成的号：SN 导入的号只能分配，不在删号范围内（按单据、物料行删时略过，按 SN 删时视为不存在）。
 """
 
 from __future__ import annotations
@@ -41,11 +42,11 @@ def _target(
     """范围 → （sn_item 的条件模板，参数，范围说明）。条件模板里列名前写 {t}（无别名为空、有别名为 i.）。"""
     a = util.trim(start_sn)
     if a:
-        s = db.one("SELECT * FROM sn_item WHERE sn = %s AND pi_no = %s", a, pi)
+        s = db.one("SELECT * FROM sn_item WHERE sn = %s AND pi_no = %s AND origin = 'GEN'", a, pi)
         if s is None:
             raise biz(ErrorCode.DELETE_SN_NOT_FOUND, pi=pi, sn=a)
         b = util.trim(end_sn) or a
-        e = s if b == a else db.one("SELECT * FROM sn_item WHERE sn = %s AND pi_no = %s", b, pi)
+        e = s if b == a else db.one("SELECT * FROM sn_item WHERE sn = %s AND pi_no = %s AND origin = 'GEN'", b, pi)
         if e is None:
             raise biz(ErrorCode.DELETE_SN_NOT_FOUND, pi=pi, sn=b)
         if (
@@ -55,7 +56,7 @@ def _target(
         ):
             raise biz(ErrorCode.DELETE_RANGE_INVALID)
         return (
-            "{t}pi_no = %s AND {t}bill_no = %s AND {t}bill_seq = %s AND {t}seq_pi_no = %s "
+            "{t}pi_no = %s AND {t}origin = 'GEN' AND {t}bill_no = %s AND {t}bill_seq = %s AND {t}seq_pi_no = %s "
             "AND {t}seq_dec BETWEEN %s AND %s",
             [pi, s["bill_no"], s["bill_seq"], s["seq_pi_no"], s["seq_dec"], e["seq_dec"]],
             f"{s['bill_no']}/{s['bill_seq']} {a}~{b}",
@@ -77,7 +78,7 @@ def _target(
         for k in keys:
             args += list(k)
     desc = " ".join(nos + [f"{k[0]}/{k[1]}" for k in keys])
-    return "{t}pi_no = %s AND (" + " OR ".join(ors) + ")", args, desc
+    return "{t}pi_no = %s AND {t}origin = 'GEN' AND (" + " OR ".join(ors) + ")", args, desc
 
 
 def _summary(tpl: str, args: list) -> dict:

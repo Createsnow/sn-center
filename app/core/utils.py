@@ -26,6 +26,21 @@ PUSH_NEW = "NEW"
 PUSH_REASSIGN = "REASSIGN"
 PUSH_TRANSFER_OUT = "TRANSFER_OUT"
 #: 暂停交付
+#: 号的来源：本系统生成 / SN 导入（导入的号没有规则与流水：seq_pi_no 为空串，只能分配）
+ORIGIN_GEN = "GEN"
+ORIGIN_IMPORT = "IMPORT"
+
+
+def seq_dec_text(seq_pi_no: str | None, seq_dec: int | None) -> str:
+    """十进制流水的显示值：导入的号（没有流水归属 PI）没有流水，为空串（seq_dec 只是导入记录 id）。"""
+    return str(seq_dec) if seq_pi_no and seq_dec is not None else ""
+
+
+def transferred_in(seq_pi_no: str | None, pi_no: str | None) -> bool:
+    """转入号：流水归属别的 PI；导入的号没有流水，不算转入。"""
+    return bool(seq_pi_no) and seq_pi_no != pi_no
+
+
 SUSPEND_REVERSAL = "REVERSAL"
 SUSPEND_CHANGE = "CHANGE"
 

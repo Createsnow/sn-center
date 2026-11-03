@@ -132,7 +132,7 @@ class ErrorCode(Enum):
     GEN_DUPLICATE_SN = (409, "完整 SN {sn} 与 PI {pi} 已有的号重复，整次生成已回滚（不自动跳号）")
     GEN_JOB_NOT_FOUND = (404, "生成任务不存在")
     GEN_SEQ_RANGE_INVALID = (400, "起止流水号须为正整数，止号不能小于起号")
-    GEN_IMPORTED_SN = (409, "完整 SN {sn} 已由 SN 导入登记（PI {pi}），不能再生成，整次生成已回滚（不自动跳号）")
+    GEN_IMPORTED_SN = (409, "完整 SN {sn} 是 SN 导入的号（PI {pi}），不能再生成，整次生成已回滚（不自动跳号）")
     # ---------- 删号 ----------
     DELETE_TARGET_INVALID = (400, "请选择要删除的单据、物料行，或填写 SN（起止号）")
     DELETE_SN_NOT_FOUND = (404, "PI {pi} 下没有 SN {sn}")

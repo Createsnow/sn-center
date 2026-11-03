@@ -1,11 +1,12 @@
-"""SN 导入：表头固定为 PI + 单据编号 + SN + 生产组织；先检查后确定导入，有一行不能导入整个文件不导入；
+"""SN 导入：表头固定为 PI + 单据编号 + SN + 生产组织；导入的号进号池（待分配），只能分配；
+先检查后确定导入，有一行不能导入整个文件不导入；
 导入的号不能与号池、已导入的号重复，之后生成撞上已导入的号整次回滚；普通操作员只能导入、查看授权组织的单据。"""
 
 from __future__ import annotations
 
 import io
 
-from conftest import emp, ok, uid
+from conftest import MES, emp, ok, uid
 from openpyxl import Workbook
 
 HEAD = ("PI", "单据编号", "SN", "生产组织")
@@ -134,7 +135,7 @@ def test_import_registers_and_blocks_reimport(w, api, sql):
     assert [x["sn"] for x in lst["items"]] == [b, a] and lst["total"] == 2
     assert ok(api.get(f"/api/sn-import/items?sn={a}", w.admin))["total"] == 1
     assert ok(api.get(f"/api/sn-import/items?import_no={done['import_no']}", w.admin))["total"] == 2
-    # 再导入同一枚号：已导入
+    # 再导入同一枚号：已导入（号也在号池里，只报「已导入」）
     again = ok(check(api, xlsx((pi, bill, a, org)), w.admin))
     assert codes(again) == {2: ["IMPORTED"]}
     assert again["issues"][0]["issues"][0]["params"] == {"import_no": done["import_no"]}
@@ -152,8 +153,94 @@ def test_generation_refuses_imported_sn(w, api, sql):
     r = api.post("/api/generate/run", {"token": pv["token"]}, w.admin)
     assert (r.status, r.code) == (409, "GEN_IMPORTED_SN"), str(r)
     assert r["params"] == {"sn": taken, "pi": pi}
-    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 0
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND origin = 'GEN'", pi) == 0
     assert (sql.scalar("SELECT last_seq_dec FROM sn_pi_counter WHERE pi_no = %s", pi) or 0) == 0
+
+
+def test_imported_sns_wait_on_allocation_page_and_can_only_be_allocated(w, api, sql):
+    """导入的号进号池待分配（单据序号 0、没有规则与流水、客户与组织取快照），在分配页标为「导入」行；
+    不在生成页（统计、单据分配状态、号段都不计，不占可生成数量），不能删号、转移；分配到单据的生产组织后照常推送。"""
+    org, pi, bill = mk(w, ("M1", 2))
+    w.enable_mes(org)
+    a, b = uid("SA"), uid("SB")
+    done = ok(run(api, xlsx((pi, bill, a, org), (pi, bill, b, org)), w.admin))
+    rows = sql.all("SELECT * FROM sn_item WHERE sn IN (%s, %s) ORDER BY sn", a, b)
+    assert [
+        (x["origin"], x["status"], x["pi_no"], x["bill_no"], x["bill_seq"], x["material_code"], x["seq_pi_no"])
+        for x in rows
+    ] == [("IMPORT", "PENDING_ALLOC", pi, bill, 0, "", "")] * 2
+    assert {(x["customer_code"], x["gen_org_code"], x["rule_version_id"], x["gen_batch"]) for x in rows} == {
+        ("C1", org, 0, done["import_no"])
+    }
+    assert sql.count("SELECT COUNT(*) FROM sn_bill_ledger WHERE bill_no = %s", bill) == 1, "与生成一样建立台账"
+    # 生成页：不计导入的号，可生成数量不变
+    ctx = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))
+    gb = next(x for x in ctx["bills"] if x["bill_no"] == bill)
+    assert (gb["alloc_state"], gb["pending_alloc"], gb["quota"], gb["segments"]["use_count"]) == (None, 0, 2, 0)
+    assert (ctx["summary"]["pending_alloc"], ctx["summary"]["transferred_in"]) == (0, 0)
+    gp = next(x for x in ok(api.get(f"/api/generate/pis?q={pi}", w.admin))["items"] if x["pi_no"] == pi)
+    assert (gp["pending_alloc"], gp["quota"]) == (0, 2)
+    assert ok(api.get(f"/api/generate/segments?pi={pi}&bill_no={bill}", w.admin))["use"] == []
+    # 删号：按单据删没有号，按 SN 删视为不存在
+    d = api.post("/api/generate/delete", {"pi_no": pi, "bills": [bill]}, w.admin)
+    assert d.code == "DELETE_NOTHING", str(d)
+    d = api.post("/api/generate/delete", {"pi_no": pi, "start_sn": a}, w.admin)
+    assert d.code == "DELETE_SN_NOT_FOUND", str(d)
+    # 分配页：一行「导入」（单据序号 0），分到单据的生产组织
+    al = ok(api.get(f"/api/allocation/context?pi={pi}", w.admin))
+    line = next(x for x in al["lines"] if x["bill_no"] == bill)
+    assert (line["seq"], line["imported"], line["pending_alloc"], line["org_code"]) == (0, True, 2, org)
+    assert al["summary"]["pending_alloc"] == 2 and al["summary"]["transferred_in"] == 0
+    left = ok(api.get(f"/api/allocation/bills?q={bill}", w.admin))["items"]
+    assert [(x["bill_no"], x["state"], x["pending_alloc"]) for x in left] == [(bill, "PENDING", 2)]
+    r = w.allocate(pi, lines=[(bill, 0)])
+    assert (r["qty"], r["orgs"]) == (2, [org])
+    assert {x["status"] for x in sql.all("SELECT status FROM sn_item WHERE sn IN (%s, %s)", a, b)} == {"TO_PUSH"}
+    # 推送：没有流水，serial / serialDec 为 "0"、serialPi 为号的 PI，billSeq 0，物料为 null
+    w.push()
+    items = [i for x in MES.received for i in x["batch"].get("items", []) if i["sn"] in (a, b)]
+    assert len(items) == 2
+    assert {(i["serial"], i["serialDec"], i["serialPi"], i["billSeq"], i["materialCode"]) for i in items} == {
+        ("0", "0", pi, 0, None)
+    }
+    assert {x["status"] for x in sql.all("SELECT status FROM sn_item WHERE sn IN (%s, %s)", a, b)} == {"PUSHED"}
+    st = ok(api.get(f"/api/sn-import/items?import_no={done['import_no']}", w.admin))["items"]
+    assert {(x["status"], x["allocated_to"]) for x in st} == {("PUSHED", org)}
+    # 查询：十进制流水为空，不算转入
+    q = ok(api.get(f"/api/sn?sn={a}", w.admin))["items"][0]
+    assert (q["seq_dec"], q["seq_text"], q["transferred_in"]) == ("", "", False)
+    # 分配后也不能转移
+    loc = api.get(f"/api/transfers/locate?q={a}", w.admin)
+    assert loc.code == "TR_SN_NOT_TRANSFERABLE", str(loc)
+
+
+def test_bill_transfer_leaves_imported_sns_behind(w, api, sql):
+    """单据里既有生成的号又有导入的号：整张单据转单只转生成的号，导入的号留在原单据。"""
+    org, pi, bill = mk(w, ("M1", 2))
+    _, _, to_bill = mk(w, ("M1", 5), org=org)
+    sql_pi_to = sql.scalar("SELECT pi FROM sn_prd_mo WHERE bill_no = %s LIMIT 1", to_bill)
+    p = "K" + uid("").replace("-", "")
+    ok(w.bind_pi(pi, w.rule(p, with_length=False, pi=pi)))
+    w.generate(pi)
+    a = uid("SA")
+    ok(run(api, xlsx((pi, bill, a, org)), w.admin))
+    w.allocate(pi)
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND status = 'ALLOCATED'", bill) == 3
+    body = {
+        "pi_no": pi,
+        "bill_no": bill,
+        "scope": "BILL",
+        "to_pi": sql_pi_to,
+        "to_bill": to_bill,
+        "to_factory": org,
+        "to_material": "M1",
+        "reason": "转单",
+    }
+    pre = ok(api.post("/api/transfers/bill/preview", body, w.admin))
+    assert (pre["total"], pre["transferable"], pre["blocked"]) == (3, 2, {"IMPORTED": 1}), str(pre)
+    ok(api.post("/api/transfers/bill", body, w.admin))
+    assert sql.one("SELECT bill_no, bill_seq FROM sn_item WHERE sn = %s", a) == {"bill_no": bill, "bill_seq": 0}
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND origin = 'GEN'", to_bill) == 2
 
 
 def test_operator_only_imports_and_sees_authorized_orgs(w, api, sql):

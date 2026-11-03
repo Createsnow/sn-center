@@ -1,14 +1,17 @@
-"""SN 导入：本系统之外已有的 SN 按「PI + 单据编号 + SN + 生产组织」登记进来，之后生成不会再出这些号。
+"""SN 导入：本系统之外已有的 SN 按「PI + 单据编号 + SN + 生产组织」导入号池，进入 SN 分配页（待分配），只能分配。
 
 - 文件：xlsx，首个非空行为表头，固定为 A～D 列依次「PI、单据编号、SN、生产组织」（列名、顺序固定，不能多列或少列；
   去首尾空白、不分大小写比较），之后每行一枚号；空行跳过。
 - 每行的条件：四列都必填；SN 不超过 64 位、不含空白；单据须在订单快照中，PI、生产组织（填编码或名称）与之相同；
-  普通操作员只能导入授权生产组织的单据；SN 在文件内不能重复，也不能与号池（已生成的号）、已导入的号重复。
+  普通操作员只能导入授权生产组织的单据；SN 在文件内不能重复，也不能与号池（已生成、已导入的号）重复。
 - 先检查（不落库，逐行列出不能导入的原因），再「确定导入」：有一行不能导入整个文件都不导入；
-  确定导入时在一个事务里重新检查一遍，全部写入，一次导入一个导入单号。
-- 导入的号只登记在 sn_import_item，不进号池，不参与分配、交付、转移和删号。
-- 与生成互斥：导入独占、生成共享 sn_seq 的 '#sn-import' 行锁（guard）。生成在写号前查已导入的号，撞上整次回滚；
-  导入在锁内查号池。这样两边同时进行时，后提交的一方一定能看到先提交的号，不会各自都以为没有重复。
+  确定导入时在 PI 操作锁与一个事务里重新检查一遍，全部写入，一次导入一个导入单号。
+- 写入：导入记录 sn_import_item（导入后不变）+ 号池 sn_item（origin = IMPORT，待分配，挂在单据序号 0 上；
+  没有规则与流水：seq_pi_no 为空串、seq_dec 为导入记录 id、rule_version_id 为 0；生产组织、客户取订单快照）。
+  与生成一样建立已出号单据台账、按台账带上暂停标记（单据反审核等照常暂停交付）。
+- 导入的号只能分配（分配后照常推送 / 拉取 / 下载、查询）；不出现在生成页（号段、单据分配状态、统计都不计），
+  不能删号、转移，也不占订单的可生成数量。
+- 完整 SN 全局唯一由号池的唯一键保证：导入撞上别人刚生成或导入的号整次不导入，生成撞上导入的号整次回滚。
 """
 
 from __future__ import annotations
@@ -26,7 +29,7 @@ from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db, is_duplicate, marks
-from app.services import audit
+from app.services import audit, changes, locks
 
 #: 单个文件上限
 MAX_MB = 20
@@ -40,8 +43,6 @@ SN_MAX = 64
 CODE_MAX = 64
 #: 生产组织可填编码或名称（名称最长 128）
 ORG_MAX = 128
-#: 导入与生成互斥用的 sn_seq 行（# 开头不会与单号序列重名）
-GUARD = "#sn-import"
 
 #: 表头：列名、顺序固定（A～D），不能多列或少列
 HEADERS = ["PI", "单据编号", "SN", "生产组织"]
@@ -73,8 +74,9 @@ class Row:
     sn: str
     #: 文件里填的生产组织（编码或名称）
     org: str
-    #: 单据在订单快照中的生产组织编码（登记、授权范围按它）
+    #: 单据在订单快照中的生产组织编码（登记、授权范围按它）、客户编码
     factory: str = ""
+    customer: str = ""
     issues: list[tuple[str, dict]] = field(default_factory=list)
 
 
@@ -172,7 +174,7 @@ def _chunks(xs: list[str]) -> Iterator[list[str]]:
 
 
 def _validate(cu: CurrentUser, rows: list[Row], lock: bool = False) -> None:
-    """逐行检查，问题记到 row.issues。lock = True（确定导入、已持 guard）时查号池用加锁读，读到最新提交的号。"""
+    """逐行检查，问题记到 row.issues。lock = True（确定导入时）查号池用加锁读，读到最新提交的号。"""
     first: dict[str, int] = {}
     for r in rows:
         if not r.pi:
@@ -204,7 +206,8 @@ def _validate(cu: CurrentUser, rows: list[Row], lock: bool = False) -> None:
     for part in _chunks(bills):
         for b in db.all(
             "SELECT m.bill_no, MIN(m.pi) pi, MIN(m.org_code) org_code, MIN(m.org_name) org_name, "
-            "MIN(f.factory_name) factory_name FROM sn_prd_mo m LEFT JOIN sn_factory f ON f.factory_code = m.org_code "
+            "MIN(m.customer_code) cc, MIN(f.factory_name) factory_name "
+            "FROM sn_prd_mo m LEFT JOIN sn_factory f ON f.factory_code = m.org_code "
             f"WHERE m.bill_no IN ({marks(len(part))}) GROUP BY m.bill_no",
             *part,
         ):
@@ -217,6 +220,7 @@ def _validate(cu: CurrentUser, rows: list[Row], lock: bool = False) -> None:
             r.issues.append((BILL_NOT_FOUND, {"bill_no": r.bill}))
             continue
         r.factory = b["org_code"] or ""
+        r.customer = b["cc"] or ""
         if r.pi and b["pi"] != r.pi:
             r.issues.append((PI_MISMATCH, {"bill_no": r.bill, "pi": b["pi"]}))
         # 生产组织填编码或名称（订单快照里的名称、生产组织列表里的名称）都可以
@@ -236,10 +240,11 @@ def _validate(cu: CurrentUser, rows: list[Row], lock: bool = False) -> None:
         for x in db.all(f"SELECT sn, import_no FROM sn_import_item WHERE sn IN ({marks(len(part))}){share}", *part):
             done[x["sn"]] = x["import_no"]
     for r in rows:
-        if r.sn in pool:
-            r.issues.append((IN_POOL, {"pi": pool[r.sn]}))
+        # 导入的号也在号池里：导入过的报「已导入」，其余在号池里的报「号池已有」
         if r.sn in done:
             r.issues.append((IMPORTED, {"import_no": done[r.sn]}))
+        elif r.sn in pool:
+            r.issues.append((IN_POOL, {"pi": pool[r.sn]}))
 
 
 def _issue_rows(rows: list[Row]) -> list[dict]:
@@ -275,39 +280,28 @@ def check(cu: CurrentUser, content: bytes) -> dict:
 # ================================================================== 导入
 
 
-def guard(exclusive: bool) -> None:
-    """导入（exclusive）与生成（共享）互斥：在当前事务里锁 sn_seq 的 GUARD 行（建表脚本写入）。
-
-    行万一不在：在本事务里补建（本事务已持该处的间隙锁，换连接去建会等自己）。"""
-    sql = "SELECT val FROM sn_seq WHERE name = %s " + ("FOR UPDATE" if exclusive else "LOCK IN SHARE MODE")
-    if db.one(sql, GUARD) is None:
-        db.exec("INSERT IGNORE INTO sn_seq(name, val) VALUES (%s, 0)", GUARD)
-        db.one(sql, GUARD)
-
-
-def imported_hit(sns: list[str]) -> dict | None:
-    """生成写号前：这些号里第一枚已导入的号（加锁读，读最新提交）；调用方须已持共享 guard。"""
-    if not sns:
-        return None
-    return db.one(
-        f"SELECT sn, pi_no FROM sn_import_item WHERE sn IN ({marks(len(sns))}) LIMIT 1 LOCK IN SHARE MODE", *sns
-    )
-
-
 _INSERT = (
     "INSERT INTO sn_import_item(import_no, sn, pi_no, bill_no, factory_code, file_name, row_no, created_by, "
     "created_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 )
+#: 号池：待分配，挂在单据序号 0；没有规则与流水（seq_pi_no 空串、seq_dec = 导入记录 id、规则版本 0）
+_INSERT_ITEM = (
+    "INSERT INTO sn_item(sn, origin, pi_no, customer_code, bill_no, bill_seq, material_code, gen_org_code, "
+    "gen_bill_no, gen_bill_seq, seq_pi_no, seq_dec, length_text, attach_no, rule_version_id, gen_batch, status, "
+    "created_at, updated_at) "
+    "VALUES (%s,'IMPORT',%s,%s,%s,0,'',%s,%s,0,'',%s,NULL,'',0,%s,'PENDING_ALLOC',%s,%s)"
+)
 
 
 def run(cu: CurrentUser, content: bytes, file_name_in: str | None) -> dict:
-    """确定导入：事务内重新检查，有问题行整个文件不导入；否则全部写入。返回导入单号与枚数。"""
+    """确定导入：PI 操作锁 + 事务内重新检查，有问题行整个文件不导入；否则写入导入记录与号池（待分配）。
+    返回导入单号与枚数。"""
     if not (cu.is_admin or cu.is_operator):
         raise biz(ErrorCode.FORBIDDEN)
     rows = parse(content)
     file_name = util.cut(util.trim(file_name_in), 255) or ""
-    with db.tx():
-        guard(exclusive=True)
+    # 与生成、删号、分配、转移共用 PI 操作锁（PI 正在生成时拿不到，提示稍后再试）
+    with locks.with_pi_lock(*sorted({r.pi for r in rows if r.pi})), db.tx():
         _validate(cu, rows, lock=True)
         bad = sum(1 for r in rows if r.issues)
         if bad:
@@ -316,18 +310,38 @@ def run(cu: CurrentUser, content: bytes, file_name_in: str | None) -> dict:
         no = util.next_id("IM")
         for i in range(0, len(rows), CHUNK):
             part = rows[i : i + CHUNK]
+            sns = [r.sn for r in part]
             try:
                 db.exec_many(
                     _INSERT,
                     [(no, r.sn, r.pi, r.bill, r.factory, file_name, r.row_no, cu.emp_no, now) for r in part],
                 )
+                ids = {
+                    x["sn"]: x["id"]
+                    for x in db.all(
+                        f"SELECT id, sn FROM sn_import_item WHERE import_no = %s AND sn IN ({marks(len(sns))})",
+                        no,
+                        *sns,
+                    )
+                }
+                db.exec_many(
+                    _INSERT_ITEM,
+                    [(r.sn, r.pi, r.customer, r.bill, r.factory, r.bill, ids[r.sn], no, now, now) for r in part],
+                )
             except pymysql.err.IntegrityError as ex:
                 if not is_duplicate(ex):
                     raise
-                hit = db.one(
-                    f"SELECT sn FROM sn_import_item WHERE sn IN ({marks(len(part))}) LIMIT 1", *[r.sn for r in part]
+                # 检查之后别人刚生成或导入了同样的号
+                hit = db.one(f"SELECT sn FROM sn_item WHERE sn IN ({marks(len(sns))}) LIMIT 1", *sns) or db.one(
+                    f"SELECT sn FROM sn_import_item WHERE sn IN ({marks(len(sns))}) AND import_no <> %s LIMIT 1",
+                    *sns,
+                    no,
                 )
                 raise biz(ErrorCode.IMPORT_CONFLICT, sn=hit["sn"] if hit else part[0].sn) from None
+        bills = sorted({r.bill for r in rows})
+        for b in bills:
+            changes.ensure_ledger(b)
+        changes.refresh_items(bills)
         by_bill: dict[tuple[str, str], list[Row]] = {}
         for r in rows:
             by_bill.setdefault((r.pi, r.bill), []).append(r)
@@ -341,6 +355,7 @@ def run(cu: CurrentUser, content: bytes, file_name_in: str | None) -> dict:
                 .bill(bill)
                 .range(ss[0], ss[-1])
                 .count(len(rs))
+                .status(None, util.PENDING_ALLOC)
                 .batch(no)
                 .info(f"file={file_name} rows={rs[0].row_no}..{rs[-1].row_no}"),
             )
@@ -364,33 +379,46 @@ class Filter:
 
 
 _FIELDS = ("id", "import_no", "sn", "pi_no", "bill_no", "factory_code", "file_name", "row_no", "created_by")
+_COLS = ", ".join(f"s.{k}" for k in _FIELDS)
 
 
 def items(cu: CurrentUser, f: Filter, q: util.Page) -> dict:
-    """已导入的号（新的在前）：按 PI、单据编号、SN（前缀）、导入单号筛选；普通操作员只看授权组织的。"""
+    """已导入的号（新的在前）：按 PI、单据编号、SN（前缀）、导入单号筛选；普通操作员只看授权组织的。
+    另带号在号池中的当前状态（待分配 / 待推送 / 已推送 / 已分配）与生产组织。"""
     where = ["1 = 1"]
     args: list[Any] = []
     facs = cu.read_factories(None)
     if facs is not None:
-        where.append(f"factory_code IN ({marks(len(facs))})")
+        where.append(f"s.factory_code IN ({marks(len(facs))})")
         args += facs
     for col, v in (("pi_no", f.pi_no), ("bill_no", f.bill_no), ("import_no", f.import_no)):
         v = util.trim(v)
         if v:
-            where.append(f"{col} = %s")
+            where.append(f"s.{col} = %s")
             args.append(v)
     sn = util.trim(f.sn)
     if sn:
-        where.append("sn LIKE %s")
+        where.append("s.sn LIKE %s")
         args.append(util.like_prefix(sn))
     w = " AND ".join(where)
-    total = db.count(f"SELECT COUNT(*) FROM sn_import_item WHERE {w}", *args)
+    total = db.count(f"SELECT COUNT(*) FROM sn_import_item s WHERE {w}", *args)
     rows = db.all(
-        f"SELECT {', '.join(_FIELDS)}, created_at FROM sn_import_item WHERE {w} ORDER BY id DESC LIMIT %s OFFSET %s",
+        f"SELECT {_COLS}, s.created_at, i.status, i.factory_code cur_factory FROM sn_import_item s "
+        f"LEFT JOIN sn_item i ON i.sn = s.sn AND i.origin = 'IMPORT' WHERE {w} ORDER BY s.id DESC LIMIT %s OFFSET %s",
         *args,
         q.size,
         q.offset,
     )
     return util.page_result(
-        [{**{k: r[k] for k in _FIELDS}, "created_at": util.fmt(r["created_at"])} for r in rows], total, q
+        [
+            {
+                **{k: r[k] for k in _FIELDS},
+                "created_at": util.fmt(r["created_at"]),
+                "status": r["status"],
+                "allocated_to": r["cur_factory"],
+            }
+            for r in rows
+        ],
+        total,
+        q,
     )

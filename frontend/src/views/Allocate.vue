@@ -89,7 +89,12 @@
                 <el-table v-show="!isFolded(b.bill_no)" ref="lineTables" :data="b.lines" size="small" row-key="key"
                   @selection-change="(rows: any[]) => onSelect(b.bill_no, rows)">
                   <el-table-column type="selection" width="40" :selectable="(row: any) => row.pending_alloc > 0 && !row.skip" />
-                  <el-table-column :label="t('common.billSeq')" prop="seq" width="64" />
+                  <el-table-column :label="t('common.billSeq')" width="64">
+                    <template #default="{ row }">
+                      <el-tag v-if="row.imported" size="small" type="warning" effect="plain" disable-transitions>{{ t("allocate.imported") }}</el-tag>
+                      <template v-else>{{ row.seq }}</template>
+                    </template>
+                  </el-table-column>
                   <el-table-column :label="t('common.material')" prop="material_code" min-width="80" show-overflow-tooltip />
                   <el-table-column :label="t('export.qty')" align="right" width="56">
                     <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>

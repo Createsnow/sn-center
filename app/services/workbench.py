@@ -68,8 +68,9 @@ def _pi_rows(q: str | None, by_modify: bool = False, facs: tuple[str, ...] | Non
     )
 
 
-def item_stats(pis: list[str], facs: tuple[str, ...] | None = None) -> dict[str, dict]:
+def item_stats(pis: list[str], facs: tuple[str, ...] | None = None, gen_only: bool = False) -> dict[str, dict]:
     """各 PI 的号数统计；facs = 授权范围（None = 全部），只数范围内的号、批次和推送任务。
+    gen_only：只数本系统生成的号（生成页用：导入的号不在生成页）；分配页连导入的号一起数。
     已分配（allocated）按单据算，与分配页左侧单据状态（allocation.bill_state）同一口径：只数状态为「已分配」的
     单据（号都已分配且推送完成，未对接 MES 的分配即完成）的号；待分配、待处理（推送中、等回执、推送中断、
     暂停交付等还有待推送的号）的单据整单不计。"""
@@ -78,14 +79,16 @@ def item_stats(pis: list[str], facs: tuple[str, ...] | None = None) -> dict[str,
     ph = marks(len(pis))
     isql, iargs = factories.item_scope_sql(facs)
     fsql, fargs = factories.scope_sql(facs)
+    gen = " AND origin = 'GEN'" if gen_only else ""
     out: dict[str, dict] = {}
     for r in db.all(
         "SELECT pi_no, SUM(pending) pending, SUM(CASE WHEN pending = 0 AND to_push = 0 THEN n ELSE 0 END) allocated, "
         "SUM(transferred_in) transferred_in, SUM(unbatched) unbatched, SUM(suspended) suspended FROM ("
         "SELECT pi_no, COUNT(*) n, SUM(status = 'PENDING_ALLOC') pending, SUM(status = 'TO_PUSH') to_push, "
-        "SUM(seq_pi_no <> pi_no) transferred_in, SUM(status = 'TO_PUSH' AND delivery_batch_no IS NULL "
-        "AND suspend IS NULL) unbatched, SUM(suspend IS NOT NULL) suspended "
-        f"FROM sn_item WHERE pi_no IN ({ph}){isql} GROUP BY pi_no, bill_no) g GROUP BY pi_no",
+        "SUM(seq_pi_no <> '' AND seq_pi_no <> pi_no) transferred_in, "
+        "SUM(status = 'TO_PUSH' AND delivery_batch_no IS NULL AND suspend IS NULL) unbatched, "
+        "SUM(suspend IS NOT NULL) suspended "
+        f"FROM sn_item WHERE pi_no IN ({ph}){gen}{isql} GROUP BY pi_no, bill_no) g GROUP BY pi_no",
         *pis,
         *iargs,
     ):
@@ -163,7 +166,7 @@ def pis(cu: CurrentUser, q: str | None, tab: str | None, by_modify: bool = False
     rows = _pi_rows(q, by_modify, facs)
     capped = len(rows) >= LIST_LIMIT
     names = [r["pi"] for r in rows]
-    stats = item_stats(names, facs)
+    stats = item_stats(names, facs, gen_only=True)
     own = gen_own(names, facs)
     running = _running(names)
     lsql, largs = factories.scope_sql(facs, "l.org_code")
@@ -287,13 +290,14 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
         )
         v["issues"] = x.issues
         b["lines"].append(v)
-    # 各单据挂在本 PI 下的号：待分配、待推送枚数（单据分配状态与分配页左侧同一口径），一次取出
+    # 各单据挂在本 PI 下本系统生成的号：待分配、待推送枚数（单据分配状态与分配页左侧同一口径），一次取出；
+    # 导入的号不在生成页，不计（否则只有导入号的单据分配后会在「可生成」页签置灰）
     isql, iargs = factories.item_scope_sql(facs)
     items = {
         r["bill_no"]: (int(r["pending"] or 0), int(r["to_push"] or 0))
         for r in db.all(
             "SELECT bill_no, SUM(status = 'PENDING_ALLOC') pending, SUM(status = 'TO_PUSH') to_push FROM sn_item "
-            "WHERE pi_no = %s" + isql + " GROUP BY bill_no",
+            "WHERE pi_no = %s AND origin = 'GEN'" + isql + " GROUP BY bill_no",
             pi,
             *iargs,
         )
@@ -338,7 +342,7 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
         b["total_qty"] = sum(x["qty"] for x in b["lines"])
         b["generated_qty"] = sum(x["generated_qty"] for x in b["lines"])
         b["quota"] = sum(x["quota"] for x in b["lines"])
-    stats = item_stats([pi], facs).get(pi, {})
+    stats = item_stats([pi], facs, gen_only=True).get(pi, {})
     running = db.one("SELECT * FROM sn_gen_job WHERE running_pi = %s", pi)
     if running is not None and not any(generate.in_scope(facs, x) for x in json.loads(running["plan_json"])["items"]):
         # 别的组织正在生成：不显示它的进度，生成、撤销仍会因 PI 操作锁被拒绝

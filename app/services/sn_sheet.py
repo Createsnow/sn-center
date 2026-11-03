@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+from app.core import utils as util
 from app.services import rules
 
 HEADERS = [
@@ -61,7 +62,7 @@ def row(no: int, r: dict) -> list:
         no,
         r["sn"],
         rules.seq_text(r["rule_version_id"], r["seq_dec"]),
-        str(r["seq_dec"]),
+        util.seq_dec_text(r["seq_pi_no"], r["seq_dec"]),
         r["factory_code"] or "",
         r["factory_name"] or "",
         r["customer_code"],

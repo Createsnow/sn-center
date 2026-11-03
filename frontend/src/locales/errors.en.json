@@ -98,7 +98,7 @@
   "GEN_DUPLICATE_SN": "Full SN {sn} duplicates an existing SN of PI {pi}; the whole generation was rolled back (no auto-skip)",
   "GEN_JOB_NOT_FOUND": "Generation job not found",
   "GEN_SEQ_RANGE_INVALID": "Start and end serial numbers must be positive integers, and the end cannot be less than the start",
-  "GEN_IMPORTED_SN": "Full SN {sn} is registered by SN import (PI {pi}) and cannot be generated; the whole generation was rolled back (no auto-skip)",
+  "GEN_IMPORTED_SN": "Full SN {sn} is an imported SN (PI {pi}) and cannot be generated; the whole generation was rolled back (no auto-skip)",
   "DELETE_TARGET_INVALID": "Select the documents or material lines to delete, or enter SNs (start / end)",
   "DELETE_SN_NOT_FOUND": "SN {sn} not found under PI {pi}",
   "DELETE_RANGE_INVALID": "Start and end SNs must be on the same serial (same serial PI), and the end cannot come before the start",

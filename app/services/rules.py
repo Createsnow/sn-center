@@ -1210,7 +1210,8 @@ def _forget(version_id: int) -> None:
 
 
 def cached_spec(version_id: int | None) -> codec.Spec | None:
-    if version_id is None:
+    # 0 = SN 导入的号（没有规则）：不查库
+    if not version_id:
         return None
     with _cache_lock:
         if version_id in _spec_cache:

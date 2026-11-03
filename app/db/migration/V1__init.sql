@@ -203,9 +203,6 @@ CREATE TABLE sn_seq (
   PRIMARY KEY (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='单号序列';
 
--- SN 导入与生成互斥用的行（# 开头不会与单号序列重名；只加行锁，不当序号用，见 sn_import.guard）
-INSERT INTO sn_seq (name, val) VALUES ('#sn-import', 0);
-
 -- 附件项次补填（快照之外）
 CREATE TABLE sn_line_attach (
   bill_no        VARCHAR(64) NOT NULL,
@@ -360,6 +357,7 @@ CREATE TABLE sn_gen_job (
 CREATE TABLE sn_item (
   id                BIGINT      NOT NULL AUTO_INCREMENT,
   sn                VARCHAR(64) NOT NULL COMMENT '完整 SN，写出后不再修改',
+  origin            VARCHAR(8)  NOT NULL DEFAULT 'GEN' COMMENT 'GEN 本系统生成 / IMPORT SN 导入：没有规则与流水（seq_pi_no 为空串、seq_dec 为导入记录 id、rule_version_id 为 0、单据序号为 0），只能分配，不能删号、转移',
   -- 当前挂靠
   factory_code      VARCHAR(64) NULL COMMENT '生产组织（分配后才有）',
   pi_no             VARCHAR(64) NOT NULL,
@@ -440,9 +438,9 @@ CREATE TABLE sn_item_deleted (
   KEY ix_item_deleted_seq (seq_pi_no, seq_dec)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='删号存档';
 
--- SN 导入：本系统之外已有的 SN（PI + 单据 + SN + 生产组织）登记在这里，与号池一起保证完整 SN 全局不重复：
--- 导入时不能与号池、已导入的号重复；生成时撞上已导入的号整次回滚。只登记，不进号池、不参与分配、交付与转移。
--- 导入与生成的先后由 sn_seq 的 '#sn-import' 行锁排定（导入独占、生成共享，见 sn_import.guard）
+-- SN 导入记录：本系统之外已有的 SN（PI + 单据 + SN + 生产组织）一次导入一个导入单号，逐枚记在这里（导入后不变）；
+-- 号同时写入号池（sn_item.origin = 'IMPORT'，待分配，挂在单据序号 0 上，id 即号池的 seq_dec），只能分配；
+-- 完整 SN 全局唯一由号池的 ux_item_sn 保证（导入撞上已有的号整次不导入，生成撞上导入的号整次回滚）
 CREATE TABLE sn_import_item (
   id            BIGINT       NOT NULL AUTO_INCREMENT,
   import_no     VARCHAR(40)  NOT NULL COMMENT '导入单号（一次导入一个）',

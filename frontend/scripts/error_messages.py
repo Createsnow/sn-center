@@ -102,7 +102,7 @@ E = {
 "GEN_PREVIEW_USED": ("This preview was already used for a generation, please preview again", "Bản xem trước này đã được dùng để tạo, vui lòng xem trước lại"),
 "GEN_BUSY": ("PI {pi} is generating, please retry later", "PI {pi} đang tạo, vui lòng thử lại sau"),
 "GEN_DUPLICATE_SN": ("Full SN {sn} duplicates an existing SN of PI {pi}; the whole generation was rolled back (no auto-skip)", "SN đầy đủ {sn} trùng với SN đã có của PI {pi}; toàn bộ lần tạo đã hoàn tác (không tự bỏ qua số)"),
-"GEN_IMPORTED_SN": ("Full SN {sn} is registered by SN import (PI {pi}) and cannot be generated; the whole generation was rolled back (no auto-skip)", "SN đầy đủ {sn} đã được đăng ký qua nhập SN (PI {pi}), không thể tạo; toàn bộ lần tạo đã hoàn tác (không tự bỏ qua số)"),
+"GEN_IMPORTED_SN": ("Full SN {sn} is an imported SN (PI {pi}) and cannot be generated; the whole generation was rolled back (no auto-skip)", "SN đầy đủ {sn} là SN đã nhập (PI {pi}), không thể tạo; toàn bộ lần tạo đã hoàn tác (không tự bỏ qua số)"),
 "GEN_JOB_NOT_FOUND": ("Generation job not found", "Không tìm thấy tác vụ tạo"),
 "GEN_SEQ_RANGE_INVALID": ("Start and end serial numbers must be positive integers, and the end cannot be less than the start", "Số tuần tự bắt đầu và kết thúc phải là số nguyên dương, số kết thúc không nhỏ hơn số bắt đầu"),
 "DELETE_TARGET_INVALID": ("Select the documents or material lines to delete, or enter SNs (start / end)", "Hãy chọn chứng từ, dòng vật tư cần xóa, hoặc nhập SN (đầu / cuối)"),

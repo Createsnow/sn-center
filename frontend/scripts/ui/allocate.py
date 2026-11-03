@@ -19,6 +19,7 @@ M = {
 "allocate.billCounts": ("{n} 行 · SN {qty} 枚", "{n} lines · {qty} SNs", "{n} dòng · {qty} SN"),
 "allocate.billPicked": ("已选 {n} 行", "{n} lines ticked", "Đã chọn {n} dòng"),
 "allocate.toOrg": ("分到", "To org", "Phân bổ cho"),
+"allocate.imported": ("导入", "Imported", "Đã nhập"),
 "allocate.prog.PENDING": ("待分配", "To allocate", "Chờ phân bổ"),
 "allocate.prog.TO_PUSH": ("待推送", "To push", "Chờ đẩy"),
 "allocate.prog.FAILED": ("推送失败 {n}", "{n} push failed", "Đẩy lỗi {n}"),

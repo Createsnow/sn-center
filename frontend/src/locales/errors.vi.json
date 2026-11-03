@@ -98,7 +98,7 @@
   "GEN_DUPLICATE_SN": "SN đầy đủ {sn} trùng với SN đã có của PI {pi}; toàn bộ lần tạo đã hoàn tác (không tự bỏ qua số)",
   "GEN_JOB_NOT_FOUND": "Không tìm thấy tác vụ tạo",
   "GEN_SEQ_RANGE_INVALID": "Số tuần tự bắt đầu và kết thúc phải là số nguyên dương, số kết thúc không nhỏ hơn số bắt đầu",
-  "GEN_IMPORTED_SN": "SN đầy đủ {sn} đã được đăng ký qua nhập SN (PI {pi}), không thể tạo; toàn bộ lần tạo đã hoàn tác (không tự bỏ qua số)",
+  "GEN_IMPORTED_SN": "SN đầy đủ {sn} là SN đã nhập (PI {pi}), không thể tạo; toàn bộ lần tạo đã hoàn tác (không tự bỏ qua số)",
   "DELETE_TARGET_INVALID": "Hãy chọn chứng từ, dòng vật tư cần xóa, hoặc nhập SN (đầu / cuối)",
   "DELETE_SN_NOT_FOUND": "Không có SN {sn} trong PI {pi}",
   "DELETE_RANGE_INVALID": "SN đầu và cuối phải cùng một dãy tuần tự (cùng PI tuần tự), SN cuối không được đứng trước SN đầu",

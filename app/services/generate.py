@@ -35,7 +35,7 @@ from app.core.errors import ErrorCode, biz
 from app.core.exceptions import BizError
 from app.core.security import CurrentUser
 from app.db.session import ER_LOCK_NOWAIT, db, error_no, is_duplicate, marks
-from app.services import audit, changes, factories, locks, orders, rules, sn_import
+from app.services import audit, changes, factories, locks, orders, rules
 
 log = structlog.get_logger()
 
@@ -245,10 +245,11 @@ SEG_LIST_MAX = 500
 #: SN 明细每页最多条数
 SN_PAGE_MAX = 200
 
-#: 号段：单据挂在本 PI 下的号按（流水归属 PI，十进制流水）连续合并；g 相同即连续
+#: 号段：单据挂在本 PI 下的号按（流水归属 PI，十进制流水）连续合并；g 相同即连续。
+#: 只含本系统生成的号：导入的号没有流水，不在生成页（只能在分配页分配）
 _ISLAND = (
     "SELECT {cols}, seq_dec - ROW_NUMBER() OVER (PARTITION BY {part} ORDER BY seq_dec) g "
-    "FROM sn_item WHERE pi_no = %s AND bill_no IN ({bills}){scope}"
+    "FROM sn_item WHERE pi_no = %s AND bill_no IN ({bills}) AND origin = 'GEN'{scope}"
 )
 
 
@@ -349,7 +350,10 @@ def segment_sns(
     pg = max(1, page or 1)
     sz = min(max(1, size or 20), SN_PAGE_MAX)
     isql, iargs = factories.item_scope_sql(facs)
-    where = "FROM sn_item WHERE pi_no = %s AND bill_no = %s AND seq_pi_no = %s AND seq_dec BETWEEN %s AND %s" + isql
+    where = (
+        "FROM sn_item WHERE pi_no = %s AND bill_no = %s AND seq_pi_no = %s AND seq_dec BETWEEN %s AND %s "
+        "AND origin = 'GEN'" + isql
+    )
     args = [pi, bill, seq_pi, start, end, *iargs]
     total = db.count("SELECT COUNT(*) " + where, *args)
     items = db.column("SELECT sn " + where + " ORDER BY seq_dec LIMIT %s OFFSET %s", *args, sz, (pg - 1) * sz)
@@ -888,8 +892,6 @@ def _by_bill(items: list[dict]) -> dict[str, list[dict]]:
 def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
     now = util.now()
     pi = j["pi_no"]
-    # 与 SN 导入互斥（生成之间共享，不互相等）：写号前查到的已导入号是最新的
-    sn_import.guard(exclusive=False)
     db.exec(
         "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, updated_at) VALUES (%s,0,0,%s) "
         "ON DUPLICATE KEY UPDATE pi_no = pi_no",
@@ -957,17 +959,21 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
                 )
                 for i, sn in enumerate(sns)
             ]
-            hit = sn_import.imported_hit(sns)
-            if hit is not None:
-                raise biz(ErrorCode.GEN_IMPORTED_SN, sn=hit["sn"], pi=hit["pi_no"])
             try:
                 db.exec_many(_INSERT_ITEM, rows)
             except pymysql.err.IntegrityError as ex:
                 if not is_duplicate(ex):
                     raise
-                hit = db.one(f"SELECT sn, pi_no FROM sn_item WHERE sn IN ({marks(len(sns))}) LIMIT 1", *sns)
+                # 撞上导入的号时优先报它
+                hit = db.one(
+                    f"SELECT sn, pi_no, origin FROM sn_item WHERE sn IN ({marks(len(sns))}) "
+                    "ORDER BY origin = 'IMPORT' DESC LIMIT 1",
+                    *sns,
+                )
                 if hit is None:
                     raise biz(ErrorCode.CONFLICT_RETRY) from None
+                if hit["origin"] == util.ORIGIN_IMPORT:
+                    raise biz(ErrorCode.GEN_IMPORTED_SN, sn=hit["sn"], pi=hit["pi_no"]) from None
                 raise biz(ErrorCode.GEN_DUPLICATE_SN, sn=hit["sn"], pi=hit["pi_no"]) from None
             done += len(sns)
             if _progress(j["id"], done, sns[-1]):

@@ -53,7 +53,7 @@ SCOPES = frozenset((SCOPE_BILL, SCOPE_MATERIAL, SCOPE_RANGE))
 
 ITEM_COLS = (
     "id, sn, factory_code, pi_no, customer_code, bill_no, bill_seq, material_code, rev, seq_pi_no, seq_dec, "
-    "length_text, attach_no, rule_version_id, status, delivery_batch_no, mes_holder, push_type, delivery_mode"
+    "length_text, attach_no, rule_version_id, status, delivery_batch_no, mes_holder, push_type, delivery_mode, origin"
 )
 
 ORG_FIELDS = (
@@ -110,10 +110,13 @@ def _reason(raw: str | None) -> str:
 
 
 def blocked(items: list[dict]) -> dict[int, str]:
-    """不能转的号及原因：PENDING_ALLOC（只有分配成功的号才能转）/ BATCH_PENDING / TRANSFER_OUT_PENDING。"""
+    """不能转的号及原因：IMPORTED（SN 导入的号只能分配）/ PENDING_ALLOC（只有分配成功的号才能转）/ BATCH_PENDING /
+    TRANSFER_OUT_PENDING。整张单据转走时这些号留在原单据，其余照转。"""
     out: dict[int, str] = {}
     for r in items:
-        if r["status"] == util.PENDING_ALLOC:
+        if r["origin"] == util.ORIGIN_IMPORT:
+            out[r["id"]] = "IMPORTED"
+        elif r["status"] == util.PENDING_ALLOC:
             out[r["id"]] = "PENDING_ALLOC"
         elif r["status"] == util.TO_PUSH and r["delivery_batch_no"] is not None:
             out[r["id"]] = "BATCH_PENDING"
@@ -123,6 +126,7 @@ def blocked(items: list[dict]) -> dict[int, str]:
 
 
 _REASON_TEXT = {
+    "IMPORTED": "SN 导入的号（只能分配，不能转移）",
     "PENDING_ALLOC": "待分配（只有分配成功的号才能转移）",
     "BATCH_PENDING": "所在批次未确认或失败",
     "TRANSFER_OUT_PENDING": "所在转出批次未确认或失败，先在原转组织单上继续推送转出",
@@ -569,12 +573,12 @@ def decide_kind(r: TransferRequest) -> str:
 
 
 def sources(cu: CurrentUser, kind: str, factory: str | None, pi: str | None) -> dict:
-    """来源候选：PI 下各单据、各物料分配成功的号数（待分配的号不能转；转组织限来源生产组织），供逐级筛选。
+    """来源候选：PI 下各单据、各物料分配成功的号数（待分配的号、SN 导入的号不能转；转组织限来源生产组织），供逐级筛选。
     rows 按单据 + 物料 + 生产组织细分，带号上的客户、附件项次、米数（页面据此带出来源生产组织与来源信息）。"""
     p = util.trim(pi)
     if not p:
         raise biz(ErrorCode.PI_REQUIRED)
-    cond, args = f"pi_no = %s AND status <> '{util.PENDING_ALLOC}'", [p]
+    cond, args = f"pi_no = %s AND status <> '{util.PENDING_ALLOC}' AND origin = 'GEN'", [p]
     if kind == KIND_ORG:
         cond += " AND factory_code = %s"
         args.append(_from_factory(cu, factory))
@@ -620,18 +624,20 @@ def sources(cu: CurrentUser, kind: str, factory: str | None, pi: str | None) -> 
 
 
 def locate(cu: CurrentUser, q: str | None) -> dict:
-    """快速定位：输入完整 SN、单据编号或 PI，带出来源（只在读范围内、分配成功的号中找）。
+    """快速定位：输入完整 SN、单据编号或 PI，带出来源（只在读范围内、分配成功的本系统生成的号中找）。
     SN → PI、单据、物料编码、生产组织、起号；单据编号 → PI、单据；PI → PI。"""
     text = util.trim(q)
     if not text:
         raise biz(ErrorCode.TR_LOCATE_NOT_FOUND, q="")
     fsql, fargs = factories.scope_sql(cu.read_factories(None))
     r = db.one(
-        f"SELECT sn, pi_no, bill_no, material_code, factory_code, status FROM sn_item WHERE sn = %s{fsql}",
+        f"SELECT sn, pi_no, bill_no, material_code, factory_code, status, origin FROM sn_item WHERE sn = %s{fsql}",
         text,
         *fargs,
     )
     if r is not None:
+        if r["origin"] == util.ORIGIN_IMPORT:
+            raise biz(ErrorCode.TR_SN_NOT_TRANSFERABLE, sn=r["sn"], reason=_REASON_TEXT["IMPORTED"])
         if r["status"] == util.PENDING_ALLOC:
             raise biz(ErrorCode.TR_SN_NOT_TRANSFERABLE, sn=r["sn"], reason=_REASON_TEXT["PENDING_ALLOC"])
         return {
@@ -642,7 +648,7 @@ def locate(cu: CurrentUser, q: str | None) -> dict:
             "factory_code": r["factory_code"],
             "sn": r["sn"],
         }
-    alloc = f" AND status <> '{util.PENDING_ALLOC}'"
+    alloc = f" AND status <> '{util.PENDING_ALLOC}' AND origin = 'GEN'"
     r = db.one(f"SELECT pi_no FROM sn_item WHERE bill_no = %s{alloc}{fsql} LIMIT 1", text, *fargs)
     if r is not None:
         return {"by": "BILL", "pi": r["pi_no"], "bill_no": text}

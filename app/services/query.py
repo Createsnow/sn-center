@@ -175,7 +175,7 @@ def view(r: dict, bill_pi: dict[str, str]) -> dict:
         "base": None if s is None else s.base,
         "unit": (None if s is None else codec.unit_of(r["sn"], s, r["length_text"])) or "",
         "seq_text": rules.seq_text(r["rule_version_id"], r["seq_dec"]),
-        "seq_dec": str(r["seq_dec"]),
+        "seq_dec": util.seq_dec_text(r["seq_pi_no"], r["seq_dec"]),
         "seq_pi_no": r["seq_pi_no"],
         "pi_no": r["pi_no"],
         "bill_no": r["bill_no"],
@@ -188,7 +188,7 @@ def view(r: dict, bill_pi: dict[str, str]) -> dict:
         "status": r["status"],
         "suspend": r["suspend"],
         "pi_changed": bill_pi.get(r["bill_no"], r["pi_no"]) != r["pi_no"],
-        "transferred_in": r["seq_pi_no"] != r["pi_no"],
+        "transferred_in": util.transferred_in(r["seq_pi_no"], r["pi_no"]),
         "created_at": util.fmt(r["created_at"]),
     }
 

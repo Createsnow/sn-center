@@ -10,6 +10,7 @@
 分配页详情（所选单据所在的 PI）：各物料行的枚数、号段、目标生产组织与推送进度，各组织推送进度，
 推送批次分页另取（/api/delivery/batches?pi=…&batch_type=DELIVERY&asc=1）。
 普通操作员只能分配到授权组织：指定的单据、物料行须属于授权组织；整张 PI 分配时只分授权组织的号。
+SN 导入的号（origin = IMPORT）照常在这里分配：挂在单据序号 0 上（详情里标为「导入」行），分到单据的生产组织。
 """
 
 from __future__ import annotations
@@ -381,7 +382,8 @@ def context(cu: CurrentUser, pi_in: str | None) -> dict:
         "SUM(i.status = 'PENDING_ALLOC') pending, SUM(i.status = 'TO_PUSH') to_push, "
         f"SUM(i.status = 'TO_PUSH' AND d.id IS NOT NULL AND {_BROKEN}) failed, "
         "MAX(CASE WHEN i.status = 'PENDING_ALLOC' THEN i.gen_org_code END) gen_org, MAX(i.factory_code) org, "
-        "MIN(i.sn) a, MAX(i.sn) b FROM sn_item i LEFT JOIN sn_delivery_batch d ON d.batch_no = i.delivery_batch_no "
+        "MIN(i.sn) a, MAX(i.sn) b, MAX(i.origin = 'IMPORT') imported "
+        "FROM sn_item i LEFT JOIN sn_delivery_batch d ON d.batch_no = i.delivery_batch_no "
         "WHERE i.pi_no = %s" + isql + " GROUP BY i.bill_no, i.bill_seq ORDER BY i.bill_no, i.bill_seq",
         pi,
         *iargs,
@@ -415,6 +417,8 @@ def context(cu: CurrentUser, pi_in: str | None) -> dict:
                 "org_name": names.get(org, "") if org else "",
                 "mes_enabled": bool(f and f["mes_enabled"]),
                 "skip": block,
+                # SN 导入的号（挂在单据序号 0 上，没有物料）
+                "imported": bool(r["imported"]),
             }
         )
     states: dict[str, list[int]] = {}
