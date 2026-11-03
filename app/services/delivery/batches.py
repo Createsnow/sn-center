@@ -144,14 +144,12 @@ TYPE_SQL = (
 )
 
 
-#: SN 导入的号只带导入文件里有的列（SN、PI、单据编号；生产组织在批次头 orgCode）与 rev，其余明细字段为 null
-IMPORTED_BLANK = ("serial", "serialDec", "serialPi", "billSeq", "attachNo", "materialCode", "length", "customerCode")
-
-
-def item_fields(r: dict) -> dict:
-    """明细的数据字段（交付批次、转出批次、接口 ④ 共用）。SN 导入的号（没有流水，seq_pi_no 为空串）不推导其他参数：
-    只给导入文件里有的 SN、PI、单据编号，其余为 null。"""
-    out = {
+def imported_item(r: dict) -> dict | None:
+    """SN 导入的号（没有流水，seq_pi_no 为空串）的明细：结构与字段顺序不变，只按导入文件里有的列填 sn、pi、billNo
+    （生产组织即批次头 orgCode）与 rev，其余为 null，不推导其他参数。本系统生成的号返回 None，照原样组装。"""
+    if r["seq_pi_no"]:
+        return None
+    return {
         "sn": r["sn"],
         "rev": int(r["rev"]),
         "serial": None,
@@ -159,28 +157,35 @@ def item_fields(r: dict) -> dict:
         "serialPi": None,
         "pi": r["pi_no"],
         "billNo": r["bill_no"],
+        "billSeq": None,
+        "attachNo": None,
+        "materialCode": None,
+        "length": None,
+        "customerCode": None,
     }
-    out.update(dict.fromkeys(IMPORTED_BLANK[3:]))
-    if not r["seq_pi_no"]:
-        return out
-    out.update(
-        serial=rules.seq_text(r["rule_version_id"], r["seq_dec"]),
-        serialDec=str(r["seq_dec"]),
-        serialPi=r["seq_pi_no"],
-        billSeq=int(r["bill_seq"]),
-        attachNo=str_or_none(r["attach_no"]),
-        materialCode=str_or_none(r["material_code"]),
-        length=r["length_text"],
-        customerCode=r["customer_code"],
-    )
-    return out
 
 
 def _item_payload(r: dict) -> dict:
     """批次明细，交付批次与转出批次同一结构。十进制流水、米数按字符串；物料、附件项次为空，规则不带米数时为 null。
     交付批次为号的当前挂靠，MES 逐枚按 rev 新增或覆盖；转出批次为转出前的挂靠，转入组织在批次头 toOrgCode，MES 据此
     标记已转走（本地没有时按 SN、rev 建一条已转走记录）。"""
-    return item_fields(r)
+    imp = imported_item(r)
+    if imp is not None:
+        return imp
+    return {
+        "sn": r["sn"],
+        "rev": int(r["rev"]),
+        "serial": rules.seq_text(r["rule_version_id"], r["seq_dec"]),
+        "serialDec": str(r["seq_dec"]),
+        "serialPi": r["seq_pi_no"],
+        "pi": r["pi_no"],
+        "billNo": r["bill_no"],
+        "billSeq": int(r["bill_seq"]),
+        "attachNo": str_or_none(r["attach_no"]),
+        "materialCode": str_or_none(r["material_code"]),
+        "length": r["length_text"],
+        "customerCode": r["customer_code"],
+    }
 
 
 def _insert_batch(
@@ -247,8 +252,16 @@ _CLAIM_COLS = (
 _POOL = "pi_no = %s AND factory_code = %s AND status = 'TO_PUSH' AND suspend IS NULL AND delivery_batch_no IS NULL"
 
 
-def claim(org: str, pi: str, limit: int, bill: str | None = None, btype: str | None = None) -> list[dict]:
-    """从号池按流水顺序认领（当前事务内加锁，已被别处锁住的跳过）；btype 只认领该类型的号。"""
+#: SN 导入的号（没有流水）与本系统生成的号不进同一批次：导入的号明细里流水等字段为 null，
+#: 单独成批，免得 MES 退回时连带生成的号
+_IMPORTED = "seq_pi_no = ''"
+
+
+def claim(
+    org: str, pi: str, limit: int, bill: str | None = None, btype: str | None = None, imported: bool | None = None
+) -> list[dict]:
+    """从号池按流水顺序认领（当前事务内加锁，已被别处锁住的跳过）；btype 只认领该类型的号；
+    imported = True / False 只认领 SN 导入的号 / 本系统生成的号。"""
     sql = f"SELECT {_CLAIM_COLS} FROM sn_item WHERE {_POOL}"
     args: list = [pi, org]
     if bill:
@@ -257,6 +270,8 @@ def claim(org: str, pi: str, limit: int, bill: str | None = None, btype: str | N
     if btype:
         sql += f" AND {TYPE_SQL} = %s"
         args.append(btype)
+    if imported is not None:
+        sql += f" AND {'' if imported else 'NOT '}{_IMPORTED}"
     sql += " ORDER BY seq_pi_no, seq_dec LIMIT %s FOR UPDATE SKIP LOCKED"
     return db.all(sql, *args, limit)
 
@@ -269,6 +284,18 @@ def pool_types(org: str, pi: str, bill: str | None = None) -> dict[str, int]:
         sql += " AND bill_no = %s"
         args.append(bill)
     return {r["t"]: int(r["n"]) for r in db.all(sql + " GROUP BY t ORDER BY p, d", *args)}
+
+
+def pool_groups(org: str, pi: str, bill: str | None = None) -> list[tuple[str, bool, int]]:
+    """号池按（类型，是否 SN 导入的号）分组的枚数：生成的号在前，各自成批。"""
+    sql = (
+        f"SELECT {TYPE_SQL} t, {_IMPORTED} imp, COUNT(*) n, MIN(seq_pi_no) p, MIN(seq_dec) d FROM sn_item WHERE {_POOL}"
+    )
+    args: list = [pi, org]
+    if bill:
+        sql += " AND bill_no = %s"
+        args.append(bill)
+    return [(r["t"], bool(r["imp"]), int(r["n"])) for r in db.all(sql + " GROUP BY t, imp ORDER BY imp, p, d", *args)]
 
 
 def _deliver(
@@ -337,8 +364,9 @@ def build_delivery(cu: CurrentUser, org: str, pi: str, source: str, bill: str | 
     f = factories.must_get(org)
     size = max(1, int(f["batch_size"]))
     with db.tx():
-        for btype in pool_types(org, pi, bill):
-            items = claim(org, pi, size, bill, btype)
+        # 生成的号与 SN 导入的号分开成批（批次类型照旧按号判断）
+        for btype, imported, _n in pool_groups(org, pi, bill):
+            items = claim(org, pi, size, bill, btype, imported)
             if items:
                 return _deliver(cu, org, pi, source, btype, items, bill)
         return None
@@ -366,11 +394,12 @@ def build_delivery_now(
     items.sort(key=lambda r: (r["seq_pi_no"], r["seq_dec"]))
     f = factories.get(org)
     size = max(1, int(f["batch_size"])) if f else 5000
-    by_type: dict[str, list[dict]] = {}
+    # 按类型分批；SN 导入的号（seq_pi_no 为空串）与生成的号不进同一批
+    by_type: dict[tuple[str, bool], list[dict]] = {}
     for r in items:
-        by_type.setdefault(item_type(r, org), []).append(r)
+        by_type.setdefault((item_type(r, org), not r["seq_pi_no"]), []).append(r)
     out = []
-    for btype, group in by_type.items():
+    for (btype, _imported), group in by_type.items():
         for i in range(0, len(group), size):
             out.append(_deliver(cu, org, pi, SRC_PUSH, btype, group[i : i + size], None, transfer, rebuilt_from))
     return out

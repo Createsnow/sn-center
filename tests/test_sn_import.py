@@ -198,24 +198,44 @@ def test_imported_sns_wait_on_allocation_page_and_can_only_be_allocated(w, api, 
     r = w.allocate(pi, lines=[(bill, 0)])
     assert (r["qty"], r["orgs"]) == (2, [org])
     assert {x["status"] for x in sql.all("SELECT status FROM sn_item WHERE sn IN (%s, %s)", a, b)} == {"TO_PUSH"}
-    # 推送：明细只带文件里有的 SN、PI、单据编号（生产组织在批次头），其余为 null
+    # 同一 PI、同一组织另有生成的号：与导入的号分开成批
+    p = "G" + uid("").replace("-", "")
+    ok(w.bind_pi(pi, w.rule(p, with_length=False, pi=pi)))
+    w.generate(pi)
+    w.allocate(pi, lines=[(bill, 1)])
+    gen = [x["sn"] for x in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s AND origin = 'GEN'", pi)]
+    assert len(gen) == 2
+    # 推送：接口与传输协议不变（明细字段、顺序与生成的号相同）；导入的号只带文件里有的 SN、PI、单据编号
+    # （生产组织在批次头），其余为 null
     w.push()
-    sent = [x["batch"] for x in MES.received if any(i["sn"] in (a, b) for i in x["batch"].get("items", []))]
-    assert sent and sent[-1]["orgCode"] == org
-    items = [i for x in sent for i in x["items"] if i["sn"] in (a, b)]
-    assert len(items) == 2
+    sent = [x["batch"] for x in MES.received if x["batch"].get("pi") == pi and x["batch"].get("items")]
+    assert all({i["sn"] in (a, b) for i in x["items"]} in ({True}, {False}) for x in sent), (
+        "导入的号与生成的号不进同一批次"
+    )
+    imp = [x for x in sent if x["items"][0]["sn"] in (a, b)]
+    items = [i for x in imp for i in x["items"]]
+    assert {i["sn"] for i in items} == {a, b} and all(x["orgCode"] == org for x in imp)
+    gen_items = [i for x in sent for i in x["items"] if i["sn"] in gen]
+    assert all(list(i) == list(gen_items[0]) for i in items), "明细字段与顺序同生成的号"
     blank = ("serial", "serialDec", "serialPi", "billSeq", "attachNo", "materialCode", "length", "customerCode")
     for i in items:
         assert (i["pi"], i["billNo"], i["rev"]) == (pi, bill, 1)
         assert {k: i[k] for k in blank} == dict.fromkeys(blank), i
-    # 接口 ④ 读回的明细同样
-    tok = w.receipt_token(org)
-    got = ok(w.mes_delivered(tok, pi=pi))
-    back = [i for i in got["items"] if i["sn"] in (a, b)]
-    assert len(back) == 2 and all(i["serial"] is None and i["customerCode"] is None for i in back), back
-    assert {x["status"] for x in sql.all("SELECT status FROM sn_item WHERE sn IN (%s, %s)", a, b)} == {"PUSHED"}
+    # 生成的号照常交付成功，不受导入的号影响
+    assert {x["status"] for x in sql.all("SELECT status FROM sn_item WHERE pi_no = %s AND origin = 'GEN'", pi)} == {
+        "PUSHED"
+    }
+    # 导入的号：接口里这几项是必填，按接口校验的模拟 MES 整批退回（须 MES 方确认能否接收），号仍待推送
+    imp_batches = sql.all(
+        "SELECT DISTINCT b.result FROM sn_delivery_batch b JOIN sn_delivery_item d ON d.batch_id = b.id "
+        "WHERE d.sn IN (%s, %s)",
+        a,
+        b,
+    )
+    assert {x["result"] for x in imp_batches} == {"FAILED"}, imp_batches
+    assert {x["status"] for x in sql.all("SELECT status FROM sn_item WHERE sn IN (%s, %s)", a, b)} == {"TO_PUSH"}
     st = ok(api.get(f"/api/sn-import/items?import_no={done['import_no']}", w.admin))["items"]
-    assert {(x["status"], x["allocated_to"]) for x in st} == {("PUSHED", org)}
+    assert {(x["status"], x["allocated_to"]) for x in st} == {("TO_PUSH", org)}
     # 查询：十进制流水为空，不算转入
     q = ok(api.get(f"/api/sn?sn={a}", w.admin))["items"][0]
     assert (q["seq_dec"], q["seq_text"], q["transferred_in"]) == ("", "", False)

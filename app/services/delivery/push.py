@@ -43,7 +43,7 @@ from app.services.delivery.batches import (
     XO_KEY,
     build_delivery,
     must_batch,
-    pool_types,
+    pool_groups,
 )
 
 log = structlog.get_logger()
@@ -147,7 +147,8 @@ def remaining_pushes(org: str, key: str) -> dict:
     """「剩余 N 次」：未入批且未暂停的号按类型分批、按单批枚数折算的次数 + 未确认或失败的批次数。"""
     f = factories.get(org)
     size = max(1, int(f["batch_size"])) if f else 5000
-    by_type = {} if key == XO_KEY else pool_types(org, key)
+    # 生成的号与 SN 导入的号分开成批，按（类型，是否导入）折算
+    groups = [] if key == XO_KEY else pool_groups(org, key)
     cond, args = _batch_cond(key)
     batches = db.count(
         f"SELECT COUNT(*) FROM sn_delivery_batch WHERE factory_code = %s AND {cond} "
@@ -155,8 +156,8 @@ def remaining_pushes(org: str, key: str) -> dict:
         org,
         *args,
     )
-    pushes = sum(math.ceil(n / size) for n in by_type.values()) + batches
-    return {"unbatched": sum(by_type.values()), "batches": batches, "pushes": pushes}
+    pushes = sum(math.ceil(n / size) for _t, _i, n in groups) + batches
+    return {"unbatched": sum(n for _t, _i, n in groups), "batches": batches, "pushes": pushes}
 
 
 def task_state(org: str, key: str) -> dict | None:

@@ -9,7 +9,7 @@ from app.core.config import settings
 from app.core.exceptions import MesError, mes_body
 from app.core.security import CurrentUser
 from app.db.session import db
-from app.services import audit, changes, factories, locks
+from app.services import audit, changes, factories, locks, rules
 from app.services.delivery.batches import (
     FAILED,
     RECEIPT_NG,
@@ -20,8 +20,9 @@ from app.services.delivery.batches import (
     body_obj,
     build_delivery,
     find_batch,
-    item_fields,
+    imported_item,
     must_batch,
+    str_or_none,
 )
 from app.services.delivery.receipts import apply_receipt
 
@@ -292,8 +293,27 @@ _READ_COLS = (
 
 
 def _read_item(r: dict) -> dict:
+    imp = imported_item(r)
+    if imp is not None:
+        return {
+            **imp,
+            "status": r["status"],
+            "batchNo": r["delivery_batch_no"],
+            "deliveredAt": util.mes_fmt(r["delivered_at"]),
+        }
     return {
-        **item_fields(r),
+        "sn": r["sn"],
+        "rev": int(r["rev"]),
+        "serial": rules.seq_text(r["rule_version_id"], r["seq_dec"]),
+        "serialDec": str(r["seq_dec"]),
+        "serialPi": r["seq_pi_no"],
+        "pi": r["pi_no"],
+        "billNo": r["bill_no"],
+        "billSeq": int(r["bill_seq"]),
+        "attachNo": str_or_none(r["attach_no"]),
+        "materialCode": str_or_none(r["material_code"]),
+        "length": r["length_text"],
+        "customerCode": r["customer_code"],
         "status": r["status"],
         "batchNo": r["delivery_batch_no"],
         "deliveredAt": util.mes_fmt(r["delivered_at"]),
