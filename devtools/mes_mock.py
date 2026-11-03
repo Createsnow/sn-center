@@ -59,6 +59,8 @@ DELIVERY_FIELDS = (
     "billSeq",
     "customerCode",
 )
+#: SN 导入的号（serial 为 null）：只带导入文件里有的 SN、PI、单据编号与 rev，其余明细字段为 null
+IMPORTED_FIELDS = ("sn", "rev", "pi", "billNo")
 TRANSFER_OUT_FIELDS = ("sn", "rev")
 #: 交付类批次类型：MES 处理都一样（逐枚按 rev 新增或覆盖），类型只说明这批号从哪来
 DELIVERY_TYPES = ("NEW", "SAME_ORG_TRANSFER", "TRANSFER_IN", "REMAP")
@@ -219,7 +221,8 @@ class MesSim:
         for x in items:
             if not isinstance(x, dict):
                 return "items 每条须为对象"
-            lack = [k for k in need if x.get(k) in (None, "")]
+            fields = IMPORTED_FIELDS if delivery and x.get("serial") is None else need
+            lack = [k for k in fields if x.get(k) in (None, "")]
             if lack:
                 return f"{x.get('sn')} 缺 {', '.join(lack)}"
             if not isinstance(x["rev"], int) or isinstance(x["rev"], bool) or x["rev"] < 1:

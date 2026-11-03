@@ -144,35 +144,43 @@ TYPE_SQL = (
 )
 
 
-def serial_fields(r: dict) -> dict:
-    """流水三项：SN 导入的号没有流水（seq_pi_no 为空串），serial、serialDec 固定为 "0"、serialPi 为号的 PI
-    （本系统生成的流水从 1 起，0 不会与之混淆；三项在 MES 接口里都必填）。"""
-    if not r["seq_pi_no"]:
-        return {"serial": "0", "serialDec": "0", "serialPi": r["pi_no"]}
-    return {
-        "serial": rules.seq_text(r["rule_version_id"], r["seq_dec"]),
-        "serialDec": str(r["seq_dec"]),
-        "serialPi": r["seq_pi_no"],
+#: SN 导入的号只带导入文件里有的列（SN、PI、单据编号；生产组织在批次头 orgCode）与 rev，其余明细字段为 null
+IMPORTED_BLANK = ("serial", "serialDec", "serialPi", "billSeq", "attachNo", "materialCode", "length", "customerCode")
+
+
+def item_fields(r: dict) -> dict:
+    """明细的数据字段（交付批次、转出批次、接口 ④ 共用）。SN 导入的号（没有流水，seq_pi_no 为空串）不推导其他参数：
+    只给导入文件里有的 SN、PI、单据编号，其余为 null。"""
+    out = {
+        "sn": r["sn"],
+        "rev": int(r["rev"]),
+        "serial": None,
+        "serialDec": None,
+        "serialPi": None,
+        "pi": r["pi_no"],
+        "billNo": r["bill_no"],
     }
+    out.update(dict.fromkeys(IMPORTED_BLANK[3:]))
+    if not r["seq_pi_no"]:
+        return out
+    out.update(
+        serial=rules.seq_text(r["rule_version_id"], r["seq_dec"]),
+        serialDec=str(r["seq_dec"]),
+        serialPi=r["seq_pi_no"],
+        billSeq=int(r["bill_seq"]),
+        attachNo=str_or_none(r["attach_no"]),
+        materialCode=str_or_none(r["material_code"]),
+        length=r["length_text"],
+        customerCode=r["customer_code"],
+    )
+    return out
 
 
 def _item_payload(r: dict) -> dict:
     """批次明细，交付批次与转出批次同一结构。十进制流水、米数按字符串；物料、附件项次为空，规则不带米数时为 null。
     交付批次为号的当前挂靠，MES 逐枚按 rev 新增或覆盖；转出批次为转出前的挂靠，转入组织在批次头 toOrgCode，MES 据此
     标记已转走（本地没有时按 SN、rev 建一条已转走记录）。"""
-    return {
-        "sn": r["sn"],
-        "rev": int(r["rev"]),
-        # SN 导入的号：serial / serialDec 为 "0"、serialPi 为号的 PI，billSeq 为 0、materialCode 为 null
-        **serial_fields(r),
-        "pi": r["pi_no"],
-        "billNo": r["bill_no"],
-        "billSeq": int(r["bill_seq"]),
-        "attachNo": str_or_none(r["attach_no"]),
-        "materialCode": str_or_none(r["material_code"]),
-        "length": r["length_text"],
-        "customerCode": r["customer_code"],
-    }
+    return item_fields(r)
 
 
 def _insert_batch(

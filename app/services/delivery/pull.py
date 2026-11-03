@@ -20,9 +20,8 @@ from app.services.delivery.batches import (
     body_obj,
     build_delivery,
     find_batch,
+    item_fields,
     must_batch,
-    serial_fields,
-    str_or_none,
 )
 from app.services.delivery.receipts import apply_receipt
 
@@ -294,16 +293,7 @@ _READ_COLS = (
 
 def _read_item(r: dict) -> dict:
     return {
-        "sn": r["sn"],
-        "rev": int(r["rev"]),
-        **serial_fields(r),
-        "pi": r["pi_no"],
-        "billNo": r["bill_no"],
-        "billSeq": int(r["bill_seq"]),
-        "attachNo": str_or_none(r["attach_no"]),
-        "materialCode": str_or_none(r["material_code"]),
-        "length": r["length_text"],
-        "customerCode": r["customer_code"],
+        **item_fields(r),
         "status": r["status"],
         "batchNo": r["delivery_batch_no"],
         "deliveredAt": util.mes_fmt(r["delivered_at"]),

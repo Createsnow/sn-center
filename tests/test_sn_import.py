@@ -169,9 +169,11 @@ def test_imported_sns_wait_on_allocation_page_and_can_only_be_allocated(w, api, 
         (x["origin"], x["status"], x["pi_no"], x["bill_no"], x["bill_seq"], x["material_code"], x["seq_pi_no"])
         for x in rows
     ] == [("IMPORT", "PENDING_ALLOC", pi, bill, 0, "", "")] * 2
-    assert {(x["customer_code"], x["gen_org_code"], x["rule_version_id"], x["gen_batch"]) for x in rows} == {
-        ("C1", org, 0, done["import_no"])
-    }
+    # 只填文件里有的列：客户、物料、附件项次、米数为空
+    assert {
+        (x["customer_code"], x["attach_no"], x["length_text"], x["gen_org_code"], x["rule_version_id"], x["gen_batch"])
+        for x in rows
+    } == {("", "", None, org, 0, done["import_no"])}
     assert sql.count("SELECT COUNT(*) FROM sn_bill_ledger WHERE bill_no = %s", bill) == 1, "与生成一样建立台账"
     # 生成页：不计导入的号，可生成数量不变
     ctx = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))
@@ -196,13 +198,21 @@ def test_imported_sns_wait_on_allocation_page_and_can_only_be_allocated(w, api, 
     r = w.allocate(pi, lines=[(bill, 0)])
     assert (r["qty"], r["orgs"]) == (2, [org])
     assert {x["status"] for x in sql.all("SELECT status FROM sn_item WHERE sn IN (%s, %s)", a, b)} == {"TO_PUSH"}
-    # 推送：没有流水，serial / serialDec 为 "0"、serialPi 为号的 PI，billSeq 0，物料为 null
+    # 推送：明细只带文件里有的 SN、PI、单据编号（生产组织在批次头），其余为 null
     w.push()
-    items = [i for x in MES.received for i in x["batch"].get("items", []) if i["sn"] in (a, b)]
+    sent = [x["batch"] for x in MES.received if any(i["sn"] in (a, b) for i in x["batch"].get("items", []))]
+    assert sent and sent[-1]["orgCode"] == org
+    items = [i for x in sent for i in x["items"] if i["sn"] in (a, b)]
     assert len(items) == 2
-    assert {(i["serial"], i["serialDec"], i["serialPi"], i["billSeq"], i["materialCode"]) for i in items} == {
-        ("0", "0", pi, 0, None)
-    }
+    blank = ("serial", "serialDec", "serialPi", "billSeq", "attachNo", "materialCode", "length", "customerCode")
+    for i in items:
+        assert (i["pi"], i["billNo"], i["rev"]) == (pi, bill, 1)
+        assert {k: i[k] for k in blank} == dict.fromkeys(blank), i
+    # 接口 ④ 读回的明细同样
+    tok = w.receipt_token(org)
+    got = ok(w.mes_delivered(tok, pi=pi))
+    back = [i for i in got["items"] if i["sn"] in (a, b)]
+    assert len(back) == 2 and all(i["serial"] is None and i["customerCode"] is None for i in back), back
     assert {x["status"] for x in sql.all("SELECT status FROM sn_item WHERE sn IN (%s, %s)", a, b)} == {"PUSHED"}
     st = ok(api.get(f"/api/sn-import/items?import_no={done['import_no']}", w.admin))["items"]
     assert {(x["status"], x["allocated_to"]) for x in st} == {("PUSHED", org)}

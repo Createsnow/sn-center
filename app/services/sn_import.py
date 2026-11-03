@@ -7,7 +7,9 @@
 - 先检查（不落库，逐行列出不能导入的原因），再「确定导入」：有一行不能导入整个文件都不导入；
   确定导入时在 PI 操作锁与一个事务里重新检查一遍，全部写入，一次导入一个导入单号。
 - 写入：导入记录 sn_import_item（导入后不变）+ 号池 sn_item（origin = IMPORT，待分配，挂在单据序号 0 上；
-  没有规则与流水：seq_pi_no 为空串、seq_dec 为导入记录 id、rule_version_id 为 0；生产组织、客户取订单快照）。
+  没有规则与流水：seq_pi_no 为空串、seq_dec 为导入记录 id、rule_version_id 为 0；
+  生产组织为文件里的生产组织（换成编码），客户、物料、附件项次、米数等文件里没有的一律为空，不另外推导）。
+  推送给 MES 的明细同样只带文件里有的 SN、PI、单据编号（生产组织在批次头），其余为 null（见 delivery.item_fields）。
   与生成一样建立已出号单据台账、按台账带上暂停标记（单据反审核等照常暂停交付）。
 - 导入的号只能分配（分配后照常推送 / 拉取 / 下载、查询）；不出现在生成页（号段、单据分配状态、统计都不计），
   不能删号、转移，也不占订单的可生成数量。
@@ -76,9 +78,8 @@ class Row:
     sn: str
     #: 文件里填的生产组织（编码或名称）
     org: str
-    #: 单据在订单快照中的生产组织编码（登记、授权范围按它）、客户编码
+    #: 文件里的生产组织对应的编码（与单据在订单快照中的生产组织相同；登记、授权范围按它）
     factory: str = ""
-    customer: str = ""
     issues: list[tuple[str, dict]] = field(default_factory=list)
 
 
@@ -208,7 +209,7 @@ def _validate(cu: CurrentUser, rows: list[Row], lock: bool = False) -> None:
     for part in _chunks(bills):
         for b in db.all(
             "SELECT m.bill_no, MIN(m.pi) pi, MIN(m.org_code) org_code, MIN(m.org_name) org_name, "
-            "MIN(m.customer_code) cc, MIN(f.factory_name) factory_name "
+            "MIN(f.factory_name) factory_name "
             "FROM sn_prd_mo m LEFT JOIN sn_factory f ON f.factory_code = m.org_code "
             f"WHERE m.bill_no IN ({marks(len(part))}) GROUP BY m.bill_no",
             *part,
@@ -222,7 +223,6 @@ def _validate(cu: CurrentUser, rows: list[Row], lock: bool = False) -> None:
             r.issues.append((BILL_NOT_FOUND, {"bill_no": r.bill}))
             continue
         r.factory = b["org_code"] or ""
-        r.customer = b["cc"] or ""
         if r.pi and b["pi"] != r.pi:
             r.issues.append((PI_MISMATCH, {"bill_no": r.bill, "pi": b["pi"]}))
         # 生产组织填编码或名称（订单快照里的名称、生产组织列表里的名称）都可以
@@ -289,12 +289,13 @@ _INSERT = (
     "INSERT INTO sn_import_item(import_no, sn, pi_no, bill_no, factory_code, file_name, row_no, created_by, "
     "created_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 )
-#: 号池：待分配，挂在单据序号 0；没有规则与流水（seq_pi_no 空串、seq_dec = 导入记录 id、规则版本 0）
+#: 号池：待分配，挂在单据序号 0；只填文件里有的 SN、PI、单据、生产组织，客户、物料、附件项次、米数为空；
+#: 没有规则与流水（seq_pi_no 空串、seq_dec = 导入记录 id、规则版本 0）
 _INSERT_ITEM = (
     "INSERT INTO sn_item(sn, origin, pi_no, customer_code, bill_no, bill_seq, material_code, gen_org_code, "
     "gen_bill_no, gen_bill_seq, seq_pi_no, seq_dec, length_text, attach_no, rule_version_id, gen_batch, status, "
     "created_at, updated_at) "
-    "VALUES (%s,'IMPORT',%s,%s,%s,0,'',%s,%s,0,'',%s,NULL,'',0,%s,'PENDING_ALLOC',%s,%s)"
+    "VALUES (%s,'IMPORT',%s,'',%s,0,'',%s,%s,0,'',%s,NULL,'',0,%s,'PENDING_ALLOC',%s,%s)"
 )
 
 
@@ -331,7 +332,7 @@ def run(cu: CurrentUser, content: bytes, file_name_in: str | None) -> dict:
                 }
                 db.exec_many(
                     _INSERT_ITEM,
-                    [(r.sn, r.pi, r.customer, r.bill, r.factory, r.bill, ids[r.sn], no, now, now) for r in part],
+                    [(r.sn, r.pi, r.bill, r.factory, r.bill, ids[r.sn], no, now, now) for r in part],
                 )
             except pymysql.err.IntegrityError as ex:
                 if not is_duplicate(ex):
