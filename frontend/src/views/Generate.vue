@@ -88,9 +88,9 @@
             <b>PI {{ ctx.pi_no }}</b>
             <span class="muted">{{ t("common.customer") }} {{ ctx.customer_code || "—" }}</span>
             <span class="push" />
-            <router-link v-if="ctx.summary.pending_alloc" class="go" :to="{ path: '/allocate', query: { pi: ctx.pi_no } }">
-              {{ t("generate.toAllocate", { n: num(ctx.summary.pending_alloc) }) }}<el-icon><Right /></el-icon>
-            </router-link>
+            <el-button size="small" type="success" plain :disabled="!ctx.summary.pending_alloc" @click="goAllocate">
+              {{ t("generate.goAllocate") }}<el-icon class="el-icon--right"><Right /></el-icon>
+            </el-button>
             <el-button size="small" @click="piRuleOpen = true">{{ t("generate.piRuleBtn") }}</el-button>
           </div>
           <div class="kv">
@@ -100,7 +100,9 @@
             <span v-if="ctx.summary.transferred_in">{{ t("generate.transferredIn") }} <b class="num">{{ num(ctx.summary.transferred_in) }}</b></span>
             <span v-if="ctx.summary.suspended" class="warn">{{ t("generate.suspendedQty", { n: num(ctx.summary.suspended) }) }}</span>
             <span>{{ t("generate.nextSeq") }} <b class="num">{{ ctx.counter.next_seq }}</b></span>
-            <span v-if="ctx.gaps?.count" class="warn">{{ t("generate.gapsLink", { n: num(ctx.gaps.count), qty: num(ctx.gaps.total) }) }}</span>
+            <el-button v-if="ctx.gaps?.count" link type="warning" size="small" @click="segDlg?.open({})">
+              {{ t("generate.gapsLink", { n: num(ctx.gaps.count), qty: num(ctx.gaps.total) }) }}
+            </el-button>
           </div>
         </div>
       </template>
@@ -128,7 +130,11 @@
             <span @click.stop><el-checkbox v-bind="billCheck(b.bill_no)" :disabled="!b.in_snapshot || !b.lines.length" @change="(v: any) => onBill(b.bill_no, !!v)" /></span>
             <span v-if="billCheck(b.bill_no).order >= 0" class="order">{{ billCheck(b.bill_no).order + 1 }}</span>
             <b>{{ b.bill_no }}</b>
-            <span class="muted">PO {{ b.po || "—" }} · {{ b.org_name || nameOf(b.org_code) }}<template v-if="deptOf(b)"> · {{ deptOf(b) }}</template><template v-if="b.modify_time"> · {{ t("orders.modifyDate") }} {{ b.modify_time }}</template></span>
+            <!-- 单据号段：可用号段（现有号段 + 最大号之后）、空闲号段（本单据删号腾出），点开看明细 -->
+            <span class="chip use" @click.stop="segDlg?.open({ bill: b.bill_no, tab: 'use' })">{{ segUseText(b) }}</span>
+            <span v-if="b.segments?.free_count" class="chip free" @click.stop="segDlg?.open({ bill: b.bill_no, tab: 'free' })">
+              {{ t("generate.segFree", { n: num(b.segments.free_count), qty: num(b.segments.free_qty) }) }}
+            </span>
             <el-tag v-if="b.alloc_state === 'ALLOCATED'" size="small" type="info">{{ t("allocate.state.ALLOCATED") }}</el-tag>
             <el-tag v-if="!b.in_snapshot" size="small" type="info">{{ t("generate.notInSnapshot") }}</el-tag>
             <el-tag v-if="b.state.suspend" size="small" type="warning">{{ suspendLabel(b.state.suspend) }}</el-tag>
@@ -221,16 +227,41 @@
         <p v-if="!shownBills.length" class="muted no-lines">{{ t("common.empty") }}</p>
       </div>
 
-      <!-- 底部操作栏：三个页签相同：选规则（所选物料行；前缀默认 PI 第一张单据编码后 7 位）、
-           撤销配置（还没有号的所选行）、删号（所选行的号 / 按 SN 起止号）、流水来源（从最大号之后 / 手动起止号，
-           空号段列表）、生成 N 枚（勾选的单据或物料行）；不显示说明文字 -->
+      <!-- 底部操作栏（三个页签相同）：左侧对勾选的行操作 —— 已选信息（清空）、选规则、更多（撤销配置 / 删号 /
+           按 SN 起止号删号，菜单项后写出作用的行数、枚数，没有可作用的行时置灰）；右侧生成 —— 生成范围、
+           流水来源（弹层：从最大号之后 / 指定起止号、空闲号段）、生成 N 枚（唯一主按钮） -->
       <template #footer>
         <div v-if="ctx" class="bar">
+          <span class="sel-info" :class="{ none: !pickedRows.length }">
+            <template v-if="pickedRows.length">
+              {{ t("generate.selInfo", { bills: pickedBills, lines: pickedRows.length }) }}
+              <el-button link type="primary" @click="clearSelection">{{ t("generate.clearSel") }}</el-button>
+            </template>
+            <template v-else>{{ t("generate.selNone") }}</template>
+          </span>
           <el-button :disabled="!pickedRows.length" @click="openRuleDialog(pickedRows)">{{ t("generate.libraryRuleBtn") }}</el-button>
-          <el-button type="danger" plain :disabled="!configRows.length" :loading="busy === 'config'" @click="revokeConfig(configRows)">{{ t("generate.revoke") }}</el-button>
-          <el-button type="danger" plain :disabled="!deleteRows.length || !!running" @click="openDelete(deleteRows)">{{ t("generate.delete") }}</el-button>
-          <el-button type="danger" link :disabled="!!running" @click="deleteDlg?.open({ sn: true })">{{ t("generate.deleteBySn") }}</el-button>
+          <el-dropdown trigger="click" placement="top-start" @command="onMore">
+            <el-button :loading="busy === 'config'">{{ t("generate.more") }}<el-icon class="el-icon--right"><ArrowDown /></el-icon></el-button>
+            <template #dropdown>
+              <el-dropdown-menu class="more-menu">
+                <el-dropdown-item command="config" :disabled="!configRows.length">
+                  <span class="mi">{{ t("generate.revokeConfig") }}<span class="k">{{ t("generate.nLines", { n: configRows.length }) }}</span></span>
+                </el-dropdown-item>
+                <el-dropdown-item command="delete" :disabled="!deleteRows.length || !!running" :class="{ danger: deleteRows.length && !running }">
+                  <span class="mi">{{ t("generate.deleteLines") }}<span class="k">{{ t("generate.nLinesQty", { n: deleteRows.length, qty: num(deleteQty) }) }}</span></span>
+                </el-dropdown-item>
+                <el-dropdown-item command="deleteSn" divided :disabled="!!running">
+                  <span class="mi">{{ t("generate.deleteBySnMenu") }}<span class="k">{{ t("generate.noSelNeeded") }}</span></span>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
           <span class="push" />
+          <span class="scope">
+            {{ t("generate.scopeLabel") }}<b>{{ pickedRows.length ? t("generate.scopeLines", { n: pickedRows.length }) : t("generate.scopePi") }}</b><br>
+            {{ pickedRows.length ? t("generate.scopeSelHint") : t("generate.scopePiHint", { n: defaultBills.length }) }}
+          </span>
+          <span class="vsep" />
           <SeqSource v-model="seq" :gaps="ctx.gaps" />
           <el-button type="primary" :loading="gen.loading" :disabled="!canGen" @click="genDlg = true">
             {{ t("generate.genBtn", { n: num(gen.preview?.generatable ? gen.preview.qty : 0) }) }}
@@ -245,6 +276,8 @@
       :loading="busy === 'run'" @confirm="runGen" />
 
     <DeleteDialog v-if="ctx" ref="deleteDlg" :pi="ctx.pi_no" @done="afterDelete" />
+
+    <SegmentsDialog v-if="ctx" ref="segDlg" :pi="ctx.pi_no" :gaps="ctx.gaps" @use="useRange" />
 
     <!-- PI / 客户规则：整张 PI 的默认规则，不常用 -->
     <PiRuleDialog v-if="ctx" v-model="piRuleOpen" :ctx="ctx" @saved="reloadCtx" />
@@ -271,6 +304,7 @@ import DeleteDialog from "@/views/generate/DeleteDialog.vue";
 import SeqSource, { type SeqValue } from "@/views/generate/SeqSource.vue";
 import GenConfirmDialog from "@/views/generate/GenConfirmDialog.vue";
 import GenProgress from "@/views/generate/GenProgress.vue";
+import SegmentsDialog from "@/views/generate/SegmentsDialog.vue";
 import { num, pct } from "@/views/generate/format";
 import { buttonWidth, colWidth, tagWidth, textWidth } from "@/colWidth.js";
 import { useLineDrafts } from "@/views/generate/useLineDrafts";
@@ -480,8 +514,24 @@ function openRuleDialog(lines: OrderLine[]) {
   ruleDlg.open = true;
 }
 
-/** 单据的生产部门：各物料行的生产车间（去重）。 */
-const deptOf = (b: any) => [...new Set<string>((b.lines as OrderLine[]).map((l) => l.dept_name).filter(Boolean))].join("、");
+/** 去 SN 分配页（本 PI）；没有待分配的号时按钮置灰。 */
+function goAllocate() {
+  if (ctx.value) router.push({ path: "/allocate", query: { pi: ctx.value.pi_no } });
+}
+
+// ---------------- 单据号段：单据头标签与号段弹窗；空闲号段「用这段」填进底部流水来源
+
+const segDlg = ref<InstanceType<typeof SegmentsDialog> | null>(null);
+function segUseText(b: any): string {
+  const s = b.segments || { use_count: 0, use_qty: 0 };
+  const next = ctx.value?.counter.next_seq ?? 1;
+  return s.use_count
+    ? t("generate.segUse", { n: num(s.use_count), qty: num(s.use_qty), next })
+    : t("generate.segUseNone", { next });
+}
+function useRange(r: { start: number; end: number }) {
+  seq.value = { mode: "RANGE", start: r.start, end: r.end };
+}
 
 // ---------------- 范围：勾选单据（整单，按勾选顺序）或物料行（按点选顺序）；生成、规则配置、撤销共用
 
@@ -688,6 +738,16 @@ async function cancelGen() {
 
 /** 底部「删号」的对象：所选物料行中挂着号的。 */
 const deleteRows = computed(() => pickedRows.value.filter((l) => l.generated_qty > 0));
+const deleteQty = computed(() => deleteRows.value.reduce((a, l) => a + l.generated_qty, 0));
+/** 已选物料行涉及的单据数（底部已选信息）。 */
+const pickedBills = computed(() => new Set(pickedRows.value.map((l) => l.bill_no)).size);
+
+/** 底部「更多」菜单。 */
+function onMore(cmd: string) {
+  if (cmd === "config") revokeConfig(configRows.value);
+  else if (cmd === "delete") openDelete(deleteRows.value);
+  else if (cmd === "deleteSn") deleteDlg.value?.open({ sn: true });
+}
 const deleteDlg = ref<InstanceType<typeof DeleteDialog> | null>(null);
 
 function openDelete(rows: LineRef[]) {
@@ -771,9 +831,6 @@ onUnmounted(() => {
 .pi-list :deep(.el-table__row) { cursor: pointer; }
 .dh { display: flex; flex-direction: column; gap: 6px; }
 .dh-title { display: flex; gap: 12px; align-items: center; font-size: 16px; color: var(--app-text); }
-.go { display: inline-flex; align-items: center; gap: 4px; padding: 3px 12px; border-radius: 14px; font-size: 13px; text-decoration: none;
-  color: var(--el-color-success-dark-2); background: var(--el-color-success-light-9); border: 1px solid var(--el-color-success-light-5); }
-.go:hover { background: var(--el-color-success-light-8); }
 .kv { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 12px; color: var(--app-muted); }
 .kv b { color: var(--app-text); font-weight: 600; }
 .drawer { display: flex; flex-direction: column; gap: 10px; }
@@ -799,11 +856,25 @@ onUnmounted(() => {
 .lines :deep(tr.picked > td) { background: var(--el-color-primary-light-9); }
 .lines :deep(.el-table__row) { cursor: pointer; }
 .no-lines { padding: 8px 12px; margin: 0; }
+.chip { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 11px; font-size: 12px; border: 1px solid; white-space: nowrap; cursor: pointer; }
+.chip:hover { text-decoration: underline; }
+.chip.use { color: var(--el-color-primary); background: var(--el-color-primary-light-9); border-color: var(--el-color-primary-light-8); }
+.chip.free { color: var(--el-color-warning-dark-2); background: var(--el-color-warning-light-9); border-color: var(--el-color-warning-light-5); }
 .bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; text-align: left; }
 .bar :deep(.el-button + .el-button) { margin-left: 0; }
+.sel-info { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 10px; border-radius: 4px; white-space: nowrap;
+  color: var(--el-color-primary); background: var(--el-color-primary-light-9); }
+.sel-info.none { color: var(--app-muted); background: var(--el-fill-color); }
+.scope { font-size: 12px; line-height: 1.35; text-align: right; white-space: nowrap; color: var(--app-muted); }
+.scope b { color: var(--app-text); }
+.vsep { width: 1px; height: 22px; background: var(--el-border-color); }
 </style>
 
 <style>
 .gen-drawer .el-drawer__header { margin-bottom: 8px; align-items: flex-start; }
 .gen-drawer .el-drawer__footer { border-top: 1px solid var(--el-border-color); background: var(--el-fill-color-lighter); padding: 10px 20px; }
+/* 底部「更多」菜单：菜单项后写出作用的行数 / 枚数；删号为红色 */
+.more-menu .mi { display: flex; align-items: center; gap: 16px; min-width: 240px; }
+.more-menu .mi .k { margin-left: auto; font-size: 12px; color: var(--app-muted); }
+.more-menu .danger:not(.is-disabled) { color: var(--el-color-danger); }
 </style>

@@ -40,6 +40,29 @@ def gen_gaps(cu: OperatorDep, pi: str | None = None) -> dict:
     return generate.gaps(pi, cu)
 
 
+@router.get(
+    "/segments",
+    summary="单据号段：可用号段（单据现有的号按流水连续合并，转入的号单独成段；另有最大号 + 1 往后）、"
+    "空闲号段（本单据删号腾出、没有号占用的流水）",
+)
+def gen_segments(cu: OperatorDep, pi: str | None = None, bill_no: str | None = None) -> dict:
+    return generate.bill_segments(cu, pi, bill_no)
+
+
+@router.get("/segments/sns", summary="号段 SN 明细：单据在流水归属 PI 的 start～end 内的号，按流水排、分页")
+def gen_segment_sns(
+    cu: OperatorDep,
+    pi: str | None = None,
+    bill_no: str | None = None,
+    seq_pi: str | None = None,
+    start: OptInt = None,
+    end: OptInt = None,
+    page: OptInt = None,
+    size: OptInt = None,
+) -> dict:
+    return generate.segment_sns(cu, pi, bill_no, seq_pi, start, end, page, size)
+
+
 @router.post("/run", summary="凭预演令牌生成：数量不大时当场完成，否则返回 RUNNING，轮询进度")
 def gen_run(body: RunIn, cu: OperatorDep) -> dict:
     return generate.generate(cu, body.token)

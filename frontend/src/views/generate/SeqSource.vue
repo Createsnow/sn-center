@@ -1,45 +1,59 @@
 <template>
-  <!-- 流水来源：从最大号之后接着编（默认），或手动起止号（用空号段与未使用的号，不够时从最大号之后接着编） -->
-  <div class="seq-src">
-    <el-radio-group :model-value="modelValue.mode" size="small" @update:model-value="(v: any) => set({ mode: v })">
-      <el-radio-button value="MAX">{{ t("generate.seqMax", { n: gaps?.next_seq ?? 1 }) }}</el-radio-button>
-      <el-radio-button value="RANGE">{{ t("generate.seqRange") }}</el-radio-button>
-    </el-radio-group>
-    <template v-if="modelValue.mode === 'RANGE'">
-      <el-input-number :model-value="modelValue.start ?? undefined" size="small" :min="1" :step="1" step-strictly controls-position="right"
-        :placeholder="t('generate.seqStart')" class="no" @update:model-value="(v: any) => set({ start: v ?? null })" />
-      <span class="muted">~</span>
-      <el-input-number :model-value="modelValue.end ?? undefined" size="small" :min="1" :step="1" step-strictly controls-position="right"
-        :placeholder="t('generate.seqEnd')" class="no" @update:model-value="(v: any) => set({ end: v ?? null })" />
+  <!-- 流水来源：底部一个按钮（显示当前来源，有空闲号段时带角标），点开弹层：从最大号之后接着编（默认）/ 指定起止号，
+       下面列出空闲号段（来源单据、起止流水、枚数），「用这段」填入起止号 -->
+  <el-popover v-model:visible="open" placement="top-end" :width="460" trigger="click" popper-class="seq-pop">
+    <template #reference>
+      <el-button>
+        {{ label }}
+        <span v-if="modelValue.mode === 'MAX' && gaps?.count" class="badge num">{{ num(gaps.count) }}</span>
+        <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+      </el-button>
     </template>
-    <el-popover v-if="gaps" placement="top" :width="380" trigger="click">
-      <template #reference>
-        <el-button link :type="gaps.count ? 'warning' : 'info'" size="small">
-          {{ t("generate.gapsLink", { n: num(gaps.count), qty: num(gaps.total) }) }}
-        </el-button>
+    <div class="seq-src">
+      <b class="title">{{ t("generate.seqTitle") }}</b>
+      <el-radio-group :model-value="modelValue.mode" class="modes" @update:model-value="(v: any) => set({ mode: v })">
+        <el-radio value="MAX">{{ t("generate.seqMaxFull", { n: nextSeq }) }}</el-radio>
+        <el-radio value="RANGE">{{ t("generate.seqRangeFull") }}</el-radio>
+      </el-radio-group>
+      <div class="range">
+        <el-input-number :model-value="modelValue.start ?? undefined" size="small" :min="1" :step="1" step-strictly controls-position="right"
+          :placeholder="t('generate.seqStart')" class="no" @update:model-value="(v: any) => set({ mode: 'RANGE', start: v ?? null })" />
+        <span class="muted">~</span>
+        <el-input-number :model-value="modelValue.end ?? undefined" size="small" :min="1" :step="1" step-strictly controls-position="right"
+          :placeholder="t('generate.seqEnd')" class="no" @update:model-value="(v: any) => set({ mode: 'RANGE', end: v ?? null })" />
+      </div>
+      <p class="muted hint">{{ t("generate.seqRangeHint") }}</p>
+      <template v-if="gaps">
+        <div class="free-h">
+          <b>{{ t("generate.freeSegs") }}</b>
+          <span class="muted">{{ t("generate.freeHead", { n: num(gaps.count), qty: num(gaps.total), last: gaps.last_seq }) }}</span>
+        </div>
+        <el-table v-if="gaps.count" :data="gaps.segments" size="small" max-height="220">
+          <el-table-column :label="t('generate.srcBill')" min-width="110">
+            <template #default="{ row }">{{ row.bill_no || "—" }}</template>
+          </el-table-column>
+          <el-table-column :label="t('generate.seqStart')" prop="start_seq" align="right" />
+          <el-table-column :label="t('generate.seqEnd')" prop="end_seq" align="right" />
+          <el-table-column :label="t('common.qty')" align="right">
+            <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
+          </el-table-column>
+          <el-table-column width="64" align="right">
+            <template #default="{ row }">
+              <el-button link type="primary" size="small" @click="use(row)">{{ t("generate.gapUse") }}</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <p v-else class="muted">{{ t("generate.gapsNone") }}</p>
+        <p v-if="gaps.truncated" class="muted">{{ t("generate.gapsTruncated", { n: gaps.segments.length }) }}</p>
       </template>
-      <p class="muted head">{{ t("generate.gapsHead", { last: gaps.last_seq }) }}</p>
-      <el-table v-if="gaps.count" :data="gaps.segments" size="small" max-height="280">
-        <el-table-column :label="t('generate.seqStart')" prop="start_seq" align="right" />
-        <el-table-column :label="t('generate.seqEnd')" prop="end_seq" align="right" />
-        <el-table-column :label="t('common.qty')" align="right">
-          <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
-        </el-table-column>
-        <el-table-column width="64" align="right">
-          <template #default="{ row }">
-            <el-button link type="primary" size="small" @click="set({ mode: 'RANGE', start: row.start_seq, end: row.end_seq })">{{ t("generate.gapUse") }}</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <p v-else class="muted">{{ t("generate.gapsNone") }}</p>
-      <p v-if="gaps.truncated" class="muted">{{ t("generate.gapsTruncated", { n: gaps.segments.length }) }}</p>
-    </el-popover>
-  </div>
+    </div>
+  </el-popover>
 </template>
 
 <script setup lang="ts">
-/** 生成的流水来源。gaps：本 PI 的空号段（生成详情 / 预演返回）；modelValue：{ mode, start, end }。
- *  空号段列表里点「用这段」填入起止号并切到手动起止号。 */
+/** 生成的流水来源。gaps：本 PI 的空闲号段（生成详情 / 预演返回，带来源单据）；modelValue：{ mode, start, end }。
+ *  空闲号段列表（或单据号段弹窗）里点「用这段」填入起止号并切到指定起止号。 */
+import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { num } from "./format";
 
@@ -48,14 +62,36 @@ export type SeqValue = { mode: "MAX" | "RANGE"; start: number | null; end: numbe
 const props = defineProps<{ modelValue: SeqValue; gaps: any }>();
 const emit = defineEmits<{ "update:modelValue": [v: SeqValue] }>();
 const { t } = useI18n();
+const open = ref(false);
+
+const nextSeq = computed(() => props.gaps?.next_seq ?? 1);
+const label = computed(() => {
+  const v = props.modelValue;
+  if (v.mode === "MAX") return t("generate.seqBtnMax", { n: nextSeq.value });
+  if (!v.start) return t("generate.seqBtnUnset");
+  return t("generate.seqBtnRange", { start: v.start, end: v.end ?? v.start });
+});
 
 function set(p: Partial<SeqValue>) {
   emit("update:modelValue", { ...props.modelValue, ...p });
 }
+
+function use(row: { start_seq: number; end_seq: number }) {
+  set({ mode: "RANGE", start: row.start_seq, end: row.end_seq });
+}
 </script>
 
 <style scoped>
-.seq-src { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.no { width: 120px; }
-.head { margin: 0 0 6px; }
+.badge { display: inline-block; min-width: 16px; height: 16px; padding: 0 4px; margin-left: 6px; border-radius: 8px; font-size: 11px; line-height: 16px;
+  text-align: center; color: #fff; background: var(--el-color-warning); }
+.seq-src { display: flex; flex-direction: column; gap: 6px; }
+.title { font-size: 13px; }
+.modes { display: flex; flex-direction: column; align-items: flex-start; }
+.modes :deep(.el-radio) { margin-right: 0; height: 26px; }
+.range { display: flex; align-items: center; gap: 6px; padding-left: 22px; }
+.no { width: 130px; }
+.hint { margin: 0 0 4px 22px; font-size: 12px; }
+.free-h { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.free-h .muted { font-size: 12px; }
+p { margin: 0; }
 </style>

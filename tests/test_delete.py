@@ -82,7 +82,7 @@ def test_regenerate_into_gaps_with_overflow(w, api, sql):
     assert w.preview(pi, lines=[(bill, 2)], seq=(0, 4)).code == "GEN_SEQ_RANGE_INVALID"
     pv = ok(w.preview(pi, lines=[(bill, 2)], seq=(4, 7)))
     assert pv["items"][0]["segs"] == [[4, 7]] and (pv["range_qty"], pv["overflow_qty"]) == (4, 0)
-    assert pv["gaps"]["segments"] == [{"start_seq": 4, "end_seq": 7, "qty": 4}]
+    assert pv["gaps"]["segments"] == [{"start_seq": 4, "end_seq": 7, "qty": 4, "bill_no": bill}]
     w.generate(pi, lines=[(bill, 2)], seq=(4, 7))
     assert sns(sql, pi) == before, "同样的参数用回空号段，号与删掉的相同"
     assert sql.scalar("SELECT last_seq_dec FROM sn_pi_counter WHERE pi_no = %s", pi) == 9
@@ -108,6 +108,63 @@ def test_regenerate_into_gaps_with_overflow(w, api, sql):
     w.generate(pi, lines=[(bill, 3)], seq=(20, 21))
     assert gaps(w, pi) == [(8, 9), (12, 19)]
     assert sql.scalar("SELECT last_seq_dec FROM sn_pi_counter WHERE pi_no = %s", pi) == 21
+
+
+def segs(w, pi: str, bill: str) -> dict:
+    return ok(w.api.get(f"/api/generate/segments?pi={pi}&bill_no={bill}", w.admin))
+
+
+def test_bill_segments_use_free_and_sn_detail(w, api, sql):
+    """单据号段：现有的号按流水连续合并（转入的号按流水归属 PI 单独成段），空闲号段按删号时的生成单据归属；
+    生成详情的单据头带号段数与枚数；SN 明细按流水分页；跳过的流水（没有删号存档）不归属任何单据。"""
+    org, pi, bill = mk(w, ("M1", 3), ("M2", 4), ("M3", 2))
+    _, _, bill2 = mk(w, ("M4", 3), pi=pi, org=org)
+    p = P()
+    ok(w.bind_pi(pi, w.rule(p, seq_len=4, with_length=False)))
+    w.generate(pi)  # bill 1～9，bill2 10～12（排号按单据编号）
+    ok(w.delete(pi, lines=[(bill, 2)]))  # bill 腾出 4～7
+    s = segs(w, pi, bill)
+    assert [(x["start_seq"], x["end_seq"], x["qty"], x["transferred_in"]) for x in s["use"]] == [
+        (1, 3, 3, False),
+        (8, 9, 2, False),
+    ]
+    assert (s["use"][0]["start_sn"], s["use"][0]["end_sn"], s["use"][0]["pending"]) == (f"{p}0001", f"{p}0003", 3)
+    assert [(x["start_seq"], x["end_seq"], x["bill_no"]) for x in s["free"]] == [(4, 7, bill)]
+    assert (s["next_seq"], s["use_qty"], s["free_qty"]) == (13, 5, 4)
+    assert segs(w, pi, bill2)["free"] == []
+    # 别的 PI 的号转入本单据：按流水归属 PI 单独成段，排在本 PI 的号段之后
+    _, pi2, bill3 = mk(w, ("M5", 2), org=org)
+    ok(w.bind_pi(pi2, w.rule(P(), with_length=False)))
+    w.generate(pi2)
+    sql.exec("UPDATE sn_item SET pi_no = %s, bill_no = %s, bill_seq = 1 WHERE seq_pi_no = %s", pi, bill, pi2)
+    s = segs(w, pi, bill)
+    assert [(x["seq_pi_no"], x["start_seq"], x["end_seq"], x["transferred_in"]) for x in s["use"]] == [
+        (pi, 1, 3, False),
+        (pi, 8, 9, False),
+        (pi2, 1, 2, True),
+    ]
+    ctx = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))
+    heads = {b["bill_no"]: b["segments"] for b in ctx["bills"]}
+    assert heads[bill] == {"use_count": 3, "use_qty": 7, "free_count": 1, "free_qty": 4}
+    assert heads[bill2] == {"use_count": 1, "use_qty": 3, "free_count": 0, "free_qty": 0}
+    # SN 明细
+    d = ok(api.get(f"/api/generate/segments/sns?pi={pi}&bill_no={bill}&start=1&end=9&page=2&size=3", w.admin))
+    assert (d["total"], d["items"]) == (5, [f"{p}0008", f"{p}0009"])
+    d = ok(api.get(f"/api/generate/segments/sns?pi={pi}&bill_no={bill}&seq_pi={pi2}&start=1&end=2", w.admin))
+    assert d["total"] == 2
+    assert api.get(f"/api/generate/segments/sns?pi={pi}&bill_no={bill}&start=5&end=4", w.admin).code == (
+        "GEN_SEQ_RANGE_INVALID"
+    )
+    assert api.get(f"/api/generate/segments?pi={pi}", w.admin).code == "ORDER_BILL_REQUIRED"
+    # 起止号在最大号之后：跳过的流水是空号段，但不归属任何单据
+    ok(w.delete(pi, lines=[(bill2, 1)]))
+    w.generate(pi, lines=[(bill2, 1)], seq=(20, 22))
+    g = ok(api.get(f"/api/generate/gaps?pi={pi}", w.admin))
+    assert [(x["start_seq"], x["end_seq"], x["bill_no"]) for x in g["segments"]] == [
+        (4, 7, bill),
+        (10, 12, bill2),
+        (13, 19, ""),
+    ]
 
 
 def test_two_lines_share_gaps_in_order_and_preview_tracks_gaps(w, api, sql):

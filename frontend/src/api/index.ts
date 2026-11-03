@@ -82,6 +82,9 @@ export const api = {
   cancelGen: (batch: string) => post(`/generate/batches/${enc(batch)}/cancel`, {}),
   /** 空号段：PI 流水 1～最大号之间没有号的连续段（删号腾出），最大号与下一个号。 */
   genGaps: (pi: string) => get("/generate/gaps", { pi }),
+  genSegments: (pi: string, bill_no: string) => get("/generate/segments", { pi, bill_no }),
+  genSegmentSns: (params: { pi: string; bill_no: string; seq_pi: string; start: number; end: number; page: number; size: number }) =>
+    get("/generate/segments/sns", params),
   /** 删号范围：单据 bills / 物料行 lines，或 SN 起止号 start_sn、end_sn（只填起号 = 单枚）。 */
   genDeletePreview: (data: Q) => post("/generate/delete/preview", data),
   /** 删号：状态不限；额度还给号现在挂的物料行，最大流水号不退回（留下空号段）；原因选填。 */

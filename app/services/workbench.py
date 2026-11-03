@@ -318,7 +318,17 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
     from app.services.allocation import bill_state
 
     states = changes.bill_states(list(bills))
+    # 单据号段：现有号的号段数与枚数、本单据删号腾出的空闲号段数与枚数（单据头标签，点开看明细）
+    gap = generate.gaps_of(pi)
+    seg_counts = generate.bill_segment_counts(pi, list(bills), facs)
+    free_counts: dict[str, list[int]] = {}
+    for g in generate.free_segments(pi, gap["last_seq"]) if gap["truncated"] else gap["segments"]:
+        c = free_counts.setdefault(g["bill_no"], [0, 0])
+        c[0] += 1
+        c[1] += g["qty"]
     for no, b in bills.items():
+        uc, fc = seg_counts.get(no, (0, 0)), free_counts.get(no, [0, 0])
+        b["segments"] = {"use_count": uc[0], "use_qty": uc[1], "free_count": fc[0], "free_qty": fc[1]}
         b["modify_time"] = orders.k3_time(b.get("_mt"))
         b["state"] = states.get(no, changes.EMPTY_STATE)
         b["pending_alloc"] = items[no][0] if no in items else 0
@@ -363,5 +373,5 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
         "running_job": None if running is None else generate.progress(running["gen_batch"]),
         "jobs": generate.jobs(pi, 20, facs),
         # 空号段（删号腾出的流水）：生成时可选用（预演的流水来源 RANGE）
-        "gaps": generate.gaps_of(pi),
+        "gaps": gap,
     }

@@ -35,7 +35,7 @@ from app.core.errors import ErrorCode, biz
 from app.core.exceptions import BizError
 from app.core.security import CurrentUser
 from app.db.session import ER_LOCK_NOWAIT, db, error_no, is_duplicate, marks
-from app.services import audit, changes, locks, orders, rules
+from app.services import audit, changes, factories, locks, orders, rules
 
 log = structlog.get_logger()
 
@@ -185,18 +185,175 @@ def gaps(pi_in: str | None, cu: CurrentUser | None = None) -> dict:
     return gaps_of(pi)
 
 
+def free_segments(pi: str, last: int | None = None) -> list[dict]:
+    """空号段按来源单据拆段（升序）：来源单据 = 流水上最后一次删掉的号的生成单据（gen_bill_no）。
+    空号都是删号腾出的（生成在一个事务里，取消即回滚，不留空号）；万一有查不到删号存档的空号，来源单据为空串。"""
+    top = last_seq(pi) if last is None else last
+    raw = gap_segments(pi, top)
+    if not raw:
+        return []
+    # 只取现在没有号占用的流水；同一流水删过多次取最后一次（号池 id 自增不复用，大的在后）
+    marked = [
+        (int(r["s"]), int(r["e"]), r["bill_no"])
+        for r in db.all(
+            "SELECT bill_no, MIN(seq_dec) s, MAX(seq_dec) e FROM ("
+            "SELECT d.gen_bill_no bill_no, d.seq_dec, "
+            "d.seq_dec - ROW_NUMBER() OVER (PARTITION BY d.gen_bill_no ORDER BY d.seq_dec) g "
+            "FROM sn_item_deleted d WHERE d.seq_pi_no = %s AND d.seq_dec <= %s "
+            "AND d.id = (SELECT MAX(x.id) FROM sn_item_deleted x "
+            "WHERE x.seq_pi_no = d.seq_pi_no AND x.seq_dec = d.seq_dec) "
+            "AND NOT EXISTS (SELECT 1 FROM sn_item i WHERE i.seq_pi_no = d.seq_pi_no AND i.seq_dec = d.seq_dec)"
+            ") t GROUP BY bill_no, g ORDER BY s",
+            pi,
+            top,
+        )
+    ]
+    out: list[tuple[int, int, str]] = []
+    i = 0
+    for s, e in raw:
+        pos = s
+        while i < len(marked) and marked[i][0] <= e:
+            a, b, bill = marked[i]
+            if a > pos:
+                out.append((pos, a - 1, ""))
+            out.append((a, b, bill))
+            pos = b + 1
+            i += 1
+        if pos <= e:
+            out.append((pos, e, ""))
+    return [{"start_seq": a, "end_seq": b, "qty": b - a + 1, "bill_no": bill} for a, b, bill in out]
+
+
 def gaps_of(pi: str) -> dict:
     last = last_seq(pi)
-    segs = gap_segments(pi, last)
+    segs = free_segments(pi, last)
     return {
         "pi_no": pi,
         "last_seq": last,
         "next_seq": last + 1,
         "count": len(segs),
-        "total": sum(e - s + 1 for s, e in segs),
-        "segments": [{"start_seq": s, "end_seq": e, "qty": e - s + 1} for s, e in segs[:GAP_LIST_MAX]],
+        "total": sum(x["qty"] for x in segs),
+        "segments": segs[:GAP_LIST_MAX],
         "truncated": len(segs) > GAP_LIST_MAX,
     }
+
+
+# ================================================================== 单据号段（生成页单据维度）
+
+#: 单据号段弹窗最多列出的段数（合计照常给全）
+SEG_LIST_MAX = 500
+#: SN 明细每页最多条数
+SN_PAGE_MAX = 200
+
+#: 号段：单据挂在本 PI 下的号按（流水归属 PI，十进制流水）连续合并；g 相同即连续
+_ISLAND = (
+    "SELECT {cols}, seq_dec - ROW_NUMBER() OVER (PARTITION BY {part} ORDER BY seq_dec) g "
+    "FROM sn_item WHERE pi_no = %s AND bill_no IN ({bills}){scope}"
+)
+
+
+def bill_segment_counts(pi: str, bill_nos: list[str], facs: tuple[str, ...] | None) -> dict[str, tuple[int, int]]:
+    """各单据现有号的号段数与枚数（生成详情的单据头用）。"""
+    if not bill_nos:
+        return {}
+    isql, iargs = factories.item_scope_sql(facs)
+    inner = _ISLAND.format(cols="bill_no, seq_pi_no", part="bill_no, seq_pi_no", bills=marks(len(bill_nos)), scope=isql)
+    return {
+        r["bill_no"]: (int(r["segs"]), int(r["qty"]))
+        for r in db.all(
+            "SELECT bill_no, COUNT(*) segs, SUM(n) qty FROM ("
+            f"SELECT bill_no, seq_pi_no, g, COUNT(*) n FROM ({inner}) t GROUP BY bill_no, seq_pi_no, g"
+            ") u GROUP BY bill_no",
+            pi,
+            *bill_nos,
+            *iargs,
+        )
+    }
+
+
+def _bill_key(cu: CurrentUser, pi_in: str | None, bill_in: str | None) -> tuple[str, str, tuple[str, ...] | None]:
+    pi, bill = util.trim(pi_in), util.trim(bill_in)
+    if not pi:
+        raise biz(ErrorCode.PI_REQUIRED)
+    if not bill:
+        raise biz(ErrorCode.ORDER_BILL_REQUIRED)
+    cu.check_read(*orders.bill_orgs([bill]))
+    return pi, bill, cu.read_factories(None)
+
+
+def bill_segments(cu: CurrentUser, pi_in: str | None, bill_in: str | None) -> dict:
+    """单据号段：可用号段 = 单据挂在本 PI 下现有的号按流水连续合并成段（转入的号按流水归属 PI 单独成段，
+    本 PI 的在前），另加「最大号 + 1 往后」（同一 PI 各单据共用流水）；空闲号段 = 本单据生成后删掉、
+    现在没有号占用的流水。"""
+    pi, bill, facs = _bill_key(cu, pi_in, bill_in)
+    isql, iargs = factories.item_scope_sql(facs)
+    inner = _ISLAND.format(cols="sn, seq_pi_no, seq_dec, status", part="seq_pi_no", bills="%s", scope=isql)
+    rows = db.all(
+        "SELECT seq_pi_no, MIN(seq_dec) s, MAX(seq_dec) e, COUNT(*) n, SUM(status = 'PENDING_ALLOC') pending, "
+        "MIN(fs) start_sn, MIN(ls) end_sn FROM (SELECT seq_pi_no, seq_dec, status, g, "
+        "FIRST_VALUE(sn) OVER (PARTITION BY seq_pi_no, g ORDER BY seq_dec) fs, "
+        "FIRST_VALUE(sn) OVER (PARTITION BY seq_pi_no, g ORDER BY seq_dec DESC) ls "
+        f"FROM ({inner}) a) b GROUP BY seq_pi_no, g ORDER BY seq_pi_no = %s DESC, seq_pi_no, s",
+        pi,
+        bill,
+        *iargs,
+        pi,
+    )
+    use = [
+        {
+            "seq_pi_no": r["seq_pi_no"],
+            "start_seq": int(r["s"]),
+            "end_seq": int(r["e"]),
+            "start_sn": r["start_sn"],
+            "end_sn": r["end_sn"],
+            "qty": int(r["n"]),
+            "pending": int(r["pending"] or 0),
+            "allocated": int(r["n"]) - int(r["pending"] or 0),
+            "transferred_in": r["seq_pi_no"] != pi,
+        }
+        for r in rows
+    ]
+    last = last_seq(pi)
+    free = [x for x in free_segments(pi, last) if x["bill_no"] == bill]
+    return {
+        "pi_no": pi,
+        "bill_no": bill,
+        "last_seq": last,
+        "next_seq": last + 1,
+        "use": use[:SEG_LIST_MAX],
+        "use_count": len(use),
+        "use_qty": sum(x["qty"] for x in use),
+        "use_truncated": len(use) > SEG_LIST_MAX,
+        "free": free[:SEG_LIST_MAX],
+        "free_count": len(free),
+        "free_qty": sum(x["qty"] for x in free),
+        "free_truncated": len(free) > SEG_LIST_MAX,
+    }
+
+
+def segment_sns(
+    cu: CurrentUser,
+    pi_in: str | None,
+    bill_in: str | None,
+    seq_pi_in: str | None,
+    start: int | None,
+    end: int | None,
+    page: int | None,
+    size: int | None,
+) -> dict:
+    """号段 SN 明细：单据挂在本 PI 下、流水归属 seq_pi_no、流水在 start～end 的号，按流水排，分页。"""
+    pi, bill, facs = _bill_key(cu, pi_in, bill_in)
+    seq_pi = util.trim(seq_pi_in) or pi
+    if start is None or end is None or start < 1 or end < start:
+        raise biz(ErrorCode.GEN_SEQ_RANGE_INVALID)
+    pg = max(1, page or 1)
+    sz = min(max(1, size or 20), SN_PAGE_MAX)
+    isql, iargs = factories.item_scope_sql(facs)
+    where = "FROM sn_item WHERE pi_no = %s AND bill_no = %s AND seq_pi_no = %s AND seq_dec BETWEEN %s AND %s" + isql
+    args = [pi, bill, seq_pi, start, end, *iargs]
+    total = db.count("SELECT COUNT(*) " + where, *args)
+    items = db.column("SELECT sn " + where + " ORDER BY seq_dec LIMIT %s OFFSET %s", *args, sz, (pg - 1) * sz)
+    return {"total": total, "page": pg, "size": sz, "items": items}
 
 
 def seq_choice(mode: str | None, start: int | None = None, end: int | None = None) -> dict:
