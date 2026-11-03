@@ -96,6 +96,7 @@
     "note": "Note",
     "sn": "Full SN",
     "seqText": "Encoded serial",
+    "seqBase": "Radix",
     "seqDec": "Decimal serial",
     "batchNo": "Batch No.",
     "export": "Export",

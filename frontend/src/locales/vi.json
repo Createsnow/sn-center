@@ -96,6 +96,7 @@
     "note": "Ghi chú",
     "sn": "SN đầy đủ",
     "seqText": "Số thứ tự mã hóa",
+    "seqBase": "Cơ số",
     "seqDec": "Số thứ tự thập phân",
     "batchNo": "Số lô",
     "export": "Xuất",

@@ -30,7 +30,7 @@
               </template>
             </el-table-column>
             <el-table-column :label="t('rules.seqDigits')" min-width="66" align="right"><template #default="{ row }">{{ row.seq_len ?? "—" }}</template></el-table-column>
-            <el-table-column prop="seq_dec" :label="t('common.seqDec')" min-width="80" align="right" />
+            <el-table-column :label="t('common.seqBase')" min-width="66" align="right"><template #default="{ row }">{{ row.base ?? "—" }}</template></el-table-column>
             <el-table-column :label="t('rules.seqNo')" min-width="76"><template #default="{ row }"><span class="sn-mono">{{ row.seq_text }}</span></template></el-table-column>
             <el-table-column :label="t('common.attachNo')" min-width="66" show-overflow-tooltip><template #default="{ row }">{{ row.attach_no || "—" }}</template></el-table-column>
             <el-table-column :label="t('common.length')" min-width="56" show-overflow-tooltip><template #default="{ row }">{{ row.length || "—" }}</template></el-table-column>
@@ -47,8 +47,8 @@
 </template>
 
 <script setup lang="ts">
-/** SN 分配页「已分配」页签的右侧（F-14 SN 导出）：左侧点一张单据后，逐枚列出该单据记载的已分配号（PI、物料编码、SN、
- *  流水位数、十进制流水、流水号、附件项次、米数、产品单位、生产组织编号、生产组织），头部按物料编码、SN 起止号筛选，
+/** SN 分配页「已分配」页签的右侧（F-14 SN 导出）：左侧点一张单据后，逐枚列出该单据记载的已分配号（PI、物料编码、完整 SN、
+ *  流水位数、进制位数（规则进制 10 / 16 / 32 / 36）、流水号、附件项次、米数、产品单位、生产组织编号、生产组织），头部按物料编码、SN 起止号筛选，
  *  分页；可按同一筛选下载范围内的号（xlsx），只读、可反复下载。
  *  与分配后的推送、拉取相互独立：推送成败都不影响列出和下载。 */
 import { computed, ref, watch } from "vue";
@@ -68,6 +68,7 @@ interface SnRow {
   material_code: string;
   seq_pi_no: string;
   transferred_in: boolean;
+  base: number | null;
   seq_len: number | null;
   seq_text: string;
   seq_dec: number;

@@ -96,6 +96,7 @@
     "note": "备注",
     "sn": "完整 SN",
     "seqText": "进制流水",
+    "seqBase": "进制位数",
     "seqDec": "十进制流水",
     "batchNo": "批次号",
     "export": "导出",
