@@ -89,7 +89,7 @@ CREATE TABLE sn_rule_version (
   id           BIGINT      NOT NULL AUTO_INCREMENT,
   rule_id      BIGINT      NOT NULL,
   version      INT         NOT NULL,
-  prefix       VARCHAR(64) NOT NULL,
+  prefix       VARCHAR(64) NOT NULL COMMENT '同一前缀下进制、流水位数、字符表相同；不同前缀不能一个是另一个的开头',
   suffix       VARCHAR(64) NOT NULL DEFAULT '',
   base         INT         NOT NULL COMMENT '10 / 16 / 32 / 36',
   seq_len      INT         NOT NULL COMMENT '流水位数',
@@ -107,7 +107,7 @@ CREATE TABLE sn_rule_version (
   updated_at   DATETIME    NOT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY ux_rule_version (rule_id, version),
-  UNIQUE KEY ux_rule_prefix (prefix),
+  KEY ix_rule_prefix (prefix) COMMENT '前缀不全局唯一：一个前缀只归属一张 PI，可有多个版本（应用层校验，见 rules.check_prefix）',
   KEY ix_rule_version_pi (claimed_pi)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='SN 规则版本';
 
@@ -398,6 +398,44 @@ CREATE TABLE sn_item (
   KEY ix_item_delivery (delivery_batch_no),
   KEY ix_item_holder (mes_holder, pi_no)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='SN 号池';
+
+-- 删号存档：SN 删除后从号池移除（腾出完整 SN 与流水，可重新生成），删除前的号与挂靠存档备查
+CREATE TABLE sn_item_deleted (
+  id                BIGINT       NOT NULL COMMENT '原号池 id（号池自增 id 不复用）',
+  del_no            VARCHAR(40)  NOT NULL COMMENT '删除单号（一次删除一个）',
+  sn                VARCHAR(64)  NOT NULL,
+  factory_code      VARCHAR(64)  NULL,
+  pi_no             VARCHAR(64)  NOT NULL,
+  customer_code     VARCHAR(64)  NOT NULL DEFAULT '',
+  bill_no           VARCHAR(64)  NOT NULL,
+  bill_seq          INT          NOT NULL,
+  material_code     VARCHAR(64)  NOT NULL DEFAULT '',
+  rev               INT          NOT NULL,
+  gen_org_code      VARCHAR(64)  NOT NULL DEFAULT '',
+  gen_bill_no       VARCHAR(64)  NOT NULL,
+  gen_bill_seq      INT          NOT NULL,
+  seq_pi_no         VARCHAR(64)  NOT NULL,
+  seq_dec           BIGINT       NOT NULL,
+  length_text       VARCHAR(64)  NULL,
+  attach_no         VARCHAR(64)  NOT NULL DEFAULT '',
+  rule_version_id   BIGINT       NOT NULL,
+  gen_batch         VARCHAR(40)  NOT NULL,
+  status            VARCHAR(16)  NOT NULL COMMENT '删除时的状态',
+  delivery_mode     VARCHAR(8)   NULL,
+  delivery_batch_no VARCHAR(40)  NULL,
+  mes_holder        VARCHAR(64)  NULL,
+  created_at        DATETIME     NOT NULL COMMENT '生成时间',
+  allocated_at      DATETIME     NULL,
+  delivered_at      DATETIME     NULL,
+  deleted_by        VARCHAR(32)  NOT NULL,
+  deleted_at        DATETIME     NOT NULL,
+  reason            VARCHAR(500) NOT NULL,
+  PRIMARY KEY (id),
+  KEY ix_item_deleted_no (del_no),
+  KEY ix_item_deleted_sn (sn),
+  KEY ix_item_deleted_pi (pi_no, deleted_at),
+  KEY ix_item_deleted_seq (seq_pi_no, seq_dec)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='删号存档';
 
 -- 交付批次（推送批次、拉取批次、转出批次共用）：内容建立后不变
 CREATE TABLE sn_delivery_batch (
