@@ -69,8 +69,9 @@ def export_items(
 
 @router.get(
     "/file",
-    summary="下载一张单据的已分配号 xlsx（列：组织编号、生产组织、PI、物料编码、SN、流水位数、十进制流水、流水号、"
-    "附件项次、米数、产品单位）；material、sn_from / sn_to 同明细筛选，只下载范围内的号；不改状态",
+    summary="下载一张单据的已分配号 xlsx（列：PI、物料编码、完整 SN、流水位数、进制位数、流水号、"
+    "附件项次、米数、产品单位、生产组织编号、生产组织，同页面明细）；"
+    "material、sn_from / sn_to 同明细筛选，只下载范围内的号；不改状态",
 )
 def export_file(
     cu: UserDep,

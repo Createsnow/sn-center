@@ -270,36 +270,36 @@ def _text(v):
     return v.decode("utf-8") if isinstance(v, (bytes, bytearray)) else v
 
 
-#: 下载文件的列（与 SN 查询导出不同，只列分配页需要的字段）
+#: 下载文件的列（与 SN 查询导出不同，只列分配页需要的字段；与分配页「已分配」明细的列、顺序一致）
 FILE_HEADERS = [
-    "组织编号",
-    "生产组织",
     "PI",
     "物料编码",
-    "SN",
+    "完整 SN",
     "流水位数",
-    "十进制流水",
+    "进制位数",
     "流水号",
     "附件项次",
     "米数",
     "产品单位",
+    "生产组织编号",
+    "生产组织",
 ]
 
 
 def _file_row(r: dict) -> list:
     """一行，列顺序同 FILE_HEADERS。"""
     return [
-        r["factory_code"] or "",
-        r["factory_name"] or "",
         r["pi_no"],
         r["material_code"],
         _text(r["sn"]),
         _seq_len(r["rule_version_id"]),
-        str(r["seq_dec"]),
+        _base(r["rule_version_id"]),
         rules.seq_text(r["rule_version_id"], r["seq_dec"]),
         _text(r["attach_no"]) or "",
         _text(r["length_text"]) or "",
         _unit(r),
+        r["factory_code"] or "",
+        r["factory_name"] or "",
     ]
 
 

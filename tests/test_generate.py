@@ -39,7 +39,7 @@ def test_prefix_any_characters_end_to_end(w, api, sql):
     assert [x["sn"] for x in ok(api.get("/api/sn" + q(sn=sns[0]), w.admin))["items"]] == [sns[0]]
     r = api.client.get(f"/api/export/file?pi={pi}&bill_no={bill}", headers={"Authorization": f"Bearer {w.admin}"})
     rows = xlsx_rows(r.content)
-    assert rows[1][rows[0].index("SN")] == sns[0]
+    assert rows[1][rows[0].index("完整 SN")] == sns[0]
 
 
 def test_sn_layout_serial_separators_padded_length_unit(w, api, sql):
