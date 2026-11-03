@@ -535,6 +535,7 @@
       "prefix": "前缀",
       "base": "进制",
       "seqLen": "流水位数",
+      "seqStart": "起始号",
       "withLength": "带米数",
       "lengthPad": "米数补 0 位数",
       "sepBefore": "米数前分隔符",

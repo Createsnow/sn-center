@@ -39,6 +39,12 @@
       <el-form-item :label="t('generate.rule.seqLen')">
         <el-input-number v-model="custom.seq_len" :min="1" :max="12" controls-position="right" @change="schedule" />
       </el-form-item>
+      <!-- 起始号（十进制流水，选填）：本 PI 已用这个前缀时流水接续，不能填 -->
+      <el-form-item :label="t('generate.rule.seqStart')">
+        <el-input-number :model-value="prefixUsed ? undefined : custom.seq_start ?? undefined" :min="1" :step="1" step-strictly
+          controls-position="right" :disabled="prefixUsed" class="w200"
+          @update:model-value="(v: any) => { custom.seq_start = v ?? null; schedule(); }" />
+      </el-form-item>
       <el-form-item :label="t('generate.rule.withLength')">
         <el-switch v-model="custom.with_length" @change="schedule" />
       </el-form-item>
@@ -97,10 +103,10 @@ const picked = ref<any>(null);
 const newPrefix = ref("");
 /** 前缀默认取 PI 第一张单据编码后 7 位（同一 PI 的各张单据共用，生成时后台查全局唯一）；取不到时用所选第一行的单据。 */
 const defaultPrefix = () => props.rulePrefix?.prefix || (props.lines[0]?.bill_no ?? "").slice(-7);
-/** 自定义规则默认：流水 4 位，不带米数、不带单位。 */
+/** 自定义规则默认：流水 4 位，不带米数、不带单位，不指定起始号（从 PI 最大号之后接着编）。 */
 const customDefault = (): CustomRule => ({
   prefix: defaultPrefix(), base: 10, seq_len: 4, with_length: false, length_pad: 0, sep_before: "", sep_after: "",
-  with_unit: false, suffix: "",
+  with_unit: false, suffix: "", seq_start: null,
 });
 const custom = reactive<CustomRule>(customDefault());
 const sample = reactive({ sn: "", error: "" });
@@ -113,6 +119,10 @@ const filtered = computed(() => {
   if (!k) return props.options;
   return props.options.filter((o) => `${o.rule_code} ${o.rule_name} ${o.category_value}`.toLowerCase().includes(k));
 });
+/** 本 PI 已用这个前缀（同格式沿用那一版、流水接续）：起始号不起作用，不能填。 */
+const prefixUsed = computed(() => !!props.rulePrefix?.custom && custom.prefix.trim() === props.rulePrefix.prefix);
+/** 提交 / 示例用的起始号 */
+const seqStart = () => (prefixUsed.value ? null : custom.seq_start || null);
 const anyGenerated = computed(() => props.lines.some((l) => l.generated_qty > 0));
 const anyLineRule = computed(() => props.lines.some((l) => l.rule?.source === "LINE"));
 const canSave = computed(() => {
@@ -130,7 +140,9 @@ function onOpen() {
   sample.sn = "";
   const cur = props.lines.length === 1 ? props.lines[0].rule : null;
   const base = props.rulePrefix?.custom ?? (cur?.mode === "CUSTOM" ? cur.custom : null);
-  Object.assign(custom, customDefault(), base ?? {}, { prefix: defaultPrefix() });
+  // 起始号只在沿用所选物料行现有的自定义规则时带出
+  const start = !props.rulePrefix?.custom && cur?.mode === "CUSTOM" ? cur.seq_start ?? null : null;
+  Object.assign(custom, customDefault(), base ?? {}, { prefix: defaultPrefix(), seq_start: start });
   mode.value = "CUSTOM";
   picked.value = cur?.rule_id ? props.options.find((o) => o.rule_id === cur.rule_id) ?? null : null;
   schedule();
@@ -153,7 +165,9 @@ async function previewCustom() {
   if (!custom.prefix.trim()) return;
   try {
     const l = props.lines[0];
-    const r = await api.previewRule({ ...custom, prefix: custom.prefix.trim(), length: l?.length || undefined, unit: l?.unit || undefined });
+    const r = await api.previewRule({
+      ...custom, prefix: custom.prefix.trim(), seq_start: seqStart() ?? undefined, length: l?.length || undefined, unit: l?.unit || undefined,
+    });
     sample.sn = r.samples?.[0]?.sn || "";
   } catch (e) {
     sample.error = e instanceof ApiError ? e.message : String(e);
@@ -183,6 +197,7 @@ async function save() {
     } else {
       body.custom = {
         ...custom, prefix: custom.prefix.trim(), suffix: custom.suffix.trim(), sep_before: custom.sep_before.trim(), sep_after: custom.sep_after.trim(),
+        seq_start: seqStart(),
       };
     }
     await api.selectLineRule(body);

@@ -118,6 +118,7 @@ class ErrorCode(Enum):
     RULE_LINE_REQUIRED = (400, "请选择物料行")
     RULE_GLOBAL_READONLY = (403, "全局规则只有系统管理员能修改、删除：{rule_code}")
     RULE_FACTORY_REQUIRED = (400, "请选择规则所属的生产组织")
+    RULE_SEQ_START_INVALID = (400, "起始号须为正整数，且不超过规则的最大流水 {max}")
     # ---------- 生成 ----------
     GEN_SCOPE_INVALID = (400, "生成范围须为同一张 PI 下的单据或物料行")
     GEN_NOT_GENERATABLE = (400, "所选范围不能生成：{detail}")

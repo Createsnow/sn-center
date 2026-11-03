@@ -41,6 +41,7 @@ M = {
 "generate.rule.prefix": ("前缀", "Prefix", "Tiền tố"),
 "generate.rule.base": ("进制", "Base", "Cơ số"),
 "generate.rule.seqLen": ("流水位数", "Serial digits", "Số chữ số tuần tự"),
+"generate.rule.seqStart": ("起始号", "Start number", "Số bắt đầu"),
 "generate.rule.withLength": ("带米数", "With length", "Kèm chiều dài"),
 "generate.rule.lengthPad": ("米数补 0 位数", "Length zero-padding", "Bù 0 cho chiều dài"),
 "generate.rule.sepBefore": ("米数前分隔符", "Separator before length", "Dấu phân cách trước chiều dài"),

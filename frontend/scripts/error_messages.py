@@ -90,6 +90,7 @@ E = {
 "RULE_LINE_REQUIRED": ("Please select material lines", "Vui lòng chọn dòng vật tư"),
 "RULE_GLOBAL_READONLY": ("Only the system administrator can modify or delete global rules: {rule_code}", "Chỉ quản trị hệ thống mới được sửa, xóa quy tắc dùng chung: {rule_code}"),
 "RULE_FACTORY_REQUIRED": ("Please choose the production org the rule belongs to", "Vui lòng chọn tổ chức sản xuất sở hữu quy tắc"),
+"RULE_SEQ_START_INVALID": ("Start number must be a positive integer not greater than the rule's max serial {max}", "Số bắt đầu phải là số nguyên dương và không vượt quá tuần tự tối đa {max} của quy tắc"),
 # ---------- 生成 ----------
 "GEN_SCOPE_INVALID": ("Generation scope must be bills or material lines under the same PI", "Phạm vi tạo phải là chứng từ hoặc dòng vật tư trong cùng một PI"),
 "GEN_NOT_GENERATABLE": ("The selected scope cannot be generated: {detail}", "Phạm vi đã chọn không thể tạo: {detail}"),

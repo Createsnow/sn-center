@@ -535,6 +535,7 @@
       "prefix": "Prefix",
       "base": "Base",
       "seqLen": "Serial digits",
+      "seqStart": "Start number",
       "withLength": "With length",
       "lengthPad": "Length zero-padding",
       "sepBefore": "Separator before length",

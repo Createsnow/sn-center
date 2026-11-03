@@ -37,6 +37,8 @@ class RulePreviewIn(RuleSpecIn):
     #: 示例米数（不填用 100）、示例单位（不填用 M）
     length: str | None = None
     unit: str | None = None
+    #: 示例从这个流水（十进制）起（生成页自定义规则的起始号）；不填从 1 起
+    seq_start: int | None = None
 
 
 class LineRef(In):
@@ -46,7 +48,7 @@ class LineRef(In):
 
 class CustomRuleIn(In):
     """自定义规则：前缀必填（生成页默认取单据号后 7 位）；进制默认 10，流水位数默认 4，
-    默认不带米数、不带单位，后缀选填。"""
+    默认不带米数、不带单位，后缀选填；起始号选填。"""
 
     prefix: str | None = None
     base: int | None = None
@@ -57,6 +59,9 @@ class CustomRuleIn(In):
     sep_after: str | None = ""
     with_unit: bool | None = False
     suffix: str | None = None
+    #: 起始号（十进制流水，选填）：首次用这条自定义规则生成、从 PI 最大号之后编号时，第一个号不小于它；
+    #: 不是格式的一部分（同格式不同起始号仍是同一条规则），本 PI 已用过这个前缀时流水接续、不起作用
+    seq_start: int | None = None
 
 
 class LineSelectIn(In):

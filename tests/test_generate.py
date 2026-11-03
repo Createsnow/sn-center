@@ -391,6 +391,58 @@ def test_custom_prefix_taken_before_run_reports_conflict(w, api):
     assert r.code == "RULE_PREFIX_CONFLICT"
 
 
+def test_custom_rule_seq_start(w, api, sql):
+    """自定义规则可手动指定起始号：首次生成从最大号之后编号时第一个号不小于它，跳过的流水成为空号段；
+    同格式没填起始号的物料行与它是同一条规则，排在其后接着编。"""
+    org, pi, bill = mk(w, ("M1", 3), ("M2", 2))
+    p = P()
+    c = m(prefix=p, base=10, seq_len=4, with_length=False)
+    ok(w.select(pi, [(bill, 1)], custom={**c, "seq_start": 101}))
+    ok(w.select(pi, [(bill, 2)], custom=c))
+    ctx = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))
+    rule1 = next(x for b in ctx["bills"] for x in b["lines"] if x["seq"] == 1)["rule"]
+    assert rule1["seq_start"] == 101 and rule1["first_sn"] == f"{p}0101"
+    w.generate(pi)
+    sns = [r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
+    assert sns == [f"{p}{i:04d}" for i in range(101, 106)]
+    # 起始号不同仍是同一条规则
+    assert sql.count("SELECT COUNT(*) FROM sn_rule WHERE rule_code LIKE %s", f"PI-{pi}-%") == 1
+    rid = sql.scalar("SELECT id FROM sn_rule WHERE rule_code = %s", f"PI-{pi}-1")
+    rows = sql.all("SELECT rule_id, custom_json FROM sn_line_rule WHERE bill_no = %s ORDER BY seq", bill)
+    assert [(r["rule_id"], r["custom_json"]) for r in rows] == [(rid, None), (rid, None)]
+    g = ok(api.get(f"/api/generate/gaps?pi={pi}", w.admin))
+    assert (g["next_seq"], g["total"], g["segments"][0]["start_seq"], g["segments"][0]["end_seq"]) == (106, 100, 1, 100)
+
+
+def test_custom_rule_seq_start_validation_and_sample(w, api):
+    """起始号须为 1..规则最大流水；示例号从起始号起。"""
+    org, pi, bill = mk(w, ("M1", 1))
+    c = m(prefix=P(), base=10, seq_len=2, with_length=False)
+    assert w.select(pi, [(bill, 1)], custom={**c, "seq_start": 100}).code == "RULE_SEQ_START_INVALID"
+    assert w.select(pi, [(bill, 1)], custom={**c, "seq_start": 0}).code == "RULE_SEQ_START_INVALID"
+    r = ok(api.post("/api/rules/preview", {**c, "seq_start": 7}, w.admin))
+    assert [x["seq_dec"] for x in r["samples"]] == [7, 8, 9, 10, 11, 99]
+    assert api.post("/api/rules/preview", {**c, "seq_start": 100}, w.admin).code == "RULE_SEQ_START_INVALID"
+    r = ok(api.post("/api/rules/preview", c, w.admin))
+    assert [x["seq_dec"] for x in r["samples"]] == [1, 2, 3, 4, 5, 99], "不填起始号照旧从 1 起"
+
+
+def test_custom_rule_seq_start_with_range_and_used_prefix(w, sql):
+    """手动起止号时范围内的空闲流水先用，溢出部分才按起始号；本 PI 已用过这个前缀时流水接续，起始号不起作用。"""
+    org, pi, bill = mk(w, ("M1", 4), ("M2", 2))
+    p = P()
+    c = m(prefix=p, base=10, seq_len=4, with_length=False)
+    ok(w.select(pi, [(bill, 1)], custom={**c, "seq_start": 50}))
+    w.generate(pi, lines=[(bill, 1)], seq=(1, 2))
+    seqs = [r["seq_dec"] for r in sql.all("SELECT seq_dec FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
+    assert seqs == [1, 2, 50, 51]
+    ok(w.select(pi, [(bill, 2)], custom={**c, "seq_start": 500}))
+    assert sql.scalar("SELECT custom_json FROM sn_line_rule WHERE bill_no = %s AND seq = 2", bill) is None
+    w.generate(pi, lines=[(bill, 2)])
+    seqs = [r["seq_dec"] for r in sql.all("SELECT seq_dec FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
+    assert seqs == [1, 2, 50, 51, 52, 53]
+
+
 def test_rules_bound_by_pi_only(w, api):
     """规则只按 PI 维度绑定：没有按客户绑定；物料行没选、PI 也没绑时须先选规则，同一客户的别的 PI 不受影响。"""
     cust = uid("CU")

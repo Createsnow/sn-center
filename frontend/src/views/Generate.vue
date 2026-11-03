@@ -260,7 +260,7 @@
             {{ pickedRows.length ? t("generate.scopeSelHint") : t("generate.scopePiHint", { n: defaultBills.length }) }}
           </span>
           <span class="vsep" />
-          <SeqSource v-model="seq" :gaps="ctx.gaps" />
+          <SeqSource v-model="seq" :gaps="ctx.gaps" :first="gen.preview?.generatable ? gen.preview.start_seq : null" />
           <el-button type="primary" :loading="gen.loading" :disabled="!canGen" @click="genDlg = true">
             {{ t("generate.genBtn", { n: num(gen.preview?.generatable ? gen.preview.qty : 0) }) }}
           </el-button>

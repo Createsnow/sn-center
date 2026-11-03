@@ -85,6 +85,7 @@
   "RULE_LINE_REQUIRED": "Please select material lines",
   "RULE_GLOBAL_READONLY": "Only the system administrator can modify or delete global rules: {rule_code}",
   "RULE_FACTORY_REQUIRED": "Please choose the production org the rule belongs to",
+  "RULE_SEQ_START_INVALID": "Start number must be a positive integer not greater than the rule's max serial {max}",
   "GEN_SCOPE_INVALID": "Generation scope must be bills or material lines under the same PI",
   "GEN_NOT_GENERATABLE": "The selected scope cannot be generated: {detail}",
   "GEN_PI_QUOTA_EMPTY": "The selected scope has no quota left to generate",

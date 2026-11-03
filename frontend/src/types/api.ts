@@ -81,6 +81,8 @@ export interface LineRule {
   version: number;
   other_pi: string | null;
   custom: CustomRule | null;
+  /** 自定义规则（还没生成过）的起始号（十进制流水），没填为 null */
+  seq_start?: number | null;
   format: string;
   first_sn: string | null;
   max_seq: number;
@@ -106,6 +108,8 @@ export interface CustomRule {
   sep_after: string;
   with_unit: boolean;
   suffix: string;
+  /** 起始号（十进制流水，选填）：首次用这条自定义规则从最大号之后编号时，第一个号不小于它 */
+  seq_start?: number | null;
 }
 
 export interface BillState {

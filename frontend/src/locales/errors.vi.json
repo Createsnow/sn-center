@@ -85,6 +85,7 @@
   "RULE_LINE_REQUIRED": "Vui lòng chọn dòng vật tư",
   "RULE_GLOBAL_READONLY": "Chỉ quản trị hệ thống mới được sửa, xóa quy tắc dùng chung: {rule_code}",
   "RULE_FACTORY_REQUIRED": "Vui lòng chọn tổ chức sản xuất sở hữu quy tắc",
+  "RULE_SEQ_START_INVALID": "Số bắt đầu phải là số nguyên dương và không vượt quá tuần tự tối đa {max} của quy tắc",
   "GEN_SCOPE_INVALID": "Phạm vi tạo phải là chứng từ hoặc dòng vật tư trong cùng một PI",
   "GEN_NOT_GENERATABLE": "Phạm vi đã chọn không thể tạo: {detail}",
   "GEN_PI_QUOTA_EMPTY": "Phạm vi đã chọn không còn hạn mức để tạo",

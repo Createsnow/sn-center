@@ -85,6 +85,7 @@
   "RULE_LINE_REQUIRED": "请选择物料行",
   "RULE_GLOBAL_READONLY": "全局规则只有系统管理员能修改、删除：{rule_code}",
   "RULE_FACTORY_REQUIRED": "请选择规则所属的生产组织",
+  "RULE_SEQ_START_INVALID": "起始号须为正整数，且不超过规则的最大流水 {max}",
   "GEN_SCOPE_INVALID": "生成范围须为同一张 PI 下的单据或物料行",
   "GEN_NOT_GENERATABLE": "所选范围不能生成：{detail}",
   "GEN_PI_QUOTA_EMPTY": "所选范围没有可生成额度",

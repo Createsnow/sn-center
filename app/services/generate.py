@@ -8,7 +8,11 @@
 - MAX 从 PI 最大流水号 + 1 起往后编（默认）；
 - RANGE 用户手动填起止流水号（十进制），在空号段（删号腾出的流水）或未使用的号（最大号之后）中取：范围内空闲的
   流水按从小到大使用，用够为止；不够时其余从 max(最大号, 止号) + 1 起接着编（溢出）。
-一个物料行可能分到几段不连续的号（plan item 的 segs）。PI 最大流水号只增不减（删号不退回），所以空号段只来自删号。
+一个物料行可能分到几段不连续的号（plan item 的 segs）。PI 最大流水号只增不减（删号不退回），所以空号段来自删号，
+以及跳过的流水（RANGE 起号在最大号之后、自定义规则的起始号）。
+
+自定义规则可带起始号（还没生成过、即首次用这条自定义规则时）：该物料行从「最大号之后」编号时第一个号不小于起始号
+（起始号不大于下一个号时不起作用）；RANGE 时手动起止号内的空闲流水照常先用，溢出部分才按起始号。
 
 必须先预演（只给出起止号、各物料行数量和号段，不落库），
 预演只对发起人有效、默认 30 分钟、只能生成一次；范围、条件或流水来源改变、所选规则版本被别的 PI 先用、
@@ -385,7 +389,8 @@ class _Taker:
         self.in_range = 0
         self.over = 0
 
-    def take(self, n: int) -> list[list[int]]:
+    def take(self, n: int, floor: int | None = None) -> list[list[int]]:
+        """切 n 个号。floor：从 overflow 接着编时第一个号不小于它（自定义规则的起始号），跳过的流水成为空号段。"""
         out: list[list[int]] = []
         while n > 0:
             if self.i < len(self.free):
@@ -399,7 +404,7 @@ class _Taker:
                 else:
                     self.pos = b + 1
             else:
-                a = self.overflow
+                a = max(self.overflow, floor or 0)
                 b = a + n - 1
                 self.over += n
                 self.overflow = b + 1
@@ -604,7 +609,8 @@ def _plan(pi: str, scope: str, keys: list[tuple[str, int]], base: int, seq: dict
     for x in todo:
         n = x.quota
         spec = x.res.spec()
-        segs = taker.take(n)
+        # 自定义规则（首次生成）的起始号
+        segs = taker.take(n, x.res.seq_start if x.res.plan == rules.PLAN_NEW else None)
         end = segs[-1][1]
         mx = codec.max_seq(spec)
         if end > mx:

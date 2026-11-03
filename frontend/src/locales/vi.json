@@ -535,6 +535,7 @@
       "prefix": "Tiền tố",
       "base": "Cơ số",
       "seqLen": "Số chữ số tuần tự",
+      "seqStart": "Số bắt đầu",
       "withLength": "Kèm chiều dài",
       "lengthPad": "Bù 0 cho chiều dài",
       "sepBefore": "Dấu phân cách trước chiều dài",

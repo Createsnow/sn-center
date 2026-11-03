@@ -47,7 +47,8 @@
 </template>
 
 <script setup lang="ts">
-/** 生成的流水来源。gaps：本 PI 的空闲号段（生成详情 / 预演返回，带来源单据）；modelValue：{ mode, start, end }。
+/** 生成的流水来源。gaps：本 PI 的空闲号段（生成详情 / 预演返回，带来源单据）；modelValue：{ mode, start, end }；
+ *  first：自动预演算出的第一个号（自定义规则指定了起始号时可能大于 PI 下一个号），没有时按 PI 下一个号。
  *  空闲号段列表（或单据号段弹窗）里点「用这段」填入起止号并切到指定起止号。 */
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
@@ -55,12 +56,12 @@ import { num } from "./format";
 
 export type SeqValue = { mode: "MAX" | "RANGE"; start: number | null; end: number | null };
 
-const props = defineProps<{ modelValue: SeqValue; gaps: any }>();
+const props = defineProps<{ modelValue: SeqValue; gaps: any; first?: number | null }>();
 const emit = defineEmits<{ "update:modelValue": [v: SeqValue] }>();
 const { t } = useI18n();
 const open = ref(false);
 
-const nextSeq = computed(() => props.gaps?.next_seq ?? 1);
+const nextSeq = computed(() => (props.modelValue.mode === "MAX" && props.first) || props.gaps?.next_seq || 1);
 const label = computed(() => {
   const v = props.modelValue;
   if (v.mode === "MAX") return t("generate.seqBtnMax", { n: nextSeq.value });

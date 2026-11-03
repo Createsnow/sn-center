@@ -292,13 +292,15 @@ SAMPLE_LENGTH = "100"
 SAMPLE_UNIT = "M"
 
 
-def preview(s: SpecIn, length: str | None = None, unit: str | None = None) -> dict:
-    """编辑时的示例号：前 5 个和最大号（米数、单位用示例值）、最大流水。"""
+def preview(s: SpecIn, length: str | None = None, unit: str | None = None, seq_start: int | None = None) -> dict:
+    """编辑时的示例号：前 5 个和最大号（米数、单位用示例值）、最大流水。seq_start：从这个流水起（自定义规则的起始号），
+    不填从 1 起。"""
     spec = normalize(s)
     sample_len = codec.clean_length(length) or SAMPLE_LENGTH
     sample_unit = util.trim(unit) or SAMPLE_UNIT
     mx = codec.max_seq(spec)
-    seqs = list(range(1, min(5, mx) + 1)) + ([mx] if mx > 5 else [])
+    first = check_seq_start(seq_start, spec) or 1
+    seqs = list(range(first, min(first + 4, mx) + 1)) + ([mx] if mx > first + 4 else [])
     samples = [
         {"seq_dec": i, "seq_text": codec.encode_seq(i, spec), "sn": codec.format_sn(i, spec, sample_len, sample_unit)}
         for i in seqs
@@ -713,6 +715,8 @@ class Resolved:
     custom: dict | None = None
     #: plan = PREFIX：当前版本已归属的 PI
     other_pi: str | None = None
+    #: 自定义规则的起始号（十进制流水，plan = NEW 时才有）：从 PI 最大号之后编号时第一个号不小于它；不参与 key
+    seq_start: int | None = None
 
     @property
     def ready(self) -> bool:
@@ -767,8 +771,19 @@ def _custom_spec(c: dict) -> codec.Spec:
     )
 
 
+def check_seq_start(seq_start: int | None, spec: codec.Spec) -> int | None:
+    """自定义规则的起始号：不填为 None；须为 1..规则最大流水。"""
+    if seq_start is None:
+        return None
+    mx = codec.max_seq(spec)
+    if not 1 <= seq_start <= mx:
+        raise biz(ErrorCode.RULE_SEQ_START_INVALID, max=mx)
+    return int(seq_start)
+
+
 def _custom_resolved(source: str, c: dict) -> Resolved:
     spec = _custom_spec(c)
+    start = check_seq_start(c.get("seq_start"), spec)
     draft = {
         "id": None,
         "rule_id": None,
@@ -787,7 +802,20 @@ def _custom_resolved(source: str, c: dict) -> Resolved:
         "claimed_pi": None,
         "derived_from": None,
     }
-    return Resolved(source, MODE_CUSTOM, PLAN_NEW, None, draft, custom=_custom_dict(spec))
+    return Resolved(source, MODE_CUSTOM, PLAN_NEW, None, draft, custom=_custom_dict(spec), seq_start=start)
+
+
+def _custom_json(res: Resolved) -> str:
+    """物料行选定的自定义规则存入 sn_line_rule.custom_json：格式参数，有起始号时另带 seq_start。"""
+    c = res.custom if res.seq_start is None else {**res.custom, "seq_start": res.seq_start}
+    return json.dumps(c, ensure_ascii=False, sort_keys=True)
+
+
+def _same_custom(custom_json: str, custom: dict) -> bool:
+    """物料行存的自定义规则与 custom 格式相同（不看起始号）。"""
+    c = json.loads(custom_json)
+    c.pop("seq_start", None)
+    return c == custom
 
 
 def _custom_dict(spec: codec.Spec) -> dict:
@@ -867,6 +895,7 @@ def info(res: Resolved | None, length: str | None = None, start_seq: int = 1, un
         "version": None if res.version is None else res.version["version"],
         "other_pi": res.other_pi,
         "custom": res.custom,
+        "seq_start": res.seq_start,
         "format": None,
         "first_sn": None,
         "max_seq": None,
@@ -884,6 +913,9 @@ def info(res: Resolved | None, length: str | None = None, start_seq: int = 1, un
         out["with_unit"] = s.with_unit
         out["suffix"] = s.suffix
         out["max_seq"] = codec.max_seq(s)
+        if res.seq_start is not None:
+            # 自定义规则的起始号：从最大号之后编号时第一个号不小于它
+            start_seq = max(start_seq, res.seq_start)
         if (length is not None or not s.with_length) and 0 < start_seq <= out["max_seq"]:
             out["first_sn"] = codec.format_sn(start_seq, s, length, unit)
     elif res.rule is not None:
@@ -986,8 +1018,10 @@ def select_for_lines(
             label = f"{own.rule['rule_code']} v{own.version['version']}"
         elif custom is not None:
             check_prefix(res.version["prefix"], spec=res.spec(), pi=pi)
-            rid, cj = None, json.dumps(res.custom, ensure_ascii=False, sort_keys=True)
-            label = f"custom {format_text(res.spec())}"
+            rid, cj = None, _custom_json(res)
+            label = f"custom {format_text(res.spec())}" + (
+                "" if res.seq_start is None else f" start={codec.encode_seq(res.seq_start, res.spec())}"
+            )
         else:
             rule = get_rule(rule_id)
             check_visible(cu, rule)
@@ -1154,15 +1188,18 @@ def realize(cu: CurrentUser, pi: str, res: Resolved, lines: list[tuple[str, int]
 
         # 物料行改记为这条规则：本次生成的行，以及本 PI 选了同一自定义规则、这次没生成的行（可能在别的组织；
         # 之后接着用这一版，不再按自定义新建——前缀已被这一版占用）
-        cj = json.dumps(res.custom, ensure_ascii=False, sort_keys=True)
+        # 格式相同即同一条规则，起始号不同也算（起始号只管首次生成，之后流水接续）
         same = list(
             dict.fromkeys(
                 [*lines]
                 + [
                     (r["bill_no"], r["seq"])
                     for r in db.all(
-                        "SELECT bill_no, seq FROM sn_line_rule WHERE pi_no = %s AND custom_json = %s", pi, cj
+                        "SELECT bill_no, seq, custom_json FROM sn_line_rule WHERE pi_no = %s "
+                        "AND custom_json IS NOT NULL",
+                        pi,
                     )
+                    if _same_custom(r["custom_json"], res.custom)
                 ]
             )
         )
