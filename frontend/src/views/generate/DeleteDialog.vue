@@ -1,6 +1,10 @@
 <template>
   <el-dialog v-model="visible" :title="t('generate.deleteTitle')" width="min(560px, 96vw)">
-    <!-- 按 SN 删：填起止号（只填起号 = 单枚），查出要删的号再确认；按物料行 / 单据删：打开即列出 -->
+    <!-- 按所选物料行删（打开即列出）或按 SN 起止号删（填起止号，只填起号 = 单枚，查出后再确认）；有所选行时可切换 -->
+    <el-radio-group v-if="lines.length" :model-value="mode" class="modes" @update:model-value="(v: any) => switchMode(v)">
+      <el-radio-button value="LINES">{{ t("generate.deleteByLines", { n: lines.length }) }}</el-radio-button>
+      <el-radio-button value="SN">{{ t("generate.deleteBySn") }}</el-radio-button>
+    </el-radio-group>
     <div v-if="mode === 'SN'" class="sn-row">
       <el-input v-model="startSn" :placeholder="t('generate.deleteStartSn')" clearable class="sn-mono" @change="reset" />
       <span class="muted">~</span>
@@ -77,9 +81,16 @@ async function load() {
   }
 }
 
+function switchMode(m: "LINES" | "SN") {
+  mode.value = m;
+  info.value = null;
+  if (m === "LINES") load();
+}
+
+/** lines 为空或给了 sn 时按 SN 起止号删；否则按所选物料行删（可切到按 SN 起止号）。 */
 function open(opts: { lines?: LineRef[]; sn?: boolean }) {
-  mode.value = opts.sn ? "SN" : "LINES";
   lines.value = (opts.lines || []).map((x) => ({ bill_no: x.bill_no, seq: x.seq }));
+  mode.value = opts.sn || !lines.value.length ? "SN" : "LINES";
   startSn.value = "";
   endSn.value = "";
   reason.value = "";
@@ -104,6 +115,7 @@ defineExpose({ open });
 </script>
 
 <style scoped>
+.modes { margin-bottom: 12px; }
 .sn-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .info { display: flex; flex-direction: column; gap: 8px; }
 .info p { margin: 0; }

@@ -22,12 +22,8 @@
         <el-input-number :model-value="modelValue.end ?? undefined" size="small" :min="1" :step="1" step-strictly controls-position="right"
           :placeholder="t('generate.seqEnd')" class="no" @update:model-value="(v: any) => set({ mode: 'RANGE', end: v ?? null })" />
       </div>
-      <p class="muted hint">{{ t("generate.seqRangeHint") }}</p>
       <template v-if="gaps">
-        <div class="free-h">
-          <b>{{ t("generate.freeSegs") }}</b>
-          <span class="muted">{{ t("generate.freeHead", { n: num(gaps.count), qty: num(gaps.total), last: gaps.last_seq }) }}</span>
-        </div>
+        <b class="free-h">{{ t("generate.freeSegs") }}</b>
         <el-table v-if="gaps.count" :data="gaps.segments" size="small" max-height="220">
           <el-table-column :label="t('generate.srcBill')" min-width="110">
             <template #default="{ row }">{{ row.bill_no || "—" }}</template>
@@ -90,8 +86,6 @@ function use(row: { start_seq: number; end_seq: number }) {
 .modes :deep(.el-radio) { margin-right: 0; height: 26px; }
 .range { display: flex; align-items: center; gap: 6px; padding-left: 22px; }
 .no { width: 130px; }
-.hint { margin: 0 0 4px 22px; font-size: 12px; }
-.free-h { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-.free-h .muted { font-size: 12px; }
+.free-h { margin-top: 6px; }
 p { margin: 0; }
 </style>

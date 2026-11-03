@@ -50,7 +50,6 @@
           </el-table-column>
         </el-table>
         <p v-if="data?.use_truncated" class="muted">{{ t("generate.gapsTruncated", { n: data.use.length }) }}</p>
-        <p class="muted note">{{ t("generate.segUseNote", { last: data?.last_seq ?? 0 }) }}</p>
       </template>
 
       <template v-else>
@@ -70,7 +69,6 @@
           </el-table-column>
         </el-table>
         <p v-if="freeTruncated" class="muted">{{ t("generate.gapsTruncated", { n: freeRows.length }) }}</p>
-        <p class="muted note">{{ t("generate.segFreeNote") }}</p>
       </template>
     </div>
 
@@ -166,7 +164,6 @@ defineExpose({ open });
 .segs { display: flex; flex-direction: column; gap: 8px; min-height: 120px; }
 .segs :deep(.el-tabs__header) { margin-bottom: 4px; }
 .tags { display: inline-flex; gap: 4px; flex-wrap: wrap; }
-.note { margin: 0; font-size: 12px; }
 p { margin: 0; }
 .pager { margin-top: 10px; justify-content: flex-end; }
 .sn-mono { font-family: var(--app-mono, monospace); }

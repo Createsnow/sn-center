@@ -228,7 +228,7 @@
       </div>
 
       <!-- 底部操作栏（三个页签相同）：左侧对勾选的行操作 —— 已选信息（清空）、选规则、更多（撤销配置 / 删号 /
-           按 SN 起止号删号，菜单项后写出作用的行数、枚数，没有可作用的行时置灰）；右侧生成 —— 生成范围、
+           删号，菜单项后写出作用的行数、枚数；撤销配置没有可作用的行时置灰，删号没有勾选时按 SN 起止号）；右侧生成 —— 生成范围、
            流水来源（弹层：从最大号之后 / 指定起止号、空闲号段）、生成 N 枚（唯一主按钮） -->
       <template #footer>
         <div v-if="ctx" class="bar">
@@ -247,11 +247,9 @@
                 <el-dropdown-item command="config" :disabled="!configRows.length">
                   <span class="mi">{{ t("generate.revokeConfig") }}<span class="k">{{ t("generate.nLines", { n: configRows.length }) }}</span></span>
                 </el-dropdown-item>
-                <el-dropdown-item command="delete" :disabled="!deleteRows.length || !!running" :class="{ danger: deleteRows.length && !running }">
-                  <span class="mi">{{ t("generate.deleteLines") }}<span class="k">{{ t("generate.nLinesQty", { n: deleteRows.length, qty: num(deleteQty) }) }}</span></span>
-                </el-dropdown-item>
-                <el-dropdown-item command="deleteSn" divided :disabled="!!running">
-                  <span class="mi">{{ t("generate.deleteBySnMenu") }}<span class="k">{{ t("generate.noSelNeeded") }}</span></span>
+                <!-- 删号：有勾选的已出号行时按所选行删（弹窗里可改为按 SN 起止号），没有时直接按 SN 起止号 -->
+                <el-dropdown-item command="delete" :disabled="!!running" :class="{ danger: !running }">
+                  <span class="mi">{{ t("generate.deleteMenu") }}<span v-if="deleteRows.length" class="k">{{ t("generate.nLinesQty", { n: deleteRows.length, qty: num(deleteQty) }) }}</span></span>
                 </el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -745,8 +743,7 @@ const pickedBills = computed(() => new Set(pickedRows.value.map((l) => l.bill_no
 /** 底部「更多」菜单。 */
 function onMore(cmd: string) {
   if (cmd === "config") revokeConfig(configRows.value);
-  else if (cmd === "delete") openDelete(deleteRows.value);
-  else if (cmd === "deleteSn") deleteDlg.value?.open({ sn: true });
+  else if (cmd === "delete") deleteDlg.value?.open({ lines: deleteRows.value });
 }
 const deleteDlg = ref<InstanceType<typeof DeleteDialog> | null>(null);
 
