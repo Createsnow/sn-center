@@ -174,6 +174,26 @@ def test_sn_list_hides_delivery_info(w, api):
     assert ok(api.get(f"/api/sn?pi={pi}&status={st}", w.admin))["total"] == 3
 
 
+def test_sn_list_pending_shows_bill_org(w, api):
+    """待分配的号上还没有生产组织：SN 明细、导出列所在单据的组织；组织筛选、普通操作员的可看范围按同一口径。"""
+    a, pi, bill = make(w, 2)
+    other = w.org(uid("O")[:10])
+    r = ok(api.get(f"/api/sn?pi={pi}", w.admin))
+    assert r["total"] == 2
+    assert {(x["status"], x["factory_code"]) for x in r["items"]} == {("PENDING_ALLOC", a)}
+    assert ok(api.get(f"/api/sn?pi={pi}&factory_code={a}", w.admin))["total"] == 2
+    assert ok(api.get(f"/api/sn?pi={pi}&factory_code={other}", w.admin))["total"] == 0
+    op = w.user(emp("F"), "operator", a)
+    assert ok(api.get(f"/api/sn?pi={pi}", op))["total"] == 2
+    op2 = w.user(emp("F"), "operator", other)
+    assert ok(api.get(f"/api/sn?pi={pi}", op2))["total"] == 0
+    rows = xlsx_rows(api.client.get(f"/api/sn/export?pi={pi}", headers={"Authorization": f"Bearer {w.admin}"}).content)
+    org_col = sn_sheet.HEADERS.index("组织编号")
+    assert [x[org_col] for x in rows[1:]] == [a, a]
+    w.allocate(pi)
+    assert {x["factory_code"] for x in ok(api.get(f"/api/sn?pi={pi}", w.admin))["items"]} == {a}
+
+
 def test_times_are_utc_iso(w, api):
     a, pi, bill = make(w, 1)
     item = ok(api.get(f"/api/sn?pi={pi}", w.admin))["items"][0]

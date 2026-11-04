@@ -1,7 +1,8 @@
 """SN 查询导出的列（导出时刻的当前值）。SN 分配页「已分配」页签的下载另有列，见 sn_export.FILE_HEADERS，
 只复用这里的 FROM / COLS 取数。
 
-生产组织列出组织编号与中文名称（金蝶组织机构的简体中文名，见 factories）；物料编码后紧跟附件项次、米数
+生产组织列出组织编号与中文名称（金蝶组织机构的简体中文名，见 factories；
+SN 查询导出中待分配的号取所在单据的组织）；物料编码后紧跟附件项次、米数
 （附件项次、米数都是生成时写到号上的值；规则不带米数时米数为空）。
 """
 
@@ -47,12 +48,22 @@ KEYS = (
     "delivery_mode",
     "delivery_batch_no",
 )
-#: 号池 i 关联生产组织 f（取中文名称）
+_COLS = (
+    "i.id, i.sn, i.rule_version_id, i.seq_dec, i.seq_pi_no, {org} factory_code, {name} factory_name, "
+    "i.customer_code, i.pi_no, i.bill_no, i.bill_seq, i.material_code, i.attach_no, i.length_text, i.status, "
+    "i.delivery_mode, i.delivery_batch_no"
+)
+#: 号池 i 关联生产组织 f（取中文名称）；生产组织取号上的（分配后才有）
 FROM = "sn_item i LEFT JOIN sn_factory f ON f.factory_code = i.factory_code"
-COLS = (
-    "i.id, i.sn, i.rule_version_id, i.seq_dec, i.seq_pi_no, i.factory_code, f.factory_name, i.customer_code, "
-    "i.pi_no, i.bill_no, i.bill_seq, i.material_code, i.attach_no, i.length_text, i.status, i.delivery_mode, "
-    "i.delivery_batch_no"
+COLS = _COLS.format(org="i.factory_code", name="f.factory_name")
+#: SN 查询导出：待分配的号还没有生产组织（号上为空），取所在单据的组织（已出号单据台账 bl，
+#: 与可看范围 factories.item_scope_sql 同口径）；已分配的号仍取号上的组织
+QUERY_FROM = (
+    "sn_item i LEFT JOIN sn_bill_ledger bl ON i.factory_code IS NULL AND bl.bill_no = i.bill_no "
+    "LEFT JOIN sn_factory f ON f.factory_code = COALESCE(i.factory_code, bl.org_code)"
+)
+QUERY_COLS = _COLS.format(
+    org="COALESCE(i.factory_code, NULLIF(bl.org_code, ''))", name="COALESCE(f.factory_name, NULLIF(bl.org_name, ''))"
 )
 
 

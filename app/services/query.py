@@ -4,6 +4,8 @@ SN 明细：按生产组织、客户、PI、单据编号、物料、米数、状
 （须填 PI；起止可填流水号或完整 SN，两端都含；只查本 PI 自己生成的流水；附小计）。
 页面只列号本身的信息（流水、PI、单据、物料、米数、客户、生产组织、状态、生成 / 分配时间），
 不列交付方式、交付批次、推送类型等交付业务信息（交付批次在「交付批次」页签看；导出列同 SN 导出，不变）。
+生产组织：已分配的号取号上的组织；待分配的号还没有（号上为空），取所在单据的组织（已出号单据台账），
+列表、导出、组织筛选与可看范围都按这一口径（同 factories.item_scope_sql）。
 列表总数超过 10 万时只统计到 10 万并注明；导出默认最多 100 万行，超过只导出前 100 万行并提示。
 """
 
@@ -53,9 +55,6 @@ class Scope:
 
     factories: tuple[str, ...] | None
     all_factories_of_pi: bool
-
-    def sql(self, col: str = "i.factory_code") -> tuple[str, list]:
-        return factories.scope_sql(self.factories, col)
 
 
 def read_scope(cu: CurrentUser, factory: str | None, pi: str | None, pi_all: bool) -> Scope:
@@ -116,7 +115,8 @@ def _where(cu: CurrentUser, f: Filter) -> tuple[str, list, tuple | None]:
     if sc.all_factories_of_pi:
         sql += " AND i.factory_code IS NOT NULL"
     else:
-        fsql, fargs = sc.sql()
+        # 已分配的按号上的组织，待分配的（号上组织为空）按所在单据的组织
+        fsql, fargs = factories.item_scope_sql(sc.factories, "i.")
         sql += fsql
         args += fargs
     for col, v in (
@@ -151,22 +151,32 @@ def _where(cu: CurrentUser, f: Filter) -> tuple[str, list, tuple | None]:
     return sql, args, rg
 
 
-def _bill_pis(bills: list[str]) -> dict[str, str]:
-    """单据当前的 PI（快照，离开快照的取台账）：与号上 PI 不同的标「已改 PI」。"""
+@dataclass(frozen=True)
+class BillInfo:
+    #: 单据当前的 PI（快照，离开快照的取台账）：与号上 PI 不同的标「已改 PI」
+    pi: dict[str, str]
+    #: 单据的生产组织（已出号单据台账）：待分配的号（号上组织为空）列这个组织
+    org: dict[str, str]
+
+
+def _bill_info(bills: list[str]) -> BillInfo:
     if not bills:
-        return {}
+        return BillInfo({}, {})
     ub = sorted(set(bills))
-    out = {
-        r["bill_no"]: r["pi"]
-        for r in db.all(f"SELECT bill_no, pi FROM sn_bill_ledger WHERE bill_no IN ({marks(len(ub))})", *ub)
-    }
+    pis: dict[str, str] = {}
+    orgs: dict[str, str] = {}
+    for r in db.all(f"SELECT bill_no, pi, org_code FROM sn_bill_ledger WHERE bill_no IN ({marks(len(ub))})", *ub):
+        pis[r["bill_no"]] = r["pi"]
+        if r["org_code"]:
+            orgs[r["bill_no"]] = r["org_code"]
     for r in db.all(f"SELECT DISTINCT bill_no, pi FROM sn_prd_mo WHERE bill_no IN ({marks(len(ub))})", *ub):
-        out[r["bill_no"]] = r["pi"]
-    return out
+        pis[r["bill_no"]] = r["pi"]
+    return BillInfo(pis, orgs)
 
 
-def view(r: dict, bill_pi: dict[str, str]) -> dict:
-    """列表一行；流水位数、进制、产品单位取号所用规则版本（产品单位从 SN 中截出，规则不带单位时为空）。"""
+def view(r: dict, bills: BillInfo) -> dict:
+    """列表一行；流水位数、进制、产品单位取号所用规则版本（产品单位从 SN 中截出，规则不带单位时为空）。
+    生产组织：已分配的取号上的，待分配的取所在单据的组织。"""
     s = rules.cached_spec(r["rule_version_id"])
     return {
         "id": r["id"],
@@ -184,10 +194,10 @@ def view(r: dict, bill_pi: dict[str, str]) -> dict:
         "attach_no": r["attach_no"],
         "length": r["length_text"],
         "customer_code": r["customer_code"],
-        "factory_code": r["factory_code"],
+        "factory_code": r["factory_code"] or bills.org.get(r["bill_no"]),
         "status": r["status"],
         "suspend": r["suspend"],
-        "pi_changed": bill_pi.get(r["bill_no"], r["pi_no"]) != r["pi_no"],
+        "pi_changed": bills.pi.get(r["bill_no"], r["pi_no"]) != r["pi_no"],
         "transferred_in": util.transferred_in(r["seq_pi_no"], r["pi_no"]),
         "created_at": util.fmt(r["created_at"]),
     }
@@ -216,8 +226,8 @@ def list_items(cu: CurrentUser, f: Filter, page: util.Page) -> dict:
     else:
         order = " ORDER BY i.id DESC"
     rows = db.all(f"SELECT {COLS} FROM sn_item i{sql}{order} LIMIT %s, %s", *args, page.offset, page.size)
-    bp = _bill_pis([r["bill_no"] for r in rows])
-    out = util.page_capped([view(r, bp) for r in rows], total, page, COUNT_CAP)
+    bi = _bill_info([r["bill_no"] for r in rows])
+    out = util.page_capped([view(r, bi) for r in rows], total, page, COUNT_CAP)
     if rg is not None:
         out["range"] = _range_summary(sql, args, rg)
     return out
@@ -242,7 +252,7 @@ def _export_rows(cu: CurrentUser, f: Filter) -> Iterator[list]:
     no = 0
     while no < limit:
         page = db.all(
-            f"SELECT {sn_sheet.COLS} FROM {sn_sheet.FROM}{sql} AND i.id > %s ORDER BY i.id LIMIT %s",
+            f"SELECT {sn_sheet.QUERY_COLS} FROM {sn_sheet.QUERY_FROM}{sql} AND i.id > %s ORDER BY i.id LIMIT %s",
             *args,
             last_id,
             min(5000, limit - no),
