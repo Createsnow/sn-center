@@ -1,7 +1,7 @@
 <template>
-  <!-- 单据号段：已用号段（本单据现有的号按流水连续合并，转入的号单独成段）/ 空闲号段（本单据删号腾出）；
-       不给单据时只列整张 PI 的空闲号段（多一列来源单据）。已用号段可看 SN 明细（只有一列 SN）；空闲号段可「用这段」 -->
-  <el-dialog v-model="visible" :title="title" width="min(780px, 96vw)">
+  <!-- 单据号段：已用号段（本单据现有的号按物料行分开列出起止号，行内按流水连续合并，转入的号单独成段）/ 空闲号段（本单据删号腾出）；
+       不给单据时只列整张 PI 的空闲号段（多一列来源单据）。已用号段可看 SN 明细（只有一列 SN，只看该物料行该段）；空闲号段可「用这段」 -->
+  <el-dialog v-model="visible" :title="title" :width="bill && tab === 'use' ? 'min(1000px, 96vw)' : 'min(780px, 96vw)'">
     <div v-loading="loading" class="segs">
       <el-tabs v-if="bill" v-model="tab">
         <el-tab-pane :label="t('generate.segTabUse', { n: num(useRows.length) })" name="use" />
@@ -9,11 +9,26 @@
       </el-tabs>
 
       <template v-if="bill && tab === 'use'">
-        <el-table :data="useRows" size="small" max-height="420" :empty-text="t('common.empty')">
-          <el-table-column :label="t('generate.segStartSn')" min-width="150">
+        <!-- 同一物料行的几段相邻排，序号 / 物料 / 附件项次合并单元格（多段时物料下写出段数与枚数） -->
+        <el-table :data="useRows" size="small" max-height="420" :empty-text="t('common.empty')" :span-method="lineSpan" class="use-table">
+          <el-table-column :label="t('common.billSeq')" width="68" class-name="line-cell">
+            <template #default="{ row }">{{ row.bill_seq }}</template>
+          </el-table-column>
+          <el-table-column :label="t('common.material')" min-width="110" class-name="line-cell">
+            <template #default="{ row, $index }">
+              <div>{{ row.material_code || t("generate.noMaterial") }}</div>
+              <div v-if="lineGroups[$index]?.span > 1" class="muted sub">
+                {{ t("generate.segLineSum", { n: num(lineGroups[$index].span), qty: num(lineGroups[$index].qty) }) }}
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column :label="t('common.attachNo')" min-width="80" class-name="line-cell">
+            <template #default="{ row }">{{ row.attach_no || "—" }}</template>
+          </el-table-column>
+          <el-table-column :label="t('generate.segStartSn')" min-width="130">
             <template #default="{ row }"><span class="sn-mono">{{ row.start_sn }}</span></template>
           </el-table-column>
-          <el-table-column :label="t('generate.segEndSn')" min-width="150">
+          <el-table-column :label="t('generate.segEndSn')" min-width="130">
             <template #default="{ row }"><span class="sn-mono">{{ row.end_sn }}</span></template>
           </el-table-column>
           <el-table-column :label="t('generate.segSeq')" align="right" min-width="110">
@@ -22,7 +37,7 @@
           <el-table-column :label="t('common.qty')" align="right" width="80">
             <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
           </el-table-column>
-          <el-table-column :label="t('common.status')" min-width="190">
+          <el-table-column :label="t('common.status')" min-width="180">
             <template #default="{ row }">
               <span class="tags">
                 <el-tag v-if="row.transferred_in" size="small" type="warning">{{ t("generate.segTransferIn", { pi: row.seq_pi_no }) }}</el-tag>
@@ -99,6 +114,31 @@ const useRows = computed<any[]>(() => data.value?.use ?? []);
 const freeRows = computed<any[]>(() => (bill.value ? data.value?.free ?? [] : props.gaps?.segments ?? []));
 const freeTruncated = computed(() => (bill.value ? data.value?.free_truncated : props.gaps?.truncated));
 
+/** 物料行合并：相邻、序号 / 物料 / 附件项次都相同的段合成一组；组首行记 span（段数）与 qty（枚数），其余行 span = 0。 */
+const lineGroups = computed(() => {
+  const rows = useRows.value;
+  const out: { span: number; qty: number }[] = rows.map(() => ({ span: 0, qty: 0 }));
+  const same = (a: any, b: any) => a.bill_seq === b.bill_seq && a.material_code === b.material_code && a.attach_no === b.attach_no;
+  let head = 0;
+  rows.forEach((r, i) => {
+    if (i > 0 && same(rows[head], r)) {
+      out[head].span += 1;
+      out[head].qty += r.qty;
+    } else {
+      head = i;
+      out[i] = { span: 1, qty: r.qty };
+    }
+  });
+  return out;
+});
+
+/** 前三列（序号、物料、附件项次）按物料行合并。 */
+function lineSpan({ rowIndex, columnIndex }: { rowIndex: number; columnIndex: number }) {
+  if (columnIndex > 2) return { rowspan: 1, colspan: 1 };
+  const span = lineGroups.value[rowIndex]?.span ?? 1;
+  return { rowspan: span, colspan: span ? 1 : 0 };
+}
+
 async function open(opts: { bill?: string; tab?: "use" | "free" }) {
   bill.value = opts.bill || "";
   tab.value = opts.tab || "use";
@@ -135,7 +175,8 @@ async function loadSns(page: number) {
   sns.loading = true;
   try {
     const r = await api.genSegmentSns({
-      pi: props.pi, bill_no: bill.value, seq_pi: seg.seq_pi_no, start: seg.start_seq, end: seg.end_seq, page, size: SN_PAGE,
+      pi: props.pi, bill_no: bill.value, bill_seq: seg.bill_seq, seq_pi: seg.seq_pi_no, start: seg.start_seq, end: seg.end_seq,
+      page, size: SN_PAGE,
     });
     Object.assign(sns, { items: r.items, total: r.total, page: r.page });
   } finally {
@@ -153,4 +194,6 @@ defineExpose({ open });
 p { margin: 0; }
 .pager { margin-top: 10px; justify-content: flex-end; }
 .sn-mono { font-family: var(--app-mono, monospace); }
+.sub { font-size: 12px; }
+.use-table :deep(td.line-cell) { background: var(--el-fill-color-lighter); border-right: 1px solid var(--el-table-border-color); }
 </style>

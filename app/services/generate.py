@@ -258,16 +258,19 @@ _ISLAND = (
 
 
 def bill_segment_counts(pi: str, bill_nos: list[str], facs: tuple[str, ...] | None) -> dict[str, tuple[int, int]]:
-    """各单据现有号的号段数与枚数（生成详情的单据头用）。"""
+    """各单据现有号的号段数与枚数（生成详情的单据头用）：号段按物料行分开算（与单据号段弹窗同口径）。"""
     if not bill_nos:
         return {}
     isql, iargs = factories.item_scope_sql(facs)
-    inner = _ISLAND.format(cols="bill_no, seq_pi_no", part="bill_no, seq_pi_no", bills=marks(len(bill_nos)), scope=isql)
+    inner = _ISLAND.format(
+        cols="bill_no, bill_seq, seq_pi_no", part="bill_no, bill_seq, seq_pi_no", bills=marks(len(bill_nos)), scope=isql
+    )
     return {
         r["bill_no"]: (int(r["segs"]), int(r["qty"]))
         for r in db.all(
             "SELECT bill_no, COUNT(*) segs, SUM(n) qty FROM ("
-            f"SELECT bill_no, seq_pi_no, g, COUNT(*) n FROM ({inner}) t GROUP BY bill_no, seq_pi_no, g"
+            f"SELECT bill_no, bill_seq, seq_pi_no, g, COUNT(*) n FROM ({inner}) t "
+            "GROUP BY bill_no, bill_seq, seq_pi_no, g"
             ") u GROUP BY bill_no",
             pi,
             *bill_nos,
@@ -287,18 +290,26 @@ def _bill_key(cu: CurrentUser, pi_in: str | None, bill_in: str | None) -> tuple[
 
 
 def bill_segments(cu: CurrentUser, pi_in: str | None, bill_in: str | None) -> dict:
-    """单据号段：已用号段 = 单据挂在本 PI 下现有的号按流水连续合并成段（转入的号按流水归属 PI 单独成段，
-    本 PI 的在前）；空闲号段 = 本单据生成后删掉、现在没有号占用的流水。另给 PI 最大号与下一个号
-    （同一 PI 各单据共用流水，页面在底部「流水」显示，不列在单据号段里）。"""
+    """单据号段：已用号段 = 单据挂在本 PI 下现有的号按物料行（单据序号）分开、行内按流水连续合并成段（转入的号
+    按流水归属 PI 单独成段），按序号排，同一物料行内本 PI 的在前；每段带序号、物料、附件项次（号上的值）；
+    空闲号段 = 本单据生成后删掉、现在没有号占用的流水。另给 PI 最大号与下一个号（同一 PI 各单据共用流水，
+    页面在底部「流水」显示，不列在单据号段里）。"""
     pi, bill, facs = _bill_key(cu, pi_in, bill_in)
     isql, iargs = factories.item_scope_sql(facs)
-    inner = _ISLAND.format(cols="sn, seq_pi_no, seq_dec, status", part="seq_pi_no", bills="%s", scope=isql)
+    inner = _ISLAND.format(
+        cols="sn, bill_seq, material_code, attach_no, seq_pi_no, seq_dec, status",
+        part="bill_seq, seq_pi_no",
+        bills="%s",
+        scope=isql,
+    )
     rows = db.all(
-        "SELECT seq_pi_no, MIN(seq_dec) s, MAX(seq_dec) e, COUNT(*) n, SUM(status = 'PENDING_ALLOC') pending, "
-        "MIN(fs) start_sn, MIN(ls) end_sn FROM (SELECT seq_pi_no, seq_dec, status, g, "
-        "FIRST_VALUE(sn) OVER (PARTITION BY seq_pi_no, g ORDER BY seq_dec) fs, "
-        "FIRST_VALUE(sn) OVER (PARTITION BY seq_pi_no, g ORDER BY seq_dec DESC) ls "
-        f"FROM ({inner}) a) b GROUP BY seq_pi_no, g ORDER BY seq_pi_no = %s DESC, seq_pi_no, s",
+        "SELECT bill_seq, MIN(material_code) material_code, MIN(attach_no) attach_no, seq_pi_no, "
+        "MIN(seq_dec) s, MAX(seq_dec) e, COUNT(*) n, SUM(status = 'PENDING_ALLOC') pending, "
+        "MIN(fs) start_sn, MIN(ls) end_sn FROM (SELECT bill_seq, material_code, attach_no, seq_pi_no, seq_dec, "
+        "status, g, FIRST_VALUE(sn) OVER (PARTITION BY bill_seq, seq_pi_no, g ORDER BY seq_dec) fs, "
+        "FIRST_VALUE(sn) OVER (PARTITION BY bill_seq, seq_pi_no, g ORDER BY seq_dec DESC) ls "
+        f"FROM ({inner}) a) b GROUP BY bill_seq, seq_pi_no, g "
+        "ORDER BY bill_seq, seq_pi_no = %s DESC, seq_pi_no, s",
         pi,
         bill,
         *iargs,
@@ -306,6 +317,9 @@ def bill_segments(cu: CurrentUser, pi_in: str | None, bill_in: str | None) -> di
     )
     use = [
         {
+            "bill_seq": int(r["bill_seq"]),
+            "material_code": r["material_code"] or "",
+            "attach_no": r["attach_no"] or "",
             "seq_pi_no": r["seq_pi_no"],
             "start_seq": int(r["s"]),
             "end_seq": int(r["e"]),
@@ -345,8 +359,10 @@ def segment_sns(
     end: int | None,
     page: int | None,
     size: int | None,
+    bill_seq: int | None = None,
 ) -> dict:
-    """号段 SN 明细：单据挂在本 PI 下、流水归属 seq_pi_no、流水在 start～end 的号，按流水排，分页。"""
+    """号段 SN 明细：单据挂在本 PI 下、流水归属 seq_pi_no、流水在 start～end 的号，按流水排，分页。
+    bill_seq：只看该物料行（单据序号）的号（已用号段按物料行分开列出，点明细时带上）；不给为整张单据。"""
     pi, bill, facs = _bill_key(cu, pi_in, bill_in)
     seq_pi = util.trim(seq_pi_in) or pi
     if start is None or end is None or start < 1 or end < start:
@@ -356,9 +372,9 @@ def segment_sns(
     isql, iargs = factories.item_scope_sql(facs)
     where = (
         "FROM sn_item WHERE pi_no = %s AND bill_no = %s AND seq_pi_no = %s AND seq_dec BETWEEN %s AND %s "
-        "AND origin = 'GEN'" + isql
+        "AND origin = 'GEN'" + ("" if bill_seq is None else " AND bill_seq = %s") + isql
     )
-    args = [pi, bill, seq_pi, start, end, *iargs]
+    args = [pi, bill, seq_pi, start, end, *([] if bill_seq is None else [bill_seq]), *iargs]
     total = db.count("SELECT COUNT(*) " + where, *args)
     items = db.column("SELECT sn " + where + " ORDER BY seq_dec LIMIT %s OFFSET %s", *args, sz, (pg - 1) * sz)
     return {"total": total, "page": pg, "size": sz, "items": items}

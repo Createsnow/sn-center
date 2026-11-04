@@ -652,6 +652,7 @@
     "segPiTitle": "Free ranges · PI {pi}",
     "segTabUse": "Used ranges ({n})",
     "segTabFree": "Free ranges ({n})",
+    "segLineSum": "{n} ranges / {qty}",
     "segStartSn": "First SN",
     "segEndSn": "Last SN",
     "segSeq": "Serials",

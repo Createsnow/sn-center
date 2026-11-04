@@ -652,6 +652,7 @@
     "segPiTitle": "空闲号段 · PI {pi}",
     "segTabUse": "已用号段（{n}）",
     "segTabFree": "空闲号段（{n}）",
+    "segLineSum": "{n} 段 / {qty} 枚",
     "segStartSn": "起始 SN",
     "segEndSn": "结束 SN",
     "segSeq": "流水",

@@ -652,6 +652,7 @@
     "segPiTitle": "Đoạn trống · PI {pi}",
     "segTabUse": "Đoạn đã dùng ({n})",
     "segTabFree": "Đoạn trống ({n})",
+    "segLineSum": "{n} đoạn / {qty}",
     "segStartSn": "SN đầu",
     "segEndSn": "SN cuối",
     "segSeq": "Tuần tự",

@@ -115,13 +115,26 @@ def segs(w, pi: str, bill: str) -> dict:
 
 
 def test_bill_segments_use_free_and_sn_detail(w, api, sql):
-    """单据号段：现有的号按流水连续合并（转入的号按流水归属 PI 单独成段），空闲号段按删号时的生成单据归属；
-    生成详情的单据头带号段数与枚数；SN 明细按流水分页；跳过的流水（没有删号存档）不归属任何单据。"""
+    """单据号段：现有的号按物料行分开、行内按流水连续合并（转入的号按流水归属 PI 单独成段），空闲号段按删号时的
+    生成单据归属；生成详情的单据头带号段数与枚数（按物料行计）；SN 明细按流水分页（可只看一个物料行）；
+    跳过的流水（没有删号存档）不归属任何单据。"""
     org, pi, bill = mk(w, ("M1", 3), ("M2", 4), ("M3", 2))
     _, _, bill2 = mk(w, ("M4", 3), pi=pi, org=org)
     p = P()
     ok(w.bind_pi(pi, w.rule(p, seq_len=4, with_length=False)))
     w.generate(pi)  # bill 1～9，bill2 10～12（排号按单据编号）
+    # 流水连续的几个物料行也按物料行分开列出起止号
+    s = segs(w, pi, bill)
+    assert [(x["bill_seq"], x["material_code"], x["start_seq"], x["end_seq"], x["qty"]) for x in s["use"]] == [
+        (1, "M1", 1, 3, 3),
+        (2, "M2", 4, 7, 4),
+        (3, "M3", 8, 9, 2),
+    ]
+    assert (s["use"][1]["start_sn"], s["use"][1]["end_sn"]) == (f"{p}0004", f"{p}0007")
+    ctx = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))
+    assert {b["bill_no"]: b["segments"]["use_count"] for b in ctx["bills"]}[bill] == 3
+    d = ok(api.get(f"/api/generate/segments/sns?pi={pi}&bill_no={bill}&bill_seq=2&start=1&end=9", w.admin))
+    assert (d["total"], d["items"][0], d["items"][-1]) == (4, f"{p}0004", f"{p}0007")
     ok(w.delete(pi, lines=[(bill, 2)]))  # bill 腾出 4～7
     s = segs(w, pi, bill)
     assert [(x["start_seq"], x["end_seq"], x["qty"], x["transferred_in"]) for x in s["use"]] == [
@@ -132,16 +145,16 @@ def test_bill_segments_use_free_and_sn_detail(w, api, sql):
     assert [(x["start_seq"], x["end_seq"], x["bill_no"]) for x in s["free"]] == [(4, 7, bill)]
     assert (s["next_seq"], s["use_qty"], s["free_qty"]) == (13, 5, 4)
     assert segs(w, pi, bill2)["free"] == []
-    # 别的 PI 的号转入本单据：按流水归属 PI 单独成段，排在本 PI 的号段之后
+    # 别的 PI 的号转入本单据：按流水归属 PI 单独成段，排在所在物料行本 PI 的号段之后
     _, pi2, bill3 = mk(w, ("M5", 2), org=org)
     ok(w.bind_pi(pi2, w.rule(P(), with_length=False)))
     w.generate(pi2)
     sql.exec("UPDATE sn_item SET pi_no = %s, bill_no = %s, bill_seq = 1 WHERE seq_pi_no = %s", pi, bill, pi2)
     s = segs(w, pi, bill)
-    assert [(x["seq_pi_no"], x["start_seq"], x["end_seq"], x["transferred_in"]) for x in s["use"]] == [
-        (pi, 1, 3, False),
-        (pi, 8, 9, False),
-        (pi2, 1, 2, True),
+    assert [(x["bill_seq"], x["seq_pi_no"], x["start_seq"], x["end_seq"], x["transferred_in"]) for x in s["use"]] == [
+        (1, pi, 1, 3, False),
+        (1, pi2, 1, 2, True),
+        (3, pi, 8, 9, False),
     ]
     ctx = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))
     heads = {b["bill_no"]: b["segments"] for b in ctx["bills"]}

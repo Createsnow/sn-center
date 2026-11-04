@@ -81,7 +81,9 @@ export const api = {
   /** 空号段：PI 流水 1～最大号之间没有号的连续段（删号腾出），最大号与下一个号。 */
   genGaps: (pi: string) => get("/generate/gaps", { pi }),
   genSegments: (pi: string, bill_no: string) => get("/generate/segments", { pi, bill_no }),
-  genSegmentSns: (params: { pi: string; bill_no: string; seq_pi: string; start: number; end: number; page: number; size: number }) =>
+  genSegmentSns: (params: {
+    pi: string; bill_no: string; bill_seq?: number; seq_pi: string; start: number; end: number; page: number; size: number;
+  }) =>
     get("/generate/segments/sns", params),
   /** 删号范围：单据 bills / 物料行 lines，或 SN 起止号 start_sn、end_sn（只填起号 = 单枚）。 */
   genDeletePreview: (data: Q) => post("/generate/delete/preview", data),

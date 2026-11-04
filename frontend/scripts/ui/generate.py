@@ -150,6 +150,7 @@ M = {
 "generate.segPiTitle": ("空闲号段 · PI {pi}", "Free ranges · PI {pi}", "Đoạn trống · PI {pi}"),
 "generate.segTabUse": ("已用号段（{n}）", "Used ranges ({n})", "Đoạn đã dùng ({n})"),
 "generate.segTabFree": ("空闲号段（{n}）", "Free ranges ({n})", "Đoạn trống ({n})"),
+"generate.segLineSum": ("{n} 段 / {qty} 枚", "{n} ranges / {qty}", "{n} đoạn / {qty}"),
 "generate.segStartSn": ("起始 SN", "First SN", "SN đầu"),
 "generate.segEndSn": ("结束 SN", "Last SN", "SN cuối"),
 "generate.segSeq": ("流水", "Serials", "Tuần tự"),
