@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.framework.task.mapper.DurableFileMapper">
+  <select id="find" resultType="com.adtek.framework.task.domain.FileEntity">
+    SELECT id, task_id, state, storage_key, sha256, byte_size, row_count, created_at,
+      filename, media_type
+    FROM sys_file
+    WHERE task_id = #{id}
+  </select>
+
+  <insert id="insert">
+    INSERT INTO sys_file(id, task_id, state, storage_key, row_count)
+    VALUES (#{id}, #{id}, 'PREPARING', #{key}, #{rows})
+  </insert>
+
+  <update id="metadata">
+    UPDATE sys_file
+    SET filename = #{name},
+        media_type = #{type}
+    WHERE task_id = #{id}
+  </update>
+
+  <update id="ready">
+    UPDATE sys_file
+    SET state = 'READY',
+        sha256 = #{digest},
+        byte_size = #{bytes}
+    WHERE task_id = #{id}
+  </update>
+
+  <update id="state">
+    UPDATE sys_file
+    SET state = #{state}
+    WHERE task_id = #{id}
+  </update>
+</mapper>

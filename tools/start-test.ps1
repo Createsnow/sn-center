@@ -1,0 +1,23 @@
+[CmdletBinding()]
+param()
+# 从本项目受保护的秘密文件装配测试环境；不会读取相邻旧工程 .env。
+$ErrorActionPreference = 'Stop'
+$projectRoot = Split-Path -Parent $PSScriptRoot
+$jar = Join-Path $projectRoot 'backend/adtek-server/target/adtek-server-0.1.0.jar'
+$jdk = Get-ChildItem -LiteralPath (Join-Path $projectRoot '.tools/jdk') -Directory | Select-Object -First 1
+$socketTemp = Join-Path $projectRoot '.tools/tmp'
+New-Item -ItemType Directory -Force -Path $socketTemp | Out-Null
+if (-not (Test-Path -LiteralPath $jar)) {
+    throw 'Build first: ./tools/maven.ps1 -B -ntp verify'
+}
+. (Join-Path $PSScriptRoot 'TestEnvironment.ps1')
+$previous = Set-AdtekTestEnvironment
+try {
+    Write-Output 'Starting test API on http://127.0.0.1:18090 (Ctrl+C stops this process).'
+    & (Join-Path $jdk.FullName 'bin/java.exe') "-Djdk.net.unixdomain.tmpdir=$socketTemp" '-jar' $jar
+    $serverExitCode = $LASTEXITCODE
+}
+finally {
+    Restore-AdtekTestEnvironment $previous
+}
+exit $serverExitCode

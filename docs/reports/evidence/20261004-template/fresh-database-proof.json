@@ -1,0 +1,12 @@
+{
+  "equipmentCount": 1,
+  "version": 2,
+  "enabled": false,
+  "successAudit": {
+    "create": 1,
+    "update": 1
+  },
+  "adminPasswordChanged": true,
+  "successfulMigrations": 2,
+  "queryResultSha256": "bc66794e89f0d6d179ab357ce4ccf052a53c0e288b7c2ed9ad432a272f2d61ad"
+}

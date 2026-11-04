@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.system.mapper.RoleMapper">
+  <sql id="columns">
+    id, role_code AS code, role_name AS name, data_scope AS dataScope,
+    resource_scope AS resourceScope, enabled, version
+  </sql>
+
+  <select id="list" resultType="com.adtek.system.domain.RoleEntity">
+    SELECT <include refid="columns"/>
+    FROM sys_role
+    ORDER BY id
+    LIMIT 1001
+  </select>
+
+  <select id="find" resultType="com.adtek.system.domain.RoleEntity">
+    SELECT <include refid="columns"/>
+    FROM sys_role
+    WHERE id = #{id}
+  </select>
+
+  <insert id="insert" useGeneratedKeys="true" keyProperty="entity.id">
+    INSERT INTO sys_role(role_code, role_name, data_scope, resource_scope, enabled)
+    VALUES (#{entity.code}, #{entity.name}, #{entity.dataScope}, #{entity.resourceScope},
+      #{entity.enabled})
+  </insert>
+
+  <update id="update">
+    UPDATE sys_role
+    SET role_code = #{entity.code},
+        role_name = #{entity.name},
+        data_scope = #{entity.dataScope},
+        resource_scope = #{entity.resourceScope},
+        enabled = #{entity.enabled},
+        version = version + 1
+    WHERE id = #{entity.id}
+      AND version = #{entity.version}
+  </update>
+</mapper>

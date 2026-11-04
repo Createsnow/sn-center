@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.system.mapper.DictionaryItemMapper">
+  <sql id="columns">
+    id, type_id AS typeId, value, label_zh AS labelZh, label_en AS labelEn,
+    label_vi AS labelVi, sort_order AS sortOrder, enabled, version
+  </sql>
+
+  <select id="list" resultType="com.adtek.system.domain.DictionaryItemEntity">
+    SELECT <include refid="columns"/>
+    FROM sys_dict_item
+    WHERE type_id = #{typeId}
+    ORDER BY sort_order, id
+    LIMIT 1001
+  </select>
+
+  <select id="find" resultType="com.adtek.system.domain.DictionaryItemEntity">
+    SELECT <include refid="columns"/>
+    FROM sys_dict_item
+    WHERE id = #{id}
+  </select>
+
+  <insert id="insert" useGeneratedKeys="true" keyProperty="entity.id">
+    INSERT INTO sys_dict_item(type_id, value, label_zh, label_en, label_vi, sort_order,
+      enabled)
+    VALUES (#{entity.typeId}, #{entity.value}, #{entity.labelZh}, #{entity.labelEn},
+      #{entity.labelVi}, #{entity.sortOrder}, #{entity.enabled})
+  </insert>
+
+  <update id="update">
+    UPDATE sys_dict_item
+    SET type_id = #{entity.typeId},
+        value = #{entity.value},
+        label_zh = #{entity.labelZh},
+        label_en = #{entity.labelEn},
+        label_vi = #{entity.labelVi},
+        sort_order = #{entity.sortOrder},
+        enabled = #{entity.enabled},
+        version = version + 1
+    WHERE id = #{entity.id}
+      AND version = #{entity.version}
+  </update>
+</mapper>

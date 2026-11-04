@@ -1,0 +1,12 @@
+diff --git a/es/PreviewGroup.d.ts b/es/PreviewGroup.d.ts
+--- a/es/PreviewGroup.d.ts
++++ b/es/PreviewGroup.d.ts
+@@ -6,1 +6,1 @@
+-export interface GroupPreviewConfig extends InternalPreviewConfig {
++export interface GroupPreviewConfig extends Omit<InternalPreviewConfig, 'imageRender'> {
+diff --git a/lib/PreviewGroup.d.ts b/lib/PreviewGroup.d.ts
+--- a/lib/PreviewGroup.d.ts
++++ b/lib/PreviewGroup.d.ts
+@@ -6,1 +6,1 @@
+-export interface GroupPreviewConfig extends InternalPreviewConfig {
++export interface GroupPreviewConfig extends Omit<InternalPreviewConfig, 'imageRender'> {

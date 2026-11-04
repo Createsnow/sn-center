@@ -1,0 +1,7 @@
+# 本机 HTTP 测试专用；SecurityBeansConfiguration 同时强制 loopback 监听。
+adtek:
+  security:
+    cookie-secure: false
+springdoc:
+  api-docs:
+    enabled: true

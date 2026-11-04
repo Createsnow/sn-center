@@ -1,0 +1,13 @@
+{
+  "template": "adtek-platform-template",
+  "version": "0.1.0",
+  "commit": "3f1dc52b29327fab9079923d548ae2b6976fec45",
+  "project": "adtek-template-copy-proof",
+  "createdAtUtc": "2026-10-04T14:34:47.6627690Z",
+  "ports": {
+    "redis": 36399,
+    "api": 18100,
+    "web": 15193,
+    "mysql": 33326
+  }
+}

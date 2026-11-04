@@ -1,0 +1,112 @@
+{
+  "stats": {
+    "startTime": "2026-10-04T14:33:30.036Z",
+    "duration": 60935.412000000004,
+    "expected": 10,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "真实审计页面查询本人失败、字段diff、追踪号和三语移动布局",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 7929
+        }
+      ]
+    },
+    {
+      "title": "三种语言登录页、移动布局与拒绝错误凭据",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 2298
+        }
+      ]
+    },
+    {
+      "title": "真实登录强制改密、刷新恢复、HttpOnly 与退出闭环",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 4028
+        }
+      ]
+    },
+    {
+      "title": "连续失败锁定在真实登录页显示中英越提示",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 2631
+        }
+      ]
+    },
+    {
+      "title": "真实配置页面完成部门、角色范围、菜单和三语字典维护",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 10750
+        }
+      ]
+    },
+    {
+      "title": "设备新增、详情、编辑、筛选、重复编码与审计",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 4358
+        }
+      ]
+    },
+    {
+      "title": "只读权限不显示写按钮，另一个本人范围账号看不到其他设备",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 2068
+        }
+      ]
+    },
+    {
+      "title": "设备页面英语、越南语与移动布局",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 5719
+        }
+      ]
+    },
+    {
+      "title": "真实导出在响应丢失后按原操作恢复、刷新恢复及三语下载同一快照",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 7293
+        }
+      ]
+    },
+    {
+      "title": "真实用户页面完成新增、编辑、启停、重置、首次改密及三语菜单",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 11861
+        }
+      ]
+    }
+  ]
+}

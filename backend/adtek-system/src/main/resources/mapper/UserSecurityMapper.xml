@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.system.mapper.UserSecurityMapper">
+  <select id="lockControl" resultType="java.lang.Boolean">
+    SELECT initialized
+    FROM sys_security_control
+    WHERE id = 1
+    FOR UPDATE
+  </select>
+
+  <select id="departmentName" resultType="java.lang.String">
+    SELECT dept_name
+    FROM sys_dept
+    WHERE id = #{id}
+  </select>
+
+  <select id="roleIds" resultType="java.lang.Long">
+    SELECT role_id
+    FROM sys_user_role
+    WHERE user_id = #{id}
+    ORDER BY role_id
+  </select>
+
+  <select id="departments" resultType="com.adtek.system.vo.UserOptionsVO$Department">
+    SELECT id, dept_name AS name
+    FROM sys_dept
+    WHERE enabled = TRUE
+    ORDER BY id
+  </select>
+
+  <select id="roles" resultType="com.adtek.system.vo.UserOptionsVO$Role">
+    SELECT id, role_name AS name, data_scope
+    FROM sys_role
+    WHERE enabled = TRUE
+    ORDER BY id
+  </select>
+
+  <select id="enabledDepartment" resultType="int">
+    SELECT COUNT(*)
+    FROM sys_dept
+    WHERE id = #{id}
+      AND enabled = TRUE
+  </select>
+
+  <select id="enabledRole" resultType="int">
+    SELECT COUNT(*)
+    FROM sys_role
+    WHERE id = #{id}
+      AND enabled = TRUE
+  </select>
+
+  <delete id="clearRoles">
+    DELETE
+    FROM sys_user_role
+    WHERE user_id = #{id}
+  </delete>
+
+  <insert id="addRole">
+    INSERT INTO sys_user_role(user_id, role_id)
+    VALUES (#{userId}, #{roleId})
+  </insert>
+
+  <select id="enabledAdministrators" resultType="long">
+    SELECT COUNT(DISTINCT u.id) FROM sys_user u
+    JOIN sys_user_role ur ON ur.user_id=u.id
+    JOIN sys_role r ON r.id=ur.role_id AND r.enabled=TRUE
+    JOIN sys_role_menu rm ON rm.role_id=r.id
+    JOIN sys_menu m ON m.id=rm.menu_id AND m.enabled=TRUE
+    WHERE u.enabled=TRUE AND r.data_scope=1 AND m.permission_code='system:security:administer'
+  </select>
+  <select id="menus" resultType="com.adtek.system.vo.MenuVO">
+    SELECT CAST(m.id AS CHAR) AS id, m.menu_name AS name, m.route_path AS path,
+      m.component_key AS component, m.permission_code AS permission
+    FROM sys_user_role ur
+    JOIN sys_role r ON r.id=ur.role_id AND r.enabled=TRUE
+    JOIN sys_role_menu rm ON rm.role_id=r.id
+    JOIN sys_menu m ON m.id=rm.menu_id AND m.enabled=TRUE
+    WHERE ur.user_id=#{userId} AND m.menu_type='C'
+    GROUP BY m.id, m.menu_name, m.route_path, m.component_key, m.permission_code, m.sort_order
+    ORDER BY m.sort_order, id
+  </select>
+</mapper>
