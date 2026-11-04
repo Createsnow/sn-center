@@ -512,10 +512,6 @@
     "nextSeq": "Tuần tự kế tiếp",
     "frozenBills": "{n} chứng từ bị đóng băng hoặc tạm dừng",
     "suspendedQty": "{n} SN tạm dừng giao",
-    "piRule": "Quy tắc PI",
-    "bindPi": "Gắn cho PI này",
-    "unbindPi": "Bỏ gắn khỏi PI",
-    "unbindPiConfirm": "Sau khi bỏ gắn, quy tắc thành mẫu chung; các dòng đã chọn quy tắc không bị ảnh hưởng. Bỏ gắn?",
     "source": {
       "LINE": "Theo dòng",
       "PI": "Gắn PI"
@@ -611,7 +607,6 @@
     "seqUsage": "Đã dùng {used} số trống trong {start}–{end}; {over} SN còn lại tiếp tục từ {next}",
     "summary": "Còn tạo được {quota}",
     "summaryPending": "Chờ phân bổ {n} →",
-    "piRuleBtn": "Quy tắc PI",
     "billCounts": "SL {total} · đã tạo {gen} · hạn mức {quota}",
     "snRange": "Dải SN",
     "changeRule": "Đổi quy tắc",

@@ -512,10 +512,6 @@
     "nextSeq": "Next serial",
     "frozenBills": "{n} bills frozen or suspended",
     "suspendedQty": "{n} suspended",
-    "piRule": "PI rule",
-    "bindPi": "Bind to this PI",
-    "unbindPi": "Unbind from PI",
-    "unbindPiConfirm": "After unbinding the rule becomes a general template; lines that already picked a rule are not affected. Unbind?",
     "source": {
       "LINE": "Line",
       "PI": "PI binding"
@@ -611,7 +607,6 @@
     "seqUsage": "Used {used} free serials within {start}–{end}; the remaining {over} continue from {next}",
     "summary": "Generatable {quota}",
     "summaryPending": "To allocate {n} →",
-    "piRuleBtn": "PI rule",
     "billCounts": "Qty {total} · generated {gen} · quota {quota}",
     "snRange": "SN range",
     "changeRule": "Change rule",

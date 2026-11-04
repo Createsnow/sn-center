@@ -91,7 +91,6 @@
             <el-button size="small" type="success" plain :disabled="!ctx.summary.pending_alloc" @click="goAllocate">
               {{ t("generate.goAllocate") }}<el-icon class="el-icon--right"><Right /></el-icon>
             </el-button>
-            <el-button size="small" @click="piRuleOpen = true">{{ t("generate.piRuleBtn") }}</el-button>
           </div>
           <div class="kv">
             <span>{{ t("generate.orderTotal") }} <b class="num">{{ num(ctx.summary.total_qty) }}</b></span>
@@ -280,7 +279,6 @@
     <SegmentsDialog v-if="ctx" ref="segDlg" :pi="ctx.pi_no" :gaps="ctx.gaps" @use="useRange" />
 
     <!-- PI / 客户规则：整张 PI 的默认规则，不常用 -->
-    <PiRuleDialog v-if="ctx" v-model="piRuleOpen" :ctx="ctx" @saved="reloadCtx" />
   </div>
 </template>
 
@@ -299,7 +297,6 @@ import { leaveStateLabel, suspendLabel } from "@/constants";
 import type { OrderLine } from "@/types/api";
 import PageHead from "@/components/PageHead.vue";
 import RuleDialog from "@/views/generate/RuleDialog.vue";
-import PiRuleDialog from "@/views/generate/PiRuleDialog.vue";
 import DeleteDialog from "@/views/generate/DeleteDialog.vue";
 import SeqSource, { type SeqValue } from "@/views/generate/SeqSource.vue";
 import GenConfirmDialog from "@/views/generate/GenConfirmDialog.vue";
@@ -417,7 +414,6 @@ function openRow(row: any) {
 const detailPi = ref("");
 const ctx = ref<any>(null);
 const ctxLoading = ref(false);
-const piRuleOpen = ref(false);
 
 const allLines = computed<OrderLine[]>(() => (ctx.value ? ctx.value.bills.flatMap((b: any) => b.lines) : []));
 const limits = computed(() => ctx.value?.limits || { default: 10000, max: 500000, sync_threshold: 5000 });
@@ -504,7 +500,7 @@ function closeDetail() {
   if (route.active && (route.query.pi || route.query.bill_no)) router.replace({ query: {} });
 }
 
-// ---------------- 规则：物料行（PI 绑定在 PiRuleDialog）
+// ---------------- 规则：物料行
 
 const ruleDlg = reactive({ open: false, lines: [] as OrderLine[] });
 

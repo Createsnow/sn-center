@@ -512,10 +512,6 @@
     "nextSeq": "下一个流水",
     "frozenBills": "{n} 张单据冻结或暂停",
     "suspendedQty": "暂停交付 {n} 枚",
-    "piRule": "PI 规则",
-    "bindPi": "绑定到本 PI",
-    "unbindPi": "解除 PI 绑定",
-    "unbindPiConfirm": "解除后规则转为通用模板，已选过规则的物料行不受影响。确认解除？",
     "source": {
       "LINE": "物料行选定",
       "PI": "PI 绑定"
@@ -611,7 +607,6 @@
     "seqUsage": "起止号 {start}～{end} 内用了 {used} 个空闲流水；不够的 {over} 枚从 {next} 起接着编",
     "summary": "还可生成 {quota}",
     "summaryPending": "待分配 {n} →",
-    "piRuleBtn": "PI 规则",
     "billCounts": "数量 {total} · 已生成 {gen} · 可生成 {quota}",
     "snRange": "SN 范围",
     "changeRule": "改规则",

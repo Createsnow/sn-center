@@ -69,8 +69,6 @@ export const api = {
   ruleOptions: (params: Q) => get("/rules/options", params),
   selectLineRule: (data: Q) => post("/rules/line-select", data),
   clearLineRule: (data: Q) => post("/rules/line-clear", data),
-  bindPiRule: (data: Q) => put("/rules/pi-binding", data),
-  unbindPiRule: (pi: string) => del("/rules/pi-binding", { pi }),
 
   // ---------------- SN 生成与删号
   genPis: (params?: Q) => get("/generate/pis", params),

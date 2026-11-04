@@ -406,7 +406,7 @@ def test_pi_prefix_stays_after_first_bill_changes(w, api, sql):
 
 def test_pi_prefix_follows_first_bill_before_any_sn(w, api):
     """本 PI 还没有生成的号：custom 为 None（页面取点选的第一个单据编码后 7 位）；prefix 为当前第一张单据
-    （单据编号最小）编码后 7 位，只在没有点选的单据时用（PI 规则换前缀）。"""
+    （单据编号最小）编码后 7 位，只在取不到点选的单据时兜底。"""
     stem = uid("").replace("-", "")
     org, pi, b = mk(w, ("M1", 2), bill="MO" + stem + "2")
     assert ok(api.get(f"/api/generate/context?pi={pi}", w.admin))["rule_prefix"] == {"prefix": b[-7:], "custom": None}
