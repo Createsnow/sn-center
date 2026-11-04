@@ -369,7 +369,6 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
             "quota": sum(b["quota"] for b in bills.values()),
             "suspended": stats.get("suspended", 0),
         },
-        "pi_rule": rules.info(rules.pi_default(pi)),
         "rule_options": rules.options(pi, customer, facs),
         # 「选规则」的默认前缀：本 PI 已生成的号还在时为已用的前缀及其格式（见 rules.pi_prefix）
         "rule_prefix": rules.pi_prefix(pi),

@@ -531,7 +531,8 @@ def test_rules_bound_by_pi_only(w, api):
     p = ok(w.preview(p2))
     assert p["generatable"] is False and p["issues"][0]["issues"] == ["NO_RULE"]
     ctx = ok(api.get(f"/api/generate/context?pi={p2}", w.admin))
-    assert ctx["pi_rule"] is None and "customer_rule" not in ctx.body
+    assert "pi_rule" not in ctx.body and "customer_rule" not in ctx.body, "生成页不再提供 PI 绑定入口，详情不带 PI 规则"
+    assert all(x["rule"] is None for b in ctx["bills"] for x in b["lines"]), "p1 的 PI 绑定不影响 p2"
 
 
 # ---------------------------------------------------------------- 生成
