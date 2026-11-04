@@ -9,8 +9,5 @@
 *.cmd text eol=crlf
 *.ps1 text eol=lf
 *.psd1 text eol=lf
-# 下载验收产物按原始字节保留；CRLF属于文件内容和摘要的一部分。
+# CSV 按原始字节保留；CRLF 属于文件内容的一部分。
 *.csv -text whitespace=cr-at-eol
-# 来源快照和验收证据按原始字节保留。
-docs/references/baselines/** -text
-docs/reports/evidence/** -text whitespace=cr-at-eol

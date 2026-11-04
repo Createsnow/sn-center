@@ -734,7 +734,7 @@ class AuthenticationIT {
     @Test
     void userLifecycleHasBoundPaginationDiffUniqueNameAndVersionConflicts() throws Exception {
         seedUser(false);
-        // S3业务资源操作员已有真实SN权限；管理该角色须同时持SN总部能力，不能只凭平台角色越权委派。
+        // 角色3设备登记员持有业务权限；委派该角色须同时持有角色2的设备管理能力，不能只凭平台角色越权委派。
         jdbc.update("INSERT INTO sys_user_role(user_id,role_id) VALUES (?,2)", USER_ID);
         try (var browser = new Browser()) {
             String access =

@@ -1,5 +1,5 @@
 # Windows PowerShell shell runner: Node 24, Git, Docker Linux engine and Edge.
-# Local commands are validated; no remote GitLab pipeline has been run.
+# Runs the same gates as the local tools/*.ps1 scripts.
 stages: [verify]
 template-checks:
   stage: verify

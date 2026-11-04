@@ -15,8 +15,6 @@ walk('docs');
 let checked = 0;
 const failures = [];
 for (const path of files) {
-  // 原基线保持字节，其旧环境引用作为历史来源由 manifest 追溯。
-  if (path.startsWith('docs/references/baselines/')) continue;
   const content = readFileSync(resolve(root, path), 'utf8').replace(/```[\s\S]*?```/g, '');
   for (const match of content.matchAll(/\]\(([^)]+)\)/g)) {
     const target = match[1].replace(/^<|>$/g, '').split('#')[0];
@@ -30,4 +28,4 @@ if (failures.length) {
   console.error(failures.join('\n'));
   process.exit(1);
 }
-console.log(`Current documentation: ${checked} local links resolve; historical baselines unchanged.`);
+console.log(`Current documentation: ${checked} local links resolve.`);
