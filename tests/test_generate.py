@@ -405,11 +405,51 @@ def test_pi_prefix_stays_after_first_bill_changes(w, api, sql):
 
 
 def test_pi_prefix_follows_first_bill_before_any_sn(w, api):
-    """本 PI 还没用单据编码出号时，默认前缀仍取当前第一张单据（单据编号最小）编码后 7 位。"""
+    """本 PI 还没有生成的号：custom 为 None（页面取点选的第一个单据编码后 7 位）；prefix 为当前第一张单据
+    （单据编号最小）编码后 7 位，只在没有点选的单据时用（PI 规则换前缀）。"""
     stem = uid("").replace("-", "")
     org, pi, b = mk(w, ("M1", 2), bill="MO" + stem + "2")
     assert ok(api.get(f"/api/generate/context?pi={pi}", w.admin))["rule_prefix"] == {"prefix": b[-7:], "custom": None}
     _, _, a = mk(w, ("M1", 1), pi=pi, org=org, bill="MO" + stem + "1")
+    assert ok(api.get(f"/api/generate/context?pi={pi}", w.admin))["rule_prefix"] == {"prefix": a[-7:], "custom": None}
+
+
+def test_pi_prefix_saved_rule_not_generated_is_not_used(w, api):
+    """只给物料行保存了规则、还没有生成：不算已用，下一张单据仍按点选的第一个单据取默认前缀（custom 为 None）。"""
+    stem = uid("").replace("-", "")
+    org, pi, a = mk(w, ("M1", 2), bill="MO" + stem + "1")
+    mk(w, ("M1", 1), pi=pi, org=org, bill="MO" + stem + "2")
+    ok(w.select(pi, [(a, 1)], custom=m(prefix=a[-7:], base=10, seq_len=4, with_length=False)))
+    assert ok(api.get(f"/api/generate/context?pi={pi}", w.admin))["rule_prefix"]["custom"] is None
+
+
+def test_pi_prefix_hand_typed_prefix_is_reused(w, api, sql):
+    """本 PI 第一次生成用的是手填前缀（不是单据编码后 7 位）：之后各张单据都默认沿用它，流水接续。"""
+    stem = uid("").replace("-", "")
+    org, pi, a = mk(w, ("M1", 2), bill="MO" + stem + "1")
+    _, _, b = mk(w, ("M1", 3), pi=pi, org=org, bill="MO" + stem + "2")
+    hand = P()
+    ok(w.select(pi, [(a, 1)], custom=m(prefix=hand, base=10, seq_len=4, with_length=False)))
+    w.generate(pi, lines=[(a, 1)])
+    rp = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))["rule_prefix"]
+    assert rp["prefix"] == hand and rp["custom"]["prefix"] == hand and rp["custom"]["seq_len"] == 4
+    ok(w.select(pi, [(b, 1)], custom=rp["custom"]))
+    w.generate(pi, lines=[(b, 1)])
+    sns = [r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
+    assert sns == [f"{hand}{i:04d}" for i in range(1, 6)]
+
+
+def test_pi_prefix_kept_until_all_sns_deleted(w, api):
+    """已生成的号没有全部删掉：继续沿用这个前缀；全部删掉后按默认规则（custom 为 None，页面取点选的第一个单据）。"""
+    stem = uid("").replace("-", "")
+    org, pi, a = mk(w, ("M1", 3), bill="MO" + stem + "1")
+    hand = P()
+    ok(w.select(pi, [(a, 1)], custom=m(prefix=hand, base=10, seq_len=4, with_length=False)))
+    w.generate(pi, lines=[(a, 1)])
+    ok(w.delete(pi, start_sn=f"{hand}0001", end_sn=f"{hand}0002", reason="t"))
+    rp = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))["rule_prefix"]
+    assert rp["prefix"] == hand and rp["custom"] is not None, "还剩 1 个号：沿用"
+    ok(w.delete(pi, lines=[(a, 1)], reason="t"))
     assert ok(api.get(f"/api/generate/context?pi={pi}", w.admin))["rule_prefix"] == {"prefix": a[-7:], "custom": None}
 
 

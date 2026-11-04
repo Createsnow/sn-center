@@ -508,7 +508,7 @@ function closeDetail() {
 
 const ruleDlg = reactive({ open: false, lines: [] as OrderLine[] });
 
-/** 底部「选规则」与行内「选规则 / 改规则」打开同一个规则对话框（默认自定义页签，前缀默认 PI 第一张单据编码后 7 位）。 */
+/** 底部「选规则」与行内「选规则 / 改规则」打开同一个规则对话框（默认自定义页签，前缀默认点选的第一个单据编码后 7 位，本 PI 已生成的号还在时沿用已用的前缀）。 */
 function openRuleDialog(lines: OrderLine[]) {
   ruleDlg.lines = lines;
   ruleDlg.open = true;

@@ -1,6 +1,6 @@
 <template>
   <el-dialog :model-value="modelValue" :title="t('generate.rule.dialogTitle')" width="640px" @update:model-value="(v: boolean) => emit('update:modelValue', v)" @open="onOpen">
-    <!-- 默认在自定义页签：前缀默认取 PI 第一张单据编码后 7 位，其他参数可选；不放说明文字 -->
+    <!-- 默认在自定义页签：前缀默认取点选的第一个单据编码后 7 位（本 PI 已生成的号还在时沿用已用的前缀），其他参数可选；不放说明文字 -->
     <el-radio-group v-model="mode" class="mb" @change="(v: any) => v === 'CUSTOM' && schedule()">
       <el-radio-button value="CUSTOM">{{ t("generate.rule.custom") }}</el-radio-button>
       <el-radio-button value="LIBRARY" :disabled="!options.length">{{ t("generate.rule.library") }}</el-radio-button>
@@ -89,9 +89,11 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { api } from "@/api";
 import { ApiError } from "@/api/http";
 import { BASES } from "@/constants";
+import { defaultRulePrefix } from "@/genScope.js";
 import type { CustomRule, OrderLine } from "@/types/api";
 
-/** 「选规则」的默认前缀（ctx.rule_prefix）：prefix = PI 第一张单据编码后 7 位（本 PI 已用单据编码出号时为已用的那个，见 rules.pi_prefix）；custom = 本 PI 已用这个前缀的格式（没有为 null）。 */
+/** ctx.rule_prefix（见 rules.pi_prefix）：custom = 本 PI 已生成的号还在时所用前缀的格式，prefix 为这个前缀；
+ *  还没有生成的号（或已全部删掉）时 custom 为 null，prefix 为 PI 第一张单据编码后 7 位（没有点选的单据时才用）。 */
 type RulePrefix = { prefix: string; custom: CustomRule | null };
 const props = defineProps<{ modelValue: boolean; pi: string; lines: OrderLine[]; options: any[]; rulePrefix?: RulePrefix }>();
 const emit = defineEmits<{ (e: "update:modelValue", v: boolean): void; (e: "saved"): void }>();
@@ -101,8 +103,9 @@ const mode = ref<"LIBRARY" | "CUSTOM">("LIBRARY");
 const kw = ref("");
 const picked = ref<any>(null);
 const newPrefix = ref("");
-/** 前缀默认取 PI 第一张单据编码后 7 位（同一 PI 的各张单据共用，生成时后台查全局唯一）；取不到时用所选第一行的单据。 */
-const defaultPrefix = () => props.rulePrefix?.prefix || (props.lines[0]?.bill_no ?? "").slice(-7);
+/** 默认前缀：本 PI 已生成的号还在时沿用已用的前缀（之后各张单据都用它，流水接续）；否则取点选的第一个单据编码后 7 位
+ *  （lines 按点选顺序，行内按钮为本行），取不到时用 PI 第一张单据的。生成时后台查前缀全局唯一。 */
+const defaultPrefix = () => defaultRulePrefix(props.rulePrefix, props.lines);
 /** 自定义规则默认：流水 4 位，不带米数、不带单位，不指定起始号（从 PI 最大号之后接着编）。 */
 const customDefault = (): CustomRule => ({
   prefix: defaultPrefix(), base: 10, seq_len: 4, with_length: false, length_pad: 0, sep_before: "", sep_after: "",
@@ -150,7 +153,7 @@ function onOpen() {
 
 function pick(o: any) {
   picked.value = o;
-  // 须为本 PI 换前缀时同样默认 PI 第一张单据编码后 7 位
+  // 须为本 PI 换前缀时同样用默认前缀
   newPrefix.value = o.plan === "PREFIX" ? defaultPrefix() : "";
 }
 

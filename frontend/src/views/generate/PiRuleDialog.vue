@@ -44,7 +44,7 @@ const busy = ref("");
 const bind = reactive({ rule_id: undefined as number | undefined, new_prefix: "" });
 const optionTitle = (o: any) => (o.version ? `${o.rule_code} v${o.version}` : o.rule_code);
 const bindOption = computed(() => props.ctx.rule_options.find((o: any) => o.rule_id === bind.rule_id));
-/** 须为本 PI 换前缀时，新前缀默认 PI 第一张单据编码后 7 位（与物料行「选规则」一致） */
+/** 须为本 PI 换前缀时，新前缀默认本 PI 已生成的号所用的前缀；还没有生成的号时（这里没有点选的单据）取 PI 第一张单据编码后 7 位 */
 function onPick() {
   bind.new_prefix = bindOption.value?.plan === "PREFIX" ? props.ctx.rule_prefix?.prefix ?? "" : "";
 }

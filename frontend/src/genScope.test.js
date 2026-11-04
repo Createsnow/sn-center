@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { billMark, emptySel, genLimit, lineOrder, scopeBody, selectedLines, seqSource, toggleBill, toggleLine } from "./genScope.js";
+import {
+  billMark, defaultRulePrefix, emptySel, genLimit, lineOrder, scopeBody, selectedLines, seqSource, toggleBill, toggleLine,
+} from "./genScope.js";
 
 const BILLS = { A: [1, 2, 3], B: [1, 2] };
 const linesOf = (no) => (BILLS[no] || []).map((seq) => ({ bill_no: no, seq }));
@@ -55,4 +57,17 @@ test("seqSource: MAX by default, RANGE needs a valid start / end (end defaults t
   for (const [a, b] of [[null, 3], [0, 3], [5, 4], [1.5, 3], ["x", 3]]) {
     assert.deepEqual(seqSource("RANGE", a, b), { body: null, error: "SEQ_RANGE" }, `${a}~${b}`);
   }
+});
+
+test("default rule prefix: first picked bill until the PI has SNs, then the prefix in use", () => {
+  const lines = [{ bill_no: "MO24000002", seq: 1 }, { bill_no: "MO24000001", seq: 1 }];
+  // 还没有生成的号：点选的第一个单据编码后 7 位，不按单据编号大小
+  assert.equal(defaultRulePrefix({ prefix: "4000001", custom: null }, lines), "4000002");
+  // 已生成的号还在：沿用已用的前缀（含手填的），不论点选哪张单据
+  assert.equal(defaultRulePrefix({ prefix: "HAND-01", custom: { seq_len: 4 } }, lines), "HAND-01");
+  // 没有点选的单据：PI 第一张单据
+  assert.equal(defaultRulePrefix({ prefix: "4000001", custom: null }, []), "4000001");
+  // 单据编号不足 7 位：整个编号
+  assert.equal(defaultRulePrefix({ prefix: "", custom: null }, [{ bill_no: "MO1", seq: 1 }]), "MO1");
+  assert.equal(defaultRulePrefix(undefined, []), "");
 });

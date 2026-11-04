@@ -17,7 +17,8 @@
 是否带单位、后缀）；
 自定义规则生成成功后存入规则库并归属本 PI（编码 PI-PI号-n，名称 PI号_vn，n 为本 PI 第几条自定义规则），
 本 PI 选了同一自定义规则、这次没生成的物料行一并改记为这条规则；生成失败或取消不留规则。
-自定义前缀默认取 PI 第一张单据（单据编号最小）编码后 7 位，同一 PI 的各张单据共用：前缀已被本 PI 同格式的版本占用时
+自定义前缀默认取点选的第一个单据编码后 7 位；本 PI 已生成的号还在时默认沿用已用的前缀（见 pi_prefix）。
+前缀已被本 PI 同格式的版本占用时
 沿用该版本（own_version），被别的 PI、别的规则或别的格式占用时报前缀冲突；
 自定义规则的前缀在选定后被别的规则先占用时，预演标「规则须换前缀」，确认生成时报前缀冲突。
 物料行生成过号后可改选，已生成的号不变，流水接续。
@@ -262,31 +263,31 @@ def own_version(pi: str, spec: codec.Spec) -> Resolved | None:
 
 
 def pi_prefix(pi: str) -> dict:
-    """生成页「选规则」的默认前缀：PI 第一张单据（单据编号最小）编码后 7 位；本 PI 已有这个前缀的版本时一并给出其格式，
-    页面按它填其他参数，保存时沿用该版本。
-    本 PI 已用某张单据的编码后 7 位作前缀（有归属本 PI 的版本）时默认它（最早归属的那个），不随单据增减漂移：
-    第一张单据出号后离开快照（号仍挂在本 PI 下），或单据编号更小的单据加入本 PI，仍默认已用的前缀、流水接续。"""
-    first = db.scalar("SELECT MIN(bill_no) FROM sn_prd_mo WHERE pi = %s", pi) or ""
-    prefix = first[-7:]
-    owned = db.column("SELECT prefix FROM sn_rule_version WHERE claimed_pi = %s GROUP BY prefix ORDER BY MIN(id)", pi)
-    if owned:
-        # 本 PI 的单据：快照里的，加上号挂在本 PI 下、已离开快照的
-        bills = db.column(
-            "SELECT bill_no FROM sn_prd_mo WHERE pi = %s "
-            "UNION SELECT bill_no FROM sn_item WHERE pi_no = %s AND origin = 'GEN'",
-            pi,
-            pi,
-        )
-        tails = {b[-7:] for b in bills if b}
-        prefix = next((p for p in owned if p in tails), prefix)
+    """生成页「选规则」的默认前缀（返回结构不变：prefix、custom）。
+    - 本 PI 已生成的号（流水归属本 PI，含已转到别的单据 / PI 的）还在：custom 为这个前缀的格式，prefix 为它，
+      之后各张单据都沿用（保存时沿用那一版、流水接续）；不论这个前缀是单据编码后 7 位还是手填的。
+      用过几个前缀时取流水最小的号所在的那个（还在的号里最早生成的）。
+    - 还没有生成的号，或已生成的号全部删掉了：custom 为 None，页面按默认规则取点选的第一个单据编码后 7 位；
+      prefix 为 PI 第一张单据（单据编号最小）编码后 7 位，只在没有点选的单据时用（PI 规则换前缀）。
+      只给物料行保存了规则、还没有生成的，不算已用。"""
+    used = db.one(
+        "SELECT v.* FROM sn_item i JOIN sn_rule_version v ON v.id = i.rule_version_id "
+        "WHERE i.seq_pi_no = %s AND i.origin = 'GEN' ORDER BY i.seq_dec LIMIT 1",
+        pi,
+    )
+    if used is None:
+        first = db.scalar("SELECT MIN(bill_no) FROM sn_prd_mo WHERE pi = %s", pi) or ""
+        return {"prefix": first[-7:], "custom": None}
+    # 格式取本 PI 这个前缀最新的版本（规则另出过新版时与 own_version 沿用的一致），没有时取号所在的版本
     v = (
         db.one(
-            "SELECT * FROM sn_rule_version WHERE prefix = %s AND claimed_pi = %s ORDER BY id DESC LIMIT 1", prefix, pi
+            "SELECT * FROM sn_rule_version WHERE prefix = %s AND claimed_pi = %s ORDER BY id DESC LIMIT 1",
+            used["prefix"],
+            pi,
         )
-        if prefix
-        else None
+        or used
     )
-    return {"prefix": prefix, "custom": None if v is None else _custom_dict(spec_of(v))}
+    return {"prefix": used["prefix"], "custom": _custom_dict(spec_of(v))}
 
 
 def _adopt(cu: CurrentUser, rule: dict, pi: str, orgs: set[str]) -> None:

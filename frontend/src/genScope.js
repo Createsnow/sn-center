@@ -85,3 +85,14 @@ export function seqSource(mode, start, end) {
   if (!Number.isSafeInteger(a) || !Number.isSafeInteger(b) || a < 1 || b < a) return { body: null, error: "SEQ_RANGE" };
   return { body: { seq_mode: "RANGE", seq_start: a, seq_end: b }, error: null };
 }
+
+/**
+ * 「选规则」的默认前缀。rulePrefix 为生成详情的 rule_prefix（见后台 rules.pi_prefix），lines 为所选物料行（按点选顺序）。
+ * - 本 PI 已生成的号还在（rulePrefix.custom 非空）：沿用已用的前缀 rulePrefix.prefix，之后各张单据都用它；
+ * - 否则：点选的第一个单据编码后 7 位（只保存了规则、还没生成的不算已用）；
+ * - 都取不到：PI 第一张单据编码后 7 位（rulePrefix.prefix）。
+ */
+export function defaultRulePrefix(rulePrefix, lines) {
+  if (rulePrefix?.custom) return rulePrefix.prefix;
+  return (lines?.[0]?.bill_no ?? "").slice(-7) || rulePrefix?.prefix || "";
+}
