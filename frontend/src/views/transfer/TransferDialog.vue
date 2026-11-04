@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="tf.open" :title="t('transfer.new')" width="1080px" top="4vh">
+  <el-dialog v-model="tf.open" :title="t('transfer.new')" width="1240px" top="4vh">
     <!-- ① 快速定位：完整 SN / 单据编号 / PI，带出来源 -->
     <div class="locate">
       <span class="locate__t">{{ t("transfer.locate") }}</span>
@@ -38,15 +38,6 @@
             </el-select>
           </el-form-item>
         </el-form>
-        <div class="info">
-          <div class="info__cap">{{ t("transfer.srcInfo") }}</div>
-          <dl>
-            <dt>{{ t("common.factory") }}</dt>
-            <dd>{{ tf.factory_code ? orgLabel(tf.factory_code) : "—" }}<el-tag v-if="isMes(tf.factory_code)" size="small" class="ml">MES</el-tag></dd>
-            <dt>{{ t("common.customer") }}</dt><dd>{{ join(srcCustomers) }}</dd>
-            <dt>{{ t("transfer.srcQty") }}</dt><dd class="num">{{ srcQtyText }}</dd>
-          </dl>
-        </div>
       </section>
 
       <div class="sides__arrow"><el-icon><Right /></el-icon></div>
@@ -82,77 +73,91 @@
             <div v-if="outOfScope" class="hint warn-text">{{ t("transfer.targetOutOfScope") }}</div>
           </el-form-item>
         </el-form>
-        <div class="info">
-          <div class="info__cap">{{ t("transfer.toInfo") }}</div>
-          <dl>
-            <dt>{{ t("transfer.billOrg") }}</dt><dd>{{ toHead ? orgLabel(toHead.org_code) : "—" }}</dd>
-            <dt>{{ t("transfer.mesConnected") }}</dt><dd>{{ tf.to_factory ? t(isMes(tf.to_factory) ? "common.yes" : "common.no") : "—" }}</dd>
-            <dt>{{ t("common.customer") }}</dt><dd>{{ toHead?.customer_code || "—" }}</dd>
-          </dl>
-        </div>
       </section>
     </div>
 
-    <!-- ③ 料号明细：料号与附件项次同级；整单转移列出全部，按料号转移勾选一个或多个，各自全部、号段或指定数量；
-         每行只转到目标单据中同料号、同附件项次的物料行 -->
+    <!-- ③ 料号明细：料号与附件项次同级，来源、目标两侧都列料号与附件项次逐行对照。整单转移列出全部；按料号转移勾选一个或多个，
+         各自全部、号段或指定数量；目标行号只列目标单据中同料号、同附件项次的行（米数相符的只有一行时自动选上） -->
     <section class="lines">
       <div class="lines__t">
         <span>{{ t("transfer.linesTitle") }}</span>
         <span class="hint inline">{{ t("transfer.sameKeyHint") }}</span>
       </div>
-      <el-table :data="groups" size="small" :empty-text="t('transfer.noLines')" max-height="300">
-        <el-table-column v-if="tf.scope === 'MATERIAL'" width="44" align="center">
+      <el-table :data="groups" size="small" border :empty-text="t('transfer.noLines')" max-height="340" :row-class-name="rowClass">
+        <el-table-column v-if="tf.scope === 'MATERIAL'" width="40" align="center">
           <template #header>
             <el-checkbox :model-value="allChecked" :indeterminate="someChecked && !allChecked" :disabled="!groups.length" @change="checkAll" />
           </template>
           <template #default="{ row }"><el-checkbox v-model="cfgs[row.key].checked" @change="refreshSeq(row)" /></template>
         </el-table-column>
-        <el-table-column :label="t('transfer.partNo')" min-width="120">
-          <template #default="{ row }"><span class="sn-mono">{{ matLabel(row.material_code) }}</span></template>
+        <el-table-column :label="t('transfer.source')" align="center" class-name="grp-src">
+          <el-table-column :label="t('transfer.partNo')" min-width="96">
+            <template #default="{ row }"><span class="key">{{ matLabel(row.material_code) }}</span></template>
+          </el-table-column>
+          <el-table-column :label="t('common.attachNo')" width="80">
+            <template #default="{ row }"><span class="key">{{ row.attach_no || "—" }}</span></template>
+          </el-table-column>
+          <el-table-column :label="t('common.length')" width="60"><template #default="{ row }">{{ join(row.lengths) }}</template></el-table-column>
+          <el-table-column :label="t('transfer.groupQty')" align="right" width="52"><template #default="{ row }"><span class="num">{{ row.qty }}</span></template></el-table-column>
         </el-table-column>
-        <el-table-column :label="t('common.attachNo')" min-width="80">
-          <template #default="{ row }"><span class="sn-mono">{{ row.attach_no || "—" }}</span></template>
-        </el-table-column>
-        <el-table-column :label="t('common.length')" width="80"><template #default="{ row }">{{ join(row.lengths) }}</template></el-table-column>
-        <el-table-column :label="t('transfer.groupQty')" align="right" width="80"><template #default="{ row }"><span class="num">{{ row.qty }}</span></template></el-table-column>
-        <el-table-column :label="t('transfer.way')" width="120">
-          <template #default="{ row }">
-            <span v-if="tf.scope === 'BILL'" class="muted">{{ t("transfer.lineMode.ALL") }}</span>
-            <el-select v-else v-model="cfgs[row.key].mode" size="small" :disabled="!cfgs[row.key].checked" @change="refreshSeq(row)">
-              <el-option v-for="md in LINE_MODES" :key="md" :value="md" :label="t(`transfer.lineMode.${md}`)" />
-            </el-select>
-          </template>
-        </el-table-column>
-        <el-table-column :label="t('transfer.configure')" min-width="230">
-          <template #default="{ row }">
-            <template v-if="tf.scope === 'MATERIAL' && cfgs[row.key].checked">
-              <div v-if="cfgs[row.key].mode === 'RANGE'" class="pair">
-                <el-input v-model="cfgs[row.key].start_sn" size="small" class="sn-mono" :placeholder="t('transfer.startSn')" clearable />
-                <el-input v-model="cfgs[row.key].end_sn" size="small" class="sn-mono" :placeholder="t('transfer.endSn')" clearable />
-              </div>
-              <el-input-number v-else-if="cfgs[row.key].mode === 'QTY'" v-model="cfgs[row.key].qty" size="small" :min="1" :max="row.qty"
-                :step="1" step-strictly :placeholder="t('transfer.qtyPlaceholder', { n: row.qty })" />
-              <span v-else class="muted">{{ t("transfer.snCount", { n: row.qty }) }}</span>
+        <el-table-column :label="t('transfer.way')" align="center">
+          <el-table-column :label="t('transfer.wayShort')" width="106">
+            <template #default="{ row }">
+              <span v-if="tf.scope === 'BILL'" class="muted">{{ t("transfer.lineMode.ALL") }}</span>
+              <el-select v-else v-model="cfgs[row.key].mode" size="small" :disabled="!cfgs[row.key].checked" @change="refreshSeq(row)">
+                <el-option v-for="md in LINE_MODES" :key="md" :value="md" :label="t(`transfer.lineMode.${md}`)" />
+              </el-select>
             </template>
-            <span v-else-if="tf.scope === 'BILL'" class="muted">{{ t("transfer.snCount", { n: row.qty }) }}</span>
-            <span v-else class="muted">—</span>
-          </template>
+          </el-table-column>
+          <el-table-column :label="t('transfer.configure')" min-width="210">
+            <template #default="{ row }">
+              <template v-if="tf.scope === 'MATERIAL' && cfgs[row.key].checked">
+                <div v-if="cfgs[row.key].mode === 'RANGE'" class="pair">
+                  <el-input v-model="cfgs[row.key].start_sn" size="small" class="sn-mono" :placeholder="t('transfer.startSn')" clearable />
+                  <el-input v-model="cfgs[row.key].end_sn" size="small" class="sn-mono" :placeholder="t('transfer.endSn')" clearable />
+                </div>
+                <el-input-number v-else-if="cfgs[row.key].mode === 'QTY'" v-model="cfgs[row.key].qty" size="small" :min="1" :max="row.qty"
+                  :step="1" step-strictly :placeholder="t('transfer.qtyPlaceholder', { n: row.qty })" />
+                <span v-else class="muted">{{ t("transfer.snCount", { n: row.qty }) }}</span>
+              </template>
+              <span v-else-if="tf.scope === 'BILL'" class="muted">{{ t("transfer.snCount", { n: row.qty }) }}</span>
+              <span v-else class="muted">—</span>
+            </template>
+          </el-table-column>
         </el-table-column>
-        <el-table-column :label="t('transfer.toSeq')" width="210">
-          <template #default="{ row }">
-            <template v-if="isActive(row)">
-              <el-select v-if="cands(row).length" v-model="cfgs[row.key].to_seq" size="small" class="full" clearable
+        <el-table-column :label="t('transfer.target')" align="center" class-name="grp-dst">
+          <el-table-column :label="t('transfer.toLine')" width="120">
+            <template #default="{ row }">
+              <el-select v-if="isActive(row) && cands(row).length" v-model="cfgs[row.key].to_seq" size="small" class="full" clearable
                 :placeholder="sameBill ? t('transfer.keepLine') : t('transfer.pickLine')">
-                <el-option v-for="l in cands(row)" :key="l.seq" :value="l.seq" :label="String(l.seq)" :disabled="lineLengthBad(l, row)">
-                  <div class="opt"><span>{{ l.seq }}</span><span class="muted">{{ t("common.length") }} {{ l.length || "—" }}{{ lineLengthBad(l, row) ? ` · ${t("transfer.lengthDiff")}` : "" }}</span></div>
+                <el-option v-for="l in cands(row)" :key="l.seq" :value="l.seq" :label="t('transfer.lineNo', { n: l.seq })" :disabled="lineLengthBad(l, row)">
+                  <span>{{ t("transfer.lineOption", { seq: l.seq, material: matLabel(l.material_code), attach: l.attach_no || "—", length: l.length || "—" }) }}</span>
+                  <span v-if="lineLengthBad(l, row)" class="muted"> · {{ t("transfer.lengthDiff") }}</span>
                 </el-option>
               </el-select>
-              <div v-if="issue(row) && issue(row) !== 'NEED_SN' && issue(row) !== 'BAD_QTY' && tf.to_bill" class="hint warn-text">
-                {{ t(`transfer.lineIssue.${issue(row)}`) }}
-              </div>
+              <span v-else class="muted">—</span>
             </template>
-            <span v-else class="muted">—</span>
-          </template>
+          </el-table-column>
+          <el-table-column :label="t('transfer.partNo')" min-width="96">
+            <template #default="{ row }">
+              <span v-if="isActive(row) && toLineOf(row)" class="key">{{ matLabel(toLineOf(row)!.material_code) }}</span><span v-else class="muted">—</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="t('common.attachNo')" width="80">
+            <template #default="{ row }">
+              <span v-if="isActive(row) && toLineOf(row)" class="key">{{ toLineOf(row)!.attach_no || "—" }}</span><span v-else class="muted">—</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="t('transfer.match')" width="150">
+            <template #default="{ row }">
+              <template v-if="isActive(row) && tf.to_bill">
+                <el-tag v-if="matchState(row) === 'OK'" type="success" size="small">{{ t("transfer.matchOk") }}</el-tag>
+                <el-tag v-else-if="matchState(row) === 'PICK_SEQ'" type="warning" size="small">{{ t("transfer.lineIssue.PICK_SEQ", { n: cands(row).length }) }}</el-tag>
+                <el-tag v-else type="danger" size="small">{{ t(`transfer.lineIssue.${matchState(row)}`) }}</el-tag>
+              </template>
+              <span v-else class="muted">—</span>
+            </template>
+          </el-table-column>
         </el-table-column>
       </el-table>
     </section>
@@ -185,7 +190,7 @@
  *  来源：快速定位（完整 SN / 单据编号 / PI）或 PI → 单据 → 范围：整单转移，或按料号转移（勾选一个或多个「料号 + 附件项次」，
  *  料号即物料编码、与附件项次同级；每行可转全部、号段或指定数量）；来源生产组织按号自动带出（号分在多个组织时才选）。
  *  目标：PI（默认同来源）→ 单据 → 生产组织（默认目标单据的，可改）；只有同料号、同附件项次才能转移——每行只能转到目标单据中
- *  料号、附件项次都相同的物料行（米数相符的只有一行时自动选上，多行时选序号）。确认框列出枚数、各行对应、不可转、转出等，
+ *  料号、附件项次都相同的物料行（米数相符的只有一行时自动选上，多行时选行号）。确认框列出枚数、各行对应、不可转、转出等，
  *  确认后执行；完成后发出 done（种类、单据）。 */
 import { computed, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
@@ -195,7 +200,7 @@ import { useFactories } from "@/composables/useFactories";
 import { scopeLabel } from "@/constants";
 import { useAuthStore } from "@/stores/auth";
 import {
-  LINE_MODES, activeGroups, autoSeq, candidates, defaultCfg, groupKey, groupsOf, lengthBad, lineIssue, linesBody, selectedQty,
+  LINE_MODES, activeGroups, autoSeq, candidates, defaultCfg, groupKey, groupsOf, lengthBad, lineIssue, linesBody,
 } from "@/transferLines.js";
 import { type Kind, type Located, type Preview, type SourceBill, type SourceGroup, type Target } from "./types";
 type Scope = "BILL" | "MATERIAL";
@@ -212,7 +217,7 @@ const tf = reactive({
   open: false, factory_code: "", pi_no: "", bill_no: "", scope: "BILL" as Scope,
   to_pi: "", to_bill: "", to_factory: "", reason: "",
 });
-/** 各行（料号 + 附件项次）的勾选、转移方式、号段或数量、目标序号；换单据、换组织时保留同一行的配置。 */
+/** 各行（料号 + 附件项次）的勾选、转移方式、号段或数量、目标行号；换单据、换组织时保留同一行的配置。 */
 const cfgs = reactive<Record<string, Cfg>>({});
 const loc = reactive({ q: "", by: "" as "" | Located["by"] });
 const srcBills = ref<SourceBill[]>([]);
@@ -234,14 +239,6 @@ const groups = computed<SourceGroup[]>(() => groupsOf(srcBill.value?.rows ?? [],
 const active = computed<SourceGroup[]>(() => activeGroups(tf.scope, groups.value, cfgs));
 const allChecked = computed(() => groups.value.length > 0 && groups.value.every((g) => cfgs[g.key]?.checked));
 const someChecked = computed(() => groups.value.some((g) => cfgs[g.key]?.checked));
-const srcCustomers = computed(() => [...new Set(active.value.flatMap((g) => g.customers))]);
-/** 所选枚数：号段的枚数在确认框里给出。 */
-const srcQtyText = computed(() => {
-  if (!tf.factory_code || !active.value.length) return "—";
-  const n = selectedQty(tf.scope, groups.value, cfgs);
-  return n === null ? "—" : t("transfer.snCount", { n });
-});
-
 // ---------------- 目标
 const toBills = computed(() => {
   const seen = new Map<string, Target>();
@@ -250,7 +247,7 @@ const toBills = computed(() => {
 });
 const toHead = computed(() => toBills.value.find((b) => b.bill_no === tf.to_bill) ?? null);
 const toLines = computed(() => toRows.value.filter((r) => r.bill_no === tf.to_bill));
-/** 目标单据就是来源单据（同一单据内转组织）：不选序号即留在原行。 */
+/** 目标单据就是来源单据（同一单据内转组织）：不选行号即留在原行。 */
 const sameBill = computed(() => !!tf.to_bill && tf.to_bill === tf.bill_no);
 
 /** 系统判断的类型：目标单据与来源不同、且生产组织就是目标单据的 → 转单；其余 → 转组织（与后台 decide_kind 一致）。 */
@@ -274,9 +271,6 @@ function matLabel(v: string) {
 function orgLabel(code: string) {
   return `${nameOf(code)}（${code}）`;
 }
-function isMes(code: string) {
-  return !!code && !!factories.value.find((f) => f.factory_code === code)?.mes_enabled;
-}
 function join(vs: string[]) {
   return vs.length ? vs.join("、") : "—";
 }
@@ -292,6 +286,25 @@ function cands(g: SourceGroup): Target[] {
 }
 function lineLengthBad(l: Target, g: SourceGroup) {
   return lengthBad(l, g, modeOf(g));
+}
+/** 该行当前对应的目标物料行：已选行号的那一行；同一单据内未选时即原行（同料号、同附件项次）。 */
+function toLineOf(g: SourceGroup): Target | null {
+  const c = cfgs[g.key];
+  const cs = cands(g);
+  if (c?.to_seq !== undefined) return cs.find((l) => l.seq === c.to_seq) ?? null;
+  return sameBill.value && cs.length ? cs[0] : null;
+}
+/** 对照：OK 同料号同项次 / PICK_SEQ 有多行须选行号 / NO_MATCH 目标没有同料号同项次的行 / LENGTH 米数都不同。
+ *  号段未填、数量越界不影响对照（在号段 / 数量列里填好即可）。 */
+function matchState(g: SourceGroup) {
+  const i = issue(g);
+  return i === "NO_MATCH" || i === "LENGTH" || i === "PICK_SEQ" ? i : "OK";
+}
+/** 目标没有同料号同项次、或米数都不同的行整行标红。 */
+function rowClass({ row }: { row: SourceGroup }) {
+  if (!isActive(row) || !tf.to_bill) return "";
+  const m = matchState(row);
+  return m === "NO_MATCH" || m === "LENGTH" ? "row-bad" : "";
 }
 function issue(g: SourceGroup) {
   return lineIssue(tf.scope, g, { ...cfgs[g.key], mode: modeOf(g) }, toLines.value, sameBill.value);
@@ -358,19 +371,19 @@ function onSourceBill(prefer?: string) {
   else if (!orgs.includes(tf.factory_code)) tf.factory_code = orgs.length === 1 ? orgs[0] : "";
   syncLines();
 }
-/** 各行配置：新出现的行补默认值（只有一行时默认勾选），并重新匹配目标序号。 */
+/** 各行配置：新出现的行补默认值（只有一行时默认勾选），并重新匹配目标行号。 */
 function syncLines() {
   for (const g of groups.value) if (!cfgs[g.key]) cfgs[g.key] = { ...defaultCfg(), checked: groups.value.length === 1 };
   groups.value.forEach(refreshSeq);
 }
-/** 目标序号按同料号、同附件项次自动匹配（米数相符的只有一行时选上）；同一单据内默认留在原行（不选）。 */
+/** 目标行号按同料号、同附件项次自动匹配（米数相符的只有一行时选上）；同一单据内默认留在原行（不选）。 */
 function refreshSeq(g: SourceGroup) {
   const c = cfgs[g.key];
   if (!c) return;
   if (sameBill.value && !cands(g).some((l) => l.seq === c.to_seq)) c.to_seq = undefined;
   else if (!sameBill.value) c.to_seq = autoSeq(toLines.value, g, { ...c, mode: modeOf(g) });
 }
-// 来源行或目标物料行变化时（换单据、组织、目标单据）补配置并重新匹配目标序号；在渲染前执行
+// 来源行或目标物料行变化时（换单据、组织、目标单据）补配置并重新匹配目标行号；在渲染前执行
 watch([groups, toLines, sameBill], syncLines);
 
 function checkAll(on: boolean | string | number) {
@@ -397,7 +410,7 @@ async function loadTargets() {
   }
   onTargetBill();
 }
-/** 换目标单据：生产组织回到该单据的，各行目标序号重新匹配。 */
+/** 换目标单据：生产组织回到该单据的，各行目标行号重新匹配。 */
 function onTargetBill() {
   tf.to_factory = toHead.value?.org_code ?? "";
   syncLines();
@@ -411,7 +424,7 @@ function body() {
   };
 }
 
-/** 确认框：类型、可转枚数、目标、各行对应的目标序号、不可转及原因、向来源 MES 转出的枚数、原因；确认后直接执行。 */
+/** 确认框：类型、可转枚数、目标、各行对应的目标行号、不可转及原因、向来源 MES 转出的枚数、原因；确认后直接执行。 */
 async function submit() {
   reasonTouched.value = true;
   if (!tf.reason.trim()) return;
@@ -454,7 +467,11 @@ defineExpose({ open });
 .hint.inline { width: auto; margin: 0 0 0 12px; font-weight: 400; }
 .lines { margin-top: 12px; border: 1px solid var(--app-line); border-radius: 8px; padding: 10px 16px 12px; background: var(--app-surface); }
 .lines__t { display: flex; align-items: baseline; flex-wrap: wrap; font-size: 13px; font-weight: 600; color: var(--app-text); margin-bottom: 6px; }
-.lines :deep(.el-input-number) { width: 160px; }
+.lines :deep(.el-input-number) { width: 130px; }
+.key { font-family: var(--sn-mono, ui-monospace, monospace); font-weight: 600; }
+.lines :deep(th.grp-src) { background: var(--el-color-primary-light-9) !important; }
+.lines :deep(th.grp-dst) { background: var(--el-color-success-light-9) !important; }
+.lines :deep(.row-bad td) { background: var(--el-color-danger-light-9) !important; }
 .warn-text { color: var(--el-color-danger); font-size: 12px; }
 .wt { color: var(--el-color-warning-dark-2); }
 .ok { color: var(--el-color-success); }
@@ -475,12 +492,6 @@ defineExpose({ open });
 .sides__arrow { display: flex; align-items: center; justify-content: center; color: var(--app-muted); font-size: 18px; }
 .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
 .opt { display: flex; justify-content: space-between; gap: 16px; }
-.info { border: 1px solid var(--app-line); border-radius: 6px; overflow: hidden; font-size: 12px; }
-.info__cap { background: var(--app-canvas); color: var(--app-muted); padding: 4px 10px; border-bottom: 1px solid var(--app-line); }
-.info dl { display: grid; grid-template-columns: 96px minmax(0, 1fr); margin: 0; }
-.info dt, .info dd { margin: 0; padding: 4px 10px; border-bottom: 1px solid var(--app-line); }
-.info dt { color: var(--app-muted); }
-.info dl > :nth-last-child(-n + 2) { border-bottom: 0; }
 .foot { display: flex; align-items: center; gap: 8px; }
 @media (max-width: 900px) {
   .sides, .pair { grid-template-columns: 1fr; }

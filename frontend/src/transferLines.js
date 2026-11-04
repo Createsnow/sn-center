@@ -2,7 +2,7 @@
  * 新建转移的料号明细（F-15、F-16）：料号（物料编码）与附件项次同级，「料号 + 附件项次」确定一组号。
  * 整单转移 = 来源单据下全部组；按料号转移 = 勾选一组或多组，每组可转全部（ALL）、号段（RANGE）或指定数量（QTY）。
  * 只有同料号、同附件项次才能转移：每组只能转到目标单据中料号、附件项次都相同的物料行；这样的行有多行时
- * 在米数相符的行里只有一行就自动选上，否则须选序号；同一单据内转（转组织）不选序号即留在原行。与后台 transfers._dest_line 一致。
+ * 在米数相符的行里只有一行就自动选上，否则须选行号；同一单据内转（转组织）不选行号即留在原行。与后台 transfers._dest_line 一致。
  *
  * @typedef {{ material_code: string, attach_no: string, factory_code: string, qty: number, customers: string[], lengths: string[] }} SrcRow
  * @typedef {{ key: string, material_code: string, attach_no: string, qty: number, customers: string[], lengths: string[] }} Group
@@ -47,7 +47,7 @@ export function lengthBad(line, g, mode) {
   return mode === "ALL" ? ls.some((x) => x !== line.length) : ls.length > 0 && !ls.includes(line.length);
 }
 
-/** 目标序号：已选的仍是米数相符的候选行时保留；否则米数相符的候选行只有一行时自动选上，其余待选。 */
+/** 目标行号：已选的仍是米数相符的候选行时保留；否则米数相符的候选行只有一行时自动选上，其余待选。 */
 export function autoSeq(lines, g, cfg) {
   const fit = candidates(lines, g).filter((l) => !lengthBad(l, g, cfg.mode));
   if (fit.some((l) => l.seq === cfg.to_seq)) return cfg.to_seq;
@@ -59,8 +59,8 @@ export function activeGroups(scope, groups, cfgs) {
   return scope === "BILL" ? groups : groups.filter((g) => cfgs[g.key]?.checked);
 }
 
-/** 一组的问题（空串 = 可以转）：NO_MATCH 目标单据没有同料号、同附件项次的行 / LENGTH 米数都不同 / PICK_SEQ 须选目标序号 /
- *  NEED_SN 号段须填起号 / BAD_QTY 数量须为 1 ～ 该组枚数的整数。sameBill = 目标单据就是来源单据（不选序号即留在原行）。 */
+/** 一组的问题（空串 = 可以转）：NO_MATCH 目标单据没有同料号、同附件项次的行 / LENGTH 米数都不同 / PICK_SEQ 须选目标行号 /
+ *  NEED_SN 号段须填起号 / BAD_QTY 数量须为 1 ～ 该组枚数的整数。sameBill = 目标单据就是来源单据（不选行号即留在原行）。 */
 export function lineIssue(scope, g, cfg, lines, sameBill) {
   const mode = scope === "BILL" ? "ALL" : cfg.mode;
   if (mode === "RANGE" && !String(cfg.start_sn || "").trim()) return "NEED_SN";
@@ -72,7 +72,7 @@ export function lineIssue(scope, g, cfg, lines, sameBill) {
   return cands.every((l) => lengthBad(l, g, mode)) ? "LENGTH" : "PICK_SEQ";
 }
 
-/** 请求体的 lines：整单转移只带各组的目标序号；按料号转移带勾选各组的方式、号段或数量与目标序号。 */
+/** 请求体的 lines：整单转移只带各组的目标行号；按料号转移带勾选各组的方式、号段或数量与目标行号。 */
 export function linesBody(scope, groups, cfgs) {
   return activeGroups(scope, groups, cfgs).map((g) => {
     const c = cfgs[g.key] || defaultCfg();

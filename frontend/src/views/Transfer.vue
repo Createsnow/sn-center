@@ -99,10 +99,10 @@ function sourceText(d: any) {
   const rest = d.kind === "BILL" ? (d.scope_text || "").split(" / ").slice(2) : [d.scope !== "BILL" && d.from_material && `${t("transfer.partNo")} ${d.from_material}`, d.from_sn && snRange(d)];
   return [scopeLabel(d.scope), ...rest].filter(Boolean).join(" · ");
 }
-/** 目标：单据 / 序号（多个料号转到不同行时不带序号）· 料号 · 客户。 */
+/** 目标：单据 · 行号（多个料号转到不同行时不带行号）· 料号 · 客户。 */
 function targetText(d: { to_bill?: string; to_seq?: number | null; to_material?: string; to_customer?: string }) {
   return [
-    d.to_bill && (d.to_seq ? `${d.to_bill} / ${d.to_seq}` : d.to_bill),
+    d.to_bill && (d.to_seq ? `${d.to_bill} · ${t("transfer.lineNo", { n: d.to_seq })}` : d.to_bill),
     d.to_material && `${t("transfer.partNo")} ${d.to_material}`,
     d.to_customer && `${t("common.customer")} ${d.to_customer}`,
   ].filter(Boolean).join(" · ");

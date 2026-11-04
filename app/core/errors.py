@@ -192,9 +192,9 @@ class ErrorCode(Enum):
     TR_TARGET_BILL_INVALID = (400, "目标单据 {bill_no} 须在快照中且有 PI；转单时不能是来源单据")
     TR_TARGET_LINE_REQUIRED = (
         400,
-        "目标单据 {bill_no} 中料号 {material}、附件项次 {attach_no} 有多行，须选定目标序号",
+        "目标单据 {bill_no} 中料号 {material}、附件项次 {attach_no} 有多行，须选定目标行号",
     )
-    TR_TARGET_LINE_INVALID = (400, "目标物料行 {seq} 不在目标单据中")
+    TR_TARGET_LINE_INVALID = (400, "目标行号 {seq} 不在目标单据中")
     TR_RANGE_INVALID = (400, "起止号 {start_sn} ~ {end_sn} 不在所选单据、料号和附件项次下，或不在同一流水归属 PI 内")
     TR_FROZEN = (409, "有 {count} 枚号不能转移：{detail}")
     TR_LOCATE_NOT_FOUND = (404, "没有找到 {q}：请输入完整 SN、单据编号或 PI（只查授权组织内分配成功的号）")

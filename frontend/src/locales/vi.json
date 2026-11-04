@@ -1039,14 +1039,9 @@
       "BILL": "Đã điền PI và chứng từ",
       "PI": "Đã điền PI"
     },
-    "srcInfo": "Thông tin nguồn (tự điền, chỉ xem)",
-    "toInfo": "Thông tin đích (tự điền, chỉ xem)",
-    "srcQty": "Số SN đã chọn",
     "toPiDefault": "Mặc định là PI nguồn",
     "orgDefault": "Mặc định là tổ chức của chứng từ đích; có thể chọn tổ chức đang hoạt động khác",
     "orgDiff": "Khác tổ chức của chứng từ đích: xử lý như chuyển tổ chức",
-    "billOrg": "Tổ chức của chứng từ",
-    "mesConnected": "Kết nối MES",
     "lengthDiff": "Khác chiều dài",
     "kindIs": "Ghi nhận là",
     "confirm": "Ghi nhận là {kind}: gắn lại {n} SN sang {to} · PI {pi} · chứng từ {bill}, có hiệu lực ngay.",
@@ -1061,7 +1056,7 @@
     "submit": "Chuyển",
     "partNo": "Mã hàng",
     "linesTitle": "Chi tiết mã hàng",
-    "sameKeyHint": "Mã hàng đi cùng hạng mục phụ kiện: chỉ chuyển được khi cùng mã hàng và cùng hạng mục phụ kiện; mỗi dòng chuyển sang dòng của chứng từ đích có cùng mã hàng và hạng mục phụ kiện",
+    "sameKeyHint": "Chỉ chuyển được khi cùng mã hàng và cùng hạng mục phụ kiện: danh sách dòng đích chỉ gồm các dòng của chứng từ đích có cùng mã hàng và hạng mục phụ kiện",
     "noLines": "Chọn PI, chứng từ (và tổ chức nguồn) để liệt kê mã hàng có thể chuyển",
     "groupQty": "Số SN",
     "way": "Cách chuyển",
@@ -1072,13 +1067,18 @@
       "QTY": "Số lượng"
     },
     "qtyPlaceholder": "1–{n}",
-    "toSeq": "STT dòng đích",
+    "toLine": "STT dòng đích",
+    "lineNo": "Dòng {n}",
+    "lineOption": "Dòng {seq} · {material} · hạng mục {attach} · chiều dài {length}",
+    "wayShort": "Cách",
+    "match": "Đối chiếu",
+    "matchOk": "✓ Cùng mã hàng · cùng hạng mục",
     "keepLine": "Giữ dòng hiện tại",
-    "pickLine": "Chọn STT dòng",
+    "pickLine": "Chọn dòng",
     "lineIssue": {
-      "NO_MATCH": "Chứng từ đích không có dòng cùng mã hàng và hạng mục phụ kiện",
-      "LENGTH": "Các dòng cùng mã hàng, hạng mục phụ kiện đều khác chiều dài",
-      "PICK_SEQ": "Có nhiều dòng phù hợp: hãy chọn STT dòng đích"
+      "NO_MATCH": "✗ Đích không có dòng cùng mã hàng, hạng mục",
+      "LENGTH": "✗ Khác chiều dài",
+      "PICK_SEQ": "{n} dòng phù hợp: hãy chọn"
     },
     "confirmLine": "· Mã hàng {material} / hạng mục phụ kiện {attach} (dòng {from}) → dòng {seq}: {n} SN"
   },
