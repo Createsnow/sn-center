@@ -40,7 +40,7 @@ from app.services import audit, factories
 
 ACTIVE = "ACTIVE"
 DISABLED = "DISABLED"
-_EMP_NO = re.compile(r"^[A-Za-z0-9]{4,32}$")
+_EMP_NO = re.compile(r"^[A-Za-z0-9-]{3,32}$")
 LANGS = frozenset(("zh-CN", "en", "vi"))
 
 
@@ -565,7 +565,7 @@ def reset_password(cu: CurrentUser, uid: int, password: str | None) -> dict:
 def _admin_emp_no() -> str:
     emp = settings.init_admin_emp_no
     if not _EMP_NO.match(emp):
-        raise RuntimeError(f"SN_INIT_ADMIN_EMP_NO={emp!r} 不是合法工号（4–32 位字母和数字）")
+        raise RuntimeError(f"SN_INIT_ADMIN_EMP_NO={emp!r} 不是合法工号（3–32 位字母、数字和 -）")
     return emp
 
 

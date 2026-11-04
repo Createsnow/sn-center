@@ -18,7 +18,7 @@ E = {
 "REASON_REQUIRED": ("Reason is required (at most 500 characters)", "Bắt buộc nhập lý do (tối đa 500 ký tự)"),
 # ---------- 账户 ----------
 "USER_NOT_FOUND": ("Account not found", "Không tìm thấy tài khoản"),
-"USER_EMP_NO_INVALID": ("Employee No. must be 4–32 letters and digits", "Mã NV phải gồm 4–32 chữ cái và chữ số"),
+"USER_EMP_NO_INVALID": ("Employee No. must be 3–32 letters, digits or -", "Mã NV phải gồm 3–32 chữ cái, chữ số hoặc -"),
 "USER_EMP_NO_EXISTS": ("Employee No. already exists: {emp_no}", "Mã NV đã tồn tại: {emp_no}"),
 "USER_NAME_REQUIRED": ("Name is required, at most 64 characters", "Bắt buộc nhập họ tên, tối đa 64 ký tự"),
 "USER_ROLE_INVALID": ("Invalid role", "Vai trò không hợp lệ"),
@@ -27,7 +27,7 @@ E = {
 "USER_MES_FACTORY_REQUIRED": ("MES interface accounts must be bound to one production org", "Tài khoản giao diện MES phải gắn một tổ chức sản xuất"),
 "USER_ADMIN_NO_FACTORY": ("The system administrator is not bound to a production org", "Quản trị hệ thống không gắn tổ chức sản xuất"),
 "USER_ADMIN_UNIQUE": ("There is only one system administrator: you cannot create one or change an account into one", "Chỉ có một quản trị hệ thống: không thể tạo mới hoặc đổi tài khoản thành quản trị hệ thống"),
-"USER_PASSWORD_WEAK": ("Password must be 8–64 characters containing both letters and digits; only letters, digits and ! @ # $ & * are allowed", "Mật khẩu 8–64 ký tự, gồm cả chữ và số; chỉ dùng chữ, số và ! @ # $ & *"),
+"USER_PASSWORD_WEAK": ("Password must be 4–64 characters containing both letters and digits; only letters, digits and ! @ # $ & * - are allowed", "Mật khẩu 4–64 ký tự, gồm cả chữ và số; chỉ dùng chữ, số và ! @ # $ & * -"),
 "USER_PASSWORD_WRONG": ("Current password is incorrect", "Mật khẩu hiện tại không đúng"),
 "USER_PASSWORD_SAME": ("New password must differ from the current one", "Mật khẩu mới phải khác mật khẩu hiện tại"),
 "USER_SELF_DISABLE": ("You cannot disable your own account", "Không thể vô hiệu tài khoản của chính mình"),

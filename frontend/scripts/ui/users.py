@@ -11,7 +11,7 @@ M = {
 "users.editTitle": ("修改账户 {emp}", "Edit account {emp}", "Sửa tài khoản {emp}"),
 "users.search": ("工号开头 / 姓名", "Employee No. prefix / name", "Đầu mã NV / họ tên"),
 "users.empNo": ("工号", "Employee No.", "Mã NV"),
-"users.empNoHint": ("4–32 位字母和数字，创建后不能改", "4–32 letters and digits; cannot change later", "4–32 chữ cái và chữ số; không đổi được sau khi tạo"),
+"users.empNoHint": ("3–32 位字母、数字和 -，创建后不能改", "3–32 letters, digits or -; cannot change later", "3–32 chữ cái, chữ số hoặc -; không đổi được sau khi tạo"),
 "users.name": ("姓名", "Name", "Họ tên"),
 "users.role": ("角色", "Role", "Vai trò"),
 "users.roleHint.admin": ("唯一的系统管理员：全部生产组织、全部功能（含配置与账户管理）", "The only system administrator: every production org, every function (including configuration and account management)", "Quản trị hệ thống duy nhất: mọi tổ chức sản xuất, mọi chức năng (gồm cấu hình và quản lý tài khoản)"),

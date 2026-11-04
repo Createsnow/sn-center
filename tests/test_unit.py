@@ -684,3 +684,22 @@ def test_logging_one_json_format_for_structlog_and_stdlib(capsys):
     assert lines[0]["n"] == 1 and lines[0]["level"] == "info" and lines[0]["timestamp"].endswith("Z")
     assert [(x["path"], x["status"]) for x in lines[1:]] == [("/api/x", 200), ("/health/ready", 503)]
     assert all(x["logger"] == "uvicorn.access" and x["method"] == "GET" for x in lines[1:])
+
+
+def test_emp_no_and_password_rules():
+    """工号 3–32 位字母、数字和 -；密码 4–64 位，同时含字母和数字，可含 ! @ # $ & * -。"""
+    from app.core.exceptions import BizError
+    from app.core.security import check_policy
+    from app.services.users import _EMP_NO
+
+    for good in ("abc", "a-1", "HQ-01-A", "admin", "A" * 32):
+        assert _EMP_NO.match(good), good
+    for bad in ("", "ab", "a1", "ab_cd", "ab cd", "ab.cd", "工号123", "A" * 33):
+        assert not _EMP_NO.match(bad), bad
+    for good in ("ab12", "Ab-1", "Pa-ss-1234", "Pa$s1234&*", "Admin@123", "A1" * 32):
+        check_policy(good)
+    weak = (None, "", "ab1", "a-1", "abcd", "1234", "a-b-", "1-2-", "Pass 1234", "密码Pass1", "Pass1234%", "A1" * 33)
+    for bad in weak:
+        with pytest.raises(BizError) as e:
+            check_policy(bad)
+        assert e.value.code == ErrorCode.USER_PASSWORD_WEAK.name, bad

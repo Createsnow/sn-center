@@ -257,7 +257,7 @@ M = {
 "password.old": ("当前密码", "Current password", "Mật khẩu hiện tại"),
 "password.new": ("新密码", "New password", "Mật khẩu mới"),
 "password.confirm": ("确认新密码", "Confirm new password", "Xác nhận mật khẩu mới"),
-"password.policy": ("8–64 位，同时含字母和数字，只能用字母、数字和 ! @ # $ & *", "8–64 characters with both letters and digits; only letters, digits and ! @ # $ & *", "8–64 ký tự, gồm cả chữ và số; chỉ dùng chữ, số và ! @ # $ & *"),
+"password.policy": ("4–64 位，同时含字母和数字，只能用字母、数字和 ! @ # $ & * -", "4–64 characters with both letters and digits; only letters, digits and ! @ # $ & * -", "4–64 ký tự, gồm cả chữ và số; chỉ dùng chữ, số và ! @ # $ & * -"),
 "password.mismatch": ("两次输入不一致", "Passwords do not match", "Hai lần nhập không khớp"),
 "password.done": ("密码已修改", "Password changed", "Đã đổi mật khẩu"),
 }

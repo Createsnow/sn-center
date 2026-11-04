@@ -45,11 +45,11 @@ def verify_password(password: str | None, stored: str | None) -> bool:
     return hmac.compare_digest(stored[32:].encode("ascii", "replace"), _pbkdf2(password, salt).hex().encode())
 
 
-_PWD = re.compile(r"^[A-Za-z0-9!@#$&*]{8,64}$")
+_PWD = re.compile(r"^[A-Za-z0-9!@#$&*-]{4,64}$")
 
 
 def check_policy(password: str | None) -> None:
-    """8–64 位，须同时含字母和数字；只能用字母、数字和 ! @ # $ & *（不能含空格、中文等）。"""
+    """4–64 位，须同时含字母和数字；只能用字母、数字和 ! @ # $ & * -（不能含空格、中文等）。"""
     if (
         password is None
         or not _PWD.match(password)

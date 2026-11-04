@@ -34,7 +34,7 @@ class ErrorCode(Enum):
     REASON_REQUIRED = (400, "原因必填（不超过 500 字）")
     # ---------- 账户 ----------
     USER_NOT_FOUND = (404, "账户不存在")
-    USER_EMP_NO_INVALID = (400, "工号须为 4–32 位字母和数字")
+    USER_EMP_NO_INVALID = (400, "工号须为 3–32 位字母、数字和 -")
     USER_EMP_NO_EXISTS = (409, "工号已存在：{emp_no}")
     USER_NAME_REQUIRED = (400, "姓名必填，不超过 64 字")
     USER_ROLE_INVALID = (400, "角色无效")
@@ -43,7 +43,7 @@ class ErrorCode(Enum):
     USER_MES_FACTORY_REQUIRED = (400, "MES 接口账户必须绑定一个生产组织")
     USER_ADMIN_NO_FACTORY = (400, "系统管理员不绑定生产组织")
     USER_ADMIN_UNIQUE = (400, "系统管理员只有一个，不能新建系统管理员或把账户改为系统管理员")
-    USER_PASSWORD_WEAK = (400, "密码须为 8–64 位，同时含字母和数字，只能用字母、数字和 ! @ # $ & *")
+    USER_PASSWORD_WEAK = (400, "密码须为 4–64 位，同时含字母和数字，只能用字母、数字和 ! @ # $ & * -")
     USER_PASSWORD_WRONG = (400, "原密码不正确")
     USER_PASSWORD_SAME = (400, "新密码不能与原密码相同")
     USER_SELF_DISABLE = (400, "不能停用自己的账户")

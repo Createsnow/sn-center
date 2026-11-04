@@ -12,11 +12,16 @@ def test_rules_for_emp_no_password_and_roles(w, api):
         body = m(emp_no=emp_no, name="x", role="auditor", factory_codes=[org], password=password) | kw
         return api.post("/api/users", body, w.admin)
 
-    assert new("ab").code == "USER_EMP_NO_INVALID"
-    assert new("ab_cd").code == "USER_EMP_NO_INVALID"
-    for bad in ("short1", "onlyletters", "12345678", "Pass 1234", "密码Pass1234", "Pass1234%"):
+    for bad in ("ab", "a1", "ab_cd", "ab cd", "ab.cd", "工号123", "a" * 33):
+        assert new(bad).code == "USER_EMP_NO_INVALID", bad
+    for bad in ("ab1", "onlyletters", "12345678", "a-b-", "1-2-", "Pass 1234", "密码Pass1234", "Pass1234%", "A1" * 33):
         assert new(emp(), bad).code == "USER_PASSWORD_WEAK", bad
     ok(new(emp(), "Pa$s1234&*"))
+    ok(new(emp(), "ab12"))
+    ok(new(emp(), "Ab-1"))
+    ok(new(emp(), "Pa-ss-1234"))
+    for good in ("a-1", "abc", uid("A-B")):
+        assert ok(new(good))["emp_no"] == good, "工号 3–32 位，可含 -"
     for old in ("query", "factory_operator"):
         assert new(emp(), role=old).code == "USER_ROLE_INVALID", "旧角色已取消"
     for role in ("operator", "auditor"):

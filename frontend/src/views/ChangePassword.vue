@@ -42,7 +42,7 @@ const rules: FormRules = {
     { required: true, message: () => t("common.required"), trigger: "blur" },
     {
       validator: (_r, v: string, cb) =>
-        v && /^[A-Za-z0-9!@#$&*]{8,64}$/.test(v) && /[A-Za-z]/.test(v) && /\d/.test(v) ? cb() : cb(new Error(t("password.policy"))),
+        v && /^[A-Za-z0-9!@#$&*-]{4,64}$/.test(v) && /[A-Za-z]/.test(v) && /\d/.test(v) ? cb() : cb(new Error(t("password.policy"))),
       trigger: "blur",
     },
   ],

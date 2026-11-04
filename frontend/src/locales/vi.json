@@ -283,7 +283,7 @@
     "old": "Mật khẩu hiện tại",
     "new": "Mật khẩu mới",
     "confirm": "Xác nhận mật khẩu mới",
-    "policy": "8–64 ký tự, gồm cả chữ và số; chỉ dùng chữ, số và ! {'@'} # $ & *",
+    "policy": "4–64 ký tự, gồm cả chữ và số; chỉ dùng chữ, số và ! {'@'} # $ & * -",
     "mismatch": "Hai lần nhập không khớp",
     "done": "Đã đổi mật khẩu"
   },
@@ -1073,7 +1073,7 @@
     "editTitle": "Sửa tài khoản {emp}",
     "search": "Đầu mã NV / họ tên",
     "empNo": "Mã NV",
-    "empNoHint": "4–32 chữ cái và chữ số; không đổi được sau khi tạo",
+    "empNoHint": "3–32 chữ cái, chữ số hoặc -; không đổi được sau khi tạo",
     "name": "Họ tên",
     "role": "Vai trò",
     "roleHint": {

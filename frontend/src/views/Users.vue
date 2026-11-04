@@ -149,7 +149,7 @@ const { t } = useI18n();
 const { fmt } = useTime();
 const store = useAuthStore();
 const { factories } = useFactories();
-const PWD = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9!@#$&*]{8,64}$/;
+const PWD = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9!@#$&*-]{4,64}$/;
 const tab = ref<"page" | "mes">("page");
 const f = reactive({ q: "", role: "", status: "", factory_code: "" });
 const dialog = ref(false);

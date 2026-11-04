@@ -312,7 +312,7 @@ def uid(prefix: str) -> str:
 
 
 def emp(prefix: str = "U") -> str:
-    """合法工号：4–32 位字母和数字。"""
+    """合法工号：3–32 位字母、数字和 -。"""
     return f"{prefix}{int(time.time() * 1000) % 100000}{next(_seq)}"
 
 

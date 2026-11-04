@@ -283,7 +283,7 @@
     "old": "Current password",
     "new": "New password",
     "confirm": "Confirm new password",
-    "policy": "8–64 characters with both letters and digits; only letters, digits and ! {'@'} # $ & *",
+    "policy": "4–64 characters with both letters and digits; only letters, digits and ! {'@'} # $ & * -",
     "mismatch": "Passwords do not match",
     "done": "Password changed"
   },
@@ -1073,7 +1073,7 @@
     "editTitle": "Edit account {emp}",
     "search": "Employee No. prefix / name",
     "empNo": "Employee No.",
-    "empNoHint": "4–32 letters and digits; cannot change later",
+    "empNoHint": "3–32 letters, digits or -; cannot change later",
     "name": "Name",
     "role": "Role",
     "roleHint": {
