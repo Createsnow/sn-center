@@ -204,8 +204,8 @@
   },
   "scope": {
     "BILL": "Whole bill",
-    "MATERIAL": "By material",
-    "RANGE": "Single SN / range"
+    "MATERIAL": "By part No.",
+    "RANGE": "By part No. · single SN / range"
   },
   "actions": {
     "LOGIN": "Login",
@@ -996,10 +996,9 @@
     "source": "Source",
     "target": "Target",
     "piInOut": "PI (out or in)",
-    "emptyMaterial": "(no material)",
+    "emptyMaterial": "(no part No.)",
     "fromBill": "Source bill",
     "toBill": "Target bill",
-    "range": "Range",
     "blocked": {
       "PENDING_ALLOC": "To allocate (only allocated SNs can be transferred)",
       "BATCH_PENDING": "In unconfirmed or failed batch",
@@ -1025,7 +1024,7 @@
     "after": "After",
     "current": "Now",
     "transferredOut": "Transferred out",
-    "desc": "Re-attach SNs to another production order or org; SN strings never change. A new transfer does not ask for the kind: fill in the source and target and the system decides — a new bill keeping that bill's org is recorded as a bill transfer, a different org (or a new org within the same bill) as an org transfer. System admins and operators both transfer directly, effective at once, with a required transfer reason; only allocated SNs can be transferred; operators need the source authorized, while the target is unrestricted. MES is informed by automatic reassign / transfer-out pushes.",
+    "desc": "Re-attach SNs to another production order or org; SN strings never change. A new transfer does not ask for the kind: fill in the source and target and the system decides — a new bill keeping that bill's org is recorded as a bill transfer, a different org (or a new org within the same bill) as an org transfer. Transfer a whole bill, or by part No. (one or several part Nos., each in full, by range or by quantity); part No. and attachment item go together, and only the same part No. with the same attachment item can be transferred. System admins and operators both transfer directly, effective at once, with a required transfer reason; only allocated SNs can be transferred; operators need the source authorized, while the target is unrestricted. MES is informed by automatic reassign / transfer-out pushes.",
     "snCount": "{n} SNs",
     "noSnInPi": "No SNs under this PI",
     "noBillInPi": "No bills of this PI in the snapshot",
@@ -1036,24 +1035,21 @@
     "locatePlaceholder": "Enter a full SN, bill No. or PI and press Enter to fill in the source",
     "locateBtn": "Locate",
     "located": {
-      "SN": "PI, bill, material, org and start SN filled in",
+      "SN": "PI, bill, part No., attachment item, org and start SN filled in",
       "BILL": "PI and bill filled in",
       "PI": "PI filled in"
     },
     "srcInfo": "Source details (filled in automatically, read-only)",
     "toInfo": "Target details (filled in automatically, read-only)",
     "srcQty": "Selected SNs",
-    "seq": "Line No.",
     "toPiDefault": "Defaults to the source PI",
-    "autoMatchHint": "Matched from the source material code; pick the line No. when the material has several lines",
     "orgDefault": "Defaults to the target bill's org; any enabled org may be chosen",
     "orgDiff": "Differs from the target bill's org: handled as an org transfer",
     "billOrg": "Bill's org",
     "mesConnected": "MES connected",
-    "lengthOk": "matches the source",
     "lengthDiff": "Length differs",
     "kindIs": "Recorded as",
-    "confirm": "Recorded as {kind}: re-attach {n} SNs to {to} · PI {pi} · bill {bill} / line {seq}. This takes effect at once.",
+    "confirm": "Recorded as {kind}: re-attach {n} SNs to {to} · PI {pi} · bill {bill}. This takes effect at once.",
     "confirmBlocked": "{n} more SNs cannot be transferred: {detail}",
     "confirmXo": "{n} SNs will be pushed to the source MES as transferred out.",
     "confirmReason": "Transfer reason: {reason}",
@@ -1062,7 +1058,29 @@
     "reasonPlaceholder": "Required: why are these SNs moved (at most 500 characters)",
     "reasonTip": "Direct transfer, effective at once; the reason is kept on the transfer document and in the audit trail",
     "reasonRequired": "Please enter the transfer reason",
-    "submit": "Transfer"
+    "submit": "Transfer",
+    "partNo": "Part No.",
+    "linesTitle": "Part Nos.",
+    "sameKeyHint": "Part No. and attachment item go together: only the same part No. with the same attachment item can be transferred; each row moves to the target bill line with the same part No. and attachment item",
+    "noLines": "Pick the PI and bill (and source org) to list transferable part Nos.",
+    "groupQty": "SNs",
+    "way": "How",
+    "configure": "Range / quantity",
+    "lineMode": {
+      "ALL": "All",
+      "RANGE": "Range",
+      "QTY": "Quantity"
+    },
+    "qtyPlaceholder": "1–{n}",
+    "toSeq": "Target line No.",
+    "keepLine": "Keep its line",
+    "pickLine": "Pick the line No.",
+    "lineIssue": {
+      "NO_MATCH": "The target bill has no line with this part No. and attachment item",
+      "LENGTH": "Lines with this part No. and attachment item all differ in length",
+      "PICK_SEQ": "Several lines match: pick the target line No."
+    },
+    "confirmLine": "· Part No. {material} / attachment item {attach} (line {from}) → line {seq}: {n} SNs"
   },
   "users": {
     "title": "Users",

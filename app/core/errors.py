@@ -167,16 +167,23 @@ class ErrorCode(Enum):
     IMPORT_DELETE_ALLOCATED = (409, "导入单 {import_no} 有 {count} 枚号已分配，不能整单删除（全部待分配时才能删除）")
     IMPORT_CONFLICT = (409, "SN {sn} 刚被生成或导入，整个文件都没有导入；请重新检查后导入")
     # ---------- 转单 / 转组织 ----------
-    TR_SCOPE_INVALID = (400, "转移范围只能是整张单据、单据 + 物料、单枚或连续号段")
-    TR_MATERIAL_REQUIRED = (400, "按物料或号段转移时物料编码必填")
+    TR_SCOPE_INVALID = (400, "转移范围只能是整单转移或按料号转移（单个或多个料号）")
+    TR_MATERIAL_REQUIRED = (400, "按料号转移时须至少选择一个料号")
+    TR_LINE_MODE_INVALID = (400, "按料号转移的方式只能是全部、号段或指定数量")
+    TR_LINE_DUPLICATE = (400, "料号 {material}（附件项次 {attach_no}）重复选择")
+    TR_LINE_EMPTY = (400, "来源单据中没有料号 {material}（附件项次 {attach_no}）的号")
     TR_SN_REQUIRED = (400, "按号段转移时起始 SN 必填（只填起始 = 单枚）")
+    TR_QTY_INVALID = (400, "指定数量须为正整数")
+    TR_QTY_EXCEEDS = (400, "料号 {material}（附件项次 {attach_no}）可转 {available} 枚，不足指定数量 {qty} 枚")
     TR_TO_PI_REQUIRED = (400, "目标 PI 必填")
     TR_TO_BILL_REQUIRED = (400, "目标单据必填")
     TR_TO_FACTORY_REQUIRED = (400, "目标生产组织必填")
-    TR_TO_MATERIAL_REQUIRED = (400, "目标物料编码必填")
     TR_TARGET_PI_MISMATCH = (400, "目标单据 {bill_no} 的 PI 是 {pi}，与所填目标 PI 不同")
     TR_TARGET_ORG_MISMATCH = (400, "转单的目标生产组织须为目标单据 {bill_no} 的生产组织 {factory}")
-    TR_TARGET_MATERIAL_INVALID = (400, "目标单据 {bill_no} 中没有物料 {material}")
+    TR_TARGET_LINE_NOT_MATCH = (
+        400,
+        "目标单据 {bill_no} 中没有料号 {material}、附件项次 {attach_no} 都相同的物料行：只有同料号、同附件项次才能转移",
+    )
     TR_NOTHING = (400, "所选范围内没有可转移的号")
     TR_SN_NOT_TRANSFERABLE = (400, "SN {sn} 当前不能转移：{reason}")
     TR_SAME_TARGET = (400, "转入目标与来源完全相同")
@@ -185,10 +192,10 @@ class ErrorCode(Enum):
     TR_TARGET_BILL_INVALID = (400, "目标单据 {bill_no} 须在快照中且有 PI；转单时不能是来源单据")
     TR_TARGET_LINE_REQUIRED = (
         400,
-        "目标单据 {bill_no} 中物料 {material} 有多行，须选定目标物料行",
+        "目标单据 {bill_no} 中料号 {material}、附件项次 {attach_no} 有多行，须选定目标序号",
     )
     TR_TARGET_LINE_INVALID = (400, "目标物料行 {seq} 不在目标单据中")
-    TR_RANGE_INVALID = (400, "起止号 {start_sn} ~ {end_sn} 不在所选单据和物料下，或不在同一流水归属 PI 内")
+    TR_RANGE_INVALID = (400, "起止号 {start_sn} ~ {end_sn} 不在所选单据、料号和附件项次下，或不在同一流水归属 PI 内")
     TR_FROZEN = (409, "有 {count} 枚号不能转移：{detail}")
     TR_LOCATE_NOT_FOUND = (404, "没有找到 {q}：请输入完整 SN、单据编号或 PI（只查授权组织内分配成功的号）")
     # ---------- 查询 / 审计 ----------

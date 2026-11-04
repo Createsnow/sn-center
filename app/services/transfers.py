@@ -17,9 +17,12 @@
 页面不区分转单、转组织（统一入口 preview_auto / transfer）：系统按 decide_kind 判断，目标单据与来源不同、
 且目标生产组织就是目标单据的生产组织 → 转单；其余 → 转组织。
 
-转单、转组织的来源与目标规则相同：来源按 PI → 单据筛选，范围三选一（整张单据 / 单据 + 物料编码下全部号 /
-单据 + 物料编码下单枚或连续号段）；转组织另限来源生产组织（转单指定了来源生产组织时同样只取该组织的号）。
-目标 PI、单据、生产组织、物料编码都必填，号改挂到目标单据的该物料行（客户取目标单据的）。
+转单、转组织的来源与目标规则相同：来源按 PI → 单据筛选，范围二选一——整单转移（单据下全部号），或按料号转移
+（选一个或多个料号；料号即物料编码，与附件项次同级，「料号 + 附件项次」确定一组号；每组可转全部、单枚或连续号段、
+或指定数量——按流水从小到大取可转的号）；转组织另限来源生产组织（转单指定了来源生产组织时同样只取该组织的号）。
+目标 PI、单据、生产组织都必填；只有同料号、同附件项次才能转移：每组号改挂到目标单据中料号、附件项次都相同的物料行
+（客户取目标单据的；这样的行有多行时按米数相符的选，仍有多行须指定序号；同一单据内转组织时留在原行），
+没有这样的行则拒绝（整单转移时单据下每个料号 + 附件项次都要有）。
 转单的目标生产组织就是目标单据的生产组织、目标单据不能是来源单据；
 转组织的目标生产组织可任选启用的（可与来源相同）。
 号换了物料行时已生成数、已分配数随号移动，额度不变。
@@ -153,7 +156,7 @@ def _check_any(items: list[dict], ok: list[dict], bad: dict[int, str], src: Sour
     """范围内一枚可转的都没有：单枚时说明原因；有不可转的列出原因；否则没有号。"""
     if ok:
         return
-    if src.scope == SCOPE_RANGE and len(items) == 1:
+    if src.single_range and len(items) == 1:
         raise biz(ErrorCode.TR_SN_NOT_TRANSFERABLE, sn=items[0]["sn"], reason=_REASON_TEXT.get(bad[items[0]["id"]], ""))
     _raise_if_blocked(bad)
     raise biz(ErrorCode.TR_NOTHING)
@@ -388,26 +391,90 @@ def _after_move(cu: CurrentUser, moved: dict) -> None:
 
 
 @dataclass(frozen=True)
+class LineSpec:
+    """按料号转移时选中的一个料号 + 附件项次（两者同级，一起确定一组号）及其转移方式。"""
+
+    material_code: str | None = None
+    #: None = 该料号下全部附件项次（只传料号的旧调用）
+    attach_no: str | None = None
+    #: ALL 该料号 + 附件项次下全部号 / RANGE 单枚或连续号段 / QTY 指定数量（留空按其余字段推断）
+    mode: str | None = None
+    start_sn: str | None = None
+    #: 留空 = 单枚
+    end_sn: str | None = None
+    qty: int | None = None
+    #: 目标单据中同料号、同附件项次有多行时指定序号
+    to_seq: int | None = None
+
+
+@dataclass(frozen=True)
 class TransferRequest:
-    """来源：PI → 单据 →（物料 →（单枚或连续号段））；目标：PI + 单据 + 生产组织 + 物料，都必填。"""
+    """来源：PI → 单据 →（整单 / 一个或多个料号 + 附件项次，各自全部、号段或指定数量）；
+    目标：PI + 单据 + 生产组织都必填，物料行按同料号、同附件项次自动匹配。"""
 
     #: 来源生产组织（转组织必填；转单可不填，填了只取该组织的号）
     factory_code: str | None = None
     pi_no: str | None = None
     bill_no: str | None = None
-    #: BILL 整张单据 / MATERIAL 单据 + 物料 / RANGE 单据 + 物料 + 单枚或连续号段
+    #: BILL 整单 / MATERIAL 按料号（单个或多个，见 lines）/ RANGE 单个料号下单枚或连续号段（旧调用）
     scope: str | None = None
+    #: 只选一个料号时可不用 lines，直接填以下几项
     material_code: str | None = None
+    attach_no: str | None = None
     start_sn: str | None = None
     #: 留空 = 单枚
     end_sn: str | None = None
+    qty: int | None = None
+    #: 按料号转移时选中的各料号；整单转移时只用来给各料号指定目标序号
+    lines: tuple[LineSpec, ...] | None = None
     to_pi: str | None = None
     to_bill: str | None = None
     to_factory: str | None = None
+    #: 选填；填了须与来源料号相同（只有同料号、同附件项次才能转移）
     to_material: str | None = None
-    #: 目标单据中同一物料有多行时指定序号
+    #: 目标单据中同料号、同附件项次有多行时指定序号（各料号未单独指定时都用它）
     to_seq: int | None = None
     reason: str | None = None
+
+
+PICK_ALL = "ALL"
+PICK_RANGE = "RANGE"
+PICK_QTY = "QTY"
+PICK_MODES = frozenset((PICK_ALL, PICK_RANGE, PICK_QTY))
+
+
+def _attach_of(r: dict) -> str:
+    return r["attach_no"] or ""
+
+
+@dataclass(frozen=True)
+class Pick:
+    """来源中选中的一组号：料号 + 附件项次（同级）及转移方式。"""
+
+    material: str
+    #: None = 该料号下全部附件项次
+    attach: str | None
+    mode: str
+    start_sn: str = ""
+    end_sn: str = ""
+    qty: int = 0
+    to_seq: int | None = None
+
+    def matches(self, r: dict) -> bool:
+        return r["material_code"] == self.material and (self.attach is None or _attach_of(r) == self.attach)
+
+    def overlaps(self, o: Pick) -> bool:
+        return self.material == o.material and (self.attach is None or o.attach is None or self.attach == o.attach)
+
+    def text(self) -> str:
+        s = self.material or "(空料号)"
+        if self.attach is not None:
+            s += f"（附件项次 {self.attach or '空'}）"
+        if self.mode == PICK_RANGE:
+            s += " " + (self.start_sn if self.start_sn == self.end_sn else f"{self.start_sn} ~ {self.end_sn}")
+        elif self.mode == PICK_QTY:
+            s += f" {self.qty} 枚"
+        return s
 
 
 @dataclass(frozen=True)
@@ -415,30 +482,84 @@ class Source:
     pi: str
     bill: str
     scope: str
-    material: str
-    start_sn: str
-    end_sn: str
+    #: 按料号转移时选中的各组；整单转移时只带各料号指定的目标序号（不限定范围）
+    picks: tuple[Pick, ...]
+
+    @property
+    def single_range(self) -> Pick | None:
+        """只选了一个料号、且按号段转移时的那一组（转组织单记起止号）。"""
+        if self.scope != SCOPE_BILL and len(self.picks) == 1 and self.picks[0].mode == PICK_RANGE:
+            return self.picks[0]
+        return None
+
+    @property
+    def doc_scope(self) -> str:
+        """转移单上记的范围：BILL 整单 / RANGE 单个料号下单枚或号段 / MATERIAL 其余按料号转移。"""
+        if self.scope == SCOPE_BILL:
+            return SCOPE_BILL
+        return SCOPE_RANGE if self.single_range else SCOPE_MATERIAL
+
+    @property
+    def material(self) -> str:
+        if self.scope == SCOPE_BILL:
+            return ""
+        return util.cut("、".join(dict.fromkeys(p.material for p in self.picks)), 64)
+
+    @property
+    def start_sn(self) -> str:
+        p = self.single_range
+        return p.start_sn if p else ""
+
+    @property
+    def end_sn(self) -> str:
+        p = self.single_range
+        return p.end_sn if p else ""
 
     def text(self, factory: str | None = None) -> str:
         parts = [x for x in (factory, self.pi, self.bill) if x]
         if self.scope != SCOPE_BILL:
-            parts.append(self.material or "(空物料)")
-        if self.scope == SCOPE_RANGE:
-            parts.append(self.start_sn if self.start_sn == self.end_sn else f"{self.start_sn} ~ {self.end_sn}")
+            parts += [p.text() for p in self.picks]
         return " / ".join(parts)
 
 
 @dataclass(frozen=True)
 class Dest:
-    """目标物料行（快照中）与转入生产组织。"""
+    """目标单据（快照中，物料行带生效的附件项次、米数）与转入生产组织。"""
 
     factory: str
     pi: str
     customer: str
     bill: str
-    seq: int
-    material: str
-    length: str
+    lines: list[dict]
+
+
+def _pick_of(scope: str, s: LineSpec) -> Pick:
+    if s.material_code is None:
+        raise biz(ErrorCode.TR_MATERIAL_REQUIRED)
+    material = s.material_code.strip()
+    attach = None if s.attach_no is None else s.attach_no.strip()
+    if scope == SCOPE_BILL:
+        return Pick(material, attach, PICK_ALL, to_seq=s.to_seq)
+    if scope == SCOPE_RANGE:
+        mode = PICK_RANGE
+    else:
+        mode = util.trim(s.mode).upper() or (
+            PICK_RANGE if util.trim(s.start_sn) else PICK_QTY if s.qty is not None else PICK_ALL
+        )
+    if mode not in PICK_MODES:
+        raise biz(ErrorCode.TR_LINE_MODE_INVALID)
+    start = end = ""
+    qty = 0
+    if mode == PICK_RANGE:
+        start = util.trim(s.start_sn)
+        if not start:
+            raise biz(ErrorCode.TR_SN_REQUIRED)
+        end = util.trim(s.end_sn) or start
+    elif mode == PICK_QTY:
+        if s.qty is None or isinstance(s.qty, bool) or int(s.qty) < 1:
+            raise biz(ErrorCode.TR_QTY_INVALID)
+        qty = int(s.qty)
+    return Pick(material, attach, mode, start, end, qty, s.to_seq)
 
 
 def _source(r: TransferRequest) -> Source:
@@ -451,34 +572,59 @@ def _source(r: TransferRequest) -> Source:
     scope = util.trim(r.scope)
     if scope not in SCOPES:
         raise biz(ErrorCode.TR_SCOPE_INVALID)
-    material = start = end = ""
-    if scope != SCOPE_BILL:
-        if r.material_code is None:
-            raise biz(ErrorCode.TR_MATERIAL_REQUIRED)
-        material = r.material_code.strip()
-    if scope == SCOPE_RANGE:
-        start = util.trim(r.start_sn)
-        if not start:
-            raise biz(ErrorCode.TR_SN_REQUIRED)
-        end = util.trim(r.end_sn) or start
-    return Source(pi, bill, scope, material, start, end)
+    specs = list(r.lines or ())
+    if not specs and scope != SCOPE_BILL:
+        specs = [LineSpec(r.material_code, r.attach_no, None, r.start_sn, r.end_sn, r.qty)]
+    picks: list[Pick] = []
+    for s in specs:
+        p = _pick_of(scope, s)
+        if any(p.overlaps(o) for o in picks):
+            raise biz(ErrorCode.TR_LINE_DUPLICATE, material=p.material or "(空)", attach_no=p.attach or "-")
+        picks.append(p)
+    if scope == SCOPE_RANGE and len(picks) != 1:
+        raise biz(ErrorCode.TR_SCOPE_INVALID)
+    return Source(pi, bill, scope, tuple(picks))
 
 
 def _source_items(src: Source, factory: str | None, lock: bool = False) -> list[dict]:
+    """整单：来源单据（该组织）下全部号；按料号：各料号 + 附件项次下全部、号段或指定数量的号。
+    指定数量按流水从小到大取可转的号（不可转的跳过，可转的不够时拒绝）。"""
     cond, args = "pi_no = %s AND bill_no = %s", [src.pi, src.bill]
     if factory is not None:
         cond += " AND factory_code = %s"
         args.append(factory)
     if src.scope != SCOPE_BILL:
-        cond += " AND material_code = %s"
-        args.append(src.material)
+        mats = sorted({p.material for p in src.picks})
+        cond += f" AND material_code IN ({marks(len(mats))})"
+        args += mats
     items = db.all(
         f"SELECT {ITEM_COLS} FROM sn_item WHERE {cond} ORDER BY seq_pi_no, seq_dec" + (" FOR UPDATE" if lock else ""),
         *args,
     )
-    if src.scope == SCOPE_RANGE:
-        items = _slice(items, src.start_sn, src.end_sn)
-    return items
+    if src.scope == SCOPE_BILL:
+        return items
+    out: list[dict] = []
+    for p in src.picks:
+        g = [r for r in items if p.matches(r)]
+        if p.mode == PICK_RANGE:
+            g = _slice(g, p.start_sn, p.end_sn)
+        elif p.mode == PICK_QTY:
+            bad = blocked(g)
+            ok = [r for r in g if r["id"] not in bad]
+            if len(ok) < p.qty:
+                raise biz(
+                    ErrorCode.TR_QTY_EXCEEDS,
+                    material=p.material or "(空)",
+                    attach_no=p.attach or "-",
+                    qty=p.qty,
+                    available=len(ok),
+                )
+            g = ok[: p.qty]
+        if not g:
+            raise biz(ErrorCode.TR_LINE_EMPTY, material=p.material or "(空)", attach_no=p.attach or "-")
+        out += g
+    out.sort(key=lambda r: (r["seq_pi_no"], r["seq_dec"]))
+    return out
 
 
 def _slice(items: list[dict], start: str, end: str) -> list[dict]:
@@ -491,26 +637,9 @@ def _slice(items: list[dict], start: str, end: str) -> list[dict]:
     return [r for r in items if r["seq_pi_no"] == s["seq_pi_no"] and lo <= r["seq_dec"] <= hi]
 
 
-def _dest_line(tb: orders.Bill, r: TransferRequest) -> dict:
-    mat = None if r.to_material is None else r.to_material.strip()
-    if r.to_seq is not None:
-        line = next((x for x in tb.lines if x["seq"] == r.to_seq), None)
-        if line is None or (mat is not None and line["material_code"] != mat):
-            raise biz(ErrorCode.TR_TARGET_LINE_INVALID, seq=r.to_seq)
-        return line
-    if mat is None:
-        raise biz(ErrorCode.TR_TO_MATERIAL_REQUIRED)
-    hit = [x for x in tb.lines if x["material_code"] == mat]
-    if not hit:
-        raise biz(ErrorCode.TR_TARGET_MATERIAL_INVALID, bill_no=tb.bill_no, material=mat or "(空)")
-    if len(hit) > 1:
-        raise biz(ErrorCode.TR_TARGET_LINE_REQUIRED, bill_no=tb.bill_no, material=mat or "(空)")
-    return hit[0]
-
-
 def _dest(kind: str, r: TransferRequest, source_bill: str) -> Dest:
-    """目标 PI、单据、生产组织、物料都必填；单据须在快照中且属于该 PI。
-    转单的生产组织就是目标单据的生产组织；转组织可选任一启用的生产组织。"""
+    """目标 PI、单据、生产组织都必填；单据须在快照中且属于该 PI。
+    转单的生产组织就是目标单据的生产组织；转组织可选任一启用的生产组织。物料行在 _targets 中按料号 + 附件项次匹配。"""
     to_pi = util.trim(r.to_pi)
     if not to_pi:
         raise biz(ErrorCode.TR_TO_PI_REQUIRED)
@@ -530,20 +659,80 @@ def _dest(kind: str, r: TransferRequest, source_bill: str) -> Dest:
             raise biz(ErrorCode.TR_TARGET_ORG_MISMATCH, bill_no=to_bill, factory=tb.org_code)
     else:
         to_factory = factories.must_be_enabled(to_factory)["factory_code"]
-    line = _dest_line(tb, r)
-    return Dest(
-        to_factory, tb.pi, tb.customer_code, tb.bill_no, line["seq"], line["material_code"], orders.length_of(line)
-    )
+    return Dest(to_factory, tb.pi, tb.customer_code, tb.bill_no, orders.effective_lines(tb.lines))
 
 
-def _targets(items: list[dict], d: Dest) -> dict[int, Target]:
-    """号改挂到目标物料行与转入生产组织；目标米数与号上米数不同则拒绝（SN 已含米数）。"""
+def _not_match(d: Dest, material: str, attach: str):
+    return biz(ErrorCode.TR_TARGET_LINE_NOT_MATCH, bill_no=d.bill, material=material or "(空)", attach_no=attach or "-")
+
+
+def _dest_line(d: Dest, src: Source, r: TransferRequest, key: tuple[str, str, int], rs: list[dict]) -> dict:
+    """一组号（料号 + 附件项次 + 来源序号）的目标物料行：只有同料号、同附件项次的行才能转入。
+    指定了序号时须是这样的行；没指定时：同一单据内转（转组织）留在原行，其余在米数相符的行里只有一行时选它。"""
+    material, attach, from_seq = key
+    to_mat = None if r.to_material is None else r.to_material.strip()
+    if to_mat is not None and to_mat != material:
+        raise _not_match(d, material, attach)
+    pick = next((p for p in src.picks if p.matches(rs[0])), None)
+    want = pick.to_seq if pick is not None and pick.to_seq is not None else r.to_seq
+    cands = [x for x in d.lines if x["material_code"] == material and x["eff_attach"] == attach]
+    if want is not None:
+        line = next((x for x in d.lines if x["seq"] == want), None)
+        if line is None:
+            raise biz(ErrorCode.TR_TARGET_LINE_INVALID, seq=want)
+        if line not in cands:
+            raise _not_match(d, material, attach)
+        return line
+    if not cands:
+        raise _not_match(d, material, attach)
+    if d.bill == rs[0]["bill_no"]:
+        stay = next((x for x in cands if x["seq"] == from_seq), None)
+        if stay is not None:
+            return stay
+    lens = {x["length_text"] for x in rs if x["length_text"] is not None}
+    fit = [x for x in cands if all(v == x["eff_length"] for v in lens)]
+    if len(fit) == 1:
+        return fit[0]
+    if not fit and len(cands) == 1:
+        return cands[0]
+    if not fit:
+        raise biz(
+            ErrorCode.TR_LENGTH_MISMATCH,
+            target="、".join(dict.fromkeys(x["eff_length"] or "(空)" for x in cands)),
+            current="、".join(sorted(lens)),
+        )
+    raise biz(ErrorCode.TR_TARGET_LINE_REQUIRED, bill_no=d.bill, material=material or "(空)", attach_no=attach or "-")
+
+
+def _targets(items: list[dict], d: Dest, src: Source, r: TransferRequest) -> tuple[dict[int, Target], list[dict]]:
+    """号按料号 + 附件项次 + 来源序号分组，各组改挂到目标单据中同料号、同附件项次的物料行与转入生产组织；
+    目标米数与号上米数不同则拒绝（SN 已含米数）。SN 导入的号（没有料号、附件项次）不能转、留在原单据，不参与匹配。
+    返回 (各号的挂靠, 各组的对应)。"""
+    groups: dict[tuple[str, str, int], list[dict]] = {}
+    for x in items:
+        if x["origin"] == util.ORIGIN_IMPORT:
+            continue
+        groups.setdefault((x["material_code"], _attach_of(x), x["bill_seq"]), []).append(x)
     out: dict[int, Target] = {}
-    for r in items:
-        if r["length_text"] is not None and r["length_text"] != d.length:
-            raise biz(ErrorCode.TR_LENGTH_MISMATCH, target=d.length or "(空)", current=r["length_text"])
-        out[r["id"]] = Target(d.factory, d.pi, d.customer, d.bill, d.seq, d.material)
-    return out
+    mapping: list[dict] = []
+    for key, rs in groups.items():
+        line = _dest_line(d, src, r, key, rs)
+        for x in rs:
+            if x["length_text"] is not None and x["length_text"] != line["eff_length"]:
+                raise biz(ErrorCode.TR_LENGTH_MISMATCH, target=line["eff_length"] or "(空)", current=x["length_text"])
+            out[x["id"]] = Target(d.factory, d.pi, d.customer, d.bill, line["seq"], line["material_code"])
+        mapping.append(
+            {
+                "material_code": key[0],
+                "attach_no": key[1],
+                "from_seq": key[2],
+                "to_seq": line["seq"],
+                "length": line["eff_length"],
+                "ids": [x["id"] for x in rs],
+            }
+        )
+    mapping.sort(key=lambda m: (m["material_code"], m["attach_no"], m["from_seq"]))
+    return out, mapping
 
 
 def _from_factory(cu: CurrentUser, code: str | None) -> str:
@@ -560,6 +749,21 @@ class Plan:
     dest: Dest
     items: list[dict]
     targets: dict[int, Target]
+    #: 各组（料号 + 附件项次 + 来源序号）→ 目标序号
+    mapping: list[dict]
+
+    def to_seq(self) -> int | None:
+        """转移单上记的目标序号：各组都转到同一行时记该行，否则为空（明细里逐枚记）。"""
+        seqs = {m["to_seq"] for m in self.mapping}
+        return seqs.pop() if len(seqs) == 1 else None
+
+    def to_material(self) -> str:
+        return util.cut("、".join(dict.fromkeys(m["material_code"] for m in self.mapping)), 64)
+
+    def to_text(self) -> str:
+        """目标说明（操作痕迹用）：单据 / 序号 / 料号 / PI / 生产组织，多组时序号逐组列出。"""
+        seqs = ",".join(f"{m['material_code']}#{m['attach_no']}:{m['from_seq']}->{m['to_seq']}" for m in self.mapping)
+        return f"{self.dest.bill}/{seqs}/{self.dest.pi}/{self.dest.factory}"
 
 
 def _plan(cu: CurrentUser, kind: str, r: TransferRequest, lock: bool = False) -> Plan:
@@ -569,16 +773,18 @@ def _plan(cu: CurrentUser, kind: str, r: TransferRequest, lock: bool = False) ->
     items = _source_items(src, factory, lock)
     if not items:
         raise biz(ErrorCode.TR_NOTHING)
-    targets = _targets(items, d)
+    targets, mapping = _targets(items, d, src, r)
     if kind == KIND_BILL:
         # 转单：号现在所在的组织须在授权范围内；目标单据的组织不限（来源组织在 _from_factory 校验）
         cu.check_write(*{x["factory_code"] for x in items})
-    if all(
-        (r["factory_code"] or d.factory, r["pi_no"], r["bill_no"], r["bill_seq"]) == (d.factory, d.pi, d.bill, d.seq)
-        for r in items
+    movable = [x for x in items if x["id"] in targets]
+    if movable and all(
+        (x["factory_code"] or d.factory, x["pi_no"], x["bill_no"], x["bill_seq"])
+        == (d.factory, d.pi, d.bill, targets[x["id"]].seq)
+        for x in movable
     ):
         raise biz(ErrorCode.TR_SAME_TARGET)
-    return Plan(factory, src, d, items, targets)
+    return Plan(factory, src, d, items, targets, mapping)
 
 
 def decide_kind(r: TransferRequest) -> str:
@@ -591,8 +797,9 @@ def decide_kind(r: TransferRequest) -> str:
 
 
 def sources(cu: CurrentUser, kind: str, factory: str | None, pi: str | None) -> dict:
-    """来源候选：PI 下各单据、各物料分配成功的号数（待分配的号、SN 导入的号不能转；转组织限来源生产组织），供逐级筛选。
-    rows 按单据 + 物料 + 生产组织细分，带号上的客户、附件项次、米数（页面据此带出来源生产组织与来源信息）。"""
+    """来源候选：PI 下各单据、各料号 + 附件项次（同级）分配成功的号数（待分配的号、SN 导入的号不能转；
+    转组织限来源生产组织），供逐级筛选。materials 按料号 + 附件项次列出；rows 再按生产组织细分，带号上的客户、米数
+    （页面据此带出来源生产组织与来源信息）。"""
     p = util.trim(pi)
     if not p:
         raise biz(ErrorCode.PI_REQUIRED)
@@ -605,28 +812,31 @@ def sources(cu: CurrentUser, kind: str, factory: str | None, pi: str | None) -> 
         cond += fsql
         args += fargs
     bills: dict[str, dict] = {}
-    mats: dict[tuple[str, str], dict] = {}
-    rows: dict[tuple[str, str, str], dict] = {}
+    mats: dict[tuple[str, str, str], dict] = {}
+    rows: dict[tuple[str, str, str, str], dict] = {}
     for x in db.all(
         "SELECT bill_no, material_code, factory_code, customer_code, attach_no, length_text, COUNT(*) n "
         f"FROM sn_item WHERE {cond} "
         "GROUP BY bill_no, material_code, factory_code, customer_code, attach_no, length_text "
-        "ORDER BY bill_no, material_code, factory_code",
+        "ORDER BY bill_no, material_code, attach_no, factory_code",
         *args,
     ):
         n = int(x["n"])
+        attach = x["attach_no"] or ""
         b = bills.setdefault(x["bill_no"], {"bill_no": x["bill_no"], "qty": 0, "materials": [], "rows": []})
         b["qty"] += n
-        mm = mats.get((x["bill_no"], x["material_code"]))
+        mk = (x["bill_no"], x["material_code"], attach)
+        mm = mats.get(mk)
         if mm is None:
-            mm = mats[(x["bill_no"], x["material_code"])] = {"material_code": x["material_code"], "qty": 0}
+            mm = mats[mk] = {"material_code": x["material_code"], "attach_no": attach, "qty": 0}
             b["materials"].append(mm)
         mm["qty"] += n
-        rk = (x["bill_no"], x["material_code"], x["factory_code"])
+        rk = (x["bill_no"], x["material_code"], attach, x["factory_code"])
         row = rows.get(rk)
         if row is None:
             row = rows[rk] = {
                 "material_code": x["material_code"],
+                "attach_no": attach,
                 "factory_code": x["factory_code"],
                 "qty": 0,
                 "customers": [],
@@ -649,7 +859,8 @@ def locate(cu: CurrentUser, q: str | None) -> dict:
         raise biz(ErrorCode.TR_LOCATE_NOT_FOUND, q="")
     fsql, fargs = factories.scope_sql(cu.read_factories(None))
     r = db.one(
-        f"SELECT sn, pi_no, bill_no, material_code, factory_code, status, origin FROM sn_item WHERE sn = %s{fsql}",
+        f"SELECT sn, pi_no, bill_no, material_code, attach_no, factory_code, status, origin FROM sn_item "
+        f"WHERE sn = %s{fsql}",
         text,
         *fargs,
     )
@@ -663,6 +874,7 @@ def locate(cu: CurrentUser, q: str | None) -> dict:
             "pi": r["pi_no"],
             "bill_no": r["bill_no"],
             "material_code": r["material_code"],
+            "attach_no": r["attach_no"] or "",
             "factory_code": r["factory_code"],
             "sn": r["sn"],
         }
@@ -703,9 +915,21 @@ def preview(cu: CurrentUser, kind: str, r: TransferRequest) -> dict:
         to_pi=d.pi,
         to_org=d.factory,
         to_bill=d.bill,
-        to_seq=d.seq,
-        to_material=d.material,
+        to_seq=p.to_seq(),
+        to_material=p.to_material(),
         to_customer=d.customer,
+        lines=[
+            {
+                "material_code": mp["material_code"],
+                "attach_no": mp["attach_no"],
+                "from_seq": mp["from_seq"],
+                "to_seq": mp["to_seq"],
+                "length": mp["length"],
+                "total": len(mp["ids"]),
+                "transferable": sum(1 for i in mp["ids"] if i not in bad),
+            }
+            for mp in p.mapping
+        ],
         scope=p.src.text(p.factory),
         other_org=sum(1 for x in p.items if x["factory_code"] is not None and x["factory_code"] != d.factory),
         xo_qty=sum(1 for x in ok if x["mes_holder"] is not None and x["mes_holder"] == x["factory_code"] != d.factory),
@@ -747,14 +971,14 @@ def transfer_bill(cu: CurrentUser, req: TransferRequest) -> dict:
             "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
             no,
             MODE_VOID if src.scope == SCOPE_BILL else MODE_SPLIT,
-            src.scope,
+            src.doc_scope,
             src.bill,
             d.bill,
             src.pi,
             d.pi,
             d.factory,
-            d.seq,
-            d.material,
+            p.to_seq(),
+            p.to_material(),
             util.cut(scope, 500),
             len(ok),
             reason,
@@ -773,7 +997,7 @@ def transfer_bill(cu: CurrentUser, req: TransferRequest) -> dict:
             .transfer(no)
             .why(reason)
             .info(
-                f"to={d.bill}/{d.seq}/{d.material}/{d.pi}/{d.factory} scope={scope} out_batches="
+                f"to={p.to_text()} scope={scope} out_batches="
                 + ",".join(b["batch_no"] for b in moved["out"])
                 + " in_batches="
                 + ",".join(b["batch_no"] for b in moved["in"])
@@ -786,14 +1010,16 @@ def transfer_bill(cu: CurrentUser, req: TransferRequest) -> dict:
 # ================================================================== 转组织
 
 
-def _dest_row(d: Dest) -> dict:
+def _dest_row(p: Plan) -> dict:
+    d = p.dest
     return {
         "to_factory": d.factory,
         "to_pi": d.pi,
         "to_bill": d.bill,
-        "to_seq": d.seq,
-        "to_material": d.material,
+        "to_seq": p.to_seq(),
+        "to_material": p.to_material(),
         "to_customer": d.customer,
+        "to_text": p.to_text(),
     }
 
 
@@ -808,7 +1034,7 @@ def _insert_org(cu, p: Plan, qty: int, reason: str) -> tuple[int, str]:
         no,
         MODE_DIRECT,
         APPROVED,
-        src.scope,
+        src.doc_scope,
         p.factory,
         src.pi,
         src.bill,
@@ -820,8 +1046,8 @@ def _insert_org(cu, p: Plan, qty: int, reason: str) -> tuple[int, str]:
         d.pi,
         d.customer,
         d.bill,
-        d.seq,
-        d.material,
+        p.to_seq(),
+        p.to_material(),
         reason,
         cu.emp_no,
         util.now(),
@@ -840,10 +1066,7 @@ def _org_entry(
         .transfer(no)
         .why(reason)
         .range(items[0]["sn"] if items else None, items[-1]["sn"] if items else None)
-        .info(
-            f"scope={scope} to={t['to_factory']}/{t['to_pi']}/{t.get('to_bill') or '-'}/"
-            f"{t.get('to_seq') or '-'}/{t['to_material'] or '-'}"
-        )
+        .info(f"scope={scope} to={t['to_text']}")
     )
 
 
@@ -858,9 +1081,7 @@ def direct(cu: CurrentUser, r: TransferRequest) -> dict:
         _check_any(p.items, ok, bad, p.src)
         tid, no = _insert_org(cu, p, len(ok), reason)
         moved = _move(cu, KIND_ORG, tid, no, ok, p.targets)
-        e = _org_entry(
-            audit.TRANSFER_DIRECT, no, p.factory, p.src.pi, p.src.text(), _dest_row(p.dest), len(ok), reason, ok
-        )
+        e = _org_entry(audit.TRANSFER_DIRECT, no, p.factory, p.src.pi, p.src.text(), _dest_row(p), len(ok), reason, ok)
         out_nos, in_nos = (",".join(b["batch_no"] for b in moved[k]) for k in ("out", "in"))
         audit.record(cu, e.info(f"{e.detail} out_batches={out_nos} in_batches={in_nos}"))
     _after_move(cu, moved)

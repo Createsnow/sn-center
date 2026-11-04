@@ -204,8 +204,8 @@
   },
   "scope": {
     "BILL": "Cả chứng từ",
-    "MATERIAL": "Theo vật tư",
-    "RANGE": "Một SN / dải số"
+    "MATERIAL": "Theo mã hàng",
+    "RANGE": "Theo mã hàng · một SN / dải số"
   },
   "actions": {
     "LOGIN": "Đăng nhập",
@@ -996,10 +996,9 @@
     "source": "Nguồn",
     "target": "Đích",
     "piInOut": "PI (đi hoặc đến)",
-    "emptyMaterial": "(không vật tư)",
+    "emptyMaterial": "(không mã hàng)",
     "fromBill": "Chứng từ nguồn",
     "toBill": "Chứng từ đích",
-    "range": "Khoảng số",
     "blocked": {
       "PENDING_ALLOC": "Chờ phân bổ (chỉ SN đã phân bổ mới được chuyển)",
       "BATCH_PENDING": "Trong lô chưa xác nhận hoặc thất bại",
@@ -1025,7 +1024,7 @@
     "after": "Sau khi chuyển",
     "current": "Hiện tại",
     "transferredOut": "Đã chuyển đi",
-    "desc": "Gắn SN sang lệnh sản xuất hoặc tổ chức khác; chuỗi SN không đổi. Tạo phiếu chuyển không cần chọn loại: điền nguồn và đích, hệ thống tự xác định — đổi chứng từ và giữ tổ chức của chứng từ đích ghi nhận là chuyển chứng từ, đổi tổ chức (hoặc đổi tổ chức trong cùng chứng từ) ghi nhận là chuyển tổ chức. Quản trị hệ thống và nhân viên vận hành đều chuyển trực tiếp, hiệu lực ngay, bắt buộc nhập lý do; chỉ SN đã phân bổ mới được chuyển; nhân viên vận hành cần được ủy quyền nguồn, đích không giới hạn. MES được báo bằng lần đẩy điều chuyển / chuyển đi tự động.",
+    "desc": "Gắn SN sang lệnh sản xuất hoặc tổ chức khác; chuỗi SN không đổi. Tạo phiếu chuyển không cần chọn loại: điền nguồn và đích, hệ thống tự xác định — đổi chứng từ và giữ tổ chức của chứng từ đích ghi nhận là chuyển chứng từ, đổi tổ chức (hoặc đổi tổ chức trong cùng chứng từ) ghi nhận là chuyển tổ chức. Có thể chuyển cả chứng từ, hoặc theo mã hàng (một hoặc nhiều mã hàng, mỗi mã toàn bộ, theo dải số hoặc theo số lượng); mã hàng đi cùng hạng mục phụ kiện, chỉ chuyển được khi cùng mã hàng và cùng hạng mục phụ kiện. Quản trị hệ thống và nhân viên vận hành đều chuyển trực tiếp, hiệu lực ngay, bắt buộc nhập lý do; chỉ SN đã phân bổ mới được chuyển; nhân viên vận hành cần được ủy quyền nguồn, đích không giới hạn. MES được báo bằng lần đẩy điều chuyển / chuyển đi tự động.",
     "snCount": "{n} SN",
     "noSnInPi": "PI này không có SN",
     "noBillInPi": "Ảnh chụp không có chứng từ của PI này",
@@ -1036,24 +1035,21 @@
     "locatePlaceholder": "Nhập SN đầy đủ, số chứng từ hoặc PI rồi nhấn Enter để điền nguồn",
     "locateBtn": "Định vị",
     "located": {
-      "SN": "Đã điền PI, chứng từ, vật tư, tổ chức và SN đầu",
+      "SN": "Đã điền PI, chứng từ, mã hàng, hạng mục phụ kiện, tổ chức và SN đầu",
       "BILL": "Đã điền PI và chứng từ",
       "PI": "Đã điền PI"
     },
     "srcInfo": "Thông tin nguồn (tự điền, chỉ xem)",
     "toInfo": "Thông tin đích (tự điền, chỉ xem)",
     "srcQty": "Số SN đã chọn",
-    "seq": "STT dòng",
     "toPiDefault": "Mặc định là PI nguồn",
-    "autoMatchHint": "Tự khớp theo mã vật tư nguồn; chọn STT dòng khi vật tư có nhiều dòng",
     "orgDefault": "Mặc định là tổ chức của chứng từ đích; có thể chọn tổ chức đang hoạt động khác",
     "orgDiff": "Khác tổ chức của chứng từ đích: xử lý như chuyển tổ chức",
     "billOrg": "Tổ chức của chứng từ",
     "mesConnected": "Kết nối MES",
-    "lengthOk": "khớp với nguồn",
     "lengthDiff": "Khác chiều dài",
     "kindIs": "Ghi nhận là",
-    "confirm": "Ghi nhận là {kind}: gắn lại {n} SN sang {to} · PI {pi} · chứng từ {bill} / dòng {seq}, có hiệu lực ngay.",
+    "confirm": "Ghi nhận là {kind}: gắn lại {n} SN sang {to} · PI {pi} · chứng từ {bill}, có hiệu lực ngay.",
     "confirmBlocked": "Còn {n} SN không thể chuyển: {detail}",
     "confirmXo": "Sẽ đẩy {n} SN chuyển đi tới MES nguồn.",
     "confirmReason": "Lý do chuyển: {reason}",
@@ -1062,7 +1058,29 @@
     "reasonPlaceholder": "Bắt buộc: lý do chuyển (tối đa 500 ký tự)",
     "reasonTip": "Chuyển trực tiếp, hiệu lực ngay; lý do được lưu trên phiếu chuyển và nhật ký thao tác",
     "reasonRequired": "Vui lòng nhập lý do chuyển",
-    "submit": "Chuyển"
+    "submit": "Chuyển",
+    "partNo": "Mã hàng",
+    "linesTitle": "Chi tiết mã hàng",
+    "sameKeyHint": "Mã hàng đi cùng hạng mục phụ kiện: chỉ chuyển được khi cùng mã hàng và cùng hạng mục phụ kiện; mỗi dòng chuyển sang dòng của chứng từ đích có cùng mã hàng và hạng mục phụ kiện",
+    "noLines": "Chọn PI, chứng từ (và tổ chức nguồn) để liệt kê mã hàng có thể chuyển",
+    "groupQty": "Số SN",
+    "way": "Cách chuyển",
+    "configure": "Dải số / số lượng",
+    "lineMode": {
+      "ALL": "Toàn bộ",
+      "RANGE": "Dải số",
+      "QTY": "Số lượng"
+    },
+    "qtyPlaceholder": "1–{n}",
+    "toSeq": "STT dòng đích",
+    "keepLine": "Giữ dòng hiện tại",
+    "pickLine": "Chọn STT dòng",
+    "lineIssue": {
+      "NO_MATCH": "Chứng từ đích không có dòng cùng mã hàng và hạng mục phụ kiện",
+      "LENGTH": "Các dòng cùng mã hàng, hạng mục phụ kiện đều khác chiều dài",
+      "PICK_SEQ": "Có nhiều dòng phù hợp: hãy chọn STT dòng đích"
+    },
+    "confirmLine": "· Mã hàng {material} / hạng mục phụ kiện {attach} (dòng {from}) → dòng {seq}: {n} SN"
   },
   "users": {
     "title": "Người dùng",

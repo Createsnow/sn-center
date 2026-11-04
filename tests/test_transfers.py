@@ -283,22 +283,30 @@ def test_org_range_transfer_validation(w, api, sql):
 
 
 def test_org_transfer_material_length_check(w, api):
+    """只有同料号、同附件项次才能转移；同料号同项次的目标行米数不同也不能转。"""
     a, pi, bill = setup(w, qty=1, mes=False)
     w.allocate(pi)
-    other = uid("MO")
-    w.order(other, a, "C1", pi, ("M2", 1, "200"))
-    assert org_direct(w, a, pi, bill, a, to_bill=other, to_material="M2").code == "TR_LENGTH_MISMATCH"
-    assert org_direct(w, a, pi, bill, a, to_bill=other, to_material="MX").code == "TR_TARGET_MATERIAL_INVALID"
+    other, diff_mat, diff_attach = uid("MO"), uid("MO"), uid("MO")
+    w.order(other, a, "C1", pi, ("M1", 1, "200"))
+    w.order(diff_mat, a, "C1", pi, ("M2", 1, "100"))
+    w.order(diff_attach, a, "C1", pi, ("M1", 1, "100", "2"))
+    assert org_direct(w, a, pi, bill, a, to_bill=other).code == "TR_LENGTH_MISMATCH"
+    assert org_direct(w, a, pi, bill, a, to_bill=diff_mat, to_material=None).code == "TR_TARGET_LINE_NOT_MATCH"
+    assert org_direct(w, a, pi, bill, a, to_bill=diff_mat, to_material="M2").code == "TR_TARGET_LINE_NOT_MATCH"
+    assert org_direct(w, a, pi, bill, a, to_bill=diff_attach).code == "TR_TARGET_LINE_NOT_MATCH", "附件项次不同"
+    assert org_direct(w, a, pi, bill, a, to_bill=diff_attach, to_seq=1).code == "TR_TARGET_LINE_NOT_MATCH"
 
 
-def test_transfer_to_empty_length_line_rejected(w, api):
-    """目标物料行米数为空：带米数的号（即使米数为 000）不能转入，米数须与号上一致。"""
+def test_transfer_to_empty_length_line_rejected(w, api, sql):
+    """目标物料行米数为空：带米数的号（即使米数为 000）不能转入，米数须与号上一致；
+    同料号同项次有多行时自动选米数相符的那一行。"""
     a, pi, bill = setup(w, qty=1, mes=False, length="000")
     w.allocate(pi)
     other = uid("MO")
-    w.order(other, a, "C1", pi, ("M2", 1, " "), ("M3", 1, "000"))
-    assert org_direct(w, a, pi, bill, a, to_bill=other, to_material="M2").code == "TR_LENGTH_MISMATCH"
-    ok(org_direct(w, a, pi, bill, a, to_bill=other, to_material="M3"))
+    w.order(other, a, "C1", pi, ("M1", 1, " "), ("M1", 1, "000"))
+    assert org_direct(w, a, pi, bill, a, to_bill=other, to_seq=1).code == "TR_LENGTH_MISMATCH"
+    ok(org_direct(w, a, pi, bill, a, to_bill=other))
+    assert sql.scalar("SELECT bill_seq FROM sn_item WHERE pi_no = %s", pi) == 2
 
 
 # ---------------------------------------------------------------- 转单
@@ -374,9 +382,14 @@ def test_material_scope_and_single_sn(w, api, sql):
         w.admin,
     )
     assert r.code == "TR_RANGE_INVALID"
-    # 整张单据
-    ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, org, scope="BILL", to_material="M1"), w.admin))
+    # 整张单据：填了目标料号时只能是来源料号；不填时各料号分别转到同料号、同附件项次的行
+    whole = bill_body(pi, src, tgt, org, scope="BILL", to_material="M1")
+    assert api.post("/api/transfers/bill", whole, w.admin).code == "TR_TARGET_LINE_NOT_MATCH"
+    t = ok(api.post("/api/transfers/bill", {**whole, "to_material": None}, w.admin))
+    assert t["to_seq"] is None and t["to_material"] == "M1、M2"
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s", src) == 0
+    rows = sql.all("SELECT material_code, bill_seq, COUNT(*) n FROM sn_item WHERE bill_no = %s GROUP BY 1, 2", tgt)
+    assert {(r["material_code"], r["bill_seq"], r["n"]) for r in rows} == {("M1", 1, 7), ("M2", 2, 2)}
 
 
 def test_target_fields_required_and_checked(w, api):
@@ -391,7 +404,7 @@ def test_target_fields_required_and_checked(w, api):
 
     assert post(to_bill=None).code == "TR_TO_BILL_REQUIRED"
     assert post(to_factory=None).code == "TR_TO_FACTORY_REQUIRED"
-    assert post(to_material=None).code == "TR_TO_MATERIAL_REQUIRED"
+    assert post(to_material="MX").code == "TR_TARGET_LINE_NOT_MATCH", "只有同料号才能转移"
     assert post(to_pi=uid("PI")).code == "TR_TARGET_PI_MISMATCH"
     assert post(to_factory=other).code == "TR_TARGET_ORG_MISMATCH", "转单的生产组织 = 目标单据的生产组织"
     assert post(to_bill=src).code == "TR_TARGET_BILL_INVALID", "转单的目标不能是来源单据"
@@ -399,8 +412,77 @@ def test_target_fields_required_and_checked(w, api):
     assert post(scope="PI").code == "TR_SCOPE_INVALID"
     assert post(scope="MATERIAL").code == "TR_MATERIAL_REQUIRED"
     assert post(scope="RANGE", material_code="M1").code == "TR_SN_REQUIRED"
+    assert post(scope="MATERIAL", lines=[]).code == "TR_MATERIAL_REQUIRED"
+    assert post(scope="MATERIAL", lines=[{"material_code": "M1", "mode": "X"}]).code == "TR_LINE_MODE_INVALID"
+    assert post(scope="MATERIAL", lines=[{"material_code": "M1", "mode": "QTY", "qty": 0}]).code == "TR_QTY_INVALID"
+    assert post(scope="MATERIAL", lines=[{"material_code": "M1", "mode": "QTY"}]).code == "TR_QTY_INVALID"
+    assert post(scope="MATERIAL", lines=[{"material_code": "M1", "mode": "RANGE"}]).code == "TR_SN_REQUIRED"
+    twice = [{"material_code": "M1", "attach_no": "1"}, {"material_code": "M1"}]
+    assert post(scope="MATERIAL", lines=twice).code == "TR_LINE_DUPLICATE"
+    assert post(scope="MATERIAL", lines=[{"material_code": "M9"}]).code == "TR_LINE_EMPTY"
+    assert post(scope="MATERIAL", lines=[{"material_code": "M1", "attach_no": "9"}]).code == "TR_LINE_EMPTY"
+    assert post(scope="MATERIAL", material_code="M1", qty=1).code == "TR_QTY_EXCEEDS", "待分配的号不算可转"
     assert post(to_bill=dup).code == "TR_TARGET_LINE_REQUIRED"
     ok(post(to_bill=dup, to_seq=2))
+    one = [{"material_code": "M1", "attach_no": "1", "to_seq": 2}]
+    assert ok(post(to_bill=dup, to_material=None, lines=one))["to_seq"] == 2, "整单转移可给各料号指定目标序号"
+
+
+def test_multi_material_transfer_by_all_range_and_qty(w, api, sql):
+    """按料号转移可一次选多个料号（料号 + 附件项次同级），各自全部、号段或指定数量；
+    每组只转到目标单据中同料号、同附件项次的行；指定数量按流水从小到大取。"""
+    org = w.org(uid("O")[:10])
+    pi, src, tgt = uid("PI"), uid("MO"), uid("MO")
+    w.order(src, org, "C1", pi, ("M1", 5), ("M2", 5), ("M1", 3, "100", "2"), ("M3", 2))
+    ok(w.bind_pi(pi, w.rule(P())))
+    w.generate(pi)
+    w.allocate(pi)
+    w.order(tgt, org, "C1", pi, ("M1", 9, "100", "2"), ("M2", 9), ("M1", 9))
+
+    def sns(material, attach):
+        q = "SELECT sn FROM sn_item WHERE bill_no = %s AND material_code = %s AND attach_no = %s ORDER BY seq_dec"
+        return [r["sn"] for r in sql.all(q, src, material, attach)]
+
+    m1, m2, m1b = sns("M1", "1"), sns("M2", "1"), sns("M1", "2")
+    lines = [
+        {"material_code": "M1", "attach_no": "1", "mode": "QTY", "qty": 2},
+        {"material_code": "M2", "attach_no": "1", "mode": "RANGE", "start_sn": m2[1], "end_sn": m2[3]},
+        {"material_code": "M1", "attach_no": "2", "mode": "ALL"},
+    ]
+    body = bill_body(pi, src, tgt, org, scope="MATERIAL", to_material=None, lines=lines)
+    pre = ok(api.post("/api/transfers/preview", body, w.admin))
+    assert pre["kind"] == "BILL" and pre["transferable"] == 2 + 3 + 3 and pre["to_seq"] is None
+    got = {(x["material_code"], x["attach_no"], x["from_seq"], x["to_seq"], x["transferable"]) for x in pre["lines"]}
+    assert got == {("M1", "1", 1, 3, 2), ("M2", "1", 2, 2, 3), ("M1", "2", 3, 1, 3)}
+    assert api.post("/api/transfers/preview", {**body, "lines": lines[:1] * 2}, w.admin).code == "TR_LINE_DUPLICATE"
+    over = [{**lines[0], "qty": 6}]
+    assert api.post("/api/transfers/preview", {**body, "lines": over}, w.admin).code == "TR_QTY_EXCEEDS"
+    t = ok(api.post("/api/transfers", body, w.admin))["doc"]
+    assert t["scope"] == "MATERIAL" and t["qty"] == 8 and t["to_seq"] is None
+    moved = {r["sn"]: r["bill_seq"] for r in sql.all("SELECT sn, bill_seq FROM sn_item WHERE bill_no = %s", tgt)}
+    assert moved == {**dict.fromkeys(m1[:2], 3), **dict.fromkeys(m2[1:4], 2), **dict.fromkeys(m1b, 1)}
+    gc = {(r["bill_no"], r["seq"]): r["gen_count"] for r in sql.all("SELECT * FROM sn_line_count")}
+    assert (gc[(src, 1)], gc[(src, 2)], gc[(src, 3)], gc[(tgt, 1)], gc[(tgt, 2)], gc[(tgt, 3)]) == (3, 2, 0, 3, 3, 2)
+    # 目标单据没有同料号、同附件项次的行：不能转（整单转移时单据下每个料号 + 附件项次都要有）
+    m3 = bill_body(pi, src, tgt, org, scope="MATERIAL", to_material=None, lines=[{"material_code": "M3"}])
+    assert api.post("/api/transfers/preview", m3, w.admin).code == "TR_TARGET_LINE_NOT_MATCH"
+    whole = bill_body(pi, src, tgt, org, to_material=None)
+    assert api.post("/api/transfers/preview", whole, w.admin).code == "TR_TARGET_LINE_NOT_MATCH"
+
+
+def test_org_transfer_within_bill_keeps_each_line(w, api, sql):
+    """同一单据内转组织：同料号、同附件项次的多行各自留在原行。"""
+    a = w.org(uid("O")[:10])
+    b = w.org(uid("O")[:10])
+    pi, bill = uid("PI"), uid("MO")
+    w.order(bill, a, "C1", pi, ("M1", 3), ("M1", 4))
+    ok(w.bind_pi(pi, w.rule(P())))
+    w.generate(pi)
+    w.allocate(pi)
+    t = ok(org_direct(w, a, pi, bill, b, to_material=None))
+    assert t["qty"] == 7 and t["to_seq"] is None
+    rows = sql.all("SELECT factory_code, bill_seq, COUNT(*) n FROM sn_item WHERE bill_no = %s GROUP BY 1, 2", bill)
+    assert {(r["factory_code"], r["bill_seq"], r["n"]) for r in rows} == {(b, 1, 3), (b, 2, 4)}
 
 
 def test_org_transfer_to_other_bill_moves_counts(w, api, sql):
@@ -424,10 +506,11 @@ def test_sources_lists_bills_and_materials(w, api):
         {
             "bill_no": bill,
             "qty": 3,
-            "materials": [{"material_code": "M1", "qty": 3}],
+            "materials": [{"material_code": "M1", "attach_no": "1", "qty": 3}],
             "rows": [
                 {
                     "material_code": "M1",
+                    "attach_no": "1",
                     "factory_code": a,
                     "qty": 3,
                     "customers": ["C1"],
@@ -514,7 +597,15 @@ def test_locate_by_sn_bill_and_pi(w, api, sql):
     assert api.get(f"/api/transfers/locate?q={bill}", w.admin).code == "TR_LOCATE_NOT_FOUND"
     w.allocate(pi)
     r = ok(api.get(f"/api/transfers/locate?q={sn}", w.admin)).body
-    assert r == {"by": "SN", "pi": pi, "bill_no": bill, "material_code": "M1", "factory_code": a, "sn": sn}
+    assert r == {
+        "by": "SN",
+        "pi": pi,
+        "bill_no": bill,
+        "material_code": "M1",
+        "attach_no": "1",
+        "factory_code": a,
+        "sn": sn,
+    }
     assert ok(api.get(f"/api/transfers/locate?q={bill}", w.admin)).body == {"by": "BILL", "pi": pi, "bill_no": bill}
     assert ok(api.get(f"/api/transfers/locate?q={pi}", w.admin)).body == {"by": "PI", "pi": pi}
     assert api.get("/api/transfers/locate?q=NOPE-404", w.admin).code == "TR_LOCATE_NOT_FOUND"
@@ -526,8 +617,11 @@ def test_same_org_bill_transfer_reassigns_pushed(w, api, sql):
     org, pi, src = setup(w, qty=3)
     w.allocate(pi)
     w.push()
-    tgt = uid("MO")
-    w.order(tgt, org, "C1", pi, ("M1", 3, "100", "T9"))
+    tgt, t9 = uid("MO"), uid("MO")
+    w.order(t9, org, "C1", pi, ("M1", 3, "100", "T9"))
+    w.order(tgt, org, "C1", pi, ("M1", 3, "100", "1"))
+    r = api.post("/api/transfers/bill", bill_body(pi, src, t9, org, reason="整单作废"), w.admin)
+    assert r.code == "TR_TARGET_LINE_NOT_MATCH", "目标行附件项次不同，不能转"
     ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, org, reason="整单作废"), w.admin))
     rows = sql.all("SELECT status, push_type, rev, bill_no FROM sn_item WHERE pi_no = %s", pi)
     assert {(r["status"], r["push_type"], r["rev"], r["bill_no"]) for r in rows} == {("TO_PUSH", "REASSIGN", 2, tgt)}
@@ -536,7 +630,7 @@ def test_same_org_bill_transfer_reassigns_pushed(w, api, sql):
     sn = rows and sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s LIMIT 1", pi)
     assert MES.store[org][sn]["billNo"] == tgt and MES.store[org][sn]["rev"] == 2
     assert MES.store[org][sn]["batchType"] == "SAME_ORG_TRANSFER"
-    # 附件项次跟着号走：换到目标单据的行（附件项次 T9）后仍是生成时的 1
+    # 附件项次跟着号走（只能转到附件项次相同的行）
     assert MES.store[org][sn]["attachNo"] == "1"
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND attach_no = '1'", pi) == 3
 

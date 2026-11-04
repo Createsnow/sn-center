@@ -404,12 +404,6 @@ def effective_length(line: dict, fill: dict | None) -> tuple[str, str]:
     return "", LENGTH_EMPTY
 
 
-def length_of(line: dict) -> str:
-    """单条物料行的生效米数（含页面填写）。"""
-    fill = db.one("SELECT * FROM sn_line_length WHERE bill_no = %s AND seq = %s", line["bill_no"], line["seq"])
-    return effective_length(line, fill)[0]
-
-
 def _length_value(value: str | None) -> str | None:
     """填写的米数：字符串原样保存（去首尾空格），不超过 64 字、不能含中文；留空返回 None（清除填写，改回金蝶值）。"""
     v = codec.clean_length(value)
@@ -741,6 +735,20 @@ def line_lengths(keys: list[tuple[str, int]]) -> dict:
 def line_extras(keys: list[tuple[str, int]]) -> tuple[dict, dict, dict, dict]:
     """物料行计数、页面填写的附件项次、米数与产品单位：(bill, seq) → 行。"""
     return line_counts(keys), _by_line("sn_line_attach", keys), line_lengths(keys), _by_line("sn_line_unit", keys)
+
+
+def effective_lines(ls: list[dict]) -> list[dict]:
+    """物料行带上生效的附件项次（eff_attach）与米数（eff_length），含页面填写的（转移按同料号、同附件项次匹配目标行）。"""
+    keys = [(r["bill_no"], r["seq"]) for r in ls]
+    lens, fills = line_lengths(keys), _by_line("sn_line_attach", keys)
+    return [
+        {
+            **r,
+            "eff_attach": effective_attach(r, fills.get((r["bill_no"], r["seq"])))[0],
+            "eff_length": effective_length(r, lens.get((r["bill_no"], r["seq"])))[0],
+        }
+        for r in ls
+    ]
 
 
 def lines(bill_no: str | None) -> list[dict]:
