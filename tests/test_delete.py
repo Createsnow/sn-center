@@ -271,3 +271,107 @@ def test_delete_sn_in_pending_batch_voids_and_rebuilds(w, api, sql):
     assert not sql.count(
         "SELECT COUNT(*) FROM sn_delivery_alert WHERE sn IN (%s, %s) AND status = 'OPEN'", f"{p}0001", f"{p}0006"
     )
+
+
+def test_delete_does_not_void_batch_confirmed_meanwhile(w, api, sql, monkeypatch):
+    """删号读出要作废的批次之后、加锁之前，这一批恰好收到 MES 回执 OK：已确认的批次不能再作废（号已是已推送）。"""
+    import threading
+
+    from app.core.security import CurrentUser
+    from app.services import deletion, delivery
+
+    org = w.org(uid("O")[:10])
+    w.enable_mes(org, batch_size=3)
+    _, pi, _bill = mk(w, ("M1", 3), org=org)
+    p = P()
+    ok(w.bind_pi(pi, w.rule(p, seq_len=4, with_length=False)))
+    w.generate(pi)
+    w.allocate(pi)
+    w.push(receipts=False)
+    b = sql.one("SELECT * FROM sn_delivery_batch WHERE pi_no = %s", pi)
+    assert b["result"] == "UNCONFIRMED"
+    real = deletion._summary
+    calls = []
+
+    def summary_then_receipt(tpl, args):
+        out = real(tpl, args)
+        calls.append(1)
+        if len(calls) == 1:
+            # 事务内这次读出批次后，回执在别的连接上先确认这一批
+            th = threading.Thread(
+                target=delivery.apply_receipt,
+                args=(CurrentUser.system(), b["batch_no"], {"batchNo": b["batch_no"], "code": "OK"}),
+            )
+            th.start()
+            th.join()
+        return out
+
+    monkeypatch.setattr(deletion, "_summary", summary_then_receipt)
+    r = ok(w.delete(pi, start_sn=f"{p}0001"))
+    assert r["voided"] == [] and r["rebuilt"] == []
+    assert sql.scalar("SELECT result FROM sn_delivery_batch WHERE id = %s", b["id"]) == "SUCCESS"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 2
+
+
+def test_regenerated_sn_rev_continues_after_deleted_rev(w, api, sql):
+    """MES 已持有、转移过（rev > 1）的号删掉后重新生成同样的号：rev 接着删除前的往上加，MES 按 rev 覆盖为新挂靠，
+    不会因 rev 回到 1 被 MES 当作旧数据跳过（回执照样 OK，本系统却以为 MES 已拿到新挂靠）。"""
+    org = w.org(uid("O")[:10])
+    w.enable_mes(org)
+    _, pi, bill = mk(w, ("M1", 2), org=org)
+    p = P()
+    rule = w.rule(p, seq_len=4, with_length=False)
+    ok(w.bind_pi(pi, rule))
+    w.generate(pi)
+    w.allocate(pi)
+    w.push()
+    # 同组织转单到另一张单据：rev 2，MES 覆盖
+    tgt = uid("MO")
+    w.order(tgt, org, "C1", pi, ("M1", 2))
+    body = m(
+        pi_no=pi, bill_no=bill, scope="BILL", to_pi=pi, to_bill=tgt, to_factory=org, to_material="M1", reason="转单"
+    )
+    ok(api.post("/api/transfers/bill", body, w.admin))
+    w.push()
+    sn = f"{p}0001"
+    assert MES.store[org][sn]["rev"] == 2 and MES.store[org][sn]["billNo"] == tgt
+    ok(w.delete(pi, bills=[tgt]))
+    # 删号后目标单据有额度：重新生成同样的号（用空号段）
+    ok(w.bind_pi(pi, rule))
+    w.generate(pi, bills=[tgt], seq=(1, 2))
+    assert sql.scalar("SELECT rev FROM sn_item WHERE sn = %s", sn) == 3
+    w.allocate(pi)
+    w.push()
+    assert MES.store[org][sn]["rev"] == 3
+
+
+def test_imported_sn_rev_continues_after_deleted_rev(w, api, sql):
+    """删掉的号（MES 已持有、rev 2）再经 SN 导入进号池：rev 同样接着删前的往上加。"""
+    from test_sn_import import run as import_run
+    from test_sn_import import xlsx
+
+    org = w.org(uid("O")[:10])
+    w.enable_mes(org)
+    _, pi, bill = mk(w, ("M1", 1), org=org)
+    p = P()
+    ok(w.bind_pi(pi, w.rule(p, seq_len=4, with_length=False)))
+    w.generate(pi)
+    w.allocate(pi)
+    w.push()
+    tgt = uid("MO")
+    w.order(tgt, org, "C1", pi, ("M1", 1))
+    body = m(
+        pi_no=pi, bill_no=bill, scope="BILL", to_pi=pi, to_bill=tgt, to_factory=org, to_material="M1", reason="转单"
+    )
+    ok(api.post("/api/transfers/bill", body, w.admin))
+    w.push()
+    sn = f"{p}0001"
+    assert MES.store[org][sn]["rev"] == 2
+    ok(w.delete(pi, bills=[tgt]))
+    ok(import_run(api, xlsx((pi, bill, sn, org)), w.admin))
+    assert sql.scalar("SELECT rev FROM sn_item WHERE sn = %s", sn) == 3
+    w.allocate(pi)
+    w.push()
+    # 导入的号必填项为 null，按接口校验的模拟 MES 整批退回（已知待 MES 确认，见 SN 导入）；这里只看送出的 rev
+    sent = [y["rev"] for x in MES.received if x["org"] == org for y in x["batch"]["items"] if y["sn"] == sn]
+    assert sent == [1, 2, 3]

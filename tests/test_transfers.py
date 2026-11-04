@@ -947,3 +947,74 @@ def test_cross_pi_transfer_first_push_rejected_pull_by_target_pi_or_bill(w, api,
     assert (rc["batchResult"], rc["firstConfirmation"]) == ("SUCCESS", True)
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi2) == 3
     assert ok(w.mes_next(tok, pi=pi2)).code == "NO_BATCH"
+
+
+def test_batch_type_follows_source_org_holding_on_chained_cross_org_transfer(w, sql):
+    """跨组织转移按「转出组织的 MES 是否已持有」定批次类型（对接说明 1.3）：A 已持有 → 转到未对接 MES 的 B
+    （A 收转出）→ 再从 B 转走时 B 没有持有，转入方收首次下发 NEW；转回 A 也不是同组织转移（A 已标「已转走」）。"""
+    a, pi, bill = setup(w, qty=2)
+    b = w.org(uid("O")[:10])
+    c = w.org(uid("O")[:10])
+    w.enable_mes(c)
+    w.allocate(pi)
+    w.push()
+    ok(org_direct(w, a, pi, bill, b))
+    w.push()
+    assert (
+        sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'ALLOCATED' AND factory_code = %s", pi, b)
+        == 2
+    )
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND mes_holder IS NULL", pi) == 2, "A 已确认转出"
+    # B（未对接、没有持有）→ A：A 收到的是首次下发，不是同组织转移
+    MES.received.clear()
+    ok(org_direct(w, b, pi, bill, a))
+    w.push()
+    got = [x["batch"]["batchType"] for x in MES.received if x["org"] == a and x["batch"]["batchType"] != "PING"]
+    assert got == ["NEW"]
+    sn = sql.scalar("SELECT sn FROM sn_item WHERE pi_no = %s LIMIT 1", pi)
+    assert MES.store[a][sn]["rev"] == 3 and not MES.store[a][sn]["transferredOut"]
+
+
+def test_batch_type_new_when_source_org_never_held_after_paused_transfer_in(w, sql):
+    """A 已持有 → 转到 B 的暂停单据（转入批次没建，留在号池）→ A 确认转出后再从 B 转到 C：B 没有持有，C 收 NEW。"""
+    a, pi, bill = setup(w, qty=2)
+    b, c = w.org(uid("O")[:10]), w.org(uid("O")[:10])
+    w.enable_mes(b)
+    w.enable_mes(c)
+    w.allocate(pi)
+    w.push()
+    sql.exec("UPDATE sn_bill_ledger SET suspend = 'CHANGE' WHERE bill_no = %s", bill)
+    ok(org_direct(w, a, pi, bill, b))
+    w.push()
+    rows = sql.all("SELECT status, delivery_batch_no, mes_holder FROM sn_item WHERE pi_no = %s", pi)
+    assert {(r["status"], r["delivery_batch_no"], r["mes_holder"]) for r in rows} == {("TO_PUSH", None, None)}
+    MES.received.clear()
+    ok(org_direct(w, b, pi, bill, c))
+    sql.exec("UPDATE sn_bill_ledger SET suspend = NULL WHERE bill_no = %s", bill)
+    from app.services import changes
+
+    changes.refresh_items([bill])
+    ok(w.api.post("/api/delivery/resume", m(factory_code=c, key=pi), w.admin))
+    w.push()
+    got = {x["batch"]["batchType"] for x in MES.received if x["org"] == c} - {"PING"}
+    assert got == {"NEW"}
+    assert not [x for x in MES.received if x["org"] == b and x["batch"]["batchType"] != "PING"], "B 没有持有，不收转出"
+
+
+def test_same_org_transfer_keeps_pending_transfer_in_type(w, api, sql):
+    """转入方暂停期间还没下发的跨组织转入号，在转入组织内再转单：B 仍没有持有，保留与 A 的转出成对的 TRANSFER_IN。"""
+    a, pi, bill = setup(w, qty=2)
+    b = w.org(uid("O")[:10])
+    w.enable_mes(b)
+    w.allocate(pi)
+    w.push()
+    sql.exec("UPDATE sn_bill_ledger SET suspend = 'CHANGE' WHERE bill_no = %s", bill)
+    ok(org_direct(w, a, pi, bill, b))
+    w.push()
+    tgt = uid("MO")
+    w.order(tgt, b, "C1", pi, ("M1", 2))
+    MES.received.clear()
+    ok(api.post("/api/transfers/bill", bill_body(pi, bill, tgt, b), w.admin))
+    w.push()
+    got = {x["batch"]["batchType"] for x in MES.received if x["org"] == b} - {"PING"}
+    assert got == {"TRANSFER_IN"}

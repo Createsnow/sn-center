@@ -981,6 +981,7 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
                 if hit["origin"] == util.ORIGIN_IMPORT:
                     raise biz(ErrorCode.GEN_IMPORTED_SN, sn=hit["sn"], pi=hit["pi_no"]) from None
                 raise biz(ErrorCode.GEN_DUPLICATE_SN, sn=hit["sn"], pi=hit["pi_no"]) from None
+            continue_deleted_rev(sns)
             done += len(sns)
             if _progress(j["id"], done, sns[-1]):
                 raise biz(ErrorCode.GEN_CANCELED)
@@ -1021,6 +1022,21 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
                 + ",".join(f"{x['seq']}:{x['qty']}@{_segs_text(x)}[{versions[x['rule_key']]['id']}]" for x in items)
             ),
         )
+
+
+def continue_deleted_rev(sns: list[str]) -> None:
+    """刚写入号池的号（当前事务内）里，以前删过同样 SN 的：rev 接着删号存档里最大的 rev 加 1，不从 1 重来。
+    删掉的号可能已交付 MES 且转移过（rev > 1），MES 按 rev 比较、小于本地的跳过（对接说明 3.2），
+    rev 回到 1 会被当作迟到的旧数据跳过，回执照样 OK，本系统却以为 MES 已拿到新的挂靠。"""
+    if not sns:
+        return
+    db.exec(
+        "UPDATE sn_item i JOIN (SELECT sn, MAX(rev) r FROM sn_item_deleted "
+        f"WHERE sn IN ({marks(len(sns))}) GROUP BY sn) d ON d.sn = i.sn SET i.rev = d.r + 1 "
+        f"WHERE i.sn IN ({marks(len(sns))})",
+        *sns,
+        *sns,
+    )
 
 
 def _chunks(segs: list[list[int]]):

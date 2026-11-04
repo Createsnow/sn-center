@@ -238,9 +238,13 @@ def _move(
                     "transfer_doc_no": doc_no,
                 }
             )
-        # 批次类型只在原组织 MES 已持有时记为转移（transfer_from_org）；MES 还没收到的号保留原标记（没有即首次下发）
+        # 批次类型只在转出组织的 MES 已持有时记为转移（transfer_from_org = 转出组织）。转出组织没有持有时：
+        # 同组织转移保留原标记（如暂停期间还没下发的跨组织转入，仍与原组织的转出成对；没有即首次下发）；
+        # 跨组织转移清除标记，转入方为首次下发 NEW（对接说明 1.3「原组织未持有：NEW」）——否则沿用更早一次转移的
+        # 标记，转回该组织会被当成同组织转移、转到第三个组织会被当成跨组织转入（都没有与之成对的转出）
         from_org = old_org if r["mes_holder"] == old_org else None
-        key = (new_org, t.pi, t.customer, t.bill, t.seq, t.material, status, push_type, mode, from_org)
+        keep_from = from_org is None and new_org == old_org
+        key = (new_org, t.pi, t.customer, t.bill, t.seq, t.material, status, push_type, mode, from_org, keep_from)
         groups.setdefault(key, []).append(r["id"])
         if (t.bill, t.seq) != (r["bill_no"], r["bill_seq"]):
             line_moves[(r["bill_no"], r["bill_seq"])] = line_moves.get((r["bill_no"], r["bill_seq"]), 0) - 1
@@ -273,14 +277,27 @@ def _move(
             )
         )
     # 号已在本事务内 FOR UPDATE 锁住，rev + 1 与上面按读出值算的 rev 一致
-    for (new_org, pi, customer, bill, seq, material, status, push_type, mode, from_org), ids in groups.items():
+    for (
+        new_org,
+        pi,
+        customer,
+        bill,
+        seq,
+        material,
+        status,
+        push_type,
+        mode,
+        from_org,
+        keep_from,
+    ), ids in groups.items():
         for i in range(0, len(ids), 1000):
             part = ids[i : i + 1000]
             db.exec(
                 "UPDATE sn_item SET factory_code = %s, pi_no = %s, customer_code = %s, bill_no = %s, bill_seq = %s, "
                 "material_code = %s, rev = rev + 1, status = %s, push_type = %s, delivery_mode = %s, "
                 "delivery_batch_no = NULL, "
-                "transfer_kind = %s, transfer_doc_no = %s, transfer_from_org = COALESCE(%s, transfer_from_org), "
+                "transfer_kind = %s, transfer_doc_no = %s, "
+                "transfer_from_org = IF(%s, transfer_from_org, %s), "
                 "updated_at = %s "
                 f"WHERE id IN ({marks(len(part))})",
                 new_org,
@@ -294,6 +311,7 @@ def _move(
                 mode,
                 tkind,
                 doc_no,
+                1 if keep_from else 0,
                 from_org,
                 now,
                 *part,
@@ -350,7 +368,7 @@ def _move(
     changes.refresh_items({r["bill_no"] for r in items} | {t.bill for t in targets.values()})
     # 转移前 MES 已持有的号当场给转入方建交付批次；MES 还没收到的号回号池按流水认领（对 MES 仍是首次下发）
     held: dict[tuple[str, str], list[int]] = {}
-    for (new_org, pi, *_, status, _push, _mode, from_org), ids in groups.items():
+    for (new_org, pi, *_, status, _push, _mode, from_org, _keep), ids in groups.items():
         if status == util.TO_PUSH and from_org is not None and new_org in mes:
             held.setdefault((new_org, pi), []).extend(ids)
     in_batches = []

@@ -181,8 +181,13 @@ def delete(
             raise biz(ErrorCode.CONFLICT_RETRY)
         if s["orgs"]:
             cu.check_write(*s["orgs"])
-        # 先锁批次再锁号（与回执确认的加锁顺序一致）
-        batches = [delivery.must_batch(no, lock=True) for no in s["batches"]]
+        # 先锁批次再锁号（与回执确认的加锁顺序一致）。加锁后再看一次结果：上面读出之后、加锁之前这一批可能刚收到
+        # MES 回执确认（号已是已推送、MES 已持有），已确认的批次不作废
+        batches = [
+            b
+            for b in (delivery.must_batch(no, lock=True) for no in s["batches"])
+            if b["result"] in ("UNCONFIRMED", "FAILED")
+        ]
         ids = db.column(f"SELECT id FROM sn_item WHERE {where} ORDER BY seq_pi_no, seq_dec FOR UPDATE", *args)
         now = util.now()
         del_no = util.next_id("D")

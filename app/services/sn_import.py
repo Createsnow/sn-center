@@ -33,7 +33,7 @@ from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db, is_duplicate, marks
-from app.services import audit, changes, locks
+from app.services import audit, changes, generate, locks
 
 #: 单个文件上限
 MAX_MB = 20
@@ -334,6 +334,8 @@ def run(cu: CurrentUser, content: bytes, file_name_in: str | None) -> dict:
                     _INSERT_ITEM,
                     [(r.sn, r.pi, r.bill, r.factory, r.bill, ids[r.sn], no, now, now) for r in part],
                 )
+                # 导入的号以前在本系统生成、删过（可能已交付 MES）：rev 接着删前的往上加
+                generate.continue_deleted_rev(sns)
             except pymysql.err.IntegrityError as ex:
                 if not is_duplicate(ex):
                     raise
