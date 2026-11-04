@@ -287,9 +287,9 @@ def _bill_key(cu: CurrentUser, pi_in: str | None, bill_in: str | None) -> tuple[
 
 
 def bill_segments(cu: CurrentUser, pi_in: str | None, bill_in: str | None) -> dict:
-    """单据号段：可用号段 = 单据挂在本 PI 下现有的号按流水连续合并成段（转入的号按流水归属 PI 单独成段，
-    本 PI 的在前），另加「最大号 + 1 往后」（同一 PI 各单据共用流水）；空闲号段 = 本单据生成后删掉、
-    现在没有号占用的流水。"""
+    """单据号段：已用号段 = 单据挂在本 PI 下现有的号按流水连续合并成段（转入的号按流水归属 PI 单独成段，
+    本 PI 的在前）；空闲号段 = 本单据生成后删掉、现在没有号占用的流水。另给 PI 最大号与下一个号
+    （同一 PI 各单据共用流水，页面在底部「流水」显示，不列在单据号段里）。"""
     pi, bill, facs = _bill_key(cu, pi_in, bill_in)
     isql, iargs = factories.item_scope_sql(facs)
     inner = _ISLAND.format(cols="sn, seq_pi_no, seq_dec, status", part="seq_pi_no", bills="%s", scope=isql)

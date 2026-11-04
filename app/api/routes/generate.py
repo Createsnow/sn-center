@@ -42,7 +42,7 @@ def gen_gaps(cu: OperatorDep, pi: str | None = None) -> dict:
 
 @router.get(
     "/segments",
-    summary="单据号段：可用号段（单据现有的号按流水连续合并，转入的号单独成段；另有最大号 + 1 往后）、"
+    summary="单据号段：已用号段（单据现有的号按流水连续合并，转入的号单独成段）、"
     "空闲号段（本单据删号腾出、没有号占用的流水）",
 )
 def gen_segments(cu: OperatorDep, pi: str | None = None, bill_no: str | None = None) -> dict:

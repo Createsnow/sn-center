@@ -130,8 +130,10 @@
             <span @click.stop><el-checkbox v-bind="billCheck(b.bill_no)" :disabled="!b.in_snapshot || !b.lines.length" @change="(v: any) => onBill(b.bill_no, !!v)" /></span>
             <span v-if="billCheck(b.bill_no).order >= 0" class="order">{{ billCheck(b.bill_no).order + 1 }}</span>
             <b>{{ b.bill_no }}</b>
-            <!-- 单据号段：可用号段（现有号段 + 最大号之后）、空闲号段（本单据删号腾出），点开看明细 -->
-            <span class="chip use" @click.stop="segDlg?.open({ bill: b.bill_no, tab: 'use' })">{{ segUseText(b) }}</span>
+            <!-- 单据号段：已用号段（本单据现有的号）、空闲号段（本单据删号腾出），没有时不显示，点开看明细 -->
+            <span v-if="b.segments?.use_count" class="chip use" @click.stop="segDlg?.open({ bill: b.bill_no, tab: 'use' })">
+              {{ t("generate.segUse", { n: num(b.segments.use_count), qty: num(b.segments.use_qty) }) }}
+            </span>
             <span v-if="b.segments?.free_count" class="chip free" @click.stop="segDlg?.open({ bill: b.bill_no, tab: 'free' })">
               {{ t("generate.segFree", { n: num(b.segments.free_count), qty: num(b.segments.free_qty) }) }}
             </span>
@@ -520,13 +522,6 @@ function goAllocate() {
 // ---------------- 单据号段：单据头标签与号段弹窗；空闲号段「用这段」填进底部流水来源
 
 const segDlg = ref<InstanceType<typeof SegmentsDialog> | null>(null);
-function segUseText(b: any): string {
-  const s = b.segments || { use_count: 0, use_qty: 0 };
-  const next = ctx.value?.counter.next_seq ?? 1;
-  return s.use_count
-    ? t("generate.segUse", { n: num(s.use_count), qty: num(s.use_qty), next })
-    : t("generate.segUseNone", { next });
-}
 function useRange(r: { start: number; end: number }) {
   seq.value = { mode: "RANGE", start: r.start, end: r.end };
 }

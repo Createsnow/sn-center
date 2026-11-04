@@ -1,6 +1,6 @@
 <template>
-  <!-- 单据号段：可用号段（现有的号按流水连续合并，转入的号单独成段；另有最大号 + 1 往后）/ 空闲号段（本单据删号腾出）；
-       不给单据时只列整张 PI 的空闲号段（多一列来源单据）。可用号段可看 SN 明细（只有一列 SN）；空闲号段可「用这段」 -->
+  <!-- 单据号段：已用号段（本单据现有的号按流水连续合并，转入的号单独成段）/ 空闲号段（本单据删号腾出）；
+       不给单据时只列整张 PI 的空闲号段（多一列来源单据）。已用号段可看 SN 明细（只有一列 SN）；空闲号段可「用这段」 -->
   <el-dialog v-model="visible" :title="title" width="min(780px, 96vw)">
     <div v-loading="loading" class="segs">
       <el-tabs v-if="bill" v-model="tab">
@@ -9,43 +9,31 @@
       </el-tabs>
 
       <template v-if="bill && tab === 'use'">
-        <el-table :data="useRows" size="small" max-height="420">
+        <el-table :data="useRows" size="small" max-height="420" :empty-text="t('common.empty')">
           <el-table-column :label="t('generate.segStartSn')" min-width="150">
-            <template #default="{ row }">
-              <span v-if="row.open" class="muted">—</span>
-              <span v-else class="sn-mono">{{ row.start_sn }}</span>
-            </template>
+            <template #default="{ row }"><span class="sn-mono">{{ row.start_sn }}</span></template>
           </el-table-column>
           <el-table-column :label="t('generate.segEndSn')" min-width="150">
-            <template #default="{ row }">
-              <span v-if="row.open" class="muted">{{ t("generate.segOpen") }}</span>
-              <span v-else class="sn-mono">{{ row.end_sn }}</span>
-            </template>
+            <template #default="{ row }"><span class="sn-mono">{{ row.end_sn }}</span></template>
           </el-table-column>
           <el-table-column :label="t('generate.segSeq')" align="right" min-width="110">
-            <template #default="{ row }"><span class="num">{{ row.open ? `${row.start_seq}～` : `${row.start_seq}～${row.end_seq}` }}</span></template>
+            <template #default="{ row }"><span class="num">{{ `${row.start_seq}～${row.end_seq}` }}</span></template>
           </el-table-column>
           <el-table-column :label="t('common.qty')" align="right" width="80">
-            <template #default="{ row }">
-              <span v-if="row.open" class="muted">—</span>
-              <span v-else class="num">{{ num(row.qty) }}</span>
-            </template>
+            <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
           </el-table-column>
           <el-table-column :label="t('common.status')" min-width="190">
             <template #default="{ row }">
               <span class="tags">
-                <el-tag v-if="row.open" size="small" type="info">{{ t("generate.segOpenTag") }}</el-tag>
-                <template v-else>
-                  <el-tag v-if="row.transferred_in" size="small" type="warning">{{ t("generate.segTransferIn", { pi: row.seq_pi_no }) }}</el-tag>
-                  <el-tag v-if="row.allocated" size="small" type="success">{{ t("generate.segAllocated", { n: num(row.allocated) }) }}</el-tag>
-                  <el-tag v-if="row.pending" size="small">{{ t("generate.segPending", { n: num(row.pending) }) }}</el-tag>
-                </template>
+                <el-tag v-if="row.transferred_in" size="small" type="warning">{{ t("generate.segTransferIn", { pi: row.seq_pi_no }) }}</el-tag>
+                <el-tag v-if="row.allocated" size="small" type="success">{{ t("generate.segAllocated", { n: num(row.allocated) }) }}</el-tag>
+                <el-tag v-if="row.pending" size="small">{{ t("generate.segPending", { n: num(row.pending) }) }}</el-tag>
               </span>
             </template>
           </el-table-column>
           <el-table-column width="64" align="right">
             <template #default="{ row }">
-              <el-button v-if="!row.open" link type="primary" size="small" @click="openSns(row)">{{ t("generate.snDetail") }}</el-button>
+              <el-button link type="primary" size="small" @click="openSns(row)">{{ t("generate.snDetail") }}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -106,10 +94,8 @@ const tab = ref<"use" | "free">("use");
 const data = ref<any>(null);
 
 const title = computed(() => (bill.value ? t("generate.segTitle", { bill: bill.value }) : t("generate.segPiTitle", { pi: props.pi })));
-/** 可用号段：现有号段 + 最大号之后（往后不限，同一 PI 各单据共用流水）。 */
-const useRows = computed<any[]>(() =>
-  data.value ? [...data.value.use, { open: true, start_seq: data.value.next_seq, start_sn: "" }] : [],
-);
+/** 已用号段：本单据现有的号按流水合并成的段（不含最大号之后：那是整张 PI 共用的，看底部「流水」）。 */
+const useRows = computed<any[]>(() => data.value?.use ?? []);
 const freeRows = computed<any[]>(() => (bill.value ? data.value?.free ?? [] : props.gaps?.segments ?? []));
 const freeTruncated = computed(() => (bill.value ? data.value?.free_truncated : props.gaps?.truncated));
 
