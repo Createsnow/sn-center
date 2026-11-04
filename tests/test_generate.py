@@ -378,6 +378,41 @@ def test_pi_bills_share_first_bill_prefix(w, api, sql):
     assert w.select(other, [(ob, 1)], custom=c).code == "RULE_PREFIX_CONFLICT"
 
 
+def test_pi_prefix_stays_after_first_bill_changes(w, api, sql):
+    """默认前缀不随 PI 的单据增减漂移：第一张单据用它出号后，这张单据离开快照（金蝶删除）、
+    或有单据编号更小的单据加入本 PI，「选规则」仍默认本 PI 已用的这个前缀并带出其格式。"""
+    stem = uid("").replace("-", "")
+    org, pi, first = mk(w, ("M1", 2), bill="MO" + stem + "2")
+    _, _, second = mk(w, ("M2", 3), pi=pi, org=org, bill="MO" + stem + "3")
+    prefix = first[-7:]
+    c = m(prefix=prefix, base=10, seq_len=4, with_length=False)
+    ok(w.select(pi, [(first, 1)], custom=c))
+    w.generate(pi, lines=[(first, 1)])
+    # 单据编号更小的单据加入本 PI：MIN(bill_no) 变了，默认前缀不变
+    mk(w, ("M3", 1), pi=pi, org=org, bill="MO" + stem + "1")
+    ctx = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))
+    assert ctx["rule_prefix"]["prefix"] == prefix and ctx["rule_prefix"]["custom"]["seq_len"] == 4
+    # 第一张单据离开快照：号仍挂在本 PI 下，默认前缀不变
+    del BILLS[first]
+    w.compare()
+    assert not sql.count("SELECT COUNT(*) FROM sn_prd_mo WHERE bill_no = %s", first)
+    ctx = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))
+    assert ctx["rule_prefix"]["prefix"] == prefix and ctx["rule_prefix"]["custom"]["seq_len"] == 4
+    ok(w.select(pi, [(second, 1)], custom=ctx["rule_prefix"]["custom"]))
+    w.generate(pi, lines=[(second, 1)])
+    sns = [r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
+    assert sns == [f"{prefix}{i:04d}" for i in range(1, 6)], "同一前缀、流水接续"
+
+
+def test_pi_prefix_follows_first_bill_before_any_sn(w, api):
+    """本 PI 还没用单据编码出号时，默认前缀仍取当前第一张单据（单据编号最小）编码后 7 位。"""
+    stem = uid("").replace("-", "")
+    org, pi, b = mk(w, ("M1", 2), bill="MO" + stem + "2")
+    assert ok(api.get(f"/api/generate/context?pi={pi}", w.admin))["rule_prefix"] == {"prefix": b[-7:], "custom": None}
+    _, _, a = mk(w, ("M1", 1), pi=pi, org=org, bill="MO" + stem + "1")
+    assert ok(api.get(f"/api/generate/context?pi={pi}", w.admin))["rule_prefix"] == {"prefix": a[-7:], "custom": None}
+
+
 def test_custom_prefix_taken_before_run_reports_conflict(w, api):
     """确认生成时再查前缀是否全局唯一：预演后前缀被别的 PI 先用，生成报前缀冲突（页面弹窗），不只是「预演已改变」。"""
     _, pa, ba = mk(w, ("M1", 2))

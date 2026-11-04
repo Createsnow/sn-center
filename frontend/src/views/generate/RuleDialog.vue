@@ -91,7 +91,7 @@ import { ApiError } from "@/api/http";
 import { BASES } from "@/constants";
 import type { CustomRule, OrderLine } from "@/types/api";
 
-/** 「选规则」的默认前缀（ctx.rule_prefix）：prefix = PI 第一张单据编码后 7 位；custom = 本 PI 已用这个前缀的格式（没有为 null）。 */
+/** 「选规则」的默认前缀（ctx.rule_prefix）：prefix = PI 第一张单据编码后 7 位（本 PI 已用单据编码出号时为已用的那个，见 rules.pi_prefix）；custom = 本 PI 已用这个前缀的格式（没有为 null）。 */
 type RulePrefix = { prefix: string; custom: CustomRule | null };
 const props = defineProps<{ modelValue: boolean; pi: string; lines: OrderLine[]; options: any[]; rulePrefix?: RulePrefix }>();
 const emit = defineEmits<{ (e: "update:modelValue", v: boolean): void; (e: "saved"): void }>();

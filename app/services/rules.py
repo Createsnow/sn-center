@@ -263,9 +263,22 @@ def own_version(pi: str, spec: codec.Spec) -> Resolved | None:
 
 def pi_prefix(pi: str) -> dict:
     """生成页「选规则」的默认前缀：PI 第一张单据（单据编号最小）编码后 7 位；本 PI 已有这个前缀的版本时一并给出其格式，
-    页面按它填其他参数，保存时沿用该版本。"""
+    页面按它填其他参数，保存时沿用该版本。
+    本 PI 已用某张单据的编码后 7 位作前缀（有归属本 PI 的版本）时默认它（最早归属的那个），不随单据增减漂移：
+    第一张单据出号后离开快照（号仍挂在本 PI 下），或单据编号更小的单据加入本 PI，仍默认已用的前缀、流水接续。"""
     first = db.scalar("SELECT MIN(bill_no) FROM sn_prd_mo WHERE pi = %s", pi) or ""
     prefix = first[-7:]
+    owned = db.column("SELECT prefix FROM sn_rule_version WHERE claimed_pi = %s GROUP BY prefix ORDER BY MIN(id)", pi)
+    if owned:
+        # 本 PI 的单据：快照里的，加上号挂在本 PI 下、已离开快照的
+        bills = db.column(
+            "SELECT bill_no FROM sn_prd_mo WHERE pi = %s "
+            "UNION SELECT bill_no FROM sn_item WHERE pi_no = %s AND origin = 'GEN'",
+            pi,
+            pi,
+        )
+        tails = {b[-7:] for b in bills if b}
+        prefix = next((p for p in owned if p in tails), prefix)
     v = (
         db.one(
             "SELECT * FROM sn_rule_version WHERE prefix = %s AND claimed_pi = %s ORDER BY id DESC LIMIT 1", prefix, pi
