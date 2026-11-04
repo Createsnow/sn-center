@@ -20,6 +20,11 @@ foreach ($reportKind in $(if ($Integration) {
         else {
             @('surefire')
         })) {
+    # 骨架阶段尚无 *IT.java 时明确报告 0 个集成测试源，而不是把空运行当作通过；一旦存在源文件即强制发现门禁。
+    if ($reportKind -eq 'failsafe' -and -not (Get-ChildItem -Path (Join-Path $projectRoot 'backend/*/src/test/java') -Recurse -File -Filter '*IT.java' -ErrorAction SilentlyContinue)) {
+        Write-Warning 'failsafe: no *IT.java sources yet; add Testcontainers integration tests with the first database feature.'
+        continue
+    }
     $reports = Get-ChildItem -Path (Join-Path $projectRoot "backend/*/target/$reportKind-reports/TEST-*.xml") -File |
         Where-Object { $_.LastWriteTimeUtc -ge $startedAt }
     if (-not $reports) {

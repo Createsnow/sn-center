@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 # 密钥只从明确挂载项装入本进程，不使用eval，不输出值；运行容器不挂载迁移账号密码。
-for name in ADTEK_DB_PASSWORD ADTEK_MIGRATION_PASSWORD ADTEK_REDIS_PASSWORD ADTEK_JWT_SECRET ADTEK_BOOTSTRAP_PASSWORD; do
+for name in ADTEK_DB_PASSWORD ADTEK_MIGRATION_PASSWORD ADTEK_REDIS_PASSWORD; do
   path="/run/secrets/$name"
   if [ -f "$path" ]; then
     value="$(cat "$path")"

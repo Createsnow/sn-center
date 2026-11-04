@@ -32,11 +32,14 @@
             <configuration>
               <rules>
                 <bannedDependencies>
+                  <!-- 模块边界：只允许依赖下层模块，对新增模块自动生效。 -->
                   <excludes>
-                    <exclude>com.adtek:adtek-equipment</exclude>
-                    <exclude>com.adtek:adtek-integration</exclude>
-                    <exclude>com.adtek:adtek-server</exclude>
+                    <exclude>com.adtek:*</exclude>
                   </excludes>
+                  <includes>
+                    <include>com.adtek:adtek-common</include>
+                    <include>com.adtek:adtek-framework</include>
+                  </includes>
                 </bannedDependencies>
               </rules>
             </configuration>

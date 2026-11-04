@@ -21,7 +21,7 @@ if (-not $dockerPath) {
 }
 if ($Action -eq 'start') {
     New-Item -ItemType Directory -Force -Path $secretsPath | Out-Null
-    foreach ($name in @('mysql-root-password', 'mysql-app-password', 'mysql-migration-password', 'redis-password', 'jwt-signing-key')) {
+    foreach ($name in @('mysql-root-password', 'mysql-app-password', 'mysql-migration-password', 'redis-password')) {
         $secretFile = Join-Path $secretsPath $name
         if (-not (Test-Path -LiteralPath $secretFile)) {
             $secretValue = [Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(32)).ToLowerInvariant()

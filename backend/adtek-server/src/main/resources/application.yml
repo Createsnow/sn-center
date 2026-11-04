@@ -61,37 +61,3 @@ mybatis-plus:
 logging:
   pattern:
     level: '%5p [traceId=%X{traceId}]'
-adtek:
-  tasks:
-    enabled: true
-    max-attempts: 3
-    lease-seconds: 30
-    budget-seconds: 300
-    retry-seconds: 3
-    per-user-limit: 3
-    queue-limit: 1000
-    export-rows: 10000
-    file-bytes: 16777216
-    file-root: ${ADTEK_FILE_ROOT:./var/files}
-  security:
-    login-guard:
-      maximum-failures: 5
-      lock-seconds: 900
-    issuer: adtek-platform-template
-    audience: adtek-platform-template-web
-    jwt-secret: ${ADTEK_JWT_SECRET}
-    access-minutes: 15
-    refresh-hours: 8
-    cookie-secure: true
-  rate-limit:
-    policies:
-      auth-login:
-        path: /api/v1/system/auth/login
-        subject-limit: 8
-        source-limit: 100
-        window-seconds: 60
-      auth-refresh:
-        path: /api/v1/system/auth/refresh
-        subject-limit: 30
-        source-limit: 100
-        window-seconds: 60

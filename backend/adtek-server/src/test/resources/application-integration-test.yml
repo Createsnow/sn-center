@@ -1,9 +1,0 @@
-adtek:
-  tasks:
-    enabled: false
-    file-root: ./target/task-files/${random.uuid}
-  security:
-    cookie-secure: false
-springdoc:
-  api-docs:
-    enabled: true

@@ -5,14 +5,7 @@ process.env.PLAYWRIGHT_NO_COPY_PROMPT = '1';
 
 export default defineConfig({
   testDir: './e2e',
-  testMatch: [
-    'auth.spec.ts',
-    'users.spec.ts',
-    'configuration.spec.ts',
-    'audit.spec.ts',
-    'export.spec.ts',
-    'equipment.spec.ts',
-  ],
+  testMatch: ['**/*.spec.ts'],
   outputDir: 'test-results/browser',
   timeout: 90_000,
   fullyParallel: false,

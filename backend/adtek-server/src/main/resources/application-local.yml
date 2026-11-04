@@ -1,7 +1,4 @@
-# 本机 HTTP 测试专用；SecurityBeansConfiguration 同时强制 loopback 监听。
-adtek:
-  security:
-    cookie-secure: false
+# 本机开发专用：开放 OpenAPI 文档供生成前端契约；部署环境保持关闭。
 springdoc:
   api-docs:
     enabled: true

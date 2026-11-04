@@ -11,10 +11,8 @@ template-checks:
     - pwsh -NoProfile -File tools/pnpm.ps1 install --frozen-lockfile
     - pwsh -NoProfile -File tools/format.ps1 -Check
     - pwsh -NoProfile -File tools/verify.ps1 -Integration
-    - pwsh -NoProfile -File tools/check-contract.ps1
     - node tools/check-docs.mjs
     - pwsh -NoProfile -File tools/verify-web.ps1
-    - pwsh -NoProfile -File tools/verify-browser.ps1
   artifacts:
     when: always
     expire_in: 14 days
@@ -22,7 +20,6 @@ template-checks:
       - backend/*/target/surefire-reports/TEST-*.xml
       - backend/*/target/failsafe-reports/TEST-*.xml
       - frontend/test-results/unit.json
-      - frontend/test-results/browser.json
     reports:
       junit:
         - backend/*/target/surefire-reports/TEST-*.xml

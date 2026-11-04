@@ -14,7 +14,7 @@
     </dependency>
     <dependency>
       <groupId>com.adtek</groupId>
-      <artifactId>adtek-equipment</artifactId>
+      <artifactId>adtek-sample</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -63,24 +63,4 @@
       </plugin>
     </plugins>
   </build>
-  <profiles>
-    <profile>
-      <id>acceptance</id>
-      <build>
-        <!-- 独立验收产物；不覆盖常驻开发JVM可能已打开的默认JAR。 -->
-        <finalName>adtek-server-acceptance</finalName>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-failsafe-plugin</artifactId>
-            <configuration>
-              <systemPropertyVariables>
-                <adtek.test.jar>target/adtek-server-acceptance.jar</adtek.test.jar>
-              </systemPropertyVariables>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>

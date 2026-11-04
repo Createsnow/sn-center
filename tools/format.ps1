@@ -5,7 +5,7 @@ param(
     [string]$Scope = 'All'
 )
 
-# 使用固定工具格式化声明的源码；不扫描秘密、数据库迁移、历史证据或生成目录。
+# 使用固定工具格式化声明的源码；不扫描秘密、数据库迁移或生成目录。
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 
@@ -54,7 +54,6 @@ if ($Scope -in @('All', 'Configuration')) {
         Get-Item (Join-Path $projectRoot '.gitlab-ci.yml')
         Get-ChildItem (Join-Path $projectRoot 'deploy') -File | Where-Object { $_.Extension -in @('.yml', '.json') }
         Get-ChildItem (Join-Path $projectRoot 'backend/adtek-server/src/main/resources') -File -Filter '*.yml'
-        Get-ChildItem (Join-Path $projectRoot 'backend/adtek-server/src/test/resources') -File -Filter '*.yml'
         Get-Item (Join-Path $PSScriptRoot 'build-tools.lock.json')
     )
     $mode = if ($Check) {

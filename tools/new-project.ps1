@@ -40,13 +40,12 @@ $database = $ProjectName.Replace('-', '_') + '_test'
 $replacements = [ordered]@{
     'adtek-platform-template' = $ProjectName
     'adtek_template_test' = $database
-    'adtek-template-' = ($ProjectName + '-')
     '33316' = [string]$MysqlPort
     '36389' = [string]$RedisPort
     '18090' = [string]$ApiPort
     '15183' = [string]$WebPort
 }
-# 一次匹配原始文本，避免新项目名称包含 adtek-template- 时被第二次替换。
+# 一次匹配原始文本，避免替换结果再次被替换。
 $replacePattern = ($replacements.Keys | ForEach-Object { [regex]::Escape($_) }) -join '|'
 New-Item -ItemType Directory -Path $targetRoot | Out-Null
 foreach ($relative in $files) {
@@ -59,7 +58,7 @@ foreach ($relative in $files) {
     }
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $target) | Out-Null
     $original = Join-Path $sourceRoot $relative
-    # 图片与发布证据保持字节；仅修改可运行配置和界面中的命名。
+    # 锁文件与二进制保持字节；仅修改可运行配置和界面中的命名。
     if ($relative -match '^(backend/|frontend/|tools/|deploy/)' -and $relative -notmatch '(^|/)(new-project\.ps1|build-tools\.lock\.json|pnpm-lock\.yaml|images\.lock\.json)$' -and ([IO.Path]::GetFileName($relative) -eq 'Dockerfile' -or [IO.Path]::GetExtension($relative) -in @('.java', '.xml', '.yml', '.json', '.ps1', '.sh', '.ts', '.tsx', '.html', '.conf'))) {
         $content = [IO.File]::ReadAllText($original)
         $content = [regex]::Replace($content, $replacePattern, { param($match) $replacements[$match.Value] })

@@ -3,7 +3,12 @@ param([switch]$Browser)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $startedAt = [DateTime]::UtcNow
-foreach ($task in @('api:check', 'lint', 'format:check', 'test', 'build')) {
+# 接口契约文件存在后才校验生成类型；新项目首次导出 OpenAPI 后该检查自动生效。
+$tasks = @('lint', 'format:check', 'test', 'build')
+if (Test-Path -LiteralPath (Join-Path $projectRoot 'frontend/openapi/adtek-template.json')) {
+    $tasks = @('api:check') + $tasks
+}
+foreach ($task in $tasks) {
     & (Join-Path $PSScriptRoot 'pnpm.ps1') $task
     if ($LASTEXITCODE -ne 0) {
         throw "Frontend $task failed: $LASTEXITCODE"
