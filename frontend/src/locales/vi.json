@@ -915,7 +915,7 @@
   },
   "snImport": {
     "title": "Nhập SN",
-    "desc": "Nhập các SN đã có ngoài hệ thống (PI + Số chứng từ + SN + Tổ chức sản xuất): sau khi nhập chờ phân bổ ở trang Phân bổ SN và chỉ có thể phân bổ",
+    "desc": "Nhập các SN đã có ngoài hệ thống (PI + Số chứng từ + SN + Tổ chức sản xuất, có thể thêm mã vật tư, hạng mục đính kèm, số mét, mã khách hàng, gửi cho MES khi đẩy / kéo): sau khi nhập chờ phân bổ ở trang Phân bổ SN và chỉ có thể phân bổ",
     "template": "Tải mẫu",
     "import": "Nhập",
     "dialogTitle": "Nhập SN",
@@ -956,6 +956,13 @@
       "IMPORTED": "Đã nhập trước đó (số phiếu nhập {import_no})",
       "BILL_NOT_FOUND": "Chứng từ {bill_no} không có trong lệnh sản xuất",
       "PI_MISMATCH": "PI của chứng từ {bill_no} là {pi}",
+      "MATERIAL_TOO_LONG": "Mã vật tư dài quá {max} ký tự",
+      "ATTACH_TOO_LONG": "Hạng mục đính kèm dài quá {max} ký tự",
+      "LENGTH_TOO_LONG": "Số mét dài quá {max} ký tự",
+      "CUSTOMER_TOO_LONG": "Mã khách hàng dài quá {max} ký tự",
+      "MATERIAL_NOT_IN_BILL": "Chứng từ {bill_no} không có vật tư {material}",
+      "ATTACH_NOT_IN_BILL": "Chứng từ {bill_no} không có dòng vật tư {material} với hạng mục đính kèm {attach}",
+      "CUSTOMER_MISMATCH": "Mã khách hàng của chứng từ {bill_no} là {customer}",
       "FACTORY_FORBIDDEN": "Tổ chức sản xuất {factory} của chứng từ không thuộc phạm vi được ủy quyền"
     }
   },

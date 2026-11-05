@@ -915,7 +915,7 @@
   },
   "snImport": {
     "title": "SN import",
-    "desc": "Import SNs that already exist outside this system (PI + Bill No. + SN + Production org): they wait on the SN allocation page and can only be allocated",
+    "desc": "Import SNs that already exist outside this system (PI + Bill No. + SN + Production org, optionally material code, attachment item, length and customer code, which go to MES with push / pull): they wait on the SN allocation page and can only be allocated",
     "template": "Download template",
     "import": "Import",
     "dialogTitle": "Import SNs",
@@ -956,6 +956,13 @@
       "IMPORTED": "Already imported (import No. {import_no})",
       "BILL_NOT_FOUND": "Bill {bill_no} is not in the production orders",
       "PI_MISMATCH": "The PI of bill {bill_no} is {pi}",
+      "MATERIAL_TOO_LONG": "Material code is longer than {max} characters",
+      "ATTACH_TOO_LONG": "Attachment item is longer than {max} characters",
+      "LENGTH_TOO_LONG": "Length is longer than {max} characters",
+      "CUSTOMER_TOO_LONG": "Customer code is longer than {max} characters",
+      "MATERIAL_NOT_IN_BILL": "Bill {bill_no} has no material {material}",
+      "ATTACH_NOT_IN_BILL": "Bill {bill_no} has no line with material {material} and attachment item {attach}",
+      "CUSTOMER_MISMATCH": "The customer code of bill {bill_no} is {customer}",
       "FACTORY_FORBIDDEN": "The bill's production org {factory} is not authorized for you"
     }
   },

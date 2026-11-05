@@ -20,6 +20,10 @@
         <el-table-column :label="t('common.sn')" min-width="150">
           <template #default="{ row }"><span class="sn-mono">{{ row.sn }}</span></template>
         </el-table-column>
+        <el-table-column prop="material_code" :label="t('common.material')" min-width="90" show-overflow-tooltip />
+        <el-table-column prop="attach_no" :label="t('common.attachNo')" min-width="80" show-overflow-tooltip />
+        <el-table-column prop="length" :label="t('common.length')" min-width="60" show-overflow-tooltip />
+        <el-table-column prop="customer_code" :label="t('common.customer')" min-width="80" show-overflow-tooltip />
         <el-table-column :label="t('snImport.status')" width="130">
           <template #default="{ row }">
             <el-tooltip v-if="row.deleted_at" :content="`${row.deleted_by} ${fmt(row.deleted_at)}`" placement="top">
@@ -100,7 +104,8 @@
 </template>
 
 <script setup lang="ts">
-/** SN 导入：系统之外已有的 SN 按「PI + 单据编号 + SN + 生产组织」导入（表头固定）：
+/** SN 导入：系统之外已有的 SN 按「PI + 单据编号 + SN + 生产组织」导入，可另填物料编码、附件项次、米数、客户编码
+ *  （表头固定，A～D 必填、E～H 选填；填了的随推送 / 拉取交给 MES）：
  *  号进号池、在 SN 分配页待分配，只能分配（不在生成页，不能删号、转移）；之后生成撞上这些号整次回滚。
  *  选文件后先由后端检查（不落库，逐行列出不能导入的原因），没有问题行才能确定导入；确定时后端再检查一遍，
  *  有一行不能导入整个文件都不导入。 */

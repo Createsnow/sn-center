@@ -1,4 +1,6 @@
-"""SN 导入：表头固定为 PI + 单据编号 + SN + 生产组织；导入的号进号池（待分配），只能分配；
+"""SN 导入：表头固定为 PI + 单据编号 + SN + 生产组织（必填）+ 物料编码 + 附件项次 + 米数 + 客户编码
+（选填，可从后往前省略）；
+导入的号进号池（待分配），只能分配；填了的选填列随推送 / 拉取交给 MES；
 先检查后确定导入，有一行不能导入整个文件不导入；
 导入的号不能与号池、已导入的号重复，之后生成撞上已导入的号整次回滚；普通操作员只能导入、查看授权组织的单据。"""
 
@@ -10,6 +12,8 @@ from conftest import MES, emp, ok, uid
 from openpyxl import Workbook
 
 HEAD = ("PI", "单据编号", "SN", "生产组织")
+#: 模板的全部列：A～D 必填，E～H 选填
+FULL = (*HEAD, "物料编码", "附件项次", "米数", "客户编码")
 
 
 def xlsx(*rows, headers=HEAD) -> bytes:
@@ -56,12 +60,12 @@ def mk(w, *lines, org=None):
     return org, pi, bill
 
 
-def test_template_has_the_four_columns(w, api):
+def test_template_has_required_and_optional_columns(w, api):
     r = api.client.get("/api/sn-import/template", headers={"Authorization": f"Bearer {w.admin}"})
     assert r.status_code == 200
     from conftest import xlsx_rows
 
-    assert xlsx_rows(r.content)[0] == list(HEAD)
+    assert xlsx_rows(r.content)[0] == list(FULL)
 
 
 def test_check_lists_every_bad_row_and_import_is_all_or_nothing(w, api, sql):
@@ -293,15 +297,25 @@ def test_operator_only_imports_and_sees_authorized_orgs(w, api, sql):
 def test_bad_files(w, api):
     assert check(api, b"not an xlsx", w.admin).code == "IMPORT_FILE_INVALID"
     assert check(api, b"", w.admin).code == "IMPORT_EMPTY"
-    # 表头固定：少列、多列、换顺序、改列名都不行
+    # 表头固定：少了必填列、多列、跳列、换顺序、改列名都不行
     for head in (
         ("PI", "单据编号", "SN"),
         (*HEAD, "其他"),
+        (*FULL, "其他"),
+        (*HEAD, "附件项次"),
+        (*HEAD, "物料编码", "米数"),
         ("单据编号", "PI", "SN", "生产组织"),
         ("PI", "单据", "SN", "生产组织"),
     ):
         r = check(api, xlsx(("P", "B", "S", "O"), headers=head), w.admin)
-        assert (r.code, r["params"]) == ("IMPORT_HEADER_INVALID", {"columns": "PI、单据编号、SN、生产组织"}), head
+        assert (r.code, r["params"]) == (
+            "IMPORT_HEADER_INVALID",
+            {"columns": "、".join(FULL), "required": "、".join(HEAD)},
+        ), head
+    # 选填列可从后往前省略：只有 A～D（旧模板）、A～E、A～H 都能读
+    for head in (HEAD, FULL[:5], FULL):
+        r = check(api, xlsx(("P", "B", "S", "O"), headers=head), w.admin)
+        assert r.status == 200 and r["total"] == 1, (head, str(r))
     assert check(api, xlsx(headers=HEAD), w.admin).code == "IMPORT_EMPTY"
 
 
@@ -342,3 +356,102 @@ def test_delete_whole_import_only_while_all_pending(w, api, sql):
     r = api.post(f"/api/sn-import/imports/{again}/delete", {}, w.admin)
     assert (r.status, r.code, r["params"]) == (409, "IMPORT_DELETE_ALLOCATED", {"import_no": again, "count": 2})
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE sn IN (%s, %s)", a, c) == 2
+
+
+def test_optional_columns_are_checked_against_the_order(w, api, sql):
+    """选填列填了就按订单快照检查：物料须是该单据的；附件项次须是该单据（填了物料时为该物料）某物料行生效的附件项次
+    （含生成页补填的）；客户编码须与单据相同；各列不超过 64 位；米数原样保存只查长度。"""
+    org, pi, bill = mk(w, ("M1", 2, "100", "A1"), ("M2", 2, "100", "A2"), ("M3", 1, "100", ""))
+    ok(api.put("/api/orders/attach", {"bill_no": bill, "seq": 3, "value": "A9"}, w.admin))
+    long = "X" * 65
+    rows = [
+        (pi, bill, uid("S"), org, "M1", "A1", "0100", "C1"),  # 2：全对
+        (pi, bill, uid("S"), org, "", "A2", "", ""),  # 3：只填附件项次，单据里有
+        (pi, bill, uid("S"), org, "M3", "A9", "", ""),  # 4：生成页补填的附件项次
+        (pi, bill, uid("S"), org, "MX", "", "", ""),  # 5：单据没有这个物料
+        (pi, bill, uid("S"), org, "M1", "A2", "", ""),  # 6：A2 是 M2 的，不是 M1 的
+        (pi, bill, uid("S"), org, "", "AX", "", ""),  # 7：单据没有这个附件项次
+        (pi, bill, uid("S"), org, "", "", "", "C9"),  # 8：客户不符
+        (pi, bill, uid("S"), org, long, long, long, long),  # 9：超长
+        (pi, bill, uid("S"), org, "MX", "AX", "", ""),  # 10：物料不对时不再对照附件项次
+    ]
+    r = ok(check(api, xlsx(*rows, headers=FULL), w.admin))
+    assert codes(r) == {
+        5: ["MATERIAL_NOT_IN_BILL"],
+        6: ["ATTACH_NOT_IN_BILL"],
+        7: ["ATTACH_NOT_IN_BILL"],
+        8: ["CUSTOMER_MISMATCH"],
+        9: ["MATERIAL_TOO_LONG", "ATTACH_TOO_LONG", "LENGTH_TOO_LONG", "CUSTOMER_TOO_LONG"],
+        10: ["MATERIAL_NOT_IN_BILL"],
+    }, codes(r)
+    issues = {x["row"]: x["issues"] for x in r["issues"]}
+    assert issues[6][0]["params"] == {"bill_no": bill, "material": "M1", "attach": "A2"}
+    assert issues[7][0]["params"] == {"bill_no": bill, "material": "—", "attach": "AX"}
+    assert issues[8][0]["params"] == {"bill_no": bill, "customer": "C1"}
+    assert run(api, xlsx(*rows, headers=FULL), w.admin).code == "IMPORT_HAS_ISSUES"
+    # 去掉问题行后可导入
+    ok(run(api, xlsx(*rows[:3], headers=FULL), w.admin))
+    got = sql.all(
+        "SELECT sn, material_code, attach_no, length_text, customer_code FROM sn_item WHERE sn IN (%s, %s, %s)",
+        *[x[2] for x in rows[:3]],
+    )
+    assert {(x["material_code"], x["attach_no"], x["length_text"], x["customer_code"]) for x in got} == {
+        ("M1", "A1", "0100", "C1"),
+        ("", "A2", None, ""),
+        ("M3", "A9", None, ""),
+    }
+
+
+def test_optional_columns_go_to_mes_with_push_and_pull(w, api, sql):
+    """导入时填了的物料编码、附件项次、米数、客户编码写进号池，推送与拉取的明细带上（米数原样、保留前导 0），
+    没填的仍为 null；流水与单据行号为 null。导入列表、分配页导入行列出这些值。"""
+    org, pi, bill = mk(w, ("M1", 2, "100", "A1"), ("M2", 2, "100", "A2"))
+    w.enable_mes(org)
+    a, b, c = uid("SA"), uid("SB"), uid("SC")
+    done = ok(
+        run(
+            api,
+            xlsx(
+                (pi, bill, a, org, "M1", "A1", "0100", "C1"),
+                (pi, bill, b, org, "M2", "A2", "", ""),
+                (pi, bill, c, org),
+                headers=FULL,
+            ),
+            w.admin,
+        )
+    )
+    st = {x["sn"]: x for x in ok(api.get(f"/api/sn-import/items?import_no={done['import_no']}", w.admin))["items"]}
+    assert (st[a]["material_code"], st[a]["attach_no"], st[a]["length"], st[a]["customer_code"]) == (
+        "M1",
+        "A1",
+        "0100",
+        "C1",
+    )
+    assert (st[c]["material_code"], st[c]["attach_no"], st[c]["length"], st[c]["customer_code"]) == ("", "", "", "")
+    al = ok(api.get(f"/api/allocation/context?pi={pi}", w.admin))
+    line = next(x for x in al["lines"] if x["bill_no"] == bill and x["seq"] == 0)
+    assert (line["imported"], line["material_code"], line["qty"]) == (True, "M1,M2", 3)
+    w.allocate(pi, lines=[(bill, 0)])
+    w.push()
+    items = {i["sn"]: i for x in MES.received if x["batch"].get("pi") == pi for i in x["batch"].get("items") or []}
+    assert set(items) == {a, b, c}
+    fields = ("attachNo", "materialCode", "length", "customerCode")
+    assert {k: items[a][k] for k in fields} == {
+        "attachNo": "A1",
+        "materialCode": "M1",
+        "length": "0100",
+        "customerCode": "C1",
+    }
+    assert {k: items[b][k] for k in fields} == {
+        "attachNo": "A2",
+        "materialCode": "M2",
+        "length": None,
+        "customerCode": None,
+    }
+    assert {k: items[c][k] for k in fields} == dict.fromkeys(fields)
+    for i in items.values():
+        assert (i["serial"], i["serialDec"], i["serialPi"], i["billSeq"]) == (None, None, None, None)
+    # 拉取：模拟 MES 按接口必填项（流水、单据行号）整批退回后号仍待推送，MES 来取拿到的明细字段与推送的相同
+    token, _ = w.mes_account(org)
+    got = ok(w.mes_next(token, pi=pi))["batch"]["items"]
+    assert {i["sn"]: {k: i[k] for k in fields} for i in got} == {s: {k: items[s][k] for k in fields} for s in items}

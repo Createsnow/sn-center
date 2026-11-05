@@ -1,7 +1,7 @@
 # SN 导入：系统外已有的 SN 按 PI + 单据编号 + SN + 生产组织登记，之后生成不会再出这些号
 M = {
 "snImport.title": ("SN 导入", "SN import", "Nhập SN"),
-"snImport.desc": ("导入本系统之外已有的 SN（PI + 单据编号 + SN + 生产组织）：导入后在 SN 分配页待分配，只能分配", "Import SNs that already exist outside this system (PI + Bill No. + SN + Production org): they wait on the SN allocation page and can only be allocated", "Nhập các SN đã có ngoài hệ thống (PI + Số chứng từ + SN + Tổ chức sản xuất): sau khi nhập chờ phân bổ ở trang Phân bổ SN và chỉ có thể phân bổ"),
+"snImport.desc": ("导入本系统之外已有的 SN（PI + 单据编号 + SN + 生产组织，可另填物料编码、附件项次、米数、客户编码，随推送 / 拉取交给 MES）：导入后在 SN 分配页待分配，只能分配", "Import SNs that already exist outside this system (PI + Bill No. + SN + Production org, optionally material code, attachment item, length and customer code, which go to MES with push / pull): they wait on the SN allocation page and can only be allocated", "Nhập các SN đã có ngoài hệ thống (PI + Số chứng từ + SN + Tổ chức sản xuất, có thể thêm mã vật tư, hạng mục đính kèm, số mét, mã khách hàng, gửi cho MES khi đẩy / kéo): sau khi nhập chờ phân bổ ở trang Phân bổ SN và chỉ có thể phân bổ"),
 "snImport.template": ("下载模板", "Download template", "Tải mẫu"),
 "snImport.import": ("导入", "Import", "Nhập"),
 "snImport.dialogTitle": ("导入 SN", "Import SNs", "Nhập SN"),
@@ -41,5 +41,12 @@ M = {
 "snImport.issue.IMPORTED": ("已导入过（导入单号 {import_no}）", "Already imported (import No. {import_no})", "Đã nhập trước đó (số phiếu nhập {import_no})"),
 "snImport.issue.BILL_NOT_FOUND": ("单据 {bill_no} 不在生产订单中", "Bill {bill_no} is not in the production orders", "Chứng từ {bill_no} không có trong lệnh sản xuất"),
 "snImport.issue.PI_MISMATCH": ("单据 {bill_no} 的 PI 是 {pi}", "The PI of bill {bill_no} is {pi}", "PI của chứng từ {bill_no} là {pi}"),
+"snImport.issue.MATERIAL_TOO_LONG": ("物料编码超过 {max} 位", "Material code is longer than {max} characters", "Mã vật tư dài quá {max} ký tự"),
+"snImport.issue.ATTACH_TOO_LONG": ("附件项次超过 {max} 位", "Attachment item is longer than {max} characters", "Hạng mục đính kèm dài quá {max} ký tự"),
+"snImport.issue.LENGTH_TOO_LONG": ("米数超过 {max} 位", "Length is longer than {max} characters", "Số mét dài quá {max} ký tự"),
+"snImport.issue.CUSTOMER_TOO_LONG": ("客户编码超过 {max} 位", "Customer code is longer than {max} characters", "Mã khách hàng dài quá {max} ký tự"),
+"snImport.issue.MATERIAL_NOT_IN_BILL": ("单据 {bill_no} 没有物料 {material}", "Bill {bill_no} has no material {material}", "Chứng từ {bill_no} không có vật tư {material}"),
+"snImport.issue.ATTACH_NOT_IN_BILL": ("单据 {bill_no} 没有物料 {material}、附件项次 {attach} 的物料行", "Bill {bill_no} has no line with material {material} and attachment item {attach}", "Chứng từ {bill_no} không có dòng vật tư {material} với hạng mục đính kèm {attach}"),
+"snImport.issue.CUSTOMER_MISMATCH": ("单据 {bill_no} 的客户编码是 {customer}", "The customer code of bill {bill_no} is {customer}", "Mã khách hàng của chứng từ {bill_no} là {customer}"),
 "snImport.issue.FACTORY_FORBIDDEN": ("单据的生产组织 {factory} 不在授权范围内", "The bill's production org {factory} is not authorized for you", "Tổ chức sản xuất {factory} của chứng từ không thuộc phạm vi được ủy quyền"),
 }

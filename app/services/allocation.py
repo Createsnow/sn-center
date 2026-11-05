@@ -378,7 +378,10 @@ def context(cu: CurrentUser, pi_in: str | None) -> dict:
     facs = cu.read_factories(None)
     isql, iargs = factories.item_scope_sql(facs, "i.")
     rows = db.all(
-        "SELECT i.bill_no, i.bill_seq, MAX(i.material_code) material_code, COUNT(*) n, "
+        # 导入行（单据序号 0）可含多个物料：列出全部（逗号分隔）；生成的物料行一行一个物料
+        "SELECT i.bill_no, i.bill_seq, IF(MAX(i.origin = 'IMPORT'), COALESCE(GROUP_CONCAT(DISTINCT "
+        "NULLIF(i.material_code, '') ORDER BY i.material_code SEPARATOR ','), ''), MAX(i.material_code)) "
+        "material_code, COUNT(*) n, "
         "SUM(i.status = 'PENDING_ALLOC') pending, SUM(i.status = 'TO_PUSH') to_push, "
         f"SUM(i.status = 'TO_PUSH' AND d.id IS NOT NULL AND {_BROKEN}) failed, "
         "MAX(CASE WHEN i.status = 'PENDING_ALLOC' THEN i.gen_org_code END) gen_org, MAX(i.factory_code) org, "
@@ -417,7 +420,7 @@ def context(cu: CurrentUser, pi_in: str | None) -> dict:
                 "org_name": names.get(org, "") if org else "",
                 "mes_enabled": bool(f and f["mes_enabled"]),
                 "skip": block,
-                # SN 导入的号（挂在单据序号 0 上，没有物料）
+                # SN 导入的号（挂在单据序号 0 上；物料为导入时填的，可能没有）
                 "imported": bool(r["imported"]),
             }
         )

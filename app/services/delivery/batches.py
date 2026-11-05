@@ -146,7 +146,8 @@ TYPE_SQL = (
 
 def imported_item(r: dict) -> dict | None:
     """SN 导入的号（没有流水，seq_pi_no 为空串）的明细：结构与字段顺序不变，只按导入文件里有的列填 sn、pi、billNo
-    （生产组织即批次头 orgCode）与 rev，其余为 null，不推导其他参数。本系统生成的号返回 None，照原样组装。"""
+    （生产组织即批次头 orgCode）、rev 与导入时填了的 attachNo、materialCode、length、customerCode（没填的为 null），
+    流水与单据行号为 null，不推导其他参数。本系统生成的号返回 None，照原样组装。推送与拉取（接口 ②④）共用。"""
     if r["seq_pi_no"]:
         return None
     return {
@@ -158,10 +159,10 @@ def imported_item(r: dict) -> dict | None:
         "pi": r["pi_no"],
         "billNo": r["bill_no"],
         "billSeq": None,
-        "attachNo": None,
-        "materialCode": None,
-        "length": None,
-        "customerCode": None,
+        "attachNo": str_or_none(r["attach_no"]),
+        "materialCode": str_or_none(r["material_code"]),
+        "length": str_or_none(r["length_text"]),
+        "customerCode": str_or_none(r["customer_code"]),
     }
 
 

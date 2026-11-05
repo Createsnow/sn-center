@@ -915,7 +915,7 @@
   },
   "snImport": {
     "title": "SN 导入",
-    "desc": "导入本系统之外已有的 SN（PI + 单据编号 + SN + 生产组织）：导入后在 SN 分配页待分配，只能分配",
+    "desc": "导入本系统之外已有的 SN（PI + 单据编号 + SN + 生产组织，可另填物料编码、附件项次、米数、客户编码，随推送 / 拉取交给 MES）：导入后在 SN 分配页待分配，只能分配",
     "template": "下载模板",
     "import": "导入",
     "dialogTitle": "导入 SN",
@@ -956,6 +956,13 @@
       "IMPORTED": "已导入过（导入单号 {import_no}）",
       "BILL_NOT_FOUND": "单据 {bill_no} 不在生产订单中",
       "PI_MISMATCH": "单据 {bill_no} 的 PI 是 {pi}",
+      "MATERIAL_TOO_LONG": "物料编码超过 {max} 位",
+      "ATTACH_TOO_LONG": "附件项次超过 {max} 位",
+      "LENGTH_TOO_LONG": "米数超过 {max} 位",
+      "CUSTOMER_TOO_LONG": "客户编码超过 {max} 位",
+      "MATERIAL_NOT_IN_BILL": "单据 {bill_no} 没有物料 {material}",
+      "ATTACH_NOT_IN_BILL": "单据 {bill_no} 没有物料 {material}、附件项次 {attach} 的物料行",
+      "CUSTOMER_MISMATCH": "单据 {bill_no} 的客户编码是 {customer}",
       "FACTORY_FORBIDDEN": "单据的生产组织 {factory} 不在授权范围内"
     }
   },
