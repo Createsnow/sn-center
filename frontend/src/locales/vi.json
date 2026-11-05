@@ -939,7 +939,7 @@
     "importedBy": "Người nhập",
     "snPrefix": "SN (bắt đầu bằng)",
     "empty": "Chưa có SN đã nhập",
-    "desc": "Nhập các SN đã có ngoài hệ thống theo mẫu nhập (tên cột cố định, thứ tự tùy ý; số mét, đơn vị sản phẩm, tên tổ chức không bắt buộc, các cột khác bắt buộc): sau khi nhập chờ phân bổ ở trang Phân bổ SN, sau khi phân bổ được đẩy, kéo và có thể chuyển như các SN khác",
+    "desc": "Nhập các SN đã có ngoài hệ thống theo mẫu nhập (tên cột cố định, thứ tự tùy ý; cột có dấu * trong mẫu là bắt buộc, số mét, đơn vị sản phẩm, tên tổ chức không bắt buộc): sau khi nhập chờ phân bổ ở trang Phân bổ SN, sau khi phân bổ được đẩy, kéo và có thể chuyển như các SN khác",
     "seq": "Dòng",
     "serial": "Số thứ tự",
     "current": "Hiện tại: {pi} / {bill}",

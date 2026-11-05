@@ -36,6 +36,8 @@ from typing import Any
 
 import pymysql
 from openpyxl import Workbook, load_workbook
+from openpyxl.comments import Comment
+from openpyxl.styles import Font, PatternFill
 from openpyxl.utils import get_column_letter
 
 from app.core import encoding as codec
@@ -73,24 +75,61 @@ class Column:
     aliases: tuple[str, ...] = ()
     #: 最长字符数
     max: int = CODE_MAX
+    #: 模板「填写说明」页的说明与示例
+    hint: str = ""
+    example: str = ""
+
+    @property
+    def title(self) -> str:
+        """模板表头：必填列前加 *（导入时 * 不参与比较，填不填都认）。"""
+        return f"{REQUIRED_MARK}{self.name}" if self.required else self.name
+
+
+#: 模板表头里必填列的标记
+REQUIRED_MARK = "*"
 
 
 #: 固定列（模板按这个顺序出；导入时按列名认、顺序不限，其他列不读）
 COLUMNS = (
-    Column("pi", "PI", True),
-    Column("bill", "单据编号", True),
-    Column("seq_in", "行号", True, ("单据行号",)),
-    Column("material", "物料编码", True, ("料号",)),
-    Column("sn", "完整 SN", True, ("SN",), SN_MAX),
-    Column("seq_len_in", "流水位数", True),
-    Column("base_in", "进制位数", True),
-    Column("serial", "流水号", True, (), codec.MAX_SEQ_LEN),
-    Column("attach", "附件项次", True),
-    Column("length", "米数", False),
-    Column("unit", "产品单位", False),
-    Column("factory_in", "生产组织编号", True),
-    Column("org_name", "生产组织", False, (), ORG_MAX),
-    Column("customer", "客户编码", True),
+    Column("pi", "PI", True, hint="生产订单的 PI，须与单据一致", example="000001"),
+    Column("bill", "单据编号", True, hint="金蝶生产订单编号，须在生产订单中", example="VT2026090001"),
+    Column("seq_in", "行号", True, ("单据行号",), hint="该单据在金蝶里的明细行号（正整数）", example="1"),
+    Column(
+        "material",
+        "物料编码",
+        True,
+        ("料号",),
+        hint="须与该行的物料编码相同（列名也可写作「料号」）",
+        example="9148363",
+    ),
+    Column(
+        "sn",
+        "完整 SN",
+        True,
+        ("SN",),
+        SN_MAX,
+        hint=f"不含空格，最长 {SN_MAX} 位；不能与系统里已有的号、文件里其他行重复（列名也可写作「SN」）",
+        example="HX100000001A",
+    ),
+    Column("seq_len_in", "流水位数", True, hint=f"1～{codec.MAX_SEQ_LEN}，等于流水号的位数", example="6"),
+    Column("base_in", "进制位数", True, hint="10 / 16 / 32 / 36", example="10"),
+    Column(
+        "serial",
+        "流水号",
+        True,
+        (),
+        codec.MAX_SEQ_LEN,
+        hint="按进制位数书写，位数等于流水位数，保留前导 0；字母大写，32 进制不用 I、L、O、U",
+        example="000001",
+    ),
+    Column("attach", "附件项次", True, hint="须与该行的附件项次相同（该行没有附件项次时以这里为准）", example="A01"),
+    Column("length", "米数", False, hint="选填；填了须与该行的米数相同，原样保存", example="0100"),
+    Column("unit", "产品单位", False, hint="选填", example="M"),
+    Column("factory_in", "生产组织编号", True, hint="须与单据的生产组织相同", example="110"),
+    Column(
+        "org_name", "生产组织", False, (), ORG_MAX, hint="选填；填了须与生产组织编号对应的名称相同", example="越南工厂"
+    ),
+    Column("customer", "客户编码", True, hint="须与单据的客户相同", example="0001"),
 )
 HEADERS = [c.name for c in COLUMNS]
 REQUIRED = [c.name for c in COLUMNS if c.required]
@@ -155,20 +194,54 @@ class Row:
 
 
 def template() -> Iterator[bytes]:
-    """导入模板：一行表头（固定列 COLUMNS；导入时按列名认列、顺序不限），各列设为文本格式
-    （长串数字的 SN、带前导 0 的流水号和米数不会被 Excel 改写）。"""
+    """导入模板：第一张表「SN导入」只有一行表头（固定列 COLUMNS；必填列前加 * 并标红，每个列名带批注说明），
+    各列设为文本格式（长串数字的 SN、带前导 0 的流水号和米数不会被 Excel 改写）；
+    第二张表「填写说明」逐列列出是否必填、填写要求与示例（导入只读第一张表）。"""
     wb = Workbook()
     ws = wb.active
     ws.title = "SN导入"
-    ws.append(HEADERS)
+    ws.append([c.title for c in COLUMNS])
     for i, c in enumerate(COLUMNS):
         col = get_column_letter(i + 1)
         ws.column_dimensions[col].width = 34 if c.field == "sn" else 12 if c.field in _NUMERIC else 16
         ws.column_dimensions[col].number_format = "@"
+        cell = ws.cell(row=1, column=i + 1)
+        cell.font = Font(bold=True, color=_RED if c.required else _GREY)
+        cell.fill = PatternFill("solid", fgColor=_REQUIRED_FILL if c.required else _OPTIONAL_FILL)
+        cell.comment = Comment(f"{'必填' if c.required else '选填'}：{c.hint}\n示例：{c.example}", "SN 中台")
     ws.freeze_panes = "A2"
+    guide = wb.create_sheet("填写说明")
+    guide.append(["列名", "是否必填", "填写要求", "示例"])
+    for c in COLUMNS:
+        guide.append([c.name, "必填" if c.required else "选填", c.hint, c.example])
+        if c.required:
+            guide.cell(row=guide.max_row, column=2).font = Font(bold=True, color=_RED)
+    guide.append([])
+    for line in _GUIDE_NOTES:
+        guide.append([line])
+        guide.merge_cells(start_row=guide.max_row, start_column=1, end_row=guide.max_row, end_column=4)
+    for cell in guide[1]:
+        cell.font = Font(bold=True)
+    for col, width in zip("ABCD", (16, 10, 70, 18), strict=True):
+        guide.column_dimensions[col].width = width
     out = io.BytesIO()
     wb.save(out)
     yield out.getvalue()
+
+
+_RED = "C00000"
+_GREY = "595959"
+_REQUIRED_FILL = "FDE9E7"
+_OPTIONAL_FILL = "F2F2F2"
+#: 「填写说明」页末尾的通用说明
+_GUIDE_NOTES = (
+    "说明：",
+    "1. 在「SN导入」表填写，一行一枚号；表头列名不要改（列名前的 * 表示必填，保留或去掉都可以），列的顺序可以调整，"
+    "多出的其他列不读。",
+    "2. 标 * 的列必须有，且每行都要填；选填的列可以整列不要。",
+    "3. 各列已设为文本格式，流水号、米数的前导 0 会原样保留，请不要改成数字格式。",
+    "4. 导入时先检查，逐行列出不能导入的原因；有一行不能导入，整个文件都不导入。",
+)
 
 
 def _text(v: Any) -> str:
@@ -183,7 +256,8 @@ def _text(v: Any) -> str:
 
 
 def _key(v: Any) -> str:
-    return "".join(_text(v).split()).lower()
+    """表头比较用：去掉空白与必填标记 *（含全角＊），不分大小写。"""
+    return "".join(_text(v).split()).lower().lstrip(REQUIRED_MARK + "＊").rstrip(REQUIRED_MARK + "＊")
 
 
 #: 列名（含别名）→ 固定列

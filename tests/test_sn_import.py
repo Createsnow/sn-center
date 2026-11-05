@@ -33,6 +33,7 @@ COL = {
 }
 #: 别名列 → 字段
 ALIAS = {"SN": "sn", "sn": "sn", "料号": "material", " pi ": "pi", "单据 编号": "bill"}
+ALIAS |= {f"* {v}": k for k, v in COL.items()} | {f"＊{v}": k for k, v in COL.items()}
 
 
 def rec(pi, bill, sn, org, **kw) -> dict:
@@ -113,8 +114,50 @@ def get_bytes(api, path: str, token: str) -> bytes:
     return r.content
 
 
-def test_template_has_the_fixed_columns(w, api):
-    assert xlsx_rows(get_bytes(api, "/api/sn-import/template", w.admin))[0] == list(FULL)
+def test_template_marks_required_columns(w, api, sql):
+    """模板：必填列名前带 *、标红并带批注；第二张表「填写说明」逐列写明是否必填、要求与示例；
+    下载的模板直接填好就能导入（表头里的 * 不参与比较）。"""
+    import openpyxl
+
+    content = get_bytes(api, "/api/sn-import/template", w.admin)
+    wb = openpyxl.load_workbook(io.BytesIO(content))
+    assert wb.sheetnames == ["SN导入", "填写说明"]
+    ws = wb["SN导入"]
+    head = [c.value for c in ws[1]]
+    assert head == [
+        "*PI",
+        "*单据编号",
+        "*行号",
+        "*物料编码",
+        "*完整 SN",
+        "*流水位数",
+        "*进制位数",
+        "*流水号",
+        "*附件项次",
+        "米数",
+        "产品单位",
+        "*生产组织编号",
+        "生产组织",
+        "*客户编码",
+    ]
+    assert ws.max_row == 1, "只有表头，没有示例数据行"
+    reds = {c.value for c in ws[1] if c.font.color is not None and c.font.color.rgb.endswith("C00000")}
+    assert reds == {h for h in head if h.startswith("*")}
+    assert all(c.comment is not None and c.comment.text.startswith(("必填", "选填")) for c in ws[1])
+    guide = [r for r in wb["填写说明"].iter_rows(values_only=True)]
+    assert guide[0] == ("列名", "是否必填", "填写要求", "示例")
+    req = {r[0]: r[1] for r in guide[1 : len(FULL) + 1]}
+    assert req == {h.lstrip("*"): "必填" if h.startswith("*") else "选填" for h in head}
+    # 用模板的表头（带 *）直接导入
+    org, pi, bill = mk(w, ("M1", 1))
+    a = uid("SA")
+    wb["SN导入"].append([rec(pi, bill, a, org).get({v: k for k, v in COL.items()}[h.lstrip("*")]) for h in head])
+    out = io.BytesIO()
+    wb.save(out)
+    r = ok(check(api, out.getvalue(), w.admin))
+    assert (r["total"], r["ok"]) == (1, 1), str(r)
+    ok(run(api, out.getvalue(), w.admin))
+    assert sql.count("SELECT COUNT(*) FROM sn_import_item WHERE sn = %s", a) == 1
     assert FULL == [
         "PI",
         "单据编号",
@@ -563,6 +606,7 @@ def test_bad_files_and_headers(w, api):
         list(reversed(FULL)),
         ["备注", *FULL, "说明"],
         [{"完整 SN": "sn", "物料编码": "料号", "PI": " pi ", "单据编号": "单据 编号"}.get(h, h) for h in FULL],
+        [f"* {h}" if i % 2 else f"＊{h}" for i, h in enumerate(FULL)],
     ):
         r = check(api, xlsx(one, headers=head), w.admin)
         assert r.status == 200 and r["total"] == 1, (head, str(r))

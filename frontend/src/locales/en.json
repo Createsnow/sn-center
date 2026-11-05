@@ -939,7 +939,7 @@
     "importedBy": "Imported by",
     "snPrefix": "SN (starts with)",
     "empty": "No imported SNs yet",
-    "desc": "Import SNs that already exist outside this system with the import template (fixed column names in any order; length, product unit and org name are optional, the rest required): they wait on the SN allocation page, and once allocated are pushed, pulled and can be transferred like any other SN",
+    "desc": "Import SNs that already exist outside this system with the import template (fixed column names in any order; columns marked * in the template are required, length, product unit and org name are optional): they wait on the SN allocation page, and once allocated are pushed, pulled and can be transferred like any other SN",
     "seq": "Line",
     "serial": "Serial",
     "current": "Now: {pi} / {bill}",
