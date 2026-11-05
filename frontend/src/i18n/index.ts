@@ -1,15 +1,14 @@
-import i18n from 'i18next';
+import i18n, { type Resource } from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import zh from './locales/zh-CN.json';
-import en from './locales/en.json';
-import vi from './locales/vi.json';
+import {
+  DEFAULT_NAMESPACE,
+  dictionaries,
+  isLanguage,
+  languages,
+  type Language,
+} from './dictionaries';
 
-export const languages = ['zh-CN', 'en', 'vi'] as const;
-export type Language = (typeof languages)[number];
-
-export function isLanguage(value: unknown): value is Language {
-  return typeof value === 'string' && (languages as readonly string[]).includes(value);
-}
+export { isLanguage, languages, type Language };
 
 function savedLanguage(): Language {
   try {
@@ -20,8 +19,21 @@ function savedLanguage(): Language {
   }
 }
 
+const resources: Resource = {};
+for (const language of languages) {
+  resources[language] = {};
+  for (const [namespace, byLanguage] of Object.entries(dictionaries)) {
+    const dictionary = byLanguage[language];
+    if (dictionary) {
+      resources[language][namespace] = dictionary;
+    }
+  }
+}
+
 void i18n.use(initReactI18next).init({
-  resources: { 'zh-CN': { translation: zh }, en: { translation: en }, vi: { translation: vi } },
+  resources,
+  ns: Object.keys(dictionaries),
+  defaultNS: DEFAULT_NAMESPACE,
   lng: savedLanguage(),
   fallbackLng: 'zh-CN',
   supportedLngs: [...languages],
