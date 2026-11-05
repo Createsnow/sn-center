@@ -68,18 +68,19 @@ QUERY_COLS = _COLS.format(
 
 
 def row(no: int, r: dict) -> list:
-    """一行，列顺序同 HEADERS。"""
+    """一行，列顺序同 HEADERS。SN 导入的号（带 r["import"]，见 sn_import.with_details）的流水与单据序号取导入记录。"""
+    imp = r.get("import")
     return [
         no,
         r["sn"],
-        rules.seq_text(r["rule_version_id"], r["seq_dec"]),
-        util.seq_dec_text(r["seq_pi_no"], r["seq_dec"]),
+        imp["serial_text"] if imp else rules.seq_text(r["rule_version_id"], r["seq_dec"]),
+        str(imp["seq_dec"]) if imp else util.seq_dec_text(r["seq_pi_no"], r["seq_dec"]),
         r["factory_code"] or "",
         r["factory_name"] or "",
         r["customer_code"],
         r["pi_no"],
         r["bill_no"],
-        r["bill_seq"],
+        int(imp["cur_bill_seq"]) if imp else r["bill_seq"],
         r["material_code"],
         r["attach_no"] or "",
         r["length_text"] or "",

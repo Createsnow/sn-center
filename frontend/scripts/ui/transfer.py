@@ -21,6 +21,7 @@ M = {
 "transfer.emptyMaterial": ("（空料号）", "(no part No.)", "(không mã hàng)"),
 "transfer.fromBill": ("来源单据", "Source bill", "Chứng từ nguồn"),
 "transfer.toBill": ("目标单据", "Target bill", "Chứng từ đích"),
+"transfer.blocked.IMPORTED": ("SN 导入的号没有导入记录（不知道在哪个物料行），不能转移", "Imported SN without an import record (its line is unknown), cannot be transferred", "SN nhập không có bản ghi nhập (không rõ dòng vật tư), không thể chuyển"),
 "transfer.blocked.PENDING_ALLOC": ("待分配（只有分配成功的号才能转移）", "To allocate (only allocated SNs can be transferred)", "Chờ phân bổ (chỉ SN đã phân bổ mới được chuyển)"),
 "transfer.blocked.BATCH_PENDING": ("所在批次未确认或失败", "In unconfirmed or failed batch", "Trong lô chưa xác nhận hoặc thất bại"),
 "transfer.blocked.TRANSFER_OUT_PENDING": ("转出未完成，先在原转组织单上继续推送转出", "Transfer-out unfinished; resume it on the original org transfer first", "Chuyển đi chưa xong; hãy đẩy tiếp trên phiếu chuyển tổ chức gốc trước"),

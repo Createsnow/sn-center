@@ -20,10 +20,21 @@
         <el-table-column :label="t('common.sn')" min-width="150">
           <template #default="{ row }"><span class="sn-mono">{{ row.sn }}</span></template>
         </el-table-column>
+        <el-table-column :label="t('snImport.seq')" width="64" align="right">
+          <template #default="{ row }">
+            <el-tooltip v-if="row.cur_bill_seq !== row.bill_seq" :content="`${row.bill_seq} → ${row.cur_bill_seq}`" placement="top">
+              <span class="num">{{ row.cur_bill_seq }}</span>
+            </el-tooltip>
+            <span v-else class="num">{{ row.bill_seq }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="material_code" :label="t('common.material')" min-width="90" show-overflow-tooltip />
         <el-table-column prop="attach_no" :label="t('common.attachNo')" min-width="80" show-overflow-tooltip />
         <el-table-column prop="length" :label="t('common.length')" min-width="60" show-overflow-tooltip />
         <el-table-column prop="customer_code" :label="t('common.customer')" min-width="80" show-overflow-tooltip />
+        <el-table-column :label="t('snImport.serial')" min-width="90" show-overflow-tooltip>
+          <template #default="{ row }"><span class="sn-mono">{{ row.serial_text }}</span></template>
+        </el-table-column>
         <el-table-column :label="t('snImport.status')" width="130">
           <template #default="{ row }">
             <el-tooltip v-if="row.deleted_at" :content="`${row.deleted_by} ${fmt(row.deleted_at)}`" placement="top">
@@ -32,6 +43,7 @@
             <template v-else-if="row.status">
               <StatusTag :status="row.status" />
               <router-link v-if="row.status === 'PENDING_ALLOC'" class="ml" :to="{ path: '/allocate', query: { pi: row.pi_no, bill: row.bill_no } }">{{ t("snImport.toAllocate") }}</router-link>
+              <div v-if="row.cur_bill && (row.cur_bill !== row.bill_no || row.cur_pi !== row.pi_no)" class="muted">{{ t("snImport.current", { pi: row.cur_pi, bill: row.cur_bill }) }}</div>
             </template>
             <span v-else class="muted">—</span>
           </template>
@@ -85,7 +97,7 @@
             </el-table-column>
             <el-table-column :label="t('snImport.problem')" min-width="220">
               <template #default="{ row }">
-                <div v-for="(x, i) in row.issues" :key="i" class="bad">{{ t(`snImport.issue.${x.code}`, x.params) }}</div>
+                <div v-for="(x, i) in row.issues" :key="i" class="bad">{{ issueText(x) }}</div>
               </template>
             </el-table-column>
           </el-table>
@@ -104,9 +116,9 @@
 </template>
 
 <script setup lang="ts">
-/** SN 导入：系统之外已有的 SN 按「PI + 单据编号 + SN + 生产组织」导入，可另填物料编码、附件项次、米数、客户编码
- *  （按列名认列、顺序不限、其他列不读：前 4 列必须有，后 4 列选填；填了的随推送 / 拉取交给 MES）：
- *  号进号池、在 SN 分配页待分配，只能分配（不在生成页，不能删号、转移）；之后生成撞上这些号整次回滚。
+/** SN 导入：系统之外已有的 SN 按导入模板（PI、单据编号、行号、物料编码、完整 SN、流水位数、进制位数、流水号、
+ *  附件项次、米数、产品单位、生产组织编号、生产组织、客户编码；按列名认列、顺序不限、其他列不读）导入：
+ *  号进号池、在 SN 分配页待分配；分配后照常推送 / 拉取，也可转移（不在生成页，不能删号）；之后生成撞上这些号整次回滚。
  *  选文件后先由后端检查（不落库，逐行列出不能导入的原因），没有问题行才能确定导入；确定时后端再检查一遍，
  *  有一行不能导入整个文件都不导入。 */
 import { onMounted, reactive, ref } from "vue";
@@ -120,12 +132,20 @@ import { usePaged } from "@/composables/usePaged";
 import { useTime } from "@/composables/useTime";
 import { downloadWithToken } from "@/utils/download";
 
-type Issue = { row: number; pi: string; bill_no: string; sn: string; issues: { code: string; params: Record<string, unknown> }[] };
+type IssueItem = { code: string; params: Record<string, unknown> };
+type Issue = { row: number; pi: string; bill_no: string; sn: string; issues: IssueItem[] };
 type CheckResult = { total: number; ok: number; bad: number; pis: number; bills: number; importable: boolean; issues: Issue[] };
 
 const { t } = useI18n();
 const { nameOf } = useFactories();
 const { fmt } = useTime();
+
+/** 问题说明：params.column 为列的字段名，换成当前语言的列名。 */
+function issueText(x: IssueItem) {
+  const p = { ...x.params };
+  if (typeof p.column === "string") p.column = t(`snImport.col.${p.column}`);
+  return t(`snImport.issue.${x.code}`, p);
+}
 
 // ---------------- 已导入的号
 const lq = reactive({ pi: "", bill_no: "", sn: "", import_no: "" });

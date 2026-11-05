@@ -26,6 +26,10 @@
 转单的目标生产组织就是目标单据的生产组织、目标单据不能是来源单据；
 转组织的目标生产组织可任选启用的（可与来源相同）。
 号换了物料行时已生成数、已分配数随号移动，额度不变。
+
+SN 导入的号（origin = IMPORT）与生成的号同一套转移规则（同料号、同附件项次、米数相符），区别只在挂靠的记法：
+号池里导入的号的单据序号始终为 0（导入功能自成一套，不进生成页的物料行，已生成数、已分配数都不计），
+所在物料行记在导入记录 sn_import_item.cur_bill_seq（见 _line_of），转移时随号改到目标行；没有导入记录的不能转。
 """
 
 from __future__ import annotations
@@ -113,11 +117,12 @@ def _reason(raw: str | None) -> str:
 
 
 def blocked(items: list[dict]) -> dict[int, str]:
-    """不能转的号及原因：IMPORTED（SN 导入的号只能分配）/ PENDING_ALLOC（只有分配成功的号才能转）/ BATCH_PENDING /
-    TRANSFER_OUT_PENDING。整张单据转走时这些号留在原单据，其余照转。"""
+    """不能转的号及原因：IMPORTED（SN 导入的号没有导入记录、不知道在哪个物料行）/ PENDING_ALLOC（只有分配成功的号
+    才能转）/ BATCH_PENDING / TRANSFER_OUT_PENDING。整张单据转走时这些号留在原单据，其余照转。
+    items 须经 _with_import_lines 带上导入的号的物料行。"""
     out: dict[int, str] = {}
     for r in items:
-        if r["origin"] == util.ORIGIN_IMPORT:
+        if r["origin"] == util.ORIGIN_IMPORT and r.get("import_seq") is None:
             out[r["id"]] = "IMPORTED"
         elif r["status"] == util.PENDING_ALLOC:
             out[r["id"]] = "PENDING_ALLOC"
@@ -129,7 +134,7 @@ def blocked(items: list[dict]) -> dict[int, str]:
 
 
 _REASON_TEXT = {
-    "IMPORTED": "SN 导入的号（只能分配，不能转移）",
+    "IMPORTED": "SN 导入的号没有导入记录（不知道在哪个物料行），不能转移",
     "PENDING_ALLOC": "待分配（只有分配成功的号才能转移）",
     "BATCH_PENDING": "所在批次未确认或失败",
     "TRANSFER_OUT_PENDING": "所在转出批次未确认或失败，先在原转组织单上继续推送转出",
@@ -199,8 +204,10 @@ def _move(
     rows = []
     #: 改挂后各列相同的号一起更新：(组织, PI, 客户, 单据, 序号, 物料, 状态, 推送类型, 交付方式, 原组织) → 号
     groups: dict[tuple, list[int]] = {}
-    #: 物料行的已生成数、已分配数随号移动（转的都是已分配的号，两者变化相同）
+    #: 物料行的已生成数、已分配数随号移动（转的都是已分配的号，两者变化相同）；导入的号不计
     line_moves: dict[tuple[str, int], int] = {}
+    #: 导入的号转到的物料行 → 导入记录 id
+    import_lines: dict[int, list[int]] = {}
     for r in items:
         t = targets[r["id"]]
         old_org = r["factory_code"]
@@ -228,7 +235,8 @@ def _move(
                     "rev": rev,
                     "pi_no": r["pi_no"],
                     "bill_no": r["bill_no"],
-                    "bill_seq": r["bill_seq"],
+                    # 导入的号记转出前所在的物料行（明细 billSeq），号池里是 0
+                    "bill_seq": _line_of(r),
                     "material_code": r["material_code"],
                     "customer_code": r["customer_code"],
                     "seq_pi_no": r["seq_pi_no"],
@@ -247,9 +255,13 @@ def _move(
         # 标记，转回该组织会被当成同组织转移、转到第三个组织会被当成跨组织转入（都没有与之成对的转出）
         from_org = old_org if r["mes_holder"] == old_org else None
         keep_from = from_org is None and new_org == old_org
-        key = (new_org, t.pi, t.customer, t.bill, t.seq, t.material, status, push_type, mode, from_org, keep_from)
+        # 导入的号：号池里单据序号仍为 0，所在物料行改在导入记录（下面），也不计已生成数、已分配数
+        seq = 0 if _is_import(r) else t.seq
+        key = (new_org, t.pi, t.customer, t.bill, seq, t.material, status, push_type, mode, from_org, keep_from)
         groups.setdefault(key, []).append(r["id"])
-        if (t.bill, t.seq) != (r["bill_no"], r["bill_seq"]):
+        if _is_import(r):
+            import_lines.setdefault(t.seq, []).append(int(r["seq_dec"]))
+        elif (t.bill, t.seq) != (r["bill_no"], r["bill_seq"]):
             line_moves[(r["bill_no"], r["bill_seq"])] = line_moves.get((r["bill_no"], r["bill_seq"]), 0) - 1
             line_moves[(t.bill, t.seq)] = line_moves.get((t.bill, t.seq), 0) + 1
         rows.append(
@@ -265,7 +277,7 @@ def _move(
                 r["pi_no"],
                 r["customer_code"],
                 r["bill_no"],
-                r["bill_seq"],
+                _line_of(r),
                 r["material_code"],
                 r["delivery_batch_no"],
                 r["rev"],
@@ -319,6 +331,10 @@ def _move(
                 now,
                 *part,
             )
+    for seq, ids in sorted(import_lines.items()):
+        for i in range(0, len(ids), 1000):
+            part = ids[i : i + 1000]
+            db.exec(f"UPDATE sn_import_item SET cur_bill_seq = %s WHERE id IN ({marks(len(part))})", seq, *part)
     db.exec_many(
         "INSERT INTO sn_transfer_item(kind, transfer_id, item_id, sn, seq_pi_no, seq_dec, from_status, from_factory, "
         "from_pi, from_customer, from_bill, from_seq, from_material, from_delivery_batch, from_rev, "
@@ -445,6 +461,28 @@ PICK_MODES = frozenset((PICK_ALL, PICK_RANGE, PICK_QTY))
 
 def _attach_of(r: dict) -> str:
     return r["attach_no"] or ""
+
+
+def _is_import(r: dict) -> bool:
+    return r["origin"] == util.ORIGIN_IMPORT
+
+
+def _line_of(r: dict) -> int:
+    """号所在的物料行：生成的号为号池的单据序号；导入的号为导入记录的当前行号（号池里记 0）。"""
+    return int(r["import_seq"]) if _is_import(r) else int(r["bill_seq"])
+
+
+def _with_import_lines(items: list[dict]) -> list[dict]:
+    """导入的号带上导入记录的当前行号 import_seq（没有导入记录为 None，不能转）；生成的号不变、不查库。"""
+    imp = [r for r in items if _is_import(r)]
+    if imp:
+        from app.services import sn_import
+
+        details = sn_import.details([r["seq_dec"] for r in imp])
+        for r in imp:
+            d = details.get(int(r["seq_dec"]))
+            r["import_seq"] = None if d is None else int(d["cur_bill_seq"])
+    return items
 
 
 @dataclass(frozen=True)
@@ -597,9 +635,12 @@ def _source_items(src: Source, factory: str | None, lock: bool = False) -> list[
         mats = sorted({p.material for p in src.picks})
         cond += f" AND material_code IN ({marks(len(mats))})"
         args += mats
-    items = db.all(
-        f"SELECT {ITEM_COLS} FROM sn_item WHERE {cond} ORDER BY seq_pi_no, seq_dec" + (" FOR UPDATE" if lock else ""),
-        *args,
+    items = _with_import_lines(
+        db.all(
+            f"SELECT {ITEM_COLS} FROM sn_item WHERE {cond} ORDER BY seq_pi_no, seq_dec"
+            + (" FOR UPDATE" if lock else ""),
+            *args,
+        )
     )
     if src.scope == SCOPE_BILL:
         return items
@@ -706,13 +747,13 @@ def _dest_line(d: Dest, src: Source, r: TransferRequest, key: tuple[str, str, in
 
 def _targets(items: list[dict], d: Dest, src: Source, r: TransferRequest) -> tuple[dict[int, Target], list[dict]]:
     """号按料号 + 附件项次 + 来源序号分组，各组改挂到目标单据中同料号、同附件项次的物料行与转入生产组织；
-    目标米数与号上米数不同则拒绝（SN 已含米数）。SN 导入的号（没有料号、附件项次）不能转、留在原单据，不参与匹配。
-    返回 (各号的挂靠, 各组的对应)。"""
+    目标米数与号上米数不同则拒绝（SN 已含米数）。SN 导入的号按导入记录的当前行号作来源序号，与生成的号一样匹配；
+    没有导入记录的不能转、留在原单据，不参与匹配。返回 (各号的挂靠, 各组的对应)。"""
     groups: dict[tuple[str, str, int], list[dict]] = {}
     for x in items:
-        if x["origin"] == util.ORIGIN_IMPORT:
+        if _is_import(x) and x.get("import_seq") is None:
             continue
-        groups.setdefault((x["material_code"], _attach_of(x), x["bill_seq"]), []).append(x)
+        groups.setdefault((x["material_code"], _attach_of(x), _line_of(x)), []).append(x)
     out: dict[int, Target] = {}
     mapping: list[dict] = []
     for key, rs in groups.items():
@@ -779,7 +820,7 @@ def _plan(cu: CurrentUser, kind: str, r: TransferRequest, lock: bool = False) ->
         cu.check_write(*{x["factory_code"] for x in items})
     movable = [x for x in items if x["id"] in targets]
     if movable and all(
-        (x["factory_code"] or d.factory, x["pi_no"], x["bill_no"], x["bill_seq"])
+        (x["factory_code"] or d.factory, x["pi_no"], x["bill_no"], _line_of(x))
         == (d.factory, d.pi, d.bill, targets[x["id"]].seq)
         for x in movable
     ):
@@ -797,13 +838,13 @@ def decide_kind(r: TransferRequest) -> str:
 
 
 def sources(cu: CurrentUser, kind: str, factory: str | None, pi: str | None) -> dict:
-    """来源候选：PI 下各单据、各料号 + 附件项次（同级）分配成功的号数（待分配的号、SN 导入的号不能转；
+    """来源候选：PI 下各单据、各料号 + 附件项次（同级）分配成功的号数（待分配的号不能转；SN 导入的号与生成的号一起算；
     转组织限来源生产组织），供逐级筛选。materials 按料号 + 附件项次列出；rows 再按生产组织细分，带号上的客户、米数
     （页面据此带出来源生产组织与来源信息）。"""
     p = util.trim(pi)
     if not p:
         raise biz(ErrorCode.PI_REQUIRED)
-    cond, args = f"pi_no = %s AND status <> '{util.PENDING_ALLOC}' AND origin = 'GEN'", [p]
+    cond, args = f"pi_no = %s AND status <> '{util.PENDING_ALLOC}'", [p]
     if kind == KIND_ORG:
         cond += " AND factory_code = %s"
         args.append(_from_factory(cu, factory))
@@ -852,8 +893,8 @@ def sources(cu: CurrentUser, kind: str, factory: str | None, pi: str | None) -> 
 
 
 def locate(cu: CurrentUser, q: str | None) -> dict:
-    """快速定位：输入完整 SN、单据编号或 PI，带出来源（只在读范围内、分配成功的本系统生成的号中找）。
-    SN → PI、单据、物料编码、生产组织、起号；单据编号 → PI、单据；PI → PI。"""
+    """快速定位：输入完整 SN、单据编号或 PI，带出来源（只在读范围内、分配成功的号中找）。
+    SN → PI、单据、物料编码、生产组织、起号；单据编号 → PI、单据；PI → PI。SN 导入的号与生成的号一样定位。"""
     text = util.trim(q)
     if not text:
         raise biz(ErrorCode.TR_LOCATE_NOT_FOUND, q="")
@@ -865,8 +906,6 @@ def locate(cu: CurrentUser, q: str | None) -> dict:
         *fargs,
     )
     if r is not None:
-        if r["origin"] == util.ORIGIN_IMPORT:
-            raise biz(ErrorCode.TR_SN_NOT_TRANSFERABLE, sn=r["sn"], reason=_REASON_TEXT["IMPORTED"])
         if r["status"] == util.PENDING_ALLOC:
             raise biz(ErrorCode.TR_SN_NOT_TRANSFERABLE, sn=r["sn"], reason=_REASON_TEXT["PENDING_ALLOC"])
         return {
@@ -878,7 +917,7 @@ def locate(cu: CurrentUser, q: str | None) -> dict:
             "factory_code": r["factory_code"],
             "sn": r["sn"],
         }
-    alloc = f" AND status <> '{util.PENDING_ALLOC}' AND origin = 'GEN'"
+    alloc = f" AND status <> '{util.PENDING_ALLOC}'"
     r = db.one(f"SELECT pi_no FROM sn_item WHERE bill_no = %s{alloc}{fsql} LIMIT 1", text, *fargs)
     if r is not None:
         return {"by": "BILL", "pi": r["pi_no"], "bill_no": text}
@@ -897,7 +936,8 @@ def preview(cu: CurrentUser, kind: str, r: TransferRequest) -> dict:
     ok = [x for x in p.items if x["id"] not in bad]
     for x in ok:
         t = p.targets[x["id"]]
-        if (t.bill, t.seq) != (x["bill_no"], x["bill_seq"]):
+        # 导入的号不计已生成数
+        if not _is_import(x) and (t.bill, t.seq) != (x["bill_no"], x["bill_seq"]):
             moves[(x["bill_no"], x["bill_seq"])] = moves.get((x["bill_no"], x["bill_seq"]), 0) - 1
             moves[(t.bill, t.seq)] = moves.get((t.bill, t.seq), 0) + 1
     counts = orders.line_counts(list(moves))
@@ -1418,15 +1458,38 @@ def items(cu: CurrentUser, kind: str, tid: int, page: util.Page) -> dict:
         page.size,
     )
     out = []
+    imports = _import_serials(rows)
     for r in rows:
         cur = r["cur_status"]
         if cu.bound and r["from_factory"] in cu.factories and not cu.can_read(r["cur_factory"]):
             cur = "TRANSFERRED_OUT"
         v = {k: util.jv(r[k]) for k in r if k not in ("rule_version_id",)}
-        v["seq_text"] = rules.seq_text(r["rule_version_id"], r["seq_dec"])
+        if r["seq_pi_no"]:
+            v["seq_text"] = rules.seq_text(r["rule_version_id"], r["seq_dec"])
+        else:
+            text, dec, seq_pi = _serial_of(r, imports)
+            v.update(seq_text=text, seq_dec=dec, seq_pi_no=seq_pi)
         v["current_status"] = cur
         out.append(v)
     return util.page_result(out, total, page)
+
+
+def _import_serials(rows: list[dict]) -> dict[int, dict]:
+    """rows（带 seq_pi_no、seq_dec）里 SN 导入的号的导入记录；没有导入的号时不查库。"""
+    ids = [r["seq_dec"] for r in rows if not r["seq_pi_no"]]
+    if not ids:
+        return {}
+    from app.services import sn_import
+
+    return sn_import.details(ids)
+
+
+def _serial_of(r: dict, imports: dict[int, dict]) -> tuple[str, str, str]:
+    """（进制流水, 十进制流水, 流水归属 PI）：生成的号按规则换算；导入的号取导入记录的流水号、十进制流水、PI。"""
+    if r["seq_pi_no"]:
+        return rules.seq_text(r["rule_version_id"], r["seq_dec"]), str(r["seq_dec"]), r["seq_pi_no"]
+    d = imports.get(int(r["seq_dec"]))
+    return ("", "", "") if d is None else (d["serial_text"], str(d["seq_dec"]), d["pi_no"])
 
 
 OUT_LIST_HEADERS = [
@@ -1470,15 +1533,17 @@ def out_list(cu: CurrentUser, tid: int):
             )
             if not page:
                 return
+            imports = _import_serials(page)
             for r in page:
                 no += 1
                 last = r["item_id"]
+                text, dec, seq_pi = _serial_of(r, imports)
                 yield [
                     no,
                     r["sn"],
-                    rules.seq_text(r["rule_version_id"], r["seq_dec"]),
-                    str(r["seq_dec"]),
-                    r["seq_pi_no"],
+                    text,
+                    dec,
+                    seq_pi,
                     r["from_factory"] or "",
                     names.get(r["from_factory"], "") if r["from_factory"] else "",
                     r["from_pi"],

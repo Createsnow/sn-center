@@ -360,8 +360,8 @@ def test_regenerated_sn_rev_continues_after_deleted_rev(w, api, sql):
 
 def test_imported_sn_rev_continues_after_deleted_rev(w, api, sql):
     """删掉的号（MES 已持有、rev 2）再经 SN 导入进号池：rev 同样接着删前的往上加。"""
+    from test_sn_import import rec, xlsx
     from test_sn_import import run as import_run
-    from test_sn_import import xlsx
 
     org = w.org(uid("O")[:10])
     w.enable_mes(org)
@@ -381,10 +381,10 @@ def test_imported_sn_rev_continues_after_deleted_rev(w, api, sql):
     sn = f"{p}0001"
     assert MES.store[org][sn]["rev"] == 2
     ok(w.delete(pi, bills=[tgt]))
-    ok(import_run(api, xlsx((pi, bill, sn, org)), w.admin))
+    ok(import_run(api, xlsx(rec(pi, bill, sn, org)), w.admin))
     assert sql.scalar("SELECT rev FROM sn_item WHERE sn = %s", sn) == 3
     w.allocate(pi)
     w.push()
-    # 导入的号必填项为 null，按接口校验的模拟 MES 整批退回（已知待 MES 确认，见 SN 导入）；这里只看送出的 rev
+    # 这里只看送出的 rev
     sent = [y["rev"] for x in MES.received if x["org"] == org for y in x["batch"]["items"] if y["sn"] == sn]
     assert sent == [1, 2, 3]

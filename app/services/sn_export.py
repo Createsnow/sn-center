@@ -16,7 +16,7 @@ from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db
-from app.services import factories, files, rules, sn_sheet
+from app.services import factories, files, rules, sn_import, sn_sheet
 
 #: 各汇总都带的枚数：暂停（单据暂停交付）
 _NOTES = "SUM(i.suspend IS NOT NULL) suspended"
@@ -215,9 +215,24 @@ def items(
             "delivery_batch_no": r["delivery_batch_no"] or "",
             "suspend": _text(r["suspend"]),
         }
-        for n, r in enumerate(rows)
+        | _import_detail(r)
+        for n, r in enumerate(sn_import.with_details(rows))
     ]
     return util.page_result(out, total, page)
+
+
+def _import_detail(r: dict) -> dict:
+    """SN 导入的号（带 r["import"]）：流水位数、进制、流水号、十进制流水、产品单位取导入记录；生成的号为空 dict。"""
+    d = r.get("import")
+    if d is None:
+        return {}
+    return {
+        "seq_len": int(d["seq_len"]),
+        "base": int(d["seq_base"]),
+        "seq_text": d["serial_text"],
+        "seq_dec": int(d["seq_dec"]),
+        "unit": d["unit"] or "",
+    }
 
 
 def _filter(
@@ -287,17 +302,18 @@ FILE_HEADERS = [
 
 
 def _file_row(r: dict) -> list:
-    """一行，列顺序同 FILE_HEADERS。"""
+    """一行，列顺序同 FILE_HEADERS。SN 导入的号（带 r["import"]）的流水位数、进制、流水号、产品单位取导入记录。"""
+    d = r.get("import")
     return [
         r["pi_no"],
         r["material_code"],
         _text(r["sn"]),
-        _seq_len(r["rule_version_id"]),
-        _base(r["rule_version_id"]),
-        rules.seq_text(r["rule_version_id"], r["seq_dec"]),
+        int(d["seq_len"]) if d else _seq_len(r["rule_version_id"]),
+        int(d["seq_base"]) if d else _base(r["rule_version_id"]),
+        d["serial_text"] if d else rules.seq_text(r["rule_version_id"], r["seq_dec"]),
         _text(r["attach_no"]) or "",
         _text(r["length_text"]) or "",
-        _unit(r),
+        (d["unit"] or "") if d else _unit(r),
         r["factory_code"] or "",
         r["factory_name"] or "",
     ]
@@ -324,7 +340,7 @@ def _file_rows(where: str, args: list) -> Iterator[list]:
         )
         if not page:
             return
-        for r in page:
+        for r in sn_import.with_details(page):
             yield _file_row(r)
         last = page[-1]
         after = (last["bill_seq"], last["seq_pi_no"], last["seq_dec"])

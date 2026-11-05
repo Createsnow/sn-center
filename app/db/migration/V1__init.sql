@@ -438,17 +438,32 @@ CREATE TABLE sn_item_deleted (
   KEY ix_item_deleted_seq (seq_pi_no, seq_dec)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='删号存档';
 
--- SN 导入记录：本系统之外已有的 SN（PI + 单据 + SN + 生产组织）一次导入一个导入单号，逐枚记在这里（导入后不变）；
--- 号同时写入号池（sn_item.origin = 'IMPORT'，待分配，挂在单据序号 0 上，id 即号池的 seq_dec），只能分配；
+-- SN 导入记录：本系统之外已有的 SN 按导入模板（PI、单据编号、行号、完整 SN、物料编码、附件项次、米数、流水号、进制位数、
+-- 流水位数、产品单位、生产组织编号、客户编码）一次导入一个导入单号，逐枚记在这里；导入功能自成一套，只用这张表：
+-- 号同时写入号池（sn_item.origin = 'IMPORT'，号池结构不变：挂在单据序号 0 上，号池的 seq_dec 即本表 id，seq_pi_no 为空串），
+-- 物料编码、附件项次、米数、客户编码号池里照常存（分配、转移、推送用）；行号、流水号、进制、流水位数、产品单位只存在本表，
+-- 推送 / 拉取 / 转出的明细（billSeq、serial、serialDec、serialPi）与导出、查询从这里取。
+-- 导入后不变，只有 cur_bill_seq 在导入的号转移时随号改到目标物料行。
 -- 完整 SN 全局唯一由号池的 ux_item_sn 保证（导入撞上已有的号整次不导入，生成撞上导入的号整次回滚）。
 -- 导入页可整单删除（一个导入单号的号全部待分配时）：号从号池移除，记录留在这里标为已删除，之后可重新导入同样的号
 CREATE TABLE sn_import_item (
   id            BIGINT       NOT NULL AUTO_INCREMENT,
   import_no     VARCHAR(40)  NOT NULL COMMENT '导入单号（一次导入一个）',
   sn            VARCHAR(64)  NOT NULL COMMENT '完整 SN',
-  pi_no         VARCHAR(64)  NOT NULL,
-  bill_no       VARCHAR(64)  NOT NULL COMMENT '单据编号（导入时须在订单快照中，且 PI、生产组织与之相同）',
-  factory_code  VARCHAR(64)  NOT NULL DEFAULT '' COMMENT '生产组织编码（导入时须与单据在订单快照中的生产组织相同；授权范围按它）',
+  pi_no         VARCHAR(64)  NOT NULL COMMENT 'PI（即流水所属 PI，推送的 serialPi）',
+  bill_no       VARCHAR(64)  NOT NULL COMMENT '单据编号（导入时须在订单快照中，且 PI、生产组织、客户与之相同）',
+  bill_seq      INT          NOT NULL COMMENT '行号（导入时填写，须为该单据金蝶明细行号，物料编码、附件项次与该行相同）',
+  cur_bill_seq  INT          NOT NULL COMMENT '当前行号（推送的 billSeq）：导入时同 bill_seq，号转移时随号改到目标物料行',
+  material_code VARCHAR(64)  NOT NULL COMMENT '物料编码（导入时）',
+  attach_no     VARCHAR(64)  NOT NULL COMMENT '附件项次（导入时）',
+  length_text   VARCHAR(64)  NULL     COMMENT '米数（原样；没填为 NULL）',
+  serial_text   VARCHAR(12)  NOT NULL COMMENT '流水号（原样，推送的 serial）',
+  seq_base      INT          NOT NULL COMMENT '进制位数 10 / 16 / 32 / 36',
+  seq_len       INT          NOT NULL COMMENT '流水位数（= 流水号长度）',
+  seq_dec       BIGINT       NOT NULL COMMENT '十进制流水（按进制的默认字符表从流水号换算，推送的 serialDec）',
+  unit          VARCHAR(64)  NOT NULL DEFAULT '' COMMENT '产品单位（选填）',
+  customer_code VARCHAR(64)  NOT NULL COMMENT '客户编码（导入时须与单据相同）',
+  factory_code  VARCHAR(64)  NOT NULL COMMENT '生产组织编码（导入时须与单据在订单快照中的生产组织相同；授权范围按它）',
   file_name     VARCHAR(255) NOT NULL DEFAULT '' COMMENT '导入文件名',
   row_no        INT          NOT NULL COMMENT '在导入文件中的行号',
   created_by    VARCHAR(32)  NOT NULL,

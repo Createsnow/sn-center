@@ -144,21 +144,35 @@ TYPE_SQL = (
 )
 
 
-def imported_item(r: dict) -> dict | None:
-    """SN 导入的号（没有流水，seq_pi_no 为空串）的明细：结构与字段顺序不变，只按导入文件里有的列填 sn、pi、billNo
-    （生产组织即批次头 orgCode）、rev 与导入时填了的 attachNo、materialCode、length、customerCode（没填的为 null），
-    流水与单据行号为 null，不推导其他参数。本系统生成的号返回 None，照原样组装。推送与拉取（接口 ②④）共用。"""
+def import_details(rows: list[dict]) -> dict[int, dict]:
+    """rows 里 SN 导入的号（seq_pi_no 为空串，seq_dec 即导入记录 id）的导入记录：行号、流水号、进制等。
+    没有导入的号时返回空、不查库（本系统生成的号照原样组装）。"""
+    ids = [r["seq_dec"] for r in rows if not r["seq_pi_no"]]
+    if not ids:
+        return {}
+    from app.services import sn_import
+
+    return sn_import.details(ids)
+
+
+def imported_item(r: dict, details: dict[int, dict]) -> dict | None:
+    """SN 导入的号（没有流水，seq_pi_no 为空串）的明细：结构、字段顺序与生成的号相同，按导入记录填齐：
+    serial 为流水号、serialDec 为十进制流水、serialPi 为导入的 PI、billSeq 为行号（r 带非 0 的 bill_seq 时用它——
+    转出批次记的是转出前的行号；否则用导入记录的当前行号），其余取号池。找不到导入记录时这几项为 null。
+    本系统生成的号返回 None，照原样组装。推送、拉取（接口 ②④）与转出批次共用。"""
     if r["seq_pi_no"]:
         return None
+    d = details.get(int(r["seq_dec"]))
+    seq = int(r["bill_seq"]) if r.get("bill_seq") else (None if d is None else int(d["cur_bill_seq"]))
     return {
         "sn": r["sn"],
         "rev": int(r["rev"]),
-        "serial": None,
-        "serialDec": None,
-        "serialPi": None,
+        "serial": None if d is None else d["serial_text"],
+        "serialDec": None if d is None else str(d["seq_dec"]),
+        "serialPi": None if d is None else d["pi_no"],
         "pi": r["pi_no"],
         "billNo": r["bill_no"],
-        "billSeq": None,
+        "billSeq": seq,
         "attachNo": str_or_none(r["attach_no"]),
         "materialCode": str_or_none(r["material_code"]),
         "length": str_or_none(r["length_text"]),
@@ -166,11 +180,11 @@ def imported_item(r: dict) -> dict | None:
     }
 
 
-def _item_payload(r: dict) -> dict:
+def _item_payload(r: dict, details: dict[int, dict]) -> dict:
     """批次明细，交付批次与转出批次同一结构。十进制流水、米数按字符串；物料、附件项次为空，规则不带米数时为 null。
     交付批次为号的当前挂靠，MES 逐枚按 rev 新增或覆盖；转出批次为转出前的挂靠，转入组织在批次头 toOrgCode，MES 据此
     标记已转走（本地没有时按 SN、rev 建一条已转走记录）。"""
-    imp = imported_item(r)
+    imp = imported_item(r, details)
     if imp is not None:
         return imp
     return {
@@ -311,7 +325,8 @@ def _deliver(
     rebuilt_from: str | None = None,
 ) -> dict:
     """把已加锁的同一类型的号写成一个交付批次，号记上批次号。"""
-    payload = [_item_payload(r) for r in items]
+    details = import_details(items)
+    payload = [_item_payload(r, details) for r in items]
     rows = [
         (
             r["id"],
@@ -419,7 +434,8 @@ def build_transfer_out(cu: CurrentUser, org: str, entries: list[dict], rebuilt_f
     out = []
     for part in parts:
         pi = part[0]["pi_no"]
-        payload = [_item_payload(e) for e in part]
+        details = import_details(part)
+        payload = [_item_payload(e, details) for e in part]
         rows = [
             (
                 e["item_id"],

@@ -20,6 +20,7 @@ from app.services.delivery.batches import (
     body_obj,
     build_delivery,
     find_batch,
+    import_details,
     imported_item,
     must_batch,
     str_or_none,
@@ -292,8 +293,8 @@ _READ_COLS = (
 )
 
 
-def _read_item(r: dict) -> dict:
-    imp = imported_item(r)
+def _read_item(r: dict, details: dict[int, dict]) -> dict:
+    imp = imported_item(r, details)
     if imp is not None:
         return {
             **imp,
@@ -350,7 +351,10 @@ def read_delivered(
     )
     more = len(rows) > n
     rows = rows[:n]
-    return mes_body("OK", "成功", items=[_read_item(r) for r in rows], nextCursor=str(rows[-1]["id"]) if more else None)
+    details = import_details(rows)
+    return mes_body(
+        "OK", "成功", items=[_read_item(r, details) for r in rows], nextCursor=str(rows[-1]["id"]) if more else None
+    )
 
 
 def read_batch_items(cu: CurrentUser, batch_no: str, cursor: str | None, size: int | None) -> dict:
@@ -371,10 +375,11 @@ def read_batch_items(cu: CurrentUser, batch_no: str, cursor: str | None, size: i
     )
     more = len(rows) > n
     rows = rows[:n]
+    details = import_details(rows)
     return mes_body(
         "OK",
         "成功",
         b["batch_no"],
-        items=[_read_item(r) for r in rows],
+        items=[_read_item(r, details) for r in rows],
         nextCursor=str(rows[-1]["id"]) if more else None,
     )

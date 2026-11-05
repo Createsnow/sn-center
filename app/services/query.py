@@ -20,7 +20,7 @@ from app.core.config import settings
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db, marks
-from app.services import factories, files, rules, sn_sheet
+from app.services import factories, files, rules, sn_import, sn_sheet
 
 COUNT_CAP = 100_000
 
@@ -178,6 +178,25 @@ def view(r: dict, bills: BillInfo) -> dict:
     """列表一行；流水位数、进制、产品单位取号所用规则版本（产品单位从 SN 中截出，规则不带单位时为空）。
     生产组织：已分配的取号上的，待分配的取所在单据的组织。"""
     s = rules.cached_spec(r["rule_version_id"])
+    imp = r.get("import")
+    if imp is not None:
+        # SN 导入的号：流水位数、进制、流水号、十进制流水、产品单位、当前行号取导入记录
+        return {**_view(r, bills, s), **_import_view(imp)}
+    return _view(r, bills, s)
+
+
+def _import_view(d: dict) -> dict:
+    return {
+        "seq_len": int(d["seq_len"]),
+        "base": int(d["seq_base"]),
+        "unit": d["unit"] or "",
+        "seq_text": d["serial_text"],
+        "seq_dec": str(d["seq_dec"]),
+        "bill_seq": int(d["cur_bill_seq"]),
+    }
+
+
+def _view(r: dict, bills: BillInfo, s) -> dict:
     return {
         "id": r["id"],
         "sn": r["sn"],
@@ -227,7 +246,7 @@ def list_items(cu: CurrentUser, f: Filter, page: util.Page) -> dict:
         order = " ORDER BY i.id DESC"
     rows = db.all(f"SELECT {COLS} FROM sn_item i{sql}{order} LIMIT %s, %s", *args, page.offset, page.size)
     bi = _bill_info([r["bill_no"] for r in rows])
-    out = util.page_capped([view(r, bi) for r in rows], total, page, COUNT_CAP)
+    out = util.page_capped([view(r, bi) for r in sn_import.with_details(rows)], total, page, COUNT_CAP)
     if rg is not None:
         out["range"] = _range_summary(sql, args, rg)
     return out
@@ -259,7 +278,7 @@ def _export_rows(cu: CurrentUser, f: Filter) -> Iterator[list]:
         )
         if not page:
             return
-        for r in page:
+        for r in sn_import.with_details(page):
             no += 1
             last_id = r["id"]
             yield sn_sheet.row(no, r)
