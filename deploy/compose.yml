@@ -1,0 +1,91 @@
+# Linux 部署：每个服务一个独立、无状态、单进程容器；配置来自 app.env，秘密以文件挂载到 /run/secrets。
+#   外部 MySQL/Redis：    docker compose -f deploy/compose.yml up -d
+#   单机含 MySQL/Redis：  docker compose -f deploy/compose.infra.yml -f deploy/compose.yml up -d
+#   水平扩展 API：        在上述命令后追加 --scale api=3
+# 对应 K8s：migrate → Job（或 initContainer），api → Deployment + Service，web → Deployment + Service + Ingress，
+# app.env → ConfigMap，.secrets → Secret（挂载到 /run/secrets），healthcheck → readiness / liveness 探针。
+name: adtek-platform-template
+x-api-image: &api-image
+  image: adtek-platform-template-api:0.1.0
+  build:
+    context: ..
+    dockerfile: deploy/api/Dockerfile
+x-hardening: &hardening
+  read_only: true
+  tmpfs:
+    - /tmp
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+services:
+  migrate:
+    <<: [*api-image, *hardening]
+    # 单次执行 Flyway 后退出；只有本容器持有 DDL 账号密码。
+    command: [--spring.profiles.active=migrate]
+    env_file:
+      - path: ./app.env
+        required: true
+    secrets:
+      - source: mysql_migration_password
+        target: ADTEK_MIGRATION_PASSWORD
+    restart: 'no'
+  api:
+    <<: [*api-image, *hardening]
+    env_file:
+      - path: ./app.env
+        required: true
+    secrets:
+      - source: mysql_app_password
+        target: ADTEK_DB_PASSWORD
+      - source: redis_password
+        target: ADTEK_REDIS_PASSWORD
+    # 不依赖启动顺序（与 K8s 一致）：迁移自行重试连接数据库，API 就绪探针在 MySQL/Redis 可用前保持 DOWN。
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    # API 只在容器网络内开放，不发布主机端口，便于多副本。
+    expose:
+      - '18090'
+    healthcheck:
+      test: [CMD, curl, -fsS, -o, /dev/null, 'http://127.0.0.1:18090/actuator/health/readiness']
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 60s
+    stop_grace_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    restart: unless-stopped
+  web:
+    <<: *hardening
+    image: adtek-platform-template-web:0.1.0
+    build:
+      context: ..
+      dockerfile: deploy/web/Dockerfile
+    depends_on:
+      api:
+        condition: service_healthy
+    # 默认只绑定本机，由主机 TLS 反向代理 / 负载均衡对外提供 HTTPS。
+    ports:
+      - '${ADTEK_WEB_BIND:-127.0.0.1}:${ADTEK_WEB_PORT:-18080}:8080'
+    healthcheck:
+      test: [CMD, curl, -fsS, -o, /dev/null, 'http://127.0.0.1:8080/healthz']
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    stop_grace_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+    restart: unless-stopped
+secrets:
+  mysql_app_password:
+    file: ./.secrets/mysql-app-password
+  mysql_migration_password:
+    file: ./.secrets/mysql-migration-password
+  redis_password:
+    file: ./.secrets/redis-password

@@ -13,10 +13,6 @@
       <artifactId>adtek-system</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.adtek</groupId>
-      <artifactId>adtek-sample</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-flyway</artifactId>
     </dependency>
@@ -60,6 +56,14 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+      <!-- server 汇集架构门禁，零发现视为失败，防止测试被误删后仍然通过。 -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <failIfNoTests>true</failIfNoTests>
+        </configuration>
       </plugin>
     </plugins>
   </build>

@@ -1,13 +1,14 @@
-# 仅本机隔离测试设施；命名卷不随 stop/down 删除，禁止用于生产库。
-name: adtek-platform-template-test
+# MySQL / Redis 基础设施：Windows 本地开发单独使用；Linux 单机部署与 compose.yml 合并使用。
+# 端口只绑定 127.0.0.1；命名卷不随 stop/down 删除。生产可改用托管 MySQL/Redis 而不启用本文件。
+name: adtek-platform-template
 services:
   mysql:
-    image: mysql:8.4.11
+    image: mysql:8.4.11@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d
     restart: unless-stopped
     ports:
-      - '127.0.0.1:33316:3306'
+      - '127.0.0.1:${ADTEK_MYSQL_PORT:-33316}:3306'
     environment:
-      MYSQL_DATABASE: adtek_template_test
+      MYSQL_DATABASE: adtek_template
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
       TZ: UTC
     command:
@@ -22,7 +23,7 @@ services:
       - mysql_migration_password
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./mysql/init-test-users.sh:/docker-entrypoint-initdb.d/10-users.sh:ro
+      - ./mysql/init-users.sh:/docker-entrypoint-initdb.d/10-users.sh:ro
     healthcheck:
       test:
         [
@@ -35,10 +36,10 @@ services:
       start_period: 45s
     mem_limit: 2g
   redis:
-    image: redis:8.4.7-alpine
+    image: redis:8.4.7-alpine@sha256:0514fa59e3d84e2f3be66731c5401fc2a85b8ea71b49c0116c850f6a558076f4
     restart: unless-stopped
     ports:
-      - '127.0.0.1:36389:6379'
+      - '127.0.0.1:${ADTEK_REDIS_PORT:-36389}:6379'
     entrypoint: [sh, /opt/adtek/start-redis.sh]
     secrets:
       - redis_password

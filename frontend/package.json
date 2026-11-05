@@ -15,6 +15,8 @@
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "format:config": "prettier --config .prettierrc.json --write ../.gitlab-ci.yml \"../deploy/*.yml\" \"../deploy/*.json\" \"../backend/adtek-server/src/main/resources/*.yml\" \"../tools/*.mjs\"",
+    "format:config:check": "prettier --config .prettierrc.json --check ../.gitlab-ci.yml \"../deploy/*.yml\" \"../deploy/*.json\" \"../backend/adtek-server/src/main/resources/*.yml\" \"../tools/*.mjs\"",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "api:generate": "openapi-typescript openapi/adtek-template.json -o src/api/generated/schema.d.ts",

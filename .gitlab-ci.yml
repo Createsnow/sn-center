@@ -1,26 +1,90 @@
-# Windows PowerShell shell runner: Node 24, Git, Docker Linux engine and Edge.
-# Runs the same gates as the local tools/*.ps1 scripts.
-stages: [verify]
-template-checks:
+# GitLab CI（Linux Docker runner）：与 tools\verify.bat 相同的门禁；镜像摘要见 deploy/images.lock.json。
+# integration 与 images 使用 docker:dind 服务，需要 privileged runner。
+stages: [verify, package]
+
+variables:
+  MAVEN_OPTS: -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
+  COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
+
+.dind: &dind
+  services:
+    - name: docker:29-dind@sha256:d035bd30886e451b2727ef3cdb9af9a5c537a10d4bc5d18c08d0ffa597e46aeb
+      alias: docker
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ''
+
+backend:
   stage: verify
-  tags: [windows-pwsh-docker]
-  timeout: 30m
+  image: eclipse-temurin:21.0.12.1_1-jdk-noble@sha256:57424b1d8eca9c4cf8a4fe226207027911f08d6758628891bf59fcfb53777029
+  cache:
+    key: maven
+    paths: [.m2/repository]
   script:
-    - pwsh -NoProfile -File tools/bootstrap-build.ps1
-    - pwsh -NoProfile -File tools/bootstrap-format.ps1
-    - pwsh -NoProfile -File tools/pnpm.ps1 install --frozen-lockfile
-    - pwsh -NoProfile -File tools/format.ps1 -Check
-    - pwsh -NoProfile -File tools/verify.ps1 -Integration
-    - node tools/check-docs.mjs
-    - pwsh -NoProfile -File tools/verify-web.ps1
+    - cd backend
+    - ./mvnw -B -ntp verify
   artifacts:
     when: always
     expire_in: 14 days
     paths:
+      - backend/adtek-server/target/adtek-server-0.1.0.jar
       - backend/*/target/surefire-reports/TEST-*.xml
-      - backend/*/target/failsafe-reports/TEST-*.xml
-      - frontend/test-results/unit.json
     reports:
-      junit:
-        - backend/*/target/surefire-reports/TEST-*.xml
-        - backend/*/target/failsafe-reports/TEST-*.xml
+      junit: backend/*/target/surefire-reports/TEST-*.xml
+
+frontend:
+  stage: verify
+  image: node:24.22.2-bookworm-slim@sha256:c86ecead9e55a5210ac1727de38a4ca840bf03dcaf34dc9749addbf383b1920c
+  cache:
+    key: pnpm
+    paths: [.tools/pnpm-store]
+  script:
+    - corepack enable
+    - cd frontend
+    - pnpm install --frozen-lockfile
+    - if [ -f openapi/adtek-template.json ]; then pnpm api:check; fi
+    - pnpm lint
+    - pnpm format:check
+    - pnpm format:config:check
+    - pnpm test
+    - pnpm build
+    - node ../tools/check-docs.mjs
+  artifacts:
+    when: always
+    expire_in: 14 days
+    paths:
+      - frontend/dist/
+      - frontend/test-results/unit.json
+
+# 只有存在 *IT.java 时运行；Testcontainers 通过 dind 启动临时 MySQL/Redis。
+integration:
+  <<: *dind
+  stage: verify
+  image: eclipse-temurin:21.0.12.1_1-jdk-noble@sha256:57424b1d8eca9c4cf8a4fe226207027911f08d6758628891bf59fcfb53777029
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ''
+    TESTCONTAINERS_HOST_OVERRIDE: docker
+  cache:
+    key: maven
+    paths: [.m2/repository]
+  rules:
+    - exists:
+        - backend/**/src/test/java/**/*IT.java
+  script:
+    - cd backend
+    - ./mvnw -B -ntp -Pintegration verify
+  artifacts:
+    when: always
+    reports:
+      junit: backend/*/target/failsafe-reports/TEST-*.xml
+
+# 用已验证的 JAR 与 dist 构建镜像；推送到哪个仓库由项目自行配置。
+images:
+  <<: *dind
+  stage: package
+  image: docker:29-cli@sha256:4d742ab934c2149b628bf26369ac3ec51cb91e2e28fe6722a0e86a6d6efc4bd5
+  needs: [backend, frontend]
+  script:
+    - docker build -f deploy/api/Dockerfile -t adtek-platform-template-api:$CI_COMMIT_SHORT_SHA .
+    - docker build -f deploy/web/Dockerfile -t adtek-platform-template-web:$CI_COMMIT_SHORT_SHA .

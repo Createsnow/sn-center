@@ -5,7 +5,9 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const files = ['README.md', 'AGENTS.md'];
 function walk(directory) {
-  for (const item of readdirSync(resolve(root, directory), { withFileTypes: true })) {
+  for (const item of readdirSync(resolve(root, directory), {
+    withFileTypes: true,
+  })) {
     const path = `${directory}/${item.name}`;
     if (item.isDirectory()) walk(path);
     else if (path.endsWith('.md')) files.push(path);
