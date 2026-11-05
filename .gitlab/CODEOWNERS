@@ -1,0 +1,29 @@
+# GitLab 代码所有者。在受保护分支开启 "Code owner approval" 后，合并请求改动下列路径时须由对应所有者批准，
+# 使修改一个业务时对其他业务或平台代码的改动必然经过其所有者评审（自动门禁之外的组织保障）。
+# 启用方法：去掉行首的 "#"，把 @your-*-group 换成实际的 GitLab 用户或组；新增业务模块时追加一个段落。
+# 后出现的匹配规则优先。
+
+# [平台] 公共契约、框架、装配、门禁、构建与部署：改动影响所有业务
+# /backend/pom.xml                     @your-platform-group
+# /backend/adtek-common/               @your-platform-group
+# /backend/adtek-framework/            @your-platform-group
+# /backend/adtek-server/               @your-platform-group
+# /frontend/src/app/                   @your-platform-group
+# /frontend/src/api/                   @your-platform-group
+# /frontend/src/routing/               @your-platform-group
+# /frontend/src/i18n/                  @your-platform-group
+# /frontend/eslint.config.js           @your-platform-group
+# /frontend/package.json               @your-platform-group
+# /frontend/pnpm-lock.yaml             @your-platform-group
+# /deploy/                             @your-platform-group
+# /tools/                              @your-platform-group
+# /docs/                               @your-platform-group
+# /.gitlab-ci.yml                      @your-platform-group
+# /.gitlab/CODEOWNERS                  @your-platform-group
+
+# [system] 平台系统模块
+# /backend/adtek-system/               @your-system-group
+
+# [业务示例] 每个业务一个段落：后端模块与同名前端功能目录归同一所有者
+# /backend/adtek-order/                @your-order-group
+# /frontend/src/features/order/        @your-order-group

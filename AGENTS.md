@@ -2,7 +2,8 @@
 
 先读 README.md 与 docs/README.md。模板为独立工程，只含架构、规范与代码结构，不读取其他项目、数据库或秘密。
 
-- 模块方向为 server → system/业务模块 → framework → common；跨模块通过 service 接口或 framework 端口，禁止访问别的模块 Mapper 与 service.impl。
+- 模块方向为 server → system/业务模块 → framework → common；业务模块之间无编译期依赖，跨模块只经 framework 端口（`*Port`，实现放提供方 service.impl 并有契约测试），禁止访问别的模块 Mapper 与 service.impl。
+- 修改一个业务只改其后端模块与同名前端功能目录；全局扩展点只在 framework/server；路由在 `/api/v1/{module}/` 与 `/{feature}` 下。boundary 门禁不得删除或放宽。
 - 保持 Controller/Service/impl/Mapper/Entity/DTO/Query/VO/MapStruct 分层，权限在服务用例验证；ArchitectureTest 不得删除或放宽。
 - 每个模块只访问以 `{module}_` 为前缀的自有表，迁移放本模块 `db/migration/{module}/`，跨模块数据经 framework 端口；不跨模块联表。
 - MySQL 是业务和任务最终状态，Redis 仅会话与入口预算。成功审计与业务同事务。

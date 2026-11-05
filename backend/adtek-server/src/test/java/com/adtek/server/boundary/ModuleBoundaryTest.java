@@ -1,5 +1,6 @@
 package com.adtek.server.boundary;
 
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noMethods;
 
@@ -230,6 +231,49 @@ class ModuleBoundaryTest {
             }
         }
         assertThat(violations).isEmpty();
+    }
+
+    /** 跨模块能力只经 framework 端口：端口接口只在 framework 中定义，业务模块之间没有编译期依赖（Maven Enforcer）。 */
+    @Test
+    void portsAreFrameworkInterfaces() {
+        classes()
+                .that()
+                .haveSimpleNameEndingWith("Port")
+                .and()
+                .areTopLevelClasses()
+                .should()
+                .beInterfaces()
+                .andShould()
+                .resideInAPackage("com.adtek.framework..")
+                .because("cross-module contracts are owned by framework")
+                .allowEmptyShould(true)
+                .check(classes);
+    }
+
+    @Test
+    void portImplementationsLiveInServiceImplementations() {
+        noClasses()
+                .that(DataOwnershipTest.businessModule())
+                .and(implementsPort())
+                .should()
+                .resideOutsideOfPackage("..service.impl..")
+                .because("a module provides a port through its use-case implementation")
+                .allowEmptyShould(true)
+                .check(classes);
+    }
+
+    static DescribedPredicate<JavaClass> implementsPort() {
+        return DescribedPredicate.describe(
+                "implement a framework port",
+                type ->
+                        !type.isInterface()
+                                && type.getAllRawInterfaces().stream()
+                                        .anyMatch(
+                                                port ->
+                                                        port.getSimpleName().endsWith("Port")
+                                                                && port.getPackageName()
+                                                                        .startsWith(
+                                                                                "com.adtek.framework")));
     }
 
     private static boolean isGlobalExtension(JavaClass type) {

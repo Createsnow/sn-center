@@ -2,6 +2,11 @@ package com.adtek.server.boundary;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.tngtech.archunit.core.domain.JavaClass;
+import com.tngtech.archunit.core.domain.JavaClasses;
+import com.tngtech.archunit.core.importer.ClassFileImporter;
+import com.tngtech.archunit.core.importer.ImportOption;
+
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -81,6 +86,37 @@ class ModuleRegistrationTest {
         for (String module : declared) {
             if (!Files.isRegularFile(BACKEND.resolve(module).resolve("pom.xml"))) {
                 violations.add(module + ": listed in <modules> but missing");
+            }
+        }
+        assertThat(violations).isEmpty();
+    }
+
+    /**
+     * 每个 framework 端口实现都有自己的契约测试（{@code {实现类}Test} 或 {@code {实现类}IT}），验证端口 Javadoc 约定的权限、范围与失败语义。
+     */
+    @Test
+    void everyPortImplementationHasAContractTest() throws Exception {
+        List<String> violations = new ArrayList<>();
+        JavaClasses production =
+                new ClassFileImporter()
+                        .withImportOption(new ImportOption.DoNotIncludeTests())
+                        .importPackages("com.adtek");
+        for (JavaClass type : production) {
+            if (!type.isTopLevelClass() || !ModuleBoundaryTest.implementsPort().test(type)) {
+                continue;
+            }
+            String module =
+                    ModuleOrigin.of(Class.forName(type.getName()))
+                            .orElseThrow(() -> new IllegalStateException(type.getName()));
+            Path tests =
+                    BACKEND.resolve("adtek-" + module)
+                            .resolve("src/test/java")
+                            .resolve(type.getPackageName().replace('.', '/'));
+            String name = type.getSimpleName();
+            if (!Files.isRegularFile(tests.resolve(name + "Test.java"))
+                    && !Files.isRegularFile(tests.resolve(name + "IT.java"))) {
+                violations.add(
+                        type.getName() + " implements a port but has no " + name + "Test/IT");
             }
         }
         assertThat(violations).isEmpty();
