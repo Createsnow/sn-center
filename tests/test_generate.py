@@ -786,6 +786,29 @@ def test_alloc_context_lists_pending_lines(w, api):
     assert ctx["summary"]["pending_alloc"] == 6 and ctx["push"] == []
 
 
+def test_alloc_context_line_display_fields(w, api, sql):
+    """分配页待分配页签物料行：附件项次（号上的值）、订单数量与客户 P/N（金蝶快照，只显示）、十进制流水号起止；
+    已不在快照的物料行订单数量为空、客户 P/N 为空串。"""
+    org = w.org(uid("O")[:10])
+    pi, bill = uid("PI"), uid("MO")
+    doc = w.doc(bill, org, "C1", pi, ("M1", 2.5, "100", "10"), ("M2", 3, "100", "2"))
+    doc["TreeEntity"][0]["FPN"] = "CPN-1"
+    BILLS[bill] = doc
+    ok(api.post("/api/orders/sync", m(bill_no=bill), w.admin))
+    ok(w.bind_pi(pi, w.rule(P())))
+    w.generate(pi)
+    ctx = ok(api.get(f"/api/allocation/context?pi={pi}", w.admin))
+    got = [
+        (x["seq"], x["attach_no"], x["order_qty"], x["customer_pn"], x["start_seq"], x["end_seq"], x["qty"])
+        for x in ctx["lines"]
+    ]
+    # 单据内按附件项次排号：项次 2 的第 2 行先排（流水 1 ~ 3），项次 10 的第 1 行后排（4 ~ 5）；订单数量按整数部分
+    assert got == [(1, "10", 2, "CPN-1", 4, 5, 2), (2, "2", 3, "", 1, 3, 3)]
+    sql.exec("DELETE FROM sn_prd_mo WHERE bill_no = %s AND seq = 1", bill)
+    line = ok(api.get(f"/api/allocation/context?pi={pi}", w.admin))["lines"][0]
+    assert (line["seq"], line["attach_no"], line["order_qty"], line["customer_pn"]) == (1, "10", None, "")
+
+
 def test_background_generation_and_cancel(w, api, sql, monkeypatch):
     monkeypatch.setenv("SN_GEN_SYNC_THRESHOLD", "10")
     org, pi, bill = mk(w, ("M1", 5000))

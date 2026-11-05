@@ -63,7 +63,8 @@
           </div>
 
           <!-- 单据物料行：勾选有待分配号的物料行为范围，不勾选 = 整张 PI；单据头、物料行都带推送进度条；
-               列宽按右侧宽度放下，不出横向滚动条 -->
+               列依次为附件项次、行号、物料编码、订单数量、客户 P/N、十进制流水号、SN 枚数、SN 范围、推送进度、分到；
+               单据内物料行按附件项次从小到大（bills）；列宽按右侧宽度放下，不出横向滚动条 -->
           <section v-if="bills.length" class="box lines-box">
             <div class="box-h">
               <b>{{ t("allocate.linesTitle") }}</b>
@@ -89,30 +90,44 @@
                 <el-table v-show="!isFolded(b.bill_no)" ref="lineTables" :data="b.lines" size="small" row-key="key"
                   @selection-change="(rows: any[]) => onSelect(b.bill_no, rows)">
                   <el-table-column type="selection" width="40" :selectable="(row: any) => row.pending_alloc > 0 && !row.skip" />
-                  <el-table-column :label="t('common.billSeq')" width="64">
+                  <el-table-column :label="t('common.attachNo')" min-width="56" show-overflow-tooltip>
+                    <template #default="{ row }">{{ row.attach_no || "—" }}</template>
+                  </el-table-column>
+                  <el-table-column :label="t('common.lineNo')" width="44">
                     <template #default="{ row }">
                       <el-tag v-if="row.imported" size="small" type="warning" effect="plain" disable-transitions>{{ t("allocate.imported") }}</el-tag>
                       <template v-else>{{ row.seq }}</template>
                     </template>
                   </el-table-column>
-                  <el-table-column :label="t('common.material')" prop="material_code" min-width="80" show-overflow-tooltip />
-                  <el-table-column :label="t('export.qty')" align="right" width="56">
+                  <el-table-column :label="t('common.material')" prop="material_code" min-width="72" show-overflow-tooltip />
+                  <!-- 订单数量、客户 P/N：金蝶物料行的值（只显示）；导入行、已不在快照的物料行为「—」 -->
+                  <el-table-column :label="t('generate.orderQty')" align="right" width="64">
+                    <template #default="{ row }"><span class="num">{{ num(row.order_qty) }}</span></template>
+                  </el-table-column>
+                  <el-table-column :label="t('orders.customerPn')" min-width="56" show-overflow-tooltip>
+                    <template #default="{ row }">{{ row.customer_pn || "—" }}</template>
+                  </el-table-column>
+                  <!-- 十进制流水号：本行号中最小、最大的十进制流水（起 ~ 止，只有一枚时只写一个）；导入的号没有流水为「—」 -->
+                  <el-table-column :label="t('generate.seqDec')" min-width="64">
+                    <template #default="{ row }"><span class="sn-mono">{{ decRange(row) }}</span></template>
+                  </el-table-column>
+                  <el-table-column :label="t('export.qty')" align="right" width="52">
                     <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
                   </el-table-column>
-                  <el-table-column :label="t('generate.snRange')" min-width="190">
+                  <el-table-column :label="t('generate.snRange')" min-width="104">
                     <template #default="{ row }"><span class="sn-mono">{{ row.start_sn }} ~ {{ row.end_sn }}</span></template>
                   </el-table-column>
-                  <el-table-column :label="t('allocate.toOrg')" min-width="80" show-overflow-tooltip>
-                    <template #default="{ row }">{{ row.org_code ? row.org_name || nameOf(row.org_code) : "—" }}</template>
-                  </el-table-column>
-                  <el-table-column :label="t('allocate.tabPush')" min-width="170">
+                  <el-table-column :label="t('allocate.tabPush')" min-width="100">
                     <template #default="{ row }">
                       <el-tag v-if="row.skip" size="small" type="danger" effect="plain">{{ t(`allocate.skip.${row.skip}`) }}</el-tag>
-                      <span v-else class="prog">
+                      <span v-else class="prog prog-row">
                         <el-progress :percentage="progressOf(row).pct" :status="PROG_STATUS[progressOf(row).state]" :show-text="false" :stroke-width="6" />
                         <span class="prog-t" :class="{ err: progressOf(row).state === 'FAILED' }">{{ progLabel(row) }}</span>
                       </span>
                     </template>
+                  </el-table-column>
+                  <el-table-column :label="t('allocate.toOrg')" min-width="56" show-overflow-tooltip>
+                    <template #default="{ row }">{{ row.org_code ? row.org_name || nameOf(row.org_code) : "—" }}</template>
                   </el-table-column>
                 </el-table>
               </div>
@@ -206,6 +221,7 @@ import { useFitRows } from "@/composables/useFitRows";
 import { usePaged } from "@/composables/usePaged";
 import { useTime } from "@/composables/useTime";
 import { BATCH_RESULT_TYPE, BILL_FOLD_OVER, batchResultLabel, batchSourceLabel, pushStateLabel, taskStateLabel } from "@/constants";
+import { lineSort } from "@/genScope.js";
 import PageHead from "@/components/PageHead.vue";
 import DeliveryBatchDrawer from "@/components/batch/DeliveryBatchDrawer.vue";
 import AllocatedPane from "./allocate/AllocatedPane.vue";
@@ -349,7 +365,9 @@ function progLabel(x: Counts) {
 
 // ---------------- 分配：勾选物料行为范围，不勾选 = 整张 PI；按钮写「分配（推送 M 次）」，未对接 MES 时写「分配 N 枚」
 
-/** 待分配页签下列出的单据（待分配、待处理，及本 PI 列出过的），物料行按单据分组（保持接口给的顺序）。 */
+/** 待分配页签下列出的单据（待分配、待处理，及本 PI 列出过的），物料行按单据分组（单据保持接口给的顺序）；
+ *  单据内物料行按附件项次从小到大（号上的附件项次，按数字比、与生成排号同一比较；空的排最后，项次相同按行号），
+ *  只管显示，不影响勾选与分配范围。 */
 const bills = computed(() => {
   const m = new Map<string, Counts & { bill_no: string; state: BillState; lines: any[] }>();
   for (const l of ctx.value?.lines ?? []) {
@@ -362,8 +380,15 @@ const bills = computed(() => {
     b.failed += l.failed;
     b.lines.push(l);
   }
+  for (const b of m.values()) b.lines = lineSort(b.lines);
   return [...m.values()];
 });
+
+/** 物料行的十进制流水号：起 ~ 止，只有一枚时只写一个；没有流水（导入的号）为「—」。 */
+function decRange(row: any): string {
+  if (row.start_seq == null) return "—";
+  return row.start_seq === row.end_seq ? String(row.start_seq) : `${row.start_seq} ~ ${row.end_seq}`;
+}
 
 /** 收起的单据（只影响显示，不影响勾选）。 */
 const folded = ref(new Set<string>());
@@ -501,6 +526,8 @@ onUnmounted(() => {
 .prog { display: inline-flex; align-items: center; gap: 8px; }
 .prog :deep(.el-progress) { width: 72px; flex: none; }
 .prog-t { font-size: 12px; color: var(--app-muted); white-space: nowrap; }
+/* 物料行的推送进度：列窄时说明文字换到进度条下面 */
+.prog-row { flex-wrap: wrap; row-gap: 2px; }
 .bar { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--el-border-color); background: var(--el-fill-color-lighter); border-radius: 0 0 8px 8px; font-size: 13px; }
 .orgs { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; min-height: 28px; justify-content: center; }
 .detail-pane > .tabs-box { flex: 1 1 0; min-height: max(240px, 40%); display: flex; flex-direction: column; padding: 0 12px 8px; }

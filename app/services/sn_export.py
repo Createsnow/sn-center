@@ -2,8 +2,8 @@
 
 与分配后的推送、拉取是两套独立的机制：号一经分配到生产组织（不再是待分配）就按「生产组织 + PI + 单据」一行列出，
 不论该组织是否对接 MES，也不看推送、拉取的进度和结果（推送失败、批次未确认都照常导出）；
-明细逐枚列出全部号（不按号段合并），也可直接下载 xlsx（列见 FILE_HEADERS，与 SN 查询导出的列不同；
-可按明细的物料编码、SN 起止号筛选只下载范围内的号）。
+明细逐枚列出全部号（不按号段合并），按附件项次从小到大（项次相同按单据序号、流水），也可直接下载 xlsx
+（列见 FILE_HEADERS，与 SN 查询导出的列不同；行顺序同明细；可按明细的物料编码、SN 起止号筛选只下载范围内的号）。
 只读：导出不改号的状态、不建批次，可反复导出；导出也不影响推送、拉取。
 """
 
@@ -15,8 +15,9 @@ from app.core import encoding as codec
 from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
-from app.db.session import db
+from app.db.session import db, marks
 from app.services import factories, files, rules, sn_import, sn_sheet
+from app.services.generate import attach_order
 
 #: 各汇总都带的枚数：暂停（单据暂停交付）
 _NOTES = "SUM(i.suspend IS NOT NULL) suspended"
@@ -168,7 +169,8 @@ def items(
     sn_from: str | None = None,
     sn_to: str | None = None,
 ) -> dict:
-    """明细：逐枚列出该单据的全部已分配号（不按号段合并），按单据序号、流水排序，与下载文件的行顺序一致。
+    """明细：逐枚列出该单据的全部已分配号（不按号段合并），按附件项次从小到大（按数字比，空的排最后），
+    项次相同按单据序号、流水排序，与下载文件的行顺序一致。
     可只看一个物料行（bill_seq + material）或一个物料编码（只给 material），q 按完整 SN 模糊匹配；
     sn_from / sn_to 为 SN 起止号（含两端，可只给一端）：按号的流水（流水归属 PI + 十进制流水）取范围，
     起止号须是该单据已分配的号，否则没有结果。每枚带 PI、生产组织（编号与名称）、物料行、进制、流水位数、
@@ -182,13 +184,18 @@ def items(
         where += " AND i.sn LIKE %s"
         args.append(util.like_any(q.strip()))
     total = db.count("SELECT COUNT(*) FROM sn_item i" + where, *args)
+    attaches = _attaches(where, args)
+    rank = f"FIELD(i.attach_no, {marks(len(attaches))}), " if len(attaches) > 1 else ""
     rows = db.all(
         "SELECT i.sn, i.rule_version_id, i.pi_no, i.factory_code, f.factory_name, i.bill_seq, i.material_code, "
         "i.attach_no, i.length_text, i.seq_pi_no, i.seq_dec, i.status, i.delivery_mode, i.delivery_batch_no, "
         "i.suspend FROM sn_item i LEFT JOIN sn_factory f ON f.factory_code = i.factory_code"
         + where
-        + " ORDER BY i.bill_seq, i.seq_pi_no, i.seq_dec LIMIT %s, %s",
+        + " ORDER BY "
+        + rank
+        + "i.bill_seq, i.seq_pi_no, i.seq_dec LIMIT %s, %s",
         *args,
+        *(attaches if rank else []),
         page.offset,
         page.size,
     )
@@ -285,7 +292,8 @@ def _text(v):
     return v.decode("utf-8") if isinstance(v, (bytes, bytearray)) else v
 
 
-#: 下载文件的列（与 SN 查询导出不同，只列分配页需要的字段；与分配页「已分配」明细的列、顺序一致）
+#: 下载文件的列（与 SN 查询导出不同，只列分配页需要的字段；行顺序与分配页「已分配」明细一致；
+#: 明细在流水号后另有十进制流水号列，下载文件不含该列，列保持不变）
 FILE_HEADERS = [
     "PI",
     "物料编码",
@@ -319,7 +327,25 @@ def _file_row(r: dict) -> list:
     ]
 
 
+def _attaches(where: str, args: list) -> list:
+    """范围内号上的附件项次（去重），按附件项次从小到大：按数字比（与生成排号同一比较 generate.attach_order），
+    不是数字的排在数字之后、按文字比，空的排最后。明细与下载按这个先后列出。"""
+    got = db.column("SELECT DISTINCT i.attach_no FROM sn_item i" + where, *args)
+
+    def key(v) -> tuple:
+        t = (_text(v) or "").strip()
+        return (not t, attach_order(t), t)
+
+    return sorted(got, key=key)
+
+
 def _file_rows(where: str, args: list) -> Iterator[list]:
+    """按附件项次从小到大（同明细），同一附件项次内按单据序号、流水排序。"""
+    for v in _attaches(where, args):
+        yield from _attach_rows(where + " AND i.attach_no = %s", [*args, v])
+
+
+def _attach_rows(where: str, args: list) -> Iterator[list]:
     """按单据序号、流水分页读出（键集翻页，不用 OFFSET）。"""
     after: tuple | None = None
     while True:

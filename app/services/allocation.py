@@ -369,8 +369,9 @@ def bills(cu: CurrentUser, q: str | None, tab: str | None, page: util.Page) -> d
 
 
 def context(cu: CurrentUser, pi_in: str | None) -> dict:
-    """分配详情：本 PI 各单据的物料行（SN 枚数、待分配 / 待推送 / 推送失败枚数、号段、分到哪个生产组织、
-    是否对接 MES、不能分配的原因）及单据状态，各组织的推送进度（推送批次由页面分页另取）。
+    """分配详情：本 PI 各单据的物料行（附件项次、订单数量、客户 P/N、十进制流水起止、SN 枚数、
+    待分配 / 待推送 / 推送失败枚数、号段、分到哪个生产组织、是否对接 MES、不能分配的原因）及单据状态，
+    各组织的推送进度（推送批次由页面分页另取）。
     页面按左侧页签只显示相应状态的单据；勾选的物料行只分配其中待分配的号。"""
     pi = util.trim(pi_in)
     if not pi:
@@ -385,12 +386,18 @@ def context(cu: CurrentUser, pi_in: str | None) -> dict:
         "SUM(i.status = 'PENDING_ALLOC') pending, SUM(i.status = 'TO_PUSH') to_push, "
         f"SUM(i.status = 'TO_PUSH' AND d.id IS NOT NULL AND {_BROKEN}) failed, "
         "MAX(CASE WHEN i.status = 'PENDING_ALLOC' THEN i.gen_org_code END) gen_org, MAX(i.factory_code) org, "
-        "MIN(i.sn) a, MAX(i.sn) b, MAX(i.origin = 'IMPORT') imported "
+        "MIN(i.sn) a, MAX(i.sn) b, MAX(i.origin = 'IMPORT') imported, "
+        # 附件项次：号上的值（生成时写定）；导入行可有多个，同物料一样列出全部
+        "IF(MAX(i.origin = 'IMPORT'), COALESCE(GROUP_CONCAT(DISTINCT NULLIF(i.attach_no, '') "
+        "ORDER BY i.attach_no SEPARATOR ','), ''), MAX(i.attach_no)) attach_no, "
+        # 十进制流水号：本行生成的号中最小、最大的十进制流水（导入的号没有流水）
+        "MIN(CASE WHEN i.origin = 'GEN' THEN i.seq_dec END) s, MAX(CASE WHEN i.origin = 'GEN' THEN i.seq_dec END) e "
         "FROM sn_item i LEFT JOIN sn_delivery_batch d ON d.batch_no = i.delivery_batch_no "
         "WHERE i.pi_no = %s" + isql + " GROUP BY i.bill_no, i.bill_seq ORDER BY i.bill_no, i.bill_seq",
         pi,
         *iargs,
     )
+    mo = _order_lines(sorted({r["bill_no"] for r in rows}))
     names = factories.names()
     targets: dict[str, tuple[str | None, str | None]] = {}
     lines = []
@@ -405,11 +412,18 @@ def context(cu: CurrentUser, pi_in: str | None) -> dict:
         else:
             org = r["org"]
         f = factories.get(org) if org else None
+        k3 = mo.get((r["bill_no"], int(r["bill_seq"])))
         lines.append(
             {
                 "bill_no": r["bill_no"],
                 "seq": r["bill_seq"],
                 "material_code": r["material_code"],
+                "attach_no": r["attach_no"] or "",
+                # 订单数量、客户 P/N 取金蝶快照的物料行（只显示）；导入行、已不在快照的物料行为空
+                "order_qty": None if k3 is None else orders.sn_qty(k3),
+                "customer_pn": "" if k3 is None else k3["customer_pn"],
+                "start_seq": None if r["s"] is None else int(r["s"]),
+                "end_seq": None if r["e"] is None else int(r["e"]),
                 "qty": int(r["n"]),
                 "pending_alloc": pending,
                 "to_push": int(r["to_push"] or 0),
@@ -454,6 +468,19 @@ def context(cu: CurrentUser, pi_in: str | None) -> dict:
         },
         "lines": lines,
         "push": push_status(pi, facs),
+    }
+
+
+def _order_lines(bill_nos: list[str]) -> dict[tuple[str, int], dict]:
+    """这些单据在金蝶快照中的物料行：(单据编号, 序号) → 订单数量、客户 P/N（分配页物料行只显示）。"""
+    if not bill_nos:
+        return {}
+    return {
+        (r["bill_no"], int(r["seq"])): r
+        for r in db.all(
+            f"SELECT bill_no, seq, qty, customer_pn FROM sn_prd_mo WHERE bill_no IN ({marks(len(bill_nos))})",
+            *bill_nos,
+        )
     }
 
 

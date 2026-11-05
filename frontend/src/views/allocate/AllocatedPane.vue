@@ -18,10 +18,11 @@
           </el-tooltip>
         </div>
 
-        <!-- 每页条数按高度算，正好放满，不出滚动条 -->
+        <!-- 每页条数按高度算，正好放满，不出滚动条；PI 列宽按内容量出，完整显示；
+             流水号后为十进制流水号；行按附件项次从小到大（后台排好，与下载文件同一顺序） -->
         <div ref="box" class="ap-table">
           <el-table v-loading="sns.state.loading" :data="sns.items.value" size="small" class="fit-table" :empty-text="t('common.empty')">
-            <el-table-column prop="pi_no" label="PI" min-width="76" show-overflow-tooltip />
+            <el-table-column prop="pi_no" label="PI" :min-width="piW" />
             <el-table-column prop="material_code" :label="t('common.material')" min-width="86" show-overflow-tooltip />
             <el-table-column :label="t('common.sn')" min-width="170" show-overflow-tooltip>
               <template #default="{ row }">
@@ -32,6 +33,7 @@
             <el-table-column :label="t('rules.seqDigits')" min-width="66" align="right"><template #default="{ row }">{{ row.seq_len ?? "—" }}</template></el-table-column>
             <el-table-column :label="t('common.seqBase')" min-width="66" align="right"><template #default="{ row }">{{ row.base ?? "—" }}</template></el-table-column>
             <el-table-column :label="t('rules.seqNo')" min-width="76"><template #default="{ row }"><span class="sn-mono">{{ row.seq_text }}</span></template></el-table-column>
+            <el-table-column :label="t('generate.seqDec')" min-width="96" align="right"><template #default="{ row }"><span class="sn-mono">{{ row.seq_dec ?? "—" }}</span></template></el-table-column>
             <el-table-column :label="t('common.attachNo')" min-width="66" show-overflow-tooltip><template #default="{ row }">{{ row.attach_no || "—" }}</template></el-table-column>
             <el-table-column :label="t('common.length')" min-width="56" show-overflow-tooltip><template #default="{ row }">{{ row.length || "—" }}</template></el-table-column>
             <el-table-column :label="t('common.unit')" min-width="66" show-overflow-tooltip><template #default="{ row }">{{ row.unit || "—" }}</template></el-table-column>
@@ -48,14 +50,15 @@
 
 <script setup lang="ts">
 /** SN 分配页「已分配」页签的右侧（F-14 SN 导出）：左侧点一张单据后，逐枚列出该单据记载的已分配号（PI、物料编码、完整 SN、
- *  流水位数、进制位数（规则进制 10 / 16 / 32 / 36）、流水号、附件项次、米数、产品单位、生产组织编号、生产组织），头部按物料编码、SN 起止号筛选，
- *  分页；可按同一筛选下载范围内的号（xlsx），只读、可反复下载。
+ *  流水位数、进制位数（规则进制 10 / 16 / 32 / 36）、流水号、十进制流水号、附件项次、米数、产品单位、生产组织编号、生产组织），
+ *  按附件项次从小到大（项次相同按单据序号、流水），头部按物料编码、SN 起止号筛选，分页；可按同一筛选下载范围内的号（xlsx），只读、可反复下载。
  *  与分配后的推送、拉取相互独立：推送成败都不影响列出和下载。 */
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { ElMessage } from "element-plus";
 import { api, urls } from "@/api";
 import { useFitRows } from "@/composables/useFitRows";
+import { colWidth, textWidth } from "@/colWidth.js";
 import { usePaged } from "@/composables/usePaged";
 import { downloadWithToken } from "@/utils/download";
 
@@ -71,7 +74,7 @@ interface SnRow {
   base: number | null;
   seq_len: number | null;
   seq_text: string;
-  seq_dec: number;
+  seq_dec: number | null;
   attach_no: string;
   length: string;
   unit: string;
@@ -100,6 +103,9 @@ const { rows } = useFitRows(box, (n) => {
   sns.load(1);
 });
 const ready = computed(() => rows.value > 0);
+
+/** PI 列宽：按本单据 PI（及本页各行）量出，PI 完整显示、不截断。 */
+const piW = computed(() => colWidth("PI", [props.pi, ...sns.items.value.map((r) => r.pi_no)].map((v) => textWidth(v))));
 
 function resetFilter() {
   material.value = "";

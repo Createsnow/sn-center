@@ -145,6 +145,37 @@ def test_detail_filters_one_bill_line(w, api):
     assert get_file(api, w.admin, pi=pi, bill_no=bill, sn_from="NOPE").json()["code"] == "EXPORT_NOTHING"
 
 
+def test_detail_and_file_sorted_by_attach_no(w, api):
+    """分配页「已分配」明细按附件项次从小到大（按数字比：2 在 10 前，不是数字的排后），项次相同按单据序号、流水；
+    分页跨项次衔接；下载文件同一顺序；明细带十进制流水号。"""
+    org = w.org(uid("O")[:10])
+    pi, bill = uid("PI"), uid("MO")
+    w.order(bill, org, "C1", pi, ("M1", 2, "100", "10"), ("M2", 3, "100", "2"), ("M3", 1, "100", "A"), ("M4", 1))
+    ok(w.bind_pi(pi, w.rule(P())))
+    w.generate(pi)
+    w.allocate(pi)
+    url = f"/api/export/items?pi={pi}&bill_no={bill}&factory_code={org}"
+    got = ok(api.get(url, w.admin))["items"]
+    assert [(x["attach_no"], x["bill_seq"]) for x in got] == [
+        ("1", 4),
+        ("2", 2),
+        ("2", 2),
+        ("2", 2),
+        ("10", 1),
+        ("10", 1),
+        ("A", 3),
+    ]
+    assert all(isinstance(x["seq_dec"], int) for x in got), "带十进制流水号"
+    paged = [x["sn"] for p in (1, 2, 3, 4) for x in ok(api.get(url + f"&page_size=2&page={p}", w.admin))["items"]]
+    assert paged == [x["sn"] for x in got], "分页顺序不变"
+    assert [x["line_no"] for x in ok(api.get(url + "&page_size=2&page=3", w.admin))["items"]] == [5, 6]
+    rows = xlsx_rows(get_file(api, w.admin, pi=pi, bill_no=bill, factory_code=org).content)
+    assert rows[0] == sn_export.FILE_HEADERS, "下载文件的列不变"
+    assert [r[2] for r in rows[1:]] == [x["sn"] for x in got], "下载文件同一顺序"
+    m2 = ok(api.get(url + "&material=M2", w.admin))["items"]
+    assert [x["sn"] for x in m2] == [x["sn"] for x in got[1:4]], "筛选后同样按附件项次"
+
+
 def test_push_failure_does_not_affect_export(w, api):
     """导出与推送相互独立：推送失败、批次未确认时照常列出、下载，号段也不按推送状态拆开。"""
     org, pi, bill = ready(w, 13, mes=True, batch_size=5)
