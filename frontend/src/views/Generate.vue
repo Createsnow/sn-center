@@ -144,7 +144,8 @@
             <el-tag v-if="b.state.open_alerts" size="small" type="warning">{{ t("generate.openAlerts", { n: b.state.open_alerts }) }}</el-tag>
             <span class="push muted num">{{ t("generate.billCounts", { total: num(b.total_qty), gen: num(b.generated_qty), quota: num(b.quota) }) }}</span>
           </div>
-          <!-- 列宽按抽屉宽度排满、不出横向滚动条：数字列收窄；不显示 SN 范围列（号段看生成记录） -->
+          <!-- 列依次为附件项次、行号、物料编码、客户 P/N、米数、产品单位、数量、已生成、已分配、可生成、状态、开始 / 结束 SN 号、操作；
+               数字列收窄；行按附件项次从小到大（shownBills） -->
           <el-table v-if="b.shown.length" v-show="!isFolded(b.bill_no)" :data="b.shown" size="small" class="lines" :row-class-name="lineClass" @row-click="onLineClick">
             <el-table-column width="44">
               <template #default="{ row }">
@@ -154,7 +155,6 @@
                 </span>
               </template>
             </el-table-column>
-            <el-table-column :label="t('common.billSeq')" prop="seq" width="48" />
             <el-table-column :label="t('common.attachNo')" width="88">
               <template #default="{ row }">
                 <!-- 金蝶有值也可改（页面值优先，留空即改回金蝶值）；生成时单据内按附件项次从小到大排号 -->
@@ -166,10 +166,15 @@
                 </span>
               </template>
             </el-table-column>
+            <el-table-column :label="t('common.lineNo')" prop="seq" width="56" />
             <el-table-column :label="t('common.material')" min-width="88" show-overflow-tooltip>
               <template #default="{ row }">
                 {{ row.material_code || t("generate.noMaterial") }}
               </template>
+            </el-table-column>
+            <!-- 客户 P/N：金蝶只显示字段，不参与生成 -->
+            <el-table-column :label="t('orders.customerPn')" min-width="80" show-overflow-tooltip>
+              <template #default="{ row }">{{ row.customer_pn || "—" }}</template>
             </el-table-column>
             <el-table-column :label="t('common.length')" width="76">
               <template #default="{ row }">
@@ -210,6 +215,13 @@
                 </div>
                 <el-tag v-else size="small" :type="LINE_STATE_TAG[lineState(row)]" disable-transitions>{{ t(`generate.lineState.${lineState(row)}`) }}</el-tag>
               </template>
+            </el-table-column>
+            <!-- 开始 / 结束 SN 号：物料行现有号中最小、最大的完整 SN（与分配页物料行同一口径）；还没有号为「—」 -->
+            <el-table-column :label="t('generate.startSn')" :min-width="snW">
+              <template #default="{ row }"><span class="sn-mono">{{ row.start_sn || "—" }}</span></template>
+            </el-table-column>
+            <el-table-column :label="t('generate.endSn')" :min-width="snW">
+              <template #default="{ row }"><span class="sn-mono">{{ row.end_sn || "—" }}</span></template>
             </el-table-column>
             <!-- 操作列按页签：待处理只有选规则；可生成有选规则和（有号时）删号；已生成只有删号（状态不限，已分配的也可删） -->
             <el-table-column :label="t('common.actions')" width="80" align="right">
@@ -292,7 +304,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { api } from "@/api";
 import { ApiError } from "@/api/http";
 import {
-  billMark, dupAttach, emptySel, genLimit, genOrder, lineOrder, scopeBody, selectedLines, seqSource, toggleBill, toggleLine,
+  billMark, dupAttach, emptySel, genLimit, genOrder, lineOrder, lineSort, scopeBody, selectedLines, seqSource, toggleBill, toggleLine,
 } from "@/genScope.js";
 import { useFactories } from "@/composables/useFactories";
 import { useTime } from "@/composables/useTime";
@@ -660,7 +672,8 @@ const filterCount = computed(() =>
 const shownBills = computed(() => {
   const ok = FILTER_OK[lineFilter.value];
   return (ctx.value?.bills ?? [])
-    .map((b: any) => ({ ...b, shown: b.lines.filter(ok) }))
+    // 单据内物料行按附件项次从小到大列出（已保存的附件项次，与生成排号同一比较；未填的排最后，项次相同按行号）
+    .map((b: any) => ({ ...b, shown: lineSort(b.lines.filter(ok)) }))
     // 已不在快照的单据（没有物料行、只有号）列在「已生成」
     .filter((b: any) => b.shown.length || (!b.lines.length && lineFilter.value === "GENERATED"));
 });
@@ -675,6 +688,14 @@ function toggleFold(no: string) {
 function foldAll(on: boolean) {
   folded.value = new Set(on ? (ctx.value?.bills ?? []).map((b: any) => b.bill_no as string) : []);
 }
+
+/** 物料行开始 / 结束 SN 号列宽：按本 PI 全部物料行的完整 SN 量出（切页签时不跳动），SN 完整显示。 */
+const snW = computed(() =>
+  Math.max(
+    colWidth(t("generate.startSn"), allLines.value.map((l) => textWidth(l.start_sn || "—", { mono: true }))),
+    colWidth(t("generate.endSn"), allLines.value.map((l) => textWidth(l.end_sn || "—", { mono: true }))),
+  ),
+);
 
 const {
   draftOf, setDraft, saveAttach, saveLength, saveUnit,

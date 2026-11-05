@@ -136,6 +136,20 @@ export function genOrder(lines, attachOf) {
 }
 
 /**
+ * 生成页单据下物料行的显示顺序：按附件项次（line.attach_no，已保存的生效值）从小到大（compareAttach），
+ * 附件项次为空的排在最后，项次相同按行号（单据序号）从小到大。只管显示，不影响勾选与排号。返回新数组。
+ */
+export function lineSort(lines) {
+  const attach = (l) => String(l.attach_no ?? "").trim();
+  return [...lines].sort((a, b) => {
+    const x = attach(a);
+    const y = attach(b);
+    if (!x !== !y) return x ? -1 : 1;
+    return compareAttach(x, y) || a.seq - b.seq;
+  });
+}
+
+/**
  * 同一单据内附件项次相同（按数字比相同）的物料行：[{ bill_no, attach, lines }]，lines 按行号从小到大；
  * 附件项次为空的不算。按 lines 中的先后列出。
  */

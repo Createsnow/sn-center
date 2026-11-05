@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :model-value="modelValue" :title="t('generate.genTitle')" width="min(1180px, 96vw)" @update:model-value="(v: boolean) => emit('update:modelValue', v)">
+  <el-dialog :model-value="modelValue" :title="t('generate.genTitle')" width="min(1380px, 96vw)" @update:model-value="(v: boolean) => emit('update:modelValue', v)">
     <template v-if="preview?.generatable">
       <!-- 手动起止号：提示用了多少个空闲流水、溢出多少枚从最大号之后接着编 -->
       <el-alert v-if="preview.seq?.mode === 'RANGE'" :type="preview.overflow_qty ? 'warning' : 'info'" :closable="false" show-icon class="usage"
@@ -10,10 +10,14 @@
           {{ t("generate.attachDupItem", { bill: g.bill_no, attach: g.attach, seqs: g.lines.map((l: any) => l.seq).join("、") }) }}
         </div>
       </el-alert>
-      <!-- 列依次为物料编码、前缀、进制、流水位数、流水号（起 ~ 止）、附件项次、米数、产品单位、开始 / 结束 SN；
+      <!-- 列依次为物料编码、订单数量（物料行的订单数量）、前缀、进制、流水位数、流水号（起 ~ 止）、十进制流水号（起 ~ 止）、
+           附件项次、米数、产品单位、开始 / 结束 SN；
            米数、产品单位为写进 SN 的值，规则不带时为「—」 -->
       <el-table :data="preview.items" size="small" max-height="320">
         <el-table-column :label="t('common.material')" prop="material_code" min-width="110" show-overflow-tooltip />
+        <el-table-column :label="t('generate.orderQty')" width="76" align="right">
+          <template #default="{ row }"><span class="num">{{ row.line_qty == null ? "—" : num(row.line_qty) }}</span></template>
+        </el-table-column>
         <el-table-column :label="t('rules.prefix')" min-width="80" show-overflow-tooltip>
           <template #default="{ row }"><span class="sn-mono">{{ row.prefix ?? "—" }}</span></template>
         </el-table-column>
@@ -26,6 +30,11 @@
         <el-table-column :label="t('rules.seqNo')" min-width="150">
           <template #default="{ row }">
             <div v-for="(g, i) in segsOf(row)" :key="i" class="sn-mono">{{ seqRange(g) }}</div>
+          </template>
+        </el-table-column>
+        <el-table-column :label="t('generate.seqDec')" min-width="120">
+          <template #default="{ row }">
+            <div v-for="(g, i) in segsOf(row)" :key="i" class="sn-mono">{{ decRange(g) }}</div>
           </template>
         </el-table-column>
         <el-table-column :label="t('common.attachNo')" prop="attach" min-width="80" show-overflow-tooltip />
@@ -56,8 +65,8 @@
 </template>
 
 <script setup lang="ts">
-/** 确认生成：只列本次各物料行的物料编码、前缀、进制、流水位数、流水号、附件项次、米数、产品单位与开始 / 结束 SN；
- *  用空号段时一个物料行可有几段号，每段一行（流水号、开始 / 结束 SN 对齐）；手动起止号时顶部提示用了多少个空闲流水、
+/** 确认生成：只列本次各物料行的物料编码、订单数量、前缀、进制、流水位数、流水号、十进制流水号、附件项次、米数、产品单位与开始 / 结束 SN；
+ *  用空号段时一个物料行可有几段号，每段一行（流水号、十进制流水号、开始 / 结束 SN 对齐）；手动起止号时顶部提示用了多少个空闲流水、
  *  溢出多少枚从最大号之后接着编；
  *  同一单据内附件项次相同时顶部提示将按行号（单据序号）从小到大生成；
  *  超过单次默认上限（unlockLimit > 0）时须先勾选解除限制。确认后由父组件凭预演令牌生成。 */
@@ -76,6 +85,11 @@ const segsOf = (row: any): any[] => row.seg_list || [row];
 function seqRange(g: any): string {
   if (!g.start_seq_text) return "—";
   return g.start_seq_text === g.end_seq_text ? g.start_seq_text : `${g.start_seq_text} ~ ${g.end_seq_text}`;
+}
+/** 一段号的十进制流水号：起 ~ 止，只有一枚时只写一个。 */
+function decRange(g: any): string {
+  if (g.start_seq == null) return "—";
+  return g.start_seq === g.end_seq ? String(g.start_seq) : `${g.start_seq} ~ ${g.end_seq}`;
 }
 /** 溢出部分从哪个十进制流水起编：max(原最大号, 止号) + 1。 */
 const overflowFrom = computed(() => {

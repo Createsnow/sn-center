@@ -85,6 +85,7 @@ M = {
 "common.materialName": ("物料名称", "Material name", "Tên vật tư"),
 "common.billNo": ("单据编号", "Bill No.", "Số chứng từ"),
 "common.billSeq": ("单据序号", "Line No.", "Số dòng"),
+"common.lineNo": ("行号", "Line No.", "Số dòng"),
 "common.length": ("米数", "Length (m)", "Số mét"),
 "common.unit": ("产品单位", "Unit", "Đơn vị"),
 "common.attachNo": ("附件项次", "Attachment item", "Hạng mục đính kèm"),

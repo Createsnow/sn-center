@@ -948,6 +948,30 @@ def test_generate_context_bill_alloc_state(w, api):
     assert states()[b4] == ("ALLOCATED", 0, 0), "推送完成后为已分配"
 
 
+def test_generate_context_line_start_end_sn(w, api, sql):
+    """生成详情各物料行带开始 / 结束 SN 号（该行现有号中最小、最大的完整 SN，与分配页同一口径）；还没有号为 None；
+    删号后随现有号变化。"""
+    org, pi, bill = mk(w, ("M1", 3), ("M2", 2), ("M3", 1))
+    ok(w.bind_pi(pi, w.rule(P())))
+    w.generate(pi, lines=[(bill, 1), (bill, 2)])
+
+    def got() -> dict[int, tuple]:
+        ctx = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))
+        (b,) = [x for x in ctx["bills"] if x["bill_no"] == bill]
+        return {x["seq"]: (x["start_sn"], x["end_sn"]) for x in b["lines"]}
+
+    def sns(seq: int) -> list[str]:
+        return sorted(
+            r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE bill_no = %s AND bill_seq = %s", bill, seq)
+        )
+
+    s1, s2 = sns(1), sns(2)
+    assert len(s1) == 3 and len(s2) == 2
+    assert got() == {1: (s1[0], s1[-1]), 2: (s2[0], s2[-1]), 3: (None, None)}
+    ok(w.delete(pi, start_sn=s1[-1], end_sn=s1[-1], reason="t"))
+    assert got()[1] == (s1[0], s1[-2]), "删掉最大的号后结束 SN 号随之变化"
+
+
 def test_interrupted_job_recovered_only_after_owner_exits(w, sql):
     """多实例：执行生成的实例退出后（PI 操作锁随连接释放）定期回收把 RUNNING 任务标为中断并释放 PI；
     锁还被持有（仍在执行）时不动它。"""

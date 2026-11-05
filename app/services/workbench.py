@@ -290,18 +290,26 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
         )
         v["issues"] = x.issues
         b["lines"].append(v)
-    # 各单据挂在本 PI 下本系统生成的号：待分配、待推送枚数（单据分配状态与分配页左侧同一口径），一次取出；
+    # 各单据挂在本 PI 下本系统生成的号：待分配、待推送枚数（单据分配状态与分配页左侧同一口径），
+    # 及各物料行现有号的开始 / 结束 SN 号（最小、最大的完整 SN，与分配页物料行同一口径），按物料行一次取出；
     # 导入的号不在生成页，不计（否则只有导入号的单据分配后会在「可生成」页签置灰）
     isql, iargs = factories.item_scope_sql(facs)
-    items = {
-        r["bill_no"]: (int(r["pending"] or 0), int(r["to_push"] or 0))
-        for r in db.all(
-            "SELECT bill_no, SUM(status = 'PENDING_ALLOC') pending, SUM(status = 'TO_PUSH') to_push FROM sn_item "
-            "WHERE pi_no = %s AND origin = 'GEN'" + isql + " GROUP BY bill_no",
-            pi,
-            *iargs,
-        )
-    }
+    items: dict[str, tuple[int, int]] = {}
+    line_sn: dict[tuple[str, int], tuple[str, str]] = {}
+    for r in db.all(
+        "SELECT bill_no, bill_seq, SUM(status = 'PENDING_ALLOC') pending, SUM(status = 'TO_PUSH') to_push, "
+        "MIN(sn) a, MAX(sn) b FROM sn_item "
+        "WHERE pi_no = %s AND origin = 'GEN'" + isql + " GROUP BY bill_no, bill_seq",
+        pi,
+        *iargs,
+    ):
+        p, q = items.get(r["bill_no"], (0, 0))
+        items[r["bill_no"]] = (p + int(r["pending"] or 0), q + int(r["to_push"] or 0))
+        line_sn[(r["bill_no"], int(r["bill_seq"]))] = (r["a"], r["b"])
+    for b in bills.values():
+        for v in b["lines"]:
+            a, z = line_sn.get((v["bill_no"], v["seq"]), (None, None))
+            v["start_sn"], v["end_sn"] = a, z
     # 已出号但不在快照（或号挂在本 PI 下）的单据
     in_pi = set(db.column("SELECT DISTINCT bill_no FROM sn_prd_mo WHERE pi = %s", pi))
     other = sorted(no for no in items if no not in in_pi)

@@ -167,6 +167,8 @@ M = {
 "generate.attachAutoSaved": ("已按点选顺序填写 {n} 行附件项次，可在表格里修改", "Filled the attachment no. of {n} line(s) in click order; you can change them in the table", "Đã điền số hạng mục đính kèm cho {n} dòng theo thứ tự chọn; có thể sửa trong bảng"),
 "generate.startSn": ("开始 SN 号", "Start SN", "SN bắt đầu"),
 "generate.endSn": ("结束 SN 号", "End SN", "SN kết thúc"),
+"generate.orderQty": ("订单数量", "Order qty", "Số lượng đơn hàng"),
+"generate.seqDec": ("十进制流水号", "Decimal serial No.", "Số thứ tự thập phân"),
 "generate.goAllocate": ("去分配", "Allocate", "Phân bổ"),
 "generate.more": ("更多", "More", "Thêm"),
 "generate.revokeConfig": ("撤销配置", "Revoke config", "Thu hồi cấu hình"),

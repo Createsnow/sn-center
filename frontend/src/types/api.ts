@@ -170,6 +170,9 @@ export interface OrderLine {
   synced_at: string;
   /** 生成页才有：不能生成的原因代码 */
   issues?: string[];
+  /** 生成页才有：物料行现有号中最小、最大的完整 SN（开始 / 结束 SN 号），还没有号为 null */
+  start_sn?: string | null;
+  end_sn?: string | null;
 }
 
 export interface OrderBill extends BillState {

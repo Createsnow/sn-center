@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  billMark, compareAttach, defaultRulePrefix, dupAttach, emptySel, genLimit, genOrder, lineOrder, scopeBody, selectedLines,
+  billMark, compareAttach, defaultRulePrefix, dupAttach, emptySel, genLimit, genOrder, lineOrder, lineSort, scopeBody, selectedLines,
   seqSource, toggleBill, toggleLine,
 } from "./genScope.js";
 
@@ -97,4 +97,14 @@ test("duplicate attachment numbers are grouped per bill", () => {
   const of = (l) => att[`${l.bill_no}#${l.seq}`];
   const lines = [L("A", 2), L("A", 1), L("A", 3), L("B", 1), L("B", 2), L("B", 3)];
   assert.deepEqual(dupAttach(lines, of), [{ bill_no: "A", attach: "01", lines: [L("A", 1), L("A", 2)] }], "空项次不算重复，跨单据不算");
+});
+
+test("bill lines are listed by attachment no. (numeric), empty last, ties by line no.", () => {
+  const A = (seq, attach_no) => ({ bill_no: "A", seq, attach_no });
+  const lines = [A(1, "10"), A(2, ""), A(3, "2"), A(4, "2"), A(5, null), A(6, "1"), A(7, "X")];
+  assert.deepEqual(
+    lineSort(lines).map((l) => l.seq),
+    [6, 3, 4, 1, 7, 2, 5],
+  );
+  assert.equal(lines[0].seq, 1, "不改原数组");
 });
