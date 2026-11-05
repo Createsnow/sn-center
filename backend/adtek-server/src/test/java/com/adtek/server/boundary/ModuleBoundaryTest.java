@@ -15,8 +15,10 @@ import com.tngtech.archunit.lang.ArchCondition;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.io.IOException;
 import java.net.URL;
@@ -27,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * 模块边界门禁：一个业务模块的改动不能改变其他模块的运行时行为。
@@ -183,6 +186,49 @@ class ModuleBoundaryTest {
                                 }
                             }
                         });
+        assertThat(violations).isEmpty();
+    }
+
+    @Test
+    void controllersLiveInControllerPackages() {
+        noClasses()
+                .that()
+                .areMetaAnnotatedWith("org.springframework.stereotype.Controller")
+                .should()
+                .resideOutsideOfPackage("..controller..")
+                .because("route ownership is checked on controller packages")
+                .allowEmptyShould(true)
+                .check(classes);
+    }
+
+    /** 控制器类级 @RequestMapping 必须位于 /api/v1/{本模块名}，方法级路径只能在其下追加，不能占用其他模块的路由。 */
+    @Test
+    void controllerRoutesStayUnderTheirModulePrefix() throws ClassNotFoundException {
+        List<String> violations = new ArrayList<>();
+        for (JavaClass type : classes) {
+            if (!type.isMetaAnnotatedWith("org.springframework.stereotype.Controller")) {
+                continue;
+            }
+            Class<?> controller = Class.forName(type.getName());
+            String module = ModuleOrigin.of(controller).orElse("?");
+            Pattern allowed = Pattern.compile("/api/v1/" + Pattern.quote(module) + "(/[^$]*)?");
+            RequestMapping mapping =
+                    AnnotatedElementUtils.findMergedAnnotation(controller, RequestMapping.class);
+            String[] paths = mapping == null ? new String[0] : mapping.path();
+            if (paths.length == 0) {
+                violations.add(
+                        type.getName()
+                                + " needs a class-level @RequestMapping(\"/api/v1/"
+                                + module
+                                + "/...\")");
+            }
+            for (String path : paths) {
+                if (!allowed.matcher(path).matches()) {
+                    violations.add(
+                            type.getName() + " maps " + path + " outside /api/v1/" + module + "/");
+                }
+            }
+        }
         assertThat(violations).isEmpty();
     }
 
