@@ -4,5 +4,24 @@
   "shell": {
     "title": "Project template skeleton",
     "description": "This template contains only the architecture, conventions and code structure. Add features under src/features as described in docs/03-代码结构.md."
+  },
+  "error": {
+    "common": {
+      "invalidRequest": "The request is invalid. Please check it and try again.",
+      "unauthenticated": "Your session has expired. Please sign in again.",
+      "forbidden": "You do not have permission to perform this action.",
+      "notFound": "The requested item does not exist or is not visible to you.",
+      "methodNotAllowed": "This request method is not supported.",
+      "conflict": "The data has been changed or already exists. Please refresh and try again.",
+      "payloadTooLarge": "The submitted content is too large.",
+      "unsupportedMediaType": "This content type is not supported.",
+      "tooManyRequests": "Too many requests. Please try again later.",
+      "internalError": "Internal server error. Please contact the administrator with the trace ID.",
+      "dependencyUnavailable": "The service is temporarily unavailable. Please try again later."
+    },
+    "client": {
+      "network": "Cannot reach the server. Please check your network and try again.",
+      "invalidResponse": "The server returned an unrecognized response."
+    }
   }
 }

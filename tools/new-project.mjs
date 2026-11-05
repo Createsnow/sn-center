@@ -72,7 +72,9 @@ const replacements = new Map([
   ['15183', ports['web-port']],
   ['18080', ports['deploy-port']],
 ]);
-const pattern = new RegExp([...replacements.keys()].join('|'), 'g');
+// 镜像摘要（sha256:...）整体匹配并原样保留，避免其中偶然出现的端口数字被替换。
+const digest = /^sha256:[0-9a-f]{64}$/;
+const pattern = new RegExp(['sha256:[0-9a-f]{64}', ...replacements.keys()].join('|'), 'g');
 const textExtensions = new Set([
   '.java',
   '.xml',
@@ -86,6 +88,8 @@ const textExtensions = new Set([
   '.conf',
   '.bat',
   '.mjs',
+  '.md',
+  '.sql',
   '.example',
 ]);
 const keepBytes = new Set(['new-project.mjs', 'pnpm-lock.yaml', 'images.lock.json']);
@@ -100,15 +104,17 @@ for (const relative of files) {
   if (!target.startsWith(targetRoot + sep)) fail('Tracked path leaves destination.');
   mkdirSync(dirname(target), { recursive: true });
   const fileName = basename(relative);
+  // 全部跟踪的文本文件（含 README、docs、.gitlab-ci.yml）都替换；锁文件与本脚本保持原字节。
   const rewrite =
-    /^(backend|frontend|tools|deploy)\//.test(relative) &&
     !keepBytes.has(fileName) &&
     (fileName === 'Dockerfile' || textExtensions.has(extname(relative)));
   if (rewrite) {
     const content = readFileSync(source, 'utf8');
     writeFileSync(
       target,
-      content.replace(pattern, (match) => replacements.get(match)),
+      content.replace(pattern, (match) =>
+        digest.test(match) ? match : (replacements.get(match) ?? match),
+      ),
       'utf8',
     );
     // 保留可执行位（如 deploy/init-secrets.sh）。

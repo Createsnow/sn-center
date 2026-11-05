@@ -132,12 +132,30 @@ class ArchitectureTest {
     @Test
     void classNamesMatchTheirLayer() {
         requireSuffix("..controller..", "Controller");
+        requireSuffix("..service.impl..", "ServiceImpl");
         requireSuffix("..mapper..", "Mapper");
         requireSuffix("..domain..", "Entity");
         requireSuffix("..dto..", "DTO");
         requireSuffix("..query..", "Query");
         requireSuffix("..vo..", "VO");
         requireSuffix("..convert..", "Convert");
+    }
+
+    @Test
+    void serviceLayerExposesOnlyServiceInterfaces() {
+        classes()
+                .that()
+                .resideInAPackage("..service")
+                .and()
+                .areTopLevelClasses()
+                .and()
+                .doNotHaveSimpleName("package-info")
+                .should()
+                .beInterfaces()
+                .andShould()
+                .haveSimpleNameEndingWith("Service")
+                .allowEmptyShould(true)
+                .check(classes);
     }
 
     private static void requireSuffix(String layer, String suffix) {

@@ -4,8 +4,9 @@ Adtek 新项目的工程模板：React / Spring Boot 前后端同仓，模块化
 
 ## 包含内容
 
-- **后端骨架**：Maven 多模块 `common → framework → system / sample → server`，每个分层包附 `package-info.java` 说明职责；`ArchitectureTest` 强制模块边界、分层方向、命名后缀与 Mapper 规则。
-- **前端骨架**：React 19 + TypeScript strict + Vite + Ant Design + TanStack Query + i18next（zh-CN/en/vi）的应用外壳与目录约定。
+- **后端骨架**：Maven 多模块 `common → framework → system / sample → server`，每个分层包附 `package-info.java` 说明职责；`ArchitectureTest` 强制模块边界、分层方向、命名后缀与 Mapper 规则，`ErrorCodeCatalogTest` 强制错误码号段与三语翻译。
+- **公共基础**：`Result` 信封、`ErrorCode`/`CommonErrorCode`、`BusinessException`、`PageResult`；全局异常处理、traceId 过滤器、默认拒绝的 `SecurityConfiguration` 骨架；V1 基线迁移与 Testcontainers 集成测试 `PlatformIT`。认证机制、数据范围、审计与任务等业务相关设施由项目按规范实现。
+- **前端骨架**：React 19 + TypeScript strict + Vite + Ant Design + TanStack Query + i18next（zh-CN/en/vi）的应用外壳、目录约定与统一 API 客户端（`src/api/client.ts`，信封运行时校验）。
 - **工程化**：锁定的依赖与镜像版本、格式化与检查（Spotless、Checkstyle、Enforcer、ESLint、Prettier）、Windows 批处理脚本、Linux Compose 部署、GitLab CI、新项目复制脚本。不使用 PowerShell。
 - **文档**：架构、技术栈、代码结构、开发规范、风格、工程要求。
 

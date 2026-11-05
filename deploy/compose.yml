@@ -40,7 +40,8 @@ services:
         target: ADTEK_DB_PASSWORD
       - source: redis_password
         target: ADTEK_REDIS_PASSWORD
-    # 不依赖启动顺序（与 K8s 一致）：迁移自行重试连接数据库，API 就绪探针在 MySQL/Redis 可用前保持 DOWN。
+    # API 在迁移成功退出后启动（K8s：initContainer 或先执行 Job）；迁移自行重试数据库连接，
+    # API 就绪探针在 MySQL/Redis 可用前保持 DOWN，因此不依赖 mysql/redis 容器的启动顺序。
     depends_on:
       migrate:
         condition: service_completed_successfully

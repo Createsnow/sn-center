@@ -25,6 +25,12 @@
       <artifactId>mysql-connector-j</artifactId>
       <scope>runtime</scope>
     </dependency>
+    <!-- 业务模块骨架只在测试类路径上，供 ArchitectureTest 检查；不打包进 server。 -->
+    <dependency>
+      <groupId>com.adtek</groupId>
+      <artifactId>adtek-sample</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>

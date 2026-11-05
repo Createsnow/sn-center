@@ -4,5 +4,24 @@
   "shell": {
     "title": "Khung mẫu dự án",
     "description": "Mẫu này chỉ gồm kiến trúc kỹ thuật, quy chuẩn và cấu trúc mã. Thêm chức năng trong src/features theo docs/03-代码结构.md."
+  },
+  "error": {
+    "common": {
+      "invalidRequest": "Yêu cầu không hợp lệ. Vui lòng kiểm tra và thử lại.",
+      "unauthenticated": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+      "forbidden": "Bạn không có quyền thực hiện thao tác này.",
+      "notFound": "Nội dung không tồn tại hoặc bạn không được phép xem.",
+      "methodNotAllowed": "Phương thức yêu cầu này không được hỗ trợ.",
+      "conflict": "Dữ liệu đã bị thay đổi hoặc đã tồn tại. Vui lòng làm mới và thử lại.",
+      "payloadTooLarge": "Nội dung gửi lên quá lớn.",
+      "unsupportedMediaType": "Loại nội dung này không được hỗ trợ.",
+      "tooManyRequests": "Yêu cầu quá nhiều. Vui lòng thử lại sau.",
+      "internalError": "Lỗi máy chủ nội bộ. Vui lòng liên hệ quản trị viên kèm mã truy vết.",
+      "dependencyUnavailable": "Dịch vụ tạm thời không khả dụng. Vui lòng thử lại sau."
+    },
+    "client": {
+      "network": "Không thể kết nối máy chủ. Vui lòng kiểm tra mạng và thử lại.",
+      "invalidResponse": "Máy chủ trả về phản hồi không xác định."
+    }
   }
 }
