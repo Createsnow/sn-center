@@ -3,7 +3,7 @@
  * 请求体（/rules/preview、/rules/line-select 的 custom）与后台逻辑都不变。
  *
  * 组件 kind：
- * - TEXT 固定文本 / SEP 分隔符 / PI / BILL 单据编号 / DATE 日期 / DCODE 字母日期码：保存时取值，成为固定字符；
+ * - TEXT 固定文本 / SEP 分隔符 / PI / BILL 单据编号 / DATE 日期：保存时取值，成为固定字符；
  * - SEQ 流水（进制、位数、起始号）：必须且只有一个；
  * - LEN 米数（补 0 位数）、UNIT 单位：各最多一个，生成时取物料行的值。
  *
@@ -18,7 +18,7 @@
  *   sep_before: string, sep_after: string, with_unit: boolean, suffix: string, seq_start: number|null }} CustomSpec
  */
 
-export const KINDS = ["TEXT", "SEP", "PI", "BILL", "DATE", "DCODE", "SEQ", "LEN", "UNIT"];
+export const KINDS = ["TEXT", "SEP", "PI", "BILL", "DATE", "SEQ", "LEN", "UNIT"];
 /** 只能有一个的组件 */
 export const SINGLE = ["SEQ", "LEN", "UNIT"];
 /** 分隔符选项（不含空格：前缀、后缀首尾的空格后台会去掉） */
@@ -89,7 +89,6 @@ export function newPart(kind, today = "") {
     case "PI": return withId({ kind, cut: "ALL", n: 7 });
     case "BILL": return withId({ kind, cut: "LAST", n: 7 });
     case "DATE": return withId({ kind, fmt: "YYMMDD", date: today });
-    case "DCODE": return withId({ kind, text: "" });
     case "SEQ": return withId({ kind, base: 10, len: 4, start: null });
     case "LEN": return withId({ kind, pad: 0 });
     case "UNIT": return withId({ kind });
@@ -105,7 +104,7 @@ export function defaultParts() {
 /** 保存时就定值的组件取值（SEQ / LEN / UNIT 返回 null）。 */
 export function partValue(p, ctx = {}) {
   switch (p.kind) {
-    case "TEXT": case "SEP": case "DCODE": return p.text || "";
+    case "TEXT": case "SEP": return p.text || "";
     case "PI": return cutText(ctx.pi, p.cut, p.n);
     case "BILL": return cutText(ctx.billNo, p.cut, p.n);
     case "DATE": return formatDate(p.fmt, p.date);

@@ -62,8 +62,8 @@ test("collected formats map onto the existing fields", () => {
     [[P("BILL", { cut: "ALL" }), P("SEP"), P("TEXT", { text: "SX" }), P("SEP"), P("SEQ", { len: 3 }), P("SEP"), P("LEN", { pad: 3 }), P("SEP"), P("UNIT")], 1, "26100701-SX-001-012-M"],
     // #5 年月日-Z01-流水
     [[P("DATE", { date: "2026-10-26" }), P("SEP"), P("TEXT", { text: "Z" }), P("TEXT", { text: "01" }), P("SEP"), P("SEQ", { len: 3 })], 1, "261026-Z01-001"],
-    // #7 字母日期码 + 数字标识 + 流水
-    [[P("DCODE", { text: "AVFH" }), P("TEXT", { text: "6" }), P("SEQ")], 8, "AVFH60008"],
+    // #7 字母日期码（手动输入的固定文本）+ 数字标识 + 流水
+    [[P("TEXT", { text: "AVFH" }), P("TEXT", { text: "6" }), P("SEQ")], 8, "AVFH60008"],
     // #8 CC-年月日流水-米数单位-01-04
     [[P("TEXT", { text: "CC" }), P("SEP"), P("DATE", { date: "2026-10-26" }), P("SEQ"), P("SEP"), P("LEN", { pad: 3 }), P("UNIT"), P("SEP"), P("TEXT", { text: "01" }), P("SEP"), P("TEXT", { text: "04" })], 1, "CC-2610260001-012M-01-04"],
     // #11 81 + 年周 + 4 位 32 进制（01AD = 1357）

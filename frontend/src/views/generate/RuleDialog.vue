@@ -38,7 +38,7 @@
           <span class="idx">{{ i + 1 }}</span>
           <span class="nm">{{ t(`generate.rule.part.${p.kind}`) }}</span>
           <div class="opts">
-            <el-input v-if="p.kind === 'TEXT' || p.kind === 'DCODE'" v-model="p.text" :maxlength="TEXT_MAX" size="small" class="w160" />
+            <el-input v-if="p.kind === 'TEXT'" v-model="p.text" :maxlength="TEXT_MAX" size="small" class="w160" />
             <el-select v-else-if="p.kind === 'SEP'" v-model="p.text" size="small" class="w80">
               <el-option v-for="s in SEPS" :key="s" :value="s" :label="s" />
             </el-select>

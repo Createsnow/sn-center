@@ -48,7 +48,6 @@ M = {
 "generate.rule.part.PI": ("PI", "PI", "PI"),
 "generate.rule.part.BILL": ("单据编号", "Bill No.", "Số chứng từ"),
 "generate.rule.part.DATE": ("日期", "Date", "Ngày"),
-"generate.rule.part.DCODE": ("字母日期码", "Letter date code", "Mã ngày bằng chữ"),
 "generate.rule.part.SEQ": ("流水", "Serial", "Tuần tự"),
 "generate.rule.part.LEN": ("米数", "Length", "Chiều dài"),
 "generate.rule.part.UNIT": ("单位", "Unit", "Đơn vị"),
