@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { defaultParts, formatDate, fromSpec, isoWeek, movePart, newPart, partValue, todayIn, toSpec } from "./snParts.js";
+import {
+  TEMPLATES, autoIndex, blockReason, defaultParts, formatDate, fromSpec, insertAt, isoWeek, movePart, moveTo, newErrors, newPart,
+  partValue, partsSig, sampleSegments, todayIn, toSpec,
+} from "./snParts.js";
 
 const P = (kind, extra = {}) => ({ ...newPart(kind, "2026-11-05"), ...extra });
 const ctx = { pi: "P2610-0701", billNo: "26100701" };
@@ -121,4 +124,67 @@ test("move part", () => {
   assert.deepEqual(movePart(a, 2, -1).map((p) => p.kind), ["BILL", "UNIT", "SEQ"]);
   assert.equal(movePart(a, 0, -1), a);
   assert.equal(new Set([...a, P("SEQ")].map((p) => p.id)).size, 4);
+});
+
+const kinds = (ps) => ps.map((p) => p.kind);
+
+test("moveTo / insertAt", () => {
+  const a = [P("TEXT"), P("SEP"), P("SEQ")];
+  assert.deepEqual(kinds(moveTo(a, 0, 3)), ["SEP", "SEQ", "TEXT"]);
+  assert.deepEqual(kinds(moveTo(a, 2, 0)), ["SEQ", "TEXT", "SEP"]);
+  assert.deepEqual(kinds(moveTo(a, 0, 2)), ["SEP", "TEXT", "SEQ"]);
+  assert.deepEqual(kinds(insertAt(a, 1, P("BILL"))), ["TEXT", "BILL", "SEP", "SEQ"]);
+  assert.equal(a.length, 3);
+});
+
+test("placement checks only count new errors", () => {
+  const a = [P("BILL"), P("SEQ"), P("UNIT")];
+  assert.deepEqual(newErrors(a, moveTo(a, 2, 1), ctx), ["AFTER_SEQ"]);
+  assert.deepEqual(newErrors(a, moveTo(a, 1, 0), ctx), ["UNIT_GAP", "PREFIX_EMPTY"]);
+  assert.equal(blockReason(a, "LEN", 1, ctx), "AFTER_SEQ");
+  assert.equal(blockReason(a, "LEN", 2, ctx), "");
+  assert.equal(blockReason(a, "SEP", 2, ctx), "UNIT_GAP");
+  assert.equal(blockReason(a, "UNIT", 3, ctx), "TAKEN");
+  assert.equal(blockReason(a, "TEXT", 3, ctx), "");
+  // 已有的错误不挡别的操作
+  const bad = [P("SEQ"), P("BILL")];
+  assert.deepEqual(newErrors(bad, insertAt(bad, 2, P("SEP")), ctx), []);
+});
+
+test("auto position for add", () => {
+  const a = [P("BILL"), P("SEQ"), P("SEP"), P("TEXT", { text: "A" })];
+  assert.equal(autoIndex(a, "UNIT", ctx), 2); // 放最后会隔着分隔符 → 紧跟流水
+  assert.equal(autoIndex(a, "LEN", ctx), 4);
+  assert.equal(autoIndex(a, "TEXT", ctx), 4);
+  const b = [P("BILL"), P("SEQ"), P("UNIT")];
+  assert.equal(autoIndex(b, "LEN", ctx), 2);
+  assert.equal(autoIndex([P("BILL"), P("LEN"), P("UNIT")], "SEQ", ctx), 1);
+  for (const k of ["TEXT", "SEP", "PI", "BILL", "DATE", "LEN"]) {
+    assert.deepEqual(newErrors(b, insertAt(b, autoIndex(b, k, ctx), P(k)), ctx), [], k);
+  }
+});
+
+test("common formats are valid and spell the collected samples", () => {
+  const expect = {
+    BILL_SEQ: [1, "61007010001"],
+    CS_WEEK: [1, "CS-2645-0001-012M"],
+    BILL_SX: [1, "26100701-SX-001-012-M"],
+    DATE_SEQ: [1, "26110500001"],
+    WEEK_B32: [1357, "81264501AD"],
+  };
+  for (const [k, f] of Object.entries(TEMPLATES)) {
+    const r = toSpec(f("2026-11-05"), ctx);
+    assert.deepEqual(r.errors, [], k);
+    assert.equal(sn(r.spec, expect[k][0], "12", "M"), expect[k][1], k);
+  }
+  assert.equal(partsSig(TEMPLATES.BILL_SEQ()), partsSig(defaultParts()));
+  assert.notEqual(partsSig(TEMPLATES.BILL_SEQ()), partsSig(TEMPLATES.DATE_SEQ("2026-11-05")));
+});
+
+test("sample segments colour serial, length and unit", () => {
+  const ps = TEMPLATES.CS_WEEK("2026-11-05");
+  const segs = sampleSegments(ps, ctx, "CS-2645-0001-012M", "0001", "012", "M");
+  assert.deepEqual(segs.filter((s) => s.cls).map((s) => [s.text, s.cls]), [["0001", "SEQ"], ["012", "LINE"], ["M", "LINE"]]);
+  assert.equal(segs.map((s) => s.text).join(""), "CS-2645-0001-012M");
+  assert.equal(sampleSegments(ps, ctx, "OTHER", "0001", "012", "M"), null);
 });

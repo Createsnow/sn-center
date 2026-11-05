@@ -27,68 +27,162 @@
       </el-form>
     </template>
 
-    <!-- 自定义：SN 组成（组件按顺序拼成；保存时换算成前缀 / 流水 / 米数 / 单位 / 后缀，见 snParts.js） -->
+    <!-- 自定义：SN 组成（组件按顺序拼成；保存时换算成前缀 / 流水 / 米数 / 单位 / 后缀，见 snParts.js）。
+         上方常用格式一键套用；结构条点选组件改参数、拖动调顺序、点「+」在该处插入；放不下的位置置灰或标红 -->
     <div v-else class="parts-box">
+      <div class="tpls">
+        <span class="lb">{{ t("generate.rule.tpls") }}</span>
+        <button v-for="k in TPL_KEYS" :key="k" type="button" class="tpl" :class="{ on: tplOn === k }" @click="applyTpl(k)">
+          {{ t(`generate.rule.tpl.${k}`) }}
+        </button>
+      </div>
       <div class="parts-head">
         <b>{{ t("generate.rule.parts") }}</b>
         <el-button link type="primary" size="small" @click="resetParts">{{ t("generate.rule.resetParts") }}</el-button>
       </div>
-      <div class="parts">
-        <div v-for="(p, i) in parts" :key="p.id" class="part" :class="`k-${p.kind}`">
-          <span class="idx">{{ i + 1 }}</span>
-          <span class="nm">{{ t(`generate.rule.part.${p.kind}`) }}</span>
-          <div class="opts">
-            <el-input v-if="p.kind === 'TEXT'" v-model="p.text" :maxlength="TEXT_MAX" size="small" class="w160" />
-            <el-select v-else-if="p.kind === 'SEP'" v-model="p.text" size="small" class="w80">
-              <el-option v-for="s in SEPS" :key="s" :value="s" :label="s" />
-            </el-select>
-            <template v-else-if="p.kind === 'PI' || p.kind === 'BILL'">
-              <el-select v-model="p.cut" size="small" class="w110">
-                <el-option v-for="c in CUTS" :key="c" :value="c" :label="t(`generate.rule.cut.${c}`)" />
-              </el-select>
-              <el-input-number v-if="p.cut !== 'ALL'" v-model="p.n" :min="1" :max="64" :step="1" step-strictly size="small" controls-position="right" class="w90" />
-            </template>
-            <template v-else-if="p.kind === 'DATE'">
-              <el-date-picker v-model="p.date" type="date" value-format="YYYY-MM-DD" :clearable="false" size="small" style="width: 140px" />
-              <el-select v-model="p.fmt" size="small" class="w170">
-                <el-option v-for="f in DATE_FMTS" :key="f" :value="f" :label="t(`generate.rule.dateFmt.${f}`)" />
-              </el-select>
-            </template>
-            <template v-else-if="p.kind === 'SEQ'">
-              <span class="lb">{{ t("generate.rule.base") }}</span>
-              <el-select v-model="p.base" size="small" class="w70">
-                <el-option v-for="b in BASES" :key="b" :value="b" :label="String(b)" />
-              </el-select>
-              <span class="lb">{{ t("generate.rule.seqLen") }}</span>
-              <el-input-number v-model="p.len" :min="1" :max="SEQ_LEN_MAX" :step="1" step-strictly size="small" controls-position="right" class="w80" />
-              <!-- 起始号（十进制流水，选填）：本 PI 已用这个前缀时流水接续，不能填 -->
-              <span class="lb">{{ t("generate.rule.seqStart") }}</span>
-              <el-input-number :model-value="prefixUsed ? undefined : p.start ?? undefined" :min="1" :step="1" step-strictly size="small"
-                controls-position="right" :disabled="prefixUsed" class="w130" @update:model-value="(v: any) => (p.start = v ?? null)" />
-            </template>
-            <template v-else-if="p.kind === 'LEN'">
-              <span class="lb">{{ t("generate.rule.lengthPad") }}</span>
-              <el-input-number v-model="p.pad" :min="0" :max="PAD_MAX" :step="1" step-strictly size="small" controls-position="right" class="w80" />
-            </template>
-            <span v-if="valueOf(p)" class="val sn-mono">{{ valueOf(p) }}</span>
+      <div ref="barEl" class="bar" :class="{ 'is-drag': drag?.on }" @pointerdown="onDown" @pointermove="onMove"
+        @pointerup="onUp(true)" @pointercancel="onUp(false)">
+        <span v-if="!parts.length" class="lb none">{{ t("generate.rule.noParts") }}</span>
+        <template v-for="(p, i) in parts" :key="p.id">
+          <button v-if="i > 0" type="button" class="slot" :class="slotClass(i)" :aria-label="t('generate.rule.insertAt', { n: i + 1 })"
+            @click="toggleIns(i)"><i>+</i></button>
+          <button type="button" class="chip" :class="chipClass(p, i)" :aria-pressed="p.id === selId"
+            @keydown.enter.prevent="select(p.id)" @keydown.space.prevent="select(p.id)">
+            <span class="v sn-mono" :class="{ blank: !chipValue(p) }">{{ chipValue(p) || t("generate.rule.blank") }}</span>
+            <span class="t">{{ chipSub(p) }}</span>
+          </button>
+        </template>
+        <span class="slot last" :class="slotClass(parts.length)" />
+        <button type="button" class="add-end" :class="{ open: ins === 'END' }" @click="toggleIns('END')">＋ {{ t("generate.rule.addPart") }}</button>
+      </div>
+      <div class="legend">
+        <span class="l-FIX">{{ t("generate.rule.legend.FIX") }}</span>
+        <span class="l-SEQ">{{ t("generate.rule.legend.SEQ") }}</span>
+        <span class="l-LINE">{{ t("generate.rule.legend.LINE") }}</span>
+        <span>{{ t("generate.rule.legend.HINT") }}</span>
+      </div>
+      <div v-if="msgText" class="msg">{{ msgText }}</div>
+
+      <!-- 插入：分三组；放不下的置灰并写明原因 -->
+      <div v-if="ins !== null" class="panel">
+        <div class="panel-h">
+          <b>{{ ins === "END" ? t("generate.rule.addAuto") : t("generate.rule.insertAt", { n: ins + 1 }) }}</b>
+          <el-button link size="small" @click="ins = null">{{ t("common.cancel") }}</el-button>
+        </div>
+        <div class="pal">
+          <div v-for="g in GROUPS" :key="g.key">
+            <div class="gh">{{ t(`generate.rule.group.${g.key}`) }}</div>
+            <div class="items">
+              <button v-for="k in g.kinds" :key="k" type="button" class="it" :disabled="!!palette[k]" @click="addPart(k)">
+                {{ t(`generate.rule.part.${k}`) }}
+                <small :class="{ 'sn-mono': !palette[k] }">{{ palette[k] ? reasonText(palette[k]) : exampleOf(k) }}</small>
+              </button>
+            </div>
           </div>
-          <span class="ops">
-            <el-button link size="small" icon="ArrowUp" :disabled="i === 0" :title="t('generate.rule.moveUp')" @click="move(i, -1)" />
-            <el-button link size="small" icon="ArrowDown" :disabled="i === parts.length - 1" :title="t('generate.rule.moveDown')" @click="move(i, 1)" />
-            <el-button link size="small" icon="Close" :title="t('common.delete')" @click="remove(i)" />
-          </span>
         </div>
       </div>
-      <div class="add">
-        <el-button v-for="k in KINDS" :key="k" size="small" icon="Plus" :disabled="isSingleTaken(k)" @click="add(k)">
-          {{ t(`generate.rule.part.${k}`) }}
-        </el-button>
+
+      <!-- 选中组件的参数 -->
+      <div v-else-if="sel" class="panel">
+        <div class="panel-h">
+          <b>{{ t(`generate.rule.part.${sel.kind}`) }}</b>
+          <span class="ops">
+            <el-button link type="primary" size="small" :disabled="!canMove(-1)" @click="moveSel(-1)">{{ t("generate.rule.moveLeft") }}</el-button>
+            <el-button link type="primary" size="small" :disabled="!canMove(1)" @click="moveSel(1)">{{ t("generate.rule.moveRight") }}</el-button>
+            <el-button link type="danger" size="small" @click="removeSel">{{ t("common.delete") }}</el-button>
+          </span>
+        </div>
+        <div class="panel-b">
+          <template v-if="sel.kind === 'TEXT'">
+            <span class="k">{{ t("generate.rule.text") }}</span>
+            <span class="val"><el-input v-model="sel.text" :maxlength="TEXT_MAX" :placeholder="t('generate.rule.textPh')" size="small" class="w200" /></span>
+          </template>
+          <template v-else-if="sel.kind === 'SEP'">
+            <span class="k">{{ t("generate.rule.part.SEP") }}</span>
+            <span class="val">
+              <el-radio-group v-model="sel.text" size="small" class="mono-seg">
+                <el-radio-button v-for="s in SEPS" :key="s" :value="s">{{ s }}</el-radio-button>
+              </el-radio-group>
+            </span>
+          </template>
+          <template v-else-if="sel.kind === 'PI' || sel.kind === 'BILL'">
+            <span class="k">{{ t("generate.rule.cutBy") }}</span>
+            <span class="val">
+              <el-radio-group v-model="sel.cut" size="small">
+                <el-radio-button v-for="c in CUTS" :key="c" :value="c">{{ t(`generate.rule.cut.${c}`) }}</el-radio-button>
+              </el-radio-group>
+            </span>
+            <template v-if="sel.cut !== 'ALL'">
+              <span class="k">{{ t("generate.rule.digits") }}</span>
+              <span class="val"><el-input-number v-model="sel.n" :min="1" :max="64" :step="1" step-strictly size="small" controls-position="right" class="w90" /></span>
+            </template>
+            <span class="k">{{ t("generate.rule.source") }}</span>
+            <span class="val note">
+              {{ t(sel.kind === "PI" ? "generate.rule.sourcePI" : "generate.rule.sourceBill") }}
+              <span class="sn-mono">{{ sel.kind === "PI" ? partCtx.pi : partCtx.billNo }}</span>
+            </span>
+          </template>
+          <template v-else-if="sel.kind === 'DATE'">
+            <span class="k">{{ t("generate.rule.part.DATE") }}</span>
+            <span class="val">
+              <el-date-picker v-model="sel.date" type="date" value-format="YYYY-MM-DD" :clearable="false" size="small" style="width: 140px" />
+              <el-button link type="primary" size="small" @click="sel.date = today()">{{ t("generate.rule.today") }}</el-button>
+            </span>
+            <span class="k">{{ t("generate.rule.dateFmtLabel") }}</span>
+            <span class="val">
+              <el-radio-group v-model="sel.fmt" size="small" class="mono-seg">
+                <el-radio-button v-for="f in DATE_FMTS" :key="f" :value="f" :title="t(`generate.rule.dateFmt.${f}`)">{{ f }}</el-radio-button>
+              </el-radio-group>
+            </span>
+            <span class="k" />
+            <span class="val note">{{ t("generate.rule.dateNote") }}</span>
+          </template>
+          <template v-else-if="sel.kind === 'SEQ'">
+            <span class="k">{{ t("generate.rule.base") }}</span>
+            <span class="val">
+              <el-radio-group v-model="sel.base" size="small" class="mono-seg">
+                <el-radio-button v-for="b in BASES" :key="b" :value="b">{{ b }}</el-radio-button>
+              </el-radio-group>
+            </span>
+            <span class="k">{{ t("generate.rule.seqLen") }}</span>
+            <span class="val">
+              <el-input-number v-model="sel.len" :min="1" :max="SEQ_LEN_MAX" :step="1" step-strictly size="small" controls-position="right" class="w90" />
+              <span class="note sn-mono">{{ seqRange(sel) }}</span>
+            </span>
+            <!-- 起始号（十进制流水，选填）：本 PI 已用这个前缀时流水接续，不能填 -->
+            <span class="k">{{ t("generate.rule.seqStart") }}</span>
+            <span class="val">
+              <el-input-number :model-value="prefixUsed ? undefined : sel.start ?? undefined" :min="1" :step="1" step-strictly size="small"
+                controls-position="right" :disabled="prefixUsed" :placeholder="t('generate.rule.startPh')" class="w130"
+                @update:model-value="(v: any) => sel && (sel.start = v ?? null)" />
+              <span class="note">{{ t(prefixUsed ? "generate.rule.startUsed" : "generate.rule.startNote") }}</span>
+            </span>
+          </template>
+          <template v-else-if="sel.kind === 'LEN'">
+            <span class="k">{{ t("generate.rule.lengthPad") }}</span>
+            <span class="val">
+              <el-input-number v-model="sel.pad" :min="0" :max="PAD_MAX" :step="1" step-strictly size="small" controls-position="right" class="w90" />
+              <span class="note">{{ t("generate.rule.padNote") }}</span>
+            </span>
+          </template>
+          <template v-else-if="sel.kind === 'UNIT'">
+            <span class="k">{{ t("generate.rule.cutBy") }}</span>
+            <span class="val note">{{ t("generate.rule.unitNote") }}</span>
+          </template>
+        </div>
       </div>
+
+      <!-- 示例：最小号（第一个号，填了起始号从起始号起）与最大号，取自 /rules/preview 的第一个和最后一个 -->
       <div class="sample">
         <span class="lb">{{ t("generate.rule.sample") }}</span>
         <span v-if="errorText" class="err">{{ errorText }}</span>
         <span v-else-if="sample.error" class="err">{{ sample.error }}</span>
-        <span v-else-if="sample.sn" class="sn-mono">{{ sample.sn }}</span>
+        <template v-else-if="sample.min">
+          <span v-for="[label, s] in sampleRows" :key="label" class="rng">
+            <span class="lb">{{ t(`generate.rule.${label}`) }}</span>
+            <span class="sn sn-mono"><template v-if="s.segs"><span v-for="(g, j) in s.segs" :key="j" :class="g.cls && `s-${g.cls}`">{{ g.text }}</span></template><template v-else>{{ s.sn }}</template></span>
+          </span>
+        </template>
         <span v-else class="muted">—</span>
       </div>
     </div>
@@ -102,16 +196,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from "vue";
+import { computed, h, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { api } from "@/api";
 import { ApiError } from "@/api/http";
-import { BASES } from "@/constants";
+import { BASES, CHARSETS } from "@/constants";
 import { useTime } from "@/composables/useTime";
 import {
-  CUTS, DATE_FMTS, KINDS, PAD_MAX, SEPS, SEQ_LEN_MAX, SINGLE, TEXT_MAX,
-  fromSpec, movePart, newPart, partValue, textPart, todayIn, toSpec,
+  CUTS, DATE_FMTS, PAD_MAX, PREFIX_MAX, SEP_MAX, SEPS, SEQ_LEN_MAX, TEMPLATES, TEXT_MAX,
+  autoIndex, blockReason, fromSpec, insertAt, moveTo, newErrors, newPart, partValue, partsSig, sampleSegments, textPart, todayIn, toSpec,
 } from "@/snParts.js";
 import type { CustomRule, OrderLine } from "@/types/api";
 
@@ -123,17 +217,31 @@ type Part = {
   id: number; kind: string; text?: string; cut?: string; n?: number; fmt?: string; date?: string;
   base?: number; len?: number; start?: number | null; pad?: number;
 };
+type Seg = { text: string; cls: string };
+type Sample = { sn: string; segs: Seg[] | null };
 const props = defineProps<{ modelValue: boolean; pi: string; lines: OrderLine[]; options: any[]; rulePrefix?: RulePrefix }>();
 const emit = defineEmits<{ (e: "update:modelValue", v: boolean): void; (e: "saved"): void }>();
 const { t } = useI18n();
 const { offset } = useTime();
+
+/** 常用格式（顺序即按钮顺序） */
+const TPL_KEYS = Object.keys(TEMPLATES) as (keyof typeof TEMPLATES)[];
+/** 插入面板的分组 */
+const GROUPS = [
+  { key: "FIX", kinds: ["TEXT", "SEP"] },
+  { key: "DOC", kinds: ["PI", "BILL", "DATE"] },
+  { key: "GEN", kinds: ["SEQ", "LEN", "UNIT"] },
+];
 
 const mode = ref<"LIBRARY" | "CUSTOM">("LIBRARY");
 const kw = ref("");
 const picked = ref<any>(null);
 const newPrefix = ref("");
 const parts = ref<Part[]>([]);
-const sample = reactive({ sn: "", error: "" });
+/** 选中的组件 id；ins 为插入位置（"END" 为「+ 组件」，自动放到可用的位置），打开时下方显示插入面板 */
+const selId = ref<number | null>(null);
+const ins = ref<number | "END" | null>(null);
+const sample = reactive<{ min: Sample | null; max: Sample | null; error: string }>({ min: null, max: null, error: "" });
 const busy = ref("");
 
 /** 组件取值用的上下文：PI、点选的第一个单据编号（lines 按点选顺序，行内按钮为本行） */
@@ -144,8 +252,189 @@ const errorText = computed(() => {
   const e = built.value.errors[0];
   return e ? t(`generate.rule.err.${e.code}`, e) : "";
 });
-const valueOf = (p: Part) => partValue(p, partCtx.value) ?? "";
-const isSingleTaken = (k: string) => SINGLE.includes(k) && parts.value.some((p) => p.kind === k);
+const today = () => todayIn(offset.value);
+const sel = computed(() => parts.value.find((p) => p.id === selId.value) ?? null);
+const selIndex = computed(() => parts.value.findIndex((p) => p.id === selId.value));
+const tplOn = computed(() => {
+  const cur = partsSig(parts.value);
+  return TPL_KEYS.find((k) => partsSig(TEMPLATES[k](today())) === cur) ?? "";
+});
+
+/** 流水文本（与后台 encoding.encode_seq 相同的字符表） */
+function seqText(n: number, base: number, len: number) {
+  const cs = CHARSETS[base] ?? CHARSETS[10];
+  let s = "";
+  for (let i = 0, x = n; i < len; i++, x = Math.floor(x / base)) s = cs[x % base] + s;
+  return s;
+}
+function seqRange(p: Part) {
+  const base = Number(p.base) || 10, len = Number(p.len) || 1;
+  const cs = CHARSETS[base] ?? CHARSETS[10];
+  return t("generate.rule.seqRange", { min: seqText(1, base, len), max: cs[base - 1].repeat(len), n: (base ** len - 1).toLocaleString() });
+}
+/** 结构条上组件显示的值：保存时定值的组件取值；流水取第一个号；米数、单位取第一个物料行的 */
+function chipValue(p: Part) {
+  const v = partValue(p, partCtx.value);
+  if (v !== null) return v;
+  const l = props.lines[0];
+  if (p.kind === "SEQ") {
+    const st = Number(p.start);
+    return seqText(!prefixUsed.value && Number.isSafeInteger(st) && st > 0 ? st : 1, Number(p.base) || 10, Number(p.len) || 4);
+  }
+  if (p.kind === "LEN") return p.pad ? (l?.length ?? "").padStart(p.pad, "0") : l?.length ?? "";
+  return l?.unit ?? "";
+}
+function chipSub(p: Part) {
+  const name = t(`generate.rule.part.${p.kind}`);
+  if ((p.kind === "PI" || p.kind === "BILL") && p.cut !== "ALL") return t(`generate.rule.sub.${p.cut}`, { name, n: p.n });
+  if (p.kind === "DATE") return `${name}·${p.fmt}`;
+  if (p.kind === "SEQ") return t("generate.rule.sub.SEQ", { base: p.base, len: p.len });
+  if (p.kind === "LEN" && p.pad) return t("generate.rule.sub.LEN", { n: p.pad });
+  return name;
+}
+const chipType = (k: string) => (k === "SEQ" ? "SEQ" : k === "LEN" || k === "UNIT" ? "LINE" : k === "SEP" ? "SEP" : "FIX");
+function chipClass(p: Part, i: number) {
+  const d = drag.value?.on && drag.value.from === i;
+  return [`c-${chipType(p.kind)}`, { sel: p.id === selId.value, dragging: d, bad: d && !drag.value?.ok }];
+}
+function slotClass(i: number) {
+  const d = drag.value;
+  return { open: ins.value === i, drop: !!d?.on && d.to === i, bad: !!d?.on && d.to === i && !d.ok };
+}
+
+const reasonText = (code: string) =>
+  t(code === "TAKEN" ? "generate.rule.taken" : `generate.rule.err.${code}`, { max: code === "SEP_TOO_LONG" ? SEP_MAX : PREFIX_MAX });
+/** 插入面板各组件放不下的原因（空为放得下） */
+const palette = computed<Record<string, string>>(() => {
+  const at = ins.value;
+  if (at === null) return {};
+  return Object.fromEntries(GROUPS.flatMap((g) => g.kinds).map((k) => {
+    const i = at === "END" ? autoIndex(parts.value, k, partCtx.value) : at;
+    return [k, blockReason(parts.value, k, i, partCtx.value)];
+  }));
+});
+function exampleOf(k: string) {
+  const l = props.lines[0];
+  switch (k) {
+    case "TEXT": return "CS / SX / 08";
+    case "SEP": return SEPS.join(" ");
+    case "PI": return partCtx.value.pi;
+    case "BILL": return partCtx.value.billNo.slice(-7);
+    case "DATE": return partValue(newPart("DATE", today()), {});
+    case "SEQ": return "0001";
+    case "LEN": return l?.length || "—";
+    default: return l?.unit || "—";
+  }
+}
+
+function select(id: number) {
+  selId.value = id;
+  ins.value = null;
+}
+function toggleIns(at: number | "END") {
+  ins.value = ins.value === at ? null : at;
+}
+function setParts(ps: Part[], sel?: number | null) {
+  parts.value = ps;
+  ins.value = null;
+  if (sel !== undefined) selId.value = sel;
+}
+/** 提示里带「撤销」 */
+function undoable(text: string, undo: () => void) {
+  const m = ElMessage({
+    type: "success",
+    duration: 5000,
+    message: h("span", [text, " ", h("a", { class: "undo", onClick: () => { undo(); m.close(); } }, t("generate.rule.undo"))]),
+  });
+}
+const seqId = (ps: Part[]) => (ps.find((p) => p.kind === "SEQ") ?? ps[0])?.id ?? null;
+function applyTpl(k: keyof typeof TEMPLATES) {
+  const prev = parts.value, prevSel = selId.value;
+  const ps = TEMPLATES[k](today()) as Part[];
+  setParts(ps, seqId(ps));
+  undoable(t("generate.rule.tplApplied", { name: t(`generate.rule.tpl.${k}`) }), () => setParts(prev, prevSel));
+}
+function addPart(kind: string) {
+  const at = ins.value === "END" ? autoIndex(parts.value, kind, partCtx.value) : (ins.value as number);
+  const p = newPart(kind, today());
+  setParts(insertAt(parts.value, at, p), p.id);
+}
+/** 左移 / 右移选中的组件（d = -1 / 1）：放不下时按钮置灰 */
+const moveTarget = (d: number) => (d < 0 ? selIndex.value - 1 : selIndex.value + 2);
+function canMove(d: number) {
+  const i = selIndex.value, to = moveTarget(d);
+  if (i < 0 || to < 0 || to > parts.value.length) return false;
+  return !newErrors(parts.value, moveTo(parts.value, i, to), partCtx.value).length;
+}
+function moveSel(d: number) {
+  if (canMove(d)) setParts(moveTo(parts.value, selIndex.value, moveTarget(d)));
+}
+function removeSel() {
+  const i = selIndex.value;
+  if (i < 0) return;
+  const prev = parts.value, p = prev[i];
+  const rest = prev.filter((_, j) => j !== i);
+  setParts(rest, (rest[i] ?? rest[i - 1])?.id ?? null);
+  undoable(t("generate.rule.partRemoved", { name: t(`generate.rule.part.${p.kind}`) }), () => setParts(prev, p.id));
+}
+
+/** 拖动：按住组件移动超过 6px 开始拖；落点为竖线，放不下时标红、松手还原。未移动即为点选。 */
+const barEl = ref<HTMLElement>();
+const drag = ref<{ from: number; id: number; x: number; y: number; on: boolean; to: number | null; ok: boolean; code: string } | null>(null);
+function onDown(e: PointerEvent) {
+  const c = (e.target as HTMLElement).closest(".chip");
+  if (!c || e.button > 0 || !barEl.value) return;
+  const chips = [...barEl.value.querySelectorAll(".chip")];
+  const from = chips.indexOf(c);
+  drag.value = { from, id: parts.value[from].id, x: e.clientX, y: e.clientY, on: false, to: null, ok: true, code: "" };
+  barEl.value.setPointerCapture(e.pointerId);
+}
+function onMove(e: PointerEvent) {
+  const d = drag.value;
+  if (!d || !barEl.value) return;
+  if (!d.on) {
+    if (Math.hypot(e.clientX - d.x, e.clientY - d.y) < 6) return;
+    d.on = true;
+    ins.value = null;
+  }
+  e.preventDefault();
+  const chips = [...barEl.value.querySelectorAll(".chip")];
+  let to = chips.length;
+  for (let i = 0; i < chips.length; i++) {
+    const r = chips[i].getBoundingClientRect();
+    if (e.clientY < r.top || (e.clientY <= r.bottom && e.clientX < r.left + r.width / 2)) {
+      to = i;
+      break;
+    }
+  }
+  if (to === d.from || to === d.from + 1) {
+    Object.assign(d, { to: null, ok: true, code: "" });
+    return;
+  }
+  const errs = newErrors(parts.value, moveTo(parts.value, d.from, to), partCtx.value);
+  Object.assign(d, { to, ok: !errs.length, code: errs[0] ?? "" });
+}
+function onUp(apply: boolean) {
+  const d = drag.value;
+  drag.value = null;
+  if (!d) return;
+  if (!d.on) {
+    if (apply) select(d.id);
+    return;
+  }
+  if (!apply || d.to === null) return;
+  if (d.ok) setParts(moveTo(parts.value, d.from, d.to));
+  else ElMessage.warning(t("generate.rule.dropReverted"));
+}
+/** 结构条下方一行：拖动中显示落点（放不下时的原因），否则显示校验错误 */
+const msgText = computed(() => {
+  const d = drag.value;
+  if (d?.on && d.to !== null) {
+    return d.ok ? t("generate.rule.dropAt", { n: d.to > d.from ? d.to : d.to + 1 }) : t("generate.rule.dropBad", { msg: reasonText(d.code) });
+  }
+  return errorText.value;
+});
+const sampleRows = computed(() => [["sampleMin", sample.min], ["sampleMax", sample.max]].filter((r) => r[1]) as [string, Sample][]);
 
 /** 默认前缀组件：本 PI 已生成的号还在时沿用已用的前缀（之后各张单据都用它，流水接续）；否则取点选的第一个单据编码后 7 位，
  *  取不到时用 PI 第一张单据的（同 genScope.defaultRulePrefix）。生成时后台查前缀全局唯一。 */
@@ -155,18 +444,15 @@ function defaultHead(): Part[] {
   return [textPart(props.rulePrefix?.prefix ?? "")];
 }
 /** 默认组成：默认前缀 + 流水 4 位（本 PI 已用前缀时按已用的格式），不带米数、不带单位 */
-function resetParts() {
+function defaultParts(): Part[] {
   const used = props.rulePrefix?.custom;
-  parts.value = used ? fromSpec({ ...used, seq_start: null }, defaultHead()) : [...defaultHead(), newPart("SEQ")];
+  return used ? fromSpec({ ...used, seq_start: null }, defaultHead()) : [...defaultHead(), newPart("SEQ")];
 }
-function add(kind: string) {
-  parts.value = [...parts.value, newPart(kind, todayIn(offset.value))];
-}
-function move(i: number, d: number) {
-  parts.value = movePart(parts.value, i, d);
-}
-function remove(i: number) {
-  parts.value = parts.value.filter((_, j) => j !== i);
+function resetParts() {
+  const prev = parts.value, prevSel = selId.value;
+  const ps = defaultParts();
+  setParts(ps, seqId(ps));
+  undoable(t("generate.rule.resetDone"), () => setParts(prev, prevSel));
 }
 
 /** 规则选择只列「规则编码 v版本」 */
@@ -194,12 +480,16 @@ function onOpen() {
   kw.value = "";
   newPrefix.value = "";
   sample.error = "";
-  sample.sn = "";
+  sample.min = null;
+  sample.max = null;
   const cur = props.lines.length === 1 ? props.lines[0].rule : null;
   const base = props.rulePrefix?.custom ?? (cur?.mode === "CUSTOM" ? cur.custom : null);
   // 起始号只在沿用所选物料行现有的自定义规则时带出
   const start = !props.rulePrefix?.custom && cur?.mode === "CUSTOM" ? cur.seq_start ?? null : null;
   parts.value = base ? fromSpec({ ...base, seq_start: start }, defaultHead()) : [...defaultHead(), newPart("SEQ")];
+  selId.value = seqId(parts.value);
+  ins.value = null;
+  drag.value = null;
   mode.value = "CUSTOM";
   picked.value = cur?.rule_id ? props.options.find((o) => o.rule_id === cur.rule_id) ?? null : null;
   schedule();
@@ -219,16 +509,23 @@ function schedule() {
 watch(parts, () => mode.value === "CUSTOM" && schedule(), { deep: true });
 
 async function previewCustom() {
-  sample.sn = "";
+  sample.min = null;
+  sample.max = null;
   sample.error = "";
   const { spec, errors } = built.value;
   if (errors.length || !spec.prefix) return;
   try {
     const l = props.lines[0];
+    // 后台返回从起始号起的前 5 个号与最大号：取第一个为最小、最后一个为最大
     const r = await api.previewRule({
       ...spec, seq_start: seqStart() ?? undefined, length: l?.length || undefined, unit: l?.unit || undefined,
     });
-    sample.sn = r.samples?.[0]?.sn || "";
+    const list: any[] = r.samples ?? [];
+    const len = spec.length_pad ? String(r.sample_length ?? "").padStart(spec.length_pad, "0") : String(r.sample_length ?? "");
+    const toSample = (x: any): Sample | null =>
+      x ? { sn: x.sn, segs: sampleSegments(parts.value, partCtx.value, x.sn, x.seq_text, len, r.sample_unit ?? "") } : null;
+    sample.min = toSample(list[0]);
+    sample.max = list.length > 1 ? toSample(list[list.length - 1]) : null;
   } catch (e) {
     sample.error = e instanceof ApiError ? e.message : String(e);
   }
@@ -284,13 +581,8 @@ async function clear() {
 <style scoped>
 .mb { margin-bottom: 12px; }
 .mt { margin-top: 12px; }
-.w70 { width: 70px; }
-.w80 { width: 80px; }
 .w90 { width: 90px; }
-.w110 { width: 110px; }
 .w130 { width: 130px; }
-.w160 { width: 160px; }
-.w170 { width: 170px; }
 .w200 { width: 200px; }
 .rule-list { border: 1px solid var(--el-border-color-lighter); border-radius: 8px; max-height: 280px; overflow: auto; }
 .rule-list .it { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 10px; align-items: center; padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--el-border-color-lighter); outline: none; }
@@ -303,22 +595,75 @@ async function clear() {
 .rule-list .nm b { font-weight: 500; white-space: nowrap; }
 .rule-list .empty { padding: 20px; text-align: center; color: var(--app-muted); }
 .parts-box { display: flex; flex-direction: column; gap: 10px; }
-.parts-head { display: flex; justify-content: space-between; align-items: center; }
+.parts-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: -4px; }
 .parts-head b { font-weight: 500; }
-.parts { display: flex; flex-direction: column; gap: 6px; max-height: 360px; overflow: auto; }
-.part { display: grid; grid-template-columns: 18px 76px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 4px 8px; border-radius: 6px; background: var(--el-fill-color-light); }
-.part.k-SEQ { background: var(--el-color-primary-light-9); }
-.part.k-LEN, .part.k-UNIT { background: var(--el-color-warning-light-9); }
-.part .idx { font-size: 12px; color: var(--app-muted); text-align: center; }
-.part .nm { font-size: 13px; }
-.part .opts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
-.part .ops { display: flex; }
-.part .ops .el-button + .el-button { margin-left: 4px; }
 .lb { font-size: 12px; color: var(--app-muted); }
-.val { font-size: 12px; color: var(--app-muted); }
-.add { display: flex; flex-wrap: wrap; gap: 6px; }
-.add .el-button { margin-left: 0; }
-.sample { display: flex; align-items: baseline; gap: 10px; padding-top: 6px; border-top: 1px solid var(--el-border-color-lighter); }
-.sample .sn-mono { font-size: 15px; }
+.note { font-size: 12px; color: var(--app-muted); }
+/* 常用格式 */
+.tpls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.tpl { font: inherit; font-size: 12px; cursor: pointer; border: 1px solid var(--el-border-color-lighter); background: var(--el-fill-color-light); color: var(--el-text-color-regular); border-radius: 12px; padding: 3px 10px; }
+.tpl:hover { border-color: var(--el-color-primary-light-5); color: var(--el-color-primary); }
+.tpl.on { border-color: var(--el-color-primary-light-5); background: var(--el-color-primary-light-9); color: var(--el-color-primary); }
+/* 结构条：组件按 SN 的顺序横排，块内为取值、块下为类型 */
+.bar { border: 1px solid var(--el-border-color); border-radius: 8px; padding: 12px 10px 8px; display: flex; flex-wrap: wrap; align-items: flex-start; row-gap: 8px; user-select: none; }
+.bar .none { padding: 8px; }
+.chip { font: inherit; display: flex; flex-direction: column; align-items: center; gap: 3px; border: none; background: none; padding: 0; cursor: grab; touch-action: none; max-width: 100%; color: inherit; }
+.chip:focus-visible { outline: 2px solid var(--el-color-primary); outline-offset: 2px; border-radius: 6px; }
+.chip .v { font-size: 16px; padding: 4px 8px; border-radius: 5px; border: 1.5px solid transparent; background: var(--el-fill-color); min-width: 28px; text-align: center; white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+.chip .v.blank { color: var(--app-muted); font-family: inherit; font-size: 12px; padding: 7px 8px; }
+.chip .t { font-size: 11px; color: var(--app-muted); white-space: nowrap; }
+.chip.c-SEP .v { background: transparent; border: 1.5px dashed var(--el-border-color); color: var(--el-text-color-regular); padding: 4px 6px; }
+.chip.c-SEQ .v { background: var(--el-color-primary-light-9); color: var(--el-color-primary); border-color: var(--el-color-primary-light-5); }
+.chip.c-LINE .v { background: var(--el-color-warning-light-9); color: var(--el-color-warning-dark-2); border-color: var(--el-color-warning-light-5); }
+.chip.sel .v { border-color: var(--el-color-primary); box-shadow: 0 0 0 3px var(--el-color-primary-light-8); }
+.chip.sel .t { color: var(--el-color-primary); font-weight: 600; }
+.chip.dragging { opacity: 0.4; cursor: grabbing; }
+.chip.dragging.bad { opacity: 1; }
+.chip.bad .v { border-color: var(--el-color-danger); background: var(--el-color-danger-light-9); color: var(--el-color-danger); }
+.chip.bad .t { color: var(--el-color-danger); }
+.slot { font: inherit; width: 16px; height: 32px; border: none; background: none; padding: 0; position: relative; display: flex; align-items: center; justify-content: center; color: transparent; flex: none; cursor: pointer; }
+.slot.last { width: 8px; cursor: default; }
+.slot i { font-style: normal; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; line-height: 1; border: 1.5px solid transparent; position: relative; z-index: 1; }
+.bar:hover .slot i, .slot:focus-visible i { color: var(--el-color-primary); border-color: var(--el-color-primary-light-5); background: var(--el-bg-color); }
+@media (hover: none) { .slot i { color: var(--el-color-primary); border-color: var(--el-color-primary-light-5); background: var(--el-bg-color); } }
+.slot:hover i, .slot.open i { color: #fff; background: var(--el-color-primary); border-color: var(--el-color-primary); }
+.slot.open::before, .slot.drop::before { content: ""; position: absolute; top: 0; bottom: 0; left: 6px; width: 3px; border-radius: 2px; background: var(--el-color-primary); }
+.slot.last.drop::before { left: 2px; }
+.slot.drop.bad::before { background: var(--el-color-danger); }
+.bar.is-drag .slot i { opacity: 0; }
+.add-end { font: inherit; cursor: pointer; margin-left: 6px; border: 1.5px dashed var(--el-color-primary-light-5); background: var(--el-bg-color); color: var(--el-color-primary); border-radius: 5px; padding: 5px 10px; }
+.add-end.open { background: var(--el-color-primary-light-9); }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 11px; color: var(--app-muted); margin-top: -4px; }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; border: 1px solid transparent; }
+.legend span:not([class])::before { display: none; }
+.legend .l-FIX::before { background: var(--el-fill-color); }
+.legend .l-SEQ::before { background: var(--el-color-primary-light-9); border-color: var(--el-color-primary-light-5); }
+.legend .l-LINE::before { background: var(--el-color-warning-light-9); border-color: var(--el-color-warning-light-5); }
+.msg { font-size: 12px; color: var(--el-color-danger); margin-top: -4px; }
+/* 选中组件的参数 / 插入面板 */
+.panel { border: 1px solid var(--el-color-primary-light-5); border-radius: 8px; }
+.panel-h { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 12px; border-bottom: 1px solid var(--el-border-color-lighter); background: var(--el-color-primary-light-9); border-radius: 8px 8px 0 0; }
+.panel-h b { color: var(--el-color-primary); font-weight: 600; }
+.panel-h .ops { display: flex; }
+.panel-h .ops .el-button + .el-button { margin-left: 8px; }
+.panel-b { padding: 12px; display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px 8px; align-items: center; }
+.panel-b .k { font-size: 12px; color: var(--el-text-color-regular); }
+.panel-b .val { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; min-width: 0; }
+.mono-seg :deep(.el-radio-button__inner) { font-family: "JetBrains Mono", Consolas, monospace; }
+.pal { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.pal .gh { font-size: 12px; color: var(--app-muted); margin-bottom: 6px; }
+.pal .items { display: flex; flex-wrap: wrap; gap: 6px; }
+.pal .it { font: inherit; font-size: 13px; cursor: pointer; color: inherit; border: 1px solid var(--el-border-color-lighter); background: var(--el-bg-color); border-radius: 6px; padding: 5px 10px; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; min-width: 96px; text-align: left; }
+.pal .it small { color: var(--app-muted); font-size: 11px; }
+.pal .it:hover:not(:disabled) { border-color: var(--el-color-primary); background: var(--el-color-primary-light-9); }
+.pal .it:disabled { background: var(--el-fill-color-light); color: var(--el-text-color-placeholder); cursor: not-allowed; }
+/* 示例：最小 / 最大号，流水与米数、单位按结构条同色 */
+.sample { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; padding-top: 8px; border-top: 1px solid var(--el-border-color-lighter); }
+.sample .rng { display: inline-flex; align-items: baseline; gap: 6px; min-width: 0; }
+.sample .sn { font-size: 15px; word-break: break-all; }
+.sample .s-SEQ { color: var(--el-color-primary); background: var(--el-color-primary-light-9); border-radius: 2px; }
+.sample .s-LINE { color: var(--el-color-warning-dark-2); background: var(--el-color-warning-light-9); border-radius: 2px; }
+.muted { color: var(--app-muted); }
 .err { color: var(--el-color-danger); font-size: 12px; }
+:global(.el-message a.undo) { color: var(--el-color-primary); cursor: pointer; margin-left: 8px; text-decoration: underline; }
 </style>

@@ -206,3 +206,78 @@ export function movePart(parts, i, d) {
   [out[i], out[j]] = [out[j], out[i]];
   return out;
 }
+
+/** 把 parts[from] 移到 parts[to] 之前（to 按原数组下标，to = length 为最后），返回新数组。 */
+export function moveTo(parts, from, to) {
+  const out = parts.slice();
+  const [p] = out.splice(from, 1);
+  out.splice(to > from ? to - 1 : to, 0, p);
+  return out;
+}
+
+/** 在 at 处插入组件，返回新数组。 */
+export function insertAt(parts, at, part) {
+  const out = parts.slice();
+  out.splice(at, 0, part);
+  return out;
+}
+
+/** cand 相比 parts 多出的校验错误码（插入、移动、拖动前判断能否放下：已有的错误不算）。 */
+export function newErrors(parts, cand, ctx = {}) {
+  const cur = new Set(toSpec(parts, ctx).errors.map((e) => e.code));
+  return [...new Set(toSpec(cand, ctx).errors.map((e) => e.code).filter((c) => !cur.has(c)))];
+}
+
+/** 「+ 组件」（不指定位置）时的位置：流水放在米数 / 单位之前，米数放在单位之前，单位不带米数时放最后、放不下则紧跟流水，其余放最后。 */
+export function autoIndex(parts, kind, ctx = {}) {
+  const end = parts.length;
+  if (kind === "SEQ" || kind === "LEN") {
+    const i = parts.findIndex((p) => (kind === "SEQ" ? p.kind === "LEN" || p.kind === "UNIT" : p.kind === "UNIT"));
+    if (i >= 0) return i;
+  }
+  if (kind === "UNIT" && !parts.some((p) => p.kind === "LEN") && newErrors(parts, insertAt(parts, end, newPart("UNIT")), ctx).length) {
+    const s = parts.findIndex((p) => p.kind === "SEQ");
+    if (s >= 0) return s + 1;
+  }
+  return end;
+}
+
+/** 在 at 处放不下 kind 的原因：TAKEN（流水 / 米数 / 单位已有）或校验错误码；放得下返回 ""。 */
+export function blockReason(parts, kind, at, ctx = {}) {
+  if (SINGLE.includes(kind) && parts.some((p) => p.kind === kind)) return "TAKEN";
+  return newErrors(parts, insertAt(parts, at, newPart(kind)), ctx)[0] ?? "";
+}
+
+/** 常用格式（按已收集的格式）：key 对应词条 generate.rule.tpl.*；today 为日期组件的日期。 */
+export const TEMPLATES = {
+  BILL_SEQ: () => [newPart("BILL"), newPart("SEQ")],
+  CS_WEEK: (today) => [
+    { ...newPart("TEXT"), text: "CS" }, newPart("SEP"), { ...newPart("DATE", today), fmt: "YYWW" }, newPart("SEP"),
+    newPart("SEQ"), newPart("SEP"), { ...newPart("LEN"), pad: 3 }, newPart("UNIT"),
+  ],
+  BILL_SX: () => [
+    { ...newPart("BILL"), cut: "ALL" }, newPart("SEP"), { ...newPart("TEXT"), text: "SX" }, newPart("SEP"),
+    { ...newPart("SEQ"), len: 3 }, newPart("SEP"), { ...newPart("LEN"), pad: 3 }, newPart("SEP"), newPart("UNIT"),
+  ],
+  DATE_SEQ: (today) => [newPart("DATE", today), { ...newPart("SEQ"), len: 5 }],
+  WEEK_B32: (today) => [{ ...newPart("TEXT"), text: "81" }, { ...newPart("DATE", today), fmt: "YYWW" }, { ...newPart("SEQ"), base: 32 }],
+};
+
+/** 组成的特征（不含 id），用来标出当前与哪个常用格式相同。 */
+export function partsSig(parts) {
+  return JSON.stringify(parts.map(({ id, ...rest }) => rest));
+}
+
+/**
+ * 示例号分段（按组件着色）：seqText 为流水文本，length / unit 为示例米数（已补 0）/ 单位。
+ * cls：SEQ 为流水，LINE 为米数 / 单位，其余为空。拼起来与 sn 不一致时返回 null（调用方原样显示 sn）。
+ */
+export function sampleSegments(parts, ctx, sn, seqText, length, unit) {
+  const segs = parts.map((p) => {
+    if (p.kind === "SEQ") return { text: seqText, cls: "SEQ" };
+    if (p.kind === "LEN") return { text: length, cls: "LINE" };
+    if (p.kind === "UNIT") return { text: unit, cls: "LINE" };
+    return { text: partValue(p, ctx) ?? "", cls: "" };
+  });
+  return segs.map((s) => s.text).join("") === sn ? segs.filter((s) => s.text) : null;
+}
