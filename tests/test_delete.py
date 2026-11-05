@@ -181,16 +181,17 @@ def test_bill_segments_use_free_and_sn_detail(w, api, sql):
 
 
 def test_two_lines_share_gaps_in_order_and_preview_tracks_gaps(w, api, sql):
-    """几个物料行按排号顺序依次用空号段；按手动起止号预演后空号段变了，确认生成时预演失效。"""
+    """几个物料行按排号顺序（单据内按附件项次，项次相同按行号，与点选先后无关）依次用空号段；
+    按手动起止号预演后空号段变了，确认生成时预演失效。"""
     org, pi, bill = mk(w, ("M1", 2), ("M2", 2), ("M3", 2), ("M4", 1))
     ok(w.bind_pi(pi, w.rule(P(), with_length=False)))
     w.generate(pi)
     ok(w.delete(pi, lines=[(bill, 1), (bill, 3)]))
     assert gaps(w, pi) == [(1, 2), (5, 6)]
     pv = ok(w.preview(pi, lines=[(bill, 3), (bill, 1)], seq=(1, 6)))
-    assert [(x["seq"], x["segs"]) for x in pv["items"]] == [(3, [[1, 2]]), (1, [[5, 6]])]
+    assert [(x["seq"], x["segs"]) for x in pv["items"]] == [(1, [[1, 2]]), (3, [[5, 6]])]
     pv = ok(w.preview(pi, lines=[(bill, 3), (bill, 1)], seq=(5, 6)))
-    assert [(x["seq"], x["segs"]) for x in pv["items"]] == [(3, [[5, 6]]), (1, [[8, 9]])]
+    assert [(x["seq"], x["segs"]) for x in pv["items"]] == [(1, [[5, 6]]), (3, [[8, 9]])]
     # 预演后又删了号（空号段变了）：确认生成按最新空号段重算，与预演不同即失效
     ok(w.delete(pi, lines=[(bill, 4)]))
     pv = ok(w.preview(pi, lines=[(bill, 1)], seq=(3, 7)))

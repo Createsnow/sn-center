@@ -1,7 +1,8 @@
 """SN 生成（F-09）。删号见 deletion，分配见 allocation。
 
-生成：在一张 PI 下整单（勾选单据，单据内按序号）或按物料行（按点选顺序）生成；最小单位是物料行——范围内每个
-还有额度的物料行一次生成它的全部额度，不拆成两次。号都排在该 PI 的一套流水上，各物料行按自己的规则写出
+生成：在一张 PI 下整单（勾选单据）或按物料行（点选）生成，须先勾选（页面不勾选不能生成）；最小单位是物料行——范围内每个
+还有额度的物料行一次生成它的全部额度，不拆成两次。排号顺序：单据按勾选 / 点选先后，单据内按附件项次从小到大
+（按数字比），项次相同按行号（单据序号）从小到大。号都排在该 PI 的一套流水上，各物料行按自己的规则写出
 （前缀 + 流水 + 分隔符 + 米数 + 分隔符 + 单位 + 后缀）。
 
 流水来源（预演时选）：
@@ -25,9 +26,11 @@ PI 最大号变化、空号段变化（按 RANGE 生成时）、同步改了范�
 from __future__ import annotations
 
 import json
+import re
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import timedelta
+from decimal import Decimal
 
 import pymysql
 import structlog
@@ -562,6 +565,26 @@ def _prefix_ok(line: Line, memo: dict | None) -> bool:
     return memo[k]
 
 
+_ATTACH_NUM = re.compile(r"^\d+(\.\d+)?$")
+
+
+def attach_order(attach: str) -> tuple:
+    """附件项次的排号次序：按数字比大小（"2" 在 "10" 前，"01" 与 "1" 相同）；不是数字的排在数字之后、按文字比。"""
+    v = (attach or "").strip()
+    if _ATTACH_NUM.match(v):
+        return (0, Decimal(v), "")
+    return (1, Decimal(0), v)
+
+
+def _gen_order(ls: list[Line]) -> list[Line]:
+    """排号顺序：单据按点选 / 勾选先后（第一次出现的先后）；
+    单据内按附件项次从小到大，项次相同按行号（单据序号）从小到大。"""
+    rank: dict[str, int] = {}
+    for x in ls:
+        rank.setdefault(x.bill_no, len(rank))
+    return sorted(ls, key=lambda x: (rank[x.bill_no], attach_order(x.attach), x.seq))
+
+
 def _scope_keys(pi: str, scope: str, bills_in: list[str] | None, lines_in: list[dict] | None) -> list[tuple[str, int]]:
     if scope == SCOPE_BILLS:
         nos = list(dict.fromkeys(util.trim(b) for b in bills_in or [] if util.trim(b)))
@@ -586,10 +609,10 @@ def _scope_keys(pi: str, scope: str, bills_in: list[str] | None, lines_in: list[
 
 
 def _plan(pi: str, scope: str, keys: list[tuple[str, int]], base: int, seq: dict | None = None) -> dict:
-    """按排号顺序给每个还有额度的物料行切号（整行额度，不拆行）；流水来源见 seq（默认 MAX）。
+    """按排号顺序（见 _gen_order）给每个还有额度的物料行切号（整行额度，不拆行）；流水来源见 seq（默认 MAX）。
     返回计划（不落库）；不能生成时 issues 非空。"""
     seq = seq or {"mode": SEQ_MAX}
-    ls = _load_lines(pi, keys)
+    ls = _gen_order(_load_lines(pi, keys))
     todo = [x for x in ls if x.quota > 0]
     quota = sum(x.quota for x in todo)
     issues = [

@@ -8,7 +8,7 @@ import type { OrderLine } from "@/types/api";
 const CHINESE = /[　-〿㐀-䶿一-鿿豈-﫿＀-￯]/;
 export const hasChinese = (v: string | null | undefined) => !!v && CHINESE.test(v);
 
-/** 金蝶缺失的附件项次（必填；点选物料行时自动填点选顺序，可改）、米数、产品单位在表格里直接填写：
+/** 附件项次（必填；金蝶有值时也可改，留空即改回金蝶值；金蝶为空时点选物料行自动填点选顺序，可改）、米数、产品单位在表格里直接填写：
  *  米数、产品单位用金蝶原值（原样显示、原样使用），金蝶为空时规则带米数 / 单位则必填，其他情况可选改（留空即改回金蝶值）；
  *  物料行有号后置灰：已生成未分配的撤销生成后可改，已分配的不能再改。失焦或回车保存，保存后刷新详情。 */
 export function useLineDrafts(reload: () => Promise<unknown>) {
@@ -54,8 +54,10 @@ export function useLineDrafts(reload: () => Promise<unknown>) {
     const k = draftKey(row, "attach");
     delete autoAttach[k];
     const value = (drafts[k] ?? "").trim();
-    if (!value || value === row.attach_no) {
-      if (!value) ElMessage.warning(t("orders.attachInvalid"));
+    // 留空：金蝶有值时改回金蝶值（页面填写过才需要保存），金蝶为空时必填
+    const revert = !value && !!row.attach_k3?.trim();
+    if (value === row.attach_no || (revert && row.attach_source !== "MANUAL") || (!value && !revert)) {
+      if (!value && !revert) ElMessage.warning(t("orders.attachInvalid"));
       delete drafts[k];
       return;
     }
@@ -90,7 +92,7 @@ export function useLineDrafts(reload: () => Promise<unknown>) {
   // ---------------- 附件项次自动填：点选附件项次为空、可填写的物料行时填上点选顺序（草稿，可改）；
   // 连续点选停下后一并保存、刷新一次（每点一行就刷新的话，补齐的行会立刻离开待处理页签，打断连续点选）
 
-  const attachEditable = (row: OrderLine) => row.attach_source !== "K3" && !row.edit_lock;
+  const attachEditable = (row: OrderLine) => !row.edit_lock;
 
   /** 点选物料行：附件项次为空（且页面没在填）时填上点选顺序 order（从 1 起）。 */
   function autoFillAttach(row: OrderLine, order: number) {

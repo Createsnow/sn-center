@@ -337,7 +337,7 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
         b["state"] = states.get(no, changes.EMPTY_STATE)
         b["pending_alloc"] = items[no][0] if no in items else 0
         # 单据分配状态：PENDING 待分配 / PROCESSING 待处理 / ALLOCATED 已分配；本 PI 下还没有号为 None。
-        # 已分配的单据在生成页「可生成」页签置灰、不可勾选，也不在不勾选时的整张 PI 生成范围内
+        # 已分配的单据在生成页「可生成」页签置灰、不可勾选（生成须先勾选）
         b["alloc_state"] = bill_state(*items[no]) if no in items else None
         b["total_qty"] = sum(x["qty"] for x in b["lines"])
         b["generated_qty"] = sum(x["generated_qty"] for x in b["lines"])

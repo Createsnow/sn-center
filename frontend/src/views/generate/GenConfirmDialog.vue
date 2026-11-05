@@ -4,6 +4,12 @@
       <!-- 手动起止号：提示用了多少个空闲流水、溢出多少枚从最大号之后接着编 -->
       <el-alert v-if="preview.seq?.mode === 'RANGE'" :type="preview.overflow_qty ? 'warning' : 'info'" :closable="false" show-icon class="usage"
         :title="t('generate.seqUsage', { start: preview.seq.start, end: preview.seq.end, used: num(preview.range_qty), over: num(preview.overflow_qty), next: overflowFrom })" />
+      <!-- 同一单据内附件项次相同：提示将按行号（单据序号）从小到大生成（不拦截） -->
+      <el-alert v-if="dups.length" type="warning" :closable="false" show-icon class="usage" :title="t('generate.attachDupHint')">
+        <div v-for="g in dups" :key="g.bill_no + '#' + g.attach">
+          {{ t("generate.attachDupItem", { bill: g.bill_no, attach: g.attach, seqs: g.lines.map((l: any) => l.seq).join("、") }) }}
+        </div>
+      </el-alert>
       <!-- 列依次为物料编码、前缀、进制、流水位数、流水号（起 ~ 止）、附件项次、米数、产品单位、开始 / 结束 SN；
            米数、产品单位为写进 SN 的值，规则不带时为「—」 -->
       <el-table :data="preview.items" size="small" max-height="320">
@@ -53,10 +59,12 @@
 /** 确认生成：只列本次各物料行的物料编码、前缀、进制、流水位数、流水号、附件项次、米数、产品单位与开始 / 结束 SN；
  *  用空号段时一个物料行可有几段号，每段一行（流水号、开始 / 结束 SN 对齐）；手动起止号时顶部提示用了多少个空闲流水、
  *  溢出多少枚从最大号之后接着编；
+ *  同一单据内附件项次相同时顶部提示将按行号（单据序号）从小到大生成；
  *  超过单次默认上限（unlockLimit > 0）时须先勾选解除限制。确认后由父组件凭预演令牌生成。 */
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { num } from "./format";
+import { dupAttach } from "@/genScope.js";
 
 const props = defineProps<{ modelValue: boolean; preview: any; unlockLimit: number; loading: boolean }>();
 const emit = defineEmits<{ "update:modelValue": [open: boolean]; confirm: [] }>();
@@ -74,6 +82,8 @@ const overflowFrom = computed(() => {
   const p = props.preview;
   return p?.seq?.mode === "RANGE" ? Math.max(Number(p.base_last_seq) || 0, Number(p.seq.end) || 0) + 1 : 0;
 });
+/** 同一单据内附件项次相同的物料行（预演各行已按排号顺序排好）。 */
+const dups = computed<any[]>(() => (props.preview?.generatable ? dupAttach(props.preview.items || [], (x: any) => x.attach) : []));
 // 每次打开都要重新勾选
 watch(() => props.modelValue, (open) => { if (open) unlocked.value = false; });
 </script>

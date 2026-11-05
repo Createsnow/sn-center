@@ -127,7 +127,7 @@
           <div class="bill-h" @click="toggleFold(b.bill_no)">
             <el-icon class="fold" :class="{ open: !isFolded(b.bill_no) }"><ArrowRight /></el-icon>
             <span @click.stop><el-checkbox v-bind="billCheck(b.bill_no)" :disabled="!b.in_snapshot || !b.lines.length" @change="(v: any) => onBill(b.bill_no, !!v)" /></span>
-            <span v-if="billCheck(b.bill_no).order >= 0" class="order">{{ billCheck(b.bill_no).order + 1 }}</span>
+            <span v-if="billIdx(b.bill_no) >= 0" class="order">{{ billIdx(b.bill_no) + 1 }}</span>
             <b>{{ b.bill_no }}</b>
             <!-- 单据号段：已用号段（本单据现有的号）、空闲号段（本单据删号腾出），没有时不显示，点开看明细 -->
             <span v-if="b.segments?.use_count" class="chip use" @click.stop="segDlg?.open({ bill: b.bill_no, tab: 'use' })">
@@ -150,17 +150,18 @@
               <template #default="{ row }">
                 <span class="sel" @click.stop>
                   <el-checkbox :model-value="isPicked(row)" @change="(v: any) => pickLine(row, !!v)" />
-                  <span v-if="lineIdx(row) >= 0" class="order">{{ lineIdx(row) + 1 }}</span>
+                  <span v-if="genIdx(row) >= 0" class="order">{{ genIdx(row) + 1 }}</span>
                 </span>
               </template>
             </el-table-column>
             <el-table-column :label="t('common.billSeq')" prop="seq" width="48" />
             <el-table-column :label="t('common.attachNo')" width="88">
               <template #default="{ row }">
-                <span v-if="row.attach_source === 'K3'">{{ row.attach_no }}</span>
-                <span v-else class="cell-input" @click.stop>
+                <!-- 金蝶有值也可改（页面值优先，留空即改回金蝶值）；生成时单据内按附件项次从小到大排号 -->
+                <span class="cell-input attach-cell" @click.stop>
                   <el-input :model-value="draftOf(row, 'attach')" size="small" maxlength="64" :disabled="!!row.edit_lock"
-                    :class="{ missing: !row.edit_lock && !draftOf(row, 'attach') }" :placeholder="t('generate.attachRequired')"
+                    :class="{ missing: !row.edit_lock && !draftOf(row, 'attach') && !row.attach_k3 }"
+                    :placeholder="row.attach_k3 ? t('generate.attachK3Placeholder', { v: row.attach_k3 }) : t('generate.attachRequired')"
                     @update:model-value="(v: string) => setDraft(row, 'attach', v)" @change="saveAttach(row)" />
                 </span>
               </template>
@@ -240,7 +241,7 @@
             </template>
             <template v-else>{{ t("generate.selNone") }}</template>
           </span>
-          <el-button :disabled="!pickedRows.length" @click="openRuleDialog(pickedRows)">{{ t("generate.libraryRuleBtn") }}</el-button>
+          <el-button :disabled="!pickedRows.length" :loading="busy === 'rule'" @click="openRuleDialog(pickedRows)">{{ t("generate.libraryRuleBtn") }}</el-button>
           <el-dropdown trigger="click" placement="top-start" @command="onMore">
             <el-button :loading="busy === 'config'">{{ t("generate.more") }}<el-icon class="el-icon--right"><ArrowDown /></el-icon></el-button>
             <template #dropdown>
@@ -257,8 +258,8 @@
           </el-dropdown>
           <span class="push" />
           <span class="scope">
-            {{ t("generate.scopeLabel") }}<b>{{ pickedRows.length ? t("generate.scopeLines", { n: pickedRows.length }) : t("generate.scopePi") }}</b><br>
-            {{ pickedRows.length ? t("generate.scopeSelHint") : t("generate.scopePiHint", { n: defaultBills.length }) }}
+            {{ t("generate.scopeLabel") }}<b>{{ pickedRows.length ? t("generate.scopeLines", { n: pickedRows.length }) : t("generate.scopeNone") }}</b><br>
+            {{ pickedRows.length ? t("generate.scopeSelHint") : t("generate.scopeNoneHint") }}
           </span>
           <span class="vsep" />
           <SeqSource v-model="seq" :gaps="ctx.gaps" :first="gen.preview?.generatable ? gen.preview.start_seq : null" />
@@ -283,14 +284,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { usePageRoute } from "@/composables/usePageRoute";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { api } from "@/api";
 import { ApiError } from "@/api/http";
-import { billMark, emptySel, genLimit, lineOrder, scopeBody, selectedLines, seqSource, toggleBill, toggleLine } from "@/genScope.js";
+import {
+  billMark, dupAttach, emptySel, genLimit, genOrder, lineOrder, scopeBody, selectedLines, seqSource, toggleBill, toggleLine,
+} from "@/genScope.js";
 import { useFactories } from "@/composables/useFactories";
 import { useTime } from "@/composables/useTime";
 import { leaveStateLabel, suspendLabel } from "@/constants";
@@ -504,11 +507,77 @@ function closeDetail() {
 
 const ruleDlg = reactive({ open: false, lines: [] as OrderLine[] });
 
-/** 底部「选规则」与行内「选规则 / 改规则」打开同一个规则对话框（默认自定义页签，前缀默认点选的第一个单据编码后 7 位，本 PI 已生成的号还在时沿用已用的前缀）。 */
-function openRuleDialog(lines: OrderLine[]) {
-  ruleDlg.lines = lines;
+/** 底部「选规则」与行内「选规则 / 改规则」打开同一个规则对话框（默认自定义页签，前缀默认点选的第一个单据编码后 7 位，本 PI 已生成的号还在时沿用已用的前缀）。
+ *  打开前先查附件项次（只查还有额度、要生成的行；生成时单据内按附件项次从小到大排号）：
+ *  1. 有没填的：跳到第一条没填的行（按排号顺序），提示补全，不打开；
+ *  2. 同一单据内有相同的：跳到这些行，提示将按行号（单据序号）从小到大生成，可继续选规则或回去修改。 */
+async function openRuleDialog(lines: OrderLine[]) {
+  const keys = lines.map(lineKey);
+  busy.value = "rule";
+  try {
+    // 点选时自动填、还没保存的附件项次先保存（会刷新详情）
+    await flushAutoAttach();
+  } finally {
+    busy.value = "";
+  }
+  const rows = keys.map((k) => allLines.value.find((l) => lineKey(l) === k)).filter(Boolean) as OrderLine[];
+  if (!rows.length) return;
+  const todo = genOrder(rows.filter((l) => l.quota > 0), attachOf);
+  const missing = todo.filter((l) => !attachOf(l));
+  if (missing.length) {
+    jumpTo(missing.slice(0, 1), true);
+    ElMessage.warning(t("generate.attachMissingJump", { bill: missing[0].bill_no, seq: missing[0].seq, n: missing.length }));
+    return;
+  }
+  const dups = dupAttach(todo, attachOf);
+  if (dups.length) {
+    jumpTo(dups.flatMap((g: any) => g.lines));
+    const text = [
+      t("generate.attachDupHint"),
+      ...dups.map((g: any) => t("generate.attachDupItem", { bill: g.bill_no, attach: g.attach, seqs: g.lines.map((l: OrderLine) => l.seq).join("、") })),
+    ].join("\n");
+    try {
+      await ElMessageBox.confirm(text, t("generate.attachDupTitle"), {
+        type: "warning",
+        confirmButtonText: t("generate.attachDupGoOn"),
+        cancelButtonText: t("generate.attachDupEdit"),
+        customStyle: { whiteSpace: "pre-line" },
+      });
+    } catch {
+      return;
+    }
+  }
+  ruleDlg.lines = rows;
   ruleDlg.open = true;
 }
+
+/** 物料行当前的附件项次（含页面上还没保存的填写）。 */
+const attachOf = (l: OrderLine) => (draftOf(l, "attach") ?? "").trim();
+
+/** 跳到物料行：切到它所在的页签、展开所在单据、滚动到第一行并高亮这些行；focus 时把光标放进第一行的附件项次。 */
+const flash = ref(new Set<string>());
+let flashTimer: ReturnType<typeof setTimeout> | undefined;
+async function jumpTo(rows: OrderLine[], focus = false) {
+  if (!rows.length) return;
+  const first = rows[0];
+  const tab = FILTER_OK[lineFilter.value](first) ? lineFilter.value : FILTERS.find((f) => FILTER_OK[f](first));
+  if (tab) lineFilter.value = tab;
+  const s = new Set(folded.value);
+  for (const l of rows) s.delete(l.bill_no);
+  folded.value = s;
+  flash.value = new Set(rows.map(lineKey));
+  flashFirst.value = lineKey(first);
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => {
+    flash.value = new Set();
+    flashFirst.value = "";
+  }, 4000);
+  await nextTick();
+  const el = document.querySelector<HTMLElement>(".gen-drawer .lines .el-table__row.flash-first");
+  el?.scrollIntoView({ block: "center", behavior: "smooth" });
+  if (focus) el?.querySelector<HTMLInputElement>(".attach-cell input")?.focus();
+}
+const flashFirst = ref("");
 
 /** 去 SN 分配页（本 PI）；没有待分配的号时按钮置灰。 */
 function goAllocate() {
@@ -554,23 +623,19 @@ function onLineClick(row: OrderLine) {
   pickLine(row, !isPicked(row));
 }
 function lineClass({ row }: { row: OrderLine }) {
-  return isPicked(row) ? "picked" : "";
+  const k = lineKey(row);
+  return [isPicked(row) ? "picked" : "", flash.value.has(k) ? "flash" : "", flashFirst.value === k ? "flash-first" : ""]
+    .filter(Boolean)
+    .join(" ");
 }
-/** 已分配的单据删号后（或数量增加后）还有额度的照常生成，不再置灰。
- *  未勾选时：生成取快照中还有额度的全部单据，排号仍按单据编号从小到大（页面显示按修改日期排，不影响排号）。 */
-const defaultBills = computed<string[]>(() =>
-  ctx.value
-    ? ctx.value.bills
-        .filter((b: any) => b.in_snapshot && b.quota > 0)
-        .map((b: any) => b.bill_no as string)
-        .sort()
-    : [],
-);
-/** 生成范围：勾选的单据或物料行；都不勾选 = 整张 PI（defaultBills）。没有可生成的为 null，不用预演。 */
-const genScope = computed(() => {
-  if (!hasSel.value) return defaultBills.value.length ? { scope: "BILLS", bills: defaultBills.value } : null;
-  return scopeBody(sel.value);
-});
+/** 生成时的排号顺序（与后台一致）：单据按勾选 / 点选先后，单据内按附件项次从小到大（按数字比），项次相同按行号从小到大。
+ *  勾选框旁的数字按这个顺序标（单据头标单据次序，物料行标排号次序）。 */
+const genRows = computed(() => genOrder(pickedRows.value, attachOf) as OrderLine[]);
+const genIdx = (l: LineRef) => genRows.value.findIndex((x) => sameLine(x, l));
+const billIdx = (no: string) => [...new Set(genRows.value.map((x) => x.bill_no))].indexOf(no);
+/** 生成范围：勾选的单据或物料行；必须勾选，都不勾选为 null（不预演、不能生成）。
+ *  已分配的单据删号后（或数量增加后）还有额度的照常勾选生成。 */
+const genScope = computed(() => (hasSel.value ? scopeBody(sel.value) : null));
 /** 流水来源：MAX 从最大号之后（默认）/ RANGE 手动起止号（空号段与未使用的号，不够时从最大号之后接着编）。 */
 const seq = ref<SeqValue>({ mode: "MAX", start: null, end: null });
 
@@ -799,6 +864,7 @@ onUnmounted(() => {
   stopPoll();
   clearTimeout(listTimer);
   clearTimeout(previewTimer);
+  clearTimeout(flashTimer);
 });
 </script>
 
@@ -842,6 +908,7 @@ onUnmounted(() => {
 .order { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; font-size: 11px; color: #fff; background: var(--el-color-primary); }
 .sel { display: inline-flex; align-items: center; gap: 4px; }
 .lines :deep(tr.picked > td) { background: var(--el-color-primary-light-9); }
+.lines :deep(tr.flash > td) { background: var(--el-color-warning-light-8) !important; transition: background 0.3s; }
 .lines :deep(.el-table__row) { cursor: pointer; }
 .no-lines { padding: 8px 12px; margin: 0; }
 .chip { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 11px; font-size: 12px; border: 1px solid; white-space: nowrap; cursor: pointer; }

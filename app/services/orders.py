@@ -339,44 +339,54 @@ def _must_line(no: str, seq: int | None) -> dict:
 
 
 def effective_attach(line: dict, fill: dict | None) -> tuple[str, str]:
-    """附件项次的生效值与来源：K3 金蝶值 / MANUAL 页面填写 / EMPTY 待填写（必填，不能生成）。"""
+    """附件项次的生效值与来源：MANUAL 页面填写（金蝶有值时也可改，优先）/ K3 金蝶值 / EMPTY 待填写（必填，不能生成）。
+    填写后同序号的物料变了，填写值作废。"""
+    if fill is not None and fill["material_code"] == (line.get("material_code") or ""):
+        return fill["manual_value"], "MANUAL"
     k3v = util.trim(line.get("attach_no"))
     if k3v:
         return k3v, "K3"
-    if fill is not None and fill["material_code"] == (line.get("material_code") or ""):
-        return fill["manual_value"], "MANUAL"
     return "", "EMPTY"
 
 
 def fill_attach(cu: CurrentUser, bill_no: str | None, seq: int | None, value: str | None) -> dict:
-    """填写附件项次（金蝶为空时，必填）；物料行有号后不能改。值不写回金蝶。
-    生成时附件项次写到号上（之后转单、转组织不变），随 MES 报文下发，也列在 SN 导出文件中。"""
+    """填写附件项次（必填）：金蝶为空时须填写；金蝶有值时也可改（页面值优先，留空即改回金蝶值）。
+    物料行有号后不能改。值不写回金蝶。
+    生成时附件项次写到号上（之后转单、转组织不变），随 MES 报文下发，也列在 SN 导出文件中。
+    k3_value 记下填写时看到的金蝶值：金蝶之后返回不同的值时才提醒（见 changes._attach_k3）。"""
     no = util.trim(bill_no)
     v = util.trim(value)
-    if not v or len(v) > 64:
+    if len(v) > 64:
         raise biz(ErrorCode.ATTACH_INVALID)
     line = _must_line(no, seq)
     cu.check_write(line["org_code"])
     with locks.with_pi_lock(line["pi"]), db.tx():
         line = _must_line(no, seq)
-        if util.trim(line["attach_no"]):
-            raise biz(ErrorCode.ATTACH_FILL_K3)
+        k3v = util.trim(line["attach_no"])
+        if not v and not k3v:
+            raise biz(ErrorCode.ATTACH_INVALID)
         _check_editable(no, line["seq"])
         prev = db.one("SELECT * FROM sn_line_attach WHERE bill_no = %s AND seq = %s FOR UPDATE", no, seq)
         now = util.now()
-        db.exec(
-            "INSERT INTO sn_line_attach(bill_no, seq, manual_value, material_code, k3_value, filled_by, filled_at, "
-            "updated_at) VALUES (%s,%s,%s,%s,'',%s,%s,%s) ON DUPLICATE KEY UPDATE manual_value = VALUES(manual_value), "
-            "material_code = VALUES(material_code), k3_value = '', filled_by = VALUES(filled_by), "
-            "filled_at = VALUES(filled_at), updated_at = VALUES(updated_at)",
-            no,
-            seq,
-            v,
-            line["material_code"],
-            cu.emp_no,
-            now,
-            now,
-        )
+        if not v:
+            # 留空：撤掉页面填写，改回金蝶值
+            db.exec("DELETE FROM sn_line_attach WHERE bill_no = %s AND seq = %s", no, seq)
+        else:
+            db.exec(
+                "INSERT INTO sn_line_attach(bill_no, seq, manual_value, material_code, k3_value, filled_by, filled_at, "
+                "updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) ON DUPLICATE KEY UPDATE "
+                "manual_value = VALUES(manual_value), material_code = VALUES(material_code), "
+                "k3_value = VALUES(k3_value), filled_by = VALUES(filled_by), "
+                "filled_at = VALUES(filled_at), updated_at = VALUES(updated_at)",
+                no,
+                seq,
+                v,
+                line["material_code"],
+                k3v,
+                cu.emp_no,
+                now,
+                now,
+            )
         audit.record(
             cu,
             audit.entry(audit.ORDER_ATTACH_FILL)
@@ -384,7 +394,7 @@ def fill_attach(cu: CurrentUser, bill_no: str | None, seq: int | None, value: st
             .pi(line["pi"])
             .factory(line["org_code"])
             .material(line["material_code"])
-            .info(f"seq={seq} {'' if prev is None else prev['manual_value']} -> {v}"),
+            .info(f"seq={seq} {'' if prev is None else prev['manual_value']} -> {v or f'K3:{k3v}'}"),
         )
     return _line_view_of(line)
 

@@ -47,7 +47,7 @@ M = {
 "orders.pick": ("在上表选择一张生产订单", "Pick a bill above", "Chọn một chứng từ ở bảng trên"),
 "orders.toGenerate": ("去生成", "Generate", "Tạo SN"),
 "orders.attachEmpty": ("缺失", "Missing", "Thiếu"),
-"orders.attachConflict": ("金蝶已有值 {k3}（页面填写 {manual}），生成用金蝶值", "Kingdee now has {k3} (entered {manual}); generation uses the Kingdee value", "Kingdee đã có {k3} (đã nhập {manual}); khi tạo dùng giá trị Kingdee"),
+"orders.attachConflict": ("金蝶值 {k3}（页面填写 {manual}），生成用页面填写值", "Kingdee has {k3} (entered {manual}); generation uses the entered value", "Kingdee có {k3} (đã nhập {manual}); khi tạo dùng giá trị đã nhập"),
 "orders.attachInvalid": ("附件项次不能为空，不超过 64 字", "Attachment item cannot be empty, at most 64 characters", "Hạng mục đính kèm không được trống, tối đa 64 ký tự"),
 "orders.lengthEmpty": ("缺失", "Missing", "Thiếu"),
 "orders.unitEmpty": ("缺失", "Missing", "Thiếu"),

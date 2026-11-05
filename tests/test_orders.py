@@ -234,7 +234,7 @@ def test_attach_fill_and_k3_value_later(w, api, sql):
     r = w.compare()
     assert r["attach_k3_filled"] == 1
     line = ok(api.get(f"/api/orders/{a}/lines", w.admin))["lines"][0]
-    assert (line["attach_no"], line["attach_manual"], line["attach_k3_conflict"]) == ("Y", "X", True)
+    assert (line["attach_no"], line["attach_manual"], line["attach_k3_conflict"]) == ("X", "X", True), "页面填写值优先"
     al = [x for x in alerts(api, w.admin, a) if x["alert_type"] == "ATTACH"]
     assert al and al[0]["actions"] == ["ACK"]
     ok(api.post(f"/api/orders/alerts/{al[0]['id']}/handle", m(action="ACK"), w.admin))

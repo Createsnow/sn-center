@@ -360,7 +360,8 @@ def after_sync(cu: CurrentUser, present: list[str], removed: list[str]) -> list[
 
 
 def _attach_k3(cu: CurrentUser, bill_no: str) -> list[str]:
-    """页面填写过附件项次的行金蝶后来返回非空值：标「金蝶已有值」并提醒（之后生成以金蝶值为准，填写值保留）。"""
+    """页面填写过附件项次的行金蝶后来返回非空值（与填写时看到的金蝶值不同）：标「金蝶已有值」并提醒
+    （页面填写值优先，生成仍用填写值；要用金蝶值，在生成页把附件项次留空即改回）。"""
     out = []
     for r in db.all(
         "SELECT m.seq, m.attach_no, a.manual_value FROM sn_line_attach a "

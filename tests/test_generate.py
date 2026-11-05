@@ -556,7 +556,7 @@ def test_generation_takes_whole_lines(w, api, sql):
         w.admin,
     )
     p = ok(r)
-    assert p["qty"] == 12 and [(x["seq"], x["qty"]) for x in p["items"]] == [(2, 5), (1, 7)], "不填数量，每行整行生成"
+    assert p["qty"] == 12 and [(x["seq"], x["qty"]) for x in p["items"]] == [(1, 7), (2, 5)], "不填数量，每行整行生成"
     w.generate(pi, lines=[(bill, 2), (bill, 1)])
     c = {r["seq"]: r["own_generated"] for r in sql.all("SELECT * FROM sn_line_count WHERE bill_no = %s", bill)}
     assert c == {1: 7, 2: 5}
@@ -575,7 +575,13 @@ def test_preview_lists_reasons(w, api):
     ok(api.put("/api/orders/attach", m(bill_no=bill, seq=3, value="A9"), w.admin))
     assert ok(w.preview(pi, lines=[(bill, 3)]))["generatable"] is True, "填写附件项次后可以生成；可缩小范围"
     assert ok(w.preview(pi))["generatable"] is False
-    assert api.put("/api/orders/attach", m(bill_no=bill, seq=1, value="A9"), w.admin).code == "ATTACH_FILL_K3"
+    r = ok(api.put("/api/orders/attach", m(bill_no=bill, seq=1, value="A9"), w.admin))
+    assert (r["attach_no"], r["attach_source"]) == ("A9", "MANUAL"), "金蝶有附件项次也可改，页面值优先"
+    r = ok(api.put("/api/orders/attach", m(bill_no=bill, seq=1, value=""), w.admin))
+    assert (r["attach_no"], r["attach_source"]) == ("1", "K3"), "留空改回金蝶值"
+    assert api.put("/api/orders/attach", m(bill_no=bill, seq=3, value=""), w.admin).code == "ATTACH_INVALID", (
+        "金蝶为空时必填"
+    )
     r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=2, value="7"), w.admin))
     assert (r["length"], r["length_source"]) == ("7", "MANUAL"), "金蝶有米数也可改"
     assert api.put("/api/orders/length", m(bill_no=bill, seq=1, value="x" * 65), w.admin).code == "LENGTH_FILL_INVALID"
@@ -688,17 +694,18 @@ def test_length_is_written_as_string(w, sql):
     ], "米数不按数值规范化，000 / 001 / 其他原样写入"
 
 
-def test_click_order_and_repeated_material_lines(w, sql):
-    org, pi, bill = mk(w, ("9148363", 100), ("9148363", 50), ("9150001", 30))
+def test_attach_order_within_bill_and_repeated_material_lines(w, sql):
+    """单据内按附件项次从小到大排号（与点选先后无关）。"""
+    org, pi, bill = mk(w, ("9148363", 100, "100", "2"), ("9148363", 50, "100", "3"), ("9150001", 30, "100", "1"))
     ok(w.bind_pi(pi, w.rule(P())))
-    w.generate(pi, lines=[(bill, 3), (bill, 1)])
+    w.generate(pi, lines=[(bill, 1), (bill, 3)])
     rows = {
         r["bill_seq"]: (r["a"], r["b"])
         for r in sql.all(
             "SELECT bill_seq, MIN(seq_dec) a, MAX(seq_dec) b FROM sn_item WHERE pi_no = %s GROUP BY bill_seq", pi
         )
     }
-    assert rows == {3: (1, 30), 1: (31, 130)}, "先点序号 3 再点序号 1"
+    assert rows == {3: (1, 30), 1: (31, 130)}, "先点序号 1 再点序号 3，序号 3 的附件项次小，先排"
     c = {r["seq"]: r for r in sql.all("SELECT * FROM sn_line_count WHERE bill_no = %s", bill)}
     assert c[1]["own_generated"] == 100 and 2 not in c
 
@@ -714,6 +721,36 @@ def test_whole_bill_order(w, sql):
         )
     }
     assert rows == {1: (1, 100), 2: (101, 150), 3: (151, 180)}
+
+
+def test_gen_order_bills_by_pick_then_attach_as_number_ties_by_line(w, api, sql):
+    """排号顺序：单据按勾选 / 点选先后；单据内附件项次按数字比（2 在 10 前），项次相同按行号；
+    页面改过的项次照样参与排序。"""
+    org, pi, a = mk(w, ("M1", 2, "100", "10"), ("M2", 2, "100", "2"), ("M3", 2, "100", "02"), ("M4", 2, "100", "A"))
+    _, _, b = mk(w, ("M5", 1, "100", "5"), ("M6", 1, "100", "1"), pi=pi, org=org)
+    ok(w.bind_pi(pi, w.rule(P())))
+    p = ok(w.preview(pi, bills=[b, a]))
+    assert [(x["bill_no"], x["seq"]) for x in p["items"]] == [(b, 2), (b, 1), (a, 2), (a, 3), (a, 1), (a, 4)], (
+        "后勾的单据在后；2 与 02 相同按行号；不是数字的排最后"
+    )
+    p = ok(w.preview(pi, lines=[(a, 1), (b, 1), (a, 4), (b, 2)]))
+    assert [(x["bill_no"], x["seq"]) for x in p["items"]] == [(a, 1), (a, 4), (b, 2), (b, 1)], (
+        "点选：单据按第一次点到的先后，单据内仍按附件项次"
+    )
+    ok(api.put("/api/orders/attach", m(bill_no=a, seq=1, value="1"), w.admin))
+    j = w.generate(pi, bills=[a])
+    assert j["start_seq_dec"] == 1
+    rows = {
+        r["bill_seq"]: (r["a"], r["b"], r["attach_no"])
+        for r in sql.all(
+            "SELECT bill_seq, MIN(seq_dec) a, MAX(seq_dec) b, MAX(attach_no) attach_no FROM sn_item "
+            "WHERE bill_no = %s GROUP BY bill_seq",
+            a,
+        )
+    }
+    assert rows == {1: (1, 2, "1"), 2: (3, 4, "2"), 3: (5, 6, "02"), 4: (7, 8, "A")}, (
+        "金蝶值改成 1 后排第一，号上写页面值"
+    )
 
 
 def test_preview_invalidated_by_other_generation(w, api):

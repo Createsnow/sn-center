@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  billMark, defaultRulePrefix, emptySel, genLimit, lineOrder, scopeBody, selectedLines, seqSource, toggleBill, toggleLine,
+  billMark, compareAttach, defaultRulePrefix, dupAttach, emptySel, genLimit, genOrder, lineOrder, scopeBody, selectedLines,
+  seqSource, toggleBill, toggleLine,
 } from "./genScope.js";
 
 const BILLS = { A: [1, 2, 3], B: [1, 2] };
@@ -70,4 +71,30 @@ test("default rule prefix: first picked bill until the PI has SNs, then the pref
   // 单据编号不足 7 位：整个编号
   assert.equal(defaultRulePrefix({ prefix: "", custom: null }, [{ bill_no: "MO1", seq: 1 }]), "MO1");
   assert.equal(defaultRulePrefix(undefined, []), "");
+});
+
+test("attachment numbers compare as numbers; non-numbers go after, by text", () => {
+  assert.equal(compareAttach("2", "10"), -1);
+  assert.equal(compareAttach("01", "1"), 0);
+  assert.equal(compareAttach("1.5", "1.50"), 0);
+  assert.equal(compareAttach("1.05", "1.5"), -1);
+  assert.equal(compareAttach("99999999999999999999", "100000000000000000000"), -1, "不限位数");
+  assert.equal(compareAttach("A1", "999"), 1);
+  assert.equal(compareAttach("A1", "B0"), -1);
+  assert.equal(compareAttach(" 3 ", "3"), 0);
+});
+
+test("generation order: bills by first pick, lines by attachment no., ties by line no.", () => {
+  const att = { "A#1": "10", "A#2": "2", "A#3": "2", "B#1": "1", "B#2": "3" };
+  const of = (l) => att[`${l.bill_no}#${l.seq}`];
+  const picked = [L("B", 2), L("A", 1), L("A", 3), L("B", 1), L("A", 2)];
+  assert.deepEqual(genOrder(picked, of), [L("B", 1), L("B", 2), L("A", 2), L("A", 3), L("A", 1)]);
+  assert.deepEqual(picked[0], L("B", 2), "不改原数组");
+});
+
+test("duplicate attachment numbers are grouped per bill", () => {
+  const att = { "A#1": "1", "A#2": "01", "A#3": "2", "B#1": "1", "B#2": "", "B#3": "" };
+  const of = (l) => att[`${l.bill_no}#${l.seq}`];
+  const lines = [L("A", 2), L("A", 1), L("A", 3), L("B", 1), L("B", 2), L("B", 3)];
+  assert.deepEqual(dupAttach(lines, of), [{ bill_no: "A", attach: "01", lines: [L("A", 1), L("A", 2)] }], "空项次不算重复，跨单据不算");
 });
