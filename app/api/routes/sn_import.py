@@ -2,6 +2,7 @@
 
 上传的 xlsx 直接作请求体（Content-Type: application/octet-stream），文件名放在查询参数 file_name；
 先 /check 检查（不落库），再「确定导入」POST /sn-import（有一行不能导入整个文件都不导入）。
+表头按列名认列（顺序不限，其他列不读），见 sn_import.COLUMNS。
 """
 
 from fastapi import APIRouter, Request
@@ -27,7 +28,7 @@ async def _content(request: Request) -> bytes:
 
 @router.get(
     "/template",
-    summary="导入模板 xlsx：表头固定为 PI、单据编号、SN、生产组织（必填）+ 物料编码、附件项次、米数、客户编码（选填）",
+    summary="导入模板 xlsx：固定列 PI、单据编号、SN、生产组织（必须有）+ 物料编码、附件项次、米数、客户编码（选填）",
 )
 def import_template(cu: OperatorDep):
     return download("SN导入模板", sn_import.template())

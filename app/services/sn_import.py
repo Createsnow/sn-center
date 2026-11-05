@@ -2,9 +2,11 @@
 只能分配；可另带物料编码、附件项次、米数、客户编码
 （推送 / 拉取给 MES 的明细里对应 materialCode、attachNo、length、customerCode）。
 
-- 文件：xlsx，首个非空行为表头，A～H 列依次「PI、单据编号、SN、生产组织、物料编码、附件项次、米数、客户编码」
-  （列名、顺序固定，去首尾空白、不分大小写比较；A～D 必须有，E～H 可从后往前省略：只有前 4 列的旧模板照常可用，
-  但不能跳列、换顺序或多出别的列），之后每行一枚号；空行跳过。
+- 文件：xlsx，首个非空行为表头，按列名认列（COLUMNS：列名固定，去空白、不分大小写比较；列的顺序不限）：
+  「PI、单据编号、SN、生产组织」四列必须有（分配要用：号挂到哪张单据、分到哪个生产组织）；
+  「物料编码（也可写作料号）、附件项次、米数、客户编码」有就读、没有按空（推送 / 拉取的明细与转移的
+  「同料号、同附件项次」要用）；其他列名的列不读（可直接用带其他列的表格导入）。同一列出现两次（含别名）不能导入。
+  之后每行一枚号；认得的列都为空的行跳过。
 - 每行的条件：A～D 必填；SN 不超过 64 位、不含空白；单据须在订单快照中，PI、生产组织（填编码或名称）与之相同；
   普通操作员只能导入授权生产组织的单据；SN 在文件内不能重复，也不能与号池（已生成、已导入的号）重复。
   E～H 选填，填了按订单快照检查（与转移「同料号、同附件项次」一致）：物料编码须是该单据的物料；附件项次须是该单据
@@ -55,9 +57,33 @@ CODE_MAX = 64
 #: 生产组织可填编码或名称（名称最长 128）
 ORG_MAX = 128
 
-#: 表头：列名、顺序固定；前 REQUIRED_COLS 列（A～D）必须有，之后的列（E～H）可从后往前省略
-HEADERS = ["PI", "单据编号", "SN", "生产组织", "物料编码", "附件项次", "米数", "客户编码"]
-REQUIRED_COLS = 4
+
+@dataclass(frozen=True)
+class Column:
+    #: Row 的字段名
+    field: str
+    #: 列名（模板里写这个）
+    name: str
+    #: 表头必须有这一列
+    required: bool
+    #: 也认的列名
+    aliases: tuple[str, ...] = ()
+
+
+#: 固定列：按列名认列，顺序不限（模板按这个顺序出）；required 的列表头必须有，其余有就读，其他列不读
+COLUMNS = (
+    Column("pi", "PI", True),
+    Column("bill", "单据编号", True),
+    Column("sn", "SN", True),
+    Column("org", "生产组织", True),
+    Column("material", "物料编码", False, ("料号",)),
+    Column("attach", "附件项次", False),
+    Column("length", "米数", False),
+    Column("customer", "客户编码", False),
+)
+HEADERS = [c.name for c in COLUMNS]
+REQUIRED = [c.name for c in COLUMNS if c.required]
+OPTIONAL = [c.name for c in COLUMNS if not c.required]
 
 # 行的问题（页面按代码翻译，params 为占位参数）
 PI_EMPTY = "PI_EMPTY"
@@ -107,7 +133,7 @@ class Row:
 
 
 def template() -> Iterator[bytes]:
-    """导入模板：一行表头（A～D 必填，E～H 选填），各列设为文本格式
+    """导入模板：一行表头（固定列，前 4 列必须有，其余选填；导入时按列名认列、顺序不限），各列设为文本格式
     （长串数字的 SN、带前导 0 的米数不会被 Excel 改写）。"""
     wb = Workbook()
     ws = wb.active
@@ -137,25 +163,34 @@ def _key(v: Any) -> str:
     return "".join(_text(v).split()).lower()
 
 
-_HEADER_KEYS = [_key(h) for h in HEADERS]
+#: 列名（含别名）→ 固定列
+_BY_KEY = {_key(n): c for c in COLUMNS for n in (c.name, *c.aliases)}
 
 
-def _header_error():
+def _header_error(missing: list[str]):
     return biz(
         ErrorCode.IMPORT_HEADER_INVALID,
-        columns="、".join(HEADERS),
-        required="、".join(HEADERS[:REQUIRED_COLS]),
+        missing="、".join(missing),
+        required="、".join(REQUIRED),
+        optional="、".join(OPTIONAL),
     )
 
 
-def _check_header(cells: list) -> int:
-    """表头须是 HEADERS 的前 n 列（REQUIRED_COLS ≤ n ≤ 全部，依次排列），之后不能再有列名；返回 n（读几列）。"""
-    keys = [_key(v) for v in cells]
-    while keys and not keys[-1]:
-        keys.pop()
-    if not REQUIRED_COLS <= len(keys) <= len(HEADERS) or keys != _HEADER_KEYS[: len(keys)]:
-        raise _header_error()
-    return len(keys)
+def _check_header(cells: list) -> dict[str, int]:
+    """按列名认列：返回 Row 字段 → 列下标。必须有的列缺了报 IMPORT_HEADER_INVALID（列出缺的列）；
+    同一列出现两次（含别名，如「物料编码」和「料号」）报 IMPORT_HEADER_DUPLICATE；其他列名的列不读。"""
+    at: dict[str, int] = {}
+    for i, v in enumerate(cells):
+        c = _BY_KEY.get(_key(v))
+        if c is None:
+            continue
+        if c.field in at:
+            raise biz(ErrorCode.IMPORT_HEADER_DUPLICATE, column=c.name)
+        at[c.field] = i
+    missing = [c.name for c in COLUMNS if c.required and c.field not in at]
+    if missing:
+        raise _header_error(missing)
+    return at
 
 
 def _cell(cells: list, i: int) -> str:
@@ -163,8 +198,8 @@ def _cell(cells: list, i: int) -> str:
 
 
 def parse(content: bytes) -> list[Row]:
-    """读 xlsx 第一张表：首个非空行为表头（HEADERS 的前 n 列），之后按表头的列读数据；返回数据行（空行跳过）。
-    表头没有的选填列按空处理；表头之外的列不读。"""
+    """读 xlsx 第一张表：首个非空行为表头（按列名认列，见 _check_header），之后按认出的列读数据；返回数据行。
+    表头没有的选填列按空处理；认不出的列不读；认得的列都为空的行跳过（只在其他列有内容的行也跳过）。"""
     if not content:
         raise biz(ErrorCode.IMPORT_EMPTY)
     if len(content) > MAX_BYTES:
@@ -177,20 +212,22 @@ def parse(content: bytes) -> list[Row]:
         ws = wb.worksheets[0] if wb.worksheets else None
         if ws is None:
             raise biz(ErrorCode.IMPORT_EMPTY)
-        width = 0
+        at: dict[str, int] | None = None
         out: list[Row] = []
         for no, values in enumerate(ws.iter_rows(values_only=True), start=1):
             cells = list(values or ())
-            if not any(_text(v) for v in cells):
+            if at is None:
+                if any(_text(v) for v in cells):
+                    at = _check_header(cells)
                 continue
-            if not width:
-                width = _check_header(cells)
+            vals = {f: _cell(cells, i) for f, i in at.items()}
+            if not any(vals.values()):
                 continue
-            out.append(Row(no, *(_cell(cells, i) if i < width else "" for i in range(len(HEADERS)))))
+            out.append(Row(no, **vals))
             if len(out) > MAX_ROWS:
                 raise biz(ErrorCode.IMPORT_TOO_MANY, max=MAX_ROWS, rows=f"{MAX_ROWS}+")
-        if not width:
-            raise _header_error()
+        if at is None:
+            raise _header_error(REQUIRED)
         if not out:
             raise biz(ErrorCode.IMPORT_EMPTY)
         return out

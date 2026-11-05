@@ -915,7 +915,7 @@
   },
   "snImport": {
     "title": "SN import",
-    "desc": "Import SNs that already exist outside this system (PI + Bill No. + SN + Production org, optionally material code, attachment item, length and customer code, which go to MES with push / pull): they wait on the SN allocation page and can only be allocated",
+    "desc": "Import SNs that already exist outside this system (PI + Bill No. + SN + Production org, optionally material code, attachment item, length and customer code, which go to MES with push / pull; columns are found by name in any order, other columns are ignored): they wait on the SN allocation page and can only be allocated",
     "template": "Download template",
     "import": "Import",
     "dialogTitle": "Import SNs",

@@ -161,8 +161,9 @@ class ErrorCode(Enum):
     IMPORT_FILE_TOO_LARGE = (400, "导入文件不能超过 {max} MB")
     IMPORT_HEADER_INVALID = (
         400,
-        "导入文件首行表头须依次为：{columns}（列名、顺序固定；{required} 必须有，其后的列可从后往前省略）",
+        "导入文件表头缺少：{missing}（须有 {required} 列，{optional} 列选填；按列名认列，顺序不限，其他列不读）",
     )
+    IMPORT_HEADER_DUPLICATE = (400, "导入文件表头「{column}」出现了不止一次（含别名），不知道读哪一列")
     IMPORT_EMPTY = (400, "导入文件没有数据行")
     IMPORT_TOO_MANY = (400, "单次最多导入 {max} 行，文件有 {rows} 行")
     IMPORT_HAS_ISSUES = (400, "有 {count} 行不能导入，整个文件都没有导入；请改好后重新导入")

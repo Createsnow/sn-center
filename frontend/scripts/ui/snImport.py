@@ -1,7 +1,7 @@
 # SN 导入：系统外已有的 SN 按 PI + 单据编号 + SN + 生产组织登记，之后生成不会再出这些号
 M = {
 "snImport.title": ("SN 导入", "SN import", "Nhập SN"),
-"snImport.desc": ("导入本系统之外已有的 SN（PI + 单据编号 + SN + 生产组织，可另填物料编码、附件项次、米数、客户编码，随推送 / 拉取交给 MES）：导入后在 SN 分配页待分配，只能分配", "Import SNs that already exist outside this system (PI + Bill No. + SN + Production org, optionally material code, attachment item, length and customer code, which go to MES with push / pull): they wait on the SN allocation page and can only be allocated", "Nhập các SN đã có ngoài hệ thống (PI + Số chứng từ + SN + Tổ chức sản xuất, có thể thêm mã vật tư, hạng mục đính kèm, số mét, mã khách hàng, gửi cho MES khi đẩy / kéo): sau khi nhập chờ phân bổ ở trang Phân bổ SN và chỉ có thể phân bổ"),
+"snImport.desc": ("导入本系统之外已有的 SN（PI + 单据编号 + SN + 生产组织，可另填物料编码、附件项次、米数、客户编码，随推送 / 拉取交给 MES；按列名认列，顺序不限，其他列不读）：导入后在 SN 分配页待分配，只能分配", "Import SNs that already exist outside this system (PI + Bill No. + SN + Production org, optionally material code, attachment item, length and customer code, which go to MES with push / pull; columns are found by name in any order, other columns are ignored): they wait on the SN allocation page and can only be allocated", "Nhập các SN đã có ngoài hệ thống (PI + Số chứng từ + SN + Tổ chức sản xuất, có thể thêm mã vật tư, hạng mục đính kèm, số mét, mã khách hàng, gửi cho MES khi đẩy / kéo; cột được nhận theo tên, thứ tự tùy ý, các cột khác bị bỏ qua): sau khi nhập chờ phân bổ ở trang Phân bổ SN và chỉ có thể phân bổ"),
 "snImport.template": ("下载模板", "Download template", "Tải mẫu"),
 "snImport.import": ("导入", "Import", "Nhập"),
 "snImport.dialogTitle": ("导入 SN", "Import SNs", "Nhập SN"),

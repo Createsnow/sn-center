@@ -915,7 +915,7 @@
   },
   "snImport": {
     "title": "Nhập SN",
-    "desc": "Nhập các SN đã có ngoài hệ thống (PI + Số chứng từ + SN + Tổ chức sản xuất, có thể thêm mã vật tư, hạng mục đính kèm, số mét, mã khách hàng, gửi cho MES khi đẩy / kéo): sau khi nhập chờ phân bổ ở trang Phân bổ SN và chỉ có thể phân bổ",
+    "desc": "Nhập các SN đã có ngoài hệ thống (PI + Số chứng từ + SN + Tổ chức sản xuất, có thể thêm mã vật tư, hạng mục đính kèm, số mét, mã khách hàng, gửi cho MES khi đẩy / kéo; cột được nhận theo tên, thứ tự tùy ý, các cột khác bị bỏ qua): sau khi nhập chờ phân bổ ở trang Phân bổ SN và chỉ có thể phân bổ",
     "template": "Tải mẫu",
     "import": "Nhập",
     "dialogTitle": "Nhập SN",

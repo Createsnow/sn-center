@@ -1,5 +1,5 @@
-"""SN 导入：表头固定为 PI + 单据编号 + SN + 生产组织（必填）+ 物料编码 + 附件项次 + 米数 + 客户编码
-（选填，可从后往前省略）；
+"""SN 导入：固定列按列名认、顺序不限、其他列不读：PI + 单据编号 + SN + 生产组织（必须有）+ 物料编码（料号）
++ 附件项次 + 米数 + 客户编码（有就读）；
 导入的号进号池（待分配），只能分配；填了的选填列随推送 / 拉取交给 MES；
 先检查后确定导入，有一行不能导入整个文件不导入；
 导入的号不能与号池、已导入的号重复，之后生成撞上已导入的号整次回滚；普通操作员只能导入、查看授权组织的单据。"""
@@ -297,23 +297,32 @@ def test_operator_only_imports_and_sees_authorized_orgs(w, api, sql):
 def test_bad_files(w, api):
     assert check(api, b"not an xlsx", w.admin).code == "IMPORT_FILE_INVALID"
     assert check(api, b"", w.admin).code == "IMPORT_EMPTY"
-    # 表头固定：少了必填列、多列、跳列、换顺序、改列名都不行
-    for head in (
-        ("PI", "单据编号", "SN"),
-        (*HEAD, "其他"),
-        (*FULL, "其他"),
-        (*HEAD, "附件项次"),
-        (*HEAD, "物料编码", "米数"),
-        ("单据编号", "PI", "SN", "生产组织"),
-        ("PI", "单据", "SN", "生产组织"),
+    # 按列名认列：缺了必须有的列（含改了列名的）列出缺哪几列
+    required, optional = "、".join(HEAD), "物料编码、附件项次、米数、客户编码"
+    for head, missing in (
+        (("PI", "单据编号", "SN"), "生产组织"),
+        (("PI", "单据", "SN", "生产组织"), "单据编号"),
+        (("物料编码", "附件项次", "米数", "客户编码"), required),
+        (("备注",), required),
     ):
         r = check(api, xlsx(("P", "B", "S", "O"), headers=head), w.admin)
         assert (r.code, r["params"]) == (
             "IMPORT_HEADER_INVALID",
-            {"columns": "、".join(FULL), "required": "、".join(HEAD)},
+            {"missing": missing, "required": required, "optional": optional},
         ), head
-    # 选填列可从后往前省略：只有 A～D（旧模板）、A～E、A～H 都能读
-    for head in (HEAD, FULL[:5], FULL):
+    # 同一列出现两次（含别名）
+    for head, col in (((*HEAD, "SN"), "SN"), ((*HEAD, "物料编码", "料号"), "物料编码")):
+        r = check(api, xlsx(("P", "B", "S", "O"), headers=head), w.admin)
+        assert (r.code, r["params"]) == ("IMPORT_HEADER_DUPLICATE", {"column": col}), head
+    # 只有必须有的列、只有部分选填列、全部列、换了顺序、夹着其他列、列名大小写和空白不同都能读
+    for head in (
+        HEAD,
+        (*HEAD, "米数"),
+        FULL,
+        ("生产组织", "SN", "单据编号", "PI"),
+        ("备注", "PI", "其他", "单据编号", "SN", "生产组织", "说明"),
+        (" pi ", "单据 编号", "sn", "生产组织"),
+    ):
         r = check(api, xlsx(("P", "B", "S", "O"), headers=head), w.admin)
         assert r.status == 200 and r["total"] == 1, (head, str(r))
     assert check(api, xlsx(headers=HEAD), w.admin).code == "IMPORT_EMPTY"
@@ -455,3 +464,38 @@ def test_optional_columns_go_to_mes_with_push_and_pull(w, api, sql):
     token, _ = w.mes_account(org)
     got = ok(w.mes_next(token, pi=pi))["batch"]["items"]
     assert {i["sn"]: {k: i[k] for k in fields} for i in got} == {s: {k: items[s][k] for k in fields} for s in items}
+
+
+def test_columns_found_by_name_in_any_order(w, api, sql):
+    """固定列按列名认、顺序不限：值按列名取（不按位置），「料号」与「物料编码」同义，其他列不读；
+    只在其他列有内容的行跳过。"""
+    org, pi, bill = mk(w, ("M1", 2, "100", "A1"))
+    a, b = uid("SA"), uid("SB")
+    head = ("备注", "料号", "SN", "客户编码", "生产组织", "附件项次", "PI", "单据编号", "米数")
+    content = xlsx(
+        ("说明 1", "M1", a, "C1", org, "A1", pi, bill, "0100"),
+        ("只有备注", None, None, None, None, None, None, None, None),
+        (None, None, b, None, org, None, pi, bill, None),
+        headers=head,
+    )
+    r = ok(check(api, content, w.admin))
+    assert (r["total"], r["bad"]) == (2, 0), str(r)
+    ok(run(api, content, w.admin))
+    got = {
+        x["sn"]: (
+            x["pi_no"],
+            x["bill_no"],
+            x["gen_org_code"],
+            x["material_code"],
+            x["attach_no"],
+            x["length_text"],
+            x["customer_code"],
+        )
+        for x in sql.all("SELECT * FROM sn_item WHERE sn IN (%s, %s)", a, b)
+    }
+    assert got == {
+        a: (pi, bill, org, "M1", "A1", "0100", "C1"),
+        b: (pi, bill, org, "", "", None, ""),
+    }
+    rows = sql.all("SELECT sn, row_no FROM sn_import_item WHERE sn IN (%s, %s) ORDER BY row_no", a, b)
+    assert [(x["sn"], x["row_no"]) for x in rows] == [(a, 2), (b, 4)], "行号为文件里的行号"

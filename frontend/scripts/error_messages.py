@@ -127,7 +127,8 @@ E = {
 # ---------- SN 导入 ----------
 "IMPORT_FILE_INVALID": ("The import file must be an xlsx file", "Tệp nhập phải là định dạng xlsx"),
 "IMPORT_FILE_TOO_LARGE": ("The import file cannot exceed {max} MB", "Tệp nhập không được vượt quá {max} MB"),
-"IMPORT_HEADER_INVALID": ("The header row of the import file must be, in order: {columns} (fixed names and order; {required} are required, the columns after them may be left off from the end)", "Dòng tiêu đề của tệp nhập phải lần lượt là: {columns} (tên và thứ tự cột cố định; bắt buộc có {required}, các cột sau đó có thể bỏ bớt từ cuối)"),
+"IMPORT_HEADER_INVALID": ("The header row of the import file is missing: {missing} (columns {required} are required, {optional} are optional; columns are found by name in any order, other columns are ignored)", "Dòng tiêu đề của tệp nhập thiếu: {missing} (bắt buộc có các cột {required}, các cột {optional} không bắt buộc; cột được nhận theo tên, thứ tự tùy ý, các cột khác bị bỏ qua)"),
+"IMPORT_HEADER_DUPLICATE": ("The column \"{column}\" appears more than once in the header of the import file (including aliases), so it is unclear which one to read", "Cột \"{column}\" xuất hiện nhiều lần trong dòng tiêu đề của tệp nhập (kể cả tên khác), không biết đọc cột nào"),
 "IMPORT_EMPTY": ("The import file has no data rows", "Tệp nhập không có dòng dữ liệu"),
 "IMPORT_TOO_MANY": ("At most {max} rows per import; the file has {rows} rows", "Mỗi lần nhập tối đa {max} dòng, tệp có {rows} dòng"),
 "IMPORT_HAS_ISSUES": ("{count} rows cannot be imported, so nothing in the file was imported; fix them and import again", "Có {count} dòng không thể nhập nên toàn bộ tệp chưa được nhập; vui lòng sửa rồi nhập lại"),
