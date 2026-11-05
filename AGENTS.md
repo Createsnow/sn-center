@@ -4,6 +4,7 @@
 
 - 模块方向为 server → system/业务模块 → framework → common；跨模块通过 service 接口或 framework 端口，禁止访问别的模块 Mapper 与 service.impl。
 - 保持 Controller/Service/impl/Mapper/Entity/DTO/Query/VO/MapStruct 分层，权限在服务用例验证；ArchitectureTest 不得删除或放宽。
+- 每个模块只访问以 `{module}_` 为前缀的自有表，迁移放本模块 `db/migration/{module}/`，跨模块数据经 framework 端口；不跨模块联表。
 - MySQL 是业务和任务最终状态，Redis 仅会话与入口预算。成功审计与业务同事务。
 - React 函数组件、严格 TypeScript、TanStack Query；业务 ID 和版本使用精确字符串；文案三语同步。
 - 不使用 PowerShell 脚本：Windows 用 tools\*.bat，Linux 用 deploy/ 下 Compose 与 sh。格式化 tools\format.bat 后执行 tools\format.bat check；已发布迁移不可改写。
