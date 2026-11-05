@@ -114,6 +114,18 @@ def segs(w, pi: str, bill: str) -> dict:
     return ok(w.api.get(f"/api/generate/segments?pi={pi}&bill_no={bill}", w.admin))
 
 
+def test_bill_segments_sorted_by_attach_no(w):
+    """单据号段弹窗的已用号段按附件项次从小到大（按数字比：2 在 10 前），项次相同按行号。"""
+    org, pi, bill = mk(w, ("M1", 2, "100", "10"), ("M2", 3, "100", "2"), ("M3", 1, "100", "2"))
+    ok(w.bind_pi(pi, w.rule(P(), seq_len=4, with_length=False)))
+    w.generate(pi)
+    rows = [
+        (x["attach_no"], x["bill_seq"], x["material_code"], x["start_seq"], x["end_seq"])
+        for x in segs(w, pi, bill)["use"]
+    ]
+    assert rows == [("2", 2, "M2", 1, 3), ("2", 3, "M3", 4, 4), ("10", 1, "M1", 5, 6)]
+
+
 def test_bill_segments_use_free_and_sn_detail(w, api, sql):
     """单据号段：现有的号按物料行分开、行内按流水连续合并（转入的号按流水归属 PI 单独成段），空闲号段按删号时的
     生成单据归属；生成详情的单据头带号段数与枚数（按物料行计）；SN 明细按流水分页（可只看一个物料行）；

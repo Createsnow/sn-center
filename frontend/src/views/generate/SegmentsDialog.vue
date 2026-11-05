@@ -9,9 +9,13 @@
       </el-tabs>
 
       <template v-if="bill && tab === 'use'">
-        <!-- 同一物料行的几段相邻排，序号 / 物料 / 附件项次合并单元格（多段时物料下写出段数与枚数） -->
+        <!-- 列依次为附件项次、行号、物料编码（同一物料行的几段相邻排，这三列合并单元格，多段时物料下写出段数与枚数）；
+             行按附件项次从小到大（后台排好），项次相同按行号 -->
         <el-table :data="useRows" size="small" max-height="420" :empty-text="t('common.empty')" :span-method="lineSpan" class="use-table">
-          <el-table-column :label="t('common.billSeq')" width="68" class-name="line-cell">
+          <el-table-column :label="t('common.attachNo')" min-width="80" class-name="line-cell">
+            <template #default="{ row }">{{ row.attach_no || "—" }}</template>
+          </el-table-column>
+          <el-table-column :label="t('common.lineNo')" width="68" class-name="line-cell">
             <template #default="{ row }">{{ row.bill_seq }}</template>
           </el-table-column>
           <el-table-column :label="t('common.material')" min-width="110" class-name="line-cell">
@@ -21,9 +25,6 @@
                 {{ t("generate.segLineSum", { n: num(lineGroups[$index].span), qty: num(lineGroups[$index].qty) }) }}
               </div>
             </template>
-          </el-table-column>
-          <el-table-column :label="t('common.attachNo')" min-width="80" class-name="line-cell">
-            <template #default="{ row }">{{ row.attach_no || "—" }}</template>
           </el-table-column>
           <el-table-column :label="t('generate.segStartSn')" min-width="130">
             <template #default="{ row }"><span class="sn-mono">{{ row.start_sn }}</span></template>
@@ -114,7 +115,7 @@ const useRows = computed<any[]>(() => data.value?.use ?? []);
 const freeRows = computed<any[]>(() => (bill.value ? data.value?.free ?? [] : props.gaps?.segments ?? []));
 const freeTruncated = computed(() => (bill.value ? data.value?.free_truncated : props.gaps?.truncated));
 
-/** 物料行合并：相邻、序号 / 物料 / 附件项次都相同的段合成一组；组首行记 span（段数）与 qty（枚数），其余行 span = 0。 */
+/** 物料行合并：相邻、行号 / 物料 / 附件项次都相同的段合成一组；组首行记 span（段数）与 qty（枚数），其余行 span = 0。 */
 const lineGroups = computed(() => {
   const rows = useRows.value;
   const out: { span: number; qty: number }[] = rows.map(() => ({ span: 0, qty: 0 }));
@@ -132,7 +133,7 @@ const lineGroups = computed(() => {
   return out;
 });
 
-/** 前三列（序号、物料、附件项次）按物料行合并。 */
+/** 前三列（附件项次、行号、物料）按物料行合并。 */
 function lineSpan({ rowIndex, columnIndex }: { rowIndex: number; columnIndex: number }) {
   if (columnIndex > 2) return { rowspan: 1, colspan: 1 };
   const span = lineGroups.value[rowIndex]?.span ?? 1;

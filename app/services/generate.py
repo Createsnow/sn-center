@@ -294,7 +294,8 @@ def _bill_key(cu: CurrentUser, pi_in: str | None, bill_in: str | None) -> tuple[
 
 def bill_segments(cu: CurrentUser, pi_in: str | None, bill_in: str | None) -> dict:
     """单据号段：已用号段 = 单据挂在本 PI 下现有的号按物料行（单据序号）分开、行内按流水连续合并成段（转入的号
-    按流水归属 PI 单独成段），按序号排，同一物料行内本 PI 的在前；每段带序号、物料、附件项次（号上的值）；
+    按流水归属 PI 单独成段），按附件项次（号上的值）从小到大排（与排号同一比较，空的排最后），项次相同按序号（行号），
+    同一物料行内本 PI 的在前、再按流水；每段带序号、物料、附件项次；
     空闲号段 = 本单据生成后删掉、现在没有号占用的流水。另给 PI 最大号与下一个号（同一 PI 各单据共用流水，
     页面在底部「流水」显示，不列在单据号段里）。"""
     pi, bill, facs = _bill_key(cu, pi_in, bill_in)
@@ -335,6 +336,8 @@ def bill_segments(cu: CurrentUser, pi_in: str | None, bill_in: str | None) -> di
         }
         for r in rows
     ]
+    # 稳定排序：同一物料行的几段保持 SQL 里的先后（本 PI 的在前、按流水），截断前排好，列出的是排在最前的号段
+    use.sort(key=lambda x: (not x["attach_no"].strip(), attach_order(x["attach_no"]), x["bill_seq"]))
     last = last_seq(pi)
     free = [x for x in free_segments(pi, last) if x["bill_no"] == bill]
     return {
