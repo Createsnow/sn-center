@@ -1,11 +1,11 @@
 <template>
-  <div class="page">
+  <div class="page page--fill">
     <PageHead :title="t('users.title')" :desc="t('users.desc')">
       <el-button type="primary" @click="openCreate"><el-icon><Plus /></el-icon>
         <span>{{ tab === "mes" ? t("users.createMes") : t("users.create") }}</span>
       </el-button>
     </PageHead>
-    <div class="surface">
+    <div class="surface fill">
       <el-tabs v-model="tab" @tab-change="onTab">
         <el-tab-pane name="page" :label="t('users.tabAll')" />
         <el-tab-pane name="mes" :label="t('users.tabMes')" />
@@ -20,22 +20,26 @@
         </el-select>
         <FactorySelect v-model="f.factory_code" clearable @update:model-value="load(1)" />
       </div>
-      <el-table v-loading="state.loading" :data="items" size="small" :empty-text="t('common.empty')">
-        <el-table-column prop="emp_no" :label="t('users.empNo')" width="120" />
-        <el-table-column prop="name" :label="t('users.name')" min-width="110" show-overflow-tooltip />
-        <el-table-column :label="t('users.role')" width="150">
+      <!-- 不出上下滚动条：每页条数按高度算（useFitRows，定高行 .fit-table），表格与页面都不上下滑动；
+           各列宽按表头与本页内容量出（colW），单元格单行完整显示、不截断，总宽超出时表格左右滑动（操作列固定在右侧）；
+           账户按创建时间由近及远（后台排序） -->
+      <div ref="box" class="fill-body users-box">
+      <el-table v-loading="state.loading" :data="items" size="small" class="fit-table users" :empty-text="t('common.empty')">
+        <el-table-column prop="emp_no" :label="t('users.empNo')" :min-width="colW.emp" />
+        <el-table-column prop="name" :label="t('users.name')" :min-width="colW.name" />
+        <el-table-column :label="t('users.role')" :min-width="colW.role">
           <template #default="{ row }">
             <el-tag v-if="row.super_admin" size="small">{{ t("app.superAdmin") }}</el-tag>
             <span v-else>{{ roleLabel(row.role) }}</span>
           </template>
         </el-table-column>
-        <el-table-column :label="t('common.factory')" min-width="160" show-overflow-tooltip>
+        <el-table-column :label="t('common.factory')" :min-width="colW.factory">
           <template #default="{ row }">{{ factoryText(row) }}</template>
         </el-table-column>
-        <el-table-column v-if="tab === 'mes'" :label="t('users.ipWhitelist')" min-width="160" show-overflow-tooltip>
+        <el-table-column v-if="tab === 'mes'" :label="t('users.ipWhitelist')" :min-width="colW.ip">
           <template #default="{ row }"><span v-if="row.ip_whitelist" class="sn-mono">{{ row.ip_whitelist }}</span><span v-else class="muted">{{ t("users.ipAny") }}</span></template>
         </el-table-column>
-        <el-table-column :label="t('common.status')" width="150">
+        <el-table-column :label="t('common.status')" :min-width="colW.status">
           <template #default="{ row }">
             <el-tag size="small" :type="row.status === 'ACTIVE' ? 'success' : 'info'">{{ row.status === "ACTIVE" ? t("users.active") : t("users.disabled") }}</el-tag>
             <el-tooltip v-if="isLocked(row)" :content="t('users.lockedUntil', { time: fmt(row.locked_until) })">
@@ -43,11 +47,11 @@
             </el-tooltip>
           </template>
         </el-table-column>
-        <el-table-column :label="tab === 'mes' ? t('users.lastToken') : t('users.lastLogin')" width="160">
+        <el-table-column :label="tab === 'mes' ? t('users.lastToken') : t('users.lastLogin')" :min-width="colW.last">
           <template #default="{ row }">{{ fmt(row.last_login_at) }}</template>
         </el-table-column>
-        <el-table-column :label="t('users.created')" width="200"><template #default="{ row }">{{ row.created_by }} · {{ fmt(row.created_at) }}</template></el-table-column>
-        <el-table-column :label="t('common.actions')" :width="tab === 'mes' ? 300 : 230" fixed="right">
+        <el-table-column :label="t('users.created')" :min-width="colW.created"><template #default="{ row }">{{ createdText(row) }}</template></el-table-column>
+        <el-table-column :label="t('common.actions')" :min-width="colW.actions" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openEdit(row)">{{ t("common.edit") }}</el-button>
             <template v-if="row.role === 'mes'">
@@ -60,6 +64,7 @@
           </template>
         </el-table-column>
       </el-table>
+      </div>
       <el-pagination class="pager" layout="total, prev, pager, next" :total="state.total" :page-size="state.pageSize"
         :current-page="state.page" @current-change="load" />
     </div>
@@ -132,7 +137,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { api } from "@/api";
@@ -144,6 +149,8 @@ import PageHead from "@/components/PageHead.vue";
 import FactorySelect from "@/components/FactorySelect.vue";
 import { useFactories } from "@/composables/useFactories";
 import { copyText } from "@/utils/clipboard";
+import { colWidth, tagWidth, textWidth } from "@/colWidth.js";
+import { useFitRows } from "@/composables/useFitRows";
 
 const { t } = useI18n();
 const { fmt } = useTime();
@@ -159,6 +166,12 @@ const EMPTY = { emp_no: "", name: "", role: "operator", factory_code: "", factor
 const form = reactive({ ...EMPTY, factory_codes: [] as string[] });
 /** 账户页签只列页面账户，MES 接口账户页签只列 MES 接口账户（kind 由后端按角色区分）。 */
 const { items, state, load } = usePaged<any>((q) => api.users({ ...f, kind: tab.value, role: tab.value === "mes" ? "" : f.role, ...q }));
+/** 每页条数按表格容器高度算（正好放满，不出上下滚动条）；量出后、高度变化后从第 1 页重新加载 */
+const box = ref<HTMLElement | null>(null);
+useFitRows(box, (n) => {
+  state.pageSize = n;
+  load(1);
+});
 
 const isMes = computed(() => form.role === "mes");
 /** 普通操作员、审计员：授权一个或多个生产组织（至少一个）。 */
@@ -171,6 +184,35 @@ const dialogTitle = computed(() => {
   return isMes.value ? t("users.createMes") : t("users.create");
 });
 const isLocked = (row: any) => !!row.locked_until && Date.parse(row.locked_until) > Date.now();
+const createdText = (row: any) => `${row.created_by} · ${fmt(row.created_at)}`;
+
+/** 链接按钮之间的间距（el-button + el-button 的 margin-left） */
+const LINK_GAP = 12;
+/** 链接按钮：字号 14px（不随小号表格变小），左右内边距 2px×2 + 边框 1px×2 */
+const LINK_FONT = 14;
+const LINK_PAD = 6;
+/** 时间列按「yyyy-MM-dd HH:mm:ss」量（翻页时列宽不跳动） */
+const TIME_SAMPLE = "0000-00-00 00:00:00";
+
+/** 列宽按表头与本页各行的内容量出、不设上限，单行完整显示、不截断；各列合计超出表格宽度时表格左右滑动。 */
+const colW = computed(() => {
+  const rows = items.value;
+  const mes = tab.value === "mes";
+  const actions = [t("common.edit"), ...(mes ? [t("users.viewSecret"), t("users.resetSecret")] : [t("users.resetPwd")]),
+    t("users.disable").length >= t("users.enable").length ? t("users.disable") : t("users.enable")];
+  const locked = rows.some(isLocked) ? 4 + tagWidth(t("users.locked")) : 0;
+  return {
+    emp: colWidth(t("users.empNo"), rows.map((r) => textWidth(r.emp_no))),
+    name: colWidth(t("users.name"), rows.map((r) => textWidth(r.name))),
+    role: colWidth(t("users.role"), rows.map((r) => (r.super_admin ? tagWidth(t("app.superAdmin")) : textWidth(roleLabel(r.role))))),
+    factory: colWidth(t("common.factory"), rows.map((r) => textWidth(factoryText(r)))),
+    ip: colWidth(t("users.ipWhitelist"), rows.map((r) => (r.ip_whitelist ? textWidth(r.ip_whitelist, { mono: true }) : textWidth(t("users.ipAny"))))),
+    status: colWidth(t("common.status"), [Math.max(tagWidth(t("users.active")), tagWidth(t("users.disabled"))) + locked]),
+    last: colWidth(mes ? t("users.lastToken") : t("users.lastLogin"), [textWidth(TIME_SAMPLE)]),
+    created: colWidth(t("users.created"), rows.map((r) => textWidth(`${r.created_by} · ${TIME_SAMPLE}`))),
+    actions: colWidth(t("common.actions"), [actions.reduce((w, x) => w + textWidth(x, { size: LINK_FONT }) + LINK_PAD, 0) + LINK_GAP * (actions.length - 1)]),
+  };
+});
 
 function onTab() {
   f.role = "";
@@ -283,11 +325,14 @@ async function copy(text: string, e: MouseEvent) {
   else ElMessage.warning(t("common.copyFailed"));
 }
 
-onMounted(() => load(1));
 </script>
 
 <style scoped>
 .ml { margin-left: 4px; }
+/* 用户表：列宽已按内容量出，单元格单行完整显示、不折行不省略（放不下时表格左右滑动）；
+   表格放在 fill-body 里，每页条数按高度算（useFitRows），不出上下滚动条 */
+.users-box { overflow: hidden; }
+.users :deep(.cell) { white-space: nowrap; text-overflow: clip; }
 .mb { margin-bottom: 12px; }
 .w100 { width: 100%; }
 .hint { width: 100%; line-height: 1.5; margin-top: 2px; }

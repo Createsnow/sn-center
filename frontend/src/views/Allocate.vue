@@ -65,7 +65,7 @@
 
           <!-- 单据物料行：勾选有待分配号的物料行为范围，不勾选 = 整张 PI；单据头、物料行都带推送进度条；
                列依次为附件项次、行号、物料编码、订单数量、客户 P/N、十进制流水号、SN 数量、SN 范围、推送进度、分到；
-               单据内物料行按附件项次从小到大（bills）；列宽按右侧宽度放下，不出横向滚动条 -->
+               单据内物料行按附件项次从小到大（bills）；列宽按右侧宽度放下；客户 P/N、SN 范围单行完整显示，放不下时表格左右滑动 -->
           <section v-if="bills.length" class="box lines-box">
             <div class="box-h">
               <b>{{ t("allocate.linesTitle") }}</b>
@@ -117,8 +117,9 @@
                   <el-table-column :label="t('allocate.snQty')" align="right" :width="qtyW" class-name="nowrap-cell" label-class-name="nowrap-cell">
                     <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
                   </el-table-column>
-                  <el-table-column :label="t('generate.snRange')" min-width="104">
-                    <template #default="{ row }"><span class="sn-mono">{{ row.start_sn }} ~ {{ row.end_sn }}</span></template>
+                  <!-- SN 范围：起 ~ 止单行完整显示、不换行，列宽按本 PI 各物料行的值量出（rangeW），放不下时表格左右滑动 -->
+                  <el-table-column :label="t('generate.snRange')" :min-width="rangeW" class-name="nowrap-cell" label-class-name="nowrap-cell">
+                    <template #default="{ row }"><span class="sn-mono">{{ snRange(row) }}</span></template>
                   </el-table-column>
                   <el-table-column :label="t('allocate.tabPush')" min-width="100">
                     <template #default="{ row }">
@@ -377,6 +378,11 @@ function progLabel(x: Counts) {
 const pnW = computed(() =>
   colWidth(t("orders.customerPn"), (ctx.value?.lines ?? []).map((l: any) => textWidth(l.customer_pn || "—")), { min: 56 }),
 );
+/** SN 范围：起 ~ 止（与原来同一写法）；列宽按本 PI 各物料行的值以等宽字体量出、不设上限，单行完整显示。 */
+const snRange = (l: any) => `${l.start_sn} ~ ${l.end_sn}`;
+const rangeW = computed(() =>
+  colWidth(t("generate.snRange"), (ctx.value?.lines ?? []).map((l: any) => textWidth(snRange(l), { mono: true })), { min: 104 }),
+);
 const qtyW = computed(() => colWidth(t("allocate.snQty"), (ctx.value?.lines ?? []).map((l: any) => textWidth(num(l.qty)))));
 
 /** 左侧单据列表 SN 数量列宽：原 86px，各语言表头更长时按表头放宽（如越南语），多出的宽度从单据编号列的最小宽度扣，
@@ -551,6 +557,6 @@ onUnmounted(() => {
 .push-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px dashed var(--el-border-color-lighter); font-size: 13px; }
 .list-pane :deep(.current-row > td) { background: var(--el-color-primary-light-9) !important; }
 .list-pane :deep(.el-table__row) { cursor: pointer; }
-/* 客户 P/N、SN 数量：表头与数据单行显示、不折行（列宽已按内容量出，放不下时表格左右滑动） */
+/* 客户 P/N、SN 数量、SN 范围：表头与数据单行显示、不折行（列宽已按内容量出，放不下时表格左右滑动） */
 .bills :deep(.nowrap-cell .cell) { white-space: nowrap; }
 </style>

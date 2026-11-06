@@ -235,7 +235,9 @@ def list_users(
         args += [util.trim(factory), util.trim(factory)]
     total = db.count("SELECT COUNT(*) FROM sn_user" + where, *args)
     names = _factory_names()
-    rows = db.all(f"SELECT * FROM sn_user{where} ORDER BY emp_no ASC LIMIT %s,%s", *args, page.offset, page.size)
+    # 按创建时间由近及远；创建时间只到秒，同一秒建的按 id（后建的在前），翻页顺序稳定
+    order = " ORDER BY created_at DESC, id DESC"
+    rows = db.all(f"SELECT * FROM sn_user{where}{order} LIMIT %s,%s", *args, page.offset, page.size)
     bound: dict[int, list[str]] = {}
     if rows:
         ids = [u["id"] for u in rows]
