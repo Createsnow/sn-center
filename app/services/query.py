@@ -6,6 +6,8 @@ SN 明细：按生产组织、客户、PI、单据编号、物料、米数、状
 不列交付方式、交付批次、推送类型等交付业务信息（交付批次在「交付批次」页签看；导出列同 SN 导出，不变）。
 生产组织：已分配的号取号上的组织；待分配的号还没有（号上为空），取所在单据的组织（已出号单据台账），
 列表、导出、组织筛选与可看范围都按这一口径（同 factories.item_scope_sql）。
+列表按 PI、附件项次从小到大排（附件项次按数字比，见 ATTACH_ORDER），同 PI 同项次按单据、序号、流水
+（查流水范围时按流水）；导出行顺序不变（按号的先后，键集翻页）。
 列表总数超过 10 万时只统计到 10 万并注明；导出默认最多 100 万行，超过只导出前 100 万行并提示。
 """
 
@@ -23,6 +25,16 @@ from app.db.session import db, marks
 from app.services import factories, files, rules, sn_import, sn_sheet
 
 COUNT_CAP = 100_000
+
+_ATTACH = "TRIM(i.attach_no)"
+#: 列表按附件项次从小到大（SQL 里排好再分页）：与生成排号同一比较（generate.attach_order）——按数字比
+#: （"2" 在 "10" 前，"01" 与 "1" 相同），不是数字的排在数字之后、按文字比；空的排最后（同分配页「已分配」明细）
+ATTACH_ORDER = (
+    f"{_ATTACH} = '', "
+    f"{_ATTACH} NOT REGEXP '^[0-9]+([.][0-9]+)?$', "
+    f"CASE WHEN {_ATTACH} REGEXP '^[0-9]+([.][0-9]+)?$' THEN CAST({_ATTACH} AS DECIMAL(65, 30)) ELSE 0 END, "
+    f"{_ATTACH}"
+)
 
 COLS = (
     "i.id, i.sn, i.rule_version_id, i.seq_dec, i.seq_pi_no, i.pi_no, i.bill_no, i.bill_seq, i.material_code, "
@@ -238,12 +250,9 @@ def _range_summary(sql: str, args: list, rg: tuple) -> dict:
 def list_items(cu: CurrentUser, f: Filter, page: util.Page) -> dict:
     sql, args, rg = _where(cu, f)
     total = db.count(f"SELECT COUNT(*) FROM (SELECT 1 FROM sn_item i{sql} LIMIT %s) c", *args, COUNT_CAP + 1)
-    if rg is not None:
-        order = " ORDER BY i.seq_dec, i.id"
-    elif not util.blank(f.pi_no):
-        order = " ORDER BY i.bill_no, i.bill_seq, i.seq_pi_no, i.seq_dec, i.id"
-    else:
-        order = " ORDER BY i.id DESC"
+    # 按 PI、附件项次从小到大；同 PI 同项次：查流水范围时按流水，否则按单据、序号、流水
+    tail = "i.seq_pi_no, i.seq_dec, i.id" if rg is not None else "i.bill_no, i.bill_seq, i.seq_pi_no, i.seq_dec, i.id"
+    order = f" ORDER BY i.pi_no, {ATTACH_ORDER}, {tail}"
     rows = db.all(f"SELECT {COLS} FROM sn_item i{sql}{order} LIMIT %s, %s", *args, page.offset, page.size)
     bi = _bill_info([r["bill_no"] for r in rows])
     out = util.page_capped([view(r, bi) for r in sn_import.with_details(rows)], total, page, COUNT_CAP)

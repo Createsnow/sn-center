@@ -52,6 +52,7 @@
       <el-table-column :label="t('rules.seqDigits')" :min-width="w.seqLen" align="right"><template #default="{ row }">{{ row.seq_len ?? "—" }}</template></el-table-column>
       <el-table-column :label="t('common.seqBase')" :min-width="w.base" align="right"><template #default="{ row }">{{ row.base ?? "—" }}</template></el-table-column>
       <el-table-column :label="t('rules.seqNo')" :min-width="w.seqText"><template #default="{ row }"><span class="sn-mono">{{ row.seq_text }}</span></template></el-table-column>
+      <el-table-column :label="t('generate.seqDec')" :min-width="w.seqDec" align="right"><template #default="{ row }"><span class="sn-mono">{{ row.seq_dec || "—" }}</span></template></el-table-column>
       <el-table-column :label="t('common.attachNo')" :min-width="w.attachNo"><template #default="{ row }">{{ row.attach_no || "—" }}</template></el-table-column>
       <el-table-column :label="t('common.length')" :min-width="w.length"><template #default="{ row }">{{ row.length ?? "—" }}</template></el-table-column>
       <el-table-column :label="t('common.unit')" :min-width="w.unit"><template #default="{ row }">{{ row.unit || "—" }}</template></el-table-column>
@@ -103,6 +104,7 @@
         <el-descriptions-item :label="t('rules.seqDigits')">{{ info.seq_len ?? "—" }}</el-descriptions-item>
         <el-descriptions-item :label="t('common.seqBase')">{{ info.base ?? "—" }}</el-descriptions-item>
         <el-descriptions-item :label="t('rules.seqNo')"><span class="sn-mono">{{ info.seq_text }}</span></el-descriptions-item>
+        <el-descriptions-item :label="t('generate.seqDec')"><span class="sn-mono">{{ info.seq_dec || "—" }}</span></el-descriptions-item>
         <el-descriptions-item :label="t('common.attachNo')">{{ info.attach_no || "—" }}</el-descriptions-item>
         <el-descriptions-item :label="t('common.length')">{{ info.length ?? "—" }}</el-descriptions-item>
         <el-descriptions-item :label="t('common.unit')">{{ info.unit || "—" }}</el-descriptions-item>
@@ -127,8 +129,9 @@
 <script setup lang="ts">
 /**
  * SN 明细（F-18）：按组织 / PI / 单据 / 完整 SN / 状态，及客户 / 物料 / 米数 / 流水范围筛选，导出。
- * 列依次为 PI、物料编码、完整 SN、流水位数、进制位数、流水号、附件项次、米数、产品单位、状态、单据 / 序号、流水归属 PI、
+ * 列依次为 PI、物料编码、完整 SN、流水位数、进制位数、流水号、十进制流水号、附件项次、米数、产品单位、状态、单据 / 序号、流水归属 PI、
  * 生产组织编号、生产组织、客户编码、生成时间（PI、物料编码、完整 SN 固定在左侧）。
+ * 行按 PI、附件项次从小到大（附件项次按数字比，空的排最后；后台在分页前排好）。
  * 各列宽度按本页内容自适应，PI、完整 SN、生产组织等值单行完整显示；点行弹出该枚 SN 的详情（可复制完整 SN）。
  * 只列号本身的信息，不列交付方式、交付批次、推送类型等交付业务信息（交付批次在「交付批次」页签看）。
  */
@@ -190,6 +193,7 @@ const w = computed(() => {
     seqLen: col(t("rules.seqDigits"), (r) => textWidth(String(r.seq_len ?? "—"))),
     base: col(t("common.seqBase"), (r) => textWidth(String(r.base ?? "—"))),
     seqText: col(t("rules.seqNo"), (r) => mono(r.seq_text)),
+    seqDec: col(t("generate.seqDec"), (r) => mono(r.seq_dec || "—")),
     attachNo: col(t("common.attachNo"), (r) => textWidth(r.attach_no || "—")),
     length: col(t("common.length"), (r) => textWidth(r.length ?? "—")),
     unit: col(t("common.unit"), (r) => textWidth(r.unit || "—")),

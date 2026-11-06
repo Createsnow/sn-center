@@ -229,3 +229,38 @@ def test_daily_maintain_runs_once_within_gap(app_client, sql, monkeypatch):
     sql.exec("UPDATE sn_seq SET val = val - 3601 WHERE name = %s", partitions.DAILY_MARK)
     partitions.maintain()
     assert runs == [1, 1]
+
+
+def test_sn_list_sorted_by_pi_then_attach_no(w, api):
+    """SN 明细按 PI、附件项次从小到大（附件项次按数字比：2 在 10 前，不是数字的排后），项次相同按单据序号、流水；
+    分页跨项次衔接；每行带十进制流水号（列表在流水号后列出）；查流水范围时同样先按附件项次。"""
+    org = w.org(uid("O")[:10])
+    pa, pb = "A" + uid("PI"), "B" + uid("PI")
+    ba, bb = uid("MO"), uid("MO")
+    w.order(ba, org, "C1", pa, ("M1", 2, "100", "10"), ("M2", 3, "100", "2"), ("M3", 1, "100", "A"), ("M4", 1))
+    w.order(bb, org, "C1", pb, ("M1", 1, "100", "1"))
+    ok(w.bind_pi(pa, w.rule(P())))
+    ok(w.bind_pi(pb, w.rule(P())))
+    w.generate(pa)
+    w.generate(pb)
+    url = f"/api/sn?customer_code=C1&factory_code={org}"
+    got = ok(api.get(url + "&page_size=100", w.admin))["items"]
+    assert [(x["pi_no"], x["attach_no"], x["bill_seq"]) for x in got] == [
+        (pa, "1", 4),
+        (pa, "2", 2),
+        (pa, "2", 2),
+        (pa, "2", 2),
+        (pa, "10", 1),
+        (pa, "10", 1),
+        (pa, "A", 3),
+        (pb, "1", 1),
+    ]
+    two = [x for x in got if x["attach_no"] == "2"]
+    assert [int(x["seq_dec"]) for x in two] == sorted(int(x["seq_dec"]) for x in two), "同项次按流水"
+    assert all(x["seq_dec"].isdigit() for x in got), "带十进制流水号"
+    paged = [x["sn"] for p in (1, 2, 3, 4) for x in ok(api.get(url + f"&page_size=2&page={p}", w.admin))["items"]]
+    assert paged == [x["sn"] for x in got], "分页顺序不变"
+    one = ok(api.get(f"/api/sn?pi={pa}&page_size=100", w.admin))["items"]
+    assert [x["sn"] for x in one] == [x["sn"] for x in got if x["pi_no"] == pa], "按 PI 查同一顺序"
+    rg = ok(api.get(f"/api/sn?pi={pa}&seq_from=1&seq_to=7&page_size=100", w.admin))["items"]
+    assert [x["attach_no"] for x in rg] == ["1", "2", "2", "2", "10", "10", "A"], "流水范围也按附件项次"
