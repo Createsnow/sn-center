@@ -17,10 +17,11 @@
         <div ref="listBox" class="list-box">
           <el-table v-loading="listLoading" :data="list.items" size="small" class="fit-table" :row-key="rowKey" highlight-current-row
             :row-class-name="({ row }: any) => (isCurrent(row) ? 'current-row' : '')" :empty-text="t('common.empty')" @row-click="pick">
-            <el-table-column :label="t('common.billNo')" min-width="150">
+            <el-table-column :label="t('common.billNo')" :min-width="150 - (listQtyW - 86)">
               <template #default="{ row }"><b>{{ row.bill_no }}</b></template>
             </el-table-column>
-            <el-table-column :label="t('export.qty')" align="right" width="86">
+            <!-- SN 数量：表头与右侧单据物料行统一（allocate.snQty）；列宽至少放下表头，不截断 -->
+            <el-table-column :label="t('allocate.snQty')" align="right" :width="listQtyW">
               <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
             </el-table-column>
             <el-table-column :label="t('common.status')" width="100">
@@ -377,6 +378,10 @@ const pnW = computed(() =>
   colWidth(t("orders.customerPn"), (ctx.value?.lines ?? []).map((l: any) => textWidth(l.customer_pn || "—")), { min: 56 }),
 );
 const qtyW = computed(() => colWidth(t("allocate.snQty"), (ctx.value?.lines ?? []).map((l: any) => textWidth(num(l.qty)))));
+
+/** 左侧单据列表 SN 数量列宽：原 86px，各语言表头更长时按表头放宽（如越南语），多出的宽度从单据编号列的最小宽度扣，
+ *  左侧总宽不变、不出横向滚动条；中文、英文仍为 86 / 150。 */
+const listQtyW = computed(() => Math.max(86, colWidth(t("allocate.snQty"), [])));
 
 const bills = computed(() => {
   const m = new Map<string, Counts & { bill_no: string; state: BillState; lines: any[] }>();
