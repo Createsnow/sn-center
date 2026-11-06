@@ -9,13 +9,13 @@
       </el-tabs>
 
       <template v-if="bill && tab === 'use'">
-        <!-- 列依次为附件项次、行号、物料编码（同一物料行的几段相邻排，这三列合并单元格，多段时物料下写出段数与枚数）；
-             行按附件项次从小到大（后台排好），项次相同按行号 -->
+        <!-- 列依次为附件项次、ERP行号、物料编码（同一物料行的几段相邻排，这三列合并单元格，多段时物料下写出段数与枚数）；
+             行按附件项次从小到大（后台排好），项次相同按 ERP行号 -->
         <el-table :data="useRows" size="small" max-height="420" :empty-text="t('common.empty')" :span-method="lineSpan" class="use-table">
           <el-table-column :label="t('common.attachNo')" min-width="80" class-name="line-cell">
             <template #default="{ row }">{{ row.attach_no || "—" }}</template>
           </el-table-column>
-          <el-table-column :label="t('common.lineNo')" width="68" class-name="line-cell">
+          <el-table-column :label="t('common.lineNo')" width="72" class-name="line-cell">
             <template #default="{ row }">{{ row.bill_seq }}</template>
           </el-table-column>
           <el-table-column :label="t('common.material')" min-width="110" class-name="line-cell">

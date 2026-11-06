@@ -1,9 +1,9 @@
 # 生产订单页词条：key -> (简体中文, English, Tiếng Việt)
 M = {
 "orders.title": ("生产订单快照", "Production order snapshot", "Ảnh chụp lệnh sản xuất"),
-"orders.desc": ("来自金蝶已审核的生产订单，按物料行（单据 + 序号）落地，可随时手动同步金蝶。上表按单据汇总，下表为所选单据的物料明细。客户编码为空的单据照常显示、照常生成与流转。",
-  "Approved Kingdee production orders, stored per material line (bill + line No.); sync with Kingdee manually at any time. Top: totals per bill; bottom: material lines of the selected bill. Bills without a customer are shown and processed as usual.",
-  "Lệnh sản xuất đã duyệt từ Kingdee, lưu theo dòng vật tư (chứng từ + số dòng); có thể đồng bộ Kingdee thủ công bất kỳ lúc nào. Trên: tổng theo chứng từ; dưới: các dòng vật tư của chứng từ đã chọn. Chứng từ không có khách hàng vẫn hiển thị và xử lý như bình thường."),
+"orders.desc": ("来自金蝶已审核的生产订单，按物料行（单据 + ERP行号）落地，可随时手动同步金蝶。上表按单据汇总，下表为所选单据的物料明细。客户编码为空的单据照常显示、照常生成与流转。",
+  "Approved Kingdee production orders, stored per material line (bill + ERP line No.); sync with Kingdee manually at any time. Top: totals per bill; bottom: material lines of the selected bill. Bills without a customer are shown and processed as usual.",
+  "Lệnh sản xuất đã duyệt từ Kingdee, lưu theo dòng vật tư (chứng từ + số dòng ERP); có thể đồng bộ Kingdee thủ công bất kỳ lúc nào. Trên: tổng theo chứng từ; dưới: các dòng vật tư của chứng từ đã chọn. Chứng từ không có khách hàng vẫn hiển thị và xử lý như bình thường."),
 "orders.dept": ("生产部门", "Production dept", "Bộ phận sản xuất"),
 "orders.productName": ("产品名称", "Product name", "Tên sản phẩm"),
 "orders.materialSpec": ("规格型号", "Specification", "Quy cách"),

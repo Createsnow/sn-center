@@ -154,7 +154,7 @@ def export_rows(b: dict) -> Iterator[list]:
 
 
 EXPORT_HEADERS = [
-    "行号",
+    "序号",
     "完整SN",
     "rev",
     "推送类型",
@@ -164,7 +164,7 @@ EXPORT_HEADERS = [
     "十进制流水",
     "PI（转出为转出前）",
     "单据编号",
-    "单据序号",
+    "ERP行号",
     "物料编码",
     "附件项次",
     "米数",

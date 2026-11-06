@@ -12,7 +12,7 @@ from app.core import utils as util
 from app.services import rules
 
 HEADERS = [
-    "行号",
+    "序号",
     "完整SN",
     "进制流水",
     "十进制流水",
@@ -21,7 +21,7 @@ HEADERS = [
     "客户编码",
     "PI",
     "单据编号",
-    "单据序号",
+    "ERP行号",
     "物料编码",
     "附件项次",
     "米数",
@@ -68,7 +68,7 @@ QUERY_COLS = _COLS.format(
 
 
 def row(no: int, r: dict) -> list:
-    """一行，列顺序同 HEADERS。SN 导入的号（带 r["import"]，见 sn_import.with_details）的流水与单据序号取导入记录。"""
+    """一行，列顺序同 HEADERS。SN 导入的号（带 r["import"]，见 sn_import.with_details）的流水与 ERP行号取导入记录。"""
     imp = r.get("import")
     return [
         no,

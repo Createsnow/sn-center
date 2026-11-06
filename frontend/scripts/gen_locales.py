@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """生成 src/locales/{zh-CN,en,vi}.json 与 errors.*.json。
 
-UI 词条来自 ui_messages.py（公共）与 ui/*.py（各页面）；错误码中文来自后端 app/core/errors.py，英 / 越来自 error_messages.py。
+UI 词条来自 ui_messages.py（公共）与 ui/*.py（各页面）；
+错误码中文来自后端 app/core/errors.py，英 / 越来自 error_messages.py。
 缺译或占位符不一致时直接失败。用法：python3 frontend/scripts/gen_locales.py
 """
+
 import json
 import pathlib
 import re
@@ -11,11 +13,10 @@ import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-from ui_messages import M as COMMON  # noqa: E402
 from error_messages import E  # noqa: E402
+from ui_messages import M as COMMON  # noqa: E402
 
 ROOT = HERE.parent
-JAVA = ROOT.parent / "backend/src/main/java/com/sncenter/common/ErrorCode.java"
 PY = ROOT.parent / "app/core/errors.py"
 OUT = ROOT / "src/locales"
 PH = re.compile(r"\{(\w+)\}")
@@ -60,28 +61,23 @@ def main():
         phs = [sorted(PH.findall(v)) for v in vals]
         if any(p != phs[0] for p in phs):
             problems.append(f"ui {key}: placeholders differ {phs}")
-        for lang, v in zip(LANGS, vals):
+        for lang, v in zip(LANGS, vals, strict=True):
             ui[lang][key] = escape(v)
-    if JAVA.exists():
-        zh_errors = dict(re.findall(r'^\s+([A-Z0-9_]+)\(\d+, "([^"]*)"\)', JAVA.read_text("utf-8"), re.M))
-    else:  # 仓库里只有 Python 后端时取 app/core/errors.py
-        # 格式化工具会把长的拆成多行：(\n 409,\n "…",\n)
-        zh_errors = dict(
-            re.findall(r'^\s+([A-Z0-9_]+) = \(\s*\d+,\s*"([^"]*)",?\s*\)', PY.read_text("utf-8"), re.M)
-        )
+    # 错误码中文取后端 app/core/errors.py；格式化工具会把长的拆成多行：(\n 409,\n "…",\n)
+    zh_errors = dict(re.findall(r'^\s+([A-Z0-9_]+) = \(\s*\d+,\s*"([^"]*)",?\s*\)', PY.read_text("utf-8"), re.M))
     errs = {lang: {} for lang in LANGS}
     for code, zh in zh_errors.items():
         if code not in E:
             problems.append(f"error {code}: missing en/vi")
             continue
         en, vi = E[code]
-        for lang, v in zip(LANGS, (zh, en, vi)):
+        for lang, v in zip(LANGS, (zh, en, vi), strict=True):
             if sorted(PH.findall(v)) != sorted(PH.findall(zh)):
                 problems.append(f"error {code} [{lang}]: placeholders differ from zh")
             errs[lang][code] = escape(v)
     for code in E:
         if code not in zh_errors:
-            problems.append(f"error {code}: not in ErrorCode.java")
+            problems.append(f"error {code}: not in app/core/errors.py")
     if problems:
         print("\n".join(problems), file=sys.stderr)
         sys.exit(1)

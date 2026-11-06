@@ -20,7 +20,7 @@
         <el-table-column :label="t('common.sn')" min-width="150">
           <template #default="{ row }"><span class="sn-mono">{{ row.sn }}</span></template>
         </el-table-column>
-        <el-table-column :label="t('snImport.seq')" width="64" align="right">
+        <el-table-column :label="t('snImport.seq')" width="72" align="right">
           <template #default="{ row }">
             <el-tooltip v-if="row.cur_bill_seq !== row.bill_seq" :content="`${row.bill_seq} → ${row.cur_bill_seq}`" placement="top">
               <span class="num">{{ row.cur_bill_seq }}</span>
@@ -56,7 +56,7 @@
             <el-button link type="primary" class="sn-mono" @click="byImportNo(row.import_no)">{{ row.import_no }}</el-button>
           </template>
         </el-table-column>
-        <el-table-column :label="t('snImport.fileRow')" min-width="80" show-overflow-tooltip>
+        <el-table-column :label="t('snImport.fileRow')" min-width="100" show-overflow-tooltip>
           <template #default="{ row }">{{ row.file_name || "—" }} / {{ row.row_no }}</template>
         </el-table-column>
         <el-table-column :label="t('snImport.importedBy')" width="140">
@@ -116,7 +116,7 @@
 </template>
 
 <script setup lang="ts">
-/** SN 导入：系统之外已有的 SN 按导入模板（PI、单据编号、行号、物料编码、完整 SN、流水位数、进制位数、流水号（选填，
+/** SN 导入：系统之外已有的 SN 按导入模板（PI、单据编号、ERP行号、物料编码、完整 SN、流水位数、进制位数、流水号（选填，
  *  不填按十进制流水号换算）、十进制流水号、附件项次、米数、产品单位、生产组织编号（选填）、生产组织、客户编码；
  *  按列名认列、顺序不限、其他列不读）导入；单据在系统中已有生成或已分配的 SN 时不能导入：
  *  号进号池、在 SN 分配页待分配；分配后照常推送 / 拉取，也可转移（不在生成页，不能删号）；之后生成撞上这些号整次回滚。

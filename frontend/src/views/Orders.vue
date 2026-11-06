@@ -116,7 +116,7 @@
           </el-descriptions>
           <div class="fill-body">
             <el-table v-loading="linesLoading" :data="detail.lines" size="small" height="100%" :empty-text="t('common.empty')">
-              <el-table-column prop="seq" :label="t('common.lineNo')" width="64" />
+              <el-table-column prop="seq" :label="t('common.lineNo')" width="72" />
               <el-table-column :label="t('common.attachNo')" min-width="120">
                 <template #default="{ row }">
                   <div class="attach">

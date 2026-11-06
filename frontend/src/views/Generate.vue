@@ -144,7 +144,7 @@
             <el-tag v-if="b.state.open_alerts" size="small" type="warning">{{ t("generate.openAlerts", { n: b.state.open_alerts }) }}</el-tag>
             <span class="push muted num">{{ t("generate.billCounts", { total: num(b.total_qty), gen: num(b.generated_qty), quota: num(b.quota) }) }}</span>
           </div>
-          <!-- 列依次为附件项次、行号、物料编码、客户 P/N、米数、产品单位、数量、已生成、已分配、可生成、状态、开始 / 结束 SN 号、操作；
+          <!-- 列依次为附件项次、ERP行号、物料编码、客户 P/N、米数、产品单位、数量、已生成、已分配、可生成、状态、开始 / 结束 SN 号、操作；
                数字列收窄；行按附件项次从小到大（shownBills） -->
           <el-table v-if="b.shown.length" v-show="!isFolded(b.bill_no)" :data="b.shown" size="small" class="lines" :row-class-name="lineClass" @row-click="onLineClick">
             <el-table-column width="44">
@@ -166,7 +166,7 @@
                 </span>
               </template>
             </el-table-column>
-            <el-table-column :label="t('common.lineNo')" prop="seq" width="56" />
+            <el-table-column :label="t('common.lineNo')" prop="seq" width="72" />
             <el-table-column :label="t('common.material')" min-width="88" show-overflow-tooltip>
               <template #default="{ row }">
                 {{ row.material_code || t("generate.noMaterial") }}

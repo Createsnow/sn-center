@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import contextlib
 import json
 import os
 import re
@@ -71,10 +72,7 @@ def _frontend_source_newer(dist_index: Path) -> bool:
     src = FRONTEND / "src"
     if not src.exists():
         return False
-    for path in src.rglob("*"):
-        if path.is_file() and path.stat().st_mtime > built:
-            return True
-    return False
+    return any(path.is_file() and path.stat().st_mtime > built for path in src.rglob("*"))
 
 
 def ensure_frontend(rebuild: bool) -> None:
@@ -88,7 +86,7 @@ def ensure_frontend(rebuild: bool) -> None:
 def open_firewall(port: int) -> None:
     if not IS_WIN:
         return
-    try:
+    with contextlib.suppress(Exception):
         subprocess.run(
             [
                 "netsh",
@@ -105,8 +103,6 @@ def open_firewall(port: int) -> None:
             check=False,
             capture_output=True,
         )
-    except Exception:
-        pass
 
 
 def pid_alive(pid: int) -> bool:
@@ -161,10 +157,8 @@ def kill_pid_tree(pid: int) -> None:
         return
     if wait_pid_gone(pid, timeout=8):
         return
-    try:
+    with contextlib.suppress(OSError):
         os.kill(pid, signal.SIGKILL)
-    except OSError:
-        pass
 
 
 def _powershell(script: str) -> subprocess.CompletedProcess[str]:
@@ -251,9 +245,7 @@ def parent_pid(pid: int) -> int:
     if pid == os.getpid():
         return os.getppid()
     if IS_WIN:
-        out = _powershell(
-            f"(Get-CimInstance Win32_Process -Filter 'ProcessId={int(pid)}').ParentProcessId"
-        )
+        out = _powershell(f"(Get-CimInstance Win32_Process -Filter 'ProcessId={int(pid)}').ParentProcessId")
         line = (out.stdout or "").strip()
         return int(line) if line.isdigit() else 0
     try:
@@ -290,9 +282,7 @@ def list_demo_pids() -> list[int]:
     pids: list[int] = []
     if IS_WIN:
         ps = (
-            "$root = [regex]::Escape("
-            + _ps_single_quote(marker)
-            + "); "
+            "$root = [regex]::Escape(" + _ps_single_quote(marker) + "); "
             "Get-CimInstance Win32_Process | Where-Object { "
             "$_.CommandLine -and $_.CommandLine -match $root -and ("
             "($_.Name -match 'python' -and $_.CommandLine -match 'uvicorn app.main:app') -or "
@@ -330,8 +320,10 @@ def list_demo_pids() -> list[int]:
             continue
         if marker not in cmd:
             continue
-        if "uvicorn app.main:app" in cmd or "cloudflared" in cmd or (
-            _START_PY_RE.search(cmd) and "--stop" not in cmd and "py_compile" not in cmd
+        if (
+            "uvicorn app.main:app" in cmd
+            or "cloudflared" in cmd
+            or (_START_PY_RE.search(cmd) and "--stop" not in cmd and "py_compile" not in cmd)
         ):
             pids.append(pid)
     return stoppable_pids(pids)
@@ -355,10 +347,8 @@ def stop_demo(announce: bool = True, port: int | None = None) -> int:
     pids.extend(pids_listening_on(listen_port))
     unique = stoppable_pids(pids)
     if not unique and port_can_bind(listen_port):
-        try:
+        with contextlib.suppress(OSError):
             RUNTIME.unlink(missing_ok=True)
-        except OSError:
-            pass
         if announce:
             print("没有正在运行的 SN Demo。")
         return 0
@@ -372,10 +362,8 @@ def stop_demo(announce: bool = True, port: int | None = None) -> int:
         unique = stoppable_pids(list_demo_pids() + pids_listening_on(listen_port))
         if not unique and port_can_bind(listen_port):
             break
-    try:
+    with contextlib.suppress(OSError):
         RUNTIME.unlink(missing_ok=True)
-    except OSError:
-        pass
     leftover = stoppable_pids(list_demo_pids() + pids_listening_on(listen_port))
     if leftover or not wait_port_free(listen_port, timeout=8):
         print(
@@ -468,10 +456,8 @@ def main() -> None:
     save_runtime(api_pid=os.getpid(), port=args.port)
 
     time.sleep(0.4)
-    try:
+    with contextlib.suppress(Exception):
         webbrowser.open(f"http://127.0.0.1:{args.port}")
-    except Exception:
-        pass
 
     try:
         run_api(host=lookup("SN_HOST", "0.0.0.0") or "0.0.0.0", port=args.port)

@@ -1493,7 +1493,7 @@ def _serial_of(r: dict, imports: dict[int, dict]) -> tuple[str, str, str]:
 
 
 OUT_LIST_HEADERS = [
-    "行号",
+    "序号",
     "完整SN",
     "进制流水",
     "十进制流水",
@@ -1502,7 +1502,7 @@ OUT_LIST_HEADERS = [
     "生产组织名称",
     "转出前PI",
     "转出前单据",
-    "转出前序号",
+    "转出前ERP行号",
     "转出前物料",
     "附件项次",
     "米数",

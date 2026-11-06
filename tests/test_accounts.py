@@ -31,7 +31,6 @@ def test_rules_for_emp_no_password_and_roles(w, api):
     assert r["factory_codes"] == sorted([org, two]) and r["factory_code"] is None, "普通操作员可授权多个组织"
 
 
-
 def test_user_list_sorted_by_created_at_desc(w, api, sql):
     """账户页签按创建时间由近及远列出；创建时间相同的，后建的（id 大）在前。"""
     org = w.org(uid("O")[:10])
@@ -45,6 +44,7 @@ def test_user_list_sorted_by_created_at_desc(w, api, sql):
     assert [x["emp_no"] for x in r["items"]] == [es[2], es[1], es[3], es[0]], "创建时间由近及远，同一时间后建的在前"
     r = ok(api.get(f"/api/users?kind=page&factory_code={org}&page=2&page_size=2", w.admin))
     assert [x["emp_no"] for x in r["items"]] == [es[3], es[0]], "翻页沿用同一顺序"
+
 
 def test_only_one_system_admin(w, api, sql):
     org = w.org(uid("O")[:10])

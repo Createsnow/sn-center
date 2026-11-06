@@ -1,7 +1,7 @@
-"""SN 导入：系统定的固定模板（PI、单据编号、行号、物料编码、完整 SN、流水位数、进制位数、流水号、十进制流水号、
+"""SN 导入：系统定的固定模板（PI、单据编号、ERP行号、物料编码、完整 SN、流水位数、进制位数、流水号、十进制流水号、
 附件项次、米数、产品单位、生产组织编号、生产组织、客户编码；流水号、米数、产品单位、生产组织编号选填，流水号不填时
 按十进制流水号换算），按列名认列、顺序不限、其他列不读；
-逐行按订单快照检查（PI、单据、行号、物料编码、附件项次、生产组织须与单据一致；单据已有生成或已分配的号不能导入），
+逐行按订单快照检查（PI、单据、ERP行号、物料编码、附件项次、生产组织须与单据一致；单据已有生成或已分配的号不能导入），
 先检查后确定导入，有一行不能导入整个文件不导入；
 导入的号进号池（待分配，号池结构不变：单据序号 0，行号、流水号等在导入记录），之后生成撞上导入的号整次回滚；
 推送 / 拉取 / 转出给 MES 的明细字段都有值；分配后可与生成的号一样转移（所在物料行记在导入记录，不计已生成数）；
@@ -21,7 +21,7 @@ from app.services.sn_import import HEADERS as FULL
 COL = {
     "pi": "PI",
     "bill": "单据编号",
-    "seq": "行号",
+    "seq": "ERP行号",
     "material": "物料编码",
     "sn": "完整 SN",
     "seq_len": "流水位数",
@@ -43,6 +43,8 @@ ALIAS = {
     "物料编号": "material",
     " pi ": "pi",
     "单据 编号": "bill",
+    "行号": "seq",
+    "单据行号": "seq",
     "十进制流水": "dec",
 }
 ALIAS |= {f"* {v}": k for k, v in COL.items()} | {f"＊{v}": k for k, v in COL.items()}
@@ -150,7 +152,7 @@ def test_template_marks_required_columns(w, api, sql):
     assert head == [
         "*PI",
         "*单据编号",
-        "*行号",
+        "*ERP行号",
         "*物料编码",
         "*完整 SN",
         "*流水位数",
@@ -185,7 +187,7 @@ def test_template_marks_required_columns(w, api, sql):
     assert FULL == [
         "PI",
         "单据编号",
-        "行号",
+        "ERP行号",
         "物料编码",
         "完整 SN",
         "流水位数",
@@ -499,7 +501,7 @@ def test_imported_sns_are_allocated_and_delivered_with_full_items(w, api, sql):
     )
     ex = xlsx_rows(get_bytes(api, f"/api/sn/export?pi={pi}", w.admin))
     row = dict(zip(ex[0], next(x for x in ex[1:] if x[1] == a), strict=True))
-    assert (row["进制流水"], row["十进制流水"], row["单据序号"]) == ("000007", "7", 1)
+    assert (row["进制流水"], row["十进制流水"], row["ERP行号"]) == ("000007", "7", 1)
 
 
 def test_mes_pull_gets_full_items_for_imported_sns(w, api, sql):
@@ -609,7 +611,7 @@ def test_imported_sns_transfer_like_generated(w, api, sql):
     ]
     lst = xlsx_rows(get_bytes(api, f"/api/transfers/org/{tid}/out-list", w.admin))
     got = dict(zip(lst[0], lst[1], strict=True))
-    assert (got["完整SN"], got["进制流水"], got["十进制流水"], got["流水归属PI"], got["转出前序号"]) == (
+    assert (got["完整SN"], got["进制流水"], got["十进制流水"], got["流水归属PI"], got["转出前ERP行号"]) == (
         a,
         "000009",
         "9",
@@ -661,12 +663,14 @@ def test_bad_files_and_headers(w, api):
     assert check(api, b"not an xlsx", w.admin).code == "IMPORT_FILE_INVALID"
     assert check(api, b"", w.admin).code == "IMPORT_EMPTY"
     assert check(api, xlsx(), w.admin).code == "IMPORT_EMPTY"
-    required = "PI、单据编号、行号、物料编码、完整 SN、流水位数、进制位数、十进制流水号、附件项次、生产组织、客户编码"
+    required = (
+        "PI、单据编号、ERP行号、物料编码、完整 SN、流水位数、进制位数、十进制流水号、附件项次、生产组织、客户编码"
+    )
     optional = "流水号、米数、产品单位、生产组织编号"
     one = rec("P", "B", "S", "O")
     # 按列名认列：缺了必填的列（含改了列名的）列出缺哪几列
     for head, missing in (
-        ([h for h in FULL if h != "行号"], "行号"),
+        ([h for h in FULL if h != "ERP行号"], "ERP行号"),
         ([h for h in FULL if h not in ("十进制流水号", "客户编码")], "十进制流水号、客户编码"),
         ([h for h in FULL if h != "生产组织"], "生产组织"),
         (["PI", "单据", *FULL[2:]], "单据编号"),
@@ -684,6 +688,7 @@ def test_bad_files_and_headers(w, api):
         ([*FULL, "料号"], "物料编码"),
         ([*FULL, "物料编号"], "物料编码"),
         ([*FULL, "十进制流水"], "十进制流水号"),
+        ([*FULL, "行号"], "ERP行号"),
     ):
         r = check(api, xlsx(one, headers=head), w.admin)
         assert (r.code, r["params"]) == ("IMPORT_HEADER_DUPLICATE", {"column": col}), head
@@ -694,13 +699,21 @@ def test_bad_files_and_headers(w, api):
         ["备注", *FULL, "说明"],
         [ALIASED.get(h, h) for h in FULL],
         ["物料编号" if h == "物料编码" else h for h in FULL],
+        ["单据行号" if h == "ERP行号" else h for h in FULL],
         [f"* {h}" if i % 2 else f"＊{h}" for i, h in enumerate(FULL)],
     ):
         r = check(api, xlsx(one, headers=head), w.admin)
         assert r.status == 200 and r["total"] == 1, (head, str(r))
 
 
-ALIASED = {"完整 SN": "sn", "物料编码": "料号", "PI": " pi ", "单据编号": "单据 编号", "十进制流水号": "十进制流水"}
+ALIASED = {
+    "完整 SN": "sn",
+    "物料编码": "料号",
+    "PI": " pi ",
+    "单据编号": "单据 编号",
+    "十进制流水号": "十进制流水",
+    "ERP行号": "行号",
+}
 
 
 def test_columns_found_by_name_in_any_order(w, api, sql):

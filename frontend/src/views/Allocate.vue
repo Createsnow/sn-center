@@ -64,7 +64,7 @@
           </div>
 
           <!-- 单据物料行：勾选有待分配号的物料行为范围，不勾选 = 整张 PI；单据头、物料行都带推送进度条；
-               列依次为附件项次、行号、物料编码、订单数量、客户 P/N、十进制流水号、SN 数量、SN 范围、推送进度、分到；
+               列依次为附件项次、ERP行号、物料编码、订单数量、客户 P/N、十进制流水号、SN 数量、SN 范围、推送进度、分到；
                单据内物料行按附件项次从小到大（bills）；列宽按右侧宽度放下；客户 P/N、SN 范围单行完整显示，放不下时表格左右滑动 -->
           <section v-if="bills.length" class="box lines-box">
             <div class="box-h">
@@ -95,7 +95,7 @@
                   <el-table-column :label="t('common.attachNo')" :min-width="attachW" class-name="nowrap-cell" label-class-name="nowrap-cell">
                     <template #default="{ row }">{{ row.attach_no || "—" }}</template>
                   </el-table-column>
-                  <el-table-column :label="t('common.lineNo')" width="44">
+                  <el-table-column :label="t('common.lineNo')" width="72">
                     <template #default="{ row }">
                       <el-tag v-if="row.imported" size="small" type="warning" effect="plain" disable-transitions>{{ t("allocate.imported") }}</el-tag>
                       <template v-else>{{ row.seq }}</template>
