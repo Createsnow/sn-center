@@ -36,7 +36,15 @@ COL = {
     "customer": "客户编码",
 }
 #: 别名列 → 字段
-ALIAS = {"SN": "sn", "sn": "sn", "料号": "material", " pi ": "pi", "单据 编号": "bill", "十进制流水": "dec"}
+ALIAS = {
+    "SN": "sn",
+    "sn": "sn",
+    "料号": "material",
+    "物料编号": "material",
+    " pi ": "pi",
+    "单据 编号": "bill",
+    "十进制流水": "dec",
+}
 ALIAS |= {f"* {v}": k for k, v in COL.items()} | {f"＊{v}": k for k, v in COL.items()}
 
 
@@ -674,6 +682,7 @@ def test_bad_files_and_headers(w, api):
         ([*FULL, "PI"], "PI"),
         ([*FULL, "SN"], "完整 SN"),
         ([*FULL, "料号"], "物料编码"),
+        ([*FULL, "物料编号"], "物料编码"),
         ([*FULL, "十进制流水"], "十进制流水号"),
     ):
         r = check(api, xlsx(one, headers=head), w.admin)
@@ -684,6 +693,7 @@ def test_bad_files_and_headers(w, api):
         list(reversed(FULL)),
         ["备注", *FULL, "说明"],
         [ALIASED.get(h, h) for h in FULL],
+        ["物料编号" if h == "物料编码" else h for h in FULL],
         [f"* {h}" if i % 2 else f"＊{h}" for i, h in enumerate(FULL)],
     ):
         r = check(api, xlsx(one, headers=head), w.admin)
