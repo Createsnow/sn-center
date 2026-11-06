@@ -154,13 +154,16 @@
                     {{ t("generate.rule.seqLen") }}
                     <el-input-number v-model="p.len" :min="1" :max="SEQ_LEN_MAX" :step="1" step-strictly size="small" class="w100" />
                   </span>
-                  <!-- 起始号（十进制流水）：默认 1，1 ～ 最大流水；为 1 时按未指定保存（start = null，请求体与原来相同）。
-                       本 PI 已用这个前缀时流水接续，置灰不显示 -->
+                  <!-- 起始号（十进制流水）：下限 startMin ～ 最大流水，默认为下限；等于下限时按未指定保存（start = null，请求体与原来相同）。
+                       新前缀下限为 1；本 PI 已用这个前缀时下限为接续的下一个号（不能往回填），改大则往后跳，跳过的号成为空号段 -->
                   <span class="fi">
                     {{ t("generate.rule.seqStart") }}
-                    <el-input-number :model-value="prefixUsed ? undefined : p.start ?? 1" :min="1" :max="maxSeq(p)" value-on-clear="min" :step="1"
-                      step-strictly size="small" :disabled="prefixUsed" class="w140"
-                      @update:model-value="(v: any) => (p.start = Number(v) > 1 ? Number(v) : null)" />
+                    <el-input-number :model-value="p.start ?? startMin" :min="startMin" :max="maxSeq(p)" value-on-clear="min" :step="1"
+                      step-strictly size="small" class="w140"
+                      @update:model-value="(v: any) => (p.start = Number(v) > startMin ? Number(v) : null)" />
+                    <el-tooltip v-if="prefixUsed" placement="top" :content="t('generate.rule.seqStartContinue', { next: startMin })">
+                      <el-icon class="tip"><QuestionFilled /></el-icon>
+                    </el-tooltip>
                   </span>
                 </template>
                 <template v-else-if="p.kind === 'LEN'">
@@ -203,7 +206,7 @@
 import { computed, h, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { Bottom, Delete, Top } from "@element-plus/icons-vue";
+import { Bottom, Delete, QuestionFilled, Top } from "@element-plus/icons-vue";
 import { api } from "@/api";
 import { ApiError } from "@/api/http";
 import { BASES, CHARSETS } from "@/constants";
@@ -226,7 +229,8 @@ type Seg = { text: string; cls: string };
 type Sample = { sn: string; segs: Seg[] | null };
 /** 三段：前缀（流水之前）/ 流水 / 后缀（流水之后，含米数、单位） */
 type SecKey = "PRE" | "SEQ" | "SUF";
-const props = defineProps<{ modelValue: boolean; pi: string; lines: OrderLine[]; options: any[]; rulePrefix?: RulePrefix }>();
+/** nextSeq：本 PI 接续的下一个号（ctx.counter.next_seq），已用前缀时起始号的下限 */
+const props = defineProps<{ modelValue: boolean; pi: string; lines: OrderLine[]; options: any[]; rulePrefix?: RulePrefix; nextSeq?: number }>();
 const emit = defineEmits<{ (e: "update:modelValue", v: boolean): void; (e: "saved"): void }>();
 const { t } = useI18n();
 const { offset } = useTime();
@@ -283,7 +287,7 @@ function chipValue(p: Part) {
   const l = props.lines[0];
   if (p.kind === "SEQ") {
     const st = Number(p.start);
-    return seqText(!prefixUsed.value && Number.isSafeInteger(st) && st > 0 ? st : 1, Number(p.base) || 10, Number(p.len) || 4);
+    return seqText(Number.isSafeInteger(st) && st > startMin.value ? st : startMin.value, Number(p.base) || 10, Number(p.len) || 4);
   }
   if (p.kind === "LEN") return p.pad ? (l?.length ?? "").padStart(p.pad, "0") : l?.length ?? "";
   return l?.unit ?? "";
@@ -385,10 +389,15 @@ const filtered = computed(() => {
   if (!k) return props.options;
   return props.options.filter((o) => `${o.rule_code} ${o.rule_name} ${o.category_value}`.toLowerCase().includes(k));
 });
-/** 本 PI 已用这个前缀（同格式沿用那一版、流水接续）：起始号不起作用，不能填。 */
+/** 本 PI 已用这个前缀（同格式沿用那一版、流水接续）：起始号下限为接续的下一个号，可改大往后跳。 */
 const prefixUsed = computed(() => !!props.rulePrefix?.custom && built.value.spec.prefix === props.rulePrefix.prefix);
-/** 提交 / 示例用的起始号 */
-const seqStart = () => (prefixUsed.value ? null : built.value.spec.seq_start || null);
+/** 起始号下限：已用前缀时为接续的下一个号，否则为 1 */
+const startMin = computed(() => (prefixUsed.value ? Math.max(Number(props.nextSeq) || 1, 1) : 1));
+/** 提交用的起始号：大于下限才提交（等于下限即接续 / 从 1 起，按未指定，请求体与原来相同） */
+const seqStart = () => {
+  const s = built.value.spec.seq_start;
+  return s && s > startMin.value ? s : null;
+};
 const anyGenerated = computed(() => props.lines.some((l) => l.generated_qty > 0));
 const canSave = computed(() => {
   if (!props.lines.length) return false;
@@ -406,8 +415,8 @@ function onOpen() {
   sample.max = null;
   const cur = props.lines.length === 1 ? props.lines[0].rule : null;
   const base = props.rulePrefix?.custom ?? (cur?.mode === "CUSTOM" ? cur.custom : null);
-  // 起始号只在沿用所选物料行现有的自定义规则时带出
-  const start = !props.rulePrefix?.custom && cur?.mode === "CUSTOM" ? cur.seq_start ?? null : null;
+  // 起始号带出所选物料行已存的：新前缀的自定义规则，或沿用本 PI 已用前缀时另记的（还没生成过）
+  const start = (props.rulePrefix?.custom ? cur?.prefix === props.rulePrefix.prefix : cur?.mode === "CUSTOM") ? cur?.seq_start ?? null : null;
   parts.value = base ? fromSpec({ ...base, seq_start: start }, defaultHead()) : [...defaultHead(), newPart("SEQ")];
   target.value = "PRE";
   hot.value = null;
@@ -439,7 +448,8 @@ async function previewCustom() {
     const l = props.lines[0];
     // 后台返回从起始号起的前 5 个号与最大号：取第一个为最小、最后一个为最大
     const r = await api.previewRule({
-      ...spec, seq_start: seqStart() ?? undefined, length: l?.length || undefined, unit: l?.unit || undefined,
+      // 示例从实际的第一个号起：填了起始号按它，已用前缀没填按接续的下一个号
+      ...spec, seq_start: seqStart() ?? (startMin.value > 1 ? startMin.value : undefined), length: l?.length || undefined, unit: l?.unit || undefined,
     });
     const list: any[] = r.samples ?? [];
     const len = spec.length_pad ? String(r.sample_length ?? "").padStart(spec.length_pad, "0") : String(r.sample_length ?? "");
@@ -491,6 +501,7 @@ async function save() {
 .mt { margin-top: 12px; }
 .w100 { width: 100px; }
 .w140 { width: 140px; }
+.tip { margin-left: -6px; color: var(--el-text-color-secondary); cursor: help; }
 .w180 { width: 180px; }
 .w200 { width: 200px; }
 .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }

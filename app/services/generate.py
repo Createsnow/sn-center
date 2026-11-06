@@ -651,8 +651,8 @@ def _plan(pi: str, scope: str, keys: list[tuple[str, int]], base: int, seq: dict
     for x in todo:
         n = x.quota
         spec = x.res.spec()
-        # 自定义规则（首次生成）的起始号
-        segs = taker.take(n, x.res.seq_start if x.res.plan == rules.PLAN_NEW else None)
+        # 起始号：自定义规则（首次生成），或沿用本 PI 已用前缀的版本时物料行另记的（只有这两种才有 seq_start）
+        segs = taker.take(n, x.res.seq_start)
         end = segs[-1][1]
         mx = codec.max_seq(spec)
         if end > mx:
@@ -977,6 +977,13 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
         same = [(y["bill_no"], y["seq"]) for y in plan["items"] if y["rule_key"] == x["rule_key"]]
         res = _resolved_of(pi, x)
         versions[x["rule_key"]] = rules.realize(cu, pi, res, same)
+    # 沿用已用前缀的版本时另记的起始号只管这一次生成：生成过的物料行清掉（之后流水接续）
+    for x in plan["items"]:
+        db.exec(
+            "UPDATE sn_line_rule SET custom_json = NULL WHERE bill_no = %s AND seq = %s AND rule_id IS NOT NULL",
+            x["bill_no"],
+            x["seq"],
+        )
     for no in {x["bill_no"] for x in plan["items"]}:
         changes.ensure_ledger(no)
     done = 0

@@ -533,6 +533,7 @@
       "base": "Base",
       "seqLen": "Serial digits",
       "seqStart": "Start number",
+      "seqStartContinue": "This PI already uses this prefix; serials continue from {next}. Enter a larger number to skip ahead — the skipped serials stay as a gap you can fill later under \"Serial source\".",
       "lengthPad": "Length zero-padding",
       "sample": "Sample",
       "resetParts": "Reset to default",

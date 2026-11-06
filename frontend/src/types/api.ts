@@ -81,7 +81,7 @@ export interface LineRule {
   version: number;
   other_pi: string | null;
   custom: CustomRule | null;
-  /** 自定义规则（还没生成过）的起始号（十进制流水），没填为 null */
+  /** 起始号（十进制流水），没填为 null：自定义规则（还没生成过）的，或沿用本 PI 已用前缀时另记的（下次生成后清掉） */
   seq_start?: number | null;
   format: string;
   first_sn: string | null;

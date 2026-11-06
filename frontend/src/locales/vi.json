@@ -533,6 +533,7 @@
       "base": "Cơ số",
       "seqLen": "Số chữ số tuần tự",
       "seqStart": "Số bắt đầu",
+      "seqStartContinue": "PI này đã dùng tiền tố này, số tuần tự tiếp nối từ {next}; có thể nhập số lớn hơn để nhảy tới, các số bị bỏ qua thành đoạn trống (có thể dùng lại trong \"Nguồn tuần tự\").",
       "lengthPad": "Bù 0 cho chiều dài",
       "sample": "Ví dụ",
       "resetParts": "Khôi phục mặc định",

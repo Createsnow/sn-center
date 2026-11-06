@@ -19,7 +19,8 @@
 本 PI 选了同一自定义规则、这次没生成的物料行一并改记为这条规则；生成失败或取消不留规则。
 自定义前缀默认取点选的第一个单据编码后 7 位；本 PI 已生成的号还在时默认沿用已用的前缀（见 pi_prefix）。
 前缀已被本 PI 同格式的版本占用时
-沿用该版本（own_version），被别的 PI、别的规则或别的格式占用时报前缀冲突；
+沿用该版本（own_version；这时填的起始号另记在物料行，下次生成从 max(PI 下一个号, 起始号) 起，跳过的流水成为空号段），
+被别的 PI、别的规则或别的格式占用时报前缀冲突；
 自定义规则的前缀在选定后被别的规则先占用时，预演标「规则须换前缀」，确认生成时报前缀冲突。
 物料行生成过号后可改选，已生成的号不变，流水接续。
 """
@@ -729,7 +730,8 @@ class Resolved:
     custom: dict | None = None
     #: plan = PREFIX：当前版本已归属的 PI
     other_pi: str | None = None
-    #: 自定义规则的起始号（十进制流水，plan = NEW 时才有）：从 PI 最大号之后编号时第一个号不小于它；不参与 key
+    #: 起始号（十进制流水）：从 PI 最大号之后编号时第一个号不小于它；不参与 key。自定义规则（plan = NEW）取规则参数；
+    #: 自定义时沿用本 PI 已用前缀的版本（own_version）取物料行另记的起始号（见 _start_json），生成后清掉
     seq_start: int | None = None
 
     @property
@@ -825,6 +827,20 @@ def _custom_json(res: Resolved) -> str:
     return json.dumps(c, ensure_ascii=False, sort_keys=True)
 
 
+def _start_json(seq_start: int | None) -> str | None:
+    """物料行沿用本 PI 已用前缀的版本（记 rule_id）时另填的起始号：存入同一行的 custom_json，只有 seq_start 一项；
+    没填为 None。生成过一次就清掉（同自定义规则：起始号只管下一次生成，之后流水接续）。"""
+    return None if seq_start is None else json.dumps({"seq_start": int(seq_start)})
+
+
+def _start_of(sel: dict) -> int | None:
+    """物料行记了 rule_id 时 custom_json 里另记的起始号（见 _start_json）；没有为 None。"""
+    if sel.get("rule_id") is None or not sel.get("custom_json"):
+        return None
+    v = json.loads(sel["custom_json"]).get("seq_start")
+    return int(v) if isinstance(v, int) and v > 0 else None
+
+
 def _same_custom(custom_json: str, custom: dict) -> bool:
     """物料行存的自定义规则与 custom 格式相同（不看起始号）。"""
     c = json.loads(custom_json)
@@ -866,7 +882,7 @@ def effective(
     """物料行生效的规则：物料行已选 ＞ PI 绑定；都没有返回 None（须先选规则）。
     memo：同一 PI 的多个物料行选了同一条规则时只解析一次（规则 id → 解析结果）。"""
     if sel is not None:
-        if sel.get("custom_json"):
+        if sel.get("custom_json") and sel.get("rule_id") is None:
             return _custom_resolved(SRC_LINE, json.loads(sel["custom_json"]))
         rid = sel.get("rule_id")
         if rid is not None:
@@ -878,7 +894,9 @@ def effective(
                 if memo is not None:
                     memo[rid] = res
             if res is not None:
-                return res
+                start = _start_of(sel)
+                # 起始号只对本 PI 正用的版本有效（memo 共用的解析结果不改，另复制一份）
+                return res if start is None or res.plan != PLAN_USE else replace(res, seq_start=start)
     if not use_default:
         return None
     return default if default is not None else pi_default(pi)
@@ -1025,11 +1043,15 @@ def select_for_lines(
             res = _custom_resolved(SRC_LINE, custom)
             own = own_version(pi, res.spec())
         if own is not None:
-            # 前缀已被本 PI 同格式的版本占用（本 PI 别的单据先生成过）：物料行改记为那条规则，沿用这一版
+            # 前缀已被本 PI 同格式的版本占用（本 PI 别的单据先生成过）：物料行改记为那条规则，沿用这一版；
+            # 填了起始号时另记在物料行（custom_json 只有 seq_start），下次生成从 max(PI 下一个号, 起始号) 起
             _adopt(cu, own.rule, pi, {line["org_code"] for _, _, line in keys})
-            res = own
-            rid, cj = own.rule["id"], None
-            label = f"{own.rule['rule_code']} v{own.version['version']}"
+            start = res.seq_start
+            res = replace(own, seq_start=start)
+            rid, cj = own.rule["id"], _start_json(start)
+            label = f"{own.rule['rule_code']} v{own.version['version']}" + (
+                "" if start is None else f" start={codec.encode_seq(start, res.spec())}"
+            )
         elif custom is not None:
             check_prefix(res.version["prefix"], spec=res.spec(), pi=pi)
             rid, cj = None, _custom_json(res)

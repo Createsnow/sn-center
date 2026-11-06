@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 from conftest import BILLS, m, ok, q, uid, xlsx_rows
 
 
@@ -502,20 +504,57 @@ def test_custom_rule_seq_start_validation_and_sample(w, api):
     assert [x["seq_dec"] for x in r["samples"]] == [1, 2, 3, 4, 5, 99], "不填起始号照旧从 1 起"
 
 
-def test_custom_rule_seq_start_with_range_and_used_prefix(w, sql):
-    """手动起止号时范围内的空闲流水先用，溢出部分才按起始号；本 PI 已用过这个前缀时流水接续，起始号不起作用。"""
-    org, pi, bill = mk(w, ("M1", 4), ("M2", 2))
+def test_custom_rule_seq_start_with_range_and_used_prefix(w, api, sql):
+    """手动起止号时范围内的空闲流水先用，溢出部分才按起始号；本 PI 已用过这个前缀时流水接续，
+    填了更大的起始号则往后跳（物料行仍记那条规则，起始号另记、生成一次后清掉），跳过的流水成为空号段。"""
+    org, pi, bill = mk(w, ("M1", 4), ("M2", 2), ("M3", 2), ("M4", 2))
     p = P()
     c = m(prefix=p, base=10, seq_len=4, with_length=False)
     ok(w.select(pi, [(bill, 1)], custom={**c, "seq_start": 50}))
     w.generate(pi, lines=[(bill, 1)], seq=(1, 2))
     seqs = [r["seq_dec"] for r in sql.all("SELECT seq_dec FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
     assert seqs == [1, 2, 50, 51]
+    rid = sql.scalar("SELECT id FROM sn_rule WHERE rule_code = %s", f"PI-{pi}-1")
+    # 已用前缀、起始号大于接续的下一个号（52）：沿用那条规则，起始号另记在物料行
     ok(w.select(pi, [(bill, 2)], custom={**c, "seq_start": 500}))
+    row = sql.one("SELECT rule_id, custom_json FROM sn_line_rule WHERE bill_no = %s AND seq = 2", bill)
+    assert (row["rule_id"], json.loads(row["custom_json"])) == (rid, {"seq_start": 500})
+    ctx = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))
+    rule2 = next(x for b in ctx["bills"] for x in b["lines"] if x["seq"] == 2)["rule"]
+    assert (rule2["plan"], rule2["rule_id"], rule2["seq_start"], rule2["first_sn"]) == ("USE", rid, 500, f"{p}0500")
+    w.generate(pi, lines=[(bill, 2)])
+    seqs = [r["seq_dec"] for r in sql.all("SELECT seq_dec FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
+    assert seqs == [1, 2, 50, 51, 500, 501]
+    assert sql.count("SELECT COUNT(*) FROM sn_rule WHERE rule_code LIKE %s", f"PI-{pi}-%") == 1, "不另建规则"
+    row = sql.one("SELECT rule_id, custom_json FROM sn_line_rule WHERE bill_no = %s AND seq = 2", bill)
+    assert (row["rule_id"], row["custom_json"]) == (rid, None), "起始号只管这一次生成"
+    gaps = ok(api.get(f"/api/generate/gaps?pi={pi}", w.admin))
+    assert [(g["start_seq"], g["end_seq"]) for g in gaps["segments"]][-1] == (52, 499), "跳过的流水成为空号段"
+    # 起始号不大于接续的下一个号：照常接续；没填起始号：custom_json 为空，同原来
+    ok(w.select(pi, [(bill, 3)], custom={**c, "seq_start": 10}))
+    ok(w.select(pi, [(bill, 4)], custom=c))
+    assert sql.scalar("SELECT custom_json FROM sn_line_rule WHERE bill_no = %s AND seq = 4", bill) is None
+    w.generate(pi, lines=[(bill, 3), (bill, 4)])
+    seqs = [r["seq_dec"] for r in sql.all("SELECT seq_dec FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
+    assert seqs[-4:] == [502, 503, 504, 505]
+    assert sql.count("SELECT COUNT(*) FROM sn_line_rule WHERE bill_no = %s AND custom_json IS NOT NULL", bill) == 0
+
+
+def test_used_prefix_seq_start_cleared_by_reselect(w, api, sql):
+    """已用前缀另记的起始号：改选（同格式不填起始号、或改用规则库的规则）即清掉；起始号超过最大流水不能保存。"""
+    org, pi, bill = mk(w, ("M1", 2), ("M2", 2))
+    p = P()
+    c = m(prefix=p, base=10, seq_len=2, with_length=False)
+    ok(w.select(pi, [(bill, 1)], custom=c))
+    w.generate(pi, lines=[(bill, 1)])
+    assert w.select(pi, [(bill, 2)], custom={**c, "seq_start": 100}).code == "RULE_SEQ_START_INVALID"
+    ok(w.select(pi, [(bill, 2)], custom={**c, "seq_start": 40}))
+    assert sql.scalar("SELECT custom_json FROM sn_line_rule WHERE bill_no = %s AND seq = 2", bill) is not None
+    ok(w.select(pi, [(bill, 2)], custom=c))
     assert sql.scalar("SELECT custom_json FROM sn_line_rule WHERE bill_no = %s AND seq = 2", bill) is None
     w.generate(pi, lines=[(bill, 2)])
     seqs = [r["seq_dec"] for r in sql.all("SELECT seq_dec FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
-    assert seqs == [1, 2, 50, 51, 52, 53]
+    assert seqs == [1, 2, 3, 4]
 
 
 def test_rules_bound_by_pi_only(w, api):
