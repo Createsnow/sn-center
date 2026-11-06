@@ -35,6 +35,8 @@ FACTORY_SYNC = "FACTORY_SYNC"
 FACTORY_MES_CONFIG = "FACTORY_MES_CONFIG"
 FACTORY_MES_TOGGLE = "FACTORY_MES_TOGGLE"
 FACTORY_MES_TEST = "FACTORY_MES_TEST"
+K3_CONFIG = "K3_CONFIG"
+K3_CONFIG_TEST = "K3_CONFIG_TEST"
 ORDER_SYNC = "ORDER_SYNC"
 ORDER_ATTACH_FILL = "ORDER_ATTACH_FILL"
 ORDER_LENGTH_FILL = "ORDER_LENGTH_FILL"
@@ -227,6 +229,8 @@ _PATH_ACTIONS = (
     (r"/api/factories/[^/]+/mes-config", FACTORY_MES_CONFIG),
     (r"/api/factories/[^/]+/mes-test", FACTORY_MES_TEST),
     (r"/api/factories/[^/]+/mes-toggle", FACTORY_MES_TOGGLE),
+    (r"/api/k3-config/test", K3_CONFIG_TEST),
+    (r"/api/k3-config", K3_CONFIG),
     (r"/api/orders/attach", ORDER_ATTACH_FILL),
     (r"/api/orders/length", ORDER_LENGTH_FILL),
     (r"/api/orders/unit", ORDER_UNIT_FILL),

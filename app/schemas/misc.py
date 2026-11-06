@@ -33,6 +33,22 @@ class MesConfigIn(In):
     tz_offset_min: int | None = None
 
 
+class K3ConfigIn(In):
+    """金蝶连接参数；未提交的项沿用当前的，应用密钥留空 = 沿用当前的（不回显）。"""
+
+    server_url: str | None = None
+    acct_id: str | None = None
+    app_id: str | None = None
+    app_secret: str | None = None
+    username: str | None = None
+    lcid: int | None = None
+    login_timeout: int | None = None
+    query_timeout: int | None = None
+    view_timeout: int | None = None
+    page_retries: int | None = None
+    page_retry_seconds: int | None = None
+
+
 class MesToggleIn(In):
     enabled: bool = False
 

@@ -11,6 +11,8 @@
   字段名是接口约定，写在代码里，不放 .env。
 - 另取几列只显示的明细字段（客户 P/N、客户描述、规格描述、物料规格型号、生产车间 = 生产部门），不参与比对、生成、
   变更提醒；金蝶不认这些列时本进程改用基本列（这几列留空），同步照常。
+- 连接参数：生产订单页「金蝶连接」保存过的（sn_k3_config，应用密钥加密保存）优先，没有时读 .env 的 K3_*；
+  每次调用金蝶时读取，保存后下一次同步即生效。
 """
 
 from __future__ import annotations
@@ -27,9 +29,11 @@ from typing import Any
 import httpx
 import structlog
 
+from app.core import secretbox
 from app.core.config import settings
 from app.core.errors import ErrorCode, biz
 from app.core.exceptions import BizError
+from app.db.session import db
 
 FORM_PRD_MO = "PRD_MO"
 FORM_ORG = "ORG_Organizations"
@@ -76,7 +80,6 @@ LCID_ZH = 2052
 LOGIN_SVC = "Kingdee.BOS.WebApi.ServicesStub.AuthService.LoginByAppSecret.common.kdsvc"
 VIEW_SVC = "Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.View.common.kdsvc"
 QUERY_SVC = "Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.ExecuteBillQuery.common.kdsvc"
-REQUIRED = ("K3_SERVER_URL", "K3_ACCT_ID", "K3_APP_ID", "K3_APP_SECRET", "K3_USERNAME")
 
 
 @dataclass(frozen=True)
@@ -145,23 +148,74 @@ class _Config:
     page_retry_seconds: float
 
 
-def _config() -> _Config:
-    missing = [k for k in REQUIRED if not settings.get(k, "")]
+#: 连接参数（页面字段名 → .env 名）：文本项（必填）与整数项（.env 名, 默认值）
+TEXT_PARAMS = {
+    "server_url": "K3_SERVER_URL",
+    "acct_id": "K3_ACCT_ID",
+    "app_id": "K3_APP_ID",
+    "app_secret": "K3_APP_SECRET",
+    "username": "K3_USERNAME",
+}
+INT_PARAMS = {
+    "lcid": ("K3_LCID", LCID_ZH),
+    "login_timeout": ("K3_LOGIN_TIMEOUT", 30),
+    "query_timeout": ("K3_QUERY_TIMEOUT", 120),
+    "view_timeout": ("K3_VIEW_TIMEOUT", 60),
+    "page_retries": ("K3_PAGE_RETRIES", 3),
+    "page_retry_seconds": ("K3_PAGE_RETRY_SECONDS", 10),
+}
+#: 参数来源：生产订单页「金蝶连接」保存的（sn_k3_config）/ .env 的 K3_*
+SOURCE_PAGE = "PAGE"
+SOURCE_ENV = "ENV"
+
+
+def env_values() -> dict:
+    """.env（进程环境变量优先）里的 K3_*。"""
+    out: dict = {k: settings.get(env, "") for k, env in TEXT_PARAMS.items()}
+    out.update({k: settings.get_int(env, d) for k, (env, d) in INT_PARAMS.items()})
+    return out
+
+
+def stored_row() -> dict | None:
+    """页面保存的连接参数（应用密钥为密文）；没有保存过为 None。"""
+    return db.one("SELECT * FROM sn_k3_config WHERE id = 1")
+
+
+def current_values() -> tuple[str, dict]:
+    """当前生效的连接参数（含应用密钥明文）与来源：页面保存过的优先，否则 .env。"""
+    row = stored_row()
+    if row is None:
+        return SOURCE_ENV, env_values()
+    secret = secretbox.open_(row["app_secret"])
+    if secret is None:
+        raise biz(ErrorCode.K3_SECRET_UNREADABLE)
+    out: dict = {k: row[k] for k in TEXT_PARAMS}
+    out.update({k: int(row[k]) for k in INT_PARAMS})
+    out["app_secret"] = secret
+    return SOURCE_PAGE, out
+
+
+def config_of(v: dict) -> _Config:
+    missing = [env for k, env in TEXT_PARAMS.items() if not v.get(k)]
     if missing:
         raise biz(ErrorCode.K3_CONFIG_MISSING, missing=", ".join(missing))
     return _Config(
-        settings.get("K3_SERVER_URL", ""),
-        settings.get("K3_ACCT_ID", ""),
-        settings.get("K3_APP_ID", ""),
-        settings.get("K3_APP_SECRET", ""),
-        settings.get("K3_USERNAME", ""),
-        settings.get_int("K3_LCID", LCID_ZH),
-        settings.get_int("K3_LOGIN_TIMEOUT", 30),
-        settings.get_int("K3_QUERY_TIMEOUT", 120),
-        settings.get_int("K3_VIEW_TIMEOUT", 60),
-        max(0, settings.get_int("K3_PAGE_RETRIES", 3)),
-        max(0.0, float(settings.get_int("K3_PAGE_RETRY_SECONDS", 10))),
+        v["server_url"],
+        v["acct_id"],
+        v["app_id"],
+        v["app_secret"],
+        v["username"],
+        int(v["lcid"]),
+        int(v["login_timeout"]),
+        int(v["query_timeout"]),
+        int(v["view_timeout"]),
+        max(0, int(v["page_retries"])),
+        max(0.0, float(v["page_retry_seconds"])),
     )
+
+
+def _config() -> _Config:
+    return config_of(current_values()[1])
 
 
 # ------------------------------------------------------------------ 字段归一
@@ -553,9 +607,9 @@ def view_bill(bill_no: str) -> BillView:
     return BillView(True, text(doc.get("DocumentStatus")), rows)
 
 
-def fetch_organizations() -> list[Org]:
-    """组织机构（含已禁用的：FForbidStatus 不是 A 即禁用）。"""
-    c = _config()
+def fetch_organizations(c: _Config | None = None) -> list[Org]:
+    """组织机构（含已禁用的：FForbidStatus 不是 A 即禁用）。c 为空 = 当前生效的连接参数（连接测试传入待测参数）。"""
+    c = c or _config()
     with _client() as http:
         _login(http, c)
         raw = []

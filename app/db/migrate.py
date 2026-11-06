@@ -153,3 +153,27 @@ def migrate(db: Db) -> int:
         finally:
             c.execute("SELECT RELEASE_LOCK('sn_center_migrate')")
     return applied_now
+
+
+#: V1 之后才加入的表（只新增、不改已有表）：已建好的库不会重跑 V1，启动时按 V1 里的建表语句补建
+ADDED_TABLES = ("sn_k3_config",)
+
+
+def create_statement(table: str) -> str:
+    """迁移脚本里某张表的建表语句。"""
+    for m in migrations():
+        for stmt in m.statements():
+            if stmt.startswith(f"CREATE TABLE {table} "):
+                return stmt
+    raise MigrationError(f"迁移脚本里没有 CREATE TABLE {table}")
+
+
+def ensure_added_tables(db: Db) -> list[str]:
+    """补建 ADDED_TABLES 里库中还没有的表，返回补建的表名。"""
+    created = []
+    for table in ADDED_TABLES:
+        if db.one("SHOW TABLES LIKE %s", table) is None:
+            db.exec(create_statement(table))
+            created.append(table)
+            log.warning("table_created", table=table, note="V1 之后加入的表，按 V1 建表语句补建")
+    return created

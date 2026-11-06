@@ -8,11 +8,14 @@
           <el-icon><Refresh /></el-icon><span>{{ t("orders.compareNow") }}</span>
         </el-button>
         <el-button v-if="store.isAdmin" :loading="syncing === 'rebuild'" @click="rebuild">{{ t("orders.rebuild") }}</el-button>
+        <el-button v-if="store.isAdmin" @click="k3Open = true"><el-icon><Setting /></el-icon><span>{{ t("k3.button") }}</span></el-button>
       </template>
     </PageHead>
 
     <el-alert v-if="meta?.compare?.last_ok === false" type="error" show-icon :closable="false"
-      :title="t('orders.syncFailed', { time: fmt(meta.compare.last_run_at), msg: meta.compare.last_message })" />
+      :title="t('orders.syncFailed', { time: fmt(meta.compare.last_run_at), msg: meta.compare.last_message })">
+      <el-button v-if="store.isAdmin" link type="primary" @click="k3Open = true">{{ t("k3.check") }}</el-button>
+    </el-alert>
 
     <div class="surface meta">
       <span>{{ t("orders.syncedAt") }}：<b>{{ fmt(meta?.synced_at) }}</b></span>
@@ -29,6 +32,14 @@
           </el-tag>
         </template>
         <span v-else class="muted">—</span>
+      </span>
+      <span v-if="store.isAdmin && k3">
+        {{ t("k3.status") }}：
+        <el-tag size="small" :type="k3.source === 'PAGE' ? 'primary' : 'info'">{{ t(`k3.source${k3.source}`) }}</el-tag>
+        <template v-if="k3.last_test">
+          <el-tag size="small" class="ml" :type="k3.last_test.ok ? 'success' : 'danger'">{{ k3.last_test.ok ? t("k3.testPassed") : t("k3.testFailedTag") }}</el-tag>
+          <span class="muted ml">{{ fmt(k3.last_test.at) }}</span>
+        </template>
       </span>
       <el-button link :type="meta?.open_alerts ? 'danger' : 'info'" @click="tab = 'alerts'">
         {{ t("orders.openAlerts", { n: meta?.open_alerts ?? 0 }) }}
@@ -242,6 +253,8 @@
         <el-button type="primary" :disabled="!mapDlg.target" :loading="mapDlg.saving" @click="submitMap">{{ t("common.confirm") }}</el-button>
       </template>
     </el-dialog>
+
+    <K3ConfigDrawer v-if="store.isAdmin" v-model="k3Open" @saved="(c: any) => (k3 = c)" @update:model-value="(v: boolean) => !v && loadK3()" />
   </div>
 </template>
 
@@ -256,6 +269,7 @@ import { usePaged } from "@/composables/usePaged";
 import { useTime } from "@/composables/useTime";
 import PageHead from "@/components/PageHead.vue";
 import FactorySelect from "@/components/FactorySelect.vue";
+import K3ConfigDrawer from "./orders/K3ConfigDrawer.vue";
 import { firstSyncThisLogin } from "@/utils/syncOnce";
 import { leaveStateLabel, suspendLabel } from "@/constants";
 import type { BillState, OrderBill, OrderLine } from "@/types/api";
@@ -296,6 +310,12 @@ const detail = ref<(OrderBill & { lines: OrderLine[]; state: BillState }) | null
 const linesLoading = ref(false);
 const syncBillNo = ref("");
 const syncing = ref<"" | "one" | "compare" | "rebuild">("");
+/** 金蝶连接（只有系统管理员）：顶部显示参数来源与最近测试，按钮打开配置抽屉 */
+const k3 = ref<any>(null);
+const k3Open = ref(false);
+const loadK3 = async () => {
+  if (store.isAdmin) k3.value = await api.k3Config().catch(() => k3.value);
+};
 
 const { items, state, load, onSize } = usePaged<OrderBill>((q) => api.orders({ ...f, ...q }));
 
@@ -425,6 +445,7 @@ watch(tab, (v) => {
  */
 onMounted(async () => {
   if (route.query.tab === "alerts") tab.value = "alerts";
+  loadK3();
   await refresh();
   if (firstSyncThisLogin("orders", store.token)) {
     const r: any = await api.pageSyncOrders().catch(() => null);

@@ -9,6 +9,7 @@ from app.api.routes import (
     factories,
     generate,
     health,
+    k3_config,
     mes,
     orders,
     rules,
@@ -24,6 +25,7 @@ api_router.include_router(auth.router)
 api_router.include_router(users.router)
 api_router.include_router(factories.router)
 api_router.include_router(orders.router)
+api_router.include_router(k3_config.router)
 api_router.include_router(rules.router)
 api_router.include_router(generate.router)
 api_router.include_router(allocation.router)

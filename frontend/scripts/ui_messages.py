@@ -198,6 +198,8 @@ M = {
 "actions.FACTORY_MES_CONFIG": ("修改 MES 对接配置", "MES settings changed", "Sửa cấu hình MES"),
 "actions.FACTORY_MES_TOGGLE": ("切换对接 MES", "MES integration toggled", "Bật / tắt kết nối MES"),
 "actions.FACTORY_MES_TEST": ("MES 连接测试", "MES connection test", "Kiểm tra kết nối MES"),
+"actions.K3_CONFIG": ("修改金蝶连接", "Kingdee connection changed", "Sửa kết nối Kingdee"),
+"actions.K3_CONFIG_TEST": ("金蝶连接测试", "Kingdee connection test", "Kiểm tra kết nối Kingdee"),
 "actions.ORDER_SYNC": ("同步生产订单", "Order sync", "Đồng bộ lệnh"),
 "actions.ORDER_ATTACH_FILL": ("填写附件项次", "Attachment item filled", "Điền hạng mục đính kèm"),
 "actions.ORDER_LENGTH_FILL": ("填写米数", "Length filled", "Điền chiều dài"),

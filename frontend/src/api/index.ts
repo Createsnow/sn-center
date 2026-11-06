@@ -43,6 +43,11 @@ export const api = {
   mesTogglePreview: (code: string) => get(`/factories/${enc(code)}/mes-toggle`),
   toggleMes: (code: string, enabled: boolean) => post(`/factories/${enc(code)}/mes-toggle`, { enabled }),
 
+  // ---------------- 金蝶连接（生产订单页，只有系统管理员）
+  k3Config: () => get("/k3-config"),
+  testK3Config: (data: Q) => http.post<any, any>("/k3-config/test", data, { timeout: 0 }),
+  saveK3Config: (data: Q) => http.put<any, any>("/k3-config", data, { timeout: 0 }),
+
   // ---------------- 生产订单快照
   orders: (params?: Q) => get("/orders", params),
   orderMeta: () => get("/orders/meta"),

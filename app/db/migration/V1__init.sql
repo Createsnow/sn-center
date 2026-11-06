@@ -179,6 +179,26 @@ CREATE TABLE sn_sync_state (
 
 INSERT INTO sn_sync_state (id) VALUES (1);
 
+-- 金蝶 K3 Cloud 连接参数（生产订单页「金蝶连接」维护，只有一行 id = 1）；没有这一行时沿用 .env 的 K3_*。
+-- 本表在 V1 之后加入：已建好的库启动时按本语句补建（app/db/migrate.py ADDED_TABLES），不动其他表
+CREATE TABLE sn_k3_config (
+  id                 TINYINT       NOT NULL,
+  server_url         VARCHAR(500)  NOT NULL COMMENT '服务地址（…/k3cloud/）',
+  acct_id            VARCHAR(128)  NOT NULL COMMENT '账套 ID（数据中心 ID）',
+  app_id             VARCHAR(255)  NOT NULL COMMENT '应用 ID',
+  app_secret         VARCHAR(1024) NOT NULL COMMENT '应用密钥（加密保存，不回显）',
+  username           VARCHAR(128)  NOT NULL COMMENT '集成用户',
+  lcid               INT           NOT NULL DEFAULT 2052 COMMENT '语言：2052 中文简体 / 1033 英文',
+  login_timeout      INT           NOT NULL DEFAULT 30 COMMENT '登录超时（秒）',
+  query_timeout      INT           NOT NULL DEFAULT 120 COMMENT '查询超时（秒）',
+  view_timeout       INT           NOT NULL DEFAULT 60 COMMENT '单据查看超时（秒）',
+  page_retries       INT           NOT NULL DEFAULT 3 COMMENT '分页查询失败重试次数',
+  page_retry_seconds INT           NOT NULL DEFAULT 10 COMMENT '分页重试间隔（秒）',
+  updated_by         VARCHAR(32)   NOT NULL DEFAULT '' COMMENT '最后修改人工号',
+  updated_at         DATETIME      NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='金蝶连接参数';
+
 -- 按天汇总的计数（无变动的比对同步次数、MES 无批次可给的取批次数）
 CREATE TABLE sn_daily_counter (
   day          DATE        NOT NULL,
