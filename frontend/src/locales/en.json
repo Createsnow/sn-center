@@ -309,6 +309,7 @@
     "resumeBtn": "Resume push ({n} left)",
     "resumed": "Push resumed, {n} left",
     "linesTitle": "Bill lines",
+    "snQty": "SN qty",
     "billCounts": "{n} lines · {qty} SNs",
     "billPicked": "{n} lines ticked",
     "toOrg": "To org",

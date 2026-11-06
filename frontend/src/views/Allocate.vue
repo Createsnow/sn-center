@@ -63,7 +63,7 @@
           </div>
 
           <!-- 单据物料行：勾选有待分配号的物料行为范围，不勾选 = 整张 PI；单据头、物料行都带推送进度条；
-               列依次为附件项次、行号、物料编码、订单数量、客户 P/N、十进制流水号、SN 枚数、SN 范围、推送进度、分到；
+               列依次为附件项次、行号、物料编码、订单数量、客户 P/N、十进制流水号、SN 数量、SN 范围、推送进度、分到；
                单据内物料行按附件项次从小到大（bills）；列宽按右侧宽度放下，不出横向滚动条 -->
           <section v-if="bills.length" class="box lines-box">
             <div class="box-h">
@@ -101,19 +101,19 @@
                   </el-table-column>
                   <el-table-column :label="t('common.material')" prop="material_code" min-width="72" show-overflow-tooltip />
                   <!-- 订单数量、客户 P/N：金蝶物料行的值（只显示）；导入行、已不在快照的物料行为「—」；
-                       客户 P/N 完整显示：不截断、不出省略号，超过列宽的在单元格内折行（同 SN 范围列），
-                       列最小宽度不变，右侧宽 1440 以上仍不出横向滚动条 -->
+                       客户 P/N 完整显示、单行不折行：列宽按本 PI 各行的值量出（pnW），放不下时表格左右滑动 -->
                   <el-table-column :label="t('generate.orderQty')" align="right" width="64">
                     <template #default="{ row }"><span class="num">{{ num(row.order_qty) }}</span></template>
                   </el-table-column>
-                  <el-table-column :label="t('orders.customerPn')" min-width="56" class-name="wrap-cell">
+                  <el-table-column :label="t('orders.customerPn')" :min-width="pnW" class-name="nowrap-cell" label-class-name="nowrap-cell">
                     <template #default="{ row }">{{ row.customer_pn || "—" }}</template>
                   </el-table-column>
                   <!-- 十进制流水号：本行号中最小、最大的十进制流水（起 ~ 止，只有一枚时只写一个）；导入的号没有流水为「—」 -->
                   <el-table-column :label="t('generate.seqDec')" min-width="64">
                     <template #default="{ row }"><span class="sn-mono">{{ decRange(row) }}</span></template>
                   </el-table-column>
-                  <el-table-column :label="t('export.qty')" align="right" width="52">
+                  <!-- SN 数量：本行号的枚数；表头、数值单行不折行，列宽按表头与各行的值量出（qtyW） -->
+                  <el-table-column :label="t('allocate.snQty')" align="right" :width="qtyW" class-name="nowrap-cell" label-class-name="nowrap-cell">
                     <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
                   </el-table-column>
                   <el-table-column :label="t('generate.snRange')" min-width="104">
@@ -224,6 +224,7 @@ import { usePaged } from "@/composables/usePaged";
 import { useTime } from "@/composables/useTime";
 import { BATCH_RESULT_TYPE, BILL_FOLD_OVER, batchResultLabel, batchSourceLabel, pushStateLabel, taskStateLabel } from "@/constants";
 import { lineSort } from "@/genScope.js";
+import { colWidth, textWidth } from "@/colWidth.js";
 import PageHead from "@/components/PageHead.vue";
 import DeliveryBatchDrawer from "@/components/batch/DeliveryBatchDrawer.vue";
 import AllocatedPane from "./allocate/AllocatedPane.vue";
@@ -370,6 +371,13 @@ function progLabel(x: Counts) {
 /** 待分配页签下列出的单据（待分配、待处理，及本 PI 列出过的），物料行按单据分组（单据保持接口给的顺序）；
  *  单据内物料行按附件项次从小到大（号上的附件项次，按数字比、与生成排号同一比较；空的排最后，项次相同按行号），
  *  只管显示，不影响勾选与分配范围。 */
+/** 单据物料行的列宽（本 PI 各单据的表同宽、列对齐）：
+ *  客户 P/N 按各行的值量出、不设上限，完整单行显示，总宽超出右侧时表格左右滑动；SN 数量按表头与各行数值量出，不折行。 */
+const pnW = computed(() =>
+  colWidth(t("orders.customerPn"), (ctx.value?.lines ?? []).map((l: any) => textWidth(l.customer_pn || "—")), { min: 56 }),
+);
+const qtyW = computed(() => colWidth(t("allocate.snQty"), (ctx.value?.lines ?? []).map((l: any) => textWidth(num(l.qty)))));
+
 const bills = computed(() => {
   const m = new Map<string, Counts & { bill_no: string; state: BillState; lines: any[] }>();
   for (const l of ctx.value?.lines ?? []) {
@@ -538,6 +546,6 @@ onUnmounted(() => {
 .push-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px dashed var(--el-border-color-lighter); font-size: 13px; }
 .list-pane :deep(.current-row > td) { background: var(--el-color-primary-light-9) !important; }
 .list-pane :deep(.el-table__row) { cursor: pointer; }
-/* 客户 P/N 完整显示：超过列宽时折行（先在「-」等处断，不带断点的长串任意位置可断） */
-.bills :deep(.wrap-cell .cell) { white-space: normal; overflow-wrap: anywhere; }
+/* 客户 P/N、SN 数量：表头与数据单行显示、不折行（列宽已按内容量出，放不下时表格左右滑动） */
+.bills :deep(.nowrap-cell .cell) { white-space: nowrap; }
 </style>

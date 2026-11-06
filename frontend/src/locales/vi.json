@@ -309,6 +309,7 @@
     "resumeBtn": "Đẩy tiếp (còn {n} lần)",
     "resumed": "Đã đẩy tiếp, còn {n} lần",
     "linesTitle": "Dòng vật tư của chứng từ",
+    "snQty": "Số lượng SN",
     "billCounts": "{n} dòng · {qty} SN",
     "billPicked": "Đã chọn {n} dòng",
     "toOrg": "Phân bổ cho",

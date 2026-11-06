@@ -309,6 +309,7 @@
     "resumeBtn": "继续推送（剩余 {n} 次）",
     "resumed": "已继续推送，剩余 {n} 次",
     "linesTitle": "单据物料行",
+    "snQty": "SN 数量",
     "billCounts": "{n} 行 · SN {qty} 枚",
     "billPicked": "已选 {n} 行",
     "toOrg": "分到",
