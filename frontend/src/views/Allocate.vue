@@ -100,11 +100,13 @@
                     </template>
                   </el-table-column>
                   <el-table-column :label="t('common.material')" prop="material_code" min-width="72" show-overflow-tooltip />
-                  <!-- 订单数量、客户 P/N：金蝶物料行的值（只显示）；导入行、已不在快照的物料行为「—」 -->
+                  <!-- 订单数量、客户 P/N：金蝶物料行的值（只显示）；导入行、已不在快照的物料行为「—」；
+                       客户 P/N 完整显示：不截断、不出省略号，超过列宽的在单元格内折行（同 SN 范围列），
+                       列最小宽度不变，右侧宽 1440 以上仍不出横向滚动条 -->
                   <el-table-column :label="t('generate.orderQty')" align="right" width="64">
                     <template #default="{ row }"><span class="num">{{ num(row.order_qty) }}</span></template>
                   </el-table-column>
-                  <el-table-column :label="t('orders.customerPn')" min-width="56" show-overflow-tooltip>
+                  <el-table-column :label="t('orders.customerPn')" min-width="56" class-name="wrap-cell">
                     <template #default="{ row }">{{ row.customer_pn || "—" }}</template>
                   </el-table-column>
                   <!-- 十进制流水号：本行号中最小、最大的十进制流水（起 ~ 止，只有一枚时只写一个）；导入的号没有流水为「—」 -->
@@ -536,4 +538,6 @@ onUnmounted(() => {
 .push-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px dashed var(--el-border-color-lighter); font-size: 13px; }
 .list-pane :deep(.current-row > td) { background: var(--el-color-primary-light-9) !important; }
 .list-pane :deep(.el-table__row) { cursor: pointer; }
+/* 客户 P/N 完整显示：超过列宽时折行（先在「-」等处断，不带断点的长串任意位置可断） */
+.bills :deep(.wrap-cell .cell) { white-space: normal; overflow-wrap: anywhere; }
 </style>
