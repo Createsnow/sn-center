@@ -242,6 +242,16 @@ export function autoIndex(parts, kind, ctx = {}) {
   return end;
 }
 
+/**
+ * 组件库「添加到 前缀 / 后缀」时的位置（target = "PRE" | "SUF"；流水之前为前缀，流水之后为后缀）：
+ * 流水、米数、单位按 autoIndex 放（米数、单位只能在后缀）；其余加到前缀时放在流水前，加到后缀时放最后。
+ */
+export function addIndex(parts, kind, target, ctx = {}) {
+  if (SINGLE.includes(kind)) return autoIndex(parts, kind, ctx);
+  const s = parts.findIndex((p) => p.kind === "SEQ");
+  return target === "PRE" && s >= 0 ? s : parts.length;
+}
+
 /** 在 at 处放不下 kind 的原因：TAKEN（流水 / 米数 / 单位已有）或校验错误码；放得下返回 ""。 */
 export function blockReason(parts, kind, at, ctx = {}) {
   if (SINGLE.includes(kind) && parts.some((p) => p.kind === kind)) return "TAKEN";

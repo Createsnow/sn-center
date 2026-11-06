@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  TEMPLATES, autoIndex, blockReason, defaultParts, formatDate, fromSpec, insertAt, isoWeek, movePart, moveTo, newErrors, newPart,
+  TEMPLATES, addIndex, autoIndex, blockReason, defaultParts, formatDate, fromSpec, insertAt, isoWeek, movePart, moveTo, newErrors, newPart,
   partValue, partsSig, sampleSegments, todayIn, toSpec,
 } from "./snParts.js";
 
@@ -162,6 +162,22 @@ test("auto position for add", () => {
   for (const k of ["TEXT", "SEP", "PI", "BILL", "DATE", "LEN"]) {
     assert.deepEqual(newErrors(b, insertAt(b, autoIndex(b, k, ctx), P(k)), ctx), [], k);
   }
+});
+
+test("add to prefix / suffix", () => {
+  const a = [P("BILL"), P("SEQ"), P("SEP"), P("LEN"), P("UNIT")];
+  assert.equal(addIndex(a, "TEXT", "PRE", ctx), 1); // 前缀：放在流水前
+  assert.equal(addIndex(a, "DATE", "SUF", ctx), 5); // 后缀：放最后
+  assert.equal(addIndex(a, "SEP", "SUF", ctx), 5);
+  const b = [P("BILL"), P("SEQ"), P("SEP"), P("TEXT", { text: "A" })];
+  for (const t of ["PRE", "SUF"]) {
+    assert.equal(addIndex(b, "UNIT", t, ctx), autoIndex(b, "UNIT", ctx), t); // 米数、单位不论选哪段都只放后缀
+    assert.equal(addIndex(b, "LEN", t, ctx), autoIndex(b, "LEN", ctx), t);
+    for (const k of ["TEXT", "SEP", "PI", "BILL", "DATE", "LEN", "UNIT"]) {
+      assert.deepEqual(newErrors(b, insertAt(b, addIndex(b, k, t, ctx), P(k)), ctx), [], `${t} ${k}`);
+    }
+  }
+  assert.equal(addIndex([P("BILL")], "TEXT", "PRE", ctx), 1); // 没有流水时放最后
 });
 
 test("common formats are valid and spell the collected samples", () => {

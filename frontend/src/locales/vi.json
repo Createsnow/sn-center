@@ -535,10 +535,41 @@
       "seqStart": "Số bắt đầu",
       "lengthPad": "Bù 0 cho chiều dài",
       "sample": "Ví dụ",
-      "parts": "Thành phần SN",
       "resetParts": "Khôi phục mặc định",
-      "moveLeft": "← Sang trái",
-      "moveRight": "Sang phải →",
+      "legend": {
+        "FIX": "Cố định khi lưu",
+        "SEQ": "Tuần tự",
+        "LINE": "Lấy theo dòng vật tư"
+      },
+      "sec": {
+        "PRE": "Tiền tố",
+        "SEQ": "Tuần tự",
+        "SUF": "Hậu tố"
+      },
+      "secHint": {
+        "PRE": "Trước tuần tự",
+        "SEQ": "Bắt buộc, chỉ một",
+        "SUF": "Sau tuần tự"
+      },
+      "prefixLen": "{n} / {max} ký tự",
+      "none": "(không có)",
+      "addTo": "Thêm vào",
+      "group": {
+        "FIX": "Ký tự cố định",
+        "DOC": "Từ chứng từ · ngày",
+        "LINE": "Lấy theo dòng vật tư"
+      },
+      "toSuf": "→ hậu tố",
+      "col": {
+        "NO": "STT",
+        "PART": "Thành phần",
+        "SET": "Thiết lập",
+        "VAL": "Giá trị",
+        "OPS": "Thao tác"
+      },
+      "moveUp": "Lên trên",
+      "moveDown": "Xuống dưới",
+      "unitFromLine": "Lấy đơn vị sản phẩm của dòng",
       "tpls": "Định dạng thường dùng",
       "tpl": {
         "BILL_SEQ": "7 ký tự cuối số chứng từ + tuần tự",
@@ -551,17 +582,11 @@
       "partRemoved": "Đã xóa “{name}”",
       "resetDone": "Đã khôi phục mặc định",
       "undo": "Hoàn tác",
-      "addPart": "Thành phần",
-      "addAuto": "Thêm thành phần",
-      "insertAt": "Chèn vào vị trí {n}",
       "blank": "(trống)",
       "taken": "Đã có",
-      "dropBad": "{msg}; thả tại đây không có tác dụng",
       "text": "Văn bản",
-      "cutBy": "Giá trị",
       "digits": "Số ký tự",
       "today": "Hôm nay",
-      "dateFmtLabel": "Định dạng",
       "sampleMin": "Nhỏ nhất",
       "sampleMax": "Lớn nhất",
       "part": {
@@ -589,12 +614,12 @@
       },
       "err": {
         "NO_SEQ": "Cần có một tuần tự",
-        "PREFIX_EMPTY": "Cần ít nhất một thành phần có giá trị trước tuần tự",
-        "AFTER_SEQ": "Chiều dài và đơn vị phải nằm sau tuần tự",
+        "PREFIX_EMPTY": "Tiền tố không được để trống",
+        "AFTER_SEQ": "Chiều dài và đơn vị chỉ được nằm ở hậu tố",
         "UNIT_AFTER_LEN": "Đơn vị phải nằm sau chiều dài",
-        "UNIT_GAP": "Khi không có chiều dài, không được có thành phần nào giữa tuần tự và đơn vị",
+        "UNIT_GAP": "Khi không có chiều dài, đơn vị phải nằm ngay sau tuần tự",
         "DUPLICATE": "Tuần tự, chiều dài và đơn vị mỗi loại chỉ có một",
-        "PREFIX_TOO_LONG": "Phần trước tuần tự vượt quá {max} ký tự",
+        "PREFIX_TOO_LONG": "Tiền tố vượt quá {max} ký tự",
         "SEP_TOO_LONG": "Phần giữa tuần tự và chiều dài, hoặc giữa chiều dài và đơn vị, tối đa {max} ký tự"
       },
       "changeConfirm": "Một số dòng đã có SN. Đổi quy tắc?"

@@ -535,10 +535,41 @@
       "seqStart": "Start number",
       "lengthPad": "Length zero-padding",
       "sample": "Sample",
-      "parts": "SN parts",
       "resetParts": "Reset to default",
-      "moveLeft": "← Left",
-      "moveRight": "Right →",
+      "legend": {
+        "FIX": "Fixed on save",
+        "SEQ": "Serial",
+        "LINE": "Taken from the line"
+      },
+      "sec": {
+        "PRE": "Prefix",
+        "SEQ": "Serial",
+        "SUF": "Suffix"
+      },
+      "secHint": {
+        "PRE": "Before the serial",
+        "SEQ": "Exactly one",
+        "SUF": "After the serial"
+      },
+      "prefixLen": "{n} / {max} chars",
+      "none": "(none)",
+      "addTo": "Add to",
+      "group": {
+        "FIX": "Fixed characters",
+        "DOC": "From bill · date",
+        "LINE": "From the line"
+      },
+      "toSuf": "→ suffix",
+      "col": {
+        "NO": "No.",
+        "PART": "Part",
+        "SET": "Settings",
+        "VAL": "Value",
+        "OPS": "Actions"
+      },
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "unitFromLine": "Uses the line's product unit",
       "tpls": "Common formats",
       "tpl": {
         "BILL_SEQ": "Bill No. last 7 + serial",
@@ -551,17 +582,11 @@
       "partRemoved": "Removed “{name}”",
       "resetDone": "Reset to default",
       "undo": "Undo",
-      "addPart": "Part",
-      "addAuto": "Add a part",
-      "insertAt": "Insert at position {n}",
       "blank": "(empty)",
-      "taken": "Already added",
-      "dropBad": "{msg}; releasing here has no effect",
+      "taken": "Added",
       "text": "Text",
-      "cutBy": "Value",
       "digits": "Characters",
       "today": "Today",
-      "dateFmtLabel": "Format",
       "sampleMin": "Min",
       "sampleMax": "Max",
       "part": {
@@ -589,12 +614,12 @@
       },
       "err": {
         "NO_SEQ": "Add one serial",
-        "PREFIX_EMPTY": "Put at least one non-empty part before the serial",
-        "AFTER_SEQ": "Length and unit must come after the serial",
+        "PREFIX_EMPTY": "The prefix cannot be empty",
+        "AFTER_SEQ": "Length and unit can only be in the suffix",
         "UNIT_AFTER_LEN": "Unit must come after length",
-        "UNIT_GAP": "Without length, nothing can sit between the serial and the unit",
+        "UNIT_GAP": "Without length, the unit must directly follow the serial",
         "DUPLICATE": "Serial, length and unit can each appear only once",
-        "PREFIX_TOO_LONG": "The part before the serial exceeds {max} characters",
+        "PREFIX_TOO_LONG": "The prefix exceeds {max} characters",
         "SEP_TOO_LONG": "Text between serial and length, or between length and unit, is limited to {max} characters"
       },
       "changeConfirm": "Some selected lines already have SNs. Change the rule?"
