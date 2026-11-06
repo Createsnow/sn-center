@@ -91,7 +91,8 @@
                 <el-table v-show="!isFolded(b.bill_no)" ref="lineTables" :data="b.lines" size="small" row-key="key"
                   @selection-change="(rows: any[]) => onSelect(b.bill_no, rows)">
                   <el-table-column type="selection" width="40" :selectable="(row: any) => row.pending_alloc > 0 && !row.skip" />
-                  <el-table-column :label="t('common.attachNo')" min-width="56" show-overflow-tooltip>
+                  <!-- 附件项次：表头与值单行完整显示、不折行，列宽按表头与本 PI 各行的值量出（attachW） -->
+                  <el-table-column :label="t('common.attachNo')" :min-width="attachW" class-name="nowrap-cell" label-class-name="nowrap-cell">
                     <template #default="{ row }">{{ row.attach_no || "—" }}</template>
                   </el-table-column>
                   <el-table-column :label="t('common.lineNo')" width="44">
@@ -109,8 +110,9 @@
                   <el-table-column :label="t('orders.customerPn')" :min-width="pnW" class-name="nowrap-cell" label-class-name="nowrap-cell">
                     <template #default="{ row }">{{ row.customer_pn || "—" }}</template>
                   </el-table-column>
-                  <!-- 十进制流水号：本行号中最小、最大的十进制流水（起 ~ 止，只有一枚时只写一个）；导入的号没有流水为「—」 -->
-                  <el-table-column :label="t('generate.seqDec')" min-width="64">
+                  <!-- 十进制流水号：本行号中最小、最大的十进制流水（起 ~ 止，只有一枚时只写一个）；导入的号没有流水为「—」；
+                       表头与值单行不折行，列宽按表头与本 PI 各行的值量出（decW） -->
+                  <el-table-column :label="t('generate.seqDec')" :min-width="decW" class-name="nowrap-cell" label-class-name="nowrap-cell">
                     <template #default="{ row }"><span class="sn-mono">{{ decRange(row) }}</span></template>
                   </el-table-column>
                   <!-- SN 数量：本行号的枚数；表头、数值单行不折行，列宽按表头与各行的值量出（qtyW） -->
@@ -383,6 +385,11 @@ const snRange = (l: any) => `${l.start_sn} ~ ${l.end_sn}`;
 const rangeW = computed(() =>
   colWidth(t("generate.snRange"), (ctx.value?.lines ?? []).map((l: any) => textWidth(snRange(l), { mono: true })), { min: 104 }),
 );
+/** 附件项次、十进制流水号：表头与值单行不折行，列宽按表头与本 PI 各物料行的值量出（原 56 / 64px 时表头折成两行）。 */
+const attachW = computed(() => colWidth(t("common.attachNo"), (ctx.value?.lines ?? []).map((l: any) => textWidth(l.attach_no || "—")), { min: 56 }));
+const decW = computed(() =>
+  colWidth(t("generate.seqDec"), (ctx.value?.lines ?? []).map((l: any) => textWidth(decRange(l), { mono: true })), { min: 64 }),
+);
 const qtyW = computed(() => colWidth(t("allocate.snQty"), (ctx.value?.lines ?? []).map((l: any) => textWidth(num(l.qty)))));
 
 /** 左侧单据列表 SN 数量列宽：原 86px，各语言表头更长时按表头放宽（如越南语），多出的宽度从单据编号列的最小宽度扣，
@@ -557,6 +564,6 @@ onUnmounted(() => {
 .push-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px dashed var(--el-border-color-lighter); font-size: 13px; }
 .list-pane :deep(.current-row > td) { background: var(--el-color-primary-light-9) !important; }
 .list-pane :deep(.el-table__row) { cursor: pointer; }
-/* 客户 P/N、SN 数量、SN 范围：表头与数据单行显示、不折行（列宽已按内容量出，放不下时表格左右滑动） */
+/* 附件项次、客户 P/N、十进制流水号、SN 数量、SN 范围：表头与数据单行显示、不折行（列宽已按内容量出，放不下时表格左右滑动） */
 .bills :deep(.nowrap-cell .cell) { white-space: nowrap; }
 </style>
