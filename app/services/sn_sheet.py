@@ -2,7 +2,7 @@
 只复用这里的 FROM / COLS 取数。
 
 生产组织列出组织编号与中文名称（金蝶组织机构的简体中文名，见 factories；
-SN 查询导出中待分配的号取所在单据的组织）；物料编码后紧跟附件项次、米数
+SN 查询导出中待分配的号取所在单据的组织）；物料编码前为附件项次、后为 ERP行号，再后为米数
 （附件项次、米数都是生成时写到号上的值；规则不带米数时米数为空）。
 """
 
@@ -21,9 +21,9 @@ HEADERS = [
     "客户编码",
     "PI",
     "单据编号",
-    "ERP行号",
-    "物料编码",
     "附件项次",
+    "物料编码",
+    "ERP行号",
     "米数",
     "状态",
     "交付方式",
@@ -40,9 +40,9 @@ KEYS = (
     "customer_code",
     "pi_no",
     "bill_no",
-    "bill_seq",
-    "material_code",
     "attach_no",
+    "material_code",
+    "bill_seq",
     "length",
     "status",
     "delivery_mode",
@@ -80,9 +80,9 @@ def row(no: int, r: dict) -> list:
         r["customer_code"],
         r["pi_no"],
         r["bill_no"],
-        int(imp["cur_bill_seq"]) if imp else r["bill_seq"],
-        r["material_code"],
         r["attach_no"] or "",
+        r["material_code"],
+        int(imp["cur_bill_seq"]) if imp else r["bill_seq"],
         r["length_text"] or "",
         r["status"],
         r["delivery_mode"] or "",

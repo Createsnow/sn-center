@@ -76,8 +76,9 @@
       </section>
     </div>
 
-    <!-- ③ 料号明细：料号与附件项次同级，来源、目标两侧都列料号与附件项次逐行对照。整单转移列出全部；按料号转移勾选一个或多个，
-         各自全部、号段或指定数量；目标行号只列目标单据中同料号、同附件项次的行（米数相符的只有一行时自动选上） -->
+    <!-- ③ 料号明细：料号与附件项次同级，来源、目标两侧都列附件项次与料号逐行对照（附件项次在料号前，目标侧料号后为目标ERP行号）。
+         整单转移列出全部；按料号转移勾选一个或多个，各自全部、号段或指定数量；目标ERP行号只列目标单据中同料号、同附件项次的行
+         （米数相符的只有一行时自动选上） -->
     <section class="lines">
       <div class="lines__t">
         <span>{{ t("transfer.linesTitle") }}</span>
@@ -91,12 +92,13 @@
           <template #default="{ row }"><el-checkbox v-model="cfgs[row.key].checked" @change="refreshSeq(row)" /></template>
         </el-table-column>
         <el-table-column :label="t('transfer.source')" align="center" class-name="grp-src">
-          <el-table-column :label="t('transfer.partNo')" min-width="96">
-            <template #default="{ row }"><span class="key">{{ matLabel(row.material_code) }}</span></template>
-          </el-table-column>
           <el-table-column :label="t('common.attachNo')" width="80">
             <template #default="{ row }"><span class="key">{{ row.attach_no || "—" }}</span></template>
           </el-table-column>
+          <el-table-column :label="t('transfer.partNo')" min-width="96">
+            <template #default="{ row }"><span class="key">{{ matLabel(row.material_code) }}</span></template>
+          </el-table-column>
+          <el-table-column :label="t('common.lineNo')" width="72"><template #default="{ row }">{{ join(row.seqs) }}</template></el-table-column>
           <el-table-column :label="t('common.length')" width="60"><template #default="{ row }">{{ join(row.lengths) }}</template></el-table-column>
           <el-table-column :label="t('transfer.groupQty')" align="right" width="52"><template #default="{ row }"><span class="num">{{ row.qty }}</span></template></el-table-column>
         </el-table-column>
@@ -126,6 +128,16 @@
           </el-table-column>
         </el-table-column>
         <el-table-column :label="t('transfer.target')" align="center" class-name="grp-dst">
+          <el-table-column :label="t('common.attachNo')" width="80">
+            <template #default="{ row }">
+              <span v-if="isActive(row) && toLineOf(row)" class="key">{{ toLineOf(row)!.attach_no || "—" }}</span><span v-else class="muted">—</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="t('transfer.partNo')" min-width="96">
+            <template #default="{ row }">
+              <span v-if="isActive(row) && toLineOf(row)" class="key">{{ matLabel(toLineOf(row)!.material_code) }}</span><span v-else class="muted">—</span>
+            </template>
+          </el-table-column>
           <el-table-column :label="t('transfer.toLine')" width="120">
             <template #default="{ row }">
               <el-select v-if="isActive(row) && cands(row).length" v-model="cfgs[row.key].to_seq" size="small" class="full" clearable
@@ -136,16 +148,6 @@
                 </el-option>
               </el-select>
               <span v-else class="muted">—</span>
-            </template>
-          </el-table-column>
-          <el-table-column :label="t('transfer.partNo')" min-width="96">
-            <template #default="{ row }">
-              <span v-if="isActive(row) && toLineOf(row)" class="key">{{ matLabel(toLineOf(row)!.material_code) }}</span><span v-else class="muted">—</span>
-            </template>
-          </el-table-column>
-          <el-table-column :label="t('common.attachNo')" width="80">
-            <template #default="{ row }">
-              <span v-if="isActive(row) && toLineOf(row)" class="key">{{ toLineOf(row)!.attach_no || "—" }}</span><span v-else class="muted">—</span>
             </template>
           </el-table-column>
           <el-table-column :label="t('transfer.match')" width="150">
@@ -271,7 +273,7 @@ function matLabel(v: string) {
 function orgLabel(code: string) {
   return `${nameOf(code)}（${code}）`;
 }
-function join(vs: string[]) {
+function join(vs: (string | number)[] = []) {
   return vs.length ? vs.join("、") : "—";
 }
 function isActive(g: SourceGroup) {

@@ -22,6 +22,9 @@ test("material code and attachment item are grouped at the same level, per sourc
   assert.deepEqual(gs.map((g) => [g.material_code, g.attach_no, g.qty]), [["M1", "1", 5], ["M1", "2", 3], ["M2", "1", 4]]);
   assert.equal(groupsOf(ROWS, "B")[0].qty, 9);
   assert.deepEqual(groupsOf([{ ...ROWS[0], attach_no: undefined }], "A")[0].attach_no, "1", "older payloads: attach_nos");
+  const merged = groupsOf([{ ...ROWS[0], seqs: [3] }, { ...ROWS[0], factory_code: "A", seqs: [1, 3] }], "A");
+  assert.deepEqual(merged[0].seqs, [1, 3], "ERP line Nos. of the group, merged and sorted");
+  assert.deepEqual(groupsOf(ROWS, "A")[0].seqs, [], "older payloads without seqs");
 });
 
 test("only lines with the same material code and attachment item are candidates", () => {

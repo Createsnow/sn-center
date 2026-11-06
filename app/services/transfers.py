@@ -840,7 +840,7 @@ def decide_kind(r: TransferRequest) -> str:
 def sources(cu: CurrentUser, kind: str, factory: str | None, pi: str | None) -> dict:
     """来源候选：PI 下各单据、各料号 + 附件项次（同级）分配成功的号数（待分配的号不能转；SN 导入的号与生成的号一起算；
     转组织限来源生产组织），供逐级筛选。materials 按料号 + 附件项次列出；rows 再按生产组织细分，带号上的客户、米数
-    （页面据此带出来源生产组织与来源信息）。"""
+    与号所在的 ERP行号 seqs（导入的号取导入记录的当前行号；页面据此带出来源生产组织与来源信息）。"""
     p = util.trim(pi)
     if not p:
         raise biz(ErrorCode.PI_REQUIRED)
@@ -856,10 +856,13 @@ def sources(cu: CurrentUser, kind: str, factory: str | None, pi: str | None) -> 
     mats: dict[tuple[str, str, str], dict] = {}
     rows: dict[tuple[str, str, str, str], dict] = {}
     for x in db.all(
-        "SELECT bill_no, material_code, factory_code, customer_code, attach_no, length_text, COUNT(*) n "
-        f"FROM sn_item WHERE {cond} "
-        "GROUP BY bill_no, material_code, factory_code, customer_code, attach_no, length_text "
-        "ORDER BY bill_no, material_code, attach_no, factory_code",
+        "SELECT i.bill_no, i.material_code, i.factory_code, i.customer_code, i.attach_no, i.length_text, "
+        "COALESCE(m.cur_bill_seq, i.bill_seq) line_seq, COUNT(*) n "
+        "FROM (SELECT bill_no, material_code, factory_code, customer_code, attach_no, length_text, bill_seq, origin, "
+        f"seq_dec FROM sn_item WHERE {cond}) i "
+        f"LEFT JOIN sn_import_item m ON i.origin = '{util.ORIGIN_IMPORT}' AND m.id = i.seq_dec "
+        "GROUP BY i.bill_no, i.material_code, i.factory_code, i.customer_code, i.attach_no, i.length_text, line_seq "
+        "ORDER BY i.bill_no, i.material_code, i.attach_no, i.factory_code",
         *args,
     ):
         n = int(x["n"])
@@ -883,12 +886,18 @@ def sources(cu: CurrentUser, kind: str, factory: str | None, pi: str | None) -> 
                 "customers": [],
                 "attach_nos": [],
                 "lengths": [],
+                "seqs": [],
             }
             b["rows"].append(row)
         row["qty"] += n
         for k, v in (("customers", x["customer_code"]), ("attach_nos", x["attach_no"]), ("lengths", x["length_text"])):
             if v is not None and v not in row[k]:
                 row[k].append(v)
+        if int(x["line_seq"]) not in row["seqs"]:
+            row["seqs"].append(int(x["line_seq"]))
+    for b in bills.values():
+        for row in b["rows"]:
+            row["seqs"].sort()
     return {"bills": list(bills.values())}
 
 
@@ -1502,9 +1511,9 @@ OUT_LIST_HEADERS = [
     "生产组织名称",
     "转出前PI",
     "转出前单据",
-    "转出前ERP行号",
-    "转出前物料",
     "附件项次",
+    "转出前物料",
+    "转出前ERP行号",
     "米数",
     "原交付批次",
     "转出批次",
@@ -1548,9 +1557,9 @@ def out_list(cu: CurrentUser, tid: int):
                     names.get(r["from_factory"], "") if r["from_factory"] else "",
                     r["from_pi"],
                     r["from_bill"],
-                    r["from_seq"],
-                    r["from_material"],
                     r["attach_no"] or "",
+                    r["from_material"],
+                    r["from_seq"],
                     r["length_text"] or "",
                     r["from_delivery_batch"],
                     r["out_batch_no"],

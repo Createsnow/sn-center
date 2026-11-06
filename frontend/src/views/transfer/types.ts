@@ -23,6 +23,8 @@ export interface SourceBill {
   materials: { material_code: string; attach_no: string; qty: number }[];
   rows: {
     material_code: string; attach_no: string; factory_code: string; qty: number; customers: string[]; attach_nos: string[]; lengths: string[];
+    /** 号所在的 ERP行号（导入的号为导入记录的当前行号） */
+    seqs: number[];
   }[];
 }
 
@@ -34,6 +36,8 @@ export interface SourceGroup {
   qty: number;
   customers: string[];
   lengths: string[];
+  /** 组内号所在的 ERP行号（从小到大） */
+  seqs: number[];
 }
 
 /** 快速定位的结果：SN 带出 PI、单据、料号、附件项次、生产组织与 SN；单据编号带出 PI、单据；PI 只带 PI。 */

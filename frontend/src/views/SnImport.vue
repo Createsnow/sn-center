@@ -20,6 +20,8 @@
         <el-table-column :label="t('common.sn')" min-width="150">
           <template #default="{ row }"><span class="sn-mono">{{ row.sn }}</span></template>
         </el-table-column>
+        <el-table-column prop="attach_no" :label="t('common.attachNo')" min-width="80" show-overflow-tooltip />
+        <el-table-column prop="material_code" :label="t('common.material')" min-width="90" show-overflow-tooltip />
         <el-table-column :label="t('snImport.seq')" width="72" align="right">
           <template #default="{ row }">
             <el-tooltip v-if="row.cur_bill_seq !== row.bill_seq" :content="`${row.bill_seq} → ${row.cur_bill_seq}`" placement="top">
@@ -28,8 +30,6 @@
             <span v-else class="num">{{ row.bill_seq }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="material_code" :label="t('common.material')" min-width="90" show-overflow-tooltip />
-        <el-table-column prop="attach_no" :label="t('common.attachNo')" min-width="80" show-overflow-tooltip />
         <el-table-column prop="length" :label="t('common.length')" min-width="60" show-overflow-tooltip />
         <el-table-column prop="customer_code" :label="t('common.customer')" min-width="80" show-overflow-tooltip />
         <el-table-column :label="t('snImport.serial')" min-width="90" show-overflow-tooltip>

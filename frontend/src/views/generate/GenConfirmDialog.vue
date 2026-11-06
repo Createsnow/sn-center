@@ -4,17 +4,19 @@
       <!-- 手动起止号：提示用了多少个空闲流水、溢出多少枚从最大号之后接着编 -->
       <el-alert v-if="preview.seq?.mode === 'RANGE'" :type="preview.overflow_qty ? 'warning' : 'info'" :closable="false" show-icon class="usage"
         :title="t('generate.seqUsage', { start: preview.seq.start, end: preview.seq.end, used: num(preview.range_qty), over: num(preview.overflow_qty), next: overflowFrom })" />
-      <!-- 同一单据内附件项次相同：提示将按行号（单据序号）从小到大生成（不拦截） -->
+      <!-- 同一单据内附件项次相同：提示将按 ERP行号从小到大生成（不拦截） -->
       <el-alert v-if="dups.length" type="warning" :closable="false" show-icon class="usage" :title="t('generate.attachDupHint')">
         <div v-for="g in dups" :key="g.bill_no + '#' + g.attach">
           {{ t("generate.attachDupItem", { bill: g.bill_no, attach: g.attach, seqs: g.lines.map((l: any) => l.seq).join("、") }) }}
         </div>
       </el-alert>
-      <!-- 列依次为物料编码、订单数量（物料行的订单数量）、前缀、进制、流水位数、流水号（起 ~ 止）、十进制流水号（起 ~ 止）、
-           附件项次、米数、产品单位、开始 / 结束 SN；
+      <!-- 列依次为附件项次、物料编码、ERP行号、订单数量（物料行的订单数量）、前缀、进制、流水位数、流水号（起 ~ 止）、
+           十进制流水号（起 ~ 止）、米数、产品单位、开始 / 结束 SN；
            米数、产品单位为写进 SN 的值，规则不带时为「—」 -->
       <el-table :data="preview.items" size="small" max-height="320">
+        <el-table-column :label="t('common.attachNo')" prop="attach" min-width="80" show-overflow-tooltip />
         <el-table-column :label="t('common.material')" prop="material_code" min-width="110" show-overflow-tooltip />
+        <el-table-column :label="t('common.lineNo')" prop="seq" width="72" />
         <el-table-column :label="t('generate.orderQty')" width="76" align="right">
           <template #default="{ row }"><span class="num">{{ row.line_qty == null ? "—" : num(row.line_qty) }}</span></template>
         </el-table-column>
@@ -37,7 +39,6 @@
             <div v-for="(g, i) in segsOf(row)" :key="i" class="sn-mono">{{ decRange(g) }}</div>
           </template>
         </el-table-column>
-        <el-table-column :label="t('common.attachNo')" prop="attach" min-width="80" show-overflow-tooltip />
         <el-table-column :label="t('common.length')" min-width="64" show-overflow-tooltip>
           <template #default="{ row }">{{ row.length ?? "—" }}</template>
         </el-table-column>

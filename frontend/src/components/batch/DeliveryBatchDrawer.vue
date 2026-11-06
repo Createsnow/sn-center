@@ -62,9 +62,10 @@
       <el-table-column :label="t('common.sn')" min-width="170"><template #default="{ row }"><span class="sn-mono">{{ row.sn }}</span></template></el-table-column>
       <el-table-column prop="rev" label="rev" width="50" />
       <el-table-column :label="t('query.pushType')" width="80"><template #default="{ row }">{{ pushTypeLabel(row.push_type) }}</template></el-table-column>
-      <el-table-column :label="t('query.billSeq')" min-width="140"><template #default="{ row }">{{ row.bill_no }} / {{ row.bill_seq }}</template></el-table-column>
-      <el-table-column prop="material_code" :label="t('common.material')" width="100" />
+      <el-table-column prop="bill_no" :label="t('common.billNo')" min-width="120" />
       <el-table-column :label="t('common.attachNo')" width="90"><template #default="{ row }">{{ row.attach_no || "—" }}</template></el-table-column>
+      <el-table-column prop="material_code" :label="t('common.material')" width="100" />
+      <el-table-column prop="bill_seq" :label="t('common.lineNo')" width="72" />
       <el-table-column :label="t('common.length')" width="70"><template #default="{ row }">{{ row.length || "—" }}</template></el-table-column>
       <el-table-column :label="t('query.receiptResult')" width="100">
         <template #default="{ row }"><el-tag v-if="row.receipt_result" size="small" :type="RECEIPT_RESULT_TYPE[row.receipt_result] || 'info'">{{ receiptResultLabel(row.receipt_result) }}</el-tag></template>

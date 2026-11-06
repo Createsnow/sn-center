@@ -4,8 +4,8 @@
  * 只有同料号、同附件项次才能转移：每组只能转到目标单据中料号、附件项次都相同的物料行；这样的行有多行时
  * 在米数相符的行里只有一行就自动选上，否则须选行号；同一单据内转（转组织）不选行号即留在原行。与后台 transfers._dest_line 一致。
  *
- * @typedef {{ material_code: string, attach_no: string, factory_code: string, qty: number, customers: string[], lengths: string[] }} SrcRow
- * @typedef {{ key: string, material_code: string, attach_no: string, qty: number, customers: string[], lengths: string[] }} Group
+ * @typedef {{ material_code: string, attach_no: string, factory_code: string, qty: number, customers: string[], lengths: string[], seqs?: number[] }} SrcRow
+ * @typedef {{ key: string, material_code: string, attach_no: string, qty: number, customers: string[], lengths: string[], seqs: number[] }} Group
  * @typedef {{ seq: number, material_code: string, attach_no: string, length: string }} TargetLine
  * @typedef {{ checked: boolean, mode: "ALL" | "RANGE" | "QTY", start_sn: string, end_sn: string, qty: number | undefined, to_seq: number | undefined }} GroupCfg
  */
@@ -15,18 +15,19 @@ export const LINE_MODES = ["ALL", "RANGE", "QTY"];
 /** 组的键：料号 + 附件项次。 */
 export const groupKey = (material, attach) => `${material}\u0001${attach ?? ""}`;
 
-/** 来源单据在所选生产组织下的各组（料号 + 附件项次），按料号、附件项次排序。 @returns {Group[]} */
+/** 来源单据在所选生产组织下的各组（料号 + 附件项次），按料号、附件项次排序；seqs 为组内号所在的 ERP行号（从小到大）。 @returns {Group[]} */
 export function groupsOf(rows, factory) {
   const by = new Map();
   for (const r of rows || []) {
     if (r.factory_code !== factory) continue;
     const attach = r.attach_no ?? (r.attach_nos && r.attach_nos[0]) ?? "";
     const key = groupKey(r.material_code, attach);
-    const g = by.get(key) ?? { key, material_code: r.material_code, attach_no: attach, qty: 0, customers: [], lengths: [] };
+    const g = by.get(key) ?? { key, material_code: r.material_code, attach_no: attach, qty: 0, customers: [], lengths: [], seqs: [] };
     g.qty += r.qty;
-    for (const k of ["customers", "lengths"]) for (const v of r[k] || []) if (!g[k].includes(v)) g[k].push(v);
+    for (const k of ["customers", "lengths", "seqs"]) for (const v of r[k] || []) if (!g[k].includes(v)) g[k].push(v);
     by.set(key, g);
   }
+  for (const g of by.values()) g.seqs.sort((a, b) => a - b);
   return [...by.values()].sort((a, b) => (a.material_code + "\u0001" + a.attach_no).localeCompare(b.material_code + "\u0001" + b.attach_no));
 }
 

@@ -1,5 +1,5 @@
-"""SN 导入：系统定的固定模板（PI、单据编号、ERP行号、物料编码、完整 SN、流水位数、进制位数、流水号、十进制流水号、
-附件项次、米数、产品单位、生产组织编号、生产组织、客户编码；流水号、米数、产品单位、生产组织编号选填，流水号不填时
+"""SN 导入：系统定的固定模板（PI、单据编号、附件项次、物料编码、ERP行号、完整 SN、流水位数、进制位数、流水号、
+十进制流水号、米数、产品单位、生产组织编号、生产组织、客户编码；流水号、米数、产品单位、生产组织编号选填，流水号不填时
 按十进制流水号换算），按列名认列、顺序不限、其他列不读；
 逐行按订单快照检查（PI、单据、ERP行号、物料编码、附件项次、生产组织须与单据一致；单据已有生成或已分配的号不能导入），
 先检查后确定导入，有一行不能导入整个文件不导入；
@@ -152,14 +152,14 @@ def test_template_marks_required_columns(w, api, sql):
     assert head == [
         "*PI",
         "*单据编号",
-        "*ERP行号",
+        "*附件项次",
         "*物料编码",
+        "*ERP行号",
         "*完整 SN",
         "*流水位数",
         "*进制位数",
         "流水号",
         "*十进制流水号",
-        "*附件项次",
         "米数",
         "产品单位",
         "生产组织编号",
@@ -187,14 +187,14 @@ def test_template_marks_required_columns(w, api, sql):
     assert FULL == [
         "PI",
         "单据编号",
-        "ERP行号",
+        "附件项次",
         "物料编码",
+        "ERP行号",
         "完整 SN",
         "流水位数",
         "进制位数",
         "流水号",
         "十进制流水号",
-        "附件项次",
         "米数",
         "产品单位",
         "生产组织编号",
@@ -552,6 +552,9 @@ def test_imported_sns_transfer_like_generated(w, api, sql):
     assert (loc["by"], loc["bill_no"], loc["material_code"]) == ("SN", bill, "M1")
     src = ok(api.get(f"/api/transfers/sources?kind=BILL&pi={pi}", w.admin))["bills"]
     assert next(x for x in src if x["bill_no"] == bill)["qty"] == 3
+    assert [r["seqs"] for r in next(x for x in src if x["bill_no"] == bill)["rows"]] == [[1]], (
+        "导入的号按导入记录的行号"
+    )
     # 转单到目标单据：M1 在第 2 行
     _, _, to_bill = mk(w, ("M9", 1), ("M1", 5), org=org)
     to_pi = sql.scalar("SELECT pi FROM sn_prd_mo WHERE bill_no = %s LIMIT 1", to_bill)
@@ -572,6 +575,8 @@ def test_imported_sns_transfer_like_generated(w, api, sql):
         "bill_seq": 1,
         "cur_bill_seq": 2,
     }
+    moved = ok(api.get(f"/api/transfers/sources?kind=BILL&pi={to_pi}", w.admin))["bills"]
+    assert [r["seqs"] for r in next(x for x in moved if x["bill_no"] == to_bill)["rows"]] == [[2]], "转移后为当前行号"
     after = {(r["bill_no"], r["seq"]): r["gen_count"] for r in sql.all(counts, bill, to_bill)}
     assert (after[(bill, 1)], after[(to_bill, 2)]) == (before[(bill, 1)] - 2, before.get((to_bill, 2), 0) + 2)
     assert (to_bill, 0) not in after and (bill, 0) not in after, "导入的号不进物料行计数"
@@ -620,7 +625,10 @@ def test_imported_sns_transfer_like_generated(w, api, sql):
     )
     # 已分配页签下载：流水位数、进制位数、流水号取导入记录
     ex = xlsx_rows(get_bytes(api, f"/api/export/file?factory_code={org_b}&pi={to_pi}&bill_no={to_bill}", w.admin))
-    row = dict(zip(ex[0], next(y for y in ex[1:] if y[2] == a), strict=True))
+    row = dict(zip(ex[0], next(y for y in ex[1:] if y[4] == a), strict=True))
+    assert row["ERP行号"] == 2, "导入的号的 ERP行号取导入记录的当前行号（号池里为 0）"
+    items = ok(api.get(f"/api/export/items?factory_code={org_b}&pi={to_pi}&bill_no={to_bill}", w.admin))["items"]
+    assert next(x for x in items if x["sn"] == a)["bill_seq"] == 2, "已分配明细同下载"
     assert (row["流水位数"], row["进制位数"], row["流水号"], row["物料编码"], row["附件项次"]) == (
         6,
         10,
@@ -664,7 +672,7 @@ def test_bad_files_and_headers(w, api):
     assert check(api, b"", w.admin).code == "IMPORT_EMPTY"
     assert check(api, xlsx(), w.admin).code == "IMPORT_EMPTY"
     required = (
-        "PI、单据编号、ERP行号、物料编码、完整 SN、流水位数、进制位数、十进制流水号、附件项次、生产组织、客户编码"
+        "PI、单据编号、附件项次、物料编码、ERP行号、完整 SN、流水位数、进制位数、十进制流水号、生产组织、客户编码"
     )
     optional = "流水号、米数、产品单位、生产组织编号"
     one = rec("P", "B", "S", "O")

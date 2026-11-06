@@ -36,7 +36,7 @@
     </span>
   </div>
   <div class="fill-body">
-    <!-- 列宽按本页内容自适应（w），单元格单行完整显示、不截断；超出容器时横向滚动（PI、完整 SN 固定在左侧）；点行弹出该枚 SN 的详情 -->
+    <!-- 列宽按本页内容自适应（w），单元格单行完整显示、不截断；超出容器时横向滚动（PI 至完整 SN 固定在左侧）；点行弹出该枚 SN 的详情 -->
     <el-table v-loading="state.loading" height="100%" :data="items" size="small" class="sn-list" :empty-text="t('common.empty')"
       @row-click="openInfo">
       <el-table-column label="PI" :min-width="w.pi" fixed>
@@ -45,7 +45,9 @@
           <el-tag v-if="row.pi_changed" size="small" type="warning" class="ml">{{ t("query.piChanged") }}</el-tag>
         </template>
       </el-table-column>
+      <el-table-column :label="t('common.attachNo')" :min-width="w.attachNo" fixed><template #default="{ row }">{{ row.attach_no || "—" }}</template></el-table-column>
       <el-table-column :label="t('common.material')" :min-width="w.material" fixed><template #default="{ row }">{{ row.material_code || "—" }}</template></el-table-column>
+      <el-table-column :label="t('common.lineNo')" :min-width="w.lineNo" fixed><template #default="{ row }">{{ row.bill_seq }}</template></el-table-column>
       <el-table-column :label="t('common.sn')" :min-width="w.sn" fixed>
         <template #default="{ row }"><span class="sn-mono">{{ row.sn }}</span></template>
       </el-table-column>
@@ -53,7 +55,6 @@
       <el-table-column :label="t('common.seqBase')" :min-width="w.base" align="right"><template #default="{ row }">{{ row.base ?? "—" }}</template></el-table-column>
       <el-table-column :label="t('rules.seqNo')" :min-width="w.seqText"><template #default="{ row }"><span class="sn-mono">{{ row.seq_text }}</span></template></el-table-column>
       <el-table-column :label="t('generate.seqDec')" :min-width="w.seqDec" align="right"><template #default="{ row }"><span class="sn-mono">{{ row.seq_dec || "—" }}</span></template></el-table-column>
-      <el-table-column :label="t('common.attachNo')" :min-width="w.attachNo"><template #default="{ row }">{{ row.attach_no || "—" }}</template></el-table-column>
       <el-table-column :label="t('common.length')" :min-width="w.length"><template #default="{ row }">{{ row.length ?? "—" }}</template></el-table-column>
       <el-table-column :label="t('common.unit')" :min-width="w.unit"><template #default="{ row }">{{ row.unit || "—" }}</template></el-table-column>
       <el-table-column :label="t('common.status')" :min-width="w.status">
@@ -62,9 +63,7 @@
           <el-tag v-if="row.suspend" size="small" type="danger" class="ml">{{ suspendLabel(row.suspend) }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column :label="t('query.billSeq')" :min-width="w.billSeq">
-        <template #default="{ row }">{{ billSeq(row) }}</template>
-      </el-table-column>
+      <el-table-column :label="t('common.billNo')" :min-width="w.billNo"><template #default="{ row }">{{ row.bill_no }}</template></el-table-column>
       <el-table-column :label="t('query.seqOwner')" :min-width="w.seqOwner">
         <template #default="{ row }">
           <span>{{ row.seq_pi_no }}</span>
@@ -94,7 +93,9 @@
           {{ info.pi_no }}
           <el-tag v-if="info.pi_changed" size="small" type="warning" class="ml">{{ t("query.piChanged") }}</el-tag>
         </el-descriptions-item>
+        <el-descriptions-item :label="t('common.attachNo')">{{ info.attach_no || "—" }}</el-descriptions-item>
         <el-descriptions-item :label="t('common.material')">{{ info.material_code || "—" }}</el-descriptions-item>
+        <el-descriptions-item :label="t('common.lineNo')">{{ info.bill_seq }}</el-descriptions-item>
         <el-descriptions-item :label="t('common.sn')">
           <div class="sn-line">
             <span class="sn-mono">{{ info.sn }}</span>
@@ -105,14 +106,13 @@
         <el-descriptions-item :label="t('common.seqBase')">{{ info.base ?? "—" }}</el-descriptions-item>
         <el-descriptions-item :label="t('rules.seqNo')"><span class="sn-mono">{{ info.seq_text }}</span></el-descriptions-item>
         <el-descriptions-item :label="t('generate.seqDec')"><span class="sn-mono">{{ info.seq_dec || "—" }}</span></el-descriptions-item>
-        <el-descriptions-item :label="t('common.attachNo')">{{ info.attach_no || "—" }}</el-descriptions-item>
         <el-descriptions-item :label="t('common.length')">{{ info.length ?? "—" }}</el-descriptions-item>
         <el-descriptions-item :label="t('common.unit')">{{ info.unit || "—" }}</el-descriptions-item>
         <el-descriptions-item :label="t('common.status')">
           <StatusTag :status="info.status" />
           <el-tag v-if="info.suspend" size="small" type="danger" class="ml">{{ suspendLabel(info.suspend) }}</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item :label="t('query.billSeq')">{{ billSeq(info) }}</el-descriptions-item>
+        <el-descriptions-item :label="t('common.billNo')">{{ info.bill_no }}</el-descriptions-item>
         <el-descriptions-item :label="t('query.seqOwner')">
           {{ info.seq_pi_no }}
           <el-tag v-if="info.transferred_in" size="small" type="info" class="ml">{{ t("query.transferredIn") }}</el-tag>
@@ -129,8 +129,8 @@
 <script setup lang="ts">
 /**
  * SN 明细（F-18）：按组织 / PI / 单据 / 完整 SN / 状态，及客户 / 物料 / 米数 / 流水范围筛选，导出。
- * 列依次为 PI、物料编码、完整 SN、流水位数、进制位数、流水号、十进制流水号、附件项次、米数、产品单位、状态、单据 / ERP行号、流水归属 PI、
- * 生产组织编号、生产组织、客户编码、生成时间（PI、物料编码、完整 SN 固定在左侧）。
+ * 列依次为 PI、附件项次、物料编码、ERP行号、完整 SN、流水位数、进制位数、流水号、十进制流水号、米数、产品单位、状态、单据编号、
+ * 流水归属 PI、生产组织编号、生产组织、客户编码、生成时间（PI 至完整 SN 固定在左侧）。
  * 行按 PI、附件项次从小到大（附件项次按数字比，空的排最后；后台在分页前排好）。
  * 各列宽度按本页内容自适应，PI、完整 SN、生产组织等值单行完整显示；点行弹出该枚 SN 的详情（可复制完整 SN）。
  * 只列号本身的信息，不列交付方式、交付批次、推送类型等交付业务信息（交付批次在「交付批次」页签看）。
@@ -176,7 +176,6 @@ const { items, state, load, onSize } = usePaged<any>(async (q) => {
   return r;
 });
 
-const billSeq = (r: any) => `${r.bill_no} / ${r.bill_seq}`;
 /** 行内标签与前面文字的间距（.ml）。 */
 const TAG_GAP = 4;
 const tagAfter = (text: string | false | null | undefined) => (text ? TAG_GAP + tagWidth(text) : 0);
@@ -198,7 +197,8 @@ const w = computed(() => {
     length: col(t("common.length"), (r) => textWidth(r.length ?? "—")),
     unit: col(t("common.unit"), (r) => textWidth(r.unit || "—")),
     status: col(t("common.status"), (r) => tagWidth(statusLabel(r.status)) + tagAfter(r.suspend && suspendLabel(r.suspend))),
-    billSeq: col(t("query.billSeq"), (r) => textWidth(billSeq(r))),
+    lineNo: col(t("common.lineNo"), (r) => textWidth(String(r.bill_seq))),
+    billNo: col(t("common.billNo"), (r) => textWidth(r.bill_no)),
     seqOwner: col(t("query.seqOwner"), (r) => textWidth(r.seq_pi_no) + tagAfter(r.transferred_in && t("query.transferredIn"))),
     factoryCode: col(t("common.factoryCode"), (r) => textWidth(r.factory_code || "—")),
     factory: col(t("common.factory"), (r) => textWidth(nameOf(r.factory_code))),

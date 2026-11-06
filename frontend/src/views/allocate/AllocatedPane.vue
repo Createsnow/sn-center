@@ -19,11 +19,13 @@
         </div>
 
         <!-- 每页条数按高度算，正好放满，不出滚动条；PI 列宽按内容量出，完整显示；
-             流水号后为十进制流水号；行按附件项次从小到大（后台排好，与下载文件同一顺序） -->
+             物料编码前为附件项次、后为 ERP行号；流水号后为十进制流水号；行按附件项次从小到大（后台排好，与下载文件同一顺序） -->
         <div ref="box" class="ap-table">
           <el-table v-loading="sns.state.loading" :data="sns.items.value" size="small" class="fit-table" :empty-text="t('common.empty')">
             <el-table-column prop="pi_no" label="PI" :min-width="piW" />
+            <el-table-column :label="t('common.attachNo')" min-width="66" show-overflow-tooltip><template #default="{ row }">{{ row.attach_no || "—" }}</template></el-table-column>
             <el-table-column prop="material_code" :label="t('common.material')" min-width="86" show-overflow-tooltip />
+            <el-table-column prop="bill_seq" :label="t('common.lineNo')" width="72" />
             <el-table-column :label="t('common.sn')" min-width="170" show-overflow-tooltip>
               <template #default="{ row }">
                 <span class="sn-mono">{{ row.sn }}</span>
@@ -34,7 +36,6 @@
             <el-table-column :label="t('common.seqBase')" min-width="66" align="right"><template #default="{ row }">{{ row.base ?? "—" }}</template></el-table-column>
             <el-table-column :label="t('rules.seqNo')" min-width="76"><template #default="{ row }"><span class="sn-mono">{{ row.seq_text }}</span></template></el-table-column>
             <el-table-column :label="t('generate.seqDec')" min-width="96" align="right"><template #default="{ row }"><span class="sn-mono">{{ row.seq_dec ?? "—" }}</span></template></el-table-column>
-            <el-table-column :label="t('common.attachNo')" min-width="66" show-overflow-tooltip><template #default="{ row }">{{ row.attach_no || "—" }}</template></el-table-column>
             <el-table-column :label="t('common.length')" min-width="56" show-overflow-tooltip><template #default="{ row }">{{ row.length || "—" }}</template></el-table-column>
             <el-table-column :label="t('common.unit')" min-width="66" show-overflow-tooltip><template #default="{ row }">{{ row.unit || "—" }}</template></el-table-column>
             <el-table-column prop="factory_code" :label="t('common.factoryCode')" min-width="90" show-overflow-tooltip />
@@ -69,6 +70,7 @@ interface SnRow {
   factory_name: string;
   sn: string;
   material_code: string;
+  bill_seq: number;
   seq_pi_no: string;
   transferred_in: boolean;
   base: number | null;

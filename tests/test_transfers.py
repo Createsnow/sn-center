@@ -516,6 +516,7 @@ def test_sources_lists_bills_and_materials(w, api):
                     "customers": ["C1"],
                     "attach_nos": r["bills"][0]["rows"][0]["attach_nos"],
                     "lengths": ["100"],
+                    "seqs": [1],
                 }
             ],
         }

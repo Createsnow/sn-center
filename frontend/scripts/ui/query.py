@@ -23,7 +23,6 @@ M = {
 "query.rangeFull": ("范围内的号全部在结果中", "Every SN of the range is in the results", "Mọi SN trong khoảng đều có trong kết quả"),
 "query.seqText": ("进制", "Encoded", "Mã hóa"),
 "query.seqDec": ("流水", "Serial", "Tuần tự"),
-"query.billSeq": ("单据 / ERP行号", "Bill / ERP line No.", "Chứng từ / dòng ERP"),
 "query.seqOwner": ("流水归属 PI", "Serial owner PI", "PI sở hữu tuần tự"),
 "query.piChanged": ("已改 PI", "PI changed", "Đã đổi PI"),
 "query.transferredIn": ("转入", "Transferred in", "Chuyển đến"),

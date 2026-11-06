@@ -229,11 +229,13 @@ def items(
 
 
 def _import_detail(r: dict) -> dict:
-    """SN 导入的号（带 r["import"]）：流水位数、进制、流水号、十进制流水、产品单位取导入记录；生成的号为空 dict。"""
+    """SN 导入的号（带 r["import"]）：ERP行号、流水位数、进制、流水号、十进制流水、产品单位取导入记录；
+    生成的号为空 dict。（号池里导入的号挂在 0 上，所在物料行是导入记录的当前行号。）"""
     d = r.get("import")
     if d is None:
         return {}
     return {
+        "bill_seq": int(d["cur_bill_seq"]),
         "seq_len": int(d["seq_len"]),
         "base": int(d["seq_base"]),
         "seq_text": d["serial_text"],
@@ -292,16 +294,17 @@ def _text(v):
     return v.decode("utf-8") if isinstance(v, (bytes, bytearray)) else v
 
 
-#: 下载文件的列（与 SN 查询导出不同，只列分配页需要的字段；行顺序与分配页「已分配」明细一致；
-#: 明细在流水号后另有十进制流水号列，下载文件不含该列，列保持不变）
+#: 下载文件的列（与 SN 查询导出不同，只列分配页需要的字段；列、行顺序与分配页「已分配」明细一致：
+#: 物料编码前为附件项次、后为 ERP行号；明细在流水号后另有十进制流水号列，下载文件不含该列）
 FILE_HEADERS = [
     "PI",
+    "附件项次",
     "物料编码",
+    "ERP行号",
     "完整 SN",
     "流水位数",
     "进制位数",
     "流水号",
-    "附件项次",
     "米数",
     "产品单位",
     "生产组织编号",
@@ -310,16 +313,18 @@ FILE_HEADERS = [
 
 
 def _file_row(r: dict) -> list:
-    """一行，列顺序同 FILE_HEADERS。SN 导入的号（带 r["import"]）的流水位数、进制、流水号、产品单位取导入记录。"""
+    """一行，列顺序同 FILE_HEADERS。SN 导入的号（带 r["import"]）的 ERP行号、流水位数、进制、流水号、产品单位
+    取导入记录。"""
     d = r.get("import")
     return [
         r["pi_no"],
+        _text(r["attach_no"]) or "",
         r["material_code"],
+        int(d["cur_bill_seq"]) if d else r["bill_seq"],
         _text(r["sn"]),
         int(d["seq_len"]) if d else _seq_len(r["rule_version_id"]),
         int(d["seq_base"]) if d else _base(r["rule_version_id"]),
         d["serial_text"] if d else rules.seq_text(r["rule_version_id"], r["seq_dec"]),
-        _text(r["attach_no"]) or "",
         _text(r["length_text"]) or "",
         (d["unit"] or "") if d else _unit(r),
         r["factory_code"] or "",

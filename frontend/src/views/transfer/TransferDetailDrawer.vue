@@ -97,7 +97,7 @@
           <template #default="{ row }">
             <div>{{ statusLabel(row.from_status) }} · {{ row.from_factory || "—" }} · {{ row.from_pi }}</div>
             <div class="muted">
-              {{ row.from_bill }} · {{ t("transfer.lineNo", { n: row.from_seq }) }} · {{ t("transfer.partNo") }} {{ row.from_material || "—" }} · {{ t("common.attachNo") }} {{ row.attach_no || "—" }}
+              {{ row.from_bill }} · {{ t("common.attachNo") }} {{ row.attach_no || "—" }} · {{ t("transfer.partNo") }} {{ row.from_material || "—" }} · {{ t("transfer.lineNo", { n: row.from_seq }) }}
               · {{ t("common.length") }} {{ row.length || "—" }} · rev {{ row.from_rev }}
             </div>
             <div v-if="row.from_delivery_batch" class="muted sn-mono small">{{ row.from_delivery_batch }}</div>
@@ -106,7 +106,7 @@
         <el-table-column :label="t('transfer.after')" min-width="200">
           <template #default="{ row }">
             <div>{{ statusLabel(row.to_status) }} · {{ row.to_factory || "—" }} · {{ row.to_pi }}</div>
-            <div class="muted">{{ row.to_bill }} · {{ t("transfer.lineNo", { n: row.to_seq }) }} · {{ t("transfer.partNo") }} {{ row.to_material || "—" }} · rev {{ row.to_rev }}</div>
+            <div class="muted">{{ row.to_bill }} · {{ t("transfer.partNo") }} {{ row.to_material || "—" }} · {{ t("transfer.lineNo", { n: row.to_seq }) }} · rev {{ row.to_rev }}</div>
             <div v-if="row.out_batch_no" class="muted sn-mono small">{{ t("transfer.outBatch") }} {{ row.out_batch_no }}</div>
           </template>
         </el-table-column>

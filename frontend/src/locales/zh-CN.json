@@ -979,7 +979,6 @@
     "rangeFull": "范围内的号全部在结果中",
     "seqText": "进制",
     "seqDec": "流水",
-    "billSeq": "单据 / ERP行号",
     "seqOwner": "流水归属 PI",
     "piChanged": "已改 PI",
     "transferredIn": "转入",

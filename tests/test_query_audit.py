@@ -64,6 +64,8 @@ def test_export_truncates_with_notice(w, api, monkeypatch):
     r = api.client.get(f"/api/sn/export?pi={pi}", headers={"Authorization": f"Bearer {w.admin}"})
     rows = xlsx_rows(r.content)
     assert rows[0] == sn_sheet.HEADERS and len(rows) == 4, "SN 查询导出的列"
+    i = rows[0].index("物料编码")
+    assert rows[0][i - 1 : i + 2] == ["附件项次", "物料编码", "ERP行号"], "物料编码前附件项次、后 ERP行号"
     got = dict(zip(rows[0], rows[1], strict=True))
     assert (got["组织编号"], got["生产组织名称"]) == (org, f"组织{org}")
 

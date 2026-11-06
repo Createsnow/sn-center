@@ -71,7 +71,9 @@ def test_allocate_pushes_in_batches_and_receipts_confirm(w, sql):
     rows = xlsx_rows(r.content)
     got = dict(zip(rows[0], rows[1], strict=False))  # 行尾的空单元格不写出
     assert (got["组织编号"], got["生产组织名称"]) == (org, f"组织{org}"), "导出带组织编号与中文名称"
-    assert (got["物料编码"], got["附件项次"], got["米数"]) == ("M1", "1", "0100"), "物料编码后带附件项次、米数"
+    assert (got["附件项次"], got["物料编码"], got["米数"]) == ("1", "M1", "0100"), "导出带附件项次、物料编码、米数"
+    h = rows[0]
+    assert h[h.index("物料编码") - 1 : h.index("物料编码") + 2] == ["附件项次", "物料编码", "ERP行号"]
     assert (
         sql.count(
             "SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED' AND mes_holder = %s "

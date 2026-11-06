@@ -979,7 +979,6 @@
     "rangeFull": "Every SN of the range is in the results",
     "seqText": "Encoded",
     "seqDec": "Serial",
-    "billSeq": "Bill / ERP line No.",
     "seqOwner": "Serial owner PI",
     "piChanged": "PI changed",
     "transferredIn": "Transferred in",
