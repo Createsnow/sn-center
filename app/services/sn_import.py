@@ -2,16 +2,19 @@
 导入功能自成一套，记录只用 sn_import_item。
 
 - 模板（template，列见 COLUMNS，与分配页「已分配」下载的列对应，另加单据编号、行号、客户编码）：
-  PI、单据编号、行号、物料编码（也认「料号」）、完整 SN（也认「SN」）、流水位数、进制位数、流水号、附件项次、米数、
-  产品单位、生产组织编号、生产组织、客户编码。米数、产品单位、生产组织（名称）选填，其余必填。
+  PI、单据编号、行号、物料编码（也认「料号」）、完整 SN（也认「SN」）、流水位数、进制位数、流水号、十进制流水号
+  （也认「十进制流水」）、附件项次、米数、产品单位、生产组织编号、生产组织、客户编码。流水号、米数、产品单位、
+  生产组织编号选填，其余必填（生产组织即名称，必填）。
 - 文件：xlsx，首个非空行为表头，按列名认列（去空白、不分大小写比较；顺序不限）：必填的列表头必须有，缺了列出缺哪几列；
   其他列名的列不读；同一列出现两次（含别名）不能导入。之后每行一枚号；认得的列都为空的行跳过。
 - 每行的条件（逐行列出不能导入的原因）：必填的都要填，各列不超长；SN 不含空白，文件内不重复，也不能与号池
-  （已生成、已导入的号）重复；单据须在订单快照中，PI、生产组织编号、客户编码与单据相同（生产组织名称填了也须相符）；
+  （已生成、已导入的号）重复；单据须在订单快照中，PI、生产组织（名称）、客户编码与单据相同（生产组织编号填了也须相符）；
   普通操作员只能导入授权生产组织的单据；行号须是该单据的金蝶明细行号，物料编码与该行相同，附件项次与该行生效的
-  附件项次相同（金蝶与生成页都没有时以文件为准），米数填了须与该行相同（转移按「同料号、同附件项次、米数相符」配对）；
-  进制位数为 10 / 16 / 32 / 36，流水位数 1～12，流水号长度等于流水位数、只用该进制默认字符表里的字符
-  （十进制流水按它换算）。
+  附件项次相同（金蝶与生成页都没有时不能导入，先在生成页补填），米数填了须与该行相同（转移按「同料号、同附件项次、
+  米数相符」配对）；该单据在本系统已有生成的号（不论状态、哪个物料行）或已分配的号（含已分配的导入号）时不能导入
+  （只有待分配的导入号时可以继续导入）；进制位数为 10 / 16 / 32 / 36，流水位数 1～12；十进制流水号为非负整数、
+  不超出该进制该位数能表示的最大值；流水号没填时按十进制流水号换算（补前导 0），填了须长度等于流水位数、
+  只用该进制默认字符表里的字符，且换算出的十进制与十进制流水号相同。
 - 先检查（不落库），再「确定导入」：有一行不能导入整个文件都不导入；确定导入时在 PI 操作锁与一个事务里重新检查一遍，
   全部写入，一次导入一个导入单号。
 - 写入：导入记录 sn_import_item（全部列；之后只有 cur_bill_seq 随转移改）+ 号池 sn_item（结构不变：origin = IMPORT，
@@ -59,6 +62,8 @@ SN_MAX = 64
 CODE_MAX = 64
 #: 生产组织名称最长 128
 ORG_MAX = 128
+#: 十进制流水号最长 19 位（36 进制 12 位流水最大 4738381338321616895，在 BIGINT 内）
+DEC_MAX = 19
 #: 进制位数
 BASES = tuple(sorted(codec.DEFAULT_CHARSETS))
 
@@ -116,26 +121,40 @@ COLUMNS = (
     Column(
         "serial",
         "流水号",
-        True,
+        False,
         (),
         codec.MAX_SEQ_LEN,
-        hint="按进制位数书写，位数等于流水位数，保留前导 0；字母大写，32 进制不用 I、L、O、U",
+        hint="选填；不填时按十进制流水号、进制位数、流水位数换算（补前导 0）。填了须按进制位数书写，位数等于流水位数，"
+        "保留前导 0，字母大写，32 进制不用 I、L、O、U，且与十进制流水号换算的相同",
         example="000001",
     ),
-    Column("attach", "附件项次", True, hint="须与该行的附件项次相同（该行没有附件项次时以这里为准）", example="A01"),
+    Column(
+        "dec_in",
+        "十进制流水号",
+        True,
+        ("十进制流水",),
+        DEC_MAX,
+        hint="非负整数（十进制）；须在进制位数、流水位数能表示的范围内，流水号按它换算",
+        example="1",
+    ),
+    Column(
+        "attach",
+        "附件项次",
+        True,
+        hint="须与该单据该行的附件项次相同（该行没有附件项次时不能导入，可先在 SN 生成页补填）",
+        example="A01",
+    ),
     Column("length", "米数", False, hint="选填；填了须与该行的米数相同，原样保存", example="0100"),
     Column("unit", "产品单位", False, hint="选填", example="M"),
-    Column("factory_in", "生产组织编号", True, hint="须与单据的生产组织相同", example="110"),
-    Column(
-        "org_name", "生产组织", False, (), ORG_MAX, hint="选填；填了须与生产组织编号对应的名称相同", example="越南工厂"
-    ),
+    Column("factory_in", "生产组织编号", False, hint="选填；填了须与单据的生产组织编码相同", example="110"),
+    Column("org_name", "生产组织", True, (), ORG_MAX, hint="须与单据的生产组织名称相同", example="越南工厂"),
     Column("customer", "客户编码", True, hint="须与单据的客户相同", example="0001"),
 )
 HEADERS = [c.name for c in COLUMNS]
 REQUIRED = [c.name for c in COLUMNS if c.required]
 OPTIONAL = [c.name for c in COLUMNS if not c.required]
 #: 只检查长度、不另外对照的数字列（行号、位数、进制另查是不是数）
-_NUMERIC = {"seq_in", "seq_len_in", "base_in"}
+_NUMERIC = {"seq_in", "seq_len_in", "base_in", "dec_in"}
 
 # 行的问题（页面按代码翻译，params 为占位参数；column 为 Row 字段名，页面换成列名）
 EMPTY = "EMPTY"
@@ -159,6 +178,11 @@ BASE_INVALID = "BASE_INVALID"
 SEQ_LEN_INVALID = "SEQ_LEN_INVALID"
 SERIAL_LEN_MISMATCH = "SERIAL_LEN_MISMATCH"
 SERIAL_CHAR_INVALID = "SERIAL_CHAR_INVALID"
+DEC_INVALID = "DEC_INVALID"
+DEC_OVERFLOW = "DEC_OVERFLOW"
+SERIAL_DEC_MISMATCH = "SERIAL_DEC_MISMATCH"
+LINE_NO_ATTACH = "LINE_NO_ATTACH"
+BILL_HAS_SN = "BILL_HAS_SN"
 
 
 @dataclass
@@ -174,18 +198,19 @@ class Row:
     seq_len_in: str = ""
     base_in: str = ""
     serial: str = ""
+    dec_in: str = ""
     attach: str = ""
     length: str = ""
     unit: str = ""
     factory_in: str = ""
     org_name: str = ""
     customer: str = ""
-    #: 行号、流水位数、进制位数、十进制流水（检查通过才有值）
+    #: 行号、流水位数、进制位数、十进制流水（检查通过才有值；流水号没填时按十进制流水换算后写回 serial）
     seq: int | None = None
     seq_len: int | None = None
     base: int | None = None
     seq_dec: int | None = None
-    #: 单据在订单快照中的生产组织编码（与文件里的生产组织编号相同；登记、授权范围按它）
+    #: 单据在订单快照中的生产组织编码（文件里的生产组织编号选填，填了须与它相同；登记、授权范围按它）
     factory: str = ""
     issues: list[tuple[str, dict]] = field(default_factory=list)
 
@@ -239,8 +264,12 @@ _GUIDE_NOTES = (
     "1. 在「SN导入」表填写，一行一枚号；表头列名不要改（列名前的 * 表示必填，保留或去掉都可以），列的顺序可以调整，"
     "多出的其他列不读。",
     "2. 标 * 的列必须有，且每行都要填；选填的列可以整列不要。",
-    "3. 各列已设为文本格式，流水号、米数的前导 0 会原样保留，请不要改成数字格式。",
-    "4. 导入时先检查，逐行列出不能导入的原因；有一行不能导入，整个文件都不导入。",
+    "3. 各列已设为文本格式，流水号、米数的前导 0 会原样保留，请不要改成数字格式（十进制流水号较长时也请保持文本，"
+    "Excel 数字格式超过 15 位会丢精度）。",
+    "4. 流水号可以不填，系统按十进制流水号、进制位数、流水位数换算；填了须与十进制流水号换算的一致。",
+    "5. PI、单据编号、行号、物料编码、附件项次、生产组织须与该单据（及该行）一致；"
+    "该单据在系统中已有生成或已分配的 SN 时不能导入（只有导入的、还待分配的号时可以继续导入）。",
+    "6. 导入时先检查，逐行列出不能导入的原因；有一行不能导入，整个文件都不导入。",
 )
 
 
@@ -375,14 +404,43 @@ def _check_values(r: Row, first: dict[str, int]) -> None:
         if r.seq_len is None or r.seq_len > codec.MAX_SEQ_LEN:
             r.seq_len = None
             r.issues.append((SEQ_LEN_INVALID, {"max": codec.MAX_SEQ_LEN}))
-    if r.serial and r.seq_len is not None and len(r.serial) != r.seq_len:
-        r.issues.append((SERIAL_LEN_MISMATCH, {"len": r.seq_len}))
-    elif r.serial and r.base is not None and r.seq_len is not None:
-        chars = codec.DEFAULT_CHARSETS[r.base]
-        if any(ch not in chars for ch in r.serial):
-            r.issues.append((SERIAL_CHAR_INVALID, {"base": r.base, "chars": chars}))
+    # 十进制流水号（必填）：非负整数；流水号（选填）没填按它换算，填了须与它换算的相同
+    dec: int | None = None
+    if r.dec_in and len(r.dec_in) <= DEC_MAX:
+        if r.dec_in.isascii() and r.dec_in.isdigit():
+            dec = int(r.dec_in)
         else:
-            r.seq_dec = sum(chars.index(ch) * r.base**i for i, ch in enumerate(reversed(r.serial)))
+            r.issues.append((DEC_INVALID, {}))
+    if r.serial:
+        if r.seq_len is not None and len(r.serial) != r.seq_len:
+            r.issues.append((SERIAL_LEN_MISMATCH, {"len": r.seq_len}))
+        elif r.base is not None and r.seq_len is not None:
+            chars = codec.DEFAULT_CHARSETS[r.base]
+            if any(ch not in chars for ch in r.serial):
+                r.issues.append((SERIAL_CHAR_INVALID, {"base": r.base, "chars": chars}))
+            elif dec is not None:
+                v = sum(chars.index(ch) * r.base**i for i, ch in enumerate(reversed(r.serial)))
+                if v != dec:
+                    r.issues.append((SERIAL_DEC_MISMATCH, {"serial": r.serial, "dec": v}))
+                else:
+                    r.seq_dec = dec
+    elif dec is not None and r.base is not None and r.seq_len is not None:
+        top = r.base**r.seq_len - 1
+        if dec > top:
+            r.issues.append((DEC_OVERFLOW, {"base": r.base, "len": r.seq_len, "max": top}))
+        else:
+            r.seq_dec = dec
+            r.serial = _encode(dec, r.base, r.seq_len)
+
+
+def _encode(dec: int, base: int, n: int) -> str:
+    """十进制流水 → 按进制默认字符表写成 n 位（左侧补 0）；调用方保证不超出 n 位。"""
+    chars = codec.DEFAULT_CHARSETS[base]
+    out = []
+    for _ in range(n):
+        dec, d = divmod(dec, base)
+        out.append(chars[d])
+    return "".join(reversed(out))
 
 
 def _snapshot(bills: list[str]) -> tuple[dict[str, dict], dict[tuple[str, int], dict]]:
@@ -404,20 +462,44 @@ def _snapshot(bills: list[str]) -> tuple[dict[str, dict], dict[tuple[str, int], 
     return heads, lines
 
 
-def _check_order(cu: CurrentUser, r: Row, b: dict, line: dict | None) -> None:
-    """与订单快照对照：PI、生产组织、客户，行号对应的物料行的物料编码、附件项次、米数；授权范围。"""
+def _used_bills(bills: list[str]) -> dict[str, int]:
+    """单据 → 本系统里挂在该单据上、已生成或已分配的号的枚数（按号的当前挂靠，不分物料行）：
+    生成的号（origin = GEN，不论状态）+ 已分配的导入号（待推送、已推送、已分配）。
+    只有待分配的导入号不算（同一单据可分几次导入）。"""
+    out: dict[str, int] = {}
+    for part in _chunks(bills):
+        for x in db.all(
+            f"SELECT bill_no, COUNT(*) n FROM sn_item WHERE bill_no IN ({marks(len(part))}) "
+            "AND (origin = 'GEN' OR status <> 'PENDING_ALLOC') GROUP BY bill_no",
+            *part,
+        ):
+            out[x["bill_no"]] = int(x["n"])
+    return out
+
+
+def _check_order(cu: CurrentUser, r: Row, b: dict, line: dict | None, used: dict[str, int]) -> None:
+    """与订单快照对照：PI、生产组织（名称必填、编号选填）、客户，行号对应的物料行的物料编码、附件项次（须与该行
+    生效的附件项次相同，该行没有附件项次不能导入）、米数；授权范围；该单据在本系统已有生成或已分配的号不能导入。"""
     r.factory = b["org_code"] or ""
     if r.pi and b["pi"] != r.pi:
         r.issues.append((PI_MISMATCH, {"bill_no": r.bill, "pi": b["pi"]}))
     name = b["factory_name"] or b["org_name"] or ""
+    org = {"bill_no": r.bill, "factory": f"{r.factory} {name}".strip()}
     if r.factory_in and r.factory_in != r.factory:
-        r.issues.append((ORG_MISMATCH, {"bill_no": r.bill, "factory": f"{r.factory} {name}".strip()}))
+        r.issues.append((ORG_MISMATCH, org))
     elif r.org_name and r.org_name not in {b["org_name"], b["factory_name"]} - {None, ""}:
-        r.issues.append((ORG_NAME_MISMATCH, {"factory": r.factory, "name": name or "—"}))
+        # 编号填了且相符：只是名称不对；没填编号：生产组织（按名称）与单据不符
+        if r.factory_in:
+            r.issues.append((ORG_NAME_MISMATCH, {"factory": r.factory, "name": name or "—"}))
+        else:
+            r.issues.append((ORG_MISMATCH, org))
     if r.customer and r.customer != (b["customer_code"] or ""):
         r.issues.append((CUSTOMER_MISMATCH, {"bill_no": r.bill, "customer": b["customer_code"] or "—"}))
     if not cu.is_admin and r.factory not in cu.factories:
         r.issues.append((FACTORY_FORBIDDEN, {"factory": r.factory}))
+    n = used.get(r.bill, 0)
+    if n:
+        r.issues.append((BILL_HAS_SN, {"bill_no": r.bill, "count": n}))
     if r.seq is None:
         return
     if line is None:
@@ -427,8 +509,11 @@ def _check_order(cu: CurrentUser, r: Row, b: dict, line: dict | None) -> None:
     if r.material and r.material != (line["material_code"] or ""):
         r.issues.append((MATERIAL_MISMATCH, {**at, "material": line["material_code"] or "—"}))
     eff_attach = line["eff_attach"] or ""
-    if r.attach and eff_attach and r.attach != eff_attach:
-        r.issues.append((ATTACH_MISMATCH, {**at, "attach": eff_attach}))
+    if r.attach and r.attach != eff_attach:
+        if eff_attach:
+            r.issues.append((ATTACH_MISMATCH, {**at, "attach": eff_attach}))
+        else:
+            r.issues.append((LINE_NO_ATTACH, at))
     eff_length = line["eff_length"] or ""
     if r.length and r.length != eff_length:
         r.issues.append((LENGTH_MISMATCH, {**at, "length": eff_length or "—"}))
@@ -441,6 +526,8 @@ def _validate(cu: CurrentUser, rows: list[Row], lock: bool = False) -> None:
         _check_values(r, first)
     bills = sorted({r.bill for r in rows if r.bill and len(r.bill) <= CODE_MAX})
     heads, lines = _snapshot(bills)
+    # 确定导入时已持有这些 PI 的操作锁（生成、分配、转移同一把锁），读到的已生成 / 已分配不会在导入中途变
+    used = _used_bills(sorted(heads))
     for r in rows:
         if not r.bill or len(r.bill) > CODE_MAX:
             continue
@@ -448,7 +535,7 @@ def _validate(cu: CurrentUser, rows: list[Row], lock: bool = False) -> None:
         if b is None:
             r.issues.append((BILL_NOT_FOUND, {"bill_no": r.bill}))
             continue
-        _check_order(cu, r, b, None if r.seq is None else lines.get((r.bill, r.seq)))
+        _check_order(cu, r, b, None if r.seq is None else lines.get((r.bill, r.seq)), used)
     # 与号池、已导入的号重复
     sns = sorted(first)
     pool: dict[str, str] = {}

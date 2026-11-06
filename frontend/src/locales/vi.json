@@ -1005,7 +1005,7 @@
     "importedBy": "Người nhập",
     "snPrefix": "SN (bắt đầu bằng)",
     "empty": "Chưa có SN đã nhập",
-    "desc": "Nhập các SN đã có ngoài hệ thống theo mẫu nhập (tên cột cố định, thứ tự tùy ý; cột có dấu * trong mẫu là bắt buộc, số mét, đơn vị sản phẩm, tên tổ chức không bắt buộc): sau khi nhập chờ phân bổ ở trang Phân bổ SN, sau khi phân bổ được đẩy, kéo và có thể chuyển như các SN khác",
+    "desc": "Nhập các SN đã có ngoài hệ thống theo mẫu nhập (tên cột cố định, thứ tự tùy ý; cột có dấu * trong mẫu là bắt buộc, số thứ tự, số mét, đơn vị sản phẩm, mã tổ chức không bắt buộc, số thứ tự để trống sẽ được đổi từ số thứ tự thập phân; chứng từ đã có SN được tạo hoặc đã phân bổ trong hệ thống thì không thể nhập): sau khi nhập chờ phân bổ ở trang Phân bổ SN, sau khi phân bổ được đẩy, kéo và có thể chuyển như các SN khác",
     "seq": "Dòng",
     "serial": "Số thứ tự",
     "current": "Hiện tại: {pi} / {bill}",
@@ -1018,6 +1018,7 @@
       "seq_len_in": "Số chữ số thứ tự",
       "base_in": "Cơ số",
       "serial": "Số thứ tự",
+      "dec_in": "Số thứ tự thập phân",
       "attach": "Hạng mục đính kèm",
       "length": "Số mét",
       "unit": "Đơn vị sản phẩm",
@@ -1046,7 +1047,12 @@
       "BASE_INVALID": "Cơ số chỉ được là {bases}",
       "SEQ_LEN_INVALID": "Số chữ số thứ tự phải từ 1 đến {max}",
       "SERIAL_LEN_MISMATCH": "Số thứ tự phải có {len} ký tự (bằng số chữ số thứ tự)",
-      "SERIAL_CHAR_INVALID": "Số thứ tự chỉ được dùng ký tự cơ số {base}: {chars}"
+      "SERIAL_CHAR_INVALID": "Số thứ tự chỉ được dùng ký tự cơ số {base}: {chars}",
+      "DEC_INVALID": "Số thứ tự thập phân phải là số nguyên không âm",
+      "DEC_OVERFLOW": "Số thứ tự thập phân vượt quá phạm vi {len} chữ số cơ số {base} (tối đa {max})",
+      "SERIAL_DEC_MISMATCH": "Số thứ tự {serial} đổi ra thập phân là {dec}, không khớp với số thứ tự thập phân",
+      "LINE_NO_ATTACH": "Chứng từ {bill_no} dòng {seq} không có hạng mục đính kèm (hãy bổ sung ở trang Tạo SN trước)",
+      "BILL_HAS_SN": "Chứng từ {bill_no} đã có SN được tạo hoặc đã phân bổ trong hệ thống ({count}), không thể nhập"
     }
   },
   "tabs": {
