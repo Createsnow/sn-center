@@ -1,115 +1,121 @@
 <template>
   <!-- 生产订单页「金蝶连接」：只有系统管理员。保存时后端先用新参数连接测试，通过才保存；应用密钥不回显 -->
-  <el-drawer :model-value="modelValue" :title="t('k3.title')" size="640px" class="k3-drawer" @update:model-value="emit('update:modelValue', $event)" @open="load">
-    <div v-loading="loading" class="body">
-      <p class="muted desc">{{ t("k3.desc") }}</p>
+  <el-drawer :model-value="modelValue" size="600px" class="k3-drawer" @update:model-value="emit('update:modelValue', $event)" @open="load">
+    <template #header>
+      <div class="head">
+        <span class="title">{{ t("k3.title") }}</span>
+        <el-tooltip :content="t('k3.desc')" placement="bottom" :show-after="200" popper-class="k3-tip">
+          <el-icon class="tip"><QuestionFilled /></el-icon>
+        </el-tooltip>
+      </div>
+    </template>
 
-      <div v-if="cfg" class="kv">
-        <span class="k">{{ t("k3.source") }}</span>
-        <span>
-          <el-tag size="small" :type="cfg.source === 'PAGE' ? 'primary' : 'info'">{{ t(`k3.source${cfg.source}`) }}</el-tag>
-          <span class="muted ml">{{ t(`k3.sourceHint${cfg.source}`) }}</span>
-        </span>
-        <span class="k">{{ t("k3.lastTest") }}</span>
-        <span>
-          <template v-if="cfg.last_test">
+    <div v-loading="loading" class="body">
+      <!-- 状态栏：来源 · 最近测试 · 最后修改 -->
+      <div v-if="cfg" class="status">
+        <div class="cell">
+          <div class="k">{{ t("k3.source") }}</div>
+          <el-tooltip :content="t(`k3.sourceHint${cfg.source}`)" placement="bottom">
+            <el-tag size="small" :type="cfg.source === 'PAGE' ? 'primary' : 'info'">{{ t(`k3.source${cfg.source}`) }}</el-tag>
+          </el-tooltip>
+        </div>
+        <div class="cell">
+          <div class="k">{{ t("k3.lastTest") }}</div>
+          <div v-if="cfg.last_test" class="v">
             <el-tag size="small" :type="cfg.last_test.ok ? 'success' : 'danger'">{{ cfg.last_test.ok ? t("k3.testPassed") : t("k3.testFailedTag") }}</el-tag>
-            <span class="muted ml">{{ fmt(cfg.last_test.at) }} · {{ cfg.last_test.by }}</span>
-          </template>
-          <span v-else class="muted">{{ t("k3.never") }}</span>
-        </span>
-        <template v-if="cfg.updated_at">
-          <span class="k">{{ t("k3.updated") }}</span>
-          <span>{{ fmt(cfg.updated_at) }} · {{ cfg.updated_by }}</span>
-        </template>
+            <span class="muted">{{ fmt(cfg.last_test.at, false) }}</span>
+          </div>
+          <div v-else class="v muted">{{ t("k3.never") }}</div>
+        </div>
+        <div class="cell">
+          <div class="k">{{ t("k3.updated") }}</div>
+          <div class="v">{{ cfg.updated_at ? `${fmt(cfg.updated_at, false)} · ${cfg.updated_by}` : "—" }}</div>
+        </div>
       </div>
 
       <el-alert v-if="cfg?.secret_unreadable" type="error" :closable="false" show-icon class="mb" :title="t('k3.secretUnreadable')" />
       <el-alert v-if="result" :type="result.ok ? 'success' : 'error'" :closable="false" show-icon class="mb"
         :title="result.ok ? t('k3.testOk', { orgs: result.orgs, sec: (result.elapsed_ms / 1000).toFixed(1) }) : t('k3.testFail', { message: result.message })" />
 
-      <div class="sec">{{ t("k3.section") }}</div>
-      <el-form label-width="120px" @submit.prevent>
-        <el-form-item :label="t('k3.serverUrl')" required>
+      <el-form label-position="top" class="grid" @submit.prevent>
+        <el-form-item class="span2" required>
+          <template #label><Lbl :text="t('k3.serverUrl')" :tip="t('k3.serverUrlHint')" /></template>
           <el-input v-model.trim="form.server_url" class="sn-mono" placeholder="http://10.0.0.1/k3cloud/" />
-          <div class="muted hint">{{ t("k3.serverUrlHint") }}</div>
         </el-form-item>
-        <el-form-item :label="t('k3.acctId')" required>
+        <el-form-item required>
+          <template #label><Lbl :text="t('k3.acctId')" :tip="t('k3.acctIdHint')" /></template>
           <el-input v-model.trim="form.acct_id" class="sn-mono" />
-          <div class="muted hint">{{ t("k3.acctIdHint") }}</div>
         </el-form-item>
-        <el-form-item :label="t('k3.appId')" required>
+        <el-form-item required>
+          <template #label><Lbl :text="t('k3.username')" :tip="t('k3.usernameHint')" /></template>
+          <el-input v-model.trim="form.username" />
+        </el-form-item>
+        <el-form-item class="span2" :label="t('k3.appId')" required>
           <el-input v-model.trim="form.app_id" class="sn-mono" />
         </el-form-item>
-        <el-form-item :label="t('k3.appSecret')" :required="!cfg?.secret_set || cfg?.secret_unreadable">
+        <el-form-item :required="!cfg?.secret_set || cfg?.secret_unreadable">
+          <template #label><Lbl :text="t('k3.appSecret')" :tip="t('k3.secretHint')" /></template>
           <el-input v-model="form.app_secret" type="password" show-password autocomplete="new-password"
             :placeholder="cfg?.secret_set && !cfg?.secret_unreadable ? t('k3.secretKeep') : ''" />
-          <div class="muted hint"><el-icon class="ico"><Lock /></el-icon> {{ t("k3.secretHint") }}</div>
-        </el-form-item>
-        <el-form-item :label="t('k3.username')" required>
-          <el-input v-model.trim="form.username" class="w240" />
-          <div class="muted hint full">{{ t("k3.usernameHint") }}</div>
         </el-form-item>
         <el-form-item :label="t('k3.lcid')">
-          <el-select v-model="form.lcid" class="w240">
+          <el-select v-model="form.lcid" class="full">
             <el-option v-for="l in LCIDS" :key="l" :value="l" :label="t(`k3.lcid${l}`)" />
           </el-select>
         </el-form-item>
       </el-form>
 
-      <el-collapse v-model="adv" class="adv">
+      <el-collapse v-model="open" class="fold">
         <el-collapse-item name="adv">
-          <template #title><span class="sec flat">{{ t("k3.advanced") }}<span class="muted plain">{{ t("k3.advancedHint") }}</span></span></template>
-          <el-form label-width="120px" @submit.prevent>
-            <el-form-item :label="t('k3.loginTimeout')">
-              <el-input-number v-model="form.login_timeout" :min="5" :max="300" /><span class="muted ml">{{ t("k3.seconds") }}</span>
-            </el-form-item>
-            <el-form-item :label="t('k3.queryTimeout')">
-              <el-input-number v-model="form.query_timeout" :min="10" :max="600" /><span class="muted ml">{{ t("k3.queryTimeoutHint") }}</span>
-            </el-form-item>
-            <el-form-item :label="t('k3.viewTimeout')">
-              <el-input-number v-model="form.view_timeout" :min="5" :max="300" /><span class="muted ml">{{ t("k3.seconds") }}</span>
-            </el-form-item>
-            <el-form-item :label="t('k3.retries')">
-              <el-input-number v-model="form.page_retries" :min="0" :max="10" class="w120" />
-              <span class="muted ml">{{ t("k3.retriesUnit") }}</span>
-              <el-input-number v-model="form.page_retry_seconds" :min="0" :max="120" class="w120 ml" />
-              <span class="muted ml">{{ t("k3.seconds") }}</span>
-            </el-form-item>
+          <template #title>
+            <span class="fold-title">{{ t("k3.advanced") }}<span class="muted">{{ t("k3.advancedHint") }}</span></span>
+          </template>
+          <el-form label-position="top" class="grid grid3" @submit.prevent>
+            <el-form-item :label="t('k3.loginTimeoutSec')"><el-input-number v-model="form.login_timeout" :min="5" :max="300" controls-position="right" class="full" /></el-form-item>
+            <el-form-item :label="t('k3.queryTimeoutSec')"><el-input-number v-model="form.query_timeout" :min="10" :max="600" controls-position="right" class="full" /></el-form-item>
+            <el-form-item :label="t('k3.viewTimeoutSec')"><el-input-number v-model="form.view_timeout" :min="5" :max="300" controls-position="right" class="full" /></el-form-item>
+            <el-form-item :label="t('k3.retryTimes')"><el-input-number v-model="form.page_retries" :min="0" :max="10" controls-position="right" class="full" /></el-form-item>
+            <el-form-item :label="t('k3.retryInterval')"><el-input-number v-model="form.page_retry_seconds" :min="0" :max="120" controls-position="right" class="full" /></el-form-item>
           </el-form>
         </el-collapse-item>
+        <el-collapse-item name="history">
+          <template #title>
+            <span class="fold-title">{{ t("k3.history") }}<span v-if="cfg?.history?.length" class="muted">（{{ cfg.history.length }}）</span></span>
+          </template>
+          <ul v-if="cfg?.history?.length" class="history">
+            <li v-for="(item, i) in cfg.history" :key="i">
+              <span class="when">{{ fmt(item.at, false) }} · {{ item.by }}</span>
+              <span>{{ historyText(item) }}</span>
+            </li>
+          </ul>
+          <div v-else class="muted">{{ t("k3.historyEmpty") }}</div>
+          <div class="muted note">{{ t("k3.historyHint") }}</div>
+        </el-collapse-item>
       </el-collapse>
-
-      <div class="sec">{{ t("k3.history") }}</div>
-      <el-timeline v-if="cfg?.history?.length" class="tl">
-        <el-timeline-item v-for="(item, i) in cfg.history" :key="i" :timestamp="`${fmt(item.at)} · ${item.by}`" :type="i === 0 ? 'primary' : undefined">
-          {{ historyText(item) }}
-        </el-timeline-item>
-      </el-timeline>
-      <div v-else class="muted">{{ t("k3.historyEmpty") }}</div>
-      <div class="muted hint">{{ t("k3.historyHint") }}</div>
     </div>
+
     <template #footer>
       <div class="foot">
         <el-tooltip :content="cfg?.source === 'PAGE' ? t('k3.resetTip') : t('k3.resetDisabled')" placement="top">
           <span class="reset">
-            <el-button :loading="busy === 'reset'" :disabled="!!busy || cfg?.source !== 'PAGE'" @click="reset">
+            <el-button text :loading="busy === 'reset'" :disabled="!!busy || cfg?.source !== 'PAGE'" @click="reset">
               <el-icon><RefreshLeft /></el-icon><span>{{ t("k3.reset") }}</span>
             </el-button>
           </span>
         </el-tooltip>
-      <el-button @click="emit('update:modelValue', false)">{{ t("common.cancel") }}</el-button>
-      <el-button :loading="busy === 'test'" :disabled="!!busy" @click="test"><el-icon><Connection /></el-icon><span>{{ t("k3.test") }}</span></el-button>
-      <el-button type="primary" :loading="busy === 'save'" :disabled="!!busy" @click="save">{{ t("common.save") }}</el-button>
+        <el-button @click="emit('update:modelValue', false)">{{ t("common.cancel") }}</el-button>
+        <el-button :loading="busy === 'test'" :disabled="!!busy" @click="test"><el-icon><Connection /></el-icon><span>{{ t("k3.test") }}</span></el-button>
+        <el-button type="primary" :loading="busy === 'save'" :disabled="!!busy" @click="save">{{ t("common.save") }}</el-button>
       </div>
     </template>
   </el-drawer>
 </template>
 
 <script setup lang="ts">
-import { h, reactive, ref } from "vue";
+import { defineComponent, h, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import { ElMessage, ElMessageBox } from "element-plus";
+import { ElIcon, ElMessage, ElMessageBox, ElTooltip } from "element-plus";
+import { QuestionFilled } from "@element-plus/icons-vue";
 import { api } from "@/api";
 import { useTime } from "@/composables/useTime";
 
@@ -124,7 +130,23 @@ const cfg = ref<any>(null);
 const loading = ref(false);
 const busy = ref<"" | "test" | "save" | "reset">("");
 const result = ref<any>(null);
-const adv = ref<string[]>([]);
+const open = ref<string[]>([]);
+
+/** 表单标签：文字 + 问号图标（悬停显示说明），代替输入框下方的说明文字 */
+const Lbl = defineComponent({
+  props: { text: { type: String, required: true }, tip: { type: String, default: "" } },
+  setup(props) {
+    return () =>
+      h("span", { class: "lbl" }, [
+        props.text,
+        props.tip
+          ? h(ElTooltip, { content: props.tip, placement: "top", popperClass: "k3-tip" }, () =>
+              h(ElIcon, { class: "lbl-tip" }, () => h(QuestionFilled)),
+            )
+          : null,
+      ]);
+  },
+});
 const form = reactive({
   server_url: "", acct_id: "", app_id: "", app_secret: "", username: "", lcid: 2052,
   login_timeout: 30, query_timeout: 120, view_timeout: 60, page_retries: 3, page_retry_seconds: 10,
@@ -222,25 +244,41 @@ async function save() {
 </script>
 
 <style scoped>
-.body { padding: 0 4px; }
-.desc { font-size: 13px; line-height: 1.6; margin: 0 0 14px; }
-.kv { display: grid; grid-template-columns: 96px 1fr; row-gap: 8px; font-size: 13px; margin-bottom: 16px;
-  background: #f8fafc; border: 1px solid var(--app-line); border-radius: 8px; padding: 12px 14px; }
-.kv .k { color: var(--app-muted); }
-.sec { font-size: 13px; font-weight: 600; color: #334155; margin: 6px 0 12px; padding-left: 8px; border-left: 3px solid var(--el-color-primary); }
-.sec.flat { margin: 0; }
-.plain { font-weight: 400; margin-left: 4px; }
-.hint { margin-top: 4px; line-height: 1.5; }
+.head { display: flex; align-items: center; gap: 6px; }
+.title { font-size: 16px; font-weight: 600; color: var(--app-text); }
+.tip { color: var(--app-muted); cursor: help; }
+.body { padding: 0 2px; }
+.status { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 18px;
+  border: 1px solid var(--app-line); border-radius: 8px; background: #f8fafc; }
+.cell { padding: 10px 14px; min-width: 0; }
+.cell + .cell { border-left: 1px solid var(--app-line); }
+.cell .k { font-size: 12px; color: var(--app-muted); margin-bottom: 6px; }
+.cell .v { display: flex; align-items: center; gap: 6px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 16px; }
+.grid3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid .span2 { grid-column: span 2; }
+.grid :deep(.el-form-item) { margin-bottom: 16px; }
+.grid :deep(.el-form-item__label) { line-height: 20px; margin-bottom: 6px; padding: 0; }
 .full { width: 100%; }
-.ico { vertical-align: -2px; }
-.ml { margin-left: 8px; }
 .mb { margin-bottom: 14px; }
-.w240 { width: 240px; }
-.w120 { width: 120px; }
-.adv { border: none; margin-bottom: 12px; }
-.adv :deep(.el-collapse-item__header) { border-bottom: none; }
-.tl { padding-left: 2px; margin-bottom: 4px; }
-.foot { display: flex; justify-content: flex-end; align-items: center; gap: 0; }
+:deep(.lbl) { display: inline-flex; align-items: center; gap: 4px; }
+:deep(.lbl-tip) { color: #94a3b8; cursor: help; font-size: 13px; }
+.fold { border-top: 1px solid var(--app-line); border-bottom: none; margin-top: 4px; }
+.fold :deep(.el-collapse-item__header) { height: 44px; font-size: 13px; }
+.fold :deep(.el-collapse-item__content) { padding-bottom: 8px; }
+.fold-title { font-weight: 600; color: #334155; }
+.fold-title .muted { font-weight: 400; margin-left: 4px; }
+.history { list-style: none; margin: 0; padding: 0; }
+.history li { display: flex; gap: 12px; font-size: 13px; padding: 6px 0; border-bottom: 1px dashed var(--app-line); }
+.history li:last-child { border-bottom: none; }
+.history .when { flex: none; width: 190px; white-space: nowrap; color: var(--app-muted); font-variant-numeric: tabular-nums; }
+.note { margin-top: 8px; }
+.foot { display: flex; justify-content: flex-end; align-items: center; }
 .reset { margin-right: auto; }
-.k3-drawer :deep(.el-drawer__body) { padding-top: 4px; }
+</style>
+
+<style>
+/* 抽屉挂在 body 下，scoped 样式作用不到头部 */
+.k3-drawer .el-drawer__header { margin-bottom: 0; padding-bottom: 16px; }
+.k3-tip { max-width: 320px; line-height: 1.6; }
 </style>

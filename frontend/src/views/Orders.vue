@@ -8,7 +8,10 @@
           <el-icon><Refresh /></el-icon><span>{{ t("orders.compareNow") }}</span>
         </el-button>
         <el-button v-if="store.isAdmin" :loading="syncing === 'rebuild'" @click="rebuild">{{ t("orders.rebuild") }}</el-button>
-        <el-button v-if="store.isAdmin" @click="k3Open = true"><el-icon><Setting /></el-icon><span>{{ t("k3.button") }}</span></el-button>
+        <!-- 金蝶连接：最近测试未通过或密钥解不开时按钮右上角红点 -->
+        <el-badge v-if="store.isAdmin" is-dot :hidden="!k3Warn" class="k3-badge">
+          <el-button @click="k3Open = true"><el-icon><Setting /></el-icon><span>{{ t("k3.button") }}</span></el-button>
+        </el-badge>
       </template>
     </PageHead>
 
@@ -32,14 +35,6 @@
           </el-tag>
         </template>
         <span v-else class="muted">—</span>
-      </span>
-      <span v-if="store.isAdmin && k3">
-        {{ t("k3.status") }}：
-        <el-tag size="small" :type="k3.source === 'PAGE' ? 'primary' : 'info'">{{ t(`k3.source${k3.source}`) }}</el-tag>
-        <template v-if="k3.last_test">
-          <el-tag size="small" class="ml" :type="k3.last_test.ok ? 'success' : 'danger'">{{ k3.last_test.ok ? t("k3.testPassed") : t("k3.testFailedTag") }}</el-tag>
-          <span class="muted ml">{{ fmt(k3.last_test.at) }}</span>
-        </template>
       </span>
       <el-button link :type="meta?.open_alerts ? 'danger' : 'info'" @click="tab = 'alerts'">
         {{ t("orders.openAlerts", { n: meta?.open_alerts ?? 0 }) }}
@@ -259,7 +254,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineComponent, h, onMounted, reactive, ref, watch } from "vue";
+import { computed, defineComponent, h, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox, ElTag } from "element-plus";
@@ -310,8 +305,9 @@ const detail = ref<(OrderBill & { lines: OrderLine[]; state: BillState }) | null
 const linesLoading = ref(false);
 const syncBillNo = ref("");
 const syncing = ref<"" | "one" | "compare" | "rebuild">("");
-/** 金蝶连接（只有系统管理员）：顶部显示参数来源与最近测试，按钮打开配置抽屉 */
+/** 金蝶连接（只有系统管理员）：按钮打开配置抽屉；最近测试未通过或密钥解不开时按钮上显示红点 */
 const k3 = ref<any>(null);
+const k3Warn = computed(() => !!k3.value && (k3.value.secret_unreadable || k3.value.last_test?.ok === false));
 const k3Open = ref(false);
 const loadK3 = async () => {
   if (store.isAdmin) k3.value = await api.k3Config().catch(() => k3.value);
@@ -461,6 +457,7 @@ onMounted(async () => {
 .toolbar .w-search { width: 280px; }
 .tabs { margin-bottom: -16px; }
 .badge { margin-left: 6px; vertical-align: top; }
+.k3-badge :deep(.el-badge__content.is-dot) { top: 4px; right: 6px; }
 .ml { margin-left: 6px; }
 .mb { margin-bottom: 12px; }
 .warn { color: var(--el-color-warning); }
