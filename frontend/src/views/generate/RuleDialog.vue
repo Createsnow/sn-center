@@ -166,8 +166,8 @@
       </div>
     </div>
 
+    <!-- 底部只有取消、确定：不提供「改回按 PI / 客户默认」（要撤回物料行选定的规则，用详情底部「更多 → 撤销配置」） -->
     <template #footer>
-      <el-button v-if="anyLineRule" :loading="busy === 'clear'" @click="clear">{{ t("generate.rule.clear") }}</el-button>
       <el-button @click="emit('update:modelValue', false)">{{ t("common.cancel") }}</el-button>
       <el-button type="primary" :loading="busy === 'save'" :disabled="!canSave" @click="save">{{ t("common.confirm") }}</el-button>
     </template>
@@ -418,7 +418,6 @@ const prefixUsed = computed(() => !!props.rulePrefix?.custom && built.value.spec
 /** 提交 / 示例用的起始号 */
 const seqStart = () => (prefixUsed.value ? null : built.value.spec.seq_start || null);
 const anyGenerated = computed(() => props.lines.some((l) => l.generated_qty > 0));
-const anyLineRule = computed(() => props.lines.some((l) => l.rule?.source === "LINE"));
 const canSave = computed(() => {
   if (!props.lines.length) return false;
   if (mode.value === "LIBRARY") return !!picked.value && (picked.value.plan !== "PREFIX" || !!newPrefix.value.trim());
@@ -508,19 +507,6 @@ async function save() {
     }
     await api.selectLineRule(body);
     ElMessage.success(t("common.saved"));
-    emit("saved");
-    emit("update:modelValue", false);
-  } finally {
-    busy.value = "";
-  }
-}
-
-async function clear() {
-  if (!(await confirmChange())) return;
-  busy.value = "clear";
-  try {
-    await api.clearLineRule({ pi_no: props.pi, lines: refs() });
-    ElMessage.success(t("common.done"));
     emit("saved");
     emit("update:modelValue", false);
   } finally {

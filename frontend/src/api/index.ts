@@ -68,7 +68,6 @@ export const api = {
   previewRule: (data: Q) => post("/rules/preview", data, true),
   ruleOptions: (params: Q) => get("/rules/options", params),
   selectLineRule: (data: Q) => post("/rules/line-select", data),
-  clearLineRule: (data: Q) => post("/rules/line-clear", data),
 
   // ---------------- SN 生成与删号
   genPis: (params?: Q) => get("/generate/pis", params),

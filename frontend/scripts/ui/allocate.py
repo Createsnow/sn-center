@@ -16,6 +16,7 @@ M = {
 "allocate.resumeBtn": ("继续推送（剩余 {n} 次）", "Resume push ({n} left)", "Đẩy tiếp (còn {n} lần)"),
 "allocate.resumed": ("已继续推送，剩余 {n} 次", "Push resumed, {n} left", "Đã đẩy tiếp, còn {n} lần"),
 "allocate.linesTitle": ("单据物料行", "Bill lines", "Dòng vật tư của chứng từ"),
+"allocate.snQty": ("SN 数量", "SN qty", "Số lượng SN"),
 "allocate.billCounts": ("{n} 行 · SN {qty} 枚", "{n} lines · {qty} SNs", "{n} dòng · {qty} SN"),
 "allocate.billPicked": ("已选 {n} 行", "{n} lines ticked", "Đã chọn {n} dòng"),
 "allocate.toOrg": ("分到", "To org", "Phân bổ cho"),

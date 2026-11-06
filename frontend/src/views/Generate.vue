@@ -172,8 +172,9 @@
                 {{ row.material_code || t("generate.noMaterial") }}
               </template>
             </el-table-column>
-            <!-- 客户 P/N：金蝶只显示字段，不参与生成 -->
-            <el-table-column :label="t('orders.customerPn')" min-width="80" show-overflow-tooltip>
+            <!-- 客户 P/N：金蝶只显示字段，不参与生成；完整显示、单行不折行（不截断、无省略号），
+                 列宽按本 PI 全部物料行的值量出（pnW），放不下时单据物料行表格左右滑动 -->
+            <el-table-column :label="t('orders.customerPn')" :min-width="pnW" class-name="nowrap-cell" label-class-name="nowrap-cell">
               <template #default="{ row }">{{ row.customer_pn || "—" }}</template>
             </el-table-column>
             <el-table-column :label="t('common.length')" width="76">
@@ -689,6 +690,10 @@ function foldAll(on: boolean) {
   folded.value = new Set(on ? (ctx.value?.bills ?? []).map((b: any) => b.bill_no as string) : []);
 }
 
+/** 物料行客户 P/N 列宽：按本 PI 全部物料行的值量出、不设上限（切页签时不跳动，各单据的表同宽、列对齐），
+ *  完整单行显示；总宽超出详情宽度时单据物料行表格左右滑动。 */
+const pnW = computed(() => colWidth(t("orders.customerPn"), allLines.value.map((l) => textWidth(l.customer_pn || "—")), { min: 80 }));
+
 /** 物料行开始 / 结束 SN 号列宽：按本 PI 全部物料行的完整 SN 量出（切页签时不跳动），SN 完整显示。 */
 const snW = computed(() =>
   Math.max(
@@ -931,6 +936,8 @@ onUnmounted(() => {
 .lines :deep(tr.picked > td) { background: var(--el-color-primary-light-9); }
 .lines :deep(tr.flash > td) { background: var(--el-color-warning-light-8) !important; transition: background 0.3s; }
 .lines :deep(.el-table__row) { cursor: pointer; }
+/* 客户 P/N：表头与数据单行显示、不折行（列宽已按内容量出，放不下时表格左右滑动） */
+.lines :deep(.nowrap-cell .cell) { white-space: nowrap; text-overflow: clip; }
 .no-lines { padding: 8px 12px; margin: 0; }
 .chip { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 11px; font-size: 12px; border: 1px solid; white-space: nowrap; cursor: pointer; }
 .chip:hover { text-decoration: underline; }

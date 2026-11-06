@@ -525,7 +525,7 @@
       "PREFIX": "须换前缀"
     },
     "rule": {
-      "dialogTitle": "物料行 SN 规则",
+      "dialogTitle": "SN 规则",
       "library": "规则库",
       "custom": "自定义",
       "recommended": "推荐",
@@ -597,8 +597,7 @@
         "PREFIX_TOO_LONG": "流水前的内容超过 {max} 位",
         "SEP_TOO_LONG": "流水与米数、米数与单位之间的内容各不能超过 {max} 位"
       },
-      "changeConfirm": "所选物料行已生成过号，确认改选规则？",
-      "clear": "改回按 PI / 客户默认"
+      "changeConfirm": "所选物料行已生成过号，确认改选规则？"
     },
     "filter": {
       "TODO": "待处理",

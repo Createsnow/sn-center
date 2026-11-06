@@ -525,7 +525,7 @@
       "PREFIX": "New prefix needed"
     },
     "rule": {
-      "dialogTitle": "Line SN rule",
+      "dialogTitle": "SN rule",
       "library": "Library",
       "custom": "Custom",
       "recommended": "Recommended",
@@ -597,8 +597,7 @@
         "PREFIX_TOO_LONG": "The part before the serial exceeds {max} characters",
         "SEP_TOO_LONG": "Text between serial and length, or between length and unit, is limited to {max} characters"
       },
-      "changeConfirm": "Some selected lines already have SNs. Change the rule?",
-      "clear": "Reset to PI / customer default"
+      "changeConfirm": "Some selected lines already have SNs. Change the rule?"
     },
     "filter": {
       "TODO": "To fix",

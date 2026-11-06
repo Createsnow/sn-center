@@ -525,7 +525,7 @@
       "PREFIX": "Cần tiền tố mới"
     },
     "rule": {
-      "dialogTitle": "Quy tắc SN của dòng",
+      "dialogTitle": "Quy tắc SN",
       "library": "Thư viện",
       "custom": "Tùy chỉnh",
       "recommended": "Đề xuất",
@@ -597,8 +597,7 @@
         "PREFIX_TOO_LONG": "Phần trước tuần tự vượt quá {max} ký tự",
         "SEP_TOO_LONG": "Phần giữa tuần tự và chiều dài, hoặc giữa chiều dài và đơn vị, tối đa {max} ký tự"
       },
-      "changeConfirm": "Một số dòng đã có SN. Đổi quy tắc?",
-      "clear": "Về mặc định PI / khách hàng"
+      "changeConfirm": "Một số dòng đã có SN. Đổi quy tắc?"
     },
     "filter": {
       "TODO": "Cần xử lý",
