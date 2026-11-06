@@ -1133,8 +1133,7 @@
       "length": "Length",
       "unit": "Product unit",
       "factory_in": "Org code",
-      "org_name": "Production org",
-      "customer": "Customer code"
+      "org_name": "Production org"
     },
     "issue": {
       "EMPTY": "{column} is empty",
@@ -1147,7 +1146,6 @@
       "PI_MISMATCH": "The PI of bill {bill_no} is {pi}",
       "ORG_MISMATCH": "The production org of bill {bill_no} is {factory}",
       "ORG_NAME_MISMATCH": "The name of production org {factory} is {name}",
-      "CUSTOMER_MISMATCH": "The customer code of bill {bill_no} is {customer}",
       "FACTORY_FORBIDDEN": "The bill's production org {factory} is not authorized for you",
       "SEQ_INVALID": "ERP line No. must be a positive whole number",
       "LINE_NOT_FOUND": "Bill {bill_no} has no ERP line No. {seq}",

@@ -3,7 +3,8 @@
 与分配后的推送、拉取是两套独立的机制：号一经分配到生产组织（不再是待分配）就按「生产组织 + PI + 单据」一行列出，
 不论该组织是否对接 MES，也不看推送、拉取的进度和结果（推送失败、批次未确认都照常导出）；
 明细逐枚列出全部号（不按号段合并），按附件项次从小到大（项次相同按单据序号、流水），也可直接下载 xlsx
-（列见 FILE_HEADERS，与 SN 查询导出的列不同；行顺序同明细；可按明细的物料编码、SN 起止号筛选只下载范围内的号）。
+（列见 FILE_HEADERS，与 SN 导入模板的列相同、与 SN 查询导出的列不同；行顺序同明细；
+可按明细的物料编码、SN 起止号筛选只下载范围内的号）。
 只读：导出不改号的状态、不建批次，可反复导出；导出也不影响推送、拉取。
 """
 
@@ -294,30 +295,19 @@ def _text(v):
     return v.decode("utf-8") if isinstance(v, (bytes, bytearray)) else v
 
 
-#: 下载文件的列（与 SN 查询导出不同，只列分配页需要的字段；列、行顺序与分配页「已分配」明细一致：
-#: 物料编码前为附件项次、后为 ERP行号；明细在流水号后另有十进制流水号列，下载文件不含该列）
-FILE_HEADERS = [
-    "PI",
-    "附件项次",
-    "物料编码",
-    "ERP行号",
-    "完整 SN",
-    "流水位数",
-    "进制位数",
-    "流水号",
-    "米数",
-    "产品单位",
-    "生产组织编号",
-    "生产组织",
-]
+#: 下载文件的列：与 SN 导入模板的列相同（同一份列名、同一顺序，见 sn_import.COLUMNS），下载的文件可直接按模板格式核对；
+#: 与 SN 查询导出不同。列依次为 PI、单据编号、附件项次、物料编码、ERP行号、完整 SN、流水位数、进制位数、流水号、
+#: 十进制流水号、米数、产品单位、生产组织编号、生产组织（表头不带模板里必填列的 *，导入时 * 填不填都认）
+FILE_HEADERS = list(sn_import.HEADERS)
 
 
 def _file_row(r: dict) -> list:
-    """一行，列顺序同 FILE_HEADERS。SN 导入的号（带 r["import"]）的 ERP行号、流水位数、进制、流水号、产品单位
-    取导入记录。"""
+    """一行，列顺序同 FILE_HEADERS。SN 导入的号（带 r["import"]）的 ERP行号、流水位数、进制、流水号、十进制流水号、
+    产品单位取导入记录。十进制流水号写文本（超过 15 位的数 Excel 会丢精度，同导入模板）。"""
     d = r.get("import")
     return [
         r["pi_no"],
+        r["bill_no"],
         _text(r["attach_no"]) or "",
         r["material_code"],
         int(d["cur_bill_seq"]) if d else r["bill_seq"],
@@ -325,6 +315,7 @@ def _file_row(r: dict) -> list:
         int(d["seq_len"]) if d else _seq_len(r["rule_version_id"]),
         int(d["seq_base"]) if d else _base(r["rule_version_id"]),
         d["serial_text"] if d else rules.seq_text(r["rule_version_id"], r["seq_dec"]),
+        str(d["seq_dec"]) if d else util.seq_dec_text(r["seq_pi_no"], r["seq_dec"]),
         _text(r["length_text"]) or "",
         (d["unit"] or "") if d else _unit(r),
         r["factory_code"] or "",

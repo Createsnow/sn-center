@@ -1133,8 +1133,7 @@
       "length": "米数",
       "unit": "产品单位",
       "factory_in": "生产组织编号",
-      "org_name": "生产组织",
-      "customer": "客户编码"
+      "org_name": "生产组织"
     },
     "issue": {
       "EMPTY": "{column}为空",
@@ -1147,7 +1146,6 @@
       "PI_MISMATCH": "单据 {bill_no} 的 PI 是 {pi}",
       "ORG_MISMATCH": "单据 {bill_no} 的生产组织是 {factory}",
       "ORG_NAME_MISMATCH": "生产组织 {factory} 的名称是 {name}",
-      "CUSTOMER_MISMATCH": "单据 {bill_no} 的客户编码是 {customer}",
       "FACTORY_FORBIDDEN": "单据的生产组织 {factory} 不在授权范围内",
       "SEQ_INVALID": "ERP行号须为正整数",
       "LINE_NOT_FOUND": "单据 {bill_no} 没有 ERP行号 {seq}",

@@ -28,7 +28,8 @@ async def _content(request: Request) -> bytes:
 
 @router.get(
     "/template",
-    summary="导入模板 xlsx：列见 sn_import.COLUMNS（流水号后为十进制流水号；流水号、米数、产品单位、生产组织编号选填）",
+    summary="导入模板 xlsx：列见 sn_import.COLUMNS，与分配页「已分配」下载的列相同"
+    "（流水号、米数、产品单位、生产组织编号选填）",
 )
 def import_template(cu: OperatorDep):
     return download("SN导入模板", sn_import.template())

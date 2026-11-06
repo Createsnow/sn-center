@@ -45,11 +45,11 @@ def test_export_is_read_only_and_repeatable(w, api, sql):
         assert (got["生产组织编号"], got["生产组织"], got["PI"], got["物料编码"]) == (org, f"组织{org}", pi, "M1")
         assert (got["附件项次"], got["米数"], got["产品单位"], got["流水位数"]) == ("1", "100", None, 6)
         assert got["ERP行号"] == 1
-        assert (got["进制位数"], got["流水号"]) == (10, "000001")
-    assert rows[0][:5] == ["PI", "附件项次", "物料编码", "ERP行号", "完整 SN"], (
-        "列与页面明细一致：物料编码前附件项次、后 ERP行号"
+        assert (got["进制位数"], got["流水号"], got["十进制流水号"], got["单据编号"]) == (10, "000001", "1", bill)
+    assert rows[0][:6] == ["PI", "单据编号", "附件项次", "物料编码", "ERP行号", "完整 SN"], (
+        "列与 SN 导入模板一致：物料编码前附件项次、后 ERP行号"
     )
-    sns = [x[4] for x in rows[1:]]
+    sns = [x[5] for x in rows[1:]]
     assert sns == [
         r["sn"] for r in sql.all("SELECT sn FROM sn_item WHERE pi_no = %s ORDER BY bill_seq, seq_pi_no, seq_dec", pi)
     ]
@@ -97,7 +97,7 @@ def test_detail_lists_every_sn_not_ranges(w, api, sql):
     assert (x["suspend"], x["transferred_in"]) == (None, False)
     page2 = ok(api.get(url + "&page_size=5&page=2", w.admin))
     assert [x["sn"] for x in page2["items"]] == want[5:] and [x["line_no"] for x in page2["items"]] == [6, 7]
-    file_sns = [r[4] for r in xlsx_rows(get_file(api, w.admin, pi=pi, bill_no=bill, factory_code=org).content)[1:]]
+    file_sns = [r[5] for r in xlsx_rows(get_file(api, w.admin, pi=pi, bill_no=bill, factory_code=org).content)[1:]]
     assert file_sns == want, "顺序同下载文件"
     assert (x["pi_no"], x["factory_code"], x["factory_name"], x["seq_len"], x["unit"]) == (pi, org, f"组织{org}", 6, "")
     other = w.org(uid("O")[:10])
@@ -131,10 +131,10 @@ def test_detail_filters_one_bill_line(w, api):
     assert [x["sn"] for x in ok(api.get(url + f"&sn_from={every[3]}", w.admin))["items"]] == every[3:]
     assert [x["sn"] for x in ok(api.get(url + f"&material=M2&sn_to={every[3]}", w.admin))["items"]] == [every[3]]
     assert ok(api.get(url + "&sn_from=NOPE", w.admin))["total"] == 0, "起止号不是本单据的号：没有结果"
-    # 下载同一组筛选：只下载范围内的号；列同页面明细：PI、物料编码、完整 SN、流水位数、进制位数、流水号、
-    # 附件项次、米数、产品单位、生产组织编号、生产组织
+    # 下载同一组筛选：只下载范围内的号；列同 SN 导入模板：PI、单据编号、附件项次、物料编码、ERP行号、完整 SN、
+    # 流水位数、进制位数、流水号、十进制流水号、米数、产品单位、生产组织编号、生产组织
     rows = xlsx_rows(get_file(api, w.admin, pi=pi, bill_no=bill, sn_from=every[1], sn_to=every[3]).content)
-    assert rows[0] == sn_export.FILE_HEADERS and [r[4] for r in rows[1:]] == every[1:4]
+    assert rows[0] == sn_export.FILE_HEADERS and [r[5] for r in rows[1:]] == every[1:4]
     head = dict(zip(rows[0], rows[1], strict=True))
     assert (head["生产组织编号"], head["生产组织"], head["PI"], head["物料编码"], head["米数"]) == (
         org,
@@ -144,7 +144,7 @@ def test_detail_filters_one_bill_line(w, api):
         "120",
     )
     rows = xlsx_rows(get_file(api, w.admin, pi=pi, bill_no=bill, material="M2").content)
-    assert [r[4] for r in rows[1:]] == every[3:]
+    assert [r[5] for r in rows[1:]] == every[3:]
     assert get_file(api, w.admin, pi=pi, bill_no=bill, sn_from="NOPE").json()["code"] == "EXPORT_NOTHING"
 
 
@@ -174,7 +174,7 @@ def test_detail_and_file_sorted_by_attach_no(w, api):
     assert [x["line_no"] for x in ok(api.get(url + "&page_size=2&page=3", w.admin))["items"]] == [5, 6]
     rows = xlsx_rows(get_file(api, w.admin, pi=pi, bill_no=bill, factory_code=org).content)
     assert rows[0] == sn_export.FILE_HEADERS, "下载文件的列不变"
-    assert [r[4] for r in rows[1:]] == [x["sn"] for x in got], "下载文件同一顺序"
+    assert [r[5] for r in rows[1:]] == [x["sn"] for x in got], "下载文件同一顺序"
     m2 = ok(api.get(url + "&material=M2", w.admin))["items"]
     assert [x["sn"] for x in m2] == [x["sn"] for x in got[1:4]], "筛选后同样按附件项次"
 

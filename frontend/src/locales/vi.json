@@ -1133,8 +1133,7 @@
       "length": "Số mét",
       "unit": "Đơn vị sản phẩm",
       "factory_in": "Mã tổ chức sản xuất",
-      "org_name": "Tổ chức sản xuất",
-      "customer": "Mã khách hàng"
+      "org_name": "Tổ chức sản xuất"
     },
     "issue": {
       "EMPTY": "{column} trống",
@@ -1147,7 +1146,6 @@
       "PI_MISMATCH": "PI của chứng từ {bill_no} là {pi}",
       "ORG_MISMATCH": "Tổ chức sản xuất của chứng từ {bill_no} là {factory}",
       "ORG_NAME_MISMATCH": "Tên của tổ chức sản xuất {factory} là {name}",
-      "CUSTOMER_MISMATCH": "Mã khách hàng của chứng từ {bill_no} là {customer}",
       "FACTORY_FORBIDDEN": "Tổ chức sản xuất {factory} của chứng từ không thuộc phạm vi được ủy quyền",
       "SEQ_INVALID": "Số dòng ERP phải là số nguyên dương",
       "LINE_NOT_FOUND": "Chứng từ {bill_no} không có dòng ERP {seq}",

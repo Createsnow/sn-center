@@ -1,6 +1,6 @@
 """SN 导入：系统定的固定模板（PI、单据编号、附件项次、物料编码、ERP行号、完整 SN、流水位数、进制位数、流水号、
-十进制流水号、米数、产品单位、生产组织编号、生产组织、客户编码；流水号、米数、产品单位、生产组织编号选填，流水号不填时
-按十进制流水号换算），按列名认列、顺序不限、其他列不读；
+十进制流水号、米数、产品单位、生产组织编号、生产组织，与分配页「已分配」下载的列相同；流水号、米数、产品单位、
+生产组织编号选填，流水号不填时按十进制流水号换算；客户编码不在模板里，取单据的），按列名认列、顺序不限、其他列不读；
 逐行按订单快照检查（PI、单据、ERP行号、物料编码、附件项次、生产组织须与单据一致；单据已有生成或已分配的号不能导入），
 先检查后确定导入，有一行不能导入整个文件不导入；
 导入的号进号池（待分配，号池结构不变：单据序号 0，行号、流水号等在导入记录），之后生成撞上导入的号整次回滚；
@@ -15,6 +15,7 @@ from conftest import MES, emp, m, ok, uid, xlsx_rows
 from openpyxl import Workbook
 
 from app.core.encoding import DEFAULT_CHARSETS
+from app.services import sn_export
 from app.services.sn_import import HEADERS as FULL
 
 #: rec 的字段 → 列名
@@ -33,7 +34,6 @@ COL = {
     "unit": "产品单位",
     "org": "生产组织编号",
     "org_name": "生产组织",
-    "customer": "客户编码",
 }
 #: 别名列 → 字段
 ALIAS = {
@@ -59,7 +59,7 @@ def dec_of(serial: str, base: str) -> str:
 
 
 def rec(pi, bill, sn, org, **kw) -> dict:
-    """一行（默认对上 mk 建的单据第 1 行：物料 M1、附件项次 1、米数 100、客户 C1、生产组织名称「组织{org}」），
+    """一行（默认对上 mk 建的单据第 1 行：物料 M1、附件项次 1、米数 100、生产组织名称「组织{org}」），
     kw 按字段名改；没给十进制流水号时按流水号换算（与流水号一致）。"""
     r = dict(
         pi=pi,
@@ -75,7 +75,6 @@ def rec(pi, bill, sn, org, **kw) -> dict:
         unit="",
         org=org,
         org_name=f"组织{org}",
-        customer="C1",
     )
     r.update(kw)
     if "dec" not in kw:
@@ -126,10 +125,10 @@ def issue(res, row: int, n: int = 0) -> dict:
     return next(x for x in res["issues"] if x["row"] == row)["issues"][n]
 
 
-def mk(w, *lines, org=None):
+def mk(w, *lines, org=None, customer="C1"):
     org = org or w.org(uid("O")[:10])
     pi, bill = uid("PI"), uid("MO")
-    w.order(bill, org, "C1", pi, *lines)
+    w.order(bill, org, customer, pi, *lines)
     return org, pi, bill
 
 
@@ -164,7 +163,6 @@ def test_template_marks_required_columns(w, api, sql):
         "产品单位",
         "生产组织编号",
         "*生产组织",
-        "*客户编码",
     ]
     assert ws.max_row == 1, "只有表头，没有示例数据行"
     reds = {c.value for c in ws[1] if c.font.color is not None and c.font.color.rgb.endswith("C00000")}
@@ -199,8 +197,8 @@ def test_template_marks_required_columns(w, api, sql):
         "产品单位",
         "生产组织编号",
         "生产组织",
-        "客户编码",
     ]
+    assert FULL == sn_export.FILE_HEADERS, "模板的列与分配页「已分配」下载的列相同"
 
 
 def test_check_lists_every_bad_row_and_import_is_all_or_nothing(w, api, sql):
@@ -226,7 +224,7 @@ def test_check_lists_every_bad_row_and_import_is_all_or_nothing(w, api, sql):
         rec(pi2, bill2, 123456789012, org2),  # 10 数字 SN 按文本；生产组织编号、名称相符
         rec(pi2, bill2, uid("S"), org),  # 11 生产组织编号与单据不符
         rec(pi2, bill2, uid("S"), org2, org_name="别的组织"),  # 12 编号相符、生产组织名称不符
-        rec(pi, bill, uid("S"), org, customer="C9"),  # 13 客户不符
+        rec(pi, bill, uid("S"), org),  # 13 可导入（模板没有客户编码列，客户取单据的）
         rec(pi, bill, uid("S"), org, seq="9"),  # 14 行号不在单据里
         rec(pi, bill, uid("S"), org, seq="x"),  # 15 行号不是正整数
         rec(pi, bill, uid("S"), org, material="M2"),  # 16 第 1 行不是 M2
@@ -238,7 +236,7 @@ def test_check_lists_every_bad_row_and_import_is_all_or_nothing(w, api, sql):
         rec(pi, bill, uid("S"), org, serial="00001"),  # 22 流水号位数不对
         rec(pi, bill, uid("S"), org, base="32", serial="00000I"),  # 23 32 进制不用 I
         rec(pi, bill, uid("S"), org, base="16", serial="00000a"),  # 24 字母要大写
-        rec(pi, bill, uid("S"), org, material="", serial="", dec="", customer=""),  # 25 必填为空（流水号选填）
+        rec(pi, bill, uid("S"), org, material="", serial="", dec=""),  # 25 必填为空（流水号选填）
         rec(pig, billg, uid("S"), org, seq="2", material="M2", attach="A2", length="200"),  # 26 单据已有生成的号
         rec(pi, bill, uid("S"), org, serial="000002", dec="1"),  # 27 流水号与十进制流水号不符
         rec(pi, bill, uid("S"), org, serial="", dec="1000000"),  # 28 十进制流水号超出 10 进制 6 位
@@ -249,7 +247,7 @@ def test_check_lists_every_bad_row_and_import_is_all_or_nothing(w, api, sql):
         rec(pi, bill, uid("S"), org, org_name=""),  # 33 生产组织为空
     ]
     r = ok(check(api, xlsx(*rows), w.admin))
-    assert (r["total"], r["ok"], r["bad"], r["importable"]) == (31, 4, 27, False), str(r)
+    assert (r["total"], r["ok"], r["bad"], r["importable"]) == (31, 5, 26, False), str(r)
     assert codes(r) == {
         3: ["FILE_DUP"],
         4: ["IN_POOL"],
@@ -259,7 +257,6 @@ def test_check_lists_every_bad_row_and_import_is_all_or_nothing(w, api, sql):
         8: ["SN_SPACE"],
         11: ["ORG_MISMATCH"],
         12: ["ORG_NAME_MISMATCH"],
-        13: ["CUSTOMER_MISMATCH"],
         14: ["LINE_NOT_FOUND"],
         15: ["SEQ_INVALID"],
         16: ["MATERIAL_MISMATCH"],
@@ -271,7 +268,7 @@ def test_check_lists_every_bad_row_and_import_is_all_or_nothing(w, api, sql):
         22: ["SERIAL_LEN_MISMATCH"],
         23: ["SERIAL_CHAR_INVALID"],
         24: ["SERIAL_CHAR_INVALID"],
-        25: ["EMPTY", "EMPTY", "EMPTY"],
+        25: ["EMPTY", "EMPTY"],
         26: ["BILL_HAS_SN"],
         27: ["SERIAL_DEC_MISMATCH"],
         28: ["DEC_OVERFLOW"],
@@ -283,7 +280,6 @@ def test_check_lists_every_bad_row_and_import_is_all_or_nothing(w, api, sql):
     assert issue(r, 7)["params"] == {"column": "sn"}
     assert issue(r, 11)["params"] == {"bill_no": bill2, "factory": f"{org2} 组织{org2}"}
     assert issue(r, 12)["params"] == {"factory": org2, "name": f"组织{org2}"}
-    assert issue(r, 13)["params"] == {"bill_no": bill, "customer": "C1"}
     assert issue(r, 14)["params"] == {"bill_no": bill, "seq": 9}
     assert issue(r, 16)["params"] == {"bill_no": bill, "seq": 1, "material": "M1"}
     assert issue(r, 17)["params"] == {"bill_no": bill, "seq": 2, "attach": "A2"}
@@ -294,7 +290,6 @@ def test_check_lists_every_bad_row_and_import_is_all_or_nothing(w, api, sql):
     assert [i["params"]["column"] for i in next(x for x in r["issues"] if x["row"] == 25)["issues"]] == [
         "material",
         "dec_in",
-        "customer",
     ]
     assert issue(r, 26)["params"] == {"bill_no": billg, "count": 1}
     assert issue(r, 27)["params"] == {"serial": "000002", "dec": 2}
@@ -307,7 +302,7 @@ def test_check_lists_every_bad_row_and_import_is_all_or_nothing(w, api, sql):
     assert sql.count(
         "SELECT COUNT(*) FROM sn_audit WHERE action = 'SN_IMPORT' AND result = 'FAIL' AND operator = 'admin' "
         "AND error_msg LIKE %s",
-        "%27 行不能导入%",
+        "%26 行不能导入%",
     )
 
 
@@ -413,6 +408,30 @@ def test_import_registers_every_column_and_blocks_reimport(w, api, sql):
     again = ok(check(api, xlsx(rec(pi, bill, a, org)), w.admin))
     assert codes(again) == {2: ["IMPORTED"]}
     assert again["issues"][0]["issues"][0]["params"] == {"import_no": done["import_no"]}
+
+
+def test_customer_code_comes_from_bill(w, api, sql):
+    """模板没有客户编码列：导入记录与号池的客户编码取单据的；单据没有客户编码也能导入；
+    旧模板里的「客户编码」列（带 * 或不带、填什么）不读，不影响检查与导入。"""
+    org, pi, bill = mk(w, ("M1", 2), customer="")
+    a, b = uid("SA"), uid("SB")
+    ok(run(api, xlsx(rec(pi, bill, a, org)), w.admin))
+    old = [*FULL, "*客户编码"]
+    content = xlsx({**rec(pi, bill, b, org, serial="000002"), "*客户编码": "C9"}, headers=old)
+    r = ok(check(api, content, w.admin))
+    assert (r["total"], r["ok"], r["importable"]) == (1, 1, True), str(r)
+    ok(run(api, content, w.admin))
+    got = {
+        x["sn"]: x["customer_code"]
+        for x in sql.all("SELECT sn, customer_code FROM sn_import_item WHERE sn IN (%s, %s)", a, b)
+    }
+    assert got == {a: "", b: ""}, "取单据的客户编码（为空）"
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE sn IN (%s, %s) AND customer_code = ''", a, b) == 2
+    org2, pi2, bill2 = mk(w, ("M1", 1), customer="C7")
+    c = uid("SC")
+    ok(run(api, xlsx({**rec(pi2, bill2, c, org2), "客户编码": "C9"}, headers=[*FULL, "客户编码"]), w.admin))
+    assert sql.scalar("SELECT customer_code FROM sn_import_item WHERE sn = %s", c) == "C7"
+    assert sql.scalar("SELECT customer_code FROM sn_item WHERE sn = %s", c) == "C7"
 
 
 def test_generation_refuses_imported_sn(w, api, sql):
@@ -625,8 +644,9 @@ def test_imported_sns_transfer_like_generated(w, api, sql):
     )
     # 已分配页签下载：流水位数、进制位数、流水号取导入记录
     ex = xlsx_rows(get_bytes(api, f"/api/export/file?factory_code={org_b}&pi={to_pi}&bill_no={to_bill}", w.admin))
-    row = dict(zip(ex[0], next(y for y in ex[1:] if y[4] == a), strict=True))
+    row = dict(zip(ex[0], next(y for y in ex[1:] if y[5] == a), strict=True))
     assert row["ERP行号"] == 2, "导入的号的 ERP行号取导入记录的当前行号（号池里为 0）"
+    assert (row["单据编号"], row["十进制流水号"]) == (to_bill, "9"), "单据编号取当前挂靠，十进制流水号取导入记录"
     items = ok(api.get(f"/api/export/items?factory_code={org_b}&pi={to_pi}&bill_no={to_bill}", w.admin))["items"]
     assert next(x for x in items if x["sn"] == a)["bill_seq"] == 2, "已分配明细同下载"
     assert (row["流水位数"], row["进制位数"], row["流水号"], row["物料编码"], row["附件项次"]) == (
@@ -671,15 +691,13 @@ def test_bad_files_and_headers(w, api):
     assert check(api, b"not an xlsx", w.admin).code == "IMPORT_FILE_INVALID"
     assert check(api, b"", w.admin).code == "IMPORT_EMPTY"
     assert check(api, xlsx(), w.admin).code == "IMPORT_EMPTY"
-    required = (
-        "PI、单据编号、附件项次、物料编码、ERP行号、完整 SN、流水位数、进制位数、十进制流水号、生产组织、客户编码"
-    )
+    required = "PI、单据编号、附件项次、物料编码、ERP行号、完整 SN、流水位数、进制位数、十进制流水号、生产组织"
     optional = "流水号、米数、产品单位、生产组织编号"
     one = rec("P", "B", "S", "O")
     # 按列名认列：缺了必填的列（含改了列名的）列出缺哪几列
     for head, missing in (
         ([h for h in FULL if h != "ERP行号"], "ERP行号"),
-        ([h for h in FULL if h not in ("十进制流水号", "客户编码")], "十进制流水号、客户编码"),
+        ([h for h in FULL if h not in ("附件项次", "十进制流水号")], "附件项次、十进制流水号"),
         ([h for h in FULL if h != "生产组织"], "生产组织"),
         (["PI", "单据", *FULL[2:]], "单据编号"),
         (["备注"], required),

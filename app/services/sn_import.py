@@ -1,14 +1,15 @@
 """SN 导入：本系统之外已有的 SN 按导入模板导入号池，进入 SN 分配页（待分配）；
 导入功能自成一套，记录只用 sn_import_item。
 
-- 模板（template，列见 COLUMNS，与分配页「已分配」下载的列对应，另加单据编号、十进制流水号、客户编码）：
+- 模板（template，列见 COLUMNS，与分配页「已分配」下载的列相同，见 sn_export.FILE_HEADERS）：
   PI、单据编号、附件项次、物料编码（也认「料号」「物料编号」）、ERP行号（也认「行号」「单据行号」）、
   完整 SN（也认「SN」）、流水位数、进制位数、流水号、十进制流水号（也认「十进制流水」）、米数、产品单位、
-  生产组织编号、生产组织、客户编码。流水号、米数、产品单位、生产组织编号选填，其余必填（生产组织即名称，必填）。
+  生产组织编号、生产组织。流水号、米数、产品单位、生产组织编号选填，其余必填（生产组织即名称，必填）。
+  客户编码不在模板里，取单据的客户编码（单据没有客户编码的也能导入）；旧模板里的「客户编码」列不读。
 - 文件：xlsx，首个非空行为表头，按列名认列（去空白、不分大小写比较；顺序不限）：必填的列表头必须有，缺了列出缺哪几列；
   其他列名的列不读；同一列出现两次（含别名）不能导入。之后每行一枚号；认得的列都为空的行跳过。
 - 每行的条件（逐行列出不能导入的原因）：必填的都要填，各列不超长；SN 不含空白，文件内不重复，也不能与号池
-  （已生成、已导入的号）重复；单据须在订单快照中，PI、生产组织（名称）、客户编码与单据相同（生产组织编号填了也须相符）；
+  （已生成、已导入的号）重复；单据须在订单快照中，PI、生产组织（名称）与单据相同（生产组织编号填了也须相符）；
   普通操作员只能导入授权生产组织的单据；ERP行号须是该单据的金蝶明细行号，物料编码与该行相同，附件项次与该行生效的
   附件项次相同（金蝶与生成页都没有时不能导入，先在生成页补填），米数填了须与该行相同（转移按「同料号、同附件项次、
   米数相符」配对）；该单据在本系统已有生成的号（不论状态、哪个物料行）或已分配的号（含已分配的导入号）时不能导入
@@ -19,7 +20,7 @@
   全部写入，一次导入一个导入单号。
 - 写入：导入记录 sn_import_item（全部列；之后只有 cur_bill_seq 随转移改）+ 号池 sn_item（结构不变：origin = IMPORT，
   待分配，挂在单据序号 0 上，seq_pi_no 为空串、seq_dec 为导入记录 id、rule_version_id 为 0；物料编码、附件项次、
-  米数、客户编码、生产组织照常存在号池，供分配、转移、推送用）。与生成一样建立已出号单据台账、带上暂停标记。
+  米数、客户编码（取单据的）、生产组织照常存在号池，供分配、转移、推送用）。与生成一样建立已出号单据台账、带上暂停标记。
 - 推送 / 拉取 / 转出给 MES 的明细与生成的号同一结构、字段都有值：billSeq 为当前行号、serial 为流水号、
   serialDec 为十进制流水、serialPi 为导入的 PI（见 import_details），其余取号池。导入的号与生成的号不进同一批次。
 - 导入的号可分配，分配后可转移（与生成的号同一套规则，见 transfers）；不出现在生成页（号段、单据分配状态、
@@ -155,7 +156,6 @@ COLUMNS = (
     Column("unit", "产品单位", False, hint="选填", example="M"),
     Column("factory_in", "生产组织编号", False, hint="选填；填了须与单据的生产组织编码相同", example="110"),
     Column("org_name", "生产组织", True, (), ORG_MAX, hint="须与单据的生产组织名称相同", example="越南工厂"),
-    Column("customer", "客户编码", True, hint="须与单据的客户相同", example="0001"),
 )
 HEADERS = [c.name for c in COLUMNS]
 REQUIRED = [c.name for c in COLUMNS if c.required]
@@ -174,7 +174,6 @@ BILL_NOT_FOUND = "BILL_NOT_FOUND"
 PI_MISMATCH = "PI_MISMATCH"
 ORG_MISMATCH = "ORG_MISMATCH"
 ORG_NAME_MISMATCH = "ORG_NAME_MISMATCH"
-CUSTOMER_MISMATCH = "CUSTOMER_MISMATCH"
 FACTORY_FORBIDDEN = "FACTORY_FORBIDDEN"
 SEQ_INVALID = "SEQ_INVALID"
 LINE_NOT_FOUND = "LINE_NOT_FOUND"
@@ -211,6 +210,7 @@ class Row:
     unit: str = ""
     factory_in: str = ""
     org_name: str = ""
+    #: 单据在订单快照中的客户编码（模板没有客户编码列，导入记录与号池按它写；可为空）
     customer: str = ""
     #: 行号、流水位数、进制位数、十进制流水（检查通过才有值；流水号没填时按十进制流水换算后写回 serial）
     seq: int | None = None
@@ -485,9 +485,10 @@ def _used_bills(bills: list[str]) -> dict[str, int]:
 
 
 def _check_order(cu: CurrentUser, r: Row, b: dict, line: dict | None, used: dict[str, int]) -> None:
-    """与订单快照对照：PI、生产组织（名称必填、编号选填）、客户，行号对应的物料行的物料编码、附件项次（须与该行
+    """与订单快照对照：PI、生产组织（名称必填、编号选填），行号对应的物料行的物料编码、附件项次（须与该行
     生效的附件项次相同，该行没有附件项次不能导入）、米数；授权范围；该单据在本系统已有生成或已分配的号不能导入。"""
     r.factory = b["org_code"] or ""
+    r.customer = b["customer_code"] or ""
     if r.pi and b["pi"] != r.pi:
         r.issues.append((PI_MISMATCH, {"bill_no": r.bill, "pi": b["pi"]}))
     name = b["factory_name"] or b["org_name"] or ""
@@ -500,8 +501,6 @@ def _check_order(cu: CurrentUser, r: Row, b: dict, line: dict | None, used: dict
             r.issues.append((ORG_NAME_MISMATCH, {"factory": r.factory, "name": name or "—"}))
         else:
             r.issues.append((ORG_MISMATCH, org))
-    if r.customer and r.customer != (b["customer_code"] or ""):
-        r.issues.append((CUSTOMER_MISMATCH, {"bill_no": r.bill, "customer": b["customer_code"] or "—"}))
     if not cu.is_admin and r.factory not in cu.factories:
         r.issues.append((FACTORY_FORBIDDEN, {"factory": r.factory}))
     n = used.get(r.bill, 0)
@@ -603,8 +602,9 @@ _INSERT = (
     "length_text, serial_text, seq_base, seq_len, seq_dec, unit, customer_code, factory_code, file_name, row_no, "
     "created_by, created_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 )
-#: 号池（结构不变）：待分配，挂在单据序号 0；SN、PI、单据、生产组织、客户编码、物料编码、附件项次、米数（没填为 NULL，
-#: 与规则不带米数时相同）取文件里的；没有规则与流水（seq_pi_no 空串、seq_dec = 导入记录 id、规则版本 0），
+#: 号池（结构不变）：待分配，挂在单据序号 0；SN、PI、单据、物料编码、附件项次、米数（没填为 NULL，
+#: 与规则不带米数时相同）取文件里的，生产组织、客户编码取单据的；
+#: 没有规则与流水（seq_pi_no 空串、seq_dec = 导入记录 id、规则版本 0），
 #: 行号、流水号等在导入记录里
 _INSERT_ITEM = (
     "INSERT INTO sn_item(sn, origin, pi_no, customer_code, bill_no, bill_seq, material_code, gen_org_code, "
