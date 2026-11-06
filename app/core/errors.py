@@ -70,6 +70,7 @@ class ErrorCode(Enum):
     K3_SECRET_UNREADABLE = (503, "金蝶应用密钥无法解密（SN_SECRET 已更换）：请在生产订单页「金蝶连接」重新填写应用密钥")
     K3_CONFIG_INVALID = (400, "金蝶连接参数不合法：{detail}")
     K3_TEST_FAILED = (502, "金蝶连接测试未通过，未保存：{message}")
+    K3_RESET_FAILED = (502, "用 .env 的参数连接测试未通过，未恢复默认：{message}")
     ORDER_BILL_REQUIRED = (400, "请输入单据编号")
     ORDER_NOT_FOUND = (404, "生产订单 {bill_no} 不在快照中（不是已审核，或尚未同步）")
     ORDER_LINE_NOT_FOUND = (404, "物料行 {bill_no} / {seq} 不在快照中")

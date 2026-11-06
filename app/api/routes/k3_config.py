@@ -19,6 +19,11 @@ def k3_config_test(body: K3ConfigIn, cu: AdminDep) -> dict:
     return k3_config.test_connection(cu, body.model_dump(exclude_unset=True))
 
 
+@router.post("/reset", summary="恢复默认：先用 .env 的 K3_* 连接测试，通过才删掉页面保存的参数，之后按 .env 连接")
+def k3_config_reset(cu: AdminDep) -> dict:
+    return k3_config.reset_to_env(cu)
+
+
 @router.put("", summary="保存金蝶连接参数：先用新参数连接测试，通过才保存；下一次调用金蝶即生效")
 def k3_config_save(body: K3ConfigIn, cu: AdminDep) -> dict:
     return k3_config.save(cu, body.model_dump(exclude_unset=True))

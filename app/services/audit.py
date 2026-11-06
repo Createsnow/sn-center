@@ -230,6 +230,7 @@ _PATH_ACTIONS = (
     (r"/api/factories/[^/]+/mes-test", FACTORY_MES_TEST),
     (r"/api/factories/[^/]+/mes-toggle", FACTORY_MES_TOGGLE),
     (r"/api/k3-config/test", K3_CONFIG_TEST),
+    (r"/api/k3-config/reset", K3_CONFIG),
     (r"/api/k3-config", K3_CONFIG),
     (r"/api/orders/attach", ORDER_ATTACH_FILL),
     (r"/api/orders/length", ORDER_LENGTH_FILL),

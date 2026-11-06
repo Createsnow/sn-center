@@ -82,25 +82,34 @@
 
       <div class="sec">{{ t("k3.history") }}</div>
       <el-timeline v-if="cfg?.history?.length" class="tl">
-        <el-timeline-item v-for="(h, i) in cfg.history" :key="i" :timestamp="`${fmt(h.at)} · ${h.by}`" :type="i === 0 ? 'primary' : undefined">
-          {{ historyText(h) }}
+        <el-timeline-item v-for="(item, i) in cfg.history" :key="i" :timestamp="`${fmt(item.at)} · ${item.by}`" :type="i === 0 ? 'primary' : undefined">
+          {{ historyText(item) }}
         </el-timeline-item>
       </el-timeline>
       <div v-else class="muted">{{ t("k3.historyEmpty") }}</div>
       <div class="muted hint">{{ t("k3.historyHint") }}</div>
     </div>
     <template #footer>
+      <div class="foot">
+        <el-tooltip :content="cfg?.source === 'PAGE' ? t('k3.resetTip') : t('k3.resetDisabled')" placement="top">
+          <span class="reset">
+            <el-button :loading="busy === 'reset'" :disabled="!!busy || cfg?.source !== 'PAGE'" @click="reset">
+              <el-icon><RefreshLeft /></el-icon><span>{{ t("k3.reset") }}</span>
+            </el-button>
+          </span>
+        </el-tooltip>
       <el-button @click="emit('update:modelValue', false)">{{ t("common.cancel") }}</el-button>
       <el-button :loading="busy === 'test'" :disabled="!!busy" @click="test"><el-icon><Connection /></el-icon><span>{{ t("k3.test") }}</span></el-button>
       <el-button type="primary" :loading="busy === 'save'" :disabled="!!busy" @click="save">{{ t("common.save") }}</el-button>
+      </div>
     </template>
   </el-drawer>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from "vue";
+import { h, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { api } from "@/api";
 import { useTime } from "@/composables/useTime";
 
@@ -113,7 +122,7 @@ const { fmt } = useTime();
 const LCIDS = [2052, 1033, 3076];
 const cfg = ref<any>(null);
 const loading = ref(false);
-const busy = ref<"" | "test" | "save">("");
+const busy = ref<"" | "test" | "save" | "reset">("");
 const result = ref<any>(null);
 const adv = ref<string[]>([]);
 const form = reactive({
@@ -143,16 +152,52 @@ async function load() {
 /** 应用密钥留空 = 沿用当前的（不提交）。 */
 const payload = () => ({ ...form, app_secret: form.app_secret.trim() || undefined });
 
-const historyText = (h: any) => {
-  if (h.from_env) return t("k3.historyFromEnv");
-  if (!h.fields?.length) return t("k3.historyNoChange");
-  return t("k3.historyChanged", { fields: h.fields.map((f: string) => t(`k3.field.${f}`)).join(t("k3.sep")) });
+const historyText = (x: any) => {
+  if (x.reset) return t("k3.historyReset");
+  if (x.from_env) return t("k3.historyFromEnv");
+  if (!x.fields?.length) return t("k3.historyNoChange");
+  return t("k3.historyChanged", { fields: x.fields.map((f: string) => t(`k3.field.${f}`)).join(t("k3.sep")) });
 };
 
 async function test() {
   busy.value = "test";
   try {
     result.value = await api.testK3Config(payload());
+    cfg.value = { ...cfg.value, ...(await api.k3Config().catch(() => ({}))) };
+  } finally {
+    busy.value = "";
+  }
+}
+
+/** 恢复默认：确认将改用的 .env 参数（不含密钥），后端先用它连接测试，通过才删掉页面保存的参数。 */
+async function reset() {
+  const env = cfg.value?.env || {};
+  const rows: [string, string][] = [
+    [t("k3.serverUrl"), env.server_url || "—"],
+    [t("k3.acctId"), env.acct_id || "—"],
+    [t("k3.appId"), env.app_id || "—"],
+    [t("k3.username"), env.username || "—"],
+    [t("k3.appSecret"), env.secret_set ? t("k3.envSecretSet") : t("k3.envSecretMissing")],
+  ];
+  const message = h("div", [
+    h("p", { style: "margin:0 0 8px" }, t("k3.resetConfirm")),
+    h("div", { style: "display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:13px" },
+      rows.flatMap(([k, v]) => [h("span", { style: "color:var(--app-muted)" }, k), h("span", { style: "word-break:break-all" }, v)])),
+  ]);
+  try {
+    await ElMessageBox.confirm(message, t("k3.reset"), { type: "warning", confirmButtonText: t("k3.reset"), cancelButtonText: t("common.cancel") });
+  } catch {
+    return;
+  }
+  busy.value = "reset";
+  try {
+    const c = await api.resetK3Config();
+    fill(c);
+    result.value = null;
+    ElMessage.success(t("k3.resetDone"));
+    emit("saved", c);
+  } catch {
+    // .env 参数连接测试未通过：错误已由请求拦截器提示；刷新「最近测试」
     cfg.value = { ...cfg.value, ...(await api.k3Config().catch(() => ({}))) };
   } finally {
     busy.value = "";
@@ -195,5 +240,7 @@ async function save() {
 .adv { border: none; margin-bottom: 12px; }
 .adv :deep(.el-collapse-item__header) { border-bottom: none; }
 .tl { padding-left: 2px; margin-bottom: 4px; }
+.foot { display: flex; justify-content: flex-end; align-items: center; gap: 0; }
+.reset { margin-right: auto; }
 .k3-drawer :deep(.el-drawer__body) { padding-top: 4px; }
 </style>

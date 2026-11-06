@@ -47,6 +47,7 @@
   "K3_SECRET_UNREADABLE": "The Kingdee app secret cannot be decrypted (SN_SECRET was changed): enter the app secret again in “Kingdee connection” on the Production orders page",
   "K3_CONFIG_INVALID": "Invalid Kingdee connection settings: {detail}",
   "K3_TEST_FAILED": "Kingdee connection test failed, not saved: {message}",
+  "K3_RESET_FAILED": "Connection test with the .env settings failed, defaults not restored: {message}",
   "ORDER_BILL_REQUIRED": "Please enter a bill No.",
   "ORDER_NOT_FOUND": "Production order {bill_no} is not in the snapshot (not approved, or not synced yet)",
   "ORDER_LINE_NOT_FOUND": "Material line {bill_no} / {seq} is not in the snapshot",

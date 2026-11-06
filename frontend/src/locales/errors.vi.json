@@ -47,6 +47,7 @@
   "K3_SECRET_UNREADABLE": "Không giải mã được khóa ứng dụng Kingdee (SN_SECRET đã thay đổi): nhập lại khóa ứng dụng trong “Kết nối Kingdee” ở trang Lệnh sản xuất",
   "K3_CONFIG_INVALID": "Tham số kết nối Kingdee không hợp lệ: {detail}",
   "K3_TEST_FAILED": "Kiểm tra kết nối Kingdee không thành công, chưa lưu: {message}",
+  "K3_RESET_FAILED": "Kiểm tra kết nối bằng tham số .env không thành công, chưa khôi phục mặc định: {message}",
   "ORDER_BILL_REQUIRED": "Vui lòng nhập số chứng từ",
   "ORDER_NOT_FOUND": "Lệnh sản xuất {bill_no} không có trong ảnh chụp (chưa duyệt hoặc chưa đồng bộ)",
   "ORDER_LINE_NOT_FOUND": "Dòng vật tư {bill_no} / {seq} không có trong ảnh chụp",

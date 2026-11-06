@@ -4,6 +4,7 @@
 - 应用密钥加密保存（与 MES 凭证同一套，密钥由 SN_SECRET 派生），不回显、不写进痕迹和日志；留空 = 沿用当前的密钥。
 - 保存时先用新参数连接测试（登录 + 读组织机构），通过才保存；保存后下一次调用金蝶即生效，不用重启。
 - 连接测试、保存都记痕迹：K3_CONFIG_TEST / K3_CONFIG（参数摘要，密钥只记是否更换）。
+- 恢复默认：先用 .env 的 K3_* 连接测试，通过才删掉页面保存的参数，之后按 .env 连接；不会在失败时自动改用 .env。
 """
 
 from __future__ import annotations
@@ -66,6 +67,7 @@ def view() -> dict:
         secret_set = bool(row["app_secret"])
         secret_unreadable = secretbox.open_(row["app_secret"]) is None
         updated_at, updated_by = util.fmt(row["updated_at"]), row["updated_by"]
+    env = k3.env_values()
     return {
         "source": k3.SOURCE_PAGE if row is not None else k3.SOURCE_ENV,
         **values,
@@ -75,6 +77,8 @@ def view() -> dict:
         "updated_by": updated_by,
         "last_test": _last_test(),
         "history": _history(),
+        # 恢复默认后使用的 .env 参数（不含应用密钥）：恢复前确认用
+        "env": {**{k: env[k] for k in TEXT_MAX}, "secret_set": bool(env["app_secret"])},
     }
 
 
@@ -155,6 +159,7 @@ def _history(limit: int = 5) -> list[dict]:
                 "by_name": r["operator_name"],
                 "fields": fields,
                 "from_env": parts.get("from") == "env",
+                "reset": parts.get("reset") == "env",
             }
         )
     return out
@@ -212,4 +217,20 @@ def save(cu: CurrentUser, body: dict) -> dict:
                 f"changed={fields} " + ("from=env " if first else "") + _summary(c, secret_changed)
             ),
         )
+    return view()
+
+
+def reset_to_env(cu: CurrentUser) -> dict:
+    """恢复默认：先用 .env 的 K3_* 连接测试，通过才删掉页面保存的参数；本来就在用 .env 时不做任何事。"""
+    if k3.stored_row() is None:
+        return view()
+    env = k3.env_values()
+    ok, message, orgs, ms = _probe(env)
+    e = audit.entry(audit.K3_CONFIG_TEST).count(orgs).info(_summary(env, False) + f" source=env ms={ms}")
+    audit.record_isolated(cu, e if ok else e.fail(message))
+    if not ok:
+        raise biz(ErrorCode.K3_RESET_FAILED, message=message)
+    with db.tx():
+        db.exec("DELETE FROM sn_k3_config WHERE id = 1")
+        audit.record(cu, audit.entry(audit.K3_CONFIG).info("changed=- reset=env " + _summary(env, False)))
     return view()

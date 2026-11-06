@@ -50,6 +50,7 @@ E = {
 "K3_QUERY_FAILED": ("Kingdee query failed: {message}", "Truy vấn Kingdee thất bại: {message}"),
 "K3_SECRET_UNREADABLE": ("The Kingdee app secret cannot be decrypted (SN_SECRET was changed): enter the app secret again in “Kingdee connection” on the Production orders page", "Không giải mã được khóa ứng dụng Kingdee (SN_SECRET đã thay đổi): nhập lại khóa ứng dụng trong “Kết nối Kingdee” ở trang Lệnh sản xuất"),
 "K3_CONFIG_INVALID": ("Invalid Kingdee connection settings: {detail}", "Tham số kết nối Kingdee không hợp lệ: {detail}"),
+"K3_RESET_FAILED": ("Connection test with the .env settings failed, defaults not restored: {message}", "Kiểm tra kết nối bằng tham số .env không thành công, chưa khôi phục mặc định: {message}"),
 "K3_TEST_FAILED": ("Kingdee connection test failed, not saved: {message}", "Kiểm tra kết nối Kingdee không thành công, chưa lưu: {message}"),
 "ORDER_BILL_REQUIRED": ("Please enter a bill No.", "Vui lòng nhập số chứng từ"),
 "ORDER_NOT_FOUND": ("Production order {bill_no} is not in the snapshot (not approved, or not synced yet)", "Lệnh sản xuất {bill_no} không có trong ảnh chụp (chưa duyệt hoặc chưa đồng bộ)"),

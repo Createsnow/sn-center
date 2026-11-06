@@ -98,6 +98,28 @@ def test_k3_config_env_then_page(w, api, sql):
         assert api.put("/api/k3-config", m(), w.admin).code == "K3_CONFIG_INVALID", "须重新填写密钥"
         v = ok(api.put("/api/k3-config", m(app_secret="secret2"), w.admin))
         assert v["secret_unreadable"] is False
+
+        # 恢复默认：先用 .env 的参数连接测试，不通过不恢复，页面参数原样保留
+        env = {"server_url": K3.url, "acct_id": "acct", "app_id": "app", "username": "tester", "secret_set": True}
+        assert v["env"] == env, "恢复前可看到会改用的 .env 参数（不含密钥）"
+        assert api.post("/api/k3-config/reset", m(), op).code == "FORBIDDEN"
+        assert api.post("/api/k3-config/reset", m(), w.admin).code == "K3_RESET_FAILED"
+        assert sql.count("SELECT COUNT(*) FROM sn_k3_config") == 1
+        last = ok(api.get("/api/k3-config", w.admin))["last_test"]
+        assert last["ok"] is False and "密钥错误" in last["message"]
+        # .env 的参数能连上：删掉页面参数，之后按 .env 连接
+        install_k3()
+        v = ok(api.post("/api/k3-config/reset", m(), w.admin))
+        assert v["source"] == "ENV" and v["acct_id"] == "acct" and v["username"] == "tester"
+        assert v["updated_at"] is None and v["history"][0]["reset"] is True and v["last_test"]["ok"] is True
+        assert sql.count("SELECT COUNT(*) FROM sn_k3_config") == 0
+        K3.calls.clear()
+        ok(api.post("/api/factories/sync", m(), w.admin))
+        assert _logins()[-1][:4] == ["acct", "tester", "app", "secret"]
+        # 本来就在用 .env：不做任何事、不留痕
+        n = sql.count("SELECT COUNT(*) FROM sn_audit WHERE action IN ('K3_CONFIG', 'K3_CONFIG_TEST')")
+        assert ok(api.post("/api/k3-config/reset", m(), w.admin))["source"] == "ENV"
+        assert sql.count("SELECT COUNT(*) FROM sn_audit WHERE action IN ('K3_CONFIG', 'K3_CONFIG_TEST')") == n
     finally:
         sql.exec("DELETE FROM sn_k3_config")
         install_k3()

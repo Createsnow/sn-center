@@ -47,6 +47,7 @@ export const api = {
   k3Config: () => get("/k3-config"),
   testK3Config: (data: Q) => http.post<any, any>("/k3-config/test", data, { timeout: 0 }),
   saveK3Config: (data: Q) => http.put<any, any>("/k3-config", data, { timeout: 0 }),
+  resetK3Config: () => http.post<any, any>("/k3-config/reset", {}, { timeout: 0 }),
 
   // ---------------- 生产订单快照
   orders: (params?: Q) => get("/orders", params),
