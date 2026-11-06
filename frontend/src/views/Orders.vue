@@ -39,6 +39,13 @@
       <el-button link :type="meta?.open_alerts ? 'danger' : 'info'" @click="tab = 'alerts'">
         {{ t("orders.openAlerts", { n: meta?.open_alerts ?? 0 }) }}
       </el-button>
+      <!-- 同步进行中（任一触发方式、任一操作人）：统计栏多出一行进度，结束后消失 -->
+      <span v-if="prog?.running" class="run">
+        <el-icon class="is-loading"><Loading /></el-icon>
+        <span>{{ progText }}</span>
+        <el-progress v-if="progPct !== null" :percentage="progPct" :stroke-width="6" :show-text="false" class="run-bar" />
+        <span v-if="prog.mode" class="muted num">{{ elapsed }}</span>
+      </span>
     </div>
 
     <el-tabs v-model="tab" class="tabs">
@@ -254,7 +261,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h, onMounted, reactive, ref, watch } from "vue";
+import { computed, defineComponent, h, onActivated, onDeactivated, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox, ElTag } from "element-plus";
@@ -343,12 +350,68 @@ async function refresh() {
   if (tab.value === "alerts") await loadAlerts();
 }
 
+// ---------------- 同步进度：同步时每秒刷新，平时每 15 秒看一次；同步结束后刷新列表
+
+const prog = ref<any>(null);
+let progTimer: number | undefined;
+let progAlive = true;
+
+async function pollProgress() {
+  window.clearTimeout(progTimer);
+  const was = !!prog.value?.running;
+  prog.value = await api.orderSyncProgress().catch(() => prog.value);
+  if (was && !prog.value?.running) refresh().catch(() => undefined);
+  if (progAlive) progTimer = window.setTimeout(pollProgress, prog.value?.running ? 1000 : 15000);
+}
+/** 点了同步按钮：请求发出后马上看一次进度 */
+const watchSoon = () => window.setTimeout(() => pollProgress().catch(() => undefined), 400);
+
+const num = (n: number) => (n ?? 0).toLocaleString();
+const progPct = computed<number | null>(() => {
+  const p = prog.value;
+  if (!p?.running || p.stage !== "DETAILS" || !p.total) return null;
+  const pct = Math.round((p.done / p.total) * 100);
+  return p.mode === "REBUILD" ? Math.min(pct, 99) : Math.min(pct, 100);
+});
+const progText = computed(() => {
+  const p = prog.value;
+  if (!p?.running) return "";
+  if (!p.mode) return t("orders.progress.other");
+  let step: string;
+  if (p.mode === "BILL") step = p.bill_no;
+  else if (!p.stage) step = t("orders.progress.login");
+  else if (p.stage === "HEADS") step = t("orders.progress.heads");
+  else if (p.stage === "WRITE") step = t("orders.progress.write");
+  else if (p.mode === "REBUILD") step = p.done ? t("orders.progress.rows", { done: num(p.done) }) : t("orders.progress.all");
+  else step = p.total ? t("orders.progress.bills", { done: num(p.done), total: num(p.total) }) : t("orders.progress.noChange");
+  return t("orders.progress.text", { mode: t(`orders.progress.mode.${p.mode}`), step });
+});
+const elapsed = computed(() => {
+  const s = prog.value?.elapsed_sec ?? 0;
+  return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+});
+
+onActivated(() => {
+  progAlive = true;
+  pollProgress().catch(() => undefined);
+});
+onDeactivated(() => {
+  progAlive = false;
+  window.clearTimeout(progTimer);
+});
+onUnmounted(() => {
+  progAlive = false;
+  window.clearTimeout(progTimer);
+});
+
 async function syncOne(bill?: string) {
   const no = (bill ?? syncBillNo.value).trim();
   if (!no) return;
   syncing.value = "one";
   try {
-    const r: any = await api.syncOrder(no);
+    const req = api.syncOrder(no);
+    watchSoon();
+    const r: any = await req;
     const msg = t(`orders.outcome.${r.outcome}`, { bill: no, rows: r.rows, status: r.doc_status || "—" });
     if (r.outcome === "REPLACED") ElMessage.success(msg);
     else ElMessage.warning({ message: msg, duration: 6000, showClose: true });
@@ -361,7 +424,9 @@ async function syncOne(bill?: string) {
 async function compareNow() {
   syncing.value = "compare";
   try {
-    const r: any = await api.compareOrders();
+    const req = api.compareOrders();
+    watchSoon();
+    const r: any = await req;
     if (r.skipped) ElMessage.info(t("orders.compareSkipped"));
     else ElMessage.success(t("orders.compareDone", { replaced: r.replaced, removed: r.removed, rows: r.rows }));
     await refresh();
@@ -378,7 +443,9 @@ async function rebuild() {
   }
   syncing.value = "rebuild";
   try {
-    const r: any = await api.rebuildOrders();
+    const req = api.rebuildOrders();
+    watchSoon();
+    const r: any = await req;
     ElMessage.success(t("orders.rebuildDone", { bills: r.bills, rows: r.rows }));
     await refresh();
   } finally {
@@ -442,6 +509,7 @@ watch(tab, (v) => {
 onMounted(async () => {
   if (route.query.tab === "alerts") tab.value = "alerts";
   loadK3();
+  pollProgress().catch(() => undefined);
   await refresh();
   if (firstSyncThisLogin("orders", store.token)) {
     const r: any = await api.pageSyncOrders().catch(() => null);
@@ -457,6 +525,8 @@ onMounted(async () => {
 .toolbar .w-search { width: 280px; }
 .tabs { margin-bottom: -16px; }
 .badge { margin-left: 6px; vertical-align: top; }
+.run { flex-basis: 100%; display: flex; align-items: center; gap: 8px; color: var(--el-color-primary); }
+.run-bar { width: 200px; }
 .k3-badge :deep(.el-badge__content.is-dot) { top: 4px; right: 6px; }
 .ml { margin-left: 6px; }
 .mb { margin-bottom: 12px; }

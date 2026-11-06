@@ -945,7 +945,23 @@
     "reasonRequired": "Bắt buộc nhập lý do (tối đa 500 ký tự)",
     "mapTitle": "Xác nhận tương ứng",
     "mapHint": "Số đã tạo của dòng bị mất {seq} (vật tư cũ {material}) thuộc chứng từ {bill} được gộp vào dòng chọn dưới đây, SN chuyển sang dòng đó; SN đã giao cho MES được đẩy lại dạng điều chuyển.",
-    "mapTarget": "Dòng đích"
+    "mapTarget": "Dòng đích",
+    "progress": {
+      "text": "{mode}: {step}",
+      "mode": {
+        "COMPARE": "Đồng bộ so sánh",
+        "REBUILD": "Dựng lại toàn bộ",
+        "BILL": "Đồng bộ theo chứng từ"
+      },
+      "other": "Đang đồng bộ",
+      "login": "đang kết nối Kingdee",
+      "heads": "đang lấy danh sách chứng từ",
+      "bills": "đang lấy chứng từ thay đổi {done} / {total}",
+      "noChange": "không có chứng từ thay đổi",
+      "all": "đang lấy toàn bộ dòng",
+      "rows": "đã lấy {done} dòng",
+      "write": "đang ghi ảnh chụp"
+    }
   },
   "query": {
     "title": "Tra cứu SN",

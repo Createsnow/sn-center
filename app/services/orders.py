@@ -106,6 +106,68 @@ def _group(rows: list[k3.Row]) -> dict[str, list[k3.Row]]:
     return out
 
 
+# ================================================================== 同步进度（生产订单页统计栏显示）
+
+
+class _Progress:
+    """同步进度：只记在本进程内存里（同一时间只有一个同步，同步锁保证），结束清掉；只用于页面显示。
+
+    不写库：进程中途退出时进度随进程消失、同步锁由 MySQL 释放，不会留下「一直在同步」。
+    多实例部署时，别的实例上运行的同步本进程看不到明细，只能从同步锁看出「正在同步」（见 sync_progress）。
+    """
+
+    def __init__(self, cu: CurrentUser, mode: str, trigger: str = "MANUAL", bill_no: str = "") -> None:
+        now = util.now()
+        self.state = {
+            "mode": mode,
+            "trigger": trigger,
+            "operator": cu.emp_no or "",
+            "stage": "",
+            "done": 0,
+            "total": 0,
+            "bill_no": bill_no,
+            "started_at": now,
+        }
+        global _running
+        with _progress_lock:
+            _running = self
+
+    def stage(self, stage: str, total: int = 0) -> None:
+        with _progress_lock:
+            self.state.update(stage=stage, done=0, total=max(0, total))
+
+    def done(self, n: int) -> None:
+        with _progress_lock:
+            self.state["done"] = n
+
+    def close(self) -> None:
+        global _running
+        with _progress_lock:
+            if _running is self:
+                _running = None
+
+
+_progress_lock = threading.Lock()
+#: 本进程正在运行的同步（没有为 None）
+_running: _Progress | None = None
+
+
+def sync_progress() -> dict:
+    """当前同步进度。本进程在同步：返回方式、阶段、数量；别的实例在同步（只看得到同步锁被占用）：
+    running = True、mode 为空；都没有：running = False。"""
+    with _progress_lock:
+        st = dict(_running.state) if _running is not None else None
+    if st is None:
+        return {"running": True, "mode": ""} if locks.sync_running() else {"running": False}
+    started = st.pop("started_at")
+    return {
+        "running": True,
+        **st,
+        "started_at": util.fmt(started),
+        "elapsed_sec": max(0, int((util.now() - started).total_seconds())),
+    }
+
+
 # ================================================================== 比对同步
 
 
@@ -117,7 +179,11 @@ def compare_sync(cu: CurrentUser, trigger: str = "SCHEDULED") -> dict | None:
     try:
         if trigger == "SCHEDULED" and _compared_recently():
             return None
-        return _compare(cu, trigger)
+        progress = _Progress(cu, "COMPARE", trigger)
+        try:
+            return _compare(cu, trigger, progress)
+        finally:
+            progress.close()
     finally:
         held.release()
 
@@ -139,15 +205,17 @@ def _compared_recently() -> bool:
     return (util.now() - last).total_seconds() < gap
 
 
-def _compare(cu: CurrentUser, trigger: str) -> dict:
+def _compare(cu: CurrentUser, trigger: str, progress: _Progress) -> dict:
     ts = util.now()
     try:
+        progress.stage("HEADS")
         heads = k3.fetch_approved_heads()
         remote = {h.bill_no: h.modify_time for h in heads}
         local = _local_heads()
         changed = [no for no, t in remote.items() if no not in local or t is None or local[no] != t]
         removed = [no for no in local if no not in remote]
-        fetched = _group(k3.fetch_bills(changed)) if changed else {}
+        progress.stage("DETAILS", len(changed))
+        fetched = _group(k3.fetch_bills(changed, progress.done)) if changed else {}
     except BizError as e:
         _finish(ts, False, e.message, None)
         audit.record_isolated(cu, audit.entry(audit.ORDER_SYNC).fail(e.message).info(f"mode=compare trigger={trigger}"))
@@ -155,6 +223,7 @@ def _compare(cu: CurrentUser, trigger: str) -> dict:
     # 有修改时间、却按单号拉不到明细（期间被反审核）：当作移出
     removed += [no for no in changed if no not in fetched and no in local]
     rows = sum(len(v) for v in fetched.values())
+    progress.stage("WRITE")
     with db.tx():
         _replace_bills(fetched, ts)
         _remove_bills(removed)
@@ -237,6 +306,7 @@ def sync_bill(cu: CurrentUser, bill_no: str | None) -> dict:
     held = locks.sync_lock(wait=True)
     if held is None:
         raise biz(ErrorCode.ORDER_SYNC_BUSY)
+    progress = _Progress(cu, "BILL", bill_no=no)
     try:
         v = k3.view_bill(no)
         ts = util.now()
@@ -260,6 +330,7 @@ def sync_bill(cu: CurrentUser, bill_no: str | None) -> dict:
             changes.after_removed(cu, no, v)
             outcome = ("NOT_APPROVED" if had else "NOT_APPROVED_NEW") if v.found else "NOT_FOUND"
     finally:
+        progress.close()
         held.release()
     return {
         "mode": "bill",
@@ -279,8 +350,12 @@ def rebuild(cu: CurrentUser) -> dict:
     held = locks.sync_lock(wait=True)
     if held is None:
         raise biz(ErrorCode.ORDER_SYNC_BUSY)
+    progress = _Progress(cu, "REBUILD")
     try:
-        rows = k3.fetch_all()
+        # 总行数金蝶不返回：按当前快照的行数估计（页面显示约百分比）
+        progress.stage("DETAILS", db.count("SELECT COUNT(*) FROM sn_prd_mo"))
+        rows = k3.fetch_all(progress.done)
+        progress.stage("WRITE")
         try:
             factories.sync_from_k3(cu)
         except Exception as e:  # noqa: BLE001
@@ -306,6 +381,7 @@ def rebuild(cu: CurrentUser) -> dict:
         audit.record_isolated(cu, audit.entry(audit.ORDER_SYNC).count(bills).info(f"mode=rebuild rows={len(rows)}"))
         changes.after_rebuild(cu)
     finally:
+        progress.close()
         held.release()
     return {"mode": "rebuild", "bills": bills, "rows": len(rows), "synced_at": util.fmt(ts)}
 

@@ -52,6 +52,8 @@ export const api = {
   // ---------------- 生产订单快照
   orders: (params?: Q) => get("/orders", params),
   orderMeta: () => get("/orders/meta"),
+  /** 同步进度（页面轮询）：失败不弹提示 */
+  orderSyncProgress: () => http.get<any, any>("/orders/sync-progress", { silent: true }),
   orderDepartments: (params?: Q) => get("/orders/departments", params),
   orderLines: (billNo: string) => get(`/orders/${enc(billNo)}/lines`),
   orderCustomers: (q?: string) => get("/orders/customers", { q }),

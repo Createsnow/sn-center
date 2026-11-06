@@ -21,6 +21,7 @@ import json
 import re
 import time
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
@@ -489,8 +490,20 @@ def _query_retry(http: httpx.Client, c: _Config, data: dict) -> list:
             time.sleep(c.page_retry_seconds)
 
 
-def _paged(http: httpx.Client, c: _Config, field_keys: str, filter_string: str, order: str, retry: bool = True) -> list:
-    """分页直到本页不足一页。任何一页（重试后）失败即整体失败；retry = False 时不重试。"""
+#: 进度回调：参数为到目前为止拉到的行数（或单据数）；只用于页面显示同步进度
+Progress = Callable[[int], None] | None
+
+
+def _paged(
+    http: httpx.Client,
+    c: _Config,
+    field_keys: str,
+    filter_string: str,
+    order: str,
+    retry: bool = True,
+    on_rows: Progress = None,
+) -> list:
+    """分页直到本页不足一页。任何一页（重试后）失败即整体失败；retry = False 时不重试。每页后回调已拉到的行数。"""
     merged: list = []
     start = 0
     while True:
@@ -508,6 +521,8 @@ def _paged(http: httpx.Client, c: _Config, field_keys: str, filter_string: str, 
             },
         )
         merged.extend(page)
+        if on_rows is not None:
+            on_rows(len(merged))
         if len(page) < PAGE_SIZE:
             return merged
         start += PAGE_SIZE
@@ -517,22 +532,22 @@ def _paged(http: httpx.Client, c: _Config, field_keys: str, filter_string: str, 
 _display_failed_at: float | None = None
 
 
-def _detail_paged(http: httpx.Client, c: _Config, filter_string: str) -> list:
+def _detail_paged(http: httpx.Client, c: _Config, filter_string: str, on_rows: Progress = None) -> list:
     """明细查询：先带只显示列；失败（不重试）再按基本列查询（照常重试，仍失败抛出）。
     基本列成功说明金蝶不认只显示列：记下时间，一段时间内只取基本列，快照里只显示的几列留空。"""
     global _display_failed_at
     base = ",".join(DETAIL_KEYS)
     if _display_failed_at is None or time.monotonic() - _display_failed_at >= DISPLAY_RETRY_SECONDS:
         try:
-            raw = _paged(http, c, ",".join(DETAIL_KEYS + DISPLAY_KEYS), filter_string, ORDER_BY, retry=False)
+            raw = _paged(http, c, ",".join(DETAIL_KEYS + DISPLAY_KEYS), filter_string, ORDER_BY, False, on_rows)
             _display_failed_at = None
             return raw
         except BizError as e:
-            raw = _paged(http, c, base, filter_string, ORDER_BY)
+            raw = _paged(http, c, base, filter_string, ORDER_BY, on_rows=on_rows)
             _display_failed_at = time.monotonic()
             structlog.get_logger().warning("k3_display_fields_skipped", reason=e.message)
             return raw
-    return _paged(http, c, base, filter_string, ORDER_BY)
+    return _paged(http, c, base, filter_string, ORDER_BY, on_rows=on_rows)
 
 
 def fetch_approved_heads() -> list[Head]:
@@ -554,8 +569,8 @@ def _quote(s: str) -> str:
     return "'" + s.replace("'", "''") + "'"
 
 
-def fetch_bills(bill_nos: list[str]) -> list[Row]:
-    """按单据编号批量拉已审核单据的全部物料行（不按业务状态过滤）。"""
+def fetch_bills(bill_nos: list[str], on_bills: Progress = None) -> list[Row]:
+    """按单据编号批量拉已审核单据的全部物料行（不按业务状态过滤）。每批后回调已拉完的单据数。"""
     if not bill_nos:
         return []
     c = _config()
@@ -569,15 +584,17 @@ def fetch_bills(bill_nos: list[str]) -> list[Row]:
                 r = _row_of_query(o) if isinstance(o, list) else None
                 if r is not None:
                     rows.append(r)
+            if on_bills is not None:
+                on_bills(min(i + BILLS_PER_QUERY, len(bill_nos)))
     return rows
 
 
-def fetch_all() -> list[Row]:
-    """全量重建：按已审核条件完整拉取。任何一页失败即整体失败，调用方不写快照。"""
+def fetch_all(on_rows: Progress = None) -> list[Row]:
+    """全量重建：按已审核条件完整拉取。任何一页失败即整体失败，调用方不写快照。每页后回调已拉到的行数。"""
     c = _config()
     with _client() as http:
         _login(http, c)
-        raw = _detail_paged(http, c, APPROVED_FILTER)
+        raw = _detail_paged(http, c, APPROVED_FILTER, on_rows)
     return [r for r in (_row_of_query(o) for o in raw if isinstance(o, list)) if r is not None]
 
 

@@ -945,7 +945,23 @@
     "reasonRequired": "Reason is required (at most 500 characters)",
     "mapTitle": "Confirm mapping",
     "mapHint": "The generated count of lost line {seq} (former material {material}) of bill {bill} is merged into the line chosen below, and its SNs move to that line; SNs already delivered to MES are re-pushed as reassignments.",
-    "mapTarget": "Target line"
+    "mapTarget": "Target line",
+    "progress": {
+      "text": "{mode}: {step}",
+      "mode": {
+        "COMPARE": "Compare sync",
+        "REBUILD": "Full rebuild",
+        "BILL": "Bill sync"
+      },
+      "other": "Sync in progress",
+      "login": "connecting to Kingdee",
+      "heads": "reading the bill list",
+      "bills": "fetching changed bills {done} / {total}",
+      "noChange": "no changed bills",
+      "all": "fetching all lines",
+      "rows": "{done} rows fetched",
+      "write": "writing the snapshot"
+    }
   },
   "query": {
     "title": "SN query",

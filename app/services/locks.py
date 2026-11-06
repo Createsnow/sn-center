@@ -99,6 +99,11 @@ def with_org_lock(org: str, timeout: int = 10) -> Iterator[None]:
 SYNC_WAIT_SECONDS = 30
 
 
+def sync_running() -> bool:
+    """订单同步锁是否有人持有（任一实例）。"""
+    return db.scalar("SELECT IS_USED_LOCK(%s)", _name("sync", "orders")) is not None
+
+
 def sync_lock(wait: bool) -> Held | None:
     """订单同步锁：wait = True 时最多等 SYNC_WAIT_SECONDS（按单据同步、全量重建排队），否则拿不到返回 None。"""
     return try_acquire("sync", ["orders"], SYNC_WAIT_SECONDS if wait else 0)

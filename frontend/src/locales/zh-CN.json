@@ -945,7 +945,23 @@
     "reasonRequired": "原因必填（不超过 500 字）",
     "mapTitle": "确认对应",
     "mapHint": "把单据 {bill} 失去对应的物料行 {seq}（原物料 {material}）的已生成数并入下面选定的物料行，号改挂到该行；已交付给 MES 的号会以「改挂」重推。",
-    "mapTarget": "目标物料行"
+    "mapTarget": "目标物料行",
+    "progress": {
+      "text": "{mode}中：{step}",
+      "mode": {
+        "COMPARE": "比对同步",
+        "REBUILD": "全量重建",
+        "BILL": "按单据同步"
+      },
+      "other": "同步进行中",
+      "login": "连接金蝶",
+      "heads": "获取单据清单",
+      "bills": "拉取变动单据 {done} / {total} 张",
+      "noChange": "没有变动的单据",
+      "all": "拉取全部明细",
+      "rows": "已拉取 {done} 行",
+      "write": "写入快照"
+    }
   },
   "query": {
     "title": "SN 查询",

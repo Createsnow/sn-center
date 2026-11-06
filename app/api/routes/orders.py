@@ -31,6 +31,14 @@ def order_meta(cu: OperatorDep) -> dict:
     return orders.meta(cu)
 
 
+@router.get(
+    "/sync-progress",
+    summary="订单同步进度（任一触发方式）：running = False 为没有同步在运行；只读，页面轮询显示在统计栏",
+)
+def order_sync_progress(cu: OperatorDep) -> dict:
+    return orders.sync_progress()
+
+
 @router.get("/customers")
 def order_customers(cu: OperatorDep, q: str | None = None) -> list:
     return orders.customers(cu, q)
