@@ -155,8 +155,12 @@ def migrate(db: Db) -> int:
     return applied_now
 
 
-#: V1 之后才加入的表（只新增、不改已有表）：已建好的库不会重跑 V1，启动时按 V1 里的建表语句补建
-ADDED_TABLES = ("sn_k3_config", "sn_bill_stat", "sn_bill_stat_dirty")
+_CREATE = re.compile(r"^CREATE TABLE (\w+) ")
+
+
+def schema_tables() -> list[str]:
+    """迁移脚本建的全部表（按脚本顺序）。"""
+    return [c.group(1) for m in migrations() for s in m.statements() if (c := _CREATE.match(s))]
 
 
 def create_statement(table: str) -> str:
@@ -168,12 +172,14 @@ def create_statement(table: str) -> str:
     raise MigrationError(f"迁移脚本里没有 CREATE TABLE {table}")
 
 
-def ensure_added_tables(db: Db) -> list[str]:
-    """补建 ADDED_TABLES 里库中还没有的表，返回补建的表名。"""
-    created = []
-    for table in ADDED_TABLES:
-        if db.one("SHOW TABLES LIKE %s", table) is None:
-            db.exec(create_statement(table))
-            created.append(table)
-            log.warning("table_created", table=table, note="V1 之后加入的表，按 V1 建表语句补建")
-    return created
+def check_tables(db: Db) -> None:
+    """库里须有迁移脚本建的每张表。表结构只来自迁移脚本本身（每张表一条完整的 CREATE TABLE），
+    启动时不另外补建表、补字段：缺表说明库是按旧版建表脚本建的，报错并说明处理办法。"""
+    have = set(db.column("SHOW TABLES"))
+    missing = [t for t in schema_tables() if t not in have]
+    if missing:
+        raise MigrationError(
+            f"数据库 {db.target.database} 缺少建表脚本里的表 {', '.join(missing)}（库是按旧版建表脚本建的）。"
+            "启动时不补建表：测试库按运维手册 8.7 保留账户、按 V1 重建其他表"
+            "（uv run python -m devtools.rebuild_keep_accounts），或按 8.1 / 8.2 / 8.3 整体重建"
+        )

@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import pytest
 from conftest import K3, emp, install_k3, m, ok, uid
 
-from app.db.migrate import ensure_added_tables
+from app.db.migrate import MigrationError, check_tables, create_statement
 from app.db.session import db
 
 
@@ -130,9 +131,19 @@ def test_k3_config_env_then_page(w, api, sql):
     assert _logins()[-1][:4] == ["acct", "tester", "app", "secret"]
 
 
-def test_k3_config_table_added_to_existing_db(app_client, sql):
-    """已建好的库（V1 已执行过）没有 sn_k3_config：启动时按 V1 的建表语句补建，已有的不动。"""
+def test_missing_table_is_not_created_on_startup(app_client, sql):
+    """已建好的库缺建表脚本里的表（按旧版 V1 建的）：启动检查报错、不补建；表结构只来自建表脚本。"""
     sql.exec("DROP TABLE sn_k3_config")
-    assert ensure_added_tables(db) == ["sn_k3_config"]
-    assert ensure_added_tables(db) == []
-    assert sql.count("SELECT COUNT(*) FROM sn_k3_config") == 0
+    try:
+        with pytest.raises(MigrationError, match="sn_k3_config"):
+            check_tables(db)
+        assert (
+            sql.count(
+                "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() "
+                "AND table_name = 'sn_k3_config'"
+            )
+            == 0
+        ), "不补建"
+    finally:
+        sql.exec(create_statement("sn_k3_config"))
+    check_tables(db)

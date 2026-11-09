@@ -252,7 +252,7 @@ def rebuild_all() -> int:
 
 
 def ensure_filled() -> bool:
-    """启动时：号池有号、汇总表却是空的（刚补建了本表，或补建后回填没做完）→ 整表回填。返回是否回填了。"""
+    """启动时：号池有号、汇总表却是空的（如从备份单独恢复了号池，或整表回填没做完）→ 整表回填。返回是否回填了。"""
     if db.exists("SELECT EXISTS(SELECT 1 FROM sn_bill_stat)") or not db.exists("SELECT EXISTS(SELECT 1 FROM sn_item)"):
         return False
     rebuild_all()

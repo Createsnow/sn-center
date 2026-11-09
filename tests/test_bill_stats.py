@@ -62,7 +62,7 @@ def test_marks_roll_back_with_the_transaction(app_client, sql):
 
 
 def test_backfill_when_table_is_empty(w, sql):
-    """已建好的库刚补建汇总表（空表）而号池有号：启动时按号池整表回填。"""
+    """汇总表是空的而号池有号（如从备份单独恢复了号池）：启动时按号池整表回填。"""
     _org, pi, bill = _mk(w, 3)
     bill_stats.refresh(budget_seconds=None)
     sql.exec("DELETE FROM sn_bill_stat")

@@ -180,7 +180,6 @@ CREATE TABLE sn_sync_state (
 INSERT INTO sn_sync_state (id) VALUES (1);
 
 -- 金蝶 K3 Cloud 连接参数（生产订单页「金蝶连接」维护，只有一行 id = 1）；没有这一行时沿用 .env 的 K3_*。
--- 本表在 V1 之后加入：已建好的库启动时按本语句补建（app/db/migrate.py ADDED_TABLES），不动其他表
 CREATE TABLE sn_k3_config (
   id                 TINYINT       NOT NULL,
   server_url         VARCHAR(500)  NOT NULL COMMENT '服务地址（…/k3cloud/）',
@@ -422,7 +421,6 @@ CREATE TABLE sn_item (
 
 -- 单据汇总：每个（PI，单据，号上的生产组织）一行，分配页、SN 导出页的单据列表查它，不对整个号池 GROUP BY。
 -- 号变动时标脏（sn_bill_stat_dirty），按单据重算整行（app/services/bill_stats.py）；口径与按号池汇总相同。
--- 本表在 V1 之后加入：已建好的库启动时按本语句补建并按号池回填（app/db/migrate.py ADDED_TABLES）
 CREATE TABLE sn_bill_stat (
   pi_no           VARCHAR(64) NOT NULL COMMENT '号现在挂的 PI',
   bill_no         VARCHAR(64) NOT NULL COMMENT '号现在挂的单据',

@@ -13,7 +13,7 @@ from app.core import encoding as codec
 from app.core.encoding import DEFAULT_CHARSETS, Spec
 from app.core.errors import ErrorCode
 from app.core.scheduler import Cron
-from app.db.migrate import ADDED_TABLES, create_statement, migrations
+from app.db.migrate import create_statement, migrations, schema_tables
 from app.middleware.request_id import request_id_of
 from app.services import files, k3, mes_client
 
@@ -363,7 +363,7 @@ def test_migration_flyway_checksum():
     """测试阶段只保留一个 V1__init.sql；校验和按 Flyway 算法固定，改了建表脚本须同步更新这里（并重建测试库）。"""
     ours = {m.script: m for m in migrations()}
     assert list(ours) == ["V1__init.sql"]
-    assert ours["V1__init.sql"].checksum() == 1780686969
+    assert ours["V1__init.sql"].checksum() == -2062353459
     statements = ours["V1__init.sql"].statements()
     assert len(statements) == 39
     text = "\n".join(statements)
@@ -382,9 +382,12 @@ def test_migration_flyway_checksum():
         "sn_k3_config",
     ):
         assert f"CREATE TABLE {table}" in text, table
-    # V1 之后加入的表：已建好的库启动时按 V1 的建表语句补建，须在 V1 里
-    for table in ADDED_TABLES:
+    # 每张表只有一条完整的 CREATE TABLE（启动时不补建表、补字段，见 migrate.check_tables）
+    tables = schema_tables()
+    assert len(tables) == len(set(tables)) == 38, tables
+    for table in tables:
         assert create_statement(table).startswith(f"CREATE TABLE {table} "), table
+    assert "ADDED_TABLES" not in ours["V1__init.sql"].text() and "补建" not in ours["V1__init.sql"].text()
     assert "ux_rule_prefix" not in text and "KEY ix_rule_prefix (prefix)" in text, (
         "同一前缀可有多个版本（删号重建、空号段复用）"
     )
