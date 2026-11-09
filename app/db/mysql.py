@@ -3,14 +3,22 @@
 事务语义对齐 Spring：``db.tx()`` 已在事务中则加入（REQUIRED），否则新开；``db.new_tx()`` 总是用独立连接
 新开一个事务（REQUIRES_NEW，失败痕迹、生成进度用）。当前事务的连接放在 contextvar 里，
 同一请求 / 同一后台线程里的查询自动走这条连接。
+
+连接池分两份名额：最外层取连接（请求、后台任务的第一条连接）占主名额（DB_POOL_SIZE）；已经拿着一条连接、
+又要另一条的（事务里写失败痕迹、生成进度、取消检查等 ``new_tx``）占备用名额（同样 DB_POOL_SIZE 条）。
+否则并发一高，主名额被「拿着一条、等第二条」的请求占满，谁也等不到第二条，要等满 30 秒取连接超时才散开
+（100 户同时生成时中位耗时 32 秒即此）。所以一个实例最多同时占 2 × DB_POOL_SIZE 条池内连接，
+另加命名锁（PI 操作锁等）各占的一条独立连接。
 """
 
 from __future__ import annotations
 
 import contextvars
 import queue
+import random
 import threading
-from collections.abc import Iterator, Sequence
+import time
+from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager, suppress
 from typing import Any
 
@@ -22,6 +30,10 @@ from app.core.config import DbTarget
 _current: contextvars.ContextVar[pymysql.connections.Connection | None] = contextvars.ContextVar(
     "sn_db_conn", default=None
 )
+#: 当前上下文已从池里拿着几条连接（> 0 时再取连接用备用名额）
+_depth: contextvars.ContextVar[int] = contextvars.ContextVar("sn_db_depth", default=0)
+#: 当前事务结束（提交或回滚）后要做的事（释放跟事务走的命名锁）
+_after: contextvars.ContextVar[list[Callable[[], None]] | None] = contextvars.ContextVar("sn_db_after", default=None)
 
 #: MySQL 错误号
 ER_DUP_ENTRY = 1062
@@ -34,6 +46,9 @@ CR_ERRORS = range(2000, 3000)
 
 #: 连接池满时等空闲连接的上限
 CHECKOUT_TIMEOUT_SECONDS = 30.0
+
+#: 死锁（1213）时整段事务自动重做的次数（含第一次）：死锁时 MySQL 已整笔回滚，按原样再做一遍即可
+DEADLOCK_ATTEMPTS = 3
 
 
 class PoolExhausted(pymysql.err.OperationalError):
@@ -56,6 +71,27 @@ def is_lock_conflict(e: BaseException) -> bool:
     return isinstance(e, pymysql.err.OperationalError) and error_no(e) in (ER_LOCK_WAIT_TIMEOUT, ER_LOCK_DEADLOCK)
 
 
+def is_deadlock(e: BaseException) -> bool:
+    return isinstance(e, pymysql.err.OperationalError) and error_no(e) == ER_LOCK_DEADLOCK
+
+
+def retry_deadlock[T](fn: Callable[[], T], attempts: int = DEADLOCK_ATTEMPTS, independent: bool = False) -> T:
+    """执行 fn（其中自己开、自己提交事务），遇死锁（1213）稍等后整段重做，最多 attempts 次。
+
+    默认只在没有外层事务时重做：死锁回滚的是整笔事务，外层事务里的重做没有意义，原样抛给外层。
+    independent = True：fn 里是独立事务（new_tx），死锁只回滚它自己，外层事务里也可重做。
+    fn 须可整段重做（事务外不留副作用，或副作用可重复）。"""
+    for i in range(attempts):
+        try:
+            return fn()
+        except pymysql.err.OperationalError as e:
+            if not is_deadlock(e) or i + 1 >= attempts or (not independent and _current.get() is not None):
+                raise
+            # 错开重做时间，免得两边又同时撞上
+            time.sleep(0.05 * (i + 1) + random.random() * 0.2)
+    raise AssertionError("unreachable")
+
+
 def is_connection_lost(e: BaseException) -> bool:
     """连接层故障（断线、读写超时）。死锁、锁等待超时、NOWAIT 冲突是服务端错误，回滚后连接照常可用。"""
     no = error_no(e)
@@ -76,6 +112,7 @@ class Db:
         self._target: DbTarget | None = None
         self._pool: queue.LifoQueue[pymysql.connections.Connection] = queue.LifoQueue()
         self._slots: threading.BoundedSemaphore | None = None
+        self._spare: threading.BoundedSemaphore | None = None
 
     # ------------------------------------------------------------------ 连接
 
@@ -83,6 +120,7 @@ class Db:
         self.close()
         self._target = target
         self._slots = threading.BoundedSemaphore(size)
+        self._spare = threading.BoundedSemaphore(size)
 
     @property
     def target(self) -> DbTarget:
@@ -106,8 +144,9 @@ class Db:
             init_command="SET SESSION group_concat_max_len = 1048576",
         )
 
-    def _checkout(self) -> pymysql.connections.Connection:
-        slots = self._slots
+    def _checkout(self, nested: bool = False) -> pymysql.connections.Connection:
+        """取一条连接。nested：当前上下文已拿着池内连接（用备用名额，见模块说明）。"""
+        slots = self._spare if nested else self._slots
         assert slots is not None, "database not configured"
         if not slots.acquire(timeout=CHECKOUT_TIMEOUT_SECONDS):
             raise PoolExhausted()
@@ -126,15 +165,16 @@ class Db:
             slots.release()
             raise
 
-    def _release(self, conn: pymysql.connections.Connection, broken: bool = False) -> None:
+    def _release(self, conn: pymysql.connections.Connection, broken: bool = False, nested: bool = False) -> None:
         try:
             if broken or not conn.open:
                 self._discard(conn)
             else:
                 self._pool.put(conn)
         finally:
-            assert self._slots is not None
-            self._slots.release()
+            slots = self._spare if nested else self._slots
+            assert slots is not None
+            slots.release()
 
     @staticmethod
     def _discard(conn: pymysql.connections.Connection) -> None:
@@ -151,7 +191,9 @@ class Db:
     @contextmanager
     def connection(self) -> Iterator[pymysql.connections.Connection]:
         """一条独立的自动提交连接（分区 DDL、命名锁）。"""
-        conn = self._checkout()
+        depth = _depth.get()
+        conn = self._checkout(depth > 0)
+        token = _depth.set(depth + 1)
         broken = False
         try:
             yield conn
@@ -159,7 +201,8 @@ class Db:
             broken = is_connection_lost(e)
             raise
         finally:
-            self._release(conn, broken)
+            _depth.reset(token)
+            self._release(conn, broken, depth > 0)
 
     # ------------------------------------------------------------------ 事务
 
@@ -172,6 +215,19 @@ class Db:
         with self._begin() as conn:
             yield conn
 
+    @staticmethod
+    def in_tx() -> bool:
+        return _current.get() is not None
+
+    @staticmethod
+    def after_tx(fn: Callable[[], None]) -> None:
+        """当前事务结束（提交或回滚）后执行 fn；不在事务里时马上执行。"""
+        pending = _after.get()
+        if pending is None:
+            fn()
+        else:
+            pending.append(fn)
+
     @contextmanager
     def new_tx(self) -> Iterator[pymysql.connections.Connection]:
         with self._begin() as conn:
@@ -179,8 +235,11 @@ class Db:
 
     @contextmanager
     def _begin(self) -> Iterator[pymysql.connections.Connection]:
-        conn = self._checkout()
+        depth = _depth.get()
+        conn = self._checkout(depth > 0)
         token = _current.set(conn)
+        dtoken = _depth.set(depth + 1)
+        atoken = _after.set([])
         broken = False
         try:
             conn.begin()
@@ -197,8 +256,14 @@ class Db:
             broken = broken or is_connection_lost(e)
             raise
         finally:
+            pending = _after.get() or []
+            _after.reset(atoken)
+            _depth.reset(dtoken)
             _current.reset(token)
-            self._release(conn, broken)
+            self._release(conn, broken, depth > 0)
+            for fn in pending:
+                with suppress(Exception):
+                    fn()
 
     # ------------------------------------------------------------------ 执行
 

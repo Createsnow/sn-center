@@ -43,7 +43,13 @@ def load(cu: CurrentUser) -> dict:
         counts[r["status"]] = int(r["c"])
     if cu.is_auditor:
         counts.pop("PENDING_ALLOC")
-    suspended = db.count("SELECT COUNT(*) FROM sn_item WHERE suspend IS NOT NULL" + isql, *iargs)
+    # 暂停标记只在未交付、未入批的号上（见 changes._set_items_suspend；入批只认领未暂停的号），
+    # 按状态先缩到在途的号再数：suspend 没有索引，不加状态条件就是整个号池全表扫描（每年数千万行）
+    suspended = db.count(
+        "SELECT COUNT(*) FROM sn_item WHERE status IN ('PENDING_ALLOC','TO_PUSH','ALLOCATED') "
+        "AND suspend IS NOT NULL" + isql,
+        *iargs,
+    )
     interrupted = db.count("SELECT COUNT(*) " + _interrupted_sql(fsql), *fargs)
     cutoff = util.now() - timedelta(minutes=settings.batch_unconfirmed_alert_minutes)
     stale_pull = db.count(

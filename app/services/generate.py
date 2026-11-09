@@ -21,12 +21,17 @@ PI 最大号变化、空号段变化（按 RANGE 生成时）、同步改了范�
 一次生成在一个事务里完成（共用一个生成批次），撞号整次回滚（含与 SN 导入登记的号相同，
 见 sn_import）；不超过 SN_GEN_SYNC_THRESHOLD 当场完成，更多转后台任务（进度、可取消）；服务重启时没跑完的任务视为失败。
 生成（含取消）、删号与分配共用 PI 操作锁。
+
+并发：一个实例同时写号池的生成不超过 SN_GEN_CONCURRENCY（默认 4，当场与后台合计），其余在任务里排队
+（任务照常是生成中，PI 操作锁照常占着）；多张 PI 同时写号池时撞上死锁（MySQL 1213，整笔事务已回滚）自动整笔重做，
+最多 DEADLOCK_ATTEMPTS 次，仍死锁才记为失败。
 """
 
 from __future__ import annotations
 
 import json
 import re
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import timedelta
@@ -41,7 +46,7 @@ from app.core.config import settings
 from app.core.errors import ErrorCode, biz
 from app.core.exceptions import BizError
 from app.core.security import CurrentUser
-from app.db.session import ER_LOCK_NOWAIT, db, error_no, is_duplicate, marks
+from app.db.session import ER_LOCK_NOWAIT, db, error_no, is_deadlock, is_duplicate, marks, retry_deadlock
 from app.services import audit, changes, factories, locks, orders, rules
 
 log = structlog.get_logger()
@@ -93,6 +98,24 @@ _INSERT_ITEM = (
 
 #: 大批量生成走后台线程
 executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="sn-gen")
+
+#: 当场生成排队等名额的上限（秒）：须明显短于页面请求超时（120 秒）；后台任务一直等
+SLOT_WAIT_SECONDS = 60
+
+_slots_lock = threading.Lock()
+_slots: tuple[int, threading.BoundedSemaphore] | None = None
+
+
+def _gen_slots() -> threading.BoundedSemaphore:
+    """本实例同时写号池的生成名额（SN_GEN_CONCURRENCY）。每个生成占一条事务连接、一条 PI 锁连接，另有进度、
+    取消检查的短连接；不设上限时同步接口线程（40）全在生成，连接数翻倍超过 MySQL max_connections，
+    号池上的锁冲突、死锁也随并发数上升。配置改了按新值重建（只影响之后取名额的）。"""
+    global _slots
+    n = settings.gen_concurrency
+    with _slots_lock:
+        if _slots is None or _slots[0] != n:
+            _slots = (n, threading.BoundedSemaphore(n))
+        return _slots[1]
 
 
 _LINE_FIELDS = (
@@ -875,23 +898,39 @@ def generate(cu: CurrentUser, token: str | None) -> dict:
 def _run(cu: CurrentUser, job_id: int, rethrow: bool) -> None:
     j = db.one("SELECT * FROM sn_gen_job WHERE id = %s", job_id)
     plan = json.loads(j["plan_json"])
-    db.exec("UPDATE sn_gen_job SET started_at = %s WHERE id = %s", util.now(), job_id)
+    slots = _gen_slots()
+    got = False
     try:
-        with db.tx():
-            _generate_in_tx(cu, j, plan)
-            n = db.exec(
-                "UPDATE sn_gen_job SET status = %s, done_qty = qty, current_sn = end_sn, running_pi = NULL, "
-                "finished_at = %s WHERE id = %s AND status = %s AND cancel_at IS NULL",
-                SUCCESS,
-                util.now(),
-                job_id,
-                RUNNING,
-            )
-            if n != 1:
-                if _cancel_requested(job_id):
-                    raise biz(ErrorCode.GEN_CANCELED)
-                raise biz(ErrorCode.CONFLICT_RETRY)
-        log.info("gen_done", job=job_id, pi=j["pi_no"], qty=j["qty"])
+        # 当场生成最多等 SLOT_WAIT_SECONDS；后台任务排队等到名额为止（期间可取消）
+        got = slots.acquire(timeout=SLOT_WAIT_SECONDS if rethrow else None)
+        if not got:
+            raise biz(ErrorCode.CONFLICT_RETRY)
+        db.exec("UPDATE sn_gen_job SET started_at = %s WHERE id = %s", util.now(), job_id)
+        attempt = 0
+
+        def once() -> None:
+            nonlocal attempt
+            attempt += 1
+            if attempt > 1:
+                log.warning("gen_deadlock_retry", job=job_id, pi=j["pi_no"], attempt=attempt)
+            with db.tx():
+                _generate_in_tx(cu, j, plan)
+                n = db.exec(
+                    "UPDATE sn_gen_job SET status = %s, done_qty = qty, current_sn = end_sn, running_pi = NULL, "
+                    "finished_at = %s WHERE id = %s AND status = %s AND cancel_at IS NULL",
+                    SUCCESS,
+                    util.now(),
+                    job_id,
+                    RUNNING,
+                )
+                if n != 1:
+                    if _cancel_requested(job_id):
+                        raise biz(ErrorCode.GEN_CANCELED)
+                    raise biz(ErrorCode.CONFLICT_RETRY)
+
+        # 死锁时整笔已回滚（号、计数、规则版本、留痕都没写进去），PI 操作锁仍在手里，按原计划整笔重做
+        retry_deadlock(once)
+        log.info("gen_done", job=job_id, pi=j["pi_no"], qty=j["qty"], attempts=attempt)
     except Exception as e:  # noqa: BLE001
         code = e.code if isinstance(e, BizError) else "INTERNAL"
         canceled = code == ErrorCode.GEN_CANCELED.name
@@ -925,9 +964,12 @@ def _run(cu: CurrentUser, job_id: int, rethrow: bool) -> None:
                     .info(f"job={job_id}"),
                 )
         if not isinstance(e, BizError):
-            log.error("gen_failed", job=job_id, pi=j["pi_no"], exc_info=e)
+            log.error("gen_failed", job=job_id, pi=j["pi_no"], deadlock=is_deadlock(e), exc_info=e)
         if rethrow:
             raise
+    finally:
+        if got:
+            slots.release()
 
 
 def _by_bill(items: list[dict]) -> dict[str, list[dict]]:
@@ -937,16 +979,25 @@ def _by_bill(items: list[dict]) -> dict[str, list[dict]]:
     return out
 
 
+def _lock_row(table: str, where: str, args: tuple, insert_sql: str, insert_args: tuple) -> dict:
+    """计数行加锁（没有先建）。先不加锁地看行在不在，在就按主键加行锁，不在才插入：
+    「INSERT … ON DUPLICATE KEY UPDATE」碰上已有的行、或对不存在的行 FOR UPDATE，都会在主键上加间隙锁，
+    几张 PI 同时生成时相邻单据 / PI 的计数行互相卡住，成为死锁。这些行只在 PI 操作锁内变动。"""
+    if not db.exists(f"SELECT EXISTS(SELECT 1 FROM {table} WHERE {where})", *args):
+        db.exec(insert_sql, *insert_args)
+    return db.one(f"SELECT * FROM {table} WHERE {where} FOR UPDATE", *args)
+
+
 def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
     now = util.now()
     pi = j["pi_no"]
-    db.exec(
-        "INSERT INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, updated_at) VALUES (%s,0,0,%s) "
-        "ON DUPLICATE KEY UPDATE pi_no = pi_no",
-        pi,
-        now,
+    c = _lock_row(
+        "sn_pi_counter",
+        "pi_no = %s",
+        (pi,),
+        "INSERT IGNORE INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, updated_at) VALUES (%s,0,0,%s)",
+        (pi, now),
     )
-    c = db.one("SELECT * FROM sn_pi_counter WHERE pi_no = %s FOR UPDATE", pi)
     if db.scalar("SELECT status FROM sn_gen_job WHERE id = %s", j["id"]) != RUNNING:
         raise biz(ErrorCode.CONFLICT_RETRY)
     if _cancel_requested(j["id"]):
@@ -955,15 +1006,14 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
         raise biz(ErrorCode.GEN_PREVIEW_STALE, pi=pi, expected=plan["base_last_seq"], actual=c["last_seq_dec"])
     # 事务内按最新快照和计数表重新校验额度（锁计数行）
     for x in plan["items"]:
-        db.exec(
-            "INSERT INTO sn_line_count(bill_no, seq, material_code, own_generated, gen_count, alloc_count, updated_at) "
-            "VALUES (%s,%s,%s,0,0,0,%s) ON DUPLICATE KEY UPDATE bill_no = bill_no",
-            x["bill_no"],
-            x["seq"],
-            x["material_code"],
-            now,
+        lc = _lock_row(
+            "sn_line_count",
+            "bill_no = %s AND seq = %s",
+            (x["bill_no"], x["seq"]),
+            "INSERT IGNORE INTO sn_line_count(bill_no, seq, material_code, own_generated, gen_count, alloc_count, "
+            "updated_at) VALUES (%s,%s,%s,0,0,0,%s)",
+            (x["bill_no"], x["seq"], x["material_code"], now),
         )
-        lc = db.one("SELECT * FROM sn_line_count WHERE bill_no = %s AND seq = %s FOR UPDATE", x["bill_no"], x["seq"])
         line = db.one(
             "SELECT qty, material_code FROM sn_prd_mo WHERE bill_no = %s AND seq = %s", x["bill_no"], x["seq"]
         )
@@ -984,8 +1034,11 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
             x["bill_no"],
             x["seq"],
         )
-    for no in {x["bill_no"] for x in plan["items"]}:
+    for no in sorted({x["bill_no"] for x in plan["items"]}):
         changes.ensure_ledger(no)
+        # 写号之前先给台账加共享锁：订单变更正在改这张单的暂停时等它提交，之后改暂停的等这次生成提交，
+        # 写完号按台账重算暂停标记时读到的就是当前值
+        changes.lock_ledger_suspend(no)
     done = 0
     for x in plan["items"]:
         v = versions[x["rule_key"]]
@@ -1053,7 +1106,7 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
         now,
         pi,
     )
-    changes.refresh_items({x["bill_no"] for x in plan["items"]})
+    changes.refresh_items({x["bill_no"] for x in plan["items"]}, quick=True)
     for no, items in _by_bill(plan["items"]).items():
         audit.record(
             cu,

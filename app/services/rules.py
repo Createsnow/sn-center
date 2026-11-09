@@ -38,7 +38,7 @@ from app.core.errors import ErrorCode, biz
 from app.core.exceptions import BizError
 from app.core.security import CurrentUser
 from app.db.session import db, marks
-from app.services import audit, factories
+from app.services import audit, factories, locks
 
 #: 分类：新建、修改只能是 PI；NONE 未分类 / CUSTOMER 客户只出现在早先的规则上
 NONE = "NONE"
@@ -201,13 +201,26 @@ def check_prefix(
     exclude_version: int | None = None,
     spec: codec.Spec | None = None,
     pi: str | None = None,
+    gen: bool = False,
 ) -> None:
     """前缀能否给一个（归属 pi 的；pi = None 为尚未归属）版本用；区分大小写。
     - 已有同前缀的版本（不含 exclude_version）：都须归属同一张 PI（pi 非空），且进制、流水位数、字符表与 spec 相同，
       否则 RULE_PREFIX_CONFLICT（别的 PI 或尚未归属的版本在用）/ RULE_PREFIX_FORMAT_LOCKED（本 PI 但流水部分不同）。
     - 与任何别的前缀一个是另一个的开头：RULE_PREFIX_OVERLAP。
-    在事务内调用：同前缀的版本加锁（FOR UPDATE，没有时锁住索引间隙），并发占用同一前缀时后到的等前一个提交。"""
-    _prefix_rules(prefix, spec, pi, exclude_version, lock=True)
+    在事务内调用：先拿这个前缀的前缀锁（锁到事务结束），并发占用同一前缀时后到的等前一个提交。
+    规则库保存等短事务另对同前缀的版本加锁（FOR UPDATE，没有时锁住索引间隙）。
+    gen（生成事务内）：不加 FOR UPDATE，按本事务所见与最新已提交的数据各判断一次。生成事务长（写几千到几十万个号），
+    对还不存在的前缀 FOR UPDATE 锁住的索引间隙要到写完号才放；几张 PI 同时首次生成、各自新建前缀时，
+    新前缀落在同一个间隙里，各自持有间隙锁又都要往里插入，成为死锁（报告第一轮 8 户 6 户失败即此）。"""
+    locks.hold_prefix(prefix)
+    if not gen:
+        _prefix_rules(prefix, spec, pi, exclude_version, lock=True)
+        return
+    # 本事务里自己写过的（未提交）
+    _prefix_rules(prefix, spec, pi, exclude_version, lock=False)
+    # 最新已提交的：独立短事务里读（本事务的一致性快照可能早于别的生成提交；同前缀的提交已由前缀锁排在前面）
+    with db.new_tx():
+        _prefix_rules(prefix, spec, pi, exclude_version, lock=False)
 
 
 def _prefix_rules(
@@ -1218,7 +1231,7 @@ def realize(cu: CurrentUser, pi: str, res: Resolved, lines: list[tuple[str, int]
         err = codec.validate(spec)
         if err is not None:
             raise biz(err)
-        check_prefix(spec.prefix, spec=spec, pi=pi)
+        check_prefix(spec.prefix, spec=spec, pi=pi, gen=True)
         code, name = _custom_names(pi)
         from app.services import orders
 
@@ -1254,7 +1267,7 @@ def realize(cu: CurrentUser, pi: str, res: Resolved, lines: list[tuple[str, int]
         raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
     if res.version["claimed_pi"] is None:
         # 首次归属本 PI：前缀不能与别的 PI 的前缀相同或一个是另一个的开头
-        check_prefix(res.version["prefix"], res.version["id"], spec_of(res.version), pi)
+        check_prefix(res.version["prefix"], res.version["id"], spec_of(res.version), pi, gen=True)
     n = db.exec(
         "UPDATE sn_rule_version SET used = 1, claimed_pi = %s WHERE id = %s AND (claimed_pi IS NULL OR claimed_pi = "
         "%s)",

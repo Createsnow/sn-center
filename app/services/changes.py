@@ -197,11 +197,32 @@ def _set_items_suspend(bill_no: str, reason: str | None) -> int:
     return total
 
 
-def refresh_items(bill_nos: Iterable[str]) -> None:
-    """号的单据或状态变化后（生成、作废批次退回、转单、驳回申请……），按单据台账重算号上的暂停标记。"""
+def refresh_items(bill_nos: Iterable[str], quick: bool = False) -> None:
+    """号的单据或状态变化后（生成、作废批次退回、转单、驳回申请……），按单据台账重算号上的暂停标记。
+
+    quick（生成、分配：在 PI 操作锁内）：台账按当前值读（共享锁，订单变更改暂停时须等这边提交），没有暂停时
+    先不加锁地看该单有没有暂停标记不一致的号，都一致（绝大多数情况）就不发 UPDATE。按单据范围的 UPDATE
+    在可重复读下会把该单的全部号连同索引间隙一起锁到事务结束，几张 PI 同时生成、分配时别的单据往这些间隙里
+    写号就被卡住，成为死锁。"""
     for no in sorted(set(bill_nos)):
-        L = ledger(no)
-        _set_items_suspend(no, None if L is None else L["suspend"])
+        if not quick:
+            L = ledger(no)
+            _set_items_suspend(no, None if L is None else L["suspend"])
+            continue
+        reason = lock_ledger_suspend(no)
+        if reason is None and not db.exists(
+            "SELECT EXISTS(SELECT 1 FROM sn_item WHERE bill_no = %s AND suspend IS NOT NULL)", no
+        ):
+            continue
+        _set_items_suspend(no, reason)
+
+
+def lock_ledger_suspend(bill_no: str) -> str | None:
+    """单据台账的暂停原因（当前值，加共享锁到事务结束）；没有台账为 None。
+    先不加锁地看台账行在不在：对不存在的行加锁会锁住主键间隙。"""
+    if not db.exists("SELECT EXISTS(SELECT 1 FROM sn_bill_ledger WHERE bill_no = %s)", bill_no):
+        return None
+    return db.scalar("SELECT suspend FROM sn_bill_ledger WHERE bill_no = %s FOR SHARE", bill_no)
 
 
 def _apply_suspend(cu: CurrentUser, bill_no: str, reason: str | None) -> None:

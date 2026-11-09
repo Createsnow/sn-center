@@ -6,10 +6,12 @@ from app.db.mysql import (
     PoolExhausted,
     db,
     error_no,
+    is_deadlock,
     is_duplicate,
     is_integrity,
     is_lock_conflict,
     marks,
+    retry_deadlock,
 )
 
 __all__ = [
@@ -20,6 +22,8 @@ __all__ = [
     "error_no",
     "is_duplicate",
     "is_integrity",
+    "is_deadlock",
     "is_lock_conflict",
     "marks",
+    "retry_deadlock",
 ]

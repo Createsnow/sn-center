@@ -4,6 +4,8 @@
   同一时刻只执行一个，后到的立即提示稍后再试（不排队）。后台生成把锁交给后台线程，结束时释放。
 - 组织建批锁（F-12 取批规则第 6 条）：MES 取批时查未确认批次与建批在同一把锁内，并发取批不会各建一批。
 - 订单同步锁（F-05 同步方式第 6 条）：各种同步共用；按单据同步、全量重建最多排队 30 秒，比对同步和进页同步直接跳过。
+- 前缀锁（规则前缀不能被两张 PI 同时占用）：判断前缀能否用到事务结束，同一前缀的判断、占用串行；
+  见 rules.check_prefix。
 """
 
 from __future__ import annotations
@@ -92,6 +94,21 @@ def with_org_lock(org: str, timeout: int = 10) -> Iterator[None]:
         yield
     finally:
         h.release()
+
+
+#: 前缀锁最长等待秒数（同一前缀正被另一笔生成 / 规则保存占用时，等它提交）
+PREFIX_WAIT_SECONDS = 30
+
+
+def hold_prefix(prefix: str) -> None:
+    """前缀锁：同一前缀同一时刻只有一笔事务在判断、占用（新建 / 首次归属版本）；锁到当前事务结束。
+    不在事务里时不加（只判断、不写，没有要保护的）。等不到报稍后重试。"""
+    if not db.in_tx():
+        return
+    h = try_acquire("prefix", [prefix], PREFIX_WAIT_SECONDS)
+    if h is None:
+        raise biz(ErrorCode.CONFLICT_RETRY)
+    db.after_tx(h.release)
 
 
 #: 按单据同步、全量重建等同步锁的最长秒数：须明显短于页面请求超时（120 秒），否则页面已报超时、后台仍排着队，

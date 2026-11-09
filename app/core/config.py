@@ -160,6 +160,11 @@ class Settings:
         return self.get_int("SN_GEN_SYNC_THRESHOLD", 5000)
 
     @property
+    def gen_concurrency(self) -> int:
+        """一个实例同时写号池的生成数（当场与后台合计），其余排队。"""
+        return max(1, self.get_int("SN_GEN_CONCURRENCY", 4))
+
+    @property
     def gen_default_limit(self) -> int:
         """生成弹窗的默认单次上限：额度超过它时数量默认填它，用户可勾选「解除限制」。"""
         return max(1, self.get_int("SN_GEN_DEFAULT_LIMIT", 10_000))

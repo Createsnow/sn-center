@@ -20,7 +20,7 @@ import math
 from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
-from app.db.session import db, marks
+from app.db.session import db, marks, retry_deadlock
 from app.services import audit, changes, delivery, factories, locks, orders, workbench
 
 #: 分配页左侧页签：待分配（含待处理）/ 已分配
@@ -209,77 +209,8 @@ def allocate(
     _check_picked(cu, bills, lines)
     with locks.with_pi_lock(pi):
         facs = cu.read_factories(None)
-        with db.tx():
-            groups, skipped = _groups(pi, bills, lines, facs)
-            idle = _idle(pi, bills, lines, facs)
-            if not groups and not idle:
-                raise biz(ErrorCode.ALLOC_NOTHING)
-            cond, args = _scope(pi, bills, lines)
-            now = util.now()
-            total = 0
-            started: set[str] = set()
-            for g in groups:
-                mes = factories.is_mes(g["org"])
-                status = util.TO_PUSH if mes else util.ALLOCATED
-                gen_cond = "" if g["snapshot"] else " AND gen_org_code = %s"
-                gen_args = [] if g["snapshot"] else [g["gen_org"]]
-                # 在 PI 操作锁与事务内，这里统计到的就是下面要改的号
-                per_line = db.all(
-                    "SELECT bill_seq, COUNT(*) n, MIN(sn) a, MAX(sn) b FROM sn_item WHERE pi_no = %s AND bill_no = %s "
-                    "AND status = 'PENDING_ALLOC'" + gen_cond + cond + " GROUP BY bill_seq",
-                    pi,
-                    g["bill_no"],
-                    *gen_args,
-                    *args,
-                )
-                if not per_line:
-                    # 同一单据有多个生成时组织、按快照组织分配时，前一组已一并分配
-                    continue
-                n = db.exec(
-                    "UPDATE sn_item SET status = %s, factory_code = %s, push_type = 'NEW', allocated_at = %s, "
-                    "updated_at = %s WHERE pi_no = %s AND bill_no = %s AND status = 'PENDING_ALLOC'" + gen_cond + cond,
-                    status,
-                    g["org"],
-                    now,
-                    now,
-                    pi,
-                    g["bill_no"],
-                    *gen_args,
-                    *args,
-                )
-                for pl in per_line:
-                    db.exec(
-                        "UPDATE sn_line_count SET alloc_count = alloc_count + %s, updated_at = %s WHERE bill_no = %s "
-                        "AND seq = %s",
-                        int(pl["n"]),
-                        now,
-                        g["bill_no"],
-                        pl["bill_seq"],
-                    )
-                audit.record(
-                    cu,
-                    audit.entry(audit.SN_ALLOCATE)
-                    .factory(g["org"])
-                    .pi(pi)
-                    .bill(g["bill_no"])
-                    .range(min(pl["a"] for pl in per_line), max(pl["b"] for pl in per_line))
-                    .count(n)
-                    .status(util.PENDING_ALLOC, status)
-                    .info(f"mes={int(mes)}"),
-                )
-                total += n
-                if mes:
-                    started.add(g["org"])
-            requeue: dict[str, int] = {}
-            for x in idle:
-                requeue[x["org"]] = requeue.get(x["org"], 0) + x["qty"]
-            for org, n in sorted(requeue.items()):
-                audit.record(
-                    cu,
-                    audit.entry(audit.SN_PUSH_RESUME).factory(org).pi(pi).count(n).info(f"key={pi} from=allocate"),
-                )
-            if groups:
-                changes.refresh_items({g["bill_no"] for g in groups})
+        # 几张 PI 同时生成、分配时号池上可能死锁（MySQL 1213，整笔已回滚）：PI 操作锁仍在手里，整笔重做
+        total, started, requeue, groups, skipped = retry_deadlock(lambda: _allocate_tx(cu, pi, bills, lines, facs))
         for org in sorted(started | set(requeue)):
             delivery.start_task(cu, org, pi)
     return {
@@ -289,6 +220,84 @@ def allocate(
         "skipped": skipped,
         "orgs": sorted({g["org"] for g in groups} | set(requeue)),
     }
+
+
+def _allocate_tx(
+    cu: CurrentUser, pi: str, bills: list[str] | None, lines: list[dict] | None, facs: tuple[str, ...] | None
+) -> tuple[int, set[str], dict[str, int], list[dict], list[dict]]:
+    """分配的事务部分（在 PI 操作锁内）；返回（分配枚数，要启动推送的组织，重新分配的组织与枚数，分组，跳过的单据）。"""
+    with db.tx():
+        groups, skipped = _groups(pi, bills, lines, facs)
+        idle = _idle(pi, bills, lines, facs)
+        if not groups and not idle:
+            raise biz(ErrorCode.ALLOC_NOTHING)
+        cond, args = _scope(pi, bills, lines)
+        now = util.now()
+        total = 0
+        started: set[str] = set()
+        for g in groups:
+            mes = factories.is_mes(g["org"])
+            status = util.TO_PUSH if mes else util.ALLOCATED
+            gen_cond = "" if g["snapshot"] else " AND gen_org_code = %s"
+            gen_args = [] if g["snapshot"] else [g["gen_org"]]
+            # 在 PI 操作锁与事务内，这里统计到的就是下面要改的号
+            per_line = db.all(
+                "SELECT bill_seq, COUNT(*) n, MIN(sn) a, MAX(sn) b FROM sn_item WHERE pi_no = %s AND bill_no = %s "
+                "AND status = 'PENDING_ALLOC'" + gen_cond + cond + " GROUP BY bill_seq",
+                pi,
+                g["bill_no"],
+                *gen_args,
+                *args,
+            )
+            if not per_line:
+                # 同一单据有多个生成时组织、按快照组织分配时，前一组已一并分配
+                continue
+            n = db.exec(
+                "UPDATE sn_item SET status = %s, factory_code = %s, push_type = 'NEW', allocated_at = %s, "
+                "updated_at = %s WHERE pi_no = %s AND bill_no = %s AND status = 'PENDING_ALLOC'" + gen_cond + cond,
+                status,
+                g["org"],
+                now,
+                now,
+                pi,
+                g["bill_no"],
+                *gen_args,
+                *args,
+            )
+            for pl in per_line:
+                db.exec(
+                    "UPDATE sn_line_count SET alloc_count = alloc_count + %s, updated_at = %s WHERE bill_no = %s "
+                    "AND seq = %s",
+                    int(pl["n"]),
+                    now,
+                    g["bill_no"],
+                    pl["bill_seq"],
+                )
+            audit.record(
+                cu,
+                audit.entry(audit.SN_ALLOCATE)
+                .factory(g["org"])
+                .pi(pi)
+                .bill(g["bill_no"])
+                .range(min(pl["a"] for pl in per_line), max(pl["b"] for pl in per_line))
+                .count(n)
+                .status(util.PENDING_ALLOC, status)
+                .info(f"mes={int(mes)}"),
+            )
+            total += n
+            if mes:
+                started.add(g["org"])
+        requeue: dict[str, int] = {}
+        for x in idle:
+            requeue[x["org"]] = requeue.get(x["org"], 0) + x["qty"]
+        for org, n in sorted(requeue.items()):
+            audit.record(
+                cu,
+                audit.entry(audit.SN_PUSH_RESUME).factory(org).pi(pi).count(n).info(f"key={pi} from=allocate"),
+            )
+        if groups:
+            changes.refresh_items({g["bill_no"] for g in groups}, quick=True)
+    return total, started, requeue, groups, skipped
 
 
 # ================================================================== 分配页左侧单据列表

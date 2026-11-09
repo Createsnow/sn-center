@@ -9,6 +9,11 @@
 - 等回执、等重试期间后续批次等待，这一批的号保持冻结；「继续推送」先重推未确认或失败的批次（含拉取建立的），
   再认领后续的号。同组织同时运行的任务数不超过推送并发上限，
 同一 PI 同一时刻只运行一个任务；租约过期（实例宕机）的任务由其他实例接手。
+
+一个实例同时执行的任务不超过推送线程数（PUSH_WORKERS）：调度只在有空闲线程时才认领，认领到的马上执行，
+不会把一堆任务先标成运行中、再在线程池里排队（排队期间不续租，还占着组织的推送并发名额）。
+执行中遇到数据库锁冲突（死锁、锁等待超时、连接池满）不算推送失败：任务转为等待，TRANSIENT_RETRY_SECONDS
+秒后自动接着推（批次、号都在库里，接着做即可），连续 TRANSIENT_MAX 次仍冲突才停止。
 """
 
 from __future__ import annotations
@@ -26,7 +31,7 @@ from app.core import utils as util
 from app.core.config import settings
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
-from app.db.session import db
+from app.db.session import db, is_lock_conflict, retry_deadlock
 from app.services import audit, factories, mes_client
 from app.services.delivery import receipts
 from app.services.delivery.batches import (
@@ -49,9 +54,17 @@ from app.services.delivery.batches import (
 log = structlog.get_logger()
 
 _wake = threading.Event()
-executor = ThreadPoolExecutor(max_workers=8, thread_name_prefix="sn-push")
+#: 本实例的推送线程数
+PUSH_WORKERS = 8
+executor = ThreadPoolExecutor(max_workers=PUSH_WORKERS, thread_name_prefix="sn-push")
 _running_here: set[tuple[str, str]] = set()
 _running_lock = threading.Lock()
+#: 已认领、交给线程池还没执行完的任务数（不超过 PUSH_WORKERS）
+_inflight = 0
+#: 数据库锁冲突后多少秒自动接着推；连续冲突多少次后停止（各任务分别计，本实例内）
+TRANSIENT_RETRY_SECONDS = 10
+TRANSIENT_MAX = 5
+_transient: dict[tuple[str, str], int] = {}
 #: 运行中任务的续租间隔（远小于租约 LEASE_SECONDS）
 HEARTBEAT_SECONDS = 60
 #: 认领推送任务的跨实例互斥行（sn_seq 中的一行，只用来加行锁，不当序号用）
@@ -63,11 +76,33 @@ def poke() -> None:
 
 
 def start_task(cu: CurrentUser, org: str, key: str, resend: bool = False) -> None:
-    """启动（或排队）推送任务：不存在 / 已结束 → 排队；运行中 → 结束后再排一次。"""
+    """启动（或排队）推送任务：不存在 / 已结束 → 排队；运行中 → 结束后再排一次。
+    死锁时自动重做（不在外层事务里时）。"""
+    retry_deadlock(lambda: _start_task(cu, org, key, resend))
+    poke()
+
+
+def _start_task(cu: CurrentUser, org: str, key: str, resend: bool) -> None:
     now = util.now()
     with db.tx():
+        # 先不加锁地看任务行在不在，不在先插入，再按主键加锁：对不存在的行 FOR UPDATE 会锁住主键间隙，
+        # 各组织同时分配、同时建第一个推送任务时互相卡住，成为死锁（MySQL 1213，分配接口报「稍后重试」）
+        if not db.exists(
+            "SELECT EXISTS(SELECT 1 FROM sn_push_task WHERE factory_code = %s AND task_key = %s)", org, key
+        ) and db.exec(
+            "INSERT IGNORE INTO sn_push_task(factory_code, task_key, state, resend, started_by, started_at, "
+            "updated_at) VALUES (%s,%s,'QUEUED',%s,%s,%s,%s)",
+            org,
+            key,
+            1 if resend else 0,
+            cu.emp_no,
+            now,
+            now,
+        ):
+            return
         t = db.one("SELECT * FROM sn_push_task WHERE factory_code = %s AND task_key = %s FOR UPDATE", org, key)
         if t is None:
+            # 插入与加锁之间被删掉（组织关闭对接 MES 时清理已结束的任务）：重新排队
             db.exec(
                 "INSERT INTO sn_push_task(factory_code, task_key, state, resend, started_by, started_at, updated_at) "
                 "VALUES (%s,%s,'QUEUED',%s,%s,%s,%s)",
@@ -100,7 +135,6 @@ def start_task(cu: CurrentUser, org: str, key: str, resend: bool = False) -> Non
                 org,
                 key,
             )
-    poke()
 
 
 def resume(cu: CurrentUser, org_in: str | None, key_in: str | None) -> dict:
@@ -186,10 +220,14 @@ def _claim_task() -> dict | None:
         now,
         now,
     )
+    if rows and not db.exists("SELECT EXISTS(SELECT 1 FROM sn_seq WHERE name = %s)", CLAIM_MUTEX):
+        # 互斥行只建一次，在事务外建：事务里先读会提前定下一致性快照，下面数运行中的任务就看不到
+        # 别的实例刚提交的认领；也免得 ON DUPLICATE KEY UPDATE 锁住它前面的间隙
+        db.exec("INSERT IGNORE INTO sn_seq(name, val) VALUES (%s, 0)", CLAIM_MUTEX)
     for t in rows:
         with db.tx():
-            # 各实例的「数运行中的任务 → 认领」串行：否则两个实例可能同时数到未满，各认领一个，超出推送并发上限
-            db.exec("INSERT INTO sn_seq(name, val) VALUES (%s, 0) ON DUPLICATE KEY UPDATE name = name", CLAIM_MUTEX)
+            # 各实例的「数运行中的任务 → 认领」串行：否则两个实例可能同时数到未满，各认领一个，超出推送并发上限。
+            # 加锁读放在事务第一句，之后的普通读（运行中的任务数）快照晚于别的实例的提交
             db.one("SELECT val FROM sn_seq WHERE name = %s FOR UPDATE", CLAIM_MUTEX)
             busy_org = db.count(
                 "SELECT COUNT(*) FROM sn_push_task WHERE factory_code = %s AND state = 'RUNNING' AND lease_until >= %s",
@@ -222,17 +260,47 @@ def _claim_task() -> dict | None:
 
 
 def run_pending(wait: bool = True) -> int:
-    """跑完当前所有可运行的任务（测试、调度线程调用）；返回执行的任务数。wait = False 时提交到线程池即返回。"""
+    """跑完当前所有可运行的任务（测试、调度线程调用）；返回执行的任务数。
+    wait = False（调度线程）：只认领空闲推送线程数那么多个，提交到线程池即返回；有线程空出来时再唤醒调度。"""
+    global _inflight
     count = 0
     while True:
-        t = _claim_task()
+        if not wait:
+            with _running_lock:
+                if _inflight >= PUSH_WORKERS:
+                    return count
+                _inflight += 1
+        try:
+            t = _claim_task()
+        except BaseException:
+            if not wait:
+                _done_inflight(False)
+            raise
         if t is None:
+            if not wait:
+                _done_inflight(False)
             return count
         count += 1
         if wait:
             _run_task(t)
         else:
-            executor.submit(_run_task, t)
+            executor.submit(_run_inflight, t)
+
+
+def _run_inflight(t: dict) -> None:
+    try:
+        _run_task(t)
+    finally:
+        _done_inflight(True)
+
+
+def _done_inflight(wake: bool) -> None:
+    global _inflight
+    with _running_lock:
+        _inflight -= 1
+    if wake:
+        # 空出一个推送线程：排着队的任务不必等到下一次轮询
+        poke()
 
 
 def _renew(t: dict, batch_no: str | None) -> None:
@@ -404,12 +472,37 @@ def _run_task(t: dict) -> None:
     try:
         with _lease_heartbeat(t):
             _drive(t)
+        _transient.pop(key, None)
     except Exception as e:  # noqa: BLE001
-        log.exception("push_task_failed", org=t["factory_code"], key=t["task_key"])
-        _end_task(t, "STOPPED", f"推送任务异常：{type(e).__name__}")
+        _task_error(t, key, e)
     finally:
         with _running_lock:
             _running_here.discard(key)
+
+
+def _task_error(t: dict, key: tuple[str, str], e: Exception) -> None:
+    """任务执行中出错：数据库锁冲突（死锁、锁等待超时、连接池满）转为等待、稍后自动接着推，
+    连续 TRANSIENT_MAX 次仍冲突、或别的异常才停止（由「继续推送」处理）。"""
+    n = _transient.get(key, 0) + 1 if is_lock_conflict(e) else 0
+    try:
+        if 0 < n <= TRANSIENT_MAX:
+            _transient[key] = n
+            log.warning("push_task_conflict", org=t["factory_code"], key=t["task_key"], attempt=n, err=str(e))
+            retry_deadlock(
+                lambda: _end_task(
+                    t,
+                    "WAITING",
+                    f"数据库繁忙（锁冲突），{TRANSIENT_RETRY_SECONDS} 秒后自动继续推送",
+                    util.now() + timedelta(seconds=TRANSIENT_RETRY_SECONDS),
+                )
+            )
+            return
+        _transient.pop(key, None)
+        log.error("push_task_failed", org=t["factory_code"], key=t["task_key"], exc_info=e)
+        retry_deadlock(lambda: _end_task(t, "STOPPED", f"推送任务异常：{type(e).__name__}"))
+    except Exception:  # noqa: BLE001
+        # 连结束状态都写不进去：任务留在运行中，租约过期后由调度重新认领
+        log.exception("push_task_end_failed", org=t["factory_code"], key=t["task_key"])
 
 
 def _drive(t: dict) -> None:
