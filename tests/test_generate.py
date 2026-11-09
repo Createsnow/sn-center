@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from conftest import BILLS, m, ok, q, uid, xlsx_rows
+from conftest import BILLS, m, mark_bill_stat, ok, q, uid, xlsx_rows
 
 
 def mk(w, *lines, pi=None, org=None, bill=None, customer="C1"):
@@ -967,6 +967,7 @@ def test_allocation_bill_list_driven_by_sns(w, api, sql):
     assert rows("TO_ALLOCATE", b2) == {b2: (pi, 2, "PENDING")}, "可按单据编号筛选"
     # 生成在一分钟前：分配后 b1 的处理时间更近
     sql.exec("UPDATE sn_item SET updated_at = updated_at - INTERVAL 1 MINUTE WHERE pi_no = %s", pi)
+    mark_bill_stat(sql)
     w.allocate(pi, lines=[(b1, 1)])
     assert rows("TO_ALLOCATE") == {b2: (pi, 2, "PENDING")}
     assert rows("ALLOCATED") == {b1: (pi, 3, "ALLOCATED")}, "未对接 MES：分配即已分配"

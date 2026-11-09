@@ -40,7 +40,7 @@ from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db, marks
-from app.services import audit, changes, delivery, factories, files, locks, orders, rules
+from app.services import audit, bill_stats, changes, delivery, factories, files, locks, orders, rules
 
 KIND_BILL = "BILL"
 KIND_ORG = "ORG"
@@ -291,6 +291,8 @@ def _move(
                 rev,
             )
         )
+    # 单据汇总：转出的（PI，单据）与转入的都要重算
+    bill_stats.touch_many([(r["pi_no"], r["bill_no"]) for r in items] + [(t.pi, t.bill) for t in targets.values()])
     # 号已在本事务内 FOR UPDATE 锁住，rev + 1 与上面按读出值算的 rev 一致
     for (
         new_org,
@@ -1184,6 +1186,7 @@ def map_material(cu: CurrentUser, alert: dict, target_seq: int | None, note: str
             else:
                 groups["DELIVERED"].append(x["id"])
         reassign = set(groups["REASSIGN"])
+        bill_stats.touch_many((x["pi_no"], x["bill_no"]) for x in items)
         for k, ids in groups.items():
             for i in range(0, len(ids), 1000):
                 part = ids[i : i + 1000]

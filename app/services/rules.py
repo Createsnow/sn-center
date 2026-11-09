@@ -238,16 +238,24 @@ def _prefix_rules(
             raise biz(ErrorCode.RULE_PREFIX_CONFLICT, prefix=prefix)
         if spec is not None and not same_seq_format(spec_of(v), spec):
             raise biz(ErrorCode.RULE_PREFIX_FORMAT_LOCKED, prefix=prefix, base=v["base"], seq_len=v["seq_len"])
-    for v in db.all(
-        "SELECT prefix, claimed_pi FROM sn_rule_version WHERE prefix <> %s "
-        "AND (LEFT(prefix, CHAR_LENGTH(%s)) = %s OR LEFT(%s, CHAR_LENGTH(prefix)) = prefix)",
-        prefix,
-        prefix,
-        prefix,
-        prefix,
-    ):
+    for v in _overlapping(prefix):
         # 不论是否同一 PI：不同前缀一个是另一个的开头时，流水不同也可能拼出相同的号（如 P1+03+后缀 5 与 P103+5）
         raise biz(ErrorCode.RULE_PREFIX_OVERLAP, prefix=prefix, other=v["prefix"], pi=v["claimed_pi"] or "-")
+
+
+def _overlapping(prefix: str) -> list[dict]:
+    """与 prefix 一个是另一个开头的别的前缀（最多一行，取最早建的版本，与原来整表扫描时报的是同一个）。
+    两头都走前缀索引 ix_rule_prefix，不随规则版本数变慢：以 prefix 开头的更长前缀按 LIKE 'prefix%' 取索引区间；
+    是 prefix 开头的更短前缀就是 prefix 的各个真前缀，按等值查。"""
+    heads = [prefix[:k] for k in range(1, len(prefix))]
+    longer = "SELECT id, prefix, claimed_pi FROM sn_rule_version WHERE prefix LIKE %s AND prefix <> %s"
+    shorter = f" UNION ALL SELECT id, prefix, claimed_pi FROM sn_rule_version WHERE prefix IN ({marks(len(heads))})"
+    return db.all(
+        "SELECT prefix, claimed_pi FROM (" + longer + (shorter if heads else "") + ") o ORDER BY id LIMIT 1",
+        util.like_prefix(prefix),
+        prefix,
+        *heads,
+    )
 
 
 def prefix_usable(prefix: str, spec: codec.Spec, pi: str, exclude_version: int | None = None) -> bool:

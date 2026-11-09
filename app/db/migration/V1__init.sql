@@ -420,6 +420,38 @@ CREATE TABLE sn_item (
   KEY ix_item_holder (mes_holder, pi_no)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='SN 号池';
 
+-- 单据汇总：每个（PI，单据，号上的生产组织）一行，分配页、SN 导出页的单据列表查它，不对整个号池 GROUP BY。
+-- 号变动时标脏（sn_bill_stat_dirty），按单据重算整行（app/services/bill_stats.py）；口径与按号池汇总相同。
+-- 本表在 V1 之后加入：已建好的库启动时按本语句补建并按号池回填（app/db/migrate.py ADDED_TABLES）
+CREATE TABLE sn_bill_stat (
+  pi_no           VARCHAR(64) NOT NULL COMMENT '号现在挂的 PI',
+  bill_no         VARCHAR(64) NOT NULL COMMENT '号现在挂的单据',
+  org_key         VARCHAR(64) NOT NULL COMMENT '号上的生产组织；待分配（还没有生产组织）为空串',
+  factory_code    VARCHAR(64) NULL COMMENT '号上的生产组织（NULL = 待分配），与号池同口径，授权范围条件直接套用',
+  qty             BIGINT      NOT NULL COMMENT '枚数',
+  pending         BIGINT      NOT NULL COMMENT '待分配枚数',
+  to_push         BIGINT      NOT NULL COMMENT '待推送枚数',
+  suspended       BIGINT      NOT NULL COMMENT '暂停交付枚数',
+  handled_at      DATETIME    NOT NULL COMMENT '号最近一次变动（号池 updated_at 的最大值）',
+  alloc_qty       BIGINT      NOT NULL COMMENT '已分配（不是待分配）的枚数：SN 导出单据列表',
+  alloc_suspended BIGINT      NOT NULL COMMENT '已分配且暂停交付的枚数',
+  alloc_customer  VARCHAR(64) NULL COMMENT '已分配的号上客户编码的最大值（导出列表显示）',
+  refreshed_at    DATETIME    NOT NULL COMMENT '最近一次重算',
+  PRIMARY KEY (pi_no, bill_no, org_key),
+  KEY ix_bill_stat_bill (bill_no),
+  KEY ix_bill_stat_factory (factory_code, pi_no),
+  KEY ix_bill_stat_refreshed (refreshed_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='单据汇总';
+
+-- 单据汇总待重算：改号的事务提交前写入（同一单据 ver 加 1），重算后只删 ver 未变的行
+CREATE TABLE sn_bill_stat_dirty (
+  pi_no      VARCHAR(64) NOT NULL,
+  bill_no    VARCHAR(64) NOT NULL,
+  ver        BIGINT      NOT NULL DEFAULT 1,
+  marked_at  DATETIME    NOT NULL,
+  PRIMARY KEY (pi_no, bill_no)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='单据汇总待重算';
+
 -- 删号存档：SN 删除后从号池移除（腾出完整 SN 与流水，可重新生成），删除前的号与挂靠存档备查
 CREATE TABLE sn_item_deleted (
   id                BIGINT       NOT NULL COMMENT '原号池 id（号池自增 id 不复用）',

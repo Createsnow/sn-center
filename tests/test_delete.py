@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from conftest import BILLS, MES, m, ok, uid
+from conftest import BILLS, MES, m, mark_bill_stat, ok, uid
 
 
 def mk(w, *lines, pi=None, org=None, bill=None):
@@ -162,6 +162,7 @@ def test_bill_segments_use_free_and_sn_detail(w, api, sql):
     ok(w.bind_pi(pi2, w.rule(P(), with_length=False)))
     w.generate(pi2)
     sql.exec("UPDATE sn_item SET pi_no = %s, bill_no = %s, bill_seq = 1 WHERE seq_pi_no = %s", pi, bill, pi2)
+    mark_bill_stat(sql)
     s = segs(w, pi, bill)
     assert [(x["bill_seq"], x["seq_pi_no"], x["start_seq"], x["end_seq"], x["transferred_in"]) for x in s["use"]] == [
         (1, pi, 1, 3, False),

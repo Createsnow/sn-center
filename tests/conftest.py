@@ -708,6 +708,8 @@ _SN_TABLES = (
     "sn_delivery_batch",
     "sn_push_task",
     "sn_item",
+    "sn_bill_stat",
+    "sn_bill_stat_dirty",
     "sn_gen_job",
     "sn_gen_preview",
     "sn_line_count",
@@ -739,6 +741,62 @@ def _fresh_sn(request):
 
         k3._display_failed_at = None
     yield
+    if "app_client" in request.fixturenames:
+        assert_bill_stat_consistent()
+
+
+#: 单据汇总与号池按单据重新汇总的结果比较（列与 bill_stats._values 同序）
+_STAT_FROM_POOL = (
+    "SELECT pi_no, bill_no, COALESCE(factory_code, '') org_key, MAX(factory_code) factory_code, COUNT(*) qty, "
+    "SUM(status = 'PENDING_ALLOC') pending, SUM(status = 'TO_PUSH') to_push, SUM(suspend IS NOT NULL) suspended, "
+    "MAX(updated_at) handled_at, SUM(status <> 'PENDING_ALLOC') alloc_qty, "
+    "SUM(status <> 'PENDING_ALLOC' AND suspend IS NOT NULL) alloc_suspended, "
+    "MAX(CASE WHEN status <> 'PENDING_ALLOC' THEN customer_code END) alloc_customer "
+    "FROM sn_item GROUP BY pi_no, bill_no, org_key"
+)
+_STAT_COLS = (
+    "pi_no, bill_no, org_key, factory_code, qty, pending, to_push, suspended, handled_at, alloc_qty, "
+    "alloc_suspended, alloc_customer"
+)
+
+
+def _stat_rows(rows: list[dict]) -> list[tuple]:
+    return sorted(
+        tuple(int(v) if hasattr(v, "as_integer_ratio") and not isinstance(v, float) else v for v in r.values())
+        for r in rows
+    )
+
+
+def mark_bill_stat(sql) -> None:
+    """用例直接改了号池（没走程序、没有标脏）之后调用：号池里的单据全部标为待重算。"""
+    sql.exec(
+        "INSERT INTO sn_bill_stat_dirty(pi_no, bill_no, ver, marked_at) SELECT DISTINCT pi_no, bill_no, 1, "
+        "UTC_TIMESTAMP() FROM sn_item ON DUPLICATE KEY UPDATE ver = ver + 1"
+    )
+
+
+def assert_bill_stat_consistent() -> None:
+    """每个用例结束后：单据汇总按标记重算完，与号池按单据重新汇总的结果逐行相同（改号的地方都标了脏）。
+    后台推送可能还在改号：同一快照里还有未处理的标记时重算后再比，最多试几次。"""
+    from app.services import bill_stats
+
+    for _ in range(20):
+        bill_stats.refresh(budget_seconds=None, wait=10)
+        with raw_conn() as c, c.cursor() as cur:
+            cur.execute("START TRANSACTION WITH CONSISTENT SNAPSHOT")
+            cur.execute("SELECT COUNT(*) n FROM sn_bill_stat_dirty")
+            if cur.fetchone()["n"]:
+                cur.execute("COMMIT")
+                time.sleep(0.2)
+                continue
+            cur.execute(f"SELECT {_STAT_COLS} FROM sn_bill_stat")
+            have = _stat_rows(list(cur.fetchall()))
+            cur.execute(_STAT_FROM_POOL)
+            want = _stat_rows(list(cur.fetchall()))
+            cur.execute("COMMIT")
+        assert have == want, f"单据汇总与号池不一致：\n汇总 {set(have) - set(want)}\n号池 {set(want) - set(have)}"
+        return
+    raise AssertionError("单据汇总的待重算标记一直处理不完")
 
 
 _once: dict[str, Any] = {}

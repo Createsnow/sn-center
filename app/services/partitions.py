@@ -99,8 +99,9 @@ def _last_daily(c) -> int | None:
 
 
 def _daily_jobs() -> None:
-    """每天 2:10 维护任务的其余部分：同步生产组织（F-03）、每日交付自检（5.2.5 第 5 条）。各自失败互不影响。"""
-    from app.services import delivery, factories
+    """每天 2:10 维护任务的其余部分：同步生产组织（F-03）、每日交付自检（5.2.5 第 5 条）、单据汇总对账。
+    各自失败互不影响。"""
+    from app.services import bill_stats, delivery, factories
 
     try:
         factories.sync_from_k3(CurrentUser.system())
@@ -110,6 +111,11 @@ def _daily_jobs() -> None:
         delivery.self_check()
     except Exception:  # noqa: BLE001
         log.exception("daily_self_check_failed")
+    try:
+        bad = bill_stats.reconcile()
+        log.info("bill_stat_reconciled", mismatched=bad)
+    except Exception:  # noqa: BLE001
+        log.exception("bill_stat_reconcile_failed")
 
 
 def _ensure_audit(c) -> None:

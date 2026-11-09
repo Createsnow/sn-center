@@ -6,7 +6,7 @@ from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db, marks
-from app.services import audit, changes, factories
+from app.services import audit, bill_stats, changes, factories
 from app.services.delivery.batches import (
     FAILED,
     M_MANUAL,
@@ -107,6 +107,7 @@ def void_in_tx(cu: CurrentUser, b: dict, r: str, bs: str) -> tuple[list[dict], s
         ids = db.column(
             "SELECT id FROM sn_item WHERE delivery_batch_no = %s AND status = 'TO_PUSH' FOR UPDATE", b["batch_no"]
         )
+        bill_stats.touch_ids(ids)
         db.exec(
             "UPDATE sn_item SET delivery_batch_no = NULL, updated_at = %s WHERE delivery_batch_no = %s "
             "AND status = 'TO_PUSH'",

@@ -5,7 +5,7 @@ from __future__ import annotations
 import gzip
 import json
 
-from conftest import BILLS, MES, emp, m, ok, uid, xlsx_rows
+from conftest import BILLS, MES, emp, m, mark_bill_stat, ok, uid, xlsx_rows
 
 
 def P() -> str:
@@ -914,6 +914,7 @@ def test_transfer_batch_holds_only_mes_held_sns_one_type_each(w, api, sql):
         a,
         *held,
     )
+    mark_bill_stat(sql)
     tgt = uid("MO")
     w.order(tgt, a, "C1", pi, ("M1", 4))
     t = ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, a), w.admin))

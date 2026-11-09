@@ -156,7 +156,7 @@ def migrate(db: Db) -> int:
 
 
 #: V1 之后才加入的表（只新增、不改已有表）：已建好的库不会重跑 V1，启动时按 V1 里的建表语句补建
-ADDED_TABLES = ("sn_k3_config",)
+ADDED_TABLES = ("sn_k3_config", "sn_bill_stat", "sn_bill_stat_dirty")
 
 
 def create_statement(table: str) -> str:

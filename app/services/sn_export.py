@@ -17,7 +17,7 @@ from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db, marks
-from app.services import factories, files, rules, sn_import, sn_sheet
+from app.services import bill_stats, factories, files, rules, sn_import, sn_sheet
 from app.services.generate import attach_order
 
 #: 各汇总都带的枚数：暂停（单据暂停交付）
@@ -38,27 +38,28 @@ def bills(
     cu: CurrentUser, factory: str | None, q: str | None, mes: bool | None, page: util.Page, pi: str | None = None
 ) -> dict:
     """每个「生产组织 + PI + 单据」一行：枚数、暂停枚数、申请中枚数；q 按 PI 或单据编号前缀匹配，pi 按 PI 精确匹配
-    （SN 分配页的「已分配单据」页签）。"""
-    where, args = _where(cu, factory)
+    （SN 分配页的「已分配单据」页签）。
+    查单据汇总（bill_stats）：汇总行已按 PI + 单据 + 号上的组织分开，取其中已分配的枚数，不对整个号池汇总。"""
+    bill_stats.refresh()
+    fsql, args = factories.scope_sql(cu.read_factories(factory), "s.factory_code")
+    where = " WHERE s.factory_code IS NOT NULL AND s.alloc_qty > 0" + fsql
     if not util.blank(pi):
-        where += " AND i.pi_no = %s"
+        where += " AND s.pi_no = %s"
         args.append(pi.strip())
     if not util.blank(q):
-        where += " AND (i.pi_no LIKE %s OR i.bill_no LIKE %s)"
+        where += " AND (s.pi_no LIKE %s OR s.bill_no LIKE %s)"
         args += [util.like_prefix(q.strip())] * 2
     if mes is not None:
         where += " AND COALESCE(f.mes_enabled, 0) = %s"
         args.append(1 if mes else 0)
-    grouped = (
-        "SELECT i.pi_no, i.factory_code, i.bill_no, MAX(i.customer_code) customer_code, "
-        "MAX(COALESCE(f.mes_enabled, 0)) mes, COUNT(*) qty, " + _NOTES + " "
-        "FROM sn_item i LEFT JOIN sn_factory f ON f.factory_code = i.factory_code"
-        + where
-        + " GROUP BY i.pi_no, i.factory_code, i.bill_no"
+    listed = (
+        "SELECT s.pi_no, s.factory_code, s.bill_no, s.alloc_customer customer_code, "
+        "COALESCE(f.mes_enabled, 0) mes, s.alloc_qty qty, s.alloc_suspended suspended "
+        "FROM sn_bill_stat s LEFT JOIN sn_factory f ON f.factory_code = s.factory_code" + where
     )
-    total = db.count("SELECT COUNT(*) FROM (" + grouped + ") g", *args)
+    total = db.count("SELECT COUNT(*) FROM (" + listed + ") g", *args)
     rows = db.all(
-        grouped + " ORDER BY i.pi_no DESC, i.factory_code, i.bill_no LIMIT %s, %s", *args, page.offset, page.size
+        listed + " ORDER BY s.pi_no DESC, s.factory_code, s.bill_no LIMIT %s, %s", *args, page.offset, page.size
     )
     items = [
         {

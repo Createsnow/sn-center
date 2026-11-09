@@ -19,7 +19,7 @@ from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db, marks
-from app.services import audit, k3, mes_client
+from app.services import audit, bill_stats, k3, mes_client
 
 BASIC = ("factory_code", "factory_name", "enabled", "mes_enabled", "tz_offset_min")
 CONFIG = (
@@ -428,6 +428,8 @@ def set_mes_enabled(cu: CurrentUser, code: str | None, enabled: bool) -> dict:
                 now,
                 fc,
             )
+            if n:
+                bill_stats.touch_factory(fc, util.TO_PUSH)
             before, after = util.ALLOCATED, util.TO_PUSH
         else:
             b = mes_blockers(fc)
@@ -448,6 +450,8 @@ def set_mes_enabled(cu: CurrentUser, code: str | None, enabled: bool) -> dict:
                 now,
                 fc,
             )
+            if n:
+                bill_stats.touch_factory(fc, util.ALLOCATED)
             before, after = util.TO_PUSH, util.ALLOCATED
             db.exec("DELETE FROM sn_push_task WHERE factory_code = %s AND state IN ('STOPPED','DONE')", fc)
         db.exec(

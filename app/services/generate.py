@@ -47,7 +47,7 @@ from app.core.errors import ErrorCode, biz
 from app.core.exceptions import BizError
 from app.core.security import CurrentUser
 from app.db.session import ER_LOCK_NOWAIT, db, error_no, is_deadlock, is_duplicate, marks, retry_deadlock
-from app.services import audit, changes, factories, locks, orders, rules
+from app.services import audit, bill_stats, changes, factories, locks, orders, rules
 
 log = structlog.get_logger()
 
@@ -1084,6 +1084,7 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
                     raise biz(ErrorCode.GEN_IMPORTED_SN, sn=hit["sn"], pi=hit["pi_no"]) from None
                 raise biz(ErrorCode.GEN_DUPLICATE_SN, sn=hit["sn"], pi=hit["pi_no"]) from None
             continue_deleted_rev(sns)
+            bill_stats.touch(pi, x["bill_no"])
             done += len(sns)
             if _progress(j["id"], done, sns[-1]):
                 raise biz(ErrorCode.GEN_CANCELED)

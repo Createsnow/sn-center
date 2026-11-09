@@ -22,7 +22,7 @@ from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db, marks, retry_deadlock
-from app.services import audit, factories, mes_client, rules
+from app.services import audit, bill_stats, factories, mes_client, rules
 
 log = structlog.get_logger()
 
@@ -366,6 +366,7 @@ def _deliver(
         )
         if n != len(part):
             raise biz(ErrorCode.CONFLICT_RETRY)
+    bill_stats.touch_many((r["pi_no"], r["bill_no"]) for r in items)
     audit.record(
         cu,
         audit.entry(audit.SN_BATCH_CREATE)

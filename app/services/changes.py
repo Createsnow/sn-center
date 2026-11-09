@@ -28,7 +28,7 @@ from app.core.errors import ErrorCode, biz
 from app.core.exceptions import BizError
 from app.core.security import CurrentUser
 from app.db.session import db, marks
-from app.services import audit, factories, k3
+from app.services import audit, bill_stats, factories, k3
 
 log = structlog.get_logger()
 
@@ -190,10 +190,12 @@ def _set_items_suspend(bill_no: str, reason: str | None) -> int:
         reason,
     )
     # 已交付或已入批的号不暂停
-    db.exec(
+    cleared = db.exec(
         f"UPDATE sn_item SET suspend = NULL WHERE bill_no = %s AND suspend IS NOT NULL AND NOT {_UNDELIVERED}",
         bill_no,
     )
+    if total or cleared:
+        bill_stats.touch_bill(bill_no)
     return total
 
 

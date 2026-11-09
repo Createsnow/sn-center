@@ -19,7 +19,7 @@ from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db, marks
-from app.services import audit, changes, delivery, generate, locks, orders
+from app.services import audit, bill_stats, changes, delivery, generate, locks, orders
 
 #: 删号原因选填，不填记这个默认原因
 DEFAULT_REASON = "生成页删除 SN"
@@ -198,6 +198,7 @@ def delete(
             *args,
         )
         per_pi = db.all(f"SELECT seq_pi_no, COUNT(*) n FROM sn_item WHERE {where} GROUP BY seq_pi_no", *args)
+        bill_stats.touch_ids(ids)
         for i in range(0, len(ids), CHUNK):
             part = ids[i : i + CHUNK]
             db.exec(

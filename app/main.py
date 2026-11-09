@@ -34,7 +34,7 @@ from app.db import init_db
 from app.db.session import PoolExhausted, db, is_integrity, is_lock_conflict
 from app.middleware.request_id import WRITE_METHODS, RequestIdMiddleware
 from app.services import audit as audit_svc
-from app.services import delivery, demo_seed, generate, locks, orders, partitions, users
+from app.services import bill_stats, delivery, demo_seed, generate, locks, orders, partitions, users
 
 log = structlog.get_logger()
 
@@ -134,6 +134,7 @@ def startup() -> None:
         raise RuntimeError(f"等待其他进程完成启动初始化超过 {STARTUP_LOCK_SECONDS} 秒")
     try:
         init_db()
+        bill_stats.ensure_filled()
         generate.recover_interrupted()
         init_admin()
         partitions.maintain(daily=settings.maintain_enabled)
@@ -158,11 +159,13 @@ async def lifespan(app: FastAPI):
         else None
     )
     push = delivery.start_scheduler()
+    stats = bill_stats.start_scheduler()
     try:
         yield
     finally:
         # 后台生成任务由线程池自行跑完（解释器退出前会等待）
         gen_recover.stop()
+        stats.stop()
         if daily is not None:
             daily.stop()
         if order_sync is not None:

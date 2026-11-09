@@ -9,7 +9,7 @@ from __future__ import annotations
 from app.core import utils as util
 from app.core.security import CurrentUser
 from app.db.session import db
-from app.services import audit, mes_client
+from app.services import audit, bill_stats, mes_client
 from app.services.delivery import push
 from app.services.delivery.batches import (
     FAILED,
@@ -174,6 +174,7 @@ def confirm(cu: CurrentUser, b: dict, method: str, by_mes: bool, now) -> None:
             now,
             b["batch_no"],
         )
+        bill_stats.touch_batch(b["batch_no"])
     else:
         # 只在持有组织仍是来源组织时清除（转入方的交付批次先确认的不受影响）
         db.exec(
@@ -183,6 +184,7 @@ def confirm(cu: CurrentUser, b: dict, method: str, by_mes: bool, now) -> None:
             b["id"],
             b["factory_code"],
         )
+        bill_stats.touch_batch_items(b["id"])
 
 
 def wake_task(b: dict, resume: bool = False) -> None:

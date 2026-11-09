@@ -21,7 +21,7 @@ from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db, marks, retry_deadlock
-from app.services import audit, changes, delivery, factories, locks, orders, workbench
+from app.services import audit, bill_stats, changes, delivery, factories, locks, orders, workbench
 
 #: 分配页左侧页签：待分配（含待处理）/ 已分配
 TO_ALLOCATE = "TO_ALLOCATE"
@@ -264,6 +264,7 @@ def _allocate_tx(
                 *gen_args,
                 *args,
             )
+            bill_stats.touch(pi, g["bill_no"])
             for pl in per_line:
                 db.exec(
                     "UPDATE sn_line_count SET alloc_count = alloc_count + %s, updated_at = %s WHERE bill_no = %s "
@@ -315,7 +316,10 @@ def bills(cu: CurrentUser, q: str | None, tab: str | None, page: util.Page) -> d
     """分配页左侧：按号取单据（号现在挂的 PI + 单据），每行 SN 枚数与状态，分页列出全部单据；q 只按 PI、单据编号匹配。
     tab：TO_ALLOCATE = 待分配、待处理；ALLOCATED = 已分配；不传为全部。
     按处理时间（单据下的号最近一次变动：生成、分配、推送、回执、转移等）越近越前。
-    普通操作员只看授权组织的号。返回分页结果，另带上方汇总：待分配枚数、待推送（未入批）枚数。"""
+    普通操作员只看授权组织的号。返回分页结果，另带上方汇总：待分配枚数、待推送（未入批）枚数。
+    单据各数查单据汇总（bill_stats，每个 PI + 单据 + 号上的组织一行），不对整个号池汇总；口径与按号汇总相同：
+    授权范围条件照样按组织（待分配的按单据台账的组织）套在汇总行上，再按 PI + 单据相加。"""
+    bill_stats.refresh()
     facs = cu.read_factories(None)
     isql, iargs = factories.item_scope_sql(facs)
     where, args = " WHERE 1=1" + isql, list(iargs)
@@ -323,23 +327,16 @@ def bills(cu: CurrentUser, q: str | None, tab: str | None, page: util.Page) -> d
     if text:
         where += " AND (pi_no LIKE %s OR bill_no LIKE %s)"
         args += [util.like_any(text)] * 2
-    open_ = "SUM(status = 'PENDING_ALLOC') > 0 OR SUM(status = 'TO_PUSH') > 0"
+    open_ = "SUM(pending) > 0 OR SUM(to_push) > 0"
     having = ""
     t = util.trim(tab)
     if t == TO_ALLOCATE:
-        # 先按状态索引取出还有待分配、待推送号的单据，免得整表汇总
-        where += (
-            " AND (pi_no, bill_no) IN (SELECT pi_no, bill_no FROM sn_item WHERE status IN ('PENDING_ALLOC', 'TO_PUSH')"
-            + isql
-            + ")"
-        )
-        args += iargs
         having = f" HAVING {open_}"
     elif t == ALLOCATED:
         having = f" HAVING NOT ({open_})"
     grouped = (
-        "SELECT pi_no, bill_no, COUNT(*) qty, SUM(status = 'PENDING_ALLOC') pending, SUM(status = 'TO_PUSH') to_push, "
-        "SUM(suspend IS NOT NULL) suspended, MAX(updated_at) handled_at FROM sn_item"
+        "SELECT pi_no, bill_no, SUM(qty) qty, SUM(pending) pending, SUM(to_push) to_push, "
+        "SUM(suspended) suspended, MAX(handled_at) handled_at FROM sn_bill_stat"
         + where
         + " GROUP BY pi_no, bill_no"
         + having

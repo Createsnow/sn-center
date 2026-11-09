@@ -34,6 +34,8 @@ _current: contextvars.ContextVar[pymysql.connections.Connection | None] = contex
 _depth: contextvars.ContextVar[int] = contextvars.ContextVar("sn_db_depth", default=0)
 #: 当前事务结束（提交或回滚）后要做的事（释放跟事务走的命名锁）
 _after: contextvars.ContextVar[list[Callable[[], None]] | None] = contextvars.ContextVar("sn_db_after", default=None)
+#: 当前事务提交前、在事务里要做的事（单据汇总标脏，见 services/bill_stats）：抛错则整笔回滚
+_before: contextvars.ContextVar[list[Callable[[], None]] | None] = contextvars.ContextVar("sn_db_before", default=None)
 
 #: MySQL 错误号
 ER_DUP_ENTRY = 1062
@@ -228,6 +230,16 @@ class Db:
         else:
             pending.append(fn)
 
+    @staticmethod
+    def before_commit(fn: Callable[[], None]) -> bool:
+        """当前事务提交前（仍在事务里）执行 fn，返回 True；不在事务里时不登记、返回 False（由调用方马上执行）。
+        同一事务登记多次的由调用方自行合并。"""
+        pending = _before.get()
+        if pending is None:
+            return False
+        pending.append(fn)
+        return True
+
     @contextmanager
     def new_tx(self) -> Iterator[pymysql.connections.Connection]:
         with self._begin() as conn:
@@ -240,11 +252,14 @@ class Db:
         token = _current.set(conn)
         dtoken = _depth.set(depth + 1)
         atoken = _after.set([])
+        btoken = _before.set([])
         broken = False
         try:
             conn.begin()
             try:
                 yield conn
+                for fn in _before.get() or []:
+                    fn()
             except BaseException:
                 try:
                     conn.rollback()
@@ -257,6 +272,7 @@ class Db:
             raise
         finally:
             pending = _after.get() or []
+            _before.reset(btoken)
             _after.reset(atoken)
             _depth.reset(dtoken)
             _current.reset(token)
