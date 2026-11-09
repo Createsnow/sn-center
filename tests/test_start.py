@@ -64,10 +64,22 @@ def test_run_api_uses_inprocess_uvicorn(monkeypatch) -> None:
         called.update(kwargs)
 
     monkeypatch.setattr(start_mod.uvicorn, "run", fake_run)
+    monkeypatch.delenv("SN_WORKERS", raising=False)
+    monkeypatch.setattr(start_mod, "lookup_int", lambda key, default, path=None: default)
     start_mod.run_api(host="0.0.0.0", port=8000)
     assert called["app"] == "app.main:app"
     assert called["host"] == "0.0.0.0"
     assert called["port"] == 8000
+    assert called["workers"] == 1, "默认单进程"
+
+
+def test_run_api_workers_from_env(monkeypatch) -> None:
+    called: dict = {}
+    monkeypatch.setattr(start_mod.uvicorn, "run", lambda app, **kw: called.update(kw))
+    for raw, want in (("3", 3), ("0", 1), ("99", 16)):
+        monkeypatch.setattr(start_mod, "lookup_int", lambda key, default, path=None, v=raw: int(v))
+        start_mod.run_api(host="127.0.0.1", port=8000)
+        assert called["workers"] == want
 
 
 def test_kill_pid_tree_skips_force_if_graceful_works(monkeypatch) -> None:

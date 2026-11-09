@@ -34,7 +34,7 @@ from app.db import init_db
 from app.db.session import PoolExhausted, db, is_integrity, is_lock_conflict
 from app.middleware.request_id import WRITE_METHODS, RequestIdMiddleware
 from app.services import audit as audit_svc
-from app.services import delivery, demo_seed, generate, orders, partitions, users
+from app.services import delivery, demo_seed, generate, locks, orders, partitions, users
 
 log = structlog.get_logger()
 
@@ -120,15 +120,27 @@ def init_admin() -> None:
         log.warning("bootstrap_admin", emp_no=emp, note="password=SN_INIT_ADMIN_PASSWORD")
 
 
+#: 启动初始化锁最长等待秒数：多进程（SN_WORKERS）、多实例同时启动时依次初始化
+STARTUP_LOCK_SECONDS = 180
+
+
 def startup() -> None:
     check_secret()
     db.configure(settings.db_target(), settings.db_pool_size)
-    init_db()
-    generate.recover_interrupted()
-    init_admin()
-    partitions.maintain(daily=settings.maintain_enabled)
-    if settings.demo_seed:
-        demo_seed.seed_if_empty()
+    # 建表、建首个管理员、演示数据都是「先看空不空、再写」：几个进程同时启动时会都看到空库、都去写，
+    # 后写的撞唯一键启动失败。整段放在跨进程的命名锁里依次做，后到的看到已建好就跳过
+    held = locks.try_acquire("startup", ["init"], STARTUP_LOCK_SECONDS)
+    if held is None:
+        raise RuntimeError(f"等待其他进程完成启动初始化超过 {STARTUP_LOCK_SECONDS} 秒")
+    try:
+        init_db()
+        generate.recover_interrupted()
+        init_admin()
+        partitions.maintain(daily=settings.maintain_enabled)
+        if settings.demo_seed:
+            demo_seed.seed_if_empty()
+    finally:
+        held.release()
     log.info("sn_center_ready", retention_days=settings.audit_retention_days)
 
 

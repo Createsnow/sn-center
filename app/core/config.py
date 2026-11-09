@@ -280,6 +280,12 @@ class Settings:
         return self.get_int("SN_PORT", 8000)
 
     @property
+    def workers(self) -> int:
+        """后端进程数（uvicorn --workers）：一个进程只能用满 1 个 CPU 核，多进程才能用上多核。
+        各进程各有一个连接池与后台调度，见运维手册「并发与连接数」。"""
+        return min(16, max(1, self.get_int("SN_WORKERS", 1)))
+
+    @property
     def db_pool_size(self) -> int:
         return max(1, self.get_int("DB_POOL_SIZE", 20))
 

@@ -5,6 +5,7 @@ production 每行一条 JSON，其他环境为便于阅读的控制台格式；�
 """
 
 import logging
+import os
 import sys
 
 import structlog
@@ -48,6 +49,12 @@ def _access_fields(_logger, _method: str, event_dict: dict) -> dict:
     return event_dict
 
 
+def _add_pid(_logger, _method: str, event_dict: dict) -> dict:
+    """进程号：多进程（SN_WORKERS > 1）时区分是哪个工作进程写的（推送任务的 runner 也带进程号）。"""
+    event_dict.setdefault("pid", os.getpid())
+    return event_dict
+
+
 def setup_logging(*, json_output: bool) -> None:
     shared = [
         structlog.contextvars.merge_contextvars,
@@ -55,6 +62,8 @@ def setup_logging(*, json_output: bool) -> None:
         structlog.processors.add_log_level,
         structlog.processors.TimeStamper(fmt="iso"),
     ]
+    if json_output:
+        shared.append(_add_pid)
     structlog.configure(
         processors=[*shared, structlog.stdlib.ProcessorFormatter.wrap_for_formatter],
         logger_factory=structlog.stdlib.LoggerFactory(),

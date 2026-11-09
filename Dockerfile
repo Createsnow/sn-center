@@ -28,4 +28,6 @@ USER appuser
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
     CMD curl -fsS http://127.0.0.1:8000/health/live || exit 1
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# 进程数 SN_WORKERS（.env，默认 1）：1 时就是单进程；大于 1 时 uvicorn 起一个守护进程管理 N 个工作进程
+# （挂掉的自动拉起），共用 8000 端口
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers \"${SN_WORKERS:-1}\""]

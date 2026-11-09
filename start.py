@@ -413,7 +413,9 @@ def reexec_in_venv() -> None:
 def run_api(*, host: str, port: int) -> None:
     if uvicorn is None:
         raise RuntimeError("uvicorn 未安装，请先创建虚拟环境")
-    uvicorn.run("app.main:app", host=host, port=port)
+    # 进程数 SN_WORKERS（默认 1）：大于 1 时 uvicorn 起守护进程管理多个工作进程，共用同一端口
+    workers = min(16, max(1, lookup_int("SN_WORKERS", 1)))
+    uvicorn.run("app.main:app", host=host, port=port, workers=workers)
 
 
 def main() -> None:
