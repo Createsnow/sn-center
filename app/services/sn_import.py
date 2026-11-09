@@ -2,7 +2,7 @@
 导入功能自成一套，记录只用 sn_import_item。
 
 - 模板（template，列见 COLUMNS，与分配页「已分配」下载的列相同，见 sn_export.FILE_HEADERS）：
-  PI、单据编号、附件项次、物料编码（也认「料号」「物料编号」）、ERP行号（也认「行号」「单据行号」）、
+  PI、单据编号、附件项次、物料编码（也认「物料编号」）、ERP行号（也认「行号」「单据行号」）、
   完整 SN（也认「SN」）、流水位数、进制位数、流水号、十进制流水号（也认「十进制流水」）、米数、产品单位、
   生产组织编号、生产组织。流水号、米数、产品单位、生产组织编号选填，其余必填（生产组织即名称，必填）。
   客户编码不在模板里，取单据的客户编码（单据没有客户编码的也能导入）；旧模板里的「客户编码」列不读。
@@ -110,8 +110,8 @@ COLUMNS = (
         "material",
         "物料编码",
         True,
-        ("料号", "物料编号"),
-        hint="须与该行的物料编码相同（列名也可写作「料号」「物料编号」）",
+        ("物料编号",),
+        hint="须与该行的物料编码相同（列名也可写作「物料编号」）",
         example="9148363",
     ),
     Column(
@@ -311,7 +311,7 @@ def _header_error(missing: list[str]):
 
 def _check_header(cells: list) -> dict[str, int]:
     """按列名认列：返回 Row 字段 → 列下标。必须有的列缺了报 IMPORT_HEADER_INVALID（列出缺的列）；
-    同一列出现两次（含别名，如「物料编码」和「料号」）报 IMPORT_HEADER_DUPLICATE；其他列名的列不读。"""
+    同一列出现两次（含别名，如「物料编码」和「物料编号」）报 IMPORT_HEADER_DUPLICATE；其他列名的列不读。"""
     at: dict[str, int] = {}
     for i, v in enumerate(cells):
         c = _BY_KEY.get(_key(v))

@@ -39,7 +39,6 @@ COL = {
 ALIAS = {
     "SN": "sn",
     "sn": "sn",
-    "料号": "material",
     "物料编号": "material",
     " pi ": "pi",
     "单据 编号": "bill",
@@ -698,6 +697,8 @@ def test_bad_files_and_headers(w, api):
     # 按列名认列：缺了必填的列（含改了列名的）列出缺哪几列
     for head, missing in (
         ([h for h in FULL if h != "ERP行号"], "ERP行号"),
+        # 程序统一用「物料编码」：「料号」不是别名，按其他列不读
+        (["料号" if h == "物料编码" else h for h in FULL], "物料编码"),
         ([h for h in FULL if h not in ("附件项次", "十进制流水号")], "附件项次、十进制流水号"),
         ([h for h in FULL if h != "生产组织"], "生产组织"),
         (["PI", "单据", *FULL[2:]], "单据编号"),
@@ -712,7 +713,6 @@ def test_bad_files_and_headers(w, api):
     for head, col in (
         ([*FULL, "PI"], "PI"),
         ([*FULL, "SN"], "完整 SN"),
-        ([*FULL, "料号"], "物料编码"),
         ([*FULL, "物料编号"], "物料编码"),
         ([*FULL, "十进制流水"], "十进制流水号"),
         ([*FULL, "行号"], "ERP行号"),
@@ -725,7 +725,6 @@ def test_bad_files_and_headers(w, api):
         list(reversed(FULL)),
         ["备注", *FULL, "说明"],
         [ALIASED.get(h, h) for h in FULL],
-        ["物料编号" if h == "物料编码" else h for h in FULL],
         ["单据行号" if h == "ERP行号" else h for h in FULL],
         [f"* {h}" if i % 2 else f"＊{h}" for i, h in enumerate(FULL)],
     ):
@@ -735,7 +734,7 @@ def test_bad_files_and_headers(w, api):
 
 ALIASED = {
     "完整 SN": "sn",
-    "物料编码": "料号",
+    "物料编码": "物料编号",
     "PI": " pi ",
     "单据编号": "单据 编号",
     "十进制流水号": "十进制流水",
