@@ -144,7 +144,11 @@ def inspect(c, keep: tuple[str, ...] = KEEP) -> Plan:
     v1_tables = {t for t, _ in creates}
     bad = [t for t in keep if t not in v1_tables]
     if bad:
-        raise SystemExit(f"--keep 里的表不在 V1：{', '.join(bad)}")
+        raise SystemExit(
+            f"--keep 里的表不在 V1：{', '.join(bad)}。建表脚本 {migrations()[0].path} 是旧版本"
+            "（Docker 部署时脚本来自镜像：先 git pull 再 docker compose build api，重新执行）；"
+            "什么也没改"
+        )
     c.execute("SELECT DATABASE() AS d")
     database = c.fetchone()["d"]
     c.execute(
@@ -275,6 +279,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     with db.connection() as conn, conn.cursor() as c:
         plan = inspect(c, keep)
+        print(f"建表脚本 {migrations()[0].path}（校验和 {plan.checksum}，{len(plan.creates)} 张表）")
         report(plan)
         bad = problems(plan)
         if bad:
