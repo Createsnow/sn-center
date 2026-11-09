@@ -94,16 +94,16 @@ const list = usePaged<any>((q) => api.transfers({ ...q, ...lq, pi: lq.pi.trim(),
 function modeLabel(row: any) {
   return row.kind === "BILL" ? t(`transfer.billMode.${row.mode}`) : t(`transfer.orgMode.${row.mode}`);
 }
-/** 来源范围：整单 / 料号 / 号段。转单没有料号、号段列，取范围说明「PI / 单据 / 各料号（附件项次、号段或数量）」去掉 PI、单据。 */
+/** 来源范围：整单 / 物料编码 / 号段。转单没有物料编码、号段列，取范围说明「PI / 单据 / 各物料编码（附件项次、号段或数量）」去掉 PI、单据。 */
 function sourceText(d: any) {
-  const rest = d.kind === "BILL" ? (d.scope_text || "").split(" / ").slice(2) : [d.scope !== "BILL" && d.from_material && `${t("transfer.partNo")} ${d.from_material}`, d.from_sn && snRange(d)];
+  const rest = d.kind === "BILL" ? (d.scope_text || "").split(" / ").slice(2) : [d.scope !== "BILL" && d.from_material && `${t("common.material")} ${d.from_material}`, d.from_sn && snRange(d)];
   return [scopeLabel(d.scope), ...rest].filter(Boolean).join(" · ");
 }
-/** 目标：单据 · ERP行号（多个料号转到不同行时不带 ERP行号）· 料号 · 客户。 */
+/** 目标：单据 · ERP行号（多个物料编码转到不同行时不带 ERP行号）· 物料编码 · 客户。 */
 function targetText(d: { to_bill?: string; to_seq?: number | null; to_material?: string; to_customer?: string }) {
   return [
     d.to_bill && (d.to_seq ? `${d.to_bill} · ${t("transfer.lineNo", { n: d.to_seq })}` : d.to_bill),
-    d.to_material && `${t("transfer.partNo")} ${d.to_material}`,
+    d.to_material && `${t("common.material")} ${d.to_material}`,
     d.to_customer && `${t("common.customer")} ${d.to_customer}`,
   ].filter(Boolean).join(" · ");
 }

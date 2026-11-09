@@ -178,8 +178,8 @@ M = {
 "roles.auditor": ("审计员", "Auditor", "Kiểm toán viên"),
 "roles.mes": ("MES 接口账户", "MES interface account", "Tài khoản giao diện MES"),
 "scope.BILL": ("整单转移", "Whole bill", "Cả chứng từ"),
-"scope.MATERIAL": ("按料号转移", "By part No.", "Theo mã hàng"),
-"scope.RANGE": ("按料号 · 单枚或号段", "By part No. · single SN / range", "Theo mã hàng · một SN / dải số"),
+"scope.MATERIAL": ("按物料编码转移", "By material code", "Theo mã vật tư"),
+"scope.RANGE": ("按物料编码 · 单枚或号段", "By material code · single SN / range", "Theo mã vật tư · một SN / dải số"),
 # ---------------- audit actions ----------------
 "actions.LOGIN": ("登录", "Login", "Đăng nhập"),
 "actions.PASSWORD_CHANGE": ("修改密码", "Password changed", "Đổi mật khẩu"),

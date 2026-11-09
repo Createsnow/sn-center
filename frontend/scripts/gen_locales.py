@@ -63,8 +63,10 @@ def main():
             problems.append(f"ui {key}: placeholders differ {phs}")
         for lang, v in zip(LANGS, vals, strict=True):
             ui[lang][key] = escape(v)
-    # 错误码中文取后端 app/core/errors.py；格式化工具会把长的拆成多行：(\n 409,\n "…",\n)
-    zh_errors = dict(re.findall(r'^\s+([A-Z0-9_]+) = \(\s*\d+,\s*"([^"]*)",?\s*\)', PY.read_text("utf-8"), re.M))
+    # 错误码中文取后端 app/core/errors.py；格式化工具会把长的拆成多行：(\n 409,\n "…",\n)，
+    # 超长的再拆成相邻的几段字符串（"…"\n "…"），按 Python 规则拼成一句
+    found = re.findall(r'^\s+([A-Z0-9_]+) = \(\s*\d+,\s*((?:"[^"]*"\s*)+),?\s*\)', PY.read_text("utf-8"), re.M)
+    zh_errors = {code: "".join(re.findall(r'"([^"]*)"', lits)) for code, lits in found}
     errs = {lang: {} for lang in LANGS}
     for code, zh in zh_errors.items():
         if code not in E:

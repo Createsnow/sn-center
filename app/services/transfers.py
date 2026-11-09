@@ -17,17 +17,17 @@
 页面不区分转单、转组织（统一入口 preview_auto / transfer）：系统按 decide_kind 判断，目标单据与来源不同、
 且目标生产组织就是目标单据的生产组织 → 转单；其余 → 转组织。
 
-转单、转组织的来源与目标规则相同：来源按 PI → 单据筛选，范围二选一——整单转移（单据下全部号），或按料号转移
-（选一个或多个料号；料号即物料编码，与附件项次同级，「料号 + 附件项次」确定一组号；每组可转全部、单枚或连续号段、
+转单、转组织的来源与目标规则相同：来源按 PI → 单据筛选，范围二选一——整单转移（单据下全部号），或按物料编码转移
+（选一个或多个物料编码；物料编码与附件项次同级，「物料编码 + 附件项次」确定一组号；每组可转全部、单枚或连续号段、
 或指定数量——按流水从小到大取可转的号）；转组织另限来源生产组织（转单指定了来源生产组织时同样只取该组织的号）。
-目标 PI、单据、生产组织都必填；只有同料号、同附件项次才能转移：每组号改挂到目标单据中料号、附件项次都相同的物料行
-（客户取目标单据的；这样的行有多行时按米数相符的选，仍有多行须指定序号；同一单据内转组织时留在原行），
-没有这样的行则拒绝（整单转移时单据下每个料号 + 附件项次都要有）。
+目标 PI、单据、生产组织都必填；只有同物料编码、同附件项次才能转移：每组号改挂到目标单据中物料编码、附件项次都相同的
+物料行（客户取目标单据的；这样的行有多行时按米数相符的选，仍有多行须指定序号；同一单据内转组织时留在原行），
+没有这样的行则拒绝（整单转移时单据下每个物料编码 + 附件项次都要有）。
 转单的目标生产组织就是目标单据的生产组织、目标单据不能是来源单据；
 转组织的目标生产组织可任选启用的（可与来源相同）。
 号换了物料行时已生成数、已分配数随号移动，额度不变。
 
-SN 导入的号（origin = IMPORT）与生成的号同一套转移规则（同料号、同附件项次、米数相符），区别只在挂靠的记法：
+SN 导入的号（origin = IMPORT）与生成的号同一套转移规则（同物料编码、同附件项次、米数相符），区别只在挂靠的记法：
 号池里导入的号的单据序号始终为 0（导入功能自成一套，不进生成页的物料行，已生成数、已分配数都不计），
 所在物料行记在导入记录 sn_import_item.cur_bill_seq（见 _line_of），转移时随号改到目标行；没有导入记录的不能转。
 """
@@ -408,47 +408,47 @@ def _after_move(cu: CurrentUser, moved: dict) -> None:
 
 @dataclass(frozen=True)
 class LineSpec:
-    """按料号转移时选中的一个料号 + 附件项次（两者同级，一起确定一组号）及其转移方式。"""
+    """按物料编码转移时选中的一个物料编码 + 附件项次（两者同级，一起确定一组号）及其转移方式。"""
 
     material_code: str | None = None
-    #: None = 该料号下全部附件项次（只传料号的旧调用）
+    #: None = 该物料编码下全部附件项次（只传物料编码的旧调用）
     attach_no: str | None = None
-    #: ALL 该料号 + 附件项次下全部号 / RANGE 单枚或连续号段 / QTY 指定数量（留空按其余字段推断）
+    #: ALL 该物料编码 + 附件项次下全部号 / RANGE 单枚或连续号段 / QTY 指定数量（留空按其余字段推断）
     mode: str | None = None
     start_sn: str | None = None
     #: 留空 = 单枚
     end_sn: str | None = None
     qty: int | None = None
-    #: 目标单据中同料号、同附件项次有多行时指定序号
+    #: 目标单据中同物料编码、同附件项次有多行时指定序号
     to_seq: int | None = None
 
 
 @dataclass(frozen=True)
 class TransferRequest:
-    """来源：PI → 单据 →（整单 / 一个或多个料号 + 附件项次，各自全部、号段或指定数量）；
-    目标：PI + 单据 + 生产组织都必填，物料行按同料号、同附件项次自动匹配。"""
+    """来源：PI → 单据 →（整单 / 一个或多个物料编码 + 附件项次，各自全部、号段或指定数量）；
+    目标：PI + 单据 + 生产组织都必填，物料行按同物料编码、同附件项次自动匹配。"""
 
     #: 来源生产组织（转组织必填；转单可不填，填了只取该组织的号）
     factory_code: str | None = None
     pi_no: str | None = None
     bill_no: str | None = None
-    #: BILL 整单 / MATERIAL 按料号（单个或多个，见 lines）/ RANGE 单个料号下单枚或连续号段（旧调用）
+    #: BILL 整单 / MATERIAL 按物料编码（单个或多个，见 lines）/ RANGE 单个物料编码下单枚或连续号段（旧调用）
     scope: str | None = None
-    #: 只选一个料号时可不用 lines，直接填以下几项
+    #: 只选一个物料编码时可不用 lines，直接填以下几项
     material_code: str | None = None
     attach_no: str | None = None
     start_sn: str | None = None
     #: 留空 = 单枚
     end_sn: str | None = None
     qty: int | None = None
-    #: 按料号转移时选中的各料号；整单转移时只用来给各料号指定目标序号
+    #: 按物料编码转移时选中的各物料编码；整单转移时只用来给各物料编码指定目标序号
     lines: tuple[LineSpec, ...] | None = None
     to_pi: str | None = None
     to_bill: str | None = None
     to_factory: str | None = None
-    #: 选填；填了须与来源料号相同（只有同料号、同附件项次才能转移）
+    #: 选填；填了须与来源物料编码相同（只有同物料编码、同附件项次才能转移）
     to_material: str | None = None
-    #: 目标单据中同料号、同附件项次有多行时指定序号（各料号未单独指定时都用它）
+    #: 目标单据中同物料编码、同附件项次有多行时指定序号（各物料编码未单独指定时都用它）
     to_seq: int | None = None
     reason: str | None = None
 
@@ -487,10 +487,10 @@ def _with_import_lines(items: list[dict]) -> list[dict]:
 
 @dataclass(frozen=True)
 class Pick:
-    """来源中选中的一组号：料号 + 附件项次（同级）及转移方式。"""
+    """来源中选中的一组号：物料编码 + 附件项次（同级）及转移方式。"""
 
     material: str
-    #: None = 该料号下全部附件项次
+    #: None = 该物料编码下全部附件项次
     attach: str | None
     mode: str
     start_sn: str = ""
@@ -505,7 +505,7 @@ class Pick:
         return self.material == o.material and (self.attach is None or o.attach is None or self.attach == o.attach)
 
     def text(self) -> str:
-        s = self.material or "(空料号)"
+        s = self.material or "(空物料编码)"
         if self.attach is not None:
             s += f"（附件项次 {self.attach or '空'}）"
         if self.mode == PICK_RANGE:
@@ -520,19 +520,19 @@ class Source:
     pi: str
     bill: str
     scope: str
-    #: 按料号转移时选中的各组；整单转移时只带各料号指定的目标序号（不限定范围）
+    #: 按物料编码转移时选中的各组；整单转移时只带各物料编码指定的目标序号（不限定范围）
     picks: tuple[Pick, ...]
 
     @property
     def single_range(self) -> Pick | None:
-        """只选了一个料号、且按号段转移时的那一组（转组织单记起止号）。"""
+        """只选了一个物料编码、且按号段转移时的那一组（转组织单记起止号）。"""
         if self.scope != SCOPE_BILL and len(self.picks) == 1 and self.picks[0].mode == PICK_RANGE:
             return self.picks[0]
         return None
 
     @property
     def doc_scope(self) -> str:
-        """转移单上记的范围：BILL 整单 / RANGE 单个料号下单枚或号段 / MATERIAL 其余按料号转移。"""
+        """转移单上记的范围：BILL 整单 / RANGE 单个物料编码下单枚或号段 / MATERIAL 其余按物料编码转移。"""
         if self.scope == SCOPE_BILL:
             return SCOPE_BILL
         return SCOPE_RANGE if self.single_range else SCOPE_MATERIAL
@@ -625,7 +625,7 @@ def _source(r: TransferRequest) -> Source:
 
 
 def _source_items(src: Source, factory: str | None, lock: bool = False) -> list[dict]:
-    """整单：来源单据（该组织）下全部号；按料号：各料号 + 附件项次下全部、号段或指定数量的号。
+    """整单：来源单据（该组织）下全部号；按物料编码：各物料编码 + 附件项次下全部、号段或指定数量的号。
     指定数量按流水从小到大取可转的号（不可转的跳过，可转的不够时拒绝）。"""
     cond, args = "pi_no = %s AND bill_no = %s", [src.pi, src.bill]
     if factory is not None:
@@ -680,7 +680,8 @@ def _slice(items: list[dict], start: str, end: str) -> list[dict]:
 
 def _dest(kind: str, r: TransferRequest, source_bill: str) -> Dest:
     """目标 PI、单据、生产组织都必填；单据须在快照中且属于该 PI。
-    转单的生产组织就是目标单据的生产组织；转组织可选任一启用的生产组织。物料行在 _targets 中按料号 + 附件项次匹配。"""
+    转单的生产组织就是目标单据的生产组织；转组织可选任一启用的生产组织。
+    物料行在 _targets 中按物料编码 + 附件项次匹配。"""
     to_pi = util.trim(r.to_pi)
     if not to_pi:
         raise biz(ErrorCode.TR_TO_PI_REQUIRED)
@@ -708,7 +709,7 @@ def _not_match(d: Dest, material: str, attach: str):
 
 
 def _dest_line(d: Dest, src: Source, r: TransferRequest, key: tuple[str, str, int], rs: list[dict]) -> dict:
-    """一组号（料号 + 附件项次 + 来源序号）的目标物料行：只有同料号、同附件项次的行才能转入。
+    """一组号（物料编码 + 附件项次 + 来源序号）的目标物料行：只有同物料编码、同附件项次的行才能转入。
     指定了序号时须是这样的行；没指定时：同一单据内转（转组织）留在原行，其余在米数相符的行里只有一行时选它。"""
     material, attach, from_seq = key
     to_mat = None if r.to_material is None else r.to_material.strip()
@@ -746,7 +747,7 @@ def _dest_line(d: Dest, src: Source, r: TransferRequest, key: tuple[str, str, in
 
 
 def _targets(items: list[dict], d: Dest, src: Source, r: TransferRequest) -> tuple[dict[int, Target], list[dict]]:
-    """号按料号 + 附件项次 + 来源序号分组，各组改挂到目标单据中同料号、同附件项次的物料行与转入生产组织；
+    """号按物料编码 + 附件项次 + 来源序号分组，各组改挂到目标单据中同物料编码、同附件项次的物料行与转入生产组织；
     目标米数与号上米数不同则拒绝（SN 已含米数）。SN 导入的号按导入记录的当前行号作来源序号，与生成的号一样匹配；
     没有导入记录的不能转、留在原单据，不参与匹配。返回 (各号的挂靠, 各组的对应)。"""
     groups: dict[tuple[str, str, int], list[dict]] = {}
@@ -790,7 +791,7 @@ class Plan:
     dest: Dest
     items: list[dict]
     targets: dict[int, Target]
-    #: 各组（料号 + 附件项次 + 来源序号）→ 目标序号
+    #: 各组（物料编码 + 附件项次 + 来源序号）→ 目标序号
     mapping: list[dict]
 
     def to_seq(self) -> int | None:
@@ -802,7 +803,7 @@ class Plan:
         return util.cut("、".join(dict.fromkeys(m["material_code"] for m in self.mapping)), 64)
 
     def to_text(self) -> str:
-        """目标说明（操作痕迹用）：单据 / 序号 / 料号 / PI / 生产组织，多组时序号逐组列出。"""
+        """目标说明（操作痕迹用）：单据 / 序号 / 物料编码 / PI / 生产组织，多组时序号逐组列出。"""
         seqs = ",".join(f"{m['material_code']}#{m['attach_no']}:{m['from_seq']}->{m['to_seq']}" for m in self.mapping)
         return f"{self.dest.bill}/{seqs}/{self.dest.pi}/{self.dest.factory}"
 
@@ -838,9 +839,10 @@ def decide_kind(r: TransferRequest) -> str:
 
 
 def sources(cu: CurrentUser, kind: str, factory: str | None, pi: str | None) -> dict:
-    """来源候选：PI 下各单据、各料号 + 附件项次（同级）分配成功的号数（待分配的号不能转；SN 导入的号与生成的号一起算；
-    转组织限来源生产组织），供逐级筛选。materials 按料号 + 附件项次列出；rows 再按生产组织细分，带号上的客户、米数
-    与号所在的 ERP行号 seqs（导入的号取导入记录的当前行号；页面据此带出来源生产组织与来源信息）。"""
+    """来源候选：PI 下各单据、各物料编码 + 附件项次（同级）分配成功的号数（待分配的号不能转；
+    SN 导入的号与生成的号一起算；转组织限来源生产组织），供逐级筛选。materials 按物料编码 + 附件项次列出；
+    rows 再按生产组织细分，带号上的客户、米数与号所在的 ERP行号 seqs
+    （导入的号取导入记录的当前行号；页面据此带出来源生产组织与来源信息）。"""
     p = util.trim(pi)
     if not p:
         raise biz(ErrorCode.PI_REQUIRED)

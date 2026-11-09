@@ -551,8 +551,9 @@ def bill_body(pi, bill, to_bill, to_factory, scope="BILL", reason="转单", **kw
 
 
 def test_imported_sns_transfer_like_generated(w, api, sql):
-    """导入的号分配后与生成的号一样转移（同料号、同附件项次）：号池里单据序号仍为 0，所在物料行记到导入记录的当前行号；
-    不计已生成数；MES 收到的改挂明细 billSeq 为新行号，转出批次为转出前的行号；转出号清单、转移明细、导出列出流水号。"""
+    """导入的号分配后与生成的号一样转移（同物料编码、同附件项次）：号池里单据序号仍为 0，
+    所在物料行记到导入记录的当前行号；不计已生成数；MES 收到的改挂明细 billSeq 为新行号，转出批次为转出前的行号；
+    转出号清单、转移明细、导出列出流水号。"""
     org, pi, bill = mk(w, ("M1", 2))
     org_b = w.org(uid("O")[:10])
     w.enable_mes(org)
@@ -659,7 +660,7 @@ def test_imported_sns_transfer_like_generated(w, api, sql):
 
 
 def test_import_without_matching_target_line_cannot_transfer(w, api, sql):
-    """目标单据没有同料号、同附件项次的物料行：导入的号与生成的号一样拒绝，号不动。"""
+    """目标单据没有同物料编码、同附件项次的物料行：导入的号与生成的号一样拒绝，号不动。"""
     org, pi, bill = mk(w, ("M1", 1))
     a = uid("SA")
     ok(run(api, xlsx(rec(pi, bill, a, org)), w.admin))

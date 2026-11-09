@@ -204,8 +204,8 @@
   },
   "scope": {
     "BILL": "Cả chứng từ",
-    "MATERIAL": "Theo mã hàng",
-    "RANGE": "Theo mã hàng · một SN / dải số"
+    "MATERIAL": "Theo mã vật tư",
+    "RANGE": "Theo mã vật tư · một SN / dải số"
   },
   "actions": {
     "LOGIN": "Đăng nhập",
@@ -1201,7 +1201,7 @@
     "source": "Nguồn",
     "target": "Đích",
     "piInOut": "PI (đi hoặc đến)",
-    "emptyMaterial": "(không mã hàng)",
+    "emptyMaterial": "(không mã vật tư)",
     "fromBill": "Chứng từ nguồn",
     "toBill": "Chứng từ đích",
     "blocked": {
@@ -1230,7 +1230,7 @@
     "after": "Sau khi chuyển",
     "current": "Hiện tại",
     "transferredOut": "Đã chuyển đi",
-    "desc": "Gắn SN sang lệnh sản xuất hoặc tổ chức khác; chuỗi SN không đổi. Tạo phiếu chuyển không cần chọn loại: điền nguồn và đích, hệ thống tự xác định — đổi chứng từ và giữ tổ chức của chứng từ đích ghi nhận là chuyển chứng từ, đổi tổ chức (hoặc đổi tổ chức trong cùng chứng từ) ghi nhận là chuyển tổ chức. Có thể chuyển cả chứng từ, hoặc theo mã hàng (một hoặc nhiều mã hàng, mỗi mã toàn bộ, theo dải số hoặc theo số lượng); mã hàng đi cùng hạng mục phụ kiện, chỉ chuyển được khi cùng mã hàng và cùng hạng mục phụ kiện. Quản trị hệ thống và nhân viên vận hành đều chuyển trực tiếp, hiệu lực ngay, bắt buộc nhập lý do; chỉ SN đã phân bổ mới được chuyển; nhân viên vận hành cần được ủy quyền nguồn, đích không giới hạn. MES được báo bằng lần đẩy điều chuyển / chuyển đi tự động.",
+    "desc": "Gắn SN sang lệnh sản xuất hoặc tổ chức khác; chuỗi SN không đổi. Tạo phiếu chuyển không cần chọn loại: điền nguồn và đích, hệ thống tự xác định — đổi chứng từ và giữ tổ chức của chứng từ đích ghi nhận là chuyển chứng từ, đổi tổ chức (hoặc đổi tổ chức trong cùng chứng từ) ghi nhận là chuyển tổ chức. Có thể chuyển cả chứng từ, hoặc theo mã vật tư (một hoặc nhiều mã vật tư, mỗi mã toàn bộ, theo dải số hoặc theo số lượng); mã vật tư đi cùng hạng mục phụ kiện, chỉ chuyển được khi cùng mã vật tư và cùng hạng mục phụ kiện. Quản trị hệ thống và nhân viên vận hành đều chuyển trực tiếp, hiệu lực ngay, bắt buộc nhập lý do; chỉ SN đã phân bổ mới được chuyển; nhân viên vận hành cần được ủy quyền nguồn, đích không giới hạn. MES được báo bằng lần đẩy điều chuyển / chuyển đi tự động.",
     "snCount": "{n} SN",
     "noSnInPi": "PI này không có SN",
     "noBillInPi": "Ảnh chụp không có chứng từ của PI này",
@@ -1241,7 +1241,7 @@
     "locatePlaceholder": "Nhập SN đầy đủ, số chứng từ hoặc PI rồi nhấn Enter để điền nguồn",
     "locateBtn": "Định vị",
     "located": {
-      "SN": "Đã điền PI, chứng từ, mã hàng, hạng mục phụ kiện, tổ chức và SN đầu",
+      "SN": "Đã điền PI, chứng từ, mã vật tư, hạng mục phụ kiện, tổ chức và SN đầu",
       "BILL": "Đã điền PI và chứng từ",
       "PI": "Đã điền PI"
     },
@@ -1260,10 +1260,9 @@
     "reasonTip": "Chuyển trực tiếp, hiệu lực ngay; lý do được lưu trên phiếu chuyển và nhật ký thao tác",
     "reasonRequired": "Vui lòng nhập lý do chuyển",
     "submit": "Chuyển",
-    "partNo": "Mã hàng",
-    "linesTitle": "Chi tiết mã hàng",
-    "sameKeyHint": "Chỉ chuyển được khi cùng mã hàng và cùng hạng mục phụ kiện: danh sách dòng ERP đích chỉ gồm các dòng của chứng từ đích có cùng mã hàng và hạng mục phụ kiện",
-    "noLines": "Chọn PI, chứng từ (và tổ chức nguồn) để liệt kê mã hàng có thể chuyển",
+    "linesTitle": "Chi tiết mã vật tư",
+    "sameKeyHint": "Chỉ chuyển được khi cùng mã vật tư và cùng hạng mục phụ kiện: danh sách dòng ERP đích chỉ gồm các dòng của chứng từ đích có cùng mã vật tư và hạng mục phụ kiện",
+    "noLines": "Chọn PI, chứng từ (và tổ chức nguồn) để liệt kê mã vật tư có thể chuyển",
     "groupQty": "Số SN",
     "way": "Cách chuyển",
     "configure": "Dải số / số lượng",
@@ -1278,15 +1277,15 @@
     "lineOption": "Dòng ERP {seq} · {material} · hạng mục {attach} · chiều dài {length}",
     "wayShort": "Cách",
     "match": "Đối chiếu",
-    "matchOk": "✓ Cùng mã hàng · cùng hạng mục",
+    "matchOk": "✓ Cùng mã vật tư · cùng hạng mục",
     "keepLine": "Giữ dòng hiện tại",
     "pickLine": "Chọn dòng ERP",
     "lineIssue": {
-      "NO_MATCH": "✗ Đích không có dòng cùng mã hàng, hạng mục",
+      "NO_MATCH": "✗ Đích không có dòng cùng mã vật tư, hạng mục",
       "LENGTH": "✗ Khác chiều dài",
       "PICK_SEQ": "{n} dòng phù hợp: hãy chọn"
     },
-    "confirmLine": "· Mã hàng {material} / hạng mục phụ kiện {attach} (dòng ERP {from}) → dòng ERP {seq}: {n} SN"
+    "confirmLine": "· Mã vật tư {material} / hạng mục phụ kiện {attach} (dòng ERP {from}) → dòng ERP {seq}: {n} SN"
   },
   "users": {
     "title": "Người dùng",

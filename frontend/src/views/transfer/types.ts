@@ -16,7 +16,7 @@ export interface Target {
   length: string;
 }
 
-/** 来源候选：PI 下一张单据及各料号 + 附件项次（同级）的号数；rows 再按生产组织细分，带号上的客户、米数。 */
+/** 来源候选：PI 下一张单据及各物料编码 + 附件项次（同级）的号数；rows 再按生产组织细分，带号上的客户、米数。 */
 export interface SourceBill {
   bill_no: string;
   qty: number;
@@ -28,7 +28,7 @@ export interface SourceBill {
   }[];
 }
 
-/** 新建转移料号明细的一行：来源单据在来源生产组织下的一个「料号 + 附件项次」。 */
+/** 新建转移物料编码明细的一行：来源单据在来源生产组织下的一个「物料编码 + 附件项次」。 */
 export interface SourceGroup {
   key: string;
   material_code: string;
@@ -40,7 +40,7 @@ export interface SourceGroup {
   seqs: number[];
 }
 
-/** 快速定位的结果：SN 带出 PI、单据、料号、附件项次、生产组织与 SN；单据编号带出 PI、单据；PI 只带 PI。 */
+/** 快速定位的结果：SN 带出 PI、单据、物料编码、附件项次、生产组织与 SN；单据编号带出 PI、单据；PI 只带 PI。 */
 export type Located =
   | { by: "SN"; pi: string; bill_no: string; material_code: string; attach_no: string; factory_code: string; sn: string }
   | { by: "BILL"; pi: string; bill_no: string; material_code?: undefined; attach_no?: undefined; factory_code?: undefined; sn?: undefined }
@@ -61,7 +61,7 @@ export interface Preview {
   /** 各行都转到同一物料行时为该行序号，否则为空（见 lines） */
   to_seq: number | null;
   to_material: string;
-  /** 各组（料号 + 附件项次 + 来源序号）对应的目标序号与枚数 */
+  /** 各组（物料编码 + 附件项次 + 来源序号）对应的目标序号与枚数 */
   lines: {
     material_code: string; attach_no: string; from_seq: number; to_seq: number; length: string; total: number; transferable: number;
   }[];

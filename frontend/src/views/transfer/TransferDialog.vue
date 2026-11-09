@@ -76,8 +76,8 @@
       </section>
     </div>
 
-    <!-- ③ 料号明细：料号与附件项次同级，来源、目标两侧都列附件项次与料号逐行对照（附件项次在料号前，目标侧料号后为目标ERP行号）。
-         整单转移列出全部；按料号转移勾选一个或多个，各自全部、号段或指定数量；目标ERP行号只列目标单据中同料号、同附件项次的行
+    <!-- ③ 物料编码明细：物料编码与附件项次同级，来源、目标两侧都列附件项次与物料编码逐行对照（附件项次在物料编码前，目标侧物料编码后为目标ERP行号）。
+         整单转移列出全部；按物料编码转移勾选一个或多个，各自全部、号段或指定数量；目标ERP行号只列目标单据中同物料编码、同附件项次的行
          （米数相符的只有一行时自动选上） -->
     <section class="lines">
       <div class="lines__t">
@@ -95,7 +95,7 @@
           <el-table-column :label="t('common.attachNo')" width="80">
             <template #default="{ row }"><span class="key">{{ row.attach_no || "—" }}</span></template>
           </el-table-column>
-          <el-table-column :label="t('transfer.partNo')" min-width="96">
+          <el-table-column :label="t('common.material')" min-width="96">
             <template #default="{ row }"><span class="key">{{ matLabel(row.material_code) }}</span></template>
           </el-table-column>
           <el-table-column :label="t('common.lineNo')" width="72"><template #default="{ row }">{{ join(row.seqs) }}</template></el-table-column>
@@ -133,7 +133,7 @@
               <span v-if="isActive(row) && toLineOf(row)" class="key">{{ toLineOf(row)!.attach_no || "—" }}</span><span v-else class="muted">—</span>
             </template>
           </el-table-column>
-          <el-table-column :label="t('transfer.partNo')" min-width="96">
+          <el-table-column :label="t('common.material')" min-width="96">
             <template #default="{ row }">
               <span v-if="isActive(row) && toLineOf(row)" class="key">{{ matLabel(toLineOf(row)!.material_code) }}</span><span v-else class="muted">—</span>
             </template>
@@ -189,10 +189,10 @@
 <script setup lang="ts">
 /** 新建转移（F-15、F-16）：页面不区分转单、转组织，系统按目标判断——目标单据与来源不同、且生产组织就是目标单据的 → 转单，
  *  其余 → 转组织。系统管理员、普通操作员都直接转移、立即生效，原因必填（没有申请、审批）。
- *  来源：快速定位（完整 SN / 单据编号 / PI）或 PI → 单据 → 范围：整单转移，或按料号转移（勾选一个或多个「料号 + 附件项次」，
- *  料号即物料编码、与附件项次同级；每行可转全部、号段或指定数量）；来源生产组织按号自动带出（号分在多个组织时才选）。
- *  目标：PI（默认同来源）→ 单据 → 生产组织（默认目标单据的，可改）；只有同料号、同附件项次才能转移——每行只能转到目标单据中
- *  料号、附件项次都相同的物料行（米数相符的只有一行时自动选上，多行时选行号）。确认框列出枚数、各行对应、不可转、转出等，
+ *  来源：快速定位（完整 SN / 单据编号 / PI）或 PI → 单据 → 范围：整单转移，或按物料编码转移（勾选一个或多个「物料编码 + 附件项次」，
+ *  物料编码与附件项次同级；每行可转全部、号段或指定数量）；来源生产组织按号自动带出（号分在多个组织时才选）。
+ *  目标：PI（默认同来源）→ 单据 → 生产组织（默认目标单据的，可改）；只有同物料编码、同附件项次才能转移——每行只能转到目标单据中
+ *  物料编码、附件项次都相同的物料行（米数相符的只有一行时自动选上，多行时选行号）。确认框列出枚数、各行对应、不可转、转出等，
  *  确认后执行；完成后发出 done（种类、单据）。 */
 import { computed, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
@@ -219,7 +219,7 @@ const tf = reactive({
   open: false, factory_code: "", pi_no: "", bill_no: "", scope: "BILL" as Scope,
   to_pi: "", to_bill: "", to_factory: "", reason: "",
 });
-/** 各行（料号 + 附件项次）的勾选、转移方式、号段或数量、目标行号；换单据、换组织时保留同一行的配置。 */
+/** 各行（物料编码 + 附件项次）的勾选、转移方式、号段或数量、目标行号；换单据、换组织时保留同一行的配置。 */
 const cfgs = reactive<Record<string, Cfg>>({});
 const loc = reactive({ q: "", by: "" as "" | Located["by"] });
 const srcBills = ref<SourceBill[]>([]);
@@ -236,7 +236,7 @@ const srcOrgs = computed(() => {
   (srcBill.value?.rows ?? []).forEach((r) => by.set(r.factory_code, (by.get(r.factory_code) ?? 0) + r.qty));
   return [...by].map(([factory_code, qty]) => ({ factory_code, qty }));
 });
-/** 来源单据在来源生产组织下的各行：料号 + 附件项次。 */
+/** 来源单据在来源生产组织下的各行：物料编码 + 附件项次。 */
 const groups = computed<SourceGroup[]>(() => groupsOf(srcBill.value?.rows ?? [], tf.factory_code));
 const active = computed<SourceGroup[]>(() => activeGroups(tf.scope, groups.value, cfgs));
 const allChecked = computed(() => groups.value.length > 0 && groups.value.every((g) => cfgs[g.key]?.checked));
@@ -282,27 +282,27 @@ function isActive(g: SourceGroup) {
 function modeOf(g: SourceGroup) {
   return tf.scope === "BILL" ? "ALL" : cfgs[g.key]?.mode ?? "ALL";
 }
-/** 目标单据中料号、附件项次都与该行相同的物料行。 */
+/** 目标单据中物料编码、附件项次都与该行相同的物料行。 */
 function cands(g: SourceGroup): Target[] {
   return candidates(toLines.value, g);
 }
 function lineLengthBad(l: Target, g: SourceGroup) {
   return lengthBad(l, g, modeOf(g));
 }
-/** 该行当前对应的目标物料行：已选行号的那一行；同一单据内未选时即原行（同料号、同附件项次）。 */
+/** 该行当前对应的目标物料行：已选行号的那一行；同一单据内未选时即原行（同物料编码、同附件项次）。 */
 function toLineOf(g: SourceGroup): Target | null {
   const c = cfgs[g.key];
   const cs = cands(g);
   if (c?.to_seq !== undefined) return cs.find((l) => l.seq === c.to_seq) ?? null;
   return sameBill.value && cs.length ? cs[0] : null;
 }
-/** 对照：OK 同料号同项次 / PICK_SEQ 有多行须选行号 / NO_MATCH 目标没有同料号同项次的行 / LENGTH 米数都不同。
+/** 对照：OK 同物料编码同项次 / PICK_SEQ 有多行须选行号 / NO_MATCH 目标没有同物料编码同项次的行 / LENGTH 米数都不同。
  *  号段未填、数量越界不影响对照（在号段 / 数量列里填好即可）。 */
 function matchState(g: SourceGroup) {
   const i = issue(g);
   return i === "NO_MATCH" || i === "LENGTH" || i === "PICK_SEQ" ? i : "OK";
 }
-/** 目标没有同料号同项次、或米数都不同的行整行标红。 */
+/** 目标没有同物料编码同项次、或米数都不同的行整行标红。 */
 function rowClass({ row }: { row: SourceGroup }) {
   if (!isActive(row) || !tf.to_bill) return "";
   const m = matchState(row);
@@ -322,7 +322,7 @@ function open() {
   reasonTouched.value = false;
 }
 
-/** 快速定位：SN 带出 PI、单据、料号 + 附件项次、生产组织与起号（按料号转移、该行按号段）；单据编号带出 PI、单据；PI 带出 PI。 */
+/** 快速定位：SN 带出 PI、单据、物料编码 + 附件项次、生产组织与起号（按物料编码转移、该行按号段）；单据编号带出 PI、单据；PI 带出 PI。 */
 async function locate() {
   const q = loc.q.trim();
   if (!q) return;
@@ -345,7 +345,7 @@ async function locate() {
   }
 }
 
-/** 来源候选：PI 下各单据、各料号 + 附件项次、各生产组织的号数；preset 为快速定位带出的值。 */
+/** 来源候选：PI 下各单据、各物料编码 + 附件项次、各生产组织的号数；preset 为快速定位带出的值。 */
 async function loadSources(preset: { bill?: string; factory?: string } = {}) {
   sourcesLoaded.value = false;
   const pi = tf.pi_no.trim();
@@ -378,7 +378,7 @@ function syncLines() {
   for (const g of groups.value) if (!cfgs[g.key]) cfgs[g.key] = { ...defaultCfg(), checked: groups.value.length === 1 };
   groups.value.forEach(refreshSeq);
 }
-/** 目标行号按同料号、同附件项次自动匹配（米数相符的只有一行时选上）；同一单据内默认留在原行（不选）。 */
+/** 目标行号按同物料编码、同附件项次自动匹配（米数相符的只有一行时选上）；同一单据内默认留在原行（不选）。 */
 function refreshSeq(g: SourceGroup) {
   const c = cfgs[g.key];
   if (!c) return;

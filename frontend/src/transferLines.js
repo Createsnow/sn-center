@@ -1,7 +1,7 @@
 /**
- * 新建转移的料号明细（F-15、F-16）：料号（物料编码）与附件项次同级，「料号 + 附件项次」确定一组号。
- * 整单转移 = 来源单据下全部组；按料号转移 = 勾选一组或多组，每组可转全部（ALL）、号段（RANGE）或指定数量（QTY）。
- * 只有同料号、同附件项次才能转移：每组只能转到目标单据中料号、附件项次都相同的物料行；这样的行有多行时
+ * 新建转移的物料编码明细（F-15、F-16）：物料编码与附件项次同级，「物料编码 + 附件项次」确定一组号。
+ * 整单转移 = 来源单据下全部组；按物料编码转移 = 勾选一组或多组，每组可转全部（ALL）、号段（RANGE）或指定数量（QTY）。
+ * 只有同物料编码、同附件项次才能转移：每组只能转到目标单据中物料编码、附件项次都相同的物料行；这样的行有多行时
  * 在米数相符的行里只有一行就自动选上，否则须选行号；同一单据内转（转组织）不选行号即留在原行。与后台 transfers._dest_line 一致。
  *
  * @typedef {{ material_code: string, attach_no: string, factory_code: string, qty: number, customers: string[], lengths: string[], seqs?: number[] }} SrcRow
@@ -12,10 +12,10 @@
 
 export const LINE_MODES = ["ALL", "RANGE", "QTY"];
 
-/** 组的键：料号 + 附件项次。 */
+/** 组的键：物料编码 + 附件项次。 */
 export const groupKey = (material, attach) => `${material}\u0001${attach ?? ""}`;
 
-/** 来源单据在所选生产组织下的各组（料号 + 附件项次），按料号、附件项次排序；seqs 为组内号所在的 ERP行号（从小到大）。 @returns {Group[]} */
+/** 来源单据在所选生产组织下的各组（物料编码 + 附件项次），按物料编码、附件项次排序；seqs 为组内号所在的 ERP行号（从小到大）。 @returns {Group[]} */
 export function groupsOf(rows, factory) {
   const by = new Map();
   for (const r of rows || []) {
@@ -36,7 +36,7 @@ export function defaultCfg() {
   return { checked: false, mode: "ALL", start_sn: "", end_sn: "", qty: undefined, to_seq: undefined };
 }
 
-/** 目标单据中料号、附件项次都与该组相同的物料行。 */
+/** 目标单据中物料编码、附件项次都与该组相同的物料行。 */
 export function candidates(lines, g) {
   return (lines || []).filter((l) => l.material_code === g.material_code && (l.attach_no ?? "") === g.attach_no);
 }
@@ -55,12 +55,12 @@ export function autoSeq(lines, g, cfg) {
   return fit.length === 1 ? fit[0].seq : undefined;
 }
 
-/** 本次参与转移的组：整单转移为全部组（全部号）；按料号转移为勾选的组。 */
+/** 本次参与转移的组：整单转移为全部组（全部号）；按物料编码转移为勾选的组。 */
 export function activeGroups(scope, groups, cfgs) {
   return scope === "BILL" ? groups : groups.filter((g) => cfgs[g.key]?.checked);
 }
 
-/** 一组的问题（空串 = 可以转）：NO_MATCH 目标单据没有同料号、同附件项次的行 / LENGTH 米数都不同 / PICK_SEQ 须选目标行号 /
+/** 一组的问题（空串 = 可以转）：NO_MATCH 目标单据没有同物料编码、同附件项次的行 / LENGTH 米数都不同 / PICK_SEQ 须选目标行号 /
  *  NEED_SN 号段须填起号 / BAD_QTY 数量须为 1 ～ 该组枚数的整数。sameBill = 目标单据就是来源单据（不选行号即留在原行）。 */
 export function lineIssue(scope, g, cfg, lines, sameBill) {
   const mode = scope === "BILL" ? "ALL" : cfg.mode;
@@ -73,7 +73,7 @@ export function lineIssue(scope, g, cfg, lines, sameBill) {
   return cands.every((l) => lengthBad(l, g, mode)) ? "LENGTH" : "PICK_SEQ";
 }
 
-/** 请求体的 lines：整单转移只带各组的目标行号；按料号转移带勾选各组的方式、号段或数量与目标行号。 */
+/** 请求体的 lines：整单转移只带各组的目标行号；按物料编码转移带勾选各组的方式、号段或数量与目标行号。 */
 export function linesBody(scope, groups, cfgs) {
   return activeGroups(scope, groups, cfgs).map((g) => {
     const c = cfgs[g.key] || defaultCfg();

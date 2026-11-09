@@ -15,7 +15,7 @@
           <el-descriptions-item :label="t('transfer.fromBill')">{{ det.doc.from_bill }} · {{ det.doc.from_pi }}</el-descriptions-item>
           <el-descriptions-item :label="t('transfer.toBill')">
             {{ det.doc.to_bill }} · {{ det.doc.to_pi }}<template v-if="det.doc.to_seq"> · {{ t("transfer.lineNo", { n: det.doc.to_seq }) }}</template>
-            <template v-if="det.doc.to_material"> · {{ t("transfer.partNo") }} {{ det.doc.to_material }}</template>
+            <template v-if="det.doc.to_material"> · {{ t("common.material") }} {{ det.doc.to_material }}</template>
             <template v-if="det.doc.to_factory"> · {{ nameOf(det.doc.to_factory) }}</template>
           </el-descriptions-item>
           <el-descriptions-item :label="t('common.operator')">{{ det.doc.created_by }} · {{ fmt(det.doc.created_at) }}</el-descriptions-item>
@@ -23,12 +23,12 @@
         <template v-else>
           <el-descriptions-item :label="t('transfer.mode')">{{ t(`transfer.orgMode.${det.doc.mode}`) }}</el-descriptions-item>
           <el-descriptions-item :label="t('transfer.scope')">
-            {{ scopeLabel(det.doc.scope) }}<template v-if="det.doc.from_material && (det.doc.scope === 'MATERIAL' || det.doc.scope === 'RANGE')"> · {{ t("transfer.partNo") }} {{ det.doc.from_material }}</template>
+            {{ scopeLabel(det.doc.scope) }}<template v-if="det.doc.from_material && (det.doc.scope === 'MATERIAL' || det.doc.scope === 'RANGE')"> · {{ t("common.material") }} {{ det.doc.from_material }}</template>
             <template v-if="det.doc.from_sn"> · <span class="sn-mono">{{ snRange(det.doc) }}</span></template>
           </el-descriptions-item>
           <el-descriptions-item :label="t('transfer.source')">{{ nameOf(det.doc.from_factory) }} · {{ det.doc.from_pi }}<template v-if="det.doc.from_bill"> · {{ det.doc.from_bill }}</template></el-descriptions-item>
           <el-descriptions-item :label="t('transfer.target')">
-            {{ nameOf(det.doc.to_factory) }} · {{ det.doc.to_pi }}<template v-if="det.doc.to_bill"> · {{ det.doc.to_bill }}<template v-if="det.doc.to_seq"> · {{ t("transfer.lineNo", { n: det.doc.to_seq }) }}</template></template><template v-if="det.doc.to_material"> · {{ t("transfer.partNo") }} {{ det.doc.to_material }}</template><template v-if="det.doc.to_customer"> · {{ det.doc.to_customer }}</template>
+            {{ nameOf(det.doc.to_factory) }} · {{ det.doc.to_pi }}<template v-if="det.doc.to_bill"> · {{ det.doc.to_bill }}<template v-if="det.doc.to_seq"> · {{ t("transfer.lineNo", { n: det.doc.to_seq }) }}</template></template><template v-if="det.doc.to_material"> · {{ t("common.material") }} {{ det.doc.to_material }}</template><template v-if="det.doc.to_customer"> · {{ det.doc.to_customer }}</template>
           </el-descriptions-item>
           <el-descriptions-item :label="t('common.operator')">{{ det.doc.applied_by }} · {{ fmt(det.doc.applied_at) }}</el-descriptions-item>
         </template>
@@ -97,7 +97,7 @@
           <template #default="{ row }">
             <div>{{ statusLabel(row.from_status) }} · {{ row.from_factory || "—" }} · {{ row.from_pi }}</div>
             <div class="muted">
-              {{ row.from_bill }} · {{ t("common.attachNo") }} {{ row.attach_no || "—" }} · {{ t("transfer.partNo") }} {{ row.from_material || "—" }} · {{ t("transfer.lineNo", { n: row.from_seq }) }}
+              {{ row.from_bill }} · {{ t("common.attachNo") }} {{ row.attach_no || "—" }} · {{ t("common.material") }} {{ row.from_material || "—" }} · {{ t("transfer.lineNo", { n: row.from_seq }) }}
               · {{ t("common.length") }} {{ row.length || "—" }} · rev {{ row.from_rev }}
             </div>
             <div v-if="row.from_delivery_batch" class="muted sn-mono small">{{ row.from_delivery_batch }}</div>
@@ -106,7 +106,7 @@
         <el-table-column :label="t('transfer.after')" min-width="200">
           <template #default="{ row }">
             <div>{{ statusLabel(row.to_status) }} · {{ row.to_factory || "—" }} · {{ row.to_pi }}</div>
-            <div class="muted">{{ row.to_bill }} · {{ t("transfer.partNo") }} {{ row.to_material || "—" }} · {{ t("transfer.lineNo", { n: row.to_seq }) }} · rev {{ row.to_rev }}</div>
+            <div class="muted">{{ row.to_bill }} · {{ t("common.material") }} {{ row.to_material || "—" }} · {{ t("transfer.lineNo", { n: row.to_seq }) }} · rev {{ row.to_rev }}</div>
             <div v-if="row.out_batch_no" class="muted sn-mono small">{{ t("transfer.outBatch") }} {{ row.out_batch_no }}</div>
           </template>
         </el-table-column>

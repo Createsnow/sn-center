@@ -204,8 +204,8 @@
   },
   "scope": {
     "BILL": "Whole bill",
-    "MATERIAL": "By part No.",
-    "RANGE": "By part No. · single SN / range"
+    "MATERIAL": "By material code",
+    "RANGE": "By material code · single SN / range"
   },
   "actions": {
     "LOGIN": "Login",
@@ -1201,7 +1201,7 @@
     "source": "Source",
     "target": "Target",
     "piInOut": "PI (out or in)",
-    "emptyMaterial": "(no part No.)",
+    "emptyMaterial": "(no material code)",
     "fromBill": "Source bill",
     "toBill": "Target bill",
     "blocked": {
@@ -1230,7 +1230,7 @@
     "after": "After",
     "current": "Now",
     "transferredOut": "Transferred out",
-    "desc": "Re-attach SNs to another production order or org; SN strings never change. A new transfer does not ask for the kind: fill in the source and target and the system decides — a new bill keeping that bill's org is recorded as a bill transfer, a different org (or a new org within the same bill) as an org transfer. Transfer a whole bill, or by part No. (one or several part Nos., each in full, by range or by quantity); part No. and attachment item go together, and only the same part No. with the same attachment item can be transferred. System admins and operators both transfer directly, effective at once, with a required transfer reason; only allocated SNs can be transferred; operators need the source authorized, while the target is unrestricted. MES is informed by automatic reassign / transfer-out pushes.",
+    "desc": "Re-attach SNs to another production order or org; SN strings never change. A new transfer does not ask for the kind: fill in the source and target and the system decides — a new bill keeping that bill's org is recorded as a bill transfer, a different org (or a new org within the same bill) as an org transfer. Transfer a whole bill, or by material code (one or several material codes, each in full, by range or by quantity); material code and attachment item go together, and only the same material code with the same attachment item can be transferred. System admins and operators both transfer directly, effective at once, with a required transfer reason; only allocated SNs can be transferred; operators need the source authorized, while the target is unrestricted. MES is informed by automatic reassign / transfer-out pushes.",
     "snCount": "{n} SNs",
     "noSnInPi": "No SNs under this PI",
     "noBillInPi": "No bills of this PI in the snapshot",
@@ -1241,7 +1241,7 @@
     "locatePlaceholder": "Enter a full SN, bill No. or PI and press Enter to fill in the source",
     "locateBtn": "Locate",
     "located": {
-      "SN": "PI, bill, part No., attachment item, org and start SN filled in",
+      "SN": "PI, bill, material code, attachment item, org and start SN filled in",
       "BILL": "PI and bill filled in",
       "PI": "PI filled in"
     },
@@ -1260,10 +1260,9 @@
     "reasonTip": "Direct transfer, effective at once; the reason is kept on the transfer document and in the audit trail",
     "reasonRequired": "Please enter the transfer reason",
     "submit": "Transfer",
-    "partNo": "Part No.",
-    "linesTitle": "Part Nos.",
-    "sameKeyHint": "Only the same part No. with the same attachment item can be transferred: the target ERP line No. list only shows lines of the target bill with the same part No. and attachment item",
-    "noLines": "Pick the PI and bill (and source org) to list transferable part Nos.",
+    "linesTitle": "Material codes",
+    "sameKeyHint": "Only the same material code with the same attachment item can be transferred: the target ERP line No. list only shows lines of the target bill with the same material code and attachment item",
+    "noLines": "Pick the PI and bill (and source org) to list transferable material codes",
     "groupQty": "SNs",
     "way": "How",
     "configure": "Range / quantity",
@@ -1278,15 +1277,15 @@
     "lineOption": "ERP line No. {seq} · {material} · item {attach} · length {length}",
     "wayShort": "Mode",
     "match": "Check",
-    "matchOk": "✓ Same part No. · same item",
+    "matchOk": "✓ Same material code · same item",
     "keepLine": "Keep its line",
     "pickLine": "Pick ERP line No.",
     "lineIssue": {
-      "NO_MATCH": "✗ No line with this part No. and item",
+      "NO_MATCH": "✗ No line with this material code and item",
       "LENGTH": "✗ Length differs",
       "PICK_SEQ": "{n} lines match: pick one"
     },
-    "confirmLine": "· Part No. {material} / attachment item {attach} (ERP line No. {from}) → ERP line No. {seq}: {n} SNs"
+    "confirmLine": "· Material code {material} / attachment item {attach} (ERP line No. {from}) → ERP line No. {seq}: {n} SNs"
   },
   "users": {
     "title": "Users",

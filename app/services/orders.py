@@ -824,7 +824,7 @@ def line_extras(keys: list[tuple[str, int]]) -> tuple[dict, dict, dict, dict]:
 
 
 def effective_lines(ls: list[dict]) -> list[dict]:
-    """物料行带上生效的附件项次（eff_attach）与米数（eff_length），含页面填写的（转移按同料号、同附件项次匹配目标行）。"""
+    """物料行带上生效的附件项次（eff_attach）与米数（eff_length），含页面填写的（转移按同物料编码、同附件项次匹配目标行）。"""
     keys = [(r["bill_no"], r["seq"]) for r in ls]
     lens, fills = line_lengths(keys), _by_line("sn_line_attach", keys)
     return [

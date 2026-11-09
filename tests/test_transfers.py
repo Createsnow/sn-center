@@ -283,7 +283,7 @@ def test_org_range_transfer_validation(w, api, sql):
 
 
 def test_org_transfer_material_length_check(w, api):
-    """只有同料号、同附件项次才能转移；同料号同项次的目标行米数不同也不能转。"""
+    """只有同物料编码、同附件项次才能转移；同物料编码同项次的目标行米数不同也不能转。"""
     a, pi, bill = setup(w, qty=1, mes=False)
     w.allocate(pi)
     other, diff_mat, diff_attach = uid("MO"), uid("MO"), uid("MO")
@@ -299,7 +299,7 @@ def test_org_transfer_material_length_check(w, api):
 
 def test_transfer_to_empty_length_line_rejected(w, api, sql):
     """目标物料行米数为空：带米数的号（即使米数为 000）不能转入，米数须与号上一致；
-    同料号同项次有多行时自动选米数相符的那一行。"""
+    同物料编码同项次有多行时自动选米数相符的那一行。"""
     a, pi, bill = setup(w, qty=1, mes=False, length="000")
     w.allocate(pi)
     other = uid("MO")
@@ -382,7 +382,7 @@ def test_material_scope_and_single_sn(w, api, sql):
         w.admin,
     )
     assert r.code == "TR_RANGE_INVALID"
-    # 整张单据：填了目标料号时只能是来源料号；不填时各料号分别转到同料号、同附件项次的行
+    # 整张单据：填了目标物料编码时只能是来源物料编码；不填时各物料编码分别转到同物料编码、同附件项次的行
     whole = bill_body(pi, src, tgt, org, scope="BILL", to_material="M1")
     assert api.post("/api/transfers/bill", whole, w.admin).code == "TR_TARGET_LINE_NOT_MATCH"
     t = ok(api.post("/api/transfers/bill", {**whole, "to_material": None}, w.admin))
@@ -404,7 +404,7 @@ def test_target_fields_required_and_checked(w, api):
 
     assert post(to_bill=None).code == "TR_TO_BILL_REQUIRED"
     assert post(to_factory=None).code == "TR_TO_FACTORY_REQUIRED"
-    assert post(to_material="MX").code == "TR_TARGET_LINE_NOT_MATCH", "只有同料号才能转移"
+    assert post(to_material="MX").code == "TR_TARGET_LINE_NOT_MATCH", "只有同物料编码才能转移"
     assert post(to_pi=uid("PI")).code == "TR_TARGET_PI_MISMATCH"
     assert post(to_factory=other).code == "TR_TARGET_ORG_MISMATCH", "转单的生产组织 = 目标单据的生产组织"
     assert post(to_bill=src).code == "TR_TARGET_BILL_INVALID", "转单的目标不能是来源单据"
@@ -425,12 +425,12 @@ def test_target_fields_required_and_checked(w, api):
     assert post(to_bill=dup).code == "TR_TARGET_LINE_REQUIRED"
     ok(post(to_bill=dup, to_seq=2))
     one = [{"material_code": "M1", "attach_no": "1", "to_seq": 2}]
-    assert ok(post(to_bill=dup, to_material=None, lines=one))["to_seq"] == 2, "整单转移可给各料号指定目标序号"
+    assert ok(post(to_bill=dup, to_material=None, lines=one))["to_seq"] == 2, "整单转移可给各物料编码指定目标序号"
 
 
 def test_multi_material_transfer_by_all_range_and_qty(w, api, sql):
-    """按料号转移可一次选多个料号（料号 + 附件项次同级），各自全部、号段或指定数量；
-    每组只转到目标单据中同料号、同附件项次的行；指定数量按流水从小到大取。"""
+    """按物料编码转移可一次选多个物料编码（物料编码 + 附件项次同级），各自全部、号段或指定数量；
+    每组只转到目标单据中同物料编码、同附件项次的行；指定数量按流水从小到大取。"""
     org = w.org(uid("O")[:10])
     pi, src, tgt = uid("PI"), uid("MO"), uid("MO")
     w.order(src, org, "C1", pi, ("M1", 5), ("M2", 5), ("M1", 3, "100", "2"), ("M3", 2))
@@ -463,7 +463,7 @@ def test_multi_material_transfer_by_all_range_and_qty(w, api, sql):
     assert moved == {**dict.fromkeys(m1[:2], 3), **dict.fromkeys(m2[1:4], 2), **dict.fromkeys(m1b, 1)}
     gc = {(r["bill_no"], r["seq"]): r["gen_count"] for r in sql.all("SELECT * FROM sn_line_count")}
     assert (gc[(src, 1)], gc[(src, 2)], gc[(src, 3)], gc[(tgt, 1)], gc[(tgt, 2)], gc[(tgt, 3)]) == (3, 2, 0, 3, 3, 2)
-    # 目标单据没有同料号、同附件项次的行：不能转（整单转移时单据下每个料号 + 附件项次都要有）
+    # 目标单据没有同物料编码、同附件项次的行：不能转（整单转移时单据下每个物料编码 + 附件项次都要有）
     m3 = bill_body(pi, src, tgt, org, scope="MATERIAL", to_material=None, lines=[{"material_code": "M3"}])
     assert api.post("/api/transfers/preview", m3, w.admin).code == "TR_TARGET_LINE_NOT_MATCH"
     whole = bill_body(pi, src, tgt, org, to_material=None)
@@ -471,7 +471,7 @@ def test_multi_material_transfer_by_all_range_and_qty(w, api, sql):
 
 
 def test_org_transfer_within_bill_keeps_each_line(w, api, sql):
-    """同一单据内转组织：同料号、同附件项次的多行各自留在原行。"""
+    """同一单据内转组织：同物料编码、同附件项次的多行各自留在原行。"""
     a = w.org(uid("O")[:10])
     b = w.org(uid("O")[:10])
     pi, bill = uid("PI"), uid("MO")
