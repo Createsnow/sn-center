@@ -1,6 +1,6 @@
 # Adtek Platform Template 0.1.0
 
-Adtek 新项目的工程模板：React / Spring Boot 前后端同仓，模块化单体，MySQL + Redis。模板**只包含技术架构、规范、技术栈、工程要求与代码结构**，不包含业务功能代码；新项目在此骨架上按规范开发。
+Adtek 新项目的工程模板：React / Spring Boot 前后端同仓，模块化单体，MySQL。模板**只包含技术架构、规范、技术栈、工程要求与代码结构**，不包含业务功能代码；新项目在此骨架上按规范开发。
 
 ## 包含内容
 
@@ -26,7 +26,7 @@ tools\start-api.bat
 
 ## Linux 部署（Docker Compose，K8s 就绪）
 
-API、Web、迁移各为独立单进程容器；MySQL/Redis 可由 `compose.infra.yml` 提供或使用外部服务。先在构建机或 CI 完成验证得到 JAR 与 `frontend/dist`，然后：
+API、Web、迁移各为独立单进程容器；MySQL 可由 `compose.infra.yml` 提供或使用外部服务。先在构建机或 CI 完成验证得到 JAR 与 `frontend/dist`，然后：
 
 ```bash
 sh deploy/init-secrets.sh

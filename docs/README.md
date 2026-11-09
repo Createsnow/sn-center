@@ -11,3 +11,9 @@
 | 5 | [代码风格与格式](05-代码风格与格式.md) | Java、XML、POM、TypeScript、批处理与 Shell 的格式与命名 |
 | 6 | [工程要求与命令](06-工程要求与命令.md) | Windows 本地命令、Linux Compose 部署与 K8s 基础、测试与交付要求 |
 | 7 | [开发自查清单](开发自查清单.md) | 提交前自行核对 |
+
+## 修订记录
+
+| 日期 | 修订 |
+| --- | --- |
+| 2026-11-09 | 移除 Redis：会话与入口预算改存 MySQL（framework 自有 `framework_*` 表）；删除 Redis 依赖、配置、Compose 服务、秘密、脚本与镜像锁条目；就绪探针只依赖 MySQL，`PlatformIT` 增加 MySQL 不可达时就绪为 DOWN 的验证。 |

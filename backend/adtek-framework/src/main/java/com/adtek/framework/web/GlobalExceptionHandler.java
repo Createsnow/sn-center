@@ -83,7 +83,7 @@ public class GlobalExceptionHandler {
         return respond(CommonErrorCode.CONFLICT, Map.of());
     }
 
-    /** MySQL 或 Redis 不可用：返回依赖失败，不放行请求。 */
+    /** MySQL 不可用：返回依赖失败，不放行请求。 */
     @ExceptionHandler(DataAccessResourceFailureException.class)
     public ResponseEntity<Result<Void>> dependency(DataAccessResourceFailureException exception) {
         log.warn("Dependency unavailable", exception);

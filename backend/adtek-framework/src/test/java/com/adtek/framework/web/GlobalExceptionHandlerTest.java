@@ -160,7 +160,7 @@ class GlobalExceptionHandlerTest {
 
         @GetMapping("/probe/dependency")
         Result<Void> dependency() {
-            throw new DataAccessResourceFailureException("redis down");
+            throw new DataAccessResourceFailureException("mysql down");
         }
 
         @GetMapping("/probe/unexpected")

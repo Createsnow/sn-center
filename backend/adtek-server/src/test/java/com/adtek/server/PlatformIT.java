@@ -10,7 +10,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -36,9 +35,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 真实设施集成测试：临时 MySQL/Redis 容器复用 deploy/ 下的初始化脚本，按部署方式先以 migrate profile 执行迁移，再启动 API。
+ * 真实设施集成测试：临时 MySQL 容器复用 deploy/ 下的初始化脚本，按部署方式先以 migrate profile 执行迁移，再启动 API。
  *
- * <p>验证 V1 基线、DML/DDL 账号分离、就绪探针依赖 MySQL 与 Redis，以及安全链对未认证请求与缺少 CSRF 的写请求统一返回 Result 信封。
+ * <p>验证 V1 基线、DML/DDL 账号分离、就绪探针只依赖 MySQL（MySQL 不可达时为 DOWN），以及安全链对未认证请求与缺少 CSRF 的写请求统一返回 Result 信封。
  */
 @Testcontainers
 class PlatformIT {
@@ -47,7 +46,6 @@ class PlatformIT {
     private static final String ROOT_PASSWORD = randomSecret();
     private static final String APP_PASSWORD = randomSecret();
     private static final String MIGRATION_PASSWORD = randomSecret();
-    private static final String REDIS_PASSWORD = randomSecret();
     private static final JsonMapper JSON = JsonMapper.builder().build();
 
     // 镜像与 deploy/compose.infra.yml、deploy/images.lock.json 一致。
@@ -71,24 +69,9 @@ class PlatformIT {
                             MountableFile.forHostPath(DEPLOY.resolve("mysql/init-users.sh"), 0644),
                             "/docker-entrypoint-initdb.d/10-users.sh");
 
-    @Container
-    static final GenericContainer<?> REDIS =
-            new GenericContainer<>(
-                            DockerImageName.parse(
-                                    "redis:8.4.7-alpine@sha256:0514fa59e3d84e2f3be66731c5401fc2a85b8ea71b49c0116c850f6a558076f4"))
-                    .withExposedPorts(6379)
-                    .withTmpFs(Map.of("/run/redis", "rw,mode=0700"))
-                    .withCopyToContainer(
-                            Transferable.of(REDIS_PASSWORD), "/run/secrets/redis_password")
-                    .withCopyFileToContainer(
-                            MountableFile.forHostPath(DEPLOY.resolve("redis/start-redis.sh"), 0644),
-                            "/opt/adtek/start-redis.sh")
-                    .withCreateContainerCmdModifier(
-                            command -> command.withEntrypoint("sh", "/opt/adtek/start-redis.sh"));
-
     @BeforeAll
     static void migrateLikeTheDeploymentJob() {
-        // 与 tools\migrate.bat、compose migrate 服务相同：只提供 DDL 账号，不提供运行账号与 Redis 配置。
+        // 与 tools\migrate.bat、compose migrate 服务相同：只提供 DDL 账号，不提供运行账号。
         try (ConfigurableApplicationContext ignored =
                 new SpringApplicationBuilder(AdtekApplication.class)
                         .profiles("migrate")
@@ -134,9 +117,6 @@ class PlatformIT {
                                 "--ADTEK_DB_URL=" + jdbcUrl(),
                                 "--ADTEK_DB_USER=adtek_app",
                                 "--ADTEK_DB_PASSWORD=" + APP_PASSWORD,
-                                "--ADTEK_REDIS_HOST=" + REDIS.getHost(),
-                                "--ADTEK_REDIS_PORT=" + REDIS.getMappedPort(6379),
-                                "--ADTEK_REDIS_PASSWORD=" + REDIS_PASSWORD,
                                 "--ADTEK_SERVER_PORT=0")) {
             String base =
                     "http://127.0.0.1:" + api.getEnvironment().getProperty("local.server.port");
@@ -163,6 +143,28 @@ class PlatformIT {
             for (String path : List.of("/v3/api-docs", "/actuator/env", "/anything")) {
                 assertThat(send(client, get(base + path)).statusCode()).as(path).isEqualTo(401);
             }
+        }
+    }
+
+    @Test
+    void readinessIsDownWhileMySqlIsUnreachable() throws Exception {
+        // 端口 1 无服务：API 照常启动并存活，就绪探针在数据库可用前保持 DOWN（K8s 不转发流量）。
+        try (ConfigurableApplicationContext api =
+                new SpringApplicationBuilder(AdtekApplication.class)
+                        .run(
+                                "--ADTEK_DB_URL=jdbc:mysql://127.0.0.1:1/" + DATABASE,
+                                "--ADTEK_DB_USER=adtek_app",
+                                "--ADTEK_DB_PASSWORD=" + APP_PASSWORD,
+                                "--spring.datasource.hikari.connection-timeout=1000",
+                                "--ADTEK_SERVER_PORT=0")) {
+            String base =
+                    "http://127.0.0.1:" + api.getEnvironment().getProperty("local.server.port");
+            HttpClient client = HttpClient.newHttpClient();
+
+            assertThat(send(client, get(base + "/actuator/health/liveness")).statusCode())
+                    .isEqualTo(200);
+            assertThat(send(client, get(base + "/actuator/health/readiness")).statusCode())
+                    .isEqualTo(503);
         }
     }
 

@@ -56,7 +56,7 @@ frontend:
       - frontend/dist/
       - frontend/test-results/unit.json
 
-# 只有存在 *IT.java 时运行；Testcontainers 通过 dind 启动临时 MySQL/Redis。
+# 只有存在 *IT.java 时运行；Testcontainers 通过 dind 启动临时 MySQL。
 integration:
   <<: *dind
   stage: verify

@@ -5,7 +5,7 @@ set -eu
 dir="$(cd "$(dirname "$0")" && pwd)/.secrets"
 mkdir -p "$dir"
 chmod 0700 "$dir"
-for name in mysql-root-password mysql-app-password mysql-migration-password redis-password; do
+for name in mysql-root-password mysql-app-password mysql-migration-password; do
   file="$dir/$name"
   if [ ! -s "$file" ]; then
     od -An -N32 -tx1 /dev/urandom | tr -d ' \n' > "$file"

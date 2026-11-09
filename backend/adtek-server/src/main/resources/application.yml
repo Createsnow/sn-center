@@ -9,13 +9,6 @@ spring:
       maximum-pool-size: 12
       minimum-idle: 2
       connection-timeout: 5000
-  data:
-    redis:
-      host: ${ADTEK_REDIS_HOST}
-      port: ${ADTEK_REDIS_PORT}
-      password: ${ADTEK_REDIS_PASSWORD}
-      connect-timeout: 2s
-      timeout: 2s
   # API 运行时不执行迁移、不持有 DDL 账号；迁移只通过 migrate profile 单次执行。
   flyway:
     enabled: false
@@ -41,7 +34,7 @@ management:
         enabled: true
       group:
         readiness:
-          include: readinessState,db,redis
+          include: readinessState,db
 springdoc:
   api-docs:
     enabled: false

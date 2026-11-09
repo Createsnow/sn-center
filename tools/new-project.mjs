@@ -16,13 +16,12 @@ import { parseArgs } from 'node:util';
 
 const usage =
   'Usage: node tools/new-project.mjs --destination <dir> --name <project-name> ' +
-  '[--mysql-port 33326] [--redis-port 36399] [--api-port 18100] [--web-port 15193] [--deploy-port 18180]';
+  '[--mysql-port 33326] [--api-port 18100] [--web-port 15193] [--deploy-port 18180]';
 const { values } = parseArgs({
   options: {
     destination: { type: 'string' },
     name: { type: 'string' },
     'mysql-port': { type: 'string', default: '33326' },
-    'redis-port': { type: 'string', default: '36399' },
     'api-port': { type: 'string', default: '18100' },
     'web-port': { type: 'string', default: '15193' },
     'deploy-port': { type: 'string', default: '18180' },
@@ -41,7 +40,7 @@ if (!values.destination || !values.name) fail('--destination and --name are requ
 const name = values.name;
 if (!/^[a-z][a-z0-9-]{2,40}$/.test(name)) fail('Project name must match ^[a-z][a-z0-9-]{2,40}$.');
 if (name === 'adtek-platform-template') fail('Choose a distinct project name.');
-const portKeys = ['mysql-port', 'redis-port', 'api-port', 'web-port', 'deploy-port'];
+const portKeys = ['mysql-port', 'api-port', 'web-port', 'deploy-port'];
 const ports = Object.fromEntries(
   portKeys.map((key) => {
     const port = Number(values[key]);
@@ -67,7 +66,6 @@ const replacements = new Map([
   ['adtek-platform-template', name],
   ['adtek_template', name.replaceAll('-', '_')],
   ['33316', ports['mysql-port']],
-  ['36389', ports['redis-port']],
   ['18090', ports['api-port']],
   ['15183', ports['web-port']],
   ['18080', ports['deploy-port']],

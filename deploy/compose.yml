@@ -1,6 +1,6 @@
 # Linux 部署：每个服务一个独立、无状态、单进程容器；配置来自 app.env，秘密以文件挂载到 /run/secrets。
-#   外部 MySQL/Redis：    docker compose -f deploy/compose.yml up -d
-#   单机含 MySQL/Redis：  docker compose -f deploy/compose.infra.yml -f deploy/compose.yml up -d
+#   外部 MySQL：          docker compose -f deploy/compose.yml up -d
+#   单机含 MySQL：        docker compose -f deploy/compose.infra.yml -f deploy/compose.yml up -d
 #   水平扩展 API：        在上述命令后追加 --scale api=3
 # 对应 K8s：migrate → Job（或 initContainer），api → Deployment + Service，web → Deployment + Service + Ingress，
 # app.env → ConfigMap，.secrets → Secret（挂载到 /run/secrets），healthcheck → readiness / liveness 探针。
@@ -38,10 +38,8 @@ services:
     secrets:
       - source: mysql_app_password
         target: ADTEK_DB_PASSWORD
-      - source: redis_password
-        target: ADTEK_REDIS_PASSWORD
     # API 在迁移成功退出后启动（K8s：initContainer 或先执行 Job）；迁移自行重试数据库连接，
-    # API 就绪探针在 MySQL/Redis 可用前保持 DOWN，因此不依赖 mysql/redis 容器的启动顺序。
+    # API 就绪探针在 MySQL 可用前保持 DOWN，因此不依赖 mysql 容器的启动顺序。
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -88,5 +86,3 @@ secrets:
     file: ./.secrets/mysql-app-password
   mysql_migration_password:
     file: ./.secrets/mysql-migration-password
-  redis_password:
-    file: ./.secrets/redis-password

@@ -19,7 +19,7 @@ import org.springframework.security.web.SecurityFilterChain;
 /**
  * 安全过滤链骨架：默认拒绝，只放行健康探针（local profile 另放行 OpenAPI 文档）；{@code /api/**} 要求认证。
  *
- * <p>模板不内置认证机制与账号，因此未认证请求一律 401。项目实现 JWT + Redis 会话 + MySQL 当前授权时，在本链中加入认证过滤器（或资源服务器配置），
+ * <p>模板不内置认证机制与账号，因此未认证请求一律 401。项目实现 JWT + MySQL 会话 + MySQL 当前授权时，在本链中加入认证过滤器（或资源服务器配置），
  * 并为登录、刷新入口单独放行与限流；授权仍在服务用例中检查。写请求使用 SPA 模式的 CSRF（XSRF-TOKEN Cookie + X-XSRF-TOKEN 头）。 不使用 Servlet
  * 会话，失败统一写出 {@code Result} 信封。
  *

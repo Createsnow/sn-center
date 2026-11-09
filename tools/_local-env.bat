@@ -8,8 +8,6 @@ if not exist "%ADTEK_JAR%" (echo [ERROR] Server JAR not found. Run tools\verify.
 set "ADTEK_DB_URL=jdbc:mysql://127.0.0.1:33316/adtek_template?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&allowPublicKeyRetrieval=true&sslMode=DISABLED"
 set "ADTEK_DB_USER=adtek_app"
 set "ADTEK_MIGRATION_USER=adtek_migration"
-set "ADTEK_REDIS_HOST=127.0.0.1"
-set "ADTEK_REDIS_PORT=36389"
 set "ADTEK_SERVER_ADDRESS=127.0.0.1"
 set "ADTEK_SERVER_PORT=18090"
 exit /b 0

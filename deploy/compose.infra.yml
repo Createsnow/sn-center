@@ -1,5 +1,5 @@
-# MySQL / Redis 基础设施：Windows 本地开发单独使用；Linux 单机部署与 compose.yml 合并使用。
-# 端口只绑定 127.0.0.1；命名卷不随 stop/down 删除。生产可改用托管 MySQL/Redis 而不启用本文件。
+# MySQL 基础设施：Windows 本地开发单独使用；Linux 单机部署与 compose.yml 合并使用。
+# 端口只绑定 127.0.0.1；命名卷不随 stop/down 删除。生产可改用托管 MySQL 而不启用本文件。
 name: adtek-platform-template
 services:
   mysql:
@@ -35,29 +35,6 @@ services:
       retries: 30
       start_period: 45s
     mem_limit: 2g
-  redis:
-    image: redis:8.4.7-alpine@sha256:0514fa59e3d84e2f3be66731c5401fc2a85b8ea71b49c0116c850f6a558076f4
-    restart: unless-stopped
-    ports:
-      - '127.0.0.1:${ADTEK_REDIS_PORT:-36389}:6379'
-    entrypoint: [sh, /opt/adtek/start-redis.sh]
-    secrets:
-      - redis_password
-    volumes:
-      - redis_data:/data
-      - ./redis/start-redis.sh:/opt/adtek/start-redis.sh:ro
-    tmpfs:
-      - /run/redis:mode=0700
-    healthcheck:
-      test:
-        [
-          CMD-SHELL,
-          'REDISCLI_AUTH="$$(cat /run/secrets/redis_password)" redis-cli ping | grep -qx PONG',
-        ]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-    mem_limit: 512m
 secrets:
   mysql_root_password:
     file: ./.secrets/mysql-root-password
@@ -65,8 +42,5 @@ secrets:
     file: ./.secrets/mysql-app-password
   mysql_migration_password:
     file: ./.secrets/mysql-migration-password
-  redis_password:
-    file: ./.secrets/redis-password
 volumes:
   mysql_data:
-  redis_data:

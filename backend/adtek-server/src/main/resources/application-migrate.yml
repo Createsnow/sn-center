@@ -19,13 +19,3 @@ spring:
     # 数据库可能晚于迁移任务就绪（compose 合并启动、K8s Job）；有限次重试后失败退出。
     connect-retries: 20
     connect-retries-interval: 5s
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration
-      - org.springframework.boot.data.redis.autoconfigure.DataRedisReactiveAutoConfiguration
-      - org.springframework.boot.data.redis.autoconfigure.DataRedisRepositoriesAutoConfiguration
-management:
-  endpoint:
-    health:
-      # 迁移进程不连接 Redis，就绪组中的 redis 成员不存在属预期。
-      validate-group-membership: false

@@ -1,6 +1,6 @@
 @echo off
 setlocal
-rem Local MySQL and Redis in Docker Desktop (Linux engine), defined by deploy\compose.infra.yml.
+rem Local MySQL in Docker Desktop (Linux engine), defined by deploy\compose.infra.yml.
 rem Usage: tools\infra.bat start|stop|status
 rem start creates random local secrets in deploy\.secrets once; stop keeps the data volumes.
 for %%I in ("%~dp0..") do set "ADTEK_ROOT=%%~fI"
@@ -18,7 +18,7 @@ exit /b 2
 where node >nul 2>nul || (echo [ERROR] Node 24 is required to create local secrets.& exit /b 1)
 node "%ADTEK_ROOT%\tools\init-secrets.mjs" || exit /b 1
 docker compose -f compose.infra.yml up -d --wait --wait-timeout 180 || goto :failed
-echo MySQL 127.0.0.1:33316 database adtek_template, Redis 127.0.0.1:36389. Passwords stay in deploy\.secrets and are not printed.
+echo MySQL 127.0.0.1:33316 database adtek_template. Passwords stay in deploy\.secrets and are not printed.
 exit /b 0
 
 :stop

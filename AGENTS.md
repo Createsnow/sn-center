@@ -6,7 +6,7 @@
 - 修改一个业务只改其后端模块与同名前端功能目录；全局扩展点只在 framework/server；路由在 `/api/v1/{module}/` 与 `/{feature}` 下。boundary 门禁不得删除或放宽。
 - 保持 Controller/Service/impl/Mapper/Entity/DTO/Query/VO/MapStruct 分层，权限在服务用例验证；ArchitectureTest 不得删除或放宽。
 - 每个模块只访问以 `{module}_` 为前缀的自有表，迁移放本模块 `db/migration/{module}/`，跨模块数据经 framework 端口；不跨模块联表。
-- MySQL 是业务和任务最终状态，Redis 仅会话与入口预算。成功审计与业务同事务。
+- MySQL 是唯一状态存储（业务、任务、会话、入口预算），不使用 Redis。成功审计与业务同事务。
 - React 函数组件、严格 TypeScript、TanStack Query；业务 ID 和版本使用精确字符串；文案三语同步。
 - 不使用 PowerShell 脚本：Windows 用 tools\*.bat，Linux 用 deploy/ 下 Compose 与 sh。格式化 tools\format.bat 后执行 tools\format.bat check；已发布迁移不可改写。
 - 容器保持无状态、配置走环境变量、秘密走 /run/secrets、API 不持有 DDL 账号，以便直接扩展到 K8s。
