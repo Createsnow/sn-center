@@ -89,7 +89,7 @@ app/                         FastAPI 后端
                              workbench（生成页与分配页共用的 PI 列表）、delivery/（交付批次：建批、回执、推送、人工处理、
                              MES 拉取、页面查询、每日自检）、sn_export、transfers、query、audit 等
 tests/                       pytest：单元测试 + 集成测试（真实 MySQL + 假金蝶 + 模拟 MES）
-devtools/                    联调工具（不随应用部署）：mes_mock.py 模拟 MES、mes_conformance.py MES 接口契约测试、rebuild_import_table.py 只重建 SN 导入表
+devtools/                    联调工具（不随应用部署）：mes_mock.py 模拟 MES、mes_conformance.py MES 接口契约测试、rebuild_import_table.py 只重建 SN 导入表、rebuild_keep_accounts.py 保留账户、按 V1 重建其他表
 frontend/                    Vue 3 + Vite + Element Plus
   src/views/                 各页面；页面的子组件放在同名小写目录（views/generate、views/query、views/transfer）
   src/components/            共用组件；components/batch 为交付批次详情与人工确认、作废（分配、转移、查询页共用）
