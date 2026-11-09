@@ -96,6 +96,33 @@ export function newPart(kind, today = "") {
   }
 }
 
+/** 流水位数默认值的下限（原来的固定默认值）：PI 订单数量小时仍是 4 位，SN 格式与原来相同 */
+export const SEQ_LEN_DEFAULT = 4;
+/** 按订单数量定位数时留的余量：订单加量、补号不至于马上用完 */
+export const SEQ_HEADROOM = 1.2;
+
+/**
+ * 本 PI 还要用到的最大十进制流水：一张 PI 下所有物料行、所有规则共用一套流水，
+ * 所以 = 已用到的（下一个号 − 1）+ 全部物料行还可生成的数量（订单数量 − 本单已生成）× 余量。
+ * @param {number | null | undefined} nextSeq 本 PI 接续的下一个号（ctx.counter.next_seq）
+ * @param {number | null | undefined} quota 本 PI 全部物料行的 quota 之和
+ * @param {number} headroom 余量倍数（定默认位数用 SEQ_HEADROOM；判断够不够用 1）
+ */
+export function seqNeed(nextSeq, quota, headroom = SEQ_HEADROOM) {
+  const used = Math.max((Number(nextSeq) || 1) - 1, 0);
+  const rest = Math.max(Number(quota) || 0, 0);
+  return used + Math.ceil(rest * headroom);
+}
+
+/** 装得下 need 的最少流水位数（进制^位数 − 1 ≥ need），不少于 SEQ_LEN_DEFAULT、不超过 SEQ_LEN_MAX。 */
+export function seqLenFor(base, need) {
+  const b = Number(base) || 10;
+  const n = Math.max(Number(need) || 0, 0);
+  let len = SEQ_LEN_DEFAULT;
+  while (len < SEQ_LEN_MAX && b ** len - 1 < n) len++;
+  return len;
+}
+
 /** 默认配置：单据编号后 7 位 + 4 位 10 进制流水。 */
 export function defaultParts() {
   return [newPart("BILL"), newPart("SEQ")];

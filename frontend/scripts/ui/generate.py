@@ -37,6 +37,7 @@ M = {
 "generate.rule.base": ("进制", "Base", "Cơ số"),
 "generate.rule.seqLen": ("流水位数", "Serial digits", "Số chữ số tuần tự"),
 "generate.rule.seqStart": ("起始号", "Start number", "Số bắt đầu"),
+"generate.rule.seqTooShort": ("本 PI 订单还要用到流水 {need}，{len} 位 {base} 进制最多 {max}，不够：请加位数或换进制", "This PI's orders need serials up to {need}, but {len} digits in base {base} only reach {max}. Add digits or choose another base.", "Đơn hàng của PI này cần số tuần tự đến {need}, nhưng {len} chữ số hệ {base} chỉ tới {max}: hãy tăng số chữ số hoặc đổi hệ cơ số."),
 "generate.rule.seqStartContinue": ("本 PI 已用这个前缀，流水接续到 {next}；可改大往后跳，跳过的号留作空号段（可在「流水来源」里补用）", "This PI already uses this prefix; serials continue from {next}. Enter a larger number to skip ahead — the skipped serials stay as a gap you can fill later under \"Serial source\".", "PI này đã dùng tiền tố này, số tuần tự tiếp nối từ {next}; có thể nhập số lớn hơn để nhảy tới, các số bị bỏ qua thành đoạn trống (có thể dùng lại trong \"Nguồn tuần tự\")."),
 "generate.rule.lengthPad": ("米数补 0 位数", "Length zero-padding", "Bù 0 cho chiều dài"),
 "generate.rule.sample": ("示例", "Sample", "Ví dụ"),

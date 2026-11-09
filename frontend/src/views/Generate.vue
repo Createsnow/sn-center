@@ -283,7 +283,7 @@
       </template>
     </el-drawer>
 
-    <RuleDialog v-if="ctx" v-model="ruleDlg.open" :pi="ctx.pi_no" :lines="ruleDlg.lines" :options="ctx.rule_options" :rule-prefix="ctx.rule_prefix" :next-seq="ctx.counter?.next_seq" @saved="reloadCtx" />
+    <RuleDialog v-if="ctx" v-model="ruleDlg.open" :pi="ctx.pi_no" :lines="ruleDlg.lines" :options="ctx.rule_options" :rule-prefix="ctx.rule_prefix" :next-seq="ctx.counter?.next_seq" :pi-quota="piQuota" @saved="reloadCtx" />
 
     <GenConfirmDialog v-model="genDlg" :preview="gen.preview" :unlock-limit="unlockLimit"
       :loading="busy === 'run'" @confirm="runGen" />
@@ -432,6 +432,8 @@ const ctx = ref<any>(null);
 const ctxLoading = ref(false);
 
 const allLines = computed<OrderLine[]>(() => (ctx.value ? ctx.value.bills.flatMap((b: any) => b.lines) : []));
+/** 本 PI 全部物料行还可生成的数量之和：各物料行共用 PI 的一套流水，规则对话框按它给流水位数的默认值 */
+const piQuota = computed(() => allLines.value.reduce((n, l) => n + (Number(l.quota) || 0), 0));
 const limits = computed(() => ctx.value?.limits || { default: 10000, max: 500000, sync_threshold: 5000 });
 
 async function openDetail(key: { pi?: string; bill_no?: string }) {

@@ -204,3 +204,24 @@ test("sample segments colour serial, length and unit", () => {
   assert.equal(segs.map((s) => s.text).join(""), "CS-2645-0001-012M");
   assert.equal(sampleSegments(ps, ctx, "OTHER", "0001", "012", "M"), null);
 });
+
+test("流水位数默认值：按本 PI 全部物料行还要生成的数量（含已用到的流水、留 20% 余量），至少 4 位", async () => {
+  const { seqLenFor, seqNeed, SEQ_LEN_DEFAULT } = await import("./snParts.js");
+  assert.equal(SEQ_LEN_DEFAULT, 4);
+  // 订单数量小：与原来相同的 4 位
+  assert.equal(seqLenFor(10, seqNeed(1, 50)), 4);
+  assert.equal(seqLenFor(10, seqNeed(null, 8333)), 5, "8333 × 1.2 = 9999.6 → 10000，4 位最多 9999，不够");
+  assert.equal(seqNeed(null, 8333), 10000);
+  assert.equal(seqLenFor(10, seqNeed(1, 8332)), 4);
+  // 12 万枚：10 进制 6 位、36 进制仍 4 位（1,679,615）
+  assert.equal(seqLenFor(10, seqNeed(1, 120_000)), 6);
+  assert.equal(seqLenFor(36, seqNeed(1, 120_000)), 4);
+  // 已用到的流水也算：下一个号 9001 + 再生成 900 枚
+  assert.equal(seqNeed(9001, 900), 9000 + 1080);
+  assert.equal(seqLenFor(10, seqNeed(9001, 900)), 5);
+  // 判断够不够时不留余量
+  assert.equal(seqNeed(9001, 900, 1), 9900);
+  // 上限 12 位
+  assert.equal(seqLenFor(10, 10 ** 15), 12);
+  assert.equal(seqLenFor(10, NaN), 4);
+});

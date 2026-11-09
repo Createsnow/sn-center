@@ -154,6 +154,9 @@
                     {{ t("generate.rule.seqLen") }}
                     <el-input-number v-model="p.len" :min="1" :max="SEQ_LEN_MAX" :step="1" step-strictly size="small" class="w100" />
                   </span>
+                  <span v-if="seqShort(p)" class="fi seq-short">
+                    {{ t("generate.rule.seqTooShort", { need, max: maxSeq(p), len: p.len, base: p.base }) }}
+                  </span>
                   <!-- 起始号（十进制流水）：下限 startMin ～ 最大流水，默认为下限；等于下限时按未指定保存（start = null，请求体与原来相同）。
                        新前缀下限为 1；本 PI 已用这个前缀时下限为接续的下一个号（不能往回填），改大则往后跳，跳过的号成为空号段 -->
                   <span class="fi">
@@ -213,7 +216,8 @@ import { BASES, CHARSETS } from "@/constants";
 import { useTime } from "@/composables/useTime";
 import {
   CUTS, DATE_FMTS, PAD_MAX, PREFIX_MAX, SEP_MAX, SEPS, SEQ_LEN_MAX, TEMPLATES, TEXT_MAX,
-  addIndex, blockReason, fromSpec, insertAt, moveTo, newErrors, newPart, partValue, partsSig, sampleSegments, textPart, todayIn, toSpec,
+  addIndex, blockReason, fromSpec, insertAt, moveTo, newErrors, newPart, partValue, partsSig, sampleSegments, seqLenFor, seqNeed, textPart,
+  todayIn, toSpec,
 } from "@/snParts.js";
 import type { CustomRule, OrderLine } from "@/types/api";
 
@@ -229,8 +233,11 @@ type Seg = { text: string; cls: string };
 type Sample = { sn: string; segs: Seg[] | null };
 /** 三段：前缀（流水之前）/ 流水 / 后缀（流水之后，含米数、单位） */
 type SecKey = "PRE" | "SEQ" | "SUF";
-/** nextSeq：本 PI 接续的下一个号（ctx.counter.next_seq），已用前缀时起始号的下限 */
-const props = defineProps<{ modelValue: boolean; pi: string; lines: OrderLine[]; options: any[]; rulePrefix?: RulePrefix; nextSeq?: number }>();
+/** nextSeq：本 PI 接续的下一个号（ctx.counter.next_seq），已用前缀时起始号的下限；
+ *  piQuota：本 PI 全部物料行还可生成的数量之和（各行订单数量 − 本单已生成），按它定流水位数的默认值 */
+const props = defineProps<{
+  modelValue: boolean; pi: string; lines: OrderLine[]; options: any[]; rulePrefix?: RulePrefix; nextSeq?: number; piQuota?: number;
+}>();
 const emit = defineEmits<{ (e: "update:modelValue", v: boolean): void; (e: "saved"): void }>();
 const { t } = useI18n();
 const { offset } = useTime();
@@ -278,6 +285,11 @@ function seqText(n: number, base: number, len: number) {
   for (let i = 0, x = n; i < len; i++, x = Math.floor(x / base)) s = cs[x % base] + s;
   return s;
 }
+/** 本 PI 还要用到的最大流水：need 不留余量（位数不够的提示用），needDefault 留余量（定默认位数用） */
+const need = computed(() => seqNeed(props.nextSeq, props.piQuota, 1));
+const needDefault = computed(() => seqNeed(props.nextSeq, props.piQuota));
+/** 新的流水组件：位数按本 PI 订单数量取装得下的最少位数（不少于 4 位，订单数量小时与原来相同） */
+const autoSeq = (base = 10): Part => ({ ...newPart("SEQ"), base, len: seqLenFor(base, needDefault.value) });
 /** 当前进制、位数下的最大流水（起始号上限） */
 const maxSeq = (p: Part) => Math.min((Number(p.base) || 10) ** (Number(p.len) || 4) - 1, Number.MAX_SAFE_INTEGER);
 /** 组件的取值：保存时定值的组件取值；流水取第一个号；米数、单位取第一个物料行的 */
@@ -371,10 +383,10 @@ function defaultHead(): Part[] {
   if ((props.lines[0]?.bill_no ?? "").slice(-7)) return [newPart("BILL")];
   return [textPart(props.rulePrefix?.prefix ?? "")];
 }
-/** 默认组成：默认前缀 + 流水 4 位（本 PI 已用前缀时按已用的格式），不带米数、不带单位 */
+/** 默认组成：默认前缀 + 流水（位数按本 PI 订单数量，至少 4 位；本 PI 已用前缀时按已用的格式），不带米数、不带单位 */
 function defaultParts(): Part[] {
   const used = props.rulePrefix?.custom;
-  return used ? fromSpec({ ...used, seq_start: null }, defaultHead()) : [...defaultHead(), newPart("SEQ")];
+  return used ? fromSpec({ ...used, seq_start: null }, defaultHead()) : [...defaultHead(), autoSeq()];
 }
 function resetParts() {
   const prev = parts.value;
@@ -417,7 +429,7 @@ function onOpen() {
   const base = props.rulePrefix?.custom ?? (cur?.mode === "CUSTOM" ? cur.custom : null);
   // 起始号带出所选物料行已存的：新前缀的自定义规则，或沿用本 PI 已用前缀时另记的（还没生成过）
   const start = (props.rulePrefix?.custom ? cur?.prefix === props.rulePrefix.prefix : cur?.mode === "CUSTOM") ? cur?.seq_start ?? null : null;
-  parts.value = base ? fromSpec({ ...base, seq_start: start }, defaultHead()) : [...defaultHead(), newPart("SEQ")];
+  parts.value = base ? fromSpec({ ...base, seq_start: start }, defaultHead()) : [...defaultHead(), autoSeq()];
   target.value = "PRE";
   hot.value = null;
   mode.value = "CUSTOM";
@@ -437,6 +449,20 @@ function schedule() {
   timer = setTimeout(previewCustom, 300);
 }
 watch(parts, () => mode.value === "CUSTOM" && schedule(), { deep: true });
+
+/** 改进制时：位数还是上一个进制按订单数量给的默认值（没手动改过）就跟着换成新进制的默认值；本 PI 已用的前缀格式锁定，不动 */
+const seqPart = computed(() => parts.value.find((p) => p.kind === "SEQ"));
+watch(
+  () => [seqPart.value?.id, seqPart.value?.base] as const,
+  ([id, b], [oldId, old]) => {
+    const p = seqPart.value;
+    // 只管同一个流水组件上改进制；整体换组成（打开、套用常用格式、重置）时不动
+    if (!p || id !== oldId || b === undefined || old === undefined || b === old || prefixUsed.value) return;
+    if (p.len === seqLenFor(old, needDefault.value)) p.len = seqLenFor(b, needDefault.value);
+  },
+);
+/** 位数不够装下本 PI 还要的流水（不含余量）：提示改大位数或换进制 */
+const seqShort = (p: Part) => !prefixUsed.value && maxSeq(p) < need.value;
 
 async function previewCustom() {
   sample.min = null;
@@ -590,6 +616,7 @@ async function save() {
 .kt.c-LINE { background: var(--el-color-warning-light-9); color: var(--el-color-warning-dark-2); border-color: var(--el-color-warning-light-5); }
 .set { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; font-size: 12px; color: var(--el-text-color-regular); min-width: 0; }
 .set .fi { display: inline-flex; align-items: center; gap: 6px; }
+.set .seq-short { color: var(--el-color-warning); font-size: 12px; }
 .rv { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rv.blank { color: var(--el-text-color-placeholder); font-family: inherit; font-size: 12px; }
 .acts { display: flex; justify-content: flex-end; }
