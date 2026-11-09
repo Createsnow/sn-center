@@ -1,4 +1,4 @@
-"""单据汇总 sn_bill_stat（容量与扩展规划 2.1）：标脏随事务、回填、对账。
+"""单据汇总 sn_bill_stat（运维手册 8.8）：标脏随事务、回填、对账。
 每个用例结束时 conftest 还会把汇总与号池重新汇总的结果整表比对（assert_bill_stat_consistent）。"""
 
 from __future__ import annotations
