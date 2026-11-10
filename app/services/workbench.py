@@ -383,6 +383,8 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
         "rule_options": rules.options(pi, customer, facs),
         # 「选规则」的默认前缀：本 PI 已生成的号还在时为已用的前缀及其格式（见 rules.pi_prefix）
         "rule_prefix": rules.pi_prefix(pi),
+        # 本 PI 已占用的前缀 → 锁定的格式（进制、流水位数不能改；号全部删掉后仍锁定，见 rules.pi_prefix_locked）
+        "prefix_locked": rules.pi_prefix_locked(pi),
         "limits": generate.limits(),
         "running_job": None if running is None else generate.progress(running["gen_batch"]),
         "jobs": generate.jobs(pi, 20, facs),

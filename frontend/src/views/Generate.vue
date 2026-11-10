@@ -283,7 +283,7 @@
       </template>
     </el-drawer>
 
-    <RuleDialog v-if="ctx" v-model="ruleDlg.open" :pi="ctx.pi_no" :lines="ruleDlg.lines" :options="ctx.rule_options" :rule-prefix="ctx.rule_prefix" :next-seq="ctx.counter?.next_seq" :pi-quota="piQuota" @saved="reloadCtx" />
+    <RuleDialog v-if="ctx" v-model="ruleDlg.open" :pi="ctx.pi_no" :lines="ruleDlg.lines" :options="ctx.rule_options" :rule-prefix="ctx.rule_prefix" :prefix-locked="ctx.prefix_locked" :next-seq="ctx.counter?.next_seq" :pi-quota="piQuota" @saved="reloadCtx" />
 
     <GenConfirmDialog v-model="genDlg" :preview="gen.preview" :unlock-limit="unlockLimit"
       :loading="busy === 'run'" @confirm="runGen" />

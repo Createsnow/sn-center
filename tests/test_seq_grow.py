@@ -184,3 +184,29 @@ def test_grow_delivery_serial_and_export(w, api, sql):
     got = ok(api.get(f"/api/export/items?pi={pi}&bill_no={bill}&page_size=200", w.admin))["items"]
     rows = {x["sn"]: (x["seq_len"], x["seq_text"]) for x in got}
     assert rows[f"{p}99"] == (2, "99") and rows[f"{p}100"] == (3, "100")
+
+
+def test_locked_prefix_format_after_all_sns_deleted(w, api, sql):
+    """号全部删掉后前缀仍归属本 PI、进制和流水位数仍锁定：生成页上下文 prefix_locked 给出锁定的格式
+    （rule_prefix 不变，custom 回到 None）；按默认 4 位保存报 RULE_PREFIX_FORMAT_LOCKED，
+    按锁定的 5 位（开启上限自动突破）可保存、流水接续。"""
+    org, pi, bill = mk(w, ("M1", 3))
+    p = bill[-7:]
+    ok(w.select(pi, [(bill, 1)], custom=m(prefix=p, base=10, seq_len=5, with_length=False)))
+    w.generate(pi)
+    ok(w.delete(pi, bills=[bill], reason="t"))
+    ctx = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))
+    assert ctx["rule_prefix"] == {"prefix": p, "custom": None}
+    assert ctx["prefix_locked"][p]["seq_len"] == 5 and ctx["prefix_locked"][p]["base"] == 10
+    c = m(prefix=p, base=10, seq_len=4, with_length=False, seq_grow=True)
+    assert w.select(pi, [(bill, 1)], custom=c).code == "RULE_PREFIX_FORMAT_LOCKED"
+    ok(w.select(pi, [(bill, 1)], custom={**ctx["prefix_locked"][p], "seq_grow": True}))
+    w.generate(pi)
+    assert sns(sql, pi) == [f"{p}{i:05d}" for i in (4, 5, 6)], "最大流水号不退回，接着编"
+    # 上限自动突破另出的版本不列为锁定格式（锁定的仍是原版本的位数）
+    _, pi2, bill2 = mk(w, ("M1", 101), org=org)
+    p2 = P()
+    ok(w.select(pi2, [(bill2, 1)], custom=m(prefix=p2, base=10, seq_len=2, with_length=False, seq_grow=True)))
+    w.generate(pi2)
+    locked = ok(api.get(f"/api/generate/context?pi={pi2}", w.admin))["prefix_locked"]
+    assert list(locked) == [p2] and locked[p2]["seq_len"] == 2

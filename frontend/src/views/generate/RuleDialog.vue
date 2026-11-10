@@ -144,15 +144,16 @@
                   </el-radio-group>
                 </template>
                 <template v-else-if="p.kind === 'SEQ'">
-                  <span class="fi">
+                  <!-- 前缀已归属本 PI（含号已全部删掉的）：进制、流水位数锁定为那个前缀的格式，置灰（悬停显示原因） -->
+                  <span class="fi" :title="lockTitle">
                     {{ t("generate.rule.base") }}
-                    <el-radio-group v-model="p.base" size="small" class="mono-seg">
+                    <el-radio-group v-model="p.base" size="small" class="mono-seg" :disabled="!!locked">
                       <el-radio-button v-for="b in BASES" :key="b" :value="b">{{ b }}</el-radio-button>
                     </el-radio-group>
                   </span>
-                  <span class="fi">
+                  <span class="fi" :title="lockTitle">
                     {{ t("generate.rule.seqLen") }}
-                    <el-input-number v-model="p.len" :min="1" :max="SEQ_LEN_MAX" :step="1" step-strictly size="small" class="w100" />
+                    <el-input-number v-model="p.len" :min="1" :max="SEQ_LEN_MAX" :step="1" step-strictly size="small" class="w100" :disabled="!!locked" />
                   </span>
                   <!-- 上限自动突破（默认开启）：流水用完位数后自动加位（4 位用到 9999 后接 5 位 10000，以此类推）；
                        关闭时保持原逻辑（位数按订单数量定，用完报规则位数已用尽） -->
@@ -220,6 +221,7 @@ import { api } from "@/api";
 import { ApiError } from "@/api/http";
 import { BASES, CHARSETS } from "@/constants";
 import { useTime } from "@/composables/useTime";
+import { translateApiError } from "@/i18n";
 import {
   CUTS, DATE_FMTS, PAD_MAX, PREFIX_MAX, SEP_MAX, SEPS, SEQ_LEN_MAX, TEMPLATES, TEXT_MAX,
   SEQ_LEN_DEFAULT, addIndex, blockReason, fromSpec, insertAt, maxSeqOf, moveTo, newErrors, newPart, partValue, partsSig, sampleSegments,
@@ -239,10 +241,12 @@ type Seg = { text: string; cls: string };
 type Sample = { sn: string; segs: Seg[] | null };
 /** 三段：前缀（流水之前）/ 流水 / 后缀（流水之后，含米数、单位） */
 type SecKey = "PRE" | "SEQ" | "SUF";
-/** nextSeq：本 PI 接续的下一个号（ctx.counter.next_seq），已用前缀时起始号的下限；
+/** prefixLocked：本 PI 已占用的前缀 → 锁定的格式（ctx.prefix_locked，见 rules.pi_prefix_locked；号全部删掉后仍锁定）；
+ *  nextSeq：本 PI 接续的下一个号（ctx.counter.next_seq），已用前缀时起始号的下限；
  *  piQuota：本 PI 全部物料行还可生成的数量之和（各行订单数量 − 本单已生成），按它定流水位数的默认值 */
 const props = defineProps<{
   modelValue: boolean; pi: string; lines: OrderLine[]; options: any[]; rulePrefix?: RulePrefix; nextSeq?: number; piQuota?: number;
+  prefixLocked?: Record<string, CustomRule>;
 }>();
 const emit = defineEmits<{ (e: "update:modelValue", v: boolean): void; (e: "saved"): void }>();
 const { t } = useI18n();
@@ -395,10 +399,14 @@ function defaultHead(): Part[] {
   if ((props.lines[0]?.bill_no ?? "").slice(-7)) return [newPart("BILL")];
   return [textPart(props.rulePrefix?.prefix ?? "")];
 }
-/** 默认组成：默认前缀 + 流水（位数按本 PI 订单数量，至少 4 位；本 PI 已用前缀时按已用的格式），不带米数、不带单位 */
-function defaultParts(): Part[] {
-  const used = props.rulePrefix?.custom;
-  return used ? fromSpec({ ...used, seq_start: null }, defaultHead()) : [...defaultHead(), autoSeq()];
+/** 前缀已归属本 PI 时锁定的格式（进制、流水位数不能改） */
+const lockedOf = (prefix: string): CustomRule | null => props.prefixLocked?.[prefix] ?? null;
+/** 默认组成：默认前缀 + 流水（上限自动突破默认开启、4 位；本 PI 已用前缀时按已用的格式；默认前缀已归属本 PI 时
+ *  （号已全部删掉）按它锁定的格式），不带米数、不带单位 */
+function defaultParts(grow = true): Part[] {
+  const head = defaultHead();
+  const used = props.rulePrefix?.custom ?? lockedOf(toSpec([...head, newPart("SEQ")], partCtx.value).spec.prefix);
+  return used ? fromSpec({ ...used, seq_start: null, seq_grow: grow }, head) : [...head, autoSeq(10, grow)];
 }
 function resetParts() {
   const prev = parts.value;
@@ -413,6 +421,16 @@ const filtered = computed(() => {
   if (!k) return props.options;
   return props.options.filter((o) => `${o.rule_code} ${o.rule_name} ${o.category_value}`.toLowerCase().includes(k));
 });
+/** 当前前缀锁定的格式（已归属本 PI）；置灰进制、流水位数时的悬停说明 */
+const locked = computed(() => lockedOf(built.value.spec.prefix));
+const lockTitle = computed(() =>
+  locked.value
+    ? translateApiError(
+      { code: "RULE_PREFIX_FORMAT_LOCKED", params: { prefix: built.value.spec.prefix, base: locked.value.base, seq_len: locked.value.seq_len } },
+      "",
+    )
+    : undefined,
+);
 /** 本 PI 已用这个前缀（同格式沿用那一版、流水接续）：起始号下限为接续的下一个号，可改大往后跳。 */
 const prefixUsed = computed(() => !!props.rulePrefix?.custom && built.value.spec.prefix === props.rulePrefix.prefix);
 /** 起始号下限：已用前缀时为接续的下一个号，否则为 1 */
@@ -445,7 +463,7 @@ function onOpen() {
   const start = own ? cur?.seq_start ?? null : null;
   // 上限自动突破带出所选物料行已存的（同上），否则默认开启
   const grow = own ? cur?.seq_grow ?? true : true;
-  parts.value = base ? fromSpec({ ...base, seq_start: start, seq_grow: grow }, defaultHead()) : [...defaultHead(), autoSeq(10, grow)];
+  parts.value = base ? fromSpec({ ...base, seq_start: start, seq_grow: grow }, defaultHead()) : defaultParts(grow);
   target.value = "PRE";
   hot.value = null;
   mode.value = "CUSTOM";
@@ -473,7 +491,7 @@ watch(
   ([id, b], [oldId, old]) => {
     const p = seqPart.value;
     // 只管同一个流水组件上改进制；整体换组成（打开、套用常用格式、重置）时不动
-    if (!p || id !== oldId || b === undefined || old === undefined || b === old || prefixUsed.value || p.grow) return;
+    if (!p || id !== oldId || b === undefined || old === undefined || b === old || prefixUsed.value || locked.value || p.grow) return;
     if (p.len === seqLenFor(old, needDefault.value)) p.len = seqLenFor(b, needDefault.value);
   },
 );
@@ -482,13 +500,23 @@ watch(
   () => [seqPart.value?.id, seqPart.value?.grow] as const,
   ([id, g], [oldId, old]) => {
     const p = seqPart.value;
-    if (!p || id !== oldId || g === undefined || old === undefined || g === old || prefixUsed.value) return;
+    if (!p || id !== oldId || g === undefined || old === undefined || g === old || prefixUsed.value || locked.value) return;
     const b = Number(p.base) || 10;
     if (p.len === autoLen(b, !!old)) p.len = autoLen(b, !!g);
   },
 );
+/** 前缀改成（或套用常用格式后成为）已归属本 PI 的前缀：进制、流水位数改为它锁定的格式（同一前缀下不能改） */
+watch(
+  () => [locked.value, seqPart.value?.id] as const,
+  ([lk]) => {
+    const p = seqPart.value;
+    if (!lk || !p) return;
+    if (p.base !== lk.base) p.base = lk.base;
+    if (p.len !== lk.seq_len) p.len = lk.seq_len;
+  },
+);
 /** 位数不够装下本 PI 还要的流水（不含余量）：提示改大位数或换进制 */
-const seqShort = (p: Part) => !p.grow && !prefixUsed.value && maxSeq(p) < need.value;
+const seqShort = (p: Part) => !p.grow && !prefixUsed.value && !locked.value && maxSeq(p) < need.value;
 
 async function previewCustom() {
   sample.min = null;

@@ -372,6 +372,20 @@ def pi_prefix(pi: str) -> dict:
     return {"prefix": used["prefix"], "custom": _custom_dict(spec_of(v))}
 
 
+def pi_prefix_locked(pi: str) -> dict[str, dict]:
+    """本 PI 已占用的前缀 → 锁定的格式（同 pi_prefix 的 custom：本 PI 这个前缀最新的版本，不算上限自动突破另出的版本）。
+    号全部删掉后前缀仍归属本 PI、进制和流水位数仍锁定（check_prefix）：生成页「选规则」前缀是其中之一时按这个格式，
+    免得按默认位数保存时报 RULE_PREFIX_FORMAT_LOCKED。"""
+    out: dict[str, dict] = {}
+    for v in db.all(
+        "SELECT v.* FROM sn_rule_version v LEFT JOIN sn_rule_version p ON p.id = v.derived_from "
+        "AND p.prefix = v.prefix WHERE v.claimed_pi = %s AND p.id IS NULL ORDER BY v.id",
+        pi,
+    ):
+        out[v["prefix"]] = _custom_dict(spec_of(v))
+    return out
+
+
 def _adopt(cu: CurrentUser, rule: dict, pi: str, orgs: set[str]) -> None:
     """物料行沿用本 PI 已有的规则版本（own_version）：生成时自动存入的本 PI 自定义规则被别的生产组织的物料行共用时
     改为全局规则（F-08 规则所属组织）；其他规则须能选用。"""
