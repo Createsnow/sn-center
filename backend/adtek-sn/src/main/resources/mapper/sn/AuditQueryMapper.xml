@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.sn.mapper.AuditQueryMapper">
+  <sql id="cols">
+    id, created_at, operator, operator_name, role, source, action, result, factory_code, pi_no, customer_code,
+    material_code, bill_no, start_sn, end_sn, qty, before_status, after_status, batch_no, request_no, transfer_no,
+    reason, error_msg, trace_id, detail
+  </sql>
+  <sql id="scopeIn">
+    <choose>
+      <when test="f.scope.isEmpty()">1=0</when>
+      <otherwise>IN <foreach collection="f.scope" item="x" open="(" separator="," close=")">#{x}</foreach></otherwise>
+    </choose>
+  </sql>
+  <sql id="where">
+    WHERE created_at &gt;= #{f.start} AND created_at &lt; #{f.end}
+    <if test="f.scope != null">
+      <choose>
+        <when test="f.bound">
+          AND (factory_code <include refid="scopeIn"/> OR (transfer_no IS NOT NULL AND transfer_no IN
+            (SELECT transfer_no FROM sn_transfer WHERE to_factory <include refid="scopeIn"/>)))
+        </when>
+        <otherwise>AND factory_code <include refid="scopeIn"/></otherwise>
+      </choose>
+    </if>
+    <if test="f.action != null">AND action = #{f.action}</if>
+    <if test="f.operator != null">AND operator = #{f.operator}</if>
+    <if test="f.pi != null">AND pi_no = #{f.pi}</if>
+    <if test="f.source != null">AND source = #{f.source}</if>
+    <if test="f.result != null">AND result = #{f.result}</if>
+    <if test="f.batchNo != null">AND batch_no = #{f.batchNo}</if>
+    <if test="f.billNo != null">AND bill_no = #{f.billNo}</if>
+    <if test="f.like != null">
+      AND (start_sn LIKE #{f.like} OR end_sn LIKE #{f.like} OR request_no LIKE #{f.like} OR transfer_no LIKE #{f.like}
+        OR bill_no LIKE #{f.like} OR detail LIKE #{f.like})
+    </if>
+    <if test="beforeId != null">AND id &lt; #{beforeId}</if>
+  </sql>
+  <select id="archiveRange" resultType="map">
+    SELECT MIN(created_at) lo, MAX(created_at) hi FROM sn_audit_archive
+  </select>
+  <select id="countLive" resultType="long">SELECT COUNT(*) FROM sn_audit <include refid="where"/></select>
+  <select id="countArchive" resultType="long">SELECT COUNT(*) FROM sn_audit_archive <include refid="where"/></select>
+  <select id="page" resultType="map">
+    SELECT * FROM (
+      SELECT <include refid="cols"/>, 0 archived FROM sn_audit <include refid="where"/>
+      <if test="archive">UNION ALL SELECT <include refid="cols"/>, 1 archived FROM sn_audit_archive <include refid="where"/></if>
+    ) u
+    <choose>
+      <when test="byId">ORDER BY id DESC LIMIT #{size}</when>
+      <otherwise>ORDER BY created_at DESC, id DESC LIMIT #{offset}, #{size}</otherwise>
+    </choose>
+  </select>
+</mapper>

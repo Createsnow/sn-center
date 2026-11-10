@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.sn.mapper.MaintainMapper">
+  <select id="lastDaily" resultType="long">SELECT val FROM sn_seq WHERE name = #{name}</select>
+  <insert id="markDaily">
+    INSERT INTO sn_seq(name, val) VALUES (#{name}, #{val}) ON DUPLICATE KEY UPDATE val = #{val}
+  </insert>
+  <!-- 归档一个月分区：按分区的时间范围拷入归档表（与按分区名读取同一批行） -->
+  <insert id="archiveRange">
+    INSERT IGNORE INTO sn_audit_archive SELECT a.*, UTC_TIMESTAMP() FROM sn_audit a
+    WHERE a.created_at &lt; #{upper} <if test="lower != null">AND a.created_at &gt;= #{lower}</if>
+  </insert>
+  <delete id="purgeArchive">
+    DELETE FROM sn_audit_archive WHERE created_at &lt; #{cutoff} LIMIT #{limit}
+  </delete>
+  <delete id="purgePreviews">
+    DELETE FROM sn_gen_preview WHERE created_at &lt; DATE_SUB(UTC_TIMESTAMP(), INTERVAL 7 DAY)
+  </delete>
+  <delete id="purgeRateCounters">
+    DELETE FROM sn_rate_counter WHERE win &lt; DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 DAY)
+  </delete>
+</mapper>

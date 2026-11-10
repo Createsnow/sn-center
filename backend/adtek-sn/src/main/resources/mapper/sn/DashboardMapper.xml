@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.sn.mapper.DashboardMapper">
+  <sql id="scopeF">
+    <if test="scope != null">
+      <choose>
+        <when test="scope.isEmpty()">AND 1=0</when>
+        <otherwise>AND factory_code IN <foreach collection="scope" item="x" open="(" separator="," close=")">#{x}</foreach></otherwise>
+      </choose>
+    </if>
+  </sql>
+  <sql id="itemScope">
+    <if test="scope != null">
+      <choose>
+        <when test="scope.isEmpty()">AND 1=0</when>
+        <otherwise>
+          AND (factory_code IN <foreach collection="scope" item="x" open="(" separator="," close=")">#{x}</foreach>
+            OR (factory_code IS NULL AND bill_no IN (SELECT l.bill_no FROM sn_bill_ledger l WHERE l.org_code IN
+              <foreach collection="scope" item="x" open="(" separator="," close=")">#{x}</foreach>)))
+        </otherwise>
+      </choose>
+    </if>
+  </sql>
+  <select id="statusCounts" resultType="map">
+    SELECT status, COUNT(*) c FROM sn_item WHERE status IN ('PENDING_ALLOC','TO_PUSH','ALLOCATED')
+    <include refid="itemScope"/> GROUP BY status
+  </select>
+  <select id="suspended" resultType="long">
+    SELECT COUNT(*) FROM sn_item WHERE status IN ('PENDING_ALLOC','TO_PUSH','ALLOCATED') AND suspend IS NOT NULL
+    <include refid="itemScope"/>
+  </select>
+  <select id="interrupted" resultType="long">
+    SELECT COUNT(*) FROM sn_delivery_batch WHERE (result = 'FAILED' OR (result = 'UNCONFIRMED' AND push_state = 'EXHAUSTED'))
+    <include refid="scopeF"/>
+  </select>
+  <select id="stalePull" resultType="long">
+    SELECT COUNT(*) FROM sn_delivery_batch WHERE result = 'UNCONFIRMED' AND source = 'PULL' AND created_at &lt; #{cutoff}
+    <include refid="scopeF"/>
+  </select>
+  <select id="alerts" resultType="map">
+    SELECT alert_type, COUNT(*) n FROM sn_delivery_alert WHERE status = 'OPEN' <include refid="scopeF"/> GROUP BY alert_type
+  </select>
+  <select id="todayAudit" resultType="map">
+    SELECT action, SUM(qty) q FROM sn_audit WHERE created_at &gt;= #{start} AND result = 'OK'
+      AND action IN ('SN_GENERATE','SN_ALLOCATE','SN_PULL','TRANSFER_BILL') <include refid="scopeF"/> GROUP BY action
+  </select>
+  <select id="todayConfirm" resultType="map">
+    SELECT confirm_method, SUM(qty) q FROM sn_delivery_batch WHERE batch_type &lt;&gt; 'TRANSFER_OUT'
+      AND confirmed_at &gt;= #{start} <include refid="scopeF"/> GROUP BY confirm_method
+  </select>
+  <select id="totalGenerated" resultType="long">SELECT COALESCE(SUM(generated_qty), 0) FROM sn_pi_counter</select>
+  <select id="runningJobs" resultType="long">SELECT COUNT(*) FROM sn_gen_job WHERE status = 'RUNNING'</select>
+  <select id="runningPlans" resultType="string">SELECT plan_json FROM sn_gen_job WHERE status = 'RUNNING'</select>
+  <select id="recentJobs" resultType="map">
+    SELECT gen_batch, pi_no, qty, done_qty, status, error_msg, created_by, created_at, plan_json FROM sn_gen_job
+    ORDER BY id DESC LIMIT #{limit}
+  </select>
+  <select id="recentFailures" resultType="map">
+    SELECT * FROM sn_delivery_batch WHERE (result = 'FAILED' OR (result = 'UNCONFIRMED'
+      AND (push_state = 'EXHAUSTED' OR (source = 'PULL' AND created_at &lt; #{cutoff})))) <include refid="scopeF"/>
+    ORDER BY updated_at DESC, id DESC LIMIT 20
+  </select>
+  <select id="openAlerts" resultType="map">
+    SELECT * FROM sn_delivery_alert WHERE status = 'OPEN' <include refid="scopeF"/> ORDER BY id DESC LIMIT 20
+  </select>
+</mapper>
