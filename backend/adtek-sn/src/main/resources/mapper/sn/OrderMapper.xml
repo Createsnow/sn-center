@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.sn.mapper.OrderMapper">
+  <!-- 读范围：scope 为 null = 全部；空列表 = 一个也没有 -->
+  <sql id="scopeM">
+    <if test="scope != null">
+      <choose>
+        <when test="scope.isEmpty()">AND 1=0</when>
+        <otherwise>AND m.org_code IN <foreach collection="scope" item="f" open="(" separator="," close=")">#{f}</foreach></otherwise>
+      </choose>
+    </if>
+  </sql>
+  <sql id="prdCols">
+    bill_no, seq, customer_code, pi, po, org_code, org_name, attach_no, material_code, material_name,
+    length_raw, unit, qty, customer_pn, customer_desc, spec_desc, material_spec, dept_code, dept_name,
+    modify_time, synced_at
+  </sql>
+  <sql id="prdValues">
+    <foreach collection="rows" item="r" separator=",">
+      (#{r.billNo}, #{r.seq}, #{r.customerCode}, #{r.pi}, #{r.po}, #{r.orgCode}, #{r.orgName}, #{r.attachNo},
+       #{r.materialCode}, #{r.materialName}, #{r.lengthRaw}, #{r.unit}, #{r.qty}, #{r.customerPn},
+       #{r.customerDesc}, #{r.specDesc}, #{r.materialSpec}, #{r.deptCode}, #{r.deptName}, #{r.modifyTime}, #{ts})
+    </foreach>
+  </sql>
+
+  <!-- ================================================================== 写快照 -->
+  <delete id="deleteBill">DELETE FROM sn_prd_mo WHERE bill_no = #{billNo}</delete>
+  <insert id="insertRows">
+    INSERT INTO sn_prd_mo(<include refid="prdCols"/>) VALUES <include refid="prdValues"/>
+  </insert>
+  <insert id="insertRowsNew">
+    INSERT INTO sn_prd_mo_new(<include refid="prdCols"/>) VALUES <include refid="prdValues"/>
+  </insert>
+  <delete id="removeBills">
+    DELETE FROM sn_prd_mo WHERE bill_no IN
+    <foreach collection="nos" item="n" open="(" separator="," close=")">#{n}</foreach>
+  </delete>
+  <select id="localHeads" resultType="map">
+    SELECT bill_no, MAX(modify_time) t FROM sn_prd_mo GROUP BY bill_no
+  </select>
+  <select id="syncState" resultType="map">SELECT * FROM sn_sync_state WHERE id = 1</select>
+  <update id="finishOk">
+    UPDATE sn_sync_state SET last_run_at = #{ts}, last_ok = 1, last_message = '', last_bills = #{bills} WHERE id = 1
+  </update>
+  <update id="finishFail">
+    UPDATE sn_sync_state SET last_run_at = #{ts}, last_ok = 0, last_message = #{message} WHERE id = 1
+  </update>
+  <update id="setLastFull">UPDATE sn_sync_state SET last_full_at = #{ts} WHERE id = 1</update>
+  <select id="existsBill" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_prd_mo WHERE bill_no = #{billNo})
+  </select>
+  <select id="countRows" resultType="long">SELECT COUNT(*) FROM sn_prd_mo</select>
+  <update id="dropNew">DROP TABLE IF EXISTS sn_prd_mo_new</update>
+  <update id="dropOld">DROP TABLE IF EXISTS sn_prd_mo_old</update>
+  <update id="createNew">CREATE TABLE sn_prd_mo_new LIKE sn_prd_mo</update>
+  <update id="swapNew">RENAME TABLE sn_prd_mo TO sn_prd_mo_old, sn_prd_mo_new TO sn_prd_mo</update>
+
+  <!-- ================================================================== 物料行与附表 -->
+  <select id="line" resultType="map">
+    SELECT * FROM sn_prd_mo WHERE bill_no = #{billNo} AND seq = #{seq}
+  </select>
+  <select id="lines" resultType="map">
+    SELECT * FROM sn_prd_mo WHERE bill_no = #{billNo} ORDER BY seq ASC
+  </select>
+  <select id="linesOfPi" resultType="map">
+    SELECT * FROM sn_prd_mo WHERE pi = #{pi} ORDER BY bill_no, seq
+  </select>
+  <select id="lineCount" resultType="map">
+    SELECT * FROM sn_line_count WHERE bill_no = #{billNo} AND seq = #{seq}
+  </select>
+  <select id="lockAttach" resultType="map">
+    SELECT * FROM sn_line_attach WHERE bill_no = #{billNo} AND seq = #{seq} FOR UPDATE
+  </select>
+  <select id="lockLength" resultType="map">
+    SELECT * FROM sn_line_length WHERE bill_no = #{billNo} AND seq = #{seq} FOR UPDATE
+  </select>
+  <select id="lockUnit" resultType="map">
+    SELECT * FROM sn_line_unit WHERE bill_no = #{billNo} AND seq = #{seq} FOR UPDATE
+  </select>
+  <delete id="deleteAttach">DELETE FROM sn_line_attach WHERE bill_no = #{billNo} AND seq = #{seq}</delete>
+  <delete id="deleteLength">DELETE FROM sn_line_length WHERE bill_no = #{billNo} AND seq = #{seq}</delete>
+  <delete id="deleteUnit">DELETE FROM sn_line_unit WHERE bill_no = #{billNo} AND seq = #{seq}</delete>
+  <delete id="deleteLineRule">DELETE FROM sn_line_rule WHERE bill_no = #{billNo} AND seq = #{seq}</delete>
+  <insert id="upsertAttach">
+    INSERT INTO sn_line_attach(bill_no, seq, manual_value, material_code, k3_value, filled_by, filled_at, updated_at)
+    VALUES (#{billNo}, #{seq}, #{value}, #{materialCode}, #{k3Value}, #{by}, #{now}, #{now})
+    ON DUPLICATE KEY UPDATE manual_value = VALUES(manual_value), material_code = VALUES(material_code),
+      k3_value = VALUES(k3_value), filled_by = VALUES(filled_by), filled_at = VALUES(filled_at),
+      updated_at = VALUES(updated_at)
+  </insert>
+  <insert id="upsertLength">
+    INSERT INTO sn_line_length(bill_no, seq, manual_value, material_code, filled_by, filled_at, updated_at)
+    VALUES (#{billNo}, #{seq}, #{value}, #{materialCode}, #{by}, #{now}, #{now})
+    ON DUPLICATE KEY UPDATE manual_value = VALUES(manual_value), material_code = VALUES(material_code),
+      filled_by = VALUES(filled_by), filled_at = VALUES(filled_at), updated_at = VALUES(updated_at)
+  </insert>
+  <insert id="upsertUnit">
+    INSERT INTO sn_line_unit(bill_no, seq, manual_value, material_code, filled_by, filled_at, updated_at)
+    VALUES (#{billNo}, #{seq}, #{value}, #{materialCode}, #{by}, #{now}, #{now})
+    ON DUPLICATE KEY UPDATE manual_value = VALUES(manual_value), material_code = VALUES(material_code),
+      filled_by = VALUES(filled_by), filled_at = VALUES(filled_at), updated_at = VALUES(updated_at)
+  </insert>
+  <select id="countsOf" resultType="map">
+    SELECT * FROM sn_line_count WHERE bill_no IN
+    <foreach collection="bills" item="b" open="(" separator="," close=")">#{b}</foreach>
+  </select>
+  <select id="attachesOf" resultType="map">
+    SELECT * FROM sn_line_attach WHERE bill_no IN
+    <foreach collection="bills" item="b" open="(" separator="," close=")">#{b}</foreach>
+  </select>
+  <select id="lengthsOf" resultType="map">
+    SELECT * FROM sn_line_length WHERE bill_no IN
+    <foreach collection="bills" item="b" open="(" separator="," close=")">#{b}</foreach>
+  </select>
+  <select id="unitsOf" resultType="map">
+    SELECT * FROM sn_line_unit WHERE bill_no IN
+    <foreach collection="bills" item="b" open="(" separator="," close=")">#{b}</foreach>
+  </select>
+
+  <!-- ================================================================== 订单页查询 -->
+  <sql id="billWhere">
+    WHERE 1=1
+    <if test="like != null">
+      AND m.bill_no IN (SELECT x.bill_no FROM sn_prd_mo x WHERE x.bill_no LIKE #{like} OR x.pi LIKE #{like}
+        OR x.po LIKE #{like} OR x.material_code LIKE #{like} OR x.customer_code LIKE #{like})
+    </if>
+    <if test="customer != null">AND m.customer_code = #{customer}</if>
+    <if test="pi != null">AND m.pi = #{pi}</if>
+    <include refid="scopeM"/>
+  </sql>
+  <select id="countBills" resultType="long">
+    SELECT COUNT(DISTINCT m.bill_no) FROM sn_prd_mo m <include refid="billWhere"/>
+  </select>
+  <select id="pageBills" resultType="map">
+    SELECT m.bill_no, MAX(m.customer_code) customer_code, MAX(m.po) po, MAX(m.pi) pi, MAX(m.org_code) org_code,
+      MAX(m.org_name) org_name, MAX(m.modify_time) modify_time, SUM(FLOOR(m.qty)) total_qty, COUNT(*) line_count,
+      GROUP_CONCAT(DISTINCT NULLIF(m.dept_name, '') ORDER BY m.dept_name SEPARATOR '、') dept_name,
+      SUM(COALESCE(c.gen_count, 0)) gen_sum,
+      SUM(GREATEST(FLOOR(m.qty) - COALESCE(c.own_generated, 0), 0)) quota
+    FROM sn_prd_mo m LEFT JOIN sn_line_count c ON c.bill_no = m.bill_no AND c.seq = m.seq
+    <include refid="billWhere"/>
+    GROUP BY m.bill_no ORDER BY MAX(m.modify_time) IS NULL, MAX(m.modify_time) DESC, m.bill_no DESC
+    LIMIT #{offset}, #{size}
+  </select>
+  <select id="departments" resultType="map">
+    SELECT m.org_code, MAX(m.org_name) org_name, m.dept_code, MAX(m.dept_name) dept_name,
+      COUNT(DISTINCT m.bill_no) bills, COUNT(*) line_count, MAX(m.modify_time) modify_time
+    FROM sn_prd_mo m WHERE m.dept_code &lt;&gt; '' <include refid="scopeM"/>
+    GROUP BY m.org_code, m.dept_code ORDER BY m.org_code, m.dept_code
+  </select>
+  <select id="meta" resultType="map">
+    SELECT MAX(m.synced_at) ts, COUNT(DISTINCT m.bill_no) bills, COUNT(*) row_count,
+      COUNT(DISTINCT CASE WHEN m.customer_code = '' THEN m.bill_no END) empty_customer
+    FROM sn_prd_mo m WHERE 1=1 <include refid="scopeM"/>
+  </select>
+  <select id="pendingAttach" resultType="long">
+    SELECT COUNT(*) FROM sn_prd_mo m LEFT JOIN sn_line_attach a ON a.bill_no = m.bill_no AND a.seq = m.seq
+    WHERE m.attach_no = '' AND (a.bill_no IS NULL OR a.material_code &lt;&gt; m.material_code)
+    <include refid="scopeM"/>
+  </select>
+  <select id="customers" resultType="string">
+    SELECT DISTINCT m.customer_code FROM sn_prd_mo m WHERE m.customer_code &lt;&gt; ''
+    <if test="like != null">AND m.customer_code LIKE #{like}</if>
+    <include refid="scopeM"/>
+    ORDER BY m.customer_code LIMIT 200
+  </select>
+  <select id="snapshotOrg" resultType="map">
+    SELECT org_code, org_name FROM sn_prd_mo WHERE bill_no = #{billNo} LIMIT 1
+  </select>
+  <select id="billOrgsSnap" resultType="map">
+    SELECT DISTINCT bill_no, org_code FROM sn_prd_mo WHERE bill_no IN
+    <foreach collection="nos" item="n" open="(" separator="," close=")">#{n}</foreach>
+  </select>
+  <select id="billOrgsLedger" resultType="map">
+    SELECT bill_no, org_code FROM sn_bill_ledger WHERE bill_no IN
+    <foreach collection="nos" item="n" open="(" separator="," close=")">#{n}</foreach>
+  </select>
+  <select id="customerOfPi" resultType="string">
+    SELECT customer_code FROM sn_prd_mo WHERE pi = #{pi} AND customer_code &lt;&gt; '' ORDER BY bill_no LIMIT 1
+  </select>
+  <select id="targets" resultType="map">
+    SELECT m.* FROM sn_prd_mo m WHERE m.pi &lt;&gt; ''
+    <if test="pi != null">AND m.pi = #{pi}</if>
+    <if test="like != null">
+      AND (m.pi LIKE #{like} OR m.bill_no LIKE #{like} OR m.material_code LIKE #{like} OR m.customer_code LIKE #{like})
+    </if>
+    ORDER BY m.pi, m.bill_no, m.seq LIMIT #{limit}
+  </select>
+</mapper>

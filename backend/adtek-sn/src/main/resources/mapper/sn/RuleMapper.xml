@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.sn.mapper.RuleMapper">
+  <sql id="visible">
+    <if test="scope != null">
+      <choose>
+        <when test="scope.isEmpty()">AND factory_code IS NULL</when>
+        <otherwise>
+          AND (factory_code IS NULL OR factory_code IN
+            <foreach collection="scope" item="f" open="(" separator="," close=")">#{f}</foreach>)
+        </otherwise>
+      </choose>
+    </if>
+  </sql>
+  <select id="prefixRules" resultType="map">
+    SELECT * FROM sn_rule_version WHERE prefix = #{prefix} AND (#{exclude} IS NULL OR id &lt;&gt; #{exclude})
+  </select>
+  <select id="prefixRulesLock" resultType="map">
+    SELECT * FROM sn_rule_version WHERE prefix = #{prefix} AND (#{exclude} IS NULL OR id &lt;&gt; #{exclude})
+    FOR UPDATE
+  </select>
+  <select id="overlapping" resultType="map">
+    SELECT prefix, claimed_pi FROM (
+      SELECT id, prefix, claimed_pi FROM sn_rule_version WHERE prefix LIKE #{like} AND prefix &lt;&gt; #{prefix}
+      <if test="heads != null and !heads.isEmpty()">
+        UNION ALL SELECT id, prefix, claimed_pi FROM sn_rule_version WHERE prefix IN
+        <foreach collection="heads" item="h" open="(" separator="," close=")">#{h}</foreach>
+      </if>
+    ) o ORDER BY id LIMIT 1
+  </select>
+  <select id="versionsOfPrefixPi" resultType="map">
+    SELECT * FROM sn_rule_version WHERE prefix = #{prefix} AND claimed_pi = #{pi}
+  </select>
+  <select id="rule" resultType="map">SELECT * FROM sn_rule WHERE id = #{id}</select>
+  <select id="ruleLock" resultType="map">SELECT * FROM sn_rule WHERE id = #{id} FOR UPDATE</select>
+  <select id="usedVersionOfPi" resultType="map">
+    SELECT v.* FROM sn_item i JOIN sn_rule_version v ON v.id = i.rule_version_id
+    WHERE i.seq_pi_no = #{pi} AND i.origin = 'GEN' ORDER BY i.seq_dec LIMIT 1
+  </select>
+  <select id="minBillOfPi" resultType="string">SELECT MIN(bill_no) FROM sn_prd_mo WHERE pi = #{pi}</select>
+  <select id="latestVersionOfPrefixPi" resultType="map">
+    SELECT * FROM sn_rule_version WHERE prefix = #{prefix} AND claimed_pi = #{pi} ORDER BY id DESC LIMIT 1
+  </select>
+  <update id="clearRuleFactory">UPDATE sn_rule SET factory_code = NULL WHERE id = #{id}</update>
+  <select id="versionsOf" resultType="map">
+    SELECT * FROM sn_rule_version WHERE rule_id = #{ruleId} ORDER BY version DESC
+  </select>
+  <select id="versionsByRules" resultType="map">
+    SELECT * FROM sn_rule_version
+    <if test="ids != null">WHERE rule_id IN <foreach collection="ids" item="i" open="(" separator="," close=")">#{i}</foreach></if>
+    ORDER BY rule_id, version DESC
+  </select>
+  <select id="currentVersion" resultType="map">
+    SELECT * FROM sn_rule_version WHERE rule_id = #{ruleId} AND version = #{version}
+  </select>
+  <select id="currentVersionLock" resultType="map">
+    SELECT * FROM sn_rule_version WHERE rule_id = #{ruleId} AND version = #{version} FOR UPDATE
+  </select>
+  <select id="piBindingsOf" resultType="map">
+    SELECT rule_id, pi_no v FROM sn_pi_rule WHERE rule_id IN
+    <foreach collection="ids" item="i" open="(" separator="," close=")">#{i}</foreach>
+    ORDER BY pi_no
+  </select>
+  <select id="listRules" resultType="map">
+    SELECT * FROM sn_rule WHERE 1=1 <include refid="visible"/>
+    <if test="category != null">AND category_scope = #{category}</if>
+    <if test="value != null">AND category_value = #{value}</if>
+    <if test="like != null">
+      AND (rule_code LIKE #{like} OR rule_name LIKE #{like} OR category_value LIKE #{like} OR id IN
+        (SELECT rule_id FROM sn_rule_version WHERE claimed_pi LIKE #{like}))
+    </if>
+    ORDER BY category_scope = 'PI' DESC, category_value ASC, rule_code ASC
+  </select>
+  <select id="visibleRules" resultType="map">
+    SELECT * FROM sn_rule WHERE 1=1 <include refid="visible"/> ORDER BY rule_code
+  </select>
+  <select id="existsCode" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_rule WHERE rule_code = #{code})
+  </select>
+  <insert id="insertRule" useGeneratedKeys="true" keyProperty="entity.id">
+    INSERT INTO sn_rule(rule_code, rule_name, category_scope, category_value, factory_code, current_version,
+      created_by, created_at, updated_by, updated_at)
+    VALUES (#{entity.ruleCode}, #{entity.ruleName}, #{entity.categoryScope}, #{entity.categoryValue},
+      #{entity.factoryCode}, 1, #{entity.createdBy}, #{entity.createdAt}, #{entity.updatedBy}, #{entity.updatedAt})
+  </insert>
+  <insert id="insertVersion" useGeneratedKeys="true" keyProperty="entity.id">
+    INSERT INTO sn_rule_version(rule_id, version, prefix, suffix, base, seq_len, charset, with_length, length_pad,
+      length_sep_before, length_sep_after, with_unit, used, claimed_pi, derived_from, created_by, created_at,
+      updated_at)
+    VALUES (#{entity.ruleId}, #{entity.version}, #{entity.prefix}, #{entity.suffix}, #{entity.base},
+      #{entity.seqLen}, #{entity.charset}, #{entity.withLength}, #{entity.lengthPad}, #{entity.lengthSepBefore},
+      #{entity.lengthSepAfter}, #{entity.withUnit}, #{entity.used}, #{entity.claimedPi}, #{entity.derivedFrom},
+      #{entity.createdBy}, #{entity.createdAt}, #{entity.updatedAt})
+  </insert>
+  <select id="nextVersion" resultType="int">
+    SELECT COALESCE(MAX(version), 0) + 1 FROM sn_rule_version WHERE rule_id = #{ruleId}
+  </select>
+  <update id="updateVersionSpec">
+    UPDATE sn_rule_version SET prefix = #{entity.prefix}, suffix = #{entity.suffix}, base = #{entity.base},
+      seq_len = #{entity.seqLen}, charset = #{entity.charset}, with_length = #{entity.withLength},
+      length_pad = #{entity.lengthPad}, length_sep_before = #{entity.lengthSepBefore},
+      length_sep_after = #{entity.lengthSepAfter}, with_unit = #{entity.withUnit}, updated_at = #{entity.updatedAt}
+    WHERE id = #{entity.id}
+  </update>
+  <update id="updateRule">
+    UPDATE sn_rule SET rule_name = #{name}, category_scope = #{scope}, category_value = #{value},
+      current_version = #{version}, updated_by = #{by}, updated_at = #{now}
+    WHERE id = #{id}
+  </update>
+  <select id="versionsLock" resultType="map">
+    SELECT * FROM sn_rule_version WHERE rule_id = #{ruleId} FOR UPDATE
+  </select>
+  <select id="piOfBinding" resultType="string">SELECT pi_no FROM sn_pi_rule WHERE rule_id = #{ruleId} LIMIT 1</select>
+  <select id="piOfLineRule" resultType="string">SELECT pi_no FROM sn_line_rule WHERE rule_id = #{ruleId} LIMIT 1</select>
+  <delete id="deleteVersions">DELETE FROM sn_rule_version WHERE rule_id = #{ruleId}</delete>
+  <delete id="deleteRule">DELETE FROM sn_rule WHERE id = #{id}</delete>
+  <select id="piRule" resultType="map">SELECT rule_id FROM sn_pi_rule WHERE pi_no = #{pi}</select>
+  <select id="piRuleLock" resultType="map">SELECT * FROM sn_pi_rule WHERE pi_no = #{pi} FOR UPDATE</select>
+  <delete id="deletePiRule">DELETE FROM sn_pi_rule WHERE pi_no = #{pi}</delete>
+  <insert id="upsertPiRule">
+    INSERT INTO sn_pi_rule(pi_no, rule_id, bound_by, bound_at) VALUES (#{pi}, #{ruleId}, #{by}, #{now})
+    ON DUPLICATE KEY UPDATE rule_id = VALUES(rule_id), bound_by = VALUES(bound_by), bound_at = VALUES(bound_at)
+  </insert>
+  <select id="selectionsOf" resultType="map">
+    SELECT * FROM sn_line_rule WHERE bill_no IN
+    <foreach collection="bills" item="b" open="(" separator="," close=")">#{b}</foreach>
+  </select>
+  <select id="prdLine" resultType="map">SELECT * FROM sn_prd_mo WHERE bill_no = #{billNo} AND seq = #{seq}</select>
+  <insert id="upsertLineRule">
+    INSERT INTO sn_line_rule(bill_no, seq, pi_no, rule_id, custom_json, set_by, set_at)
+    VALUES (#{billNo}, #{seq}, #{pi}, #{ruleId}, #{customJson}, #{by}, #{now})
+    ON DUPLICATE KEY UPDATE pi_no = VALUES(pi_no), rule_id = VALUES(rule_id), custom_json = VALUES(custom_json),
+      set_by = VALUES(set_by), set_at = VALUES(set_at)
+  </insert>
+  <select id="ownGenerated" resultType="long">
+    SELECT COALESCE(SUM(own_generated), 0) FROM sn_line_count WHERE bill_no = #{billNo} AND seq = #{seq}
+  </select>
+  <delete id="deleteLineRule">DELETE FROM sn_line_rule WHERE bill_no = #{billNo} AND seq = #{seq}</delete>
+  <select id="orgsOfPi" resultType="string">SELECT DISTINCT org_code FROM sn_prd_mo WHERE pi = #{pi}</select>
+  <select id="ruleCodesLike" resultType="string">SELECT rule_code FROM sn_rule WHERE rule_code LIKE #{like}</select>
+  <select id="customLineRules" resultType="map">
+    SELECT bill_no, seq, custom_json FROM sn_line_rule WHERE pi_no = #{pi} AND custom_json IS NOT NULL
+  </select>
+  <update id="setLineRuleRule">
+    UPDATE sn_line_rule SET rule_id = #{ruleId}, custom_json = NULL WHERE bill_no = #{billNo} AND seq = #{seq}
+  </update>
+  <update id="claimVersion">
+    UPDATE sn_rule_version SET used = 1, claimed_pi = #{pi} WHERE id = #{id} AND (claimed_pi IS NULL OR claimed_pi = #{pi})
+  </update>
+  <select id="versionClaimedBy" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_rule_version WHERE id = #{id} AND claimed_pi = #{pi})
+  </select>
+  <select id="version" resultType="map">SELECT * FROM sn_rule_version WHERE id = #{id}</select>
+</mapper>

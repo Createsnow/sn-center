@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.sn.mapper.ChangeMapper">
+  <sql id="scopeL">
+    <if test="scope != null">
+      <choose>
+        <when test="scope.isEmpty()">AND 1=0</when>
+        <otherwise>AND l.org_code IN <foreach collection="scope" item="f" open="(" separator="," close=")">#{f}</foreach></otherwise>
+      </choose>
+    </if>
+  </sql>
+  <!-- 未交付且未入批（暂停交付作用的范围） -->
+  <sql id="undelivered">
+    (status IN ('PENDING_ALLOC','ALLOCATED') OR (status = 'TO_PUSH' AND delivery_batch_no IS NULL))
+  </sql>
+  <insert id="countDaily">
+    INSERT INTO sn_daily_counter(day, kind, factory_code, n) VALUES (#{day}, #{kind}, #{factory}, 1)
+    ON DUPLICATE KEY UPDATE n = n + 1
+  </insert>
+  <select id="openAlertsByBill" resultType="map">
+    SELECT bill_no, COUNT(*) n FROM sn_order_alert WHERE status = 'OPEN' AND bill_no IN
+    <foreach collection="bills" item="b" open="(" separator="," close=")">#{b}</foreach>
+    GROUP BY bill_no
+  </select>
+  <select id="ledgersOf" resultType="map">
+    SELECT * FROM sn_bill_ledger WHERE bill_no IN
+    <foreach collection="bills" item="b" open="(" separator="," close=")">#{b}</foreach>
+  </select>
+  <select id="ledger" resultType="map">SELECT * FROM sn_bill_ledger WHERE bill_no = #{billNo}</select>
+  <select id="ledgerLock" resultType="map">SELECT * FROM sn_bill_ledger WHERE bill_no = #{billNo} FOR UPDATE</select>
+  <select id="openAlertOfType" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_order_alert WHERE bill_no = #{billNo} AND alert_type = #{type} AND status = 'OPEN')
+  </select>
+  <select id="openAlertCount" resultType="long">
+    SELECT COUNT(*) FROM sn_order_alert a LEFT JOIN sn_bill_ledger l ON l.bill_no = a.bill_no
+    WHERE a.status = 'OPEN' <include refid="scopeL"/>
+  </select>
+  <insert id="insertLedger">
+    INSERT IGNORE INTO sn_bill_ledger(bill_no, pi, customer_code, org_code, org_name, created_at, updated_at)
+    VALUES (#{billNo}, #{pi}, #{customerCode}, #{orgCode}, #{orgName}, #{now}, #{now})
+  </insert>
+  <insert id="insertLedgerLines">
+    INSERT IGNORE INTO sn_bill_ledger_line(bill_no, seq, qty) VALUES
+    <foreach collection="rows" item="r" separator=",">(#{r.bill_no}, #{r.seq}, #{r.qty})</foreach>
+  </insert>
+  <insert id="upsertLedgerLines">
+    INSERT INTO sn_bill_ledger_line(bill_no, seq, qty) VALUES
+    <foreach collection="rows" item="r" separator=",">(#{r.bill_no}, #{r.seq}, #{r.qty})</foreach>
+    ON DUPLICATE KEY UPDATE qty = VALUES(qty)
+  </insert>
+  <update id="setItemsSuspend">
+    UPDATE sn_item SET suspend = #{reason}, updated_at = #{now}
+    WHERE bill_no = #{billNo} AND <include refid="undelivered"/> AND NOT (suspend &lt;=&gt; #{reason})
+  </update>
+  <update id="clearDeliveredSuspend">
+    UPDATE sn_item SET suspend = NULL WHERE bill_no = #{billNo} AND suspend IS NOT NULL
+      AND NOT <include refid="undelivered"/>
+  </update>
+  <select id="anySuspended" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_item WHERE bill_no = #{billNo} AND suspend IS NOT NULL)
+  </select>
+  <select id="ledgerExists" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_bill_ledger WHERE bill_no = #{billNo})
+  </select>
+  <select id="ledgerSuspendShare" resultType="string">
+    SELECT suspend FROM sn_bill_ledger WHERE bill_no = #{billNo} FOR SHARE
+  </select>
+  <update id="setLedgerSuspend">
+    UPDATE sn_bill_ledger SET suspend = #{reason}, updated_at = #{now} WHERE bill_no = #{billNo}
+  </update>
+  <select id="openTypes" resultType="string">
+    SELECT alert_type FROM sn_order_alert WHERE bill_no = #{billNo} AND status = 'OPEN'
+  </select>
+  <update id="setPiFrozen">UPDATE sn_bill_ledger SET pi_frozen = #{frozen} WHERE bill_no = #{billNo}</update>
+  <select id="openAlertLock" resultType="map">
+    SELECT id, after_value FROM sn_order_alert WHERE bill_no = #{billNo} AND alert_type = #{type}
+      AND seq &lt;=&gt; #{seq} AND status = 'OPEN' FOR UPDATE
+  </select>
+  <update id="updateAlertAfter">
+    UPDATE sn_order_alert SET after_value = #{after}, updated_at = #{now} WHERE id = #{id}
+  </update>
+  <insert id="insertAlert">
+    INSERT INTO sn_order_alert(bill_no, alert_type, seq, before_value, after_value, status, created_at, updated_at)
+    VALUES (#{billNo}, #{type}, #{seq}, #{before}, #{after}, 'OPEN', #{now}, #{now})
+  </insert>
+  <select id="openAlertsOfTypes" resultType="map">
+    SELECT id, alert_type, seq FROM sn_order_alert WHERE bill_no = #{billNo} AND status = 'OPEN'
+      AND alert_type IN <foreach collection="types" item="t" open="(" separator="," close=")">#{t}</foreach>
+  </select>
+  <update id="closeAlert">
+    UPDATE sn_order_alert SET status = 'CLOSED', closed_by = #{by}, closed_at = #{now}, close_action = #{action},
+      note = #{note}, updated_at = #{now}
+    WHERE id = #{id}
+  </update>
+  <select id="attachK3Rows" resultType="map">
+    SELECT m.seq, m.attach_no, a.manual_value FROM sn_line_attach a
+      JOIN sn_prd_mo m ON m.bill_no = a.bill_no AND m.seq = a.seq
+    WHERE a.bill_no = #{billNo} AND m.attach_no &lt;&gt; '' AND a.k3_value &lt;&gt; m.attach_no
+  </select>
+  <update id="updateAttachK3">
+    UPDATE sn_line_attach SET k3_value = #{value}, updated_at = #{now} WHERE bill_no = #{billNo} AND seq = #{seq}
+  </update>
+  <select id="countsOfBill" resultType="map">
+    SELECT seq, material_code, own_generated, gen_count FROM sn_line_count WHERE bill_no = #{billNo}
+  </select>
+  <select id="ledgerLines" resultType="map">
+    SELECT seq, qty FROM sn_bill_ledger_line WHERE bill_no = #{billNo}
+  </select>
+  <update id="clearLeave">
+    UPDATE sn_bill_ledger SET leave_state = NULL, left_at = NULL, updated_at = #{now} WHERE bill_no = #{billNo}
+  </update>
+  <update id="setLeftAt">
+    UPDATE sn_bill_ledger SET left_at = COALESCE(left_at, #{now}), updated_at = #{now} WHERE bill_no = #{billNo}
+  </update>
+  <update id="setLeaveState">
+    UPDATE sn_bill_ledger SET leave_state = #{state} WHERE bill_no = #{billNo}
+  </update>
+  <select id="reversedBills" resultType="string">
+    SELECT bill_no FROM sn_bill_ledger WHERE leave_state = 'REVERSAL'
+  </select>
+  <select id="snapBills" resultType="string">SELECT DISTINCT bill_no FROM sn_prd_mo</select>
+  <select id="allLedgers" resultType="map">SELECT bill_no, leave_state FROM sn_bill_ledger</select>
+  <sql id="alertWhere">
+    FROM sn_order_alert a LEFT JOIN sn_bill_ledger l ON l.bill_no = a.bill_no
+    WHERE 1=1
+    <if test="status != null">AND a.status = #{status}</if>
+    <if test="billNo != null">AND a.bill_no = #{billNo}</if>
+    <if test="type != null">AND a.alert_type = #{type}</if>
+    <include refid="scopeL"/>
+  </sql>
+  <select id="countAlerts" resultType="long">SELECT COUNT(*) <include refid="alertWhere"/></select>
+  <select id="pageAlerts" resultType="map">
+    SELECT a.*, l.pi, l.org_code, l.org_name, l.suspend, l.leave_state <include refid="alertWhere"/>
+    ORDER BY a.id DESC LIMIT #{offset}, #{size}
+  </select>
+  <select id="billItemCounts" resultType="map">
+    SELECT bill_no, SUM(suspend IS NOT NULL) s, SUM(status = 'PUSHED') d, SUM(factory_code IS NOT NULL) a
+    FROM sn_item WHERE bill_no IN
+    <foreach collection="bills" item="b" open="(" separator="," close=")">#{b}</foreach>
+    GROUP BY bill_no
+  </select>
+  <select id="itemFactoriesOfBill" resultType="string">
+    SELECT DISTINCT factory_code FROM sn_item WHERE bill_no = #{billNo}
+  </select>
+  <select id="alert" resultType="map">SELECT * FROM sn_order_alert WHERE id = #{id}</select>
+  <select id="alertLock" resultType="map">SELECT * FROM sn_order_alert WHERE id = #{id} FOR UPDATE</select>
+  <select id="snapFirst" resultType="map">SELECT * FROM sn_prd_mo WHERE bill_no = #{billNo} LIMIT 1</select>
+  <update id="updateLedgerPi">
+    UPDATE sn_bill_ledger SET pi = #{value}, updated_at = #{now} WHERE bill_no = #{billNo}
+  </update>
+  <update id="updateLedgerCustomer">
+    UPDATE sn_bill_ledger SET customer_code = #{value}, updated_at = #{now} WHERE bill_no = #{billNo}
+  </update>
+  <update id="updateLedgerOrg">
+    UPDATE sn_bill_ledger SET org_code = #{orgCode}, org_name = #{orgName}, updated_at = #{now} WHERE bill_no = #{billNo}
+  </update>
+  <update id="setVoidConfirmed">
+    UPDATE sn_bill_ledger SET leave_state = 'VOID_CONFIRMED', updated_at = #{now} WHERE bill_no = #{billNo}
+  </update>
+</mapper>
