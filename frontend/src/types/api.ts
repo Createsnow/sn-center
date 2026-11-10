@@ -83,6 +83,8 @@ export interface LineRule {
   custom: CustomRule | null;
   /** 起始号（十进制流水），没填为 null：自定义规则（还没生成过）的，或沿用本 PI 已用前缀时另记的（下次生成后清掉） */
   seq_start?: number | null;
+  /** 流水上限自动突破（自定义规则的开关，记在物料行上）：开启时流水用完位数后自动加位 */
+  seq_grow?: boolean;
   format: string;
   first_sn: string | null;
   max_seq: number;
@@ -110,6 +112,8 @@ export interface CustomRule {
   suffix: string;
   /** 起始号（十进制流水，选填）：首次用这条自定义规则从最大号之后编号时，第一个号不小于它 */
   seq_start?: number | null;
+  /** 流水上限自动突破（选填，不传按关闭）：开启时流水用完位数后自动加位（4 位 9999 之后接 5 位 10000） */
+  seq_grow?: boolean;
 }
 
 export interface BillState {

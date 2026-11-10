@@ -98,7 +98,8 @@ def _summary(tpl: str, args: list) -> dict:
             "end_sn": r["b"],
         }
         for r in db.all(
-            f"SELECT bill_no, bill_seq, MIN(material_code) material_code, COUNT(*) n, MIN(sn) a, MAX(sn) b "
+            f"SELECT bill_no, bill_seq, MIN(material_code) material_code, COUNT(*) n, "
+            f"{util.sn_min()} a, {util.sn_max()} b "
             f"FROM sn_item WHERE {where} GROUP BY bill_no, bill_seq ORDER BY bill_no, bill_seq",
             *args,
         )
@@ -192,8 +193,8 @@ def delete(
         now = util.now()
         del_no = util.next_id("D")
         per_line = db.all(
-            f"SELECT bill_no, bill_seq, COUNT(*) n, SUM(status <> 'PENDING_ALLOC') a, MIN(sn) first_sn, "
-            f"MAX(sn) last_sn, MIN(factory_code) f, COUNT(DISTINCT COALESCE(factory_code, '')) nf, "
+            f"SELECT bill_no, bill_seq, COUNT(*) n, SUM(status <> 'PENDING_ALLOC') a, {util.sn_min()} first_sn, "
+            f"{util.sn_max()} last_sn, MIN(factory_code) f, COUNT(DISTINCT COALESCE(factory_code, '')) nf, "
             f"GROUP_CONCAT(DISTINCT status) st FROM sn_item WHERE {where} GROUP BY bill_no, bill_seq",
             *args,
         )
@@ -274,7 +275,7 @@ def deleted(pi_in: str | None, limit: int = 200) -> list[dict]:
     """删号记录（新的在前）：每次删除一行，删除单号、枚数、起止号、原因、操作人与时间。"""
     pi = util.trim(pi_in)
     rows = db.all(
-        "SELECT del_no, MIN(sn) start_sn, MAX(sn) end_sn, COUNT(*) qty, MIN(deleted_by) deleted_by, "
+        f"SELECT del_no, {util.sn_min()} start_sn, {util.sn_max()} end_sn, COUNT(*) qty, MIN(deleted_by) deleted_by, "
         "MIN(deleted_at) deleted_at, MIN(reason) reason, GROUP_CONCAT(DISTINCT bill_no ORDER BY bill_no) bills "
         "FROM sn_item_deleted WHERE pi_no = %s GROUP BY del_no ORDER BY MIN(deleted_at) DESC, del_no DESC LIMIT %s",
         pi,

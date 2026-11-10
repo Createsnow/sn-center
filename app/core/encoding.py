@@ -8,12 +8,15 @@
 - 前缀、后缀、分隔符不限制字符（只去首尾空格）。前缀必填：一个前缀只归属一张 PI，同一 PI 内流水不重复，
   SN 就不重复（号池唯一约束兜底）。
 - 流水紧跟前缀、定长，所以按版本可以把 SN 反解出十进制流水。
+- 上限自动突破（生成页自定义规则的开关）：流水用完规则位数后接着加位（4 位用到 9999 后 10000 起为 5 位，以此类推，
+  最多 MAX_SEQ_LEN 位）；每个位数各是一个规则版本（同前缀、同格式，只有流水位数不同），号挂在自己位数的版本上，
+  所以每个版本内流水仍是定长。
 """
 
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from app.core.errors import ErrorCode
 
@@ -96,6 +99,37 @@ def max_seq(s: Spec) -> int:
     """该规则能表示的最大十进制流水（封顶在 long 上限）。"""
     v = s.base**s.seq_len
     return LONG_MAX if v - 1 > LONG_MAX else v - 1
+
+
+def max_seq_grow(s: Spec) -> int:
+    """上限自动突破时能表示的最大十进制流水：位数加到 MAX_SEQ_LEN 为止（封顶在 long 上限）。"""
+    v = s.base**MAX_SEQ_LEN
+    return LONG_MAX if v - 1 > LONG_MAX else v - 1
+
+
+def seq_width(seq: int, s: Spec) -> int:
+    """上限自动突破时这个流水用几位：不少于规则的流水位数，装不下时按实际位数（9999 之后 10000 为 5 位）。"""
+    w = s.seq_len
+    while w < MAX_SEQ_LEN and seq > s.base**w - 1:
+        w += 1
+    return w
+
+
+def widen(s: Spec, width: int) -> Spec:
+    """同一格式、流水位数换成 width（突破后的版本）。"""
+    return s if width == s.seq_len else replace(s, seq_len=width)
+
+
+def split_by_width(a: int, b: int, s: Spec) -> list[tuple[int, int, int]]:
+    """号段 [a, b] 按突破后的位数切开：[(起, 止, 位数)]，每段内位数相同。"""
+    out = []
+    while a <= b:
+        w = seq_width(a, s)
+        top = s.base**w - 1 if w < MAX_SEQ_LEN else b
+        e = min(b, top)
+        out.append((a, e, w))
+        a = e + 1
+    return out
 
 
 def encode_seq(seq: int, s: Spec) -> str:

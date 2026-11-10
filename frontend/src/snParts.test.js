@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  TEMPLATES, addIndex, autoIndex, blockReason, defaultParts, formatDate, fromSpec, insertAt, isoWeek, movePart, moveTo, newErrors, newPart,
+  TEMPLATES, addIndex, maxSeqOf, seqText, autoIndex, blockReason, defaultParts, formatDate, fromSpec, insertAt, isoWeek, movePart, moveTo, newErrors, newPart,
   partValue, partsSig, sampleSegments, todayIn, toSpec,
 } from "./snParts.js";
 
@@ -45,7 +45,7 @@ test("default is bill No. last 7 + 4-digit base-10 serial (same as before)", () 
   assert.deepEqual(r.errors, []);
   assert.deepEqual(r.spec, {
     prefix: "6100701", base: 10, seq_len: 4, with_length: false, length_pad: 0, sep_before: "", sep_after: "",
-    with_unit: false, suffix: "", seq_start: null,
+    with_unit: false, suffix: "", seq_start: null, seq_grow: true,
   });
 });
 
@@ -110,7 +110,7 @@ test("start number only when a positive integer", () => {
 test("existing custom rule splits back into parts and round-trips", () => {
   const spec = {
     prefix: "CS-2605-", base: 32, seq_len: 5, with_length: true, length_pad: 3, sep_before: "-", sep_after: "/",
-    with_unit: true, suffix: "-01-04", seq_start: 9,
+    with_unit: true, suffix: "-01-04", seq_start: 9, seq_grow: false,
   };
   const parts = fromSpec(spec, [P("TEXT", { text: spec.prefix })]);
   assert.deepEqual(parts.map((p) => p.kind), ["TEXT", "SEQ", "SEP", "LEN", "SEP", "UNIT", "TEXT"]);
@@ -224,4 +224,21 @@ test("流水位数默认值：按本 PI 全部物料行还要生成的数量（�
   // 上限 12 位
   assert.equal(seqLenFor(10, 10 ** 15), 12);
   assert.equal(seqLenFor(10, NaN), 4);
+});
+
+test("seq grow (上限自动突破): default on, round-trip, text widens, max", () => {
+  assert.equal(newPart("SEQ").grow, true, "默认开启");
+  assert.equal(toSpec([P("BILL"), P("SEQ")], ctx).spec.seq_grow, true);
+  assert.equal(toSpec([P("BILL"), P("SEQ", { grow: false })], ctx).spec.seq_grow, false);
+  // 没带 seq_grow 的旧规则拆回组件按默认开启；带了按原值
+  assert.equal(fromSpec({ base: 10, seq_len: 4 }, [P("BILL")])[1].grow, true);
+  assert.equal(fromSpec({ base: 10, seq_len: 4, seq_grow: false }, [P("BILL")])[1].grow, false);
+  const cs = "0123456789";
+  assert.equal(seqText(1, 10, 4, cs, true), "0001");
+  assert.equal(seqText(9999, 10, 4, cs, true), "9999");
+  assert.equal(seqText(10000, 10, 4, cs, true), "10000");
+  assert.equal(seqText(10000, 10, 4, cs), "0000", "关闭时与原来相同（只取低位）");
+  assert.equal(maxSeqOf(10, 4), 9999);
+  assert.equal(maxSeqOf(10, 4, true), 10 ** 12 - 1);
+  assert.equal(maxSeqOf(36, 4, true), Number.MAX_SAFE_INTEGER);
 });

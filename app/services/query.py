@@ -109,7 +109,10 @@ def seq_range(f: Filter) -> tuple[str, int | None, int | None] | None:
         if util.blank(v):
             bounds.append(None)
             continue
-        n = _seq_of(v.strip(), specs)
+        # 完整 SN 先按号池精确取流水（上限自动突破后位数不同，带米数且没有分隔符时按规则反解可能有歧义）
+        n = db.scalar("SELECT seq_dec FROM sn_item WHERE sn = %s AND seq_pi_no = %s AND origin = 'GEN'", v.strip(), pi)
+        if n is None:
+            n = _seq_of(v.strip(), specs)
         if n is None:
             raise biz(ErrorCode.QUERY_RANGE_INVALID, value=v.strip(), pi=pi)
         bounds.append(n)

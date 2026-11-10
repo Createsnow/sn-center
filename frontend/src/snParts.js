@@ -4,7 +4,8 @@
  *
  * 组件 kind：
  * - TEXT 固定文本 / SEP 分隔符 / PI / BILL 单据编号 / DATE 日期：保存时取值，成为固定字符；
- * - SEQ 流水（进制、位数、起始号）：必须且只有一个；
+ * - SEQ 流水（进制、位数、起始号、上限自动突破）：必须且只有一个；上限自动突破默认开启（流水用完位数后自动加位，
+ *   保存时为 seq_grow，后台按位数另出版本；关闭时保持原逻辑：位数按订单数量定、用完报规则位数已用尽）；
  * - LEN 米数（补 0 位数）、UNIT 单位：各最多一个，生成时取物料行的值。
  *
  * 按位置换算（后台编码：前缀 + 流水 + 米数前分隔符 + 米数 + 米数后分隔符 + 单位 + 后缀）：
@@ -12,10 +13,11 @@
  * 所以米数、单位须在流水之后、单位在米数之后；不带米数时流水与单位之间不能有组件。
  *
  * @typedef {{ id: number, kind: string, text?: string, cut?: "ALL"|"LAST"|"FIRST", n?: number, fmt?: string,
- *   date?: string, base?: number, len?: number, start?: number|null, pad?: number }} Part
+ *   date?: string, base?: number, len?: number, start?: number|null, grow?: boolean, pad?: number }} Part
  * @typedef {{ pi?: string, billNo?: string }} PartCtx
  * @typedef {{ prefix: string, base: number, seq_len: number, with_length: boolean, length_pad: number,
- *   sep_before: string, sep_after: string, with_unit: boolean, suffix: string, seq_start: number|null }} CustomSpec
+ *   sep_before: string, sep_after: string, with_unit: boolean, suffix: string, seq_start: number|null,
+ *   seq_grow: boolean }} CustomSpec
  */
 
 export const KINDS = ["TEXT", "SEP", "PI", "BILL", "DATE", "SEQ", "LEN", "UNIT"];
@@ -89,7 +91,7 @@ export function newPart(kind, today = "") {
     case "PI": return withId({ kind, cut: "ALL", n: 7 });
     case "BILL": return withId({ kind, cut: "LAST", n: 7 });
     case "DATE": return withId({ kind, fmt: "YYMMDD", date: today });
-    case "SEQ": return withId({ kind, base: 10, len: 4, start: null });
+    case "SEQ": return withId({ kind, base: 10, len: 4, start: null, grow: true });
     case "LEN": return withId({ kind, pad: 0 });
     case "UNIT": return withId({ kind });
     default: throw new Error(`unknown part ${kind}`);
@@ -112,6 +114,22 @@ export function seqNeed(nextSeq, quota, headroom = SEQ_HEADROOM) {
   const used = Math.max((Number(nextSeq) || 1) - 1, 0);
   const rest = Math.max(Number(quota) || 0, 0);
   return used + Math.ceil(rest * headroom);
+}
+
+/**
+ * 流水文本（与后台 encoding.encode_seq 相同）：左侧用字符表首字符补到 len 位；grow（上限自动突破）时装不下就按实际位数
+ * （4 位 9999 之后 10000），不开启时只取低 len 位（与原来相同，调用方保证不超出）。
+ */
+export function seqText(n, base, len, charset, grow = false) {
+  const b = Number(base) || 10;
+  let s = "";
+  for (let i = 0, x = Math.max(Number(n) || 0, 0); i < len || (grow && x > 0); i++, x = Math.floor(x / b)) s = charset[x % b] + s;
+  return s;
+}
+
+/** 当前进制、位数下的最大流水；grow（上限自动突破）时为加到 SEQ_LEN_MAX 位的最大流水。不超过 Number.MAX_SAFE_INTEGER。 */
+export function maxSeqOf(base, len, grow = false) {
+  return Math.min((Number(base) || 10) ** (grow ? SEQ_LEN_MAX : Number(len) || 4) - 1, Number.MAX_SAFE_INTEGER);
 }
 
 /** 装得下 need 的最少流水位数（进制^位数 − 1 ≥ need），不少于 SEQ_LEN_DEFAULT、不超过 SEQ_LEN_MAX。 */
@@ -157,7 +175,9 @@ function textParts(s) {
  */
 export function fromSpec(spec, head) {
   const s = spec || {};
-  const seq = withId({ kind: "SEQ", base: Number(s.base) || 10, len: Number(s.seq_len) || 4, start: s.seq_start ?? null });
+  const seq = withId({
+    kind: "SEQ", base: Number(s.base) || 10, len: Number(s.seq_len) || 4, start: s.seq_start ?? null, grow: s.seq_grow ?? true,
+  });
   const out = [...head, seq];
   if (s.with_length) {
     out.push(...textParts(s.sep_before), withId({ kind: "LEN", pad: Number(s.length_pad) || 0 }), ...textParts(s.sep_after));
@@ -221,6 +241,7 @@ export function toSpec(parts, ctx = {}) {
     with_unit: parts.some((p) => p.kind === "UNIT"),
     suffix: suffix.trim(),
     seq_start: Number.isSafeInteger(start) && start > 0 ? start : null,
+    seq_grow: seq.grow !== false,
   };
   return { spec, errors };
 }

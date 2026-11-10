@@ -27,7 +27,10 @@
           <template #default="{ row }">{{ row.base ?? "—" }}</template>
         </el-table-column>
         <el-table-column :label="t('rules.seqDigits')" width="76" align="right">
-          <template #default="{ row }">{{ row.seq_len ?? "—" }}</template>
+          <!-- 上限自动突破时号段按位数切开，每段带自己的位数 -->
+          <template #default="{ row }">
+            <div v-for="(g, i) in segsOf(row)" :key="i">{{ g.seq_len ?? row.seq_len ?? "—" }}</div>
+          </template>
         </el-table-column>
         <el-table-column :label="t('rules.seqNo')" min-width="150">
           <template #default="{ row }">

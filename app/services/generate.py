@@ -677,27 +677,39 @@ def _plan(pi: str, scope: str, keys: list[tuple[str, int]], base: int, seq: dict
         # 起始号：自定义规则（首次生成），或沿用本 PI 已用前缀的版本时物料行另记的（只有这两种才有 seq_start）
         segs = taker.take(n, x.res.seq_start)
         end = segs[-1][1]
-        mx = codec.max_seq(spec)
+        grow = x.res.seq_grow
+        # 上限自动突破：用完规则位数后接着加位（最多 12 位），号段按位数切开，每段一个位数（生成时挂对应位数的版本）
+        mx = codec.max_seq_grow(spec) if grow else codec.max_seq(spec)
         if end > mx:
             raise biz(ErrorCode.GEN_RULE_EXHAUSTED, max=mx, end=end)
+        if grow:
+            parts = [(a, b, w) for s0, e0 in segs for a, b, w in codec.split_by_width(s0, e0, spec)]
+            segs = [[a, b] for a, b, _ in parts]
+        else:
+            parts = [(a, b, spec.seq_len) for a, b in segs]
         length = x.length if spec.with_length else None
         unit = x.unit if spec.with_unit else None
-        start_sn = codec.format_sn(segs[0][0], spec, length, unit)
-        if len(start_sn) > codec.SN_MAX:
-            raise biz(ErrorCode.RULE_SN_TOO_LONG)
         res = x.res
-        seg_list = [
-            {
+        seg_list = []
+        for a, b, w in parts:
+            ws = codec.widen(spec, w)
+            g = {
                 "start_seq": a,
                 "end_seq": b,
                 "qty": b - a + 1,
-                "start_sn": codec.format_sn(a, spec, length, unit),
-                "end_sn": codec.format_sn(b, spec, length, unit),
-                "start_seq_text": codec.encode_seq(a, spec),
-                "end_seq_text": codec.encode_seq(b, spec),
+                "start_sn": codec.format_sn(a, ws, length, unit),
+                "end_sn": codec.format_sn(b, ws, length, unit),
+                "start_seq_text": codec.encode_seq(a, ws),
+                "end_seq_text": codec.encode_seq(b, ws),
             }
-            for a, b in segs
-        ]
+            if grow:
+                # 这一段的流水位数（确认生成弹窗按段显示）
+                g["seq_len"] = w
+            # 突破后位数变多，SN 也变长：每段的止号都不能超过 SN 长度上限
+            if len(g["end_sn"]) > codec.SN_MAX:
+                raise biz(ErrorCode.RULE_SN_TOO_LONG)
+            seg_list.append(g)
+        start_sn = seg_list[0]["start_sn"]
         out["items"].append(
             {
                 "bill_no": x.bill_no,
@@ -712,6 +724,8 @@ def _plan(pi: str, scope: str, keys: list[tuple[str, int]], base: int, seq: dict
                 "prefix": spec.prefix,
                 "base": spec.base,
                 "seq_len": spec.seq_len,
+                # 流水上限自动突破（开启时号段按位数切开，seg_list 各段另带 seq_len）
+                "seq_grow": grow,
                 "start_seq_text": seg_list[0]["start_seq_text"],
                 "end_seq_text": seg_list[-1]["end_seq_text"],
                 "line_qty": x.qty,
@@ -1027,23 +1041,33 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
         same = [(y["bill_no"], y["seq"]) for y in plan["items"] if y["rule_key"] == x["rule_key"]]
         res = _resolved_of(pi, x)
         versions[x["rule_key"]] = rules.realize(cu, pi, res, same)
-    # 沿用已用前缀的版本时另记的起始号只管这一次生成：生成过的物料行清掉（之后流水接续）
+    # 沿用已用前缀的版本时另记的起始号只管这一次生成：生成过的物料行清掉（之后流水接续）；上限自动突破照旧保留
     for x in plan["items"]:
-        db.exec(
-            "UPDATE sn_line_rule SET custom_json = NULL WHERE bill_no = %s AND seq = %s AND rule_id IS NOT NULL",
-            x["bill_no"],
-            x["seq"],
-        )
+        rules.keep_grow(x["bill_no"], x["seq"])
     for no in sorted({x["bill_no"] for x in plan["items"]}):
         changes.ensure_ledger(no)
         # 写号之前先给台账加共享锁：订单变更正在改这张单的暂停时等它提交，之后改暂停的等这次生成提交，
         # 写完号按台账重算暂停标记时读到的就是当前值
         changes.lock_ledger_suspend(no)
     done = 0
+    # 上限自动突破：超出规则位数的号挂到对应位数的突破版本上（同一次生成里同一版本、同一位数共用）
+    grown: dict[tuple[int, int], dict] = {}
+
+    def version_for(base: dict, seq: int) -> dict:
+        w = codec.seq_width(seq, rules.spec_of(base))
+        if w == base["seq_len"]:
+            return base
+        k = (base["id"], w)
+        if k not in grown:
+            grown[k] = rules.grow_version(cu, pi, base, w)
+        return grown[k]
+
     for x in plan["items"]:
-        v = versions[x["rule_key"]]
-        spec = rules.spec_of(v)
+        base_v = versions[x["rule_key"]]
         for s, e in _chunks(item_segs(x)):
+            # 号段已按位数切开（见 _plan），一块内位数相同
+            v = version_for(base_v, s)
+            spec = rules.spec_of(v)
             sns = [codec.format_sn(q, spec, x["length"], x.get("unit")) for q in range(s, e + 1)]
             rows = [
                 (

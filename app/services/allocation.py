@@ -242,7 +242,8 @@ def _allocate_tx(
             gen_args = [] if g["snapshot"] else [g["gen_org"]]
             # 在 PI 操作锁与事务内，这里统计到的就是下面要改的号
             per_line = db.all(
-                "SELECT bill_seq, COUNT(*) n, MIN(sn) a, MAX(sn) b FROM sn_item WHERE pi_no = %s AND bill_no = %s "
+                f"SELECT bill_seq, COUNT(*) n, {util.sn_min()} a, {util.sn_max()} b FROM sn_item "
+                "WHERE pi_no = %s AND bill_no = %s "
                 "AND status = 'PENDING_ALLOC'" + gen_cond + cond + " GROUP BY bill_seq",
                 pi,
                 g["bill_no"],

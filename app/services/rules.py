@@ -23,6 +23,12 @@
 被别的 PI、别的规则或别的格式占用时报前缀冲突；
 自定义规则的前缀在选定后被别的规则先占用时，预演标「规则须换前缀」，确认生成时报前缀冲突。
 物料行生成过号后可改选，已生成的号不变，流水接续。
+
+流水上限自动突破（自定义规则的开关，默认开启；记在物料行上，不是格式的一部分）：开启时流水用完规则位数后自动加位
+（4 位用到 9999 后接 5 位 10000，以此类推，最多 12 位）。每个位数各是一个版本：生成时按需为本规则另出
+「同前缀、同格式、只有流水位数不同」的版本（突破版本：derived_from 为原版本且前缀相同，与换前缀另出的版本区分；
+归属同一 PI，不改规则的当前版本），号挂在自己位数的版本上；前缀校验时突破版本按原版本的流水格式比较。
+关闭时保持原逻辑（用完报规则位数已用尽）。
 """
 
 from __future__ import annotations
@@ -226,18 +232,17 @@ def check_prefix(
 def _prefix_rules(
     prefix: str, spec: codec.Spec | None, pi: str | None, exclude_version: int | None, lock: bool
 ) -> None:
-    same = db.all(
-        "SELECT * FROM sn_rule_version WHERE prefix = %s AND (%s IS NULL OR id <> %s)"
-        + (" FOR UPDATE" if lock else ""),
-        prefix,
-        exclude_version,
-        exclude_version,
-    )
-    for v in same:
+    every = db.all("SELECT * FROM sn_rule_version WHERE prefix = %s" + (" FOR UPDATE" if lock else ""), prefix)
+    by_id = {v["id"]: v for v in every}
+    for v in every:
+        if v["id"] == exclude_version:
+            continue
         if pi is None or v["claimed_pi"] != pi:
             raise biz(ErrorCode.RULE_PREFIX_CONFLICT, prefix=prefix)
-        if spec is not None and not same_seq_format(spec_of(v), spec):
-            raise biz(ErrorCode.RULE_PREFIX_FORMAT_LOCKED, prefix=prefix, base=v["base"], seq_len=v["seq_len"])
+        # 突破版本（同前缀、由原版本加位而来）按原版本的流水格式比较
+        b = by_id.get(v["derived_from"]) or v
+        if spec is not None and not same_seq_format(spec_of(b), spec):
+            raise biz(ErrorCode.RULE_PREFIX_FORMAT_LOCKED, prefix=prefix, base=b["base"], seq_len=b["seq_len"])
     for v in _overlapping(prefix):
         # 不论是否同一 PI：不同前缀一个是另一个的开头时，流水不同也可能拼出相同的号（如 P1+03+后缀 5 与 P103+5）
         raise biz(ErrorCode.RULE_PREFIX_OVERLAP, prefix=prefix, other=v["prefix"], pi=v["claimed_pi"] or "-")
@@ -284,6 +289,61 @@ def own_version(pi: str, spec: codec.Spec) -> Resolved | None:
     return None
 
 
+def seq_label(seq: int, spec: codec.Spec, grow: bool = False) -> str:
+    """流水号文本（留痕用）；上限自动突破时按突破后的位数。"""
+    return codec.encode_seq(seq, codec.widen(spec, codec.seq_width(seq, spec)) if grow else spec)
+
+
+def is_grow_version(v: dict, parent: dict | None) -> bool:
+    """v 是否为 parent 上限自动突破另出的版本（derived_from 为 parent 且前缀相同；换前缀另出的版本前缀不同）。"""
+    return parent is not None and v.get("derived_from") == parent["id"] and v["prefix"] == parent["prefix"]
+
+
+def base_of(v: dict) -> dict:
+    """突破版本的原版本；不是突破版本时为它自己。"""
+    if v.get("derived_from") is None:
+        return v
+    p = db.one("SELECT * FROM sn_rule_version WHERE id = %s", v["derived_from"])
+    return p if is_grow_version(v, p) else v
+
+
+def grow_version(cu: CurrentUser, pi: str, base: dict, width: int) -> dict:
+    """生成事务内：版本 base 的流水上限自动突破到 width 位时用的版本。同规则、同前缀、同格式，只有流水位数为 width，
+    归属本 PI、derived_from = base；已有则沿用，没有则另出一版（版本号接着排，不改规则的当前版本）。
+    前缀已归属本 PI（base 已落库归属），不另查前缀、不另拿前缀锁（命名锁各占一条连接，同一事务再拿会等自己；
+    同一 PI 的生成由 PI 操作锁串行）；先锁规则行，与规则库改版排队（版本号不撞）。"""
+    if width == base["seq_len"]:
+        return base
+    db.one("SELECT id FROM sn_rule WHERE id = %s FOR UPDATE", base["rule_id"])
+    v = db.one(
+        "SELECT * FROM sn_rule_version WHERE rule_id = %s AND derived_from = %s AND prefix = %s AND seq_len = %s "
+        "AND claimed_pi = %s",
+        base["rule_id"],
+        base["id"],
+        base["prefix"],
+        width,
+        pi,
+    )
+    if v is not None:
+        return v
+    spec = codec.widen(spec_of(base), width)
+    err = codec.validate(spec)
+    if err is not None:
+        raise biz(err)
+    n = _next_version(base["rule_id"])
+    vid = _insert_version(cu, base["rule_id"], n, spec, util.now(), used=True, claimed_pi=pi, derived_from=base["id"])
+    code = db.scalar("SELECT rule_code FROM sn_rule WHERE id = %s", base["rule_id"])
+    audit.record(
+        cu,
+        audit.entry(audit.RULE_VERSION)
+        .pi(pi)
+        .info(
+            f"{code} v{n} {describe(spec)} (v{base['version']} 流水用完 {base['seq_len']} 位，自动突破到 {width} 位)"
+        ),
+    )
+    return db.one("SELECT * FROM sn_rule_version WHERE id = %s", vid)
+
+
 def pi_prefix(pi: str) -> dict:
     """生成页「选规则」的默认前缀（返回结构不变：prefix、custom）。
     - 本 PI 已生成的号（流水归属本 PI，含已转到别的单据 / PI 的）还在：custom 为这个前缀的格式，prefix 为它，
@@ -300,15 +360,15 @@ def pi_prefix(pi: str) -> dict:
     if used is None:
         first = db.scalar("SELECT MIN(bill_no) FROM sn_prd_mo WHERE pi = %s", pi) or ""
         return {"prefix": first[-7:], "custom": None}
-    # 格式取本 PI 这个前缀最新的版本（规则另出过新版时与 own_version 沿用的一致），没有时取号所在的版本
-    v = (
-        db.one(
-            "SELECT * FROM sn_rule_version WHERE prefix = %s AND claimed_pi = %s ORDER BY id DESC LIMIT 1",
-            used["prefix"],
-            pi,
-        )
-        or used
-    )
+    # 格式取本 PI 这个前缀最新的版本（规则另出过新版时与 own_version 沿用的一致；不算上限自动突破另出的版本），
+    # 没有时取号所在的版本（号在突破版本上时取它的原版本）
+    v = db.one(
+        "SELECT v.* FROM sn_rule_version v LEFT JOIN sn_rule_version p ON p.id = v.derived_from "
+        "AND p.prefix = v.prefix WHERE v.prefix = %s AND v.claimed_pi = %s AND p.id IS NULL "
+        "ORDER BY v.id DESC LIMIT 1",
+        used["prefix"],
+        pi,
+    ) or base_of(used)
     return {"prefix": used["prefix"], "custom": _custom_dict(spec_of(v))}
 
 
@@ -328,17 +388,31 @@ SAMPLE_LENGTH = "100"
 SAMPLE_UNIT = "M"
 
 
-def preview(s: SpecIn, length: str | None = None, unit: str | None = None, seq_start: int | None = None) -> dict:
-    """编辑时的示例号：前 5 个和最大号（米数、单位用示例值）、最大流水。seq_start：从这个流水起（自定义规则的起始号），
-    不填从 1 起。"""
+def preview(
+    s: SpecIn, length: str | None = None, unit: str | None = None, seq_start: int | None = None, grow: bool = False
+) -> dict:
+    """编辑时的示例号：前 5 个和最大号（米数、单位用示例值）、最大流水（规则位数的）。seq_start：从这个流水起
+    （自定义规则的起始号），不填从 1 起。grow（上限自动突破）：起始号可超过规则位数（按突破后的位数），
+    最大号之后另带突破后的第一个号（最大流水 + 1）。"""
     spec = normalize(s)
     sample_len = codec.clean_length(length) or SAMPLE_LENGTH
     sample_unit = util.trim(unit) or SAMPLE_UNIT
     mx = codec.max_seq(spec)
-    first = check_seq_start(seq_start, spec) or 1
+    first = check_seq_start(seq_start, spec, grow) or 1
     seqs = list(range(first, min(first + 4, mx) + 1)) + ([mx] if mx > first + 4 else [])
+    if grow:
+        seqs = list(range(first, first + 5)) if first > mx else seqs + [mx + 1]
+    seqs = [i for i in seqs if i <= (codec.max_seq_grow(spec) if grow else mx)]
+
+    def text(i: int) -> codec.Spec:
+        return codec.widen(spec, codec.seq_width(i, spec)) if grow else spec
+
     samples = [
-        {"seq_dec": i, "seq_text": codec.encode_seq(i, spec), "sn": codec.format_sn(i, spec, sample_len, sample_unit)}
+        {
+            "seq_dec": i,
+            "seq_text": codec.encode_seq(i, text(i)),
+            "sn": codec.format_sn(i, text(i), sample_len, sample_unit),
+        }
         for i in seqs
     ]
     return {
@@ -754,6 +828,8 @@ class Resolved:
     #: 起始号（十进制流水）：从 PI 最大号之后编号时第一个号不小于它；不参与 key。自定义规则（plan = NEW）取规则参数；
     #: 自定义时沿用本 PI 已用前缀的版本（own_version）取物料行另记的起始号（见 _start_json），生成后清掉
     seq_start: int | None = None
+    #: 流水上限自动突破（自定义规则的开关，记在物料行上，见 _start_json）；不参与 key（同格式共用同一版）
+    seq_grow: bool = False
 
     @property
     def ready(self) -> bool:
@@ -781,7 +857,10 @@ def _resolve_in(rule: dict, vs: list[dict], pi: str, source: str) -> Resolved:
     t = _current_of(rule, vs)
     if t is None:
         raise biz(ErrorCode.RULE_VERSION_NOT_FOUND)
-    own = next((v for v in vs if v["derived_from"] == t["id"] and v["claimed_pi"] == pi), None)
+    # 为本 PI 换前缀另出的版本（前缀不同；同前缀的是上限自动突破另出的版本，不算）
+    own = next(
+        (v for v in vs if v["derived_from"] == t["id"] and v["claimed_pi"] == pi and v["prefix"] != t["prefix"]), None
+    )
     if t["claimed_pi"] == pi:
         return Resolved(source, MODE_LIBRARY, PLAN_USE, rule, t)
     if own is not None:
@@ -808,11 +887,11 @@ def _custom_spec(c: dict) -> codec.Spec:
     )
 
 
-def check_seq_start(seq_start: int | None, spec: codec.Spec) -> int | None:
-    """自定义规则的起始号：不填为 None；须为 1..规则最大流水。"""
+def check_seq_start(seq_start: int | None, spec: codec.Spec, grow: bool = False) -> int | None:
+    """自定义规则的起始号：不填为 None；须为 1..规则最大流水（上限自动突破时为加到 12 位的最大流水）。"""
     if seq_start is None:
         return None
-    mx = codec.max_seq(spec)
+    mx = codec.max_seq_grow(spec) if grow else codec.max_seq(spec)
     if not 1 <= seq_start <= mx:
         raise biz(ErrorCode.RULE_SEQ_START_INVALID, max=mx)
     return int(seq_start)
@@ -820,7 +899,8 @@ def check_seq_start(seq_start: int | None, spec: codec.Spec) -> int | None:
 
 def _custom_resolved(source: str, c: dict) -> Resolved:
     spec = _custom_spec(c)
-    start = check_seq_start(c.get("seq_start"), spec)
+    grow = bool(c.get("seq_grow"))
+    start = check_seq_start(c.get("seq_start"), spec, grow)
     draft = {
         "id": None,
         "rule_id": None,
@@ -839,19 +919,33 @@ def _custom_resolved(source: str, c: dict) -> Resolved:
         "claimed_pi": None,
         "derived_from": None,
     }
-    return Resolved(source, MODE_CUSTOM, PLAN_NEW, None, draft, custom=_custom_dict(spec), seq_start=start)
+    return Resolved(
+        source, MODE_CUSTOM, PLAN_NEW, None, draft, custom=_custom_dict(spec), seq_start=start, seq_grow=grow
+    )
 
 
 def _custom_json(res: Resolved) -> str:
-    """物料行选定的自定义规则存入 sn_line_rule.custom_json：格式参数，有起始号时另带 seq_start。"""
-    c = res.custom if res.seq_start is None else {**res.custom, "seq_start": res.seq_start}
+    """物料行选定的自定义规则存入 sn_line_rule.custom_json：格式参数，有起始号时另带 seq_start，
+    开启上限自动突破时另带 seq_grow（关闭时不写，与原来相同）。"""
+    c = dict(res.custom)
+    if res.seq_start is not None:
+        c["seq_start"] = res.seq_start
+    if res.seq_grow:
+        c["seq_grow"] = True
     return json.dumps(c, ensure_ascii=False, sort_keys=True)
 
 
-def _start_json(seq_start: int | None) -> str | None:
-    """物料行沿用本 PI 已用前缀的版本（记 rule_id）时另填的起始号：存入同一行的 custom_json，只有 seq_start 一项；
-    没填为 None。生成过一次就清掉（同自定义规则：起始号只管下一次生成，之后流水接续）。"""
-    return None if seq_start is None else json.dumps({"seq_start": int(seq_start)})
+def _start_json(seq_start: int | None, grow: bool = False) -> str | None:
+    """物料行记 rule_id（沿用本 PI 已用前缀的版本，或自定义规则生成后改记的规则）时另记的：起始号 seq_start、
+    上限自动突破 seq_grow（开启时），存入同一行的 custom_json；都没有为 None。
+    起始号生成过一次就清掉（同自定义规则：起始号只管下一次生成，之后流水接续），
+    上限自动突破一直保留（见 keep_grow）。"""
+    c: dict = {}
+    if seq_start is not None:
+        c["seq_start"] = int(seq_start)
+    if grow:
+        c["seq_grow"] = True
+    return json.dumps(c, sort_keys=True) if c else None
 
 
 def _start_of(sel: dict) -> int | None:
@@ -862,10 +956,38 @@ def _start_of(sel: dict) -> int | None:
     return int(v) if isinstance(v, int) and v > 0 else None
 
 
+def _grow_of(custom_json: str | None) -> bool:
+    """物料行的 custom_json 里是否开启了上限自动突破。"""
+    return bool(custom_json) and json.loads(custom_json).get("seq_grow") is True
+
+
+def keep_grow(no: str, seq: int, rule_id: int | None = None) -> None:
+    """物料行生成过号后（记 rule_id）：custom_json 只保留上限自动突破（起始号只管这一次生成）；没开启时清空。
+    rule_id 给出时同时改记为这条规则（自定义规则生成后存入规则库）。"""
+    cur = db.scalar("SELECT custom_json FROM sn_line_rule WHERE bill_no = %s AND seq = %s", no, seq)
+    cj = _start_json(None, _grow_of(cur))
+    if rule_id is None:
+        db.exec(
+            "UPDATE sn_line_rule SET custom_json = %s WHERE bill_no = %s AND seq = %s AND rule_id IS NOT NULL",
+            cj,
+            no,
+            seq,
+        )
+    else:
+        db.exec(
+            "UPDATE sn_line_rule SET rule_id = %s, custom_json = %s WHERE bill_no = %s AND seq = %s",
+            rule_id,
+            cj,
+            no,
+            seq,
+        )
+
+
 def _same_custom(custom_json: str, custom: dict) -> bool:
-    """物料行存的自定义规则与 custom 格式相同（不看起始号）。"""
+    """物料行存的自定义规则与 custom 格式相同（不看起始号、上限自动突破）。"""
     c = json.loads(custom_json)
     c.pop("seq_start", None)
+    c.pop("seq_grow", None)
     return c == custom
 
 
@@ -916,8 +1038,11 @@ def effective(
                     memo[rid] = res
             if res is not None:
                 start = _start_of(sel)
-                # 起始号只对本 PI 正用的版本有效（memo 共用的解析结果不改，另复制一份）
-                return res if start is None or res.plan != PLAN_USE else replace(res, seq_start=start)
+                grow = _grow_of(sel.get("custom_json"))
+                # 起始号、上限自动突破只对本 PI 正用的版本有效（memo 共用的解析结果不改，另复制一份）
+                if res.plan != PLAN_USE or (start is None and not grow):
+                    return res
+                return replace(res, seq_start=start, seq_grow=grow)
     if not use_default:
         return None
     return default if default is not None else pi_default(pi)
@@ -949,6 +1074,7 @@ def info(res: Resolved | None, length: str | None = None, start_seq: int = 1, un
         "other_pi": res.other_pi,
         "custom": res.custom,
         "seq_start": res.seq_start,
+        "seq_grow": res.seq_grow,
         "format": None,
         "first_sn": None,
         "max_seq": None,
@@ -965,12 +1091,14 @@ def info(res: Resolved | None, length: str | None = None, start_seq: int = 1, un
         out["sep_after"] = s.sep_after
         out["with_unit"] = s.with_unit
         out["suffix"] = s.suffix
-        out["max_seq"] = codec.max_seq(s)
+        # 上限自动突破时为加到 12 位的最大流水
+        out["max_seq"] = codec.max_seq_grow(s) if res.seq_grow else codec.max_seq(s)
         if res.seq_start is not None:
             # 自定义规则的起始号：从最大号之后编号时第一个号不小于它
             start_seq = max(start_seq, res.seq_start)
         if (length is not None or not s.with_length) and 0 < start_seq <= out["max_seq"]:
-            out["first_sn"] = codec.format_sn(start_seq, s, length, unit)
+            w = codec.widen(s, codec.seq_width(start_seq, s)) if res.seq_grow else s
+            out["first_sn"] = codec.format_sn(start_seq, w, length, unit)
     elif res.rule is not None:
         t = current_version(res.rule)
         if t is not None:
@@ -1067,17 +1195,21 @@ def select_for_lines(
             # 前缀已被本 PI 同格式的版本占用（本 PI 别的单据先生成过）：物料行改记为那条规则，沿用这一版；
             # 填了起始号时另记在物料行（custom_json 只有 seq_start），下次生成从 max(PI 下一个号, 起始号) 起
             _adopt(cu, own.rule, pi, {line["org_code"] for _, _, line in keys})
-            start = res.seq_start
-            res = replace(own, seq_start=start)
-            rid, cj = own.rule["id"], _start_json(start)
-            label = f"{own.rule['rule_code']} v{own.version['version']}" + (
-                "" if start is None else f" start={codec.encode_seq(start, res.spec())}"
+            start, grow = res.seq_start, res.seq_grow
+            res = replace(own, seq_start=start, seq_grow=grow)
+            rid, cj = own.rule["id"], _start_json(start, grow)
+            label = (
+                f"{own.rule['rule_code']} v{own.version['version']}"
+                + ("" if start is None else f" start={seq_label(start, res.spec(), grow)}")
+                + (" grow" if grow else "")
             )
         elif custom is not None:
             check_prefix(res.version["prefix"], spec=res.spec(), pi=pi)
             rid, cj = None, _custom_json(res)
-            label = f"custom {format_text(res.spec())}" + (
-                "" if res.seq_start is None else f" start={codec.encode_seq(res.seq_start, res.spec())}"
+            label = (
+                f"custom {format_text(res.spec())}"
+                + ("" if res.seq_start is None else f" start={seq_label(res.seq_start, res.spec(), res.seq_grow)}")
+                + (" grow" if res.seq_grow else "")
             )
         else:
             rule = get_rule(rule_id)
@@ -1267,9 +1399,8 @@ def realize(cu: CurrentUser, pi: str, res: Resolved, lines: list[tuple[str, int]
             cu, code, name, spec, (PI, pi), " (自定义规则，生成成功后存入规则库)", claimed_pi=pi, factory=owner
         )
         for no, seq in same:
-            db.exec(
-                "UPDATE sn_line_rule SET rule_id = %s, custom_json = NULL WHERE bill_no = %s AND seq = %s", rid, no, seq
-            )
+            # 改记为这条规则；上限自动突破记在各物料行上，照旧保留
+            keep_grow(no, seq, rid)
         return db.one("SELECT * FROM sn_rule_version WHERE rule_id = %s AND version = 1", rid)
     if res.version is None:
         raise biz(ErrorCode.GEN_PREVIEW_CHANGED)

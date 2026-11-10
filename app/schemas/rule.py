@@ -39,6 +39,8 @@ class RulePreviewIn(RuleSpecIn):
     unit: str | None = None
     #: 示例从这个流水（十进制）起（生成页自定义规则的起始号）；不填从 1 起
     seq_start: int | None = None
+    #: 上限自动突破（生成页自定义规则的开关）：示例另带规则位数的最大号与突破后的第一个号；不传 = 关闭
+    seq_grow: bool | None = None
 
 
 class LineRef(In):
@@ -62,6 +64,9 @@ class CustomRuleIn(In):
     #: 起始号（十进制流水，选填）：首次用这条自定义规则生成、从 PI 最大号之后编号时，第一个号不小于它；
     #: 不是格式的一部分（同格式不同起始号仍是同一条规则），本 PI 已用过这个前缀时流水接续、不起作用
     seq_start: int | None = None
+    #: 流水上限自动突破：开启时流水用完位数后自动加位（4 位用到 9999 后接 5 位 10000，以此类推，最多 12 位）；
+    #: 不传或 false = 关闭（原逻辑：用完报规则位数已用尽）。不是格式的一部分，记在物料行上
+    seq_grow: bool | None = None
 
 
 class LineSelectIn(In):

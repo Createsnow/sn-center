@@ -532,6 +532,7 @@
       "newPrefix": "New prefix",
       "base": "Base",
       "seqLen": "Serial digits",
+      "seqGrow": "Auto-extend when full",
       "seqStart": "Start number",
       "seqTooShort": "This PI's orders need serials up to {need}, but {len} digits in base {base} only reach {max}. Add digits or choose another base.",
       "seqStartContinue": "This PI already uses this prefix; serials continue from {next}. Enter a larger number to skip ahead — the skipped serials stay as a gap you can fill later under \"Serial source\".",
@@ -591,6 +592,8 @@
       "today": "Today",
       "sampleMin": "Min",
       "sampleMax": "Max",
+      "sampleTop": "Max at {len} digits",
+      "sampleBrk": "Then",
       "part": {
         "TEXT": "Fixed text",
         "SEP": "Separator",

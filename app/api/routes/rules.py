@@ -63,9 +63,12 @@ def rule_delete(id: int, cu: OperatorDep) -> dict:
     return rules.delete(cu, id)
 
 
-@router.post("/preview", summary="示例号：前 5 个和最大号（米数、单位用示例值；可从起始号起）、最大流水")
+@router.post(
+    "/preview",
+    summary="示例号：前 5 个和最大号（米数、单位用示例值；可从起始号起；上限自动突破时另带突破后的第一个号）、最大流水",
+)
 def rule_preview(body: RulePreviewIn, cu: OperatorDep) -> dict:
-    return rules.preview(_spec(body), body.length, body.unit, body.seq_start)
+    return rules.preview(_spec(body), body.length, body.unit, body.seq_start, bool(body.seq_grow))
 
 
 @router.get("/options", summary="生成页规则库选项：推荐的排前面；给出本 PI 用这条规则时的版本与是否须换前缀")

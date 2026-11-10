@@ -532,6 +532,7 @@
       "newPrefix": "Tiền tố mới",
       "base": "Cơ số",
       "seqLen": "Số chữ số tuần tự",
+      "seqGrow": "Tự tăng chữ số khi hết",
       "seqStart": "Số bắt đầu",
       "seqTooShort": "Đơn hàng của PI này cần số tuần tự đến {need}, nhưng {len} chữ số hệ {base} chỉ tới {max}: hãy tăng số chữ số hoặc đổi hệ cơ số.",
       "seqStartContinue": "PI này đã dùng tiền tố này, số tuần tự tiếp nối từ {next}; có thể nhập số lớn hơn để nhảy tới, các số bị bỏ qua thành đoạn trống (có thể dùng lại trong \"Nguồn tuần tự\").",
@@ -591,6 +592,8 @@
       "today": "Hôm nay",
       "sampleMin": "Nhỏ nhất",
       "sampleMax": "Lớn nhất",
+      "sampleTop": "Lớn nhất {len} chữ số",
+      "sampleBrk": "Sau đó",
       "part": {
         "TEXT": "Văn bản cố định",
         "SEP": "Dấu phân cách",

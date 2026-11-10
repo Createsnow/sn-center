@@ -83,6 +83,17 @@ def like_prefix(s: str) -> str:
     return s.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
 
 
+def sn_min(col: str = "sn") -> str:
+    """号段的开始 SN（SQL 聚合表达式）：先比长度再比字符。同一规则下位数相同时与 MIN(sn) 相同；
+    流水上限自动突破后位数变多（…9999 之后 …10000），按字符比 …10000 会排在 …9999 前面，先比长度才是真正的先后。"""
+    return f"SUBSTRING(MIN(CONCAT(LPAD(CHAR_LENGTH({col}), 2, '0'), {col})), 3)"
+
+
+def sn_max(col: str = "sn") -> str:
+    """号段的结束 SN（见 sn_min）。"""
+    return f"SUBSTRING(MAX(CONCAT(LPAD(CHAR_LENGTH({col}), 2, '0'), {col})), 3)"
+
+
 def like_any(s: str) -> str:
     return "%" + like_prefix(s)
 

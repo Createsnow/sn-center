@@ -298,7 +298,10 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
     line_sn: dict[tuple[str, int], tuple[str, str]] = {}
     for r in db.all(
         "SELECT bill_no, bill_seq, SUM(status = 'PENDING_ALLOC') pending, SUM(status = 'TO_PUSH') to_push, "
-        "MIN(sn) a, MAX(sn) b FROM sn_item "
+        + util.sn_min()
+        + " a, "
+        + util.sn_max()
+        + " b FROM sn_item "
         "WHERE pi_no = %s AND origin = 'GEN'" + isql + " GROUP BY bill_no, bill_seq",
         pi,
         *iargs,

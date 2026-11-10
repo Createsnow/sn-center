@@ -532,6 +532,7 @@
       "newPrefix": "新前缀",
       "base": "进制",
       "seqLen": "流水位数",
+      "seqGrow": "上限自动突破",
       "seqStart": "起始号",
       "seqTooShort": "本 PI 订单还要用到流水 {need}，{len} 位 {base} 进制最多 {max}，不够：请加位数或换进制",
       "seqStartContinue": "本 PI 已用这个前缀，流水接续到 {next}；可改大往后跳，跳过的号留作空号段（可在「流水来源」里补用）",
@@ -591,6 +592,8 @@
       "today": "今天",
       "sampleMin": "最小",
       "sampleMax": "最大",
+      "sampleTop": "{len} 位最大",
+      "sampleBrk": "突破后",
       "part": {
         "TEXT": "固定文本",
         "SEP": "分隔符",

@@ -69,7 +69,7 @@
           <span v-else-if="sample.error" class="err">{{ sample.error }}</span>
           <template v-else-if="sample.min">
             <span v-for="[label, s] in sampleRows" :key="label" class="rng">
-              <span class="lb">{{ t(`generate.rule.${label}`) }}</span>
+              <span class="lb">{{ label === "sampleTop" ? t("generate.rule.sampleTop", { len: seqPart?.len }) : t(`generate.rule.${label}`) }}</span>
               <span class="sn sn-mono"><template v-if="s.segs"><span v-for="(g, j) in s.segs" :key="j" :class="g.cls && `s-${g.cls}`">{{ g.text }}</span></template><template v-else>{{ s.sn }}</template></span>
             </span>
           </template>
@@ -154,6 +154,12 @@
                     {{ t("generate.rule.seqLen") }}
                     <el-input-number v-model="p.len" :min="1" :max="SEQ_LEN_MAX" :step="1" step-strictly size="small" class="w100" />
                   </span>
+                  <!-- 上限自动突破（默认开启）：流水用完位数后自动加位（4 位用到 9999 后接 5 位 10000，以此类推）；
+                       关闭时保持原逻辑（位数按订单数量定，用完报规则位数已用尽） -->
+                  <span class="fi grow" :class="{ on: p.grow }">
+                    <el-switch v-model="p.grow" size="small" />
+                    {{ t("generate.rule.seqGrow") }}
+                  </span>
                   <span v-if="seqShort(p)" class="fi seq-short">
                     {{ t("generate.rule.seqTooShort", { need, max: maxSeq(p), len: p.len, base: p.base }) }}
                   </span>
@@ -216,8 +222,8 @@ import { BASES, CHARSETS } from "@/constants";
 import { useTime } from "@/composables/useTime";
 import {
   CUTS, DATE_FMTS, PAD_MAX, PREFIX_MAX, SEP_MAX, SEPS, SEQ_LEN_MAX, TEMPLATES, TEXT_MAX,
-  addIndex, blockReason, fromSpec, insertAt, moveTo, newErrors, newPart, partValue, partsSig, sampleSegments, seqLenFor, seqNeed, textPart,
-  todayIn, toSpec,
+  SEQ_LEN_DEFAULT, addIndex, blockReason, fromSpec, insertAt, maxSeqOf, moveTo, newErrors, newPart, partValue, partsSig, sampleSegments,
+  seqLenFor, seqNeed, seqText as seqTextOf, textPart, todayIn, toSpec,
 } from "@/snParts.js";
 import type { CustomRule, OrderLine } from "@/types/api";
 
@@ -227,7 +233,7 @@ type RulePrefix = { prefix: string; custom: CustomRule | null };
 /** SN 组成的一个组件（见 snParts.js） */
 type Part = {
   id: number; kind: string; text?: string; cut?: string; n?: number; fmt?: string; date?: string;
-  base?: number; len?: number; start?: number | null; pad?: number;
+  base?: number; len?: number; start?: number | null; grow?: boolean; pad?: number;
 };
 type Seg = { text: string; cls: string };
 type Sample = { sn: string; segs: Seg[] | null };
@@ -261,7 +267,10 @@ const parts = ref<Part[]>([]);
 const target = ref<"PRE" | "SUF">("PRE");
 /** 悬停的清单行（示例上同一组件高亮） */
 const hot = ref<number | null>(null);
-const sample = reactive<{ min: Sample | null; max: Sample | null; error: string }>({ min: null, max: null, error: "" });
+/** 示例：最小号、最大号；上限自动突破时 max 为规则位数的最大号，brk 为突破后的第一个号 */
+const sample = reactive<{ min: Sample | null; max: Sample | null; brk: Sample | null; error: string }>({
+  min: null, max: null, brk: null, error: "",
+});
 const busy = ref("");
 
 /** 组件取值用的上下文：PI、点选的第一个单据编号（lines 按点选顺序，行内按钮为本行） */
@@ -278,20 +287,17 @@ const tplOn = computed(() => {
   return TPL_KEYS.find((k) => partsSig(TEMPLATES[k](today())) === cur) ?? "";
 });
 
-/** 流水文本（与后台 encoding.encode_seq 相同的字符表） */
-function seqText(n: number, base: number, len: number) {
-  const cs = CHARSETS[base] ?? CHARSETS[10];
-  let s = "";
-  for (let i = 0, x = n; i < len; i++, x = Math.floor(x / base)) s = cs[x % base] + s;
-  return s;
-}
+/** 流水文本（与后台 encoding.encode_seq 相同的字符表；上限自动突破时装不下按实际位数） */
+const seqText = (n: number, base: number, len: number, grow = false) => seqTextOf(n, base, len, CHARSETS[base] ?? CHARSETS[10], grow);
 /** 本 PI 还要用到的最大流水：need 不留余量（位数不够的提示用），needDefault 留余量（定默认位数用） */
 const need = computed(() => seqNeed(props.nextSeq, props.piQuota, 1));
 const needDefault = computed(() => seqNeed(props.nextSeq, props.piQuota));
-/** 新的流水组件：位数按本 PI 订单数量取装得下的最少位数（不少于 4 位，订单数量小时与原来相同） */
-const autoSeq = (base = 10): Part => ({ ...newPart("SEQ"), base, len: seqLenFor(base, needDefault.value) });
-/** 当前进制、位数下的最大流水（起始号上限） */
-const maxSeq = (p: Part) => Math.min((Number(p.base) || 10) ** (Number(p.len) || 4) - 1, Number.MAX_SAFE_INTEGER);
+/** 新的流水组件：上限自动突破默认开启，位数默认 4 位（用完自动加位）；
+ *  关闭时（原逻辑）位数按本 PI 订单数量取装得下的最少位数（不少于 4 位，订单数量小时与原来相同） */
+const autoLen = (base: number, grow: boolean) => (grow ? SEQ_LEN_DEFAULT : seqLenFor(base, needDefault.value));
+const autoSeq = (base = 10, grow = true): Part => ({ ...newPart("SEQ"), base, grow, len: autoLen(base, grow) });
+/** 当前进制、位数下的最大流水（起始号上限）；上限自动突破时为加到 12 位的最大流水 */
+const maxSeq = (p: Part) => maxSeqOf(p.base, p.len, p.grow);
 /** 组件的取值：保存时定值的组件取值；流水取第一个号；米数、单位取第一个物料行的 */
 function chipValue(p: Part) {
   const v = partValue(p, partCtx.value);
@@ -299,7 +305,7 @@ function chipValue(p: Part) {
   const l = props.lines[0];
   if (p.kind === "SEQ") {
     const st = Number(p.start);
-    return seqText(Number.isSafeInteger(st) && st > startMin.value ? st : startMin.value, Number(p.base) || 10, Number(p.len) || 4);
+    return seqText(Number.isSafeInteger(st) && st > startMin.value ? st : startMin.value, Number(p.base) || 10, Number(p.len) || 4, !!p.grow);
   }
   if (p.kind === "LEN") return p.pad ? (l?.length ?? "").padStart(p.pad, "0") : l?.length ?? "";
   return l?.unit ?? "";
@@ -374,7 +380,13 @@ function removeRow(i: number) {
   setParts(prev.filter((_, j) => j !== i));
   undoable(t("generate.rule.partRemoved", { name: t(`generate.rule.part.${p.kind}`) }), () => setParts(prev));
 }
-const sampleRows = computed(() => [["sampleMin", sample.min], ["sampleMax", sample.max]].filter((r) => r[1]) as [string, Sample][]);
+/** 示例行：最小号、最大号；上限自动突破时为最小号、规则位数的最大号、突破后的第一个号 */
+const sampleRows = computed(() =>
+  (sample.brk
+    ? [["sampleMin", sample.min], ["sampleTop", sample.max], ["sampleBrk", sample.brk]]
+    : [["sampleMin", sample.min], ["sampleMax", sample.max]]
+  ).filter((r) => r[1]) as [string, Sample][],
+);
 
 /** 默认前缀组件：本 PI 已生成的号还在时沿用已用的前缀（之后各张单据都用它，流水接续）；否则取点选的第一个单据编码后 7 位，
  *  取不到时用 PI 第一张单据的（同 genScope.defaultRulePrefix）。生成时后台查前缀全局唯一。 */
@@ -425,11 +437,15 @@ function onOpen() {
   sample.error = "";
   sample.min = null;
   sample.max = null;
+  sample.brk = null;
   const cur = props.lines.length === 1 ? props.lines[0].rule : null;
   const base = props.rulePrefix?.custom ?? (cur?.mode === "CUSTOM" ? cur.custom : null);
   // 起始号带出所选物料行已存的：新前缀的自定义规则，或沿用本 PI 已用前缀时另记的（还没生成过）
-  const start = (props.rulePrefix?.custom ? cur?.prefix === props.rulePrefix.prefix : cur?.mode === "CUSTOM") ? cur?.seq_start ?? null : null;
-  parts.value = base ? fromSpec({ ...base, seq_start: start }, defaultHead()) : [...defaultHead(), autoSeq()];
+  const own = props.rulePrefix?.custom ? cur?.prefix === props.rulePrefix.prefix : cur?.mode === "CUSTOM";
+  const start = own ? cur?.seq_start ?? null : null;
+  // 上限自动突破带出所选物料行已存的（同上），否则默认开启
+  const grow = own ? cur?.seq_grow ?? true : true;
+  parts.value = base ? fromSpec({ ...base, seq_start: start, seq_grow: grow }, defaultHead()) : [...defaultHead(), autoSeq(10, grow)];
   target.value = "PRE";
   hot.value = null;
   mode.value = "CUSTOM";
@@ -457,16 +473,27 @@ watch(
   ([id, b], [oldId, old]) => {
     const p = seqPart.value;
     // 只管同一个流水组件上改进制；整体换组成（打开、套用常用格式、重置）时不动
-    if (!p || id !== oldId || b === undefined || old === undefined || b === old || prefixUsed.value) return;
+    if (!p || id !== oldId || b === undefined || old === undefined || b === old || prefixUsed.value || p.grow) return;
     if (p.len === seqLenFor(old, needDefault.value)) p.len = seqLenFor(b, needDefault.value);
   },
 );
+/** 开关上限自动突破时：位数还是默认值（没手动改过）就换成另一种的默认值（开启 4 位，关闭按订单数量）；本 PI 已用的前缀格式锁定，不动 */
+watch(
+  () => [seqPart.value?.id, seqPart.value?.grow] as const,
+  ([id, g], [oldId, old]) => {
+    const p = seqPart.value;
+    if (!p || id !== oldId || g === undefined || old === undefined || g === old || prefixUsed.value) return;
+    const b = Number(p.base) || 10;
+    if (p.len === autoLen(b, !!old)) p.len = autoLen(b, !!g);
+  },
+);
 /** 位数不够装下本 PI 还要的流水（不含余量）：提示改大位数或换进制 */
-const seqShort = (p: Part) => !prefixUsed.value && maxSeq(p) < need.value;
+const seqShort = (p: Part) => !p.grow && !prefixUsed.value && maxSeq(p) < need.value;
 
 async function previewCustom() {
   sample.min = null;
   sample.max = null;
+  sample.brk = null;
   sample.error = "";
   const { spec, errors } = built.value;
   if (errors.length || !spec.prefix) return;
@@ -482,7 +509,11 @@ async function previewCustom() {
     const toSample = (x: any): Sample | null =>
       x ? { sn: x.sn, segs: sampleSegments(parts.value, partCtx.value, x.sn, x.seq_text, len, r.sample_unit ?? "") } : null;
     sample.min = toSample(list[0]);
-    sample.max = toSample(list[list.length - 1]);
+    // 上限自动突破：后台在规则位数的最大号之后另带突破后的第一个号（最大流水 + 1）
+    const top = Number(r.max_seq);
+    const brk = spec.seq_grow ? list.find((x) => Number(x.seq_dec) === top + 1) : undefined;
+    sample.max = toSample(brk ? list.find((x) => Number(x.seq_dec) === top) : list[list.length - 1]);
+    sample.brk = toSample(brk);
   } catch (e) {
     sample.error = e instanceof ApiError ? e.message : String(e);
   }
@@ -509,7 +540,8 @@ async function save() {
       body.rule_id = picked.value.rule_id;
       if (picked.value.plan === "PREFIX") body.new_prefix = newPrefix.value.trim();
     } else {
-      // 请求体与原来相同：prefix、base、seq_len、with_length、length_pad、sep_before、sep_after、with_unit、suffix、seq_start
+      // 请求体：prefix、base、seq_len、with_length、length_pad、sep_before、sep_after、with_unit、suffix、seq_start，
+      // 另带 seq_grow（上限自动突破，后台不传按关闭）
       body.custom = { ...built.value.spec, seq_start: seqStart() };
     }
     await api.selectLineRule(body);
@@ -616,6 +648,8 @@ async function save() {
 .kt.c-LINE { background: var(--el-color-warning-light-9); color: var(--el-color-warning-dark-2); border-color: var(--el-color-warning-light-5); }
 .set { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; font-size: 12px; color: var(--el-text-color-regular); min-width: 0; }
 .set .fi { display: inline-flex; align-items: center; gap: 6px; }
+.set .grow { padding: 0 8px; height: 24px; border-radius: 12px; background: var(--el-fill-color-light); }
+.set .grow.on { color: var(--el-color-primary); background: var(--el-color-primary-light-9); }
 .set .seq-short { color: var(--el-color-warning); font-size: 12px; }
 .rv { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rv.blank { color: var(--el-text-color-placeholder); font-family: inherit; font-size: 12px; }

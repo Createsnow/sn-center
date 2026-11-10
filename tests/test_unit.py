@@ -732,3 +732,16 @@ def test_import_sn_rejects_spaces_and_invisible_chars(sn, bad):
     r = sn_import.Row(2, sn=sn)
     sn_import._check_values(r, {})
     assert (sn_import.SN_SPACE in [c for c, _ in r.issues]) is bad
+
+
+def test_seq_grow_width_and_split():
+    """流水上限自动突破：位数不少于规则位数，装不下时按实际位数；号段按位数切开；最多 12 位。"""
+    s = Spec("P", "", 10, 4, DEFAULT_CHARSETS[10], with_length=False)
+    assert [codec.seq_width(n, s) for n in (1, 9999, 10000, 99999, 100000)] == [4, 4, 5, 5, 6]
+    assert codec.split_by_width(9990, 100005, s) == [(9990, 9999, 4), (10000, 99999, 5), (100000, 100005, 6)]
+    assert codec.split_by_width(5, 8, s) == [(5, 8, 4)]
+    assert codec.format_sn(10000, codec.widen(s, 5)) == "P10000"
+    assert codec.max_seq_grow(s) == 10**12 - 1 and codec.seq_width(10**12 - 1, s) == 12
+    b36 = Spec("P", "", 36, 2, DEFAULT_CHARSETS[36], with_length=False)
+    assert codec.seq_width(36**2 - 1, b36) == 2 and codec.seq_width(36**2, b36) == 3
+    assert codec.encode_seq(36**2, codec.widen(b36, 3)) == "100"
