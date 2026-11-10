@@ -1456,10 +1456,15 @@ public class RuleServiceImpl implements RuleService {
     @Override
     public List<RuleOptionVO> options(String pi, String customer) {
         CurrentUser cu = operator();
+        return optionsFor(pi, customer, cu.readFactories(null));
+    }
+
+    /** 规则库选项（授权范围 scope；null = 全部）。 */
+    public List<RuleOptionVO> optionsFor(String pi, String customer, List<String> scope) {
         List<RuleOptionVO> out = new ArrayList<>();
         Map<Long, List<Map<String, Object>>> versions = versionsByRule(null);
         String p = Util.blank(pi) ? null : pi;
-        for (Map<String, Object> r : mapper.visibleRules(cu.readFactories(null))) {
+        for (Map<String, Object> r : mapper.visibleRules(scope)) {
             List<Map<String, Object>> vs = versions.getOrDefault(R.l(r, "id"), List.of());
             Resolved res = p != null ? resolveIn(r, vs, p, SRC_LINE) : null;
             boolean recommended =

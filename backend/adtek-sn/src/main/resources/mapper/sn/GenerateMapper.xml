@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.sn.mapper.GenerateMapper">
+  <!-- 号的生产组织条件：已分配的按号上的组织，待分配的按所在单据的组织（已出号单据台账） -->
+  <sql id="itemScope">
+    <if test="scope != null">
+      <choose>
+        <when test="scope.isEmpty()">AND 1=0</when>
+        <otherwise>
+          AND (factory_code IN <foreach collection="scope" item="f" open="(" separator="," close=")">#{f}</foreach>
+            OR (factory_code IS NULL AND bill_no IN (SELECT l.bill_no FROM sn_bill_ledger l WHERE l.org_code IN
+              <foreach collection="scope" item="f" open="(" separator="," close=")">#{f}</foreach>)))
+        </otherwise>
+      </choose>
+    </if>
+  </sql>
+  <select id="lastSeq" resultType="long">
+    SELECT COALESCE(MAX(last_seq_dec), 0) FROM sn_pi_counter WHERE pi_no = #{pi}
+  </select>
+  <select id="gapRows" resultType="map">
+    SELECT prev + 1 s, seq_dec - 1 e FROM (SELECT seq_dec, LAG(seq_dec, 1, 0) OVER (ORDER BY seq_dec) prev
+      FROM sn_item WHERE seq_pi_no = #{pi} AND seq_dec &lt;= #{top}) t
+    WHERE seq_dec - prev &gt; 1 ORDER BY seq_dec
+  </select>
+  <select id="usedTop" resultType="long">
+    SELECT COALESCE(MAX(seq_dec), 0) FROM sn_item WHERE seq_pi_no = #{pi} AND seq_dec &lt;= #{top}
+  </select>
+  <select id="deletedMarks" resultType="map">
+    SELECT bill_no, MIN(seq_dec) s, MAX(seq_dec) e FROM (
+      SELECT d.gen_bill_no bill_no, d.seq_dec,
+        d.seq_dec - ROW_NUMBER() OVER (PARTITION BY d.gen_bill_no ORDER BY d.seq_dec) g
+      FROM sn_item_deleted d WHERE d.seq_pi_no = #{pi} AND d.seq_dec &lt;= #{top}
+        AND d.id = (SELECT MAX(x.id) FROM sn_item_deleted x WHERE x.seq_pi_no = d.seq_pi_no AND x.seq_dec = d.seq_dec)
+        AND NOT EXISTS (SELECT 1 FROM sn_item i WHERE i.seq_pi_no = d.seq_pi_no AND i.seq_dec = d.seq_dec)
+    ) t GROUP BY bill_no, g ORDER BY s
+  </select>
+  <select id="billsOfPi" resultType="string">SELECT DISTINCT bill_no FROM sn_prd_mo WHERE pi = #{pi}</select>
+  <select id="billSegmentCounts" resultType="map">
+    SELECT bill_no, COUNT(*) segs, SUM(n) qty FROM (
+      SELECT bill_no, bill_seq, seq_pi_no, g, COUNT(*) n FROM (
+        SELECT bill_no, bill_seq, seq_pi_no,
+          seq_dec - ROW_NUMBER() OVER (PARTITION BY bill_no, bill_seq, seq_pi_no ORDER BY seq_dec) g
+        FROM sn_item WHERE pi_no = #{pi} AND origin = 'GEN' AND bill_no IN
+          <foreach collection="bills" item="b" open="(" separator="," close=")">#{b}</foreach>
+          <include refid="itemScope"/>
+      ) t GROUP BY bill_no, bill_seq, seq_pi_no, g
+    ) u GROUP BY bill_no
+  </select>
+  <select id="billSegments" resultType="map">
+    SELECT bill_seq, MIN(material_code) material_code, MIN(attach_no) attach_no, seq_pi_no,
+      MIN(seq_dec) s, MAX(seq_dec) e, COUNT(*) n, SUM(status = 'PENDING_ALLOC') pending,
+      MIN(fs) start_sn, MIN(ls) end_sn
+    FROM (
+      SELECT bill_seq, material_code, attach_no, seq_pi_no, seq_dec, status, g,
+        FIRST_VALUE(sn) OVER (PARTITION BY bill_seq, seq_pi_no, g ORDER BY seq_dec) fs,
+        FIRST_VALUE(sn) OVER (PARTITION BY bill_seq, seq_pi_no, g ORDER BY seq_dec DESC) ls
+      FROM (
+        SELECT sn, bill_seq, material_code, attach_no, seq_pi_no, seq_dec, status,
+          seq_dec - ROW_NUMBER() OVER (PARTITION BY bill_seq, seq_pi_no ORDER BY seq_dec) g
+        FROM sn_item WHERE pi_no = #{pi} AND bill_no = #{bill} AND origin = 'GEN' <include refid="itemScope"/>
+      ) a
+    ) b GROUP BY bill_seq, seq_pi_no, g
+    ORDER BY bill_seq, seq_pi_no = #{pi} DESC, seq_pi_no, s
+  </select>
+  <sql id="segSnWhere">
+    FROM sn_item WHERE pi_no = #{pi} AND bill_no = #{bill} AND seq_pi_no = #{seqPi}
+      AND seq_dec BETWEEN #{start} AND #{end} AND origin = 'GEN'
+    <if test="billSeq != null">AND bill_seq = #{billSeq}</if>
+    <include refid="itemScope"/>
+  </sql>
+  <select id="segmentSnCount" resultType="long">SELECT COUNT(*) <include refid="segSnWhere"/></select>
+  <select id="segmentSns" resultType="string">
+    SELECT sn <include refid="segSnWhere"/> ORDER BY seq_dec LIMIT #{size} OFFSET #{offset}
+  </select>
+  <select id="prdLinesOf" resultType="map">
+    SELECT * FROM sn_prd_mo WHERE bill_no IN
+    <foreach collection="bills" item="b" open="(" separator="," close=")">#{b}</foreach>
+  </select>
+  <insert id="insertPreview">
+    INSERT INTO sn_gen_preview(token, pi_no, qty, base_last_seq, plan_json, created_by, created_at, expires_at)
+    VALUES (#{token}, #{pi}, #{qty}, #{base}, #{plan}, #{by}, #{now}, #{expires})
+  </insert>
+  <select id="preview" resultType="map">SELECT * FROM sn_gen_preview WHERE token = #{token}</select>
+  <select id="previewUsed" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_gen_job WHERE preview_token = #{token})
+  </select>
+  <insert id="insertJob" useGeneratedKeys="true" keyProperty="entity.id">
+    INSERT INTO sn_gen_job(gen_batch, pi_no, scope, qty, start_seq_dec, end_seq_dec, start_sn, end_sn, status,
+      done_qty, running_pi, preview_token, plan_json, created_by, created_at)
+    VALUES (#{entity.genBatch}, #{entity.piNo}, #{entity.scope}, #{entity.qty}, #{entity.startSeqDec},
+      #{entity.endSeqDec}, #{entity.startSn}, #{entity.endSn}, 'RUNNING', 0, #{entity.piNo}, #{entity.previewToken},
+      #{entity.planJson}, #{entity.createdBy}, #{entity.createdAt})
+  </insert>
+  <select id="job" resultType="map">SELECT * FROM sn_gen_job WHERE id = #{id}</select>
+  <select id="jobByBatch" resultType="map">SELECT * FROM sn_gen_job WHERE gen_batch = #{batch}</select>
+  <select id="jobByBatchLock" resultType="map">SELECT * FROM sn_gen_job WHERE gen_batch = #{batch} FOR UPDATE</select>
+  <update id="jobStarted">UPDATE sn_gen_job SET started_at = #{now} WHERE id = #{id}</update>
+  <update id="jobSuccess">
+    UPDATE sn_gen_job SET status = 'SUCCESS', done_qty = qty, current_sn = end_sn, running_pi = NULL,
+      finished_at = #{now}
+    WHERE id = #{id} AND status = 'RUNNING' AND cancel_at IS NULL
+  </update>
+  <update id="jobFailed">
+    UPDATE sn_gen_job SET status = #{status}, done_qty = 0, error_code = #{code}, error_msg = #{msg},
+      running_pi = NULL, finished_at = #{now}
+    WHERE id = #{id} AND status = 'RUNNING'
+  </update>
+  <select id="counterExists" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_pi_counter WHERE pi_no = #{pi})
+  </select>
+  <insert id="insertCounter">
+    INSERT IGNORE INTO sn_pi_counter(pi_no, last_seq_dec, generated_qty, updated_at) VALUES (#{pi}, 0, 0, #{now})
+  </insert>
+  <select id="lockCounter" resultType="map">SELECT * FROM sn_pi_counter WHERE pi_no = #{pi} FOR UPDATE</select>
+  <select id="jobStatus" resultType="string">SELECT status FROM sn_gen_job WHERE id = #{id}</select>
+  <select id="cancelAt" resultType="java.time.LocalDateTime">SELECT cancel_at FROM sn_gen_job WHERE id = #{id}</select>
+  <select id="lineCountExists" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_line_count WHERE bill_no = #{billNo} AND seq = #{seq})
+  </select>
+  <insert id="insertLineCount">
+    INSERT IGNORE INTO sn_line_count(bill_no, seq, material_code, own_generated, gen_count, alloc_count, updated_at)
+    VALUES (#{billNo}, #{seq}, #{materialCode}, 0, 0, 0, #{now})
+  </insert>
+  <select id="lockLineCount" resultType="map">
+    SELECT * FROM sn_line_count WHERE bill_no = #{billNo} AND seq = #{seq} FOR UPDATE
+  </select>
+  <select id="lineQty" resultType="map">
+    SELECT qty, material_code FROM sn_prd_mo WHERE bill_no = #{billNo} AND seq = #{seq}
+  </select>
+  <update id="clearLineStart">
+    UPDATE sn_line_rule SET custom_json = NULL WHERE bill_no = #{billNo} AND seq = #{seq} AND rule_id IS NOT NULL
+  </update>
+  <insert id="insertItems">
+    INSERT INTO sn_item(sn, pi_no, customer_code, bill_no, bill_seq, material_code, gen_org_code, gen_bill_no,
+      gen_bill_seq, seq_pi_no, seq_dec, length_text, attach_no, rule_version_id, gen_batch, status, created_at,
+      updated_at) VALUES
+    <foreach collection="rows" item="r" separator=",">
+      (#{r.sn}, #{pi}, #{x.customerCode}, #{x.billNo}, #{x.seq}, #{x.materialCode}, #{x.orgCode}, #{x.billNo},
+       #{x.seq}, #{pi}, #{r.seqDec}, #{x.length}, #{x.attach}, #{versionId}, #{batch}, 'PENDING_ALLOC', #{now},
+       #{now})
+    </foreach>
+  </insert>
+  <select id="duplicateHit" resultType="map">
+    SELECT sn, pi_no, origin FROM sn_item WHERE sn IN
+    <foreach collection="sns" item="s" open="(" separator="," close=")">#{s}</foreach>
+    ORDER BY origin = 'IMPORT' DESC LIMIT 1
+  </select>
+  <update id="continueDeletedRev">
+    UPDATE sn_item i JOIN (SELECT sn, MAX(rev) r FROM sn_item_deleted WHERE sn IN
+      <foreach collection="sns" item="s" open="(" separator="," close=")">#{s}</foreach>
+      GROUP BY sn) d ON d.sn = i.sn
+    SET i.rev = d.r + 1
+    WHERE i.sn IN <foreach collection="sns" item="s" open="(" separator="," close=")">#{s}</foreach>
+  </update>
+  <update id="addLineCount">
+    UPDATE sn_line_count SET material_code = #{materialCode}, own_generated = own_generated + #{qty},
+      gen_count = gen_count + #{qty}, updated_at = #{now}
+    WHERE bill_no = #{billNo} AND seq = #{seq}
+  </update>
+  <update id="advanceCounter">
+    UPDATE sn_pi_counter SET last_seq_dec = GREATEST(last_seq_dec, #{last}), generated_qty = generated_qty + #{qty},
+      updated_at = #{now}
+    WHERE pi_no = #{pi}
+  </update>
+  <select id="ruleLock" resultType="map">SELECT * FROM sn_rule WHERE id = #{id} FOR UPDATE</select>
+  <select id="runningJobs" resultType="map">SELECT id, pi_no FROM sn_gen_job WHERE status = 'RUNNING'</select>
+  <select id="jobStatusNowait" resultType="map">
+    SELECT status FROM sn_gen_job WHERE id = #{id} FOR UPDATE NOWAIT
+  </select>
+  <select id="counterNowait" resultType="map">
+    SELECT pi_no FROM sn_pi_counter WHERE pi_no = #{pi} FOR UPDATE NOWAIT
+  </select>
+  <update id="markInterrupted">
+    UPDATE sn_gen_job SET status = 'FAILED', done_qty = 0, error_code = 'INTERRUPTED', error_msg = #{msg},
+      running_pi = NULL, finished_at = #{now}
+    WHERE id = #{id}
+  </update>
+  <update id="jobProgress">
+    UPDATE sn_gen_job SET done_qty = #{done}, current_sn = #{current} WHERE id = #{id}
+  </update>
+  <update id="requestCancel">
+    UPDATE sn_gen_job SET cancel_at = #{now}, cancel_by = #{by} WHERE id = #{id}
+  </update>
+  <select id="jobsOfPi" resultType="map">
+    SELECT * FROM sn_gen_job WHERE pi_no = #{pi} ORDER BY id DESC LIMIT #{limit}
+  </select>
+</mapper>

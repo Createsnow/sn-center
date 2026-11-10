@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.sn.mapper.WorkbenchMapper">
+  <sql id="itemScope">
+    <if test="scope != null">
+      <choose>
+        <when test="scope.isEmpty()">AND 1=0</when>
+        <otherwise>
+          AND (factory_code IN <foreach collection="scope" item="f" open="(" separator="," close=")">#{f}</foreach>
+            OR (factory_code IS NULL AND bill_no IN (SELECT l.bill_no FROM sn_bill_ledger l WHERE l.org_code IN
+              <foreach collection="scope" item="f" open="(" separator="," close=")">#{f}</foreach>)))
+        </otherwise>
+      </choose>
+    </if>
+  </sql>
+  <sql id="factoryScope">
+    <if test="scope != null">
+      <choose>
+        <when test="scope.isEmpty()">AND 1=0</when>
+        <otherwise>AND factory_code IN <foreach collection="scope" item="f" open="(" separator="," close=")">#{f}</foreach></otherwise>
+      </choose>
+    </if>
+  </sql>
+  <select id="piRows" resultType="map">
+    SELECT m.pi, MAX(m.customer_code) customer_code, COUNT(DISTINCT m.bill_no) bills,
+      GROUP_CONCAT(DISTINCT m.org_code ORDER BY m.org_code) orgs, SUM(FLOOR(m.qty)) total_qty,
+      SUM(COALESCE(c.gen_count, 0)) gen_sum, SUM(GREATEST(FLOOR(m.qty) - COALESCE(c.own_generated, 0), 0)) quota,
+      MAX(m.bill_no) last_bill, MAX(m.modify_time) modify_time
+    FROM sn_prd_mo m LEFT JOIN sn_line_count c ON c.bill_no = m.bill_no AND c.seq = m.seq
+    WHERE m.pi &lt;&gt; ''
+    <if test="scope != null">
+      <choose>
+        <when test="scope.isEmpty()">AND 1=0</when>
+        <otherwise>AND m.org_code IN <foreach collection="scope" item="f" open="(" separator="," close=")">#{f}</foreach></otherwise>
+      </choose>
+    </if>
+    <if test="like != null">
+      AND m.pi IN (SELECT x.pi FROM sn_prd_mo x WHERE x.pi LIKE #{like} OR x.bill_no LIKE #{like}
+        OR x.po LIKE #{like} OR x.customer_code LIKE #{like} OR x.material_code LIKE #{like})
+    </if>
+    GROUP BY m.pi
+    <choose>
+      <when test="byModify">ORDER BY MAX(m.modify_time) IS NULL, MAX(m.modify_time) DESC, last_bill DESC</when>
+      <otherwise>ORDER BY last_bill DESC</otherwise>
+    </choose>
+    LIMIT #{limit}
+  </select>
+  <select id="itemStats" resultType="map">
+    SELECT pi_no, SUM(pending) pending, SUM(CASE WHEN pending = 0 AND to_push = 0 THEN n ELSE 0 END) allocated,
+      SUM(transferred_in) transferred_in, SUM(unbatched) unbatched, SUM(suspended) suspended
+    FROM (
+      SELECT pi_no, COUNT(*) n, SUM(status = 'PENDING_ALLOC') pending, SUM(status = 'TO_PUSH') to_push,
+        SUM(seq_pi_no &lt;&gt; '' AND seq_pi_no &lt;&gt; pi_no) transferred_in,
+        SUM(status = 'TO_PUSH' AND delivery_batch_no IS NULL AND suspend IS NULL) unbatched,
+        SUM(suspend IS NOT NULL) suspended
+      FROM sn_item WHERE pi_no IN <foreach collection="pis" item="p" open="(" separator="," close=")">#{p}</foreach>
+      <if test="genOnly">AND origin = 'GEN'</if>
+      <include refid="itemScope"/>
+      GROUP BY pi_no, bill_no
+    ) g GROUP BY pi_no
+  </select>
+  <select id="interrupted" resultType="map">
+    SELECT pi_no, COUNT(*) n FROM sn_delivery_batch WHERE batch_type &lt;&gt; 'TRANSFER_OUT'
+      AND pi_no IN <foreach collection="pis" item="p" open="(" separator="," close=")">#{p}</foreach>
+      AND (result = 'FAILED' OR (result = 'UNCONFIRMED' AND push_state = 'EXHAUSTED'))
+      <include refid="factoryScope"/>
+    GROUP BY pi_no
+  </select>
+  <select id="activeTasks" resultType="map">
+    SELECT task_key, COUNT(*) n FROM sn_push_task
+    WHERE task_key IN <foreach collection="pis" item="p" open="(" separator="," close=")">#{p}</foreach>
+      AND state IN ('QUEUED','RUNNING','WAITING') <include refid="factoryScope"/>
+    GROUP BY task_key
+  </select>
+  <select id="genOwn" resultType="map">
+    SELECT seq_pi_no, COUNT(*) n FROM sn_item
+    WHERE seq_pi_no IN <foreach collection="pis" item="p" open="(" separator="," close=")">#{p}</foreach>
+    <include refid="itemScope"/>
+    GROUP BY seq_pi_no
+  </select>
+  <select id="runningJobs" resultType="map">
+    SELECT * FROM sn_gen_job WHERE running_pi IN
+    <foreach collection="pis" item="p" open="(" separator="," close=")">#{p}</foreach>
+  </select>
+  <select id="frozen" resultType="map">
+    SELECT l.pi, COUNT(*) n FROM sn_bill_ledger l WHERE (l.pi_frozen = 1 OR l.suspend IS NOT NULL)
+    <if test="scope != null">
+      <choose>
+        <when test="scope.isEmpty()">AND 1=0</when>
+        <otherwise>AND l.org_code IN <foreach collection="scope" item="f" open="(" separator="," close=")">#{f}</foreach></otherwise>
+      </choose>
+    </if>
+    GROUP BY l.pi
+  </select>
+  <select id="maxSynced" resultType="java.time.LocalDateTime">SELECT MAX(synced_at) FROM sn_prd_mo</select>
+  <select id="linesOfPi" resultType="map">
+    SELECT * FROM sn_prd_mo WHERE pi = #{pi}
+    <if test="scope != null">
+      <choose>
+        <when test="scope.isEmpty()">AND 1=0</when>
+        <otherwise>AND org_code IN <foreach collection="scope" item="f" open="(" separator="," close=")">#{f}</foreach></otherwise>
+      </choose>
+    </if>
+    ORDER BY bill_no, seq
+  </select>
+  <select id="itemLines" resultType="map">
+    SELECT bill_no, bill_seq, SUM(status = 'PENDING_ALLOC') pending, SUM(status = 'TO_PUSH') to_push,
+      MIN(sn) a, MAX(sn) b
+    FROM sn_item WHERE pi_no = #{pi} AND origin = 'GEN' <include refid="itemScope"/>
+    GROUP BY bill_no, bill_seq
+  </select>
+  <select id="runningOfPi" resultType="map">SELECT * FROM sn_gen_job WHERE running_pi = #{pi}</select>
+</mapper>

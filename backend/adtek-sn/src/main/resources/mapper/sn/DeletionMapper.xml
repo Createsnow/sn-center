@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.sn.mapper.DeletionMapper">
+  <!-- 删号范围（tg）：range = SN 起止号（同一物料行、同一流水归属 PI）；否则单据 nos 与物料行 keys -->
+  <sql id="target">
+    pi_no = #{tg.pi} AND origin = 'GEN'
+    <choose>
+      <when test="tg.range">
+        AND bill_no = #{tg.bill} AND bill_seq = #{tg.billSeq} AND seq_pi_no = #{tg.seqPi}
+        AND seq_dec BETWEEN #{tg.s} AND #{tg.e}
+      </when>
+      <otherwise>
+        AND (
+        <trim prefixOverrides="OR">
+          <if test="tg.nos != null and !tg.nos.isEmpty()">
+            OR bill_no IN <foreach collection="tg.nos" item="n" open="(" separator="," close=")">#{n}</foreach>
+          </if>
+          <if test="tg.keys != null and !tg.keys.isEmpty()">
+            OR (bill_no, bill_seq) IN
+            <foreach collection="tg.keys" item="k" open="(" separator="," close=")">(#{k.billNo}, #{k.seq})</foreach>
+          </if>
+        </trim>
+        )
+      </otherwise>
+    </choose>
+  </sql>
+  <sql id="targetI">
+    i.pi_no = #{tg.pi} AND i.origin = 'GEN'
+    <choose>
+      <when test="tg.range">
+        AND i.bill_no = #{tg.bill} AND i.bill_seq = #{tg.billSeq} AND i.seq_pi_no = #{tg.seqPi}
+        AND i.seq_dec BETWEEN #{tg.s} AND #{tg.e}
+      </when>
+      <otherwise>
+        AND (
+        <trim prefixOverrides="OR">
+          <if test="tg.nos != null and !tg.nos.isEmpty()">
+            OR i.bill_no IN <foreach collection="tg.nos" item="n" open="(" separator="," close=")">#{n}</foreach>
+          </if>
+          <if test="tg.keys != null and !tg.keys.isEmpty()">
+            OR (i.bill_no, i.bill_seq) IN
+            <foreach collection="tg.keys" item="k" open="(" separator="," close=")">(#{k.billNo}, #{k.seq})</foreach>
+          </if>
+        </trim>
+        )
+      </otherwise>
+    </choose>
+  </sql>
+  <select id="genItem" resultType="map">
+    SELECT * FROM sn_item WHERE sn = #{sn} AND pi_no = #{pi} AND origin = 'GEN'
+  </select>
+  <select id="byStatus" resultType="map">
+    SELECT status, COUNT(*) n FROM sn_item WHERE <include refid="target"/> GROUP BY status
+  </select>
+  <select id="lines" resultType="map">
+    SELECT bill_no, bill_seq, MIN(material_code) material_code, COUNT(*) n, MIN(sn) a, MAX(sn) b
+    FROM sn_item WHERE <include refid="target"/> GROUP BY bill_no, bill_seq ORDER BY bill_no, bill_seq
+  </select>
+  <select id="batches" resultType="string">
+    SELECT DISTINCT i.delivery_batch_no FROM sn_item i JOIN sn_delivery_batch b ON b.batch_no = i.delivery_batch_no
+    WHERE <include refid="targetI"/> AND i.status = 'TO_PUSH' AND b.result IN ('UNCONFIRMED','FAILED')
+    ORDER BY i.delivery_batch_no
+  </select>
+  <select id="factories" resultType="string">
+    SELECT DISTINCT factory_code FROM sn_item WHERE <include refid="target"/>
+  </select>
+  <select id="pendingBills" resultType="string">
+    SELECT DISTINCT bill_no FROM sn_item WHERE <include refid="target"/> AND factory_code IS NULL
+  </select>
+  <select id="seqPis" resultType="string">
+    SELECT DISTINCT seq_pi_no FROM sn_item WHERE <include refid="target"/>
+  </select>
+  <select id="transferredIn" resultType="long">
+    SELECT COUNT(*) FROM sn_item WHERE <include refid="target"/> AND seq_pi_no &lt;&gt; pi_no
+  </select>
+  <select id="anyRunning" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_gen_job WHERE running_pi IN
+      <foreach collection="pis" item="p" open="(" separator="," close=")">#{p}</foreach>)
+  </select>
+  <select id="lockIds" resultType="long">
+    SELECT id FROM sn_item WHERE <include refid="target"/> ORDER BY seq_pi_no, seq_dec FOR UPDATE
+  </select>
+  <select id="perLine" resultType="map">
+    SELECT bill_no, bill_seq, COUNT(*) n, SUM(status &lt;&gt; 'PENDING_ALLOC') a, MIN(sn) first_sn, MAX(sn) last_sn,
+      MIN(factory_code) f, COUNT(DISTINCT COALESCE(factory_code, '')) nf, GROUP_CONCAT(DISTINCT status) st
+    FROM sn_item WHERE <include refid="target"/> GROUP BY bill_no, bill_seq
+  </select>
+  <select id="perPi" resultType="map">
+    SELECT seq_pi_no, COUNT(*) n FROM sn_item WHERE <include refid="target"/> GROUP BY seq_pi_no
+  </select>
+  <sql id="archiveCols">
+    id, sn, factory_code, pi_no, customer_code, bill_no, bill_seq, material_code, rev, gen_org_code, gen_bill_no,
+    gen_bill_seq, seq_pi_no, seq_dec, length_text, attach_no, rule_version_id, gen_batch, status, delivery_mode,
+    delivery_batch_no, mes_holder, created_at, allocated_at, delivered_at
+  </sql>
+  <insert id="archive">
+    INSERT INTO sn_item_deleted(<include refid="archiveCols"/>, del_no, deleted_by, deleted_at, reason)
+    SELECT <include refid="archiveCols"/>, #{delNo}, #{by}, #{now}, #{reason} FROM sn_item WHERE id IN
+    <foreach collection="ids" item="i" open="(" separator="," close=")">#{i}</foreach>
+  </insert>
+  <delete id="deleteItems">
+    DELETE FROM sn_item WHERE id IN <foreach collection="ids" item="i" open="(" separator="," close=")">#{i}</foreach>
+  </delete>
+  <update id="giveBack">
+    UPDATE sn_line_count SET gen_count = GREATEST(gen_count - #{n}, 0), alloc_count = GREATEST(alloc_count - #{a}, 0),
+      own_generated = GREATEST(own_generated - #{n}, 0), updated_at = #{now}
+    WHERE bill_no = #{billNo} AND seq = #{seq}
+  </update>
+  <update id="reduceGenerated">
+    UPDATE sn_pi_counter SET generated_qty = GREATEST(generated_qty - #{n}, 0), updated_at = #{now} WHERE pi_no = #{pi}
+  </update>
+  <select id="deleted" resultType="map">
+    SELECT del_no, MIN(sn) start_sn, MAX(sn) end_sn, COUNT(*) qty, MIN(deleted_by) deleted_by,
+      MIN(deleted_at) deleted_at, MIN(reason) reason, GROUP_CONCAT(DISTINCT bill_no ORDER BY bill_no) bills
+    FROM sn_item_deleted WHERE pi_no = #{pi} GROUP BY del_no ORDER BY MIN(deleted_at) DESC, del_no DESC LIMIT #{limit}
+  </select>
+</mapper>

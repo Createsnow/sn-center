@@ -1068,6 +1068,18 @@ public class OrderServiceImpl implements OrderService, RecurringTask {
                 byLine(mapper.unitsOf(bills)));
     }
 
+    public Extras lineExtrasOfBills(Collection<String> billNos) {
+        Set<String> bills = new TreeSet<>(billNos);
+        if (bills.isEmpty()) {
+            return new Extras(new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>());
+        }
+        return new Extras(
+                byLine(mapper.countsOf(bills)),
+                byLine(mapper.attachesOf(bills)),
+                byLine(mapper.lengthsOf(bills)),
+                byLine(mapper.unitsOf(bills)));
+    }
+
     /** 物料行带上生效的附件项次（eff_attach）与米数（eff_length）。 */
     public List<Map<String, Object>> effectiveLines(List<Map<String, Object>> ls) {
         Map<String, Map<String, Object>> lens = lineLengths(ls);
