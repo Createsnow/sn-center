@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.sn.mapper.SnImportMapper">
+  <select id="heads" resultType="map">
+    SELECT m.bill_no, MIN(m.pi) pi, MIN(m.org_code) org_code, MIN(m.org_name) org_name,
+      MIN(m.customer_code) customer_code, MIN(f.factory_name) factory_name
+    FROM sn_prd_mo m LEFT JOIN sn_factory f ON f.factory_code = m.org_code
+    WHERE m.bill_no IN <foreach collection="bills" item="b" open="(" separator="," close=")">#{b}</foreach>
+    GROUP BY m.bill_no
+  </select>
+  <select id="lines" resultType="map">
+    SELECT * FROM sn_prd_mo WHERE bill_no IN <foreach collection="bills" item="b" open="(" separator="," close=")">#{b}</foreach>
+    ORDER BY bill_no, seq
+  </select>
+  <select id="usedBills" resultType="map">
+    SELECT bill_no, COUNT(*) n FROM sn_item
+    WHERE bill_no IN <foreach collection="bills" item="b" open="(" separator="," close=")">#{b}</foreach>
+      AND (origin = 'GEN' OR status &lt;&gt; 'PENDING_ALLOC') GROUP BY bill_no
+  </select>
+  <select id="poolSns" resultType="map">
+    SELECT sn, pi_no FROM sn_item WHERE sn IN <foreach collection="sns" item="s" open="(" separator="," close=")">#{s}</foreach>
+    <if test="lock">LOCK IN SHARE MODE</if>
+  </select>
+  <select id="importedSns" resultType="map">
+    SELECT sn, import_no FROM sn_import_item
+    WHERE sn IN <foreach collection="sns" item="s" open="(" separator="," close=")">#{s}</foreach> AND deleted_at IS NULL
+    <if test="lock">LOCK IN SHARE MODE</if>
+  </select>
+  <insert id="insertImports">
+    INSERT INTO sn_import_item(import_no, sn, pi_no, bill_no, bill_seq, cur_bill_seq, material_code, attach_no,
+      length_text, serial_text, seq_base, seq_len, seq_dec, unit, customer_code, factory_code, file_name, row_no,
+      created_by, created_at) VALUES
+    <foreach collection="rows" item="r" separator=",">
+      (#{no}, #{r.sn}, #{r.pi}, #{r.bill}, #{r.seq}, #{r.seq}, #{r.material}, #{r.attach}, #{r.lengthOrNull},
+       #{r.serial}, #{r.base}, #{r.seqLen}, #{r.seqDec}, #{r.unit}, #{r.customer}, #{r.factory}, #{fileName},
+       #{r.rowNo}, #{by}, #{now})
+    </foreach>
+  </insert>
+  <select id="importIds" resultType="map">
+    SELECT id, sn FROM sn_import_item WHERE import_no = #{no}
+      AND sn IN <foreach collection="sns" item="s" open="(" separator="," close=")">#{s}</foreach>
+  </select>
+  <insert id="insertItems">
+    INSERT INTO sn_item(sn, origin, pi_no, customer_code, bill_no, bill_seq, material_code, gen_org_code,
+      gen_bill_no, gen_bill_seq, seq_pi_no, seq_dec, length_text, attach_no, rule_version_id, gen_batch, status,
+      created_at, updated_at) VALUES
+    <foreach collection="rows" item="r" separator=",">
+      (#{r.sn}, 'IMPORT', #{r.pi}, #{r.customer}, #{r.bill}, 0, #{r.material}, #{r.factory}, #{r.bill}, 0, '',
+       #{r.importId}, #{r.lengthOrNull}, #{r.attach}, 0, #{no}, 'PENDING_ALLOC', #{now}, #{now})
+    </foreach>
+  </insert>
+  <select id="firstPoolSn" resultType="string">
+    SELECT sn FROM sn_item WHERE sn IN <foreach collection="sns" item="s" open="(" separator="," close=")">#{s}</foreach>
+    LIMIT 1
+  </select>
+
+  <sql id="listWhere">
+    WHERE 1 = 1
+    <if test="scope != null">
+      <choose>
+        <when test="scope.isEmpty()">AND 1=0</when>
+        <otherwise>AND s.factory_code IN <foreach collection="scope" item="f" open="(" separator="," close=")">#{f}</foreach></otherwise>
+      </choose>
+    </if>
+    <if test="pi != null">AND s.pi_no = #{pi}</if>
+    <if test="bill != null">AND s.bill_no = #{bill}</if>
+    <if test="importNo != null">AND s.import_no = #{importNo}</if>
+    <if test="sn != null">AND s.sn LIKE #{sn}</if>
+  </sql>
+  <select id="countItems" resultType="long">
+    SELECT COUNT(*) FROM sn_import_item s <include refid="listWhere"/>
+  </select>
+  <select id="pageItems" resultType="map">
+    SELECT s.id, s.import_no, s.sn, s.pi_no, s.bill_no, s.bill_seq, s.cur_bill_seq, s.material_code, s.attach_no,
+      s.serial_text, s.seq_base, s.seq_len, s.unit, s.customer_code, s.factory_code, s.file_name, s.row_no,
+      s.created_by, s.deleted_by, s.length_text, s.created_at, s.deleted_at, i.status, i.factory_code cur_factory,
+      i.pi_no cur_pi, i.bill_no cur_bill
+    FROM sn_import_item s LEFT JOIN sn_item i ON i.seq_pi_no = '' AND i.seq_dec = s.id AND i.origin = 'IMPORT'
+    <include refid="listWhere"/>
+    ORDER BY s.id DESC LIMIT #{size} OFFSET #{offset}
+  </select>
+  <select id="details" resultType="map">
+    SELECT id, pi_no, bill_seq, cur_bill_seq, serial_text, seq_base, seq_len, seq_dec, unit FROM sn_import_item
+    WHERE id IN <foreach collection="ids" item="i" open="(" separator="," close=")">#{i}</foreach>
+  </select>
+  <select id="records" resultType="map">
+    SELECT * FROM sn_import_item WHERE import_no = #{no} AND deleted_at IS NULL ORDER BY id
+  </select>
+  <select id="pool" resultType="map">
+    SELECT id, sn, status, pi_no, bill_no, factory_code, gen_org_code FROM sn_item
+    WHERE sn IN <foreach collection="sns" item="s" open="(" separator="," close=")">#{s}</foreach>
+      AND origin = 'IMPORT' AND gen_batch = #{no}
+    <if test="lock">FOR UPDATE</if>
+  </select>
+  <delete id="deleteItems">
+    DELETE FROM sn_item WHERE id IN <foreach collection="ids" item="i" open="(" separator="," close=")">#{i}</foreach>
+  </delete>
+  <update id="markDeleted">
+    UPDATE sn_import_item SET deleted_by = #{by}, deleted_at = #{now} WHERE import_no = #{no} AND deleted_at IS NULL
+  </update>
+</mapper>

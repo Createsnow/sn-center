@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.sn.mapper.AllocationMapper">
+  <!-- 分配范围：物料行（单据 + 序号）/ 单据 / 整张 PI -->
+  <sql id="range">
+    <choose>
+      <when test="lines != null and !lines.isEmpty()">
+        AND (<foreach collection="lines" item="x" separator=" OR ">(bill_no = #{x.billNo} AND bill_seq = #{x.seq})</foreach>)
+      </when>
+      <when test="bills != null and !bills.isEmpty()">
+        AND bill_no IN <foreach collection="bills" item="b" open="(" separator="," close=")">#{b}</foreach>
+      </when>
+    </choose>
+  </sql>
+  <sql id="itemScope">
+    <if test="scope != null">
+      <choose>
+        <when test="scope.isEmpty()">AND 1=0</when>
+        <otherwise>
+          AND (factory_code IN <foreach collection="scope" item="f" open="(" separator="," close=")">#{f}</foreach>
+            OR (factory_code IS NULL AND bill_no IN (SELECT l.bill_no FROM sn_bill_ledger l WHERE l.org_code IN
+              <foreach collection="scope" item="f" open="(" separator="," close=")">#{f}</foreach>)))
+        </otherwise>
+      </choose>
+    </if>
+  </sql>
+  <sql id="itemScopeI">
+    <if test="scope != null">
+      <choose>
+        <when test="scope.isEmpty()">AND 1=0</when>
+        <otherwise>
+          AND (i.factory_code IN <foreach collection="scope" item="f" open="(" separator="," close=")">#{f}</foreach>
+            OR (i.factory_code IS NULL AND i.bill_no IN (SELECT l.bill_no FROM sn_bill_ledger l WHERE l.org_code IN
+              <foreach collection="scope" item="f" open="(" separator="," close=")">#{f}</foreach>)))
+        </otherwise>
+      </choose>
+    </if>
+  </sql>
+  <select id="groups" resultType="map">
+    SELECT bill_no, gen_org_code, COUNT(*) n, MIN(seq_dec) s, MAX(seq_dec) e FROM sn_item
+    WHERE pi_no = #{pi} AND status = 'PENDING_ALLOC' <include refid="range"/>
+    GROUP BY bill_no, gen_org_code ORDER BY bill_no
+  </select>
+  <select id="idle" resultType="map">
+    SELECT factory_code, bill_no, COUNT(*) n, GROUP_CONCAT(DISTINCT material_code) m FROM sn_item
+    WHERE pi_no = #{pi} AND status = 'TO_PUSH' AND delivery_batch_no IS NULL AND suspend IS NULL
+    <include refid="range"/>
+    GROUP BY factory_code, bill_no ORDER BY bill_no
+  </select>
+  <select id="pendingMaterials" resultType="map">
+    SELECT bill_no, GROUP_CONCAT(DISTINCT material_code) m FROM sn_item WHERE pi_no = #{pi} AND status = 'PENDING_ALLOC'
+    <include refid="range"/> GROUP BY bill_no
+  </select>
+  <select id="perLine" resultType="map">
+    SELECT bill_seq, COUNT(*) n, MIN(sn) a, MAX(sn) b FROM sn_item WHERE pi_no = #{pi} AND bill_no = #{bill}
+      AND status = 'PENDING_ALLOC' <if test="genOrg != null">AND gen_org_code = #{genOrg}</if>
+      <include refid="range"/>
+    GROUP BY bill_seq
+  </select>
+  <update id="allocate">
+    UPDATE sn_item SET status = #{status}, factory_code = #{org}, push_type = 'NEW', allocated_at = #{now}, updated_at = #{now}
+    WHERE pi_no = #{pi} AND bill_no = #{bill} AND status = 'PENDING_ALLOC'
+      <if test="genOrg != null">AND gen_org_code = #{genOrg}</if>
+      <include refid="range"/>
+  </update>
+  <update id="addAllocCount">
+    UPDATE sn_line_count SET alloc_count = alloc_count + #{n}, updated_at = #{now} WHERE bill_no = #{bill} AND seq = #{seq}
+  </update>
+
+  <!-- 左侧单据列表（单据汇总表） -->
+  <sql id="billsGrouped">
+    SELECT pi_no, bill_no, SUM(qty) qty, SUM(pending) pending, SUM(to_push) to_push, SUM(suspended) suspended,
+      MAX(handled_at) handled_at FROM sn_bill_stat WHERE 1=1
+    <include refid="itemScope"/>
+    <if test="q != null">AND (pi_no LIKE #{q} OR bill_no LIKE #{q})</if>
+    GROUP BY pi_no, bill_no
+    <choose>
+      <when test="tab == 'TO_ALLOCATE'">HAVING SUM(pending) &gt; 0 OR SUM(to_push) &gt; 0</when>
+      <when test="tab == 'ALLOCATED'">HAVING NOT (SUM(pending) &gt; 0 OR SUM(to_push) &gt; 0)</when>
+    </choose>
+  </sql>
+  <select id="countBills" resultType="long">
+    SELECT COUNT(*) FROM (<include refid="billsGrouped"/>) g
+  </select>
+  <select id="pageBills" resultType="map">
+    <include refid="billsGrouped"/> ORDER BY handled_at DESC, bill_no DESC, pi_no LIMIT #{offset}, #{size}
+  </select>
+  <select id="summary" resultType="map">
+    SELECT SUM(status = 'PENDING_ALLOC') pending,
+      SUM(status = 'TO_PUSH' AND delivery_batch_no IS NULL AND suspend IS NULL) unbatched
+    FROM sn_item WHERE status IN ('PENDING_ALLOC', 'TO_PUSH')
+    <include refid="itemScope"/>
+  </select>
+
+  <!-- 分配页详情 -->
+  <select id="contextRows" resultType="map">
+    SELECT i.bill_no, i.bill_seq, IF(MAX(i.origin = 'IMPORT'), COALESCE(GROUP_CONCAT(DISTINCT
+      NULLIF(i.material_code, '') ORDER BY i.material_code SEPARATOR ','), ''), MAX(i.material_code)) material_code,
+      COUNT(*) n, SUM(i.status = 'PENDING_ALLOC') pending, SUM(i.status = 'TO_PUSH') to_push,
+      SUM(i.status = 'TO_PUSH' AND d.id IS NOT NULL AND (d.result = 'FAILED' OR (d.result = 'UNCONFIRMED'
+        AND d.push_state = 'EXHAUSTED'))) failed,
+      MAX(CASE WHEN i.status = 'PENDING_ALLOC' THEN i.gen_org_code END) gen_org, MAX(i.factory_code) org,
+      MIN(i.sn) a, MAX(i.sn) b, MAX(i.origin = 'IMPORT') imported,
+      IF(MAX(i.origin = 'IMPORT'), COALESCE(GROUP_CONCAT(DISTINCT NULLIF(i.attach_no, '')
+        ORDER BY i.attach_no SEPARATOR ','), ''), MAX(i.attach_no)) attach_no,
+      MIN(CASE WHEN i.origin = 'GEN' THEN i.seq_dec END) s, MAX(CASE WHEN i.origin = 'GEN' THEN i.seq_dec END) e
+    FROM sn_item i LEFT JOIN sn_delivery_batch d ON d.batch_no = i.delivery_batch_no
+    WHERE i.pi_no = #{pi}
+    <include refid="itemScopeI"/>
+    GROUP BY i.bill_no, i.bill_seq ORDER BY i.bill_no, i.bill_seq
+  </select>
+  <select id="orderLines" resultType="map">
+    SELECT bill_no, seq, qty, customer_pn FROM sn_prd_mo
+    WHERE bill_no IN <foreach collection="bills" item="b" open="(" separator="," close=")">#{b}</foreach>
+  </select>
+  <select id="quota" resultType="java.math.BigDecimal">
+    SELECT SUM(GREATEST(FLOOR(m.qty) - COALESCE(c.own_generated, 0), 0)) FROM sn_prd_mo m
+    LEFT JOIN sn_line_count c ON c.bill_no = m.bill_no AND c.seq = m.seq WHERE m.pi = #{pi}
+    <if test="scope != null">
+      <choose>
+        <when test="scope.isEmpty()">AND 1=0</when>
+        <otherwise>AND m.org_code IN <foreach collection="scope" item="f" open="(" separator="," close=")">#{f}</foreach></otherwise>
+      </choose>
+    </if>
+  </select>
+  <select id="pushOrgs" resultType="string">
+    SELECT DISTINCT factory_code FROM sn_item WHERE pi_no = #{pi} AND factory_code IS NOT NULL
+    UNION SELECT DISTINCT factory_code FROM sn_delivery_batch WHERE pi_no = #{pi} AND batch_type &lt;&gt; 'TRANSFER_OUT'
+  </select>
+  <select id="hasBatch" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_delivery_batch WHERE factory_code = #{org} AND pi_no = #{pi})
+  </select>
+  <select id="pushedQty" resultType="long">
+    SELECT COUNT(*) FROM sn_item WHERE factory_code = #{org} AND pi_no = #{pi} AND status = 'PUSHED'
+  </select>
+  <select id="doneBatches" resultType="long">
+    SELECT COUNT(*) FROM sn_delivery_batch WHERE factory_code = #{org} AND pi_no = #{pi}
+      AND batch_type &lt;&gt; 'TRANSFER_OUT' AND result = 'SUCCESS'
+  </select>
+  <select id="lastProblem" resultType="map">
+    SELECT batch_no, fail_reason, result, push_state FROM sn_delivery_batch WHERE factory_code = #{org} AND pi_no = #{pi}
+      AND batch_type &lt;&gt; 'TRANSFER_OUT' AND (result = 'FAILED' OR push_state IN ('WAIT_RETRY','EXHAUSTED')
+      OR (push_state = 'WAIT_RECEIPT' AND receipt_timeouts &gt; 0))
+    ORDER BY id DESC LIMIT 1
+  </select>
+  <select id="currentPushState" resultType="string">
+    SELECT push_state FROM sn_delivery_batch WHERE batch_no = #{batchNo} AND result = 'UNCONFIRMED'
+  </select>
+</mapper>

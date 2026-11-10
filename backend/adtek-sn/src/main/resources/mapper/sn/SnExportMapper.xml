@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.sn.mapper.SnExportMapper">
+  <sql id="scopeS">
+    <if test="scope != null">
+      <choose>
+        <when test="scope.isEmpty()">AND 1=0</when>
+        <otherwise>AND s.factory_code IN <foreach collection="scope" item="f" open="(" separator="," close=")">#{f}</foreach></otherwise>
+      </choose>
+    </if>
+  </sql>
+  <sql id="billsListed">
+    SELECT s.pi_no, s.factory_code, s.bill_no, s.alloc_customer customer_code, COALESCE(f.mes_enabled, 0) mes,
+      s.alloc_qty qty, s.alloc_suspended suspended
+    FROM sn_bill_stat s LEFT JOIN sn_factory f ON f.factory_code = s.factory_code
+    WHERE s.factory_code IS NOT NULL AND s.alloc_qty &gt; 0 <include refid="scopeS"/>
+    <if test="pi != null">AND s.pi_no = #{pi}</if>
+    <if test="q != null">AND (s.pi_no LIKE #{q} OR s.bill_no LIKE #{q})</if>
+    <if test="mes != null">AND COALESCE(f.mes_enabled, 0) = #{mes}</if>
+  </sql>
+  <select id="countBills" resultType="long">SELECT COUNT(*) FROM (<include refid="billsListed"/>) g</select>
+  <select id="pageBills" resultType="map">
+    <include refid="billsListed"/> ORDER BY s.pi_no DESC, s.factory_code, s.bill_no LIMIT #{offset}, #{size}
+  </select>
+
+  <!-- 一张单据（生产组织 + PI + 单据）的已分配号，及明细与下载共用的筛选 -->
+  <sql id="billWhere">
+    WHERE i.factory_code IS NOT NULL AND i.status &lt;&gt; 'PENDING_ALLOC'
+    <if test="f.scope != null">
+      <choose>
+        <when test="f.scope.isEmpty()">AND 1=0</when>
+        <otherwise>AND i.factory_code IN <foreach collection="f.scope" item="x" open="(" separator="," close=")">#{x}</foreach></otherwise>
+      </choose>
+    </if>
+    AND i.pi_no = #{f.pi} AND i.bill_no = #{f.bill}
+    <if test="f.billSeq != null">AND i.bill_seq = #{f.billSeq} AND i.material_code = #{f.material}</if>
+    <if test="f.billSeq == null and f.material != null">AND i.material_code = #{f.material}</if>
+    <if test="f.fromPi != null">AND (i.seq_pi_no, i.seq_dec) &gt;= (#{f.fromPi}, #{f.fromDec})</if>
+    <if test="f.toPi != null">AND (i.seq_pi_no, i.seq_dec) &lt;= (#{f.toPi}, #{f.toDec})</if>
+    <if test="f.q != null">AND i.sn LIKE #{f.q}</if>
+    <if test="f.attachSet">
+      <choose>
+        <when test="f.attach == null">AND i.attach_no IS NULL</when>
+        <otherwise>AND i.attach_no = #{f.attach}</otherwise>
+      </choose>
+    </if>
+  </sql>
+  <select id="lines" resultType="map">
+    SELECT i.bill_seq, i.material_code, MAX(i.attach_no) attach_no, MAX(i.length_text) length_text, COUNT(*) qty,
+      SUM(i.suspend IS NOT NULL) suspended
+    FROM sn_item i <include refid="billWhere"/>
+    GROUP BY i.bill_seq, i.material_code ORDER BY i.bill_seq, i.material_code
+  </select>
+  <sql id="segGrouped">
+    SELECT factory_code, bill_seq, material_code, MAX(attach_no) attach_no, MAX(length_text) length_text,
+      seq_pi_no, MIN(seq_dec) s, MAX(seq_dec) e,
+      SUBSTRING(MIN(CONCAT(LPAD(seq_dec, 20, '0'), sn)), 21) start_sn,
+      SUBSTRING(MAX(CONCAT(LPAD(seq_dec, 20, '0'), sn)), 21) end_sn, COUNT(*) qty, MAX(suspend) suspend
+    FROM (SELECT i.factory_code, i.bill_seq, i.material_code, i.attach_no, i.length_text, i.status, i.seq_pi_no,
+      i.seq_dec, i.sn, i.suspend,
+      i.seq_dec - ROW_NUMBER() OVER (PARTITION BY i.factory_code, i.bill_seq, i.material_code,
+      i.seq_pi_no ORDER BY i.seq_dec) grp FROM sn_item i <include refid="billWhere"/>) t
+    GROUP BY factory_code, bill_seq, material_code, seq_pi_no, grp
+  </sql>
+  <select id="countSegments" resultType="long">SELECT COUNT(*) FROM (<include refid="segGrouped"/>) g</select>
+  <select id="pageSegments" resultType="map">
+    <include refid="segGrouped"/> ORDER BY bill_seq, seq_pi_no, s, factory_code LIMIT #{offset}, #{size}
+  </select>
+  <select id="snAt" resultType="map">
+    SELECT i.seq_pi_no, i.seq_dec FROM sn_item i <include refid="billWhere"/> AND i.sn = #{sn} LIMIT 1
+  </select>
+  <select id="countItems" resultType="long">SELECT COUNT(*) FROM sn_item i <include refid="billWhere"/></select>
+  <select id="exists" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_item i <include refid="billWhere"/>)
+  </select>
+  <select id="attaches" resultType="string">
+    SELECT DISTINCT i.attach_no FROM sn_item i <include refid="billWhere"/>
+  </select>
+  <select id="pageItems" resultType="map">
+    SELECT i.sn, i.rule_version_id, i.pi_no, i.factory_code, f.factory_name, i.bill_seq, i.material_code,
+      i.attach_no, i.length_text, i.seq_pi_no, i.seq_dec, i.status, i.delivery_mode, i.delivery_batch_no, i.suspend
+    FROM sn_item i LEFT JOIN sn_factory f ON f.factory_code = i.factory_code <include refid="billWhere"/>
+    ORDER BY
+    <if test="rank != null and rank.size() &gt; 1">
+      FIELD(i.attach_no, <foreach collection="rank" item="a" separator=",">#{a}</foreach>),
+    </if>
+    i.bill_seq, i.seq_pi_no, i.seq_dec LIMIT #{offset}, #{size}
+  </select>
+  <!-- 下载：同一附件项次内按单据序号、流水键集翻页 -->
+  <select id="fileChunk" resultType="map">
+    SELECT i.id, i.sn, i.rule_version_id, i.seq_dec, i.seq_pi_no, i.factory_code factory_code,
+      f.factory_name factory_name, i.customer_code, i.pi_no, i.bill_no, i.bill_seq, i.material_code, i.attach_no,
+      i.length_text, i.status, i.delivery_mode, i.delivery_batch_no
+    FROM sn_item i LEFT JOIN sn_factory f ON f.factory_code = i.factory_code <include refid="billWhere"/>
+    <if test="afterSeq != null">
+      AND (i.bill_seq &gt; #{afterSeq} OR (i.bill_seq = #{afterSeq} AND (i.seq_pi_no &gt; #{afterPi}
+        OR (i.seq_pi_no = #{afterPi} AND i.seq_dec &gt; #{afterDec}))))
+    </if>
+    ORDER BY i.bill_seq, i.seq_pi_no, i.seq_dec LIMIT 5000
+  </select>
+</mapper>
