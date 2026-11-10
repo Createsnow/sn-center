@@ -114,6 +114,10 @@ public class DeliveryServiceImpl implements DeliveryService {
         push.kickBill(billNo);
     }
 
+    public PushRemainingVO remainingPushes(String org, String key) {
+        return push.remainingPushes(org, key);
+    }
+
     public void startTask(CurrentUser cu, String org, String key) {
         push.startTask(cu, org, key);
     }

@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.sn.mapper.TransferMapper">
+  <sql id="itemCols">
+    id, sn, factory_code, pi_no, customer_code, bill_no, bill_seq, material_code, rev, seq_pi_no, seq_dec,
+    length_text, attach_no, rule_version_id, status, delivery_batch_no, mes_holder, push_type, delivery_mode, origin
+  </sql>
+  <sql id="scopeIn">
+    <choose>
+      <when test="scope.isEmpty()">1=0</when>
+      <otherwise>IN <foreach collection="scope" item="f" open="(" separator="," close=")">#{f}</foreach></otherwise>
+    </choose>
+  </sql>
+  <select id="sourceItems" resultType="map">
+    SELECT <include refid="itemCols"/> FROM sn_item WHERE pi_no = #{pi} AND bill_no = #{bill}
+    <if test="factory != null">AND factory_code = #{factory}</if>
+    <if test="mats != null">
+      AND material_code IN <foreach collection="mats" item="m" open="(" separator="," close=")">#{m}</foreach>
+    </if>
+    ORDER BY seq_pi_no, seq_dec
+    <if test="lock">FOR UPDATE</if>
+  </select>
+  <update id="moveItems">
+    UPDATE sn_item SET factory_code = #{g.org}, pi_no = #{g.pi}, customer_code = #{g.customer}, bill_no = #{g.bill},
+      bill_seq = #{g.seq}, material_code = #{g.material}, rev = rev + 1, status = #{g.status}, push_type = #{g.pushType},
+      delivery_mode = #{g.mode}, delivery_batch_no = NULL, transfer_kind = #{tkind}, transfer_doc_no = #{docNo},
+      transfer_from_org = IF(#{g.keepFrom}, transfer_from_org, #{g.fromOrg}), updated_at = #{now}
+    WHERE id IN <foreach collection="ids" item="i" open="(" separator="," close=")">#{i}</foreach>
+  </update>
+  <update id="importSeq">
+    UPDATE sn_import_item SET cur_bill_seq = #{seq}
+    WHERE id IN <foreach collection="ids" item="i" open="(" separator="," close=")">#{i}</foreach>
+  </update>
+  <insert id="insertTransferItems">
+    INSERT INTO sn_transfer_item(kind, transfer_id, item_id, sn, seq_pi_no, seq_dec, from_status, from_factory,
+      from_pi, from_customer, from_bill, from_seq, from_material, from_delivery_batch, from_rev,
+      to_status, to_factory, to_pi, to_customer, to_bill, to_seq, to_material, to_rev) VALUES
+    <foreach collection="rows" item="r" separator=",">
+      (#{r.kind}, #{r.transferId}, #{r.itemId}, #{r.sn}, #{r.seqPiNo}, #{r.seqDec}, #{r.fromStatus}, #{r.fromFactory},
+       #{r.fromPi}, #{r.fromCustomer}, #{r.fromBill}, #{r.fromSeq}, #{r.fromMaterial}, #{r.fromBatch}, #{r.fromRev},
+       #{r.toStatus}, #{r.toFactory}, #{r.toPi}, #{r.toCustomer}, #{r.toBill}, #{r.toSeq}, #{r.toMaterial}, #{r.toRev})
+    </foreach>
+    ON DUPLICATE KEY UPDATE to_status = VALUES(to_status), to_factory = VALUES(to_factory), to_pi = VALUES(to_pi),
+      to_customer = VALUES(to_customer), to_bill = VALUES(to_bill), to_seq = VALUES(to_seq),
+      to_material = VALUES(to_material), to_rev = VALUES(to_rev), from_rev = VALUES(from_rev),
+      from_delivery_batch = VALUES(from_delivery_batch)
+  </insert>
+  <insert id="ensureLineCount">
+    INSERT INTO sn_line_count(bill_no, seq, material_code, own_generated, gen_count, alloc_count, updated_at)
+    VALUES (#{bill}, #{seq}, COALESCE((SELECT material_code FROM sn_prd_mo WHERE bill_no = #{bill} AND seq = #{seq}), ''),
+      0, 0, 0, #{now})
+    ON DUPLICATE KEY UPDATE bill_no = bill_no
+  </insert>
+  <update id="addLineCount">
+    UPDATE sn_line_count SET gen_count = gen_count + #{d}, alloc_count = alloc_count + #{d}, updated_at = #{now}
+    WHERE bill_no = #{bill} AND seq = #{seq}
+  </update>
+  <update id="setOutBatch">
+    UPDATE sn_transfer_item t JOIN sn_delivery_item d ON d.batch_id = #{batchId} AND d.item_id = t.item_id
+    SET t.out_batch_no = #{batchNo} WHERE t.kind = #{kind} AND t.transfer_id = #{tid}
+  </update>
+  <insert id="insertBillTransfer" useGeneratedKeys="true" keyProperty="e.id">
+    INSERT INTO sn_bill_transfer(transfer_no, mode, scope, from_bill, to_bill, from_pi, to_pi, to_factory, to_seq,
+      to_material, scope_text, qty, reason, created_by, created_at)
+    VALUES (#{e.no}, #{e.mode}, #{e.scope}, #{e.fromBill}, #{e.toBill}, #{e.fromPi}, #{e.toPi}, #{e.toFactory},
+      #{e.toSeq}, #{e.toMaterial}, #{e.scopeText}, #{e.qty}, #{e.reason}, #{e.by}, #{e.now})
+  </insert>
+  <insert id="insertOrgTransfer" useGeneratedKeys="true" keyProperty="e.id">
+    INSERT INTO sn_transfer(transfer_no, mode, status, scope, from_factory, from_pi, from_bill, from_material, from_sn,
+      from_end_sn, qty, to_factory, to_pi, to_customer, to_bill, to_seq, to_material, reason, applied_by, applied_at)
+    VALUES (#{e.no}, 'DIRECT', 'APPROVED', #{e.scope}, #{e.fromFactory}, #{e.fromPi}, #{e.fromBill}, #{e.fromMaterial},
+      #{e.fromSn}, #{e.fromEndSn}, #{e.qty}, #{e.toFactory}, #{e.toPi}, #{e.toCustomer}, #{e.toBill}, #{e.toSeq},
+      #{e.toMaterial}, #{e.reason}, #{e.by}, #{e.now})
+  </insert>
+
+  <!-- 物料确认对应 -->
+  <select id="moLine" resultType="map">SELECT * FROM sn_prd_mo WHERE bill_no = #{bill} AND seq = #{seq}</select>
+  <select id="orderAlertLock" resultType="map">SELECT * FROM sn_order_alert WHERE id = #{id} FOR UPDATE</select>
+  <select id="lineItems" resultType="map">
+    SELECT <include refid="itemCols"/> FROM sn_item WHERE bill_no = #{bill} AND bill_seq = #{seq} FOR UPDATE
+  </select>
+  <update id="remapItems">
+    UPDATE sn_item SET bill_seq = #{seq}, material_code = #{material}
+    <choose>
+      <when test="mode == 'REASSIGN'">, rev = rev + 1, status = 'TO_PUSH', push_type = 'REASSIGN', delivery_batch_no = NULL,
+        transfer_kind = NULL, transfer_doc_no = NULL, transfer_from_org = NULL</when>
+      <when test="mode == 'DELIVERED'">, rev = rev + 1</when>
+    </choose>
+    , updated_at = #{now}
+    WHERE id IN <foreach collection="ids" item="i" open="(" separator="," close=")">#{i}</foreach>
+  </update>
+  <select id="lineCountLock" resultType="map">
+    SELECT * FROM sn_line_count WHERE bill_no = #{bill} AND seq = #{seq} FOR UPDATE
+  </select>
+  <insert id="mergeLineCount">
+    INSERT INTO sn_line_count(bill_no, seq, material_code, own_generated, gen_count, alloc_count, updated_at)
+    VALUES (#{bill}, #{seq}, #{material}, #{own}, #{gen}, #{alloc}, #{now})
+    ON DUPLICATE KEY UPDATE material_code = VALUES(material_code), own_generated = own_generated + VALUES(own_generated),
+      gen_count = gen_count + VALUES(gen_count), alloc_count = alloc_count + VALUES(alloc_count),
+      updated_at = VALUES(updated_at)
+  </insert>
+  <delete id="deleteLineCount">DELETE FROM sn_line_count WHERE bill_no = #{bill} AND seq = #{seq}</delete>
+  <select id="lineRuleExists" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_line_rule WHERE bill_no = #{bill} AND seq = #{seq})
+  </select>
+  <update id="moveLineRule">UPDATE sn_line_rule SET seq = #{to} WHERE bill_no = #{bill} AND seq = #{from}</update>
+
+  <!-- 来源候选与快速定位 -->
+  <select id="sources" resultType="map">
+    SELECT i.bill_no, i.material_code, i.factory_code, i.customer_code, i.attach_no, i.length_text,
+      COALESCE(m.cur_bill_seq, i.bill_seq) line_seq, COUNT(*) n
+    FROM (SELECT bill_no, material_code, factory_code, customer_code, attach_no, length_text, bill_seq, origin, seq_dec
+      FROM sn_item WHERE pi_no = #{pi} AND status &lt;&gt; 'PENDING_ALLOC'
+      <if test="factory != null">AND factory_code = #{factory}</if>
+      <if test="factory == null and scope != null">AND factory_code <include refid="scopeIn"/></if>) i
+    LEFT JOIN sn_import_item m ON i.origin = 'IMPORT' AND m.id = i.seq_dec
+    GROUP BY i.bill_no, i.material_code, i.factory_code, i.customer_code, i.attach_no, i.length_text, line_seq
+    ORDER BY i.bill_no, i.material_code, i.attach_no, i.factory_code
+  </select>
+  <select id="locateSn" resultType="map">
+    SELECT sn, pi_no, bill_no, material_code, attach_no, factory_code, status, origin FROM sn_item WHERE sn = #{q}
+    <if test="scope != null">AND factory_code <include refid="scopeIn"/></if>
+  </select>
+  <select id="locateBill" resultType="string">
+    SELECT pi_no FROM sn_item WHERE bill_no = #{q} AND status &lt;&gt; 'PENDING_ALLOC'
+    <if test="scope != null">AND factory_code <include refid="scopeIn"/></if> LIMIT 1
+  </select>
+  <select id="locatePi" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_item WHERE pi_no = #{q} AND status &lt;&gt; 'PENDING_ALLOC'
+    <if test="scope != null">AND factory_code <include refid="scopeIn"/></if>)
+  </select>
+
+  <!-- 查询 -->
+  <sql id="orgWhere">
+    WHERE 1=1
+    <if test="pi != null">AND (from_pi = #{pi} OR to_pi = #{pi})</if>
+    <if test="bill != null">AND (from_bill = #{bill} OR to_bill = #{bill} OR id IN
+      (SELECT transfer_id FROM sn_transfer_item WHERE kind = 'ORG' AND from_bill = #{bill}))</if>
+    <if test="scope != null">AND (from_factory <include refid="scopeIn"/> OR to_factory <include refid="scopeIn"/>)</if>
+  </sql>
+  <sql id="billWhere">
+    WHERE 1=1
+    <if test="pi != null">AND (from_pi = #{pi} OR to_pi = #{pi})</if>
+    <if test="bill != null">AND (from_bill = #{bill} OR to_bill = #{bill})</if>
+    <if test="scope != null">
+      AND (id IN (SELECT x.transfer_id FROM sn_transfer_item x WHERE x.kind = 'BILL' AND
+        (x.from_factory <include refid="scopeIn"/> OR x.to_factory <include refid="scopeIn"/>))
+        OR to_factory <include refid="scopeIn"/>
+        OR from_bill IN (SELECT l.bill_no FROM sn_bill_ledger l WHERE l.org_code <include refid="scopeIn"/>))
+    </if>
+  </sql>
+  <select id="countOrg" resultType="long">SELECT COUNT(*) FROM sn_transfer <include refid="orgWhere"/></select>
+  <select id="pageOrg" resultType="map">
+    SELECT * FROM sn_transfer <include refid="orgWhere"/> ORDER BY id DESC LIMIT #{offset}, #{size}
+  </select>
+  <select id="countBill" resultType="long">SELECT COUNT(*) FROM sn_bill_transfer <include refid="billWhere"/></select>
+  <select id="pageBill" resultType="map">
+    SELECT * FROM sn_bill_transfer <include refid="billWhere"/> ORDER BY id DESC LIMIT #{offset}, #{size}
+  </select>
+  <sql id="allUnion">
+    <if test="org">
+      (SELECT 'ORG' kind, id, transfer_no, mode, status, scope, '' scope_text, from_factory, from_pi, from_bill,
+        from_material, from_sn, from_end_sn, to_factory, to_pi, to_bill, to_seq, to_material, to_customer, qty, reason,
+        applied_by created_by, applied_at created_at FROM sn_transfer <include refid="orgWhere"/>)
+    </if>
+    <if test="org and billKind">UNION ALL</if>
+    <if test="billKind">
+      (SELECT 'BILL' kind, id, transfer_no, mode, 'APPROVED' status, scope, scope_text, NULL from_factory, from_pi,
+        from_bill, '' from_material, '' from_sn, '' from_end_sn, to_factory, to_pi, to_bill, to_seq, to_material,
+        '' to_customer, qty, reason, created_by, created_at FROM sn_bill_transfer <include refid="billWhere"/>)
+    </if>
+  </sql>
+  <select id="countAll" resultType="long">SELECT COUNT(*) FROM (<include refid="allUnion"/>) u</select>
+  <select id="pageAll" resultType="map">
+    SELECT * FROM (<include refid="allUnion"/>) u ORDER BY created_at DESC, id DESC LIMIT #{offset}, #{size}
+  </select>
+  <select id="orgTransfer" resultType="map">SELECT * FROM sn_transfer WHERE id = #{id}</select>
+  <select id="billTransfer" resultType="map">SELECT * FROM sn_bill_transfer WHERE id = #{id}</select>
+  <select id="outBatches" resultType="map">
+    SELECT * FROM sn_delivery_batch WHERE transfer_doc_no = #{docNo} AND batch_type = 'TRANSFER_OUT' ORDER BY id
+  </select>
+  <select id="pushTargets" resultType="map">
+    SELECT i.factory_code, i.pi_no, COUNT(*) n, SUM(i.status = 'TO_PUSH') pending,
+      GROUP_CONCAT(DISTINCT i.delivery_batch_no) batches
+    FROM sn_transfer_item t JOIN sn_item i ON i.id = t.item_id
+    WHERE t.kind = #{kind} AND t.transfer_id = #{tid} AND i.transfer_doc_no = #{docNo}
+    GROUP BY i.factory_code, i.pi_no
+  </select>
+  <select id="billTransferOrgs" resultType="map">
+    SELECT GROUP_CONCAT(DISTINCT from_factory) f, GROUP_CONCAT(DISTINCT to_factory) t FROM sn_transfer_item
+    WHERE kind = 'BILL' AND transfer_id = #{tid}
+  </select>
+  <select id="countItems" resultType="long">
+    SELECT COUNT(*) FROM sn_transfer_item WHERE kind = #{kind} AND transfer_id = #{tid}
+  </select>
+  <select id="pageItems" resultType="map">
+    SELECT t.*, i.status cur_status, i.factory_code cur_factory, i.pi_no cur_pi, i.rule_version_id,
+      i.delivery_batch_no cur_batch, i.attach_no, i.length_text length
+    FROM sn_transfer_item t LEFT JOIN sn_item i ON i.id = t.item_id
+    WHERE t.kind = #{kind} AND t.transfer_id = #{tid} ORDER BY t.seq_pi_no, t.seq_dec LIMIT #{offset}, #{size}
+  </select>
+  <select id="outListChunk" resultType="map">
+    SELECT t.*, i.rule_version_id, i.attach_no, i.length_text FROM sn_transfer_item t
+    LEFT JOIN sn_item i ON i.id = t.item_id
+    WHERE t.kind = 'ORG' AND t.transfer_id = #{tid} AND t.item_id &gt; #{last} AND t.to_factory IS NOT NULL
+      AND t.to_factory &lt;&gt; t.from_factory ORDER BY t.item_id LIMIT 5000
+  </select>
+</mapper>
