@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.sn.mapper.QueryMapper">
+  <sql id="where">
+    WHERE 1=1
+    <choose>
+      <when test="f.allOfPi">AND i.factory_code IS NOT NULL</when>
+      <when test="f.scope != null">
+        <choose>
+          <when test="f.scope.isEmpty()">AND 1=0</when>
+          <otherwise>
+            AND (i.factory_code IN <foreach collection="f.scope" item="x" open="(" separator="," close=")">#{x}</foreach>
+              OR (i.factory_code IS NULL AND i.bill_no IN (SELECT l.bill_no FROM sn_bill_ledger l WHERE l.org_code IN
+                <foreach collection="f.scope" item="x" open="(" separator="," close=")">#{x}</foreach>)))
+          </otherwise>
+        </choose>
+      </when>
+    </choose>
+    <if test="f.customerCode != null">AND i.customer_code = #{f.customerCode}</if>
+    <if test="f.pi != null and f.rangePi == null">AND i.pi_no = #{f.pi}</if>
+    <if test="f.billNo != null">AND i.bill_no = #{f.billNo}</if>
+    <if test="f.length != null">AND i.length_text = #{f.length}</if>
+    <if test="f.sn != null">AND i.sn = #{f.sn}</if>
+    <if test="f.materialCode != null">AND i.material_code = #{f.materialCode}</if>
+    <choose>
+      <when test="f.status == 'SUSPENDED'">AND i.suspend IS NOT NULL</when>
+      <when test="f.status != null">AND i.status = #{f.status}</when>
+    </choose>
+    <if test="f.rangePi != null">
+      AND i.seq_pi_no = #{f.rangePi}
+      <if test="f.rangeLo != null">AND i.seq_dec &gt;= #{f.rangeLo}</if>
+      <if test="f.rangeHi != null">AND i.seq_dec &lt;= #{f.rangeHi}</if>
+    </if>
+  </sql>
+  <select id="piOwned" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_item WHERE pi_no = #{pi}
+      <choose>
+        <when test="scope.isEmpty()">AND 1=0</when>
+        <otherwise>AND factory_code IN <foreach collection="scope" item="x" open="(" separator="," close=")">#{x}</foreach></otherwise>
+      </choose>)
+  </select>
+  <select id="piVersions" resultType="long">
+    SELECT DISTINCT rule_version_id FROM sn_item WHERE seq_pi_no = #{pi} ORDER BY rule_version_id DESC
+  </select>
+  <select id="count" resultType="long">
+    SELECT COUNT(*) FROM (SELECT 1 FROM sn_item i <include refid="where"/> LIMIT #{cap}) c
+  </select>
+  <select id="page" resultType="map">
+    SELECT i.id, i.sn, i.rule_version_id, i.seq_dec, i.seq_pi_no, i.pi_no, i.bill_no, i.bill_seq, i.material_code,
+      i.length_text, i.customer_code, i.factory_code, i.status, i.suspend, i.created_at, i.attach_no
+    FROM sn_item i <include refid="where"/>
+    ORDER BY i.pi_no, TRIM(i.attach_no) = '', TRIM(i.attach_no) NOT REGEXP '^[0-9]+([.][0-9]+)?$',
+      CASE WHEN TRIM(i.attach_no) REGEXP '^[0-9]+([.][0-9]+)?$' THEN CAST(TRIM(i.attach_no) AS DECIMAL(65, 30)) ELSE 0 END,
+      TRIM(i.attach_no),
+    <choose>
+      <when test="f.rangePi != null">i.seq_pi_no, i.seq_dec, i.id</when>
+      <otherwise>i.bill_no, i.bill_seq, i.seq_pi_no, i.seq_dec, i.id</otherwise>
+    </choose>
+    LIMIT #{offset}, #{size}
+  </select>
+  <select id="rangeSummary" resultType="map">
+    SELECT i.status, COUNT(*) n FROM sn_item i <include refid="where"/> GROUP BY i.status
+  </select>
+  <select id="ledger" resultType="map">
+    SELECT bill_no, pi, org_code FROM sn_bill_ledger
+    WHERE bill_no IN <foreach collection="bills" item="b" open="(" separator="," close=")">#{b}</foreach>
+  </select>
+  <select id="snapshotPis" resultType="map">
+    SELECT DISTINCT bill_no, pi FROM sn_prd_mo
+    WHERE bill_no IN <foreach collection="bills" item="b" open="(" separator="," close=")">#{b}</foreach>
+  </select>
+  <select id="exportChunk" resultType="map">
+    SELECT i.id, i.sn, i.rule_version_id, i.seq_dec, i.seq_pi_no, COALESCE(i.factory_code, NULLIF(bl.org_code, '')) factory_code,
+      COALESCE(f.factory_name, NULLIF(bl.org_name, '')) factory_name, i.customer_code, i.pi_no, i.bill_no, i.bill_seq,
+      i.material_code, i.attach_no, i.length_text, i.status, i.delivery_mode, i.delivery_batch_no
+    FROM sn_item i LEFT JOIN sn_bill_ledger bl ON i.factory_code IS NULL AND bl.bill_no = i.bill_no
+      LEFT JOIN sn_factory f ON f.factory_code = COALESCE(i.factory_code, bl.org_code)
+    <include refid="where"/> AND i.id &gt; #{last} ORDER BY i.id LIMIT #{limit}
+  </select>
+</mapper>
