@@ -51,6 +51,21 @@ public final class DbErrors {
         return false;
     }
 
+    /** 数据库锁冲突：死锁、锁等待超时、连接池取不到连接（推送任务据此转为等待、稍后接着推）。 */
+    public static boolean isLockConflict(Throwable e) {
+        int code = errorCode(e);
+        if (code == ER_LOCK_DEADLOCK || code == ER_LOCK_WAIT_TIMEOUT) {
+            return true;
+        }
+        for (Throwable t = e; t != null; t = t.getCause()) {
+            if (t instanceof org.springframework.jdbc.CannotGetJdbcConnectionException
+                    || t instanceof java.sql.SQLTransientConnectionException) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** 执行 fn（其中自己开、自己提交事务），遇死锁稍等后整段重做，最多 attempts 次；只在没有外层事务时重做。 */
     public static <T> T retryDeadlock(Supplier<T> fn, int attempts, boolean independent) {
         for (int i = 0; ; i++) {

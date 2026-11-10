@@ -37,11 +37,9 @@ public interface WorkbenchMapper {
 
     LocalDateTime maxSynced();
 
-    List<Map<String, Object>> linesOfPi(
-            @Param("pi") String pi, @Param("scope") List<String> scope);
+    List<Map<String, Object>> linesOfPi(@Param("pi") String pi, @Param("scope") List<String> scope);
 
-    List<Map<String, Object>> itemLines(
-            @Param("pi") String pi, @Param("scope") List<String> scope);
+    List<Map<String, Object>> itemLines(@Param("pi") String pi, @Param("scope") List<String> scope);
 
     Map<String, Object> runningOfPi(@Param("pi") String pi);
 }

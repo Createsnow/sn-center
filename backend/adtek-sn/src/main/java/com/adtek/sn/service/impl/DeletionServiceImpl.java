@@ -30,8 +30,8 @@ import java.util.TreeSet;
 
 /**
  * 删号（原系统 app/services/deletion.py）：在一张 PI 下按单据、物料行，或单枚 / 一段 SN 删除号（状态不限），号从号池移除并存档；PI
- * 最大流水号不退回（留下空号段）；额度还给号现在挂的物料行；号所在的未确认或失败交付批次作废（其余的号回号池或当场重建批次）。与生成、分配、
- * 转移共用 PI 操作锁；只删本系统生成的号（导入的号不在范围内）。
+ * 最大流水号不退回（留下空号段）；额度还给号现在挂的物料行；号所在的未确认或失败交付批次作废（其余的号回号池或当场重建批次）。与生成、分配、 转移共用 PI
+ * 操作锁；只删本系统生成的号（导入的号不在范围内）。
  */
 @Service
 public class DeletionServiceImpl {
@@ -101,8 +101,7 @@ public class DeletionServiceImpl {
             tg.put("seqPi", R.s(s, "seq_pi_no"));
             tg.put("s", R.l(s, "seq_dec"));
             tg.put("e", R.l(e, "seq_dec"));
-            return new Target(
-                    tg, R.s(s, "bill_no") + "/" + R.i(s, "bill_seq") + " " + a + "~" + b);
+            return new Target(tg, R.s(s, "bill_no") + "/" + R.i(s, "bill_seq") + " " + a + "~" + b);
         }
         LinkedHashSet<String> nos = new LinkedHashSet<>();
         if (bills != null) {
@@ -235,7 +234,8 @@ public class DeletionServiceImpl {
                                 Set<String> held = new TreeSet<>(seqPis);
                                 held.add(pi);
                                 if (mapper.anyRunning(held)) {
-                                    throw Biz.err(SnErrorCode.GEN_BUSY, "pi", String.join("、", held));
+                                    throw Biz.err(
+                                            SnErrorCode.GEN_BUSY, "pi", String.join("、", held));
                                 }
                                 Map<String, Object> s = summary(tg);
                                 if (R.l(s, "qty") == 0) {
@@ -296,7 +296,9 @@ public class DeletionServiceImpl {
                                 }
                                 List<Map<String, Object>> sorted = new ArrayList<>(perLine);
                                 sorted.sort(
-                                        Comparator.comparing((Map<String, Object> x) -> R.s(x, "bill_no"))
+                                        Comparator.comparing(
+                                                        (Map<String, Object> x) ->
+                                                                R.s(x, "bill_no"))
                                                 .thenComparingInt(x -> R.i(x, "bill_seq")));
                                 for (Map<String, Object> r : sorted) {
                                     String st = R.sz(r, "st");

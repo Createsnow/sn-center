@@ -47,10 +47,10 @@ import java.util.regex.Pattern;
 /**
  * SN 生成（F-09，原系统 app/services/generate.py）。删号见 DeletionServiceImpl，分配见 AllocationServiceImpl。
  *
- * <p>在一张 PI 下整单（勾选单据）或按物料行生成；最小单位是物料行（整行额度一次生成）。排号顺序：单据按勾选先后，单据内按附件项次（按数字比）、
- * 项次相同按行号。流水来源：MAX 从 PI 最大号 + 1 起；RANGE 用手动起止号内的空闲流水，不够时从 max(最大号, 止号) + 1 接着编。必须先预演
- * （只对发起人有效、默认 30 分钟、只能用一次，条件变化即失效）；一次生成在一个事务里完成，撞号整次回滚；数量不大时当场完成，否则后台执行
- * （可取消）。生成、删号与分配共用 PI 操作锁；一个实例同时写号池的生成不超过 SN_GEN_CONCURRENCY；死锁整笔重做。
+ * <p>在一张 PI 下整单（勾选单据）或按物料行生成；最小单位是物料行（整行额度一次生成）。排号顺序：单据按勾选先后，单据内按附件项次（按数字比）、 项次相同按行号。流水来源：MAX 从 PI
+ * 最大号 + 1 起；RANGE 用手动起止号内的空闲流水，不够时从 max(最大号, 止号) + 1 接着编。必须先预演 （只对发起人有效、默认 30
+ * 分钟、只能用一次，条件变化即失效）；一次生成在一个事务里完成，撞号整次回滚；数量不大时当场完成，否则后台执行 （可取消）。生成、删号与分配共用 PI 操作锁；一个实例同时写号池的生成不超过
+ * SN_GEN_CONCURRENCY；死锁整笔重做。
  *
  * <p>预演与任务的计划以 JSON 文档保存（snake_case 键，与原系统相同，新旧版本可互读），返回给前端时转为 camelCase。
  */
@@ -75,18 +75,53 @@ public class GenerateServiceImpl implements RecurringTask {
     public static final long RECOVER_INTERVAL_SECONDS = 60;
     static final List<String> JOB_FIELDS =
             List.of(
-                    "id", "gen_batch", "pi_no", "scope", "qty", "start_seq_dec", "end_seq_dec",
-                    "start_sn", "end_sn", "status", "done_qty", "current_sn", "error_code",
-                    "error_msg", "created_by", "cancel_by", "cancel_at", "revoke_reason",
-                    "created_at", "started_at", "finished_at");
+                    "id",
+                    "gen_batch",
+                    "pi_no",
+                    "scope",
+                    "qty",
+                    "start_seq_dec",
+                    "end_seq_dec",
+                    "start_sn",
+                    "end_sn",
+                    "status",
+                    "done_qty",
+                    "current_sn",
+                    "error_code",
+                    "error_msg",
+                    "created_by",
+                    "cancel_by",
+                    "cancel_at",
+                    "revoke_reason",
+                    "created_at",
+                    "started_at",
+                    "finished_at");
     static final List<String> LINE_FIELDS =
             List.of(
-                    "bill_no", "seq", "material_code", "attach", "length", "unit", "qty",
-                    "start_sn", "end_sn", "rule_label");
+                    "bill_no",
+                    "seq",
+                    "material_code",
+                    "attach",
+                    "length",
+                    "unit",
+                    "qty",
+                    "start_sn",
+                    "end_sn",
+                    "rule_label");
     static final List<String> KEY_FIELDS =
             List.of(
-                    "bill_no", "seq", "qty", "start_seq", "end_seq", "start_sn", "end_sn",
-                    "rule_key", "rule_plan", "line_qty", "own_before", "segs");
+                    "bill_no",
+                    "seq",
+                    "qty",
+                    "start_seq",
+                    "end_seq",
+                    "start_sn",
+                    "end_sn",
+                    "rule_key",
+                    "rule_plan",
+                    "line_qty",
+                    "own_before",
+                    "segs");
     private static final Pattern ATTACH_NUM = Pattern.compile("^\\d+(\\.\\d+)?$");
 
     private final GenerateMapper mapper;
@@ -158,7 +193,10 @@ public class GenerateServiceImpl implements RecurringTask {
         if (segs instanceof List<?> l && !l.isEmpty()) {
             for (Object s : l) {
                 List<Object> p = (List<Object>) s;
-                out.add(new long[] {((Number) p.get(0)).longValue(), ((Number) p.get(1)).longValue()});
+                out.add(
+                        new long[] {
+                            ((Number) p.get(0)).longValue(), ((Number) p.get(1)).longValue()
+                        });
             }
             return out;
         }
@@ -314,7 +352,8 @@ public class GenerateServiceImpl implements RecurringTask {
     // ================================================================== 单据号段
 
     /** 各单据现有号的号段数与枚数（生成详情的单据头用）。 */
-    public Map<String, long[]> billSegmentCounts(String pi, List<String> billNos, List<String> scope) {
+    public Map<String, long[]> billSegmentCounts(
+            String pi, List<String> billNos, List<String> scope) {
         Map<String, long[]> out = new HashMap<>();
         if (billNos.isEmpty()) {
             return out;
@@ -581,8 +620,10 @@ public class GenerateServiceImpl implements RecurringTask {
             line.pi = R.s(r, "pi");
             line.qty = OrderServiceImpl.snQty(r);
             line.own = c == null ? 0 : R.l(c, "own_generated");
-            OrderServiceImpl.Effective len = OrderServiceImpl.effectiveLength(r, extras.lengths().get(key));
-            OrderServiceImpl.Effective unit = OrderServiceImpl.effectiveUnit(r, extras.units().get(key));
+            OrderServiceImpl.Effective len =
+                    OrderServiceImpl.effectiveLength(r, extras.lengths().get(key));
+            OrderServiceImpl.Effective unit =
+                    OrderServiceImpl.effectiveUnit(r, extras.units().get(key));
             line.length = len.value();
             line.lengthSource = len.source();
             line.unit = unit.value();
@@ -631,8 +672,17 @@ public class GenerateServiceImpl implements RecurringTask {
                         ? R.lo(line.res.version(), "id")
                         : null;
         String k =
-                spec.prefix() + "\u0000" + spec.base() + "\u0000" + spec.seqLen() + "\u0000"
-                        + spec.charset() + "\u0000" + line.pi + "\u0000" + own;
+                spec.prefix()
+                        + "\u0000"
+                        + spec.base()
+                        + "\u0000"
+                        + spec.seqLen()
+                        + "\u0000"
+                        + spec.charset()
+                        + "\u0000"
+                        + line.pi
+                        + "\u0000"
+                        + own;
         return memo.computeIfAbsent(k, x -> rules.prefixUsable(spec.prefix(), spec, line.pi, own));
     }
 
@@ -759,7 +809,8 @@ public class GenerateServiceImpl implements RecurringTask {
             return out;
         }
         if (quota > settings.genMaxPerRun()) {
-            throw Biz.err(SnErrorCode.GEN_QTY_OVER_MAX, "qty", quota, "max", settings.genMaxPerRun());
+            throw Biz.err(
+                    SnErrorCode.GEN_QTY_OVER_MAX, "qty", quota, "max", settings.genMaxPerRun());
         }
         Taker taker = taker(pi, base, seq);
         List<Map<String, Object>> items = items(out);
@@ -866,7 +917,8 @@ public class GenerateServiceImpl implements RecurringTask {
         }
         Map<String, Object> seq = seqChoice(seqMode, seqStart, seqEnd);
         List<String[]> keys = scopeKeys(pi, sc, bills, lines);
-        cu.checkWrite(orders.billOrgs(keys.stream().map(k -> k[0]).toList()).toArray(String[]::new));
+        cu.checkWrite(
+                orders.billOrgs(keys.stream().map(k -> k[0]).toList()).toArray(String[]::new));
         Map<String, Object> plan = plan(pi, sc, keys, lastSeq(pi), seq);
         Map<String, Object> gap = gapsOf(pi);
         Map<String, Object> out = new LinkedHashMap<>(plan);
@@ -1070,7 +1122,12 @@ public class GenerateServiceImpl implements RecurringTask {
                     },
                     DbErrors.DEADLOCK_ATTEMPTS,
                     false);
-            log.info("gen_done job={} pi={} qty={} attempts={}", jobId, R.s(j, "pi_no"), R.l(j, "qty"), attempt[0]);
+            log.info(
+                    "gen_done job={} pi={} qty={} attempts={}",
+                    jobId,
+                    R.s(j, "pi_no"),
+                    R.l(j, "qty"),
+                    attempt[0]);
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
             failJob(cu, j, plan, Biz.err(SnErrorCode.CONFLICT_RETRY), rethrow);
@@ -1102,7 +1159,9 @@ public class GenerateServiceImpl implements RecurringTask {
                 Util.cut(
                         e instanceof BusinessException be
                                 ? Biz.message(be)
-                                : (e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage()),
+                                : (e.getMessage() == null
+                                        ? e.getClass().getSimpleName()
+                                        : e.getMessage()),
                         1000);
         try {
             mapper.jobFailed(jobId, canceled ? CANCELED : FAILED, code, msg, Util.now());
@@ -1120,13 +1179,20 @@ public class GenerateServiceImpl implements RecurringTask {
                                 .bill(en.getKey())
                                 .factory(R.s(its.getFirst(), "org_code"))
                                 .count(its.stream().mapToLong(x -> R.l(x, "qty")).sum())
-                                .range(R.s(its.getFirst(), "start_sn"), R.s(its.getLast(), "end_sn"))
+                                .range(
+                                        R.s(its.getFirst(), "start_sn"),
+                                        R.s(its.getLast(), "end_sn"))
                                 .batch(R.s(j, "gen_batch"))
                                 .info("job=" + jobId));
             }
         }
         if (!(e instanceof BusinessException)) {
-            log.error("gen_failed job={} pi={} deadlock={}", jobId, R.s(j, "pi_no"), DbErrors.isDeadlock(e), e);
+            log.error(
+                    "gen_failed job={} pi={} deadlock={}",
+                    jobId,
+                    R.s(j, "pi_no"),
+                    DbErrors.isDeadlock(e),
+                    e);
         }
     }
 
@@ -1145,7 +1211,8 @@ public class GenerateServiceImpl implements RecurringTask {
         return mapper.lockCounter(pi);
     }
 
-    private Map<String, Object> lockLineCountRow(String bill, int seq, String material, LocalDateTime now) {
+    private Map<String, Object> lockLineCountRow(
+            String bill, int seq, String material, LocalDateTime now) {
         if (!mapper.lineCountExists(bill, seq)) {
             mapper.insertLineCount(bill, seq, material, now);
         }
@@ -1176,7 +1243,8 @@ public class GenerateServiceImpl implements RecurringTask {
         List<Map<String, Object>> items = items(plan);
         for (Map<String, Object> x : items) {
             Map<String, Object> lc =
-                    lockLineCountRow(R.s(x, "bill_no"), R.i(x, "seq"), R.s(x, "material_code"), now);
+                    lockLineCountRow(
+                            R.s(x, "bill_no"), R.i(x, "seq"), R.s(x, "material_code"), now);
             Map<String, Object> line = mapper.lineQty(R.s(x, "bill_no"), R.i(x, "seq"));
             if (line == null
                     || OrderServiceImpl.snQty(line) - R.l(lc, "own_generated") < R.l(x, "qty")) {
@@ -1240,10 +1308,18 @@ public class GenerateServiceImpl implements RecurringTask {
                     }
                     if (Util.ORIGIN_IMPORT.equals(R.s(hit, "origin"))) {
                         throw Biz.err(
-                                SnErrorCode.GEN_IMPORTED_SN, "sn", R.s(hit, "sn"), "pi", R.s(hit, "pi_no"));
+                                SnErrorCode.GEN_IMPORTED_SN,
+                                "sn",
+                                R.s(hit, "sn"),
+                                "pi",
+                                R.s(hit, "pi_no"));
                     }
                     throw Biz.err(
-                            SnErrorCode.GEN_DUPLICATE_SN, "sn", R.s(hit, "sn"), "pi", R.s(hit, "pi_no"));
+                            SnErrorCode.GEN_DUPLICATE_SN,
+                            "sn",
+                            R.s(hit, "sn"),
+                            "pi",
+                            R.s(hit, "pi_no"));
                 }
                 continueDeletedRev(sns);
                 billStats.touch(pi, R.s(x, "bill_no"));
@@ -1311,7 +1387,9 @@ public class GenerateServiceImpl implements RecurringTask {
     static String segsText(Map<String, Object> x) {
         Object sl = x.get("seg_list");
         List<Map<String, Object>> segs =
-                sl instanceof List<?> l && !l.isEmpty() ? (List<Map<String, Object>>) sl : oneSeg(x);
+                sl instanceof List<?> l && !l.isEmpty()
+                        ? (List<Map<String, Object>>) sl
+                        : oneSeg(x);
         List<String> out = new ArrayList<>();
         for (Map<String, Object> g : segs) {
             out.add(R.s(g, "start_sn") + "~" + R.s(g, "end_sn"));
@@ -1322,7 +1400,8 @@ public class GenerateServiceImpl implements RecurringTask {
     @SuppressWarnings("unchecked")
     private RuleServiceImpl.Resolved resolvedOf(String pi, Map<String, Object> x) {
         if (RuleServiceImpl.PLAN_NEW.equals(R.s(x, "rule_plan"))) {
-            return rules.customResolved(RuleServiceImpl.SRC_LINE, (Map<String, Object>) x.get("custom"));
+            return rules.customResolved(
+                    RuleServiceImpl.SRC_LINE, (Map<String, Object>) x.get("custom"));
         }
         Map<String, Object> rule = mapper.ruleLock(R.l(x, "rule_id"));
         if (rule == null) {
@@ -1418,7 +1497,9 @@ public class GenerateServiceImpl implements RecurringTask {
         Map<String, Object> j =
                 Util.blank(batch)
                         ? null
-                        : (lock ? mapper.jobByBatchLock(Util.trim(batch)) : mapper.jobByBatch(Util.trim(batch)));
+                        : (lock
+                                ? mapper.jobByBatchLock(Util.trim(batch))
+                                : mapper.jobByBatch(Util.trim(batch)));
         if (j == null) {
             throw Biz.err(SnErrorCode.GEN_JOB_NOT_FOUND);
         }
@@ -1480,7 +1561,9 @@ public class GenerateServiceImpl implements RecurringTask {
                 tx.run(
                         () -> {
                             Map<String, Object> j = jobByBatch(batch, true);
-                            cu.checkWrite(orgsOf(items(loads(R.s(j, "plan_json")))).toArray(String[]::new));
+                            cu.checkWrite(
+                                    orgsOf(items(loads(R.s(j, "plan_json"))))
+                                            .toArray(String[]::new));
                             if (!RUNNING.equals(R.s(j, "status"))) {
                                 throw Biz.err(SnErrorCode.GEN_CANCEL_NOT_RUNNING);
                             }

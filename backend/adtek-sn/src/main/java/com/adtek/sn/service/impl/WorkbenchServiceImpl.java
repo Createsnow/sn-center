@@ -83,13 +83,15 @@ public class WorkbenchServiceImpl {
         }
         for (Map<String, Object> r : mapper.itemStats(pis, scope, genOnly)) {
             Map<String, Long> m = new HashMap<>();
-            for (String k : List.of("pending", "allocated", "transferred_in", "unbatched", "suspended")) {
+            for (String k :
+                    List.of("pending", "allocated", "transferred_in", "unbatched", "suspended")) {
                 m.put(k, R.l(r, k));
             }
             out.put(R.s(r, "pi_no"), m);
         }
         for (Map<String, Object> r : mapper.interrupted(pis, scope)) {
-            out.computeIfAbsent(R.s(r, "pi_no"), k -> new HashMap<>()).put("interrupted", R.l(r, "n"));
+            out.computeIfAbsent(R.s(r, "pi_no"), k -> new HashMap<>())
+                    .put("interrupted", R.l(r, "n"));
         }
         for (Map<String, Object> r : mapper.activeTasks(pis, scope)) {
             out.computeIfAbsent(R.s(r, "task_key"), k -> new HashMap<>()).put("tasks", R.l(r, "n"));
@@ -141,7 +143,11 @@ public class WorkbenchServiceImpl {
             }
         }
         boolean needRule =
-                todo.stream().anyMatch(x -> x.issues.contains("NO_RULE") || x.issues.contains("RULE_PREFIX"));
+                todo.stream()
+                        .anyMatch(
+                                x ->
+                                        x.issues.contains("NO_RULE")
+                                                || x.issues.contains("RULE_PREFIX"));
         boolean cannot = !todo.isEmpty() && todo.stream().allMatch(x -> !x.issues.isEmpty());
         return new IssueSummary(needRule, cannot, reasons);
     }
@@ -152,7 +158,8 @@ public class WorkbenchServiceImpl {
         List<String> scope = cu.readFactories(null);
         String text = Util.trim(q);
         List<Map<String, Object>> rows =
-                mapper.piRows(text.isEmpty() ? null : Util.likeAny(text), byModify, scope, LIST_LIMIT);
+                mapper.piRows(
+                        text.isEmpty() ? null : Util.likeAny(text), byModify, scope, LIST_LIMIT);
         boolean capped = rows.size() >= LIST_LIMIT;
         List<String> names = rows.stream().map(r -> R.s(r, "pi")).toList();
         Map<String, Map<String, Long>> stats = itemStats(names, scope, true);
@@ -171,7 +178,8 @@ public class WorkbenchServiceImpl {
             long pending = s.getOrDefault("pending", 0L);
             boolean interrupted =
                     s.getOrDefault("interrupted", 0L) > 0
-                            || (s.getOrDefault("unbatched", 0L) > 0 && s.getOrDefault("tasks", 0L) == 0);
+                            || (s.getOrDefault("unbatched", 0L) > 0
+                                    && s.getOrDefault("tasks", 0L) == 0);
             String status = null;
             Map<String, Long> reasons = new LinkedHashMap<>();
             if (running.containsKey(pi)) {
@@ -179,7 +187,8 @@ public class WorkbenchServiceImpl {
             } else if (quota > 0 && i < DETAIL_ROWS) {
                 IssueSummary is = lineIssueSummary(pi, scope);
                 reasons = is.reasons();
-                status = is.cannot() && !is.needRule() ? CANNOT : (is.needRule() ? NEED_RULE : null);
+                status =
+                        is.cannot() && !is.needRule() ? CANNOT : (is.needRule() ? NEED_RULE : null);
             }
             if (status == null) {
                 if (interrupted) {
@@ -333,8 +342,12 @@ public class WorkbenchServiceImpl {
         Map<String, String[]> lineSn = new HashMap<>();
         for (Map<String, Object> r : mapper.itemLines(pi, scope)) {
             long[] pq = items.getOrDefault(R.s(r, "bill_no"), new long[2]);
-            items.put(R.s(r, "bill_no"), new long[] {pq[0] + R.l(r, "pending"), pq[1] + R.l(r, "to_push")});
-            lineSn.put(R.key(R.s(r, "bill_no"), R.i(r, "bill_seq")), new String[] {R.s(r, "a"), R.s(r, "b")});
+            items.put(
+                    R.s(r, "bill_no"),
+                    new long[] {pq[0] + R.l(r, "pending"), pq[1] + R.l(r, "to_push")});
+            lineSn.put(
+                    R.key(R.s(r, "bill_no"), R.i(r, "bill_seq")),
+                    new String[] {R.s(r, "a"), R.s(r, "b")});
         }
         for (Map<String, Object> b : bills.values()) {
             for (GenLineVO v : (List<GenLineVO>) b.get("lines")) {
@@ -371,7 +384,8 @@ public class WorkbenchServiceImpl {
         }
         Map<String, BillStateVO> states = changes.billStates(bills.keySet());
         Map<String, Object> gap = generate.gapsOf(pi);
-        Map<String, long[]> segCounts = generate.billSegmentCounts(pi, new ArrayList<>(bills.keySet()), scope);
+        Map<String, long[]> segCounts =
+                generate.billSegmentCounts(pi, new ArrayList<>(bills.keySet()), scope);
         Map<String, long[]> freeCounts = new HashMap<>();
         List<Map<String, Object>> freeSegs =
                 Boolean.TRUE.equals(gap.get("truncated"))
@@ -389,7 +403,15 @@ public class WorkbenchServiceImpl {
             long[] fc = freeCounts.getOrDefault(no, new long[2]);
             b.put(
                     "segments",
-                    R.of("use_count", uc[0], "use_qty", uc[1], "free_count", fc[0], "free_qty", fc[1]));
+                    R.of(
+                            "use_count",
+                            uc[0],
+                            "use_qty",
+                            uc[1],
+                            "free_count",
+                            fc[0],
+                            "free_qty",
+                            fc[1]));
             b.put("modify_time", OrderServiceImpl.k3Time(mts.get(no)));
             b.put("state", states.getOrDefault(no, BillStateVO.empty()));
             long[] pq = items.get(no);
@@ -412,8 +434,7 @@ public class WorkbenchServiceImpl {
         List<Map<String, Object>> billList = new ArrayList<>(bills.values());
         billList.sort(
                 Comparator.comparing((Map<String, Object> x) -> mts.get(R.s(x, "bill_no")) != null)
-                        .thenComparing(
-                                x -> mts.getOrDefault(R.s(x, "bill_no"), LocalDateTime.MIN))
+                        .thenComparing(x -> mts.getOrDefault(R.s(x, "bill_no"), LocalDateTime.MIN))
                         .thenComparing(x -> R.s(x, "bill_no"))
                         .reversed());
         Map<String, Object> summary = new LinkedHashMap<>();
@@ -433,7 +454,9 @@ public class WorkbenchServiceImpl {
         out.put("rule_options", rules.optionsFor(pi, customer, scope));
         out.put("rule_prefix", rules.piPrefix(pi));
         out.put("limits", generate.limits());
-        out.put("running_job", running == null ? null : generate.progress(null, R.s(running, "gen_batch")));
+        out.put(
+                "running_job",
+                running == null ? null : generate.progress(null, R.s(running, "gen_batch")));
         out.put("jobs", generate.jobs(pi, 20, scope));
         out.put("gaps", gap);
         return Camel.map(out);

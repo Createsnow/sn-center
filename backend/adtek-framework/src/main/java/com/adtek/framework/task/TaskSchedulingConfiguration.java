@@ -40,8 +40,8 @@ public class TaskSchedulingConfiguration {
     @Bean(destroyMethod = "shutdown")
     ThreadPoolTaskExecutor adtekBackgroundExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(8);
-        executor.setMaxPoolSize(8);
+        executor.setCorePoolSize(16);
+        executor.setMaxPoolSize(16);
         executor.setQueueCapacity(1000);
         executor.setThreadNamePrefix("adtek-bg-");
         // 停机时等后台任务（如生成）尽量跑完

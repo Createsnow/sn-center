@@ -54,7 +54,8 @@ public class GenerateFacadeServiceImpl implements GenerateService {
     @Override
     public Map<String, Object> preview(GenPreviewDTO b) {
         return Camel.map(
-                generate.preview(cu(), b.piNo, b.scope, b.bills, b.lines, b.seqMode, b.seqStart, b.seqEnd));
+                generate.preview(
+                        cu(), b.piNo, b.scope, b.bills, b.lines, b.seqMode, b.seqStart, b.seqEnd));
     }
 
     @Override
@@ -77,7 +78,8 @@ public class GenerateFacadeServiceImpl implements GenerateService {
             Integer page,
             Integer size,
             Integer billSeq) {
-        return Camel.map(generate.segmentSns(cu(), pi, billNo, seqPi, start, end, page, size, billSeq));
+        return Camel.map(
+                generate.segmentSns(cu(), pi, billNo, seqPi, start, end, page, size, billSeq));
     }
 
     @Override
@@ -108,7 +110,8 @@ public class GenerateFacadeServiceImpl implements GenerateService {
 
     @Override
     public Map<String, Object> delete(GenDeleteDTO b) {
-        return Camel.map(deletion.delete(cu(), b.piNo, b.bills, b.lines, b.startSn, b.endSn, b.reason));
+        return Camel.map(
+                deletion.delete(cu(), b.piNo, b.bills, b.lines, b.startSn, b.endSn, b.reason));
     }
 
     @Override

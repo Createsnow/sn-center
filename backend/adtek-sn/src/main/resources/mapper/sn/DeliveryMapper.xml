@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.sn.mapper.DeliveryMapper">
+  <!-- 号池中号的批次类型：转移时原组织 MES 已持有的按前后组织分同组织转移 / 跨组织转入；改挂为 REMAP；其余 NEW -->
+  <sql id="typeSql">
+    (CASE WHEN transfer_from_org IS NOT NULL THEN IF(transfer_from_org = factory_code, 'SAME_ORG_TRANSFER',
+      'TRANSFER_IN') WHEN push_type = 'REASSIGN' THEN 'REMAP' ELSE 'NEW' END)
+  </sql>
+  <!-- 号池：待推送、未入批、未暂停（按组织 + PI） -->
+  <sql id="pool">
+    pi_no = #{pi} AND factory_code = #{org} AND status = 'TO_PUSH' AND suspend IS NULL AND delivery_batch_no IS NULL
+  </sql>
+  <sql id="claimCols">
+    id, sn, rev, push_type, pi_no, bill_no, bill_seq, material_code, customer_code, seq_pi_no, seq_dec,
+    length_text, attach_no, rule_version_id, transfer_from_org
+  </sql>
+  <sql id="factoryScope">
+    <if test="scope != null">
+      <choose>
+        <when test="scope.isEmpty()">AND 1=0</when>
+        <otherwise>AND factory_code IN <foreach collection="scope" item="f" open="(" separator="," close=")">#{f}</foreach></otherwise>
+      </choose>
+    </if>
+  </sql>
+
+  <!-- ================================================================== 批次 -->
+  <select id="batch" resultType="map">SELECT * FROM sn_delivery_batch WHERE batch_no = #{batchNo}</select>
+  <select id="batchLock" resultType="map">SELECT * FROM sn_delivery_batch WHERE batch_no = #{batchNo} FOR UPDATE</select>
+  <select id="batchById" resultType="map">SELECT * FROM sn_delivery_batch WHERE id = #{id}</select>
+  <select id="seqExists" resultType="boolean">SELECT EXISTS(SELECT 1 FROM sn_seq WHERE name = #{name})</select>
+  <insert id="seqInsert">INSERT IGNORE INTO sn_seq(name, val) VALUES (#{name}, 0)</insert>
+  <update id="seqBump">UPDATE sn_seq SET val = val + 1 WHERE name = #{name}</update>
+  <select id="seqValue" resultType="long">SELECT val FROM sn_seq WHERE name = #{name}</select>
+  <select id="seqLock" resultType="long">SELECT val FROM sn_seq WHERE name = #{name} FOR UPDATE</select>
+  <insert id="insertBatch" useGeneratedKeys="true" keyProperty="entity.id">
+    INSERT INTO sn_delivery_batch(batch_no, source, batch_type, factory_code, pi_no, qty, items_digest, body_gz,
+      result, transfer_kind, transfer_doc_no, rebuilt_from, created_by, created_at, updated_at)
+    VALUES (#{entity.batchNo}, #{entity.source}, #{entity.batchType}, #{entity.factoryCode}, #{entity.piNo},
+      #{entity.qty}, #{entity.itemsDigest}, #{entity.bodyGz}, 'UNCONFIRMED', #{entity.transferKind},
+      #{entity.transferDocNo}, #{entity.rebuiltFrom}, #{entity.createdBy}, #{entity.createdAt}, #{entity.createdAt})
+  </insert>
+  <insert id="insertItems">
+    INSERT INTO sn_delivery_item(batch_id, line_no, item_id, sn, rev, push_type, pi_no, bill_no, bill_seq,
+      material_code, customer_code, seq_pi_no, seq_dec, to_factory) VALUES
+    <foreach collection="rows" item="r" separator=",">
+      (#{batchId}, #{r.line_no}, #{r.item_id}, #{r.sn}, #{r.rev}, #{r.push_type}, #{r.pi_no}, #{r.bill_no},
+       #{r.bill_seq}, #{r.material_code}, #{r.customer_code}, #{r.seq_pi_no}, #{r.seq_dec}, #{r.to_factory})
+    </foreach>
+  </insert>
+  <select id="claim" resultType="map">
+    SELECT <include refid="claimCols"/> FROM sn_item WHERE <include refid="pool"/>
+    <if test="bill != null">AND bill_no = #{bill}</if>
+    <if test="btype != null">AND <include refid="typeSql"/> = #{btype}</if>
+    <if test="imported != null">
+      <choose><when test="imported">AND seq_pi_no = ''</when><otherwise>AND NOT seq_pi_no = ''</otherwise></choose>
+    </if>
+    ORDER BY seq_pi_no, seq_dec LIMIT #{limit} FOR UPDATE SKIP LOCKED
+  </select>
+  <select id="poolGroups" resultType="map">
+    SELECT <include refid="typeSql"/> t, seq_pi_no = '' imp, COUNT(*) n, MIN(seq_pi_no) p, MIN(seq_dec) d
+    FROM sn_item WHERE <include refid="pool"/>
+    <if test="bill != null">AND bill_no = #{bill}</if>
+    GROUP BY t, imp ORDER BY imp, p, d
+  </select>
+  <update id="assignBatch">
+    UPDATE sn_item SET delivery_batch_no = #{batchNo}, updated_at = #{now}
+    WHERE id IN <foreach collection="ids" item="i" open="(" separator="," close=")">#{i}</foreach>
+      AND status = 'TO_PUSH' AND delivery_batch_no IS NULL
+  </update>
+  <select id="lockPoolIds" resultType="map">
+    SELECT <include refid="claimCols"/> FROM sn_item
+    WHERE id IN <foreach collection="ids" item="i" open="(" separator="," close=")">#{i}</foreach>
+      AND <include refid="pool"/> FOR UPDATE
+  </select>
+
+  <select id="importDetails" resultType="map">
+    SELECT id, pi_no, bill_seq, cur_bill_seq, serial_text, seq_base, seq_len, seq_dec, unit FROM sn_import_item
+    WHERE id IN <foreach collection="ids" item="i" open="(" separator="," close=")">#{i}</foreach>
+  </select>
+
+  <!-- ================================================================== 回执 -->
+  <insert id="insertReceipt">
+    INSERT INTO sn_delivery_receipt(batch_id, method, outcome, verdict, detail, body_gz, created_by, created_at)
+    VALUES (#{batchId}, #{method}, #{outcome}, #{verdict}, #{detail}, #{body}, #{by}, #{now})
+  </insert>
+  <update id="markFailed">
+    UPDATE sn_delivery_batch SET result = 'FAILED', fail_code = #{code}, fail_reason = #{reason}, voidable = #{voidable},
+      push_state = 'IDLE', next_retry_at = NULL, updated_at = #{now}
+    WHERE id = #{id}
+  </update>
+  <update id="acceptItems">UPDATE sn_delivery_item SET receipt_result = 'ACCEPTED' WHERE batch_id = #{batchId}</update>
+  <update id="confirmBatch">
+    UPDATE sn_delivery_batch SET result = 'SUCCESS', confirm_method = #{method}, confirmed_at = #{now},
+      accepted_qty = #{accepted}, push_state = 'IDLE', next_retry_at = NULL, updated_at = #{now}
+    WHERE id = #{id}
+  </update>
+  <update id="itemsPushed">
+    UPDATE sn_item SET status = 'PUSHED', mes_holder = #{org}, delivery_mode = #{mode}, push_type = 'NEW',
+      delivered_at = #{now}, updated_at = #{now}
+    WHERE delivery_batch_no = #{batchNo} AND status = 'TO_PUSH'
+  </update>
+  <update id="clearHolder">
+    UPDATE sn_item i JOIN sn_delivery_item d ON d.item_id = i.id SET i.mes_holder = NULL, i.updated_at = #{now}
+    WHERE d.batch_id = #{batchId} AND i.mes_holder = #{org}
+  </update>
+  <update id="wakeTask">
+    UPDATE sn_push_task SET state = 'QUEUED', run_after = NULL, updated_at = #{now}
+    WHERE factory_code = #{org} AND task_key = #{key}
+      AND ((state = 'WAITING' AND current_batch = #{batchNo})<if test="resume"> OR state = 'STOPPED'</if>)
+  </update>
+
+  <!-- ================================================================== 人工处理 -->
+  <update id="setManual">
+    UPDATE sn_delivery_batch SET manual_reason = #{reason}, manual_basis = #{basis}, manual_by = #{by}, manual_at = #{now}
+    WHERE id = #{id}
+  </update>
+  <update id="voidBatch">
+    UPDATE sn_delivery_batch SET result = 'VOIDED', push_state = 'IDLE', next_retry_at = NULL, manual_reason = #{reason},
+      manual_basis = #{basis}, manual_by = #{by}, manual_at = #{now}, updated_at = #{now}
+    WHERE id = #{id}
+  </update>
+  <select id="billsOfBatch" resultType="string">
+    SELECT DISTINCT bill_no FROM sn_item WHERE delivery_batch_no = #{batchNo}
+  </select>
+  <select id="lockBatchIds" resultType="long">
+    SELECT id FROM sn_item WHERE delivery_batch_no = #{batchNo} AND status = 'TO_PUSH' FOR UPDATE
+  </select>
+  <update id="unbatch">
+    UPDATE sn_item SET delivery_batch_no = NULL, updated_at = #{now} WHERE delivery_batch_no = #{batchNo}
+      AND status = 'TO_PUSH'
+  </update>
+  <update id="setRebuiltTo">UPDATE sn_delivery_batch SET rebuilt_to = #{to} WHERE id = #{id}</update>
+  <select id="outEntries" resultType="map">
+    SELECT d.item_id, d.sn, d.rev, d.pi_no, d.bill_no, d.bill_seq, d.material_code, d.customer_code, d.seq_pi_no,
+      d.seq_dec, d.to_factory, i.length_text, i.attach_no, i.rule_version_id
+    FROM sn_delivery_item d JOIN sn_item i ON i.id = d.item_id WHERE d.batch_id = #{batchId} ORDER BY d.line_no
+  </select>
+  <update id="moveOutBatch">
+    UPDATE sn_transfer_item SET out_batch_no = #{to} WHERE out_batch_no = #{from}
+  </update>
+  <select id="alertLock" resultType="map">SELECT * FROM sn_delivery_alert WHERE id = #{id} FOR UPDATE</select>
+  <update id="closeAlert">
+    UPDATE sn_delivery_alert SET status = 'CLOSED', closed_by = #{by}, closed_at = #{now}, note = #{note} WHERE id = #{id}
+  </update>
+  <select id="frozenByTransferOut" resultType="long">
+    SELECT d.item_id FROM sn_delivery_item d JOIN sn_delivery_batch b ON b.id = d.batch_id
+    WHERE d.item_id IN <foreach collection="ids" item="i" open="(" separator="," close=")">#{i}</foreach>
+      AND b.batch_type = 'TRANSFER_OUT' AND b.result IN ('UNCONFIRMED','FAILED')
+  </select>
+  <select id="countAlerts" resultType="long">
+    SELECT COUNT(*) FROM sn_delivery_alert WHERE 1=1 <if test="status != null">AND status = #{status}</if>
+    <include refid="factoryScope"/>
+  </select>
+  <select id="pageAlerts" resultType="map">
+    SELECT * FROM sn_delivery_alert WHERE 1=1 <if test="status != null">AND status = #{status}</if>
+    <include refid="factoryScope"/>
+    ORDER BY id DESC LIMIT #{offset}, #{size}
+  </select>
+
+  <!-- ================================================================== 推送任务 -->
+  <select id="taskExists" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_push_task WHERE factory_code = #{org} AND task_key = #{key})
+  </select>
+  <insert id="taskInsertIgnore">
+    INSERT IGNORE INTO sn_push_task(factory_code, task_key, state, resend, started_by, started_at, updated_at)
+    VALUES (#{org}, #{key}, 'QUEUED', #{resend}, #{by}, #{now}, #{now})
+  </insert>
+  <insert id="taskInsert">
+    INSERT INTO sn_push_task(factory_code, task_key, state, resend, started_by, started_at, updated_at)
+    VALUES (#{org}, #{key}, 'QUEUED', #{resend}, #{by}, #{now}, #{now})
+  </insert>
+  <select id="taskLock" resultType="map">
+    SELECT * FROM sn_push_task WHERE factory_code = #{org} AND task_key = #{key} FOR UPDATE
+  </select>
+  <select id="task" resultType="map">SELECT * FROM sn_push_task WHERE factory_code = #{org} AND task_key = #{key}</select>
+  <update id="taskRequeue">
+    UPDATE sn_push_task SET requeue = 1, resend = resend OR #{resend}, updated_at = #{now}
+    WHERE factory_code = #{org} AND task_key = #{key}
+  </update>
+  <update id="taskQueue">
+    UPDATE sn_push_task SET state = 'QUEUED', run_after = NULL, resend = #{resend}, requeue = 0, message = '',
+      started_by = #{by}, started_at = #{now}, updated_at = #{now}
+    WHERE factory_code = #{org} AND task_key = #{key}
+  </update>
+  <sql id="batchCond">
+    <choose>
+      <when test="key == '#XO'">AND batch_type = 'TRANSFER_OUT'</when>
+      <otherwise>AND batch_type &lt;&gt; 'TRANSFER_OUT' AND pi_no = #{key}</otherwise>
+    </choose>
+  </sql>
+  <update id="resetForResume">
+    UPDATE sn_delivery_batch SET retry_count = 0, receipt_timeouts = 0, push_state = 'IDLE', next_retry_at = NULL,
+      repush_count = repush_count + 1, updated_at = #{now}
+    WHERE factory_code = #{org} <include refid="batchCond"/> AND result IN ('UNCONFIRMED','FAILED')
+  </update>
+  <select id="openBatchCount" resultType="long">
+    SELECT COUNT(*) FROM sn_delivery_batch WHERE factory_code = #{org} <include refid="batchCond"/>
+      AND result IN ('UNCONFIRMED','FAILED')
+  </select>
+  <select id="kickTargets" resultType="map">
+    SELECT DISTINCT factory_code, pi_no FROM sn_item WHERE bill_no = #{billNo} AND status = 'TO_PUSH'
+      AND delivery_batch_no IS NULL AND suspend IS NULL
+  </select>
+  <select id="runnableTasks" resultType="map">
+    SELECT t.*, f.push_concurrency FROM sn_push_task t JOIN sn_factory f ON f.factory_code = t.factory_code
+    WHERE t.state = 'QUEUED' OR (t.state = 'WAITING' AND t.run_after &lt;= #{now})
+      OR (t.state = 'RUNNING' AND t.lease_until &lt; #{now})
+    ORDER BY t.updated_at LIMIT 50
+  </select>
+  <select id="busyOrg" resultType="long">
+    SELECT COUNT(*) FROM sn_push_task WHERE factory_code = #{org} AND state = 'RUNNING' AND lease_until &gt;= #{now}
+  </select>
+  <select id="keyRunning" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_push_task WHERE task_key = #{key} AND state = 'RUNNING' AND lease_until &gt;= #{now})
+  </select>
+  <update id="claimTask">
+    UPDATE sn_push_task SET state = 'RUNNING', lease_until = #{lease}, runner = #{runner}, requeue = 0, updated_at = #{now}
+    WHERE factory_code = #{org} AND task_key = #{key} AND state = #{state} AND updated_at = #{updatedAt}
+  </update>
+  <update id="renewTask">
+    UPDATE sn_push_task SET lease_until = #{lease}, current_batch = #{batchNo}, updated_at = #{now}
+    WHERE factory_code = #{org} AND task_key = #{key} AND state = 'RUNNING'
+  </update>
+  <update id="extendLease">
+    UPDATE sn_push_task SET lease_until = #{lease}
+    WHERE factory_code = #{org} AND task_key = #{key} AND state = 'RUNNING' AND runner = #{runner}
+  </update>
+  <select id="taskRequeueFlag" resultType="map">
+    SELECT requeue FROM sn_push_task WHERE factory_code = #{org} AND task_key = #{key} FOR UPDATE
+  </select>
+  <update id="endTask">
+    UPDATE sn_push_task SET state = #{state}, run_after = #{runAfter}, lease_until = NULL, current_batch = #{batchNo},
+      message = #{message}, requeue = 0, resend = IF(#{state} IN ('DONE','STOPPED'), 0, resend), updated_at = #{now}
+    WHERE factory_code = #{org} AND task_key = #{key}
+  </update>
+  <select id="pendingBatches" resultType="map">
+    SELECT * FROM sn_delivery_batch WHERE factory_code = #{org} <include refid="batchCond"/>
+      AND result IN ('UNCONFIRMED','FAILED') ORDER BY created_at, id
+  </select>
+  <update id="receiptTimeoutResend">
+    UPDATE sn_delivery_batch SET receipt_timeouts = receipt_timeouts + 1, push_state = 'IDLE', next_retry_at = NULL,
+      fail_code = 'RECEIPT_TIMEOUT', fail_reason = #{reason}, updated_at = #{now}
+    WHERE id = #{id}
+  </update>
+  <update id="receiptTimeoutExhausted">
+    UPDATE sn_delivery_batch SET push_state = 'EXHAUSTED', next_retry_at = NULL, fail_code = 'RECEIPT_TIMEOUT',
+      fail_reason = #{reason}, updated_at = #{now}
+    WHERE id = #{id}
+  </update>
+  <select id="otherDelivered" resultType="long">
+    SELECT COUNT(*) FROM sn_item WHERE pi_no = #{pi} AND factory_code = #{org} AND status IN ('TO_PUSH','PUSHED')
+      AND delivery_mode IN ('PULL','PAGE')
+  </select>
+  <select id="sentBatches" resultType="long">
+    SELECT COUNT(*) FROM sn_delivery_batch WHERE factory_code = #{org} <include refid="batchCond"/>
+      AND result = 'SUCCESS' AND source = 'PUSH'
+  </select>
+  <select id="lastReceiptId" resultType="long">
+    SELECT COALESCE(MAX(id), 0) FROM sn_delivery_receipt WHERE batch_id = #{batchId}
+  </select>
+  <update id="countPush">
+    UPDATE sn_delivery_batch SET push_count = push_count + 1, last_push_at = #{now}, updated_at = #{now} WHERE id = #{id}
+  </update>
+  <select id="receiptAfter" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_delivery_receipt WHERE batch_id = #{batchId} AND id &gt; #{seen})
+  </select>
+  <update id="waitReceipt">
+    UPDATE sn_delivery_batch SET result = 'UNCONFIRMED', voidable = 0, push_state = 'WAIT_RECEIPT',
+      next_retry_at = #{next}, received_at = #{now}, updated_at = #{now}
+    WHERE id = #{id}
+  </update>
+  <update id="factoryCfgOk">
+    UPDATE sn_factory SET cfg_status = 'OK', cfg_message = '' WHERE factory_code = #{org}
+  </update>
+  <update id="factoryCfgFailed">
+    UPDATE sn_factory SET cfg_status = 'FAILED', cfg_message = #{message} WHERE factory_code = #{org}
+  </update>
+  <update id="waitRetry">
+    UPDATE sn_delivery_batch SET retry_count = retry_count + 1, push_state = 'WAIT_RETRY', next_retry_at = #{next},
+      fail_code = #{code}, fail_reason = #{reason}, updated_at = #{now}
+    WHERE id = #{id}
+  </update>
+  <update id="retryExhausted">
+    UPDATE sn_delivery_batch SET push_state = 'EXHAUSTED', next_retry_at = NULL, fail_code = #{code},
+      fail_reason = #{reason}, updated_at = #{now}
+    WHERE id = #{id}
+  </update>
+
+  <!-- ================================================================== MES 拉取与只读 -->
+  <insert id="rateBump">
+    INSERT INTO sn_rate_counter(rkey, win, n) VALUES (#{key}, #{win}, 1) ON DUPLICATE KEY UPDATE n = n + 1
+  </insert>
+  <select id="rateValue" resultType="long">SELECT n FROM sn_rate_counter WHERE rkey = #{key} AND win = #{win}</select>
+  <!-- 范围内符合条件的交付批次与转出批次；cond：PENDING / PENDING_SCOPED / FAILED_PULLED -->
+  <sql id="condSql">
+    <choose>
+      <when test="cond == 'PENDING'">(b.result = 'UNCONFIRMED' OR (b.result = 'FAILED' AND b.pulled_at IS NULL))</when>
+      <when test="cond == 'PENDING_SCOPED'">b.result IN ('UNCONFIRMED','FAILED')</when>
+      <otherwise>b.result = 'FAILED' AND b.pulled_at IS NOT NULL</otherwise>
+    </choose>
+  </sql>
+  <sql id="inScope">
+    <if test="mes">
+      SELECT b.* FROM sn_delivery_batch b WHERE b.factory_code = #{org} AND b.batch_type &lt;&gt; 'TRANSFER_OUT'
+        AND <include refid="condSql"/>
+        <if test="pi != null">AND b.pi_no = #{pi}</if>
+        <if test="bill != null">AND EXISTS(SELECT 1 FROM sn_delivery_item d WHERE d.batch_id = b.id AND d.bill_no = #{bill})</if>
+        <if test="exclude != null">AND b.id &lt;&gt; #{exclude}</if>
+      UNION ALL
+    </if>
+    SELECT b.* FROM sn_delivery_batch b WHERE b.factory_code = #{org} AND b.batch_type = 'TRANSFER_OUT'
+      AND <include refid="condSql"/>
+      <if test="pi != null and bill != null">
+        AND EXISTS(SELECT 1 FROM sn_delivery_item d WHERE d.batch_id = b.id AND d.pi_no = #{pi} AND d.bill_no = #{bill})
+      </if>
+      <if test="pi != null and bill == null">
+        AND EXISTS(SELECT 1 FROM sn_delivery_item d WHERE d.batch_id = b.id AND d.pi_no = #{pi})
+      </if>
+      <if test="pi == null and bill != null">
+        AND EXISTS(SELECT 1 FROM sn_delivery_item d WHERE d.batch_id = b.id AND d.bill_no = #{bill})
+      </if>
+      <if test="exclude != null">AND b.id &lt;&gt; #{exclude}</if>
+  </sql>
+  <select id="firstInScope" resultType="map">
+    SELECT * FROM (<include refid="inScope"/>) t
+    <choose>
+      <when test="byPulled">ORDER BY pulled_at, created_at, id</when>
+      <otherwise>ORDER BY created_at, id</otherwise>
+    </choose>
+    LIMIT 1
+  </select>
+  <select id="qtyInScope" resultType="long">
+    SELECT COALESCE(SUM(qty), 0) FROM (<include refid="inScope"/>) t
+  </select>
+  <select id="unbatchedCount" resultType="long">
+    SELECT COUNT(*) FROM sn_item WHERE factory_code = #{org} AND status = 'TO_PUSH' AND suspend IS NULL
+      AND delivery_batch_no IS NULL
+      AND pi_no NOT IN (SELECT pi_no FROM sn_delivery_batch WHERE factory_code = #{org}
+        AND batch_type &lt;&gt; 'TRANSFER_OUT' AND result = 'FAILED' AND pulled_at IS NOT NULL AND id &lt;&gt; #{firstTry})
+      <if test="pi != null">AND pi_no = #{pi}</if>
+      <if test="bill != null">AND bill_no = #{bill}</if>
+  </select>
+  <select id="pausedCount" resultType="long">
+    SELECT COUNT(*) FROM sn_item WHERE factory_code = #{org} AND status = 'TO_PUSH' AND suspend IS NOT NULL
+      AND delivery_batch_no IS NULL
+      <if test="pi != null">AND pi_no = #{pi}</if>
+      <if test="bill != null">AND bill_no = #{bill}</if>
+  </select>
+  <select id="piHasItems" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_item WHERE pi_no = #{pi} AND factory_code = #{org})
+  </select>
+  <select id="piHasTransferOut" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_delivery_batch b JOIN sn_delivery_item d ON d.batch_id = b.id
+      WHERE b.factory_code = #{org} AND b.batch_type = 'TRANSFER_OUT' AND d.pi_no = #{pi})
+  </select>
+  <select id="firstPoolPi" resultType="string">
+    SELECT pi_no FROM sn_item WHERE factory_code = #{org} AND status = 'TO_PUSH' AND suspend IS NULL
+      AND delivery_batch_no IS NULL
+      AND pi_no NOT IN (SELECT pi_no FROM sn_delivery_batch WHERE factory_code = #{org}
+        AND batch_type &lt;&gt; 'TRANSFER_OUT' AND result = 'FAILED')
+      <if test="bill != null">AND bill_no = #{bill}</if>
+    ORDER BY seq_pi_no, seq_dec LIMIT 1
+  </select>
+  <select id="blockingFailed" resultType="map">
+    SELECT * FROM sn_delivery_batch WHERE factory_code = #{org} AND pi_no = #{pi} AND batch_type &lt;&gt; 'TRANSFER_OUT'
+      AND result = 'FAILED' ORDER BY created_at, id LIMIT 1
+  </select>
+  <update id="markPulled">UPDATE sn_delivery_batch SET pulled_at = #{now} WHERE id = #{id}</update>
+  <sql id="readCols">
+    id, sn, rev, status, factory_code, pi_no, bill_no, bill_seq, material_code, customer_code, seq_pi_no, seq_dec,
+    length_text, attach_no, rule_version_id, delivery_batch_no, delivered_at
+  </sql>
+  <select id="readDelivered" resultType="map">
+    SELECT <include refid="readCols"/> FROM sn_item WHERE factory_code = #{org}
+      <choose>
+        <when test="holder">AND mes_holder = #{org}</when>
+        <otherwise>AND status &lt;&gt; 'PENDING_ALLOC'</otherwise>
+      </choose>
+      <if test="pi != null">AND pi_no = #{pi}</if>
+      AND id &gt; #{cursor} ORDER BY id LIMIT #{limit}
+  </select>
+  <select id="readBatchItems" resultType="map">
+    SELECT <include refid="readCols"/> FROM sn_item WHERE delivery_batch_no = #{batchNo} AND factory_code = #{org}
+      AND id &gt; #{cursor} ORDER BY id LIMIT #{limit}
+  </select>
+
+  <!-- ================================================================== 页面查询 -->
+  <sql id="batchListWhere">
+    WHERE 1=1 <include refid="factoryScope"/>
+    <if test="delivery">AND batch_type &lt;&gt; 'TRANSFER_OUT'</if>
+    <if test="pi != null">AND pi_no = #{pi}</if>
+    <if test="batchNo != null">AND batch_no = #{batchNo}</if>
+    <if test="source != null">AND source = #{source}</if>
+    <if test="batchType != null">AND batch_type = #{batchType}</if>
+    <if test="result != null">AND result = #{result}</if>
+    <if test="transferNo != null">AND transfer_doc_no = #{transferNo}</if>
+  </sql>
+  <sql id="batchFields">
+    id, batch_no, source, batch_type, factory_code, pi_no, qty, items_digest, result, confirm_method, confirmed_at,
+    fail_code, fail_reason, voidable, accepted_qty, push_state, retry_count, receipt_timeouts, next_retry_at,
+    received_at, push_count, repush_count, last_push_at, pulled_at, transfer_kind, transfer_doc_no, rebuilt_from,
+    rebuilt_to, manual_reason, manual_basis, manual_by, manual_at, created_by, created_at
+  </sql>
+  <select id="countBatches" resultType="long">
+    SELECT COUNT(*) FROM sn_delivery_batch <include refid="batchListWhere"/>
+  </select>
+  <select id="pageBatches" resultType="map">
+    SELECT <include refid="batchFields"/> FROM sn_delivery_batch <include refid="batchListWhere"/>
+    <choose>
+      <when test="asc">ORDER BY created_at, id</when>
+      <otherwise>ORDER BY created_at DESC, id DESC</otherwise>
+    </choose>
+    LIMIT #{offset}, #{size}
+  </select>
+  <select id="receiptsOf" resultType="map">
+    SELECT id, method, outcome, verdict, detail, created_by, created_at FROM sn_delivery_receipt
+    WHERE batch_id = #{batchId} ORDER BY id
+  </select>
+  <select id="segmentsOf" resultType="map">
+    SELECT seq_pi_no, MIN(seq_dec) s, MAX(seq_dec) e, COUNT(*) n, MAX(first_sn) first_sn, MAX(last_sn) last_sn
+    FROM (SELECT seq_pi_no, seq_dec, g, FIRST_VALUE(sn) OVER w first_sn,
+        LAST_VALUE(sn) OVER (w ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) last_sn
+      FROM (SELECT seq_pi_no, seq_dec, sn, seq_dec - ROW_NUMBER() OVER (PARTITION BY seq_pi_no ORDER BY seq_dec) g
+        FROM sn_delivery_item WHERE batch_id = #{batchId}) t
+      WINDOW w AS (PARTITION BY seq_pi_no, g ORDER BY seq_dec)) u
+    GROUP BY seq_pi_no, g ORDER BY seq_pi_no, s LIMIT 500
+  </select>
+  <select id="billsOfBatchItems" resultType="string">
+    SELECT DISTINCT bill_no FROM sn_delivery_item WHERE batch_id = #{batchId} ORDER BY bill_no
+  </select>
+  <select id="materialsOfBatchItems" resultType="string">
+    SELECT DISTINCT material_code FROM sn_delivery_item WHERE batch_id = #{batchId} ORDER BY material_code
+  </select>
+  <select id="batchItemsPage" resultType="map">
+    SELECT d.*, i.status, i.factory_code current_factory, i.rev current_rev, i.attach_no, i.length_text length
+    FROM sn_delivery_item d LEFT JOIN sn_item i ON i.id = d.item_id WHERE d.batch_id = #{batchId}
+    ORDER BY d.line_no LIMIT #{offset}, #{size}
+  </select>
+  <select id="exportChunk" resultType="map">
+    SELECT d.*, i.attach_no, i.length_text FROM sn_delivery_item d LEFT JOIN sn_item i ON i.id = d.item_id
+    WHERE d.batch_id = #{batchId} AND d.line_no &gt; #{last} ORDER BY d.line_no LIMIT 5000
+  </select>
+
+  <!-- ================================================================== 每日自检 -->
+  <select id="checkAccepted" resultType="map">
+    SELECT b.factory_code, b.batch_no, b.qty, (SELECT COUNT(*) FROM sn_delivery_item d WHERE d.batch_id = b.id
+      AND d.receipt_result IS NOT NULL) n
+    FROM sn_delivery_batch b WHERE b.result = 'SUCCESS' AND b.confirm_method &lt;&gt; 'MANUAL' AND b.confirmed_at &gt;= #{since}
+  </select>
+  <select id="checkDuplicates" resultType="map">
+    SELECT MIN(d.sn) sn, d.rev, COUNT(DISTINCT d.batch_id) n, GROUP_CONCAT(DISTINCT b.batch_no) nos,
+      MIN(b.factory_code) f
+    FROM sn_delivery_item d JOIN sn_delivery_batch b ON b.id = d.batch_id WHERE b.batch_type &lt;&gt; 'TRANSFER_OUT'
+      AND b.result = 'SUCCESS' AND d.item_id IN (SELECT d2.item_id FROM sn_delivery_item d2
+        JOIN sn_delivery_batch b2 ON b2.id = d2.batch_id WHERE b2.confirmed_at &gt;= #{since})
+    GROUP BY d.item_id, d.rev HAVING n &gt; 1 LIMIT 500
+  </select>
+  <select id="checkUnconfirmed" resultType="map">
+    SELECT factory_code, batch_no, created_at FROM sn_delivery_batch WHERE result = 'UNCONFIRMED' AND created_at &lt; #{cutoff}
+  </select>
+  <select id="manualCount" resultType="long">
+    SELECT COUNT(*) FROM sn_delivery_batch WHERE confirm_method = 'MANUAL' AND confirmed_at &gt;= #{since}
+  </select>
+  <select id="openCheckAlert" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_delivery_alert WHERE alert_type = 'CHECK' AND status = 'OPEN'
+      AND batch_no = #{batchNo} AND sn &lt;=&gt; #{sn})
+  </select>
+  <insert id="insertCheckAlert">
+    INSERT INTO sn_delivery_alert(alert_type, factory_code, batch_no, sn, detail, created_at)
+    VALUES ('CHECK', #{org}, #{batchNo}, #{sn}, #{detail}, #{now})
+  </insert>
+</mapper>

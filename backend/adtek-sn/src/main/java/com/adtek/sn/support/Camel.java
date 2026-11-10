@@ -6,9 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * 文档型数据（库里以 JSON 保存的生成计划、预演结果等，键为 snake_case）返回给前端前统一转为 camelCase 键；只转键，不改值。
- */
+/** 文档型数据（库里以 JSON 保存的生成计划、预演结果等，键为 snake_case）返回给前端前统一转为 camelCase 键；只转键，不改值。 */
 public final class Camel {
     private Camel() {}
 

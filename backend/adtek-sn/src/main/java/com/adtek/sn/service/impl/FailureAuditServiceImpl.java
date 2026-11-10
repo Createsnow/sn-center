@@ -164,6 +164,34 @@ public class FailureAuditServiceImpl implements FailureAuditPort {
         audit.recordIsolated(u, e);
     }
 
+    /** MES 接口被拒绝的请求（越权、限流、参数不合法、批次不存在等）：按原系统的对外路径记失败痕迹。 */
+    public void recordMes(
+            CurrentUser u, String action, String externalPath, byte[] body, String message) {
+        AuditEntryDTO e = AuditEntryDTO.of(action).fail(message);
+        if (body != null && body.length > 0) {
+            JsonNode m = null;
+            try {
+                m = JSON.readTree(body);
+            } catch (RuntimeException ignored) {
+                // 非 JSON 请求体：只记动作与原因
+            }
+            if (m != null && m.isObject()) {
+                String factory = first(m, "factoryCode");
+                e.factory(factory != null ? factory : u.factoryCode())
+                        .pi(first(m, "piNo", "pi"))
+                        .bill(first(m, "billNo", "fromBill"))
+                        .batch(first(m, "batchNo"))
+                        .why(first(m, "reason"));
+                JsonNode q = m.get("qty");
+                if (q != null && q.isNumber()) {
+                    e.count(q.asLong());
+                }
+            }
+        }
+        e.info("POST " + externalPath);
+        audit.recordIsolated(u, e);
+    }
+
     private static String first(JsonNode m, String... keys) {
         for (String k : keys) {
             JsonNode v = m.get(k);
