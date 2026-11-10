@@ -120,7 +120,8 @@
     "collapse": "收起",
     "expandAll": "全部展开",
     "collapseAll": "全部收起",
-    "factoryCode": "生产组织编号"
+    "factoryCode": "生产组织编号",
+    "total": "共 {{n}} 条"
   },
   "status": {
     "PENDING_ALLOC": "待分配",

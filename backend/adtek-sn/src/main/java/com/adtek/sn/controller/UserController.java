@@ -11,11 +11,11 @@ import com.adtek.sn.vo.SecretVO;
 import com.adtek.sn.vo.UserVO;
 
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /** 账户管理（F-01）：只有系统管理员账户。 */
@@ -29,8 +29,23 @@ public class UserController {
     }
 
     @GetMapping
-    public Result<PageVO<UserVO>> list(@ModelAttribute UserQuery q) {
-        return Result.ok(users.list(q));
+    public Result<PageVO<UserVO>> list(
+            @RequestParam(required = false) String kind,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String factoryCode,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer pageSize) {
+        UserQuery query = new UserQuery();
+        query.kind = kind;
+        query.q = q;
+        query.role = role;
+        query.status = status;
+        query.factoryCode = factoryCode;
+        query.page = page;
+        query.pageSize = pageSize;
+        return Result.ok(users.list(query));
     }
 
     @PostMapping

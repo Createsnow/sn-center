@@ -120,7 +120,8 @@
     "collapse": "Thu gọn",
     "expandAll": "Mở rộng tất cả",
     "collapseAll": "Thu gọn tất cả",
-    "factoryCode": "Mã tổ chức sản xuất"
+    "factoryCode": "Mã tổ chức sản xuất",
+    "total": "Tổng {{n}}"
   },
   "status": {
     "PENDING_ALLOC": "Chờ phân bổ",

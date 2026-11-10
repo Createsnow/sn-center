@@ -120,7 +120,8 @@
     "collapse": "Collapse",
     "expandAll": "Expand all",
     "collapseAll": "Collapse all",
-    "factoryCode": "Production org code"
+    "factoryCode": "Production org code",
+    "total": "Total {{n}}"
   },
   "status": {
     "PENDING_ALLOC": "To allocate",
