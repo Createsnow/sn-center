@@ -113,3 +113,8 @@
 .fit-table .ant-table-tbody > tr > td { height: 36px; padding-top: 0 !important; padding-bottom: 0 !important; white-space: nowrap; }
 .fit-table .ant-table-thead > tr > th { white-space: nowrap; }
 @media (max-width: 1199px) { .page--fill { height: auto; } .page--fill .fill-body { flex: none; height: 520px; } }
+.sn-tabs-fill { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.sn-tabs-fill > .ant-tabs-content-holder { flex: 1; min-height: 0; }
+.sn-tabs-fill > .ant-tabs-content-holder > .ant-tabs-content { height: 100%; }
+.sn-tabs-fill > .ant-tabs-content-holder > .ant-tabs-content > .ant-tabs-tabpane-active { height: 100%; display: flex; flex-direction: column; }
+@media (max-width: 1199px) { .sn-tabs-fill > .ant-tabs-content-holder > .ant-tabs-content > .ant-tabs-tabpane-active { height: auto; } }
