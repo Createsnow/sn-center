@@ -22,8 +22,17 @@ describe('tabList', () => {
   });
 
   it('restores only the same account and allowed pages', () => {
-    const saved = { uid: '1', tabs: [{ path: '/sn/a', fullPath: '/sn/a', ver: 1 }, { path: '/sn/x', fullPath: '/sn/x', ver: 2 }] };
-    expect(restoreTabs(saved, '1', (p) => p === '/sn/a').map((t) => t.path)).toEqual([HOME, '/sn/a']);
+    const saved = {
+      uid: '1',
+      tabs: [
+        { path: '/sn/a', fullPath: '/sn/a', ver: 1 },
+        { path: '/sn/x', fullPath: '/sn/x', ver: 2 },
+      ],
+    };
+    expect(restoreTabs(saved, '1', (p) => p === '/sn/a').map((t) => t.path)).toEqual([
+      HOME,
+      '/sn/a',
+    ]);
     expect(restoreTabs(saved, '2', () => true).map((t) => t.path)).toEqual([HOME]);
   });
 });

@@ -13,10 +13,13 @@ export function usePaged(
   initial: QueryParams = {},
   size = 20,
   enabled = true,
+  /** 每页条数由外部决定（如按高度放满的 useFitRows），此时忽略 setPageSize。 */
+  fixedSize?: number,
 ) {
   const [params, setParams] = useState<QueryParams>(initial);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(size);
+  const [ownSize, setPageSize] = useState(size);
+  const pageSize = fixedSize ?? ownSize;
   const [seq, setSeq] = useState(0);
   const query = useQuery({
     queryKey: ['sn', key, params, page, pageSize, seq],
