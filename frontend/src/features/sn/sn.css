@@ -161,3 +161,32 @@
 .sn-push-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px dashed #ebeef5;
   font-size: 13px; }
 .sn-nowrap { white-space: nowrap; }
+/* SN 转移 */
+.sn-tf-toolbar .ant-input-affix-wrapper, .sn-tf-toolbar .ant-select { width: 170px; }
+.sn-flow { display: grid; grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1fr); align-items: center; gap: 8px; }
+.sn-sub { margin: 18px 0 8px; font-size: 14px; }
+.sn-hint { width: 100%; margin-top: 4px; line-height: 1.5; color: var(--sn-muted); font-size: 12px; }
+.sn-warn-text { color: #b42318; font-size: 12px; }
+.sn-opt { display: flex; justify-content: space-between; gap: 16px; }
+.sn-key { font-family: 'JetBrains Mono', Consolas, monospace; font-weight: 600; }
+.sn-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+.sn-tf-locate { display: flex; align-items: center; gap: 10px; border: 1px solid var(--sn-line); border-radius: 8px; padding: 10px 16px;
+  margin-bottom: 12px; background: var(--sn-canvas); }
+.sn-tf-sides { display: grid; grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr); gap: 8px; align-items: stretch; }
+.sn-tf-side { border: 1px solid var(--sn-line); border-radius: 8px; padding: 12px 16px; background: var(--sn-surface); }
+.sn-tf-side h5 { margin: 0 0 10px; font-size: 13px; font-weight: 600; }
+.sn-tf-arrow { display: flex; align-items: center; justify-content: center; color: var(--sn-muted); font-size: 18px; }
+.sn-tf-form .ant-form-item { margin-bottom: 14px; }
+.sn-tf-form .ant-form-item-label { padding-bottom: 4px; }
+.sn-tf-lines, .sn-tf-reason { margin-top: 12px; border: 1px solid var(--sn-line); border-radius: 8px; padding: 10px 16px 12px;
+  background: var(--sn-surface); }
+.sn-tf-reason { border-left: 3px solid #e6a23c; }
+.sn-tf-reason.bad { border-left-color: #b42318; }
+.sn-tf-lines-t { display: flex; align-items: baseline; flex-wrap: wrap; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.sn-tf-lines th.sn-grp-src { background: #ecf5ff !important; }
+.sn-tf-lines th.sn-grp-dst { background: #f0f9eb !important; }
+.sn-tf-lines .sn-row-bad > td { background: #fef0f0 !important; }
+@media (max-width: 900px) {
+  .sn-tf-sides, .sn-pair { grid-template-columns: 1fr; }
+  .sn-tf-arrow { transform: rotate(90deg); }
+}
