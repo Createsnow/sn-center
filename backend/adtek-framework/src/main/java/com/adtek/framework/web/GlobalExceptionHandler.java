@@ -4,16 +4,22 @@ import com.adtek.common.constant.CommonErrorCode;
 import com.adtek.common.core.BusinessException;
 import com.adtek.common.core.ErrorCode;
 import com.adtek.common.core.Result;
+import com.adtek.framework.audit.FailureAuditPort;
+import com.adtek.framework.security.AuthPrincipal;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.TypeMismatchException;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -24,19 +30,38 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.servlet.HandlerMapping;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
  * 全局异常处理：所有失败统一为 {@link Result} 信封，HTTP 状态取自错误码，不用 200 表示失败。
  *
  * <p>不向客户端返回异常消息、SQL 或堆栈；只有非预期异常与依赖故障记录日志（日志带 traceId）。校验失败只返回字段名，不回显输入值。
+ *
+ * <p>已登录账户的 {@code /api} 写请求失败时，经 {@link FailureAuditPort}（若有提供方）在独立事务中记一条失败痕迹；留痕失败不影响响应。
  */
 @RestControllerAdvice
 @Order(Ordered.LOWEST_PRECEDENCE)
 public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private static final Set<String> WRITE_METHODS = Set.of("POST", "PUT", "PATCH", "DELETE");
+
+    private final ObjectProvider<FailureAuditPort> failureAudit;
+
+    public GlobalExceptionHandler() {
+        this(null);
+    }
+
+    @Autowired
+    public GlobalExceptionHandler(ObjectProvider<FailureAuditPort> failureAudit) {
+        this.failureAudit = failureAudit;
+    }
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<Result<Void>> business(BusinessException exception) {
@@ -75,6 +100,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<Result<Void>> unauthenticated(AuthenticationException exception) {
         return respond(CommonErrorCode.UNAUTHENTICATED, Map.of());
+    }
+
+    /** 超长、格式不符等数据约束问题（不是唯一键冲突）：请求本身的问题，重试也不会成功。 */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Result<Void>> integrity(DataIntegrityViolationException exception) {
+        if (exception instanceof DuplicateKeyException) {
+            return respond(CommonErrorCode.CONFLICT, Map.of());
+        }
+        log.warn("Data integrity violation: {}", exception.getMostSpecificCause().getMessage());
+        return respond(CommonErrorCode.INVALID_REQUEST, Map.of("fields", "body"));
     }
 
     /** 唯一约束冲突与锁/版本冲突返回 409，不静默覆盖、不自动重试。 */
@@ -125,9 +160,44 @@ public class GlobalExceptionHandler {
         };
     }
 
-    private static ResponseEntity<Result<Void>> respond(
-            ErrorCode errorCode, Map<String, String> args) {
+    private ResponseEntity<Result<Void>> respond(ErrorCode errorCode, Map<String, String> args) {
+        audit(errorCode, args);
         return ResponseEntity.status(errorCode.httpStatus())
                 .body(Result.fail(errorCode, args).withTraceId(TraceContext.current()));
+    }
+
+    private void audit(ErrorCode errorCode, Map<String, String> args) {
+        if (failureAudit == null) {
+            return;
+        }
+        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
+        if (!(attributes instanceof ServletRequestAttributes servlet)) {
+            return;
+        }
+        HttpServletRequest request = servlet.getRequest();
+        if (!WRITE_METHODS.contains(request.getMethod())
+                || !request.getRequestURI().startsWith("/api/")) {
+            return;
+        }
+        AuthPrincipal principal = AuthPrincipal.current().orElse(null);
+        FailureAuditPort port = failureAudit.getIfAvailable();
+        if (principal == null || port == null) {
+            return;
+        }
+        Object template = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+        Object body = request.getAttribute(RequestBodyCachingFilter.BODY_ATTRIBUTE);
+        try {
+            port.recordFailure(
+                    principal,
+                    request.getMethod(),
+                    request.getRequestURI(),
+                    template == null ? request.getRequestURI() : template.toString(),
+                    body instanceof byte[] bytes ? bytes : null,
+                    errorCode,
+                    args);
+        } catch (RuntimeException e) {
+            // 留痕失败不能盖掉原来的错误响应
+            log.warn("Failure audit failed", e);
+        }
     }
 }
