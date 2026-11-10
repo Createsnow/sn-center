@@ -118,3 +118,11 @@
 .sn-tabs-fill > .ant-tabs-content-holder > .ant-tabs-content { height: 100%; }
 .sn-tabs-fill > .ant-tabs-content-holder > .ant-tabs-content > .ant-tabs-tabpane-active { height: 100%; display: flex; flex-direction: column; }
 @media (max-width: 1199px) { .sn-tabs-fill > .ant-tabs-content-holder > .ant-tabs-content > .ant-tabs-tabpane-active { height: auto; } }
+/* 生产订单：宽屏上下两栏平分剩余高度，各自在卡片内滚动；屏幕矮时每栏不低于 420px，整页滚动 */
+.sn-orders-stack { display: flex; flex-direction: column; gap: 16px; }
+@media (min-width: 1200px) {
+  .sn-orders-stack { flex: 1; min-height: 0; }
+  .sn-orders-stack > .surface { flex: 1 1 0; min-height: 420px; }
+}
+.sn-spin-fill { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.sn-spin-fill > .ant-spin-container { flex: 1; min-height: 0; display: flex; flex-direction: column; }
