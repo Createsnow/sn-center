@@ -194,7 +194,7 @@ class PlatformIT {
                 + MYSQL.getMappedPort(3306)
                 + "/"
                 + DATABASE
-                + "?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true"
+                + "?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&useAffectedRows=true"
                 + "&allowPublicKeyRetrieval=true&sslMode=DISABLED";
     }
 

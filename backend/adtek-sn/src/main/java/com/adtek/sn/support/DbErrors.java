@@ -58,7 +58,7 @@ public final class DbErrors {
             return true;
         }
         for (Throwable t = e; t != null; t = t.getCause()) {
-            if (t instanceof org.springframework.jdbc.CannotGetJdbcConnectionException
+            if (t instanceof org.springframework.dao.DataAccessResourceFailureException
                     || t instanceof java.sql.SQLTransientConnectionException) {
                 return true;
             }
