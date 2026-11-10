@@ -50,16 +50,105 @@ const http = axios.create({
   validateStatus: () => true,
 });
 
-export function apiGet<T>(
-  path: string,
-  parse: DataParser<T>,
-  params?: Readonly<Record<string, string | number>>,
-): Promise<T> {
-  return send(() => http.get<unknown>(path, { params }), parse);
+export type QueryParams = Readonly<Record<string, string | number | boolean | null | undefined>>;
+
+/** 本标签页的会话令牌（页面登录后以 Bearer 发送）；为空时依赖 HttpOnly 会话 Cookie。 */
+let authToken = '';
+/** 登录已失效（401）时的处理：由功能注册（清理登录态、回到登录页）。 */
+let unauthorized: ((error: ApiError) => void) | null = null;
+
+export function setAuthToken(token: string): void {
+  authToken = token;
 }
 
-export function apiPost<T>(path: string, body: unknown, parse: DataParser<T>): Promise<T> {
-  return send(() => http.post<unknown>(path, body), parse);
+export function onUnauthorized(handler: ((error: ApiError) => void) | null): void {
+  unauthorized = handler;
+}
+
+http.interceptors.request.use((config) => {
+  if (authToken) {
+    config.headers.Authorization = `Bearer ${authToken}`;
+  }
+  return config;
+});
+
+/** 去掉空串、null、undefined：后端不把它们当作筛选条件。 */
+export function cleanParams(params?: QueryParams): Record<string, string | number | boolean> {
+  const out: Record<string, string | number | boolean> = {};
+  for (const [key, value] of Object.entries(params ?? {})) {
+    if (value !== undefined && value !== null && value !== '') {
+      out[key] = value;
+    }
+  }
+  return out;
+}
+
+export function apiGet<T>(path: string, parse: DataParser<T>, params?: QueryParams): Promise<T> {
+  return send(() => http.get<unknown>(path, { params: cleanParams(params) }), parse);
+}
+
+export function apiPost<T>(
+  path: string,
+  body: unknown,
+  parse: DataParser<T>,
+  options?: { headers?: Record<string, string>; params?: QueryParams; timeout?: number },
+): Promise<T> {
+  return send(
+    () =>
+      http.post<unknown>(path, body, {
+        headers: options?.headers,
+        params: cleanParams(options?.params),
+        timeout: options?.timeout,
+      }),
+    parse,
+  );
+}
+
+/** 上传原始文件作请求体（application/octet-stream），不限时。 */
+export function apiUpload<T>(
+  path: string,
+  file: Blob,
+  parse: DataParser<T>,
+  params?: QueryParams,
+): Promise<T> {
+  return apiPost(path, file, parse, {
+    headers: { 'Content-Type': 'application/octet-stream' },
+    params,
+    timeout: 0,
+  });
+}
+
+/** 下载文件（xlsx）：失败时按信封抛 ApiError；文件名取 Content-Disposition。 */
+export async function apiDownload(path: string, fallback: string, params?: QueryParams): Promise<void> {
+  let response: AxiosResponse<Blob>;
+  try {
+    response = await http.get<Blob>(path, {
+      params: cleanParams(params),
+      responseType: 'blob',
+      timeout: 0,
+    });
+  } catch {
+    throw new ApiError({ status: 0, ...clientErrors.network, args: {}, traceId: null });
+  }
+  if (response.status < 200 || response.status >= 300) {
+    let body: unknown = null;
+    try {
+      body = JSON.parse(await response.data.text()) as unknown;
+    } catch {
+      body = null;
+    }
+    unwrap(response.status, body, parseNothing);
+    return;
+  }
+  const disposition = String(response.headers['content-disposition'] ?? '');
+  const match =
+    /filename\*=UTF-8''([^;]+)/i.exec(disposition) ?? /filename="?([^";]+)"?/i.exec(disposition);
+  const name = match?.[1] ? decodeURIComponent(match[1]) : fallback;
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(response.data);
+  link.download = name;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
 }
 
 /** 写命令成功时 data 为 null。 */
@@ -95,7 +184,11 @@ export function unwrap<T>(status: number, body: unknown, parse: DataParser<T>): 
   }
   const { code, key, args, traceId } = body;
   if (code !== 0 || status < 200 || status >= 300) {
-    throw new ApiError({ status, code, key, args, traceId });
+    const error = new ApiError({ status, code, key, args, traceId });
+    if (status === 401 && unauthorized) {
+      unauthorized(error);
+    }
+    throw error;
   }
   try {
     return parse(body.data);

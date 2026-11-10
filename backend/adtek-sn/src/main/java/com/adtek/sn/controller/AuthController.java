@@ -44,18 +44,22 @@ public class AuthController {
     @PostMapping("/login")
     public Result<LoginVO> login(
             @RequestBody LoginDTO body, HttpServletRequest request, HttpServletResponse response) {
-        boolean page =
-                "web"
-                        .equalsIgnoreCase(
-                                String.valueOf(request.getHeader(PAGE_CLIENT_HEADER)).strip());
+        // web：页面会话放 HttpOnly Cookie；web-token：页面会话令牌放应答体，由页面存在本标签页（sessionStorage）
+        // 并以 Bearer 发送——与原系统相同，同一浏览器的不同标签页可登录不同账户。
+        String client = String.valueOf(request.getHeader(PAGE_CLIENT_HEADER)).strip();
+        boolean tabToken = "web-token".equalsIgnoreCase(client);
+        boolean page = tabToken || "web".equalsIgnoreCase(client);
         AuthService.LoginResult r =
                 auth.login(body.empNo, body.password, ClientAddress.of(request), page);
-        if (r.page()) {
+        LoginVO out = r.body();
+        if (tabToken) {
+            out.token = r.token();
+        } else if (r.page()) {
             response.addHeader(
                     "Set-Cookie",
                     SessionCookies.issue(r.token(), r.ttlSeconds(), security.cookieSecure()));
         }
-        return Result.ok(r.body());
+        return Result.ok(out);
     }
 
     @GetMapping("/me")
