@@ -15,7 +15,7 @@ export default defineConfig({
   use: {
     ...devices['Desktop Chrome'],
     channel: process.platform === 'win32' ? 'msedge' : undefined,
-    baseURL: process.env.ADTEK_E2E_URL ?? 'http://127.0.0.1:15183',
+    baseURL: process.env.ADTEK_E2E_URL ?? 'http://127.0.0.1:15193',
     // 网络 trace/storageState 含认证秘密，禁止生成；只保存明确指定的无秘密页面截图。
     actionTimeout: 15_000,
     trace: 'off',

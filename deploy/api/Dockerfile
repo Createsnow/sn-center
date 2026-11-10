@@ -7,8 +7,8 @@ COPY --chmod=0444 backend/adtek-server/target/adtek-server-0.1.0.jar /app/app.ja
 # configtree：/run/secrets/<变量名> 文件内容作为同名配置值，例如 ADTEK_DB_PASSWORD。
 ENV SPRING_CONFIG_IMPORT=optional:configtree:/run/secrets/ \
     ADTEK_SERVER_ADDRESS=0.0.0.0 \
-    ADTEK_SERVER_PORT=18090 \
+    ADTEK_SERVER_PORT=18100 \
     JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=70 -XX:+ExitOnOutOfMemoryError -Djava.io.tmpdir=/tmp"
 USER 10001:10001
-EXPOSE 18090
+EXPOSE 18100
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

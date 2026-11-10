@@ -4,9 +4,9 @@
 #   水平扩展 API：        在上述命令后追加 --scale api=3
 # 对应 K8s：migrate → Job（或 initContainer），api → Deployment + Service，web → Deployment + Service + Ingress，
 # app.env → ConfigMap，.secrets → Secret（挂载到 /run/secrets），healthcheck → readiness / liveness 探针。
-name: adtek-platform-template
+name: sn-center
 x-api-image: &api-image
-  image: adtek-platform-template-api:0.1.0
+  image: sn-center-api:0.1.0
   build:
     context: ..
     dockerfile: deploy/api/Dockerfile
@@ -45,9 +45,9 @@ services:
         condition: service_completed_successfully
     # API 只在容器网络内开放，不发布主机端口，便于多副本。
     expose:
-      - '18090'
+      - '18100'
     healthcheck:
-      test: [CMD, curl, -fsS, -o, /dev/null, 'http://127.0.0.1:18090/actuator/health/readiness']
+      test: [CMD, curl, -fsS, -o, /dev/null, 'http://127.0.0.1:18100/actuator/health/readiness']
       interval: 10s
       timeout: 3s
       retries: 6
@@ -60,7 +60,7 @@ services:
     restart: unless-stopped
   web:
     <<: *hardening
-    image: adtek-platform-template-web:0.1.0
+    image: sn-center-web:0.1.0
     build:
       context: ..
       dockerfile: deploy/web/Dockerfile
@@ -69,7 +69,7 @@ services:
         condition: service_healthy
     # 默认只绑定本机，由主机 TLS 反向代理 / 负载均衡对外提供 HTTPS。
     ports:
-      - '${ADTEK_WEB_BIND:-127.0.0.1}:${ADTEK_WEB_PORT:-18080}:8080'
+      - '${ADTEK_WEB_BIND:-127.0.0.1}:${ADTEK_WEB_PORT:-18180}:8080'
     healthcheck:
       test: [CMD, curl, -fsS, -o, /dev/null, 'http://127.0.0.1:8080/healthz']
       interval: 10s

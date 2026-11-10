@@ -41,7 +41,7 @@ import java.util.Map;
  */
 @Testcontainers
 class PlatformIT {
-    private static final String DATABASE = "adtek_template";
+    private static final String DATABASE = "sn_center";
     private static final Path DEPLOY = Path.of("..", "..", "deploy");
     private static final String ROOT_PASSWORD = randomSecret();
     private static final String APP_PASSWORD = randomSecret();

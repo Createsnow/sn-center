@@ -18,7 +18,7 @@ exit /b 2
 where node >nul 2>nul || (echo [ERROR] Node 24 is required to create local secrets.& exit /b 1)
 node "%ADTEK_ROOT%\tools\init-secrets.mjs" || exit /b 1
 docker compose -f compose.infra.yml up -d --wait --wait-timeout 180 || goto :failed
-echo MySQL 127.0.0.1:33316 database adtek_template. Passwords stay in deploy\.secrets and are not printed.
+echo MySQL 127.0.0.1:33326 database sn_center. Passwords stay in deploy\.secrets and are not printed.
 exit /b 0
 
 :stop

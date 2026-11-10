@@ -86,5 +86,5 @@ images:
   image: docker:29-cli@sha256:4d742ab934c2149b628bf26369ac3ec51cb91e2e28fe6722a0e86a6d6efc4bd5
   needs: [backend, frontend]
   script:
-    - docker build -f deploy/api/Dockerfile -t adtek-platform-template-api:$CI_COMMIT_SHORT_SHA .
-    - docker build -f deploy/web/Dockerfile -t adtek-platform-template-web:$CI_COMMIT_SHORT_SHA .
+    - docker build -f deploy/api/Dockerfile -t sn-center-api:$CI_COMMIT_SHORT_SHA .
+    - docker build -f deploy/web/Dockerfile -t sn-center-web:$CI_COMMIT_SHORT_SHA .

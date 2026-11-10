@@ -1,0 +1,13 @@
+{
+  "template": "adtek-platform-template",
+  "version": "0.1.0",
+  "commit": "35e8fb15411da7a1745626033e5d16fd10e1fa96",
+  "project": "sn-center",
+  "createdAtUtc": "2026-11-10T04:00:42.001Z",
+  "ports": {
+    "mysql-port": 33326,
+    "api-port": 18100,
+    "web-port": 15193,
+    "deploy-port": 18180
+  }
+}

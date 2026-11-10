@@ -22,7 +22,7 @@ tools\migrate.bat
 tools\start-api.bat
 ```
 
-另开一个命令行窗口执行 `tools\start-web.bat`，浏览器打开 `http://127.0.0.1:15183`。
+另开一个命令行窗口执行 `tools\start-web.bat`，浏览器打开 `http://127.0.0.1:15193`。
 
 ## Linux 部署（Docker Compose，K8s 就绪）
 
@@ -34,7 +34,7 @@ cp deploy/app.env.example deploy/app.env
 docker compose -f deploy/compose.infra.yml -f deploy/compose.yml up -d --build --wait
 ```
 
-Web 默认监听 `127.0.0.1:18080`，由 TLS 反向代理对外提供 HTTPS。K8s 映射与约定见[工程要求与命令](docs/06-工程要求与命令.md#linux-部署docker-compose)。
+Web 默认监听 `127.0.0.1:18180`，由 TLS 反向代理对外提供 HTTPS。K8s 映射与约定见[工程要求与命令](docs/06-工程要求与命令.md#linux-部署docker-compose)。
 
 ## 创建新项目
 
