@@ -1140,7 +1140,7 @@
     "issue": {
       "EMPTY": "{column}为空",
       "TOO_LONG": "{column}超过 {max} 位",
-      "SN_SPACE": "SN 含空格",
+      "SN_SPACE": "SN 含空格或不可见字符",
       "FILE_DUP": "与第 {row} 行的 SN 重复",
       "IN_POOL": "系统已生成这枚号（PI {pi}）",
       "IMPORTED": "已导入过（导入单号 {import_no}）",

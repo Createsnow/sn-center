@@ -710,3 +710,25 @@ def test_emp_no_and_password_rules():
         with pytest.raises(BizError) as e:
             check_policy(bad)
         assert e.value.code == ErrorCode.USER_PASSWORD_WEAK.name, bad
+
+
+@pytest.mark.parametrize(
+    ("sn", "bad"),
+    [
+        ("HX100000001A", False),
+        ("SN-001_A/B.01", False),
+        ("SN 001", True),  # 空格
+        ("SN　001", True),  # 全角空格
+        ("SN 001", True),  # 不换行空格
+        ("SN001​", True),  # 零宽空格：看着与 SN001 一样，唯一键却认为不同
+        ("﻿SN001", True),  # BOM
+        ("SN‍001", True),  # 零宽连接符
+    ],
+)
+def test_import_sn_rejects_spaces_and_invisible_chars(sn, bad):
+    """导入的 SN 含空白或看不见的字符时报 SN_SPACE，免得「看着一样」的号绕过号池唯一键防重。"""
+    from app.services import sn_import
+
+    r = sn_import.Row(2, sn=sn)
+    sn_import._check_values(r, {})
+    assert (sn_import.SN_SPACE in [c for c, _ in r.issues]) is bad

@@ -128,7 +128,7 @@ COLUMNS = (
         True,
         ("SN",),
         SN_MAX,
-        hint=f"不含空格，最长 {SN_MAX} 位；不能与系统里已有的号、文件里其他行重复（列名也可写作「SN」）",
+        hint=f"不含空格及不可见字符，最长 {SN_MAX} 位；不能与系统里已有的号、文件里其他行重复（列名也可写作「SN」）",
         example="HX100000001A",
     ),
     Column("seq_len_in", "流水位数", True, hint=f"1～{codec.MAX_SEQ_LEN}，等于流水号的位数", example="6"),
@@ -382,7 +382,7 @@ def _int(v: str) -> int | None:
 
 
 def _check_values(r: Row, first: dict[str, int]) -> None:
-    """不查库的检查：必填、超长、SN 空白与文件内重复、行号、进制、流水位数、流水号（通过的算出数值）。"""
+    """不查库的检查：必填、超长、SN 空白 / 不可见字符与文件内重复、行号、进制、流水位数、流水号（通过的算出数值）。"""
     for c in COLUMNS:
         v = getattr(r, c.field)
         if not v:
@@ -391,7 +391,9 @@ def _check_values(r: Row, first: dict[str, int]) -> None:
         elif len(v) > c.max:
             r.issues.append((TOO_LONG, {"column": c.field, "max": c.max}))
     if r.sn and len(r.sn) <= SN_MAX:
-        if any(ch.isspace() for ch in r.sn):
+        # 空白，以及零宽空格、BOM 等看不见的字符（复制粘贴常带进来）：带着它的号看着与已有的号一样，
+        # 唯一键却认为不同，会绕过防重
+        if any(ch.isspace() for ch in r.sn) or not r.sn.isprintable():
             r.issues.append((SN_SPACE, {}))
         if r.sn in first:
             r.issues.append((FILE_DUP, {"row": first[r.sn]}))
@@ -525,8 +527,13 @@ def _check_order(cu: CurrentUser, r: Row, b: dict, line: dict | None, used: dict
         r.issues.append((LENGTH_MISMATCH, {**at, "length": eff_length or "—"}))
 
 
-def _validate(cu: CurrentUser, rows: list[Row], lock: bool = False) -> None:
-    """逐行检查，问题记到 row.issues。lock = True（确定导入时）查号池用加锁读，读到最新提交的号。"""
+def _validate(cu: CurrentUser, rows: list[Row]) -> None:
+    """逐行检查，问题记到 row.issues。
+
+    查号池用普通读、不加锁：确定导入时事务在拿到 PI 操作锁之后才开始，同 PI 的生成、分配、转移、删号都已提交；
+    别的 PI 刚写入的同号由号池唯一键 ux_item_sn 兜底（写入时报 IMPORT_CONFLICT）。
+    不用 LOCK IN SHARE MODE：查不存在的号时它在唯一索引上加间隙锁，两张不同 PI 的文件同时确定导入
+    （SN 落在同一间隙，如都是新号段）会互相卡住成死锁，失败的一方只能报「稍后重试」。"""
     first: dict[str, int] = {}
     for r in rows:
         _check_values(r, first)
@@ -546,12 +553,11 @@ def _validate(cu: CurrentUser, rows: list[Row], lock: bool = False) -> None:
     sns = sorted(first)
     pool: dict[str, str] = {}
     done: dict[str, str] = {}
-    share = " LOCK IN SHARE MODE" if lock else ""
     for part in _chunks(sns):
-        for x in db.all(f"SELECT sn, pi_no FROM sn_item WHERE sn IN ({marks(len(part))}){share}", *part):
+        for x in db.all(f"SELECT sn, pi_no FROM sn_item WHERE sn IN ({marks(len(part))})", *part):
             pool[x["sn"]] = x["pi_no"]
         for x in db.all(
-            f"SELECT sn, import_no FROM sn_import_item WHERE sn IN ({marks(len(part))}) AND deleted_at IS NULL{share}",
+            f"SELECT sn, import_no FROM sn_import_item WHERE sn IN ({marks(len(part))}) AND deleted_at IS NULL",
             *part,
         ):
             done[x["sn"]] = x["import_no"]
@@ -623,7 +629,7 @@ def run(cu: CurrentUser, content: bytes, file_name_in: str | None) -> dict:
     file_name = util.cut(util.trim(file_name_in), 255) or ""
     # 与生成、删号、分配、转移共用 PI 操作锁（PI 正在生成时拿不到，提示稍后再试）
     with locks.with_pi_lock(*sorted({r.pi for r in rows if r.pi})), db.tx():
-        _validate(cu, rows, lock=True)
+        _validate(cu, rows)
         bad = sum(1 for r in rows if r.issues)
         if bad:
             raise biz(ErrorCode.IMPORT_HAS_ISSUES, count=bad)
@@ -696,8 +702,9 @@ def run(cu: CurrentUser, content: bytes, file_name_in: str | None) -> dict:
             except pymysql.err.IntegrityError as ex:
                 if not is_duplicate(ex):
                     raise
-                # 检查之后别人刚生成或导入了同样的号
-                hit = db.one(f"SELECT sn FROM sn_item WHERE sn IN ({marks(len(sns))}) LIMIT 1", *sns)
+                # 检查之后别人刚生成或导入了同样的号。用加锁读读最新提交的：普通读是本事务开始时的快照，
+                # 看不到对方刚提交的号（报出的 SN 会不准）；这里之后整笔回滚，锁随即释放
+                hit = db.one(f"SELECT sn FROM sn_item WHERE sn IN ({marks(len(sns))}) LIMIT 1 LOCK IN SHARE MODE", *sns)
                 raise biz(ErrorCode.IMPORT_CONFLICT, sn=hit["sn"] if hit else part[0].sn) from None
         bills = sorted({r.bill for r in rows})
         for b in bills:

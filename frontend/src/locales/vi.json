@@ -1140,7 +1140,7 @@
     "issue": {
       "EMPTY": "{column} trống",
       "TOO_LONG": "{column} dài quá {max} ký tự",
-      "SN_SPACE": "SN chứa khoảng trắng",
+      "SN_SPACE": "SN chứa khoảng trắng hoặc ký tự ẩn",
       "FILE_DUP": "Trùng SN với dòng {row}",
       "IN_POOL": "Hệ thống đã tạo số này (PI {pi})",
       "IMPORTED": "Đã nhập trước đó (số phiếu nhập {import_no})",
