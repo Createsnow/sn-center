@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const directory = resolve(root, 'deploy/.secrets');
-const names = ['mysql-root-password', 'mysql-app-password', 'mysql-migration-password'];
+const names = ['mysql-root-password', 'mysql-app-password', 'mysql-migration-password', 'sn-secret'];
 
 mkdirSync(directory, { recursive: true });
 for (const name of names) {

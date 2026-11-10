@@ -38,6 +38,8 @@ services:
     secrets:
       - source: mysql_app_password
         target: ADTEK_DB_PASSWORD
+      - source: sn_secret
+        target: SN_SECRET
     # API 在迁移成功退出后启动（K8s：initContainer 或先执行 Job）；迁移自行重试数据库连接，
     # API 就绪探针在 MySQL 可用前保持 DOWN，因此不依赖 mysql 容器的启动顺序。
     depends_on:
@@ -86,3 +88,5 @@ secrets:
     file: ./.secrets/mysql-app-password
   mysql_migration_password:
     file: ./.secrets/mysql-migration-password
+  sn_secret:
+    file: ./.secrets/sn-secret

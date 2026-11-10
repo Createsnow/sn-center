@@ -15,5 +15,10 @@ CREATE USER 'adtek_app'@'%' IDENTIFIED BY '$app_password';
 CREATE USER 'adtek_migration'@'%' IDENTIFIED BY '$migration_password';
 GRANT SELECT, INSERT, UPDATE, DELETE ON \`$MYSQL_DATABASE\`.* TO 'adtek_app'@'%';
 GRANT ALL PRIVILEGES ON \`$MYSQL_DATABASE\`.* TO 'adtek_migration'@'%';
+-- 运行时 DDL（与原系统相同，只限这几张表）：sn_audit 按月建 / 删分区；订单快照全量重建用 sn_prd_mo_new 换表。
+GRANT ALTER, DROP ON \`$MYSQL_DATABASE\`.\`sn_audit\` TO 'adtek_app'@'%';
+GRANT CREATE, ALTER, DROP ON \`$MYSQL_DATABASE\`.\`sn_prd_mo\` TO 'adtek_app'@'%';
+GRANT CREATE, ALTER, DROP, INSERT, SELECT ON \`$MYSQL_DATABASE\`.\`sn_prd_mo_new\` TO 'adtek_app'@'%';
+GRANT CREATE, ALTER, DROP, INSERT, SELECT ON \`$MYSQL_DATABASE\`.\`sn_prd_mo_old\` TO 'adtek_app'@'%';
 SQL
 ) || exit 1

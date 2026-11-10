@@ -6,7 +6,8 @@ spring:
     username: ${ADTEK_DB_USER}
     password: ${ADTEK_DB_PASSWORD}
     hikari:
-      maximum-pool-size: 12
+      # 推送线程（8）、后台生成、命名锁专用连接与请求共用；原系统 DB_POOL_SIZE 默认 20
+      maximum-pool-size: ${DB_POOL_SIZE:30}
       minimum-idle: 2
       connection-timeout: 5000
   # API 运行时不执行迁移、不持有 DDL 账号；迁移只通过 migrate profile 单次执行。
@@ -14,6 +15,22 @@ spring:
     enabled: false
   lifecycle:
     timeout-per-shutdown-phase: 30s
+  servlet:
+    multipart:
+      enabled: false
+adtek:
+  security:
+    # 页面会话 JWT 签名密钥（与原系统 SN_SECRET 相同变量名；生产环境须 ≥ 32 位随机串，秘密文件 /run/secrets/SN_SECRET）
+    secret: ${SN_SECRET:}
+    environment: ${ENVIRONMENT:local}
+    token-ttl-seconds: ${SN_TOKEN_TTL_SECONDS:43200}
+    cookie-secure: ${SN_COOKIE_SECURE:true}
+    public-paths:
+      - /api/v1/sn/auth/login
+      - /api/v1/sn/auth/csrf
+    # MES 对外接口：入口把原系统 /api/mes/v1/* 改写到这里，认证在用例内（Bearer 工号:密钥 或页面令牌）
+    machine-paths:
+      - /api/v1/sn/mes/**
 server:
   forward-headers-strategy: none
   address: ${ADTEK_SERVER_ADDRESS:127.0.0.1}

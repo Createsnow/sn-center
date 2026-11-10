@@ -8,7 +8,7 @@ import java.util.List;
  * 安全链配置（server 的 application.yml 绑定）。
  *
  * @param secret 签名密钥（环境变量 SN_SECRET，至少 32 位随机串）；production 环境为空、示例值或过短时拒绝启动
- * @param production 是否生产环境（ENVIRONMENT=production）
+ * @param environment 运行环境（环境变量 ENVIRONMENT，与原系统相同；production 为生产环境）
  * @param tokenTtlSeconds 访问令牌与会话有效期（秒）
  * @param cookieSecure 会话 Cookie 是否带 Secure（只有本机 loopback 的 local profile 可关闭）
  * @param publicPaths 匿名可访问的业务入口（如登录），Ant 风格
@@ -17,7 +17,7 @@ import java.util.List;
 @ConfigurationProperties("adtek.security")
 public record SecurityProperties(
         String secret,
-        boolean production,
+        String environment,
         long tokenTtlSeconds,
         boolean cookieSecure,
         List<String> publicPaths,
@@ -32,6 +32,11 @@ public record SecurityProperties(
         tokenTtlSeconds = tokenTtlSeconds <= 0 ? 12 * 3600 : tokenTtlSeconds;
         publicPaths = publicPaths == null ? List.of() : List.copyOf(publicPaths);
         machinePaths = machinePaths == null ? List.of() : List.copyOf(machinePaths);
+    }
+
+    /** 是否生产环境（ENVIRONMENT=production）。 */
+    public boolean production() {
+        return "production".equals(environment);
     }
 
     /** 实际使用的密钥：未设置时（仅非生产）用兜底值，与原系统一致。 */
