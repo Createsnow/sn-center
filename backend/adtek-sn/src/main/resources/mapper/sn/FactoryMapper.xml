@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.sn.mapper.FactoryMapper">
+  <select id="selectAll" resultType="com.adtek.sn.domain.FactoryEntity">
+    SELECT * FROM sn_factory ORDER BY factory_code ASC
+  </select>
+  <select id="get" resultType="com.adtek.sn.domain.FactoryEntity">
+    SELECT * FROM sn_factory WHERE factory_code = #{code}
+  </select>
+  <select id="lock" resultType="com.adtek.sn.domain.FactoryEntity">
+    SELECT * FROM sn_factory WHERE factory_code = #{code} FOR UPDATE
+  </select>
+  <select id="disabledCodes" resultType="string">
+    SELECT factory_code FROM sn_factory WHERE enabled = 0
+  </select>
+  <select id="mesCodes" resultType="string">
+    SELECT factory_code FROM sn_factory WHERE mes_enabled = 1
+  </select>
+  <select id="isMes" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_factory WHERE factory_code = #{code} AND mes_enabled = 1)
+  </select>
+  <select id="tzOffset" resultType="java.lang.Integer">
+    SELECT tz_offset_min FROM sn_factory WHERE factory_code = #{code}
+  </select>
+  <select id="boundUsers" resultType="com.adtek.sn.vo.KeyCountVO">
+    SELECT factory_code k, COUNT(*) n FROM (
+      SELECT factory_code, id FROM sn_user WHERE status = 'ACTIVE' AND factory_code IS NOT NULL
+      UNION ALL
+      SELECT b.factory_code, u.id FROM sn_user_factory b JOIN sn_user u ON u.id = b.user_id WHERE u.status = 'ACTIVE'
+    ) t GROUP BY factory_code
+  </select>
+  <insert id="insert">
+    INSERT INTO sn_factory(factory_code, factory_name, enabled, created_at, updated_at)
+    VALUES (#{code}, #{name}, 1, #{now}, #{now})
+  </insert>
+  <update id="rename">
+    UPDATE sn_factory SET factory_name = #{name}, updated_at = #{now} WHERE factory_code = #{code}
+  </update>
+  <update id="setEnabled">
+    UPDATE sn_factory SET enabled = #{enabled}, updated_at = #{now} WHERE factory_code = #{code}
+  </update>
+  <update id="updateTest">
+    UPDATE sn_factory SET cfg_tested = #{tested}, cfg_checked_at = #{now}, cfg_message = #{message},
+      cfg_status = #{status}
+    WHERE factory_code = #{code}
+  </update>
+  <update id="updateConfig">
+    UPDATE sn_factory SET mes_url = #{entity.mesUrl}, mes_auth_type = #{entity.mesAuthType},
+      mes_credential = #{entity.mesCredential}, mes_gzip = #{entity.mesGzip}, batch_size = #{entity.batchSize},
+      push_timeout_sec = #{entity.pushTimeoutSec}, push_concurrency = #{entity.pushConcurrency},
+      tz_offset_min = #{entity.tzOffsetMin}, cfg_status = #{entity.cfgStatus}, updated_at = #{entity.updatedAt}
+    WHERE factory_code = #{entity.factoryCode}
+  </update>
+  <select id="activeTasks" resultType="long">
+    SELECT COUNT(*) FROM sn_push_task WHERE factory_code = #{code} AND state IN ('QUEUED','RUNNING','WAITING')
+  </select>
+  <select id="openBatches" resultType="com.adtek.sn.vo.FactoryToggleVO$BatchBrief">
+    SELECT batch_no, qty, result FROM sn_delivery_batch WHERE factory_code = #{code}
+      AND result IN ('UNCONFIRMED','FAILED') ORDER BY created_at LIMIT 50
+  </select>
+  <select id="openBatchTotal" resultType="long">
+    SELECT COUNT(*) FROM sn_delivery_batch WHERE factory_code = #{code} AND result IN ('UNCONFIRMED','FAILED')
+  </select>
+  <select id="openBatchQty" resultType="long">
+    SELECT COALESCE(SUM(qty), 0) FROM sn_delivery_batch WHERE factory_code = #{code}
+      AND result IN ('UNCONFIRMED','FAILED')
+  </select>
+  <select id="reassignQty" resultType="long">
+    SELECT COUNT(*) FROM sn_item WHERE factory_code = #{code} AND status = 'TO_PUSH' AND push_type = 'REASSIGN'
+      AND mes_holder = #{code}
+  </select>
+  <select id="allocatedCount" resultType="long">
+    SELECT COUNT(*) FROM sn_item WHERE status = 'ALLOCATED' AND factory_code = #{code}
+  </select>
+  <select id="unbatchedCount" resultType="long">
+    SELECT COUNT(*) FROM sn_item WHERE status = 'TO_PUSH' AND factory_code = #{code} AND delivery_batch_no IS NULL
+  </select>
+  <update id="allocatedToPush">
+    UPDATE sn_item SET status = 'TO_PUSH', push_type = 'NEW', updated_at = #{now}
+    WHERE status = 'ALLOCATED' AND factory_code = #{code}
+  </update>
+  <update id="unbatchedToAllocated">
+    UPDATE sn_item SET status = 'ALLOCATED', updated_at = #{now}
+    WHERE status = 'TO_PUSH' AND factory_code = #{code} AND delivery_batch_no IS NULL
+  </update>
+  <delete id="deleteFinishedTasks">
+    DELETE FROM sn_push_task WHERE factory_code = #{code} AND state IN ('STOPPED','DONE')
+  </delete>
+  <update id="setMesEnabled">
+    UPDATE sn_factory SET mes_enabled = #{enabled}, updated_at = #{now} WHERE factory_code = #{code}
+  </update>
+</mapper>

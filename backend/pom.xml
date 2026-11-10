@@ -17,6 +17,9 @@
     <module>adtek-framework</module>
     <module>adtek-system</module>
     <module>adtek-sample</module>
+    <module>adtek-sn</module>
+    <module>adtek-integration-k3</module>
+    <module>adtek-integration-mes</module>
     <module>adtek-server</module>
   </modules>
   <properties>
@@ -26,6 +29,7 @@
     <mybatis-plus.version>3.5.17</mybatis-plus.version>
     <mapstruct.version>1.6.3</mapstruct.version>
     <springdoc.version>3.1.1</springdoc.version>
+    <poi.version>5.4.1</poi.version>
     <archunit.version>1.4.1</archunit.version>
     <maven-enforcer.version>3.6.2</maven-enforcer.version>
     <spotless.version>3.10.3</spotless.version>
@@ -54,6 +58,26 @@
         <groupId>com.adtek</groupId>
         <artifactId>adtek-sample</artifactId>
         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.adtek</groupId>
+        <artifactId>adtek-sn</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.adtek</groupId>
+        <artifactId>adtek-integration-k3</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.adtek</groupId>
+        <artifactId>adtek-integration-mes</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.poi</groupId>
+        <artifactId>poi-ooxml</artifactId>
+        <version>${poi.version}</version>
       </dependency>
       <dependency>
         <groupId>com.baomidou</groupId>

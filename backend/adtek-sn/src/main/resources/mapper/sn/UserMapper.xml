@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.sn.mapper.UserMapper">
+  <select id="byId" resultType="com.adtek.sn.domain.UserEntity">
+    SELECT * FROM sn_user WHERE id = #{id}
+  </select>
+  <select id="byEmpNo" resultType="com.adtek.sn.domain.UserEntity">
+    SELECT * FROM sn_user WHERE emp_no = #{empNo}
+  </select>
+  <select id="boundFactories" resultType="string">
+    SELECT factory_code FROM sn_user_factory WHERE user_id = #{userId} ORDER BY factory_code
+  </select>
+  <select id="boundOf" resultType="com.adtek.sn.vo.UserFactoryVO">
+    SELECT user_id, factory_code FROM sn_user_factory WHERE user_id IN
+    <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    ORDER BY factory_code
+  </select>
+  <sql id="listWhere">
+    WHERE 1=1
+    <if test="kind == 'page'">AND role &lt;&gt; 'mes'</if>
+    <if test="kind == 'mes'">AND role = 'mes'</if>
+    <if test="q != null">AND (emp_no LIKE #{q} OR name LIKE #{qLike})</if>
+    <if test="role != null">AND role = #{role}</if>
+    <if test="status != null">AND status = #{status}</if>
+    <if test="factory != null">
+      AND (factory_code = #{factory} OR id IN (SELECT user_id FROM sn_user_factory WHERE factory_code = #{factory}))
+    </if>
+  </sql>
+  <select id="count" resultType="long">
+    SELECT COUNT(*) FROM sn_user <include refid="listWhere"/>
+  </select>
+  <select id="page" resultType="com.adtek.sn.domain.UserEntity">
+    SELECT * FROM sn_user <include refid="listWhere"/>
+    ORDER BY created_at DESC, id DESC LIMIT #{offset}, #{size}
+  </select>
+  <select id="lockLastLogin" resultType="java.time.LocalDateTime">
+    SELECT last_login_at FROM sn_user WHERE id = #{id} FOR UPDATE
+  </select>
+  <update id="setLastLogin">
+    UPDATE sn_user SET last_login_at = #{at} WHERE id = #{id}
+  </update>
+  <update id="setPassword">
+    UPDATE sn_user SET password_hash = #{hash}, must_change_pwd = 0, pwd_changed_at = #{pwdChangedAt},
+      updated_at = #{now}
+    WHERE id = #{id}
+  </update>
+  <update id="setLang">
+    UPDATE sn_user SET lang = #{lang} WHERE id = #{id}
+  </update>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="entity.id">
+    INSERT INTO sn_user(emp_no, name, role, factory_code, status, password_hash, secret_sealed, must_change_pwd,
+      pwd_changed_at, ip_whitelist, created_by, created_at, updated_at)
+    VALUES (#{entity.empNo}, #{entity.name}, #{entity.role}, #{entity.factoryCode}, #{entity.status},
+      #{entity.passwordHash}, #{entity.secretSealed}, 0, #{entity.pwdChangedAt}, #{entity.ipWhitelist},
+      #{entity.createdBy}, #{entity.createdAt}, #{entity.updatedAt})
+  </insert>
+  <delete id="deleteBindings">
+    DELETE FROM sn_user_factory WHERE user_id = #{userId}
+  </delete>
+  <insert id="insertBinding">
+    INSERT INTO sn_user_factory(user_id, factory_code) VALUES (#{userId}, #{factoryCode})
+  </insert>
+  <select id="activeAdmins" resultType="long">
+    SELECT COUNT(*) FROM sn_user WHERE role = 'admin' AND status = 'ACTIVE'
+  </select>
+  <update id="update">
+    UPDATE sn_user SET name = #{name}, role = #{role}, factory_code = #{factoryCode}, ip_whitelist = #{ipWhitelist},
+      updated_at = #{now}
+    WHERE id = #{id}
+  </update>
+  <update id="resetSecret">
+    UPDATE sn_user SET password_hash = #{hash}, secret_sealed = #{sealed}, pwd_changed_at = #{pwdChangedAt},
+      auth_failures = 0, locked_until = NULL, updated_at = #{now}
+    WHERE id = #{id}
+  </update>
+  <update id="disable">
+    UPDATE sn_user SET status = 'DISABLED', disabled_by = #{by}, disabled_at = #{now}, updated_at = #{now}
+    WHERE id = #{id}
+  </update>
+  <update id="enable">
+    UPDATE sn_user SET status = 'ACTIVE', disabled_by = NULL, disabled_at = NULL, updated_at = #{now} WHERE id = #{id}
+  </update>
+  <update id="restoreAdmin">
+    UPDATE sn_user SET role = 'admin', factory_code = NULL, status = 'ACTIVE', password_hash = #{hash},
+      must_change_pwd = 0, pwd_changed_at = #{pwdChangedAt}, disabled_by = NULL, disabled_at = NULL,
+      updated_at = #{now}
+    WHERE id = #{id}
+  </update>
+  <select id="countAll" resultType="long">
+    SELECT COUNT(*) FROM sn_user
+  </select>
+  <select id="lockAuth" resultType="com.adtek.sn.domain.UserEntity">
+    SELECT id, auth_failures, locked_until FROM sn_user WHERE id = #{id} FOR UPDATE
+  </select>
+  <update id="unlockAuth">
+    UPDATE sn_user SET auth_failures = 0, locked_until = NULL WHERE id = #{id}
+  </update>
+  <update id="setAuthFailures">
+    UPDATE sn_user SET auth_failures = #{failures}, locked_until = #{lockedUntil} WHERE id = #{id}
+  </update>
+  <update id="authOk">
+    UPDATE sn_user SET auth_failures = 0, last_login_at = #{now} WHERE id = #{id}
+  </update>
+</mapper>

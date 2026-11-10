@@ -13,6 +13,18 @@
       <artifactId>adtek-system</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.adtek</groupId>
+      <artifactId>adtek-sn</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.adtek</groupId>
+      <artifactId>adtek-integration-k3</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.adtek</groupId>
+      <artifactId>adtek-integration-mes</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-flyway</artifactId>
     </dependency>

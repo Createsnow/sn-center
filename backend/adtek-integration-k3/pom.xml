@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.adtek</groupId>
+    <artifactId>adtek-parent</artifactId>
+    <version>0.1.0</version>
+  </parent>
+  <artifactId>adtek-integration-k3</artifactId>
+  <dependencies>
+    <dependency>
+      <groupId>com.adtek</groupId>
+      <artifactId>adtek-framework</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>module-boundaries</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <!-- 模块边界：只允许依赖下层模块，对新增模块自动生效。 -->
+                  <excludes>
+                    <exclude>com.adtek:*</exclude>
+                  </excludes>
+                  <includes>
+                    <include>com.adtek:adtek-common</include>
+                    <include>com.adtek:adtek-framework</include>
+                  </includes>
+                </bannedDependencies>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

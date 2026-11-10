@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.sn.mapper.K3ConfigMapper">
+  <select id="selectStored" resultType="com.adtek.sn.domain.K3ConfigEntity">
+    SELECT * FROM sn_k3_config WHERE id = 1
+  </select>
+  <select id="lockStored" resultType="com.adtek.sn.domain.K3ConfigEntity">
+    SELECT * FROM sn_k3_config WHERE id = 1 FOR UPDATE
+  </select>
+  <insert id="insert">
+    INSERT INTO sn_k3_config(id, server_url, acct_id, app_id, app_secret, username, lcid, login_timeout,
+      query_timeout, view_timeout, page_retries, page_retry_seconds, updated_by, updated_at)
+    VALUES (1, #{entity.serverUrl}, #{entity.acctId}, #{entity.appId}, #{entity.appSecret}, #{entity.username},
+      #{entity.lcid}, #{entity.loginTimeout}, #{entity.queryTimeout}, #{entity.viewTimeout}, #{entity.pageRetries},
+      #{entity.pageRetrySeconds}, #{entity.updatedBy}, #{entity.updatedAt})
+  </insert>
+  <update id="update">
+    UPDATE sn_k3_config SET server_url = #{entity.serverUrl}, acct_id = #{entity.acctId}, app_id = #{entity.appId},
+      app_secret = #{entity.appSecret}, username = #{entity.username}, lcid = #{entity.lcid},
+      login_timeout = #{entity.loginTimeout}, query_timeout = #{entity.queryTimeout},
+      view_timeout = #{entity.viewTimeout}, page_retries = #{entity.pageRetries},
+      page_retry_seconds = #{entity.pageRetrySeconds}, updated_by = #{entity.updatedBy},
+      updated_at = #{entity.updatedAt}
+    WHERE id = 1
+  </update>
+  <delete id="delete">
+    DELETE FROM sn_k3_config WHERE id = 1
+  </delete>
+  <select id="lastAction" resultType="com.adtek.sn.vo.AuditBriefVO">
+    SELECT created_at, operator, operator_name, result, error_msg, detail FROM sn_audit WHERE action = #{action}
+    ORDER BY created_at DESC LIMIT 1
+  </select>
+  <select id="okHistory" resultType="com.adtek.sn.vo.AuditBriefVO">
+    SELECT created_at, operator, operator_name, result, error_msg, detail FROM sn_audit
+    WHERE action = #{action} AND result = 'OK' ORDER BY created_at DESC LIMIT #{limit}
+  </select>
+</mapper>

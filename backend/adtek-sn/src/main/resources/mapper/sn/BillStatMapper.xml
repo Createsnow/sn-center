@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adtek.sn.mapper.BillStatMapper">
+  <!-- 按单据重算（与分配页、导出页的汇总同一口径）；org_key = 号上的生产组织，待分配为空串 -->
+  <sql id="statSelect">
+    COALESCE(factory_code, '') org_key, MAX(factory_code) factory_code, COUNT(*) qty,
+    COALESCE(SUM(status = 'PENDING_ALLOC'), 0) pending, COALESCE(SUM(status = 'TO_PUSH'), 0) to_push,
+    COALESCE(SUM(suspend IS NOT NULL), 0) suspended, MAX(updated_at) handled_at,
+    COALESCE(SUM(status &lt;&gt; 'PENDING_ALLOC'), 0) alloc_qty,
+    COALESCE(SUM(status &lt;&gt; 'PENDING_ALLOC' AND suspend IS NOT NULL), 0) alloc_suspended,
+    MAX(CASE WHEN status &lt;&gt; 'PENDING_ALLOC' THEN customer_code END) alloc_customer
+  </sql>
+  <select id="pairsOfItems" resultType="com.adtek.sn.vo.PiBillVO">
+    SELECT DISTINCT pi_no, bill_no FROM sn_item WHERE id IN
+    <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+  </select>
+  <select id="pairsOfBatch" resultType="com.adtek.sn.vo.PiBillVO">
+    SELECT DISTINCT pi_no, bill_no FROM sn_item WHERE delivery_batch_no = #{batchNo}
+  </select>
+  <select id="pairsOfBatchItems" resultType="com.adtek.sn.vo.PiBillVO">
+    SELECT DISTINCT i.pi_no, i.bill_no FROM sn_delivery_item d JOIN sn_item i ON i.id = d.item_id
+    WHERE d.batch_id = #{batchId}
+  </select>
+  <select id="pisOfBill" resultType="string">
+    SELECT DISTINCT pi_no FROM sn_item WHERE bill_no = #{billNo}
+  </select>
+  <select id="pairsOfFactory" resultType="com.adtek.sn.vo.PiBillVO">
+    SELECT DISTINCT pi_no, bill_no FROM sn_item WHERE status = #{status} AND factory_code = #{factoryCode}
+  </select>
+  <insert id="markDirty">
+    INSERT INTO sn_bill_stat_dirty(pi_no, bill_no, ver, marked_at) VALUES
+    <foreach collection="rows" item="r" separator=",">(#{r.piNo}, #{r.billNo}, 1, #{now})</foreach>
+    ON DUPLICATE KEY UPDATE ver = ver + 1, marked_at = VALUES(marked_at)
+  </insert>
+  <select id="anyDirty" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_bill_stat_dirty)
+  </select>
+  <select id="dirty" resultType="com.adtek.sn.vo.PiBillVO">
+    SELECT pi_no, bill_no, ver FROM sn_bill_stat_dirty ORDER BY pi_no, bill_no LIMIT #{limit}
+  </select>
+  <select id="computeBill" resultType="com.adtek.sn.domain.BillStatEntity">
+    SELECT <include refid="statSelect"/> FROM sn_item WHERE bill_no = #{bill} AND pi_no = #{pi} GROUP BY org_key
+  </select>
+  <select id="computeAll" resultType="com.adtek.sn.domain.BillStatEntity">
+    SELECT pi_no, bill_no, <include refid="statSelect"/> FROM sn_item GROUP BY pi_no, bill_no, org_key
+  </select>
+  <delete id="deleteBill">
+    DELETE FROM sn_bill_stat WHERE pi_no = #{pi} AND bill_no = #{bill}
+  </delete>
+  <delete id="deleteAll">
+    DELETE FROM sn_bill_stat
+  </delete>
+  <insert id="insertStats">
+    INSERT INTO sn_bill_stat(pi_no, bill_no, org_key, factory_code, qty, pending, to_push, suspended, handled_at,
+      alloc_qty, alloc_suspended, alloc_customer, refreshed_at) VALUES
+    <foreach collection="rows" item="r" separator=",">
+      (#{r.piNo}, #{r.billNo}, #{r.orgKey}, #{r.factoryCode}, #{r.qty}, #{r.pending}, #{r.toPush}, #{r.suspended},
+       #{r.handledAt}, #{r.allocQty}, #{r.allocSuspended}, #{r.allocCustomer}, #{now})
+    </foreach>
+  </insert>
+  <delete id="deleteDirty">
+    DELETE FROM sn_bill_stat_dirty WHERE pi_no = #{pi} AND bill_no = #{bill} AND ver = #{ver}
+  </delete>
+  <select id="anyStat" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_bill_stat)
+  </select>
+  <select id="anyItem" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_item)
+  </select>
+  <select id="recentPairs" resultType="com.adtek.sn.vo.PiBillVO">
+    SELECT pi_no, bill_no FROM sn_bill_stat GROUP BY pi_no, bill_no ORDER BY MAX(refreshed_at) DESC LIMIT #{limit}
+  </select>
+  <select id="allStatPairs" resultType="com.adtek.sn.vo.PiBillVO">
+    SELECT DISTINCT pi_no, bill_no FROM sn_bill_stat
+  </select>
+  <select id="allDirtyPairs" resultType="com.adtek.sn.vo.PiBillVO">
+    SELECT pi_no, bill_no FROM sn_bill_stat_dirty
+  </select>
+  <select id="allItemPairs" resultType="com.adtek.sn.vo.PiBillVO">
+    SELECT DISTINCT pi_no, bill_no FROM sn_item
+  </select>
+  <select id="dirtyFor" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM sn_bill_stat_dirty WHERE pi_no = #{pi} AND bill_no = #{bill})
+  </select>
+  <select id="storedBill" resultType="com.adtek.sn.domain.BillStatEntity">
+    SELECT org_key, factory_code, qty, pending, to_push, suspended, handled_at, alloc_qty, alloc_suspended,
+      alloc_customer
+    FROM sn_bill_stat WHERE pi_no = #{pi} AND bill_no = #{bill}
+  </select>
+</mapper>
