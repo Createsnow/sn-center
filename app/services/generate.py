@@ -1,9 +1,9 @@
 """SN 生成（F-09）。删号见 deletion，分配见 allocation。
 
 生成：在一张 PI 下整单（勾选单据）或按物料行（点选）生成，须先勾选（页面不勾选不能生成）；最小单位是物料行——范围内每个
-还有额度的物料行一次生成它的全部额度，不拆成两次。排号顺序：单据按勾选 / 点选先后，单据内按附件项次从小到大
-（按数字比），项次相同按行号（单据序号）从小到大。号都排在该 PI 的一套流水上，各物料行按自己的规则写出
-（前缀 + 流水 + 分隔符 + 米数 + 分隔符 + 单位 + 后缀）。
+还有额度的物料行一次生成它的全部额度，不拆成两次。排号顺序：所选物料行不分单据（不分组织）按附件项次从小到大
+（按数字比），项次相同按行号（单据序号）从小到大，行号也相同按单据勾选 / 点选先后。号都排在该 PI 的一套流水上，
+各物料行按自己的规则写出（前缀 + 流水 + 分隔符 + 米数 + 分隔符 + 单位 + 后缀）。
 
 流水来源（预演时选）：
 - MAX 从 PI 最大流水号 + 1 起往后编（默认）；
@@ -603,12 +603,12 @@ def attach_order(attach: str) -> tuple:
 
 
 def _gen_order(ls: list[Line]) -> list[Line]:
-    """排号顺序：单据按点选 / 勾选先后（第一次出现的先后）；
-    单据内按附件项次从小到大，项次相同按行号（单据序号）从小到大。"""
+    """排号顺序：同一 PI 所选物料行不分单据（不分组织）按附件项次从小到大（attach_order）；
+    项次相同按行号（单据序号）从小到大；行号也相同（不同单据）按单据点选 / 勾选先后（第一次出现的先后）。"""
     rank: dict[str, int] = {}
     for x in ls:
         rank.setdefault(x.bill_no, len(rank))
-    return sorted(ls, key=lambda x: (rank[x.bill_no], attach_order(x.attach), x.seq))
+    return sorted(ls, key=lambda x: (attach_order(x.attach), x.seq, rank[x.bill_no]))
 
 
 def _scope_keys(pi: str, scope: str, bills_in: list[str] | None, lines_in: list[dict] | None) -> list[tuple[str, int]]:

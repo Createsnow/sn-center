@@ -130,11 +130,11 @@ def test_bill_segments_use_free_and_sn_detail(w, api, sql):
     """单据号段：现有的号按物料行分开、行内按流水连续合并（转入的号按流水归属 PI 单独成段），空闲号段按删号时的
     生成单据归属；生成详情的单据头带号段数与枚数（按物料行计）；SN 明细按流水分页（可只看一个物料行）；
     跳过的流水（没有删号存档）不归属任何单据。"""
-    org, pi, bill = mk(w, ("M1", 3), ("M2", 4), ("M3", 2))
-    _, _, bill2 = mk(w, ("M4", 3), pi=pi, org=org)
+    org, pi, bill = mk(w, ("M1", 3, "100", "1"), ("M2", 4, "100", "2"), ("M3", 2, "100", "3"))
+    _, _, bill2 = mk(w, ("M4", 3, "100", "4"), pi=pi, org=org)
     p = P()
     ok(w.bind_pi(pi, w.rule(p, seq_len=4, with_length=False)))
-    w.generate(pi)  # bill 1～9，bill2 10～12（排号按单据编号）
+    w.generate(pi)  # bill 1～9，bill2 10～12（不分单据按附件项次 1、2、3、4 排号）
     # 流水连续的几个物料行也按物料行分开列出起止号
     s = segs(w, pi, bill)
     assert [(x["bill_seq"], x["material_code"], x["start_seq"], x["end_seq"], x["qty"]) for x in s["use"]] == [

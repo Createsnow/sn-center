@@ -123,15 +123,15 @@ export function compareAttach(a, b) {
 }
 
 /**
- * 生成的排号顺序（与后台 generate._gen_order 一致）：单据按勾选 / 点选先后（第一次出现的先后）；
- * 单据内按附件项次从小到大（compareAttach），项次相同按行号（单据序号）从小到大。
- * attachOf(line) 取物料行的附件项次。返回新数组。
+ * 生成的排号顺序（与后台 generate._gen_order 一致）：所选物料行不分单据（不分组织）按附件项次从小到大
+ * （compareAttach）；项次相同按行号（单据序号）从小到大；行号也相同（不同单据）按单据勾选 / 点选先后
+ * （第一次出现的先后）。attachOf(line) 取物料行的附件项次。返回新数组。
  */
 export function genOrder(lines, attachOf) {
   const rank = new Map();
   for (const l of lines) if (!rank.has(l.bill_no)) rank.set(l.bill_no, rank.size);
   return [...lines].sort(
-    (a, b) => rank.get(a.bill_no) - rank.get(b.bill_no) || compareAttach(attachOf(a), attachOf(b)) || a.seq - b.seq,
+    (a, b) => compareAttach(attachOf(a), attachOf(b)) || a.seq - b.seq || rank.get(a.bill_no) - rank.get(b.bill_no),
   );
 }
 
@@ -151,19 +151,22 @@ export function lineSort(lines) {
 }
 
 /**
- * 同一单据内附件项次相同（按数字比相同）的物料行：[{ bill_no, attach, lines }]，lines 按行号从小到大；
- * 附件项次为空的不算。按 lines 中的先后列出。
+ * 附件项次相同（按数字比相同）的物料行，不分单据：[{ attach, lines }]，lines 按生成顺序（行号从小到大，
+ * 行号也相同按单据在 lines 中第一次出现的先后）；附件项次为空的不算。各组按附件项次从小到大列出。
  */
 export function dupAttach(lines, attachOf) {
+  const rank = new Map();
+  for (const l of lines) if (!rank.has(l.bill_no)) rank.set(l.bill_no, rank.size);
   const groups = [];
   for (const l of lines) {
     const v = String(attachOf(l) ?? "").trim();
     if (!v) continue;
-    const g = groups.find((x) => x.bill_no === l.bill_no && compareAttach(x.attach, v) === 0);
+    const g = groups.find((x) => compareAttach(x.attach, v) === 0);
     if (g) g.lines.push(l);
-    else groups.push({ bill_no: l.bill_no, attach: v, lines: [l] });
+    else groups.push({ attach: v, lines: [l] });
   }
   return groups
     .filter((g) => g.lines.length > 1)
-    .map((g) => ({ ...g, lines: [...g.lines].sort((a, b) => a.seq - b.seq) }));
+    .sort((a, b) => compareAttach(a.attach, b.attach))
+    .map((g) => ({ ...g, lines: [...g.lines].sort((a, b) => a.seq - b.seq || rank.get(a.bill_no) - rank.get(b.bill_no)) }));
 }

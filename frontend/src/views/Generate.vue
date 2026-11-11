@@ -157,7 +157,7 @@
             </el-table-column>
             <el-table-column :label="t('common.attachNo')" width="88">
               <template #default="{ row }">
-                <!-- 金蝶有值也可改（页面值优先，留空即改回金蝶值）；生成时单据内按附件项次从小到大排号 -->
+                <!-- 金蝶有值也可改（页面值优先，留空即改回金蝶值）；生成时所选物料行不分单据按附件项次从小到大排号 -->
                 <span class="cell-input attach-cell" @click.stop>
                   <el-input :model-value="draftOf(row, 'attach')" size="small" maxlength="64" :disabled="!!row.edit_lock"
                     :class="{ missing: !row.edit_lock && !draftOf(row, 'attach') && !row.attach_k3 }"
@@ -523,9 +523,9 @@ function closeDetail() {
 const ruleDlg = reactive({ open: false, lines: [] as OrderLine[] });
 
 /** 底部「选规则」与行内「选规则 / 改规则」打开同一个规则对话框（默认自定义页签，前缀默认点选的第一个单据编码后 7 位，本 PI 已生成的号还在时沿用已用的前缀）。
- *  打开前先查附件项次（只查还有额度、要生成的行；生成时单据内按附件项次从小到大排号）：
+ *  打开前先查附件项次（只查还有额度、要生成的行；生成时所选物料行不分单据按附件项次从小到大排号）：
  *  1. 有没填的：跳到第一条没填的行（按排号顺序），提示补全，不打开；
- *  2. 同一单据内有相同的：跳到这些行，提示将按行号（单据序号）从小到大生成，可继续选规则或回去修改。 */
+ *  2. 有相同的（不分单据）：跳到这些行，提示将按行号（单据序号）从小到大生成，可继续选规则或回去修改。 */
 async function openRuleDialog(lines: OrderLine[]) {
   const keys = lines.map(lineKey);
   busy.value = "rule";
@@ -549,7 +549,7 @@ async function openRuleDialog(lines: OrderLine[]) {
     jumpTo(dups.flatMap((g: any) => g.lines));
     const text = [
       t("generate.attachDupHint"),
-      ...dups.map((g: any) => t("generate.attachDupItem", { bill: g.bill_no, attach: g.attach, seqs: g.lines.map((l: OrderLine) => l.seq).join("、") })),
+      ...dups.map((g: any) => t("generate.attachDupItem", { attach: g.attach, lines: dupLines(g.lines) })),
     ].join("\n");
     try {
       await ElMessageBox.confirm(text, t("generate.attachDupTitle"), {
@@ -565,6 +565,9 @@ async function openRuleDialog(lines: OrderLine[]) {
   ruleDlg.lines = rows;
   ruleDlg.open = true;
 }
+
+/** 相同附件项次提示里一组物料行的文字（按生成顺序）：单据 X ERP行号 n、…… */
+const dupLines = (ls: OrderLine[]) => ls.map((l) => t("generate.attachDupLine", { bill: l.bill_no, seq: l.seq })).join("、");
 
 /** 物料行当前的附件项次（含页面上还没保存的填写）。 */
 const attachOf = (l: OrderLine) => (draftOf(l, "attach") ?? "").trim();
@@ -643,8 +646,8 @@ function lineClass({ row }: { row: OrderLine }) {
     .filter(Boolean)
     .join(" ");
 }
-/** 生成时的排号顺序（与后台一致）：单据按勾选 / 点选先后，单据内按附件项次从小到大（按数字比），项次相同按行号从小到大。
- *  勾选框旁的数字按这个顺序标（单据头标单据次序，物料行标排号次序）。 */
+/** 生成时的排号顺序（与后台一致）：所选物料行不分单据按附件项次从小到大（按数字比），项次相同按行号从小到大，
+ *  行号也相同按单据勾选 / 点选先后。勾选框旁的数字按这个顺序标（单据头标单据第一次出现的次序，物料行标排号次序）。 */
 const genRows = computed(() => genOrder(pickedRows.value, attachOf) as OrderLine[]);
 const genIdx = (l: LineRef) => genRows.value.findIndex((x) => sameLine(x, l));
 const billIdx = (no: string) => [...new Set(genRows.value.map((x) => x.bill_no))].indexOf(no);

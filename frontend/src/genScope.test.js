@@ -84,19 +84,31 @@ test("attachment numbers compare as numbers; non-numbers go after, by text", () 
   assert.equal(compareAttach(" 3 ", "3"), 0);
 });
 
-test("generation order: bills by first pick, lines by attachment no., ties by line no.", () => {
-  const att = { "A#1": "10", "A#2": "2", "A#3": "2", "B#1": "1", "B#2": "3" };
+test("generation order: attachment no. first across bills, then line no., then bill pick order", () => {
+  // 单据 A：行1 项次3、行2 项次1、行3 项次2；单据 B：行1 项次2、行2 项次4、行3 项次1；先勾 B 再勾 A
+  const att = { "A#1": "3", "A#2": "1", "A#3": "2", "B#1": "2", "B#2": "4", "B#3": "1" };
   const of = (l) => att[`${l.bill_no}#${l.seq}`];
-  const picked = [L("B", 2), L("A", 1), L("A", 3), L("B", 1), L("A", 2)];
-  assert.deepEqual(genOrder(picked, of), [L("B", 1), L("B", 2), L("A", 2), L("A", 3), L("A", 1)]);
-  assert.deepEqual(picked[0], L("B", 2), "不改原数组");
+  const picked = [L("B", 1), L("B", 2), L("B", 3), L("A", 1), L("A", 2), L("A", 3)];
+  assert.deepEqual(genOrder(picked, of), [L("A", 2), L("B", 3), L("B", 1), L("A", 3), L("A", 1), L("B", 2)]);
+  assert.deepEqual(picked[0], L("B", 1), "不改原数组");
+  // 项次、行号都相同：按单据第一次出现的先后；项次按数字比（2 与 02 相同，2 在 10 前，不是数字的排后）
+  const att2 = { "A#1": "5", "B#1": "5", "A#2": "10", "B#2": "02", "A#3": "X", "B#3": "2" };
+  const of2 = (l) => att2[`${l.bill_no}#${l.seq}`];
+  assert.deepEqual(genOrder(picked, of2), [L("B", 2), L("B", 3), L("B", 1), L("A", 1), L("A", 2), L("A", 3)]);
 });
 
-test("duplicate attachment numbers are grouped per bill", () => {
-  const att = { "A#1": "1", "A#2": "01", "A#3": "2", "B#1": "1", "B#2": "", "B#3": "" };
+test("duplicate attachment numbers are grouped across bills, lines in generation order", () => {
+  const att = { "A#1": "1", "A#2": "01", "A#3": "2", "B#1": "2", "B#2": "", "B#3": "", "C#1": "1" };
   const of = (l) => att[`${l.bill_no}#${l.seq}`];
-  const lines = [L("A", 2), L("A", 1), L("A", 3), L("B", 1), L("B", 2), L("B", 3)];
-  assert.deepEqual(dupAttach(lines, of), [{ bill_no: "A", attach: "01", lines: [L("A", 1), L("A", 2)] }], "空项次不算重复，跨单据不算");
+  const lines = [L("B", 1), L("B", 2), L("B", 3), L("A", 3), L("A", 2), L("C", 1), L("A", 1)];
+  assert.deepEqual(
+    dupAttach(lines, of),
+    [
+      { attach: "01", lines: [L("A", 1), L("C", 1), L("A", 2)] },
+      { attach: "2", lines: [L("B", 1), L("A", 3)] },
+    ],
+    "跨单据也算；组内按行号，行号相同按单据先后；空项次不算；各组按项次从小到大",
+  );
 });
 
 test("bill lines are listed by attachment no. (numeric), empty last, ties by line no.", () => {
