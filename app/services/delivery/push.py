@@ -638,6 +638,9 @@ def push_once(b: dict) -> str:
             cur = must_batch(b["batch_no"], lock=True)
             if cur["result"] == SUCCESS:
                 return "CONFIRMED"
+            if cur["result"] not in (UNCONFIRMED, FAILED):
+                # 发送期间已作废（号已回号池或已重建）：不再改这一批
+                return "SKIPPED"
             if cur["retry_count"] < len(intervals):
                 wait = intervals[cur["retry_count"]] * 60
                 if out.retry_after is not None:
@@ -677,6 +680,9 @@ def push_once(b: dict) -> str:
         cur = must_batch(b["batch_no"], lock=True)
         if cur["result"] == SUCCESS:
             return "CONFIRMED"
+        if cur["result"] not in (UNCONFIRMED, FAILED):
+            # 发送期间已作废：保持作废，不改回失败（否则又挡住该 PI 的推送、拉取，续推时按旧内容重发）
+            return "SKIPPED"
         receipts.mark_failed(cur, out.code, out.message, out.voidable, now)
         if out.config_problem:
             db.exec(
