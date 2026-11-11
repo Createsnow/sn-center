@@ -15,6 +15,8 @@ class PreviewIn(In):
     seq_mode: str | None = None
     seq_start: int | None = None
     seq_end: int | None = None
+    #: 手动起止号范围不够时剩下的号要用的空号段 [[起, 止], …]（按从小到大使用）；不给为接在最大号之后
+    seq_gaps: list[list[int]] | None = None
 
 
 class RunIn(In):

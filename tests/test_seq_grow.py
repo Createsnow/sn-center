@@ -148,22 +148,23 @@ def test_grow_with_length_unit_and_free_range(w, api, sql):
     ok(w.select(pi, [(bill, 1), (bill, 2)], custom={**c, "seq_start": 98}))
     w.generate(pi, lines=[(bill, 1)])
     assert sns(sql, pi) == [f"{p}98-100M", f"{p}99-100M", f"{p}100-100M"]
-    # 空号段 1..97：手动起止号 96 ~ 101 用 96、97（2 位），不够从最大号之后接着编（101、102，3 位）
+    # 第一次生成就填了起始号：预留表从 98 起（序号 1 98～100，序号 2 101～104），最大号 104
+    # 空号段 1..97：手动起止号 96 ~ 97 用 96、97（2 位），序号 2 放弃预留，不够的从最大号之后接着编（105、106，3 位）
     pv = ok(w.preview(pi, lines=[(bill, 2)], seq=(96, 97)))
     assert [(g["start_sn"], g["end_sn"], g["seq_len"]) for g in pv["items"][0]["seg_list"]] == [
         (f"{p}96-100M", f"{p}97-100M", 2),
-        (f"{p}101-100M", f"{p}102-100M", 3),
+        (f"{p}105-100M", f"{p}106-100M", 3),
     ]
     w.generate(pi, lines=[(bill, 2)], seq=(96, 97))
     # 按 SN 区间查询：跨位数的起止号按号池精确取流水
-    got = ok(api.get("/api/sn" + q(pi=pi, seq_from=f"{p}97-100M", seq_to=f"{p}101-100M"), w.admin))
+    got = ok(api.get("/api/sn" + q(pi=pi, seq_from=f"{p}97-100M", seq_to=f"{p}105-100M"), w.admin))
     assert sorted(x["sn"] for x in got["items"]) == sorted(
-        [f"{p}97-100M", f"{p}98-100M", f"{p}99-100M", f"{p}100-100M", f"{p}101-100M"]
+        [f"{p}97-100M", f"{p}98-100M", f"{p}99-100M", f"{p}100-100M", f"{p}105-100M"]
     )
     # 删号按 SN 起止号（同一物料行）跨位数
     r = ok(w.delete(pi, start_sn=f"{p}99-100M", end_sn=f"{p}100-100M", reason="t"))
     assert r["qty"] == 2
-    assert sns(sql, pi) == [f"{p}96-100M", f"{p}97-100M", f"{p}98-100M", f"{p}101-100M", f"{p}102-100M"]
+    assert sns(sql, pi) == [f"{p}96-100M", f"{p}97-100M", f"{p}98-100M", f"{p}105-100M", f"{p}106-100M"]
     rec = ok(w.api.get(f"/api/generate/deleted?pi={pi}", w.admin)).body[0]
     assert (rec["start_sn"], rec["end_sn"]) == (f"{p}99-100M", f"{p}100-100M"), "删号记录的起止号按位数比"
 
@@ -202,7 +203,7 @@ def test_locked_prefix_format_after_all_sns_deleted(w, api, sql):
     assert w.select(pi, [(bill, 1)], custom=c).code == "RULE_PREFIX_FORMAT_LOCKED"
     ok(w.select(pi, [(bill, 1)], custom={**ctx["prefix_locked"][p], "seq_grow": True}))
     w.generate(pi)
-    assert sns(sql, pi) == [f"{p}{i:05d}" for i in (4, 5, 6)], "最大流水号不退回，接着编"
+    assert sns(sql, pi) == [f"{p}{i:05d}" for i in (1, 2, 3)], "删掉的流水仍是该行的预留，再生成回到原号段"
     # 上限自动突破另出的版本不列为锁定格式（锁定的仍是原版本的位数）
     _, pi2, bill2 = mk(w, ("M1", 101), org=org)
     p2 = P()

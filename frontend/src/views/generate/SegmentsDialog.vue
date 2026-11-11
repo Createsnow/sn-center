@@ -1,11 +1,13 @@
 <template>
   <!-- 单据号段：已用号段（本单据现有的号按物料行分开列出起止号，行内按流水连续合并，转入的号单独成段）/ 空闲号段（本单据删号腾出）；
-       不给单据时只列整张 PI 的空闲号段（多一列来源单据）。已用号段可看 SN 明细（只有一列 SN，只看该物料行该段）；空闲号段可「用这段」 -->
+       不给单据时只列整张 PI 的空闲号段（多一列来源单据）。已用号段可看 SN 明细（只有一列 SN，只看该物料行该段）；空闲号段可「用这段」；
+       预留号段：各物料行预留里还空着的流水（号段预留，生成时用；不能「用这段」） -->
   <el-dialog v-model="visible" :title="title" :width="bill && tab === 'use' ? 'min(1000px, 96vw)' : 'min(780px, 96vw)'">
     <div v-loading="loading" class="segs">
-      <el-tabs v-if="bill" v-model="tab">
-        <el-tab-pane :label="t('generate.segTabUse', { n: num(useRows.length) })" name="use" />
+      <el-tabs v-model="tab">
+        <el-tab-pane v-if="bill" :label="t('generate.segTabUse', { n: num(useRows.length) })" name="use" />
         <el-tab-pane :label="t('generate.segTabFree', { n: num(freeRows.length) })" name="free" />
+        <el-tab-pane :label="t('generate.segTabReserved', { n: num(reservedRows.length) })" name="reserved" />
       </el-tabs>
 
       <template v-if="bill && tab === 'use'">
@@ -54,6 +56,18 @@
           </el-table-column>
         </el-table>
         <p v-if="data?.use_truncated" class="muted">{{ t("generate.gapsTruncated", { n: data.use.length }) }}</p>
+      </template>
+
+      <template v-else-if="tab === 'reserved'">
+        <el-table :data="reservedRows" size="small" max-height="420" :empty-text="t('generate.reservedNone')">
+          <el-table-column v-if="!bill" :label="t('common.billNo')" min-width="130" prop="bill_no" />
+          <el-table-column :label="t('common.lineNo')" width="80" prop="seq" />
+          <el-table-column :label="t('generate.seqStart')" prop="start_seq" align="right" />
+          <el-table-column :label="t('generate.seqEnd')" prop="end_seq" align="right" />
+          <el-table-column :label="t('common.qty')" align="right">
+            <template #default="{ row }"><span class="num">{{ num(row.qty) }}</span></template>
+          </el-table-column>
+        </el-table>
       </template>
 
       <template v-else>
@@ -106,7 +120,7 @@ const { t } = useI18n();
 const visible = ref(false);
 const loading = ref(false);
 const bill = ref("");
-const tab = ref<"use" | "free">("use");
+const tab = ref<"use" | "free" | "reserved">("use");
 const data = ref<any>(null);
 
 const title = computed(() => (bill.value ? t("generate.segTitle", { bill: bill.value }) : t("generate.segPiTitle", { pi: props.pi })));
@@ -114,6 +128,8 @@ const title = computed(() => (bill.value ? t("generate.segTitle", { bill: bill.v
 const useRows = computed<any[]>(() => data.value?.use ?? []);
 const freeRows = computed<any[]>(() => (bill.value ? data.value?.free ?? [] : props.gaps?.segments ?? []));
 const freeTruncated = computed(() => (bill.value ? data.value?.free_truncated : props.gaps?.truncated));
+/** 预留号段里还空着的流水（单据时为本单据各物料行的，否则整张 PI 的） */
+const reservedRows = computed<any[]>(() => (bill.value ? data.value?.reserved ?? [] : props.gaps?.reserved ?? []));
 
 /** 物料行合并：相邻、ERP行号 / 物料 / 附件项次都相同的段合成一组；组首行记 span（段数）与 qty（枚数），其余行 span = 0。 */
 const lineGroups = computed(() => {
@@ -140,9 +156,9 @@ function lineSpan({ rowIndex, columnIndex }: { rowIndex: number; columnIndex: nu
   return { rowspan: span, colspan: span ? 1 : 0 };
 }
 
-async function open(opts: { bill?: string; tab?: "use" | "free" }) {
+async function open(opts: { bill?: string; tab?: "use" | "free" | "reserved" }) {
   bill.value = opts.bill || "";
-  tab.value = opts.tab || "use";
+  tab.value = opts.tab || (bill.value ? "use" : "free");
   data.value = null;
   visible.value = true;
   if (!bill.value) return;

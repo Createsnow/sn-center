@@ -103,6 +103,8 @@
   "GEN_DUPLICATE_SN": "SN đầy đủ {sn} trùng với SN đã có của PI {pi}; toàn bộ lần tạo đã hoàn tác (không tự bỏ qua số)",
   "GEN_JOB_NOT_FOUND": "Không tìm thấy tác vụ tạo",
   "GEN_SEQ_RANGE_INVALID": "Số tuần tự bắt đầu và kết thúc phải là số nguyên dương, số kết thúc không nhỏ hơn số bắt đầu",
+  "GEN_SHIFT_CONFLICT": "Chứng từ {bill_no} dòng {seq}: tuần tự {start}–{end} sau khi dịch theo số bắt đầu trùng với SN đã có hoặc đoạn dự trữ của dòng khác; hãy đổi số bắt đầu",
+  "GEN_GAP_INVALID": "Tuần tự {start}–{end} không phải đoạn trống (đã dùng hoặc dự trữ cho dòng khác); hãy chọn lại",
   "GEN_IMPORTED_SN": "SN đầy đủ {sn} là SN đã nhập (PI {pi}), không thể tạo; toàn bộ lần tạo đã hoàn tác (không tự bỏ qua số)",
   "DELETE_TARGET_INVALID": "Hãy chọn chứng từ, dòng vật tư cần xóa, hoặc nhập SN (đầu / cuối)",
   "DELETE_SN_NOT_FOUND": "Không có SN {sn} trong PI {pi}",

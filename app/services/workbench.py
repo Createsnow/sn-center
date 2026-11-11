@@ -267,6 +267,8 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
     customer = next((r["customer_code"] for r in snap if r["customer_code"]), None) or orders.customer_of_pi(pi) or ""
     last = generate.last_seq(pi)
     ls = {(x.bill_no, x.seq): x for x in generate._load_lines(pi, keys)}
+    # 各物料行下次生成的第一个流水：有预留按预留（含起始号平移），否则最大号 + 1
+    firsts = generate.first_seqs(pi, list(ls.values()), last)
     bills: dict[str, dict] = {}
     for r in snap:
         k = (r["bill_no"], r["seq"])
@@ -286,7 +288,12 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
             b["_mt"] = r["modify_time"]
         x = ls[k]
         v = orders.line_view(
-            r, counts.get(k), fills.get(k), rules.info(x.res, x.length, last + 1, x.unit), lens.get(k), units.get(k)
+            r,
+            counts.get(k),
+            fills.get(k),
+            rules.info(x.res, x.length, firsts.get(k, last + 1), x.unit),
+            lens.get(k),
+            units.get(k),
         )
         v["issues"] = x.issues
         b["lines"].append(v)
@@ -370,7 +377,8 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
                 reverse=True,
             )
         ],
-        "counter": {"last_seq_dec": last, "next_seq": last + 1},
+        # reserve_start：号段预留的预留起号（规则弹窗起始号的默认值；本 PI 还没有预留为 null）
+        "counter": {"last_seq_dec": last, "next_seq": last + 1, "reserve_start": gap["reserve_start"]},
         "summary": {
             "total_qty": sum(b["total_qty"] for b in bills.values()),
             "generated_qty": gen_own([pi], facs).get(pi, 0),

@@ -109,6 +109,8 @@ E = {
 "GEN_DUPLICATE_SN": ("Full SN {sn} duplicates an existing SN of PI {pi}; the whole generation was rolled back (no auto-skip)", "SN đầy đủ {sn} trùng với SN đã có của PI {pi}; toàn bộ lần tạo đã hoàn tác (không tự bỏ qua số)"),
 "GEN_IMPORTED_SN": ("Full SN {sn} is an imported SN (PI {pi}) and cannot be generated; the whole generation was rolled back (no auto-skip)", "SN đầy đủ {sn} là SN đã nhập (PI {pi}), không thể tạo; toàn bộ lần tạo đã hoàn tác (không tự bỏ qua số)"),
 "GEN_JOB_NOT_FOUND": ("Generation job not found", "Không tìm thấy tác vụ tạo"),
+"GEN_SHIFT_CONFLICT": ("Bill {bill_no} line {seq}: serials {start}–{end} after shifting by the start number overlap existing SNs or another line's reserved range; change the start number", "Chứng từ {bill_no} dòng {seq}: tuần tự {start}–{end} sau khi dịch theo số bắt đầu trùng với SN đã có hoặc đoạn dự trữ của dòng khác; hãy đổi số bắt đầu"),
+"GEN_GAP_INVALID": ("Serials {start}–{end} are not a free range (already used or reserved for another line); choose again", "Tuần tự {start}–{end} không phải đoạn trống (đã dùng hoặc dự trữ cho dòng khác); hãy chọn lại"),
 "GEN_SEQ_RANGE_INVALID": ("Start and end serial numbers must be positive integers, and the end cannot be less than the start", "Số tuần tự bắt đầu và kết thúc phải là số nguyên dương, số kết thúc không nhỏ hơn số bắt đầu"),
 "DELETE_TARGET_INVALID": ("Select the documents or material lines to delete, or enter SNs (start / end)", "Hãy chọn chứng từ, dòng vật tư cần xóa, hoặc nhập SN (đầu / cuối)"),
 "DELETE_SN_NOT_FOUND": ("SN {sn} not found under PI {pi}", "Không có SN {sn} trong PI {pi}"),

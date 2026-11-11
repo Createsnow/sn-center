@@ -505,8 +505,9 @@ def test_custom_rule_seq_start_validation_and_sample(w, api):
 
 
 def test_custom_rule_seq_start_with_range_and_used_prefix(w, api, sql):
-    """手动起止号时范围内的空闲流水先用，溢出部分才按起始号；本 PI 已用过这个前缀时流水接续，
-    填了更大的起始号则往后跳（物料行仍记那条规则，起始号另记、生成一次后清掉），跳过的流水成为空号段。"""
+    """手动起止号时范围内的空闲流水先用，溢出部分才按起始号；第一次生成就建号段预留（预留起号 1）；
+    本 PI 已用过这个前缀时，填了起始号的物料行按「新号 = 预留号 − 预留起号 + 起始号」平移（物料行仍记那条规则，
+    起始号另记、生成一次后清掉），原预留与跳过的流水成为空号段；没填起始号的按预留号段生成。"""
     org, pi, bill = mk(w, ("M1", 4), ("M2", 2), ("M3", 2), ("M4", 2))
     p = P()
     c = m(prefix=p, base=10, seq_len=4, with_length=False)
@@ -514,6 +515,13 @@ def test_custom_rule_seq_start_with_range_and_used_prefix(w, api, sql):
     w.generate(pi, lines=[(bill, 1)], seq=(1, 2))
     seqs = [r["seq_dec"] for r in sql.all("SELECT seq_dec FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
     assert seqs == [1, 2, 50, 51]
+    # 预留：序号 1 放弃（1～4 → 实际 1、2、50、51），序号 2、3、4 依次 5～6、7～8、9～10
+    g = ok(api.get(f"/api/generate/gaps?pi={pi}", w.admin))
+    assert g["reserve_start"] == 1 and [(x["seq"], x["start_seq"], x["end_seq"]) for x in g["reserved"]] == [
+        (2, 5, 6),
+        (3, 7, 8),
+        (4, 9, 10),
+    ]
     rid = sql.scalar("SELECT id FROM sn_rule WHERE rule_code = %s", f"PI-{pi}-1")
     # 已用前缀、起始号大于接续的下一个号（52）：沿用那条规则，起始号另记在物料行
     ok(w.select(pi, [(bill, 2)], custom={**c, "seq_start": 500}))
@@ -521,23 +529,30 @@ def test_custom_rule_seq_start_with_range_and_used_prefix(w, api, sql):
     assert (row["rule_id"], json.loads(row["custom_json"])) == (rid, {"seq_start": 500})
     ctx = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))
     rule2 = next(x for b in ctx["bills"] for x in b["lines"] if x["seq"] == 2)["rule"]
-    assert (rule2["plan"], rule2["rule_id"], rule2["seq_start"], rule2["first_sn"]) == ("USE", rid, 500, f"{p}0500")
+    # 平移：预留 5～6 → 5 − 1 + 500 = 504～505
+    assert (rule2["plan"], rule2["rule_id"], rule2["seq_start"], rule2["first_sn"]) == ("USE", rid, 500, f"{p}0504")
     w.generate(pi, lines=[(bill, 2)])
     seqs = [r["seq_dec"] for r in sql.all("SELECT seq_dec FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
-    assert seqs == [1, 2, 50, 51, 500, 501]
+    assert seqs == [1, 2, 50, 51, 504, 505]
     assert sql.count("SELECT COUNT(*) FROM sn_rule WHERE rule_code LIKE %s", f"PI-{pi}-%") == 1, "不另建规则"
     row = sql.one("SELECT rule_id, custom_json FROM sn_line_rule WHERE bill_no = %s AND seq = 2", bill)
     assert (row["rule_id"], row["custom_json"]) == (rid, None), "起始号只管这一次生成"
     gaps = ok(api.get(f"/api/generate/gaps?pi={pi}", w.admin))
-    assert [(g["start_seq"], g["end_seq"]) for g in gaps["segments"]][-1] == (52, 499), "跳过的流水成为空号段"
-    # 起始号不大于接续的下一个号：照常接续；没填起始号：custom_json 为空，同原来
+    assert [(g["start_seq"], g["end_seq"]) for g in gaps["segments"]] == [(3, 6), (11, 49), (52, 503)], (
+        "序号 1 原预留 3～4、序号 2 原预留 5～6 退回，跳过的流水成为空号段"
+    )
+    # 序号 3 起始号 10：预留 7～8 平移到 16～17（落在空号段里）；序号 4 没填起始号：按预留 9～10，custom_json 为空
     ok(w.select(pi, [(bill, 3)], custom={**c, "seq_start": 10}))
     ok(w.select(pi, [(bill, 4)], custom=c))
     assert sql.scalar("SELECT custom_json FROM sn_line_rule WHERE bill_no = %s AND seq = 4", bill) is None
     w.generate(pi, lines=[(bill, 3), (bill, 4)])
     seqs = [r["seq_dec"] for r in sql.all("SELECT seq_dec FROM sn_item WHERE pi_no = %s ORDER BY seq_dec", pi)]
-    assert seqs[-4:] == [502, 503, 504, 505]
+    assert seqs == [1, 2, 9, 10, 16, 17, 50, 51, 504, 505]
     assert sql.count("SELECT COUNT(*) FROM sn_line_rule WHERE bill_no = %s AND custom_json IS NOT NULL", bill) == 0
+    # 平移后与已有的号重叠：不能生成
+    ok(w.delete(pi, lines=[(bill, 4)]))
+    ok(w.select(pi, [(bill, 4)], custom={**c, "seq_start": 42}))
+    assert w.preview(pi, lines=[(bill, 4)]).code == "GEN_SHIFT_CONFLICT", "9～10 平移到 50～51，与序号 1 的号重叠"
 
 
 def test_used_prefix_seq_start_cleared_by_reselect(w, api, sql):
@@ -657,17 +672,17 @@ def test_attach_and_length_locked_once_line_has_sns(w, api, sql):
         f"{p}000002000",
         f"{p}000003000",
         f"{p}000004000",
-        f"{p}000005000",
-        f"{p}000006000",
-    ], "同一物料行接着生成仍用锁定的米数"
-    # 删掉该行的号后可修改，再生成用新值；最大号不退回，新号接在最大号之后
+        f"{p}000007000",
+        f"{p}000008000",
+    ], "同一物料行接着生成仍用锁定的米数；预留 1～4 用完，新增的 2 枚接在最大号之后（5～6 是序号 2 的预留）"
+    # 删掉该行的号后可修改，再生成用新值；删掉的流水仍是该行的预留，再生成回到原号段
     assert j["status"] == "SUCCESS"
     ok(w.delete(pi, lines=[(bill, 1)], reason="改米数"))
     r = ok(api.put("/api/orders/length", m(bill_no=bill, seq=1, value="5"), w.admin))
     assert (r["length"], r["edit_lock"]) == ("5", None)
     w.generate(pi, lines=[(bill, 1)])
     assert sql.scalar("SELECT sn FROM sn_item WHERE bill_seq = 1 AND pi_no = %s ORDER BY seq_dec LIMIT 1", pi) == (
-        f"{p}0000075"
+        f"{p}0000015"
     )
     w.allocate(pi)
     line = {x["seq"]: x for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"]}
@@ -787,9 +802,12 @@ def test_gen_order_bills_by_pick_then_attach_as_number_ties_by_line(w, api, sql)
             a,
         )
     }
-    assert rows == {1: (1, 2, "1"), 2: (3, 4, "2"), 3: (5, 6, "02"), 4: (7, 8, "A")}, (
-        "金蝶值改成 1 后排第一，号上写页面值"
+    assert rows == {1: (1, 2, "1"), 2: (4, 5, "2"), 3: (6, 7, "02"), 4: (9, 10, "A")}, (
+        "金蝶值改成 1 后排第一，号上写页面值；单据 b 没勾选也预留了位置：b-2（项次 1、行号 2）3、b-1（项次 5）8"
     )
+    w.generate(pi, bills=[b])
+    seqs = {r["bill_seq"]: r["seq_dec"] for r in sql.all("SELECT bill_seq, seq_dec FROM sn_item WHERE bill_no = %s", b)}
+    assert seqs == {2: 3, 1: 8}, "之后单独生成 b：用预留号段，整张 PI 1～10 按附件项次接号"
 
 
 def test_gen_order_attach_first_across_bills_and_orgs(w, sql):

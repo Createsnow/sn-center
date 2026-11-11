@@ -55,6 +55,12 @@ test("seqSource: MAX by default, RANGE needs a valid start / end (end defaults t
   assert.deepEqual(seqSource(undefined, 3, 4).body, { seq_mode: "MAX" });
   assert.deepEqual(seqSource("RANGE", 4, 7).body, { seq_mode: "RANGE", seq_start: 4, seq_end: 7 });
   assert.deepEqual(seqSource("RANGE", "5", "").body, { seq_mode: "RANGE", seq_start: 5, seq_end: 5 }, "只填起号 = 单个号");
+  // 范围不够时剩下的号用勾选的空号段（按从小到大）；没勾选请求体与原来相同；MAX 时不带
+  assert.deepEqual(seqSource("RANGE", 11, 15, [[100, 199], [16, 20]]).body, {
+    seq_mode: "RANGE", seq_start: 11, seq_end: 15, seq_gaps: [[16, 20], [100, 199]],
+  });
+  assert.deepEqual(seqSource("RANGE", 11, 15, []).body, { seq_mode: "RANGE", seq_start: 11, seq_end: 15 });
+  assert.deepEqual(seqSource("MAX", null, null, [[1, 2]]).body, { seq_mode: "MAX" });
   for (const [a, b] of [[null, 3], [0, 3], [5, 4], [1.5, 3], ["x", 3]]) {
     assert.deepEqual(seqSource("RANGE", a, b), { body: null, error: "SEQ_RANGE" }, `${a}~${b}`);
   }

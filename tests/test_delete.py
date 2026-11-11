@@ -31,13 +31,20 @@ def gaps(w, pi: str) -> list[tuple[int, int]]:
     return [(x["start_seq"], x["end_seq"]) for x in g["segments"]]
 
 
+def reserved(w, pi: str) -> list[tuple[int, int, int]]:
+    """各物料行预留号段里还空着的流水：（序号，起，止）。"""
+    g = ok(w.api.get(f"/api/generate/gaps?pi={pi}", w.admin))
+    return [(x["seq"], x["start_seq"], x["end_seq"]) for x in g["reserved"]]
+
+
 def counts(sql, bill: str, seq: int) -> tuple[int, int, int]:
     c = sql.one("SELECT * FROM sn_line_count WHERE bill_no = %s AND seq = %s", bill, seq)
     return int(c["own_generated"]), int(c["gen_count"]), int(c["alloc_count"])
 
 
 def test_delete_any_state_keeps_max_and_returns_quota(w, api, sql):
-    """已分配的号也能删；最大号不退回、留下空号段；额度、计数退回；删前的号存档；默认从最大号之后接着编。"""
+    """已分配的号也能删；最大号不退回，删掉的流水仍是该物料行的预留号段（不是空号段）；额度、计数退回；删前的号存档；
+    再生成默认回到该行的预留号段，数量调大多出来的接在最大号之后。"""
     org, pi, bill = mk(w, ("M1", 3), ("M2", 4), ("M3", 2))
     p = P()
     ok(w.bind_pi(pi, w.rule(p, with_length=False)))
@@ -48,7 +55,7 @@ def test_delete_any_state_keeps_max_and_returns_quota(w, api, sql):
     r = ok(w.delete(pi, lines=[(bill, 2)], reason="数量改了"))
     assert (r["qty"], r["lines"]) == (4, [{"bill_no": bill, "seq": 2, "qty": 4}])
     assert sql.scalar("SELECT last_seq_dec FROM sn_pi_counter WHERE pi_no = %s", pi) == 9, "最大号不退回"
-    assert gaps(w, pi) == [(4, 7)]
+    assert (gaps(w, pi), reserved(w, pi)) == ([], [(2, 4, 7)])
     assert counts(sql, bill, 2) == (0, 0, 0)
     assert (
         sql.count("SELECT COUNT(*) FROM sn_item_deleted WHERE del_no = %s AND status = 'ALLOCATED'", r["del_no"]) == 4
@@ -56,16 +63,17 @@ def test_delete_any_state_keeps_max_and_returns_quota(w, api, sql):
     assert sql.scalar("SELECT reason FROM sn_item_deleted WHERE del_no = %s LIMIT 1", r["del_no"]) == "数量改了"
     rec = ok(api.get(f"/api/generate/deleted?pi={pi}", w.admin)).body
     assert [(x["del_no"], x["qty"], x["bills"]) for x in rec] == [(r["del_no"], 4, [bill])]
-    # 数量改了再生成：默认从最大号之后接着编，空号段不用
+    # 数量改大再生成：回到预留 4～7，多出的 1 枚接在最大号之后
     BILLS[bill]["TreeEntity"][1]["Qty"] = 5.0
     w.touch(bill)
     w.compare()
     j = w.generate(pi, lines=[(bill, 2)])
-    assert (j["start_seq_dec"], j["end_seq_dec"]) == (10, 14)
-    assert gaps(w, pi) == [(4, 7)]
-    # 删中间的物料行（待分配）也行，不限流水先后
+    assert (j["start_seq_dec"], j["end_seq_dec"]) == (4, 10)
+    assert [q for s, q, _ in sns(sql, pi) if s == 2] == [4, 5, 6, 7, 10]
+    assert (gaps(w, pi), reserved(w, pi)) == ([], [])
+    # 删中间的物料行（待分配）也行，不限流水先后；删掉的流水留作该行的预留
     ok(w.delete(pi, lines=[(bill, 1)]))
-    assert gaps(w, pi) == [(1, 7)]
+    assert (gaps(w, pi), reserved(w, pi)) == ([], [(1, 1, 3)])
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s", pi) == 7
 
 
@@ -82,7 +90,9 @@ def test_regenerate_into_gaps_with_overflow(w, api, sql):
     assert w.preview(pi, lines=[(bill, 2)], seq=(0, 4)).code == "GEN_SEQ_RANGE_INVALID"
     pv = ok(w.preview(pi, lines=[(bill, 2)], seq=(4, 7)))
     assert pv["items"][0]["segs"] == [[4, 7]] and (pv["range_qty"], pv["overflow_qty"]) == (4, 0)
-    assert pv["gaps"]["segments"] == [{"start_seq": 4, "end_seq": 7, "qty": 4, "bill_no": bill}]
+    # 删掉的流水仍是序号 2 的预留（不是空号段）；本次生成的就是序号 2，手动起止号照样能用
+    assert pv["gaps"]["segments"] == []
+    assert pv["gaps"]["reserved"] == [{"bill_no": bill, "seq": 2, "start_seq": 4, "end_seq": 7, "qty": 4}]
     w.generate(pi, lines=[(bill, 2)], seq=(4, 7))
     assert sns(sql, pi) == before, "同样的参数用回空号段，号与删掉的相同"
     assert sql.scalar("SELECT last_seq_dec FROM sn_pi_counter WHERE pi_no = %s", pi) == 9
@@ -103,7 +113,7 @@ def test_regenerate_into_gaps_with_overflow(w, api, sql):
     assert [x[1] for x in sns(sql, pi) if x[0] == 1] == [1, 2, 3, 10, 11]
     assert sql.scalar("SELECT last_seq_dec FROM sn_pi_counter WHERE pi_no = %s", pi) == 11
     assert gaps(w, pi) == []
-    # 起止号在最大号之后：跳过的流水成为空号段
+    # 起止号在最大号之后：跳过的流水成为空号段；序号 3 放弃预留，原预留 8～9 退回成空号段
     ok(w.delete(pi, lines=[(bill, 3)]))
     w.generate(pi, lines=[(bill, 3)], seq=(20, 21))
     assert gaps(w, pi) == [(8, 9), (12, 19)]
@@ -154,8 +164,9 @@ def test_bill_segments_use_free_and_sn_detail(w, api, sql):
         (8, 9, 2, False),
     ]
     assert (s["use"][0]["start_sn"], s["use"][0]["end_sn"], s["use"][0]["pending"]) == (f"{p}0001", f"{p}0003", 3)
-    assert [(x["start_seq"], x["end_seq"], x["bill_no"]) for x in s["free"]] == [(4, 7, bill)]
-    assert (s["next_seq"], s["use_qty"], s["free_qty"]) == (13, 5, 4)
+    # 删掉的流水仍是序号 2 的预留，不是空闲号段
+    assert s["free"] == [] and [(x["seq"], x["start_seq"], x["end_seq"]) for x in s["reserved"]] == [(2, 4, 7)]
+    assert (s["next_seq"], s["use_qty"], s["free_qty"], s["reserved_qty"]) == (13, 5, 0, 4)
     assert segs(w, pi, bill2)["free"] == []
     # 别的 PI 的号转入本单据：按流水归属 PI 单独成段，排在所在物料行本 PI 的号段之后
     _, pi2, bill3 = mk(w, ("M5", 2), org=org)
@@ -171,7 +182,7 @@ def test_bill_segments_use_free_and_sn_detail(w, api, sql):
     ]
     ctx = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))
     heads = {b["bill_no"]: b["segments"] for b in ctx["bills"]}
-    assert heads[bill] == {"use_count": 3, "use_qty": 7, "free_count": 1, "free_qty": 4}
+    assert heads[bill] == {"use_count": 3, "use_qty": 7, "free_count": 0, "free_qty": 0}
     assert heads[bill2] == {"use_count": 1, "use_qty": 3, "free_count": 0, "free_qty": 0}
     # SN 明细
     d = ok(api.get(f"/api/generate/segments/sns?pi={pi}&bill_no={bill}&start=1&end=9&page=2&size=3", w.admin))
@@ -182,40 +193,41 @@ def test_bill_segments_use_free_and_sn_detail(w, api, sql):
         "GEN_SEQ_RANGE_INVALID"
     )
     assert api.get(f"/api/generate/segments?pi={pi}", w.admin).code == "ORDER_BILL_REQUIRED"
-    # 起止号在最大号之后：跳过的流水是空号段，但不归属任何单据
+    # 起止号在最大号之后：跳过的流水是空号段，但不归属任何单据；bill2 放弃预留，原预留 10～12 退回成空号段
     ok(w.delete(pi, lines=[(bill2, 1)]))
     w.generate(pi, lines=[(bill2, 1)], seq=(20, 22))
     g = ok(api.get(f"/api/generate/gaps?pi={pi}", w.admin))
     assert [(x["start_seq"], x["end_seq"], x["bill_no"]) for x in g["segments"]] == [
-        (4, 7, bill),
         (10, 12, bill2),
         (13, 19, ""),
     ]
 
 
 def test_two_lines_share_gaps_in_order_and_preview_tracks_gaps(w, api, sql):
-    """几个物料行按排号顺序（单据内按附件项次，项次相同按行号，与点选先后无关）依次用空号段；
-    按手动起止号预演后空号段变了，确认生成时预演失效。"""
+    """删号后流水仍是各行的预留：手动起止号时本次生成的几个物料行按排号顺序（附件项次、行号，与点选先后无关）
+    依次用范围内空着的流水（含本次各行自己的预留），不用别的物料行的预留；按预留生成回到原号段。"""
     org, pi, bill = mk(w, ("M1", 2), ("M2", 2), ("M3", 2), ("M4", 1))
     ok(w.bind_pi(pi, w.rule(P(), with_length=False)))
     w.generate(pi)
     ok(w.delete(pi, lines=[(bill, 1), (bill, 3)]))
-    assert gaps(w, pi) == [(1, 2), (5, 6)]
+    assert (gaps(w, pi), reserved(w, pi)) == ([], [(1, 1, 2), (3, 5, 6)])
     pv = ok(w.preview(pi, lines=[(bill, 3), (bill, 1)], seq=(1, 6)))
     assert [(x["seq"], x["segs"]) for x in pv["items"]] == [(1, [[1, 2]]), (3, [[5, 6]])]
     pv = ok(w.preview(pi, lines=[(bill, 3), (bill, 1)], seq=(5, 6)))
     assert [(x["seq"], x["segs"]) for x in pv["items"]] == [(1, [[5, 6]]), (3, [[8, 9]])]
-    # 预演后又删了号（空号段变了）：确认生成按最新空号段重算，与预演不同即失效
+    # 别的物料行（序号 3、4）的预留不能用：范围内没有空着的流水，全部接在最大号之后
     ok(w.delete(pi, lines=[(bill, 4)]))
     pv = ok(w.preview(pi, lines=[(bill, 1)], seq=(3, 7)))
-    assert pv["items"][0]["segs"] == [[5, 6]]
-    ok(w.delete(pi, lines=[(bill, 2)]))
-    assert w.api.post("/api/generate/run", m(token=pv["token"]), w.admin).code == "GEN_PREVIEW_CHANGED"
+    assert pv["items"][0]["segs"] == [[8, 9]] and (pv["range_qty"], pv["overflow_qty"]) == (0, 2)
+    # 序号 3 放弃预留（指定 20～21）后 5～6 成为空号段，序号 1 再预演就用上；之前的预演失效
+    w.generate(pi, lines=[(bill, 3)], seq=(20, 21))
+    assert gaps(w, pi) == [(5, 6), (8, 19)]
+    assert w.api.post("/api/generate/run", m(token=pv["token"]), w.admin).code == "GEN_PREVIEW_STALE"
     pv = ok(w.preview(pi, lines=[(bill, 1)], seq=(3, 7)))
-    assert pv["items"][0]["segs"] == [[3, 4]]
-    # 不选起止号（从最大号之后）不受空号段影响
-    j = w.generate(pi, lines=[(bill, 3)])
-    assert j["start_seq_dec"] == 8
+    assert pv["items"][0]["segs"] == [[5, 6]]
+    # 按预留生成：序号 4 回到原号段 7
+    j = w.generate(pi, lines=[(bill, 4)])
+    assert (j["start_seq_dec"], j["end_seq_dec"]) == (7, 7)
 
 
 def test_delete_single_sn_and_range(w, api, sql):
@@ -227,7 +239,7 @@ def test_delete_single_sn_and_range(w, api, sql):
     w.allocate(pi)
     ok(w.delete(pi, start_sn=f"{p}0005"))
     ok(w.delete(pi, start_sn=f"{p}0007", end_sn=f"{p}0008"))
-    assert gaps(w, pi) == [(5, 5), (7, 8)]
+    assert (gaps(w, pi), reserved(w, pi)) == ([], [(1, 5, 5), (1, 7, 8)])
     assert counts(sql, bill, 1) == (7, 7, 7)
     line = next(x for x in ok(api.get(f"/api/orders/{bill}/lines", w.admin))["lines"] if x["seq"] == 1)
     assert line["quota"] == 3
@@ -254,7 +266,7 @@ def test_delete_returns_quota_to_current_line(w, api, sql):
     ok(w.delete(pi2, lines=[(dst, 1)]))
     assert counts(sql, src, 1) == (5, 0, 0), "生成行不变"
     assert counts(sql, dst, 1) == (0, 0, 0)
-    assert gaps(w, pi) == [(1, 5)], "流水空出在原 PI"
+    assert (gaps(w, pi), reserved(w, pi)) == ([], [(1, 1, 5)]), "流水空出在原 PI（仍是生成行的预留）"
     assert gaps(w, pi2) == []
     ok(w.bind_pi(pi2, w.rule(P(), with_length=False)))
     j = w.generate(pi2)
@@ -363,9 +375,12 @@ def test_regenerated_sn_rev_continues_after_deleted_rev(w, api, sql):
     sn = f"{p}0001"
     assert MES.store[org][sn]["rev"] == 2 and MES.store[org][sn]["billNo"] == tgt
     ok(w.delete(pi, bills=[tgt]))
-    # 删号后目标单据有额度：重新生成同样的号（用空号段）
+    # 删掉的流水仍是生成行的预留：生成行数量调大后按预留重新生成同样的号
+    BILLS[bill]["TreeEntity"][0]["Qty"] = 4.0
+    w.touch(bill)
+    w.compare()
     ok(w.bind_pi(pi, rule))
-    w.generate(pi, bills=[tgt], seq=(1, 2))
+    w.generate(pi, bills=[bill])
     assert sql.scalar("SELECT rev FROM sn_item WHERE sn = %s", sn) == 3
     w.allocate(pi)
     w.push()

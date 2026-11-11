@@ -102,6 +102,9 @@
             <el-button v-if="ctx.gaps?.count" link type="warning" size="small" @click="segDlg?.open({})">
               {{ t("generate.gapsLink", { n: num(ctx.gaps.count), qty: num(ctx.gaps.total) }) }}
             </el-button>
+            <el-button v-if="ctx.gaps?.reserved_total" link type="primary" size="small" @click="segDlg?.open({ tab: 'reserved' })">
+              {{ t("generate.reservedLink", { qty: num(ctx.gaps.reserved_total) }) }}
+            </el-button>
           </div>
         </div>
       </template>
@@ -275,7 +278,7 @@
             {{ pickedRows.length ? t("generate.scopeSelHint") : t("generate.scopeNoneHint") }}
           </span>
           <span class="vsep" />
-          <SeqSource v-model="seq" :gaps="ctx.gaps" :first="gen.preview?.generatable ? gen.preview.start_seq : null" />
+          <SeqSource v-model="seq" :gaps="ctx.gaps" :own="ownReserved" :first="gen.preview?.generatable ? gen.preview.start_seq : null" />
           <el-button type="primary" :loading="gen.loading" :disabled="!canGen" @click="genDlg = true">
             {{ t("generate.genBtn", { n: num(gen.preview?.generatable ? gen.preview.qty : 0) }) }}
           </el-button>
@@ -283,7 +286,7 @@
       </template>
     </el-drawer>
 
-    <RuleDialog v-if="ctx" v-model="ruleDlg.open" :pi="ctx.pi_no" :lines="ruleDlg.lines" :options="ctx.rule_options" :rule-prefix="ctx.rule_prefix" :prefix-locked="ctx.prefix_locked" :next-seq="ctx.counter?.next_seq" :pi-quota="piQuota" @saved="reloadCtx" />
+    <RuleDialog v-if="ctx" v-model="ruleDlg.open" :pi="ctx.pi_no" :lines="ruleDlg.lines" :options="ctx.rule_options" :rule-prefix="ctx.rule_prefix" :prefix-locked="ctx.prefix_locked" :next-seq="ctx.counter?.next_seq" :reserve-start="ctx.counter?.reserve_start" :pi-quota="piQuota" @saved="reloadCtx" />
 
     <GenConfirmDialog v-model="genDlg" :preview="gen.preview" :unlock-limit="unlockLimit"
       :loading="busy === 'run'" @confirm="runGen" />
@@ -441,7 +444,7 @@ async function openDetail(key: { pi?: string; bill_no?: string }) {
   ctx.value = null;
   clearSelection();
   // 流水来源每张 PI 重新选：默认从最大号之后
-  seq.value = { mode: "MAX", start: null, end: null };
+  seq.value = { mode: "MAX", start: null, end: null, gaps: [] };
   foldAll(false);
   await loadCtx(key);
   if (!ctx.value) return;
@@ -606,7 +609,7 @@ function goAllocate() {
 
 const segDlg = ref<InstanceType<typeof SegmentsDialog> | null>(null);
 function useRange(r: { start: number; end: number }) {
-  seq.value = { mode: "RANGE", start: r.start, end: r.end };
+  seq.value = { mode: "RANGE", start: r.start, end: r.end, gaps: [] };
 }
 
 // ---------------- 范围：勾选单据（整单，按勾选顺序）或物料行（按点选顺序）；生成、规则配置、撤销共用
@@ -625,6 +628,11 @@ const lineIdx = (l: LineRef) => lineOrder(sel.value, l);
 const billCheck = (no: string) => billMark(sel.value, no, linesOf);
 const isPicked = (l: LineRef) => lineIdx(l) >= 0 || billCheck(l.bill_no).order >= 0;
 /** 选中的物料行（勾选的单据展开），按排号顺序。 */
+/** 所选物料行自己预留里空着的号段（指定起止号时这些行放弃预留，可勾选作剩下的号的去处） */
+const ownReserved = computed<any[]>(() => {
+  const keys = new Set(pickedRows.value.map((l: any) => `${l.bill_no}#${l.seq}`));
+  return (ctx.value?.gaps?.reserved ?? []).filter((x: any) => keys.has(`${x.bill_no}#${x.seq}`));
+});
 const pickedRows = computed(() =>
   selectedLines(sel.value, linesOf)
     .map((r: LineRef) => allLines.value.find((l) => sameLine(l, r)))
@@ -655,7 +663,7 @@ const billIdx = (no: string) => [...new Set(genRows.value.map((x) => x.bill_no))
  *  已分配的单据删号后（或数量增加后）还有额度的照常勾选生成。 */
 const genScope = computed(() => (hasSel.value ? scopeBody(sel.value) : null));
 /** 流水来源：MAX 从最大号之后（默认）/ RANGE 手动起止号（空号段与未使用的号，不够时从最大号之后接着编）。 */
-const seq = ref<SeqValue>({ mode: "MAX", start: null, end: null });
+const seq = ref<SeqValue>({ mode: "MAX", start: null, end: null, gaps: [] });
 
 // ---------------- 物料行：状态、筛选、号段；附件项次、米数、产品单位的填写
 
@@ -732,7 +740,7 @@ function schedulePreview() {
 async function runPreview() {
   if (!ctx.value || running.value) return;
   const scope = genScope.value;
-  const src = seqSource(seq.value.mode, seq.value.start, seq.value.end);
+  const src = seqSource(seq.value.mode, seq.value.start, seq.value.end, seq.value.gaps);
   // 手动起止号还没填好：不预演
   if (!scope || !src.body) return resetGen();
   gen.loading = true;

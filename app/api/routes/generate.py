@@ -32,7 +32,9 @@ def gen_context(cu: OperatorDep, pi: str | None = None, bill_no: str | None = No
 )
 def gen_preview(body: PreviewIn, cu: OperatorDep) -> dict:
     lines = [x.model_dump() for x in body.lines or []]
-    return generate.preview(cu, body.pi_no, body.scope, body.bills, lines, body.seq_mode, body.seq_start, body.seq_end)
+    return generate.preview(
+        cu, body.pi_no, body.scope, body.bills, lines, body.seq_mode, body.seq_start, body.seq_end, body.seq_gaps
+    )
 
 
 @router.get("/gaps", summary="空号段：PI 流水 1～最大号之间没有号的连续段（删号腾出），最大号与下一个号")

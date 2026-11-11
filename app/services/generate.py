@@ -47,7 +47,7 @@ from app.core.errors import ErrorCode, biz
 from app.core.exceptions import BizError
 from app.core.security import CurrentUser
 from app.db.session import ER_LOCK_NOWAIT, db, error_no, is_deadlock, is_duplicate, marks, retry_deadlock
-from app.services import audit, bill_stats, changes, factories, locks, orders, rules
+from app.services import audit, bill_stats, changes, factories, locks, orders, reserve, rules
 
 log = structlog.get_logger()
 
@@ -217,9 +217,10 @@ def gaps(pi_in: str | None, cu: CurrentUser | None = None) -> dict:
 
 def free_segments(pi: str, last: int | None = None) -> list[dict]:
     """空号段按来源单据拆段（升序）：来源单据 = 流水上最后一次删掉的号的生成单据（gen_bill_no）。
-    空号都是删号腾出的（生成在一个事务里，取消即回滚，不留空号）；万一有查不到删号存档的空号，来源单据为空串。"""
+    物料行的预留号段（见 reserve）不是空号段。空号来自删号、预留退回（平移、手动起止号、数量调小）与跳过的流水；
+    查不到删号存档的空号，来源单据为空串。"""
     top = last_seq(pi) if last is None else last
-    raw = gap_segments(pi, top)
+    raw = reserve.subtract(gap_segments(pi, top), reserve.all_segs(reserve.rows(pi)))
     if not raw:
         return []
     # 只取现在没有号占用的流水；同一流水删过多次取最后一次（号池 id 自增不复用，大的在后）
@@ -238,6 +239,9 @@ def free_segments(pi: str, last: int | None = None) -> list[dict]:
             top,
         )
     ]
+    # 删号存档的流水可能是物料行的预留（不是空号段）：只留落在空号段里的部分
+    marked = [(a, b, bill) for s0, e0, bill in marked for a, b in reserve.intersect([(s0, e0)], raw)]
+    marked.sort()
     out: list[tuple[int, int, str]] = []
     i = 0
     for s, e in raw:
@@ -254,9 +258,41 @@ def free_segments(pi: str, last: int | None = None) -> list[dict]:
     return [{"start_seq": a, "end_seq": b, "qty": b - a + 1, "bill_no": bill} for a, b, bill in out]
 
 
+def reserved_segments(pi: str, last: int | None = None, bill: str | None = None) -> list[dict]:
+    """预留号段里还空着的流水（按物料行，升序）：[{bill_no, seq, start_seq, end_seq, qty}]；bill 给出时只列该单据的。"""
+    top = last_seq(pi) if last is None else last
+    unused = gap_segments(pi, top)
+    out = []
+    for (b, q), segs in reserve.rows(pi).items():
+        if bill is not None and b != bill:
+            continue
+        for a, e in reserve.intersect(segs, unused):
+            out.append({"bill_no": b, "seq": q, "start_seq": a, "end_seq": e, "qty": e - a + 1})
+    return sorted(out, key=lambda x: x["start_seq"])
+
+
+def first_seqs(pi: str, lines: list[Line], last: int) -> dict[tuple[str, int], int]:
+    """各物料行下次按预留生成时的第一个流水（生成页规则列的「第一个号」用）：预留里第一个空着的流水，
+    起始号与预留起号不同时按平移；没有预留（或预留已用完）的不列，按最大号 + 1（及起始号）算。"""
+    start = reserve.start_of(pi)
+    rs = reserve.rows(pi) if start is not None else {}
+    if not rs:
+        return {}
+    unused = reserve.merge(gap_segments(pi, last) + [(last + 1, reserve.INF)])
+    out = {}
+    for x in lines:
+        free = reserve.intersect(rs.get((x.bill_no, x.seq), []), unused)
+        if not free:
+            continue
+        st = x.res.seq_start if x.res is not None else None
+        out[(x.bill_no, x.seq)] = free[0][0] + (st - start if st is not None and st != start else 0)
+    return out
+
+
 def gaps_of(pi: str) -> dict:
     last = last_seq(pi)
     segs = free_segments(pi, last)
+    res = reserved_segments(pi, last)
     return {
         "pi_no": pi,
         "last_seq": last,
@@ -265,6 +301,11 @@ def gaps_of(pi: str) -> dict:
         "total": sum(x["qty"] for x in segs),
         "segments": segs[:GAP_LIST_MAX],
         "truncated": len(segs) > GAP_LIST_MAX,
+        # 号段预留：预留起号（本 PI 还没有预留为 null）、各物料行预留里还空着的流水
+        "reserve_start": reserve.start_of(pi),
+        "reserved_count": len(res),
+        "reserved_total": sum(x["qty"] for x in res),
+        "reserved": res[:GAP_LIST_MAX],
     }
 
 
@@ -363,6 +404,7 @@ def bill_segments(cu: CurrentUser, pi_in: str | None, bill_in: str | None) -> di
     use.sort(key=lambda x: (not x["attach_no"].strip(), attach_order(x["attach_no"]), x["bill_seq"]))
     last = last_seq(pi)
     free = [x for x in free_segments(pi, last) if x["bill_no"] == bill]
+    res = reserved_segments(pi, last, bill)
     return {
         "pi_no": pi,
         "bill_no": bill,
@@ -376,6 +418,9 @@ def bill_segments(cu: CurrentUser, pi_in: str | None, bill_in: str | None) -> di
         "free_count": len(free),
         "free_qty": sum(x["qty"] for x in free),
         "free_truncated": len(free) > SEG_LIST_MAX,
+        # 本单据各物料行预留号段里还空着的流水（生成时用；见 reserve）
+        "reserved": res[:SEG_LIST_MAX],
+        "reserved_qty": sum(x["qty"] for x in res),
     }
 
 
@@ -409,8 +454,12 @@ def segment_sns(
     return {"total": total, "page": pg, "size": sz, "items": items}
 
 
-def seq_choice(mode: str | None, start: int | None = None, end: int | None = None) -> dict:
-    """规范化流水来源：MAX（默认）/ RANGE（起止流水号为正整数，止号不小于起号；只填起号按单个号）。"""
+def seq_choice(
+    mode: str | None, start: int | None = None, end: int | None = None, gaps: list[list[int]] | None = None
+) -> dict:
+    """规范化流水来源：MAX（默认）/ RANGE（起止流水号为正整数，止号不小于起号；只填起号按单个号）。
+    gaps：RANGE 时范围不够、剩下的号要用的空号段（[[起, 止], …]，按从小到大使用，每段从最小号用起）；
+    不给为剩下的接在最大号之后。"""
     m = util.trim(mode) or SEQ_MAX
     if m == SEQ_MAX:
         return {"mode": SEQ_MAX}
@@ -420,7 +469,18 @@ def seq_choice(mode: str | None, start: int | None = None, end: int | None = Non
         end = start
     if start is None or start < 1 or end < start:
         raise biz(ErrorCode.GEN_SEQ_RANGE_INVALID)
-    return {"mode": SEQ_RANGE, "start": int(start), "end": int(end)}
+    out = {"mode": SEQ_RANGE, "start": int(start), "end": int(end)}
+    picked = []
+    for g in gaps or []:
+        if not isinstance(g, (list, tuple)) or len(g) != 2:
+            raise biz(ErrorCode.GEN_SEQ_RANGE_INVALID)
+        a, b = g
+        if not isinstance(a, int) or not isinstance(b, int) or a < 1 or b < a:
+            raise biz(ErrorCode.GEN_SEQ_RANGE_INVALID)
+        picked.append([a, b])
+    if picked:
+        out["gaps"] = [list(g) for g in reserve.merge(picked)]
+    return out
 
 
 class _Taker:
@@ -461,18 +521,110 @@ class _Taker:
         return out
 
 
-def _taker(pi: str, base: int, seq: dict) -> _Taker:
-    if seq["mode"] != SEQ_RANGE:
-        return _Taker([], base + 1)
-    start, end = seq["start"], seq["end"]
-    free = []
-    for s, e in gap_segments(pi, base):
-        a, b = max(s, start), min(e, end)
-        if a <= b:
-            free.append((a, b))
-    if end > base:
-        free.append((max(start, base + 1), end))
-    return _Taker(free, max(base, end) + 1)
+def _assign(pi: str, keys: list[tuple[str, int]], todo: list[Line], base: int, seq: dict) -> dict:
+    """按排号顺序给每个物料行切号（见 reserve）：
+    - MAX：用该行预留号段里空着的流水；起始号与预留起号不同时平移；没有预留或不够的接在最大号之后；
+    - RANGE：放弃预留，用起止号内空着的流水，再用所选空号段，仍不够的接在最大号之后。
+    都不占别的物料行的预留号段。返回各行号段与来源、本次要落库的预留、最大号（含新建的预留）与各来源枚数。"""
+    run = [(x.bill_no, x.seq) for x in todo]
+    run_set = set(run)
+    start = reserve.start_of(pi)
+    rs = reserve.rows(pi)
+    new = start is None
+    layout: list[tuple[str, int, int, int]] = []
+    top = base
+    if new:
+        start = base + 1
+        if seq["mode"] == SEQ_MAX:
+            # 第一次生成就填了起始号：预留表从起始号排（填的不一样时取最小的，其余的行按平移）
+            firsts = [x.res.seq_start for x in todo if x.res.seq_start and x.res.seq_start > start]
+            if firsts:
+                start = min(firsts)
+        layout = reserve.build(pi, [k[0] for k in keys], start)
+        rs = {(b, q): [(a, e)] for b, q, a, e in layout}
+        top = max([base] + [e for *_, e in layout])
+    # 没有号的流水：1～最大号之间的空号（含预留里空着的）与最大号之后
+    unused = reserve.merge(gap_segments(pi, base) + [(base + 1, reserve.INF)])
+    lines: dict[tuple[str, int], dict] = {}
+    keep: dict[tuple[str, int], list] = {}
+    range_qty = gap_qty = over = 0
+    if seq["mode"] == SEQ_RANGE:
+        lo, hi = seq["start"], seq["end"]
+        others = reserve.all_segs(rs, run_set)
+        avail = reserve.subtract(unused, others)
+        in_range = reserve.intersect(avail, [(lo, hi)])
+        picked = reserve.merge(seq.get("gaps") or [])
+        for a, b in picked:
+            if reserve.subtract([(a, b)], reserve.intersect(avail, [(1, top)])):
+                raise biz(ErrorCode.GEN_GAP_INVALID, start=a, end=b)
+        extra = reserve.subtract(picked, in_range)
+        tail_from = max(top, hi) + 1
+        taker = _Taker(in_range + extra, tail_from)
+        for x in todo:
+            k = (x.bill_no, x.seq)
+            segs = taker.take(x.quota, x.res.seq_start)
+            tail = reserve.total(reserve.intersect(segs, [(tail_from, reserve.INF)]))
+            gap = reserve.total(reserve.intersect(segs, extra))
+            range_qty += reserve.total(reserve.intersect(segs, in_range))
+            gap_qty += gap
+            over += tail
+            lines[k] = {"segs": segs, "src": SEQ_RANGE, "tail": tail, "gap": gap}
+            # 原预留里空着的退回成空号段，已有号的部分照留
+            keep[k] = reserve.merge(reserve.subtract(rs.get(k, []), unused) + [tuple(g) for g in segs])
+    else:
+        rest: list[tuple[Line, int, list]] = []
+        targets: list[tuple[int, int]] = []
+        for x in todo:
+            k = (x.bill_no, x.seq)
+            mine = rs.get(k, [])
+            free = reserve.intersect(mine, unused)
+            st = x.res.seq_start
+            if mine and st is not None and st != start:
+                parts = reserve.take(free, x.quota)
+                tgt = reserve.shift(parts, st - start)
+                ok = reserve.subtract(unused, reserve.all_segs(rs, {k}))
+                if tgt and (reserve.subtract(tgt, ok) or reserve.intersect(tgt, targets)):
+                    raise biz(
+                        ErrorCode.GEN_SHIFT_CONFLICT, bill_no=x.bill_no, seq=x.seq, start=tgt[0][0], end=tgt[-1][1]
+                    )
+                targets = reserve.merge(targets + tgt)
+                lines[k] = {"segs": tgt, "src": "SHIFT"}
+                base_keep = reserve.subtract(mine, free)
+            elif mine:
+                parts = reserve.take(free, x.quota)
+                lines[k] = {"segs": parts, "src": "RESERVE"}
+                # 数量调小：预留里用不完的退回成空号段
+                base_keep = reserve.subtract(mine, reserve.subtract(free, parts))
+            else:
+                parts = []
+                lines[k] = {"segs": [], "src": "TAIL"}
+                base_keep = []
+            rest.append((x, x.quota - reserve.total(parts), base_keep))
+        tail_from = max([top] + [b for _, b in targets]) + 1
+        taker = _Taker([], tail_from)
+        for x, n, base_keep in rest:
+            k = (x.bill_no, x.seq)
+            # 没有预留的行仍按起始号（第一个号不小于它）；有预留的不足部分直接接在最大号之后
+            t = taker.take(n, x.res.seq_start if lines[k]["src"] == "TAIL" else None) if n > 0 else []
+            segs = reserve.merge(lines[k]["segs"] + [tuple(g) for g in t])
+            lines[k]["segs"] = segs
+            lines[k]["tail"] = n if n > 0 else 0
+            keep[k] = reserve.merge(base_keep + segs)
+    plan_reserve = {
+        "new": new,
+        "start": start,
+        "others": [[b, q, a, e] for b, q, a, e in layout if (b, q) not in run_set],
+        "set": [{"bill_no": k[0], "seq": k[1], "segs": [list(g) for g in keep[k]]} for k in run],
+    }
+    return {
+        "lines": {k: {**v, "segs": [list(g) for g in v["segs"]]} for k, v in lines.items()},
+        "reserve": plan_reserve,
+        "top": top,
+        "range_qty": range_qty,
+        "gap_qty": gap_qty,
+        "overflow_qty": over,
+        "tail_from": tail_from,
+    }
 
 
 # ================================================================== 物料行与生成条件
@@ -670,12 +822,12 @@ def _plan(pi: str, scope: str, keys: list[tuple[str, int]], base: int, seq: dict
     qty = quota
     if qty > settings.gen_max_per_run:
         raise biz(ErrorCode.GEN_QTY_OVER_MAX, qty=qty, max=settings.gen_max_per_run)
-    taker = _taker(pi, base, seq)
+    got = _assign(pi, keys, todo, base, seq)
     for x in todo:
         n = x.quota
         spec = x.res.spec()
-        # 起始号：自定义规则（首次生成），或沿用本 PI 已用前缀的版本时物料行另记的（只有这两种才有 seq_start）
-        segs = taker.take(n, x.res.seq_start)
+        a_ = got["lines"][(x.bill_no, x.seq)]
+        segs = [list(g) for g in a_["segs"]]
         end = segs[-1][1]
         grow = x.res.seq_grow
         # 上限自动突破：用完规则位数后接着加位（最多 12 位），号段按位数切开，每段一个位数（生成时挂对应位数的版本）
@@ -731,6 +883,11 @@ def _plan(pi: str, scope: str, keys: list[tuple[str, int]], base: int, seq: dict
                 "line_qty": x.qty,
                 "own_before": x.own,
                 "qty": n,
+                # 号的来源：RESERVE 预留号段 / SHIFT 按起始号平移 / RANGE 手动起止号 / TAIL 没有预留、接在最大号之后；
+                # tail_qty 接在最大号之后的枚数（没有预留或预留不够），gap_qty 用所选空号段的枚数（手动起止号）
+                "seq_src": a_["src"],
+                "tail_qty": a_["tail"],
+                "gap_qty": a_.get("gap", 0),
                 # 号段：一段或几段不连续的号（用空号段时）；start_seq / end_seq 为第一段起号、最后一段止号
                 "segs": segs,
                 "seg_list": seg_list,
@@ -752,11 +909,17 @@ def _plan(pi: str, scope: str, keys: list[tuple[str, int]], base: int, seq: dict
     out["qty"] = qty
     out["start_seq"] = min(x["start_seq"] for x in out["items"])
     out["end_seq"] = max(x["end_seq"] for x in out["items"])
-    # 生成后的 PI 最大号（只增不减）
-    out["new_last"] = max(base, out["end_seq"])
-    # 用到的空闲流水（手动起止号内）与溢出（从最大号之后接着编）的枚数
-    out["range_qty"] = taker.in_range
-    out["overflow_qty"] = taker.over if seq["mode"] == SEQ_RANGE else 0
+    # 生成后的 PI 最大号（只增不减，含预留号段）
+    out["new_last"] = max(got["top"], out["end_seq"])
+    # 用到的空闲流水（手动起止号内）、所选空号段与溢出（从最大号之后接着编）的枚数
+    out["range_qty"] = got["range_qty"]
+    out["gap_qty"] = got["gap_qty"]
+    out["overflow_qty"] = got["overflow_qty"]
+    # 接在最大号之后的号从哪个流水起（含新建的预留）
+    out["tail_from"] = got["tail_from"]
+    # 号段预留：本次落库的预留（第一次生成时建预留表）；预留起号
+    out["reserve"] = got["reserve"]
+    out["reserve_start"] = got["reserve"]["start"]
     out["start_sn"] = out["items"][0]["start_sn"]
     out["end_sn"] = out["items"][-1]["end_sn"]
     return out
@@ -771,6 +934,7 @@ def preview(
     seq_mode: str | None = None,
     seq_start: int | None = None,
     seq_end: int | None = None,
+    seq_gaps: list[list[int]] | None = None,
 ) -> dict:
     """预演：范围内每个还有额度的物料行整行生成。可生成时返回令牌与号段；不能生成时 generatable = false 并逐行列出原因
     （可缩小范围后再预演）。流水来源 seq_mode：MAX 从最大号 + 1 起（默认）/ RANGE 用起止流水号内的空闲流水，
@@ -779,7 +943,7 @@ def preview(
     if not pi:
         raise biz(ErrorCode.PI_REQUIRED)
     sc = util.trim(scope) or SCOPE_BILLS
-    seq = seq_choice(seq_mode, seq_start, seq_end)
+    seq = seq_choice(seq_mode, seq_start, seq_end, seq_gaps)
     keys = _scope_keys(pi, sc, bills, lines)
     cu.check_write(*orders.bill_orgs(k[0] for k in keys))
     plan = _plan(pi, sc, keys, last_seq(pi), seq)
@@ -1122,7 +1286,12 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
             x["bill_no"],
             x["seq"],
         )
-    # 最大号只增不减：用空号段生成时可能不变
+    # 号段预留：第一次生成时建预留表，本次生成的物料行改为计划给出的号段（早先的计划没有 reserve）
+    if plan.get("reserve"):
+        if plan["reserve"].get("new") and reserve.start_of(pi) is not None:
+            raise biz(ErrorCode.GEN_PREVIEW_STALE, pi=pi, expected=plan["base_last_seq"], actual=c["last_seq_dec"])
+        reserve.save(pi, plan["reserve"], cu.emp_no)
+    # 最大号只增不减（含预留号段）：用预留号段、空号段生成时可能不变
     db.exec(
         "UPDATE sn_pi_counter SET last_seq_dec = GREATEST(last_seq_dec, %s), generated_qty = generated_qty + %s, "
         "updated_at = %s WHERE pi_no = %s",

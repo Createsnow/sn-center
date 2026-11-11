@@ -73,17 +73,22 @@ export function genLimit(qty, limits, unlocked) {
 }
 
 /**
- * 生成的流水来源（预演请求体的一部分）：mode = "MAX" 从最大号 + 1 起；"RANGE" 手动起止流水号（十进制），
- * 在空号段与未使用的号中取，不够时后台从最大号之后接着编。只填起号按单个号。
+ * 生成的流水来源（预演请求体的一部分）：mode = "MAX" 按各物料行的预留号段（没有预留的接在最大号之后）；
+ * "RANGE" 手动起止流水号（十进制），在空号段与未使用的号中取，不够时用 gaps（勾选的空号段 [[起, 止], …]，按从小到大），
+ * 再不够（或没勾选）后台从最大号之后接着编。只填起号按单个号。
  * 返回 { body, error }：body 合并进预演请求；起止号不合法时 body 为 null、error 为 "SEQ_RANGE"。
  */
-export function seqSource(mode, start, end) {
+export function seqSource(mode, start, end, gaps) {
   if (mode !== "RANGE") return { body: { seq_mode: "MAX" }, error: null };
   const toInt = (v) => (v === "" || v === null || v === undefined ? null : Number(v));
   const a = toInt(start);
   const b = toInt(end) ?? a;
   if (!Number.isSafeInteger(a) || !Number.isSafeInteger(b) || a < 1 || b < a) return { body: null, error: "SEQ_RANGE" };
-  return { body: { seq_mode: "RANGE", seq_start: a, seq_end: b }, error: null };
+  const body = { seq_mode: "RANGE", seq_start: a, seq_end: b };
+  // 范围不够时剩下的号用的空号段（按从小到大）；没选为接在最大号之后（请求体与原来相同）
+  const picked = (gaps || []).map((g) => [Number(g[0]), Number(g[1])]).sort((x, y) => x[0] - y[0]);
+  if (picked.length) body.seq_gaps = picked;
+  return { body, error: null };
 }
 
 /**

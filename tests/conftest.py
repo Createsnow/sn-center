@@ -604,16 +604,19 @@ class World:
         bills: list[str] | None = None,
         lines: list[tuple[str, int]] | None = None,
         seq: tuple[int, int] | None = None,
+        gaps: list[list[int]] | None = None,
     ) -> Res:
         """预演：范围内每个还有额度的物料行整行生成；不给范围 = 这张 PI 在快照中的全部单据。
-        seq = （起, 止）十进制流水：按手动起止号（空号段与未使用的号，不够时从最大号之后接着编）；
-        不给从最大号 + 1 起。"""
+        seq = （起, 止）十进制流水：按手动起止号（空号段与未使用的号，不够时用 gaps 所选空号段，
+        再不够从最大号之后接着编）；不给按预留号段（没有预留的从最大号之后）。"""
         scope = "LINES" if lines else "BILLS"
         if not lines and not bills:
             bills = sorted({d["BillNo"] for d in BILLS.values() if d["F_HX_PI"] == pi and d["DocumentStatus"] == "C"})
         body = m(pi_no=pi, scope=scope, bills=bills, lines=[m(bill_no=b, seq=s) for b, s in lines or []])
         if seq is not None:
             body |= m(seq_mode="RANGE", seq_start=seq[0], seq_end=seq[1])
+            if gaps:
+                body |= m(seq_gaps=gaps)
         return self.api.post("/api/generate/preview", body, self.admin)
 
     def generate(
@@ -622,8 +625,9 @@ class World:
         bills: list[str] | None = None,
         lines: list[tuple[str, int]] | None = None,
         seq: tuple[int, int] | None = None,
+        gaps: list[list[int]] | None = None,
     ) -> dict:
-        p = ok(self.preview(pi, bills, lines, seq))
+        p = ok(self.preview(pi, bills, lines, seq, gaps))
         assert p["generatable"], str(p)
         j = ok(self.api.post("/api/generate/run", m(token=p["token"]), self.admin))
         assert j["status"] == "SUCCESS", str(j)
@@ -716,6 +720,8 @@ _SN_TABLES = (
     "sn_line_rule",
     "sn_line_attach",
     "sn_pi_counter",
+    "sn_pi_reserve",
+    "sn_pi_reserve_head",
     "sn_pi_rule",
     "sn_rule_version",
     "sn_rule",

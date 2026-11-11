@@ -360,9 +360,12 @@ def test_locale_json_matches_sources(tmp_path, capsys):
 
 
 def test_migration_flyway_checksum():
-    """测试阶段只保留一个 V1__init.sql；校验和按 Flyway 算法固定，改了建表脚本须同步更新这里（并重建测试库）。"""
+    """V1__init.sql 建全部原有表（校验和按 Flyway 算法固定，改了须同步更新这里并重建测试库）；
+    V2__pi_reserve.sql 只新建号段预留两张表（联调环境启动时自动执行，不用重建库、不改已有的表）。"""
     ours = {m.script: m for m in migrations()}
-    assert list(ours) == ["V1__init.sql"]
+    assert list(ours) == ["V1__init.sql", "V2__pi_reserve.sql"]
+    v2 = ours["V2__pi_reserve.sql"].statements()
+    assert [" ".join(x.split()[:3]) for x in v2] == ["CREATE TABLE sn_pi_reserve_head", "CREATE TABLE sn_pi_reserve"]
     assert ours["V1__init.sql"].checksum() == -2062353459
     statements = ours["V1__init.sql"].statements()
     assert len(statements) == 39
@@ -384,7 +387,7 @@ def test_migration_flyway_checksum():
         assert f"CREATE TABLE {table}" in text, table
     # 每张表只有一条完整的 CREATE TABLE（启动时不补建表、补字段，见 migrate.check_tables）
     tables = schema_tables()
-    assert len(tables) == len(set(tables)) == 38, tables
+    assert len(tables) == len(set(tables)) == 40, tables
     for table in tables:
         assert create_statement(table).startswith(f"CREATE TABLE {table} "), table
     assert "ADDED_TABLES" not in ours["V1__init.sql"].text() and "补建" not in ours["V1__init.sql"].text()
