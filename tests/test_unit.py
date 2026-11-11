@@ -360,19 +360,16 @@ def test_locale_json_matches_sources(tmp_path, capsys):
 
 
 def test_migration_flyway_checksum():
-    """V1__init.sql 建全部原有表（校验和按 Flyway 算法固定，改了须同步更新这里并重建测试库）；
-    V2__pi_reserve.sql 只新建号段预留两张表（联调环境启动时自动执行，不用重建库、不改已有的表）。"""
+    """测试阶段只保留一个 V1__init.sql；校验和按 Flyway 算法固定，改了建表脚本须同步更新这里（并重建测试库）。"""
     ours = {m.script: m for m in migrations()}
-    assert list(ours) == ["V1__init.sql", "V2__pi_reserve.sql"]
-    v2 = ours["V2__pi_reserve.sql"].statements()
-    assert [" ".join(x.split()[:3]) for x in v2] == ["CREATE TABLE sn_pi_reserve_head", "CREATE TABLE sn_pi_reserve"]
-    assert ours["V1__init.sql"].checksum() == -2062353459
+    assert list(ours) == ["V1__init.sql"]
+    assert ours["V1__init.sql"].checksum() == 1576179204
     statements = ours["V1__init.sql"].statements()
-    assert len(statements) == 39
+    assert len(statements) == 41
     text = "\n".join(statements)
-    # 脚本独立完整：38 张表各一条 CREATE TABLE 加 sn_sync_state 初始行，不用 ALTER 等语句事后补字段、补索引
+    # 脚本独立完整：40 张表各一条 CREATE TABLE 加 sn_sync_state 初始行，不用 ALTER 等语句事后补字段、补索引
     kinds = [" ".join(s.split()[:2]).upper() for s in statements]
-    assert kinds.count("CREATE TABLE") == 38 and kinds.count("INSERT INTO") == 1, kinds
+    assert kinds.count("CREATE TABLE") == 40 and kinds.count("INSERT INTO") == 1, kinds
     for table in (
         "sn_line_count",
         "sn_line_length",
@@ -383,6 +380,8 @@ def test_migration_flyway_checksum():
         "sn_item_deleted",
         "sn_import_item",
         "sn_k3_config",
+        "sn_pi_reserve_head",
+        "sn_pi_reserve",
     ):
         assert f"CREATE TABLE {table}" in text, table
     # 每张表只有一条完整的 CREATE TABLE（启动时不补建表、补字段，见 migrate.check_tables）

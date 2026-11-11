@@ -274,11 +274,34 @@ CREATE TABLE sn_line_count (
 -- PI 流水：一张 PI 一行，生成时 FOR UPDATE
 CREATE TABLE sn_pi_counter (
   pi_no          VARCHAR(64) NOT NULL,
-  last_seq_dec   BIGINT      NOT NULL DEFAULT 0 COMMENT '本 PI 自己生成的最大十进制流水（含已转出的，不含转入号）',
+  last_seq_dec   BIGINT      NOT NULL DEFAULT 0 COMMENT '本 PI 最大十进制流水（自己生成的号与号段预留中最大的；含已转出的，不含转入号）',
   generated_qty  BIGINT      NOT NULL DEFAULT 0 COMMENT '本 PI 自己生成的枚数',
   updated_at     DATETIME    NOT NULL,
   PRIMARY KEY (pi_no)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='PI 流水';
+
+-- PI 号段预留表头：本 PI 第一次生成时建立（同 PI 多单据、不同组织分开生成也按附件项次接号，见 services/reserve）
+CREATE TABLE sn_pi_reserve_head (
+  pi_no          VARCHAR(64) NOT NULL,
+  start_seq      BIGINT      NOT NULL COMMENT '预留起号（十进制流水）：起始号平移的基准',
+  created_by     VARCHAR(32) NOT NULL,
+  created_at     DATETIME    NOT NULL,
+  PRIMARY KEY (pi_no)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='PI 号段预留表头';
+
+-- PI 号段预留：物料行的预留号段（一行可有几段）；只在生成事务（PI 操作锁内）变动；PI 最大流水含预留号段
+CREATE TABLE sn_pi_reserve (
+  id             BIGINT      NOT NULL AUTO_INCREMENT,
+  pi_no          VARCHAR(64) NOT NULL,
+  bill_no        VARCHAR(64) NOT NULL,
+  seq            INT         NOT NULL COMMENT '单据序号（行号）',
+  start_seq      BIGINT      NOT NULL COMMENT '预留起（十进制流水，含）',
+  end_seq        BIGINT      NOT NULL COMMENT '预留止（十进制流水，含）',
+  created_at     DATETIME    NOT NULL,
+  PRIMARY KEY (id),
+  KEY ix_reserve_pi (pi_no, start_seq),
+  KEY ix_reserve_line (bill_no, seq)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='PI 号段预留';
 
 -- 已出号单据台账：单据第一次生成号时建立；记最近一次在快照中时的表头与各物料行数量（是否在快照直接看 sn_prd_mo）
 CREATE TABLE sn_bill_ledger (
