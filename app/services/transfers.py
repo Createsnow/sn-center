@@ -1234,6 +1234,9 @@ def map_material(cu: CurrentUser, alert: dict, target_seq: int | None, note: str
                 now,
             )
             db.exec("DELETE FROM sn_line_count WHERE bill_no = %s AND seq = %s", bill, old)
+        # 号段预留随计数归新行（见 reserve）：之后在新行删号再生成回到原号段，原行不留没人能用的预留；
+        # 新行已有预留时两段合在一起，生成时用不完的照常退回成空号段
+        db.exec("UPDATE sn_pi_reserve SET seq = %s WHERE bill_no = %s AND seq = %s", target_seq, bill, old)
         rule = db.one("SELECT * FROM sn_line_rule WHERE bill_no = %s AND seq = %s", bill, old)
         if rule is not None and not db.exists(
             "SELECT EXISTS(SELECT 1 FROM sn_line_rule WHERE bill_no = %s AND seq = %s)", bill, target_seq

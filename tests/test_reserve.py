@@ -166,3 +166,25 @@ def test_context_rule_first_sn_and_reserve_start(w, api):
     ctx = ok(api.get(f"/api/generate/context?pi={pi}", w.admin))
     line = next(x for bb in ctx["bills"] if bb["bill_no"] == b for x in bb["lines"] if x["seq"] == 2)
     assert line["rule"]["first_sn"] == f"{c['prefix']}5051"
+
+
+def test_material_map_moves_reserve_with_counts(w, api, sql):
+    """失去对应「确认对应」到新行：原行的预留号段随计数、号一起归新行；之后在新行删号再生成回到原号段，
+    原行（已不存在）不再留着一段没人能用的预留。"""
+    pi, a, b, c = setup(w)
+    assert seqs(sql, a)[1] == [(41, 50)]
+    BILLS[a]["TreeEntity"][0]["MaterialId"] = {"Number": "M9", "Name": "x"}
+    BILLS[a]["TreeEntity"].append(
+        {"Seq": 4, "MaterialId": {"Number": "M9", "Name": "x"}, "Qty": 10.0, "Flength": "100", "FTERM": "3"}
+    )
+    w.touch(a)
+    w.compare()
+    al = [x for x in ok(api.get(f"/api/orders/alerts?bill_no={a}", w.admin))["items"] if x["alert_type"] == "MATERIAL"]
+    ok(api.post(f"/api/orders/alerts/{al[0]['id']}/handle", m(action="MAP", target_seq=4), w.admin))
+    assert seqs(sql, a)[4] == [(41, 50)]
+    got = sql.all("SELECT seq, start_seq, end_seq FROM sn_pi_reserve WHERE pi_no = %s AND bill_no = %s", pi, a)
+    assert {(r["seq"], r["start_seq"], r["end_seq"]) for r in got if r["start_seq"] == 41} == {(4, 41, 50)}
+    ok(w.delete(pi, lines=[(a, 4)]))
+    ok(w.select(pi, [(a, 4)], custom=c))
+    w.generate(pi, lines=[(a, 4)])
+    assert seqs(sql, a)[4] == [(41, 50)], "删号后再生成回到原号段"
