@@ -435,3 +435,26 @@ def test_scheduled_compare_skips_within_interval(w, sql):
     assert orders.compare_sync(CurrentUser.system(), "SCHEDULED") is not None
     assert len(conftest.K3.calls) > calls
     assert w.compare() is not None, "手动触发不去重"
+
+
+def test_material_unrelated_does_not_reopen_on_next_compare(w, api, sql):
+    """失去对应「确认无关」后，该单再有别的变化（如数量）重新比对时，同一物料行不再重复提醒、不再暂停。"""
+    org, pi, bill = issued(w, ("M1", 5), ("M2", 5))
+    BILLS[bill]["TreeEntity"][0]["MaterialId"] = {"Number": "M9", "Name": "x"}
+    w.touch(bill)
+    w.compare()
+    al = [x for x in alerts(api, w.admin, bill) if x["alert_type"] == "MATERIAL"][0]
+    ok(api.post(f"/api/orders/alerts/{al['id']}/handle", m(action="UNRELATED", note="换料"), w.admin))
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND suspend IS NOT NULL", bill) == 0
+    BILLS[bill]["TreeEntity"][1]["Qty"] = 9.0
+    w.touch(bill)
+    w.compare()
+    assert [x for x in alerts(api, w.admin, bill) if x["alert_type"] == "MATERIAL"] == []
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND suspend IS NOT NULL", bill) == 0
+    # 之后该行又换成别的物料：是新的变化，照常提醒并暂停
+    BILLS[bill]["TreeEntity"][0]["MaterialId"] = {"Number": "M7", "Name": "y"}
+    w.touch(bill)
+    w.compare()
+    again = [x for x in alerts(api, w.admin, bill) if x["alert_type"] == "MATERIAL"]
+    assert [(x["seq"], x["before_value"], x["after_value"]) for x in again] == [(1, "M1", "M7")]
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND suspend = 'CHANGE'", bill) == 10

@@ -803,3 +803,33 @@ def test_delete_whole_import_only_while_all_pending(w, api, sql):
     r = api.post(f"/api/sn-import/imports/{again}/delete", {}, w.admin)
     assert (r.status, r.code, r["params"]) == (409, "IMPORT_DELETE_ALLOCATED", {"import_no": again, "count": 2})
     assert sql.count("SELECT COUNT(*) FROM sn_item WHERE sn IN (%s, %s)", a, c) == 2
+
+
+def test_material_map_moves_imported_sns_too(w, api, sql):
+    """物料行失去对应、「确认对应」到新行：该行上的导入号（号池单据序号为 0，所在行记在导入记录）
+    与生成的号一起改到新行，物料编码改为新行的；否则导入号仍挂在已不存在的行上，下发给 MES 的 ERP行号、物料仍是旧的。"""
+    from conftest import BILLS
+
+    org, pi, bill = mk(w, ("M1", 5), ("M2", 5))
+    imp = uid("SI")
+    ok(run(api, xlsx(rec(pi, bill, imp, org)), w.admin))
+    ok(w.bind_pi(pi, w.rule("Q" + uid("").replace("-", ""), with_length=False, pi=pi)))
+    w.generate(pi, lines=[(bill, 1)])
+    BILLS[bill]["TreeEntity"][0]["MaterialId"] = {"Number": "M9", "Name": "x"}
+    BILLS[bill]["TreeEntity"].append(
+        {"Seq": 3, "MaterialId": {"Number": "M9", "Name": "x"}, "Qty": 5.0, "Flength": "100", "FTERM": "1"}
+    )
+    w.touch(bill)
+    w.compare()
+    al = [
+        x for x in ok(api.get(f"/api/orders/alerts?bill_no={bill}", w.admin))["items"] if x["alert_type"] == "MATERIAL"
+    ]
+    assert al and al[0]["seq"] == 1
+    ok(api.post(f"/api/orders/alerts/{al[0]['id']}/handle", m(action="MAP", target_seq=3), w.admin))
+    row = sql.one(
+        "SELECT i.material_code, i.bill_seq, s.cur_bill_seq FROM sn_item i JOIN sn_import_item s ON s.id = i.seq_dec "
+        "WHERE i.sn = %s",
+        imp,
+    )
+    assert (row["material_code"], row["bill_seq"], row["cur_bill_seq"]) == ("M9", 0, 3)
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND bill_seq = 3 AND origin = 'GEN'", bill) == 5

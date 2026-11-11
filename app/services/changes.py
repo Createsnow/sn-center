@@ -427,19 +427,28 @@ def _on_present(cu: CurrentUser, bill_no: str) -> None:
     counts = db.all(
         "SELECT seq, material_code, own_generated, gen_count FROM sn_line_count WHERE bill_no = %s", bill_no
     )
+    # 已「确认无关」的失去对应（同一物料行、同样的前后值）不再提醒：计数仍按原物料记在这一行，
+    # 否则该单之后每次有别的变化（如数量）重新比对，都会再出同一条提醒并再次暂停
+    unrelated = {
+        (r["seq"], r["before_value"], r["after_value"])
+        for r in db.all(
+            "SELECT seq, before_value, after_value FROM sn_order_alert WHERE bill_no = %s AND alert_type = %s "
+            "AND status = 'CLOSED' AND close_action = %s",
+            bill_no,
+            MATERIAL,
+            UNRELATED,
+        )
+    }
     for c in counts:
         if not (c["gen_count"] > 0 or c["own_generated"] > 0):
             continue
         line = by_seq.get(c["seq"])
         if line is None or line["material_code"] != c["material_code"]:
-            _alert(
-                cu,
-                bill_no,
-                MATERIAL,
-                c["seq"],
-                c["material_code"] or "(空)",
-                "(删除)" if line is None else (line["material_code"] or "(空)"),
-            )
+            before = c["material_code"] or "(空)"
+            after = "(删除)" if line is None else (line["material_code"] or "(空)")
+            if (c["seq"], util.cut(before, 255), util.cut(after, 255)) in unrelated:
+                continue
+            _alert(cu, bill_no, MATERIAL, c["seq"], before, after)
             keep.add((MATERIAL, c["seq"]))
     # 不再成立的变化（如又改回去）自动关闭
     _close_auto(cu, bill_no, BLOCKING, "比对已无差异", keep)

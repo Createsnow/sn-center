@@ -63,6 +63,9 @@ ITEM_COLS = (
     "length_text, attach_no, rule_version_id, status, delivery_batch_no, mes_holder, push_type, delivery_mode, origin"
 )
 
+#: 同 ITEM_COLS，带号池表别名 i.（与导入记录联查时用）
+_I_COLS = ", ".join("i." + c.strip() for c in ITEM_COLS.split(","))
+
 ORG_FIELDS = (
     "id",
     "transfer_no",
@@ -385,6 +388,10 @@ def _move(
                 kind,
                 transfer_id,
             )
+    # 目标单据此前没出过号（没生成、没导入）时建台账（同生成、导入）：否则号挂到这张单后，
+    # 订单变更比对（PI / 组织 / 客户变更、失去对应、反审核）整张跳过，未交付的号不会暂停
+    for no in sorted({targets[r["id"]].bill for r in items}):
+        changes.ensure_ledger(no)
     # 先按目标单据重算暂停标记再建批：已入批的号不再暂停，目标单据暂停交付时号须留在号池
     changes.refresh_items({r["bill_no"] for r in items} | {t.bill for t in targets.values()})
     # 转移前 MES 已持有的号当场给转入方建交付批次；MES 还没收到的号回号池按流水认领（对 MES 仍是首次下发）
@@ -1161,6 +1168,14 @@ def map_material(cu: CurrentUser, alert: dict, target_seq: int | None, note: str
         if a is None or a["status"] != "OPEN":
             raise biz(ErrorCode.ALERT_NOT_FOUND)
         items = db.all(f"SELECT {ITEM_COLS} FROM sn_item WHERE bill_no = %s AND bill_seq = %s FOR UPDATE", bill, old)
+        # SN 导入的号：号池单据序号为 0，所在行记在导入记录（见 _line_of），一并改到新行
+        imported = db.all(
+            f"SELECT {_I_COLS} FROM sn_item i JOIN sn_import_item s ON s.id = i.seq_dec "
+            f"WHERE i.bill_no = %s AND i.origin = '{util.ORIGIN_IMPORT}' AND s.cur_bill_seq = %s FOR UPDATE",
+            bill,
+            old,
+        )
+        items += imported
         frozen = sum(1 for x in items if x["status"] == util.TO_PUSH and x["delivery_batch_no"] is not None)
         frozen += len(delivery.frozen_by_transfer_out([x["id"] for x in items]))
         if frozen:
@@ -1191,13 +1206,17 @@ def map_material(cu: CurrentUser, alert: dict, target_seq: int | None, note: str
             for i in range(0, len(ids), 1000):
                 part = ids[i : i + 1000]
                 db.exec(
-                    f"UPDATE sn_item SET bill_seq = %s, material_code = %s{extra[k]}, updated_at = %s "
-                    f"WHERE id IN ({marks(len(part))})",
+                    f"UPDATE sn_item SET bill_seq = IF(origin = '{util.ORIGIN_IMPORT}', bill_seq, %s), "
+                    f"material_code = %s{extra[k]}, updated_at = %s WHERE id IN ({marks(len(part))})",
                     target_seq,
                     line["material_code"],
                     now,
                     *part,
                 )
+        imp_ids = [int(x["seq_dec"]) for x in imported]
+        for i in range(0, len(imp_ids), 1000):
+            part = imp_ids[i : i + 1000]
+            db.exec(f"UPDATE sn_import_item SET cur_bill_seq = %s WHERE id IN ({marks(len(part))})", target_seq, *part)
         oc = db.one("SELECT * FROM sn_line_count WHERE bill_no = %s AND seq = %s FOR UPDATE", bill, old)
         if oc is not None:
             db.exec(

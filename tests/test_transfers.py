@@ -1114,3 +1114,24 @@ def test_same_org_transfer_keeps_pending_transfer_in_type(w, api, sql):
     w.push()
     got = {x["batch"]["batchType"] for x in MES.received if x["org"] == b} - {"PING"}
     assert got == {"TRANSFER_IN"}
+
+
+def test_transfer_into_never_issued_bill_tracks_order_changes(w, api, sql):
+    """转入的目标单据此前没生成、没导入过号（没有台账）：转移时建台账，之后目标单据在金蝶反审核、
+    改 PI 等变更照常提醒并暂停未交付的号（否则号挂在没有台账的单据上，订单变更比对整张跳过）。"""
+    a, pi, src = setup(w, qty=3, mes=False)
+    w.allocate(pi)
+    tgt = uid("MO")
+    w.order(tgt, a, "C1", pi, ("M1", 5))
+    assert sql.one("SELECT 1 FROM sn_bill_ledger WHERE bill_no = %s", tgt) is None
+    ok(api.post("/api/transfers/bill", bill_body(pi, src, tgt, a), w.admin))
+    led = sql.one("SELECT pi, org_code, customer_code, suspend FROM sn_bill_ledger WHERE bill_no = %s", tgt)
+    assert led is not None and (led["pi"], led["org_code"], led["customer_code"], led["suspend"]) == (
+        pi,
+        a,
+        "C1",
+        None,
+    )
+    w.touch(tgt, status="D")
+    w.compare()
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE bill_no = %s AND suspend = 'REVERSAL'", tgt) == 3
