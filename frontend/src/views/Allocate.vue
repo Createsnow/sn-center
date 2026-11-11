@@ -39,7 +39,13 @@
       <div v-loading="ctxLoading" class="surface pane detail-pane">
         <!-- 已分配页签：左侧点了单据才显示，只有一个页签，头部为筛选框，下面逐枚列出 SN -->
         <template v-if="tab === 'ALLOCATED'">
-          <AllocatedPane v-if="pi && bill" ref="allocated" :pi="pi" :bill="bill" />
+          <div v-if="pi && bill" class="tabs-wrap">
+            <AllocatedPane ref="allocated" :pi="pi" :bill="bill" />
+            <!-- 页签右上角：去生成（带所选单据的 PI 到 SN 生成页） -->
+            <div class="tabs-extra">
+              <el-button type="primary" plain size="small" @click="goGenerate(pi)">{{ t("allocate.goGenerate") }}<el-icon class="el-icon--right"><Right /></el-icon></el-button>
+            </div>
+          </div>
           <p v-else class="muted empty">{{ list.items.length ? t("allocate.pickBill") : t("common.empty") }}</p>
         </template>
         <p v-else-if="!ctx" class="muted empty">{{ list.items.length ? t("allocate.pickBill") : t("common.empty") }}</p>
@@ -49,9 +55,9 @@
               <b>PI {{ ctx.pi_no }}</b>
               <span class="muted">{{ t("common.customer") }} {{ ctx.customer_code || "—" }}</span>
               <span class="push" />
-              <router-link v-if="ctx.summary.quota" class="go" :to="{ path: '/generate', query: { pi: ctx.pi_no } }">
-                {{ t("allocate.toGenerate", { n: num(ctx.summary.quota) }) }}<el-icon><Right /></el-icon>
-              </router-link>
+              <!-- 与 PI、客户编码同行的右上角：去生成（带本 PI 到 SN 生成页）；本 PI 还有可生成额度时左侧提示枚数 -->
+              <span v-if="ctx.summary.quota" class="muted quota">{{ t("allocate.quotaLeft", { n: num(ctx.summary.quota) }) }}</span>
+              <el-button type="primary" plain size="small" @click="goGenerate(ctx.pi_no)">{{ t("allocate.goGenerate") }}<el-icon class="el-icon--right"><Right /></el-icon></el-button>
             </div>
             <div class="kv">
               <span>{{ t("generate.generated") }} <b class="num">{{ num(ctx.summary.generated_qty) }}</b></span>
@@ -270,8 +276,9 @@ const { rows: listRows } = useFitRows(listBox, () => loadList());
 const rowKey = (row: BillRow) => `${row.pi_no}|${row.bill_no}`;
 const isCurrent = (row: BillRow) => row.pi_no === pi.value && row.bill_no === bill.value;
 
-/** 分页取单据（处理时间近的在前）；silent = 刷新当前页，不改右侧所选。 */
-async function loadList(silent = false, p = 1) {
+/** 分页取单据（处理时间近的在前）；silent = 刷新当前页，不改右侧所选；
+ *  keep = 所选单据不在本页时也保持（分配完成自动切到已分配页签时，右侧仍看这张单据）。 */
+async function loadList(silent = false, p = 1, keep = false) {
   if (!listRows.value) return;
   if (!silent) listLoading.value = true;
   try {
@@ -284,7 +291,7 @@ async function loadList(silent = false, p = 1) {
   // 右侧跟随左侧列表：所选单据在本页时保持；不在时待分配页签改选第一张（只带 PI 进来时先找该 PI 的单据），
   // 已分配页签等左侧点单据；列表为空时右侧也为空
   const items: BillRow[] = list.value.items;
-  if (items.find(isCurrent)) return;
+  if (items.find(isCurrent) || (keep && bill.value)) return;
   const hit = tab.value === "TO_ALLOCATE" ? (!bill.value && items.find((r) => r.pi_no === pi.value)) || items[0] : undefined;
   if (hit) pick(hit);
   else if (pi.value && route.active) router.replace({ query: { tab: tab.value } });
@@ -319,6 +326,9 @@ async function loadCtx(silent = false) {
     const c = await api.allocContext(pi.value);
     c.lines.forEach((l: any) => (l.key = `${l.bill_no}/${l.seq}`));
     const fresh = c.pi_no !== ctx.value?.pi_no;
+    // 所选单据这次刷新前后的状态：由待分配 / 待处理变为已分配（分配完成、推送全部完成）时自动切到已分配页签
+    const before = fresh ? undefined : billStateOf(ctx.value, bill.value);
+    const after = billStateOf(c, bill.value);
     if (fresh) shownBills.value = new Set();
     const s = new Set(shownBills.value);
     c.lines.forEach((l: any) => l.bill_state !== "ALLOCATED" && s.add(l.bill_no));
@@ -326,6 +336,10 @@ async function loadCtx(silent = false) {
     ctx.value = c;
     // 换了 PI：单据多时只展开所选单据；同一 PI 刷新保持原样
     if (fresh) focusBill(bills.value.length > BILL_FOLD_OVER);
+    if (before && before !== "ALLOCATED" && after === "ALLOCATED" && route.active) {
+      switchToAllocated();
+      return;
+    }
   } finally {
     ctxLoading.value = false;
   }
@@ -337,6 +351,29 @@ async function loadCtx(silent = false) {
   batches.load(silent ? batches.state.page : 1);
   // 有推送任务在跑时，定时刷新推送进度
   if (ctx.value?.push.some((p: any) => p.task && ACTIVE_TASK.includes(p.task.state))) ctxTimer = setTimeout(() => loadCtx(true), 5000);
+}
+
+/** 详情里某张单据的状态（物料行上的 bill_state）；本 PI 没有该单据时为 undefined。 */
+function billStateOf(c: any, no: string): BillState | undefined {
+  return c?.lines.find((l: any) => l.bill_no === no)?.bill_state;
+}
+
+/** 刚点「分配」分到的枚数：分配后的刷新里自动切到已分配页签时与切换提示合成一条，用过即清空。 */
+let allocDoneQty: number | null = null;
+
+/** 所选单据分配完成（按单据：本单据没有待分配、待推送的号）：提示后切到已分配页签，左侧列表回到第一页，
+ *  右侧仍是这张单据的 SN 明细。刚点「分配」引起的切换只提示一条（已分配 N 枚 + 已切换）。 */
+function switchToAllocated() {
+  const n = allocDoneQty;
+  allocDoneQty = null;
+  ElMessage.success(n != null ? t("allocate.allocDoneSwitched", { n: num(n), bill: bill.value }) : t("allocate.autoSwitched", { bill: bill.value }));
+  tab.value = "ALLOCATED";
+  loadList(false, 1, true);
+}
+
+/** 去生成：带 PI 打开 SN 生成页（生成页按 PI 打开详情）。 */
+function goGenerate(no: string) {
+  router.push({ path: "/generate", query: { pi: no } });
 }
 
 async function reload() {
@@ -474,11 +511,13 @@ async function doAllocate() {
   busy.value = "alloc";
   try {
     const r = await api.allocate({ pi_no: ctx.value.pi_no, ...scopeBody.value });
-    ElMessage.success(t("allocate.allocDone", { n: num(r.qty) }));
     if (r.skipped?.length) ElMessage.warning(t("allocate.allocSkipped", { n: r.skipped.length }));
-    // 分配后留在原处看推送进度条
+    // 分配后留在原处看推送进度条；所选单据就此分配完成时自动切到已分配页签，两条提示合成一条（switchToAllocated）
+    allocDoneQty = r.qty;
     await reload();
+    if (allocDoneQty != null) ElMessage.success(t("allocate.allocDone", { n: num(allocDoneQty) }));
   } finally {
+    allocDoneQty = null;
     busy.value = "";
   }
 }
@@ -534,9 +573,6 @@ onUnmounted(() => {
 .empty { padding: 40px; text-align: center; }
 .dh { display: flex; flex-direction: column; gap: 6px; flex: none; }
 .dh-title { display: flex; gap: 12px; align-items: center; font-size: 16px; color: var(--app-text); }
-.go { display: inline-flex; align-items: center; gap: 4px; padding: 3px 12px; border-radius: 14px; font-size: 13px; text-decoration: none;
-  color: var(--el-color-primary); background: var(--el-color-primary-light-9); border: 1px solid var(--el-color-primary-light-7); }
-.go:hover { background: var(--el-color-primary-light-8); }
 .kv { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 12px; color: var(--app-muted); }
 .kv b { color: var(--app-text); font-weight: 600; }
 .box { border: 1px solid var(--el-border-color-lighter); border-radius: 8px; }
@@ -558,6 +594,10 @@ onUnmounted(() => {
 .prog-row { flex-wrap: wrap; row-gap: 2px; }
 .bar { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--el-border-color); background: var(--el-fill-color-lighter); border-radius: 0 0 8px 8px; font-size: 13px; }
 .orgs { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; min-height: 28px; justify-content: center; }
+/* 已分配页签：右侧页签外包一层，页签右上角放「去生成」（叠在页签头一行的右端） */
+.tabs-wrap { position: relative; flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
+.tabs-extra { position: absolute; top: 6px; right: 0; z-index: 2; display: flex; align-items: center; gap: 10px; font-size: 12px; }
+.quota { font-size: 12px; }
 .detail-pane > .tabs-box { flex: 1 1 0; min-height: max(240px, 40%); display: flex; flex-direction: column; padding: 0 12px 8px; }
 .tabs-box :deep(.el-tabs__header) { flex: none; }
 .tabs-box :deep(.el-tabs__content) { flex: 1; min-height: 0; overflow-y: auto; }
