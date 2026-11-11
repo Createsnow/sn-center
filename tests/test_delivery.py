@@ -984,3 +984,33 @@ def test_claim_serialized_across_instances_respects_concurrency(w, sql):
         other.close()
     assert got == [None], "x 已在运行，并发上限 1：y 不认领"
     assert _task_state(sql, org, y) == "QUEUED"
+
+
+@pytest.mark.parametrize("kind", ["FAIL", "RETRY"])
+def test_batch_voided_during_push_stays_voided(w, sql, monkeypatch, kind):
+    """推送请求在途时总部把这一批作废（号已回号池），随后 MES 应答失败或要求重试：批次保持作废，
+    不被应答改回失败 / 等重试——否则作废的批次又挡住该 PI 的推送、拉取，续推时还会按旧内容重发。"""
+    from app.services import mes_client
+
+    org, pi, bill = setup_pi(w, qty=3, batch_size=5)
+
+    real = mes_client.send
+    voided: list[str] = []
+
+    def send(t, batch_no, body_gz, attempt, ping=False):
+        if voided:
+            return real(t, batch_no, body_gz, attempt, ping)
+        voided.append(batch_no)
+        ok(w.api.post(f"/api/delivery/batches/{batch_no}/void", m(reason="现场停用", basis="书面确认"), w.admin))
+        if kind == "FAIL":
+            return mes_client.Outcome(mes_client.FAIL, code="AUTH", message="认证失败", http_status=401)
+        return mes_client.Outcome(mes_client.RETRY, code="HTTP_503", message="稍后再试", http_status=503)
+
+    monkeypatch.setattr(mes_client, "send", send)
+    w.allocate(pi)
+    w.push()
+    b = sql.one("SELECT result, push_state FROM sn_delivery_batch WHERE batch_no = %s", voided[0])
+    assert (b["result"], b["push_state"]) == ("VOIDED", "IDLE"), str(b)
+    assert sql.count("SELECT COUNT(*) FROM sn_delivery_batch WHERE pi_no = %s AND result = 'FAILED'", pi) == 0
+    # 作废后号回号池，任务接着用新批次推完
+    assert sql.count("SELECT COUNT(*) FROM sn_item WHERE pi_no = %s AND status = 'PUSHED'", pi) == 3
