@@ -94,6 +94,11 @@ def sn_max(col: str = "sn") -> str:
     return f"SUBSTRING(MAX(CONCAT(LPAD(CHAR_LENGTH({col}), 2, '0'), {col})), 3)"
 
 
+def sn_order(sn: str) -> tuple[int, str]:
+    """号的先后（Python 侧，与 sn_min / sn_max 同口径）：先比长度再比字符，流水突破位数后 …10000 排在 …9999 之后。"""
+    return len(sn), sn
+
+
 def like_any(s: str) -> str:
     return "%" + like_prefix(s)
 

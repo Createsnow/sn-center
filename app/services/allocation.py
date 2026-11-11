@@ -281,7 +281,11 @@ def _allocate_tx(
                 .factory(g["org"])
                 .pi(pi)
                 .bill(g["bill_no"])
-                .range(min(pl["a"] for pl in per_line), max(pl["b"] for pl in per_line))
+                # 跨物料行取起止号也先比长度（与 sn_min / sn_max 同口径），流水突破位数后不按字符比错
+                .range(
+                    min((pl["a"] for pl in per_line), key=util.sn_order),
+                    max((pl["b"] for pl in per_line), key=util.sn_order),
+                )
                 .count(n)
                 .status(util.PENDING_ALLOC, status)
                 .info(f"mes={int(mes)}"),

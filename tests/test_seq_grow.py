@@ -211,3 +211,20 @@ def test_locked_prefix_format_after_all_sns_deleted(w, api, sql):
     w.generate(pi2)
     locked = ok(api.get(f"/api/generate/context?pi={pi2}", w.admin))["prefix_locked"]
     assert list(locked) == [p2] and locked[p2]["seq_len"] == 2
+
+
+def test_allocate_audit_range_compares_by_width(w, api, sql):
+    """分配留痕的起止号跨物料行时按位数比：物料行 1 用到 …99、物料行 2 从 …100 起（位数变多），
+    整单分配的结束号是 …104，不能按字符比成 …99（与 util.sn_min / sn_max 同口径）。"""
+    org, pi, bill = mk(w, ("M1", 99), ("M2", 5))
+    p = P()
+    c = m(prefix=p, base=10, seq_len=2, with_length=False, seq_grow=True)
+    ok(w.select(pi, [(bill, 1), (bill, 2)], custom=c))
+    w.generate(pi, bills=[bill])
+    assert sns(sql, pi)[98:100] == [f"{p}99", f"{p}100"]
+    w.allocate(pi, bills=[bill])
+    row = sql.one(
+        "SELECT start_sn, end_sn, qty FROM sn_audit WHERE action = 'SN_ALLOCATE' AND pi_no = %s AND result = 'OK'",
+        pi,
+    )
+    assert (row["start_sn"], row["end_sn"], row["qty"]) == (f"{p}01", f"{p}104", 104)
