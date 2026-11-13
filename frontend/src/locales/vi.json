@@ -706,6 +706,7 @@
     "scopeWholePi": "Chưa chọn = cả PI",
     "scopeLinesN": "Đã chọn {n} dòng vật tư",
     "clearSel": "Bỏ chọn",
+    "selectAllBills": "Chọn tất cả",
     "revokeConfigTitle": "Thu hồi cấu hình",
     "revokeConfigConfirm": "Thu hồi cấu hình của {n} dòng vật tư: quy tắc đã chọn cho dòng trở về mặc định theo PI / khách hàng, hạng mục đính kèm nhập tay bị xóa, chiều dài và đơn vị nhập tay trở về giá trị Kingdee.",
     "revokeConfigDone": "Đã thu hồi cấu hình của {n} dòng",

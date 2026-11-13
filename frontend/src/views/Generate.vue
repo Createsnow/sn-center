@@ -13,6 +13,8 @@
           <el-radio-button v-for="v in TABS" :key="v" :value="v">{{ t(`generate.tab.${v}`) }}</el-radio-button>
         </el-radio-group>
         <el-input v-model="q" class="kw" :placeholder="t('generate.search')" clearable prefix-icon="Search" @keyup.enter="loadList()" @clear="loadList()" />
+        <!-- 生产组织筛选：系统管理员、授权多个组织的账户才有；只在页面上按 PI 的生产组织筛（不改接口），详情仍列出本 PI 授权范围内的全部单据 -->
+        <FactorySelect v-if="store.multiScope" v-model="factory" scoped clearable :placeholder="t('app.allFactories')" @update:model-value="page = 1" />
         <span class="muted summary">
           {{ t("generate.summary", { quota: num(list.summary.quota) }) }}
           <router-link v-if="list.summary.pending_alloc" to="/allocate">{{ t("generate.summaryPending", { n: num(list.summary.pending_alloc) }) }}</router-link>
@@ -120,6 +122,8 @@
             <el-tab-pane v-for="f in FILTERS" :key="f" :label="t(`generate.filter.${f}`)" :name="f" />
           </el-tabs>
           <span class="fold-ops">
+            <!-- 全选：勾选当前页签列出的全部可勾选单据（与逐张勾选单据头相同，整单），再点取消这些单据的勾选 -->
+            <el-checkbox v-bind="allBillsMark" :disabled="!pickableBills.length" class="all-bills" @change="(v: any) => onAllBills(!!v)">{{ t("generate.selectAllBills") }}</el-checkbox>
             <el-button link type="primary" size="small" @click="foldAll(false)">{{ t("common.expandAll") }}</el-button>
             <el-button link type="primary" size="small" @click="foldAll(true)">{{ t("common.collapseAll") }}</el-button>
           </span>
@@ -129,9 +133,12 @@
           <!-- 点单据头展开 / 收起物料行；勾选框只管勾选 -->
           <div class="bill-h" @click="toggleFold(b.bill_no)">
             <el-icon class="fold" :class="{ open: !isFolded(b.bill_no) }"><ArrowRight /></el-icon>
-            <span @click.stop><el-checkbox v-bind="billCheck(b.bill_no)" :disabled="!b.in_snapshot || !b.lines.length" @change="(v: any) => onBill(b.bill_no, !!v)" /></span>
+            <!-- 勾选框跟随勾选状态（model-value 受控；Element Plus 的 checked 只是初始值，清空 / 全选后会对不上） -->
+            <span @click.stop><el-checkbox :model-value="billCheck(b.bill_no).checked" :indeterminate="billCheck(b.bill_no).indeterminate" :disabled="!billPickable(b)" @change="(v: any) => onBill(b.bill_no, !!v)" /></span>
             <span v-if="billIdx(b.bill_no) >= 0" class="order">{{ billIdx(b.bill_no) + 1 }}</span>
             <b>{{ b.bill_no }}</b>
+            <!-- 单据所属生产组织名称（小号加粗），在号段标签之前 -->
+            <b v-if="billOrg(b)" class="bill-org">{{ billOrg(b) }}</b>
             <!-- 单据号段：已用号段（本单据现有的号）、空闲号段（本单据删号腾出），没有时不显示，点开看明细 -->
             <span v-if="b.segments?.use_count" class="chip use" @click.stop="segDlg?.open({ bill: b.bill_no, tab: 'use' })">
               {{ t("generate.segUse", { n: num(b.segments.use_count), qty: num(b.segments.use_qty) }) }}
@@ -313,8 +320,10 @@ import {
 import { useFactories } from "@/composables/useFactories";
 import { useTime } from "@/composables/useTime";
 import { leaveStateLabel, suspendLabel } from "@/constants";
+import { useAuthStore } from "@/stores/auth";
 import type { OrderLine } from "@/types/api";
 import PageHead from "@/components/PageHead.vue";
+import FactorySelect from "@/components/FactorySelect.vue";
 import RuleDialog from "@/views/generate/RuleDialog.vue";
 import DeleteDialog from "@/views/generate/DeleteDialog.vue";
 import SeqSource, { type SeqValue } from "@/views/generate/SeqSource.vue";
@@ -346,7 +355,8 @@ const { t } = useI18n();
 // 页签缓存下本页在后台时不跟随别的页面的地址参数，也不改写地址
 const route = usePageRoute();
 const router = useRouter();
-const { nameOf } = useFactories();
+const { factories, nameOf } = useFactories();
+const store = useAuthStore();
 const { fmt: fmtTime } = useTime();
 const issueText = (c: string) => t(`generate.issue.${c}`);
 const sameLine = (a: LineRef, b: LineRef) => a.bill_no === b.bill_no && a.seq === b.seq;
@@ -359,8 +369,13 @@ const q = ref("");
 const page = ref(1);
 const listLoading = ref(false);
 const list = ref<any>({ items: [], capped: false, summary: { quota: 0, pending_alloc: 0, unbatched: 0 }, synced_at: null });
-const limited = computed(() => !q.value.trim() && list.value.items.length > PAGE * RECENT_PAGES);
-const shown = computed<any[]>(() => (limited.value ? list.value.items.slice(0, PAGE * RECENT_PAGES) : list.value.items));
+/** 生产组织筛选（空 = 全部）：按 PI 的生产组织（orgs，一张 PI 可有多个组织）在页面上筛，接口不变。 */
+const factory = ref("");
+const filtered = computed<any[]>(() =>
+  factory.value ? list.value.items.filter((x: any) => (x.orgs || []).includes(factory.value)) : list.value.items,
+);
+const limited = computed(() => !q.value.trim() && filtered.value.length > PAGE * RECENT_PAGES);
+const shown = computed<any[]>(() => (limited.value ? filtered.value.slice(0, PAGE * RECENT_PAGES) : filtered.value));
 const paged = computed(() => shown.value.slice((page.value - 1) * PAGE, page.value * PAGE));
 let listTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -394,6 +409,9 @@ function actionText(row: any): string {
 
 const frozenText = (row: any) => t("generate.frozenBills", { n: row.frozen_bills });
 const orgNames = (row: any): string[] => (row.orgs || []).map((o: string) => nameOf(o));
+/** 详情单据头的生产组织名称：与 PI 列表生产组织列同一来源（生产组织列表），取不到时用详情带的名称、编号。 */
+const billOrg = (b: any): string =>
+  factories.value.find((f) => f.factory_code === b.org_code)?.factory_name || b.org_name || b.org_code || "";
 
 /** 生产组织列放不下时在组织之间换行，列宽不超过此值（单个组织名称更长时按最长的名称）。 */
 const ORGS_MAX_W = 240;
@@ -627,6 +645,26 @@ const onLine = (l: LineRef, on: boolean) => (sel.value = toggleLine(sel.value, l
 const lineIdx = (l: LineRef) => lineOrder(sel.value, l);
 const billCheck = (no: string) => billMark(sel.value, no, linesOf);
 const isPicked = (l: LineRef) => lineIdx(l) >= 0 || billCheck(l.bill_no).order >= 0;
+/** 单据可勾选（与单据头勾选框置灰同一条件）：在快照中且有物料行。 */
+const billPickable = (b: any) => !!b.in_snapshot && !!b.lines.length;
+/** 「全选」作用的单据：当前页签列出的、可勾选的单据（按列出顺序）。 */
+const pickableBills = computed<string[]>(() => shownBills.value.filter(billPickable).map((b: any) => b.bill_no as string));
+/** 全选框：这些单据都整单勾选为选中，部分勾选（含单据内部分物料行）为半选。 */
+const allBillsMark = computed(() => {
+  const marks = pickableBills.value.map(billCheck);
+  const checked = marks.length > 0 && marks.every((m) => m.checked);
+  return { modelValue: checked, indeterminate: !checked && marks.some((m) => m.checked || m.indeterminate) };
+});
+/** 全选 / 取消全选：逐张走单据头勾选（toggleBill），与一张张勾选单据相同；取消后什么都没选时等同「清空」。 */
+function onAllBills(on: boolean) {
+  let s = sel.value;
+  for (const no of pickableBills.value) {
+    if (on && billMark(s, no, linesOf).checked) continue;
+    s = toggleBill(s, no, on, linesOf);
+  }
+  if (!on && !s.bills.length && !s.lines.length) return clearSelection();
+  sel.value = s;
+}
 /** 选中的物料行（勾选的单据展开），按排号顺序。 */
 /** 所选物料行自己预留里空着的号段（指定起止号时这些行放弃预留，可勾选作剩下的号的去处） */
 const ownReserved = computed<any[]>(() => {
@@ -930,8 +968,9 @@ onUnmounted(() => {
 .dtabs :deep(.el-tabs__header) { margin-bottom: 8px; }
 .tabs-row { position: relative; }
 /* 高度与页签头（40px）一致，按钮与页签文字垂直居中；左侧留白避免与页签重叠 */
-.dtabs :deep(.el-tabs__nav-wrap) { padding-right: 160px; }
+.dtabs :deep(.el-tabs__nav-wrap) { padding-right: 300px; }
 .fold-ops { position: absolute; top: 0; right: 0; height: 40px; display: inline-flex; align-items: center; gap: 4px; }
+.all-bills { margin-right: 8px; height: auto; }
 .fold-ops :deep(.el-button + .el-button) { margin-left: 0; }
 .toolbar { margin-bottom: 8px; }
 .issue-tags, .ops { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
@@ -944,6 +983,7 @@ onUnmounted(() => {
 .bill-h:hover { background: var(--el-fill-color); }
 .fold { color: var(--app-muted); transition: transform 0.15s; }
 .fold.open { transform: rotate(90deg); }
+.bill-org { font-size: 12px; font-weight: 700; color: var(--app-text); white-space: nowrap; }
 .order { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; font-size: 11px; color: #fff; background: var(--el-color-primary); }
 .sel { display: inline-flex; align-items: center; gap: 4px; }
 .lines :deep(tr.picked > td) { background: var(--el-color-primary-light-9); }

@@ -178,6 +178,7 @@ M = {
 "generate.scopeWholePi": ("未勾选 = 整张 PI", "Nothing ticked = whole PI", "Chưa chọn = cả PI"),
 "generate.scopeLinesN": ("已选 {n} 个物料行", "{n} material lines selected", "Đã chọn {n} dòng vật tư"),
 "generate.clearSel": ("清空", "Clear", "Bỏ chọn"),
+"generate.selectAllBills": ("全选", "Select all", "Chọn tất cả"),
 "generate.revokeConfigTitle": ("撤销配置", "Revoke configuration", "Thu hồi cấu hình"),
 "generate.revokeConfigConfirm": ("撤销 {n} 个物料行的配置：物料行选定的规则改回按 PI / 客户默认，手填的附件项次清空，手填的米数、产品单位改回金蝶值。", "Revoke the config of {n} material line(s): the line's selected rule goes back to the PI / customer default, the manually filled attachment item is cleared, and the manually filled length and unit go back to the Kingdee values.", "Thu hồi cấu hình của {n} dòng vật tư: quy tắc đã chọn cho dòng trở về mặc định theo PI / khách hàng, hạng mục đính kèm nhập tay bị xóa, chiều dài và đơn vị nhập tay trở về giá trị Kingdee."),
 "generate.revokeConfigDone": ("已撤销 {n} 个物料行的配置", "Configuration of {n} lines revoked", "Đã thu hồi cấu hình của {n} dòng"),

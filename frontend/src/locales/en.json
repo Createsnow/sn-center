@@ -706,6 +706,7 @@
     "scopeWholePi": "Nothing ticked = whole PI",
     "scopeLinesN": "{n} material lines selected",
     "clearSel": "Clear",
+    "selectAllBills": "Select all",
     "revokeConfigTitle": "Revoke configuration",
     "revokeConfigConfirm": "Revoke the config of {n} material line(s): the line's selected rule goes back to the PI / customer default, the manually filled attachment item is cleared, and the manually filled length and unit go back to the Kingdee values.",
     "revokeConfigDone": "Configuration of {n} lines revoked",
