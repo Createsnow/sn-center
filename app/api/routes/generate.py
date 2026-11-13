@@ -4,8 +4,8 @@ from fastapi import APIRouter
 
 from app.api.deps import OperatorDep
 from app.schemas.common import OptInt
-from app.schemas.gen import DeleteIn, PreviewIn, RevokeConfigIn, RunIn
-from app.services import deletion, generate, orders, workbench
+from app.schemas.gen import DeleteIn, PreviewIn, RevokeConfigIn, RunIn, VoidRuleIn
+from app.services import deletion, generate, line_void, orders, workbench
 
 router = APIRouter(prefix="/generate", tags=["generate"])
 
@@ -121,3 +121,17 @@ def gen_deleted(cu: OperatorDep, pi: str | None = None) -> list:
 )
 def gen_revoke_config(body: RevokeConfigIn, cu: OperatorDep) -> dict:
     return orders.revoke_config(cu, body.pi_no, [x.model_dump() for x in body.lines or []])
+
+
+@router.get("/void-rule", summary="物料行失效条件（全系统一套）：开关、业务状态、领料状态，最后修改人与时间")
+def gen_void_rule(cu: OperatorDep) -> dict:
+    return line_void.view()
+
+
+@router.put(
+    "/void-rule",
+    summary="改物料行失效条件（全系统生效）：开启时业务状态、领料状态都在所选范围内的物料行整行失效，"
+    "不参与排号与计数，不能选规则、填写、撤销配置，不能作转移、导入目标；已有的号照常处理",
+)
+def gen_void_rule_save(body: VoidRuleIn, cu: OperatorDep) -> dict:
+    return line_void.save(cu, body.enabled, body.biz_status, body.pick_status)

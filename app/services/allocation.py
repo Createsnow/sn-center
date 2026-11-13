@@ -21,7 +21,7 @@ from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db, marks, retry_deadlock
-from app.services import audit, bill_stats, changes, delivery, factories, locks, orders, workbench
+from app.services import audit, bill_stats, changes, delivery, factories, line_void, locks, orders, workbench
 
 #: 分配页左侧页签：待分配（含待处理）/ 已分配
 TO_ALLOCATE = "TO_ALLOCATE"
@@ -465,8 +465,11 @@ def context(cu: CurrentUser, pi_in: str | None) -> dict:
         x["bill_state"] = bill_states[x["bill_no"]]
     stats = workbench.item_stats([pi], facs).get(pi, {})
     msql, margs = factories.scope_sql(facs, "m.org_code")
+    # 可生成不算失效的物料行（line_void），与生成页同一口径
+    void = line_void.current().sql("m")
     quota = db.scalar(
-        "SELECT SUM(GREATEST(FLOOR(m.qty) - COALESCE(c.own_generated, 0), 0)) FROM sn_prd_mo m "
+        f"SELECT SUM(CASE WHEN {void} THEN 0 ELSE GREATEST(FLOOR(m.qty) - COALESCE(c.own_generated, 0), 0) END) "
+        "FROM sn_prd_mo m "
         "LEFT JOIN sn_line_count c ON c.bill_no = m.bill_no AND c.seq = m.seq WHERE m.pi = %s" + msql,
         pi,
         *margs,

@@ -44,7 +44,7 @@ from app.core.errors import ErrorCode, biz
 from app.core.exceptions import BizError
 from app.core.security import CurrentUser
 from app.db.session import db, marks
-from app.services import audit, factories, locks
+from app.services import audit, factories, line_void, locks
 
 #: 分类：新建、修改只能是 PI；NONE 未分类 / CUSTOMER 客户只出现在早先的规则上
 NONE = "NONE"
@@ -1183,6 +1183,11 @@ def _line_keys(pi: str, lines: list[dict] | None) -> list[tuple[str, int, dict]]
         keys.append((no, int(seq), line))
     if not keys:
         raise biz(ErrorCode.RULE_LINE_REQUIRED)
+    # 失效的物料行（line_void）不能选规则、改回默认
+    vrule = line_void.current()
+    bad = next(((no, seq) for no, seq, line in keys if vrule.is_void(line)), None)
+    if bad is not None:
+        raise biz(ErrorCode.LINE_VOID, bill_no=bad[0], seq=bad[1])
     return keys
 
 

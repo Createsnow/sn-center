@@ -47,7 +47,7 @@ from app.core.errors import ErrorCode, biz
 from app.core.exceptions import BizError
 from app.core.security import CurrentUser
 from app.db.session import ER_LOCK_NOWAIT, db, error_no, is_deadlock, is_duplicate, marks, retry_deadlock
-from app.services import audit, bill_stats, changes, factories, locks, orders, reserve, rules
+from app.services import audit, bill_stats, changes, factories, line_void, locks, orders, reserve, rules
 
 log = structlog.get_logger()
 
@@ -650,10 +650,12 @@ class Line:
     res: rules.Resolved | None
     block: str | None = None
     issues: list[str] = field(default_factory=list)
+    #: 物料行失效（line_void）：不参与排号，额度按 0 算
+    void: bool = False
 
     @property
     def quota(self) -> int:
-        return max(0, self.qty - self.own)
+        return 0 if self.void else max(0, self.qty - self.own)
 
 
 def _load_lines(pi: str, keys: list[tuple[str, int]]) -> list[Line]:
@@ -671,6 +673,7 @@ def _load_lines(pi: str, keys: list[tuple[str, int]]) -> list[Line]:
     memo: dict[int, rules.Resolved | None] = {}
     taken: dict = {}
     blocks = {b: changes.generation_block(b) for b in bills}
+    vrule = line_void.current()
     out = []
     for k in keys:
         r = snap.get(k)
@@ -698,6 +701,7 @@ def _load_lines(pi: str, keys: list[tuple[str, int]]) -> list[Line]:
             attach,
             rules.effective(pi, sels.get(k), default, memo=memo),
             blocks[r["bill_no"]],
+            void=vrule.is_void(r),
         )
         _check(line, taken)
         out.append(line)
@@ -1182,7 +1186,8 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
         raise biz(ErrorCode.GEN_CANCELED)
     if c["last_seq_dec"] != plan["base_last_seq"]:
         raise biz(ErrorCode.GEN_PREVIEW_STALE, pi=pi, expected=plan["base_last_seq"], actual=c["last_seq_dec"])
-    # 事务内按最新快照和计数表重新校验额度（锁计数行）
+    # 事务内按最新快照和计数表重新校验额度（锁计数行）；预演后物料行失效（改了失效条件或状态刷新）也算计划已变
+    vrule = line_void.current()
     for x in plan["items"]:
         lc = _lock_row(
             "sn_line_count",
@@ -1193,9 +1198,11 @@ def _generate_in_tx(cu: CurrentUser, j: dict, plan: dict) -> None:
             (x["bill_no"], x["seq"], x["material_code"], now),
         )
         line = db.one(
-            "SELECT qty, material_code FROM sn_prd_mo WHERE bill_no = %s AND seq = %s", x["bill_no"], x["seq"]
+            "SELECT qty, material_code, biz_status, pick_status FROM sn_prd_mo WHERE bill_no = %s AND seq = %s",
+            x["bill_no"],
+            x["seq"],
         )
-        if line is None or orders.sn_qty(line) - int(lc["own_generated"]) < x["qty"]:
+        if line is None or vrule.is_void(line) or orders.sn_qty(line) - int(lc["own_generated"]) < x["qty"]:
             raise biz(ErrorCode.GEN_PREVIEW_CHANGED)
     # 规则版本落库并归属本 PI；同一次生成里规则相同的物料行共用同一版
     versions: dict[str, dict] = {}

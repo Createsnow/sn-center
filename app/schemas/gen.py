@@ -40,3 +40,11 @@ class DeleteIn(In):
     start_sn: str | None = None
     end_sn: str | None = None
     reason: str | None = None
+
+
+class VoidRuleIn(In):
+    """物料行失效条件（全系统一套）：开关 + 业务状态 + 领料状态（各至少一项，取金蝶枚举值）。"""
+
+    enabled: bool | None = None
+    biz_status: list[str] | None = None
+    pick_status: list[str] | None = None

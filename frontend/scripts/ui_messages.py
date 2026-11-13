@@ -216,6 +216,7 @@ M = {
 "actions.RULE_PI_UNBIND": ("解除 PI 绑定", "PI rule unbound", "Bỏ gắn quy tắc PI"),
 "actions.RULE_LINE_SELECT": ("物料行选规则", "Line rule selected", "Chọn quy tắc cho dòng"),
 "actions.LINE_CONFIG_REVOKE": ("物料行撤销配置", "Line config revoked", "Thu hồi cấu hình dòng"),
+"actions.LINE_VOID_RULE": ("物料行失效条件", "Line void condition", "Điều kiện vô hiệu dòng"),
 "actions.RULE_PREFIX_VERSION": ("换前缀另出版本", "New prefix version", "Phiên bản tiền tố mới"),
 "actions.RULE_DELETE": ("删除规则", "Rule deleted", "Xóa quy tắc"),
 "actions.SN_GENERATE": ("生成", "Generate", "Tạo"),

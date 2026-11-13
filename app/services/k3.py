@@ -4,13 +4,15 @@
 - 比对同步只取已审核（FDocumentStatus = 'C'）单据的单据编号与修改时间两列，比对在本地完成；
   变动的单据再按单据编号批量拉明细。全量重建按已审核条件完整拉取。
 - 按单据编号同步、离开快照检测用 View，不带单据状态条件，只看单据状态。
-- 不读业务状态、作废状态、需求单据号，不读写金蝶序列号字段；不返回单据内码、分录内码。
+- 明细的业务状态（FStatus）、领料状态（FPickMtrlStatus）只用于生成页的「物料行失效」（line_void），不参与比对、
+  变更提醒；业务状态、领料状态的变化不改金蝶修改日期，比对同步另按 fetch_line_status 刷新这两列。
+  不读作废状态、需求单据号，不读写金蝶序列号字段；不返回单据内码、分录内码。
 - 文本未填写时金蝶常返回一个空格：一律去首尾空格；基础资料未填写时为 null，视为空。
 - 字段位置按《生产订单查询接口》：PO 为表头 F_HX_PO，修改日期为表头 FModifyDate（ModifyDate），
   附件项次为明细 FTERM，米数为明细 Flength，产品单位为明细 FProductUnit。
   字段名是接口约定，写在代码里，不放 .env。
-- 另取几列只显示的明细字段（客户 P/N、客户描述、规格描述、物料规格型号、生产车间 = 生产部门），不参与比对、生成、
-  变更提醒；金蝶不认这些列时本进程改用基本列（这几列留空），同步照常。
+- 另取几列只显示的明细字段（客户 P/N、客户描述、规格描述、物料规格型号、生产车间 = 生产部门）与业务状态、领料状态，
+  不参与比对、变更提醒；金蝶不认这些列时本进程改用基本列（这几列留空，状态为空的物料行不会失效），同步照常。
 - 连接参数：生产订单页「金蝶连接」保存过的（sn_k3_config，应用密钥加密保存）优先，没有时读 .env 的 K3_*；
   每次调用金蝶时读取，保存后下一次同步即生效。
 """
@@ -61,8 +63,8 @@ DETAIL_KEYS = (
     "FModifyDate",
     "FProductUnit",
 )
-#: 只显示的明细列（接在 DETAIL_KEYS 之后，顺序即 Row 的 customer_pn … dept_name）；
-#: 字段标识见 docs/k3/prd_mo_structure.md
+#: 只显示的明细列（接在 DETAIL_KEYS 之后，顺序即 Row 的 customer_pn … pick_status）；
+#: 字段标识见 docs/k3/prd_mo_structure.md。业务状态、领料状态用于生成页的物料行失效（line_void）
 DISPLAY_KEYS = (
     "FPN",
     "FCD",
@@ -70,7 +72,11 @@ DISPLAY_KEYS = (
     "FMaterialId.FSpecification",
     "FWorkShopID.FNumber",
     "FWorkShopID.FName",
+    "FStatus",
+    "FPickMtrlStatus",
 )
+#: 比对同步刷新业务状态、领料状态（这两项变化不改金蝶修改日期）的查询列
+STATUS_KEYS = ("FBillNo", "FTreeEntity_FSeq", "FStatus", "FPickMtrlStatus")
 #: 带只显示列查询失败、改用基本列后，隔多久再试带只显示列（秒）
 DISPLAY_RETRY_SECONDS = 3600
 ORG_FIELDS = "FNumber,FName,FForbidStatus"
@@ -108,6 +114,9 @@ class Row:
     material_spec: str = ""
     dept_code: str = ""
     dept_name: str = ""
+    #: 业务状态 1 计划 … 7 结算；领料状态 1 未领料 … 4 超额领料（金蝶枚举值，未取到为空）
+    biz_status: str = ""
+    pick_status: str = ""
 
 
 @dataclass(frozen=True)
@@ -326,13 +335,16 @@ def _row_of_query(o: list) -> Row | None:
         locale_name(p[18]),
         text(p[19]),
         locale_name(p[20]),
+        text(p[21]),
+        text(p[22]),
     )
 
 
 def rows_from_view(doc: dict | None) -> list[Row]:
     """View 单据：表头客户在 F_ora_Base.Number，生产组织在 PrdOrgId，PI / PO 在 F_HX_PI / F_HX_PO；
     修改日期在 ModifyDate；明细在 TreeEntity，附件项次 FTERM、米数 Flength、产品单位 FProductUnit、数量 Qty；
-    只显示的客户 P/N FPN、客户描述 FCD、规格描述 FAdtek、物料规格型号 MaterialId.Specification、生产车间 WorkShopID。"""
+    只显示的客户 P/N FPN、客户描述 FCD、规格描述 FAdtek、物料规格型号 MaterialId.Specification、生产车间 WorkShopID；
+    业务状态 Status、领料状态 PickMtrlStatus。"""
     out: list[Row] = []
     if not doc:
         return out
@@ -378,6 +390,8 @@ def rows_from_view(doc: dict | None) -> list[Row]:
                     locale_name(material.get("Specification")),
                     text(shop.get("Number")),
                     locale_name(shop.get("Name")),
+                    text(lm.get("Status")),
+                    text(lm.get("PickMtrlStatus")),
                 )
             )
     return out
@@ -596,6 +610,23 @@ def fetch_all(on_rows: Progress = None) -> list[Row]:
         _login(http, c)
         raw = _detail_paged(http, c, APPROVED_FILTER, on_rows)
     return [r for r in (_row_of_query(o) for o in raw if isinstance(o, list)) if r is not None]
+
+
+def fetch_line_status() -> dict[tuple[str, int], tuple[str, str]]:
+    """比对同步：已审核单据各物料行的业务状态、领料状态（(单据, 行号) → (业务状态, 领料状态)）。
+    这两项由执行操作、领料单回写改变，不改金蝶修改日期，按修改日期比对拉不到。只拉 4 列、不重试；失败抛出，
+    调用方只记日志（本周期不刷新状态，订单快照照常同步）。"""
+    c = _config()
+    with _client() as http:
+        _login(http, c)
+        raw = _paged(http, c, ",".join(STATUS_KEYS), APPROVED_FILTER, ORDER_BY, False)
+    out: dict[tuple[str, int], tuple[str, str]] = {}
+    for o in raw:
+        if isinstance(o, list) and len(o) >= 4:
+            no = text(o[0])
+            if no:
+                out[(no, seq_of(o[1]))] = (text(o[2]), text(o[3]))
+    return out
 
 
 def view_bill(bill_no: str) -> BillView:

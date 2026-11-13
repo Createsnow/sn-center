@@ -99,6 +99,8 @@ export const api = {
   genDeleted: (pi: string) => get("/generate/deleted", { pi }),
   /** 撤销物料行配置（待处理、可生成页签）：还没有号的行，物料行规则、手填的附件项次、米数、产品单位恢复为未配置；有号的行跳过。 */
   revokeConfig: (pi_no: string, lines: { bill_no: string; seq: number }[]) => post("/generate/revoke-config", { pi_no, lines }),
+  /** 物料行失效条件（全系统一套）：开关、业务状态、领料状态（各至少一项）。 */
+  saveVoidRule: (data: { enabled: boolean; biz_status: string[]; pick_status: string[] }) => put("/generate/void-rule", data),
 
   // ---------------- SN 分配
   allocBills: (params?: Q) => get("/allocation/bills", params),

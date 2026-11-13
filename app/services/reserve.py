@@ -125,11 +125,13 @@ def all_segs(rs: dict[tuple[str, int], list[Seg]], but: set[tuple[str, int]] | N
 
 
 def build(pi: str, picked_bills: list[str], start: int) -> list[tuple[str, int, int, int]]:
-    """排预留（不落库）：本 PI 快照里全部还有额度、附件项次不为空的物料行，按「附件项次 → 行号 → 单据」
-    （单据：picked_bills 里的按其先后在前，其余按单据编号）从 start 起逐行接号。返回 [(单据, 序号, 起, 止)]。"""
-    from app.services import generate, orders
+    """排预留（不落库）：本 PI 快照里全部还有额度、附件项次不为空、没有失效（line_void）的物料行，
+    按「附件项次 → 行号 → 单据」（单据：picked_bills 里的按其先后在前，其余按单据编号）从 start 起逐行接号。
+    返回 [(单据, 序号, 起, 止)]。"""
+    from app.services import generate, line_void, orders
 
     snap = db.all("SELECT * FROM sn_prd_mo WHERE pi = %s", pi)
+    vrule = line_void.current()
     keys = [(r["bill_no"], r["seq"]) for r in snap]
     counts, fills, _lens, _units = orders.line_extras(keys)
     rank = {b: i for i, b in enumerate(dict.fromkeys(picked_bills))}
@@ -139,7 +141,7 @@ def build(pi: str, picked_bills: list[str], start: int) -> list[tuple[str, int, 
         c = counts.get(k)
         quota = orders.sn_qty(r) - (0 if c is None else int(c["own_generated"]))
         attach, _src = orders.effective_attach(r, fills.get(k))
-        if quota > 0 and attach:
+        if quota > 0 and attach and not vrule.is_void(r):
             lines.append((generate.attach_order(attach), int(r["seq"]), r["bill_no"], quota))
     lines.sort(key=lambda x: (x[0], x[1], (0, rank[x[2]], "") if x[2] in rank else (1, 0, x[2])))
     out = []

@@ -4,6 +4,8 @@
 1. 比对同步（日常，默认每 10 分钟）：只拉已审核单据的编号与修改时间，与快照比对：新出现、修改时间不同的单据
    整单替换，快照有、金蝶没有的移出；每张变动的单据随即做订单变更比对（changes）；同一周期对反审核中的
    已出号单据按单号复查。任一页拉取失败（重试后）本周期不改快照。
+   之后另拉各物料行的业务状态、领料状态（不改修改日期，见 k3.fetch_line_status），只更新快照里这两列；
+   这一步失败只记日志，不影响本次比对同步的结果。
 2. 按单据编号同步：不带单据状态条件查询，只看单据状态。
 3. 进页同步：进入订单页时在后台触发一次比对同步；正有同步在运行时跳过。
 4. 全量重建：完整拉取后写入新表、原子换表（RENAME），失败旧快照完整保留；完成后对全部已出号单据比对。
@@ -25,16 +27,16 @@ from app.core.errors import ErrorCode, biz
 from app.core.exceptions import BizError
 from app.core.security import CurrentUser
 from app.db.session import db, marks
-from app.services import audit, changes, factories, k3, locks
+from app.services import audit, changes, factories, k3, line_void, locks
 
 log = structlog.get_logger()
 
 PRD_MO_COLS = (
     "bill_no, seq, customer_code, pi, po, org_code, org_name, attach_no, material_code, material_name, "
     "length_raw, unit, qty, customer_pn, customer_desc, spec_desc, material_spec, dept_code, dept_name, "
-    "modify_time, synced_at"
+    "biz_status, pick_status, modify_time, synced_at"
 )
-_INSERT = f"INSERT INTO {{table}}({PRD_MO_COLS}) VALUES ({marks(21)})"
+_INSERT = f"INSERT INTO {{table}}({PRD_MO_COLS}) VALUES ({marks(23)})"
 
 
 # ================================================================== 写快照
@@ -69,6 +71,8 @@ def _args(rows: list[k3.Row], ts) -> list[tuple]:
                 util.cut(r.material_spec, 500),
                 util.cut(r.dept_code, 64),
                 util.cut(r.dept_name, 128),
+                util.cut(r.biz_status, 8),
+                util.cut(r.pick_status, 8),
                 r.modify_time,
                 ts,
             )
@@ -230,6 +234,8 @@ def _compare(cu: CurrentUser, trigger: str, progress: _Progress) -> dict:
     notes = changes.after_sync(cu, list(fetched), removed)
     # 反审核中的已出号单据按单号复查（发现重新审核或删除）
     changes.recheck_reversed(cu, set(remote))
+    # 状态刷新算在「写入」阶段里（订单页同步进度不另设阶段）
+    status_rows = refresh_line_status()
     n_bills = len(fetched) + len(removed)
     _finish(ts, True, "", n_bills)
     if n_bills:
@@ -237,7 +243,10 @@ def _compare(cu: CurrentUser, trigger: str, progress: _Progress) -> dict:
             cu,
             audit.entry(audit.ORDER_SYNC)
             .count(n_bills)
-            .info(f"mode=compare trigger={trigger} replaced={len(fetched)} removed={len(removed)} rows={rows}"),
+            .info(
+                f"mode=compare trigger={trigger} replaced={len(fetched)} removed={len(removed)} rows={rows}"
+                f" status={status_rows}"
+            ),
         )
     else:
         changes.count_daily("ORDER_SYNC_NOCHANGE")
@@ -250,6 +259,27 @@ def _compare(cu: CurrentUser, trigger: str, progress: _Progress) -> dict:
         "synced_at": util.fmt(ts),
         "attach_k3_filled": notes.count("ATTACH"),
     }
+
+
+def refresh_line_status() -> int | None:
+    """业务状态、领料状态（物料行失效用）与金蝶对齐：只更新快照里状态不同的物料行。返回更新的行数；
+    拉取失败返回 None（只记日志：状态停在上次的值，订单快照照常）。"""
+    try:
+        remote = k3.fetch_line_status()
+    except BizError as e:
+        log.warning("k3_line_status_skipped", reason=e.message)
+        return None
+    changed = [
+        (v[0][:8], v[1][:8], r["bill_no"], r["seq"])
+        for r in db.all("SELECT bill_no, seq, biz_status, pick_status FROM sn_prd_mo")
+        if (v := remote.get((r["bill_no"], r["seq"]))) is not None and (r["biz_status"], r["pick_status"]) != v
+    ]
+    for i in range(0, len(changed), 1000):
+        db.exec_many(
+            "UPDATE sn_prd_mo SET biz_status = %s, pick_status = %s WHERE bill_no = %s AND seq = %s",
+            changed[i : i + 1000],
+        )
+    return len(changed)
 
 
 def _finish(ts, ok: bool, message: str, bills: int | None) -> None:
@@ -400,6 +430,8 @@ def edit_lock(count: dict | None) -> str | None:
 
 
 def _check_editable(no: str, seq: int) -> None:
+    # 失效的物料行（line_void）不能填写附件项次、米数、产品单位
+    line_void.check_not_void([(no, seq)])
     lock = edit_lock(db.one("SELECT * FROM sn_line_count WHERE bill_no = %s AND seq = %s", no, seq))
     if lock == "ALLOCATED":
         raise biz(ErrorCode.LINE_EDIT_ALLOCATED, bill_no=no, seq=seq)
@@ -634,6 +666,11 @@ def revoke_config(cu: CurrentUser, pi_in: str | None, lines_in: list[dict] | Non
         if len(rows) != len(keys):
             raise biz(ErrorCode.GEN_SCOPE_INVALID)
         cu.check_write(*{r["org_code"] for r in rows})
+        # 失效的物料行（line_void）不能撤销配置
+        vrule = line_void.current()
+        bad = sorted((r["bill_no"], r["seq"]) for r in rows if vrule.is_void(r))
+        if bad:
+            raise biz(ErrorCode.LINE_VOID, bill_no=bad[0][0], seq=bad[0][1])
         counts = line_counts([(r["bill_no"], r["seq"]) for r in rows])
         free = [r for r in rows if edit_lock(counts.get((r["bill_no"], r["seq"]))) is None]
         done: list[tuple[dict, list[str]]] = []

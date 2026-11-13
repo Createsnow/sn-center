@@ -40,7 +40,7 @@ from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db, marks
-from app.services import audit, bill_stats, changes, delivery, factories, files, locks, orders, rules
+from app.services import audit, bill_stats, changes, delivery, factories, files, line_void, locks, orders, rules
 
 KIND_BILL = "BILL"
 KIND_ORG = "ORG"
@@ -710,7 +710,9 @@ def _dest(kind: str, r: TransferRequest, source_bill: str) -> Dest:
             raise biz(ErrorCode.TR_TARGET_ORG_MISMATCH, bill_no=to_bill, factory=tb.org_code)
     else:
         to_factory = factories.must_be_enabled(to_factory)["factory_code"]
-    return Dest(to_factory, tb.pi, tb.customer_code, tb.bill_no, orders.effective_lines(tb.lines))
+    vrule = line_void.current()
+    lines = [{**x, "void": vrule.is_void(x)} for x in orders.effective_lines(tb.lines)]
+    return Dest(to_factory, tb.pi, tb.customer_code, tb.bill_no, lines)
 
 
 def _not_match(d: Dest, material: str, attach: str):
@@ -719,23 +721,30 @@ def _not_match(d: Dest, material: str, attach: str):
 
 def _dest_line(d: Dest, src: Source, r: TransferRequest, key: tuple[str, str, int], rs: list[dict]) -> dict:
     """一组号（物料编码 + 附件项次 + 来源序号）的目标物料行：只有同物料编码、同附件项次的行才能转入。
-    指定了序号时须是这样的行；没指定时：同一单据内转（转组织）留在原行，其余在米数相符的行里只有一行时选它。"""
+    指定了序号时须是这样的行；没指定时：同一单据内转（转组织）留在原行，其余在米数相符的行里只有一行时选它。
+    失效的物料行（line_void）不能转入；号留在原行（同一单据内转组织）不算转入。"""
     material, attach, from_seq = key
+    stays = lambda x: d.bill == rs[0]["bill_no"] and x["seq"] == from_seq  # noqa: E731
     to_mat = None if r.to_material is None else r.to_material.strip()
     if to_mat is not None and to_mat != material:
         raise _not_match(d, material, attach)
     pick = next((p for p in src.picks if p.matches(rs[0])), None)
     want = pick.to_seq if pick is not None and pick.to_seq is not None else r.to_seq
-    cands = [x for x in d.lines if x["material_code"] == material and x["eff_attach"] == attach]
+    matched = [x for x in d.lines if x["material_code"] == material and x["eff_attach"] == attach]
     if want is not None:
         line = next((x for x in d.lines if x["seq"] == want), None)
         if line is None:
             raise biz(ErrorCode.TR_TARGET_LINE_INVALID, seq=want)
-        if line not in cands:
+        if line not in matched:
             raise _not_match(d, material, attach)
+        if line["void"] and not stays(line):
+            raise biz(ErrorCode.TR_TARGET_LINE_VOID, bill_no=d.bill, seq=line["seq"])
         return line
-    if not cands:
+    if not matched:
         raise _not_match(d, material, attach)
+    cands = [x for x in matched if not x["void"] or stays(x)]
+    if not cands:
+        raise biz(ErrorCode.TR_TARGET_LINE_VOID, bill_no=d.bill, seq=matched[0]["seq"])
     if d.bill == rs[0]["bill_no"]:
         stay = next((x for x in cands if x["seq"] == from_seq), None)
         if stay is not None:

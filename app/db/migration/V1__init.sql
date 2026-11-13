@@ -156,6 +156,8 @@ CREATE TABLE sn_prd_mo (
   material_spec VARCHAR(500)  NOT NULL DEFAULT '' COMMENT '物料规格型号（FMaterialId.FSpecification，只显示）',
   dept_code     VARCHAR(64)   NOT NULL DEFAULT '' COMMENT '生产部门编码（金蝶明细生产车间 FWorkShopID，只显示）',
   dept_name     VARCHAR(128)  NOT NULL DEFAULT '' COMMENT '生产部门名称（只显示）',
+  biz_status    VARCHAR(8)    NOT NULL DEFAULT '' COMMENT '业务状态（金蝶明细 FStatus：1 计划 … 7 结算；物料行失效用，空 = 未取到）',
+  pick_status   VARCHAR(8)    NOT NULL DEFAULT '' COMMENT '领料状态（金蝶明细 FPickMtrlStatus：1 未领料 … 4 超额领料；空 = 未取到）',
   modify_time   DATETIME      NULL COMMENT '金蝶修改日期 ModifyDate（比对同步、订单页排序用）',
   synced_at     DATETIME      NOT NULL,
   PRIMARY KEY (id),
@@ -197,6 +199,19 @@ CREATE TABLE sn_k3_config (
   updated_at         DATETIME      NOT NULL,
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='金蝶连接参数';
+
+-- 物料行失效条件（全系统一套，只有一行 id = 1；生成页详情维护）：开启时业务状态、领料状态都在所选范围内的物料行整行失效，
+-- 不参与排号、订单数与可生成的计数，不能选规则、填写、撤销配置，不能作转移目标、导入目标；已有的号照常分配、推送、删号、转移。
+-- 没有这一行时按默认（开启，完工 / 结案 / 结算 + 未领料）
+CREATE TABLE sn_line_void_rule (
+  id           TINYINT      NOT NULL,
+  enabled      TINYINT(1)   NOT NULL DEFAULT 1 COMMENT '1 开启（按条件失效）/ 0 关闭（全部生效）',
+  biz_status   VARCHAR(64)  NOT NULL COMMENT '业务状态，逗号分隔（如 5,6,7）',
+  pick_status  VARCHAR(64)  NOT NULL COMMENT '领料状态，逗号分隔（如 1）',
+  updated_by   VARCHAR(32)  NOT NULL DEFAULT '' COMMENT '最后修改人工号',
+  updated_at   DATETIME     NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='物料行失效条件';
 
 -- 按天汇总的计数（无变动的比对同步次数、MES 无批次可给的取批次数）
 CREATE TABLE sn_daily_counter (

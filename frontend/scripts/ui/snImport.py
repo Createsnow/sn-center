@@ -66,6 +66,7 @@ M = {
 "snImport.issue.DEC_INVALID": ("十进制流水号须为非负整数", "Decimal serial must be a non-negative whole number", "Số thứ tự thập phân phải là số nguyên không âm"),
 "snImport.issue.DEC_OVERFLOW": ("十进制流水号超出 {base} 进制 {len} 位能表示的范围（最大 {max}）", "Decimal serial is out of range for {len} base-{base} digits (max {max})", "Số thứ tự thập phân vượt quá phạm vi {len} chữ số cơ số {base} (tối đa {max})"),
 "snImport.issue.SERIAL_DEC_MISMATCH": ("流水号 {serial} 换算成十进制是 {dec}，与十进制流水号不符", "Serial {serial} is {dec} in decimal, which does not match the decimal serial", "Số thứ tự {serial} đổi ra thập phân là {dec}, không khớp với số thứ tự thập phân"),
+"snImport.issue.LINE_VOID": ("单据 {bill_no} ERP行号 {seq} 已失效（SN 生成页的失效条件），不能导入", "Bill {bill_no} ERP line No. {seq} is void (void condition on the SN generation page) and cannot be imported", "Chứng từ {bill_no} dòng ERP {seq} đã vô hiệu (điều kiện vô hiệu ở trang Tạo SN), không thể nhập"),
 "snImport.issue.LINE_NO_ATTACH": ("单据 {bill_no} ERP行号 {seq} 没有附件项次（可先在 SN 生成页补填）", "Bill {bill_no} ERP line No. {seq} has no attachment item (fill it on the SN generation page first)", "Chứng từ {bill_no} dòng ERP {seq} không có hạng mục đính kèm (hãy bổ sung ở trang Tạo SN trước)"),
 "snImport.issue.BILL_HAS_SN": ("单据 {bill_no} 在系统中已有生成或已分配的 SN（{count} 枚），不能导入", "Bill {bill_no} already has generated or allocated SNs in the system ({count}), so it cannot be imported", "Chứng từ {bill_no} đã có SN được tạo hoặc đã phân bổ trong hệ thống ({count}), không thể nhập"),
 }

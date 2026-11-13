@@ -363,13 +363,13 @@ def test_migration_flyway_checksum():
     """测试阶段只保留一个 V1__init.sql；校验和按 Flyway 算法固定，改了建表脚本须同步更新这里（并重建测试库）。"""
     ours = {m.script: m for m in migrations()}
     assert list(ours) == ["V1__init.sql"]
-    assert ours["V1__init.sql"].checksum() == 1576179204
+    assert ours["V1__init.sql"].checksum() == 9571506
     statements = ours["V1__init.sql"].statements()
-    assert len(statements) == 41
+    assert len(statements) == 42
     text = "\n".join(statements)
-    # 脚本独立完整：40 张表各一条 CREATE TABLE 加 sn_sync_state 初始行，不用 ALTER 等语句事后补字段、补索引
+    # 脚本独立完整：41 张表各一条 CREATE TABLE 加 sn_sync_state 初始行，不用 ALTER 等语句事后补字段、补索引
     kinds = [" ".join(s.split()[:2]).upper() for s in statements]
-    assert kinds.count("CREATE TABLE") == 40 and kinds.count("INSERT INTO") == 1, kinds
+    assert kinds.count("CREATE TABLE") == 41 and kinds.count("INSERT INTO") == 1, kinds
     for table in (
         "sn_line_count",
         "sn_line_length",
@@ -382,11 +382,12 @@ def test_migration_flyway_checksum():
         "sn_k3_config",
         "sn_pi_reserve_head",
         "sn_pi_reserve",
+        "sn_line_void_rule",
     ):
         assert f"CREATE TABLE {table}" in text, table
     # 每张表只有一条完整的 CREATE TABLE（启动时不补建表、补字段，见 migrate.check_tables）
     tables = schema_tables()
-    assert len(tables) == len(set(tables)) == 40, tables
+    assert len(tables) == len(set(tables)) == 41, tables
     for table in tables:
         assert create_statement(table).startswith(f"CREATE TABLE {table} "), table
     assert "ADDED_TABLES" not in ours["V1__init.sql"].text() and "补建" not in ours["V1__init.sql"].text()

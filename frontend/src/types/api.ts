@@ -174,6 +174,8 @@ export interface OrderLine {
   synced_at: string;
   /** 生成页才有：不能生成的原因代码 */
   issues?: string[];
+  /** 生成页才有：物料行失效（业务状态、领料状态在失效条件内）：不参与排号与计数，额度为 0，不能勾选 */
+  void?: boolean;
   /** 生成页才有：物料行现有号中最小、最大的完整 SN（开始 / 结束 SN 号），还没有号为 null */
   start_sn?: string | null;
   end_sn?: string | null;

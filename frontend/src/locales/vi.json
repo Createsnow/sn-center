@@ -243,6 +243,7 @@
     "RULE_PI_UNBIND": "Bỏ gắn quy tắc PI",
     "RULE_LINE_SELECT": "Chọn quy tắc cho dòng",
     "LINE_CONFIG_REVOKE": "Thu hồi cấu hình dòng",
+    "LINE_VOID_RULE": "Điều kiện vô hiệu dòng",
     "RULE_PREFIX_VERSION": "Phiên bản tiền tố mới",
     "RULE_DELETE": "Xóa quy tắc",
     "SN_GENERATE": "Tạo",
@@ -641,7 +642,29 @@
       "GEN": "Tạo được",
       "DONE": "Đã phân bổ",
       "NONE": "Không có hạn mức",
-      "GENERATED": "Đã tạo"
+      "GENERATED": "Đã tạo",
+      "VOID": "Vô hiệu"
+    },
+    "void": {
+      "label": "Vô hiệu",
+      "biz": "Nghiệp vụ",
+      "pick": "Lĩnh liệu",
+      "atLeastOne": "Chọn ít nhất một trạng thái nghiệp vụ và một trạng thái lĩnh liệu",
+      "bizStatus": {
+        "1": "Kế hoạch",
+        "2": "Xác nhận kế hoạch",
+        "3": "Đã phát lệnh",
+        "4": "Đã khởi công",
+        "5": "Hoàn công",
+        "6": "Đã đóng",
+        "7": "Đã quyết toán"
+      },
+      "pickStatus": {
+        "1": "Chưa lĩnh liệu",
+        "2": "Lĩnh một phần",
+        "3": "Lĩnh toàn bộ",
+        "4": "Lĩnh vượt mức"
+      }
     },
     "notInSnapshot": "Không có trong ảnh chụp",
     "piFrozen": "Đóng băng do đổi PI",
@@ -1187,6 +1210,7 @@
       "DEC_INVALID": "Số thứ tự thập phân phải là số nguyên không âm",
       "DEC_OVERFLOW": "Số thứ tự thập phân vượt quá phạm vi {len} chữ số cơ số {base} (tối đa {max})",
       "SERIAL_DEC_MISMATCH": "Số thứ tự {serial} đổi ra thập phân là {dec}, không khớp với số thứ tự thập phân",
+      "LINE_VOID": "Chứng từ {bill_no} dòng ERP {seq} đã vô hiệu (điều kiện vô hiệu ở trang Tạo SN), không thể nhập",
       "LINE_NO_ATTACH": "Chứng từ {bill_no} dòng ERP {seq} không có hạng mục đính kèm (hãy bổ sung ở trang Tạo SN trước)",
       "BILL_HAS_SN": "Chứng từ {bill_no} đã có SN được tạo hoặc đã phân bổ trong hệ thống ({count}), không thể nhập"
     }

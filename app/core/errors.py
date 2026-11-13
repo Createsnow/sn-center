@@ -89,6 +89,11 @@ class ErrorCode(Enum):
         409,
         "物料行 {bill_no} / {seq} 有已分配的号，附件项次、米数和产品单位不能修改；先删除该行的号再修改",
     )
+    LINE_VOID = (
+        409,
+        "物料行 {bill_no} / {seq} 已失效（业务状态、领料状态在失效条件内），不能操作；取消生成页的「失效」勾选后再操作",
+    )
+    LINE_VOID_RULE_INVALID = (400, "失效条件须选定开关，业务状态、领料状态各至少选一项")
     ALERT_NOT_FOUND = (404, "订单变更提醒不存在或已处理")
     ALERT_ACTION_INVALID = (400, "该提醒不能这样处理")
     ALERT_MAP_TARGET_INVALID = (400, "确认对应的目标物料行须是该单据快照中的另一行：{seq}")
@@ -209,6 +214,7 @@ class ErrorCode(Enum):
         "目标单据 {bill_no} 中物料编码 {material}、附件项次 {attach_no} 有多行，须选定目标ERP行号",
     )
     TR_TARGET_LINE_INVALID = (400, "目标ERP行号 {seq} 不在目标单据中")
+    TR_TARGET_LINE_VOID = (400, "目标单据 {bill_no} 的ERP行号 {seq} 已失效，不能转入")
     TR_RANGE_INVALID = (
         400,
         "起止号 {start_sn} ~ {end_sn} 不在所选单据、物料编码和附件项次下，或不在同一流水归属 PI 内",

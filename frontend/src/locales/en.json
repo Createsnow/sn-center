@@ -243,6 +243,7 @@
     "RULE_PI_UNBIND": "PI rule unbound",
     "RULE_LINE_SELECT": "Line rule selected",
     "LINE_CONFIG_REVOKE": "Line config revoked",
+    "LINE_VOID_RULE": "Line void condition",
     "RULE_PREFIX_VERSION": "New prefix version",
     "RULE_DELETE": "Rule deleted",
     "SN_GENERATE": "Generate",
@@ -641,7 +642,29 @@
       "GEN": "Generatable",
       "DONE": "Allocated",
       "NONE": "No quota",
-      "GENERATED": "Generated"
+      "GENERATED": "Generated",
+      "VOID": "Void"
+    },
+    "void": {
+      "label": "Void",
+      "biz": "Business",
+      "pick": "Picking",
+      "atLeastOne": "Select at least one business status and one picking status",
+      "bizStatus": {
+        "1": "Planned",
+        "2": "Plan confirmed",
+        "3": "Released",
+        "4": "Started",
+        "5": "Finished",
+        "6": "Closed",
+        "7": "Settled"
+      },
+      "pickStatus": {
+        "1": "Not picked",
+        "2": "Partly picked",
+        "3": "Fully picked",
+        "4": "Over-picked"
+      }
     },
     "notInSnapshot": "Not in snapshot",
     "piFrozen": "PI change frozen",
@@ -1187,6 +1210,7 @@
       "DEC_INVALID": "Decimal serial must be a non-negative whole number",
       "DEC_OVERFLOW": "Decimal serial is out of range for {len} base-{base} digits (max {max})",
       "SERIAL_DEC_MISMATCH": "Serial {serial} is {dec} in decimal, which does not match the decimal serial",
+      "LINE_VOID": "Bill {bill_no} ERP line No. {seq} is void (void condition on the SN generation page) and cannot be imported",
       "LINE_NO_ATTACH": "Bill {bill_no} ERP line No. {seq} has no attachment item (fill it on the SN generation page first)",
       "BILL_HAS_SN": "Bill {bill_no} already has generated or allocated SNs in the system ({count}), so it cannot be imported"
     }

@@ -243,6 +243,7 @@
     "RULE_PI_UNBIND": "解除 PI 绑定",
     "RULE_LINE_SELECT": "物料行选规则",
     "LINE_CONFIG_REVOKE": "物料行撤销配置",
+    "LINE_VOID_RULE": "物料行失效条件",
     "RULE_PREFIX_VERSION": "换前缀另出版本",
     "RULE_DELETE": "删除规则",
     "SN_GENERATE": "生成",
@@ -641,7 +642,29 @@
       "GEN": "可生成",
       "DONE": "已分配",
       "NONE": "无额度",
-      "GENERATED": "已生成"
+      "GENERATED": "已生成",
+      "VOID": "失效"
+    },
+    "void": {
+      "label": "失效",
+      "biz": "业务状态",
+      "pick": "领料状态",
+      "atLeastOne": "业务状态、领料状态各至少选一项",
+      "bizStatus": {
+        "1": "计划",
+        "2": "计划确认",
+        "3": "下达",
+        "4": "开工",
+        "5": "完工",
+        "6": "结案",
+        "7": "结算"
+      },
+      "pickStatus": {
+        "1": "未领料",
+        "2": "部分领料",
+        "3": "全部领料",
+        "4": "超额领料"
+      }
     },
     "notInSnapshot": "不在快照",
     "piFrozen": "PI 变更冻结",
@@ -1187,6 +1210,7 @@
       "DEC_INVALID": "十进制流水号须为非负整数",
       "DEC_OVERFLOW": "十进制流水号超出 {base} 进制 {len} 位能表示的范围（最大 {max}）",
       "SERIAL_DEC_MISMATCH": "流水号 {serial} 换算成十进制是 {dec}，与十进制流水号不符",
+      "LINE_VOID": "单据 {bill_no} ERP行号 {seq} 已失效（SN 生成页的失效条件），不能导入",
       "LINE_NO_ATTACH": "单据 {bill_no} ERP行号 {seq} 没有附件项次（可先在 SN 生成页补填）",
       "BILL_HAS_SN": "单据 {bill_no} 在系统中已有生成或已分配的 SN（{count} 枚），不能导入"
     }

@@ -16,7 +16,7 @@ from datetime import datetime
 from app.core import utils as util
 from app.core.security import CurrentUser
 from app.db.session import db, marks
-from app.services import changes, factories, generate, orders, rules
+from app.services import changes, factories, generate, line_void, orders, rules
 
 #: 列表一次最多取的 PI 数；逐行判断「需先选规则 / 不能生成」只对前 DETAIL_ROWS 行做
 LIST_LIMIT = 500
@@ -35,14 +35,21 @@ DONE = "DONE"
 
 #: 生成页与订单页同一排序：金蝶修改日期新的在前（取不到的排后），同一时间单据编号大的在前
 _BY_MODIFY = "MAX(m.modify_time) IS NULL, MAX(m.modify_time) DESC, last_bill DESC"
-#: 快照按 PI 汇总（订单数、已生成、额度、最大单据编号、最新修改日期）
-_PI_SUM = (
-    "SELECT m.pi, MAX(m.customer_code) customer_code, COUNT(DISTINCT m.bill_no) bills, "
-    "GROUP_CONCAT(DISTINCT m.org_code ORDER BY m.org_code) orgs, SUM(FLOOR(m.qty)) total_qty, "
-    "SUM(COALESCE(c.gen_count, 0)) gen_sum, SUM(GREATEST(FLOOR(m.qty) - COALESCE(c.own_generated, 0), 0)) quota, "
-    "MAX(m.bill_no) last_bill, MAX(m.modify_time) modify_time "
-    "FROM sn_prd_mo m LEFT JOIN sn_line_count c ON c.bill_no = m.bill_no AND c.seq = m.seq"
-)
+
+
+def _pi_sum() -> str:
+    """快照按 PI 汇总（订单数、已生成、额度、最大单据编号、最新修改日期）；
+    失效的物料行（line_void）不计订单数、额度。"""
+    v = line_void.current().sql("m")
+    return (
+        "SELECT m.pi, MAX(m.customer_code) customer_code, COUNT(DISTINCT m.bill_no) bills, "
+        "GROUP_CONCAT(DISTINCT m.org_code ORDER BY m.org_code) orgs, "
+        f"SUM(CASE WHEN {v} THEN 0 ELSE FLOOR(m.qty) END) total_qty, "
+        "SUM(COALESCE(c.gen_count, 0)) gen_sum, "
+        f"SUM(CASE WHEN {v} THEN 0 ELSE GREATEST(FLOOR(m.qty) - COALESCE(c.own_generated, 0), 0) END) quota, "
+        "MAX(m.bill_no) last_bill, MAX(m.modify_time) modify_time "
+        "FROM sn_prd_mo m LEFT JOIN sn_line_count c ON c.bill_no = m.bill_no AND c.seq = m.seq"
+    )
 
 
 def _pi_rows(q: str | None, by_modify: bool = False, facs: tuple[str, ...] | None = None) -> list[dict]:
@@ -62,7 +69,7 @@ def _pi_rows(q: str | None, by_modify: bool = False, facs: tuple[str, ...] | Non
         )
         args += [like] * 5
     return db.all(
-        _PI_SUM + where + " GROUP BY m.pi ORDER BY " + (_BY_MODIFY if by_modify else "last_bill DESC") + " LIMIT %s",
+        _pi_sum() + where + " GROUP BY m.pi ORDER BY " + (_BY_MODIFY if by_modify else "last_bill DESC") + " LIMIT %s",
         *args,
         LIST_LIMIT,
     )
@@ -296,6 +303,10 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
             units.get(k),
         )
         v["issues"] = x.issues
+        # 物料行失效（line_void）：整行置灰、不能勾选，不计订单数、可生成
+        v["void"] = x.void
+        if x.void:
+            v["quota"] = 0
         b["lines"].append(v)
     # 各单据挂在本 PI 下本系统生成的号：待分配、待推送枚数（单据分配状态与分配页左侧同一口径），
     # 及各物料行现有号的开始 / 结束 SN 号（最小、最大的完整 SN，与分配页物料行同一口径），按物料行一次取出；
@@ -357,7 +368,7 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
         # 单据分配状态：PENDING 待分配 / PROCESSING 待处理 / ALLOCATED 已分配；本 PI 下还没有号为 None。
         # 已分配的单据在生成页「可生成」页签置灰、不可勾选（生成须先勾选）
         b["alloc_state"] = bill_state(*items[no]) if no in items else None
-        b["total_qty"] = sum(x["qty"] for x in b["lines"])
+        b["total_qty"] = sum(x["qty"] for x in b["lines"] if not x["void"])
         b["generated_qty"] = sum(x["generated_qty"] for x in b["lines"])
         b["quota"] = sum(x["quota"] for x in b["lines"])
     stats = item_stats([pi], facs, gen_only=True).get(pi, {})
@@ -398,4 +409,6 @@ def context(cu: CurrentUser, pi_in: str | None, bill_no: str | None = None) -> d
         "jobs": generate.jobs(pi, 20, facs),
         # 空号段（删号腾出的流水）：生成时可选用（预演的流水来源 RANGE）
         "gaps": gap,
+        # 物料行失效条件（全系统一套，页签行「业务状态」「领料状态」「失效」）
+        "void_rule": line_void.view(),
     }

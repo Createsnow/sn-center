@@ -121,8 +121,8 @@ class FakeK3:
 K3 = FakeK3()
 #: 假金蝶里的单据：单据编号 → View 返回的单据（含 DocumentStatus）
 BILLS: dict[str, dict] = {}
-#: 置为 True 时 ExecuteBillQuery 返回失败（模拟金蝶故障）
-K3_FAIL = {"query": False, "view": False, "display": False}
+#: 置为 True 时 ExecuteBillQuery 返回失败（模拟金蝶故障）；status：只有业务状态、领料状态的查询失败
+K3_FAIL = {"query": False, "view": False, "display": False, "status": False}
 
 
 def _zh(v: Any) -> str:
@@ -144,6 +144,8 @@ def _display_cols(line: dict) -> list:
         _zh(line["MaterialId"].get("Specification")),
         shop.get("Number", ""),
         _zh(shop.get("Name")),
+        line.get("Status", " "),
+        line.get("PickMtrlStatus", " "),
     ]
 
 
@@ -203,6 +205,14 @@ def install_k3() -> None:
             docs = [d for d in list(BILLS.values()) if d["DocumentStatus"] == "C"]
             if data["FieldKeys"] == "FBillNo,FModifyDate":
                 return [[d["BillNo"], d["ModifyDate"]] for d in docs]
+            if data["FieldKeys"] == "FBillNo,FTreeEntity_FSeq,FStatus,FPickMtrlStatus":
+                if K3_FAIL["status"]:
+                    return [[fail]]
+                return [
+                    [d["BillNo"], line["Seq"], line.get("Status", " "), line.get("PickMtrlStatus", " ")]
+                    for d in docs
+                    for line in d["TreeEntity"]
+                ]
             display = "FPN" in data["FieldKeys"].split(",")
             if display and K3_FAIL["display"]:
                 # 金蝶不认只显示列
@@ -703,6 +713,7 @@ def w(api, admin) -> World:
 #: 号、规则、批次相关的表：每个用例开始前清空（SN 全局唯一、前缀不能互为开头，跨用例会冲突）；
 #: 生产组织、账户、订单快照、留痕不清。
 _SN_TABLES = (
+    "sn_line_void_rule",
     "sn_transfer_item",
     "sn_transfer",
     "sn_bill_transfer",
@@ -742,7 +753,7 @@ def _fresh_sn(request):
         BILLS.clear()
         MES.reset()
         RECEIPT_REPLIES.clear()
-        K3_FAIL.update(query=False, view=False, display=False)
+        K3_FAIL.update(query=False, view=False, display=False, status=False)
         from app.services import k3
 
         k3._display_failed_at = None

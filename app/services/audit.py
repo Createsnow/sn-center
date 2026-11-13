@@ -54,6 +54,7 @@ RULE_PI_BIND = "RULE_PI_BIND"
 RULE_PI_UNBIND = "RULE_PI_UNBIND"
 RULE_LINE_SELECT = "RULE_LINE_SELECT"
 LINE_CONFIG_REVOKE = "LINE_CONFIG_REVOKE"
+LINE_VOID_RULE = "LINE_VOID_RULE"
 RULE_PREFIX_VERSION = "RULE_PREFIX_VERSION"
 RULE_DELETE = "RULE_DELETE"
 SN_GENERATE = "SN_GENERATE"
@@ -244,6 +245,7 @@ _PATH_ACTIONS = (
     (r"/api/generate/batches/[^/]+/cancel", SN_GEN_CANCEL),
     (r"/api/generate/delete", SN_DELETE),
     (r"/api/generate/revoke-config", LINE_CONFIG_REVOKE),
+    (r"/api/generate/void-rule", LINE_VOID_RULE),
     (r"/api/generate/.*", SN_GENERATE),
     (r"/api/allocation/.*", SN_ALLOCATE),
     (r"/api/sn-import/imports/[^/]+/delete", SN_IMPORT_DELETE),

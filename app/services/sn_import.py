@@ -49,7 +49,7 @@ from app.core import utils as util
 from app.core.errors import ErrorCode, biz
 from app.core.security import CurrentUser
 from app.db.session import db, is_duplicate, marks
-from app.services import audit, bill_stats, changes, generate, locks, orders
+from app.services import audit, bill_stats, changes, generate, line_void, locks, orders
 
 #: 单个文件上限
 MAX_MB = 20
@@ -188,6 +188,7 @@ DEC_INVALID = "DEC_INVALID"
 DEC_OVERFLOW = "DEC_OVERFLOW"
 SERIAL_DEC_MISMATCH = "SERIAL_DEC_MISMATCH"
 LINE_NO_ATTACH = "LINE_NO_ATTACH"
+LINE_VOID = "LINE_VOID"
 BILL_HAS_SN = "BILL_HAS_SN"
 
 
@@ -457,6 +458,7 @@ def _snapshot(bills: list[str]) -> tuple[dict[str, dict], dict[tuple[str, int], 
     """单据（PI、生产组织、客户）与其物料行（带生效的附件项次、米数，含生成页补填的），按单据编号、（单据, 行号）。"""
     heads: dict[str, dict] = {}
     lines: dict[tuple[str, int], dict] = {}
+    vrule = line_void.current()
     for part in _chunks(bills):
         for b in db.all(
             "SELECT m.bill_no, MIN(m.pi) pi, MIN(m.org_code) org_code, MIN(m.org_name) org_name, "
@@ -468,6 +470,8 @@ def _snapshot(bills: list[str]) -> tuple[dict[str, dict], dict[tuple[str, int], 
             heads[b["bill_no"]] = b
         ls = db.all(f"SELECT * FROM sn_prd_mo WHERE bill_no IN ({marks(len(part))}) ORDER BY bill_no, seq", *part)
         for x in orders.effective_lines(ls):
+            # 失效的物料行（line_void）不能作导入目标
+            x["void"] = vrule.is_void(x)
             lines[(x["bill_no"], int(x["seq"]))] = x
     return heads, lines
 
@@ -515,6 +519,8 @@ def _check_order(cu: CurrentUser, r: Row, b: dict, line: dict | None, used: dict
         r.issues.append((LINE_NOT_FOUND, {"bill_no": r.bill, "seq": r.seq}))
         return
     at = {"bill_no": r.bill, "seq": r.seq}
+    if line.get("void"):
+        r.issues.append((LINE_VOID, at))
     if r.material and r.material != (line["material_code"] or ""):
         r.issues.append((MATERIAL_MISMATCH, {**at, "material": line["material_code"] or "—"}))
     eff_attach = line["eff_attach"] or ""
