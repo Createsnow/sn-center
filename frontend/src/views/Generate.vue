@@ -87,7 +87,7 @@
       <template #header>
         <div v-if="ctx" class="dh">
           <div class="dh-title">
-            <b>PI {{ ctx.pi_no }}</b>
+            <b>{{ ctx.pi_no }}</b>
             <span class="muted">{{ t("common.customer") }} {{ ctx.customer_code || "—" }}</span>
             <span class="push" />
             <el-button size="small" type="success" plain :disabled="!ctx.summary.pending_alloc" @click="goAllocate">
