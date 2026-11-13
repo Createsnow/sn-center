@@ -303,7 +303,6 @@
       "PROCESSING": "Chờ xử lý",
       "ALLOCATED": "Đã phân bổ"
     },
-    "snDetail": "SN được ghi trên chứng từ này · {bill}",
     "pickBill": "Chọn một chứng từ ở bên trái",
     "unbatched": "Chờ đẩy",
     "resumeBtn": "Đẩy tiếp (còn {n} lần)",

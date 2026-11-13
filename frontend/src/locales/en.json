@@ -303,7 +303,6 @@
       "PROCESSING": "To handle",
       "ALLOCATED": "Allocated"
     },
-    "snDetail": "SNs recorded on this bill · {bill}",
     "pickBill": "Pick a bill on the left",
     "unbatched": "To push",
     "resumeBtn": "Resume push ({n} left)",

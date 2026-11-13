@@ -355,7 +355,7 @@ const { t } = useI18n();
 // 页签缓存下本页在后台时不跟随别的页面的地址参数，也不改写地址
 const route = usePageRoute();
 const router = useRouter();
-const { factories, nameOf } = useFactories();
+const { nameOf } = useFactories();
 const store = useAuthStore();
 const { fmt: fmtTime } = useTime();
 const issueText = (c: string) => t(`generate.issue.${c}`);
@@ -409,9 +409,9 @@ function actionText(row: any): string {
 
 const frozenText = (row: any) => t("generate.frozenBills", { n: row.frozen_bills });
 const orgNames = (row: any): string[] => (row.orgs || []).map((o: string) => nameOf(o));
-/** 详情单据头的生产组织名称：与 PI 列表生产组织列同一来源（生产组织列表），取不到时用详情带的名称、编号。 */
-const billOrg = (b: any): string =>
-  factories.value.find((f) => f.factory_code === b.org_code)?.factory_name || b.org_name || b.org_code || "";
+/** 详情单据头的生产组织名称：取单据所属组织的名称（详情带的 org_name：金蝶订单快照，已离开快照的取单据台账），
+ *  没有名称时按组织编号查生产组织列表。 */
+const billOrg = (b: any): string => b.org_name || (b.org_code ? nameOf(b.org_code) : "");
 
 /** 生产组织列放不下时在组织之间换行，列宽不超过此值（单个组织名称更长时按最长的名称）。 */
 const ORGS_MAX_W = 240;

@@ -9,7 +9,6 @@ M = {
 "allocate.state.PENDING": ("待分配", "To allocate", "Chờ phân bổ"),
 "allocate.state.PROCESSING": ("待处理", "To handle", "Chờ xử lý"),
 "allocate.state.ALLOCATED": ("已分配", "Allocated", "Đã phân bổ"),
-"allocate.snDetail": ("本单据记载的存货 SN 信息 · {bill}", "SNs recorded on this bill · {bill}", "SN được ghi trên chứng từ này · {bill}"),
 "allocate.pickBill": ("从左侧选择一张单据", "Pick a bill on the left", "Chọn một chứng từ ở bên trái"),
 "allocate.unbatched": ("待推送", "To push", "Chờ đẩy"),
 "allocate.resumeBtn": ("继续推送（剩余 {n} 次）", "Resume push ({n} left)", "Đẩy tiếp (còn {n} lần)"),

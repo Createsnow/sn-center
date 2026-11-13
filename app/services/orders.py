@@ -977,6 +977,31 @@ def snapshot_org(bill_no: str) -> tuple[str, str] | None:
     return None if r is None else (r["org_code"], r["org_name"])
 
 
+def bill_org_names(bill_nos) -> dict[str, tuple[str, str]]:
+    """各单据所属的生产组织（编号, 名称）：快照中的；已离开快照的取已出号单据台账（与 bill_orgs 同一口径）。
+    都没有的单据不在结果里。"""
+    nos = sorted({b for b in bill_nos if b})
+    if not nos:
+        return {}
+    found = {
+        r["bill_no"]: (r["org_code"] or "", r["org_name"] or "")
+        for r in db.all(
+            f"SELECT bill_no, MAX(org_code) org_code, MAX(org_name) org_name FROM sn_prd_mo "
+            f"WHERE bill_no IN ({marks(len(nos))}) GROUP BY bill_no",
+            *nos,
+        )
+    }
+    gone = [n for n in nos if n not in found]
+    if gone:
+        found.update(
+            (r["bill_no"], (r["org_code"] or "", r["org_name"] or ""))
+            for r in db.all(
+                f"SELECT bill_no, org_code, org_name FROM sn_bill_ledger WHERE bill_no IN ({marks(len(gone))})", *gone
+            )
+        )
+    return found
+
+
 def bill_orgs(bill_nos) -> set[str]:
     """单据的生产组织（每张单据只有一个）：快照中的；已离开快照的取已出号单据台账。"""
     nos = sorted({b for b in bill_nos if b})

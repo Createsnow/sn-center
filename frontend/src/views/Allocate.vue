@@ -85,6 +85,8 @@
                 <div class="bill-h" :title="isFolded(b.bill_no) ? t('common.expand') : t('common.collapse')" @click="toggleFold(b.bill_no)">
                   <el-icon class="fold" :class="{ open: !isFolded(b.bill_no) }"><ArrowRight /></el-icon>
                   <b>{{ b.bill_no }}</b>
+                  <!-- 单据所属的生产组织名称（小号加粗；不是「分到的生产组织」列，转组织后两者可不同） -->
+                  <b v-if="b.org" class="bill-org">{{ b.org }}</b>
                   <el-tag size="small" :type="STATE_TAG[b.state]" disable-transitions>{{ t(`allocate.state.${b.state}`) }}</el-tag>
                   <span class="muted num">{{ t("allocate.billCounts", { n: b.lines.length, qty: num(b.qty) }) }}</span>
                   <el-tag v-if="selByBill[b.bill_no]?.length" size="small" disable-transitions>{{ t("allocate.billPicked", { n: selByBill[b.bill_no].length }) }}</el-tag>
@@ -433,12 +435,15 @@ const qtyW = computed(() => colWidth(t("allocate.snQty"), (ctx.value?.lines ?? [
  *  左侧总宽不变、不出横向滚动条；中文、英文仍为 86 / 150。 */
 const listQtyW = computed(() => Math.max(86, colWidth(t("allocate.snQty"), [])));
 
+/** 单据所属的生产组织名称（详情物料行上的 bill_org_name：金蝶订单，已离开快照的取单据台账；没有名称时按编号查组织列表）。 */
+const billOrgName = (l: any): string => l.bill_org_name || (l.bill_org_code ? nameOf(l.bill_org_code) : "");
+
 const bills = computed(() => {
-  const m = new Map<string, Counts & { bill_no: string; state: BillState; lines: any[] }>();
+  const m = new Map<string, Counts & { bill_no: string; org: string; state: BillState; lines: any[] }>();
   for (const l of ctx.value?.lines ?? []) {
     if (!shownBills.value.has(l.bill_no)) continue;
     let b = m.get(l.bill_no);
-    if (!b) m.set(l.bill_no, (b = { bill_no: l.bill_no, state: l.bill_state, qty: 0, pending_alloc: 0, to_push: 0, failed: 0, lines: [] }));
+    if (!b) m.set(l.bill_no, (b = { bill_no: l.bill_no, org: billOrgName(l), state: l.bill_state, qty: 0, pending_alloc: 0, to_push: 0, failed: 0, lines: [] }));
     b.qty += l.qty;
     b.pending_alloc += l.pending_alloc;
     b.to_push += l.to_push;
@@ -585,6 +590,7 @@ onUnmounted(() => {
 .bill.focus { border-color: var(--el-color-primary-light-5); }
 .bill-h { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: var(--el-fill-color-lighter); font-size: 13px; cursor: pointer; user-select: none; }
 .bill-h:hover { background: var(--el-fill-color); }
+.bill-org { font-size: 12px; font-weight: 700; white-space: nowrap; }
 .fold { color: var(--app-muted); transition: transform 0.15s; }
 .fold.open { transform: rotate(90deg); }
 .prog { display: inline-flex; align-items: center; gap: 8px; }

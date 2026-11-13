@@ -409,6 +409,8 @@ def context(cu: CurrentUser, pi_in: str | None) -> dict:
         *iargs,
     )
     mo = _order_lines(sorted({r["bill_no"] for r in rows}))
+    # 单据所属的生产组织（页面单据头显示；与「分到的生产组织」org_code 不同：转组织后、暂停分配时两者可不一样）
+    bill_orgs = orders.bill_org_names({r["bill_no"] for r in rows})
     names = factories.names()
     targets: dict[str, tuple[str | None, str | None]] = {}
     lines = []
@@ -424,6 +426,7 @@ def context(cu: CurrentUser, pi_in: str | None) -> dict:
             org = r["org"]
         f = factories.get(org) if org else None
         k3 = mo.get((r["bill_no"], int(r["bill_seq"])))
+        bo_code, bo_name = bill_orgs.get(r["bill_no"], ("", ""))
         lines.append(
             {
                 "bill_no": r["bill_no"],
@@ -443,6 +446,9 @@ def context(cu: CurrentUser, pi_in: str | None) -> dict:
                 "end_sn": r["b"],
                 "org_code": org,
                 "org_name": names.get(org, "") if org else "",
+                # 单据所属的生产组织（金蝶订单；已离开快照的取单据台账），只读显示；名称为空时取生产组织列表的名称
+                "bill_org_code": bo_code,
+                "bill_org_name": bo_name or (names.get(bo_code, "") if bo_code else ""),
                 "mes_enabled": bool(f and f["mes_enabled"]),
                 "skip": block,
                 # SN 导入的号（挂在单据序号 0 上；物料为导入时填的，可能没有）

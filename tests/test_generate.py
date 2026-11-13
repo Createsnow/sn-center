@@ -902,6 +902,27 @@ def test_alloc_context_line_display_fields(w, api, sql):
     assert (line["seq"], line["attach_no"], line["order_qty"], line["customer_pn"]) == (1, "10", None, "")
 
 
+def test_alloc_context_bill_org(w, api, sql):
+    """分配页单据头显示单据所属的生产组织（bill_org_code / bill_org_name）：取金蝶快照，已离开快照的取单据台账；
+    与「分到的生产组织」（org_code）分开：号转到别的组织后 org_code 变，单据所属组织不变。"""
+    org, pi, bill = mk(w, ("M1", 2))
+    ok(w.bind_pi(pi, w.rule(P())))
+    w.generate(pi)
+    name = sql.scalar("SELECT MAX(org_name) FROM sn_prd_mo WHERE bill_no = %s", bill)
+    assert name
+    line = ok(api.get(f"/api/allocation/context?pi={pi}", w.admin))["lines"][0]
+    assert (line["org_code"], line["bill_org_code"], line["bill_org_name"]) == (org, org, name)
+    other = w.org(uid("O")[:10])
+    sql.exec("UPDATE sn_item SET status = 'TO_PUSH', factory_code = %s WHERE pi_no = %s", other, pi)
+    line = ok(api.get(f"/api/allocation/context?pi={pi}", w.admin))["lines"][0]
+    assert (line["org_code"], line["bill_org_code"], line["bill_org_name"]) == (other, org, name)
+    # 单据离开快照：取单据台账
+    sql.exec("UPDATE sn_bill_ledger SET org_name = %s WHERE bill_no = %s", "台账组织", bill)
+    sql.exec("DELETE FROM sn_prd_mo WHERE bill_no = %s", bill)
+    line = ok(api.get(f"/api/allocation/context?pi={pi}", w.admin))["lines"][0]
+    assert (line["bill_org_code"], line["bill_org_name"]) == (org, "台账组织")
+
+
 def test_background_generation_and_cancel(w, api, sql, monkeypatch):
     monkeypatch.setenv("SN_GEN_SYNC_THRESHOLD", "10")
     org, pi, bill = mk(w, ("M1", 5000))

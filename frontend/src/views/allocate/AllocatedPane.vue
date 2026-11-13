@@ -1,6 +1,10 @@
 <template>
   <el-tabs model-value="sn" class="ap">
-    <el-tab-pane :label="t('allocate.snDetail', { bill })" name="sn">
+    <!-- 页签头（右侧头部左侧）：单据编号 + 单据所属的生产组织名称（小号加粗） -->
+    <el-tab-pane name="sn">
+      <template #label>
+        <span class="ap-title">{{ bill }}<b v-if="billOrg" class="bill-org">{{ billOrg }}</b></span>
+      </template>
       <div class="ap-body">
         <!-- 头部筛选：物料编码、SN 起止号（含两端，可只填一端）；不筛选时列出该单据的全部已分配号 -->
         <div class="toolbar">
@@ -59,6 +63,7 @@ import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { ElMessage } from "element-plus";
 import { api, urls } from "@/api";
+import { useFactories } from "@/composables/useFactories";
 import { useFitRows } from "@/composables/useFitRows";
 import { colWidth, textWidth } from "@/colWidth.js";
 import { usePaged } from "@/composables/usePaged";
@@ -87,6 +92,27 @@ interface SnRow {
 const props = defineProps<{ pi: string; bill: string }>();
 
 const { t } = useI18n();
+const { nameOf } = useFactories();
+
+/** 单据所属的生产组织名称：取分配详情物料行上的 bill_org_name（同一 PI 只取一次）；取不到时不显示。 */
+const billOrg = ref("");
+let orgPi = "";
+let orgMap = new Map<string, string>();
+async function loadBillOrg() {
+  const pi = props.pi;
+  if (pi !== orgPi) {
+    billOrg.value = "";
+    try {
+      const c: any = await api.allocContext(pi);
+      if (pi !== props.pi) return;
+      orgMap = new Map((c.lines ?? []).map((l: any) => [l.bill_no, l.bill_org_name || (l.bill_org_code ? nameOf(l.bill_org_code) : "")]));
+      orgPi = pi;
+    } catch {
+      return;
+    }
+  }
+  billOrg.value = orgMap.get(props.bill) ?? "";
+}
 
 /** 筛选：物料编码（空 = 全部）、SN 起止号（含两端，可只填一端；须是本单据已分配的号）。 */
 const material = ref("");
@@ -118,6 +144,7 @@ function resetFilter() {
 }
 
 async function open() {
+  loadBillOrg();
   material.value = "";
   snFrom.value = "";
   snTo.value = "";
@@ -156,6 +183,8 @@ defineExpose({ load: () => sns.load() });
 .ap-body { height: 100%; display: flex; flex-direction: column; }
 .ap-table { flex: 1; min-height: 240px; overflow: hidden; }
 .ml { margin-left: 6px; }
+.ap-title { display: inline-flex; align-items: baseline; gap: 8px; font-weight: 600; }
+.bill-org { font-size: 12px; font-weight: 700; white-space: nowrap; }
 .sp { flex: 1; }
 .toolbar { flex-wrap: nowrap; }
 .w-mat { width: 160px !important; flex: none; }

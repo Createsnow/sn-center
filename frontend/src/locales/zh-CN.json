@@ -303,7 +303,6 @@
       "PROCESSING": "待处理",
       "ALLOCATED": "已分配"
     },
-    "snDetail": "本单据记载的存货 SN 信息 · {bill}",
     "pickBill": "从左侧选择一张单据",
     "unbatched": "待推送",
     "resumeBtn": "继续推送（剩余 {n} 次）",
