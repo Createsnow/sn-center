@@ -52,7 +52,7 @@
         <template v-else>
           <div class="dh">
             <div class="dh-title">
-              <b>PI {{ ctx.pi_no }}</b>
+              <b>{{ ctx.pi_no }}</b>
               <span class="muted">{{ t("common.customer") }} {{ ctx.customer_code || "—" }}</span>
               <span class="push" />
               <!-- 与 PI、客户编码同行的右上角：去生成（带本 PI 到 SN 生成页）；本 PI 还有可生成额度时左侧提示枚数 -->
